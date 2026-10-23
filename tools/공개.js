@@ -79,10 +79,12 @@ const 제작표시 = /c2pa\.|openai|chatgpt|gpt-image|trainedAlgorithmicMedia/i;
  * 맨 `gpt`는 10-19 몽글 시범 공개에서 「GPT 이미지」가 새어 더했다(`\b`라 MonoGPT·gpt2 같은 붙은 이름은 따로 적는다).
  * runway·llama·sora·veo처럼 흔한 낱말과 같은 이름은 숫자가 붙은 꼴만 본다(10-19 공개본 948개로 잰 거짓 경보: CSS runway,
  * 스페인어 llama, 받아쓰기 모델 tokenizer.json).
+ * 검수 AI fable·argon은 10-23에 더했다(배포 점검 목록에도 있다). opus·sonnet·haiku는 소리 코덱(`codecs=opus`)·받아쓰기 모델
+ * 어휘와 겹쳐 숫자가 붙은 꼴만 보고, 영문 astra는 같은 어휘(`ĠAstra`)와 겹쳐 넣지 않는다(gpt-6-astra는 gpt-숫자 꼴로 잡힌다).
  */
-const AI이름 = /\b(?:claude(?:\.ai)?|anthropic|chatgpt|openai|codex|gpt-?[0-9][\w.]*|gpt[- ]?image|gpt|monogpt|gemini|copilot|midjourney|higgsfield|suno|udio|nano[ -]?banana|elevenlabs|seedance|kling|typecast|demucs|cosy ?voice|mmaudio|seedvr2?|hyperframes|comfy ?ui|qwen|hailuo|veo[- ]?[0-9]|sora[- ]?[0-9]|flux[ .-]?[0-9])\b/i;
-/** 한글로 적은 AI 이름. 다른 낱말 속에 들어가기 쉬운 것(사이클링·교수노조)은 앞 글자가 한글이 아닐 때만 본다. */
-const AI한글이름 = /지피티|제미나이|타입캐스트|힉스필드|나노 ?바나나|미드저니|일레븐 ?랩스|앤[트스]로픽|오픈 ?(?:AI|에이아이)|코파일럿|(?<![가-힣])(?:클로드|클링|수노|코덱스|제미니|[씨시]댄스)/i;
+const AI이름 = /\b(?:claude(?:\.ai)?|anthropic|chatgpt|openai|codex|gpt-?[0-9][\w.]*|gpt[- ]?image|gpt|monogpt|gemini|copilot|midjourney|higgsfield|suno|udio|nano[ -]?banana|elevenlabs|seedance|kling|typecast|demucs|cosy ?voice|mmaudio|seedvr2?|hyperframes|comfy ?ui|qwen|hailuo|veo[- ]?[0-9]|sora[- ]?[0-9]|flux[ .-]?[0-9]|fable|argon|(?:opus|sonnet|haiku)[- ]?[0-9])\b/i;
+/** 한글로 적은 AI 이름. 다른 낱말 속에 들어가기 쉬운 것(사이클링·교수노조)과 검수 AI 이름(10-23)은 앞 글자가 한글이 아닐 때만 본다. */
+const AI한글이름 = /지피티|제미나이|타입캐스트|힉스필드|나노 ?바나나|미드저니|일레븐 ?랩스|앤[트스]로픽|오픈 ?(?:AI|에이아이)|코파일럿|(?<![가-힣])(?:클로드|클링|수노|코덱스|제미니|[씨시]댄스|페이블|아르곤|아스트라)/i;
 const AI표현 = /AI ?생성|AI로 만든|AI가 만든|AI-generated|generated (?:by|with) AI|made (?:by|with) AI/i;
 /**
  * 이 PC·작업 자리 경로(더한 줄만 본다). 10-19 몽글 시범 공개에서 `Documents/synk-vendor/…`가 주석에 실려 나갔다.
@@ -102,11 +104,12 @@ const 제작자료 = [
   [/\.(psd|blend1?|kra|xcf|aep|prproj)$/i, '편집 원본 파일'],
 ];
 /**
- * 배포 점검(.github/site-check/check.mjs 「2. 도구 이름」) 규칙을 못 읽을 때 쓰는 사본(10-20 판: 한글 이름·영상·소리 도구·작업 PC 경로).
+ * 배포 점검(.github/site-check/check.mjs 「2. 도구 이름」) 규칙을 못 읽을 때 쓰는 사본(10-23 판: 10-20 판의 한글 이름·영상·소리 도구·
+ * 작업 PC 경로에 검수 AI 이름 fable·argon·페이블·아르곤·아스트라를 더했다).
  * WORLD 공개 빌드 tools/build-world-app-public.mjs `publicToolName`도 같은 목록이다(tests/공개.test.js가 둘을 견준다).
  */
 const 점검규칙사본 = {
-  낱말: 'c3Vub3xoaWdnc2ZpZWxkfG5hbm8gYmFuYW5hfG1pZGpvdXJuZXl8Z3B0Wy0gXWltYWdlfGVkZ2VbLV8gXXR0c3xlbGV2ZW5sYWJzfHR5cGVjYXN0fGdlbWluaS1bMC05XVtcdy4tXSp0dHN8a28tS1ItW0EtWmEtel0rTmV1cmFsfG1hZGUgd2l0aCAoc3Vub3x1ZGlvKXxncHRbLSBdP+ydtOuvuOyngHzsp4DtlLzti7B8Y29kZXh8c2VlZGFuY2V8XGJrbGluZ3xkZW11Y3N87YOA7J6F7LqQ7Iqk7Yq4fO2eieyKpO2VhOuTnHzrgpjrhbggP+uwlOuCmOuCmHxzeW5rLXZlbmRvcnwoPzwhW1x3Li1dKVwudG1wW1xcL118KD88IVvqsIAt7Z6jXSkoPzrtgbTroZzrk5x87KCc66+464KY7J20fOyImOuFuCk=',
+  낱말: 'c3Vub3xoaWdnc2ZpZWxkfG5hbm8gYmFuYW5hfG1pZGpvdXJuZXl8Z3B0Wy0gXWltYWdlfGVkZ2VbLV8gXXR0c3xlbGV2ZW5sYWJzfHR5cGVjYXN0fGdlbWluaS1bMC05XVtcdy4tXSp0dHN8a28tS1ItW0EtWmEtel0rTmV1cmFsfG1hZGUgd2l0aCAoc3Vub3x1ZGlvKXxncHRbLSBdP+ydtOuvuOyngHzsp4DtlLzti7B8Y29kZXh8c2VlZGFuY2V8XGJrbGluZ3xkZW11Y3N87YOA7J6F7LqQ7Iqk7Yq4fO2eieyKpO2VhOuTnHzrgpjrhbggP+uwlOuCmOuCmHxzeW5rLXZlbmRvcnwoPzwhW1x3Li1dKVwudG1wW1xcL118KD88IVvqsIAt7Z6jXSkoPzrtgbTroZzrk5x87KCc66+464KY7J20fOyImOuFuHztjpjsnbTruJR87JWE66W06rOkfOyVhOyKpO2KuOudvCl8XGIoPzpmYWJsZXxhcmdvbilcYg==',
   태그: 'c3Vub3xcYnVkaW9cYnxnZW1pbml8ZWxldmVubGFic3x0eXBlY2FzdHxvcGVuYWl8ZWRnZVstXyBdP3R0cw==',
   skipDir: /(^|\/)(vendor|node_modules)\//,
   skipPage: /^(en\/)?(privacy|terms|data-deletion|brief)\//,

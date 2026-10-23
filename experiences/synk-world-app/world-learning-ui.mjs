@@ -581,7 +581,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   home.showPanel('마을 준비 확인','<div class="wpos-stage" data-town-stage></div>',{...PANEL,eyebrow:'TOWN CHECK'});
   const box=panelNode('[data-town-stage]');if(!box)return;
   box.innerHTML=view.renderTownCheckWait();box.querySelector('[data-town-wait]')?.focus?.({preventScroll:true});
-  // 첫 확인은 30초 규칙을 기다리지 않는다 — 시트를 연 직후라면 서버가 지난 결과(retryAfterMs)를 주고, 그 모자란 영역으로 바로 문항을 낸다(Fable F1).
+  // 첫 확인은 30초 규칙을 기다리지 않는다 — 시트를 연 직후라면 서버가 지난 결과(retryAfterMs)를 주고, 그 모자란 영역으로 바로 문항을 낸다(검수 F1).
   let first;try{first=await townSend(coachNow,{wait:false});}catch(error){if(ticket===townOpen)failed(error);return;}
   if(ticket!==townOpen||!box.isConnected)return;
   // 열렸거나, 확인은 마쳤는데 체험·이용권이 없거나(access — 문항을 더 내지 않는다), 미룸·보류면 바로 끝 화면.

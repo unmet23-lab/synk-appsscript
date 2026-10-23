@@ -400,7 +400,33 @@ test('AI 이름 한글·맨 GPT와 이 PC 경로: 10-19 공개본에서 샌 줄�
   assert.deepEqual(허용.알림.map((x) => x.검사).sort(), ['AI 이름', '내부 경로'], '--허용은 사람이 본 AI 이름·이 PC 경로를 알림으로 넘긴다');
 });
 
-test('도구 사본 = 배포 점검 목록(10-20 판): 샌 꼴은 잡고 공개본의 낱말 조각은 넘긴다 · check.mjs와 같으면 조용하다 · WORLD 공개 빌드와 같은 목록', async (t) => {
+test('검수 AI 이름(10-23): 더한 줄의 Fable·아르곤·아스트라·argon·숫자 붙은 Opus·Sonnet은 잡고, 녹음 코덱·받아쓰기 어휘·붙은 낱말은 넘긴다', () => {
+  const 규칙 = 속.점검규칙읽기(점검원문('suno'));
+  const 검사 = (줄들) => 속.검사하기(줄들.map(([경로, 새]) => ({ 경로, 버퍼: 글(새), 공개버퍼: null })), 규칙);
+  const 걸린 = (r) => r.걸림.map((x) => `${x.경로} ${x.검사}`).sort();
+  // 10-21 말하기 후보·10-23 공개본에 실려 나간 꼴(파일마다 한 꼴 — 이름 검사는 파일마다 처음 걸린 줄 하나만 알린다)
+  const 샌 = 검사([
+    ['world/app-shell.mjs', '// 자리가 다르면 다시 그린다(10-22 Fable P3).\n'],
+    ['world/world-speaking-practice.mjs', '// 녹음 칸을 다시 그린다(10-21 Fable 검수)\n'],
+    ['ub/app.js', '  // 줄바꿈이 다른 칸처럼 보이지 않게(10-21 아르곤 검수)\n'],
+    ['a/astra.js', '// 백엔드 검수(아스트라 재확인) 반영\n'],
+    ['a/argon.json', '{"stage": "argon"}\n'],
+    ['a/opus.js', '// 문항 1차는 Opus 5.5, 하위 일은 sonnet-5-5\n'],
+  ]);
+  assert.deepEqual(걸린(샌), ['a/argon.json AI 이름', 'a/astra.js AI 이름', 'a/opus.js AI 이름', 'ub/app.js AI 이름',
+    'world/app-shell.mjs AI 이름', 'world/world-speaking-practice.mjs AI 이름']);
+  // 공개본(7340f37)의 거짓 경보 후보 — WORLD 녹음 코덱, 받아쓰기 모델 어휘, 이름이 붙은 다른 낱말·한글 낱말 속
+  const 흔한 = 검사([
+    ['world/world-speaking-practice.mjs', "const MIMES=['audio/webm;codecs=opus','audio/ogg;codecs=opus'];\n"],
+    ['path/models/whisper-base/tokenizer.json', '{"ĠAstra": 45242, "opus": 23280, "Ġoct opus": 92557}\n'],
+    ['a/story.js', "const 이야기 = 'Aesop fables · a fabled town';\n"],
+    ['a/hash.js', "import { hash } from './argon2.js';\n"],
+    ['a/korean.js', '// 케이블·테이블 정리\n'],
+  ]);
+  assert.deepEqual(걸린(흔한), []);
+});
+
+test('도구 사본 = 배포 점검 목록(10-23 판): 샌 꼴은 잡고 공개본의 낱말 조각은 넘긴다 · check.mjs와 같으면 조용하다 · WORLD 공개 빌드와 같은 목록', async (t) => {
   const 사본 = 속.점검규칙읽기(null);
   const 풀기 = (b64) => Buffer.from(b64, 'base64').toString('utf8');
   const 낱말 = new RegExp(풀기(사본.낱말), 'i');
@@ -410,10 +436,21 @@ test('도구 사본 = 배포 점검 목록(10-20 판): 샌 꼴은 잡고 공개�
     '목소리만 떼어(Demucs)', '타입캐스트 하나', '힉스필드 카타나', '나노바나나', '나노 바나나 프로', 'Documents/synk-vendor/hangul-songs/',
     '(격자 사진: .tmp/world-firstrun-20261014)', '.tmp\\x', '클로드가 다시 그림', '제미나이 젬', '(수노 노래)', '"provider": "typecast"',
   ]) assert.match(샌, 낱말, 샌);
+  // 10-21 말하기 후보·10-23 공개본(7340f37, 점검 범위 글 875개 가운데 10개)에 실려 나간 검수 AI 이름
+  for (const 샌 of [
+    '(Fable 2차 검수 반영)', '(10-22 Fable P3)', '(10-21 Fable 검수)', '(§6-4; Fable P1-4)', 'Fable검수', '"reviewer": "fable"',
+    '(10-21 아르곤 검수)', 'Gemini 4 Argon', 'gemini-4-argon', '(아스트라 재확인)', '페이블·아르곤 검수',
+  ]) assert.match(샌, 낱말, 샌);
   // 공개본(1c34773, 점검 범위 글 850개)에 있는 낱말 조각 — 받아쓰기 모델 어휘·한글 낱말 속·다른 경로
   for (const 흔한 of [
     '"chuckling": 32312, "Ġtackling": 344', '"Ġsparkling": 399, "inkling": 452', '사이클링 대회와 교수노조 회의', '가수노래',
     'cache.tmp/x', 'a-.tmp/x', '<canvas class="hero-runway">', '쌍둥이자리 gemini', 'https://example.com/documents/guide.pdf',
+  ]) assert.doesNotMatch(흔한, 낱말, 흔한);
+  // 10-23 공개본(7340f37)에서 잰 검수 AI 이름 둘레 — 받아쓰기 어휘 ĠAstra·opus, WORLD 녹음 코덱, 계정 묶음 이름 속 astra. 영문 astra·opus는
+  // 목록에 넣지 않았고, 붙은 낱말(fables·argon2)과 한글 낱말 속(케이블·테이블)은 넘긴다
+  for (const 흔한 of [
+    '"ĠAstra": 45242, "opus": 23280', "'audio/webm;codecs=opus','audio/ogg;codecs=opus'", 'globalThis.SynkAtlasTravel',
+    'Aesop fables · a fabled town', "import { hash } from './argon2.js'", '케이블·테이블 정리',
   ]) assert.doesNotMatch(흔한, 낱말, 흔한);
 
   // 후보의 check.mjs 목록이 사본과 같으면 어긋남을 알리지 않는다

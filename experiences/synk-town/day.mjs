@@ -467,7 +467,7 @@ function sceneFor(day, ctx) {
     for (const id of members(e.kind)) {
       if (e.kind === 'help' && e.choice === 'alone') continue;
       const index = members(e.kind).indexOf(id), targetX = base.x + (index ? 1 : -.8), targetZ = base.z + .3;
-      // A resident still walking over to the scene keeps the plan's walk (Fable P2-2); one the plan has
+      // A resident still walking over to the scene keeps the plan's walk (review P2-2); one the plan has
       // asleep (a scene that ran past bedtime) stays at the scene.
       if (v?.places?.[id]?.walking && v.places[id].archetype === 'reserved') continue;
       let n = npcs.find(row => row.id === id);

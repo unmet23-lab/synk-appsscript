@@ -44,7 +44,7 @@
     return !/^\.|\.$|\.\./.test(m[1]);
   }
   const clip = (s, n) => String(s || '').replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, '').trim().slice(0, n);
-  // 궁금한 점은 한 줄로 편다 — 문의 내용은 한 줄에 한 칸이라 줄바꿈이 다른 칸처럼 보이지 않게(10-21 아르곤 검수)
+  // 궁금한 점은 한 줄로 편다 — 문의 내용은 한 줄에 한 칸이라 줄바꿈이 다른 칸처럼 보이지 않게(10-21 검수)
   const noteText = s => clip(String(s || '').replace(/\s*[\r\n]+\s*/g, ' / '), 300);
   const pick = (list, id) => list.find(x => x.id === id);
   const branch = id => pick(C.BRANCHES, id);
@@ -173,7 +173,7 @@
   const T = () => C[state.lang];
   const live = msg => { const el = $('#live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 40); } };
 
-  // 꼭 고를 칸은 fieldset의 aria-required로 알린다 — 입력마다 required를 달면 보내기 전부터 :invalid로 읽힌다(10-21 아르곤 검수).
+  // 꼭 고를 칸은 fieldset의 aria-required로 알린다 — 입력마다 required를 달면 보내기 전부터 :invalid로 읽힌다(10-21 검수).
   function choices(type, name, list) {
     const cls = type === 'checkbox' ? 'ub-opt multi' : 'ub-opt';
     return list.map(o => `<label class="${cls}"><input type="${type}" name="${name}" value="${esc(o.id)}"><span>${keepDots(o[state.lang])}</span></label>`).join('');
@@ -335,7 +335,7 @@
     }
   }
 
-  /** 첫 화면 단추: 등록을 마치면 선 알약으로 — 완료 판의 「링크 보내기」와 흰 알약이 한 화면에 둘 보이지 않게(10-22 Fable 검수, 1440×900에서 783px 거리). */
+  /** 첫 화면 단추: 등록을 마치면 선 알약으로 — 완료 판의 「링크 보내기」와 흰 알약이 한 화면에 둘 보이지 않게(10-22 검수, 1440×900에서 783px 거리). */
   function heroPill(on) {
     const b = $('.ub-actions [data-go-form]');
     if (!b) return;
@@ -402,7 +402,7 @@
     }
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    // 갈래 단추가 아니면 양식 제목으로 — 이름 칸으로 가면 위의 꼭 고를 칸 넷을 건너뛰고, 휴대폰에서는 자판이 올라와 가린다(10-21 아르곤 검수)
+    // 갈래 단추가 아니면 양식 제목으로 — 이름 칸으로 가면 위의 꼭 고를 칸 넷을 건너뛰고, 휴대폰에서는 자판이 올라와 가린다(10-21 검수)
     const first = $('#form').hidden ? $('#done-title') : want ? $(`input[name="interest"][value="${want}"]`) : $('#form-title');
     setTimeout(() => first && first.focus({ preventScroll: true }), reduce ? 0 : 420);
   }
@@ -422,7 +422,7 @@
     const dock = $('.ub-dock');
     if (dock && 'IntersectionObserver' in window) {
       const seen = new Set();
-      // 아래 여백을 줄이지 않는다 — 대상이 화면 아래 끝에 들어오는 순간 숨겨야 흰 알약 둘이 함께 보이지 않는다(10-21 아르곤 검수)
+      // 아래 여백을 줄이지 않는다 — 대상이 화면 아래 끝에 들어오는 순간 숨겨야 흰 알약 둘이 함께 보이지 않는다(10-21 검수)
       const io = new IntersectionObserver(es => {
         es.forEach(x => { if (x.isIntersecting) seen.add(x.target); else seen.delete(x.target); });
         dock.classList.toggle('away', seen.size > 0);

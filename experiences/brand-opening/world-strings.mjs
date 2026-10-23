@@ -880,7 +880,7 @@ export default {
  'account.kindTest':{ko:'로컬 테스트 계정',en:'Local test account',mn:'Дотоод туршилтын бүртгэл'},
  'account.learningRecords':{ko:'학습 기록 연결',en:'Learning records',mn:'Сургалтын мэдээллийн холболт'},
  'account.learningSave':{ko:'학습 기록을 SYNK 계정에 저장하기',en:'Save learning records to my SYNK account',mn:'Сургалтын мэдээллийг SYNK бүртгэлдээ хадгалах'},
- // 10-23(WORLD 학습자 응답 Fable 검수): 이 토글이 학습 호스트 연결(world-account.mjs connected)을 정해 연습·놀이 기록 전체와 연습 뒤 응답이 계정에 가는지를 가른다 — 처리방침 「학습 기록 저장을 켠 경우에만」과 같은 뜻.
+ // 10-23(WORLD 학습자 응답 검수): 이 토글이 학습 호스트 연결(world-account.mjs connected)을 정해 연습·놀이 기록 전체와 연습 뒤 응답이 계정에 가는지를 가른다 — 처리방침 「학습 기록 저장을 켠 경우에만」과 같은 뜻.
  'account.learningNote':{ko:'켠 뒤에 한 연습·놀이 기록과 연습 뒤 남긴 응답을 SYNK 계정에 저장해요. 끈 동안의 기록은 이 기기에만 남아요. 반에 공유하는 것과 타운 활동 공유는 내 수업에서 따로 정해요.',en:'Practice and play records, and responses you leave after practice, are saved to your SYNK account from when you turn this on. While it is off, records stay on this device only. Sharing with your class and Town sharing are set separately in My classes.',mn:'Асаасны дараах дасгал, тоглоомын тэмдэглэл болон дасгалын дараа үлдээсэн хариултыг SYNK бүртгэлд хадгална. Унтраасан үеийн тэмдэглэл зөвхөн энэ төхөөрөмж дээр үлдэнэ. Ангитайгаа болон Таунтай хуваалцахыг «Миний хичээл» хэсэгт тусад нь тохируулна.'},
  'account.learningElsewhere':{ko:'학습 연결 설정은 내 수업의 계정 화면에서 볼 수 있어요.',en:'You can see learning connection settings on the account screen in My classes.',mn:'Сургалтын холболтын тохиргоог «Миний хичээл» хэсгийн бүртгэлийн дэлгэцээс харж болно.'},
  'account.classSettings':{ko:'수업·공유 설정 열기',en:'Open class and sharing settings',mn:'Хичээл, хуваалцах тохиргоог нээх'},

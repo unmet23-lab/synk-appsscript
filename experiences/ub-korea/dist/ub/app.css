@@ -884,7 +884,7 @@ p.doneline span{color:var(--ink-2)}
 
 /* 휴대폰 아래 단추 — 등록 판이 보이면 숨는다 */
 .ub-dock{display:none}
-/* 앱 스크립트가 꺼졌거나 못 돌면(.js가 안 붙으면) 양식 대신 안내만 — 스크립트가 채우는 칸(계기판·갈래 카드·목록·아래 단추)도 빈 상자로 남기지 않는다(10-21 아르곤 검수) */
+/* 앱 스크립트가 꺼졌거나 못 돌면(.js가 안 붙으면) 양식 대신 안내만 — 스크립트가 채우는 칸(계기판·갈래 카드·목록·아래 단추)도 빈 상자로 남기지 않는다(10-21 검수) */
 html:not(.js) .ub-form,html:not(.js) .ub-facts,html:not(.js) .ub-actions,html:not(.js) .ub-main,html:not(.js) .ub-dock,html:not(.js) .ub-lang{display:none!important}
 .ub-fallback{display:none;padding:22px}
 html:not(.js) .ub-fallback{display:block}
@@ -923,7 +923,7 @@ html:not(.js) .ub-fallback{display:block}
 }
 @media(max-width:360px){
   .ub-poster-hero .led-chip{height:auto;min-height:28px;padding:5px 12px 5px 10px;white-space:normal;line-height:1.3}
-  /* 몽골어 칩이 두 줄(아래 끝 약 39%)이 되므로 가방은 그 아래에서 시작한다(10-22 Fable 검수) */
+  /* 몽골어 칩이 두 줄(아래 끝 약 39%)이 되므로 가방은 그 아래에서 시작한다(10-22 검수) */
   .poster.tall.ub-poster-hero .cut{top:42%;height:54%}
   .ub-poster-form{--word-max:4.5rem}
   .ub-poster-form .cut{max-width:36%}

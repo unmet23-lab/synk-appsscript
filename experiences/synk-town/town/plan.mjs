@@ -156,7 +156,7 @@ export function planBand(input) {
       archetype: 'reserved', spot, cause: 'reservation', reservation: hold.id, base: null };
     const after = to < s.end ? planRange([npc], { [npc]: { ...s, t: to, prior: { ...prior, lastSpot: holding.spot } } }, [...fixed, ...others, ...before, holding], ctx,
       () => createRng(villageSeed, 'replan', lifeDay, band, npc, planCmdRev, Math.floor((to - startMs) / MINUTE), hold.id),
-      // A promise already begun before the hold is not made up afterwards (§6-4; Fable P1-4).
+      // A promise already begun before the hold is not made up afterwards (§6-4; review P1-4).
       (input.promises || []).filter(p => !before.some(x => x.promise === p.id))) : [];
     segments = [...others, ...before, holding, ...after];
   }

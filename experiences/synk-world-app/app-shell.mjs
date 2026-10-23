@@ -390,7 +390,7 @@ async function classworkThisWeek(){
 const writingOwnerId=()=>client?.snapshot?.accountId||'guest';
 // 배우기 판의 쓰기 줄은 열린 문항이 있을 때만 보이므로 문항 은행을 미리 읽어 둔다(작은 JSON 하나).
 // 줄의 자리(생활 팩 위 EXAM · 아래 MORE)는 그리는 순간의 이번 주 계획으로 정하므로, 학습 기록을 읽는 사이(계획 없음)에 연 판은
-// 계획이 선 뒤(생활 진도가 바뀔 때마다 onSummary) 자리가 다르면 다시 그린다(10-22 Fable P3). 앞에서 부르므로 함수 선언으로 둔다.
+// 계획이 선 뒤(생활 진도가 바뀔 때마다 onSummary) 자리가 다르면 다시 그린다(10-22 검수 P3). 앞에서 부르므로 함수 선언으로 둔다.
 function repaintWritingRow(){
  if(!writingReady()||!lifeUI||!document.querySelector('#world-panel[open] #panel-content .life-hub'))return;
  const row=document.querySelector('#panel-content [data-world="writing"]');
@@ -510,7 +510,7 @@ function quietTownCheck(){
  quietTown=(async()=>{
   for(const until=Date.now()+15000;Date.now()<until;){const state=window.SYNKLearningHost?.status?.();if(!state||!state.queued&&['synced','idle'].includes(state.phase))break;await new Promise(resolve=>setTimeout(resolve,500));}
   const body={bankHash:worldPosition?.topik?.hash||null,sound:townSound()};let result=await client.request('town/check',{method:'POST',body});
-  // 30초 안이라 서버가 지난 결과와 retryAfterMs를 주면 그만큼 기다려 한 번 더 묻는다 — 낡은 결과로 「열렸어요」를 놓치지 않게(Fable F5).
+  // 30초 안이라 서버가 지난 결과와 retryAfterMs를 주면 그만큼 기다려 한 번 더 묻는다 — 낡은 결과로 「열렸어요」를 놓치지 않게(검수 F5).
   if(Number.isFinite(result?.retryAfterMs)&&result.retryAfterMs>0&&result.retryAfterMs<=30000){await new Promise(resolve=>setTimeout(resolve,result.retryAfterMs+300));result=await client.request('town/check',{method:'POST',body});}
   townEntry=result;if(result.allowed)home.toast('마을이 열렸어요. 싱크타운에서 들어갈 수 있어요.');
  })().catch(()=>{}).finally(()=>{quietTown=null;});

@@ -282,7 +282,7 @@ function runLife(state, operation) {
 }
 // ── The living village (W3; vertical slice §6-4·§6-5·§14-4) ─────────────────────
 const DAY_MEMBERS = Object.freeze({ tea: ['cafe-owner', 'researcher'], coordination: ['workshop-owner', 'researcher'], help: ['workshop-owner'] });
-/** The spot a scene holds each member at — two members never share a one-seat spot (Fable P2-6). */
+/** The spot a scene holds each member at — two members never share a one-seat spot (review P2-6). */
 const HOLD_SPOTS = Object.freeze({ tea: { 'cafe-owner': 'cafe.counter', researcher: 'cafe.front' },
   coordination: { cafe: { 'workshop-owner': 'cafe.front', researcher: 'cafe.front' }, greenhouse: { 'workshop-owner': 'greenhouse.door', researcher: 'greenhouse.board' } },
   help: { 'workshop-owner': 'workshop.bench' } });

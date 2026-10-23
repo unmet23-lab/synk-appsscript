@@ -5,7 +5,7 @@ export const VISIT_IDLE_MS = 30 * 60 * 1000;
 export const initialPresence = () => ({ at: null, surfaces: {}, owner: null, fence: 0,
   lastActiveAt: null, idleClosed: false });
 
-/** The wall time the current visit ends at if nothing comes back (W3, Fable P1-1): 30 minutes after
+/** The wall time the current visit ends at if nothing comes back (W3, review P1-1): 30 minutes after
  * the last stretch of play the presence covers — a foreground window counts to its lease's end. The
  * pulse that notices the end and every settlement use this one definition, so a visit ends at the
  * same time however late either looks. null once the visit already ended (idleClosed) or never began. */

@@ -215,7 +215,7 @@
  .first-hangul-choices>button svg{width:52px;height:52px}
 }
 /* 넓은 판(PC)·가로 태블릿·낮은 가로 화면: 왼쪽 시범 카드(두 칸 + 「안녕」) · 오른쪽 질문과 고르기(세로 가운데).
- * 가로 태블릿은 터치라 PC 규칙(pointer:fine)이 안 걸린다 — 빼면 두 칸이 가로폭을 꽉 채워 고르기가 화면 밖으로 밀린다(10-19 Fable 1024×768 실측). */
+ * 가로 태블릿은 터치라 PC 규칙(pointer:fine)이 안 걸린다 — 빼면 두 칸이 가로폭을 꽉 채워 고르기가 화면 밖으로 밀린다(10-19 검수 1024×768 실측). */
 @media(orientation:landscape) and (max-height:599px),(orientation:landscape) and (min-width:800px),(min-width:600px) and (min-height:600px) and (pointer:fine){
  .tutor-panel #panel-content:has(.first-hangul){display:block}
  .first-hangul{max-width:860px;margin:0 auto;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:1fr auto auto auto 1fr;grid-template-areas:"card ." "card ask" "card choices" "card status" "card .";gap:0 22px}
