@@ -11,8 +11,12 @@ export type FilmProps = { shot?: string; bgm?: string; bgmVolume?: number };
 
 export const Film: React.FC<FilmProps> = ({ shot, bgm, bgmVolume = 0.09 }) => {
   const g = useCurrentFrame();
-  const id = Object.keys(SCENES).find((k) => g >= SCENES[k].from && g < SCENES[k].to) ?? '11';
+  const ids = Object.keys(SCENES).sort(); // 「10」·「11」은 숫자 모양 키라 Object.keys가 「01」보다 앞에 둔다 — 정렬해야 앞 장면이 맞는다
+  const id = ids.find((k) => g >= SCENES[k].from && g < SCENES[k].to) ?? '11';
   const View = SCENE_VIEW[id];
+  // 새 판이 떠오르는 동안(첫 12프레임) 앞 판을 아래에 남긴다 — 경계마다 흰 판 사이 검은 책상 1프레임이 「깜빡」했다(Fable 10-23 최종본).
+  const prevId = ids[ids.indexOf(id) - 1];
+  const Prev = prevId && g < SCENES[id].from + 12 ? SCENE_VIEW[prevId] : null;
   // 지금 시각을 품은 큐를 먼저 고르고(같은 줄의 둘째 큐가 앞 큐 꼬리에 가리지 않게), 없을 때만 막 끝난 큐를 잠깐 남긴다.
   const now = cues.findIndex((c) => g >= c.from && g < c.to);
   const tailIdx = now >= 0 ? -1 : cues.findIndex((c) => g >= c.to && g < c.to + 8);
@@ -25,6 +29,7 @@ export const Film: React.FC<FilmProps> = ({ shot, bgm, bgmVolume = 0.09 }) => {
     <AbsoluteFill>
       <Desk />
       {ko ? <TopBar no={id} ko={ko} mn={mn} /> : null}
+      {Prev ? <Prev g={g} shot={shot} /> : null}
       <View g={g} shot={shot} />
       <Sub text={cue?.text ?? null} o={subO} />
       {Object.keys(VO_DUR).map((id) => (

@@ -482,7 +482,8 @@ export const S08: React.FC<P> = ({ g }) => {
         </div>
         <div style={{ opacity: meter }}>
           <div style={{ fontFamily: KO, fontSize: 24, fontWeight: 650, color: INK2 }}>
-            {L('countLabel').ko} <span style={{ fontFamily: MN, fontWeight: 500, fontSize: 21, color: INK3, marginLeft: 6 }}>{L('countLabel').mn}</span>
+            {L('countLabel').ko}
+            <MnLine size={21}>{L('countLabel').mn}</MnLine>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
             <div style={{ fontFamily: KO, fontSize: 80, fontWeight: 820, color: INK, letterSpacing: '-0.03em', lineHeight: 1.05, fontVariantNumeric: 'tabular-nums' }}>281자</div>
@@ -510,7 +511,9 @@ const MARK_T: Record<string, { mark: Beat; say: Beat; fix?: Beat }> = {
   자: { mark: ['i6', '물가가', 0.02], say: ['i6', '자료에', 0.57] },
   '+': { mark: ['i7', '잘', 0.02], say: ['i7', '잘', 0.02] },
 };
-const FIX: Record<string, string> = { 체: '-습니다 → -다', 조: '63%이 → 63%가', 낱: '15% → 15%포인트' };
+const FIX: Record<string, [string, string]> = { 체: ['-습니다 → ', '-다'], 조: ['', '63%이 → 63%가'], 낱: ['', '15% → 15%포인트'] };
+// 〔체〕는 두 박자로 쌓는다 — 「다른 문장은 끝이 다인데」에 「-다」가 먼저, 「여기만 습니다」에 「-습니다 →」가 그 앞에 붙는다.
+const FIX_FIRST: Record<string, Beat> = { 체: ['i3', '다인데', 0.69] };
 export const S09: React.FC<P> = ({ g }) => {
   const beat = (b: Beat | undefined, len = 14) => (b ? prog(g, atw(b[0], b[1], b[2]), len) : 0);
   const mp = (code: string) => beat(MARK_T[code].mark);
@@ -523,7 +526,7 @@ export const S09: React.FC<P> = ({ g }) => {
   const shrink = mix(1, 0.55, card);
   const chipsOn = card < 0.5 ? 1 : 0; // 줄어든 학생 글에서는 칩을 끈다(얼룩처럼 보여서)
   const pill = prog(g, atw('i1', '예시로', 0.55), 10);
-  const listHead = prog(g, at('i2', 0), 10);
+  const listHead = prog(g, atw('i2', '다섯', 0.25), 10); // 「다섯 곳까지」 — 머리와 빈 칸 다섯이 같이
   // i9 「다시 써 볼 곳은 다음 주 숙제와 함께」 — 셋째 줄을 두르고, 다음 주 숙제 표를 붙인다
   const redo = prog(g, atw('i9', '다시', 0.02), 14);
   const nextHw = prog(g, atw('i9', '숙제와', 0.47), 12);
@@ -585,15 +588,21 @@ export const S09: React.FC<P> = ({ g }) => {
             const ps = beat(MARK_T[m.code].say, 12);
             const pf = beat(MARK_T[m.code].fix, 12);
             const fix = FIX[m.code];
+            const p2 = FIX_FIRST[m.code] ? beat(FIX_FIRST[m.code], 12) : pf;
             return (
               <div key={m.code} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', alignItems: 'baseline', opacity: p, transform: `translateX(${mix(12, 0, p)}px)` }}>
                 <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 26, color: CORAL_DEEP }}>〔{m.code}〕</span>
                 <div>
                   <div style={{ opacity: ps, transform: `translateX(${mix(8, 0, ps)}px)` }}>
-                    <div style={{ fontFamily: KO, fontWeight: 650, fontSize: 25, color: INK }}>{m.ko}</div>
-                    <MnLine size={22}>{m.mn}</MnLine>
+                    <div style={{ fontFamily: KO, fontWeight: 650, fontSize: 28, color: INK }}>{m.ko}</div>
+                    <MnLine size={24}>{m.mn}</MnLine>
                   </div>
-                  {fix ? <div style={{ marginTop: 4, fontFamily: KO, fontWeight: 750, fontSize: 24, color: CORAL_DEEP, opacity: pf, transform: `translateX(${mix(8, 0, pf)}px)` }}>{withAr(fix)}</div> : null}
+                  {fix ? (
+                    <div style={{ marginTop: 4, fontFamily: KO, fontWeight: 750, fontSize: 27, color: CORAL_DEEP }}>
+                      <span style={{ opacity: pf }}>{withAr(fix[0])}</span>
+                      <span style={{ opacity: p2 }}>{withAr(fix[1])}</span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
@@ -649,6 +658,7 @@ export const S10: React.FC<P & { shot?: string }> = ({ g, shot }) => {
   const { from, to } = SCENES['10'];
   const t = prog(g, from + 4, 16);
   const pan = prog(g, from + 24, Math.max(30, to - from - 40), IN_OUT);
+  const where = prog(g, atw('j1', '앱의', 0.3), 12);
   const visible = BOARD.h - 40 - 12;
   return (
     <Board o={fadeIn(g, '10')} scale={push(g, '10')} ox={30} oy={40}>
@@ -659,6 +669,11 @@ export const S10: React.FC<P & { shot?: string }> = ({ g, shot }) => {
         <div style={{ marginTop: 36, fontFamily: KO, fontWeight: 600, fontSize: 28, lineHeight: 1.6, color: INK2 }}>
           {L('worldSub').ko}
           <MnLine size={24}>{L('worldSub').mn}</MnLine>
+        </div>
+        {/* 「싱크 월드 앱의」 — 무엇이고 어디서 여는지(이해 시험 10-23: 두 시청자 모두 「앱이 뭔지, 어디서 받는지」) */}
+        <div style={{ marginTop: 22, fontFamily: KO, fontWeight: 700, fontSize: 26, color: CORAL_DEEP, opacity: where, transform: `translateY(${mix(8, 0, where)}px)` }}>
+          {L('worldWhere').ko}
+          <MnLine size={22} style={{ marginTop: 2, textWrap: 'balance' }}>{L('worldWhere').mn}</MnLine>
         </div>
         <div style={{ marginTop: 36, display: 'inline-flex', gap: 10, alignItems: 'center', padding: '8px 16px', borderRadius: 999, background: '#F2F2F0', fontFamily: KO, fontWeight: 600, fontSize: 20, color: INK3 }}>
           {L('worldPill').ko} <span style={{ fontFamily: MN, fontWeight: 500 }}>{L('worldPill').mn}</span>
@@ -730,7 +745,7 @@ export const S11: React.FC<P> = ({ g }) => {
               ))}
             </MnLine>
           </div>
-          <div style={{ position: 'absolute', left: 70, top: 520, display: 'flex', alignItems: 'center', gap: 22, opacity: cta }}>
+          <div style={{ position: 'absolute', left: 70, top: 492, display: 'flex', alignItems: 'center', gap: 22, opacity: cta }}>
             <div style={{ padding: '16px 32px', borderRadius: 999, background: '#FFFFFF', fontFamily: MN, fontWeight: 700, fontSize: 44, color: POSTER_INK, letterSpacing: '-0.01em' }}>
               <U p={url} w={6}>
                 synk.im/lab/topik4
@@ -738,7 +753,10 @@ export const S11: React.FC<P> = ({ g }) => {
             </div>
             <div>
               <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 28, color: POSTER_INK }}>{L('endCta').ko}</div>
-              <MnLine size={22} color="rgba(30,14,10,.74)">{L('endCta').mn}</MnLine>
+              <MnLine size={24} color="rgba(30,14,10,.74)">{L('endCta').mn}</MnLine>
+              {/* 관심 등록이 무엇인지 — 신청 페이지 글 그대로(이해 시험 10-23 「신청인지 대기 명단인지」) */}
+              <div style={{ marginTop: 10, fontFamily: KO, fontWeight: 600, fontSize: 23, color: POSTER_INK }}>{L('openRule').ko}</div>
+              <MnLine size={22} color="rgba(30,14,10,.74)">{L('openRule').mn}</MnLine>
             </div>
           </div>
           {/* 합성 목소리 한 줄 — 휴대폰에서도 읽히게 크게(Fable 10-23) */}

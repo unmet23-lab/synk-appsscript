@@ -22,9 +22,12 @@ const syllables = (s) => [...s].filter((ch) => /[가-힣]/.test(ch)).length;
 
 /**
  * 큐 경계: 몽골어 글자 수 비율로 나눈 자리에서 가장 가까운 한국어 낱말 끝(쉼표·마침표 뒤를 먼저)으로 옮긴다.
+ * 줄에 cut(큐마다 그 큐가 끝나는 한국어 낱말)이 있으면 그 낱말 끝을 먼저 쓴다 — 첫 큐가 인용이거나 두 큐 길이가 비대칭이면
+ * 비율 자리가 먼 낱말에 걸려 1초 안팎 어긋났다(Fable 10-23 최종본: d3·e2·e3·f5·g3). 같은 낱말이 둘이면 앞 경계 뒤의 첫 것.
  * 낱말 시각이 없으면 비율 그대로.
  */
-function cueSplits(dur, mn, words) {
+const bare = (w) => String(w).replace(/[.,?!]+$/, '');
+function cueSplits(dur, mn, words, cut) {
   const total = mn.reduce((a, m) => a + m.length, 0);
   const raw = [];
   let acc = 0;
@@ -33,7 +36,14 @@ function cueSplits(dur, mn, words) {
     raw.push((dur * acc) / total);
   }
   if (!words?.length) return raw;
-  return raw.map((t) => {
+  let after = 0;
+  return raw.map((t, i) => {
+    const want = cut?.[i];
+    const k = want ? words.findIndex(([text], j) => j >= after && bare(text) === bare(want)) : -1;
+    if (k >= 0) {
+      after = k + 1;
+      return words[k][2];
+    }
     let best = null;
     for (const [text, , e] of words) {
       const score = Math.abs(e - t) - (/[.,?!]$/.test(text) ? 0.6 : 0);
@@ -60,7 +70,7 @@ export function buildTimeline(lines, vo, fps) {
     for (const l of lines.filter((x) => x.scene === sc.id)) {
       const dur = vo.dur?.[l.id] ?? syllables(l.say) / SYL;
       lineTime[l.id] = { from: f(t), to: f(t + dur), sec: t, dur };
-      const splits = cueSplits(dur, l.mn, vo.words?.[l.id]);
+      const splits = cueSplits(dur, l.mn, vo.words?.[l.id], l.cut);
       const edges = [0, ...splits, dur];
       l.mn.forEach((m, i) => cues.push({ from: f(t + edges[i]), to: f(t + edges[i + 1]), line: l.id, text: m }));
       last = t + dur;
