@@ -71,10 +71,11 @@
   ],
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-10-22T14:27:37+09:00",
+    "시각": "2026-10-23T13:41:05+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
+      "준비.json · 「기획」(기획 장부 줄 — 10-23부터 고른 기획만 만든다)이 없다",
       "표지(lab-youtube · lab-instagram · lab-facebook · lab-cn-xiaohongshu · lab-mm-tiktok) · 표지 오른쪽 단추 자리 1군데 — 「파리 날리다」 오른쪽 끝 960px(안전선 920)",
       "영상 4개 · 오른쪽 단추 자리 34군데(01-youtube-en/video.mp4 10 · 02-mn/video.mp4 12 · 03-xiaohongshu-cn/video.mp4 7 · 04-tiktok-mm/video.mp4 5) — 0.5초 「파리 날리다」 오른쪽 끝 960px(안전선 920) · 8.5초 「파리 날리다 ,련1」 오른쪽 끝 1080px(안전선 920) · 장면표 .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_01-youtube-en_video.jpg · .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_02-mn_video.jpg · .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_03-xiaohongshu-cn_video.jpg · .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_04-tiktok-mm_video.jpg",
       "영상 4개 · 아래 앱 글자 자리 9군데(01-youtube-en/video.mp4 2 · 02-mn/video.mp4 2 · 03-xiaohongshu-cn/video.mp4 3 · 04-tiktok-mm/video.mp4 2) — 16.5초 「go-yang-i se-su-ma」 아래 끝 1450px(안전선 1428) · 17.5초 「go-yang-i se-su-ma」 아래 끝 1450px(안전선 1428) · 장면표 .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_01-youtube-en_video.jpg · .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_02-mn_video.jpg · .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_03-xiaohongshu-cn_video.jpg · .tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/글자표_게시_04-tiktok-mm_video.jpg",
@@ -96,7 +97,7 @@
         "봉우리": -1.8,
         "정지": "10% 통과",
         "끝화면": 4.3,
-        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_01-youtube-en_video/inspection-5b40761a-d712-4467-ba16-e1b396029499/검사.json"
+        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_01-youtube-en_video/inspection-083da2bf-cce5-40d6-a0d2-a8c760b2ee06/검사.json"
       },
       {
         "경로": "docs/마케팅/LAB_관용구퀴즈5_동물_20261021/게시/02-mn/video.mp4",
@@ -114,7 +115,7 @@
         "봉우리": -2,
         "정지": "10% 통과",
         "끝화면": 4.3,
-        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_02-mn_video/inspection-e3cc6a70-d4d1-499b-84f6-f1c96e5657e3/검사.json"
+        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_02-mn_video/inspection-041a5ab1-4d9d-4221-b59d-9ce5c872df71/검사.json"
       },
       {
         "경로": "docs/마케팅/LAB_관용구퀴즈5_동물_20261021/게시/03-xiaohongshu-cn/video.mp4",
@@ -131,7 +132,7 @@
         "봉우리": -2,
         "정지": "9% 통과",
         "끝화면": 4.3,
-        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_03-xiaohongshu-cn_video/inspection-1d8a7d9d-a25b-461c-87ea-7ae60cb6886a/검사.json"
+        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_03-xiaohongshu-cn_video/inspection-42bfa19e-0da6-4f42-948b-592457cbe8d5/검사.json"
       },
       {
         "경로": "docs/마케팅/LAB_관용구퀴즈5_동물_20261021/게시/04-tiktok-mm/video.mp4",
@@ -148,7 +149,7 @@
         "봉우리": -2,
         "정지": "9% 통과",
         "끝화면": 4.3,
-        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_04-tiktok-mm_video/inspection-8f76e177-6a4f-4ec8-b910-5002d292d9e0/검사.json"
+        "사전검사": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021/영상사전검사_게시_04-tiktok-mm_video/inspection-1d0c62ff-60fd-460d-a6a4-67f7fc1f417b/검사.json"
       }
     ],
     "기록": ".tmp/올리기전검사/LAB_관용구퀴즈5_동물_20261021"
