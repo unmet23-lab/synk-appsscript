@@ -454,6 +454,49 @@ test('화면 아르곤 A→수정→Fable B는 정상, B 이후 수정·낡은 F
   r.쓰기('view.txt', 'd\n'); assert.equal(api.검수확인(폴더).통과, false);
 });
 
+test('화면 Fable 생략(10-24): 아르곤만 끝까지 읽으면 통과, 막히면 Fable이 대신, 고친 아르곤 P1은 다시(아르곤·Fable), 다시 볼 지적 없는 다시는 아르곤만', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  assert.throws(() => 증명.정책만들기({ 종류: '백엔드', 페이블생략: '그림만' }, []), /화면 검수에서/);
+  assert.throws(() => 증명.정책만들기({ 종류: '화면', 페이블생략: ' ' }, []), /까닭과 함께/);
+  assert.deepEqual(증명.정책만들기({ 종류: '화면' }, []).필수, ['아르곤', 'Fable'], '주지 않으면 지금처럼 Fable 최종까지');
+  assert.ok(!('페이블생략' in 증명.정책만들기({ 종류: '화면' }, [])), '옛 묶음의 정책 해시가 그대로다');
+  const r = 임시저장소(t, { 'view.html': '<p>옛</p>\n' }); r.쓰기('view.html', '<p>새</p>\n');
+  const 준비 = 이름 => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 페이블생략: '그림만 바꿈' });
+  // ① 아르곤 0건이면 Fable 없이 통과
+  const s = await 준비('skip');
+  assert.deepEqual(s.목록.정책.필수, ['아르곤']); assert.equal(s.목록.정책.페이블생략, '그림만 바꿈');
+  assert.match(증명.필수글(s.목록.정책), /Fable 생략 — 그림만 바꿈/);
+  assert.match(api.검수확인(s.폴더).사유.join(' / '), /필수 아르곤 검수 미완료/);
+  await api.아르곤보내기(s.폴더, s.목록, { call: 답하기(), 몫: 몫충분 });
+  assert.deepEqual(api.검수확인(s.폴더).사유, []);
+  const 집계 = x => api.집계하기(x.목록, api.결과들읽기(x.폴더, x.목록), api.지적표읽기(x.폴더));
+  assert.equal(집계(s).배포조건충족, true, 집계(s).조건.join(' / '));
+  // ② 아르곤이 한도로 막히면 Fable이 대신한다
+  const b = await 준비('skip-blocked');
+  await api.아르곤보내기(b.폴더, b.목록, { call: async () => { throw new Error('RESOURCE_EXHAUSTED quota'); }, 몫: 몫충분 });
+  assert.match(api.검수확인(b.폴더).사유.join(' / '), /아르곤이 한도·로그인으로 막혀 Fable 검수로 대신/);
+  assert.ok(집계(b).조건.some(x => /Fable 검수로 대신/.test(x)), 집계(b).조건.join(' / '));
+  await api.페이블하기(b.폴더, { 시험: false, 캡처: false });
+  api.페이블받기(b.폴더, final답(JSON.parse(fs.readFileSync(path.join(b.폴더, '페이블자료.json'))).증명));
+  assert.deepEqual(api.검수확인(b.폴더).사유, []);
+  // ③ 고친 아르곤 P1은 Fable 없이 닫히지 않는다 — 다시 검수에서 아르곤·Fable이 고친 diff를 본다
+  const p = await 준비('skip-p1');
+  await api.아르곤보내기(p.폴더, p.목록, { call: 답하기([{ ...지적하나('view.html:1'), quote: '<p>새</p>' }]), 몫: 몫충분 });
+  api.지적표고치기(p.폴더, 표 => api.처리하기(표, ['A1=반영']));
+  assert.match(api.검수확인(p.폴더).사유.join(' / '), /A1 P1 미해결 — 반영: 고친 diff를 다시 검수받는다/);
+  assert.ok(집계(p).조건.some(x => /A1 P1 반영 — 고친 diff를 다시 검수받는다.*아르곤·Fable/.test(x)), 집계(p).조건.join(' / '));
+  r.쓰기('view.html', '<p>새 글</p>\n');
+  const d = await api.다시하기({ 이름: 'skip-p1-again', 폴더: path.join(r.뿌리, 'skip-p1-again'), 앞: p.폴더 });
+  assert.deepEqual(d.목록.검수자들, ['아르곤', 'Fable']);
+  assert.deepEqual(d.목록.대상.map(x => x.번호), ['A1']);
+  // ④ 다시 볼 지적이 없는 다시 검수는 아르곤만 본다
+  const e = await api.다시하기({ 이름: 'skip-again', 폴더: path.join(r.뿌리, 'skip-again'), 앞: s.폴더 });
+  assert.deepEqual(e.목록.검수자들, ['아르곤']); assert.deepEqual(e.목록.대상, []);
+  await api.아르곤보내기(e.폴더, e.목록, { call: 다시답하기(), 몫: 몫충분 });
+  const ok = api.검수확인(e.폴더);
+  assert.deepEqual(ok.사유, []); assert.deepEqual(ok.증명.사슬, ['skip', 'skip-again']);
+});
+
 test('Fable 재검수: 위치·인용이 같아도 문제 문장이 바뀌면 새 지적을 처리해야 한다', async t => {
   const api = await tool(), r = 임시저장소(t, { 'view.txt': 'a\n' }); r.쓰기('view.txt', 'b\n');
   const { 폴더, 목록 } = await api.준비하기({ 이름: 'fable-repeat', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕 });
