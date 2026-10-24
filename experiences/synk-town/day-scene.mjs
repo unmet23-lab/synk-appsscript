@@ -430,7 +430,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     if (disposed) return;
     if (townLight.apply(state, { reducedMotion: reducedMotion || motionQuery.matches })) { dirty = true; schedule(); }
   }
-  /** Where a resident's name label is on the canvas, in CSS px (W4 — the mood line hangs under it): null while
+  /** Where a resident's name label is on the canvas, in CSS px (W4 — the mood line hangs by it): null while
    * the resident is hidden or the label is off screen. */
   const labelPoint = new THREE.Vector3();
   function labelScreen(id) {

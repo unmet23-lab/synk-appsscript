@@ -558,16 +558,18 @@ function villageFrame() {
   if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
   moodFrame(v, village);
 }
-/** A resident whose mind the plan changed shows its line under the name while the player is near (§7-3, W4) —
+/** A resident whose mind the plan changed shows its line by the name while the player is near (§7-3, W4) —
  * only residents the plan draws this frame, never over a dialog, the nearby panel or the text alternative. */
 let moodLines = null;
 function moodFrame(v, village) {
   moodLines ||= createMoodLines($('mood-lines'), $('mood-live'));
   const blocked = !v || !renderer || fallback || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]');
-  const canvas = $('day-canvas').getBoundingClientRect(), scene = $('scene').getBoundingClientRect();
+  // Where the canvas sits in the scene, read only when a card is placed (no layout reads on frames without one).
+  let offset = null;
+  const canvasOffset = () => { if (!offset) { const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); offset = { x: c.left - s.left, y: c.top - s.top }; } return offset; };
   moodLines.update({ segments: v?.segments, t: village?.t ?? null, rows: blocked ? [] : village.rows.filter(r => villageLive.ids.has(r.id)),
     player: blocked ? null : renderer.playerPoint?.(), names: roleNames, blocked,
-    labelAt: id => { const p = renderer?.labelScreen?.(id); return p ? { x: p.x + canvas.left - scene.left, y: p.y + canvas.top - scene.top } : null; } });
+    labelAt: id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const o = canvasOffset(); return { x: p.x + o.x, y: p.y + o.y }; } });
 }
 /** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
  * same village at the same time looks the same on every device. Before the village keeps a zone (a first visit) the

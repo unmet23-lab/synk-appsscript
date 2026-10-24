@@ -53,37 +53,53 @@ export function moodAt(segments, npc, t) {
   return seg?.mood && LINE_BY_ID.has(seg.mood) ? seg.mood : null;
 }
 
+/** Metres past the near radius before a shown card goes, so walking along the edge does not make it blink. */
+const LEAVE_MARGIN = 0.25;
+/** CSS px between a card and the centre of the name label (the label is about 18px tall). */
+const LABEL_GAP = 14;
+
 /** The cards over a scene. update() runs each frame with { segments, t, rows, player, labelAt, names, blocked }:
  * rows are the residents as drawn (live ones only carry a line), player is { x, z }, labelAt(id) → { x, y } on the
  * scene (or null off screen), blocked hides every card (a dialog, the nearby panel, the text alternative). */
 export function createMoodLines(container, live) {
+  // An entry page from before the mood lines (a cached day.html) has no layer: nothing to draw, and the frame loop
+  // that calls update() must keep running.
+  if (!container) return { update: () => [] };
   const cards = new Map(), eased = new Set(), announced = new Set();
+  const textOf = id => { const line = LINE_BY_ID.get(id), level = lineLevel({ kind: 'mood', npc: line.npc, id }); return line.levels[eased.has(id) ? easier(level) : level]; };
+  const say = (npc, id, names) => { if (live) live.textContent = `${names[npc] || npc}: ${textOf(id)}`; };
   function card(npc, id, names) {
     const line = LINE_BY_ID.get(id), el = document.createElement('div');
     el.className = 'mood-card'; el.dataset.npc = npc; el.dataset.line = id; el.setAttribute('role', 'group'); el.setAttribute('aria-label', `${names[npc] || npc}의 마음`);
     el.innerHTML = `<span class="mood-icon">${svg(line.icon)}</span><p class="mood-text"></p><button type="button" class="mood-help" aria-expanded="false">무슨 뜻이에요?</button>`;
-    el.querySelector('.mood-help').addEventListener('click', () => { if (eased.has(id)) eased.delete(id); else eased.add(id); paint(el, id); });
+    // The line changes in place, so a screen reader hears the version now shown.
+    el.querySelector('.mood-help').addEventListener('click', () => { if (eased.has(id)) eased.delete(id); else eased.add(id); paint(el, id); say(npc, id, names); });
     container.append(el);
     return el;
   }
   function paint(el, id) {
-    const line = LINE_BY_ID.get(id), level = lineLevel({ kind: 'mood', npc: line.npc, id }), down = eased.has(id);
-    const text = line.levels[down ? easier(level) : level];
+    const down = eased.has(id), text = textOf(id);
     const p = el.querySelector('.mood-text'); if (p.textContent !== text) p.textContent = text;
     el.classList.toggle('is-eased', down);
     const help = el.querySelector('.mood-help'); help.setAttribute('aria-expanded', String(down)); help.textContent = down ? '원래 말로' : '무슨 뜻이에요?';
+  }
+  // A card that goes (walked away, or the next segment brings another line) takes its 「무슨 뜻이에요?」 with it, and
+  // keyboard focus on its button goes back to the scene instead of falling to the page.
+  function drop(npc, el) {
+    if (el.contains(document.activeElement)) container.closest?.('[tabindex]')?.focus?.();
+    el.remove(); cards.delete(npc); eased.delete(el.dataset.line);
   }
   function update({ segments = [], t = null, rows = [], player = null, labelAt = () => null, names = {}, blocked = false }) {
     const want = new Map();
     if (!blocked && t !== null && player) {
       for (const row of rows) {
         if (!row.live || row.asleep || row.held) continue;
-        const id = moodAt(segments, row.id, t);
-        if (id && Math.hypot(row.x - player.x, row.z - player.z) <= WALK_NEAR_RADIUS) want.set(row.id, id);
+        const id = moodAt(segments, row.id, t), reach = WALK_NEAR_RADIUS + (cards.get(row.id)?.dataset.line === id ? LEAVE_MARGIN : 0);
+        if (id && Math.hypot(row.x - player.x, row.z - player.z) <= reach) want.set(row.id, id);
       }
     }
-    // A card that goes (walked away, or the next segment brings another line) takes its 「무슨 뜻이에요?」 with it.
-    for (const [npc, el] of cards) if (want.get(npc) !== el.dataset.line) { el.remove(); cards.delete(npc); eased.delete(el.dataset.line); }
+    for (const [npc, el] of cards) if (want.get(npc) !== el.dataset.line) drop(npc, el);
+    if (!want.size) return [];
     const box = container.getBoundingClientRect();
     for (const [npc, id] of want) {
       let el = cards.get(npc);
@@ -91,10 +107,12 @@ export function createMoodLines(container, live) {
       const at = labelAt(npc);
       if (!at) { el.hidden = true; continue; }
       el.hidden = false;
-      // Under the name, kept inside the scene with a 16px gutter (narrow screens).
-      const w = el.offsetWidth, gutter = 16, x = Math.max(gutter, Math.min(box.width - w - gutter, at.x - w / 2));
-      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(at.y + 14)}px)`;
-      if (!announced.has(id)) { announced.add(id); if (live) live.textContent = `${names[npc] || npc}: ${LINE_BY_ID.get(id).levels[lineLevel({ kind: 'mood', npc, id })]}`; }
+      // Over the name, so the resident and the player stay in sight; under it only when the top of the scene has no
+      // room. Kept inside the scene with a 16px gutter (narrow screens).
+      const w = el.offsetWidth, h = el.offsetHeight, gutter = 16, x = Math.max(gutter, Math.min(box.width - w - gutter, at.x - w / 2));
+      const over = at.y - LABEL_GAP - h, y = over >= gutter ? over : at.y + LABEL_GAP;
+      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      if (!announced.has(id)) { announced.add(id); say(npc, id, names); }
     }
     return [...want.entries()].map(([npc, id]) => ({ npc, id, eased: eased.has(id) }));
   }
