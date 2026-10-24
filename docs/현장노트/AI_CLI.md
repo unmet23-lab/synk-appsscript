@@ -755,6 +755,12 @@
 
 ## Claude Code·공식 CLI 읽기(계정판)
 
+### 다른 저장소 검수를 재개할 때 공용 검수 폴더가 작업 경로에 빠지면 읽기부터 거절된다 (2026-10-24 GPT)
+- 증상: 홈페이지 작업본에서 기존 `claude --resume … -p`를 이어 돌리자 공용 저장소의 운영 원칙·공식 검수 묶음·작업본 밖 QA를 `Path is outside allowed working directories`로 읽지 못했다. 프로세스는 종료0이어도 Fable 실행·공식 접수는0이었다.
+- 원인: 호출자가 작업 경로를 홈페이지 폴더 하나만 넘겼다. 기존 대화에 적힌 절대경로는 현재 호출의 허용 작업 경로가 아니다.
+- 고침: 작업 범위로 이미 승인된 정책·도구·공식 검수·해당 QA 폴더만 CLI의 `--add-dir`에 명시하고 같은 세션을 이어간다. 전역 권한·로그인·모델 설정은 바꾸지 않는다. 접근 거절 뒤 다른 셸로 같은 경로를 우회하지 않는다. 필요한 경로의 권한 자체가 없으면 요청하고 멈춘다.
+- 다시 확인: 새 호출의 실제 Read가 묶음을 읽었는지, 실제 Fable 응답의 입력 SHA·항목·끝 표식과 공식 접수/확인까지 이어졌는지 본다. 종료0만으로 검수 통과라고 쓰지 않는다.
+
 ### 데스크톱 앱 계정과 `~/.claude` 로그인 파일의 계정이 다르다 (2026-10-20 Claude)
 - 증상: 앱 세션의 `get_usage`는 주간 99%였는데 계정판(`~/.ai-accounts/read-usage.mjs`)의 Claude는 27%로 떴다. 기본 로그인 `~/.claude/.credentials.json`을 읽어 홈 `~/.claude.json`의 이메일을 붙이자, 다른 계정의 27%가 앱 계정 이름으로 찍혔다.
 - 원인: 데스크톱 앱은 이 로그인 파일을 쓰지 않는다. 앱 안에 따로 로그인해 두고, 세션의 API 요청을 앱 쪽 통로(`ANTHROPIC_BASE_URL`)로 보낸다. 세션에는 `CLAUDE_CODE_USER_EMAIL`·`CLAUDE_CODE_ACCOUNT_UUID`만 오고 `CLAUDE_CODE_OAUTH_TOKEN`은 없다. 홈 `~/.claude.json`의 oauthAccount는 앱 계정을 따라가고, `~/.claude/.credentials.json`은 터미널 `claude` 로그인이라 둘이 다른 계정일 수 있다(10-20에는 서로 다른 Max 계정이었다).

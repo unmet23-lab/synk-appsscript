@@ -10,11 +10,11 @@ import {fileURLToPath} from 'node:url';
 import {createDatingServer} from '../experiences/atlas-lab/dating-server.mjs';
 const require=createRequire(import.meta.url);
 const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_QA_NODE_MODULES||path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
-const out=fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-editing/',import.meta.url));
+const out=process.env.SYNK_QA_OUTPUT_DIR?path.resolve(process.env.SYNK_QA_OUTPUT_DIR):fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-editing/',import.meta.url));
 const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'synk-dating-editing-browser-'));
 const START='2026-10-10T03:00:00.000Z',END='2026-10-10T03:01:00.000Z';
 const ids=Array.from({length:3},(_,i)=>`81000000-0000-4000-8000-00000000000${i+1}`),tokens=ids.map((_,i)=>`synthetic-editing-account-${i+1}`),fixtures=[];
-const sourceNames=['dating-ui.mjs','dating-live.mjs','dating.css','profile-editing-drafts.mjs','public-profile-preview.mjs','public-profile.mjs','discovery.mjs','preference-deadline.mjs','meeting-regions.mjs','dating-service.mjs','dating-server.mjs','dating-store.mjs'];
+const sourceNames=['dating-ui.mjs','dating-drafts.mjs','dating-live.mjs','dating.css','profile-editing-drafts.mjs','public-profile-preview.mjs','public-profile.mjs','discovery.mjs','preference-deadline.mjs','meeting-regions.mjs','dating-service.mjs','dating-server.mjs','dating-store.mjs'];
 const report={kind:'synthetic-dating-editing-browser',at:new Date().toISOString(),status:'running',actualUsers:0,modelCalls:0,externalApiCost:0,paths:[],errors:[],externalRequests:[],screenshots:[]};
 let browser;
 async function sourceHashes(){const value={};for(const name of sourceNames)value[name]=createHash('sha256').update(await fs.readFile(fileURLToPath(new URL('../experiences/atlas-lab/'+name,import.meta.url)))).digest('hex');return value;}

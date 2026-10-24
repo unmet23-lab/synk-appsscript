@@ -52,10 +52,10 @@ test('the explicit package list covers the actual static and delayed CJS depende
   await visit(path.join(DATING_PACKAGE_ROOT, entry)); assert.equal(seen.size, 32);
   const runtime = new Set([...seen].map(filename => path.relative(DATING_PACKAGE_ROOT, filename).replaceAll('\\', '/')));
   for (const name of DATING_PUBLIC_FILES) runtime.add('experiences' + name);
-  assert.equal(runtime.size, 51);
+  assert.equal(runtime.size, 52);
   const templates = ['Caddyfile', 'synk-dating.service', 'runtime.env.example', 'account.public.example.json'].map(name => 'experiences/atlas-lab/deploy/' + name);
   assert.deepEqual([...runtime, ...templates, 'tools/atlas-dating-backup.mjs', 'experiences/atlas-lab/dating-reconcile.mjs'].sort(), [...DATING_PACKAGE_FILES]);
-  assert.equal(DATING_PACKAGE_FILES.length, 57); assert.equal(DATING_PACKAGE_CONTENTS.length, 58);
+  assert.equal(DATING_PACKAGE_FILES.length, 58); assert.equal(DATING_PACKAGE_CONTENTS.length, 59);
   await visit(path.join(DATING_PACKAGE_ROOT, 'tools/atlas-dating-backup.mjs'));
   for (const filename of seen) assert.ok(DATING_PACKAGE_FILES.includes(path.relative(DATING_PACKAGE_ROOT, filename).replaceAll('\\', '/')), 'Offline backup dependency must be packaged');
 });
@@ -69,7 +69,7 @@ test('isolated package starts from another cwd under a module parent and serves 
   });
   const dir = await fixture(t), bundle = path.join(dir, 'bundle'), cwd = path.join(dir, 'unrelated-cwd');
   await fs.writeFile(path.join(dir, 'package.json'), '{"type":"module"}'); await fs.mkdir(cwd);
-  const built = await buildDatingPackage(bundle); assert.equal(built.verified, true); assert.equal(built.files, 58);
+  const built = await buildDatingPackage(bundle); assert.equal(built.verified, true); assert.equal(built.files, 59);
   assert.deepEqual(JSON.parse(await fs.readFile(path.join(bundle, 'package.json'), 'utf8')), { private: true, type: 'commonjs' });
   assert.equal(await exists(path.join(bundle, 'node_modules')), false);
   // The packaged operation tool must resolve the copied shared restore module.

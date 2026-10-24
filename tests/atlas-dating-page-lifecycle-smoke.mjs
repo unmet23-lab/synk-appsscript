@@ -14,7 +14,7 @@ import { captureDatingDatabase } from './lib/dating-sqlite-faults.mjs';
 
 const require=createRequire(import.meta.url);
 const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_QA_NODE_MODULES||path.join(process.env.USERPROFILE,'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')]}));
-const out=fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-page-lifecycle/',import.meta.url));
+const out=process.env.SYNK_QA_OUTPUT_DIR?path.resolve(process.env.SYNK_QA_OUTPUT_DIR):fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-page-lifecycle/',import.meta.url));
 const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'synk-dating-page-lifecycle-'));
 const ACCOUNT='95000000-0000-4000-8000-000000000001',TOKEN='synthetic-page-lifecycle-token';
 const SESSION='synk.oauth.session.dating',DRAFT='다시 돌아와 이어 쓸 합성 소개';
@@ -24,7 +24,7 @@ const snap=page=>page.evaluate(()=>window.synkDating.snapshot());
 const idle=page=>page.waitForFunction(()=>!document.getElementById('content').hasAttribute('aria-busy'));
 const marker=page=>page.evaluate(key=>sessionStorage.getItem(key),DATING_CHECKPOINT_KEY);
 async function click(page,action){await page.locator(`[data-action="${action}"]`).click();await idle(page);}
-async function hashes(){const result={};for(const name of ['dating-ui.mjs','dating-account.mjs','dating-delivery.mjs','dating-checkpoint.mjs','dating-server.mjs','dating-service.mjs'])result[name]=createHash('sha256').update(await fs.readFile(fileURLToPath(new URL('../experiences/atlas-lab/'+name,import.meta.url)))).digest('hex');return result;}
+async function hashes(){const result={};for(const name of ['dating-ui.mjs','dating-drafts.mjs','dating-account.mjs','dating-delivery.mjs','dating-checkpoint.mjs','dating-server.mjs','dating-service.mjs'])result[name]=createHash('sha256').update(await fs.readFile(fileURLToPath(new URL('../experiences/atlas-lab/'+name,import.meta.url)))).digest('hex');return result;}
 async function call(f,route,body){const response=await fetch(f.origin+'/api/atlas-dating'+route,{method:body?'POST':'GET',headers:{Origin:f.origin,Authorization:'Bearer '+TOKEN,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();assert.equal(response.status,200,JSON.stringify(value.error));return value;}
 async function fixture(name,width,{start=true}={}){
  const reservation=net.createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve));

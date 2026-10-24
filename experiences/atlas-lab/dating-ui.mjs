@@ -12,6 +12,7 @@ import { getCandidateHighlights } from './candidate-highlights.mjs';
 import { getPublicProfilePreview } from './public-profile-preview.mjs';
 import { getProfileEditingBasis } from './profile-editing-drafts.mjs';
 import { getOnboardingDraftBasis } from './onboarding-drafts.mjs';
+import { createDraftRegistry, createBasisDrafts, createBasisDraft, createScheduleEditor } from './dating-drafts.mjs';
 
 const $ = id => document.getElementById(id), el = (tag, text, cls) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; };
 const append = (node, ...children) => { node.append(...children.filter(Boolean)); return node; };
@@ -85,18 +86,26 @@ let pendingPreview = null, appliedPreview = null, focusedPreference = null;
 let previewReturnPage = null;
 let correctionSource = null;
 let focusedPair = null;
-let conditionalContactDraft = null;
 let comparisonSelection = null;
 // Raw drafts live only in this tab, never in browser storage or a server request.
-const profileEditingDrafts = new Map();
+// Each kind registers with `drafts` here; an owner reset, a render and the leave
+// warning use only the registry, never a list of draft names (dating-drafts.mjs).
+const drafts = createDraftRegistry();
+const profileEditingDrafts = drafts.register('profile', createBasisDrafts({ basisOf: key => getProfileEditingBasis(view, key) }));
 let restoringProfileDrafts = false, publicPreviewReturn = null, pendingProfileSave = null;
-let onboardingDraft = null, pendingOnboardingSave = null;
-const preferenceDrafts = new Map();
-const openForms = new Set();
-const reflectionTopics = new Map();
-const rescheduleDrafts = new Map();
-const scheduleDrafts = new Map();
-const alignmentDisclosure = new Map();
+const onboardingDraft = drafts.register('onboarding', createBasisDraft({ basisOf: () => getOnboardingDraftBasis(view) }));
+let pendingOnboardingSave = null;
+// A preference draft only reopens a previewed answer; the preview itself is the unsent work.
+const preferenceDrafts = drafts.register('preference', createBasisDrafts({ basisOf: id => preferenceDraftKey(view?.discovery?.fields.find(field => field.id === id)), counts: () => false }));
+const conditionalContactDraft = drafts.register('conditional-contact', createBasisDraft({ basisOf: () => conditionalContactDraftKey() }));
+const scheduleEditor = drafts.register('schedule', createScheduleEditor({
+  basis: (pairId, formKey) => scheduleDraftKey(view?.pairs?.find(item => item.pairId === pairId), formKey),
+  seedOf: (pairId, appointmentId) => { const pair = view?.pairs?.find(item => item.pairId === pairId); return pair ? getRescheduleDraft(pair, appointmentId) : null; } }));
+drafts.register('comparison', { clear: () => { comparisonSelection = null; },
+  prune: () => { if (!view?.discovery || comparisonSelection?.some(id => !view.discovery.candidates.some(c => c.id === id && c.status === 'eligible'))) comparisonSelection = null; } });
+const openForms = drafts.register('open-forms', new Set());
+const reflectionTopics = drafts.register('reflection-topics', new Map());
+const alignmentDisclosure = drafts.register('alignment-disclosure', new Map());
 const client = createDatingAccount({ onChange: next => { config = next; } });
 const checkpoint = createDatingCheckpoint({ storage:window.sessionStorage, binding:()=>client.checkpointBinding({demo}) });
 const delivery = createDatingDelivery({ request: (...args) => client.request(...args), idFactory: uuid, checkpoint });
@@ -116,13 +125,9 @@ function syncPanel() {
 function syncSucceeded() { syncState={status:'connected',lastCheckedAt:new Date().toISOString()}; if ($('notice').textContent===pollFailureText) notice(''); syncPanel(); }
 function syncFailed(error) { syncState={...syncState,status:isAccountAccessLost(error)?'unavailable':'offline'}; syncPanel(); }
 function notice(text) { $('notice').textContent = text; }
-function clearPrivateDrafts() { delivery.clear(); queuedView = null; pendingPreview = null; previewReturnPage = null; appliedPreview = null; focusedPreference = null; correctionSource = null; focusedPair = null; conditionalContactDraft = null; comparisonSelection = null; profileEditingDrafts.clear(); publicPreviewReturn = null; pendingProfileSave = null; onboardingDraft = null; pendingOnboardingSave = null; preferenceDrafts.clear(); openForms.clear(); reflectionTopics.clear(); rescheduleDrafts.clear(); scheduleDrafts.clear(); alignmentDisclosure.clear(); dirty = false; }
+function clearPrivateDrafts() { delivery.clear(); drafts.clear(); queuedView = null; pendingPreview = null; previewReturnPage = null; appliedPreview = null; focusedPreference = null; correctionSource = null; focusedPair = null; publicPreviewReturn = null; pendingProfileSave = null; pendingOnboardingSave = null; dirty = false; }
 const editingInputs = node => [...node.querySelectorAll('input,select,textarea')];
 const editingValues = node => editingInputs(node).map(input=>({name:input.name,value:input.value,checked:input.checked}));
-function pruneProfileEditingDrafts() {
-  for (const [key,draft] of profileEditingDrafts) if (draft.basis!==getProfileEditingBasis(view,key)) profileEditingDrafts.delete(key);
-  if (!getProfileEditingBasis(view,'profile') || publicPreviewReturn?.accountId!==view?.accountId) publicPreviewReturn=null;
-}
 function editProfileLocation(key) {
   if(key==='profile') {
     if(page!=='settings')setPage('settings');
@@ -141,7 +146,7 @@ function bindProfileEditing(node,key) {
   const remember=()=>{
     if(restoringProfileDrafts)return;
     const values=editingValues(node);
-    if(basis && basis===getProfileEditingBasis(view,key) && JSON.stringify(values)!==original)profileEditingDrafts.set(key,{basis,values,open:[...node.querySelectorAll('details')].map(n=>n.open)});
+    if(basis && basis===getProfileEditingBasis(view,key) && JSON.stringify(values)!==original)profileEditingDrafts.write(key,basis,{values,open:[...node.querySelectorAll('details')].map(n=>n.open)});
     else profileEditingDrafts.delete(key);
     status.hidden=!profileEditingDrafts.has(key);
   };
@@ -151,7 +156,7 @@ function restoreProfileEditingDrafts() {
   restoringProfileDrafts=true;
   try {
     for(const node of $('content').querySelectorAll('[data-editing-scope]')) {
-      const key=node.dataset.editingScope,draft=profileEditingDrafts.get(key);if(!draft)continue;
+      const key=node.dataset.editingScope,draft=profileEditingDrafts.read(key);if(!draft)continue;
       const inputs=editingInputs(node);if(inputs.length!==draft.values.length||inputs.some((input,i)=>input.name!==draft.values[i].name)){profileEditingDrafts.delete(key);continue;}
       inputs.forEach((input,i)=>{input.value=draft.values[i].value;if(['checkbox','radio'].includes(input.type))input.checked=draft.values[i].checked;});
       // Refresh region counts and expiration controls; confirmations are deliberately rebuilt.
@@ -261,7 +266,7 @@ async function recoverDelivery(retry) {
     pendingPreview=null; previewReturnPage=null; correctionSource=null; appliedPreview=null;
     const savedKeys=pendingProfileSave?.accountId===next?.accountId?pendingProfileSave.keys:[];
     for(const key of savedKeys)profileEditingDrafts.delete(key);pendingProfileSave=null;
-    if(pendingOnboardingSave?.accountId===next?.accountId && next.onboarding?.complete){onboardingDraft=null;page='discover';}
+    if(pendingOnboardingSave?.accountId===next?.accountId && next.onboarding?.complete){onboardingDraft.discard();page='discover';}
     pendingOnboardingSave=null;
     applyLiveView(next);if(savedKeys.includes(publicPreviewReturn?.key))returnToPublicPreview();
     if(next.onboarding?.complete===false)focusOnboardingMissing();
@@ -269,42 +274,19 @@ async function recoverDelivery(retry) {
     if (result.checkpointCleanupFailed) notice('저장은 확인됐어요. 이 기기의 확인 표식을 정리하지 못해 다음 접속 때 다시 확인할 수 있어요.');
   });
 }
+// Basis of a previewed answer's reopened selection (registered as the `preference` draft).
 function preferenceDraftKey(field) {
   if (!field || !view?.discovery || view.status !== 'active' || view.paused || !view.adult?.selfDeclared || !view.consents?.storePreferences) return null;
   return JSON.stringify([generation, view.accountId, view.discovery.context.id, view.discovery.context.closed,
     field.id, field.source, field.effective, field.baseline, field.context, field.required]);
 }
-const scheduleSlot = (pairId, formKey) => JSON.stringify([pairId, formKey]);
+// Basis of an appointment form's draft (the `schedule` editing session in dating-drafts.mjs).
 function scheduleDraftKey(pair, formKey) {
   if (!view || view.status !== 'active' || !view.adult?.selfDeclared || !view.consents?.storePreferences
     || view.paused || !pair?.view || pair.status !== 'active' || pair.paused || !pair.introduction?.accepted
     || !pair.introduction.current?.id || !/^[a-f0-9]{64}$/.test(pair.scheduleDraftBasis || '')) return null;
   const allowed = formKey === 'new' ? pair.view.canPropose : pair.view.appointments?.some(item => `${item.id}:${item.proposal.version}` === formKey && item.canRevise);
   return allowed ? JSON.stringify([generation, view.accountId, pair.pairId, pair.scheduleDraftBasis, formKey]) : null;
-}
-function pruneInputDrafts() {
-  for (const [fieldId, draft] of preferenceDrafts) {
-    const key = preferenceDraftKey(view?.discovery?.fields.find(field => field.id === fieldId));
-    if (!key || draft.key !== key) preferenceDrafts.delete(fieldId);
-  }
-  for (const [slot, draft] of scheduleDrafts) {
-    const pair = view?.pairs?.find(item => item.pairId === draft.pairId), key = scheduleDraftKey(pair, draft.formKey);
-    if (!key || draft.key !== key) scheduleDrafts.delete(slot);
-  }
-}
-function restoreScheduleForms() {
-  for (const form of document.querySelectorAll('[data-schedule-form]')) {
-    const slot = scheduleSlot(form.dataset.schedulePair, form.dataset.scheduleForm), draft = scheduleDrafts.get(slot);
-    const container = form.closest('details');
-    if (draft && draft.key === form.dataset.scheduleDraftKey) {
-      if (container) container.open = draft.open;
-      if (Object.values(draft.values).some(Boolean)) dirty = true;
-    }
-    container?.addEventListener('toggle', () => {
-      const saved = scheduleDrafts.get(slot);
-      if (form.isConnected && saved?.key === form.dataset.scheduleDraftKey) saved.open = container.open;
-    });
-  }
 }
 function conditionalContactDraftKey() {
   const discovery = view?.discovery, conditional = discovery?.conditionalPreference;
@@ -426,7 +408,7 @@ function previewPanel() {
     box.append(info);
   }
   const leavePreview = () => { page = previewReturnPage || page; pendingPreview = null; previewReturnPage = null; };
-  actions.append(button('확인한 변경 적용', () => act({ kind: 'apply-preview', preview: p.token }, '확인한 기준으로 저장했어요.', () => { leavePreview(); appliedPreview = p.summary; correctionSource = null; conditionalContactDraft = null; preferenceDrafts.clear(); }), 'preview-apply', true), button('적용하지 않고 돌아가기', () => {
+  actions.append(button('확인한 변경 적용', () => act({ kind: 'apply-preview', preview: p.token }, '확인한 기준으로 저장했어요.', () => { leavePreview(); appliedPreview = p.summary; correctionSource = null; conditionalContactDraft.discard(); preferenceDrafts.clear(); }), 'preview-apply', true), button('적용하지 않고 돌아가기', () => {
     if (p.needsRefresh) return run(async () => { await load(); leavePreview(); }, '이 미리보기는 적용하지 않았어요. 최신 기준을 확인하고 돌아왔어요.');
     leavePreview(); render(); notice('추천 기준은 바뀌지 않았어요. 입력한 답을 다시 고칠 수 있어요.');
   }, 'preview-cancel'));
@@ -729,24 +711,17 @@ async function enterDemo(role) {
 function render() {
   if (disposed) return;
   if ($('lab-link')) $('lab-link').hidden = config.labAvailable !== true;
-  pruneProfileEditingDrafts();
-  if(onboardingDraft?.basis!==getOnboardingDraftBasis(view))onboardingDraft=null;
-  if(!view?.discovery||comparisonSelection?.some(id=>!view.discovery.candidates.some(c=>c.id===id&&c.status==='eligible')))comparisonSelection=null;
+  // Before any form reads a draft, drop every draft whose saved basis this view no longer has.
+  drafts.prune();
+  if (!getProfileEditingBasis(view,'profile') || publicPreviewReturn?.accountId!==view?.accountId) publicPreviewReturn=null;
   renderVersion++; renderedPage=page;
-  pruneInputDrafts();
   syncPanel();
-  if (conditionalContactDraft && conditionalContactDraft.key !== conditionalContactDraftKey()) conditionalContactDraft = null;
   const mode = $('mode'); mode.replaceChildren(para(demo ? `가상 체험 · ${view?.profile?.nickname || view?.accountId || '연결 중'}` : config.signedIn ? 'SYNK ID에 연결됨' : '나다운 만남 · MVP', 'small'));
   if (view && demo) {
     const role = view.accountId === 'demo:adult-a' ? 'adult-b' : 'adult-a';
     const a = el('a', '상대 역할 체험 열기', 'small'); a.href = `./dating.html?demo=${role}`; a.target = '_blank'; a.rel = 'noopener'; mode.append(a);
   }
   if (!view) { $('nav').hidden = true; landing(); return; }
-  for (const [id, stored] of rescheduleDrafts) {
-    const pair = view.pairs?.find(item => item.pairId === id), current = pair && getRescheduleDraft(pair, stored.appointmentId);
-    const key = scheduleDraftKey(pair, 'new');
-    if (!current || !key || stored.key !== key || ['proposalVersion', 'place', 'durationMinutes'].some(key => current[key] !== stored[key])) rescheduleDrafts.delete(id);
-  }
   const nav = $('nav'); nav.hidden = false; nav.replaceChildren();
   const newCount = (view.inbox || []).filter(n => !n.read).length + (view.introductions || []).filter(i => i.canRespond).length;
   for (const [id, label] of [['discover', '오늘의 추천'], ['profile', '내 기준'], ['inbox', `초대·약속${newCount ? ` (${newCount})` : ''}`], ['settings', '내 설정']]) {
@@ -772,7 +747,7 @@ function render() {
   if (appliedPreview && ['discover', 'profile', 'inbox'].includes(page)) area.append(append(el('section', null, 'summary'), el('strong', '방금 반영한 변화'), para(appliedPreview), button('확인했어요', () => { appliedPreview = null; render(); }, 'preview-noted')));
   ({ discover: recommendations, profile: preferences, inbox, settings })[page](area, secondaryOpen);
   restoreProfileEditingDrafts();
-  restoreScheduleForms();
+  if (scheduleEditor.restore(document)) dirty = true;
   updatePanels();
 }
 const needsOnboarding=()=>view?.status==='active' && (view.onboarding?.complete===false || !view.adult?.selfDeclared || !view.profile?.nickname);
@@ -796,18 +771,19 @@ function bindOnboardingDraft(form){
   const basis=getOnboardingDraftBasis(view),original=JSON.stringify(editingValues(form));
   const status=append(el('div',null,'editing-draft'),para('아직 저장하지 않은 첫 설정이에요. 화면을 옮겨도 이 탭에서 이어 쓸 수 있어요. 탭을 닫거나 새로고침하면 작성 중인 내용은 사라져요.','hint'));
   status.dataset.onboardingDraft='true';status.hidden=true;
-  status.append(button('작성 중인 첫 설정 버리기',()=>{onboardingDraft=null;render();$('content').querySelector('[data-onboarding-form] input')?.focus();notice('작성 중인 내용만 버렸어요. 이미 저장한 소개와 선택은 그대로예요.');},'discard-onboarding-draft'));form.append(status);
+  status.append(button('작성 중인 첫 설정 버리기',()=>{onboardingDraft.discard();render();$('content').querySelector('[data-onboarding-form] input')?.focus();notice('작성 중인 내용만 버렸어요. 이미 저장한 소개와 선택은 그대로예요.');},'discard-onboarding-draft'));form.append(status);
   const remember=()=>{
     const values=editingValues(form);
-    onboardingDraft=basis && basis===getOnboardingDraftBasis(view) && JSON.stringify(values)!==original?{basis,values}:null;
-    status.hidden=!onboardingDraft;
+    if(basis && basis===getOnboardingDraftBasis(view) && JSON.stringify(values)!==original)onboardingDraft.write(basis,{values});else onboardingDraft.discard();
+    status.hidden=!onboardingDraft.read();
   };
   form.addEventListener('input',remember);form.addEventListener('change',remember);
-  if(onboardingDraft?.basis===basis){
-    const inputs=editingInputs(form),saved=onboardingDraft.values;
+  const resumed=onboardingDraft.read();
+  if(resumed?.basis===basis){
+    const inputs=editingInputs(form),saved=resumed.values;
     if(inputs.length===saved.length&&inputs.every((input,i)=>input.name===saved[i].name)){
       inputs.forEach((input,i)=>{input.value=saved[i].value;if(input.type==='checkbox')input.checked=saved[i].checked;});status.hidden=false;dirty=true;
-    }else onboardingDraft=null;
+    }else onboardingDraft.discard();
   }
 }
 function saveOnboarding(action){
@@ -816,7 +792,7 @@ function saveOnboarding(action){
     let result;
     try{result=await delivery.send({actorId:view.accountId,expectedRevision:view.revision,action,demo});}
     catch(error){if(!delivery.snapshot())pendingOnboardingSave=null;throw error;}
-    view=result.view;queuedView=null;appliedPreview=null;onboardingDraft=null;pendingOnboardingSave=null;page='discover';render();
+    view=result.view;queuedView=null;appliedPreview=null;onboardingDraft.discard();pendingOnboardingSave=null;page='discover';render();
   },'내 소개와 직접 선택한 공개·초대·저장 범위를 함께 저장했어요.');
 }
 function onboarding(area) {
@@ -1125,7 +1101,7 @@ function conditionalContactSection() {
   append(section, el('h3', '원래 선호는 유지하고, 괜찮은 경우만 더해요'), para('매일 연락하는 방식을 선호하지만, 바쁠 때 미리 알려주는 사람이라면 며칠 간격도 괜찮을 때 선택해 주세요.'),
     para('상대가 직접 공개한 사전 예고 답이 “미리 알려요”일 때만 비교해요. 그 사람이 실제로 그렇게 행동할지는 아직 알 수 없어요.', 'hint'), para(conditional.summary, 'summary'), conditionalRuleInformation(conditional));
   if (conditional.available) {
-    const key = conditionalContactDraftKey(), draft = conditionalContactDraft?.key === key ? conditionalContactDraft : null;
+    const key = conditionalContactDraftKey(), draft = conditionalContactDraft.read();
     if (draft) section.open = true;
     const form = el('div', null, 'form');
     const targets = (conditional.availableTargets || []).map(target => [target, target === 'context' ? '이번 추천에서만' : '앞으로도']);
@@ -1137,7 +1113,7 @@ function conditionalContactSection() {
     const lifetimeControl=deadlineControl(form,{scope,name:'conditional-until',value:draft?.until??local,mode:draft?.deadlineMode,
       limits:target=>({contextExpiresAt:view.discovery.context.expiresAt,answerUntil:view.discovery.fields.find(field=>field.id==='wants.contact')?.[target==='baseline'?'baseline':'effective']?.provenance?.until})});
     const until=lifetimeControl.input;
-    const rememberDraft = () => { conditionalContactDraft = { key, target: scope.value, until: until.value,deadlineMode:lifetimeControl.mode.value }; };
+    const rememberDraft = () => { conditionalContactDraft.write(key, { target: scope.value, until: until.value,deadlineMode:lifetimeControl.mode.value }); };
     scope.addEventListener('change', rememberDraft); until.addEventListener('input', rememberDraft); until.addEventListener('change', rememberDraft);
     append(form, para('원래 연락 답의 기한이 먼저 끝나거나 그 답을 바꾸면 이 허용 조건도 끝나요. 필수로 정한 연락 기준은 완화하지 않아요. 이 선택은 나만 보는 추천 기준이에요.', 'hint'),
       button('이 조건으로 추천 변화 보기', () => {
@@ -1200,7 +1176,7 @@ function preferences(area) {
       if(f.context?.state==='known')form.append(button('이전 이번 답 취소',()=>discovery({kind:'revert-context',field:f.id}),'revert-legacy-purpose'));
       section.append(form);area.append(section);continue;
     }
-    const draft = preferenceDrafts.get(f.id), regions=f.kind==='regions';
+    const draft = preferenceDrafts.read(f.id), regions=f.kind==='regions';
     const value = regions ? regionPicker(form,'실제로 만날 수 있는 지역',f.value,'value') : select(form, '바꿀 답', [['', '아직 선택하지 않음'], ...(f.options || []).map(o => [o.id, o.label])], 'value');
     value.value = draft?.value ?? (regions?f.value||[]:String(f.value??''));
     const scope = select(form, '반영할 범위', f.kind === 'wants' || f.id === 'availability' || regions ? [['baseline', '앞으로도'], ['context', '이번 추천에서만']] : [['baseline', '앞으로도']], 'scope');
@@ -1216,7 +1192,8 @@ function preferences(area) {
       const selected = regions?{value:JSON.parse(value.value)}:f.options.find(o => o.id === value.value); if (!selected || regions&&(!selected.value.length||selected.value.length>MAX_MEETING_REGIONS)) { notice(regions?'만날 수 있는 지역을 한 개부터 여섯 개까지 직접 골라 주세요.':'바꿀 답을 직접 골라 주세요. 아직 선택하지 않은 답은 저장하지 않아요.'); return; }
       const lifetime=lifetimeControl?.resolve();if(lifetimeControl&&!lifetime)return;
       const action = { kind: 'set', field: f.id, value: selected.value, target: lifetime?.target||scope.value, ...(required && scope.value === 'baseline' ? { required: required.checked } : {}), ...(lifetime?.until ? { until: lifetime.until } : {}) };
-      focusedPreference = f.id; preferenceDrafts.set(f.id, { key: preferenceDraftKey(f), value: value.value, scope: scope.value, required: required?.checked, until: until?.value || '',deadlineMode:lifetimeControl?.mode.value });
+      focusedPreference = f.id; const draftKey = preferenceDraftKey(f);
+      if (draftKey) preferenceDrafts.write(f.id, draftKey, { value: value.value, scope: scope.value, required: required?.checked, until: until?.value || '',deadlineMode:lifetimeControl?.mode.value }); else preferenceDrafts.delete(f.id);
       if (f.id === 'consent') void discovery(action); else void requestPreview({action,...(correctionSource?{sourceDecisionId:correctionSource}:{})},deadlineConfirmation(lifetime,f.label,lifetime.target==='context'?answerReturn(f,lifetime.effectiveUntil):lifetime.until?'기한이 끝나면 이 평소 답은 미확인이 돼요. 이전 답을 자동으로 되살리지 않아요.':'직접 변경하거나 철회할 때까지 이 평소 답을 사용해요.'));
     }, `edit-${f.id}`));
     if (f.id !== 'consent') actions.append(button('평소 답 지우기', () => discovery({ kind: 'clear', field: f.id, target: 'baseline' }), `clear-${f.id}`));
@@ -1539,15 +1516,10 @@ function proposalChanges(a) {
 }
 function scheduleForm(pair, existing) {
   const form = el('div', null, 'form');
-  const formKey = existing ? `${existing.id}:${existing.proposal.version}` : 'new', slot = scheduleSlot(pair.pairId, formKey);
-  const draftKey = scheduleDraftKey(pair, formKey), saved = scheduleDrafts.get(slot);
-  const draft = draftKey && saved?.key === draftKey ? saved : null;
-  form.dataset.scheduleForm = formKey; form.dataset.schedulePair = pair.pairId;
-  if (draftKey) form.dataset.scheduleDraftKey = draftKey;
-  const v = pairView(pair), stored = existing ? null : rescheduleDrafts.get(pair.pairId);
-  const current = stored && getRescheduleDraft(pair, stored.appointmentId);
-  const copied = current && ['appointmentId', 'proposalVersion', 'place', 'durationMinutes'].every(key => current[key] === stored[key]) ? current : null;
-  if (stored && !copied) rescheduleDrafts.delete(pair.pairId);
+  // The appointment editing session owns this form's unsent input and the reschedule seed; this function only lays out fields.
+  const formKey = existing ? `${existing.id}:${existing.proposal.version}` : 'new';
+  const draft = scheduleEditor.readDraft(pair.pairId, formKey);
+  const v = pairView(pair), copied = existing ? null : scheduleEditor.readSeed(pair.pairId);
   const hint = existing || copied ? null : v.me?.nextForm;
   const local = value => { const d = new Date(value); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1613,17 +1585,12 @@ function scheduleForm(pair, existing) {
     if (event.relatedTarget?.dataset.action !== 'propose' || !form.contains(event.relatedTarget)) validate();
   });
   form.addEventListener('input', () => validate());
-  const remember = () => {
-    const currentPair = view?.pairs?.find(item => item.pairId === pair.pairId);
-    if (!form.isConnected || !draftKey || scheduleDraftKey(currentPair, formKey) !== draftKey) return;
-    scheduleDrafts.set(slot, { key: draftKey, pairId: pair.pairId, formKey, endEdited, open: form.closest('details')?.open ?? true,
-      values: { startsAt: start.value, durationMinutes: duration.value, endsAt: end.value, place: place.value, note: note.value } });
-  };
-  form.addEventListener('input', remember); form.addEventListener('change', remember);
+  scheduleEditor.mount(form, { pairId: pair.pairId, formKey, read: () => ({ endEdited,
+    values: { startsAt: start.value, durationMinutes: duration.value, endsAt: end.value, place: place.value, note: note.value } }) });
   form.append(button(existing ? '변경한 일정 제안하기' : '이 일정 제안하기', () => {
     attempted = true;
     if (!validate(true)) return;
-    void appointment(pair, { kind: existing ? 'revise' : 'propose', ...(existing ? { appointmentId: existing.id } : {}), schedule: { startsAt: new Date(start.value).toISOString(), endsAt: new Date(end.value).toISOString(), timeZone: zone, place: place.value.trim(), note: note.value.trim() } }, '일정을 제안했어요. 두 사람이 확인한 뒤 확정돼요.', () => { scheduleDrafts.delete(slot); rescheduleDrafts.delete(pair.pairId); });
+    void appointment(pair, { kind: existing ? 'revise' : 'propose', ...(existing ? { appointmentId: existing.id } : {}), schedule: { startsAt: new Date(start.value).toISOString(), endsAt: new Date(end.value).toISOString(), timeZone: zone, place: place.value.trim(), note: note.value.trim() } }, '일정을 제안했어요. 두 사람이 확인한 뒤 확정돼요.', () => scheduleEditor.sent(pair.pairId, formKey));
   }, 'propose', true)); return form;
 }
 function inbox(area) {
@@ -1658,14 +1625,12 @@ function inbox(area) {
       const actions = el('div', null, 'actions');
       if (a.canRespond) actions.append(button('이 약속 수락', () => appointment(pair, { kind: 'respond', appointmentId: a.id, proposalVersion: a.proposal.version, value: 'accept' }), 'accept', true), button('시간만 안 맞아요 · 다른 시간 준비', () => appointment(pair, { kind: 'respond', appointmentId: a.id, proposalVersion: a.proposal.version, value: 'busy' }, '이 일정은 닫았어요. 아래에서 편한 시간을 새로 제안할 수 있어요.', () => openForms.add(pair.pairId)), 'busy'), button('이 만남은 원하지 않아요', () => appointment(pair, { kind: 'respond', appointmentId: a.id, proposalVersion: a.proposal.version, value: 'decline' }, '이 만남을 거절했어요. 직접 다시 열기 전에는 이 상대의 새 요청을 받지 않아요.'), 'decline'));
       if (getRescheduleDraft(pair, a.id)) actions.append(button('장소·길이는 유지하고 다른 시간 제안', () => {
-        const latest = view.pairs?.find(item => item.pairId === pair.pairId), draft = latest && getRescheduleDraft(latest, a.id);
-        if (!draft) { notice('그동안 약속 상태가 바뀌었어요. 최신 일정을 다시 확인해 주세요.'); return; }
-        const key = scheduleDraftKey(latest, 'new');
-        scheduleDrafts.delete(scheduleSlot(pair.pairId, 'new'));
-        if (key) rescheduleDrafts.set(pair.pairId, { ...draft, key }); else rescheduleDrafts.delete(pair.pairId);
+        const reused = scheduleEditor.reuse(pair.pairId, a.id);
+        if (!reused) { notice('그동안 약속 상태가 바뀌었어요. 최신 일정을 다시 확인해 주세요.'); return; }
+        const draft = reused.seed;
         openForms.add(pair.pairId); render();
         const target = [...document.querySelectorAll('[data-pair]')].find(item => item.dataset.pair === pair.pairId)?.querySelector('[data-new-schedule]');
-        if (!key && target) {
+        if (!reused.kept && target) {
           for (const [name, value] of Object.entries({ startsAt: '', endsAt: '', durationMinutes: String(draft.durationMinutes), place: draft.place, note: '' })) {
             const input = target.querySelector(`[name=${name}]`); if (input) input.value = value;
           }
@@ -1780,7 +1745,7 @@ window.addEventListener('pageshow', event => {
   if (view) { syncState={...syncState,status:'checking'}; syncPanel(); }
   startPolling();
 });
-function hasUnsavedWork() { return !!delivery.snapshot() || dirty || !!onboardingDraft || profileEditingDrafts.size>0 || !!pendingPreview || [...scheduleDrafts.values()].some(draft=>Object.values(draft.values).some(Boolean)) || !!conditionalContactDraft; }
+function hasUnsavedWork() { return !!delivery.snapshot() || dirty || !!pendingPreview || drafts.hasDraft(); }
 window.addEventListener('beforeunload', event=>{ if (hasUnsavedWork()) { event.preventDefault(); event.returnValue=''; } });
 window.addEventListener('online',()=>{void pollLive();});
 window.addEventListener('offline',()=>{if(view){syncFailed({});}});

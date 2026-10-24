@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { createDatingServer } from '../experiences/atlas-lab/dating-server.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require(require.resolve('playwright', { paths: [process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
-const out = fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-conditional-draft/', import.meta.url));
+const out = process.env.SYNK_QA_OUTPUT_DIR ? path.resolve(process.env.SYNK_QA_OUTPUT_DIR) : fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-conditional-draft/', import.meta.url));
 const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'synk-dating-conditional-draft-'));
 const reproduceOnly = process.argv.includes('--reproduce-only');
 const report = { at: new Date().toISOString(), status: 'running', kind: 'synthetic-dating-conditional-draft-browser',
@@ -100,6 +100,9 @@ try {
     report.paths.push('a peer change invalidates its old preview during the production refresh while preserving the unsubmitted own draft whose source is unchanged');
 
     await click(a, 'nav-discover'); const oldContext = (await snap(a)).view.discovery.context.id; await click(a, 'new-context');
+    await a.waitForSelector('[data-preview="pending"]');
+    assert.equal((await snap(a)).view.discovery.context.id, oldContext, 'preview alone must not replace the recommendation context');
+    await click(a, 'preview-apply');
     assert.notEqual((await snap(a)).view.discovery.context.id, oldContext); box = await section(a);
     assert.notEqual((await inputs(box)).until, '2026-10-11T19:20', 'a new recommendation context cannot reuse its previous conditional draft');
     report.paths.push('starting a new recommendation context discards the old unsaved conditional draft');

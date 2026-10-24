@@ -13,7 +13,7 @@ export const DATING_PUBLIC_FILES = Object.freeze([
   '/atlas-lab/dating-live.mjs', '/atlas-lab/meeting-regions.mjs',
   '/atlas-lab/preference-deadline.mjs', '/atlas-lab/discovery.mjs',
   '/atlas-lab/candidate-highlights.mjs', '/atlas-lab/public-profile-preview.mjs',
-  '/atlas-lab/profile-editing-drafts.mjs', '/atlas-lab/onboarding-drafts.mjs',
+  '/atlas-lab/profile-editing-drafts.mjs', '/atlas-lab/onboarding-drafts.mjs', '/atlas-lab/dating-drafts.mjs',
   '/synk-account/src/core.mjs', '/synk-account/assets/sticker-person.webp',
   '/learning-hub/assets/SUIT-Variable.woff2',
   '/learning-hub/assets/slab-cream-long.webp', '/learning-hub/assets/slab-blush-long.webp',

@@ -9,7 +9,7 @@ import { createDatingServer } from '../experiences/atlas-lab/dating-server.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require(require.resolve('playwright', { paths: [process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
 const reproduceOnly = process.argv.includes('--reproduce-only');
-const out = fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-input-continuity/', import.meta.url));
+const out = process.env.SYNK_QA_OUTPUT_DIR ? path.resolve(process.env.SYNK_QA_OUTPUT_DIR) : fileURLToPath(new URL('../experiences/atlas-lab/qa/dating-input-continuity/', import.meta.url));
 const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'synk-dating-input-continuity-'));
 const report = { at: new Date().toISOString(), status: 'running', kind: reproduceOnly ? 'synthetic-input-reproduction' : 'synthetic-input-continuity-browser', modelCalls: 0, externalApiCost: 0, actualUsers: 0, paths: [], errors: [], externalRequests: [], screenshots: [] };
 let server, browser, origin, time = Date.parse('2026-10-10T03:00:00.000Z');
