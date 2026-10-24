@@ -332,7 +332,8 @@ def card3():
 
 
 JOBS = {
-    11: dict(hand="H1", prop="mini/mini_0001.png", narrow=0.5, tint=(1.0, 1.0, 1.0), bottom=True, split=False, card=card1,
+    # bg_lab: 바탕 판만 원본 카드 첫 프레임(빈 갈색)의 Lab 평균(OpenCV 8비트)으로 옮긴다 — 우리 갈색이 덜 붉었다(a +4 대 +11, 10-24 「색감이 자꾸 바뀐다」)
+    11: dict(hand="H1", prop="mini/mini_0001.png", narrow=0.5, tint=(1.0, 1.0, 1.0), bottom=True, split=False, card=card1, bg_lab=(36.3, 139.0, 139.3),
              main=lambda t: (0.0, 780 * (1 - ease_out(ramp(t, 0.20, 0.62))))),
     21: dict(hand="H2", prop="giftbox/giftbox_0001.png", narrow=0.5, tint=(0.66, 0.78, 0.92), bottom=False, split=True, card=card2,
              main=lambda t: (0.0, -1000 * (1 - ease_out(ramp(t, 0.35, 0.78)))),
@@ -348,6 +349,10 @@ def render(n):
     j = JOBS[n]
     nf = SH[n]["f1"] - SH[n]["f0"]
     bg, (mi, ma), (pi_, pa_), _ = layers(j["hand"], j["prop"], j["narrow"], j["tint"], j["bottom"], j["split"])
+    if "bg_lab" in j:   # 손 · 물건 층은 그대로 두고 바탕만 원본 색으로
+        lab = cv2.cvtColor(np.clip(bg, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
+        lab += np.array(j["bg_lab"], np.float32) - lab.reshape(-1, 3).mean(0)
+        bg = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
     card = j["card"]()
     os.makedirs(OUT, exist_ok=True)
     out = os.path.join(OUT, f"C{n}.mp4")
