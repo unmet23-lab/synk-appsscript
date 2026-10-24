@@ -8,7 +8,12 @@
  * the approved v20 look and the bake as it was.
  */
 import { LIGHT_KEYS, MINUTE, HOUR, DAY, offsetAt, bandAt, weatherAt, weatherChangesBetween } from './clock.mjs';
-import { LIGHT } from './data.gen.mjs';
+import * as generated from './data.gen.mjs';
+
+// Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the
+// generated data from before the light table existed. Then LIGHT is missing, lightAt throws and the screen keeps
+// the approved noon — a named import would instead stop the whole town from loading.
+const LIGHT = generated.LIGHT;
 
 // Numbers the light table also holds are never written here (tests/town-light.test.js):
 // per-mille is 1e3, a second 1e3 ms, half a turn HALF_TURN degrees.
@@ -86,6 +91,7 @@ const direction = (elevation, azimuth) => {
  * direction: a baked town keeps it, because its shadows were baked there. */
 export function lightAt({ villageSeed = null, tz, ms, light = LIGHT }) {
   if (!Number.isSafeInteger(ms)) throw new RangeError('ms is epoch milliseconds (a safe integer)');
+  if (!light?.keys || !light.rain) throw new RangeError('no light table');
   for (const key of LIGHT_KEYS) if (!light.keys[key.id]) throw new RangeError(`light has no key ${key.id}`);
   const minute = localMinuteAt(tz, ms), key = lightKeyAt(minute, light.keys);
   const k = mixKeys(keyValues(light.keys[key.from]), keyValues(light.keys[key.to]), key.t);

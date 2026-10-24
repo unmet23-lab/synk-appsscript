@@ -168,3 +168,13 @@ test('첫 방문처럼 마을 시간대가 비면 화면이 기기 오프셋을 
   const app = fs.readFileSync(path.join(ROOT, 'experiences/synk-town/day-app.mjs'), 'utf8');
   assert.match(app, /validOffset\(device\) \? device : null/); assert.match(app, /villageSeed: typeof v\?\.seed === 'string' \? v\.seed : null/);
 });
+
+test('공개 직후 캐시에 옛 생성물이 남아도 마을은 뜬다 — 빛 표는 이름 공간으로 읽고, 표가 없으면 lightAt만 거절한다', async () => {
+  const { lightAt } = await townModule('light');
+  // 이름 있는 가져오기(import { LIGHT })였다면 옛 data.gen.mjs에서 모듈 연결이 실패해 화면 전체가 멈춘다.
+  const code = fs.readFileSync(path.join(TOWN, 'light.mjs'), 'utf8');
+  assert.match(code, /import \* as generated from '\.\/data\.gen\.mjs'/); assert.doesNotMatch(code, /import \{[^}]*\bLIGHT\b[^}]*\} from/);
+  assert.throws(() => lightAt({ tz: 540, ms: kst(CLEAR, '12:00'), light: null }), /no light table/);
+  // 화면은 그 거절을 받아 승인된 정오로 둔다(day-app.mjs lightNow의 try/catch).
+  assert.match(fs.readFileSync(path.join(ROOT, 'experiences/synk-town/day-app.mjs'), 'utf8'), /try \{ return lightAt\(/);
+});
