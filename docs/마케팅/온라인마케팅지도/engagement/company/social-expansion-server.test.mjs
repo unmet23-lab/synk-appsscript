@@ -91,5 +91,7 @@ test('HTTP first-party attribution requires exact CORS origin and HMAC server pr
 test('public review and attribution assets are served without a company session under restrictive response headers',async t=>{
   const f=await fixture(t);
   for(const path of ['/social-review','/social-review.js','/social-review.css','/social-tracking.js']){const r=await fetch(f.base+path);assert.equal(r.status,200,path);assert.equal(r.headers.get('x-content-type-options'),'nosniff');assert.ok((await r.text()).length>100);}
+  const policy=(await fetch(f.base+'/social-review')).headers.get('content-security-policy');assert.match(policy,/(?:^|; )default-src 'none'(?:;|$)/,policy);assert.match(policy,/(?:^|; )font-src 'self'(?:;|$)/,policy);
+  const fonts=[...(await (await fetch(f.base+'/social-review.css')).text()).matchAll(/url\('([^']+\.(?:woff2|ttf))'\)/g)].map(m=>m[1]);assert.equal(fonts.length,5);for(const url of fonts){assert.match(url,/^\/consultation\/assets\//);const r=await fetch(f.base+url);assert.equal(r.status,200,url);assert.match(r.headers.get('content-type'),/^font\//,url);await r.arrayBuffer();}
   assert.equal((await fetch(f.base+'/api/social/recovery')).status,401);assert.equal((await f.publicApi('/api/social-review/open',{}, {Origin:f.app.origin})).status,401);
 });

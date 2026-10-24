@@ -133,3 +133,11 @@ test('Fable 10-23 follow-ups: total repeat count, reply-scope names, headings th
   assert.deepEqual(headings,['올라갈 게시물 3개','주고받은 의견 0개']);
   f.windows.pageshow({persisted:false});assert.equal(f.reloads.length,0);f.windows.pageshow({persisted:true});assert.equal(f.reloads.length,1);
 });
+
+test('brand fonts (2026-10-24): every face is a consultation asset and the page preloads the same SUIT file before the stylesheet',()=>{
+  const css=readFileSync(new URL('./public/social-review.css',import.meta.url),'utf8'),faces=[...css.matchAll(/url\('([^']+\.(?:woff2|ttf))'\)/g)].map(m=>m[1]);
+  assert.equal(faces.length,5);assert.ok(faces.every(url=>url.startsWith('/consultation/assets/')),faces.join(' '));
+  const preloads=[...html.matchAll(/<link rel="preload" href="([^"]+)" as="font" type="font\/woff2" crossorigin>/g)].map(m=>m[1]);
+  assert.deepEqual(preloads,['/consultation/assets/SUIT-Variable.woff2']);assert.ok(faces.includes(preloads[0]),'the preload is the file a face names, so it is fetched once');
+  assert.ok(html.indexOf('rel="preload"')<html.indexOf('rel="stylesheet"'),'the font starts with the stylesheet, not after it');
+});

@@ -3,11 +3,19 @@
  *       고객 상담 /consultation/(customer-computer.css)과 같은 값. 글자 단계는 고객 화면 기준(680·650·600·550·450, 한글 13px 이상).
  * 뼈대: 머리(게시물 이름 · 한 줄 안내 · 상태 칩) → 올라갈 게시물(SNS 화면처럼 계정 머리 · 사진/영상 · 문구 · 설정) → 올라가는 때
  *       → 주고받은 의견 → 답하기. 넓은 화면은 의견과 답하기가 오른쪽 칸에 붙어 따라온다.
- * 이 화면의 CSP(default-src 'none'; style-src 'self')는 글꼴 파일과 style 속성을 막는다. 그래서 글꼴은 기기의 한글 글꼴을 쓰고
- * (SUIT가 깔린 기기는 SUIT), 칸 모양은 모두 클래스로 고른다. */
+ * 이 화면의 CSP(default-src 'none'; style-src 'self')는 style 속성을 막아 칸 모양은 모두 클래스로 고른다. 글꼴은 고객 상담과 같은
+ * 파일을 같은 주소(/consultation/assets/의 SUIT·SYNK Latin·DM Mono)로 받는다 — CSP에 font-src 'self'를 더했다(10-24).
+ * SUIT는 social-review.html의 preload가 이 CSS보다 먼저 받기 시작한다 — 주소를 바꾸면 그 줄도 같이 바꾼다. */
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url('/consultation/assets/SUIT-Variable.woff2') format('woff2')}
+/* 영문·숫자는 synk.im과 같은 Inter Tight(SYNK Latin). 띄어쓰기와 가운뎃점은 한글 높이에 맞는 SUIT로 둔다 */
+@font-face{font-family:'SYNK Latin';font-weight:100 450;font-display:swap;src:url('/consultation/assets/SYNKLatin-Regular.woff2') format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026,U+20A9}
+@font-face{font-family:'SYNK Latin';font-weight:451 620;font-display:swap;src:url('/consultation/assets/SYNKLatin-SemiBold.woff2') format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026,U+20A9}
+@font-face{font-family:'SYNK Latin';font-weight:621 900;font-display:swap;src:url('/consultation/assets/SYNKLatin-Bold.woff2') format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026,U+20A9}
+/* DM Mono는 띄어쓰기를 뺀 범위만: 한글이 섞여도 고정폭 공백으로 벌어지지 않게 */
+@font-face{font-family:'DM Mono';font-weight:400 700;font-display:swap;src:url('/consultation/assets/DMMono.ttf') format('truetype');unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
 :root{
-  --sans:'SUIT Variable','SUIT',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR','Malgun Gothic','맑은 고딕',system-ui,sans-serif;
-  --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+  --sans:'SYNK Latin','SUIT Variable','SUIT',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR','Malgun Gothic','맑은 고딕',system-ui,sans-serif;
+  --mono:'DM Mono','SUIT Variable',ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
   /* 틀(어두운 바탕) */
   --frame:#060709;--on-frame:#FAFAF9;--on-frame-2:rgba(250,250,249,.76);--on-frame-3:rgba(250,250,249,.6);
   --glass:rgba(26,27,32,.58);--glass-strong:rgba(18,19,23,.82);--glass-edge:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.075),0 12px 32px rgba(0,0,0,.36);

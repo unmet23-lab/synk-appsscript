@@ -1,6 +1,7 @@
 // 고객 SNS 게시물 검토(/social-review) 브라우저 점검(2026-10-23). verify-social-review-fixture.mjs를 제 임시 폴더로 띄우고
 // (실제 회사 서버 코드·임시 SQLite·가짜 SNS 공급자), 헤드리스 Chrome으로 장면마다 1440·390을 찍은 뒤 흐름을 눌러 본다.
-// 확인: 가로 넘침 · 한글 13px 미만 · 한글에 모노 글꼴 · 콘솔 오류(거둔 링크의 410 한 번만 예상) · 실패 요청 · 누를 때만 파일 받기 ·
+// 확인: 가로 넘침 · 한글 13px 미만 · 한글에 모노 글꼴 · 브랜드 글꼴(SUIT·SYNK Latin·DM Mono)을 받아 씀(SUIT는 preload로 한 번)과 글꼴 CSP 거절 없음 ·
+//       콘솔 오류(거둔 링크의 410 한 번만 예상) · 실패 요청 · 누를 때만 파일 받기 ·
 //       빈 의견 막기와 그 안내 자리 · 이름 칸 Enter가 승인이 되지 않음 · 수정 요청/승인 뒤 상태 · 답한 뒤에도 펼친 영상 유지 · 닫힌 링크.
 // 쓰는 법: node qa/verify-social-review-browser.mjs   (그림과 보이는 글(.txt)은 SYNK_SOCIAL_REVIEW_QA_OUT 또는 새 임시 폴더로 — 저장소에는 안 쓴다)
 import { spawn } from 'node:child_process';
@@ -58,6 +59,19 @@ async function audit(page, name) {
   check(`${name}: 한글 13px 이상`, !a.small.length, a.small.join(' | '));
   check(`${name}: 한글에 모노 글꼴 없음`, !a.mono.length, a.mono.join(' | '));
 }
+// 글꼴은 고객 상담과 같은 /consultation/assets/ 파일이다(CSP font-src 'self', 10-24). 막히면 기기 글꼴로 조용히 바뀌므로 받은 상태를 본다.
+async function fonts(page, name, problems) {
+  const f = await page.evaluate(async () => { await document.fonts.ready;
+    return { suit: document.fonts.check('16px "SUIT Variable"'), faces: [...document.fonts].map(face => ({ family: face.family.replace(/["']/g, ''), weight: face.weight, status: face.status })),
+      suitFetches: performance.getEntriesByType('resource').filter(entry => new URL(entry.name).pathname === '/consultation/assets/SUIT-Variable.woff2').map(entry => entry.initiatorType) }; });
+  const loaded = family => f.faces.some(face => face.family === family && face.status === 'loaded'), faces = JSON.stringify(f.faces);
+  check(`${name}: SUIT 글꼴을 받아 씀`, f.suit && loaded('SUIT Variable'), faces);
+  // HTML의 preload가 CSS보다 먼저 받고, CSS의 @font-face가 그 받은 것을 그대로 쓴다(crossorigin이 어긋나면 두 번 받는다)
+  check(`${name}: SUIT는 preload로 한 번만 받음`, f.suitFetches.length === 1 && f.suitFetches[0] === 'link', f.suitFetches.join(','));
+  check(`${name}: SYNK Latin·DM Mono도 받음`, loaded('SYNK Latin') && loaded('DM Mono'), faces);
+  check(`${name}: 글꼴 받기 실패 없음`, !f.faces.some(face => face.status === 'error'), faces);
+  check(`${name}: 글꼴 CSP 거절 없음`, !problems.console.some(text => /font/i.test(text) && /Content Security Policy/i.test(text)), problems.console.join(' | '));
+}
 async function shot(page, name) {
   const file = join(out, name + '.png');
   await page.screenshot({ path: file, fullPage: true });
@@ -68,7 +82,7 @@ async function shot(page, name) {
 // 1) 장면마다 처음 화면(파일을 열기 전), 1440·390
 for (const scene of ['daily', 'customer', 'approved', 'optional', 'long', 'revoked', 'notoken']) for (const width of [1440, 390]) {
   const { context, page, problems } = await open(scene, width), name = `${scene}-${width}`;
-  await audit(page, name); await shot(page, name);
+  await audit(page, name); await fonts(page, name, problems); await shot(page, name);
   const expectedConsole = scene === 'revoked' ? 1 : 0;
   check(`${name}: 콘솔 오류 ${expectedConsole}개`, problems.console.length === expectedConsole && problems.console.every(text => /410/.test(text)), problems.console.join(' | '));
   check(`${name}: 실패 요청 없음`, !problems.failed.length, problems.failed.join(' | '));
