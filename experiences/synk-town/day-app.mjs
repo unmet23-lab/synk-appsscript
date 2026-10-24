@@ -5,6 +5,7 @@ import { PLACE_BY_ID, PLAYER_PLACES, SPOT_BY_ID } from './town/places.mjs';
 import { placeAt, caption, doing, goalOf } from './town/village.mjs';
 import { lightAt } from './town/light.mjs';
 import { validOffset } from './town/clock.mjs';
+import { createMoodLines } from './day-mood.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -551,10 +552,22 @@ function observe(now) {
  * new segment, wakes, sleeps or reaches a scene's hold, the whole scene (captions included) is drawn again. */
 function villageFrame() {
   const v = snapshot?.view.day?.scene?.village;
-  if (!v || !connected) return;
+  if (!v || !connected) { moodFrame(null); return; }
   const village = villageRows(v);
-  if (village.signature !== villageLive.signature) { renderScene(); return; }
+  if (village.signature !== villageLive.signature) { renderScene(); moodFrame(v, village); return; }
   if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
+  moodFrame(v, village);
+}
+/** A resident whose mind the plan changed shows its line under the name while the player is near (§7-3, W4) —
+ * only residents the plan draws this frame, never over a dialog, the nearby panel or the text alternative. */
+let moodLines = null;
+function moodFrame(v, village) {
+  moodLines ||= createMoodLines($('mood-lines'), $('mood-live'));
+  const blocked = !v || !renderer || fallback || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]');
+  const canvas = $('day-canvas').getBoundingClientRect(), scene = $('scene').getBoundingClientRect();
+  moodLines.update({ segments: v?.segments, t: village?.t ?? null, rows: blocked ? [] : village.rows.filter(r => villageLive.ids.has(r.id)),
+    player: blocked ? null : renderer.playerPoint?.(), names: roleNames, blocked,
+    labelAt: id => { const p = renderer?.labelScreen?.(id); return p ? { x: p.x + canvas.left - scene.left, y: p.y + canvas.top - scene.top } : null; } });
 }
 /** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
  * same village at the same time looks the same on every device. Before the village keeps a zone (a first visit) the

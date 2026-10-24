@@ -430,6 +430,18 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     if (disposed) return;
     if (townLight.apply(state, { reducedMotion: reducedMotion || motionQuery.matches })) { dirty = true; schedule(); }
   }
+  /** Where a resident's name label is on the canvas, in CSS px (W4 — the mood line hangs under it): null while
+   * the resident is hidden or the label is off screen. */
+  const labelPoint = new THREE.Vector3();
+  function labelScreen(id) {
+    const a = actors.get(id);
+    if (disposed || !a?.group.visible || !a.label.visible) return null;
+    a.label.getWorldPosition(labelPoint).project(camera);
+    if (Math.abs(labelPoint.x) > 1 || Math.abs(labelPoint.y) > 1 || labelPoint.z > 1) return null;
+    return { x: (labelPoint.x + 1) * canvas.clientWidth / 2, y: (1 - labelPoint.y) * canvas.clientHeight / 2 };
+  }
+  /** Where the player stands in the town now ({ x, z }), walking or not. */
+  function playerPoint() { const p = actors.get('player')?.group.position; return p ? { x: p.x, z: p.z } : null; }
   function setActor(id, value, now, immediate = false) {
     const a = actors.get(id); if (!a || !value) return; const walkingPlayer = id === 'player' && freeWalk;
     const x = clamp(finite(value.x), walkingPlayer ? WALK_BOUNDS.minX : -10, walkingPlayer ? WALK_BOUNDS.maxX : 10),
@@ -747,5 +759,5 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     try { await Promise.race([initialAssets.catch(() => {}), new Promise(resolve => { timer = setTimeout(resolve, 5000); })]); }
     finally { clearTimeout(timer); }
   }
-  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose };
+  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose, labelScreen, playerPoint };
 }

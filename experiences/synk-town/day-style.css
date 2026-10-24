@@ -393,3 +393,20 @@ body[data-walk-input=touch] .walk-help{display:none}
 }
 @media(prefers-reduced-transparency:reduce){.walk-mode .town-map{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media(forced-colors:active){.walk-mode .town-map{background:Canvas;color:CanvasText;border:1px solid CanvasText}.town-map-me,.town-todo::before{background:Highlight}}
+/* 마음 한 줄(W4, §7-3): 가까운 주민의 이름표 아래 작은 그림과 한 줄 — 말풍선이 아니고 대답을 묻지 않는다. 자리는 화면이 매 프레임 옮긴다. */
+.visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.mood-lines{position:absolute;inset:0;z-index:3;pointer-events:none}
+.mood-card{position:absolute;top:0;left:0;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 9px;max-width:min(272px,calc(100% - 32px));padding:9px 12px 6px 10px;border-radius:var(--w-r-sm);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);color:var(--w-ink);pointer-events:auto;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);animation:mood-in .24s var(--w-ease) both}
+.mood-card[hidden]{display:none}
+.mood-icon{display:grid;place-items:center;width:24px;height:24px;color:var(--w-face)}
+.mood-icon svg{width:20px;height:20px}
+.mood-text{margin:0;font-size:13.5px;line-height:1.5;font-weight:var(--wt-body);text-wrap:pretty;word-break:keep-all}
+.mood-help{grid-column:2;justify-self:start;min-height:32px;padding:0;border:0;background:none;color:var(--w-ink-3);font:inherit;font-size:12.5px;font-weight:var(--wt-strong);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px;cursor:pointer}
+.mood-help:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.mood-card.is-eased .mood-icon{width:40px;height:40px}
+.mood-card.is-eased .mood-icon svg{width:34px;height:34px}
+.mood-card.is-eased .mood-text{font-size:15px}
+@keyframes mood-in{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){.mood-card{max-width:min(240px,calc(100% - 32px))}.mood-text{font-size:13px}}
+@media(prefers-reduced-transparency:reduce){.mood-card{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){.mood-card{background:Canvas;color:CanvasText;border:1px solid CanvasText}.mood-icon{color:CanvasText}}

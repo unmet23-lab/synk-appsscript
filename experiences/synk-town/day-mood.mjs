@@ -1,0 +1,98 @@
+/** Mood lines under a resident's name (vertical slice design §7-3, W4): when the player is within a resident's
+ * near radius and the plan's current segment for that resident changed its mind, a small picture and one line
+ * hang under the name label — not a speech bubble, and nothing asks for an answer. The line's level is one
+ * function (lineLevel) the learning adapter (W9) will plug into; 「무슨 뜻이에요?」 shows that line alone one level
+ * down with its picture larger and changes no ladder state (§13-1). The state behind it never shows (G2).
+ * Screen-only module: the server's plan decides which line (segment.mood), the screen only draws it.
+ */
+import { MOOD_LINES } from './town/data.gen.mjs';
+import { WALK_NEAR_RADIUS } from './walk.mjs';
+
+const LINE_BY_ID = new Map(MOOD_LINES.map(line => [line.id, line]));
+const LEVELS = ['L1', 'L2', 'L3', 'L4'];
+/** The level a one-line text shows at (§13-1 「장면이 아닌 한 줄」): the reading seat's stable level. W4 has no ladder yet → L2. */
+export function lineLevel(/* { kind: 'mood', npc, id } */) { return 'L2'; }
+/** One level down for 「무슨 뜻이에요?」 — L1 stays L1. */
+export const easier = level => LEVELS[Math.max(0, LEVELS.indexOf(level) - 1)];
+
+// Small line pictures (24×24, currentColor) — one per icon name the lines checker allows (MOOD_ICONS).
+const G = (...parts) => parts.join('');
+export const ICONS = Object.freeze({
+  rain: G('<path d="M7 15a4 4 0 0 1 .5-8A5 5 0 0 1 17 8a3.5 3.5 0 0 1 0 7H7z"/>', '<path d="M8 18l-1 2.5M12 18l-1 2.5M16 18l-1 2.5"/>'),
+  guests: G('<circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/>', '<path d="M3.5 19.5a5.5 5.5 0 0 1 11 0M14.5 19.5a4.5 4.5 0 0 1 6.5-3.9"/>'),
+  seat: '<path d="M8 3v10h9v7M8 13v7M8 9h9"/>',
+  menu: G('<rect x="5" y="3" width="14" height="18" rx="2"/>', '<path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>'),
+  leaf: '<path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14zM5 19l7-7"/>',
+  steam: G('<path d="M5 11h11v3a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5v-3zM16 12h1.5a2.5 2.5 0 0 1 0 5H16"/>', '<path d="M8 4c1 1.2-1 2.3 0 3.5M11.5 4c1 1.2-1 2.3 0 3.5"/>'),
+  umbrella: '<path d="M3 12a9 9 0 0 1 18 0H3zM12 12v6a2 2 0 0 0 4 0"/>',
+  cups: '<path d="M3 10h7v4a3.5 3.5 0 0 1-7 0v-4zM14 10h7v4a3.5 3.5 0 0 1-7 0v-4zM2 21h20"/>',
+  together: '<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>',
+  cold: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 6.5l2.5-2M9.5 19.5 12 17.5l2.5 2"/>',
+  orders: '<path d="M4 8l8-4 8 4v8l-8 4-8-4V8zM4 8l8 4 8-4M12 12v8"/>',
+  quiet: G('<path d="M4 6h16v10H9l-4 3v-3H4z"/>', '<path d="M9 11h6"/>'),
+  plane: '<path d="M3 15h18v3H3zM6 15l2-6h7l3 6M11 9V6h3"/>',
+  cup: '<path d="M5 9h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V9zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M4 21h14"/>',
+  wobble: '<path d="M5 16l14-4M7 20l1-4M17 16l1 4M6 9c1-1 2 1 3 0M15 6c1-1 2 1 3 0"/>',
+  tired: '<path d="M4 11c2.5 3.5 13.5 3.5 16 0M7 14l-1.5 2.2M12 15.2v2.6M17 14l1.5 2.2"/>',
+  puddle: G('<ellipse cx="12" cy="17.5" rx="8" ry="3"/>', '<path d="M12 4c2 3 3 4.5 3 6a3 3 0 0 1-6 0c0-1.5 1-3 3-6z"/>'),
+  moon: '<path d="M19 15A8 8 0 0 1 9 5a8 8 0 1 0 10 10z"/>',
+  sparkle: '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z"/>',
+  board: G('<rect x="4" y="4" width="16" height="11" rx="1.5"/>', '<path d="M8 21l3-6M16 21l-3-6"/>'),
+  flower: G('<circle cx="12" cy="9" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="16" cy="9" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="8" cy="9" r="2"/>', '<path d="M12 15v6"/>'),
+  pages: '<path d="M7 3h8l4 4v14H7zM15 3v4h4M4 6v15h12"/>',
+  sun: G('<circle cx="12" cy="12" r="4"/>', '<path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'),
+});
+const svg = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name] || ICONS.sparkle}</svg>`;
+
+/** The mood line the plan gives a resident at server time t: its current segment's line, or null. */
+export function moodAt(segments, npc, t) {
+  const seg = segments.find(s => s.npc === npc && s.startMs <= t && t < s.endMs);
+  return seg?.mood && LINE_BY_ID.has(seg.mood) ? seg.mood : null;
+}
+
+/** The cards over a scene. update() runs each frame with { segments, t, rows, player, labelAt, names, blocked }:
+ * rows are the residents as drawn (live ones only carry a line), player is { x, z }, labelAt(id) → { x, y } on the
+ * scene (or null off screen), blocked hides every card (a dialog, the nearby panel, the text alternative). */
+export function createMoodLines(container, live) {
+  const cards = new Map(), eased = new Set(), announced = new Set();
+  function card(npc, id, names) {
+    const line = LINE_BY_ID.get(id), el = document.createElement('div');
+    el.className = 'mood-card'; el.dataset.npc = npc; el.dataset.line = id; el.setAttribute('role', 'group'); el.setAttribute('aria-label', `${names[npc] || npc}의 마음`);
+    el.innerHTML = `<span class="mood-icon">${svg(line.icon)}</span><p class="mood-text"></p><button type="button" class="mood-help" aria-expanded="false">무슨 뜻이에요?</button>`;
+    el.querySelector('.mood-help').addEventListener('click', () => { if (eased.has(id)) eased.delete(id); else eased.add(id); paint(el, id); });
+    container.append(el);
+    return el;
+  }
+  function paint(el, id) {
+    const line = LINE_BY_ID.get(id), level = lineLevel({ kind: 'mood', npc: line.npc, id }), down = eased.has(id);
+    const text = line.levels[down ? easier(level) : level];
+    const p = el.querySelector('.mood-text'); if (p.textContent !== text) p.textContent = text;
+    el.classList.toggle('is-eased', down);
+    const help = el.querySelector('.mood-help'); help.setAttribute('aria-expanded', String(down)); help.textContent = down ? '원래 말로' : '무슨 뜻이에요?';
+  }
+  function update({ segments = [], t = null, rows = [], player = null, labelAt = () => null, names = {}, blocked = false }) {
+    const want = new Map();
+    if (!blocked && t !== null && player) {
+      for (const row of rows) {
+        if (!row.live || row.asleep || row.held) continue;
+        const id = moodAt(segments, row.id, t);
+        if (id && Math.hypot(row.x - player.x, row.z - player.z) <= WALK_NEAR_RADIUS) want.set(row.id, id);
+      }
+    }
+    for (const [npc, el] of cards) if (want.get(npc) !== el.dataset.line) { el.remove(); cards.delete(npc); if (!want.has(npc)) eased.delete(el.dataset.line); }
+    const box = container.getBoundingClientRect();
+    for (const [npc, id] of want) {
+      let el = cards.get(npc);
+      if (!el) { el = card(npc, id, names); cards.set(npc, el); paint(el, id); }
+      const at = labelAt(npc);
+      if (!at) { el.hidden = true; continue; }
+      el.hidden = false;
+      // Under the name, kept inside the scene with a 16px gutter (narrow screens).
+      const w = el.offsetWidth, gutter = 16, x = Math.max(gutter, Math.min(box.width - w - gutter, at.x - w / 2));
+      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(at.y + 14)}px)`;
+      if (!announced.has(id)) { announced.add(id); if (live) live.textContent = `${names[npc] || npc}: ${LINE_BY_ID.get(id).levels[lineLevel({ kind: 'mood', npc, id })]}`; }
+    }
+    return [...want.entries()].map(([npc, id]) => ({ npc, id, eased: eased.has(id) }));
+  }
+  return { update };
+}
