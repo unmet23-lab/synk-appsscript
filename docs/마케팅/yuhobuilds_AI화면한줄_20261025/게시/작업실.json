@@ -1,0 +1,31 @@
+{
+  "도구": "tools/작업실예약.js",
+  "작업실": "https://workspace.synk.im",
+  "시작": "2026-10-24T23:51:15.595Z",
+  "자산": {
+    "docs/마케팅/yuhobuilds_AI화면한줄_20261025/remotion/out/ig-v9_final.mp4": "cedd8829-f1be-44df-9e1d-1d6e092b549b",
+    "docs/마케팅/yuhobuilds_AI화면한줄_20261025/remotion/out/yt-v9_final.mp4": "48a72722-735f-406c-9bb0-7a57c835c9cf"
+  },
+  "판": [
+    {
+      "계정": "yuhobuilds-instagram",
+      "채널": "8d6d4d37-5a44-47ce-a757-9411ed15523c",
+      "작업": "d493be07f6f73d7d116660afa5d54794f24420e9a4d5d38b3213bda0a0184037",
+      "시각": "2026-10-25T21:00+09:00",
+      "영상": "docs/마케팅/yuhobuilds_AI화면한줄_20261025/remotion/out/ig-v9_final.mp4"
+    },
+    {
+      "계정": "yuhobuilds-youtube",
+      "채널": "452a3e17-7ec1-4f1e-8dbb-fe5d34380a9f",
+      "작업": "45808166b3c00673f6599c12d810eaeabdaed7803c626690b08030dc7a6b07ee",
+      "시각": "2026-10-25T21:00+09:00",
+      "영상": "docs/마케팅/yuhobuilds_AI화면한줄_20261025/remotion/out/yt-v9_final.mp4"
+    }
+  ],
+  "postId": "d576eca5-61b5-4281-9d9d-c51565e71b14",
+  "링크": {
+    "id": "808ad512-5a25-4fd6-8b0b-79adefd723fc",
+    "만료": "2026-10-26T12:51:26.714Z"
+  },
+  "끝": "2026-10-24T23:51:25.212Z"
+}
