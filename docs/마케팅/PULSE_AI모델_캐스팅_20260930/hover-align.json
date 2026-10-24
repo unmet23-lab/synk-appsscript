@@ -180,6 +180,21 @@
     0.3508
    ],
    "scale": 0.9912
+  },
+  {
+   "code": "M06",
+   "key": "M06",
+   "hero": "C:/SYNK-LoRA/casting/wave2_20261023/M06_h1.jpg",
+   "smile": "C:/SYNK-LoRA/casting/wave2_20261023/세트/M06_exp-smile.jpg",
+   "heroEye": [
+    0.508,
+    0.3391
+   ],
+   "smileEye": [
+    0.5233,
+    0.3354
+   ],
+   "scale": 1.0102
   }
  ]
 }

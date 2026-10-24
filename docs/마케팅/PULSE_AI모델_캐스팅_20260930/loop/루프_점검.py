@@ -11,7 +11,9 @@ import numpy as np
 from PIL import Image
 
 CAST = r"C:\SYNK-LoRA\casting\wave1_20261019"
-HERO = {"F05": "F05_c2.jpg", "M04": "M04_c2.jpg", "F06": "F06_c1.jpg", "F07": "F07_c1.jpg", "M05": "M05_h1.jpg"}
+HERO = {"F05": "F05_c2.jpg", "M04": "M04_c2.jpg", "F06": "F06_c1.jpg", "F07": "F07_c1.jpg", "M05": "M05_h1.jpg",
+        # 2차(10-24): 다른 폴더라 절대 경로(os.path.join이 CAST를 버린다) — 루프_H3.py와 같다
+        "M06": r"C:\SYNK-LoRA\casting\wave2_20261023\M06_h1.jpg"}
 USE = 106  # 0~105번
 # 눈 감은 프레임 수(10-21 Fable 게이트 뒤): 눈 높이/폭이 첫 장의 60% 아래인 프레임. 0.2초 깜빡임은 5장 안팎이고, 은정 s42(0.65초)는 16장,
 # 채원 s42는 두 번 감았다. MediaPipe 얼굴 표지(C:\SYNK-LoRA\tools\measure 가상환경)가 없으면 이 칸은 비운다.

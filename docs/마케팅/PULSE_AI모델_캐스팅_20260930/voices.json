@@ -481,5 +481,47 @@
   "note": "밝고 다정한 톤 · 캠핑·주말 요리",
   "script": "주말엔 아내랑 캠핑을 가요. 준비는 간단하게, 시간은 넉넉하게. 그게 제 방식이에요.",
   "made": "2026-10-20 · .tmp/voice-pick-wave1-20261020 (측정으로 고름) · 10-21 유호님 확정"
+ },
+ {
+  "name": "M06-voice-1",
+  "engine": "typecast",
+  "voice": "성현",
+  "voiceId": "tc_6502c170032896b4d457fe01",
+  "model": "ssfm-v30",
+  "emotion": "happy",
+  "tempo": 1.03,
+  "seed": 1018,
+  "label": "밝고 청량한",
+  "note": "밝고 청량한 톤 · 음료·간식",
+  "script": "슛 하나만 더 넣고요! 운동 끝나고 마시는 이 한 모금, 이게 진짜 청량이죠.",
+  "made": "2026-10-23 · C:/SYNK-LoRA/casting/wave2_20261023/목소리 (측정으로 고름)"
+ },
+ {
+  "name": "M06-voice-2",
+  "engine": "typecast",
+  "voice": "성현",
+  "voiceId": "tc_6502c170032896b4d457fe01",
+  "model": "ssfm-v30",
+  "emotion": "normal",
+  "tempo": 1,
+  "seed": 1018,
+  "label": "편하고 친근한",
+  "note": "편하고 친근한 톤 · 앱·게임",
+  "script": "슛 하나만 더 넣고요! 운동 끝나고 마시는 이 한 모금, 이게 진짜 청량이죠.",
+  "made": "2026-10-23 · C:/SYNK-LoRA/casting/wave2_20261023/목소리 (측정으로 고름)"
+ },
+ {
+  "name": "M06-voice-3",
+  "engine": "typecast",
+  "voice": "성현",
+  "voiceId": "tc_6502c170032896b4d457fe01",
+  "model": "ssfm-v30",
+  "emotion": "toneup",
+  "tempo": 1,
+  "seed": 1018,
+  "label": "힘차게 응원하는",
+  "note": "힘차게 응원하는 톤 · 헬스·스포츠",
+  "script": "슛 하나만 더 넣고요! 운동 끝나고 마시는 이 한 모금, 이게 진짜 청량이죠.",
+  "made": "2026-10-23 · C:/SYNK-LoRA/casting/wave2_20261023/목소리 (측정으로 고름)"
  }
 ]

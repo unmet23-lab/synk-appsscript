@@ -875,6 +875,82 @@
       "hands": "holding a plain unlabeled stainless-steel tumbler with both hands",
       "voiceBrief": "30대 후반 남성, 믿음직하고 편안한 톤",
       "spec": "명세서/M05_준호.json"
+    },
+    {
+      "key": "M06",
+      "code": "M06",
+      "name": "한결",
+      "ageBand": "20대",
+      "hero": "C:/SYNK-LoRA/casting/wave2_20261023/M06_h1.jpg",
+      "heroEngine": "2차 확장 후보에서 유호님 선택(10-23, 코끝 점을 지운 판)",
+      "gender": "남",
+      "age": "20대 초반",
+      "concept": "스포티",
+      "tagline": "청량한 운동부 후배",
+      "impression": [
+        "청량한",
+        "상큼한",
+        "친근한"
+      ],
+      "fits": [
+        "음료·간식",
+        "앱·게임",
+        "헬스 입문·운동",
+        "러닝·단백질",
+        "캐주얼·운동복",
+        "남성 스킨케어 입문"
+      ],
+      "roles": [
+        "대학 운동부",
+        "러닝 크루 막내",
+        "헬스 입문자",
+        "게이머",
+        "편의점·카페 손님"
+      ],
+      "avoid": [
+        "섹시",
+        "정장 화보",
+        "수염"
+      ],
+      "height": 178,
+      "build": "슬림 운동형 · 수영 선수 체형(어깨 넓고 곧음)",
+      "sizes": {
+        "top": "100 (L)",
+        "bottom": "30",
+        "shoe": "270"
+      },
+      "skin": "밝은 웜톤, 볼 홍조, 수염 없음",
+      "eyes": "무쌍(쌍꺼풀 선 없음), 웃으면 반달 눈",
+      "hairBase": "검은 크롭, 흐트러진 앞머리",
+      "outfit": "plain crisp white cotton crew-neck t-shirt",
+      "hair": [
+        {
+          "label": "기본 · 짧은 크롭",
+          "prompt": ""
+        },
+        {
+          "label": "투블럭 · 시스루 앞머리",
+          "prompt": "black hair grown slightly longer into a neat two-block cut with airy see-through bangs falling over the forehead, the sides still short so his ears stay visible"
+        },
+        {
+          "label": "쉼표 머리 · 소프트 펌",
+          "prompt": "black side-parted comma hair with a soft perm, the fringe curling outward on one side so half of the forehead shows, short sides with his ears visible"
+        }
+      ],
+      "looks": [
+        {
+          "label": "러닝 윈드브레이커 · 쇼츠(운동)",
+          "prompt": "a black lightweight running windbreaker half-zipped over a white tee, black running shorts over black running tights and plain white running shoes, a sporty training look"
+        },
+        {
+          "label": "오버핏 후드 · 카고 팬츠(캠퍼스)",
+          "prompt": "an oversized olive-green hoodie with loose black cargo pants and plain white sneakers, a relaxed campus street look"
+        }
+      ],
+      "context": "on an outdoor basketball court on a sunny afternoon after a pickup game, sitting on a courtside bench, drinking from a plain unlabeled clear water bottle and laughing, a plain basketball with no printing at his feet, the court and fence softly out of focus",
+      "hands": "holding a plain unlabeled clear glass bottle of sparkling water with both hands, small condensation droplets on the glass",
+      "voiceBrief": "20대 초반 남성, 밝고 청량한 톤",
+      "spec": "명세서/M06_한결.json"
     }
   ]
 }

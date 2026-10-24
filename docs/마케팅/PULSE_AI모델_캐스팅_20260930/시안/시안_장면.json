@@ -53,6 +53,16 @@
     {"id": "S2", "이름": "주말 요리 · 가전·주방", "text": "chest-up, in a bright home kitchen on a weekend, wearing a dark green apron over a grey t-shirt, {can} in his right hand beside his shoulder, warm smile, daylight from a window"},
     {"id": "S3", "이름": "회의실 팀장 · 건강보조·생활", "text": "waist-up, standing in a bright modern office meeting room, wearing a light blue shirt with the sleeves rolled up, {can} in his right hand held a little toward the camera, friendly confident smile, soft daylight"}
    ]
+  },
+  "M06": {
+   "lora": "m06_hangyeol_v2\\m06_hangyeol_v2.safetensors",
+   "앞": "pls_m06, a Korean man in his early twenties",
+   "뒤": "short cropped black hair with a messy fringe, monolid eyes, slightly protruding ears, straight nose, slightly angular boyish jaw, clean-shaven, no moles anywhere on his face, soft coral-pink lips, warm skin tone, lean athletic build, 85mm portrait lens, realistic photo",
+   "장면": [
+    {"id": "S1", "이름": "농구장 저녁 · 음료", "text": "waist-up, standing on an outdoor basketball court at dusk after a game, wearing a white t-shirt, {can} in his right hand at chest height, bright laughing smile, warm evening light, the court and fence softly out of focus"},
+    {"id": "S2", "이름": "헬스장 운동 뒤 · 헬스 입문", "text": "chest-up, sitting on a bench in a bright gym after a workout, a white towel over one shoulder, wearing a black training t-shirt, {can} in his right hand at chest height, relaxed soft smile, soft daylight from big windows"},
+    {"id": "S3", "이름": "캠퍼스 잔디 오후 · 앱·간식", "text": "waist-up, sitting on the grass of a university campus on a sunny afternoon, wearing a navy varsity jacket with no letters over a white t-shirt, {can} in his right hand held a little toward the camera, friendly closed-mouth smile, trees softly out of focus"}
+   ]
   }
  }
 }

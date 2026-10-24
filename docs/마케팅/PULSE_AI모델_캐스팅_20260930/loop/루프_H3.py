@@ -1,4 +1,4 @@
-# 1차 다섯 명(F05 소연 · M04 민재 · F06 은정 · F07 채원 · M05 준호) 보드 루프를 로컬 MiniMax H3(ComfyUI 127.0.0.1:8188)로 뽑는다.
+# 1차 다섯 명(F05 소연 · M04 민재 · F06 은정 · F07 채원 · M05 준호)과 2차 M06 한결(10-24) 보드 루프를 로컬 MiniMax H3(ComfyUI 127.0.0.1:8188)로 뽑는다.
 #   1기 일곱 명 루프(Wan 3.0, README)처럼 시작 그림과 끝 그림을 같은 대표 사진으로 묶어 이음매를 없앤다.
 #   그래프·설정은 지유 광고 `../../PULSE_포트폴리오_제작준비_20261012/video/jiyu-skincare-20261018/영상_H3.py`와 같다:
 #   본체 minimax_h3_fl2va_pruned_int8_convrot · 글 인코더 qwen3vl_32b nvfp4_awq · 영상 VAE int8, res_multistep · simple ·
@@ -8,6 +8,7 @@
 # 쓰기: <ComfyUI venv python> -X utf8 루프_H3.py F05 M04 F06 F07 M05     ← 적은 순서대로 하나씩 넣고 끝날 때마다 받는다
 #       H3_SEED=7 … 루프_H3.py F06                                         ← 안 되면 시드만 바꿔 한 번 더
 #       H3_HOLD=1 H3_SEED=101 … 루프_H3.py M04 F07                         ← 이가 보이는 대표의 입·깜빡임을 더 못 박은 판
+#       H3_HOLD=2 H3_SEED=201 … 루프_H3.py M06                             ← 부정문 없이 「웃음을 사진처럼 그대로」만 적은 판(10-24)
 import json
 import os
 import shutil
@@ -29,7 +30,9 @@ W, H = 768, 1024
 LOG = os.path.join(OUT, "기록.txt")
 
 # 대표 사진은 명세서 「기준파일.대표사진」과 같다.
-HERO = {"F05": "F05_c2.jpg", "M04": "M04_c2.jpg", "F06": "F06_c1.jpg", "F07": "F07_c1.jpg", "M05": "M05_h1.jpg"}
+HERO = {"F05": "F05_c2.jpg", "M04": "M04_c2.jpg", "F06": "F06_c1.jpg", "F07": "F07_c1.jpg", "M05": "M05_h1.jpg",
+        # 2차(10-24): 다른 폴더라 절대 경로(os.path.join이 CAST를 버린다)
+        "M06": r"C:\SYNK-LoRA\casting\wave2_20261023\M06_h1.jpg"}
 
 # 인물 문장: 명세서 「바뀌면_안되는_것」·「얼굴」·LoRA 주의(나이 낱말, 준호 clean-shaven 등)에서 대표 사진에 보이는 것만.
 CHAR = {
@@ -44,6 +47,9 @@ CHAR = {
             "sun-tanned warm skin with light sun freckles across her nose and cheekbones, a dark grey sleeveless athletic top."),
     "M05": ("CHARACTER: a Korean man in his late thirties with short black hair neatly side-parted, a broad forehead, crow's "
             "feet when he smiles, clean-shaven with a smooth jaw, a navy crew-neck knit sweater."),
+    "M06": ("CHARACTER: a Korean man in his early twenties with short cropped black hair with a messy fringe, clean monolid eyes "
+            "with no double-eyelid crease, ears sticking out slightly from the sides of his head, a straight nose, a slightly "
+            "angular boyish jaw, rosy cheeks, clean-shaven, no moles on his face, a plain white crew-neck t-shirt."),
 }
 # 대표 사진의 웃음을 그대로 둔다(민재·채원은 이가 보이는 웃음, 나머지는 입 다문 미소).
 SMILE = {
@@ -52,12 +58,16 @@ SMILE = {
     "F06": "the gentle closed-mouth smile of the start image",
     "F07": "the bright open smile of the start image, upper teeth showing",
     "M05": "the calm closed-mouth smile of the start image",
+    "M06": "the bright open smile of the start image, upper teeth showing",
 }
-PRON = {"F05": "she", "M04": "he", "F06": "she", "F07": "she", "M05": "he"}
+PRON = {"F05": "she", "M04": "he", "F06": "she", "F07": "she", "M05": "he", "M06": "he"}
 # H3_HOLD=1(10-21 Fable 게이트 뒤): 이가 보이는 대표(민재·채원)는 가운데에서 입을 닫았다 다시 열고 눈을 두 번 감았다
 #   → 이가 계속 보이고 입술이 움직이지 않는다 · 0.2초 깜빡임 한 번을 못 박는다. 결과 이름은 <코드>_h3_hold_s<시드>.mp4
 HOLD = os.environ.get("H3_HOLD") == "1"
-TAG = "h3_hold" if HOLD else "h3"
+# H3_HOLD=2(10-24 한결): hold 판 세 시드(101~103)가 모두 1~3초에 웃던 입을 다물었다 오므렸다(말하는 입). 「말하지 않음 · 숨 한 번」 같은
+#   부정문·입 동작 낱말을 빼고 「사진 찍듯 웃음을 처음부터 끝까지 그대로 · 입술 · 윗니 · 턱이 첫 장 그대로」만 적은 판. 결과 <코드>_h3_hold2_s<시드>.mp4
+HOLD2 = os.environ.get("H3_HOLD") == "2"
+TAG = "h3_hold2" if HOLD2 else "h3_hold" if HOLD else "h3"
 
 GLOBAL = ("GLOBAL STYLE: Live-action footage from a casting reel, vertical 3:4, a head-and-shoulders portrait in front of a "
           "plain warm grey seamless studio backdrop. Real-time speed throughout, no slow motion, no time dilation. No fade in "
@@ -67,6 +77,8 @@ REF = ("REFERENCES: the start image is both the first frame and the last frame o
 TEX = ("TEXTURE AND REALISM: a real person filmed on set: unretouched skin with visible pores, slight asymmetry, natural skin "
        "color variation. No beauty filter, no airbrushed or glowing skin, no added grain, no added sharpening, no plastic sheen.")
 LIGHT = "LIGHT: Soft studio key light from camera left with gentle fill, exactly as in the start image; the light stays constant."
+# 한결 대표 사진은 사진 오른쪽이 밝다(세트_지시문.py와 같이 쪽을 적지 않는다)
+LIGHT_BY = {"M06": "LIGHT: Soft studio key light with gentle fill, exactly as in the start image; the light stays constant."}
 CAM = "CAMERA: A locked-off cinema camera on a tripod; the frame does not move at all. Keep the face readable and correctly focused."
 
 
@@ -78,9 +90,16 @@ def prompt(code):
            f"looks into the lens.{keep} {p.capitalize()} {blink} and takes one small, soft breath; a few strands of hair "
            f"stir very slightly. Expressions never morph. No talking, no humming, no laughing, no new expression, no nodding, "
            f"no head turn, no facial reshaping, the mouth keeps the same shape as in the start image.")
+    if HOLD2:
+        pos = "his" if p == "he" else "her"
+        act = (f"ACTING: A living photograph of someone holding a pose for a photo. {p.capitalize()} holds {SMILE[code]}, "
+               f"perfectly still from the first frame to the last, looking into the lens. In every frame {pos} lips, {pos} visible "
+               f"upper teeth and {pos} jaw stay exactly as in the start image, as if frozen in that smile. {p.capitalize()} "
+               f"blinks once, quickly, about halfway through the shot. A few strands of hair stir very slightly; {pos} head and "
+               f"shoulders stay still.")
     cons = ("CONSISTENCY: the same person, hair and clothes as the start image. Alone. Nothing new appears in the frame. No "
             "text, no logos, no subtitles.")
-    return "\n".join([GLOBAL, REF, TEX, LIGHT, CHAR[code], act, CAM, cons])
+    return "\n".join([GLOBAL, REF, TEX, LIGHT_BY.get(code, LIGHT), CHAR[code], act, CAM, cons])
 
 
 def prepare(code):
@@ -140,7 +159,7 @@ def run(code):
     name = prepare(code)
     pid = post("/prompt", {"prompt": graph(code, name), "client_id": str(uuid.uuid4())})["prompt_id"]
     t0 = time.time()
-    log(f"{code} 넣음 {pid} steps={STEPS} seed={SEED} frames={FRAMES} {W}x{H}{' hold' if HOLD else ''}")
+    log(f"{code} 넣음 {pid} steps={STEPS} seed={SEED} frames={FRAMES} {W}x{H}{' hold2' if HOLD2 else ' hold' if HOLD else ''}")
     while True:
         time.sleep(10)
         h = get(f"/history/{pid}")

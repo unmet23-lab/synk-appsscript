@@ -31,3 +31,8 @@
 - 사람 원본 60장 `C:\SYNK-LoRA\tools\ComfyUI\output\pulse_gate\mock\`, 키운 15장 `…\up\`, 합성 확인판 `C:\SYNK-LoRA\work\pulse_gate_20261021\comp\`.
 - 고른 최종 시안: `C:\SYNK-LoRA\validation\<모델 폴더>\gate_20261021\시안_S1~S3.png`(캐스팅북 「장면」 칸 앞 세 장, `catalog.json` scenes p1~p3).
 - 비용: 0(로컬 5090 · 블렌더 CPU).
+
+## 2차 한결 M06(10-24)
+
+- 같은 순서(캔 렌더는 1차 것을 그대로 씀). 장면은 `시안_장면.json`의 M06 — S1 농구장 저녁 · 음료, S2 헬스장 운동 뒤 · 헬스 입문, S3 캠퍼스 잔디 오후 · 앱·간식. 지시문 앞에 `pls_m06, a Korean man in his early twenties`를 늘 함께 둔다(LoRA 판정 주의 — 트리거만 쓰면 여자로 나온다), 뒤에 무쌍 · 살짝 나온 귀 · 「no moles anywhere on his face」.
+- 고른 시드: S1 s12 · S2 s13 · S3 s13(시드 넷 표 `C:\SYNK-LoRA\work\pulse_gate_m06_20261024\comp\_sheet_M06.jpg`). 키운 판 `C:\SYNK-LoRA\tools\ComfyUI\output\pulse_gate\up\M06_S#_s##_00001_.png`, 합성 확인판 · 캔 확대 `C:\SYNK-LoRA\work\pulse_gate_m06_20261024\comp\`, 최종 `C:\SYNK-LoRA\validation\M06_hangyeol\gate_20261024\시안_S1~S3.png`. [판정](../fable/2차_영상게이트_한결_20261024.md).

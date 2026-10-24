@@ -41,7 +41,7 @@ test('제품 설명의 낱말은 긴 낱말부터 찾고 영문은 낱말 경계
 test('거르기는 고른 조건만 보고, 업종·키 구간도 거른다', () => {
   assert.equal(L.filterModels(models, { gender: '전체', age: '전체', concept: '전체', height: '전체', industry: '' }).length, models.length);
   assert.deepEqual(L.filterModels(models, { gender: '여', industry: 'food' }).map((m) => m.code), ['F02', 'F04', 'F05'], '소연은 간편식으로, 은정의 「건강기능식품」은 식음료가 아니다');
-  assert.deepEqual(L.filterModels(models, { industry: 'sports' }).map((m) => m.code), ['F07']);
+  assert.deepEqual(L.filterModels(models, { industry: 'sports' }).map((m) => m.code), ['F07', 'M06'], '2차 한결(10-24)이 스포츠의 남자 자리');
   assert.deepEqual(L.filterModels(models, { industry: 'health' }).map((m) => m.code), ['F05', 'F06', 'M05']);
   assert.deepEqual(L.filterModels(models, { height: '180cm대' }).map((m) => m.code).sort(), ['M01', 'M02', 'M03']);
   assert.equal(L.heightBand(165), '160cm대');
@@ -109,6 +109,26 @@ test('브리프 추천: 1차 확장 업종(건강식품·생활/주방·육아·
   assert.ok(!all('지적인 금융 앱 광고').includes('M03') && !all('친근하고 편안한 일상 브이로그').includes('M03'));
   assert.equal(all('4차원 캐릭터 광고')[0], 'M03');
   assert.equal(all('사차원 캐릭터 광고')[0], 'M03', '한글로 적은 「사차원」도 알아듣는다');
+});
+
+test('브리프 추천: 2차 한결(10-24)이 음료·운동·게임·남성 스킨케어를 받는다', () => {
+  const T = { ...TAX, genderWords: catalog.genderWords };
+  const top = (product) => L.recommend(models, { product }, T, 3).map((r) => r.model.code);
+  assert.deepEqual(byCode('M06').industries, ['food', 'beauty', 'fashion', 'tech', 'sports']);
+  assert.deepEqual(byCode('M06').moods, ['fresh', 'friendly']);
+  assert.equal(top('스포츠 음료')[0], 'M06', '음료와 운동이 둘 다 맞는 한결이 맨 위');
+  assert.deepEqual(top('남성 운동복'), ['M06']);
+  assert.ok(top('청량한 사이다').includes('M06'), '사이다·드링크도 음료로 읽는다');
+  assert.ok(top('에너지 드링크').includes('M06'));
+  assert.ok(top('모바일 게임').includes('M06') && top('남성 로션').includes('M06'));
+  assert.equal(L.recommend(models, { industry: 'food', gender: '남', moods: ['fresh'] }, T, 1)[0].model.code, 'M06', '남자 상큼 음료 광고는 한결');
+  // 업종 문구 「음료·간식」인 한결이 간식 설명에서 빠지지 않는다(10-24 Fable P2 — 간식·과자가 「디저트」 세부 분야에만 있었다)
+  assert.equal(top('간식')[0], 'M06', '문구에 「간식」이 그대로 있는 한결이 맨 위');
+  for (const w of ['편의점 간식', '과자', '스낵', '에너지바']) assert.ok(top(w).includes('M06'), `${w}에 한결`);
+  assert.ok(top('과자').includes('F02') && top('딸기 아이스크림')[0] === 'F02', '디저트 하린은 그대로');
+  assert.ok(!top('딸기 아이스크림').includes('M06'), '아이스크림은 디저트 — 간식 문구로 새지 않는다');
+  // 수치 칸(390px 3열)은 기본 헤어의 첫 조각만 쓴다 — 한결은 다섯 자 안(10-24 Fable P2)
+  assert.ok(byCode('M06').hairBase.split(/[,·(]/)[0].trim().length <= 5);
 });
 
 test('브리프 추천: 성별 조건과 빈 브리프', () => {
@@ -248,7 +268,7 @@ test('모델 북은 사진만: 움직임 탭도, 모델별 참고 영상 자료�
 test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문장·없는 목소리를 막는다(타입캐스트는 부르지 않는다)', async () => {
   const say = require(path.join(dir, 'say-server.cjs'));
   const table = say.voiceTable();
-  assert.deepEqual(Object.keys(table).sort(), ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'M01', 'M02', 'M04', 'M05'], '유호(실제 목소리) 말고 열한 명이 타입캐스트 목소리');
+  assert.deepEqual(Object.keys(table).sort(), ['F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'M01', 'M02', 'M04', 'M05', 'M06'], '유호(실제 목소리) 말고 열두 명이 타입캐스트 목소리');
   assert.deepEqual(Object.keys(table.M02), ['0', '1', '2']);
   assert.ok(!JSON.stringify(table).includes('Gemini'));
   assert.equal(say.clean(' 안녕\n하세요<b>\u0007 '), '안녕 하세요 b');

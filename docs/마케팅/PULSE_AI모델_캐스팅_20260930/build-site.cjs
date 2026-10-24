@@ -220,7 +220,7 @@ const homeFiles = {
   'assets/favicon-32.png': fs.readFileSync(faviconFile),
 };
 for (const [rel, buf] of Object.entries(homeFiles)) { fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true }); fs.writeFileSync(path.join(out, rel), buf); }
-// 공유 미리보기 그림(1200×630): 열두 명 대표 사진을 명단 순서로 6×2 칸에
+// 공유 미리보기 그림(1200×630): 대표 사진을 명단 순서로 두 줄 칸에(열세 명이면 7 + 6)
 execFileSync('python', [path.join(here, 'make-og.py'), path.join(out, 'assets/og.jpg'), ...data.models.map((m) => path.join(out, m.hero.l || m.hero.s))], { stdio: 'inherit' });
 const ogToken = require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(out, 'assets/og.jpg'))).digest('hex').slice(0, 12);
 const desc = (template.match(/<meta name="description" content="([^"]*)">/) || [])[1] || '';
