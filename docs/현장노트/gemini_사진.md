@@ -343,7 +343,7 @@
 - 증상: 10-19 한강 v40 가편집에서 유호님이 「여기 내 뒷모습이 너무 뚱뚱하게 나왔어」(K28b 뒷모습). 같은 몸 문장으로 구운 K31 아치 터널 뒷모습도 Fable 시청자 검수에서 같은 문제로 짚혔다.
 - 원인(추정, Fable 진단): 인물 블록의 「broad shoulders … size 110 (XXL)」을 모델이 옷이 아니라 몸 전체 크기로 읽었다. 뒤에 바짝 붙은 광각 카메라가 몸을 더 부풀렸다(K31). Higgsfield에서도 체격 낱말이 얼굴을 넓혔다(`higgsfield.md`).
 - 고침: 치수를 빼고 몸 모양을 쓴다 — 「180 cm, broad shoulders on a lean, fit frame - flat stomach, a visible waist taper under the open jacket, narrow hips, long slim straight legs; the jacket hem sits at hip level and does not flare. Not heavy, not chubby, not a bodybuilder.」(`재촬영_v40/도구/장면키프레임_지시.py` HIM). 뒷모습 컷은 카메라를 반 걸음 물려 35mm·허벅지 중간까지 담는다. 그래도 두툼하면 같은 대화에서 「몸만 더 날씬하게」(위 항목).
-- 다시 확인: 옛 판과 나란히 놓고 허리선이 보이는지, 재킷 밑단이 엉덩이에서 퍼지지 않는지(10-19 K14 2판·K28b 3차·K31 2판).
+- 다시 확인: 옛 판과 나란히 놓고 허리선이 보이는지, 재킷 밑단이 엉덩이에서 퍼지지 않는지(10-19 K14 2판·K28b 3차·K31 2판). 10-24에도 치수 든 체격 줄(「180 cm, size 110 (XXL) tops … broad shoulders … fuller chest」)로 구운 Gemini 물러남 판은 머리 길이 대비 가슴 폭 2.57로, 유호님이 고른 캐스팅 08(2.28)보다 컸다 — 유호님 체격 기준은 「물러남 마른 판」이다([LoRA 학습](LoRA_학습.md) 10-24 「유호 LoRA 체격이 컷마다 · 판마다 흔들린다」).
 
 ### 같은 대화에서 「손만 빼 달라」 같은 작은 고침도 앞 그림을 그대로 돌려준다
 - 증상: 10-18 지유 컷 7에서 「앞 그림 그대로 두고 대리석 위 손만 빼 달라」고 같은 대화에 보내자, 답 그림이 앞 그림과 똑같았다(내려받은 파일 이름 `Gemini_Generated_Image_fl9i5i…`까지 같음). 같은 대화의 첫 고침(대칭 미소)은 먹었지만 손 위치 지시는 두 번 다 무시됐다.
@@ -394,7 +394,7 @@
 
 ### 앞 컷과 같은 카메라로 다음 순간을 그리게 하면 새 대화 생성은 카메라가 돌아간다
 - 증상: 10-19 저녁 한강 K03(어깨빵 직후 넘어짐)을 K01b 8판(옆에서 본 투샷, 뒤 난간이 가로로)을 Image 1로 주고 「the same camera side … keep exactly that place」라고 새로 생성하자, 사람 좌우는 맞았지만 카메라가 45도쯤 비스듬해져 난간이 오른쪽 앞에서 뒤로 빠졌다(K03 5판).
-- 원인: 새 생성은 참고 그림을 「장소·인물 참고」로만 쓰고 구도는 다시 짠다(위 「같은 방을 새 카메라 자리에서」와 반대 방향의 같은 결).
+- 원인: 새 생성은 참고 그림을 「장소·인물 참고」로만 쓰고 구도는 다시 짠다(아래 「같은 대화에서 카메라를 크게 옮겨 달라면 같은 그림이 다시 나온다」와 반대 방향의 같은 결. Nano Banana Pro 편집의 같은 버릇은 [Higgsfield](higgsfield.md) 「편집은 한 가지만 바꿀 때 지켜진다 …」).
 - 고침: 앞 컷을 고칠 그림으로 두고 「Edit the first attached photo (Image 1). Keep exactly the same camera position and height, … Pull the camera back just enough to fit the whole action. Change only the moment - …」로 순간만 바꾸면 카메라·배경이 그대로 남았다(6판). 이때 화면 밖이던 것(그의 신발)은 새로 그리며 틀릴 수 있어 같은 대화에서 「신발만 흰 운동화로」를 한 번 더 했다.
 - 다시 확인: 두 컷을 나란히 놓고 배경의 수평선·난간 선이 같은 높이·같은 기울기인지.
 - 10-19 밤 더: 이렇게 앞 컷에서 이어 그린 그림은 앞 컷의 잘못(까몽이 가방 옆면, 뿌연 하늘)도 그대로 물려받는다 — 고칠 때 이어진 컷을 같이 고친다. 물건을 「옮겨 달라」면 하나가 더 생길 수 있다(K03 8판: 공중에 하나 + 가슴 끈에 하나) → 같은 대화에서 「exactly ONE …, keep the one …, remove the second …」로 하나만 남기면 됐다.

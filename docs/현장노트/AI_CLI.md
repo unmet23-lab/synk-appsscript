@@ -36,7 +36,7 @@
 
 ## 목차
 
-[Gemini·agy](#geminiagy) · [Claude API](#claude-api) · [Claude Code 자동 모드](#claude-code-자동-모드) · [Claude 앱 세션](#claude-앱-세션) · [Claude 서브에이전트](#claude-서브에이전트) · [Hermes(텔레그램 팁 봇)](#hermes텔레그램-팁-봇) · [Codex 예약](#codex-예약) · [Codex 세션 기록](#codex-세션-기록) · [Claude Code·공식 CLI 읽기(계정판)](#claude-code공식-cli-읽기계정판) · [지난 기록](지난기록/AI_CLI.md)
+[Gemini·agy](#geminiagy) · [Claude API](#claude-api) · [Claude Code 자동 모드](#claude-code-자동-모드) · [Claude 앱 세션](#claude-앱-세션) · [Claude 서브에이전트](#claude-서브에이전트) · [Hermes(텔레그램 팁 봇)](#hermes텔레그램-팁-봇) · [Codex 예약](#codex-예약) · [Codex 세션 기록](#codex-세션-기록) · [Codex 데스크톱 앱](#codex-데스크톱-앱) · [Claude Code·공식 CLI 읽기(계정판)](#claude-code공식-cli-읽기계정판) · [지난 기록](지난기록/AI_CLI.md)
 
 ## Gemini·agy
 
@@ -282,6 +282,12 @@
 - 다시 확인: 준비 출력이 「뺌 0」·「차이 N곳(N>0)」이고 `캡처/후/<기기>/<이름>.txt`가 새 글이다.
 - 덧붙임(같은 날, 기준 그림 갱신의 GPT 검수): 배포 점검 기준 그림 두 장을 바꾸는 백엔드 묶음(`준비 <이름> .github --종류 백엔드 … --배포후보 <기준후보>`)을 GPT가 「P01·P03은 이미지 원본을 확보하지 못했다 · 옛 manifest가 없어 다른 항목이 그대로인지 못 봤다」며 `complete:false`로 내 「덜 읽음」이 됐다(`radio-listen-baseline-20261024`). 배경에 「그림 둘은 경로·크기·sha256이 후보 목록·manifest와 맞는지만 보면 된다(그림 내용은 Claude가 열어 확인)」와 공개본 manifest(`git -C <공개 도구 사본> show <공개 커밋>:.github/site-check/baseline/manifest.json`)와 새 manifest의 바뀐 값 목록을 넣어 다시 준비하자 93초에 읽음·0건이었다(`radio-listen-baseline-20261024-r2`).
 
+### 이 PC agy 로그인은 키 입력 화면(TTY)이 있어야 해서 Claude의 셸 도구로는 못 끝낸다 — node-pty 가짜 터미널로 띄우고, 코드는 PC 화면의 작은 입력 창으로 받는다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-17 AI 구독 계정판 작업에서 이 PC agy 로그인을 Claude가 대신 띄워야 했다. 로그인은 키 입력 화면(TTY)에서만 끝나는데 Claude의 Bash·PowerShell 도구는 TTY가 아니다. 앱 터미널 탭에 띄우면 그 세션 창이 열려 있지 않을 때 유호님이 탭을 찾지 못한다.
+- 원인: agy에는 로그인 옵션이 없고 로그인은 대화형 화면의 `/login`으로만 한다(위 「agy가 어느 계정으로 도는지 …」). 브라우저 승인 뒤 나온 코드를 그 화면에 넣어야 끝난다.
+- 고침: `%APPDATA%\npm\node_modules\@google\gemini-cli\node_modules\@lydell\node-pty`로 가짜 터미널을 만들어 agy를 띄우고, 브라우저 승인 뒤 나오는 코드는 유호님이 넣게 PC 화면 맨 위에 작은 입력 창(WinForms TopMost)을 띄워 받는다. Claude는 인증 코드를 대신 넣지 않는다. 서버 agy도 같은 꼴(pty 연결기 + 붙여넣기 창)로 한다 — 위 「SSH로 띄운 agy 로그인은 …」.
+- 다시 확인: 10-24 읽기만 — `@lydell` 아래에 `node-pty`·`node-pty-win32-x64`가 있고, `agy --help`(WinGet 판)에 로그인·인증 옵션이 없다. 실제 로그인은 계정을 건드리는 일이라 (10-24 메모에서 옮김, 다시 확인 전).
+
 ## Claude API
 
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
@@ -373,6 +379,12 @@
 - 고침: 우회하지 않고 같은 일을 전용 도구로 했다 — 고침은 Read 뒤 Edit, 찾기는 Grep 도구. 둘 다 통과했고, 그 폴더의 `node --test`(시험 실행)도 통과했다. 운영 반영(릴리스)은 이것과 별개로 회사 릴리스 절차를 따른다.
 - 다시 확인: 회사 원문 한 줄을 Edit로 고친 뒤 `git diff --stat`에 그 파일만 보이는지 본다.
 
+### 예약 작업 바꾸기·세션 공유 미러 읽기가 「바로 해결 가능하면 해결해」로는 「Account & Standing-Rule Changes」로 막히고, 한동안 `git log`·`ls`까지 막힌다 — 바꿀 작업과 값을 적은 문장에 「승인」 한 마디로 통과했다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-20 유호님 「바로 해결 가능하면 해결해」 뒤 Windows 예약 작업 바꾸기(`Set-ScheduledTask`)와 세션 공유 미러(`%LOCALAPPDATA%\claude-session-share`) 읽기가 「Account & Standing-Rule Changes」로 거절됐다. 그 직후 한동안 무해한 `git log`·`ls`까지 막혔다(저장소 안 Read·Edit·`node --check`는 됐다).
+- 원인: 기본 soft_deny 「Account & Standing-Rule Changes」는 계정 보안·접근을 바꾸거나 사용자 없이 나중에 도는 규칙(예약 작업·자동화·웹훅)을 만드는 일에, 바꿀 설정·규칙을 이름 댄 사용자 말을 요구한다. 관련 일을 시키는 말(「받은편지함 정리해」)은 설정을 이름 댄 것으로 치지 않는다. 뒤의 읽기 거절은 앞 호출의 맥락으로 판정한 것으로 보인다(추정 — 위 「회사 DB를 …」·「Self-Modification」 항목과 같은 꼴).
+- 고침: 10-21에는 바꿀 작업과 값을 적은 문장을 Claude가 써서 여쭸다(「SYNK GitHub 커밋 백업 예약을 우선순위 5로 올리고 시작을 2시간마다 :45로 옮겨 줘」). 유호님 「승인」 한 마디로 통과했고, 바꾸기 전 작업 XML을 보관했다. 예약 작업·계정 도구·전역 설정은 처음부터 이렇게 승인을 받고 시작하고, 다른 세션에 대신 시키지 않는다(권한 세탁). 다른 세션이 전한 승인은 이 세션의 판정기가 받지 않는다(위 「회사 DB를 …」의 덧붙임들, [Higgsfield](higgsfield.md) 「다른 세션이 전해 준 크레딧 승인으로는 …」). 승인이 다른 세션에서 필요하면 처음부터 「그 세션을 열어 거기서 보내 주세요」라고 하고, 그 세션이 청한 문장을 `search_session_transcripts`로 찾아 복사할 수 있게 코드 블록으로 드린다(10-23 유호님 「뭘 하라는거야?」). talk SQL 읽기 허용 줄은 10-19 비평 지적(쓰기가 섞인 CTE·개인정보)으로 뺐다 — 무인 모니터링을 만들 때 읽기 전용 거래로 도는 도구와 함께 다시 넣는다. 판정기 설정 되돌리기는 [관문·자동화 한 장](../_ops/관문_자동화.md) 「자동 모드 판정기」 줄.
+- 다시 확인: 10-24 읽기만 돌림 — `claude auto-mode defaults`의 「Account & Standing-Rule Changes」 줄에 scheduled jobs와 「must name: the setting or rule being changed」가 있다. `Get-ScheduledTask`에서 「SYNK GitHub 커밋 백업」이 우선순위 5·시작 :45·2시간 반복이다(10-21 바꾼 그대로). `~/.claude/settings.json`의 `autoMode.allow` 다섯 줄에 SQL 읽기 허락이 없고, 상시 허락 줄은 「not SQL reads of customer tables」로 뺀다. 판정기가 포괄 요청을 지금도 막는지, 상시 허락 줄(10-21)을 넣기 전부터 떠 있던 CLI가 새 설정을 읽는지는 (10-24 메모에서 옮김, 다시 확인 전).
+
 ## Claude 앱 세션
 
 ### 스스로 보관한 세션이 부모 세션에는 「끝나기 전에 사용자가 보관했다」로 온다 (2026-10-20 Claude)
@@ -408,8 +420,8 @@
 ### 부모를 보관하면 곁 세션도 다 같이 보관된다고 보면 틀린다 — 일하는 곁 세션은 남고, 쉬는 곁 세션은 유호님 답을 기다려도 같이 보관된다 (2026-10-20 Claude)
 - 증상: /이어서 보낼 글의 「보관하면 그 세션들도 같이 보관된다」를 읽고, 곁 세션이 일하는 동안 보관을 미룬 세션이 있었다(db517ab4 「보관하면 그 두 세션도 같이 보관되므로 보관하지 않고 그대로 둡니다」). 그런데 10-20 9df9048b를 보관한 뒤에도 일하던 곁 세션 1f572be7은 그대로 남았다.
 - 원인: `archive_session`은 끝난(쉬고 있고 자기 PR이 없는) 곁 세션과 워크트리를 같이 쓰는 곁 세션만 같이 보관한다. 일하는 곁 세션은 남기고, 워크트리를 같이 쓰는 곁 세션이 일하면 부모 보관을 거절한다(도구 설명). 쉬는 곁 세션에는 유호님 답을 기다리는 세션과 Stop으로 멈춘 세션도 든다.
-- 고침: /이어서 보낼 글을 실제 동작대로 바꿨다. 일하는 곁 세션은 남지만 결과를 받아 확인할 세션이 없어지므로 끝날 때까지 기다린다. 쉬는 곁 세션은 같이 보관되므로, 유호님 지시를 기다리거나 일이 남은 세션이 있으면 보관하지 않는다. /이어서의 바로 보관도 곁 세션이 그 아래까지 모두 보관 칸일 때만 한다.
-- 다시 확인: 쉬는 곁 세션이 있는 부모를 보관한 뒤 `list_sessions(include_archived: true)`로 그 곁 세션의 `isArchived`를 본다.
+- 고침: /이어서 보낼 글을 실제 동작대로 바꿨다. 일하는 곁 세션은 남지만 결과를 받아 확인할 세션이 없어지므로 끝날 때까지 기다린다. 쉬는 곁 세션은 같이 보관되므로, 유호님 지시를 기다리거나 일이 남은 세션이 있으면 보관하지 않는다. /이어서의 바로 보관도 곁 세션이 그 아래까지 모두 보관 칸일 때만 한다. 조율 세션이 길어져 새 조율 세션에 넘길 때는 새 조율 세션이 시작된 뒤 그 세션(과 남길 곁 세션)을 `detach_session`으로 떼어 내고 나서 자신을 보관한다 — 떼지 않으면 쉬고 있는 곁 세션이 같이 보관된다(10-22~24 싱크타운, 10-24 메모에서 옮김).
+- 다시 확인: 쉬는 곁 세션이 있는 부모를 보관한 뒤 `list_sessions(include_archived: true)`로 그 곁 세션의 `isArchived`를 본다. `detach_session` 도구 설명(10-24 읽음)은 떼어 낸 세션이 부모와 함께 보관되지 않는다고 하고, 다른 세션의 워크트리를 같이 쓰는 곁 세션과 사람 없는 세션에서는 쓸 수 없다고 적는다.
 
 ### 앱 요약이 completed여도 마지막 보고에 남은 일이 적혀 있는 세션이 많다 (2026-10-20 Claude)
 - 증상: 세션 기록 `postTurnSummary.status_category`가 completed이고 `needs_action`이 빈 세션 56개의 마지막 보고를 읽었다. 「CI 미확인」, 「로그인 작업 미완료 — 유호님 몫으로 남겼습니다」, 「공개는 아직 하지 않았습니다」, 「후속 세션이 아직 작업 중」, 「origin CI 결과는 확인하지 않았어요 … 휴대폰에서 하실 것: 인스타 댓글 고정만 남았어요」가 있었다.
@@ -464,6 +476,30 @@
 - 원인: 세션은 스킬 목록을 보고 Skill 도구를 부르기보다 `SKILL.md`나 그 안의 `scripts`·`references`를 경로로 바로 읽는 일이 많다. 저장소 문서와 도구도 스킬 폴더 안의 엔진을 경로로 가리킨다.
 - 고침: 쓰임은 셋을 함께 센다 — ① Skill 호출(`rg -o -g '*.jsonl' '"name":"Skill","input":\{"skill":"[^"]+"' ~/.claude/projects`) ② 스킬 폴더 경로가 나온 세션 수를 날짜별로(`rg -l -g '*.jsonl' 'skills/<이름>/' ~/.claude/projects`) ③ 저장소 문서·도구·만족 사례 장부가 그 이름이나 경로를 가리키는지(`rg -l '<이름>' docs/현장노트 docs/마케팅 tools`). 콘텐츠 품질에 닿는 스킬은 셋 중 하나라도 걸리면 끄지 않는다(10-24 유호님 「낮아지면 안돼는데」). 끄더라도 지우지 않고 옮긴다.
 - 다시 확인: ②로 `skills/last30days/`를 세면 10-19부터 하루 9~21개 세션이 나온다(10-24 기준).
+
+### 검수에 든 Claude 사용량을 원문 jsonl의 줄마다 더하면 두세 배로 부푼다 — 같은 message.id가 생각·글·도구 호출 줄마다 되풀이된다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-24 검수 평가의 Claude 사용량을 `~/.claude/projects/**/*.jsonl`의 assistant 줄마다 `message.usage`로 더하면 실제의 두세 배가 나온다. 그날 원문 둘에서 usage 줄 60·204개가 고유 message.id로는 28·99개였고, 출력 토큰은 175,060 대 67,336(2.6배)·168,779 대 72,603(2.3배), 입력(캐시 포함)은 2.1배였다.
+- 원인: 한 응답(message.id 하나)의 생각·글·도구 호출 블록이 줄마다 따로 적히고, 줄마다 같은 usage가 붙는다(두 원문에서 같은 id인데 usage가 다른 경우 0).
+- 고침: Claude 쪽은 message.id마다 한 번만 더하고 모델별, 본 세션과 하위 에이전트(`<세션 id>/subagents/agent-*.jsonl`, 첫 지시에 검수 낱말이 든 것)로 나눈다. 검수자 쪽은 공용 작업본 `.tmp/검수/*/`의 `지적표.json`(지적마다 출처·등급·처리), `아르곤-*.json`·`GPT-*.json`의 `usage`, `묶음.json`의 `만든때`·`종류`로 날짜·가족(이름에서 날짜·r2·v2를 뗀 것)·출처별로 센다. usage 칸 이름은 검수자마다 다르다 — 아르곤은 `cache_read_tokens`·`thinking_tokens`, GPT는 `cached_input_tokens`·`reasoning_output_tokens`. 계정 몫은 `get_usage`·`read_usage`로 본다.
+- 다시 확인: 10-24 돌림(읽기만) — 위 원문 둘의 줄 수 대 고유 id(60 대 28, 204 대 99)와 같은 id의 usage가 모두 같음을 셌다. `.tmp/검수/`는 290곳(지적표 284·아르곤 답 366·GPT 답 269·묶음 284, 지적 663건 — GPT 270·Fable 240·아르곤 137·Claude 16)이다.
+
+### 띄워진 곁 세션은 새 세션을 못 띄우고, 사람 말 없이 시작된 알림 차례에는 `start_session`이 거절된다 — 다음 세션은 조율 세션이 띄우고, 알림 차례면 카드로 올린다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-22~24 싱크타운 W0~W3를 여러 세션으로 이어 갈 때 조율 세션이 띄운 구현 세션들이 「새 세션을 띄울 수 없다」고 보고해 왔다. 조율 세션도 곁 세션이 끝나 저절로 깨어난 차례(자동 알림)에서는 `start_session`이 거절됐다.
+- 원인: 확인 못 함. `start_session` 도구 설명(10-24 읽음)에는 두 제한이 적혀 있지 않다. 바로 시작하는 `user_asked`는 사람이 말로 시킨 일에 쓰는 값이라, 사람 말이 없는 차례에서는 앱이 받지 않는 것으로 보인다(추정).
+- 고침: 다음 세션은 부모(조율 세션)가 띄운다. 알림 차례에서 거절되면 `initiation: "own_initiative"` 카드로 올려 두고, 유호님이 카드를 누르시거나 「띄워 줘」라고 하시면 그 `proposal_id`로 시작한다. 조율 세션을 새 조율 세션으로 넘길 때는 위 「부모를 보관하면 …」 항목대로 떼고 나서 보관한다.
+- 다시 확인: (10-24 메모에서 옮김, 다시 확인 전) — 새 세션을 띄워야 보이는 일이라 돌리지 않았다.
+
+### 계정을 바꿔 이어 쓴 세션이 다시 뜰 때마다 「Artifact comment monitor … didn't resume」 알림이 되풀이되고, 옛 계정 페이지의 db 문서는 새 주소로 따라오지 않는다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-17 계정을 바꿔 이어 쓴 세션이 다시 뜰 때마다 「Artifact comment monitor for 아티팩트 · <id> didn't resume: it couldn't restart in this session」 알림이 떴다(id는 게시 결과 `artifact_id`의 앞 8자리). 다시 올리다 404가 나는 일과는 다르다. 10-19 밤에는 계정이 바뀐 뒤 같은 페이지를 `url` 없이 올리자 새 아티팩트가 생기고 `db` 선언이 빠져 저장이 안 되는 페이지가 됐고, 옛 계정 페이지에 쌓인 사용자 표시(db 문서)도 없었다.
+- 원인: 아티팩트는 올린 계정(조직)에만 묶인다. 세션은 올린 아티팩트마다 댓글 지켜보기를 켜 두고(원문의 `artifact-comment-monitor` 줄, 마지막 armed만 유효) 재시작마다 되살리는데, 지금 계정이 못 여는 페이지는 실패한다. 404를 막는 전역 훅([관문·자동화 한 장](../_ops/관문_자동화.md) 「아티팩트 계정 훅」)은 지금 계정 몫 사본 주소로 돌려 올릴 뿐이고, db 문서는 계정 페이지마다 따로다.
+- 고침: 알림은 작업에 지장이 없다. 10-17 전역 `SessionEnd` 훅(`~/.ai-accounts/claude-artifact-account-hook.mjs session-end`)이 세션이 내려갈 때 켜진 지켜보기를 모두 끄는 줄을 덧붙인다 — 대가로 자동 답장은 재시작을 넘어 이어지지 않고, 그 페이지를 다시 올리면 켜진다. 시작 훅은 되살리기보다 늦게 돌아 안 된다. 종료 훅 전에 내려간 세션의 묵은 켜짐은 같은 훅의 `prune-idle`로 정리한다. 다시 올릴 때 그 계정 몫 사본 주소가 이미 있으면 그 주소를 `url`로 주고 `capabilities: {"db": {}}`를 함께 넘긴다(그 주소의 옛 파일을 이번 세션에서 안 봤다고 거절되면 `read`로 읽은 뒤). 파일 다시 올리기는 [브라우저·게시](브라우저_게시.md) 「새 주소에 파일 300개를 다시 올릴 때」. db 문서는 옛 계정일 때 `list`로 읽어 둔 내용을 새 페이지에 `batch`(50개씩, 이미 있는 문서는 `if_version`)로 옮긴다 — 계정이 바뀐 뒤에는 옛 페이지를 못 읽는다.
+- 다시 확인: 10-24 읽기만 — `~/.claude/settings.json` hooks에 이 훅이 PreToolUse `pre`·PostToolUse `post`·PostToolUseFailure `failure`(셋 다 matcher `Artifact`)와 SessionEnd `session-end`로 걸려 있고, 훅 파일에 `prune-idle`이 있다. 알림이 다시 안 뜨는지는 계정을 바꿔야 보여 (10-24 메모에서 옮김, 다시 확인 전).
+
+### 워크트리 세션은 `change_directory`로 공용 작업본에 옮겨 가지 못하고, `request_directory`로 접근을 받아도 공용 작업본 Edit이 막힐 때가 있다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-09 앱이 `.claude/worktrees/<이름>`에서 연 세션이 공용 작업본 파일을 Edit하자 PreToolUse 보호 장치가 「isolated worktree … base repo checkout」으로 막았다(유호님 「다시 시도」에도 같음). `change_directory`는 「워크트리 세션은 옮길 수 없다, request_directory를 쓰라」로 거절됐고, `request_directory`(경로 지정)로 접근을 받은 뒤에는 그날 작업본·master를 맞출 수 있었다. 10-18(S4 수집기 멈춤 경고 세션)에는 `request_directory`로 접근을 받은 뒤에도 Edit이 같은 문구로 막혔다(읽기·node 실행은 됐다).
+- 원인: 보호 장치가 워크트리 세션의 공용 작업본 쓰기를 막는다. 접근 허락이 그 막음을 푸는지는 때마다 달랐고 까닭은 확인 못 했다. 두 도구 설명(10-24 읽음)에는 워크트리 세션 제한이 적혀 있지 않다 — 거절은 부를 때 나온다.
+- 고침: 공용 작업본에서 하라는 일을 워크트리 세션에서 받으면 고치기·시험은 워크트리에서 끝내고, 반영은 `node tools/바로올리기.js`로 올려 공용 작업본이 따라가게 한다(AGENTS 「올리기·배포·끝내기」). 꼭 공용 작업본에 써야 하면 먼저 `request_directory`로 그 폴더를 받고, 그래도 막히면 유호님께 여쭌다 — 셸로 돌아가거나 다른 세션에 시키지 않는다(권한 우회). 10-20에는 유호님 「그 파일 하나 써도 돼」 뒤 node로 그 파일만 썼다. `.tmp` 릴리스 폴더 쪽은 [git 줄끝·잠금](git_줄끝_잠금.md) 「워크트리 세션은 공용 `.tmp` 릴리스 폴더에 …」·[배포·공개](배포_공개.md) 「워크트리 세션에서 PC 릴리스를 돌리면 …」.
+- 다시 확인: (10-24 메모에서 옮김, 다시 확인 전) — 폴더 접근을 바꾸는 확인이라 돌리지 않았다.
 
 ## Claude 서브에이전트
 
@@ -644,6 +680,18 @@
 - 다시 확인: `node --test tests/헤르메스보내기.test.js`(끊김·종료 1·「sent」만 찍은 꼴은 보냄, `success:false`·사용법 오류는 실패). 다음 실제 알림 뒤 `output/예약큐/예약실행.log`의 예약큐 단계가 종료 0이고, `%LOCALAPPDATA%\synk\예약큐\알림.json`의 `sentAt`이 그 시각이다.
 - 다시 겪음(10-23 Claude): 45초로 남아 있던 `tools/텔레그램승인.js`의 `보내기`를 CI 빨간불·예약 멈춤 알림도 쓴다. 바쁜 PC(CPU 100%, `hermes --version`만 17초)에 텔레그램 연결 지연(agent.log 15:28·15:58 ConnectTimeout)까지 겹치자 15:48부터 한 시간 넘게 매 회차 `spawnSync … hermes.exe ETIMEDOUT`로 「넓은 시험 빨개짐」·「다시 초록」이 한 통도 못 나갔다. state.db가 14:51 뒤로 그대로라 실제로는 안 갔고, 겹쳐 간 것도 없다. 고침: `보낸결과`가 `헤르메스보내기.결과`로 「보냈다」를 읽어 끊겨도 보낸 것으로 치고, 한도는 부르는 쪽이 넘긴다 — CI 빨간불 120초·예약 멈춤 90초(한 회차 숨김실행 280초 안), 승인 훅은 60초 훅 한도 때문에 45초 그대로.
 
+### 팁 장부 웹앱을 다시 승인하려고 Apps Script 편집기를 열면 함수 없는 `비밀.gs`가 먼저 열린다 — `Code.gs`의 `처음설정`을 돌리고, 승인 창은 유호님이 누른다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-16~17 팁 장부 웹앱(스킬 폴더의 `ledger_appsscript/`)을 다시 승인해야 할 때 편집기를 열면 함수가 없는 `비밀.gs`가 먼저 열려, 실행할 함수가 목록에 없었다. 승인 팝업은 크롬 확장으로 누를 수 없었다.
+- 원인: 편집기가 어느 파일을 먼저 여는지는 확인 못 했다(`.clasp.json`의 `filePushOrder`는 비어 있다). 승인 팝업은 확장이 붙은 탭 밖의 창이다([브라우저·게시](브라우저_게시.md) 「로그인 단추가 띄운 팝업 창을 확장이 보지 못한다」).
+- 고침: 파일 목록에서 `Code.gs`를 열고 `처음설정`을 실행한다. 승인 창은 유호님이 크롬에서 직접 누른다.
+- 다시 확인: 10-24 읽기만 — `ledger_appsscript/`에 `비밀.js`(함수 없음)와 `Code.js`(첫 함수 `처음설정`)가 있고 `.clasp.json`의 `filePushOrder`가 비어 있다. 편집기에서 먼저 열리는 파일과 승인 창은 (10-24 메모에서 옮김, 다시 확인 전).
+
+### 텔레그램 DM만 Claude로 답하는 것은 `channel_overrides` 덕이고 대신 받을 모델이 없다 — 크레딧이 바닥나면 DM 답이 그냥 멈춘다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상(예방): Hermes CLI 기본 모델은 qwen 그대로이고 `/new` 안내문도 「qwen3.8」을 보이는데, 텔레그램 DM은 10-19부터 Claude(Sonnet 5.5, 10-21 20:12부터 Opus 5.5)로 답한다. 그 키 조직의 API 크레딧은 talk 강사 도우미와 같이 쓴다([AI 계정과 크레딧](../AI_계정과_크레딧.md#claude-api-크레딧)).
+- 원인: config.yaml의 `channel_overrides` 아래 DM 대화 id에 provider·model·system_prompt가 따로 있다. `/new` 안내문은 전역 기본값을 보일 뿐이다. 같은 자리의 `system_prompt`가 받기(synk-tip-review)와 작업 맡기기(synk-work)를 가른다. 맨 위 `fallback_providers: []`라 그 크레딧이 바닥나면 대신 답할 모델이 없다.
+- 고침: DM 모델 바꾸기·되돌리기는 위 「개인 대화를 Claude로 바꿀 때 …」의 줄끝을 지키는 바꾸기로 한다(10-21 판 `.tmp/hermes-telegram-opus-20261021/switch.cjs`, 되돌리기 `--restore`). 다시 켜기는 같은 폴더 `restart-when-idle.ps1`을 PowerShell 7(`pwsh`)로 돌린다 — BOM 없는 한글 스크립트라 Windows PowerShell 5.1은 깨뜨린다([윈도우 셸](윈도우_셸.md) 「Windows PowerShell 5.1이 BOM 없는 .ps1에서 …」). DM이 갑자기 답하지 않으면 게이트웨이보다 그 조직 크레딧부터 본다.
+- 다시 확인: 10-24 읽기만 — `%LOCALAPPDATA%\hermes\config.yaml`에 `channel_overrides:` 아래 DM 대화 하나(provider·model·system_prompt)와 맨 위 `fallback_providers: []`가 있고, `restart-when-idle.ps1`은 BOM 없이 한글 주석으로 시작한다(첫 바이트 `23 20 ED`).
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
@@ -755,6 +803,14 @@
 - 원인: 패치 본문이 도구 인자 JSON 안의 문자열이라, 줄바꿈이 `\n`으로 남는 줄과 `\\n`(역슬래시 둘 + n)으로 남는 줄이 섞여 있다. 경로 뒤에 붙는 꼴이 줄마다 달라 자르는 자리가 어긋난다.
 - 고침: 줄에서 역슬래시 묶음을 모두 `/`로 바꾼 뒤, 저장소 경로 머리(`docs/`·`tools/`·`experiences/` …)에서 시작해 찾는 경로들의 길이로 잘라 목록과 맞췄다. 바로 다음 글자가 이름에 이어지는 글자면 버린다(긴 이름의 앞부분). 패치 53개 파일과 경로 언급 1,329개가 나왔다. 상대 경로 패치는 세션 `cwd`가 그 작업본일 때만 센다. 스크립트는 공유 노트 `미추적판정_20261021/codex_scan.cjs`.
 - 다시 확인: `grep -c 'Add File: ' ~/.codex/archived_sessions/rollout-2026-10-17T14-50-39-*.jsonl`(10-21에 94)과, 그 줄들에서 `\n` 기준으로 자른 경로가 실제 파일과 맞는 수를 견준다.
+
+## Codex 데스크톱 앱
+
+### GPT(Codex) 데스크톱 앱이 업데이트·재부팅 뒤 검은 로고 화면에서 10분 넘게 안 넘어간다 — 엔진은 멀쩡하고 화면 쪽만 멈춘 것이라 앱을 끄고 `shell:AppsFolder`로 다시 켠다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-03 앱 업데이트(26.930.3930.0) 뒤 재부팅하고 처음 켜자 검은 로고 화면에서 10분 넘게 멈췄다. 앱 엔진(codex app-server)·로그인·네트워크는 정상이었고, 화면 쪽 로그에는 `bundled_plugins_reconcile_skipped_features_unavailable`만 되풀이됐다.
+- 원인: 화면 쪽이 기능 설정을 못 받은 채 기다렸다. 왜 못 받았는지는 확인하지 못했다. 그 줄은 정상 실행에도 찍히니(10-24 하루 로그에 3번) 멈춤의 표시는 그 줄이 아니라 아래 정상 신호가 없는 것이다.
+- 고침: `ChatGPT.exe` 전부와 그 자식 `codex.exe`를 끄고 `explorer.exe "shell:AppsFolder\OpenAI.Codex_2p2nqsd0c76g0!App"`로 다시 켜자 바로 떴다. 진단 자리는 화면 로그 `%LOCALAPPDATA%\Packages\OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Local\Codex\Logs\YYYY\MM\DD\codex-desktop-*-t0-*.log`와 엔진 기록 `~/.codex/logs_2.sqlite`의 `logs` 표(ts·level·target·feedback_log_body — 읽기 전용으로 열면 앱이 도는 중에도 읽힌다)다. 열려 있는 로그는 `Get-ChildItem` 크기가 실제보다 늦게 잡히니(10-03 0바이트, 10-24 9.00MB 대 실제 9.34MB) 파일을 직접 열어 읽는다. 정상 실행은 로그인 확인 직후 `Concurrent reasoning summaries feature override resolved` → `Codex runtime config selected`가 1초 안에 나온다.
+- 다시 확인: 10-24 돌림(읽기만, 앱이 도는 중) — 그날 t0 로그에서 두 줄이 0.09초 사이로 나왔다(06:27:23.757Z → .844Z). `Get-StartApps`의 AppID가 `OpenAI.Codex_2p2nqsd0c76g0!App` 그대로이고, `logs_2.sqlite`를 `mode=ro`로 열어 `logs` 표 칸을 읽었다. 멈춤 재현과 다시 켜기는 하지 않았다.
 
 ## Claude Code·공식 CLI 읽기(계정판)
 

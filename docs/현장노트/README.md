@@ -15,18 +15,18 @@
 | [윈도우 셸](윈도우_셸.md) | PowerShell 변수 뒤 한글, heredoc·백틱, 파이썬 한글 출력·cv2 경로, Git Bash 경로 변환·시각, 앱 AppData·%TEMP% 정리, 디스크 재기, ssh 키 권한 |
 | [git 줄끝·잠금](git_줄끝_잠금.md) | 공용 작업본에서 내 것만 커밋하는 절차, CRLF·LF, index.lock, 당기기·push, 워크트리·junction, 공간 정리, 큰 blob을 거른 클론의 이력 훑기, 생성 지도 해시 줄끝·다른 가지의 생성 사본·PC에만 있는 파일 |
 | [시험·화면 확인](시험_화면확인.md) | `node --test` 요약, CI가 안 도는 시험, 실제 키, 공용 증거를 덮는 시험, 가려진 창·휴대폰 폭, 클라우드 `CI=1`·실행 위치·리눅스 lifecycle·본문 도중 세션 폐기, 헤드리스 WebGL·fps 재기, CSP를 켠 QA·같은 와이파이 휴대폰 |
-| [블렌더·3D](블렌더_3D.md) | Cycles 굽기(검은·빈 지도, 두 겹 천, 오목한 바닥, 노이즈 제거, 여러 물체의 굽기 여백 덮어쓰기, 텍셀보다 얇은 섬, 묻힌 면 청소), glTF 내보내기의 알파, ETC1S 회벽 얼룩, 웹에 얹을 때 바닥 discard |
+| [블렌더·3D](블렌더_3D.md) | Cycles 굽기(검은·빈 지도, 두 겹 천, 오목한 바닥, 노이즈 제거, 여러 물체의 굽기 여백 덮어쓰기, 텍셀보다 얇은 섬, 묻힌 면 청소), glTF 내보내기의 알파, ETC1S 회벽 얼룩, 웹에 얹을 때 바닥 discard, 영상 모델 참고 영상(회색 마네킹, 보류) |
 | [그림 굽기·오리기](그림_굽기_오리기.md) | GPT 그림 굽기 주간 한도·계정 돌려쓰기, 펠트 오리기의 흰 띠·바닥 그림자, sharp 위치 |
-| [Higgsfield](higgsfield.md) | 계정·잔액·제출 거절, 올리기, Nano Banana Pro, Seedance·Wan·Kling |
+| [Higgsfield](higgsfield.md) | 계정·잔액·제출 거절, 올리기, Nano Banana Pro, Seedance·Wan·Kling, Genjutsu 물건 바꾸기 |
 | [Gemini 사진](gemini_사진.md) | Gemini 앱(Ultra)으로 사진 만들기 — 사고 수준, 참조 올리기, 원본 받기, 늦게 뜨는 페이지, 2.1·프로 차이 |
 | [LoRA 학습·검증](LoRA_학습.md) | AI-Toolkit·ComfyUI·측정 도구 — 설치, 큰 파일 받기, 잠자기, 학습 속도, 트리거 없는 얼굴 새기, 옆모습 측정 |
 | [영상·소리](영상_ffmpeg_자막.md) | ffmpeg xfade·자르기·음량, 자막, HyperFrames·GSAP 렌더, TTS·받아쓰기, 렌더 장비, 블렌더 장면·회색 미리보기(불리언·워크벤치 조명·겹친 면, SUIT 기호) |
 | [배포·공개](배포_공개.md) | talk 함수 배포·설정값·마이그레이션, 깨끗한 사본 빌드, synk.im(synk-policy)·배포 점검, LAB·WORLD 공개 묶음, GCS, 회사 VM SSH·릴리스, Platform Mac DMG, SNS 지도 대시보드 빌드 |
 | [브라우저·게시](브라우저_게시.md) | 크롬 확장(프로필 로그인, 네이티브 창, 파일 올리기 10MB, 팝업), Meta·인스타 웹, 유튜브 스튜디오·API 한도·예약 읽기, Suno, Google Flow, 특허로 |
-| [AI CLI·구독 통로](AI_CLI.md) | agy(Gemini 구독)·몽골어 검문 429·훅 UTF-8·아르곤에게 블렌더 맡기기, Hermes 팁 봇(64K 창·Git Bash 경로·yaml), Codex 세션 기록(수정 시각·보관·한글 경로) |
+| [AI CLI·구독 통로](AI_CLI.md) | agy(Gemini 구독)·몽골어 검문 429·훅 UTF-8·아르곤에게 블렌더 맡기기, Hermes 팁 봇(64K 창·Git Bash 경로·yaml), Codex 세션 기록(수정 시각·보관·한글 경로), Codex 데스크톱 앱 멈춤 |
 | [한글(HWP) 양식](한글_HWP.md) | 한컴 없이 HWP·HWPX 읽기(`tools/hwp읽기.py`, 배포용 포함), 한컴 없이 HWP 고치기(바뀐 문단만 바꾸기·hwplib 상자 쓰기)와 쪽 수 어림, 옛 한글 2024 COM 길(첫 실행·보안 창·작업 서버, 모아 찍기, 체크 글머리표, 쪽 나눔) |
 | [백업·큰 업로드](백업_업로드.md) | Drive 백업 짜임, 겹치는 업로드, 회선 지연 맞추기, 작은 파일, 몇 시간짜리 업로드 |
-| [수집(yt-dlp·RSS)](수집_yt-dlp.md) | 남의 공개 영상 숫자·댓글 읽기(`tools/수요스캔/`) — 댓글 수 덮어쓰기, RSS 404·500, 검색 거르기, 쇼츠 탭의 빈 날짜·길이 |
+| [수집(yt-dlp·RSS)](수집_yt-dlp.md) | 남의 공개 영상 숫자·댓글 읽기(`tools/수요스캔/`) — 댓글 수 덮어쓰기, RSS 404·500, 검색 거르기, 쇼츠 탭의 빈 날짜·길이, 공모전 모음 사이트·Cosmos 컬렉션 읽기 |
 
 ## 항목 틀
 

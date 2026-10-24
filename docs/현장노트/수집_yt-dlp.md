@@ -1,6 +1,6 @@
 # 현장 노트 · 수집(yt-dlp · RSS)
 
-> 남의 공개 영상의 숫자 · 댓글을 읽는 수집(`tools/수요스캔/`, 10-22 시청자 수요 조사)에서 만난 함정. 읽기만 하는 수집이다 — 로그인 · 게시 · 영상 파일 받기를 하지 않는다.
+> 남의 공개 영상의 숫자 · 댓글을 읽는 수집(`tools/수요스캔/`, 10-22 시청자 수요 조사)에서 만난 함정. 읽기만 하는 수집이다 — 로그인 · 게시 · 영상 파일 받기를 하지 않는다. 공모전 모음 사이트 · 디자인 레퍼런스(Cosmos) 목록 읽기도 여기 둔다(10-24).
 
 ## 먼저 볼 것
 
@@ -17,6 +17,7 @@
 - [검색의 날짜 거르기·조회순 정렬이 기대대로 안 된다](#검색의-날짜-거르기조회순-정렬이-기대대로-안-된다-2026-10-23)
 - [쇼츠 탭과 쇼츠 재생목록에는 날짜와 길이가 없다](#쇼츠-탭과-쇼츠-재생목록에는-날짜와-길이가-없다-2026-10-23)
 - [인스타 공개 계정의 글 숫자는 웹 API를 직접 부르면 429 — ego에서 그 페이지가 받는 응답을 읽는다](#인스타-공개-계정의-글-숫자는-웹-api를-직접-부르면-429--ego에서-그-페이지가-받는-응답을-읽는다-2026-10-23-claude)
+- [공모전·디자인 레퍼런스 사이트](#공모전디자인-레퍼런스-사이트) — 공모전 모음 사이트 다섯 곳의 목록 주소·API와 본문 자르기, Cosmos 공개 컬렉션 GraphQL과 인기 신호
 
 ## yt-dlp
 
@@ -51,3 +52,25 @@
 - 원인: 확실하지 않다. 페이지 밖에서 부른 API 요청이 막힌 것으로 보인다. 같은 계정을 ego로 열면 인스타 페이지가 스스로 GraphQL(`/api/graphql`, `/graphql/query`)로 글 목록을 받는다.
 - 고침: `page.cdp('Network.enable')` → 프로필 열기 → 마우스 휠로 아홉 번쯤 내리기 → `page.events()`의 `Network.responseReceived` 가운데 graphql 응답만 `Network.getResponseBody`로 읽어, `data.xdt_api__v1__feed__user_timeline_graphql_connection.edges`의 글(code · taken_at · media_type · like_count · comment_count · carousel_media_count · 캡션 앞부분)만 남긴다. 계정 10곳에서 48~180편씩 읽혔다. **같은 묶음에 메시지함 응답(`get_slide_mailbox…`)이 섞여 오니 통째로 저장하지 말고 글 목록만 골라 쓴다.** 틱톡은 같은 방법으로 `api/post/item_list`(계정)와 `api/search/item`(검색) 응답을 읽는다. 이번 스크립트(세션 scratchpad의 `ig/round-02.mjs` · `ig/tt-round-01.mjs`)는 며칠 뒤 지워지니 다시 쓸 때는 이 순서대로 새로 짠다 — 본문이 `{`로 시작하는 응답만 JSON으로 읽고, 팔로우 · 좋아요 · 메시지 단추는 누르지 않는다.
 - 다시 확인: 공개 계정 하나를 열어 읽은 글 수와 그 계정 첫 화면 「게시물」 수의 최근 줄이 맞는지, 저장한 JSON에 `inbox` · `thread` 낱말이 없는지 본다. ego가 다른 세션 스크립트를 받는 중이면 한 번에 하나씩이고, 앱이 다시 켜지면 작업 공간 번호로 못 잡는다([브라우저 노트](브라우저_게시.md#ego-앱이-다시-시작되면-작업-공간-번호로-못-잡는다-2026-10-21-claude)).
+
+## 공모전·디자인 레퍼런스 사이트
+
+로그인 없이 열리는 공개 목록만 읽는다. 남의 그림·글은 저장소에 넣지 않는다(`.tmp`·scratchpad에만).
+
+### 공모전 모음 사이트 다섯 곳은 목록 주소·API로 읽고, 상세 본문은 정해진 구간만 자른다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-19 「조건에 맞는 공모전 전부」 수집(`.tmp/contests-20261019/`, git 밖)에서 — 콘테스트코리아 상세를 통째로 긁자 옆 목록 글이 본문에 섞여 290건을 다시 읽었고, 씽유 상세는 한 건에 10초쯤 걸렸고, 링커리어에 접수 예정(`SCHEDULED`)을 물으면 오류였다. 6G 같은 부처 공모는 모음 사이트에 없었다.
+- 원인: 사이트마다 짜임이 다르다. 링커리어는 화면이 부르는 GraphQL이 상세 글까지 한 번에 준다. 콘테스트코리아 상세 쪽은 세부요강 뒤에 다른 공모전 목록이 길게 붙는다. 씽유는 서버가 상세를 늦게 낸다.
+- 고침(사이트별 길):
+  - 링커리어: `POST https://api.linkareer.com/graphql`(Origin·Referer `https://linkareer.com`), `activities(filterBy:{activityTypeID:"3", status:"OPEN"}, orderBy:{direction:DESC, field:CREATED_AT}, pagination:{page, pageSize:100})`의 `totalCount`와 `nodes{… targets{name} categories{name} recruitCloseAt tenThousandUnitOfReward homepageURL detailText{text}}`. 상태는 `OPEN`만 쓴다.
+  - 위비티: 목록 `https://www.wevity.com/?c=find&s=1&gub=2&cidx=<32 제한없음|4 일반인|90 기타>&gbn=list&mode=<ing|soon|future>&gp=N`, 상세 `?c=find&s=1&gbn=view&ix=<id>`의 `cd-info-list`·`#viewContents`. 상세는 `gbn=viewok`로 302 넘기니 curl에는 `-L`을 붙인다(파이썬 requests는 저절로 따라간다).
+  - 콘테스트코리아: `https://www.contestkorea.com/sub/list.php?displayrow=100&int_gbn=1&Txt_bcode=<분야 코드>&page=N`(접수 중이 앞쪽에 몰린다). 상세 본문은 `<div class="view_detail_area">`부터 `<!-- //세부요강 -->`까지만 자른다.
+  - 씽유: 목록 `https://thinkyou.co.kr/contest/?serstatus=1|0|2&pagesize=45&page=N`. 상세가 느리니 다른 사이트에 없는 공고만 5개씩 동시에 읽는다(10-19 299건 중 61건).
+  - K-Startup: `https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=list&schStr=<낱말>`. 가을엔 경진대회가 적고 지역·기업 한정이 많다. 부처 공모는 기사·공식 사이트로 따로 찾는다.
+  - 판정을 에이전트 여럿에 나눠 맡길 때는 보조 파일 폴더를 따로 정해 준다([AI CLI 노트](AI_CLI.md) 「병렬 서브에이전트가 같은 scratchpad에…」).
+- 다시 확인: 10-24 읽기만 — 링커리어 `OPEN` totalCount 639(상세 글 포함), `SCHEDULED`는 「Value "SCHEDULED" does not exist in "ActivityStatus" enum」. 위비티 목록 첫 쪽 15건, 상세는 302 → `viewok`에서 두 칸이 다 있다. 콘테스트코리아 아이디어 분야 첫 쪽 접수 중 28건, 상세에 두 표지가 있고 끝 표지 뒤로 약 3만 3천 자가 더 붙는다. 씽유 목록 45건이 1초, 상세 한 건은 8.4초. K-Startup 「공모전」 진행 공고 3건.
+
+### Cosmos 공개 컬렉션은 로그인 없이 GraphQL로 끝까지 읽힌다 — 화면을 내려 모으면 첫 32개 뒤가 빠지고 느리다 (2026-10-24 Claude · 메모에서 옮김)
+- 증상: 10-22 synk.im v11 디자인 레퍼런스 조사(유호님이 헤르메스로 보낸 디자인 사이트, 팁 장부 14행 Cosmos)에서 화면 스크롤로 엘리먼트를 모으자 빠지고 느렸다. 엘리먼트 검색(`/search/elements/…`)은 조금 내리면 가입 창이 떴다.
+- 원인: 컬렉션 화면은 첫 32개를 서버가 그려 주고, 그 뒤는 `https://api.cosmos.so/graphql`의 `GetClusterElements`(32개씩, `pageCursor`)로 받는다. 공개 컬렉션 `/<주인>/<슬러그>`·`/explore/<분류>`(ui-ux·branding·typography·graphic-design·motion·technology)·`/search/collections/<낱말>`에는 로그인 벽이 없다.
+- 고침: ego 페이지에서 fetch를 감싸 `GetClusterBySlug`·`GetClusterElements` 요청 본문을 한 번 잡아 두고, 같은 꼴을 `page.fetch`로 커서를 따라 0.35초 간격으로 부른다(스크립트 `.tmp/homepage-v11-20261022/research/design-crawl/`, git 밖). 웹사이트 엘리먼트(`WebsiteElementTile`)에 원래 사이트 주소(`source.url`)·`websiteTitle`·`websiteDescription`·저장 날짜(`createdAt`)·그림이 있다. 인기 신호는 컬렉션 팔로워 수, 같은 사이트가 여러 컬렉션에 겹쳐 저장된 수, 저장 날짜(최근성)뿐이고 노출 수는 없다 — 인기 숫자가 필요하면 recent.design을 같이 본다. 엘리먼트 검색의 가입 벽 너머는 받지 않는다. 10-22 결과는 컬렉션 229개 · 엘리먼트 26,057 · 웹사이트 3,108 · 사이트 1,867.
+- 다시 확인: 10-24 읽기만 — `/explore/ui-ux` 200. 10-22에 잡아 둔 `GetClusterBySlug` 본문을 curl로 보내도(Origin `https://www.cosmos.so`, 로그인 없음) 공개 컬렉션 하나의 엘리먼트 수·팔로워 수가 왔고, `GetClusterElements` 첫 쪽은 32개(그중 `WebsiteElementTile` 5개, 제목·설명·날짜·주소·그림 칸이 다 있음)와 다음 커서를 줬다 — 페이지 밖에서도 부를 수 있다.
