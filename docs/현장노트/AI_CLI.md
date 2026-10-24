@@ -443,6 +443,12 @@
 - 고침: 다시 걸기 전에 PowerShell로 그 스크립트 이름이 든 node 프로세스를 찾아 끈다 — `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*watch-chain.cjs*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }`. 감시는 「시작 뒤 파일 시각」으로 다시 훑는 꼴로 짜고, 새로 걸 때 이전과 같은 `--after`를 줘서 끊긴 사이의 사건을 놓치지 않는다.
 - 다시 확인: 10-23 재시작마다 남은 감시 하나씩을 끄고 다시 걸어 사슬 24·25·26 armed를 모두 받았다(`local/watch.log`).
 
+### 스킬을 끌지 고를 때 Skill 호출 수만 세면 실제 쓰임을 놓친다 — 파일을 직접 읽은 세션과 엔진을 가져다 쓰는 곳까지 센다 (2026-10-24 Claude)
+- 증상: 10-24 경량화에서 대화 기록의 `"name":"Skill","input":{"skill":"…"}` 호출만 세어 `last30days`(3번)·HyperFrames 계열(2번)·Remotion(0번)·Higgsfield(0번)를 끄자고 권했다. 다시 세어 보니 이 스킬 파일을 Read로 바로 연 세션이 하루 1~21개였고, 레딧 원문 읽기는 `.claude/skills/last30days/scripts` 엔진을 불러 쓰며([브라우저·게시](브라우저_게시.md)), 만족 사례 S16·S17·S22·S23의 방법에 Remotion이 들어 있었다. 그대로 껐으면 수요 조사·영상 재현 품질이 떨어질 뻔했다.
+- 원인: 세션은 스킬 목록을 보고 Skill 도구를 부르기보다 `SKILL.md`나 그 안의 `scripts`·`references`를 경로로 바로 읽는 일이 많다. 저장소 문서와 도구도 스킬 폴더 안의 엔진을 경로로 가리킨다.
+- 고침: 쓰임은 셋을 함께 센다 — ① Skill 호출(`rg -o -g '*.jsonl' '"name":"Skill","input":\{"skill":"[^"]+"' ~/.claude/projects`) ② 스킬 폴더 경로가 나온 세션 수를 날짜별로(`rg -l -g '*.jsonl' 'skills/<이름>/' ~/.claude/projects`) ③ 저장소 문서·도구·만족 사례 장부가 그 이름이나 경로를 가리키는지(`rg -l '<이름>' docs/현장노트 docs/마케팅 tools`). 콘텐츠 품질에 닿는 스킬은 셋 중 하나라도 걸리면 끄지 않는다(10-24 유호님 「낮아지면 안돼는데」). 끄더라도 지우지 않고 옮긴다.
+- 다시 확인: ②로 `skills/last30days/`를 세면 10-19부터 하루 9~21개 세션이 나온다(10-24 기준).
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)
