@@ -1,31 +1,31 @@
 {
   "도구": "tools/작업실예약.js",
   "작업실": "https://workspace.synk.im",
-  "시작": "2026-10-23T23:22:45.340Z",
+  "시작": "2026-10-24T12:43:07.465Z",
   "자산": {
-    "docs/마케팅/synkbrief_AI질문전후_20261024/게시/memo-a_master.mp4": "a6a11361-2b04-46d3-9915-b6ef8809e45a",
-    "docs/마케팅/synkbrief_AI질문전후_20261024/게시/memo-b_master.mp4": "aaa89beb-07fd-45dd-9434-e1943d0bb1ed"
+    "docs/마케팅/synkbrief_AI질문전후_20261024/게시/memo-a_master.mp4": "779f959b-b5ed-4c7a-babc-8c36538e5749",
+    "docs/마케팅/synkbrief_AI질문전후_20261024/게시/memo-b_master.mp4": "c9f86aae-cb58-48cc-baa0-096f15d915c1"
   },
   "판": [
     {
       "계정": "synkbrief-instagram",
       "채널": "620ff779-b81c-4c04-81d4-e9e842cab6a8",
-      "작업": "1a66d4f60940a0e7e227579e83aee33edff3e6d73e1bbadaf5a0b0c4445aa997",
-      "시각": "2026-10-26T21:00:00+09:00",
+      "작업": "b8be110826ad8f04bddfe2014b70d769c8922a83864d68139c1fe9e27ac13fd6",
+      "시각": "2026-10-24T23:00:00+09:00",
       "영상": "docs/마케팅/synkbrief_AI질문전후_20261024/게시/memo-a_master.mp4"
     },
     {
       "계정": "synkbrief-youtube",
       "채널": "cffc89eb-dcc4-472e-9b29-7b2013d25602",
-      "작업": "f3ad052341b4a3e3ea0f04957dd2919fda833e6c7816a7a0551b590b7ff4dafb",
-      "시각": "2026-10-26T21:00:00+09:00",
+      "작업": "9c51257c1fe896b4a00c61bf88947946450bfd109e943d04e2699758a0f4adef",
+      "시각": "2026-10-24T23:00:00+09:00",
       "영상": "docs/마케팅/synkbrief_AI질문전후_20261024/게시/memo-b_master.mp4"
     }
   ],
-  "postId": "0924df95-ed8b-4ebf-9d88-87621e6ed20b",
+  "postId": "58eb97ea-853b-4aa9-92e0-ea8d343100cc",
   "링크": {
-    "id": "7f101875-f434-42ce-819e-3b94b7b8529e",
-    "만료": "2026-10-27T12:22:55.846Z"
+    "id": "38427302-f306-4164-8fd5-74380e3473c4",
+    "만료": "2026-10-25T14:43:18.487Z"
   },
-  "끝": "2026-10-23T23:22:55.148Z"
+  "끝": "2026-10-24T12:43:17.009Z"
 }
