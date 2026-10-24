@@ -1,7 +1,7 @@
 {
   "app.css": {
-    "bytes": 83839,
-    "sha256": "f8ccfde0dc3b1d30a2c32078fecf2a3cd00617d999888c8f1bd2f61f89dd62a5"
+    "bytes": 84273,
+    "sha256": "8213d11150f8967133d89d02cbd39db9bccf08cfe363cfa1915bc75f254d7097"
   },
   "app.js": {
     "bytes": 17467,
@@ -28,8 +28,8 @@
     "sha256": "a1f8ef8722cee826313d0b56816757e4afef9bf37d77a1a8eb42055792a137ac"
   },
   "assets/SUIT-subset.woff2": {
-    "bytes": 104964,
-    "sha256": "3446d138cdad32a23afe399997061c3488047d04644aed4b15dae2324bf460e7"
+    "bytes": 105212,
+    "sha256": "ada120bfb7c306e7a96600e2ad6f116a069fee076fe0a355b815bedcb6a87e3f"
   },
   "assets/favicon-32.png": {
     "bytes": 2310,
@@ -51,13 +51,21 @@
     "bytes": 82988,
     "sha256": "7497243a9bda0720878a78972fce5fbfab449f9febb091a831f8b393f977bc4f"
   },
+  "assets/topik4-sample-class-20261023.mp4": {
+    "bytes": 19943394,
+    "sha256": "86c099c64bee6b769f55afed8a0d463b1735590be3d2e72624b179bdd5e35a67"
+  },
+  "assets/topik4-sample-class-poster.jpg": {
+    "bytes": 65910,
+    "sha256": "bd9e6440f393ef7e55e94c09ded84d701f0b7e028c3739959b282d20cdbee255"
+  },
   "copy.js": {
-    "bytes": 26590,
-    "sha256": "f0abd0ac6ad2434167b57107c659e11a126fd538efad0a599853d195da529264"
+    "bytes": 27530,
+    "sha256": "d4d1a685baca3a0a2fe4dca44f81ceb1373966f11fe52adaf6ce3710d6f8dafe"
   },
   "index.html": {
-    "bytes": 12391,
-    "sha256": "c6a5afd9c959f3ff585f8cfb0f62e10152f31b53b30f87b3abcde0e00a4fbdfd"
+    "bytes": 12913,
+    "sha256": "d1f983aa12f78957738d4e44ffbe915dc5312c23b8aaaaa42379f9aec1267761"
   },
   "og.png": {
     "bytes": 354497,

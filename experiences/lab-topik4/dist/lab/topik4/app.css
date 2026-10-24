@@ -801,6 +801,12 @@ p.doneline span{color:var(--ink-2)}
 .t4-card h3{margin:0 0 6px;font-size:17px;font-weight:650;line-height:1.35;letter-spacing:-.01em}
 .t4-card p:last-child{margin:0;font-size:15.5px;line-height:1.62;color:var(--ink-2)}
 
+/* 맛보기 수업 영상: 16:9 한 판, 첨삭 판과 같은 둥근 모서리 · 겉줄. 누르기 전엔 포스터(제목 장면)만 받는다(preload none) */
+.t4-video{border-radius:16px;overflow:hidden;background:#000;box-shadow:inset 0 0 0 1px var(--line)}
+.t4-video video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000}
+/* 자막이 영상에 구워져 있어 휴대폰 폭 인라인(약 340px)에서는 안 읽힌다 — 휴대폰에서만 가로 전체 화면을 권하는 한 줄 */
+.t4-video-tip{display:none}
+
 /* 첨삭 맛보기: 과제 → 학생 글 → 표시한 곳 → 한마디 세 줄을 판 하나씩. 학생 글은 읽기 좋게 줄 간격을 넉넉히 */
 .t4-sample-lead{margin:0 0 14px;font-size:15.5px;line-height:1.62;color:var(--ink-2)}
 .t4-sample{display:grid;gap:10px}
@@ -915,6 +921,8 @@ html:not(.js) .t4-fallback{display:block}
   .t4-facts b{flex:none;min-width:88px;font-size:20px}
   .t4-terms,.t4-free{grid-template-columns:minmax(0,1fr)}
   .t4-weeks li{grid-template-columns:minmax(0,1fr);gap:3px}
+  .t4-video-tip{display:block;margin-top:12px}
+  .t4-video-tip + .t4-note{margin-top:6px}
   .t4-lead{font-size:16px}
   .t4 h1{font-size:clamp(30px,8.4vw,40px)}
   .t4-dock{position:fixed;z-index:30;left:16px;right:16px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;box-shadow:0 14px 34px rgba(0,0,0,.45);transition:transform .25s var(--ease),opacity .2s var(--ease)}

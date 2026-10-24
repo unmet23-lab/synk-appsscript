@@ -25,7 +25,12 @@ const ART = [
   ['src/art/topik4-art-cap.webp', 'topik4-art-cap.webp'],
   ['src/art/topik4-art-grid.webp', 'topik4-art-grid.webp'],
   ['src/art/topik4-art-list.webp', 'topik4-art-list.webp'],
+  ['src/art/topik4-sample-class-poster.jpg', 'topik4-sample-class-poster.jpg'],
 ];
+// 맛보기 수업 영상(10-23 최종본, 4분 · 약 20MB). 영상은 저장소 정책상 git에 넣지 않는다(tools/git-storage-policy.json) —
+// 완성본 자리에서 dist로 복사하고, dist의 mp4는 .gitignore로 뺀다. 깨끗한 사본에서 빌드할 때는 SYNK_T4_VIDEO로 그 파일을 준다.
+const VIDEO = process.env.SYNK_T4_VIDEO || path.join(REPO, 'docs/마케팅/LAB_TOPIK4맛보기수업_20261023/remotion/out/final/lesson-web.mp4');
+const VIDEO_OUT = 'topik4-sample-class-20261023.mp4';
 const COPIED = [
   [path.join(REPO, 'docs/마케팅/맞춤도구/assets/favicon-32.png'), 'favicon-32.png'],
 ];
@@ -85,6 +90,8 @@ for (const [src, out] of [['DM_Mono/DMMono-Regular.ttf', 'DMMono-400.woff2'], ['
 // 3) 그림. 로고는 표시 크기의 2배(156×48)로 줄인다.
 for (const [src, out] of ART) fs.copyFileSync(path.join(HERE, src), path.join(ASSETS, out));
 for (const [src, out] of COPIED) fs.copyFileSync(src, path.join(ASSETS, out));
+if (!fs.existsSync(VIDEO)) throw new Error(`맛보기 수업 영상이 없어요: ${VIDEO} — 만들기는 docs/마케팅/LAB_TOPIK4맛보기수업_20261023/remotion/본편.sh, 다른 자리면 SYNK_T4_VIDEO`);
+fs.copyFileSync(VIDEO, path.join(ASSETS, VIDEO_OUT));
 run('python', ['-I', '-c', 'import sys\nfrom PIL import Image\nim=Image.open(sys.argv[1]).convert("RGBA")\nim.thumbnail((156,48),Image.LANCZOS)\nim.save(sys.argv[2],"WEBP",lossless=True)', LOGO, path.join(ASSETS, 'logo-lab.webp')]);
 
 // 4) 링크 미리보기: og.html을 dist에 잠깐 놓고 찍은 뒤 지운다(공개하지 않는다).

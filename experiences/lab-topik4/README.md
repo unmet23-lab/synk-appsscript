@@ -72,6 +72,18 @@ node tools/공개.js 올리기 --원본 experiences/lab-topik4/dist lab/topik4 -
 
 미리 보기의 계획 해시로 `-m "<메시지>" --실행 --계획 <해시>`를 붙인다. `lab/topik4/`는 이 빌드만 쓰는 폴더라 `--전부`로 올린다(회사 페이지 빌드의 `lab/index.html`과 겹치지 않는다). 공개 뒤 `node tools/공개.js 확인 <커밋>`과 라이브 주소로 화면·그림·글꼴을 본다.
 
+맛보기 수업 영상(10-24부터, `#class-video`)은 git에 넣지 않는다 — 저장소 정책상 mp4는 이력에 들어가지 않는다. 빌드가 완성본 자리 `docs/마케팅/LAB_TOPIK4맛보기수업_20261023/remotion/out/final/lesson-web.mp4`(git 밖 · 원본창고·금고 보관)에서 dist로 복사하고, dist의 mp4는 이 폴더 `.gitignore`가 뺀다. 그래서 공개 묶음은 [현장 노트](../../docs/현장노트/배포_공개.md#공용-작업본에서-빌드한-공개-묶음에-남의-미커밋-변경이-실린다)대로 깨끗한 사본에서 빌드한다:
+
+```bash
+R=.tmp/<작업>/root && mkdir -p $R
+git -c core.autocrlf=false archive origin/master experiences/lab-topik4 docs/브랜드_폰트 docs/마케팅/맞춤도구/core/signal.css docs/마케팅/맞춤도구/assets/favicon-32.png docs/디자인/SNS키트/assets/logo-lab.webp docs/온라인반_TOPIK4급/쓰기과제.md | tar -x -C $R
+SYNK_T4_VIDEO="$(cygpath -w docs/마케팅/LAB_TOPIK4맛보기수업_20261023/remotion/out/final/lesson-web.mp4)" node $R/experiences/lab-topik4/build.mjs
+node --test $R/experiences/lab-topik4/app.test.js
+node tools/공개.js 올리기 --원본 $R/experiences/lab-topik4/dist lab/topik4 --전부 --후보폴더 .tmp/<작업>/후보
+```
+
+`쓰기과제.md`는 시험(첨삭 맛보기 원문 대조)이 읽는다. 깨끗한 사본은 줄끝이 LF라 `app.js`처럼 내용이 같은 파일은 「줄끝만 다르다」로 공개본을 그대로 둔다.
+
 ## 확인 기록
 
 - 2026-10-21 로컬(`.claude/launch.json`의 `lab-topik4`, 「/lab/topik4/index.html」로 연다 — 지면서버는 폴더 주소에서 목록을 보인다): 1440·390 두 언어 화면, 가로 넘침 0, 콘솔 오류 0, 이미지·글꼴(키릴) 로드, 빈 칸 보내기 → 오류 4개·이메일 칸 초점, 처음엔 `aria-invalid` 없음, 언어를 바꿔도 고른 답 유지, 구글 폼 주소를 가로챈 Playwright로 보낼 값·완료 판·완료 제목 초점·아래 단추 숨김 확인(캡처·스크립트 `.tmp/lab-topik4-20261021/shots/`, git 밖). 시험 13/13.
@@ -83,3 +95,13 @@ node tools/공개.js 올리기 --원본 experiences/lab-topik4/dist lab/topik4 -
 - 2026-10-22 낮 다시 공개: synk-policy `a16c06f`(app.css·app.js·copy.js·index.html) · 배포 점검 39722355100 통과(그 뒤 커밋 판, 새 칸만큼 화면 차이 → `node tools/공개.js 기준 --점검 39722355100 /lab/topik4/`로 기준 그림 갱신) · 라이브에 새 칸 확인. 「첨삭은 이렇게 돌아와요」 칸(03) — 수업 자료 W3의 가상 학생 글·기호 표시·한마디 세 줄, 몽골어 화면은 기호 뜻·한마디 풀이. 검수 아르곤 0건 · Fable P0·P1 0(P2 2·P3 1 반영 — 원문 W3 해요체, 「3주째」, 한마디 끝 기호 묶음).
 - 2026-10-21 공개: synk-policy `a05d547`(16파일) · 배포 점검 39586426806 · 바이트 대조 16/16 · CDN 다시 채움. 라이브(https://synk.im/lab/topik4/) 1440 몽골어·390 한국어에서 제목·글꼴(키릴 포함)·그림·차시표 8주·가로 넘침 0·콘솔 오류 0(구글 폼 주소는 가로채 실제 전송 0). Fable 최종 검수 1차 「이것만 고치면 됨」(P1 1) → 재확인 「공개해도 됨」, 기록 `.tmp/lab-topik4-20261021/fable/review.md`(git 밖).
 - 2026-10-23 19:52 KST 운영 「문의 지우기」 확인(회사 HA 사슬 26 합본 armed 뒤, 유호님 10-23 합본 승인 「… 운영 확인으로 10-21 종단 시험 줄 하나를 문의 접수에서 지워 봐」): 10-21 종단 시험 줄 하나를 확인 → 지우기 — Google 원본 「있음」(원본은 두고 회사 서버 줄만 지움), 할 일 없음(시험 줄은 할 일을 만들지 않는다), 다음 수집(19:53:52) 뒤에도 돌아오지 않음, 지운 기록 {줄 번호, 시각}·감사 한 줄(키 action·at·id·subject·userId), 고객 문의 줄 수는 그대로(0). 확인은 읽기 전용 DB 조회(시험 줄·지운 기록·감사만, `.tmp/inquiry-erase-20261022/read-erasure.cjs`)와 관리자 페이지의 API 호출(번호·상태만 출력)로 했다.
+- 2026-10-24 맛보기 수업 영상 칸(03 `#class-video`) 공개:
+  - 공개 커밋: synk-policy `380d612` — index.html·copy.js·app.css·SUIT 줄인 글꼴과 새 자산 둘(영상 19MB · 포스터). app.js는 줄끝만 달라 공개본 그대로다.
+  - 확인: 바이트 대조 6/6, 배포 점검 40075364201 통과(새 접근성 위반 0). 새 칸만큼 달라진 /lab/topik4/ 기준 그림은 `185ed31`로 갈았다(백엔드 검수 아르곤 0 · GPT 0).
+  - 라이브: 1440·390 × 한·몽 모두 가로 넘침 0 · 콘솔 오류 0. 영상 메타데이터 245.5초 · 1920×1080, 포스터 1280×720, 앵커 착지는 칸 머리 88px/76px.
+  - 영상 응답: `curl -r 0-1` → 206 Partial Content · video/mp4 · Accept-Ranges bytes · 19,943,394바이트.
+  - CDN: `node tools/공개.js 채우기 "lab/topik4/assets/*.mp4"` → HIT, PATH 영상 14개도 다시 채움.
+  - 휴대폰(≤640px): 영상 아래에 「가로로 돌려 전체 화면으로」 안내 한 줄이 보인다(구운 자막이 인라인 342px에서 약 7.5px라 — Fable P2).
+  - 화면 검수: 아르곤 0건 · Fable 3건(반영 1 · 후속 2), 고친 판은 같은 Fable 재확인 지적 0(`.tmp/검수/lab-topik4-video-20261023`, git 밖).
+  - 몽골어 다섯 줄: 1층 정상 · 2층 자연스러움 · Fable 3층 동의. 자세한 것은 [콘티 14절](../../docs/마케팅/LAB_TOPIK4맛보기수업_20261023/콘티.md).
+

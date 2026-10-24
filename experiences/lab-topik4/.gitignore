@@ -1,0 +1,2 @@
+# 맛보기 수업 영상은 git에 넣지 않는다(tools/git-storage-policy.json · 영상 결과물) — build.mjs가 완성본 자리에서 복사하고 tools/공개.js가 synk.im에만 올린다.
+dist/lab/topik4/assets/*.mp4
