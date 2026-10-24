@@ -78,7 +78,7 @@ def lab_match(img, ref, kl=0.8, kc=1.0):
     return cv2.cvtColor(np.clip(a, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR)
 
 
-def fit(n, src):
+def fit(n, src, blur=True, out=None):
     img = imread(src)
     H, W = img.shape[:2]
     orig = imread(V + "검수/fable_v4콘티/frames/%04d.jpg" % (SH[n - 1]["f0"] + 1))
@@ -121,12 +121,12 @@ def fit(n, src):
     crop = img[int(y0): int(y0 + ch), int(x0): int(x0 + cw)]
     crop = cv2.resize(crop, (1920, 1080), interpolation=cv2.INTER_LANCZOS4 if cw < 1920 else cv2.INTER_AREA)
     graded = lab_match(crop, cv2.resize(orig, (1920, 1080)))
-    if n == 30:   # 원본 #30은 카메라가 휙 돌아 흐린 채 시작한다(64.42~64.7초) — 가로 움직임 흐림
+    if n == 30 and blur:   # 원본 #30은 카메라가 휙 돌아 흐린 채 시작한다(64.42~64.7초) — 가로 움직임 흐림(영상 시작 그림은 blur=False로 또렷하게 뽑고 흐림은 편집에서)
         k = np.zeros((1, 71), np.float32)
         k[0, :] = 1 / 71
         graded = cv2.filter2D(graded, -1, k)
         note += " · 휙 흐림"
-    out = OUT + f"S{n:02d}.jpg"
+    out = out or OUT + f"S{n:02d}.jpg"
     cv2.imencode(".jpg", graded, [cv2.IMWRITE_JPEG_QUALITY, 92])[1].tofile(out)
     return out, f"창 x{int(x0)} y{int(y0)} 폭{int(cw)}({cw / W:.0%}) · {note}"
 

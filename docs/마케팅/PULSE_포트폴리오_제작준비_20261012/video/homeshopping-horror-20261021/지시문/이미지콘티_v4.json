@@ -436,6 +436,46 @@
    ],
    "text": "{시작} The background is the living room in Image 1 at night, far out of focus and very dark — a dim door frame with a little warm light at the right and a dark plant, mostly deep warm-brown shadow; use Image 1 only for the background. From the bottom edge of the frame, left of center, a single hand rises — only ONE hand is in the frame, the other hand is not visible — and holds up on its fingertips and palm, from below, a rectangular box about 17 cm wide, 12 cm deep and 8 cm tall, at the middle height of the frame and about one third from the left edge, seen from the front and slightly from above. {손_대역} {손_사람} The right half of the frame is empty dark background. Close-up, 50mm lens, shallow depth of field. {손_빛} {필름}",
    "메모": "광고 카드 ? · 3 손(원본 #27 · #29 — 어두운 거실 · 아래에서 손이 리본 핫도그를 들어 올림). 초록 상자 자리에 블렌더 리본 떡볶이 도시락을 넣는다."
+  },
+  {
+   "id": "S09f1",
+   "who": "강도",
+   "refs": [
+    "v4/R2",
+    "배치:S09"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He bends his masked head down and peers into the small fluffy red heart pouch, which he holds open in his left hand together with the knife, low in front of his belly; the fingers of his right hand reach down into the open pouch. Nothing gold is visible yet. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {빛} {필름} {사진남1}",
+   "메모": "#9 영상 시작 그림(10-24) — 원본 첫 프레임(f245)처럼 주머니를 들여다보는 첫 자세(Fable P2-2 · P2-B). 금빛 것은 아직 안 보인다 — 영상에서 꺼낸다."
+  },
+  {
+   "id": "S09f2",
+   "who": "강도",
+   "refs": [
+    "v4/R2",
+    "배치:S09"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He bends his masked head down and peers into the small fluffy red heart pouch, which he holds open in his left hand together with the knife, low in front of his belly; the fingers of his right hand reach down into the open pouch. Nothing gold is visible yet. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {빛} {필름} {사진남1}",
+   "메모": "S09f1과 같은 글 — 둘째 판"
+  },
+  {
+   "id": "S15p1",
+   "who": "강도",
+   "refs": [
+    "v4/R2",
+    "배치:S15"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He holds the knife vertically in his right fist in front of his chest, the steel blade pointing straight up and catching the candlelight. His LEFT hand hangs lower, at his left hip and clearly inside the frame, and grips the small fluffy red heart pouch by its thin gold chain strap, so the red pouch is plainly visible. His masked face looks down at the women out of frame. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {빛} {필름} {사진남1}",
+   "메모": "#15 영상 시작 그림(10-24) — 왼손에 빨간 하트 주머니가 화면 안에 보이게(Fable P2-7 · P2-B)."
+  },
+  {
+   "id": "S15p2",
+   "who": "강도",
+   "refs": [
+    "v4/R2",
+    "배치:S15"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He holds the knife vertically in his right fist in front of his chest, the steel blade pointing straight up and catching the candlelight. His LEFT hand hangs lower, at his left hip and clearly inside the frame, and grips the small fluffy red heart pouch by its thin gold chain strap, so the red pouch is plainly visible. His masked face looks down at the women out of frame. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {빛} {필름} {사진남1}",
+   "메모": "S15p1과 같은 글 — 둘째 판"
   }
  ]
 }

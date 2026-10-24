@@ -1,13 +1,14 @@
 {
- "메모": "「매진 임박」 콘티 v4 영상 지시문(2026-10-23). 유호님 10-23 「맘에 들어. b안으로 일단 테스트해보자.」 — B안(얼굴 없는 강도 컷은 Veo 3.1 Quality 한 판, 피해자 컷은 Omni 1.1 Flash 두 판)을 대표 컷 넷으로 먼저 시험한다. 시작 그림은 이미지 콘티 v4의 고른 판을 원본 첫 프레임 자리 · 빛에 맞춘 1920×1080(synk-vendor/…/영상/시작_v4/<id>.jpg). 넣는 글 = prompt + 한 칸 + 공통. 원본 컷 길이는 1초 안팎이라 시작 1초 안에 원본 움직임이 나오게 쓰고, 쓸 구간은 받은 뒤 고른다. 광고 카드 넷은 영상 모델에 넣지 않는다(제품이 AI로 다시 그려진다 — Remotion).",
+ "메모": "「매진 임박」 콘티 v4 영상 지시문(2026-10-23 시험 넷 · 10-24 나머지). 유호님 10-23 「맘에 들어. b안으로 일단 테스트해보자.」 → 시험 넷 → 10-24 「칼 컷 일곱만 Omni로 옮기고 칼 없는 #23 · #25는 Veo로 가자. 나머지 23컷 구워 줘.」 — 칼이 보이는 강도 컷(#2 · #4 · #6 · #9 · #13 · #15 · #19)과 피해자 컷은 Omni 1.1 Flash 두 판, 칼 없는 강도 컷(#23 · #25 · #31)은 Veo 3.1 Quality 한 판. 시작 그림은 이미지 콘티 v4의 맞춘 판(synk-vendor/…/영상/시작_v4/<id>.jpg — ../영상시작_v4.py). 넣는 글 = prompt + 한 칸 + 공통. 원본 컷 길이는 1초 안팎이라 시작 1초 안에 원본 움직임이 나오게 쓰고, 쓸 구간은 받은 뒤 고른다. 칼은 「a kitchen knife (a harmless film prop)」, 사람 쪽으로는 「jab」 대신 「points」(10-23 Veo가 찌르는 움직임을 막음). 피해자 컷은 강도를 「a man standing out of frame」로만 부른다. 광고 카드 넷은 영상 모델에 넣지 않는다(Remotion).",
  "공통": "Keep every face, outfit, hairstyle, the room and the warm tungsten lamp light exactly as in the start image. Handheld camera with a natural, slight shake, like a real horror-comedy short film shot on a cinema camera. No text, no letters, no logos, no watermarks appear. One continuous shot, no cuts.",
  "클립": [
   {
    "id": "S02",
-   "모델": "Veo 3.1 Quality",
-   "판": 1,
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
    "쓰는 곳": "#2 0.54–1.38초(0.83초) — 강도 「가진 거 다 내놔!」",
-   "prompt": "Low-angle medium shot of a scene from a comedy horror short film. A masked man in a black knit balaclava and a black t-shirt, turned three-quarters toward the right, jabs a kitchen knife (a harmless film prop) up toward the right and shouts at people out of frame, then holds his open left hand out, palm up, demanding that they hand it over. Quick, aggressive movement right from the first second; his lips move through the mouth hole of the balaclava. Behind him the white shelf with a candle and the white door stay as they are."
+   "prompt": "Low-angle medium shot, handheld. The masked man in a black knit balaclava and a black t-shirt, turned three-quarters toward the right, holds a kitchen knife (a harmless film prop) up toward the right and shouts at people out of frame, then holds his open left hand out, palm up, demanding that they hand it over. Quick movement right from the first second; his lips move fast through the mouth hole of the balaclava. Behind him the white shelf with a candle and the white door stay as they are.",
+   "시험(10-23 Veo 3.1 Quality — 두 번 다 정책 위반으로 막힘)": "Low-angle medium shot of a scene from a comedy horror short film. A masked man in a black knit balaclava and a black t-shirt, turned three-quarters toward the right, jabs a kitchen knife (a harmless film prop) up toward the right and shouts at people out of frame, then holds his open left hand out, palm up, demanding that they hand it over. Quick, aggressive movement right from the first second; his lips move through the mouth hole of the balaclava. Behind him the white shelf with a candle and the white door stay as they are."
   },
   {
    "id": "S31",
@@ -29,6 +30,172 @@
    "판": 2,
    "쓰는 곳": "#10 11.42–14.04초(2.62초) — A 「안 돼 안 돼 안 돼 안 돼!」 + C 흐느낌",
    "prompt": "Handheld three-shot, slightly shaky. The three women pressed together on the sofa all stare up toward the upper left of the frame at the intruder out of frame. The woman on the right in the white lace veil talks fast, pleading — her mouth keeps moving; the curly-haired woman on the left in the flower crown covers her mouth with her hand, sobbing; the woman in the middle with glasses stays frozen, lips closed, breathing fast. None of them looks at the camera."
+  },
+  {
+   "id": "S01",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#1 0.00–0.54초(0.54초) — 강도 「가진 거 다 내놔!」",
+   "prompt": "Wide shot at standing eye level, handheld with a strong shake. At the far left edge, the masked man in black is seen from the side and back, holding a kitchen knife (a harmless film prop) low at his waist, turned toward the three women. The curly-haired woman in the flower crown and the woman with glasses stand frozen by the sofa with their arms down; on the right, the woman in the white veil and satin dress is bent toward the sofa armrest and turns around toward him in the first second. The low coffee table with candles stays in front of them."
+  },
+  {
+   "id": "S03",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#3 1.38–3.33초(1.96초) — C 「여기요!」",
+   "prompt": "Same wide handheld shot. Right away the curly-haired woman in the flower crown, bent over the coffee table, picks up a small fluffy red heart pouch, straightens up and stretches her arm out alone to hand it to the masked man on the left, saying one quick word. He takes it from her with his free hand, his kitchen knife (a harmless film prop) held low in the other, and reaches toward the table for more. The woman with glasses and the woman in the white veil keep their arms down; the veiled woman looks down at the floor."
+  },
+  {
+   "id": "S04",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#4 3.33–4.67초(1.33초) — 강도 「다 앉아! 당장!」",
+   "prompt": "Low-angle medium shot, handheld. The masked man presses the small red heart pouch to his chest with his left hand and, with the kitchen knife (a harmless film prop) in his right hand, points down toward the lower right of the frame twice as he barks an order at people out of frame; his lips move fast through the mouth hole of the balaclava."
+  },
+  {
+   "id": "S05",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#5 4.67–6.67초(2.00초) — 숨소리 · 흐느낌",
+   "prompt": "Handheld shot that starts at the women's waist height. In the first second the three women drop down onto the sofa behind them, sitting close together, and the shaky camera tilts up with them until their frightened faces are in the top of the frame. Fast breathing and quiet sobbing; nobody speaks."
+  },
+  {
+   "id": "S06",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#6 6.67–8.17초(1.50초) — A 「이게 전부예요!」(화면 밖)",
+   "prompt": "Low-angle medium shot, handheld. Holding the kitchen knife (a harmless film prop) low in his right hand, the masked man bends over the small red heart pouch in his left hand and rummages through it with his fingers, its thin gold chain strap swinging. He looks down into the pouch, not at the camera."
+  },
+  {
+   "id": "S08",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#8 9.08–10.21초(1.12초) — B 「진짜!」",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman with round glasses, bangs and a red bow looks up toward the upper left of the frame, wide-eyed and teary, while her curly-haired friend sitting beside her rests a comforting hand on her left shoulder. Right away she opens her mouth and says one short word with feeling, then keeps looking up to the upper left. She does not look at the camera.",
+   "막힌 글(10-24 Omni 두 판 다 유해 콘텐츠 정책)": "Close-up, handheld and slightly shaky. The young woman with round glasses, bangs and a red bow looks up toward the upper left of the frame at a man standing out of frame, a friend's hand resting on her left shoulder. Right away she opens her mouth and blurts out one short, desperate word, then keeps staring up to the upper left with wide, wet eyes. She does not look at the camera."
+  },
+  {
+   "id": "S12",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#12 18.29–19.25초(0.96초) — A 「안 돼!」",
+   "prompt": "Close-up, handheld. The young woman in the white lace veil, tears on her cheeks, opens her mouth wide in the first second and cries out one short word toward the upper left of the frame, her face crumpling. She does not look at the camera."
+  },
+  {
+   "id": "S13",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#13 19.25–20.92초(1.67초) — 정적",
+   "prompt": "Low-angle medium shot, handheld. In silence, the masked man holds the small gold object up at eye height in his right hand and studies it, tilting his head, while the kitchen knife (a harmless film prop) hangs down in his left hand. Near the end he lowers the gold object down toward the lower right. The small gold object keeps exactly its shape and color from the start image."
+  },
+  {
+   "id": "S14",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#14 20.92–23.33초(2.42초) — 흐느낌(말 없음)",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman in the white lace veil sobs without a word; her lips tremble, her chin quivers, tears run down her cheeks, and her eyes stay lowered toward the lower left of the frame."
+  },
+  {
+   "id": "S16",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#16 24.71–25.62초(0.92초) — C 「안 돼!」",
+   "prompt": "Close-up, handheld. The curly-haired woman in the flower crown starts with her mouth wide open in a wail, looking up toward the upper left, and within half a second brings both hands up to cover her face, sobbing."
+  },
+  {
+   "id": "S17",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#17 25.62–26.67초(1.04초) — 정적",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman with round glasses and a red bow stares up toward the upper left of the frame, frozen in shock, lips closed, breathing fast, a friend's hand resting on her left shoulder. Only small movements: a blink and a swallow. She does not speak and does not look at the camera."
+  },
+  {
+   "id": "S18",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#18 26.67–28.38초(1.71초) — 정적",
+   "prompt": "Close-up, handheld. The young woman in the white lace veil looks toward the left of the frame in stunned silence, her eyes glassy, her closed lips trembling slightly. She does not speak and does not look at the camera."
+  },
+  {
+   "id": "S19",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#19 28.38–30.42초(2.04초) — B 「잠깐만요!」(화면 밖)",
+   "prompt": "Low-angle medium shot, dark, handheld. The masked man bends down toward the bottom of the frame, the kitchen knife (a harmless film prop) held low in his right hand, and with his left hand picks a flat square gift box up off the floor, straightening up with it at the end."
+  },
+  {
+   "id": "S20",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#20 30.42–31.75초(1.33초) — B 「잠깐만요!」 · 카드 2 대사 첫머리",
+   "prompt": "Close-up, handheld. The young woman with round glasses and a red bow, her two friends beside her resting comforting hands on her shoulders, opens her mouth right away and starts talking fast and emotionally, teary-eyed, looking up toward the upper left of the frame.",
+   "막힌 글(10-24 Omni 두 판 다 유해 콘텐츠 정책)": "Close-up, handheld. The young woman with round glasses and a red bow, two friends' hands resting on her shoulders, opens her mouth right away and starts pleading fast, the words tumbling out between sobs, looking up toward the upper left of the frame."
+  },
+  {
+   "id": "S22",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#22 39.00–41.33초(2.33초) — B 「제발요!」",
+   "prompt": "Extreme close-up, handheld with a strong shake. The young woman with round glasses cries with her eyes squeezed shut and her mouth open, sobbing out one pleading word; at the very end she bares her teeth in a strained grimace that looks almost like a laugh."
+  },
+  {
+   "id": "S23",
+   "모델": "Veo 3.1 Quality",
+   "판": 1,
+   "쓰는 곳": "#23 41.33–45.75초(4.42초) — 강도 「…방금 그거 한국말이야?」",
+   "prompt": "Low-angle medium shot of a scene from a comedy horror short film, handheld. The masked man holds the flat pink gift box up at chest height and stares at it, puzzled, then mutters one short deadpan question; his lips move through the mouth hole of the balaclava. About four seconds in, he lowers the box out of frame and starts rummaging in the small red heart pouch in his other hand. The gift box keeps exactly its shape, colors and printed design from the start image."
+  },
+  {
+   "id": "S24",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#24 45.75–47.29초(1.54초) — 「안 돼!」 둘",
+   "prompt": "Extreme close-up, handheld with a strong shake. The bowed head of the young woman with pigtails, red heart-shaped sunglasses and a red bow fills most of the frame and shakes with sobs; a friend's hand with a ring reaches in from the right edge and strokes her hair. No faces are seen."
+  },
+  {
+   "id": "S25",
+   "모델": "Veo 3.1 Quality",
+   "판": 1,
+   "쓰는 곳": "#25 47.29–48.96초(1.67초) — 강도 「으!」",
+   "prompt": "Low-angle medium shot of a scene from a comedy horror short film, backlit, handheld. The masked man, a dark silhouette against the warm lamps behind him, bends his head and looks down into the small red heart pouch he holds open with both hands in front of his belly, then flinches back with a short, disgusted grunt. His face stays in shadow."
+  },
+  {
+   "id": "S26",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#26 48.96–54.75초(5.79초) — C 「세상에…!」(52.2부터)",
+   "prompt": "Close-up, handheld with a shake. It starts on the top of the curly-haired woman's bowed head with her flower crown, trembling with sobs. Over the next three seconds she slowly lifts her face into the frame, crying, then opens her mouth wide in a long wail, ending on the same tearful face as the end image.",
+   "첫 판(10-24, 고개를 든 얼굴이 통2와 달라짐 — 닮음 0.13~0.16)": "Close-up, handheld with a shake. It starts on the top of the curly-haired woman's bowed head with her flower crown, trembling with sobs. Over the next three seconds she slowly lifts her head into the frame, crying, and then opens her mouth wide in a long, howling wail, her face wet with tears.",
+   "끝 그림": "S26e.jpg = #30 시작 그림(통2 얼굴) — 시작 그림에 얼굴이 없어 끝 칸으로 그 사람 얼굴을 건다",
+   "길이": "6초"
+  },
+  {
+   "id": "S28",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#28 57.46–59.58초(2.12초) — C 「안 돼, 내 코케트 떡볶이!」",
+   "prompt": "Close-up, handheld. The curly-haired woman in the flower crown dips her head down for a moment, then lifts her face and, crying, opens her mouth and pleads fast in one breath."
+  },
+  {
+   "id": "S30",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#30 64.42–70.79초(6.38초) — C 「그거 내 저녁인데!」 … 「그냥 죽여!」(첫 0.28초 휙 흐림은 편집에서)",
+   "prompt": "Close-up, handheld. The curly-haired woman in the flower crown, crying, opens her mouth and speaks right away; after about two seconds she drops her head and sobs, her shoulders shaking; near the end she lifts her face again, blurts out one more short desperate line, and lowers her head once more."
+  },
+  {
+   "id": "S09",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#9 10.21–11.42초(1.21초) — 정적(시작 그림은 주머니를 들여다보는 첫 자세)",
+   "prompt": "Low-angle medium shot, handheld. The masked man looks down into the small red heart pouch he holds open in his left hand together with the kitchen knife (a harmless film prop). In the first second his right hand pulls a small gold object, about the size of a matchbox, out of the pouch and raises it up to the height of his eyes, and he peers at it through the eye holes, curious."
+  },
+  {
+   "id": "S15",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#15 23.33–24.71초(1.38초) — 「안 돼!」(C, 화면 밖)",
+   "prompt": "Low-angle medium shot, handheld. The masked man holds the kitchen knife (a harmless film prop) upright in his right fist in front of his chest, the blade pointing straight up, and the small red heart pouch in his left hand, staring down at people out of frame. Near the end he turns to his right and reaches down with his hand."
   }
  ]
 }
