@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "ig",
+ "text": "댓글에 한줄이라고 남겨 주시면, 이 한 줄을 디엠으로 보내 드릴게요.",
+ "dur": 3.399,
+ "words": [
+  {
+   "text": "댓글에",
+   "start": 0.02,
+   "end": 0.289
+  },
+  {
+   "text": "한줄이라고",
+   "start": 0.359,
+   "end": 0.769
+  },
+  {
+   "text": "남겨",
+   "start": 0.81,
+   "end": 1.023
+  },
+  {
+   "text": "주시면,",
+   "start": 1.065,
+   "end": 1.432
+  },
+  {
+   "text": "이",
+   "start": 1.884,
+   "end": 1.898
+  },
+  {
+   "text": "한",
+   "start": 1.983,
+   "end": 2.068
+  },
+  {
+   "text": "줄을",
+   "start": 2.11,
+   "end": 2.279
+  },
+  {
+   "text": "디엠으로",
+   "start": 2.321,
+   "end": 2.674
+  },
+  {
+   "text": "보내",
+   "start": 2.716,
+   "end": 2.871
+  },
+  {
+   "text": "드릴게요.",
+   "start": 2.914,
+   "end": 3.399
+  }
+ ],
+ "source": {
+  "key": "91a4f36548537dc0b8976a793f843331",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

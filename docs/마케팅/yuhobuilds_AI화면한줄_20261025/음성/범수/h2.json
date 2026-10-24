@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "그런데 한 줄을 붙였더니, 빵 담는 종이봉투처럼 바뀌었어요.",
+ "dur": 3.246,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.245
+  },
+  {
+   "text": "한",
+   "start": 0.311,
+   "end": 0.417
+  },
+  {
+   "text": "줄을",
+   "start": 0.456,
+   "end": 0.602
+  },
+  {
+   "text": "붙였더니,",
+   "start": 0.642,
+   "end": 1.066
+  },
+  {
+   "text": "빵",
+   "start": 1.502,
+   "end": 1.674
+  },
+  {
+   "text": "담는",
+   "start": 1.714,
+   "end": 1.926
+  },
+  {
+   "text": "종이봉투처럼",
+   "start": 1.966,
+   "end": 2.561
+  },
+  {
+   "text": "바뀌었어요.",
+   "start": 2.601,
+   "end": 3.246
+  }
+ ],
+ "source": {
+  "key": "bbd0838c757580fe55215a8fc22869ba",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

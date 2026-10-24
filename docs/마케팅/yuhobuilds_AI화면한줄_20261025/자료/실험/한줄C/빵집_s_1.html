@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>새벽 네 시 제빵소 · 밀포대</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* 분위기: 밀가루 포대에 찍힌 잉크 도장. 무명천 흰색 + 남색 잉크 + 바랜 붉은 도장 한 점. 그 외 색 없음. */
+:root{
+  --cloth:#efe8d8;      /* 무명천 */
+  --cloth-deep:#e4dbc6;
+  --ink:#1d2a4a;        /* 포대 인쇄 남색 */
+  --ink-soft:#4a5573;
+  --stamp:#b3402e;      /* 바랜 붉은 도장 */
+  --serif:'Nanum Myeongjo','Gowun Batang',serif;
+  --body:'Gowun Batang','Nanum Myeongjo',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--cloth)}
+body{
+  background:var(--cloth);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.8;
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(29,42,74,.035) 3px 4px),
+    repeating-linear-gradient(90deg,transparent 0 3px,rgba(29,42,74,.03) 3px 4px);
+  min-height:100vh;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+a{color:inherit}
+
+/* 위 줄 */
+.top{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:2px solid var(--ink);font-size:14px;letter-spacing:.08em}
+.top nav{display:flex;gap:22px}
+.top nav a{text-decoration:none;border-bottom:1px solid transparent}
+.top nav a:hover{border-bottom-color:var(--ink)}
+.top b{font-family:var(--serif);font-weight:800;letter-spacing:.2em}
+
+/* 포대 인쇄 영역 */
+.sack{display:grid;grid-template-columns:1.25fr .75fr;gap:0;border-bottom:2px solid var(--ink)}
+.sack-main{padding:56px 40px 56px 0;border-right:2px solid var(--ink);position:relative}
+.kicker{font-size:14px;letter-spacing:.3em;color:var(--ink-soft)}
+h1{
+  font-family:var(--serif);font-weight:800;line-height:1.08;letter-spacing:-.02em;
+  font-size:clamp(52px,9.5vw,118px);margin:18px 0 26px;
+}
+h1 span{display:block}
+h1 .small{font-size:.36em;font-weight:700;letter-spacing:.12em;line-height:1.6;margin-top:10px}
+.lede{max-width:30em;font-size:18px}
+.lede em{font-style:normal;background:linear-gradient(transparent 62%,rgba(179,64,46,.28) 62%)}
+.cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+.btn{
+  display:inline-block;padding:13px 26px;border:2px solid var(--ink);text-decoration:none;
+  font-family:var(--serif);font-weight:700;letter-spacing:.08em;font-size:16px;
+}
+.btn.fill{background:var(--ink);color:var(--cloth)}
+.btn.fill:hover{background:var(--stamp);border-color:var(--stamp)}
+.btn:not(.fill):hover{background:var(--ink);color:var(--cloth)}
+
+/* 도장 */
+.stamp{
+  position:absolute;right:36px;top:34px;width:128px;height:128px;border-radius:50%;
+  border:3px solid var(--stamp);color:var(--stamp);display:grid;place-items:center;text-align:center;
+  font-family:var(--serif);font-weight:800;line-height:1.25;transform:rotate(-12deg);
+  opacity:.88;mix-blend-mode:multiply;
+  box-shadow:inset 0 0 0 5px var(--cloth),inset 0 0 0 7px var(--stamp);
+}
+.stamp small{display:block;font-size:11px;letter-spacing:.2em;font-weight:700}
+.stamp strong{display:block;font-size:30px}
+
+/* 오른쪽 세로 칸: 오늘 나오는 시각표 */
+.sack-side{padding:56px 0 56px 32px}
+.sack-side h2{font-family:var(--serif);font-size:15px;letter-spacing:.3em;font-weight:800;margin-bottom:6px}
+.sack-side p.sub{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+.times{list-style:none}
+.times li{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:13px 0;border-top:1px dashed var(--ink-soft)}
+.times li:last-child{border-bottom:1px dashed var(--ink-soft)}
+.times time{font-family:var(--serif);font-weight:800;font-size:22px;line-height:1.3}
+.times span{line-height:1.5}
+.times small{display:block;color:var(--ink-soft);font-size:13px}
+.sold{color:var(--stamp);font-family:var(--serif);font-weight:800;font-size:13px;letter-spacing:.1em;border:1.5px solid var(--stamp);padding:0 6px;margin-left:6px;display:inline-block;transform:rotate(-3deg)}
+
+/* 아래: 이름 적힌 빵 세 가지 */
+.three{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:2px solid var(--ink)}
+.three article{padding:30px 24px 34px;border-right:2px solid var(--ink)}
+.three article:first-child{padding-left:0}
+.three article:last-child{border-right:0;padding-right:0}
+.three .no{font-family:var(--serif);font-weight:800;font-size:13px;letter-spacing:.3em;color:var(--stamp)}
+.three h3{font-family:var(--serif);font-weight:800;font-size:28px;margin:6px 0 8px;line-height:1.25}
+.three p{font-size:15.5px;line-height:1.7}
+.three .price{margin-top:12px;font-family:var(--serif);font-weight:700;font-size:15px;border-top:1px solid var(--ink);padding-top:8px;display:flex;justify-content:space-between}
+
+footer{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:24px 0 40px;font-size:14px;color:var(--ink-soft)}
+footer b{color:var(--ink);font-family:var(--serif)}
+
+@media (max-width:820px){
+  .sack{grid-template-columns:1fr}
+  .sack-main{border-right:0;border-bottom:2px solid var(--ink);padding:40px 0 44px}
+  .sack-side{padding:32px 0 36px}
+  .stamp{position:static;transform:rotate(-8deg);margin:0 0 20px;width:104px;height:104px}
+  .stamp strong{font-size:24px}
+  .three{grid-template-columns:1fr}
+  .three article,.three article:first-child,.three article:last-child{padding:24px 0;border-right:0;border-bottom:2px solid var(--ink)}
+  .three article:last-child{border-bottom:0}
+  .top nav{gap:14px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <b>밀 포 대</b>
+    <nav>
+      <a href="#today">오늘 나온 빵</a>
+      <a href="#bread">대표 빵</a>
+      <a href="#visit">찾아오는 길</a>
+    </nav>
+  </header>
+
+  <section class="sack">
+    <div class="sack-main">
+      <div class="stamp" aria-hidden="true"><div><small>매일 새벽</small><strong>4시</strong><small>반죽 시작</small></div></div>
+      <p class="kicker">동네 제빵소 · 이십삼 년째 같은 자리</p>
+      <h1>
+        <span>새벽에</span>
+        <span>반죽하고,</span>
+        <span>아침에 판다.</span>
+      </h1>
+      <p class="lede">밀가루, 물, 소금, 효모. 우리 집 빵은 이 네 가지가 거의 전부입니다. 밤새 천천히 부푼 반죽을 <em>그날 아침 가마에서 꺼내</em>, 다 팔리면 문을 닫습니다.</p>
+      <div class="cta">
+        <a class="btn fill" href="#today">오늘 나온 빵 보기</a>
+        <a class="btn" href="#visit">예약해서 받기</a>
+      </div>
+    </div>
+
+    <aside class="sack-side" id="today">
+      <h2>오늘 구워 나오는 때</h2>
+      <p class="sub">시각이 되면 가게 앞에 종이 울립니다.</p>
+      <ul class="times">
+        <li><time>06:30</time><span>시골 호밀빵<small>묵직하고 약간 신 맛</small></span></li>
+        <li><time>07:30</time><span>버터 소금빵<small>한 판에 스무 개</small></span></li>
+        <li><time>09:00</time><span>단팥 식빵 <i class="sold">품절</i><small>내일 같은 시각에 다시</small></span></li>
+        <li><time>11:00</time><span>바게트<small>껍질 소리 나는 것으로</small></span></li>
+      </ul>
+    </aside>
+  </section>
+
+  <section class="three" id="bread">
+    <article>
+      <div class="no">NO. 1</div>
+      <h3>시골 호밀빵</h3>
+      <p>직접 키운 발효종으로 열여덟 시간. 얇게 썰어 버터만 발라도 한 끼가 됩니다.</p>
+      <div class="price"><span>한 덩이</span><span>7,500원</span></div>
+    </article>
+    <article>
+      <div class="no">NO. 2</div>
+      <h3>버터 소금빵</h3>
+      <p>겉은 바삭, 속은 촉촉. 구운 지 한 시간 안에 드시면 소금이 아직 녹지 않았습니다.</p>
+      <div class="price"><span>한 개</span><span>3,200원</span></div>
+    </article>
+    <article>
+      <div class="no">NO. 3</div>
+      <h3>단팥 식빵</h3>
+      <p>팥은 가게 뒤편에서 매일 삶습니다. 달지 않게, 팥 알이 씹히게.</p>
+      <div class="price"><span>한 줄</span><span>6,800원</span></div>
+    </article>
+  </section>
+
+  <footer id="visit">
+    <div><b>밀포대 제빵소</b><br>화~일 오전 6시 30분 – 빵이 떨어질 때까지 · 월요일 쉼</div>
+    <div>예약 전화 000-0000-0000<br>시장 입구 두 번째 골목, 파란 차양</div>
+  </footer>
+
+</div>
+</body>
+</html>

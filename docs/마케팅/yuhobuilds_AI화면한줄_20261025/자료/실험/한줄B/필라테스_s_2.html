@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>결 필라테스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* 물건: 리셉션 벽에 걸어 두는 활판 인쇄 수업 시간표 카드. 크림 종이, 짙은 세이지 잉크, 테라코타 한 점. */
+:root{
+  --paper:#efe8d8; --paper2:#e7dfcb; --ink:#26372f; --ink2:#4d5f55; --rust:#b4502f; --line:#26372f;
+}
+@media (prefers-color-scheme: dark){
+  :root{--paper:#efe8d8;--paper2:#e7dfcb;--ink:#26372f;--ink2:#4d5f55;--rust:#b4502f}
+}
+*{box-sizing:border-box;margin:0}
+body{background:#cfc6b0;color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;min-height:100vh;display:grid;place-items:center;padding:32px 16px}
+.card{
+  width:min(960px,100%);background:var(--paper);
+  background-image:radial-gradient(rgba(38,55,47,.05) 1px,transparent 1px);background-size:5px 5px;
+  border:2px solid var(--line);outline:1px solid var(--line);outline-offset:-9px;
+  padding:clamp(28px,5vw,56px);box-shadow:0 18px 40px -18px rgba(38,55,47,.5);position:relative
+}
+.hole{position:absolute;top:14px;left:50%;width:14px;height:14px;border-radius:50%;background:#cfc6b0;border:1.5px solid var(--line);transform:translateX(-50%)}
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px double var(--line);padding:14px 0 14px;font-size:13px;letter-spacing:.18em}
+header b{font-family:"Noto Serif KR",serif;font-size:15px;letter-spacing:.3em}
+h1{font-family:"Noto Serif KR",serif;font-weight:900;font-size:clamp(44px,9vw,96px);line-height:1.08;margin:36px 0 18px;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--rust)}
+.lead{font-family:"Noto Serif KR",serif;font-size:clamp(16px,2vw,19px);line-height:1.8;max-width:34em;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(24px,4vw,48px);margin-top:40px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+h2{font-family:"Noto Serif KR",serif;font-size:15px;letter-spacing:.2em;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td{padding:11px 0;border-bottom:1px dotted var(--ink2);font-size:15px}
+td:first-child{font-family:"Noto Serif KR",serif;font-weight:600;width:5.5em}
+td:last-child{text-align:right;color:var(--ink2);font-size:13px}
+td .tag{color:var(--rust);font-weight:500}
+.list p{padding:12px 0;border-bottom:1px dotted var(--ink2);font-size:15px;line-height:1.6}
+.list b{font-family:"Noto Serif KR",serif;display:block;font-size:17px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:40px;padding-top:24px;border-top:3px double var(--line)}
+.btn{font-family:"Noto Serif KR",serif;font-weight:600;font-size:17px;background:var(--ink);color:var(--paper);padding:15px 28px;text-decoration:none;border:2px solid var(--ink);transition:background .2s,color .2s}
+.btn:hover,.btn:focus-visible{background:var(--rust);border-color:var(--rust)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.addr{margin-left:auto;font-size:13px;line-height:1.7;color:var(--ink2);text-align:right}
+@media(max-width:760px){.addr{margin-left:0;text-align:left}}
+.stamp{position:absolute;right:clamp(20px,5vw,56px);top:112px;width:84px;height:84px;border:2px solid var(--rust);border-radius:50%;display:grid;place-items:center;text-align:center;color:var(--rust);font-family:"Noto Serif KR",serif;font-weight:900;font-size:13px;line-height:1.3;transform:rotate(-12deg);opacity:.85}
+@media(max-width:760px){.stamp{display:none}}
+</style>
+</head>
+<body>
+<main class="card">
+  <span class="hole"></span>
+  <header><b>결 필라테스</b><span>이번 달 수업표</span></header>
+  <div class="stamp">소규모<br>5인 이하</div>
+
+  <h1>몸의 <em>결</em>을<br>따라 움직입니다</h1>
+  <p class="lead">처음 오셔도 괜찮습니다. 자세와 통증 이력을 먼저 듣고, 한 분에게 맞는 순서로 천천히 시작합니다. 한 반에 다섯 분까지만 받습니다.</p>
+
+  <div class="grid">
+    <section>
+      <h2>수 업 시 간 표</h2>
+      <table>
+        <tr><td>평일 07:00</td><td>매트 기초</td><td><span class="tag">신규 환영</span></td></tr>
+        <tr><td>평일 10:30</td><td>리포머 입문</td><td>주 2회</td></tr>
+        <tr><td>평일 14:00</td><td>1:1 맞춤 수업</td><td>예약제</td></tr>
+        <tr><td>평일 19:30</td><td>리포머 중급</td><td>퇴근 후</td></tr>
+        <tr><td>토 10:00</td><td>자세 교정 그룹</td><td><span class="tag">신규 환영</span></td></tr>
+      </table>
+    </section>
+    <section class="list">
+      <h2>처 음 오 시 면</h2>
+      <p><b>1. 체험 상담 30분</b>자세 확인과 목표 이야기, 무료입니다.</p>
+      <p><b>2. 맞는 반 추천</b>무리하게 등록을 권하지 않습니다.</p>
+      <p><b>3. 첫 수업</b>편한 옷과 양말만 가져오세요.</p>
+    </section>
+  </div>
+
+  <div class="cta">
+    <a class="btn" href="#reserve">체험 상담 예약</a>
+    <a class="btn ghost" href="tel:0000000000">전화 문의</a>
+    <div class="addr">서울시 ○○구 ○○로 00, 2층<br>평일 06:30–21:30 · 토 09:00–14:00</div>
+  </div>
+</main>
+</body>
+</html>

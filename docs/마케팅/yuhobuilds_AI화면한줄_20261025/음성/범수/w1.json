@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w1",
+ "text": "에이아이는 따로 말 안 하면, 제일 흔한 모양을 골라요. 꽃집도, 세무사도 똑같죠.",
+ "dur": 4.249,
+ "words": [
+  {
+   "text": "에이아이는",
+   "start": 0.02,
+   "end": 0.414
+  },
+  {
+   "text": "따로",
+   "start": 0.472,
+   "end": 0.618
+  },
+  {
+   "text": "말",
+   "start": 0.677,
+   "end": 0.793
+  },
+  {
+   "text": "안",
+   "start": 0.837,
+   "end": 0.881
+  },
+  {
+   "text": "하면,",
+   "start": 0.925,
+   "end": 1.203
+  },
+  {
+   "text": "제일",
+   "start": 1.378,
+   "end": 1.611
+  },
+  {
+   "text": "흔한",
+   "start": 1.655,
+   "end": 1.83
+  },
+  {
+   "text": "모양을",
+   "start": 1.874,
+   "end": 2.122
+  },
+  {
+   "text": "골라요.",
+   "start": 2.166,
+   "end": 2.472
+  },
+  {
+   "text": "꽃집도,",
+   "start": 2.852,
+   "end": 3.217
+  },
+  {
+   "text": "세무사도",
+   "start": 3.334,
+   "end": 3.699
+  },
+  {
+   "text": "똑같죠.",
+   "start": 3.743,
+   "end": 4.249
+  }
+ ],
+ "source": {
+  "key": "91614876a699ca7d9a06f45e0c2c9ef9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

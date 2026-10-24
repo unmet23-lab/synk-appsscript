@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "꽃집은 포장지, 세무사는 서류 봉투가 됐어요.",
+ "dur": 2.491,
+ "words": [
+  {
+   "text": "꽃집은",
+   "start": 0.02,
+   "end": 0.323
+  },
+  {
+   "text": "포장지,",
+   "start": 0.366,
+   "end": 0.727
+  },
+  {
+   "text": "세무사는",
+   "start": 1.13,
+   "end": 1.519
+  },
+  {
+   "text": "서류",
+   "start": 1.576,
+   "end": 1.706
+  },
+  {
+   "text": "봉투가",
+   "start": 1.75,
+   "end": 1.98
+  },
+  {
+   "text": "됐어요.",
+   "start": 2.023,
+   "end": 2.491
+  }
+ ],
+ "source": {
+  "key": "94345abcb6a4e8fc9a81869031d6e82a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

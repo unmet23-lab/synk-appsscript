@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>김도윤 세무사 사무소</title>
+<style>
+  :root {
+    --navy: #1b2a4a;
+    --navy-dark: #121c33;
+    --gold: #b8924a;
+    --bg: #f7f6f2;
+    --text: #2b2f38;
+    --muted: #6b7280;
+    --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+  a { color: inherit; text-decoration: none; }
+  header {
+    background: var(--white);
+    border-bottom: 1px solid #e5e2da;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .nav {
+    max-width: 1080px; margin: 0 auto; padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo { font-weight: 700; font-size: 1.15rem; color: var(--navy); letter-spacing: -0.02em; }
+  .logo span { color: var(--gold); }
+  nav ul { display: flex; gap: 28px; list-style: none; font-size: 0.95rem; }
+  nav a:hover { color: var(--gold); }
+  .hero {
+    background: linear-gradient(135deg, var(--navy-dark), var(--navy));
+    color: var(--white);
+    padding: 96px 24px 104px;
+  }
+  .hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: center; }
+  .eyebrow { color: var(--gold); font-size: 0.9rem; letter-spacing: 0.08em; margin-bottom: 16px; }
+  h1 { font-size: 2.6rem; line-height: 1.3; letter-spacing: -0.03em; margin-bottom: 20px; }
+  .hero p { color: #c9d0de; font-size: 1.05rem; max-width: 520px; margin-bottom: 32px; }
+  .btns { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 14px 28px; border-radius: 6px; font-weight: 600; font-size: 0.98rem; display: inline-block; }
+  .btn-primary { background: var(--gold); color: var(--navy-dark); }
+  .btn-primary:hover { background: #c9a35a; }
+  .btn-ghost { border: 1px solid rgba(255,255,255,0.4); color: var(--white); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.08); }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 28px;
+  }
+  .card h3 { font-size: 1rem; margin-bottom: 16px; color: var(--gold); }
+  .card ul { list-style: none; font-size: 0.95rem; }
+  .card li { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
+  .card li:last-child { border: 0; }
+  .card li b { color: var(--white); font-weight: 600; }
+  .card li span { color: #c9d0de; }
+  section { padding: 80px 24px; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h2 { font-size: 1.8rem; color: var(--navy); margin-bottom: 8px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin-bottom: 40px; }
+  .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+  .service { background: var(--white); border: 1px solid #e5e2da; border-radius: 10px; padding: 28px 24px; }
+  .service .num { color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+  .service h3 { color: var(--navy); margin-bottom: 8px; font-size: 1.1rem; }
+  .service p { color: var(--muted); font-size: 0.93rem; }
+  .strip { background: var(--white); border-top: 1px solid #e5e2da; border-bottom: 1px solid #e5e2da; padding: 40px 24px; }
+  .stats { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); text-align: center; gap: 20px; }
+  .stats strong { display: block; font-size: 2rem; color: var(--navy); }
+  .stats span { color: var(--muted); font-size: 0.9rem; }
+  .contact { background: var(--navy); color: var(--white); text-align: center; }
+  .contact h2 { color: var(--white); }
+  .contact p { color: #c9d0de; margin-bottom: 28px; }
+  .info { margin-top: 28px; color: #c9d0de; font-size: 0.93rem; }
+  footer { background: var(--navy-dark); color: #8f98ab; text-align: center; padding: 28px 24px; font-size: 0.85rem; }
+  @media (max-width: 800px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    h1 { font-size: 2rem; }
+    nav ul { display: none; }
+    .hero { padding: 64px 24px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <a class="logo" href="#">김도윤 <span>세무사</span> 사무소</a>
+    <nav>
+      <ul>
+        <li><a href="#services">업무 안내</a></li>
+        <li><a href="#about">소개</a></li>
+        <li><a href="#contact">상담 문의</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">1인 세무사 사무소 · 대표 세무사 직접 담당</div>
+      <h1>세금은 처음부터 끝까지,<br>대표 세무사가 직접 봅니다.</h1>
+      <p>담당자가 바뀌지 않습니다. 개인사업자와 소규모 법인의 기장, 신고, 절세 상담을 한 사람이 책임지고 맡습니다.</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="#contact">무료 상담 신청</a>
+        <a class="btn btn-ghost" href="tel:0212345678">02-1234-5678</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>주요 업무</h3>
+      <ul>
+        <li><b>부가가치세</b><span>1월 · 7월 신고</span></li>
+        <li><b>종합소득세</b><span>5월 신고</span></li>
+        <li><b>법인세</b><span>3월 신고</span></li>
+        <li><b>상속 · 증여세</b><span>사전 설계</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="wrap">
+    <h2>업무 안내</h2>
+    <p class="sub">필요한 서비스만 골라 맡기실 수 있습니다.</p>
+    <div class="services">
+      <div class="service"><div class="num">01</div><h3>세무 기장</h3><p>월 단위 장부 관리와 증빙 정리로 신고 시기에 서두르지 않도록 준비합니다.</p></div>
+      <div class="service"><div class="num">02</div><h3>세무 신고 대행</h3><p>부가세, 종합소득세, 법인세 등 정기 신고를 정확하게 처리합니다.</p></div>
+      <div class="service"><div class="num">03</div><h3>절세 컨설팅</h3><p>사업 형태와 매출 규모에 맞춰 공제·감면 가능한 항목을 점검합니다.</p></div>
+      <div class="service"><div class="num">04</div><h3>세무조사 대응</h3><p>조사 통지부터 소명 자료 준비까지 함께 대응합니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="strip">
+  <div class="stats">
+    <div><strong>15년</strong><span>세무 실무 경력</span></div>
+    <div><strong>1:1</strong><span>대표 직접 상담</span></div>
+    <div><strong>24시간</strong><span>문의 회신 목표</span></div>
+    <div><strong>첫 상담</strong><span>무료</span></div>
+  </div>
+</div>
+
+<section id="about">
+  <div class="wrap">
+    <h2>대표 세무사 소개</h2>
+    <p class="sub">김도윤 세무사</p>
+    <p style="max-width:680px">대형 회계법인과 세무서 근무 경험을 바탕으로 개인사업자와 소규모 법인을 돕고 있습니다. 직원이 아닌 대표가 직접 상담하고 신고까지 책임지기 때문에, 처음 말씀하신 내용이 끝까지 이어집니다.</p>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <h2>상담 문의</h2>
+    <p>전화나 이메일로 편하게 문의해 주세요. 영업일 기준 하루 안에 답변드립니다.</p>
+    <div class="btns" style="justify-content:center">
+      <a class="btn btn-primary" href="tel:0212345678">전화 상담 02-1234-5678</a>
+      <a class="btn btn-ghost" href="mailto:contact@example.com">이메일 보내기</a>
+    </div>
+    <div class="info">서울특별시 서초구 서초대로 000, 5층 · 평일 09:00 – 18:00</div>
+  </div>
+</section>
+
+<footer>© 2026 김도윤 세무사 사무소. All rights reserved.</footer>
+</body>
+</html>

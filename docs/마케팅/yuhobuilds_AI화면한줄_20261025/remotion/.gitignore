@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# 자산 사본(서체·효과음·목소리·배경음)은 node 준비.mjs로 다시 만든다. 원본은 저장소의 원래 자리에 있다.
+public

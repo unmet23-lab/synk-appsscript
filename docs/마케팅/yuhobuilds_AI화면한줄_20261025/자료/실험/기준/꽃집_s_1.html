@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>다온 꽃집 - 동네 꽃집</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; color: #3b2f2f; background: #fffaf7; line-height: 1.6; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 20px 6%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
+  .logo { font-size: 1.6rem; font-weight: 700; color: #d6537a; }
+  nav a { margin-left: 24px; text-decoration: none; color: #3b2f2f; font-weight: 500; }
+  nav a:hover { color: #d6537a; }
+  .hero { text-align: center; padding: 100px 6%; background: linear-gradient(135deg, #ffe3ec, #fff1d6); }
+  .hero h1 { font-size: 2.6rem; margin-bottom: 16px; }
+  .hero p { font-size: 1.15rem; margin-bottom: 32px; color: #6b5a5a; }
+  .btn { display: inline-block; padding: 14px 32px; background: #d6537a; color: #fff; border-radius: 30px; text-decoration: none; font-weight: 700; }
+  .btn:hover { background: #bd3f65; }
+  section { padding: 70px 6%; }
+  h2 { text-align: center; font-size: 1.8rem; margin-bottom: 40px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 16px; padding: 32px 20px; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+  .card .emoji { font-size: 3rem; margin-bottom: 12px; }
+  .card h3 { margin-bottom: 8px; }
+  .card .price { color: #d6537a; font-weight: 700; margin-top: 8px; }
+  .info { background: #fff; text-align: center; }
+  .info p { margin: 6px 0; }
+  footer { text-align: center; padding: 28px; background: #3b2f2f; color: #e8dcdc; font-size: 0.9rem; }
+  @media (max-width: 600px) { .hero h1 { font-size: 2rem; } nav a { margin-left: 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🌸 다온 꽃집</div>
+  <nav><a href="#menu">꽃 상품</a><a href="#info">매장 안내</a><a href="#contact">주문 문의</a></nav>
+</header>
+
+<div class="hero">
+  <h1>오늘의 마음을 꽃으로 전하세요</h1>
+  <p>매일 아침 새로 들어오는 신선한 꽃, 동네에서 정성껏 만들어 드립니다.</p>
+  <a class="btn" href="#contact">전화로 주문하기</a>
+</div>
+
+<section id="menu">
+  <h2>인기 상품</h2>
+  <div class="cards">
+    <div class="card"><div class="emoji">💐</div><h3>꽃다발</h3><p>생일, 기념일 선물용</p><div class="price">25,000원~</div></div>
+    <div class="card"><div class="emoji">🪴</div><h3>화분 · 식물</h3><p>개업, 집들이 선물</p><div class="price">15,000원~</div></div>
+    <div class="card"><div class="emoji">🌹</div><h3>꽃바구니</h3><p>감사와 축하의 마음</p><div class="price">35,000원~</div></div>
+    <div class="card"><div class="emoji">🎀</div><h3>정기 구독</h3><p>매주 집으로 배달</p><div class="price">월 40,000원~</div></div>
+  </div>
+</section>
+
+<section class="info" id="info">
+  <h2>매장 안내</h2>
+  <p>📍 서울시 ○○구 ○○로 12, 1층</p>
+  <p>🕘 매일 09:00 - 20:00 (일요일 휴무)</p>
+  <p>🚚 동네 근처 당일 배달 가능</p>
+</section>
+
+<section id="contact" style="text-align:center;">
+  <h2>주문 문의</h2>
+  <p style="margin-bottom:24px;">전화 또는 카카오톡으로 편하게 문의해 주세요.</p>
+  <a class="btn" href="tel:0212345678">02-1234-5678</a>
+</section>
+
+<footer>© 다온 꽃집 · 동네에서 가장 향기로운 가게</footer>
+</body>
+</html>

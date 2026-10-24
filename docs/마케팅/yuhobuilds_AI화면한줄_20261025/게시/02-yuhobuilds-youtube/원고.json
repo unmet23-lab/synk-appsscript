@@ -1,0 +1,15 @@
+{
+ "id": "02-yuhobuilds-youtube",
+ "brand": "yuhobuilds",
+ "platform": "youtube",
+ "account": "@yuhobuilds",
+ "format": "shorts",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "title": "AI한테 홈페이지 시키면 다 똑같은 이유 — 고치는 한 줄 #Shorts",
+ "caption": "AI한테 빵집 홈페이지를 두 번 시켰더니, 가게 이름과 문구만 다르고 큰 제목 · 둥근 버튼 둘 · 식빵 그림까지 같은 순서로 나왔어요. 꽃집 · 필라테스 학원 · 세무사 사무실도 같은 틀이었어요. AI는 따로 말 안 하면 제일 흔하고 무난한 모양을 고르거든요.\n\n요청 끝에 이 한 줄을 붙이세요(그대로 복사):\n먼저 이 가게에 어울리는 실제 물건 하나(간판, 포장지, 메뉴판 같은)를 정하고, 그 물건의 색과 글씨로 화면을 만들어 줘.\n\n빵집은 종이봉투, 꽃집은 포장지, 세무사는 서류 봉투처럼 가게마다 다른 화면이 됐어요. 처음부터 통째로 쓰려면 「【우리 가게】 홈페이지 첫 화면을 만들어 줘. HTML 파일 하나로.」 뒤에 붙이면 돼요.\n전체 프롬프트: https://synk.im/prompts/#one-object-homepage\n\n제가 해 본 범위: 한 AI로, 대화 기록 없는 새 창에서 한 번씩 — 빵집 · 필라테스 · 세무사 두 번, 꽃집 한 번(한 줄 붙인 것도 같은 수). 다른 AI에서는 아직 안 해 봤어요. 한 줄을 붙여도 종이 · 크라프트 느낌으로 몰리는 편이라(7번 중 6번), 다른 느낌을 원하면 물건을 직접 정해 주세요. 화면 속 가게 이름 · 전화 · 가격은 AI가 지어낸 예시예요.\n\n「흔한 걸 고른다」의 근거(Anthropic, 2025년 11월 12일): https://claude.com/blog/improving-frontend-design-through-skills\n제가 만든 도구들: https://synk.im/builds/\n내레이션은 AI 음성이에요.",
+ "pinnedComment": "홈페이지 요청 끝에 이 한 줄을 붙이세요 👇\n먼저 이 가게에 어울리는 실제 물건 하나(간판, 포장지, 메뉴판 같은)를 정하고, 그 물건의 색과 글씨로 화면을 만들어 줘.\n여러분 가게라면 어떤 물건이에요?\n전체 프롬프트: https://synk.im/prompts/#one-object-homepage",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md."
+}

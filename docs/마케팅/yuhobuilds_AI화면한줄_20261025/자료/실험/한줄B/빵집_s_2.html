@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>밀방울 빵집</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* 고른 물건: 이 빵집의 갈색 크라프트 빵 봉투 (붉은 갈색 도장 잉크 한 가지로만 인쇄) */
+:root{
+  --kraft:#c9a171;
+  --kraft-light:#d8b88d;
+  --kraft-dark:#a97f52;
+  --ink:#8c2f1b;
+  --ink-soft:#8c2f1bcc;
+  --text:#3b2415;
+}
+*{box-sizing:border-box;margin:0}
+body{
+  background:var(--kraft);
+  color:var(--text);
+  font-family:"Gowun Batang","Nanum Myeongjo",serif;
+  min-height:100vh;
+  background-image:
+    repeating-linear-gradient(90deg,#0000 0 3px,#7a54281a 3px 4px),
+    radial-gradient(ellipse at 30% 20%,var(--kraft-light),#0000 60%);
+}
+.wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px}
+nav{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);padding-bottom:12px;color:var(--ink);font-size:15px;letter-spacing:.08em}
+nav ul{display:flex;gap:22px;list-style:none;padding:0}
+nav a{color:inherit;text-decoration:none}
+nav a:hover{text-decoration:underline}
+.logo{font-family:"Black Han Sans",sans-serif;font-size:22px;letter-spacing:.02em}
+
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:36px;align-items:center;padding:56px 0 40px}
+.stamp-title{
+  font-family:"Black Han Sans",sans-serif;
+  color:var(--ink);
+  font-size:clamp(56px,11vw,120px);
+  line-height:.98;
+  transform:rotate(-2deg);
+  mix-blend-mode:multiply;
+  opacity:.92;
+  filter:url(#rough);
+}
+.stamp-title small{display:block;font-family:"Nanum Myeongjo",serif;font-weight:700;font-size:clamp(15px,2vw,19px);letter-spacing:.35em;margin-top:18px;transform:none}
+.lead{margin-top:26px;font-size:18px;line-height:1.85;max-width:30em}
+.lead b{color:var(--ink)}
+.cta{display:inline-block;margin-top:28px;padding:12px 26px;border:2.5px solid var(--ink);color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:.1em;border-radius:3px;transition:.15s}
+.cta:hover{background:var(--ink);color:var(--kraft-light)}
+
+/* 봉투 위에 찍힌 라벨 */
+.label{
+  border:3px double var(--ink);
+  color:var(--ink);
+  padding:22px 20px;
+  text-align:center;
+  background:#f1e3c755;
+  transform:rotate(2.5deg);
+  mix-blend-mode:multiply;
+}
+.label .big{font-family:"Black Han Sans",sans-serif;font-size:30px}
+.label hr{border:0;border-top:1.5px dashed var(--ink);margin:12px 0}
+.label dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;text-align:left;font-size:16px}
+.label dt{font-weight:700}
+.label dd{text-align:right}
+
+.menu{margin-top:20px;border-top:2px solid var(--ink);padding-top:26px}
+.menu h2{font-family:"Black Han Sans",sans-serif;color:var(--ink);font-weight:400;font-size:28px;margin-bottom:14px}
+.menu ul{list-style:none;padding:0;columns:2;column-gap:48px}
+.menu li{display:flex;align-items:baseline;gap:8px;padding:7px 0;font-size:18px;break-inside:avoid}
+.menu li::after{content:"";order:2;flex:1;border-bottom:2px dotted var(--ink-soft);transform:translateY(-4px)}
+.menu li span.n{order:1}
+.menu li span.p{order:3;color:var(--ink);font-weight:700}
+.note{margin-top:30px;color:var(--ink);font-size:15px;text-align:center;letter-spacing:.06em}
+
+@media(max-width:720px){
+  .hero{grid-template-columns:1fr;padding-top:36px}
+  .menu ul{columns:1}
+  nav ul{gap:12px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
+<div class="wrap">
+  <nav>
+    <span class="logo">밀방울</span>
+    <ul><li><a href="#menu">오늘의 빵</a></li><li><a href="#info">가게 안내</a></li><li><a href="#info">예약</a></li></ul>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <h1 class="stamp-title">갓 구운<br>빵 한 봉투<small>밀방울 빵집 · 매일 새벽 4시 반 반죽</small></h1>
+      <p class="lead">동네 골목 끝, 노란 불이 켜지면 <b>오늘의 첫 빵</b>이 나옵니다. 밀가루, 소금, 물, 시간. 많이 넣지 않고 오래 기다려서 만듭니다.</p>
+      <a class="cta" href="#info">오늘 구운 빵 예약하기</a>
+    </div>
+    <aside class="label" id="info">
+      <div class="big">밀방울 빵집</div>
+      <hr>
+      <dl>
+        <dt>영업</dt><dd>오전 7시 ~ 소진 시</dd>
+        <dt>휴무</dt><dd>매주 월요일</dd>
+        <dt>위치</dt><dd>행복길 12, 1층</dd>
+        <dt>전화</dt><dd>000-0000-0000</dd>
+      </dl>
+      <hr>
+      <div>오늘의 첫 빵 · 오전 7시</div>
+    </aside>
+  </section>
+
+  <section class="menu" id="menu">
+    <h2>오늘의 빵</h2>
+    <ul>
+      <li><span class="n">소금빵</span><span class="p">2,800</span></li>
+      <li><span class="n">통밀 식빵</span><span class="p">6,500</span></li>
+      <li><span class="n">단팥빵</span><span class="p">2,500</span></li>
+      <li><span class="n">우유 크림빵</span><span class="p">3,200</span></li>
+      <li><span class="n">치아바타</span><span class="p">4,000</span></li>
+      <li><span class="n">쑥 인절미 파이</span><span class="p">3,800</span></li>
+    </ul>
+    <p class="note">— 빵은 그날 다 팔리면 끝입니다. 일찍 오세요 —</p>
+  </section>
+</div>
+</body>
+</html>

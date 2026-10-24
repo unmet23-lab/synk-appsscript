@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>밀단빵집 – 동네 빵집</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/*
+  고른 물건: 이 빵집의 갈색 크라프트 종이 봉투.
+  봉투 종이색(크라프트 갈색), 도장 잉크(빨강), 먹색 글씨, 빵끈 크림색을 그대로 가져왔다.
+  글씨는 봉투에 찍힌 도장 같은 굵은 고딕(Black Han Sans)과 손글씨 느낌의 바탕체(Gowun Batang).
+*/
+:root{
+  --kraft:#c8a273;
+  --kraft-dark:#b58b5a;
+  --cream:#f4e9d4;
+  --ink:#2a1c12;
+  --stamp:#b3342a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--kraft);
+  color:var(--ink);
+  font-family:"Gowun Batang","Batang",serif;
+  min-height:100vh;
+  background-image:
+    radial-gradient(rgba(90,55,20,.10) 1px, transparent 1.5px),
+    radial-gradient(rgba(255,240,210,.12) 1px, transparent 1.5px);
+  background-size:7px 7px, 11px 11px;
+  background-position:0 0, 3px 5px;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 56px}
+
+/* 상단: 봉투 윗부분 접힌 선 */
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:22px 0;border-bottom:2px dashed rgba(42,28,18,.45);
+  font-size:15px;
+}
+header .logo{font-family:"Black Han Sans",sans-serif;font-size:22px;letter-spacing:.04em}
+header nav a{color:var(--ink);text-decoration:none;margin-left:22px;border-bottom:1.5px solid transparent}
+header nav a:hover{border-bottom-color:var(--stamp)}
+
+/* 첫 화면 */
+.hero{
+  display:grid;grid-template-columns:1.15fr .85fr;gap:40px;
+  align-items:center;padding:56px 0 40px;
+}
+.stampline{
+  display:inline-block;border:2.5px solid var(--stamp);color:var(--stamp);
+  padding:5px 12px;font-family:"Black Han Sans",sans-serif;font-size:14px;
+  letter-spacing:.12em;transform:rotate(-2deg);margin-bottom:22px;
+}
+h1{
+  font-family:"Black Han Sans",sans-serif;font-weight:400;
+  font-size:clamp(46px,8vw,92px);line-height:1.05;letter-spacing:-.01em;
+  color:var(--ink);
+}
+h1 span{color:var(--stamp)}
+.lead{margin-top:22px;font-size:19px;line-height:1.75;max-width:30em}
+.cta{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{
+  font-family:"Black Han Sans",sans-serif;font-size:17px;text-decoration:none;
+  padding:13px 24px;border:2.5px solid var(--ink);color:var(--ink);
+  transition:transform .15s;
+}
+.btn.fill{background:var(--ink);color:var(--cream)}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--stamp)}
+
+/* 봉투 모양 카드 */
+.bag{
+  position:relative;background:var(--cream);padding:34px 28px 28px;
+  box-shadow:0 18px 30px -12px rgba(42,28,18,.45);
+  transform:rotate(1.6deg);
+}
+.bag::before{ /* 빵끈 */
+  content:"";position:absolute;left:50%;top:-14px;width:84px;height:26px;
+  background:var(--stamp);transform:translateX(-50%);
+  clip-path:polygon(0 0,100% 0,92% 100%,8% 100%);
+}
+.bag h2{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:26px;
+  border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:6px}
+.bag ul{list-style:none}
+.bag li{
+  display:flex;justify-content:space-between;gap:12px;
+  padding:11px 0;border-bottom:1px dotted rgba(42,28,18,.5);font-size:17px;
+}
+.bag li b{font-family:"Black Han Sans",sans-serif;font-weight:400;color:var(--stamp)}
+.bag .note{margin-top:16px;font-size:14px;line-height:1.6;opacity:.85}
+
+/* 하단 안내 띠 */
+.info{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border:2.5px solid var(--ink);background:var(--cream);
+}
+.info div{padding:20px 22px;border-right:2px dashed rgba(42,28,18,.4)}
+.info div:last-child{border-right:0}
+.info small{display:block;font-family:"Black Han Sans",sans-serif;color:var(--stamp);font-size:13px;letter-spacing:.1em;margin-bottom:6px}
+.info p{font-size:17px;line-height:1.55}
+footer{margin-top:28px;text-align:center;font-size:14px;opacity:.8}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;padding-top:36px}
+  .bag{transform:rotate(0)}
+  .info{grid-template-columns:1fr}
+  .info div{border-right:0;border-bottom:2px dashed rgba(42,28,18,.4)}
+  .info div:last-child{border-bottom:0}
+  header nav a{margin-left:14px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">밀단빵집</div>
+    <nav>
+      <a href="#menu">오늘의 빵</a>
+      <a href="#visit">찾아오기</a>
+      <a href="tel:0000000000">전화</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="stampline">매일 새벽 4시 굽습니다</div>
+      <h1>갓 나온 빵을<br><span>종이봉투</span>에<br>담아 드려요</h1>
+      <p class="lead">동네에서 십이 년, 같은 자리에서 같은 반죽으로 구웠습니다. 문 열자마자 따뜻한 소보로와 식빵이 나오고, 오후엔 샌드위치가 채워집니다.</p>
+      <div class="cta">
+        <a class="btn fill" href="#menu">오늘의 빵 보기</a>
+        <a class="btn" href="#visit">가게 위치</a>
+      </div>
+    </div>
+
+    <aside class="bag" id="menu" aria-label="오늘의 빵">
+      <h2>오늘의 빵</h2>
+      <ul>
+        <li><span>우유 식빵</span><b>4,500</b></li>
+        <li><span>소보로빵</span><b>2,200</b></li>
+        <li><span>단팥 크림빵</span><b>2,500</b></li>
+        <li><span>통밀 깜빠뉴</span><b>6,000</b></li>
+        <li><span>소금빵</span><b>2,800</b></li>
+      </ul>
+      <p class="note">재료가 떨어지면 그날 구움은 끝나요.<br>예약은 전화로 받습니다.</p>
+    </aside>
+  </section>
+
+  <section class="info" id="visit">
+    <div><small>영업시간</small><p>오전 7시 – 오후 8시<br>매주 월요일 휴무</p></div>
+    <div><small>찾아오기</small><p>동네 사거리 모퉁이<br>(주소를 입력하세요)</p></div>
+    <div><small>전화</small><p>000-0000-0000<br>단체 주문 환영</p></div>
+  </section>
+
+  <footer>© 밀단빵집 · 오늘도 따뜻하게 구웠습니다</footer>
+</div>
+</body>
+</html>

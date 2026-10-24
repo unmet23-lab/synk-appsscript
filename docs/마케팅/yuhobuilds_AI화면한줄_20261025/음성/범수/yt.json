@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "yt",
+ "text": "이 한 줄은 고정 댓글에 있어요. 그대로 복사해서 붙이세요.",
+ "dur": 2.807,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.01,
+   "end": 0.023
+  },
+  {
+   "text": "한",
+   "start": 0.1,
+   "end": 0.191
+  },
+  {
+   "text": "줄은",
+   "start": 0.23,
+   "end": 0.399
+  },
+  {
+   "text": "고정",
+   "start": 0.45,
+   "end": 0.658
+  },
+  {
+   "text": "댓글에",
+   "start": 0.697,
+   "end": 0.903
+  },
+  {
+   "text": "있어요.",
+   "start": 0.942,
+   "end": 1.188
+  },
+  {
+   "text": "그대로",
+   "start": 1.59,
+   "end": 1.81
+  },
+  {
+   "text": "복사해서",
+   "start": 1.849,
+   "end": 2.199
+  },
+  {
+   "text": "붙이세요.",
+   "start": 2.237,
+   "end": 2.794
+  }
+ ],
+ "source": {
+  "key": "b0f1f4fd25b799c64856142f1333588e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

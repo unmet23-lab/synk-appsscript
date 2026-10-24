@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "에이아이한테 빵집 홈페이지를 두 번 시켰더니, 거의 똑같이 나왔어요.",
+ "dur": 3.319,
+ "words": [
+  {
+   "text": "에이아이한테",
+   "start": 0.02,
+   "end": 0.496
+  },
+  {
+   "text": "빵집",
+   "start": 0.535,
+   "end": 0.856
+  },
+  {
+   "text": "홈페이지를",
+   "start": 0.895,
+   "end": 1.32
+  },
+  {
+   "text": "두",
+   "start": 1.358,
+   "end": 1.423
+  },
+  {
+   "text": "번",
+   "start": 1.461,
+   "end": 1.565
+  },
+  {
+   "text": "시켰더니,",
+   "start": 1.603,
+   "end": 1.989
+  },
+  {
+   "text": "거의",
+   "start": 2.208,
+   "end": 2.362
+  },
+  {
+   "text": "똑같이",
+   "start": 2.401,
+   "end": 2.71
+  },
+  {
+   "text": "나왔어요.",
+   "start": 2.749,
+   "end": 3.319
+  }
+ ],
+ "source": {
+  "key": "49421681fd38e2cd5e32c076c2af72cf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>코어 필라테스 아카데미</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; color: #333; line-height: 1.6; }
+  header { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); display: flex; justify-content: space-between; align-items: center; padding: 18px 60px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .logo { font-size: 22px; font-weight: 700; color: #7a9e8e; letter-spacing: 1px; }
+  nav a { margin-left: 32px; text-decoration: none; color: #555; font-size: 15px; transition: color .2s; }
+  nav a:hover { color: #7a9e8e; }
+  .hero { height: 100vh; background: linear-gradient(135deg, #e8f1ec 0%, #f6efe6 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; }
+  .hero h1 { font-size: 52px; font-weight: 700; color: #2f4a3f; line-height: 1.3; margin-bottom: 20px; }
+  .hero p { font-size: 20px; color: #666; margin-bottom: 40px; }
+  .btns a { display: inline-block; padding: 16px 38px; margin: 0 8px; border-radius: 40px; text-decoration: none; font-size: 16px; font-weight: 500; transition: transform .2s; }
+  .btns a:hover { transform: translateY(-3px); }
+  .primary { background: #7a9e8e; color: #fff; }
+  .secondary { border: 2px solid #7a9e8e; color: #7a9e8e; }
+  .features { display: flex; justify-content: center; gap: 30px; padding: 80px 40px; background: #fff; flex-wrap: wrap; }
+  .card { width: 280px; padding: 36px 28px; border-radius: 16px; background: #f8f6f2; text-align: center; }
+  .card .icon { font-size: 40px; margin-bottom: 16px; }
+  .card h3 { margin-bottom: 10px; color: #2f4a3f; }
+  .card p { font-size: 14px; color: #777; }
+  footer { background: #2f4a3f; color: #cfdcd5; text-align: center; padding: 30px; font-size: 14px; }
+  @media (max-width: 700px) {
+    header { padding: 14px 20px; }
+    nav a { margin-left: 14px; font-size: 13px; }
+    .hero h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">CORE PILATES</div>
+  <nav>
+    <a href="#">학원 소개</a>
+    <a href="#">수업 안내</a>
+    <a href="#">강사진</a>
+    <a href="#">상담 신청</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>바른 몸, 가벼운 일상<br>코어 필라테스 아카데미</h1>
+  <p>1:1 맞춤 지도부터 소그룹 클래스까지, 당신의 몸에 맞는 수업을 만나보세요.</p>
+  <div class="btns">
+    <a href="#" class="primary">무료 체험 신청</a>
+    <a href="#" class="secondary">수업 둘러보기</a>
+  </div>
+</section>
+
+<section class="features">
+  <div class="card"><div class="icon">🧘</div><h3>1:1 맞춤 레슨</h3><p>체형 분석을 바탕으로 개인별 맞춤 프로그램을 제공합니다.</p></div>
+  <div class="card"><div class="icon">👩‍🏫</div><h3>전문 강사진</h3><p>국제 자격을 갖춘 경력 강사가 안전하게 지도합니다.</p></div>
+  <div class="card"><div class="icon">🌿</div><h3>쾌적한 스튜디오</h3><p>소수 정원제로 여유롭고 편안한 환경에서 운동하세요.</p></div>
+</section>
+
+<footer>
+  © 2026 코어 필라테스 아카데미 · 서울시 OO구 OO로 123 · 02-1234-5678
+</footer>
+</body>
+</html>
