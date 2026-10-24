@@ -5,10 +5,13 @@
  * down with its picture larger and changes no ladder state (§13-1). The state behind it never shows (G2).
  * Screen-only module: the server's plan decides which line (segment.mood), the screen only draws it.
  */
-import { MOOD_LINES } from './town/data.gen.mjs';
+import * as generated from './town/data.gen.mjs';
 import { WALK_NEAR_RADIUS } from './walk.mjs';
 
-const LINE_BY_ID = new Map(MOOD_LINES.map(line => [line.id, line]));
+// Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the
+// generated data from before the mood lines existed. Then no line shows and the town still opens — a named import
+// would instead stop the whole town from loading.
+const LINE_BY_ID = new Map((generated.MOOD_LINES || []).map(line => [line.id, line]));
 const LEVELS = ['L1', 'L2', 'L3', 'L4'];
 /** The level a one-line text shows at (§13-1 「장면이 아닌 한 줄」): the reading seat's stable level. W4 has no ladder yet → L2. */
 export function lineLevel(/* { kind: 'mood', npc, id } */) { return 'L2'; }

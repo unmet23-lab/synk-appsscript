@@ -32,6 +32,14 @@ test('지금 조각의 마음 줄만: 시각이 조각 안이고 원고가 있�
   assert.deepEqual(['L4', 'L3', 'L2', 'L1'].map(easier), ['L3', 'L2', 'L1', 'L1']);
 });
 
+test('공개 직후 캐시에 옛 생성물이 남아도 마을은 뜬다 — 마음 줄은 이름 공간으로 읽는다', () => {
+  // 이름 있는 가져오기(import { MOOD_LINES })였다면 옛 data.gen.mjs에서 모듈 연결이 실패해 화면 전체가 멈춘다(빛 표와 같은 길, town-light 시험).
+  const code = require('node:fs').readFileSync(path.join(ROOT, 'experiences/synk-town/day-mood.mjs'), 'utf8');
+  assert.match(code, /import \* as generated from '\.\/town\/data\.gen\.mjs'/);
+  assert.doesNotMatch(code, /import \{[^}]*\bMOOD_LINES\b[^}]*\} from/);
+  assert.match(code, /generated\.MOOD_LINES \|\| \[\]/);
+});
+
 // 카드가 쓰는 DOM 조각만 흉내 낸다(카드·글·단추·층).
 function fakeScene() {
   class El {

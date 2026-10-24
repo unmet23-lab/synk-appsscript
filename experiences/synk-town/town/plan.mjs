@@ -19,8 +19,8 @@ import { ARCHETYPES, RESIDENTS, ROUTINES, RAIN_ALT } from './data.gen.mjs';
 import { PLACES, SPOT_BY_ID, SPOT_GROUPS, FT_SEATS } from './places.mjs';
 import { createRng, pickByWeight } from './rng.mjs';
 import { dayKindOf, weatherAt as clockWeatherAt, weatherChangesBetween, MINUTE } from './clock.mjs';
-import { paramsFor, PER_MILLE } from './params.mjs';
-import { stateOf, running, keptState, bandEvents, advance, finishSegment, replay, stateFactors, stateCandidates, available, playerMade } from './state.mjs';
+import { paramsFor } from './params.mjs';
+import { PER_MILLE, stateOf, running, keptState, bandEvents, advance, finishSegment, replay, stateFactors, stateCandidates, available, playerMade } from './state.mjs';
 
 export const ARCHETYPE_BY_ID = Object.freeze(Object.fromEntries(ARCHETYPES.map(a => [a.id, a])));
 export const RESIDENT_BY_ID = Object.freeze(Object.fromEntries(RESIDENTS.map(r => [r.id, r])));

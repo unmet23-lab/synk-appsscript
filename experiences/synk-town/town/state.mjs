@@ -11,8 +11,15 @@
  */
 import { createRng } from './rng.mjs';
 import { weekdayOf, dayKindOf, MINUTE } from './clock.mjs';
-import { paramsFor, perMille } from './params.mjs';
+import { paramsFor } from './params.mjs';
 import { ARCHETYPES } from './data.gen.mjs';
+
+// Here rather than in params.mjs: a name new to an already published module would stop the town's module links
+// for a browser still holding the older module (the ten-minute cache). Numbers the state section also holds are
+// never written here (tests/town-params.test.js), so per-mille is 1e3.
+/** Multipliers and shares are per-mille integers (§2-4): ×1.5 is 1500. */
+export const PER_MILLE = 1e3;
+export const perMille = (n, share) => Math.floor(n * share / PER_MILLE);
 
 export const STATS = Object.freeze(['energy', 'chores', 'social']);
 /** Causes behind which the player stands (G4); their changes are good-side only. */
