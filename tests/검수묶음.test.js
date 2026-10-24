@@ -313,6 +313,84 @@ test('가져온 캡처(--캡처): 전·후/<기기>/<이름>.png를 그대로 �
   assert.match(fs.readFileSync(path.join(폴더, 목록.묶음.at(-1).파일), 'utf8'), /화면 「홈」[\s\S]*-옛 글[\s\S]*\+새 글/);
 });
 
+// 1×1 RGBA 두 장(거르개 1) — 노란 반투명 · 파란 반투명
+const 노점 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
+const 파점 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+
+test('그림 잇기: PNG 조각을 위에서부터 한 장으로 잇고, PNG가 아니면 멈춘다', async () => {
+  const { 그림잇기, png풀기 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
+  const p = png풀기(그림잇기([노점, 파점, 노점]));
+  assert.deepEqual([p.폭, p.높이, p.색], [1, 3, 6]);
+  assert.deepEqual([...p.화소], [255, 255, 0, 127, 0, 0, 255, 127, 255, 255, 0, 127]);
+  assert.throws(() => 그림잇기([노점, Buffer.from('그림 아님')]), /PNG가 아니다/);
+});
+
+test('안정된그림: 찍을 때마다 조각을 다시 정해, 조각 수나 내용이 바뀌면 다시 찍고 같아진 조각을 잇는다', async () => {
+  const { 안정된그림, png풀기 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
+  // 셋 → 둘(앞 둘과 같지만 수가 달라 같지 않다) → 둘(같음, 안정)
+  const 계획들 = [['노', '파', '노'], ['노', '파'], ['노', '파']];
+  let 회 = 0;
+  const page = { screenshot: async x => ({ 노: 노점, 파: 파점 })[x], waitForTimeout: async () => {} };
+  const r = await 안정된그림(page, async () => 계획들[Math.min(회++, 계획들.length - 1)]);
+  assert.deepEqual([r.흔들림, r.찍은수, r.조각], [false, 3, 2]);
+  assert.deepEqual([...png풀기(r.그림).화소], [255, 255, 0, 127, 0, 0, 255, 127]);
+  const 한장 = await 안정된그림(page, '노');
+  assert.ok(한장.그림.equals(노점), '조각이 하나면 찍은 그대로');
+});
+
+test('긴 쪽 캡처: 배율 2로 그림이 16,384화소를 넘는 쪽은 나눠 찍어 바닥글까지 잇고, 짧은 전과 같은 배율로 견준다', async t => {
+  let browser;
+  try {
+    const { chromium } = require('playwright');
+    browser = await chromium.launch({ channel: 'chrome', headless: true }).catch(() => chromium.launch({ headless: true }));
+  } catch { /* 아래에서 건너뜀 */ }
+  if (!browser) return t.skip('브라우저를 띄울 수 없다(playwright·Chrome 없음)');
+  await browser.close();
+  const 캡 = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-tall-'));
+  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
+  // 머리(파랑 200) + 100px 줄들(줄마다 다른 색, 글은 왼쪽 100px 밖) + 바닥글(빨강 300). 전 25줄 = CSS 3,000 · 후 90줄 = CSS 9,500(×2 = 19,000화소)
+  const 줄색 = i => [0, i * 2 % 256, i % 2 ? 0 : 128];
+  const 쪽 = 줄수 => `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>긴 쪽</title>
+<style>body{margin:0;font:16px sans-serif}header{height:200px;background:#00f}.r{height:100px;padding-left:100px;box-sizing:border-box;color:#fff}footer{height:300px;background:#f00}</style>
+<header></header>${Array.from({ length: 줄수 }, (_, i) => `<div class="r" style="background:rgb(${줄색(i)})">줄 ${i}</div>`).join('')}<footer></footer></html>`;
+  const 사이트 = path.join(뿌리, 'site');
+  fs.mkdirSync(사이트);
+  fs.writeFileSync(path.join(사이트, '전.html'), 쪽(25));
+  fs.writeFileSync(path.join(사이트, '후.html'), 쪽(90));
+  const 서버 = await 캡.정적서버(사이트);
+  let r;
+  try {
+    r = await 캡.찍기({ 화면들: [{ 이름: '긴', 주소: { 전: `${서버.주소}/전.html`, 후: `${서버.주소}/후.html` } }], 판들: [{ 이름: '전', 덧: null }, { 이름: '후', 덧: null }], 폴더: path.join(뿌리, '캡처') });
+  } finally { await 서버.닫기(); }
+  assert.deepEqual(r.못연, []);
+  const 장 = (판, 기기) => r.장들.find(x => x.판 === 판 && x.기기 === 기기);
+  const 그림 = x => 캡.png풀기(fs.readFileSync(x.그림));
+  const 색 = (p, x, y) => { const 점 = p.색 === 6 ? 4 : 3, i = (y * p.폭 + x) * 점; return [...p.화소.subarray(i, i + 3)]; };
+  const 후 = 그림(장('후', '390'));
+  assert.equal(장('후', '390').높이, 9500);
+  assert.equal(장('후', '390').조각, 2, '9,500 × 2는 한 장 한계를 넘어 두 조각으로 찍는다');
+  assert.deepEqual([후.폭, 후.높이], [780, 19000], '기기 배율(2) 그대로 CSS 높이 전체');
+  assert.deepEqual(색(후, 10, 후.높이 - 5), [255, 0, 0], '맨 아래는 바닥글');
+  assert.deepEqual(색(후, 10, 16450), 줄색(80), '16,384화소 아래도 제 줄(CSS 8,225px = 80번 줄) — 페이지 머리가 다시 찍히지 않는다');
+  assert.deepEqual(색(후, 10, 5), [0, 0, 255], '맨 위는 머리');
+  const 전 = 그림(장('전', '390'));
+  assert.ok(!장('전', '390').조각, '한 장에 들어가는 쪽은 그대로 한 번에 찍는다');
+  assert.deepEqual([전.폭, 전.높이], [780, 6000]);
+  const 큰 = 그림(장('후', '1440'));
+  assert.deepEqual([큰.폭, 큰.높이, 장('후', '1440').조각], [1440, 9500, undefined], '배율 1은 9,500px도 한 장');
+  // 짧은 전(한 장)과 긴 후(이은 그림)를 같은 배율로 견준다 — 처음 달라지는 곳은 전의 바닥글 자리(CSS 2,700px)
+  const 차 = r.차이들.find(x => x.기기 === '390');
+  assert.equal(차.같음, false);
+  assert.equal(차.위, 2700);
+  assert.equal(캡.png풀기(fs.readFileSync(차.그림)).폭, 780);
+  // 풀었다 다시 묶어도 화소가 같다 — Chromium이 묶은 그림을 odiff(따로 푸는 쪽)로 견준다
+  const { compare } = require('odiff-bin');
+  const 다시 = path.join(뿌리, '다시.png');
+  fs.writeFileSync(다시, 캡.그림잇기([fs.readFileSync(장('후', '1440').그림)]));
+  assert.equal((await compare(장('후', '1440').그림, 다시, path.join(뿌리, '다시-차이.png'), { threshold: 0 })).match, true);
+});
+
 // ── GPT 2차 검수(2026-10-22): 백엔드는 아르곤과 GPT가 같은 묶음을 함께 본다 ──
 const 답하기 = (지적 = []) => async ({ prompt }) => {
   const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
