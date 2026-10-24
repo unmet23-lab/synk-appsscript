@@ -1,16 +1,16 @@
 {
- "id": "01-ig-fb-mn",
- "brand": "LAB",
- "platform": "instagram+facebook",
- "account": "@synk.mn · SYNK(synkworld)",
- "format": "reels",
- "language": "mn",
- "audioLanguage": "zxx",
- "caption": "«12,000원» гэдгийг хэрхэн уншдаг вэ? 🧾\nСолонгосчууд 10,000-ыг нэг үгээр хэлдэг — 만.\n\n12,000원 = 만 이천 원 (ман ичөн вон)\n«십이천 원» гэж уншдаггүй.\n\n💡 1,000 = 천, 10,000 = 만 — урд нь «일» (нэг) гэж нэмж хэлдэггүй.\n\nОдоо чиний ээлж: «15,000원» гэдгийг солонгос үсгээр сэтгэгдэлд бичээрэй 👇\n(Хариу хамгийн доор байгаа)\n\nБид SYNK LAB — монгол оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia\n.\n.\n.\nХариу: 만 오천 원 (ман очөн вон)",
- "firstComment": "Дэлгүүрт их хардаг үнэ: 1,000 = 천 · 5,000 = 오천 · 10,000 = 만 · 50,000 = 오만 💸\nҮнийг үргэлж 일 · 이 · 삼… тоогоор уншдаг — 하나 · 둘 · 셋 биш.",
- "alt": [
-  "A felt mascot at a shop checkout and a receipt showing 12,000원. After a 3-2-1 countdown, the wrong reading 십이천 원 is crossed out, a card shows 10,000 = 만, the price splits into 1 | 2,000 labelled 만 | 이천, and the answer card shows 만 이천 원 with the Mongolian Cyrillic reading and meaning. At the end the receipt changes to 15,000원 and asks viewers to write it in Korean in the comments"
- ],
- "_비고": "video.mp4 = price-mn v2(18.0초, 화면 글 몽골어 · 목소리 없음 · 배경음과 효과음). Business Suite 릴스 하나로 인스타 @synk.mn · 페북 SYNK 교차 게시(M2와 같은 길). Meta AI 번역(더빙 · 입 맞추기)은 끈다. 해시태그 4개(인스타 5개 이하). 첫 댓글(가게에서 자주 보는 값)은 선택. 답은 캡션 맨 아래 — 댓글에 답글을 달지 않는다(상시 승인 밖). 표지 cover.png = 0.67초(영수증 「12,000원」 + 땀 흘리는 몽글 «Хэрхэн уншдаг вэ?»).",
- "version": "price-mn-v2"
+  "id": "01-ig-fb-mn",
+  "brand": "LAB",
+  "platform": "instagram+facebook",
+  "account": "@synk.mn · SYNK(synkworld)",
+  "format": "reels",
+  "language": "mn",
+  "audioLanguage": "zxx",
+  "caption": "«12,000원» гэдгийг хэрхэн уншдаг вэ? 🧾\nСолонгосчууд 10,000-ыг нэг үгээр хэлдэг — 만.\n\n12,000원 = 만 이천 원 (ман ичөн вон)\n«십이천 원» гэж уншдаггүй.\n\n💡 1,000 = 천 · 10,000 = 만 — эдгээрийн өмнө «일» (нэг) гэж нэмж хэлдэггүй.\n\nОдоо чиний ээлж: «15,000원» гэдгийг хэрхэн уншихыг солонгос үсгээр сэтгэгдэлд бичээрэй 👇\n(Хариулт нь энэ бичвэрийн хамгийн доор байна)\n\nБид SYNK LAB — монголчуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia\n.\n.\n.\nХариулт: 만 오천 원 (ман очөн вон)",
+  "firstComment": "Дэлгүүрт элбэг тааралддаг үнэ: 1,000 = 천 · 5,000 = 오천 · 10,000 = 만 · 50,000 = 오만 💸\nҮнийг 하나 · 둘 · 셋 гэж биш, үргэлж 일 · 이 · 삼 гэсэн тоогоор уншдаг.",
+  "alt": [
+    "A felt mascot at a shop checkout and a receipt showing 12,000원. After a 3-2-1 countdown, the wrong reading 십이천 원 gets an X, the price splits into 1 | 2,000 labelled 만 | 이천 while a card shows 10,000 = 만 and 2,000 = 이천, and the answer card shows 만 이천 원 with the Mongolian Cyrillic reading and = 12,000 won. At the end the receipt changes to 15,000원 and asks viewers to write how to read it in Korean in the comments"
+  ],
+  "_비고": "video.mp4 = price-mn v3(16.5초, 화면 글 몽골어 · 목소리 없음 · 배경음과 효과음 — 이해 시험 v1 3점 뒤 다시 짠 판). Business Suite 릴스 하나로 인스타 @synk.mn · 페북 SYNK 교차 게시(M2와 같은 길). Meta AI 번역(더빙 · 입 맞추기)은 끈다. 해시태그 4개(인스타 5개 이하). 첫 댓글(가게에서 자주 보는 값)은 선택. 답은 캡션 맨 아래 — 댓글에 답글을 달지 않는다(상시 승인 밖). 표지 cover.png = 0.67초(영수증 「12,000원」 + 땀 흘리는 몽글 «Хэрхэн уншдаг вэ?»).",
+  "version": "price-mn-v3"
 }

@@ -69,23 +69,22 @@ const ZIG = (() => {
   return `polygon(${pts.join(', ')})`;
 })();
 
-/** 3 · 2 · 1 고리(영수증 오른쪽 위 모서리). */
-const Countdown: React.FC = () => {
+/** 3 · 2 · 1 고리 — v2부터 「3초 안에 소리 내어 읽어 보세요」 글 바로 위(질문 카드 안)에 둔다(v1은 영수증 모서리라 무엇을 세는지 몰랐다). */
+const Countdown: React.FC<{ size: number }> = ({ size }) => {
   const t = useT();
   if (t < T.count || t >= T.wrong) return null;
   const k = Math.min(2, Math.floor(t - T.count));
   const p = (t - T.count) % 1;
   const pulse = 1 + 0.12 * Math.max(0, 1 - p * 4);
-  const out = interpolate(t, [T.wrong - 0.2, T.wrong], [1, 0], clamp);
-  const R = 74, L = 2 * Math.PI * R;
+  const c = size / 2, R = size * 0.39, L = 2 * Math.PI * R;
   return (
-    <div style={{ position: 'absolute', left: RC.w - 150, top: -60, width: 190, height: 190, transform: `scale(${pulse * out})`, opacity: out }}>
-      <svg width={190} height={190} style={{ position: 'absolute', inset: 0 }}>
-        <circle cx={95} cy={95} r={88} fill={C.butter} />
-        <circle cx={95} cy={95} r={R} fill="none" stroke={C.ink} strokeOpacity={0.15} strokeWidth={12} />
-        <circle cx={95} cy={95} r={R} fill="none" stroke={C.ink} strokeWidth={12} strokeLinecap="round" strokeDasharray={L} strokeDashoffset={L * ((t - T.count) / 3)} transform="rotate(-90 95 95)" />
+    <div style={{ position: 'relative', width: size, height: size, transform: `scale(${pulse})`, transformOrigin: 'left center' }}>
+      <svg width={size} height={size} style={{ position: 'absolute', inset: 0 }}>
+        <circle cx={c} cy={c} r={size * 0.46} fill={C.butter} />
+        <circle cx={c} cy={c} r={R} fill="none" stroke={C.ink} strokeOpacity={0.15} strokeWidth={size * 0.06} />
+        <circle cx={c} cy={c} r={R} fill="none" stroke={C.ink} strokeWidth={size * 0.06} strokeLinecap="round" strokeDasharray={L} strokeDashoffset={L * ((t - T.count) / 3)} transform={`rotate(-90 ${c} ${c})`} />
       </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: EN, fontWeight: 900, fontSize: 104, color: C.ink }}>{3 - k}</div>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: EN, fontWeight: 900, fontSize: size * 0.55, color: C.ink }}>{3 - k}</div>
     </div>
   );
 };
@@ -156,13 +155,12 @@ const Receipt: React.FC = () => {
       {t >= T.end + 0.35 ? (
         <div style={{ position: 'absolute', right: 24, top: 24, width: 150, height: 150, borderRadius: 75, background: C.butter, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: EN, fontWeight: 900, fontSize: 110, color: C.ink, transform: `scale(${q}) rotate(${Math.sin(t * 4) * 6}deg)` }}>?</div>
       ) : null}
-      <Countdown />
     </div>
   );
 };
 
 // ── 아래 카드 ────────────────────────────────────────────────────
-const CARD = { x: 60, y: 1010, w: 840, h: 400 };
+const CARD = { x: 60, y: 990, w: 840, h: 430 };
 
 const CardShell: React.FC<{ from: number; to: number | null; bg: string; children: React.ReactNode; instant?: boolean }> = ({ from, to, bg, children, instant }) => {
   const t = useT();
@@ -202,12 +200,15 @@ const HookCard: React.FC = () => {
   return (
     <CardShell from={0} to={T.wrong} bg={C.bake} instant>
       <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <div style={{ width: 380, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Mongle src="img/mongle_puzzled.jpg" size={410} />
+        <div style={{ width: 360, height: CARD.h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Mongle src="img/mongle_puzzled.jpg" size={400} />
         </div>
         <div style={{ flex: 1, paddingRight: 40 }}>
           {counting ? (
-            <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 52, lineHeight: 1.12, color: C.paper, opacity: fade(sc), transform: `translateY(${(1 - sc) * 20}px)` }}>{MN.count}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, opacity: fade(sc), transform: `translateY(${(1 - sc) * 20}px)` }}>
+              <Countdown size={150} />
+              <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 48, lineHeight: 1.1, color: C.paper }}>{MN.count}</div>
+            </div>
           ) : (
             <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 70, lineHeight: 1.05, color: C.paper }}>{MN.hook}</div>
           )}
@@ -229,34 +230,34 @@ const Stamp: React.FC<{ at: number; mark: '✗' | '✓'; color: string; size: nu
   );
 };
 
-const WrongCard: React.FC = () => {
-  const t = useT();
-  const strike = interpolate(t, [T.wrong + 0.55, T.wrong + 0.85], [0, 1], { ...clamp, easing: EASE });
-  return (
-    <CardShell from={T.wrong} to={T.rule} bg={C.paper}>
-      <div style={{ position: 'absolute', left: 60, top: 56, fontFamily: EN, fontWeight: 800, fontSize: 58, color: C.ink }}>{MN.wrong}</div>
-      <div style={{ position: 'absolute', left: 56, top: 170, fontFamily: KO_FONT, fontWeight: 900, fontSize: 120, lineHeight: 1, color: C.ink, opacity: 1 - 0.45 * strike }}>
-        {KO.wrong}
-        <div style={{ position: 'absolute', left: -10, top: 62, height: 14, borderRadius: 7, width: `${strike * 104}%`, background: C.pop }} />
-      </div>
-      <Stamp at={T.wrong + 0.55} mark="✗" color={C.pop} size={160} style={{ right: 30, top: 150 }} />
-    </CardShell>
-  );
-};
+/** 오답 — v2는 줄을 긋지 않는다(v1 정지컷에서 줄 때문에 「심이천」으로 읽혔다). 글은 그대로 또렷이, 색과 ✗ 도장으로 틀림을 보인다. */
+const WrongCard: React.FC = () => (
+  <CardShell from={T.wrong} to={T.rule} bg={C.paper}>
+    <div style={{ position: 'absolute', left: 60, top: 64, fontFamily: EN, fontWeight: 800, fontSize: 60, color: C.ink }}>{MN.wrong}</div>
+    <div style={{ position: 'absolute', left: 56, top: 190, fontFamily: KO_FONT, fontWeight: 900, fontSize: 128, lineHeight: 1, color: C.popDeep }}>{KO.wrong}</div>
+    <Stamp at={T.wrong + 0.45} mark="✗" color={C.pop} size={160} style={{ right: 60, top: 170 }} />
+  </CardShell>
+);
 
+/** 규칙 — 영수증의 파랑 「1」 · 노랑 「2,000」과 같은 색 칸으로 10,000 = 만 · 2,000 = 이천을 한 줄씩. */
 const RuleCard: React.FC = () => {
   const t = useT();
-  const s2 = useSpringAt(T.rule + 0.45);
-  const pulse = t > T.rule + 0.8 ? 1 + 0.03 * Math.sin((t - T.rule) * 5) : 1;
+  const row2 = useSpringAt(T.rule + 0.4);
+  const s3 = useSpringAt(T.rule + 0.8);
+  const pulse = t > T.rule + 0.6 ? 1 + 0.025 * Math.sin((t - T.rule) * 5) : 1;
+  const row = (num: string, ko: string, bg: string, fg: string, numSize: number, koSize: number) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+      <div style={{ width: 330, textAlign: 'right', fontFamily: EN, fontWeight: 900, fontSize: numSize, color: C.ink, letterSpacing: -2 }}>{num}</div>
+      <div style={{ fontFamily: EN, fontWeight: 900, fontSize: numSize * 0.8, color: C.ink, opacity: 0.4 }}>=</div>
+      <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: koSize, color: fg, background: bg, borderRadius: 26, padding: '0 26px', lineHeight: `${koSize * 1.2}px` }}>{ko}</div>
+    </div>
+  );
   return (
     <CardShell from={T.rule} to={T.answer} bg={C.paper}>
       <div style={{ position: 'absolute', inset: 0, border: `6px solid ${C.lapis}`, borderRadius: 40 }} />
-      <div style={{ position: 'absolute', left: 0, width: CARD.w, top: 56, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 34, transform: `scale(${pulse})` }}>
-        <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 132, color: C.ink, letterSpacing: -2 }}>{KO.ruleL}</div>
-        <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 110, color: C.ink, opacity: 0.4 }}>=</div>
-        <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 168, color: C.paper, background: C.lapis, borderRadius: 30, padding: '0 30px', lineHeight: '200px' }}>{KO.man}</div>
-      </div>
-      <div style={{ position: 'absolute', left: 50, width: CARD.w - 100, top: 270, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 50, lineHeight: 1.1, color: C.lapisDeep, opacity: fade(s2), transform: `translateY(${(1 - s2) * 16}px)` }}>{MN.rule}</div>
+      <div style={{ position: 'absolute', left: 40, top: 30, transform: `scale(${pulse})`, transformOrigin: 'left center' }}>{row('10,000', KO.man, C.lapis, C.paper, 104, 118)}</div>
+      <div style={{ position: 'absolute', left: 40, top: 186, opacity: fade(row2), transform: `translateY(${(1 - row2) * 20}px)` }}>{row('2,000', KO.ichon, C.butter, C.ink, 84, 88)}</div>
+      <div style={{ position: 'absolute', left: 50, width: CARD.w - 100, top: 318, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.1, color: C.lapisDeep, opacity: fade(s3) }}>{MN.rule}</div>
     </CardShell>
   );
 };
@@ -269,7 +270,7 @@ const AnswerCard: React.FC = () => {
   return (
     <>
       <CardShell from={T.answer} to={T.end} bg={C.paper}>
-        <div style={{ position: 'absolute', left: 56, top: 58, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ position: 'absolute', left: 56, top: 72, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 132, lineHeight: 1.05, color: C.ink }}>{KO.answer}</div>
           <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 52, color: C.lapisDeep, marginTop: 8, opacity: fade(readS), transform: `translateY(${(1 - readS) * 16}px)` }}>[{MN.read}]</div>
           <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 58, color: C.ink, marginTop: 4, opacity: fade(meanS), transform: `translateY(${(1 - meanS) * 20}px)` }}>{MN.mean}</div>
@@ -278,24 +279,29 @@ const AnswerCard: React.FC = () => {
       </CardShell>
       {t >= T.answer + 0.2 && t < T.end ? (
         <div style={{ position: 'absolute', left: CARD.x + 40, top: CARD.y - 46, background: C.meadow, color: C.paper, borderRadius: 28, padding: '10px 28px 12px', fontFamily: EN, fontWeight: 800, fontSize: 44, opacity: fade(pillS) * interpolate(t, [T.end - 0.1, T.end + 0.15], [1, 0], clamp), transform: `scale(${0.8 + 0.2 * pillS})`, transformOrigin: 'left center' }}>
-          {MN.check}
+          ✓ {MN.check}
         </div>
       ) : null}
     </>
   );
 };
 
+/** 끝 문제 — v2는 「15,000원 = ?」를 카드에도 크게 두고 「읽는 법을 댓글에 한글로」를 또렷이(v1은 무엇을 하라는지 몰랐다). */
 const EndCard: React.FC = () => {
-  const s2 = useSpringAt(T.end + 0.6);
+  const s1 = useSpringAt(T.end + 0.35);
+  const s2 = useSpringAt(T.end + 0.8);
   return (
     <CardShell from={T.end} to={null} bg={C.bake}>
       <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <div style={{ width: 330, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Mongle src="img/mongle_happy.jpg" size={370} hop />
+        <div style={{ width: 230, height: CARD.h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Mongle src="img/mongle_happy.jpg" size={290} hop />
         </div>
-        <div style={{ flex: 1, paddingRight: 34, display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 72, lineHeight: 1.05, color: C.paper }}>{MN.endQ}</div>
-          <div style={{ alignSelf: 'flex-start', background: C.paper, borderRadius: 22, padding: '12px 20px 14px', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1.12, color: C.lapisDeep, opacity: fade(s2), transform: `scale(${0.8 + 0.2 * s2})`, transformOrigin: 'left center' }}>
+        <div style={{ flex: 1, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 62, lineHeight: 1.05, color: C.paper }}>{MN.endQ}</div>
+          <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 84, lineHeight: 1.05, color: C.butter, opacity: fade(s1), transform: `scale(${0.85 + 0.15 * s1})`, transformOrigin: 'left center' }}>
+            {NEXT}원 <span style={{ fontFamily: EN }}>= ?</span>
+          </div>
+          <div style={{ alignSelf: 'flex-start', background: C.paper, borderRadius: 22, padding: '10px 18px 12px', fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.12, color: C.lapisDeep, opacity: fade(s2), transform: `scale(${0.85 + 0.15 * s2})`, transformOrigin: 'left center' }}>
             {MN.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
           </div>
         </div>
@@ -317,7 +323,7 @@ const Sound: React.FC = () => (
     {[0, 1, 2].map((k) => (
       <Sfx key={k} file="tick.wav" at={T.count + k} vol={0.5} />
     ))}
-    <Sfx file="tok.wav" at={T.wrong + 0.55} vol={0.6} />
+    <Sfx file="tok.wav" at={T.wrong + 0.45} vol={0.6} />
     <Sfx file="sparkle.wav" at={T.rule} vol={0.35} />
     <Sfx file="pop.wav" at={T.split + 0.15} vol={0.45} />
     <Sfx file="pop.wav" at={T.split + 0.37} vol={0.45} />
