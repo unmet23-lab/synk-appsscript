@@ -171,6 +171,58 @@ h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;line-height:1.1;letter-spaci
 
 .foot{max-width:880px;margin-top:28px;padding:0 4px;font-size:13px;line-height:1.55;color:var(--on-frame-3)}
 
+/* ── 지난 판과 바뀐 곳(10-24) — 새 링크에서 직전에 답한 판과 견준 것. 「전/후」는 글자로도 쓰고(색만이 아님) 바뀐 낱말만 칠한다.
+ *    색은 이 블록 안에서만 쓰므로 :root 대신 .layout에 둔다. ── */
+.layout{--del-bg:#FCEDEA;--del-mark:#F6C8C1;--del-ink:#8E2A20;--ins-bg:#E9F3E2;--ins-mark:#C9E3B8;--ins-ink:#24561A;--tag-bg:#EAF0FB}
+.facts .fact-diff{padding:0;background:none;box-shadow:none}
+.facts .fact-diff button{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:6px 14px;border:0;border-radius:999px;background:var(--tint);color:var(--ink);font-size:14px;font-weight:600;line-height:1.3}
+.facts .fact-diff button::before{content:'';flex:none;width:8px;height:8px;border-radius:50%;background:var(--lapis)}
+.facts .fact-diff button:hover{box-shadow:0 0 0 3px rgba(197,214,245,.35)}
+.changes>.note{margin-top:8px}
+.asked{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.asked h3,.change-body h4{font-size:13px;font-weight:600;line-height:1.4;color:var(--ink-3)}
+.msgs.is-small{gap:8px;margin-top:10px}
+.msgs.is-small .msg{padding:10px 12px}
+.msgs.is-small .msg-text{margin-top:6px;font-size:14px}
+.more,.view-post{justify-self:start;min-height:40px;margin-top:10px;padding:8px 15px;border:1px solid var(--line-2);border-radius:999px;background:var(--paper);color:var(--ink);font-size:14px;font-weight:600;line-height:1.3}
+.view-post{margin-top:2px}
+.more:hover,.view-post:hover{box-shadow:0 0 0 3px rgba(61,107,201,.28)}
+.change-list{margin-top:14px;padding:0;list-style:none;border-top:1px solid var(--line)}
+.change{border-bottom:1px solid var(--line)}
+.change-group{padding:14px 0 2px;font-size:13px;font-weight:600;line-height:1.4;color:var(--ink-3)}
+.change summary{position:relative;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:13px 30px 13px 0;cursor:pointer;list-style:none}
+.change summary::-webkit-details-marker{display:none}
+.change summary::after{content:'';position:absolute;right:8px;top:19px;width:8px;height:8px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);transition:transform .16s var(--ease)}
+.change details[open]>summary::after{top:23px;transform:rotate(-135deg)}
+.change-label{font-size:15px;font-weight:600;line-height:1.45}
+.change-meta{font-size:13px;line-height:1.45;color:var(--ink-3)}
+.change-body{display:grid;gap:8px;padding:0 0 16px}
+.change-files{display:grid;gap:4px;margin:0;padding:0 0 0 20px;font-size:14px;line-height:1.5}
+.diff{display:grid;gap:3px}
+.diff-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:baseline;gap:8px;margin:0;padding:5px 10px;border-radius:10px;font-size:14px;line-height:1.58}
+.diff-side{font-size:13px;font-weight:700}
+.diff-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.diff-row.is-removed{background:var(--del-bg)}
+.diff-row.is-removed .diff-side{color:var(--del-ink)}
+.diff-row.is-added{background:var(--ins-bg)}
+.diff-row.is-added .diff-side{color:var(--ins-ink)}
+.diff-row.is-same{color:var(--ink-3)}
+.diff-row.is-skip{display:block;padding:2px 10px;font-size:13px;color:var(--ink-3)}
+.diff-row.is-gap{display:block;height:6px;padding:0}
+.diff del{border-radius:3px;background:var(--del-mark);color:var(--del-ink);text-decoration:line-through;text-decoration-thickness:1px}
+.diff ins{border-radius:3px;background:var(--ins-mark);color:var(--ins-ink);text-decoration:none}
+.diff del.is-whole,.diff ins.is-whole{background:none}
+.is-blank{font-size:13px;color:var(--ink-3)}
+.diff-label{margin-top:4px;font-size:13px;font-weight:600;color:var(--ink-3)}
+/* 카드 안 표 — 미리 보기를 가리지 않게 작게. 사진 칸 표는 개수 표(오른쪽 위)와, 여러 장 띠에서 옆 칸의 개수 표와도 겹치지 않게 왼쪽 아래. */
+.tag{display:inline-flex;align-items:center;gap:6px;justify-self:start;padding:2px 9px 2px 8px;border-radius:999px;background:var(--tag-bg);color:var(--mark);font-size:13px;font-weight:600;line-height:1.5;letter-spacing:0;white-space:nowrap;vertical-align:middle}
+.tag::before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:var(--lapis)}
+.settings dt .tag{margin-left:6px}
+.copy-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.post-flag{padding:9px 18px;background:var(--tag-bg);color:var(--mark);font-size:13px;font-weight:600;line-height:1.4}
+.frame-tag{position:absolute;bottom:12px;left:12px;padding:5px 10px;border-radius:999px;background:rgba(8,9,12,.62);color:#fff;font-size:13px;font-weight:600;line-height:1.2}
+.post:focus-visible,.content>.sheet:focus-visible{outline:2px solid var(--tint);outline-offset:3px}
+
 /* ── 아래 떠 있는 결정 막대(좁은 화면, 답하기 전에만 — PULSE 고객 화면의 결정 막대와 같은 쓰임) ── */
 .dock{position:fixed;z-index:20;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;max-width:640px;margin:0 auto;padding:8px 8px 8px 16px;border-radius:999px;background:var(--glass-strong);box-shadow:var(--glass-edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
 .dock-state{display:inline-flex;align-items:center;gap:8px;margin-right:auto;font-size:14px;font-weight:600;color:var(--on-frame);white-space:nowrap}
@@ -196,9 +248,13 @@ h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;line-height:1.1;letter-spaci
   .copies,.settings{margin:0 16px}
   .slot{grid-template-columns:minmax(0,1fr) auto}
   .slot-who{grid-column:1/-1;grid-row:2}
+  .diff-row{grid-template-columns:20px minmax(0,1fr);gap:6px;padding:5px 8px}
+  .post-flag{padding:9px 16px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
 @media (forced-colors:active){
   .sheet,.post,.facts li,.load,.actions button,.retry,.msg,.copy,.closed{border:1px solid CanvasText}
   .facts .fact-state::before,.msg-tag::before{forced-color-adjust:none}
+  .diff-row,.tag,.post-flag,.frame-tag,.facts .fact-diff button,.more,.view-post{border:1px solid CanvasText}
+  .diff ins{text-decoration:underline}
 }

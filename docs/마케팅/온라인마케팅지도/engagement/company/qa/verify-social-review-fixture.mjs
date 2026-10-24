@@ -7,6 +7,8 @@
 //   optional  필수 아닌 검토, 일정 없음, 콘텐츠 만료 있음
 //   long      긴 제목·긴 문구·해시태그 많음·계정 넷(인스타·페이스북·유튜브·틱톡)·의견 여럿
 //   revoked   거둔 링크(서버가 410)
+//   revised   고친 판(10-24) — 의견·수정 요청을 받은 판을 고쳐 다시 승인·예약한 새 링크, 지난 판과 바뀐 곳이 보임
+//   before    그 지난 판의 옛 링크(고친 뒤라 서버가 410)
 // 쓰는 법: node qa/verify-social-review-fixture.mjs [port]
 //   → 한 줄 JSON { base, links: { 장면: 주소 }, directory }. 표준입력에 stop을 보내면 멈추고 폴더를 지운다(윈도는 자식에 SIGINT가 잘 안 간다).
 import { execFileSync } from 'node:child_process';
@@ -29,6 +31,7 @@ const ff = (...args) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'er
 mkdirSync(media, { recursive: true });
 ff('-i', join(demo, 'scene-1.png'), '-vf', 'scale=-2:1350,crop=1080:1350', join(media, 'moru-1.png'));
 ff('-i', join(demo, 'scene-2.png'), '-vf', 'scale=-2:1350,crop=1080:1350:x=(iw-1080)*0.62', join(media, 'moru-2.png'));
+ff('-i', join(demo, 'scene-3.png'), '-vf', 'scale=-2:1350,crop=1080:1350:x=(iw-1080)*0.35', join(media, 'moru-3.png'));
 ff('-loop', '1', '-i', join(demo, 'scene-3.png'), '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-vf', 'scale=-2:1920,crop=1080:1920,format=yuv420p',
   '-t', '4', '-r', '30', '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', join(media, 'daily-short.mp4'));
 
@@ -90,7 +93,7 @@ async function upload(file, type) {
   return { assetId: data.asset.id };
 }
 const short = await upload(join(media, 'daily-short.mp4'), 'video/mp4');
-const moru1 = await upload(join(media, 'moru-1.png'), 'image/png'), moru2 = await upload(join(media, 'moru-2.png'), 'image/png');
+const moru1 = await upload(join(media, 'moru-1.png'), 'image/png'), moru2 = await upload(join(media, 'moru-2.png'), 'image/png'), moru3 = await upload(join(media, 'moru-3.png'), 'image/png');
 const film = await upload(join(demo, 'preview-v2.mp4'), 'video/mp4');
 
 const day = (days, hour, minute = 0) => { const d = new Date(Date.now() + days * 86400000), kst = new Date(d.getTime() + 9 * 3600000).toISOString().slice(0, 10);
@@ -109,8 +112,10 @@ async function post(input, { approve = true, schedules = [], link = {}, answers 
     revision = (await response.json()).review.revision;
   }
   if (revoke) await call(`/api/social/review-links/${made.link.id}/revoke`, { method: 'POST', body: { revision } });
+  rows.set(made.url, row);
   return made.url;
 }
+const rows = new Map();
 
 const daily = await post({ title: '멈춘 시간 재기', body: '', variants: [
   { channelId: 'yb-ig', format: 'reel', text: '42초 쇼츠를 재 보니 24초가 멈춰 있었어요.\n\n멈춘 구간을 찾는 법은 고정 댓글에 적어 둘게요.\n\n#쇼츠만들기 #영상편집 #유호빌드', media: [short], options: { shareToFeed: true, madeWithAi: true } },
@@ -148,4 +153,31 @@ const long = await post({ title: '모루 커피 가을 시즌 전체 정리 — 
 
 const revoked = await post({ title: '거둔 링크', body: '', variants: [{ channelId: 'yb-ig', format: 'image', text: '거둔 링크', media: [moru1], options: {} }] }, { revoke: true });
 
-console.log(JSON.stringify({ base: origin + '/social-review', links: { daily, customer, approved, optional, long, revoked, notoken: origin + '/social-review' }, directory }));
+// 고친 판(10-24): 고객 장면처럼 의견·수정 요청을 받은 게시물을 담당자가 고쳐(가격 줄 빼기·물 온도 고침·두 번째 사진 바꿈·
+// 첫 댓글 고침·일정 하루 미룸) 다시 승인·예약하고 새 링크를 만든다. 옛 링크(before)는 서버가 닫고, 새 링크(revised)에 지난 판과 바뀐 곳이 보인다.
+async function revise(url, input, schedules) {
+  const id = rows.get(url).id;
+  let { data: { post: row } } = await call(`/api/social/posts/${id}`, { method: 'POST', body: { revision: rows.get(url).revision, ...input } });
+  ({ data: { post: row } } = await call(`/api/social/posts/${id}/action`, { method: 'POST', body: { revision: row.revision, action: 'approve', note: '합성 검토 — 고친 판' } }));
+  for (const [scheduledAt, channelIds] of schedules)
+    await call(`/api/social/posts/${id}/action`, { method: 'POST', body: { revision: row.revision, action: 'schedule', mode: 'fixed', scheduledAt, timezone: 'Asia/Seoul', channelIds } });
+  const { data: made } = await call(`/api/social/posts/${id}/review-links`, { method: 'POST', body: { revision: row.revision, expiresInHours: 72, required: true, label: '고친 판 검토' } });
+  return made.url;
+}
+const priced = moruText.replace('\n\n#모루커피', '\n가격은 한 상자 1만 2천 원이에요.\n\n#모루커피');
+const firstIg = { channelId: 'moru-ig', format: 'carousel', text: priced, media: [moru1, moru2],
+  options: { firstComment: '원두 이야기는 프로필 링크에서 볼 수 있어요.', altText: '모루 드립백 봉투와 커피 한 잔', hashtags: '#모루커피 #드립백' },
+  copyVariants: [{ id: 'second', text: '두 번째 주에도 같은 루틴으로.\n물 온도는 92도면 충분해요.\n\n#모루커피 #드립백' }] };
+const firstFb = { channelId: 'moru-fb', format: 'video', text: '15초 안에 담은 모루의 아침. 새 원두는 이번 주부터 매장과 온라인에서 만나요.', media: [film], options: { link: 'https://moru.example/drip' } };
+const before = await post({ title: '가을 첫 잔 — 드립백 새 원두', body: '모루 드립백 가을 원두 소개. 인스타는 사진 두 장, 페이스북은 15초 예고편으로 올려요.', recurrence: { intervalDays: 7, maxOccurrences: 3 }, variants: [firstIg, firstFb] },
+  { schedules: [[day(3, 12), ['moru-ig', 'moru-fb']]], link: { label: '모루 마케팅팀 검토', expiresInHours: 120 }, answers: [
+    { decision: 'comment', name: '김지은', comment: '두 번째 사진은 원두가 더 잘 보이는 컷이면 좋겠어요.' },
+    { decision: 'reject', name: '박서준 · 모루 마케팅', comment: '가격 문구는 빼 주세요. 첫 댓글은 「프로필 맨 위 링크」로 바꿔 주세요.\n두 번째 주 문구의 물 온도는 90도로, 올리는 날은 하루 미뤄 주세요.' },
+  ] });
+const revised = await revise(before, { variants: [
+  { ...firstIg, text: moruText, media: [moru1, moru3], options: { ...firstIg.options, firstComment: '원두 이야기는 프로필 맨 위 링크에서 볼 수 있어요.' },
+    copyVariants: firstIg.copyVariants.map(copy => ({ ...copy, text: copy.text.replace('92도', '90도') })) },
+  firstFb,
+] }, [[day(4, 12), ['moru-ig', 'moru-fb']]]);
+
+console.log(JSON.stringify({ base: origin + '/social-review', links: { daily, customer, approved, optional, long, revoked, revised, before, notoken: origin + '/social-review' }, directory }));

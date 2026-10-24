@@ -16,6 +16,7 @@ function fixture(hash='#token='+token,globals={}){
     querySelectorAll(selector){return this.children.flatMap(child=>[...selector.split(',').includes(child.tagName)?[child]:[],...child.querySelectorAll(selector)]);}
     set innerHTML(_){throw Error('untrusted HTML rendering');}
     focus(){this.focused=true;}
+    scrollIntoView(){this.scrolled=true;}
     setAttribute(name,value){this.attributes={...this.attributes,[name]:String(value)};}
     getAttribute(name){return this.attributes?.[name]??null;}
   }
@@ -121,6 +122,67 @@ test('the floating decision bar shows only while the link waits for an answer an
   f.ids['review-retry'].handlers.click();f.resolveRequest(2,{...opened,review:{...opened.review,revision:2,status:'approved',decision:'approve',feedback:[{name:'',comment:'',decision:'approve',createdAt:'2026-10-13T00:00:00Z'}]}});await flush();
   assert.equal(f.ids['review-dock'].hidden,true,'nothing left to decide');assert.match(f.text(f.ids['review-facts']),/승인됨/);
   const closed=fixture('');assert.equal(closed.ids['review-dock'].hidden,true);
+});
+// 지난 판과 바뀐 곳(10-24)
+const all=(node,keep)=>[...(keep(node)?[node]:[]),...(node.children||[]).flatMap(child=>all(child,keep))];
+const byClass=(root,name)=>all(root,node=>String(node.className||'').split(' ').includes(name));
+const account={name:'검토 계정',platform:'instagram',profile:'@review'};
+const revised={state:'compared',contentVersion:1,answeredAt:'2026-10-13T01:00:00Z',decision:'reject',decidedAt:'2026-10-13T01:00:00Z',requestTotal:3,truncated:false,
+  requests:[{name:'가',comment:'첫 의견',decision:'comment',createdAt:'2026-10-13T00:10:00Z'},{name:'나',comment:'<img src=x onerror=alert(1)>',decision:'comment',createdAt:'2026-10-13T00:20:00Z'},{name:'다',comment:'가격 문구는 빼 주세요',decision:'reject',createdAt:'2026-10-13T01:00:00Z'}],
+  changes:[
+    {kind:'text',field:'text',variant:'v0',account,rows:[{type:'same',text:'하루'},{type:'removed',text:'<script>old</script> 가격은 1만 원'},{type:'same',text:''},{type:'removed',parts:[{text:'물 온도는 ',changed:false},{text:'92도면',changed:true}]},{type:'added',parts:[{text:'물 온도는 ',changed:false},{text:'90도면',changed:true}]},{type:'skip',count:3}],stats:{changed:1,removed:1,added:0}},
+    {kind:'media',field:'media',variant:'v0',account,items:[{change:'replaced',index:1,key:'v0m0',type:'image',width:100,height:100,duration:null,before:{type:'image',width:200,height:100,duration:null}}]},
+    {kind:'options',field:'options',variant:'v0',account,items:[{key:'firstComment',before:'옛 댓글',after:'첫 댓글'}]},
+    {kind:'copies',field:'copyVariants',variant:'v0',account,items:[{index:1,change:'changed',text:{rows:[{type:'removed',text:'옛 반복'},{type:'added',text:'반복 문구'}],stats:{changed:0,removed:1,added:1}}}]},
+    {kind:'value',field:'variantTitle',variant:'v0',account,before:'옛 제목',after:'제목'},
+    {kind:'presence',field:'variant',change:'removed',account:{name:'페이스북 계정',platform:'facebook',profile:''}},
+    {kind:'schedule',field:'schedule',removed:[{account:'검토 계정',scheduledAt:'2026-10-14T00:00:00Z',timezone:'Asia/Seoul',cancelled:false}],added:[{account:'검토 계정',scheduledAt:'2026-10-15T00:00:00Z',timezone:'Asia/Seoul',cancelled:false}]}]};
+const withPrevious=previous=>({...opened,review:{...opened.review,previous}});
+test('a revised link opens with a chip, a sheet of what changed, the answers left then, and small marks inside the post (2026-10-24)',async()=>{
+  const f=fixture();f.resolveRequest(0,withPrevious(revised));await flush();
+  const facts=f.text(f.ids['review-facts']),content=f.ids['review-content'],sheet=byClass(content,'changes')[0];
+  assert.match(facts,/바뀐 곳 6/,'the instagram title change is not shown, like the card');assert.ok(sheet);assert.equal(content.children[0],sheet,'the sheet comes first');
+  const text=f.text(sheet);
+  for(const pattern of [/지난 판과 바뀐 곳/,/10월 13일에 수정을 요청한 판\(버전 1\)과 견줬어요/,/그때 남긴 의견/,/가격 문구는 빼 주세요/,/<img src=x onerror=alert\(1\)>/,/앞의 의견 1개 더 보기/,/올라가는 때\n10월 14일 → 10월 15일[\s\S]*검토 계정 · 인스타그램\n+문구\n고친 줄 1 · 뺀 줄 1/,/사진 1 바뀜/,/첫 댓글/,/문구 2 고침/,/페이스북 계정 · 페이스북\n+이번 판에서 뺀 게시물/])assert.match(text,pattern);
+  assert.doesNotMatch(text,/옛 제목|v0m0|variantTitle/);
+  const removed=byClass(sheet,'is-removed').map(row=>f.text(row));assert.ok(removed.some(row=>/^\n?전\n.*<script>old<\/script> 가격은 1만 원/s.test(row)),removed.join(' | '));
+  assert.deepEqual(all(sheet,node=>node.tagName==='del'||node.tagName==='ins').filter(node=>!String(node.className).includes('is-whole')).map(node=>node.tagName+':'+node.textContent),['del:92도면','ins:90도면']);
+  assert.equal(byClass(sheet,'is-gap').length,1,'an unchanged blank line is only a gap');
+  const asked=byClass(sheet,'asked')[0],items=all(asked,node=>node.tagName==='li');assert.deepEqual(items.map(item=>item.hidden),[true,false,false]);
+  all(asked,node=>node.tagName==='button')[0].handlers.click();assert.deepEqual(items.map(item=>item.hidden),[false,false,false]);
+  const marks=[...byClass(content,'tag'),...byClass(content,'frame-tag')].map(node=>node.textContent);
+  for(const want of ['문구 바뀜','바뀐 사진','바뀜'])assert.ok(marks.includes(want),want+' in '+marks.join(','));
+  assert.ok(byClass(content,'when')[0].children[0].children.some(node=>node.textContent==='바뀜'),'the schedule heading is marked');
+});
+test('what changed jumps to the post, the chip jumps back, and an answer does not redraw the sheet (2026-10-24)',async()=>{
+  const f=fixture();f.resolveRequest(0,withPrevious(revised));await flush();
+  const content=f.ids['review-content'],sheet=byClass(content,'changes')[0],card=byClass(content,'post')[0];
+  const go=all(sheet,node=>node.tagName==='button'&&node.textContent==='게시물에서 보기')[0];go.handlers.click();assert.equal(card.scrolled,true);assert.equal(card.focused,true);
+  const chip=all(f.ids['review-facts'],node=>node.tagName==='button')[0];chip.handlers.click();assert.equal(sheet.scrolled,true);assert.equal(sheet.focused,true);
+  const details=all(sheet,node=>node.tagName==='details');details[0].open=true;
+  f.ids['review-comment'].value='확인했어요';f.submit('comment');f.resolveRequest(1,{...withPrevious(revised),review:{...withPrevious(revised).review,revision:2,feedback:[{id:'a',name:'',comment:'확인했어요',decision:'comment',createdAt:'2026-10-13T02:00:00Z'}]}});await flush();
+  assert.equal(byClass(f.ids['review-content'],'changes')[0],sheet,'same comparison, same nodes');assert.equal(details[0].open,true);
+});
+test('narrow screens fold the list to four with a show-all button; same, unavailable and first versions read differently (2026-10-24)',async()=>{
+  const narrow=fixture(undefined,{matchMedia:query=>({matches:/max-width/.test(query)})});narrow.resolveRequest(0,withPrevious(revised));await flush();
+  const list=byClass(narrow.ids['review-content'],'change');assert.deepEqual(list.map(item=>item.hidden),[false,false,false,true,true,true]);assert.ok(list.every(item=>item.children[0].open===false));
+  assert.deepEqual(byClass(narrow.ids['review-content'],'change-group').map(head=>[head.textContent,head.hidden]),[['검토 계정 · 인스타그램',false],['페이스북 계정 · 페이스북',true]]);
+  all(byClass(narrow.ids['review-content'],'changes')[0],node=>node.tagName==='button'&&/모두 보기/.test(node.textContent))[0].handlers.click();assert.ok(list.every(item=>item.hidden===false));
+  const same=fixture();same.resolveRequest(0,withPrevious({...revised,state:'same',changes:[],decision:'approve'}));await flush();
+  assert.match(same.text(same.ids['review-facts']),/지난 판과 같음/);assert.match(same.text(same.ids['review-content']),/지난 판과 같아요\n10월 13일에 승인한 판\(버전 1\)과 보이는 내용은 같아요/);
+  const closed=fixture();closed.resolveRequest(0,withPrevious({state:'unavailable',contentVersion:1}));await flush();
+  assert.doesNotMatch(closed.text(closed.ids['review-facts']),/바뀐 곳|지난 판/);assert.match(closed.text(closed.ids['review-content']),/지난 판\(버전 1\)과는 이 링크에서 견줘 볼 수 없어요/);
+  const first=fixture();first.resolveRequest(0,opened);await flush();assert.equal(byClass(first.ids['review-content'],'changes').length,0);assert.doesNotMatch(first.text(first.ids['review-facts']),/바뀐 곳/);
+  const big=fixture();big.resolveRequest(0,withPrevious({...revised,dropped:4}));await flush();
+  assert.match(big.text(big.ids['review-facts']),/바뀐 곳 10/,'six shown + four the server left out');assert.match(big.text(big.ids['review-content']),/그 밖에 바뀐 곳 4곳은 길어서 여기 보이지 않아요/);
+});
+test('a schedule that only lost one of two slots is not called unset, and a body removed entirely gets no jump button (Argon 10-24 A1·A2)',async()=>{
+  const slot=at=>({account:'검토 계정',scheduledAt:at,timezone:'Asia/Seoul',cancelled:false});
+  const previous={...revised,changes:[{kind:'text',field:'body',rows:[{type:'removed',text:'옛 공통 문구'}],stats:{changed:0,removed:1,added:0}},{kind:'schedule',field:'schedule',removed:[slot('2026-10-16T00:00:00Z')],added:[]}]};
+  const f=fixture();f.resolveRequest(0,{...opened,review:{...opened.review,previous,snapshot:{...opened.review.snapshot,body:'',schedule:[slot('2026-10-15T00:00:00Z')]}}});await flush();
+  const sheet=byClass(f.ids['review-content'],'changes')[0],text=f.text(sheet);
+  assert.match(text,/올라가는 때\n뺀 때 1/);assert.doesNotMatch(text,/아직 다시 정하지 않았어요/);
+  assert.deepEqual(byClass(sheet,'view-post').map(node=>node.textContent),['올라가는 때에서 보기']);
 });
 test('Fable 10-23 follow-ups: total repeat count, reply-scope names, headings that read with their counts, and a page restored from the back-forward cache reloads',async()=>{
   const x={account:{platform:'x',name:'모루',profile:'@moru'},text:'글',format:'text',options:{whoCanReply:'mentionedUsers'},copyVariants:[],media:[]};

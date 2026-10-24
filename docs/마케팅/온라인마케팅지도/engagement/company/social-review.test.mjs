@@ -201,3 +201,89 @@ test('opening and answering a review checks media records without reading files,
   await f.review.open(link.token,context);await f.respond(link.token,{decision:'comment',comment:'좋아요'});assert.ok(reads.length>=2);assert.ok(reads.every(read=>read===false),JSON.stringify(reads));
   reads.length=0;await f.review.media(link.token,{mediaKey:'v0m0'},context);assert.deepEqual(reads,[true]);
 });
+
+// 지난 판과 바뀐 곳(10-24)
+const second=bytes=>({assetId:'private-asset-2',id:'private-asset-2',url:'/api/social/media/private-asset-2',sha256:digest(bytes),mimeType:'image/png',type:'image',width:100,height:120});
+test('a new link shows what changed since the last answered version with that round’s answers, and nothing private',async t=>{
+  const f=await fixture(t),post=f.create(),first=await f.link(post);
+  await f.respond(first.token,{decision:'comment',name:'지은',comment:'사진이 어두워요'});await f.respond(first.token,{revision:2,requestId:'request-0002',decision:'reject',name:'고객',comment:'가격 문구는 빼 주세요'});
+  const fresh=Buffer.from('second verified file');f.setBytes(fresh);
+  const next=f.publishing.savePost(f.users.writer,{revision:post.revision,variants:[{channelId:'ig',text:'검토 원고 고침',format:'image',media:[second(fresh)],options:{altText:'사진 설명',hashtags:'#검토',firstComment:'첫 댓글'}},{channelId:'fb',text:'새 계정 문구',format:'post',media:[]}]},post.id).post;
+  await assert.rejects(f.review.open(first.token,context),{status:410});
+  const link=await f.link(next),opened=await f.review.open(link.token,context),previous=opened.review.previous;
+  assert.equal(previous.state,'compared');assert.equal(previous.contentVersion,1);assert.equal(previous.decision,'reject');assert.equal(previous.requestTotal,2);
+  assert.deepEqual(previous.requests.map(r=>[r.decision,r.name,r.comment]),[['comment','지은','사진이 어두워요'],['reject','고객','가격 문구는 빼 주세요']]);
+  assert.deepEqual(previous.changes.map(c=>[c.kind,c.field,c.variant??null,c.change??null]),[['text','text','v0',null],['media','media','v0',null],['options','options','v0',null],['presence','variant','v1','added']]);
+  assert.deepEqual(previous.changes[1].items.map(i=>[i.change,i.index,i.key]),[['replaced',1,'v0m0']]);assert.deepEqual(previous.changes[2].items,[{key:'firstComment',before:null,after:'첫 댓글'}]);
+  const text=JSON.stringify(opened);for(const secret of [post.id,first.link.id,f.users.writer.id,'private-asset','sha256',digest(fresh),'request-0001','request-0002','privateReference','integrationId','externalId','connectionVersion','linkIds','channelIds','tokenHash','versionKey',f.store.get('socialReviewLinks',link.link.id).versionKey])assert.ok(!text.includes(secret),secret);
+  assert.match(f.store.get('socialReviewLinks',link.link.id).versionKey,/^[0-9a-f]{64}$/,'the version key is written once on the link row');
+  const listed=f.review.workspace(f.users.writer,{postId:post.id}).links;assert.equal(listed.find(l=>l.id===link.link.id).previousVersion,1);assert.equal(listed.find(l=>l.id===first.link.id).previousVersion,null);
+  const reads=[],get=f.store.get.bind(f.store);f.store.get=(kind,id)=>{if(kind==='socialReviewLinks')reads.push(id);return get(kind,id);};
+  try{await f.review.open(link.token,context);}finally{f.store.get=get;}
+  assert.deepEqual([...new Set(reads)],[link.link.id],'opening reads only its own link row, never the old ones (GPT r2 GA1)');
+});
+
+test('parallel links of one version are not a previous version; reconnecting alone compares nothing; a hidden edit says nothing visible changed',async t=>{
+  const f=await fixture(t),post=f.create(),a=await f.link(post);await f.respond(a.token,{decision:'reject',comment:'제목을 바꿔 주세요'});
+  const b=await f.link(post);assert.equal((await f.review.open(b.token,context)).review.previous,null);
+  f.store.put('channels','ig',{...f.store.get('channels','ig'),connectionVersion:2});
+  const c=await f.link(post);assert.equal((await f.review.open(c.token,context)).review.previous,null,'same visible version after reconnecting');
+  const next=f.publishing.savePost(f.users.writer,{revision:post.revision,category:'안쪽 분류'},post.id).post;assert.equal(next.contentVersion,2);
+  const d=await f.link(next),previous=(await f.review.open(d.token,context)).review.previous;
+  assert.equal(previous.state,'same');assert.deepEqual(previous.changes,[]);assert.deepEqual(previous.requests.map(r=>r.comment),['제목을 바꿔 주세요']);
+});
+
+test('only answered versions count, a link withdrawn while live is never one, and answers of links revoked later disappear',async t=>{
+  const f=await fixture(t),post=f.create(),v1=await f.link(post);await f.respond(v1.token,{decision:'comment',comment:'좋아요'});
+  const v2=f.publishing.savePost(f.users.writer,{revision:post.revision,body:'둘째 판'},post.id).post;await f.link(v2);
+  const v3=f.publishing.savePost(f.users.writer,{revision:v2.revision,body:'셋째 판'},post.id).post,third=await f.link(v3);
+  const previous=(await f.review.open(third.token,context)).review.previous;assert.equal(previous.contentVersion,1,'the unsent typo link in between is skipped');
+  assert.deepEqual(previous.changes[0].rows.map(r=>r.type+':'+(r.text??r.parts.map(p=>p.text).join(''))),['removed:공통 문구','added:셋째 판']);
+  f.review.revoke(f.users.writer,{id:v1.link.id,revision:2});assert.equal(f.store.get('socialReviewLinks',v1.link.id).revokedState,'stale');
+  const later=(await f.review.open(third.token,context)).review.previous;assert.equal(later.requests.length,0);assert.equal(later.requestTotal,0);assert.equal(later.changes.length,1,'what changed stays');
+  const g=await fixture(t),live=g.create(),withdrawn=await g.link(live);await g.respond(withdrawn.token,{decision:'reject',comment:'잘못 보낸 링크'});
+  g.review.revoke(g.users.writer,{id:withdrawn.link.id,revision:2});assert.equal(g.store.get('socialReviewLinks',withdrawn.link.id).revokedState,'rejected');
+  const edited=g.publishing.savePost(g.users.writer,{revision:live.revision,body:'고친 판'},live.id).post;assert.equal((await g.review.open((await g.link(edited)).token,context)).review.previous,null);
+});
+
+test('revoking the link that left the last ten answers brings back the other parallel link answers (GPT r3 GA1)',async t=>{
+  const f=await fixture(t),post=f.create(),a=await f.link(post),b=await f.link(post);
+  await f.respond(a.token,{decision:'comment',name:'에이',comment:'에이의 의견'});f.setTime('2026-10-13T00:01:00Z');
+  for(let i=0;i<10;i++)await f.respond(b.token,{revision:i+1,requestId:'request-b-'+String(i).padStart(4,'0'),decision:'comment',name:'비',comment:'비의 의견 '+i});
+  const next=f.publishing.savePost(f.users.writer,{revision:post.revision,body:'고친 판'},post.id).post,link=await f.link(next);
+  const before=(await f.review.open(link.token,context)).review.previous;assert.equal(before.requestTotal,11);assert.equal(before.requests.length,10);assert.ok(before.requests.every(r=>r.name==='비'));
+  f.review.revoke(f.users.writer,{id:b.link.id,revision:11});
+  const after=(await f.review.open(link.token,context)).review.previous;assert.equal(after.requestTotal,1);assert.deepEqual(after.requests.map(r=>r.comment),['에이의 의견']);
+});
+
+test('a removed account shows only its header, and losing that account later closes the comparison without its name',async t=>{
+  const f=await fixture(t),post=f.create({variants:[{channelId:'ig',text:'인스타 문구',format:'image',media:[f.media]},{channelId:'fb',text:'페이스북에서만 쓰던 문구',format:'post',media:[]}]}),first=await f.link(post);await f.respond(first.token,{decision:'reject',comment:'페이스북은 빼 주세요'});
+  const next=f.publishing.savePost(f.users.writer,{revision:post.revision,variants:[{channelId:'ig',text:'인스타 문구',format:'image',media:[f.media]}]},post.id).post,link=await f.link(next);
+  const opened=await f.review.open(link.token,context),removed=opened.review.previous.changes.find(c=>c.kind==='presence');
+  assert.deepEqual([removed.change,removed.account.name,removed.variant],['removed','검토 계정 fb',undefined]);assert.ok(!JSON.stringify(opened).includes('페이스북에서만 쓰던 문구'));
+  assert.deepEqual(f.review.workspace(f.users.writer,{postId:post.id}).previousPreview,{contentVersion:1,requestCount:1,names:['고객']});
+  f.store.put('channels','fb',{...f.store.get('channels','fb'),hidden:true});
+  const closed=await f.review.open(link.token,context);assert.deepEqual(closed.review.previous,{state:'unavailable',contentVersion:1});assert.ok(!JSON.stringify(closed).includes('검토 계정 fb'));
+  assert.equal(f.review.workspace(f.users.writer,{postId:post.id}).previousPreview,null,'the workspace preview hides it too (Argon A1)');
+});
+
+test('an approval without words still says the previous version was approved; compare can be turned off and must be a boolean',async t=>{
+  const f=await fixture(t),post=f.create(),first=await f.link(post);await f.respond(first.token,{decision:'approve'});
+  const next=f.publishing.savePost(f.users.writer,{revision:post.revision,body:'승인 뒤 고침'},post.id).post,link=await f.link(next),previous=(await f.review.open(link.token,context)).review.previous;
+  assert.equal(previous.decision,'approve');assert.equal(previous.decidedAt,'2026-10-13T00:00:00.000Z');assert.deepEqual(previous.requests,[]);
+  assert.deepEqual(f.review.workspace(f.users.writer,{postId:post.id}).previousPreview,{contentVersion:1,requestCount:0,names:[]});
+  const off=await f.link(next,{compare:false});assert.equal((await f.review.open(off.token,context)).review.previous,null);assert.equal(f.store.get('socialReviewLinks',off.link.id).previous,null);assert.equal(f.store.get('socialReviewPrevious',off.link.id),null);
+  for(const compare of ['yes',null,0,1])await assert.rejects(f.link(next,{compare}),{status:400},String(compare));
+});
+
+test('the comparison stays small for huge edits, keeps the last ten answers, and a same-id retry returns the same comparison',async t=>{
+  const f=await fixture(t),lines=word=>Array.from({length:3000},(_,i)=>word+' '+i).join('\n'),post=f.create({variants:[{channelId:'ig',text:lines('줄'),format:'post',media:[]}]}),first=await f.link(post);
+  for(let i=0;i<12;i++)await f.respond(first.token,{revision:i+1,requestId:'request-'+String(i).padStart(4,'0'),decision:'comment',name:'검토자 '+i,comment:'의견 '+i});
+  assert.equal(f.review.workspace(f.users.writer,{postId:post.id}).previousPreview,null,'the open version itself is not a previous one');
+  const next=f.publishing.savePost(f.users.writer,{revision:post.revision,variants:[{channelId:'ig',text:lines('행'),format:'post',media:[]}]},post.id).post;
+  assert.deepEqual(f.review.workspace(f.users.writer,{postId:post.id}).previousPreview,{contentVersion:1,requestCount:12,names:['검토자 0','검토자 1','검토자 2']});
+  f.setTime('2026-10-13T00:02:00Z');const started=Date.now(),link=await f.link(next);assert.ok(Date.now()-started<3000,'took '+(Date.now()-started)+'ms');
+  const answered=await f.respond(link.token,{requestId:'request-retry',decision:'comment',comment:'확인'}),again=await f.respond(link.token,{requestId:'request-retry',decision:'comment',comment:'확인'});
+  const previous=answered.review.previous;assert.deepEqual(again.review.previous,previous);
+  assert.ok(Buffer.byteLength(JSON.stringify(previous.changes))<=32768);assert.equal(previous.truncated,true);assert.equal(previous.requestTotal,12);assert.deepEqual(previous.requests.map(r=>r.comment),Array.from({length:10},(_,i)=>'의견 '+(i+2)));
+});

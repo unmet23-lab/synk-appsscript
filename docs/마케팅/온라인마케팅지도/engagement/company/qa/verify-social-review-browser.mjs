@@ -1,8 +1,9 @@
 // 고객 SNS 게시물 검토(/social-review) 브라우저 점검(2026-10-23). verify-social-review-fixture.mjs를 제 임시 폴더로 띄우고
 // (실제 회사 서버 코드·임시 SQLite·가짜 SNS 공급자), 헤드리스 Chrome으로 장면마다 1440·390을 찍은 뒤 흐름을 눌러 본다.
 // 확인: 가로 넘침 · 한글 13px 미만 · 한글에 모노 글꼴 · 브랜드 글꼴(SUIT·SYNK Latin·DM Mono)을 받아 씀(SUIT는 preload로 한 번)과 글꼴 CSP 거절 없음 ·
-//       콘솔 오류(거둔 링크의 410 한 번만 예상) · 실패 요청 · 누를 때만 파일 받기 ·
-//       빈 의견 막기와 그 안내 자리 · 이름 칸 Enter가 승인이 되지 않음 · 수정 요청/승인 뒤 상태 · 답한 뒤에도 펼친 영상 유지 · 닫힌 링크.
+//       콘솔 오류(거둔 링크·고친 뒤 닫힌 옛 링크의 410 한 번씩만 예상) · 실패 요청 · 누를 때만 파일 받기 ·
+//       빈 의견 막기와 그 안내 자리 · 이름 칸 Enter가 승인이 되지 않음 · 수정 요청/승인 뒤 상태 · 답한 뒤에도 펼친 영상 유지 · 닫힌 링크 ·
+//       고친 판(10-24)의 바뀐 곳 칩·판·그때 의견·「전/후」·낱말 표시·카드 안 표·게시물에서 보기·좁은 화면 접기.
 // 쓰는 법: node qa/verify-social-review-browser.mjs   (그림과 보이는 글(.txt)은 SYNK_SOCIAL_REVIEW_QA_OUT 또는 새 임시 폴더로 — 저장소에는 안 쓴다)
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -80,15 +81,55 @@ async function shot(page, name) {
 }
 
 // 1) 장면마다 처음 화면(파일을 열기 전), 1440·390
-for (const scene of ['daily', 'customer', 'approved', 'optional', 'long', 'revoked', 'notoken']) for (const width of [1440, 390]) {
+for (const scene of ['daily', 'customer', 'approved', 'optional', 'long', 'revoked', 'revised', 'before', 'notoken']) for (const width of [1440, 390]) {
   const { context, page, problems } = await open(scene, width), name = `${scene}-${width}`;
   await audit(page, name); await fonts(page, name, problems); await shot(page, name);
-  const expectedConsole = scene === 'revoked' ? 1 : 0;
+  const expectedConsole = ['revoked', 'before'].includes(scene) ? 1 : 0;
   check(`${name}: 콘솔 오류 ${expectedConsole}개`, problems.console.length === expectedConsole && problems.console.every(text => /410/.test(text)), problems.console.join(' | '));
   check(`${name}: 실패 요청 없음`, !problems.failed.length, problems.failed.join(' | '));
   if (scene !== 'notoken') check(`${name}: 열 때 검토 요청은 open 하나(파일은 누를 때만)`, problems.requests.length === 1 && problems.requests[0] === '/api/social-review/open', problems.requests.join(','));
   else check(`${name}: 열쇠가 없으면 요청하지 않음`, !problems.requests.length, problems.requests.join(','));
-  if (['revoked', 'notoken'].includes(scene)) check(`${name}: 닫힌 링크 머리`, (await page.textContent('#review-heading')) === '검토 링크를 열 수 없어요');
+  if (['revoked', 'before', 'notoken'].includes(scene)) check(`${name}: 닫힌 링크 머리`, (await page.textContent('#review-heading')) === '검토 링크를 열 수 없어요');
+  if (!['revised', 'before', 'revoked', 'notoken'].includes(scene)) check(`${name}: 첫 판에는 바뀐 곳 판·칩이 없음`, !(await page.$('.changes')) && !(await page.$('.fact-diff')));
+  await context.close();
+}
+
+// 1-1) 고친 판(10-24): 머리 칩 → 바뀐 곳 판(그때 의견 · 접힌 항목) → 펼친 「전/후」와 낱말 표시 → 카드 안 표 → 「게시물에서 보기」, 답한 뒤에도 펼친 채
+for (const width of [1440, 390]) {
+  const { context, page, problems } = await open('revised', width), name = `revised-${width}`;
+  const facts = await page.textContent('#review-facts'), sheet = await page.textContent('.changes');
+  check(`${name}: 머리 칩 「바뀐 곳 5」`, facts.includes('바뀐 곳 5'), facts);
+  check(`${name}: 판 제목과 견준 판`, sheet.includes('지난 판과 바뀐 곳') && sheet.includes('수정을 요청한 판(버전 1)과 견줬어요'), sheet.slice(0, 160));
+  check(`${name}: 그때 남긴 의견 둘`, sheet.includes('두 번째 사진은 원두가') && sheet.includes('가격 문구는 빼 주세요'));
+  const summaries = await page.$$eval('.change summary', list => list.map(s => s.textContent)), groups = await page.$$eval('.change-group', list => list.map(g => g.textContent));
+  check(`${name}: 게시물 전체 다음에 계정 소제목 하나`, summaries[0].startsWith('올라가는 때') && groups.length === 1 && groups[0] === '모루 커피 · 인스타그램', summaries[0] + ' / ' + groups.join(' | '));
+  for (const want of ['문구뺀 줄 1', '사진 2 바뀜', '첫 댓글', '문구 2 고침', '10월'])
+    check(`${name}: 바뀐 곳 「${want}」`, summaries.some(text => text.includes(want)), summaries.join(' | '));
+  check(`${name}: 다섯 항목은 처음에 접혀 있음`, (await page.$$eval('.change details', list => list.filter(d => d.open).length)) === 0);
+  if (width === 390) {
+    check(`${name}: 좁은 화면은 셋까지만 먼저`, (await page.$$eval('li.change', list => list.filter(li => !li.hidden).length)) === 3);
+    await page.click('text=바뀐 곳 5개 모두 보기');
+    check(`${name}: 모두 보기를 누르면 다섯`, (await page.$$eval('li.change', list => list.filter(li => !li.hidden).length)) === 5);
+  } else check(`${name}: 넓은 화면은 다섯 모두`, !(await page.$('text=바뀐 곳 5개 모두 보기')) && (await page.$$eval('li.change', list => list.filter(li => !li.hidden).length)) === 5);
+  await page.click('.change-label:text-is("문구")');
+  const removed = await page.$$eval('.change details[open] .diff-row.is-removed', rows => rows.map(r => r.textContent));
+  check(`${name}: 뺀 가격 줄이 「전」으로`, removed.some(text => text.startsWith('전') && text.includes('가격은 한 상자 1만 2천 원이에요.')), removed.join(' | '));
+  await page.click('.change-label:text-is("반복 게시 문구")');
+  const words = await page.$$eval('.change details[open] del, .change details[open] ins', list => list.map(n => n.tagName + ':' + n.textContent));
+  check(`${name}: 반복 문구의 낱말만 칠함(92도면 → 90도면)`, words.includes('DEL:92도면') && words.includes('INS:90도면'), words.join(' | '));
+  const marks = await page.$$eval('.post .tag, .post .frame-tag, .when h2 .tag', list => list.map(n => n.textContent));
+  for (const want of ['바뀐 사진', '문구 바뀜', '바뀜']) check(`${name}: 카드 안 표 「${want}」`, marks.includes(want), marks.join(' | '));
+  await audit(page, name + '-open'); await shot(page, name + '-open');
+  await page.click('.change details[open] .view-post >> nth=0'); await page.waitForTimeout(700);
+  const focus = await page.evaluate(() => { const a = document.activeElement, r = a?.getBoundingClientRect(); return { tag: a?.tagName, cls: a?.className, top: r?.top, h: innerHeight }; });
+  check(`${name}: 「게시물에서 보기」로 그 카드에 초점·화면 안`, focus.tag === 'ARTICLE' && focus.cls === 'post' && focus.top >= -2 && focus.top < focus.h, JSON.stringify(focus));
+  await page.click('.fact-diff button'); await page.waitForTimeout(700);
+  const back = await page.evaluate(() => { const a = document.activeElement, r = a?.getBoundingClientRect(); return { cls: a?.className, top: r?.top }; });
+  check(`${name}: 머리 칩으로 바뀐 곳 판에`, /changes/.test(back.cls || '') && back.top >= -2 && back.top < 200, JSON.stringify(back));
+  await page.fill('#review-comment', '바뀐 곳 확인했어요.'); await page.click('button[value="comment"]');
+  await page.waitForFunction(() => document.getElementById('review-result')?.textContent.includes('저장'), null, { timeout: 15000 }).catch(() => {});
+  check(`${name}: 답한 뒤에도 바뀐 곳 판을 다시 그리지 않음(펼친 항목 그대로)`, (await page.$$eval('.change details', list => list.filter(d => d.open).length)) === 2 && (await page.textContent('#review-result')).includes('의견을 저장했어요'));
+  check(`${name}: 콘솔 오류 없음`, !problems.console.length, problems.console.join(' | '));
   await context.close();
 }
 
