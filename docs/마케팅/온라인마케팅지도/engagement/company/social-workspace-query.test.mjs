@@ -55,6 +55,16 @@ test('counts, calendar days, occupied slots and tray inspect all jobs beyond a p
   const queue=f.service.workspace(f.member,{pageSize:10,section:'queue',date:'2026-10-15'});assert.equal(queue.pagination.jobs.total,66);assert.equal(queue.summary.jobs.queue,66);assert.equal(queue.occupiedSlots.length,1);
 });
 
+test('review-link waiting jobs are counted apart from internal review posts',t=>{
+  const f=fixture(t),p=f.post('daily'),internal=f.post('internal',{status:'review'});
+  f.job('waiting1',p,{reviewWaiting:true,message:'고객 검토 승인을 받아야 발행할 수 있어요'});f.job('waiting2',p,{reviewWaiting:true,scheduledAt:'2026-10-16T12:00:00.000Z'});
+  f.job('ready',p,{reviewWaiting:false});f.job('stale',p,{status:'published',reviewWaiting:true,publishedAt:f.time});f.job('internal-job',internal);
+  const page=f.service.workspace(f.member,{pageSize:10,section:'overview'});
+  assert.equal(page.counts.reviewWaiting,2);assert.equal(page.summary.jobs.reviewWaiting,2);
+  assert.equal(page.counts.review,1);assert.equal(page.summary.posts.review,1);
+  const queue=f.service.workspace(f.member,{pageSize:10,section:'queue'});assert.equal(queue.counts.reviewWaiting,2);
+});
+
 test('page and summary recheck every current variant and historical job channel, including owner-only drafts',t=>{
   const f=fixture(t),allowed=f.post('allowed'),mixed=f.post('mixed',{variants:[...allowed.variants,{...allowed.variants[0],channelId:'b'}]}),empty=f.post('empty',{variants:[]}),privateEmpty=f.post('private-empty',{ownerId:'other',variants:[]});
   f.job('allowed-job',allowed);f.job('old-channel-job',allowed,{channelId:'b'});f.job('mixed-job',mixed);
