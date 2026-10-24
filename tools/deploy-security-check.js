@@ -195,6 +195,8 @@ function claspProjects() {
 }
 
 // 배포 표면과 검수 반영 경계는 tests/배포표면.test.js·검수배포.test.js에서 확인한다.
+// 검수 증거(--검수)는 처음 검수 묶음이거나, 검수 뒤 고친 diff만 다시 본 검수 사슬의 끝(tools/검수묶음.mjs 다시, 2026-10-24 다섯 가지 ⑤)이다.
+// 사슬 이음(해시)·고리마다 검수는 검수확인이 보고, 여기서는 사슬 끝 후보 = 지금 배포 파일·설정을 그대로 본다.
 const sha256 = b => crypto.createHash('sha256').update(b).digest('hex');
 
 /** 반영 모드는 현재 정본의 명시 allowlist만 받는다. 해석 못 하는 rootDir·패턴은 추측하지 않는다. */
@@ -257,7 +259,8 @@ async function 검수반영({ root = ROOT, 검수, deployment, description }) {
   const 증거 = await 검수확인(검수, { 저장소: root });
   if (!증거.통과) throw new Error(`배포 전 검수: ${(증거.사유 || []).join(' / ')}`);
   if (증거.증명?.정책?.종류 !== '백엔드') throw new Error('Apps Script에는 백엔드 검수 정책이 필요하다');
-  if (!같은후보(증거.증명?.배포후보, 자료.후보)) throw new Error('검수한 Apps Script 후보와 현재 배포 파일·설정이 다르다');
+  const 사슬 = Array.isArray(증거.증명?.사슬) ? 증거.증명.사슬 : null, 끝이름 = 사슬 ? 사슬.at(-1) : path.basename(String(검수));
+  if (!같은후보(증거.증명?.배포후보, 자료.후보)) throw new Error(`검수한 Apps Script 후보${사슬 ? `(사슬 끝 ${끝이름})` : ''}와 현재 배포 파일·설정이 다르다 — 바뀐 부분만 다시 검수한다: node tools/deploy-security-check.js --후보 <새 폴더> → node tools/검수묶음.mjs 다시 <새 이름> --앞 ${끝이름} --배포후보 <새 폴더> → --검수 <새 이름>`);
   const git = args => execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 30000 });
   const 공용 = git(['rev-parse', '--git-common-dir']).toString().trim();
   const 작업 = git(['rev-parse', '--git-dir']).toString().trim();
@@ -270,7 +273,7 @@ async function 검수반영({ root = ROOT, 검수, deployment, description }) {
   git(['diff', '--quiet', 'origin/master', '--', 'tools/deploy-security-check.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/배포판점검.js', '.claude/hooks/lib/clasp-project.js']);
   const 임시기준 = fs.realpathSync(os.tmpdir());
   const snapshot = fs.mkdtempSync(path.join(임시기준, 'synk-reviewed-deploy-'));
-  const 상태 = { 단계: '준비', 검수, deployment, versionNumber: null, 설명: description };
+  const 상태 = { 단계: '준비', 검수, deployment, versionNumber: null, 설명: description, ...(사슬 ? { 사슬 } : {}) };
   try {
     후보쓰기(snapshot, 자료);
     // clasp가 실제 다시 읽을 디렉터리에서 범위·설정·바이트를 재검사한다.
@@ -329,7 +332,7 @@ async function main(argv = process.argv.slice(2)) {
     if (o.후보) { console.log(`Apps Script 검수 후보: ${후보쓰기(o.후보, 배포후보읽기())}`); return; }
     if (!o.push) throw new Error('--후보 또는 --push를 준다');
     const r = await 검수반영(o);
-    console.log(`Apps Script 기존 배포 반영·대조 완료 @${r.versionNumber} · 검수 ${r.검수}`);
+    console.log(`Apps Script 기존 배포 반영·대조 완료 @${r.versionNumber} · 검수 ${r.검수}${r.사슬 ? `(사슬 ${r.사슬.join(' → ')})` : ''}`);
     return;
   }
   const projects = claspProjects();

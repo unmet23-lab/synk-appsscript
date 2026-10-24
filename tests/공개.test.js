@@ -14,7 +14,7 @@ const { execFileSync } = require('node:child_process');
 
 const REPO = path.resolve(__dirname, '..');
 const 원도구 = require(path.join(REPO, 'tools', '공개.js'));
-const { 검수증거 } = require('./lib/검수증명.js');
+const { 검수증거, 다시증거 } = require('./lib/검수증명.js');
 // 기존 배포 시나리오도 실제 증거를 만든다. 생산 코드에는 시험용 검수 우회가 없다.
 async function 증거있는실행(명령, 옵션) {
   const { _검수시험, ...실제 } = 옵션;
@@ -827,6 +827,33 @@ test('검수 관문: 검수한 소스 변경과 새 계획의 후보 바이트 �
   assert.equal(다름.결과, '멈춤');
   assert.match(다름.이유, /최종 바이트/);
   assert.equal(공.머리(), 공.바탕);
+});
+
+test('검수 관문: 검수 뒤 고친 후보는 바뀐 diff만 다시 본 사슬의 끝 후보로 올리고, 끝 후보와 다른 바이트는 막는다', async t => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+  const 빌드 = 공.로컬('build', { 'a.txt': '새\n' });
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 빌드, 항목: ['a.txt'], 후보폴더: 후보 });
+  await 원도구.올리기(입력);
+  const 검수 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'review') });
+  쓰기(빌드, 'a.txt', '새 고침\n');
+  const 후보2 = 공.후보폴더();
+  const 새계획 = await 원도구.올리기({ ...입력, 후보폴더: 후보2 });
+  const 실행 = { ...입력, 실행: true, 계획: 새계획.계획, 메시지: 'Publish fix', 받기: async () => ({ 상태: 200, 버퍼: Buffer.from('새 고침\n'), 머리: '' }) };
+  const 막힘 = await 원도구.올리기({ ...실행, 검수 });
+  assert.equal(막힘.결과, '멈춤');
+  assert.match(막힘.이유, /최종 바이트.*바뀐 부분만 다시 검수한다: .*다시 <새 이름> --앞 review --배포후보/);
+  const 다시 = await 다시증거({ 앞: 검수, 저장소: 공.작업, 배포후보: 후보2, 폴더: path.join(공.뿌리, 'review-2') });
+  // 사슬 끝 후보와 다른 바이트(그새 빌드가 또 바뀜)는 막는다
+  쓰기(빌드, 'a.txt', '또 고침\n');
+  const 또계획 = await 원도구.올리기({ ...입력, 후보폴더: undefined });
+  const 다름 = await 원도구.올리기({ ...실행, 계획: 또계획.계획, 검수: 다시 });
+  assert.equal(다름.결과, '멈춤'); assert.match(다름.이유, /사슬 끝 review-2.*최종 바이트/);
+  쓰기(빌드, 'a.txt', '새 고침\n');
+  const 올림 = await 원도구.올리기({ ...실행, 검수: 다시 });
+  assert.equal(올림.결과, '올림', 올림.이유);
+  assert.deepEqual(올림.검수.사슬, ['review', 'review-2']);
+  assert.equal(공.파일('a.txt').toString(), '새 고침\n');
 });
 
 test('검수 관문: 자동 토큰 파일·삭제·모드를 포함한 최종 후보 전체가 검수에 있어야 한다', async t => {

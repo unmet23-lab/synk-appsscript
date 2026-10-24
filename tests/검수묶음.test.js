@@ -824,3 +824,175 @@ test('2차 검수 고침: 표시는 결과·지적표를 다 쓴 뒤 지우고, 
   assert.deepEqual(GPT설정('profile = "fast"\nmodel = "main"\n[profiles.fast]\nmodel = "fast-model"\nmodel_reasoning_effort = \'low\'\n[plugins."x"]\nmodel = "nope"\n'), { 모델: 'fast-model', 추론: 'low' });
   assert.deepEqual(GPT설정(''), { 모델: null, 추론: null });
 });
+
+// ── 다시 검수(2026-10-24 다섯 가지 ②·⑤): 고친 diff와 그 지적만, 사슬은 해시로 처음 검수까지 ──
+const 다시답하기 = (지적 = [], 풀림 = {}) => async ({ prompt }) => {
+  const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
+  const seen = [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(m => m[1]);
+  const 대상 = [...prompt.matchAll(/^- \[(Q\d+)\]/gm)].map(m => m[1]);
+  return { text: JSON.stringify({ findings: 지적, targets: 대상.map(id => ({ id, resolved: 풀림[id] ?? true, note: '고친 diff에서 확인' })), seen,
+    coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }) };
+};
+
+test('다시(백엔드): 고친 diff와 그 지적만 GPT가 다시 보고, 해시로 이어진 사슬이면 끝 후보로 통과', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'src/a.js': 'export const a = 1;\n', 'src/b.js': 'export const b = 1;\n' });
+  r.쓰기('src/a.js', 'export const a = 2;\n'); r.쓰기('src/b.js', 'export const b = 2;\n');
+  const 처음 = await api.준비하기({ 이름: 'first', 폴더: path.join(r.뿌리, 'first'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  assert.ok(fs.readdirSync(path.join(처음.폴더, '내용')).length >= 2, '검수한 판의 바이트를 해시 이름으로 보관한다');
+  await api.GPT보내기(처음.폴더, 처음.목록, { call: 답하기([{ ...지적하나('src/a.js:1'), quote: 'a = 2' }]), 몫: 몫충분 });
+  await assert.rejects(api.다시하기({ 이름: 'early', 폴더: path.join(r.뿌리, 'early'), 앞: 처음.폴더 }), /아직 끝나지 않았다.*GA1 P1 미해결/, '처리하지 않은 P0·P1이 있으면 만들지 않는다');
+  api.지적표고치기(처음.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  r.쓰기('src/a.js', 'export const a = 3;\n');
+  assert.match(api.검수확인(처음.폴더).사유.join(' / '), /검수 뒤 파일 변경: src\/a\.js.*다시 <새 이름> --앞 first/);
+  const 다시 = await api.다시하기({ 이름: 'again', 폴더: path.join(r.뿌리, 'again'), 앞: 처음.폴더 });
+  assert.deepEqual(다시.목록.검수자들, ['GPT']);
+  assert.deepEqual(다시.목록.대상.map(x => `${x.아이디}=${x.고리}:${x.번호}`), ['Q1=first:GA1']);
+  assert.deepEqual(다시.목록.바뀐경로, { 소스: ['src/a.js'], 후보: [] });
+  const 글 = fs.readFileSync(path.join(다시.폴더, '묶음-A.txt'), 'utf8');
+  assert.match(글, /-export const a = 2;\n\+export const a = 3;/, '앞 고리가 검수한 판 → 지금 판');
+  assert.match(글, /\[Q1\] GPT GA1/);
+  assert.doesNotMatch(글, /b = 2/, '앞 검수 뒤 안 바뀐 파일은 싣지 않는다');
+  const p = 다시.목록.증명;
+  assert.equal(p.앞.후보해시.length, 64); assert.equal(p.새후보해시.length, 64); assert.equal(p.자료해시.length, 64);
+  assert.deepEqual(p.항목, [다시.목록.묶음[0].sha256]); assert.match(다시.목록.묶음[0].표식, /^END_OF_REVIEW_A_/);
+  assert.match(api.검수확인(다시.폴더).사유.join(' / '), /again: 다시 검수 GPT 미완료/);
+  await api.GPT보내기(다시.폴더, 다시.목록, { call: 다시답하기(), 몫: 몫충분 });
+  const ok = api.검수확인(다시.폴더);
+  assert.deepEqual(ok.사유, []);
+  assert.deepEqual(ok.증명.사슬, ['first', 'again']);
+  assert.equal(ok.증명.최종파일.find(f => f.경로 === 'src/a.js').sha256, crypto.createHash('sha256').update('export const a = 3;\n').digest('hex'));
+  assert.equal(ok.다시[0].대상[0].풀림, true);
+  execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', 다시.폴더], { encoding: 'utf8' });
+  const 보고 = fs.readFileSync(path.join(다시.폴더, '보고.md'), 'utf8');
+  assert.match(보고, /다시 검수: 앞 「first」 · 다시 볼 지적 1건 · 다시 검수자 GPT · 바뀐 파일 1개 · 사슬 first → again/);
+  assert.match(보고, /Q1 GPT GA1 P1 → 풀림\(GPT\)/); assert.match(보고, /배포 조건\(재현되는 P0·P1 0건\): 충족/);
+  // 끝 후보 뒤에 또 바뀌면 막는다(CRLF는 같은 판)
+  r.쓰기('src/a.js', 'export const a = 4;\n');
+  assert.match(api.검수확인(다시.폴더).사유.join(' / '), /검수 뒤 파일 변경: src\/a\.js.*--앞 again/);
+  r.쓰기('src/a.js', 'export const a = 3;\r\n');
+  assert.deepEqual(api.검수확인(다시.폴더).사유, []);
+});
+
+test('다시: 끝까지 안 읽힘·targets 빠짐·새 P0·P1·안 풀림·해시 끊김·diff 바뀜은 막고, 안 풀린 지적은 다음 다시 검수가 잇는다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const x = await api.준비하기({ 이름: 'x', 폴더: path.join(r.뿌리, 'x'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  r.쓰기('a.js', 'a=3\n');
+  const y = await api.다시하기({ 이름: 'y', 폴더: path.join(r.뿌리, 'y'), 앞: x.폴더 });
+  const 고친답 = 바꿈 => async a => ({ text: JSON.stringify({ ...JSON.parse((await 다시답하기()(a)).text), ...바꿈 }) });
+  await api.GPT보내기(y.폴더, y.목록, { call: 고친답({ endMarker: 'truncated' }), 몫: 몫충분 });
+  assert.match(api.검수확인(y.폴더).사유.join(' / '), /y: 다시 검수 GPT 미완료/, '끝까지 읽히지 않은 답은 다시 검수로 치지 않는다');
+  await api.GPT보내기(y.폴더, y.목록, { call: 고친답({ targets: [] }), 몫: 몫충분, 다시: true });
+  assert.match(api.검수확인(y.폴더).사유.join(' / '), /targets가 다시 볼 지적 집합과 다르다/);
+  // 새 P1은 처리해야 하고, 재현 안 됨이면 닫힌다
+  await api.GPT보내기(y.폴더, y.목록, { call: 다시답하기([{ ...지적하나('a.js:1'), quote: 'a=3', problem: '새로 생긴 문제' }]), 몫: 몫충분, 다시: true });
+  assert.match(api.검수확인(y.폴더).사유.join(' / '), /y: GA1 P1 미해결/);
+  api.지적표고치기(y.폴더, 표 => api.처리하기(표, ['GA1=재현안됨:a=3을 부르는 곳이 없다']));
+  assert.deepEqual(api.검수확인(y.폴더).사유, []);
+  // 안 풀렸다고 답하면 그 지적이 이 고리의 지적으로 다시 올라오고, 반영하면 또 다시 검수받는다
+  await api.GPT보내기(y.폴더, y.목록, { call: 다시답하기([], { Q1: false }), 몫: 몫충분, 다시: true });
+  const 올림 = api.지적표읽기(y.폴더).지적.find(x => /다시 검수에서 풀리지 않았다\(앞 x GA1\)/.test(x.문제));
+  assert.ok(올림, '안 풀린 지적이 다시 올라온다');
+  assert.match(api.검수확인(y.폴더).사유.join(' / '), new RegExp(`y: ${올림.번호} P1 미해결`));
+  api.지적표고치기(y.폴더, 표 => api.처리하기(표, [`${올림.번호}=반영`]));
+  assert.match(api.검수확인(y.폴더).사유.join(' / '), /y: GA1 P1 미해결 — 반영: 고친 diff를 다시 검수받는다: node tools\/검수묶음\.mjs 다시 <새 이름> --앞 y/);
+  r.쓰기('a.js', 'a=4\n');
+  const z = await api.다시하기({ 이름: 'z', 폴더: path.join(r.뿌리, 'z'), 앞: y.폴더 });
+  assert.deepEqual(z.목록.대상.map(t => `${t.고리}:${t.번호}`), [`y:${올림.번호}`]);
+  assert.match(fs.readFileSync(path.join(z.폴더, '묶음-A.txt'), 'utf8'), /-a=3\n\+a=4/, '앞 고리(y)가 검수한 판에서 지금 판으로');
+  assert.match(z.목록.경고, /두 회차 연달아 P0·P1/);
+  await api.GPT보내기(z.폴더, z.목록, { call: 다시답하기(), 몫: 몫충분 });
+  const 끝 = api.검수확인(z.폴더);
+  assert.deepEqual(끝.사유, []); assert.deepEqual(끝.증명.사슬, ['x', 'y', 'z']);
+  // 해시 끊김: 다른 판을 검수한 묶음을 앞으로 대면 잇지 않는다
+  const 남 = await api.준비하기({ 이름: 'other', 폴더: path.join(r.뿌리, 'other'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.GPT보내기(남.폴더, 남.목록, { call: 답하기(), 몫: 몫충분 });
+  const zj = path.join(z.폴더, '묶음.json'), zm = JSON.parse(fs.readFileSync(zj, 'utf8'));
+  fs.writeFileSync(zj, JSON.stringify({ ...zm, 앞: { 이름: 'other', 폴더: 남.폴더 } }));
+  assert.match(api.검수확인(z.폴더).사유.join(' / '), /z: 앞 other의 검수한 후보와 해시로 이어지지 않는다/);
+  fs.writeFileSync(zj, JSON.stringify({ ...zm, 대상: [] }));
+  assert.match(api.검수확인(z.폴더).사유.join(' / '), /다시 볼 지적·다시 검수자가 준비 뒤 바뀌었다/);
+  const { 갈래, ...처음처럼 } = zm;
+  fs.writeFileSync(zj, JSON.stringify(처음처럼));
+  assert.match(api.검수확인(z.폴더).사유.join(' / '), /묶음 갈래와 증명이 맞지 않는다/, '증명 밖 갈래만 지워 처음 검수처럼 읽히지 않는다(GPT 2차 검수 GB1)');
+  fs.writeFileSync(zj, JSON.stringify(zm));
+  const 묶음글 = fs.readFileSync(path.join(z.폴더, '묶음-A.txt'), 'utf8');
+  assert.ok(묶음글.includes(`앞 후보 ${zm.증명.앞.후보해시} → 지금 후보 ${zm.증명.새후보해시}`), '검수자가 읽은 글이 사슬 해시를 말한다');
+  fs.appendFileSync(path.join(z.폴더, 'diff.patch'), '덧붙임');
+  assert.match(api.검수확인(z.폴더).사유.join(' / '), /z: 다시 검수 diff가 준비 뒤 바뀌었다/);
+});
+
+test('다시: 작업본을 옮겨도 --저장소로 앞 사슬의 바탕 판을 보고 잇는다(GPT 2차 검수 GB2)', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n', 'b.js': 'b=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const x = await api.준비하기({ 이름: 'move-x', 폴더: path.join(r.뿌리, 'move-x'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  r.쓰기('b.js', 'b=2\n');
+  const y = await api.다시하기({ 이름: 'move-y', 폴더: path.join(r.뿌리, 'move-y'), 앞: x.폴더 });
+  assert.deepEqual(y.목록.바뀐경로.소스, ['b.js'], '앞 검수에 없던 b.js는 바탕 판에서 지금 판으로');
+  await api.GPT보내기(y.폴더, y.목록, { call: 다시답하기([{ ...지적하나('b.js:1'), quote: 'b=2' }]), 몫: 몫충분 });
+  api.지적표고치기(y.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  const 새곳 = path.join(r.뿌리, 'repo-moved');
+  fs.renameSync(r.저장소, 새곳);
+  fs.writeFileSync(path.join(새곳, 'b.js'), 'b=3\n');
+  await assert.rejects(api.다시하기({ 이름: 'move-z0', 폴더: path.join(r.뿌리, 'move-z0'), 앞: y.폴더 }), /작업본이 없다|검수 git 읽기 실패/);
+  const z = await api.다시하기({ 이름: 'move-z', 폴더: path.join(r.뿌리, 'move-z'), 앞: y.폴더, 저장소: 새곳 });
+  assert.match(fs.readFileSync(path.join(z.폴더, '묶음-A.txt'), 'utf8'), /-b=2\n\+b=3/);
+  await api.GPT보내기(z.폴더, z.목록, { call: 다시답하기(), 몫: 몫충분 });
+  assert.deepEqual(api.검수확인(z.폴더, { 저장소: 새곳 }).사유, []);
+});
+
+test('다시: 대상 지적 없는 고침(P2)도 정책의 첫 검수자가 보고, GPT가 한도로 막히면 아르곤이 대신, 바뀐 것이 없으면 만들지 않는다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const x = await api.준비하기({ 이름: 'p2', 폴더: path.join(r.뿌리, 'p2'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1', 'P2')]), 몫: 몫충분 });
+  await assert.rejects(api.다시하기({ 이름: 'same', 폴더: path.join(r.뿌리, 'same'), 앞: x.폴더 }), /다시 볼 것이 없다/);
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  r.쓰기('a.js', 'a=2 // 이름 고침\n');
+  const y = await api.다시하기({ 이름: 'p2-again', 폴더: path.join(r.뿌리, 'p2-again'), 앞: x.폴더 });
+  assert.deepEqual(y.목록.대상, []); assert.deepEqual(y.목록.검수자들, ['GPT']);
+  await api.GPT보내기(y.폴더, y.목록, { call: async () => { throw new Error('You have hit your usage limit'); }, 몫: 몫충분 });
+  assert.match(api.검수확인(y.폴더).사유.join(' / '), /다시 검수 아르곤 미완료.*GPT 검수가 한도·로그인으로 막혀 대신/);
+  await api.아르곤보내기(y.폴더, y.목록, { call: 다시답하기(), 몫: 몫충분 });
+  assert.deepEqual(api.검수확인(y.폴더).사유, []);
+});
+
+test('다시(화면): 반영한 Fable P1은 같은 Fable이 고친 diff만 다시 확인하고, Fable 최종 전에 고친 아르곤 지적은 대상이 아니다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'view.html': '<p>옛</p>\n' }); r.쓰기('view.html', '<p>새</p>\n');
+  const s = await api.준비하기({ 이름: 'screen', 폴더: path.join(r.뿌리, 'screen'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕 });
+  await api.아르곤보내기(s.폴더, s.목록, { call: 답하기([{ ...지적하나('view.html:1'), quote: '<p>새</p>' }]), 몫: 몫충분 });
+  api.지적표고치기(s.폴더, 표 => api.처리하기(표, ['A1=반영']));
+  r.쓰기('view.html', '<p>새 글</p>\n');
+  await api.페이블하기(s.폴더, { 시험: false, 캡처: false });
+  const 증명 = JSON.parse(fs.readFileSync(path.join(s.폴더, '페이블자료.json'))).증명;
+  api.페이블받기(s.폴더, JSON.stringify({ ...JSON.parse(final답(증명)), findings: [{ grade: 'P1', location: 'view.html:1', quote: '<p>새 글</p>', problem: '안내 문장이 빠졌다', fix: '안내 문장을 붙인다' }] }));
+  api.지적표고치기(s.폴더, 표 => api.처리하기(표, ['F1=반영']));
+  r.쓰기('view.html', '<p>새 글</p><p>안내</p>\n');
+  const d = await api.다시하기({ 이름: 'screen-again', 폴더: path.join(r.뿌리, 'screen-again'), 앞: s.폴더 });
+  assert.deepEqual(d.목록.검수자들, ['Fable']);
+  assert.deepEqual(d.목록.대상.map(x => x.번호), ['F1'], 'Fable 최종 전에 고친 아르곤 A1은 대상이 아니다');
+  assert.match(fs.readFileSync(path.join(d.폴더, '묶음-A.txt'), 'utf8'), /-<p>새 글<\/p>\n\+<p>새 글<\/p><p>안내<\/p>/, 'Fable이 본 판에서 지금 판으로');
+  const fable = fs.readFileSync(path.join(d.폴더, 'fable.md'), 'utf8');
+  assert.match(fable, /묶음-A\.txt/);
+  assert.ok(!fable.includes(d.목록.묶음[0].표식), 'fable.md에 끝 표식을 적지 않는다(묶음을 끝까지 읽어야 안다)');
+  await assert.rejects(api.페이블하기(d.폴더, { 시험: false, 캡처: false }), /페이블을 쓰지 않는다/);
+  assert.match(api.검수확인(d.폴더).사유.join(' / '), /다시 검수 Fable 미완료/);
+  fs.writeFileSync(path.join(d.폴더, 'Fable-답-A.json'), (await 다시답하기()({ prompt: fs.readFileSync(path.join(d.폴더, '묶음-A.txt'), 'utf8') })).text);
+  execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '페이블받기', d.폴더], { encoding: 'utf8' });
+  const ok = api.검수확인(d.폴더);
+  assert.deepEqual(ok.사유, []); assert.deepEqual(ok.증명.사슬, ['screen', 'screen-again']);
+});
+
+test('다시: 내용 보관 전 옛 묶음은 git에서 앞 판을 찾고, 못 찾으면 처음부터 준비하라고 멈춘다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const x = await api.준비하기({ 이름: 'old', 폴더: path.join(r.뿌리, 'old'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  fs.rmSync(path.join(x.폴더, '내용'), { recursive: true });
+  r.쓰기('a.js', 'a=3\n');
+  await assert.rejects(api.다시하기({ 이름: 'lost', 폴더: path.join(r.뿌리, 'lost'), 앞: x.폴더 }), /앞 판 내용을 찾지 못했다: a\.js.*처음부터 준비한다/);
+  r.쓰기('a.js', 'a=2\n'); r.g('commit', '-qam', '검수한 판'); r.쓰기('a.js', 'a=3\n');
+  const y = await api.다시하기({ 이름: 'found', 폴더: path.join(r.뿌리, 'found'), 앞: x.폴더 });
+  assert.match(fs.readFileSync(path.join(y.폴더, '묶음-A.txt'), 'utf8'), /-a=2\n\+a=3/);
+});

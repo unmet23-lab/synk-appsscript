@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { createRequire } = require('node:module');
 const cp = require('node:child_process');
-const { 검수증거 } = require('./lib/검수증명.js');
+const { 검수증거, 다시증거 } = require('./lib/검수증명.js');
 const 실제 = require('../tools/deploy-security-check.js');
 
 for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
@@ -143,6 +143,42 @@ test('Apps Script: 검수한 파일과 origin 내용·모드가 다르면 원격
   f.git(['add', 'Code.js']); f.git(['commit', '-qm', 'restore']); f.git(['update-ref', 'refs/remotes/origin/master', 'HEAD']);
   f.git(['update-index', '--chmod=+x', 'Code.js']);
   await assert.rejects(f.도구.검수반영(f.args), /파일 모드/);
+  assert.equal(f.calls.length, 0);
+});
+
+// 2026-10-24 다섯 가지 ⑤: 검수 뒤 고친 diff만 다시 본 사슬의 끝 후보 = 지금 배포 파일이면 반영한다
+const 고친뒤 = f => {
+  fs.writeFileSync(path.join(f.root, 'Code.js'), 'function doGet() { return "fixed"; }\n');
+  f.git(['add', 'Code.js']); f.git(['commit', '-qm', 'fix']); f.git(['update-ref', 'refs/remotes/origin/master', 'HEAD']);
+  return 실제.후보쓰기(path.join(path.dirname(f.root), 'candidate-2'), 실제.배포후보읽기(f.root));
+};
+test('Apps Script: 검수 뒤 고친 diff만 다시 본 사슬이면 끝 후보로 반영한다', async t => {
+  const f = await 시나리오(t);
+  const 새후보 = 고친뒤(f);
+  await assert.rejects(f.도구.검수반영(f.args), /후보와 현재 배포 파일·설정이 다르다 — 바뀐 부분만 다시 검수한다: .*다시 <새 이름> --앞 review/);
+  assert.equal(f.calls.length, 0, '처음 검수 증거만으로는 원격을 부르지 않는다');
+  const 다시 = await 다시증거({ 앞: f.검수, 저장소: f.root, 배포후보: 새후보, 폴더: path.join(path.dirname(f.root), 'review-2') });
+  const 글 = fs.readFileSync(path.join(다시, '묶음-A.txt'), 'utf8');
+  assert.match(글, /배포 후보 Code\.js/); assert.match(글, /\+function doGet\(\) \{ return "fixed"; \}/);
+  const r = await f.도구.검수반영({ ...f.args, 검수: 다시 });
+  assert.equal(r.통과, true); assert.deepEqual(r.사슬, ['review', 'review-2']);
+  assert.ok(f.calls.some(x => x.args.includes('deploy')));
+});
+
+test('Apps Script: 다시 검수 사슬이 끊기거나 끝 후보 뒤에 바뀌면 원격 호출 전에 막는다', async t => {
+  const f = await 시나리오(t);
+  const 새후보 = 고친뒤(f), 뿌리 = path.dirname(f.root);
+  const 다시 = await 다시증거({ 앞: f.검수, 저장소: f.root, 배포후보: 새후보, 폴더: path.join(뿌리, 'review-2') });
+  // 고친 판을 처음부터 검수한 다른 묶음을 앞으로 대면 해시가 이어지지 않는다
+  const 남 = await 검수증거({ 저장소: f.root, 바탕: f.git(['rev-list', '--max-parents=0', 'HEAD']).trim(), 배포후보: 새후보, 폴더: path.join(뿌리, 'review-other') });
+  const 목록파일 = path.join(다시, '묶음.json'), 목록 = JSON.parse(fs.readFileSync(목록파일, 'utf8'));
+  fs.writeFileSync(목록파일, JSON.stringify({ ...목록, 앞: { 이름: 'review-other', 폴더: 남 } }));
+  await assert.rejects(f.도구.검수반영({ ...f.args, 검수: 다시 }), /review-2: 앞 review-other의 검수한 후보와 해시로 이어지지 않는다/);
+  fs.writeFileSync(목록파일, JSON.stringify(목록));
+  // 사슬 끝 후보 뒤에 다시 고치면 막는다
+  fs.writeFileSync(path.join(f.root, 'Code.js'), 'function doGet() { return "again"; }\n');
+  f.git(['add', 'Code.js']); f.git(['commit', '-qm', 'again']); f.git(['update-ref', 'refs/remotes/origin/master', 'HEAD']);
+  await assert.rejects(f.도구.검수반영({ ...f.args, 검수: 다시 }), /검수 뒤 파일 변경: Code\.js|후보와 현재 배포 파일/);
   assert.equal(f.calls.length, 0);
 });
 

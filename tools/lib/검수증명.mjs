@@ -19,7 +19,13 @@ function git(cwd, args, buffer = false) {
   if (r.status !== 0) throw new Error(`검수 git 읽기 실패: ${args[0]}`);
   return r.stdout;
 }
-export function 파일상태(root, relative, { rev = null, 역할 = '소스' } = {}) {
+/** 파일상태와 같은 꼴로 바이트를 맞춘다 — 글(utf8)은 CRLF → LF, 이진은 그대로. 해시는 맞춘 바이트의 sha256이다. */
+export function 맞춘내용(b) {
+  const text = !b.subarray(0, 8000).includes(0) && Buffer.from(b.toString('utf8')).equals(b);
+  return text ? { 바이트: Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n'), 'utf8'), 해시꼴: 'utf8-lf' } : { 바이트: b, 해시꼴: 'bytes' };
+}
+/** 내용(Map)을 주면 맞춘 바이트를 해시 이름으로 담는다 — 다시 검수가 앞 판과 지금 판의 diff를 만든다. */
+export function 파일상태(root, relative, { rev = null, 역할 = '소스', 내용 = null } = {}) {
   let b, mode;
   if (rev) {
     const tree = git(root, ['ls-tree', rev, '--', relative]).trim();
@@ -36,15 +42,16 @@ export function 파일상태(root, relative, { rev = null, 역할 = '소스' } =
     mode = stage ? stage.split(' ')[0] : process.platform !== 'win32' && (fs.statSync(f).mode & 0o111) ? '100755' : '100644';
     if (process.platform !== 'win32') mode = fs.statSync(f).mode & 0o111 ? '100755' : '100644';
   }
-  const text = !b.subarray(0, 8000).includes(0) && Buffer.from(b.toString('utf8')).equals(b);
-  return { 경로: relative, sha256: sha256(text ? b.toString('utf8').replace(/\r\n/g, '\n') : b), 모드: mode, 역할, 해시꼴: text ? 'utf8-lf' : 'bytes' };
+  const m = 맞춘내용(b), h = sha256(m.바이트);
+  if (내용) 내용.set(h, m.바이트);
+  return { 경로: relative, sha256: h, 모드: mode, 역할, 해시꼴: m.해시꼴 };
 }
-export function 소스스냅샷(설정, files) {
+export function 소스스냅샷(설정, files, { 내용 = null } = {}) {
   const paths = new Map();
   for (const f of files) { paths.set(f.경로, '소스'); if (f.옛경로) paths.set(f.옛경로, '소스'); }
   for (const p of 설정.곁 || []) paths.set(p.replace(/:\d+-\d+$/, '').replace(/\\/g, '/'), '의존');
   for (const p of 설정.시험 || []) if (!/[*?]/.test(p)) paths.set(p.replace(/\\/g, '/'), '시험');
-  return [...paths].sort(([a], [b]) => a.localeCompare(b)).map(([p, 역할]) => 파일상태(설정.저장소, p, { rev: 설정.끝 === '작업본' ? null : 설정.끝.커밋, 역할 }));
+  return [...paths].sort(([a], [b]) => a.localeCompare(b)).map(([p, 역할]) => 파일상태(설정.저장소, p, { rev: 설정.끝 === '작업본' ? null : 설정.끝.커밋, 역할, 내용 }));
 }
 export function 후보읽기(folder) {
   if (!folder) return null;
@@ -122,6 +129,15 @@ export function 응답검사(answer, expected, { final = false } = {}) {
     const got = answer.seen.map(norm), want = expected.항목.map(norm);
     if (new Set(got).size !== got.length || got.length !== want.length || want.some(x => !got.includes(x))) errors.push('seen이 요구 항목 집합과 다르다');
   }
+  // 다시 검수 묶음: 다시 볼 지적([Q…])마다 풀었는지를 한 번씩 답한다
+  if (expected?.대상) {
+    const t = answer.targets;
+    if (!Array.isArray(t) || t.some(x => !x || typeof x.id !== 'string' || typeof x.resolved !== 'boolean' || typeof x.note !== 'string')) errors.push('targets schema 오류');
+    else {
+      const got = t.map(x => x.id.trim().replace(/^\[|\]$/g, ''));
+      if (new Set(got).size !== got.length || got.length !== expected.대상.length || expected.대상.some(x => !got.includes(x))) errors.push('targets가 다시 볼 지적 집합과 다르다');
+    }
+  }
   if (expected && answer.endMarker !== expected.표식) errors.push('끝 표식 불일치');
   if (final && (!expected?.검토입력해시 || answer.reviewInputHash !== expected.검토입력해시)) errors.push('최종 검토 입력 해시 불일치');
   return errors;
@@ -133,6 +149,32 @@ export function 막힘증거(누구, raw, usage = null) {
   const quota = 누구 === 'GPT' ? /(?:hit your usage limit|usage limit.*(?:reached|exceeded)|no Pro account.*(?:available|remaining)|Pro 계정.*(?:없|한도)|주간.*한계)/i : /(?:RESOURCE_EXHAUSTED|QUOTA_EXHAUSTED|quota.*(?:exceeded|exhausted)|limit remaining 0|429.*(?:quota|rate))/i;
   const login = /(?:not logged in|login required|authentication (?:failed|required)|unauthenticated|invalid credential|로그인이 필요)/i;
   return quota.test(text) || login.test(text) ? { 종류: quota.test(text) ? '한도' : '로그인', 도구: 누구 === 'GPT' ? 'codex' : 'agy', 원문: text } : null;
+}
+/** 다시 검수(고친 diff만) 증명 — 앞 고리 후보 해시·지금 후보 해시·diff 해시·대상 지적·묶음 입력 SHA를 한 해시에 묶는다. */
+export function 다시증명(body) {
+  const 검토입력해시 = 정규해시(body);
+  return { ...body, 검토입력해시, 표식: `END_OF_FINAL_REVIEW_${검토입력해시}` };
+}
+/** 앞 판과 지금 판(파일 스냅샷·배포 후보)에서 내용·모드가 달라진 경로. */
+export function 바뀐경로들(앞판, 지금판, 앞후보 = null, 지금후보 = null) {
+  const 앞 = new Map(앞판.map(f => [f.경로, f]));
+  const 소스 = 지금판.filter(f => { const a = 앞.get(f.경로); return !a || a.sha256 !== f.sha256 || a.모드 !== f.모드; }).map(f => f.경로).sort();
+  const 후보앞 = new Map((앞후보?.항목 || []).map(x => [x.경로, x])), 후보지금 = new Map((지금후보?.항목 || []).map(x => [x.경로, x]));
+  const 후보 = [...new Set([...후보앞.keys(), ...후보지금.keys()])].filter(k => 정규해시(후보앞.get(k) ?? null) !== 정규해시(후보지금.get(k) ?? null)).sort();
+  return { 소스, 후보 };
+}
+/** 다시 검수자: 그 지적을 낸 검수자. GPT 작성은 GPT·Claude 둘 다, 화면은 Fable이 끝 상태를 본다, 대상이 없으면 정책의 첫 검수자. */
+export function 다시검수자들(정책, 대상) {
+  if (정책.작성자 === 'GPT') return [...정책.필수];
+  const 낸 = ['아르곤', 'GPT', 'Fable'].filter(w => 대상.some(t => t.출처 === w));
+  if (정책.종류 === '화면') return [...new Set([...낸, 'Fable'])];
+  return 낸.length ? 낸 : [대체순서(정책)[0]];
+}
+/** 그 검수자가 한도·로그인으로 막혔을 때 대신하는 차례(자신 포함). GPT 작성은 대신이 없다. */
+export function 대신할검수자(정책, 누구) {
+  if (정책.작성자 === 'GPT') return [누구];
+  const 차례 = ['GPT', '아르곤', 'Fable'], i = 차례.indexOf(누구);
+  return i < 0 ? [누구] : 차례.slice(i);
 }
 export function 입력증명({ 정책, 파일, 배포후보 = null, 항목 = [], 자료해시 = null, 보조파일 = [] }) {
   const body = { 정책, 파일, 배포후보, 항목, 자료해시, 보조파일 };
