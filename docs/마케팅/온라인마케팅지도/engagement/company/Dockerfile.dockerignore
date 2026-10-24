@@ -67,6 +67,8 @@
 !experiences/teacher-world/workspace-overview.css
 !experiences/teacher-world/workspace-overview.mjs
 !experiences/teacher-world/sharing-fence.mjs
+!experiences/teacher-world/selection-session.mjs
+!experiences/teacher-world/teacher-host.mjs
 !experiences/teacher-world/course-writing-ui.mjs
 !experiences/teacher-world/homework-review.mjs
 !experiences/teacher-world/homework-review.css

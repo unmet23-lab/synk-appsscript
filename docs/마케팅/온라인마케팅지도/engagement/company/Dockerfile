@@ -54,7 +54,7 @@ COPY ["atlas/engine.js","atlas/trail.js","atlas/personalization.js","atlas/domai
 COPY ["atlas/ask.js","/workspace/atlas/ask.js"]
 COPY ["experiences/shift-workbench/model.mjs","experiences/shift-workbench/storage-upgrade.mjs","/workspace/experiences/shift-workbench/"]
 COPY ["experiences/teacher-world/index.html","experiences/teacher-world/app.mjs","experiences/teacher-world/personalization-ui.mjs","experiences/teacher-world/style.css","experiences/teacher-world/personalization.css","/workspace/experiences/teacher-world/"]
-COPY ["experiences/teacher-world/signal.css","experiences/teacher-world/workspace-overview.css","experiences/teacher-world/workspace-overview.mjs","experiences/teacher-world/sharing-fence.mjs","/workspace/experiences/teacher-world/"]
+COPY ["experiences/teacher-world/signal.css","experiences/teacher-world/workspace-overview.css","experiences/teacher-world/workspace-overview.mjs","experiences/teacher-world/sharing-fence.mjs","experiences/teacher-world/selection-session.mjs","experiences/teacher-world/teacher-host.mjs","/workspace/experiences/teacher-world/"]
 COPY ["experiences/teacher-world/course-writing-ui.mjs","experiences/teacher-world/homework-review.mjs","experiences/teacher-world/homework-review.css","/workspace/experiences/teacher-world/"]
 COPY ["experiences/synk-world-app/topik4-homework.json","/workspace/experiences/synk-world-app/"]
 COPY ["experiences/teacher-world/assets/wide-butter.webp","/workspace/experiences/teacher-world/assets/"]

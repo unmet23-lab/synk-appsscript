@@ -5,10 +5,12 @@ import vm from 'node:vm';
 import * as Overview from './workspace-overview.mjs';
 import {applySharingFence} from './sharing-fence.mjs';
 import {mountCourseWriting} from './course-writing-ui.mjs';
+import * as Session from './selection-session.mjs';
+import * as Host from './teacher-host.mjs';
 
 // 교사 앱 주소(/teacher-world/)를 workspace.synk.im에서 직접 열면 회사 서버의 /api/workspace(업무 자료, 로그인 필요)를
 // 수업 자료로 읽어 「처리하지 못했어요. (401)」이 보였다. 이 파일은 그 안내 화면이 오류 대신 나오는지 본다.
-const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'');
+const source=fs.readFileSync(new URL('./app.mjs',import.meta.url),'utf8').replace("import {mountHomeworkReview} from './homework-review.mjs';",'').replace("import {applySharingFence} from './sharing-fence.mjs';",'').replace("import {createPersonalizationUI} from './personalization-ui.mjs';",'').replace(/^import \{[^\n]*\} from '\.\/workspace-overview\.mjs';\r?\n/m,'').replace(/^import \{[^\n]*\} from '\.\/(?:selection-session|teacher-host)\.mjs';\r?\n/gm,'');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const reply=(body,status=200)=>({ok:status<400,status,json:async()=>body});
 const COMPANY_HEALTH={ok:true,app:'synk-company',version:1,workspaceIntegration:true,ready:true};
@@ -16,7 +18,7 @@ const COMPANY_HEALTH={ok:true,app:'synk-company',version:1,workspaceIntegration:
 function open({health,search=''}={}){
   const nodes=new Map(),requests=[];
   const element=id=>{if(!nodes.has(id))nodes.set(id,{id,value:'',textContent:'',innerHTML:'',hidden:false,dataset:{},listeners:new Map(),addEventListener(name,fn){this.listeners.set(name,fn);},replaceChildren(){this.innerHTML='';this.textContent='';},close(){this.open=false;},querySelector(){return element(id+'-child');}});return nodes.get(id);};
-  const context={...Overview,applySharingFence,URL,URLSearchParams,Date,Error,FormData:class{},crypto:{randomUUID:()=>'test-key'},setTimeout:()=>0,clearTimeout(){},setInterval:()=>1,clearInterval(){},
+  const context={...Overview,...Session,...Host,applySharingFence,URL,URLSearchParams,Date,Error,FormData:class{},crypto:{randomUUID:()=>'test-key'},setTimeout:()=>0,clearTimeout(){},setInterval:()=>1,clearInterval(){},
     location:{href:'https://workspace.synk.im/teacher-world/'+search,origin:'https://workspace.synk.im'},history:{replaceState(){}},
     sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},window:{addEventListener(){}},
     document:{getElementById:element,documentElement:element('html'),querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){}},

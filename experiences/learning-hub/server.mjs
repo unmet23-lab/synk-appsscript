@@ -23,7 +23,7 @@ consult.set('/teacher-world/topik4-homework.json', 'synk-world-app/topik4-homewo
 consult.set('/synk-town/engine/loom-motion.js','../tools/lib/loom-motion.js');
 consult.set('/synk-town/engine/loom-life.js','../tools/lib/loom-life.js');
 const classroomPublic={
-  'teacher-world':new Set(['index.html','style.css','signal.css','app.mjs','course-writing-ui.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','homework-review.mjs','homework-review.css']),
+  'teacher-world':new Set(['index.html','style.css','signal.css','app.mjs','course-writing-ui.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs','homework-review.mjs','homework-review.css','selection-session.mjs','teacher-host.mjs']),
   'synk-town':new Set(['linked.html','app.mjs','style.css','linked-client.mjs','understanding.mjs','understanding-ui.mjs'])
 };
 const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
