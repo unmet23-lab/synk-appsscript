@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n4",
+ "text": "What's the weirdest sentence your app taught you?",
+ "dur": 2.547,
+ "words": [
+  {
+   "text": "What's",
+   "start": 0.02,
+   "end": 0.19
+  },
+  {
+   "text": "the",
+   "start": 0.229,
+   "end": 0.294
+  },
+  {
+   "text": "weirdest",
+   "start": 0.451,
+   "end": 0.855
+  },
+  {
+   "text": "sentence",
+   "start": 0.92,
+   "end": 1.324
+  },
+  {
+   "text": "your",
+   "start": 1.363,
+   "end": 1.467
+  },
+  {
+   "text": "app",
+   "start": 1.61,
+   "end": 1.767
+  },
+  {
+   "text": "taught",
+   "start": 1.845,
+   "end": 2.093
+  },
+  {
+   "text": "you?",
+   "start": 2.132,
+   "end": 2.547
+  }
+ ],
+ "source": {
+  "key": "56242816c7b776f3ad845b4f23eb9093",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.1,
+   "tempo": 1,
+   "seed": 1025,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

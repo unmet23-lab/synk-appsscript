@@ -1,0 +1,34 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "주문하시겠어요?",
+ "dur": 1.068,
+ "words": [
+  {
+   "text": "주문하시겠어요?",
+   "start": 0.02,
+   "end": 1.068
+  }
+ ],
+ "source": {
+  "key": "a4c21049fce4cd6a14570e6a345fc2c4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1025,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "카페 계산대 앞에 손님이 섰다. 바리스타가 밝게 묻는다.",
+   "next": "안녕하십니까. 저는 커피를 원합니다."
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

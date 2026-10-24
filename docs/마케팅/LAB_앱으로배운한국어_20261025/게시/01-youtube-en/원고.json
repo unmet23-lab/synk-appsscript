@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "POV: you learned Korean from an app… now order coffee ☕ #learnkorean",
+  "caption": "Textbook Korean at a café: “안녕하십니까. 저는 커피를 원합니다.” (Greetings. I desire coffee.) 😅 Not wrong. Just very, very stiff.\n\nWhat actually works: [menu item] + 하나 주세요 (“one ___, please”)\n☕ 아이스 아메리카노 하나 주세요 — One iced americano, please.\n🍰 Works for anything: 치즈케이크 하나 주세요, 아이스티 하나 주세요.\n(For drinks you'll also hear 한 잔 주세요 — “one cup, please.”)\n\nWhat's the weirdest sentence your app taught you? 👇\n\n🎮 Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #korean",
+  "pinnedComment": "Mine: 사과는 빨갛습니다 (The apple is red) 🍎 Your turn 👇\n🎮 New to Korean? Listening & reading mini games → https://synk.im/try/learning-hub/",
+  "alt": [
+    "A needle-felted café. A small coral ghost-shaped plush stands on the counter, sweating, next to a felt phone with a language lesson on it; a felt barista smiles behind the counter and asks “주문하시겠어요?” (Ready to order?). The plush answers with a stiff textbook sentence, “안녕하십니까. 저는 커피를 원합니다.” (Greetings. I desire coffee.); the barista's smile freezes and he asks “따뜻한 거요, 아이스요?” (Hot or iced?). The plush panics, eyes spinning, and blurts “사과는… 빨갛습니다.” (The apple… is red.). A card titled REAL KOREAN THAT WORKS shows 아이스 아메리카노 (iced americano) + 하나 (one) + 주세요 (please), with a pause to say it out loud. The plush says it, the barista happily hands over an iced americano, and the video asks: what's the weirdest sentence your app taught you?"
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = appkr-en v6(22.9초, 렌더 → 음량마감 −14.6 LUFS → CBR 10M 다시 담기). 표지 cover.png = 1.2초(36프레임 — POV 제목 · 땀 흘리는 몽글 · 바리스타 · 「Ready to order?」). 어린이 전용 아님(예문 댓글이 필요). 합성 표시: 필수 아님 — 펠트 인형 장면은 GPT 이미지로 구웠지만 실제 사람 · 장소 · 사건으로 보이지 않는 인형극이고, 목소리는 특정인이 아닌 TTS(퀴즈 편과 같은 판단). 동영상 언어: 대사가 한국어(바리스타 · 해설의 한국어 줄)와 영어(해설)가 섞임 — 오디오 언어 ko, 제목 · 설명 en. 자동 더빙 끔.",
+  "version": "appkr-en-v6"
+}

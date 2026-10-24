@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "아이스 아메리카노 하나 주세요.",
+ "dur": 2.433,
+ "words": [
+  {
+   "text": "아이스",
+   "start": 0.02,
+   "end": 0.463
+  },
+  {
+   "text": "아메리카노",
+   "start": 0.645,
+   "end": 1.35
+  },
+  {
+   "text": "하나",
+   "start": 1.431,
+   "end": 1.653
+  },
+  {
+   "text": "주세요.",
+   "start": 1.733,
+   "end": 2.433
+  }
+ ],
+ "source": {
+  "key": "42d185a402c2d85285ac75bf4dd36669",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 1025,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

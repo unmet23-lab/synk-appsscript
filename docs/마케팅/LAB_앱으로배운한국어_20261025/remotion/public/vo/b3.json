@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "네, 아이스 아메리카노 하나요!",
+ "dur": 2.029,
+ "words": [
+  {
+   "text": "네,",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "아이스",
+   "start": 0.724,
+   "end": 1.025
+  },
+  {
+   "text": "아메리카노",
+   "start": 1.085,
+   "end": 1.487
+  },
+  {
+   "text": "하나요!",
+   "start": 1.548,
+   "end": 2.029
+  }
+ ],
+ "source": {
+  "key": "391e336091e069a6e3f00566a088644c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1025,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

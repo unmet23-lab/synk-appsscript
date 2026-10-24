@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — third shot of the same short comedy video: a close-up of the barista whose polite smile has frozen because the customer just said something weirdly formal. Needle-felted wool miniature set, photographed like a real macro photo.
+
+The attached image is the opening frame of this film: keep exactly the same barista doll (big round felt head, glossy black bead eyes, short dark-brown felt hair, cream felt shirt, sage-green felt apron with a blank felt name tag), the same café set and the same lighting.
+
+FORMAT: one PORTRAIT image, 2:3. The video crops about 8% off the left and right edges — keep the barista inside the central 84% of the width.
+
+SHOT: close-up from the customer's side, camera at counter height. The barista stands behind the wooden counter, seen from the chest up, centered, his head in the middle of the image (head top at about 22% from the top, chin at about 52%). A soft, out-of-focus coral blob of the customer's wool body is visible only at the very bottom-left corner, cut off by the frame (over-the-shoulder feeling).
+Expression: FROZEN POLITE SMILE — the embroidered smile still there but stiff, bead eyes a little too wide, one small felt eyebrow raised, head tilted a few degrees, one tiny clear glass-bead sweat drop at his temple. His felt hands rest still on the counter.
+
+Background (out of focus): the cream felt wall, the charcoal-and-lapis espresso machine, the row of felt cups, the warm pendant lamps. Warm morning window light from the upper left, shallow depth of field, visible wool fibers.
+
+Absolutely no text, letters, numbers, prices, logos, symbols or watermarks anywhere in the image — the name tag stays blank.

@@ -1,0 +1,54 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "아, 네. 따뜻한 거요, 아이스요?",
+ "dur": 2.64,
+ "words": [
+  {
+   "text": "아,",
+   "start": 0.03,
+   "end": 0.049
+  },
+  {
+   "text": "네.",
+   "start": 0.198,
+   "end": 0.29
+  },
+  {
+   "text": "따뜻한",
+   "start": 0.869,
+   "end": 1.261
+  },
+  {
+   "text": "거요,",
+   "start": 1.316,
+   "end": 1.503
+  },
+  {
+   "text": "아이스요?",
+   "start": 1.987,
+   "end": 2.64
+  }
+ ],
+ "source": {
+  "key": "4b038730cb862eb7c310b31c462f821e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1025,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "손님이 「안녕하십니까. 저는 커피를 원합니다.」라고 로봇처럼 말했다. 바리스타는 잠깐 당황했지만 웃으며 빠르게 다음을 묻는다.",
+   "next": "사과는… 빨갛습니다."
+  },
+  "speed": 1.08,
+  "cut": null
+ }
+}

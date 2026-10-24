@@ -1,0 +1,59 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n3",
+ "text": "Your turn. Say it out loud!",
+ "dur": 2.397,
+ "words": [
+  {
+   "text": "Your",
+   "start": 0.18,
+   "end": 0.402
+  },
+  {
+   "text": "turn.",
+   "start": 0.482,
+   "end": 0.866
+  },
+  {
+   "text": "Say",
+   "start": 1.188,
+   "end": 1.37
+  },
+  {
+   "text": "it",
+   "start": 1.511,
+   "end": 1.592
+  },
+  {
+   "text": "out",
+   "start": 1.652,
+   "end": 1.813
+  },
+  {
+   "text": "loud!",
+   "start": 1.894,
+   "end": 2.358
+  }
+ ],
+ "source": {
+  "key": "359a443371bb49557d59335dc4f884fc",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1025,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "아이스 아메리카노 하나 주세요. Now you say it out loud.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

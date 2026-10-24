@@ -1,0 +1,15 @@
+{
+ "_설명": "E3 「POV: 앱으로 배운 한국어」 게시글 정본(10-25). 화면 글 정본은 ../remotion/src/film/Film.tsx(제목 · 말풍선 · 자막 · Real Korean 칸)와 timeline.ts. 판별 글(01-youtube-en/)은 이 파일에서 만든다. 학습 허브 링크는 10-25 07:33 응답 200 확인.",
+ "_ko": {
+  "title": "POV: 앱으로 한국어를 배웠는데… 이제 카페에서 주문해야 한다 ☕",
+  "description": "카페에서 교과서 한국어: 「안녕하십니까. 저는 커피를 원합니다.」 😅 틀린 말은 아닌데, 너무 딱딱해.\n\n실제로 통하는 말: 메뉴 + 하나 주세요(「~ 하나 주세요」)\n☕ 아이스 아메리카노 하나 주세요 — 아이스 아메리카노 하나 주세요.\n🍰 무엇이든 돼: 치즈케이크 하나 주세요, 아이스티 하나 주세요.\n(음료는 「한 잔 주세요」도 많이 들려 — 「한 잔」 = 한 컵)\n\n앱이 가르쳐 준 가장 이상한 문장은 뭐였어? 👇\n\n🎮 한국어 듣기·읽기 미니 게임: https://synk.im/try/learning-hub/",
+  "pinned_comment": "내 건: 사과는 빨갛습니다(사과는 빨갛다) 🍎 네 차례 👇\n🎮 한국어 처음이야? 듣기·읽기 미니 게임 → https://synk.im/try/learning-hub/"
+ },
+ "en": {
+  "account": "YouTube @synkkorean",
+  "title": "POV: you learned Korean from an app… now order coffee ☕ #learnkorean",
+  "description": "Textbook Korean at a café: “안녕하십니까. 저는 커피를 원합니다.” (Greetings. I desire coffee.) 😅 Not wrong. Just very, very stiff.\n\nWhat actually works: [menu item] + 하나 주세요 (“one ___, please”)\n☕ 아이스 아메리카노 하나 주세요 — One iced americano, please.\n🍰 Works for anything: 치즈케이크 하나 주세요, 아이스티 하나 주세요.\n(For drinks you'll also hear 한 잔 주세요 — “one cup, please.”)\n\nWhat's the weirdest sentence your app taught you? 👇\n\n🎮 Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #korean",
+  "pinned_comment": "Mine: 사과는 빨갛습니다 (The apple is red) 🍎 Your turn 👇\n🎮 New to Korean? Listening & reading mini games → https://synk.im/try/learning-hub/",
+  "alt": "A needle-felted café. A small coral ghost-shaped plush stands on the counter, sweating, next to a felt phone with a language lesson on it; a felt barista smiles behind the counter and asks “주문하시겠어요?” (Ready to order?). The plush answers with a stiff textbook sentence, “안녕하십니까. 저는 커피를 원합니다.” (Greetings. I desire coffee.); the barista's smile freezes and he asks “따뜻한 거요, 아이스요?” (Hot or iced?). The plush panics, eyes spinning, and blurts “사과는… 빨갛습니다.” (The apple… is red.). A card titled REAL KOREAN THAT WORKS shows 아이스 아메리카노 (iced americano) + 하나 (one) + 주세요 (please), with a pause to say it out loud. The plush says it, the barista happily hands over an iced americano, and the video asks: what's the weirdest sentence your app taught you?"
+ }
+}

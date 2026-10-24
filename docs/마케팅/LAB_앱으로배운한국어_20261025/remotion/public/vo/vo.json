@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1025,
+  "lufs": -15.5
+ },
+ "made": "2026-10-24T22:37:22.789Z",
+ "lines": [
+  {
+   "id": "b1",
+   "text": "주문하시겠어요?",
+   "dur": 1.068,
+   "syllablesPerSec": 6.55,
+   "src": "b1.wav",
+   "key": "a4c21049fce4cd6a14570e6a345fc2c4",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "아, 네. 따뜻한 거요, 아이스요?",
+   "dur": 2.64,
+   "syllablesPerSec": 4.17,
+   "src": "b2.wav",
+   "key": "4b038730cb862eb7c310b31c462f821e",
+   "words": 5
+  },
+  {
+   "id": "b3",
+   "text": "네, 아이스 아메리카노 하나요!",
+   "dur": 2.029,
+   "syllablesPerSec": 5.91,
+   "src": "b3.wav",
+   "key": "391e336091e069a6e3f00566a088644c",
+   "words": 4
+  },
+  {
+   "id": "n1",
+   "text": "Real Korean? Just say this.",
+   "dur": 2.619,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "470162d66136a6d0f497fc4d7e96050f",
+   "words": 5
+  },
+  {
+   "id": "n2",
+   "text": "아이스 아메리카노 하나 주세요.",
+   "dur": 2.433,
+   "syllablesPerSec": 5.34,
+   "src": "n2.wav",
+   "key": "42d185a402c2d85285ac75bf4dd36669",
+   "words": 4
+  },
+  {
+   "id": "n3",
+   "text": "Your turn. Say it out loud!",
+   "dur": 2.397,
+   "syllablesPerSec": null,
+   "src": "n3.wav",
+   "key": "359a443371bb49557d59335dc4f884fc",
+   "words": 6
+  },
+  {
+   "id": "n4",
+   "text": "What's the weirdest sentence your app taught you?",
+   "dur": 2.547,
+   "syllablesPerSec": null,
+   "src": "n4.wav",
+   "key": "56242816c7b776f3ad845b4f23eb9093",
+   "words": 8
+  }
+ ]
+}

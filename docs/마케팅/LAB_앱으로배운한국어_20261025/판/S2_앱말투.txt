@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — second shot of the same short comedy video: a close-up of Mongle ordering coffee in an overly formal, robotic "textbook" way. Needle-felted wool miniature set, photographed like a real macro photo.
+
+The FIRST attached image is the opening frame of this film: keep exactly the same café set, the same lighting, the same Mongle and the same felt smartphone. The other attached photos show Mongle's body shape, coral wool, fuzzy texture, scalloped hem with a cream running stitch and glossy black bead eyes — use them only for its look. No arms, no legs, no hands, ever.
+
+FORMAT: one PORTRAIT image, 2:3. The video crops about 8% off the left and right edges — keep Mongle and the phone inside the central 84% of the width.
+
+SHOT: close-up, camera at counter height on the barista's side, looking at Mongle across the wooden counter top. Mongle stands on the counter in the lower-middle of the frame, its body about 50% of the image height, its top at about 42% from the top of the image, so the upper 38% of the image is soft, out-of-focus café background (this area will hold a speech bubble — keep it calm, no objects in focus there). Hem pressing into the counter with a soft contact shadow.
+Expression: PROUD AND STIFF, like a robot reciting a memorized lesson — body perfectly upright and puffed up, bead eyes looking straight ahead and slightly upward with great seriousness, mouth a small precise flat line, tiny pink felt cheeks. No sweat in this shot.
+The same felt smartphone leans against the right side of the hem; its cream felt screen shows the felt lesson: a mint-green progress bar, a butter-yellow felt star and two short charcoal felt dash lines. No animal, no owl, no logo, no letters.
+
+Background (out of focus): the same cream felt wall, the charcoal-and-lapis espresso machine and the warm pendant lamp glow. Warm morning window light from the upper left, shallow depth of field, visible wool fibers. Do not use coral anywhere except Mongle.
+
+Absolutely no text, letters, numbers, prices, logos, symbols or watermarks anywhere in the image.

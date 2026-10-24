@@ -1,0 +1,18 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — opening frame of a vertical short comedy video: a nervous little customer at a café counter. Needle-felted wool miniature set, photographed like a real macro photo.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video will crop about 8% off the left and right edges, so keep both characters and the phone inside the central 84% of the width.
+
+CHARACTER 1 — Mongle (the customer): the coral needle-felted wool ghost-shaped mascot in the attached reference photos. Use the references ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. Mongle never holds anything.
+Mongle stands ON the wooden counter top, on the customer side near the front edge, in the lower-left-to-center foreground. Its body is about 28% of the image height. Three-quarter view, turned slightly to the right toward the barista, face clearly visible. Expression: NERVOUS — glossy bead eyes wide, a tiny wobbly worried mouth, small pink felt cheeks. Three or four clear glass-bead sweat drops fly off the top of its head. The hem presses into the counter with a soft contact shadow.
+Leaning against the right side of Mongle's hem stands a small felt smartphone (charcoal felt frame, cream felt screen). On the screen: a generic language-learning lesson made only of felt shapes — a mint-green progress bar at the top, a butter-yellow felt star, and two short charcoal felt dash lines. No animal, no owl, no logo, no letters.
+
+CHARACTER 2 — the barista: a needle-felted wool doll of a friendly young adult man (simple doll proportions: big round head, glossy black bead eyes, small embroidered smile, short dark-brown felt hair), cream felt shirt, sage-green felt apron, a tiny felt name tag that is blank. He stands BEHIND the counter at center-right, seen from the waist up, a little farther from the camera than Mongle, leaning forward slightly with a polite customer-service smile, both felt hands resting on the counter next to a small felt card reader.
+
+SET: a cozy neighborhood café made entirely of wool felt and wood. Warm natural oak counter top across the lower 35% of the image. Behind the barista: a cream felt wall, a charcoal-and-lapis-blue felt espresso machine, a row of felt cups, one small felt plant. The TOP 22% of the image is calm: a dark charcoal felt menu board with only blank colored felt panels (butter yellow, mint, cream) and two warm pendant lamps — this area will hold a title, so keep it simple.
+Colors: warm cream, oak, sage green, lapis blue, butter yellow accents. Do not use coral anywhere except Mongle, so Mongle pops.
+
+PHOTOGRAPHY: real handmade needle-felt craft shot with a macro lens, visible wool fibers, warm morning window light from the upper left, shallow depth of field (the back wall softly blurred, both characters in focus), cute but not babyish — for teenagers and university students.
+
+Absolutely no text, letters, numbers, prices, logos, symbols or watermarks anywhere in the image — not on the menu board, the phone, the cups, the name tag or the apron.
