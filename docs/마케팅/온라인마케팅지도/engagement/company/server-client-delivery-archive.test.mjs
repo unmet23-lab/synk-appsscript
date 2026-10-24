@@ -25,9 +25,11 @@ async function fixture(t){
   const prepared=async user=>{const result=await api({user});assert.equal(result.status,200,result.text);return result.data;};
   return {app,base,path,id,users,sessions,api,headers,prepared,row:()=>app.store.get('clientProjects',id)};
 }
-test('preview and JSON/native POST deliver a real ZIP with originals and links without mutations',async t=>{
+// A complete Content-Length body can reach fetch before the server closes its
+// archive handles. Each transport gets its own fixture, not an overlapping download.
+for(const form of [false,true])test(`preview and ${form?'native':'JSON'} POST deliver a real ZIP with originals and links without mutations`,async t=>{
   const f=await fixture(t),before=JSON.stringify(f.row()),prepared=await f.prepared();assert.equal(prepared.files.length,1);assert.equal(prepared.links.length,1);
-  for(const form of [false,true]){const result=await f.api({method:'POST',form,input:{fingerprint:prepared.fingerprint,...form?{csrfToken:csrf}:{}}});assert.equal(result.status,200,result.text);assert.equal(result.bytes.readUInt32LE(0),0x04034b50);assert.equal(result.bytes.readUInt32LE(result.bytes.length-22),0x06054b50);assert.equal(Number(result.headers.get('content-length')),result.bytes.length);assert.equal(result.headers.get('content-type'),'application/zip');assert.match(result.headers.get('content-disposition'),/attachment;.*filename\*=UTF-8''/);assert.match(result.headers.get('cache-control'),/no-store/);assert.match(result.text,/synthetic final video bytes/);assert.match(result.text,/https:\/\/example.test\/final.srt/);assert.doesNotMatch(result.text,/NEVER-INCLUDE/);}
+  const result=await f.api({method:'POST',form,input:{fingerprint:prepared.fingerprint,...form?{csrfToken:csrf}:{}}});assert.equal(result.status,200,result.text);assert.equal(result.bytes.readUInt32LE(0),0x04034b50);assert.equal(result.bytes.readUInt32LE(result.bytes.length-22),0x06054b50);assert.equal(Number(result.headers.get('content-length')),result.bytes.length);assert.equal(result.headers.get('content-type'),'application/zip');assert.match(result.headers.get('content-disposition'),/attachment;.*filename\*=UTF-8''/);assert.match(result.headers.get('cache-control'),/no-store/);assert.match(result.text,/synthetic final video bytes/);assert.match(result.text,/https:\/\/example.test\/final.srt/);assert.doesNotMatch(result.text,/NEVER-INCLUDE/);
   assert.equal(JSON.stringify(f.row()),before);
 });
 test('native form errors stay in same-origin frame and are readable without navigating the workroom',async t=>{
