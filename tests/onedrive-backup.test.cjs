@@ -807,7 +807,9 @@ test('an unchanged copy list or exclusion list is not rewritten on the next run 
   const f = fixture(t);
   f.put(f.root, 'doc.md', '# Main');
   const options = { ...f, getRows: () => [{ brand: 'SYNK', source: 'doc.md', target: 'doc.md', kind: 'system' }],
-    collectWorktrees: () => ({ documents: 0 }), checkProvider: healthy };
+    collectWorktrees: () => ({ documents: 0 }), checkProvider: healthy,
+    // 주기 해시 재확인은 verifiedAt을 갱신하므로, 여기서는 내용이 그대로인 평상 회차를 고정한다.
+    clock: clockOutsideRecheck([path.join(f.root, 'doc.md'), path.join(f.destination, 'SYNK/doc.md')]) };
   // 첫 회차 직후의 행은 「방금 써서 다시 읽어 확인」이고, 다음 회차부터 「앞 확인 + 지금 메타데이터」로 한 번 바뀐다.
   assert.equal(backup.run(options).status, 'healthy'); assert.equal(backup.run(options).status, 'healthy');
   const manifest = path.join(f.stateDir, 'copy-manifest.json'), before = fs.readFileSync(manifest, 'utf8');
