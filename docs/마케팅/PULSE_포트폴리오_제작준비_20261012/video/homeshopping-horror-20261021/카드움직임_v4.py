@@ -332,8 +332,9 @@ def card3():
 
 
 JOBS = {
-    # bg_lab: 바탕 판만 원본 카드 첫 프레임(빈 갈색)의 Lab 평균(OpenCV 8비트)으로 옮긴다 — 우리 갈색이 덜 붉었다(a +4 대 +11, 10-24 「색감이 자꾸 바뀐다」)
-    11: dict(hand="H1", prop="mini/mini_0001.png", narrow=0.5, tint=(1.0, 1.0, 1.0), bottom=True, split=False, card=card1, bg_lab=(36.3, 139.0, 139.3),
+    # bg_lab(쓰지 않음): 바탕 판을 원본 카드 첫 프레임의 Lab 평균으로 옮기던 칸 — 10-24 유호님 「뭐든 후보정은 최대한 피하는게 좋아보여」로 뺐다.
+    #   바탕 색이 틀리면 손 그림을 지시문으로 다시 굽는다. 다시 켜려면 bg_lab=(L, a, b)(OpenCV 8비트)를 넣는다.
+    11: dict(hand="H1", prop="mini/mini_0001.png", narrow=0.5, tint=(1.0, 1.0, 1.0), bottom=True, split=False, card=card1,
              main=lambda t: (0.0, 780 * (1 - ease_out(ramp(t, 0.20, 0.62))))),
     21: dict(hand="H2", prop="giftbox/giftbox_0001.png", narrow=0.5, tint=(0.66, 0.78, 0.92), bottom=False, split=True, card=card2,
              main=lambda t: (0.0, -1000 * (1 - ease_out(ramp(t, 0.35, 0.78)))),
