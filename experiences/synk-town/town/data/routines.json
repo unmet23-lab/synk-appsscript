@@ -47,6 +47,7 @@
       { "archetype": "quiet-rest", "spot": "workshop.rest", "weight": 100 } ] },
     { "npc": "workshop-owner", "dayKind": "weekday", "band": "day", "pool": [
       { "archetype": "craft", "spot": "workshop.bench", "weight": 400 },
+      { "archetype": "tool-care", "spot": "workshop.bench", "weight": 300 },
       { "archetype": "breeze-lunch", "spot": "workshop.door", "weight": 150 },
       { "archetype": "breeze-lunch", "spot": "cafe.outside", "weight": 150 },
       { "archetype": "fix-round", "spot": "cafe.front", "weight": 300 } ] },
@@ -63,6 +64,7 @@
     { "npc": "workshop-owner", "dayKind": "weekend", "band": "morning", "sameAs": "weekday" },
     { "npc": "workshop-owner", "dayKind": "weekend", "band": "day", "pool": [
       { "archetype": "craft", "spot": "workshop.bench", "weight": 250 },
+      { "archetype": "tool-care", "spot": "workshop.bench", "weight": 300 },
       { "archetype": "breeze-lunch", "spot": "workshop.door", "weight": 200 },
       { "archetype": "breeze-lunch", "spot": "cafe.outside", "weight": 200 },
       { "archetype": "fix-round", "spot": "cafe.front", "weight": 350 } ] },

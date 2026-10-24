@@ -5,6 +5,9 @@ const assert = require('node:assert/strict');
 const { toolModule } = require('./lib/town.js');
 
 const line = (id, levels, extra = {}) => ({ id, npc: id.split('.')[0], kind: id.split('.')[1], meaning: '시험', slots: [], levels, ...extra });
+// 마음 한 줄(§7-3 json 꼴): 네 판·그림·근거·하루 한 번.
+const FULL = { L1: '좀 쉴게요.', L2: '피곤해서 앉아서 정리할게요.', L3: '오늘 많이 걸었어요. 앉아서 정리할게요.', L4: '돌아다니는 것도 좋아요. 그래도 지금은 앉아서 정리할게요.' };
+const mood = (id, levels = FULL, extra = {}) => line(id, levels, { when: { reason: id.split('.')[2] }, icon: 'tired', from: ['시험'], oncePerLifeDay: true, ...extra });
 const check = async (docs, allow = []) => (await toolModule('town-lines-check')).checkDocuments(docs.map((doc, i) => ({ file: `시험${i}.json`, doc })), { allow });
 
 test('실제 원고와 허용 목록은 문제 0건이다', async () => {
@@ -38,7 +41,7 @@ test('「그동안 달라진 것」 줄은 허용 목록으로도 지나가지 �
 });
 
 test('주민 줄은 사람이 확인한 쓰임만 지나가고, 허용 목록에는 까닭이 있어야 한다', async () => {
-  const doc = [line('researcher.mood.low-energy.1', { L1: '좀 쉴게요.', L2: '제가 쉬는 동안 판을 봐 주세요.' })];
+  const doc = [mood('researcher.mood.low-energy.1', { ...FULL, L2: '제가 쉬는 동안 판을 봐 주세요.' })];
   assert.equal((await check([doc])).problems[0].rule, 'period');
   const allow = [{ id: 'researcher.mood.low-energy.1', level: 'L2', rule: 'period', phrase: '쉬는 동안', reason: '주민 자기 쉼 — 플레이어와 상관없음' }];
   const ok = await check([doc], allow);
@@ -61,6 +64,35 @@ test('ID 꼴·중복·L1 판을 본다', async () => {
   assert.ok(messages.includes('shape:cafe owner mood'));
   assert.ok(result.problems.some(p => p.id === 'cafe-owner.mood.busy.1' && /L1/.test(p.message)));
   assert.ok(result.problems.some(p => p.id === 'cafe-owner.mood.tired.1' && /L5/.test(p.message)));
+});
+
+test('마음 한 줄은 꼴·네 판·판 길이 상한을 본다(§7-3·§13-1·§16-3)', async () => {
+  assert.deepEqual((await check([[mood('researcher.mood.low-energy.1')]])).problems, [], '꼴이 맞으면 문제 0');
+  const found = async entry => (await check([[entry]])).problems.map(p => `${p.rule}:${p.level ?? ''}`);
+  assert.ok((await found(mood('researcher.mood.low-energy.1', { L1: FULL.L1, L2: FULL.L2 }))).includes('mood:L3'), 'L3·L4가 빠짐');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', FULL, { icon: 'smile' }))).includes('mood:'), '모르는 그림');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', FULL, { when: { reason: 'tired' } }))).includes('mood:'), 'when이 ID의 이유와 다름');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', FULL, { npc: 'cafe-owner' }))).includes('mood:'), 'npc가 ID 앞과 다름');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', FULL, { oncePerLifeDay: false }))).includes('mood:'), '하루 한 번');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', { ...FULL, L2: '오늘은 정말 너무 많이 걸어서 조금 앉아서 천천히 정리할게요.' }))).includes('length:L2'), 'L2 8어절 넘음');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', { ...FULL, L1: '피곤해요. 쉴게요.' }))).includes('length:L1'), 'L1은 한 문장');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', { ...FULL, L3: '앉아서 정리할게요.' }))).includes('length:L3'), 'L3은 두세 문장');
+  assert.ok((await found(mood('researcher.mood.low-energy.1', { ...FULL, L4: '돌아다니며 보는 것도 좋기는 하지만 지금은 몸이 좀 무거워서 앉아서 오늘 본 것을 천천히 정리하려고 해요. 그러니까요.' }))).includes('length:L4'), 'L4 문장마다 14어절');
+  const { sentencesOf } = await toolModule('town-lines-check');
+  assert.equal(sentencesOf('재미있는 걸 봤는데… 하나만 말할게요.').length, 1, '말줄임은 문장 안이다');
+});
+
+test('실제 마음 원고는 주민마다 이유 아홉(자기 여덟 + 공통 with-player-glad)이다(§7-3·§16-1)', async () => {
+  const { loadDocuments } = await toolModule('town-lines-check');
+  const moods = loadDocuments().flatMap(({ doc }) => (Array.isArray(doc) ? doc : [])).filter(entry => entry.kind === 'mood');
+  for (const npc of ['cafe-owner', 'workshop-owner', 'researcher']) {
+    const mine = moods.filter(entry => entry.npc === npc).map(entry => entry.when.reason);
+    assert.equal(new Set(mine).size, 9, `${npc}의 이유`);
+    assert.ok(mine.includes('with-player-glad'), `${npc}의 공통 이유`);
+  }
+  // 이유 스물다섯 = 주민마다 자기 여덟(low-energy는 공방 주인·연구원 둘 다의 이유) + 공통 하나.
+  const own = new Set(moods.filter(entry => entry.when.reason !== 'with-player-glad').map(entry => `${entry.npc}:${entry.when.reason}`));
+  assert.equal(own.size + 1, 25, '이유는 모두 스물다섯');
 });
 
 test('대화 장면은 주민 줄과 플레이어 보기를 나눠 본다', async () => {

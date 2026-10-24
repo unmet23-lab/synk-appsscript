@@ -6,7 +6,8 @@
  *
  * 원고는 experiences/synk-town/town/data/lines/*.json 이다. 파일 하나는 줄 묶음(배열, §16-2 꼴) 또는
  * 대화 장면 하나(sceneId·versions, §12-2 꼴)다.
- * 지금(W0) 보는 것: 원고 ID 꼴·중복, L1 판, 금지 말(G3·G4·G10·주민:26). 수준·설정 일관성·판본 일치는 W10에서 더한다.
+ * 지금 보는 것: 원고 ID 꼴·중복, L1 판, 금지 말(G3·G4·G10·주민:26), 마음 한 줄(kind mood, W4)의 꼴·네 판·판 길이 상한.
+ * 낱말·문형 층 대조와 설정 일관성은 W10에서 더한다.
  * 금지 말 목록은 이 파일 한 곳에 두고, 원칙 시험(§15-2)도 여기서 가져다 쓴다.
  */
 import fs from 'node:fs';
@@ -36,6 +37,38 @@ export const FORBIDDEN = Object.freeze([
 
 const ID = /^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*\.[A-Za-z0-9][A-Za-z0-9-]*\.\d+$/;
 const SCENE_ID = /^[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+$/;
+
+/** 마음 한 줄의 그림(§7-3 icon). 화면(day-mood.mjs)이 이 이름마다 그림을 그린다. */
+export const MOOD_ICONS = Object.freeze(['rain', 'guests', 'seat', 'menu', 'leaf', 'steam', 'umbrella', 'cups', 'together', 'cold', 'orders',
+  'quiet', 'plane', 'cup', 'wobble', 'tired', 'puddle', 'moon', 'sparkle', 'board', 'flower', 'pages', 'sun']);
+/** 판 길이 상한(§13-1·§16-3, 다리 §3-1): 문장 수 [최소, 최대]와 문장마다 어절 수. L4의 최소 둘은 설계 §7-3 본보기(두 문장)에 맞춘 것. */
+export const LEVEL_LENGTH = Object.freeze({ L1: { sentences: [1, 1], words: 5 }, L2: { sentences: [1, 1], words: 8 },
+  L3: { sentences: [2, 3], words: 10 }, L4: { sentences: [2, 4], words: 14 } });
+/** 문장으로 나눈다 — 마침표·물음표·느낌표 뒤에서만(말줄임 「…」은 문장 안이다). */
+export const sentencesOf = text => text.trim().split(/(?<=[.?!])\s+/).filter(Boolean);
+export const wordsOf = sentence => sentence.trim().split(/\s+/).filter(Boolean).length;
+
+/** 마음 한 줄 하나의 꼴(§7-3 json·§16-2): ID = <주민>.mood.<이유>.<번호>, 네 판·그림·근거·하루 한 번, 판 길이. */
+function moodProblems(entry, file) {
+  const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
+  const [npc, , key] = entry.id.split('.');
+  if (!RESIDENTS.includes(entry.npc) || entry.npc !== npc) bad('mood', '마음 한 줄은 ID 앞의 주민이 npc예요.');
+  if (entry.when?.reason !== key || Object.keys(entry.when || {}).length !== 1) bad('mood', 'when은 ID의 이유 하나({ reason })예요.');
+  if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad('mood', '뜻(meaning)이 없어요.');
+  if (!MOOD_ICONS.includes(entry.icon)) bad('mood', `그림(icon)은 ${MOOD_ICONS.join('·')} 가운데 하나예요.`);
+  if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(f => typeof f === 'string' && f.trim())) bad('mood', '근거 설정(from)이 없어요.');
+  if (entry.oncePerLifeDay !== true) bad('mood', '마음 한 줄은 생활일마다 한 번이에요(oncePerLifeDay).');
+  for (const level of LEVELS) {
+    const text = entry.levels?.[level];
+    // 판본 일치(§16-3): 네 판이 다 있고, 빈칸은 쓰지 않는다(마음 줄에는 채울 값이 없다).
+    if (typeof text !== 'string' || !text.trim()) { bad('mood', `${level} 판이 없어요 — 마음 한 줄은 네 판이 다 있어요.`, level); continue; }
+    if (/[{}]/.test(text)) bad('mood', '마음 한 줄에는 빈칸이 없어요.', level);
+    const { sentences: [least, most], words } = LEVEL_LENGTH[level], parts = sentencesOf(text);
+    if (parts.length < least || parts.length > most) bad('length', `${level}은 ${least === most ? `${least}문장` : `${least}~${most}문장`}이에요(지금 ${parts.length}).`, level);
+    for (const part of parts) if (wordsOf(part) > words) bad('length', `${level}은 문장마다 ${words}어절 안이에요 — 「${part}」 ${wordsOf(part)}어절.`, level);
+  }
+  return out;
+}
 
 /** 글 하나에서 걸린 금지 말. 플레이어 보기는 기간·탓·재촉 대상이 아니라 주제만 본다. */
 export function scanText(text, { speaker = 'resident' } = {}) {
@@ -68,6 +101,7 @@ export function collectTexts(doc, file) {
       const extra = Object.keys(entry.levels).filter(level => !LEVELS.includes(level));
       if (extra.length) bad(id, `모르는 판: ${extra.join(', ')}`);
       if (typeof entry.levels.L1 !== 'string') bad(id, 'L1 판은 모든 줄에 있어야 해요(다리 §3-4).');
+      if (entry.kind === 'mood') problems.push(...moodProblems(entry, file));
       const speaker = RESIDENTS.includes(entry.npc) ? 'resident' : 'system';
       for (const [level, text] of levelTexts(entry.levels)) {
         if (typeof text !== 'string' || !text.trim()) { bad(id, `${level} 판이 비었어요.`); continue; }

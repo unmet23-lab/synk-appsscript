@@ -8,6 +8,8 @@
 import { planBand, routeBetween, awakeWindow, RESIDENT_IDS, RESIDENT_BY_ID, ARCHETYPE_BY_ID, travelMs } from './plan.mjs';
 import { bandAt, clockAt, lifeDayStartAt, recordOffset, validOffset, BAND_IDS, DAY } from './clock.mjs';
 import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
+import { paramsFor } from './params.mjs';
+import { wake } from './state.mjs';
 
 /** An absence longer than this starts again this far back (§10-1; W6 replaces the plain cut). */
 export const ABSENCE_LIMIT_MS = 7 * DAY;
@@ -25,11 +27,19 @@ const id = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,120}$/.test
 const npcId = value => RESIDENT_IDS.includes(value);
 const spotId = value => typeof value === 'string' && Object.hasOwn(SPOT_BY_ID, value);
 const plain = value => !!value && typeof value === 'object' && !Array.isArray(value);
+// The mood tags a resident's table names (§7-3) — moodsToday holds only those, at most a day's worth.
+const MOOD_TAGS = Object.freeze(Object.fromEntries(RESIDENT_IDS.map(npc => [npc, new Set(RESIDENT_BY_ID[npc].moods.map(m => m.tag))])));
+const CHORES_EVERY = Math.max(1, ...Object.values(ARCHETYPE_BY_ID).map(a => a.choresEvery || 1));
+/** A resident's band-start summary. The W4 state fields may be absent (an old world reads the waking values). */
 function validResidents(residents) {
+  const s = paramsFor().state, within = (n, max) => n === undefined || integer(n) && n <= max;
   return plain(residents) && Object.entries(residents).every(([npc, r]) => npcId(npc) && plain(r)
     && Array.isArray(r.recent) && r.recent.every(a => Object.hasOwn(ARCHETYPE_BY_ID, a) || a === 'pause')
     && Array.isArray(r.placesToday) && r.placesToday.every(p => typeof p === 'string')
-    && (r.lastSpot === null || spotId(r.lastSpot)) && typeof r.firstOfDay === 'boolean');
+    && (r.lastSpot === null || spotId(r.lastSpot)) && typeof r.firstOfDay === 'boolean'
+    && within(r.energy, s.energyMax) && within(r.chores, s.choresMax) && within(r.social, s.socialMax) && within(r.choresTick, CHORES_EVERY - 1)
+    && (r.moodsToday === undefined || Array.isArray(r.moodsToday) && r.moodsToday.length <= s.moodLinesPerDay
+      && r.moodsToday.every(tag => MOOD_TAGS[npc].has(tag)) && new Set(r.moodsToday).size === r.moodsToday.length));
 }
 export function validVillage(v) {
   if (!plain(v) || !(v.agreement === null || v.agreement === undefined || id(v.agreement)) || !(v.seed === null || typeof v.seed === 'string' && v.seed.length > 0 && v.seed.length <= 120)
@@ -42,7 +52,9 @@ export function validVillage(v) {
     && plain(b.objects) && Object.values(b.objects).every(o => plain(o) && spotId(o.spot)))) return false;
   if (!Array.isArray(v.reservations) || v.reservations.length > RESERVATIONS_MAX || !v.reservations.every(r => plain(r) && id(r.id) && npcId(r.npc)
     && integer(r.fromMs) && (r.toMs === null || integer(r.toMs) && r.toMs >= r.fromMs) && id(r.by) && spotId(r.spot)
-    && (r.seat === undefined || spotId(r.seat)))) return false;
+    && (r.seat === undefined || spotId(r.seat))
+    // W4 (§7-2): the scene reached its result with the player; help lightens the cafe owner's chores.
+    && (r.with === undefined || r.with === true) && (r.help === undefined || r.with === true && integer(r.help) && r.help <= paramsFor().state.choresMax))) return false;
   if (new Set(v.reservations.map(r => r.id)).size !== v.reservations.length) return false;
   if (!Array.isArray(v.promises) || v.promises.length > VILLAGE_MAX || !v.promises.every(p => plain(p) && id(p.id) && npcId(p.npc)
     && Object.hasOwn(ARCHETYPE_BY_ID, p.archetype) && spotId(p.spot) && time(p.lifeDay) && BAND_IDS.includes(p.band))) return false;
@@ -60,7 +72,7 @@ export function bandInput(v, b = v.band, visitEnd = null) {
   return { villageSeed: v.seed, lifeDay: b.lifeDay, band: b.band, startMs: b.startMs, endMs: b.endMs, dayStartMs: b.dayStartMs,
     planCmdRev: b.planCmdRev, weatherTomorrow: clock.weatherTomorrow, season: clock.season, visitHabit: null,
     residents: b.residents, objects: b.objects,
-    reservations: touching.map(r => ({ id: r.id, npc: r.npc, fromMs: r.fromMs, toMs: r.toMs, spot: r.spot })),
+    reservations: touching.map(r => ({ id: r.id, npc: r.npc, fromMs: r.fromMs, toMs: r.toMs, spot: r.spot, ...(r.with ? { with: true, ...(r.help ? { help: r.help } : {}) } : {}) })),
     promises: v.promises.filter(p => p.lifeDay === b.lifeDay && p.band === b.band).map(p => ({ id: p.id, npc: p.npc, archetype: p.archetype, spot: p.spot })),
     habits: Object.fromEntries(Object.entries(v.habits).map(([npc, list]) => [npc, list.filter(h => h.formed).map(h => ({ spot: h.spot, archetype: h.archetype }))])),
     // A guest at the player's seat holds it while the use is reserved (§6-4 occupied).
@@ -76,11 +88,19 @@ export function planOf(v, b = v.band, visitEnd = null) {
   return planMemo.get(key);
 }
 
+/** A new life day (§6-2·§7-1): places visited and moods shown today empty, the next choice is the first of the day,
+ * and every resident wakes — energy back up, social toward its resting value, the workshop's new orders. The
+ * simulation (tools/town-sim.mjs) turns its days with the same function. */
+export function nextLifeDay(residents, { seed, lifeDay, atMs }) {
+  return Object.fromEntries(Object.entries(residents || {}).map(([npc, r]) => {
+    const { state } = wake(RESIDENT_BY_ID[npc], r, { seed, lifeDay, atMs });
+    return [npc, { ...r, placesToday: [], firstOfDay: true, ...state, moodsToday: [] }];
+  }));
+}
+
 function openBand(v, atMs, planCmdRev, carried) {
   const w = bandAt(v.tz, atMs), sameDay = carried?.lifeDay === w.lifeDay;
-  // A new life day empties the places visited today and makes the next choice the first of the day.
-  const residents = Object.fromEntries(Object.entries(carried?.residents || {}).map(([npc, r]) =>
-    [npc, sameDay ? r : { ...r, placesToday: [], firstOfDay: true }]));
+  const residents = sameDay ? { ...carried.residents } : nextLifeDay(carried?.residents, { seed: v.seed, lifeDay: w.lifeDay, atMs: w.startMs });
   v.band = { lifeDay: w.lifeDay, band: w.band, startMs: w.startMs, endMs: w.endMs, dayStartMs: lifeDayStartAt(v.tz, w.startMs),
     planCmdRev, residents, objects: structuredClone(carried?.objects || START_OBJECTS) };
 }

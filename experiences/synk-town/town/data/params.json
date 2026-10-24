@@ -1,5 +1,5 @@
 {
-  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
+  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. One dated exception (2026-10-24, decision table): W4 added the state section to town-params-1, the only version any band has run, before any band ran with other state values. Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
   "versions": [
     {
       "paramsVer": "town-params-1",
@@ -18,6 +18,30 @@
         "tomorrowClearMultiplier": 2000,
         "firstAromaWeight": 300,
         "bringInWeight": 400
+      },
+      "state": {
+        "energyMax": 100,
+        "choresMax": 5,
+        "socialMax": 100,
+        "wakeEnergy": 80,
+        "allNighterEnergy": 45,
+        "socialRest": 60,
+        "aloneSocial": 10,
+        "guestSocialMax": 10,
+        "togetherSocial": 15,
+        "busyChores": 4,
+        "lonelySocial": 40,
+        "tiredRestMultiplier": 3000,
+        "tiredWorkMultiplier": 500,
+        "dozeWeight": 300,
+        "busyRestMultiplier": 500,
+        "busyPairMultiplier": 500,
+        "lonelyMultiplier": 2000,
+        "dailyOrders": [0, 2],
+        "bigOrder": 3,
+        "cafeGuests": { "weekday": [2, 5], "weekend": [4, 8], "bandShare": { "morning": 700, "day": 1000, "evening": 800, "night": 400 }, "rushes": [1, 2] },
+        "helpChores": { "bazaar": 2, "life": 1 },
+        "moodLinesPerDay": 4
       },
       "seen": { "countMax": 99, "perRequest": 50, "familiarAfter": 3 },
       "prefs": { "notFitMultiplier": 500, "lessOftenMultiplier": 300, "feedbackLifeDays": 30 },

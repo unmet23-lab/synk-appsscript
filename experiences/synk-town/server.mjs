@@ -12,15 +12,16 @@ import { branchPaths, atomicWrite, appendLines, readLines, truncateTo, removeFil
 import { lifeDayAt, offsetAt, validOffset } from './town/clock.mjs';
 import { validateOps, DEFAULT_OPS } from './town/params.mjs';
 import { eventProblem } from './town/events.mjs';
-import { ITEMS } from './town/data.gen.mjs';
+import { ITEMS, MOOD_LINES } from './town/data.gen.mjs';
 
 /** A screen may open a safe boundary at most once in this long (vertical slice §14-3). */
 export const BOUNDARY_GAP_MS = 20000;
 /** Receipts the world itself keeps, and the movement receipts the store keeps (talk's limits). */
 export const COMMAND_WINDOW = 32, WALK_RECEIPTS = 512;
 /** The keys a screen may report as seen (§20-2): what the content data knows — the cards and the
- * gathered items now; lines, pair steps, scenes and tea frames join with their content (W4~W9). */
-export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id) });
+ * gathered items and the mood lines (W4 — a screen reports them from W5); pair steps, scenes and tea frames join
+ * with their content (W5~W9). */
+export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id), lines: MOOD_LINES.map(line => line.id) });
 // `|| 0`: a UTC host gives -0, which a save's JSON round trip turns into 0, so a reopened world would differ.
 const hostOffset = () => { const offset = -new Date().getTimezoneOffset() || 0; return validOffset(offset) ? offset : 540; };
 
@@ -431,7 +432,7 @@ function fileFor(route, previewEnabled) {
   // Baked district comparison only (?district=); v20 never requests these.
   if (/^\/assets\/district\/[a-z0-9-]+\.(?:glb|json)$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/basis\/basis_transcoder\.(?:js|wasm)$/.test(route)) return path.join(root, route.slice(1));
-  if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/day-light.mjs', '/walk.mjs', '/walk-controls.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
+  if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/day-light.mjs', '/day-mood.mjs', '/walk.mjs', '/walk-controls.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
   // The town runtime layer the browser shares with the host (vertical slice §2-5): modules only, never data sources.
   if (/^\/town\/[a-z0-9-]+(?:\.gen)?\.mjs$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise|GLTFLoader|BufferGeometryUtils|KTX2Loader|WorkerPool|ktx-parse\.module|zstddec\.module|ColorSpaces|meshopt_decoder\.module)\.js$/.test(route)) return path.join(root, route.slice(1));

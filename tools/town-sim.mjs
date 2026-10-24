@@ -6,8 +6,9 @@
  *   node tools/town-sim.mjs --hash               결과 해시만 낸다(시간대를 바꿔 돌려 견주는 데 쓴다, §15-3)
  *   --seeds N · --days N                         규모를 바꾼다(시험은 씨앗 12)
  *
- * 마을 씨앗 × 시간대 넷(UTC+9·+8·+7·−5) × 플레이어 모습 다섯을 돈다. 런타임은 묶음마다 자란다 — 지금(W3)은 계획기로
- * 주민 일과를 짜서 두 주민·장소·반복·비 지표를 잰다. 아직 잴 수 없는 지표는 「대기」로 남긴다.
+ * 마을 씨앗 × 시간대 넷(UTC+9·+8·+7·−5) × 플레이어 모습 다섯을 돈다. 런타임은 묶음마다 자란다 — 지금(W4)은 계획기로
+ * 주민 일과를 짜서 두 주민·장소·반복·비 지표를, 주민 자기 상태로 기운·마음 한 줄 지표를 잰다(계절을 타는 날씨 이유는
+ * 같은 씨앗의 겨울 판에서도 잰다). 아직 잴 수 없는 지표는 「대기」로 남긴다.
  * 시뮬레이션은 시각을 숫자(epoch ms)로만 다룬다. 기기 시간대·로캘을 읽지 않는다.
  */
 import crypto from 'node:crypto';
@@ -17,6 +18,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRng } from '../experiences/synk-town/town/rng.mjs';
 import * as clock from '../experiences/synk-town/town/clock.mjs';
 import * as plan from '../experiences/synk-town/town/plan.mjs';
+import { nextLifeDay } from '../experiences/synk-town/town/village.mjs';
+import { paramsFor } from '../experiences/synk-town/town/params.mjs';
 import { SPOT_BY_ID } from '../experiences/synk-town/town/places.mjs';
 import { ROUTINES } from '../experiences/synk-town/town/data.gen.mjs';
 
@@ -79,22 +82,39 @@ export const NULL_RUNTIME = Object.freeze({
 const percent = (n, d) => (d ? Math.round(n / d * 1000) / 10 : 0);
 const ROUTINE_SPAN_MIN = 120;
 
-/** 주민 일과(W3): 계획기로 30생활일을 짜고 지표에 쓸 것만 줄여 남긴다. 주민의 하루는 아직 플레이어와 상관없어
- * (W5·W6에서 달라진다) 마을 씨앗 × 시간대마다 한 번 계산해 플레이어 모습끼리 나눠 쓴다. */
+/** 주민 일과(W3)와 자기 상태·마음 한 줄(W4): 계획기로 30생활일을 짜고 지표에 쓸 것만 줄여 남긴다. 주민의 하루는 아직
+ * 플레이어와 상관없어(W5·W6에서 달라진다) 마을 씨앗 × 시간대마다 한 번 계산해 플레이어 모습끼리 나눠 쓴다.
+ * 생활일이 바뀌면 결산과 같은 함수(village.mjs nextLifeDay)로 주민이 일어난다. */
 function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days }) {
-  const result = { meetableShortMinutes: 0, placeDays: 0, placeShortDays: 0, repeats: 0, orderPairs: 0, sameOrder: 0, rainOutside: 0, segments: 0 };
+  const result = { meetableShortMinutes: 0, placeDays: 0, placeShortDays: 0, repeats: 0, orderPairs: 0, sameOrder: 0, rainOutside: 0, segments: 0,
+    // W4: 주민마다 깨어 있는 분·기운 문턱 아래 분·문턱 아래로 간 날, 줄이 뜬 이유(주민:이유 → 횟수), 하루 가장 많은 줄, 상한 전 이유가 넷을 넘은 날.
+    awakeMinutes: {}, belowMinutes: {}, belowDays: {}, moods: {}, moodsMaxPerDay: 0, reasonsOverCap: 0, residentDays: 0 };
   let residents = {}, objects = { 'cafe-tray': { spot: 'cafe.prep' }, 'observation-board': { spot: 'greenhouse.board' } };
-  const lastOrder = new Map();
+  const lastOrder = new Map(), linesPerDay = paramsFor().state.moodLinesPerDay;
   for (let day = 0; day < days; day++) {
     const dayStartMs = startMs + day * clock.DAY, lifeDay = clock.lifeDayAt(tzOffsetMin, dayStartMs);
-    residents = Object.fromEntries(Object.entries(residents).map(([npc, r]) => [npc, { ...r, placesToday: [], firstOfDay: true }]));
-    const daySegments = [];
+    residents = nextLifeDay(residents, { seed: villageSeed, lifeDay, atMs: dayStartMs });
+    const daySegments = [], dayBelow = new Set(), dayMoods = {}, dayReasons = {};
     for (const w of clock.bandsBetween(tzOffsetMin, dayStartMs, dayStartMs + clock.DAY)) {
+      const before = residents;
       const out = plan.planBand({ villageSeed, lifeDay, band: w.band, startMs: w.startMs, endMs: w.endMs, dayStartMs, planCmdRev: 0,
         weatherAt: ms => clock.weatherAt(villageSeed, ms), weatherTomorrow: clock.clockAt({ villageSeed, hostNowMs: w.startMs, tz: tzOffsetMin }).weatherTomorrow,
         season: clock.clockAt({ villageSeed, hostNowMs: w.startMs, tz: tzOffsetMin }).season, residents, objects });
       residents = out.residents; objects = out.objects;
       daySegments.push(...out.segments);
+      // 기운은 구간 시작 값에 변화 기록을 시각 차례로 더해, 결정 시각마다(조각을 놓기 전) 문턱 아래였던 시간을 센다.
+      for (const npc of plan.RESIDENT_IDS) {
+        const log = out.stateLog.filter(e => e.npc === npc && e.stat === 'energy'), threshold = plan.RESIDENT_BY_ID[npc].restThreshold;
+        let energy = before[npc]?.energy ?? paramsFor().state.wakeEnergy, i = 0;
+        for (const s of out.segments.filter(x => x.npc === npc)) {
+          const minutes = (s.endMs - s.startMs) / clock.MINUTE;
+          while (i < log.length && log[i].atMs < s.startMs) energy += log[i++].delta;
+          result.awakeMinutes[npc] = (result.awakeMinutes[npc] || 0) + minutes;
+          if (energy < threshold) { result.belowMinutes[npc] = (result.belowMinutes[npc] || 0) + minutes; dayBelow.add(npc); }
+          if (s.reason) (dayReasons[npc] ||= new Set()).add(s.reason);
+          if (s.mood) { (dayMoods[npc] ||= []).push(s.reason); result.moods[`${npc}:${s.reason}`] = (result.moods[`${npc}:${s.reason}`] || 0) + 1; }
+        }
+      }
       for (const npc of plan.RESIDENT_IDS) {
         const order = out.segments.filter(s => s.npc === npc).map(s => s.archetype).join(',');
         const key = `${npc}|${w.band}`;
@@ -103,6 +123,12 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days }) {
       }
     }
     result.segments += daySegments.length;
+    for (const npc of plan.RESIDENT_IDS) {
+      result.residentDays++;
+      if (dayBelow.has(npc)) result.belowDays[npc] = (result.belowDays[npc] || 0) + 1;
+      result.moodsMaxPerDay = Math.max(result.moodsMaxPerDay, (dayMoods[npc] || []).length);
+      if ((dayReasons[npc]?.size || 0) > linesPerDay) result.reasonsOverCap++;
+    }
     // 만날 수 있는 시각 05:30~23:30(§4-2): 분마다 깨어 있는 주민 수.
     const awake = new Uint8Array(24 * 60);
     for (const npc of plan.RESIDENT_IDS) {
@@ -141,19 +167,46 @@ function routineVariety() {
   return short;
 }
 
+/** 이유마다 「살아 있는」 마을 몫의 기준(§15-1 죽은 이유 0, 검토 P3-3): 마을(씨앗·시간대)마다 30일에 한 번 이상 뜬 비율. */
+export const MOOD_ALIVE_SHARE = 0.75;
+/** 계절을 타는 날씨 이유(§7-3 cold-hands: 쌀쌀한 아침 = 비 오는 아침·겨울 아침)는 겨울 판(1월 1일 시작)에서도 잰다. */
+export const WINTER_START_MS = 1798761600000; // 2027-01-01T00:00Z
+/** 마음 표의 이유(주민:이유) — W4가 켠 것. 카드·이웃 일·밤샘 이유는 W5. */
+export const MOOD_REASONS = Object.freeze(plan.RESIDENT_IDS.flatMap(npc => [...new Set(plan.RESIDENT_BY_ID[npc].moods.map(m => `${npc}:${m.tag}`))]));
+
 export const TOWN_RUNTIME = Object.freeze({
-  name: 'town-w3',
+  name: 'town-w4',
   cache: new Map(),
-  createVillage(args) {
+  life(args) {
     const key = `${args.villageSeed}|${args.tzOffsetMin}|${args.startMs}|${args.days}`;
     if (!this.cache.has(key)) this.cache.set(key, lifeOfVillage(args));
-    return { life: this.cache.get(key) };
+    return this.cache.get(key);
   },
+  createVillage(args) { return { life: this.life(args) }; },
   visit: () => ({ changes: [] }),
   finish: village => village.life,
   measure(id, run) {
     const lives = [...new Map(run.villages.map(v => [`${v.villageSeed}|${v.tzOffsetMin}`, v.result])).values()];
     const sum = key => lives.reduce((n, life) => n + life[key], 0);
+    const per = (key, npc) => lives.reduce((n, life) => n + (life[key][npc] || 0), 0);
+    if (id === 'energy') {
+      const rows = plan.RESIDENT_IDS.map(npc => ({ npc, share: per('belowMinutes', npc) / Math.max(1, per('awakeMinutes', npc)), week: per('belowDays', npc) / (lives.length * run.days) * 7 }));
+      const ok = rows.every(r => r.share <= 0.15);
+      return { status: ok ? 'pass' : 'fail', value: rows.map(r => `${plan.RESIDENT_BY_ID[r.npc].label} ${percent(r.share * 1000, 1000)}%·주 ${r.week.toFixed(1)}일`).join(' · ') };
+    }
+    if (id === 'mood-lines') {
+      // 겨울 판: 같은 씨앗을 첫 시간대에서 1월부터 — 계절을 타는 이유는 두 판 가운데 하나에서 뜨면 산 것으로 본다.
+      const winter = [...new Set(run.villages.map(v => v.villageSeed))].map(villageSeed => this.life({ villageSeed, tzOffsetMin: run.timezones[0], startMs: firstLifeDayStart(run.timezones[0], WINTER_START_MS), days: run.days }));
+      const alive = MOOD_REASONS.map(key => {
+        const share = lives.filter(life => life.moods[key]).length / lives.length, winterShare = winter.filter(life => life.moods[key]).length / winter.length;
+        return { key, share: Math.max(share, winterShare) };
+      });
+      const dead = alive.filter(a => a.share < MOOD_ALIVE_SHARE), maxPerDay = Math.max(...lives.map(l => l.moodsMaxPerDay), ...winter.map(l => l.moodsMaxPerDay));
+      const overCap = sum('reasonsOverCap') / Math.max(1, sum('residentDays'));
+      const ok = !dead.length && maxPerDay <= paramsFor().state.moodLinesPerDay && overCap <= 0.01;
+      return { status: ok ? 'pass' : 'fail', value: `가장 드문 이유 ${alive.sort((a, b) => a.share - b.share).slice(0, 2).map(a => `${a.key} ${Math.round(a.share * 100)}%`).join('·')} · 하루 최대 ${maxPerDay}줄 · 상한 전 넷 넘은 날 ${percent(overCap * 1000, 1000)}%`,
+        detail: dead.map(a => `${a.key} ${Math.round(a.share * 100)}%`).join(', ') };
+    }
     if (id === 'meetable-residents') return { status: sum('meetableShortMinutes') === 0 ? 'pass' : 'fail', value: `둘 미만인 분 ${sum('meetableShortMinutes')}` };
     if (id === 'places-per-day') return { status: sum('placeShortDays') === 0 ? 'pass' : 'fail', value: `셋 미만 ${sum('placeShortDays')}/${sum('placeDays')}(${percent(sum('placeShortDays'), sum('placeDays'))}%)` };
     if (id === 'routine-variety') { const short = routineVariety(); return { status: short.length ? 'fail' : 'pass', value: short.length ? short.join(' · ') : '모든 칸 셋 이상', detail: short.join(', ') }; }

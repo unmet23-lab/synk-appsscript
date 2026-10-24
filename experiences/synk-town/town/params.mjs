@@ -10,6 +10,9 @@ import { PARAMS } from './data.gen.mjs';
 import { seedKey, hashString } from './rng.mjs';
 
 export const PARAMS_BY_VER = Object.freeze(Object.fromEntries(PARAMS.map(version => [version.paramsVer, version])));
+/** Multipliers and shares are per-mille integers (§2-4): ×1.5 is 1500. */
+export const PER_MILLE = 1000;
+export const perMille = (n, share) => Math.floor(n * share / PER_MILLE);
 export const FIRST_PARAMS_VER = PARAMS[0].paramsVer;
 /** Same words as Atlas (engine.js:299). */
 export const ARMS = Object.freeze(['adapted', 'baseline']);

@@ -6,7 +6,8 @@
  *
  * 브라우저·talk 묶음은 JSON 대신 이 생성물을 읽는다(브라우저 모듈은 JSON을 바로 못 부르고, talk는 esbuild로 묶는다).
  * 원천을 고치면 생성물을 같은 커밋에 올린다 — 바로올리기의 짝검사와 tests/town-places.test.js가 낡은 생성물을 막는다.
- * 원고(data/lines)와 허용 목록(lines-allow.json)은 검사기만 읽으므로 여기 담지 않는다.
+ * 원고(data/lines)는 마음 한 줄(kind mood, W4)만 싣는다 — 화면이 그 판을 그리고 서버가 「본 것」 키로 받는다. 금지 말·판 길이는
+ * 원고 검사기(tools/town-lines-check.mjs)가 보고, 허용 목록(lines-allow.json)도 검사기만 읽는다.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -84,12 +85,20 @@ export function validateArchetypes(data, places) {
     if (a.choresEvery !== undefined && !integer(a.choresEvery, 2)) fail(`${a.id}.choresEvery`);
     if (a.wear !== undefined && !OBJECTS.includes(a.wear)) fail(`${a.id}.wear`);
     if (a.moves !== undefined && (!OBJECTS.includes(a.moves.object) || !(a.moves.to === 'spot' || spots.has(a.moves.to)))) fail(`${a.id}.moves`);
+    // W4 (§7-1): needs — the chores it works off must be there (a waiting guest, an order); visit — a neighbour visit lonely raises.
+    if (a.needs !== undefined && !['guests', 'orders'].includes(a.needs)) fail(`${a.id}.needs`);
+    if (a.needs !== undefined && !(a.chores < 0)) fail(`${a.id}.needs는 할 일을 줄이는 원형에만 있어요.`);
+    if (a.visit !== undefined && a.visit !== true) fail(`${a.id}.visit`);
   }
   return data;
 }
 
-export function validateResidents(data, places) {
-  const spots = new Set(places.spots.map(s => s.id)), seen = new Set();
+/** The planner's factors a resident's mood table may name (§7-3; card factors arrive with W5). */
+export const MOOD_FACTORS = Object.freeze(['rain', 'cold-hands', 'tomorrow-clear', 'first-aroma', 'tomorrow-rain', 'tired', 'doze', 'busy', 'lonely']);
+const REASON = /^[a-z][a-z0-9-]*$/;
+
+export function validateResidents(data, places, archetypes = { archetypes: [] }) {
+  const spots = new Set(places.spots.map(s => s.id)), seen = new Set(), archetypeIds = new Set(archetypes.archetypes.map(a => a.id));
   if (!Array.isArray(data?.residents)) fail('residents.json에는 residents가 있어요.');
   for (const r of data.residents) {
     if (!['cafe-owner', 'workshop-owner', 'researcher'].includes(r.id) || seen.has(r.id)) fail(`주민 ID ${r.id}`);
@@ -102,6 +111,19 @@ export function validateResidents(data, places) {
     if (!integer(r.restThreshold, 0, 100)) fail(`${r.id}.restThreshold`);
     if (!r.multipliers || Object.values(r.multipliers).some(v => !integer(v, 0, 10000))) fail(`${r.id}.multipliers`);
     if (r.crowdedRest !== undefined && !integer(r.crowdedRest, 0, 10000)) fail(`${r.id}.crowdedRest`);
+    // W4 (§7-1·§7-3): what the resident's chores are, where it dozes when tired, and which factor shows which mood line.
+    if (!['guests', 'orders', 'observations'].includes(r.chores)) fail(`${r.id}.chores`);
+    if (r.dozeSpot !== undefined && !spots.has(r.dozeSpot) && !Object.hasOwn(places.groups || {}, r.dozeSpot)) fail(`${r.id}.dozeSpot`);
+    if (!Array.isArray(r.moods)) fail(`${r.id}.moods`);
+    const known = { chosenKinds: KINDS, chosenArchetypes: archetypeIds, baseArchetypes: archetypeIds, bands: BANDS };
+    for (const m of r.moods) {
+      if (!MOOD_FACTORS.includes(m.factor) || !REASON.test(m.tag ?? '') || Object.keys(m).some(k => !['factor', 'tag', ...Object.keys(known)].includes(k))) fail(`${r.id}의 마음 ${m.factor}·${m.tag}`);
+      for (const [k, allowed] of Object.entries(known)) {
+        const has = value => (allowed instanceof Set ? allowed.has(value) : allowed.includes(value));
+        if (m[k] !== undefined && !(Array.isArray(m[k]) && m[k].length && m[k].every(has))) fail(`${r.id}의 마음 ${m.tag}.${k}`);
+      }
+    }
+    if (new Set(r.moods.map(m => m.factor)).size !== r.moods.length) fail(`${r.id}의 마음 표에 같은 요인이 둘이에요.`);
   }
   if (seen.size !== 3) fail('주민은 셋이에요.');
   return data;
@@ -188,6 +210,20 @@ export function validateLight(data) {
   return data;
 }
 
+/** The mood lines the screen shows (§7-3, W4): one record per line with its four levels and picture; every
+ * tag a resident's mood table names has its first variant. The checker (town-lines-check) owns the wording rules. */
+export function validateMoodLines(docs, residents) {
+  const lines = docs.flat().filter(entry => entry?.kind === 'mood'), ids = new Set();
+  for (const entry of lines) {
+    const [npc, kind, reason, n] = String(entry.id).split('.');
+    if (kind !== 'mood' || entry.npc !== npc || entry.when?.reason !== reason || !/^\d+$/.test(n ?? '') || ids.has(entry.id)) fail(`마음 줄 ${entry.id}`);
+    if (!['L1', 'L2', 'L3', 'L4'].every(level => typeof entry.levels?.[level] === 'string') || typeof entry.icon !== 'string') fail(`마음 줄 ${entry.id}의 판·그림`);
+    ids.add(entry.id);
+  }
+  for (const r of residents.residents) for (const m of r.moods) if (!ids.has(`${r.id}.mood.${m.tag}.1`)) fail(`${r.id}의 마음 ${m.tag}에 줄(${r.id}.mood.${m.tag}.1)이 없어요.`);
+  return lines.map(entry => ({ id: entry.id, npc: entry.npc, reason: entry.when.reason, icon: entry.icon, levels: entry.levels }));
+}
+
 /** The ledger's items (§20-7 ①): one definition each; a gathered material names a gather spot. */
 export function validateItems(data, places) {
   const ids = new Set(), kinds = ['material', 'product', 'tool', 'decor', 'currency'];
@@ -209,16 +245,20 @@ export function build() {
   const placesData = validatePlaces(read('places.json'));
   const { places, spots, groups } = placesData;
   const { archetypes } = validateArchetypes(read('archetypes.json'), placesData);
-  const residentsData = validateResidents(read('residents.json'), placesData);
+  const residentsData = validateResidents(read('residents.json'), placesData, { archetypes });
   const { rainAlt, routines } = validateRoutines(read('routines.json'), placesData, { archetypes }, residentsData);
   const { versions: params } = validateParams(read('params.json'));
   const { items } = validateItems(read('items.json'), placesData);
   const { $comment, ...light } = validateLight(read('light.json'));
+  const linesDir = path.join(DATA, 'lines');
+  const lineDocs = fs.existsSync(linesDir) ? fs.readdirSync(linesDir).filter(name => name.endsWith('.json')).sort()
+    .map(name => JSON.parse(fs.readFileSync(path.join(linesDir, name), 'utf8'))).filter(Array.isArray) : [];
+  const moodLines = validateMoodLines(lineDocs, residentsData);
   // One record per line keeps the generated diff as readable as the source.
   const rows = list => `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]`;
   const body = `{\n  places: ${rows(places)},\n  spots: ${rows(spots)},\n  groups: ${JSON.stringify(groups)},\n`
     + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n`
-    + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n}`;
+    + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  moodLines: ${rows(moodLines)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -233,6 +273,7 @@ export function build() {
     'export const PARAMS = data.params;',
     'export const ITEMS = data.items;',
     'export const LIGHT = data.light;',
+    'export const MOOD_LINES = data.moodLines;',
     '',
   ].join('\n');
 }

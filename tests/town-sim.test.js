@@ -18,8 +18,8 @@ test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 모두
   const s = summarize(result);
   assert.equal(s.villages, 12 * 4 * 5);
   assert.equal(s.fail, 0, result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
-  const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside'];
-  assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3부터 재는 지표');
+  const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside', 'energy', 'mood-lines'];
+  assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3·W4가 재는 지표');
   assert.deepEqual(result.metrics.map(m => m.id), METRICS.map(m => m.id));
   assert.equal(runSimulation({ seeds: 12, days: 30 }).hash, result.hash, '같은 입력이면 같은 결과');
   assert.notEqual(runSimulation({ seeds: 13, days: 30 }).hash, result.hash);

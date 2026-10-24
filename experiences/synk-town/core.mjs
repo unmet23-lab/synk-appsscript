@@ -18,7 +18,7 @@ import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback
   answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses } from './town/prefs.mjs';
 import { initialConsents, changeConsent, validConsents } from './town/consent.mjs';
 import { eventProblem, FAMILIES } from './town/events.mjs';
-import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS } from './town/params.mjs';
+import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten } from './town/memory.mjs';
 import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf } from './town/village.mjs';
 import { agreementSpot, RESIDENT_BY_ID } from './town/plan.mjs';
@@ -326,6 +326,24 @@ function habitSpots(state) {
   return [...(state.placement && FT_SEATS[state.placement] ? [{ spot: FT_SEATS[state.placement].spot }] : []),
     ...(agreed ? [{ spot: agreed, npc: 'workshop-owner' }] : [])];
 }
+/** A scene that reached its result with the player (§7-2 함께한 일): its residents' open holds say so — at the step
+ * the result came in and at a command's end, never later (review P1-1: a mark on a hold that already ended could
+ * reach a band that settlement had closed). The cafe owner's hold also says how much the help lightened her chores
+ * (stall service, the tray; not when the player only watched). The band its hold ends in counts it (village.mjs). */
+function markTogether(state) {
+  const v = state.village;
+  if (!v?.reservations.length) return;
+  const help = paramsFor().state.helpChores, done = new Map();
+  const scene = (e, helpKind) => { if (e?.resultId) done.set(e.id, helpKind && e.role !== 'observer' ? help[helpKind] : 0); };
+  scene(state.day?.episode, null);
+  scene(state.bazaar?.episode, 'bazaar');
+  scene(state.life?.episode, 'life');
+  for (const r of v.reservations) {
+    if (r.toMs !== null || r.with || !done.has(r.by)) continue;
+    r.with = true;
+    if (r.npc === 'cafe-owner' && done.get(r.by)) r.help = done.get(r.by);
+  }
+}
 /** The settlement's close step (town/settle.mjs close): bands that ended by nowMs close and the next
  * opens; habit uses become town events. The host gives the village seed, its offset and visitEnd, and
  * sleeps when it keeps the residents' nights (an account's town; village.mjs upFor). */
@@ -343,6 +361,7 @@ function settleVillage(state, host) {
   const v = state.village;
   if (!v?.band || !Number.isSafeInteger(host.nowMs)) return;
   keepHabitSpots(v, habitSpots(state));
+  markTogether(state);
   holdResidents(v, heldNow(state), host.nowMs, state.revision + 1);
   const agreement = state.day?.agreement, spot = agreementSpot(agreement);
   if ((agreement?.resultId ?? null) === v.agreement) return;
@@ -379,7 +398,8 @@ function villageScene(state) {
     // Whether a scene may begin with each resident now (the night rule; always true without sleeps).
     awake: Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, upFor(v, npc, nowMs)])),
     band: { band: v.band.band, startMs: v.band.startMs, endMs: v.band.endMs },
-    segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot }) => ({ npc, startMs, arriveMs, endMs, archetype, spot })) };
+    // A segment whose mind changed carries its mood line's ID (§7-3) — the screen shows it near that resident; never the state (G2).
+    segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot, mood }) => ({ npc, startMs, arriveMs, endMs, archetype, spot, ...(mood ? { mood } : {}) })) };
 }
 /** One step of the living modules on a state, in place: the chain one old pulse ran. Settlement
  * (town/settle.mjs) walks unsettled time in steps of this, checking the state once around them. */
@@ -392,6 +412,7 @@ export function stepLiving(state, host) {
   runLife(state, () => advanceLife(state.life, livingContext(state, host)));
   if (state.day) runLife(state, () => advanceDay(state.day, dayContext(state, host)));
   if (state.bazaar) runLife(state, () => advanceBazaar(state.bazaar, bazaarContext(state, host)));
+  markTogether(state);
   return state;
 }
 /** The old pulse path, kept for callers that have not moved to the lease (talk until W2b). */
