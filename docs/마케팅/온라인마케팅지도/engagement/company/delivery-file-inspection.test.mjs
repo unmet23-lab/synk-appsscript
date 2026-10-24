@@ -143,19 +143,35 @@ test('short reads preserve a split media signature and the full content hash',as
 });
 
 test('growth, truncation and same-size writes during chunked reads cannot pass or reach FFprobe',async t=>{
-  for(const change of ['grow','truncate','overwrite'])await t.test(change,async t=>{
+  // 'overwrite' changes bytes already hashed while every timestamp stays equal.
+  // No reader can tell a write into bytes not yet read from stored content, so
+  // 'aged overwrite' checks that case where timestamps can: in a settled file.
+  for(const change of ['grow','truncate','overwrite','aged overwrite'])await t.test(change,async t=>{
     const fake=fakeProbe(),f=await fixture(t,{spawnProcess:fake.spawn}),bytes=Buffer.alloc(3*1024*1024,37);fakeMp4.copy(bytes);
-    const media=await f.file(bytes),reference=await open(media.path,'r'),prototype=Object.getPrototypeOf(reference),read=prototype.read;await reference.close();let reads=0;
+    const media=await f.file(bytes);
+    if(change==='overwrite')await fixedTimestampCollision(t,media.path);
+    else if(change==='aged overwrite'){const old=new Date(Date.now()-60000);await utimes(media.path,old,old);}
+    const reference=await open(media.path,'r'),prototype=Object.getPrototypeOf(reference),read=prototype.read;await reference.close();let reads=0;
     t.mock.method(prototype,'read',async function(...args){
       const result=await read.apply(this,args);
       if(++reads===1){
         if(change==='grow')await appendFile(media.path,Buffer.from([1]));
         else if(change==='truncate')await truncate(media.path,bytes.length-1);
-        else {const writer=await open(media.path,'r+');try{await writer.write(Buffer.from([99]),0,1,bytes.length-1);}finally{await writer.close();}}
+        else {const writer=await open(media.path,'r+');try{await writer.write(Buffer.from([99]),0,1,change==='overwrite'?result.bytesRead-1:bytes.length-1);}finally{await writer.close();}}
       }
       return result;
     });
     const result=await f.inspector.inspect(media);assert.equal(result.code,'file_changed');assert.equal(result.sha256,undefined);assert.equal(fake.calls.length,0);
+  });
+});
+
+test('a recent same-size write into hashed bytes cannot reuse a cached result or pass a subtitle',async t=>{
+  for(const kind of ['cached media','subtitle'])await t.test(kind,async t=>{
+    const fake=fakeProbe(),f=await fixture(t,{spawnProcess:fake.spawn}),media=kind==='subtitle'?await f.file(Buffer.from(srt),'application/x-subrip','srt'):await f.file(fakeMp4);
+    await fixedTimestampCollision(t,media.path);if(kind==='cached media')assert.equal((await f.inspector.inspect(media)).status,'inspected');
+    const reference=await open(media.path,'r'),prototype=Object.getPrototypeOf(reference),read=prototype.read;await reference.close();let reads=0;
+    t.mock.method(prototype,'read',async function(...args){const result=await read.apply(this,args);if(++reads===1){const writer=await open(media.path,'r+');try{await writer.write(Buffer.from('9'),0,1,result.bytesRead-1);}finally{await writer.close();}}return result;});
+    const result=await f.inspector.inspect(media);assert.equal(result.code,'file_changed');assert.equal(result.sha256,undefined);assert.equal(fake.calls.length,kind==='cached media'?1:0);
   });
 });
 
@@ -221,6 +237,16 @@ test('recent cache verification rejects path replacement even when the opened by
   const reference=await open(media.path,'r'),prototype=Object.getPrototypeOf(reference),read=prototype.read;await reference.close();let replaced=false;
   t.mock.method(prototype,'read',async function(...args){const result=await read.apply(this,args);if(!replaced){replaced=true;await rename(media.path,media.path+'.old');await writeFile(media.path,fakeMp4);}return result;});
   const result=await f.inspector.inspect(media);assert.equal(result.code,'file_changed');assert.equal(fake.calls.length,1);
+});
+
+test('a cache entry made while timestamps were recent is hashed again before timestamps alone are trusted',async t=>{
+  const fake=fakeProbe(),f=await fixture(t,{spawnProcess:fake.spawn}),media=await f.file(fakeMp4);
+  await fixedTimestampCollision(t,media.path);
+  const first=await f.inspector.inspect(media),changed=Buffer.from(fakeMp4);changed[changed.length-1]=9;await writeFile(media.path,changed);
+  // The same-tick write kept every timestamp, and those timestamps later look settled.
+  const later=Date.now()+5000;Date.now.mock.mockImplementation(()=>later);
+  const second=await f.inspector.inspect(media);assert.equal(second.status,'inspected');assert.notEqual(second.sha256,first.sha256);assert.equal(second.sha256,digest(changed));assert.equal(fake.calls.length,2);
+  assert.equal((await f.inspector.inspect(media)).sha256,digest(changed));assert.equal(fake.calls.length,2);
 });
 
 test('actual MP4 metadata and content hash are read without modifying uploaded bytes',realMedia,async t=>{
