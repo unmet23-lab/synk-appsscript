@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// 화면·백엔드 검수 묶음(2026-10-21). docs/AI_운영원칙.md 「백엔드 검수」·「화면 검수」의 아르곤(백엔드는 GPT도) → Fable 검수에 넘길 자료를 한 명령으로 묶고,
+// 화면·백엔드 검수 묶음(2026-10-21). docs/AI_운영원칙.md 「백엔드 검수」·「화면 검수」의 GPT(백엔드 — 2026-10-24부터 하나, 막히면 아르곤) · 아르곤(화면 1차) → Fable 검수에 넘길 자료를 한 명령으로 묶고,
 // 받은 답을 입력 SHA·끝 표식·읽은 항목으로 대조해 지적표·Fable 요약·「아르곤 N건(반영 M) · GPT N건(반영 M) · Fable N건(반영 M)」 집계를 만든다.
 // 새 LLM 실행기가 아니다 — 아르곤은 tools/lib/제미나이구독호출.js의 부르기를, GPT는 공식 Codex CLI(`codex exec`, 주간 몫이 넉넉한 Pro 계정)를 묶음마다 한 번 부르고
 // (되풀이·다른 모델로 대체 없음, 다시 보내기는 사람이 --다시로), Fable은 세션이 Agent 도구(model: fable)에 fable.md를 준다. 틀은 tools/topik-review.mjs를 본떴다.
 //
 //   node tools/검수묶음.mjs 준비 <이름> --종류 화면|백엔드 --바탕 <커밋> [<경로…>] [준비 옵션]   아르곤 묶음·전후 캡처·시험 TAP·Fable 요약
 //   node tools/검수묶음.mjs 아르곤 <이름> [--수준 high|medium] [--묶음 A …] [--다시]       묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
-//   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수의 GPT 몫(2026-10-22) — 같은 묶음·같은 대조, 아르곤과 함께 돌려도 된다
+//   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수(2026-10-24 GPT 하나 — 막히면 아르곤 → Fable) — 아르곤과 같은 묶음·같은 대조
 //   node tools/검수묶음.mjs 처리 <이름> <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … [<번호>=재확인]   지적마다 Claude의 처리를 적는다
 //   node tools/검수묶음.mjs 페이블 <이름> [--시험안함 | --시험결과 <현재판.tap>] [--캡처안함]      고친 뒤 상태로 diff·시험·캡처를 다시 떠 fable.md를 쓴다
 //   node tools/검수묶음.mjs 페이블받기 <이름> [<답 파일>] [--새로]     Fable 답의 JSON 지적을 지적표에 F1…로 넣는다
@@ -28,7 +28,7 @@ import { createRequire } from 'node:module';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
-import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 정책만들기, 응답검사, 막힘증거, 입력증명, 안전경로 } from './lib/검수증명.mjs';
+import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 정책만들기, 정책판, 대체순서, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로 } from './lib/검수증명.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -587,7 +587,7 @@ export function 설정만들기(o) {
   return { 종류: o.종류, 저장소, 바탕: 커밋풀기(o.바탕, 저장소), 끝: o.끝 ? 커밋풀기(o.끝, 저장소) : '작업본', 경로: [...(o.경로 || []), ...(o.경로목록 || [])],
     배경파일: o.배경 ? path.resolve(o.배경) : null, 곁: o.곁 || [], 시험: o.시험 || [], 시험결과: o.시험결과 || null, 화면,
     장면: o.장면 ? path.resolve(o.장면) : null, 주소뿌리: o.주소뿌리 || [], 시각: o.시각 || null, 캡처: o.캡처 ? path.resolve(o.캡처) : null,
-    뺌: o.뺌 || [], 넣음: o.넣음 || [], 크기, 작성자: o.작성자 || 'Claude', GPT구독: o.GPT구독 || '유지',
+    뺌: o.뺌 || [], 넣음: o.넣음 || [], 크기, 작성자: o.작성자 || 'Claude', GPT구독: o.GPT구독 || '유지', 정책판: o.정책판 ? Number(o.정책판) : 정책판,
     예외: o.예외 || null, 대상: o.대상 || null, 사유: o.사유 || null, 배포후보: o.배포후보 ? path.resolve(o.배포후보) : null };
 }
 
@@ -598,7 +598,7 @@ export async function 준비하기(o, { 알리기 = () => {} } = {}) {
   fs.mkdirSync(폴더, { recursive: true });
   const 자료 = await 자료모으기(설정, 폴더, { 알리기 });
   if (!자료.파일들.length && !자료.화면 && !자료.가져온캡처 && !자료.배포후보) throw new Error('바뀐 파일이 없다 — --바탕·--끝·경로를 확인한다');
-  const 정책 = 정책만들기(설정, 자료.파일들);
+  const 정책 = 정책만들기(설정, 자료.파일들, { 판: 설정.정책판 });
   const 항목들 = 항목만들기(자료, 설정, 폴더);
   const 배경 = 자료.배경 || `(배경 글이 없어 커밋 메시지로 대신한다 — 무엇을 왜 바꿨는지·글자가 동작에 엮인 곳은 아래 커밋과 diff로 판단한다.)`;
   const 규칙 = 규칙글(설정.종류, 설정.작성자) + `\n\n검수 정책: ${JSON.stringify(정책)}\n소스 스냅샷: ${정규해시(자료.스냅샷)}`;
@@ -668,7 +668,7 @@ const 퍼 = v => (v == null ? '?' : `${(v * 100).toFixed(1)}%`);
 const 몫글 = m => (m?.앞 || m?.뒤 ? ` · 주간 몫 ${퍼(m.앞?.주간)} → ${퍼(m.뒤?.주간)}` : '');
 
 // ── GPT ────────────────────────────────────────────────────────────
-// 백엔드 2차 검수는 아르곤과 GPT가 함께 본다(2026-10-22 유호님, GPT 구독이 남은 동안). 모델·추론은 GPT 앱 본 설정(~/.codex/config.toml) 그대로이고,
+// 백엔드 2차 검수는 GPT 하나다(2026-10-24 유호님 다섯 가지 ① — 막히면 아르곤 → Fable, 10-22~24는 아르곤과 함께). 모델·추론은 GPT 앱 본 설정(~/.codex/config.toml) 그대로이고,
 // 계정은 Pro 계정(본 계정 + 굽기 장부 ~/.codex-bake) 가운데 주간 몫이 가장 넉넉한 것이다 — 10-22 본 계정은 GPT 앱 백엔드 작업으로 주간 90%였고
 // 크레딧이 있어 한도를 넘기면 크레딧이 나갈 수 있었다. 그래서 주간 90% 넘게 쓴 계정은 고르지 않는다.
 // 묶음은 표준입력으로만 준다 — Windows 읽기 전용 실행은 파일 읽기도 거절해서(현장 노트 AI_CLI) -C는 빈 폴더다. 그래서 GPT도 아르곤과 같은 바이트만 본다.
@@ -787,10 +787,10 @@ export async function GPT몫읽기(계정 = { 이름: null }) {
 export const 검수자들 = {
   아르곤: { 출처: '아르곤', 번호앞: '', 모델: ARGON.model, 기본수준: 종류 => 기본수준[종류], 제한분: 수준 => 제한분[수준], 몫: 몫읽기,
     수준검사: 수준 => { if (!제한분[수준]) throw new Error(`--수준은 high·medium·low 가운데 하나(받음 ${수준})`); },
-    막힘말: '아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않는다 — 백엔드는 GPT가 끝까지 읽었으면 그것으로, 아니면 Fable 검수로 대신하고 끝 보고에 그렇게 적는다' },
+    막힘말: '아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않는다 — 화면은 Fable 최종 검수로 가고, 백엔드(GPT가 막혀 대신한 검수)는 Fable 검수로 대신하고 끝 보고에 그렇게 적는다' },
   GPT: { 출처: 'GPT', 번호앞: 'G', 모델: null, 기본수준: () => null, 제한분: () => GPT제한분, 몫: GPT몫읽기,
     수준검사: 수준 => { if (수준 != null && !추론들.includes(수준)) throw new Error(`--수준은 ${추론들.join('·')} 가운데 하나(받음 ${수준}) — 빼면 본 계정 설정 그대로`); },
-    막힘말: 'GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 아르곤이 끝까지 읽었으면 그것으로 가고(아르곤도 막히면 Fable), 끝 보고에 그렇게 적는다' },
+    막힘말: 'GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 아르곤으로 대신하고(아르곤 <이름>, 아르곤도 막히면 Fable), 끝 보고에 그렇게 적는다' },
 };
 
 export function 아르곤보내기(폴더, 목록, o = {}) { return 검수보내기('아르곤', 폴더, 목록, o); }
@@ -1019,7 +1019,10 @@ function 페이블쓰기(폴더, 목록, 지금) {
   const 화면 = 목록.종류 === '화면';
   const 표 = 지적표읽기(폴더);
   const 결과들 = 결과들읽기(폴더, 목록), G결과들 = 결과들읽기(폴더, 목록, 'GPT');
-  const 막힘 = 결과들.some(r => r.상태 === '막힘');
+  // 대신하는 Fable인가: 화면은 아르곤이, 백엔드는 차례의 앞 검수(GPT·아르곤)가 모두 막혔을 때
+  const 순서 = 목록.정책 ? 대체순서(목록.정책) : null, 막힌것 = { 아르곤: 결과들, GPT: G결과들 };
+  const 막힘 = 순서 ? 순서.slice(0, -1).every(w => 막힌것[w].some(r => r.상태 === '막힘')) : 결과들.some(r => r.상태 === '막힘');
+  const 막힌이름 = 순서 ? 순서.slice(0, -1).join('·') : '아르곤';
   // 먼저 본 다른 회사 검수자(쓸 만한 답이 있는 쪽). 아르곤이 막혔어도 GPT가 읽었으면 2단계에 GPT 지적이 간다.
   const 앞검수 = [...(결과들.some(쓸만한가) ? [['아르곤', '아르곤지적표.md', 결과들]] : []), ...(G결과들.some(쓸만한가) ? [['GPT', 'GPT지적표.md', G결과들]] : [])];
   const 앞이름 = 앞검수.map(([이름]) => (이름 === '아르곤' ? '아르곤(Gemini 4 Argon)' : 'GPT')).join('과 ');
@@ -1041,7 +1044,7 @@ function 페이블쓰기(폴더, 목록, 지금) {
   const 줄 = [
     `# Fable 최종 검수 — ${목록.이름} (${목록.종류})`,
     '',
-    `너는 SYNK의 최종 ${목록.종류} 검수자(Fable)다. Claude(Opus)가 만든 변경을${앞검수.length ? ` ${앞이름}(다른 회사 모델)이 먼저 본 뒤 Claude가 고친` : 막힘 ? ' — 아르곤(다른 회사 모델)이 한도·로그인으로 막혀 아르곤 대신 —' : ' 아르곤(Gemini 4 Argon, 다른 회사 모델)이 먼저 본 뒤 Claude가 고친'} 지금 상태로 다시 본다. 품질이 먼저라 범위를 줄이지 않는다 — 바뀐 파일 전체와 그 변경이 닿는 ${화면 ? '화면' : '코드 경로'} 전체를 본다. 아래 목록은 헤매지 않게 하려는 안내일 뿐 범위의 끝이 아니다. 저장소 파일은 직접 열어 읽어도 되지만 고치지는 않는다.`,
+    `너는 SYNK의 최종 ${목록.종류} 검수자(Fable)다. Claude(Opus)가 만든 변경을${앞검수.length ? ` ${앞이름}(다른 회사 모델)이 먼저 본 뒤 Claude가 고친` : 막힘 ? ` — ${막힌이름}(다른 회사 모델)이 한도·로그인으로 막혀 그 대신 —` : ' 아르곤(Gemini 4 Argon, 다른 회사 모델)이 먼저 본 뒤 Claude가 고친'} 지금 상태로 다시 본다. 품질이 먼저라 범위를 줄이지 않는다 — 바뀐 파일 전체와 그 변경이 닿는 ${화면 ? '화면' : '코드 경로'} 전체를 본다. 아래 목록은 헤매지 않게 하려는 안내일 뿐 범위의 끝이 아니다. 저장소 파일은 직접 열어 읽어도 되지만 고치지는 않는다.`,
     '',
     '## 1단계 — 네 검수를 먼저 쓴다',
     '',
@@ -1148,30 +1151,36 @@ export function 검수확인(folderOrId, { 저장소 = null } = {}) {
     const 폴더 = 폴더찾기(folderOrId), 목록 = readJson(path.join(폴더, '묶음.json'));
     if (목록.판 !== 2 || !증명맞나(목록.증명)) return { 통과: false, 사유: ['현재 소스와 연결된 검수 증명이 없다 — 새 이름으로 준비한다'], 증명: null };
     if (!Array.isArray(목록.묶음) || !목록.묶음.length) return { 통과: false, 사유: ['검수 묶음이 비어 있다'], 증명: null };
-    const 정책 = 정책만들기(목록.설정, 목록.파일);
+    // 옛 판(1) 묶음은 그 판으로 다시 만들어 대조한다 — 판정은 아래 지금 규칙(대체순서)으로 한다.
+    const 정책 = 정책만들기(목록.설정, 목록.파일, { 판: 목록.정책?.판 ?? 1 });
     if (정규해시(정책) !== 정규해시(목록.정책) || 정규해시(정책) !== 정규해시(목록.증명.정책)) 사유.push('검수 정책이 준비 뒤 바뀌었다');
     if (정규해시(목록.묶음.map(b => b.sha256)) !== 정규해시(목록.증명.항목)) 사유.push('검수 묶음 목록이 준비 뒤 바뀌었다');
     const { 표, 결과 } = 잠근채(폴더, () => ({ 표: 지적표읽기(폴더), 결과: Object.fromEntries(['아르곤', 'GPT', 'Claude'].map(w => [w, 결과들읽기(폴더, 목록, w)])) }));
-    const valid = {}, blocked = {}, rawFindings = [];
+    // 검수자마다 끝까지 읽혔는지(valid)·한도·로그인 막힘 증거가 있는지(blocked)와 그 문제를 모으고, 어느 검수가 필요한지는 아래에서 정한다.
+    const valid = {}, blocked = {}, 문제 = {}, rawFindings = [];
     for (const 누구 of ['아르곤', 'GPT', 'Claude']) {
-      const required = 정책.필수.includes(누구);
       let complete = true, block = false, failed = false;
+      문제[누구] = [];
       for (const b of 목록.묶음) {
         if (sha(fs.readFileSync(path.join(폴더, b.파일))) !== b.sha256) { 사유.push(`묶음 ${b.이름} 입력 SHA 불일치`); failed = true; }
         const r = 결과[누구].find(x => x.묶음 === b.이름);
         if (!r) { complete = false; continue; }
         if (r.상태 === '보내는 중') { 사유.push(`${누구} ${b.이름} 보내는 중`); complete = false; failed = true; continue; }
-        if (r.입력sha256 !== b.sha256) { if (required) 사유.push(`${누구} ${b.이름} 응답 입력 SHA 불일치`); failed = true; complete = false; continue; }
+        if (r.입력sha256 !== b.sha256) { 문제[누구].push(`${누구} ${b.이름} 응답 입력 SHA 불일치`); failed = true; complete = false; continue; }
         if (r.차단증거 && 정규해시(r.차단증거) === 정규해시(막힘증거(누구, r.실패원문, r.몫?.앞))) { block = true; complete = false; continue; }
         let answer;
         try { answer = 페이블답읽기(r.원문); } catch { answer = null; }
         const errors = 응답검사(answer, b);
-        if (errors.length) { complete = false; failed = true; if (required) 사유.push(`${누구} ${b.이름}: ${errors.join(', ')}`); }
+        if (errors.length) { complete = false; failed = true; 문제[누구].push(`${누구} ${b.이름}: ${errors.join(', ')}`); }
         else for (const f of answer.findings) rawFindings.push({ 누구, 묶음: b.이름, f });
       }
       valid[누구] = complete && !failed;
       blocked[누구] = block && !failed;
     }
+    // Claude 백엔드는 GPT 하나 — 한도·로그인으로 막혔을 때만 아르곤, 둘 다 막혔으면 Fable이 대신한다(2026-10-24 다섯 가지 ①).
+    const 순서 = 대체순서(정책);
+    const 대체로 = Boolean(순서) && 순서.slice(0, -1).every(w => blocked[w]);
+    if (정책.예외) for (const who of 정책.필수) 사유.push(...(문제[who] || []));
     let final = 목록.증명, finalValid = false;
     if (표.페이블) {
       const data = readJson(path.join(폴더, '페이블자료.json'));
@@ -1179,24 +1188,27 @@ export function 검수확인(folderOrId, { 저장소 = null } = {}) {
       try { answer = 페이블답읽기(표.페이블.원문); } catch { answer = null; }
       const errors = 응답검사(answer, data.증명, { final: true });
       if (!증명맞나(data.증명) || 정규해시(data.증명.정책) !== 정규해시(정책) || sha(fs.readFileSync(path.join(폴더, 'diff.patch'))) !== data.증명.자료해시) errors.push('최종 검수 자료 증명 불일치');
-      if (errors.length) { if (목록.종류 === '화면' || 정책.필수.every(w => blocked[w])) 사유.push(`Fable: ${errors.join(', ')}`); }
+      if (errors.length) { if (목록.종류 === '화면' || 대체로) 사유.push(`Fable: ${errors.join(', ')}`); }
       else {
         finalValid = true;
-        // 화면의 A 검수 → 수정 → B 최종 검수는 정상이다. 백엔드는 필수 두 검수가 B를 다시 봐야 한다.
-        if (목록.종류 === '화면' || (정책.작성자 === 'Claude' && 정책.필수.every(w => blocked[w]))) final = data.증명;
+        // 화면의 A 검수 → 수정 → B 최종 검수는 정상이다. 백엔드는 대신한 Fable(앞 검수가 다 막힘)일 때만 B가 최종이다.
+        if (목록.종류 === '화면' || 대체로) final = data.증명;
         for (const f of answer.findings) rawFindings.push({ 누구: 'Fable', 묶음: null, f });
       }
     }
     if (!정책.예외) {
       if (목록.종류 === '화면') {
-        if (!valid.아르곤 && !blocked.아르곤) 사유.push('필수 아르곤 검수 미완료(미전송은 한도 예외가 아니다)');
+        if (!valid.아르곤 && !blocked.아르곤) 사유.push(...문제.아르곤, '필수 아르곤 검수 미완료(미전송은 한도 예외가 아니다)');
         if (!finalValid) 사유.push('Fable 최종 검수 미완료');
-      } else if (정책.작성자 === 'GPT') {
-        for (const who of 정책.필수) if (!valid[who]) 사유.push(`GPT 작성 작업의 필수 ${who} 검수 미완료 — 한쪽 검수 대체 정책 없음`);
+      } else if (!순서) {
+        for (const who of 정책.필수) if (!valid[who]) 사유.push(...문제[who], `GPT 작성 작업의 필수 ${who} 검수 미완료 — 한쪽 검수 대체 정책 없음`);
       } else {
-        for (const who of 정책.필수) if (!valid[who] && !blocked[who]) 사유.push(`필수 ${who} 검수 미완료(미전송은 한도 예외가 아니다)`);
-        const someValid = 정책.필수.some(w => valid[w]), allBlocked = 정책.필수.every(w => blocked[w]);
-        if (!someValid && !(allBlocked && finalValid)) 사유.push('필수 검수 또는 한도·로그인 막힘 뒤 Fable 대체 검수 필요');
+        for (const [k, who] of 순서.entries()) {
+          const 대신 = k ? ` — ${순서.slice(0, k).join('·')} 검수가 한도·로그인으로 막혀 대신하는 검수` : '';
+          if (who === 'Fable') { if (!finalValid) 사유.push(`필수 검수(${순서.slice(0, k).join('·')})가 한도·로그인으로 막혀 Fable 대체 검수 필요`); break; }
+          if (valid[who]) break;
+          if (!blocked[who]) { 사유.push(...문제[who], `필수 ${who} 검수 미완료(미전송은 한도 예외가 아니다)${대신}`); break; }
+        }
       }
     }
     for (const { 누구, 묶음, f } of rawFindings) {
@@ -1233,15 +1245,16 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
   const 덜글목록 = 상태 => 덜읽음(상태).filter(b => b.상태 !== '보내는 중');
   const 덜글 = 상태 => 덜글목록(상태).map(b => `${b.이름}(${b.입력같음 === false ? '입력 SHA 다름' : b.상태})`).join(', ');
   const 막힘 = 묶음상태.some(b => b.상태 === '막힘');
-  // GPT는 백엔드 2차 검수에 아르곤과 함께(2026-10-22). 보낸 적이 없으면 관문에 넣지 않고(구독이 끝나면 아르곤만), 보냈으면 아르곤처럼 끝까지 읽혀야 친다.
+  // 정책 없는 옛 목록(판 2 전): GPT는 백엔드 2차 검수에 아르곤과 함께였다(2026-10-22). 보낸 적이 없으면 관문에 넣지 않고(구독이 끝나면 아르곤만), 보냈으면 아르곤처럼 끝까지 읽혀야 친다.
   const G보냄 = G결과들.length > 0, G막힘 = G묶음상태.some(b => b.상태 === '막힘'), G다읽음 = G보냄 && !덜읽음(G묶음상태).length;
   const 페이블있음 = Boolean(표.페이블);
   const 열린 = 표.지적.filter(x => ['P0', 'P1'].includes(x.등급) && (!닫힘.has(x.처리) || (x.출처 === 'Fable' && x.처리 === '반영' && x.재확인 !== '통과')));
   if (목록.판 === 2) {
     // 새 판은 실행한 모델뿐 아니라 정책상 필수인 미실행 검수자도 보고한다.
     // 배포 CLI의 최종 판정은 아래 요약 상태 대신 검수확인이 원문·현재 파일로 다시 검사한다.
-    const 필수 = 목록.정책.필수, 결과별 = { 아르곤: 결과들, GPT: G결과들, Claude: C결과들 }, 셈별 = { 아르곤: 아, GPT: 지, Claude: 씨, Fable: 페 };
-    const 검수자별 = [...new Set([...필수, ...Object.keys(결과별).filter(w => 결과별[w].length || 셈별[w].건), ...(페이블있음 || 페.건 ? ['Fable'] : [])])].map(이름 => {
+    // 필수는 지금 규칙(옛 판 1의 [아르곤, GPT]도 [GPT])이고, 대신한 검수는 돌았을 때만 보인다. 차례는 아르곤 · GPT · Claude · Fable.
+    const 필수 = 실제필수(목록.정책), 순서 = 대체순서(목록.정책), 결과별 = { 아르곤: 결과들, GPT: G결과들, Claude: C결과들 }, 셈별 = { 아르곤: 아, GPT: 지, Claude: 씨, Fable: 페 };
+    const 검수자별 = ['아르곤', 'GPT', 'Claude', 'Fable'].filter(w => 필수.includes(w) || (w === 'Fable' ? 페이블있음 || 페.건 : 결과별[w].length || 셈별[w].건)).map(이름 => {
       const 상태 = 이름 === 'Fable' ? [] : 상태표(결과별[이름]);
       return { 이름, 필수: 필수.includes(이름), 셈: 셈별[이름], 묶음상태: 상태, 보냄: 이름 === 'Fable' ? 페이블있음 : 결과별[이름].length > 0, 막힘: 상태.some(b => b.상태 === '막힘'), 다읽음: 이름 === 'Fable' ? 페이블있음 : 상태.length > 0 && !덜읽음(상태).length };
     });
@@ -1254,8 +1267,18 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
         else if (!r.막힘 || 목록.정책.작성자 === 'GPT') 조건.push(`${r.이름} 묶음 ${덜글(r.묶음상태)} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
       }
     }
-    const 앞필수 = 검수자별.filter(r => r.필수 && r.이름 !== 'Fable');
-    if (!목록.정책.예외 && 목록.정책.작성자 === 'Claude' && 앞필수.some(r => r.막힘) && !앞필수.some(r => r.다읽음) && !페이블있음) 조건.push('필수 검수가 막혀 Fable 검수로 대신해야 한다');
+    if (!목록.정책.예외 && 순서) {
+      // 앞 검수자가 막혔으면 다음 차례가 끝까지 읽어야 한다(GPT → 아르곤 → Fable)
+      for (const [k, who] of 순서.entries()) {
+        const r = 검수자별.find(x => x.이름 === who);
+        if (who === 'Fable') { if (!페이블있음) 조건.push(`${순서.slice(0, k).join('·')} 검수가 막혀 Fable 검수로 대신해야 한다`); break; }
+        if (r?.다읽음) break;
+        if (!r?.막힘) { if (k) 조건.push(`${순서.slice(0, k).join('·')} 검수가 막혀 ${who} 검수로 대신해야 한다${r?.보냄 ? ` — ${who} 묶음 ${덜글(r.묶음상태)}` : ''}`); break; }
+      }
+    } else if (!목록.정책.예외 && 목록.정책.작성자 === 'Claude') {
+      const 앞필수 = 검수자별.filter(r => r.필수 && r.이름 !== 'Fable');
+      if (앞필수.some(r => r.막힘) && !앞필수.some(r => r.다읽음) && !페이블있음) 조건.push('필수 검수가 막혀 Fable 검수로 대신해야 한다');
+    }
     for (const x of 열린) 조건.push(`${x.번호} ${x.등급} ${x.처리 ? (x.처리 === '반영' ? '반영 — 같은 Fable 재확인 전' : x.처리) : '처리 미정'}`);
     const 한줄 = 검수자별.map(r => `${r.이름} ${!r.보냄 && !r.셈.건 ? '미실행' : r.막힘 && !r.셈.건 ? '막힘(한도·로그인)' : `${r.셈.건}건(반영 ${r.셈.반영})`}`).join(' · ');
     return { 한줄, 검수자별, 아르곤: 아, GPT: 지, Claude: 씨, 페이블: 페, 묶음상태, G묶음상태, C묶음상태: 상태표(C결과들), 막힘, G보냄, G막힘, 페이블있음, 열린, 조건, 배포조건충족: !조건.length,
@@ -1284,7 +1307,7 @@ function 집계글(목록, 결과들, 표, s) {
     '',
     `- ${s.한줄}`,
     ...(s.검수자별 ? [
-      `- 작성자 ${목록.정책.작성자} · 필수 검수: ${목록.정책.필수.join(' · ')}${목록.정책.예외 ? ` · 예외 ${목록.정책.예외.종류}` : ''}`,
+      `- 작성자 ${목록.정책.작성자} · 필수 검수: ${필수글(목록.정책)}${목록.정책.예외 ? ` · 예외 ${목록.정책.예외.종류}` : ''}`,
       `- 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 묶음 ${목록.묶음.length}개: ${s.검수자별.map(r => `${r.이름} ${r.이름 === 'Fable' ? (r.보냄 ? '최종 답 받음' : '안 받음') : 상태글(r.묶음상태)}`).join(' / ')}`,
       ...s.검수자별.map(r => `- ${r.이름}: ${셈글(r.셈)}${r.이름 === 'Fable' && 표.페이블 ? ` · ${표.페이블.회차}회 받음` : ''}`),
     ] : [
@@ -1342,6 +1365,8 @@ async function main(argv) {
     console.log(`  Fable 요약: ${path.join(폴더, 'fable.md')}`);
     if (목록.정책.작성자 === 'GPT') {
       console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개)`);
+    } else if (대체순서(목록.정책)?.[0] === 'GPT') {
+      console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · 한도·로그인으로 막히면 아르곤 ${목록.이름}, 둘 다 막히면 페이블 ${목록.이름})`);
     } else {
       console.log(`다음: node tools/검수묶음.mjs 아르곤 ${목록.이름}   (수준 ${기본수준[목록.종류]} · 묶음 ${목록.묶음.length}개를 하나씩)`);
     }
@@ -1361,7 +1386,7 @@ async function main(argv) {
     await 아르곤보내기(폴더, 목록, { 수준: o.수준 || 기본수준[목록.종류], 고른: o.묶음 || null, 다시: Boolean(o.다시), call: 부르기, 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록);
     console.log(`아르곤 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
-    console.log(`다음: ${목록.종류 === '백엔드' ? `GPT ${목록.이름}(같이 돌려도 된다) → ` : ''}재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → ${목록.종류 === '백엔드' ? '집계' : '페이블'} ${목록.이름}`);
+    console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → ${목록.종류 === '백엔드' ? '집계' : '페이블'} ${목록.이름}`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }
   if (o.명령 === 'GPT') {

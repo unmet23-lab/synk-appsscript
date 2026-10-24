@@ -67,7 +67,11 @@ export function 후보읽기(folder) {
   const manifest = { 판: 1, 종류: raw.종류, 항목 };
   return { ...manifest, manifestSha256: 정규해시(manifest) };
 }
-export function 정책만들기(o, files) {
+// 검수 정책 판. 2(2026-10-24 다섯 가지 ①)부터 Claude 백엔드의 필수 검수는 GPT 하나다. 1(10-22~24)은 아르곤·GPT 둘을 적었다 —
+// 옛 판 묶음도 판정은 아래 대체순서(지금 규칙)로 하므로, 둘 다 받은 옛 증거와 GPT만 받은 옛 증거가 그대로 통과한다.
+export const 정책판 = 2;
+export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
+  if (![1, 2].includes(판)) throw new Error(`모르는 검수 정책 판: ${판}`);
   const candidate = 후보읽기(o.배포후보);
   const 기준이미지만 = candidate?.종류 === 'synk.im' && candidate.항목.every(f => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(f.경로));
   if (candidate && o.종류 !== (candidate.종류 === 'synk.im' && !기준이미지만 ? '화면' : '백엔드')) throw new Error(`배포 후보 ${candidate.종류}에 맞는 검수 종류가 아니다`);
@@ -76,7 +80,7 @@ export function 정책만들기(o, files) {
   if (작성자 === 'GPT' && o.종류 === '화면') throw new Error('화면 구현은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
   if (!['유지', '종료'].includes(구독)) throw new Error('--GPT구독은 유지|종료');
   if (구독 === '종료' && (!o.사유?.trim() || 작성자 === 'GPT')) throw new Error('GPT 구독 종료는 Claude 작업에서 --사유와 함께 명시한다');
-  const 필수 = o.종류 === '화면' ? ['아르곤', 'Fable'] : 작성자 === 'GPT' ? ['GPT', 'Claude'] : 구독 === '종료' ? ['아르곤'] : ['아르곤', 'GPT'];
+  const 필수 = o.종류 === '화면' ? ['아르곤', 'Fable'] : 작성자 === 'GPT' ? ['GPT', 'Claude'] : 구독 === '종료' ? ['아르곤'] : 판 === 1 ? ['아르곤', 'GPT'] : ['GPT'];
   let 예외 = null;
   if (o.예외) {
     if (!['내부', '아주작은수정', '콘텐츠'].includes(o.예외) || !o.대상?.trim() || !o.사유?.trim()) throw new Error('검수 예외에는 --예외 내부|아주작은수정|콘텐츠 --대상 --사유가 필요하다');
@@ -90,8 +94,20 @@ export function 정책만들기(o, files) {
     if (o.예외 === '아주작은수정' && candidates.some(f => f.종류 === '지움' || f.경로 !== files[0].경로 || sha256(fs.readFileSync(안전경로(o.저장소, f.경로))) !== f.sha256)) throw new Error('아주 작은 수정의 배포 후보는 검토 대상 원천 파일 그대로여야 한다');
     예외 = { 종류: o.예외, 대상: o.대상.trim(), 사유: o.사유.trim() };
   }
-  return { 판: 1, 작성자, 종류: o.종류, GPT구독: 구독, ...(구독 === '종료' ? { 구독사유: o.사유.trim() } : {}), 필수, 예외 };
+  return { 판, 작성자, 종류: o.종류, GPT구독: 구독, ...(구독 === '종료' ? { 구독사유: o.사유.trim() } : {}), 필수, 예외 };
 }
+/** Claude 백엔드의 다른 회사 검수 순서 — 앞 검수자가 한도·로그인으로 막혔을 때만 다음으로 넘어간다(2026-10-24 다섯 가지 ①).
+ *  화면(아르곤 → Fable 최종)과 GPT 작성(GPT·Claude 둘 다, 대체 없음)은 null. 정책 판과 상관없이 지금 규칙이다. */
+export function 대체순서(정책) {
+  if (정책.종류 === '화면' || 정책.작성자 === 'GPT') return null;
+  return 정책.GPT구독 === '종료' ? ['아르곤', 'Fable'] : ['GPT', '아르곤', 'Fable'];
+}
+/** 지금 규칙으로 꼭 받아야 하는 검수자(대체는 빼고). 옛 판 1의 [아르곤, GPT]도 [GPT]로 본다. */
+export const 실제필수 = 정책 => (대체순서(정책) ? [대체순서(정책)[0]] : 정책.필수);
+export const 필수글 = 정책 => {
+  const 순서 = 대체순서(정책);
+  return 순서 ? `${순서[0]}(한도·로그인으로 막히면 ${순서.slice(1).join(' → ')})` : 정책.필수.join(' · ');
+};
 export function 응답검사(answer, expected, { final = false } = {}) {
   const errors = [];
   if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return ['응답이 객체가 아니다'];
