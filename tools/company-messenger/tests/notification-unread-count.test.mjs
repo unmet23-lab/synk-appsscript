@@ -1,3 +1,4 @@
+import { initializeCollaborationSchema } from '../messenger-schema.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -45,10 +46,11 @@ function fixture(t) {
     return row;
   };
   const requireMessage = (id, userId) => { const row = db.prepare('SELECT * FROM messages WHERE id=?').get(id); check(row, 404); requireChannel(userId, row.channel_id); return row; };
+  initializeCollaborationSchema(db);
   const service = createCollaborationService({ db, assert: check, textField: value => value, now: () => stamp,
     transaction: fn => { db.exec('BEGIN'); try { const result = fn(); db.exec('COMMIT'); return result; } catch (error) { db.exec('ROLLBACK'); throw error; } },
     members, requireChannel, requireMessage, requirePosting: requireChannel, publish() {}, backgroundJobsEnabled: false,
-    messageShape: (row, userId) => { shapes++; return { id: String(row.id), channelId: row.channel_id, ...service.messageExtras(row, userId) }; },
+    messageShape: (row, userId) => { shapes++; return { id: String(row.id), channelId: row.channel_id }; },
     externalNotifications: { list: () => external, read() {}, readAll() {} },
   });
   service.setPersonalNotifications({ list: () => personal, read() {} });

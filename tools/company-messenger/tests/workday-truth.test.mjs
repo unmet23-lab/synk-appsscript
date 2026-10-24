@@ -1,3 +1,4 @@
+import { initializeCollaborationSchema } from '../messenger-schema.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -31,6 +32,7 @@ function fixture(t) {
     requireChannel(userId, message.channel_id);
     return message;
   };
+  initializeCollaborationSchema(db);
   const service = createCollaborationService({
     db, assert: check,
     textField: (value, label, max, min = 0) => {

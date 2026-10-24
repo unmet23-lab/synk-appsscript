@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const rooms=()=>[
   {id:'self',kind:'self',scope:'private',name:'나에게 메모',memberIds:['u1'],unread:0},
   {id:'dm',kind:'dm',scope:'private',name:'지민',memberIds:['u1','u2'],unread:2},
@@ -26,7 +26,7 @@ function fixture(){
   const categorySections=['personal','team','all'].map(category=>{const section=get(`[data-chat-section="${category}"]`);section.dataset.chatSection=category;section.querySelector=selector=>selector==='[data-channel]'?node():null;return section;});collections.set('[data-chat-section]',categorySections);collections.set('.sidebar-scroll .nav-section',categorySections);
   for(const selector of ['#chat-category-tabs','#chat-category-description','#chat-category-title','#search-input','#search-scope','#drawer-body'])get(selector);
   const context=vm.createContext({document,location:{pathname:'/',origin:'http://localhost'},window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Intl,crypto:{randomUUID:()=> 'fixture-uuid'},CSS:{escape:String}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   context.syntheticRooms=rooms();run("Object.assign(state,{user:{id:'u1',name:'유호',role:'owner',teamId:'marketing'},channels:syntheticRooms,members:[{id:'u1',name:'유호',teamId:'marketing'},{id:'u2',name:'지민',teamId:'marketing'},{id:'u3',name:'민서',teamId:'design'}],teams:[{id:'marketing',name:'마케팅팀',canOpen:true},{id:'design',name:'디자인팀',canOpen:false}],channelId:'self',chatCategory:'personal',categoryFilters:{personal:'all',team:'all',all:'all'},categoryChannels:{personal:'self'},mode:'chat'});");
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));context.notice=(...args)=>notifications.push(args);context.recordRead=async channelId=>reads.push(channelId);context.recordRender=()=>renders.push(run('state.channelId'));context.recordUpload=(...args)=>uploads.push(args);
   run('api=request;toast=notice;markRead=recordRead;renderMessages=recordRender;uploadFile=recordUpload;renderDirectory=()=>{};parentMessage=()=>{};');

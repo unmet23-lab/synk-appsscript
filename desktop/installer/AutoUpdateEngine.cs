@@ -209,7 +209,7 @@ namespace Synk.SignalInstaller
             catch { parent.Dispose(); throw; }
         }
 
-        public AutomaticUpdateResult InstallAutomaticUpdate(AutomaticUpdateSession session, Action<string,string,int?> progress)
+        public AutomaticUpdateResult InstallAutomaticUpdate(AutomaticUpdateSession session, Action<InstallProgress> progress)
         {
             return InstallAutomaticUpdateCore(session, progress, InstallPayload, delegate(string executable,string arguments) {
                 InstallFile incoming = spec.Files.Find(item => String.Equals(item.Path,spec.ExecutableName,StringComparison.OrdinalIgnoreCase));
@@ -218,11 +218,11 @@ namespace Synk.SignalInstaller
             });
         }
 
-        internal AutomaticUpdateResult InstallAutomaticUpdateCore(AutomaticUpdateSession session, Action<string,string,int?> progress, Func<Action<string,string,int?>,string> install, Action<string,string> launch)
+        internal AutomaticUpdateResult InstallAutomaticUpdateCore(AutomaticUpdateSession session, Action<InstallProgress> progress, Func<Action<InstallProgress>,string> install, Action<string,string> launch)
         {
             if (session == null || session.Used || session.Parent == null) throw new InvalidOperationException("자동 업데이트는 한 번에 하나만 할 수 있어요.");
             session.Used = true;
-            progress("앱을 닫는 중", "저장할 작업이 있는지 보고 앱이 꺼지기를 기다려요.", null);
+            progress(new InstallProgress(InstallStage.WaitingForApp, "앱을 닫는 중", "저장할 작업이 있는지 보고 앱이 꺼지기를 기다려요.", null));
             if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 다시 해 주세요.");
             UpdateBackup backup = null;
             bool mutationStarted = false;
@@ -271,9 +271,9 @@ namespace Synk.SignalInstaller
             if (identity.AppId != spec.AppId || identity.Version != session.Version) throw new IOException("이전 앱의 설치 정보를 확인하지 못했어요.");
         }
 
-        UpdateBackup BackupPrevious(AutomaticUpdateSession session, Action<string,string,int?> progress)
+        UpdateBackup BackupPrevious(AutomaticUpdateSession session, Action<InstallProgress> progress)
         {
-            progress("되돌릴 파일을 준비해요", "지금 앱과 설치 정보를 그대로 보관해요.", 0);
+            progress(new InstallProgress(InstallStage.BackingUp, "되돌릴 파일을 준비해요", "지금 앱과 설치 정보를 그대로 보관해요.", 0));
             bool existed=Directory.Exists(session.Directory);
             var files = existed?Inventory(session.Directory):new List<BackupFile>();
             long bytes = files.Sum(item => item.Bytes), reserve = spec.MinFreeBytes > 0 ? spec.MinFreeBytes : 3L*1024*1024*1024;
@@ -289,7 +289,7 @@ namespace Synk.SignalInstaller
             {
                 string target=Inside(Path.Combine(backup.Directory,"application"),file.RelativePath); Directory.CreateDirectory(Path.GetDirectoryName(target)); File.Copy(Inside(session.Directory,file.RelativePath),target,false);
                 if (HashFile(target)!=file.SHA256) throw new IOException("되돌릴 파일을 확인하지 못했어요.");
-                progress("되돌릴 파일을 준비해요","지금 앱을 그대로 보관해요.",++done*100/files.Count);
+                progress(new InstallProgress(InstallStage.BackingUp, "되돌릴 파일을 준비해요","지금 앱을 그대로 보관해요.",++done*100/files.Count));
             }
             foreach (string shortcut in KnownShortcutPaths())
             {
@@ -301,13 +301,13 @@ namespace Synk.SignalInstaller
             backup.State="prepared";WriteJson(Path.Combine(backup.Directory,"transaction.json"),backup);return backup;
         }
 
-        void RestorePrevious(UpdateBackup backup, Action<string,string,int?> progress)
+        void RestorePrevious(UpdateBackup backup, Action<InstallProgress> progress)
         {
             if (backup == null || activeTransaction!=backup.Directory) throw new IOException("되돌릴 파일 위치가 맞지 않아요.");
             var running=Process.GetProcessesByName(Path.GetFileNameWithoutExtension(spec.ExecutableName));try { if (running.Length!=0) throw new IOException("앱이 켜져 있어 되돌릴 파일을 남겨 뒀어요. 앱을 닫아 주세요."); } finally { foreach (var process in running) process.Dispose(); }
             RejectReparsePoints(backup.OriginalDirectory);RejectReparsePoints(backup.Directory);
             foreach (var file in backup.Files) if (HashFile(Inside(Path.Combine(backup.Directory,"application"),file.RelativePath))!=file.SHA256) throw new IOException("되돌릴 원본을 확인하지 못했어요.");
-            progress("이전 버전으로 되돌려요","앱 파일과 설치 정보를 되돌려요.",null);
+            progress(new InstallProgress(InstallStage.Restoring, "이전 버전으로 되돌려요","앱 파일과 설치 정보를 되돌려요.",null));
             var old = new HashSet<string>(backup.Files.Select(item=>item.RelativePath),StringComparer.OrdinalIgnoreCase);
             var permittedNew = new HashSet<string>(spec.Files.Select(item=>item.Path),StringComparer.OrdinalIgnoreCase); permittedNew.Add("Uninstall "+Path.GetFileNameWithoutExtension(spec.ExecutableName)+".exe");
             if (Directory.Exists(backup.OriginalDirectory)) foreach (var item in Inventory(backup.OriginalDirectory)) if (!old.Contains(item.RelativePath)) { if (!permittedNew.Contains(item.RelativePath)) throw new IOException("설치 폴더에 모르는 파일이 있어 되돌릴 원본을 남겨 뒀어요."); File.Delete(Inside(backup.OriginalDirectory,item.RelativePath)); }

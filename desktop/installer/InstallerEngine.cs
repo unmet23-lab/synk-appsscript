@@ -12,6 +12,18 @@ using Microsoft.Win32;
 
 namespace Synk.SignalInstaller
 {
+    // Semantic phase is independent of translated display copy.
+    public enum InstallStage { Preparing, Installing, Verifying, WaitingForApp, BackingUp, Restoring, Stopping, AutomaticPreparation }
+    public sealed class InstallProgress
+    {
+        public readonly InstallStage Stage;
+        public readonly string Title;
+        public readonly string Detail;
+        public readonly int? Percentage;
+        public InstallProgress(InstallStage stage, string title, string detail, int? percentage)
+        { Stage=stage; Title=title; Detail=detail; Percentage=percentage; }
+    }
+
     [DataContract]
     public sealed class InstallFile
     {
@@ -138,15 +150,15 @@ namespace Synk.SignalInstaller
                 return BitConverter.ToString(sha.ComputeHash(input)).Replace("-", "").ToLowerInvariant();
         }
 
-        string InstallPayload(Action<string,string,int?> progress) { return InstallPayload(progress,BackendProcess.DeadlineMilliseconds); }
-        internal string InstallPayload(Action<string,string,int?> progress,int deadline)
+        string InstallPayload(Action<InstallProgress> progress) { return InstallPayload(progress,BackendProcess.DeadlineMilliseconds); }
+        internal string InstallPayload(Action<InstallProgress> progress,int deadline)
         {
             Preflight();
             string cache = CreatePrivateCache();
             try
             {
                 string backend = System.IO.Path.Combine(cache, "setup.exe");
-                progress("설치를 준비해요", "설치 파일을 확인하고 있어요.", 0);
+                progress(new InstallProgress(InstallStage.Preparing, "설치를 준비해요", "설치 파일을 확인하고 있어요.", 0));
                 using (Stream source = backendFactory())
                 using (FileStream target = new FileStream(backend, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 {
@@ -159,7 +171,7 @@ namespace Synk.SignalInstaller
                         target.Write(buffer, 0, count);
                         written += count;
                         int percent = (int)(written * 100 / Math.Max(1, spec.BackendBytes));
-                        if (percent != last) { last = percent; progress("설치를 준비해요", "설치 파일을 준비하고 있어요.", Math.Min(100, percent)); }
+                        if (percent != last) { last = percent; progress(new InstallProgress(InstallStage.Preparing, "설치를 준비해요", "설치 파일을 준비하고 있어요.", Math.Min(100, percent))); }
                     }
                 }
                 // Keep a no-write/no-delete handle until the verified child has exited.
@@ -168,8 +180,8 @@ namespace Synk.SignalInstaller
                     if (held.Length != spec.BackendBytes || !String.Equals(HashFile(backend), spec.BackendSHA256, StringComparison.OrdinalIgnoreCase))
                         throw new IOException("설치 파일이 온전하지 않아요. synk.im에서 다시 받아 주세요.");
                     Preflight();
-                    progress(Short + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null);
-                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress("설치를 멈춰요","설치 제한 시간을 넘겼어요. 설치를 멈춘 뒤 이전 상태를 확인해요.",null); });
+                    progress(new InstallProgress(InstallStage.Installing, Short + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null));
+                    int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress(new InstallProgress(InstallStage.Stopping, "설치를 멈춰요","설치 제한 시간을 넘겼어요. 설치를 멈춘 뒤 이전 상태를 확인해요.",null)); });
                     if (exitCode == 20) throw new InvalidOperationException(Short + "가 켜져 있거나, 켜져 있는지 확인하지 못했어요. " + Short + "를 닫고 다시 해 주세요.");
                     if (exitCode != 0) throw new IOException("설치를 마치지 못했어요. 다시 해 주세요. (코드 " + exitCode + ")");
                 }
@@ -182,8 +194,8 @@ namespace Synk.SignalInstaller
             }
         }
 
-        public string VerifyInstalled() { return VerifyInstalled(delegate(string a, string b, int? c) { }); }
-        string VerifyInstalled(Action<string,string,int?> progress)
+        public string VerifyInstalled() { return VerifyInstalled(delegate(InstallProgress progress) { }); }
+        string VerifyInstalled(Action<InstallProgress> progress)
         {
             string directory = ResolveDirectory();
             RejectReparsePoints(directory);
@@ -199,7 +211,7 @@ namespace Synk.SignalInstaller
                 if (!info.Exists || (info.Attributes & FileAttributes.ReparsePoint) != 0 || info.Length != item.Bytes ||
                     !String.Equals(HashFile(file), item.SHA256, StringComparison.OrdinalIgnoreCase))
                     throw new IOException("설치된 파일을 확인하지 못했어요: " + item.Path + ". 다시 설치해 주세요.");
-                progress("설치를 확인해요", Short + "를 열기 전에 설치된 파일을 확인해요.", ++done * 100 / spec.Files.Count);
+                progress(new InstallProgress(InstallStage.Verifying, "설치를 확인해요", Short + "를 열기 전에 설치된 파일을 확인해요.", ++done * 100 / spec.Files.Count));
             }
             string uninstall = ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "UninstallString");
             string uninstallFile = null;

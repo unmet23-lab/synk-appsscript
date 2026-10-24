@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 function fixture({pathname='/',instant='2026-10-09T14:59:59.500Z'}={}){
   const nodes=new Map(),requests=[],toasts=[],timers=new Map(),documentEvents=new Map(),windowEvents=new Map();let now=Date.parse(instant),timerId=0;
@@ -13,7 +13,7 @@ function fixture({pathname='/',instant='2026-10-09T14:59:59.500Z'}={}){
   const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener:(name,handler)=>documentEvents.set(name,handler)};
   const window={parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener:(name,handler)=>windowEvents.set(name,handler)};
   const context=vm.createContext({document,window,location:{pathname,origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:(callback,delay)=>{const id=++timerId;timers.set(id,{id,callback,delay});return id;},clearTimeout:id=>timers.delete(id),Date:ClockDate,URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=> 'refresh-request'},FormData:class extends Map{constructor(form){super(Object.entries(form.values));}}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run("Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},members:[{id:'u1',name:'담당'},{id:'u2',name:'검토'}],channels:[{id:'c1',name:'프로젝트',kind:'channel',memberIds:['u1','u2'],canPost:true}],channelId:'c1',chatCategory:'all',drawer:'personal',personalTab:'workday'});");
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));context.report=(message,error)=>toasts.push({message,error});
   run("api=request;toast=report;formError=message=>toast(message,true);attachDeadlineSettings=async()=>{};bindMessagePicker=()=>{};syncDrawerAccess=()=>{};openModal=(title,html)=>{modalVersion++;modal.open=true;state.testModal=html;};");

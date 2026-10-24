@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 const signedIn=()=>({user:{id:'user-a',name:'합성 사용자'},workspace:{name:'시험 공간'},channels:[],members:[]});
 function fixture({embedded=false,ignoreAbort=false}={}){
@@ -16,7 +16,7 @@ function fixture({embedded=false,ignoreAbort=false}={}){
     setTimeout(callback,delay){timers.set(++next,{at:now+delay,delay,callback});return next;},clearTimeout:id=>timers.delete(id),
     fetch(path,options){return new Promise((resolve,reject)=>{const request={path,options,resolve,reject};requests.push(request);if(!ignoreAbort)options.signal?.addEventListener('abort',()=>reject(options.signal.reason),{once:true});});},
   });
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run("renderShell=()=>{app.innerHTML='workspace ready';};voiceController=()=>null;clearChannelSelection=()=>{};connectEvents=()=>{};refreshChannels=async()=>{};refreshMessages=async()=>{};refreshVisibleWorkday=async()=>{};cancelWorkdayRefresh=()=>{};");
   if(embedded)run('moduleVisible=true');
   const event=async(target,type,value={})=>{for(const handler of listeners.get(target+':'+type)||[])await handler(value);await settle();};

@@ -57,7 +57,7 @@ namespace Synk.SignalInstaller
                             window.Loaded += async delegate
                             {
                                 if (started) return; started = true;
-                                window.ShowProgress("자동 업데이트를 준비해요", "설치된 앱을 확인해요.", null);
+                                window.ShowProgress(new InstallProgress(InstallStage.AutomaticPreparation, "자동 업데이트를 준비해요", "설치된 앱을 확인해요.", null));
                                 try
                                 {
                                     AutomaticUpdateResult result = await Task.Run(delegate
@@ -65,7 +65,7 @@ namespace Synk.SignalInstaller
                                         using (AutomaticUpdateSession request = engine.PrepareAutomaticUpdate(automatic.ParentId, automatic.Token, InstallerEngine.HashFile(assembly.Location)))
                                         {
                                             Console.WriteLine("SYNK_UPDATE_READY " + automatic.Token); Console.Out.Flush();
-                                            return engine.InstallAutomaticUpdate(request, delegate(string title, string detail, int? percent) { window.Dispatcher.Invoke(delegate { window.ShowProgress(title, detail, percent); }); });
+                                            return engine.InstallAutomaticUpdate(request, delegate(InstallProgress progress) { window.Dispatcher.Invoke(delegate { window.ShowProgress(progress); }); });
                                         }
                                     });
                                     if (result.Updated) { window.ShowComplete(); window.Close(); }
@@ -91,13 +91,13 @@ namespace Synk.SignalInstaller
                         }
                         window.InstallRequested += async delegate
                         {
-                            window.ShowProgress("설치를 준비해요", "설치할 수 있는지 확인해요.", null);
+                            window.ShowProgress(new InstallProgress(InstallStage.Preparing, "설치를 준비해요", "설치할 수 있는지 확인해요.", null));
                             try
                             {
                                 await Task.Run(delegate
                                 {
-                                    engine.Install(delegate(string title, string detail, int? percent)
-                                    { window.Dispatcher.Invoke(delegate { window.ShowProgress(title, detail, percent); }); });
+                                    engine.Install(delegate(InstallProgress progress)
+                                    { window.Dispatcher.Invoke(delegate { window.ShowProgress(progress); }); });
                                 });
                                 window.ShowComplete();
                             }

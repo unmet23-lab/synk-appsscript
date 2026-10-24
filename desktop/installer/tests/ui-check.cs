@@ -52,12 +52,12 @@ internal static class SignalUiCheck
             window.SetReady(); render("ready");
             window.SetInstalled(true); render("reinstall");
             window.SetInstalled(false);
-            window.ShowProgress("설치를 준비해요", "설치할 수 있는지 확인해요.", null); render("prepare");
+            window.ShowProgress(new InstallProgress(InstallStage.Preparing, "설치를 준비해요", "설치할 수 있는지 확인해요.", null)); render("prepare");
             CheckButtons(surface, false);
-            window.ShowProgress("설치를 준비해요", "설치 파일을 준비하고 있어요.", 64); render("prepare-64");
-            window.ShowProgress(product.ShortName + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null);
+            window.ShowProgress(new InstallProgress(InstallStage.Preparing, "설치를 준비해요", "설치 파일을 준비하고 있어요.", 64)); render("prepare-64");
+            window.ShowProgress(new InstallProgress(InstallStage.Installing, product.ShortName + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null));
             started.SetValue(window, DateTime.UtcNow.AddSeconds(-42)); meter.Invoke(window, null); render("install-42s");
-            window.ShowProgress("설치를 확인해요", product.ShortName + "를 열기 전에 설치된 파일을 확인해요.", 80); render("verify-80");
+            window.ShowProgress(new InstallProgress(InstallStage.Verifying, "설치를 확인해요", product.ShortName + "를 열기 전에 설치된 파일을 확인해요.", 80)); render("verify-80");
             CheckButtons(surface, false);
             window.ShowComplete(); render("complete");
             CheckButtons(surface, true);
@@ -68,7 +68,7 @@ internal static class SignalUiCheck
             if(FindButton(surface,"다시 시도")==null||FindButton(surface,"닫기")==null)throw new Exception("Timeout retry/close missing");
             window.ShowFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요. 계정과 앱 기록은 그대로예요.\n되돌릴 원본: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Cache\\example\nSYNK에 이 내용을 알려 주세요.",false); render("timeout-recovery-required");
             if(FindButton(surface,"다시 시도")!=null)throw new Exception("Unsafe recovery exposed retry");
-            window.ShowProgress("이전 버전으로 되돌려요","앱 파일과 설치 정보를 되돌려요.",null);render("restoring");
+            window.ShowProgress(new InstallProgress(InstallStage.Restoring,"이전 버전으로 되돌려요","앱 파일과 설치 정보를 되돌려요.",null));render("restoring");
             window.ShowAutomaticFailure("설치된 앱과 업데이트 버전이 맞지 않아요.",true);render("automatic-failure");
             if(FindButton(surface,"다시 시도")!=null)throw new Exception("Automatic failure exposed retry");
             window.ShowAutomaticFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요. 계정과 앱 기록은 그대로예요.\n되돌릴 원본: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Cache\\example\nSYNK에 이 내용을 알려 주세요.",false);render("automatic-recovery-required");
@@ -86,6 +86,18 @@ internal static class SignalUiCheck
             if (launched != 1) throw new Exception("LaunchRequested event not emitted");
             window.SetReady();
             Console.WriteLine("PASS: install/launch event dispatch and installation close-button guard");
+            // 점은 엔진 단계로만 고른다 — 제목 글이 달라도 같은 점, 되돌리기는 지금 점을 두고 엔진 글을 그대로.
+            FieldInfo stepField = typeof(SignalWindow).GetField("step", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo titleField = typeof(SignalWindow).GetField("statusTitle", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo detailField = typeof(SignalWindow).GetField("detail", BindingFlags.NonPublic | BindingFlags.Instance);
+            Func<string> shownTitle = delegate { return (string)titleField.FieldType.GetProperty("Text").GetValue(titleField.GetValue(window), null); };
+            window.ShowProgress(new InstallProgress(InstallStage.Verifying, "다른 글로 바꾼 확인 제목", "다른 설명", 10));
+            if ((int)stepField.GetValue(window) != 3 || shownTitle() != "설치된 파일을 확인하고 있어요") throw new Exception("Verifying stage did not select step 3 independent of title");
+            window.ShowProgress(new InstallProgress(InstallStage.Restoring, "이전 버전으로 되돌려요", "앱 파일과 설치 정보를 되돌려요.", null));
+            if ((int)stepField.GetValue(window) != 3 || shownTitle() != "이전 버전으로 되돌려요" || ((TextBlock)detailField.GetValue(window)).Text != "앱 파일과 설치 정보를 되돌려요.") throw new Exception("Restoring stage must keep the current step and show engine copy");
+            window.ShowProgress(new InstallProgress(InstallStage.Installing, "설치를 준비해요", "제목이 준비여도 단계는 설치", null));
+            if ((int)stepField.GetValue(window) != 2 || shownTitle() != "앱 파일을 넣고 있어요") throw new Exception("Installing stage must not be inferred from title text");
+            Console.WriteLine("PASS: progress steps follow engine stage, not display copy");
             foreach (string font in renderedFonts) Console.WriteLine("RENDERED FONT: " + font);
             app.Shutdown();
             return 0;

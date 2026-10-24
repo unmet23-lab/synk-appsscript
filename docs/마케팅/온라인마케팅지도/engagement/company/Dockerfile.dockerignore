@@ -31,6 +31,11 @@
 !tools/company-messenger/direct-task-service.mjs
 !tools/company-messenger/web-push-service.mjs
 !tools/company-messenger/platform-navigation.mjs
+!tools/company-messenger/messenger-schema.mjs
+!tools/company-messenger/task-transition.mjs
+!tools/company-messenger/unit-of-work.mjs
+!tools/company-messenger/routes/
+!tools/company-messenger/routes/*.mjs
 !tools/company-messenger/voice-service.mjs
 !tools/company-messenger/voice-invitations.mjs
 !tools/company-messenger/voice-encryption.mjs

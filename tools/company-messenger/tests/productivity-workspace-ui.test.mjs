@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 function fixture(){
   const nodes=new Map(),requests=[],errors=[];
@@ -11,7 +11,7 @@ function fixture(){
   for(const key of ['#app','#modal','#personal-body','#drawer','#catchup-read','#decisions-search','#task-form','#task-result-picker','.workflow-source-actions','select[name=stage]','#task-reload','#workflow-stage-help','button[type=submit]'])nodes.set(key,node());
   const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=> 'request-uuid'},FormData:class extends Map{constructor(form){super(Object.entries(form.values));}}});
-  const run=code=>vm.runInContext(code,context);run(source);context.originalNotificationCount=run('refreshNotificationCount');
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);context.originalNotificationCount=run('refreshNotificationCount');
   run("Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},members:[{id:'u1',name:'담당'},{id:'u2',name:'검토'}],channels:[{id:'c1',name:'프로젝트',kind:'channel',memberIds:['u1','u2'],canPost:true}],channelId:'c1',drawer:'personal'});");
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));context.report=value=>errors.push(value);
   run('api=request;toast=report;refreshMessages=async()=>{};refreshDetailViews=async()=>{};refreshNotificationCount=async()=>{};');

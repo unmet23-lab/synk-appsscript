@@ -1,3 +1,4 @@
+import { initializeCollaborationSchema } from '../messenger-schema.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -15,6 +16,7 @@ function fixture(t) {
   const requireChannel = (userId, room) => { const row = db.prepare('SELECT c.* FROM channels c JOIN memberships m ON m.channel_id=c.id WHERE c.id=? AND m.user_id=? AND c.deleted_at IS NULL').get(room, userId); check(row && members().some(user => user.id === userId), 404, '대화방 확인'); return row; };
   const requirePosting = (userId, room) => { const row = requireChannel(userId, room); check(members().find(user => user.id === userId)?.role !== 'viewer', 403, '작성 권한 확인'); return row; };
   const requireMessage = (id, userId) => { const row = db.prepare('SELECT * FROM messages WHERE id=?').get(id); check(row, 404, '메시지 확인'); requireChannel(userId, row.channel_id); return row; };
+  initializeCollaborationSchema(db);
   const service = createCollaborationService({ db, assert: check, textField: (value, label, max, min = 0) => { check(typeof value === 'string' && value.trim().length >= min && value.trim().length <= max, 400, label); return value.trim(); }, now: () => stamp,
     transaction: fn => { db.exec('BEGIN'); try { const result = fn(); db.exec('COMMIT'); return result; } catch (error) { db.exec('ROLLBACK'); throw error; } },
     members, requireChannel, requirePosting, requireMessage, messageShape: row => ({ id: String(row.id), channelId: row.channel_id, body: row.body }), publish() {}, origin: () => 'http://fixture.test', resolveLink: value => value.workspaceLink, backgroundJobsEnabled: false });

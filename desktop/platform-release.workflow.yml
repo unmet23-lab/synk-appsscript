@@ -147,14 +147,14 @@ jobs:
           $output = Join-Path (Get-Location).Path 'qa-results/win32-x64-installer-ui'
           New-Item -ItemType Directory -Path $output -ErrorAction Stop | Out-Null
           $checker = Join-Path $output 'signal-ui-check.exe'
-          $compile = @('/nologo', '/target:exe', '/platform:x64', "/out:$checker", '/r:System.Core.dll', '/r:System.Xaml.dll')
+          $compile = @('/nologo', '/target:exe', '/platform:x64', "/out:$checker", '/r:System.Core.dll', '/r:System.Runtime.Serialization.dll', '/r:System.Xaml.dll')
           foreach ($assembly in @('PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll')) {
             $compile += '/r:' + (Join-Path $framework "WPF/$assembly")
           }
           foreach ($product in @('platform', 'world', 'messenger')) {
             $compile += '/resource:' + (Join-Path $source "art/poster-$product.png") + ",art.poster-$product.png"
           }
-          $compile += @((Join-Path $source 'SignalWindow.cs'), (Join-Path $source 'tests/ui-check.cs'))
+          $compile += @('InstallerEngine.cs', 'AutoUpdateEngine.cs', 'BackendProcess.cs', 'InstallTransaction.cs', 'SignalWindow.cs', 'tests/ui-check.cs' | ForEach-Object { Join-Path $source $_ })
           & (Join-Path $framework 'csc.exe') @compile
           if ($LASTEXITCODE -ne 0) { throw 'Installer UI checker compilation failed' }
           foreach ($product in @('platform', 'world', 'messenger')) {

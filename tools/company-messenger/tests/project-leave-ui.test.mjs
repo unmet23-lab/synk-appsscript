@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 
 function fixture(){
  const nodes=new Map(),storage=new Map(),requests=[],selected=[],notices=[];
  const get=selector=>{if(!nodes.has(selector)){const classes=new Set();nodes.set(selector,{innerHTML:'',textContent:'',value:'',disabled:false,open:false,isConnected:true,dataset:{},style:{},scrollHeight:100,classList:{add:value=>classes.add(value),remove:value=>classes.delete(value),contains:value=>classes.has(value),toggle(value,active){if(active)classes.add(value);else classes.delete(value);}},querySelector:get,querySelectorAll:()=>[],insertAdjacentHTML(position,html){this.innerHTML+=html;},addEventListener(name,callback){this['on'+name]=callback;},setAttribute(){},removeAttribute(){},focus(){},contains(){return false;},closest(){return null;},showModal(){this.open=true;},close(){this.open=false;}});}return nodes.get(selector);};
  const context=vm.createContext({document:{querySelector:get,querySelectorAll:()=>[],addEventListener(){},activeElement:null,hidden:false},window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/messenger/',origin:'http://localhost'},localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},URL,URLSearchParams,CSS:{escape:String},setTimeout(){},clearTimeout(){}});
- const run=code=>vm.runInContext(code,context);run(source);run("Object.assign(state,{user:{id:'u1',name:'유호',role:'owner'},integrated:{canWrite:true,canManage:true},members:[{id:'u1',name:'유호'},{id:'u2',name:'민지'}],channels:[{id:'project',kind:'channel',category:'project',scope:'private',name:'가을 <캠페인>',description:'자료',memberIds:['u1','u2'],canManage:true,canDelete:true,canLeave:true,canPost:true},{id:'public',kind:'channel',category:'generic',scope:'public',name:'정보방',memberIds:['u1','u2'],canPost:true},{id:'self',kind:'self',scope:'private',memberIds:['u1'],canPost:true}],channelId:'project',chatCategory:'all',categoryChannels:{all:'project',personal:'self'}});");
+ installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);run("Object.assign(state,{user:{id:'u1',name:'유호',role:'owner'},integrated:{canWrite:true,canManage:true},members:[{id:'u1',name:'유호'},{id:'u2',name:'민지'}],channels:[{id:'project',kind:'channel',category:'project',scope:'private',name:'가을 <캠페인>',description:'자료',memberIds:['u1','u2'],canManage:true,canDelete:true,canLeave:true,canPost:true},{id:'public',kind:'channel',category:'generic',scope:'public',name:'정보방',memberIds:['u1','u2'],canPost:true},{id:'self',kind:'self',scope:'private',memberIds:['u1'],canPost:true}],channelId:'project',chatCategory:'all',categoryChannels:{all:'project',personal:'self'}});");
  context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));context.selected=selected;context.notices=notices;
  run("const actualSyncChannelHeader=syncChannelHeader;api=request;toast=(message)=>notices.push(message);renderNavigation=()=>{};syncChannelHeader=()=>{};syncComposerAccess=()=>{};renderMessages=()=>{};renderReplyContext=()=>{};renderQueue=()=>{};renderEmptyChannel=()=>{};renderComposeExtras=()=>{};markRead=async()=>{};parentMessage=()=>{};refreshDetailViews=async()=>{};selectChannel=async channelId=>{saveDraft();state.channelId=channelId;state.navigationSeq++;selected.push(channelId);};");
  return{get,storage,requests,selected,notices,run,context,state:run('state'),modal:get('#modal')};
@@ -58,16 +58,19 @@ test('ordinary project crew retain personal notification settings but do not ent
  const f=fixture();f.context.opened=[];f.run("editChannelDialog=()=>opened.push('manager');channelNotificationsDialog=()=>opened.push('notifications');roomSettingsDialog();state.channels[0].canManage=false;state.integrated.canWrite=false;roomSettingsDialog()");assert.deepEqual(Array.from(f.context.opened),['manager','notifications']);
 });
 
+const shell=embedded=>`shellHtml({embedded:${embedded},workspaceName:'SYNK',user:state.user,chatCategory:'personal',platformEntry:'',uploadDestination:'새 파일은 이 PC에 저장',fileLimit:'100.0 MB'},{icon,esc,avatar,initials})`;
+
 test('a public project can re-invite departed crew only when the server grants invitation permission',()=>{
  const f=fixture();f.run("state.channels[0].scope='public';state.channels[0].canInvite=true");assert.equal(f.run('canInviteProject(state.channels[0])'),true);f.run('state.channels[0].canInvite=false');assert.equal(f.run('canInviteProject(state.channels[0])'),false);
 });
 
 test('the crew directory presents one range selector and retains direct crew clicks',()=>{
- const f=fixture();f.run('applyDirectoryLayout=()=>{};renderDirectory=()=>{};installDirectory()');const html=f.get('.shell').innerHTML;assert.ok(html.includes('id="directory-team"'));assert.ok(!html.includes('data-directory-filter'));assert.ok(html.includes('이름을 누르면 개인 대화'));
+ const f=fixture(),opened=[];const html=f.run(shell(true)),directory=html.slice(html.indexOf('id="employee-directory"'));assert.ok(directory.includes('id="directory-team"'));assert.ok(!html.includes('data-directory-filter'));assert.ok(directory.includes('크루를 누르면<br>개인 대화가 바로 열려요.'));
+ f.context.opened=opened;f.run('openDirectMessage=(personId,button)=>opened.push([personId,button.dataset.contact]);wireShell()');const person={dataset:{contact:'u2'}};f.get('#employee-directory').onclick({target:{closest:selector=>selector==='[data-contact]'?person:null}});assert.deepEqual(opened.map(item=>[...item]),[['u2','u2']]);
 });
 
 test('the concise header retains notifications, search and room settings without a duplicate task button',()=>{
- const f=fixture();f.run('installProductivityUI()');assert.ok(f.get('.header-actions').innerHTML.includes('id="personal-bell"'));assert.ok(!f.get('.header-actions').innerHTML.includes('id="personal-tools"'));assert.ok(f.get('#channel-search').innerHTML.includes('id="channel-notifications"'));
+ const f=fixture();for(const embedded of [false,true]){const html=f.run(shell(embedded)),header=html.slice(html.indexOf('class="header-actions"'),html.indexOf('</header>'));assert.ok(html.includes('id="personal-bell"'));assert.ok(!html.includes('id="personal-tools"'));assert.ok(html.includes('id="global-search"'));assert.ok(header.includes('id="channel-notifications"'));assert.equal(header.includes('id="personal-bell"'),embedded,'inside the workspace my-work joins the header actions');}
 });
 
 test('the restoration list distinguishes a last-leaver archive from a deleted room',()=>{

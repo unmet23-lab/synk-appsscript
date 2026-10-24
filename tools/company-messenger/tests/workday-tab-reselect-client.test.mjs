@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 // 「내 업무」에서 이미 열린 「오늘」 탭을 다시 눌러도 오늘 할 일 줄의 단추가 계속 할 일을 연다.
 // 탭을 누르면 목록 상태를 비우는데, 오늘 할 일은 자료가 같으면 다시 그리지 않아(스냅숏 비교) 빈 목록으로 남던 것(10-23 화면 검수).
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 function fixture(){
   const nodes=new Map(),requests=[];
   const node=()=>({innerHTML:'',value:'',textContent:'',hidden:false,disabled:false,open:false,isConnected:true,dataset:{},classList:{add(){},remove(){},toggle(){},contains:()=>false},contains:()=>false,setAttribute(){},removeAttribute(){},getAttribute:()=>null,addEventListener(){},querySelector:()=>null,querySelectorAll:()=>[],focus(){},scrollIntoView(){},close(){this.open=false;}});
@@ -15,7 +15,7 @@ function fixture(){
   const document={hidden:false,activeElement:null,body:node(),querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(){}};
   const window={parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
   const context=vm.createContext({document,window,location:{pathname:'/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:()=>0,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=>'request'}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run("Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},members:[{id:'u1',name:'담당'}],channels:[{id:'c1',name:'프로젝트',kind:'channel',memberIds:['u1'],canPost:true}],channelId:'c1',chatCategory:'all'});");
   context.request=path=>new Promise((resolve,reject)=>requests.push({path,resolve,reject}));
   run("api=request;toast=()=>{};attachDeadlineSettings=async()=>{};syncDrawerAccess=()=>{};openTaskDetail=message=>{state.openedTasks=(state.openedTasks||[]).concat(message?.task?.id||null);};");

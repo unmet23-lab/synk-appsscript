@@ -1,30 +1,15 @@
+import { createUnitOfWork } from './unit-of-work.mjs';
 import { randomUUID } from 'node:crypto';
 import { createProductivityService } from './productivity-service.mjs';
 
 // All personal indexes point to live messages. They never keep copied message bodies.
-export function createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape, publish, origin, fileTypeSql, integrated, resolveLink, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, externalNotifications = null }) {
+export function createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape: baseMessageShape, publish, origin, fileTypeSql, integrated, resolveLink, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, externalNotifications = null }) {
   assert(typeof backgroundJobsEnabled === 'boolean', 400, '백그라운드 작업 설정은 boolean이어야 합니다.');
   assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
+  const unitOfWork = createUnitOfWork(transaction);
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
-  const columns = new Set(all('PRAGMA table_info(messages)').map(row => row.name));
-  if (!columns.has('workspace_link')) db.exec('ALTER TABLE messages ADD COLUMN workspace_link TEXT');
-  if (!columns.has('ack_required')) {
-    db.exec('ALTER TABLE messages ADD COLUMN ack_required INTEGER NOT NULL DEFAULT 0 CHECK(ack_required IN (0,1))');
-    db.exec("UPDATE messages SET ack_required=1 WHERE channel_id IN (SELECT id FROM channels WHERE system_key='announcements')");
-  }
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS message_mentions (message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,PRIMARY KEY(message_id,user_id));
-    CREATE TABLE IF NOT EXISTS channel_notifications (channel_id TEXT NOT NULL REFERENCES channels(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,mode TEXT NOT NULL CHECK(mode IN ('all','mentions','mute')),PRIMARY KEY(channel_id,user_id));
-    CREATE TABLE IF NOT EXISTS notifications (id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,kind TEXT NOT NULL,dedupe_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,read_at TEXT);
-    CREATE INDEX IF NOT EXISTS notifications_user ON notifications(user_id,created_at DESC);
-    CREATE TABLE IF NOT EXISTS announcement_acks (message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,acknowledged_at TEXT NOT NULL,PRIMARY KEY(message_id,user_id));
-    CREATE TABLE IF NOT EXISTS message_tasks (id TEXT PRIMARY KEY,message_id INTEGER NOT NULL UNIQUE REFERENCES messages(id) ON DELETE CASCADE,assignee_id TEXT NOT NULL REFERENCES users(id),creator_id TEXT NOT NULL REFERENCES users(id),title TEXT NOT NULL,due_date TEXT,status TEXT NOT NULL CHECK(status IN ('todo','doing','done')),created_at TEXT NOT NULL,updated_at TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 1);
-    CREATE TABLE IF NOT EXISTS saved_messages (message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,created_at TEXT NOT NULL,PRIMARY KEY(message_id,user_id));
-    CREATE TABLE IF NOT EXISTS message_reminders (id TEXT PRIMARY KEY,message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,remind_at TEXT NOT NULL,created_at TEXT NOT NULL,delivered_at TEXT,UNIQUE(message_id,user_id));
-    CREATE INDEX IF NOT EXISTS reminders_due ON message_reminders(delivered_at,remind_at);
-  `);
   function activeUser(userId) { return members().find(user => user.id === userId) || null; }
   function accessible(userId, channelId) {
     if (!activeUser(userId)) return false;
@@ -90,7 +75,7 @@ export function createCollaborationService({ db, assert, textField, now, transac
     if (!accessible(userId, message.channel_id)) return false;
     return Boolean(run('INSERT OR IGNORE INTO notifications(id,user_id,message_id,kind,dedupe_key,created_at) VALUES(?,?,?,?,?,?)', randomUUID(), userId, message.id, kind, key, now()).changes);
   }
-  function notifyMessage(message, { edit = false, atomic = false, deferPublish = null } = {}) {
+  function notifyMessage(message, { edit = false } = {}) {
     const channel = one('SELECT * FROM channels WHERE id=?', message.channel_id), mentioned = new Set(all('SELECT user_id FROM message_mentions WHERE message_id=?', message.id).map(row => row.user_id));
     const parent = message.reply_to_id ? one('SELECT user_id FROM messages WHERE id=?', message.reply_to_id) : null;
     const changed = [];
@@ -101,18 +86,21 @@ export function createCollaborationService({ db, assert, textField, now, transac
         if (kind && notify(member.id, message, kind, `message:${message.id}:${member.id}:${kind}`)) changed.push(member.id);
       }
     };
-    if (atomic) { assert(db.isTransaction, 500, '메시지 알림 트랜잭션을 확인해 주세요.'); writeNotifications(); }
-    else transaction(writeNotifications);
-    const publishNotifications = () => { for (const userId of changed) publish('notification', channel.id, userId); };
-    if (deferPublish) deferPublish(publishNotifications); else publishNotifications();
+    unitOfWork.run(({ afterCommit }) => {
+      writeNotifications();
+      afterCommit(() => { for (const userId of changed) publish('notification', channel.id, userId); });
+    });
   }
   function reminderShape(row) { return row ? { id: row.id, messageId: String(row.message_id), channelId: one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id, remindAt: row.remind_at, createdAt: row.created_at, deliveredAt: row.delivered_at } : null; }
-  const productivity = createProductivityService({ db, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled, workNotificationsEnabled });
+  const productivity = createProductivityService({ db, unitOfWork, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled, workNotificationsEnabled });
   const { taskShape } = productivity;
-  function messageExtras(message, userId) {
+  function messageShape(message, userId, options = {}) {
+    return { ...baseMessageShape(message, userId), ...messageExtras(message, userId, options) };
+  }
+  function messageExtras(message, userId, options = {}) {
     const mentions = all('SELECT user_id FROM message_mentions WHERE message_id=?', message.id).map(row => activeUser(row.user_id)).filter(Boolean);
     const acknowledged = all('SELECT user_id FROM announcement_acks WHERE message_id=?', message.id).filter(row => accessible(row.user_id, message.channel_id));
-    return { mentions, workspaceLink: message.workspace_link ? JSON.parse(message.workspace_link) : null, task: taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', message.id), userId), saved: Boolean(one('SELECT 1 FROM saved_messages WHERE message_id=? AND user_id=?', message.id, userId)), reminder: reminderShape(one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, userId)), ackRequired: Boolean(message.ack_required), acknowledged: acknowledged.some(row => row.user_id === userId), ackCount: acknowledged.length };
+    return { mentions, workspaceLink: message.workspace_link ? JSON.parse(message.workspace_link) : null, task: Object.hasOwn(options, 'task') ? options.task : taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', message.id), userId), saved: Boolean(one('SELECT 1 FROM saved_messages WHERE message_id=? AND user_id=?', message.id, userId)), reminder: reminderShape(one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, userId)), ackRequired: Boolean(message.ack_required), acknowledged: acknowledged.some(row => row.user_id === userId), ackCount: acknowledged.length };
   }
   function setExternalNotifications(adapter) {
     assert(adapter === null || (adapter && ['list', 'read', 'readAll'].every(key => typeof adapter[key] === 'function')), 400, '외부 업무 알림 연결을 확인해 주세요.');
@@ -267,5 +255,5 @@ export function createCollaborationService({ db, assert, textField, now, transac
     }
     return false;
   }
-  return { prepareMessage, applyMessage, notifyMessage, messageExtras, notificationMode: mode, unreadCount, deliverReminders, personalMutation, handle, productivity, setExternalNotifications, setPersonalNotifications, notificationsForPush, notifyExternal: userId => publish('notification', null, userId) };
+  return { unitOfWork, prepareMessage, applyMessage, notifyMessage, messageShape, messageExtras, notificationMode: mode, unreadCount, deliverReminders, personalMutation, handle, productivity, setExternalNotifications, setPersonalNotifications, notificationsForPush, notifyExternal: userId => publish('notification', null, userId) };
 }

@@ -1,3 +1,4 @@
+import { initializeCollaborationSchema } from '../messenger-schema.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -579,6 +580,7 @@ test('push projection is read-only and removes internal fields, muted rooms, dep
     const members = () => db.prepare('SELECT * FROM users WHERE active=1').all();
     const requireChannel = (userId, channelId) => { const row = db.prepare('SELECT c.* FROM channels c JOIN memberships m ON m.channel_id=c.id JOIN users u ON u.id=m.user_id WHERE c.id=? AND m.user_id=? AND u.active=1 AND c.deleted_at IS NULL').get(channelId, userId); check(row, 404); return row; };
     const requireMessage = (id, userId) => { const row = db.prepare('SELECT * FROM messages WHERE id=?').get(id); check(row, 404); requireChannel(userId, row.channel_id); return row; };
+    initializeCollaborationSchema(db);
     const service = createCollaborationService({ db, assert: check, textField: value => value, now: () => '2026-10-08T01:00:00.000Z', members, requireChannel, requireMessage, requirePosting: requireChannel, publish() {}, backgroundJobsEnabled: false, transaction: fn => { db.exec('BEGIN'); try { const out = fn(); db.exec('COMMIT'); return out; } catch (error) { db.exec('ROLLBACK'); throw error; } }, messageShape: row => ({ id: String(row.id), channelId: row.channel_id, body: row.body }) });
     service.notifyMessage(db.prepare('SELECT * FROM messages').get());
     const before = db.prepare('SELECT total_changes() AS n').get().n;

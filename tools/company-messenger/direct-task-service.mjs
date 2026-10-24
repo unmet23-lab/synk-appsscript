@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 
 // Reuse the original message/task/receipt tables. Only publication leaves the
 // transaction; task and ordinary chat notifications are durable together.
-export function createDirectTaskService({ db, assert, textField, validateRequestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape, publish = () => {}, onPublishError = () => {} }) {
+export function createDirectTaskService({ db, assert, textField, validateRequestId, now, requirePosting, channelShape, channelMembers, collaboration, messageShape, publish = () => {}, onPublishError = () => {} }) {
+  const { unitOfWork } = collaboration;
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const fields = new Set(['requestId', 'channelId', 'title', 'body', 'assigneeId', 'reviewerId', 'dueDate']);
   function options(userId) {
@@ -24,8 +25,7 @@ export function createDirectTaskService({ db, assert, textField, validateRequest
     const title = textField(input.title, '업무 제목', 200, 1), body = textField(input.body, '요청 내용', 8000, 1);
     const payload = { kind: 'direct-task-v1', channelId, title, body, assigneeId: input.assigneeId, reviewerId: input.reviewerId ?? null, dueDate: input.dueDate ?? null };
     const fingerprint = createHash('sha256').update(JSON.stringify(payload)).digest('hex'), receiptId = 'direct-task:' + requestId;
-    const effects = [], deferPublish = effect => effects.push(effect);
-    const result = transaction(() => {
+    return unitOfWork.run(() => {
       // Namespace and actor-wide lookup also reject a reused UUID with a
       // different room, while ordinary message UUIDs remain independent.
       const prior = one('SELECT * FROM message_send_requests WHERE user_id=? AND request_id=?', userId, receiptId);
@@ -39,24 +39,19 @@ export function createDirectTaskService({ db, assert, textField, validateRequest
       const extras = collaboration.prepareMessage({}, channel, userId);
       const messageId = Number(db.prepare('INSERT INTO messages(channel_id,user_id,body,created_at,reply_to_id) VALUES(?,?,?,?,NULL)').run(channelId, userId, body, now()).lastInsertRowid);
       collaboration.applyMessage(messageId, extras);
-      const task = collaboration.productivity.upsertTask({ messageId: String(messageId), userId, body: { title, assigneeId: payload.assigneeId, reviewerId: payload.reviewerId, dueDate: payload.dueDate, stage: 'requested' }, method: 'POST', atomic: true, deferPublish }).task;
+      const task = collaboration.productivity.upsertTask({ messageId: String(messageId), userId, body: { title, assigneeId: payload.assigneeId, reviewerId: payload.reviewerId, dueDate: payload.dueDate, stage: 'requested' }, method: 'POST' }).task;
       const message = one('SELECT * FROM messages WHERE id=?', messageId);
-      collaboration.notifyMessage(message, { atomic: true, deferPublish });
+      collaboration.notifyMessage(message);
       db.prepare('INSERT INTO message_send_requests(user_id,channel_id,request_id,payload_hash,message_id,created_at) VALUES(?,?,?,?,?,?)').run(userId, channelId, receiptId, fingerprint, messageId, now());
       return { message: messageShape(message, userId), task, created: true };
-    });
-    for (const effect of effects) {
-      try { effect(); } catch (error) { onPublishError(error); }
-    }
-    return result;
+    }, { onPublishError });
   }
   // Takes back a task this person registered when its source record is erased (a deleted website inquiry).
   // Only the receipt's own message goes, as when its author deletes it; one already gone is not an error.
   function remove(userId, input) {
     assert(input && typeof input === 'object' && !Array.isArray(input) && Object.keys(input).every(key => ['requestId', 'messageId'].includes(key)), 400, '지울 업무 정보가 맞지 않아요. 새로고침한 뒤 다시 해 주세요.');
     const requestId = validateRequestId(input.requestId, '업무 등록');
-    const effects = [];
-    const result = transaction(() => {
+    return unitOfWork.run(({ afterCommit }) => {
       const receipt = one('SELECT * FROM message_send_requests WHERE user_id=? AND request_id=?', userId, 'direct-task:' + requestId);
       const message = receipt?.state === 'sent' && receipt.message_id ? one('SELECT * FROM messages WHERE id=?', receipt.message_id) : null;
       if (!message) return { removed: false };
@@ -64,13 +59,9 @@ export function createDirectTaskService({ db, assert, textField, validateRequest
       assert(!one('SELECT 1 FROM files WHERE message_id=? LIMIT 1', message.id), 409, '파일이 붙은 업무라 저절로 지우지 않았어요. 메신저에서 그 업무를 직접 지워 주세요.');
       collaboration.productivity.assertMessageMutable(message.id);
       db.prepare('DELETE FROM messages WHERE id=?').run(message.id);
-      effects.push(() => publish('message', message.channel_id));
+      afterCommit(() => publish('message', message.channel_id));
       return { removed: true, messageId: String(message.id) };
-    });
-    for (const effect of effects) {
-      try { effect(); } catch (error) { onPublishError(error); }
-    }
-    return result;
+    }, { onPublishError });
   }
   return { options, create, remove };
 }

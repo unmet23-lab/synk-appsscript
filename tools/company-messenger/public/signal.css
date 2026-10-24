@@ -339,7 +339,6 @@
 :root body .wd-overlap[open]>summary>svg:last-child{transform:rotate(90deg)}
 :root body .wd-overlap-body{padding:0 6px 12px 34px}
 :root body .wd-overlap-body .wd-overlap{border-bottom:0}
-:root body .wd-overlap-body .deadline-overlap-project{margin:0 0 10px}
 :root body .wd-overlap-body h5,:root body .wd-overlap-more h5{margin:0 0 4px;font-size:13.5px;font-weight:620;color:var(--sg-ink)}
 :root body .wd-overlap-body ul,:root body .wd-overlap-more ul{display:grid;gap:4px;margin:0 0 8px;padding:0;list-style:none;font-size:13px;line-height:1.45}
 :root body .wd-overlap-body li{display:flex;align-items:baseline;gap:8px}

@@ -43,8 +43,8 @@ namespace Synk.SignalInstaller
             activeTransaction=null;
             return new InstallFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요. 계정과 앱 기록은 그대로예요.\n되돌릴 원본: "+(backup==null?"생성 전":backup.Directory)+"\nSYNK에 이 내용을 알려 주세요.\n"+error.Message,false,!(error is InstallFailure)||((InstallFailure)error).BackendStopped);
         }
-        public string Install(Action<string,string,int?> progress) { return InstallWithDeadline(progress,BackendProcess.DeadlineMilliseconds); }
-        internal string InstallWithDeadline(Action<string,string,int?> progress,int deadline)
+        public string Install(Action<InstallProgress> progress) { return InstallWithDeadline(progress,BackendProcess.DeadlineMilliseconds); }
+        internal string InstallWithDeadline(Action<InstallProgress> progress,int deadline)
         {
             string directory=Preflight();UpdateBackup backup=null;bool started=false;
             try

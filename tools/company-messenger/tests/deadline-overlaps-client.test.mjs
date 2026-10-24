@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {buildClientDeadlineOverlaps} from '../../../docs/마케팅/온라인마케팅지도/engagement/company/client-deadline-overlaps.mjs';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 const first='11111111-1111-4111-8111-111111111111',second='22222222-2222-4222-8222-222222222222';
 const now='2026-10-12T03:00:00Z';
@@ -15,7 +15,7 @@ function fixture({integrated=true}={}){
   const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(){}};
   const window={parent:{postMessage:(value,origin)=>messages.push({value,origin})},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){},getSelection:()=>null};
   const context=vm.createContext({document,window,location:{pathname:'/messenger/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:(callback,delay)=>{const id=++serial;timers.set(id,{id,callback,delay});return id;},clearTimeout:id=>timers.delete(id),URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=>first}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run(`Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},channels:[],members:[],drawer:'personal',personalTab:'workday',integrated:${integrated?"{companyUserId:'owner',canWrite:true}":'null'}});moduleVisible=true;`);
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));
   run('api=request;clientWorkflowApi=()=>request("/api/client-workflow");publicationWorkflowApi=()=>request("/api/publication-workflow");attachDeadlineSettings=async()=>{};');

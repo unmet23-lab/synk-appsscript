@@ -43,6 +43,8 @@ COPY ["docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESE
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs"]
 COPY ["tools/company-messenger/server.mjs","tools/company-messenger/drive-storage.mjs","tools/company-messenger/company-integration.mjs","tools/company-messenger/collaboration-service.mjs","tools/company-messenger/productivity-service.mjs","tools/company-messenger/direct-task-service.mjs","tools/company-messenger/web-push-service.mjs","tools/company-messenger/platform-navigation.mjs","/workspace/tools/company-messenger/"]
+COPY ["tools/company-messenger/messenger-schema.mjs","tools/company-messenger/task-transition.mjs","tools/company-messenger/unit-of-work.mjs","/workspace/tools/company-messenger/"]
+COPY ["tools/company-messenger/routes","/workspace/tools/company-messenger/routes"]
 COPY ["tools/company-messenger/public","/workspace/tools/company-messenger/public"]
 COPY ["tools/lib/sns-dm.js","/workspace/tools/lib/sns-dm.js"]
 COPY ["tools/lib/generated/talk-publication.cjs","/workspace/tools/lib/generated/talk-publication.cjs"]

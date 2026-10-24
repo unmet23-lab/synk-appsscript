@@ -20,6 +20,7 @@ using Synk.SignalInstaller;
 internal static class SignalInstallerTests
 {
     private static readonly List<object> Checks = new List<object>();
+    private static readonly List<InstallStage> ProgressStages = new List<InstallStage>();
     private static readonly JavaScriptSerializer Json = new JavaScriptSerializer();
     private static string Root;
     private static string FixtureJson;
@@ -132,7 +133,10 @@ internal static class SignalInstallerTests
             });
             Check("real NSIS install through production engine", delegate
             {
+                ProgressStages.Clear();
                 Assert(Same(InstallOnWorker(engine), Spec.InstallDirectory), "Installation returned another directory.");
+                int preparing=ProgressStages.IndexOf(InstallStage.Preparing),installing=ProgressStages.IndexOf(InstallStage.Installing),verifying=ProgressStages.IndexOf(InstallStage.Verifying);
+                Assert(preparing>=0&&installing>preparing&&verifying>installing,"Typed install phases are missing or out of order.");
                 Assert(Same(engine.VerifyInstalled(), Spec.InstallDirectory), "Installed verification returned another directory.");
                 VerifyRegistrationAndShortcuts();
             });
@@ -189,6 +193,7 @@ internal static class SignalInstallerTests
             {
                 Check("deadline stops descendants after parent exit then restores files registry shortcuts and preserves external data",delegate
                 {
+                    ProgressStages.Clear();
                     string backend=(string)Fixture["timeoutBackend"],pulse=Path.Combine(Root,"timeout-pulse.txt");
                     var limited=ReadSpec();limited.BackendSHA256=Hash(backend);limited.BackendBytes=new FileInfo(backend).Length;
                     limited.Files.Add(new InstallFile { Path="update-only.txt",Bytes=0,SHA256=new string('0',64) });
@@ -197,6 +202,7 @@ internal static class SignalInstallerTests
                     try { Task.Run(delegate { return timed.InstallWithDeadline(Progress,1500); }).GetAwaiter().GetResult(); }
                     catch(InstallFailure error) { failure=error; }
                     Assert(failure!=null&&failure.CanRetry&&failure.BackendStopped,"Timed-out partial install was not safely retryable.");
+                    AssertRollbackStages(false);
                     Assert(failure.Message.Contains("되돌렸어요"),"Failure did not disclose rollback status.");
                     Assert(elapsed.ElapsedMilliseconds<20000,"Timeout did not return within the bounded stop grace.");
                     Assert(File.Exists(pulse),"Fixture descendant did not run.");
@@ -217,7 +223,7 @@ internal static class SignalInstallerTests
                             Assert(exited.WaitForExit(5000),"Fixture parent did not exit.");
                             var session=new AutomaticUpdateSession { Parent=exited,Directory=Spec.InstallDirectory,Version=Spec.Version,ExecutableSHA256=Hash(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),AsarSHA256=Hash(Path.Combine(Spec.InstallDirectory,"resources","app.asar")),Nonce=new string('a',64),InstallerSHA256=new string('b',64) };
                             bool relaunched=false;var blocked=Engine(ReadSpec());
-                            var result=Task.Run(delegate { return blocked.InstallAutomaticUpdateCore(session,Progress,delegate(Action<string,string,int?> progress) { throw new InstallFailure("Synthetic stop confirmation failure",false,false); },delegate(string executable,string arguments){relaunched=true;}); }).GetAwaiter().GetResult();
+                            var result=Task.Run(delegate { return blocked.InstallAutomaticUpdateCore(session,Progress,delegate(Action<InstallProgress> progress) { throw new InstallFailure("Synthetic stop confirmation failure",false,false); },delegate(string executable,string arguments){relaunched=true;}); }).GetAwaiter().GetResult();
                             Assert(!result.Restored&&!result.Updated&&!relaunched,"Unconfirmed stop attempted recovery or launch.");
                             Assert(result.Message.Contains("일부 바뀌었을 수")&&result.Message.Contains("되돌릴 원본"),"Uncertain state not disclosed.");
                             InstallFailure failure=null;try { Engine(ReadSpec()).Preflight(); }catch(InstallFailure error){failure=error;}
@@ -233,6 +239,7 @@ internal static class SignalInstallerTests
                 });
                 Check("automatic update timeout uses the same bounded backend and restores previous application before recovery launch",delegate
                 {
+                    ProgressStages.Clear();
                     string backend=(string)Fixture["timeoutBackend"];var limited=ReadSpec();limited.Version="0.0.2";limited.BackendSHA256=Hash(backend);limited.BackendBytes=new FileInfo(backend).Length;
                     limited.Files.Add(new InstallFile { Path="update-only.txt",Bytes=0,SHA256=new string('0',64) });
                     var timed=new InstallerEngine(limited,delegate { return File.OpenRead(backend); });
@@ -242,8 +249,9 @@ internal static class SignalInstallerTests
                         string nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N");
                         var session=new AutomaticUpdateSession { Parent=exited,Directory=Spec.InstallDirectory,Version=Spec.Version,ExecutableSHA256=Hash(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),AsarSHA256=Hash(Path.Combine(Spec.InstallDirectory,"resources","app.asar")),Nonce=nonce,InstallerSHA256=new string('b',64) };
                         int launches=0;
-                        var result=Task.Run(delegate { return timed.InstallAutomaticUpdateCore(session,Progress,delegate(Action<string,string,int?> progress){return timed.InstallPayload(progress,1500);},delegate(string executable,string arguments){engine.VerifyInstalled();VerifyRegistrationAndShortcuts();Assert(arguments=="--synk-update-recovery="+nonce,"Timeout recovery token differs");launches++;}); }).GetAwaiter().GetResult();
+                        var result=Task.Run(delegate { return timed.InstallAutomaticUpdateCore(session,Progress,delegate(Action<InstallProgress> progress){return timed.InstallPayload(progress,1500);},delegate(string executable,string arguments){engine.VerifyInstalled();VerifyRegistrationAndShortcuts();Assert(arguments=="--synk-update-recovery="+nonce,"Timeout recovery token differs");launches++;}); }).GetAwaiter().GetResult();
                         Assert(result.Restored&&result.Relaunched&&!result.Updated&&launches==1,"Automatic timeout did not recover exactly once: "+result.Message);
+                        AssertRollbackStages(true);
                         Assert(!File.Exists(Path.Combine(Spec.InstallDirectory,"update-only.txt")),"Automatic timeout left partial payload.");
                         Assert(Hash(sentinel)==sentinelHash,"Automatic timeout changed external account data.");
                         Assert(result.RecoveryFile.EndsWith(Spec.AppId+".json",StringComparison.Ordinal),"Fixture recovery file differs");File.Delete(result.RecoveryFile);
@@ -378,8 +386,9 @@ internal static class SignalInstallerTests
     {
         return Task.Run(delegate { return engine.Install(Progress); }).GetAwaiter().GetResult();
     }
-    private static void Progress(string phase, string message, int? percent)
+    private static void Progress(InstallProgress progress)
     {
+        ProgressStages.Add(progress.Stage);
         Assert(Thread.CurrentThread.GetApartmentState() == ApartmentState.MTA, "Installation must use the same MTA worker context as Program.cs.");
     }
     private static string InstallKey() { return "Software\\" + Spec.Guid; }
@@ -390,6 +399,19 @@ internal static class SignalInstallerTests
     private static bool Same(string first, string second) { return string.Equals(Path.GetFullPath(first).TrimEnd('\\'), Path.GetFullPath(second).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase); }
     private static bool IsInside(string file, string parent) { return Path.GetFullPath(file).StartsWith(Path.GetFullPath(parent).TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase); }
     private static string Hash(string file) { using (var hash = SHA256.Create()) using (var stream = File.OpenRead(file)) return BitConverter.ToString(hash.ComputeHash(stream)).Replace("-", "").ToLowerInvariant(); }
+    private static void AssertRollbackStages(bool automatic)
+    {
+        var expected = automatic
+            ? new [] { InstallStage.WaitingForApp, InstallStage.BackingUp, InstallStage.Preparing, InstallStage.Installing, InstallStage.Stopping, InstallStage.Restoring }
+            : new [] { InstallStage.BackingUp, InstallStage.Preparing, InstallStage.Installing, InstallStage.Stopping, InstallStage.Restoring };
+        int previous = -1;
+        foreach (var stage in expected)
+        {
+            int index = ProgressStages.IndexOf(stage);
+            Assert(index > previous, "Rollback progress phase missing or out of order: " + stage);
+            previous = index;
+        }
+    }
     private static void Assert(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
     private static void ExpectFailure(Action action)
     {

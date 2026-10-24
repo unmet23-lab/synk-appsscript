@@ -1,3 +1,4 @@
+import { initializeCollaborationSchema } from '../messenger-schema.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -32,7 +33,8 @@ function fixture(t) {
     return message;
   };
   let service;
-  const messageShape = (row, userId) => ({ id: String(row.id), channelId: row.channel_id, body: row.body, ...service.messageExtras(row, userId) });
+  const messageShape = (row, userId) => ({ id: String(row.id), channelId: row.channel_id, body: row.body });
+  initializeCollaborationSchema(db);
   service = createCollaborationService({
     db, assert: check,
     textField: (value, label, max, min = 0) => {
@@ -78,7 +80,7 @@ function fixture(t) {
       const task = f.doing(f.create(creator, assignee, { reviewerId: reviewer, ...body }));
       return f.patch(task, assignee, { stage: 'review', resultMessageId: f.send(assignee, '제출한 결과물') });
     },
-    detail(task, userId = 'worker') { return messageShape(requireMessage(task.messageId, userId), userId).task; },
+    detail(task, userId = 'worker') { return service.messageShape(requireMessage(task.messageId, userId), userId).task; },
     workday(userId = 'worker') { return f.productivity.workday(userId); },
   };
   return f;
@@ -250,7 +252,7 @@ test('workday and nested message tasks use one captured server day even when the
   assert.equal(f.clockReads, 2, 'fresh detail must observe the next server day');
 });
 
-test('a failed nested source render restores the captured-date context for the next read', t => {
+test('a failed nested source render cannot affect the next explicit task date', t => {
   const f = fixture(t), task = f.accepted(f.create('requester', 'worker', { dueDate: '2026-10-10' }));
   const row = f.db.prepare('SELECT * FROM message_tasks WHERE id=?').get(task.id);
   f.db.prepare('UPDATE messages SET workspace_link=? WHERE id=?').run('{invalid', task.messageId);

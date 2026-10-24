@@ -30,7 +30,10 @@ test('both no-store entry documents version their public scripts and styles; exa
       assert.deepEqual(urls.map(url=>url.pathname).sort(),expected);
       for(const added of ['/website-inquiries.js','/website-inquiries.css'])assert.ok(expected.includes(added),added);
       expectedCount+=expected.length;
-    }else{assert.equal(urls.length,4);expectedCount+=4;}
+    }else{
+      const expected=['app.js','styles.css','messenger-design.css','signal.css','messenger-state.js','messenger-session.js','messenger-shell.js','messenger-task-model.js'].map(file=>'/messenger/'+file).sort();
+      assert.deepEqual(urls.map(url=>url.pathname).sort(),expected);expectedCount+=expected.length;
+    }
     for(const url of urls){const asset=await wire(base,url.pathname+url.search,{headers:{'Accept-Encoding':'br'}});assert.equal(asset.status,200,url.pathname);assert.equal(asset.headers['cache-control'],'public, max-age=31536000, immutable',url.pathname);assert.equal(hash(decoded(asset)),url.searchParams.get('v'),url.pathname);count++;}
   }
   assert.equal(count,expectedCount);assert.ok(count>100);

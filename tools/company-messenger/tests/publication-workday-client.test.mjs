@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 const uid='12345678-1234-1234-1234-123456789abc';
 const entryId='a1'.repeat(32);
@@ -15,10 +15,10 @@ function fixture({embedded=true,integrated=embedded}={}){
   const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener:(name,handler)=>documentEvents.set(name,handler)};
   const window={parent:{postMessage:(value,origin)=>messages.push({value,origin})},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener:(name,handler)=>windowEvents.set(name,handler),getSelection:()=>null};
   const context=vm.createContext({document,window,location:{pathname:embedded?'/messenger/':'/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:(callback,delay)=>{const id=++timerId;timers.set(id,{id,callback,delay});return id;},clearTimeout:id=>timers.delete(id),URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=>uid}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run(`Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},channels:[],members:[],drawer:'personal',personalTab:'workday',integrated:${integrated?"{companyUserId:'owner',canWrite:true}":'null'}});moduleVisible=true;`);
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));
-  run('api=request;clientWorkflowApi=()=>request("/api/client-workflow");publicationWorkflowApi=()=>request("/api/publication-workflow");attachDeadlineSettings=async()=>{};refreshChannels=async()=>{};refreshMessages=async()=>{};');
+  run('originalPublicationWorkflowApi=publicationWorkflowApi;api=request;clientWorkflowApi=()=>request("/api/client-workflow");publicationWorkflowApi=()=>request("/api/publication-workflow");attachDeadlineSettings=async()=>{};refreshChannels=async()=>{};refreshMessages=async()=>{};');
   return{context,run,nodes,requests,timers,messages,document,window,windowEvents,documentEvents,state:run('state'),node,fire(timer){timers.delete(timer.id);timer.callback();}};
 }
 const flush=async()=>{for(let index=0;index<12;index++)await Promise.resolve();};
@@ -124,7 +124,7 @@ test('returning from another personal tab renders today even with an unchanged s
 });
 
 test('publication API rejects malformed responses and responses from a previous login',async()=>{
-  const f=fixture();f.run(source.slice(source.indexOf('async function publicationWorkflowApi(){'),source.indexOf('function publicationWorkflowItems(')));const fetches=[];f.context.fetch=(path,options)=>new Promise(resolve=>fetches.push({path,options,resolve}));
+  const f=fixture();f.run('publicationWorkflowApi=originalPublicationWorkflowApi');const fetches=[];f.context.fetch=(path,options)=>new Promise(resolve=>fetches.push({path,options,resolve}));
   let pending=f.run('publicationWorkflowApi()');fetches[0].resolve({ok:true,json:async()=>({})});await assert.rejects(pending,/게시 업무 목록/);assert.equal(fetches[0].path,'/api/publication-workflow');assert.equal(fetches[0].options.credentials,'same-origin');
   pending=f.run('publicationWorkflowApi()');fetches[1].resolve({ok:true,json:async()=>({items:[{id:'broken'}]})});await assert.rejects(pending,/게시 업무 목록/);
   pending=f.run('publicationWorkflowApi()');f.run('resetWorkNotificationState()');fetches[2].resolve({ok:true,json:async()=>({items:[item()]})});await assert.rejects(pending,/로그인이 바뀌어/);
@@ -132,7 +132,7 @@ test('publication API rejects malformed responses and responses from a previous 
 
 test('package review is accepted by the real API validator and opens its exact package from today',async()=>{
   const f=fixture(),review=item({id:'publication:review:'+uid,kind:'publication_review',title:'합성 게시 전 점검',actionLabel:'남은 점검 확인',href:publicationHref('review','packageId='+uid)});
-  f.run(source.slice(source.indexOf('async function publicationWorkflowApi(){'),source.indexOf('function publicationWorkflowItems(')));
+  f.run('publicationWorkflowApi=originalPublicationWorkflowApi');
   f.context.fetch=async()=>({ok:true,json:async()=>({items:[review]})});const response=await f.run('publicationWorkflowApi()');assert.equal(response.items[0].kind,'publication_review');
   f.context.href=review.href;assert.equal(f.run('safePublicationWorkflowHref(href)'),'http://localhost'+review.href);
   f.context.href=review.href+'&publicationFormat=youtube-shorts';assert.equal(f.run('safePublicationWorkflowHref(href)'),null);
@@ -145,7 +145,7 @@ test('link errors open exactly one stored package or post and reject mixed targe
   const f=fixture();
   for(const field of ['packageId='+uid,'entryId='+entryId]){
     const entry=item({id:'publication:link:'+field,kind:'publication_link',title:'합성 링크 접속 오류',actionLabel:'링크 오류 확인',href:publicationHref('link',field)});
-    f.run(source.slice(source.indexOf('async function publicationWorkflowApi(){'),source.indexOf('function publicationWorkflowItems(')));f.context.fetch=async()=>({ok:true,json:async()=>({items:[entry]})});assert.equal((await f.run('publicationWorkflowApi()')).items[0].kind,'publication_link');
+    f.run('publicationWorkflowApi=originalPublicationWorkflowApi');f.context.fetch=async()=>({ok:true,json:async()=>({items:[entry]})});assert.equal((await f.run('publicationWorkflowApi()')).items[0].kind,'publication_link');
     f.run('publicationWorkflowApi=()=>request("/api/publication-workflow")');const html=await load(f,{items:[entry]});assert.match(html,/합성 링크 접속 오류/);
     await f.nodes.get('#personal-body').onclick({preventDefault(){},target:{closest:selector=>selector==='[data-publication-open]'?{dataset:{publicationOpen:entry.id}}:null}});assert.equal(f.messages.at(-1).value.url,'http://localhost'+entry.href);
   }

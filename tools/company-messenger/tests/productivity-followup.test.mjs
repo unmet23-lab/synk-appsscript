@@ -1,3 +1,4 @@
+import { initializeCollaborationSchema } from '../messenger-schema.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -21,10 +22,11 @@ async function fixture(t, { backgroundJobsEnabled = true, workNotificationsEnabl
       CREATE TABLE IF NOT EXISTS channels(id TEXT PRIMARY KEY,system_key TEXT,deleted_at TEXT);
       CREATE TABLE IF NOT EXISTS memberships(channel_id TEXT REFERENCES channels(id),user_id TEXT REFERENCES users(id),PRIMARY KEY(channel_id,user_id));
       CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY AUTOINCREMENT,channel_id TEXT REFERENCES channels(id),user_id TEXT REFERENCES users(id),body TEXT,created_at TEXT,edited_at TEXT,reply_to_id INTEGER);`);
+    initializeCollaborationSchema(db);
     service = createCollaborationService({ db, assert: check, textField: (value, label, max, min = 0) => { check(typeof value === 'string' && value.trim().length >= min && value.trim().length <= max, 400, label); return value.trim(); }, now: () => stamp,
       transaction: fn => { db.exec('BEGIN'); inTransaction = true; try { const value = fn(); db.exec('COMMIT'); return value; } catch (error) { db.exec('ROLLBACK'); throw error; } finally { inTransaction = false; } },
       members, requireChannel, requirePosting, requireMessage,
-      messageShape: (row, userId) => ({ id: String(row.id), channelId: row.channel_id, body: row.body, ...service.messageExtras(row, userId) }),
+      messageShape: (row, userId) => ({ id: String(row.id), channelId: row.channel_id, body: row.body }),
       publish: (type, channelId, userId) => events.push({ type, channelId, userId }), origin: () => 'http://fixture.test', resolveLink: value => value.workspaceLink, backgroundJobsEnabled, workNotificationsEnabled });
   }
   open();

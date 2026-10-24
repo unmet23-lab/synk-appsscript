@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 
 function fixture(){
   const nodes=new Map(),requests=[],dialogs=[],errors=[],opened=[];
@@ -11,7 +11,7 @@ function fixture(){
   for(const key of ['#app','#modal','.modal-body','#personal-body','#task-detail-retry','#personal-task-scope','#personal-task-filter'])nodes.set(key,node());
   const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=> 'detail-request'}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run("Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},members:[{id:'u1',name:'담당'},{id:'u2',name:'검토'},{id:'u3',name:'요청자'}],channels:[{id:'c1',name:'프로젝트 방',kind:'channel',memberIds:['u1','u2','u3'],canPost:true}],channelId:'c1',chatCategory:'all',drawer:'personal',personalTab:'tasks',taskScope:'mine',taskFilter:'all'});");
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));
   context.recordDialog=message=>dialogs.push(message);context.report=message=>errors.push(message);context.recordSource=message=>opened.push(message);

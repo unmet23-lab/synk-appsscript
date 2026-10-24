@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 function fixture(){
  const nodes=new Map(),requests=[],storage=new Map();
  const get=key=>{if(!nodes.has(key)){const classes=new Set();nodes.set(key,{innerHTML:'',textContent:'',value:'',disabled:false,open:false,isConnected:true,dataset:{},style:{},classList:{add:value=>classes.add(value),remove:value=>classes.delete(value),contains:value=>classes.has(value),toggle(value,active){if(active)classes.add(value);else classes.delete(value);}},querySelector:get,querySelectorAll:()=>[],addEventListener(event,callback){this['on'+event]=callback;},setAttribute(){},removeAttribute(){},focus(){},contains(){return false;},closest(){return null;},showModal(){this.open=true;},close(){this.open=false;}});}return nodes.get(key);};
@@ -11,7 +11,7 @@ function fixture(){
  get('#project-access').value='private';get('input[name="category"]:checked').value='project';
  const document={querySelector:get,querySelectorAll:()=>[],addEventListener(){},activeElement:null},parent={};
  const context=vm.createContext({document,window:{parent,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/messenger/',origin:'http://localhost'},localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},URL,URLSearchParams,CSS:{escape:String},setTimeout(){},clearTimeout(){},FormData:class {constructor(form){this.values=form.values||{};}*[Symbol.iterator](){yield* Object.entries(this.values);}}});
- const run=code=>vm.runInContext(code,context);run(source);run("Object.assign(state,{user:{id:'u1',name:'유호',role:'owner'},integrated:{canWrite:true,canManage:true},members:[{id:'u1',name:'유호',teamName:'운영팀'},{id:'u2',name:'민지',teamName:'마케팅'},{id:'u3',name:'지수',teamName:'디자인',companyRole:'viewer'},{id:'u4',name:'<img src=x>',teamName:'마케팅'}],channels:[{id:'private',kind:'channel',scope:'private',category:'project',name:'캠페인',memberIds:['u1','u2'],canInvite:true,canManage:true},{id:'public',kind:'channel',scope:'public',category:'project',name:'공개 프로젝트',memberIds:['u1','u2','u3','u4'],canInvite:false}],channelId:'private',chatCategory:'all'});");
+ installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);run("Object.assign(state,{user:{id:'u1',name:'유호',role:'owner'},integrated:{canWrite:true,canManage:true},members:[{id:'u1',name:'유호',teamName:'운영팀'},{id:'u2',name:'민지',teamName:'마케팅'},{id:'u3',name:'지수',teamName:'디자인',companyRole:'viewer'},{id:'u4',name:'<img src=x>',teamName:'마케팅'}],channels:[{id:'private',kind:'channel',scope:'private',category:'project',name:'캠페인',memberIds:['u1','u2'],canInvite:true,canManage:true},{id:'public',kind:'channel',scope:'public',category:'project',name:'공개 프로젝트',memberIds:['u1','u2','u3','u4'],canInvite:false}],channelId:'private',chatCategory:'all'});");
  context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));run('api=request;toast=()=>{};refreshChannels=async()=>{};selectChannel=async channelId=>{state.channelId=channelId;};');
  return{get,run,context,requests,state:run('state'),modal:get('#modal')};
 }

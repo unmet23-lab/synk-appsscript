@@ -4,13 +4,13 @@ import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 function fixture(storage=new Map()){
   const nodes=new Map(),requests=[],toasts=[],xhrs=[];
   const get=selector=>{if(!nodes.has(selector))nodes.set(selector,{value:'',innerHTML:'',textContent:'',disabled:false,style:{},dataset:{},scrollHeight:100,classList:{add(){},remove(){},toggle(){}},addEventListener(){},setAttribute(){},focus(){},close(){},insertAdjacentHTML(){},querySelector:get,querySelectorAll:()=>[]});return nodes.get(selector);};
   class XHR{constructor(){this.upload={};this.headers={};xhrs.push(this);}open(method,url){this.method=method;this.url=url;}setRequestHeader(key,value){this.headers[key]=value;}send(file){this.sent=file;}abort(){this.aborted=true;this.onabort?.();}}
   const context=vm.createContext({document:{body:get('body'),querySelector:get,querySelectorAll:()=>[],addEventListener(){},hidden:false},window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/messenger/',origin:'http://localhost'},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID},XMLHttpRequest:XHR,localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},setTimeout(){},clearTimeout(){}});
-  const run=code=>vm.runInContext(code,context);run(source);context.originalApi=run('api');
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);context.originalApi=run('api');
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));context.recordToast=(message)=>toasts.push(message);
   run("Object.assign(state,{user:{id:'u1',name:'유호',role:'owner'},integrated:{canWrite:true,csrfToken:'test-csrf'},sendRecovery:{messages:true,uploads:true},channels:[{id:'c1',kind:'self',name:'메모',memberIds:['u1'],canPost:true},{id:'c2',kind:'self',name:'다른 방',memberIds:['u1'],canPost:true}],channelId:'c1',chatCategory:'personal',members:[{id:'u1',name:'유호'}]});api=request;toast=recordToast;renderMessages=()=>{};refreshChannels=async()=>{};markRead=async()=>{};renderReplyContext=()=>{};renderComposeExtras=()=>{};closeMentionPicker=()=>{};");
   get('#composer-input').value='보낼 원문';run('updateSend()');

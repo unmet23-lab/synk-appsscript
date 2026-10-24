@@ -384,11 +384,14 @@ namespace Synk.SignalInstaller
             SetButtons(installed ? "다시 설치하기" : "설치하기", "나중에", true);
         }
 
-        public void ShowProgress(string title, string detailText, int? percentage)
+        public void ShowProgress(InstallProgress update)
         {
+            if (update == null) throw new ArgumentNullException("update");
             if (!Dispatcher.CheckAccess()) {
-                Dispatcher.Invoke(new Action<string, string, int?>(ShowProgress), title, detailText, percentage); return;
+                Dispatcher.Invoke(new Action<InstallProgress>(ShowProgress), update); return;
             }
+            string title = update.Title, detailText = update.Detail;
+            int? percentage = update.Percentage;
             bool entering = state != InstallerState.Installing;
             state = InstallerState.Installing;
             if (entering) {
@@ -399,7 +402,7 @@ namespace Synk.SignalInstaller
                 SetButtons("설치 중", "나중에", false);
                 step = 0;
             }
-            int mapped = StepOf(title);
+            int mapped = StepFor(update.Stage);
             int next = mapped;
             if (next == 0) next = Math.Max(step, 1);
             if (next != step) { step = next; stepStarted = DateTime.UtcNow; }
@@ -479,7 +482,7 @@ namespace Synk.SignalInstaller
                 else ShowComplete();
                 return;
             }
-            ShowProgress("설치를 시작하는 중", "잠시만 기다려 주세요.", null);
+            ShowProgress(new InstallProgress(InstallStage.Preparing, "설치를 시작하는 중", "잠시만 기다려 주세요.", null));
             EventHandler install = InstallRequested;
             if (install != null) install(this, EventArgs.Empty);
             else ShowFailure("설치를 시작하지 못했어요. 설치 파일을 다시 열어 주세요.");
@@ -599,13 +602,15 @@ namespace Synk.SignalInstaller
             return parts[0] + "\\" + parts[1] + "\\…\\" + parts[parts.Length - 2] + "\\" + parts[parts.Length - 1];
         }
 
-        private int StepOf(string title)
+        // 세 점은 엔진이 넘긴 단계로만 고른다. 되돌리기·기다리기·멈추기는 지금 점을 두고 엔진 글을 그대로 보인다.
+        private static int StepFor(InstallStage stage)
         {
-            if (title == null) return 0;
-            if (title.StartsWith("설치를 준비", StringComparison.Ordinal) || title.StartsWith("설치를 시작", StringComparison.Ordinal)) return 1;
-            if (title.StartsWith(product.ShortName + "를 설치", StringComparison.Ordinal)) return 2;
-            if (title.StartsWith("설치를 확인", StringComparison.Ordinal)) return 3;
-            return 0;
+            switch (stage) {
+                case InstallStage.Preparing: return 1;
+                case InstallStage.Installing: return 2;
+                case InstallStage.Verifying: return 3;
+                default: return 0;
+            }
         }
 
         private static string StepTitle(int value, string fallback)

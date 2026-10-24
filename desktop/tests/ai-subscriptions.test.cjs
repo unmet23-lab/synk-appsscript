@@ -621,6 +621,19 @@ test('removing a connected Higgsfield account deletes its home folder, sign-in a
 /* ---------- 10-18 본체 검토에서 찾은 것 ---------- */
 const writeBoard=(f,rows)=>{fs.mkdirSync(path.join(f.root,'data'),{recursive:true});fs.writeFileSync(path.join(f.root,'data','board.json'),JSON.stringify({version:1,rows,settings:{usdKrw:1400},check:null}));};
 
+test('inherited service names in a damaged board cannot stop checking or removing accounts',async t=>{
+  const f=fakeSystem();t.after(()=>{f.service.dispose();fs.rmSync(f.root,{recursive:true,force:true});});
+  const services=['__proto__','constructor','toString'];
+  writeBoard(f,[...services.map((service,i)=>({id:'damaged-'+i,service,source:'auto'})),{id:'valid',service:'claude',source:'auto'}]);
+  const checked=await f.service.check();
+  assert.equal(checked.rows.find(row=>row.id==='valid').state,'ok');
+  for(let i=0;i<services.length;i++){
+    const result=await f.service.save({remove:'damaged-'+i});
+    assert.ok(!result.rows.some(row=>row.id==='damaged-'+i));
+  }
+  assert.equal((await f.service.snapshot()).rows.length,1);
+});
+
 test('removing an account never follows a link out of its folder',async t=>{
   const f=fakeSystem();
   const accounts=path.join(f.root,'data','accounts'),outside=path.join(f.root,'outside');

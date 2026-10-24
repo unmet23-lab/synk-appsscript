@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 function fixture(){
  const storage=new Map(),nodes=new Map(),requests=[],listeners={};
  const make=()=>({innerHTML:'',value:'',textContent:'',disabled:false,readOnly:false,open:false,isConnected:true,selectionStart:0,selectionEnd:0,dataset:{},style:{},classList:{add(){},remove(){},toggle(){}},setAttribute(){},removeAttribute(){},addEventListener(){},querySelector(){return null;},querySelectorAll(){return[];},focus(){},setRangeText(value,start,end){this.value=this.value.slice(0,start)+value+this.value.slice(end);this.selectionStart=this.selectionEnd=start+value.length;}});
@@ -10,7 +10,7 @@ function fixture(){
  const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(){}};
  const parent={},window={parent,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener:(event,callback)=>listeners[event]=callback};
  const context=vm.createContext({document,window,location:{pathname:'/messenger/',origin:'http://localhost'},localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=> '00000000-0000-4000-8000-000000000001'},setTimeout:()=>1,clearTimeout(){}});
- const run=code=>vm.runInContext(code,context);run(source);run("Object.assign(state,{sendRecovery:{messages:true,uploads:true},user:{id:'u1',name:'유호',role:'member'},members:[{id:'u1',name:'유호'},{id:'u2',name:'민지'},{id:'u3',name:'다른팀'}],channels:[{id:'c1',kind:'channel',name:'정보방',memberIds:['u1','u2'],canPost:true},{id:'c2',kind:'channel',name:'공지',systemKey:'announcements',memberIds:['u1','u2'],canPost:false}],channelId:'c1',chatCategory:'all'});");
+ installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);run("Object.assign(state,{sendRecovery:{messages:true,uploads:true},user:{id:'u1',name:'유호',role:'member'},members:[{id:'u1',name:'유호'},{id:'u2',name:'민지'},{id:'u3',name:'다른팀'}],channels:[{id:'c1',kind:'channel',name:'정보방',memberIds:['u1','u2'],canPost:true},{id:'c2',kind:'channel',name:'공지',systemKey:'announcements',memberIds:['u1','u2'],canPost:false}],channelId:'c1',chatCategory:'all'});");
  context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));run('api=request;toast=()=>{};refreshNotificationCount=async()=>{};');
  return{context,run,nodes,storage,requests,listeners,parent,state:run('state'),make};
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const text=html=>String(html).replace(/<[^>]*>/g,'');const confirmsEmptyDay=html=>/오늘 할 일 0개/.test(text(html));
 const flush=async()=>{for(let index=0;index<8;index++)await Promise.resolve();};
 const decode=value=>String(value||'').replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
@@ -42,7 +42,7 @@ function fixture(){
   nodes.set('button[type=submit]',nodes.get('#task-create-submit'));
   const document={hidden:false,activeElement:null,querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/',origin:'http://localhost'},localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++uuid).padStart(12,'0')}`},FormData:class extends Map{constructor(){super([...fields].filter(([,field])=>!field.disabled).map(([name,field])=>[name,field.value]));}}});
-  const run=code=>vm.runInContext(code,context);run(source);currentState=run('state');context.originalRefreshTaskViews=run('refreshTaskViews');
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);currentState=run('state');context.originalRefreshTaskViews=run('refreshTaskViews');
   run("Object.assign(state,{user:{id:'u1',name:'나',role:'member'},members:[{id:'u1',name:'나',companyRole:'member'},{id:'u2',name:'다른 담당',companyRole:'member'},{id:'u3',name:'읽기 전용',companyRole:'viewer'}],channels:[{id:'self',name:'나에게',kind:'self',memberIds:['u1'],canPost:true},{id:'c1',name:'프로젝트',kind:'channel',memberIds:['u1','u2','u3'],canPost:true},{id:'c2',name:'다른 방',kind:'channel',memberIds:['u1','u2'],canPost:true}],channelId:'c1',chatCategory:'all',drawer:'personal',personalTab:'workday'});");
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));
   context.report=(message,error)=>toasts.push({message,error});context.openedTask=message=>opened.push(message);context.recordRefresh=context=>{refreshes.push(context);return Promise.resolve();};

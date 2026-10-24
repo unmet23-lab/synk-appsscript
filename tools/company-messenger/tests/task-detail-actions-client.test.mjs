@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 // 할 일 상세 3판(2026-10-20 유호님 A안): 단계마다 주 단추 하나, 수락·시작·완료는 같은 revision으로 바로 PATCH,
 // 수정 요청은 한 번 더 확인한 뒤 답글 쓰기로, 검토 맡기기·다시 열기·검토자 다시 정하기는 바꾸기 양식을 연다.
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const text=html=>String(html).replace(/<[^>]*>/g,'');
 function fixture(userId='u1'){
   const nodes=new Map(),requests=[],toasts=[],calls=[];
@@ -15,7 +15,7 @@ function fixture(userId='u1'){
   const buttons=[];nodes.get('#modal').querySelectorAll=selector=>selector==='[data-task-action]'?buttons:[];
   const document={hidden:false,activeElement:null,querySelector:name=>nodes.get(name)||null,querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=>'request-uuid'}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run("Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},members:[{id:'u1',name:'담당'},{id:'u2',name:'검토'},{id:'u3',name:'하윤'}],channels:[{id:'c1',name:'가을 캠페인',kind:'channel',memberIds:['u1','u2','u3'],canPost:true}],channelId:'c1'});");
   run(`state.user=state.members.find(person=>person.id==='${userId}');`);
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));context.record=(...args)=>calls.push(args);

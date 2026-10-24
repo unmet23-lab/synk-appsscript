@@ -44,6 +44,27 @@ class ContinuityElement {
 const settleLibrary=async()=>{for(let i=0;i<16;i++)await new Promise(resolve=>setImmediate(resolve));};
 const cloudLibrary=()=>({version:1,consent:true,favorites:['world'],recent:[],rememberRecent:true,notes:[{id:'saved-note',appId:'world',title:'자동으로 이어질 합성 메모',done:false,createdAt:1}]});
 
+// Electron loads launcher.mjs and the generated account-library bundle as ES modules in one renderer realm.
+// Both read that realm's globals (document, localStorage, setTimeout, crypto, structuredClone,
+// addEventListener), and several fixtures stay alive at once, so each fixture needs its own vm context.
+// Node's vm links ES modules only behind --experimental-vm-modules, so the two files run as classic scripts:
+// each relative named import reads the namespace the fixture supplies for that specifier, and a trailing export
+// list becomes the file's namespace. No module or export name is listed here, so moving launcher code into
+// another renderer module or changing the bundle's exports needs no harness edit. The two deliberate seams are
+// named in fixture(): the convenience double and the bundle evaluated inside the realm.
+const RENDERER=path.join(__dirname,'../renderer');
+const RELATIVE_IMPORT=/^import \{([^}]+)\} from '\.\/([\w-]+)\.mjs';$/gm;
+const realmScripts=new Map();
+function realmScript(file){
+  if(realmScripts.has(file))return realmScripts.get(file);
+  const source=fs.readFileSync(path.join(RENDERER,file),'utf8'),namespace=file.replace(/\.mjs$/,'');let exported=false;
+  const script=source.replace(RELATIVE_IMPORT,(_all,names,specifier)=>'const {'+names.replace(/\s+as\s+/g,':')+'}=globalThis.rendererModules['+JSON.stringify(specifier)+'];')
+    .replace(/^export\s*\{([^}]*)\};?\s*$/m,(_all,names)=>{exported=true;return 'globalThis.rendererModules['+JSON.stringify(namespace)+']={'+names.split(',').map(name=>name.trim()).filter(Boolean).map(name=>{const [local,as=local]=name.split(/\s+as\s+/);return JSON.stringify(as)+':'+local;}).join(',')+'};';});
+  const leftover=/^[ \t]*(?:import\s*[\w*{'"]|export\b)/m.exec(script);
+  assert.equal(leftover,null,file+' uses a module form this harness cannot run as a classic script: '+leftover?.[0]);
+  const entry={script,exported,imports:[...source.matchAll(RELATIVE_IMPORT)].map(match=>match[2])};realmScripts.set(file,entry);return entry;
+}
+
 // Actual renderer handlers, including adversarial IPC ordering. This DOM double
 // is not layout, real authentication, or an operating-service assertion.
 async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bridgeOverrides={},initialPreferences=null,personalPreferences=null,storageEntries=[],native=true,libraryDOM=false}={}) {
@@ -73,15 +94,14 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   if(!libraryDOM){const request=bridge.accountRequest;bridge.accountRequest=async(operation,params)=>['platformLoad','insightLoad'].includes(operation)?{ok:true,scope:'synk-personal',resource:operation==='platformLoad'?'platform-library':'member-insight',accountId:currentAuth.account?.synk_user_id,revision:0,updatedAt:null,state:null}:request?.(operation,params);}
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-insight','member-activity-controller','member-understanding-controller','member-settings','member-understanding-host','member-insight-view','subscriptions','member-home','pulse-client','update-view','account-page'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const launcher=realmScript('launcher.mjs'),continuity=realmScript('platform-continuity.mjs'),modules={};
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
-  modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-insight|member-activity-controller|member-understanding-controller|member-settings|member-understanding-host|member-insight-view|subscriptions|member-home|platform-continuity|convenience|pulse-client|update-view|account-page)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
-  // Execute the shipped continuity bundle in the same realm as the renderer.
-  // Only its ESM export is adapted; mount/projection/dispatch remain real code.
-  const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
-  assert.notEqual(continuity,fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8'),'continuity module export must be loaded into the VM');
+  const seams={convenience:{mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})}};
+  // The shipped continuity bundle runs in the same realm as the renderer (below), so mount, projection and
+  // dispatch use this fixture's timers and storage. Every other launcher import is the real module.
+  for(const specifier of launcher.imports)if(specifier!=='platform-continuity')modules[specifier]=seams[specifier]||await import('../renderer/'+specifier+'.mjs');
+  assert.equal(continuity.exported,true,'continuity module export must be loaded into the VM');
   const context={rendererModules:modules,SynkAtlasPersonalization:personalEngine,document,window:{addEventListener:(name,callback)=>windowHandlers.set(name,callback)},synkDesktop:native?bridge:undefined,
     localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key),key:index=>[...storage.keys()][index]??null,get length(){return storage.size;}},setTimeout:(callback,delay)=>{const id=++timerId;if(libraryDOM)timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),Intl,Date,crypto:require('node:crypto').webcrypto,
     addEventListener:(name,callback)=>lifecycleHandlers.set(name,callback),removeEventListener:name=>lifecycleHandlers.delete(name),structuredClone,TextEncoder,URL,URLSearchParams,queueMicrotask};
@@ -90,7 +110,7 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   // boundary so the real personal-data validator sees ordinary local objects.
   vm.runInContext('structuredClone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value))',context);
   if(native&&bridge.accountRequest)vm.runInContext('synkDesktop.accountRequest=((request)=>async(...args)=>{const value=await request(...args);return value===undefined?undefined:JSON.parse(JSON.stringify(value));})(synkDesktop.accountRequest)',context);
-  vm.runInContext('(function(){'+continuity+'\n})();',context,{filename:'desktop/renderer/platform-continuity.mjs'});vm.runInContext(source,context,{filename:'desktop/renderer/launcher.mjs'});
+  vm.runInContext('(function(){'+continuity.script+'\n})();',context,{filename:'desktop/renderer/platform-continuity.mjs'});vm.runInContext(launcher.script,context,{filename:'desktop/renderer/launcher.mjs'});
   return {element,bridge,storage,document,lifecycleHandlers,ready:ready.promise,setAuth:value=>{currentAuth=value;},continuity:()=>vm.runInContext('continuity',context),continuityRoot:()=>element('view-home').beforeNodes[0],
     async flushLibrary(){for(let round=0;round<20;round++){const saves=[...timers].filter(([,timer])=>timer.delay===400);if(!saves.length)return;for(const [id,timer]of saves){timers.delete(id);timer.callback();}await settleLibrary();}assert.fail('library save did not settle');},
     beforeUnload(){const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};windowHandlers.get('beforeunload')?.(event);return event.defaultPrevented;},
@@ -418,6 +438,27 @@ test('accepted logout closes the account modal before its outcome while sign-in 
   const cancelled=await fixture({initialAuth:{...signedOut,status:'signing-in'},bridgeOverrides:{authCancelSignIn:async()=>{cancelled.setAuth({...signedOut,sessionGeneration:1});return {ok:true};}}});
   await cancelled.ready;await cancelled.click('account-button');await cancelled.click('cancel-sign-in');
   assert.equal(cancelled.element('account-dialog').open,true,'cancelling sign-in is not an accepted logout');
+});
+
+test('「내 계정」 sign-out runs the sign-out button action and cannot start a second logout while one is pending',async()=>{
+  const operation=deferred();let calls=0;
+  const f=await fixture({initialAuth:signedIn,bridgeOverrides:{authSignOut:()=>{calls++;return operation.promise;}}});assert.equal(await f.ready,'true');
+  const page=f.element('view-account');page.contains=()=>true;
+  const pageSignOut=async()=>{await page.handlers.get('click')({target:{closest:()=>({dataset:{accountAction:'sign-out'},disabled:false})}});await settleLibrary();};
+  await pageSignOut();assert.equal(calls,1);assert.equal(f.element('sign-out').disabled,true,'the shared action disables the sign-out button');
+  // A late native status still reports the old session while that logout is pending.
+  f.emit('auth',signedIn);await pageSignOut();await f.click('sign-out');assert.equal(calls,1);
+  operation.resolve({ok:true,serverRevoked:true,serverSessionRevoked:true});await settleLibrary();assert.equal(f.element('sign-out').disabled,false);
+  f.bridge.authSignOut=async()=>{calls++;f.setAuth({...signedOut,sessionGeneration:2});return {ok:true,serverRevoked:true,serverSessionRevoked:true};};
+  await pageSignOut();assert.equal(calls,2);assert.match(f.element('toast').textContent,/^로그아웃했어요\.$/);assert.deepEqual(f.ids(),['world']);
+});
+
+test('PULSE favorite runs the favorite button action for the selected PULSE app',async()=>{
+  const f=await fixture({initialAuth:account('customer',['pulse'])});assert.equal(await f.ready,'true');
+  await f.action({pulseLegacy:'open'});const legacy=f.element('pulse-client');legacy.contains=()=>true;assert.equal(f.element('favorite').attributes.get('aria-pressed'),'false');
+  await legacy.handlers.get('click')({target:{closest:()=>({dataset:{pulseFavorite:''}})}});await settleLibrary();
+  assert.deepEqual(JSON.parse(f.storage.get(viewKey('customer'))).favorites,['pulse']);assert.equal(f.element('favorite').attributes.get('aria-pressed'),'true');
+  await f.click('favorite');await settleLibrary();assert.deepEqual(JSON.parse(f.storage.get(viewKey('customer'))).favorites,[]);assert.equal(f.element('favorite').attributes.get('aria-pressed'),'false');
 });
 
 test('retired Studio and SHIFT selections stay hidden and cannot launch or grant Messenger',async()=>{for(const id of ['studio','shift']){let calls=0;const f=await fixture({initialAuth:account('legacy-'+id,[id]),initialPreferences:JSON.stringify({selected:id,favorites:[id]}),initialClients:[{id,canLaunch:true}],bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['path','shift']}),openProductPreview:async()=>{calls++;},launch:async()=>{calls++;}}});assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('app-detail').hidden,true);await f.action({app:id});await f.action({command:'product-preview',client:id});await f.action({command:'launch',client:'messenger'});assert.equal(calls,0);assert.doesNotMatch(f.element('download-list').innerHTML,/Messenger/);}});

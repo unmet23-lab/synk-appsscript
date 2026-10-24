@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(){
   const nodes=new Map(),requests=[],toasts=[],errors=[];
@@ -11,7 +11,7 @@ function fixture(){
   nodes.set('#app',node());nodes.set('#modal',node());
   const document={body:node(),hidden:false,activeElement:null,querySelector:selector=>nodes.get(selector)||null,querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,location:{pathname:'/',origin:'http://localhost'},window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=> 'fixture-id'},FormData:class extends Map{constructor(){super();for(const [key,control]of nodes)if(key.startsWith('input[name=')&&!control.disabled){const name=key.slice(11,-1);if(control.type!=='checkbox'||control.checked)this.set(name,control.type==='checkbox'?'on':control.value);}}}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   context.request=(path,options={})=>new Promise((resolve,reject)=>requests.push({path,options,resolve,reject}));
   context.renderModal=(title,html)=>{
     const modal=nodes.get('#modal');for(const [key,control]of nodes)if(key!=='#app'&&key!=='#modal'){control.isConnected=false;nodes.delete(key);}

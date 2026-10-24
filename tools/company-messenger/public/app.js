@@ -4,6 +4,11 @@ const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const app = $('#app');
 const modal = $('#modal');
+// Browser modules loaded before this file (index.html). Tests evaluate this file as a classic script and install the same namespaces.
+const {createMessengerState,enterWorkspaceState,createSessionOwner,createSendAttemptStore,createPersonalPanelOwner}=window.SynkMessengerState;
+const {createCompanySessionRecovery,createApiClient,createBootstrapRefresh}=window.SynkMessengerSession;
+const {CHAT_CATEGORIES,shellHtml}=window.SynkMessengerShell;
+const taskModel=window.SynkMessengerTasks;
 const icons = {
   chat:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/>',
   hash:'<path d="M4 9h16M3 15h16M10 3 6 21M18 3l-4 18"/>',
@@ -66,21 +71,18 @@ const shortDate = date => new Date(date).toLocaleDateString('ko-KR',{month:'long
 const timeLabel = date => new Date(date).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false});
 // 대화·다시 볼 시간은 PC 시간(입력 칸과 같은 기준)으로, 오늘 할 일·할 일 상세는 taskMoment로 한국 시간으로 적는다.
 const dateTimeLabel = date => new Date(date).toLocaleString('ko-KR',{month:'long',day:'numeric',hour:'numeric',minute:'2-digit'});
-const state = {user:null,workspace:{name:'SYNK'},storage:{provider:'local'},integrated:null,channels:[],members:[],channelId:null,messages:[],hasMore:false,mode:'chat',drawer:null,queues:new Map(),events:null,loadSeq:0,connected:false,sending:false,needsSetup:false,fileBytes:104857600,searchSeq:0,refreshSeq:0};
-Object.assign(state,{navFilter:'all',roomQuery:'',chatCategory:'personal',categoryFilters:{personal:'all',team:'all',all:'all'},categoryChannels:{},navigationSeq:0,replyTarget:null,thread:null,threadSeq:0,pins:[],pinsSeq:0,filesSeq:0,fileQuery:'',fileType:'all',fileScope:'channel',fileOffset:0,sharedFiles:[],teams:[],directoryQuery:'',directoryTeam:'all'});
-Object.assign(state,{unavailableChannels:new Set(),deletingChannels:new Set(),leavingChannels:new Set(),restoringChannels:new Set(),channelsSeq:0});
-const chatCategories=[['personal','개인채팅','chat'],['team','팀채팅','users'],['all','전체채팅','globe']];
+const state = createMessengerState();
+const chatCategories=CHAT_CATEGORIES;
 const systemRoomMeta={announcements:{icon:'announcement',description:'회사 일정과 꼭 볼 안내',intro:'회사 일정과 결정, 꼭 알아야 할 안내가 올라와요.'},info:{icon:'note',description:'일 자료와 링크',intro:'일에 필요한 자료와 링크, 쓸 만한 정보를 나눠요.'},social:{icon:'chat',description:'가벼운 이야기와 일상',intro:'가벼운 안부부터 오늘 있었던 일까지 편하게 나눠요.'}};
-Object.assign(state,{mentionIds:[],workspaceLink:null,ackRequired:false,mentionPicker:null,personalTab:'workday',savedView:'saved',taskFilter:'all',taskScope:'mine',shareSeq:0,personalSeq:0,personalItems:[],notificationCount:0,searchMessages:[],searchOffset:0,decisionQuery:'',decisionCurrent:true,decisionKind:'all',customerWork:[],catchUp:null});
-Object.assign(state,{scheduledNotifications:{enabled:null},workNotificationSession:0,workNotificationRevision:0,deadlineSettings:undefined,deadlineSettingsUser:null});
-Object.assign(state,{publicationWork:[],workdaySnapshot:null,workdayBody:null,workdayCount:null});
-Object.assign(state,{transferSession:0,sendAttempts:new Map(),transferFocusRevision:0});
+// Each field has one owner (messenger-state.js); the renderer below reads and writes through these.
+const sessionOwner=createSessionOwner(state);
+const sendAttemptStore=createSendAttemptStore(state,{storage:{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)},transferCurrent:context=>transferContextCurrent(context)});
+const personalPanel=createPersonalPanelOwner(state,{cancelRefresh:()=>cancelWorkdayRefresh(),setNotificationStatus:(enabled,options)=>setWorkNotificationStatus(enabled,options),showReminderStatus:()=>$$('[data-reminder-status]').forEach(label=>{label.textContent=reminderStatusLabel({deliveredAt:label.dataset.reminderDelivered==='1'});}),setTimer:(callback,delay)=>setTimeout(callback,delay),clearTimer:timer=>clearTimeout(timer)});
 function sortedPublicChannels(channels){const order=Object.keys(systemRoomMeta);return channels.map((channel,index)=>({channel,index,rank:order.includes(channel.systemKey)?order.indexOf(channel.systemKey):order.length})).sort((a,b)=>a.rank-b.rank||a.index-b.index).map(item=>item.channel);}
 function channelCategory(channel){return channel?.kind==='self'||channel?.kind==='dm'?'personal':channel?.scope==='team'?'team':'all';}
 function selectedConversation(){const channel=currentChannel();return channel&&channelCategory(channel)===state.chatCategory?channel:null;}
 function categoryLabel(){return chatCategories.find(([key])=>key===state.chatCategory)?.[1]||'개인채팅';}
 let eventTimer, searchTimer, modalReturnFocus, composition = false, dragDepth = 0, modalVersion = 0;
-let workdayTimer=null,workdayTimerVersion=0;
 const pendingUpdates = new Set();
 const mobileLayout=window.matchMedia('(max-width: 680px)');
 const directoryWide=window.matchMedia('(min-width: 1000px)');
@@ -99,38 +101,9 @@ function toast(message, error = false){
   const item = document.createElement('div'); item.className = `toast${error?' error':''}`; item.textContent = message;
   $('#toasts').append(item); setTimeout(() => item.remove(),5500);
 }
-function companySessionRecovery(){
-  if(!moduleBase||window.parent===window)return null;
-  let parent;try{parent=window.parent;if(parent.location?.origin!==location.origin||typeof parent.ensureNativeSynkCompanySession!=='function')return null;}catch{return null;}
-  const owner=state.integrated?.companyUserId,context=state.user?transferContext():null,initial=state.integrated;
-  const recovery=parent.ensureNativeSynkCompanySession();if(!recovery)return null;
-  return Promise.resolve(recovery).then(session=>{
-    if(!session)return;
-    if(initial!==state.integrated||context&&!transferContextCurrent(context)||owner&&owner!==session.companyUserId||typeof session.csrfToken!=='string')throw new Error('로그인이 바뀌어 하던 요청을 멈췄어요.');
-    if(state.integrated){const changed=state.integrated.csrfToken!==session.csrfToken;state.integrated.csrfToken=session.csrfToken;if(changed&&state.events)connectEvents();}
-  });
-}
-async function api(path, options = {}){
-  const recovery=companySessionRecovery();if(recovery)await recovery;
-  if(options.signal?.aborted)throw options.signal.reason||Object.assign(new Error('취소한 요청이에요.'),{name:'AbortError'});
-  const identity={userId:state.user?.id,integrated:state.integrated,csrf:state.integrated?.csrfToken};
-  const opts = {...options,credentials:'same-origin',headers:{...options.headers}};
-  const recoveryContext=opts.recoveryContext;delete opts.recoveryContext;
-  if(options.body !== undefined && typeof options.body !== 'string'){opts.body = JSON.stringify(options.body);opts.headers['Content-Type']='application/json';}
-  if(state.integrated?.csrfToken&&opts.method&&opts.method!=='GET')opts.headers['X-CSRF-Token']=state.integrated.csrfToken;
-  const controller=recoveryContext&&typeof AbortController==='function'?new AbortController():null;
-  if(controller)opts.signal=controller.signal;const timeout=controller?setTimeout(()=>controller.abort(),30000):null;
-  let response,data;try{response=await fetch(moduleUrl(path),opts);data=await response.json().catch(()=>({}));}finally{if(controller)clearTimeout(timeout);}
-  if(opts.signal?.aborted)throw opts.signal.reason||Object.assign(new Error('취소한 요청이에요.'),{name:'AbortError'});
-  if(identity.userId!==state.user?.id||identity.integrated!==state.integrated||identity.csrf!==state.integrated?.csrfToken)throw new Error('로그인이 바뀌어 하던 요청을 멈췄어요.');
-  if(recoveryContext&&!transferContextCurrent(recoveryContext))throw new Error('로그인이 바뀌어 하던 요청을 멈췄어요.');
-  if(!response.ok){
-    if(response.status===401&&moduleBase){returnToCompanyLogin();throw new Error('회사 계정으로 다시 로그인해 주세요.');}
-    if(response.status===401 && state.user){state.events?.close();state.user=null;state.queues.forEach(q=>q.forEach(f=>f.xhr?.abort()));state.queues.clear();if(modal.open)modal.close();renderAuth('login');}
-    const error = new Error(data.error || `요청을 처리하지 못했어요. (${response.status})`);error.status=response.status;error.code=data.code;throw error;
-  }
-  return data;
-}
+const companySessionRecovery=createCompanySessionRecovery({state,session:sessionOwner,embedded:()=>Boolean(moduleBase)&&window.parent!==window,parent:()=>window.parent,origin:()=>location.origin,reconnectEvents:()=>connectEvents()});
+const requestApi=createApiClient({state,session:sessionOwner,fetch:(path,options)=>fetch(path,options),moduleUrl,sessionRecovery:()=>companySessionRecovery(),companyHosted:()=>Boolean(moduleBase),abortController:()=>typeof AbortController==='function'?new AbortController():null,setTimer:(callback,delay)=>setTimeout(callback,delay),clearTimer:timer=>clearTimeout(timer),onCompanyLoginExpired:()=>returnToCompanyLogin(),onLoginExpired:()=>{sessionOwner.expire();if(modal.open)modal.close();renderAuth('login');}});
+function api(path,options){return requestApi(path,options);}
 function draftKey(channelId = state.channelId){return `synk-messenger:draft:${state.user?.id}:${channelId}`;}
 function readDraft(){try{return localStorage.getItem(draftKey()) || '';}catch{return '';}}
 function saveDraft(){const box=$('#composer-input');if(!box||!state.user||!state.channelId||state.unavailableChannels.has(state.channelId))return;try{localStorage.setItem(draftKey(),box.value);}catch{}saveComposeExtras();}
@@ -170,17 +143,8 @@ function updateStorageProvider(provider){
   if($('#settings-storage-note'))$('#settings-storage-note').innerHTML=storageNote();
   if($('#composer-input'))updateSend();
 }
-async function refreshStorageProvider(){
-  const userId=state.user?.id,session=state.workNotificationSession,revision=++state.workNotificationRevision,data=await api('/api/bootstrap');
-  if(!userId||userId!==state.user?.id||session!==state.workNotificationSession||(data.user&&data.user.id!==userId))return;
-  const previousWrite=canWriteMessages(),previousScheduler=state.scheduledNotifications.enabled;
-  // A bootstrap refresh of the same login must not invalidate concurrent reads.
-  // Replacing the identity still cancels requests when the company account or CSRF changes.
-  if(data.integrated){if(state.integrated&&state.integrated.companyUserId===data.integrated.companyUserId&&state.integrated.csrfToken===data.integrated.csrfToken)Object.assign(state.integrated,data.integrated);else state.integrated=data.integrated;}if(data.user)state.user=data.user;if(revision===state.workNotificationRevision)setWorkNotificationStatus(data.scheduledNotifications?.enabled);if(data.storage)updateStorageProvider(data.storage.provider);
-  const permissionsChanged=previousWrite!==canWriteMessages();
-  if(permissionsChanged){applyIntegratedUI();syncComposerAccess();}
-  if(permissionsChanged||previousScheduler!==state.scheduledNotifications.enabled){renderMessages({preserve:true});await refreshDetailViews();}
-}
+const refreshBootstrap=createBootstrapRefresh({state,session:sessionOwner,personal:personalPanel,api:(path,options)=>api(path,options),canWrite:()=>canWriteMessages(),setNotificationStatus:enabled=>setWorkNotificationStatus(enabled),updateStorage:provider=>updateStorageProvider(provider),applyPermissions:()=>{applyIntegratedUI();syncComposerAccess();},refreshDetails:async()=>{renderMessages({preserve:true});await refreshDetailViews();}});
+function refreshStorageProvider(){return refreshBootstrap();}
 function storageNote(){return `${storageSentence()} 파일은 저절로 지워지지 않아요. 중요한 자료는 따로 백업해 두세요.${state.user?.role==='member'?'<br>위 숫자는 내가 볼 수 있는 대화만 센 거예요.':''}`;}
 
 function stopBootRecovery(phase='idle'){
@@ -233,12 +197,11 @@ function renderAuth(mode='login'){
 }
 function enterWorkspace(data){
   stopBootRecovery();
-  resetTransfers();state.sendRecovery={messages:data.sendRecovery?.messages===true,uploads:data.sendRecovery?.uploads===true};
+  resetTransfers();
   resetWorkNotificationState();setWorkNotificationStatus(data.scheduledNotifications?.enabled);
   document.body.classList.toggle('integrated-module',Boolean(data.integrated));
   document.body.classList.toggle('viewer-mode',data.integrated?.canWrite===false);
-  Object.assign(state,{platformUrl:data.platformUrl||null,user:data.user,workspace:data.workspace,storage:data.storage||{provider:'local'},integrated:data.integrated||null,channels:data.channels,members:data.members,teams:data.teams||[],fileBytes:data.limits?.fileBytes || 104857600,channelId:null,mode:'chat',messages:[],drawer:null,needsSetup:false,navFilter:'all',roomQuery:'',replyTarget:null,thread:null,pins:[],sharedFiles:[],directoryQuery:'',directoryTeam:'all'});
-  Object.assign(state,{chatCategory:'personal',categoryFilters:{personal:'all',team:'all',all:'all'},categoryChannels:{},navigationSeq:state.navigationSeq+1,unavailableChannels:new Set(),deletingChannels:new Set(),leavingChannels:new Set(),restoringChannels:new Set()});
+  enterWorkspaceState(state,data);
   renderShell();void voiceController()?.init(data);
   let last;try{last=localStorage.getItem(`synk-messenger:last:${state.user.id}`);}catch{}
   const channel=state.channels.find(c=>c.id===last)||state.channels.find(c=>c.kind==='self')||state.channels[0];
@@ -251,27 +214,46 @@ function enterWorkspace(data){
   connectEvents();
   Promise.resolve(initialMessages).catch(error=>{if(state.user===user)toast(error.message,true);});
 }
+// The final shell comes from one template (messenger-shell.js); this only wires it and runs the layout and permission passes.
 function renderShell(){
-  app.innerHTML=`<div class="shell"><button class="mobile-scrim" id="mobile-scrim" aria-label="메뉴 닫기"></button><aside class="sidebar" id="sidebar"><div class="sidebar-brand"><img class="brand-logo" src="assets/synk-ko.svg" alt="싱ㅋ"><span class="brand-context">팀 메신저</span></div><div class="workspace-card"><span class="workspace-symbol">${esc(initials(state.workspace.name).slice(0,1))}</span><div class="workspace-info"><strong>${esc(state.workspace.name)}</strong><span>워크스페이스</span></div>${icon('lock')}</div><button class="sidebar-search" id="global-search">${icon('search')}<span>대화 검색</span><kbd>Ctrl K</kbd></button><nav class="sidebar-scroll" aria-label="대화 목록"><section class="nav-section"><div class="section-label">내 공간</div><div id="self-nav"></div></section><section class="nav-section"><div class="section-label">채널<button class="icon-button small" id="create-channel" aria-label="채널 만들기">${icon('plus')}</button></div><div id="channel-nav"></div></section><section class="nav-section"><div class="section-label">다이렉트 메시지<button class="icon-button small" id="new-dm" aria-label="새 다이렉트 메시지">${icon('plus')}</button></div><div id="dm-nav"></div></section></nav><div class="sidebar-bottom"><div id="connection" class="connection offline"><span class="dot"></span><span>연결하는 중</span></div><button class="profile-button" id="workspace-settings">${avatar(state.user)}<span><strong>${esc(state.user.name)}</strong><small>${state.user.role==='owner'?'워크스페이스 관리자':'팀원'}</small></span>${icon('settings')}</button></div></aside><main class="main"><header class="main-header"><button class="icon-button mobile-menu" id="mobile-menu" aria-label="대화 목록 열기">${icon('menu')}</button><div class="header-title"><div class="header-breadcrumb"><span>${esc(state.workspace.name)}</span>${icon('chevron')}<span id="breadcrumb-type">채널</span></div><h1 id="channel-title"></h1></div><div class="header-actions"><button class="member-count" id="channel-members" aria-label="크루 보기">${icon('users')}<span id="member-number"></span></button><button class="icon-button" id="channel-search" aria-label="이 대화 검색">${icon('search')}</button></div></header><div class="channel-bar"><button class="tab-button active" id="tab-chat">${icon('chat')}대화</button><button class="tab-button" id="tab-files">${icon('folder')}공유한 파일</button><span class="channel-about" id="channel-about"></span></div><div class="content-body"><section class="chat-area" id="chat-area" aria-label="대화"><div class="message-scroll" id="message-scroll"><div id="message-list"></div></div><button class="jump-latest hidden" id="jump-latest">${icon('down')}최신 메시지로</button><div class="composer-wrap"><form class="composer" id="composer-form"><div class="upload-queue hidden" id="upload-queue"></div><textarea id="composer-input" aria-label="메시지 입력" rows="2" maxlength="8000" placeholder="메시지를 남겨 보세요"></textarea><div class="composer-bottom"><button class="icon-button" type="button" id="attach-file" aria-label="파일 첨부">${icon('plus')}</button><button class="icon-button" type="button" id="composer-emoji" aria-label="이모지 넣기">${icon('smile')}</button><span class="composer-hint">Enter로 전송 · Shift + Enter로 줄바꿈</span><button class="send-button" type="submit" id="send-message" aria-label="메시지 보내기" disabled>${icon('send')}</button></div><input id="file-input" class="hidden" type="file" multiple></form><div class="composer-footnote"><span id="composer-status">파일을 끌어다 놓아도 돼요.</span><span id="composer-storage">${uploadDestination()} · 파일당 최대 ${bytes(state.fileBytes)}</span></div></div><div class="drop-overlay hidden" id="drop-overlay">${icon('upload')}<strong>여기에 놓으면 첨부돼요</strong><span>한 번에 5개 · 파일당 최대 ${bytes(state.fileBytes)}</span></div></section><section class="files-view hidden" id="files-view" aria-label="공유한 파일"></section><aside class="drawer hidden" id="drawer"></aside></div></main></div>`;
-  enhanceConversationShell();
-  installMessengerDesign();
+  app.innerHTML=shellHtml({embedded:Boolean(moduleBase),workspaceName:state.workspace.name,user:state.user,chatCategory:state.chatCategory,platformEntry:platformEntry(),uploadDestination:uploadDestination(),fileLimit:bytes(state.fileBytes)},{icon,esc,avatar,initials});
+  wireShell();
+  applyDirectoryLayout();renderDirectory();
   renderNavigation();
   syncSidebarAccess();
   applyIntegratedUI();
+}
+function wireShell(){
+  $('#chat-category-tabs').onclick=event=>{const button=event.target.closest('[data-chat-category]');if(button)selectChatCategory(button.dataset.chatCategory);};
+  $('#chat-category-tabs').onkeydown=event=>{const button=event.target.closest('[data-chat-category]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const index=chatCategories.findIndex(([key])=>key===button.dataset.chatCategory),next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;const key=chatCategories[next][0];selectChatCategory(key);$(`[data-chat-category="${key}"]`)?.focus({preventScroll:true});};
+  $$('[data-nav-filter]').forEach(button=>button.onclick=()=>{state.navFilter=button.dataset.navFilter;state.categoryFilters[state.chatCategory]=state.navFilter;renderNavigation();});
+  $('#room-filter').oninput=event=>{state.roomQuery=event.target.value;renderNavigation();};
+  $('#clear-room-filter').onclick=()=>{state.roomQuery='';$('#room-filter').value='';renderNavigation();$('#room-filter').focus();};
   $('#sidebar').onclick=handleSidebarAction;
   $('#mobile-menu').onclick=()=>setMobileMenu(true);$('#mobile-scrim').onclick=()=>setMobileMenu(false);
   $('#create-channel').onclick=createChannelDialog;$('#channel-members').onclick=focusDirectory;
+  $('#deleted-projects').onclick=deletedProjectsDialog;
   $('#global-search').onclick=()=>openDrawer('search',false);
   $('#workspace-settings').onclick=settingsDialog;$('#invite-button')?.addEventListener('click',inviteDialog);
   $('#tab-chat').onclick=()=>setMode('chat');$('#tab-files').onclick=()=>setMode('files');
+  $('#tab-pins').onclick=()=>setMode('pins');
+  $('#employee-search').oninput=event=>{state.directoryQuery=event.target.value;renderDirectory();};
+  $('#directory-team').onchange=event=>{state.directoryTeam=event.target.value;renderDirectory();};
+  $('#employee-directory').onclick=event=>{const filter=event.target.closest('[data-directory-filter]');if(filter){state.directoryTeam=filter.dataset.directoryFilter;renderDirectory();}const person=event.target.closest('[data-contact]');if(person)openDirectMessage(person.dataset.contact,person);};
+  $('#directory-back').onclick=()=>{$('.shell').classList.remove('directory-open');$('#sidebar').classList.remove('directory-focus');$('#global-search')?.focus({preventScroll:true});};
   $('#composer-form').onsubmit=sendMessage;
   $('#composer-input').addEventListener('input',()=>{saveDraft();resizeComposer();updateSend();updateMentionPicker();});
   $('#composer-input').addEventListener('compositionstart',()=>composition=true);$('#composer-input').addEventListener('compositionend',()=>{composition=false;updateMentionPicker();});
   $('#composer-input').addEventListener('keydown',event=>{if(mentionKeyboard(event))return;if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!composition&&event.keyCode!==229){event.preventDefault();if(!$('#send-message').disabled)$('#composer-form').requestSubmit();}});
+  $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('workday');$('#channel-notifications').onclick=roomSettingsDialog;
+  $('#mention-picker').onmousedown=event=>event.preventDefault();$('#mention-picker').onclick=event=>{const button=event.target.closest('[data-mention-index]');if(button)chooseMention(Number(button.dataset.mentionIndex));};
   $('#attach-file').onclick=()=>$('#file-input').click();$('#file-input').onchange=event=>{addFiles([...event.target.files]);event.target.value='';};
   $('#composer-emoji').onclick=()=>reactionDialog(null);
+  $('#composer-mention').onclick=()=>{if(!canPostToChannel())return;const box=$('#composer-input');box.focus();const before=box.value.slice(0,box.selectionStart);box.setRangeText((before&&!/\s$/.test(before)?' ':'')+'@',box.selectionStart,box.selectionEnd,'end');saveDraft();resizeComposer();updateSend();updateMentionPicker();};
+  $('#reply-context').onclick=event=>{if(event.target.closest('[data-cancel-reply]'))clearReply();};
   $('#upload-queue').onclick=event=>{const retry=event.target.closest('[data-upload-retry]');if(retry)return retryUpload(retry.dataset.uploadRetry);const btn=event.target.closest('[data-upload-remove]');if(btn)removeUpload(btn.dataset.uploadRemove);};
   $('#message-list').onclick=handleMessageAction;
+  $('#pins-view').onclick=handleMessageAction;
   $('#jump-latest').onclick=()=>scrollToBottom();
   $('#message-scroll').onscroll=()=>{const box=$('#message-scroll');$('#jump-latest').classList.toggle('hidden',box.scrollHeight-box.scrollTop-box.clientHeight<200);};
   const area=$('#chat-area');area.addEventListener('dragenter',event=>{if(canPostToChannel()&&[...event.dataTransfer.types].includes('Files')){event.preventDefault();dragDepth++;$('#drop-overlay').classList.remove('hidden');}});area.addEventListener('dragover',event=>{if(canPostToChannel()&&[...event.dataTransfer.types].includes('Files')){event.preventDefault();event.dataTransfer.dropEffect='copy';}});area.addEventListener('dragleave',()=>{dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop-overlay').classList.add('hidden');});area.addEventListener('drop',event=>{event.preventDefault();dragDepth=0;$('#drop-overlay').classList.add('hidden');addFiles([...event.dataTransfer.files]);});
@@ -298,8 +280,6 @@ function setMobileMenu(open,{restoreFocus=true}={}){
   else if(wasOpen&&restoreFocus){const target=sidebarReturnFocus?.isConnected?sidebarReturnFocus:$('#mobile-menu');if(target&&!target.closest('[inert]'))target.focus({preventScroll:true});}
   if(wasOpen&&!open&&state.messages.length)markRead(state.channelId);
 }
-mobileLayout.addEventListener('change',()=>{setMobileMenu(false,{restoreFocus:false});syncSidebarAccess();});
-directoryWide.addEventListener('change',()=>{applyDirectoryLayout();syncDrawerAccess();});
 function matchesRoomQuery(room){
   const query=state.roomQuery?.trim().toLocaleLowerCase();if(!query)return true;
   const person=room.kind==='dm'?state.members.find(member=>member.id!==state.user.id&&room.memberIds?.includes(member.id)):null;
@@ -473,30 +453,13 @@ async function refreshMessages(){
 }
 async function loadEarlier(button){if(!state.messages.length)return;button.disabled=true;const seq=state.loadSeq,box=$('#message-scroll'),oldHeight=box.scrollHeight;try{const result=await api(`/api/channels/${id(state.channelId)}/messages?before=${id(state.messages[0].id)}`);if(seq!==state.loadSeq)return;state.messages=[...result.messages,...state.messages];state.hasMore=result.hasMore;renderMessages();box.scrollTop=box.scrollHeight-oldHeight;}catch(error){toast(error.message,true);button.disabled=false;}}
 function resizeComposer(){const box=$('#composer-input');if(!box)return;box.style.height='auto';box.style.height=`${Math.min(box.scrollHeight,190)}px`;}
-function transferContext(){return{userId:state.user?.id,session:state.transferSession};}
-function transferContextCurrent(context){return Boolean(context.userId&&context.userId===state.user?.id&&context.session===state.transferSession);}
-function resetTransfers(){
-  state.transferSession++;state.sending=false;state.sendAttempts.clear();
-  for(const uploads of state.queues.values())for(const upload of uploads){upload.cancelled=true;upload.rawFile=null;upload.xhr?.abort();}
-  state.queues.clear();
-}
-function sendAttemptKey(channelId,userId=state.user?.id){return `synk-messenger:send:${userId}:${channelId}`;}
-function sendAttempt(channelId=state.channelId){
-  if(!channelId||!state.user||state.unavailableChannels.has(channelId))return null;
-  const key=sendAttemptKey(channelId);if(state.sendAttempts.has(key))return state.sendAttempts.get(key);
-  let attempt=null;try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved?.userId===state.user.id&&saved.channelId===channelId&&typeof saved.clientMessageId==='string'&&/^[0-9a-f-]{36}$/i.test(saved.clientMessageId)&&typeof saved.payload?.body==='string'&&Array.isArray(saved.payload.fileIds))attempt={...saved,busy:false,status:'unknown'};}catch{}
-  state.sendAttempts.set(key,attempt);return attempt;
-}
-function persistSendAttempt(attempt){
-  const {busy,status,...saved}=attempt;
-  try{localStorage.setItem(sendAttemptKey(attempt.channelId,attempt.userId),JSON.stringify(saved));return true;}
-  catch{return false;}
-}
-function forgetSendAttempt(attempt){
-  const key=sendAttemptKey(attempt.channelId,attempt.userId);
-  if(state.sendAttempts.get(key)===attempt)state.sendAttempts.set(key,null);
-  try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved?.clientMessageId===attempt.clientMessageId)localStorage.removeItem(key);}catch{}
-}
+function transferContext(){return sessionOwner.transferContext();}
+function transferContextCurrent(context){return sessionOwner.transferCurrent(context);}
+function resetTransfers(){sessionOwner.resetTransfers();}
+function sendAttemptKey(channelId,userId=state.user?.id){return sendAttemptStore.key(channelId,userId);}
+function sendAttempt(channelId=state.channelId){return sendAttemptStore.get(channelId);}
+function persistSendAttempt(attempt){return sendAttemptStore.persist(attempt);}
+function forgetSendAttempt(attempt){sendAttemptStore.forget(attempt);}
 function currentComposeSnapshot(){return{body:$('#composer-input')?.value||'',replyToId:state.replyTarget?.id||null,fileIds:queue().filter(item=>item.file&&!item.cancelled).map(item=>item.file.id),...composePayload()};}
 function beginTransferFocus(selector){
   const focused=document.activeElement;if(!focused?.matches?.(selector))return null;
@@ -507,10 +470,6 @@ function finishTransferFocus(saved){
   const focused=document.activeElement;if(focused&&focused!==document.body&&focused!==document.documentElement&&focused.isConnected!==false)return;
   const action=document.querySelector(saved.selector),target=action&&!action.disabled?action:$('#composer-input');if(target&&!target.disabled)target.focus({preventScroll:true});
 }
-document.addEventListener('focusin',event=>{if(event.target!==document.body&&event.target!==document.documentElement)state.transferFocusRevision++;});
-document.addEventListener('pointerdown',()=>{state.transferFocusRevision++;});
-window.addEventListener('blur',()=>{state.transferFocusRevision++;});
-document.addEventListener('keydown',event=>{if(event.key==='Tab')state.transferFocusRevision++;});
 function renderSendRecovery(){
   const form=$('#composer-form');if(!form)return;
   let wrap=$('#send-recovery');if(!wrap){form.insertAdjacentHTML('afterbegin','<section id="send-recovery" class="send-recovery hidden" aria-label="메시지 전송 확인" aria-live="polite"></section>');wrap=$('#send-recovery');}if(!wrap)return;
@@ -540,7 +499,7 @@ async function sendMessage(event){
   if(!persistSendAttempt(attempt)){toast('브라우저에 보내기 기록을 저장하지 못했어요. 저장 공간을 비운 뒤 다시 보내 주세요.',true);return;}
   state.sendAttempts.set(sendAttemptKey(attempt.channelId),attempt);await postSendAttempt(attempt);
 }
-function attemptCurrent(attempt,context){return transferContextCurrent(context)&&!state.unavailableChannels.has(attempt.channelId)&&state.sendAttempts.get(sendAttemptKey(attempt.channelId,attempt.userId))===attempt;}
+function attemptCurrent(attempt,context){return sendAttemptStore.current(attempt,context);}
 function completeSendAttempt(attempt,result,{deleted=false}={}){
   const channelId=attempt.channelId,payload=attempt.payload,active=state.channelId===channelId;
   const uploads=state.queues.get(channelId)||[];
@@ -923,38 +882,10 @@ async function refreshDriveStatus(){
 }
 async function inviteDialog(){if(state.integrated){parentMessage('messenger:team');return;}openModal('팀원 초대하기',`<p class="modal-description">초대 코드를 받은 팀원이 자기 아이디와 비밀번호를 만들어 들어와요. 코드는 7일 동안 한 번만 쓸 수 있어요.</p><div class="settings-note">지금은 이 PC에서만 시험하는 중이에요. 다른 기기에서 들어오려면 서버 연결을 먼저 준비해야 해요.</div><button class="button primary full" id="generate-invite">${icon('plus')}초대 코드 만들기</button><div id="generated-invite"></div><div id="modal-error" class="form-error hidden" role="alert"></div><div class="invite-list" id="invite-list"></div>`);$('#generate-invite').onclick=async event=>{const button=event.currentTarget;button.disabled=true;try{const result=await api('/api/invites',{method:'POST',body:{}});$('#generated-invite').innerHTML=`<div class="code-display"><code id="new-invite-code">${esc(result.code)}</code><button class="icon-button" id="copy-code" aria-label="초대 코드 복사">${icon('copy')}</button></div><p class="tiny muted invite-expiry">${shortDate(result.expiresAt)}까지 쓸 수 있어요. 지금만 보이니 복사해 두세요.</p>`;$('#copy-code').onclick=async()=>{try{await navigator.clipboard.writeText(result.code);toast('초대 코드를 복사했어요.');}catch{const range=document.createRange();range.selectNodeContents($('#new-invite-code'));const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);toast('코드를 선택했어요. Ctrl+C로 복사해 주세요.');}};await loadInvites();}catch(error){formError(error.message);}finally{button.disabled=false;}};await loadInvites();}
 async function loadInvites(){try{const result=await api('/api/invites');const list=$('#invite-list');if(!list)return;list.innerHTML=`<h3>만든 초대 코드</h3>${result.invites.length?result.invites.map(inv=>{const expired=new Date(inv.expiresAt)<new Date(),inactive=inv.usedAt||inv.revokedAt||expired;const status=inv.usedAt?'가입 완료':inv.revokedAt?'취소됨':expired?'만료됨':'쓸 수 있음';return `<div class="invite-row"><div><strong>${shortDate(inv.createdAt)} 만듦 · ${status}</strong><span>${shortDate(inv.expiresAt)} 만료</span></div>${!inactive?`<button class="text-button" data-revoke="${esc(inv.id)}">초대 취소</button>`:''}</div>`;}).join(''):'<p class="tiny muted">아직 만든 코드가 없어요.</p>'}`;$$('[data-revoke]',list).forEach(button=>button.onclick=async()=>{button.disabled=true;try{await api(`/api/invites/${id(button.dataset.revoke)}`,{method:'DELETE'});await loadInvites();toast('초대 코드를 취소했어요.');}catch(error){formError(error.message);button.disabled=false;}});}catch(error){formError(error.message);}}
-document.addEventListener('keydown',event=>{
-  if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&state.user){event.preventDefault();if(!modal.open)openDrawer('search');}
-  if(event.key==='Escape'&&!modal.open){setMobileMenu(false);closeDrawer();}
-  if(event.key==='Tab'&&mobileLayout.matches&&$('#sidebar')?.classList.contains('open')&&!modal.open){
-    const targets=[...$$('[data-chat-category][aria-selected="true"]'),$('#mobile-scrim'),...$$('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled)',$('#sidebar'))].filter(element=>element?.getClientRects().length);
-    if(!targets.length)return;const first=targets[0],last=targets.at(-1);
-    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
-    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
-  }
-});
-document.addEventListener('visibilitychange',()=>{resumeBootRecovery();if(!document.hidden&&state.user){refreshChannels().catch(()=>{});refreshMessages().catch(()=>{});refreshVisibleWorkday().catch(()=>{});}else cancelWorkdayRefresh();});
-window.addEventListener('online',resumeBootRecovery);
-window.addEventListener('pagehide',()=>{const resume=bootRecovery.phase==='loading'||bootRecovery.phase==='waiting';stopBootRecovery('closed');bootRecovery.resumeOnRestore=resume;});
-// A restored page resumes an unfinished bootstrap; any other restored screen
-// keeps working buttons (a permanent-failure screen can still retry manually).
-window.addEventListener('pageshow',event=>{if(!event.persisted||bootRecovery.phase!=='closed')return;if(bootRecovery.resumeOnRestore){stopBootRecovery('waiting');resumeBootRecovery();}else stopBootRecovery();});
-window.addEventListener('beforeunload',saveDraft);
-for(const eventType of ['dragover','drop'])window.addEventListener(eventType,event=>{if(state.user&&[...(event.dataTransfer?.types||[])].includes('Files'))event.preventDefault();});
 
 function canWriteMessages(){return state.integrated?.canWrite!==false;}
 function canPostToChannel(channel=selectedConversation()){return Boolean(channel)&&!state.unavailableChannels.has(channel.id)&&!state.deletingChannels.has(channel.id)&&!state.leavingChannels.has(channel.id)&&canWriteMessages()&&channel.canPost!==false;}
 function canPostMessage(message){const channel=message?.channelId?state.channels.find(item=>item.id===message.channelId):selectedConversation();return canPostToChannel(channel||null);}
-function installDirectory(){
-  $('.shell').insertAdjacentHTML('beforeend',`<aside class="employee-directory" id="employee-directory" aria-label="회사 크루 목록"><div class="directory-heading"><div><span class="directory-eyebrow">PEOPLE</span><h2>크루 목록 <span id="directory-count"></span></h2></div>${icon('users')}</div><label class="directory-search">${icon('search')}<input id="employee-search" type="search" placeholder="이름이나 팀으로 찾기" aria-label="크루 검색" autocomplete="off"></label><label class="directory-team-select"><span class="sr-only">팀별 크루 보기</span><select id="directory-team" aria-label="팀별 크루 보기"></select></label><div class="directory-list" id="directory-list"></div><p class="directory-footnote">이름을 누르면 개인 대화가 열려요.</p></aside>`);
-  $('#employee-search').oninput=event=>{state.directoryQuery=event.target.value;renderDirectory();};
-  $('#directory-team').onchange=event=>{state.directoryTeam=event.target.value;renderDirectory();};
-  $('#employee-directory').onclick=event=>{const filter=event.target.closest('[data-directory-filter]');if(filter){state.directoryTeam=filter.dataset.directoryFilter;renderDirectory();}const person=event.target.closest('[data-contact]');if(person)openDirectMessage(person.dataset.contact,person);};
-  $('.directory-heading').insertAdjacentHTML('beforeend',`<button class="icon-button directory-back" id="directory-back" aria-label="대화 목록으로 돌아가기" title="대화 목록으로 돌아가기">${icon('arrow')}</button>`);
-  $('#directory-back').onclick=()=>{$('.shell').classList.remove('directory-open');$('#sidebar').classList.remove('directory-focus');$('#global-search')?.focus({preventScroll:true});};
-  $('#channel-members').setAttribute('aria-label','크루 목록 보기');
-  applyDirectoryLayout();renderDirectory();
-}
 function applyDirectoryLayout(){
   const directory=$('#employee-directory'),shell=$('.shell'),sidebar=$('#sidebar');if(!directory||!shell||!sidebar)return;
   const wide=directoryWide.matches;shell.classList.toggle('directory-wide',wide);sidebar.classList.toggle('directory-inside',!wide);
@@ -1009,55 +940,6 @@ async function openTeamConversation(teamId,button){
 }
 function platformEntry(){
   return state.platformUrl?`<a class="platform-entry" href="${esc(state.platformUrl)}" target="_top" rel="noreferrer" referrerpolicy="no-referrer" aria-label="SYNK 플랫폼으로 이동">SYNK 플랫폼</a>`:'';
-}
-function installMessengerDesign(){
-  const tabs=$('#chat-category-tabs');
-  const wordmark='<img src="assets/synk-ko.svg" alt="싱ㅋ" width="560" height="328">';
-  tabs.insertAdjacentHTML('beforebegin',`<div class="messenger-topbar"><div class="messenger-brand">${moduleBase?`<a href="/?tab=home" target="_top" aria-label="홈으로 이동">${wordmark}</a>`:wordmark}<strong>메신저</strong></div><div class="messenger-quick-tools" aria-label="내 업무 바로가기"></div></div>`);
-  $('.messenger-topbar').insertBefore(tabs,$('.messenger-quick-tools'));
-  for(const button of $$('[data-chat-category]'))button.insertAdjacentHTML('afterbegin',icon(chatCategories.find(([key])=>key===button.dataset.chatCategory)?.[2]));
-  const bell=$('#personal-bell');bell.classList.remove('icon-button');bell.classList.add('quick-tool');bell.insertAdjacentHTML('beforeend','<span>내 업무</span>');bell.setAttribute('title','내 업무 · 할 일, 알림, 저장');bell.setAttribute('aria-label','내 업무 · 할 일, 알림, 저장');$('.messenger-quick-tools').append(bell);
-
-  if(!moduleBase&&state.platformUrl)$('.messenger-quick-tools').insertAdjacentHTML('afterbegin',platformEntry());
-  if(moduleBase){
-    $('#sidebar').insertBefore(tabs,$('#global-search'));
-    $('.header-actions').prepend($('.messenger-quick-tools'));
-    $('.messenger-topbar').remove();
-  }
-  $('#global-search').insertAdjacentHTML('afterend',`<label class="room-filter-label">${icon('search')}<input type="search" id="room-filter" aria-label="대화방 찾기" placeholder="대화방 찾기" autocomplete="off"><button type="button" id="clear-room-filter" class="icon-button small hidden" aria-label="찾는 말 지우기">${icon('close')}</button></label>`);
-  $('.sidebar-scroll').insertAdjacentHTML('beforeend','<p class="sidebar-hint hidden" id="room-filter-empty" role="status">맞는 대화방이 없어요.<br>다른 이름이나 팀으로 찾아보세요.</p>');
-  $('#room-filter').oninput=event=>{state.roomQuery=event.target.value;renderNavigation();};
-  $('#clear-room-filter').onclick=()=>{state.roomQuery='';$('#room-filter').value='';renderNavigation();$('#room-filter').focus();};
-  $('.header-title').append($('#channel-about'));
-  $('#channel-members').insertAdjacentHTML('beforeend','<span class="member-button-label">크루</span>');
-  $('#channel-search').remove();
-  $('#global-search').innerHTML=`${icon('search')}<span>메시지 검색</span><kbd>Ctrl K</kbd>`;
-  $('#channel-notifications').setAttribute('title','대화방 설정');
-  $('#attach-file').innerHTML=`${icon('attach')}<span>파일</span>`;$('#attach-file').classList.add('composer-tool');
-  $('#composer-emoji').classList.add('composer-tool');$('#composer-emoji').setAttribute('title','이모지 넣기');
-  $('#composer-emoji').insertAdjacentHTML('afterend','<button class="composer-tool" type="button" id="composer-mention" aria-label="크루 멘션 넣기" title="크루 멘션 넣기"><span aria-hidden="true">@</span></button>');
-  $('#composer-mention').onclick=()=>{if(!canPostToChannel())return;const box=$('#composer-input');box.focus();const before=box.value.slice(0,box.selectionStart);box.setRangeText((before&&!/\s$/.test(before)?' ':'')+'@',box.selectionStart,box.selectionEnd,'end');saveDraft();resizeComposer();updateSend();updateMentionPicker();};
-  $('#send-message').innerHTML=`<span>보내기</span>${icon('send')}`;
-  $('.directory-footnote').innerHTML=`${icon('chat')}<span>크루를 누르면<br>개인 대화가 바로 열려요.</span>`;
-}
-function enhanceConversationShell(){
-  $('.shell').insertAdjacentHTML('afterbegin',`<div class="chat-categories" id="chat-category-tabs" role="tablist" aria-label="채팅 종류">${chatCategories.map(([key,label])=>`<button type="button" role="tab" id="chat-category-${key}" data-chat-category="${key}" aria-controls="conversation-panel" aria-selected="${key===state.chatCategory}" tabindex="${key===state.chatCategory?0:-1}"><span>${label}</span><span class="category-unread hidden"></span></button>`).join('')}</div>`);
-  $('.main').id='conversation-panel';$('.main').setAttribute('role','tabpanel');
-  $('#chat-category-tabs').onclick=event=>{const button=event.target.closest('[data-chat-category]');if(button)selectChatCategory(button.dataset.chatCategory);};
-  $('#chat-category-tabs').onkeydown=event=>{const button=event.target.closest('[data-chat-category]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const index=chatCategories.findIndex(([key])=>key===button.dataset.chatCategory),next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;const key=chatCategories[next][0];selectChatCategory(key);$(`[data-chat-category="${key}"]`)?.focus({preventScroll:true});};
-  $('#global-search').insertAdjacentHTML('afterend',`<div class="conversation-filters" role="group" aria-label="대화 필터"><button class="active" data-nav-filter="all" aria-pressed="true">전체</button><button data-nav-filter="unread" aria-pressed="false">안 읽음 <span id="nav-unread-count" class="filter-count hidden"></span></button></div>`);
-  $('.sidebar-scroll').innerHTML=`<div id="unread-empty" class="unread-empty hidden">${icon('check')}<strong>다 읽었어요</strong><span>새 메시지가 오면 여기에 모여요.</span></div><section class="nav-section" data-chat-section="personal" aria-label="개인 대화방"><div id="self-nav"></div><div id="dm-nav"></div></section><section class="nav-section hidden" data-chat-section="team" aria-label="우리 팀 대화방"><div id="team-nav"></div></section><section class="nav-section hidden" data-chat-section="all" aria-label="공용·프로젝트 대화방"><div class="section-label"><button class="create-project-link" id="create-channel" type="button" aria-label="새 대화방 만들기">새 대화방 ${icon('plus')}</button></div><div id="channel-nav"></div><button class="deleted-projects-link" id="deleted-projects">${icon('trash')}삭제된 대화방</button></section>`;
-  $('.channel-bar').insertAdjacentHTML('afterend','<div class="project-participation hidden" id="project-participation" aria-label="프로젝트 참여 크루"></div>');
-  $('#tab-files').insertAdjacentHTML('afterend',`<button class="tab-button" id="tab-pins" aria-pressed="false">${icon('pin')}고정 메시지</button>`);
-  $('#files-view').insertAdjacentHTML('afterend','<section class="pins-view hidden" id="pins-view" aria-label="고정 메시지"></section>');
-  $('#composer-form').insertAdjacentHTML('beforebegin','<p class="channel-write-notice hidden" id="channel-write-notice" role="status"></p>');
-  $('#composer-form').insertAdjacentHTML('afterbegin','<div class="reply-context hidden" id="reply-context"></div>');
-  $$('[data-nav-filter]').forEach(button=>button.onclick=()=>{state.navFilter=button.dataset.navFilter;state.categoryFilters[state.chatCategory]=state.navFilter;renderNavigation();});
-  $('#deleted-projects').onclick=deletedProjectsDialog;
-  $('#tab-pins').onclick=()=>setMode('pins');
-  $('#reply-context').onclick=event=>{if(event.target.closest('[data-cancel-reply]'))clearReply();};
-  $('#pins-view').onclick=handleMessageAction;
-  installDirectory();installProductivityUI();
 }
 function replyDraftKey(channelId=state.channelId){return `synk-messenger:reply:${state.user?.id}:${channelId}`;}
 function restoreReply(){state.replyTarget=null;try{const reply=JSON.parse(localStorage.getItem(replyDraftKey())||'null');if(reply?.channelId===state.channelId&&reply.id&&reply.user)state.replyTarget=reply;}catch{}}
@@ -1151,7 +1033,7 @@ async function handleWorkspaceOpen(value){
   }catch(error){if(active())toast(error.message,true);}
   finally{if(state.workspaceOpenId===value.requestId)state.workspaceOpenPending=false;parentMessage('messenger:open-received',{requestId:value.requestId});}
 }
-window.addEventListener('message',async event=>{
+async function handleParentMessage(event){
   if(!moduleBase||event.origin!==location.origin||event.source!==window.parent||!event.data||typeof event.data!=='object')return;
   if(event.data.type==='workspace:ready-check'){if(moduleReady)parentMessage('messenger:ready');return;}
   if(event.data.type==='workspace:visible'){const wasVisible=moduleVisible;moduleVisible=Boolean(event.data.visible);if(moduleVisible&&!wasVisible)resumeBootRecovery();if(!moduleVisible&&state.workspaceOpenPending){state.navigationSeq++;state.workspaceOpenId=null;state.workspaceOpenPending=false;}if(moduleVisible&&state.user){refreshVisibleWorkday().catch(()=>{});await refreshChannels().catch(()=>{});await refreshMessages().catch(()=>{});}else cancelWorkdayRefresh();return;}
@@ -1168,7 +1050,7 @@ window.addEventListener('message',async event=>{
     setMode('chat');closeDrawer();state.workspaceLink=link;saveDraft();renderComposeExtras();updateSend();$('#composer-input').focus();
     toast('공유 카드를 메시지 칸에 넣었어요. 보고 나서 보내 주세요.');parentMessage('messenger:share-received',{requestId:event.data.requestId});
   }
-});
+}
 
 
 function safeWorkspaceLink(value){
@@ -1217,27 +1099,15 @@ function messageProductivityHtml(message){
   return workspaceCardHtml(message.workspaceLink)+(task?`<button class="message-task" data-action="task">${icon('task')}<span><strong>${esc(task.title)}</strong><small>${esc(task.assignee?.name||'담당 미정')} · ${taskStatusLabel(taskStage(task))}${task.dueDate?' · '+workdayDueHtml(task.dueDate,taskStage(task)==='done'?'':task.workday?.date||''):''}</small></span>${icon('chevron')}</button>`:'')+(message.ackRequired?`<div class="message-ack"><button type="button" class="ack-button${message.acknowledged?' checked':''}" data-action="ack" ${message.acknowledged?'disabled':''}>${icon('check')}${message.acknowledged?'확인함':'확인했어요'}</button><button class="text-button" data-action="ack-list">확인 ${Number(message.ackCount)||0}명 · 명단 보기</button></div>`:'')+(reminder?`<span class="message-reminder">${icon('clock')}${esc(dateTimeLabel(reminder.remindAt))} ${reminderStatusHtml(reminder)}</span>`:'');
 }
 function messageProductivityTools(message){return `<button class="icon-button" data-action="save" aria-label="${message.saved?'저장 해제':'메시지 저장'}" aria-pressed="${Boolean(message.saved)}">${icon('bookmark')}</button><button class="icon-button" data-action="remind" aria-label="나중에 다시 보기">${icon('clock')}</button>${canPostMessage(message)||message.task?`<button class="icon-button" data-action="task" aria-label="${message.task?'할 일 보기':'할 일로 만들기'}">${icon('task')}</button>`:''}${canPostMessage(message)?`<button class="icon-button" data-action="decision" aria-label="결정·최종본으로 기록">${icon('note')}</button>`:''}`;}
-function installProductivityUI(){
-  $('.header-actions').insertAdjacentHTML('afterbegin',`<button type="button" class="icon-button personal-bell" id="personal-bell" aria-label="내 업무">${icon('bell')}<span id="personal-unread" hidden></span></button>`);
-  $('#channel-search').insertAdjacentHTML('afterend',`<button type="button" class="icon-button" id="channel-notifications" aria-label="대화방 설정" title="대화방 설정">${icon('settings')}</button>`);
-  $('#composer-input').insertAdjacentHTML('beforebegin','<div id="compose-extras" class="compose-extras hidden"></div><div id="mention-picker" class="mention-picker hidden" role="listbox" aria-label="멘션할 크루"></div>');
-  $('#composer-input').setAttribute('aria-controls','mention-picker');$('#composer-input').setAttribute('aria-autocomplete','list');$('#composer-input').setAttribute('aria-expanded','false');
-  $('#mention-picker').onmousedown=event=>event.preventDefault();$('#mention-picker').onclick=event=>{const button=event.target.closest('[data-mention-index]');if(button)chooseMention(Number(button.dataset.mentionIndex));};
-  $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('workday');$('#channel-notifications').onclick=roomSettingsDialog;
-}
 async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}setPersonalTabCount('notifications',state.notificationCount);$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
 const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 글에 답글',message:'새 메시지',reminder:'다시 볼 시간',task:'할 일 바뀜',client_workflow:'고객 업무',automation_health:'자동화 상태',social_publishing:'SNS 게시',due_digest:'마감 알림'};
 function taskStatusLabel(value){return{todo:'할 일',requested:'수락 전',accepted:'수락함',doing:'진행 중',review:'검토 중',changes:'수정 요청',done:'완료'}[value]||'할 일';}
-function taskStage(task){return task?.stage||({todo:'requested',doing:'doing',done:'done'}[task?.status])||'requested';}
+function taskStage(task){return taskModel.taskStage(task);}
 function workdayRefreshActive(){return Boolean(state.user&&state.drawer==='personal'&&state.personalTab==='workday'&&!document.hidden&&moduleVisible);}
-function cancelWorkdayRefresh(){clearTimeout(workdayTimer);workdayTimer=null;workdayTimerVersion++;}
+function cancelWorkdayRefresh(){personalPanel.stopRefresh();}
 function scheduleWorkdayRefresh(delay){
   cancelWorkdayRefresh();if(!workdayRefreshActive()||!Number.isInteger(delay)||delay<1001||delay>86401000)return;
-  const version=workdayTimerVersion,userId=state.user.id,session=state.workNotificationSession;
-  workdayTimer=setTimeout(()=>{
-    if(version!==workdayTimerVersion||userId!==state.user?.id||session!==state.workNotificationSession)return;
-    workdayTimer=null;if(workdayRefreshActive())loadPersonalPanel({background:true}).catch(()=>{});
-  },delay);
+  personalPanel.startRefresh(delay,()=>{if(workdayRefreshActive())loadPersonalPanel({background:true}).catch(()=>{});});
 }
 async function refreshVisibleWorkday(){if(workdayRefreshActive())await loadPersonalPanel({background:true});else cancelWorkdayRefresh();}
 const personalTabs=[['workday','오늘'],['catchup','바뀐 것'],['tasks','전체'],['notifications','알림'],['decisions','결정·최종본'],['saved','저장']];
@@ -1334,12 +1204,12 @@ async function attachDeadlineSettings(){
   }catch(error){if(error.status===404&&userId===state.user?.id&&session===state.workNotificationSession)state.deadlineSettings=null;}
 }
 function deadlineSettingsLabel(settings){return !settings?.enabled?'마감 알림 꺼짐':settings.schedulerEnabled===false?'마감 알림 · 회사 알림 꺼짐':settings.includeWeekends?'마감 알림 · 매일 오전 9시':'마감 알림 · 평일 오전 9시';}
-function setWorkNotificationStatus(enabled,{invalidatePending=false}={}){if(invalidatePending)state.workNotificationRevision++;state.scheduledNotifications={enabled:typeof enabled==='boolean'?enabled:null};$$('[data-reminder-status]').forEach(label=>{label.textContent=reminderStatusLabel({deliveredAt:label.dataset.reminderDelivered==='1'});});}
-function resetWorkNotificationState(){cancelWorkdayRefresh();state.personalSeq++;state.workNotificationSession++;setWorkNotificationStatus(null,{invalidatePending:true});state.deadlineSettings=undefined;state.deadlineSettingsUser=null;state.publicationWork=[];state.customerWork=[];state.clientRechecks={};state.clientRecheckToday=null;state.customerGroupIdentity=null;state.workdaySnapshot=null;state.workdayBody=null;state.workdayCount=null;}
+function setWorkNotificationStatus(enabled,options){personalPanel.applyNotificationStatus(enabled,options);}
+function resetWorkNotificationState(){personalPanel.reset();}
 async function loadWorkNotificationSettings(){
-  const userId=state.user?.id,session=state.workNotificationSession,revision=++state.workNotificationRevision;
-  try{const settings=await api('/api/workday/notifications');if(!userId||userId!==state.user?.id||session!==state.workNotificationSession||revision!==state.workNotificationRevision)return null;state.deadlineSettings=settings;state.deadlineSettingsUser=userId;setWorkNotificationStatus(settings.schedulerEnabled);return settings;}
-  catch(error){if(userId!==state.user?.id||session!==state.workNotificationSession||revision!==state.workNotificationRevision)return null;setWorkNotificationStatus(null);throw error;}
+  const ticket=personalPanel.ticket({revise:true});
+  try{const settings=await api('/api/workday/notifications');if(!personalPanel.current(ticket))return null;state.deadlineSettings=settings;state.deadlineSettingsUser=ticket.userId;setWorkNotificationStatus(settings.schedulerEnabled);return settings;}
+  catch(error){if(!personalPanel.matches(ticket))return null;setWorkNotificationStatus(null);throw error;}
 }
 function reminderStatusLabel(reminder){return reminder.deliveredAt?'알림 도착':state.scheduledNotifications.enabled===true?'알림 예정':state.scheduledNotifications.enabled===false?'알림 꺼짐':'알림 상태 모름';}
 function reminderStatusHtml(reminder){return `<span data-reminder-status data-reminder-delivered="${reminder.deliveredAt?'1':'0'}">${reminderStatusLabel(reminder)}</span>`;}
@@ -1685,25 +1555,7 @@ async function openTaskDetail(message){
     $('#task-detail-retry').onclick=()=>openTaskDetail(message);
   }
 }
-function taskNextSteps(task,message=null){
-  if(taskStage(task)==='done'&&(task.assigneeUnavailable||task.reviewerUnavailable))return ['끝난 기록과 결과물은 그대로 남아요.','더 할 일이 있으면 새 할 일로 요청해 주세요.'];
-  if(task.assigneeUnavailable||!task.assignee?.id)return ['담당 크루를 찾을 수 없어요. 요청한 사람에게 담당을 다시 정해 달라고 해 주세요.','담당이 정해질 때까지는 상태를 그대로 두세요.'];
-  if(task.canManage===false||message&&!canPostMessage(message))return ['이 계정으로는 상태를 바꿀 수 없어요. 요청과 결과물만 볼 수 있어요.','상태나 담당을 바꿔야 하면 요청한 사람에게 말해 주세요.'];
-  const current=taskStage(task),assignee=task.assignee?.id===state.user?.id,reviewer=taskReviewerId(task)===state.user?.id,hasReviewer=Boolean(taskReviewerId(task));
-  if(task.reviewerUnavailable&&current!=='done'){
-    if(task.canReassignReviewer)return ['검토자가 검토할 수 없게 됐어요. ‘검토자 다시 정하기’를 눌러 새 검토자를 정해 주세요.',current==='review'?'올린 결과물 그대로 새 검토자에게 다시 맡겨요.':'요청·담당·기한·상태와 결과물은 그대로예요.'];
-    return ['검토자가 검토할 수 없게 됐어요. 요청한 사람이나 관리자에게 새 검토자를 정해 달라고 해 주세요.','새 검토자가 정해질 때까지 ‘검토 중’이나 ‘완료’로 바꾸지 마세요.'];
-  }
-  if(current==='done')return ['끝난 일이에요. 결과물과 원래 대화를 열어 볼 수 있어요.',assignee||task.createdBy?.id===state.user?.id?'더 할 게 생기면 ‘다시 열기’를 눌러 다시 시작해요.':'더 할 게 생기면 담당이나 요청한 사람이 다시 열 수 있어요.'];
-  if(current==='review')return reviewer?['결과물을 열어 요청대로 됐는지 봐 주세요.','고칠 게 있으면 ‘수정 요청’을 눌러 원래 대화에 의견을 남겨 주세요.','요청대로 됐으면 ‘완료’를 눌러 주세요.']:['검토를 맡긴 상태예요. 검토자의 답을 기다려 주세요.','검토 의견은 원래 대화의 답글로 와요.'];
-  if(!assignee)return [`${task.assignee?.name||'담당 크루'}의 차례예요. ${current==='requested'?'요청을 보고 수락하기를':'요청대로 일하기를'} 기다리는 중이에요.`,'더할 조건이나 바뀐 점은 원래 대화에 답글로 남겨 주세요.'];
-  if(current==='requested')return ['요청과 기한, 참고 자료를 봐 주세요.','범위나 결과물이 애매하면 원래 대화에 답글로 물어봐 주세요.','할 수 있으면 ‘수락하기’를 눌러 주세요.'];
-  if(current==='accepted')return ['일을 시작하면 ‘시작하기’를 눌러 주세요.','다 만들면 파일이나 링크를 이 대화방에 올려 주세요.'];
-  const steps=current==='changes'?['답글로 온 수정 의견대로 결과물을 고쳐 주세요.']:['요청에 맞춰 결과물을 만들어 주세요.'];
-  steps.push('다 만들면 파일이나 링크를 이 대화방에 올려 주세요.');
-  steps.push(hasReviewer?'‘검토 맡기기’를 누르고 올린 결과물을 골라 저장하면 검토자가 봐요.':'검토 없이 끝내려면 ‘완료’를 눌러 주세요. 검토가 필요하면 ‘검토 맡기기’에서 검토자를 정해 주세요.');
-  return steps;
-}
+function taskNextSteps(task,message=null){return taskModel.taskNextSteps(task,{userId:state.user?.id,canPost:!message||canPostMessage(message)});}
 function taskWorkdayBasis(task){
   const basis=task.workday;
   const valid=basis&&/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(basis.date||'')&&Array.isArray(basis.todayReasons)&&Array.isArray(basis.remainingReasons)&&basis.todayReasons.every(key=>todayWorkdayKeys.includes(key))&&basis.remainingReasons.every(key=>remainingWorkdayKeys.includes(key));
@@ -1729,21 +1581,7 @@ function bindTaskManagementEntry(message,version){
   };
   management.addEventListener('toggle',()=>{if(entry.isConnected)entry.setAttribute('aria-expanded',String(management.open));});
 }
-function taskDetailActions(message){
-  const task=message.task;if(!task||task.canManage===false||!canPostMessage(message))return [];
-  const stage=taskStage(task),me=state.user?.id,assignee=task.assignee?.id===me,reviewer=taskReviewerId(task)===me,hasReviewer=Boolean(taskReviewerId(task)),allowed=new Set(task.allowedStages||[]);
-  if(task.canReassignReviewer&&task.reviewerUnavailable&&stage!=='done')return [{action:'recovery',label:'검토자 다시 정하기',primary:true}];
-  if(task.assigneeUnavailable||!task.assignee?.id||task.reviewerUnavailable&&stage!=='done')return [];
-  if(stage==='requested')return assignee&&allowed.has('accepted')?[{action:'stage',stage:'accepted',label:'수락하기',primary:true}]:[];
-  if(stage==='accepted')return assignee&&allowed.has('doing')?[{action:'stage',stage:'doing',label:'시작하기',primary:true},...(allowed.has('done')?[{action:'stage',stage:'done',label:'완료'}]:[])]:[];
-  if(['doing','changes'].includes(stage)){
-    if(!assignee)return [];
-    if(hasReviewer)return allowed.has('review')?[{action:'submit',label:'검토 맡기기',primary:true}]:[];
-    return [...(allowed.has('done')?[{action:'stage',stage:'done',label:'완료',primary:true}]:[]),...(allowed.has('review')?[{action:'submit',label:'검토 맡기기'}]:[])];
-  }
-  if(stage==='review')return reviewer?[...(allowed.has('done')?[{action:'stage',stage:'done',label:'완료',primary:true}]:[]),...(allowed.has('changes')?[{action:'changes',label:'수정 요청'}]:[])]:[];
-  return stage==='done'&&allowed.has('doing')?[{action:'reopen',label:'다시 열기'}]:[];
-}
+function taskDetailActions(message){return taskModel.taskDetailActions(message.task,{userId:state.user?.id,canPost:canPostMessage(message)});}
 function openTaskManagement({stage=null,focus=null}={}){
   const management=$('.task-management',modal);if(!management)return;
   management.open=true;$('[data-task-manage-entry]',modal)?.setAttribute('aria-expanded','true');$('#task-changes-confirm',modal)?.classList.add('hidden');$('#task-actions',modal)?.classList.remove('hidden');
@@ -1803,7 +1641,7 @@ function taskDetailHtml(message,{managementHtml=''}={}){
   const folds=`<details class="td-fold"><summary>${icon('chevron')}<span>${esc(basis.title)}</span><small>${esc(basis.summary)}</small></summary><div class="td-fold-body">${basis.date?`<p>${esc(workdayDateLabel(basis.date))} 한국 시간 기준</p>`:''}${basis.reasons.length>1?`<ul>${basis.reasons.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`:''}<p>${esc(reason)}</p><p>누군가 메시지를 할 일로 만들고 담당을 정한 기록이에요.</p></div></details><details class="td-fold"><summary>${icon('chevron')}<span>언제 끝나나요?</span><small>${esc(completion)}</small></summary><div class="td-fold-body"><p>수락 → 진행 → 검토 → 완료 순서예요. 수정 요청을 받으면 고쳐서 다시 검토받아요.</p></div></details>`;
   return `<section class="task-detail" aria-labelledby="task-detail-title"><h3 class="td-title" id="task-detail-title">${esc(task.title)}</h3>${meta}${request}${bar}${managementHtml}<section class="td-block"><h4>다음 할 일</h4><ol class="td-steps">${taskNextSteps(task,message).map(step=>`<li>${esc(step)}</li>`).join('')}</ol></section>${people}${folds}</section>`;
 }
-function taskReviewerId(task){return task?.reviewerId||task?.reviewer?.id||null;}
+function taskReviewerId(task){return taskModel.taskReviewerId(task);}
 function reviewerRecoveryHtml(task,people){
   if(!task||taskStage(task)==='done'||!task.reviewerUnavailable)return '';
   const reviewing=taskStage(task)==='review',preserved=reviewing?'검토자가 이 대화방에서 검토할 수 없게 됐어요. 올린 결과물은 그대로예요.':'검토자가 이 대화방에서 검토할 수 없게 됐어요. 요청·담당·기한·상태와 결과물은 그대로예요.',confirmation=reviewing?'같은 결과물로 새 검토자에게 다시 맡길게요.':'요청과 담당은 그대로 두고 검토자만 바꿀게요.',completion=reviewing?'새 검토자가 결과물을 보고 ‘완료’로 바꿔야 끝나요.':'상태·기한·결과물은 그대로 두고 검토자만 바꿔요. 결과물이 아직 없어도 정할 수 있어요.',buttonLabel=reviewing?'다시 맡기기':'검토자 다시 정하기';
@@ -1963,4 +1801,34 @@ function reminderDialog(message){
   loadWorkNotificationSettings().then(settings=>{if(!active())return;schedulerEnabled=typeof settings?.schedulerEnabled==='boolean'?settings.schedulerEnabled:null;update();}).catch(()=>{if(active()){schedulerEnabled=null;update();}});
 }
 
+// Document- and window-wide listeners, registered once: layout breakpoints, transfer focus tracking,
+// keyboard shortcuts, boot recovery on visibility/restore, draft saving, file-drop guards and company messages.
+function installGlobalEvents(){
+  mobileLayout.addEventListener('change',()=>{setMobileMenu(false,{restoreFocus:false});syncSidebarAccess();});
+  directoryWide.addEventListener('change',()=>{applyDirectoryLayout();syncDrawerAccess();});
+  document.addEventListener('focusin',event=>{if(event.target!==document.body&&event.target!==document.documentElement)state.transferFocusRevision++;});
+  document.addEventListener('pointerdown',()=>{state.transferFocusRevision++;});
+  window.addEventListener('blur',()=>{state.transferFocusRevision++;});
+  document.addEventListener('keydown',event=>{if(event.key==='Tab')state.transferFocusRevision++;});
+  document.addEventListener('keydown',event=>{
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&state.user){event.preventDefault();if(!modal.open)openDrawer('search');}
+    if(event.key==='Escape'&&!modal.open){setMobileMenu(false);closeDrawer();}
+    if(event.key==='Tab'&&mobileLayout.matches&&$('#sidebar')?.classList.contains('open')&&!modal.open){
+      const targets=[...$$('[data-chat-category][aria-selected="true"]'),$('#mobile-scrim'),...$$('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled)',$('#sidebar'))].filter(element=>element?.getClientRects().length);
+      if(!targets.length)return;const first=targets[0],last=targets.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
+  document.addEventListener('visibilitychange',()=>{resumeBootRecovery();if(!document.hidden&&state.user){refreshChannels().catch(()=>{});refreshMessages().catch(()=>{});refreshVisibleWorkday().catch(()=>{});}else cancelWorkdayRefresh();});
+  window.addEventListener('online',resumeBootRecovery);
+  window.addEventListener('pagehide',()=>{const resume=bootRecovery.phase==='loading'||bootRecovery.phase==='waiting';stopBootRecovery('closed');bootRecovery.resumeOnRestore=resume;});
+  // A restored page resumes an unfinished bootstrap; any other restored screen
+  // keeps working buttons (a permanent-failure screen can still retry manually).
+  window.addEventListener('pageshow',event=>{if(!event.persisted||bootRecovery.phase!=='closed')return;if(bootRecovery.resumeOnRestore){stopBootRecovery('waiting');resumeBootRecovery();}else stopBootRecovery();});
+  window.addEventListener('beforeunload',saveDraft);
+  for(const eventType of ['dragover','drop'])window.addEventListener(eventType,event=>{if(state.user&&[...(event.dataTransfer?.types||[])].includes('Files'))event.preventDefault();});
+  window.addEventListener('message',handleParentMessage);
+}
+installGlobalEvents();
 boot();

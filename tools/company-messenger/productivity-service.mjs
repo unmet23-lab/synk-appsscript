@@ -1,3 +1,4 @@
+import { validateTaskTransition } from './task-transition.mjs';
 import { randomUUID } from 'node:crypto';
 
 const STAGES = ['requested', 'accepted', 'doing', 'review', 'changes', 'done'];
@@ -6,50 +7,11 @@ const legacyStage = status => ({ todo: 'requested', doing: 'doing', done: 'done'
 const workdayDateFor = timestamp => new Date(Date.parse(timestamp) + 9 * 3600000).toISOString().slice(0, 10);
 
 // Events contain references and workflow changes, never a second copy of chat text.
-export function createProductivityService({ db, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled }) {
+export function createProductivityService({ db, unitOfWork, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled }) {
   assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
-  let shapingWorkdayDate = null;
-  const columns = new Set(all('PRAGMA table_info(message_tasks)').map(row => row.name));
-  for (const [name, type] of [['stage', "TEXT NOT NULL DEFAULT 'requested'"], ['reviewer_id', 'TEXT REFERENCES users(id)'], ['result_message_id', 'INTEGER REFERENCES messages(id) ON DELETE SET NULL']]) {
-    if (!columns.has(name)) db.exec(`ALTER TABLE message_tasks ADD COLUMN ${name} ${type}`);
-  }
-  if (!columns.has('stage')) db.exec("UPDATE message_tasks SET stage=CASE status WHEN 'doing' THEN 'doing' WHEN 'done' THEN 'done' ELSE 'requested' END");
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS message_decisions (
-      id TEXT PRIMARY KEY,message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-      summary TEXT NOT NULL,effective_date TEXT NOT NULL,kind TEXT NOT NULL CHECK(kind IN ('decision','final')),
-      result_message_id INTEGER REFERENCES messages(id) ON DELETE SET NULL,
-      creator_id TEXT NOT NULL REFERENCES users(id),created_at TEXT NOT NULL,
-      replaces_id TEXT UNIQUE REFERENCES message_decisions(id) ON DELETE SET NULL,request_id TEXT,
-      superseded_by_id TEXT,UNIQUE(creator_id,request_id)
-    );
-    CREATE TABLE IF NOT EXISTS productivity_events (
-      sequence INTEGER PRIMARY KEY AUTOINCREMENT,message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-      actor_id TEXT NOT NULL REFERENCES users(id),kind TEXT NOT NULL,task_id TEXT REFERENCES message_tasks(id) ON DELETE CASCADE,
-      decision_id TEXT REFERENCES message_decisions(id) ON DELETE CASCADE,changes TEXT NOT NULL,created_at TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS productivity_reads (
-      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,sequence INTEGER NOT NULL DEFAULT 0,
-      offered_sequence INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS due_digest_preferences (
-      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-      enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0,1)),
-      include_weekends INTEGER NOT NULL DEFAULT 0 CHECK(include_weekends IN (0,1))
-    );
-    CREATE TABLE IF NOT EXISTS due_digests (
-      id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      kst_date TEXT NOT NULL,created_at TEXT NOT NULL,read_at TEXT,UNIQUE(user_id,kst_date)
-    );
-    CREATE TABLE IF NOT EXISTS due_digest_tasks (
-      digest_id TEXT NOT NULL REFERENCES due_digests(id) ON DELETE CASCADE,
-      task_id TEXT NOT NULL REFERENCES message_tasks(id) ON DELETE CASCADE,PRIMARY KEY(digest_id,task_id)
-    );
-  `);
-  if (!all('PRAGMA table_info(message_decisions)').some(row => row.name === 'superseded_by_id')) db.exec('ALTER TABLE message_decisions ADD COLUMN superseded_by_id TEXT');
   function isOwner(userId) { const person = activeUser(userId); return person?.role === 'owner' || person?.companyRole === 'admin'; }
   function canPost(userId, channelId) {
     if (!activeUser(userId)) return false;
@@ -96,29 +58,21 @@ export function createProductivityService({ db, assert, textField, now, transact
     if (!todayReasons.length && ((row.creator_id === userId && !assigned) || (assigned && row.stage === 'review'))) remainingReasons.push('waiting');
     return { date, todayReasons, remainingReasons };
   }
-  function taskMessageShape(message, userId, date) {
-    // messageShape synchronously re-enters taskShape through messageExtras.
-    // Keep the nested task on the same server day, including at midnight.
-    const previousDate = shapingWorkdayDate;
-    shapingWorkdayDate = date;
-    try { return messageShape(message, userId); }
-    finally { shapingWorkdayDate = previousDate; }
-  }
   function taskShape(row, userId, withMessage = false, date = null) {
     if (!row) return null;
     const message = one('SELECT * FROM messages WHERE id=?', row.message_id);
     if (!message || !accessible(userId, message.channel_id)) return null;
     const result = row.result_message_id && one('SELECT * FROM messages WHERE id=? AND channel_id=?', row.result_message_id, message.channel_id);
-    const taskDate = date ?? shapingWorkdayDate ?? workdayDateFor(now());
-    return { id: row.id, messageId: String(row.message_id), channelId: message.channel_id, title: row.title,
+    const taskDate = date ?? workdayDateFor(now());
+    const task = { id: row.id, messageId: String(row.message_id), channelId: message.channel_id, title: row.title,
       assignee: activeUser(row.assignee_id), reviewer: activeUser(row.reviewer_id), reviewerId: row.reviewer_id,
       reviewerUnavailable: reviewerUnavailable(row), assigneeUnavailable: assigneeUnavailable(row), canReassignReviewer: canReassignReviewer(row, userId), dueDate: row.due_date,
       status: row.status, stage: row.stage, revision: row.revision, resultMessageId: result ? String(result.id) : null,
       resultMessage: result ? { id: String(result.id), channelId: result.channel_id, body: result.body, user: activeUser(result.user_id), createdAt: result.created_at } : null,
       createdBy: activeUser(row.creator_id), createdAt: row.created_at, updatedAt: row.updated_at,
       canManage: canManageTask(row, userId), allowedStages: allowedStages(row, userId),
-      workday: taskWorkday(row, userId, taskDate),
-      ...(withMessage ? { message: taskMessageShape(message, userId, taskDate) } : {}) };
+      workday: taskWorkday(row, userId, taskDate) };
+    return withMessage ? { ...task, message: messageShape(message, userId, { task }) } : task;
   }
   function weeklySummary(userId, { startAt, endAt, nextStartDate, nextEndDate, today = workdayDateFor(now()) }) {
     assert(activeUser(userId), 401, '회사 계정으로 로그인해 주세요.');
@@ -143,7 +97,7 @@ export function createProductivityService({ db, assert, textField, now, transact
   function event(message, userId, kind, { taskId = null, decisionId = null, changes = {} } = {}) {
     run('INSERT INTO productivity_events(message_id,actor_id,kind,task_id,decision_id,changes,created_at) VALUES(?,?,?,?,?,?,?)', message.id, userId, kind, taskId, decisionId, JSON.stringify(changes), now());
   }
-  function upsertTask({ messageId, userId, body, method = 'PATCH', atomic = false, deferPublish = null }) {
+  function upsertTask({ messageId, userId, body, method = 'PATCH' }) {
     const message = requireMessage(String(messageId), userId), channel = requirePosting(userId, message.channel_id);
     const prior = one('SELECT * FROM message_tasks WHERE message_id=?', message.id);
     assert(method !== 'PATCH' || prior, 404, '할 일을 찾지 못했어요. 목록을 새로 불러와 주세요.');
@@ -175,26 +129,11 @@ export function createProductivityService({ db, assert, textField, now, transact
       result = requireMessage(String(resultMessageId), userId);
       assert(result.channel_id === channel.id, 400, '결과물은 이 대화방의 메시지로 골라 주세요.');
     }
-    if (prior) {
-      if (recovery) {
-        assert(typeof reviewerId === 'string' && reviewerId !== prior.reviewer_id, 400, '지금 검토자 말고 새 검토자를 골라 주세요.');
-        assert(prior.assignee_id === assigneeId && prior.title === title && prior.due_date === dueDate && prior.stage === stage && (prior.result_message_id ?? null) === (result?.id ?? null), 409, '검토자만 바꿔 주세요. 담당·결과물·기한·상태는 그대로 둬야 해요.');
-      }
-      const metadataChanged = prior.assignee_id !== assigneeId || prior.reviewer_id !== reviewerId || prior.title !== title || prior.due_date !== dueDate;
-      assert(!metadataChanged || [prior.creator_id, prior.assignee_id].includes(userId) || isOwner(userId), 403, '검토자는 검토 결과만 바꿀 수 있어요.');
-      // Reviewers cannot be removed by the assignee to bypass required approval.
-      assert(prior.reviewer_id === reviewerId || !prior.reviewer_id || ((prior.creator_id === userId || isOwner(userId)) && prior.assignee_id !== userId), 403, '검토자는 담당이 아닌 요청한 사람이나 관리자만 바꿀 수 있어요.');
-      const resultChanged = (prior.result_message_id ?? null) !== (result?.id ?? null);
-      assert(!resultChanged || prior.assignee_id === userId, 403, '결과물은 담당만 올릴 수 있어요.');
-      assert(prior.stage !== 'done' || stage !== 'done' || (!resultChanged && prior.reviewer_id === reviewerId && prior.assignee_id === assigneeId), 409, '끝난 일의 담당·검토자·결과물은 ‘진행 중’으로 다시 연 뒤 바꿔 주세요.');
-      assert(prior.stage !== 'review' || recovery || (prior.assignee_id === assigneeId && prior.reviewer_id === reviewerId && (prior.result_message_id ?? null) === (result?.id ?? null)), 409, '검토 중에는 담당과 결과물을 바꿀 수 없어요. ‘수정 요청’ 상태가 되면 바꿔 주세요.');
-      if (stage !== prior.stage) {
-        const legacy = body.stage === undefined && body.status !== undefined && !prior.reviewer_id && !reviewerId;
-        assert(allowedStages({ ...prior, reviewer_id: reviewerId }, userId).includes(stage) || (legacy && [prior.creator_id, prior.assignee_id].includes(userId)) || (legacy && isOwner(userId)), 403, '지금 상태에서는 이렇게 바꿀 수 없어요.');
-      }
-    }
-    if (stage === 'review') assert(reviewerId && result, 400, '‘검토 중’으로 바꾸려면 검토자와 결과물 메시지를 모두 골라 주세요.');
-    if (prior?.stage === 'review' && stage === 'done') assert(result, 400, '결과물 메시지가 지워졌어요. ‘수정 요청’으로 바꾼 뒤 결과물을 다시 골라 주세요.');
+    validateTaskTransition({ prior, next: { assigneeId, reviewerId, title, dueDate, stage, result },
+      actor: { userId, owner: isOwner(userId) }, recovery,
+      legacyStatus: body.stage === undefined && body.status !== undefined,
+      allowedStages: prior ? allowedStages({ ...prior, reviewer_id: reviewerId }, userId) : [],
+    }, assert);
     const normalizedResult = result?.id ?? null;
     const changed = !prior || prior.title !== title || prior.assignee_id !== assigneeId || prior.reviewer_id !== reviewerId || prior.due_date !== dueDate || prior.stage !== stage || (prior.result_message_id ?? null) !== normalizedResult;
     if (!changed) return { task: taskShape(prior, userId), created: false };
@@ -217,13 +156,13 @@ export function createProductivityService({ db, assert, textField, now, transact
         if (personId !== userId && mode(personId, channel.id) !== 'mute' && notify(personId, message, 'task', `task:${task.id}:${task.revision}:${personId}`)) notifications.push(personId);
       }
     };
-    if (atomic) { assert(db.isTransaction, 500, '업무 저장 트랜잭션을 확인해 주세요.'); writeTask(); }
-    else transaction(writeTask);
-    const publishTask = () => {
-      publish('message', channel.id);
-      for (const personId of notifications) publish('notification', channel.id, personId);
-    };
-    if (deferPublish) deferPublish(publishTask); else publishTask();
+    unitOfWork.run(({ afterCommit }) => {
+      writeTask();
+      afterCommit(() => {
+        publish('message', channel.id);
+        for (const personId of notifications) publish('notification', channel.id, personId);
+      });
+    });
     return { task: taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', message.id), userId), created: !prior };
   }
   function workday(userId) {

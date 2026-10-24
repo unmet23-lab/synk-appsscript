@@ -15,6 +15,7 @@ import {mountPlatformLibrary} from './platform-continuity.mjs';
 import {mountConvenience} from './convenience.mjs';
 import {mountPlatformUpdates} from './update-view.mjs';
 import {mountAccountPage} from './account-page.mjs';
+import {createAccountLifecycle} from './account-lifecycle.mjs';
 const $=id=>document.getElementById(id),bridge=globalThis.synkDesktop,asset='/assets/launcher/';
 const apps=APPS;
 const localStore={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
@@ -26,7 +27,10 @@ const worldExtras=[['TOPIK 연습','짧은 진단으로 TOPIK I 내 위치를 �
 let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer;
 let selectedBenefit=null,environmentRevision=0,sessionPurpose=null,sessionPurposeOwner=null,leaveDecision=null;
 let continuity=null,convenience=null,platformUpdates=null,libraryActionQueue=Promise.resolve(),pendingLibraryActions=0;
-let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false;
+let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false;
+// Screens register their account-change reset, render and draft hooks here (the list after the library mount).
+// ownerEpoch mirrors the registry's ownership generation so every existing guard keeps reading one variable.
+const accountLifecycle=createAccountLifecycle({onEpoch:epoch=>{ownerEpoch=epoch;}});
 const memberActivity=createMemberActivity({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params),getFavorites:()=>effectivePrefs().favorites});
 const memberUnderstanding=createMemberUnderstanding({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params)});
 const memberSettings=createMemberSettings({getIdentity:()=>auth,request:(operation,params)=>bridge.accountRequest(operation,params)});
@@ -34,14 +38,37 @@ const memberInsight=createMemberInsight({getIdentity:()=>auth,request:(operation
 bindMemberUnderstandingEditor($('benefit-detail'),{controller:memberUnderstanding,getReport:()=>memberInsight.read().report,settings:memberSettings,getSettingsContext:()=>memberInsight.settingsContext(),onSettingsSaved:()=>void memberInsight.refresh({quiet:true})});
 function renderInsight(){const restoreInsightFocus=captureMemberUnderstandingFocus($('benefit-detail'));const target=$('benefit-detail'),active=target.contains(document.activeElement),action=document.activeElement?.dataset.insightAction,app=document.activeElement?.dataset.insightTarget;target.innerHTML=renderMemberInsight(memberInsight.read(),{native:true,poster:benefitPoster('insight')});if(active)(action?[...target.querySelectorAll('[data-insight-action]')].find(node=>node.dataset.insightAction===action&&node.dataset.insightTarget===app):target.querySelector('#benefit-title'))?.focus({preventScroll:true});restoreInsightFocus();}
 const memberHome=mountMemberHome($('view-home'),{storage:localStore,getSnapshot:()=>({library,personal:personalState,prefs:effectivePrefs(),clients:clients.map(row=>client(row.id))}),getAppAction,onLaunch:launchFromHome,onRetry:()=>refreshAuth({reload:true}),onApp:selectApp,onPurpose:choosePurpose,onAccount:()=>openAccount(),onBenefits:()=>showView('benefits'),onToast:toast});
-const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getContext:()=>({owner:library.owner,status:library.status}),getFavorite:()=>effectivePrefs().favorites.includes('pulse'),onFavorite:()=>$('favorite').click(),onToast:toast,onOpenApp:()=>command('pulse-app','pulse')});
+const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getContext:()=>({owner:library.owner,status:library.status}),getFavorite:()=>effectivePrefs().favorites.includes('pulse'),onFavorite:toggleSelectedFavorite,onToast:toast,onOpenApp:()=>command('pulse-app','pulse')});
 // 「내 계정」: signed-in entry points open it; signed out they keep the sign-in dialog.
-const accountPage=mountAccountPage($('view-account'),{bridge,getIdentity:()=>auth,getAppIds:()=>library.appIds,onBack:()=>showView('settings'),onSignIn:()=>$('account-dialog').showModal(),onSignOut:()=>$('sign-out').click(),onWorkspace:()=>{if(allowed('messenger'))launchFromHome('messenger');else toast('이 계정에서는 작업실을 열 수 없어요.');},onAccountChanged:()=>void refreshAuth({reload:true}),toast:message=>toast(message)});
+const accountPage=mountAccountPage($('view-account'),{bridge,getIdentity:()=>auth,getAppIds:()=>library.appIds,onBack:()=>showView('settings'),onSignIn:()=>$('account-dialog').showModal(),onSignOut:signOut,onWorkspace:()=>{if(allowed('messenger'))launchFromHome('messenger');else toast('이 계정에서는 작업실을 열 수 없어요.');},onAccountChanged:()=>void refreshAuth({reload:true}),toast:message=>toast(message)});
 function openAccount(){if(bridge&&auth.signedIn)showView('account');else $('account-dialog').showModal();}
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');$('view-home').before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./platform-continuity.css';document.head.append(continuityStyle);
 continuity=mountPlatformLibrary(continuityRoot,{native:true,getHost:()=>bridge,getAppIds:()=>library.appIds,getDevice:()=>({favorites:prefs.favorites,recent:Object.entries(prefs.lastLaunch).filter(([,at])=>at).map(([id,at])=>({id,at,mode:'client'}))}),onChange:()=>{renderLibrary();renderSelected();memberHome.render();convenience?.refresh();},onFavoritesChanged:()=>memberActivity.syncFavorites(),onOpen:id=>{if(allowed(id))launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');},storage:localStorage});
 function effectivePrefs(){const cloud=continuity?.projection();return projectLibraryPreferences(cloud?{...prefs,accountLibrary:true,favorites:cloud.favorites,lastLaunch:Object.fromEntries(cloud.recent.map(row=>[row.entryId||row.id,row.at]))}:prefs,library);}
+// Account lifecycle participants. Registration order is the order every phase runs in: identity updates,
+// resets after an account change, renders, unsaved-draft checks (first hit wins), discards and flushes.
+// A new account-scoped screen registers here instead of editing setAuth or the draft guards.
+accountLifecycle.register('member-activity',{onIdentity:()=>memberActivity.read()});
+accountLifecycle.register('personalization',{onIdentity:()=>{if(sessionPurpose&&((library.owner&&library.owner!==sessionPurposeOwner)||['signed-out','signing-out','unconfigured'].includes(auth.status))){sessionPurpose=null;sessionPurposeOwner=null;}},render:()=>applyPersonalization()});
+accountLifecycle.register('commands',{onAccountChange:()=>{busy=new Set();}});
+accountLifecycle.register('library-view',{onAccountChange:({ownerChanged})=>{if(ownerChanged){detail='overview';filter='all';search='';$('search').value='';pulseLegacyView=false;}},render:()=>reconcileSelection()});
+accountLifecycle.register('dialogs-and-toast',{onAccountChange:()=>{
+  if($('leave-dialog').open)$('leave-dialog').close('keep');
+  for(const id of ['content-dialog','personal-dialog'])if($(id).open)$(id).close();
+  $('content-title').textContent='';$('content-description').textContent='';$('content-image').removeAttribute('src');$('personal-message').textContent='';
+  clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';
+}});
+accountLifecycle.register('device-preferences',{onAccountChange:({ownerChanged})=>{if(ownerChanged){prefs=parsePreferences(readPrefs());personal=createPersonal();}}});
+accountLifecycle.register('pulse-drafts',{hasUnsavedDrafts:()=>pulseClient.hasUnsavedChanges(),discardDraft:()=>pulseClient.discard()});
+accountLifecycle.register('member-home',{hasUnsavedDrafts:()=>memberHome.hasUnsavedChanges(),discardDraft:()=>memberHome.discardDraft(),flushDraft:()=>memberHome.flushDraft?.()});
+accountLifecycle.register('account-library',{render:()=>continuity?.render(),hasUnsavedDrafts:()=>!!continuity?.hasUnsavedDraft(),discardDraft:()=>continuity?.discardDraft(),flushDraft:()=>continuity?.flushDraft?.()});
+accountLifecycle.register('library',{render:()=>renderLibrary()});
+accountLifecycle.register('app-detail',{render:()=>renderSelected()});
+accountLifecycle.register('downloads',{render:()=>renderDownloads()});
+accountLifecycle.register('account',{render:()=>renderAuth()});
+accountLifecycle.register('benefits',{render:()=>renderBenefits()});
+accountLifecycle.register('convenience',{beforeOwnerChange:()=>convenience?.capture(),afterRender:()=>convenience?.refresh()});
 function enqueueLibraryAction(id,action){
   const epoch=ownerEpoch;
   pendingLibraryActions++;
@@ -77,21 +104,8 @@ function reconcileSelection(){if(['ready','guest'].includes(library.status))pref
 function setAuth(snapshot,{environmentOnly=false}={}){
   if(!environmentOnly)authRevision++;
   const next=resolveLibrary(snapshot,environment),changed=JSON.stringify([library.owner,library.status,library.appIds,auth.sessionGeneration])!==JSON.stringify([next.owner,next.status,next.appIds,snapshot?.sessionGeneration]);
-  const ownerChanged=library.owner!==next.owner;
-  if(ownerChanged)convenience?.capture();
-  auth=snapshot||{status:'error',signedIn:false};library=next;
-  memberActivity.read();
-  if(sessionPurpose&&((next.owner&&next.owner!==sessionPurposeOwner)||['signed-out','signing-out','unconfigured'].includes(auth.status))){sessionPurpose=null;sessionPurposeOwner=null;}
-  if(changed){
-    ownerEpoch++;busy=new Set();
-    if(ownerChanged){detail='overview';filter='all';search='';$('search').value='';pulseLegacyView=false;}
-    if($('leave-dialog').open)$('leave-dialog').close('keep');
-    for(const id of ['content-dialog','personal-dialog'])if($(id).open)$(id).close();
-    $('content-title').textContent='';$('content-description').textContent='';$('content-image').removeAttribute('src');$('personal-message').textContent='';
-    clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';
-    if(ownerChanged){prefs=parsePreferences(readPrefs());personal=createPersonal();}
-  }
-  applyPersonalization();reconcileSelection();continuity?.render();renderLibrary();renderSelected();renderDownloads();renderAuth();renderBenefits();convenience?.refresh();
+  // The registered screens own the resets and renders; changed accounts also advance ownerEpoch.
+  accountLifecycle.transition({changed,ownerChanged:library.owner!==next.owner,commit:()=>{auth=snapshot||{status:'error',signedIn:false};library=next;}});
   if(bridge&&auth.signedIn&&library.owner)void continuity?.connect();
 }
 async function refreshAuth({reload=false}={}){
@@ -109,7 +123,7 @@ function launchFromHome(id){if(!allowed(id))return;const action=getAppAction(id)
 function choosePurpose(context,{remember=false}={}){if(!Object.hasOwn(CONTEXTS,context))return;if(remember){openPersonalization();$('personal-context').value=context;$('personal-goal').value=CONTEXTS[context].goal;return;}sessionPurpose=context;sessionPurposeOwner=library.owner;applyPersonalization();renderLibrary();renderSelected();}
 function setMobileSearch(open,{focus=true}={}){document.documentElement.classList.toggle('library-search-open',open);$('library-search-toggle').setAttribute('aria-expanded',String(open));if(focus){const target=open?$('search'):$('library-search-toggle');target.focus();if(open)target.select();}}
 function openLibrarySearch(){if(matchMedia('(max-width:760px)').matches)setMobileSearch(true);else{$('search').focus();$('search').select();}}
-function hasUnsavedDrafts(){return pulseClient.hasUnsavedChanges()||memberHome.hasUnsavedChanges()||!!continuity?.hasUnsavedDraft();}
+function hasUnsavedDrafts(){return accountLifecycle.hasUnsavedDrafts();}
 function confirmDraftExit(message){
   if(pendingLibraryActions){toast('즐겨찾기와 실행 기록을 저장하는 중이에요. 끝난 뒤 다시 해 주세요.');return Promise.resolve(false);}
   if(!hasUnsavedDrafts())return Promise.resolve(true);
@@ -242,7 +256,7 @@ async function command(action,id=prefs.selected){
 document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(['enable-activity','disable-activity'].includes(button.dataset.insightAction)){void memberActivity.setConsent(button.dataset.insightAction==='enable-activity');return;}if(button.dataset.insightAction==='activity'){const id=button.dataset.insightTarget;if(['world','messenger','path','pulse'].includes(id)){if(allowed(id))void launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');}return;}if(button.dataset.insightAction==='refresh'){void refreshAuth({reload:true}).then(()=>memberInsight.refresh());return;}else if(button.dataset.insightAction==='account'){openAccount();return;}else if(button.dataset.themeChoice)setTheme(button.dataset.themeChoice);else if(button.dataset.benefit)openBenefit(button.dataset.benefit);else if(button.dataset.benefitPublic)return command('public-web',button.dataset.benefitPublic);else if(button.dataset.benefitPreview){if(canPreviewBenefit(button.dataset.benefitPreview))return command('product-preview',button.dataset.benefitPreview);}else if(button.dataset.pulseLegacy)selectApp('pulse',{legacy:true});else if(button.dataset.app)selectApp(button.dataset.app);else if(button.dataset.personalApp)selectApp(button.dataset.personalApp);else if(button.dataset.view)showView(button.dataset.view);else if(button.dataset.filter){filter=button.dataset.filter;renderLibrary();}else if(button.dataset.detail||button.dataset.showDetail){showView('library',{appId:prefs.selected,detail:button.dataset.detail||button.dataset.showDetail});}else if(button.dataset.command)command(button.dataset.command,button.dataset.client);else if(button.dataset.window)void windowAction(button.dataset.window);else if(button.dataset.game){if(!allowed('world')||prefs.selected!=='world')return;const game=games[button.dataset.game];if(!game)return;$('content-image').src=asset+game.image;$('content-image').alt=game.name+' 게임 화면';$('content-title').textContent=game.name;$('content-description').textContent=game.description;$('content-dialog').showModal();}});
 $('brand-home').addEventListener('click',()=>showView('home'));
 $('library-search-toggle').addEventListener('click',()=>setMobileSearch(!document.documentElement.classList.contains('library-search-open')));
-$('leave-dialog').addEventListener('close',async()=>{const done=leaveDecision;leaveDecision=null;if(!done)return;const discard=$('leave-dialog').returnValue==='discard';if(discard){const clearing=await Promise.allSettled([memberHome.discardDraft(),continuity?.discardDraft(),pulseClient.discard()]);if(clearing.some(result=>result.status==='rejected'||result.value===false)){toast('임시 저장한 메모를 지우지 못했어요. 설정에서 「쓰던 메모 되살리기」를 꺼 주세요.');done(false);return;}}else{if($('account-dialog').open)$('account-dialog').close();if(pulseClient.hasUnsavedChanges()){selectApp('pulse',{legacy:true});pulseClient.openBrief();}else showView('home');if(continuity?.hasUnsavedDraft())continuity.focusDraft();else memberHome.focusDraft();}done(discard);});
+$('leave-dialog').addEventListener('close',async()=>{const done=leaveDecision;leaveDecision=null;if(!done)return;const discard=$('leave-dialog').returnValue==='discard';if(discard){const clearing=await accountLifecycle.discardDrafts();if(clearing.some(result=>result.status==='rejected'||result.value===false)){toast('임시 저장한 메모를 지우지 못했어요. 설정에서 「쓰던 메모 되살리기」를 꺼 주세요.');done(false);return;}}else{if($('account-dialog').open)$('account-dialog').close();if(pulseClient.hasUnsavedChanges()){selectApp('pulse',{legacy:true});pulseClient.openBrief();}else showView('home');if(continuity?.hasUnsavedDraft())continuity.focusDraft();else memberHome.focusDraft();}done(discard);});
 $('leave-dialog').addEventListener('cancel',()=>{$('leave-dialog').returnValue='keep';});
 window.addEventListener('beforeunload',event=>{if(pendingLibraryActions||hasUnsavedDrafts()){event.preventDefault();event.returnValue='';if(pendingLibraryActions)toast('즐겨찾기와 실행 기록을 저장하는 중이에요. 끝난 뒤 다시 해 주세요.');}});
 $('search').addEventListener('input',event=>{search=event.target.value.trim().toLowerCase();renderLibrary();});
@@ -250,7 +264,9 @@ $('primary-action').addEventListener('click',()=>command($('primary-action').dat
 $('refresh').addEventListener('click',refresh);$('refresh-downloads').addEventListener('click',refresh);
 function toggleFavorite(id){if(!allowed(id))return;return enqueueLibraryAction(id,async()=>{if(continuity?.connected())await continuity.dispatch({type:'favorite',id});else{prefs.favorites=effectivePrefs().favorites.includes(id)?prefs.favorites.filter(entry=>displayLibraryAppId(entry,library)!==id):[...prefs.favorites,id];savePrefs();renderLibrary();renderActions();void memberActivity.syncFavorites();}});}
 function moveFavorite(id,direction){if(!allowed(id)||![-1,1].includes(direction))return;return enqueueLibraryAction(id,async()=>{if(continuity?.connected())return continuity.dispatch({type:'move-favorite',id,direction});const rows=effectivePrefs().favorites.filter(allowed),index=rows.indexOf(id),next=index+direction;if(index<0||next<0||next>=rows.length)return;[rows[index],rows[next]]=[rows[next],rows[index]];prefs.favorites=rows;savePrefs();renderLibrary();renderActions();toast('즐겨찾기 순서를 바꿨어요.');});}
-$('favorite').addEventListener('click',()=>toggleFavorite(prefs.selected));
+// The favorite button and PULSE's own favorite control share this action.
+function toggleSelectedFavorite(){return toggleFavorite(prefs.selected);}
+$('favorite').addEventListener('click',toggleSelectedFavorite);
 $('download-shortcut').addEventListener('click',()=>showView('downloads'));$('footer-settings').addEventListener('click',()=>showView('settings'));
 for(const id of ['account-button','settings-login','library-account'])$(id).addEventListener('click',openAccount);
 async function openSignUp(){
@@ -271,10 +287,12 @@ $('sign-in').addEventListener('click',async()=>{
   try{const result=await bridge.authSignIn();if(revision!==authRevision)return;await refreshAuth();if(result?.ok===false&&!auth.signedIn)toast(errorText(result));}
   catch{if(revision===authRevision)setAuth({status:'error',configured:true,signedIn:false,error:{message:'로그인 창을 열지 못했어요. 다시 눌러 주세요.'}});}
 });
-$('sign-out').addEventListener('click',async()=>{
-  if(!bridge||!auth.signedIn)return;const leaveEpoch=ownerEpoch;
+// The sign-out button and 「내 계정」's sign-out share this action. While a logout is pending the button is
+// disabled, and signOutPending keeps the account page from starting a second one in that window.
+async function signOut(){
+  if(signOutPending||!bridge||!auth.signedIn)return;const leaveEpoch=ownerEpoch;
   if(!await confirmDraftExit('저장하지 않은 내용은 로그아웃하면 사라져요. 돌아가서 저장하거나, 저장 없이 로그아웃할 수 있어요.')||leaveEpoch!==ownerEpoch||!auth.signedIn)return;
-  $('sign-out').disabled=true;
+  signOutPending=true;$('sign-out').disabled=true;
   const signedOutGeneration=Number.isSafeInteger(auth.sessionGeneration)?auth.sessionGeneration+1:null;
   setAuth({status:'signing-out',configured:auth.configured,signedIn:false});const revision=authRevision;
   const sameLogout=()=>revision===authRevision||signedOutGeneration!==null&&auth.sessionGeneration===signedOutGeneration&&auth.status==='signed-out'&&!auth.signedIn;
@@ -289,8 +307,9 @@ $('sign-out').addEventListener('click',async()=>{
       toast(notice+cleanupNotice);
     }
   }catch{if(sameLogout())setAuth({status:'error',configured:auth.configured,signedIn:false,error:{message:'로그아웃됐는지 확인하지 못했어요. 창을 닫았다 다시 열어 주세요.'}});}
-  finally{$('sign-out').disabled=false;}
-});
+  finally{signOutPending=false;$('sign-out').disabled=false;}
+}
+$('sign-out').addEventListener('click',signOut);
 $('account-retry').addEventListener('click',async()=>{
   if(accountRetryPending||!bridge||typeof bridge.accountRequest!=='function'||!auth.configured||auth.signedIn||auth.status!=='error'||auth.error?.retryable!==true)return;
   accountRetryPending=true;renderAuth();
@@ -322,9 +341,10 @@ $('personal-clear').addEventListener('click',()=>{if(!library.owner)return;try{p
 function windowState(state){$('maximize').setAttribute('aria-label',state?.maximized?'창 크기 복원':'최대화');$('maximize').dataset.maximized=String(!!state?.maximized);}
 convenience=mountConvenience({bridge,storage:localStore,apps,getSnapshot:()=>({owner:library.owner,appIds:library.appIds,prefs:effectivePrefs(),environment,auth,clients}),readRoute,applyRoute:route=>showView(route.view,{...route,restore:true}),launchApp:launchFromHome,onToast:toast,onFavorite:toggleFavorite,onMoveFavorite:moveFavorite,onLibrarySearch:()=>{showView('library');openLibrarySearch();},getNotes:query=>[...(memberHome.searchRecords?.(query)||[]).map(row=>({...row,source:'device'})),...(continuity?.searchNotes?.(query)||[]).map(row=>({...row,source:'account'}))],openNote:note=>note.source==='account'?continuity?.openNote?.(note.id):memberHome.focusRecord?.(note.id),onDesktopPreferences:snapshot=>{if(environment)environment.closeToTray=snapshot.preferences?.closeToTray===true&&snapshot.capabilities?.tray===true;}});
 platformUpdates=mountPlatformUpdates({bridge,document,getEnvironment:()=>environment,confirmInstall:confirmUpdateInstall});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){void memberHome.flushDraft?.();void continuity?.flushDraft?.();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)accountLifecycle.flushDrafts();});
 async function init(){
-  applyPersonalization();reconcileSelection();continuity?.render();renderLibrary();renderSelected();renderDownloads();renderAuth();renderBenefits();showView('home',{restore:true});convenience.refresh();
+  // Home is the default view; the after-render hooks may then restore this owner's saved route.
+  accountLifecycle.render();showView('home',{restore:true});accountLifecycle.afterRender();
   if(bridge){
     let clientEvents=0;const revision=authRevision;
     bridge.onAuthChanged?.(setAuth);

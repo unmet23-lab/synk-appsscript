@@ -7,12 +7,12 @@ import vm from 'node:vm';
 // ISO(2026-10-24)·점 표기(10. 23.)·두 자리 시각(오후 07:04)이 화면 글로 다시 나오면 깨진다.
 // 다시 볼 시간·바뀐 것·공지 확인 시각은 PC 시간으로 적으므로 이 파일은 한국 시간으로 고정해 같은 글을 기대한다.
 process.env.TZ='Asia/Seoul';
-const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8').replace(/\bboot\(\);\s*$/,'');
+import {appSource as source,installMessengerModules} from './support/messenger-client.mjs';
 function fixture(timers=null){
   const node=()=>({innerHTML:'',dataset:{},classList:{add(){},remove(){},toggle(){},contains:()=>false},setAttribute(){},getAttribute:()=>null,addEventListener(){},querySelector:()=>null,querySelectorAll:()=>[]});
   const document={hidden:false,activeElement:null,body:node(),querySelector:()=>node(),querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},location:{pathname:'/',origin:'http://localhost'},localStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout:(fn,ms)=>timers?timers.push({fn,ms}):0,clearTimeout(){},URL,URLSearchParams,CSS:{escape:String},crypto:{randomUUID:()=>'request'}});
-  const run=code=>vm.runInContext(code,context);run(source);
+  installMessengerModules(context);const run=code=>vm.runInContext(code,context);run(source);
   run("Object.assign(state,{user:{id:'u1',name:'담당',role:'member'},members:[{id:'u1',name:'담당'},{id:'u2',name:'하윤'}],channels:[{id:'c1',name:'마케팅팀',kind:'channel',memberIds:['u1','u2'],canPost:true}],channelId:'c1'});");
   return {run,context,document};
 }
