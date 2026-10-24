@@ -767,12 +767,19 @@ test('a worktree-level memo is reused only for the same input key and survives a
 
 test('the read cache appends only changed entries within a day, writes nothing when nothing changed, and rewrites in full once a day (10-20)', t => {
   const f = fixture(t), cacheFile = path.join(f.stateDir, 'read-cache.json'), journal = path.join(f.stateDir, 'read-cache.journal.jsonl');
-  const fingerprint = '7'.repeat(64), day = Date.parse('2026-10-20T03:00:00Z');
+  const fingerprint = '7'.repeat(64);
   const file = f.put(f.root, 'a.md', '# A'), other = f.put(f.root, 'b.md', '# B');
+  // 이 시험은 저장 방식만 본다. 임시 경로의 재읽기 몫과 겹치면 lookup이 정상적으로 null을 돌려준다.
+  const dayStart = Date.parse('2026-10-20T00:00:00Z');
+  const day = Array.from({ length: readCache.SLOTS }, (_, k) => dayStart + k * readCache.SLOT_MS)
+    .find(now => [file, other].every(p => readCache.slotOf(p) !== readCache.currentSlot(now)));
+  assert.ok(Number.isFinite(day), 'both records have a cache-hit slot within the fixed day');
   const stat = p => fs.statSync(p, { bigint: true }), sha = text => require('node:crypto').createHash('sha256').update(text).digest('hex');
   // 처음: 기록 파일을 통째로 쓴다.
   let cache = readCache.open(cacheFile, { fingerprint, now: day });
   cache.remember(file, stat(file), stat(file), sha('# A'), 3, 'a.md', null);
+  // 날짜 경계의 통째 저장을 용량 기준과 분리한다. 덧붙인 줄이 바탕의 절반을 넘지 않게 둔다.
+  assert.equal(cache.setMemo('compaction-padding', 'stable', Array(4).fill('x'.repeat(1024))), true);
   assert.equal(cache.save().mode, 'full'); assert.equal(fs.existsSync(journal), false);
   const baseBefore = fs.readFileSync(cacheFile, 'utf8');
   // 같은 날 바뀐 것이 없으면 아무것도 안 쓴다(그날 이미 본 항목을 다시 봐도).
@@ -795,6 +802,8 @@ test('the read cache appends only changed entries within a day, writes nothing w
     entries: { [path.resolve(other)]: [[...readCache.statKey(stat(other))], sha('stale'), 3, {}, {}, 1] } }) + '\n{"base":');
   cache = readCache.open(cacheFile, { fingerprint, now: day + 240000 });
   assert.equal(cache.lookup(other, stat(other), 'b.md').sha256, sha('# B')); assert.equal(cache.dropped, 1);
+  assert.ok(fs.statSync(journal).size < fs.statSync(cacheFile).size / 2, 'the journal size alone cannot trigger a full rewrite');
+  assert.deepEqual(cache.save(), { saved: false, unchanged: true, mode: 'none' }, 'the same state remains unchanged on the same day');
   // 다음 날 처음 저장하면 통째로 다시 쓰고 덧붙인 줄을 비운다.
   cache = readCache.open(cacheFile, { fingerprint, now: day + 86400000 });
   cache.lookup(file, stat(file), 'a.md');

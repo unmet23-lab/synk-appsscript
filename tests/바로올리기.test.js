@@ -352,6 +352,32 @@ test('워크트리: --모두는 고친·새·지운 파일을 모두 올린다',
 const 이어 = (...조각) => 조각.join('');
 const 공개정책 = (허용 = []) => `${JSON.stringify({ 판: 1, 설명: '시험', 허용 }, null, 2)}\n`;
 
+// 가림 검사는 표시 글을 본다. Git SHA에 우연히 섞인 시험 번호 네 자리는 개인정보가 아니다.
+function 공개표시글(결과) {
+  const 표시 = structuredClone(결과);
+  for (const 열쇠 of ['바탕', '원격머리']) {
+    if (/^[a-f0-9]{40}$/.test(표시[열쇠] || '')) 표시[열쇠] = '<Git SHA>';
+  }
+  if (표시.공개) {
+    if (/^[a-f0-9]{40}$/.test(표시.공개.공개판 || '')) 표시.공개.공개판 = '<Git SHA>';
+    if (/^[a-f0-9]{9}:tools\/공개검사_허용\.json$/.test(표시.공개.정책 || '')) 표시.공개.정책 = '<정책 Git SHA>:tools/공개검사_허용.json';
+  }
+  return JSON.stringify(표시);
+}
+
+test('공개 검사: 가림 단언은 Git SHA의 번호 충돌만 제외하고 표시 값의 노출은 잡는다', () => {
+  const 지문 = `5a207${이어('38', '47')}4af744bff71b8f9991cb1d6b314ad51`;
+  const 번호 = 이어('38', '47');
+  const 결과 = { 바탕: 지문, 원격머리: 지문, 공개: { 공개판: 지문, 정책: `${지문.slice(0, 9)}:tools/공개검사_허용.json`, 걸림: [{ 값: '010…(13자, 끝 13)' }] } };
+  const 전 = structuredClone(결과);
+  assert.ok(!공개표시글(결과).includes(번호));
+  assert.deepEqual(결과, 전, '원래 결과는 바꾸지 않는다');
+  assert.ok(공개표시글({ ...결과, 이유: 번호 }).includes(번호), '표시 글에 샌 번호는 잡는다');
+  assert.ok(공개표시글({ ...결과, 바탕: 번호 }).includes(번호), 'SHA 꼴이 아닌 값은 제외하지 않는다');
+  assert.ok(공개표시글({ ...결과, 공개: { ...결과.공개, 걸림: [{ 값: 번호 }] } }).includes(번호), '가림 값의 노출은 잡는다');
+  assert.ok(공개표시글({ ...결과, 문제: [{ 값: 지문 }] }).includes(번호), '다른 필드의 해시는 무조건 제외하지 않는다');
+});
+
 test('공개 검사: 휴대폰·주민번호·개인 메일·특허 칸·비공개 표시·명단 표·파일 이름은 미리 보기와 --실행 모두 멈추고 아무것도 올리지 않는다', async (t) => {
   const 판 = 새판(t, { 파일: { 'tools/공개검사_허용.json': 공개정책(), 'docs/상담.md': '# 상담\n' } });
   const 워 = 판.워크트리('wt');
@@ -375,7 +401,7 @@ test('공개 검사: 휴대폰·주민번호·개인 메일·특허 칸·비공�
     assert.deepEqual(r.문제.filter((x) => x.공개).map((x) => x.경로),
       [2, 3, 4, 5, 6, 7, 8].map((n) => `docs/상담.md:${n}`).concat(이어('docs/학생', '명단.xlsx')));
     assert.deepEqual([...new Set(r.공개.걸림.map((x) => x.규칙))], ['휴대폰', '주민번호', '개인메일', '특허', '비공개표시', '명단표', '파일이름']);
-    assert.ok(!/3847|38 4721|erdene/.test(JSON.stringify(r)), '결과에는 값을 가려서만 싣는다');
+    assert.ok(!/3847|38 4721|erdene/.test(공개표시글(r)), '결과에는 값을 가려서만 싣는다');
     assert.deepEqual({ 원격: 판.원격머리(), 머리: 워.머리() }, 전);
   }
   const 돌림 = spawnSync(process.execPath, [도구경로, 'docs', '-m', '상담 기록', '--실행'], { cwd: 워.폴더, encoding: 'utf8' });

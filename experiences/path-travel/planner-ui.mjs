@@ -1,8 +1,8 @@
 import { TRAVEL_PLACES, TRAVEL_META } from './places-v2.mjs';
-import { planTravel, replanTravel, replanRemainingTravel, suggestTravelRecovery, normalizePlannerInput, plannerInputFingerprint, assessCompanionFit, estimateWalkingLeg, PREFERENCE_LABELS } from './planner.mjs';
+import { planTravel, replanTravel, replanRemainingTravel, suggestTravelRecovery, normalizePlannerInput, plannerInputFingerprint, assessCompanionFit, PREFERENCE_LABELS } from './planner.mjs';
 import { createWalkingRouter } from './walking-router.mjs';
-import { evaluateRealStay } from './real-conditions.mjs';
-import { REAL_CONDITION_CALENDAR } from './real-places.mjs';
+// 첫 화면 고르기의 시간·장소·동선 제약은 DOM 없는 경계가 맡는다. 화면은 출발 입력·고른 것·시간을 넘기고 결과만 그린다.
+import { CHOOSER_INTENTS as INTENTS, CHOOSER_MANAGED_PREFERENCES, CHOOSER_HOURS as HOURS, minutesOf, clockText, seoulDate as koreanDate, seoulMinutes, seoulDay, dayIntents, dayIntentRules as intentSpecs, servesDayIntent as servesPick, chooserWindow, chooserLaterHours, planChooser, chooserTripInput, chooserTimeFromSaved } from './planner-chooser.mjs';
 import { ORIGIN_BOUNDS, originPoint, originPosition, createMapOrigin } from './planner-origin.mjs';
 import { createTravelMemory, validateTravelMemory, defaultTravelQuery, loadTravelMemory, saveTravelMemory, clearTravelMemory, setTravelConsent, exportTravelMemory, importTravelMemory, TRAVEL_STORAGE_KEY, TRAVEL_MAX_BYTES } from './planner-storage.mjs';
 import { recordPlanDecision, recordPlanExposure, recordVisit, recordTripOutcome, proposeVisitPreference, confirmTravelPreference, removeTravelPreference, editTravelVisit, removeTravelVisit, clearTravelHistory, TRAVEL_VISIT_REASONS } from './planner-feedback.mjs';
@@ -18,20 +18,12 @@ const e=escape, money=value=>Number(value||0).toLocaleString('ko-KR')+'원';
 const placeMap=new Map(TRAVEL_PLACES.map(p=>[p.id,p]));
 const categoryLabel={food:'한 끼의 즐거움',tea:'차와 카페',culture:'문화와 산책',stay:'하룻밤의 쉼'};
 const categoryShort={food:'한 끼',tea:'차와 카페',culture:'문화와 산책',stay:'숙소'};
-const seoulDay=date=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short'}).format(new Date(date+'T12:00:00+09:00'));
 const budgetLabel=value=>value>=10000&&value%10000===0?value/10000+'만 원':money(value);
-// 하고 싶은 것 → 엔진 취향(prefs)과 실제 장소 표시(check). 궁궐은 역사+산책, 골목은 산책+야외라서
-// 취향으로 서로 갈리고, 넣었는지는 진짜 궁·한옥 골목·시장 표시로 확인한다.
-const INTENTS={food:{short:'맛집',prefs:{food:true},check:{category:'food'}},tea:{short:'차',prefs:{tea:true},check:{category:'tea'}},art:{short:'전시',prefs:{art:true},check:{feature:'art'}},
- palace:{short:'궁궐',prefs:{history:true,walk:true},check:{feature:'palace'}},alley:{short:'골목',prefs:{walk:true,outdoor:true},check:{feature:'hanok',category:'culture'}},market:{short:'시장',prefs:{marketFood:true},check:{feature:'market'}}};
-const MANAGED=new Set(Object.values(INTENTS).flatMap(intent=>Object.keys(intent.prefs)));
-// 쓸 시간 → 장소 수·걷기 상한. 상한은 넉넉히 두고 엔진이 덜 걷는 쪽을 고른다.
-const HOURS={1:{label:'1시간',stops:1,walk:20},2:{label:'2시간',stops:2,walk:50},3:{label:'3시간',stops:3,walk:70},5:{label:'반나절',stops:4,walk:100},8:{label:'하루',stops:5,walk:150}};
+// 고르기가 켜고 끄는 취향(고른 것들의 취향)
+const MANAGED=new Set(CHOOSER_MANAGED_PREFERENCES);
 // 사진이 없는 곳은 그곳 대표 메뉴를 펠트로 구운 그림을 쓴다(2026-10-19 굽기).
 const FELT={'gaeseong-mandu-koong':'mandu',hwangsaengga:'kalguksu',tosokchon:'samgyetang','gwanghwamun-mijin':'memil','balwoo-gongyang':'baru','kyungin-traditional-teahouse':'tea-table','osulloc-bukchon':'green-tea','beautiful-tea-museum':'tea-tin','fritz-wonseo':'croissant','onion-anguk':'pandoro'};
 const feltSrc=name=>`./assets/felt/${name}.webp`;
-const minutesOf=value=>Number(value.slice(0,2))*60+Number(value.slice(3));
-const clockText=value=>String(Math.floor(value/60)).padStart(2,'0')+':'+String(value%60).padStart(2,'0');
 const reducedMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 let picks=[],pickHours=3,dialFrame=0,foodByHand=false,handWhen=null,animatedPlan=null,chooserIssue=null,chooserChanges={appointments:[],kept:[],meal:null};const dial={value:3,velocity:0};
 // 폼에서 직접 켠 취향. 고르기는 이것을 끄지 않는다.
@@ -48,7 +40,6 @@ let accountSession=null, accountApplying=false;
 const baseOrigins=structuredClone(origins);
 // A slower device must not move an existing record's event clock backwards.
 const now=()=>new Date(Math.max(Date.now(),Date.parse(memory.updatedAt)||0)).toISOString();
-const koreanDate=at=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(at));
 function toast(message){$('#toast').textContent=message;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
 function notice(message){$('#form-error').textContent=message;$('#form-error').hidden=false;}
 function persist(){
@@ -85,7 +76,7 @@ function restoreGuestDraft(draft){
  labelOriginPicker();syncScheduleFields();updateCompanionCount();
  for(const field of draft.originControls){const control=$('#'+field.id);if(control)control.value=field.value;}
  picksFromQuery({preferences:readPreferences()});
- if(draft.formDirty)handWhen={date:$('#trip-date').value,start:$('#start-time').value};
+ if(draft.formDirty)handWhen={date:$('#trip-date').value,startTime:$('#start-time').value};
  if(draft.originOpen)$('#origin-dialog').showModal();
 }
 function loginFieldKey(control){
@@ -116,7 +107,7 @@ function restoreLoginDraft(raw){
  $('#conditions-panel').open=draft.panels.conditions;$('#companions-details').open=draft.panels.companions;$('#schedule-details').open=draft.panels.schedule;
  syncScheduleFields();updateCompanionCount();picksFromQuery({preferences:readPreferences()});
  // 로그인 전에 폼을 고치던 중이면 돌아온 날짜·출발 시각을 직접 정한 것으로 둔다(고르기가 다시 덮지 않게).
- if(draft.formDirty)handWhen={date:$('#trip-date').value,start:$('#start-time').value};
+ if(draft.formDirty)handWhen={date:$('#trip-date').value,startTime:$('#start-time').value};
 }
 function applyAccountState(value,{guest=false}={}){
  accountApplying=true;
@@ -343,80 +334,15 @@ function settings(query=memory.query){
  return {now:new Date().toISOString(),feedback:memory.confirmedPreferences,routeLeg,intents:intentSpecs(query)};
 }
 // 고른 것은 취향에서 알아보고, 엔진에는 진짜 궁·한옥 골목·시장 같은 장소 표시로 알린다(여행 조건에는 들어가지 않는다).
-function intentSpecs(query){return dayIntents(query).map(id=>({id,...INTENTS[id].check}));}
+// settings의 intentSpecs는 고르기 경계의 dayIntentRules다.
 // ── 첫 화면 고르기: 하고 싶은 것 → 몇 시간. 둘 다 건너뛰어도 하루가 나온다. ──
 // 고르기는 아래 폼에 바로 적는다. 폼이 하나뿐인 원본이라 「이 시간으로 하루 만들기」와 폼 단추가 같은 조건을 쓴다.
-function seoulClock(){return minutesOf(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()));}
-function nextDate(date){const day=new Date(date+'T00:00:00Z');day.setUTCDate(day.getUTCDate()+1);return day.toISOString().slice(0,10);}
-// 폼에서 날짜·출발 시각을 직접 정했으면 그날 그 시각부터(오늘이면 지금 이후로). 아니면 오늘 남은 시간에 들어갈 때
-// 10분 뒤 출발, 안 되면 내일 10시. 긴 일정은 저녁 8시, 짧은 일정은 9시까지 끝낸다.
+// 시간 창·후보·짝·곳 수는 고르기 경계(planner-chooser.mjs)가 센다. 화면은 지금 시각·폼의 출발점·폼에서 직접 정한 날짜와
+// 출발 시각(handWhen)·고른 것·시간·지도 길 찾기를 명시해 넘기고 돌아온 결과만 그린다.
 // 고르기가 폼에 써 넣은 날짜·시각은 직접 정한 것으로 보지 않고 매번 다시 계산한다.
-function chooserWindow(hours){
- const today=koreanDate(new Date().toISOString()),tomorrow=nextDate(today),span=hours*60,latest=hours>=5?1200:1260;
- const soon=Math.ceil((seoulClock()+10)/10)*10,soonest=Math.max(600,soon);
- if(handWhen&&handWhen.date>=today){
-  const asked=/^\d\d:\d\d$/.test(handWhen.start)?minutesOf(handWhen.start):600,first=handWhen.date===today?Math.max(540,soon):540,start=Math.max(first,Math.min(asked,latest-span));
-  // 직접 정한 시각을 옮겼으면 까닭(이미 지남·너무 이른 시각·늦게 끝남)을 같이 돌려준다.
-  const shift=asked===start?null:asked>start?'late':handWhen.date===today&&asked<soon?'past':'early';
-  if(start+span<=latest)return {date:handWhen.date,start,end:start+span,when:handWhen.date===today?'오늘':handWhen.date===tomorrow?'내일':seoulDay(handWhen.date),today:handWhen.date===today,asked,shift};
- }
- return soonest+span<=latest?{date:today,start:soonest,end:soonest+span,when:'오늘',today:true}:{date:tomorrow,start:600,end:600+span,when:'내일',moved:true};
-}
-const lunchIncluded=(span,hours)=>hours>=5&&span.start<=720&&span.end>=810;
-const servesPick=(place,id)=>{const rule=INTENTS[id].check;return (!rule.category||place.category===rule.category)&&(!rule.feature||place.features?.[rule.feature]===true);};
-// 고른 것마다 출발점에서 갈 수 있는 곳의 걷는 상단·걷고 머무는 시간. 엔진이 일정을 짜기 전에 시간 화면에서 미리 알려 준다.
-// 그 시간에 고르기가 잡을 날짜·시각에 문을 연 곳만 센다(쉬는 날인 궁·미술관은 빼고, 안내가 없는 곳은 엔진처럼 후보로 둔다).
-const pickCache=new Map();
-function pickOptions(id,hours){
- const origin=origins.find(row=>row.id===$('#origin').value)??origins[0],span=chooserWindow(hours),key=[id,origin.lat,origin.lon,Boolean(routeLeg),span.date,span.start,span.end].join('|');
- if(!pickCache.has(key)){
-  const at=new Date().toISOString();
-  const opens=(place,walk)=>{for(let arrive=span.start+walk;arrive+place.planningStayMinutes<=span.end;arrive+=30)if(evaluateRealStay(place,{date:span.date,time:clockText(arrive),stayMinutes:place.planningStayMinutes},{now:at,calendar:REAL_CONDITION_CALENDAR}).status!=='unmatched')return true;return false;};
-  pickCache.set(key,TRAVEL_PLACES.filter(place=>place.dayPlannerEligible!==false&&place.coordinates&&servesPick(place,id)).map(place=>{const leg=estimateWalkingLeg(origin,place,{routeLeg});return {place,walk:leg.maxMinutes,total:leg.maxMinutes+place.planningStayMinutes};}).filter(row=>opens(row.place,row.walk)));
- }
- return pickCache.get(key);
-}
-const pickFits=(id,hours)=>pickOptions(id,hours).some(row=>row.total<=hours*60&&row.walk<=HOURS[hours].walk);
-// 한 곳을 더 붙일 여유(가장 짧은 다른 곳 ≈ 40분)가 있는지
-const pickPairs=(id,hours)=>pickOptions(id,hours).some(row=>row.total+40<=hours*60&&row.walk<=HOURS[hours].walk);
-const pickMinutes=(id,hours)=>Math.min(...pickOptions(id,hours).filter(row=>row.walk<=HOURS[hours].walk).map(row=>row.total));
-// 고른 두 가지를 그 시간에 한 일정으로 이을 수 있는지: 모든 후보 짝을 두 순서로, 엔진과 같은 걷기 추정(상단)·머무는 시간·
-// 운영 시각으로 본다. 여는 시각까지는 15분씩 1시간까지 기다려 본다. 길 찾기는 직선거리 하한으로 거른 짝에만 돌린다.
-const legCache=new Map();
-const legBetween=(a,b)=>{const key=[a.id,b.id,Boolean(routeLeg)].join('|');if(!legCache.has(key))legCache.set(key,estimateWalkingLeg(a,b,{routeLeg}).maxMinutes);return legCache.get(key);};
-// 길 찾기(경로 거리÷50+3분)와 직선 추정 어느 쪽보다도 길지 않은 하한
-const legFloor=(a,b)=>{const plain=estimateWalkingLeg(a,b);return Math.min(Math.max(2,Math.ceil(plain.distanceMeters/50+3)),plain.maxMinutes);};
-function pairFits(a,b,hours){
- const span=chooserWindow(hours),at=new Date().toISOString(),rows=id=>pickOptions(id,hours).filter(row=>row.walk<=HOURS[hours].walk);
- const opens=(place,arrive)=>evaluateRealStay(place,{date:span.date,time:clockText(arrive),stayMinutes:place.planningStayMinutes},{now:at,calendar:REAL_CONDITION_CALENDAR}).status!=='unmatched';
- const enter=(place,from)=>{for(let arrive=from;arrive<=from+60&&arrive+place.planningStayMinutes<=span.end;arrive+=15)if(opens(place,arrive))return arrive;return null;};
- for(const x of rows(a))for(const y of rows(b))for(const [first,second] of [[x,y],[y,x]]){
-  if(first.place.id===second.place.id)continue;
-  const stay=second.place.planningStayMinutes,earliest=span.start+first.walk+first.place.planningStayMinutes;
-  if(earliest+legFloor(first.place,second.place)+stay>span.end)continue;
-  const arrive=enter(first.place,span.start+first.walk);if(arrive===null)continue;
-  const next=enter(second.place,arrive+first.place.planningStayMinutes+legBetween(first.place,second.place));
-  if(next!==null)return true;
- }
- return false;
-}
-// 이 시간에 넣을 고른 것과 들어갈 곳 수. 2시간에 다른 곳과 짝을 못 짓는 긴 곳(전시·궁궐 등)을 고르면 그 한 곳으로 잡고,
-// 같이 고른 다른 것은 이번에 빼며 몇 시간부터 같이 들어가는지 알린다. 곳 수는 고른 곳의 걷고 머무는 시간으로 어림한다.
-function chooserPlan(fits){
- const hours=HOURS[pickHours],long=hours.stops===2?fits.find(id=>!pickPairs(id,pickHours)):undefined;
- if(long){
-  const left=fits.filter(id=>id!==long),both=[long,...left];
-  return {long,left,count:1,used:picks.filter(id=>!left.includes(id)),together:[3,5,8].find(h=>both.every(id=>pickFits(id,h))&&both.reduce((sum,id)=>sum+pickMinutes(id,h),0)<=h*60)};
- }
- // 고른 곳들의 걷고 머무는 시간에 짧은 곳(≈40분)을 더해 몇 곳쯤 들어갈지 어림한다.
- const estimate=list=>{const need=list.slice(0,hours.stops).map(id=>pickMinutes(id,pickHours));let count=need.length,used=need.reduce((sum,value)=>sum+value,0);
-  while(count<hours.stops&&(!need.length||used+40<=pickHours*60)){count++;used+=40;}return count;};
- let count=estimate(fits);
- // 따로는 들어가도 한 일정으로 잇지 못하는 두 가지(예: 늦은 오후의 궁궐과 찻집)는 미리 알리고, 긴 쪽 없이 곳 수를 다시 어림한다.
- const shown=fits.slice(0,Math.min(hours.stops,count));let apart=null;
- for(let i=0;i<shown.length&&!apart;i++)for(let j=i+1;j<shown.length&&!apart;j++)if(!pairFits(shown[i],shown[j],pickHours))apart=[shown[i],shown[j]];
- if(apart){const longer=pickMinutes(apart[0],pickHours)>=pickMinutes(apart[1],pickHours)?apart[0]:apart[1];count=estimate(fits.filter(id=>id!==longer));}
- return {long,left:[],count:Math.max(1,count),used:picks,apart};
+function chooserRequest(hours=pickHours){
+ const origin=origins.find(row=>row.id===$('#origin').value)??origins[0];
+ return {now:new Date().toISOString(),hours,picks:[...picks],places:TRAVEL_PLACES,routeLeg,query:{origin,date:handWhen?.date??null,startTime:handWhen?.startTime??null}};
 }
 // 받침이 있으면 '은', 없으면 '는'
 function withEun(word){const code=word.charCodeAt(word.length-1)-0xAC00;return word+(code>=0&&code<11172&&code%28?'은':'는');}
@@ -428,7 +354,7 @@ function pickNote(){
  if(!picks.length)return '고르지 않으면 가까운 곳을 고루 섞어요.';
  const names=list=>list.map(id=>INTENTS[id].short).join(' · ');
  if(hoursChosen){
-  const fits=picks.filter(id=>pickFits(id,pickHours)),plan=chooserPlan(fits),kept=fits.filter(id=>!plan.left.includes(id));
+  const plan=planChooser(chooserRequest()),kept=plan.fits.filter(id=>!plan.left.includes(id));
   if(kept.length<picks.length)return kept.length?`${names(picks)} — 고른 ${HOURS[pickHours].label}에는 ${names(kept)}만 넣어요.`:`${names(picks)} — 고른 ${HOURS[pickHours].label}에는 넣기 어려워요. 시간을 늘려 보세요.`;
  }
  return `${names(picks)} — 하나씩은 꼭 넣을게요.`;
@@ -457,7 +383,7 @@ function togglePick(id){
 // 폼에서 고친 취향이 고른 것과 같아지면 고르기에도 그대로 보인다.
 function picksFromForm(control){
  const key=control.dataset.taste??control.value;if(!MANAGED.has(key))return;
- const prefs=readPreferences(),derived=Object.keys(INTENTS).filter(id=>Object.entries(INTENTS[id].prefs).every(([name,value])=>prefs[name]===value));
+ const prefs=readPreferences(),derived=dayIntents({preferences:prefs});
  if(prefs[key]===true)handPrefs.add(key);else handPrefs.delete(key);
  picks=[...picks.filter(id=>derived.includes(id)),...derived.filter(id=>!picks.includes(id))];syncPicks();
 }
@@ -492,10 +418,9 @@ function animateDial(target){
  dialFrame=requestAnimationFrame(frame);
 }
 function renderTimeStep(){
- const span=chooserWindow(pickHours),hours=HOURS[pickHours],origin=origins.find(row=>row.id===$('#origin').value)??origins[0];
- const fits=picks.filter(id=>pickFits(id,pickHours)),misses=picks.filter(id=>!fits.includes(id)),plan=chooserPlan(fits);
+ const request=chooserRequest(),plan=planChooser(request),{span,fits,misses}=plan,hours=HOURS[pickHours],origin=request.query.origin;
  $('#chooser-card').dataset.sky=String(pickHours);
- $('#time-context').textContent=`${span.today?'지금 '+clockText(seoulClock())+' · ':''}${origin.name}에서 출발해요`;
+ $('#time-context').textContent=`${span.today?'지금 '+clockText(seoulMinutes(request.now))+' · ':''}${origin.name}에서 출발해요`;
  $('#dial-hours').textContent=hours.label;
  $('#dial-range').textContent=`${span.when} ${clockText(span.start)}–${clockText(span.end)}`;
  for(const chip of $$('.time-chips [data-hours]'))chip.setAttribute('aria-pressed',String(Number(chip.dataset.hours)===pickHours));
@@ -505,10 +430,10 @@ function renderTimeStep(){
  // 식사 안내는 폼에 실제로 적힌 「식사를 꼭 포함」을 그대로 읽는다.
  // 시간을 늘리면 창이 다른 날(오늘 → 내일)로 넘어가면 그 날을 같이 말한다.
  const later=misses.map(id=>{
-  const short=INTENTS[id].short,sameDay=[1,2,3,5,8].find(h=>chooserWindow(h).date===span.date&&pickFits(id,h)),anyDay=sameDay??[1,2,3,5,8].find(h=>pickFits(id,h));
+  const short=INTENTS[id].short,{sameDay,anyDay}=chooserLaterHours(id,request);
   if(!anyDay)return `${short} 갈 곳을 지금 출발점에서 찾지 못했어요`;
   if(sameDay)return `${withEun(short)} ${HOURS[sameDay].label}부터 넉넉해요`;
-  return `${withEun(short)} ${span.when==='오늘'?'오늘은 어렵고 ':''}${chooserWindow(anyDay).when} ${josa(HOURS[anyDay].label,'이면','면')} 넉넉해요`;
+  return `${withEun(short)} ${span.when==='오늘'?'오늘은 어렵고 ':''}${chooserWindow({...request,hours:anyDay}).when} ${josa(HOURS[anyDay].label,'이면','면')} 넉넉해요`;
  });
  const notes=chooserIssue?[`아래 조건에서 먼저 고칠 곳이 있어요 · ${chooserIssue.message}`]:[...later,
   plan.long?`${withEun(INTENTS[plan.long].short)} 한 곳으로 시간이 꽉 차요`:'',
@@ -528,22 +453,10 @@ function renderTimeStep(){
 function chooserQuery(){
  // 여행 중 기록은 그날의 남은 일정에 묶여 있다. 새 날짜의 하루는 「새 여행 만들기」 뒤에 고른다.
  if(memory.progress)throw new TypeError('여행 중에는 「여행 중이라면」에서 남은 일정을 맞춰 주세요. 새 하루는 내 여행의 「새 여행 만들기」로 시작해요.');
- const span=chooserWindow(pickHours),hours=HOURS[pickHours],fits=picks.filter(id=>pickFits(id,pickHours)),plan=chooserPlan(fits);
+ const request=chooserRequest(),plan=planChooser(request);
  chooserChanges={appointments:[],kept:[],meal:null};
- return readInput(raw=>{
-  Object.assign(raw,{planningMode:'day',date:span.date,startTime:clockText(span.start),endTime:clockText(span.end),stopCount:plan.long?1:hours.stops,maxWalkMinutes:hours.walk,lockedIds:[],excludedIds:[]});
-  // 이번에 넣을 고른 것의 취향만 켜고, 고르기가 켰던 나머지는 끈다. 폼에서 직접 켠 것과 피하기는 그대로 둔다.
-  const owned=new Set(plan.used.flatMap(id=>Object.keys(INTENTS[id].prefs)));
-  for(const key of MANAGED)if(owned.has(key))raw.preferences[key]=true;else if(raw.preferences[key]===true&&!handPrefs.has(key))delete raw.preferences[key];
-  if(raw.meal.mode==='none'&&plan.used.includes('food'))raw.meal={mode:'any',startTime:'12:00',endTime:'13:00'};
-  if(raw.meal.mode==='window'&&(raw.meal.endTime<raw.startTime||raw.meal.startTime>=raw.endTime)){chooserChanges.meal={...raw.meal};raw.meal={mode:'any',startTime:'12:00',endTime:'13:00'};}
-  // 식사 필수는 직접 고친 폼 값을 따르고, 아니면 이 시간에 들어가는 맛집을 골랐거나 반나절 이상이 점심을 걸칠 때만 넣는다.
-  const meal=foodByHand?raw.requiredCategories.includes('food'):raw.meal.mode!=='none'&&(plan.used.includes('food')&&fits.includes('food')||lunchIncluded(span,pickHours));
-  raw.requiredCategories=[...raw.requiredCategories.filter(key=>key!=='food'),...(meal?['food']:[])];
-  // 이 시간 밖의 예약·약속은 빼고 시간 화면에 알린다.
-  const inside=row=>row.time>=raw.startTime&&row.time<raw.endTime;
-  chooserChanges.kept=raw.appointments;chooserChanges.appointments=raw.appointments.filter(row=>!inside(row));raw.appointments=raw.appointments.filter(inside);
- });
+ // 고른 것·시간만 덮고(고르기 경계가 정한 시간 창·곳 수·걷기 상한·취향·식사·시간 밖 약속) 폼 값과 함께 한 번만 검사한다.
+ return readInput(raw=>{const next=chooserTripInput(raw,request,{plan,handPreferences:handPrefs,foodByHand});Object.assign(raw,next.input);chooserChanges=next.changes;});
 }
 // 폼이 잘못된 상태면 폼은 그대로 두고 그 까닭을 시간 화면에 보인다. 만들 때는 폼을 열어 그 칸을 알려 준다.
 // 이 시간 밖이라 뺀 예약·식사 시간대는 폼에서 지우지 않아, 시간을 바꾸면 다시 들어간다.
@@ -647,7 +560,6 @@ function renderConditionChips(){
  const chips=[seoulDay(q.date),q.startTime+'–'+q.endTime,q.origin.name+' 출발','성인 '+q.party.adults+(q.party.children?' · 아이 '+q.party.children:''),budgetLabel(q.budget),'걷기 '+q.maxWalkMinutes+'분 이내','최대 '+q.stopCount+'곳'];
  $('#condition-chips').innerHTML=chips.map(text=>`<span class="cond-chip">${e(text)}</span>`).join('');
 }
-function dayIntents(q){return Object.keys(INTENTS).filter(id=>Object.entries(INTENTS[id].prefs).every(([key,value])=>q.preferences?.[key]===value));}
 function durationText(value){const h=Math.floor(value/60),m=value%60;return value<=0?'':h?`${h}시간${m?' '+m+'분':''}`:`${m}분`;}
 // 받침이 없거나 ㄹ이면 '로', 아니면 '으로'
 function withRo(word){const code=word.charCodeAt(word.length-1)-0xAC00,last=code>=0&&code<11172?code%28:0;return word+(last===0||last===8?'로':'으로');}
@@ -1094,7 +1006,7 @@ window.addEventListener('popstate',event=>{
 });
 $('#require-food').addEventListener('change',()=>{foodByHand=true;});
 // 고르기 시간은 사용자가 폼에서 직접 고친 날짜·출발 시각을 따른다(고르기가 써 넣은 값은 세지 않는다).
-for(const id of ['trip-date','start-time'])$('#'+id).addEventListener('change',()=>{handWhen={date:$('#trip-date').value,start:$('#start-time').value};});
+for(const id of ['trip-date','start-time'])$('#'+id).addEventListener('change',()=>{handWhen={date:$('#trip-date').value,startTime:$('#start-time').value};});
 window.addEventListener('pageshow',event=>{if(event.persisted)void accountSession?.resume();});
 window.addEventListener('resize',()=>{if(!memory.plan)return;if($('#map-dialog').open)renderMap();if(!$('#result').hidden)renderMapThumb(memory.plan);});
 // 출발지를 바꾸고 돌아오면 시간 고르기의 「어디에서 출발」 문구도 새로 쓴다.
@@ -1107,7 +1019,8 @@ window.addEventListener('scroll',()=>{const y=scrollY;if(Math.abs(y-lastScroll)<
 window.addEventListener('beforeunload',event=>{if(formDirty){event.preventDefault();event.returnValue='';}});
 try{const saved=loadTravelMemory();if(saved){memory=saved;restored=true;}}catch(error){toast(error.message);}
 writeInput(memory.query);renderExplore();picksFromQuery(memory.query);
-handWhen=memory.query.date>koreanDate(new Date().toISOString())?{date:memory.query.date,start:memory.query.startTime}:null;
+// 앞날의 저장 여행이면 그 날짜·출발 시각을 직접 정한 것으로 둔다.
+handWhen=chooserTimeFromSaved(memory.query,new Date().toISOString());
 $('#hero-place-count').textContent='가입 없이 시작 · 서울 종로의 실제 장소 '+TRAVEL_PLACES.filter(p=>p.dayPlannerEligible!==false).length+'곳';
 $('#photo-credit-list').innerHTML=TRAVEL_PLACES.filter(p=>p.photo).map(p=>`<p class="photo-credit"><strong>${e(p.name)}</strong> · ${credit(p)}</p>`).join('');
 try{const response=await fetch('./assets/jongno-walking.json');if(!response.ok)throw Error('map unavailable');network=await response.json();routeLeg=createWalkingRouter(network);$('#load-status').textContent='실제 장소 '+TRAVEL_PLACES.length+'곳 · 지도 기반 예상 이동으로 비교해요.';}

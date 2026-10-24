@@ -1,3 +1,4 @@
+import { createRaceController, createRaceState } from '../race-controller.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -13,24 +14,25 @@ import {resolveContact,shieldContact,comboShield} from '../driving.js';
 import {BASE_CRUISE,racingFollowUp,racingRecheck,linkRacingRecheck} from '../personalization.js';
 import {createQuestionPace,gatePosition,QUESTION_LEAD,rewardBoost,COMBO_BOOST_SECONDS} from '../race-pacing.js';
 
-// Execute production app functions, rather than restating their transitions in a
-// test. The file uses unindented top-level declarations/closing braces. Device,
-// DOM and rendering boundaries are fakes; progress/awards/contacts/radio are real.
-// This cannot verify the rendered interface, audible music or browser policy.
-const appSource=readFileSync(new URL('../app.js',import.meta.url),'utf8');
-function appFunction(name){
-  const marker=`function ${name}(`,start=appSource.indexOf(marker);
-  assert.notEqual(start,-1,`Missing app function: ${name}`);
-  const lineEnd=appSource.indexOf('\n',start),line=appSource.slice(start,lineEnd).trimEnd();
-  const end=line.endsWith('}')?lineEnd:appSource.indexOf('\n}',lineEnd)+2;
-  assert(end>start,`Missing app function boundary: ${name}`);
-  return (appSource.slice(Math.max(0,start-6),start)==='async '?'async ':'')+appSource.slice(start,end);
-}
-const productionFunctions=['syncCoastRadio','silence','finish','resultSummary','nextStage','showCruiseResults','returnToCruise',
-  'pause','resume','updateContacts','updateCoastDrive','toggleSound','updateSoundButton','setText'];
+// Execute the actual race controller. Only device, DOM, rendering and voice delivery are fake.
+// The same behavior assertions cover transitions without extracting source function bodies.
 // Screen drawing lives in hud.js/results.js/screens.js; a catch-all no-op stands in for the race HUD here.
 const noopHud=()=>new Proxy({},{get:(target,key)=>target[key]??(()=>{})});
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
+
+test('the imported controller resets a completed drive for a new round without awarding or saving again', async () => {
+  const x=setup(); x.run('finish'); await flush();
+  const c=x.ctx, progress=c.progress, garage=c.garage, saved=x.storage.get(PROGRESS_KEY);
+  c.inputs.left=true;c.inputs.right=true;c.paused=true;c.collisions=9;c.shield=1;c.questionExpanded=true;
+  c.reset(true);
+  assert.equal(c.running,true);assert.equal(c.paused,false);assert.equal(c.finished,false);
+  assert.equal(c.playerS,75);assert.equal(c.elapsed,0);assert.equal(c.velocity,c.cruise);
+  assert.equal(c.answers.length,0);assert.equal(c.correct,0);assert.equal(c.collisions,0);assert.equal(c.shield,0);
+  assert.deepEqual({...c.inputs},{left:false,right:false});assert.equal(c.gateIndex,0);assert.equal(c.gate.announced,false);
+  assert.equal(c.coastDrive.active,false);assert.equal(x.$('cruise-banner').hidden,true);
+  assert.equal(c.progress,progress);assert.equal(c.garage,garage);assert.equal(x.storage.get(PROGRESS_KEY),saved);
+  assert.equal(x.counts.award,1);assert.equal(x.counts.record,1);assert.equal(x.counts.progress,1);
+});
 
 test('account reward latency keeps completion driving responsive and displays only confirmed coins',async()=>{
   const x=setup();let resolve,commands=0;
@@ -164,7 +166,7 @@ function setup({score=5,demo=false,cruise=26}={}){
     contactSound(){counts.contacts++;},contactSparks(){},showToast(){},speak(){},
     displayQuestion(){},narrateQuestion(){},repeatTutorial(){},tutorialDelivered(){},renderTutorial(){},learn(){},
   });
-  for(const name of productionFunctions)vm.runInContext(appFunction(name),context,{filename:`app.js:${name}`});
+  installController(context);
   $('results').hidden=true;$('pause-dialog').open=false;
   return {ctx:context,$,counts,storage,media,run:name=>vm.runInContext(`${name}()`,context)};
 }
@@ -177,7 +179,7 @@ function setupRace({cruise=26,reading=false,muted=false}={}){
     elapsed:10,answers:[],correct:0,combo:0,bestCombo:0,boost:0,collisions:0,gateIndex:0,
     playerS:gatePosition(0)+.1,playerOffset:0,velocity:cruise,questionChosen:true,questionExpanded:false,
     inputs:{left:false,right:false},laneAim:null,aimOffset:0,narrationUnavailable:false,soundEnabled:!muted,
-    questionPace:createQuestionPace(),gatePosition,QUESTION_LEAD,rewardBoost,COMBO_BOOST_SECONDS,comboShield,WORD_BY_ID,
+    gatePosition,QUESTION_LEAD,rewardBoost,COMBO_BOOST_SECONDS,comboShield,WORD_BY_ID,
     LANES:[-3.45,0,3.45],car:{position:{y:0},rotation:{z:0},userData:{jets:[{visible:false,scale:{y:0}}]}},
     // Isolate pacing from incidental traffic; these still pass through the real
     // traffic/contact routines throughout the simulated route.
@@ -196,8 +198,7 @@ function setupRace({cruise=26,reading=false,muted=false}={}){
     }
   });
   if(reading){c.selectedStage=CAMPAIGN[2];c.questionBank=makeQuestions(c.selectedStage,()=>.3);}
-  for(const name of ['chooseCurrentLane','questionReady','displayQuestion','judgeGate','continueFeedback','updateGame'])
-    vm.runInContext(appFunction(name),c,{filename:`app.js:${name}`});
+  // These methods are the imported controller methods installed by setup().
   c.makeGate(0,gatePosition(0));c.gate.announced=true;c.questionChosen=true;
   c.playerOffset=c.LANES[c.gate.types.indexOf(c.gate.q.answer)];
   const step=(seconds,dt=1/60)=>{for(let i=0;i<Math.round(seconds/dt);i++)vm.runInContext(`updateGame(${dt})`,c);};
@@ -399,3 +400,21 @@ test('↑ right after tapping an answer tag keeps the tapped lane; while steerin
   x.run('chooseCurrentLane');
   assert.equal(c.gate.intentChoice,c.gate.types[other],'holding a direction chooses where the car is');
 });
+
+// Same existing scenario inputs/assertions, now crossing the production controller
+// boundary. Device, DOM and rendering ports are fakes. No control-flow copies.
+function installController(c) {
+  c.questionPace = createQuestionPace();
+  const race = createRaceController({
+    state: Object.fromEntries(Object.keys(createRaceState()).filter(k => k in c).map(k => [k, c[k]])),
+    view: { $: c.$, hud: c.hud, screenEl: c.screenEl, hidden: () => c.document.hidden, showScreen: name => c.showScreen(name), showRace: () => c.showRace(), openDialog: x => c.openDialog(x), closeDialog: x => c.closeDialog(x), renderResults: x => c.renderResults(x), renderLobby: () => c.renderLobby(), renderCollection: () => c.renderCollection?.(), syncSoundToggles: () => c.syncSoundToggles() },
+    sound: { narrator: c.narrator, speak: (...args) => c.speak(...args), ensureAudio: () => c.ensureAudio(), ding: (...args) => c.ding?.(...args), contact: () => c.contactSound(), quiet() {}, engineCoast() {}, engineRace() {} },
+    scene: { car: () => c.car, wheels: () => c.wheels, rivals: () => c.rivals, placeCar: (...args) => c.placeCar(...args), applyEquipment() {}, mascotMood: (...args) => c.mascotMood?.(...args), contactSparks: (...args) => c.contactSparks(...args), buildGate: () => ({ group: {}, fruitObjects: [] }), removeGate() {}, hideRoundEffects() {}, resetCamera() {}, wrapCamera() {} },
+    learning: { learn: (...args) => c.learn(...args), presentGate: (...args) => c.presentGate?.(...args), answerGate: (...args) => c.answerGate?.(...args), endLive: () => c.endLive(), nextPersonalized: () => c.nextPersonalized(), learningScope: () => c.learningScope() },
+    rewards: { account: () => c.SynkPlayAccount, storage: c.progressStorage, loadGarage: () => c.loadGarageSafe(), storeGarage: value => c.storeGarage(value), wishText: () => c.wishText(), awardRace: (...args) => c.awardRace(...args), recordRound: (...args) => c.recordRound(...args), loadProgress: (...args) => c.loadProgress(...args) },
+    tutorial: { active: () => !!c.tutorial, chooseLane: () => c.chooseTutorialLane?.(), tapLane: id => c.tutorialTapLane?.(id), render: () => c.renderTutorial(), repeat: () => c.repeatTutorial(), delivered: () => c.tutorialDelivered(), clearVoice: () => { c.tutorialVoicePending = false; } },
+    coastDrive: c.coastDrive, coastRadio: c.coastRadio, clock: c.clock, questionPace: c.questionPace, reducedMotion: c.reducedMotion,
+  });
+  for (const name of Object.keys(race.state)) Object.defineProperty(c, name, { configurable: true, enumerable: true, get: () => race.state[name], set: value => { race.state[name] = value; } });
+  for (const [name, value] of Object.entries(race)) if (typeof value === 'function' && name !== 'speak') c[name] = value;
+}
