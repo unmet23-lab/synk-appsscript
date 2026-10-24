@@ -43,4 +43,3 @@ function groupSubscriptionReads(targets,rows,shared){
   return {groups,covered};
 }
 module.exports={createSharedAccounts,groupSubscriptionReads};
-
