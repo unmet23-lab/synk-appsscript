@@ -411,336 +411,379 @@ export function createDiscoveryAdapter({ Domain, Ask, Personalization, Condition
     baselineEvent: me.layers.baseline.provenance[field]?.eventId || null,
     contextEvent: me.layers.context.provenance[field]?.eventId || null,
     unknownEvent: runtime.unknown.get(field)?.eventId || null });
+  // Event reducers receive only their replay state and evaluation policy.
+  // They never publish records; replay owns event order and context expiry.
+  function createReplayRuntime() {
+    return { preferences: [], requirements: {}, skipped: new Set(), unknown: new Map(), selection: null, selectionEvent: null, selectionBasis: null, revision: 0, change: null,
+      changes: [], feedback: [], excluded: new Set(), exclusionSources: new Map(), comparisonSkips: new Set(), exposures: new Map(), snoozes: new Map(), lastShown: null, questionsPaused: false,
+      priorities: { baseline: [], context: null }, priorityDeadlines: { baseline: null, context: null }, regions: { baseline: null, context: null }, priorityChanges: [], questionMode: null, questionUses: [], deferred: new Map(), reasons: new Map(), sceneResponses: new Map(), sceneSources: new Map(),
+      conditional: { baseline: null, context: null }, contextNumber: 1, context: { id: ENCOUNTER, closed: false, expiresAt: null, endedReason: null } };
+  }
+  const writeReplayRegions = (runtime, kind, target, value, id, when, until) => {
+    if (kind !== 'set') { runtime.regions[target] = null; return; }
+    if (until !== undefined && (utc(until) !== until || instant(until) <= instant(when))) fail('region deadline must be after its declaration');
+    const provenance = { eventId: id, source: 'explicit', duration: target === 'baseline' ? 'ongoing' : 'once', encounterId: runtime.context.id, at: when, ...(until ? { until } : {}) };
+    runtime.regions[target] = { value: validateMeetingRegions(value), provenance, ...(until ? { until } : {}) };
+    if (target === 'baseline') runtime.regions.context = null;
+  };
+  const preferenceBasis = (me, when) => canonical({ values: me.values, provenance: me.provenance, hardValues: me.hardValues, priorities: me.priorities,
+    ...(conditionalKey(me, when) ? { conditionalKey: conditionalKey(me, when) } : {}) });
+  const invalidateReplay = runtime => { runtime.selection = null; runtime.selectionEvent = null; runtime.selectionBasis = null; runtime.revision++; };
+  const closeReplayContext = (runtime, id, when, reason) => {
+    runtime.preferences = P.record({ contract: CONTRACT, scope: prefScope(ME), encounterId: runtime.context.id,
+      events: runtime.preferences, at: when, id, kind: 'close' });
+    runtime.context.closed = true; runtime.context.endedReason = reason; runtime.unknown.clear(); runtime.skipped.clear(); invalidateReplay(runtime);
+    runtime.priorities.context = null;
+    runtime.priorityDeadlines.context = null; runtime.regions.context = null;
+    runtime.conditional.context = null;
+    runtime.sceneResponses.clear();
+    runtime.change = null;
+  };
+  const expireReplay = (runtime, when) => {
+    if (!runtime.context.closed && runtime.context.expiresAt && instant(when) >= instant(runtime.context.expiresAt))
+      closeReplayContext(runtime, `expiry-${runtime.contextNumber}`, runtime.context.expiresAt, 'expired');
+  };
+  const replayEventFields = { set: ['field', 'value', 'required', 'target', 'until', 'optionalUse', 'sceneResponseId'], clear: ['field', 'target', 'required'], 'mark-unknown': ['field', 'optionalUse'], 'revert-context': ['field'],
+    'close-context': [], 'start-context': ['expiresAt'], skip: ['field', 'optionalUse'], select: synthetic ? ['candidateId'] : ['candidateId', 'candidateKey'], unselect: [],
+    feedback: ['candidateId', 'reason', 'decision'], 'restore-candidate': ['candidateId', 'feedbackId'], expose: ['candidateIds', 'shownKey', 'shownBasis'], 'stop-questions': [], 'continue-questions': [], 'undo-field': ['field', 'changeId'],
+    priorities: ['fields', 'target', 'until'], 'undo-priorities': ['changeId'], 'question-mode': ['mode'], 'defer-question': ['field', 'optionalUse'], reason: ['field', 'value'],
+    'scene-respond': ['sceneId', 'choice'], 'scene-withdraw': ['sceneId'], 'hide-candidate': ['candidateId', 'days'], 'unhide-candidate': ['candidateId'],
+    'conditional-set': ['ruleId', 'target', 'until', 'rule'], 'conditional-clear': ['target'] };
+  function validateReplayEvent(event, index, priorAt, at) {
+    if (!event || !own(replayEventFields, event.kind) || !exact(event, ['id', 'at', 'kind', ...replayEventFields[event.kind]]) || event.id !== `event-${index + 1}`
+      || utc(event.at) !== event.at || instant(event.at) <= priorAt || instant(event.at) > instant(at)) fail('invalid or unordered event');
+    return instant(event.at);
+  }
+  function reduceConditional(runtime, event, { replayEvaluation }) {
+    if (!ConditionalPreference?.validateRule || !ConditionalPreference?.assess) fail('Core conditional preference support is required');
+    const me = project(runtime, event.at);
+    if (runtime.context.closed || me.values.consent !== true || !['baseline', 'context'].includes(event.target)) fail('current consent, context and explicit rule target required');
+    const before = replayEvaluation(me, event.at);
+    if (event.kind === 'conditional-clear') {
+      if (!runtime.conditional[event.target]) fail('no saved conditional preference to clear');
+      runtime.conditional[event.target] = null;
+    } else {
+      if (event.ruleId !== 'contact-with-notice' || me.required.includes('wants.contact') || me.values['wants.contact'] !== 'daily'
+        || !conditionalSource(me.provenance['wants.contact'])) fail('an optional explicit daily contact preference is required');
+      const source = conditionalSource(me.provenance['wants.contact']);
+      const expected = { version: ConditionalPreference.VERSION, id: event.ruleId, scope: prefScope(ME), field: 'wants.contact', feature: 'self.contact',
+        primary: 'daily', alternative: 'few-days', when: { field: 'self.notice', value: 'advance' }, target: event.target,
+        encounterId: runtime.context.id, at: event.at, until: event.until ?? null, source };
+      ConditionalPreference.validateRule({ contract: CONTRACT, scope: prefScope(ME), rule: expected });
+      if (canonical(event.rule) !== canonical(expected)) fail('conditional rule must bind the current explicit source');
+      if (event.target === 'context' && runtime.context.expiresAt && event.until && instant(event.until) > instant(runtime.context.expiresAt)) fail('conditional rule outlives current context');
+      runtime.conditional[event.target] = { rule: copy(expected), invalidated: false };
+      if (event.target === 'baseline') runtime.conditional.context = null;
+    }
+    invalidateReplay(runtime);
+    const after = replayEvaluation(project(runtime, event.at), event.at);
+    runtime.change = { beforeId: before.top?.id || null, beforeLabel: before.top?.label || null, afterId: after.top?.id || null, afterLabel: after.top?.label || null,
+      reason: event.kind === 'conditional-clear' ? '직접 정한 연락 간격의 허용 조건을 철회했어요. 기본 선호와 필수조건은 그대로예요.'
+        : '바쁠 때 미리 알린다고 공개한 상대에게만 며칠 간격을 허용해요. 기본 선호와 필수조건은 그대로예요.' };
+    return;
+  }
+  function reduceCandidateVisibility(runtime, event, { strictEventId }) {
+    const me = project(runtime, event.at), person = pool.find(candidate => candidate.id === event.candidateId);
+    if (!accountId(event.candidateId) || event.kind === 'hide-candidate' && ![7, 30].includes(event.days)) fail('invalid candidate hiding period');
+    if (event.id === strictEventId && (!person || me.values.consent !== true || me.closed)) fail('only a currently authorized candidate can be hidden or restored');
+    if (event.kind === 'unhide-candidate') {
+      if (!runtime.snoozes.has(event.candidateId)) fail('no candidate hiding choice to withdraw');
+      runtime.snoozes.delete(event.candidateId);
+    } else {
+      const end = instant(event.at) + event.days * DAY;
+      if (!Number.isSafeInteger(end) || Math.abs(end) > 8640000000000000) fail('candidate hiding deadline is outside the supported time range');
+      runtime.snoozes.set(event.candidateId, { id: event.candidateId, at: event.at, until: new Date(end).toISOString() });
+    }
+    invalidateReplay(runtime); return;
+  }
+  function reduceSceneResponse(runtime, event, { strictEventId }) {
+    const scene = sceneSpec(event.sceneId), me = project(runtime, event.at);
+    if (!scene || runtime.context.closed || me.values.consent !== true) fail('a current consented scene is required');
+    if (event.kind === 'scene-withdraw') {
+      const old = runtime.sceneResponses.get(scene.id);
+      if (!old) fail('no current scene response to withdraw');
+      // A separately approved setting is an explicit declaration. Removing
+      // this private reaction only withdraws its unapproved suggestion.
+      runtime.sceneResponses.delete(scene.id); return;
+    }
+    if (!['a', 'b', 'neither', 'depends'].includes(event.choice)) fail('invalid scene response');
+    if (event.id === strictEventId && sceneBlock(runtime, me, scene, event.at)) fail('scene question is paused, deferred or over its daily budget');
+    runtime.sceneResponses.set(scene.id, { id: event.id, sceneId: scene.id, field: scene.field, choice: event.choice, at: event.at,
+      contextId: runtime.context.id, basis: sceneBasis(runtime, me, scene.field) });
+    runtime.questionUses.push({ field: scene.field, at: event.at }); return;
+  }
+  function chargeOptionalQuestion(runtime, event, { strictEventId }) {
+    if (own(event, 'optionalUse')) {
+      if (event.optionalUse !== true || runtime.questionMode === null || !spec(event.field)) fail('invalid optional question use');
+      if (event.id === strictEventId) {
+        const selected = question(runtime, project(runtime, event.at), event.at);
+        if (!selected?.optional || selected.field !== event.field) fail('only the selected optional question counts toward its budget');
+      }
+      runtime.questionUses.push({ field: event.field, at: event.at });
+    }
+  }
+  function reduceQuestionMode(runtime, event) {
+    if (!own(OPTIONAL_BUDGET, event.mode)) fail('invalid question mode');
+    runtime.questionMode = event.mode; return;
+  }
+  function reduceDeferredQuestion(runtime, event, { strictEventId }) {
+    if (runtime.context.closed || !spec(event.field) || spec(event.field).kind === 'required' || runtime.requirements[event.field]) fail('only an optional question can be deferred');
+    if (event.id === strictEventId) {
+      // Budget use has already been recorded; inspect the pre-charge choice.
+      const beforeCharge = { ...runtime, questionUses: own(event, 'optionalUse') ? runtime.questionUses.slice(0, -1) : runtime.questionUses };
+      const selected = question(beforeCharge, project(beforeCharge, event.at), event.at);
+      if (!selected?.optional || selected.field !== event.field) fail('only the selected optional question can be deferred');
+    }
+    runtime.deferred.set(event.field, { field: event.field, at: event.at, until: new Date(instant(event.at) + 7 * DAY).toISOString() }); return;
+  }
+  function reducePrivateReason(runtime, event) {
+    if (event.field !== 'wants.contact' || !['conversation', 'predictability', 'temporary', 'unsure'].includes(event.value)) fail('invalid private choice reason');
+    runtime.reasons.set(event.field, { id: event.id, field: event.field, value: event.value, at: event.at }); return;
+  }
+  function reducePriorityUndo(runtime, event) {
+    const source = runtime.priorityChanges.find(change => change.id === event.changeId);
+    if (runtime.context.closed || !source || source.kind !== 'priorities' || source.contextId !== runtime.context.id
+      || runtime.priorityChanges.filter(change => change.target === source.target).at(-1)?.id !== source.id)
+      fail('only the latest current-context priority change can be undone');
+    const before = copy(runtime.priorities[source.target]), beforeUntil = runtime.priorityDeadlines[source.target];
+    const expired = source.beforeUntil && instant(event.at) >= instant(source.beforeUntil);
+    runtime.priorities[source.target] = expired ? source.target === 'context' ? null : [] : copy(source.before);
+    runtime.priorityDeadlines[source.target] = expired ? null : source.beforeUntil || null; invalidateReplay(runtime);
+    runtime.priorityChanges.push({ id: event.id, kind: event.kind, contextId: runtime.context.id, at: event.at, target: source.target,
+      before, after: copy(runtime.priorities[source.target]), ...(beforeUntil ? { beforeUntil } : {}), ...(runtime.priorityDeadlines[source.target] ? { afterUntil: runtime.priorityDeadlines[source.target] } : {}) });
+    runtime.change = null; return;
+  }
+  function reducePriorities(runtime, event, { strictEventId, replayEvaluation }) {
+    if (!['baseline', 'context'].includes(event.target) || !Array.isArray(event.fields) || event.fields.length > 2 || new Set(event.fields).size !== event.fields.length
+      || event.fields.some(field => spec(field)?.kind !== 'wants' || spec(field)?.legacy && event.id === strictEventId)) fail('choose at most two wants priorities');
+    if (event.target === 'context' && runtime.context.closed) fail('context is closed; start a new context');
+    const person = project(runtime, event.at), before = replayEvaluation(person, event.at);
+    if (own(event, 'until')) {
+      if (utc(event.until) !== event.until || instant(event.until) <= instant(event.at)) fail('priority deadline must be in the future');
+      const deadlines = [...event.fields.map(field => (event.target === 'baseline' ? person.layers.baseline : person).provenance[field]?.until),
+        ...(event.target === 'context' ? [runtime.context.expiresAt] : [])].filter(Boolean);
+      if (deadlines.some(until => instant(event.until) > instant(until))) fail('priority deadline exceeds its answer or context');
+    }
+    const beforeFields = copy(runtime.priorities[event.target]);
+    const beforeUntil = runtime.priorityDeadlines[event.target];
+    runtime.priorities[event.target] = [...event.fields]; invalidateReplay(runtime);
+    runtime.priorityDeadlines[event.target] = event.until || null;
+    runtime.priorityChanges.push({ id: event.id, kind: event.kind, contextId: runtime.context.id, at: event.at, target: event.target,
+      before: beforeFields, after: [...event.fields], ...(beforeUntil ? { beforeUntil } : {}), ...(event.until ? { afterUntil: event.until } : {}) });
+    const after = replayEvaluation(project(runtime, event.at), event.at);
+    runtime.change = { beforeId: before.top?.id || null, beforeLabel: before.top?.label || null, afterId: after.top?.id || null, afterLabel: after.top?.label || null,
+      reason: `더 중요하게 볼 항목을 ${event.target === 'context' ? '이번 추천에' : '평소 기준에'} 반영했어요. 필수조건은 그대로예요.${before.top?.id === after.top?.id ? ' 먼저 살펴볼 후보는 그대로예요.' : ' 먼저 살펴볼 후보가 달라졌어요.'}` }; return;
+  }
+  function reduceContextClose(runtime, event) {
+    if (runtime.context.closed) fail('context is already closed');
+    closeReplayContext(runtime, event.id, event.at, 'closed'); return;
+  }
+  function reduceContextStart(runtime, event) {
+    if (own(event, 'expiresAt') && (utc(event.expiresAt) !== event.expiresAt || instant(event.expiresAt) <= instant(event.at))) fail('context expiry must be in the future');
+    if (!runtime.context.closed) closeReplayContext(runtime, `${event.id}.close`, event.at, 'replaced');
+    runtime.contextNumber++;
+    runtime.context = { id: `discovery-context-${runtime.contextNumber}`, closed: false, expiresAt: event.expiresAt || null, endedReason: null };
+    runtime.unknown.clear(); runtime.skipped.clear(); runtime.excluded.clear(); runtime.exclusionSources.clear(); runtime.comparisonSkips.clear(); runtime.questionsPaused = false;
+    for (const exposure of runtime.exposures.values()) exposure.currentCount = 0;
+    invalidateReplay(runtime); runtime.change = null; return;
+  }
+  function reduceQuestionPause(runtime, event) {
+    runtime.questionsPaused = event.kind === 'stop-questions'; return;
+  }
+  function reduceCandidateRestore(runtime, event, { strictEventId }) {
+    const me = project(runtime, event.at), source = runtime.exclusionSources.get(event.candidateId);
+    if (!accountId(event.candidateId) || typeof event.feedbackId !== 'string' || !/^event-[1-9][0-9]*$/.test(event.feedbackId)) fail('invalid candidate exclusion source');
+    if (runtime.context.closed || me.values.consent !== true || !source || source.id !== event.feedbackId || source.contextId !== runtime.context.id)
+      fail('only the latest current-context candidate exclusion can be restored');
+    // Historical restoration still replays if its person later withdraws
+    // public disclosure. A new write must use the currently authorized pool.
+    if (event.id === strictEventId && !pool.some(person => person.id === event.candidateId)) fail('only a currently authorized candidate exclusion can be restored');
+    runtime.exclusionSources.delete(event.candidateId); runtime.excluded.delete(event.candidateId); runtime.comparisonSkips.delete(event.candidateId);
+    const feedback = runtime.feedback.find(item => item.id === source.id);
+    if (feedback) { feedback.restoredAt = event.at; feedback.restorationId = event.id; }
+    invalidateReplay(runtime); runtime.change = null; return;
+  }
+  function reduceCandidateEvidence(runtime, event, { strictEventId, declarationOnly, replayEvaluation }) {
+    const me = project(runtime, event.at), visible = replayEvaluation(me, event.at);
+    if (runtime.context.closed || me.values.consent !== true) fail('current consent and an active context are required');
+    if (event.kind === 'feedback') {
+      const candidate = declarationOnly ? pool.find(person => person.id === event.candidateId) : visible.rows.find(row => row.id === event.candidateId);
+      if (!accountId(event.candidateId) || !DISCOVERY_FEEDBACK_REASONS.some(reason => reason.id === event.reason) || !['record-only', 'skip-current'].includes(event.decision)) fail('invalid candidate feedback');
+      if (event.decision === 'skip-current') {
+        runtime.comparisonSkips.add(event.candidateId);
+        runtime.exclusionSources.set(event.candidateId, { id: event.id, at: event.at, contextId: runtime.context.id, candidateId: event.candidateId });
+      }
+      if (!candidate) { if (!synthetic && strictEventId !== event.id) return; fail('invalid candidate feedback'); }
+      runtime.feedback.push({ id: event.id, at: event.at, contextId: runtime.context.id, candidateId: candidate.id, label: candidate.label, reason: event.reason, decision: event.decision });
+      if (event.decision === 'skip-current') { runtime.excluded.add(candidate.id); invalidateReplay(runtime); }
+    } else {
+      if (!Array.isArray(event.candidateIds) || event.candidateIds.length > 100 || new Set(event.candidateIds).size !== event.candidateIds.length
+        || event.candidateIds.some(id => !accountId(id))
+        || !declarationOnly && (strictEventId === event.id || synthetic && !(me.required.includes('wants.purpose') && me.hardValues['wants.purpose'] !== 'any')) && (!event.candidateIds.length && visible.rows.some(row => row.status === 'eligible')
+          || event.candidateIds.some(id => !visible.rows.some(row => row.id === id && row.status === 'eligible')))) fail('only currently eligible displayed candidates can be exposed');
+      if (own(event, 'shownKey')) {
+        if (!/^[a-f0-9]{16}$/.test(event.shownKey) || event.id === strictEventId && event.shownKey !== shownKey(me, visible, event.at)) fail('invalid displayed recommendation basis');
+        if (own(event, 'shownBasis')) {
+          const expected = shownBasis(runtime, me, event.at);
+          const historicalIds = DISCOVERY_FIELDS.filter(field => field.legacy || !field.id.includes('relationship') && field.kind !== 'regions').map(field => field.id);
+          const historical = event.id !== strictEventId && Array.isArray(event.shownBasis.fields)
+            && canonical(event.shownBasis.fields.map(field => field.id)) === canonical(historicalIds);
+          const compatible = historical ? { ...expected, fields: expected.fields.filter(field => historicalIds.includes(field.id)) } : expected;
+          if (!exact(event.shownBasis, Object.keys(expected)) || !/^[a-f0-9]{16}$/.test(event.shownBasis.poolKey)
+            || canonical({ ...event.shownBasis, poolKey: expected.poolKey }) !== canonical(compatible)
+            || event.id === strictEventId && event.shownBasis.poolKey !== expected.poolKey) fail('invalid displayed explanation basis');
+        }
+        runtime.lastShown = { key: event.shownKey, at: event.at, ...(event.shownBasis ? { basis: copy(event.shownBasis) } : {}) };
+      } else runtime.lastShown = null; // Legacy exposure did not retain its historical comparison basis.
+      for (const id of event.candidateIds.filter(id => pool.some(person => person.id === id))) {
+        const old = runtime.exposures.get(id) || { candidateId: id, count: 0, currentCount: 0 };
+        runtime.exposures.set(id, { ...old, count: old.count + 1, currentCount: old.currentCount + 1, lastAt: event.at });
+      }
+    }
+    return;
+  }
+  function reduceFieldUndo(runtime, event) {
+    const lastChange = runtime.changes.filter(change => change.field === event.field).at(-1);
+    if (runtime.context.closed || event.field === 'consent' || !lastChange || lastChange.id !== event.changeId || lastChange.kind === 'undo-field' || lastChange.contextId !== runtime.context.id) fail('only the latest current-context field change can be undone; consent requires a direct answer');
+    const before = fieldSnapshot(runtime, project(runtime, event.at), event.field), target = lastChange.before;
+    const write = (suffix, duration, layer) => {
+      const kind = layer.state === 'known' && (!layer.until || instant(layer.until) > instant(event.at)) ? 'set' : 'withdraw';
+      if (spec(event.field)?.kind === 'regions') { writeReplayRegions(runtime, kind, duration === 'ongoing' ? 'baseline' : 'context', layer.value, `${event.id}.${suffix}`, event.at, layer.until); return; }
+      runtime.preferences = P.record({ contract: CONTRACT, scope: prefScope(ME), encounterId: runtime.context.id,
+        events: runtime.preferences, at: event.at, id: `${event.id}.${suffix}`, kind, field: event.field, duration,
+        ...(kind === 'set' ? { value: layer.value, ...(layer.until ? { until: layer.until } : {}) } : {}) }); };
+    write('baseline', 'ongoing', target.baseline);
+    write('context', 'once', target.context);
+    runtime.requirements[event.field] = target.required; runtime.unknown.delete(event.field); runtime.skipped.delete(event.field);
+    if (target.context.state === 'unknown') {
+      runtime.unknown.set(event.field, { eventId: event.id, at: event.at, source: 'explicit', duration: 'once', encounterId: runtime.context.id });
+      if (!target.required) runtime.skipped.add(event.field);
+    }
+    if (event.field === 'wants.contact') for (const entry of Object.values(runtime.conditional)) if (entry) entry.invalidated = true;
+    invalidateReplay(runtime);
+    runtime.changes.push({ id: event.id, kind: event.kind, field: event.field, label: spec(event.field).label, at: event.at, contextId: runtime.context.id,
+      before, after: fieldSnapshot(runtime, project(runtime, event.at), event.field) });
+    runtime.change = null; return;
+  }
+  function reduceFieldDeclaration(runtime, event, { strictEventId, replayEvaluation }) {
+    const field = spec(event.field); if (!field) fail('unknown field');
+    if (own(event, 'target') && !['baseline', 'context'].includes(event.target)) fail('invalid preference target');
+    const target = ['mark-unknown', 'revert-context'].includes(event.kind) ? 'context' : event.target || 'baseline';
+    if (!['baseline', 'context'].includes(target)) fail('invalid preference target');
+    if (target === 'context' && (field.kind === 'self' || field.id === 'consent')) fail('only wants and explicit availability (or meeting regions) support a context choice');
+    if (target === 'context' && runtime.context.closed) fail('context is closed; start a new context');
+    if (event.kind === 'set' && (typeof event.required !== 'boolean' || field.kind !== 'wants' && event.required !== (field.kind === 'required'))) fail('invalid requirement flag');
+    if (event.kind === 'clear' && own(event, 'required')
+      && !(event.field === 'wants.purpose' && target === 'baseline' && event.required === false && runtime.requirements[event.field] === true))
+      fail('only an explicit legacy baseline retirement can clear a requirement flag');
+    if (target === 'context' && event.kind === 'set' && field.kind === 'wants' && event.required !== (runtime.requirements[field.id] === true)) fail('context choice cannot change a hard requirement');
+    const beforePerson = project(runtime, event.at), beforeField = fieldSnapshot(runtime, beforePerson, event.field), before = replayEvaluation(beforePerson, event.at);
+    if (field.legacy && event.kind === 'set' && event.id === strictEventId
+      && !(event.field === 'wants.purpose' && runtime.requirements[event.field] === true && target === 'baseline' && event.required === false
+        && event.value === beforePerson.layers.baseline.values[event.field] && !own(event, 'until') && !own(event, 'sceneResponseId')))
+      fail('legacy relationship answers are history-only; choose goal and speed separately');
+    let sceneResponse = null;
+    if (own(event, 'sceneResponseId')) {
+      sceneResponse = [...runtime.sceneResponses.values()].find(response => response.id === event.sceneResponseId);
+      const suggestion = sceneResponse && sceneSuggestion(runtime, beforePerson, sceneResponse);
+      if (!suggestion || event.field !== suggestion.field || event.value !== suggestion.value || target !== 'context'
+        || event.until !== suggestion.until) fail('stale or changed scene suggestion');
+    }
+    if (field.kind === 'regions') writeReplayRegions(runtime, event.kind, target, event.value, event.id, event.at, event.until);
+    else runtime.preferences = P.record({ contract: CONTRACT, scope: prefScope(ME), encounterId: target === 'baseline' && runtime.context.closed ? 'discovery-profile' : runtime.context.id, events: runtime.preferences, at: event.at,
+      id: event.id, kind: event.kind === 'set' ? 'set' : 'withdraw', field: event.field, duration: target === 'context' ? 'once' : 'ongoing', ...(event.kind === 'set' ? { value: event.value, ...(own(event, 'until') ? { until: event.until } : {}) } : {}) });
+    // An explicit edit/unknown/undo requires a new allowance confirmation.
+    // Returning to the same enum later cannot revive an old allowance.
+    if (event.field === 'wants.contact') for (const entry of Object.values(runtime.conditional)) if (entry) entry.invalidated = true;
+    if (event.kind === 'set' && target === 'baseline') runtime.requirements[event.field] = event.required;
+    if (event.kind === 'clear' && own(event, 'required')) runtime.requirements[event.field] = false;
+    if (sceneResponse) {
+      sceneResponse.appliedEventId = event.id;
+      runtime.sceneSources.set(event.id, { sceneId: sceneResponse.sceneId, responseId: sceneResponse.id });
+    }
+    if (event.kind === 'mark-unknown') runtime.unknown.set(event.field, { eventId: event.id, at: event.at, source: 'explicit', duration: 'once', encounterId: runtime.context.id });
+    else if (!(event.kind === 'clear' && target === 'baseline')) runtime.unknown.delete(event.field);
+    runtime.skipped.delete(event.field); invalidateReplay(runtime);
+    if (event.field === 'consent' && (event.kind !== 'set' || event.value !== true)) { runtime.sceneResponses.clear(); runtime.lastShown = null; }
+    if (runtime.unknown.has(event.field) && field.kind === 'wants' && !runtime.requirements[event.field]) runtime.skipped.add(event.field);
+    const after = replayEvaluation(project(runtime, event.at), event.at);
+    const phrase = event.kind === 'mark-unknown' ? '이번에는 아직 모르는 항목으로 남겼어요. 평소 답으로 채우지 않아요.'
+      : event.kind === 'revert-context' || event.kind === 'clear' && target === 'context' ? '이번 선택을 취소하고 유효한 평소 답으로 돌아갔어요.'
+        : event.kind === 'clear' ? '평소 답을 지워 미확인으로 바꿨어요.'
+          : `‘${labelValue(field.id, event.value)}’${field.kind === 'wants' && event.required ? '(필수조건 유지)' : ''}을 ${target === 'context' ? '이번 추천에서만' : '앞으로도'} 적용해요.`;
+    runtime.change = { beforeId: before.top?.id || null, beforeLabel: before.top?.label || null, afterId: after.top?.id || null, afterLabel: after.top?.label || null,
+      reason: `${field.label}: ${phrase} 쌍방 조건을 다시 살펴봤어요.${before.top?.id === after.top?.id ? ' 먼저 살펴볼 후보는 그대로예요.' : ' 먼저 살펴볼 후보가 달라졌어요.'}` };
+    runtime.changes.push({ id: event.id, kind: event.kind, field: event.field, label: field.label, at: event.at, contextId: runtime.context.id,
+      before: beforeField, after: fieldSnapshot(runtime, project(runtime, event.at), event.field) });
+    return;
+  }
+  function reduceSelection(runtime, event, { strictEventId, declarationOnly }) {
+    const me = project(runtime, event.at);
+    if (event.kind === 'skip') {
+      if (runtime.context.closed) fail('context is closed');
+      if (!spec(event.field) || spec(event.field).kind === 'required' || own(me.values, event.field) || me.required.includes(event.field)
+        || considering(me, event.at).some(person => person.required.includes(event.field.replace('self.', 'wants.')) && event.field.startsWith('self.'))) fail('only an unknown optional question can be skipped');
+      runtime.skipped.add(event.field); return;
+    }
+    if (event.kind === 'unselect') { runtime.selection = null; runtime.selectionEvent = null; return; }
+    if (!synthetic && (!accountId(event.candidateId) || !/^[a-f0-9]{16}$/.test(event.candidateKey))) fail('invalid external candidate selection');
+    const candidate = declarationOnly ? pool.find(person => person.id === event.candidateId) : evaluate(me, event.at).rows.find(row => row.id === event.candidateId && row.status === 'eligible');
+    if (!candidate || !synthetic && event.candidateKey !== fingerprint(pool.find(person => person.id === event.candidateId))) {
+      if (event.id !== strictEventId && me.required.includes('wants.purpose') && me.hardValues['wants.purpose'] !== 'any') {
+        runtime.selection = null; runtime.selectionEvent = null; return;
+      }
+      if (!synthetic && strictEventId !== event.id) { runtime.selection = null; runtime.selectionEvent = null; return; }
+      fail('candidate is not currently eligible');
+    }
+    runtime.selection = { candidateId: candidate.id, label: candidate.label, revision: runtime.revision };
+    runtime.selectionEvent = event;
+    runtime.selectionBasis = preferenceBasis(me, event.at);
+  }
+  const replayReducers = {
+    'conditional-set': reduceConditional,
+    'conditional-clear': reduceConditional,
+    'hide-candidate': reduceCandidateVisibility,
+    'unhide-candidate': reduceCandidateVisibility,
+    'scene-respond': reduceSceneResponse,
+    'scene-withdraw': reduceSceneResponse,
+    'question-mode': reduceQuestionMode,
+    'defer-question': reduceDeferredQuestion,
+    'reason': reducePrivateReason,
+    'undo-priorities': reducePriorityUndo,
+    'priorities': reducePriorities,
+    'close-context': reduceContextClose,
+    'start-context': reduceContextStart,
+    'stop-questions': reduceQuestionPause,
+    'continue-questions': reduceQuestionPause,
+    'restore-candidate': reduceCandidateRestore,
+    'feedback': reduceCandidateEvidence,
+    'expose': reduceCandidateEvidence,
+    'undo-field': reduceFieldUndo,
+    'set': reduceFieldDeclaration,
+    'clear': reduceFieldDeclaration,
+    'mark-unknown': reduceFieldDeclaration,
+    'revert-context': reduceFieldDeclaration,
+    'skip': reduceSelection,
+    'unselect': reduceSelection,
+    'select': reduceSelection
+  };
   function replay(state, at, strictEventId = null, declarationOnly = false) {
     if (!exact(state, synthetic ? ['version', 'scenarioId', 'events'] : ['version', 'scenarioId', 'events', 'ownerId', 'contextId'])
       || !synthetic && (state.ownerId !== ownerId || state.contextId !== contextId || state.scenarioId !== 'first')
       || state.version !== VERSION || !DISCOVERY_SCENARIOS.some(s => s.id === state.scenarioId)
       || !Array.isArray(state.events) || state.events.length > 500) fail('invalid state');
-    const runtime = { preferences: [], requirements: {}, skipped: new Set(), unknown: new Map(), selection: null, selectionEvent: null, selectionBasis: null, revision: 0, change: null,
-      changes: [], feedback: [], excluded: new Set(), exclusionSources: new Map(), comparisonSkips: new Set(), exposures: new Map(), snoozes: new Map(), lastShown: null, questionsPaused: false,
-      priorities: { baseline: [], context: null }, priorityDeadlines: { baseline: null, context: null }, regions: { baseline: null, context: null }, priorityChanges: [], questionMode: null, questionUses: [], deferred: new Map(), reasons: new Map(), sceneResponses: new Map(), sceneSources: new Map(),
-      conditional: { baseline: null, context: null }, contextNumber: 1, context: { id: ENCOUNTER, closed: false, expiresAt: null, endedReason: null } };
-    const writeRegions = (kind, target, value, id, when, until) => {
-      if (kind !== 'set') { runtime.regions[target] = null; return; }
-      if (until !== undefined && (utc(until) !== until || instant(until) <= instant(when))) fail('region deadline must be after its declaration');
-      const provenance = { eventId: id, source: 'explicit', duration: target === 'baseline' ? 'ongoing' : 'once', encounterId: runtime.context.id, at: when, ...(until ? { until } : {}) };
-      runtime.regions[target] = { value: validateMeetingRegions(value), provenance, ...(until ? { until } : {}) };
-      if (target === 'baseline') runtime.regions.context = null;
-    };
-    // A private declaration read never ranks peers or asks hypothetical answers.
-    // The ordinary write/recommendation path still performs full candidate checks.
-    const replayEvaluation = declarationOnly ? () => ({ status: 'unavailable', rows: [], top: null, tied: false }) : evaluate;
-    const preferenceBasis = (me, when) => canonical({ values: me.values, provenance: me.provenance, hardValues: me.hardValues, priorities: me.priorities,
-      ...(conditionalKey(me, when) ? { conditionalKey: conditionalKey(me, when) } : {}) });
-    const invalidate = () => { runtime.selection = null; runtime.selectionEvent = null; runtime.selectionBasis = null; runtime.revision++; };
-    const closeContext = (id, when, reason) => {
-      runtime.preferences = P.record({ contract: CONTRACT, scope: prefScope(ME), encounterId: runtime.context.id,
-        events: runtime.preferences, at: when, id, kind: 'close' });
-      runtime.context.closed = true; runtime.context.endedReason = reason; runtime.unknown.clear(); runtime.skipped.clear(); invalidate();
-      runtime.priorities.context = null;
-      runtime.priorityDeadlines.context = null; runtime.regions.context = null;
-      runtime.conditional.context = null;
-      runtime.sceneResponses.clear();
-      runtime.change = null;
-    };
-    const expire = when => {
-      if (!runtime.context.closed && runtime.context.expiresAt && instant(when) >= instant(runtime.context.expiresAt))
-        closeContext(`expiry-${runtime.contextNumber}`, runtime.context.expiresAt, 'expired');
-    };
-    // START is a reproducible fixture clock, not the earliest legal product date.
+    const runtime = createReplayRuntime();
+    // A declaration read restores private answers without ranking peers.
+    // New writes still check current candidates; historical compatibility stays in each reducer.
+    const policy = { strictEventId, declarationOnly, replayEvaluation: declarationOnly ? () => ({ status: 'unavailable', rows: [], top: null, tied: false }) : evaluate };
     let priorAt = -Infinity;
     for (const [index, event] of state.events.entries()) {
-      const allowed = { set: ['field', 'value', 'required', 'target', 'until', 'optionalUse', 'sceneResponseId'], clear: ['field', 'target', 'required'], 'mark-unknown': ['field', 'optionalUse'], 'revert-context': ['field'],
-        'close-context': [], 'start-context': ['expiresAt'], skip: ['field', 'optionalUse'], select: synthetic ? ['candidateId'] : ['candidateId', 'candidateKey'], unselect: [],
-        feedback: ['candidateId', 'reason', 'decision'], 'restore-candidate': ['candidateId', 'feedbackId'], expose: ['candidateIds', 'shownKey', 'shownBasis'], 'stop-questions': [], 'continue-questions': [], 'undo-field': ['field', 'changeId'],
-        priorities: ['fields', 'target', 'until'], 'undo-priorities': ['changeId'], 'question-mode': ['mode'], 'defer-question': ['field', 'optionalUse'], reason: ['field', 'value'],
-        'scene-respond': ['sceneId', 'choice'], 'scene-withdraw': ['sceneId'], 'hide-candidate': ['candidateId', 'days'], 'unhide-candidate': ['candidateId'],
-        'conditional-set': ['ruleId', 'target', 'until', 'rule'], 'conditional-clear': ['target'] };
-      if (!event || !own(allowed, event.kind) || !exact(event, ['id', 'at', 'kind', ...allowed[event.kind]]) || event.id !== `event-${index + 1}`
-        || utc(event.at) !== event.at || instant(event.at) <= priorAt || instant(event.at) > instant(at)) fail('invalid or unordered event');
-      priorAt = instant(event.at);
-      expire(event.at);
-      if (event.kind === 'conditional-set' || event.kind === 'conditional-clear') {
-        if (!ConditionalPreference?.validateRule || !ConditionalPreference?.assess) fail('Core conditional preference support is required');
-        const me = project(runtime, event.at);
-        if (runtime.context.closed || me.values.consent !== true || !['baseline', 'context'].includes(event.target)) fail('current consent, context and explicit rule target required');
-        const before = replayEvaluation(me, event.at);
-        if (event.kind === 'conditional-clear') {
-          if (!runtime.conditional[event.target]) fail('no saved conditional preference to clear');
-          runtime.conditional[event.target] = null;
-        } else {
-          if (event.ruleId !== 'contact-with-notice' || me.required.includes('wants.contact') || me.values['wants.contact'] !== 'daily'
-            || !conditionalSource(me.provenance['wants.contact'])) fail('an optional explicit daily contact preference is required');
-          const source = conditionalSource(me.provenance['wants.contact']);
-          const expected = { version: ConditionalPreference.VERSION, id: event.ruleId, scope: prefScope(ME), field: 'wants.contact', feature: 'self.contact',
-            primary: 'daily', alternative: 'few-days', when: { field: 'self.notice', value: 'advance' }, target: event.target,
-            encounterId: runtime.context.id, at: event.at, until: event.until ?? null, source };
-          ConditionalPreference.validateRule({ contract: CONTRACT, scope: prefScope(ME), rule: expected });
-          if (canonical(event.rule) !== canonical(expected)) fail('conditional rule must bind the current explicit source');
-          if (event.target === 'context' && runtime.context.expiresAt && event.until && instant(event.until) > instant(runtime.context.expiresAt)) fail('conditional rule outlives current context');
-          runtime.conditional[event.target] = { rule: copy(expected), invalidated: false };
-          if (event.target === 'baseline') runtime.conditional.context = null;
-        }
-        invalidate();
-        const after = replayEvaluation(project(runtime, event.at), event.at);
-        runtime.change = { beforeId: before.top?.id || null, beforeLabel: before.top?.label || null, afterId: after.top?.id || null, afterLabel: after.top?.label || null,
-          reason: event.kind === 'conditional-clear' ? '직접 정한 연락 간격의 허용 조건을 철회했어요. 기본 선호와 필수조건은 그대로예요.'
-            : '바쁠 때 미리 알린다고 공개한 상대에게만 며칠 간격을 허용해요. 기본 선호와 필수조건은 그대로예요.' };
-        continue;
-      }
-      if (event.kind === 'hide-candidate' || event.kind === 'unhide-candidate') {
-        const me = project(runtime, event.at), person = pool.find(candidate => candidate.id === event.candidateId);
-        if (!accountId(event.candidateId) || event.kind === 'hide-candidate' && ![7, 30].includes(event.days)) fail('invalid candidate hiding period');
-        if (event.id === strictEventId && (!person || me.values.consent !== true || me.closed)) fail('only a currently authorized candidate can be hidden or restored');
-        if (event.kind === 'unhide-candidate') {
-          if (!runtime.snoozes.has(event.candidateId)) fail('no candidate hiding choice to withdraw');
-          runtime.snoozes.delete(event.candidateId);
-        } else {
-          const end = instant(event.at) + event.days * DAY;
-          if (!Number.isSafeInteger(end) || Math.abs(end) > 8640000000000000) fail('candidate hiding deadline is outside the supported time range');
-          runtime.snoozes.set(event.candidateId, { id: event.candidateId, at: event.at, until: new Date(end).toISOString() });
-        }
-        invalidate(); continue;
-      }
-      if (event.kind === 'scene-respond' || event.kind === 'scene-withdraw') {
-        const scene = sceneSpec(event.sceneId), me = project(runtime, event.at);
-        if (!scene || runtime.context.closed || me.values.consent !== true) fail('a current consented scene is required');
-        if (event.kind === 'scene-withdraw') {
-          const old = runtime.sceneResponses.get(scene.id);
-          if (!old) fail('no current scene response to withdraw');
-          // A separately approved setting is an explicit declaration. Removing
-          // this private reaction only withdraws its unapproved suggestion.
-          runtime.sceneResponses.delete(scene.id); continue;
-        }
-        if (!['a', 'b', 'neither', 'depends'].includes(event.choice)) fail('invalid scene response');
-        if (event.id === strictEventId && sceneBlock(runtime, me, scene, event.at)) fail('scene question is paused, deferred or over its daily budget');
-        runtime.sceneResponses.set(scene.id, { id: event.id, sceneId: scene.id, field: scene.field, choice: event.choice, at: event.at,
-          contextId: runtime.context.id, basis: sceneBasis(runtime, me, scene.field) });
-        runtime.questionUses.push({ field: scene.field, at: event.at }); continue;
-      }
-      if (own(event, 'optionalUse')) {
-        if (event.optionalUse !== true || runtime.questionMode === null || !spec(event.field)) fail('invalid optional question use');
-        if (event.id === strictEventId) {
-          const selected = question(runtime, project(runtime, event.at), event.at);
-          if (!selected?.optional || selected.field !== event.field) fail('only the selected optional question counts toward its budget');
-        }
-        runtime.questionUses.push({ field: event.field, at: event.at });
-      }
-      if (event.kind === 'question-mode') {
-        if (!own(OPTIONAL_BUDGET, event.mode)) fail('invalid question mode');
-        runtime.questionMode = event.mode; continue;
-      }
-      if (event.kind === 'defer-question') {
-        if (runtime.context.closed || !spec(event.field) || spec(event.field).kind === 'required' || runtime.requirements[event.field]) fail('only an optional question can be deferred');
-        if (event.id === strictEventId) {
-          // Budget use has already been recorded; inspect the pre-charge choice.
-          const beforeCharge = { ...runtime, questionUses: own(event, 'optionalUse') ? runtime.questionUses.slice(0, -1) : runtime.questionUses };
-          const selected = question(beforeCharge, project(beforeCharge, event.at), event.at);
-          if (!selected?.optional || selected.field !== event.field) fail('only the selected optional question can be deferred');
-        }
-        runtime.deferred.set(event.field, { field: event.field, at: event.at, until: new Date(instant(event.at) + 7 * DAY).toISOString() }); continue;
-      }
-      if (event.kind === 'reason') {
-        if (event.field !== 'wants.contact' || !['conversation', 'predictability', 'temporary', 'unsure'].includes(event.value)) fail('invalid private choice reason');
-        runtime.reasons.set(event.field, { id: event.id, field: event.field, value: event.value, at: event.at }); continue;
-      }
-      if (event.kind === 'undo-priorities') {
-        const source = runtime.priorityChanges.find(change => change.id === event.changeId);
-        if (runtime.context.closed || !source || source.kind !== 'priorities' || source.contextId !== runtime.context.id
-          || runtime.priorityChanges.filter(change => change.target === source.target).at(-1)?.id !== source.id)
-          fail('only the latest current-context priority change can be undone');
-        const before = copy(runtime.priorities[source.target]), beforeUntil = runtime.priorityDeadlines[source.target];
-        const expired = source.beforeUntil && instant(event.at) >= instant(source.beforeUntil);
-        runtime.priorities[source.target] = expired ? source.target === 'context' ? null : [] : copy(source.before);
-        runtime.priorityDeadlines[source.target] = expired ? null : source.beforeUntil || null; invalidate();
-        runtime.priorityChanges.push({ id: event.id, kind: event.kind, contextId: runtime.context.id, at: event.at, target: source.target,
-          before, after: copy(runtime.priorities[source.target]), ...(beforeUntil ? { beforeUntil } : {}), ...(runtime.priorityDeadlines[source.target] ? { afterUntil: runtime.priorityDeadlines[source.target] } : {}) });
-        runtime.change = null; continue;
-      }
-      if (event.kind === 'priorities') {
-        if (!['baseline', 'context'].includes(event.target) || !Array.isArray(event.fields) || event.fields.length > 2 || new Set(event.fields).size !== event.fields.length
-          || event.fields.some(field => spec(field)?.kind !== 'wants' || spec(field)?.legacy && event.id === strictEventId)) fail('choose at most two wants priorities');
-        if (event.target === 'context' && runtime.context.closed) fail('context is closed; start a new context');
-        const person = project(runtime, event.at), before = replayEvaluation(person, event.at);
-        if (own(event, 'until')) {
-          if (utc(event.until) !== event.until || instant(event.until) <= instant(event.at)) fail('priority deadline must be in the future');
-          const deadlines = [...event.fields.map(field => (event.target === 'baseline' ? person.layers.baseline : person).provenance[field]?.until),
-            ...(event.target === 'context' ? [runtime.context.expiresAt] : [])].filter(Boolean);
-          if (deadlines.some(until => instant(event.until) > instant(until))) fail('priority deadline exceeds its answer or context');
-        }
-        const beforeFields = copy(runtime.priorities[event.target]);
-        const beforeUntil = runtime.priorityDeadlines[event.target];
-        runtime.priorities[event.target] = [...event.fields]; invalidate();
-        runtime.priorityDeadlines[event.target] = event.until || null;
-        runtime.priorityChanges.push({ id: event.id, kind: event.kind, contextId: runtime.context.id, at: event.at, target: event.target,
-          before: beforeFields, after: [...event.fields], ...(beforeUntil ? { beforeUntil } : {}), ...(event.until ? { afterUntil: event.until } : {}) });
-        const after = replayEvaluation(project(runtime, event.at), event.at);
-        runtime.change = { beforeId: before.top?.id || null, beforeLabel: before.top?.label || null, afterId: after.top?.id || null, afterLabel: after.top?.label || null,
-          reason: `더 중요하게 볼 항목을 ${event.target === 'context' ? '이번 추천에' : '평소 기준에'} 반영했어요. 필수조건은 그대로예요.${before.top?.id === after.top?.id ? ' 먼저 살펴볼 후보는 그대로예요.' : ' 먼저 살펴볼 후보가 달라졌어요.'}` }; continue;
-      }
-      if (event.kind === 'close-context') {
-        if (runtime.context.closed) fail('context is already closed');
-        closeContext(event.id, event.at, 'closed'); continue;
-      }
-      if (event.kind === 'start-context') {
-        if (own(event, 'expiresAt') && (utc(event.expiresAt) !== event.expiresAt || instant(event.expiresAt) <= instant(event.at))) fail('context expiry must be in the future');
-        if (!runtime.context.closed) closeContext(`${event.id}.close`, event.at, 'replaced');
-        runtime.contextNumber++;
-        runtime.context = { id: `discovery-context-${runtime.contextNumber}`, closed: false, expiresAt: event.expiresAt || null, endedReason: null };
-        runtime.unknown.clear(); runtime.skipped.clear(); runtime.excluded.clear(); runtime.exclusionSources.clear(); runtime.comparisonSkips.clear(); runtime.questionsPaused = false;
-        for (const exposure of runtime.exposures.values()) exposure.currentCount = 0;
-        invalidate(); runtime.change = null; continue;
-      }
-      if (event.kind === 'stop-questions' || event.kind === 'continue-questions') { runtime.questionsPaused = event.kind === 'stop-questions'; continue; }
-      if (event.kind === 'restore-candidate') {
-        const me = project(runtime, event.at), source = runtime.exclusionSources.get(event.candidateId);
-        if (!accountId(event.candidateId) || typeof event.feedbackId !== 'string' || !/^event-[1-9][0-9]*$/.test(event.feedbackId)) fail('invalid candidate exclusion source');
-        if (runtime.context.closed || me.values.consent !== true || !source || source.id !== event.feedbackId || source.contextId !== runtime.context.id)
-          fail('only the latest current-context candidate exclusion can be restored');
-        // Historical restoration still replays if its person later withdraws
-        // public disclosure. A new write must use the currently authorized pool.
-        if (event.id === strictEventId && !pool.some(person => person.id === event.candidateId)) fail('only a currently authorized candidate exclusion can be restored');
-        runtime.exclusionSources.delete(event.candidateId); runtime.excluded.delete(event.candidateId); runtime.comparisonSkips.delete(event.candidateId);
-        const feedback = runtime.feedback.find(item => item.id === source.id);
-        if (feedback) { feedback.restoredAt = event.at; feedback.restorationId = event.id; }
-        invalidate(); runtime.change = null; continue;
-      }
-      if (event.kind === 'feedback' || event.kind === 'expose') {
-        const me = project(runtime, event.at), visible = replayEvaluation(me, event.at);
-        if (runtime.context.closed || me.values.consent !== true) fail('current consent and an active context are required');
-        if (event.kind === 'feedback') {
-          const candidate = declarationOnly ? pool.find(person => person.id === event.candidateId) : visible.rows.find(row => row.id === event.candidateId);
-          if (!accountId(event.candidateId) || !DISCOVERY_FEEDBACK_REASONS.some(reason => reason.id === event.reason) || !['record-only', 'skip-current'].includes(event.decision)) fail('invalid candidate feedback');
-          if (event.decision === 'skip-current') {
-            runtime.comparisonSkips.add(event.candidateId);
-            runtime.exclusionSources.set(event.candidateId, { id: event.id, at: event.at, contextId: runtime.context.id, candidateId: event.candidateId });
-          }
-          if (!candidate) { if (!synthetic && strictEventId !== event.id) continue; fail('invalid candidate feedback'); }
-          runtime.feedback.push({ id: event.id, at: event.at, contextId: runtime.context.id, candidateId: candidate.id, label: candidate.label, reason: event.reason, decision: event.decision });
-          if (event.decision === 'skip-current') { runtime.excluded.add(candidate.id); invalidate(); }
-        } else {
-          if (!Array.isArray(event.candidateIds) || event.candidateIds.length > 100 || new Set(event.candidateIds).size !== event.candidateIds.length
-            || event.candidateIds.some(id => !accountId(id))
-            || !declarationOnly && (strictEventId === event.id || synthetic && !(me.required.includes('wants.purpose') && me.hardValues['wants.purpose'] !== 'any')) && (!event.candidateIds.length && visible.rows.some(row => row.status === 'eligible')
-              || event.candidateIds.some(id => !visible.rows.some(row => row.id === id && row.status === 'eligible')))) fail('only currently eligible displayed candidates can be exposed');
-          if (own(event, 'shownKey')) {
-            if (!/^[a-f0-9]{16}$/.test(event.shownKey) || event.id === strictEventId && event.shownKey !== shownKey(me, visible, event.at)) fail('invalid displayed recommendation basis');
-            if (own(event, 'shownBasis')) {
-              const expected = shownBasis(runtime, me, event.at);
-              const historicalIds = DISCOVERY_FIELDS.filter(field => field.legacy || !field.id.includes('relationship') && field.kind !== 'regions').map(field => field.id);
-              const historical = event.id !== strictEventId && Array.isArray(event.shownBasis.fields)
-                && canonical(event.shownBasis.fields.map(field => field.id)) === canonical(historicalIds);
-              const compatible = historical ? { ...expected, fields: expected.fields.filter(field => historicalIds.includes(field.id)) } : expected;
-              if (!exact(event.shownBasis, Object.keys(expected)) || !/^[a-f0-9]{16}$/.test(event.shownBasis.poolKey)
-                || canonical({ ...event.shownBasis, poolKey: expected.poolKey }) !== canonical(compatible)
-                || event.id === strictEventId && event.shownBasis.poolKey !== expected.poolKey) fail('invalid displayed explanation basis');
-            }
-            runtime.lastShown = { key: event.shownKey, at: event.at, ...(event.shownBasis ? { basis: copy(event.shownBasis) } : {}) };
-          } else runtime.lastShown = null; // Legacy exposure did not retain its historical comparison basis.
-          for (const id of event.candidateIds.filter(id => pool.some(person => person.id === id))) {
-            const old = runtime.exposures.get(id) || { candidateId: id, count: 0, currentCount: 0 };
-            runtime.exposures.set(id, { ...old, count: old.count + 1, currentCount: old.currentCount + 1, lastAt: event.at });
-          }
-        }
-        continue;
-      }
-      if (event.kind === 'undo-field') {
-        const lastChange = runtime.changes.filter(change => change.field === event.field).at(-1);
-        if (runtime.context.closed || event.field === 'consent' || !lastChange || lastChange.id !== event.changeId || lastChange.kind === 'undo-field' || lastChange.contextId !== runtime.context.id) fail('only the latest current-context field change can be undone; consent requires a direct answer');
-        const before = fieldSnapshot(runtime, project(runtime, event.at), event.field), target = lastChange.before;
-        const write = (suffix, duration, layer) => {
-          const kind = layer.state === 'known' && (!layer.until || instant(layer.until) > instant(event.at)) ? 'set' : 'withdraw';
-          if (spec(event.field)?.kind === 'regions') { writeRegions(kind, duration === 'ongoing' ? 'baseline' : 'context', layer.value, `${event.id}.${suffix}`, event.at, layer.until); return; }
-          runtime.preferences = P.record({ contract: CONTRACT, scope: prefScope(ME), encounterId: runtime.context.id,
-            events: runtime.preferences, at: event.at, id: `${event.id}.${suffix}`, kind, field: event.field, duration,
-            ...(kind === 'set' ? { value: layer.value, ...(layer.until ? { until: layer.until } : {}) } : {}) }); };
-        write('baseline', 'ongoing', target.baseline);
-        write('context', 'once', target.context);
-        runtime.requirements[event.field] = target.required; runtime.unknown.delete(event.field); runtime.skipped.delete(event.field);
-        if (target.context.state === 'unknown') {
-          runtime.unknown.set(event.field, { eventId: event.id, at: event.at, source: 'explicit', duration: 'once', encounterId: runtime.context.id });
-          if (!target.required) runtime.skipped.add(event.field);
-        }
-        if (event.field === 'wants.contact') for (const entry of Object.values(runtime.conditional)) if (entry) entry.invalidated = true;
-        invalidate();
-        runtime.changes.push({ id: event.id, kind: event.kind, field: event.field, label: spec(event.field).label, at: event.at, contextId: runtime.context.id,
-          before, after: fieldSnapshot(runtime, project(runtime, event.at), event.field) });
-        runtime.change = null; continue;
-      }
-      if (['set', 'clear', 'mark-unknown', 'revert-context'].includes(event.kind)) {
-        const field = spec(event.field); if (!field) fail('unknown field');
-        if (own(event, 'target') && !['baseline', 'context'].includes(event.target)) fail('invalid preference target');
-        const target = ['mark-unknown', 'revert-context'].includes(event.kind) ? 'context' : event.target || 'baseline';
-        if (!['baseline', 'context'].includes(target)) fail('invalid preference target');
-        if (target === 'context' && (field.kind === 'self' || field.id === 'consent')) fail('only wants and explicit availability (or meeting regions) support a context choice');
-        if (target === 'context' && runtime.context.closed) fail('context is closed; start a new context');
-        if (event.kind === 'set' && (typeof event.required !== 'boolean' || field.kind !== 'wants' && event.required !== (field.kind === 'required'))) fail('invalid requirement flag');
-        if (event.kind === 'clear' && own(event, 'required')
-          && !(event.field === 'wants.purpose' && target === 'baseline' && event.required === false && runtime.requirements[event.field] === true))
-          fail('only an explicit legacy baseline retirement can clear a requirement flag');
-        if (target === 'context' && event.kind === 'set' && field.kind === 'wants' && event.required !== (runtime.requirements[field.id] === true)) fail('context choice cannot change a hard requirement');
-        const beforePerson = project(runtime, event.at), beforeField = fieldSnapshot(runtime, beforePerson, event.field), before = replayEvaluation(beforePerson, event.at);
-        if (field.legacy && event.kind === 'set' && event.id === strictEventId
-          && !(event.field === 'wants.purpose' && runtime.requirements[event.field] === true && target === 'baseline' && event.required === false
-            && event.value === beforePerson.layers.baseline.values[event.field] && !own(event, 'until') && !own(event, 'sceneResponseId')))
-          fail('legacy relationship answers are history-only; choose goal and speed separately');
-        let sceneResponse = null;
-        if (own(event, 'sceneResponseId')) {
-          sceneResponse = [...runtime.sceneResponses.values()].find(response => response.id === event.sceneResponseId);
-          const suggestion = sceneResponse && sceneSuggestion(runtime, beforePerson, sceneResponse);
-          if (!suggestion || event.field !== suggestion.field || event.value !== suggestion.value || target !== 'context'
-            || event.until !== suggestion.until) fail('stale or changed scene suggestion');
-        }
-        if (field.kind === 'regions') writeRegions(event.kind, target, event.value, event.id, event.at, event.until);
-        else runtime.preferences = P.record({ contract: CONTRACT, scope: prefScope(ME), encounterId: target === 'baseline' && runtime.context.closed ? 'discovery-profile' : runtime.context.id, events: runtime.preferences, at: event.at,
-          id: event.id, kind: event.kind === 'set' ? 'set' : 'withdraw', field: event.field, duration: target === 'context' ? 'once' : 'ongoing', ...(event.kind === 'set' ? { value: event.value, ...(own(event, 'until') ? { until: event.until } : {}) } : {}) });
-        // An explicit edit/unknown/undo requires a new allowance confirmation.
-        // Returning to the same enum later cannot revive an old allowance.
-        if (event.field === 'wants.contact') for (const entry of Object.values(runtime.conditional)) if (entry) entry.invalidated = true;
-        if (event.kind === 'set' && target === 'baseline') runtime.requirements[event.field] = event.required;
-        if (event.kind === 'clear' && own(event, 'required')) runtime.requirements[event.field] = false;
-        if (sceneResponse) {
-          sceneResponse.appliedEventId = event.id;
-          runtime.sceneSources.set(event.id, { sceneId: sceneResponse.sceneId, responseId: sceneResponse.id });
-        }
-        if (event.kind === 'mark-unknown') runtime.unknown.set(event.field, { eventId: event.id, at: event.at, source: 'explicit', duration: 'once', encounterId: runtime.context.id });
-        else if (!(event.kind === 'clear' && target === 'baseline')) runtime.unknown.delete(event.field);
-        runtime.skipped.delete(event.field); invalidate();
-        if (event.field === 'consent' && (event.kind !== 'set' || event.value !== true)) { runtime.sceneResponses.clear(); runtime.lastShown = null; }
-        if (runtime.unknown.has(event.field) && field.kind === 'wants' && !runtime.requirements[event.field]) runtime.skipped.add(event.field);
-        const after = replayEvaluation(project(runtime, event.at), event.at);
-        const phrase = event.kind === 'mark-unknown' ? '이번에는 아직 모르는 항목으로 남겼어요. 평소 답으로 채우지 않아요.'
-          : event.kind === 'revert-context' || event.kind === 'clear' && target === 'context' ? '이번 선택을 취소하고 유효한 평소 답으로 돌아갔어요.'
-            : event.kind === 'clear' ? '평소 답을 지워 미확인으로 바꿨어요.'
-              : `‘${labelValue(field.id, event.value)}’${field.kind === 'wants' && event.required ? '(필수조건 유지)' : ''}을 ${target === 'context' ? '이번 추천에서만' : '앞으로도'} 적용해요.`;
-        runtime.change = { beforeId: before.top?.id || null, beforeLabel: before.top?.label || null, afterId: after.top?.id || null, afterLabel: after.top?.label || null,
-          reason: `${field.label}: ${phrase} 쌍방 조건을 다시 살펴봤어요.${before.top?.id === after.top?.id ? ' 먼저 살펴볼 후보는 그대로예요.' : ' 먼저 살펴볼 후보가 달라졌어요.'}` };
-        runtime.changes.push({ id: event.id, kind: event.kind, field: event.field, label: field.label, at: event.at, contextId: runtime.context.id,
-          before: beforeField, after: fieldSnapshot(runtime, project(runtime, event.at), event.field) });
-        continue;
-      }
-      const me = project(runtime, event.at);
-      if (event.kind === 'skip') {
-        if (runtime.context.closed) fail('context is closed');
-        if (!spec(event.field) || spec(event.field).kind === 'required' || own(me.values, event.field) || me.required.includes(event.field)
-          || considering(me, event.at).some(person => person.required.includes(event.field.replace('self.', 'wants.')) && event.field.startsWith('self.'))) fail('only an unknown optional question can be skipped');
-        runtime.skipped.add(event.field); continue;
-      }
-      if (event.kind === 'unselect') { runtime.selection = null; runtime.selectionEvent = null; continue; }
-      if (!synthetic && (!accountId(event.candidateId) || !/^[a-f0-9]{16}$/.test(event.candidateKey))) fail('invalid external candidate selection');
-      const candidate = declarationOnly ? pool.find(person => person.id === event.candidateId) : evaluate(me, event.at).rows.find(row => row.id === event.candidateId && row.status === 'eligible');
-      if (!candidate || !synthetic && event.candidateKey !== fingerprint(pool.find(person => person.id === event.candidateId))) {
-        if (event.id !== strictEventId && me.required.includes('wants.purpose') && me.hardValues['wants.purpose'] !== 'any') {
-          runtime.selection = null; runtime.selectionEvent = null; continue;
-        }
-        if (!synthetic && strictEventId !== event.id) { runtime.selection = null; runtime.selectionEvent = null; continue; }
-        fail('candidate is not currently eligible');
-      }
-      runtime.selection = { candidateId: candidate.id, label: candidate.label, revision: runtime.revision };
-      runtime.selectionEvent = event;
-        runtime.selectionBasis = preferenceBasis(me, event.at);
+      priorAt = validateReplayEvent(event, index, priorAt, at);
+      expireReplay(runtime, event.at);
+      chargeOptionalQuestion(runtime, event, policy);
+      replayReducers[event.kind](runtime, event, policy);
     }
-    expire(at);
+    expireReplay(runtime, at);
     if (runtime.selection && runtime.selectionBasis !== preferenceBasis(project(runtime, at), at)) {
       runtime.selection = null; runtime.selectionEvent = null; runtime.selectionBasis = null;
     }
