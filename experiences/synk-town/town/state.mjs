@@ -68,7 +68,8 @@ export function bandEvents(resident, { seed, lifeDay, band, window, holds = [] }
       if (count) out.push({ atMs: window.fromMs, type: 'orders', count });
     }
   }
-  for (const h of holds) if (h.npc === resident.id && h.with && Number.isSafeInteger(h.toMs) && window && h.toMs >= window.bandStartMs && h.toMs < window.bandEndMs)
+  // A hold ending exactly as the band ends is this band's: the next band no longer touches it (review GA1).
+  for (const h of holds) if (h.npc === resident.id && h.with && Number.isSafeInteger(h.toMs) && window && h.toMs > window.bandStartMs && h.toMs <= window.bandEndMs)
     out.push({ atMs: h.toMs, type: 'together', help: h.help || 0, by: h.id });
   return out.sort((a, b) => a.atMs - b.atMs || EVENT_ORDER.indexOf(a.type) - EVENT_ORDER.indexOf(b.type) || (a.by < b.by ? -1 : a.by > b.by ? 1 : 0));
 }

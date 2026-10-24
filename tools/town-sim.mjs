@@ -107,10 +107,14 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days }) {
         const log = out.stateLog.filter(e => e.npc === npc && e.stat === 'energy'), threshold = plan.RESIDENT_BY_ID[npc].restThreshold;
         let energy = before[npc]?.energy ?? paramsFor().state.wakeEnergy, i = 0;
         for (const s of out.segments.filter(x => x.npc === npc)) {
-          const minutes = (s.endMs - s.startMs) / clock.MINUTE;
-          while (i < log.length && log[i].atMs < s.startMs) energy += log[i++].delta;
-          result.awakeMinutes[npc] = (result.awakeMinutes[npc] || 0) + minutes;
-          if (energy < threshold) { result.belowMinutes[npc] = (result.belowMinutes[npc] || 0) + minutes; dayBelow.add(npc); }
+          // A merged segment is decided once a piece: each piece counts from its own decision time (review GA3).
+          const pieces = s.pieceStarts ?? [s.startMs];
+          pieces.forEach((at, k) => {
+            const minutes = ((pieces[k + 1] ?? s.endMs) - at) / clock.MINUTE;
+            while (i < log.length && log[i].atMs < at) energy += log[i++].delta;
+            result.awakeMinutes[npc] = (result.awakeMinutes[npc] || 0) + minutes;
+            if (energy < threshold) { result.belowMinutes[npc] = (result.belowMinutes[npc] || 0) + minutes; dayBelow.add(npc); }
+          });
           if (s.reason) (dayReasons[npc] ||= new Set()).add(s.reason);
           if (s.mood) { (dayMoods[npc] ||= []).push(s.reason); result.moods[`${npc}:${s.reason}`] = (result.moods[`${npc}:${s.reason}`] || 0) + 1; }
         }

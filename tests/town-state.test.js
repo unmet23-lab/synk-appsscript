@@ -110,6 +110,37 @@ test('G4: 플레이어 원인의 변화는 좋은 쪽뿐 · 결과 없이 닫힌
   assert.equal(st.energy, 50, '플레이어가 만든 습관 자리의 일은 기운을 깎지 않는다');
 });
 
+test('G4: 함께한 일은 그 주민에게만 — 다른 주민의 계획은 그대로이고, 구간 끝 정각에 끝난 붙잡힘도 그 구간이 센다(검수 GA1·GA2)', async () => {
+  const plan = await townModule('plan');
+  let compared = 0;
+  for (const { input, out } of await villageDays({ seed: 'with-only-mine', days: 3 })) {
+    if (input.band !== 'day') continue;
+    // 찻집 주인을 구간 끝 정각까지 붙잡는다 — 결과 없는 붙잡힘과 결과에 닿은 붙잡힘(도움 2).
+    // 효과가 상한에 막히지 않게(어울림 100·할 일 0이면 +15·−2가 변화 0이라 기록도 없다) 낮은 어울림·남은 손님으로 시작한다.
+    const residents = { ...input.residents, 'cafe-owner': { ...input.residents['cafe-owner'], social: 20, chores: 5 } };
+    const others = r => r.segments.filter(x => x.npc !== 'cafe-owner');
+    // 구간 가운데에서 끝난 붙잡힘(GA2): 그 뒤로도 결정이 이어져, 함께한 일이 첫 계획에 새면 다른 주민 조각이 바뀐다.
+    for (const hold of [{ id: 'R-mid', npc: 'cafe-owner', fromMs: input.startMs + HOUR, toMs: input.startMs + 2 * HOUR, spot: 'cafe.counter' },
+      { id: 'R-end', npc: 'cafe-owner', fromMs: input.endMs - 2 * HOUR, toMs: input.endMs, spot: 'cafe.counter' }]) {
+      const plain = plan.planBand({ ...input, residents, reservations: [hold] }), done = plan.planBand({ ...input, residents, reservations: [{ ...hold, with: true, help: 2 }] });
+      assert.deepEqual(others(done), others(plain), `다른 주민의 하루는 함께한 일과 상관없다(${hold.id})`);
+      const gains = done.stateLog.filter(e => e.npc === 'cafe-owner' && ['together', 'help'].includes(e.cause));
+      assert.ok(gains.some(e => e.cause === 'together' && e.atMs === hold.toMs), `붙잡힘이 끝난 때에 센다 — 구간 끝 정각도(${hold.id})`);
+      assert.ok(!plain.stateLog.some(e => ['together', 'help'].includes(e.cause)));
+      if (hold.id === 'R-mid') assert.notDeepEqual(done.segments.filter(x => x.npc === 'cafe-owner'), plain.segments.filter(x => x.npc === 'cafe-owner').map(x => x), '그 주민의 남은 하루는 함께한 일을 안다');
+    }
+    void out; compared++;
+  }
+  assert.ok(compared >= 3);
+  // 검수 GA2 재현 조건 그대로: 이 마을에서 함께한 일이 첫 계획에 새면 연구원의 그림 펼치기 자리가 바뀐다.
+  const v = await townModule('village'), village = v.initialVillage(), open = Date.UTC(2026, 9, 23, 3, 0);
+  v.closeBands(village, { nowMs: open, seed: 'check-7', offsetMin: 540, revision: 0 });
+  const input = v.bandInput(village), hold = { id: 'R-1', npc: 'cafe-owner', fromMs: open, toMs: open + HOUR, spot: 'cafe.counter' };
+  const plain = plan.planBand({ ...input, reservations: [hold] }), done = plan.planBand({ ...input, reservations: [{ ...hold, with: true, help: 2 }] });
+  assert.deepEqual(done.segments.filter(x => x.npc !== 'cafe-owner'), plain.segments.filter(x => x.npc !== 'cafe-owner'), 'check-7: 다른 주민은 그대로');
+  assert.notDeepEqual(done.segments.filter(x => x.npc === 'cafe-owner'), plain.segments.filter(x => x.npc === 'cafe-owner'), 'check-7: 찻집 주인의 남은 하루만 달라진다');
+});
+
 test('G4: 장면이 결과에 닿은 붙잡힘만 「함께한 일」 — 결과가 난 걸음에서 표시하고, 그 붙잡힘이 끝난 구간이 한 번 센다', async () => {
   const { createStore } = await townFile('server.mjs'), village = await townModule('village');
   let now = NOON, sequence = 0, receipt;

@@ -148,8 +148,10 @@ export function planBand(input) {
     window: starts[npc] && { fromMs: starts[npc].t, toMs: starts[npc].end, bandStartMs: startMs, bandEndMs: endMs }, holds: reservations }, params)]));
   const ctx = { input, weatherAt, rainStarts, P, params, events };
 
-  // Pass one: the band as it would go with no one held.
-  let segments = planRange(RESIDENT_IDS, starts, fixed, ctx, npc => createRng(villageSeed, 'plan', lifeDay, band, npc, planCmdRev));
+  // Pass one: the band as it would go with no one held — so without what a hold's end brings (a scene done together):
+  // that reaches only its own resident's re-plan and the close, never the others (review GA2).
+  const unheld = Object.fromEntries(Object.entries(events).map(([npc, list]) => [npc, list.filter(e => e.type !== 'together')]));
+  let segments = planRange(RESIDENT_IDS, starts, fixed, { ...ctx, events: unheld }, npc => createRng(villageSeed, 'plan', lifeDay, band, npc, planCmdRev));
   const deferred = segments.deferred;
   // Each reservation re-plans only its resident, after the hold, around everyone else.
   for (const hold of reservations) {
