@@ -58,6 +58,7 @@
 - 고침: 대기열이 비고 running 작업이 없는 것을 본 뒤 서버 트리(concurrently)를 끄고 `C:\SYNK-LoRA\AI-Toolkit_실행.cmd`를 최소화 창으로 다시 띄웠다(6초 뒤 응답) → mark_stopped → start → queue start로 바로 running이 됐다. 다른 세션이 같은 서버로 학습 중이면 끄지 않는다.
 - 함께: `학습_사슬.py`는 error도 「끝남」으로 보고 바로 끝난다(21:48 「보류가 비어 끝」) — 사슬은 학습이 running이 된 것을 본 뒤에 띄운다(`casting\wave2_20261023\학습_다시넣기.sh`). 학습을 멈출 때 `/api/jobs/<id>/stop` 뒤에도 모델을 올리던 run.py가 몇십 초 VRAM을 쥐다가 「Job stopped」로 내려갔다 — 다른 일에 GPU를 넘기기 전에 run.py가 없어졌는지 본다.
 - 다시 확인: 작업 상태가 running이고 `outputs/<이름>/log.txt`에 진행 막대가 찍히는지.
+- 덧붙임(10-24): 학습은 03:00에 끝났는데 사슬의 검증이 `검증_<폴더>.log rc=1 0.0분`으로 끝났다 — `verify_v2_jobs.json`이 없었다(`comfy_run.py` FileNotFoundError). 학습을 넣기 전에 `python verify_make.py <폴더>`로 검증 목록을 만들어 둔다. 빠뜨렸으면 목록을 만들고 `학습_사슬.py <이름>`을 다시 띄우면 학습이 completed라 바로 검증 10장 · 한 장 표로 간다(한결 1.4분).
 
 ### 트리거 없는 「a young Korean woman」에도 학습한 얼굴이 샌다
 - 증상: 학습 중 샘플에서 트리거 없이 쓴 「a young Korean woman …」도 250스텝부터 앞머리·갈색 단발로 바뀌었다(10-17 하린 v2).

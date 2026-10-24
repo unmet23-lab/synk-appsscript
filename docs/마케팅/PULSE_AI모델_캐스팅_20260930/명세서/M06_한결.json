@@ -4,7 +4,7 @@
   "코드": "M06",
   "키": "없음(2차 가번호 — 캐스팅북 반영 때 붙음)",
   "이름": "한결(가칭)",
-  "틀": "1차 다섯 명과 같은 기본 명세서 + 「바뀌면_안되는_것」(로드맵 7절 4단계) + 목소리(5단계). 데이터셋 · LoRA 칸은 그 단계 뒤에 더한다.",
+  "틀": "1차 다섯 명과 같은 기본 명세서 + 「바뀌면_안되는_것」(로드맵 7절 4단계) + 목소리(5단계) + 데이터셋 · LoRA(6단계, 10-24 Fable 통과). 영상_게이트 칸은 시안 · 루프 뒤에 더한다.",
   "콘셉트": "「청량한 운동부 후배」 · 스포티·상큼",
   "기준파일": {
     "대표사진": "C:/SYNK-LoRA/casting/wave2_20261023/M06_h1.jpg",
@@ -104,6 +104,36 @@
     "역할": "대학 운동부·러닝 크루 막내·헬스 입문자·게이머·편의점·카페 손님",
     "금지": "섹시(태준 자리), 정장 화보, 수염",
     "업종": "음료·간식, 앱·게임, 헬스 입문·스포츠, 남성 스킨케어 입문, 캐주얼·운동복"
+  },
+  "데이터셋": {
+    "트리거": "pls_m06",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/M06_hangyeol/v1",
+      "장수": 15,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (M06_hangyeol/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/M06_hangyeol/v2",
+      "장수": 34,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (M06_hangyeol/captions_v2.json)",
+      "새컷": "10-23 Gemini Ultra 나노바나나 2.1(4 Argon · 사고 수준 높음, ego), 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/validation/M06_hangyeol/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/M06_hangyeol/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/M06_hangyeol/job_config_v2.json",
+    "학습": "v2(2026-10-24) — 34장(세트 15 + 새 컷 19, 데이터셋 검수대로 23·30 자르고 24·27 캡션 고침) · 3,400스텝 · lr 1e-4 · rank 32/alpha 32(conv 16) · 해상도 512·768·1024 · 캡션 드롭아웃 0.05 · 마스크 없음 · 트리거 pls_m06 · Z-Image Turbo bf16 + 학습 어댑터 v2 · 00:04~03:00 한 번에(2시간 41분, 2.84 s/it), 재시작 없음(첫 시도 23:48은 GPU 양보로 0스텝 견본만 남기고 멈춤) · 가중치 C:/SYNK-LoRA/outputs/m06_hangyeol_v2/m06_hangyeol_v2.safetensors(250스텝마다 14개 저장점 보관) · 견본은 트리거+정장 도서관 컷이 500부터 한결, 트리거만 적은 줄전구 클로즈업은 저장점마다 여자↔한결로 뒤집혀 마지막 3,400도 여자, 트리거 없는 a young Korean man도 500부터 한결 꼴"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_m06",
+      "쓸_판": "C:/SYNK-LoRA/outputs/m06_hangyeol_v2/m06_hangyeol_v2.safetensors (마지막 3,400스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/m06_hangyeol_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_m06, a Korean man in his early twenties, <구도·표정·옷·배경·조명>",
+      "검증": "통과(2026-10-24, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 한결로 보인다(예 8·약함 2·아니오 0). 지킬 특징 둘 다 유지: 무쌍은 9칸 양쪽 선 없음 + V06 먼 눈에 얇은 접힘 선 △(가까운 눈은 무쌍), 살짝 나온 귀는 10/10(양쪽 7·한쪽 3, V02·V04는 기준보다 더 나옴). 점은 코끝·미간 0/10이나 V05 왼볼(사진 오른쪽) 점 하나·V06 볼 작은 점 7개쯤 무리 — 두 칸 후보정. 보이는 나이 20~27, 가운데 22~25로 범위(18~26) 안이고 V05·V06만 위 끝에 한 살 걸침, 아이돌형으로 바뀐 칸 없음. 함께: 크롭 10/10·곧은 코 10/10·면도 10/10(수염 0칸)·볼 홍조 9/10·소년 턱 8/10, 이마 잡티는 기준(6~8)보다 적게(0~3). 약한 칸: V05 아래에서 한낮(squinting이 세트 07 화남의 미간 세로 주름·내린 눈썹으로 반쯤 새고 아래턱 폭이 학습 정면 컷 최대보다 7% 넓어져 24~27, 점 하나·땀 광택), V06 촛불 돌아봄(광대·턱선이 또렷해지고 입술 도톰, 24~27, 바짝 보면 다른 사람 같음). 전신 V08은 얼굴 69px에서도 한결로 읽혀 경계 예(등신 7.05·어깨/얼굴폭 2.5 허용 윗끝, 다리 0.511 허용 위 — 길어진 쪽, 짧아지지 않음). 좌우 방향 V02 왼쪽·V03 오른쪽·V09 오른쪽 3/3, front view −1.9°로 수치가 있는 앞 모델 여덟 중 가장 정면, 옆얼굴 +51°, 돌아봄 몸 64°/얼굴 −27°. 창가 옆얼굴 땀방울(V03)은 태준·민재 V03과 같은 시드 버릇. 옷을 안 적은 V01에 흰 티·회색 배경이 새지 않고, 표정을 안 적은 V03·V06·V08은 다문 입(큰 웃음이 기본값 아님). 트리거 결속 약함: 얼굴이 pls_m06보다 캡션의 a Korean man in his early twenties에 묶여 있어 둘을 함께 적은 검증 꼴에서만 10/10",
+      "검증표": "C:/SYNK-LoRA/validation/M06_hangyeol/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/M06_hangyeol/verify_v2_jobs.json",
+      "주의": "지시문엔 pls_m06, a Korean man in his early twenties를 늘 함께 적는다 — 트리거만 적은 클로즈업 견본은 여자로 나오고(줄전구 2,500~3,400) 트리거 없는 a young Korean man은 한결 꼴이 되니 트리거 하나만 믿지 않고, 한 장면에 다른 젊은 남자 모델 LoRA나 트리거 없는 젊은 남자를 세우지 않는다(두 사람 컷은 따로 뽑아 합침). young·handsome은 쓰지 않고 룩은 short cropped black hair with a messy fringe, monolid eyes, slightly protruding ears, straight nose, slightly angular boyish jaw, clean-shaven, no moles anywhere on his face. squinting·frown은 세트 07 화남의 미간 주름이 새고 볼·턱이 넓어지며 볼에 점이 생기니(V05) relaxed brow, soft eyes slightly narrowed, soft smile로 바꾸고 한낮 직사광은 시드 2~3개·점은 후보정. 촛불·따뜻한 측광 돌아봄은 광대·턱이 각지고 볼에 작은 점이 번지며 24~27로 보이니(V06) soft boyish face, smooth cheeks, gentle expression을 적고 시드 2~3개, 클로즈업은 img2img 0.6, 볼 확인. 안전한 표정은 큰 웃음(V10)·다문 입 미소(V01·V04)·담담한 응시(V02·V07), focused는 시선이 내려간다(V09). 수염은 안 적어도 0/10이라 clean-shaven 불필요, 이마 잡티는 기준보다 적게 나와 필요하면 a few faint tiny blemishes on the forehead. 전신은 얼굴 69px에서도 한결이나 등신 7.05·어깨/얼굴폭 2.5·다리 0.511로 허용 윗끝이고 입술이 어두우니(V08) 178 cm, swimmer's build with broad straight shoulders, camera at waist height를 적고 등신을 재며 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 좌우 방향은 적은 대로 돌고(3/3) front view도 정면이지만 45°는 16~19°에 그치니 three-quarter view, 45 degrees, far ear hidden으로 적고 각도를 잰다. candid snapshot은 광각 꼴(V01)이라 85mm portrait lens, 창가 옆얼굴 땀방울(V03)은 dry matte skin 또는 시드 바꾸기. 입술은 어두운 빛에서 적갈색(V08·V06·V09)이라 soft coral-pink lips, 차가운 빛은 warm skin tone"
+    }
   },
   "목소리": {
     "엔진": "타입캐스트 ssfm-v30 · seed 1018",
