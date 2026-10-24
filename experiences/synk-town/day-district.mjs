@@ -40,17 +40,29 @@ export function districtRequest(search, { world = false } = {}) {
 // Lambert with a black diffuse colour draws nothing from real-time light; the
 // baked radiance is the emissive term. The map's alpha is the share of direct
 // sun in the bake, so live shadows (characters) darken only lit texels and the
-// shade already baked is never darkened twice.
-function bakedMaterial(THREE, source) {
+// shade already baked is never darkened twice. The hour (W7, day-light.mjs)
+// tints the two shares apart — sky (1 − alpha) and sun (alpha) — through
+// uniforms every baked material shares, so no new bake is needed (§2-2); noon
+// tints both 1, the bake as it was. Rain darkens by surface kind and gives the
+// ground a faint sky sheen at grazing angles.
+const WET_KINDS = Object.freeze({ ground: 0, roof: 1, wall: 2 });
+function bakedMaterial(THREE, source, light = null, kind = 'wall') {
   const scale = Number(source.userData?.synk_bake_scale) || 1, sunAlpha = Number(source.userData?.synk_sun_alpha) === 1;
   const material = new THREE.MeshLambertMaterial({ name: source.name, color: 0x000000, emissive: 0xffffff, emissiveIntensity: scale, emissiveMap: source.map || null, side: source.side });
-  if (sunAlpha && source.map) {
+  if (source.map && (sunAlpha || light)) {
+    const wet = WET_KINDS[kind] ?? WET_KINDS.wall, share = sunAlpha ? 'emissiveColor.a' : '0.5', mask = sunAlpha ? 'getShadowMask()' : '1.0';
+    const sheen = wet === WET_KINDS.ground ? '\n\t\ttotalEmissiveRadiance += synkSkyTint * synkWetSheen * synkWet * pow( 1.0 - clamp( dot( normal, normalize( vViewPosition ) ), 0.0, 1.0 ), 3.0 );' : '';
+    const body = light
+      ? `\n#ifdef USE_EMISSIVEMAP\n\t{\n\t\tfloat sunShare = ${share};\n\t\ttotalEmissiveRadiance *= synkSkyTint * ( 1.0 - sunShare ) + synkSunTint * sunShare * ${mask};\n\t\ttotalEmissiveRadiance *= 1.0 - synkWet * synkWetDark[ ${wet} ];${sheen}\n\t}\n#endif`
+      : '\n#ifdef USE_EMISSIVEMAP\n\ttotalEmissiveRadiance *= 1.0 - emissiveColor.a * ( 1.0 - getShadowMask() );\n#endif';
     material.onBeforeCompile = shader => {
+      if (light) Object.assign(shader.uniforms, light);
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <shadowmap_pars_fragment>', '#include <shadowmap_pars_fragment>\n#include <shadowmask_pars_fragment>')
-        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n#ifdef USE_EMISSIVEMAP\n\ttotalEmissiveRadiance *= 1.0 - emissiveColor.a * ( 1.0 - getShadowMask() );\n#endif');
+        .replace('#include <shadowmap_pars_fragment>', '#include <shadowmap_pars_fragment>\n#include <shadowmask_pars_fragment>'
+          + (light ? '\nuniform vec3 synkSkyTint;\nuniform vec3 synkSunTint;\nuniform float synkWet;\nuniform vec3 synkWetDark;\nuniform float synkWetSheen;' : ''))
+        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>' + body);
     };
-    material.customProgramCacheKey = () => 'synk-baked-sun-share-v1';
+    material.customProgramCacheKey = () => light ? `synk-baked-light-v2-${kind}${sunAlpha ? '' : '-flat'}` : 'synk-baked-sun-share-v1';
   }
   material.userData.townBaked = true;
   return material;
@@ -143,7 +155,7 @@ function hideDistrictGround(THREE, landscape, b, groundTop, onlyGround = false) 
 }
 
 // Converts one loaded GLB scene in place and records its cost.
-function adoptBaked(THREE, root, liveGlass, state, drop = []) {
+function adoptBaked(THREE, root, liveGlass, state, drop = [], light = null) {
   const textures = new Set(), removed = [];
   let lost = 0;
   // The greenhouse's panes are thinner than window glass in v20 (opacity .16,
@@ -160,7 +172,7 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
       // Every baked surface carries an atlas; GLTFLoader leaves the map empty when
       // its texture failed (e.g. a blocked transcoder), which would draw it white.
       if (!source.map) lost++;
-      object.material = bakedMaterial(THREE, source); if (source.map) textures.add(source.map);
+      object.material = bakedMaterial(THREE, source, light, /ground|ring/.test(object.name) ? 'ground' : /roof/.test(object.name) ? 'roof' : 'wall'); if (source.map) textures.add(source.map);
       if (/roof/.test(object.name)) object.material.userData.townSurface = 'roof';
       // Ground does not need to cast; structure keeps shading characters and
       // the v20 lawn just outside the district.
@@ -181,7 +193,8 @@ function adoptBaked(THREE, root, liveGlass, state, drop = []) {
   if (lost) throw new Error(`${lost} baked meshes lost their texture`);
 }
 
-export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume, renderer, phone = false }) {
+// light: the shared hour uniforms (day-light.mjs bakedLightUniforms); onAttach(root) hears of each part put in place.
+export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume, renderer, phone = false, light = null, onAttach = null }) {
   const request = districtRequest(location.search, { world: !!globalThis.__SYNK_WORLD_TOWN__ });
   if (!request) return null;
   const started = performance.now(), hidden = [];
@@ -233,7 +246,7 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
     const root = gltf.scene; root.name = `town-${part.id}-baked`;
     const before = { meshes: state.meshes, triangles: state.triangles, textureBytes: state.textureBytes };
     if (part.id === 'ring' || part.id === 'neighbours') takeOuter();
-    adoptBaked(THREE, root, liveGlass, state, part.drop || []);
+    adoptBaked(THREE, root, liveGlass, state, part.drop || [], light);
     // GLB vertices are in Town world space; parents carry their own transform.
     const building = part.placeId && buildings.find(b => b.userData.placeId === part.placeId);
     const parent = building || world;
@@ -255,6 +268,7 @@ export function swapDistrict({ THREE, world, buildings, liveGlass, replaceVolume
       }
       for (const house of touched) replaceVolume?.(house);
     }
+    onAttach?.(root);
     state.parts.push({ id: part.id, meshes: state.meshes - before.meshes, triangles: state.triangles - before.triangles, textureBytes: state.textureBytes - before.textureBytes, ...(part.defer ? { deferred: true } : {}) });
     record();
   }

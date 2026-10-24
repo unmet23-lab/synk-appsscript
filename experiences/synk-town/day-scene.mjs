@@ -7,6 +7,7 @@ import { makeTownResident } from './day-residents.mjs';
 import { buildTownEnvironment } from './day-environment.mjs';
 import { applyTownMaterials, TOWN_BRAND } from './day-materials.mjs';
 import { createTownRendering } from './day-rendering.mjs';
+import { createTownLight, bakedLightUniforms, shadowFocus, sunReach } from './day-light.mjs';
 import { WALK_BOUNDS } from './walk.mjs';
 import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, SIGN_SLOTS } from './town/places.mjs';
 
@@ -19,6 +20,8 @@ const LABELS = Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].l
 const LEGACY_SLOTS = Object.fromEntries(Object.entries(FT_SEATS).map(([id, seat]) => [id, [seat.legacy2d.x, seat.legacy2d.y, seat.at.x, seat.at.z]]));
 const ROLE_LABELS = { player: '나', 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원', 'visitor-tea-reader': '손님', 'book-guest': '책 읽는 손님', companion: '동행 손님' };
 const VISITORS = new Set(['visitor-tea-reader', 'book-guest', 'companion']);
+const WALK_CENTER = new THREE.Vector3((WALK_BOUNDS.minX + WALK_BOUNDS.maxX) / 2, .12, (WALK_BOUNDS.minZ + WALK_BOUNDS.maxZ) / 2);
+const WALK_REACH = Math.hypot(WALK_BOUNDS.maxX - WALK_BOUNDS.minX, WALK_BOUNDS.maxZ - WALK_BOUNDS.minZ) / 2 + 6;
 const clamp = THREE.MathUtils.clamp;
 const finite = (n, fallback = 0) => Number.isFinite(n) ? n : fallback;
 function random(seed) { let n = seed; return () => ((n = (1664525 * n + 1013904223) >>> 0) / 4294967296); }
@@ -182,12 +185,6 @@ function townFadeMesh(object, faded, mode, fadedMaterials) {
   object.castShadow = faded ? false : entry.castShadow; object.receiveShadow = faded ? false : entry.receiveShadow;
   object.visible = hidden ? false : entry.visible; entry.active = faded; entry.mode = mode;
 }
-function shadowFocus(x, z, extent, mapSize) {
-  const length = Math.sqrt(251), horizontal = Math.sqrt(130), rx = 7 / horizontal, rz = 9 / horizontal,
-    ux = 99 / (horizontal * length), uz = -77 / (horizontal * length), step = 2 * extent / mapSize;
-  const r = Math.round((x * rx + z * rz) / step) * step, u = Math.round((x * ux + z * uz) / step) * step, determinant = rx * uz - rz * ux;
-  return { x: (r * uz - rz * u) / determinant, z: (rx * u - r * ux) / determinant, step };
-}
 function quantile(list, fraction) { if (!list.length) return null; const sorted = [...list].sort((a, b) => a - b); return +sorted[Math.floor((sorted.length - 1) * fraction)].toFixed(2); }
 
 /** Scene state is presentation input only. No reward, clock, or fact is committed here. */
@@ -219,22 +216,33 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   // One broad sun and restrained sky fill let curved eaves, woven cloth and
   // timber edges carry volume. Extra ambient light previously flattened them.
   const light = new THREE.DirectionalLight('#fff3de', 3.15); light.position.set(-9, 11, 7); light.castShadow = true; light.shadow.mapSize.set(2048, 2048); Object.assign(light.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: .5, far: 45 }); light.shadow.normalBias = .018; light.shadow.bias = -.0002; light.shadow.radius = 4.5; light.shadow.blurSamples = 8; scene.add(light); scene.add(light.target);
-  scene.add(new THREE.HemisphereLight('#d8eaff', '#71815e', .58)); const fill = new THREE.DirectionalLight('#cddfff', .18); fill.position.set(8, 4, -10); scene.add(fill);
+  const hemi = new THREE.HemisphereLight('#d8eaff', '#71815e', .58); scene.add(hemi); const fill = new THREE.DirectionalLight('#cddfff', .18); fill.position.set(8, 4, -10); scene.add(fill);
+  // The hour's light and the rain (W7, day-light.mjs). Until setLight is called this is the noon above.
+  const bakedLight = bakedLightUniforms(THREE), townLight = createTownLight({ THREE, scene, renderer, sun: light, hemi, fill, baked: bakedLight, phone: canvas.clientWidth < 600 });
   const surfaceArt = applyTownMaterials(m, Math.min(8, renderer.capabilities.getMaxAnisotropy()));
+  m.glass.userData.townGlass = true; // windows glow at night; its clones (greenhouse, houses, baked thin glass) keep the mark
   const rendering = createTownRendering(renderer, scene, camera);
   const environmentArt = buildTownEnvironment(THREE, world, m, { mesh, box, tube, textLabel });
   const { buildings, hitTargets } = environmentArt;
   world.updateMatrixWorld(true);
   const fixedSupports = []; for (const building of buildings) building.traverse(object => { if (object.isMesh && object.userData.townSupportSurface) fixedSupports.push(object); });
   const occlusionVolumes = (environmentArt.occlusionRoots || buildings).map(root => townOcclusionVolume(root, buildings.includes(root) || root.userData.neighbourhoodHouse === true));
+  // Rain stops under each building's roofs and glass roofs (their footprint up to their top), not over its yard.
+  townLight.register(world); townLight.setShelters(occlusionVolumes.filter(volume => volume.structure).map(({ root }) => {
+    const roof = new THREE.Box3(), part = new THREE.Box3();
+    root.traverse(o => { if (o.isMesh && [o.material].flat().some(mat => mat?.userData.townSurface === 'roof' || mat?.userData.townGlass) && part.setFromObject(o).min.y > 1.2) roof.union(part); });
+    return roof;
+  }));
   // Baked town (day-district.mjs): inside WORLD the whole merged town by default
   // (10-19), elsewhere only with ?district=<name>. The module is fetched only
   // then; the plain local v20 path loads nothing extra.
   let bakedDistrict = null;
   const bakedDistrictReady = /[?&]district=/.test(location.search) || globalThis.__SYNK_WORLD_TOWN__ ? import('./day-district.mjs').then(({ swapDistrict }) => {
-    bakedDistrict = swapDistrict({ THREE, world, buildings, liveGlass: m.glass, renderer, phone: canvas.clientWidth < 600, replaceVolume: root => {
+    bakedDistrict = swapDistrict({ THREE, world, buildings, liveGlass: m.glass, renderer, phone: canvas.clientWidth < 600, light: bakedLight, onAttach: root => townLight.register(root), replaceVolume: root => {
       const index = occlusionVolumes.findIndex(volume => volume.root === root); if (index >= 0) occlusionVolumes[index] = townOcclusionVolume(root, true);
     } });
+    // Its shadows were baked from the noon sun: the live sun keeps that axis while a baked town stands.
+    if (bakedDistrict) { townLight.setBaked(true); bakedDistrict.ready.then(state => { townLight.setBaked(state?.loaded === true); dirty = true; schedule(); }); }
     return bakedDistrict?.ready;
   }).catch(() => null) : null;
   for (const building of buildings) {
@@ -246,6 +254,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const actors = new Map(Object.keys(ROLE_LABELS).map(id => [id, actor(world, id, m, shared)])); for (const id of VISITORS) actors.get(id).group.visible = false;
   const labelSprites = [...actors.values()].map(a => a.label);
   for (const building of buildings) for (const child of building.children) if (child.isSprite && child.userData.labelWidth) labelSprites.push(child);
+  // Names stay readable in the dark: light and tone mapping never reached them, and the hour's fog (W7) does not either.
+  for (const sprite of labelSprites) sprite.material.fog = false;
   const labelPosition = new THREE.Vector3();
   const propRoot = new THREE.Group(); world.add(propRoot); let propSignature = '', propCount = 0;
   let propSupports = [], propContacts = [], lifeContact = null, legacyContact = null;
@@ -314,14 +324,14 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     const extent = close ? 5.2 : overview ? Math.max(WALK_BOUNDS.maxX - WALK_BOUNDS.minX, WALK_BOUNDS.maxZ - WALK_BOUNDS.minZ) / 2 + 6 : 14,
       x = overview ? (WALK_BOUNDS.minX + WALK_BOUNDS.maxX) / 2 : freeWalk ? p.x : 0,
       z = overview ? (WALK_BOUNDS.minZ + WALK_BOUNDS.maxZ) / 2 : freeWalk ? p.z : -2,
-      snapped = shadowFocus(x, z, extent, light.shadow.mapSize.x), scale = overview ? 3 : 1, far = overview ? 95 : 45;
-    light.position.set(snapped.x - 9 * scale, 11 * scale, snapped.z + 7 * scale); light.target.position.set(snapped.x, 0, snapped.z);
+      d = townLight.sunDirection(), snapped = shadowFocus(x, z, extent, light.shadow.mapSize.x, d), { reach, far } = sunReach(d, overview ? 3 : 1, extent, overview ? 95 : 45);
+    light.position.set(snapped.x + d.x * reach, d.y * reach, snapped.z + d.z * reach); light.target.position.set(snapped.x, 0, snapped.z);
     light.shadow.bias = -.0089 / (far - .5);
     if (light.shadow.camera.right !== extent || light.shadow.camera.far !== far) {
       Object.assign(light.shadow.camera, { left: -extent, right: extent, top: extent, bottom: -extent, far });
       light.shadow.camera.updateProjectionMatrix(); light.shadow.needsUpdate = true;
     }
-    shadowDiagnostics = { x: snapped.x, z: snapped.z, texelStep: snapped.step, extent, far, mapSize: light.shadow.mapSize.x, direction: 'unchanged-sun-axis', tracking: freeWalk && !overview ? 'player' : overview ? 'whole-world' : 'classic' };
+    shadowDiagnostics = { x: snapped.x, z: snapped.z, texelStep: snapped.step, extent, far, mapSize: light.shadow.mapSize.x, direction: townLight.sunMode(), tracking: freeWalk && !overview ? 'player' : overview ? 'whole-world' : 'classic' };
   }
   function followTarget() {
     const p = actors.get('player').target;
@@ -378,8 +388,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       distance = Math.max(height, width / aspect) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * (wideWalking ? 1.18 : 1);
     // Perspective enlarges the near corners. The map overview reserves room
     // for them and keeps the enlarged world clear at its farther lens distance.
-    scene.fog.near = wideWalking ? Math.max(30, distance - 5) : 30;
-    scene.fog.far = wideWalking ? Math.max(100, distance + 95) : 100;
+    // The layout's own fog distances; the hour scales them (W7, dawn mist comes close).
+    townLight.setFogRange(wideWalking ? Math.max(30, distance - 5) : 30, wideWalking ? Math.max(100, distance + 95) : 100);
     cameraPosition.copy(target).add(new THREE.Vector3(close ? .23 : .17, close ? .70 : .85, 1).normalize().multiplyScalar(distance));
     if (follow || walkingClose) followTarget();
     if (immediate || reducedMotion || motionQuery.matches) { camera.position.copy(cameraPosition); cameraTarget.copy(target); camera.lookAt(cameraTarget); }
@@ -414,6 +424,11 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       changed = true;
     }
     if (changed) { dirty = true; schedule(); }
+  }
+  /** The hour's light (town/light.mjs lightAt), or null for the approved noon; drawn again only when it changed. */
+  function setLight(state) {
+    if (disposed) return;
+    if (townLight.apply(state, { reducedMotion: reducedMotion || motionQuery.matches })) { dirty = true; schedule(); }
   }
   function setActor(id, value, now, immediate = false) {
     const a = actors.get(id); if (!a || !value) return; const walkingPlayer = id === 'player' && freeWalk;
@@ -619,7 +634,9 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       const fibers = a.body.getObjectByName('close-view-felt-fibers'); if (fibers) fibers.visible = cameraMode === 'close';
     }
     for (const o of labelSprites) { o.getWorldPosition(labelPosition); if (o.userData.placeId) { const p = actors.get('player').target, [x, z] = LOCATIONS[o.userData.placeId]; o.visible = !(cameraMode === 'close' && o.parent.userData.faded) && (!freeWalk || cameraMode !== 'wide' && Math.hypot(p.x - x, p.z - z) < 4.8); } const worldPerPixel = 2 * camera.position.distanceTo(labelPosition) * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, canvas.clientHeight); const width = Math.min(Math.max(o.userData.labelWidth, o.userData.minPixelWidth * worldPerPixel), (o.userData.maxPixelWidth || 170) * worldPerPixel); o.scale.set(width, width * (o.userData.labelAspect || 100 / 384), 1); }
-    updateOcclusion(); focusShadow();
+    // Over the whole town (the walking overview) the rain covers the walking grounds, otherwise the view's centre.
+    const overview = freeWalk && cameraMode === 'wide';
+    updateOcclusion(); focusShadow(); townLight.frame(now, camera, overview ? WALK_CENTER : freeWalk ? actors.get('player').group.position : cameraTarget, overview ? WALK_REACH : 0);
     rendering.render(cameraMode === 'wide'); frameCount++; renderedSerial = requestedSerial; ready = true; dirty = false;
     const cpu = performance.now() - start; cpuTimes.push(cpu); if (lastMetricsAt && now - lastMetricsAt < 250) intervals.push(now - lastMetricsAt); lastMetricsAt = now; if (cpuTimes.length > 360) cpuTimes.shift(); if (intervals.length > 360) intervals.shift();
     if (motion || freeWalk && playerMoving) schedule();
@@ -706,7 +723,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     loadSurface(`azure-sky-v3${canvas.clientWidth < 600 ? '-mobile' : ''}.jpg`, map => {
       skyTexture = map; map.colorSpace = THREE.SRGBColorSpace; map.mapping = THREE.EquirectangularReflectionMapping;
       skyTarget = pmrem.fromEquirectangular(map); scene.background = map; scene.environment = skyTarget.texture;
-      scene.backgroundRotation.y = scene.environmentRotation.y = .65; scene.backgroundIntensity = .95;
+      scene.backgroundRotation.y = scene.environmentRotation.y = .65; scene.backgroundIntensity = .95; townLight.reapply();
     }),
     loadSurface('felt-coral.webp', map => {
       map.colorSpace = THREE.SRGBColorSpace; map.wrapS = map.wrapT = THREE.RepeatWrapping; map.repeat.set(2.1, 1.4);
@@ -730,5 +747,5 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     try { await Promise.race([initialAssets.catch(() => {}), new Promise(resolve => { timer = setTimeout(resolve, 5000); })]); }
     finally { clearTimeout(timer); }
   }
-  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setAppearance, prepareInitialAssets, resize, stats, dispose };
+  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose };
 }

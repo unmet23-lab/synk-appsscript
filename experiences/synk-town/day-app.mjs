@@ -3,6 +3,8 @@ import { createWalkControls } from './walk-controls.mjs';
 import { movePoint, nearbyPlace, WALK_SPAWNS } from './walk.mjs';
 import { PLACE_BY_ID, PLAYER_PLACES, SPOT_BY_ID } from './town/places.mjs';
 import { placeAt, caption, doing, goalOf } from './town/village.mjs';
+import { lightAt } from './town/light.mjs';
+import { validOffset } from './town/clock.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -554,6 +556,20 @@ function villageFrame() {
   if (village.signature !== villageLive.signature) { renderScene(); return; }
   if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
 }
+/** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
+ * same village at the same time looks the same on every device. Before the village keeps a zone (a first visit) the
+ * device's offset stands in — the server records that same offset with its first band; with no clock at all the
+ * scene keeps the approved noon. Painted once a second: the light moves in minutes. */
+let lightShown = null, lightSource = 'none';
+function lightNow() {
+  const v = snapshot?.state?.village, at = serverNow() ?? snapshot?.view.day?.scene?.village?.nowMs ?? null;
+  const saved = Array.isArray(v?.tz) && v.tz.length ? v.tz : null, device = -new Date().getTimezoneOffset();
+  const tz = saved || (validOffset(device) ? device : null);
+  lightSource = !Number.isSafeInteger(at) || tz === null ? 'none' : saved ? 'server-tz' : 'device-tz';
+  if (lightSource === 'none') return null;
+  try { return lightAt({ villageSeed: typeof v?.seed === 'string' ? v.seed : null, tz, ms: at }); } catch { lightSource = 'none'; return null; }
+}
+function paintLight() { if (!renderer?.setLight) return; lightShown = lightNow(); renderer.setLight(lightShown); }
 function frame(now) { walkFrame(now); observe(now); villageFrame(); raf = requestAnimationFrame(frame); }
 async function load() {
   setBusy(true);
@@ -647,6 +663,7 @@ try {
   }
   walkControls = createWalkControls({ surface: $('scene'), joystick: $('walk-joystick'), thumb: $('walk-thumb'), canMove: () => walking() && connected && !busy,
     onInteract: interactWalk, onCancel: dismissWalkPanel, onMoveStart: dismissWalkPanel, onInputMode: mode => { walkInputMode = mode; } });
+  paintLight(); setInterval(paintLight, 1000); // the hour's light (W7), before the first frame shows
   renderScene(); applyWalkView(); if (walking()) $('scene').focus({ preventScroll: true });
   raf = requestAnimationFrame(frame); setInterval(tick, 1000);
   setInterval(() => { if (renderer) text('scene-metrics', JSON.stringify(renderer.stats(), null, 2)); }, 3000);
@@ -655,6 +672,8 @@ try {
 // Read-only instrumentation for the isolated QA runner. It cannot mutate state or time.
 globalThis.SYNKTownDay = Object.freeze({ metrics: () => ({ ...(renderer?.stats() || { renderer: 'text-alternative' }), reducedMotion: reduced.matches, connected, fallback, worldLinked: worldHostRequested,
   village: { serverNow: serverNow(), live: [...villageLive.ids], signature: villageLive.signature, due: dueAt(), timed: timed() },
+  lightClock: lightShown && { source: lightSource, seedKind: typeof snapshot?.state?.village?.seed === 'string' ? 'string' : snapshot?.state?.village?.seed == null ? 'none' : 'other',
+    key: lightShown.key, band: lightShown.band, localMinute: lightShown.localMinute, rain: { raining: lightShown.rain.raining, drops: lightShown.rain.drops, overcast: lightShown.rain.overcast, wet: lightShown.rain.wet } },
   walk: { enabled: walking(), ...walkPoint, heading: walkHeading, moving: walkMoving, inputActive: walkInputActive, nearby: nearby(walkPoint), interactionOpen: walkPanel, input: walkInputMode,
     pending: walkPending.length, pendingMs: walkPending.reduce((n, s) => n + s.durationMs, 0), sending: !!walkFlushing, backpressured: walkBackpressured,
     correctionDistance: walkCorrectionDistance, maxCorrection: walkMaxCorrection } }), snapshot: () => structuredClone(snapshot) });

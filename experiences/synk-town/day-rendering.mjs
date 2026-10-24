@@ -54,7 +54,8 @@ function createContactLight({ renderer, scene, camera, quality = 'balanced', mob
     const override = ao._overrideVisibility.bind(ao);
     ao._overrideVisibility = () => {
       override();
-      scene.traverse(object => { if (object.visible && object.customDepthMaterial) { object.visible = false; ao._visibilityCache.push(object); } });
+      // The sky overlay and the rain streaks (W7) are not surfaces either.
+      scene.traverse(object => { if (object.visible && (object.customDepthMaterial || object.userData.noContactAO)) { object.visible = false; ao._visibilityCache.push(object); } });
     };
     output = new OutputPass(); output.renderToScreen = true;
     // Three deliberately bypasses tone mapping for an sRGB photographic sky
