@@ -91,7 +91,7 @@ test('direct query and hash messenger destinations leave demo before making any 
 test('messenger suppresses the demo entry banner so the workspace retains its full width',()=>{
   for(const url of [initialUrl,'http://localhost:4191/?tab=messenger']){
     const f=fixture(url);f.state.tab='messenger';f.state.data.demoAvailable=true;assert.equal(f.run('demoBanner()'),'');
-    f.state.tab='overview';assert.notEqual(f.run('demoBanner()'),'','marketing keeps its demo entry or explanation');
+    f.state.tab='overview';const banner=f.run('demoBanner()');if(f.location.search.includes('demo=1'))assert.notEqual(banner,'','the demo itself keeps its explanation');else assert.equal(banner,'','10-24: the graph demo entry is gone outside the demo address');
   }
 });
 
@@ -109,7 +109,7 @@ test('messenger navigation outside demo mode keeps the normal app handler and cu
 test('desktop context stays visible and preserves manual collapse around the menu-free messenger while the mobile menu closes on workspace entry',()=>{
   const initial=vm.runInNewContext(appSource.split('\n').find(line=>line.startsWith('const state ='))+'\nstate;', {dateToday:()=> '2026-09-30',shiftDate:()=> '2026-09-24'});
   assert.equal(initial.workspaceSidebarOpen,false);
-  const f=fixture('http://localhost:4191/?tab=history'),dom=sidebarDom(f);f.state.workspaceSidebarOpen=initial.workspaceSidebarOpen;f.installShell();
+  const f=fixture('http://localhost:4191/?tab=history&demo=1'),dom=sidebarDom(f);f.state.workspaceSidebarOpen=initial.workspaceSidebarOpen;f.installShell();
   f.run("shell('<p>기존 분석</p>')");assert.equal(dom.get('workspace-sidebar-content').inert,false);assert.equal(dom.get('workspace-sidebar-toggle').attrs['aria-expanded'],'true');
   f.run('setWorkspaceSidebar(false)');assert.equal(f.mounts(),1,'manual collapse must not remount the page or messenger');assert.equal(f.renders.length,0);assert.equal(dom.get('workspace-sidebar-content').hidden,true);
   f.run("shell('<p>갱신된 분석</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'desktop collapse survives background refresh');

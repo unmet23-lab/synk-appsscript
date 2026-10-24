@@ -163,7 +163,7 @@ function swNow(production,full){
     return poster({title:'다음 할 일을 정해요',body:escape('다음 할 일을 한 줄로 남기면 목록과 이 판에 보여요.'),actions:mtPill('작업 정보 고치기',`data-action="sw-edit-production" data-id="${key}"`)});
   }
   if(stage==='ready')return quiet({label:'완성',title:'완성한 작업이에요',body:escape(share?'팀에 남기고 싶은 장면이면 좋은 예시로 남겨요. 올린 뒤에는 단계를 「게시 기록」으로 바꿔요.':'올린 뒤에는 단계를 「게시 기록」으로 바꿔요.'),actions:shareButton});
-  if(stage==='published')return quiet({label:'게시 기록',title:'게시 기록으로 표시한 작업이에요',body:escape(share?'올린 뒤 숫자와 기록은 게시 준비·성과에서 봐요. 좋았던 장면은 예시로 남길 수 있어요.':'올린 뒤 숫자와 기록은 게시 준비·성과에서 봐요.'),actions:`<button type="button" class="mt-link" data-maker-tool="publication">게시 준비·성과 열기</button>${shareButton}`});
+  if(stage==='published')return quiet({label:'게시 기록',title:'게시 기록으로 표시한 작업이에요',body:escape(share?'올린 뒤 숫자는 SNS·마케팅 「성과」에서 봐요. 좋았던 장면은 예시로 남길 수 있어요.':'올린 뒤 숫자는 SNS·마케팅 「성과」에서 봐요.'),actions:`<button type="button" class="mt-link" data-action="social-view" data-view="results">SNS 성과 열기</button>${shareButton}`});
   return quiet({label:swStages[stage]||'진행 중',title:production.nextAction?`다음 할 일: ${production.nextAction}`:'진행 중인 작업이에요',body:escape(production.assigneeName?`제작 담당: ${production.assigneeName}`:'제작 담당을 정하면 그 사람의 목록에 올라가요.')});
 }
 function swMembersOptions(selected,optional=false,selectedName='예전에 정한 담당'){

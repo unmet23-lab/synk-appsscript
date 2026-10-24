@@ -62,23 +62,7 @@ test('calendar weeks start on Monday even on Sundays and across month or year bo
   }
 });
 
-test('home to historical analysis and back resets only the home period while preserving scope and analysis filters',async()=>{
-  const f=fixture({scope:'team'});await f.run('loadReport()');await f.click('report-view',{view:'analysis'});
-  const firstAnalysis=new URL(f.requests.filter(url=>url.startsWith('/api/analytics')).at(-1),'http://localhost').searchParams;
-  assert.equal(firstAnalysis.get('start'),'2026-09-28');assert.equal(firstAnalysis.get('end'),'2026-09-30');assert.equal(firstAnalysis.has('growth'),false);assert.equal(f.state.range,'custom');
-  Object.assign(f.state,{start:'2026-04-02',end:'2026-04-08',range:'custom',ownerId:'owner-a',platform:'youtube',channel:'channel-a'});
-  await f.run('loadReport()');
-  const detailUrl=new URL(f.requests.filter(url=>url.startsWith('/api/analytics')).at(-1),'http://localhost');
-  assert.equal(detailUrl.searchParams.has('growth'),false);assert.equal(detailUrl.searchParams.get('start'),'2026-04-02');assert.equal(detailUrl.searchParams.get('end'),'2026-04-08');
-  assert.equal(detailUrl.searchParams.get('ownerId'),'owner-a');assert.equal(detailUrl.searchParams.get('platform'),'youtube');assert.equal(detailUrl.searchParams.get('channel'),'channel-a');assert.equal(f.state.range,'custom');
-  assert.ok(f.requests.some(url=>url.startsWith('/api/team-overview')),'comparison is loaded when detail analysis needs it');
-  const before=f.requests.length;await f.click('report-view',{view:'overview'});
-  assert.equal(f.requests.length,before+1,'returning home only loads its summary');
-  const homeUrl=new URL(f.requests.at(-1),'http://localhost');assert.equal(homeUrl.searchParams.get('start'),'2026-09-28');assert.equal(homeUrl.searchParams.get('end'),'2026-09-30');assert.equal(homeUrl.searchParams.get('growth'),'1');assert.equal(f.state.range,'custom');
-  assert.equal(homeUrl.searchParams.get('scope'),'team');assert.equal(homeUrl.searchParams.get('teamId'),'team-a');for(const key of ['ownerId','platform','channel'])assert.equal(homeUrl.searchParams.has(key),false);
-  assert.equal(f.state.scope,'team');assert.equal(f.state.teamId,'team-a');assert.equal(f.calls.hype,0);
-});
-
+// 10-24 간편판: 체험 주소 밖에서 성장 홈 ↔ 성과 분석을 오가는 길이 없어져(옛 주소는 SNS 성과로) 「home to historical analysis and back …」 시험을 뺐다.
 test('metric controls render the selected growth statistic without refetching or changing scope',async()=>{
   for(const demo of [false,true]){
     const f=fixture({demo});await f.run('loadReport()');const count=f.requests.length,oldRenders=f.calls.renders;
@@ -112,7 +96,8 @@ test('history requests separate the current endpoint and history selection from 
 });
 
 test('history navigation and return to weekly home preserve scope and exclude hidden team and hype requests',async()=>{
-  for(const scope of ['mine','team','all'])for(const demo of [false,true]){
+  // 10-24 간편판: 성과 분석·전체 추이 화면은 체험 주소(?demo=1)에만 남았다 — 그 밖의 주소는 SNS 성과로 간다(workspace-navigation 시험).
+  for(const scope of ['mine','team','all'])for(const demo of [true]){
     const f=fixture({scope,demo});Object.assign(f.state,{tab:'analysis',start:'2022-02-01',end:'2022-02-07',ownerId:'selected-owner',historyRange:'year',historyGroup:'month'});
     await f.click('report-view',{view:'history'});
     assert.equal(f.state.tab,'history');assert.equal(f.state.scope,scope);assert.equal(f.state.teamId,scope==='team'?'team-a':'');assert.equal(f.requests.length,1);assert.equal(f.calls.hype,0);

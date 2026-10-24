@@ -86,7 +86,7 @@ test('source link validation permits exact existing views and rejects arbitrary 
 });
 
 test('source navigation preserves package, client and message identifiers and never reruns a job',async()=>{
-  const calls=[],f=fixture(async(...args)=>{calls.push(args);return report();});for(const href of ['/?tab=workroom&section=clients&project=owned-project&followUp=1','/?tab=workroom&section=tools&tool=publication&publicationAction=link&packageId=owned-package','/?tab=messenger&panel=tasks&channelId=channel-1&messageId=123','/#view=content&section=plan&draftId=owned-plan','/?tab=workroom&section=tools&tool=weekly','/?tab=workroom&section=clients','/?tab=home']){f.context.href=href;await f.run('ahOpenSource(href)');}assert.deepEqual(f.links.map(link=>link[0]),['client','publication','messenger','content','workspace','workspace','workspace']);assert.equal(f.links[2][1].messageId,'123');assert.equal(f.links[4][1],'workroom');assert.equal(f.links[5][2],'clients');assert.equal(f.links[6][1],'home');assert.deepEqual(calls,[]);
+  const calls=[],f=fixture(async(...args)=>{calls.push(args);return report();});for(const href of ['/?tab=workroom&section=clients&project=owned-project&followUp=1','/?tab=workroom&section=tools&tool=publication&publicationAction=link&packageId=owned-package','/?tab=messenger&panel=tasks&channelId=channel-1&messageId=123','/#view=content&section=plan&draftId=owned-plan','/?tab=workroom&section=tools&tool=weekly','/?tab=workroom&section=clients','/?tab=home']){f.context.href=href;await f.run('ahOpenSource(href)');}assert.deepEqual(f.links.map(link=>link[0]),['client','workspace','messenger','content','workspace','workspace','workspace']);assert.deepEqual(f.links[1].slice(1),['social','results'],'게시 준비·성과는 SNS 성과로(10-24)');assert.deepEqual(f.links[4].slice(1),['social','results'],'주간 정리도 SNS 성과로');assert.equal(f.links[2][1].messageId,'123');assert.equal(f.links[5][2],'clients');assert.equal(f.links[6][1],'home');assert.deepEqual(calls,[]);
 });
 
 test('manual refresh preserves the main scroll and focused source across both loading and completion renders',async()=>{
@@ -223,13 +223,13 @@ test('missing, invalid or empty stopped-collector fields keep the warning withou
   }
 });
 
-test('the stopped-collector link asks 게시 준비·성과 for a posted episode while other source links leave the publication view as it was',async()=>{
+test('publication and weekly source links open SNS results without touching the removed publication view',async()=>{
   const f=fixture(),calls=[];f.context.pf={view:'prepare'};f.context.pfIdentity=()=>{calls.push('identity');f.context.pf.view='prepare';};
   const click=dataset=>f.event('click',{target:{closest:selector=>selector==='[data-ah-source]'?{dataset}:null},preventDefault(){},button:0});
-  await click({ahSource:'/?tab=workroom&section=tools&tool=publication',ahView:'performance'});assert.equal(f.run('makerTools.view'),'publication');assert.equal(f.context.pf.view,'performance');assert.deepEqual(calls,['identity']);assert.deepEqual(f.links.at(-1),['workspace','workroom','tools']);
-  f.context.pf.view='prepare';await click({ahSource:'/?tab=workroom&section=tools&tool=publication'});assert.equal(f.context.pf.view,'prepare');
-  await click({ahSource:'/?tab=workroom&section=tools&tool=weekly',ahView:'performance'});assert.equal(f.run('makerTools.view'),'weekly');assert.equal(f.context.pf.view,'prepare');assert.deepEqual(calls,['identity']);
-  delete f.context.pf;assert.equal(await f.run('ahOpenSource("/?tab=workroom&section=tools&tool=publication","performance")'),true);assert.equal(f.run('makerTools.view'),'publication');
+  await click({ahSource:'/?tab=workroom&section=tools&tool=publication',ahView:'performance'});assert.equal(f.run('makerTools.view'),'automation');assert.equal(f.context.pf.view,'prepare');assert.deepEqual(calls,[]);assert.deepEqual(f.links.at(-1),['workspace','social','results']);
+  await click({ahSource:'/?tab=workroom&section=tools&tool=weekly',ahView:'performance'});assert.equal(f.run('makerTools.view'),'automation');assert.deepEqual(f.links.at(-1),['workspace','social','results']);
+  delete f.context.pf;assert.equal(await f.run('ahOpenSource("/?tab=workroom&section=tools&tool=publication","performance")'),true);assert.deepEqual(f.links.at(-1),['workspace','social','results']);
+  assert.equal(f.run('ahDest("/?tab=workroom&section=tools&tool=weekly")'),'SNS 성과');
 });
 
 test('a row click opens its facts below, keeps them open across refreshes and ignores unknown rows',async()=>{

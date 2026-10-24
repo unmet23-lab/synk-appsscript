@@ -64,6 +64,7 @@ import { createSocialPublishingProvider } from './social-publishing-provider.mjs
 import { createSocialPublishMedia } from './social-publish-media.mjs';
 import { createSocialMarketingService } from './social-marketing.mjs';
 import { createSocialRoutes } from './social-routes.mjs';
+import { createSocialSimple } from './social-simple.mjs';
 import { createSocialSourceDistribution } from './social-source-distribution.mjs';
 import { createSocialInboxProvider } from './social-inbox-provider.mjs';
 import { createSocialInboxRecovery } from './social-inbox-recovery.mjs';
@@ -404,7 +405,10 @@ export function createCompanyApp(options={}) {
     return socialExtras;
   }
   const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
-  const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
+  const socialSimple=createSocialSimple({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,clock});
+  // SNS·마케팅 간편판(10-24) — 세 장이 서버에서 더 읽는 사실: 보이는 채널·수집 상태·게시 성과 관측(채널 비교 셈 없이 — 무거운 report는 쓰지 않는다).
+  const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
+  const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
@@ -1817,7 +1821,7 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/marin-home.js':['public/marin-home.js','text/javascript; charset=utf-8'],'/marin-home.css':['public/marin-home.css','text/css; charset=utf-8'],'/marin.webp':['public/marin.webp','image/webp']});
     Object.assign(files,{'/marin-work.js':['public/marin-work.js','text/javascript; charset=utf-8'],'/marin-work.css':['public/marin-work.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workroom.js':['public/workroom.js','text/javascript; charset=utf-8'],'/workroom.css':['public/workroom.css','text/css; charset=utf-8']});
-    Object.assign(files,{'/social-workspace.js':['public/social-workspace.js','text/javascript; charset=utf-8'],'/social-workspace.css':['public/social-workspace.css','text/css; charset=utf-8']});
+    Object.assign(files,{'/social-workspace.js':['public/social-workspace.js','text/javascript; charset=utf-8'],'/social-workspace.css':['public/social-workspace.css','text/css; charset=utf-8'],'/social-simple.js':['public/social-simple.js','text/javascript; charset=utf-8'],'/social-simple.css':['public/social-simple.css','text/css; charset=utf-8']});
     Object.assign(files,{'/social-tracking.js':['public/social-tracking.js','text/javascript; charset=utf-8'],'/social-review':['public/social-review.html','text/html; charset=utf-8'],'/social-review.js':['public/social-review.js','text/javascript; charset=utf-8'],'/social-review.css':['public/social-review.css','text/css; charset=utf-8']});
     Object.assign(files,{'/publication-flow.js':['public/publication-flow.js','text/javascript; charset=utf-8'],'/publication-flow.css':['public/publication-flow.css','text/css; charset=utf-8']});
     files['/publication-learning-plan.js']=['public/publication-learning-plan.js','text/javascript; charset=utf-8'];

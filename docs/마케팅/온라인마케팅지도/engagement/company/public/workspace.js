@@ -13,15 +13,14 @@ function workspaceContextMenu(){
   let title={home:'홈',workroom:'내 작업실',handbook:'회사 안내',marketing:'마케팅',messenger:'메신저',members:'팀·크루',settings:'설정'}[view]||'워크스페이스',items='',extra='';
   if(view==='workroom'){
     items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)+(id==='tools'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerToolsSubnav==='function'?makerToolsSubnav():'')).join('');
-    extra=link('tasks','내 할 일','calendar','marin-workroom-panel','data-panel="tasks"')+link('saved','저장한 메시지','bookmark','marin-workroom-panel','data-panel="saved"')+link('profile','내 업무 카드','users','marin-profile')+link('mine','내 성과','chart');
+    extra=link('tasks','내 할 일','calendar','marin-workroom-panel','data-panel="tasks"')+link('saved','저장한 메시지','bookmark','marin-workroom-panel','data-panel="saved"')+link('profile','내 업무 카드','users','marin-profile')+link('results','SNS 성과','chart','social-view','data-view="results"');
   }else if(view==='handbook'){
     const categories=typeof cg!=='undefined'?cg.data?.categories||[]:[];
     items=[{id:'all',label:'한눈에'},...categories].map(row=>link(row.id,row.label,'info','company-guide-category',`data-id="${escape(row.id)}"`,typeof cg!=='undefined'&&!cg.selected&&cg.category===row.id)).join('');
   }else if(view==='social'){
-    const selected=state.tab==='overview'&&state.marketingView==='channels'?'channels':['overview','analysis','history'].includes(state.tab)?marketingScope():state.tab;
     title='SNS·마케팅';
-    items=[['overview','운영 현황','grid'],['compose','게시물 작성','plus'],['calendar','게시 달력','calendar'],['queue','발행 대기열','clock'],['bulk','대량 편성','copy'],['accounts','계정 관리','users'],['results','캠페인·성과','chart'],['inbox','댓글·문의','chat'],['settings','연결·자동화','settings']].map(([id,label,glyph])=>link(id,label,glyph,'social-view',`data-view="${id}"`,state.tab==='social'&&typeof socialWorkspaceSection==='function'&&socialWorkspaceSection()===id)).join('');
-    extra=workspaceMarketingTabs.map(([id,label,glyph])=>link(id,label,glyph,'marketing-section','',state.tab!=='social'&&selected===id)).join('');
+    const turn=typeof snsSimple!=='undefined'&&snsSimple.data&&typeof ssMyTurn==='function'?ssMyTurn(snsSimple.data):0;
+    items=[['today','오늘','clock'],['results','성과','chart'],['accounts','계정','users']].map(([id,label,glyph])=>link(id,label,glyph,'social-view',`data-view="${id}"`,state.tab==='social'&&typeof socialWorkspaceSection==='function'&&socialWorkspaceSection()===id).replace('</span></button>',`</span>${id==='today'&&turn?`<b class="nav-count social-turn" aria-label="내 차례 ${turn}">${turn}</b>`:''}</button>`)).join('');
 
   }
   return `<div class="context-menu-scroll"><nav class="nav-list" aria-label="${title} 세부 메뉴">${items}</nav>${extra?`<p class="context-section-label">${view==='social'?'상세 분석·기획':'개인 업무'}</p><nav class="nav-list" aria-label="${title} 바로가기">${extra}</nav>`:''}</div>`;
@@ -89,7 +88,11 @@ function normalizeMarketingScope(){
   if(before!==`${state.scope}:${state.teamId||''}`)invalidateMarketingReport();
   return scope;
 }
+// 10-24 간편판: 마케팅 현황(내·팀·전체)·성과 분석·전체 추이·채널·수집 화면은 SNS·마케팅 세 장으로 옮겼다 — 옛 주소·단추는 그 자리로 보낸다.
+// 콘텐츠 기획은 메뉴에서만 뺐다. 작업실 카드·제작 상황판·공유 카드가 기획 하나를 바로 여는 길은 그대로 둔다.
+const WORKSPACE_MARKETING_MOVED={marketing:'results',mine:'results',team:'results',all:'results',overview:'results',analysis:'results',history:'results',summary:'results',channels:'accounts',collection:'accounts'};
 function selectWorkspaceView(view,section='',teamId=undefined,draftId=undefined){
+  if(WORKSPACE_MARKETING_MOVED[view]&&!(typeof isDemoMode==='function'&&isDemoMode()))return selectWorkspaceView('social',section==='channels'?'accounts':WORKSPACE_MARKETING_MOVED[view]);
   if(isMarketingWorkspace()){
     state.lastMarketingTab=state.tab;
     if(['analysis','history'].includes(state.tab)||state.tab==='overview'&&state.marketingView!=='channels'){

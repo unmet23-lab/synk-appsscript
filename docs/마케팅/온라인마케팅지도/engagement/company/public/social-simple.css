@@ -1,0 +1,238 @@
+/* SNS·마케팅 간편판 — 오늘 · 성과 · 계정 세 장 (2026-10-24 유호님 승인 시안을 옮김)
+   틀은 13판 머리 한 벌(검은 포스터 + 1px 계기판 + 구역)이고, 판 안 글자는 PULSE 글자 2판 단계(680·650·600·550·450, 한글 13px 이상).
+   선택자는 :root .synk-workspace .sw-simple 로 시작해 signal.css(뒤에 읽힘)의 공통 단추 규칙보다 앞선다.
+   마크업에 style 속성을 쓰지 않는다(CSP style-src 'self'). 글꼴 SNS Latin은 social-workspace.css가 정의한다. */
+
+:root .synk-workspace .sw-simple{
+  --ss-paper:#fff;--ss-paper-2:#F7F7F6;--ss-surface:#F5F5F4;--ss-surface-2:#EDEDEB;
+  --ss-ink:#08090C;--ss-ink-2:rgba(8,9,12,.76);--ss-ink-3:rgba(8,9,12,.58);--ss-ink-4:rgba(8,9,12,.42);--ss-ink-5:rgba(8,9,12,.2);
+  --ss-line:rgba(8,9,12,.08);--ss-line-2:rgba(8,9,12,.14);
+  --ss-face:#17181C;--ss-on-face:#C5D6F5;--ss-on-face-2:rgba(197,214,245,.72);
+  --ss-lapis:#3D6BC9;--ss-lapis-deep:#24448C;--ss-lapis-wash:#EEF3FC;
+  --ss-coral:#F96859;--ss-coral-ink:#B23A2D;--ss-coral-wash:#FFF0EE;
+  --ss-butter:#F5C445;--ss-butter-ink:#7A5600;--ss-butter-wash:#FFF6DB;
+  --ss-green:#2E9E66;--ss-green-ink:#1F7A4D;--ss-green-wash:#EAF6EF;
+  --ss-sans:'SNS Latin',SUIT,'SUIT Variable','Inter Tight',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --ss-latin:'SNS Latin','Inter Tight',SUIT,system-ui,sans-serif;
+  --ss-mono:'Signal Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --w-display:680;--w-title:650;--w-strong:600;--w-label:550;--w-body:450;
+  container:ss/inline-size;max-width:1020px;min-width:0;padding-bottom:56px;color:var(--ss-ink);font:var(--w-body) 15px/1.55 var(--ss-sans);
+  -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+:root .synk-workspace .sw-simple *,:root .synk-workspace .sw-simple *::before,:root .synk-workspace .sw-simple *::after{box-sizing:border-box}
+:root .synk-workspace .sw-simple :is(h1,h2,h3,p){margin:0}
+:root .synk-workspace .sw-simple button{font:inherit;color:inherit;cursor:pointer}
+:root .synk-workspace .sw-simple a{color:inherit}
+:root .synk-workspace .sw-simple :is(button,a,summary):focus-visible{outline:2px solid var(--ss-lapis);outline-offset:2px;border-radius:8px}
+:root .synk-workspace .sw-simple .ss-num{font-family:var(--ss-latin);font-variant-numeric:tabular-nums}
+
+/* ── 머리 한 벌 ── */
+:root .synk-workspace .sw-simple .ss-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,380px);gap:20px 36px;align-items:stretch;margin-bottom:22px}
+:root .synk-workspace .sw-simple .ss-head-copy{display:flex;flex-direction:column;justify-content:flex-end;min-width:0}
+:root .synk-workspace .sw-simple .ss-eyebrow{display:flex;align-items:center;gap:10px;font:500 11px/1 var(--ss-mono);letter-spacing:.14em;color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-eyebrow::after{content:"";width:28px;height:1px;background:var(--ss-ink-5)}
+:root .synk-workspace .sw-simple .ss-head h1{margin:12px 0 0;font-family:var(--ss-sans);font-size:clamp(32px,3.3vw,44px);line-height:1.1;font-weight:var(--w-display);letter-spacing:-.042em;color:var(--ss-ink);text-wrap:balance}
+:root .synk-workspace .sw-simple .ss-lede{margin:10px 0 0;font-size:15px;color:var(--ss-ink-3);text-wrap:pretty}
+:root .synk-workspace .sw-simple .ss-poster{position:relative;isolation:isolate;overflow:hidden;min-height:196px;border-radius:24px;color:#fff;background:radial-gradient(120% 90% at 16% -14%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 46%,rgba(0,0,0,.34)),var(--ss-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 26px 48px -34px rgba(8,9,12,.9)}
+:root .synk-workspace .sw-simple .ss-poster-label{position:absolute;left:22px;top:20px;z-index:3;font:500 11px/1 var(--ss-mono);letter-spacing:.1em;color:var(--ss-on-face-2)}
+:root .synk-workspace .sw-simple .ss-poster-stats{position:absolute;left:22px;top:44px;z-index:3;display:flex;gap:20px;margin:0;max-width:calc(100% - 200px)}
+:root .synk-workspace .sw-simple .ss-poster-stats div{display:flex;flex-direction:column;gap:4px}
+:root .synk-workspace .sw-simple .ss-poster-stats b{font:650 26px/1 var(--ss-latin);letter-spacing:-.02em;color:#fff}
+:root .synk-workspace .sw-simple .ss-poster-stats span{font-size:13px;line-height:1.35;font-weight:var(--w-label);color:var(--ss-on-face-2);overflow-wrap:anywhere}
+:root .synk-workspace .sw-simple .ss-poster-word{position:absolute;left:16px;bottom:-.04em;z-index:2;font:900 96px/.9 var(--ss-sans);letter-spacing:-.065em;color:var(--ss-on-face);white-space:nowrap;pointer-events:none;user-select:none}
+:root .synk-workspace .sw-simple .ss-poster-art{position:absolute;right:18px;bottom:12px;z-index:3;width:156px;height:148px;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);filter:drop-shadow(0 18px 18px rgba(0,0,0,.5)) drop-shadow(0 4px 6px rgba(0,0,0,.35));pointer-events:none}
+
+/* ── 계기판 ── */
+:root .synk-workspace .sw-simple .ss-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 8px;border-block:1px solid var(--ss-line-2)}
+:root .synk-workspace .sw-simple .ss-meter>*{display:flex;flex-direction:column;justify-content:flex-end;gap:8px;min-width:0;padding:13px 16px 15px;border-left:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-meter>:first-child{border-left:0;padding-left:2px}
+:root .synk-workspace .sw-simple .ss-meter span{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:var(--w-label);color:var(--ss-ink-3);white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-meter em{font-style:normal}
+:root .synk-workspace .sw-simple .ss-meter .ss-l-short{display:none}
+:root .synk-workspace .sw-simple .ss-meter strong{font:650 30px/1 var(--ss-latin);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-meter strong small{font:var(--w-label) 14px/1 var(--ss-sans);color:var(--ss-ink-3);margin-left:3px;letter-spacing:0}
+:root .synk-workspace .sw-simple .ss-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ss-ink-5);flex:none}
+:root .synk-workspace .sw-simple .ss-dot.coral{background:var(--ss-coral)}
+:root .synk-workspace .sw-simple .ss-dot.butter{background:var(--ss-butter)}
+:root .synk-workspace .sw-simple .ss-dot.green{background:var(--ss-green)}
+
+/* ── 구역 ── */
+:root .synk-workspace .sw-simple .ss-block{margin-top:34px}
+:root .synk-workspace .sw-simple .ss-block-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding-bottom:11px;border-bottom:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-block-head h2{margin:0;font-family:var(--ss-sans);font-size:18px;font-weight:var(--w-title);letter-spacing:-.02em;color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-count{font:500 12px/1 var(--ss-mono);color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-hint{font-size:13.5px;color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-block-tools{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+:root .synk-workspace .sw-simple .ss-seg{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--ss-surface)}
+:root .synk-workspace .sw-simple .ss-seg button{border:0;background:none;height:30px;min-height:0;padding:0 12px;border-radius:999px;font-size:13.5px;font-weight:var(--w-label);color:var(--ss-ink-3);box-shadow:none}
+:root .synk-workspace .sw-simple .ss-seg button[aria-pressed=true]{background:var(--ss-ink);color:var(--ss-paper)}
+:root .synk-workspace .sw-simple .ss-btn{display:inline-flex;align-items:center;gap:8px;height:42px;min-height:0;padding:0 18px;border-radius:999px;border:0;background:var(--ss-paper);box-shadow:inset 0 0 0 1px var(--ss-line-2);font-size:14.5px;font-weight:var(--w-strong);color:var(--ss-ink);text-decoration:none;white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-btn:hover{box-shadow:inset 0 0 0 1px var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-link{border:0;background:none;padding:0;min-height:0;font-size:13.5px;font-weight:var(--w-strong);color:var(--ss-lapis-deep);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;box-shadow:none}
+
+/* 내 차례 — 첫 카드만 어두운 면 */
+:root .synk-workspace .sw-simple .ss-now{position:relative;isolation:isolate;overflow:hidden;margin-top:14px;padding:20px 22px;border-radius:22px;color:#fff;background:radial-gradient(110% 120% at 0% 0%,rgba(255,255,255,.12),transparent 55%),var(--ss-face)}
+:root .synk-workspace .sw-simple .ss-now-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:var(--w-label);color:var(--ss-on-face-2)}
+:root .synk-workspace .sw-simple .ss-mono-tag{font:500 11px/1 var(--ss-mono);letter-spacing:.12em;color:var(--ss-on-face)}
+:root .synk-workspace .sw-simple .ss-now h3{margin:10px 0 0;font-family:var(--ss-sans);font-size:21px;line-height:1.35;font-weight:var(--w-title);letter-spacing:-.025em;color:#fff;text-wrap:balance}
+:root .synk-workspace .sw-simple .ss-now p{margin:6px 0 0;font-size:14px;color:var(--ss-on-face-2)}
+:root .synk-workspace .sw-simple .ss-now-items{display:grid;gap:10px;margin-top:16px}
+:root .synk-workspace .sw-simple .ss-now-item{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:center}
+:root .synk-workspace .sw-simple .ss-now-item .ss-thumb{width:34px;height:60px;border-radius:7px;background:#2a2b31}
+:root .synk-workspace .sw-simple .ss-now-item b{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.35}
+:root .synk-workspace .sw-simple .ss-now-item .ss-plates{margin-top:5px}
+:root .synk-workspace .sw-simple .ss-now .ss-pf{background:rgba(255,255,255,.12);color:#fff}
+:root .synk-workspace .sw-simple .ss-now .ss-handle{color:var(--ss-on-face-2)}
+:root .synk-workspace .sw-simple .ss-now .ss-plate.is-when{color:var(--ss-on-face)}
+:root .synk-workspace .sw-simple .ss-task{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 20px;align-items:center;margin-top:10px;padding:16px 18px;border-radius:18px;background:var(--ss-surface)}
+:root .synk-workspace .sw-simple .ss-task-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-task b{display:block;margin-top:5px;font-size:16px;font-weight:var(--w-strong);letter-spacing:-.015em}
+:root .synk-workspace .sw-simple .ss-task p{margin:4px 0 0;font-size:13.5px;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-task.is-first{margin-top:22px}
+:root .synk-workspace .sw-simple .ss-task.is-problem{background:var(--ss-coral-wash)}
+:root .synk-workspace .sw-simple .ss-task.is-problem .ss-task-label{color:var(--ss-coral-ink)}
+:root .synk-workspace .sw-simple .ss-task.is-quiet{margin-top:14px}
+:root .synk-workspace .sw-simple .ss-task-actions{display:flex;flex-wrap:wrap;gap:8px}
+:root .synk-workspace .sw-simple .ss-calm{margin-top:14px;padding:14px 16px;border-radius:14px;background:var(--ss-paper-2);font-size:14px;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-note{margin:10px 0 0;font-size:13.5px;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-alert{margin:0 0 14px;padding:12px 16px;border-radius:14px;background:var(--ss-coral-wash);color:var(--ss-coral-ink);font-size:14px}
+:root .synk-workspace .sw-simple .ss-alert .ss-link{margin-left:8px}
+:root .synk-workspace .sw-simple .ss-stale{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--ss-butter-wash);color:var(--ss-butter-ink);font-size:13.5px}
+:root .synk-workspace .sw-simple .ss-country-list{padding:0 14px 6px}
+
+/* 줄 */
+:root .synk-workspace .sw-simple .ss-rows{display:grid}
+:root .synk-workspace .sw-simple .ss-row{display:grid;grid-template-columns:62px 38px minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:13px 2px;border-bottom:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-row:last-child{border-bottom:0}
+:root .synk-workspace .sw-simple .ss-time{font:600 15px/1.2 var(--ss-latin);font-variant-numeric:tabular-nums}
+:root .synk-workspace .sw-simple .ss-time small{display:block;margin-top:4px;font:var(--w-label) 13px/1.1 var(--ss-sans);color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-thumb{display:block;width:38px;height:67px;border-radius:8px;object-fit:cover;background:var(--ss-surface-2)}
+:root .synk-workspace .sw-simple .ss-row-body{min-width:0}
+:root .synk-workspace .sw-simple .ss-row-title{font-size:15px;font-weight:var(--w-strong);line-height:1.4;letter-spacing:-.012em}
+:root .synk-workspace .sw-simple .ss-row-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:5px}
+:root .synk-workspace .sw-simple .ss-day{display:flex;align-items:center;gap:10px;margin-top:16px;padding:0 2px 6px;font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-day::after{content:"";flex:1;height:1px;background:var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-empty-day{padding:12px 14px;border-radius:12px;background:repeating-linear-gradient(-45deg,var(--ss-paper-2) 0 8px,var(--ss-surface) 8px 16px);font-size:13.5px;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-plates{display:flex;flex-wrap:wrap;gap:4px 12px}
+:root .synk-workspace .sw-simple .ss-plate{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+:root .synk-workspace .sw-simple .ss-pf{display:inline-grid;place-items:center;min-width:24px;height:18px;padding:0 4px;border-radius:5px;background:var(--ss-surface-2);font:500 10.5px/1 var(--ss-mono);letter-spacing:.04em;color:var(--ss-ink-2)}
+:root .synk-workspace .sw-simple .ss-handle{color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-st{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:var(--w-label);white-space:nowrap;background:var(--ss-surface);color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-st.butter{background:var(--ss-butter-wash);color:var(--ss-butter-ink)}
+:root .synk-workspace .sw-simple .ss-st.butter .ss-dot{background:var(--ss-butter)}
+:root .synk-workspace .sw-simple .ss-st.green{background:var(--ss-green-wash);color:var(--ss-green-ink)}
+:root .synk-workspace .sw-simple .ss-st.green .ss-dot{background:var(--ss-green)}
+:root .synk-workspace .sw-simple .ss-st.coral{background:var(--ss-coral-wash);color:var(--ss-coral-ink)}
+:root .synk-workspace .sw-simple .ss-st.coral .ss-dot{background:var(--ss-coral)}
+:root .synk-workspace .sw-simple .ss-st:empty{display:none}
+:root .synk-workspace .sw-simple details.ss-fold{margin-top:10px;border-radius:14px;background:var(--ss-paper-2)}
+:root .synk-workspace .sw-simple details.ss-fold>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;padding:12px 14px;font-size:14px;font-weight:var(--w-label);color:var(--ss-ink-2);cursor:pointer}
+:root .synk-workspace .sw-simple details.ss-fold>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-simple details.ss-fold>summary .ss-hint{font-weight:var(--w-body)}
+:root .synk-workspace .sw-simple details.ss-fold>summary .ss-what{white-space:nowrap}
+:root .synk-workspace .sw-simple details.ss-fold>summary::after{content:"";width:7px;height:7px;margin-left:auto;border-right:1.6px solid var(--ss-ink-4);border-bottom:1.6px solid var(--ss-ink-4);transform:rotate(45deg) translateY(-2px);flex:none}
+:root .synk-workspace .sw-simple details.ss-fold[open]>summary::after{transform:rotate(225deg)}
+:root .synk-workspace .sw-simple details.ss-fold .ss-rows{padding:0 14px 6px}
+:root .synk-workspace .sw-simple .ss-health{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:30px;padding-top:14px;border-top:1px solid var(--ss-line);font-size:13px;color:var(--ss-ink-3)}
+
+/* 성과 */
+:root .synk-workspace .sw-simple .ss-res{display:grid;grid-template-columns:38px minmax(0,1fr) minmax(300px,380px);gap:4px 16px;align-items:start;padding:14px 2px;border-bottom:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-res.is-best{margin:0 -12px;padding-inline:14px;border-radius:16px;background:var(--ss-lapis-wash);border-bottom-color:transparent}
+:root .synk-workspace .sw-simple .ss-res-title{font-size:15px;font-weight:var(--w-strong);line-height:1.4;letter-spacing:-.012em}
+:root .synk-workspace .sw-simple .ss-res-meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:5px;font-size:13px;color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-brand{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--ss-surface);font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-2)}
+:root .synk-workspace .sw-simple .ss-pl-list{display:grid;gap:6px}
+:root .synk-workspace .sw-simple .ss-pl{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;gap:8px;align-items:center;min-height:28px;font-size:13px}
+:root .synk-workspace .sw-simple .ss-pl .ss-handle{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-v{font:600 14px/1 var(--ss-latin);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-v small{display:block;margin-top:3px;font:var(--w-label) 13px/1 var(--ss-sans);color:var(--ss-ink-4);text-align:right}
+:root .synk-workspace .sw-simple .ss-x{display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:24px;padding:0 8px;border-radius:999px;font:600 13px/1 var(--ss-latin);font-variant-numeric:tabular-nums;white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-x.up{background:var(--ss-green-wash);color:var(--ss-green-ink)}
+:root .synk-workspace .sw-simple .ss-x.mid{background:var(--ss-surface);color:var(--ss-ink-2)}
+:root .synk-workspace .sw-simple .ss-x.none{font:var(--w-label) 13px/1.2 var(--ss-sans);color:var(--ss-ink-4);background:none;padding:0}
+:root .synk-workspace .sw-simple .ss-more{grid-column:2 / -1;justify-self:start;margin-top:6px}
+:root .synk-workspace .sw-simple .ss-detail{grid-column:2 / -1;margin-top:8px;overflow-x:auto}
+:root .synk-workspace .sw-simple .ss-scroll-hint{display:none;margin:0 0 6px;font-size:13px;color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-detail.is-wide .ss-scroll-hint{display:block}
+:root .synk-workspace .sw-simple .ss-detail table{width:100%;min-width:440px;border-collapse:collapse;font-size:13px}
+:root .synk-workspace .sw-simple .ss-detail :is(th,td){padding:7px 8px;border-bottom:1px solid var(--ss-line);text-align:right;white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-detail :is(th:first-child,td:first-child,th:nth-child(2)){text-align:left}
+:root .synk-workspace .sw-simple .ss-detail th{font-weight:var(--w-label);color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-detail td{font-family:var(--ss-latin);font-variant-numeric:tabular-nums}
+:root .synk-workspace .sw-simple .ss-detail td.is-dash{color:var(--ss-ink-5)}
+:root .synk-workspace .sw-simple .ss-detail td.is-metric{text-align:left;font-family:var(--ss-sans);color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-detail .ss-pt{margin-left:5px;font:var(--w-label) 13px/1 var(--ss-sans);color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-detail a{color:var(--ss-lapis-deep);text-decoration:none;margin-left:4px}
+:root .synk-workspace .sw-simple .ss-foot{margin-top:18px;font-size:13px;line-height:1.6;color:var(--ss-ink-4)}
+
+/* 계정 */
+:root .synk-workspace .sw-simple :is(.ss-acc-head,.ss-acc){display:grid;grid-template-columns:minmax(0,1.6fr) 118px 96px minmax(0,1fr) 64px;gap:8px 14px;align-items:center}
+:root .synk-workspace .sw-simple .ss-acc-head{padding:10px 2px 8px;font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-4);border-bottom:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-acc-head .is-r{text-align:right}
+:root .synk-workspace .sw-simple .ss-acc{padding:11px 2px;border-bottom:1px solid var(--ss-line);font-size:13.5px}
+:root .synk-workspace .sw-simple .ss-acc-name{display:flex;align-items:center;gap:9px;min-width:0}
+:root .synk-workspace .sw-simple .ss-acc-name b{font-weight:var(--w-strong);white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-acc-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ss-ink-4);font-size:13px}
+:root .synk-workspace .sw-simple .ss-acc-n{font-family:var(--ss-latin);font-variant-numeric:tabular-nums;color:var(--ss-ink-2);white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-acc-n.is-zero{color:var(--ss-ink-5)}
+:root .synk-workspace .sw-simple .ss-acc-last{font-family:var(--ss-latin);font-variant-numeric:tabular-nums;color:var(--ss-ink-3);text-align:right}
+:root .synk-workspace .sw-simple .ss-acc-fix{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;color:var(--ss-coral-ink)}
+
+/* 맥락 메뉴 「오늘」의 내 차례 배지(workspace.js) — 시안의 코랄 동그라미 */
+:root .synk-workspace .nav-item .nav-count.social-turn{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-left:auto;padding:0 7px;border-radius:999px;background:#F96859;color:#fff;font:700 12px/1 'SNS Latin','Inter Tight',system-ui,sans-serif}
+
+/* 폰 메뉴(맥락 메뉴가 서랍이 되는 폭) */
+:root .synk-workspace .sw-simple .ss-tabs{display:none}
+:root .synk-workspace .sw-simple .ss-badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--ss-coral);color:#fff;font:700 11px/18px var(--ss-latin);text-align:center}
+
+/* 불러오는 중 · 못 불러옴 */
+:root .synk-workspace .sw-simple .ss-empty{margin-top:24px;padding:28px 24px;border-radius:18px;background:var(--ss-paper-2);color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-empty h2{font-family:var(--ss-sans);font-size:18px;font-weight:var(--w-title);color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-empty p{margin-top:6px;font-size:14px}
+:root .synk-workspace .sw-simple .ss-empty .ss-btn{margin-top:14px}
+
+/* 실물은 레일·맥락 메뉴 옆에 들어가므로 화면 폭이 아니라 내용 폭으로 가른다(1440 → 약 1020, 1024 → 약 680, 폰 → 약 350). */
+@container ss (max-width:760px){
+  :root .synk-workspace .sw-simple .ss-head{grid-template-columns:minmax(0,1fr) minmax(250px,320px)}
+  :root .synk-workspace .sw-simple .ss-poster-word{font-size:80px}
+  :root .synk-workspace .sw-simple .ss-res{grid-template-columns:38px minmax(0,1fr)}
+  :root .synk-workspace .sw-simple .ss-res .ss-pl-list{grid-column:2 / -1}
+  :root .synk-workspace .sw-simple .ss-poster-art{width:124px;height:118px}
+  :root .synk-workspace .sw-simple .ss-poster-stats{max-width:calc(100% - 160px)}
+}
+@media (max-width:700px){
+  :root .synk-workspace .sw-simple .ss-tabs{display:flex;gap:2px;padding:3px;margin:0 0 18px;border-radius:999px;background:var(--ss-surface);width:max-content;max-width:100%}
+  :root .synk-workspace .sw-simple .ss-tabs button{border:0;background:none;height:36px;min-height:0;padding:0 16px;border-radius:999px;font-size:14.5px;font-weight:var(--w-label);color:var(--ss-ink-3);display:inline-flex;align-items:center;gap:6px;box-shadow:none}
+  :root .synk-workspace .sw-simple .ss-tabs button[aria-current=page]{background:var(--ss-ink);color:#fff}
+}
+@container ss (max-width:600px){
+  :root .synk-workspace .sw-simple .ss-head{grid-template-columns:minmax(0,1fr);gap:16px}
+  :root .synk-workspace .sw-simple .ss-head h1{margin-top:10px;font-size:30px}
+  :root .synk-workspace .sw-simple .ss-lede{display:none}
+  :root .synk-workspace .sw-simple .ss-poster{display:none}
+  :root .synk-workspace .sw-simple .ss-meter>*{padding:10px 8px 12px;gap:6px}
+  :root .synk-workspace .sw-simple .ss-meter span{white-space:normal;font-size:13px;line-height:1.25;align-items:flex-start}
+  :root .synk-workspace .sw-simple .ss-meter span .ss-dot{margin-top:4px}
+  :root .synk-workspace .sw-simple .ss-meter strong{font-size:22px}
+  :root .synk-workspace .sw-simple .ss-meter .ss-l-long{display:none}
+  :root .synk-workspace .sw-simple .ss-meter .ss-l-short{display:inline}
+  :root .synk-workspace .sw-simple .ss-block{margin-top:26px}
+  :root .synk-workspace .sw-simple .ss-pl{grid-template-columns:28px minmax(0,1fr) auto}
+  :root .synk-workspace .sw-simple .ss-pl .ss-handle{display:none}
+  :root .synk-workspace .sw-simple .ss-now{padding:18px}
+  :root .synk-workspace .sw-simple .ss-now h3{font-size:18.5px}
+  :root .synk-workspace .sw-simple .ss-task{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-simple .ss-task .ss-btn{justify-self:start}
+  :root .synk-workspace .sw-simple .ss-row{grid-template-columns:38px minmax(0,1fr);row-gap:8px}
+  :root .synk-workspace .sw-simple .ss-row .ss-time{grid-column:2;grid-row:1;font-size:13.5px}
+  :root .synk-workspace .sw-simple .ss-row .ss-time small{display:inline;margin:0 0 0 6px}
+  :root .synk-workspace .sw-simple .ss-row .ss-thumb{grid-row:1 / span 3;align-self:start}
+  :root .synk-workspace .sw-simple .ss-row .ss-row-body{grid-column:2}
+  :root .synk-workspace .sw-simple .ss-row .ss-st{grid-column:2;justify-self:start}
+  :root .synk-workspace .sw-simple .ss-acc-head{display:none}
+  :root .synk-workspace .sw-simple .ss-acc{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}
+  :root .synk-workspace .sw-simple .ss-acc .ss-acc-name{grid-column:1 / -1}
+  :root .synk-workspace .sw-simple .ss-acc .ss-acc-pub{grid-row:2;justify-self:start}
+  :root .synk-workspace .sw-simple .ss-acc .ss-acc-col{grid-row:2;grid-column:2;justify-self:end}
+  :root .synk-workspace .sw-simple .ss-acc .ss-acc-n{grid-column:1}
+  :root .synk-workspace .sw-simple .ss-acc .ss-acc-last{grid-column:2}
+}

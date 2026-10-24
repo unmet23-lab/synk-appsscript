@@ -33,10 +33,10 @@ function fixture({url='http://localhost:4191/',storage=new Map()}={}){
   return{state,context,location,document,nodes,handlers,windowHandlers,requests,renders,notifications,posted,created,storage,timers,run,dispatch,element,home:run('marinHome')};
 }
 
-test('default entry is the Marine home while explicit marketing, messenger and saved-plan routes retain their destinations',()=>{
+test('default entry is the Marine home; messenger and saved-plan routes keep their destinations and old marketing routes open the SNS screens',()=>{
   const f=fixture();
   for(const input of [undefined,'home']){f.context.destination=input;f.run('selectWorkspaceView(destination)');assert.equal(f.state.tab,'home');}
-  for(const [view,section,expected] of [['handbook','','handbook'],['workroom','','workroom'],['overview','mine','overview'],['analysis','team','analysis'],['history','all','history'],['messenger','','messenger'],['channels','','overview'],['studio','','content']]){
+  for(const [view,section,expected] of [['handbook','','handbook'],['workroom','','workroom'],['overview','mine','social'],['analysis','team','social'],['history','all','social'],['messenger','','messenger'],['channels','','social'],['studio','','content']]){
     f.context.destination={view,section};f.run('selectWorkspaceView(destination.view,destination.section)');assert.equal(f.state.tab,expected);
   }
   f.run("selectWorkspaceView('content','plan',undefined,'saved-plan');syncWorkspaceLocation()");assert.equal(f.location.searchParams.get('draftId'),'saved-plan');
@@ -45,7 +45,7 @@ test('default entry is the Marine home while explicit marketing, messenger and s
 
 test('initial bare, query and hash routes load only the selected workspace after authentication',async()=>{
   const initialize=appSource.slice(appSource.indexOf('async function initialize()'),appSource.indexOf('async function loadState()'));
-  for(const [suffix,tab,reports,content] of [['','home',0,0],['?tab=home','home',0,0],['?tab=workroom','workroom',0,0],['?tab=handbook','handbook',0,0],['?tab=messenger','messenger',0,0],['#view=messenger','messenger',0,0],['?tab=history&section=team&teamId=team-a','history',1,0],['#view=content&section=plan&draftId=saved-plan','content',0,1]]){
+  for(const [suffix,tab,reports,content] of [['','home',0,0],['?tab=home','home',0,0],['?tab=workroom','workroom',0,0],['?tab=handbook','handbook',0,0],['?tab=messenger','messenger',0,0],['#view=messenger','messenger',0,0],['?tab=history&section=team&teamId=team-a','social',0,0],['#view=content&section=plan&draftId=saved-plan','content',0,1]]){
     const f=fixture({url:'http://localhost:4191/'+suffix});let reportCount=0,contentCount=0;
     Object.assign(f.context,{loadState:async()=>{},loadReport:async()=>reportCount++,loadContentWorkspace:async()=>contentCount++,startPolling(){},app:{innerHTML:''}});
     f.run(appSource.split('\n').find(line=>line.startsWith('function reportTabs('))+'\n'+initialize);
@@ -102,10 +102,10 @@ test('stored history is bounded and safely validates actions before display or e
   assert.equal(await f.run('dispatchMarinAction(100,0)'),false);f.state.user={id:'crew-b'};assert.equal(await f.run('dispatchMarinAction(0,0)'),false);assert.equal(opened.length,1);assert.equal(f.requests.length,0,'stored buttons must not post messages or silently open a DM');
 });
 
-test('explicit marketing actions preserve permitted scope and load only that destination',async()=>{
+test('old marketing actions from the assistant open SNS results without loading the old reports, while a plan action still opens the plan',async()=>{
   const f=fixture();let reports=0,plans=0;f.context.loadReport=async()=>reports++;f.context.loadContentWorkspace=async()=>plans++;f.run(appSource.split('\n').find(line=>line.startsWith('function reportTabs(')));f.run("ensureMarinSession();marinHome.entries=[{role:'assistant',text:'업무 찾기',actions:[{type:'marketing',label:'팀 현황',view:'history',section:'team',teamId:'team-a'},{type:'marketing',label:'새 기획',view:'content',section:'plan'}]}]");
-  assert.equal(await f.run('dispatchMarinAction(0,0)'),true);assert.equal(f.state.tab,'history');assert.equal(f.state.scope,'team');assert.equal(f.state.teamId,'team-a');assert.equal(reports,1);assert.equal(plans,0);
-  assert.equal(await f.run('dispatchMarinAction(0,1)'),true);assert.equal(f.state.tab,'content');assert.equal(f.run('cp.view'),'plan');assert.equal(reports,1);assert.equal(plans,1);assert.equal(f.requests.length,0);
+  assert.equal(await f.run('dispatchMarinAction(0,0)'),true);assert.equal(f.state.tab,'social');assert.equal(reports,0);assert.equal(plans,0);
+  assert.equal(await f.run('dispatchMarinAction(0,1)'),true);assert.equal(f.state.tab,'content');assert.equal(f.run('cp.view'),'plan');assert.equal(reports,0);assert.equal(plans,1);assert.equal(f.requests.length,0);
 });
 
 test('an explicit messenger suggestion queues until the current frame is ready and a later home visit cancels it',()=>{
@@ -132,7 +132,7 @@ test('weekly summary action is fixed and exact task deep links survive a fresh w
   assert.equal(f.location.searchParams.has('messageId'),false);
   const invalid=fixture({url:'http://localhost:4191/?tab=messenger&panel=tasks&channelId=..%2Fadmin&messageId=27'});invalid.state.tab='messenger';invalid.run('mountWorkspaceModule()');assert.equal(invalid.run('workspaceModule.open'),null);
   const home=fixture();home.run("ensureMarinSession();marinHome.entries=[{role:'assistant',text:'주간 정리',actions:[{type:'weekly-summary',label:'주간 정리 열기',url:'https://evil.example'}]}]");
-  assert.equal(await home.run('dispatchMarinAction(0,0)'),true);assert.equal(home.location.href,'http://localhost:4191/?tab=workroom&section=tools&tool=weekly');assert.equal(home.requests.length,0);
+  assert.equal(await home.run('dispatchMarinAction(0,0)'),true);assert.equal(home.location.href,'http://localhost:4191/?tab=social&section=results','주간 정리는 SNS 성과로(10-24)');assert.equal(home.requests.length,0);
 });
 
 test('a home refresh preserves the focused prompt and caret with teaching in the rail and guidance in settings',()=>{

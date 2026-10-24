@@ -4,9 +4,10 @@ const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const parameter=value=>{try{return value===undefined?undefined:decodeURIComponent(value);}catch{throw fail('SNS 항목 주소를 확인해 주세요.');}};
 
 // Requests that save nothing (previews, cost quotes, read-only insights, private recovery copies) do not tell every screen to refresh.
-const QUIET_PATHS=new Set(['/api/social/ai/quote','/api/social/insights/variants']);
+// 편 요약(30분마다 자동화 계정이 보냄)은 화면이 스스로 다시 읽으므로 모두에게 알리지 않는다.
+const QUIET_PATHS=new Set(['/api/social/ai/quote','/api/social/insights/variants','/api/social/repo-digest']);
 export function socialChangeNotifies(path){return !path.startsWith('/api/social/recovery/')&&!/[/-]preview$/.test(path)&&!QUIET_PATHS.has(path);}
-export function createSocialRoutes({store,dmRegistration,publishing,marketing,provider,distribution,inboxProvider,inboxRecovery,replies,capacity,copyInsights,followups,ai,recovery,tracking,inquiries,workflows,review,publicationLinks,signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
+export function createSocialRoutes({store,dmRegistration,publishing,marketing,provider,distribution,inboxProvider,inboxRecovery,replies,capacity,copyInsights,followups,ai,recovery,tracking,inquiries,workflows,review,publicationLinks,simple,simpleSources=()=>({}),signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
   return async function handle(req,res,{url,demoRequest=false}){
     const path=url.pathname;if(!path.startsWith('/api/social/'))return false;
     const auth=session(req);if(!auth)throw fail('먼저 로그인해 주세요.',401);
@@ -29,6 +30,8 @@ export function createSocialRoutes({store,dmRegistration,publishing,marketing,pr
         if(result.inboxProvider&&inboxRecovery){const recoveryByChannel=new Map(inboxRecovery.workspace(user).channels.map(row=>[row.channelId,row.recovery]));result.inboxProvider={...result.inboxProvider,channels:result.inboxProvider.channels.map(row=>({...row,recovery:recoveryByChannel.get(row.channelId)||null}))};}
         result.onboarding=socialOnboarding(paged?{...result,...publishing.summary(user)}:result,{origin});return result;
       }));return true;}
+      // 간편판 세 장(오늘·성과·계정) — 서버 사실과 저장소 편 요약을 합친 한 벌(social-simple.mjs)
+      if(path==='/api/social/simple'&&simple){send(res,200,store.readScope(()=>simple.workspace(user,simpleSources(user))));return true;}
       if(path==='/api/social/capacity'){send(res,200,store.readScope(()=>capacity.workspace(user,{pageSize:50,...Object.fromEntries(url.searchParams)})));return true;}
       const followup=path.match(/^\/api\/social\/inbox\/([^/]+)\/followup$/);
       if(followup){send(res,200,followups.workspace(user,{inboxId:parameter(followup[1])}));return true;}
@@ -56,6 +59,7 @@ export function createSocialRoutes({store,dmRegistration,publishing,marketing,pr
     let result,match;
     if(path==='/api/social/recovery/save')result=recovery.save(actor,input);
     else if((match=path.match(/^\/api\/social\/inbox\/([^/]+)\/followup$/)))result=followups.create(actor,{...input,inboxId:parameter(match[1])},{authorize,signal});
+    else if(path==='/api/social/repo-digest'&&simple)result=simple.saveDigest(actor,input);
     else if(path==='/api/social/capacity/preview')result=capacity.preview(actor,input);
     else if(path==='/api/social/capacity/apply')result=capacity.apply(actor,input);
     else if(path==='/api/social/copy-insights/template-preview')result=await copyInsights.templatePreview(actor,input,{authorize,signal});

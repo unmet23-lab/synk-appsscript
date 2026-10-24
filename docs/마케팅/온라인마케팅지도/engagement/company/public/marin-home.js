@@ -90,7 +90,7 @@ async function dispatchMarinAction(entryIndex,actionIndex){
   if(action.type==='profile'){if(typeof openMarinProfile==='function'){await openMarinProfile(action.draft);return true;}notify('업무 카드를 준비하고 있어요. 잠시 뒤 다시 불러와 주세요.');return false;}
   if(action.type==='team-builder'){if(typeof openMarinTeamBuilder==='function'){await openMarinTeamBuilder();return true;}notify('팀 구성 화면을 준비하고 있어요. 잠시 뒤 다시 불러와 주세요.');return false;}
   if(action.type==='messenger')return openWorkspaceDestination(action);
-  if(action.type==='weekly-summary'){location.href=new URL('/?tab=workroom&section=tools&tool=weekly',location.origin).href;return true;}
+  if(action.type==='weekly-summary'){location.href=new URL('/?tab=social&section=results',location.origin).href;return true;}
   if(action.type==='automation-health'){location.href=new URL('/?tab=workroom&section=tools&tool=automation',location.origin).href;return true;}
   selectWorkspaceView(action.view,action.section,action.teamId);state.error='';state.report=null;render();window.scrollTo(0,0);if(reportTabs())await loadReport();if(state.tab==='content')await loadContentWorkspace();return true;
 }

@@ -40,7 +40,8 @@ function initializeDemoRange(data) {
 }
 function demoBanner() {
   if (['messenger','workroom','handbook'].includes(state.tab)) return '';
-  if (!isDemoMode()) return state.data?.demoAvailable && isAdmin() ? `<aside class="demo-entry"><span>예시 데이터로 개인·팀·전체 그래프를 비교해 보세요.</span><a class="btn small" href="${escape(demoScreenUrl(true))}">${icon('chart')}그래프 데모 보기</a></aside>` : '';
+  // 10-24 간편판: 개인·팀·전체 그래프 화면을 SNS 성과로 옮겨 데모 입구를 거뒀다(주소로 여는 ?demo=1은 그대로).
+  if (!isDemoMode()) return '';
   const data=state.data?.demo, people=data?.people||[];
   return `<aside class="demo-banner demo-banner-compact" aria-label="데모 데이터 안내"><div class="demo-banner-copy"><strong><span class="demo-badge">DEMO</span>가상 데이터</strong><details id="demo-information"><summary>예시 정보</summary><p>크루 ${people.length}명 · 채널 ${number(data?.channelCount??state.data?.channels?.length)}개 · 가상 게시글 ${number(data?.postCount)}개. 실제 업로드나 수집 기록이 아닙니다. 읽기 전용이며 삭제 요청 전까지 보관됩니다.</p></details></div><div class="demo-banner-controls"><select data-demo-persona aria-label="데모 크루 선택">${people.map(person=>`<option value="${escape(person.id)}" ${person.id===data?.personaId?'selected':''}>${escape(person.name)} · ${escape(person.teamName)}</option>`).join('')}</select><a href="${escape(demoScreenUrl(false))}">실제 데이터로 돌아가기</a></div></aside>`;
 }

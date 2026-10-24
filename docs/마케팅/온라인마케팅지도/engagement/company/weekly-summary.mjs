@@ -95,7 +95,7 @@ export function createWeeklySummaryService({store,studio,postPerformance,publica
         const channel=store.get('channels',job.channelId),at=instant(job.scheduledAt);
         if(at===null||!['scheduled','manual'].includes(job.status)||!(job.publisherId===user.id||channel?.ownerIds?.includes(user.id)))continue;
         const dueDate=date(at+KST);if(!nextDate(dueDate,period))continue;
-        add('upcoming',{id:'social:schedule:'+job.id,kind:'social_schedule',title:job.contentSummary?.title||channel?.displayName||'SNS 게시 예약',text:`${channel?.displayName||channel?.platform||'SNS'} · ${new Date(at+KST).toISOString().slice(11,16)} 한국 시간. ${job.status==='manual'?'앱에서 직접 마무리해야 해요.':job.paused?'멈춘 예약이에요.':'저장된 게시 예약이에요.'}`,statusLabel:job.status==='manual'?'직접 마무리':job.paused?'예약 멈춤':'게시 예약',dueDate,href:'/?tab=social&section=queue&post='+encodeURIComponent(job.postId)});
+        add('upcoming',{id:'social:schedule:'+job.id,kind:'social_schedule',title:job.contentSummary?.title||channel?.displayName||'SNS 게시 예약',text:`${channel?.displayName||channel?.platform||'SNS'} · ${new Date(at+KST).toISOString().slice(11,16)} 한국 시간. ${job.status==='manual'?'앱에서 직접 마무리해야 해요.':job.paused?'멈춘 예약이에요.':'저장된 게시 예약이에요.'}`,statusLabel:job.status==='manual'?'직접 마무리':job.paused?'예약 멈춤':'게시 예약',dueDate,href:'/?tab=social&section=today'});
       }
       const projects=read(['completed','upcoming'],()=>clientProjects?clientProjects.workspace(user).projects:[],[]).filter(row=>row.ownerId===user.id||row.reviewerId===user.id);
       for(const row of projects){

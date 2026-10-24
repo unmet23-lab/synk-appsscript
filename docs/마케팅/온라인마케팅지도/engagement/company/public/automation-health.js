@@ -107,7 +107,7 @@ function ahHref(value){
 function ahDest(href){
   if(!href)return '';let params;try{const url=new URL(href,location.origin);params=new URLSearchParams(url.hash?url.hash.slice(1):url.search);}catch{return '';}
   const tab=params.get('tab')||params.get('view'),tool=params.get('tool');
-  return tab==='home'?'홈':tab==='messenger'?'메신저':tab==='content'?'기획':params.get('section')==='clients'?'고객 관리':tool==='weekly'?'주간 정리':tool==='publication'?'게시 준비·성과':'';
+  return tab==='home'?'홈':tab==='messenger'?'메신저':tab==='content'?'기획':params.get('section')==='clients'?'고객 관리':['weekly','publication'].includes(tool)?'SNS 성과':'';
 }
 // 게시 준비·성과 has no performance tab any more: pf.view='performance' asks publication-flow.js (pfHonorView) to open a posted episode.
 function ahShowPerformance(){if(typeof pf==='undefined')return;if(typeof pfIdentity==='function')pfIdentity();pf.view='performance';}
@@ -116,6 +116,7 @@ async function ahOpenSource(value,view=''){
   const url=new URL(href,location.origin),params=new URLSearchParams(url.hash?url.hash.slice(1):url.search);
   if(params.get('tab')==='home'){selectWorkspaceView('home');render();window.scrollTo(0,0);return true;}
   if(params.get('tab')==='workroom'&&params.get('section')==='clients'&&!params.has('project')){selectWorkspaceView('workroom','clients');render();window.scrollTo(0,0);return true;}
+  if(params.get('tab')==='workroom'&&params.get('section')==='tools'&&['weekly','publication'].includes(params.get('tool'))){selectWorkspaceView('social','results');render();window.scrollTo(0,0);return true;}
   if(params.get('tab')==='workroom'&&params.get('section')==='tools'&&!params.has('publicationAction')){makerTools.view=params.get('tool');if(view==='performance'&&makerTools.view==='publication')ahShowPerformance();selectWorkspaceView('workroom','tools');render();makerToolsEnsure();window.scrollTo(0,0);return true;}
   return typeof wksOpenSource==='function'?wksOpenSource(href):false;
 }

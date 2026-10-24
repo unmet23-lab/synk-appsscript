@@ -7,7 +7,8 @@ function pcCancelFile(){pc.fileRequest++;const cancel=pc.fileCancel;pc.fileCance
 function publishCheckReset(){pcCancelFile();if(pc.preview)URL.revokeObjectURL(pc.preview);Object.assign(pc,{userId:null,request:pc.request+1,waitRequest:pc.waitRequest+1,attempted:false,loading:false,saving:false,error:'',data:null,waiting:null,draft:null,preview:'',reading:false,archived:false,dirty:false,query:'',picking:false,folds:{}});}
 function pcNewDraft(){return {title:'',preset:'vertical',media:null,audience:'',rights:'',measurement:'',checks:Object.fromEntries((pc.data?.review||[]).map(row=>[row.id,{checked:false,note:''}]))};}
 function pcIdentity(){if(pc.userId!==state.user?.id){publishCheckReset();pc.userId=state.user?.id||null;}}
-function publishCheckEnsure(){if(!state.user)return;pcIdentity();if(!pc.attempted&&!pc.loading){void pcLoad();void pcLoadWaiting();}}
+// 10-24 간편판: 게시 묶음(게시 준비·성과)을 지워 묶음 점검 줄(「점검 기다림」)은 부르지 않는다 — 열면 갈 곳이 없다.
+function publishCheckEnsure(){if(!state.user)return;pcIdentity();if(!pc.attempted&&!pc.loading){void pcLoad();}}
 async function pcLoad({discard=false}={}){const userId=state.user?.id,request=++pc.request;if(!userId)return;const previousId=pc.draft?.id,draftSnapshot=JSON.stringify(pc.draft);pc.userId=userId;pc.loading=true;pc.attempted=true;pc.error='';
   try{const data=await api('/api/creator-reviews');if(state.user?.id!==userId||request!==pc.request)return;pc.data=data;if(discard&&JSON.stringify(pc.draft)===draftSnapshot)pcSetDraft(data.records.find(row=>row.id===previousId)||(previousId===undefined&&pc.draft&&data.canWrite?pcNewDraft():pcFirstDraft(data)));else if(!pc.draft)pc.draft=pcFirstDraft(data);}
   catch(error){if(state.user?.id===userId&&request===pc.request)pc.error=error.message;}
@@ -32,7 +33,7 @@ function pcSearch(row){return [row.title,row.media?.name].filter(Boolean).join('
 function pcGlyphs(formats){return mtGlyphs([...new Set((Array.isArray(formats)?formats:[]).map(id=>mtPlatformGlyph(String(id).split('-')[0])))]);}
 function pcHead(){
   const data=pc.data,records=data?.records||[],write=!!data?.canWrite,sheet=!!(pc.draft&&write&&!pc.draft.archived);
-  const actions=`${write?`<button type="button" class="btn${sheet?'':' primary'}" data-publish-action="new" ${pc.saving?'disabled':''}>${mtIcon('plus')}새 점검</button>`:''}<button type="button" class="btn icon" data-publish-action="refresh" aria-label="다시 읽기" title="다시 읽기" ${pc.loading||pc.saving?'disabled':''}>${mtIcon('refresh')}</button><button type="button" class="mt-link" data-maker-tool="publication">게시 묶음 점검 열기</button>`;
+  const actions=`${write?`<button type="button" class="btn${sheet?'':' primary'}" data-publish-action="new" ${pc.saving?'disabled':''}>${mtIcon('plus')}새 점검</button>`:''}<button type="button" class="btn icon" data-publish-action="refresh" aria-label="다시 읽기" title="다시 읽기" ${pc.loading||pc.saving?'disabled':''}>${mtIcon('refresh')}</button>`;
   const meter=data?mtMeter([Array.isArray(pc.waiting)?{label:'점검 기다림',value:pc.waiting.length,unit:'편',tone:pc.waiting.length?'wait':''}:null,{label:'저장한 기록',value:records.filter(row=>!row.archived).length,unit:'개'},{label:'보관',value:records.filter(row=>row.archived).length,unit:'개'}]):'';
   return mtHead({tool:'publish',title:'게시 전 점검',desc:'올리기 전에 파일 규격을 맞춰 보고, 직접 본 것과 근거를 남겨요.',actions,meter});
 }
@@ -143,7 +144,7 @@ document.addEventListener('submit',event=>{if(!event.target.matches('[data-publi
 // 접는 번호 구역의 열림을 기억한다(toggle은 거품이 없어 잡기 단계에서 듣는다).
 document.addEventListener('toggle',event=>{const node=event.target;if(node?.matches?.('[data-publish-fold]'))pc.folds[node.dataset.publishFold]=node.open;},true);
 document.addEventListener('click',async event=>{const target=event.target.closest('[data-publish-action]');if(!target||target.disabled||!state.user||pc.saving)return;const action=target.dataset.publishAction;
-  if(action==='refresh'){if(!pc.loading&&pcCanLeave()){pc.attempted=false;const loading=pcLoad({discard:true});void pcLoadWaiting();await loading;}return;}
+  if(action==='refresh'){if(!pc.loading&&pcCanLeave()){pc.attempted=false;const loading=pcLoad({discard:true});await loading;}return;}
   if(action==='new'&&pc.data?.canWrite&&pcCanLeave()){pc.archived=false;pcSetDraft(pcNewDraft());return;}
   if(action==='open'){if(pc.draft?.id&&pc.draft.id===target.dataset.id){pc.picking=false;render();return;}if(!pcCanLeave())return;const row=pc.data.records.find(row=>row.id===target.dataset.id);if(row)pcSetDraft(row);return;}
   if(action==='draft'||action==='pick'){pc.picking=action==='pick'&&!pc.picking;render();return;}

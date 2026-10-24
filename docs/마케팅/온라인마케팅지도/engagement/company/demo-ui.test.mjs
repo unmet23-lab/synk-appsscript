@@ -101,7 +101,7 @@ test('the banner distinguishes demo data, escapes persona fields and shows crew,
   assert.match(html,/value="a&quot; injected=&quot;x" selected/);assert.match(html,/&lt;img/);assert.match(html,/A &amp; B/);assert.doesNotMatch(html,/<img| injected="x/);
   const information=html.match(/<details id="demo-information"[^>]*>/)?.[0];assert.ok(information);assert.doesNotMatch(information,/\bopen\b/,'the detailed demo explanation starts collapsed');
   assert.equal((html.match(/<option /g)||[]).length,3);assert.equal((html.match(/실제 데이터로 돌아가기/g)||[]).length,1);
-  const off=fixture('');off.state.data.demoAvailable=true;assert.match(off.run('demoBanner()'),/그래프 데모 보기/);
+  const off=fixture('');off.state.data.demoAvailable=true;assert.equal(off.run('demoBanner()'),'','개인·팀·전체 그래프를 SNS 성과로 옮겨 데모 입구를 거뒀다(10-24)');
   off.state.user.role='member';assert.equal(off.run('demoBanner()'),'');off.state.user.role='admin';off.state.data.demoAvailable=false;assert.equal(off.run('demoBanner()'),'');
 });
 
