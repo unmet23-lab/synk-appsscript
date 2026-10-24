@@ -342,6 +342,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 남이 만들었거나 오래된 문서를 고칠 때는 먼저 `git ls-files --error-unmatch <경로>`로 추적 중인지 본다. 추적 전이면 공개해도 되는지 따로 정하고, 내 한 줄만 남기면 될 때는 추적 중인 기록(결정 표·트랙)에 적는다.
 - 다시 확인: 미리 보기 목록에서 파일마다 +/− 줄 수가 고친 양과 맞는지 보고, 「+N −0」인 파일은 `git log --oneline -- <경로>`가 비어 있지 않은지(처음 올라가는 파일인지) 짚는다.
 
+### 새 파일 이름에 `password`가 들어가면 `.gitignore`의 `*password*`에 걸려 바로올리기·검수 묶음에서 조용히 빠진다 (2026-10-23 Claude)
+- 증상: 로그인 되찾기의 새 시험 `server-password-recovery.test.mjs`가 `git add -N`에서 거절되고, `바로올리기.js`·`검수묶음.mjs 준비`의 파일 목록에서 말없이 빠졌다(「파일 N개」가 경로 수보다 적었다).
+- 원인: `.gitignore` 17행 `*password*`(비밀번호 파일을 막는 규칙)가 이름만 보고 시험 파일까지 막았다.
+- 고침: 이름을 바꿨다(`server-login-recovery.test.mjs`). 비밀이 아닌 파일 이름에는 `password`·`secret` 같은 낱말을 넣지 않는다.
+- 다시 확인: `git check-ignore -v <파일>`이 아무것도 찍지 않아야 한다(옛 이름은 `.gitignore:17:*password*`를 찍는다).
+
 ## 당기기·push
 
 ### 워크트리끼리 같이 보는 `origin/master`로 판을 만들면 남의 새 줄이 내 변경에 섞인다 (2026-10-19)
