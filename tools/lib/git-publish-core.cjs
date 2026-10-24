@@ -1040,6 +1040,40 @@ function CI경고(c) {
   try { return ci빨간불.빠른경고글(ci빨간불.빠른상태({ sh: ci빨간불.실행기(c.저장소) })); } catch { return null; }
 }
 
+// ── 늘 읽는 문서 크기 알림(2026-10-24 경량화 2차, 막지 않음) ─────────────────────────
+// 늘 읽는 두 장이 상한을 넘겨 커지거나 결정·트랙에 2KB 넘는 줄이 새로 들어오면 결과에 알림만 붙인다(이 push가 바꾼 경로만 본다).
+// 상한은 10-24 정리 뒤 크기(AGENTS 9.5KB · 운영 원칙 31.8KB)에 여유를 둔 값이다. 바꾸면 docs/_ops/관문_자동화.md push 표도 고친다.
+const 늘읽는상한 = { 'AGENTS.md': 11 * 1024, 'docs/AI_운영원칙.md': 35 * 1024 };
+const 긴줄상한 = { 'docs/_ops/결정.md': 2048, 'docs/_ops/트랙.md': 2048 };
+const KB = (n) => `${(n / 1024).toFixed(1)}KB`;
+
+function 크기알림(git, O, 머리, 바뀐) {
+  const 알림 = [];
+  const 크기 = (rev, p) => { try { return Number(git.글(['cat-file', '-s', `${rev}:${p}`])); } catch { return null; } };
+  for (const [p, 상한] of Object.entries(늘읽는상한)) {
+    if (!바뀐.has(p)) continue;
+    const 앞 = 크기(O, p), 뒤 = 크기(머리, p);
+    // 이미 넘은 문서를 줄이는 push는 조용하다 — 커질 때만 알린다.
+    if (뒤 != null && 뒤 > 상한 && (앞 == null || 뒤 > 앞)) 알림.push(`${p} ${KB(뒤)} — 상한 ${KB(상한)}을 넘겨 커졌다(전 ${앞 == null ? '없음' : KB(앞)})`);
+  }
+  for (const [p, 상한] of Object.entries(긴줄상한)) {
+    if (!바뀐.has(p)) continue;
+    let 글;
+    try { 글 = git(['diff', '--no-color', '--no-ext-diff', '--no-renames', '-U0', O, 머리, '--', p]).toString('utf8'); } catch { continue; }
+    const 긴 = [];
+    let 덩어리안 = false;   // 머리(diff --git·+++)를 지나 @@ 뒤부터가 내용 줄이다
+    for (const l of 글.split('\n')) {
+      if (l.startsWith('@@')) { 덩어리안 = true; continue; }
+      if (덩어리안 && l.startsWith('+')) {
+        const 줄 = l.slice(1).replace(/\r$/, '');
+        if (Buffer.byteLength(줄) > 상한) 긴.push(줄);
+      }
+    }
+    if (긴.length) 알림.push(`${p}에 ${KB(상한)} 넘는 줄 ${긴.length}개 — ${긴.slice(0, 3).map((줄) => `「${[...줄].slice(0, 30).join('')}…」 ${KB(Buffer.byteLength(줄))}`).join(' · ')}${긴.length > 3 ? ' …' : ''}`);
+  }
+  return 알림.length ? 알림 : null;
+}
+
 async function 올리기(옵션 = {}) {
   try {
     const c = 맥락(옵션);
@@ -1109,6 +1143,8 @@ async function 올리기(옵션 = {}) {
       요약.머리 = 계획.머리;
       요약.수 = 줄수(git, O, 계획.머리);
       요약.용량 = 검사.용량;
+      const 크기 = 크기알림(git, O, 계획.머리, new Set(요약.수.map((x) => x.경로)));
+      if (크기) 요약.크기알림 = 크기;
       if (!짝판) 짝판 = 짝검사고르기(c, 만든, 옵션);
       if (짝판 && (짝판.요약.수 || 짝판.요약.못고름)) 요약.짝검사 = { ...짝판.요약, ...(짝건너뜀 ? { 건너뜀: 짝건너뜀 } : {}), ...(짝결과 ? { 결과: 짝결과 } : {}) };
       if (짝판 && 짝판.고름.length && !짝건너뜀 && !짝결과) {
