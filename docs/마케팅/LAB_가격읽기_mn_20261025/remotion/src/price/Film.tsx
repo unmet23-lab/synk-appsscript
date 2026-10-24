@@ -231,33 +231,45 @@ const Stamp: React.FC<{ at: number; mark: '✗' | '✓'; color: string; size: nu
 };
 
 /** 오답 — v2는 줄을 긋지 않는다(v1 정지컷에서 줄 때문에 「심이천」으로 읽혔다). 글은 그대로 또렷이, 색과 ✗ 도장으로 틀림을 보인다. */
-const WrongCard: React.FC = () => (
-  <CardShell from={T.wrong} to={T.rule} bg={C.paper}>
-    <div style={{ position: 'absolute', left: 60, top: 64, fontFamily: EN, fontWeight: 800, fontSize: 60, color: C.ink }}>{MN.wrong}</div>
-    <div style={{ position: 'absolute', left: 56, top: 190, fontFamily: KO_FONT, fontWeight: 900, fontSize: 128, lineHeight: 1, color: C.popDeep }}>{KO.wrong}</div>
-    <Stamp at={T.wrong + 0.45} mark="✗" color={C.pop} size={160} style={{ right: 60, top: 170 }} />
-  </CardShell>
-);
+// v3: 왜 틀렸는지를 말 대신 수식으로 — 「십이천」은 1,000을 열둘 모으는 셈(= 12 × 1,000)이다(이해 시험 v2 「왜 오답인지 설명이 없다」).
+const WrongCard: React.FC = () => {
+  const m = useSpringAt(T.wrongMath);
+  return (
+    <CardShell from={T.wrong} to={T.rule} bg={C.paper}>
+      <div style={{ position: 'absolute', left: 60, top: 46, fontFamily: EN, fontWeight: 800, fontSize: 56, color: C.ink }}>{MN.wrong}</div>
+      <div style={{ position: 'absolute', left: 56, top: 140, fontFamily: KO_FONT, fontWeight: 900, fontSize: 124, lineHeight: 1, color: C.popDeep }}>{KO.wrong}</div>
+      <div style={{ position: 'absolute', left: 60, top: 296, fontFamily: EN, fontWeight: 900, fontSize: 84, lineHeight: 1, color: C.popDeep, letterSpacing: -1, opacity: fade(m), transform: `translateY(${(1 - m) * 18}px)` }}>
+        <span style={{ fontFamily: KO_FONT }}>{KO.wrongShort}</span> = 12 × 1,000
+      </div>
+      <Stamp at={T.wrong + 0.45} mark="✗" color={C.pop} size={160} style={{ right: 50, top: 120 }} />
+    </CardShell>
+  );
+};
 
-/** 규칙 — 영수증의 파랑 「1」 · 노랑 「2,000」과 같은 색 칸으로 10,000 = 만 · 2,000 = 이천을 한 줄씩. */
+/** 규칙 — v3: 「만 이천 = 10,000 + 2,000」을 수식으로. 위 줄은 영수증의 파랑 「1」 · 노랑 「2,000」과 같은 색 칸(만 · 이천), 아래 줄은 그 칸 바로 밑의 값. */
 const RuleCard: React.FC = () => {
   const t = useT();
-  const row2 = useSpringAt(T.rule + 0.4);
-  const s3 = useSpringAt(T.rule + 0.8);
+  const row2 = useSpringAt(T.rule + 0.35);
+  const s3 = useSpringAt(T.rule + 0.7);
   const pulse = t > T.rule + 0.6 ? 1 + 0.025 * Math.sin((t - T.rule) * 5) : 1;
-  const row = (num: string, ko: string, bg: string, fg: string, numSize: number, koSize: number) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-      <div style={{ width: 330, textAlign: 'right', fontFamily: EN, fontWeight: 900, fontSize: numSize, color: C.ink, letterSpacing: -2 }}>{num}</div>
-      <div style={{ fontFamily: EN, fontWeight: 900, fontSize: numSize * 0.8, color: C.ink, opacity: 0.4 }}>=</div>
-      <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: koSize, color: fg, background: bg, borderRadius: 26, padding: '0 26px', lineHeight: `${koSize * 1.2}px` }}>{ko}</div>
-    </div>
-  );
+  const COL = [290, 300]; // 만 · 이천 칸 너비(아래 값과 가운데를 맞춘다)
+  const cell = (w: number, child: React.ReactNode) => <div style={{ width: w, display: 'flex', justifyContent: 'center' }}>{child}</div>;
+  const op = (s: string, size: number) => <div style={{ width: 70, textAlign: 'center', fontFamily: EN, fontWeight: 900, fontSize: size, color: C.ink, opacity: 0.45 }}>{s}</div>;
   return (
     <CardShell from={T.rule} to={T.answer} bg={C.paper}>
       <div style={{ position: 'absolute', inset: 0, border: `6px solid ${C.lapis}`, borderRadius: 40 }} />
-      <div style={{ position: 'absolute', left: 40, top: 30, transform: `scale(${pulse})`, transformOrigin: 'left center' }}>{row('10,000', KO.man, C.lapis, C.paper, 104, 118)}</div>
-      <div style={{ position: 'absolute', left: 40, top: 186, opacity: fade(row2), transform: `translateY(${(1 - row2) * 20}px)` }}>{row('2,000', KO.ichon, C.butter, C.ink, 84, 88)}</div>
-      <div style={{ position: 'absolute', left: 50, width: CARD.w - 100, top: 318, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.1, color: C.lapisDeep, opacity: fade(s3) }}>{MN.rule}</div>
+      <div style={{ position: 'absolute', left: 60, top: 30, display: 'flex', alignItems: 'center', transform: `scale(${pulse})`, transformOrigin: 'left center' }}>
+        {cell(COL[0], <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 112, color: C.paper, background: C.lapis, borderRadius: 26, padding: '0 30px', lineHeight: '136px' }}>{KO.man}</div>)}
+        {op('', 70)}
+        {cell(COL[1], <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 104, color: C.ink, background: C.butter, borderRadius: 26, padding: '0 26px', lineHeight: '136px' }}>{KO.ichon}</div>)}
+      </div>
+      <div style={{ position: 'absolute', left: 60, top: 186, display: 'flex', alignItems: 'center', opacity: fade(row2), transform: `translateY(${(1 - row2) * 20}px)` }}>
+        {cell(COL[0], <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 80, color: C.lapisDeep, letterSpacing: -2 }}>10,000</div>)}
+        {op('+', 72)}
+        {cell(COL[1], <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 80, color: '#7E5A10', letterSpacing: -2 }}>2,000</div>)}
+      </div>
+      <Stamp at={T.rule + 0.6} mark="✓" color={C.meadow} size={110} style={{ right: 24, top: 24 }} />
+      <div style={{ position: 'absolute', left: 50, width: CARD.w - 100, top: 322, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.1, color: C.lapisDeep, opacity: fade(s3) }}>{MN.rule}</div>
     </CardShell>
   );
 };
@@ -290,19 +302,23 @@ const AnswerCard: React.FC = () => {
 const EndCard: React.FC = () => {
   const s1 = useSpringAt(T.end + 0.35);
   const s2 = useSpringAt(T.end + 0.8);
+  const s3 = useSpringAt(T.end + 1.4);
   return (
     <CardShell from={T.end} to={null} bg={C.bake}>
       <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <div style={{ width: 230, height: CARD.h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Mongle src="img/mongle_happy.jpg" size={290} hop />
+        <div style={{ width: 200, height: CARD.h, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Mongle src="img/mongle_happy.jpg" size={260} hop />
         </div>
         <div style={{ flex: 1, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 62, lineHeight: 1.05, color: C.paper }}>{MN.endQ}</div>
-          <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 84, lineHeight: 1.05, color: C.butter, opacity: fade(s1), transform: `scale(${0.85 + 0.15 * s1})`, transformOrigin: 'left center' }}>
+          <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 58, lineHeight: 1.05, color: C.paper }}>{MN.endQ}</div>
+          <div style={{ fontFamily: KO_FONT, fontWeight: 900, fontSize: 78, lineHeight: 1.05, color: C.butter, opacity: fade(s1), transform: `scale(${0.85 + 0.15 * s1})`, transformOrigin: 'left center' }}>
             {NEXT}원 <span style={{ fontFamily: EN }}>= ?</span>
           </div>
-          <div style={{ alignSelf: 'flex-start', background: C.paper, borderRadius: 22, padding: '10px 18px 12px', fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.12, color: C.lapisDeep, opacity: fade(s2), transform: `scale(${0.85 + 0.15 * s2})`, transformOrigin: 'left center' }}>
+          <div style={{ alignSelf: 'flex-start', background: C.paper, borderRadius: 22, padding: '10px 18px 12px', fontFamily: EN, fontWeight: 800, fontSize: 38, lineHeight: 1.12, color: C.lapisDeep, opacity: fade(s2), transform: `scale(${0.85 + 0.15 * s2})`, transformOrigin: 'left center' }}>
             {MN.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
+          </div>
+          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 32, lineHeight: 1.1, color: C.butterSoft, opacity: fade(s3) }}>
+            {MN.endA}
           </div>
         </div>
       </div>

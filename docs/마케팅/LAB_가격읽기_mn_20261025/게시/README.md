@@ -4,7 +4,7 @@
 
 | 폴더 | 계정 | 영상 | 글 | 게시 시각 제안(KST) |
 |---|---|---|---|---|
-| `01-ig-fb-mn/` | 인스타 @synk.mn · 페북 SYNK(synkworld), Business Suite 릴스 하나로 교차 게시 | `video.mp4` 16.5초 · 표지 `cover.png`(0.67초) · 10MB 길로만 올릴 때 `upload_10MB.mp4`(8.50MB) | `캡션_mn.txt` · `첫댓글_mn.txt`(선택) · `원고.json` | 10-26(월) 21:00(울란바토르 20:00) |
+| `01-ig-fb-mn/` | 인스타 @synk.mn · 페북 SYNK(synkworld), Business Suite 릴스 하나로 교차 게시 | `video.mp4` 16.5초 · 표지 `cover.png`(0.67초) · 10MB 길로만 올릴 때 `upload_10MB.mp4`(8.49MB) | `캡션_mn.txt` · `첫댓글_mn.txt`(선택) · `원고.json` | 10-26(월) 21:00(울란바토르 20:00) |
 
 ## 설정
 
