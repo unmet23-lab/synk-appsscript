@@ -79,7 +79,8 @@ export function createMoodLines(container, live) {
         if (id && Math.hypot(row.x - player.x, row.z - player.z) <= WALK_NEAR_RADIUS) want.set(row.id, id);
       }
     }
-    for (const [npc, el] of cards) if (want.get(npc) !== el.dataset.line) { el.remove(); cards.delete(npc); if (!want.has(npc)) eased.delete(el.dataset.line); }
+    // A card that goes (walked away, or the next segment brings another line) takes its 「무슨 뜻이에요?」 with it.
+    for (const [npc, el] of cards) if (want.get(npc) !== el.dataset.line) { el.remove(); cards.delete(npc); eased.delete(el.dataset.line); }
     const box = container.getBoundingClientRect();
     for (const [npc, id] of want) {
       let el = cards.get(npc);
