@@ -39,7 +39,8 @@
   "눈길_왼쪽위": "Her eyes look up and to the LEFT side of the frame — her irises sit in the left corners of her eyes, toward the left edge of the frame — at a man standing there out of frame. She does not look at the camera and does not look to the right.",
   "셋_얼굴_방없이": "THE THREE WOMEN, left to right — (C) a plus-size Korean woman about 30 with a short, tightly curled dark-brown permed bob and a full round face, the woman in Images 2 and 3, wearing {통2_코케트}; (B) a slim Korean woman about 27 with a black bob with straight blunt bangs, large round tortoiseshell glasses and a small mole on her cheek, the woman in Images 4 and 5, wearing {리4_코케트}; (A) a young Korean woman in her early twenties with long straight jet-black hair and a center part, the woman in Images 6 and 7, wearing {지유_코케트}. Images 2 to 7 are identity references only — ignore their backgrounds, clothing and lighting. Each woman keeps her own face, hair and body exactly; do not mix their faces.",
   "친구손_하나": "TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head with the heart sunglasses is just inside the top edge and her shoulders are cut off by the bottom edge. The only other thing in the frame is her friend's hand, coming in from the left edge and resting gently on her bare shoulder to comfort her: a small, soft young woman's hand with short natural nails, and the edge of a plain white cotton t-shirt sleeve just visible at the left edge of the frame — the hand of her curly-haired girlfriend sitting right beside her on the sofa. It is clearly a woman's hand, slender and delicate. No other face or body.",
-  "친구손_둘": "TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head with the heart sunglasses is just inside the top edge and her shoulders are cut off by the bottom edge. The only other things in the frame are her two girlfriends' hands, one coming in from each side edge and resting gently on her bare shoulders to comfort her: on the left, a small, soft young woman's hand with the edge of a plain white cotton t-shirt sleeve at the left edge; on the right, a slender young woman's hand with a thin ring and a sheer white chiffon sleeve at the right edge. Both are clearly women's hands, slender and delicate. No other face or body."
+  "친구손_둘": "TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head with the heart sunglasses is just inside the top edge and her shoulders are cut off by the bottom edge. The only other things in the frame are her two girlfriends' hands, one coming in from each side edge and resting gently on her bare shoulders to comfort her: on the left, a small, soft young woman's hand with the edge of a plain white cotton t-shirt sleeve at the left edge; on the right, a slender young woman's hand with a thin ring and a sheer white chiffon sleeve at the right edge. Both are clearly women's hands, slender and delicate. No other face or body.",
+  "공포_몸짓": "The women are TERRIFIED, not calm: shoulders hunched up toward their ears, bodies stiff and leaning back, away from the masked man; they cling to each other's arms and hands; eyes opened wide so the whites show, fixed on him; eyebrows raised and pulled together; lips parted and trembling; faces drained with fear. Nobody smiles, nobody stands relaxed with loose arms."
  },
  "컷": [
   {
@@ -518,6 +519,62 @@
    ],
    "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} {친구손_둘} Her face is slightly left of the center of the frame. She starts to cry out, mouth opening in a pleading grimace that shows her teeth, eyebrows raised, looking up toward the upper left. The leopard-print blanket at the upper left. {클로즈업_카메라} {빛} {필름}",
    "메모": "S20c1과 같은 글 — 둘째 판"
+  },
+  {
+   "id": "S03f1",
+   "who": "셋+강도",
+   "refs": [
+    "v4/R1",
+    "배치:S03",
+    "통2전신",
+    "리4전신",
+    "F04전신",
+    "통2정면",
+    "리4정면",
+    "F04정면"
+   ],
+   "text": "{시작} {세트_짧게:1} {배치_실루엣:2} Wide shot at standing eye level from the doorway side of the room, 24mm lens, handheld. THE INTRUDER stands left of center, seen from the side, stepping toward the women with the knife held out toward them. {강도_옷} The woman on the left (C), trembling with fear, bends down fast toward the coffee table and snatches a small fluffy red heart-shaped pouch with a thin silver chain strap, her body leaning back away from him and her terrified eyes fixed on the knife. Behind her, the woman in the middle (B) and the woman on the right (A) huddle together, clutching each other's arms, shoulders hunched, frozen with fear and staring at him; A's chin trembles. {공포_몸짓} {셋_전신} {빛} {필름}",
+   "메모": "#3 공포 먼저(10-24) — 몸을 뒤로 빼며 주머니를 집는 C, 서로 붙잡고 웅크린 B · A"
+  },
+  {
+   "id": "S03f2",
+   "who": "셋+강도",
+   "refs": [
+    "v4/R1",
+    "배치:S03",
+    "통2전신",
+    "리4전신",
+    "F04전신",
+    "통2정면",
+    "리4정면",
+    "F04정면"
+   ],
+   "text": "{시작} {세트_짧게:1} {배치_실루엣:2} Wide shot at standing eye level from the doorway side of the room, 24mm lens, handheld. THE INTRUDER stands left of center, seen from the side, stepping toward the women with the knife held out toward them. {강도_옷} The woman on the left (C), trembling with fear, bends down fast toward the coffee table and snatches a small fluffy red heart-shaped pouch with a thin silver chain strap, her body leaning back away from him and her terrified eyes fixed on the knife. Behind her, the woman in the middle (B) and the woman on the right (A) huddle together, clutching each other's arms, shoulders hunched, frozen with fear and staring at him; A's chin trembles. {공포_몸짓} {셋_전신} {빛} {필름}",
+   "메모": "S03f1과 같은 글 — 둘째 판"
+  },
+  {
+   "id": "S10f1",
+   "who": "셋",
+   "refs": [
+    "배치:S10",
+    "통2x2",
+    "리4x2",
+    "F04x2"
+   ],
+   "text": "{시작} {배치_실루엣:1} TIGHT THREE-SHOT FROM THE SIDE, matching the silhouettes in Image 1: the camera is close, at the right end of the sofa, looking back along the row of the three women's faces, 50mm lens, handheld, slightly above their eye level. A, nearest to the camera, fills the right third of the frame and her head is the biggest; B's face is in the middle, a little smaller; C's face, farthest, is at the left; they are pressed tightly together, clutching each other, and the frame cuts them at mid-chest. All three stare up toward the upper LEFT of the frame, at the intruder standing there outside the frame, in terror — none of them looks at the camera. C covers her mouth with her hand, sobbing in fear, her eyes wide; B is frozen stiff with fear, her eyes wide open behind her glasses, lips pressed together and trembling, tears welling; A's eyes are wide with terror, eyebrows raised and pulled together, her mouth open mid-plea. Behind them, out of focus and dark: the beige sofa back, a leopard-print fleece blanket, the warm bokeh of tiny fairy lights and, at the upper right, the soft glow of a pink-shaded lamp. {공포_몸짓} {셋_얼굴_방없이} {빛} {필름}",
+   "메모": "#10 공포 먼저(10-24) — 서로 붙잡고 겁에 질린 셋"
+  },
+  {
+   "id": "S10f2",
+   "who": "셋",
+   "refs": [
+    "배치:S10",
+    "통2x2",
+    "리4x2",
+    "F04x2"
+   ],
+   "text": "{시작} {배치_실루엣:1} TIGHT THREE-SHOT FROM THE SIDE, matching the silhouettes in Image 1: the camera is close, at the right end of the sofa, looking back along the row of the three women's faces, 50mm lens, handheld, slightly above their eye level. A, nearest to the camera, fills the right third of the frame and her head is the biggest; B's face is in the middle, a little smaller; C's face, farthest, is at the left; they are pressed tightly together, clutching each other, and the frame cuts them at mid-chest. All three stare up toward the upper LEFT of the frame, at the intruder standing there outside the frame, in terror — none of them looks at the camera. C covers her mouth with her hand, sobbing in fear, her eyes wide; B is frozen stiff with fear, her eyes wide open behind her glasses, lips pressed together and trembling, tears welling; A's eyes are wide with terror, eyebrows raised and pulled together, her mouth open mid-plea. Behind them, out of focus and dark: the beige sofa back, a leopard-print fleece blanket, the warm bokeh of tiny fairy lights and, at the upper right, the soft glow of a pink-shaded lamp. {공포_몸짓} {셋_얼굴_방없이} {빛} {필름}",
+   "메모": "S10f1과 같은 글 — 둘째 판"
   }
  ]
 }

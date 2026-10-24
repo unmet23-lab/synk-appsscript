@@ -210,6 +210,20 @@
    "판": 2,
    "쓰는 곳": "#20 30.42–31.75초(1.33초) — B 「잠깐만요!」 · 시작 그림은 양쪽 어깨 손을 친구 둘 손으로 다시 구운 S20n",
    "prompt": "Close-up, handheld. The young woman with round glasses and a red bow, with her two girlfriends' gentle hands on her shoulders, opens her mouth right away and starts talking fast, teary-eyed, looking up toward the upper left of the frame."
+  },
+  {
+   "id": "S03f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#3 1.38–3.33초(1.96초) — C 「여기요!」 · 공포 먼저로 다시(10-24)",
+   "prompt": "Same wide shot, handheld with a strong, nervous shake. Trembling with fear, the curly-haired woman in the flower crown snatches the small red heart pouch from the coffee table and thrusts it out at arm's length toward the masked man, leaning her whole body back and turning her face half away, then flinches as he takes it with his free hand, his kitchen knife (a harmless film prop) held low in the other. Behind her, the woman with glasses and the woman in the white veil cling to each other's arms, shoulders hunched, eyes wide with fear, staring at him; the veiled woman's chin trembles."
+  },
+  {
+   "id": "S10f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#10 11.42–14.04초(2.62초) — A 「안 돼 안 돼 안 돼 안 돼!」 + C 흐느낌 · 공포 먼저로 다시(10-24)",
+   "prompt": "Handheld three-shot with a nervous shake. The three women, pressed tightly together on the sofa and clutching each other, stare up toward the upper left of the frame in terror. The woman on the right in the white lace veil pleads fast in a shaking voice, eyes wide with fear; the curly-haired woman on the left in the flower crown covers her mouth with her hand, sobbing in fright; the woman in the middle with glasses is frozen stiff, trembling, lips pressed together, tears welling. None of them looks at the camera."
   }
  ]
 }
