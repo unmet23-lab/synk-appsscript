@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — two scenes of "Mongle" for a short video about reading Korean prices at a shop checkout, needle-felted wool photography, one sheet.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). No arms, no legs, no hands, ever. Mongle stands upright and front-facing in both cells, the same size in both. Props stand beside the hem; Mongle never holds anything.
+
+Layout: one landscape image, 2 columns × 1 row, two cells of equal size. One scene per cell, centered, the whole group filling about 65% of the cell height, with wide empty margins so the two cells never touch. Seamless flat lapis-blue background (#3D6BC9) across the whole image, flat even studio light, no floor line, only a very soft contact shadow, no reflections, no border lines. Absolutely no text, letters, numbers, digits, currency signs, logos or symbols anywhere — not on the receipt, not on the register, not on the bag.
+
+Cell 1 (left) — "HOW DO I READ THIS PRICE?": Mongle PUZZLED and a little nervous (big glossy bead eyes looking sideways at the receipt, small pink felt cheeks, mouth a tiny wavy line, body tilted slightly), one small pale-blue felt sweat drop beside its head. Standing to the right of Mongle: a small cream-and-charcoal felt cash register (a simple box shape), with a long strip of cream felt receipt paper curling out of its top and draping down to the ground in a soft loop. On the receipt only short charcoal felt dash lines in rows — never digits or letters. Above Mongle's head floats a small butter-yellow felt question-mark-shaped swirl made of a single curved felt strand with a dot (abstract, not a printed character).
+
+Cell 2 (right) — "I CAN READ IT!": Mongle proud and happy (eyes closed as upward arcs, wide open smiling mouth, pink cheeks, body bouncing up a little). Standing beside the hem: a small meadow-green felt shopping bag with cream felt handles, a butter-yellow felt rectangle (like a folded banknote, completely blank) peeking out of it. Around Mongle's head, three tiny butter-yellow felt sparkle shapes.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft and warm, cute but not babyish (for teenagers and university students), consistent lighting in both cells. Mongle's coral wool must stay clearly coral against the blue background.
