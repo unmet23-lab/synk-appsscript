@@ -7,13 +7,13 @@ import {spawn,spawnSync} from 'node:child_process';
 import {mkdtempSync,mkdirSync,readFileSync,existsSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {randomBytes} from 'node:crypto';
+import {randomBytes,createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 
 const here=fileURLToPath(new URL('.',import.meta.url));
 const VACUUM=join(here,'vacuum.mjs'),NODE_SCAN=join(here,'free-space-node.py');
-const {clean}=createRequire(import.meta.url)(join(here,'scan.cjs'));
+const {clean,layout}=createRequire(import.meta.url)(join(here,'scan.cjs'));
 const base=mkdtempSync(join(tmpdir(),'synk-free-space-'));
 test.after(()=>rmSync(base,{recursive:true,force:true}));
 
@@ -65,6 +65,8 @@ function runVacuum(dir,{input='GO\n',env={}}={}){
 }
 const python=(()=>{for(const cmd of ['python3','python']){const p=spawnSync(cmd,['-c','import sys;print(sys.version_info>=(3,11))'],{encoding:'utf8'});if(p.status===0&&p.stdout.trim()==='True')return cmd;}return null;})();
 const nodeScan=file=>{const p=spawnSync(python,['-B',NODE_SCAN,'--db',file],{encoding:'utf8',timeout:60000});assert.equal(p.status,0,p.stderr);return JSON.parse(p.stdout);};
+// free-space-node.py가 vacuum.mjs 결과에 종료 코드를 exit로 덧붙여 scan.cjs에 넘긴다 — 시험도 같은 꼴로 판정한다.
+const vacuumed=run=>({...run.result,exit:run.status});
 const residue=(scan,parts=['freelist','inPage','logical','dbFile','walFile'])=>parts.reduce((n,k)=>n+scan.residue[k].payloadResidue+scan.residue[k].draftResidue,0);
 
 test('옛 판 잔여는 새 판 지우기 뒤에도 남고, vacuum.mjs(GO) 뒤에는 DB·WAL 어디에도 없다', ()=>{
@@ -145,33 +147,73 @@ test('free-space-node.py가 정리 전 잔여를 세고 정리 뒤 0으로 센�
   assert.ok(before.residue.inPage.payloadResidue>=1,'페이지 안 빈 칸의 옛 칸 앞머리(암호문)');
   assert.ok(before.residue.dbFile.payloadResidue>=1,'실제 DB 파일에서도 보인다');
   assert.equal(before.residue.logical.payloadLive,1,'산 줄은 산 것으로 센다');
-  runVacuum(dir);
+  const run=runVacuum(dir);
   const after=nodeScan(join(dir,'company.sqlite'));
   assert.equal(after.pragma.freelist_count,0);
   assert.equal(residue(after),0);
   assert.equal(after.residue.freelist.payloadLive+after.residue.inPage.payloadLive+after.residue.inPage.draftLive,0,'빈 칸에 산 줄 사본도 없다');
   assert.equal(after.residue.logical.payloadLive,1);
   assert.equal(JSON.stringify(after).includes(MARK.live),false,'결과에 글이 나오지 않는다');
-  // 표식 없는 옛 바이트도 정리 대상이다 — VACUUM 뒤에는 빈 칸에 0 아닌 바이트가 없고, scan.cjs의 끝 판정도 그것까지 본다(GPT GA2).
+  // 작은 합성 DB에서는 VACUUM 뒤 빈 칸의 0 아닌 바이트·조각이 0이다(운영 꼴 DB는 아래 시험 — VACUUM 자체가 남긴다).
   assert.ok(before.residue.inPage.nonzeroBytes>0);
   assert.equal(after.residue.freelist.nonzeroBytes+after.residue.inPage.nonzeroBytes,0,'VACUUM 뒤 빈 칸의 옛 바이트 0');
   assert.equal(after.residue.fragmentBytes,0,'VACUUM 뒤 셀 사이 조각도 0');
-  assert.equal(clean(before),false);
-  assert.equal(clean(after),true);
+  assert.equal(clean(null,before),false,'다시 썼다는 VACUUM 결과 없이는 깨끗하지 않다');
+  assert.equal(clean(vacuumed(run),after),true);
 });
 
-test('scan.cjs 끝 판정은 표식 없는 빈 칸 바이트가 남으면 깨끗하다고 하지 않는다', ()=>{
+test('운영 꼴 DB(PRIMARY KEY 자동 색인·부분 색인·tokens)에서는 VACUUM 자체가 빈 틈에 산 키 바이트를 남긴다 — 끝 판정은 그것을 잔여로 보지 않는다', {skip:!python&&'python 3.11+ 없음'}, ()=>{
+  const dir=join(base,'shaped');mkdirSync(dir);const db=open(dir);
+  // 운영처럼 키(kind,id)가 rowid 순서와 상관없이 들어간다 — 같은 결과가 나게 고정 난수(sha256)로. 46종·6,000줄·tokens 2,000줄.
+  const key=i=>createHash('sha256').update('k'+i).digest('hex').slice(0,32);
+  db.exec('BEGIN');
+  for(let i=0;i<6000;i++)put(db,'kind'+(i*7919%46).toString(36),key(i),{n:i,x:'v'.repeat(80+(i*31)%900)});
+  for(let i=0;i<2000;i++)db.prepare('INSERT INTO tokens VALUES (?,?,?,?,?)').run(key('t'+i),'p','u','{}',new Date(1792000000000+i*997).toISOString());
+  put(db,'websiteInquiries','L9',inquiry('L9','LIVE9PAY'+'A'.repeat(80),'산 줄 초안 그대로입니다'));
+  put(db,'websiteInquiries','R9',inquiry('R9','GONE9PAY'+'B'.repeat(80),'지운 줄 초안입니다 연락처'));
+  db.exec('COMMIT');
+  // 옛 판처럼 secure_delete 끔으로 문의 하나를 지워 옛 잔여를 남긴다.
+  db.exec('PRAGMA secure_delete=OFF');db.prepare("DELETE FROM documents WHERE kind='websiteInquiries' AND id='R9'").run();
+  db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();db.close();
+  const before=nodeScan(join(dir,'company.sqlite'));
+  assert.ok(residue(before)>=1,'정리 전에는 지운 줄의 잔여가 있다');
+  const run=runVacuum(dir);
+  assert.equal(run.status,0,run.stderr+JSON.stringify(run.result));
+  const after=nodeScan(join(dir,'company.sqlite'));
+  assert.equal(after.files.wal,0,'뒤 재기 때 WAL 0 — 그사이 쓰기가 없으니 남은 바이트는 VACUUM이 쓴 것');
+  assert.equal(residue(after),0,'지운 줄 잔여 0');
+  assert.equal(after.residue.freelist.payloadLive+after.residue.inPage.payloadLive+after.residue.inPage.draftLive,0,'빈 칸에 산 줄 사본(표식) 0');
+  assert.ok(after.residue.inPage.nonzeroBytes+after.residue.fragmentBytes>0,'VACUUM이 색인을 채우며 빈 틈에 산 키 바이트·조각을 남긴다(10-23 운영 2,419·12와 같은 꼴)');
+  assert.ok(run.result.walAfterVacuum>=run.result.after.pages*after.pragma.page_size,'VACUUM이 모든 쪽을 WAL로 다시 썼다');
+  assert.equal(clean(vacuumed(run),after),true,'다시 쓴 뒤 남은 표식 없는 바이트는 배치라 깨끗하다');
+  assert.deepEqual(layout(after),{gapBytes:after.residue.inPage.nonzeroBytes,fragmentBytes:after.residue.fragmentBytes});
+  assert.equal(clean(null,after),false,'같은 재기라도 다시 썼다는 결과가 없으면 깨끗하다고 하지 않는다');
+});
+
+test('scan.cjs 끝 판정 — VACUUM이 모든 쪽을 다시 썼을 때만 빈 틈의 표식 없는 바이트·조각을 배치로 보고, 표식 잔여·사본은 언제나 막는다', ()=>{
   const part=change=>({payloadResidue:0,draftResidue:0,payloadLive:0,draftLive:0,payloadShort:0,draftShort:0,nonzeroBytes:0,...change});
-  const scan=inPage=>({pragma:{freelist_count:0},residue:{attempts:1,changedDuringScan:false,fragmentBytes:0,freelist:part(),inPage:part(inPage),walTorn:part(),
-    logical:part({payloadLive:5,draftLive:78,nonzeroBytes:34848907}),dbFile:part({payloadLive:5,nonzeroBytes:34803252})}});
-  assert.equal(clean(scan({})),true,'산 줄이 있는 논리 스냅샷·DB 파일의 0 아닌 바이트는 상관없다');
-  assert.equal(clean(scan({nonzeroBytes:6510000})),false,'GPT GA2의 예 — 표식 모두 0, 빈 칸 바이트 6.51MB');
-  assert.equal(clean(scan({draftLive:11})),false,'빈 칸의 산 줄 사본');
-  assert.equal(clean(scan({nonzeroBytes:undefined})),false,'세지 못한 칸은 깨끗하지 않다');
-  assert.equal(clean({...scan({}),pragma:{freelist_count:3}}),false);
-  assert.equal(clean({...scan({}),residue:{...scan({}).residue,changedDuringScan:true}}),false,'판정 못 한 재기');
-  assert.equal(clean({...scan({}),residue:{...scan({}).residue,fragmentBytes:2}}),false,'셀 사이 조각 바이트(셋째 GA2)');
-  assert.equal(clean({...scan({}),residue:{...scan({}).residue,fragmentBytes:undefined}}),false,'조각 수가 없는 옛 결과');
+  // 10-23 운영 VACUUM의 꼴: 빈 틈 2,419바이트·조각 12, WAL 37,215,992 ≥ 9,033쪽 × 4,096.
+  const scan=(inPage={},change={})=>({pragma:{freelist_count:0,page_size:4096},residue:{attempts:1,changedDuringScan:false,fragmentBytes:12,freelist:part(),
+    inPage:part({nonzeroBytes:2419,...inPage}),walTorn:part(),logical:part({payloadLive:5,draftLive:78,nonzeroBytes:34848907}),dbFile:part({payloadLive:5,nonzeroBytes:34803252}),...change}});
+  const v={exit:0,quickCheck:'ok',walTruncated:true,logical:'same',walAfterVacuum:37215992,after:{pages:9033}};
+  assert.equal(clean(v,scan()),true,'운영 VACUUM 결과 — 남은 빈 틈 바이트·조각은 배치');
+  assert.equal(clean({...v,logical:'app-wrote-meanwhile'},scan()),true,'그사이 앱이 썼어도 지문이 다르지 않으면');
+  assert.equal(clean(v,scan({nonzeroBytes:6510000})),true,'모든 쪽을 다시 쓴 뒤라면 표식 없는 바이트는 양과 상관없이 산 줄에서 왔다(첫 GA2의 예를 이 증거로 가른다)');
+  assert.equal(clean({...v,walAfterVacuum:9033*4096-1},scan()),false,'모든 쪽을 다시 썼다는 증거(WAL ≥ 쪽 수 × 쪽 크기)가 모자라면 너그럽지 않다');
+  for(const missing of [{walAfterVacuum:undefined},{after:undefined},{after:{pages:0}}])assert.equal(clean({...v,...missing},scan()),false,'증거가 없으면 아니다');
+  assert.equal(clean(null,scan()),false);
+  for(const bad of [{exit:5},{quickCheck:'corrupt'},{walTruncated:false},{logical:'DIFFERENT'}])assert.equal(clean({...v,...bad},scan()),false,JSON.stringify(bad));
+  assert.equal(clean(v,{...scan(),pragma:{freelist_count:0}}),false,'쪽 크기를 모르면 다시 썼다고 못 본다');
+  assert.equal(clean(v,scan({draftLive:11})),false,'빈 칸의 산 줄 사본(표식)은 막는다');
+  assert.equal(clean(v,scan({payloadResidue:1})),false,'표식 잔여');
+  assert.equal(clean(v,scan({payloadShort:1})),false,'판정 못 한 조각');
+  assert.equal(clean(v,scan({},{walTorn:part({draftLive:1})})),false,'덜 쓴 WAL 꼬리의 표식');
+  assert.equal(clean(v,scan({},{walTorn:part({nonzeroBytes:256})})),false,'덜 쓴 WAL 꼬리의 0 아닌 바이트는 배치가 아니다 — VACUUM 뒤 쓰기에서 생기고 칸 경계도 모른다(GPT GA1)');
+  assert.equal(clean(v,scan({},{walTorn:undefined})),false,'덜 쓴 꼬리를 세지 못한 재기');
+  assert.equal(clean(v,{...scan(),pragma:{freelist_count:3,page_size:4096}}),false,'빈 페이지');
+  assert.equal(clean(v,scan({},{freelist:part({nonzeroBytes:10})})),false,'빈 페이지 목록의 0 아닌 바이트');
+  assert.equal(clean(v,scan({},{changedDuringScan:true})),false,'판정 못 한 재기');
+  assert.deepEqual(layout(scan()),{gapBytes:2419,fragmentBytes:12});
 });
 
 test('운영처럼 -e로 표식을 붙여 띄우면 실제 VACUUM을 하는 자식도 그 표식을 받는다 — 부모가 먼저 죽어도 호스트가 찾게(다섯째 GA1)', ()=>{

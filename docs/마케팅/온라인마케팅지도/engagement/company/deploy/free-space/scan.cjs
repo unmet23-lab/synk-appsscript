@@ -16,12 +16,23 @@ const brief=s=>s&&{error:s.error,code:s.code,freePages:s.pragma?.freelist_count,
     ...(STRICT.includes(k)?{copies:x.payloadLive+x.draftLive,nonzeroBytes:x.nonzeroBytes}:{})}]))};
 // 판정할 수 있었는가: 잔여를 세었고(메모리 부족으로 건너뛰지 않았고) 조용한 한 번에 읽었다.
 const decided=s=>!!s?.residue&&!s.residue.skipped&&!s.residue.changedDuringScan;
-// 정리가 끝났다고 볼 때: 빈 페이지 0, 어디에도 잔여 0, 빈 칸·덜 쓴 꼬리에는 산 줄 사본도 판정 못 한 조각도 없고 0 아닌 바이트도 없다.
-// 표식 없는 옛 바이트도 정리 대상이다 — 표식만 보면 그것이 남아도 깨끗하다고 나온다(10-23 GPT GA2). 세지 못한 칸(nonzeroBytes 없음)도 깨끗하지 않다.
-// 셀 사이 1~3바이트 조각(fragmentBytes)은 자리를 몰라 표식을 볼 수 없으니 0이어야 한다(셋째 GA2). 그 수가 없는 옛 결과도 깨끗하지 않다.
-const clean=s=>decided(s)&&s.pragma?.freelist_count===0&&s.residue?.fragmentBytes===0&&
-  parts(s).every(([k,x])=>x.payloadResidue+x.draftResidue===0&&(!STRICT.includes(k)||(x.payloadLive+x.draftLive+x.payloadShort+x.draftShort===0&&x.nonzeroBytes===0)));
-module.exports={brief,decided,clean};
+// VACUUM이 파일을 산 줄로 다시 썼는가: 끝(exit 0)·quick_check ok·뒤 WAL 비움·논리 지문 같음(또는 그사이 앱이 씀), 그리고 VACUUM이
+// WAL에 쓴 양이 새 DB 전체(쪽 수 × 쪽 크기) 이상 — 새 DB의 모든 쪽이 본 DB로 복사됐다(vacuum.c sqlite3BtreeCopyFile). 수가 없으면 아니다.
+const rewrote=(v,s)=>v?.exit===0&&v.quickCheck==='ok'&&v.walTruncated===true&&['same','app-wrote-meanwhile'].includes(v.logical)&&
+  Number.isInteger(v.after?.pages)&&v.after.pages>0&&Number.isInteger(s?.pragma?.page_size)&&Number.isInteger(v.walAfterVacuum)&&
+  v.walAfterVacuum>=v.after.pages*s.pragma.page_size;
+// 정리가 끝났다고 볼 때(v = vacuum 결과, s = 뒤 재기): VACUUM이 모든 쪽을 다시 썼고, 뒤 재기를 판정할 수 있었고, 빈 페이지 0·빈 페이지의
+// 0 아닌 바이트 0, 어디에도 표식 잔여 0, 빈 칸·덜 쓴 꼬리에 산 줄 사본도 판정 못 한 조각도 없다.
+// 페이지 안 빈 틈의 표식 없는 바이트·셀 사이 조각은 잔여로 보지 않고 수만 보인다(layout, 10-24 고침). VACUUM은 새 DB에 표와 색인을 먼저 만들고
+// 줄을 rowid 순서로 옮겨 넣어(vacuum.c) 색인에 키가 무작위로 들어가 페이지가 나뉘고, 나눌 때 다시 짠 페이지(btree.c rebuildPage)는 가운데
+// 빈 틈을 지우지 않아 옮겨 간 산 셀 바이트가 남는다. 새 파일은 산 줄에서만 지어지니 그 바이트는 지운 자료일 수 없다(10-23 운영 2,419바이트·
+// 조각 12, 같은 꼴 로컬 실험 2,069·8 — 그때까지의 「0이어야 함」 판정은 정리가 끝나도 거짓을 냈다). 다시 썼다는 증거가 없으면 이 너그러움도 없다.
+// 너그러움은 페이지 안 빈 틈과 셀 사이 조각에만이다 — 덜 쓴 WAL 꼬리(walTorn)는 VACUUM 뒤 쓰기에서 생기고 칸 경계도 믿을 수 없어
+// 0 아닌 바이트가 있으면 깨끗하지 않다(10-24 GPT GA1). 빈 페이지 목록도 그대로 0이어야 한다.
+const clean=(v,s)=>rewrote(v,s)&&decided(s)&&s.pragma?.freelist_count===0&&s.residue?.freelist?.nonzeroBytes===0&&s.residue?.walTorn?.nonzeroBytes===0&&
+  parts(s).every(([k,x])=>x.payloadResidue+x.draftResidue===0&&(!STRICT.includes(k)||x.payloadLive+x.draftLive+x.payloadShort+x.draftShort===0));
+const layout=s=>({gapBytes:s?.residue?.inPage?.nonzeroBytes??null,fragmentBytes:s?.residue?.fragmentBytes??null});
+module.exports={brief,decided,rewrote,clean,layout};
 if(require.main===module)main();
 
 function main(){
@@ -62,8 +73,8 @@ if(vacuum){const js=fs.readFileSync(path.join(__dirname,'vacuum.mjs'),'utf8');if
   const record={label,mode:vacuum?'vacuum':'scan',approval,checkedAt:new Date().toISOString(),result};
   if(out)try{fs.writeFileSync(out,JSON.stringify(record,null,1)+'\n',{flag:'wx'});}catch(e){console.error('결과 파일을 쓰지 못했습니다('+e.code+') — 아래 요약과 전체 결과:');console.error(JSON.stringify(record));process.exitCode=1;}
   const w=result.find(x=>x.hasDb);
-  console.log(JSON.stringify({label,writer:w?.node||null,...(vacuum?{error:w?.error,before:brief(w?.before),vacuum:w?.vacuum,after:brief(w?.after),afterClean:clean(w?.after)}:{...brief(w),decided:decided(w)}),
+  console.log(JSON.stringify({label,writer:w?.node||null,...(vacuum?{error:w?.error,before:brief(w?.before),vacuum:w?.vacuum,after:brief(w?.after),rewrote:rewrote(w?.vacuum,w?.after),afterClean:clean(w?.vacuum,w?.after),layout:layout(w?.after)}:{...brief(w),decided:decided(w)}),
     errors:result.filter(x=>x.error).map(x=>x.node+' '+x.error)},null,1));
-  if(!w||w.error||(!vacuum&&!decided(w))||(vacuum&&(w.vacuum?.exit!==0||w.vacuum?.quickCheck!=='ok'||w.vacuum?.walTruncated!==true||!clean(w.after))))process.exitCode=1;
+  if(!w||w.error||(!vacuum&&!decided(w))||(vacuum&&(w.vacuum?.exit!==0||w.vacuum?.quickCheck!=='ok'||w.vacuum?.walTruncated!==true||!clean(w.vacuum,w.after))))process.exitCode=1;
 })().catch(e=>{console.error('ERR',e.message);process.exit(1);});
 }
