@@ -217,7 +217,7 @@ h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;line-height:1.1;letter-spaci
 /* 카드 안 표 — 미리 보기를 가리지 않게 작게. 사진 칸 표는 개수 표(오른쪽 위)와, 여러 장 띠에서 옆 칸의 개수 표와도 겹치지 않게 왼쪽 아래. */
 .tag{display:inline-flex;align-items:center;gap:6px;justify-self:start;padding:2px 9px 2px 8px;border-radius:999px;background:var(--tag-bg);color:var(--mark);font-size:13px;font-weight:600;line-height:1.5;letter-spacing:0;white-space:nowrap;vertical-align:middle}
 .tag::before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:var(--lapis)}
-.settings dt .tag{margin-left:6px}
+.settings dt .tag{margin-left:2px}
 .copy-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .post-flag{padding:9px 18px;background:var(--tag-bg);color:var(--mark);font-size:13px;font-weight:600;line-height:1.4}
 .frame-tag{position:absolute;bottom:12px;left:12px;padding:5px 10px;border-radius:999px;background:rgba(8,9,12,.62);color:#fff;font-size:13px;font-weight:600;line-height:1.2}

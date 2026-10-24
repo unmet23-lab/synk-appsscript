@@ -163,7 +163,7 @@ test('what changed jumps to the post, the chip jumps back, and an answer does no
   f.ids['review-comment'].value='확인했어요';f.submit('comment');f.resolveRequest(1,{...withPrevious(revised),review:{...withPrevious(revised).review,revision:2,feedback:[{id:'a',name:'',comment:'확인했어요',decision:'comment',createdAt:'2026-10-13T02:00:00Z'}]}});await flush();
   assert.equal(byClass(f.ids['review-content'],'changes')[0],sheet,'same comparison, same nodes');assert.equal(details[0].open,true);
 });
-test('narrow screens fold the list to four with a show-all button; same, unavailable and first versions read differently (2026-10-24)',async()=>{
+test('narrow screens fold the list to three with a show-all button; same, unavailable and first versions read differently (2026-10-24)',async()=>{
   const narrow=fixture(undefined,{matchMedia:query=>({matches:/max-width/.test(query)})});narrow.resolveRequest(0,withPrevious(revised));await flush();
   const list=byClass(narrow.ids['review-content'],'change');assert.deepEqual(list.map(item=>item.hidden),[false,false,false,true,true,true]);assert.ok(list.every(item=>item.children[0].open===false));
   assert.deepEqual(byClass(narrow.ids['review-content'],'change-group').map(head=>[head.textContent,head.hidden]),[['검토 계정 · 인스타그램',false],['페이스북 계정 · 페이스북',true]]);
@@ -183,6 +183,29 @@ test('a schedule that only lost one of two slots is not called unset, and a body
   const sheet=byClass(f.ids['review-content'],'changes')[0],text=f.text(sheet);
   assert.match(text,/올라가는 때\n뺀 때 1/);assert.doesNotMatch(text,/아직 다시 정하지 않았어요/);
   assert.deepEqual(byClass(sheet,'view-post').map(node=>node.textContent),['올라가는 때에서 보기']);
+});
+test('removed copies and photos name the last version, a failed photo hides its mark, a changed setting reads with a space, and schedule dates follow the slot time zone (Fable 10-24 F1–F4)',async()=>{
+  const slot=at=>({account:'검토 계정',scheduledAt:at,timezone:'America/New_York',cancelled:false});
+  const previous={...revised,changes:[
+    {kind:'copies',field:'copyVariants',variant:'v0',account,items:[{index:1,change:'removed'},{index:0,change:'changed',text:{rows:[{type:'removed',text:'A'},{type:'added',text:'B'}],stats:{changed:0,removed:1,added:1}}}]},
+    {kind:'media',field:'media',variant:'v0',account,items:[{change:'removed',index:1,type:'image',width:100,height:100,duration:null},{change:'replaced',index:1,key:'v0m0',type:'image',width:100,height:100,duration:null,before:{type:'image',width:200,height:100,duration:null}}]},
+    {kind:'options',field:'options',variant:'v0',account,items:[{key:'firstComment',before:'옛 댓글',after:'첫 댓글'}]},
+    {kind:'schedule',field:'schedule',removed:[slot('2026-10-27T03:00:00Z')],added:[slot('2026-10-28T03:00:00Z')]}]};
+  const f=fixture();f.resolveRequest(0,withPrevious(previous));await flush();
+  const content=f.ids['review-content'],sheet=byClass(content,'changes')[0],text=f.text(sheet);
+  // F1 — 뺀 것의 번호는 지난 판 자리라 「지난 판의」가 붙고, 지금 판의 같은 번호와 섞여 읽히지 않는다
+  assert.match(text,/지난 판의 문구 2 뺌 · 문구 1 고침/);assert.match(text,/지난 판의 사진 1 뺌 · 사진 1 바뀜/);assert.doesNotMatch(text,/(^|[^의] )문구 2 뺌/);
+  assert.ok(all(sheet,node=>node.tagName==='h4').some(node=>node.textContent==='지난 판의 문구 2 — 뺌'));
+  // F4 — 서울이 아닌 일정은 그 시간대 날짜(뉴욕 10월 26일 오후 11시 → 27일 오후 11시)
+  assert.match(text,/10월 26일 → 10월 27일/);assert.doesNotMatch(text,/10월 27일 → 10월 28일/);
+  // F3 — 바뀐 설정 이름 뒤에 빈칸이 있어 「첫 댓글 바뀜」으로 읽힌다
+  const term=all(content,node=>node.tagName==='dt'&&byClass(node,'tag').length>0)[0];assert.ok(term);assert.match(term.textContent,/ $/);assert.equal(byClass(term,'tag')[0].textContent,'바뀜');
+  // F2 — 받기 실패 안내가 보이는 동안 사진 칸 왼쪽 아래 표를 숨기고, 다시 누르면 되살린다
+  const figure=byClass(content,'frame').find(node=>byClass(node,'frame-tag').length>0),flag=byClass(figure,'frame-tag')[0],load=byClass(figure,'load')[0];
+  assert.equal(flag.textContent,'바뀐 사진');assert.notEqual(flag.hidden,true);
+  let action=load.handlers.click();f.resolveRequest(1,{error:'잠시 뒤 다시 해 주세요.'},503);await action;
+  assert.equal(byClass(figure,'frame-error')[0].hidden,false);assert.equal(flag.hidden,true);
+  action=load.handlers.click();assert.equal(flag.hidden,false);f.resolveRequest(2,{type:'image/png'});await action;assert.equal(flag.hidden,false);
 });
 test('Fable 10-23 follow-ups: total repeat count, reply-scope names, headings that read with their counts, and a page restored from the back-forward cache reloads',async()=>{
   const x={account:{platform:'x',name:'모루',profile:'@moru'},text:'글',format:'text',options:{whoCanReply:'mentionedUsers'},copyVariants:[],media:[]};

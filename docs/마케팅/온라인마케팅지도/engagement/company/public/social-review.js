@@ -36,9 +36,11 @@
       return z===ZONE?text:text+' ('+z+')';
     }catch{return String(value);}
   }
-  function day(value){
+  // 일정이면 그 일정의 시간대로 읽어 본문 「전/후」 줄(when)과 같은 날짜가 되게 한다(Fable 10-24 F4). 모르는 시간대면 서울로.
+  function day(value,zone){
     const date=new Date(value);if(!value||Number.isNaN(date.getTime()))return '';
-    try{const p=Object.fromEntries(new Intl.DateTimeFormat('ko-KR',{timeZone:ZONE,month:'numeric',day:'numeric'}).formatToParts(date).map(x=>[x.type,x.value]));return p.month+'월 '+p.day+'일';}catch{return '';}
+    for(const z of [zone||ZONE,ZONE]){try{const p=Object.fromEntries(new Intl.DateTimeFormat('ko-KR',{timeZone:z,month:'numeric',day:'numeric'}).formatToParts(date).map(x=>[x.type,x.value]));return p.month+'월 '+p.day+'일';}catch{}}
+    return '';
   }
   const clock=seconds=>{const s=Math.max(0,Math.round(Number(seconds)||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
   function setBusy(value){busy=value;for(const button of [...form.querySelectorAll('button'),dockApprove])button.disabled=value;for(const input of form.querySelectorAll('input,textarea'))input.disabled=value||!!pending;}
@@ -82,7 +84,8 @@
     const entries=Object.entries(raw||{}).filter(([,value])=>value!==''&&value!=null);
     if(!entries.length)return null;
     const box=el('section','settings'),list=el('dl');
-    for(const [key,value] of entries){const row=el('div'),term=el('dt',null,has(optionNames,key)?optionNames[key]:key);if(changed.has(key))term.append(tag('바뀜'));row.append(term,el('dd',null,optionValue(key,value)));list.append(row);}
+    // 「바뀜」 표 앞에 빈칸을 두어 「첫 댓글 바뀜」으로 읽히게 한다(Fable 10-24 F3)
+    for(const [key,value] of entries){const row=el('div'),term=el('dt',null,has(optionNames,key)?optionNames[key]:key);if(changed.has(key)){term.textContent+=' ';term.append(tag('바뀜'));}row.append(term,el('dd',null,optionValue(key,value)));list.append(row);}
     box.append(el('h3',null,'함께 보내는 설정'),list);
     return box;
   }
@@ -99,9 +102,11 @@
     load.append(label,el('span','load-meta',[video&&media.duration?clock(media.duration):'',media.width&&media.height?media.width+'×'+media.height:''].filter(Boolean).join(' · ')));
     figure.append(load,problem);
     if(total>1)figure.append(el('span','count',(index+1)+'/'+total));
-    if(badge)figure.append(el('span','frame-tag',badge));
+    // 받기 실패 안내와 바뀐 사진 표가 칸 왼쪽 아래에서 겹치지 않게, 안내가 보이는 동안 표를 숨긴다(Fable 10-24 F2)
+    const flag=badge?el('span','frame-tag',badge):null;
+    if(flag)figure.append(flag);
     load.addEventListener('click',async()=>{
-      load.disabled=true;label.textContent='불러오는 중';problem.hidden=true;
+      load.disabled=true;label.textContent='불러오는 중';problem.hidden=true;if(flag)flag.hidden=false;
       try{
         const blob=await api('media',{mediaKey:media.key},true);
         if(closed)return;
@@ -111,7 +116,7 @@
         element.src=url;load.replaceWith(element);
       }catch(error){
         load.disabled=false;label.textContent=word;
-        if([403,410].includes(error.status))close(error.message);else{problem.textContent=error.message;problem.hidden=false;}
+        if([403,410].includes(error.status))close(error.message);else{problem.textContent=error.message;problem.hidden=false;if(flag)flag.hidden=true;}
       }
     });
     return figure;
@@ -228,6 +233,8 @@
   const accountName=account=>{const a=account||{},p=String(a.platform||'');return [a.name||a.profile||'게시 계정',has(PLATFORM,p)?PLATFORM[p]:p].filter(Boolean).join(' · ');};
   const lineCount=s=>[s?.changed?'고친 줄 '+s.changed:'',s?.removed?'뺀 줄 '+s.removed:'',s?.added?'더한 줄 '+s.added:''].filter(Boolean).join(' · ');
   const COPY={added:'새로 더함',removed:'뺌',changed:'고침',moved:'자리 바뀜'};
+  // 뺀 문구·사진의 번호는 지난 판 자리다 — 지금 판의 같은 번호와 헷갈리지 않게 「지난 판의」를 붙인다(Fable 10-24 F1)
+  const past=item=>item.change==='removed'?'지난 판의 ':'';
   function valueText(field,value){
     if(value==null||value==='')return '없음';
     if(field==='format')return has(FORMAT,value)?FORMAT[value]:String(value);
@@ -238,7 +245,7 @@
   }
   const optionText=(key,value)=>value==null||value===''?'없음':String(optionValue(key,value));
   function fileLine(item){
-    const where=item.change==='moved'?noun(item.type)+' '+item.from+' → '+item.index:noun(item.type)+' '+item.index;
+    const where=item.change==='moved'?noun(item.type)+' '+item.from+' → '+item.index:past(item)+noun(item.type)+' '+item.index;
     const meta=[item.type==='video'&&item.duration?clock(item.duration):'',item.width&&item.height?item.width+'×'+item.height:''].filter(Boolean).join(' · ');
     const was=item.change==='replaced'&&item.before?' (전: '+[noun(item.before.type),item.before.width&&item.before.height?item.before.width+'×'+item.before.height:''].filter(Boolean).join(' ')+')':'';
     return where+' '+(has(MOVE,item.change)?MOVE[item.change]:'')+(meta?' · '+meta:'')+was;
@@ -246,11 +253,11 @@
   function brief(change){
     const items=Array.isArray(change.items)?change.items:[];
     if(change.kind==='text')return lineCount(change.stats);
-    if(change.kind==='media')return items.map(item=>item.change==='moved'?noun(item.type)+' '+item.from+' → '+item.index+' 자리 바뀜':noun(item.type)+' '+item.index+' '+(MOVE[item.change]||'')).join(' · ');
+    if(change.kind==='media')return items.map(item=>item.change==='moved'?noun(item.type)+' '+item.from+' → '+item.index+' 자리 바뀜':past(item)+noun(item.type)+' '+item.index+' '+(MOVE[item.change]||'')).join(' · ');
     if(change.kind==='options')return items.map(item=>has(optionNames,item.key)?optionNames[item.key]:item.key).join(' · ');
-    if(change.kind==='copies')return items.map(item=>'문구 '+(item.index+1)+' '+(COPY[item.change]||'')).join(' · ');
+    if(change.kind==='copies')return items.map(item=>past(item)+'문구 '+(item.index+1)+' '+(COPY[item.change]||'')).join(' · ');
     // 더한 때가 없어도 지금 판에 남은 예약이 있으면 뺀 것만 말한다(아르곤 A1) — 「아직 다시 정하지 않았어요」는 지금 판에 예약이 하나도 없을 때만.
-    if(change.kind==='schedule'){const before=slotGroups(change.removed||[]),after=slotGroups(change.added||[]);if(!after.length)return booked()?'뺀 때 '+before.length:'아직 다시 정하지 않았어요';if(before.length===1&&after.length===1&&day(before[0].entry.scheduledAt)!==day(after[0].entry.scheduledAt))return day(before[0].entry.scheduledAt)+' → '+day(after[0].entry.scheduledAt);return [before.length?'뺀 때 '+before.length:'',after.length?'더한 때 '+after.length:''].filter(Boolean).join(' · ');}
+    if(change.kind==='schedule'){const before=slotGroups(change.removed||[]),after=slotGroups(change.added||[]);if(!after.length)return booked()?'뺀 때 '+before.length:'아직 다시 정하지 않았어요';if(before.length===1&&after.length===1){const was=day(before[0].entry.scheduledAt,before[0].entry.timezone),now=day(after[0].entry.scheduledAt,after[0].entry.timezone);if(was!==now)return was+' → '+now;}return [before.length?'뺀 때 '+before.length:'',after.length?'더한 때 '+after.length:''].filter(Boolean).join(' · ');}
     if(change.kind==='value'){const a=valueText(change.field,change.before),b=valueText(change.field,change.after);return a.length+b.length<=40?a+' → '+b:'바뀜';}
     return '';
   }
@@ -285,7 +292,7 @@
     else if(change.kind==='media'){const list=el('ul','change-files');for(const item of items){list.append(el('li',null,fileLine(item)));size++;}box.append(list);}
     else if(change.kind==='options')for(const item of items){box.append(el('h4',null,has(optionNames,item.key)?optionNames[item.key]:item.key),either(item,value=>optionText(item.key,value)));size++;}
     else if(change.kind==='copies')for(const item of items){
-      box.append(el('h4',null,'문구 '+(item.index+1)+' — '+(item.change==='moved'?'문구 '+(item.from+1)+'에서 자리를 옮겼어요':COPY[item.change]||'')));size++;
+      box.append(el('h4',null,past(item)+'문구 '+(item.index+1)+' — '+(item.change==='moved'?'문구 '+(item.from+1)+'에서 자리를 옮겼어요':COPY[item.change]||'')));size++;
       if(item.change!=='changed')continue;
       if(item.title&&TITLED.has(platform))box.append(el('p','diff-label','제목'),either(item.title,value=>value||'없음'));
       if(item.text)box.append(lines(item.text.rows,item.text.truncated));
