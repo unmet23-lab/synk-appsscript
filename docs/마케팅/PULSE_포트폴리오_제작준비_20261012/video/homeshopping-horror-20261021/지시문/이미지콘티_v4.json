@@ -37,7 +37,9 @@
   "손_대역": "The object is a placeholder prop for visual effects: a plain, matte, solid chroma-key green block with no markings, no texture and no reflections — it will be replaced later. Keep it pure flat green.",
   "손_사람": "The hands belong to a young Korean woman: slim fingers, natural short nails with no polish, no rings, no jewelry, warm natural skin. Only the hands and a little of the forearms are in the frame — no face, no body.",
   "눈길_왼쪽위": "Her eyes look up and to the LEFT side of the frame — her irises sit in the left corners of her eyes, toward the left edge of the frame — at a man standing there out of frame. She does not look at the camera and does not look to the right.",
-  "셋_얼굴_방없이": "THE THREE WOMEN, left to right — (C) a plus-size Korean woman about 30 with a short, tightly curled dark-brown permed bob and a full round face, the woman in Images 2 and 3, wearing {통2_코케트}; (B) a slim Korean woman about 27 with a black bob with straight blunt bangs, large round tortoiseshell glasses and a small mole on her cheek, the woman in Images 4 and 5, wearing {리4_코케트}; (A) a young Korean woman in her early twenties with long straight jet-black hair and a center part, the woman in Images 6 and 7, wearing {지유_코케트}. Images 2 to 7 are identity references only — ignore their backgrounds, clothing and lighting. Each woman keeps her own face, hair and body exactly; do not mix their faces."
+  "셋_얼굴_방없이": "THE THREE WOMEN, left to right — (C) a plus-size Korean woman about 30 with a short, tightly curled dark-brown permed bob and a full round face, the woman in Images 2 and 3, wearing {통2_코케트}; (B) a slim Korean woman about 27 with a black bob with straight blunt bangs, large round tortoiseshell glasses and a small mole on her cheek, the woman in Images 4 and 5, wearing {리4_코케트}; (A) a young Korean woman in her early twenties with long straight jet-black hair and a center part, the woman in Images 6 and 7, wearing {지유_코케트}. Images 2 to 7 are identity references only — ignore their backgrounds, clothing and lighting. Each woman keeps her own face, hair and body exactly; do not mix their faces.",
+  "친구손_하나": "TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head with the heart sunglasses is just inside the top edge and her shoulders are cut off by the bottom edge. The only other thing in the frame is her friend's hand, coming in from the left edge and resting gently on her bare shoulder to comfort her: a small, soft young woman's hand with short natural nails, and the edge of a plain white cotton t-shirt sleeve just visible at the left edge of the frame — the hand of her curly-haired girlfriend sitting right beside her on the sofa. It is clearly a woman's hand, slender and delicate. No other face or body.",
+  "친구손_둘": "TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head with the heart sunglasses is just inside the top edge and her shoulders are cut off by the bottom edge. The only other things in the frame are her two girlfriends' hands, one coming in from each side edge and resting gently on her bare shoulders to comfort her: on the left, a small, soft young woman's hand with the edge of a plain white cotton t-shirt sleeve at the left edge; on the right, a slender young woman's hand with a thin ring and a sheer white chiffon sleeve at the right edge. Both are clearly women's hands, slender and delicate. No other face or body."
  },
  "컷": [
   {
@@ -476,6 +478,46 @@
    ],
    "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He holds the knife vertically in his right fist in front of his chest, the steel blade pointing straight up and catching the candlelight. His LEFT hand hangs lower, at his left hip and clearly inside the frame, and grips the small fluffy red heart pouch by its thin gold chain strap, so the red pouch is plainly visible. His masked face looks down at the women out of frame. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {빛} {필름} {사진남1}",
    "메모": "S15p1과 같은 글 — 둘째 판"
+  },
+  {
+   "id": "S08c1",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S08"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} {친구손_하나} Her face is in the middle of the frame. Scared, eyebrows raised, lips just opening to speak. {눈길_왼쪽위} Behind her: the leopard-print blanket at the upper left and the fairy-light bokeh across the top. {클로즈업_카메라} {빛} {필름}",
+   "메모": "#8 영상 시작 그림(10-24) — 어깨 손을 원본처럼 친구(통2) 손으로. 남자 손처럼 그린 첫 판은 Omni가 네 번 다 정책으로 막았다."
+  },
+  {
+   "id": "S08c2",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S08"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} {친구손_하나} Her face is in the middle of the frame. Scared, eyebrows raised, lips just opening to speak. {눈길_왼쪽위} Behind her: the leopard-print blanket at the upper left and the fairy-light bokeh across the top. {클로즈업_카메라} {빛} {필름}",
+   "메모": "S08c1과 같은 글 — 둘째 판"
+  },
+  {
+   "id": "S20c1",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S20"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} {친구손_둘} Her face is slightly left of the center of the frame. She starts to cry out, mouth opening in a pleading grimace that shows her teeth, eyebrows raised, looking up toward the upper left. The leopard-print blanket at the upper left. {클로즈업_카메라} {빛} {필름}",
+   "메모": "#20 영상 시작 그림(10-24) — 양쪽 어깨 손을 원본처럼 친구 둘(C 통2 · A 지유) 손으로."
+  },
+  {
+   "id": "S20c2",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S20"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} {친구손_둘} Her face is slightly left of the center of the frame. She starts to cry out, mouth opening in a pleading grimace that shows her teeth, eyebrows raised, looking up toward the upper left. The leopard-print blanket at the upper left. {클로즈업_카메라} {빛} {필름}",
+   "메모": "S20c1과 같은 글 — 둘째 판"
   }
  ]
 }

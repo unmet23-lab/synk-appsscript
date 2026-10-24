@@ -196,6 +196,20 @@
    "판": 2,
    "쓰는 곳": "#15 23.33–24.71초(1.38초) — 「안 돼!」(C, 화면 밖)",
    "prompt": "Low-angle medium shot, handheld. The masked man holds the kitchen knife (a harmless film prop) upright in his right fist in front of his chest, the blade pointing straight up, and the small red heart pouch in his left hand, staring down at people out of frame. Near the end he turns to his right and reaches down with his hand."
+  },
+  {
+   "id": "S08n",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#8 9.08–10.21초(1.12초) — B 「진짜!」 · 시작 그림은 어깨 손을 친구 손으로 다시 구운 S08n",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman with round glasses, bangs and a red bow looks up toward the upper left of the frame, wide-eyed, while her girlfriend beside her keeps a gentle hand on her shoulder. Right away she says one short word, then keeps looking up to the upper left. She does not look at the camera."
+  },
+  {
+   "id": "S20n",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#20 30.42–31.75초(1.33초) — B 「잠깐만요!」 · 시작 그림은 양쪽 어깨 손을 친구 둘 손으로 다시 구운 S20n",
+   "prompt": "Close-up, handheld. The young woman with round glasses and a red bow, with her two girlfriends' gentle hands on her shoulders, opens her mouth right away and starts talking fast, teary-eyed, looking up toward the upper left of the frame."
   }
  ]
 }
