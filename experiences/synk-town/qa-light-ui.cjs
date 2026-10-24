@@ -36,11 +36,13 @@ async function fixture(startMs) {
 }
 const quantile = (list, q) => { const s = [...list].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor((s.length - 1) * q))]; };
 const metricsOf = page => page.evaluate(() => { const m = SYNKTownDay.metrics(); return { light: m.light || null, lightClock: m.lightClock || null, camera: m.camera, location: m.location,
-  bakedDistrict: m.bakedDistrict && { loaded: m.bakedDistrict.loaded, failed: m.bakedDistrict.failed }, drawCalls: m.drawCalls, triangles: m.triangles, textures: m.textures, dpr: m.dpr, frameCount: m.frameCount, quality: m.quality }; });
+  bakedDistrict: m.bakedDistrict && { loaded: m.bakedDistrict.loaded, failed: m.bakedDistrict.failed }, drawCalls: m.drawCalls, triangles: m.triangles, textures: m.textures, dpr: m.dpr, frameCount: m.frameCount, quality: m.quality, webglPrograms: globalThis.__webglPrograms ?? null }; });
 
 async function open(browser, item) {
   const { server, base, speed } = await fixture(kst(item.date, item.time));
   const context = await browser.newContext({ ...DEVICES[item.device], reducedMotion: item.reduced ? 'reduce' : 'no-preference' });
+  // Every program the page links, whatever build it runs (the W7 rig's own count is not in an older build).
+  await context.addInitScript(() => { const p = WebGL2RenderingContext.prototype, create = p.createProgram; p.createProgram = function (...a) { globalThis.__webglPrograms = (globalThis.__webglPrograms || 0) + 1; return create.apply(this, a); }; });
   const page = await context.newPage(), errors = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error' && !/Failed to load resource/.test(message.text())) errors.push(message.text()); });
@@ -97,11 +99,11 @@ async function scene(browser, item) {
 /** A day at 300× once the page is up (five real minutes; under reduced motion one and a half): the light must
  * move through every band and the rain, and compile nothing once warm; a still screen must still repaint. */
 async function sweep(browser, reduced) {
-  const item = { id: `sweep-baked-desktop${reduced ? '-reduced' : ''}`, date: '2026-10-30', time: '04:00', device: 'desktop', town: 'baked', reduced };
+  const item = { id: `${baseline ? 'base-' : ''}sweep-baked-desktop${reduced ? '-reduced' : ''}`, date: '2026-10-30', time: '04:00', device: 'desktop', town: 'baked', reduced };
   const { page, errors, close, speed } = await open(browser, item);
   try {
     const samples = []; speed(300);
-    for (let i = 0; i < (reduced ? 30 : 100); i++) { const m = await metricsOf(page); samples.push({ band: m.lightClock?.band, key: m.lightClock?.key?.to, raining: m.lightClock?.rain?.raining, drawn: m.light?.rain?.drawn, programs: m.light?.programs, frameCount: m.frameCount }); await delay(3000); }
+    for (let i = 0; i < (reduced ? 30 : 100); i++) { const m = await metricsOf(page); samples.push({ band: m.lightClock?.band, key: m.lightClock?.key?.to, raining: m.lightClock?.rain?.raining, drawn: m.light?.rain?.drawn, programs: m.webglPrograms, frameCount: m.frameCount }); await delay(3000); }
     const warm = samples.slice(3).map(s => s.programs).filter(n => n !== null && n !== undefined);
     return { id: item.id, reduced, bands: [...new Set(samples.map(s => s.band))], keys: [...new Set(samples.map(s => s.key))], rained: samples.some(s => s.raining), drew: Math.max(...samples.map(s => s.drawn || 0)),
       programsFirst: warm[0], programsLast: warm.at(-1), programsMax: Math.max(...warm), framesFirst: samples[3].frameCount, framesLast: samples.at(-1).frameCount, errors, samples };

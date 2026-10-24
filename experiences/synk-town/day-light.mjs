@@ -107,6 +107,9 @@ export function createTownLight({ THREE, scene, renderer, sun, hemi, fill, baked
   const shelters = { rects: Array.from({ length: MAX_SHELTERS }, () => new THREE.Vector4()), tops: new Array(MAX_SHELTERS).fill(0), count: 0 };
   const glass = new Map(), lanterns = new Map(), wet = new Map(), glow = new THREE.Color(WINDOW_GLOW);
   let last = null, signature = '', bakedTown = false, drawnDrops = 0, appliedAt = 0, reducedNow = false;
+  // The sky overlay and the rain are drawn once on the first frames (alpha 0, no drops: nothing shows) so their
+  // programs exist before the first dusk or the first rain — an hour going by then compiles nothing at all.
+  let warm = 0;
 
   function makeRain(capacity) {
     const drops = new Float32Array(capacity * 16), corners = new Float32Array(capacity * 8), index = new Uint32Array(capacity * 6);
@@ -203,7 +206,7 @@ export function createTownLight({ THREE, scene, renderer, sun, hemi, fill, baked
     paintMaterials(state);
     const capacity = phone ? state.rain.dropsPhone : state.rain.dropsPc;
     drawnDrops = Math.round(capacity * state.rain.drops * (reducedMotion ? state.rain.reducedShare : 1));
-    if (drawnDrops > 0 && !rain) { rain = makeRain(capacity); rain.material.uniforms.rainShelterCount.value = shelters.count; }
+    if (!rain) { rain = makeRain(capacity); rain.material.uniforms.rainShelterCount.value = shelters.count; }
     if (rain) {
       const r = rain.material.uniforms, lit = Math.min(1, .2126 * state.baked.sky[0] + .7152 * state.baked.sky[1] + .0722 * state.baked.sky[2]);
       // Streaks catch the sky: lighter than what they fall past, quiet in the dark.
@@ -216,6 +219,8 @@ export function createTownLight({ THREE, scene, renderer, sun, hemi, fill, baked
    * server's clock, held still under reduced motion. */
   function frame(now, camera, center, wideRadius = 0) {
     sky.position.copy(camera.position); sky.scale.setScalar(Math.min(SKY_RADIUS, camera.far * .95));
+    if (warm === 1) { sky.visible = sky.material.uniforms.skyAlpha.value > .001; rain.visible = drawnDrops > 0; warm = 2; }
+    if (warm === 0 && rain) { sky.visible = rain.visible = true; warm = 1; }
     if (!rain?.visible || !last) return;
     const r = rain.material.uniforms; r.rainCenter.value.copy(center); r.rainRadius.value = Math.max(last.rain.radius, wideRadius);
     r.rainPixel.value = 2 * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, renderer?.domElement.clientHeight || 900);
