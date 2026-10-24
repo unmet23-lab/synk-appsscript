@@ -1,6 +1,7 @@
-/** Mood lines under a resident's name (vertical slice design §7-3, W4): when the player is within a resident's
+/** Mood lines by a resident's name (vertical slice design §7-3, W4): when the player is within a resident's
  * near radius and the plan's current segment for that resident changed its mind, a small picture and one line
- * hang under the name label — not a speech bubble, and nothing asks for an answer. The line's level is one
+ * hang over the name label (under it only when the top of the scene has no room) — not a speech bubble, and
+ * nothing asks for an answer. The line's level is one
  * function (lineLevel) the learning adapter (W9) will plug into; 「무슨 뜻이에요?」 shows that line alone one level
  * down with its picture larger and changes no ladder state (§13-1). The state behind it never shows (G2).
  * Screen-only module: the server's plan decides which line (segment.mood), the screen only draws it.
