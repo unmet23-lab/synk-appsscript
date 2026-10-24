@@ -224,6 +224,48 @@
    "판": 2,
    "쓰는 곳": "#10 11.42–14.04초(2.62초) — A 「안 돼 안 돼 안 돼 안 돼!」 + C 흐느낌 · 공포 먼저로 다시(10-24)",
    "prompt": "Handheld three-shot with a nervous shake. The three women, pressed tightly together on the sofa and clutching each other, stare up toward the upper left of the frame in terror. The woman on the right in the white lace veil pleads fast in a shaking voice, eyes wide with fear; the curly-haired woman on the left in the flower crown covers her mouth with her hand, sobbing in fright; the woman in the middle with glasses is frozen stiff, trembling, lips pressed together, tears welling. None of them looks at the camera."
+  },
+  {
+   "id": "S01f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#1 0.00–0.54초(0.54초) — 강도 「가진 거 다 내놔!」 · 공포 먼저",
+   "prompt": "Wide shot at standing eye level, handheld with a strong, nervous shake. At the far left edge, the masked man in black is seen from the side and back, holding a kitchen knife (a harmless film prop) low at his waist. The curly-haired woman in the flower crown and the woman with glasses shrink back by the sofa, shoulders hunched, hands clutched at their chests, frozen in terror; on the right, the woman in the white veil spins away toward the sofa armrest in panic in the first second. The low coffee table with candles stays in front of them."
+  },
+  {
+   "id": "S05f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#5 4.67–6.67초(2.00초) — 숨소리 · 흐느낌 · 공포 먼저",
+   "prompt": "Handheld shot with a nervous shake that starts at the women's waist height. In the first second the three women drop down onto the sofa in fright, pressed tightly together and clutching each other's hands, and the shaky camera tilts up with them to their terrified faces at the top of the frame: eyes wide, mouths trembling, fast breathing and sobbing. Nobody speaks."
+  },
+  {
+   "id": "S07f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#7 8.17–9.08초(0.92초) — A 「이게 전부예요!」 · 공포 먼저",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman in the white lace veil stares up toward the upper left of the frame and pleads fast in a trembling voice; her lips move with the words, her eyes are wide open with fear so the whites show, her eyebrows raised and pulled together. The fairy-light bokeh behind her stays soft."
+  },
+  {
+   "id": "S08f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#8 9.08–10.21초(1.12초) — B 「진짜!」 · 공포 먼저(친구 손)",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman with round glasses, bangs and a red bow stares up toward the upper left of the frame in terror, her girlfriend's gentle hand on her shoulder. Right away she says one short word in a shaking voice, eyes wide with fear, then keeps staring, frozen. She does not look at the camera."
+  },
+  {
+   "id": "S17f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#17 25.62–26.67초(1.04초) — 정적 · 공포 먼저(친구 손)",
+   "prompt": "Close-up, handheld and slightly shaky. The young woman with round glasses and a red bow stares up toward the upper left of the frame, frozen stiff with terror, lips pressed together and trembling, eyes wide, breathing fast, her girlfriend's gentle hand on her shoulder. Only small movements: a shiver and a hard swallow. She does not speak and does not look at the camera."
+  },
+  {
+   "id": "S18f",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#18 26.67–28.38초(1.71초) — 정적 · 공포 먼저",
+   "prompt": "Close-up, handheld. The young woman in the white lace veil stares toward the upper left of the frame, frozen in terror, eyes wide and glassy, lips closed and trembling, holding her breath. She does not speak and does not look at the camera."
   }
  ]
 }
