@@ -111,6 +111,10 @@
     lu.style.setProperty('--k', Math.max(0.3, k).toFixed(4));
     lu.classList.toggle('dense', k * 10 < 18 && k * 20 >= 18);
     lu.classList.toggle('sparse', k * 20 < 18);
+    // 프로필의 키 띠는 모두를 한 눈금에 세워 화면보다 넓다 — 지금 모델이 띠 가운데 오게 옆으로 민다(10-24 화면 검수).
+    // 위에서 너비를 비웠다 다시 잡을 때 스크롤이 처음으로 돌아가므로 맞출 때마다 다시 민다. 보드의 키 순서는 지금 모델이 없어 그대로다.
+    const on = minK && $('.lu-fig.on', lu), sc = lu.parentElement;
+    if (on && sc.classList.contains('lu-scroll')) sc.scrollLeft = on.offsetLeft + on.offsetWidth / 2 - sc.clientWidth / 2;
   }
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver((es) => es.forEach((e) => fitLineup(e.target.closest('[data-lu]')))) : null;
   function watchLineups(scope) {

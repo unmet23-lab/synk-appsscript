@@ -180,9 +180,11 @@ b,strong{font-weight:600}
 .comp > div{padding:14px 12px 14px 0;min-width:0}
 .comp > div + div{padding-left:14px;border-left:1px solid var(--rule)}
 .comp dt{font-size:13px;color:var(--ink-3)}
-.comp dd{margin:4px 0 0;font-size:19px;font-weight:550;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 수치 칸 값: 칸보다 길면(「햇볕에 그을린 피부」를 390px 3열에) 말없이 잘리지 않게 줄을 바꾼다(10-24 화면 검수).
+   줄 높이를 em으로 주어 단위(small)·색 점도 같은 첫 줄 높이를 쓰고, 한 줄짜리 칸은 위아래 여백까지 옛 높이(1.55) 그대로다. */
+.comp dd{margin:4px 0 0;padding:.125em 0;font-size:19px;font-weight:550;letter-spacing:-.02em;line-height:1.3em;display:flex;align-items:flex-start;gap:8px;text-wrap:balance}
 .comp dd small{font-size:13px;color:var(--ink-3);font-weight:450}
-.dotc{flex:none;width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.dotc{flex:none;width:14px;height:14px;margin-top:calc((1.3em - 14px) / 2);border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
 .pick{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);gap:44px;padding-top:44px;padding-bottom:72px}
 .pick h2,.sec-h{display:block;font-size:14px;font-weight:600;margin-bottom:14px}
 .sec-h.top{margin-top:32px}
@@ -274,7 +276,7 @@ b,strong{font-weight:600}
 .cc-comp div{padding:10px 10px 10px 0;border-bottom:1px solid var(--rule)}
 .cc-comp div:nth-child(3n+2),.cc-comp div:nth-child(3n){padding-left:12px;border-left:1px solid var(--rule)}
 .cc-comp dt{font-size:13px;color:var(--ink-3)}
-.cc-comp dd{margin:2px 0 0;font-size:17px;font-weight:550;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.cc-comp dd{margin:2px 0 0;padding:.125em 0;font-size:17px;font-weight:550;line-height:1.3em;display:flex;align-items:flex-start;gap:6px;text-wrap:balance}
 .cc-pick{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:14px}
 .cc-pick dt{color:var(--ink-3)}
 .cc-pick dd{margin:0}

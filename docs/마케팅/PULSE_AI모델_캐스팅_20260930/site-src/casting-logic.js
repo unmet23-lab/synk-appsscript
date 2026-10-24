@@ -9,19 +9,30 @@
 
   const ASCII = /^[A-Za-z0-9 ]+$/;
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // 띄어 쓴 낱말 뒤에 붙어도 낱말이 끝난 것으로 보는 조사(「에너지 바를」)
+  const JOSA = '으로|에서|처럼|까지|보다|이랑|은|는|이|가|을|를|의|에|와|과|도|로|만|랑|용|류';
 
   // 글에서 낱말을 찾는다. 긴 낱말부터 찾고 찾은 자리는 지워서 「아이스크림」 안의 「크림」처럼 겹쳐 잡히지 않게 한다.
   // 영문 낱말(IT·AI·SUV)은 낱말 경계에서만 잡는다(OUTFIT의 IT를 잡지 않게).
+  // 세 글자 넘는 한글 낱말은 띄어 써도 잡는다(「에너지 바」 → 에너지바, 「아이스 크림」 → 아이스크림 — 10-24 화면 검수). 띄어 쓴 꼴은 앞뒤가
+  // 낱말 경계일 때만 받는다: 「패밀리 카페」의 「패밀리 카」(뒤에 「페」), 「가계 부담」의 「가계 부」, 「우선 케어」의 「선 케어」(앞에 「우」)는 잡지 않는다.
   function findWords(text, entries) {
     let rest = ' ' + String(text || '') + ' ';
     const found = [];
     const sorted = entries.slice().sort((a, b) => b.word.length - a.word.length);
     for (const e of sorted) {
-      const re = ASCII.test(e.word)
-        ? new RegExp('(^|[^A-Za-z0-9])' + escapeRe(e.word) + '(?=[^A-Za-z0-9]|$)', 'gi')
-        : new RegExp(escapeRe(e.word), 'g');
       let hit = false;
-      rest = rest.replace(re, (m) => { hit = true; return ' '.repeat(m.length); });
+      const blank = (m) => { hit = true; return ' '.repeat(m.length); };
+      if (ASCII.test(e.word)) {
+        rest = rest.replace(new RegExp('(^|[^A-Za-z0-9])' + escapeRe(e.word) + '(?=[^A-Za-z0-9]|$)', 'gi'), blank);
+      } else {
+        rest = rest.replace(new RegExp(escapeRe(e.word), 'g'), blank);
+        const chars = [...e.word.replace(/\s+/g, '')];
+        if (chars.length >= 3) {
+          const spaced = new RegExp('(^|[^가-힣])(' + chars.map(escapeRe).join('\\s*') + ')(?=[^가-힣]|(?:' + JOSA + ')(?![가-힣]))', 'g');
+          rest = rest.replace(spaced, (m, pre, word) => (/\s/.test(word) ? pre + blank(word) : m));
+        }
+      }
       if (hit) found.push(e);
     }
     return found;

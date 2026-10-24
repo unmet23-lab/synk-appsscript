@@ -131,6 +131,47 @@ test('브리프 추천: 2차 한결(10-24)이 음료·운동·게임·남성 스
   assert.ok(byCode('M06').hairBase.split(/[,·(]/)[0].trim().length <= 5);
 });
 
+test('업종 낱말 표: 세부 분야 낱말은 혼자 적어도 잡히고, 띄어 쓴 낱말은 붙여 쓴 꼴과 같게 읽는다(10-24 Fable P3)', () => {
+  const T = { ...TAX, genderWords: catalog.genderWords };
+  const all = (product) => L.recommend(models, { product }, T, models.length).map((r) => r.model.code);
+  // 세부 분야에만 있고 업종 낱말에 없으면 혼자 적었을 때 아무도 안 나온다(초콜릿·쿠키가 그랬다). 다른 낱말과 함께 쓰는 꾸밈말만 남긴다
+  const onlySub = new Set();
+  for (const i of catalog.industries) for (const ws of Object.values(i.sub || {})) for (const w of ws) if (!i.words.includes(w)) onlySub.add(w);
+  assert.deepEqual([...onlySub].sort(), ['가족', '등산', '패밀리'], '패밀리 SUV·가족 자동차·등산 여행처럼 꾸밈말로만 쓴다');
+  assert.deepEqual(all('초콜릿'), ['F02', 'M06'], '디저트 하린 · 간식 한결');
+  assert.deepEqual(all('쿠키'), ['F02', 'M06']);
+  // 띄어 쓴 꼴(세 글자 넘는 낱말): 붙여 쓴 꼴과 같은 추천
+  for (const [spaced, joined] of [['에너지 바', '에너지바'], ['아이스 크림', '아이스크림'], ['건강 기능 식품', '건강기능식품'], ['공기 청정기', '공기청정기'], ['커피 머신', '커피머신'], ['콜드 브루', '콜드브루'], ['스킨 케어', '스킨케어'], ['닭 가슴살', '닭가슴살'], ['전기 차', '전기차']]) {
+    assert.deepEqual(all(spaced), all(joined), `${spaced} = ${joined}`);
+  }
+  assert.deepEqual(all('에너지 바'), ['M06']);
+  assert.deepEqual(all('아이스 크림'), ['F02'], '「크림」만 보고 뷰티 모델로 새지 않는다');
+  assert.deepEqual(all('건강 기능 식품'), ['F05', 'F06', 'M05'], '「식품」만 보고 식음료(위스키 태준까지)로 새지 않는다');
+  assert.deepEqual(all('에너지 바를 먹는 장면'), ['M06'], '조사가 붙어도 낱말이 끝난 것으로 본다');
+  assert.deepEqual(L.readBrief({ product: '여름 선 크림' }, T).subs.get('beauty'), ['스킨케어', '선케어']);
+  // 띄어 쓴 꼴은 앞뒤가 낱말 경계일 때만 받는다 — 다른 낱말로 이어지는 글은 지금처럼 읽는다
+  assert.deepEqual(all('패밀리 카페 홍보'), all('카페 홍보'), '패밀리 카페는 카페 — 패밀리카(자동차)가 아니다');
+  assert.deepEqual(all('친구 사이 다정한 분위기'), all('친구 다정한 분위기'), '「사이 다정한」은 사이다가 아니다');
+  for (const p of ['가계 부담 줄이는 마트', '건강 보조금 안내', '에너지 바우처 안내']) assert.deepEqual(all(p), [], `${p}는 가계부·건강보조·에너지바가 아니다`);
+  assert.equal(L.readBrief({ product: '피부 우선 케어' }, T).subs.get('beauty'), undefined, '「우선 케어」의 「선 케어」를 선케어로 읽지 않는다');
+  assert.deepEqual([...L.readBrief({ product: '에너지 바' }, T).inds.get('food').words], ['에너지바'], '알아들은 낱말은 표의 꼴로 보인다');
+});
+
+// 화면은 1440·390 캡처로 확인하고(10-24 검수), 여기서는 그 고침이 되돌아가지 않게만 본다
+test('화면 원고: 수치 칸은 길면 줄을 바꾸고, 프로필 키 띠는 지금 모델을 가운데로 민다(10-24 Fable P2)', () => {
+  const fs = require('node:fs');
+  const css = fs.readFileSync(path.join(dir, 'site-src', 'style.css'), 'utf8'), app = fs.readFileSync(path.join(dir, 'site-src', 'app.js'), 'utf8');
+  for (const sel of ['.comp dd', '.cc-comp dd']) {
+    const rule = (css.match(new RegExp('^' + sel.replace(/\./g, '\\.') + '\\{([^}]*)\\}', 'm')) || [])[1];
+    assert.ok(rule, `${sel} 규칙`);
+    assert.doesNotMatch(rule, /nowrap|ellipsis/, `${sel}: 칸보다 긴 값(「햇볕에 그을린 피부」)을 자르지 않는다`);
+  }
+  const fit = app.slice(app.indexOf('function fitLineup('), app.indexOf('function watchLineups('));
+  assert.match(fit, /\$\('\.lu-fig\.on', lu\)[\s\S]*scrollLeft = on\.offsetLeft \+ on\.offsetWidth \/ 2 - sc\.clientWidth \/ 2/, '맞출 때마다 지금 모델을 띠 가운데로');
+  assert.match(app, /lineupHTML\(sorted, \{ current: m\.code, maxH: 300, minK: 1\.2 \}\)/, '프로필 띠만 지금 모델(current)이 있다');
+  assert.doesNotMatch(app, /lineupHTML\(sorted, \{ maxH: 440, dim, minK: 1\.45 \}\)[^\n]*current/, '보드의 키 순서는 지금 모델 없이 그대로');
+});
+
 test('브리프 추천: 성별 조건과 빈 브리프', () => {
   const men = L.recommend(models, { industry: 'fragrance', gender: '남' }, TAX, 3);
   assert.ok(men.length && men.every((r) => r.model.gender === '남'));
