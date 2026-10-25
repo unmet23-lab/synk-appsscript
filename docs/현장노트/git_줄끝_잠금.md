@@ -355,6 +355,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 이름을 바꿨다(`server-login-recovery.test.mjs`). 비밀이 아닌 파일 이름에는 `password`·`secret` 같은 낱말을 넣지 않는다.
 - 다시 확인: `git check-ignore -v <파일>`이 아무것도 찍지 않아야 한다(옛 이름은 `.gitignore:17:*password*`를 찍는다).
 
+### 임시 저장소에서 `git update-ref -d FETCH_HEAD`가 「refusing to update pseudoref」로 거절된다 (2026-10-25 Claude)
+- 증상: 검수용 임시 저장소를 만드는 도구(사슬 33 `make-review-repo-33-delta.cjs`)가 앞 저장소 객체를 fetch한 뒤 `git update-ref -d FETCH_HEAD`로 흔적을 지우려다 「refusing to update pseudoref 'FETCH_HEAD'」로 멈췄다.
+- 원인: 새 git은 `FETCH_HEAD` 같은 의사 참조를 `update-ref`로 바꾸거나 지우지 않는다(참조 저장소 밖의 파일이다).
+- 고침: 그 저장소의 `.git/FETCH_HEAD` 파일을 직접 지운다(임시 저장소 안에서만 — 공용 작업본의 것은 건드리지 않는다).
+- 다시 확인: 같은 도구가 끝까지 돌아 검수 저장소 `review-repo-33c`를 만들었다.
+
 ## 당기기·push
 
 ### 워크트리끼리 같이 보는 `origin/master`로 판을 만들면 남의 새 줄이 내 변경에 섞인다 (2026-10-19)
