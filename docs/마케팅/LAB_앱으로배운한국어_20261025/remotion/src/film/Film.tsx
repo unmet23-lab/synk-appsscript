@@ -5,6 +5,7 @@ import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { EN, KO } from '../lib/fonts';
 import { fr, N2_WORDS, T } from './timeline';
+import { LOCALES, type Loc, type LocText } from './locale';
 
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다(현장 노트)
@@ -79,7 +80,7 @@ const TopShade: React.FC<{ h?: number; a?: number }> = ({ h = 640, a = 0.62 }) =
   />
 );
 
-const PovTitle: React.FC = () => {
+const PovTitle: React.FC<{ L: LocText }> = ({ L }) => {
   const frame = useCurrentFrame();
   const out = interpolate(frame, [fr(T.s2) - 4, fr(T.s2)], [1, 0], clamp);
   return (
@@ -99,7 +100,7 @@ const PovTitle: React.FC = () => {
             borderRadius: 18,
           }}
         >
-          POV:
+          {L.pov.kicker}
         </div>
         <div
           style={{
@@ -107,14 +108,17 @@ const PovTitle: React.FC = () => {
             color: '#fff',
             fontFamily: EN,
             fontWeight: 800,
-            fontSize: 84,
+            fontSize: L.pov.titleSize,
             lineHeight: 1.08,
             textShadow: '0 4px 18px rgba(0,0,0,0.55)',
           }}
         >
-          you learned Korean
-          <br />
-          from an app
+          {L.pov.title.map((t, i) => (
+            <React.Fragment key={t}>
+              {i > 0 ? <br /> : null}
+              {t}
+            </React.Fragment>
+          ))}
         </div>
         {/* v1 시험 「뭘 배우는 영상인지 아직 안 보인다」 — 할 일(커피 주문)을 첫 화면에 */}
         <div
@@ -123,11 +127,11 @@ const PovTitle: React.FC = () => {
             color: BUTTER,
             fontFamily: EN,
             fontWeight: 800,
-            fontSize: 52,
+            fontSize: L.pov.subSize,
             textShadow: '0 4px 14px rgba(0,0,0,0.55)',
           }}
         >
-          …and now you order coffee
+          {L.pov.sub}
         </div>
       </div>
     </AbsoluteFill>
@@ -251,7 +255,7 @@ const Bubble: React.FC<{
 };
 
 // 바리스타 장면 도장 — v2 시험 「왜 어색한지 설명이 없다」: 틀린 말이 아니라 너무 딱딱한 말이라는 것만
-const Stamp: React.FC<{ from: number; to: number }> = ({ from, to }) => {
+const Stamp: React.FC<{ from: number; to: number; text: string }> = ({ from, to, text }) => {
   const frame = useCurrentFrame();
   const p = usePop(from, 9);
   if (frame < fr(from) || frame >= fr(to)) return null;
@@ -270,7 +274,7 @@ const Stamp: React.FC<{ from: number; to: number }> = ({ from, to }) => {
           borderRadius: 18,
         }}
       >
-        WAY TOO FORMAL
+        {text}
       </div>
     </div>
   );
@@ -307,7 +311,7 @@ const Chip: React.FC<{ show: number; at: number; ko: string; gloss: string; lit:
   );
 };
 
-const Lesson: React.FC = () => {
+const Lesson: React.FC<{ L: LocText }> = ({ L }) => {
   const frame = useCurrentFrame();
   const inP = usePop(T.lesson, 14);
   const n2 = T.n2;
@@ -341,15 +345,15 @@ const Lesson: React.FC = () => {
         >
           <span style={{ display: 'inline-block', width: 12, height: 40, background: '#fff', borderRadius: 3, marginRight: 8, verticalAlign: '-4px' }} />
           <span style={{ display: 'inline-block', width: 12, height: 40, background: '#fff', borderRadius: 3, marginRight: 24, verticalAlign: '-4px' }} />
-          REAL KOREAN THAT WORKS
+          {L.lesson.head}
         </span>
       </div>
       <div style={{ position: 'absolute', top: 430, left: 0, width: 1080, textAlign: 'center' }}>
-        <Chip show={T.lesson + 0.08} at={tIce} ko="아이스 아메리카노" gloss="iced americano" lit={lit(tIce, tHana)} />
+        <Chip show={T.lesson + 0.08} at={tIce} ko="아이스 아메리카노" gloss={L.lesson.ice} lit={lit(tIce, tHana)} />
       </div>
       <div style={{ position: 'absolute', top: 690, left: 0, width: 1080, textAlign: 'center' }}>
-        <Chip show={T.lesson + 0.16} at={tHana} ko="하나" gloss="one" lit={lit(tHana, tJu)} />
-        <Chip show={T.lesson + 0.24} at={tJu} ko="주세요" gloss="please" lit={lit(tJu, tEnd + 0.3)} />
+        <Chip show={T.lesson + 0.16} at={tHana} ko="하나" gloss={L.lesson.hana} lit={lit(tHana, tJu)} />
+        <Chip show={T.lesson + 0.24} at={tJu} ko="주세요" gloss={L.lesson.juseyo} lit={lit(tJu, tEnd + 0.3)} />
       </div>
       <div
         style={{
@@ -367,7 +371,7 @@ const Lesson: React.FC = () => {
           textShadow: '0 3px 12px rgba(0,0,0,0.6)',
         }}
       >
-        any menu item + <span style={{ fontFamily: KO, fontWeight: 800, color: BUTTER }}>하나 주세요</span> ✓
+        {L.lesson.any}<span style={{ fontFamily: KO, fontWeight: 800, color: BUTTER }}>하나 주세요</span> ✓
       </div>
       {frame >= fr(T.n3) ? (
         <div style={{ position: 'absolute', top: 1065, left: 0, width: 1080, textAlign: 'center', opacity: turnP, transform: `scale(${0.7 + 0.3 * turnP})` }}>
@@ -383,7 +387,7 @@ const Lesson: React.FC = () => {
               borderRadius: 999,
             }}
           >
-            YOUR TURN: say it out loud!
+            {L.lesson.again && sec < T.turnGap[0] ? L.lesson.again : L.lesson.turn}
           </div>
           <div style={{ width: 520, height: 14, margin: '22px auto 0', borderRadius: 7, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
             <div style={{ width: `${gap * 100}%`, height: '100%', background: BUTTER, borderRadius: 7 }} />
@@ -394,7 +398,7 @@ const Lesson: React.FC = () => {
   );
 };
 
-const EndCard: React.FC = () => {
+const EndCard: React.FC<{ L: LocText }> = ({ L }) => {
   const p = usePop(T.end + 0.05, 13);
   return (
     <AbsoluteFill>
@@ -409,14 +413,19 @@ const EndCard: React.FC = () => {
           color: '#fff',
           fontFamily: EN,
           fontWeight: 800,
-          fontSize: 76,
+          fontSize: L.endSize,
           lineHeight: 1.12,
           textShadow: '0 4px 18px rgba(0,0,0,0.55)',
           opacity: p,
           transform: `scale(${0.8 + 0.2 * p})`,
         }}
       >
-        What&apos;s the weirdest<br />sentence your app<br />taught you? 👇
+        {L.end.map((t, i) => (
+          <React.Fragment key={t}>
+            {i > 0 ? <br /> : null}
+            {t}
+          </React.Fragment>
+        ))}
       </div>
     </AbsoluteFill>
   );
@@ -434,7 +443,7 @@ const Sfx: React.FC<{ file: string; t: number; vol?: number }> = ({ file, t, vol
   </Sequence>
 );
 
-const Sound: React.FC = () => {
+const Sound: React.FC<{ voice: boolean }> = ({ voice }) => {
   const total = fr(T.total);
   // 말하는 동안 배경음을 낮추고(목소리 아래로), 멘붕 장면에서는 멈춘다
   const talk: [number, number][] = [
@@ -443,7 +452,7 @@ const Sound: React.FC = () => {
     [T.n2, T.n2 + 2.5],
     [T.n3, T.turnGap[1]],
     [T.b3, T.b3 + 2.1],
-    [T.n4, T.n4 + 2.6],
+    ...(voice ? [[T.n4, T.n4 + 2.6] as [number, number]] : []),
   ];
   const bgmVol = (i: number) => {
     const sec = i / 30;
@@ -474,7 +483,8 @@ const Sound: React.FC = () => {
       <Sfx file="pop.wav" t={T.n2 + N2_WORDS.hana} vol={0.25} />
       <Sfx file="pop.wav" t={T.n2 + N2_WORDS.juseyo} vol={0.25} />
       <Sfx file="tok.wav" t={T.anyItem} vol={0.3} />
-      <Vo id="n3" t={T.n3} />
+      {/* 간체판(10-26): 영어 해설 「Your turn…」 자리에 한국어 해설 n2를 한 번 더 — 따라 말할 문장을 두 번 듣는다 */}
+      {voice ? <Vo id="n3" t={T.n3} /> : <Vo id="n2" t={T.n3} />}
       <Sfx file="tick.wav" t={T.turnGap[0]} vol={0.35} />
       <Sfx file="tick.wav" t={T.turnGap[0] + 0.5} vol={0.35} />
       <Sfx file="tick.wav" t={T.turnGap[0] + 1.0} vol={0.35} />
@@ -483,45 +493,46 @@ const Sound: React.FC = () => {
       <Sfx file="ice.wav" t={T.b3 - 0.2} vol={0.9} />
       <Vo id="b3" t={T.b3} />
       <Sfx file="tok.wav" t={T.end + 0.05} vol={0.3} />
-      <Vo id="n4" t={T.n4} />
+      {voice ? <Vo id="n4" t={T.n4} /> : null}
     </>
   );
 };
 
 // ── 전체 ───────────────────────────────────────────────────────────────────
-export const Film: React.FC = () => {
+export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'en' }) => {
   const frame = useCurrentFrame();
   const sec = frame / 30;
+  const L = LOCALES[loc];
   return (
-    <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
+    <AbsoluteFill style={{ backgroundColor: '#2a1d16', ...(L.font ? ({ '--kids-font': L.font } as React.CSSProperties) : {}) }}>
       {sec < T.s2 ? <Scene src="s1.jpg" from={0} to={T.s2} ox={45} focus={[330, 1250]} zoom={[1.0, 1.05]} /> : null}
       {sec >= T.s2 && sec < T.s3 ? <Scene src="s2.jpg" from={T.s2} to={T.s3} focus={[420, 1150]} zoom={[1.02, 1.08]} /> : null}
       {sec >= T.s3 && sec < T.s4 ? <Scene src="s3.jpg" from={T.s3} to={T.s4} focus={[540, 700]} zoom={[1.0, 1.07]} /> : null}
       {sec >= T.s4 && sec < T.lesson ? <Scene src="s4.jpg" from={T.s4} to={T.lesson} focus={[520, 1150]} zoom={[1.02, 1.07]} punch shake={[T.s4, T.s4 + 0.6]} /> : null}
-      {sec >= T.lesson && sec < T.s5 ? <Lesson /> : null}
+      {sec >= T.lesson && sec < T.s5 ? <Lesson L={L} /> : null}
       {sec >= T.s5 ? <Scene src="s5.jpg" from={T.s5} to={T.total} focus={[460, 1920]} zoom={[1.15, 1.2]} /> : null}
 
-      {sec < T.s2 ? <PovTitle /> : null}
-      <Sub from={T.b1 - 0.05} to={T.s2} ko="주문하시겠어요?" en="Ready to order?" y={830} />
+      {sec < T.s2 ? <PovTitle L={L} /> : null}
+      <Sub from={T.b1 - 0.05} to={T.s2} ko="주문하시겠어요?" en={L.sub1} y={830} />
       <Bubble
         from={T.bubble1}
         to={T.s3}
         top={250}
         tailX={430}
-        tag="📱 textbook Korean"
+        tag={L.bubble1.tag}
         ko={<>안녕하십니까.<br />저는 커피를 원합니다.</>}
-        en="“Greetings. I desire coffee.”"
+        en={L.bubble1.line}
       />
-      <Stamp from={T.s3 + 0.2} to={T.s4} />
-      <Sub from={T.b2} to={T.s4} ko="아, 네. 따뜻한 거요, 아이스요?" en="Uh, okay. Hot or iced?" />
+      <Stamp from={T.s3 + 0.2} to={T.s4} text={L.stamp} />
+      <Sub from={T.b2} to={T.s4} ko="아, 네. 따뜻한 거요, 아이스요?" en={L.sub2} />
       <Bubble
         from={T.bubble2}
         to={T.lesson}
         top={250}
         tailX={460}
-        tag="😵 panic → random app sentence"
+        tag={L.bubble2.tag}
         ko={<>사과는…<br />빨갛습니다.</>}
-        en="“The apple… is red.”"
+        en={L.bubble2.line}
         koSize={74}
         wobble
       />
@@ -531,12 +542,12 @@ export const Film: React.FC = () => {
         top={545}
         tailX={330}
         ko={<>아이스 아메리카노<br />하나 주세요!</>}
-        en="“One iced americano, please!”"
+        en={L.bubble3}
         koSize={60}
       />
-      <Sub from={T.b3} to={T.end} ko="네, 아이스 아메리카노 하나요!" en="Sure! One iced americano." y={1240} />
-      {sec >= T.end ? <EndCard /> : null}
-      <Sound />
+      <Sub from={T.b3} to={T.end} ko="네, 아이스 아메리카노 하나요!" en={L.sub3} y={1240} />
+      {sec >= T.end ? <EndCard L={L} /> : null}
+      <Sound voice={L.voice} />
     </AbsoluteFill>
   );
 };
