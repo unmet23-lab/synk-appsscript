@@ -436,3 +436,6 @@ docs/마케팅/LAB_관용구퀴즈3_20261019/판/판1_074138.png
 
 # Internal research remains local/private; existing public history needs separate removal.
 /docs/_ops/NEXT/
+
+# 개인 메모 설명을 담은 지면(옛 tools/뇌그물.js 출력)은 공개 저장소에 올리지 않는다 — 10-25 결정. 다시 만들면 출력은 .tmp/로.
+/docs/SYNK_기억그물.html
