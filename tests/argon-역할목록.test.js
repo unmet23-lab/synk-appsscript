@@ -55,6 +55,21 @@ test('조사 서버에 손으로 올리는 파일의 역할 목록이 docs.json�
   assert.deepEqual(capture, JSON.parse(read('tools/argon-schedules/configuration/docs.json')), 'argon-capture.py EXPECTED_DOCS');
 });
 
+test('꺼 둔 역할 목록(paused.json)은 docs.json 역할 → 끈 날이고, README 예약 표가 같은 역할만 「꺼 둠」으로 적는다', () => {
+  const paused = JSON.parse(read('tools/argon-schedules/configuration/paused.json'));
+  assert.ok(paused && typeof paused === 'object' && !Array.isArray(paused));
+  for (const [role, since] of Object.entries(paused)) {
+    assert.ok(ROLES.includes(role), 'docs.json에 없는 역할 ' + role);
+    assert.match(since, /^\d{4}-\d{2}-\d{2}$/, role);
+  }
+  const readme = read('tools/argon-schedules/README.md');
+  for (const role of ROLES) {
+    const row = readme.match(new RegExp('^\\| `' + role + '` \\|([^\\n]*)\\|$', 'm'));
+    assert.ok(row, 'README 예약 표의 ' + role + ' 줄');
+    assert.equal(row[1].includes('꺼 둠'), role in paused, 'README 예약 표 ' + role + '(꺼 두거나 다시 켜면 표와 paused.json을 함께 고친다)');
+  }
+});
+
 test('역할마다 예약 단위·입력·프롬프트가 있고 남는 것이 없다', () => {
   const units = fs.readdirSync(path.join(ARGON, 'production-units'));
   for (const kind of ['service', 'timer']) {

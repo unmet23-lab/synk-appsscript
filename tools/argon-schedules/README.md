@@ -1,6 +1,14 @@
 # Argon 예약 운영 소스
 
-2026-10-18 12:12 KST 운영 전환을 마쳤다. 기존 Gemini 예약 4개는 일시중지했고, 서버 타이머 4개는 enabled·active로 확인했다. 전환 뒤 첫 정규 회차인 10-18 14:00 YouTube·TikTok 조사가 실제 타이머로 시작해 Argon 실행과 기존 Google Docs의 새 저장까지 성공했다. 장애 알림 메일 실제 수신도 확인해 요청한 운영 검증 목표를 충족했다. [YouTube·TikTok 결과 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit), 최신 운영 결과는 [트랙](../../docs/_ops/트랙.md)의 해당 예약 항목과 아래 실행 상태에서 확인한다.
+2026-10-18 12:12 KST 운영 전환을 마쳤다. 기존 Gemini 예약 4개는 일시중지했고, 서버 타이머 4개는 enabled·active로 확인했다. 전환 뒤 첫 정규 회차인 10-18 14:00 YouTube·TikTok 조사가 실제 타이머로 시작해 Argon 실행과 기존 Google Docs의 새 저장까지 성공했다. 장애 알림 메일 실제 수신도 확인해 요청한 운영 검증 목표를 충족했다. [YouTube·TikTok 결과 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit), 최신 운영 결과는 아래 「상태와 실패 확인」의 조회로 본다(트랙의 「Argon 운영」 항목은 남은 일이 끝나 10-25에 [보관](../../docs/_ops/보관/트랙_2026-10.md)으로 옮겼다). 지금 예약 표는 [관문·자동화](../../docs/_ops/관문_자동화.md) 「회사 서버 예약」에도 있다.
+
+## 2026-10-25 · 월요일 스캔 셋(scan-lab·ai·platform)을 끔
+
+- **왜.** 결과를 읽는 곳이 없다. 10-23부터 매일 19:30 「수요 스캔 + 기획 후보」(앱 예약 `synk-monday-trend-scan-2`)가 `tools/수요스캔/`으로 모으고, 그 지시문(10-25 확인)·[제작 방식 v2 §6](../../docs/마케팅/콘텐츠_제작방식_v2_20261002.md)·결정 10-23 「수요 스캔 매일」·「매일 게시 · 이해 관문」 행 어디에도 세 역할을 읽는 단계가 없다. `scan-read.cjs`를 부르는 예약·도구도 없었다(헤르메스 상태판은 이름표만, 07시 제작은 제작 절차만 따른다). 이어 읽게 하는 것도 득이 적다. 새 기준(v2 §1)의 근거는 「채널 평소보다 크게 튄 편」(정확한 조회수로 잰 평소 대비 배수)이고 질문·달력은 보조인데, 세 역할은 보이는 조회수로 고른 쇼츠·공식 발표·형식·달력을 모으는 10-19 판이라 그 근거가 못 된다. 주 한 번이라 매일 스캔에는 거의 늘 지난 자료이고, 잇자면 매일 예약 지시문에 단계를 더해야 한다(결정 10-23 「예약 작업 지시문 고침은 유호님 승인 뒤」·「지시문은 최소화」). 반면 회차마다 화면·백엔드 검수와 같은 Ultra 주간 몫을 쓴다 — 10-22에 yt-tt·meta-brand를 줄인 까닭과 같다.
+- **바꾼 것(10-25 서버).** 세 timer만 `systemctl disable --now` 했다. 정규 회차는 한 번도 돌지 않았다(10-19 손 실행 셋뿐, 첫 회차가 10-26 01:00이었다). service·timer unit, 지시문, 결과 문서 셋과 `docs.json` 대응, 알림 정책, 서버 백업 대응은 그대로 두어 다시 켜기만 하면 된다. 끄기 전 상태와 timer unit 사본은 `config-backups/20261025T054605Z-monday-scan-off/`(끈 뒤 상태는 같은 폴더 `after.txt`).
+- **헤르메스 상태판.** 꺼 둔 역할과 끈 날을 `configuration/paused.json`에 적는다(PC만 읽고 서버에 넣지 않는다). 상태판(`tools/hermes-synk/overview.cjs`)은 이 역할을 「꺼 둠」으로 보이고 timer 상태로는 알리지 않는다 — 실패는 그대로 알린다. 목록에 없는 역할의 timer가 꺼지면 전처럼 알린다. 목록을 먼저 올리고 timer를 꺼야 헛알림이 없다.
+- **PC가 꺼져 있어도 서치가 돌게 하려던 10-19의 까닭.** 그때 수집을 서버로 옮긴 것은 느린 웹 서치를 PC와 Claude 세션 밖에서 돌리려던 것이고, 그 까닭은 그대로다. 다만 지금 느린 서치는 매일 스캔의 `tools/수요스캔/스캔.js`(yt-dlp)이고 PC에서 돈다. 세 역할이 돌아도 그 서치를 대신하지 못했다. 그 수집을 서버로 옮기는 일은 따로 본다(YouTube가 데이터센터 IP에 봇 확인을 더 자주 거는지부터).
+- **다시 켜기.** 먼저 매일 수요 스캔이 결과를 읽도록 예약 지시문을 고친다(유호님 승인). 그다음 다른 역할이 돌지 않을 때 `sudo systemctl enable --now synk-argon-ultra-scan-<역할>.timer`를 하나씩 하고, `paused.json`과 아래 예약 표에서 그 역할을 고친다(`tests/argon-역할목록.test.js`가 둘을 맞춰 본다). timer를 시작한 그 자리에서 회차가 돌 수 있다([현장 노트](../../docs/현장노트/AI_CLI.md) 「timer 재시작」).
 
 ## 2026-10-22 · unmet25 예비 로그인과 회차별 계정 고르기
 
@@ -54,7 +62,7 @@
 - **고침(10-19 10:48 KST 적용).** `settings.json` allow에 `read_file(/opt/synk-argon-77yuhbs)` 한 줄(도우미·검증기 원문, 비밀값 없음)만 더했다. 인증 폴더·토큰·설정 읽기 거절은 그대로다(거절이 허용보다 앞선다). 네 지시문 끝에 「도구 규칙」(적힌 docs-io·date 명령만, 페이지는 read_url·view_file로, 거절돼도 결과를 끝까지 저장)을 붙였다. 임시 명령 허용은 넓히지 않았다. 서버 백업 `config-backups/20261019T014821Z`.
 - **월요일 스캔 수집 역할 셋.** `scan-lab`(LAB 한국어 학습 쇼츠·학습자 질문·달력 연계·우리 채널 공개 숫자), `scan-ai`(공식 AI 발표·국내 보도·한국어 AI 쇼츠·커뮤니티 질문·제작기 트렌드), `scan-platform`(플랫폼 변화·형식/소리 트렌드·2~6주 달력). 지시문은 `weekly-scan-prompts.py`가 `production-inputs/scan-*.{prompt.txt,input.jsonl}`로 만든다. 결과는 unmet23의 새 문서 셋(`configuration/docs.json`)에 JSON 한 개 + 마지막 줄 `SYNK_WEEKLY_SCAN_COMPLETE`로 저장한다. `docs-io.py validate_weekly`는 모양(역할·주간 날짜·항목의 제목/주소/출처 종류)만 검사하고 회사 앱 검증기는 쓰지 않는다. 내용 사실은 월요일 Claude 검수가 다시 확인한다.
 - **읽는 통로.** PC의 `node tools/argon-schedules/scan-read.cjs`가 GCE API로 standby의 지금 주소를 읽고, `~/.ssh/known_hosts_synk_argon`(별칭 `synk-argon-standby`)에 고정한 호스트 키로 SSH에 붙어 `docs-io.py read`와 회차 상태만 가져온다. 결과는 `.tmp/weekly-scan/<날짜>/`. 크롬 확장이나 Google Drive 연결 없이 읽는다. SSH가 막히면(이 PC 공인 IP가 허용 목록 밖) 출력에 문서의 `/mobilebasic` 읽기 주소가 나온다. `--매일`을 붙이면 매일 도는 제작 인사이트 넷(full·yt-tt·meta-brand·synkbrief)의 문서 원문과 회차 상태를 `.tmp/daily-argon/<날짜>/`에 받는다(2026-10-20, 1일 1편 예약 작업용 — 형식이 역할마다 달라 해석하지 않고 원문만, 회차가 오늘·어제 끝났으면 fresh).
-- **Claude 쪽.** 10-19에는 월요일 09:30 데스크톱 예약 `synk-monday-trend-scan-2`(부하 분산 지연으로 실제 09:44, 우회 권한 모드로 저장)가 위 도구로 원자료를 읽고 검수해 `docs/마케팅/트렌드스캔/<월요일>.md`를 썼다. 10-23부터 이 예약은 매일 19:30 「수요 스캔 + 기획 후보」로 바뀌어 `tools/수요스캔/`으로 모으고 `docs/마케팅/트렌드스캔/<오늘>.md`를 쓰며, 위 세 역할의 결과(`scan-read.cjs`)는 읽지 않는다(10-24 예약 지시문 확인, [제작 방식 v2 §6](../../docs/마케팅/콘텐츠_제작방식_v2_20261002.md)). 데스크톱 예약은 PC가 깨어 있고 앱이 켜져 있어야 돌며, 놓치면 켜질 때 한 번 따라 돈다(공식 문서).
+- **Claude 쪽.** 10-19에는 월요일 09:30 데스크톱 예약 `synk-monday-trend-scan-2`(부하 분산 지연으로 실제 09:44, 우회 권한 모드로 저장)가 위 도구로 원자료를 읽고 검수해 `docs/마케팅/트렌드스캔/<월요일>.md`를 썼다. 10-23부터 이 예약은 매일 19:30 「수요 스캔 + 기획 후보」로 바뀌어 `tools/수요스캔/`으로 모으고 `docs/마케팅/트렌드스캔/<오늘>.md`를 쓰며, 위 세 역할의 결과(`scan-read.cjs`)는 읽지 않는다(10-24 예약 지시문 확인, [제작 방식 v2 §6](../../docs/마케팅/콘텐츠_제작방식_v2_20261002.md)). 그래서 10-25에 세 timer를 껐다(위 「2026-10-25」). 데스크톱 예약은 PC가 깨어 있고 앱이 켜져 있어야 돌며, 놓치면 켜질 때 한 번 따라 돈다(공식 문서).
 - **확인(10-19).** 고친 뒤 첫 회차 meta-brand 11:00 KST가 complete·거절 0이었다. yt-tt 14:00 정규 회차도 complete·거절 0(14:00~14:14, 문서 35,582자·완료 표식)이다. 배포 뒤 서버 시험 24/24·systemd verify·logrotate가 통과했고, 서버 해시는 docs-io.py `f8dc64a2469ab62c`·run-check.py `6760fa8e01b1c520`·alert-event.py `50f8400c270a5d3f`·docs.json `0d07ca0e5793c4a8`(앞 16자리)다. scan-lab을 손으로 한 번 돌렸다(`systemctl start --no-block`, 11:21~11:46 KST). 결과는 complete·`gemini-4-argon-high`·거절 0, 항목 43개(5구역), 문서 46,048자, 끝줄 완료 표식이었다. PC `scan-read.cjs`로도 이번 주(weekOf 2026-10-19) 자료로 읽혔다. 영상 항목 3개는 공개 oEmbed 제목과 맞았다. 같은 날 scan-ai(14:14~14:35, 항목 35, 문서 26,559자)와 scan-platform(14:36~14:54, 항목 21, 문서 16,632자)도 손으로 돌렸다. 정규 회차와 겹치지 않게 yt-tt가 끝난 뒤 하나씩 돌렸고, 둘 다 complete·거절 0·완료 표식이었다. 이어 `scan-read.cjs`로 세 역할 모두 이번 주 자료로 읽혔다(종료 코드 0).
 - **실패 메일(10-19 14:07).** 전용 Cloud Monitoring 정책 `8330051917313971027`의 조건이 `full|yt-tt|meta-brand|synkbrief`만 걸러, 새 셋이 실패해도 기록만 남고 메일이 오지 않았다. 조건의 역할 목록에만 `scan-lab|scan-ai|scan-platform`을 더했다. 채널(unmet27 메일), 문서, 묶음 간격, 조건 이름은 그대로다. 바꾸기 전후 정책과 대조 결과는 `.tmp/argon-alerts-20261019/`에 있다. 10-18 03:00Z 뒤의 실패 기록은 넓히기 전과 같은 6건(합성 시험 2·실제 실패 4)이 잡혔다. 다시 읽을 때 `labelExtractors` 칸 순서가 바뀌어 돌아오니, 비교는 키를 정렬해서 한다.
 
@@ -81,7 +89,7 @@
 | `docs-io.py`, `run-check.py` | `/opt/synk-argon-77yuhbs/`, root 소유 0755 |
 | `docs-io-test.py`, `run-check-test.py` | 가짜 Docs 응답과 임시 파일만 사용하는 오프라인 시험 |
 | `validate-report.mjs`, `validate-report.test.mjs` | 저장 전 회사 v1 스키마와 담당 source 범위를 검사한다. 서버 entrypoint는 `report-contract/validate-report.mjs`; 실제 앱에서 추출한 `creative-research.mjs`·`organization.mjs`와 세 파일 SHA를 담은 `manifest.json`을 함께 배치한다. |
-| `production-units/` | `/etc/systemd/system/`의 7개 service·7개 timer(10-19 월요일 스캔 셋 추가)·공용 slice, root 소유 0644 |
+| `production-units/` | `/etc/systemd/system/`의 7개 service·7개 timer(10-19 월요일 스캔 셋 추가, 그 셋의 timer는 10-25부터 꺼 둠)·공용 slice, root 소유 0644 |
 | `production-inputs/*.input.jsonl` | `/var/lib/synk-argon-77yuhbs/prompts/`, 실행 사용자 소유 0600; 공식 CLI의 user event 한 줄 |
 | `production-inputs/*.prompt.txt` | 같은 지시문의 사람이 읽을 수 있는 원문 |
 | `synk-argon-ultra.logrotate` | `/etc/logrotate.d/synk-argon-ultra`, root 소유 0644; 실행·후처리 중에는 회전하지 않음 |
@@ -92,8 +100,9 @@
 | `agy-account.py`, `agy-account-test.py` | `/opt/synk-argon-77yuhbs/agy-account.py`, root 소유 0755(10-22). 회차별 계정 고르기·`status`·`mode`·`sync-settings`. 모드 파일 `/etc/synk-argon-77yuhbs/agy-account.json`은 root 소유 0644(없으면 auto). 시험은 가짜 `/usage` 응답과 임시 폴더만 쓴다 |
 | `alert-policy.json` | 전용 Cloud Monitoring 정책 원문. 같은 이름·ID의 기존 정책을 먼저 조회하고 중복 생성하지 않음 |
 | `configuration/docs.json` | `/etc/synk-argon-77yuhbs/docs.json`, root 소유 0644; 승인된 7개 역할의 문서 ID(10-19 월요일 스캔 셋 추가). `docs-io.py`의 역할 목록, 예비 노드 서버 백업의 `tools/server-backup/argon-capture.py`(`EXPECTED_DOCS`)와 정확히 같아야 하므로 셋은 함께 바꾸고 서버에도 함께 넣는다. 서버 백업 쪽 어긋남은 `node --test tools/server-backup/backup.test.cjs`가 잡는다(10-20 이 셋째를 빠뜨려 07:11 서버 백업이 실패했다). PC 매일 백업의 `Argon백업.js`는 이 파일을 직접 읽는다 |
+| `configuration/paused.json` | 꺼 둔 역할 → 끈 날(10-25 월요일 스캔 셋). 서버에 넣지 않는다 — 헤르메스 상태판이 이 역할의 꺼진 timer를 알리지 않게 PC에서만 읽는다. 끄거나 다시 켤 때 아래 예약 표와 함께 고친다 |
 | `weekly-scan-prompts.py` | 월요일 스캔 세 역할의 지시문 생성기(저장소에서만 실행, LLM 호출 없음) |
-| `scan-read.cjs` | PC에서 월요일 스캔 결과를 읽는 도구(읽기 전용, SSH). 주소 읽기·호스트 키를 `agy-login.cjs`에 내보낸다 |
+| `scan-read.cjs` | PC에서 월요일 스캔 결과를 읽는 도구(읽기 전용, SSH). 셋을 끈 10-25부터는 10-19 마지막 결과만 읽힌다. 주소 읽기·호스트 키를 `agy-login.cjs`에 내보낸다 |
 | `agy-login.cjs` | PC에서 서버 agy 로그인 화면을 이 터미널에 띄우는 도구(10-22, `node tools/argon-schedules/agy-login.cjs unmet25`). 비밀번호·토큰은 지나가지 않는다 |
 | `configuration/agy-settings.example.json` | 아래 복원 설명에 따라 별도 HOME의 `settings.json`에 반영하는 비밀값 없는 설정 예시 |
 
@@ -104,12 +113,12 @@
 | `full` | 매일 05:00 |
 | `yt-tt` | 매일 20:00 (10-22까지 08:00·14:00·20:00) |
 | `meta-brand` | 매일 23:00 (10-22까지 11:00·17:00·23:00) |
-
-2026-10-22 유호님 확정으로 yt-tt·meta-brand를 하루 세 번에서 한 번으로 줄였다. 회차 기록(10-18~22)에서 두 역할이 회차마다 입력 약 9만~13만·출력 약 3만7천~4만1천 토큰을 써서, 출력에 무게를 둔 추정으로 예약 전체 사용량의 약 3분의 2였다. 같은 Ultra 주간 몫을 화면·백엔드·문항 검수와 나눠 쓰는데 주간 몫이 이틀을 남기고 20%까지 내려가 있었다. 남긴 시각은 07시 1일 1편 제작(`scan-read.cjs --매일`, 오늘·어제 끝난 회차를 신선으로 친다) 바로 전의 저녁 회차다. 서버 적용 기록은 아래 「상태와 실패 확인」의 조회로 본다.
 | `synkbrief` | 월·수·금 09:00 |
-| `scan-lab` | 월 01:00 (월요일 스캔 수집, 10-19 추가) |
-| `scan-ai` | 월 02:00 (월요일 스캔 수집, 10-19 추가) |
-| `scan-platform` | 월 03:00 (월요일 스캔 수집, 10-19 추가) |
+| `scan-lab` | 꺼 둠(10-25부터 · 그전 월 01:00, 월요일 스캔 수집 10-19 추가) |
+| `scan-ai` | 꺼 둠(10-25부터 · 그전 월 02:00, 월요일 스캔 수집 10-19 추가) |
+| `scan-platform` | 꺼 둠(10-25부터 · 그전 월 03:00, 월요일 스캔 수집 10-19 추가) |
+
+2026-10-22 유호님 확정으로 yt-tt·meta-brand를 하루 세 번에서 한 번으로 줄였다. 회차 기록(10-18~22)에서 두 역할이 회차마다 입력 약 9만~13만·출력 약 3만7천~4만1천 토큰을 써서, 출력에 무게를 둔 추정으로 예약 전체 사용량의 약 3분의 2였다. 같은 Ultra 주간 몫을 화면·백엔드·문항 검수와 나눠 쓰는데 주간 몫이 이틀을 남기고 20%까지 내려가 있었다. 남긴 시각은 07시 1일 1편 제작(`scan-read.cjs --매일`, 오늘·어제 끝난 회차를 신선으로 친다) 바로 전의 저녁 회차다. 서버 적용 기록은 아래 「상태와 실패 확인」의 조회로 본다. 월요일 스캔 셋을 끈 까닭은 위 「2026-10-25」에 있다.
 
 ## 상태와 실패 확인
 
@@ -142,7 +151,7 @@ journalctl -u synk-argon-ultra-synkbrief.service --since today
 4. 위 표의 경로·소유권·권한으로 소스를 배치하고 SHA-256을 대조한다. 공식 실행 파일 경로는 unit과 일치해야 한다. 이 폴더에는 설치기나 별도 LLM 실행기가 없다.
    창작 조사용 `report-contract/`는 서버 암호화 복원 사본의 네 파일을 함께 복원한다. 디렉터리 root:root 0755, 파일 root:root 0644이며 manifest의 크기·SHA가 하나라도 다르면 검증기가 중단한다. 앱 스키마를 배포로 바꿨다면 활성 앱의 두 모듈과 source SHA를 다시 대조한 계약 묶음으로 갱신하고 단독 사본을 임의 편집하지 않는다. 검증용 Node는 `/opt/synk-argon-77yuhbs/bin/node`이다. 10-18에는 기존 HA 실행용 v24.21.0 바이너리(sha256 `7fde7b8afa198da66257f42ee2001d874c7355631e6d1579a5fb5ef1f246df4c`)를 그대로 복사해 root:root 0755로 설치했다. HA 보안 폴더의 권한을 완화하지 않는다. `runuser -u synk-argon-ultra -- …/bin/node --version`과 `docs-io.py validate ROLE CONTENT_FILE`을 비활성 복원 상태에서 확인한다.
 5. `systemd-analyze verify /etc/systemd/system/synk-argon-ultra-*.service /etc/systemd/system/synk-argon-ultra-*.timer /etc/systemd/system/synk-argon-ultra.slice`와 `logrotate --debug /etc/logrotate.d/synk-argon-ultra`로 확인한 뒤 `systemctl daemon-reload`한다. 7개 timer가 계속 disabled이고 readiness 파일이 없는지 다시 확인한다.
-6. 활성화는 별도 실제 실행 검증, Docs 재읽기·모델 확인, 기존 Gemini 예약 4개 일시중지 확인을 마친 후 운영 전환으로 수행한다. 비활성 복원 자체가 예약 활성화를 뜻하지 않는다.
+6. 활성화는 별도 실제 실행 검증, Docs 재읽기·모델 확인, 기존 Gemini 예약 4개 일시중지 확인을 마친 후 운영 전환으로 수행한다. 비활성 복원 자체가 예약 활성화를 뜻하지 않는다. `configuration/paused.json`에 있는 역할(10-25부터 월요일 스캔 셋)의 timer는 켜지 않는다.
 
 장애 알림을 복구할 때는 기존 전용 정책과 이메일 채널의 현재 상태를 읽는다. 서버 서비스 계정의 `roles/logging.logWriter`, root 소유 알림 소스·unit, 7개 service drop-in, root 0700 outbox·ack를 대조한 뒤 drain timer를 켠다. 정책 조건의 역할 목록(`alert-policy.json`)도 7역할 + `alert-test`인지 본다(10-19에 월요일 스캔 셋을 더함). 합성 시험은 수동으로 한 번만 시작하며 운영 조사나 문서를 바꾸지 않는다. Cloud Logging 기록과 실제 이메일 수신을 각각 확인한다. 계정 키 파일과 별도 Ops Agent는 필요하지 않다.
 

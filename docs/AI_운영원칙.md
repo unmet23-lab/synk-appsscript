@@ -13,7 +13,7 @@
 | 기획·앱·엔진(Atlas) | Claude가 처음부터 마감까지 | 큰 기능은 만들기 전에 Fable이 설계를 본다 — 아래 「큰 기능의 설계 검토」. 화면·백엔드 파일을 바꾸면 위 두 줄 | — |
 | 콘텐츠 제작과 마감(영상·이미지·SNS 글) | Claude가 처음부터 마감까지 | 콘티·완성본은 Fable이 검수하고, 콘티·시안·영상·이미지는 유호님이 보고 고른다 | 그림: 마스코트·영상에 얹는 그림은 GPT 이미지 2.5(Claude가 `tools/codex계정.js`로 부른다), 실사 정지컷(얼굴·AI 영상 시작 그림)과 LoRA 학습용 사람 사진은 Gemini Ultra 웹(77yuhbs)의 나노바나나 2.1(「4 Argon」+사고 수준 최고, 힉스필드 크레딧 0 — [장부](마케팅/제작양식/만족사례_장부.md) S21·S24). 영상: 주력 경로 하나를 끝까지 — Flow Omni 1.1 Flash(Ultra 계정)·로컬 H3·힉스필드 Seedance 2.5, 우리 인물 얼굴이 없고 화질만 중요한 장면만 Veo 3.1 Quality, Wan 3.0은 쓰지 않는다([AI 광고영상 제작 규칙](마케팅/제작양식/AI광고영상_제작규칙.md) 「주력 경로 고정」) |
 | 현지어 문안·학습 문항 | Claude | 현지어 문안은 Opus 역번역 대조 → Fable 교정 → 아르곤 문법 채점(몽골어 `tools/몽골어대조.js --구독`, 그 밖은 `tools/현지어대조.js`). 문항·해설은 1차 Opus(Claude API 무료 크레딧) → 2차 아르곤의 AI 2중 검수(결정 10-21 「TOPIK 문항 AI 2중 검수 규칙」) | — |
-| 딥리서치·예약 조사 | 아르곤(Google AI Ultra 계정 77yuhbs@gmail.com). 업무 문서 저장은 unmet23@gmail.com | 월요일 스캔은 Claude가 원자료를 읽고 검수한다([Argon 예약 운영](../tools/argon-schedules/README.md)) | — |
+| 딥리서치·예약 조사 | 아르곤(Google AI Ultra 계정 77yuhbs@gmail.com). 업무 문서 저장은 unmet23@gmail.com | 예약 조사의 창작 조사 셋은 저장 전에 서버가 회사 앱 형식으로 검사한다([Argon 예약 운영](../tools/argon-schedules/README.md)) | — |
 | 블렌더 | 아르곤이 모델링 스크립트를 쓰고 Claude가 굽기·압축을 한다 | 시안은 유호님이 보고 고른다 | — |
 
 GPT에게는 백엔드(만들기·검수)만 맡긴다. 그림 굽기는 Claude가 GPT 이미지 2.5를 `tools/codex계정.js`로 부르고, 헤르메스 텔레그램 개인 대화는 Claude로 돈다. GPT 구독은 백엔드·그림 생성용으로 계속 둔다(2026-10-24). 경과는 [결정](_ops/결정.md)의 10-19·10-20·10-21·10-24 줄에 있다.

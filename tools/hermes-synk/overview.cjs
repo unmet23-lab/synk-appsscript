@@ -61,6 +61,13 @@ const argonRoles = mappings => {
   const roles = Object.keys(mappings).filter(role => /^[a-z][a-z0-9-]{1,30}$/.test(role));
   return roles.length <= 20 ? roles : [];
 };
+// 꺼 둔 역할(역할 → 끈 날)은 docs.json 옆 paused.json에 둔다(10-25 월요일 스캔 셋). 그 역할은 timer 상태로 알리지 않고
+// (실패는 그대로 알린다) 켜져 있으면 개요 글에만 적는다 — 목록을 먼저 올린 뒤 서버 timer를 끄는 사이, 그리고 서버 조회
+// 사본(한 시간)이 바뀌기 전까지 헛알림이 나가지 않게. docs.json에 없는 역할·잘못된 날짜는 무시한다.
+const argonPaused = (value, roles) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter(([role, since]) => roles.includes(role) && /^\d{4}-\d{2}-\d{2}$/.test(since)));
+};
 const STATES = new Set(['preparing', 'launching', 'running', 'finalizing', 'unknown', 'launch_failed', 'exited', 'closed_by_user']);
 const DELIVERIES = new Set(['sent', 'sending', 'unconfirmed', 'waiting', 'not_recorded', 'suppressed_success']);
 const INTEGRATION_POLICY = 'auto_verified_v1';
@@ -262,6 +269,8 @@ function readArgonRecords({ root }) {
   let proof = null;
   try { proof = readJson(root, 'tools/argon-schedules/verification/20261018.json', 100_000).firstProduction; } catch {}
   const items = [], roles = argonRoles(mappings);
+  let paused = {};
+  try { paused = argonPaused(readJson(root, 'tools/argon-schedules/configuration/paused.json', 5000), roles); } catch {}
   for (const role of roles) {
     const title = ROLE_TITLES[role] || role;
     const documentId = typeof mappings[role] === 'string' && /^[A-Za-z0-9_-]{15,100}$/.test(mappings[role]) ? mappings[role] : null;
@@ -271,7 +280,7 @@ function readArgonRecords({ root }) {
       && proof.acceptance?.argonExecutionVerified === true && proof.acceptance?.docsReadbackVerified === true
       && proof.acceptance?.newDocsSaveVerified === true && proof.runState?.status === 'complete' && iso(proof.checkedAt)
       && /^[a-f0-9]{64}$/.test(proof.docs?.sha256 || '') && proof.docs.sha256 === proof.runState?.sha256;
-    items.push({ role, title, url: 'https://docs.google.com/document/d/' + documentId + '/edit',
+    items.push({ role, title, url: 'https://docs.google.com/document/d/' + documentId + '/edit', pausedSince: paused[role] || null,
       storedVerified: verified, storedVerifiedAt: verified ? iso(proof.checkedAt) : null,
       completedAt: verified ? iso(proof.runState.completedAt) : null,
       revisionFingerprint: verified ? proof.docs.sha256 : null,
@@ -823,16 +832,19 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
       : '기존 결과 문서 링크 있음 · 현재 실행·새 저장 여부 미확인';
     let severity = 'info';
     const current = row.current;
+    let paused = row.pausedSince ? `꺼 둠(${row.pausedSince}부터) · ` : '';
     if (current) {
       const failed = current.status === 'failed' || current.serviceState === 'failed' || ['exit-code', 'timeout', 'signal'].includes(current.serviceResult);
       const consistent = ['complete', 'no-change'].includes(current.status) && current.modelMatches && current.documentMatches && current.sha256;
-      severity = failed ? 'error' : (!current.timerActive || !current.timerEnabled || ['complete', 'no-change'].includes(current.status) && !consistent) ? 'warning' : 'info';
+      if (paused && (current.timerActive || current.timerEnabled)) paused = `꺼 둠(${row.pausedSince}부터) 목록에 있지만 서버 timer가 켜져 있음 · `;
+      severity = failed ? 'error' : row.pausedSince ? 'info'
+        : (!current.timerActive || !current.timerEnabled || ['complete', 'no-change'].includes(current.status) && !consistent) ? 'warning' : 'info';
       const label = { running: '조사 실행 기록', complete: '서버 후처리 완료 영수증', 'no-change': '서버 후처리 변경 없음 영수증', failed: '서버 후처리 실패', missing: '저장된 실행 영수증 없음', unknown: '실행 기록 미확인' }[current.status];
       detail = `${label} · ${formatTime(current.completedAt || current.startedAt)}${research.stale ? ' · 조회 사본 오래됨/연결 미확인' : ''}`
         + (consistent ? ' · 기록상 모델·문서 일치' : '') + (current.errorCode ? ' · ' + current.errorCode : '')
         + ' · Docs 본문 재검증·회사 가져오기 미조회';
     }
-    const researchEvent = event('research-' + row.role, 'research', severity, row.title + ' · 기존 결과', detail,
+    const researchEvent = event('research-' + row.role, 'research', severity, row.title + ' · 기존 결과', paused + detail,
       { url: row.url, storedVerified: row.storedVerified, revisionFingerprint: row.revisionFingerprint, current, stale: current ? research.stale : true });
     researchEvent.needs_attention = !!current && ['error','warning'].includes(severity);
     researchEvent.attention_fingerprint = hash({ role:row.role,status:current?.status,error:current?.errorCode,
@@ -858,7 +870,7 @@ function formatOverview(report) {
   lines.push('- 적용 상태는 카드 원문을 우선합니다. 실제 배포 완료와는 구분합니다.');
   lines.push(`- 장부 기준 ${formatTime(snapshot.ledger.checkedAt)}${snapshot.ledger.stale ? ' · 오래됨/연결 미확인' : ' · 마지막 성공 조회 사본'}`);
   lines.push(snapshot.research.remoteStatusAvailable ? `- 조사 서버 조회 ${formatTime(snapshot.research.remoteCheckedAt)}${snapshot.research.stale ? ' · 오래됨/연결 미확인' : ' · 저장된 영수증 기준'}` : '- 조사는 기존 결과를 재사용합니다(현재 원격 상태 미확인).');
-  for (const row of snapshot.research.items) lines.push(`  ${row.title}${row.current ? ' · ' + ({ running: '실행 기록', complete: '후처리 완료 기록', 'no-change': '변경 없음 기록', failed: '실패 기록', missing: '실행기록 없음', unknown: '미확인' }[row.current.status]) : ''}: ${row.url}`);
+  for (const row of snapshot.research.items) lines.push(`  ${row.title}${row.pausedSince ? ' · 꺼 둠' : ''}${row.current ? ' · ' + ({ running: '실행 기록', complete: '후처리 완료 기록', 'no-change': '변경 없음 기록', failed: '실패 기록', missing: '실행기록 없음', unknown: '미확인' }[row.current.status]) : ''}: ${row.url}`);
   lines.push('', '요청 → 완료');
   if (!snapshot.tasks.available) lines.push('- 맡긴 작업 기록 미확인');
   else if (!snapshot.tasks.items.length) lines.push('- 이 연결에서 맡긴 작업 기록 없음');

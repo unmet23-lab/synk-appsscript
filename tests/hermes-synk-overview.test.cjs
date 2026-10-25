@@ -887,6 +887,37 @@ test('문서 ID가 깨진 역할이 있어도 나머지 역할의 원격 상태�
   assert.equal(report.snapshot.research.items.every(row => row.current?.documentMatches), true);
 });
 
+test('꺼 둔 역할(paused.json)은 timer 상태로 알리지 않고 실패만 알린다 — 목록에 없는 역할의 꺼진 timer는 그대로 알린다', async t => {
+  const { formatOverview } = require('../tools/hermes-synk/overview.cjs');
+  const f = fixture(t);
+  write(f.root, 'tools/argon-schedules/configuration/docs.json', SEVEN);
+  write(f.root, 'tools/argon-schedules/configuration/paused.json',
+    { 'scan-lab': '2026-10-25', 'scan-ai': '2026-10-25', 'scan-platform': '2026-10-25', ghost: '2026-10-25', full: '어제' });
+  const off = { timerActive: false, timerEnabled: false };
+  const rows = { 'scan-lab': off, 'scan-platform': { ...off, status: 'failed', serviceState: 'failed', serviceResult: 'exit-code', errorCode: 'DOCS_CONFLICT' }, synkbrief: off };
+  const remote = async input => ({ roles: input.roles.map(role => argonRow(role, SEVEN[role], rows[role] || {})) });
+  const report = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readArgonRemote: remote });
+  const research = role => report.events.find(row => row.id === 'research-' + role);
+  assert.deepEqual(report.snapshot.research.items.filter(row => row.pausedSince).map(row => row.role), ['scan-lab', 'scan-ai', 'scan-platform'],
+    'docs.json에 없는 역할·날짜가 아닌 값은 꺼 둔 것으로 보지 않는다');
+  assert.equal(research('scan-lab').severity, 'info');
+  assert.equal(research('scan-lab').needs_attention, false);
+  assert.match(research('scan-lab').detail, /^꺼 둠\(2026-10-25부터\) · 서버 후처리 완료 영수증/);
+  assert.equal(research('scan-ai').needs_attention, false, '목록을 먼저 올린 뒤 서버 timer를 끄기 전에도 알리지 않는다');
+  assert.match(research('scan-ai').detail, /^꺼 둠\(2026-10-25부터\) 목록에 있지만 서버 timer가 켜져 있음 · /);
+  assert.equal(research('scan-platform').severity, 'error');
+  assert.equal(research('scan-platform').needs_attention, true, '꺼 둔 역할도 실패는 알린다');
+  assert.equal(research('synkbrief').severity, 'warning');
+  assert.equal(research('synkbrief').needs_attention, true, '목록에 없는 역할의 timer가 꺼지면 그대로 알린다');
+  assert.equal(research('full').needs_attention, false);
+  assert.doesNotMatch(research('full').detail, /꺼 둠/);
+  assert.match(formatOverview(report), /월요일 스캔 · LAB · 꺼 둠 · 후처리 완료 기록/);
+  write(f.root, 'tools/argon-schedules/configuration/paused.json', '{');
+  const broken = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readArgonRemote: remote });
+  assert.equal(broken.snapshot.research.available, true, '깨진 목록은 조사 조회를 막지 않는다');
+  assert.equal(broken.events.find(row => row.id === 'research-scan-lab').needs_attention, true, '목록을 못 읽으면 꺼진 timer를 알린다');
+});
+
 test('운영 사본이 같은 까닭으로 30분 넘게 멈추거나 갱신 예약이 멈추거나 못 올린 기록이 6시간 넘으면 한 번 알리고, 풀리면 정보로 돌아간다', async t => {
   const f = fixture(t);
   const file = path.join(f.directory, 'ops-status.json');

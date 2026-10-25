@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /* 월요일 스캔 수집(scan-lab · scan-ai · scan-platform) 결과를 브라우저 없이 읽는다 (2026-10-19).
+ *   셋은 2026-10-25부터 꺼 둠(README 「2026-10-25」) — 기본 모드는 10-19 마지막 결과만 읽고 「이번 주 아님」(종료 3)으로 끝난다.
  * --매일: 매일 도는 제작 인사이트(full · yt-tt · meta-brand · synkbrief) 문서를 읽는다 (2026-10-20, 1일 1편 예약 작업용).
  *
  * 읽기 전용: GCE API로 standby 서버의 지금 주소를 읽고, 고정한 호스트 키로 SSH에 붙어
