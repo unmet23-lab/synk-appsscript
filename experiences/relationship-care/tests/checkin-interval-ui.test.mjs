@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { emptyState, makePerson, makeEvent, importBackup } from '../model.mjs';
+import { createTransientSession } from '../care-transient-session.mjs';
 
 const source = readFileSync(new URL('../app.mjs', import.meta.url), 'utf8');
 function functionSource(name) {
@@ -51,8 +52,11 @@ function harness(people = []) {
     localStorage: { setItem(key, value) { if (context.storageFails) throw Error('Storage is full'); writes.push({ key, value }); } },
   });
   context.person = () => context.state.people.find(item => item.id === context.selectedId);
-  vm.runInContext(['save', 'choosePerson', 'openPersonDialog', 'updatePersonSubmit', 'checkinSummary', 'updateCheckinInput', 'checkinInput', 'replaceState'].map(functionSource).join('\n'), context);
+  vm.runInContext(['save', 'choosePerson', 'openPersonDialog', 'discardPersonDialog', 'updatePersonSubmit', 'checkinSummary', 'updateCheckinInput', 'checkinInput', 'replaceState'].map(functionSource).join('\n'), context);
   vm.runInContext(['new-person-checkin', 'close-person-dialog', 'person-form'].map(handlerSource).join('\n'), context);
+  // replaceState no longer lists every feature's cleanup; it calls the transient session (E07).
+  // The real imported session runs the app's own person-dialog owner, as app.mjs registers it.
+  context.transient = createTransientSession([['person-dialog', { clearForOwnerChange: () => context.discardPersonDialog() }]]);
   const submit = () => handlers.get('person-form:submit')({ preventDefault() {} });
   const change = (selection, custom) => {
     element('new-person-checkin').value = selection;

@@ -16,7 +16,7 @@ test('레슨 표현이 이야기에 나오면 누를 수 있는 형광펜을 칠
 
 test('따옴표 안 글은 전처럼 칠하고, 표현과 맞을 때만 누를 수 있다', () => {
   const expressions = [{korean: '포장해 주세요.', meaning: ''}];
-  assert.equal(storyLineMarkup('직원이 ‘포장해 주세요’라고 들었어요.', expressions), '직원이 ‘<mark class="life-say" data-life-mark="0" tabindex="0" aria-label="포장해 주세요 · 표현 도움 보기">포장해 주세요</mark>’라고 들었어요.');
+  assert.equal(storyLineMarkup('직원이 ‘포장해 주세요’라고 들었어요.', expressions), '직원이 ‘<mark class="life-say" data-life-mark="0" role="button" tabindex="0" aria-label="포장해 주세요 · 표현 도움 보기">포장해 주세요</mark>’라고 들었어요.');
   assert.equal(storyLineMarkup('안내판에 ‘공원’이 있어요.', expressions), '안내판에 ‘<mark class="life-say">공원</mark>’이 있어요.');
   assert.equal(storyLineMarkup('<b>“너”</b> & 나', []), '&lt;b&gt;“너”&lt;/b&gt; &amp; 나');
 });

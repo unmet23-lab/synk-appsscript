@@ -27,6 +27,18 @@ test('local health and capability report actual limitations without paths or acc
   assert.match(await lunar.text(), /export function lunarToSolar/);
 });
 
+test('every relative browser module imported by the app is on the local static allowlist', async t => {
+  const { base } = await fixture(t);
+  const app = await (await fetch(base + '/app.mjs')).text();
+  const modules = [...new Set([...app.matchAll(/\bfrom\s*(['"])\.\/([^'"]+)\1/g)].map(match => match[2]))];
+  assert.ok(modules.includes('care-transient-session.mjs'));
+  for (const name of modules) {
+    const res = await fetch(base + '/' + name);
+    assert.equal(res.status, 200, name);
+    assert.match(res.headers.get('content-type'), /javascript/, name);
+  }
+});
+
 async function callbackFixture(t, redirect = base => base + '/') {
   const reserve = http.createServer();
   await new Promise(resolve => reserve.listen(0, '127.0.0.1', resolve));

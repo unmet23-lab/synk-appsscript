@@ -13,6 +13,7 @@ import { createCarePush, carePushAccountIdentity, careLogoutNotice } from './car
 import { CHECKIN_INTENTS, listSavedMessages, toggleMessageFavorite, removeSavedMessage } from './model.mjs';
 import { CONTACT_FILE_LIMIT, parseContactFile, previewContacts, addSelectedContacts } from './care-contact-import.mjs';
 import { createCareSignal } from './care-signal-view.mjs';
+import { createTransientSession, createObjectUrlSlot, createRecordingWorkspace, createDialogSuspension, createConfirmation, readOwnerTransition } from './care-transient-session.mjs';
 import { initTheme, cycleTheme, THEME_LABEL, icon as signalIcon, createSheet } from '/member-signal/signal.mjs';
 
 const $ = id => document.getElementById(id);
@@ -21,16 +22,15 @@ const STORAGE_KEY = 'synk.care.local.v1';
 const MAX_AUDIO = 20 * 1024 * 1024;
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 let state = emptyState(), selectedId = null, persist = false, saveFailed = false, sampleMode = false, activeTab = 'events', activeView = 'home';
-let audioFile = null, audioURL = null, transcribing = null, capabilities = null, currentDraft = null, toastTimer;
+let capabilities = null, currentDraft = null, toastTimer;
 let calendarMonth = '', calendarDay = '', captureReview = null, logOccurrence = null;
 let accountStatus = { configured: false, signedIn: false, status: 'loading' }, accountStarting = true, syncStatus = { status: 'idle' }, accountId = null, guestSnapshot = null, authEpoch = 0;
 let personDialogContext = null;
-let accountDialogs = [];
 let contactImport = null, contactImportGeneration = 0;
 let sync = null, account = null;
 const carePush = createCarePush({ request: (action, body) => account.requestPush(action, body), onState: () => renderPushSettings() });
 let preparationKey = '', preparationInputs = { attendance: 'undecided', timeMinutes: null, budgetWon: null }, preparationResult = null, preparationLogId = null, preparationLogError = '';
-let expressionReview = null, preferenceCandidates = [], preferenceContext = null, cardURL = null, cardFilename = '', cardGeneration = 0, cardItemsKey = '';
+let expressionReview = null, preferenceCandidates = [], preferenceContext = null, cardItemsKey = '';
 let memoryChoice = null, followupCalendar = null, checkinMode = false;
 let followupContext = null;
 let focusKey = '', focusEpoch = 0, focusOperation = null;
@@ -38,6 +38,42 @@ let careSignal = null; // 시그널 판 새 화면(아래에서 만든다). 그 
 const ACTIONS = { contact: '연락', attend: '참석', gift: '선물', money: '경조금', remember: '조용히 기억' };
 const won = value => value === null || value === undefined ? '' : `${value.toLocaleString('ko-KR')}원`;
 const conversations = new Map(), sessionDrafts = new Map(), notified = new Set();
+// 임시 편집 세션(care-transient-session.mjs): 저장하기 전의 작업은 각자의 주인이 정리한다.
+// 다른 수첩이 들어오면 clearForOwnerChange, 같은 계정을 다시 확인하는 잠금 동안엔 suspend,
+// 잠금이 풀리면 restore, 페이지를 떠날 때 pageHide. 아래 등록 순서가 정리 순서다.
+const recording = createRecordingWorkspace({ view: {
+  show(file, url) { $('audio-player').src = url; $('audio-filename').textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`; $('audio-detail').hidden = false; },
+  stopped() {
+    $('transcribe-button').disabled = !capabilities?.transcription?.available; $('transcribe-button').textContent = '녹음을 글로 바꾸기';
+    $('transcription-status').textContent = '이전 녹음을 글로 바꾸던 것은 멈췄어요. 새 녹음을 골라 다시 해 주세요.';
+  },
+  reset() { $('audio-file').value = ''; $('audio-player').removeAttribute('src'); $('audio-player').load(); $('audio-detail').hidden = true; $('transcript-wrap').hidden = true; $('transcript-text').value = ''; $('audio-consent').checked = false; },
+  pause() { $('audio-player').pause(); },
+} });
+const memoryCard = createObjectUrlSlot();
+const lockedDialogs = createDialogSuspension({ ids: ['person-dialog', 'memory-card-dialog', 'followup-calendar-dialog', 'contact-import-dialog'], dialog: $ });
+const confirmation = createConfirmation({ dialog: () => $('confirm-dialog'), ownerToken: () => authEpoch, present: ({ title, message, button }) => {
+  $('confirm-title').textContent = title;
+  $('confirm-dialog').querySelector('[value="confirm"]').textContent = button;
+  $('confirm-message').textContent = message;
+} });
+const transient = createTransientSession([
+  ['locked-dialogs', lockedDialogs],
+  ['confirmation', confirmation],
+  ['contact-import', { clearForOwnerChange: () => resetContactImport() }],
+  ['person-dialog', { clearForOwnerChange: () => discardPersonDialog() }],
+  ['followups', { clearForOwnerChange: () => discardFollowupWork() }],
+  ['care-focus', { clearForOwnerChange: () => { focusKey = ''; focusEpoch = authEpoch; focusOperation = null; } }],
+  ['personal-memory', { clearForOwnerChange: () => resetPersonalMemory() }],
+  ['memory-card', { clearForOwnerChange: () => resetMemoryCard(), pageHide: () => releaseMemoryCard() }],
+  ['capture', { clearForOwnerChange: () => discardCapture() }],
+  ['care-log', { clearForOwnerChange: () => { logOccurrence = null; $('care-log-form').reset(); } }],
+  ['open-reminders', { clearForOwnerChange: () => notified.clear() }],
+  ['recording', recording],
+  ['conversation', { clearForOwnerChange: () => { conversations.clear(); clearConversationFields(); } }],
+  ['draft', { clearForOwnerChange: () => { sessionDrafts.clear(); checkinMode = false; resetDraft(); } }],
+  ['event-form', { clearForOwnerChange: () => resetEventForm() }],
+]);
 const person = () => state.people.find(item => item.id === selectedId);
 const rows = () => upcomingEvents(state);
 const currentRows = () => rows().filter(item => item.person.id === selectedId);
@@ -67,9 +103,9 @@ const hasUnsubmittedAccountInput = () => {
   // A synced notebook does not mean that this working material is already saved.
   return preferenceChanged || eventChanged || hasText(['draft-text', 'capture-source', 'capture-title', 'followup-title', 'followup-date', 'memory-card-title', 'memory-card-message', 'personal-memory',
     'conversation-text', 'self-text', 'other-text', 'transcript-text', 'care-log-note', 'care-log-amount']) ||
-    (!!$('person-dialog')?.open || accountDialogs.includes('person-dialog')) && hasText(['new-person-name', 'new-person-relationship', 'new-person-notes']) ||
+    (!!$('person-dialog')?.open || lockedDialogs.isSuspended('person-dialog')) && hasText(['new-person-name', 'new-person-relationship', 'new-person-notes']) ||
     [...conversations.values()].some(row => [row.text, row.selfText, row.otherText].some(value => value?.trim())) ||
-    [...sessionDrafts.values()].some(row => row.text?.trim()) || !!audioFile ||
+    [...sessionDrafts.values()].some(row => row.text?.trim()) || !!recording.file ||
     !!$('memory-card-photo')?.files.length || !!document.querySelector('[data-card-selected]:checked') || !!document.querySelector('[data-contact-selected]:checked');
 };
 const hasPersonalizationInput = () => !!memoryChoice || !!$('personal-memory').value || (currentDraft?.eventType === 'checkin' && !!$('draft-text').value.trim());
@@ -410,7 +446,7 @@ function checkMessage() {
   return result;
 }
 function releaseMemoryCard() {
-  cardGeneration++; if (cardURL) URL.revokeObjectURL(cardURL); cardURL = null; cardFilename = '';
+  memoryCard.release();
   $('memory-card-preview').removeAttribute('src'); if ($('memory-card-dialog').open) $('memory-card-dialog').close();
 }
 function resetMemoryCard() {
@@ -436,15 +472,14 @@ async function previewMemoryCard() {
     if (item.dataset.cardKind === 'memory') memories.push({ ...value, text: excerpt }); else activities.push({ ...value, note: excerpt });
   }
   const file = $('memory-card-photo').files[0]; if (file && file.size > 10 * 1024 * 1024) throw Error('카드 사진은 10 MB까지 가져올 수 있어요.');
-  const epoch = authEpoch, owner = who.id, version = ++cardGeneration;
+  const epoch = authEpoch, owner = who.id, version = memoryCard.begin();
   $('preview-memory-card').disabled = true; $('memory-card-status').textContent = '카드를 만들고 있어요.';
   try {
     const result = await createMemoryCard({ person: who, memories, activities, title: $('memory-card-title').value, message: $('memory-card-message').value, photoFile: file });
-    if (epoch !== authEpoch || owner !== selectedId || version !== cardGeneration || notebookView().locked) return;
-    if (cardURL) URL.revokeObjectURL(cardURL); cardURL = URL.createObjectURL(result.blob); cardFilename = result.filename;
-    $('memory-card-preview').src = cardURL; $('memory-card-dialog').showModal(); $('memory-card-status').textContent = '고른 내용만 담았어요. 이름과 문구가 맞는지 보고 저장해 주세요.';
-  } catch (error) { if (epoch === authEpoch && owner === selectedId && version === cardGeneration) { $('memory-card-status').textContent = error.message; throw error; } }
-  finally { if (epoch === authEpoch && owner === selectedId && version === cardGeneration) $('preview-memory-card').disabled = false; }
+    if (epoch !== authEpoch || owner !== selectedId || !memoryCard.isCurrent(version) || notebookView().locked) return;
+    $('memory-card-preview').src = memoryCard.publish(result.blob, { ticket: version, name: result.filename }); $('memory-card-dialog').showModal(); $('memory-card-status').textContent = '고른 내용만 담았어요. 이름과 문구가 맞는지 보고 저장해 주세요.';
+  } catch (error) { if (epoch === authEpoch && owner === selectedId && memoryCard.isCurrent(version)) { $('memory-card-status').textContent = error.message; throw error; } }
+  finally { if (epoch === authEpoch && owner === selectedId && memoryCard.isCurrent(version)) $('preview-memory-card').disabled = false; }
 }
 function renderBrief() {
   renderMemoryPicker();
@@ -500,6 +535,7 @@ function renderCapturePeople() {
   else if (state.people.length === 1) $('capture-person').value = state.people[0].id;
 }
 function invalidateCapture() { captureReview = null; $('capture-results').textContent = ''; $('capture-save').hidden = true; }
+function discardCapture() { invalidateCapture(); $('capture-source').value = ''; $('capture-title').value = ''; }
 function extractCapture() {
   const who = state.people.find(item => item.id === $('capture-person').value);
   if (!who) throw Error('먼저 사람을 더하고, 누구의 이야기인지 골라 주세요.');
@@ -526,32 +562,18 @@ async function saveCapture() {
   notify(`일정 ${events.length}개와 기억 ${memories.length}개, 붙여 넣은 글을 저장했어요. 문구를 준비할 때 다시 볼 수 있어요.`);
 }
 function replaceState(next) {
-  accountDialogs = [];
-  resetContactImport();
-  personDialogContext = null; $('person-dialog').close(); $('person-form').reset();
-  followupContext = null;
-  focusKey = ''; focusEpoch = authEpoch;focusOperation = null;
-  resetPersonalMemory(); checkinMode=false; followupCalendar=null; $('followup-calendar-dialog').close();
-  resetMemoryCard(); $('followup-form').reset(); preparationKey = '';
+  // 다른 수첩이 들어온다. 수첩을 먼저 바꾸고(선택한 사람 없음), 임시 작업은 각자의 주인이 비운다.
   state = importBackup(next || emptyState()); selectedId = null; activeView = 'home'; sampleMode = false;
-  conversations.clear(); sessionDrafts.clear(); notified.clear(); logOccurrence = null; invalidateCapture();
-  $('capture-source').value = ''; $('capture-title').value = ''; $('care-log-form').reset();
-  clearAudio(); clearConversationFields(); resetDraft(); resetEventForm(); render();
+  transient.clearForOwnerChange();
+  render();
 }
 function renderAccount() {
   const connected = !!accountId;
   const presentation = notebookView(), main = document.querySelector('.main-grid');
   const verified = connected && accountStatus.signedIn;
-  if (connected && presentation.locked) {
-    for (const id of ['person-dialog', 'memory-card-dialog', 'followup-calendar-dialog', 'contact-import-dialog']) {
-      if ($(id).open) { if (!accountDialogs.includes(id)) accountDialogs.push(id); $(id).close(); }
-    }
-    if ($('confirm-dialog').open) { $('confirm-dialog').returnValue = 'cancel'; $('confirm-dialog').close(); }
-    $('audio-player').pause();
-  } else if (verified && !presentation.locked) {
-    const dialogs = accountDialogs; accountDialogs = [];
-    for (const id of dialogs) $(id).showModal();
-  }
+  // 같은 계정을 다시 확인하거나 수첩을 불러오는 동안: 입력은 두고 창·재생만 멈췄다가 풀리면 되살린다.
+  if (connected && presentation.locked) transient.suspend();
+  else if (verified && !presentation.locked) transient.restore();
   const local = syncStatus.localRecords || { count: 0, pending: 0, corrupt: 0 };
   $('account-signin').hidden = connected && !presentation.canReconnect; $('account-signin').disabled = presentation.signInDisabled;
   $('account-signin').textContent = presentation.signInLabel;
@@ -594,19 +616,19 @@ async function handleAccountStatus(status) {
   accountStatus = status;
   // A temporary verification failure is not a logout. Keep raw work and its
   // sync revision in memory, concealed until the same account is verified again.
-  if (accountId && (status.status === 'restoring' || !status.signedIn && status.status === 'error' && status.error?.retryable === true)) { renderAccount(); return; }
-  const nextId = status.signedIn ? status.accountId || status.account?.synk_user_id : null;
+  const transition = readOwnerTransition(accountId, status);
+  if (transition.kind === 'hold') { renderAccount(); return; }
   const pushAccountId = carePushAccountIdentity(status, accountStarting);
   if (pushAccountId !== undefined) void carePush.setAccount(pushAccountId);
-  if (nextId === accountId) { renderAccount(); return; }
-  const hadAccount = !!accountId;
+  if (transition.kind === 'same') { renderAccount(); return; }
+  const { nextId } = transition, hadAccount = !!accountId;
   const epoch = ++authEpoch;
   if (hadAccount) { accountId = null; sync.close(); }
   if (nextId) {
-    if (!hadAccount) guestSnapshot = { state: importBackup(state), persist, selectedId, sampleMode };
+    if (transition.parkGuest) guestSnapshot = { state: importBackup(state), persist, selectedId, sampleMode };
     accountId = nextId; persist = false; replaceState(emptyState()); renderAccount();
     try { await sync.open(nextId); } catch (error) { if (epoch === authEpoch) notify(error.message || '계정 수첩을 불러오지 못했어요.'); }
-  } else if (hadAccount) {
+  } else if (transition.restoreGuest) {
     const guest = guestSnapshot; guestSnapshot = null;
     replaceState(guest?.state || emptyState()); persist = guest?.persist === true; sampleMode = guest?.sampleMode === true; render();
   }
@@ -707,15 +729,7 @@ async function deleteSavedMessage() {
   const saved = save(); renderSavedDraft(); renderHistory(); if (saved) notify('보관함에서 문구를 지웠어요. 쓰던 초안은 그대로예요.');
 }
 function resetDraft({ preserveIntent = false } = {}) { invalidateMessageReview(); currentDraft = null; $('draft-text').value = ''; if (typeof paintDraftButtons === 'function') paintDraftButtons(); if (!preserveIntent) $('draft-intent').value = 'everyday'; $('draft-confirm').checked = false; $('remember-draft').checked = false; $('draft-basis').textContent = '정해 둔 표현과 상황에 맞춰 만들어요.'; renderDraftNotice(); }
-function clearAudio() {
-  if (transcribing) {
-    const previous = transcribing; transcribing = null; previous.abort();
-    $('transcribe-button').disabled = !capabilities?.transcription?.available; $('transcribe-button').textContent = '녹음을 글로 바꾸기';
-    $('transcription-status').textContent = '이전 녹음을 글로 바꾸던 것은 멈췄어요. 새 녹음을 골라 다시 해 주세요.';
-  }
-  if (audioURL) URL.revokeObjectURL(audioURL);
-  audioURL = null; audioFile = null; $('audio-file').value = ''; $('audio-player').removeAttribute('src'); $('audio-player').load(); $('audio-detail').hidden = true; $('transcript-wrap').hidden = true; $('transcript-text').value = ''; $('audio-consent').checked = false;
-}
+function clearAudio() { recording.clear(); }
 async function choosePerson(id, tab = 'events') {
   const epoch = authEpoch;
   if (notebookView().locked) return false;
@@ -743,6 +757,7 @@ function openPersonDialog(edit = false) {
   updatePersonSubmit();
   $('delete-person').hidden = !target; $('person-dialog').showModal();
 }
+function discardPersonDialog() { personDialogContext = null; $('person-dialog').close(); $('person-form').reset(); }
 function updatePersonSubmit() {
   $('person-submit').textContent = $('person-edit-id').value ? '저장' : $('quick-event-date').value ? '저장하고 문구 준비' : '저장하고 안부 준비';
 }
@@ -767,11 +782,8 @@ function checkinInput(old) {
   return days === 30 && !Object.hasOwn(old ?? {}, 'checkinIntervalDays') ? {} : { checkinIntervalDays: days };
 }
 async function confirmDelete(message, title = '자료 삭제', button = '삭제') {
-  const epoch = authEpoch;
-  $('confirm-title').textContent = title;
-  $('confirm-dialog').querySelector('[value="confirm"]').textContent = button;
-  $('confirm-message').textContent = message; $('confirm-dialog').returnValue = 'cancel'; $('confirm-dialog').showModal();
-  return new Promise(resolve => $('confirm-dialog').addEventListener('close', () => resolve(epoch === authEpoch && $('confirm-dialog').returnValue === 'confirm'), { once: true }));
+  // 묻는 동안 계정이 바뀌면 「확인」을 눌러도 false다(확인창 주인: care-transient-session.mjs).
+  return confirmation.ask({ message, title, button });
 }
 function renderEvents() {
   const events = state.events.filter(item => item.personId === selectedId);
@@ -926,6 +938,7 @@ function currentFollowupContext() {
   if (!item) followupContext=null;
   return item;
 }
+function discardFollowupWork() { followupContext = null; followupCalendar = null; $('followup-calendar-dialog').close(); $('followup-form').reset(); }
 async function beginFollowup(id) {
   const item=state.followups.find(row=>row.id===id&&row.status==='pending');
   if (!item||notebookView().locked) throw Error('끝났거나 지운 일이에요. 남은 일에서 다시 골라 주세요.');
@@ -999,23 +1012,23 @@ async function checkCapabilities() {
   $('transcription-status').textContent = available ? '이 PC에서 녹음을 글로 바꿀 수 있어요. 녹음이 길면 시간이 걸려요.' : '이 PC에서는 녹음을 글로 바꿀 수 없어요. 녹음을 들으며 대화를 직접 적어 넣어 주세요.';
 }
 async function transcribe() {
-  if (!audioFile) throw Error('먼저 녹음 파일을 골라 주세요.');
+  if (!recording.file) throw Error('먼저 녹음 파일을 골라 주세요.');
   if (!$('audio-consent').checked) throw Error('녹음을 글로 바꿔도 되는지 묻는 칸에 체크해 주세요.');
   if (!capabilities?.transcription?.available) throw Error('여기서는 녹음을 글로 바꿀 수 없어요. 대화를 직접 적어 주세요.');
-  if (transcribing) return;
-  const file = audioFile, ownerId = selectedId, epoch = authEpoch, operation = new AbortController();
-  const isCurrent = () => transcribing === operation && epoch === authEpoch && ownerId === selectedId && file === audioFile;
-  transcribing = operation; $('transcribe-button').disabled = true; $('transcribe-button').textContent = '글로 바꾸는 중…';
+  if (recording.transcribing) return;
+  const ownerId = selectedId, epoch = authEpoch, job = recording.startTranscription(), file = job.file;
+  const isCurrent = () => job.isCurrent() && epoch === authEpoch && ownerId === selectedId;
+  $('transcribe-button').disabled = true; $('transcribe-button').textContent = '글로 바꾸는 중…';
   $('transcription-status').textContent = '이 PC에서 녹음을 글로 바꾸고 있어요. 긴 녹음은 시간이 걸려요.';
   try {
-    const response = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': file.type.startsWith('audio/') ? file.type : 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name), 'X-SYNK-Care': '1' }, body: file, signal: operation.signal });
+    const response = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': file.type.startsWith('audio/') ? file.type : 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name), 'X-SYNK-Care': '1' }, body: file, signal: job.signal });
     if (!isCurrent()) return;
     const result = await response.json(); if (!isCurrent()) return;
     if (!response.ok) throw Error(result.error || '녹음을 글로 바꾸지 못했어요. 대화를 직접 적어 주세요.');
     $('transcript-text').value = result.text || ''; $('transcript-wrap').hidden = false;
     $('transcription-status').textContent = '글로 바꿨어요. 녹음을 들으며 틀린 곳을 고치고, 내가 한 말과 상대가 한 말을 나눠 주세요.';
   } catch (error) { if (isCurrent()) $('transcription-status').textContent = error.message || '녹음을 글로 바꾸지 못했어요. 대화를 직접 적어 주세요.'; }
-  finally { if (transcribing === operation) { transcribing = null; $('transcribe-button').disabled = !capabilities?.transcription?.available; $('transcribe-button').textContent = '녹음을 글로 바꾸기'; } }
+  finally { if (job.finish()) { $('transcribe-button').disabled = !capabilities?.transcription?.available; $('transcribe-button').textContent = '녹음을 글로 바꾸기'; } }
 }
 function notificationStatus() {
   const push = carePush.snapshot();
@@ -1258,7 +1271,7 @@ on('preference-form', 'submit', e => {
   if (keepCheckin || currentRows().length) generateDraft({ silent: true });
   notify(preference.confirmed ? '표현을 저장하고 초안에 넣었어요.' : '설정을 저장했어요. 「이 설정으로 문구를 만들게요」에 체크하면 초안에 들어가요.');
 });
-on('audio-file', 'change', () => { const file = $('audio-file').files[0]; if (!file) return; clearAudio(); if (file.size > MAX_AUDIO) throw Error('음성 파일은 20 MB까지 가져올 수 있어요.'); if (!file.size) throw Error('빈 음성 파일은 재생할 수 없어요.'); audioFile = file; audioURL = URL.createObjectURL(file); $('audio-player').src = audioURL; $('audio-filename').textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`; $('audio-detail').hidden = false; });
+on('audio-file', 'change', () => { const file = $('audio-file').files[0]; if (!file) return; clearAudio(); if (file.size > MAX_AUDIO) throw Error('음성 파일은 20 MB까지 가져올 수 있어요.'); if (!file.size) throw Error('빈 음성 파일은 재생할 수 없어요.'); recording.take(file); });
 on('transcribe-button', 'click', transcribe);
 on('use-transcript', 'click', () => { const text = $('transcript-text').value.trim(); if (!text) throw Error('받아 적은 대화가 비어 있어요. 녹음을 글로 바꾸거나 대화를 직접 적어 주세요.'); if (text.length > 50_000) throw Error('대화는 50,000자까지 넣을 수 있어요.'); $('conversation-text').value = text; $('self-text').value = ''; $('other-text').value = ''; $('speaker-confirm').checked = false; stashConversation(); $('input-text-tab').click(); notify('대화를 옮겼어요. 내가 한 말과 상대가 한 말을 나눠 주세요.'); });
 on('event-type', 'change', () => { const type = $('event-type').value; $('event-repeat').value = ['wedding', 'condolence'].includes(type) ? 'none' : 'yearly'; updateEventType(); });
@@ -1316,7 +1329,7 @@ on('followup-form','submit',e=>{e.preventDefault();state=addFollowup(state,{pers
 on('preview-memory-card','click',previewMemoryCard);
 for (const type of ['input', 'change']) on('memory-card-builder', type, () => { releaseMemoryCard(); $('preview-memory-card').disabled = false; $('memory-card-status').textContent = '바뀐 내용으로 카드를 다시 만들 수 있어요.'; });
 on('close-memory-card','click',()=>{$('memory-card-dialog').close();});
-on('download-memory-card','click',()=>{if(!cardURL)throw Error('「카드 미리 보기」를 다시 눌러 주세요.');const link=document.createElement('a');link.href=cardURL;link.download=cardFilename;link.click();});
+on('download-memory-card','click',()=>{if(!memoryCard.url)throw Error('「카드 미리 보기」를 다시 눌러 주세요.');const link=document.createElement('a');link.href=memoryCard.url;link.download=memoryCard.name;link.click();});
 on('go-events', 'click', () => switchTab('events')); on('generate-draft', 'click', () => changeDraft()); on('draft-event', 'change', () => { followupContext=null;checkinMode=!$('draft-event').value;resetDraft(); $('draft-style').value = defaultDraftApproach(person(),state.events.find(item=>item.id===$('draft-event').value)?.type||'checkin'); updateMood(); renderBrief(); }); on('draft-style', 'change', () => changeDraft()); on('draft-intent', 'change', () => changeDraft({ intentChanged: true })); on('draft-text', 'input', () => { $('draft-confirm').checked = false; invalidateMessageReview(); renderSavedDraft(); });
 on('save-draft-only', 'click', () => {
   const input = checkedDraftInput({ rememberOnly: true }); if (!input) return;
@@ -1461,7 +1474,7 @@ load(); render(true); switchTab('events'); updateEventType(); notificationStatus
 setInterval(() => { try { renderPeople(); renderHome(); renderEvents(); checkReminders(); } catch { /* 잘못된 상태는 다음 사용자 행동에서 확인한다. */ } }, 60_000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { notificationStatus(); renderHome(); if (accountId) void carePush.prepare(); checkReminders(); } });
 window.addEventListener('beforeunload', event => { if (accountId && (syncStatus.pending || hasUnsubmittedAccountInput())) { event.preventDefault(); event.returnValue = ''; } });
-window.addEventListener('pagehide', event => { releaseMemoryCard(); $('audio-player').pause(); if (!event.persisted && audioURL) { URL.revokeObjectURL(audioURL); audioURL = null; } });
+window.addEventListener('pagehide', event => transient.pageHide({ persisted: event.persisted }));
 window.addEventListener('pageshow', event => { const restored = resumeCareLoginNavigation(accountStatus, event.persisted); if (restored !== accountStatus && !accountId) { accountStatus = restored;renderAccount(); } });
 window.addEventListener('online', () => { if (accountId && syncStatus.pending) void sync.flush(); });
 document.documentElement.dataset.ready = 'true';

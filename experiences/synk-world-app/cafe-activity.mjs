@@ -56,7 +56,7 @@ export const CAFE_VISITS=[
     b:{...order('warm',2,'따뜻한 주스 두 잔'),response:'따뜻한 주스 두 잔을 유지할게요. 차로 바꾸려면 다시 알려 주세요.',friend:'이 몸은 오늘 차로 바꾸고 싶군.'},
     c:{...order('cold',2,'차가운 주스 두 잔'),response:'차가운 주스로 바꿀게요. 따뜻한 차를 원하시면 종류도 함께 알려 주세요.',friend:'내가 원하는 건 따뜻한 차야. 주스 말고.'}}},
    {name:'한 잔 더',staff:'따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?',speaker:'mongle',friend:'오! 마린도 같이 마신대! 두 잔에 한 잔 더하면 셋이야!',hint:'두 잔에 한 잔을 추가해요. 한 잔 더 주세요.',next:'가져갈 곳 바꾸기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','추가 전 주문'),options:{
-    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔을 빼면 한 잔만 남아요. 세 잔이 필요하시면 한 잔 더 추가할까요?',friend:'어? 컵이 줄었네! 우리는 셋이 같이 마셔야 해!'},
+    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔을 빼면 한 잔만 남아요. 세 잔이 필요하시면 두 잔 더 추가할까요?',friend:'어? 컵이 줄었네! 우리는 셋이 같이 마셔야 해!'},
     b:{...order('tea',3,'따뜻한 차 세 잔'),response:'한 잔 추가해서 따뜻한 차 세 잔으로 준비할게요.',friend:'우와! 컵이 셋이야! 마린 것도 생겼네!'},
     c:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔을 유지할게요. 세 분이 드시면 한 잔 더 추가할 수 있어요.',friend:'마린 컵도 같이 챙기자! 한 잔 더 필요해!'}}},
    {name:'포장으로 변경',staff:'세 잔 모두 매장에서 드실 건가요?',speaker:'marine',friend:'목적지 변경. 카페에서 공원으로. 포장 컵, 셋.',hint:'주문은 유지하고 마실 곳을 바꿔요. 포장으로 바꿔 주세요.',next:'세 친구의 컵 받아 출발하기',before:order('tea',3,'따뜻한 차 세 잔','매장 이용'),options:{
@@ -123,7 +123,18 @@ export function resumeCafe(state,lessonId=state.id||CAFE_LESSON_ID){
  const firstWrong=questions.findIndex(q=>state.answers[q.id]&&!state.answers[q.id].correct);
  const lastAnswered=questions.reduce((last,q,index)=>state.answers[q.id]?index:last,-1);
  const index=firstWrong<0?lastAnswered:firstWrong;
- if(index>=0){const q=questions[index],answer=state.answers[q.id];result.step=index;result.choiceId=q.choices.some(c=>c.id===answer.choiceId)?answer.choiceId:q.answerId;result.phase=result.choiceId===q.answerId?'response':'repair';}
+ if(index<0)return result;
+ const q=questions[index],answer=state.answers[q.id],known=q.choices.some(c=>c.id===answer.choiceId);
+ if(lessonId===CAFE_COMPOSE_ID){
+  // A compose scene may only reuse the order sent with the first answer: it must
+  // match that answer's choice, and a later step needs the order that passed step 0.
+  // Otherwise reopen the welcome to compose again; an unknown later choice is asked again.
+  const first=state.answers[questions[0].id],sent=first?.order;
+  if(!isCafeOrder(sent,{complete:true})||first.choiceId!==orderChoice(sent)||index>0&&first.choiceId!==questions[0].answerId)return result;
+  result.order=clone(sent);
+  if(!known)return {...result,step:index,phase:'choose'};
+ }
+ result.step=index;result.choiceId=known?answer.choiceId:q.answerId;result.phase=result.choiceId===q.answerId?'response':'repair';
  return result;
 }
 export function chooseCafe(state,choiceId,lessonId=CAFE_LESSON_ID){

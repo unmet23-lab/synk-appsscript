@@ -190,6 +190,74 @@ test('an opening taken for today alone is not kept: the next day starts where ad
   if (easier.intro().opening.length) assert.deepEqual(easier.memory(NOW).indices, defaults);
 });
 
+// One content knob of six steps that starts at the third: an opening has room both ways.
+const ladder = () => Flow.defineContent({ id: 'test.ladder', knobs: [{ id: 'step', values: [0, 1, 2, 3, 4, 5], start: 2 }] });
+const reasons = run => run.intro().opening.map(change => change.because);
+
+test('a round chosen harder keeps the place the prior gave: only the steps past it are today’s and undone', () => {
+  const spec = ladder();
+  // Strong practice elsewhere places the person at the top step, with "harder" or without.
+  for (const declared of [{}, { mode: 'harder' }]) {
+    const run = Flow.start({ spec, now: NOW, prior: { content: 4 }, declared });
+    assert.equal(run.settings().indices.step, 5);
+    assert.deepEqual(reasons(run), ['prior', 'prior', 'prior'], 'every step was the prior’s, not today’s');
+    assert.equal(run.memory(NOW).indices.step, 5);
+    assert.equal(Flow.start({ spec, now: later(1), memory: run.memory(NOW) }).settings().indices.step, 5, 'the next day resumes there');
+  }
+  // A weaker prior places the person at step 4; "harder" takes one more, and only that one is undone.
+  assert.equal(Flow.start({ spec, now: NOW, prior: { content: 3.2 } }).settings().indices.step, 4);
+  const more = Flow.start({ spec, now: NOW, prior: { content: 3.2 }, declared: { mode: 'harder' } });
+  assert.equal(more.settings().indices.step, 5);
+  assert.deepEqual(reasons(more), ['prior', 'prior', 'declared-harder']);
+  assert.equal(more.memory(NOW).indices.step, 4);
+  assert.equal(Flow.start({ spec, now: later(1), memory: more.memory(NOW) }).settings().indices.step, 4);
+  // A miss in play is still learnt from that place: eased one step, and today's step is still undone.
+  const missed = Flow.start({ spec, now: NOW, prior: { content: 3.2 }, declared: { mode: 'harder' } });
+  assert.equal(missed.observe({ outcome: 'fail' }).change?.direction, -1);
+  assert.equal(missed.settings().indices.step, 4);
+  assert.equal(missed.memory(NOW).indices.step, 3);
+});
+
+test('an opening that memory itself asks for says so and is kept, even on a tired day; only the extra tired step is undone', () => {
+  const spec = ladder(), at = Flow.start({ spec, now: NOW }).memory(NOW);
+  // Kept at step 4, but what was learnt there says one step lighter.
+  const memory = { ...at, indices: { step: 4 }, estimates: { ...at.estimates, content: { theta: 2.6, n: 10, reversals: 0 } } };
+  const usual = Flow.start({ spec, now: later(1), memory });
+  assert.equal(usual.intro().code, 'start.memory');
+  assert.deepEqual(usual.intro().opening.map(c => [c.because, c.from, c.to]), [['memory', 4, 3]]);
+  assert.equal(usual.memory(later(1)).indices.step, 3);
+  const tired = Flow.start({ spec, now: later(1), memory, condition: 'tired' });
+  assert.deepEqual(tired.intro().opening.map(c => [c.because, c.from, c.to]), [['memory', 4, 3], ['tired', 3, 2]]);
+  assert.equal(tired.settings().indices.step, 2, 'today still opens a step lighter');
+  assert.equal(tired.memory(later(1)).indices.step, 3, 'the next day starts where memory alone placed the person');
+});
+
+test('when the prior and today pull different ways, or over several knobs, what is kept is the place the prior alone gives', () => {
+  const spec = ladder();
+  // The prior eases two steps; "harder" lets only one of them happen today. Memory keeps both.
+  const low = { content: Math.log(3) };
+  assert.equal(Flow.start({ spec, now: NOW, prior: low }).settings().indices.step, 0);
+  const harder = Flow.start({ spec, now: NOW, prior: low, declared: { mode: 'harder' } });
+  assert.equal(harder.settings().indices.step, 1);
+  assert.deepEqual(reasons(harder), ['prior']);
+  assert.equal(harder.memory(NOW).indices.step, 0);
+  // The prior raises three steps; "easier" takes two of them, a tired day none. Neither loses the prior's place.
+  const easier = Flow.start({ spec, now: NOW, prior: { content: 4 }, declared: { mode: 'easier' } });
+  assert.equal(easier.settings().indices.step, 4);
+  assert.deepEqual(reasons(easier), ['prior', 'prior']);
+  const tired = Flow.start({ spec, now: NOW, prior: { content: 4 }, condition: 'tired' });
+  assert.equal(tired.settings().indices.step, 2, 'a tired day never opens higher');
+  for (const run of [easier, tired]) assert.equal(run.memory(NOW).indices.step, 5);
+  // Two knobs: the prior fills the first and one step of the second; "harder" adds one more to the second only.
+  const two = Flow.defineContent({ id: 'test.ladder.two', knobs: [{ id: 'a', values: [0, 1, 2, 3], start: 1 }, { id: 'b', values: [0, 1, 2, 3], start: 1 }] });
+  const prior = { content: 3.7 };
+  assert.deepEqual(Flow.start({ spec: two, now: NOW, prior }).settings().indices, { a: 3, b: 2 });
+  const both = Flow.start({ spec: two, now: NOW, prior, declared: { mode: 'harder' } });
+  assert.deepEqual(both.settings().indices, { a: 3, b: 3 });
+  assert.deepEqual(both.intro().opening.map(c => [c.knob, c.because]), [['a', 'prior'], ['a', 'prior'], ['b', 'prior'], ['b', 'declared-harder']]);
+  assert.deepEqual(both.memory(NOW).indices, { a: 3, b: 2 });
+});
+
 test('successes in a row, with help or without, are counted for the offer of less help; a miss ends the run', () => {
   const spec = Flow.defineContent({ id: 'test.auto-help', knobs: [{ id: 'clue', kind: 'support', values: ['at-once', 'on-pause', 'on-press'], start: 0 }] });
   const run = Flow.start({ spec, now: NOW });

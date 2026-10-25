@@ -30,7 +30,7 @@ export function validateTravelAccountState(value) {
 /** Fixed product identity; a caller cannot accidentally write a trip into PATH VR. */
 function travelAccountOptions(options) {
   return { ...options, clientKey: 'path-travel', resource: 'path-travel',
-    scope: 'synk-personal', endpoint: 'synk-personal', validateState: validateTravelAccountDocument,
+    scope: 'synk-personal', endpoint: 'synk-personal', validateState: validateTravelAccountState,
     operations: { load: 'personalLoad', save: 'personalSave', delete: 'personalDelete' } };
 }
 export async function createTravelAccount(options = {}) {

@@ -22,6 +22,9 @@
 //     --작성자 Claude|GPT(기본 Claude) · --GPT구독 유지|종료(종료는 --사유 필요) · --배포후보 <후보.json이 있는 폴더>
 //     --예외 내부|아주작은수정|콘텐츠 --대상 <경로·폴더[,경로…]> --사유 <까닭> (기존 정책의 후검수 예외만)
 //     --페이블생략 <까닭> (화면만, 2026-10-24) 그림·글·색만 바꾼 화면처럼 Fable이 볼 것이 적으면 아르곤만으로 배포 조건이 찬다 —
+//     --사용자지정 <JSON> (승인된 spaghetti-refactor-20261023 화면만, 정책 3): 정확한 후보·작성자·사용자 원문을 봉인, 묶음별 GPT·아르곤 + 마지막 Claude 전역 판정
+//   node tools/검수묶음.mjs 배포판정준비 <이름> → 배포판정받기 <이름> <Claude 답 JSON>
+//   정책 3 candidate-only 고침: 다시 <새 이름> --앞 <이름> --사용자지정 <새 JSON> --배포후보 <새 폴더> (경로·종류·모드·작성자 유지, GPT+아르곤 둘 다)
 //       아르곤이 한도·로그인으로 막히면 Fable이 대신하고, 아르곤 P0·P1을 고치면 다시 <새 이름> --앞 <이름>으로 아르곤·Fable이 고친 diff를 본다
 //   경로는 이름 바로 뒤에 두거나 --경로로 준다(목록 옵션 뒤의 낱말은 그 목록에 든다).
 //   <이름>의 폴더는 <공용 작업본>/.tmp/검수/<이름>/ 이다(워크트리를 보관해도 남는다). 다음 명령에는 이름이나 폴더 경로를 준다.
@@ -34,7 +37,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
 import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 정책만들기, 정책판, 대체순서, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로,
-  맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 대신할검수자 } from './lib/검수증명.mjs';
+  맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 대신할검수자, 사용자지정사슬검사 } from './lib/검수증명.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -530,6 +533,31 @@ async function 자료모으기(설정, 폴더, { 시험 = true, 캡처 = true, �
   return 자료;
 }
 
+/** 정책 3에서만 같은 원시 바이트 본문을 한 번 싣는다. 경로별 검증·manifest·스냅샷은 그대로 남는다. */
+export function 후보항목들(candidate, contents, { 동일본문참조 = false } = {}) {
+  if (contents.length !== candidate.항목.length) throw new Error('배포 후보 내용 수 불일치');
+  const items = [항목('P00', '배포 후보 manifest — 실제 올릴 내용과 삭제·모드', JSON.stringify(candidate, null, 2))], seen = new Map();
+  for (const [i, f] of candidate.항목.entries()) {
+    const b = contents[i], prefix = `P${String(i + 1).padStart(2, '0')}`, title = `배포 후보 ${f.경로} (${f.종류}, ${f.모드})`;
+    if (동일본문참조 && (!Buffer.isBuffer(b) || sha(b) !== f.sha256)) throw new Error(`배포 후보 원시 SHA 불일치: ${f.경로}`);
+    if (동일본문참조 && (b.includes(0) || !Buffer.from(b.toString('utf8')).equals(b))) throw new Error(`사용자지정 본문 참조는 손실 없는 UTF-8 코드만 지원한다: ${f.경로}`);
+    const previous = 동일본문참조 && seen.get(f.sha256);
+    if (previous) {
+      if (!b.equals(previous.bytes)) throw new Error(`같은 SHA의 다른 후보 바이트: ${f.경로}`);
+      items.push(항목(prefix, title, `동일 원시 본문 참조: [${previous.item.id}] (${previous.path})\nsha256: ${f.sha256}\n이 경로의 ${b.length}바이트를 직접 대조했다. 공통 본문 전체(쪼개졌으면 위 원본 ID가 제목에 있는 모든 조각)를 이 경로에도 적용해 검수한다. 생략·해당 없음이 아니다.`, '코드', null));
+      continue;
+    }
+    const body = !b ? '(삭제)' : b.subarray(0, 8000).includes(0) ? `(이진 파일: sha256 ${f.sha256}, ${b.length}바이트 — 화면·자산 검토는 최종 검수자가 파일을 열어 확인)` : b.toString('utf8');
+    const item = 항목(prefix, title, body, '코드', null);
+    if (동일본문참조) {
+      item.제목 += ` — 공통 본문 원본 [${item.id}], sha256 ${f.sha256}`;
+      item.글 = `### [${item.id}] ${item.제목}\n${item.몸}\n`;
+      seen.set(f.sha256, { item, bytes: b, path: f.경로 });
+    }
+    items.push(item);
+  }
+  return items;
+}
 function 항목만들기(자료, 설정, 폴더) {
   const 항목들 = [];
   if (자료.시험) {
@@ -560,12 +588,7 @@ function 항목만들기(자료, 설정, 폴더) {
     });
   }
   if (자료.배포후보) {
-    항목들.push(항목('P00', '배포 후보 manifest — 실제 올릴 내용과 삭제·모드', JSON.stringify(자료.배포후보, null, 2)));
-    for (const [i, f] of 자료.배포후보.항목.entries()) {
-      const b = 자료.후보내용[i];
-      const body = !b ? '(삭제)' : b.subarray(0, 8000).includes(0) ? `(이진 파일: sha256 ${f.sha256}, ${b.length}바이트 — 화면·자산 검토는 최종 검수자가 파일을 열어 확인)` : b.toString('utf8');
-      항목들.push(항목(`P${String(i + 1).padStart(2, '0')}`, `배포 후보 ${f.경로} (${f.종류}, ${f.모드})`, body, '코드', null));
-    }
+    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: 설정.정책판 === 3 }));
   }
   return 항목들;
 }
@@ -598,9 +621,9 @@ export function 설정만들기(o) {
   return { 종류: o.종류, 저장소, 바탕: 커밋풀기(o.바탕, 저장소), 끝: o.끝 ? 커밋풀기(o.끝, 저장소) : '작업본', 경로: [...(o.경로 || []), ...(o.경로목록 || [])],
     배경파일: o.배경 ? path.resolve(o.배경) : null, 곁: o.곁 || [], 시험: o.시험 || [], 시험결과: o.시험결과 || null, 화면,
     장면: o.장면 ? path.resolve(o.장면) : null, 주소뿌리: o.주소뿌리 || [], 시각: o.시각 || null, 캡처: o.캡처 ? path.resolve(o.캡처) : null,
-    뺌: o.뺌 || [], 넣음: o.넣음 || [], 크기, 작성자: o.작성자 || 'Claude', GPT구독: o.GPT구독 || '유지', 정책판: o.정책판 ? Number(o.정책판) : 정책판,
+    뺌: o.뺌 || [], 넣음: o.넣음 || [], 크기, 작성자: o.작성자 || (o.사용자지정 ? '혼합' : 'Claude'), GPT구독: o.GPT구독 || '유지', 정책판: o.정책판 ? Number(o.정책판) : o.사용자지정 ? 3 : 정책판,
     예외: o.예외 || null, 대상: o.대상 || null, 사유: o.사유 || null, 배포후보: o.배포후보 ? path.resolve(o.배포후보) : null,
-    ...(o.페이블생략 != null ? { 페이블생략: o.페이블생략 } : {}) };
+    ...(o.페이블생략 != null ? { 페이블생략: o.페이블생략 } : {}), ...(o.사용자지정 ? { 사용자지정: path.resolve(o.사용자지정) } : {}) };
 }
 
 export async function 준비하기(o, { 알리기 = () => {} } = {}) {
@@ -641,7 +664,7 @@ export async function 준비하기(o, { 알리기 = () => {} } = {}) {
   if (!fs.existsSync(path.join(폴더, '지적표.json'))) writeJson(path.join(폴더, '지적표.json'), { 이름: 목록.이름, 지적: [] });
   const 지금 = { 파일: 목록.파일, 시험: 자료.시험 || null, 화면: 자료.화면 || null, 가져온캡처: 자료.가져온캡처 || null, 배경: 자료.배경 || null, 때: 목록.만든때, 증명: 최종입력증명(목록, 자료, 폴더) };
   writeJson(path.join(폴더, '페이블자료.json'), 지금);
-  페이블쓰기(폴더, 목록, 지금);
+  if (!정책.사용자지정) 페이블쓰기(폴더, 목록, 지금);
   return { 폴더, 목록 };
 }
 
@@ -1112,6 +1135,7 @@ function 페이블쓰기(폴더, 목록, 지금) {
 export async function 페이블하기(폴더, { 시험 = true, 시험결과 = null, 캡처 = true, 알리기 = () => {} } = {}) {
   if (!시험 && 시험결과) throw new Error('--시험안함과 --시험결과는 함께 쓸 수 없다 — 현재 판 TAP를 받으려면 --시험결과만 준다');
   const 목록 = readJson(path.join(폴더, '묶음.json'));
+  if (목록.정책?.사용자지정) throw new Error('사용자지정 검수는 Fable로 대체하지 않는다');
   if (목록.판 !== 2) throw new Error('옛 검수는 현재 내용 증명이 없다 — 새 이름으로 준비한다');
   if (목록.갈래 === '델타') throw new Error('다시 검수 묶음에는 페이블을 쓰지 않는다 — Fable은 fable.md를 읽고 답한 뒤 페이블받기로 받는다');
   const 설정 = { ...목록.설정, 바탕: 목록.바탕, 끝: 목록.끝, 화면: 목록.설정.화면 || [], ...(시험결과 ? { 시험: [], 시험결과: path.resolve(시험결과) } : {}) };
@@ -1154,6 +1178,7 @@ export function 검수받기(폴더, 누구, 묶음이름, 원문) {
 
 export function 페이블받기(폴더, 원문, { 새로 = false } = {}) {
   const 목록 = readJson(path.join(폴더, '묶음.json'));
+  if (목록.정책?.사용자지정) throw new Error('사용자지정 검수는 Fable로 대체하지 않는다');
   // 다시 검수 묶음: Fable도 묶음 A를 읽은 답으로 받는다(입력 SHA·끝 표식·다시 볼 지적 대조) — 돌려주는 것은 그 Fable 지적 번호
   if (목록.갈래 === '델타') { 검수받기(폴더, 'Fable', 목록.묶음[0].이름, 원문); return 지적표읽기(폴더).지적.filter(x => x.출처 === 'Fable').map(x => x.번호); }
   const 증명 = readJson(path.join(폴더, '페이블자료.json')).증명;
@@ -1218,7 +1243,8 @@ function 처음고리판정(폴더, 목록) {
   const 대체로 = Boolean(순서) && 순서.slice(0, -1).every(w => blocked[w]);
   if (정책.예외) for (const who of 정책.필수) 사유.push(...(문제[who] || []));
   let final = 목록.증명, finalValid = false;
-  if (표.페이블) {
+  if (정책.사용자지정 && 표.페이블) 사유.push('사용자지정에 허용되지 않은 Fable 최종 증거');
+  if (표.페이블 && !정책.사용자지정) {
     const data = readJson(path.join(폴더, '페이블자료.json'));
     let answer;
     try { answer = 페이블답읽기(표.페이블.원문); } catch { answer = null; }
@@ -1233,7 +1259,9 @@ function 처음고리판정(폴더, 목록) {
     }
   }
   if (!정책.예외) {
-    if (목록.종류 === '화면') {
+    if (정책.사용자지정) {
+      for (const who of 정책.필수) if (!valid[who]) 사유.push(...문제[who], `사용자지정 필수 ${who} 검수 미완료 — 대체 없음`);
+    } else if (목록.종류 === '화면') {
       if (!valid.아르곤 && !blocked.아르곤) 사유.push(...문제.아르곤, '필수 아르곤 검수 미완료(미전송은 한도 예외가 아니다)');
       // Fable 생략 묶음(2026-10-24)은 아르곤이 끝까지 읽었으면 Fable 없이 간다 — 아르곤이 막혔으면 Fable이 대신한다.
       // 고친 아르곤 P0·P1은 아래 사슬판정이 다시 검수(아르곤·Fable)로 보낸다.
@@ -1256,6 +1284,10 @@ function 처음고리판정(폴더, 목록) {
 /** 다시 검수 고리(고친 diff만): 증명·묶음·diff가 그대로인지, 그 지적을 낸 검수자(한도·로그인으로 막혔으면 다음 차례)가 끝까지 읽었는지, 다시 볼 지적마다 풀었는지. */
 function 다시고리판정(폴더, 목록) {
   const 사유 = [], p = 목록.증명, 정책 = 목록.정책, b0 = 목록.묶음[0];
+  if (정책.사용자지정) {
+    if (p.파일?.length || p.앞판?.length || 목록.파일?.length) 사유.push('사용자지정 다시는 원천 없는 배포 후보만 지원한다');
+    if (정규해시(정책만들기(목록.설정, [], { 판: 3 })) !== 정규해시(정책)) 사유.push('사용자지정 다시의 권한 원문·후보가 준비 뒤 바뀌었다');
+  }
   if (정규해시(정책) !== 정규해시(p.정책)) 사유.push('검수 정책이 준비 뒤 바뀌었다');
   if (목록.묶음.length !== 1 || 정규해시(목록.묶음.map(b => b.sha256)) !== 정규해시(p.항목)) 사유.push('검수 묶음 목록이 준비 뒤 바뀌었다');
   if (!Array.isArray(p.대상) || !Array.isArray(p.검수자들) || 정규해시(목록.대상) !== 정규해시(p.대상) || 정규해시(목록.검수자들) !== 정규해시(p.검수자들) || 정규해시(b0.대상 || []) !== 정규해시(p.대상.map(t => t.아이디))) 사유.push('다시 볼 지적·다시 검수자가 준비 뒤 바뀌었다');
@@ -1279,6 +1311,15 @@ function 다시고리판정(폴더, 목록) {
   }
   const 대상판정 = new Map();
   for (const t of p.대상 || []) {
+    if (정책.사용자지정) {
+      const votes = p.검수자들.map(w => 효력[w] && 답들[효력[w]]?.[b0.이름]?.targets?.find(x => 대상번호(x?.id) === t.아이디));
+      if (votes.every(Boolean)) 대상판정.set(대상열쇠(t.고리, t.번호), { 대상: t, 풀림: votes.every(v => v.resolved === true), 메모: votes.map(v => v.note).join(' / '), 누구: p.검수자들.join('·'),
+        // A negative vote becomes this link's own finding. Keep its exact raw-answer identity so
+        // a later correction can resolve it without treating a table-only dismissal as approval.
+        후속: votes.flatMap((v, i) => v.resolved ? [] : 답지적들(목록, { targets: [v] }).map(f => ({ 출처: p.검수자들[i], 묶음: b0.이름,
+          등급: f.grade, 위치: f.location, 인용: f.quote, 문제: f.problem }))) });
+      continue;
+    }
     const who = 효력[t.출처], v = who && 답들[who]?.[b0.이름]?.targets?.find(x => 대상번호(x?.id) === t.아이디);
     if (v) 대상판정.set(대상열쇠(t.고리, t.번호), { 대상: t, 풀림: v.resolved === true, 메모: v.note, 누구: who });
   }
@@ -1290,7 +1331,7 @@ function 앞폴더(목록) {
 }
 /** 끝 묶음에서 앞으로 사슬(처음 검수 → 고친 diff만 다시 본 검수 …)을 따라 고리마다 판정하고, 해시 이음·P0·P1·지금 파일을 본다(2026-10-24 다섯 가지 ②·⑤).
  *  지금대조: 끝 고리의 후보를 지금 파일·배포 후보와 견준다. 끝반영: '막음'(배포 판정) | '대상'(다시 만들 때 — 끝 고리의 반영한 P0·P1이 다시 볼 지적이 된다). */
-function 사슬판정(끝폴더, { 저장소 = null, 지금대조 = true, 끝반영 = '막음' } = {}) {
+function 사슬판정(끝폴더, { 저장소 = null, 지금대조 = true, 끝반영 = '막음', 사용자최종판정 = true } = {}) {
   const 고리들 = [], 본 = new Set();
   for (let 폴더 = 끝폴더; ;) {
     const 진짜 = fs.existsSync(폴더) ? fs.realpathSync(폴더) : path.resolve(폴더);
@@ -1313,7 +1354,13 @@ function 사슬판정(끝폴더, { 저장소 = null, 지금대조 = true, 끝반
   // 이음: 다시 검수마다 앞 고리가 검수한 후보(파일·배포 후보)와 해시로 이어진다
   for (let i = 1; i < n; i++) {
     const 앞 = 고리들[i - 1], 뒤 = 고리들[i], p = 뒤.목록.증명;
-    if (정규해시(뒤.정책) !== 정규해시(처음.정책)) 사유.push(붙임(뒤, '정책이 처음 검수와 다르다'));
+    if (앞.정책.사용자지정 || 뒤.정책.사용자지정) {
+      try {
+        if (앞.최종.파일.length || 뒤.최종.파일.length) throw new Error('사용자지정 다시는 원천 없는 배포 후보만 지원한다');
+        사용자지정사슬검사(앞.정책, 뒤.정책, 앞.최종.배포후보, 뒤.최종.배포후보);
+        if (고리들.slice(0, i).some(g => path.resolve(g.목록.설정.사용자지정) === path.resolve(뒤.목록.설정.사용자지정) || path.resolve(g.목록.설정.배포후보) === path.resolve(뒤.목록.설정.배포후보))) throw new Error('사용자지정 다시는 앞 권한·후보를 덮지 않고 새 경로로 준비한다');
+      } catch (e) { 사유.push(붙임(뒤, e.message)); }
+    } else if (정규해시(뒤.정책) !== 정규해시(처음.정책)) 사유.push(붙임(뒤, '정책이 처음 검수와 다르다'));
     const 앞후보해시 = 정규해시({ 파일: 앞.최종.파일, 배포후보: 앞.최종.배포후보 ?? null });
     if (p.앞?.후보해시 !== 앞후보해시 || p.앞?.검토입력해시 !== 앞.최종.검토입력해시 || 정규해시(p.앞후보 ?? null) !== 정규해시(앞.최종.배포후보 ?? null)) {
       사유.push(붙임(뒤, `앞 ${앞.이름}의 검수한 후보와 해시로 이어지지 않는다 — 앞 검수를 다시 받았으면 다시 검수도 새로 만든다`));
@@ -1336,9 +1383,21 @@ function 사슬판정(끝폴더, { 저장소 = null, 지금대조 = true, 끝반
     if (g.페이블최종 && x.출처 !== 'Fable' && x.처리 === '반영') return null;
     if (i < n - 1) {
       const v = 고리들[i + 1].대상판정.get(대상열쇠(g.이름, x.번호));
+      if (g.정책.사용자지정 && v?.풀림 !== true) {
+        const 뒤 = 고리들[i + 1];
+        // Carry every negative vote through its generated finding and the next real review.
+        // Only the last reflected finding may become a new delta target during preparation;
+        // deployment still waits for both reviewers to resolve every descendant target.
+        if (!v || !지적같음(v.대상, x) || !v.후속?.length || v.후속.some(f => {
+          const row = 뒤.표.지적.find(y => y.묶음 === f.묶음 && 지적같음(f, y));
+          return !row || !['반영', '일부 반영'].includes(row.처리) || 미해결까닭(i + 1, row) !== null;
+        })) return ' — GPT·아르곤 모두가 고침을 해결했다고 확인하지 않았다';
+        return null;
+      }
       return v && 지적같음(v.대상, x) ? null : ` — 다음 다시 검수 ${고리들[i + 1].이름}가 이 지적을 다시 보지 않았다`;
     }
     if (끝반영 === '대상') return null;
+    if (g.정책.사용자지정) return 다시말(g, x);
     // Fable 생략 화면 묶음에서 고친 아르곤 P0·P1은 화면을 보는 Fable이 고친 diff를 함께 봐야 닫힌다(2026-10-24)
     if (n === 1) return x.처리 === '반영' ? ((x.출처 === 'Fable' && x.재확인 !== '통과') || (g.정책.페이블생략 && !g.페이블최종) ? 다시말(g, x) : null) : '';
     return 다시말(g, x);
@@ -1368,7 +1427,20 @@ function 사슬판정(끝폴더, { 저장소 = null, 지금대조 = true, 끝반
     if (정규해시(끝.최종.배포후보 ?? null) !== 정규해시(후보읽기(끝.목록.설정?.배포후보 || null))) { 사유.push('검수 뒤 배포 후보 변경'); 바뀜 = true; }
     if (바뀜) 사유.push(`바뀐 부분만 다시 검수한다: node tools/검수묶음.mjs 다시 <새 이름> --앞 ${끝.이름}${끝.목록.설정?.배포후보 ? ' [--배포후보 <새 후보 폴더>]' : ''}`);
   }
-  const 증명 = { 판: 2, 정책: 처음.정책, 검토입력해시: 끝.최종.검토입력해시, 최종파일: 끝.최종.파일, ...(끝.최종.배포후보 ? { 배포후보: 끝.최종.배포후보 } : {}), ...(n > 1 ? { 사슬: 고리들.map(g => g.이름) } : {}) };
+  const 증명 = { 판: 2, 정책: 처음.정책.사용자지정 ? 끝.정책 : 처음.정책, 검토입력해시: 끝.최종.검토입력해시, 최종파일: 끝.최종.파일, ...(끝.최종.배포후보 ? { 배포후보: 끝.최종.배포후보 } : {}), ...(n > 1 ? { 사슬: 고리들.map(g => g.이름) } : {}) };
+  if (처음.정책.사용자지정 && 사용자최종판정) {
+    if (사유.length) 사유.push('필수 검수·현재 후보 확인이 끝나지 않아 최종 Claude 배포 판정은 효력이 없다');
+    else {
+      try {
+        const 입력 = 사용자배포입력(고리들, 증명), file = path.join(끝폴더, 'Claude-배포판정.json');
+        if (!fs.existsSync(file)) throw new Error('전체 후보에 대한 최종 Claude 배포 판정이 없다');
+        const saved = readJson(file), errors = 사용자배포답검사(saved.답, 입력);
+        if (saved.입력sha256 !== 입력.inputSha256 || saved.원문sha256 !== sha(saved.원문) || 정규해시(페이블답읽기(saved.원문)) !== 정규해시(saved.답)) errors.push('최종 Claude 배포 판정 원문·입력 불일치');
+        if (saved.답.approveDeployment !== true || saved.답.conditions.length) errors.push('Claude가 배포를 거절했거나 미해결 조건이 있다');
+        사유.push(...errors); if (!errors.length) 증명.최종Claude배포판정 = { 입력sha256: 입력.inputSha256, 응답sha256: sha(fs.readFileSync(file)) };
+      } catch (e) { 사유.push(e.message); }
+    }
+  }
   return { 고리들, 사유: [...new Set(사유)], 대상후보, 증명 };
 }
 const 다시요약 = 고리들 => 고리들.filter(g => g.델타).map(g => ({ 이름: g.이름, 앞: g.목록.앞?.이름, 검수자들: g.목록.검수자들, 대상: (g.목록.대상 || []).map(t => {
@@ -1381,6 +1453,48 @@ export function 검수확인(folderOrId, { 저장소 = null } = {}) {
     const r = 사슬판정(폴더찾기(folderOrId), { 저장소 });
     return { 통과: r.사유.length === 0, 사유: r.사유, 증명: r.증명, ...(r.고리들.length > 1 ? { 다시: 다시요약(r.고리들) } : {}) };
   } catch (e) { return { 통과: false, 사유: [e.message], 증명: null }; }
+}
+
+// 묶음별 GPT·아르곤 coverage는 배포 허용이 아니다. 필수 검수가 모두 끝난 현재 후보만 마지막 Claude 입력으로 만든다.
+function 사용자배포입력(고리들, 증명) {
+  const 목록 = 고리들.at(-1).목록;
+  const reviews = 고리들.flatMap(g => g.정책.필수.flatMap(reviewer => g.목록.묶음.map(b => {
+    const file = path.join(g.폴더, `${reviewer}-${b.이름}.json`), raw = fs.readFileSync(file), saved = JSON.parse(raw), answer = 페이블답읽기(saved.원문);
+    return { chain: g.이름, reviewer, bundle: b.이름, inputSha256: b.sha256, resultSha256: sha(raw), coverage: answer.coverage, findings: answer.findings, ...(answer.targets ? { targets: answer.targets } : {}) };
+  })));
+  const body = { version: 1, taskId: 목록.정책.사용자지정.taskId, reviewInputHash: 증명.검토입력해시,
+    candidate: 증명.배포후보 || null, sources: 증명.최종파일, manifestSha256: 증명.배포후보?.manifestSha256 || null,
+    requiredReviewsHash: 정규해시(reviews), reviews,
+    chain: 고리들.map(g => ({ name: g.이름, inputSha256: g.최종.검토입력해시, authoritySha256: g.정책.사용자지정.파일sha256, manifestSha256: g.최종.배포후보?.manifestSha256 ?? null, targets: g.목록.대상 || [] })),
+    disposition: 고리들.map(g => ({ chain: g.이름, table: 지적표읽기(g.폴더) })),
+    scope: [...증명.최종파일.map(f => `source:${f.경로}`), ...(증명.배포후보?.항목 || []).map(f => `candidate:${f.경로}`)].sort(),
+    userStatements: 목록.정책.사용자지정.userStatements };
+  const inputSha256 = 정규해시(body); return { ...body, inputSha256, endMarker: `END_OF_CLAUDE_DEPLOYMENT_${inputSha256}` };
+}
+export function 사용자배포답검사(answer, input) {
+  const errors = [];
+  if (!answer || answer.reviewer !== 'Claude' || typeof answer.approveDeployment !== 'boolean') return ['최종 배포 판정은 Claude의 명시 boolean 답이어야 한다'];
+  for (const key of ['taskId', 'inputSha256', 'manifestSha256', 'requiredReviewsHash', 'endMarker']) if (answer[key] !== input[key]) errors.push(`최종 Claude ${key} 불일치`);
+  if (!Array.isArray(answer.scope) || 정규해시(answer.scope) !== 정규해시(input.scope)) errors.push('최종 Claude 전체 후보 범위 불일치');
+  if (!Array.isArray(answer.conditions) || answer.conditions.some(s => typeof s !== 'string' || !s.trim()) || typeof answer.limitations !== 'string') errors.push('최종 Claude 조건·제한 형식 오류');
+  if (answer.coverage?.complete !== true || !Array.isArray(answer.coverage?.missing) || answer.coverage.missing.length || typeof answer.coverage.reviewed !== 'string' || !answer.coverage.reviewed.trim()) errors.push('최종 Claude 전체 입력 완독 증거 없음');
+  return errors;
+}
+export function 배포판정준비(폴더) {
+  const r = 사슬판정(폴더, { 사용자최종판정: false });
+  if (!r.고리들[0].정책.사용자지정) throw new Error('배포판정준비는 사용자지정 정책만 지원한다');
+  if (r.사유.length) throw new Error(`필수 검수·후보가 미완료: ${r.사유.join(' / ')}`);
+  const input = 사용자배포입력(r.고리들, r.증명), file = path.join(폴더, 'Claude-배포입력.json');
+  if (fs.existsSync(file) && 정규해시(readJson(file)) !== 정규해시(input)) throw new Error('최종 배포 입력이 이미 봉인됐다 — 새 묶음으로 준비한다');
+  if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify(input, null, 2) + '\n', { flag: 'wx' });
+  return input;
+}
+export function 배포판정받기(폴더, 원문) {
+  const input = 배포판정준비(폴더), answer = 페이블답읽기(원문), errors = 사용자배포답검사(answer, input);
+  if (errors.length) throw new Error(errors.join(' / '));
+  const file = path.join(폴더, 'Claude-배포판정.json');
+  fs.writeFileSync(file, JSON.stringify({ 입력sha256: input.inputSha256, 원문sha256: sha(원문), 원문, 답: answer, 받은때: new Date().toISOString() }, null, 2) + '\n', { flag: 'wx' });
+  return 검수확인(폴더);
 }
 
 // ── 다시 검수(고친 diff만) ─────────────────────────────────────────────
@@ -1483,19 +1597,27 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
   const 폴더 = 폴더찾기(o.이름, o.폴더);
   if (fs.existsSync(path.join(폴더, '묶음.json'))) throw new Error(`이미 있는 묶음: ${폴더} — 다른 이름을 쓴다`);
   // 앞 사슬은 지금 파일 대조만 빼고 다 맞아야 한다 — 앞 고리에서 반영한 P0·P1이 이번에 다시 볼 지적이 된다
-  const 앞 = 사슬판정(앞폴더이름, { 저장소: o.저장소 || null, 지금대조: false, 끝반영: '대상' });   // 옮긴 작업본(--저장소)으로 앞 사슬의 바탕 판도 본다(GPT 2차 검수 GB2)
+  const 앞 = 사슬판정(앞폴더이름, { 저장소: o.저장소 || null, 지금대조: false, 끝반영: '대상', 사용자최종판정: !o.사용자지정 });   // 사용자지정의 중간 후보는 delta 준비만 가능하며 실제 배포 확인은 최종 Claude를 요구한다.
   if (앞.사유.length) throw new Error(`앞 검수 ${path.basename(앞폴더이름)}가 아직 끝나지 않았다 — ${앞.사유.join(' / ')}`);
-  const 처음 = 앞.고리들[0], 끝고리 = 앞.고리들.at(-1), 정책 = 처음.정책, 앞설정 = 처음.목록.설정;
+  const 처음 = 앞.고리들[0], 끝고리 = 앞.고리들.at(-1), 앞설정 = 처음.목록.설정;
+  let 정책 = 끝고리.정책;
+  if (Boolean(정책.사용자지정) !== Boolean(o.사용자지정)) throw new Error('사용자지정 다시는 기존 정책에 추가할 수 없고 새 --사용자지정 봉인이 필요하다');
+  if (정책.사용자지정 && (앞.고리들.some(g => g.최종.파일.length) || !o.배포후보 || 앞.고리들.some(g => path.resolve(o.배포후보) === path.resolve(g.목록.설정.배포후보) || path.resolve(o.사용자지정) === path.resolve(g.목록.설정.사용자지정)))) throw new Error('사용자지정 다시는 원천 없는 후보와 새 봉인·새 후보 경로가 필요하다');
   if (정책.예외) throw new Error('예외 정책(내부·아주작은수정·콘텐츠) 묶음은 다시 검수하지 않는다 — 새로 준비한다');
   const 저장소 = path.resolve(o.저장소 || 처음.목록.저장소);
   if (!fs.existsSync(저장소)) throw new Error(`앞 검수의 작업본이 없다: ${저장소} — --저장소 <지금 작업본>으로 준다`);
   const 설정 = { 종류: 정책.종류, 저장소, 바탕: 처음.목록.바탕, 끝: o.끝 ? 커밋풀기(o.끝, 저장소) : '작업본', 경로: 앞설정.경로 || [], 곁: 앞설정.곁 || [],
     시험: o.시험 || [], 시험결과: o.시험결과 ? path.resolve(o.시험결과) : null, 뺌: 앞설정.뺌 || [], 넣음: 앞설정.넣음 || [], 크기: o.크기 ? Number(o.크기) : 기본크기,
-    배포후보: o.배포후보 ? path.resolve(o.배포후보) : 끝고리.목록.설정?.배포후보 || null, 배경파일: o.배경 ? path.resolve(o.배경) : null };
+    배포후보: o.배포후보 ? path.resolve(o.배포후보) : 끝고리.목록.설정?.배포후보 || null, 배경파일: o.배경 ? path.resolve(o.배경) : null,
+    ...(정책.사용자지정 ? { 사용자지정: path.resolve(o.사용자지정), 정책판: 3, 작성자: '혼합' } : {}) };
   if (!(설정.크기 >= 30_000)) throw new Error('--크기는 30000 이상 바이트');
   if (설정.시험.length && 설정.시험결과) throw new Error('--시험과 --시험결과는 함께 쓰지 않는다');
   // 새 배포 후보도 처음 검수와 같은 정책(종류)이어야 한다 — 화면 후보를 백엔드 검수로 잇지 않는다
-  if (정규해시(정책만들기({ ...앞설정, 배포후보: 설정.배포후보 }, 처음.목록.파일, { 판: 정책.판 })) !== 정규해시(정책)) throw new Error('새 배포 후보가 처음 검수의 정책과 맞지 않는다 — 새로 준비한다');
+  if (정책.사용자지정) {
+    const 새정책 = 정책만들기(설정, [], { 판: 3 });
+    사용자지정사슬검사(정책, 새정책, 끝고리.최종.배포후보, 후보읽기(설정.배포후보));
+    정책 = 새정책;
+  } else if (정규해시(정책만들기({ ...앞설정, 배포후보: 설정.배포후보 }, 처음.목록.파일, { 판: 정책.판 })) !== 정규해시(정책)) throw new Error('새 배포 후보가 처음 검수의 정책과 맞지 않는다 — 새로 준비한다');
   const 앞최종 = 끝고리.최종, 앞후보 = 앞최종.배포후보 ?? null, 판끝 = 설정.끝 === '작업본' ? null : 설정.끝.커밋;
   const 내용 = new Map();
   const 재기 = () => {
@@ -1516,6 +1638,7 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
   }
   if (정규해시(잼) !== 정규해시(재기())) throw new Error('다시 검수 준비 중 소스·배포 후보가 바뀌었다 — 다시 한다');
   const 지금판 = 잼.지금, 지금후보 = 잼.후보;
+  if (정책.사용자지정 && 지금판.length) throw new Error('사용자지정 다시에서 원천 범위를 늘릴 수 없다 — 시험 결과는 --시험결과로 받는다');
   const 앞파일 = new Map(앞최종.파일.map(f => [f.경로, f]));
   const 앞판 = 지금판.map(f => 앞파일.get(f.경로) ?? 파일상태(저장소, f.경로, { rev: 설정.바탕.커밋, 역할: f.역할 }));
   const 바뀐 = 바뀐경로들(앞판, 지금판, 앞후보, 지금후보);
@@ -1590,7 +1713,7 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
     파일: 바뀐.소스.map(경로 => ({ 경로, 상태: !앞맵.get(경로).sha256 ? 'A' : !지금맵.get(경로).sha256 ? 'D' : 'M' })), 시험, 최대바이트: 설정.크기, 묶음: [묶음], 증명, ...(경고 ? { 경고 } : {}) };
   writeJson(path.join(폴더, '묶음.json'), 목록);
   writeJson(path.join(폴더, '지적표.json'), { 이름: 목록.이름, 지적: [] });
-  다시페이블쓰기(폴더, 목록);
+  if (!정책.사용자지정) 다시페이블쓰기(폴더, 목록);
   if (경고) 알리기(경고);
   return { 폴더, 목록 };
 }
@@ -1616,7 +1739,7 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
   const 페이블있음 = Boolean(표.페이블);
   // Fable 생략 화면 묶음(2026-10-24)에서 Fable 없이 고친 P0·P1은 고친 diff를 다시 검수(아르곤·Fable)받아야 닫힌다
   const 생략고침 = !델타 && Boolean(목록.정책?.페이블생략) && !페이블있음;
-  const 열린 = 표.지적.filter(x => ['P0', 'P1'].includes(x.등급) && (델타 ? x.처리 !== '재현 안 됨' : !닫힘.has(x.처리) || (x.출처 === 'Fable' && x.처리 === '반영' && x.재확인 !== '통과') || (생략고침 && x.처리 === '반영')));
+  const 열린 = 표.지적.filter(x => ['P0', 'P1'].includes(x.등급) && (델타 || 목록.정책?.사용자지정 ? x.처리 !== '재현 안 됨' : !닫힘.has(x.처리) || (x.출처 === 'Fable' && x.처리 === '반영' && x.재확인 !== '통과') || (생략고침 && x.처리 === '반영')));
   if (목록.판 === 2) {
     // 새 판은 실행한 모델뿐 아니라 정책상 필수인 미실행 검수자도 보고한다.
     // 배포 CLI의 최종 판정은 아래 요약 상태 대신 검수확인이 원문·현재 파일로 다시 검사한다.
@@ -1628,12 +1751,13 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
       return { 이름, 필수: 필수.includes(이름), 셈: 셈별[이름], 묶음상태: 상태, 보냄: 최종페(이름) ? 페이블있음 : 결과별[이름].length > 0, 막힘: 상태.some(b => b.상태 === '막힘'), 다읽음: 최종페(이름) ? 페이블있음 : 상태.length > 0 && !덜읽음(상태).length };
     });
     const 조건 = [];
+    if (목록.정책.사용자지정) 조건.push('최종 전체 Claude 판정과 현재 후보는 검수확인으로 원문 대조해야 한다');
     for (const r of 검수자별) {
       const 보내는중 = r.묶음상태.filter(b => b.상태 === '보내는 중');
       if (보내는중.length) 조건.push(`${보내는중.map(b => `${r.이름} ${b.이름}`).join(', ')} 묶음을 보내는 중 — 답을 받은 뒤 집계한다`);
       if (!목록.정책.예외 && r.필수 && !r.다읽음) {
         if (최종페(r.이름)) 조건.push('Fable 최종 검수 전');
-        else if (!r.막힘 || 목록.정책.작성자 === 'GPT') 조건.push(`${r.이름} 묶음 ${덜글(r.묶음상태)} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
+        else if (!r.막힘 || 목록.정책.작성자 === 'GPT' || 목록.정책.사용자지정) 조건.push(`${r.이름} 묶음 ${덜글(r.묶음상태)} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
       }
     }
     if (델타) {
@@ -1658,7 +1782,7 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
       const 앞필수 = 검수자별.filter(r => r.필수 && r.이름 !== 'Fable');
       if (앞필수.some(r => r.막힘) && !앞필수.some(r => r.다읽음) && !페이블있음) 조건.push('필수 검수가 막혀 Fable 검수로 대신해야 한다');
     }
-    for (const x of 열린) 조건.push(`${x.번호} ${x.등급} ${x.처리 ? (x.처리 === '반영' ? (델타 || 생략고침 ? `반영 — 고친 diff를 다시 검수받는다(다시 <새 이름> --앞 ${목록.이름}${생략고침 ? ' — Fable 생략 묶음이라 아르곤·Fable이 본다' : ''})` : '반영 — 같은 Fable 재확인 전') : x.처리) : '처리 미정'}`);
+    for (const x of 열린) 조건.push(`${x.번호} ${x.등급} ${목록.정책.사용자지정 ? '미해결 — candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다' : x.처리 ? (x.처리 === '반영' ? (델타 || 생략고침 ? `반영 — 고친 diff를 다시 검수받는다(다시 <새 이름> --앞 ${목록.이름}${생략고침 ? ' — Fable 생략 묶음이라 아르곤·Fable이 본다' : ''})` : '반영 — 같은 Fable 재확인 전') : x.처리) : '처리 미정'}`);
     const 한줄 = 검수자별.map(r => `${r.이름} ${!r.보냄 && !r.셈.건 ? '미실행' : r.막힘 && !r.셈.건 ? '막힘(한도·로그인)' : `${r.셈.건}건(반영 ${r.셈.반영})`}`).join(' · ');
     return { 한줄, 검수자별, 아르곤: 아, GPT: 지, Claude: 씨, 페이블: 페, 묶음상태, G묶음상태, C묶음상태: 상태표(C결과들), 막힘, G보냄, G막힘, 페이블있음, 열린, 조건, 배포조건충족: !조건.length,
       안함: 표.지적.filter(x => x.처리 && x.처리 !== '반영'), 미정: 표.지적.filter(x => !x.처리) };
@@ -1697,7 +1821,7 @@ function 집계글(목록, 결과들, 표, s) {
       ...(s.G보냄 || s.GPT.건 ? [`- GPT: ${셈글(s.GPT)}`] : []),
       ...(s.페이블있음 || s.페이블.건 ? [`- Fable: ${셈글(s.페이블)}${표.페이블 ? ` · ${표.페이블.회차}회 받음` : ''}`] : []),
     ]),
-    `- 배포 조건(재현되는 P0·P1 0건${목록.종류 === '화면' ? (목록.정책?.페이블생략 ? ' · 아르곤 검수(Fable 생략)' : ' · Fable 최종 검수') : ''}): ${s.배포조건충족 ? '충족' : `미충족 — ${s.조건.join(' / ')}`}`,
+    `- 배포 조건(재현되는 P0·P1 0건${목록.정책?.사용자지정 ? ' · 묶음별 GPT·아르곤 및 최종 전체 Claude 배포 판정' : 목록.종류 === '화면' ? (목록.정책?.페이블생략 ? ' · 아르곤 검수(Fable 생략)' : ' · Fable 최종 검수') : ''}): ${s.배포조건충족 ? '충족' : `미충족 — ${s.조건.join(' / ')}`}`,
     ...(s.다시?.length ? ['', '## 다시 볼 지적(고친 diff만 다시 본 검수)', '', ...s.다시.flatMap(g => [`- ${g.이름} ← 앞 ${g.앞} · 다시 검수자 ${g.검수자들.join('·')}${g.대상.length ? '' : ' · 대상 지적 없음(새 P0·P1만 본다)'}`,
       ...g.대상.map(t => `  - ${t.아이디} ${t.출처} ${t.번호} ${t.등급} → ${t.풀림 === null ? '답 없음' : t.풀림 ? `풀림(${t.누구})` : `안 풀림(${t.누구})`}${t.메모 ? ` — ${칸(t.메모).slice(0, 200)}` : ''}`)])] : []),
     ...(s.안함.length ? ['', '## 반영하지 않은 것', '', ...s.안함.map(x => `- ${x.번호} ${x.등급} ${x.처리} — ${칸(x.이유)} (${칸(x.위치).slice(0, 80)})`)] : []),
@@ -1707,7 +1831,7 @@ function 집계글(목록, 결과들, 표, s) {
 }
 
 // ── 명령 ───────────────────────────────────────────────────────────
-const 값칸 = new Set(['--종류', '--바탕', '--끝', '--저장소', '--배경', '--시험결과', '--장면', '--시각', '--캡처', '--크기', '--폴더', '--수준', '--작성자', '--GPT구독', '--배포후보', '--예외', '--대상', '--사유', '--검수자', '--앞', '--페이블생략']);
+const 값칸 = new Set(['--종류', '--바탕', '--끝', '--저장소', '--배경', '--시험결과', '--장면', '--시각', '--캡처', '--크기', '--폴더', '--수준', '--작성자', '--GPT구독', '--배포후보', '--예외', '--대상', '--사유', '--검수자', '--앞', '--페이블생략', '--사용자지정']);
 const 목록칸 = new Set(['--경로', '--곁', '--시험', '--화면', '--주소뿌리', '--뺌', '--넣음', '--묶음']);
 const 켜기칸 = new Set(['--다시', '--시험안함', '--캡처안함', '--새로']);
 export function 인자읽기(argv) {
@@ -1735,7 +1859,7 @@ async function main(argv) {
   let o;
   try { o = 인자읽기(argv); } catch (e) { console.error(e.message); console.log(쓰는법()); return 2; }
   if (/^gpt$/i.test(o.명령 || '')) o.명령 = 'GPT';
-  if (!o.명령 || !o.이름 || !['준비', '다시', '아르곤', 'GPT', '처리', '페이블', '페이블받기', '검수받기', '확인', '집계'].includes(o.명령)) { console.log(쓰는법()); return 2; }
+  if (!o.명령 || !o.이름 || !['준비', '다시', '아르곤', 'GPT', '처리', '페이블', '페이블받기', '검수받기', '배포판정준비', '배포판정받기', '확인', '집계'].includes(o.명령)) { console.log(쓰는법()); return 2; }
   const 알리기 = m => console.error(`… ${m}`);
   if (o.명령 === '준비') {
     const { 폴더, 목록 } = await 준비하기(o, { 알리기 });
@@ -1745,8 +1869,10 @@ async function main(argv) {
     if (목록.시험) console.log(`  시험: ${시험한줄(목록.시험)}`);
     if (목록.화면) console.log(`  캡처: ${목록.화면.장들.length}장 · 차이 ${목록.화면.차이들.filter(x => !x.같음).length}곳 · 못 연 화면 ${목록.화면.못연.length}${목록.화면.못끼움.length ? ` · 「전」에 못 끼운 바뀐 화면 파일 ${목록.화면.못끼움.length}개(주소 연결 확인: ${목록.화면.못끼움.slice(0, 3).join(', ')})` : ''}${목록.화면.헷갈림.length ? ` · 헷갈린 주소 ${목록.화면.헷갈림.length}(--주소뿌리)` : ''}`);
     if (!목록.배경) console.log('  배경 글 없음 — 무엇을 왜 바꿨는지·글자가 동작에 엮인 곳을 --배경 <파일>로 주면 지적이 정확해진다');
-    console.log(`  Fable 요약: ${path.join(폴더, 'fable.md')}`);
-    if (목록.정책.작성자 === 'GPT') {
+    if (!목록.정책.사용자지정) console.log(`  Fable 요약: ${path.join(폴더, 'fable.md')}`);
+    if (목록.정책.사용자지정) {
+      console.log('다음: GPT·아르곤이 모든 묶음을 검수한 뒤 배포판정준비 → 전체 입력에 대한 마지막 Claude 답을 배포판정받기로 받는다. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.');
+    } else if (목록.정책.작성자 === 'GPT') {
       console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개)`);
     } else if (대체순서(목록.정책)?.[0] === 'GPT') {
       console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · 한도·로그인으로 막히면 아르곤 ${목록.이름}, 둘 다 막히면 페이블 ${목록.이름})`);
@@ -1771,6 +1897,12 @@ async function main(argv) {
   const 폴더 = 폴더찾기(o.이름, o.폴더);
   if (!fs.existsSync(path.join(폴더, '묶음.json'))) { console.error(`묶음이 없다: ${폴더}`); return 2; }
   const 목록 = readJson(path.join(폴더, '묶음.json'));
+  if (o.사용자지정) throw new Error('--사용자지정은 준비에서만 받는다');
+  if (o.명령 === '배포판정준비') { console.log(JSON.stringify(배포판정준비(폴더), null, 2)); return 0; }
+  if (o.명령 === '배포판정받기') {
+    if (o.남은.length !== 1) throw new Error('배포판정받기 <이름> <Claude 답 JSON>');
+    const r = 배포판정받기(폴더, fs.readFileSync(path.resolve(o.남은[0]), 'utf8')); console.log(JSON.stringify(r, null, 2)); return r.통과 ? 0 : 1;
+  }
   if (o.명령 === '확인') { const r = 검수확인(폴더, { 저장소: o.저장소 }); console.log(JSON.stringify(r, null, 2)); return r.통과 ? 0 : 1; }
   if (o.명령 === '검수받기') {
     if (!o.남은[0] || !o.검수자 || o.묶음?.length !== 1) throw new Error('검수받기 <이름> <답파일> --검수자 Claude|GPT|아르곤(다시 검수 묶음은 Fable도) --묶음 A');
@@ -1783,6 +1915,10 @@ async function main(argv) {
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록);
     console.log(`아르곤 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
     const 생략 = 목록.정책?.페이블생략 && 목록.갈래 !== '델타';
+    if (목록.정책?.사용자지정) {
+      console.log('다음: GPT·아르곤 모든 묶음이 끝나면 배포판정준비 → 마지막 전체 Claude 판정을 배포판정받기로 받는다. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.');
+      return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
+    }
     console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → ${목록.종류 === '백엔드' || 목록.갈래 === '델타' || 생략 ? '집계' : '페이블'} ${목록.이름}${생략 ? ` (Fable 생략 — 아르곤 P0·P1을 고쳤으면 다시 <새 이름> --앞 ${목록.이름}로 아르곤·Fable이 고친 diff를 본다)` : ''}`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }
@@ -1793,6 +1929,10 @@ async function main(argv) {
     await GPT보내기(폴더, 목록, { 수준: o.수준 || null, 고른: o.묶음 || null, 다시: Boolean(o.다시), call: a => GPT부르기({ ...a, 계정 }), 몫: () => (계정 ? GPT몫읽기(계정) : null), 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록, 'GPT');
     console.log(`GPT ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === 'GPT').length}건 → ${path.join(폴더, '지적표.md')}`);
+    if (목록.정책?.사용자지정) {
+      console.log('다음: GPT·아르곤 모든 묶음이 끝나면 배포판정준비 → 마지막 전체 Claude 판정을 배포판정받기로 받는다. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.');
+      return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
+    }
     console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} GA1=반영 "GA2=재현안됨:<이유>" … → 집계 ${목록.이름}${목록.갈래 === '델타' ? '' : ` — 고친 뒤에는 다시 <새 이름> --앞 ${목록.이름}로 고친 diff만 다시 본다`}`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }

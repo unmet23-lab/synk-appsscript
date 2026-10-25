@@ -204,7 +204,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const answered=results.filter(row=>!row.skipped).length,skipped=results.length-answered;
   const rows=doneRows({map,results,items,practice});
   const wrong=results.some(row=>!row.skipped&&row.verdict==='incorrect');
-  return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t('position.diagnostic.doneTitle'),t('position.diagnostic.doneSummary',{answered,skipped}))}${rows?`<ul class="wpos-done-list">${rows}</ul>`:''}${wrong?`<p class="wpos-note">${posEscape(t('position.diagnostic.wrongNote'))}</p>`:''}<p class="wpos-intro">${posEscape(t('position.diagnostic.doneNote'))}</p><p class="wpos-summary-line">${posEscape(t('position.summary',{...map.counts,total:map.total}))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t('position.diagnostic.back'))} <span aria-hidden="true">→</span></button>${renderSetResponse(response)}</div>`;
+  return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t('position.diagnostic.doneTitle'),t('position.diagnostic.doneSummary',{answered,skipped}))}${rows?`<ul class="wpos-done-list">${rows}</ul>`:''}${wrong?`<p class="wpos-note">${posEscape(t('position.diagnostic.wrongNote'))}</p>`:''}<p class="wpos-intro">${posEscape(t('position.diagnostic.doneNote'))}</p><p class="wpos-summary-line">${posEscape(t(map.exam==='topik2'?'position.summary.topik2':'position.summary',{...map.counts,total:map.total}))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t('position.diagnostic.back'))} <span aria-hidden="true">→</span></button>${renderSetResponse(response)}</div>`;
  }
 
  // ── 마을 준비 확인(싱크타운 학습·개인화 다리 §4-2) ──

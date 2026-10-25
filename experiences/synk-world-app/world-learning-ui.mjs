@@ -502,7 +502,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const set=finishSet(coachNow,'diagnostic');
    // 끝 화면의 「이 항목 연습하기」는 새 추천(refresh) 뒤의 후보로 고른다 — 방금 푼 진단 문항은 이제 본 문항이다.
    refresh();const routes=practiceRoutes(coachNow);
-   let after=map;try{after=position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,prefer:id=>routes.has(id)});}catch{after=map;}
+   let after=map;try{after=position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,prefer:id=>routes.has(id),exam:map.exam});}catch{after=map;}
    box.innerHTML=view.renderDiagnosticDone({map:after,results,items:position.itemsById,practice:id=>routes.get(id)||null,response:responseView(set,'diagnostic')});
    bindPractice(box,routes);bindResponse({box,coachNow,set,kind:'diagnostic'});
    box.querySelector('[data-position-done]')?.focus?.({preventScroll:true});

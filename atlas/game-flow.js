@@ -185,7 +185,7 @@ function createLive({ coach, port, clock }) {
     const run = Flow.start({ spec, memory, prior, declared, condition: condition === undefined ? port.today() : condition, arm, now: clock() });
     const say = event => VellumFlow.line(event, { level, words });
     const save = () => port.save(spec.id, run.memory(clock()), since);
-    const shown = new Map();
+    const shown = new Map(), owed = new Set();
     const snapshot = () => { const s = run.settings(); return { content: s.content, policy: s.policy, arm: s.arm, mode: s.mode, values: s.values, level: s.level }; };
     const result = observed => ({ ...observed, line: observed.change ? say(observed.change) : null });
     return Object.freeze({
@@ -215,13 +215,24 @@ function createLive({ coach, port, clock }) {
       present(item) { const pid = coach.present(item, { flow: snapshot() }); shown.set(pid, item.difficulty); return pid; },
       /* Learning evidence to Trail first; then the same response moves the challenge. `flow` may
        * name the outcome for the challenge (a missed order is a 'timeout' there, yet not a language
-       * error) and pass the share of time used as `pressure`. Trail decides assisted and repeat. */
+       * error) and pass the share of time used as `pressure`. Otherwise the outcome is the verdict
+       * Trail recorded, so an answer it could not assess moves nothing. Trail decides assisted and repeat. */
       answer(pid, response, flow = {}) {
+        // Only an attempt this answer added to Trail moves the challenge. A resent attempt comes back
+        // with the eventId Trail already held, whichever live or caller sent it first; a result
+        // without an eventId moves nothing and saves nothing.
+        const known = typeof coach.events === 'function' ? coach.events() : null;
         const recorded = coach.answer(pid, response);
-        const outcome = flow.outcome ?? (response.correct === true ? 'success' : response.correct === false ? 'fail' : 'void');
+        const eventId = object(recorded) && recorded.accepted !== false && typeof recorded.eventId === 'string' && recorded.eventId ? recorded.eventId : null;
+        const fresh = !!eventId && Array.isArray(known) && (owed.has(eventId) || !known.some(event => event.id === eventId));
+        if (!fresh) return { recorded, change: null, settings: run.settings(), evidence: false, line: null };
+        const outcome = flow.outcome ?? (recorded.verdict === 'correct' ? 'success' : recorded.verdict === 'incorrect' ? 'fail' : 'void');
         const level = spec.items && spec.items.levels.includes(shown.get(pid)) ? shown.get(pid) : null;
+        // Owed until observed, so an observation Flow refused can be sent again, corrected.
+        owed.add(eventId);
         const observed = run.observe({ outcome, assisted: flow.assisted ?? recorded.assisted === true, repeat: flow.repeat ?? recorded.exposure === 'repeat',
           pressure: flow.pressure ?? null, latencyMs: flow.latencyMs ?? null, level });
+        owed.delete(eventId);
         save();
         return { recorded, ...result(observed) };
       },

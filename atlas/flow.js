@@ -190,6 +190,8 @@
     let overall = spec.target + (mode === 'easier' ? 0.1 : mode === 'harder' ? -0.1 : 0) + (condition === 'tired' ? 0.08 : 0);
     overall = clamp(overall, 0.55, 0.92);
     const aim = targets(spec, overall);
+    // The aims of an ordinary day in auto mode: where the prior or memory alone places the person.
+    const ordinary = targets(spec, spec.target);
     // The content's own default is the anchor: a new person starts exactly there.
     const base = defaults(spec);
     const fresh = dimension => ({ theta: challenge(spec, base, dimension) + logit(targets(spec, spec.target)[dimension]), n: 0, reversals: 0, streak: 0, sign: 0 });
@@ -222,21 +224,21 @@
     // `steady` counts successes in a row, with help or without: where help shows before every
     // answer no success can be quiet, and less help must still be askable (vellum-flow.supportStep).
     let step = 0, responses = 0, quiet = 0, steady = 0, last = null;
-    // Opening steps taken only for today's choice (a tired day, a round chosen easier or harder).
-    // They are undone in what is kept, so the next day starts where adapted play reached.
-    const TODAY_ONLY = ['tired', 'declared-easier', 'declared-harder'];
+    // How far today's opening ends, per knob, from where the prior or memory alone places the person:
+    // the part taken only for today's choice (a tired day, a round chosen easier or harder). It is undone
+    // in what is kept, so the next day starts where adapted play reached.
     const todayOnly = {};
-    const gap = dimension => (estimates[dimension].theta - logit(aim[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
+    const gap = (dimension, goal = aim, theta = estimates[dimension].theta) => (theta - logit(goal[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
     const chance = (dimension, at = indices) => sigmoid(estimates[dimension].theta - challenge(spec, at, dimension));
     const expected = (at = indices) => (has(spec, 'content') ? chance('content', at) : 1) * (has(spec, 'pace') ? chance('pace', at) : 1);
     // An estimate never runs far beyond what the content can express, so a change of heart is met quickly.
     // A knob set by hand for today does not narrow this: the estimate is about the person, not today's choice.
-    const span = dimension => {
+    const span = (dimension, goal = aim) => {
       const knobs = spec.knobs.filter(knob => dimensionOf(knob) === dimension);
       const fixed = knob => knob.follows === 'declared' ? indices[knob.id] : null;
       const low = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? 0), 0);
       const high = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? k.values.length - 1), 0);
-      return [low + logit(aim[dimension]) - 2 * spec.scale, high + logit(aim[dimension]) + 2 * spec.scale];
+      return [low + logit(goal[dimension]) - 2 * spec.scale, high + logit(goal[dimension]) + 2 * spec.scale];
     };
     const bound = dimension => { const [low, high] = span(dimension); estimates[dimension].theta = clamp(estimates[dimension].theta, low, high); };
     function learn(dimension, y, weight, ceiling = Infinity) {
@@ -277,9 +279,11 @@
       return null;
     }
     /* Opening placement. A prior may take several steps toward the estimate. Memory resumes where
-     * the person left off and only eases for today's choices; after a long gap it starts one step
-     * lighter than last time, and the estimate is brought down to agree with that start.
-     * A tired day's opening only eases. */
+     * the person left off and only eases, where its estimate or today's choice asks; after a long gap
+     * it starts one step lighter than last time, and the estimate is brought down to agree with that
+     * start. A tired day's opening only eases. */
+    // The estimates as an ordinary day bounds them, before today's aims do.
+    const ordinaryTheta = Object.fromEntries(DIMENSIONS.map(d => [d, clamp(estimates[d].theta, ...span(d, ordinary))]));
     for (const dimension of DIMENSIONS) bound(dimension);
     const opening = [];
     if (adaptive && returning) {
@@ -290,17 +294,36 @@
       for (const dimension of DIMENSIONS) estimates[dimension].theta = Math.min(estimates[dimension].theta, logit(aim[dimension]) + challenge(spec, indices, dimension));
     } else if (adaptive) {
       const limit = basis === 'memory' ? 2 : 12, easeOnly = basis === 'memory' || calm;
-      for (let moves = 0; moves < limit; moves += 1) {
-        const dimension = DIMENSIONS.filter(d => Math.abs(gap(d)) >= DEADBAND && (!easeOnly || gap(d) < 0)).sort((a, b) => Math.abs(gap(b)) - Math.abs(gap(a)))[0];
-        if (!dimension) break;
-        const direction = Math.sign(gap(dimension));
-        const reason = direction > 0 ? (mode === 'harder' ? 'declared-harder' : 'prior')
-          : condition === 'tired' ? 'tired' : mode === 'easier' ? 'declared-easier' : 'prior';
-        const change = settle(dimension, direction, null, reason, 'opening');
-        if (!change) break;
-        opening.push(change);
-        if (TODAY_ONLY.includes(change.because)) todayOnly[change.knob] = (todayOnly[change.knob] || 0) + change.direction;
+      const why = basis === 'memory' ? 'memory' : 'prior';
+      const open = (goal, theta, ease) => {
+        const moves = [];
+        for (let n = 0; n < limit; n += 1) {
+          const off = d => gap(d, goal, theta[d]);
+          const dimension = DIMENSIONS.filter(d => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)))[0];
+          if (!dimension) break;
+          const change = settle(dimension, Math.sign(off(dimension)), null, why, 'opening');
+          if (!change) break;
+          moves.push(change);
+        }
+        return moves;
+      };
+      // On a day chosen easier or harder, or a tired one, the same opening is first worked out at the
+      // ordinary aims and set aside. Steps toward that place are the prior's or memory's and are kept;
+      // the difference from it, steps past it or steps it took that today did not, is today's alone.
+      let home = null;
+      if (mode !== 'auto' || calm) {
+        const from = { ...indices };
+        open(ordinary, ordinaryTheta, basis === 'memory');
+        home = indices; indices = from; changes.length = 0;
       }
+      for (const change of open(aim, Object.fromEntries(DIMENSIONS.map(d => [d, estimates[d].theta])), easeOnly)) {
+        if (home && (home[change.knob] - change.from) * change.direction <= 0) {
+          change.because = change.direction > 0 ? (mode === 'harder' ? 'declared-harder' : why)
+            : calm ? 'tired' : mode === 'easier' ? 'declared-easier' : why;
+        }
+        opening.push(change);
+      }
+      if (home) for (const knob of spec.knobs) todayOnly[knob.id] = indices[knob.id] - home[knob.id];
     }
     const intro = !adaptive ? (arm === 'baseline' ? 'baseline' : 'fixed') : returning ? 'returning' : condition === 'tired' ? 'tired' : basis;
     const settings = () => ({ content: spec.id, policy: VERSION, arm, mode, adaptive,

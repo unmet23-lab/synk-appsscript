@@ -25,7 +25,7 @@ async function fixture(t) {
 
 test('fixed public artifact preserves brand assets and keeps all imports under its subpath', async t => {
   const temp = await fixture(t), result = await prepareCarePublic({ root, targetUrl, config, out: path.join(temp, 'build') });
-  assert.equal(result.fileCount, 80);
+  assert.equal(result.fileCount, 81);
   const html = await fs.readFile(path.join(result.output, 'index.html'), 'utf8');
   assert.match(html, /name="synk-care-runtime" content="public-web"/); assert.match(html, /name="referrer" content="no-referrer"/);
   assert.match(html, /connect-src 'self' https:\/\/auth.example.test https:\/\/api.example.test/);
@@ -38,7 +38,9 @@ test('fixed public artifact preserves brand assets and keeps all imports under i
   assert.match(await fs.readFile(path.join(result.output, 'app.mjs'), 'utf8'), /\.\/care-account-view.mjs/);
   assert.match(await fs.readFile(path.join(result.output, 'app.mjs'), 'utf8'), /\.\/care-contact-import.mjs/);
   assert.match(await fs.readFile(path.join(result.output, 'care-contact-import.mjs'), 'utf8'), /addSelectedContacts/);
-  const pub = JSON.parse(await fs.readFile(path.join(result.output, 'config.json'), 'utf8'));
+  assert.match(await fs.readFile(path.join(result.output, 'app.mjs'), 'utf8'), /\.\/care-transient-session.mjs/);
+  assert.match(await fs.readFile(path.join(result.output, 'care-transient-session.mjs'), 'utf8'), /export function createTransientSession/);
+  const pub =JSON.parse(await fs.readFile(path.join(result.output, 'config.json'), 'utf8'));
   assert.deepEqual(Object.keys(pub.clients), ['care']); assert.equal(pub.clients.care.redirectUri, targetUrl); assert.equal(pub.authorizationClients[0].product, 'platform');
   for (const entry of result.manifest.files) {
     assert.equal(/(?:server|tests|qa|user|\.env|oauth-return)/.test(entry.name), false, entry.name);
@@ -98,7 +100,15 @@ test('entry, styles and every shipped static or dynamic module resolve to their 
     assert.equal(normalized.get(new URL(specifier, importerUrl).href), new URL(imports['./' + dependency], targetUrl).href);
   }
   assert.match(await fs.readFile(path.join(result.output, 'vendor/account/product-account.mjs'), 'utf8'), /import\('\.\/core\.mjs'\)/);
-  assert.equal(result.fileCount, 80);
+  // Every relative static or dynamic import of every shipped module must itself be shipped in the map.
+  // A browser module added to app.mjs but missing from the public allowlist would otherwise 404 only live.
+  for (const entry of modules) {
+    const code = await fs.readFile(path.join(result.output, entry.name), 'utf8'), importerUrl = new URL(entry.name, targetUrl);
+    for (const match of code.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(['"])(\.{1,2}\/[^'"]+)\1/g)) {
+      assert.ok(normalized.has(new URL(match[2], importerUrl).href), `${entry.name} imports an unpublished module ${match[2]}`);
+    }
+  }
+  assert.equal(result.fileCount, 81);
   assert.equal(result.manifest.files.find(entry => entry.name === 'index.html').sha256, sha(html));
 });
 
@@ -124,5 +134,5 @@ test('changing a dependency or stylesheet changes its public URL and the HTML ha
   assert.notEqual(changed.manifest.files.find(entry => entry.name === 'index.html').sha256, initial.manifest.files.find(entry => entry.name === 'index.html').sha256);
   for (const entry of changed.manifest.files) assert.equal(entry.sha256, sha(await fs.readFile(path.join(changed.output, entry.name))), entry.name);
   for (const source of changed.manifest.sourceFiles) assert.equal(source.sha256, sha(await fs.readFile(path.join(sourceRoot, source.file))), source.file);
-  assert.equal(changed.fileCount, 80);
+  assert.equal(changed.fileCount, 81);
 });

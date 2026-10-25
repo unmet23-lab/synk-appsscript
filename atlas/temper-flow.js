@@ -7,11 +7,19 @@
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) { const Flow = require('./flow'); module.exports = factory(require('./temper'), () => Flow); }
-  // Plain scripts: temper.js, flow.js and this file load in any order. The global is built at its first
-  // use, once the guard is there; until then reading it names the file it needs.
+  // Plain scripts: temper.js, flow.js and this file load in any order. The module is built once, at its
+  // first use after the guard is there, and then held as a plain global. Until then the global is a frozen
+  // stand-in with the same names, safe to read, list and test with typeof: its values follow the module
+  // once it can be built, and a function called before then names the file it needs.
   else {
+    let built = null;
+    const ready = () => built || (typeof root.SynkTemper?.check === 'function' ? (built = factory(root.SynkTemper, () => root.SynkFlow)) : null);
+    const later = name => (...args) => { if (!ready()) throw new Error('Temper: load temper.js (the guard) before using temper-flow.js'); return built[name](...args); };
+    const calls = { check: later('check'), truth: later('truth'), simulate: later('simulate') };
+    const waiting = Object.freeze(Object.defineProperties({}, Object.fromEntries(['VERSION', 'FLIP_WINDOW', 'COOL_DOWN', 'PERSONAS', 'check', 'truth', 'simulate']
+      .map(name => [name, { enumerable: true, get: () => ready()?.[name] ?? calls[name] }]))));
     const keep = value => Object.defineProperty(root, 'SynkTemperFlow', { value, writable: true, enumerable: true, configurable: true });
-    Object.defineProperty(root, 'SynkTemperFlow', { enumerable: true, configurable: true, set: keep, get: () => keep(factory(root.SynkTemper, () => root.SynkFlow)).SynkTemperFlow });
+    Object.defineProperty(root, 'SynkTemperFlow', { enumerable: true, configurable: true, set: keep, get: () => (ready() ? keep(built).SynkTemperFlow : waiting) });
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (guard, getFlow) {
   'use strict';
@@ -74,9 +82,11 @@
       const outcome = timeout ? 'timeout' : success ? 'success' : 'fail';
       const result = flow.observe({ outcome, assisted, pressure: chance.timed ? Math.min(1, duration) : null, latencyMs: Math.round(duration * 10000) });
       let change = result.change;
-      // The host offers less help after three quiet successes when nothing else just changed,
-      // at most every ten responses (vellum-flow.supportStep decides this in a real content).
-      if (adaptive && !change && flow.quietStreak() >= 3 && step - offered >= 10) { offered = step; if (rng() < (self.accepts ?? 0.6)) change = flow.acceptLessHelp(); }
+      // The host offers less help after three quiet successes when nothing else just changed and Flow
+      // would take it now, at most every ten responses (vellum-flow.supportStep and game-flow's
+      // offerLessHelp decide this in a real content). An offer that cannot be made is not made: it
+      // neither draws from the random stream nor starts the ten responses to the next one.
+      if (adaptive && !change && flow.quietStreak() >= 3 && step - offered >= 10 && flow.lessHelpAllowed()) { offered = step; if (rng() < (self.accepts ?? 0.6)) change = flow.acceptLessHelp(); }
       rows.push({ step, outcome, assisted, truth: chance.success, indices: before.indices, change });
       if (success && !assisted) { self.content += self.growth; self.speed += self.growth / 2; }
       at += 20000;

@@ -26,7 +26,7 @@ export function storyLineMarkup(text,expressions=[]){
   if(m.start<cursor)continue;
   html+=escape(source.slice(cursor,m.start));
   const inner=source.slice(m.start,m.end);
-  html+=m.index===null?`<mark class="life-say">${escape(inner)}</mark>`:`<mark class="life-say" data-life-mark="${m.index}" tabindex="0" aria-label="${escape(inner)} · 표현 도움 보기">${escape(inner)}</mark>`;
+  html+=m.index===null?`<mark class="life-say">${escape(inner)}</mark>`:`<mark class="life-say" data-life-mark="${m.index}" role="button" tabindex="0" aria-label="${escape(inner)} · 표현 도움 보기">${escape(inner)}</mark>`;
   cursor=m.end;
  }
  return html+escape(source.slice(cursor));

@@ -7,6 +7,7 @@ import {createLifeProgressPort} from '../life-progress-port.mjs';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {choiceKey,readTutorChoice,saveTutorChoice} from '../../brand-opening/tutor-choice.mjs';
 import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus} from '../tutor-selection-sync.mjs';
+import {createLifeSession} from '../world-session.mjs';
 
 const OWNER='11111111-1111-4111-8111-111111111111';
 const failure=code=>Object.assign(Error(code),{code});
@@ -122,63 +123,71 @@ test('guest choices stay local and status distinguishes loading, syncing and rec
  for(const phase of ['conflict','unreadable','stopped'])assert.equal(tutorSelectionStatus({owner:OWNER,ready:true,progress:{status:()=>({phase,scoped:true})}}).blocked,true);
 });
 
-// Exercise the shipped shell callback without loading a DOM or starting account
-// traffic. The dependencies below represent the page at the reconnection event.
-function reconnectContext({panel='',port={},flush=async()=>{},blocked=false}={}){
+// Exercise the shipped shell callback and refocus listener against the real
+// life session (world-session.mjs), without loading a DOM or starting account
+// traffic. The session's stages stand in for the account life port: port=null
+// is an account whose life port failed, so it continues on the device record.
+async function reconnectContext({panel='',port={},flush=async()=>{},blocked=false}={}){
  const source=readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n');
- const callback=source.match(/async function refreshTutorAccount\(\)\{[\s\S]*?\n\}\n(?=function initializeLife)/)?.[0];
+ const callback=source.match(/function refreshTutorAccount\(\)\{[\s\S]*?\n\}\n/)?.[0];
  assert.ok(callback,'shell reconnect callback is present');
  const listeners=new Map(),focusListener=source.split('\n').find(line=>line.startsWith("window.addEventListener('focus',"));
  assert.ok(focusListener,'shell listens to refocus even when the document remains visible');
- const context={tutorRefresh:null,client:{snapshot:{accountId:OWNER},busy:false},home:{openPanel:()=>panel},lifePort:port,tutorReady:true,tutorStatus:()=>({blocked}),lifeEpoch:1,flushes:0,reinitializations:0,
+ const counts={flushes:0,loads:0};let generation=1;
+ const life=createLifeSession({identity:()=>({owner:OWNER,generation}),
+  openPort:async()=>{if(!port)throw failure('NETWORK_UNAVAILABLE');return {...port,dispose(){}};},
+  createProgress:()=>({flush:async()=>{counts.flushes++;await flush();},stop(){}}),
+  onLoading:()=>{counts.loads++;}});
+ await life.ensure();assert.equal(life.mounted,true);
+ const context={client:{snapshot:{accountId:OWNER},busy:false},home:{openPanel:()=>panel},life,tutorStatus:()=>({blocked}),
   document:{hidden:false},window:{addEventListener:(event,fn)=>listeners.set(event,fn)}};
- context.lifeProgress={flush:async()=>{context.flushes++;await flush();}};
- context.initializeLife=async()=>{context.reinitializations++;};
  vm.createContext(context);vm.runInContext(callback,context);vm.runInContext(focusListener,context);
- return {context,run:()=>vm.runInContext('refreshTutorAccount()',context),focus:()=>listeners.get('focus')()};
+ return {context,life,counts,reinitializations:()=>counts.loads-1,changeAccount:()=>{generation++;assert.equal(life.sync(),true);},
+  run:()=>vm.runInContext('refreshTutorAccount()',context),focus:()=>listeners.get('focus')()};
 }
 
 test('reconnection flushes a durable tutor choice even while a cafe panel stays open',async()=>{
- const f=reconnectContext({panel:'life-cafe'});await f.run();
- assert.equal(f.context.flushes,1);assert.equal(f.context.reinitializations,0,'an active lesson is not replaced');
+ const f=await reconnectContext({panel:'life-cafe'});await f.run();
+ assert.equal(f.counts.flushes,1);assert.equal(f.reinitializations(),0,'an active lesson is not replaced');
 });
 
 test('background refresh is serialized and an account change during flush prevents rebuilding stale progress',async()=>{
- const gate=deferred(),f=reconnectContext({flush:()=>gate.promise});
- const first=f.run();await f.run();assert.equal(f.context.flushes,1);
- f.context.lifeEpoch++;gate.resolve();await first;
- assert.equal(f.context.reinitializations,0);assert.equal(f.context.tutorRefresh,null);
- const current=reconnectContext();await current.run();
- assert.equal(current.context.flushes,1);assert.equal(current.context.reinitializations,1);
+ const gate=deferred(),f=await reconnectContext({flush:()=>gate.promise});
+ const first=f.run(),second=f.run();assert.equal(second,first,'a second reconnection joins the running refresh');assert.equal(f.counts.flushes,1);
+ f.changeAccount();const loadsAfterChange=f.counts.loads;
+ gate.resolve();await first;
+ assert.equal(f.counts.loads,loadsAfterChange,'the replaced record is not rebuilt after its flush');assert.equal(f.life.refreshing,null);
+ const current=await reconnectContext();await current.run();
+ assert.equal(current.counts.flushes,1);assert.equal(current.reinitializations(),1);
 });
 
 test('reconnection retries account progress from a local fallback at home and preserves an open fallback lesson',async()=>{
- const home=reconnectContext({port:null});await home.run();
- assert.equal(home.context.reinitializations,1,'a failed initial life load can recover without choosing a tutor again');
- const lesson=reconnectContext({port:null,panel:'life-lesson'});await lesson.run();
- assert.equal(lesson.context.reinitializations,0,'unscoped in-progress learning is preserved until leaving the lesson');
+ const home=await reconnectContext({port:null});assert.equal(home.life.port,null);await home.run();
+ assert.equal(home.reinitializations(),1,'a failed initial life load can recover without choosing a tutor again');assert.equal(home.counts.flushes,0);
+ const lesson=await reconnectContext({port:null,panel:'life-lesson'});await lesson.run();
+ assert.equal(lesson.reinitializations(),0,'unscoped in-progress learning is preserved until leaving the lesson');
 });
 
 test('visible desktop refocus fetches the latest tutor without requiring a visibility change',async()=>{
- const f=reconnectContext();
- f.focus();await f.context.tutorRefresh;
- assert.equal(f.context.document.hidden,false);assert.equal(f.context.flushes,1);assert.equal(f.context.reinitializations,1);
+ const f=await reconnectContext();
+ f.focus();await f.life.refreshing;
+ assert.equal(f.context.document.hidden,false);assert.equal(f.counts.flushes,1);assert.equal(f.reinitializations(),1);
 });
 
 test('duplicate focus events share one refresh and preserve an open cafe while flushing queued selection',async()=>{
- const gate=deferred(),f=reconnectContext({panel:'life-cafe',flush:()=>gate.promise});
- f.focus();f.focus();f.focus();assert.equal(f.context.flushes,1);
- gate.resolve();await f.context.tutorRefresh;
- assert.equal(f.context.reinitializations,0);assert.equal(f.context.tutorRefresh,null);
+ const gate=deferred(),f=await reconnectContext({panel:'life-cafe',flush:()=>gate.promise});
+ f.focus();f.focus();f.focus();assert.equal(f.counts.flushes,1);
+ gate.resolve();await f.life.refreshing;
+ assert.equal(f.reinitializations(),0);assert.equal(f.life.refreshing,null);
 });
 
-test('refocus does not access account progress for a guest, hidden document or active account command',async()=>{
- for(const blocked of ['guest','hidden','busy']){
-  const f=reconnectContext();
+test('refocus does not access account progress for a guest, hidden document, active account command or blocked tutor record',async()=>{
+ for(const blocked of ['guest','hidden','busy','blocked']){
+  const f=await reconnectContext({blocked:blocked==='blocked'});
   if(blocked==='guest')f.context.client.snapshot=null;
   if(blocked==='hidden')f.context.document.hidden=true;
   if(blocked==='busy')f.context.client.busy=true;
   f.focus();await Promise.resolve();
-  assert.equal(f.context.flushes,0,blocked);assert.equal(f.context.reinitializations,0,blocked);
+  assert.equal(f.counts.flushes,0,blocked);assert.equal(f.reinitializations(),0,blocked);assert.equal(f.life.refreshing,null,blocked);
  }
 });

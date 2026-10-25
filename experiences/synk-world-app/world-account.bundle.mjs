@@ -9385,6 +9385,7 @@ var require_flow = __commonJS({
         let overall = spec.target + (mode === "easier" ? 0.1 : mode === "harder" ? -0.1 : 0) + (condition === "tired" ? 0.08 : 0);
         overall = clamp(overall, 0.55, 0.92);
         const aim = targets(spec, overall);
+        const ordinary = targets(spec, spec.target);
         const base = defaults(spec);
         const fresh = (dimension) => ({ theta: challenge(spec, base, dimension) + logit(targets(spec, spec.target)[dimension]), n: 0, reversals: 0, streak: 0, sign: 0 });
         const estimates = { content: fresh("content"), pace: fresh("pace") };
@@ -9410,17 +9411,16 @@ var require_flow = __commonJS({
         const latencies = remembered ? remembered.latencies : [];
         const changes = [], trace = [];
         let step = 0, responses = 0, quiet = 0, steady = 0, last = null;
-        const TODAY_ONLY = ["tired", "declared-easier", "declared-harder"];
         const todayOnly = {};
-        const gap = (dimension) => (estimates[dimension].theta - logit(aim[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
+        const gap = (dimension, goal = aim, theta = estimates[dimension].theta) => (theta - logit(goal[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
         const chance = (dimension, at = indices) => sigmoid(estimates[dimension].theta - challenge(spec, at, dimension));
         const expected = (at = indices) => (has(spec, "content") ? chance("content", at) : 1) * (has(spec, "pace") ? chance("pace", at) : 1);
-        const span = (dimension) => {
+        const span = (dimension, goal = aim) => {
           const knobs = spec.knobs.filter((knob) => dimensionOf(knob) === dimension);
           const fixed = (knob) => knob.follows === "declared" ? indices[knob.id] : null;
           const low = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? 0), 0);
           const high = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? k.values.length - 1), 0);
-          return [low + logit(aim[dimension]) - 2 * spec.scale, high + logit(aim[dimension]) + 2 * spec.scale];
+          return [low + logit(goal[dimension]) - 2 * spec.scale, high + logit(goal[dimension]) + 2 * spec.scale];
         };
         const bound = (dimension) => {
           const [low, high] = span(dimension);
@@ -9467,6 +9467,7 @@ var require_flow = __commonJS({
           }
           return null;
         }
+        const ordinaryTheta = Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(estimates[d].theta, ...span(d, ordinary))]));
         for (const dimension of DIMENSIONS) bound(dimension);
         const opening = [];
         if (adaptive && returning) {
@@ -9480,16 +9481,34 @@ var require_flow = __commonJS({
           for (const dimension of DIMENSIONS) estimates[dimension].theta = Math.min(estimates[dimension].theta, logit(aim[dimension]) + challenge(spec, indices, dimension));
         } else if (adaptive) {
           const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
-          for (let moves = 0; moves < limit; moves += 1) {
-            const dimension = DIMENSIONS.filter((d) => Math.abs(gap(d)) >= DEADBAND && (!easeOnly || gap(d) < 0)).sort((a, b) => Math.abs(gap(b)) - Math.abs(gap(a)))[0];
-            if (!dimension) break;
-            const direction = Math.sign(gap(dimension));
-            const reason = direction > 0 ? mode === "harder" ? "declared-harder" : "prior" : condition === "tired" ? "tired" : mode === "easier" ? "declared-easier" : "prior";
-            const change = settle(dimension, direction, null, reason, "opening");
-            if (!change) break;
-            opening.push(change);
-            if (TODAY_ONLY.includes(change.because)) todayOnly[change.knob] = (todayOnly[change.knob] || 0) + change.direction;
+          const why = basis === "memory" ? "memory" : "prior";
+          const open = (goal, theta, ease) => {
+            const moves = [];
+            for (let n = 0; n < limit; n += 1) {
+              const off = (d) => gap(d, goal, theta[d]);
+              const dimension = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)))[0];
+              if (!dimension) break;
+              const change = settle(dimension, Math.sign(off(dimension)), null, why, "opening");
+              if (!change) break;
+              moves.push(change);
+            }
+            return moves;
+          };
+          let home = null;
+          if (mode !== "auto" || calm) {
+            const from = { ...indices };
+            open(ordinary, ordinaryTheta, basis === "memory");
+            home = indices;
+            indices = from;
+            changes.length = 0;
           }
+          for (const change of open(aim, Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta])), easeOnly)) {
+            if (home && (home[change.knob] - change.from) * change.direction <= 0) {
+              change.because = change.direction > 0 ? mode === "harder" ? "declared-harder" : why : calm ? "tired" : mode === "easier" ? "declared-easier" : why;
+            }
+            opening.push(change);
+          }
+          if (home) for (const knob of spec.knobs) todayOnly[knob.id] = indices[knob.id] - home[knob.id];
         }
         const intro = !adaptive ? arm === "baseline" ? "baseline" : "fixed" : returning ? "returning" : condition === "tired" ? "tired" : basis;
         const settings = () => ({
@@ -9970,7 +9989,7 @@ var require_game_flow = __commonJS({
         const run = Flow.start({ spec, memory, prior, declared, condition: condition === void 0 ? port.today() : condition, arm, now: clock2() });
         const say = (event) => VellumFlow.line(event, { level, words });
         const save = () => port.save(spec.id, run.memory(clock2()), since);
-        const shown = /* @__PURE__ */ new Map();
+        const shown = /* @__PURE__ */ new Map(), owed = /* @__PURE__ */ new Set();
         const snapshot = () => {
           const s = run.settings();
           return { content: s.content, policy: s.policy, arm: s.arm, mode: s.mode, values: s.values, level: s.level };
@@ -10009,11 +10028,17 @@ var require_game_flow = __commonJS({
           },
           /* Learning evidence to Trail first; then the same response moves the challenge. `flow` may
            * name the outcome for the challenge (a missed order is a 'timeout' there, yet not a language
-           * error) and pass the share of time used as `pressure`. Trail decides assisted and repeat. */
+           * error) and pass the share of time used as `pressure`. Otherwise the outcome is the verdict
+           * Trail recorded, so an answer it could not assess moves nothing. Trail decides assisted and repeat. */
           answer(pid, response, flow = {}) {
+            const known = typeof coach.events === "function" ? coach.events() : null;
             const recorded = coach.answer(pid, response);
-            const outcome = flow.outcome ?? (response.correct === true ? "success" : response.correct === false ? "fail" : "void");
+            const eventId = object4(recorded) && recorded.accepted !== false && typeof recorded.eventId === "string" && recorded.eventId ? recorded.eventId : null;
+            const fresh = !!eventId && Array.isArray(known) && (owed.has(eventId) || !known.some((event) => event.id === eventId));
+            if (!fresh) return { recorded, change: null, settings: run.settings(), evidence: false, line: null };
+            const outcome = flow.outcome ?? (recorded.verdict === "correct" ? "success" : recorded.verdict === "incorrect" ? "fail" : "void");
             const level2 = spec.items && spec.items.levels.includes(shown.get(pid)) ? shown.get(pid) : null;
+            owed.add(eventId);
             const observed = run.observe({
               outcome,
               assisted: flow.assisted ?? recorded.assisted === true,
@@ -10022,6 +10047,7 @@ var require_game_flow = __commonJS({
               latencyMs: flow.latencyMs ?? null,
               level: level2
             });
+            owed.delete(eventId);
             save();
             return { recorded, ...result(observed) };
           },
@@ -10797,8 +10823,16 @@ var require_temper_flow = __commonJS({
         const Flow = require_flow();
         module.exports = factory(require_temper(), () => Flow);
       } else {
+        let built = null;
+        const ready = () => built || (typeof root.SynkTemper?.check === "function" ? built = factory(root.SynkTemper, () => root.SynkFlow) : null);
+        const later = (name) => (...args) => {
+          if (!ready()) throw new Error("Temper: load temper.js (the guard) before using temper-flow.js");
+          return built[name](...args);
+        };
+        const calls = { check: later("check"), truth: later("truth"), simulate: later("simulate") };
+        const waiting = Object.freeze(Object.defineProperties({}, Object.fromEntries(["VERSION", "FLIP_WINDOW", "COOL_DOWN", "PERSONAS", "check", "truth", "simulate"].map((name) => [name, { enumerable: true, get: () => ready()?.[name] ?? calls[name] }]))));
         const keep = (value) => Object.defineProperty(root, "SynkTemperFlow", { value, writable: true, enumerable: true, configurable: true });
-        Object.defineProperty(root, "SynkTemperFlow", { enumerable: true, configurable: true, set: keep, get: () => keep(factory(root.SynkTemper, () => root.SynkFlow)).SynkTemperFlow });
+        Object.defineProperty(root, "SynkTemperFlow", { enumerable: true, configurable: true, set: keep, get: () => ready() ? keep(built).SynkTemperFlow : waiting });
       }
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(guard, getFlow) {
       "use strict";
@@ -10872,7 +10906,7 @@ var require_temper_flow = __commonJS({
           const outcome = timeout ? "timeout" : success ? "success" : "fail";
           const result = flow.observe({ outcome, assisted, pressure: chance.timed ? Math.min(1, duration) : null, latencyMs: Math.round(duration * 1e4) });
           let change = result.change;
-          if (adaptive && !change && flow.quietStreak() >= 3 && step - offered >= 10) {
+          if (adaptive && !change && flow.quietStreak() >= 3 && step - offered >= 10 && flow.lessHelpAllowed()) {
             offered = step;
             if (rng() < (self.accepts ?? 0.6)) change = flow.acceptLessHelp();
           }
@@ -14505,7 +14539,7 @@ var PACKS = [
       ], [
         question("plans-apply-time", "plans-time-reading", "plans-time", "\uC5B8\uC81C \uAC00\uC57C \uD574\uC694?", "\uCE5C\uAD6C\uC758 \uBA54\uC2DC\uC9C0: \u201C\uB0B4\uC77C \uC624\uD6C4 \uB450 \uC2DC\uC5D0 \uD559\uAD50 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uB0B4\uC77C \uC624\uD6C4 \uB450 \uC2DC", "\uC624\uB298 \uC624\uD6C4 \uB450 \uC2DC", "\uB0B4\uC77C \uC624\uC804 \uB450 \uC2DC"], "a", "\uB0A0\uC9DC\uB294 \uB0B4\uC77C, \uC2DC\uAC04\uC740 \uC624\uD6C4 \uB450 \uC2DC\uC608\uC694.", transfer("\uC5B8\uC81C \uAC00\uC57C \uD574\uC694?", "\uCE5C\uAD6C\uC758 \uBA54\uC2DC\uC9C0: \u201C\uC624\uB298 \uC624\uD6C4 \uB2E4\uC12F \uC2DC\uC5D0 \uCE74\uD398 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uB0B4\uC77C \uC624\uD6C4 \uB2E4\uC12F \uC2DC", "\uC624\uB298 \uC624\uC804 \uB2E4\uC12F \uC2DC", "\uC624\uB298 \uC624\uD6C4 \uB2E4\uC12F \uC2DC"], "c", "\uC0C8 \uC57D\uC18D\uC740 \uC624\uB298 \uC624\uD6C4 \uB2E4\uC12F \uC2DC\uC608\uC694. \uC7A5\uC18C\uC640 \uC2DC\uAC04\uC744 \uB098\uB204\uC5B4 \uC77D\uC5B4\uC694.")),
         question("plans-apply-place", "plans-location", "plans-place", "\uC5B4\uB514\uC5D0\uC11C \uAE30\uB2E4\uB9B4\uAE4C\uC694?", "\u201C\uC5ED \uC548\uC774 \uC544\uB2C8\uB77C \uC5ED \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uC5ED \uC548", "\uC5ED \uB4A4", "\uC5ED \uC55E"], "c", "\uBA54\uC2DC\uC9C0\uB294 \u2018\uC5ED \uC548\u2019\uC774 \uC544\uB2C8\uB77C \u2018\uC5ED \uC55E\u2019\uC774\uB77C\uACE0 \uD655\uC778\uD574 \uC918\uC694.", transfer("\uC5B4\uB514\uC5D0\uC11C \uAE30\uB2E4\uB9B4\uAE4C\uC694?", "\u201C\uD559\uAD50 \uC548\uC774 \uC544\uB2C8\uB77C \uD559\uAD50 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694.\u201D", ["\uD559\uAD50 \uC548", "\uD559\uAD50 \uC55E", "\uD559\uAD50 \uB4A4"], "b", "\u2018\uD559\uAD50 \uC548\u2019\uC740 \uC81C\uC678\uD558\uACE0 \u2018\uD559\uAD50 \uC55E\u2019\uC5D0\uC11C \uB9CC\uB098\uC694.")),
-        question("plans-apply-delay", "plans-delay-message", "plans-delay", "\uCE5C\uAD6C\uC5D0\uAC8C \uBCF4\uB0BC \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", "\uC57D\uC18D \uC7A5\uC18C\uC5D0 \uAC00\uB294 \uBC84\uC2A4\uB97C \uB193\uCCE4\uC5B4\uC694. \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694.", ["\uBC8C\uC368 \uB3C4\uCC29\uD588\uC5B4\uC694.", "\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC77C\uCC0D \uB3C4\uCC29\uD588\uC5B4\uC694."], "b", "\uC544\uC9C1 \uB3C4\uCC29\uD558\uC9C0 \uC54A\uC558\uACE0 \uB2A6\uC744 \uAC83 \uAC19\uC73C\uBBC0\uB85C \uBBF8\uB9AC \uC5F0\uB77D\uD574\uC694.", transfer("\uCE5C\uAD6C\uC5D0\uAC8C \uBCF4\uB0BC \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", "\uAE38\uC774 \uB9C9\uD600 \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uC2ED \uBD84 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694.", ["\uC2ED \uBD84 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC2ED \uBD84 \uC77C\uCC0D \uC654\uC5B4\uC694.", "\uC9C0\uAE08 \uB3C4\uCC29\uD588\uC5B4\uC694."], "a", "\uB2A6\uC744 \uC608\uC0C1 \uC2DC\uAC04\uC744 \uD568\uAED8 \uC54C\uB824 \uC8FC\uBA74 \uCE5C\uAD6C\uAC00 \uAE30\uB2E4\uB9AC\uB294 \uB370 \uB3C4\uC6C0\uC774 \uB3FC\uC694."))
+        question("plans-apply-delay", "plans-delay-message", "plans-delay", "\uCE5C\uAD6C\uC5D0\uAC8C \uBCF4\uB0BC \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", "\uC57D\uC18D \uC7A5\uC18C\uC5D0 \uAC00\uB294 \uBC84\uC2A4\uB97C \uB193\uCCE4\uC5B4\uC694. \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694.", ["\uBC8C\uC368 \uB3C4\uCC29\uD588\uC5B4\uC694.", "\uC870\uAE08 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC77C\uCC0D \uB3C4\uCC29\uD588\uC5B4\uC694."], "b", "\uC544\uC9C1 \uB3C4\uCC29\uD558\uC9C0 \uC54A\uC558\uACE0 \uB2A6\uC744 \uAC83 \uAC19\uC73C\uBBC0\uB85C \uBBF8\uB9AC \uC5F0\uB77D\uD574\uC694.", transfer("\uCE5C\uAD6C\uC5D0\uAC8C \uBCF4\uB0BC \uC5F0\uB77D\uC744 \uACE8\uB77C\uC694.", "\uAE38\uC774 \uB9C9\uD600 \uC57D\uC18D \uC2DC\uAC04\uBCF4\uB2E4 \uC2ED \uBD84 \uB2A6\uAC8C \uB3C4\uCC29\uD560 \uAC83 \uAC19\uC544\uC694.", ["\uC2ED \uBD84 \uB2A6\uC744 \uAC83 \uAC19\uC544\uC694.", "\uC2ED \uBD84 \uC77C\uCC0D \uC654\uC5B4\uC694.", "\uC9C0\uAE08 \uB3C4\uCC29\uD588\uC5B4\uC694."], "a", "\uC5BC\uB9C8\uB098 \uB2A6\uC744\uC9C0 \uD568\uAED8 \uC54C\uB824 \uC8FC\uBA74 \uCE5C\uAD6C\uAC00 \uAE30\uB2E4\uB9AC\uB294 \uB370 \uB3C4\uC6C0\uC774 \uB3FC\uC694."))
       ])
     ]
   }
@@ -18846,7 +18880,7 @@ function createPositionView({ t, has = () => true, formatDate = null, lang = () 
     const answered = results.filter((row) => !row.skipped).length, skipped = results.length - answered;
     const rows2 = doneRows({ map, results, items, practice });
     const wrong = results.some((row) => !row.skipped && row.verdict === "incorrect");
-    return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t("position.diagnostic.doneTitle"), t("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t("position.summary", { ...map.counts, total: map.total }))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button>${renderSetResponse(response)}</div>`;
+    return `<div class="wpos life-heading" data-position-done tabindex="-1">${poster(t("position.diagnostic.doneTitle"), t("position.diagnostic.doneSummary", { answered, skipped }))}${rows2 ? `<ul class="wpos-done-list">${rows2}</ul>` : ""}${wrong ? `<p class="wpos-note">${posEscape(t("position.diagnostic.wrongNote"))}</p>` : ""}<p class="wpos-intro">${posEscape(t("position.diagnostic.doneNote"))}</p><p class="wpos-summary-line">${posEscape(t(map.exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total }))}</p><button class="felt-button" type="button" data-position-back>${posEscape(t("position.diagnostic.back"))} <span aria-hidden="true">\u2192</span></button>${renderSetResponse(response)}</div>`;
   }
   const TOWN_POSTER = { print: "position", label: "TOWN CHECK" };
   function renderTownCheckWait({ after = false } = {}) {

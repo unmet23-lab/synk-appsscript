@@ -8903,6 +8903,7 @@ var SynkLearning = (() => {
           let overall = spec.target + (mode === "easier" ? 0.1 : mode === "harder" ? -0.1 : 0) + (condition === "tired" ? 0.08 : 0);
           overall = clamp(overall, 0.55, 0.92);
           const aim = targets(spec, overall);
+          const ordinary = targets(spec, spec.target);
           const base = defaults(spec);
           const fresh = (dimension) => ({ theta: challenge(spec, base, dimension) + logit(targets(spec, spec.target)[dimension]), n: 0, reversals: 0, streak: 0, sign: 0 });
           const estimates = { content: fresh("content"), pace: fresh("pace") };
@@ -8928,17 +8929,16 @@ var SynkLearning = (() => {
           const latencies = remembered ? remembered.latencies : [];
           const changes = [], trace = [];
           let step = 0, responses = 0, quiet = 0, steady = 0, last = null;
-          const TODAY_ONLY = ["tired", "declared-easier", "declared-harder"];
           const todayOnly = {};
-          const gap = (dimension) => (estimates[dimension].theta - logit(aim[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
+          const gap = (dimension, goal = aim, theta = estimates[dimension].theta) => (theta - logit(goal[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
           const chance = (dimension, at = indices) => sigmoid(estimates[dimension].theta - challenge(spec, at, dimension));
           const expected = (at = indices) => (has(spec, "content") ? chance("content", at) : 1) * (has(spec, "pace") ? chance("pace", at) : 1);
-          const span = (dimension) => {
+          const span = (dimension, goal = aim) => {
             const knobs = spec.knobs.filter((knob) => dimensionOf(knob) === dimension);
             const fixed = (knob) => knob.follows === "declared" ? indices[knob.id] : null;
             const low = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? 0), 0);
             const high = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? k.values.length - 1), 0);
-            return [low + logit(aim[dimension]) - 2 * spec.scale, high + logit(aim[dimension]) + 2 * spec.scale];
+            return [low + logit(goal[dimension]) - 2 * spec.scale, high + logit(goal[dimension]) + 2 * spec.scale];
           };
           const bound = (dimension) => {
             const [low, high] = span(dimension);
@@ -8985,6 +8985,7 @@ var SynkLearning = (() => {
             }
             return null;
           }
+          const ordinaryTheta = Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(estimates[d].theta, ...span(d, ordinary))]));
           for (const dimension of DIMENSIONS) bound(dimension);
           const opening = [];
           if (adaptive && returning) {
@@ -8998,16 +8999,34 @@ var SynkLearning = (() => {
             for (const dimension of DIMENSIONS) estimates[dimension].theta = Math.min(estimates[dimension].theta, logit(aim[dimension]) + challenge(spec, indices, dimension));
           } else if (adaptive) {
             const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
-            for (let moves = 0; moves < limit; moves += 1) {
-              const dimension = DIMENSIONS.filter((d) => Math.abs(gap(d)) >= DEADBAND && (!easeOnly || gap(d) < 0)).sort((a, b) => Math.abs(gap(b)) - Math.abs(gap(a)))[0];
-              if (!dimension) break;
-              const direction = Math.sign(gap(dimension));
-              const reason = direction > 0 ? mode === "harder" ? "declared-harder" : "prior" : condition === "tired" ? "tired" : mode === "easier" ? "declared-easier" : "prior";
-              const change = settle(dimension, direction, null, reason, "opening");
-              if (!change) break;
-              opening.push(change);
-              if (TODAY_ONLY.includes(change.because)) todayOnly[change.knob] = (todayOnly[change.knob] || 0) + change.direction;
+            const why = basis === "memory" ? "memory" : "prior";
+            const open = (goal, theta, ease) => {
+              const moves = [];
+              for (let n = 0; n < limit; n += 1) {
+                const off = (d) => gap(d, goal, theta[d]);
+                const dimension = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)))[0];
+                if (!dimension) break;
+                const change = settle(dimension, Math.sign(off(dimension)), null, why, "opening");
+                if (!change) break;
+                moves.push(change);
+              }
+              return moves;
+            };
+            let home = null;
+            if (mode !== "auto" || calm) {
+              const from = { ...indices };
+              open(ordinary, ordinaryTheta, basis === "memory");
+              home = indices;
+              indices = from;
+              changes.length = 0;
             }
+            for (const change of open(aim, Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta])), easeOnly)) {
+              if (home && (home[change.knob] - change.from) * change.direction <= 0) {
+                change.because = change.direction > 0 ? mode === "harder" ? "declared-harder" : why : calm ? "tired" : mode === "easier" ? "declared-easier" : why;
+              }
+              opening.push(change);
+            }
+            if (home) for (const knob of spec.knobs) todayOnly[knob.id] = indices[knob.id] - home[knob.id];
           }
           const intro = !adaptive ? arm === "baseline" ? "baseline" : "fixed" : returning ? "returning" : condition === "tired" ? "tired" : basis;
           const settings = () => ({
@@ -9488,7 +9507,7 @@ var SynkLearning = (() => {
           const run = Flow.start({ spec, memory, prior, declared, condition: condition === void 0 ? port.today() : condition, arm, now: clock() });
           const say = (event) => VellumFlow.line(event, { level, words });
           const save = () => port.save(spec.id, run.memory(clock()), since);
-          const shown = /* @__PURE__ */ new Map();
+          const shown = /* @__PURE__ */ new Map(), owed = /* @__PURE__ */ new Set();
           const snapshot = () => {
             const s = run.settings();
             return { content: s.content, policy: s.policy, arm: s.arm, mode: s.mode, values: s.values, level: s.level };
@@ -9527,11 +9546,17 @@ var SynkLearning = (() => {
             },
             /* Learning evidence to Trail first; then the same response moves the challenge. `flow` may
              * name the outcome for the challenge (a missed order is a 'timeout' there, yet not a language
-             * error) and pass the share of time used as `pressure`. Trail decides assisted and repeat. */
+             * error) and pass the share of time used as `pressure`. Otherwise the outcome is the verdict
+             * Trail recorded, so an answer it could not assess moves nothing. Trail decides assisted and repeat. */
             answer(pid, response, flow = {}) {
+              const known = typeof coach.events === "function" ? coach.events() : null;
               const recorded = coach.answer(pid, response);
-              const outcome = flow.outcome ?? (response.correct === true ? "success" : response.correct === false ? "fail" : "void");
+              const eventId = object(recorded) && recorded.accepted !== false && typeof recorded.eventId === "string" && recorded.eventId ? recorded.eventId : null;
+              const fresh = !!eventId && Array.isArray(known) && (owed.has(eventId) || !known.some((event) => event.id === eventId));
+              if (!fresh) return { recorded, change: null, settings: run.settings(), evidence: false, line: null };
+              const outcome = flow.outcome ?? (recorded.verdict === "correct" ? "success" : recorded.verdict === "incorrect" ? "fail" : "void");
               const level2 = spec.items && spec.items.levels.includes(shown.get(pid)) ? shown.get(pid) : null;
+              owed.add(eventId);
               const observed = run.observe({
                 outcome,
                 assisted: flow.assisted ?? recorded.assisted === true,
@@ -9540,6 +9565,7 @@ var SynkLearning = (() => {
                 latencyMs: flow.latencyMs ?? null,
                 level: level2
               });
+              owed.delete(eventId);
               save();
               return { recorded, ...result(observed) };
             },
@@ -10315,8 +10341,16 @@ var SynkLearning = (() => {
           const Flow = require_flow();
           module.exports = factory(require_temper(), () => Flow);
         } else {
+          let built = null;
+          const ready = () => built || (typeof root.SynkTemper?.check === "function" ? built = factory(root.SynkTemper, () => root.SynkFlow) : null);
+          const later = (name) => (...args) => {
+            if (!ready()) throw new Error("Temper: load temper.js (the guard) before using temper-flow.js");
+            return built[name](...args);
+          };
+          const calls = { check: later("check"), truth: later("truth"), simulate: later("simulate") };
+          const waiting = Object.freeze(Object.defineProperties({}, Object.fromEntries(["VERSION", "FLIP_WINDOW", "COOL_DOWN", "PERSONAS", "check", "truth", "simulate"].map((name) => [name, { enumerable: true, get: () => ready()?.[name] ?? calls[name] }]))));
           const keep = (value) => Object.defineProperty(root, "SynkTemperFlow", { value, writable: true, enumerable: true, configurable: true });
-          Object.defineProperty(root, "SynkTemperFlow", { enumerable: true, configurable: true, set: keep, get: () => keep(factory(root.SynkTemper, () => root.SynkFlow)).SynkTemperFlow });
+          Object.defineProperty(root, "SynkTemperFlow", { enumerable: true, configurable: true, set: keep, get: () => ready() ? keep(built).SynkTemperFlow : waiting });
         }
       })(typeof globalThis !== "undefined" ? globalThis : exports, function(guard, getFlow) {
         "use strict";
@@ -10390,7 +10424,7 @@ var SynkLearning = (() => {
             const outcome = timeout ? "timeout" : success ? "success" : "fail";
             const result = flow.observe({ outcome, assisted, pressure: chance.timed ? Math.min(1, duration) : null, latencyMs: Math.round(duration * 1e4) });
             let change = result.change;
-            if (adaptive && !change && flow.quietStreak() >= 3 && step - offered >= 10) {
+            if (adaptive && !change && flow.quietStreak() >= 3 && step - offered >= 10 && flow.lessHelpAllowed()) {
               offered = step;
               if (rng() < (self.accepts ?? 0.6)) change = flow.acceptLessHelp();
             }

@@ -380,7 +380,7 @@ test('계획 연결: app-shell은 말하기 모듈을 정적으로 부르지 않
  assert.match(shell,/speakingPractice:\{available:\(\)=>!!speakingModule\?\.speakingReady\(\)/);
  for(const name of ['readSpeakingExam','writeSpeakingExam','speakingWeek'])assert.ok(shell.includes(`speakingModule.${name}({storage:localStorage,owner`),name);
  assert.ok(shell.includes("SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking')"),'계획에는 시험 유형만(카페 역할극은 아직 넣지 않는다)');
- assert.ok(shell.includes('.then(()=>{repaintSpeakingRow();education?.refresh();})'),'은행을 읽으면 추천·계획을 다시 세운다');
+ assert.ok(shell.includes('.then(()=>{repaintSpeakingRow();life.education?.refresh();})'),'은행을 읽으면 추천·계획을 다시 세운다(학습 화면은 생활 세션의 지금 기록 것)');
  assert.ok(shell.includes('speakingModule.readSpeakingSummary({storage:localStorage,owner:writingOwnerId()}).times)add(at)'),'알림의 「그날 공부함」에 말하기 시각');
  const ui=fs.readFileSync(path.join(app,'world-learning-ui.mjs'),'utf8');
  assert.ok(ui.includes("speakingPractice.open('speaking')"),'계획 판의 「말하기 연습 열기」는 유형 목록을 연다');

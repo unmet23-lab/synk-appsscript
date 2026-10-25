@@ -8,7 +8,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 6850, capabilityDocLines: 150 });
+// 2026-10-26: Flow/TemperFlow 공통 안전처리 +33줄, 실제 6,879줄. 주문 폭주·말의 리듬·Atlas 실험실과
+// 공개 LAB 계열 13경로/WORLD가 공유하므로 설계 절의 근거와 함께 50줄만 늘린다(여유 21줄).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 6900, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {
