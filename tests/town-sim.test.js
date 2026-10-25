@@ -10,20 +10,23 @@ const { toolModule, runUnderTimezone, runtimeFiles, ROOT } = require('./lib/town
 const MINUTE = 60000, HOUR = 60 * MINUTE;
 
 test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 모두 통과한다', async () => {
-  const { runSimulation, summarize, METRICS } = await toolModule('town-sim');
-  const started = Date.now();
-  const result = runSimulation({ seeds: 12, days: 30 });
-  // 설계 목표는 한가한 PC에서 5초(§15-5) — CI에서 다른 시험과 함께 돌 때도 넘지 않을 상한을 둔다.
-  assert.ok(Date.now() - started < 15000, `${Date.now() - started}ms`);
+  const { runSimulation, summarize, METRICS, TIMEZONES } = await toolModule('town-sim');
+  // 줄인 판은 마을 시간대 하나로 돈다(W5b, 10-26) — 네 시간대는 같은 CI의 씨앗 100 단계(npm run check:town-sim)가 본다.
+  // 설계 목표는 한가한 PC에서 5초(§15-5). 재는 것은 이 프로세스가 쓴 CPU 시간이다: CI의 「SYNK safety tests」는 시험 파일들을 나란히
+  // 돌려, 벽시계로 재면 다른 시험을 기다린 시간이 끼어 W5a 뒤 21초로 넘기도 했다(10-25 run 40216175219).
+  const started = process.cpuUsage();
+  const result = runSimulation({ seeds: 12, days: 30, timezones: [TIMEZONES[0]] });
+  const used = process.cpuUsage(started), cpuMs = Math.round((used.user + used.system) / 1000);
+  assert.ok(cpuMs < 15000, `${cpuMs}ms`);
   const s = summarize(result);
-  assert.equal(s.villages, 12 * (4 * 4 + 1), '다 받는 모습은 첫 시간대에서만');
+  assert.equal(s.villages, 12 * (1 * 4 + 1), '다 받는 모습은 첫 시간대에서만');
   assert.equal(s.fail, 0, result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
   const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside', 'energy', 'mood-lines',
     'cards', 'hearsay', 'pairs', 'card-coverage'];
   assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3·W4·W5가 재는 지표');
   assert.deepEqual(result.metrics.map(m => m.id), METRICS.map(m => m.id));
-  assert.equal(runSimulation({ seeds: 12, days: 30 }).hash, result.hash, '같은 입력이면 같은 결과');
-  assert.notEqual(runSimulation({ seeds: 13, days: 30 }).hash, result.hash);
+  assert.equal(runSimulation({ seeds: 12, days: 30, timezones: [TIMEZONES[0]] }).hash, result.hash, '같은 입력이면 같은 결과');
+  assert.notEqual(runSimulation({ seeds: 13, days: 30, timezones: [TIMEZONES[0]] }).hash, result.hash);
 });
 
 test('플레이어 모습 다섯의 방문 일정', async () => {
