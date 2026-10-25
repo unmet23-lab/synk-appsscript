@@ -108,6 +108,25 @@ async function flows(browser) {
       m = await metrics(page); check(scene, !m.stay.seated, '「일어나기」 단추로 일어난다', m.stay);
       await page.keyboard.press('f'); await delay(1200); await page.keyboard.down('s'); await delay(800); await page.keyboard.up('s'); await delay(600);
       m = await metrics(page); check(scene, !m.stay.seated, '걷기 키로 바로 일어난다', m.stay);
+      // From the door, the home panel's 「창가 벤치에 앉아 머물기」: a reply from the server keeps the player seated, and only
+      // another window walking the player away stands it up (W7b screen review).
+      await walkTo(page, [['x', -6.5], ['z', 1.2]]); await page.keyboard.press('e'); await delay(1200);
+      await page.locator('#sound-box').getByRole('button', { name: '창가 벤치에 앉아 머물기', exact: true }).click();
+      await page.waitForFunction(() => SYNKTownDay.metrics().stay?.seated, null, { timeout: 10000 });
+      await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); await delay(2500);
+      m = await metrics(page); check(scene, m.stay.seated === 'home-window-bench', '집 판의 단추로 앉으면 서버 응답 뒤에도 앉은 채', { stay: m.stay, walk: m.walk });
+      if (device === 'desktop') {
+        // A seen, seated window keeps the lease, so another window walks the player only while this one is hidden.
+        const hide = hidden => page.evaluate(h => { for (const [name, value] of [['hidden', h], ['visibilityState', h ? 'hidden' : 'visible']]) Object.defineProperty(document, name, { configurable: true, get: () => value });
+          document.dispatchEvent(new Event('visibilitychange')); }, hidden);
+        await hide(true);
+        const other = await open(browser, { reuse: s, district: '' });
+        try {
+          await walkTo(other.page, [['z', 2.8]]);
+          await hide(false); await delay(2500);
+          m = await metrics(page); check(scene, !m.stay.seated && other.errors.length === 0, '숨긴 사이 다른 창이 걸어 옮기면 돌아와서 일어난다', { stay: m.stay, walk: m.walk, other: (await metrics(other.page)).walk, otherErrors: other.errors });
+        } finally { await other.close(); }
+      } else { await page.keyboard.press('Escape'); await delay(800); }
       check(scene, s.errors.length === 0, '오류 없음', s.errors);
     } finally { await s.close(); }
   }

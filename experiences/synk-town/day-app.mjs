@@ -8,14 +8,14 @@ import { validOffset } from './town/clock.mjs';
 import { createMoodLines } from './day-mood.mjs';
 import { createStay } from './day-stay.mjs';
 import { createTownSound } from './day-sound.mjs';
-import { seatNear, QUIET } from './town/stay.mjs';
+import { QUIET } from './town/stay.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
 // Staying and the village's sound (W7b): the seat's quiet view and the two sound buses, on this device only.
 const sound = createTownSound({ surfaceId });
 // walkWarm is false between standing up and the zero step's receipt: steps wait for the walk clock to stand again.
-let stay = null, villageWalking = false, appTimer = 0, lightPaintedAt = 0, seatedRetry = 0, walkWarm = true;
+let stay = null, stayPoint = null, villageWalking = false, appTimer = 0, lightPaintedAt = 0, seatedRetry = 0, walkWarm = true;
 const unlockSound = () => sound.unlock();
 addEventListener('pointerdown', unlockSound, { capture: true, passive: true }); addEventListener('keydown', unlockSound, true);
 const names = Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].labels.map]));
@@ -503,8 +503,8 @@ function accept(data) {
   if ($('journal-dialog').open) renderJournal();
   $('look-scene').hidden = !activePlan && !observation && !snapshot.view.life?.interaction?.resultId;
   reconcileWalk(); applyWalkView();
-  // Another window moved the player away from the seat (or left home in the classic view): stand up quietly (W7b).
-  if (stay?.active() && (walking() ? seatNear(walkPoint)?.id !== stay.seat().id : day.location !== 'home')) stay.leave('moved');
+  // Another window moved the player from where it sat down (or left home in the classic view): stand up quietly (W7b).
+  if (stay?.active() && (walking() ? !walkPoint || !stayPoint || Math.hypot(walkPoint.x - stayPoint.x, walkPoint.z - stayPoint.z) > stay.seat().reach : day.location !== 'home')) stay.leave('moved');
   clearTimeout(seatedRetry); stay?.update(stayContext()); soundFrame();
 }
 function renderJournal() {
@@ -733,11 +733,12 @@ try {
   // Staying (W7b): the seats, their quiet view and the sound switches. Sitting sends the steps taken so far; standing
   // up starts the walk clock again with a zero step, so the first real step is never pulled back.
   stay = createStay({ scene: $('scene'), hud: $('walk-hud'), nearby: $('nearby-panel'), settings: $('settings-dialog'), sound, renderer: () => renderer,
-    beforeSit: async () => { walkControls?.stop(); dismissWalkPanel(); await flushWalk(true); },
+    beforeSit: async () => { walkControls?.stop(); dismissWalkPanel(); await flushWalk(true); stayPoint = walkPoint && { x: walkPoint.x, z: walkPoint.z }; },
     onChange: () => { soundFrame(); applyWalkView(true); },
-    onStand: () => {
+    onStand: reason => {
       if (appTimer) { clearTimeout(appTimer); appTimer = 0; raf = requestAnimationFrame(frame); }
-      if (walking() && connected) { walkWarm = false; walkPending.push({ x: 0, z: 0, durationMs: 0 }); Promise.resolve(flushWalk(true)).finally(() => { walkWarm = true; }); }
+      // Standing up to walk on warms the walking clock; moved by another window (which holds the walk now) or closing, not.
+      if (reason !== 'moved' && reason !== 'dispose' && walking() && connected) { walkWarm = false; walkPending.push({ x: 0, z: 0, durationMs: 0 }); Promise.resolve(flushWalk(true)).finally(() => { walkWarm = true; }); }
       paintLight(true); renderScene();
     } });
   sound.onPrefs(() => stay?.paint());

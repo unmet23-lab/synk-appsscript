@@ -50,21 +50,24 @@ function noiseBuffers(ctx) {
 /* ── the pieces ── */
 function filter(ctx, type, frequency, q = .7) { const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = frequency; f.Q.value = q; return f; }
 function chain(...nodes) { for (let i = 0; i < nodes.length - 1; i++) nodes[i].connect(nodes[i + 1]); return nodes.at(-1); }
-function panned(ctx, out, pan) { if (!ctx.createStereoPanner) return out; const p = ctx.createStereoPanner(); p.pan.value = pan; p.connect(out); return p; }
+function panned(ctx, out, pan) { if (!ctx.createStereoPanner) return out; const p = ctx.createStereoPanner(); p.pan.value = pan; p.connect(out); p.notes = 0; return p; }
+/** Each sound through a note's own panner holds it; the last one to end lets it go (the layer's gain lives on). */
+const hold = out => { if (out.notes !== undefined) out.notes++; };
+const letGo = out => { if (out.notes !== undefined && --out.notes === 0) out.disconnect(); };
 /** A loop that runs as long as the layer lives. */
 function loop(ctx, buffer, offset = Math.random()) { const s = ctx.createBufferSource(); s.buffer = buffer; s.loop = true; s.start(ctx.currentTime, offset * buffer.duration); return s; }
 /** One plain sine with an envelope (attack, decay to silence) and an optional glide; cleans itself up. */
 function tone(ctx, out, { t, f, f2 = 0, glide = .05, peak, attack = .004, decay = .1 }) {
   const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + glide);
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(peak, .0002), t + attack); g.gain.exponentialRampToValueAtTime(.0001, t + attack + decay);
-  o.connect(g); g.connect(out); o.start(t); o.stop(t + attack + decay + .05); o.onended = () => { o.disconnect(); g.disconnect(); };
+  o.connect(g); g.connect(out); hold(out); o.start(t); o.stop(t + attack + decay + .05); o.onended = () => { o.disconnect(); g.disconnect(); letGo(out); };
 }
 /** A short broad noise tap (a raindrop, a tick) through a high-pass and a low-pass — never one narrow band. */
 function tap(ctx, out, noise, { t, peak, decay = .006, low = 1800, high = 9000 }) {
   const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = noise;
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(peak, .0002), t + .0008); g.gain.exponentialRampToValueAtTime(.0001, t + .0008 + decay);
-  chain(s, filter(ctx, 'highpass', low, .5), filter(ctx, 'lowpass', high, .5), g).connect(out);
-  s.start(t, Math.random() * (noise.duration - .1)); s.stop(t + decay + .05); s.onended = () => { s.disconnect(); g.disconnect(); };
+  chain(s, filter(ctx, 'highpass', low, .5), filter(ctx, 'lowpass', high, .5), g).connect(out); hold(out);
+  s.start(t, Math.random() * (noise.duration - .1)); s.stop(t + decay + .05); s.onended = () => { s.disconnect(); g.disconnect(); letGo(out); };
 }
 
 /* ── the layers ── each builds its steady part into out and returns tick(level, from, to), which schedules the
@@ -120,7 +123,7 @@ const LAYER_MAKERS = {
     // A low two-note croak with a soft burr (amplitude, not pitch, wavers), two frogs answering each other.
     const croak = (t, f, pan) => { const o = ctx.createOscillator(), g = ctx.createGain(), am = ctx.createOscillator(), depth = ctx.createGain(), p = panned(ctx, out, pan);
       o.frequency.value = f; am.frequency.value = 28; depth.gain.value = .045; g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.06, t + .02); g.gain.linearRampToValueAtTime(.0001, t + .14);
-      am.connect(depth); depth.connect(g.gain); o.connect(g); g.connect(p); o.start(t); am.start(t); o.stop(t + .2); am.stop(t + .2); o.onended = () => { o.disconnect(); g.disconnect(); am.disconnect(); depth.disconnect(); }; };
+      am.connect(depth); depth.connect(g.gain); o.connect(g); g.connect(p); hold(p); o.start(t); am.start(t); o.stop(t + .2); am.stop(t + .2); o.onended = () => { o.disconnect(); g.disconnect(); am.disconnect(); depth.disconnect(); letGo(p); }; };
     return (level, from, to) => { for (let t = from + rand(0, 1); t < to; t += rand(.9, 3.2) / Math.max(.15, level)) { const pan = pick([-.6, .5]), f = pan < 0 ? 220 : 196; croak(t, f, pan); croak(t + .17, f * .9, pan); } };
   },
   cafe(ctx, out, n) {
@@ -281,7 +284,7 @@ export function createTownSound({ surfaceId = crypto.randomUUID() } = {}) {
      * into view reads the microphone key before it sounds again (it may have been frozen while hidden). */
     update(next) {
       // Seen again: read the microphone key, and sound again unless another window took over while this one was away.
-      if (input?.hidden && !next.hidden) { const at = readStamp(MIC_KEY); if (at) mic.heardAt = Math.max(mic.heardAt || 0, at); if (!readOwner()) claim(); if (interrupted) ctx?.resume().catch(() => {}); }
+      if (input?.hidden && !next.hidden) { const at = readStamp(MIC_KEY); if (at) mic.heardAt = Math.max(mic.heardAt || 0, at); else mic.closedAt = Date.now(); if (!readOwner()) claim(); if (interrupted) ctx?.resume().catch(() => {}); }
       if (!input?.hidden && next.hidden) releaseOwner();
       if (next.staying && !input?.staying) claim();
       input = next; music.day(next.ms); apply();
@@ -344,7 +347,7 @@ function createMusic({ onChange = () => {} } = {}) {
     start(to, track); const now = ctx.currentTime, fade = ms(FADES.musicMs);
     to.gain.gain.cancelScheduledValues(now); to.gain.gain.setValueAtTime(0, now); to.gain.gain.linearRampToValueAtTime(target, now + fade);
     from.gain.gain.cancelScheduledValues(now); from.gain.gain.setValueAtTime(from.gain.gain.value, now); from.gain.gain.linearRampToValueAtTime(0, now + fade);
-    setTimeout(() => { if (players[current] !== to) from.audio.pause(); }, fade * 1000 + 100);
+    setTimeout(() => { if (players[current] !== from) from.audio.pause(); }, fade * 1000 + 100);
     current = 1 - current;
   }
   return {
@@ -364,7 +367,7 @@ function createMusic({ onChange = () => {} } = {}) {
     day(at) { if (!TRACKS.length || !Number.isFinite(at)) return; const key = Math.floor(at / DAY); if (key !== dayKey) { dayKey = key; order = shuffle(key); } },
     level(value, fade) {
       if (!players.length) return;
-      clearTimeout(timer); const now = ctx.currentTime, was = target; target = value;
+      if (value === target) return; clearTimeout(timer); const now = ctx.currentTime, was = target; target = value;
       if (value > 0 && was === 0) { if (!players[current].track) { next(); return; } players[current].audio.play().catch(() => {}); }
       const p = players[current]; p.gain.gain.cancelScheduledValues(now); p.gain.gain.setValueAtTime(p.gain.gain.value, now); p.gain.gain.linearRampToValueAtTime(value, now + fade);
       if (value === 0) timer = setTimeout(() => { for (const q of players) q.audio.pause(); }, fade * 1000 + 100);
