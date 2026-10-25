@@ -327,7 +327,7 @@ async function overview(browser) {
   }
 }
 
-/** Listening samples for Yuho's ear check (village design §4-4 — the crickets wait for it): each a 20-second mix the
+/** Listening samples for Yuho's ear checks (village design §4-4 — the crickets came on after one, 10-26): each a 20-second mix the
  * screen's own engine renders offline from that hour's levels, saved as MP3 next to the captures. */
 async function samples(browser) {
   const { server, base } = await fixture(kst('2026-10-25', '12:00')), page = await browser.newPage(), dir = path.join(output, 'samples');
@@ -335,8 +335,8 @@ async function samples(browser) {
   const plan = [
     ['01-가을낮-길가벤치', '2026-10-25', '10:30', { x: -5, z: 3.06, sheltered: false }, 1, {}],
     ['02-가을저녁-길가벤치', '2026-10-25', '18:40', { x: -5, z: 3.06, sheltered: false }, 1, {}],
-    ['03-가을깊은밤-길가벤치(지금-귀뚜라미끔)', '2026-10-25', '23:45', { x: -5, z: 3.06, sheltered: false }, 1, {}],
-    ['04-가을깊은밤-귀뚜라미를켠다면(귀검수)', '2026-10-25', '23:45', { x: -5, z: 3.06, sheltered: false }, 1, { crickets: .22 }],
+    ['03-가을깊은밤-길가벤치', '2026-10-25', '23:45', { x: -5, z: 3.06, sheltered: false }, 1, {}],
+    ['04-가을깊은밤-귀뚜라미없이(견줌)', '2026-10-25', '23:45', { x: -5, z: 3.06, sheltered: false }, 1, { crickets: 0 }],
     ['05-비오는날-창가벤치', '2026-10-29', '14:00', { x: -5.18, z: -.7, sheltered: true }, 1, {}],
     ['06-비오는날-길가벤치', '2026-10-29', '14:00', { x: -5, z: 3.06, sheltered: false }, 1, {}],
     ['07-6월밤-연못곁', '2026-06-20', '22:00', { x: 5, z: -3, sheltered: false }, 1, {}],

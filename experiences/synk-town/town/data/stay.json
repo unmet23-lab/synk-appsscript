@@ -1,5 +1,5 @@
 {
-  "$comment": "머무는 모드(세로 조각 W7b, 마을 설계 §4-4) 〔초기값〕 — 앉을 자리 셋, 앉아 있는 동안의 조용한 그리기, 마을 소리 섞기. 길이는 밀리미터(좌표라 음수도 있다), 비율·세기는 천분율, 시간은 밀리초, 각도는 도. 자리 위치는 걷기 충돌 상자(walk.mjs의 solid)에서 읽고 여기에는 그 이름만 둔다. 소리 층의 time은 빛 기준점(clock.mjs LIGHT_KEYS) 일곱, month는 한국 날짜의 1~12월(달 가운데에 맞춰 이어 섞음), weather는 비가 다 왔을 때·다 흐릴 때·다 젖었을 때의 배수, shelter는 [트인 곳, 처마 밑] 배수, source는 소리가 나는 곳과 들리기 시작해 사라지는 거리(near·far). gain은 화면 소리(day-sound.mjs)의 층별 기준 세기다 — 귀뚜라미는 유호님 귀검수 전까지 0(사운드킷 「모기·벌레 소리」 금지와 부딪힐 수 있어서). quiet: 움직이는 것(걷는 주민·빗줄기)이 있을 때의 장면 fps·앱 고리 appHz, 없을 때 앱 고리 idleHz(장면은 바뀐 때만), 맥박 pulseMs는 임대(presence.mjs 3초)보다 짧아야 걷기 시계·U가 끊기지 않는다. sit는 자리 가운데에서 앉는 곳까지의 [x, z]. camera: look은 자리 가운데에서 보는 곳, dir은 보는 곳에서 카메라 쪽, width·height는 화면에 담을 너비·높이(세로 화면은 portraitWidth). 화면·순수 섞기(town/soundscape.mjs)는 이 값을 이름으로 읽고 코드에 숫자로 쓰지 않는다(tests/town-sound.test.js).",
+  "$comment": "머무는 모드(세로 조각 W7b, 마을 설계 §4-4) 〔초기값〕 — 앉을 자리 셋, 앉아 있는 동안의 조용한 그리기, 마을 소리 섞기. 길이는 밀리미터(좌표라 음수도 있다), 비율·세기는 천분율, 시간은 밀리초, 각도는 도. 자리 위치는 걷기 충돌 상자(walk.mjs의 solid)에서 읽고 여기에는 그 이름만 둔다. 소리 층의 time은 빛 기준점(clock.mjs LIGHT_KEYS) 일곱, month는 한국 날짜의 1~12월(달 가운데에 맞춰 이어 섞음), weather는 비가 다 왔을 때·다 흐릴 때·다 젖었을 때의 배수, shelter는 [트인 곳, 처마 밑] 배수, source는 소리가 나는 곳과 들리기 시작해 사라지는 거리(near·far). gain은 화면 소리(day-sound.mjs)의 층별 기준 세기다 — 귀뚜라미는 사운드킷 「모기·벌레 소리」 금지와 부딪힐 수 있어 0으로 두었다가, 2026-10-26 유호님이 깊은 밤 표본(이 세기 220)을 듣고 켰다. quiet: 움직이는 것(걷는 주민·빗줄기)이 있을 때의 장면 fps·앱 고리 appHz, 없을 때 앱 고리 idleHz(장면은 바뀐 때만), 맥박 pulseMs는 임대(presence.mjs 3초)보다 짧아야 걷기 시계·U가 끊기지 않는다. sit는 자리 가운데에서 앉는 곳까지의 [x, z]. camera: look은 자리 가운데에서 보는 곳, dir은 보는 곳에서 카메라 쪽, width·height는 화면에 담을 너비·높이(세로 화면은 portraitWidth). 화면·순수 섞기(town/soundscape.mjs)는 이 값을 이름으로 읽고 코드에 숫자로 쓰지 않는다(tests/town-sound.test.js).",
   "stayVer": "town-stay-1",
   "seats": [
     { "id": "street-bench-left", "label": "길가 벤치", "solid": "street-bench-left", "seatTop": 590, "sit": [0, 60], "heading": 0, "reach": 900, "sheltered": false,
@@ -57,7 +57,7 @@
         "time": { "deep-night": 0, "dawn-mist": 800, "morning": 1000, "noon": 450, "sunset": 350, "blue-evening": 0, "lantern-night": 0 },
         "month": [350, 400, 700, 900, 1000, 900, 800, 750, 700, 600, 450, 350],
         "weather": { "drops": 100, "overcast": 700, "wet": 1000 }, "shelter": [1000, 600] },
-      "crickets": { "driver": "always", "gain": 0,
+      "crickets": { "driver": "always", "gain": 220,
         "time": { "deep-night": 700, "dawn-mist": 150, "morning": 0, "noon": 0, "sunset": 250, "blue-evening": 800, "lantern-night": 1000 },
         "month": [0, 0, 0, 0, 0, 150, 500, 900, 1000, 850, 350, 0],
         "weather": { "drops": 250, "overcast": 900, "wet": 1000 }, "shelter": [1000, 650] },

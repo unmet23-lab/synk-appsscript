@@ -142,7 +142,7 @@ export function buildLayer(name, ctx, dest, buffers = noiseBuffers(ctx)) {
 }
 /** Renders a whole village mix offline, as the screen would play it (layers: { name: level }, bus: the village bus
  * level) — for listening samples and loudness checks. gains overrides a layer's reference gain (an ear check of a
- * layer that is off, such as the crickets). */
+ * layer at another strength). */
 export async function renderMix({ layers: levels, seconds = 20, bus = 1, gains = {}, sampleRate = 44100 }) {
   const ctx = new OfflineAudioContext(2, Math.ceil(seconds * sampleRate), sampleRate), buffers = noiseBuffers(ctx);
   const limiter = ctx.createDynamicsCompressor(); limiter.threshold.value = -10; limiter.ratio.value = 4; limiter.knee.value = 6;
@@ -243,7 +243,7 @@ export function createTownSound({ surfaceId = crypto.randomUUID() } = {}) {
     return ctx;
   }
   /** Schedules the next stretch of events, layer by layer, at the levels the scene asks for now (a layer whose
-   * reference gain is 0 — crickets until Yuho's ear check — makes no events at all). */
+   * reference gain is 0 makes no events at all). */
   function tick() {
     if (!ctx || ctx.state !== 'running') return;
     if (recordingNow() !== last.recording) apply();
