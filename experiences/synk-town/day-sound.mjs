@@ -81,12 +81,12 @@ const LAYER_MAKERS = {
   },
   rainOpen(ctx, out, n) {
     chain(loop(ctx, n.pink), filter(ctx, 'highpass', 350, .5), filter(ctx, 'lowpass', 6500, .3)).connect(out);
-    return (level, from, to) => { for (let t = from + rand(0, .06); t < to; t += rand(.05, .12) / Math.max(.2, level)) tap(ctx, panned(ctx, out, rand(-.6, .6)), n.white, { t, peak: rand(.25, .7) }); };
+    return (level, from, to) => { for (let t = from + rand(0, .06); t < to; t += rand(.07, .16) / Math.max(.2, level)) tap(ctx, panned(ctx, out, rand(-.6, .6)), n.white, { t, peak: rand(.25, .7) }); };
   },
   rainRoof(ctx, out, n) {
     chain(loop(ctx, n.pink), filter(ctx, 'lowpass', 1600, .4)).connect(out);
     const thrum = ctx.createGain(); thrum.gain.value = .5; chain(loop(ctx, n.brown), filter(ctx, 'lowpass', 160, .5), thrum).connect(out);
-    return (level, from, to) => { for (let t = from + rand(0, .08); t < to; t += rand(.05, .12) / Math.max(.2, level)) tap(ctx, panned(ctx, out, rand(-.8, .8)), n.white, { t, peak: rand(.2, .5), decay: .012, low: 600, high: 2600 }); };
+    return (level, from, to) => { for (let t = from + rand(0, .08); t < to; t += rand(.08, .18) / Math.max(.2, level)) tap(ctx, panned(ctx, out, rand(-.8, .8)), n.white, { t, peak: rand(.2, .5), decay: .012, low: 600, high: 2600 }); };
   },
   drip(ctx, out) {
     return (level, from, to) => { for (let t = from + rand(0, .4); t < to; t += rand(.6, 2.4) / Math.max(.15, level)) {
@@ -136,6 +136,19 @@ export function buildLayer(name, ctx, dest, buffers = noiseBuffers(ctx)) {
   const gain = ctx.createGain(); gain.gain.value = 0; gain.connect(dest);
   const tick = LAYER_MAKERS[name]?.(ctx, gain, buffers) || null;
   return { gain, tick };
+}
+/** Renders a whole village mix offline, as the screen would play it (layers: { name: level }, bus: the village bus
+ * level) — for listening samples and loudness checks. gains overrides a layer's reference gain (an ear check of a
+ * layer that is off, such as the crickets). */
+export async function renderMix({ layers: levels, seconds = 20, bus = 1, gains = {}, sampleRate = 44100 }) {
+  const ctx = new OfflineAudioContext(2, Math.ceil(seconds * sampleRate), sampleRate), buffers = noiseBuffers(ctx);
+  const limiter = ctx.createDynamicsCompressor(); limiter.threshold.value = -10; limiter.ratio.value = 4; limiter.knee.value = 6;
+  const village = ctx.createGain(); village.gain.value = bus; chain(village, limiter, ctx.destination);
+  for (const [name, level] of Object.entries(levels)) {
+    const gain = gains[name] ?? GAINS[name] ?? 0; if (!(level > .01) || !(gain > 0)) continue;
+    const layer = buildLayer(name, ctx, village, buffers); layer.gain.gain.value = level * gain; layer.tick?.(level, 0, seconds);
+  }
+  return ctx.startRendering();
 }
 /** Renders a layer offline for the QA's loudness measurement (level 0~1, the layer's reference gain applied). */
 export async function renderLayer(name, { seconds = 8, level = 1, sampleRate = 44100 } = {}) {

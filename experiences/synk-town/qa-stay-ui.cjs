@@ -7,7 +7,7 @@
 // browser that cannot store starting both off, a dropped connection leaving the player seated, the first step after
 // standing up not pulled back, and the battery measures (rAF wake-ups, frames drawn, render time, requests, audio
 // nodes) standing still versus seated. Phone figures are an emulation (DPR 3, 4× CPU) — the real phone is W11's.
-//   node experiences/synk-town/qa-stay-ui.cjs [--out <dir>] [--only flows,switches,mic,storage,offline,step,battery,captures,overview]
+//   node experiences/synk-town/qa-stay-ui.cjs [--out <dir>] [--only flows,switches,mic,storage,offline,step,battery,captures,overview,samples]
 const fs = require('node:fs'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -283,12 +283,50 @@ async function overview(browser) {
   }
 }
 
+/** Listening samples for Yuho's ear check (village design §4-4 — the crickets wait for it): each a 20-second mix the
+ * screen's own engine renders offline from that hour's levels, saved as MP3 next to the captures. */
+async function samples(browser) {
+  const { server, base } = await fixture(kst('2026-10-25', '12:00')), page = await browser.newPage(), dir = path.join(output, 'samples');
+  fs.mkdirSync(dir, { recursive: true });
+  const plan = [
+    ['01-가을낮-길가벤치', '2026-10-25', '10:30', { x: -5, z: 3.06, sheltered: false }, 1, {}],
+    ['02-가을저녁-길가벤치', '2026-10-25', '18:40', { x: -5, z: 3.06, sheltered: false }, 1, {}],
+    ['03-가을깊은밤-길가벤치(지금-귀뚜라미끔)', '2026-10-25', '23:45', { x: -5, z: 3.06, sheltered: false }, 1, {}],
+    ['04-가을깊은밤-귀뚜라미를켠다면(귀검수)', '2026-10-25', '23:45', { x: -5, z: 3.06, sheltered: false }, 1, { crickets: .22 }],
+    ['05-비오는날-창가벤치', '2026-10-29', '14:00', { x: -5.18, z: -.7, sheltered: true }, 1, {}],
+    ['06-비오는날-길가벤치', '2026-10-29', '14:00', { x: -5, z: 3.06, sheltered: false }, 1, {}],
+    ['07-6월밤-연못곁', '2026-06-20', '22:00', { x: 5, z: -3, sheltered: false }, 1, {}],
+    ['08-걸을때-찻집앞-낮', '2026-10-25', '12:30', { x: 0, z: 2.5, sheltered: false }, .4, {}],
+  ];
+  try {
+    await page.goto(`${base}/day-style.css`);
+    for (const [name, date, time, listener, bus, gains] of plan) {
+      const wav = await page.evaluate(async ({ ms, listener, bus, gains }) => {
+        const { renderMix } = await import('/day-sound.mjs'), { soundscapeAt } = await import('/town/soundscape.mjs'), { lightAt } = await import('/town/light.mjs');
+        const { layers } = soundscapeAt({ light: lightAt({ villageSeed: 'synk-town', tz: 540, ms }), ms, listener, awake: { 'cafe-owner': true } });
+        const audio = await renderMix({ layers, seconds: 20, bus, gains }), frames = audio.length, data = new DataView(new ArrayBuffer(44 + frames * 4));
+        const text = (at, s) => [...s].forEach((c, i) => data.setUint8(at + i, c.charCodeAt(0)));
+        text(0, 'RIFF'); data.setUint32(4, 36 + frames * 4, true); text(8, 'WAVEfmt '); data.setUint32(16, 16, true); data.setUint16(20, 1, true); data.setUint16(22, 2, true);
+        data.setUint32(24, audio.sampleRate, true); data.setUint32(28, audio.sampleRate * 4, true); data.setUint16(32, 4, true); data.setUint16(34, 16, true); text(36, 'data'); data.setUint32(40, frames * 4, true);
+        const l = audio.getChannelData(0), r = audio.getChannelData(1);
+        for (let i = 0; i < frames; i++) { data.setInt16(44 + i * 4, Math.max(-1, Math.min(1, l[i])) * 32767, true); data.setInt16(46 + i * 4, Math.max(-1, Math.min(1, r[i])) * 32767, true); }
+        let s = ''; const bytes = new Uint8Array(data.buffer); for (let i = 0; i < bytes.length; i += 32768) s += String.fromCharCode(...bytes.subarray(i, i + 32768));
+        return { b64: btoa(s), layers };
+      }, { ms: kst(date, time), listener, bus, gains });
+      const file = path.join(dir, `${name}.wav`); fs.writeFileSync(file, Buffer.from(wav.b64, 'base64'));
+      const mp3 = file.replace(/\.wav$/, '.mp3'), made = require('node:child_process').spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', file, '-b:a', '160k', mp3]);
+      if (made.status === 0) fs.rmSync(file);
+      check('samples', fs.existsSync(made.status === 0 ? mp3 : file), name, Object.fromEntries(Object.entries(wav.layers).filter(([, v]) => v > .01).map(([k, v]) => [k, +v.toFixed(2)])));
+    }
+  } finally { await page.close(); await new Promise(resolve => server.close(resolve)); }
+}
+
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const gpu = await (async () => { const page = await browser.newPage(); await page.setContent('<canvas></canvas>'); const r = await page.evaluate(() => { const gl = document.querySelector('canvas').getContext('webgl2'), e = gl?.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : null; }); await page.close(); return r; })();
   report.gpu = gpu;
-  const scenes = { flows, captures, switches, mic, storage, offline, step, battery, overview };
+  const scenes = { flows, captures, switches, mic, storage, offline, step, battery, overview, samples };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;
