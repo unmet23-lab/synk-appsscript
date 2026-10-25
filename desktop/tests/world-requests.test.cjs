@@ -57,3 +57,9 @@ test('native homework keys bind a single class, week and kind without arbitrary 
  assert.deepEqual(send({route:'homework/key',classId:uuid,body}),{path:'synk-classroom/api/world/homework/key?classId='+uuid,method:'POST',body});
  for(const params of [{route:'homework/key',body},{route:'homework/key',classId:uuid,body:{...body,week:0}},{route:'homework/key',classId:uuid,body:{...body,week:9}},{route:'homework/key',classId:uuid,body:{...body,kind:'all'}},{route:'homework/key',classId:uuid,body:{...body,accountId:'other'}},{route:'homework/key',classId:uuid,body:{...body,classId:'22222222-2222-4222-8222-222222222222'}}])assert.throws(()=>send(params),{code:'INVALID_REQUEST'});
 });
+test('native WORLD boundary carries what the town screen showed and what it can draw (W5b caps) — short words only',()=>{
+  const body={surfaceId:'world-main',fence:3,seen:['line:cafe-owner.card.C1-trigger.1','card:C1:self'],caps:['cards']};
+  assert.deepEqual(send({route:'town/boundary',body}),{path:'synk-town/boundary',method:'POST',body});
+  for(const caps of ['cards',[1],Array(9).fill('cards'),['x'.repeat(33)]])assert.throws(()=>send({route:'town/boundary',body:{surfaceId:'world-main',fence:3,caps}}),{code:'INVALID_REQUEST'},JSON.stringify(caps));
+  assert.throws(()=>send({route:'town/boundary',body:{surfaceId:'world-main',fence:3,other:true}}),{code:'INVALID_REQUEST'});
+});

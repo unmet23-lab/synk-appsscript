@@ -193,3 +193,22 @@ test('검수 반영(GA1·GA2·GA4) — 잊은 카드 참조는 접어도 남고,
   const work = { npc: 'cafe-owner', startMs: t, arriveMs: t, endMs: t + 30 * MIN, archetype: 'prep-cups', spot: 'cafe.prep', cause: 'routine', pieceStarts: [t, t + 10 * MIN, t + 20 * MIN] };
   assert.equal(villageAt(input('morning'), [work], [], t + 15 * MIN).wear['cafe-tray'], 2, '지난 두 조각만');
 });
+
+test('W5b — 카드 제안의 전달 확인은 그 주인 곁에서(걷기 중 공방 앞): 자리 초대(옛 C1)만 찻집 가까이를 요구한다', async () => {
+  const path = require('node:path'), { pathToFileURL } = require('node:url'), { ROOT } = require('./lib/town.js');
+  const load = file => import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', file)).href);
+  const [{ createStore }, core, { WALK_SPAWNS }] = await Promise.all([load('server.mjs'), load('core.mjs'), load('walk.mjs')]);
+  const now = Date.UTC(2026, 9, 23, 3, 0, 0), store = createStore({ now: () => now, tz: TZ, villageSeed: 'acct-ack', sleeps: true, lifeEnabled: true });
+  const { fence } = store.pulse({ surfaceId: 'day-a', surface: 'day', foreground: true, safe: true }).presence;
+  const state = store.read().state;
+  Object.assign(state.day, { location: 'workshop', walk: { enabled: true, x: WALK_SPAWNS.workshop.x, z: WALK_SPAWNS.workshop.z, headingX: 0, headingZ: 1 } });
+  state.life.authority = { surfaceId: 'day-a', fence };
+  const offer = (id, extra) => ({ id, status: 'issued', delivered: false, issuedU: state.life.uMs, issuedSurfaceId: 'day-a', issuedFence: fence, ...extra });
+  state.life.contacts.push(offer('card:contact:9', { contactKey: 'card:W1:k1', card: 'W1', key: 'k1' }));
+  state.life.sequence = Math.max(state.life.sequence || 0, 9);
+  const host = { enabled: true, surfaceId: 'day-a', fence, nowMs: now, surface: 'day', canRun: true, canContact: false, elapsedMs: 0, ownerSurfaceId: 'day-a' };
+  const ack = contactId => core.reduceCommand(state, { id: `ack-${contactId}`, type: 'LIFE_ACK', payload: { contactId, visible: true, surfaceId: 'day-a', fence }, expectedRevision: state.revision }, host);
+  const done = ack('card:contact:9').state.life.contacts.find(c => c.id === 'card:contact:9');
+  assert.deepEqual([done.status, done.delivered], ['delivered', true], '공방 앞에서 받은 카드 제안');
+  assert.throws(() => ack('C1:contact:404'), { code: 'day-walk-too-far' }, '카드가 아닌 것은 여전히 찻집 가까이');
+});

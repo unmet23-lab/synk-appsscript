@@ -75,11 +75,14 @@ export function learnPrivate(village, line, params) {
   for (const npc of residentActors(line)) learn(k, npc, entryOf(line, 'private'), params);
 }
 
-/** What a resident would tell the player when greeted (§9-4): the newest public thing it knows and has not told yet,
- * that it did not do itself — or null. Forgetting never touches public things; private ones are not hearsay. */
+/** Whether a known thing can be told as hearsay: the greeting's words are its card's news line (§9-4), so only a card
+ * that makes news, by a path that does (W5b — the others still spread among the residents, they are just not told). */
+export const tellable = e => CARD_BY_ID[e.card]?.news != null && (!CARD_BY_ID[e.card].newsPaths || CARD_BY_ID[e.card].newsPaths.includes(e.path));
+/** What a resident would tell the player when greeted (§9-4): the newest public thing it knows, can tell and has not
+ * told yet, that it did not do itself — or null. Forgetting never touches public things; private ones are not hearsay. */
 export function hearsayFor(village, npc) {
   const told = new Set(village.told?.[npc] || []);
-  return [...(village.knowledge?.known?.[npc] || [])].reverse().find(e => e.how !== 'private' && !told.has(e.ref) && !e.actors.includes(npc)) ?? null;
+  return [...(village.knowledge?.known?.[npc] || [])].reverse().find(e => e.how !== 'private' && tellable(e) && !told.has(e.ref) && !e.actors.includes(npc)) ?? null;
 }
 /** A resident told the player one thing (the greeting showed it): never again by that resident. */
 export function tell(village, npc, ref, params) {

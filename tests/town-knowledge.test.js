@@ -75,6 +75,19 @@ test('인사 — 그 주민이 아는 것 가운데 아직 말하지 않은 가�
   assert.equal(k.validKnowledge({ ...v, knowledge: { ...v.knowledge, known: { researcher: [{ ref: 'x', how: 'gossip' }] } } }), false);
 });
 
+test('인사 — 말로 전할 수 있는 것만(W5b): 소식 줄이 없는 카드나 소식이 되지 않는 길은 주민끼리만 알고 플레이어에게는 건너뛴다', async () => {
+  const k = await townModule('knowledge'), v = {};
+  // C1 혼자(소식 ○) → C2 혼자(소식 없음) → C4 혼자(소식은 둘이 길만) 순으로 연구원이 봤다 — 인사는 가장 최근의 말할 수 있는 것.
+  const seen = [line('C1', { atMs: DAY0 + 7 * HOUR }), line('C2', { atMs: DAY0 + 8 * HOUR }), line('C4', { atMs: DAY0 + 9 * HOUR })];
+  k.learnBand(v, { lifeDay: LIFE, resolved: seen, scenes: [] }, at({ researcher: 'cafe' }));
+  assert.deepEqual(v.knowledge.known.researcher.map(e => e.card), ['C1', 'C2', 'C4'], '셋 다 안다');
+  assert.equal(k.hearsayFor(v, 'researcher').card, 'C1');
+  assert.deepEqual(['C1', 'C2', 'C3', 'W2', 'R4'].map(card => k.tellable({ card, path: 'self' })), [true, false, true, false, true]);
+  assert.deepEqual(['self', 'pair'].map(path => k.tellable({ card: 'C4', path })), [false, true]);
+  k.tell(v, 'researcher', `${LIFE}.day.C1`);
+  assert.equal(k.hearsayFor(v, 'researcher'), null, '말할 것이 더 없다 — 남은 둘은 말로 못 전한다');
+});
+
 test('결산 결합 — 마을을 여러 번 나눠 닫아도 한 번에 닫은 것과 지식·소식·일어난 일·카드가 같다', async () => {
   const village = await townModule('village');
   const base = { seed: 'knowledge-split', offsetMin: TZ, revision: 3 }, end = DAY0 + 4 * 24 * HOUR;

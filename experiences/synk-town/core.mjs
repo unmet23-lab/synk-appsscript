@@ -1060,7 +1060,9 @@ export function reduceCommand(previous, command, host = {}) {
       }
       ensure(command.type.startsWith('LIFE_') && state.life && host.enabled === true,
         'unknown-command', '지금 할 수 있는 일을 골라요.');
-      if (state.day?.walk?.enabled && !['LIFE_CLOSE', 'LIFE_PREFERENCE'].includes(command.type))
+      // A card's offer is answered where its owner stands (W5b): its delivery receipt is not the cafe's own.
+      const cardReceipt = command.type === 'LIFE_ACK' && typeof p.contactId === 'string' && state.life.contacts.some(c => c.id === p.contactId && c.card !== undefined);
+      if (state.day?.walk?.enabled && !['LIFE_CLOSE', 'LIFE_PREFERENCE'].includes(command.type) && !cardReceipt)
         ensure(atDayPlace(state, 'cafe'), 'day-walk-too-far', '찻집 가까이 걸어가서 이웃과 이야기해 주세요.', 409);
       if (['LIFE_OPEN', 'LIFE_RESUME'].includes(command.type)) state.resting = false;
       runLife(state, () => commandLife(state.life, command.type, p, livingContext(state, host)));

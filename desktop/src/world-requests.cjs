@@ -61,7 +61,9 @@ function validateBody(route,body){
     case 'town/command':keys(body,['id','type','payload','expectedRevision']);if(!id(body.id)||!id(body.type)||!record(body.payload)||!revision(body.expectedRevision))invalid();break;
     case 'town/presence':case 'town/pulse':keys(body,['surfaceId','surface','foreground','safe']);if(!id(body.surfaceId)||!id(body.surface)||typeof body.foreground!=='boolean'||typeof body.safe!=='boolean')invalid();break;
     // A safe point (at most every 20 seconds) may carry what the screen showed: short ids only.
-    case 'town/boundary':keys(body,['surfaceId','fence','seen'],['surfaceId','fence']);if(!id(body.surfaceId)||!revision(body.fence)||body.seen!==undefined&&(!Array.isArray(body.seen)||body.seen.length>64||!body.seen.every(key=>typeof key==='string'&&key.length<=120)))invalid();break;
+    // W5b: what the screen can draw (caps, short words — the town keeps only those it knows).
+    case 'town/boundary':keys(body,['surfaceId','fence','seen','caps'],['surfaceId','fence']);if(!id(body.surfaceId)||!revision(body.fence)||body.seen!==undefined&&(!Array.isArray(body.seen)||body.seen.length>64||!body.seen.every(key=>typeof key==='string'&&key.length<=120))
+      ||body.caps!==undefined&&(!Array.isArray(body.caps)||body.caps.length>8||!body.caps.every(cap=>typeof cap==='string'&&cap.length<=32)))invalid();break;
     case 'town/sharing':keys(body,['enabled','revision']);if(typeof body.enabled!=='boolean'||!revision(body.revision))invalid();break;
     case 'homework/submit':keys(body,['classId','week','kind','requestId','expectedRevision','contentVersion','answers','retry'],['classId','week','kind','requestId','expectedRevision','contentVersion','answers']);
       if(!uuid(body.classId)||!Number.isInteger(body.week)||body.week<1||body.week>12||!['reading','writing'].includes(body.kind)||!uuid(body.requestId)||!revision(body.expectedRevision)
