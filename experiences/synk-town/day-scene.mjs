@@ -719,7 +719,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   function pointerDown(e) { if (e.button && e.pointerType === 'mouse') return; pointerStart = { id: e.pointerId, x: e.clientX, y: e.clientY }; }
   function pointerUp(e) {
     const start = pointerStart; pointerStart = null; if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > 9 || contextLost) return;
-    if (freeWalk) return;
+    // Walking, or seated (a touch then only wakes the card): no tap-to-go.
+    if (freeWalk || stay) return;
     const rect = canvas.getBoundingClientRect(); pointer.set((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1); raycaster.setFromCamera(pointer, camera);
     const hit = raycaster.intersectObjects(hitTargets, false)[0]; if (hit) return onDestination(hit.object.userData.destination);
     const p = new THREE.Vector3(); if (!raycaster.ray.intersectPlane(floors, p)) return;

@@ -18,6 +18,8 @@ const sound = createTownSound({ surfaceId });
 let stay = null, stayPoint = null, villageWalking = false, appTimer = 0, lightPaintedAt = 0, seatedRetry = 0, walkWarm = true;
 const unlockSound = () => sound.unlock();
 addEventListener('pointerdown', unlockSound, { capture: true, passive: true }); addEventListener('keydown', unlockSound, true);
+// A touch's pointerdown is no user activation: phones (iPhones above all) let the sound start only in touchend or click.
+for (const type of ['touchend', 'click']) addEventListener(type, unlockSound, { capture: true, passive: true });
 const names = Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].labels.map]));
 // 우리 동네 HUD(2026-10-14 3차): 가장 작은 지도 한 장 + 할 일 한 줄. 표시만 하고 이동·저장·권한 논리는 건드리지 않는다.
 const MAP_BOUNDS = { minX: -9, maxX: 9, minZ: -6.5, maxZ: 6 };
@@ -631,9 +633,10 @@ function paintLight(force = false) {
 function frame(now) {
   raf = null;
   if (stay?.active()) {
-    // Seated (W7b): the app's loop runs on a timer — at the scene's pace while a resident walks, slowly otherwise.
-    villageFrame(); stay.frame();
-    appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking ? QUIET.appHz : QUIET.idleHz));
+    // Seated (W7b): the app's loop runs on a timer — at the scene's pace while a resident walks or a gamepad is connected
+    // (its buttons are read here, and a short press must not fall between two reads), slowly otherwise.
+    villageFrame(); const padded = stay.frame();
+    appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking || padded ? QUIET.appHz : QUIET.idleHz));
     return;
   }
   walkFrame(now); observe(now); villageFrame(); stay?.frame(); raf = requestAnimationFrame(frame);
@@ -733,7 +736,7 @@ try {
   // Staying (W7b): the seats, their quiet view and the sound switches. Sitting sends the steps taken so far; standing
   // up starts the walk clock again with a zero step, so the first real step is never pulled back.
   stay = createStay({ scene: $('scene'), hud: $('walk-hud'), nearby: $('nearby-panel'), settings: $('settings-dialog'), sound, renderer: () => renderer,
-    beforeSit: async () => { walkControls?.stop(); dismissWalkPanel(); await flushWalk(true); stayPoint = walkPoint && { x: walkPoint.x, z: walkPoint.z }; },
+    beforeSit: async () => { walkControls?.stop(); dismissWalkPanel(); await flushWalk(true); stayPoint = walkPoint && { x: walkPoint.x, z: walkPoint.z }; return connected; },
     onChange: () => { soundFrame(); applyWalkView(true); },
     onStand: reason => {
       if (appTimer) { clearTimeout(appTimer); appTimer = 0; raf = requestAnimationFrame(frame); }

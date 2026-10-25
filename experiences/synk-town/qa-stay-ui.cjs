@@ -7,7 +7,7 @@
 // browser that cannot store starting both off, a dropped connection leaving the player seated, the first step after
 // standing up not pulled back, and the battery measures (rAF wake-ups, frames drawn, render time, requests, audio
 // nodes) standing still versus seated. Phone figures are an emulation (DPR 3, 4× CPU) — the real phone is W11's.
-//   node experiences/synk-town/qa-stay-ui.cjs [--out <dir>] [--only flows,switches,mic,storage,offline,step,battery,captures,overview,samples]
+//   node experiences/synk-town/qa-stay-ui.cjs [--out <dir>] [--only flows,switches,mic,storage,offline,step,gamepad,battery,captures,overview,samples]
 const fs = require('node:fs'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -260,6 +260,31 @@ async function step(browser) {
   } finally { await s.close(); }
 }
 
+/** A gamepad (a stub behind navigator.getGamepads): short presses — X sits, A wakes the faded card, B stands up — are not
+ * lost while seated with the residents still (the app's slow loop would read twice a second; W7b final review). */
+async function gamepad(browser) {
+  const scene = 'gamepad', s = await open(browser, { start: kst('2026-10-25', '12:30') });
+  try {
+    const { page } = s;
+    await page.evaluate(() => { const pad = { id: 'qa pad', index: 0, connected: true, mapping: 'standard', timestamp: 0, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })) };
+      globalThis.__qaPad = pad; Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [pad, null, null, null] }); });
+    const press = async (button, ms = 120) => { await page.evaluate(b => { globalThis.__qaPad.buttons[b].pressed = true; globalThis.__qaPad.buttons[b].value = 1; }, button); await delay(ms);
+      await page.evaluate(b => { globalThis.__qaPad.buttons[b].pressed = false; globalThis.__qaPad.buttons[b].value = 0; }, button); await delay(700); };
+    await walkTo(page, ROUTES.bench); await page.waitForFunction(() => SYNKTownDay.metrics().stay?.sitShown, null, { timeout: 10000 });
+    let stood = 0, woke = 0;
+    for (let round = 0; round < 3; round++) {
+      await press(2); let m = await metrics(page);
+      check(scene, m.stay.seated === 'street-bench-left', `X 짧게 눌러 앉는다(${round + 1})`, m.stay);
+      await delay(7000); await press(0); m = await metrics(page); if (m.stay.cardAwake) woke++;
+      await press(1); m = await metrics(page); if (!m.stay.seated) stood++;
+      await delay(800);
+    }
+    check(scene, woke === 3, 'A를 짧게 누르면 옅은 판이 늘 밝아진다', { woke });
+    check(scene, stood === 3, 'B를 짧게 누르면 늘 일어난다', { stood });
+    check(scene, s.errors.length === 0, '오류 없음', s.errors);
+  } finally { await s.close(); }
+}
+
 /** Battery measures: standing still in the walking view versus seated (dry and in the rain), and seated but hidden. */
 async function battery(browser) {
   const seconds = Number(arg('--seconds', 20)), rows = [];
@@ -345,7 +370,7 @@ async function samples(browser) {
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const gpu = await (async () => { const page = await browser.newPage(); await page.setContent('<canvas></canvas>'); const r = await page.evaluate(() => { const gl = document.querySelector('canvas').getContext('webgl2'), e = gl?.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : null; }); await page.close(); return r; })();
   report.gpu = gpu;
-  const scenes = { flows, captures, switches, mic, storage, offline, step, battery, overview, samples };
+  const scenes = { flows, captures, switches, mic, storage, offline, step, gamepad, battery, overview, samples };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;

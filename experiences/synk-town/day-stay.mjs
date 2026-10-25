@@ -91,8 +91,9 @@ export function createStay({ scene, hud, nearby, settings, sound, renderer, befo
   async function enter(next, event) {
     if (seat || disposed) return;
     sound.unlock(event);
-    await beforeSit();
-    if (seat || disposed) return;
+    // A walk that could not reach the server leaves the person standing, the error in sight (beforeSit says false).
+    const ready = await beforeSit();
+    if (seat || disposed || ready === false) return;
     seat = next; sit.hidden = true;
     document.body.classList.add('stay-mode');
     renderer()?.setStay?.(next, QUIET || {});
@@ -147,15 +148,16 @@ export function createStay({ scene, hud, nearby, settings, sound, renderer, befo
     },
     /** The sound's own state changed (a switch elsewhere, music waiting for Wi-Fi). */
     paint: paintSwitches,
-    /** Each app frame: a gamepad's X sits where a seat is near; seated, B or the stick stands up and A wakes the card. */
+    /** Each app frame: a gamepad's X sits where a seat is near; seated, B or the stick stands up and A wakes the card.
+     * Says whether a gamepad is connected — seated, the app then reads it at the scene's pace. */
     frame() {
-      const gamepad = [...(navigator.getGamepads?.() || [])].find(p => p?.connected && p.mapping === 'standard'); if (!gamepad) return;
+      const gamepad = [...(navigator.getGamepads?.() || [])].find(p => p?.connected && p.mapping === 'standard'); if (!gamepad) return false;
       const pressed = i => !!gamepad.buttons[i]?.pressed, moved = Math.hypot(gamepad.axes[0] || 0, gamepad.axes[1] || 0) > .5 || [12, 13, 14, 15].some(pressed);
       const now = { x: pressed(2), b: pressed(1), a: pressed(0) };
       if (!seat && now.x && !pad.x) { const near = canSitNow(); if (near) enter(near, null); }
       else if (seat && (now.b && !pad.b || moved)) leave('move');
       else if (seat && now.a && !pad.a) showCard();
-      pad = now;
+      pad = now; return true;
     },
     active: () => !!seat,
     seat: () => seat,
