@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "Korean idiom quiz 🌬️⭐☀️ \"hit by the wind\" = you got STOOD UP?! Can you guess all 3? #learnkorean",
+ "caption": "Can you guess these 3 Korean sky & weather idioms in 3 seconds? 🌬️⭐☀️\n\n바람맞다 — not “hit by the wind”: the person you were meeting never showed up (you got stood up)\n하늘의 별 따기 — not just “picking a star from the sky”: something super hard to get\n해가 서쪽에서 뜨다 — not “the sun rises in the west”: something that never happens… just happened\n\nSay it: 바람맞았어요 · 하늘의 별 따기예요 · 해가 서쪽에서 뜨겠어요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\n\n🎮 Play Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB · Korean idiom quiz 6 with Mongle.\n#learnkorean #koreanlanguage #studykorean #koreanidioms",
+ "pinnedComment": "Ever been 바람맞았어요 (stood up)? 🌬️ Tell us below 👇\n🎮 New to Korean? Play our listening & reading mini games → https://synk.im/try/learning-hub/",
+ "alt": [
+  "Felt mascot Mongle hosts a Korean idiom quiz. A felt teddy bear blown back by blue wind swirls, the bear on a ladder grabbing a smiling star, and a grinning sun rising over green hills next to a confused rooster show the literal readings of 바람맞다, 하늘의 별 따기 and 해가 서쪽에서 뜨다; the bear sitting alone on a park bench with flowers, the bear at the very back of a long ticket line, and the bear shocked to see his little brother washing the dishes show the real meanings."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = q6-en(100 BPM, 33.3초, 렌더_q6.mjs). 표지 cover.png = 1.3초(GUESS THE REAL MEANING! + 바람맞다 + 돌풍에 맞는 곰 + hit by the wind??). 어린이 전용 아님(점수 댓글이 필요 — 퀴즈 #1~#5와 같음). 합성 표시는 필수 아님(펠트 그림·특정인이 아닌 TTS 진행자, 퀴즈 #2와 같음). 동영상 언어 en(영어 진행), 제목·설명 언어 en. 자동 더빙 꺼짐 확인.",
+ "version": "q6-en"
+}

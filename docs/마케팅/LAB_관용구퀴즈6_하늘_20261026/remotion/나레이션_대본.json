@@ -1,0 +1,504 @@
+{
+  "_주": "at은 영상 시작 기준 초. 120 BPM이라 한 박 = 0.5초. 문제마다 0 제목 · 0.5 조각 · 1.0 오답 · 1.5 Nope · 2.0 카드 · 2.5~3.5 카운트다운(음악 멈춤) · 4.0 정답(음악 다시 터짐) · 4.5 예문 · 6.0 SAY IT · 7.73 다음 장면. 목소리는 두 판 모두 하나.",
+  "defaults": {
+    "seed": 1310,
+    "tempo": 1,
+    "lufs": -17,
+    "emotion": "normal",
+    "intensity": 1
+  },
+  "limits": [
+    {
+      "from": 0,
+      "to": 9.5
+    },
+    {
+      "from": 9.6,
+      "to": 19.1
+    },
+    {
+      "from": 19.2,
+      "to": 28.7
+    },
+    {
+      "from": 28.8,
+      "to": 33.25
+    }
+  ],
+  "versions": {
+    "q6en": {
+      "_말투": "관용구 퀴즈 #6 영어판(v5b 틀). 퀴즈쇼 진행자처럼 신나게(하나). 순서 바람 → 별 → 해.",
+      "defaults": {
+        "tempo": 1.15,
+        "emotion": "smart"
+      },
+      "lines": [
+        {
+          "id": "q1_title",
+          "at": 0.03,
+          "lang": "ko",
+          "text": "바람맞다!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q1_guess",
+          "at": 1.15,
+          "lang": "en",
+          "text": "Hit by the wind?",
+          "prev": "A fun Korean idiom quiz. The idiom literally reads wind plus get hit.",
+          "next": "Nope! That's not it.",
+          "speed": 1.3
+        },
+        {
+          "id": "q1_nope",
+          "at": 2.36,
+          "lang": "en",
+          "text": "Nope!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.05
+        },
+        {
+          "id": "q1_3",
+          "at": 3,
+          "lang": "en",
+          "text": "Three!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q1_2",
+          "at": 3.6,
+          "lang": "en",
+          "text": "Two!",
+          "emotion": "toneup",
+          "intensity": 1.2
+        },
+        {
+          "id": "q1_1",
+          "at": 4.2,
+          "lang": "en",
+          "text": "One!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q1_answer",
+          "at": 5.04,
+          "lang": "en",
+          "text": "Got stood up!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.1
+        },
+        {
+          "id": "q1_say",
+          "at": 6.36,
+          "lang": "ko",
+          "text": "바람맞았어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q2_title",
+          "at": 9.63,
+          "lang": "ko",
+          "text": "하늘의 별 따기!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.2
+        },
+        {
+          "id": "q2_guess",
+          "at": 10.92,
+          "lang": "en",
+          "text": "Picking a star?",
+          "prev": "A fun Korean idiom quiz. The idiom literally reads a star in the sky plus picking.",
+          "next": "Nope! That's not it.",
+          "speed": 1.3
+        },
+        {
+          "id": "q2_nope",
+          "at": 11.96,
+          "lang": "en",
+          "text": "Nope!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.05
+        },
+        {
+          "id": "q2_3",
+          "at": 12.6,
+          "lang": "en",
+          "text": "Three!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q2_2",
+          "at": 13.2,
+          "lang": "en",
+          "text": "Two!",
+          "emotion": "toneup",
+          "intensity": 1.2
+        },
+        {
+          "id": "q2_1",
+          "at": 13.8,
+          "lang": "en",
+          "text": "One!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q2_answer",
+          "at": 14.64,
+          "lang": "en",
+          "text": "Super hard to get!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.35
+        },
+        {
+          "id": "q2_say",
+          "at": 15.96,
+          "lang": "ko",
+          "text": "하늘의 별 따기예요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q3_title",
+          "at": 19.23,
+          "lang": "ko",
+          "text": "해가 서쪽에서 뜨다!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.4
+        },
+        {
+          "id": "q3_guess",
+          "at": 20.6,
+          "lang": "en",
+          "text": "Sun in the west?",
+          "prev": "A fun Korean idiom quiz. The idiom literally reads the sun from the west plus rises.",
+          "next": "Nope! That's not it.",
+          "speed": 1.5
+        },
+        {
+          "id": "q3_nope",
+          "at": 21.56,
+          "lang": "en",
+          "text": "Nope!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.05
+        },
+        {
+          "id": "q3_3",
+          "at": 22.2,
+          "lang": "en",
+          "text": "Three!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q3_2",
+          "at": 22.8,
+          "lang": "en",
+          "text": "Two!",
+          "emotion": "toneup",
+          "intensity": 1.2
+        },
+        {
+          "id": "q3_1",
+          "at": 23.4,
+          "lang": "en",
+          "text": "One!",
+          "emotion": "toneup",
+          "intensity": 1.2,
+          "speed": 1.05
+        },
+        {
+          "id": "q3_answer",
+          "at": 24.24,
+          "lang": "en",
+          "text": "That never happens!",
+          "emotion": "happy",
+          "intensity": 1.3,
+          "speed": 1.2
+        },
+        {
+          "id": "q3_say",
+          "at": 25.5,
+          "lang": "ko",
+          "text": "해가 서쪽에서 뜨겠어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.2
+        },
+        {
+          "id": "end_score",
+          "at": 28.86,
+          "lang": "en",
+          "text": "Okay! How many did you get?",
+          "prev": "That was the last question of a fun Korean idiom quiz.",
+          "next": "Drop your score below!",
+          "cut": 1.9
+        },
+        {
+          "id": "end_comment",
+          "at": 30.8,
+          "lang": "en",
+          "text": "Drop your score below!",
+          "prev": "How many did you get?",
+          "next": "See you next round!",
+          "cut": 1.35
+        },
+        {
+          "id": "end_fighting",
+          "at": 32.42,
+          "lang": "ko",
+          "text": "화이팅!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 1.2,
+          "cut": 0.6
+        }
+      ]
+    },
+    "q6ko": {
+      "_말투": "관용구 퀴즈 #6 한국어로만(몽골어판 등). 관용구 제목·해요체 + 한국 퀴즈쇼 말. 순서 바람 → 별 → 해(모든 판 같음).",
+      "defaults": {
+        "tempo": 1.15,
+        "emotion": "smart"
+      },
+      "lines": [
+        {
+          "id": "q1_title",
+          "at": 0.03,
+          "lang": "ko",
+          "text": "바람맞다!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q1_nope",
+          "at": 1.86,
+          "lang": "ko",
+          "text": "땡!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q1_3",
+          "at": 3,
+          "lang": "ko",
+          "text": "셋!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q1_2",
+          "at": 3.6,
+          "lang": "ko",
+          "text": "둘!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q1_1",
+          "at": 4.2,
+          "lang": "ko",
+          "text": "하나!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q1_answer",
+          "at": 4.86,
+          "lang": "ko",
+          "text": "딩동댕!",
+          "emotion": "happy",
+          "speed": 1.15
+        },
+        {
+          "id": "q1_sayit",
+          "at": 5.5,
+          "lang": "ko",
+          "text": "따라 해 보세요!",
+          "emotion": "happy",
+          "speed": 1.25
+        },
+        {
+          "id": "q1_say",
+          "at": 6.36,
+          "lang": "ko",
+          "text": "바람맞았어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q2_title",
+          "at": 9.63,
+          "lang": "ko",
+          "text": "하늘의 별 따기!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.2
+        },
+        {
+          "id": "q2_nope",
+          "at": 11.46,
+          "lang": "ko",
+          "text": "땡!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q2_3",
+          "at": 12.6,
+          "lang": "ko",
+          "text": "셋!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q2_2",
+          "at": 13.2,
+          "lang": "ko",
+          "text": "둘!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q2_1",
+          "at": 13.8,
+          "lang": "ko",
+          "text": "하나!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q2_answer",
+          "at": 14.46,
+          "lang": "ko",
+          "text": "딩동댕!",
+          "emotion": "happy",
+          "speed": 1.15
+        },
+        {
+          "id": "q2_sayit",
+          "at": 15.1,
+          "lang": "ko",
+          "text": "따라 해 보세요!",
+          "emotion": "happy",
+          "speed": 1.25
+        },
+        {
+          "id": "q2_say",
+          "at": 15.96,
+          "lang": "ko",
+          "text": "하늘의 별 따기예요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8
+        },
+        {
+          "id": "q3_title",
+          "at": 19.23,
+          "lang": "ko",
+          "text": "해가 서쪽에서 뜨다!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.4
+        },
+        {
+          "id": "q3_nope",
+          "at": 21.06,
+          "lang": "ko",
+          "text": "땡!",
+          "emotion": "happy"
+        },
+        {
+          "id": "q3_3",
+          "at": 22.2,
+          "lang": "ko",
+          "text": "셋!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q3_2",
+          "at": 22.8,
+          "lang": "ko",
+          "text": "둘!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q3_1",
+          "at": 23.4,
+          "lang": "ko",
+          "text": "하나!",
+          "emotion": "toneup"
+        },
+        {
+          "id": "q3_answer",
+          "at": 24.06,
+          "lang": "ko",
+          "text": "딩동댕!",
+          "emotion": "happy",
+          "speed": 1.15
+        },
+        {
+          "id": "q3_sayit",
+          "at": 24.7,
+          "lang": "ko",
+          "text": "따라 해 보세요!",
+          "emotion": "happy",
+          "speed": 1.25
+        },
+        {
+          "id": "q3_say",
+          "at": 25.56,
+          "lang": "ko",
+          "text": "해가 서쪽에서 뜨겠어요!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 0.8,
+          "speed": 1.2
+        },
+        {
+          "id": "end_score",
+          "at": 28.86,
+          "lang": "ko",
+          "text": "몇 개 맞혔어요?",
+          "emotion": "happy"
+        },
+        {
+          "id": "end_comment",
+          "at": 30.2,
+          "lang": "ko",
+          "text": "댓글로 알려 주세요!",
+          "emotion": "happy"
+        },
+        {
+          "id": "end_fighting",
+          "at": 32.42,
+          "lang": "ko",
+          "text": "화이팅!",
+          "tempo": 1.05,
+          "emotion": "happy",
+          "intensity": 1.2
+        }
+      ]
+    }
+  }
+}

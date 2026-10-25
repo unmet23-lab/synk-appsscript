@@ -1,0 +1,27 @@
+0.0s  바람맞다! (Korean)
+1.1s  Hit by the wind?
+2.4s  Nope!
+3.0s  Three!
+3.6s  Two!
+4.2s  One!
+5.0s  Got stood up!
+6.4s  바람맞았어요! (Korean)
+9.6s  하늘의 별 따기! (Korean)
+10.9s  Picking a star?
+12.0s  Nope!
+12.6s  Three!
+13.2s  Two!
+13.8s  One!
+14.6s  Super hard to get!
+16.0s  하늘의 별 따기예요! (Korean)
+19.2s  해가 서쪽에서 뜨다! (Korean)
+20.6s  Sun in the west?
+21.6s  Nope!
+22.2s  Three!
+22.8s  Two!
+23.4s  One!
+24.2s  That never happens!
+25.5s  해가 서쪽에서 뜨겠어요! (Korean)
+28.9s  Okay! How many did you get?
+30.8s  Drop your score below!
+32.4s  화이팅! (Korean)

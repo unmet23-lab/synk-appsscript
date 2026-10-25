@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool props for a kids' Korean idiom quiz about SKY & WEATHER idioms, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting, the caramel-brown teddy bear character). Do not copy its objects or layout.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on signs, clocks, tickets, booths or screens. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal. Soap bubbles and clouds are light blue, never white.
+
+Top row = the funny WRONG literal readings:
+1. "HIT BY THE WIND" — a caramel-brown felt teddy bear (same character as the reference) standing and leaning backwards, eyes squeezed shut, cheeks puffed, its red felt scarf and both ears blown straight back; three thick light-blue felt wind swirls (spiral gusts) smack into its face from the left side, and a few small green felt leaves fly past. Funny, slapstick.
+2. "PICKING A STAR FROM THE SKY" — the same bear balancing on tiptoes on top of a tall wooden felt step-ladder, stretching one paw up to grab a big chubby golden-yellow felt star with a sleepy smiling face; a small dark-navy felt cloud-shaped patch of night sky sits behind the star with a few tiny yellow felt dots.
+3. "THE SUN RISING IN THE WEST" — a big round orange-and-yellow felt sun with a cheeky grin peeking up over two rounded green felt hills; on the hill stands a small wooden felt signpost whose single arrow points toward the sun (plain arrow, no letters), and a little red-and-orange felt rooster stands next to it scratching its head, very confused.
+
+Bottom row = the TRUE meanings:
+4. GOT STOOD UP — the same caramel bear sitting alone on one end of a small green felt park bench, holding a bouquet of red felt flowers on its lap, droopy sad eyes and one light-blue felt teardrop; next to the bench a tall dark-green felt street clock (plain yellow face, two hands, no numbers). The rest of the bench is empty.
+5. SUPER HARD TO GET — a long winding queue of seven tiny felt animals in different colors (blue, pink, green, purple, orange) snaking toward a small red felt ticket booth that holds one golden felt ticket in its window; the caramel bear stands at the very back of the line, exhausted, sweating light-blue felt drops, looking up at how far the booth is.
+6. SOMETHING THAT NEVER HAPPENS — a smaller dark-brown felt bear cub (the little brother) wearing a yellow felt apron and pink rubber gloves happily washing a stack of colorful felt plates at a mint-green felt sink with light-blue felt bubbles, while the caramel bear stands beside it with jaw dropped, eyes huge, both paws on its cheeks in total shock.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.
