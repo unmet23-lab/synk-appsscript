@@ -13,6 +13,9 @@
  *   구독 로그인이 없는 전용 설정 폴더(CLAUDE_CONFIG_DIR)를 쓴다 — 도구는 그대로, 인증은 키뿐(실측: 「Credit balance is too low」).
  *   그 폴더에는 유호님 설정의 autoMode·permissions와 텔레그램 승인 훅(tools/텔레그램승인.js)만 옮기고 다른 훅·플러그인은 옮기지 않는다.
  * 크레딧 키가 없으면 키를 지운 채 구독 로그인으로 돈다(작업이 허용할 때만) — 어느 쪽으로 돌았는지 기록에 남긴다.
+ * 구독이 사용 한도(「You've hit your weekly limit · resets …」)로 끝나면 풀리는 시각을 output/크레딧작업/구독한도.json에
+ * 적고, 그때까지 어느 작업도 구독으로 띄우지 않는다(크레딧 키는 그대로 쓴다). 알림은 한도마다 한 번 — 10-24~25에 15분마다
+ * 같은 실패 알림이 71번 갔다.
  * 모델을 고르거나 바꾸지 않고 결과를 다시 검수하는 반복도 없다 — 공식 CLI를 한 번 띄울 뿐이다.
  * 키 목록·상태·사용 기록은 클로드키와 같은 곳(저장소 밖 ~/SYNK_보안)이고, 실행 기록은 output/크레딧작업/<이름>/ 이다
  * (할 일 없이 끝난 확인은 마지막확인.json 하나만 덮어쓴다). 작업 스케줄러 등록은 tools/크레딧작업/install-task.ps1.
@@ -90,6 +93,63 @@ function 결과읽기(stdout) {
 }
 
 const 가리기 = (글) => String(글 ?? '').replace(/sk-ant-[A-Za-z0-9_-]+/g, '[REDACTED]');
+
+// 구독 사용 한도 문구 — 「You've hit your weekly limit · resets Oct 26, 12pm (Asia/Seoul)」·「… session limit · resets 8:20pm」,
+// 옛 꼴 「Claude AI usage limit reached|<유닉스 초>」. 풀리기 전에는 다시 띄워도 1초 만에 같은 문구로 끝난다.
+const 한도문구 = /hit your (?:[\w-]+ )?limit|usage limit reached/i;
+const 달이름 = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const 기본쉼ms = 60 * 60 * 1000; // 풀리는 시각을 못 읽으면 한 시간 뒤 다시 본다
+const 한도알림간격ms = 12 * 60 * 60 * 1000; // 풀린 줄 알고 다시 띄웠는데 또 한도면, 앞 알림 뒤 12시간이 지났을 때만 다시 알린다
+
+function 쓸시간대(이름) {
+  if (!이름) return null;
+  try { new Intl.DateTimeFormat('en-US', { timeZone: 이름 }); return 이름; } catch { return null; }
+}
+
+/** 그 시간대(없으면 이 PC 시간대)의 벽시계 연·월·일·시·분. */
+function 벽시계(때, 시간대) {
+  if (!시간대) return { 연: 때.getFullYear(), 월: 때.getMonth(), 일: 때.getDate(), 시: 때.getHours(), 분: 때.getMinutes() };
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 시간대, hourCycle: 'h23', year: 'numeric', month: 'numeric',
+    day: 'numeric', hour: 'numeric', minute: 'numeric' }).formatToParts(때).map((x) => [x.type, Number(x.value)]));
+  return { 연: p.year, 월: p.month - 1, 일: p.day, 시: p.hour, 분: p.minute };
+}
+
+/** 그 시간대 벽시계 시각 → Date. 시간대 차이를 한 번 재서 뺀다(서머타임이 바뀌는 한 시간은 따지지 않는다). */
+function 벽시계시각(연, 월, 일, 시, 분, 시간대) {
+  if (!시간대) return new Date(연, 월, 일, 시, 분);
+  const 겉 = Date.UTC(연, 월, 일, 시, 분);
+  const 잰 = 벽시계(new Date(겉), 시간대);
+  return new Date(겉 - (Date.UTC(잰.연, 잰.월, 잰.일, 잰.시, 잰.분) - 겉));
+}
+
+/** 오류 글이 구독 사용 한도면 { 풀림: Date|null }, 아니면 null. 날짜 없는 「resets 12pm」은 다가오는 그 시각이다. */
+function 한도읽기(글, 지금 = new Date()) {
+  const s = String(글 ?? '');
+  if (!한도문구.test(s)) return null;
+  const 옛 = s.match(/usage limit reached\|(\d{10})\b/i);
+  if (옛) return { 풀림: new Date(Number(옛[1]) * 1000) };
+  const m = s.match(/resets\s+(?:([a-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+)?(\d{1,2})(?::(\d{2}))?\s*([ap]m)\b(?:\s*\(([^)]+)\))?/i);
+  if (!m) return { 풀림: null };
+  const 시간대 = 쓸시간대(m[6]);
+  const 시 = (Number(m[3]) % 12) + (m[5].toLowerCase() === 'pm' ? 12 : 0);
+  const 분 = Number(m[4] || 0);
+  const 오늘 = 벽시계(지금, 시간대);
+  if (m[1]) {
+    const 월 = 달이름.indexOf(m[1].toLowerCase());
+    if (월 < 0) return { 풀림: null };
+    const 때 = 벽시계시각(오늘.연, 월, Number(m[2]), 시, 분, 시간대);
+    // 12월 끝에 받은 「resets Jan 2」는 다음 해다
+    return { 풀림: +때 < +지금 - 180 * 864e5 ? 벽시계시각(오늘.연 + 1, 월, Number(m[2]), 시, 분, 시간대) : 때 };
+  }
+  const 때 = 벽시계시각(오늘.연, 오늘.월, 오늘.일, 시, 분, 시간대);
+  return { 풀림: +때 > +지금 ? 때 : 벽시계시각(오늘.연, 오늘.월, 오늘.일 + 1, 시, 분, 시간대) };
+}
+
+const 시각글 = (때) => `${때.getMonth() + 1}월 ${때.getDate()}일 ${String(때.getHours()).padStart(2, '0')}:${String(때.getMinutes()).padStart(2, '0')}`;
+
+function JSON읽기(파일) {
+  try { return JSON.parse(fs.readFileSync(파일, 'utf8')); } catch { return null; }
+}
 
 /** claude 를 한 번 띄운다. 입력이 'inherit'면 이 프로세스의 표준입력을 그대로 넘긴다. 통과면 출력도 그대로 내보낸다. */
 function 띄우기({ 실행파일 = claude실행파일(), 앞인자 = [], 인자, 입력 = '', env, cwd = 루트, 시간제한 = 0, 통과 = false }) {
@@ -172,19 +232,29 @@ async function 작업돌리기(이름, 옵션 = {}) {
   const 알림 = 옵션.알림 || 텔레그램보내기;
   const 풀기 = 잠그기(path.join(방, '잠금'), 작업.잠금시간 || 3 * 60 * 60 * 1000);
   const ctx = { 루트, 방, 실행: 옵션.실행 || 명령실행, 알림, 지금: 옵션.지금 };
+  // 구독 사용 한도는 작업끼리 같이 쓰므로 작업 방들 옆에 하나만 둔다.
+  const 한도파일 = path.join(path.dirname(방), '구독한도.json');
+  const 지금은 = () => (옵션.지금 ? new Date(옵션.지금) : new Date());
+  // 작업 스케줄러가 15분마다 부르는 확인이 AI 없이 끝날 때마다 파일을 쌓지 않는다 — 마지막 확인 하나만 덮어쓴다.
+  const 마지막확인 = (상태, 이유) => fs.writeFileSync(path.join(방, '마지막확인.json'),
+    JSON.stringify({ 이름, 상태, 이유, 시각: new Date().toISOString() }, null, 2) + '\n');
   try {
     const 자료 = await 작업.사전확인(ctx);
     if (!자료 || 자료.할일 === false) {
-      // 작업 스케줄러가 15분마다 부르는 확인이 할 일 없이 끝날 때마다 파일을 쌓지 않는다 — 마지막 확인 하나만 덮어쓴다.
-      fs.writeFileSync(path.join(방, '마지막확인.json'),
-        JSON.stringify({ 이름, 상태: '할일없음', 이유: 자료?.이유 ?? null, 시각: new Date().toISOString() }, null, 2) + '\n');
+      마지막확인('할일없음', 자료?.이유 ?? null);
       return { 상태: '할일없음', 이유: 자료?.이유 ?? null };
     }
+    const 쉼 = JSON읽기(한도파일);
+    const 쉬는중 = Date.parse(쉼?.풀림) > +지금은();
     const 돈 = await 크레딧으로띄우기({
       이름, 입력: 작업.지시문(자료, ctx), cwd: 작업.작업폴더 || 루트, 시간제한: 작업.시간제한,
-      구독대체: !!작업.구독대체, 인자만들기: (o) => 작업.인자(o), 실행파일: 옵션.실행파일, 앞인자: 옵션.앞인자, fetch: 옵션.fetch, 설정폴더: 옵션.설정폴더,
+      구독대체: !!작업.구독대체 && !쉬는중, 인자만들기: (o) => 작업.인자(o), 실행파일: 옵션.실행파일, 앞인자: 옵션.앞인자, fetch: 옵션.fetch, 설정폴더: 옵션.설정폴더,
       지금: 옵션.지금,
     });
+    if (돈.경로 === '없음' && 쉬는중 && 작업.구독대체) {
+      마지막확인('한도쉼', `구독 사용 한도 — ${시각글(new Date(쉼.풀림))}에 풀림`);
+      return { 상태: '한도쉼', 풀림: 쉼.풀림 };
+    }
     if (돈.경로 === '없음') {
       실행기록(방, { 이름, 상태: '키없음', 건너뛴키: 돈.건너뛴키 });
       알림(`[크레딧 실행] ${이름}: 쓸 수 있는 크레딧 키가 없어 돌지 않았어요. node tools/lib/클로드키.js --상태 로 확인해 주세요.`);
@@ -193,6 +263,19 @@ async function 작업돌리기(이름, 옵션 = {}) {
     클로드.기록남기기({ 키이름: 돈.키이름 || '구독', 용도: 이름, 경로: 돈.경로, model: 작업.모델 || null,
       추정USD: 돈.경로 === '크레딧' ? 돈.결과.비용 : null, 오류: 돈.결과.오류 }, { ...키경로(), 지금: 옵션.지금 });
     const 기록파일 = 실행기록(방, { 이름, 경로: 돈.경로, 키이름: 돈.키이름, 비용: 돈.결과.비용, 오류: 돈.결과.오류, 시도: 돈.시도, 글: 돈.결과.글 });
+    const 걸린한도 = 돈.경로 === '구독' && 돈.결과.오류 ? 한도읽기(돈.결과.글, 지금은()) : null;
+    if (걸린한도) {
+      const 때 = 지금은();
+      const 풀림 = 걸린한도.풀림 && +걸린한도.풀림 > +때 ? 걸린한도.풀림 : new Date(+때 + 기본쉼ms);
+      const 알릴까 = !(Date.parse(쉼?.알림) > +때 - 한도알림간격ms);
+      fs.writeFileSync(한도파일, JSON.stringify({ 풀림: 풀림.toISOString(), 글: 가리기(돈.결과.글), 작업: 이름,
+        알림: 알릴까 ? 때.toISOString() : 쉼.알림 }, null, 2) + '\n');
+      if (알릴까) {
+        알림(`[크레딧 실행] ${이름}: 이 PC Claude CLI 구독이 사용 한도에 걸려 ${시각글(풀림)}까지 쉬어요. 풀린 뒤 다음 확인에서 저절로 다시 돌고, 그동안 이 알림은 다시 보내지 않아요.\n원문: ${가리기(돈.결과.글).slice(0, 200)}`);
+      }
+      return { 상태: '한도쉼', 경로: 돈.경로, 풀림: 풀림.toISOString(), 기록파일 };
+    }
+    if (돈.경로 === '구독') fs.rmSync(한도파일, { force: true }); // 구독이 다시 돈다 — 다음 한도는 처음처럼 알린다
     if (!돈.결과.읽음 || 돈.결과.오류) {
       알림(`[크레딧 실행] ${이름} 실패(${돈.경로}) — ${가리기(돈.결과.글 || 돈.시도.at(-1)?.stderr || '결과 없음').slice(0, 300)}\n기록: ${path.relative(루트, 기록파일)}`);
       return { 상태: '실패', 경로: 돈.경로, 기록파일 };
@@ -222,7 +305,7 @@ async function 중계(인자들, 옵션 = {}) {
   return r.code;
 }
 
-module.exports = { 환경만들기, 설정폴더준비, 결과읽기, 띄우기, 잠그기, 크레딧으로띄우기, 작업돌리기, 중계, 텔레그램보내기, 명령실행 };
+module.exports = { 환경만들기, 설정폴더준비, 결과읽기, 한도읽기, 띄우기, 잠그기, 크레딧으로띄우기, 작업돌리기, 중계, 텔레그램보내기, 명령실행 };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);

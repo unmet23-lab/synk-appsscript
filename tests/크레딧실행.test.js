@@ -12,6 +12,7 @@ const 실행기 = require('../tools/크레딧실행.js');
 const 가짜claude = `const fs=require('fs');let input='';process.stdin.on('data',d=>input+=d).on('end',()=>{
 const key=process.env.ANTHROPIC_API_KEY||'';const args=process.argv.slice(2);
 if(process.env.FAKE_MARK)fs.appendFileSync(process.env.FAKE_MARK,JSON.stringify({key:key.slice(-4),cfg:!!process.env.CLAUDE_CONFIG_DIR,args,input:input.slice(0,40),unattended:process.env.SYNK_UNATTENDED||null})+'\\n');
+if(!key&&process.env.FAKE_LIMIT){console.log(JSON.stringify({type:'result',is_error:true,result:process.env.FAKE_LIMIT,total_cost_usd:0,num_turns:1}));process.exit(1);}
 if(key.endsWith('aaaa')){console.log(JSON.stringify({type:'result',is_error:true,result:'Credit balance is too low',total_cost_usd:0,num_turns:1}));process.exit(1);}
 console.log(JSON.stringify({type:'result',is_error:false,result:'{"ok":true,"key":"'+key.slice(-4)+'"}',total_cost_usd:0.42,num_turns:3,session_id:'s1'}));});`;
 
@@ -137,6 +138,75 @@ test('크레딧 키가 없으면 허용한 작업만 구독으로 돈다(키 없
     assert.equal(r2.상태, '키없음');
     assert.equal(t.실행들().length, 1, '구독 대체를 허용하지 않으면 띄우지 않는다');
     assert.match(알림[0], /크레딧 키가 없어/);
+  } finally { t.지우기(); }
+});
+
+test('한도읽기: 구독 사용 한도 문구에서 풀리는 시각을 읽는다(날짜가 없으면 다가오는 그 시각)', () => {
+  const 읽기 = 실행기.한도읽기;
+  // 10-24~25 운영 사본 기록에 찍힌 문구 그대로
+  const 밤 = new Date('2026-10-24T11:46:07Z'); // 서울 10-24 20:46
+  assert.equal(읽기("You've hit your weekly limit · resets Oct 26, 12pm (Asia/Seoul)", 밤).풀림.toISOString(), '2026-10-26T03:00:00.000Z');
+  const 낮 = new Date('2026-10-25T05:46:09Z'); // 서울 10-25 14:46 — 오늘 정오는 지났다
+  assert.equal(읽기("You've hit your weekly limit · resets 12pm (Asia/Seoul)", 낮).풀림.toISOString(), '2026-10-26T03:00:00.000Z');
+  assert.equal(읽기("You've hit your session limit · resets 8:20pm (Asia/Seoul)", 낮).풀림.toISOString(), '2026-10-25T11:20:00.000Z');
+  assert.equal(읽기("You've hit your session limit · resets 12am (Asia/Seoul)", 낮).풀림.toISOString(), '2026-10-25T15:00:00.000Z');
+  assert.equal(읽기("You've hit your weekly limit · resets Jan 2, 9am (Asia/Seoul)", new Date('2026-12-30T00:00:00Z')).풀림.toISOString(),
+    '2027-01-02T00:00:00.000Z', '12월 끝에 받은 1월 날짜는 다음 해');
+  // 시간대가 없거나 모르는 이름이면 이 PC 시간대로 센다
+  assert.equal(+읽기("You've hit your session limit · resets 9:00am", new Date(2026, 9, 25, 14, 46)).풀림, +new Date(2026, 9, 26, 9, 0));
+  assert.equal(+읽기("You've hit your session limit · resets 3pm (Mars/Base)", new Date(2026, 9, 25, 14, 46)).풀림, +new Date(2026, 9, 25, 15, 0));
+  assert.equal(읽기('Claude AI usage limit reached|1793000000', 낮).풀림.toISOString(), new Date(1793000000 * 1000).toISOString());
+  assert.deepEqual(읽기("You've hit your weekly limit", 낮), { 풀림: null }, '한도지만 풀리는 시각을 모름');
+  assert.equal(읽기('Credit balance is too low', 낮), null);
+  assert.equal(읽기('API Error: 529 overloaded', 낮), null);
+  assert.equal(읽기('', 낮), null);
+});
+
+test('구독이 사용 한도에 걸리면 풀릴 때까지 띄우지도 알리지도 않고, 풀린 뒤 다시 돈다', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa']]);
+  try {
+    const { 작업, 받은 } = 가짜작업();
+    const out = path.join(t.방, 'out');
+    const 알림 = [];
+    const 돌기 = (때) => 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인소진, 알림: (s) => 알림.push(s), 지금: 때 });
+    const 밤 = new Date('2026-10-24T11:46:07Z');
+    const 분뒤 = (m) => new Date(+밤 + m * 60000);
+    const 한도파일 = path.join(t.방, '구독한도.json');
+
+    process.env.FAKE_LIMIT = "You've hit your weekly limit · resets Oct 26, 12pm (Asia/Seoul)";
+    const r = await 돌기(밤);
+    assert.deepEqual([r.상태, r.경로, r.풀림], ['한도쉼', '구독', '2026-10-26T03:00:00.000Z']);
+    assert.equal(알림.length, 1); assert.match(알림[0], /사용 한도에 걸려 .+까지 쉬어요/);
+    for (const m of [15, 30, 60 * 24]) assert.equal((await 돌기(분뒤(m))).상태, '한도쉼');
+    assert.equal(t.실행들().length, 1, '쉬는 동안은 claude를 띄우지 않는다');
+    assert.equal(알림.length, 1, '같은 한도 알림은 한 번');
+    assert.equal(fs.readdirSync(out).filter((f) => /^\d{4}-/.test(f)).length, 1, '실행 기록도 한 번만 쌓인다');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8')).상태, '한도쉼');
+
+    // 풀릴 시각 뒤에도 한도면(시각을 못 읽는 문구) 한 시간씩 다시 쉬고, 앞 알림 뒤 12시간이 지났을 때만 다시 알린다
+    process.env.FAKE_LIMIT = "You've hit your weekly limit";
+    const 풀린뒤 = new Date('2026-10-26T03:01:00Z');
+    assert.equal((await 돌기(풀린뒤)).풀림, '2026-10-26T04:01:00.000Z');
+    assert.equal(알림.length, 2, '앞 알림(10-24 밤) 뒤 12시간이 지났다');
+    assert.equal((await 돌기(new Date('2026-10-26T04:02:00Z'))).상태, '한도쉼');
+    assert.equal(알림.length, 2, '한 시간 전에 알렸다 — 다시 알리지 않는다');
+    assert.equal(t.실행들().length, 3);
+
+    delete process.env.FAKE_LIMIT;
+    const 끝 = await 돌기(new Date('2026-10-26T05:03:00Z'));
+    assert.equal(끝.상태, '끝'); assert.equal(받은.사후.length, 1);
+    assert.equal(fs.existsSync(한도파일), false, '구독이 다시 돌면 한도 표시를 지운다');
+  } finally { t.지우기(); }
+});
+
+test('구독이 쉬는 동안에도 크레딧 키가 있으면 그 키로 돈다', async () => {
+  const t = 방만들기([['B', 25, 'sk-ant-test-bbbb']]);
+  try {
+    fs.writeFileSync(path.join(t.방, '구독한도.json'), JSON.stringify({ 풀림: '2025-03-11T00:00:00.000Z', 알림: '2025-03-10T00:00:00.000Z' }));
+    const { 작업 } = 가짜작업();
+    const r = await 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: () => {}, 지금 });
+    assert.deepEqual([r.상태, r.경로, r.키이름], ['끝', '크레딧', 'B']);
+    assert.equal(fs.existsSync(path.join(t.방, '구독한도.json')), true, '크레딧으로 돈 것은 구독 한도가 풀렸다는 뜻이 아니다');
   } finally { t.지우기(); }
 });
 
