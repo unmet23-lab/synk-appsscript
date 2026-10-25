@@ -1,7 +1,7 @@
 # 현장 노트 · Gemini 앱 사진 만들기
 
 > 판: gemini.google.com 웹(크롬 프로필 「유호」, Ultra 계정) · 모델 「4 Argon」 + 사고 수준 「최고가」(= 나노바나나 2.1), 「3.1 Pro」(= 나노바나나 프로, 10-18부터 모드 메뉴에서 고름) · Claude in Chrome 확장
-> 마지막 확인: 2026-10-23(PULSE 한결 후보 넷, 다른 세션 라운드 사이 틈에 끼우기), 2026-10-22(「매진 임박」 개그 모델 후보 여덟, ego lite 여러 장 라운드), 2026-10-19(한강2126 v40 장면 키프레임 56장·같은 대화 고침, 오전 2차 고침 중 `/images` 새 입력창 배포를 만남, 낮 v41 고침·새 칸 19장), 2026-10-18(한강2126 재촬영 기준 그림·얼굴 시험, 지유 LoRA 학습용 19컷·광고 키프레임), 2026-10-17(하린 19컷)
+> 마지막 확인: 2026-10-25(「달리며 건너뛰는 한국」 얼굴 컷 다섯 — ego lite · 2.1 · 구도 참고 그림), 2026-10-23(PULSE 한결 후보 넷, 다른 세션 라운드 사이 틈에 끼우기), 2026-10-22(「매진 임박」 개그 모델 후보 여덟, ego lite 여러 장 라운드), 2026-10-19(한강2126 v40 장면 키프레임 56장·같은 대화 고침, 오전 2차 고침 중 `/images` 새 입력창 배포를 만남, 낮 v41 고침·새 칸 19장), 2026-10-18(한강2126 재촬영 기준 그림·얼굴 시험, 지유 LoRA 학습용 19컷·광고 키프레임), 2026-10-17(하린 19컷)
 > 쓴 AI: Claude Code(Claude Opus 5.5)
 
 무엇을 어떤 지시문으로 만들지는 [만족 사례 장부](../마케팅/제작양식/만족사례_장부.md) S21(참조 4장·공통 문구·장마다 검사)을 본다. 계정 역할은 [AI 운영 원칙](../AI_운영원칙.md). 여기는 화면 자동화와 결과물의 함정이다. 틀은 [README](README.md)를 따른다.
@@ -23,6 +23,7 @@
 - ego lite로 구울 때는 원본 받기에 다운로드 이벤트가 안 온다 → 네트워크의 원본 주소를 `page.fetch`로 받고, 창이 최소화돼 있으면 먼저 띄운다 ([자세히](#ego-lite에서-원본-크기-이미지-다운로드를-눌러도-다운로드-이벤트가-안-온다--네트워크에서-원본-주소를-잡아-받는다-2026-10-21-claude))
 - ego로 여러 장을 한 라운드에 돌릴 때는 → 표준 입력으로 돌리고(`-e` import는 중간에 끝남), 받기가 빠지면 그 자리에서 대화 주소로 다시 받는다 ([자세히](#ego로-여러-장을-한-라운드에-돌리면---e-import는-중간에-끝나고-막-그린-페이지-받기는-빠지고-다음-장-이동이-끊긴다-2026-10-22-claude))
 - 원본 영상 컷을 옮길 때 「클로즈업」이 넓게 나온다 → 「얼굴이 화면 높이의 2/3 · 정수리가 위 가장자리에 잘림」처럼 화면 안 경계로 쓰고, 남는 차이는 원본 첫 프레임의 얼굴 자리로 잘라 맞춘다 ([자세히](#원본-영상-컷을-옮길-때-클로즈업은-화면-안-경계로-쓰고-남는-차이는-원본-첫-프레임의-얼굴-자리--크기로-잘라-맞춘다-2026-10-23-claude))
+- 다른 도구(LoRA)로 잡은 구도에 얼굴만 고정 얼굴 세트로 다시 그릴 때 → 그 판에서 머리만 흐린 그림을 끝 참고로, 서 있는 전신은 「정수리는 위에서 3분의 1 · 운동화는 아래 끝 · 몸 가운데는 화면 60%」처럼 숫자로 ([자세히](#다른-도구로-잡은-구도를-얼굴만-고정-얼굴-세트로-다시-그릴-때--그-판에서-머리만-흐린-그림을-끝-참고로-주고-서-있는-전신은-화면-안-위치를-숫자로-쓴다-2026-10-25-claude))
 
 ## 목차
 
@@ -480,3 +481,15 @@
 - 원인: 위 「어깨 위」 항목과 같은 결 — 크기 낱말보다 장면 구성을 따르고 사람을 가운데에 세운다. 실루엣 배치도는 자세(칼 든 팔 방향)는 따라오지만 크기 · 자리는 약하게만 따른다.
 - 고침: ① 클로즈업은 화면 안 경계로 쓴다 — 「TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head is cut off by the top edge of the frame and her shoulders are cut off by the bottom edge. No other face or body is in the frame.」 옆 사람 손이 필요하면 「The only other thing in the frame is one hand of a person outside the frame, coming in from the left edge」. 강도는 「The camera is close to him, about one meter away and very low … the frame cuts him at the hips」. 이렇게 쓰자 #7 · #8이 원본 크기 가까이 나왔다. ② 남는 차이는 다시 굽지 않고 잘라 맞춘다 — OpenCV YuNet 얼굴 상자(강도는 사람 마스크 머리 폭)를 원본 첫 프레임의 상자와 같은 자리 · 같은 폭이 되게 16:9 창을 자르고, 빛은 원본 첫 프레임의 Lab 평균 · 퍼짐으로 옮긴다(밝기 0.8 · 색 1.0). 창이 받은 그림 폭의 45%보다 작아야 맞으면 다시 굽는다(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/homeshopping-horror-20261021/이미지콘티_v4_맞춤.py`). ③ 닮음은 SFace 코사인으로 잰다(참조 사진끼리 0.55~0.6, 같은 사람 기준선 0.363 — 같은 폴더 `이미지콘티_v4_닮음.py`). OpenCV 5.0에는 Haar가 없고, 한글 경로의 ONNX를 못 읽어 YuNet · SFace 모델은 영문 경로 사본(`%USERPROFILE%/.rembg/models/yunet/`)을 쓴다.
 - 다시 확인: 맞춤 기록(`synk-vendor/…/콘티/v4/컷/_맞춤기록.json`)의 창 폭, 원본 첫 프레임과 나란히 놓은 보드, 닮음 점수.
+
+### 다른 도구로 잡은 구도를 얼굴만 고정 얼굴 세트로 다시 그릴 때 — 그 판에서 머리만 흐린 그림을 끝 참고로 주고, 서 있는 전신은 화면 안 위치를 숫자로 쓴다 (2026-10-25 Claude)
+- 증상: 「달리며 건너뛰는 한국」 원본 구도 LoRA 판에서 유호님이 「배경이랑 구도는 좋은데 인물이 큰 문제」라고 하셨다. 그래서 얼굴이 보이는 다섯 컷을 2.1로 다시 그렸다.
+  - 참고 순서: 확정 B · C, 실제 사진 3장, (같은 방향 승인 각도), 끝에 그 LoRA 판에서 머리만 흐리게 지운 그림(`Documents/synk-vendor/korea-run-montage-20261021/ego/v3/layout.py`).
+  - 구도 문장: 「Copy exactly its camera position, height and angle, its lens, its framing, his position, size and pose … His head in Image N is blurred out on purpose — never copy that blur; draw his head and face only from Images 1 to 5」.
+  - 셀카 · 테이프 · 폰 시점 얼굴 · 출발은 한 번에 구도 · 옷 · 소품(테이프 X · 폰 · 테이프 롤)까지 맞았다.
+  - 정면으로 서 있는 전신(물러남)만 사람이 작아지고 가운데로 가며 바닥 · 승강장이 넓어졌다.
+- 원인: 위 「어깨 위」 항목과 같은 결 — 사람을 가운데에 세우고 넓게 잡는 버릇이 참고 그림보다 셌다.
+- 고침:
+  - 화면 안 위치를 숫자로 쓴다: 「He is large in the picture, exactly as in Image N: the top of his head about one third down from the top edge, his sneakers at the very bottom edge; he stands right of center — the middle of his body at about 60 percent of the picture width from the left … Do not show more floor or more of the platform than Image N」. 이렇게 쓰자 한 번에 맞았다.
+  - 구도 참고 그림의 피부 · 옷 색도 따라온다. 하얗게 밝힌 LoRA 판을 넣자 살색 b*가 10으로 낮게 나왔다. 구도 참고의 색은 원하는 색으로 맞춰 둔다.
+- 다시 확인: 원본 · 지난 판 · 새 판을 한 줄로 놓고 얼굴 폭 · 살색을 함께 본다(`ego/v3/견주기.py`).
