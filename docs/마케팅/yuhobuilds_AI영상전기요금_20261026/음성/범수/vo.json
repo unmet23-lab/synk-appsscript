@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-25T23:13:55.873Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "에이아이 영상 하나 만들면, 전기요금이 얼마나 나올까요?",
+   "dur": 2.557,
+   "syllablesPerSec": 8.99,
+   "src": "h1.wav",
+   "key": "dcea00aebfd1d0c9ca311fbf7a8d2ccd",
+   "words": 7
+  },
+  {
+   "id": "h2",
+   "text": "집 노트북으로 이 영상을 만들면서, 그래픽카드 전기를 재 봤어요.",
+   "dur": 3.501,
+   "syllablesPerSec": 7.43,
+   "src": "h2.wav",
+   "key": "b415704818a6ed8479b5ce0c73025715",
+   "words": 9
+  },
+  {
+   "id": "h3",
+   "text": "몇 원일지, 먼저 맞혀 보세요.",
+   "dur": 1.725,
+   "syllablesPerSec": 6.38,
+   "src": "h3.wav",
+   "key": "b522cdce78756842d4a1a0d638b4d58e",
+   "words": 5
+  },
+  {
+   "id": "r1",
+   "text": "십 원도 안 나왔어요.",
+   "dur": 0.946,
+   "syllablesPerSec": 8.46,
+   "src": "r1.wav",
+   "key": "1c3f884796edf10372b43f9843d61480",
+   "words": 4
+  },
+  {
+   "id": "r2",
+   "text": "그래픽카드가 십 분 동안, 거의 내내 최대로 돌았는데도요.",
+   "dur": 2.893,
+   "syllablesPerSec": 7.95,
+   "src": "r2.wav",
+   "key": "d0d8275d78a81171baf5d6efc9d56d92",
+   "words": 8
+  },
+  {
+   "id": "w1",
+   "text": "전기요금은 걱정 안 해도 되겠어요. 대신 하나에 십 분씩 걸려요.",
+   "dur": 3.288,
+   "syllablesPerSec": 7.6,
+   "src": "w1.wav",
+   "key": "33c5c1f954fe2c58f4dd596442dbef9b",
+   "words": 10
+  },
+  {
+   "id": "ig",
+   "text": "댓글에 전기라고 남겨 주시면, 내 컴퓨터 전기요금을 재는 요청문을 보내 드릴게요.",
+   "dur": 4.286,
+   "syllablesPerSec": 7.7,
+   "src": "ig.wav",
+   "key": "68e40674d98b8715d060a595a000a455",
+   "words": 11
+  },
+  {
+   "id": "yt",
+   "text": "내 컴퓨터 전기요금을 재는 요청문은, 고정 댓글에 있어요.",
+   "dur": 2.952,
+   "syllablesPerSec": 7.79,
+   "src": "yt.wav",
+   "key": "83a90e56350fca3fdb60f6ede030a21a",
+   "words": 8
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

@@ -1,0 +1,136 @@
+{
+  "이름": "coffee",
+  "지시문": "Close-up of a white ceramic cup of hot coffee on a wooden cafe table by a sunny window in the morning. A barista's hand slowly pours steamed milk into the coffee, drawing a heart of latte art, then pulls away. Soft steam rises, warm sunlight, shallow depth of field. Static camera, vertical framing. Sound: quiet cafe ambience and the soft pour of milk.",
+  "설정": {
+    "steps": 20,
+    "seed": 42,
+    "frames": 124,
+    "size": "768x1344",
+    "fps": 24
+  },
+  "시작": "2026-10-26 07:43:00",
+  "걸린초": 578.0,
+  "만드는동안": {
+    "gpu": {
+      "Wh": 27.22,
+      "평균W": 169.5,
+      "최대W": 196.1,
+      "표본": 574
+    },
+    "cpu": {
+      "Wh": 9.517,
+      "평균W": 59.4,
+      "최대W": 154.8,
+      "표본": 574
+    }
+  },
+  "쉴때": {
+    "gpu": {
+      "Wh": 0.063,
+      "평균W": 4.0,
+      "최대W": 4.1,
+      "표본": 58
+    },
+    "cpu": {
+      "Wh": 0.419,
+      "평균W": 26.3,
+      "최대W": 82.7,
+      "표본": 58
+    }
+  },
+  "GPU프로세스": [
+    [
+      1792968120.1218426,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968150.1788044,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968180.2352786,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968210.2825766,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968240.3595674,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968270.4210484,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968300.4857366,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968330.53918,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968360.5903144,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968390.6563275,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968420.7148726,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968450.7607007,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968480.8127227,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968510.8708606,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968540.9303603,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968570.9792984,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968601.0276074,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968631.0816734,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968661.1202796,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968691.1922128,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968721.235658,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968751.3008323,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792968781.3584604,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ]
+  ],
+  "결과": "C:\\SYNK-LoRA\\tools\\ComfyUI\\output\\y7\\coffee_00001_.mp4"
+}

@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "집 노트북으로 이 영상을 만들면서, 그래픽카드 전기를 재 봤어요.",
+ "dur": 3.501,
+ "words": [
+  {
+   "text": "집",
+   "start": 0.02,
+   "end": 0.155
+  },
+  {
+   "text": "노트북으로",
+   "start": 0.21,
+   "end": 0.668
+  },
+  {
+   "text": "이",
+   "start": 0.749,
+   "end": 0.762
+  },
+  {
+   "text": "영상을",
+   "start": 0.83,
+   "end": 1.14
+  },
+  {
+   "text": "만들면서,",
+   "start": 1.18,
+   "end": 1.652
+  },
+  {
+   "text": "그래픽카드",
+   "start": 2.084,
+   "end": 2.515
+  },
+  {
+   "text": "전기를",
+   "start": 2.555,
+   "end": 2.866
+  },
+  {
+   "text": "재",
+   "start": 2.907,
+   "end": 2.988
+  },
+  {
+   "text": "봤어요.",
+   "start": 3.028,
+   "end": 3.501
+  }
+ ],
+ "source": {
+  "key": "b415704818a6ed8479b5ce0c73025715",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

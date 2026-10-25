@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "yt",
+ "text": "내 컴퓨터 전기요금을 재는 요청문은, 고정 댓글에 있어요.",
+ "dur": 2.952,
+ "words": [
+  {
+   "text": "내",
+   "start": 0.01,
+   "end": 0.085
+  },
+  {
+   "text": "컴퓨터",
+   "start": 0.136,
+   "end": 0.439
+  },
+  {
+   "text": "전기요금을",
+   "start": 0.477,
+   "end": 0.957
+  },
+  {
+   "text": "재는",
+   "start": 0.995,
+   "end": 1.184
+  },
+  {
+   "text": "요청문은,",
+   "start": 1.222,
+   "end": 1.664
+  },
+  {
+   "text": "고정",
+   "start": 2.005,
+   "end": 2.22
+  },
+  {
+   "text": "댓글에",
+   "start": 2.258,
+   "end": 2.498
+  },
+  {
+   "text": "있어요.",
+   "start": 2.536,
+   "end": 2.952
+  }
+ ],
+ "source": {
+  "key": "83a90e56350fca3fdb60f6ede030a21a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

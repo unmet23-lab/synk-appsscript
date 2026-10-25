@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h3",
+ "text": "몇 원일지, 먼저 맞혀 보세요.",
+ "dur": 1.725,
+ "words": [
+  {
+   "text": "몇",
+   "start": 0.01,
+   "end": 0.089
+  },
+  {
+   "text": "원일지,",
+   "start": 0.136,
+   "end": 0.449
+  },
+  {
+   "text": "먼저",
+   "start": 0.794,
+   "end": 0.998
+  },
+  {
+   "text": "맞혀",
+   "start": 1.044,
+   "end": 1.232
+  },
+  {
+   "text": "보세요.",
+   "start": 1.28,
+   "end": 1.725
+  }
+ ],
+ "source": {
+  "key": "b522cdce78756842d4a1a0d638b4d58e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

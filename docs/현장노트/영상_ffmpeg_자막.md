@@ -630,6 +630,12 @@
 - 고침: 컷에 쓸 프레임만 잘라(36장) 프레임 수 이상인 4n+1 배치 하나(37)로 키웠다(`…/jiyu-skincare-20261018/v7/영상_키우기.py <mp4> 24 36 K7_미소 37`, 283초, 노트북 5090 24GB에서 문제없음). 같이 SeedVR2 판이 정지컷보다 두 배쯤 또렷해(라플라시안 분산) 가편집에서 가우시안 σ0.5로 정지컷 결에 맞췄다.
 - 다시 확인: 키운 PNG에서 얼굴 판 라플라시안 분산을 프레임마다 재 이웃보다 30% 넘게 낮은 장이 없는지 본다(최종 mp4로 재면 인코딩 · 그레인 때문에 4장 주기로 출렁여 판단이 안 된다).
 
+### 로컬 AI 한 편의 전기를 재려는데 CPU 전력은 관리자 도구(HWiNFO 등) 없이는 못 읽는 줄 알았다 — 윈도우 Energy Meter 카운터로 읽힌다 (2026-10-26 Claude)
+- 증상: 10-26 yuhobuilds Y7(AI 영상 한 편 전기요금)에서 그래픽카드는 `nvidia-smi --query-gpu=power.draw … -lms 1000`으로 1초마다 읽혔지만, CPU 전력은 드라이버를 까는 도구 없이 못 잴 것 같았다.
+- 원인: 이 노트북(Core Ultra 9 275HX)의 윈도우에는 RAPL 값을 내주는 성능 카운터 「Energy Meter」가 있다(관리자 권한 불필요). 단 CPU 패키지 값에는 같은 시각 다른 세션 작업이 그대로 섞인다 — 쉴 때 26~67W로 흔들렸다.
+- 고침: `typeperf "\Energy Meter(rapl_package0_pkg)\Power" -si 1`(mW, 콘솔이 cp949라 읽을 때 인코딩 지정). 그래픽카드 · CPU를 함께 1초마다 적고 쉬는 60초 · 작업 · 쉬는 30초를 나눠 Wh로 더하는 도구는 `docs/마케팅/yuhobuilds_AI영상전기요금_20261026/자료/실측/실측.py`(ComfyUI 8190에 MiniMax H3 글 → 5초 영상을 넣는다), 한전 요금 셈은 같은 폴더 `요금.mjs`. 실측: 768×1344 · 124프레임 · 20단계 한 편이 9.6~10분 · 그래픽카드 26.8~27.2Wh(한도 175W 근처에 9분 넘게). 「Power Meter」 카운터는 충전기를 꽂으면 0이라 노트북 전체 값은 못 읽는다.
+- 다시 확인: `Get-Counter -ListSet "Energy Meter"`에 `rapl_package0_pkg`가 있는지, 작업 중 `nvidia-smi --query-compute-apps=pid,process_name --format=csv`에 내 프로세스만 있는지(그래픽카드 값은 보드 전체라 남의 작업도 더해진다).
+
 ## 블렌더 장면·회색 미리보기
 
 > 판: Blender 5.2.2 LTS(워크벤치·EEVEE·Cycles, `-b --python`) · 10-18 한강2126 드론 동선 미리보기(`~/Videos/한강2126_새판_20261009/재촬영_v40/시험/블렌더_미리보기/`), 10-18 지유 광고 병 장면(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/jiyu-skincare-20261018/블렌더/`, Cycles CPU 미리보기)에서 실측 · Claude Code(Claude Opus 5.5)

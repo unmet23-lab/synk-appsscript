@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "ig",
+ "text": "댓글에 전기라고 남겨 주시면, 내 컴퓨터 전기요금을 재는 요청문을 보내 드릴게요.",
+ "dur": 4.286,
+ "words": [
+  {
+   "text": "댓글에",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "전기라고",
+   "start": 0.334,
+   "end": 0.739
+  },
+  {
+   "text": "남겨",
+   "start": 0.778,
+   "end": 1
+  },
+  {
+   "text": "주시면,",
+   "start": 1.039,
+   "end": 1.392
+  },
+  {
+   "text": "내",
+   "start": 1.797,
+   "end": 1.862
+  },
+  {
+   "text": "컴퓨터",
+   "start": 1.953,
+   "end": 2.268
+  },
+  {
+   "text": "전기요금을",
+   "start": 2.319,
+   "end": 2.829
+  },
+  {
+   "text": "재는",
+   "start": 2.868,
+   "end": 3.103
+  },
+  {
+   "text": "요청문을",
+   "start": 3.169,
+   "end": 3.56
+  },
+  {
+   "text": "보내",
+   "start": 3.599,
+   "end": 3.743
+  },
+  {
+   "text": "드릴게요.",
+   "start": 3.783,
+   "end": 4.286
+  }
+ ],
+ "source": {
+  "key": "68e40674d98b8715d060a595a000a455",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "에이아이 영상 하나 만들면, 전기요금이 얼마나 나올까요?",
+ "dur": 2.557,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "영상",
+   "start": 0.34,
+   "end": 0.558
+  },
+  {
+   "text": "하나",
+   "start": 0.596,
+   "end": 0.686
+  },
+  {
+   "text": "만들면,",
+   "start": 0.724,
+   "end": 1.147
+  },
+  {
+   "text": "전기요금이",
+   "start": 1.274,
+   "end": 1.71
+  },
+  {
+   "text": "얼마나",
+   "start": 1.761,
+   "end": 2.004
+  },
+  {
+   "text": "나올까요?",
+   "start": 2.042,
+   "end": 2.557
+  }
+ ],
+ "source": {
+  "key": "dcea00aebfd1d0c9ca311fbf7a8d2ccd",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

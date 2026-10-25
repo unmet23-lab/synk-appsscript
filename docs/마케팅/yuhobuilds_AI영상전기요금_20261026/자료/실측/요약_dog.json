@@ -1,0 +1,136 @@
+{
+  "이름": "dog",
+  "지시문": "A small white puppy sits on a soft rug in a sunny living room, tilts its head curiously, then wags its tail and trots one step toward the camera. Warm afternoon light, shallow depth of field. Static camera, vertical framing. Sound: a happy little bark and soft paws on the rug.",
+  "설정": {
+    "steps": 20,
+    "seed": 42,
+    "frames": 124,
+    "size": "768x1344",
+    "fps": 24
+  },
+  "시작": "2026-10-26 07:59:50",
+  "걸린초": 585.6,
+  "만드는동안": {
+    "gpu": {
+      "Wh": 26.817,
+      "평균W": 164.8,
+      "최대W": 218.3,
+      "표본": 582
+    },
+    "cpu": {
+      "Wh": 11.461,
+      "평균W": 70.6,
+      "최대W": 157.3,
+      "표본": 582
+    }
+  },
+  "쉴때": {
+    "gpu": {
+      "Wh": 0.066,
+      "평균W": 4.1,
+      "최대W": 7.3,
+      "표본": 58
+    },
+    "cpu": {
+      "Wh": 1.062,
+      "평균W": 66.6,
+      "최대W": 112.8,
+      "표본": 58
+    }
+  },
+  "GPU프로세스": [
+    [
+      1792969130.8299038,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969160.8860345,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969190.9665334,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969221.0647893,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969251.1118379,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969281.1677294,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969311.2190871,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969341.262704,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969371.314081,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969401.3605962,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969431.4050188,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969461.4735472,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969491.5114982,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969521.5581121,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969551.6127365,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969581.6756475,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969611.7397738,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969641.7740226,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969671.8392837,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969701.9026606,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969731.9698007,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969762.0293171,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ],
+    [
+      1792969792.1159358,
+      "47312, C:\\Users\\q1212\\AppData\\Roaming\\uv\\python\\cpython-3.12.15-windows-x86_64-none\\python.exe, [N/A]"
+    ]
+  ],
+  "결과": "C:\\SYNK-LoRA\\tools\\ComfyUI\\output\\y7\\dog_00001_.mp4"
+}

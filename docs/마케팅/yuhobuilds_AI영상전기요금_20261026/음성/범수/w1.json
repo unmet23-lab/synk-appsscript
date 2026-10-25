@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w1",
+ "text": "전기요금은 걱정 안 해도 되겠어요. 대신 하나에 십 분씩 걸려요.",
+ "dur": 3.288,
+ "words": [
+  {
+   "text": "전기요금은",
+   "start": 0.05,
+   "end": 0.556
+  },
+  {
+   "text": "걱정",
+   "start": 0.595,
+   "end": 0.84
+  },
+  {
+   "text": "안",
+   "start": 0.88,
+   "end": 0.906
+  },
+  {
+   "text": "해도",
+   "start": 0.944,
+   "end": 1.061
+  },
+  {
+   "text": "되겠어요.",
+   "start": 1.1,
+   "end": 1.528
+  },
+  {
+   "text": "대신",
+   "start": 1.957,
+   "end": 2.19
+  },
+  {
+   "text": "하나에",
+   "start": 2.229,
+   "end": 2.449
+  },
+  {
+   "text": "십",
+   "start": 2.5,
+   "end": 2.592
+  },
+  {
+   "text": "분씩",
+   "start": 2.631,
+   "end": 2.825
+  },
+  {
+   "text": "걸려요.",
+   "start": 2.864,
+   "end": 3.288
+  }
+ ],
+ "source": {
+  "key": "33c5c1f954fe2c58f4dd596442dbef9b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

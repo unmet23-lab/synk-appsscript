@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r2",
+ "text": "그래픽카드가 십 분 동안, 거의 내내 최대로 돌았는데도요.",
+ "dur": 2.893,
+ "words": [
+  {
+   "text": "그래픽카드가",
+   "start": 0.02,
+   "end": 0.55
+  },
+  {
+   "text": "십",
+   "start": 0.605,
+   "end": 0.686
+  },
+  {
+   "text": "분",
+   "start": 0.727,
+   "end": 0.822
+  },
+  {
+   "text": "동안,",
+   "start": 0.863,
+   "end": 1.121
+  },
+  {
+   "text": "거의",
+   "start": 1.393,
+   "end": 1.57
+  },
+  {
+   "text": "내내",
+   "start": 1.638,
+   "end": 1.801
+  },
+  {
+   "text": "최대로",
+   "start": 1.855,
+   "end": 2.128
+  },
+  {
+   "text": "돌았는데도요.",
+   "start": 2.168,
+   "end": 2.893
+  }
+ ],
+ "source": {
+  "key": "d0d8275d78a81171baf5d6efc9d56d92",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

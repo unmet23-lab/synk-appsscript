@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "십 원도 안 나왔어요.",
+ "dur": 0.946,
+ "words": [
+  {
+   "text": "십",
+   "start": 0.03,
+   "end": 0.091
+  },
+  {
+   "text": "원도",
+   "start": 0.136,
+   "end": 0.317
+  },
+  {
+   "text": "안",
+   "start": 0.362,
+   "end": 0.392
+  },
+  {
+   "text": "나왔어요.",
+   "start": 0.452,
+   "end": 0.946
+  }
+ ],
+ "source": {
+  "key": "1c3f884796edf10372b43f9843d61480",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
