@@ -222,7 +222,7 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const bakedLight = bakedLightUniforms(THREE), townLight = createTownLight({ THREE, scene, renderer, sun: light, hemi, fill, baked: bakedLight, phone: canvas.clientWidth < 600 });
   const surfaceArt = applyTownMaterials(m, Math.min(8, renderer.capabilities.getMaxAnisotropy()));
   m.glass.userData.townGlass = true; // windows glow at night; its clones (greenhouse, houses, baked thin glass) keep the mark
-  // A drinking glass is not a lit window (W7 Fable P2): its own clone, without the mark.
+  // A drinking glass is not a lit window (W7 screen review): its own clone, without the mark.
   m.cupGlass = m.glass.clone(); delete m.cupGlass.userData.townGlass;
   const rendering = createTownRendering(renderer, scene, camera);
   const environmentArt = buildTownEnvironment(THREE, world, m, { mesh, box, tube, textLabel });

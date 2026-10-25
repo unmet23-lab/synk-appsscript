@@ -498,7 +498,7 @@ function accept(data) {
     const execution = data.view.execution, plan = globalThis.LoomLife.createPlan(execution.plan);
     executionSample = globalThis.LoomLife.sample(plan, execution.elapsedMs, { currentRevision: plan.revision, currentPlanId: plan.id, committedStepIds: plan.steps.map(s => s.id), reducedMotion: reduced.matches || fallback });
   }
-  // The hour's light before the scene is drawn: a first visit at night or in the rain never shows the noon first (W7 Fable P2).
+  // The hour's light before the scene is drawn: a first visit at night or in the rain never shows the noon first (W7 screen review).
   text('connection', `${worldHostRequested ? (globalThis.__SYNK_WORLD_TOWN__?.mode === 'account' ? 'SYNK 계정에 저장됨' : '테스트 계정에 저장됨') : '이 기기에 저장됨'} · ${names[day.location] || ''}`); configurePlan(); paintLight(true); renderScene(); renderLife(); setBusy(busy);
   if ($('journal-dialog').open) renderJournal();
   $('look-scene').hidden = !activePlan && !observation && !snapshot.view.life?.interaction?.resultId;

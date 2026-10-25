@@ -219,7 +219,7 @@ export function createTownLight({ THREE, scene, renderer, sun, hemi, fill, baked
    * server's clock, held still under reduced motion. */
   function frame(now, camera, center, wideRadius = 0) {
     // Just inside the far plane, whatever the view: a dome nearer than far would paint over the hills behind it
-    // (the map overview's far is about 135 m — W7 Fable P3).
+    // (the map overview's far is about 135 m — W7 screen review).
     sky.position.copy(camera.position); sky.scale.setScalar(camera.far * .95);
     if (warm === 1) { sky.visible = sky.material.uniforms.skyAlpha.value > .001; rain.visible = drawnDrops > 0; warm = 2; }
     if (warm === 0 && rain) { sky.visible = rain.visible = true; warm = 1; }

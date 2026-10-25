@@ -51,7 +51,7 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   guideCloth.side = THREE.DoubleSide; ownedMaterials.add(guideCloth);
   const coral = m.coral || material({ color: '#f96859', roughness: .42 });
   // The wall lanterns light up at night (W7, day-light.mjs) — their own material: the shared butter cloth is cotton
-  // with a black glow (it lit nothing) and also dyes memory threads, which must not shine (W7 Fable P2).
+  // with a black glow (it lit nothing) and also dyes memory threads, which must not shine (W7 screen review).
   const butter = m.butter ? m.butter.clone() : material({ color: '#f5c445', roughness: .6 });
   butter.emissive.set('#f5c445'); butter.emissiveIntensity = .08; butter.userData.townLantern = true; ownedMaterials.add(butter);
   const terrainMaterial = material({ color: '#ffffff', vertexColors: true, roughness: 1, bumpMap: m.soil?.bumpMap, bumpScale: .026 });
