@@ -714,6 +714,30 @@
    ],
    "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {클로즈업_틀} Her face is right of the center of the frame, the lace veil at the right edge. She looks toward the upper left of the frame, silent, frozen in terror, lips closed and trembling, holding her breath. {공포_얼굴} {배경_소파} {클로즈업_카메라} {빛} {필름}",
    "메모": "#18 공포 먼저(10-24, 유호님 S32 「맘에 드는데」 뒤 같은 길) — 둘째 판"
+  },
+  {
+   "id": "S05e1",
+   "who": "셋",
+   "refs": [
+    "v4/S05g",
+    "통2x2",
+    "리4x2",
+    "F04x2"
+   ],
+   "text": "{시작} Image 1 is the opening frame of this same handheld shot, taken at the three women's waist height. This still is the END of that shot: the camera has tilted straight up from the same spot to their faces. Keep everything from Image 1 — the same three women in the same places left to right, the same clothes, the same sofa, the curtains, the pink-shaded lamp with the two red candles at the right and the leopard-print blanket — but now the frame shows them from the chest up, with all three faces fully inside the frame in its upper half, side by side and close together, their heads at about the same height. They still cling to each other's arms. All three stare up toward the upper LEFT of the frame, at the masked intruder standing there outside the frame — nobody looks at the camera. {공포_몸짓} C sobs in fear with her mouth open and tears on her cheeks; B's eyes are wide open behind her glasses, her lips trembling; A's eyes are wide with terror, her eyebrows raised and pulled together, her mouth open mid-gasp. {셋_얼굴_방없이} {빛} {필름}",
+   "메모": "#5 끝 그림(10-25, 유호님 「#5 끝 그림에 세 사람 얼굴 걸어서 다시 뽑아 줘.」) — 시작 그림(S05g)과 같은 자리에서 얼굴까지 올라간 끝, 빛은 지시문으로(색 옮기기 없음)"
+  },
+  {
+   "id": "S05e2",
+   "who": "셋",
+   "refs": [
+    "v4/S05g",
+    "통2x2",
+    "리4x2",
+    "F04x2"
+   ],
+   "text": "{시작} Image 1 is the opening frame of this same handheld shot, taken at the three women's waist height. This still is the END of that shot: the camera has tilted straight up from the same spot to their faces. Keep everything from Image 1 — the same three women in the same places left to right, the same clothes, the same sofa, the curtains, the pink-shaded lamp with the two red candles at the right and the leopard-print blanket — but now the frame shows them from the chest up, with all three faces fully inside the frame in its upper half, side by side and close together, their heads at about the same height. They still cling to each other's arms. All three stare up toward the upper LEFT of the frame, at the masked intruder standing there outside the frame — nobody looks at the camera. {공포_몸짓} C sobs in fear with her mouth open and tears on her cheeks; B's eyes are wide open behind her glasses, her lips trembling; A's eyes are wide with terror, her eyebrows raised and pulled together, her mouth open mid-gasp. {셋_얼굴_방없이} {빛} {필름}",
+   "메모": "#5 끝 그림(10-25, 유호님 「#5 끝 그림에 세 사람 얼굴 걸어서 다시 뽑아 줘.」) — 시작 그림(S05g)과 같은 자리에서 얼굴까지 올라간 끝, 빛은 지시문으로(색 옮기기 없음) — 둘째 판"
   }
  ]
 }

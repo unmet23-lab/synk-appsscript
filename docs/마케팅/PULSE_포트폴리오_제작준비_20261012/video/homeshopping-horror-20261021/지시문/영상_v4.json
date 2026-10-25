@@ -266,6 +266,16 @@
    "판": 2,
    "쓰는 곳": "#18 26.67–28.38초(1.71초) — 정적 · 공포 먼저",
    "prompt": "Close-up, handheld. The young woman in the white lace veil stares toward the upper left of the frame, frozen in terror, eyes wide and glassy, lips closed and trembling, holding her breath. She does not speak and does not look at the camera."
+  },
+  {
+   "id": "S05g",
+   "모델": "Omni 1.1 Flash",
+   "판": 2,
+   "쓰는 곳": "#5 4.67–6.67초(2.00초) — 숨소리 · 흐느낌 · 공포 먼저 · 끝 칸에 세 사람 얼굴(10-25)",
+   "prompt": "Handheld shot with a nervous shake that starts at the women's waist height, on their clutched hands. Within the first second the shaky camera tilts up quickly to their faces and then holds on the three terrified faces until the end, ending exactly on the end image: the curly-haired woman with the flower crown at the left, the woman with round glasses and a red bow in the middle, the woman in the white lace veil at the right. They cling to each other and stare up toward the upper left in terror, eyes wide, mouths trembling, fast breathing and sobbing. Nobody speaks.",
+   "시작 그림": "S05g.jpg = S05f1 판을 S05f와 같은 창으로 자르고 빛은 옮기지 않음(10-24 결정 「후보정 최대한 안 함」)",
+   "끝 그림": "S05e.jpg = 이미지콘티_v4.json S05e1 · S05e2 가운데 고른 판(세 사람 얼굴 — 시작 그림에 얼굴이 없어 Omni가 다른 얼굴을 지어낸 #5, 10-25)",
+   "길이": "4초"
   }
  ]
 }

@@ -2,6 +2,7 @@
 #   python -X utf8 이미지콘티_v4_배치도.py 거실        → synk-vendor/…/콘티/v4/배치/R1_배치.png · R2_배치.png(원본 #1 · #13 첫 프레임에서 사람을 지우고 크게 흐림)
 #   python -X utf8 이미지콘티_v4_배치도.py [컷 번호…]  → 배치/S01.png …(1456×816, 밝은 회색 바탕 + 사람 자리만 검은 실루엣 · rembg u2net_human_seg)
 #                                                     · 배치/_확인/S01.jpg(원본 위 마스크)
+#   python -X utf8 이미지콘티_v4_배치도.py 5@156      → 배치/S05e.png — 컷 첫 프레임 대신 원본 프레임 156으로(끝 그림, 10-25 #5)
 import sys, json
 from pathlib import Path
 import numpy as np, cv2
@@ -67,7 +68,7 @@ def silhouettes(cuts):
     (OUT / "_확인").mkdir(parents=True, exist_ok=True)
     SHOTS = json.load(open(V / "원본/원본_샷.json", encoding="utf-8"))
     for n in cuts:
-        f0 = SHOTS[n - 1]["f0"]
+        n, f0, name = (n[0], n[1], f"S{n[0]:02d}e") if isinstance(n, tuple) else (n, SHOTS[n - 1]["f0"], f"S{n:02d}")
         im = Image.open(F / f"{f0 + 1:04d}.jpg").convert("RGB")
         m = np.asarray(remove(im, session=ses, only_mask=True)).astype(np.float32) / 255
         m = (m > 0.5).astype(np.uint8) * 255
@@ -82,9 +83,9 @@ def silhouettes(cuts):
             cv2.line(m, a, b, 255, w)
         sil = np.full((im.height, im.width, 3), 205, np.uint8)
         sil[m > 0] = 18
-        Image.fromarray(sil).resize((1456, 816), Image.LANCZOS).save(OUT / f"S{n:02d}.png")
+        Image.fromarray(sil).resize((1456, 816), Image.LANCZOS).save(OUT / f"{name}.png")
         a = np.asarray(im).copy(); a[m > 0] = (a[m > 0] * 0.4 + np.array([255, 0, 0]) * 0.6).astype(np.uint8)
-        Image.fromarray(a).save(OUT / "_확인" / f"S{n:02d}.jpg", quality=85)
+        Image.fromarray(a).save(OUT / "_확인" / f"{name}.jpg", quality=85)
         print(n, f"사람 {round((m > 0).mean() * 100, 1)}%")
 
 
@@ -93,4 +94,4 @@ if __name__ == "__main__":
         rooms()
     else:
         SHOTS = json.load(open(V / "원본/원본_샷.json", encoding="utf-8"))
-        silhouettes([int(x) for x in sys.argv[1:]] or [s["n"] for s in SHOTS if s["n"] not in CARDS])
+        silhouettes([tuple(int(v) for v in x.split("@")) if "@" in x else int(x) for x in sys.argv[1:]] or [s["n"] for s in SHOTS if s["n"] not in CARDS])

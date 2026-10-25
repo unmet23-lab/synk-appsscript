@@ -5,6 +5,7 @@
 #    Gemini는 「클로즈업」이라 써도 조금 넓게 잡는다(현장노트 gemini_사진 「어깨 위」 항목) — 다시 굽지 않고 창을 잘라 맞춘다.
 #    창이 원본 폭의 45%보다 작아지면(2.2배 넘게 키움) 화질이 모자라 「다시 굽기」로 적고 45%에서 멈춘다.
 # 2) 빛: 원본 첫 프레임의 Lab 평균 · 퍼짐으로 옮긴다(밝기 0.8 · 색 1.0 — 원본 텅스텐 호박빛 · 어둡기).
+#    10-24부터 새로 굽는 판은 빛을 옮기지 않는다(light=False — 결정 10-24 「후보정 최대한 안 함」, 빛은 굽는 지시문에 쓴다).
 # 손으로 정한 창은 CROP에(받은 그림 좌표 x0, y0, 폭).
 import sys, json, glob, os
 import numpy as np, cv2
@@ -78,7 +79,7 @@ def lab_match(img, ref, kl=0.8, kc=1.0):
     return cv2.cvtColor(np.clip(a, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR)
 
 
-def fit(n, src, blur=True, out=None):
+def fit(n, src, blur=True, out=None, light=True):
     img = imread(src)
     H, W = img.shape[:2]
     orig = imread(V + "검수/fable_v4콘티/frames/%04d.jpg" % (SH[n - 1]["f0"] + 1))
@@ -120,7 +121,9 @@ def fit(n, src, blur=True, out=None):
     y0 = min(max(y0, 0), H - ch)
     crop = img[int(y0): int(y0 + ch), int(x0): int(x0 + cw)]
     crop = cv2.resize(crop, (1920, 1080), interpolation=cv2.INTER_LANCZOS4 if cw < 1920 else cv2.INTER_AREA)
-    graded = lab_match(crop, cv2.resize(orig, (1920, 1080)))
+    graded = lab_match(crop, cv2.resize(orig, (1920, 1080))) if light else crop
+    if not light:
+        note += " · 빛 옮기지 않음"
     if n == 30 and blur:   # 원본 #30은 카메라가 휙 돌아 흐린 채 시작한다(64.42~64.7초) — 가로 움직임 흐림(영상 시작 그림은 blur=False로 또렷하게 뽑고 흐림은 편집에서)
         k = np.zeros((1, 71), np.float32)
         k[0, :] = 1 / 71

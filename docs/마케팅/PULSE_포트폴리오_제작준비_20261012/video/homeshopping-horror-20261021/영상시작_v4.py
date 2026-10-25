@@ -4,6 +4,7 @@
 #  - #8 · #17 · #20 리4 클로즈업은 원본(밝기 중앙 64~70)보다 어둡다(46~48) → 중간 밝기를 64 쪽으로 감마로 올린다(흰 곳은 그대로, 최대 0.75).
 #  - #30은 휙 흐림 없이 또렷한 판으로(흐림은 편집에서 첫 0.28초에) — 흐린 그림을 넣으면 영상 모델이 흐림을 이어 그린다.
 #  - #9(주머니를 들여다보는 첫 자세) · #15(왼손 주머니)는 새로 구운 판을 이미지콘티_v4_맞춤.py로 맞춘 뒤 이 스크립트에 넣는다.
+#  - 10-24 결정(후보정 최대한 안 함) 뒤로 새로 구운 판(=파일)은 자리 · 크기만 맞추고 빛은 옮기지 않는다(light=False). 아래 밝히기(BRIGHT)도 새로 쓰지 않는다.
 import importlib.util
 import json
 import os
@@ -49,7 +50,7 @@ if __name__ == "__main__":
             keep = m.CROP.get(n)
             if win:
                 m.CROP[n] = tuple(int(v) for v in win.split(","))
-            _, note = m.fit(n, V + "받음/v4/" + newpick, out=dst)
+            _, note = m.fit(n, V + "받음/v4/" + newpick, out=dst, light=False)
             if keep is None:
                 m.CROP.pop(n, None)
             else:
