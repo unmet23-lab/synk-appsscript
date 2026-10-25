@@ -306,7 +306,8 @@ test('막힘 갈래와 부르개 — 간격을 지키고, 막히면 쉬었다가
   assert.equal(수집.실패갈래('ERROR: [youtube] x: Unable to download API page: HTTP Error 403: Forbidden'), '막힘');
   assert.equal(수집.실패갈래('ERROR: Sign in to confirm you’re not a bot'), '막힘');
   assert.equal(수집.실패갈래('ERROR: [youtube:tab] UCx: This channel does not have a shorts tab'), '없음');
-  assert.equal(수집.실패갈래('ERROR: [tiktok:user] koreanhoon: Unable to extract secondary user ID'), '없음');
+  // 없는 계정이 아니다 — 같은 계정이 앞뒤 회차엔 읽혔다(10-24 PC 8곳 · 10-25 서버, 흉내내기 없는 판에서 잦다)
+  assert.equal(수집.실패갈래('ERROR: [tiktok:user] koreanhoon: Unable to extract secondary user ID'), '실패');
   assert.equal(수집.실패갈래('ERROR: something else'), '실패');
   // 댓글을 받으면 JSON의 comment_count는 받은 개수로 덮인다 — 전체 수는 --verbose 줄에서 읽는다
   assert.equal(수집.댓글총수('[debug] x\n[youtube] Downloading ~1,382 comments\n[youtube] Extracted 30 comments'), 1382);
@@ -1117,6 +1118,11 @@ test('재확인 B5 — 3분 넘는 영상은 튄 편으로 싣지 않는다(유�
   const 후보 = { id: vid('L', 1), 제목: '', 조회: 9000, 날짜: '2026-10-20' };
   assert.equal(판정.상세반영(후보, { 날짜: '2026-10-20', 조회: 9000, 길이: 200 }, 기준, 판정.기본.판정, '2026-09-28').아님, true);
   assert.ok(판정.상세반영(후보, { 날짜: '2026-10-20', 조회: 9000, 길이: 180 }, 기준, 판정.기본.판정, '2026-09-28').줄, '3분까지는 쇼츠');
+  // Data API 길이는 1초 올림 — 꼭 3분인 쇼츠가 181초로 온다(10-25 대조: 같은 편이 yt-dlp 17·11·59초, API 18·12·60초)
+  assert.ok(판정.상세반영(후보, { 날짜: '2026-10-20', 조회: 9000, 길이: 181, 길이출처: 'api' }, 기준, 판정.기본.판정, '2026-09-28').줄, 'API 181초는 3분 쇼츠');
+  assert.equal(판정.상세반영(후보, { 날짜: '2026-10-20', 조회: 9000, 길이: 182, 길이출처: 'api' }, 기준, 판정.기본.판정, '2026-09-28').아님, true);
+  assert.equal(판정.상세반영(후보, { 날짜: '2026-10-20', 조회: 9000, 길이: 181 }, 기준, 판정.기본.판정, '2026-09-28').아님, true, 'yt-dlp 길이는 그대로 180초까지');
+  assert.equal(수집.api영상읽기({ id: 'x1234567890', snippet: {}, statistics: {}, contentDetails: { duration: 'PT3M1S' } }).길이출처, 'api');
   const 목록 = [
     { id: '7600000000000000001', 날짜: '2026-10-24', 조회: 50000, 길이: 240 },
     { id: '7600000000000000002', 날짜: '2026-10-23', 조회: 40000, 길이: 60 },
@@ -1215,4 +1221,244 @@ test('명령 인자 — 브랜드 순서, 전부, 숫자 검사', () => {
   assert.throws(() => 스캔.인자(['lab-en', '--채널', '-1']), /0 이상/);
   assert.throws(() => 스캔.인자(['lab-xx']), /모르는 인자/);
   assert.throws(() => 스캔.인자(['--날짜', '10/26']), /YYYY-MM-DD/);
+  assert.equal(스캔.인자(['lab-en']).유튜브, 'api', '유튜브 채널은 기본으로 Data API');
+  assert.equal(스캔.인자(['lab-en', '--유튜브', 'ytdlp']).유튜브, 'ytdlp');
+  assert.throws(() => 스캔.인자(['lab-en', '--유튜브', 'rss']), /api 또는 ytdlp/);
+});
+
+// ── YouTube Data API(10-25 — tools/수요스캔/서버.md 「권하는 길」) — 가짜 fetch로, 네트워크 없음 ──
+
+/** 가짜 Data API 장면 → {api, 불림, 기록}. 채널: {id: {이름, 핸들, 구독}} · 목록: {채널id: [영상id…]}(없으면 404) · 영상: {id: {…}} */
+function 가짜api({ 채널 = {}, 목록 = {}, 영상 = {}, 고장 = () => null, 토큰들 = ['TOKEN-1'] } = {}) {
+  const 불림 = [];
+  const 기록 = [];
+  let 토큰차례 = 0;
+  const 응답 = (status, 몸) => ({ ok: status >= 200 && status < 300, status, json: async () => 몸 });
+  const 채널항목 = id => ({ id, snippet: { title: 채널[id].이름 || id, customUrl: 채널[id].핸들 || '' },
+    statistics: { subscriberCount: String(채널[id].구독 ?? 0), hiddenSubscriberCount: 채널[id].구독 === null } });
+  const fetch기 = async (url, opts) => {
+    const u = new URL(url);
+    const 자원 = u.pathname.split('/').pop();
+    const 값 = Object.fromEntries(u.searchParams);
+    불림.push([자원, 값, opts.headers.authorization]);
+    const 깨짐 = 고장(자원, 값, 불림.length);
+    if (깨짐) return 응답(깨짐.status, 깨짐.몸 || {});
+    if (자원 === 'channels') {
+      if (값.forHandle) {
+        const id = Object.keys(채널).find(k => String(채널[k].핸들 || '').replace(/^@/, '') === 값.forHandle);
+        return 응답(200, { items: id ? [채널항목(id)] : [] });
+      }
+      return 응답(200, { items: 값.id.split(',').filter(id => 채널[id]).map(채널항목) });
+    }
+    if (자원 === 'playlistItems') {
+      const id = 'UC' + 값.playlistId.slice(4);
+      if (!목록[id]) return 응답(404, { error: { errors: [{ reason: 'playlistNotFound' }] } });
+      return 응답(200, { items: 목록[id].slice(0, Number(값.maxResults)).map(v => ({ contentDetails: { videoId: v } })) });
+    }
+    if (자원 === 'videos') {
+      return 응답(200, { items: 값.id.split(',').filter(v => 영상[v]).map(v => ({ id: v,
+        snippet: { title: 영상[v].제목 || v, channelId: 영상[v].채널, channelTitle: 채널[영상[v].채널]?.이름 || '', publishedAt: `${영상[v].날짜}T09:00:00Z`, description: '' },
+        statistics: { viewCount: String(영상[v].조회), ...(영상[v].좋아요 === undefined ? {} : { likeCount: String(영상[v].좋아요) }), ...(영상[v].댓글 === undefined ? {} : { commentCount: String(영상[v].댓글) }) },
+        contentDetails: { duration: `PT${영상[v].길이 ?? 20}S` } })) });
+    }
+    throw new Error(자원);
+  };
+  const api = new 수집.API부르개({ 토큰: async () => 토큰들[Math.min(토큰차례++, 토큰들.length - 1)], fetch기, 기록: 줄 => 기록.push(줄), 지금: () => 0 });
+  return { api, 불림, 기록 };
+}
+
+/** 채널 하나의 쇼츠 30편 장면 — 맨 앞은 튄 편(9,100회 · 10-25 · 12초), 나머지 29편은 1,000회 */
+function api채널장면(A, { 튄 = 'NEW1aaaaaaa', 핸들 = '@aa', 구독 = 50000 } = {}) {
+  const 평범 = Array.from({ length: 29 }, (_, i) => vid('B', i));
+  const 영상 = { [튄]: { 채널: A, 날짜: '2026-10-25', 조회: 9100, 좋아요: 300, 댓글: 40, 길이: 12, 제목: '새 편 1' } };
+  평범.forEach((v, i) => { 영상[v] = { 채널: A, 날짜: `2026-10-${String(1 + (i % 20)).padStart(2, '0')}`, 조회: 1000, 길이: 30 }; });
+  return { 채널: { [A]: { 이름: '가 채널', 핸들, 구독 } }, 목록: { [A]: [튄, ...평범] }, 영상 };
+}
+
+test('Data API 부르개 — 토큰은 머리에만(기록에 없음), 401이면 한 번 새로 받고, 한도 403이면 이 회차 멈춤, 404는 없음, 묶음은 50편씩', async () => {
+  assert.equal(수집.api영상읽기({ id: 'x1234567890', snippet: { publishedAt: '2026-10-23T14:23:49Z' }, statistics: { viewCount: '14478' }, contentDetails: { duration: 'PT1M5S' } }).길이, 65);
+  const 하나 = 수집.api영상읽기({ id: 'x1234567890', snippet: { title: 't', channelId: 'UCx', publishedAt: '2026-10-23T14:23:49Z' }, statistics: { viewCount: '14478', commentCount: '7' }, contentDetails: { duration: 'PT25S' } });
+  assert.deepEqual([하나.조회, 하나.좋아요, 하나.댓글수, 하나.날짜, 하나.올린때], [14478, null, 7, '2026-10-23', '2026-10-23T14:23:49Z'], '좋아요를 숨기면 null');
+  assert.equal(수집.api채널읽기({ id: 'UCx', snippet: { customUrl: 'hayanleekr' }, statistics: { subscriberCount: '47400' } }).핸들, '@hayanleekr');
+  assert.equal(수집.api채널읽기({ id: 'UCx', snippet: {}, statistics: { hiddenSubscriberCount: true, subscriberCount: '0' } }).구독, null, '숨긴 구독은 0이 아니라 모름');
+
+  const A = 'UC' + 'a'.repeat(22);
+  const 장면 = api채널장면(A);
+  // 첫 호출은 401(토큰 끝남) → 새 토큰으로 다시
+  const 하나장면 = 가짜api({ ...장면, 고장: (자원, 값, n) => (n === 1 ? { status: 401 } : null), 토큰들: ['TOKEN-old', 'TOKEN-new'] });
+  const 목록 = await 하나장면.api.쇼츠목록(A, 30);
+  assert.equal(목록.상태, '됨');
+  assert.deepEqual(하나장면.불림.map(([자원, , 머리]) => [자원, 머리]), [['playlistItems', 'Bearer TOKEN-old'], ['playlistItems', 'Bearer TOKEN-new']]);
+  assert.equal(하나장면.불림[1][1].playlistId, 'UUSH' + 'a'.repeat(22));
+  assert.ok(!JSON.stringify(하나장면.기록).includes('TOKEN'), '기록에 토큰이 없다');
+  assert.ok(하나장면.기록.every(줄 => 줄.곳 === 'api'));
+
+  // 영상 120편은 50 · 50 · 20 세 묶음
+  const 많이 = Array.from({ length: 120 }, (_, i) => vid('M', i));
+  const 셋 = 가짜api({ 영상: Object.fromEntries(많이.map(v => [v, { 채널: A, 날짜: '2026-10-20', 조회: 5 }])) });
+  const 받음 = await 셋.api.영상들(많이);
+  assert.equal(받음.상세.size, 120);
+  assert.deepEqual(셋.불림.map(([, 값]) => 값.id.split(',').length), [50, 50, 20]);
+
+  // 404는 없음(그 채널만), 한도 403은 멈춤 — 멈춘 뒤에는 부르지 않는다
+  const 넷 = 가짜api({ ...장면, 고장: (자원) => (자원 === 'videos' ? { status: 403, 몸: { error: { errors: [{ reason: 'quotaExceeded' }] } } } : null) });
+  assert.equal((await 넷.api.쇼츠목록('UC' + 'z'.repeat(22), 30)).상태, '없음');
+  assert.equal(넷.api.셈.멈춤, false, '404 하나로 멈추지 않는다');
+  assert.equal((await 넷.api.영상들([vid('B', 1)])).상태, '멈춤');
+  assert.equal(넷.api.셈.멈춤, true);
+  assert.match(넷.api.셈.까닭, /403 quotaExceeded/);
+  const 앞 = 넷.불림.length;
+  assert.equal((await 넷.api.쇼츠목록(A, 30)).상태, '멈춤');
+  assert.equal(넷.불림.length, 앞, '멈춘 뒤에는 부르지 않는다');
+
+  // 연달아 셋 실패(500)면 멈춘다 · 토큰을 못 받으면 처음부터 멈춘다
+  const 다섯 = 가짜api({ ...장면, 고장: () => ({ status: 500 }) });
+  for (let i = 0; i < 3; i += 1) assert.equal((await 다섯.api.쇼츠목록(A, 30)).상태, '실패');
+  assert.equal(다섯.api.셈.멈춤, true);
+  const 여섯 = new 수집.API부르개({ 토큰: async () => { throw new Error('LAB YouTube 자격이 없다'); }, fetch기: async () => { throw new Error('부르면 안 된다'); } });
+  assert.equal((await 여섯.영상들([vid('B', 1)])).상태, '멈춤');
+  assert.match(여섯.셈.까닭, /토큰을 못 받았다 — LAB YouTube 자격이 없다/);
+});
+
+test('Data API 길 — 채널은 API로만 읽고(쇼츠 탭·RSS 안 부름), 정확한 조회로 기준선, 길이·좋아요·댓글 수는 API 값, 상세 상한을 안 깎고, yt-dlp는 댓글 본문만', async () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const 출력 = 임시폴더();
+  try {
+    const A = 'UC' + 'a'.repeat(22);
+    const { api, 불림: api불림 } = 가짜api(api채널장면(A));
+    const yt불림 = [];
+    const 부르개 = 가짜((종류, 값) => {
+      yt불림.push([종류, 값.id, 값.댓글수]);
+      if (종류 === '영상' && 값.댓글수 > 0) return { 상태: '됨', 줄들: [{ id: 값.id, duration: 999, view_count: 1, comments: [
+        { id: 'c1', parent: 'root', text: '이거 나도 그랬다', like_count: 50, author: '홍길동', author_id: 'UCauthorsecret000000000a' }] }], 오류: '', 오류글: '[youtube] Downloading ~1,234 comments' };
+      throw new Error(`${종류}는 부르지 않는다`);
+    });
+    const { 설정 } = 판정.설정검사({ 브랜드: 'lab-en', 이름: '시험', 유튜브: [{ id: A, 이름: '가 채널' }], 검색: { 어: ['q'], 회차당: 0 }, 판정: { 최소조회: 3000 } }, 'lab-en');
+    const o = 스캔.인자(['lab-en', '--상세', '0', '--댓글', '1', '--틱톡', '0']);
+    const 누적 = 판정.빈누적('lab-en');
+    const { 요약 } = await 스캔.브랜드스캔({ 설정, 누적, o, 부르개, api, 캐시: new Map(), 오늘: '2026-10-26', 출력 });
+    assert.deepEqual(yt불림, [['영상', 'NEW1aaaaaaa', 30]], 'yt-dlp는 댓글 본문 한 번만');
+    assert.deepEqual(api불림.map(([자원]) => 자원), ['channels', 'playlistItems', 'videos'], '채널 50곳 한 번 · 쇼츠 목록 · 영상 묶음');
+    const [줄] = 요약.새튄편;
+    assert.deepEqual([줄.id, 줄.조회, 줄.날짜, 줄.길이, 줄.좋아요, 줄.댓글수, 줄.구독, 줄.배수], ['NEW1aaaaaaa', 9100, '2026-10-25', 12, 300, 40, 50000, 9.1],
+      '숫자·길이는 API 값(댓글 호출의 999초·조회 1·「~1,234」가 아니다)');
+    assert.match(줄.인용, /NEW1aaaaaaa\(9\.1천 · ×9\.1 · 2026-10-25 · 12초\)/);
+    assert.equal(줄.상세, '됨');
+    assert.deepEqual([요약.표본.유튜브.api, 요약.표본.유튜브.탭, 요약.표본.유튜브.rss, 요약.표본.유튜브.읽음], [1, 0, 0, 1]);
+    assert.deepEqual(요약.표본.상세, { 시도: 1, 됨: 1, api: 1 });
+    assert.deepEqual(누적.튄편.NEW1aaaaaaa.길이, 12);
+    assert.ok(!누적.튄편.NEW1aaaaaaa.보충, '길이를 API로 읽었으니 보충이 아니다');
+    const 칸 = 누적.채널[A];
+    assert.deepEqual([칸.중앙값, 칸.편수, 칸.구독, 칸.핸들, 칸.기준선잰날], [1000, 30, 50000, '@aa', '2026-10-26'], '정확한 조회 30편으로 기준선');
+    assert.equal(칸.편.NEW1aaaaaaa, '2026-10-25');
+    const 댓글글 = fs.readFileSync(path.join(출력, '댓글', 'lab-en', 'NEW1aaaaaaa.json'), 'utf8');
+    assert.ok(!댓글글.includes('홍길동') && !댓글글.includes('UCauthorsecret'));
+    assert.equal(JSON.parse(댓글글).댓글수, 40, '전체 댓글 수도 API 값');
+    assert.match(판정.요약글({ 날짜: '2026-10-26', 규칙: '', 브랜드: { 'lab-en': 요약 } }), /Data API로 1곳/);
+  } finally {
+    require('node:fs').rmSync(출력, { recursive: true, force: true });
+  }
+});
+
+test('Data API 길 — 지난 회차의 보충(길이 없음)·다시볼(날짜 없음)은 영상 묶음 한 번으로 채운다(yt-dlp 안 부름)', async () => {
+  const 출력 = 임시폴더();
+  try {
+    const A = 'UC' + 'a'.repeat(22);
+    const 장면 = api채널장면(A, { 튄: vid('B', 99) });
+    장면.영상[vid('B', 99)].조회 = 1000; // 이번 목록에는 튄 편이 없다
+    장면.영상.OLD1aaaaaaa = { 채널: A, 날짜: '2026-10-10', 조회: 8500, 길이: 20 };
+    장면.영상.UND1aaaaaaa = { 채널: A, 날짜: '2026-10-12', 조회: 7200, 길이: 15 };
+    const { api, 불림: api불림 } = 가짜api(장면);
+    const 부르개 = 가짜((종류) => { throw new Error(`${종류}는 부르지 않는다`); });
+    const { 설정 } = 판정.설정검사({ 브랜드: 'lab-en', 이름: '시험', 유튜브: [{ id: A, 이름: '가 채널' }], 검색: { 어: ['q'], 회차당: 0 }, 판정: { 최소조회: 3000 } }, 'lab-en');
+    const 누적 = { ...판정.빈누적('lab-en'),
+      채널: { [A]: { 중앙값: 1000, 편수: 30, 구독: 50000, 기준선잰날: '2026-10-19', 편: {} } },
+      튄편: { OLD1aaaaaaa: { 곳: '유튜브', 채널: A, 날짜: '2026-10-10', 조회: 8000, 배수: 8, 규칙: 'A', 잡은날: '2026-10-19', 보충: true } },
+      다시볼: { UND1aaaaaaa: { 채널: A, 조회: 7000, 날짜: null, 남긴날: '2026-10-19' } } };
+    const o = 스캔.인자(['lab-en', '--상세', '0', '--댓글', '0', '--틱톡', '0']);
+    const { 요약 } = await 스캔.브랜드스캔({ 설정, 누적, o, 부르개, api, 캐시: new Map(), 오늘: '2026-10-26', 출력 });
+    const 영상부름 = api불림.filter(([자원]) => 자원 === 'videos').map(([, 값]) => 값.id.split(',').sort());
+    assert.deepEqual(영상부름.at(-1), ['OLD1aaaaaaa', 'UND1aaaaaaa'], '다시볼·보충 두 편을 한 묶음으로');
+    assert.deepEqual(요약.새튄편.map(r => [r.id, r.날짜, r.길이, r.찾은길]), [['UND1aaaaaaa', '2026-10-12', 15, '지난 회차에 날짜를 확인 못 함']], '날짜를 API로 알게 된 다시볼 편이 처음 실린다');
+    assert.deepEqual(요약.날짜모름, []);
+    assert.deepEqual(요약.보충.map(r => [r.id, r.길이, r.조회, r.보고한날]), [['OLD1aaaaaaa', 20, 8500, '2026-10-19']]);
+    assert.ok(!누적.튄편.OLD1aaaaaaa.보충);
+    assert.equal(누적.튄편.OLD1aaaaaaa.길이, 20);
+    assert.deepEqual(누적.다시볼, {});
+  } finally {
+    require('node:fs').rmSync(출력, { recursive: true, force: true });
+  }
+});
+
+test('Data API 길 — 한도(403 quotaExceeded)로 멈추면 그 채널부터 쇼츠 탭·RSS(yt-dlp)로 읽고 못 잰 곳에 적는다 · 쇼츠 목록 404인 채널도 쇼츠 탭으로', async () => {
+  const 출력 = 임시폴더();
+  try {
+    const A = 'UC' + 'a'.repeat(22);
+    const B = 'UC' + 'b'.repeat(22);
+    const C = 'UC' + 'c'.repeat(22);
+    const 장면 = api채널장면(A);
+    장면.채널[B] = { 이름: '나 채널', 핸들: '@bb', 구독: 1000 };
+    장면.채널[C] = { 이름: '다 채널', 핸들: '@cc', 구독: 1000 };
+    // C는 쇼츠 목록이 없고(404), A의 영상 묶음에서 한도가 끝난다
+    const { api } = 가짜api({ ...장면, 고장: (자원) => (자원 === 'videos' ? { status: 403, 몸: { error: { errors: [{ reason: 'quotaExceeded' }] } } } : null) });
+    const 부르개 = 가짜((종류, 값) => {
+      if (종류 === '탭') return 값.id === C ? { 상태: '없음', 줄들: [], 오류: 'This channel does not have a shorts tab', 오류글: '' } : 탭응답(값.id, 평범30('T'));
+      throw new Error(종류);
+    });
+    const { 설정 } = 판정.설정검사({ 브랜드: 'lab-en', 이름: '시험', 유튜브: [{ id: C, 이름: '다 채널' }, { id: A, 이름: '가 채널' }, { id: B, 이름: '나 채널' }], 검색: { 어: ['q'], 회차당: 0 } }, 'lab-en');
+    const o = 스캔.인자(['lab-en', '--상세', '0', '--댓글', '0', '--틱톡', '0']);
+    const { 요약 } = await 스캔.브랜드스캔({ 설정, 누적: 판정.빈누적('lab-en'), o, 부르개, api, 캐시: new Map(), 오늘: '2026-10-26', 출력 });
+    assert.deepEqual(부르개.불림.filter(([종류]) => 종류 === '탭').map(([, id]) => id), [C, A, B], 'C는 목록 404라, A는 영상 묶음이 멈춰서, B는 멈춘 뒤라 쇼츠 탭');
+    assert.equal(요약.표본.유튜브.api, 0);
+    assert.equal(요약.표본.유튜브.읽음, 2);
+    assert.ok(요약.못잼.some(m => m.계정 === '다 채널' && /쇼츠 탭 없음/.test(m.까닭)));
+    assert.ok(요약.못잼.some(m => m.계정 === 'Data API' && /403 quotaExceeded/.test(m.까닭) && /yt-dlp/.test(m.까닭)));
+  } finally {
+    require('node:fs').rmSync(출력, { recursive: true, force: true });
+  }
+});
+
+test('Data API 길 — 핸들만 적은 우리 계정도 API로 찾아 비교 줄에만 두고, 누적에 ID·핸들을 둔다', async () => {
+  const 출력 = 임시폴더();
+  try {
+    const OURS = 'UC' + 'o'.repeat(22);
+    const 편 = ['OUR1aaaaaaa', ...Array.from({ length: 12 }, (_, i) => vid('U', i))];
+    const 영상 = Object.fromEntries(편.map((v, i) => [v, { 채널: OURS, 날짜: i ? '2026-10-10' : '2026-10-25', 조회: i ? 172 : 3440, 길이: 20 }]));
+    const { api, 불림 } = 가짜api({ 채널: { [OURS]: { 이름: '우리', 핸들: '@ours', 구독: 8 } }, 목록: { [OURS]: 편 }, 영상 });
+    const 부르개 = 가짜((종류) => { throw new Error(`우리 계정에는 ${종류}를 부르지 않는다`); });
+    const { 설정 } = 판정.설정검사({ 브랜드: 'synkbrief', 이름: '시험', 유튜브: [{ 핸들: '@ours', 이름: '우리', 우리: true }], 검색: { 어: ['q'], 회차당: 0 } }, 'synkbrief');
+    const 누적 = 판정.빈누적('synkbrief');
+    const { 요약 } = await 스캔.브랜드스캔({ 설정, 누적, o: 스캔.인자(['synkbrief', '--틱톡', '0']), 부르개, api, 캐시: new Map(), 오늘: '2026-10-26', 출력 });
+    assert.equal(불림[0][1].forHandle, 'ours');
+    assert.deepEqual(요약.새튄편, []);
+    assert.deepEqual(요약.우리.map(u => [u.곳, u.계정, u.기준.중앙값]), [['유튜브', '@ours', 172]]);
+    assert.equal(누적.채널[OURS].핸들, '@ours');
+  } finally {
+    require('node:fs').rmSync(출력, { recursive: true, force: true });
+  }
+});
+
+test('Data API 길 — main은 가짜 부르개만 주면 API를 만들지 않고(시험이 네트워크를 안 탄다), API를 주면 요약 호출 칸에 그 셈을 남긴다', async () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const A = 'UC' + 'a'.repeat(22);
+  const 폴더 = main시험폴더({ 브랜드: 'lab-en', 이름: '시험', 유튜브: [{ id: A }], 검색: { 어: ['q'], 회차당: 0 } });
+  try {
+    const 인자 = ['lab-en', '--누적', 폴더.누적, '--출력', 폴더.출력, '--날짜', '2026-10-26', '--틱톡', '0', '--댓글', '0', '--누적안씀'];
+    const 옛 = 가짜((종류, 값) => (종류 === '탭' ? 탭응답(값.id, 평범30('T')) : { 상태: '막힘', 줄들: [], 오류: '', 오류글: '' }));
+    assert.equal(await 스캔.main(인자, { 부르개: 옛, 설정폴더: 폴더.설정 }), 0);
+    let 요약 = JSON.parse(fs.readFileSync(path.join(폴더.출력, '요약.json'), 'utf8'));
+    assert.equal(요약.호출.api, undefined, '가짜 부르개만 주면 Data API를 쓰지 않는다');
+    assert.ok(옛.불림.some(([종류]) => 종류 === '탭'));
+    fs.rmSync(폴더.출력, { recursive: true, force: true });
+    const { api } = 가짜api(api채널장면(A));
+    const 새 = 가짜((종류) => { throw new Error(`${종류}는 부르지 않는다`); });
+    assert.equal(await 스캔.main(인자, { 부르개: 새, api, 설정폴더: 폴더.설정 }), 0);
+    요약 = JSON.parse(fs.readFileSync(path.join(폴더.출력, '요약.json'), 'utf8'));
+    assert.deepEqual([요약.호출.api.호출, 요약.호출.api.멈춤], [3, false]);
+    assert.deepEqual(요약.브랜드['lab-en'].새튄편.map(r => [r.id, r.길이]), [['NEW1aaaaaaa', 12]]);
+  } finally {
+    fs.rmSync(폴더.뿌리, { recursive: true, force: true });
+  }
 });

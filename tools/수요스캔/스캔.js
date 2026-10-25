@@ -37,6 +37,7 @@ const 도움글 = `쓰는 법: node tools/수요스캔/스캔.js <lab-en|lab-mn|
   --창 N       판정 창(일, 기본 ${판정.기본.창})
   --기준선 N   쇼츠 탭(기준선·구독)을 다시 읽는 간격(일, 기본 ${판정.기본.기준선갱신일}, 0이면 매번)
   --간격 S     유튜브·틱톡 호출 사이 최소 간격(초, 기본 2.5)
+  --유튜브 api|ytdlp  유튜브 채널 숫자를 읽는 길(기본 api — Data API, 안 되면 그 채널부터 쇼츠 탭·RSS로. ytdlp는 처음부터 쇼츠 탭·RSS)
   --날짜 YYYY-MM-DD  회차 날짜(기본 오늘 서울)
   --누적 <폴더>  누적 폴더(기본 tools/수요스캔/누적)
   --출력 <폴더>  결과 폴더(기본 <공용 작업본>/.tmp/수요스캔/<날짜>)
@@ -47,7 +48,7 @@ function 인자(argv) {
   const o = {
     브랜드: [], 채널: null, 검색: null, 찾기: null, 틱톡: null, 댓글: 판정.기본.댓글편수, 댓글수: 판정.기본.댓글개수,
     상세: 판정.기본.상세상한, 창: 판정.기본.창, 기준선: 판정.기본.기준선갱신일, 간격: 2.5, 날짜: null, 누적: null, 출력: null,
-    누적안씀: false, 설정검사: false, 도움: false,
+    유튜브: 'api', 누적안씀: false, 설정검사: false, 도움: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -74,6 +75,7 @@ function 인자(argv) {
     else if (a === '--날짜') { o.날짜 = 글(); if (!/^\d{4}-\d{2}-\d{2}$/.test(o.날짜)) throw new Error('--날짜는 YYYY-MM-DD'); }
     else if (a === '--누적') o.누적 = path.resolve(글());
     else if (a === '--출력') o.출력 = path.resolve(글());
+    else if (a === '--유튜브') { o.유튜브 = 글(); if (!['api', 'ytdlp'].includes(o.유튜브)) throw new Error('--유튜브는 api 또는 ytdlp'); }
     else if (a === '--누적안씀') o.누적안씀 = true;
     else if (a === '--설정검사') o.설정검사 = true;
     else if (a === '-h' || a === '--help' || a === '--도움') o.도움 = true;
@@ -180,8 +182,9 @@ function 규칙글() {
   return `그 채널 최근 쇼츠 ${p.기준편수}편 조회 중앙값의 ${p.배수}배 이상(브랜드별 최소 조회 이상) · 작은 채널(구독 ${판정.짧은수(p.작은채널구독상한)} 이하)은 조회 ≥ 구독 · 쇼츠가 ${p.최소편수}편 안 되면 평소를 못 재 판정하지 않는다. 틱톡은 최근 ${t.기준편수}편 중앙값의 ${t.배수}배 이상(구독 수를 못 읽어 작은 채널 규칙 없음). 창 안(올린 지 ${판정.기본.창}일 안)이고 지난 회차까지 보고하지 않은 편만 「새 튄 편」이다.`;
 }
 
-/** 브랜드 하나를 돈다 → {요약, 원자료} (누적은 그 자리에서 고친다) */
-async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, 출력 }) {
+/** 브랜드 하나를 돈다 → {요약, 원자료} (누적은 그 자리에서 고친다)
+ *  api(수집.API부르개)를 주면 유튜브 채널은 Data API로 먼저 읽고, 못 읽은 채널만 쇼츠 탭·RSS(yt-dlp)로 읽는다. */
+async function 브랜드스캔({ 설정, 누적, o, 부르개, api = null, 캐시, 오늘, 출력 }) {
   const 판 = 설정.판정;
   const 창시작 = 판정.날짜빼기(오늘, o.창);
   const 지난스캔 = 누적.마지막스캔;
@@ -191,11 +194,14 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
   const 유튜브후보 = [];
   const 원자료 = { 채널: [], 검색: [], 틱톡: [] };
   const 표본 = {
-    유튜브: { 대상: 0, 읽음: 0, 탭: 0, rss: 0, 지난기준선: 0, 편: 0, 창안: 0 },
+    유튜브: { 대상: 0, 읽음: 0, 탭: 0, rss: 0, api: 0, 지난기준선: 0, 편: 0, 창안: 0 },
     틱톡: { 대상: 0, 읽음: 0, 편: 0 },
     검색: { 어: [], 결과: 0, 쇼츠: 0, 새채널: 0 },
-    상세: { 시도: 0, 됨: 0 }, 댓글: { 편: 0, 개: 0 },
+    상세: { 시도: 0, 됨: 0, api: 0 }, 댓글: { 편: 0, 개: 0 },
   };
+  const API쓰기 = () => Boolean(api) && !api.셈.멈춤;
+  // Data API로 읽은 편의 상세(길이·좋아요·댓글 수·정확한 조회) — 4·5단계가 yt-dlp를 부르지 않게. 회차 하나에 하나(브랜드를 건너서 쓴다)
+  const api상세 = 캐시.api상세 || (캐시.api상세 = new Map());
 
   const 핸들로id = 핸들 => {
     if (!핸들) return null;
@@ -248,16 +254,60 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     return 결과;
   }
 
+  // 유튜브 채널을 Data API로(10-25) — 쇼츠 목록 30편 + 그 편들의 정확한 숫자(50편 한 번) + 구독. 쇼츠 탭·RSS 둘을 대신해서
+  // 탭 꼴(기준선·구독)과 RSS 꼴(정확한 조회·올린 날)을 같이 돌려준다 — 판정(채널정리)은 그대로 쓴다. 못 읽으면 {상태, 오류}.
+  async function 읽기api(c, id) {
+    const 열쇠 = `api:${id || String(c.핸들).toLowerCase()}`;
+    if (캐시.has(열쇠)) return 캐시.get(열쇠);
+    let 결과 = null;
+    let 채널 = null;
+    if (id) {
+      채널 = (await api.채널들([id])).get(id) || null;
+    } else {
+      const r = await api.핸들채널(c.핸들);
+      if (r.상태 === '됨') { 채널 = r.채널; id = 채널.채널id; } else 결과 = { 상태: r.상태, 오류: r.오류 };
+    }
+    if (!결과) {
+      const 목록 = await api.쇼츠목록(id, 판.기준편수);
+      if (목록.상태 !== '됨') 결과 = { 상태: 목록.상태, 오류: 목록.오류 };
+      else {
+        const 받음 = await api.영상들(목록.ids);
+        const 편 = 목록.ids.map(v => 받음.상세.get(v)).filter(Boolean);
+        if (받음.상태 !== '됨' && !편.length) 결과 = { 상태: 받음.상태, 오류: 받음.오류 };
+        else {
+          for (const d of 편) api상세.set(d.id, { ...d, 핸들: 채널?.핸들 || null, 구독: 채널?.구독 ?? null });
+          const 채널이름 = 채널?.채널이름 || 편[0]?.채널이름 || '';
+          결과 = {
+            탭: { 채널id: id, 채널이름, 핸들: 채널?.핸들 || null, 구독: 채널?.구독 ?? null, 편: 편.map(d => ({ id: d.id, 제목: d.제목, 조회: d.조회 })) },
+            rss: { 채널id: id, 채널이름, 전체수: 편.length, 편: 편.map(d => ({ id: d.id, 제목: d.제목, 날짜: d.올린때, 쇼츠: true, 조회: d.조회 })) },
+            일부: 받음.상태 === '됨' ? null : `일부만 읽음 — 영상 숫자 ${편.length}/${목록.ids.length}편(${받음.오류})`,
+          };
+        }
+      }
+    }
+    캐시.set(열쇠, 결과);
+    if (결과.탭?.채널id) 캐시.set(`api:${결과.탭.채널id}`, 결과);
+    return 결과;
+  }
+
   async function 채널하나(c) {
     표본.유튜브.대상 += 1;
     let id = c.id || 핸들로id(c.핸들);
     if (id && 이번읽은.has(id)) { 표본.유튜브.대상 -= 1; return; }
     const 이전 = id ? 누적.채널[id] : undefined;
-    const 탭필요 = !id || 판정.탭다시읽기(이전, 오늘, o.기준선);
     let 탭 = null;
     let 이름 = 표시이름(c);
     let 탭실패 = null;
     let 탭일부 = null;
+    // Data API로 읽히면 쇼츠 탭·RSS를 부르지 않는다. 목록이 없거나(404) 실패·멈춤이면 이 채널은 아래 yt-dlp 길로
+    const 바로 = API쓰기() ? await 읽기api(c, id) : null;
+    if (바로?.탭) {
+      탭 = 바로.탭;
+      탭일부 = 바로.일부;
+      id = id || 바로.탭.채널id;
+      표본.유튜브.api += 1;
+    }
+    const 탭필요 = !바로?.탭 && (!id || 판정.탭다시읽기(이전, 오늘, o.기준선));
     if (탭필요) {
       const r = await 읽기탭(c, id);
       if (r.탭) {
@@ -277,9 +327,9 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     if (이번읽은.has(id)) { 표본.유튜브.대상 -= 1; return; }
     이번읽은.add(id);
     const 지금이전 = 누적.채널[id] || 이전;
-    const rr = await 읽기rss(id, 지금이전?.rss);
+    const rr = 바로?.탭 ? { rss: 바로.rss } : await 읽기rss(id, 지금이전?.rss);
     const rss = rr.rss || null;
-    if (rss) 표본.유튜브.rss += 1;
+    if (rss && !바로?.탭) 표본.유튜브.rss += 1;
     if (!rss && !탭 && !탭필요) {
       // 탭을 안 읽는 주에 RSS가 막히면 쇼츠 탭을 읽는다(조회는 지금 것, 날짜는 누적에서)
       const r = await 읽기탭(c, id);
@@ -287,7 +337,7 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     }
     // 이름은 설정에 없으면 이번에 읽은 쇼츠 탭이나 RSS 머리에서(2차 검수 B3 — 찾은 채널이 탭을 안 읽는 주에 ID로만 보였다)
     if (이름없음(c)) 이름 = 탭?.채널이름 || rss?.채널이름 || 이름;
-    if (탭일부) 못잼.push({ 곳: '유튜브', 계정: 이름, 까닭: `쇼츠 탭 ${탭일부}` });
+    if (탭일부) 못잼.push({ 곳: '유튜브', 계정: 이름, 까닭: `${바로?.탭 ? 'Data API' : '쇼츠 탭'} ${탭일부}` });
     if (!탭 && !rss) {
       못잼.push({ 곳: '유튜브', 계정: 이름, 까닭: `쇼츠 탭·RSS 둘 다 못 읽음 — 탭 ${탭실패 ? 까닭글(탭실패) : '(이번엔 안 읽음)'} · RSS ${까닭글(rr)}` });
       if (지금이전) 누적.채널[id] = { ...지금이전, 막힘: `${오늘} ${rr.상태 || '실패'}` };
@@ -328,6 +378,8 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     대상.push({ id, 핸들: 누적.채널[id]?.핸들 || null, 이름: null, 우리: false, 찾은길: `검색으로 찾음(${f.찾은날})` });
   }
   if (o.채널 !== null) 대상 = 대상.slice(0, o.채널);
+  // ID를 아는 채널의 이름·핸들·구독은 50곳에 한 번(1단위)으로 미리 — 채널마다 따로 부르지 않게
+  if (API쓰기()) await api.채널들(대상.map(c => c.id || 핸들로id(c.핸들)).filter(Boolean));
   for (const c of 대상) await 채널하나(c);
 
   // 2) 검색 — 아직 모르는 채널 가운데 쇼츠가 하한 넘게 나온 채널을 몇 곳 더 읽는다
@@ -411,11 +463,27 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     유튜브후보.push({ ...h, 채널: h.핸들 || h.채널id, 찾은길: '지난 회차에 날짜를 확인 못 함' });
   }
   유튜브후보.sort((a, b) => (b.조회 || 0) - (a.조회 || 0) || a.id.localeCompare(b.id));
+  // API로 읽은 채널의 편은 상세가 이미 있다 — 다시볼·지난 보충처럼 이번에 목록에 없던 편만 50편 묶음으로 한 번에(1단위)
+  if (API쓰기()) {
+    const 모자람 = [...유튜브후보.map(h => h.id), ...판정.보충후보(튄편, 누적.채널, 창시작).map(h => h.id)].filter(v => !api상세.has(v));
+    if (모자람.length) for (const [v, d] of (await api.영상들(모자람)).상세) api상세.set(v, d);
+  }
+  // 상세 상한(--상세)은 yt-dlp로 읽는 편에만 건다 — API 상세는 공짜에 가깝다
   let 상세남음 = o.상세;
   let 댓글남음 = o.댓글;
 
-  /** 영상 하나 → {상세, 댓글:{목록, 전체}|null, 일부} | {실패} — 클라이언트를 바꿔 가며, 막히면 바로 그친다 */
+  /** 영상 하나 → {상세, 댓글:{목록, 전체}|null, 일부, api} | {실패} — API 상세가 있으면 그것을 쓰고 댓글 본문만 yt-dlp로.
+   *  없으면 yt-dlp로 클라이언트를 바꿔 가며, 막히면 바로 그친다 */
   async function 영상받기(id, 댓글수) {
+    const 미리 = api상세.get(id);
+    if (미리) {
+      if (!(댓글수 > 0)) return { 상세: { ...미리 }, 댓글: null, 일부: null, api: true };
+      // 숫자·길이·전체 댓글 수는 API 값 그대로 — 쓴 사람 칸은 댓글줄이기가 버린다. 댓글을 못 받으면 부르는 쪽이 「댓글을 못 받음」으로 적는다
+      const r = await 부르개.yt('영상', { id, 댓글수, 시도: 0 });
+      const 받은 = (r.상태 === '됨' || r.상태 === '일부') && r.줄들[0] ? r.줄들[0] : null;
+      const 댓글 = 받은 ? { 목록: 판정.댓글줄이기(받은.comments, 댓글수), 전체: 숫자인가(미리.댓글수) ? 미리.댓글수 : 수집.댓글총수(r.오류글) } : null;
+      return { 상세: { ...미리 }, 댓글, 일부: null, api: true };
+    }
     let 마지막 = null;
     for (let 시도 = 0; 시도 < 수집.영상시도.length; 시도 += 1) {
       const r = await 부르개.yt('영상', { id, 댓글수, 시도 });
@@ -442,12 +510,14 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     // 댓글은 창 안이고 조회가 정확한 수로 확정된 편에만 같이 부른다 — 날짜 모르는 옛 히트·반올림 조회 편은 영상 정보부터(재확인 B3)
     const 확정 = Boolean(h.날짜) && h.정확 === true;
     let 댓글물음 = false;
-    if (상세남음 > 0) {
-      상세남음 -= 1;
+    const api있음 = api상세.has(h.id);
+    if (api있음 || 상세남음 > 0) {
+      if (!api있음) 상세남음 -= 1;
       표본.상세.시도 += 1;
       댓글물음 = 확정 && 댓글남음 > 0;
       받음 = await 영상받기(h.id, 댓글물음 ? o.댓글수 : 0);
       if (받음.상세) 표본.상세.됨 += 1;
+      if (받음.api) 표본.상세.api += 1;
     }
     const 상세 = 받음?.상세 || null;
     const 반영 = 판정.상세반영(h, 상세, h.기준, 판, 창시작);
@@ -498,15 +568,18 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     if (누적.찾은채널[h.채널id]) 누적.찾은채널[h.채널id].마지막튐 = 오늘; // 실제로 실은 편이 있을 때만(재확인 B4)
   }
 
-  // 5) 보충 — 앞 회차에 길이 없이 실은 편의 영상 정보를 상한이 남는 만큼 마저 읽는다(새 튄 편으로 다시 싣지 않는다)
+  // 5) 보충 — 앞 회차에 길이 없이 실은 편의 영상 정보를 마저 읽는다(새 튄 편으로 다시 싣지 않는다). API 상세가 있는 편은 모두,
+  //    yt-dlp로 읽을 편은 상한이 남는 만큼
   const 보충 = [];
   for (const h of 판정.보충후보(튄편, 누적.채널, 창시작)) {
-    if (상세남음 <= 0) break;
-    상세남음 -= 1;
+    const api있음 = api상세.has(h.id);
+    if (!api있음 && 상세남음 <= 0) continue;
+    if (!api있음) 상세남음 -= 1;
     표본.상세.시도 += 1;
     const 받음 = await 영상받기(h.id, 0);
     if (!받음.상세) continue; // 다음 회차에 다시
     표본.상세.됨 += 1;
+    if (받음.api) 표본.상세.api += 1;
     const 칸튄 = 튄편[h.id];
     const 반영 = 판정.상세반영(h, 받음.상세, h.기준, 판, 창시작);
     const 이름 = 받음.상세.채널이름 || h.핸들 || h.채널id;
@@ -538,6 +611,7 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
     if (!시드인가(id) && !Object.prototype.hasOwnProperty.call(누적.찾은채널, id)) delete 누적.채널[id];
   }
   누적.마지막스캔 = new Date().toISOString();
+  if (api?.셈.멈춤) 못잼.push({ 곳: '유튜브', 계정: 'Data API', 까닭: `이 회차에서 멈췄다 — ${api.셈.까닭} · 그 뒤 채널은 쇼츠 탭·RSS(yt-dlp)로 읽었다` });
   for (const m of 설정.못잼) 못잼.push({ ...m });
 
   const 요약 = {
@@ -547,7 +621,7 @@ async function 브랜드스캔({ 설정, 누적, o, 부르개, 캐시, 오늘, �
   return { 요약, 원자료 };
 }
 
-/** 주입(시험용): {부르개, 설정폴더} — 시험이 네트워크 없이 main을 돌린다 */
+/** 주입(시험용): {부르개, api, 설정폴더} — 시험이 네트워크 없이 main을 돌린다. 가짜 부르개만 주면 Data API는 쓰지 않는다 */
 async function main(argv, 주입 = {}) {
   const o = 인자(argv);
   if (o.도움) { console.log(도움글); return 0; }
@@ -571,7 +645,9 @@ async function main(argv, 주입 = {}) {
   const 누적폴더 = o.누적 || path.join(여기, '누적');
   fs.mkdirSync(출력, { recursive: true });
   const 기록파일 = path.join(출력, '기록.jsonl');
-  const 부르개 = 주입.부르개 || new 수집.부르개({ 간격초: o.간격, 기록: 줄 => fs.appendFileSync(기록파일, JSON.stringify(줄) + '\n', 'utf8') });
+  const 기록 = 줄 => fs.appendFileSync(기록파일, JSON.stringify(줄) + '\n', 'utf8');
+  const 부르개 = 주입.부르개 || new 수집.부르개({ 간격초: o.간격, 기록 });
+  const api = 주입.api !== undefined ? 주입.api : (주입.부르개 || o.유튜브 !== 'api' ? null : new 수집.API부르개({ 기록 }));
   const 캐시 = new Map();
   const 요약파일 = path.join(출력, '요약.json');
   let 읽은곳 = 0;
@@ -581,7 +657,7 @@ async function main(argv, 주입 = {}) {
     for (const b of 대상) {
       const { 누적, 경로, 처음 } = 누적읽기(누적폴더, b);
       const 시작 = Date.now();
-      const { 요약, 원자료 } = await 브랜드스캔({ 설정: 설정들[b], 누적, o, 부르개, 캐시, 오늘, 출력 });
+      const { 요약, 원자료 } = await 브랜드스캔({ 설정: 설정들[b], 누적, o, 부르개, api, 캐시, 오늘, 출력 });
       const 이번읽음 = 요약.표본.유튜브.읽음 + 요약.표본.틱톡.읽음;
       읽은곳 += 이번읽음;
       // 한 곳도 못 읽은 회차(모두 막힘)는 누적을 덮지 않는다 — 검색 차례·마지막 스캔이 헛돌지 않게(2차 검수 B1)
@@ -591,13 +667,14 @@ async function main(argv, 주입 = {}) {
       파일쓰기(path.join(출력, '원자료', `${b}.json`), JSON.stringify(원자료, null, 1) + '\n');
       let 이전요약 = null;
       try { 이전요약 = JSON.parse(fs.readFileSync(요약파일, 'utf8')); } catch { /* 첫 브랜드 */ }
-      const 합친 = 판정.요약합치기(이전요약, { 판: 1, 날짜: 오늘, 만든때: new Date().toISOString(), 규칙: 규칙글(), 브랜드: { [b]: 요약 }, 호출: { ...부르개.셈 } });
+      const 호출 = { ...부르개.셈, ...(api ? { api: { ...api.셈 } } : {}) };
+      const 합친 = 판정.요약합치기(이전요약, { 판: 1, 날짜: 오늘, 만든때: new Date().toISOString(), 규칙: 규칙글(), 브랜드: { [b]: 요약 }, 호출 });
       파일쓰기(요약파일, JSON.stringify(합친, null, 1) + '\n');
       파일쓰기(path.join(출력, '요약.md'), 판정.요약글(합친));
       if (누적쓰기) 파일쓰기(경로, 판정.줄맞춰(누적) + '\n');
       const p = 요약.표본;
       const 유튜브수 = 요약.새튄편.filter(r => r.곳 === '유튜브').length;
-      console.log(`[${b}] 유튜브 ${p.유튜브.읽음}/${p.유튜브.대상}채널 · 검색 ${p.검색.어.length}개(새 채널 ${p.검색.새채널}) · 틱톡 ${p.틱톡.읽음}/${p.틱톡.대상}`
+      console.log(`[${b}] 유튜브 ${p.유튜브.읽음}/${p.유튜브.대상}채널${p.유튜브.api ? `(API ${p.유튜브.api})` : ''} · 검색 ${p.검색.어.length}개(새 채널 ${p.검색.새채널}) · 틱톡 ${p.틱톡.읽음}/${p.틱톡.대상}`
         + ` · 새 튄 편 ${요약.새튄편.length}(유튜브 ${유튜브수}·틱톡 ${요약.새튄편.length - 유튜브수}) · 보충 ${(요약.보충 || []).length} · 날짜 모름 ${요약.날짜모름.length} · 못 잼 ${요약.못잼.length}`
         + ` · ${Math.round((Date.now() - 시작) / 1000)}초${처음 ? ' · 첫 스캔' : ''}${o.누적안씀 ? ' · 누적 안 씀' : (누적쓰기 ? '' : ' · 한 곳도 못 읽어 누적 그대로')}`);
     }
@@ -606,6 +683,7 @@ async function main(argv, 주입 = {}) {
   }
   if (부르개.셈.멈춘서비스.length) console.log(`⚠ 연달아 막혀 멈춘 곳: ${부르개.셈.멈춘서비스.join('·')} — 다음 회차에 다시 읽는다`);
   if ((캐시.rss연속실패 || 0) >= RSS멈춤한도) console.log('⚠ 유튜브 RSS가 연달아 실패해 남은 채널은 쇼츠 탭으로만 읽었다(새 편 날짜는 영상 정보로 확인)');
+  if (api?.셈.멈춤) console.log(`⚠ Data API가 이 회차에서 멈췄다(${api.셈.까닭}) — 그 뒤 유튜브 채널은 쇼츠 탭·RSS(yt-dlp)로 읽었다`);
   console.log(`→ ${path.join(출력, '요약.md')}`);
   return 읽은곳 > 0 ? 0 : 1;
 }

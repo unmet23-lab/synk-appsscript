@@ -10,6 +10,7 @@
  */
 const { spawn } = require('node:child_process');
 const { 가리기, utc날짜 } = require('./수요판정.js');
+const { seconds } = require('../lib/평소배수.js');
 
 const YT = 'https://www.youtube.com';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
@@ -59,11 +60,13 @@ function yt인자(종류, 값) {
   }
 }
 
-/** yt-dlp 오류 글 → '막힘' | '없음' | '실패' */
+/** yt-dlp 오류 글 → '막힘' | '없음' | '실패'
+ * 틱톡 「Unable to extract secondary user ID」는 없는 계정이 아니다 — 같은 계정이 앞뒤 회차엔 읽혔고, 흉내내기(curl_cffi) 없이 받은 페이지에서
+ * 잦다(10-24 PC 27곳 중 8곳, 10-25 서버 실측). 「실패」로 둔다. */
 function 실패갈래(오류글) {
   const s = String(오류글 || '');
   if (/HTTP Error (?:403|429)|Too Many Requests|Sign in to confirm|not a bot|rate[- ]?limit/i.test(s)) return '막힘';
-  if (/does not exist|does not have a (?:shorts|videos) tab|This channel does not have|terminated|Video unavailable|Private video|account is either private|Unable to extract secondary user ID|Unsupported URL|This video is not available|not available in your country/i.test(s)) return '없음';
+  if (/does not exist|does not have a (?:shorts|videos) tab|This channel does not have|terminated|Video unavailable|Private video|account is either private|Unsupported URL|This video is not available|not available in your country/i.test(s)) return '없음';
   return '실패';
 }
 
@@ -303,7 +306,180 @@ class 부르개 {
   }
 }
 
+// ── YouTube Data API(10-25) ─────────────────────────────────────────
+// 유튜브 채널의 쇼츠 목록·영상 숫자·구독을 공식 API로 읽는다(읽기만 — LAB YouTube 자격, tools/평소배수.js와 같은 길).
+// yt-dlp는 호출마다 2.5초를 띄워 네 브랜드가 18분이고, 쇼츠 탭 조회는 반올림, RSS는 10-24부터 대부분 404·500이다(tools/수요스캔/서버.md).
+// API는 채널마다 쇼츠 목록 한 번 + 영상 50편 묶음 한 번(각 1단위)이면 정확한 조회·올린 시각·길이가 다 온다.
+// 검색(search.list는 한 번에 100단위)·틱톡·댓글 본문은 yt-dlp 그대로.
+
+const API주소 = 'https://www.googleapis.com/youtube/v3/';
+// 이 회차에서 API를 그만 부를 403 까닭(한도·사용 설정·권한). 그 밖의 403은 그 대상만 실패로 센다.
+const API멈춤까닭 = /quotaExceeded|dailyLimitExceeded|rateLimitExceeded|accessNotConfigured|insufficientPermissions|SERVICE_DISABLED/i;
+
+/** LAB YouTube 자격으로 액세스 토큰을 받는다(값은 찍지 않는다) — tools/평소배수.js 토큰()과 같다 */
+async function lab토큰() {
+  const publisher = require('../lib/sns-publisher.js');
+  const 자격 = publisher.readCredential('lab-youtube', { allowLegacy: true });
+  if (!자격) throw new Error('LAB YouTube 자격이 없다(tools/sns-자격.ps1)');
+  return (await publisher.googleAccessToken(자격)).accessToken;
+}
+
+const api수 = v => (v === undefined || v === null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
+
+/** channels.list 항목 → {채널id, 채널이름, 핸들, 구독} — 구독을 숨긴 채널은 null */
+function api채널읽기(c) {
+  if (!c || typeof c.id !== 'string') return null;
+  const 주소 = c.snippet?.customUrl || '';
+  return {
+    채널id: c.id, 채널이름: c.snippet?.title || '', 핸들: 주소 ? (주소.startsWith('@') ? 주소 : `@${주소}`) : null,
+    구독: c.statistics?.hiddenSubscriberCount ? null : api수(c.statistics?.subscriberCount),
+  };
+}
+
+/** videos.list 항목 → 영상읽기와 같은 칸(조회·좋아요·댓글 수는 정확한 수, 날짜는 올린 시각의 UTC 날짜) + 올린때(ISO) */
+function api영상읽기(v) {
+  if (!v || typeof v.id !== 'string') return null;
+  const 통계 = v.statistics || {};
+  const 올린때 = typeof v.snippet?.publishedAt === 'string' ? v.snippet.publishedAt : null;
+  return {
+    id: v.id, 제목: v.snippet?.title || '', 채널id: v.snippet?.channelId || null, 채널이름: v.snippet?.channelTitle || '',
+    핸들: null, 구독: null, 조회: api수(통계.viewCount), 좋아요: api수(통계.likeCount), 댓글수: api수(통계.commentCount),
+    // 길이는 yt-dlp보다 1초 길게 올림으로 온다(10-25 같은 편 대조: 17→18 · 11→12 · 59→60초) — 3분 검사가 이 칸을 보고 1초 봐준다
+    길이: seconds(v.contentDetails?.duration), 길이출처: 'api', 날짜: /^\d{4}-\d{2}-\d{2}/.test(올린때 || '') ? 올린때.slice(0, 10) : null, 올린때,
+    설명: 가리기(v.snippet?.description || '').slice(0, 300),
+  };
+}
+
+/**
+ * Data API 부르개. 토큰은 처음 부를 때 받고, 401이면 한 번만 새로 받는다. 401이 되풀이되거나 한도·사용 설정 403이 오거나
+ * 연달아 실패한도만큼 실패하면 이 회차에서 멈춘다 — 부르는 쪽은 그 뒤 채널을 yt-dlp 길(쇼츠 탭·RSS)로 읽는다.
+ *   부르기(자원, 값) → {상태:'됨', 몸} | {상태:'없음'|'실패'|'멈춤', 오류}
+ * 토큰은 머리에만 싣고 기록(기록.jsonl)에는 자원·대상·상태·걸린 시간만 남긴다.
+ */
+class API부르개 {
+  constructor({ 토큰 = lab토큰, fetch기 = (...a) => fetch(...a), 기록 = null, 지금 = () => Date.now(), 실패한도 = 3 } = {}) {
+    Object.assign(this, { 토큰, fetch기, 기록, 지금, 실패한도 });
+    this.열쇠 = null;
+    this.연속실패 = 0;
+    this.채널칸 = new Map();
+    this.셈 = { 호출: 0, 실패: 0, 멈춤: false, 까닭: '' };
+  }
+
+  남기기(줄) {
+    if (typeof this.기록 === 'function') {
+      try { this.기록({ 때: new Date(this.지금()).toISOString(), 곳: 'api', ...줄 }); } catch { /* 기록 실패는 스캔을 멈추지 않는다 */ }
+    }
+  }
+
+  멈추기(까닭) {
+    if (this.셈.멈춤) return;
+    this.셈.멈춤 = true;
+    this.셈.까닭 = 까닭;
+  }
+
+  async 열쇠받기() {
+    try { this.열쇠 = await this.토큰(); return true; } catch (e) {
+      this.멈추기(`토큰을 못 받았다 — ${String(e?.message || e).slice(0, 120)}`);
+      return false;
+    }
+  }
+
+  실패세기(자원, 대상, ms, 오류) {
+    this.셈.실패 += 1;
+    this.연속실패 += 1;
+    this.남기기({ 종류: 자원, 대상, 상태: '실패', ms, 오류 });
+    if (this.연속실패 >= this.실패한도) this.멈추기(`연달아 ${this.연속실패}번 실패 — ${오류}`);
+    return { 상태: '실패', 오류 };
+  }
+
+  async 부르기(자원, 값, 대상 = '') {
+    if (this.셈.멈춤) return { 상태: '멈춤', 오류: this.셈.까닭 };
+    if (!this.열쇠 && !(await this.열쇠받기())) return { 상태: '멈춤', 오류: this.셈.까닭 };
+    const url = API주소 + 자원 + '?' + new URLSearchParams(값);
+    for (let 번 = 0; 번 < 2; 번 += 1) {
+      const 시작 = this.지금();
+      this.셈.호출 += 1;
+      let res;
+      let 몸 = {};
+      try {
+        res = await this.fetch기(url, { headers: { authorization: `Bearer ${this.열쇠}`, accept: 'application/json' }, signal: AbortSignal.timeout(30000) });
+        몸 = await res.json().catch(() => ({}));
+      } catch (e) {
+        return this.실패세기(자원, 대상, this.지금() - 시작, String(e?.cause?.code || e?.name || e?.message || e).slice(0, 120));
+      }
+      const ms = this.지금() - 시작;
+      if (res.ok) {
+        this.연속실패 = 0;
+        this.남기기({ 종류: 자원, 대상, 상태: '됨', ms });
+        return { 상태: '됨', 몸 };
+      }
+      const 까닭 = String(몸?.error?.errors?.[0]?.reason || 몸?.error?.status || '');
+      const 오류 = `HTTP ${res.status}${까닭 ? ` ${까닭}` : ''}`;
+      if (res.status === 401 && 번 === 0) {
+        this.남기기({ 종류: 자원, 대상, 상태: '실패', ms, 오류: `${오류} — 토큰을 새로 받는다` });
+        if (await this.열쇠받기()) continue;
+        return { 상태: '멈춤', 오류: this.셈.까닭 };
+      }
+      if (res.status === 401 || (res.status === 403 && API멈춤까닭.test(까닭))) {
+        this.남기기({ 종류: 자원, 대상, 상태: '멈춤', ms, 오류 });
+        this.멈추기(오류);
+        return { 상태: '멈춤', 오류 };
+      }
+      if (res.status === 404) {
+        this.연속실패 = 0;
+        this.남기기({ 종류: 자원, 대상, 상태: '없음', ms, 오류 });
+        return { 상태: '없음', 오류 };
+      }
+      return this.실패세기(자원, 대상, ms, 오류);
+    }
+    return { 상태: '실패', 오류: 'HTTP 401' };
+  }
+
+  /** 채널 ID 여럿 → Map(id → {채널id, 채널이름, 핸들, 구독}) — 50곳에 1단위, 이 회차에 이미 읽은 채널은 다시 안 부른다 */
+  async 채널들(ids) {
+    const 모자람 = [...new Set((ids || []).filter(id => /^UC[\w-]{22}$/.test(id || '') && !this.채널칸.has(id)))];
+    for (let i = 0; i < 모자람.length; i += 50) {
+      const 묶음 = 모자람.slice(i, i + 50);
+      const r = await this.부르기('channels', { part: 'snippet,statistics', id: 묶음.join(','), maxResults: '50' }, `채널 ${묶음.length}곳`);
+      if (r.상태 !== '됨') break;
+      for (const c of r.몸.items || []) { const 칸 = api채널읽기(c); if (칸) this.채널칸.set(칸.채널id, 칸); }
+    }
+    return new Map((ids || []).filter(id => this.채널칸.has(id)).map(id => [id, this.채널칸.get(id)]));
+  }
+
+  /** @핸들 → {상태:'됨', 채널} | {상태:'없음'|'실패'|'멈춤', 오류} */
+  async 핸들채널(핸들) {
+    const r = await this.부르기('channels', { part: 'snippet,statistics', forHandle: String(핸들 || '').replace(/^@/, '') }, String(핸들 || ''));
+    if (r.상태 !== '됨') return r;
+    const 칸 = api채널읽기((r.몸.items || [])[0]);
+    if (!칸) return { 상태: '없음', 오류: '핸들로 채널을 못 찾음' };
+    this.채널칸.set(칸.채널id, 칸);
+    return { 상태: '됨', 채널: 칸 };
+  }
+
+  /** 채널의 쇼츠 목록(UUSH + 채널 ID 셋째 글자부터, 최신순) 앞 수편 → {상태:'됨', ids} | {상태:'없음'(목록 없음)|'실패'|'멈춤', 오류} */
+  async 쇼츠목록(채널id, 수 = 30) {
+    const r = await this.부르기('playlistItems', { part: 'contentDetails', playlistId: `UUSH${String(채널id).slice(2)}`, maxResults: String(Math.min(50, 수)) }, 채널id);
+    if (r.상태 !== '됨') return r;
+    return { 상태: '됨', ids: (r.몸.items || []).map(i => i?.contentDetails?.videoId).filter(id => /^[\w-]{11}$/.test(id || '')) };
+  }
+
+  /** 영상 ID 여럿 → {상태, 오류?, 상세: Map(id → 상세)} — 50편에 1단위. 비공개·지운 편은 응답에 없어 빠지고, 도중에 멈추면 받은 만큼만 */
+  async 영상들(ids) {
+    const 상세 = new Map();
+    const 고유 = [...new Set((ids || []).filter(id => /^[\w-]{11}$/.test(id || '')))];
+    for (let i = 0; i < 고유.length; i += 50) {
+      const 묶음 = 고유.slice(i, i + 50);
+      const r = await this.부르기('videos', { part: 'snippet,statistics,contentDetails', id: 묶음.join(','), maxResults: '50' }, `영상 ${묶음.length}편`);
+      if (r.상태 !== '됨') return { 상태: r.상태, 오류: r.오류, 상세 };
+      for (const v of r.몸.items || []) { const d = api영상읽기(v); if (d) 상세.set(d.id, d); }
+    }
+    return { 상태: '됨', 상세 };
+  }
+}
+
 module.exports = {
   YT, 공통인자, 영상시도, 채널주소, 검색주소, rss주소, yt인자, 실패갈래, 오류줄, 댓글총수, json줄들,
   xml풀기, rss읽기, 올린날, 탭읽기, 검색읽기, 영상읽기, 틱톡읽기, 실행, 부르개,
+  API주소, lab토큰, api채널읽기, api영상읽기, API부르개,
 };
