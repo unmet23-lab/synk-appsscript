@@ -4,7 +4,12 @@ import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { EN, KO, MONO } from '../lib/fonts';
 import { handPath, inBox, Pt } from './geo';
+import { LOCALES, Loc, LocText } from './locale';
 import { fr, T } from './timeline';
+
+// 판(en · zhs · my)의 화면 글 — Film이 판 하나를 골라 아래로 내린다(locale.ts).
+const LocCtx = React.createContext<LocText>(LOCALES.en);
+const useLoc = () => React.useContext(LocCtx);
 
 const C = {
   coral: '#F96859',
@@ -122,6 +127,7 @@ const GridBox: React.FC<{ box: { x: number; y: number; s: number }; w?: number }
 const Tag: React.FC<{ text: string; at: number; box: { x: number; y: number; s: number }; plain?: boolean }> = ({ text, at: t, box, plain }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const L = useLoc();
   const sp = t <= 0 ? 1 : spring({ frame: f - fr(t), fps, config: { damping: 13, stiffness: 190, mass: 0.7 } });
   if (f < fr(t)) return null;
   return (
@@ -138,8 +144,8 @@ const Tag: React.FC<{ text: string; at: number; box: { x: number; y: number; s: 
         border: plain ? `4px solid ${C.coral}` : 'none',
         fontFamily: EN,
         fontWeight: 800,
-        fontSize: plain ? 42 : 50,
-        lineHeight: 1,
+        fontSize: plain ? L.size.tagPlain : L.size.tag,
+        lineHeight: L.voice ? 1 : 1.25,
         padding: plain ? '10px 18px 12px' : '14px 22px 16px',
         borderRadius: 18,
         boxShadow: '0 6px 14px rgba(80,30,20,0.18)',
@@ -222,7 +228,7 @@ const Pop: React.FC<{ at: number; children: React.ReactNode; style?: React.CSSPr
 };
 
 const Kicker: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span style={{ display: 'inline-block', background: C.coral, color: C.brown, fontFamily: EN, fontWeight: 800, fontSize: 46, padding: '8px 18px 10px', borderRadius: 14, marginRight: 16, verticalAlign: 'middle', transform: 'translateY(-8px)', letterSpacing: 0 }}>{children}</span>
+  <span style={{ display: 'inline-block', background: C.coral, color: C.brown, fontFamily: EN, fontWeight: 800, fontSize: useLoc().size.kicker, lineHeight: 1.1, padding: '8px 18px 10px', borderRadius: 14, marginRight: 16, verticalAlign: 'middle', transform: 'translateY(-8px)', letterSpacing: 0 }}>{children}</span>
 );
 
 const TitleZone: React.FC<{ children: React.ReactNode; opacity?: number; top?: number; height?: number }> = ({ children, opacity = 1, top = 300, height = 300 }) => (
@@ -232,22 +238,34 @@ const TitleZone: React.FC<{ children: React.ReactNode; opacity?: number; top?: n
 );
 
 const BIG_TXT: React.CSSProperties = { fontFamily: EN, fontWeight: 800, fontSize: 84, lineHeight: 1.06, color: C.brown, letterSpacing: -1 };
+// 판 글 속 「ㄹ」만 한글 서체로
+// 판 글 속 「\n」은 줄바꿈 — 한 글자만 다음 줄로 넘어가지 않게 줄은 글에서 직접 나눈다
+const withHangul = (s: string) =>
+  s.split('\n').flatMap((line, n) => [
+    ...(n ? [<br key={`b${n}`} />] : []),
+    ...line.split('ㄹ').flatMap((part, i) => (i ? [<span key={`h${n}-${i}`} style={HANGUL_IN_EN}>ㄹ</span>, part] : [part])),
+  ]);
 const HANGUL_IN_EN: React.CSSProperties = { fontFamily: KO, fontWeight: 800, fontSize: '1.18em', lineHeight: 0.9 };
 
 const Titles: React.FC = () => {
+  const L = useLoc();
+  const big: React.CSSProperties = { ...BIG_TXT, fontSize: L.size.big, lineHeight: L.size.lineHeight, letterSpacing: L.voice ? -1 : 0 };
   const f = useCurrentFrame();
   const t = f / 30;
   const fade = (a: number, b: number) => interpolate(t, [a, a + 0.12, b - 0.12, b], [0, 1, 1, 0], clamp);
   if (t < T.flip[0] + 0.1) {
     return (
       <TitleZone top={290} height={260} opacity={interpolate(t, [T.flip[0] - 0.1, T.flip[0] + 0.1], [1, 0], clamp)}>
-        <div style={BIG_TXT}>
-          <Kicker>POV:</Kicker>writing <span style={HANGUL_IN_EN}>ㄹ</span>
-          <br />
-          for the first time
+        <div style={big}>
+          {L.title.map((line, i) => (
+            <React.Fragment key={i}>
+              {i ? <br /> : L.kicker ? <Kicker>{L.kicker}</Kicker> : null}
+              {withHangul(line)}
+            </React.Fragment>
+          ))}
         </div>
-        <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 38, color: C.coralShade, marginTop: 14 }}>
-          (the Korean letter <span style={{ fontFamily: MONO, fontWeight: 500 }}>rieul</span>)
+        <div style={{ fontFamily: EN, fontWeight: L.voice ? 600 : 800, fontSize: L.size.sub, lineHeight: L.voice ? undefined : 1.4, color: C.coralShade, marginTop: 14 }}>
+          {L.sub.split('{rieul}').flatMap((part, i) => (i ? [<span key={i} style={{ fontFamily: MONO, fontWeight: 500 }}>rieul</span>, ...withHangul(part)] : withHangul(part)))}
         </div>
       </TitleZone>
     );
@@ -255,10 +273,10 @@ const Titles: React.FC = () => {
   if (t < T.k1) {
     return (
       <TitleZone opacity={fade(T.f1, T.k1)}>
-        <div style={{ ...BIG_TXT, fontSize: 92 }}>
-          <Pop at={T.f1 + 0.04}>Easy fix:</Pop>
+        <div style={{ ...big, fontSize: L.size.fix }}>
+          <Pop at={T.f1 + 0.04}>{L.fix[0]}</Pop>
           <br />
-          <Pop at={T.f1 + 0.99} style={{ color: C.coralShade }}>3 strokes</Pop>
+          <Pop at={T.f1 + 0.99} style={{ color: C.coralShade }}>{L.fix[1]}</Pop>
         </div>
       </TitleZone>
     );
@@ -270,16 +288,21 @@ const Titles: React.FC = () => {
           <Pop at={T.k1}><span style={{ ...HANGUL_IN_EN, fontSize: 150, color: C.brown, lineHeight: 1 }}>ㄹ</span></Pop>
           <Pop at={T.k1 + 0.08}><span style={{ fontFamily: MONO, fontSize: 70, color: C.coralShade }}>rieul</span></Pop>
         </div>
+        {L.nameLine ? (
+          <Pop at={T.k1 + 0.2} style={{ fontFamily: EN, fontWeight: 800, fontSize: 52, color: C.brown, marginTop: 10 }}>
+            {L.nameLine.split('{name}').flatMap((part, i) => (i ? [<span key={i} style={{ fontFamily: KO, fontWeight: 800 }}>리을</span>, part] : [part]))}
+          </Pop>
+        ) : null}
       </TitleZone>
     );
   }
   return (
     <TitleZone opacity={interpolate(t, [T.end, T.end + 0.12], [0, 1], clamp)}>
-      <div style={BIG_TXT}>
-        <Pop at={T.end}>Rate my new <span style={HANGUL_IN_EN}>ㄹ</span></Pop>
+      <div style={big}>
+        <Pop at={T.end} style={{ fontSize: L.size.end ?? undefined }}>{withHangul(L.end[0])}</Pop>
         <br />
-        <Pop at={T.e1 + 1.15} style={{ color: C.coralShade, fontSize: 70 }}>
-          Comment 1–10 <span style={{ fontFamily: "'Segoe UI Emoji', 'Noto Color Emoji', sans-serif", fontWeight: 400 }}>👇</span>
+        <Pop at={L.voice ? T.e1 + 1.15 : T.end + 0.2} style={{ color: C.coralShade, fontSize: L.size.endSub }}>
+          {withHangul(L.end[1])}<span style={{ fontFamily: "'Segoe UI Emoji', 'Noto Color Emoji', sans-serif", fontWeight: 400, display: 'inline-block', transform: L.voice ? undefined : `translateY(${Math.sin((f / 30 - T.end) * 5) * 10}px)` }}>👇</span>
         </Pop>
       </div>
     </TitleZone>
@@ -288,8 +311,9 @@ const Titles: React.FC = () => {
 
 // ── 첫 장 ─────────────────────────────────────────────────────────
 const PageOne: React.FC = () => {
+  const L = useLoc();
   const f = useCurrentFrame();
-  const tongue = interpolate(f, [fr(T.a3 + 0.3), fr(T.a3 + 0.55)], [0, 1], clamp);
+  const tongue = interpolate(f, [fr(T.tag3 + 0.02), fr(T.tag3 + 0.27)], [0, 1], clamp);
   return (
     <AbsoluteFill>
       <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0 }}>
@@ -310,12 +334,38 @@ const PageOne: React.FC = () => {
             <circle cx={SNAKE_EYE[0]} cy={SNAKE_EYE[1]} r={7 * tongue} fill={C.graphite} />
           </>
         ) : null}
+        {L.voice ? null : (
+          <>
+            <Cross box={BOX[1]} at={T.tag1 + 0.16} />
+            <Cross box={BOX[2]} at={T.tag2 + 0.12} />
+            <Cross box={BOX[3]} at={T.tag3 + 0.17} />
+          </>
+        )}
       </svg>
-      <Tag text="copy this" at={-1} box={BOX[0]} plain />
-      <Tag text="a 2?" at={T.a1 + 0.79} box={BOX[1]} />
-      <Tag text="a Z?" at={T.a2 + 1.03} box={BOX[2]} />
-      <Tag text="a snake?" at={T.a3 + 0.28} box={BOX[3]} />
+      <Tag text={L.tags.copy} at={-1} box={BOX[0]} plain />
+      <Tag text={L.tags.a1} at={T.tag1} box={BOX[1]} />
+      <Tag text={L.tags.a2} at={T.tag2} box={BOX[2]} />
+      <Tag text={L.tags.a3} at={T.tag3} box={BOX[3]} />
     </AbsoluteFill>
+  );
+};
+
+// 틀린 칸의 빨간 펜 ✗(목소리가 없는 판 — 「That's a two.」 같은 말 대신 틀렸다는 것을 보인다, 10-25 첫 렌더 이해 시험)
+const Cross: React.FC<{ box: { x: number; y: number; s: number }; at: number }> = ({ box, at: t }) => {
+  const f = useCurrentFrame();
+  const x = box.x + box.s - 74;
+  const y = box.y + 30;
+  const a = `M ${x} ${y} L ${x + 46} ${y + 46}`;
+  const b = `M ${x + 46} ${y} L ${x} ${y + 46}`;
+  const p1 = interpolate(f, [fr(t), fr(t + 0.12)], [0, 1], clamp);
+  const p2 = interpolate(f, [fr(t + 0.12), fr(t + 0.24)], [0, 1], clamp);
+  if (p1 <= 0) return null;
+  const ev = (p: number, d: string) => evolvePath(p, d);
+  return (
+    <g filter="url(#redpen)">
+      <path d={a} fill="none" stroke={C.red} strokeWidth={8} strokeLinecap="round" strokeDasharray={ev(p1, a).strokeDasharray} strokeDashoffset={ev(p1, a).strokeDashoffset} />
+      {p2 > 0 ? <path d={b} fill="none" stroke={C.red} strokeWidth={8} strokeLinecap="round" strokeDasharray={ev(p2, b).strokeDasharray} strokeDashoffset={ev(p2, b).strokeDashoffset} /> : null}
+    </g>
   );
 };
 
@@ -388,6 +438,7 @@ const Formula: React.FC = () => {
 // 분해 장면: 다 그은 뒤 ㄱ은 위로, ㄴ은 아래로 벌렸다가 다시 붙인다 — 세 획이 각각 무엇인지 보이게(v2 이해 시험)
 const DY = [-64, 0, 64];
 const PageTwo: React.FC = () => {
+  const L = useLoc();
   const f = useCurrentFrame();
   const snap = interpolate(f, [fr(T.snap[0]), fr(T.snap[1])], [0, 1], { ...clamp, easing: EASE_IO });
   // 벌린 채 멈춰 있지 않게, 다시 붙이기 전까지 조금씩 더 벌어진다
@@ -413,12 +464,12 @@ const PageTwo: React.FC = () => {
             <Stroke d={d} p={prog(f, STROKE_T[i])} width={32} />
           </g>
         ))}
-        {grade > 0 ? <path d={ring} fill="none" stroke={C.red} strokeWidth={7} strokeLinecap="round" filter="url(#redpen)" strokeDasharray={evolvePath(grade, ring).strokeDasharray} strokeDashoffset={evolvePath(grade, ring).strokeDashoffset} /> : null}
+        {grade > 0 && L.grade !== false ? <path d={ring} fill="none" stroke={C.red} strokeWidth={7} strokeLinecap="round" filter="url(#redpen)" strokeDasharray={evolvePath(grade, ring).strokeDasharray} strokeDashoffset={evolvePath(grade, ring).strokeDashoffset} /> : null}
       </svg>
       {BADGES.map((p, i) => (
         <Badge key={i} n={i + 1} p={p} at={GUIDE_AT + i * 0.22} active={STROKE_T[i]} dy={DY[i] * ex} recap={RECAP[i]} />
       ))}
-      {f >= fr(T.grade[0] + 0.15) ? (
+      {f >= fr(T.grade[0] + 0.15) && L.grade !== false ? (
         <div style={{ position: 'absolute', left: 760, top: 694, width: 150, textAlign: 'center', transform: `rotate(-8deg) scale(${interpolate(f, [fr(T.grade[0] + 0.15), fr(T.grade[0] + 0.45)], [0.2, 1], { ...clamp, easing: Easing.out(Easing.back(2.4)) })})`, fontFamily: EN, fontWeight: 800, fontSize: 52, color: C.red, opacity: interpolate(f, [fr(T.grade[0] + 0.15), fr(T.grade[0] + 0.3)], [0, 1], clamp) }}>?/10</div>
       ) : null}
       <Formula />
@@ -472,19 +523,26 @@ const Sfx: React.FC<{ file: string; at: number; vol: number; from?: number; dur?
   </Sequence>
 );
 
-const Sound: React.FC = () => (
+const Sound: React.FC = () => {
+  const L = useLoc();
+  return (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.11 * MASTER * interpolate(i, [fr(T.total) - 30, fr(T.total)], [1, 0], clamp)} />
-    <Vo id="h1" at={T.h1} />
-    <Vo id="a1" at={T.a1} />
-    <Vo id="a2" at={T.a2} />
-    <Vo id="a3" at={T.a3} />
-    <Vo id="f1" at={T.f1} />
-    <Vo id="n1" at={T.st1[0]} />
-    <Vo id="n2" at={T.st2[0]} />
-    <Vo id="n3" at={T.st3[0]} />
+    <Audio src={staticFile('bgm.wav')} volume={(i) => L.bgm * MASTER * interpolate(i, [fr(T.total) - 30, fr(T.total)], [1, 0], clamp)} />
+    {/* 영어 진행 목소리는 영어판에만(제작 방식 v2 §4-3). 「리을.」 한국어 한 줄은 모든 판 */}
+    {L.voice ? (
+      <>
+        <Vo id="h1" at={T.h1} />
+        <Vo id="a1" at={T.a1} />
+        <Vo id="a2" at={T.a2} />
+        <Vo id="a3" at={T.a3} />
+        <Vo id="f1" at={T.f1} />
+        <Vo id="n1" at={T.st1[0]} />
+        <Vo id="n2" at={T.st2[0]} />
+        <Vo id="n3" at={T.st3[0]} />
+      </>
+    ) : null}
     <Vo id="k1b" at={T.k1} />
-    <Vo id="e1" at={T.e1} />
+    {L.voice ? <Vo id="e1" at={T.e1} /> : null}
     {/* 연필 — 실제 녹음(Fairlight) 조각, 획마다 다른 자리 */}
     <Sfx file="pencil_a.wav" at={T.att1[0]} from={0.6} dur={T.att1[1] - T.att1[0]} vol={0.5} />
     <Sfx file="pencil_a.wav" at={T.att2[0]} from={2.4} dur={T.att2[1] - T.att2[0]} vol={0.5} />
@@ -492,23 +550,28 @@ const Sound: React.FC = () => (
     <Sfx file="pencil_b.wav" at={T.st1[0]} from={1.5} dur={T.st1[1] - T.st1[0]} vol={0.55} />
     <Sfx file="pencil_a.wav" at={T.st2[0]} from={4.2} dur={T.st2[1] - T.st2[0]} vol={0.55} />
     <Sfx file="pencil_b.wav" at={T.st3[0]} from={0.6} dur={T.st3[1] - T.st3[0]} vol={0.55} />
-    <Sfx file="pencil_b.wav" at={T.grade[0]} from={2.2} dur={T.grade[1] - T.grade[0]} vol={0.35} />
+    {L.grade !== false ? <Sfx file="pencil_b.wav" at={T.grade[0]} from={2.2} dur={T.grade[1] - T.grade[0]} vol={0.35} /> : null}
     {/* 이름표 · 쪽 넘김 · 번호 */}
-    <Sfx file="pop.wav" at={T.a1 + 0.79} vol={0.32} />
-    <Sfx file="pop.wav" at={T.a2 + 1.03} vol={0.32} />
-    <Sfx file="pop.wav" at={T.a3 + 0.28} vol={0.32} />
+    <Sfx file="pop.wav" at={T.tag1} vol={0.32} />
+    <Sfx file="pop.wav" at={T.tag2} vol={0.32} />
+    <Sfx file="pop.wav" at={T.tag3} vol={0.32} />
     <Sfx file="page.wav" at={T.flip[0] - 0.05} vol={0.9} />
     <Sfx file="tok.wav" at={T.explode[0]} vol={0.3} />
     <Sfx file="tok.wav" at={T.snap[1] - 0.05} vol={0.35} />
     <Sfx file="sparkle.wav" at={T.snap[1]} vol={0.22} />
   </>
-);
+  );
+};
 
-export const Film: React.FC = () => {
+export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'en' }) => {
   const f = useCurrentFrame();
   const flipped = f >= fr(T.flip[0]);
+  const L = LOCALES[loc];
+  // 목소리 없는 판의 끝 화면은 천천히 다가간다(끝까지 완전히 멈춘 화면이 되지 않게)
+  const push = L.voice ? 1 : interpolate(f, [fr(T.end), fr(T.total)], [1, 1.035], clamp);
   return (
-    <AbsoluteFill style={{ backgroundColor: '#E9DCC4' }}>
+    <LocCtx.Provider value={L}>
+    <AbsoluteFill style={{ backgroundColor: '#E9DCC4', transform: push === 1 ? undefined : `scale(${push})`, ...(L.font ? ({ '--kids-font': L.font } as React.CSSProperties) : {}) }}>
       <Img src={staticFile('img/notebook.jpg')} style={{ position: 'absolute', inset: 0, width: 1080, height: 1920 }} />
       {flipped ? <PageTwo /> : <PageOne />}
       {flipped ? (
@@ -520,5 +583,6 @@ export const Film: React.FC = () => {
       <Titles />
       <Sound />
     </AbsoluteFill>
+    </LocCtx.Provider>
   );
 };

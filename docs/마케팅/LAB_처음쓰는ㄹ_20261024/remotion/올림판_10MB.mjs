@@ -6,7 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-const TARGET = 9.4 * 1024 * 1024; // 바이트
+// 바이트. 짧고 거친 화면은 2패스가 목표를 조금 넘길 수 있어 UPLOAD_TARGET_MB로 낮춘다(10-25 버마어판 10.03MB)
+const TARGET = (Number(process.env.UPLOAD_TARGET_MB) || 9.4) * 1024 * 1024;
 const AUDIO = 128_000;
 const LIMIT = 10 * 1000 * 1000; // 확장 설명의 「under 10 MB」를 보수적으로
 
