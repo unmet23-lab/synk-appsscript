@@ -127,6 +127,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `git -c core.autocrlf=false archive <커밋> -- <경로들> | tar -x -C <폴더>`. 차이만 볼 때는 `diff --strip-trailing-cr`도 된다.
 - 다시 확인: 꺼낸 파일의 `tr -cd '\r' | wc -c`가 blob(`git cat-file blob <커밋>:<경로> | tr -cd '\r' | wc -c`)과 같다.
 - 10-19 덧붙임(`git apply`도 같다): SYNK-website처럼 `.gitattributes`가 `eol=lf`인 저장소를 archive로 꺼낸 사본은 LF로 나왔지만, 그 사본(저장소 밖 폴더)에서 `git apply <패치>`를 하자 고친 세 파일(build.mjs·site.css·site.js)만 모든 줄이 CRLF가 됐다. 저장소 밖에서는 `.gitattributes`를 보지 않고 시스템 `core.autocrlf=true`대로 쓴다. 홈페이지 빌드는 이 바이트로 `?v=` 토큰을 만들므로 공개본과 어긋난다. `git -c core.autocrlf=false apply`로 하거나, 패치를 만든 사본의 파일을 그대로 복사한다(10-19 질문창·서비스 시안). 확인은 Node로 CR 수를 센다(`(s.match(/\r/g)||[]).length`, 아래 「grep -c $'\r'」 항목).
+- 10-26 덧붙임(반대 경우 — 저장소 **안** 폴더, Claude): 워크트리의 `.tmp/<작업>/new/`에 커밋 판을 archive로 꺼내 `cd new && git apply 고침.patch`를 하자 종료 0인데 아무 파일도 안 바뀌었다 — 빌드가 기준과 바이트까지 같게 나와서 알았다. 저장소 안의 하위 폴더에서는 git이 저장소를 찾아 패치 경로를 저장소 루트 기준으로 보고, 지금 폴더 밖 경로는 말없이 건너뛴다(`--verbose`로 보면 「Skipped patch」). 고침: `GIT_CEILING_DIRECTORIES=<그 폴더의 부모> git -c core.autocrlf=false apply --verbose 고침.patch`(저장소 찾기를 멈추고, 저장소 밖처럼 굴 때의 CRLF 변환도 끈다) 뒤에 고친 값이 들어갔는지 `grep -q`로 확인하고 없으면 멈춘다. 다시 확인: 「Applied patch … cleanly」가 파일마다 나오고, 기준 빌드와의 차이가 고친 줄뿐이며 CR이 0이다(싱크타운 귀뚜라미 공개 `.tmp/townw7b-crickets-20261026/build-new.sh`).
 
 ### Linux 연결 검사에 Windows 작업본 해시를 쓰면 정상 배포를 거절한다
 - 증상: 문의 연결 준비의 `store.mjs` 해시가 검증한 회사 이미지와 다르지만 LF로 맞춘 본문은 같았다(10-20).
