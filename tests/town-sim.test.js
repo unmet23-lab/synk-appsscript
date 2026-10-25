@@ -12,12 +12,14 @@ const MINUTE = 60000, HOUR = 60 * MINUTE;
 test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 모두 통과한다', async () => {
   const { runSimulation, summarize, METRICS, TIMEZONES } = await toolModule('town-sim');
   // 줄인 판은 마을 시간대 하나로 돈다(W5b, 10-26) — 네 시간대는 같은 CI의 씨앗 100 단계(npm run check:town-sim)가 본다.
-  // 설계 목표는 한가한 PC에서 5초(§15-5). 재는 것은 이 프로세스가 쓴 CPU 시간이다: CI의 「SYNK safety tests」는 시험 파일들을 나란히
-  // 돌려, 벽시계로 재면 다른 시험을 기다린 시간이 끼어 W5a 뒤 21초로 넘기도 했다(10-25 run 40216175219).
-  const started = process.cpuUsage();
+  // 설계 목표는 한가한 PC에서 5초(§15-5). 재는 것은 이 시험을 돌린 주 스레드의 CPU 시간이다: CI의 「SYNK safety tests」는 시험 파일들을
+  // 나란히 돌려, 벽시계로 재면 다른 시험을 기다린 시간이 끼어 W5a 뒤 21초로 넘기도 했고(10-25 run 40216175219), 프로세스 CPU
+  // (process.cpuUsage)는 GC·컴파일 도우미 스레드까지 더해 16초로 부풀었다(10-26 run 40217350081). 주 스레드 CPU가 없는 옛 노드는 벽시계.
+  const clock = () => (process.threadCpuUsage ? (u => (u.user + u.system) / 1000)(process.threadCpuUsage()) : performance.now());
+  const started = clock();
   const result = runSimulation({ seeds: 12, days: 30, timezones: [TIMEZONES[0]] });
-  const used = process.cpuUsage(started), cpuMs = Math.round((used.user + used.system) / 1000);
-  assert.ok(cpuMs < 15000, `${cpuMs}ms`);
+  const spentMs = Math.round(clock() - started);
+  assert.ok(spentMs < 15000, `${spentMs}ms`);
   const s = summarize(result);
   assert.equal(s.villages, 12 * (1 * 4 + 1), '다 받는 모습은 첫 시간대에서만');
   assert.equal(s.fail, 0, result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
