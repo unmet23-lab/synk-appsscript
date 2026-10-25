@@ -410,3 +410,62 @@ body[data-walk-input=touch] .walk-help{display:none}
 @media(max-width:600px){.mood-card{max-width:min(240px,calc(100% - 32px))}.mood-text{font-size:13px}}
 @media(prefers-reduced-transparency:reduce){.mood-card{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media(forced-colors:active){.mood-card{background:Canvas;color:CanvasText;border:1px solid CanvasText}.mood-icon{color:CanvasText}}
+/* 작은 필요 카드(W5b, §8·§9·§20): 주인의 이름표 위 제안 한 장(「같이 할래요?」 · 다음에요 · 「…」), 장소 판의 인사·기다리는 생활·문 앞 쪽지,
+ * 「나와 함께」 고르기 판과 결과의 「…」 응답, 다섯 쪽 이웃 수첩. 숫자·날짜·연속 표시는 두지 않는다(G2·G3). */
+.card-offers{position:absolute;inset:0;z-index:4;pointer-events:none}
+.offer-card{position:absolute;top:0;left:0;display:grid;gap:8px;max-width:min(300px,calc(100% - 32px));padding:10px 12px 12px;border-radius:var(--w-r-md);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);color:var(--w-ink);pointer-events:auto;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);animation:mood-in .24s var(--w-ease) both}
+.offer-card[hidden]{display:none}
+.offer-card.is-docked{top:auto;left:50%;bottom:16px;transform:translateX(-50%)!important}
+.walk-mode .offer-card.is-docked{bottom:calc(var(--bottom) + 96px)}
+.offer-head{display:flex;align-items:center;gap:8px;margin:0;font-size:12.5px;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.offer-icon,.place-icon,.notebook-icon,.card-icon{display:inline-grid;place-items:center;flex:none;color:var(--w-face)}
+.offer-icon svg{width:18px;height:18px}
+.offer-text{margin:0;font-size:14px;line-height:1.5;text-wrap:pretty;word-break:keep-all}
+.offer-actions,.offer-menu{display:flex;flex-wrap:wrap;gap:6px}
+.offer-actions .felt,.offer-menu .felt{min-height:40px;padding:0 14px;font-size:13.5px}
+.offer-actions .offer-more{min-width:44px;padding:0;font-size:16px;letter-spacing:.06em}
+.offer-menu[hidden]{display:none}
+.place-cards{display:grid;gap:10px}
+.place-greet{display:flex;align-items:flex-start;gap:10px;margin:0;padding:11px 13px;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:var(--w-card-edge);font-size:15px;line-height:1.55;text-wrap:pretty}
+.place-icon svg{width:20px;height:20px}
+.place-need{display:grid;gap:8px;padding:11px 13px;border-radius:var(--w-r-sm);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.place-need p{margin:0;font-size:15px;line-height:1.55;text-wrap:pretty}
+.place-need .felt{width:100%;min-height:46px}
+.place-note .eyebrow{margin-bottom:4px}
+.place-note ul{display:grid;gap:6px;margin:0 0 4px;padding:0;list-style:none}
+.place-note li{display:flex;align-items:flex-start;gap:8px;font-size:14.5px;line-height:1.55;color:var(--w-ink-2)}
+.card-owner{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.card-icon svg{width:22px;height:22px}
+.card-choices{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin:4px 0 14px}
+.card-choices[hidden]{display:none}
+.feedback{display:grid;gap:8px;margin:4px 0 12px}
+.feedback[hidden]{display:none}
+.feedback-more.felt{justify-self:start;min-width:48px;padding:0 14px;font-size:16px;letter-spacing:.06em}
+.feedback-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.feedback-options[hidden]{display:none}
+.feedback-options .felt{min-height:44px;padding:4px 10px;font-size:14px}
+.card-dialog .actions .felt[hidden]{display:none}
+.notebook-tabs{display:flex;gap:4px;margin:0 0 14px;padding:4px;overflow-x:auto;border-radius:20px;background:var(--w-s1);box-shadow:var(--w-card-edge);scrollbar-width:none}
+.notebook-tabs::-webkit-scrollbar{display:none}
+.notebook-tab{flex:0 0 auto;min-height:44px;padding:0 14px;border:0;border-radius:16px;background:transparent;color:var(--w-ink-2);font-size:14px;font-weight:var(--wt-strong);white-space:nowrap}
+.notebook-tab:hover{color:var(--w-ink)}
+.notebook-tab[aria-selected=true]{background:var(--w-ink);color:var(--w-on-ink)}
+.notebook-list{display:grid;margin:0;padding:0;list-style:none;border-top:1px solid var(--w-line)}
+.notebook-list li{display:flex;align-items:flex-start;gap:10px;padding:12px 2px;border-bottom:1px solid var(--w-line);font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.notebook-list li.with-action,.notebook-list li.with-feedback{flex-wrap:wrap;align-items:center;justify-content:space-between}
+.notebook-list li.with-action .felt{min-height:40px;padding:0 14px;font-size:13.5px}
+.notebook-list strong{display:block;color:var(--w-ink);font-weight:var(--wt-strong)}
+.notebook-sub{display:block;font-size:13.5px;color:var(--w-ink-3)}
+.notebook-icon svg{width:20px;height:20px;margin-top:2px}
+.notebook-memory h3{margin:22px 0 8px;font-size:15.5px;font-weight:var(--wt-title);letter-spacing:-.01em}
+.notebook-memory h3:first-child{margin-top:0}
+.notebook-empty{margin:6px 0 2px}
+.notebook-journal{margin:10px 0 0}
+.notebook-journal summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--w-ink-2);font-size:14px;font-weight:var(--wt-strong)}
+.notebook-clear.felt{margin-top:10px}
+.notebook-confirm{display:grid;gap:8px;margin-top:10px}
+.notebook-confirm .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+body.stay-mode .card-offers{display:none!important}
+@media(max-width:600px){.offer-card{max-width:min(272px,calc(100% - 32px))}.offer-text{font-size:13.5px}.notebook-tab{padding:0 12px;font-size:13.5px}}
+@media(prefers-reduced-transparency:reduce){.offer-card{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){.offer-card,.place-greet,.place-need{background:Canvas;color:CanvasText;border:1px solid CanvasText}.offer-icon,.place-icon,.notebook-icon,.card-icon{color:CanvasText}.notebook-tab[aria-selected=true]{outline:2px solid Highlight}}

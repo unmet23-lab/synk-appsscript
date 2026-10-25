@@ -8,7 +8,7 @@ import { buildTownEnvironment } from './day-environment.mjs';
 import { applyTownMaterials, TOWN_BRAND } from './day-materials.mjs';
 import { createTownRendering } from './day-rendering.mjs';
 import { createTownLight, bakedLightUniforms, shadowFocus, sunReach } from './day-light.mjs';
-import { WALK_BOUNDS } from './walk.mjs';
+import { WALK_BOUNDS, WALK_NEAR_RADIUS } from './walk.mjs';
 import { PLACE_BY_ID, PLAYER_PLACES, FT_SEATS, SIGN_SLOTS } from './town/places.mjs';
 
 // Local art/interaction study derived from synk-world-home/scene.mjs.
@@ -692,8 +692,9 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       else a.visualFacing += Math.atan2(Math.sin(heading - a.visualFacing), Math.cos(heading - a.visualFacing)) * (1 - Math.exp(-dt * 18));
       a.body.rotation.y = a.visualFacing;
       a.resident?.update({ now, deltaSeconds: dt, walkPhase: a.walkPhase, gaitBlend: gait, motion, walking, working, showing, holding, talking, seated: ['sit', 'sitting', 'seated'].includes(a.pose) });
-      // Seated, the screen goes quiet: no name labels (W7b).
-      a.label.visible = !stay && (!freeWalk || cameraMode !== 'wide' && id !== 'player' && a.group.position.distanceTo(actors.get('player').group.position) < (cameraMode === 'close' ? 2.0 : 3.0));
+      // Seated, the screen goes quiet: no name labels (W7b). Close up, a name shows as far as a resident's line does (the
+      // near radius and the mood card's leaving margin — W4 screen review), so a line never hangs by no name.
+      a.label.visible = !stay && (!freeWalk || cameraMode !== 'wide' && id !== 'player' && a.group.position.distanceTo(actors.get('player').group.position) < (cameraMode === 'close' ? WALK_NEAR_RADIUS + .25 : 3.0));
       const fibers = a.body.getObjectByName('close-view-felt-fibers'); if (fibers) fibers.visible = cameraMode === 'close';
     }
     for (const o of labelSprites) { o.getWorldPosition(labelPosition); if (o.userData.placeId) { const p = actors.get('player').target, [x, z] = LOCATIONS[o.userData.placeId]; o.visible = !stay && !(cameraMode === 'close' && o.parent.userData.faded) && (!freeWalk || cameraMode !== 'wide' && Math.hypot(p.x - x, p.z - z) < 4.8); } const worldPerPixel = 2 * camera.position.distanceTo(labelPosition) * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, canvas.clientHeight); const width = Math.min(Math.max(o.userData.labelWidth, o.userData.minPixelWidth * worldPerPixel), (o.userData.maxPixelWidth || 170) * worldPerPixel); o.scale.set(width, width * (o.userData.labelAspect || 100 / 384), 1); }

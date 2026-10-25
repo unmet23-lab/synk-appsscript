@@ -5,7 +5,9 @@ import { PLACE_BY_ID, PLAYER_PLACES, SPOT_BY_ID } from './town/places.mjs';
 import { placeAt, caption, doing, goalOf } from './town/village.mjs';
 import { lightAt } from './town/light.mjs';
 import { validOffset } from './town/clock.mjs';
-import { createMoodLines } from './day-mood.mjs';
+import { createMoodLines, moodAt } from './day-mood.mjs';
+import { createOffer, offerModel, placeModel, takeModel, sceneLine, pairSteps, lineText, iconSvg, FEEDBACK, NAMES as CARD_NAMES } from './day-cards.mjs';
+import { createNotebook } from './day-notebook.mjs';
 import { createStay } from './day-stay.mjs';
 import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
@@ -57,6 +59,16 @@ const signatures = new Map();
 const RESIDENT_IDS = ['cafe-owner', 'workshop-owner', 'researcher'], BOUNDARY_GAP_MS = 20000;
 let clockOffset = null, villageLive = { ids: new Set(), signature: '' };
 let reading = false, bounding = false, lastBoundary = 0, dueReadAt = 0;
+// The small need cards (W5b): what this window can draw (caps — dropped for good when an older host refuses it), the
+// keys of what it showed waiting for the next boundary (§20-2 — one showing of one happening counts once), the
+// greeting and the offer receipt in flight.
+let capsOk = true, cardOfferUi = null, notebook = null, greeted = new Set(), offerAckPending = null, offerSeenAt = null, offerGesture = null;
+const seenQueue = new Set(), seenTags = new Set(), SEEN_PER_REQUEST = 50;
+/** Record keys the screen really showed — never while seated (the seat's quiet view shows none, W7b). */
+function noteSeen(keys, occurrence = '') {
+  if (stay?.active()) return;
+  for (const key of keys || []) { const tag = `${key}|${occurrence}`; if (seenTags.has(tag)) continue; seenTags.add(tag); seenQueue.add(key); }
+}
 // A WORLD page opened before the town learned pulse·boundary keeps an older host that answers only presence — its
 // town client or its account bundle refuses the operation (either may still come from the 10-minute cache) — and
 // a PC app released before those routes says so by its code: this window then falls back to the old heartbeat
@@ -134,7 +146,7 @@ async function interactWalk() {
   if (!walking() || busy || !connected) return;
   if (walkPanel) { const action = $('nearby-panel').querySelector('button[data-command]:not(:disabled)'); if (action) action.click(); return; }
   walkControls?.stop(); await flushWalk(true); const place = nearby(walkPoint); if (!place) return;
-  if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; applyWalkView(); }
+  if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; placeOpens++; applyWalkView(); renderCards(); }
 }
 function walkFrame(now) {
   if (!walking() || !walkControls || !walkPoint) { walkFrameAt = null; return; }
@@ -213,12 +225,19 @@ function sceneVisible() { return connected && sceneReady && visible($('scene'), 
 function dayActive() { return !!snapshot?.view.day?.episode?.open; }
 function bazaarActive() { return snapshot?.view.day?.location === 'cafe' && !!snapshot.view.bazaar?.episode?.open; }
 function lifeAvailable() { return snapshot?.view.day?.location === 'cafe' && !dayActive() && !bazaarActive() && !snapshot.view.day.scene.cafeReserved && !snapshot?.view.plan && !snapshot?.view.execution && !!snapshot?.view.life?.canStart; }
+/** A place where a resident's card may wait for the player (W5b): the player stands still by it, nothing else is going on. */
+function cardPlaceQuiet() {
+  const location = snapshot?.view.day?.location, v = snapshot?.view.day?.scene?.village;
+  return !!v && ['cafe', 'workshop', 'greenhouse'].includes(location) && !dayActive() && !bazaarActive() && !snapshot.view.plan && !snapshot.view.execution && !v.take
+    && (!walking() || nearby(walkPoint) === location && !walkMoving && !walkInputActive);
+}
 function flags() {
   const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
   // A seated window is in front while it is seen, focused or not (W7b): the town beside a study window is still with
   // the person — it is never a spoofed focus, and it walks nowhere.
   return { surfaceId, surface: 'day', foreground: !document.hidden && (!walking() || document.hasFocus() || !!stay?.active()) && sceneReady && connected,
-    safe: !!(lifeAvailable() && (!walking() || nearby(walkPoint) === 'cafe' && !walkMoving && !walkInputActive) && !busy && !document.querySelector('dialog[open]') && !editing && sceneVisible()) };
+    safe: !!((lifeAvailable() && (!walking() || nearby(walkPoint) === 'cafe' && !walkMoving && !walkInputActive) || cardPlaceQuiet())
+      && !busy && !document.querySelector('dialog[open]') && !editing && sceneVisible()) };
 }
 async function pulseNow() {
   // The host lease starts when the request is processed, not when a slow GPU
@@ -263,10 +282,18 @@ function read() {
 function boundary() {
   if (bounding || legacyHost || !presence?.owner) return;
   bounding = true; lastBoundary = performance.now();
+  // A screen that draws the cards says so (W5b, review F6) — not while seated (no offer reaches a quiet seat) — and
+  // carries what it showed (§20-2, up to a request's worth).
+  const caps = capsOk && !stay?.active() ? ['cards'] : null, seen = [...seenQueue].slice(0, SEEN_PER_REQUEST);
   queue(async () => {
-    const data = await request('boundary', { surfaceId, fence: presence.fence });
+    const data = await request('boundary', { surfaceId, fence: presence.fence, ...(caps ? { caps } : {}), ...(seen.length ? { seen } : {}) });
+    for (const key of seen) seenQueue.delete(key);
     if (data.issued || data.worldSeq !== snapshot?.state.writeSeq) accept(await request('state'));
-  }).catch(error => { if (error.status !== 409) showError(error.message); }).finally(() => { bounding = false; });
+  }).catch(error => {
+    // An older PC app's WORLD window takes no caps: this window goes on as one that does not draw the cards' offers.
+    if (caps && error?.code === 'INVALID_REQUEST') { capsOk = false; return; }
+    if (error.status !== 409) showError(error.message);
+  }).finally(() => { bounding = false; });
 }
 /** Whether the world runs a timer of its own now (a scene's stage, C1, a bazaar step, a guest's use):
  * only then the screen reads every second. Otherwise the world moves when the window does something. */
@@ -316,7 +343,7 @@ async function command(type, payload = {}) {
   setBusy(true);
   try {
     await queue(async () => {
-      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_)/.test(type)) {
+      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|GREET$)/.test(type)) {
         await ensureFreshPresence();
         payload = { ...payload, surfaceId, fence: presence.fence };
       }
@@ -327,6 +354,12 @@ async function command(type, payload = {}) {
     return true;
   } catch (e) { showError(e.message); return false; }
   finally { setBusy(false); }
+}
+/** A command the player asked for from a layer that does not wait on busy (an offer's answer, closing a card): it goes
+ * once the receipt or read in flight is done, instead of being dropped. */
+async function freeCommand(type, payload = {}) {
+  for (let i = 0; i < 30 && busy; i++) await new Promise(resolve => setTimeout(resolve, 100));
+  return command(type, payload);
 }
 function button(action) {
   const b = document.createElement('button'); b.type = 'button'; b.className = `felt${action.primary ? ' primary' : ''}`; b.textContent = action.label;
@@ -387,7 +420,9 @@ function villageRows(v) {
     else if (!at) rows.push({ id, asleep: true });
     else {
       const point = at.walking && still ? SPOT_BY_ID[at.spot].at : at;
-      rows.push({ id, x: point.x, z: point.z, pose: at.walking && still ? 'standing' : at.pose, goal: goalOf(at), live: true, archetype: at.archetype, walking: at.walking });
+      // A card's owner offering it gestures for its first seconds (§8-3 몸짓 8초) — where it stands, never mid-walk.
+      const pose = at.walking && still ? 'standing' : !at.walking && offerGesture === id ? 'inviting' : at.pose;
+      rows.push({ id, x: point.x, z: point.z, pose, goal: goalOf(at), live: true, archetype: at.archetype, walking: at.walking });
     }
   }
   // Two residents on one spot (a two-seat spot, or a plan spot under a scene's) stand apart; a walker passes through.
@@ -454,7 +489,11 @@ function renderScene() {
   const description = activePlan || executionSample ? (sample?.visualComplete ? snapshot.view.line : stepLines[sample?.activeStepId] || '손님이 고른 자리를 사용해요.') : bazaarActive() ? snapshot.view.bazaar.line : dayActive() ? day.line : background || scene.summary || scene.line || day.line;
   $('scene').setAttribute('aria-label', `${names[day.location] || day.location}. ${description}`); text('scene-caption', description); if (!walking()) text('scene-badge', names[day.location] || day.location);
   text('fallback-title', names[day.location] || day.location); text('fallback-line', description);
-  const people = (scene.npcs || []).filter(n => !n.location || n.location === day.location).map(n => `${n.name || roleNames[n.id] || n.id}: ${n.line || n.activityLabel || n.actionLabel || n.goal || '자기 일을 하고 있어요.'}`);
+  // The text alternative also says each resident's line now — its card's, its pair's or its mind's (W4 screen review F12, W5b).
+  const sv = scene.village, lineNow = id => { if (!sv || !RESIDENT_IDS.includes(id)) return null; const t = Math.min(sv.band.endMs - 1, Math.max(sv.nowMs, serverNow() ?? sv.nowMs));
+    const lineId = residentLine(sv, id, t)?.id || moodAt(sv.segments, id, t); return lineId ? lineText(lineId) : null; };
+  const people = (scene.npcs || []).filter(n => !n.location || n.location === day.location).map(n => { const said = lineNow(n.id);
+    return `${n.name || roleNames[n.id] || n.id}: ${n.line || n.activityLabel || n.actionLabel || n.goal || '자기 일을 하고 있어요.'}${said ? ` 「${said}」` : ''}`; });
   const peopleSig = JSON.stringify(people);
   if (signatures.get('people') !== peopleSig) { signatures.set('people', peopleSig); $('fallback-people').replaceChildren(...people.map(p => { const li = document.createElement('li'); li.textContent = p; return li; })); }
   if (renderer) {
@@ -481,6 +520,116 @@ function renderLife() {
   if ($('life-dialog').open) { text('life-dialog-line', life?.interaction?.line || ''); actions('life-dialog-actions', life?.interaction?.actions || []); }
   if (!enabled && $('life-dialog').open) $('life-dialog').close();
 }
+/** The residents at the player's place now (W5b): there by the plan, not walking through. */
+function residentsHere() {
+  const v = snapshot?.view.day?.scene?.village, location = snapshot?.view.day?.location;
+  if (!v || !location) return [];
+  const { places } = villageRows(v);
+  return RESIDENT_IDS.filter(id => places[id] && !places[id].walking && places[id].to === location);
+}
+// One greeting a talk (§9-4): the one shown stays until the player leaves the place or closes the panel, though the
+// server already has the next thing that resident could tell.
+let greetSession = null, placeOpens = 0, placeShownAt = null;
+function placePanelOpen() { return !walking() || walkPanel; }
+/** The place's panel (W5b): who greets the player with what it heard, the cards whose owner is here — its need and
+ * 「같이 해요」, or the paused one to go on with — and at home the news note by the door (newest three, no dates). */
+function renderCards() {
+  const v = snapshot.view.day?.scene?.village, location = snapshot.view.day?.location, panel = $('place-cards');
+  const model = v && !dayActive() && !bazaarActive() ? placeModel({ location, residentsHere: residentsHere(), hearsay: v.hearsay || {}, cards: v.cards || [], news: v.news || [], take: v.take }) : null;
+  const session = `${location}:${placeOpens}`;
+  if (greetSession?.session !== session) greetSession = { session, greet: model?.greet ?? null };
+  else if (!greetSession.greet && model?.greet && !greeted.has(model.greet.ref)) greetSession.greet = model.greet;
+  const greet = greetSession.greet, shown = !!model && (!!greet || model.needs.length > 0 || model.note.length > 0);
+  panel.hidden = !shown;
+  if (!shown) { placeShownAt = null; return; }
+  const sig = JSON.stringify([greet?.ref, greet?.text, model.needs.map(n => [n.card, n.key, n.paused]), model.note.map(n => n.ref)]);
+  if (signatures.get('place-cards') === sig) return;
+  signatures.set('place-cards', sig); placeShownAt = null;
+  const parts = [];
+  if (greet) {
+    const p = document.createElement('p'); p.className = 'place-greet';
+    p.innerHTML = `<span class="place-icon">${iconSvg(greet.icon)}</span>`;
+    const words = document.createElement('span'); words.textContent = `${CARD_NAMES[greet.npc]}: ${greet.text}`; p.append(words); parts.push(p);
+  }
+  for (const need of model.needs) {
+    const row = document.createElement('div'); row.className = 'place-need';
+    const line = document.createElement('p'); line.textContent = `${CARD_NAMES[need.owner]}: ${need.line || need.title}`;
+    const go = document.createElement('button'); go.type = 'button'; go.className = 'felt primary'; go.textContent = need.paused ? '이어서 하기' : '같이 해요'; go.dataset.command = 'CARD_OPEN';
+    go.addEventListener('click', () => openCard(need, 'direct'));
+    row.append(line, go); parts.push(row);
+  }
+  if (model.note.length) {
+    const note = document.createElement('div'); note.className = 'place-note'; note.setAttribute('role', 'group'); note.setAttribute('aria-label', '문 앞 쪽지');
+    const head = document.createElement('p'); head.className = 'eyebrow'; head.textContent = '문 앞 쪽지'; note.append(head);
+    const list = document.createElement('ul');
+    for (const item of model.note) { const li = document.createElement('li'); li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
+    const more = document.createElement('button'); more.type = 'button'; more.className = 'text-button'; more.textContent = '수첩에서 더 보기';
+    more.addEventListener('click', () => notebook?.open('news'));
+    note.append(list, more); parts.push(note);
+  }
+  panel.replaceChildren(...parts);
+}
+/** The greeting and the note count as shown once the panel has held them in sight a moment (§20-2); the greeting then
+ * tells the server this resident said it (GREET — never the first-word budget, §9-4). */
+function cardsFrame(now) {
+  const panel = $('place-cards');
+  const good = !panel.hidden && placePanelOpen() && !busy && connected && !stay?.active() && !document.querySelector('dialog[open]') && visible(panel, false);
+  if (!good) { placeShownAt = null; return; }
+  placeShownAt ??= now;
+  if (now - placeShownAt < 1200) return;
+  const greet = greetSession?.greet, model = snapshot.view.day?.scene?.village;
+  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref) {
+    greeted.add(greet.ref); noteSeen(greet.seen, greet.ref);
+    command('GREET', { npc: greet.npc, ref: greet.ref }).then(ok => { if (!ok) greeted.delete(greet.ref); });
+  }
+  for (const n of (model?.news || []).slice(0, 3)) if (snapshot.view.day.location === 'home') noteSeen([`line:village.news.${n.card}.1`], n.ref);
+}
+async function openCard(c, source) {
+  const payload = { card: c.card, key: c.key, source, ...(source === 'contact' ? { contactId: c.id } : {}) };
+  if (await freeCommand('CARD_OPEN', payload)) renderCardDialog();
+}
+/** 「나와 함께」's panel (§8-3): the card, its owner's words, the choices the server allows, then the result with 「…」
+ * (Atlas's four answers, §20-3). Closing before it is done leaves it 「하던 생활」 (CARD_CLOSE → paused). */
+let cardFeedbackOpen = false, cardClosing = false;
+function renderCardDialog() {
+  const dialog = $('card-dialog'), m = takeModel(snapshot.view.day?.scene?.village?.take);
+  if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; return; }
+  // A take still open (a reload, another window's answer) brings its panel back — not while this window is closing it.
+  if (!dialog.open) { if (cardClosing || stay?.active()) return; cardFeedbackOpen = false; dialog.showModal(); }
+  text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]); text('card-line', m.line || '');
+  if ($('card-icon').dataset.icon !== m.icon) { $('card-icon').dataset.icon = m.icon; $('card-icon').innerHTML = iconSvg(m.icon); }
+  const choices = $('card-choices'), sig = JSON.stringify([m.card, m.done, m.choices]);
+  if (signatures.get('card-choices') !== sig) {
+    signatures.set('card-choices', sig);
+    choices.replaceChildren(...(m.done ? [] : m.choices.map(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt'; b.textContent = c.label;
+      b.setAttribute('aria-pressed', String(c.chosen)); b.dataset.command = 'CARD_CHOOSE'; b.addEventListener('click', () => command('CARD_CHOOSE', { choice: c.id })); return b; })));
+  }
+  // The confirm waits for a choice (setBusy keeps it off while a command is out, by its data-unavailable).
+  const confirm = $('card-confirm'); confirm.dataset.command = 'CARD_CONFIRM'; confirm.dataset.unavailable = String(!m.chosen);
+  choices.hidden = m.done; confirm.hidden = m.done; confirm.disabled = busy || !available() || !m.chosen;
+  text('card-note', m.done ? '고른 대로 남았어요. 닫아도 그대로예요.' : '닫으면 하던 생활로 남아요. 주인에게 다시 말을 걸면 이어서 해요.');
+  const feedback = $('card-feedback'); feedback.hidden = !m.done || !m.eventId;
+  if (m.done && m.eventId) {
+    noteSeen([`line:${m.lineId}`, `card:${m.card}:player`], m.eventId);
+    const given = (snapshot.state.prefs?.feedback || []).find(f => f.completionId === m.eventId)?.value ?? null, fsig = JSON.stringify([m.eventId, given, cardFeedbackOpen]);
+    if (signatures.get('card-feedback') !== fsig) {
+      signatures.set('card-feedback', fsig);
+      const more = document.createElement('button'); more.type = 'button'; more.className = 'felt subtle feedback-more'; more.textContent = '…';
+      more.setAttribute('aria-expanded', String(cardFeedbackOpen)); more.setAttribute('aria-label', '이 생활에 응답 남기기');
+      more.addEventListener('click', () => { cardFeedbackOpen = !cardFeedbackOpen; renderCardDialog(); });
+      const options = document.createElement('div'); options.className = 'feedback-options'; options.hidden = !cardFeedbackOpen; options.setAttribute('role', 'group'); options.setAttribute('aria-label', '응답');
+      for (const [value, label] of FEEDBACK) { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt'; b.textContent = label; b.setAttribute('aria-pressed', String(given === value)); b.dataset.command = 'FEEDBACK_GIVE';
+        b.addEventListener('click', () => { cardFeedbackOpen = false; command('FEEDBACK_GIVE', { completionId: m.eventId, value, canonicalActivityId: m.activity }); }); options.append(b); }
+      feedback.replaceChildren(more, options);
+    }
+  }
+}
+function closeCard() {
+  $('card-dialog').close();
+  if (!snapshot?.view.day?.scene?.village?.take) return;
+  // A receipt or a read still out (busy) must not drop the close: it goes once the window is free again.
+  cardClosing = true; freeCommand('CARD_CLOSE').finally(() => { cardClosing = false; });
+}
 function accept(data) {
   snapshot = data; connected = true;
   if (data.presence?.surfaceId === surfaceId) presence = data.presence;
@@ -501,18 +650,13 @@ function accept(data) {
     executionSample = globalThis.LoomLife.sample(plan, execution.elapsedMs, { currentRevision: plan.revision, currentPlanId: plan.id, committedStepIds: plan.steps.map(s => s.id), reducedMotion: reduced.matches || fallback });
   }
   // The hour's light before the scene is drawn: a first visit at night or in the rain never shows the noon first (W7 screen review).
-  text('connection', `${worldHostRequested ? (globalThis.__SYNK_WORLD_TOWN__?.mode === 'account' ? 'SYNK 계정에 저장됨' : '테스트 계정에 저장됨') : '이 기기에 저장됨'} · ${names[day.location] || ''}`); configurePlan(); paintLight(true); renderScene(); renderLife(); setBusy(busy);
-  if ($('journal-dialog').open) renderJournal();
+  text('connection', `${worldHostRequested ? (globalThis.__SYNK_WORLD_TOWN__?.mode === 'account' ? 'SYNK 계정에 저장됨' : '테스트 계정에 저장됨') : '이 기기에 저장됨'} · ${names[day.location] || ''}`); configurePlan(); paintLight(true); renderScene(); renderLife(); renderCards(); renderCardDialog(); setBusy(busy);
+  if ($('notebook-dialog').open) notebook?.render(snapshot);
   $('look-scene').hidden = !activePlan && !observation && !snapshot.view.life?.interaction?.resultId;
   reconcileWalk(); applyWalkView();
   // Another window moved the player from where it sat down (or left home in the classic view): stand up quietly (W7b).
   if (stay?.active() && (walking() ? !walkPoint || !stayPoint || Math.hypot(walkPoint.x - stayPoint.x, walkPoint.z - stayPoint.z) > stay.seat().reach : day.location !== 'home')) stay.leave('moved');
   clearTimeout(seatedRetry); stay?.update(stayContext()); soundFrame();
-}
-function renderJournal() {
-  const lines = [...(snapshot?.view.notebook || []), ...(snapshot?.view.day?.history || []).map(row => row.summary), ...(snapshot?.view.bazaar?.history || []).map(row => row.summary)];
-  $('journal-list').replaceChildren(...[...new Set(lines.filter(Boolean))].map(line => { const li = document.createElement('li'); li.textContent = line; return li; }));
-  if (!$('journal-list').children.length) { const li = document.createElement('li'); li.textContent = '아직 함께한 일이 없어요. 찻집부터 들러 보세요.'; $('journal-list').append(li); }
 }
 function currentObservation() {
   if (!bazaarActive()) return snapshot?.view.day?.observation;
@@ -599,18 +743,54 @@ function villageFrame() {
   if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
   moodFrame(v, village);
 }
-/** A resident whose mind the plan changed shows its line by the name while the player is near (§7-3, W4) —
- * only residents the plan draws this frame, never over a dialog, the nearby panel or the text alternative. */
+/** The line a resident says at server time t (W5b): its card's or its pair's (day-cards sceneLine), else null — the
+ * mood layer then shows its mood line (§7-3). */
+function residentLine(v, id, t) {
+  return sceneLine(v.segments, id, t, { steps: pairSteps(snapshot?.state?.village?.band?.pairs), waiting: v.cards || [] });
+}
+/** A resident whose mind the plan changed — or who is solving a card or talking with its pair (W5b) — shows its line by
+ * the name while the player is near (§7-3, W4) — only residents the plan draws this frame, never over a dialog, the
+ * nearby panel or the text alternative, nor for the resident whose offer is up (that card carries its words). */
 let moodLines = null;
 function moodFrame(v, village) {
   moodLines ||= createMoodLines($('mood-lines'), $('mood-live'));
   const blocked = !v || !renderer || fallback || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active();
   // Where the canvas sits in the scene, read only when a card is placed (no layout reads on frames without one).
-  let offset = null;
+  let offset = null, scene = null;
   const canvasOffset = () => { if (!offset) { const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); offset = { x: c.left - s.left, y: c.top - s.top }; } return offset; };
+  // The walking HUD's panels the cards keep off (the map and the view button — the W4 screen review's follow-up).
+  const avoid = () => { scene ||= $('scene').getBoundingClientRect(); return walking() ? ['town-map', 'camera-toggle'].map(id => $(id)?.getBoundingClientRect()).filter(r => r?.width)
+    .map(r => ({ x: r.left - scene.left, y: r.top - scene.top, w: r.width, h: r.height })) : []; };
+  const labelAt = id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const o = canvasOffset(); return { x: p.x + o.x, y: p.y + o.y }; };
   moodLines.update({ segments: v?.segments, t: village?.t ?? null, rows: blocked ? [] : village.rows.filter(r => villageLive.ids.has(r.id)),
-    player: blocked ? null : renderer.playerPoint?.(), names: roleNames, blocked,
-    labelAt: id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const o = canvasOffset(); return { x: p.x + o.x, y: p.y + o.y }; } });
+    player: blocked ? null : renderer.playerPoint?.(), names: roleNames, blocked, labelAt,
+    lineAt: id => residentLine(v, id, village.t), skip: offerGesture ? [offerGesture] : [], day: v?.band ? snapshot?.state?.village?.band?.lifeDay ?? null : null,
+    avoid, onSeen: noteSeen });
+  // The offer also reaches the text alternative (docked at the scene's foot — there is no name to hang it by).
+  offerFrame(v, !v || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active(), renderer && !fallback ? labelAt : () => null);
+}
+/** The card offer standing for this window (§8-3): by its owner's name for 20 seconds, the owner gesturing for the
+ * first 8; its delivery receipt once it has been in sight a moment (LIFE_ACK, like the seat's invitation). Never while
+ * seated, in a dialog or in the text alternative's place of the scene. */
+function offerFrame(v, blocked, labelAt) {
+  cardOfferUi ||= createOffer($('card-offers'), {
+    live: $('mood-live'),
+    onAccept: o => openCard(o, 'contact'),
+    onLater: o => freeCommand('CARD_DEFER', { contactId: o.id }),
+    onToday: async o => { if (await freeCommand('PREF_TODAY_OTHER', { activity: `card.${o.card}` })) freeCommand('CARD_DEFER', { contactId: o.id }); },
+    onLess: async o => { if (await freeCommand('PREF_LESS_OFTEN', { activity: `card.${o.card}`, on: true })) freeCommand('CARD_DECLINE', { contactId: o.id }); },
+  });
+  const offer = v && presence ? offerModel(snapshot?.view.life?.cardContact, { surfaceId, fence: presence.fence }) : null;
+  const shown = cardOfferUi.update({ offer, labelAt, blocked: blocked || !v });
+  const gesture = shown.gesture && offer ? offer.owner : null;
+  if (gesture !== offerGesture) { offerGesture = gesture; renderScene(); }
+  if (!shown.shown || !offer) { offerSeenAt = null; return; }
+  offerSeenAt ??= performance.now();
+  const contact = snapshot.view.life.cardContact;
+  if (contact.state === 'issued' && offerAckPending !== offer.id && performance.now() - offerSeenAt >= 300 && !busy) {
+    offerAckPending = offer.id; noteSeen([`line:${offer.lineId}`], offer.id);
+    command('LIFE_ACK', { contactId: offer.id, visible: true }).then(ok => { if (!ok) offerAckPending = null; });
+  }
 }
 /** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
  * same village at the same time looks the same on every device. Before the village keeps a zone (a first visit) the
@@ -639,7 +819,7 @@ function frame(now) {
     appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking || padded ? QUIET.appHz : QUIET.idleHz));
     return;
   }
-  walkFrame(now); observe(now); villageFrame(); stay?.frame(); raf = requestAnimationFrame(frame);
+  walkFrame(now); observe(now); villageFrame(); cardsFrame(now); stay?.frame(); raf = requestAnimationFrame(frame);
 }
 async function load() {
   setBusy(true);
@@ -672,7 +852,12 @@ $('reading-open').addEventListener('click', async () => {
 function closeReading() { $('reading-dialog').close(); command('SUPPORT_CLOSE').then(() => { $('settings-dialog').showModal(); renderSupport(); }); }
 $('reading-close').addEventListener('click', closeReading);
 $('reading-dialog').addEventListener('cancel', event => { event.preventDefault(); closeReading(); });
-$('journal-open').addEventListener('click', () => { renderJournal(); $('journal-dialog').showModal(); }); $('journal-close').addEventListener('click', () => $('journal-dialog').close());
+// The neighbour notebook (W5b, §20-5) — the old 「함께한 일」 list is its 「마을이 기억하는 것」 page now.
+notebook = createNotebook($('notebook-dialog'), { command: (type, payload) => command(type, payload) });
+$('journal-open').addEventListener('click', () => { notebook.render(snapshot); notebook.open(); }); $('notebook-close').addEventListener('click', () => $('notebook-dialog').close());
+$('card-confirm').addEventListener('click', () => command('CARD_CONFIRM'));
+$('card-close').addEventListener('click', closeCard);
+$('card-dialog').addEventListener('cancel', event => { event.preventDefault(); closeCard(); });
 $('retry').addEventListener('click', load);
 $('look-scene').addEventListener('click', () => $('scene').scrollIntoView({ block: 'start', behavior: reduced.matches ? 'instant' : 'smooth' }));
 function updateCameraControl() {
@@ -755,6 +940,11 @@ try {
 globalThis.SYNKTownDay = Object.freeze({ metrics: () => ({ ...(renderer?.stats() || { renderer: 'text-alternative' }), reducedMotion: reduced.matches, connected, fallback, worldLinked: worldHostRequested,
   village: { serverNow: serverNow(), live: [...villageLive.ids], signature: villageLive.signature, due: dueAt(), timed: timed() },
   stay: stay?.metrics() ?? null, sound: { ...sound.stats(), level: sound.level() }, foreground: flags().foreground,
+  // W5b: what this window draws of the cards — the offer, the residents' lines, the place's panel — and its seen keys still to send.
+  cards: { capsOk, safe: flags().safe, seenPending: [...seenQueue], gesture: offerGesture, take: snapshot?.view.day?.scene?.village?.take?.status ?? null,
+    offer: (el => el ? { text: el.querySelector('.offer-text')?.textContent ?? '', docked: el.classList.contains('is-docked'), rect: el.getBoundingClientRect().toJSON() } : null)(document.querySelector('#card-offers .offer-card:not([hidden])')),
+    lines: [...document.querySelectorAll('#mood-lines .mood-card:not([hidden])')].map(el => ({ npc: el.dataset.npc, line: el.dataset.line, rect: el.getBoundingClientRect().toJSON() })),
+    place: $('place-cards').hidden ? null : $('place-cards').textContent },
   lightClock: lightShown && { source: lightSource, seedKind: typeof snapshot?.state?.village?.seed === 'string' ? 'string' : snapshot?.state?.village?.seed == null ? 'none' : 'other',
     key: lightShown.key, band: lightShown.band, localMinute: lightShown.localMinute, rain: { raining: lightShown.rain.raining, drops: lightShown.rain.drops, overcast: lightShown.rain.overcast, wet: lightShown.rain.wet } },
   walk: { enabled: walking(), ...walkPoint, heading: walkHeading, moving: walkMoving, inputActive: walkInputActive, nearby: nearby(walkPoint), interactionOpen: walkPanel, input: walkInputMode,

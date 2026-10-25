@@ -1,0 +1,191 @@
+/** The small need cards, the pairs and what the residents tell, on the screen (vertical slice design §8·§9·§20, W5b).
+ * The server decides everything — which card waits, who solves it how, what a resident knows and has not told yet,
+ * whether an offer stands; this module only words and draws it: the line a resident says while it solves a card or
+ * talks with its pair, the offer by its owner's name (「같이 할래요?」 with 「…」 — something else today, suggest less
+ * often), the choosing panel of 「나와 함께」 and the result with its 「…」 feedback, the cards and the greeting in the
+ * place's panel, and the news note by the door. No numbers, dates or counts show (G2·G3).
+ * Screen-only module; every line comes from the reviewed lines (town/data/lines) through the generated data.
+ */
+import * as generated from './town/data.gen.mjs';
+import * as mood from './day-mood.mjs';
+
+// Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the generated
+// data from before the cards existed (then no card line shows and the town still opens — a named import would stop it).
+const LINES = new Map([...(generated.MOOD_LINES || []), ...(generated.TOWN_LINES || [])].map(line => [line.id, line]));
+export const CARD_BY_ID = new Map((generated.CARDS || []).map(card => [card.id, card]));
+const PAIR_LIST = generated.PAIRS || [];
+export const NAMES = Object.freeze({ 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' });
+export const LEVEL = 'L2';
+
+/** What each choice of 「나와 함께」 is called on its button (the cards' own choice ids, §8-4). */
+export const CHOICE_LABELS = Object.freeze({
+  C1: { inside: '찻집 안에서', outside: '바깥 자리에서', watch: '구경할게요' },
+  C2: { 'eaves-left': '처마 왼쪽', 'eaves-right': '처마 오른쪽' },
+  C3: { mild: '순한 향', deep: '진한 향' },
+  C6: { 'eaves-left': '처마 왼쪽 자리', 'eaves-right': '처마 오른쪽 자리' },
+  W1: { near: '가까이 보이게', clear: '통로 넓게' },
+  W2: { 'garden-right': '정원 오른쪽', 'eaves-right': '처마 오른쪽', 'my-seat': '내가 만든 자리' },
+  W3: { cafe: '찻집 앞부터', workshop: '공방 앞부터' },
+  W4: { inside: '공방 안에', door: '문 앞에' },
+  W5: { slowly: '「천천히 해요」' },
+  W6: { 'my-seat': '내가 만든 자리', 'garden-right': '정원 오른쪽', eaves: '처마 밑' },
+  R1: { stone: '돌', wood: '나무' },
+  R2: { greenhouse: '온실 안', eaves: '찻집 처마' },
+  R3: { light: '밝은 쪽 그림', shade: '그늘 쪽 그림' },
+  R4: { watch: '같이 볼게요' },
+  R5: { left: '왼쪽 잎', right: '오른쪽 잎' },
+});
+export const choiceLabel = (card, choice) => CHOICE_LABELS[card]?.[choice] ?? choice;
+/** The picture by a card's lines (the mood lines' pictures — one per card). */
+export const CARD_ICONS = Object.freeze({ C1: 'wobble', C2: 'umbrella', C3: 'leaf', C4: 'cup', C5: 'guests', C6: 'seat', W1: 'board', W2: 'quiet',
+  W3: 'puddle', W4: 'orders', W5: 'sparkle', W6: 'sun', R1: 'board', R2: 'rain', R3: 'pages', R4: 'moon', R5: 'leaf', R6: 'tired' });
+/** Where a told thing came from (§9-4): seen (an eye), heard (an ear) or the village news (a note). */
+const HOW_ICONS = Object.freeze({
+  direct: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  heard: '<path d="M7 9a5 5 0 0 1 10 0c0 3.5-3 4.5-3 7.5a2.5 2.5 0 0 1-5 0"/><path d="M10 10a2 2 0 0 1 4 0"/>',
+  news: '<path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3M9 11h6M9 15h6"/>',
+});
+const svgOf = body => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${body}</svg>`;
+export const iconSvg = name => svgOf(HOW_ICONS[name] || mood.ICONS?.[name] || mood.ICONS?.sparkle || '');
+
+/** A line's words at the level a one-line text shows (W9 plugs the level in; now L2), or null without it. */
+export function lineText(id, level = LEVEL) { const line = LINES.get(id); return line ? line.levels[level] ?? line.levels.L2 ?? null : null; }
+export const hasLine = id => LINES.has(id);
+const cardLine = (npc, card, part) => `${npc}.card.${card}-${part}.1`;
+export const newsLine = card => `village.news.${card}.1`;
+const pairOf = (a, b) => PAIR_LIST.find(p => p.members.includes(a) && p.members.includes(b) && a !== b) ?? null;
+/** The pairs' small differences as the band started (state.village.band.pairs): { PAIR01: step, … }. */
+export function pairSteps(bandPairs) {
+  return Object.fromEntries(PAIR_LIST.map(p => [p.scene, Math.max(0, Math.min(2, bandPairs?.[p.key]?.friction?.step ?? 0))]));
+}
+const here = (s, t) => s.startMs <= t && t < s.endMs;
+const arrived = (s, t) => t >= (s.arriveMs ?? s.startMs);
+
+/** The line a resident says at server time t, from what the plan has it doing (§8-4·§9-1): solving a card (alone, or
+ * asking its pair / come to help), talking with its pair (the pair's line for their small difference's step), or — when
+ * its card waits for it — that card's need. Only once it is where it does it; a pair line only when both are there (a
+ * resident alone never talks to the air — review F14). Returns { id, icon, seen: [keys] } or null. waiting: the view's
+ * cards still waiting ({ card, owner, status }). */
+export function sceneLine(segments, npc, t, { steps = {}, waiting = [] } = {}) {
+  const seg = segments.find(s => s.npc === npc && here(s, t));
+  if (seg && arrived(seg, t) && seg.card && CARD_BY_ID.has(seg.card)) {
+    const card = CARD_BY_ID.get(seg.card), together = seg.cardRole === 'partner'
+      || segments.some(s => s.cardRole === 'partner' && s.card === seg.card && s.key === seg.key);
+    const id = cardLine(npc, seg.card, together ? 'pair' : 'self');
+    if (!LINES.has(id)) return null;
+    const scene = together && card.paths?.pair?.scene, seen = [`line:${id}`, `card:${seg.card}:${together ? 'pair' : 'self'}`];
+    if (scene && Object.hasOwn(steps, scene)) seen.push(`pair:${scene}:${steps[scene]}`);
+    return { id, icon: CARD_ICONS[seg.card] || 'sparkle', seen, occurrence: `${seg.card}:${seg.key}:${together ? 'pair' : 'self'}` };
+  }
+  if (seg && arrived(seg, t) && seg.with) {
+    const pair = pairOf(npc, seg.with), mate = segments.find(s => s.npc === seg.with && s.with === npc && here(s, t) && arrived(s, t));
+    if (!pair || !mate) return null;
+    const step = steps[pair.scene] ?? 0, id = `${npc}.pair.${pair.scene}-${step}.1`;
+    return LINES.has(id) ? { id, icon: 'together', seen: [`line:${id}`, `pair:${pair.scene}:${step}`], occurrence: `${pair.scene}:${Math.min(seg.startMs, mate.startMs)}` } : null;
+  }
+  const need = waiting.find(c => c.owner === npc && c.status === 'triggered');
+  if (need) { const id = cardLine(npc, need.card, 'trigger'); if (LINES.has(id)) return { id, icon: CARD_ICONS[need.card] || 'sparkle', seen: [`line:${id}`], occurrence: `${need.card}:${need.key}:trigger` }; }
+  return null;
+}
+
+/** The greeting's words (§9-4): the resident's hearsay frame for how it knows, filled with the card's news line and who
+ * told it. null when the lines are missing (an old cache) — then nothing is said and nothing is marked told. */
+export function hearsayText(npc, entry, level = LEVEL) {
+  if (!entry) return null;
+  const how = entry.how === 'direct' ? 'seen' : entry.how === 'heard' ? 'heard' : 'news', frame = `${npc}.hearsay.${how}.1`;
+  const words = lineText(frame, level), news = lineText(newsLine(entry.card), level);
+  if (!words || !news || how === 'heard' && !NAMES[entry.from]) return null;
+  return { id: frame, text: words.replace('{news}', news).replace('{from}', NAMES[entry.from] || ''), icon: entry.how === 'direct' ? 'direct' : entry.how === 'heard' ? 'heard' : 'news',
+    seen: [`line:${frame}`, `line:${newsLine(entry.card)}`] };
+}
+
+/** Whether a card waiting for its owner may be taken now by the player (W5: every card but the locked one and the two
+ * that need the tea order). */
+export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) && c.ready !== false && CARD_BY_ID.get(c.card)?.paths?.player?.ready === true && !CARD_BY_ID.get(c.card)?.locked;
+
+/** What the place's panel shows of the cards and the residents here (§8-3·§9-4): the resident who greets the player
+ * with what it heard (one, once — the newest it may tell), the cards whose owner is here (its need, and 「같이 해요」 or
+ * the paused one to go on with), and at home the news note (the newest three, never their days). */
+export function placeModel({ location, residentsHere = [], hearsay = {}, cards = [], news = [], take = null }) {
+  const greet = residentsHere.map(npc => ({ npc, line: hearsayText(npc, hearsay[npc]) })).find(g => g.line) ?? null;
+  const open = take && ['with', 'resolved'].includes(take.status) ? take : null;
+  const needs = open ? [] : cards.filter(c => takeable(c) && residentsHere.includes(c.owner)).map(c => ({ card: c.card, key: c.key, owner: c.owner, paused: c.status === 'paused',
+    title: CARD_BY_ID.get(c.card).title, line: lineText(cardLine(c.owner, c.card, c.status === 'paused' ? 'offer' : 'trigger')) }));
+  const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card)) })).filter(n => n.text) : [];
+  return { greet: greet && { npc: greet.npc, ref: hearsay[greet.npc].ref, ...greet.line }, needs, note, open };
+}
+
+/** The offer standing for this window (§8-3): a card's contact issued here that the screen may still show — the owner's
+ * line, and which card. */
+export function offerModel(contact, { surfaceId, fence }) {
+  if (!contact || !['issued', 'delivered'].includes(contact.state) || contact.issuedSurfaceId !== surfaceId || contact.issuedFence !== fence) return null;
+  const card = CARD_BY_ID.get(contact.card);
+  if (!card) return null;
+  const id = cardLine(card.owner, card.id, 'offer');
+  return { id: contact.id, card: card.id, key: contact.key, owner: card.owner, lineId: id, text: lineText(id) || '같이 할래요?', icon: CARD_ICONS[card.id] || 'sparkle' };
+}
+
+/** The choosing panel's model (§8-3 나와 함께): the card, its owner's words, the choices (only those the server allows
+ * now), the one chosen, and after it is done the result line with its feedback. */
+export function takeModel(take) {
+  const card = take && CARD_BY_ID.get(take.card);
+  if (!card) return null;
+  const done = take.status === 'resolved';
+  return { card: card.id, title: card.title, owner: card.owner, done,
+    line: lineText(cardLine(card.owner, card.id, done ? 'result' : 'offer')), lineId: cardLine(card.owner, card.id, done ? 'result' : 'offer'),
+    choices: (take.choices || []).map(choice => ({ id: choice, label: choiceLabel(card.id, choice), chosen: take.choice === choice })),
+    chosen: take.choice ?? null, eventId: take.eventId ?? null, activity: `card.${card.id}`, icon: CARD_ICONS[card.id] || 'sparkle' };
+}
+/** Atlas's four answers (§20-3 — never new words), as the 「…」 under a result shows them. */
+export const FEEDBACK = Object.freeze([['helpful', '좋았어요'], ['not_fit', '안 맞았어요'], ['too_much', '많았어요'], ['want_more', '더 하고 싶어요']]);
+
+/** The offer by its owner's name: one small card with the owner's words and three answers. update() runs each frame with
+ * { offer, labelAt, blocked }; the card hangs over the owner's name (docked at the scene's foot when the name is off
+ * screen), the owner gestures for its first 8 seconds and the card goes after 20 (§8-3, NPC:229). Returns
+ * { shown, gesture } so the scene can pose the owner. */
+export function createOffer(container, { onAccept, onLater, onToday, onLess, live } = {}) {
+  if (!container) return { update: () => ({ shown: false, gesture: false }), close() {} };
+  let el = null, current = null, shownAt = 0, menu = false;
+  const GESTURE_MS = 8000, LINE_MS = 20000, GAP = 14;
+  // An answered or timed-out offer stays gone for its id, however long the server still lists it.
+  const done = new Set();
+  function build(offer) {
+    el = document.createElement('div'); el.className = 'offer-card'; el.setAttribute('role', 'group'); el.setAttribute('aria-label', `${NAMES[offer.owner]}의 제안`);
+    el.innerHTML = '<p class="offer-head"><span class="offer-icon"></span><span class="offer-name"></span></p><p class="offer-text"></p>'
+      + '<div class="offer-actions"><button type="button" class="felt primary offer-accept">같이 해요</button><button type="button" class="felt offer-later">다음에요</button>'
+      + '<button type="button" class="felt subtle offer-more" aria-expanded="false" aria-label="다른 답 보기">…</button></div>'
+      + '<div class="offer-menu" hidden><button type="button" class="felt offer-today">오늘은 다른 일</button><button type="button" class="felt offer-less">이런 일은 덜 추천</button></div>';
+    el.querySelector('.offer-icon').innerHTML = iconSvg(offer.icon);
+    el.querySelector('.offer-name').textContent = NAMES[offer.owner];
+    el.querySelector('.offer-text').textContent = offer.text;
+    const act = fn => () => { const o = current; if (o) { done.add(o.id); close(); current = null; fn?.(o); } };
+    el.querySelector('.offer-accept').addEventListener('click', act(onAccept));
+    el.querySelector('.offer-later').addEventListener('click', act(onLater));
+    el.querySelector('.offer-today').addEventListener('click', act(onToday));
+    el.querySelector('.offer-less').addEventListener('click', act(onLess));
+    el.querySelector('.offer-more').addEventListener('click', () => { menu = !menu; el.querySelector('.offer-menu').hidden = !menu; el.querySelector('.offer-more').setAttribute('aria-expanded', String(menu)); });
+    container.append(el);
+    if (live) live.textContent = `${NAMES[offer.owner]}: ${offer.text}`;
+  }
+  function close() {
+    if (el?.contains(document.activeElement)) container.closest?.('[tabindex]')?.focus?.();
+    el?.remove(); el = null; menu = false;
+  }
+  function update({ offer = null, labelAt = () => null, blocked = false, now = performance.now() } = {}) {
+    if (!offer || done.has(offer.id)) { if (el) close(); current = null; return { shown: false, gesture: false }; }
+    if (current?.id !== offer.id) { close(); current = offer; shownAt = now; }
+    if (now - shownAt >= LINE_MS) { done.add(offer.id); close(); current = null; return { shown: false, gesture: false }; }
+    if (blocked) { if (el) el.hidden = true; return { shown: false, gesture: now - shownAt < GESTURE_MS }; }
+    if (!el) build(offer);
+    el.hidden = false;
+    const at = labelAt(offer.owner), box = container.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight, gutter = 16;
+    el.classList.toggle('is-docked', !at);
+    if (at) {
+      const x = Math.max(gutter, Math.min(box.width - w - gutter, at.x - w / 2)), over = at.y - GAP - h, y = over >= gutter ? over : at.y + GAP;
+      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    } else el.style.transform = '';
+    return { shown: true, gesture: now - shownAt < GESTURE_MS, element: el };
+  }
+  // The answer sent: the offer goes from the screen at once (the server marks it at that command).
+  return { update, close: id => { if (id) done.add(id); close(); current = null; } };
+}
