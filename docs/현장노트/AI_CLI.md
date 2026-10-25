@@ -599,10 +599,10 @@
 - 다시 확인: `.tmp/hermes-improve-20261018/gateway-smoke-result.json`의 운영 PID·작업 ID·종료 코드·Telegram assistant 표식과 실제 전송 기록을 대조한다. 휴대폰에서 직접 입력한 새 메시지의 수신 증거와는 구분한다.
 
 ### 헤르메스만 다른 GPT 계정으로 바꾸려면 독립 OAuth와 활성 자격을 함께 확인한다
-- 증상: 10-18 사용자 요청으로 헤르메스 접수 GPT를 `q121235@outlook.com` Microsoft 계정으로 바꿨다. 기존 Codex 그림 굽기에도 같은 계정 로그인이 있었지만 refresh token 사본을 함께 쓰면 회전 때문에 다른 세션이 무효가 될 수 있다.
+- 증상: 10-18 사용자 요청으로 헤르메스 접수 GPT를 다른 Microsoft(Outlook) 계정으로 바꿨다. 기존 Codex 그림 굽기에도 같은 계정 로그인이 있었지만 refresh token 사본을 함께 쓰면 회전 때문에 다른 세션이 무효가 될 수 있다.
 - 원인: Hermes는 독립 OAuth 세션과 credential pool을 쓰며, 새 계정을 priority 0에 추가만 하면 한도 때 옛 계정으로 회전할 수 있다. `auth.adopt_external_logins: true`도 다른 앱 로그인을 가져올 수 있다.
 - 고침: Hermes 내부에 원래 인증·설정을 백업하고 공식 `auth add openai-codex --browser --no-browser`로 새 로그인했다. 실제 이메일을 확인한 뒤 기존 자격을 공식 `auth remove`로 활성 pool에서 뺐고 외부 로그인 자동 가져오기를 껐다. 모델·추론 설정은 유지하고 공식 gateway restart로 반영했다.
-- 다시 확인: 활성 pool 1개·JWT 이메일 `q121235@outlook.com`·옛 singleton 없음·자동 provider fallback 없음, GPT-6.1 Sol xhigh의 `SYNK_HERMES_GPT_CONNECTED` 응답·도구 호출 0, gateway running·telegram connected를 확인했다. 비밀값 없는 근거 `.tmp/hermes-gpt-account-20261018/`. 기존 Codex·Claude 앱의 계정 전환은 하지 않았다.
+- 다시 확인: 활성 pool 1개·JWT 이메일이 위 Outlook 계정과 같음·옛 singleton 없음·자동 provider fallback 없음, GPT-6.1 Sol xhigh의 `SYNK_HERMES_GPT_CONNECTED` 응답·도구 호출 0, gateway running·telegram connected를 확인했다. 비밀값 없는 근거 `.tmp/hermes-gpt-account-20261018/`. 기존 Codex·Claude 앱의 계정 전환은 하지 않았다.
 
 ### Claude 결과의 `subtype: success`만으로 성공을 판정하면 안 된다
 - 증상: 10-18 19:40 Hermes의 실제 Claude 시험 `synk-b4cde9c4b442`에서 JSON은 `type: result`, `subtype: success`지만 `is_error: true`와 주간 한도 문구를 반환했고 프로세스는 코드 1로 종료됐다.
