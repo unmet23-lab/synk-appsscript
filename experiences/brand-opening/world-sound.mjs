@@ -204,10 +204,32 @@ export function bindTaps(root=document,{selector='button,[role=button],a.felt-bu
   return()=>{root.removeEventListener('pointerdown',handler);root.__synkTapsBound=false;};
 }
 
+/* ── 마이크 알림(싱크타운 머무는 모드 W7b — 마을 설계 인수 기준 11 「녹음 중에는 0」) ──
+ * 마이크가 열려 있는 동안 같은 출처의 다른 창(나란히 띄운 마을 등)이 제 소리를 0으로 둔다. 정본은 localStorage 열쇠 하나
+ * (synk.world.mic = 열린 동안 5초마다 새로 쓰는 시각, 닫으면 지움) — 다른 창은 storage 이벤트로 바로 받고, 늦게 열린 창·
+ * 얼었다 돌아온 창은 읽기만 하면 된다. 마을은 15초 지난 시각을 닫힌 것으로 본다(town/data/stay.json sound.record).
+ * BroadcastChannel이 있으면 같은 말을 빠른 길로도 보낸다. 같은 탭의 마을은 녹음 화면이 패널을 바꿀 때 이미 닫힌다(home.mjs). */
+export const MIC_KEY='synk.world.mic';
+const MIC_CHANNEL='synk-world-audio',MIC_BEAT_MS=5000;
+let micChannel=null,micTimer=0;
+function micBus(){
+  if(!micChannel&&typeof BroadcastChannel==='function')try{micChannel=new BroadcastChannel(MIC_CHANNEL);}catch{micChannel=null;}
+  return micChannel;
+}
+function micBeat(open){
+  try{if(open)localStorage.setItem(MIC_KEY,String(Date.now()));else localStorage.removeItem(MIC_KEY);}catch{}
+  try{micBus()?.postMessage({type:'mic',open});}catch{}
+}
+/** 마이크를 열었으면 true(스트림을 얻은 직후), 닫았으면 false(트랙을 멈추는 모든 곳). */
+export function recordingSignal(open){
+  clearInterval(micTimer);micTimer=0;micBeat(Boolean(open));
+  if(open)micTimer=setInterval(()=>micBeat(true),MIC_BEAT_MS);
+}
+
 /** 판정 한 번: 소리 + 진동 + (켜져 있으면) 캐릭터 반응 콜백. */
 export function verdict(correct,{react=null}={}){
   play(correct?'ok':'miss');haptic(correct?'ok':'miss');
   if(react&&getPref('reactions')){try{react(correct);}catch{}}
 }
 
-export default {play,haptic,hapticAvailable,getPref,setPref,onPref,bindTaps,verdict,storyVoice,renderSound,PREF_KEYS,PREF_LABELS};
+export default {play,haptic,hapticAvailable,getPref,setPref,onPref,bindTaps,verdict,storyVoice,renderSound,recordingSignal,PREF_KEYS,PREF_LABELS};

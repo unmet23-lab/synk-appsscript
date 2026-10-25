@@ -50,8 +50,10 @@ export function buildTownEnvironment(THREE, world, m, helpers = {}) {
   const guideCloth = m.lapis ? m.lapis.clone() : material({ color: '#3d6bc9', roughness: .92 });
   guideCloth.side = THREE.DoubleSide; ownedMaterials.add(guideCloth);
   const coral = m.coral || material({ color: '#f96859', roughness: .42 });
-  const butter = m.butter || material({ color: '#f5c445', roughness: .6, emissive: '#f5c445', emissiveIntensity: .08 });
-  butter.userData.townLantern = true; // the wall lanterns light up at night (W7, day-light.mjs)
+  // The wall lanterns light up at night (W7, day-light.mjs) — their own material: the shared butter cloth is cotton
+  // with a black glow (it lit nothing) and also dyes memory threads, which must not shine (W7 Fable P2).
+  const butter = m.butter ? m.butter.clone() : material({ color: '#f5c445', roughness: .6 });
+  butter.emissive.set('#f5c445'); butter.emissiveIntensity = .08; butter.userData.townLantern = true; ownedMaterials.add(butter);
   const terrainMaterial = material({ color: '#ffffff', vertexColors: true, roughness: 1, bumpMap: m.soil?.bumpMap, bumpScale: .026 });
   const cliffMaterial = material({ color: '#83917e', roughness: .94, bumpMap: m.stone?.bumpMap, bumpScale: .035 });
   const greenhouseGlass = m.glass.clone(); greenhouseGlass.opacity = .16; greenhouseGlass.depthWrite = false; ownedMaterials.add(greenhouseGlass);

@@ -6,9 +6,18 @@ import { placeAt, caption, doing, goalOf } from './town/village.mjs';
 import { lightAt } from './town/light.mjs';
 import { validOffset } from './town/clock.mjs';
 import { createMoodLines } from './day-mood.mjs';
+import { createStay } from './day-stay.mjs';
+import { createTownSound } from './day-sound.mjs';
+import { seatNear, QUIET } from './town/stay.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
+// Staying and the village's sound (W7b): the seat's quiet view and the two sound buses, on this device only.
+const sound = createTownSound({ surfaceId });
+// walkWarm is false between standing up and the zero step's receipt: steps wait for the walk clock to stand again.
+let stay = null, villageWalking = false, appTimer = 0, lightPaintedAt = 0, seatedRetry = 0, walkWarm = true;
+const unlockSound = () => sound.unlock();
+addEventListener('pointerdown', unlockSound, { capture: true, passive: true }); addEventListener('keydown', unlockSound, true);
 const names = Object.fromEntries(PLAYER_PLACES.map(id => [id, PLACE_BY_ID[id].labels.map]));
 // 우리 동네 HUD(2026-10-14 3차): 가장 작은 지도 한 장 + 할 일 한 줄. 표시만 하고 이동·저장·권한 논리는 건드리지 않는다.
 const MAP_BOUNDS = { minX: -9, maxX: 9, minZ: -6.5, maxZ: 6 };
@@ -77,7 +86,23 @@ function applyWalkView(force = false) {
   button.disabled = !place || busy || !connected;
   text('walk-interact', place ? `${walkInputMode === 'touch' ? '' : walkInputMode === 'gamepad' ? 'A · ' : 'E · '}${place === 'home' ? '집 살펴보기' : `${names[place]}에서 이야기하기`}` : '가까이 가면 이야기해요');
   text('walk-status', place ? `${names[place]} 앞이에요. 원할 때 이야기해요.` : '길을 따라 걸어 보세요.');
-  text('walk-help', walkInputMode === 'gamepad' ? '왼쪽 스틱 · 방향 패드 이동 / A 이야기 / B 닫기' : walkInputMode === 'touch' ? '조이스틱으로 걷고, 가까이 가면 이야기해요' : 'WASD · 방향키로 걷기 / E 이야기 / Esc 닫기');
+  text('walk-help', walkInputMode === 'gamepad' ? '왼쪽 스틱 · 방향 패드 이동 / A 이야기 / X 앉기 / B 닫기' : walkInputMode === 'touch' ? '조이스틱으로 걷고, 가까이 가면 이야기해요' : 'WASD · 방향키로 걷기 / E 이야기 / F 앉기 / Esc 닫기');
+}
+/** What the seats need to know (W7b): where the player walks, whether a seat may be offered now, and the light. */
+function stayContext() {
+  const location = snapshot?.view.day?.location;
+  return { walking: walking(), point: walkPoint, connected, busy, dialog: !!document.querySelector('dialog[open]'), panel: walkPanel, inputMode: walkInputMode, location,
+    homePanel: walking() ? walkPanel && location === 'home' : location === 'home', light: lightShown };
+}
+/** The village's sound now (W7b): the seat or the walking player listens, at the server's hour and the village's weather. */
+function soundFrame() {
+  const v = snapshot?.view.day?.scene?.village, seat = stay?.seat(), at = serverNow() ?? v?.nowMs ?? null;
+  if (!snapshot || !Number.isSafeInteger(at)) return;
+  const place = PLACE_BY_ID[snapshot.view.day.location]?.center;
+  const listener = seat ? { x: seat.x, z: seat.z, sheltered: seat.sheltered } : walking() && walkPoint ? { x: walkPoint.x, z: walkPoint.z, sheltered: renderer?.shelteredAt?.(walkPoint.x, walkPoint.z) } : place ? { x: place.x, z: place.z } : null;
+  const t = v ? Math.min(v.band.endMs - 1, Math.max(v.nowMs, at)) : at;
+  sound.update({ light: lightShown, ms: at, listener, awake: v ? { 'cafe-owner': !!placeAt(v.segments, 'cafe-owner', t, v.startSpots) } : {}, staying: !!seat,
+    dialog: !!document.querySelector('dialog[open]') || walkPanel, hidden: document.hidden });
 }
 function reconcileWalk() {
   if (!walking()) return;
@@ -120,7 +145,7 @@ function walkFrame(now) {
   // Preserve the authority's bounded prediction window and 32-part contract.
   // Use the remaining budget instead of discarding a whole final frame, and
   // merge identical input so high-refresh displays do not fragment packets.
-  let stepMs = walkInputActive ? Math.min(dt, Math.max(0, 240 - pendingMs)) : 0;
+  let stepMs = walkInputActive && walkWarm ? Math.min(dt, Math.max(0, 240 - pendingMs)) : 0;
   const next = stepMs > 0 ? movePoint(walkPoint, input, stepMs / 1000) : walkPoint;
   const origin = sameDirection && walkSegmentOrigins.get(last);
   const combined = origin && stepMs > 0 ? movePoint(origin, input, (last.durationMs + stepMs) / 1000) : null;
@@ -142,17 +167,22 @@ function walkFrame(now) {
   }
   renderer?.setPlayerPose?.({ ...walkPoint, heading: walkHeading, moving: walkMoving }); paintMap(nearby(walkPoint));
   if (walkPending.length && (now - walkSentAt >= 150 || !walkInputActive || walkPending.length >= 32 || pendingMs + stepMs >= 240)) flushWalk();
-  applyWalkView();
+  applyWalkView(); stay?.update(stayContext());
 }
 
 function text(id, value = '') { if ($(id).textContent !== value) $(id).textContent = value; }
 function queue(work) { const next = tail.then(work, work); tail = next.catch(() => {}); return next; }
-function showError(message) { connected = false; presence = null; walkControls?.stop(); document.body.classList.add('walk-error'); text('error', message); $('error').hidden = false; $('retry').hidden = false; text('connection', '연결을 다시 확인해 주세요'); setBusy(false); }
+function showError(message) {
+  connected = false; presence = null; walkControls?.stop(); document.body.classList.add('walk-error'); text('error', message); $('error').hidden = false; $('retry').hidden = false; text('connection', '연결을 다시 확인해 주세요'); setBusy(false);
+  // Seated, a dropped connection asks nothing of the hands (W7b): the seat and its sound stay, and the town tries again.
+  if (stay?.active()) { clearTimeout(seatedRetry); seatedRetry = setTimeout(() => { if (stay?.active() && !connected) load(); }, QUIET?.lightMs ?? 10000); }
+}
 function clearError() { document.body.classList.remove('walk-error'); $('error').hidden = true; $('retry').hidden = true; }
 function available() { return connected && snapshot?.capabilities?.day === true; }
 function setBusy(value) {
   busy = value; $('day-app').setAttribute('aria-busy', String(value));
   for (const b of document.querySelectorAll('[data-command], [data-destination], [data-mode], #life-open, #life-contact-open, #life-resume')) b.disabled = value || !available() || b.dataset.unavailable === 'true';
+  stay?.update(stayContext());
 }
 // state and command answer with the whole town; pulse and boundary with a few fields (vertical slice §14-3, F11).
 // The old heartbeat (presence) answers the whole town like a read — without worldSeq on an account's town.
@@ -183,7 +213,9 @@ function bazaarActive() { return snapshot?.view.day?.location === 'cafe' && !!sn
 function lifeAvailable() { return snapshot?.view.day?.location === 'cafe' && !dayActive() && !bazaarActive() && !snapshot.view.day.scene.cafeReserved && !snapshot?.view.plan && !snapshot?.view.execution && !!snapshot?.view.life?.canStart; }
 function flags() {
   const editing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-  return { surfaceId, surface: 'day', foreground: !document.hidden && (!walking() || document.hasFocus()) && sceneReady && connected,
+  // A seated window is in front while it is seen, focused or not (W7b): the town beside a study window is still with
+  // the person — it is never a spoofed focus, and it walks nowhere.
+  return { surfaceId, surface: 'day', foreground: !document.hidden && (!walking() || document.hasFocus() || !!stay?.active()) && sceneReady && connected,
     safe: !!(lifeAvailable() && (!walking() || nearby(walkPoint) === 'cafe' && !walkMoving && !walkInputActive) && !busy && !document.querySelector('dialog[open]') && !editing && sceneVisible()) };
 }
 async function pulseNow() {
@@ -266,8 +298,10 @@ function dueAt() {
  * every second; a due time is read once (again after 2 seconds if the server had not reached it yet);
  * a safe window offers a boundary every 20 seconds. */
 function tick() {
+  soundFrame();
   if (!snapshot?.capabilities?.day || !connected) return;
-  pulse();
+  // Seated, the pulse comes less often but always inside the lease (W7b — the walk clock and play time go on).
+  if (!stay?.active() || performance.now() - lastPulse >= QUIET.pulseMs - 500) pulse();
   // A hidden window keeps its lease and reads again when it is shown; an older host's presence brings the whole town.
   if (document.hidden || legacyHost) return;
   const now = performance.now(), t = serverNow(), due = dueAt();
@@ -464,10 +498,14 @@ function accept(data) {
     const execution = data.view.execution, plan = globalThis.LoomLife.createPlan(execution.plan);
     executionSample = globalThis.LoomLife.sample(plan, execution.elapsedMs, { currentRevision: plan.revision, currentPlanId: plan.id, committedStepIds: plan.steps.map(s => s.id), reducedMotion: reduced.matches || fallback });
   }
-  text('connection', `${worldHostRequested ? (globalThis.__SYNK_WORLD_TOWN__?.mode === 'account' ? 'SYNK 계정에 저장됨' : '테스트 계정에 저장됨') : '이 기기에 저장됨'} · ${names[day.location] || ''}`); configurePlan(); renderScene(); renderLife(); setBusy(busy);
+  // The hour's light before the scene is drawn: a first visit at night or in the rain never shows the noon first (W7 Fable P2).
+  text('connection', `${worldHostRequested ? (globalThis.__SYNK_WORLD_TOWN__?.mode === 'account' ? 'SYNK 계정에 저장됨' : '테스트 계정에 저장됨') : '이 기기에 저장됨'} · ${names[day.location] || ''}`); configurePlan(); paintLight(true); renderScene(); renderLife(); setBusy(busy);
   if ($('journal-dialog').open) renderJournal();
   $('look-scene').hidden = !activePlan && !observation && !snapshot.view.life?.interaction?.resultId;
   reconcileWalk(); applyWalkView();
+  // Another window moved the player away from the seat (or left home in the classic view): stand up quietly (W7b).
+  if (stay?.active() && (walking() ? seatNear(walkPoint)?.id !== stay.seat().id : day.location !== 'home')) stay.leave('moved');
+  clearTimeout(seatedRetry); stay?.update(stayContext()); soundFrame();
 }
 function renderJournal() {
   const lines = [...(snapshot?.view.notebook || []), ...(snapshot?.view.day?.history || []).map(row => row.summary), ...(snapshot?.view.bazaar?.history || []).map(row => row.summary)];
@@ -552,8 +590,9 @@ function observe(now) {
  * new segment, wakes, sleeps or reaches a scene's hold, the whole scene (captions included) is drawn again. */
 function villageFrame() {
   const v = snapshot?.view.day?.scene?.village;
-  if (!v || !connected) { moodFrame(null); return; }
+  if (!v || !connected) { villageWalking = false; moodFrame(null); return; }
   const village = villageRows(v);
+  villageWalking = village.rows.some(r => r.live && r.walking);
   if (village.signature !== villageLive.signature) { renderScene(); moodFrame(v, village); return; }
   if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
   moodFrame(v, village);
@@ -563,7 +602,7 @@ function villageFrame() {
 let moodLines = null;
 function moodFrame(v, village) {
   moodLines ||= createMoodLines($('mood-lines'), $('mood-live'));
-  const blocked = !v || !renderer || fallback || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]');
+  const blocked = !v || !renderer || fallback || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active();
   // Where the canvas sits in the scene, read only when a card is placed (no layout reads on frames without one).
   let offset = null;
   const canvasOffset = () => { if (!offset) { const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); offset = { x: c.left - s.left, y: c.top - s.top }; } return offset; };
@@ -584,8 +623,21 @@ function lightNow() {
   if (lightSource === 'none') return null;
   try { return lightAt({ villageSeed: typeof v?.seed === 'string' ? v.seed : null, tz, ms: at }); } catch { lightSource = 'none'; return null; }
 }
-function paintLight() { if (!renderer?.setLight) return; lightShown = lightNow(); renderer.setLight(lightShown); }
-function frame(now) { walkFrame(now); observe(now); villageFrame(); raf = requestAnimationFrame(frame); }
+function paintLight(force = false) {
+  // Seated, the light is painted less often (W7b) — it moves in minutes.
+  if (!force && stay?.active() && performance.now() - lightPaintedAt < QUIET.lightMs) return;
+  lightPaintedAt = performance.now(); lightShown = lightNow(); renderer?.setLight?.(lightShown); stay?.update(stayContext());
+}
+function frame(now) {
+  raf = null;
+  if (stay?.active()) {
+    // Seated (W7b): the app's loop runs on a timer — at the scene's pace while a resident walks, slowly otherwise.
+    villageFrame(); stay.frame();
+    appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking ? QUIET.appHz : QUIET.idleHz));
+    return;
+  }
+  walkFrame(now); observe(now); villageFrame(); stay?.frame(); raf = requestAnimationFrame(frame);
+}
 async function load() {
   setBusy(true);
   // The window's first pulse records a visit that ended while it was away; the second read shows the town after it.
@@ -638,10 +690,10 @@ try { const note = JSON.parse(localStorage.getItem('synk-town-day-play-notes') |
 function notes() { return { kind: 'self-guided-developer-play-notes', recordedAt: new Date().toISOString(), participantStudy: false, ...Object.fromEntries(noteIds.map(id => [id, $(id).value])) }; }
 $('play-notes').addEventListener('submit', event => { event.preventDefault(); try { localStorage.setItem('synk-town-day-play-notes', JSON.stringify(notes())); text('notes-status', '이 기기에 저장했어요.'); } catch { text('notes-status', '메모 파일 받기로 보관해 주세요.'); } });
 $('notes-export').addEventListener('click', () => { const blob = new Blob([JSON.stringify(notes(), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'synk-town-play-notes.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) pauseWalkInput(); pulse(); if (!document.hidden) read(); }); window.addEventListener('online', () => { if (!connected) load(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseWalkInput(); soundFrame(); pulse(); if (!document.hidden) read(); }); window.addEventListener('online', () => { if (!connected) load(); });
 window.addEventListener('blur', () => { if (walking()) { pauseWalkInput(); pulse(); } }); window.addEventListener('focus', () => { if (walking()) pulse(); });
 window.addEventListener('pagehide', () => {
-  if (raf !== null) cancelAnimationFrame(raf); walkControls?.dispose(); renderer?.dispose();
+  if (raf !== null) cancelAnimationFrame(raf); clearTimeout(appTimer); stay?.dispose(); sound.dispose(); walkControls?.dispose(); renderer?.dispose();
   const stopped = { surfaceId, surface: 'day', foreground: false, safe: false };
   if (worldHostRequested) { worldHost?.request(legacyHost ? 'presence' : 'pulse', stopped).catch(() => {}); worldHost?.dispose(); }
   else fetch('/api/preview/pulse', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true, body: JSON.stringify(stopped) }).catch(() => {});
@@ -676,8 +728,19 @@ try {
     if (walkWanted && !fallback) { if (!snapshot.state.day.walk?.enabled) await command('DAY_WALK_ENABLE'); camera = 'follow'; updateCameraControl(); }
     else if (snapshot?.state.day.walk?.enabled) await command('DAY_WALK_DISABLE');
   }
-  walkControls = createWalkControls({ surface: $('scene'), joystick: $('walk-joystick'), thumb: $('walk-thumb'), canMove: () => walking() && connected && !busy,
+  walkControls = createWalkControls({ surface: $('scene'), joystick: $('walk-joystick'), thumb: $('walk-thumb'), canMove: () => walking() && connected && !busy && !stay?.active(),
     onInteract: interactWalk, onCancel: dismissWalkPanel, onMoveStart: dismissWalkPanel, onInputMode: mode => { walkInputMode = mode; } });
+  // Staying (W7b): the seats, their quiet view and the sound switches. Sitting sends the steps taken so far; standing
+  // up starts the walk clock again with a zero step, so the first real step is never pulled back.
+  stay = createStay({ scene: $('scene'), hud: $('walk-hud'), nearby: $('nearby-panel'), settings: $('settings-dialog'), sound, renderer: () => renderer,
+    beforeSit: async () => { walkControls?.stop(); dismissWalkPanel(); await flushWalk(true); },
+    onChange: () => { soundFrame(); applyWalkView(true); },
+    onStand: () => {
+      if (appTimer) { clearTimeout(appTimer); appTimer = 0; raf = requestAnimationFrame(frame); }
+      if (walking() && connected) { walkWarm = false; walkPending.push({ x: 0, z: 0, durationMs: 0 }); Promise.resolve(flushWalk(true)).finally(() => { walkWarm = true; }); }
+      paintLight(true); renderScene();
+    } });
+  sound.onPrefs(() => stay?.paint());
   paintLight(); setInterval(paintLight, 1000); // the hour's light (W7), before the first frame shows
   renderScene(); applyWalkView(); if (walking()) $('scene').focus({ preventScroll: true });
   raf = requestAnimationFrame(frame); setInterval(tick, 1000);
@@ -687,6 +750,7 @@ try {
 // Read-only instrumentation for the isolated QA runner. It cannot mutate state or time.
 globalThis.SYNKTownDay = Object.freeze({ metrics: () => ({ ...(renderer?.stats() || { renderer: 'text-alternative' }), reducedMotion: reduced.matches, connected, fallback, worldLinked: worldHostRequested,
   village: { serverNow: serverNow(), live: [...villageLive.ids], signature: villageLive.signature, due: dueAt(), timed: timed() },
+  stay: stay?.metrics() ?? null, sound: { ...sound.stats(), level: sound.level() }, foreground: flags().foreground,
   lightClock: lightShown && { source: lightSource, seedKind: typeof snapshot?.state?.village?.seed === 'string' ? 'string' : snapshot?.state?.village?.seed == null ? 'none' : 'other',
     key: lightShown.key, band: lightShown.band, localMinute: lightShown.localMinute, rain: { raining: lightShown.rain.raining, drops: lightShown.rain.drops, overcast: lightShown.rain.overcast, wet: lightShown.rain.wet } },
   walk: { enabled: walking(), ...walkPoint, heading: walkHeading, moving: walkMoving, inputActive: walkInputActive, nearby: nearby(walkPoint), interactionOpen: walkPanel, input: walkInputMode,

@@ -218,7 +218,9 @@ export function createTownLight({ THREE, scene, renderer, sun, hemi, fill, baked
   /** Each drawn frame: the sky follows the camera; the rain the view centre (wider over the whole town) and the
    * server's clock, held still under reduced motion. */
   function frame(now, camera, center, wideRadius = 0) {
-    sky.position.copy(camera.position); sky.scale.setScalar(Math.min(SKY_RADIUS, camera.far * .95));
+    // Just inside the far plane, whatever the view: a dome nearer than far would paint over the hills behind it
+    // (the map overview's far is about 135 m — W7 Fable P3).
+    sky.position.copy(camera.position); sky.scale.setScalar(camera.far * .95);
     if (warm === 1) { sky.visible = sky.material.uniforms.skyAlpha.value > .001; rain.visible = drawnDrops > 0; warm = 2; }
     if (warm === 0 && rain) { sky.visible = rain.visible = true; warm = 1; }
     if (!rain?.visible || !last) return;
@@ -243,5 +245,7 @@ export function createTownLight({ THREE, scene, renderer, sun, hemi, fill, baked
     sky.geometry.dispose(); sky.material.dispose(); scene.remove(sky);
     if (rain) { rain.geometry.dispose(); rain.material.dispose(); scene.remove(rain); }
   }
-  return { apply, register, setShelters, setFogRange, setBaked, reapply, frame, sunDirection: () => direction, sunMode, stats, dispose };
+  // Whether streaks are falling now (a seated still view keeps drawing while they do — W7b).
+  const rainVisible = () => !!rain?.visible && drawnDrops > 0;
+  return { apply, register, setShelters, setFogRange, setBaked, reapply, frame, rainVisible, sunDirection: () => direction, sunMode, stats, dispose };
 }

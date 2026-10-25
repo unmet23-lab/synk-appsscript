@@ -207,6 +207,8 @@ docs/_ops/마스코트_Drive이관_20260910/transfer/
 *.glb
 # Baked Town district set lists: they point at GLBs kept in the originals warehouse (10-18).
 experiences/synk-town/assets/district/*.json
+# 머무는 모드의 SYNK 음악 앱 파일(W7b): 원곡은 창고, 앱 파일은 공개 사이트에만 — tools/town-music-build.mjs가 만든다.
+experiences/synk-town/assets/music/
 /tmp/
 # 검토·실험 중간판: 납품본은 각 폴더 바깥의 정본 자리에 둔다.
 **/_검토/

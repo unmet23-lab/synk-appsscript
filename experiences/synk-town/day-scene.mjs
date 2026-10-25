@@ -99,9 +99,10 @@ function mug(parent, m, p, scale = 1) {
 }
 function waterGlass(parent, m, p, scale = 1) {
   const g = new THREE.Group(); g.position.set(...p); g.scale.setScalar(scale); parent.add(g);
-  mesh(g, new THREE.CylinderGeometry(.13, .105, .29, 18, 1, true), m.glass, [0, .15, 0]);
-  mesh(g, new THREE.CylinderGeometry(.10, .10, .025, 18), m.glass, [0, .02, 0]);
-  mesh(g, new THREE.TorusGeometry(.128, .012, 5, 20), m.glass, [0, .295, 0]).rotation.x = Math.PI / 2;
+  const glass = m.cupGlass || m.glass;
+  mesh(g, new THREE.CylinderGeometry(.13, .105, .29, 18, 1, true), glass, [0, .15, 0]);
+  mesh(g, new THREE.CylinderGeometry(.10, .10, .025, 18), glass, [0, .02, 0]);
+  mesh(g, new THREE.TorusGeometry(.128, .012, 5, 20), glass, [0, .295, 0]).rotation.x = Math.PI / 2;
   mesh(g, new THREE.CylinderGeometry(.112, .098, .21, 18), m.water, [0, .125, 0]); return g;
 }
 function drinkIcon(parent, m, drink, position, scale = 1) {
@@ -221,6 +222,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const bakedLight = bakedLightUniforms(THREE), townLight = createTownLight({ THREE, scene, renderer, sun: light, hemi, fill, baked: bakedLight, phone: canvas.clientWidth < 600 });
   const surfaceArt = applyTownMaterials(m, Math.min(8, renderer.capabilities.getMaxAnisotropy()));
   m.glass.userData.townGlass = true; // windows glow at night; its clones (greenhouse, houses, baked thin glass) keep the mark
+  // A drinking glass is not a lit window (W7 Fable P2): its own clone, without the mark.
+  m.cupGlass = m.glass.clone(); delete m.cupGlass.userData.townGlass;
   const rendering = createTownRendering(renderer, scene, camera);
   const environmentArt = buildTownEnvironment(THREE, world, m, { mesh, box, tube, textLabel });
   const { buildings, hitTargets } = environmentArt;
@@ -228,11 +231,14 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const fixedSupports = []; for (const building of buildings) building.traverse(object => { if (object.isMesh && object.userData.townSupportSurface) fixedSupports.push(object); });
   const occlusionVolumes = (environmentArt.occlusionRoots || buildings).map(root => townOcclusionVolume(root, buildings.includes(root) || root.userData.neighbourhoodHouse === true));
   // Rain stops under each building's roofs and glass roofs (their footprint up to their top), not over its yard.
-  townLight.register(world); townLight.setShelters(occlusionVolumes.filter(volume => volume.structure).map(({ root }) => {
+  const shelterBoxes = occlusionVolumes.filter(volume => volume.structure).map(({ root }) => {
     const roof = new THREE.Box3(), part = new THREE.Box3();
     root.traverse(o => { if (o.isMesh && [o.material].flat().some(mat => mat?.userData.townSurface === 'roof' || mat?.userData.townGlass) && part.setFromObject(o).min.y > 1.2) roof.union(part); });
     return roof;
-  }));
+  });
+  townLight.register(world); townLight.setShelters(shelterBoxes);
+  /** Whether a point is under a roof — the very boxes the rain stops under, so the rain's sound agrees (W7b). */
+  const shelteredAt = (x, z) => shelterBoxes.some(b => !b.isEmpty() && x >= b.min.x && x <= b.max.x && z >= b.min.z && z <= b.max.z);
   // Baked town (day-district.mjs): inside WORLD the whole merged town by default
   // (10-19), elsewhere only with ?district=<name>. The module is fetched only
   // then; the plain local v20 path loads nothing extra.
@@ -271,6 +277,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   const signTeaIcon = mug(legacySign, m, [0, .60, .065], .95);
   let disposed = false, ready = false, contextLost = false, visible = true, raf = 0, dirty = true, previousFrame = 0, frameCount = 0, requestedSerial = 0, renderedSerial = 0, currentLocation = 'home', quality = 'balanced', cameraMode = 'wide', reducedMotion = false, bazaarActive = false;
   let freeWalk = false, playerControlled = false, playerMoving = false, framingActorIds = [];
+  // Staying (W7b): the seat the player sits on, its quiet drawing, and the walking pose kept for standing up.
+  let stay = null, stayTimer = 0, stayPose = null;
   let skyTexture = null, skyTarget = null, assetsReady = false, playerOutfit = 'scarf', playerDyes = {}, appearanceVerified = false;
   const assetFailures = [], assetTextures = new Set();
   let pointerStart = null, lastQuality = '', cpuTimes = [], intervals = [], lastMetricsAt = 0;
@@ -288,7 +296,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       && old.cx === camera.position.x && old.cy === camera.position.y && old.cz === camera.position.z) { occlusionReused++; return; }
     previousOcclusion = { walk: freeWalk, mode: cameraMode, x: p.x, y: floorY, z: p.z, cx: camera.position.x, cy: camera.position.y, cz: camera.position.z }; occlusionQueries++;
     const next = new Set(), nextMeshes = new Set();
-    if (freeWalk && cameraMode !== 'wide') {
+    // A seat's fixed view looks at the seat from the open street (W7b): nothing to fade, and what faded comes back.
+    if (freeWalk && cameraMode !== 'wide' && !stay) {
       for (const x of [-.44, 0, .44]) for (const y of [.12, .38, .68, .98]) {
         sight.set(p.x + x, floorY + y, p.z + .12);
         const distance = camera.position.distanceTo(sight);
@@ -320,10 +329,10 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     obscuredBuildings.clear(); for (const group of next) obscuredBuildings.add(group);
   }
   function focusShadow() {
-    const close = freeWalk && cameraMode === 'close', overview = freeWalk && cameraMode === 'wide', p = actors.get('player').target;
+    const close = freeWalk && cameraMode === 'close' || !!stay, overview = freeWalk && cameraMode === 'wide' && !stay, p = actors.get('player').target;
     const extent = close ? 5.2 : overview ? Math.max(WALK_BOUNDS.maxX - WALK_BOUNDS.minX, WALK_BOUNDS.maxZ - WALK_BOUNDS.minZ) / 2 + 6 : 14,
-      x = overview ? (WALK_BOUNDS.minX + WALK_BOUNDS.maxX) / 2 : freeWalk ? p.x : 0,
-      z = overview ? (WALK_BOUNDS.minZ + WALK_BOUNDS.maxZ) / 2 : freeWalk ? p.z : -2,
+      x = stay ? stay.x : overview ? (WALK_BOUNDS.minX + WALK_BOUNDS.maxX) / 2 : freeWalk ? p.x : 0,
+      z = stay ? stay.z : overview ? (WALK_BOUNDS.minZ + WALK_BOUNDS.maxZ) / 2 : freeWalk ? p.z : -2,
       d = townLight.sunDirection(), snapped = shadowFocus(x, z, extent, light.shadow.mapSize.x, d), { reach, far } = sunReach(d, overview ? 3 : 1, extent, overview ? 95 : 45);
     light.position.set(snapped.x + d.x * reach, d.y * reach, snapped.z + d.z * reach); light.target.position.set(snapped.x, 0, snapped.z);
     light.shadow.bias = -.0089 / (far - .5);
@@ -378,7 +387,19 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   }
   function layoutCamera(immediate = false) {
     const w = Math.max(1, canvas.clientWidth), h = Math.max(1, canvas.clientHeight), aspect = w / h;
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, quality === 'experience' ? (w < 600 ? 1.6 : 2) : (w < 600 ? 1.25 : 1.5))); renderer.setSize(w, h, false); camera.aspect = aspect;
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, stay ? stay.pixelRatio : quality === 'experience' ? (w < 600 ? 1.6 : 2) : (w < 600 ? 1.25 : 1.5))); renderer.setSize(w, h, false); camera.aspect = aspect;
+    if (stay) {
+      // The seat's own still view (W7b): the seat's frame fitted to the screen's shape, from in front of the seat.
+      const c = stay.camera; camera.fov = c.fov;
+      target.set(stay.x + c.look[0], c.look[1], stay.z + c.look[2]);
+      // A tall phone keeps the seat and the house behind it rather than the whole street's width.
+      const distance = Math.max(c.height, (aspect < 1 ? c.portraitWidth : c.width) / aspect) / (2 * Math.tan(THREE.MathUtils.degToRad(c.fov) / 2));
+      cameraPosition.copy(target).add(new THREE.Vector3(...c.dir).normalize().multiplyScalar(distance));
+      camera.position.copy(cameraPosition); cameraTarget.copy(target); camera.lookAt(cameraTarget);
+      townLight.setFogRange(30, 100);
+      camera.far = Math.max(100, distance + 65); camera.updateProjectionMatrix(); rendering.resize(w, h, quality); dirty = true; schedule();
+      return;
+    }
     const follow = cameraMode === 'follow', walkingClose = freeWalk && cameraMode === 'close'; camera.fov = walkingClose ? (aspect < .8 ? 46 : 42) : follow ? (aspect < .8 ? 48 : 44) : 36;
     const close = cameraMode === 'close', wideWalking = freeWalk && cameraMode === 'wide', [x, z] = LOCATIONS[currentLocation] || LOCATIONS.home;
     target.set(close ? x : 0, close ? .8 : .25, close ? z + (bazaarActive ? .6 : -.6) : wideWalking ? (WALK_BOUNDS.minZ + WALK_BOUNDS.maxZ) / 2 : -2.25);
@@ -398,6 +419,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   function resize() { if (!disposed) layoutCamera(true); }
   function setPlayerPose(value = {}) {
     if (disposed || !Number.isFinite(value.x) || !Number.isFinite(value.z)) return;
+    // Seated, the seat holds the player; the walking pose waits for standing up (W7b).
+    if (stay) { stayPose = { ...value }; return; }
     const a = actors.get('player'), now = performance.now();
     if (playerControlled && a.target.x === value.x && a.target.z === value.z && playerMoving === (value.moving === true)
       && (!Number.isFinite(value.heading) || a.facing === value.heading)) return;
@@ -429,6 +452,26 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
   function setLight(state) {
     if (disposed) return;
     if (townLight.apply(state, { reducedMotion: reducedMotion || motionQuery.matches })) { dirty = true; schedule(); }
+  }
+  /** Staying (W7b): sits the player on a seat (town/stay.mjs SEATS — { id, x, z, seatTop, heading, sit, camera }) and
+   * draws the seat's still view quietly — fewer frames on a timer, a plain pixel ratio, no contact shading, no name
+   * labels (quiet: { fps, pixelRatio }) — or, with null, gives the walking pose and view back. Returns whether it changed. */
+  function setStay(seat, quiet = {}) {
+    if (disposed || (!seat && !stay) || (seat && stay?.id === seat.id)) return false;
+    const now = performance.now(), player = actors.get('player');
+    if (!seat) {
+      stay = null; clearTimeout(stayTimer); stayTimer = 0;
+      const pose = stayPose; stayPose = null; playerControlled = false;
+      if (pose) setPlayerPose(pose);
+      layoutCamera(true); dirty = true; schedule(); return true;
+    }
+    const wasSeated = !!stay;
+    stay = { id: seat.id, x: seat.x + (seat.sit?.[0] || 0), z: seat.z + (seat.sit?.[1] || 0), seatTop: seat.seatTop, heading: seat.heading, camera: seat.camera,
+      fps: quiet.fps || 15, pixelRatio: quiet.pixelRatio || 1 };
+    if (!wasSeated) stayPose = { x: player.target.x, z: player.target.z, heading: player.facing, moving: false };
+    setActor('player', { x: stay.x, z: stay.z, pose: 'sitting' }, now, true);
+    player.facing = player.visualFacing = stay.heading;
+    clearTimeout(stayTimer); stayTimer = 0; layoutCamera(true); dirty = true; schedule(); return true;
   }
   /** Where a resident's name label is on the canvas, in CSS px (W4 — the mood line hangs by it): null while
    * the resident is hidden or the label is off screen. */
@@ -584,7 +627,8 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     bazaarActive = nextBazaar;
     quality = nextQuality; cameraMode = nextCamera; reducedMotion = !!options.reducedMotion; currentLocation = LOCATIONS[data.location] ? data.location : 'home';
     if (lastQuality !== quality) { lastQuality = quality; const size = canvas.clientWidth < 600 && quality !== 'experience' ? 1024 : 2048; light.shadow.mapSize.set(size, size); light.shadow.map?.dispose(); light.shadow.map = null; light.shadow.needsUpdate = true; cpuTimes = []; intervals = []; lastMetricsAt = 0; }
-    if (!freeWalk || !playerControlled) setActor('player', data.player || { x: -6, z: 1.1 }, now);
+    // Seated, the seat holds the player in every view (W7b — the classic view moves it on each render otherwise).
+    if (!stay && (!freeWalk || !playerControlled)) setActor('player', data.player || { x: -6, z: 1.1 }, now);
     // A live resident follows the village plan every frame (setResidents), so it is placed, not eased.
     const npcIds = new Set(); for (const npc of data.npcs || []) { if (npc.id === 'player' || npc.id === 'visitor-tea-reader') continue; npcIds.add(npc.id); setActor(npc.id, npc, now, npc.live === true); }
     for (const id of ['cafe-owner', 'workshop-owner', 'researcher', 'book-guest', 'companion']) if (!npcIds.has(id)) actors.get(id).group.visible = false;
@@ -601,13 +645,16 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     raf = 0; if (disposed || !visible || document.hidden || contextLost) return;
     // Resolution/contact light define the quality tiers. Both keep responsive
     // 60 Hz presentation; lowering the default to 30 made walking visibly step.
-    const motion = !reducedMotion && !motionQuery.matches, interval = 1000 / 60;
+    const motion = !reducedMotion && !motionQuery.matches, interval = 1000 / (stay ? stay.fps : 60);
     if (frameCount && now - previousFrame < interval - 1) { schedule(); return; }
-    const dt = Math.min(.08, Math.max(0, now - previousFrame) / 1000); previousFrame = now; const start = performance.now();
-    if (cameraMode === 'follow' || freeWalk && cameraMode === 'close') followTarget();
+    const dt = Math.min(stay ? .2 : .08, Math.max(0, now - previousFrame) / 1000); previousFrame = now; const start = performance.now();
+    if (!stay && (cameraMode === 'follow' || freeWalk && cameraMode === 'close')) followTarget();
     // Direct walking input and the camera share the same displacement. There is
     // no follow spring, turn banking, head bob or residual drift after release.
     const cameraBlend = !motion || freeWalk && cameraMode !== 'wide' ? 1 : Math.min(1, dt * 8); camera.position.lerp(cameraPosition, cameraBlend); cameraTarget.lerp(target, cameraBlend); camera.lookAt(cameraTarget);
+    // Seated, the still view is drawn only while something moves (a walking resident, the rain) and on a change;
+    // a standing resident's idle sway is held still (W7b).
+    let moving = false; const idleSway = stay ? 0 : 1;
     for (const [id, a] of actors) {
       if (!a.group.visible) continue; const progress = motion ? clamp((now - a.changedAt) / 260, 0, 1) : 1; a.group.position.lerpVectors(a.from, a.target, progress * progress * (3 - 2 * progress));
       const walking = progress < 1 || ['walking', 'walk', 'walk-to-seat', 'walk-to-sign', 'carrying'].includes(a.pose), working = ['working', 'drawing', 'tidying', 'serve', 'serving', 'read', 'reading'].includes(a.pose), showing = a.pose === 'showing', holding = a.pose === 'holding', talking = ['talking', 'inviting'].includes(a.pose), resting = ['sit', 'sitting', 'seated', 'resting'].includes(a.pose);
@@ -619,44 +666,56 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       const gaitTarget = motion && walking && travelled > .00001 ? 1 : 0;
       a.gaitBlend += (gaitTarget - a.gaitBlend) * (1 - Math.exp(-dt * (gaitTarget ? 22 : 28)));
       if (!motion || a.gaitBlend < .001) a.gaitBlend = 0;
+      if (a.gaitBlend > 0 || progress < 1) moving = true;
       const gait = a.gaitBlend, sway = Math.sin(a.walkPhase), idle = 1 - gait;
       if (a.groundX !== a.group.position.x || a.groundZ !== a.group.position.z) {
         const floorY = environmentArt.floorHeight?.(a.group.position.x, a.group.position.z);
         a.floorY = Number.isFinite(floorY) ? floorY : .12; a.groundX = a.group.position.x; a.groundZ = a.group.position.z;
       }
-      a.gaitBob = motion ? Math.abs(sway) * gait * (a.resident ? .008 : .020) + idle * (holding ? 0 : working || talking ? Math.sin(now * .0032) * .012 : Math.sin(now * .0018) * .003) : 0;
+      a.gaitBob = motion ? Math.abs(sway) * gait * (a.resident ? .008 : .020) + idle * idleSway * (holding ? 0 : working || talking ? Math.sin(now * .0032) * .012 : Math.sin(now * .0018) * .003) : 0;
       // The visual feet follow the surface. The input anchor, gait travel and
       // direct camera remain level; a seated resident keeps its chair pose.
       a.surfaceOffset = ['sit', 'sitting', 'seated'].includes(a.pose) ? 0 : a.floorY - a.group.position.y;
+      // The seated player rests on the seat itself (W7b); the seat's own shadow stays on the ground under it.
+      const seated = id === 'player' && !!stay; if (seated) a.surfaceOffset = stay.seatTop - a.group.position.y;
       a.body.position.y = a.surfaceOffset + a.gaitBob;
       a.shadow.position.y = a.floorY - a.group.position.y + .004;
       // High steps/porches use the real sun shadow, avoiding a floating contact
       // disc spilling outside a narrow elevated platform.
-      a.shadow.visible = a.floorY < .2;
-      a.body.rotation.z = motion ? sway * gait * (a.resident ? .007 : .023) + idle * (showing ? .045 + Math.sin(now * .0026) * .025 : working ? Math.sin(now * .0032) * .020 : 0) : 0;
+      a.shadow.visible = a.floorY < .2 && !seated;
+      a.body.rotation.z = motion ? sway * gait * (a.resident ? .007 : .023) + idle * idleSway * (showing ? .045 + Math.sin(now * .0026) * .025 : working ? Math.sin(now * .0032) * .020 : 0) : 0;
       a.body.rotation.x = a.resident ? 0 : working ? .10 : showing ? -.05 : 0;
       const squash = a.resident ? 0 : Math.cos(a.walkPhase * 2) * gait * .008;
       a.body.scale.set(.56 * (1 + squash * .5), .56 * (1 - squash), .56 * (1 + squash * .5));
-      const heading = id === 'player' && freeWalk && playerControlled ? a.facing : walking ? a.facing : resting && id !== 'player' ? -.18 : holding ? .3 : .10;
+      const heading = seated ? stay.heading : id === 'player' && freeWalk && playerControlled ? a.facing : walking ? a.facing : resting && id !== 'player' ? -.18 : holding ? .3 : .10;
       if (a.visualFacing === null || !motion) a.visualFacing = heading;
       else a.visualFacing += Math.atan2(Math.sin(heading - a.visualFacing), Math.cos(heading - a.visualFacing)) * (1 - Math.exp(-dt * 18));
       a.body.rotation.y = a.visualFacing;
       a.resident?.update({ now, deltaSeconds: dt, walkPhase: a.walkPhase, gaitBlend: gait, motion, walking, working, showing, holding, talking, seated: ['sit', 'sitting', 'seated'].includes(a.pose) });
-      a.label.visible = !freeWalk || cameraMode !== 'wide' && id !== 'player' && a.group.position.distanceTo(actors.get('player').group.position) < (cameraMode === 'close' ? 2.0 : 3.0);
+      // Seated, the screen goes quiet: no name labels (W7b).
+      a.label.visible = !stay && (!freeWalk || cameraMode !== 'wide' && id !== 'player' && a.group.position.distanceTo(actors.get('player').group.position) < (cameraMode === 'close' ? 2.0 : 3.0));
       const fibers = a.body.getObjectByName('close-view-felt-fibers'); if (fibers) fibers.visible = cameraMode === 'close';
     }
-    for (const o of labelSprites) { o.getWorldPosition(labelPosition); if (o.userData.placeId) { const p = actors.get('player').target, [x, z] = LOCATIONS[o.userData.placeId]; o.visible = !(cameraMode === 'close' && o.parent.userData.faded) && (!freeWalk || cameraMode !== 'wide' && Math.hypot(p.x - x, p.z - z) < 4.8); } const worldPerPixel = 2 * camera.position.distanceTo(labelPosition) * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, canvas.clientHeight); const width = Math.min(Math.max(o.userData.labelWidth, o.userData.minPixelWidth * worldPerPixel), (o.userData.maxPixelWidth || 170) * worldPerPixel); o.scale.set(width, width * (o.userData.labelAspect || 100 / 384), 1); }
+    for (const o of labelSprites) { o.getWorldPosition(labelPosition); if (o.userData.placeId) { const p = actors.get('player').target, [x, z] = LOCATIONS[o.userData.placeId]; o.visible = !stay && !(cameraMode === 'close' && o.parent.userData.faded) && (!freeWalk || cameraMode !== 'wide' && Math.hypot(p.x - x, p.z - z) < 4.8); } const worldPerPixel = 2 * camera.position.distanceTo(labelPosition) * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / Math.max(1, canvas.clientHeight); const width = Math.min(Math.max(o.userData.labelWidth, o.userData.minPixelWidth * worldPerPixel), (o.userData.maxPixelWidth || 170) * worldPerPixel); o.scale.set(width, width * (o.userData.labelAspect || 100 / 384), 1); }
     // Over the whole town (the walking overview) the rain covers the walking grounds, otherwise the view's centre.
-    const overview = freeWalk && cameraMode === 'wide';
-    updateOcclusion(); focusShadow(); townLight.frame(now, camera, overview ? WALK_CENTER : freeWalk ? actors.get('player').group.position : cameraTarget, overview ? WALK_REACH : 0);
-    rendering.render(cameraMode === 'wide'); frameCount++; renderedSerial = requestedSerial; ready = true; dirty = false;
+    const overview = freeWalk && cameraMode === 'wide' && !stay;
+    updateOcclusion(); focusShadow(); townLight.frame(now, camera, overview ? WALK_CENTER : freeWalk || stay ? actors.get('player').group.position : cameraTarget, overview ? WALK_REACH : 0);
+    // Seated, no contact shading (the light pass): the still view is drawn plainly to save the battery (W7b).
+    rendering.render(cameraMode === 'wide' || !!stay); frameCount++; renderedSerial = requestedSerial; ready = true; dirty = false;
     const cpu = performance.now() - start; cpuTimes.push(cpu); if (lastMetricsAt && now - lastMetricsAt < 250) intervals.push(now - lastMetricsAt); lastMetricsAt = now; if (cpuTimes.length > 360) cpuTimes.shift(); if (intervals.length > 360) intervals.shift();
-    if (motion || freeWalk && playerMoving) schedule();
+    if (stay ? motion && (moving || townLight.rainVisible?.()) : motion || freeWalk && playerMoving) schedule();
   }
   // An account iframe waits for its first authoritative scene input. Rendering
   // the unused placeholder here can block the account response during shader
   // compilation, then immediately repeat that work for the actual town view.
-  function schedule() { if ((!deferInitialRender || requestedSerial > 0) && !raf && !disposed && visible && !document.hidden && !contextLost) raf = requestAnimationFrame(frame); }
+  function schedule() {
+    if ((!deferInitialRender || requestedSerial > 0) && !raf && !stayTimer && !disposed && visible && !document.hidden && !contextLost) {
+      // Seated, the next frame waits on a timer rather than waking at every display refresh (W7b).
+      const wait = stay && previousFrame ? 1000 / stay.fps - (performance.now() - previousFrame) : 0;
+      if (wait > 4) stayTimer = setTimeout(() => { stayTimer = 0; schedule(); }, wait - 2);
+      else raf = requestAnimationFrame(frame);
+    }
+  }
   function pointerDown(e) { if (e.button && e.pointerType === 'mouse') return; pointerStart = { id: e.pointerId, x: e.clientX, y: e.clientY }; }
   function pointerUp(e) {
     const start = pointerStart; pointerStart = null; if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > 9 || contextLost) return;
@@ -668,11 +727,11 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     const nearest = Object.entries(LOCATIONS).map(([id, [x, z]]) => ({ id, d: Math.hypot(p.x - x, p.z - z) })).sort((a, b) => a.d - b.d)[0]; if (nearest?.d < 4.5) onDestination(nearest.id);
   }
   function pointerCancel() { pointerStart = null; }
-  function visibilityChange() { cancelAnimationFrame(raf); raf = 0; previousFrame = lastMetricsAt = 0; if (!document.hidden) { dirty = true; schedule(); } }
+  function visibilityChange() { cancelAnimationFrame(raf); raf = 0; clearTimeout(stayTimer); stayTimer = 0; previousFrame = lastMetricsAt = 0; if (!document.hidden) { dirty = true; schedule(); } }
   function motionChange() { dirty = true; schedule(); }
   function lost(e) { e.preventDefault(); contextLost = true; ready = false; cancelAnimationFrame(raf); raf = 0; onError(new Error('입체 장면을 표시할 수 없어요. 아래 생활 현황과 행동은 계속 사용할 수 있어요.')); }
   const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(canvas);
-  const intersection = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; cancelAnimationFrame(raf); raf = 0; previousFrame = lastMetricsAt = 0; if (visible) { dirty = true; schedule(); } }, { threshold: .01 }); intersection.observe(canvas);
+  const intersection = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; cancelAnimationFrame(raf); raf = 0; clearTimeout(stayTimer); stayTimer = 0; previousFrame = lastMetricsAt = 0; if (visible) { dirty = true; schedule(); } }, { threshold: .01 }); intersection.observe(canvas);
   canvas.addEventListener('pointerdown', pointerDown); canvas.addEventListener('pointerup', pointerUp); canvas.addEventListener('pointercancel', pointerCancel); canvas.addEventListener('webglcontextlost', lost); document.addEventListener('visibilitychange', visibilityChange); motionQuery.addEventListener?.('change', motionChange);
   function setAppearance(value) {
     if (disposed) return;
@@ -697,9 +756,9 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
       }
     };
   }
-  function stats() { const player = actors.get('player'); const projected = player.group.position.clone().add(new THREE.Vector3(0, .55 + player.surfaceOffset, 0)).project(camera); const head = player.group.position.clone().add(new THREE.Vector3(0, .83 + player.surfaceOffset, 0)).project(camera); return { ready, ...cameraDiagnostics(), playerHeadScreen: {x:(head.x+1)*canvas.clientWidth/2,y:(1-head.y)*canvas.clientHeight/2,inFrustum:Math.abs(head.x)<1&&Math.abs(head.y)<1&&Math.abs(head.z)<1}, graphicsVersion: 20, ...(bakedDistrict ? { bakedDistrict: bakedDistrict.stats() } : {}), brandArt: { revision: 13, palette: TOWN_BRAND, materialVersion: surfaceArt.version, memoryMarkers: memoryMarkers.map(h => ({ ...h })) }, rendering: rendering.stats(), conversationHeads: framingActorIds.map(id=>{const a=actors.get(id), point=(a.resident?.head ? a.resident.head.getWorldPosition(new THREE.Vector3()) : a.group.position.clone().add(new THREE.Vector3(0,a.headHeight,0))).project(camera);return {id,x:(point.x+1)*canvas.clientWidth/2,y:(1-point.y)*canvas.clientHeight/2};}), residents: [...actors.entries()].filter(([,a])=>a.resident).map(([id,a])=>({id,visible:a.group.visible,identity:a.resident.identity,height:a.height,headHeight:a.headHeight,pose:a.pose,x:a.group.position.x,z:a.group.position.z})), assetsReady, assetFailures: [...assetFailures], environment: environmentArt.stats, surfaceAlignment: { revision: 20, floorY: player.floorY, surfaceOffset: player.surfaceOffset, footWorldY: player.group.position.y + player.body.position.y, nominalFootWorldY: player.group.position.y + player.surfaceOffset, bob: player.gaitBob, shadowWorldY: player.group.position.y + player.shadow.position.y, contactShadowVisible: player.shadow.visible, anchorY: player.group.position.y, gameplayYChanged: false }, propContacts: [...propContacts, ...(lifeCup.visible && lifeContact ? [lifeContact] : []), ...(legacy.visible && legacyCup.visible && legacyContact ? [legacyContact] : [])], occlusionReuse: { queries: occlusionQueries, reusedFrames: occlusionReused, fadedMeshCount: fadedMeshes.size, roofCutaways: [...fadedMeshes].filter(object => fadedMaterials.get(object)?.roof && !object.visible).length }, shadowFocus: shadowDiagnostics, playerAvatar: player.avatar?.metrics() || {avatarVersion:'town-role-v2',outfit:playerOutfit}, appearanceVerified, playerScreen: { x: (projected.x + 1) * canvas.clientWidth / 2, y: (1 - projected.y) * canvas.clientHeight / 2, inFrustum: Math.abs(projected.x) < 1 && Math.abs(projected.y) < 1 && Math.abs(projected.z) < 1 }, cameraNear: camera.near, cameraDistance: camera.position.distanceTo(player.group.position), requestedSerial, renderedSerial, renderer: `Three.js r${THREE.REVISION}`, webgl: renderer.capabilities.isWebGL2 ? 'WebGL2' : 'WebGL', contextLost, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, dpr: renderer.getPixelRatio(), drawingBuffer: { width: canvas.width, height: canvas.height }, frameCount, samples: cpuTimes.length, cpuRenderMs: { p50: quantile(cpuTimes, .5), p95: quantile(cpuTimes, .95) }, frameIntervalMs: { p50: quantile(intervals, .5), p95: quantile(intervals, .95) }, frameCap: 60, quality, camera: cameraMode, location: currentLocation, freeWalk, locomotion: { revision: 6, requestedHeading: player.facing, displayedHeading: player.visualFacing, gaitBlend: player.gaitBlend, phase: player.walkPhase, bob: player.gaitBob, roll: player.body.rotation.z, positionResidual: player.group.position.distanceTo(player.target), headingResponse: 'shortest-angle-body-only', gaitClock: 'travel-distance' }, playerPose: { x: player.group.position.x, y: player.group.position.y, z: player.group.position.z, heading: player.body.rotation.y, moving: playerMoving }, cameraPosition: camera.position.toArray(), cameraTarget: cameraTarget.toArray(), obscuredBuildingCount: [...obscuredBuildings].filter(g => buildings.includes(g)).length, obscuredPropCount: [...obscuredBuildings].filter(g => !buildings.includes(g)).length, paused: disposed || !visible || document.hidden || contextLost, reducedMotion: reducedMotion || motionQuery.matches, actorCount: [...actors.values()].filter(a => a.group.visible).length, propCount, productionAsset: false, physicalDeviceVerified: false }; }
+  function stats() { const player = actors.get('player'); const projected = player.group.position.clone().add(new THREE.Vector3(0, .55 + player.surfaceOffset, 0)).project(camera); const head = player.group.position.clone().add(new THREE.Vector3(0, .83 + player.surfaceOffset, 0)).project(camera); return { ready, ...cameraDiagnostics(), playerHeadScreen: {x:(head.x+1)*canvas.clientWidth/2,y:(1-head.y)*canvas.clientHeight/2,inFrustum:Math.abs(head.x)<1&&Math.abs(head.y)<1&&Math.abs(head.z)<1}, graphicsVersion: 20, ...(bakedDistrict ? { bakedDistrict: bakedDistrict.stats() } : {}), brandArt: { revision: 13, palette: TOWN_BRAND, materialVersion: surfaceArt.version, memoryMarkers: memoryMarkers.map(h => ({ ...h })) }, rendering: rendering.stats(), conversationHeads: framingActorIds.map(id=>{const a=actors.get(id), point=(a.resident?.head ? a.resident.head.getWorldPosition(new THREE.Vector3()) : a.group.position.clone().add(new THREE.Vector3(0,a.headHeight,0))).project(camera);return {id,x:(point.x+1)*canvas.clientWidth/2,y:(1-point.y)*canvas.clientHeight/2};}), residents: [...actors.entries()].filter(([,a])=>a.resident).map(([id,a])=>({id,visible:a.group.visible,identity:a.resident.identity,height:a.height,headHeight:a.headHeight,pose:a.pose,x:a.group.position.x,z:a.group.position.z})), assetsReady, assetFailures: [...assetFailures], environment: environmentArt.stats, surfaceAlignment: { revision: 20, floorY: player.floorY, surfaceOffset: player.surfaceOffset, footWorldY: player.group.position.y + player.body.position.y, nominalFootWorldY: player.group.position.y + player.surfaceOffset, bob: player.gaitBob, shadowWorldY: player.group.position.y + player.shadow.position.y, contactShadowVisible: player.shadow.visible, anchorY: player.group.position.y, gameplayYChanged: false }, propContacts: [...propContacts, ...(lifeCup.visible && lifeContact ? [lifeContact] : []), ...(legacy.visible && legacyCup.visible && legacyContact ? [legacyContact] : [])], occlusionReuse: { queries: occlusionQueries, reusedFrames: occlusionReused, fadedMeshCount: fadedMeshes.size, roofCutaways: [...fadedMeshes].filter(object => fadedMaterials.get(object)?.roof && !object.visible).length }, shadowFocus: shadowDiagnostics, playerAvatar: player.avatar?.metrics() || {avatarVersion:'town-role-v2',outfit:playerOutfit}, appearanceVerified, playerScreen: { x: (projected.x + 1) * canvas.clientWidth / 2, y: (1 - projected.y) * canvas.clientHeight / 2, inFrustum: Math.abs(projected.x) < 1 && Math.abs(projected.y) < 1 && Math.abs(projected.z) < 1 }, cameraNear: camera.near, cameraDistance: camera.position.distanceTo(player.group.position), requestedSerial, renderedSerial, renderer: `Three.js r${THREE.REVISION}`, webgl: renderer.capabilities.isWebGL2 ? 'WebGL2' : 'WebGL', contextLost, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, dpr: renderer.getPixelRatio(), drawingBuffer: { width: canvas.width, height: canvas.height }, frameCount, samples: cpuTimes.length, cpuRenderMs: { p50: quantile(cpuTimes, .5), p95: quantile(cpuTimes, .95) }, frameIntervalMs: { p50: quantile(intervals, .5), p95: quantile(intervals, .95) }, frameCap: stay ? stay.fps : 60, stay: stay ? { seat: stay.id, fps: stay.fps, pixelRatio: stay.pixelRatio } : null, quality, camera: stay ? 'stay' : cameraMode, location: currentLocation, freeWalk, locomotion: { revision: 6, requestedHeading: player.facing, displayedHeading: player.visualFacing, gaitBlend: player.gaitBlend, phase: player.walkPhase, bob: player.gaitBob, roll: player.body.rotation.z, positionResidual: player.group.position.distanceTo(player.target), headingResponse: 'shortest-angle-body-only', gaitClock: 'travel-distance' }, playerPose: { x: player.group.position.x, y: player.group.position.y, z: player.group.position.z, heading: player.body.rotation.y, moving: playerMoving }, cameraPosition: camera.position.toArray(), cameraTarget: cameraTarget.toArray(), obscuredBuildingCount: [...obscuredBuildings].filter(g => buildings.includes(g)).length, obscuredPropCount: [...obscuredBuildings].filter(g => !buildings.includes(g)).length, paused: disposed || !visible || document.hidden || contextLost, reducedMotion: reducedMotion || motionQuery.matches, actorCount: [...actors.values()].filter(a => a.group.visible).length, propCount, productionAsset: false, physicalDeviceVerified: false }; }
   function dispose() {
-    if (disposed) return; disposed = true; cancelAnimationFrame(raf); resizeObserver.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', visibilityChange); motionQuery.removeEventListener?.('change', motionChange);
+    if (disposed) return; disposed = true; cancelAnimationFrame(raf); clearTimeout(stayTimer); resizeObserver.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', visibilityChange); motionQuery.removeEventListener?.('change', motionChange);
     for (const [type, fn] of [['pointerdown', pointerDown], ['pointerup', pointerUp], ['pointercancel', pointerCancel], ['webglcontextlost', lost]]) canvas.removeEventListener(type, fn);
     for (const actor of actors.values()) actor.avatar?.dispose();
     for (const actor of actors.values()) if (actor.resident) actor.body.traverse(o => { if (o.isInstancedMesh) o.dispose(); });
@@ -759,5 +818,5 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     try { await Promise.race([initialAssets.catch(() => {}), new Promise(resolve => { timer = setTimeout(resolve, 5000); })]); }
     finally { clearTimeout(timer); }
   }
-  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose, labelScreen, playerPoint };
+  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setStay, shelteredAt, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose, labelScreen, playerPoint };
 }

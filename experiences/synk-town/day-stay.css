@@ -1,0 +1,41 @@
+/* 싱크타운 머무는 모드(세로 조각 W7b, 마을 설계 §4-4) — 앉으면 장면 위 조작이 모두 빠지고 어두운 막과 작은 판 하나만 남는다.
+ * 판의 글·스위치는 혼자 두면 옅어지고(그동안은 누름을 받지 않아 첫 손길은 밝히기만 한다), 「일어나기」는 옅은 모양으로 늘 보인다.
+ * 옅어지기·어둡게는 transition이라 움직임 줄이기에서는 day-style.css의 규칙이 즉시로 바꾼다. day-stay.mjs가 이 파일을 붙인다
+ * (day.html은 고치지 않는다 — 캐시에 옛 day.html이 남아도 마을이 뜬다). 토큰은 day-style.css의 :root 그대로. */
+body.stay-mode{overflow:hidden}
+body.stay-mode .topbar,body.stay-mode .heading,body.stay-mode .destinations,body.stay-mode .walk-hud,body.stay-mode .scene-badge,body.stay-mode .scene-caption,
+body.stay-mode .camera,body.stay-mode .mood-lines,body.stay-mode .nearby,body.stay-mode .scene-foot,body.stay-mode .play-note,body.stay-mode .development,
+body.stay-mode .ft-static,body.stay-mode .world-column>.observation,body.stay-mode .job{display:none!important}
+body.stay-mode .scene{position:fixed;inset:0;z-index:20;height:100dvh;min-height:100dvh;border-radius:0;box-shadow:none}
+body.stay-mode .scene:focus{outline:none}
+
+.stay-veil{position:absolute;inset:0;z-index:5;background:#000;opacity:0;pointer-events:none;transition:opacity var(--stay-dim-in,8s) var(--w-ease)}
+.stay-veil.dim{opacity:var(--stay-dim,.4)}
+
+#stay-card:focus,#stay-card:focus-visible{outline:none}
+.stay-card{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);z-index:6;display:flex;flex-direction:column;align-items:stretch;gap:12px;width:min(360px,calc(100% - 32px));transform:translateX(-50%);outline:none}
+.stay-face{padding:16px 16px 14px;border-radius:var(--w-r-lg);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);color:var(--w-ink);opacity:0;pointer-events:none;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:opacity .6s var(--w-ease)}
+.stay-card.awake .stay-face{opacity:1;pointer-events:auto}
+.stay-title{margin:0;font-size:16px;font-weight:var(--wt-title);letter-spacing:-.01em}
+.stay-line{margin:4px 0 12px;color:var(--w-ink-2);font-size:13.5px;line-height:1.55}
+.stay-switches{display:grid;gap:8px}
+.stay-switch-row{display:grid;gap:4px}
+.stay-switch{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:0 10px 0 16px;border:0;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font:inherit;font-size:14.5px;font-weight:var(--wt-strong);cursor:pointer}
+.stay-switch-state{min-width:52px;padding:5px 10px;border-radius:999px;background:var(--w-s3);color:var(--w-ink-3);font-size:12.5px;font-weight:var(--wt-label);text-align:center}
+.stay-switch[aria-checked="true"] .stay-switch-state{background:var(--w-ink);color:var(--w-on-ink)}
+.stay-switch:focus-visible,.stay-stand.felt:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.stay-switch-note{margin:0 16px;color:var(--w-ink-3);font-size:12px;line-height:1.5}
+.stay-stand.felt{align-self:center;min-height:44px;padding:0 22px;background:var(--w-glass);box-shadow:var(--w-glass-edge);color:var(--w-ink-2);opacity:.72;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:opacity .6s var(--w-ease)}
+.stay-card.awake .stay-stand.felt{opacity:1;color:var(--w-ink)}
+
+/* 걷는 화면: 벤치 가까이에서만 이야기 단추 위에 뜨는 「앉아서 머물기」 */
+.walk-sit.felt{position:absolute;right:var(--edge);bottom:calc(var(--bottom) + 96px);width:216px;min-height:48px;padding:6px 16px;pointer-events:auto;touch-action:manipulation;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);color:var(--w-ink);font-size:14px;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+/* 집의 소리 상자(근처 판)와 「내 속도」의 소리 칸 */
+.sound-box .stay-switch-row,.sound-settings .stay-switch-row{margin-top:8px}
+.sound-box>.felt{margin-top:12px}
+.sound-settings .stay-switch{background:var(--w-s3)}
+
+@media(max-width:760px){.walk-sit.felt{width:164px;bottom:calc(var(--bottom) + 92px);padding:6px 12px;font-size:13.5px}}
+@media(max-width:360px){.walk-sit.felt{width:148px}}
+@media(prefers-reduced-transparency:reduce){.stay-face,.walk-sit.felt,.stay-stand.felt{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){.stay-face,.walk-sit.felt,.stay-stand.felt{background:Canvas;color:CanvasText;border:1px solid CanvasText}.stay-switch[aria-checked="true"] .stay-switch-state{background:Highlight;color:HighlightText}.stay-veil{display:none}}

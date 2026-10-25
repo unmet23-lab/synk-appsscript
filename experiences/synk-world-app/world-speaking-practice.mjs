@@ -16,6 +16,10 @@
 // · 한 자리 한 언어: 화면 글은 st()(화면 언어), 문제·대화·자료·예시 답·받아 적은 말·튜터 대사는 lang="ko" 칸.
 import {currentLang,onLang,t,hasString} from '../brand-opening/world-lang.mjs';
 import {tutorPhoto} from '../brand-opening/tutor-photos.mjs';
+// 마이크가 열린 동안 나란히 띄운 마을 창은 소리를 0으로 둔다(싱크타운 W7b). 이름 공간으로 읽어, 공개 직후 10분 캐시에 옛 world-sound.mjs가
+// 남아도 이 모듈이 뜬다(그때는 알림만 없다).
+import * as worldSound from '../brand-opening/world-sound.mjs';
+const micSignal=open=>{try{worldSound.recordingSignal?.(open);}catch{}};
 // 화면 글은 공용 글 표(brand-opening/world-strings.mjs)의 speaking.* 줄이다(10-21 운영 통로와 함께 시범 글 표에서 옮김).
 const st=(key,vars)=>t(`speaking.${key}`,vars);
 if(globalThis.document&&!document.querySelector('[data-speaking-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./world-speaking.css',import.meta.url).href;style.dataset.speakingStyle='true';document.head.append(style);}
@@ -142,10 +146,10 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
  // ── 마이크·녹음 ──
  async function openMic(){
   if(!recordingSupport(win))throw Object.assign(Error('mic'),{code:'unsupported'});
-  try{return await win.navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}
+  try{const stream=await win.navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});micSignal(true);return stream;}
   catch(error){throw Object.assign(Error('mic'),{code:error?.name==='NotFoundError'||error?.name==='OverconstrainedError'?'none':error?.name==='NotAllowedError'||error?.name==='SecurityError'?'denied':'denied'});}
  }
- function closeMic(){if(!mic)return;try{mic.recorder?.state==='recording'&&mic.recorder.stop();}catch{}cancelAnimationFrame(mic.raf);try{mic.source?.disconnect();}catch{}for(const track of mic.stream?.getTracks?.()||[])try{track.stop();}catch{}mic=null;}
+ function closeMic(){if(!mic)return;try{mic.recorder?.state==='recording'&&mic.recorder.stop();}catch{}cancelAnimationFrame(mic.raf);try{mic.source?.disconnect();}catch{}for(const track of mic.stream?.getTracks?.()||[])try{track.stop();}catch{}mic=null;micSignal(false);}
  function startRecorder(stream,onLevel){
   const mime=pickMime(win),recorder=new win.MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:32000}:{audioBitsPerSecond:32000}),chunks=[];
   recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data);};
@@ -282,7 +286,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   // 권한 창을 기다리는 사이 목록으로 나갔다가 같은 문항을 다시 열면 run이 바뀐다 — 그때 열린 마이크는 쓰지 않고 끈다.
   const token=run;
   let stream;try{stream=await openMic();}catch(error){if(stopped||view.id!==it.id||run!==token)return;run={...run,phase:'idle',error:error.code};paintZone(it);return;}
-  if(stopped||view.id!==it.id||run!==token){for(const tr of stream.getTracks())tr.stop();return;}
+  if(stopped||view.id!==it.id||run!==token){for(const tr of stream.getTracks())tr.stop();micSignal(false);return;}
   mic={stream};
   if(run.timing==='practice'){run.phase='prep';paintZone(it);announce(st('task.prepFree'));return;}
   run.phase='prep';run.until=now()+bank.types[it.type].prepSec*1000;paintZone(it);announce(st('task.prep'));
@@ -371,7 +375,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(!state.consent){view={...view,consent:true};render('[data-wsp-consent]');return;}
   stopPlayback();sharedCtx();run.phase='opening';run.error=null;const token=run;render();
   let stream;try{stream=await openMic();}catch(error){if(!stopped&&view.kind==='roleplay'&&run===token){run.phase='turn';run.error=error.code;render('[data-wsp-rp-speak]');}return;}
-  if(stopped||view.kind!=='roleplay'||run!==token||run.phase!=='opening'){for(const tr of stream.getTracks())tr.stop();return;}
+  if(stopped||view.kind!=='roleplay'||run!==token||run.phase!=='opening'){for(const tr of stream.getTracks())tr.stop();micSignal(false);return;}
   beep();const level=v=>{const bar=stage?.querySelector('[data-wsp-level]');if(bar)bar.style.setProperty('--level',v.toFixed(3));};
   mic=startRecorder(stream,level);run.phase='rec';run.until=now()+rp.answerSec*1000;run.startedAt=now();render();announce(st('task.beep'));
   clearInterval(ticker);ticker=setInterval(()=>{if(run?.phase!=='rec')return;const left=run.until-now();const el=stage?.querySelector('[data-wsp-clock]');if(el)el.textContent=st('task.left',{s:secs(left)});if(left<=0)void rpStop(rp);},250);

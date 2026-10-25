@@ -210,6 +210,67 @@ export function validateLight(data) {
   return data;
 }
 
+/** The sound layers the screen knows how to make (W7b, day-sound.mjs): the table names each of them, no other. */
+export const SOUND_LAYERS = Object.freeze(['wind', 'rainOpen', 'rainRoof', 'drip', 'chime', 'birds', 'crickets', 'frogs', 'cafe']);
+/** Staying (W7b, village design §4-4): the seats, the quiet drawing while seated and the village's sound mix. Lengths
+ * are millimetres (coordinates may be negative), shares per-mille, times milliseconds, angles degrees. A seat names a
+ * walking solid for its place (walk.mjs — tests/town-stay.test.js checks it exists). */
+export function validateStay(data) {
+  if (!/^town-stay-[1-9][0-9]*$/.test(data?.stayVer ?? '')) fail('stay.json의 stayVer');
+  if (!Array.isArray(data.seats) || !data.seats.length) fail('stay.json에는 seats가 있어요.');
+  const ids = new Set(), ints = (list, n, min, max) => Array.isArray(list) && list.length === n && list.every(v => integer(v, min, max));
+  for (const seat of data.seats) {
+    if (!/^[a-z][a-z0-9-]*$/.test(seat.id ?? '') || ids.has(seat.id)) fail(`자리 ${seat.id}`);
+    ids.add(seat.id);
+    if (typeof seat.label !== 'string' || !seat.label || !/^[a-z][a-z0-9-]*$/.test(seat.solid ?? '')) fail(`${seat.id}.label·solid`);
+    if (!integer(seat.seatTop, 0, 3000) || !ints(seat.sit, 2, -2000, 2000) || !integer(seat.heading, 0, 359) || !integer(seat.reach, 1, 5000) || typeof seat.sheltered !== 'boolean') fail(`${seat.id}의 높이·앉는 곳·방향·범위·처마`);
+    const c = seat.camera || {};
+    if (!ints(c.look, 3, -20000, 20000) || !ints(c.dir, 3, -20000, 20000) || c.dir.every(v => v === 0)
+      || !integer(c.width, 1, 60000) || !integer(c.portraitWidth, 1, c.width) || !integer(c.height, 1, 60000) || !integer(c.fov, 10, 90)) fail(`${seat.id}.camera`);
+  }
+  const q = data.quiet || {};
+  // The pulse stays under the presence lease (3 s, presence.mjs): a seated window keeps its walk clock and play time.
+  if (!integer(q.fps, 1, 60) || !integer(q.appHz, 1, 60) || !integer(q.idleHz, 1, q.appHz) || !integer(q.pixelRatio, 250, 3000) || !integer(q.pulseMs, 1000, 2999) || !integer(q.lightMs, 1000, 60000)
+    || !integer(q.dimDay, 0, 1000) || !integer(q.dimNight, 0, 1000) || !integer(q.dimInMs, 0, 60000) || !integer(q.cardMs, 1000, 60000) || ![0, 1].includes(q.wakeLock)) fail('stay.json quiet');
+  const s = data.sound || {};
+  if (!['walk', 'stay', 'dialog', 'underMusic', 'music'].every(k => integer(s.bus?.[k], 0, 1000))) fail('stay.json sound.bus');
+  if (!['layerMs', 'hideMs', 'muteMs', 'resumeMs', 'musicMs'].every(k => integer(s.fade?.[k], 1, 60000))) fail('stay.json sound.fade');
+  if (!integer(s.record?.heartbeatMs, 1000, 60000) || !integer(s.record?.staleMs, s.record.heartbeatMs + 1, 600000)) fail('stay.json sound.record');
+  if (!Array.isArray(s.shelters) || s.shelters.some(r => !ints(r, 4, -30000, 30000) || r[0] >= r[2] || r[1] >= r[3])) fail('stay.json sound.shelters');
+  const keys = LIGHT_KEYS.map(key => key.id), layers = s.layers || {};
+  if (JSON.stringify(Object.keys(layers).sort()) !== JSON.stringify([...SOUND_LAYERS].sort())) fail(`stay.json sound.layers는 ${SOUND_LAYERS.join('·')}예요.`);
+  for (const [name, layer] of Object.entries(layers)) {
+    const where = `stay.json sound.layers.${name}`;
+    if (!['always', 'drops', 'wet'].includes(layer.driver) || !integer(layer.gain, 0, 1000)) fail(`${where}.driver·gain`);
+    if (JSON.stringify(Object.keys(layer.time || {}).sort()) !== JSON.stringify([...keys].sort()) || keys.some(k => !integer(layer.time[k], 0, 1000))) fail(`${where}.time은 빛 기준점 일곱이에요.`);
+    if (!ints(layer.month, 12, 0, 1000)) fail(`${where}.month는 열두 달이에요.`);
+    if (!['drops', 'overcast', 'wet'].every(k => integer(layer.weather?.[k], 0, 5000))) fail(`${where}.weather`);
+    if (!ints(layer.shelter, 2, 0, 1000)) fail(`${where}.shelter`);
+    if (layer.source !== undefined && (!ints(layer.source.at, 2, -30000, 30000) || !integer(layer.source.near, 0, 60000) || !integer(layer.source.far, layer.source.near + 1, 60000))) fail(`${where}.source`);
+    if (layer.awake !== undefined && !['cafe-owner', 'workshop-owner', 'researcher'].includes(layer.awake)) fail(`${where}.awake`);
+  }
+  return data;
+}
+
+/** SYNK music for staying (W7b): the songs Yuho chose, each made from its original by tools/town-music-build.mjs.
+ * An empty list is a release without music (the screen shows no music switch). */
+export function validateMusic(data) {
+  if (!/^town-music-[1-9][0-9]*$/.test(data?.musicVer ?? '')) fail('music.json의 musicVer');
+  if (!Array.isArray(data.tracks)) fail('music.json에는 tracks가 있어요.');
+  const ids = new Set(), sha = value => /^[0-9a-f]{64}$/.test(value ?? '');
+  for (const t of data.tracks) {
+    if (!/^[a-z][a-z0-9-]{1,40}$/.test(t.id ?? '') || ids.has(t.id)) fail(`곡 ${t.id}`);
+    ids.add(t.id);
+    // The file name carries its hash: a song never changes under the same name, so it can be cached for good.
+    if (typeof t.title !== 'string' || !t.title || !sha(t.fileSha256) || t.file !== `assets/music/${t.id}-${t.fileSha256.slice(0, 8)}.mp3`) fail(`곡 ${t.id}의 제목·파일`);
+    if (!integer(t.durationMs, 1000, 3600000) || !integer(t.bytes, 1, 50000000) || !sha(t.fileSha256)) fail(`곡 ${t.id}의 길이·크기·해시`);
+    if (!integer(t.lufsTenths, -400, 0) || !integer(t.peakTenths, -200, 0)) fail(`곡 ${t.id}의 음량`);
+    if (!integer(t.source?.ledger, 1, 999) || typeof t.source.original !== 'string' || !sha(t.source.sha256)) fail(`곡 ${t.id}의 원본`);
+    if (t.rights !== 'suno-paid-official-download' || !/^[0-9a-f-]{36}$/.test(t.source.suno?.id ?? '')) fail(`곡 ${t.id}의 권리(Suno 유료 계정의 공식 내려받기본만)`);
+  }
+  return data;
+}
+
 /** The mood lines the screen shows (§7-3, W4): one record per line with its four levels and picture; every
  * tag a resident's mood table names has its first variant. The checker (town-lines-check) owns the wording rules. */
 export function validateMoodLines(docs, residents) {
@@ -250,6 +311,8 @@ export function build() {
   const { versions: params } = validateParams(read('params.json'));
   const { items } = validateItems(read('items.json'), placesData);
   const { $comment, ...light } = validateLight(read('light.json'));
+  const { $comment: stayNote, ...stay } = validateStay(read('stay.json'));
+  const { $comment: musicNote, ...music } = validateMusic(read('music.json'));
   const linesDir = path.join(DATA, 'lines');
   const lineDocs = fs.existsSync(linesDir) ? fs.readdirSync(linesDir).filter(name => name.endsWith('.json')).sort()
     .map(name => JSON.parse(fs.readFileSync(path.join(linesDir, name), 'utf8'))).filter(Array.isArray) : [];
@@ -258,7 +321,7 @@ export function build() {
   const rows = list => `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]`;
   const body = `{\n  places: ${rows(places)},\n  spots: ${rows(spots)},\n  groups: ${JSON.stringify(groups)},\n`
     + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n`
-    + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  moodLines: ${rows(moodLines)},\n}`;
+    + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  stay: ${JSON.stringify(stay)},\n  music: ${JSON.stringify(music)},\n  moodLines: ${rows(moodLines)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -273,6 +336,8 @@ export function build() {
     'export const PARAMS = data.params;',
     'export const ITEMS = data.items;',
     'export const LIGHT = data.light;',
+    'export const STAY = data.stay;',
+    'export const MUSIC = data.music;',
     'export const MOOD_LINES = data.moodLines;',
     '',
   ].join('\n');
