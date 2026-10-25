@@ -194,6 +194,43 @@ test('three simple views, the inbox and the needs-hand page render; old view nam
   f.run("socialWorkspaceState.view='fix';socialWorkspaceState.data.jobs=[{id:'m',postId:'p',channelId:'ch',status:'manual',scheduledAt:'2026-10-24T12:00:00.000Z',message:'앱에서 마무리'}]");const fix=f.run('snswFixJobs()');assert.match(fix,/sw-job/);assert.doesNotMatch(fix,/원문·이력/);
   assert.match(f.run('snswResults()'),/미확인|아직 연결된 관측/);assert.ok(css.includes('@media(max-width:700px)'));
 });
+test('the results poster puts the best account and its views on their own lines inside a flowing card (10-26 ops overlap)',()=>{
+  const f=fixture();vm.runInContext(simpleSource,f.context);
+  const plate={platform:'instagram',handle:'@yuhobuilds',points:{'72h':{views:4049,multiple:{value:16.2,median:250},sampleN:12}},now:{views:4100},pending:[]};
+  f.context.D={today:'2026-10-26',results:{since:'2026-10-18',list:[{key:'k',title:'편',brand:'유호',firstAt:'2026-10-24 23:01',thumb:null,plates:[plate]}],excluded:{}}};
+  const poster=f.run('ssResults(D)').match(/<figure class="ss-poster">.*?<\/figure>/)?.[0]||'';
+  assert.match(poster,/<b>16배<\/b><span>인스타 @yuhobuilds<br>72시간 4,049회<\/span>/);
+  const simpleCss=readFileSync(new URL('./public/social-simple.css',import.meta.url),'utf8'),rule=name=>simpleCss.match(new RegExp(`\\.${name}\\{([^}]*)\\}`))?.[1]||'';
+  // figure 기본 여백이 카드를 80px 좁히고, 절대 위치 숫자 칸이 큰 글자·그림 위로 흘러내렸던 두 원인
+  assert.match(rule('ss-poster'),/(^|;)margin:0(;|$)/);assert.match(rule('ss-poster'),/flex-direction:column/);
+  assert.doesNotMatch(rule('ss-poster-stats'),/position:absolute/);assert.doesNotMatch(rule('ss-poster-word'),/position:absolute/);
+  f.context.D.results.list[0].plates[0].handle='@synklab.mongolia_official';
+  assert.match(f.run('ssResults(D)'),/인스타 @synklab\.<wbr>mongolia_<wbr>official<br>72시간/,'긴 핸들은 점·밑줄 뒤에서 끊는다(Fable 10-26 F1)');
+});
+test('review-waiting plates whose time has passed count as schedule problems and say approval posts right away; the collection line waits for the daily slot (10-26 ops)',()=>{
+  const f=fixture();vm.runInContext(simpleSource,f.context);
+  // 운영 10-26 01:50 KST — 10-25 21:00 검토 대기 3판이 그대로 남아 있었다.
+  f.context.D={generatedAt:'2026-10-25T16:50:55.000Z',today:'2026-10-26',problems:[],
+    review:[{postId:'a',title:'카페 POV',at:'2026-10-25 21:00',plates:[{platform:'youtube',handle:'@synkkorean'}]},{postId:'b',title:'홈페이지 한 줄',at:'2026-10-25 21:00',plates:[{platform:'instagram',handle:'@yuhobuilds'},{platform:'youtube',handle:'@yuhobuilds'}]},{postId:'c',title:'오늘 밤 편',at:'2026-10-26 21:00',plates:[{platform:'instagram',handle:'@synk.mn'}]}],
+    health:{collectOk:0,collectTotal:35,failed:0,needsReconnect:0,overdue:0,collectedAt:'2026-10-25 09:01',nextAt:'2026-10-26 09:00',offPlatforms:[]}};
+  const html=f.run('ssToday(D)'),text=html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+  assert.match(text,/검토 대기 검토 1 판/);assert.match(text,/예약 문제 문제 3 판/);assert.equal(f.run('ssMyTurn(D)'),2);
+  assert.match(text,/검토 없이 시각이 지난 예약 3판 10\.25 \(일\) 밤 9시 예약이 검토 없이 지나 아직 안 나갔어요/);
+  assert.match(text,/지금 승인하면 그때 바로 올라가요\(예약 시각이 아니라 승인한 때\)/);assert.doesNotMatch(text,/다시 예약해야/);
+  assert.match(text,/10\.26 \(월\) 밤 9시에 나갈 1판, 유호님 검토가 있어야 나가요/,'아직 안 지난 검토 대기는 NOW 카드에 남는다');
+  assert.match(text,/계정 35개 · 마지막 수집 10\.25 \(일\) 09:01 · 다음 수집 오늘 09:00/);assert.doesNotMatch(text,/중 0개를/);
+  f.context.D.health={...f.context.D.health,collectOk:32,collectedAt:'2026-10-26 09:02',nextAt:'2026-10-27 09:00'};
+  assert.match(f.run('ssToday(D)').replace(/<[^>]+>/g,' ').replace(/\s+/g,' '),/계정 35개 중 32개를 오늘 09:02에 모음 · 다음 수집 10\.27 \(화\) 09:00/);
+  // 한 원고의 판이 다른 시각이면 판 단위로 가른다(Fable 10-26 FA1) — 지난 판만 문제, 안 온 판은 검토 대기에 남는다.
+  f.context.D.review=[{postId:'m',title:'나눠 잡은 원고',at:'2026-10-25 21:00',plates:[{platform:'instagram',handle:'@synk.mn',at:'2026-10-25 21:00'},{platform:'facebook',handle:'synkworld',at:'2026-10-25 21:00'},{platform:'youtube',handle:'@synkkorean',at:'2026-10-26 19:30'},{platform:'tiktok',handle:'@synk.mn',at:'2026-10-26 19:30'}]}];
+  const split=f.run('ssToday(D)').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+  assert.match(split,/검토 대기 검토 2 판/);assert.match(split,/예약 문제 문제 2 판/);
+  assert.match(split,/검토 없이 시각이 지난 예약 2판/);assert.match(split,/10\.26 \(월\) 밤 7시 30분에 나갈 2판/);
+  // 나눈 조각은 조각 시각 순으로 선다(Fable 10-26 r3 FA1) — 목록이 카드 문장의 시각 순과 같다.
+  f.context.D.review=[{postId:'a',title:'원고 A',at:'2026-10-25 21:00',plates:[{platform:'youtube',handle:'@synkkorean',at:'2026-10-25 21:00'},{platform:'instagram',handle:'@synk.mn',at:'2026-10-27 21:00'}]},{postId:'b',title:'원고 B',at:'2026-10-26 19:30',plates:[{platform:'instagram',handle:'@yuhobuilds',at:'2026-10-26 19:30'}]}];
+  assert.deepEqual(f.run('JSON.stringify(ssReviewSplit(D).waiting.map(r=>[r.title,r.at]))'),JSON.stringify([['원고 B','2026-10-26 19:30'],['원고 A','2026-10-27 21:00']]));
+  const order=f.run('ssToday(D)').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');assert.ok(order.indexOf('원고 B')<order.lastIndexOf('원고 A'));
+});
 test('out of order workspace reads cannot populate a newer read or a different identity',async()=>{
   const f=fixture(),a=f.run('snswLoad()'),b=f.run('snswLoad()');f.requests[1].resolve({...f.context.initial,marker:'new'});await b;f.requests[0].resolve({...f.context.initial,marker:'old'});await a;assert.equal(f.run('socialWorkspaceState.data.marker'),'new');
   const pending=f.run('snswLoad()');f.context.state.user={id:'other',role:'member'};f.run('snswIdentity()');f.requests[2].resolve({...f.context.initial,marker:'private'});await pending;assert.equal(f.run('socialWorkspaceState.data'),null);assert.equal(f.run('socialWorkspaceState.draft.body'),'');

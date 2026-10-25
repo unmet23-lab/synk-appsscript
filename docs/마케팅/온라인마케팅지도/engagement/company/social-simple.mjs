@@ -15,6 +15,8 @@ const PLATFORMS=new Set(['youtube','instagram','facebook','tiktok']);
 const NEED_HAND={failed:'실패',unknown:'결과 확인 필요',manual:'앱에서 마무리',missed:'시각 지남'};
 // 메타·직접 예약 판은 주소가 비어 있다 — 같은 채널 수집 게시물이 판 시각 앞뒤 60분 안이면 그 판으로 본다. 2시간이 지나도 없으면 「확인 필요」.
 const PAIR_WINDOW=60*60000,CONFIRM_AFTER=2*HOUR;
+// 수집은 하루 한 번(정해 둔 시각)이라 자정 뒤 그 시각까지는 계정마다 「수집 시각 전」이다 — 마지막 성공이 하루 + 여유 6시간 안이면 멈춤이 아니다.
+const COLLECT_FRESH=30*HOUR;
 const STALE_DIGEST=60000;
 const GENERIC_PATH=new Set(['watch','shorts','reel','reels','p','tv','video','videos','posts','story','photo','photos','permalink','share','home']);
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
@@ -76,7 +78,7 @@ export function validateDigest(input,{now}){
 // jobs: publishing.summary 예약 작업, postTitles: {postId:title}, thumbs: {postId:{src,kind}}, recent: 최근 31일 수집 게시물(+views),
 // performance: 게시 성과 관측 항목, inbox: 줄인 댓글({channelId,open,remoteCreatedAt,collectorPostId}), commentPosts: {postId:{title,url}},
 // providerRows·healthRows: 자동 게시 연결, digest: 받은 편 요약(없으면 null), isAdmin: 서버 채널이 없는 계정의 판을 보일지.
-export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},jobs=[],postTitles={},thumbs={},recent=[],performance=[],inbox=[],commentPosts={},providerRows=[],healthRows=[],digest=null}){
+export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},collectHourKst=null,jobs=[],postTitles={},thumbs={},recent=[],performance=[],inbox=[],commentPosts={},providerRows=[],healthRows=[],digest=null}){
   const nowMs=Date.parse(now),today=kstDay(nowMs),yesterday=addDays(today,-1),since=addDays(today,-7);
   const channelById=new Map(channels.map(c=>[c.id,c]));
   const channelOf=(platform,handle)=>channels.find(c=>c.platform===platform&&norm(c.handle)&&norm(c.handle)===norm(handle))||null;
@@ -157,7 +159,8 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},j
 
   // 4) 내 차례 — 검토 링크 대기(원고별) · 손이 필요한 예약
   const reviewMap=new Map();
-  for(const p of plates.filter(p=>p.state==='검토 대기'&&p.jobId)){const g=reviewMap.get(p.postId)||{postId:p.postId,title:p.episode.title,at:kst(p.at),thumb:p.thumb,plates:[]};if(kst(p.at)<g.at)g.at=kst(p.at);g.plates.push({platform:p.platform,handle:p.handle});reviewMap.set(p.postId,g);}
+  for(const p of plates.filter(p=>p.state==='검토 대기'&&p.jobId)){const g=reviewMap.get(p.postId)||{postId:p.postId,title:p.episode.title,at:kst(p.at),thumb:p.thumb,plates:[]};if(kst(p.at)<g.at)g.at=kst(p.at);g.plates.push({platform:p.platform,handle:p.handle,at:kst(p.at)});reviewMap.set(p.postId,g);}
+  // 원고마다 묶되 판마다 시각을 싣는다 — 한 원고의 판이 다른 시각에 잡히면 화면이 판 단위로 지난 것과 기다리는 것을 가른다.
   const review=[...reviewMap.values()].sort((a,b)=>a.at.localeCompare(b.at));
   const problems=jobs.filter(j=>NEED_HAND[j.status]).sort((a,b)=>String(b.scheduledAt||'').localeCompare(String(a.scheduledAt||''))).map(j=>{const c=channelById.get(j.channelId);return {id:j.id,state:NEED_HAND[j.status],title:postTitles[j.postId]||j.contentSummary?.title||'',...plateFace(c),at:kst(j.scheduledAt),message:String(j.message||'').slice(0,300)};});
 
@@ -173,7 +176,10 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},j
   // 6) 수집 한 줄
   const offPlatforms=[...new Set((collection.items||[]).filter(i=>i.status==='unsupported').map(i=>channelById.get(i.channelId)?.platform).filter(Boolean))];
   const numbersAt=recent.map(r=>r.lastSeenAt).filter(Boolean).sort().at(-1)||null;
-  const health={collectOk:collection.successToday??0,collectTotal:collection.total??channels.length,failed:collection.failed??0,needsReconnect:collection.needsReconnect??0,overdue:collection.overdue??0,collectedAt:collection.lastSuccessAt?kst(collection.lastSuccessAt):null,offPlatforms,numbersAt:numbersAt?kst(numbersAt):null};
+  // 다음 수집 = 정해 둔 시각(한국 시각)이 오늘 아직 안 왔으면 오늘, 지났으면 내일. 자동 수집이 꺼져 있으면 비운다.
+  const hourOk=Number.isInteger(collectHourKst)&&collectHourKst>=0&&collectHourKst<=23,todaySlot=hourOk?Date.parse(`${today}T${String(collectHourKst).padStart(2,'0')}:00:00+09:00`):null;
+  const nextAt=hourOk?kst(nowMs<todaySlot?todaySlot:todaySlot+DAY):null;
+  const health={collectOk:collection.successToday??0,collectTotal:collection.total??channels.length,failed:collection.failed??0,needsReconnect:collection.needsReconnect??0,overdue:collection.overdue??0,collectedAt:collection.lastSuccessAt?kst(collection.lastSuccessAt):null,nextAt,offPlatforms,numbersAt:numbersAt?kst(numbersAt):null};
 
   // 7) 성과 — 최근 7일 게시된 판, 판마다 24·72시간 관측과 장부 배수(견줄 편 4개부터)
   const pointOf=(p,point,hours)=>{
@@ -208,8 +214,10 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},j
     const row=providerBy.get(c.id),state=healthBy.get(c.id)?.state,item=itemBy.get(c.id);
     const publish=state==='connected'||row?.supported&&row.enabled&&row.connected?'자동 게시':row?.supported===false||state==='unsupported'?'앱에서 직접':'안 켬';
     // 지금 수집 건강(collectionHealth)을 먼저 본다 — 채널 status는 마지막 수집 결과라 연결이 끊긴 뒤에도 success로 남는다.
-    const now=item?.status||c.status;
-    const collect=['success','partial'].includes(now)?'수집 중':now==='unsupported'||(!item&&c.status==='not-connected')?'수집 안 함':'수집 멈춤';
+    // 하루 수집을 기다리는 중(수집 시각 전 · 시각이 막 지남)은 마지막 성공이 COLLECT_FRESH 안이면 「수집 중」 — 실패·재연결·오래된 기록만 멈춤이다.
+    const now=item?.status||c.status,lastOk=Date.parse(item?.lastCollectedAt||c.lastCollectedAt||'');
+    const waiting=['scheduled','overdue'].includes(now)&&Number.isFinite(lastOk)&&lastOk<=nowMs&&nowMs-lastOk<=COLLECT_FRESH;
+    const collect=['success','partial','collecting'].includes(now)||waiting?'수집 중':now==='unsupported'||(!item&&c.status==='not-connected')?'수집 안 함':'수집 멈춤';
     let connectUrl=null;try{const u=new URL(row?.connectUrl||'','https://workspace.invalid');if(u.origin==='https://workspace.invalid'&&u.pathname==='/api/oauth/'+c.platform+'/start'&&u.searchParams.get('channelId')===c.id&&u.searchParams.get('publishing')==='1')connectUrl=u.pathname+u.search;}catch{}
     const fix=item&&['reconnect','connect'].includes(item.action)?{kind:'collect',message:item.label||'수집 연결을 다시 해야 해요'}:row?.supported&&row.enabled&&!row.connected?{kind:'publish',message:'게시 권한을 다시 연결해야 해요',connectUrl}:null;
     const brand=brandOf(c),name=String(c.displayName||'');
@@ -274,8 +282,8 @@ export function createSocialSimple({store,publishing,marketing,provider,clock=()
     for(const postId of new Set(inbox.filter(i=>i.open&&i.collectorPostId).map(i=>i.collectorPostId))){const p=store.get('posts',postId);if(p&&allowed.has(p.channelId))commentPosts[postId]={title:p.title||'',url:/^https:\/\//.test(p.url||'')?p.url:null};}
     const providerRows=(provider?.settings?.(user)?.channels||[]).filter(r=>allowed.has(r.channelId));
     const healthRows=(provider?.health?.(user)?.channels||[]).filter(r=>allowed.has(r.channelId));
-    const digest=store.get(DIGEST_KIND,DIGEST_ID)||null;
-    return buildSocialSimple({now,isAdmin:user.role==='admin',channels:visible,collection,jobs,postTitles,thumbs,recent,performance:performance.filter(e=>allowed.has(e.channelId)),inbox,commentPosts,providerRows,healthRows,digest});
+    const digest=store.get(DIGEST_KIND,DIGEST_ID)||null,schedule=store.get('settings','company');
+    return buildSocialSimple({now,isAdmin:user.role==='admin',channels:visible,collection,collectHourKst:schedule&&schedule.enabled!==false?Number(schedule.hourKst):null,jobs,postTitles,thumbs,recent,performance:performance.filter(e=>allowed.has(e.channelId)),inbox,commentPosts,providerRows,healthRows,digest});
   }
   return {workspace,saveDigest};
 }

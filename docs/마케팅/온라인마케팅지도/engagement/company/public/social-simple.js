@@ -48,14 +48,35 @@ const ssRow=({time,small,thumb,title,meta,chip})=>`<div class="ss-row"><div clas
 const ssEpisodeMeta=g=>`${g.brand?`<span class="ss-brand">${ssEsc(g.brand)}</span>`:''}<span class="ss-plates">${(g.plates||[]).map(ssPlate).join('')}</span>`;
 
 // ── 오늘 ──
-function ssMyTurn(D){return ((D.review||[]).length?1:0)+((D.problems||[]).length?1:0);}
+// 검토 대기 가운데 예약 시각이 이미 지난 것(서버 시각 generatedAt 기준)은 「예약 문제」로 센다. 게시 서버는 검토를 기다리느라
+// 늦은 예약을 「시각 지남」으로 바꾸지 않고, 승인되면 다음 점검(15초)에서 그때 바로 올린다(social-publishing.mjs tick의 waitingSeen).
+// 한 원고의 판이 다른 시각에 잡힐 수 있어 판 단위로 가른다(판 시각이 없는 옛 응답은 원고 시각).
+function ssReviewSplit(D){
+  const ms=Date.parse(D.generatedAt||''),now=Number.isFinite(ms)?new Date(ms+9*3600e3).toISOString().slice(0,16).replace('T',' '):'';
+  const passed=at=>!!now&&!!at&&at<now,waiting=[],late=[];
+  for(const r of D.review||[]){
+    const plates=r.plates||[];
+    if(!plates.length){(passed(r.at)?late:waiting).push(r);continue;}
+    const part=list=>({...r,at:list.map(p=>p.at||r.at).sort()[0],plates:list});
+    const gone=plates.filter(p=>passed(p.at||r.at)),left=plates.filter(p=>!passed(p.at||r.at));
+    if(gone.length)late.push(part(gone));if(left.length)waiting.push(part(left));
+  }
+  // 나눈 조각은 원고의 가장 이른 판 시각과 달라질 수 있어 조각 시각 순으로 다시 세운다(카드 문장의 시각 순과 목록 순을 맞춤).
+  const byAt=(a,b)=>String(a.at||'').localeCompare(String(b.at||''));
+  return {waiting:waiting.sort(byAt),late:late.sort(byAt)};
+}
+const ssPlateCount=list=>list.reduce((n,r)=>n+(r.plates||[]).length,0);
+// 「내 차례」 수 = 할 일 종류 수(검토 · 예약 문제) — 계기판 두 칸과 같은 가름이고, 예약 문제 카드는 둘(손이 필요한 예약 · 검토 없이 지난 예약)일 수 있다.
+function ssMyTurn(D){const {waiting,late}=ssReviewSplit(D);return (waiting.length?1:0)+((D.problems||[]).length||late.length?1:0);}
 function ssToday(D){
-  const today=D.today,review=D.review||[],problems=D.problems||[],H=D.health||{},C=D.comments||{};
+  const today=D.today,{waiting:review,late}=ssReviewSplit(D),problems=D.problems||[],H=D.health||{},C=D.comments||{};
   const tonight=D.tonight||[],held=D.held||[],upcoming=D.upcoming||[],yesterday=D.yesterday||[],myTurn=ssMyTurn(D);
-  const reviewPlates=review.reduce((n,r)=>n+(r.plates||[]).length,0),slots=[...new Set(review.map(r=>r.at))].sort();
+  const reviewPlates=ssPlateCount(review),slots=[...new Set(review.map(r=>r.at))].sort();
   const platesAt=at=>review.filter(r=>r.at===at).reduce((n,r)=>n+(r.plates||[]).length,0);
   const p0=problems[0];
   const problemCard=p0?`<div class="ss-task is-problem"><div><div class="ss-task-label">${ssDot('coral')}손이 필요한 예약 ${ssN(problems.length)}판</div><b>${ssEsc(p0.state)} · ${ssEsc(ssPfName(p0.platform))} ${ssEsc(p0.handle)} · ${ssEsc(ssRel(p0.at,today))}</b>${p0.title?`<p>${ssEsc(p0.title)}</p>`:''}<p>${ssEsc(p0.message||'')}${problems.length>1?ssEsc(` · 그 밖에 ${problems.length-1}판`):''}</p></div><button class="ss-btn" type="button" data-sw-action="view" data-value="fix">처리하기</button></div>`:'';
+  const latePlates=ssPlateCount(late),lateSlots=[...new Set(late.map(r=>r.at))].sort();
+  const lateCard=late.length?`<div class="ss-task is-problem"><div><div class="ss-task-label">${ssDot('coral')}검토 없이 시각이 지난 예약 ${ssN(latePlates)}판</div><b>${ssEsc(lateSlots.length===1?`${ssWhen(lateSlots[0])} 예약이 검토 없이 지나 아직 안 나갔어요`:`검토 없이 예약 시각이 지나 아직 안 나간 판이 ${latePlates}판이에요`)}</b><p>${ssEsc('텔레그램 검토 링크에서 지금 승인하면 그때 바로 올라가요(예약 시각이 아니라 승인한 때). 안 누르면 계속 안 나가요.')}</p><div class="ss-late">${late.map(r=>`<div><span class="ss-late-title">${ssEsc(r.title||'제목 없는 원고')}</span><span class="ss-plates">${lateSlots.length>1?`<span class="ss-plate is-when">${ssEsc(ssWhen(r.at))}</span>`:''}${(r.plates||[]).map(ssPlate).join('')}</span></div>`).join('')}</div></div></div>`:'';
   const nowCard=review.length?`<div class="ss-now"><div class="ss-now-label">${ssDot('butter')}<span class="ss-mono-tag">NOW</span>내 차례 · 검토</div><h3>${ssEsc(slots.length===1?`${ssWhen(slots[0])}에 나갈 ${reviewPlates}판, 유호님 검토가 있어야 나가요`:`${reviewPlates}판이 유호님 검토를 기다려요`)}</h3><p>${ssEsc(`${slots.length>1?slots.map(at=>`${ssWhen(at)} ${platesAt(at)}판`).join(' · ')+'. ':''}텔레그램으로 받은 검토 링크에서 승인하면 그 시각에 바로 올라가요. 안 누르면 나가지 않아요.`)}</p><div class="ss-now-items">${review.map(r=>`<div class="ss-now-item">${ssThumb(r.thumb)}<div><b>${ssEsc(r.title||'제목 없는 원고')}</b><div class="ss-plates">${slots.length>1?`<span class="ss-plate is-when">${ssEsc(ssWhen(r.at))}</span>`:''}${(r.plates||[]).map(ssPlate).join('')}</div></div></div>`).join('')}</div></div>`:'';
   const channels=C.channels||[],top=C.top;
   const commentCard=C.total?`<div class="ss-task is-quiet"><div><div class="ss-task-label">${ssDot()}답 안 한 댓글</div><b>${ssEsc(`${channels.map(c=>`${ssPfName(c.platform)} ${c.handle}`).join(' · ')} 댓글 ${ssN(C.total)}개에 아직 답이 없어요`)}</b><p>${ssEsc(`최근 7일에 달린 것 ${ssN(C.recent7d)}개${top?` · 많은 글 「${String(top.title).length>24?String(top.title).slice(0,24)+'…':top.title}」 ${ssN(top.n)}개`:''}. 이름 답글·자료 DM은 Claude가 정해 둔 문구로 달고 주 1회 묶어 보고해요.`)}</p></div><div class="ss-task-actions"><button class="ss-btn" type="button" data-sw-action="view" data-value="inbox">댓글 화면</button>${top?.url?`<a class="ss-btn" href="${ssEsc(top.url)}" target="_blank" rel="noopener noreferrer">많은 글 열기</a>`:''}</div></div>`:'';
@@ -74,11 +95,13 @@ function ssToday(D){
   }).join('');
   const bad=(H.failed||0)+(H.needsReconnect||0)+(H.overdue||0);
   const off=[...new Set((H.offPlatforms||[]).map(ssPfName))].join('·');
-  const collected=H.collectedAt?(H.collectedAt.slice(0,10)===today?`오늘 ${H.collectedAt.slice(11)}`:ssRel(H.collectedAt,today)):'';
-  const health=`<div class="ss-health">${ssDot(bad?'coral':'green')}${ssEsc([bad?`수집에 문제가 있어요 · 실패 ${H.failed||0} · 다시 연결 ${H.needsReconnect||0} · 밀림 ${H.overdue||0}`:'연결·수집 이상 없음',H.collectTotal?`계정 ${H.collectTotal}개 중 ${H.collectOk||0}개를 ${collected||'최근'}에 모음`:'',off?`자동 수집이 안 되는 곳: ${off}`:'',H.numbersAt?`숫자는 ${ssRel(H.numbersAt,today)} 기준`:''].filter(Boolean).join(' · '))}</div>`;
+  // 하루 수집은 정해 둔 시각에 한 번이라, 그 전(자정 뒤)에는 오늘 모은 수가 0이다 — 그때는 마지막 수집 시각과 다음 수집 시각을 쓴다.
+  const collectedToday=!!H.collectedAt&&H.collectedAt.slice(0,10)===today&&(H.collectOk||0)>0;
+  const collected=!H.collectTotal?'':collectedToday?`계정 ${H.collectTotal}개 중 ${H.collectOk}개를 오늘 ${H.collectedAt.slice(11)}에 모음`:H.collectedAt?`계정 ${H.collectTotal}개 · 마지막 수집 ${ssRel(H.collectedAt,today)}`:`계정 ${H.collectTotal}개 · 아직 모은 기록이 없어요`;
+  const health=`<div class="ss-health">${ssDot(bad?'coral':'green')}${ssEsc([bad?`수집에 문제가 있어요 · 실패 ${H.failed||0} · 다시 연결 ${H.needsReconnect||0} · 밀림 ${H.overdue||0}`:'연결·수집 이상 없음',collected,H.nextAt?`다음 수집 ${ssRel(H.nextAt,today)}`:'',off?`자동 수집이 안 되는 곳: ${off}`:'',H.numbersAt?`숫자는 ${ssRel(H.numbersAt,today)} 기준`:''].filter(Boolean).join(' · '))}</div>`;
   return ssHead({title:'오늘',lede:ssEsc(`${ssMd(today)} · 내가 할 일과 나갈 게시물만 모았어요.`),poster:ssPoster({label:'SYNK SOCIAL · TODAY',stats:[[ssN(myTurn),'내 차례'],[`${ssN(tonight.length)}편`,'오늘 나감']],word:'오늘',art:'overview'})})
-    +ssMeter([['검토 대기',ssUnit(reviewPlates,'판'),'butter','검토'],['오늘 나감',ssUnit(tonight.length,'편'),'green','오늘'],['예약 문제',ssUnit(problems.length,'판'),problems.length?'coral':'','문제'],['멈춘 편',ssUnit(held.length,'편'),'','멈춤']])
-    +`<section class="ss-block">${ssBlockHead('내 차례',{count:myTurn,hint:'유호님이 해야 나가는 일만'})}${problemCard}${nowCard}${myTurn?'':'<div class="ss-calm">오늘은 손댈 일이 없어요.</div>'}</section>`
+    +ssMeter([['검토 대기',ssUnit(reviewPlates,'판'),'butter','검토'],['오늘 나감',ssUnit(tonight.length,'편'),'green','오늘'],['예약 문제',ssUnit(problems.length+latePlates,'판'),problems.length+latePlates?'coral':'','문제'],['멈춘 편',ssUnit(held.length,'편'),'','멈춤']])
+    +`<section class="ss-block">${ssBlockHead('내 차례',{count:myTurn,hint:'유호님이 해야 나가는 일만'})}${problemCard}${lateCard}${nowCard}${myTurn?'':'<div class="ss-calm">오늘은 손댈 일이 없어요.</div>'}</section>`
     +`<section class="ss-block">${ssBlockHead('오늘 나가는 것',{count:tonight.length})}<div class="ss-rows">${tonightRows||'<div class="ss-empty-day">오늘 나갈 편이 없어요</div>'}</div>${held.length?`<details class="ss-fold"><summary><span class="ss-what">멈춘 편 ${ssN(held.length)}</span><span class="ss-hint">${ssEsc('보류한 편이에요 · 다시 판단하기 전엔 안 나가요')}</span></summary><div class="ss-rows">${heldRows}</div></details>`:''}</section>`
     +`<section class="ss-block">${ssBlockHead('다음 사흘',{hint:ssEsc('검토 대기는 위 「내 차례」에서 승인해요')})}${upcomingHtml}</section>`
     +(yesterday.length?`<section class="ss-block">${ssBlockHead('어제 올린 편',{count:yesterday.length,hint:ssEsc('지금까지 조회 · 자세한 건 성과에서'),tools:'<button class="ss-link" type="button" data-sw-action="view" data-value="results">성과 보기</button>'})}<div class="ss-rows">${yRows}</div></section>`:'')
@@ -136,7 +159,8 @@ function ssResults(D,{brand='전체',sort='recent',open=new Set()}={}){
     return `<div class="ss-res${g.key===bestKey&&sort==='recent'&&brand==='전체'?' is-best':''}">${ssThumb(g.thumb)}<div><div class="ss-res-title">${ssEsc(g.title)}</div><div class="ss-res-meta">${g.brand?`<span class="ss-brand">${ssEsc(g.brand)}</span>`:''}<span>${ssEsc(ssRel(g.firstAt,'').replace(/^오늘 /,''))}</span></div></div><div class="ss-pl-list">${(g.plates||[]).map(p=>ssPlRow(p,today)).join('')}</div>${hasPoints?`<button class="ss-link ss-more" type="button" data-ss-action="detail" data-value="${ssEsc(g.key)}" aria-expanded="${isOpen}">${isOpen?'숫자 접기':'숫자 모두 보기'}</button>${isOpen?ssDetailTable(g,today):''}`:''}</div>`;
   }).join('');
   const bl=S.best?.lp[1];
-  const posterStats=S.best?[[`${ssTimes(bl.multiple.value)}배`,ssEsc(`${ssPfName(S.best.p.platform)} ${S.best.p.handle} · ${S.best.lp[0]} ${ssN(bl.views)}회`)]]:[[`${ssN(R.length)}편`,'올린 편'],[`${ssN(S.passN)}판`,'2배 이상']];
+  // 계정과 「72시간 N회」를 두 줄로 나눠, 핸들 길이에 따라 숫자가 중간에서 끊기지 않게 한다. 긴 핸들은 점·밑줄 뒤에서 끊는다.
+  const posterStats=S.best?[[`${ssTimes(bl.multiple.value)}배`,`${ssEsc(ssPfName(S.best.p.platform))} ${ssEsc(S.best.p.handle).replace(/([._])/g,'$1<wbr>')}<br>${ssEsc(`${S.best.lp[0]} ${ssN(bl.views)}회`)}`]]:[[`${ssN(R.length)}편`,'올린 편'],[`${ssN(S.passN)}판`,'2배 이상']];
   return ssHead({title:'성과',lede:'올린 편마다 같은 계정의 평소 조회와 견줘요.',poster:ssPoster({label:S.best?'BEST · THIS WEEK':'SYNK SOCIAL · RESULTS',stats:posterStats,word:'성과',art:'results'})})
     +ssMeter([['올린 편',ssUnit(R.length,'편'),undefined,'올린 편'],['평소 2배 이상',ssUnit(S.passN,'판'),'green','2배 이상'],['숫자 기다림',ssUnit(S.waitingN,'판'),'butter','기다림'],['판정 자료 부족',ssUnit(S.lackN,'판'),'','자료 부족']])
     +(S.judgedN||!S.all.length?'':`<p class="ss-note">판정(3초 유지율·평균 시청·저장·도구 유입 네 숫자)은 아직 모두 「자료 부족」이에요. 같은 계정에서 견줄 편이 4편은 쌓여야 나와요.</p>`)

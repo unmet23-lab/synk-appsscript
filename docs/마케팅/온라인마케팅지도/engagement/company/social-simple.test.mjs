@@ -67,6 +67,7 @@ test('today counts review-link waiting jobs, needs-hand jobs without expired, an
   const D=base();
   assert.equal(D.today,'2026-10-24');
   assert.deepEqual(D.review.map(r=>[r.title,r.at,r.plates.length]),[['처음 쓰는 ㄹ','2026-10-26 21:00',1],['AI한테 보고서','2026-10-26 21:00',1]]);
+  assert.deepEqual(D.review.map(r=>r.plates.map(p=>p.at)),[['2026-10-26 21:00'],['2026-10-26 21:00']],'판마다 시각을 싣는다(화면이 판 단위로 지남을 가름)');
   assert.deepEqual(D.problems.map(p=>[p.id,p.state]),[['j3','앱에서 마무리']]);
   const upcoming=D.upcoming.map(g=>[g.date,g.title,g.state]);
   assert.deepEqual(upcoming,[['2026-10-25','원고 6','예약됨'],['2026-10-26','처음 쓰는 ㄹ','검토 대기'],['2026-10-26','AI한테 보고서','검토 대기'],['2026-10-27','빈칸 규칙','예약 전']]);
@@ -103,6 +104,17 @@ test('accounts read brand and country from the digest and blank a channel name t
   assert.deepEqual(mx.map(a=>a.country),[true,false]);
   assert.deepEqual([yt.publish,yt.posts30,yt.views30,yt.lastPost],['자동 게시',1,1214,'2026-10-23']);
   assert.deepEqual([ig.brand,ig.posts30,ig.views30],['유호',1,40]);
+});
+
+test('after midnight the daily collection is waiting, not stopped; only failures, reconnects and stale successes stop (10-26 ops)',()=>{
+  // 10-26 01:50 KST — 하루 수집은 09:00이라 계정마다 「수집 시각 전」(scheduled)이고 오늘 성공은 0이다.
+  const at='2026-10-25T16:50:00.000Z',yesterday='2026-10-25T00:01:00.000Z',old='2026-10-22T00:01:00.000Z';
+  const items=[{channelId:'c-ig',status:'scheduled',lastCollectedAt:yesterday},{channelId:'c-yt',status:'overdue',lastCollectedAt:yesterday},{channelId:'c-fb',status:'scheduled',lastCollectedAt:old},{channelId:'c-tt',status:'failed',lastCollectedAt:yesterday}];
+  const D=buildSocialSimple({now:at,channels,collection:{total:4,successToday:0,failed:1,needsReconnect:0,overdue:1,lastSuccessAt:yesterday,items},collectHourKst:9});
+  assert.deepEqual(D.accounts.map(a=>[a.channelId,a.collect]),[['c-ig','수집 중'],['c-yt','수집 중'],['c-fb','수집 멈춤'],['c-tt','수집 멈춤']]);
+  assert.equal(D.health.collectedAt,'2026-10-25 09:01');assert.equal(D.health.nextAt,'2026-10-26 09:00');
+  assert.equal(buildSocialSimple({now:'2026-10-26T01:30:00.000Z',channels,collection:{items},collectHourKst:9}).health.nextAt,'2026-10-27 09:00','오늘 시각이 지났으면 내일');
+  assert.equal(buildSocialSimple({now:at,channels,collection:{items}}).health.nextAt,null,'자동 수집이 꺼졌거나 시각을 모르면 비움');
 });
 
 test('empty and partial data never throw: no digest, no comparable posts, comments without a known post',()=>{
