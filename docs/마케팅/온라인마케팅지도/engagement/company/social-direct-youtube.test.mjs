@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {createServer} from 'node:http';
 import {createSocialDirectYouTube} from './social-direct-youtube.mjs';
 
 const cid='UC1234567890123456789012',vid='video123456',session='https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=secret-upload-id';
@@ -259,4 +260,63 @@ test('credential errors with a known code become a definitive retryable unsent f
     const response=await adapter.publish(f.input);assert.equal(response.status,'failed',code);assert.equal(response.errorCode,code);assert.equal(response.definitive,true);assert.equal(response.retryable,true);assert.match(response.message,/다시 확인/);assert.equal(f.requests.length,0);assert.equal(f.row(),undefined);
   }
   const f=fixture(),adapter=f.build({getCredentials:async()=>{throw Object.assign(new Error('secret internal detail'),{status:400});}});const response=await adapter.publish(f.input);assert.equal(response.status,'failed');assert.equal(response.errorCode,'YOUTUBE_FAILED');assert.equal(response.retryable,false);assert.ok(!response.message.includes('secret internal detail'));assert.equal(f.requests.length,0);
+});
+// Real Node fetch (not the fixture's Response stub) against a local stand-in for the upload API: the fixture
+// returns 308 objects directly, so it never met undici's redirect check that broke 10-24's live uploads.
+async function realYouTube(f,routes){
+  const hits=[];const server=createServer((req,res)=>{const parts=[];req.on('data',c=>parts.push(c));req.on('end',()=>{const body=Buffer.concat(parts),url=new URL(req.url,'http://local');hits.push({method:req.method,path:url.pathname,range:req.headers['content-range']||'',bytes:body.length});const out=routes(req,url,body)||{status:404,body:{error:{message:'none'}}};res.writeHead(out.status,{'content-type':'application/json',...out.headers});res.end(out.body===undefined?'':JSON.stringify(out.body));});});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const base='http://127.0.0.1:'+server.address().port,fetchImpl=(url,options)=>fetch(String(url).replace(/^https:\/\/(www|youtube)\.googleapis\.com/,base),options);
+  return {hits,fetchImpl,close:()=>new Promise(resolve=>server.close(resolve))};
+}
+test('real fetch: a multi-chunk upload reads 308 Resume Incomplete between chunks and publishes once',async()=>{
+  const f=fixture(),bytes=Buffer.alloc(3*262144+1000);bytes.write('ftyp',4);bytes.write('isom',8);
+  const ref={...f.ref,byteSize:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')},input=structuredClone(f.input);input.post.media=[ref];input.variant.media=[ref];input.job.snapshot={post:input.post,variant:input.variant};f.setResolver(()=>({bytes}));
+  let received=0;
+  const yt=await realYouTube(f,(req,url,body)=>{
+    if(url.pathname==='/youtube/v3/channels')return {status:200,body:{items:[{id:cid}]}};
+    if(url.pathname==='/youtube/v3/videos')return {status:200,body:{items:[f.video()]}};
+    if(req.method==='POST'&&url.pathname==='/upload/youtube/v3/videos')return {status:200,body:{},headers:{location:session}};
+    if(req.method==='PUT'&&url.pathname==='/upload/youtube/v3/videos'){received+=body.length;return received<bytes.length?{status:308,headers:{range:'bytes=0-'+(received-1)}}:{status:200,body:{id:vid}};}
+  });
+  try{
+    const result=await f.build({fetchImpl:yt.fetchImpl,uploadChunkBytes:262144}).publish(input);
+    assert.equal(result.status,'published');assert.equal(result.errorCode,null);assert.equal(received,bytes.length);
+    assert.deepEqual(yt.hits.filter(h=>h.method==='PUT').map(h=>h.range),['bytes 0-262143/'+bytes.length,'bytes 262144-524287/'+bytes.length,'bytes 524288-786431/'+bytes.length,'bytes 786432-'+(bytes.length-1)+'/'+bytes.length]);
+    assert.equal(yt.hits.filter(h=>h.method==='POST').length,1);assert.equal(f.row().status,'published');
+  }finally{await yt.close();}
+});
+test('real fetch: a status probe after an interrupted chunk resumes from the 308 range instead of staying uncertain',async()=>{
+  const f=fixture(),bytes=Buffer.alloc(2*262144+10);bytes.write('ftyp',4);bytes.write('isom',8);
+  const ref={...f.ref,byteSize:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')},input=structuredClone(f.input);input.post.media=[ref];input.variant.media=[ref];input.job.snapshot={post:input.post,variant:input.variant};f.setResolver(()=>({bytes}));
+  let received=0,dropSecond=true;
+  const yt=await realYouTube(f,(req,url,body)=>{
+    if(url.pathname==='/youtube/v3/channels')return {status:200,body:{items:[{id:cid}]}};
+    if(url.pathname==='/youtube/v3/videos')return {status:200,body:{items:[f.video()]}};
+    if(req.method==='POST'&&url.pathname==='/upload/youtube/v3/videos')return {status:200,body:{},headers:{location:session}};
+    if(req.method==='PUT'&&url.pathname==='/upload/youtube/v3/videos'){
+      if(!body.length)return {status:308,headers:received?{range:'bytes=0-'+(received-1)}:{}};
+      if(received===262144&&dropSecond){dropSecond=false;return {status:500,body:{error:{message:'synthetic'}}};}
+      received+=body.length;return received<bytes.length?{status:308,headers:{range:'bytes=0-'+(received-1)}}:{status:200,body:{id:vid}};}
+  });
+  try{
+    const adapter=f.build({fetchImpl:yt.fetchImpl,uploadChunkBytes:262144});
+    const first=await adapter.publish(input);assert.notEqual(first.status,'published');assert.equal(received,262144);
+    f.advance(60000);
+    let last=first;for(let k=0;k<3&&last.status!=='published';k++){f.advance(60000);last=await adapter.status(input);}
+    assert.equal(last.status,'published');assert.equal(received,bytes.length);
+    assert.ok(yt.hits.some(h=>h.method==='PUT'&&h.bytes===0&&h.range==='bytes */'+bytes.length),'probe asks for the confirmed range');
+    assert.equal(yt.hits.filter(h=>h.method==='POST').length,1);
+  }finally{await yt.close();}
+});
+test('real fetch: a redirect with Location is never followed (manual mode keeps the token on Google hosts)',async()=>{
+  const f=fixture();
+  const yt=await realYouTube(f,(req,url)=>{
+    if(url.pathname==='/youtube/v3/channels')return {status:302,headers:{location:'/elsewhere'}};
+    if(url.pathname==='/elsewhere')return {status:200,body:{items:[{id:cid}]}};
+  });
+  try{
+    await assert.rejects(()=>f.build({fetchImpl:yt.fetchImpl}).checkConnection(f.input.channel),e=>typeof e.code==='string'&&e.code.startsWith('YOUTUBE_'));
+    assert.deepEqual(yt.hits.map(h=>h.path),['/youtube/v3/channels']);
+  }finally{await yt.close();}
 });

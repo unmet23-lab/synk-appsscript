@@ -87,9 +87,11 @@ export function createSocialDirectYouTube({store,fetchImpl=globalThis.fetch,cloc
     if(credentialFingerprint(credentials)!==credentialFingerprint(secret(channel)))throw fail('CONNECTION_CHANGED','저장한 YouTube 인증 정보가 바뀌었어요.');
     const problem=issue(live(channel),credentials,{enabled});if(problem)throw fail(problem[0],problem[1]);
     const credentialPin=credentialFingerprint(credentials),check=()=>{checkBase();if(credentialFingerprint(secret(channel))!==credentialPin)throw fail('CONNECTION_CHANGED','처리 중에 YouTube 인증 정보가 바뀌었어요.');};
+    // redirect:'manual', not 'error': resumable chunks answer 308 Resume Incomplete (no Location), and Node fetch
+    // turns any 3xx into "unexpected redirect" under 'error'. 'manual' still never follows; receipt()/json() judge the status.
     async function request(url,{method='GET',body,headers={}}={}){
       check();reserve(channel);let response;
-      try{response=await fetchImpl(url,{method,body,headers:{Authorization:'Bearer '+credentials.accessToken,Accept:'application/json','Cache-Control':'no-store',...headers},redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});}catch{throw fail('YOUTUBE_NETWORK','YouTube 응답을 확인하지 못했어요.',502);}
+      try{response=await fetchImpl(url,{method,body,headers:{Authorization:'Bearer '+credentials.accessToken,Accept:'application/json','Cache-Control':'no-store',...headers},redirect:'manual',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(90000)]):AbortSignal.timeout(90000)});}catch{throw fail('YOUTUBE_NETWORK','YouTube 응답을 확인하지 못했어요.',502);}
       if(method==='GET')check();return response;
     }
     async function json(response){
