@@ -1,0 +1,455 @@
+{
+ "메모": "「매진 임박」 이미지 콘티 v5(2026-10-25 — Seedance 시작 · 끝 그림). v4(이미지콘티_v4.json)와 같은 배치도 · 배역 참조로 굽되, 받은 그림은 16:9로 자르기만 하고 색 옮기기 · 밝히기는 하지 않는다(결정 10-24). 그래서 빛을 지시문에 쓴다 — v4 받은 그대로는 원본보다 대비가 세고(L 95분위 60 대 43, 120 넘는 화소 11% 대 0.5%) 얼굴이 밝게 비쳐, 빛 칸을 「낮은 노출 · 부드러운 대비 · 갈색 그림자 · 얼굴은 옆에서 흐리게」로 새로 쓰고 방 기준 그림(R1 · R2)부터 다시 굽는다. 클로즈업은 원본 첫 프레임의 얼굴 상자(YuNet)를 화면 비로 재어 화면 안 경계로 쓴다. 피해자 컷은 모두 공포 먼저(장부 S32). 풀기: node 풀기.mjs --파일 이미지콘티_v5.json → ego/jobs_이미지콘티_v5.json, 받은 그림은 받음/v5/, 고른 판은 정지컷/v5/<컷>.png, 16:9 자르기는 ../영상시작_v5.py, 보드는 ../콘티보드_v5.py.",
+ "공통": {
+  "시작": "Create one still photograph. A cinematic film still from a Korean horror-comedy short film, 16:9 frame.",
+  "세트_소파": "Location: a Korean apartment living room late at night, set for a small night party of three home-shopping superfans. A long, low beige velvet sectional sofa with plump cushions runs along the back wall, and its right end turns toward the camera as an L. A leopard-print fleece blanket is draped over the right part of the sofa, and a cream faux-fur throw lies over the right armrest. In front of the sofa stands a low black coffee table with a crossed metal base, crowded with a night-party mess: lit pillar candles and tea lights, two wine bottles, stemmed glasses, a white fluffy fur cushion, a stack of clear plastic food-storage containers with pastel pink and mint lids, and a long curl of printed paper order receipts hanging over the table edge. A burgundy rug lies under the table on a warm wood-look floor. Behind the sofa, the left part of the back wall is a wide window with sheer white curtains and heavy beige drapes; through it, the lit windows of neighboring Korean apartment towers at night. On the back wall right of center hangs a vertical column of three small framed shadow boxes, each displaying a pastel-pink limited-edition food-container gift box like a collector's treasure, with a small dried-flower wreath beside them. In the right part of the room behind the sofa corner, on a low sideboard: a vintage table lamp whose pleated pink fabric shade glows warm amber, two red taper candles, and a string of tiny warm fairy lights draped along the sideboard and along the back of the sofa.",
+  "세트_짧게": "Location: the same Korean apartment living room as in Image {n}, late at night — the beige sectional sofa with the leopard-print blanket, the coffee table crowded with candles, wine glasses, pastel food-storage containers and paper order receipts, the curtained window, the framed shadow boxes, the pink-shaded lamp and the fairy lights. Use Image {n} for the room, the set dressing and the light.",
+  "강도방": "Location: the other side of the same Korean apartment living room at night, as in Image {n} — the white ledge with a candle, the round wall clock, the white door, the iron wall sconce, the crown molding and the beige curtain. Image {n} was shot from this same low camera: keep its room, its light and its camera height and upward tilt.",
+  "배치_흐림": "Image {n} is a heavily blurred layout guide of this shot: match its camera position, camera height, tilt and lens, and where the large shapes sit in the frame — but ignore its blur, its smudges, its exact furniture and its colors.",
+  "배치_실루엣": "Image {n} is a layout guide: the black silhouettes show only where the people are in the frame, how big and in what pose — match that placement, size and pose. The silhouettes have no faces, clothes or colors to copy.",
+  "배치_실루엣1": "Image {n} is a layout guide: the black silhouette shows only where the person is in the frame, how big and in what pose — match that placement, size and pose. It has no face, clothes or colors to copy.",
+  "강도_옷": "THE INTRUDER: a slim Korean man in his twenties wearing a black knit balaclava ski mask with two eye holes and one round mouth hole — his eyes and lips show through the holes, everything else of his head and neck is covered in black knit — a plain black short-sleeved t-shirt and black trousers. His bare forearms are lean. Any knife is a large kitchen knife with a plain steel blade — a film prop, clean, no blood.",
+  "강도_카메라": "Medium shot from low: the camera is at the eye level of the women sitting on the sofa, about one meter above the floor, tilted up at him, 28mm lens, handheld, shallow depth of field.",
+  "사진남1": "He is the only person in the frame.",
+  "지유_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one young Korean woman in her early twenties. Keep her face exactly the same in every detail: soft round face with a small chin, dark brown eyes with subtle inner double eyelids and aegyo-sal, small straight nose, natural coral-red lips (not deep red, not pink), bright warm-toned skin with a faint natural blush on the cheeks, and her long straight hair with a center part falling well below her shoulders, no bangs. Her hair is natural jet black (close to #191C1A), not brown, not blue-black, and it stays this shade in the warm lamp light. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
+  "리4_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 27 years old. Keep her face exactly the same: her round face, her black hair with straight blunt bangs just above the eyebrows, her large round tortoiseshell glasses with clean clear lenses, and the small mole on her cheek exactly where it is in the reference photos. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add other moles, freckles, marks, tattoos, text, logos or watermarks.",
+  "통2_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman about 30 years old. Keep her face and body exactly the same: her full round face with soft cheeks and a soft double chin, thick straight dark eyebrows, her short tightly curled dark-brown permed bob, her plus-size figure (163 cm, Korean clothing size 88), and — when her teeth show — only a very narrow gap between her two front teeth (both front teeth fully there). Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
+  "지유_코케트": "a sheer white lace veil draped over the top of her head and falling past her shoulders over her long black hair, a fitted white satin mini dress with sheer long sleeves, and a short pearl necklace, and a thin silver ring on her right hand",
+  "리4_코케트": "a red-and-white gingham cami top with thin straps and a ruffled neckline, white lace-trimmed bloomer shorts, a big red satin ribbon bow and red heart-shaped sunglasses pushed up on top of her head above her bangs — her own round tortoiseshell glasses stay on her face — and her black bob tied into two short low pigtails with small red ribbons, her straight blunt bangs unchanged",
+  "통2_코케트": "a crown of small pink and cream roses on her curly hair, a plain white cropped t-shirt with a small red heart printed on the chest (no words), and black denim shorts",
+  "배경_소파": "Behind her, far out of focus: the beige sofa back, a leopard-print fleece blanket and the soft round warm bokeh of tiny fairy lights.",
+  "클로즈업_카메라": "Camera: handheld close-up from the height of a man standing over her — a little above her eye level, looking slightly down at her — 85mm lens, very shallow depth of field.",
+  "사진여1": "She is the only person in the frame.",
+  "셋_전신": "THE THREE WOMEN, left to right — (C) a plus-size Korean woman about 30 with a short, tightly curled dark-brown permed bob and a full round face, the woman in Images 3 and 6, wearing {통2_코케트}; (B) a slim Korean woman about 27 with a black bob with straight blunt bangs and large round tortoiseshell glasses, the woman in Images 4 and 7, wearing {리4_코케트}; (A) a young Korean woman in her early twenties with long straight jet-black hair, the woman in Images 5 and 8, wearing {지유_코케트}. Images 3 to 8 are identity references only — ignore their backgrounds, clothing and lighting. Each woman keeps her own face, hair and body; do not mix their faces.",
+  "셋_얼굴_방없이": "THE THREE WOMEN, left to right — (C) a plus-size Korean woman about 30 with a short, tightly curled dark-brown permed bob and a full round face, the woman in Images 2 and 3, wearing {통2_코케트}; (B) a slim Korean woman about 27 with a black bob with straight blunt bangs, large round tortoiseshell glasses and a small mole on her cheek, the woman in Images 4 and 5, wearing {리4_코케트}; (A) a young Korean woman in her early twenties with long straight jet-black hair and a center part, the woman in Images 6 and 7, wearing {지유_코케트}. Images 2 to 7 are identity references only — ignore their backgrounds, clothing and lighting. Each woman keeps her own face, hair and body exactly; do not mix their faces.",
+  "강도_가까이": "The camera is close to him, about one meter away and very low, so he towers over the lens: his masked head is near the top edge of the frame and the frame cuts him at the hips.",
+  "눈길_왼쪽위": "Her eyes look up and to the LEFT side of the frame — her irises sit in the left corners of her eyes, toward the left edge of the frame — at a man standing there out of frame. She does not look at the camera and does not look to the right.",
+  "공포_몸짓": "The women are TERRIFIED, not calm: shoulders hunched up toward their ears, bodies stiff and leaning back, away from the masked man; they cling to each other's arms and hands; eyes opened wide so the whites show, fixed on him; eyebrows raised and pulled together; lips parted and trembling; faces drained with fear. Nobody smiles, nobody stands relaxed with loose arms.",
+  "공포_얼굴": "She is TERRIFIED, not sad and not annoyed: her eyes are opened very wide so the whites show around the irises, fixed on the man up and to the left; her eyebrows are raised high and pulled together; her forehead is tense; her nostrils flare; her face is drained with fear. No crying with squeezed-shut eyes, no pout, no frown of annoyance.",
+  "빛": "Light and color: the ceiling lights are off; the only light comes from warm tungsten lamps, candles and tiny fairy lights (old 2200–2700K bulbs), giving the whole image a warm orange-amber cast. Low exposure and soft, gentle contrast, like a dim night scene on old film: most of the frame is warm dark-brown shadow, the deepest shadows are a dark warm brown rather than pure black, and only the small flames and bulbs themselves are bright — no white or glowing areas, no glossy highlights, no flash, no key light. No pink, magenta, blue or teal light, no colored gels, no neon.",
+  "빛_어둡게": "Expose about one stop darker than normal — a low-key frame where even the lit side of a face or a wall is only a soft, warm mid-tone. White clothes, white lace and lamp shades stay a muted warm beige in this dim light, never bright white or glowing.",
+  "필름": "Photorealistic film still with natural skin texture, fine film grain and natural lens falloff, as if shot handheld on a cinema camera at night. No text, no logos, no watermarks.",
+  "세트_강도": "Location: the other side of the same Korean apartment living room at night, facing away from the sofa toward the entrance. On the left, a white built-in wall cabinet with a deep ledge at chest height like a mantelpiece, holding a lit pillar candle in a glass holder and a small trailing plant, with the edge of a tall white bookshelf at the far left. Center-right, a closed white panel door to the hallway with a silver lever handle. On the wall to the right of the door, a black wrought-iron wall sconce holding a candle in a glass. Above the ledge, a round antique wall clock. White crown molding runs where the beige walls meet the shadowy ceiling. At the far right edge of the frame, a heavy beige curtain. This side of the room is dimmer and more muted than the sofa side: dim brownish-beige walls and a dull off-white door, lit only by the small candle on the ledge, the candle in the wall sconce and the faint warm spill of the party lamps from behind the camera.",
+  "강도빛": "He is lit only dimly from the front by the faint warm spill of the party lamps behind the camera: his black balaclava and black clothes are a soft, deep brown-black with the knit texture just visible, his bare forearms are warm and dim, and the room behind him is muted and dim.",
+  "얼굴빛": "Her face is lit only softly and dimly from the side by the warm glow of the nearby lamp, candles and fairy lights: her skin looks warm orange-tan with soft brown shadows, there is no bright highlight or shine on her forehead, nose or cheeks, and one side of her face falls into soft warm shadow.",
+  "울음_공포": "She is crying in terror — tears on her cheeks, her face crumpled, her eyebrows pulled up and together — and she is frightened, not just sad: her crying is real and desperate, never cute, never pouting.",
+  "친구손_하나": "The only other thing in the frame is her friend's hand, coming in from the left edge and resting gently on her bare shoulder to comfort her: a small, soft young woman's hand with short natural nails, and the edge of a plain white cotton t-shirt sleeve just visible at the left edge of the frame — the hand of her curly-haired girlfriend sitting right beside her on the sofa. It is clearly a woman's hand, slender and delicate. No other face or body.",
+  "친구손_둘": "The only other things in the frame are her two girlfriends' hands, one coming in from each side edge and resting gently on her bare shoulders to comfort her: on the left, a small, soft young woman's hand with the edge of a plain white cotton t-shirt sleeve at the left edge; on the right, a slender young woman's hand with a thin ring and a sheer white chiffon sleeve at the right edge. Both are clearly women's hands, slender and delicate. No other face or body.",
+  "A_꽉": "EXTREME CLOSE-UP: her face fills the frame from top to bottom — the top edge of the frame cuts across her forehead a little above her eyebrows and the bottom edge cuts just under her chin. No other face or body is in the frame.",
+  "통2_얼굴끝": "Use Images 2 to 5 only as identity references for one Korean woman about 30 years old. Keep her face and body exactly the same: her full round face with soft cheeks and a soft double chin, thick straight dark eyebrows, her short tightly curled dark-brown permed bob, her plus-size figure (163 cm, Korean clothing size 88), and — when her teeth show — only a very narrow gap between her two front teeth (both front teeth fully there). Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
+  "리4_얼굴끝": "Use Images 2 to 5 only as identity references for one Korean woman about 27 years old. Keep her face exactly the same: her round face, her black hair with straight blunt bangs just above the eyebrows, her large round tortoiseshell glasses with clean clear lenses, and the small mole on her cheek exactly where it is in the reference photos. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add other moles, freckles, marks, tattoos, text, logos or watermarks.",
+  "얼굴빛_밤": "This is a dark, low-key night close-up, exposed about two stops under a normal portrait: the room is barely lit, only by candles and tiny fairy lights, so her face is in dim, warm half-light — the lit side of her face is only a muted warm amber, no brighter than the candle-lit sofa behind her, the other side sinks into deep warm-brown shadow, and her eyes catch only tiny reflections of the fairy lights. The background is dark brown with small, soft glowing bokeh dots. Nothing in the frame is bright except the tiny flames and bulbs.",
+  "빛_짧게": "Light: the same dim, warm tungsten night light as in Image 1 — only candles, the pink-shaded lamp and tiny fairy lights; low exposure and soft contrast, deep warm-brown shadows rather than black, nothing bright except the small flames and bulbs; white clothes and lace stay a muted warm beige; no pink, blue or neon light.",
+  "빛_뒤램프_셋": "Light direction: the only lamp is behind and to the right of them, so their fronts and their white clothes are on the shadow side — the white t-shirt, white shorts and white satin dress read as dim warm grey-beige, their brightest fold no lighter than the beige sofa behind them; only a faint warm candle glow touches their faces.",
+  "빛_뒤램프_하나": "Light direction: the only lamp is behind and to the right of her, so her front and her white t-shirt are on the shadow side — the t-shirt reads as a dim warm grey-beige, never bright white, no lighter than the beige sofa behind her; her face is lit only softly from the side by warm candlelight."
+ },
+ "컷": [
+  {
+   "id": "R1a",
+   "who": "방",
+   "refs": [
+    "배치:R1_배치"
+   ],
+   "text": "{시작} {세트_소파} {배치_흐림:1} Wide shot at standing eye level from the doorway side of the room, 24mm lens: the sofa runs across the middle of the frame from the left edge to the right, the coffee table sits in the lower middle foreground, the window and drapes fill the upper left and middle, the framed shadow boxes hang right of center, and the pink lamp glows softly at the right behind the sofa corner. Nobody is in the room — the space in front of the sofa is empty. {빛} {필름}",
+   "메모": "거실 기준 그림(피해자 쪽) v5 — 빛 시험 a"
+  },
+  {
+   "id": "R1b",
+   "who": "방",
+   "refs": [
+    "배치:R1_배치"
+   ],
+   "text": "{시작} {세트_소파} {배치_흐림:1} Wide shot at standing eye level from the doorway side of the room, 24mm lens: the sofa runs across the middle of the frame from the left edge to the right, the coffee table sits in the lower middle foreground, the window and drapes fill the upper left and middle, the framed shadow boxes hang right of center, and the pink lamp glows softly at the right behind the sofa corner. Nobody is in the room — the space in front of the sofa is empty. {빛} {빛_어둡게} {필름}",
+   "메모": "거실 기준 그림(피해자 쪽) v5 — 빛 시험 b(한 스톱 어둡게)"
+  },
+  {
+   "id": "R2a",
+   "who": "방",
+   "refs": [
+    "배치:R2_배치"
+   ],
+   "text": "{시작} {세트_강도} {배치_흐림:1} The camera sits low, at the eye level of someone sitting on the sofa, about one meter above the floor, tilted up about 15 degrees, 28mm lens, so the ceiling and the crown molding show: the white ledge with its candle at the lower left, the white door from the middle to the right, the sconce on the right wall. Nobody is in the frame — the middle of the frame, where a standing person would be, is plain wall and the door. {빛} {필름}",
+   "메모": "거실 기준 그림(강도 쪽) v5 — 빛 시험 a"
+  },
+  {
+   "id": "R2b",
+   "who": "방",
+   "refs": [
+    "배치:R2_배치"
+   ],
+   "text": "{시작} {세트_강도} {배치_흐림:1} The camera sits low, at the eye level of someone sitting on the sofa, about one meter above the floor, tilted up about 15 degrees, 28mm lens, so the ceiling and the crown molding show: the white ledge with its candle at the lower left, the white door from the middle to the right, the sconce on the right wall. Nobody is in the frame — the middle of the frame, where a standing person would be, is plain wall and the door. {빛} {빛_어둡게} {필름}",
+   "메모": "거실 기준 그림(강도 쪽) v5 — 빛 시험 b"
+  },
+  {
+   "id": "S07a",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S07"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {필름}",
+   "메모": "#7 빛 시험 a"
+  },
+  {
+   "id": "S07b",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S07"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#7 빛 시험 b"
+  },
+  {
+   "id": "S07c",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S07"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛_밤} {빛} {필름}",
+   "메모": "#7 빛 시험 c(얼굴 클로즈업용 낮은 키)"
+  },
+  {
+   "id": "S07d",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S07"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛_밤} {빛} {빛_어둡게} {필름}",
+   "메모": "#7 빛 시험 d(c + 한 스톱 더)"
+  },
+  {
+   "id": "S01",
+   "who": "셋+강도",
+   "refs": [
+    "v5/R1",
+    "배치:S01",
+    "통2전신",
+    "리4전신",
+    "F04전신",
+    "통2정면",
+    "리4정면",
+    "F04정면"
+   ],
+   "text": "{시작} {세트_짧게:1} {배치_실루엣:2} Wide shot at standing eye level from the doorway side of the room, 24mm lens, handheld with a little motion blur. At the very left edge of the frame, cut off by the edge, THE INTRUDER is seen from the side and back, holding the knife low at his waist and pointing it toward the women. {강도_옷} In front of the sofa, behind the coffee table, the three women are frozen in terror: the woman on the left (C) and the woman in the middle (B) shrink back with their shoulders hunched up, arms pulled tight to their bodies and hands clutched at their chests; the woman on the right in the veil (A) twists away toward the sofa armrest in panic, bending, caught mid-turn and slightly blurred. {공포_몸짓} {셋_전신} {빛_짧게} {필름}",
+   "메모": "#1 0.00–0.54 넓게 · 눈높이 · 왼쪽 끝 강도(옆 · 등, 칼은 허리 높이) · C · B 웅크려 굳음 · A 팔걸이 쪽으로 돌아섬 — 강도 「가진 거 다 내놔!」"
+  },
+  {
+   "id": "S02",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S02"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He is turned three-quarters toward the right of the frame, shouting — his lips, seen through the mouth hole, are wide open. His right arm is thrust out toward the right with the knife raised in his fist, the blade pointing up and to the right; his left hand is held out open, palm up, in a demanding 'give it here' gesture. The white ledge and its candle are behind him at the left, the white door at the right. {강도_카메라} {강도_가까이} He stands in the left half of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#2 0.54–1.38 강도 미디엄 · 3/4 옆 · 칼을 세워 들고 왼손을 편다 — 「가진 거 다 내놔!」"
+  },
+  {
+   "id": "S03",
+   "who": "셋+강도",
+   "refs": [
+    "v5/R1",
+    "배치:S03",
+    "통2전신",
+    "리4전신",
+    "F04전신",
+    "통2정면",
+    "리4정면",
+    "F04정면"
+   ],
+   "text": "{시작} {세트_짧게:1} {배치_실루엣:2} Wide shot at standing eye level from the doorway side of the room, 24mm lens, handheld. THE INTRUDER stands left of center, seen from the side, stepping toward the women with the knife held out toward them. {강도_옷} The woman on the left (C), trembling with fear, bends down fast toward the coffee table and snatches a small fluffy red heart-shaped pouch with a thin silver chain strap, her body leaning back away from him and her terrified eyes fixed on him. Behind her, the woman in the middle (B) and the woman on the right (A) huddle together, clutching each other's arms, shoulders hunched, frozen with fear and staring at him; A's chin trembles. {공포_몸짓} {셋_전신} {빛_짧게} {필름}",
+   "메모": "#3 1.38–3.33 #1 자리 · C가 떨며 주머니를 집어 건넨다 · B · A 붙잡고 웅크림 — C 「여기요!」"
+  },
+  {
+   "id": "S04",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S04"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He holds a small fluffy red heart-shaped pouch with a thin silver chain strap in his left hand, against his stomach; with his right arm he points the knife out toward the lower right of the frame, at the women out of frame, barking an order — his lips open through the mouth hole. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#4 3.33–4.67 주머니를 든 채 칼로 오른쪽 아래(셋)를 가리킨다 — 「다 앉아! 당장!」"
+  },
+  {
+   "id": "S05",
+   "who": "셋",
+   "refs": [
+    "v5/R1",
+    "배치:S05",
+    "통2전신",
+    "리4전신",
+    "F04전신"
+   ],
+   "text": "{시작} {세트_짧게:1} {배치_실루엣:2} Close medium shot at waist height, handheld and shaky, as the three women drop down onto the sofa in fright: their faces are above the top edge of the frame — only their bodies from the chest to the thighs show. They are pressed tightly together, clutching each other's hands and arms on their laps, their bodies tense and trembling. Left to right: C's white cropped t-shirt with the small red heart and black denim shorts; B's red-and-white gingham cami top and white lace-trimmed bloomer shorts; A's fitted white satin dress and sheer sleeve. A little motion blur; the leopard-print blanket and the sofa cushions behind them. Images 3, 4 and 5 show the three women's body shapes left to right (C is plus-size, B and A are slim) — ignore their clothes and backgrounds. {빛_뒤램프_셋} {빛} {빛_어둡게} {필름}",
+   "메모": "#5 4.67–6.67 셋의 허리 높이에서 시작(얼굴 없음) → 앉으며 얼굴까지(영상). 끝 그림 S05e"
+  },
+  {
+   "id": "S05e",
+   "who": "셋",
+   "refs": [
+    "v5/S05",
+    "통2x2",
+    "리4x2",
+    "F04x2"
+   ],
+   "text": "{시작} Image 1 is the opening frame of this same handheld shot, taken at the three women's waist height. This still is the END of that shot: the camera has tilted straight up from the same spot to their faces. Keep everything from Image 1 — the same three women in the same places left to right, the same clothes, the same sofa, the leopard-print blanket and the light — but now the frame shows them from the chest up, with all three faces fully inside the frame in its upper half, side by side and close together, their heads at about the same height. They still cling to each other's arms. All three stare up toward the upper LEFT of the frame, at the masked intruder standing there outside the frame — nobody looks at the camera. {공포_몸짓} C sobs in fear with her mouth open and tears on her cheeks; B's eyes are wide open behind her glasses, her lips trembling; A's eyes are wide with terror, her eyebrows raised and pulled together, her mouth open mid-gasp. Their faces are lit only softly and dimly by the warm lamp and fairy lights. {셋_얼굴_방없이} {빛_뒤램프_셋} {빛} {빛_어둡게} {필름}",
+   "메모": "#5 끝 그림 — 시작 그림(v5/S05)과 같은 자리에서 얼굴까지 올라간 끝(10-25 S05e2 방법)"
+  },
+  {
+   "id": "S05r",
+   "who": "셋",
+   "refs": [
+    "v5/S05e"
+   ],
+   "text": "{시작} Image 1 is the END of this same handheld shot: the three women sitting pressed together on the sofa, seen from the chest up, staring up to the upper left in terror. This still is the FIRST frame of that shot, a moment earlier: from the same spot, the camera is tilted down to their waist height — the frame shows only their bodies from the chest to the thighs and their clutched hands in their laps; their faces are above the top edge of the frame. Keep everything from Image 1: the same three women in the same places left to right, the same clothes (C's white cropped t-shirt with the small red heart and black denim shorts; B's red-and-white gingham cami top and white lace-trimmed bloomer shorts; A's fitted white satin dress with sheer sleeves), the same sofa and leopard-print blanket, the same dim warm light and colors. Nothing stands in front of them — no table, no glasses, no candles in the foreground. They cling to each other's hands and arms, trembling. {빛_뒤램프_셋} {빛} {빛_어둡게} {필름}",
+   "메모": "#5 시작 그림을 끝 그림(S05e)에서 거꾸로 — 같은 샷의 첫 프레임(허리 높이), Fable 2차 P2-1"
+  },
+  {
+   "id": "S06",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S06"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He holds the knife low in his right hand and with his left hand rummages inside a small fluffy red heart-shaped pouch, whose thin silver chain strap dangles; his masked head is tilted down toward it. {강도_카메라} {강도_가까이} He stands left of the center of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#6 6.67–8.17 왼손으로 주머니를 뒤진다 — A 「이게 전부예요!」(화면 밖)"
+  },
+  {
+   "id": "S07",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S07"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#7 8.17–9.08 A 클로즈업 · 왼쪽 위를 보며 애원 — 「이게 전부예요!」 · 원본 얼굴 상자 위 7% ~ 아래 93%, 눈 38%"
+  },
+  {
+   "id": "S08",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S08"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} CLOSE-UP: her face takes up about 60% of the frame height and sits in the middle of the frame — the red heart sunglasses pushed up on top of her head touch the top edge of the frame, her eyes sit about 36% down from the top, and below her chin her bare shoulders with the thin gingham straps fill the bottom quarter of the frame. {친구손_하나} Her lips are just opening to speak. {공포_얼굴} {눈길_왼쪽위} Behind her: the leopard-print blanket at the upper left and the fairy-light bokeh across the top. {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#8 9.08–10.21 B 클로즈업 · 왼쪽 어깨에 친구(C) 손 · 입을 연다 — 「진짜!」 · 원본 상자 15%~74%, 눈 36%"
+  },
+  {
+   "id": "S09",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S09"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He bends his masked head down and peers into the small fluffy red heart pouch, which he holds open in his left hand together with the knife, low in front of his belly; the fingers of his right hand reach down into the open pouch. Nothing gold is visible yet. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#9 10.21–11.42 주머니를 들여다보는 첫 자세 → 금빛 것을 꺼내 눈높이로(영상)"
+  },
+  {
+   "id": "S10",
+   "who": "셋",
+   "refs": [
+    "배치:S10",
+    "통2x2",
+    "리4x2",
+    "F04x2"
+   ],
+   "text": "{시작} {배치_실루엣:1} TIGHT THREE-SHOT FROM THE SIDE, matching the silhouettes in Image 1: the camera is close, at the right end of the sofa, looking back along the row of the three women's faces, 50mm lens, handheld, slightly above their eye level. A, nearest to the camera, fills the right third of the frame and her head is the biggest; B's face is in the middle, a little smaller; C's face, farthest, is at the left; they are pressed tightly together, clutching each other, and the frame cuts them at mid-chest. All three stare up toward the upper LEFT of the frame, at the intruder standing there outside the frame, in terror — none of them looks at the camera. C covers her mouth with her hand, sobbing in fear, her eyes wide; B is frozen stiff with fear, her eyes wide open behind her glasses, lips pressed together and trembling, tears welling; A's eyes are wide with terror, eyebrows raised and pulled together, her mouth open mid-plea. Behind them, out of focus and dark: the beige sofa back, a leopard-print blanket and tiny fairy-light bokeh. {공포_몸짓} {셋_얼굴_방없이} {빛_뒤램프_셋} {빛} {필름}",
+   "메모": "#10 11.42–14.04 셋 · 모두 왼쪽 위 — A 「안 돼 안 돼 안 돼 안 돼!」 + C 흐느낌 · 원본 얼굴 가로 A 74% · B 52% · C 30%"
+  },
+  {
+   "id": "S12",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S12"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about one third down from the top of the frame and her face is a little right of the center, the white lace veil at the right edge. She is breaking down: her eyebrows are pulled up and together, her wet eyes look up toward the upper left at the man out of frame, tears run down her cheeks, and her trembling lips are opening with the corners pulled down as she is about to cry out. {울음_공포} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#12 18.29–19.25 A 클로즈업 · 무너지며 입을 연다 — 「안 돼!」 · 원본 상자 4%~91%, 눈 33%, 가로 가운데 60%"
+  },
+  {
+   "id": "S13",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S13",
+    "v5/제품_미니"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} In his right hand, up at the height of his eyes, he holds the small container shown in Image 3 — exactly that product, palm-sized: a shiny gold lid with latches and a knob, a smoky see-through body and a small black label — and studies it, his masked head tilted slightly; his left arm hangs down at his side. Image 3 is only a product reference: ignore its plain background. {강도_카메라} {강도_가까이} He stands left of the center of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#13 19.25–20.92 금장 꽉 미니(블렌더 렌더를 참고 그림으로 — 덮기 없음)를 눈높이에 들고 본다 → 끝에 오른쪽 아래로 내린다(영상)"
+  },
+  {
+   "id": "S14",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S14"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit a little below 45% from the top of the frame and her face is in the middle of the frame, the white lace veil at the right edge. She sobs silently in fear — her lips pressed together and trembling, the corners pulled down, her chin quivering, her eyes brimming with tears and looking to the left. {울음_공포} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#14 20.92–23.33 A 클로즈업 · 입을 떨며 흐느낀다(말 없음) · 원본 상자 12%~98%, 눈 44%"
+  },
+  {
+   "id": "S15",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S15"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He holds the knife vertically in his right fist in front of his chest, the steel blade pointing straight up. His LEFT hand hangs lower, at his left hip and clearly inside the frame, and grips the small fluffy red heart pouch by its thin chain strap, so the red pouch is plainly visible. His masked face looks down at the women out of frame. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#15 23.33–24.71 칼을 수직으로 세우고 왼손 주머니 → 오른쪽으로 돌아 손을 내린다(영상) — 「안 돼!」(C, 화면 밖)"
+  },
+  {
+   "id": "S16",
+   "who": "통2",
+   "refs": [
+    "통2x4",
+    "배치:S16"
+   ],
+   "text": "{시작} {통2_얼굴} She wears {통2_코케트}. {배치_실루엣1:5} CLOSE-UP: her face takes up about two-thirds of the frame height and sits in the middle of the frame — the crown of roses on her curly hair is cut off by the top edge, her eyes sit one third down from the top, and her chin is about a quarter of the frame height above the bottom edge, where the neckline of her white t-shirt shows. She screams 'No!' in terror — mouth wide open, eyebrows high and pulled together, eyes wet and wide, tears streaming. {눈길_왼쪽위} A row of warm fairy-light bokeh runs across the top of the frame behind her; the sofa cushions behind her. {클로즈업_카메라} {빛_뒤램프_하나} {빛} {빛_어둡게} {필름} {사진여1}",
+   "메모": "#16 24.71–25.62 C 클로즈업 · 입을 크게 벌린 채 → 손으로 얼굴을 가린다(영상) — 「안 돼!」 · 원본 상자 8%~75%, 눈 33%"
+  },
+  {
+   "id": "S17",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S17"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} CLOSE-UP: her face takes up about 60% of the frame height and sits a little right of the center — the heart sunglasses on top of her head are cut by the top edge, her eyes sit about 40% down from the top, and her bare shoulders with the thin gingham straps fill the bottom of the frame. {친구손_하나} She looks up toward the upper left of the frame, silent, frozen stiff with terror, lips pressed together and trembling. {공포_얼굴} The leopard-print blanket at the upper left, fairy-light bokeh across the top. {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#17 25.62–26.67 B 클로즈업 · 어깨에 친구 손 · 말 없이 굳음 · 원본 상자 18%~82%, 눈 41%"
+  },
+  {
+   "id": "S18",
+   "who": "지유",
+   "refs": [
+    "F04x4",
+    "배치:S18"
+   ],
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil at the right edge. She looks toward the upper left of the frame, silent, frozen in terror, lips closed and trembling, holding her breath, tears welling in her eyes. {공포_얼굴} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#18 26.67–28.38 A 클로즈업 · 왼쪽을 본다 · 말 없음 · 원본 상자 7%~93%, 눈 39%"
+  },
+  {
+   "id": "S19",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S19"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} It is darker here. He bends forward deeply at the waist toward the bottom of the frame, reaching down with his left hand to pick something up from below the frame, his masked head lowered, his back rounded, his face turned down and away. {강도_카메라} {강도_가까이} He is left of the center of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#19 28.38–30.42 몸을 숙여 아래에서 집는다 → 왼손에 납작한 선물 상자(영상) — B 「잠깐만요!」(화면 밖)"
+  },
+  {
+   "id": "S20",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S20"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} CLOSE-UP: her face is high in the frame and left of the center — the top edge cuts through the heart sunglasses and the top of her head, her eyes sit about a quarter down from the top, her face takes up about 70% of the frame height, and her bare shoulders fill the bottom of the frame. {친구손_둘} She starts to cry out — her mouth pulled into a pleading, crying grimace that shows her clenched teeth, her eyebrows raised and pulled together, her wet eyes looking up toward the upper left. {울음_공포} The leopard-print blanket at the upper left. {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#20 30.42–31.75 B 클로즈업 · 양쪽 어깨에 친구 둘 손 · 이를 드러낸 애원 → 읊기 시작 · 원본 상자 1%~71%, 눈 27%, 가로 가운데 40%"
+  },
+  {
+   "id": "S22",
+   "who": "리4",
+   "refs": [
+    "리4x4",
+    "배치:S22"
+   ],
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} EXTREME CLOSE-UP, handheld and shaky: her face fills most of the left half of the frame — the top edge cuts through her bangs and the heart sunglasses, her squeezed-shut eyes sit at the middle height of the frame and her chin is near the bottom edge; a little motion blur. She is crying hard, eyes squeezed shut, tears on her cheeks, her mouth pulled open in a sob. No other face or body is in the frame. {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#22 39.00–41.33 B 아주 가까이 · 크게 흔들림 · 눈 감고 울다 끝에 이를 드러냄 — 「제발요!」 · 원본 상자 22%~96%, 가로 가운데 33%"
+  },
+  {
+   "id": "S23",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S23",
+    "v5/제품_상자"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} In his left hand, at chest height on the right side of the frame, he holds the flat square pastel-pink gift box shown in Image 3 — exactly that product, about 30 cm wide and 4 cm thick, its printed front half turned toward the camera — and looks down at it through the eye holes, puzzled; his right hand hangs low holding the small fluffy red heart pouch. Image 3 is only a product reference: ignore its plain background. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#23 41.33–45.75 핑크 에디션 6종 상자(블렌더 렌더를 참고 그림으로 — 덮기 없음)를 가슴 높이에 들고 본다 → 내려놓고 주머니(영상) — 「…방금 그거 한국말이야?」"
+  },
+  {
+   "id": "S24",
+   "who": "셋",
+   "refs": [
+    "배치:S24",
+    "리4정면",
+    "통2정면",
+    "F04정면"
+   ],
+   "text": "{시작} {배치_실루엣:1} Extreme close-up, handheld and shaky: the top of a bowed head fills the middle of the frame — the woman in Image 2, hunched forward and crying, her face hidden: her black hair with blunt bangs tied into short pigtails, red heart-shaped sunglasses pushed up on her head and a red satin ribbon bow. At the left edge, a little of the tightly curled dark-brown hair of the woman in Image 3 beside her, with her crown of small PINK and CREAM roses (pale pink and cream even in this dim light — not red, not dark). At the right edge, the long straight jet-black hair and a sheer white lace veil of the woman in Image 4, whose hand with a thin ring holds the crying woman's shoulder. Images 2 to 4 are identity references only — ignore their backgrounds and clothing. Nobody's face is visible. Warm fairy-light bokeh behind. Camera: handheld, from just above them, 50mm lens, very shallow depth of field. {빛} {빛_어둡게} {필름}",
+   "메모": "#24 45.75–47.29 B의 숙인 머리 · 왼쪽 C 머리 · 오른쪽 A 손(반지) — 「안 돼!」 둘. 끝 그림 S24e(얼굴 없음 그대로)"
+  },
+  {
+   "id": "S24e",
+   "who": "셋",
+   "refs": [
+    "v5/S24"
+   ],
+   "text": "{시작} Image 1 is the opening frame of this same handheld shot. This still is the END of that shot, a second later, from the same spot: the woman in the middle is still bent forward crying with her face completely hidden — her head has sunk a little lower toward the bottom left of the frame, so we see the top and back of her head: her black hair with the blunt bangs falling forward, her two short pigtails with small red ribbons, the red heart-shaped sunglasses and the big red satin bow. At the upper right, the hand of the woman in the veil, with a thin silver ring, grips her shoulder tightly; at the left edge, a little of the curly dark-brown hair of the woman beside her, with her crown of small PINK and CREAM roses (not red, not dark). Nobody's face is visible. Keep everything else from Image 1 — the same people, hair, accessories, clothes, light and colors. {빛} {빛_어둡게} {필름}",
+   "메모": "#24 끝 그림 — 원본 끝처럼 머리가 더 숙고 오른쪽 위에 A의 반지 손, 얼굴은 끝까지 안 보인다"
+  },
+  {
+   "id": "S25",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S25"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} Seen from very low against the warm glow of the wall sconce and a lamp directly behind his head, he is almost a black silhouette: his front, chest and masked face are in deep shadow, nearly black, with only a thin warm rim of light around his head and shoulders. His head is bowed down steeply, his chin on his chest — he peers down into the small fluffy red heart pouch that he holds open with both hands in front of his stomach near the bottom of the frame. No knife in view; his face is not visible. {강도_카메라} {강도_가까이} He is in the middle of the frame. {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#25 47.29–48.96 아래서 · 역광 실루엣 · 고개 숙여 주머니 속을 본다 — 강도 「으!」"
+  },
+  {
+   "id": "S26",
+   "who": "통2",
+   "refs": [
+    "통2x4",
+    "배치:S26"
+   ],
+   "text": "{시작} {통2_얼굴} She wears {통2_코케트}. {배치_실루엣1:5} Close-up from slightly above, handheld: the frame starts on the top of her bowed head — her short tightly curled dark-brown hair and the crown of small pink and cream roses fill the center of the frame, a little motion blur on her shaking head; her face is hidden, bowed down as she sobs, her shoulders shaking. Fairy-light bokeh across the top, the leopard-print blanket behind her. {클로즈업_카메라} {빛} {빛_어둡게} {필름} {사진여1}",
+   "메모": "#26 48.96–54.75 C 숙인 정수리(꽃관)에서 시작 → 들며 울부짖음(영상). 끝 그림 S26e(얼굴)"
+  },
+  {
+   "id": "S26e",
+   "who": "통2",
+   "refs": [
+    "v5/S26",
+    "통2x4"
+   ],
+   "text": "{시작} Edit Image 1, the opening frame of this handheld close-up. Keep exactly the same camera position, framing distance, background and light as Image 1: the leopard-print blanket behind her and the row of warm fairy lights across the top of the frame, the same dim warm tungsten light. Change only one thing: she has lifted her head toward the camera, so her face is now fully visible in the middle of the frame, her face taking up about two-thirds of the frame height, her crown of small PINK and CREAM roses (the very same crown as in Image 1, pale pink and cream — not red, not dark) at the top of her curly hair, cut by the top edge. She wails in terror and despair: her mouth is wide open, her eyebrows pulled up and together, tears running down her cheeks, and her wet eyes look up toward the upper LEFT of the frame at the masked man out of frame. Her white t-shirt stays the same, in dim warm shade. {통2_얼굴끝} {눈길_왼쪽위} {얼굴빛} {빛} {빛_어둡게} {필름} {사진여1}",
+   "메모": "#26 끝 그림 — 같은 자리에서 고개를 든 통2 얼굴(닮음은 이 그림이 지킨다)"
+  },
+  {
+   "id": "S28",
+   "who": "통2",
+   "refs": [
+    "통2x4",
+    "배치:S28"
+   ],
+   "text": "{시작} {통2_얼굴} She wears {통2_코케트}. {배치_실루엣1:5} CLOSE-UP: her face takes up about 70% of the frame height and sits a little right of the center — the rose crown is cut by the top edge, her eyes sit about one third down from the top, and her chin is a little more than a quarter of the frame height above the bottom edge. Her head is bowed a little and her eyes are cast down as she cries hard — her mouth open in a sob as she starts to speak, tears running down her cheeks, her eyebrows pulled up and together in despair. {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "메모": "#28 57.46–59.58 C 클로즈업 · 숙였다가 입을 벌려 말한다 — 「안 돼, 내 코케트 떡볶이!」 · 원본 상자 4%~73%, 가로 가운데 60%"
+  },
+  {
+   "id": "S30",
+   "who": "통2",
+   "refs": [
+    "통2x4"
+   ],
+   "text": "{시작} {통2_얼굴} She wears {통2_코케트}. CLOSE-UP: her face sits in the middle of the frame — the rose crown is cut off by the top edge, her eyes sit about 40% down from the top, and her chin is a little above the bottom edge, where the neckline of her white t-shirt with the small red heart shows. Her mouth is open in a wail as she cries out, her eyes squeezed half shut, tears on her cheeks, her eyebrows pulled up and together, her face turned a little up toward the upper left. {배경_소파} {클로즈업_카메라} {빛_뒤램프_하나} {빛} {빛_어둡게} {필름} {사진여1}",
+   "메모": "#30 64.42–70.79 C 클로즈업 · 또렷한 시작 그림(첫 0.3초 휙 패닝은 영상 지시문) — 「…저녁인데!」 · 「그냥 죽여!」"
+  },
+  {
+   "id": "S31",
+   "who": "강도",
+   "refs": [
+    "v5/R2",
+    "배치:S31",
+    "v5/제품_도시락매달림"
+   ],
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} He stands facing the camera and stares straight into the lens through the eye holes, deadpan. In his right hand, at chest height, he holds up the ribbon-tied lunchbox shown in Image 3 — exactly that product: a small clear food-storage container full of red tteokbokki rice cakes, tied with a big cream satin ribbon bow — letting it dangle from the long ribbon loop wound around his fingers; his left arm hangs at his side. No knife in view. Image 3 is only a product reference: ignore its plain background. {강도_카메라} {강도_가까이} He stands in the middle of the frame. {강도빛} {빛} {빛_어둡게} {필름} {사진남1}",
+   "메모": "#31 70.79–72.62 리본 끈에 매달린 떡볶이 도시락(블렌더 렌더를 참고 그림으로 — 덮기 없음)을 들고 렌즈를 본다(말 없음)"
+  }
+ ]
+}

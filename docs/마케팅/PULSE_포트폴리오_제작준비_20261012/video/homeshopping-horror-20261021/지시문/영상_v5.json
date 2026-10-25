@@ -1,0 +1,640 @@
+{
+ "메모": "「매진 임박」 콘티 v4 공포 컷 27개를 Seedance 2.5로 다시 뽑는 지시문(2026-10-25, 결정 10-25 — Omni 판은 시험). 넣는 글 = prompt + 한 칸 + 공통(대사 없는 피해자 컷은 「공통_말없음」, 강도 혼자인 컷은 「공통_말없음_강도」도). 시작 · 끝 그림은 이미지 콘티 v5의 고른 판을 16:9로 자르기만 한 것(synk-vendor/…/영상/시작_v5/<id>.jpg — ../영상시작_v5.py, 색 옮기기 · 밝히기 없음, 결정 10-24). 대사 컷은 배역 목소리(목소리/계획_v5.json, 타입캐스트 · 배역마다 하나)를 원본 받아쓰기 시각에 놓은 mp3를 audio_references로 넣어 입모양을 맞춘다(장부 S15 · S19, 제작 규칙 「소리」) — 줄마다 [줄 id, 클립 안 시작 초], 만들기는 ../영상_소리참고_v5.py. 최종 목소리는 후시녹음이고 영상 소리는 쓰지 않는다. 대사 컷만 generate_audio를 켠다(값은 같고, 클립 소리의 크기 곡선으로 대사 시각을 다시 재 얹기 위해 — 현장노트 higgsfield 「시간표와 대사가 지시문보다 늦게 온다」). 「쓰는 구간」은 [클립 안 시작 초, 원본 컷 길이] — 대사 컷은 소리 참고에 놓은 원본 시각에서 셈한 자리이고, 받은 뒤 입 움직임을 보고 고른다. 원본 컷이 1초 안팎이라 클립 4초 가운데 앞쪽만 쓴다. 칼은 「a kitchen knife (a harmless film prop)」, 사람 쪽으로는 「points」(10-23 · 10-24 정책 막힘), 피해자 컷은 강도를 「a man standing out of frame」로만. 어깨 손은 친구(여자) 손으로 그린 시작 그림(10-24 #8 · #20). 한 묶음 3건 안쪽으로 낸다(현장노트 higgsfield). 생성은 유호님 승인 뒤에만.",
+ "모델": {
+  "model": "seedance_2_5",
+  "mode": "omni_reference",
+  "aspect_ratio": "16:9",
+  "초안": {
+   "draft": true,
+   "resolution": "480p",
+   "값": "초당 3크레딧(4초 12)"
+  },
+  "마무리": {
+   "draft_job_id": "고른 초안 작업 id",
+   "resolution": "1080p",
+   "값": "초당 16크레딧(4초 64) — 초안을 만든 계정에서 7일 안에"
+  },
+  "medias": "start_image(모든 컷) · end_image(#5 · #24 · #26) · audio_references(대사 컷 13개)",
+  "호출 예(MCP generate_video)": {
+   "model": "seedance_2_5",
+   "mode": "omni_reference",
+   "aspect_ratio": "16:9",
+   "duration": "클립의 「길이」",
+   "draft": true,
+   "generate_audio": "클립의 generate_audio",
+   "medias": [
+    {
+     "role": "start_image",
+     "value": "<시작 그림 media_id>"
+    },
+    {
+     "role": "end_image",
+     "value": "<끝 그림 media_id — #5 · #24 · #26만>"
+    },
+    {
+     "role": "audio_references",
+     "value": "<소리 참고 mp3 media_id — 대사 컷만>"
+    }
+   ],
+   "prompt": "<클립 prompt> <공통_말없음(말 없는 컷)> <공통>",
+   "올리기": "그림은 media_upload → curl PUT(If-None-Match: *) → media_confirm, 소리는 mp3 이름으로(현장노트 higgsfield 「MCP로 올린 참고 그림이 403·404로 막힌다」). 내기 전에 get_cost:true로 값부터, 한 묶음 3건 안쪽.",
+   "마무리": "고른 초안은 {model, draft_job_id: <초안 작업 id>, resolution: '1080p'}(같은 계정, 7일 안)"
+  },
+  "시험 먼저": "#7(지유 클로즈업 · 소리 참고) · #3(칼 든 강도가 C 쪽으로 — 칼 정책을 가장 세게 시험) · #26(정수리 → 끝 그림 얼굴 · 소리 참고 · 7초) · #5(허리 → 얼굴 틸트 · 끝 그림) 네 컷을 480p 초안으로 먼저(57크레딧) — 시작 그림이 첫 화면으로 남는지(현장노트 「얼굴 정지컷에 소리 참고를 같이 주면 첫 화면을 다시 짠다」), 한국어 입모양, 칼 정책 막힘, 끝 그림 이음(구도가 다르면 하드컷)을 본 뒤 27컷을 낸다. Fable 검수(10-25) P3-3."
+ },
+ "공통": "One continuous handheld shot from a live-action Korean horror-comedy short film, with absolutely no cuts and no transitions. The first frame is exactly the start image: keep the same faces, hair, outfits, the room and its dim, warm tungsten lamp light and colors for the whole shot, with no new light, no brightening and no color shift; the camera moves only as described. Handheld camera with a natural, nervous shake; it keeps the same distance and never pushes in or zooms. Natural real-time motion. No added on-screen text, captions or logos (printed packaging in the scene stays as it is), no music.",
+ "공통_말없음": "Nobody speaks in this shot; no words, only breathing and sobbing.",
+ "클립": [
+  {
+   "id": "S01",
+   "컷": 1,
+   "원본": "0.00–0.54 (0.54초) 넓게 · 눈높이 · 왼쪽 끝 강도(옆 · 등) · 셋이 굳고 A가 돌아섬",
+   "길이": 4,
+   "쓰는 구간": [
+    0.2,
+    0.54
+   ],
+   "시작 그림": "S01.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "강도 「가진 거 다 내놔!」(얼굴이 안 보여 소리 참고 없음 — 편집에서 얹는다)",
+   "prompt": "Wide handheld shot with a strong, nervous shake. At the left edge the masked man in the black balaclava, seen from the side and back, holds a kitchen knife (a harmless film prop) low at his waist, pointed toward the three women. Immediately the woman in the white lace veil on the right spins away toward the sofa armrest in panic, her veil swinging; the curly-haired woman with the rose crown and the woman with round glasses flinch back, shoulders hunched, hands clutched to their chests, frozen in terror. All of this happens within the first second.",
+   "공통_말없음": true,
+   "요약": "넓게 · 강한 손떨림. 왼쪽 끝 강도가 칼(소품)을 허리 높이로 셋 쪽에 · 첫 1초 안에 A가 팔걸이 쪽으로 홱 돌아서고 C · B는 어깨를 웅크리고 굳는다."
+  },
+  {
+   "id": "S02",
+   "컷": 2,
+   "원본": "0.54–1.38 (0.83초) 강도 미디엄 · 아래에서 · 칼을 세워 들고 왼손을 편다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.84,
+    0.83
+   ],
+   "시작 그림": "S02.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S02.mp3",
+    "줄": [
+     [
+      "V02",
+      0.3
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "강도 「가진 거 다 내놔!」(원본 0.00–1.12 — 컷에는 「…다 내놔!」가 보인다)",
+   "prompt": "Low-angle handheld medium shot. The masked man in the black knit balaclava, turned three-quarters to the right, shouts in Korean, his lips moving through the mouth hole in sync with the reference audio: \"가진 거 다 내놔!\" He holds a kitchen knife (a harmless film prop) raised toward the right and thrusts his open left hand out, palm up, demanding that they hand everything over. The white ledge with the candle and the white door behind him stay still.",
+   "요약": "아래에서 · 손떨림. 강도가 칼을 오른쪽 위로 세워 들고 왼손을 내밀며 「가진 거 다 내놔!」(소리 참고로 입모양)."
+  },
+  {
+   "id": "S03",
+   "컷": 3,
+   "원본": "1.38–3.33 (1.96초) #1 자리 · C가 주머니를 집어 혼자 팔을 뻗어 건넨다 · 강도가 받는다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.0,
+    1.96
+   ],
+   "시작 그림": "S03.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "C 「여기요!」(1.38–1.88 — 얼굴이 작아 소리 참고 없음)",
+   "prompt": "Wide handheld shot. The curly-haired woman on the left, trembling, snatches the small fluffy red heart pouch from the coffee table and, leaning her whole body back as far from him as she can, thrusts it out at arm's length toward the masked man; he steps in and takes it with his free hand, keeping the kitchen knife (a harmless film prop) low at his side. Behind her the woman with round glasses and the woman in the white lace veil huddle together, clutching each other's arms, shoulders hunched, frozen in terror. It starts right away.",
+   "공통_말없음": true,
+   "요약": "넓게. C가 떨며 주머니를 집어 몸을 뒤로 뺀 채 팔만 뻗어 건네고 강도가 받는다 · B · A는 서로 붙잡고 웅크려 굳는다."
+  },
+  {
+   "id": "S04",
+   "컷": 4,
+   "원본": "3.33–4.67 (1.33초) 강도 · 왼손에 주머니 · 칼로 오른쪽 아래(셋)를 가리키며 「다 앉아!」",
+   "길이": 4,
+   "쓰는 구간": [
+    0.71,
+    1.33
+   ],
+   "시작 그림": "S04.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S04.mp3",
+    "줄": [
+     [
+      "V04",
+      0.3
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "강도 「다 앉아! 당장!」(원본 2.92–4.70)",
+   "prompt": "Low-angle handheld medium shot. The masked man barks an order in Korean, his lips moving through the mouth hole in sync with the reference audio: \"다 앉아! 당장!\" His LEFT arm points the kitchen knife (a harmless film prop) out toward the lower right at the people sitting out of frame, then flicks it up and to the right, while his RIGHT hand holds the small fluffy red heart pouch against his stomach.",
+   "요약": "아래에서. 오른손으로 주머니를 배에 대고, 왼팔로 칼을 오른쪽 아래(셋)로 가리켰다 위로 · 「다 앉아! 당장!」(소리 참고)."
+  },
+  {
+   "id": "S05",
+   "컷": 5,
+   "원본": "4.67–6.67 (2.00초) 셋의 허리 높이 → 1초 안에 얼굴까지 올라가 겁먹은 셋",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    2.0
+   ],
+   "시작 그림": "S05.jpg",
+   "끝 그림": "S05e.jpg",
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "숨소리 · 흐느낌(말 없음)",
+   "prompt": "Handheld shot with a nervous shake that starts at the three women's waist height, on their clutched hands in their laps as they sit pressed together on the sofa. Within the first second the shaky camera tilts straight up to their faces and then holds on the three terrified faces until the end, ending exactly on the end frame: the curly-haired woman with the rose crown on the left, the woman with round glasses, heart sunglasses and a red bow in the middle, the woman in the white lace veil on the right. They cling to each other and stare up toward the upper left at a man standing out of frame, eyes wide, lips trembling, breathing fast and sobbing, and keep trembling until the last frame.",
+   "공통_말없음": true,
+   "요약": "허리 높이에서 붙어 앉아 맞잡은 손으로 시작해 1초 안에 얼굴까지 틸트 → 끝 그림의 겁먹은 세 얼굴로 끝 · 숨소리 · 흐느낌."
+  },
+  {
+   "id": "S06",
+   "컷": 6,
+   "원본": "6.67–8.17 (1.50초) 강도 · 왼손으로 주머니를 뒤진다(쇠사슬 끈이 흔들림)",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.5
+   ],
+   "시작 그림": "S06.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "A 「이게 전부예요!」(화면 밖 — 강도 입이 움직이지 않게 소리 참고 없음)",
+   "prompt": "Low-angle handheld medium shot. The masked man looks down and rummages through the small fluffy red heart pouch with his RIGHT hand, its thin chain strap swinging; the kitchen knife (a harmless film prop) and the pouch's chain hang low in his LEFT hand. He keeps his mouth closed.",
+   "요약": "아래에서. 오른손으로 주머니를 뒤지고(왼손에 칼과 쇠사슬 끈) 끈이 흔들린다 · 강도는 입을 닫는다(대사는 화면 밖 A).",
+   "공통_말없음_강도": true
+  },
+  {
+   "id": "S07",
+   "컷": 7,
+   "원본": "8.17–9.08 (0.92초) A 클로즈업 · 왼쪽 위를 보며 애원",
+   "길이": 4,
+   "쓰는 구간": [
+    1.13,
+    0.92
+   ],
+   "시작 그림": "S07.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S07.mp3",
+    "줄": [
+     [
+      "V07",
+      0.3
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "A 「이게 전부예요!」(원본 7.34–8.90)",
+   "prompt": "Extreme close-up, handheld with a slight nervous shake. The young woman in the white lace veil stares up toward the upper left of the frame at a man standing out of frame and pleads in Korean in a trembling voice, her lips in sync with the reference audio: \"이게 전부예요!\" Her eyes are wide with fear so the whites show, her eyebrows raised and pulled together, her chin trembling. She never looks at the camera.",
+   "요약": "꽉 찬 클로즈업 · 잔떨림. 왼쪽 위를 보며 떨리는 목소리로 「이게 전부예요!」(소리 참고) · 흰자가 보이게 뜬 눈."
+  },
+  {
+   "id": "S08",
+   "컷": 8,
+   "원본": "9.08–10.21 (1.12초) B 클로즈업 · 왼쪽 어깨에 친구 손 · 「진짜!」",
+   "길이": 4,
+   "쓰는 구간": [
+    0.34,
+    1.12
+   ],
+   "시작 그림": "S08.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S08.mp3",
+    "줄": [
+     [
+      "V08",
+      0.3
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "B 「진짜!」(원본 9.04–9.42)",
+   "prompt": "Close-up, handheld with a slight nervous shake. The woman with round glasses, heart sunglasses pushed up on her head and a red bow, her friend's hand resting on her bare shoulder, stares up toward the upper left at a man standing out of frame and blurts out in Korean, her lips in sync with the reference audio: \"진짜!\" Then her mouth stays half open, trembling, her eyes wide and fixed on him.",
+   "요약": "클로즈업. 친구 손이 어깨에 · 왼쪽 위를 보며 「진짜!」(소리 참고) · 입이 반쯤 벌어진 채 떤다."
+  },
+  {
+   "id": "S09",
+   "컷": 9,
+   "원본": "10.21–11.42 (1.21초) 강도 · 주머니를 들여다보다 작은 금빛 것을 꺼내 눈높이로",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.21
+   ],
+   "시작 그림": "S09.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "정적",
+   "prompt": "Low-angle handheld medium shot. The masked man reaches into the small fluffy red heart pouch with his right hand, pulls out a palm-sized food-storage mini container with a shiny gold lid with latches and a knob, a smoky see-through body and a small black label, and quickly lifts it up to his eyes to peer at it, curious; the kitchen knife (a harmless film prop) stays low in his left hand with the pouch. It happens within the first second.",
+   "요약": "아래에서. 주머니에서 금장 미니 용기(금빛 뚜껑 · 걸쇠 · 연기색 투명 몸통 — #13과 같은 물건)를 꺼내 1초 안에 눈높이로 들어 들여다본다.",
+   "공통_말없음_강도": true
+  },
+  {
+   "id": "S10",
+   "컷": 10,
+   "원본": "11.42–14.04 (2.62초) 셋 · 모두 왼쪽 위 · A가 「안 돼 안 돼…」 · C는 입을 막고 흐느낌 · B는 입을 닫고 굳음",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    2.62
+   ],
+   "시작 그림": "S10.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S10.mp3",
+    "줄": [
+     [
+      "V10",
+      1.14
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "A 「안 돼 안 돼 안 돼 안 돼!」(원본 12.26–13.62) + C 흐느낌",
+   "prompt": "Tight handheld three-shot from the side with a nervous shake. All three women cling together and stare up toward the upper left at a man standing out of frame, in terror. The woman in the white lace veil on the right, nearest the camera, cries out in Korean, her lips in sync with the reference audio: \"안 돼 안 돼 안 돼 안 돼!\" The curly-haired woman on the left presses her hand over her mouth and sobs; the woman with round glasses in the middle is frozen stiff, lips pressed together and trembling. Only the woman in the veil speaks.",
+   "요약": "옆에서 본 셋 · 모두 왼쪽 위. A만 「안 돼 안 돼 안 돼 안 돼!」(소리 참고) · C는 손으로 입을 막고 흐느낌 · B는 입을 다문 채 굳음."
+  },
+  {
+   "id": "S12",
+   "컷": 12,
+   "원본": "18.29–19.25 (0.96초) A 클로즈업 · 무너지며 입을 크게 연다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    0.96
+   ],
+   "시작 그림": "S12.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S12.mp3",
+    "줄": [
+     [
+      "V12",
+      0.31
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "A 「안 돼!」(원본 18.30)",
+   "prompt": "Extreme close-up, handheld with a nervous shake. The young woman in the white lace veil breaks down: her face crumples and she cries out in Korean, her lips in sync with the reference audio: \"안 돼!\" Her mouth opens wide with the corners pulled down, tears run down her cheeks, and her wet eyes stay fixed up toward the upper left at the man standing out of frame.",
+   "요약": "꽉 찬 클로즈업. 얼굴이 무너지며 「안 돼!」(소리 참고) · 입꼬리가 내려간 채 크게 벌어지고 눈물."
+  },
+  {
+   "id": "S13",
+   "컷": 13,
+   "원본": "19.25–20.92 (1.67초) 강도 · 금빛 것을 눈높이에 들고 보다가 끝에 오른쪽 아래로 내린다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.67
+   ],
+   "시작 그림": "S13.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "정적",
+   "prompt": "Low-angle handheld medium shot. The masked man holds the palm-sized gold-lidded mini container up at eye level and studies it, turning it slightly in his fingers; after about a second and a half he lowers his hand down toward the lower right. His left hand stays down out of frame. He keeps his mouth closed.",
+   "요약": "아래에서. 금장 미니 용기를 눈높이에 들고 돌려 보다가 1.5초쯤 오른쪽 아래로 내린다 · 왼손은 화면 밖 아래.",
+   "공통_말없음_강도": true
+  },
+  {
+   "id": "S14",
+   "컷": 14,
+   "원본": "20.92–23.33 (2.42초) A 클로즈업 · 입을 떨며 흐느낀다(말 없음)",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    2.42
+   ],
+   "시작 그림": "S14.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "흐느낌",
+   "prompt": "Extreme close-up, handheld with a slight nervous shake. The young woman in the white lace veil sobs silently in fear: her lips pressed together and trembling, her chin quivering, tears spilling down her cheeks; she glances up toward the upper left at the man standing out of frame and her mouth opens a little in a shaky breath, then trembles shut again.",
+   "공통_말없음": true,
+   "요약": "꽉 찬 클로즈업. 소리 없이 흐느낌 · 입술을 다문 채 떨고 턱이 떨림 · 왼쪽 위를 힐끗."
+  },
+  {
+   "id": "S15",
+   "컷": 15,
+   "원본": "23.33–24.71 (1.38초) 강도 · 칼을 수직으로 세우고 왼손 주머니 → 1.3초에 오른쪽으로 돌아 손을 내린다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.38
+   ],
+   "시작 그림": "S15.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "C 「안 돼!」(화면 밖 — 소리 참고 없음)",
+   "prompt": "Low-angle handheld medium shot. The masked man holds a kitchen knife (a harmless film prop) upright in front of his chest, the blade pointing straight up, and looks down at the people out of frame; the small fluffy red heart pouch hangs from his left hand. After about a second he turns to his right and lowers both hands. He keeps his mouth closed.",
+   "요약": "아래에서. 칼을 가슴 앞에 수직으로 세우고 아래를 내려다보다 1초쯤 오른쪽으로 돌아 손을 내린다.",
+   "공통_말없음_강도": true
+  },
+  {
+   "id": "S16",
+   "컷": 16,
+   "원본": "24.71–25.62 (0.92초) C 클로즈업 · 입을 크게 벌린 채 → 0.4초부터 손으로 얼굴을 가린다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.43,
+    0.92
+   ],
+   "시작 그림": "S16.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S16.mp3",
+    "줄": [
+     [
+      "V16",
+      0.3
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "C 「안 돼!」(원본 24.58)",
+   "prompt": "Close-up, handheld with a nervous shake. The curly-haired woman with the rose crown screams in Korean, her lips in sync with the reference audio: \"안 돼!\" Her mouth is wide open, eyebrows high, tears streaming, her eyes on the man standing out of frame at the upper left; right after the scream she presses her hand over her face and sobs.",
+   "요약": "클로즈업. 「안 돼!」(소리 참고) 크게 벌린 입 → 곧 손으로 얼굴을 가리고 흐느낌."
+  },
+  {
+   "id": "S17",
+   "컷": 17,
+   "원본": "25.62–26.67 (1.04초) B 클로즈업 · 어깨에 친구 손 · 말 없이 굳음",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.04
+   ],
+   "시작 그림": "S17.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "정적",
+   "prompt": "Close-up, handheld with a slight nervous shake. The woman with round glasses stares up toward the upper left at a man standing out of frame, silent and frozen stiff with terror, her lips pressed together and trembling, her eyes wide; her friend's hand on her shoulder squeezes gently.",
+   "공통_말없음": true,
+   "요약": "클로즈업. 말 없이 굳어 왼쪽 위를 봄 · 입술을 다문 채 떨림 · 어깨 위 친구 손이 꼭 쥔다."
+  },
+  {
+   "id": "S18",
+   "컷": 18,
+   "원본": "26.67–28.38 (1.71초) A 클로즈업 · 왼쪽을 본다 · 말 없음",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.71
+   ],
+   "시작 그림": "S18.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "정적",
+   "prompt": "Extreme close-up, handheld with a slight nervous shake. The young woman in the white lace veil looks toward the upper left at a man standing out of frame, silent and frozen in terror, holding her breath; her lips are closed and trembling, tears welling in her wide eyes, and she swallows hard once.",
+   "공통_말없음": true,
+   "요약": "꽉 찬 클로즈업. 말 없이 숨을 참고 왼쪽 위를 봄 · 눈물이 고이고 침을 한 번 삼킨다."
+  },
+  {
+   "id": "S19",
+   "컷": 19,
+   "원본": "28.38–30.42 (2.04초) 강도 · 어둡게 · 몸을 숙여 아래에서 집어 → 1.6초에 왼손에 납작한 상자",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    2.04
+   ],
+   "시작 그림": "S19.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "B 「잠깐만요!」(화면 밖 — 소리 참고 없음)",
+   "prompt": "Low-angle handheld medium shot in the dim room. The masked man is bent forward deeply at the waist, reaching down below the frame with his left hand; after about a second and a half he straightens up holding a flat square pastel-pink gift box in his left hand at his side. He keeps his mouth closed.",
+   "요약": "아래에서 · 어둡게. 허리를 깊이 숙여 화면 아래에서 집고 1.5초쯤 납작한 분홍 상자를 들고 일어선다.",
+   "공통_말없음_강도": true
+  },
+  {
+   "id": "S20",
+   "컷": 20,
+   "원본": "30.42–31.75 (1.33초) B 클로즈업 · 양쪽 어깨에 친구 둘 손 · 「잠깐만요!」 끝 → 0.9초에 읊기 시작",
+   "길이": 4,
+   "쓰는 구간": [
+    0.72,
+    1.33
+   ],
+   "시작 그림": "S20.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S20.mp3",
+    "줄": [
+     [
+      "V20a",
+      0.3
+     ],
+     [
+      "V20b",
+      1.62
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "B 「잠깐만요!」(원본 30.00–30.76) → 「안 돼, 내 핑크 에디션!」(31.32부터)",
+   "prompt": "Close-up, handheld with a nervous shake. The woman with round glasses, both friends' hands on her shoulders, cries out in Korean in a pleading, crying voice, her lips in sync with the reference audio: \"잠깐만요!\" and then, almost sobbing, \"안 돼, 내 핑크 에디션!\" Her mouth is pulled into a pleading grimace that shows her teeth, her eyebrows raised and pulled together, her wet eyes fixed up toward the upper left at the man standing out of frame.",
+   "요약": "클로즈업. 양쪽 어깨에 친구 둘 손 · 「잠깐만요!」 뒤 울먹이며 「안 돼, 내 핑크 에디션!」(소리 참고) · 이를 드러낸 애원."
+  },
+  {
+   "id": "S22",
+   "컷": 22,
+   "원본": "39.00–41.33 (2.33초) B 아주 가까이 · 크게 흔들림 · 눈 감고 울다 끝에 이를 드러냄",
+   "길이": 4,
+   "쓰는 구간": [
+    0.7,
+    2.33
+   ],
+   "시작 그림": "S22.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S22.mp3",
+    "줄": [
+     [
+      "V22",
+      0.3
+     ],
+     [
+      "V22",
+      1.78
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "B 「…제발요!」(읊기 끝, 원본 39.42까지) · 「제발요!」(40.08–40.78)",
+   "prompt": "Extreme close-up with a strong, shaky handheld wobble. The woman with round glasses cries hard with her eyes squeezed shut, tears on her cheeks, and sobs in Korean, her lips in sync with the reference audio: \"제발요!\" and again \"제발요!\" About three seconds in her mouth stretches into a wide grimace that bares her teeth, almost like a laugh through the tears.",
+   "요약": "아주 가까이 · 크게 흔들림. 눈을 감고 울며 「제발요!」 두 번(소리 참고) · 끝에 이를 드러내 웃는 듯."
+  },
+  {
+   "id": "S23",
+   "컷": 23,
+   "원본": "41.33–45.75 (4.42초) 강도 · 납작한 상자를 가슴 높이에 들고 본다 → 3.9초에 내려놓고 → 4.4초에 주머니",
+   "길이": 5,
+   "쓰는 구간": [
+    0.3,
+    4.42
+   ],
+   "시작 그림": "S23.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S23.mp3",
+    "줄": [
+     [
+      "V23",
+      1.09
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "강도 「…방금 그거 한국말이야?」(원본 42.12–43.56)",
+   "prompt": "Low-angle handheld medium shot. The masked man holds the flat square pastel-pink gift box at chest height and stares at it, puzzled; then he looks up and asks flatly in Korean, his lips moving through the mouth hole in sync with the reference audio: \"방금 그거 한국말이야?\" About four seconds in he lowers the box out of frame and starts digging in the small fluffy red heart pouch again.",
+   "요약": "아래에서. 분홍 상자를 가슴 높이에 들고 보다가 고개를 들어 「방금 그거 한국말이야?」(소리 참고) → 상자를 내리고 주머니를 다시 뒤진다."
+  },
+  {
+   "id": "S24",
+   "컷": 24,
+   "원본": "45.75–47.29 (1.54초) 아주 가까이 · 크게 흔들림 · B의 숙인 머리 · 얼굴은 끝까지 안 보인다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.54
+   ],
+   "시작 그림": "S24.jpg",
+   "끝 그림": "S24e.jpg",
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "「안 돼!」 둘(44.56 · 45.79 — 얼굴이 안 보여 편집에서)",
+   "prompt": "Extreme close-up with a strong handheld shake, on the top of the bowed head of the woman with the red heart sunglasses and the red bow, who sobs bent forward, her head shaking; her head sinks a little lower and her face stays hidden the whole time. The hand of the woman in the veil, with a thin ring, grips her shoulder at the upper right and slides up into her hair. Nobody's face appears.",
+   "공통_말없음": true,
+   "요약": "아주 가까이 · 크게 흔들림. B의 숙인 머리가 더 숙고 얼굴은 끝까지 안 보임 · 오른쪽 위 A의 반지 손이 어깨를 쥐었다 머리로 올라간다."
+  },
+  {
+   "id": "S25",
+   "컷": 25,
+   "원본": "47.29–48.96 (1.67초) 강도 · 아래서 · 역광 실루엣 · 주머니 속을 보다 「으!」",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.67
+   ],
+   "시작 그림": "S25.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "강도 「으!」(47.46–48.16 — 입이 그늘이라 소리 참고 없음, 편집에서)",
+   "prompt": "Low-angle handheld shot of the masked man as a dark backlit silhouette against the glow behind him. He peers down into the small fluffy red heart pouch held open in both hands just below the bottom edge of the frame, then jerks his head back a little in disgust and turns his head down to the right. The backlight and the dark silhouette stay the same.",
+   "요약": "아래에서 · 역광 실루엣. 주머니 속을 보다 질색하며 고개를 뒤로 뺐다 오른쪽 아래로.",
+   "공통_말없음_강도": true
+  },
+  {
+   "id": "S26",
+   "컷": 26,
+   "원본": "48.96–54.75 (5.79초) C 숙인 정수리(꽃관) → 고개를 들며 울부짖음 → 3.2초에 입을 크게 「세상에…!」",
+   "길이": 7,
+   "쓰는 구간": [
+    1.21,
+    5.79
+   ],
+   "시작 그림": "S26.jpg",
+   "끝 그림": "S26e.jpg",
+   "소리 참고": {
+    "파일": "S26.mp3",
+    "줄": [
+     [
+      "V26",
+      4.45
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "C 「세상에…!」(원본 52.20–53.90)",
+   "prompt": "Close-up with a handheld shake. It starts on the top of the curly-haired woman's bowed head with her rose crown, shaking with sobs. Over the next two to three seconds she slowly lifts her face into the frame, crying in terror and despair, her wet eyes going up toward the upper left at the man standing out of frame; then she opens her mouth wide and wails in Korean, her lips in sync with the reference audio: \"세상에…!\" ending on the same tearful face as the end frame.",
+   "요약": "숙인 정수리(꽃관)에서 2~3초에 걸쳐 얼굴을 들고 → 컷 3.2초에 「세상에…!」(소리 참고) 울부짖음 → 끝 그림 얼굴로(7초를 뽑아 끝 그림에 닿는 뒤쪽 5.79초를 씀)."
+  },
+  {
+   "id": "S28",
+   "컷": 28,
+   "원본": "57.46–59.58 (2.12초) C 클로즈업 · 고개를 숙였다가 0.4초부터 입을 벌려 말한다",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    2.12
+   ],
+   "시작 그림": "S28.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S28.mp3",
+    "줄": [
+     [
+      "V28",
+      0.46
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "C 「안 돼, 내 코케트 떡볶이!」(원본 57.62–59.26)",
+   "prompt": "Close-up, handheld with a nervous shake. The curly-haired woman with the rose crown bows her head for a moment, then lifts her eyes and cries out in Korean through her tears, her lips in sync with the reference audio: \"안 돼, 내 코케트 떡볶이!\" Her mouth is wide in a sob, her eyebrows pulled up and together, tears running down her cheeks.",
+   "요약": "클로즈업. 잠깐 고개를 숙였다 들며 「안 돼, 내 코케트 떡볶이!」(소리 참고) 울며 외침."
+  },
+  {
+   "id": "S30",
+   "컷": 30,
+   "원본": "64.42–70.79 (6.38초) C · 카메라가 휙 돌아 흐린 채 시작 → 말함 → 2.3초에 고개 떨구고 흐느낌 → 5.1초에 얼굴 들어 「그냥 죽여!」 → 6.3초에 다시 숙임",
+   "길이": 7,
+   "쓰는 구간": [
+    0.0,
+    6.38
+   ],
+   "시작 그림": "S30.jpg",
+   "끝 그림": null,
+   "소리 참고": {
+    "파일": "S30.mp3",
+    "줄": [
+     [
+      "V30t",
+      0.0
+     ],
+     [
+      "V30b",
+      4.88
+     ]
+    ]
+   },
+   "generate_audio": true,
+   "대사": "C 「…저녁인데!」(원본 64.42–65.28 — 앞말은 카드 3에서) · 「그냥 죽여!」(69.30–70.46)",
+   "prompt": "Close-up, handheld. The camera has just whipped onto the curly-haired woman with the rose crown and is still settling: a residual sway and a touch of motion blur in the first half second, then it steadies on her face. She is crying and speaking in Korean, her lips in sync with the reference audio: \"저녁인데!\" After about two seconds she drops her head and sobs, her shoulders shaking; about five seconds in she lifts her face again and blurts out in Korean, in sync with the reference audio: \"그냥 죽여!\" and then lowers her head once more.",
+   "요약": "카메라가 막 휙 돌아와 첫 0.5초는 흔들리고 번지다 얼굴에 멈춘다 · 「…저녁인데!」 → 2초쯤 고개를 떨구고 흐느낌 → 5초쯤 얼굴 들어 「그냥 죽여!」(소리 참고) → 다시 숙임.",
+   "막히면": "정책에 막히면 「그냥 죽여!」 문장을 글에서 빼고(소리 참고 V30b로만 입을 맞춤) 다시 낸다: 마지막 문장을 \"about five seconds in she lifts her face again and blurts out one short line in Korean, in sync with the reference audio, and then lowers her head once more.\"로."
+  },
+  {
+   "id": "S31",
+   "컷": 31,
+   "원본": "70.79–72.62 (1.83초) 강도 미디엄 · 리본 끈에 매달린 도시락을 들고 렌즈를 본다(말 없음)",
+   "길이": 4,
+   "쓰는 구간": [
+    0.3,
+    1.83
+   ],
+   "시작 그림": "S31.jpg",
+   "끝 그림": null,
+   "소리 참고": null,
+   "generate_audio": false,
+   "대사": "말 없음",
+   "prompt": "Low-angle handheld medium shot. The masked man stands still facing the camera and stares straight into the lens, deadpan; the small ribbon-tied lunchbox dangles and sways slightly from the long ribbon ends wound around the fingers of his right hand, which stays at chest height. He does not move his arms.",
+   "요약": "아래에서. 렌즈를 똑바로 보며 무표정 · 리본 끈에 매달린 도시락이 살짝 흔들린다 · 팔은 움직이지 않는다.",
+   "공통_말없음_강도": true
+  }
+ ],
+ "공통_말없음_강도": "Nobody speaks in this shot and he keeps his mouth closed; no sobbing, no words."
+}
