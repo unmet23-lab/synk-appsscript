@@ -1,5 +1,17 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="yt-upload-redirect-32-production-20261025"></a>
+## 작업실 유튜브 직접 게시 `redirect:'manual'` · 2026-10-25 운영 반영 (순서 문서 「이력 33」 · 실제 사슬 32 — 긴급 판)
+
+작업실이 유튜브에 직접 올리는 영상이 8MB(조각 하나)를 넘으면 첫 조각 뒤 「확인 필요」(`YOUTUBE_NETWORK`)로 멈추던 것을 고쳤다. 원인은 서버 `social-direct-youtube.mjs`의 `request()`가 `fetch(..., {redirect:'error'})`로 불러, 유튜브 이어 올리기의 조각 응답 `308 Resume Incomplete`(Location 없음)까지 Node fetch가 「unexpected redirect」로 끊은 것이다(10-24 23:00 세 편이 모두 첫 8MB 뒤 멈춤). `redirect:'manual'`은 여전히 리다이렉트를 따라가지 않고, 상태 판정은 `receipt()`·`json()`이 한다.
+
+- **바뀌는 것(회사 2파일, 새 파일 0):** 서버 `social-direct-youtube.mjs`(`redirect:'error'` → `'manual'` 한 줄 + 주석 둘)와 시험 `social-direct-youtube.test.mjs`(진짜 fetch + 가짜 업로드 서버 셋 — 여러 조각 게시가 PUT 범위 넷으로 끝까지 · 끊긴 조각 뒤 308 범위에서 이어 보냄 · 302+Location은 따라가지 않고 `YOUTUBE_*` 오류). 커밋 `0b40ab037`. 공개 행·입구 HTML·화면은 그대로다(공개 delta 0).
+- **싣지 않은 것:** 긴급 판이라 작게 — 워크스페이스 SNS·마케팅 간편판(`0c3d51134`), `a3c665c36`(social-workspace-query), GA1 `309ef29d2`, `12a003a93`, `71ba79285`는 다음 회사 이미지 판(사슬 33).
+- **시험(로컬):** 관련 시험 통과 · 후보 선택 210파일 3,247/3,247 · 회사 전체 317파일 4,206 통과·실패 0(윈도 건너뜀 9) · 메신저 796/796 · 릴리스 도구 최종 묶음 17항목 0.
+- **검수(반영 전):** 백엔드 `.tmp/검수/yt-redirect-manual-20261025/` GPT 0 「배포 조건 충족」. 릴리스 도구 `.tmp/검수/w32-tools/` GPT 7묶음 — P1 1건(생성물 주석 줄이 코드로 보인다는 지적)은 실제 파일에서 재현되지 않음(`node --check` 통과 · 그 도구를 실제로 돌림 — 긴 줄 낱말 diff 착시), 배포 조건 충족.
+- **반영(10-25, 실제 사슬 32 — 폴더 `.tmp/yt-upload-redirect-32-release-20261025/`·후보 `.tmp/yt-upload-redirect-32-candidate-20261025/`):** 후보 `321dec7ef1678da88bd36ab58b22c5c5a49d8c3d5431ec6bfdb374abeac35363`(부모 사슬 31 `8ab3a6b8…`, 원문 1,192 · 이미지 849 · delta 2 · 선택 210). inert 16:16~16:23 KST(리눅스 선택 3,247/3,247 · 호환 2/2, 이미지 `sha256:b23d142226bccb9850717bdbacdfe0c43d521481d7c2eaa5216b1cd2fe9ffdc7`) → 결속 영수증 → 재무장 원본(로컬 Node 120 · Python 35) → stage(델타 2파일) 16:28:30~16:33:10 `staged-immutable` → 반영 전 백업 16:33~16:54 → 재무장 리눅스 QA(794파일 · 120 · 35 · 126) → 교체 16:58:31 시작 · 17:01:23 dispatch(작업 `9b1e5d75…`) · 17:06:46 끝(되돌림 없음) — **공개 접속 17:01:33~17:06:21 약 4분 50초 끊김** → 런타임 사후 검증 passed · 공개 전체 대조 240/240 · 메신저 공개 검증 · 음성 켜짐 확인 → 재무장 17:13:30~17:18:11 **armed**(요청 `20b2f3ca-d579-4915-8c7c-422c30a5606a` · 계약 `contract-final-v1.json` `d2d5bf65…` · 사후 확인 `arm-postcheck-final-v1.json` `d8ca479d…` · epoch 7).
+- **반영 뒤 확인(운영 자료를 바꾸지 않는 것만, 17:2x — 모두 통과):** 회사 `/`·`/messenger/` HTML 바이트 = 기대 = 31판(`42f9db97…`·`ae889e89…`), `/api/static-set` 그대로, 열쇠 없는 공개 화면 1440·390 콘솔 오류·실패 요청 0. 시험 게시는 하지 않았다 — 고침은 다음 실제 작업실 유튜브 예약에서 처음 쓰인다.
+
 <a id="social-review-changes-31-production-20261025"></a>
 ## 고객 SNS 검토 `/social-review` 「지난 판과 바뀐 곳」 · 2026-10-25 운영 반영 (순서 문서 「이력 32」 · 실제 사슬 31)
 
