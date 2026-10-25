@@ -8,7 +8,7 @@
  * 시청자 한 사람 역할)을 만든다. 판정은 답을 받은 세션이 한 장 기획의 「한 문장」과 견줘서 한다
  * (docs/마케팅/기획장부/제작절차.md §3 「낯선 사람 이해 시험」).
  *
- *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|synkbrief|yuhobuilds> [--밖 <폴더>]
+ *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds> [--밖 <폴더>]
  *
  * 만드는 것: <밖>/정지컷_2초마다.jpg · <밖>/말.txt · <밖>/질문.md(하위 에이전트에 그대로 줄 글).
  * 말.txt는 줄마다 「12.3s  들리는 말」 꼴이 좋다. .srt를 주면 그 꼴로 바꾼다.
@@ -22,6 +22,9 @@ const ROOT = path.resolve(__dirname, '..');
 const 시청자 = {
   'lab-en': { 곳: '유튜브 쇼츠', 사람: '한국어를 이제 막 배우기 시작한 영어 사용자' },
   'lab-mn': { 곳: '인스타 릴스', 사람: '한국어를 이제 막 배우기 시작한 몽골 사람(몽골어로 생각한다)' },
+  // 10-25 두 채널 판(기획장부/LAB.md 머리말) — 원본 편이 통과한 뒤 옮긴 판의 최종본을 그 나라 사람이 본다.
+  'lab-cn': { 곳: '샤오훙수 영상 노트', 사람: '한국어를 이제 막 배우기 시작한 중국 사람(간체 중국어로 생각한다)' },
+  'lab-mm': { 곳: '틱톡', 사람: '한국어를 이제 막 배우기 시작한 미얀마 사람(버마어로 생각한다)' },
   synkbrief: { 곳: '인스타 릴스', 사람: 'AI 도구를 가끔 쓰는 30대 한국인 직장인' },
   yuhobuilds: { 곳: '인스타 릴스', 사람: 'AI 도구를 일에 자주 쓰지만 개발자는 아닌 30대 한국인 직장인·1인 사업가' },
 };
@@ -92,7 +95,7 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|synkbrief|yuhobuilds> [--밖 <폴더>]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds> [--밖 <폴더>]');
     return 2;
   }
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
