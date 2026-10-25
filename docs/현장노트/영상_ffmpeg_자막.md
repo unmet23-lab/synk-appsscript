@@ -336,7 +336,7 @@
 ### 몽골어·베트남어 같은 짧은 외국어 대사는 Gemini TTS가 원어민 발음으로 읽는다(타입캐스트는 한국어만)
 - 증상: 10-19 한강 v41 2층 인사(몽골어·베트남어·아랍어·러시아어·중국어 한 마디씩)를 원어민 발음으로 넣어야 했다. 타입캐스트 목록엔 그 언어 목소리가 없고, edge-tts 6.x는 403(옛 판), ElevenLabs v3 언어 목록(74)엔 몽골어가 안 보였다.
 - 원인: 엔진마다 지원 언어가 다르다. `gemini-3.8-flash-tts`는 130+ 언어(Halh Mongolian 포함)다.
-- 고침: Vertex `gemini-3.8-flash-tts`에 `speechConfig.languageCode`(mn-MN·vi-VN·ar-EG·ru-RU)를 주고, 메모는 머리글로 가른다(위 항목). 16개 1,809토큰, 길이 0.6~1.2초로 지어내기 없음. 「외국인이 서툴게 말하는」 개그 대사는 대본을 로마자(「Nee how!」)로 주고 메모에 「a clear American accent」를 적으면 받아쓰기가 영어로 들을 만큼 억양이 났다. edge-tts는 `pip install -U edge-tts`(7.2.8)로 다시 됐다(임시용). 굽기 보기 `C:/Users/q1212/Videos/한강2126_새판_20261009/재촬영_v40/소리/오디션/인사_제미나이_굽기.cjs`.
+- 고침: Vertex `gemini-3.8-flash-tts`에 `speechConfig.languageCode`(mn-MN·vi-VN·ar-EG·ru-RU)를 주고, 메모는 머리글로 가른다(위 항목). 16개 1,809토큰, 길이 0.6~1.2초로 지어내기 없음. 「외국인이 서툴게 말하는」 개그 대사는 대본을 로마자(「Nee how!」)로 주고 메모에 「a clear American accent」를 적으면 받아쓰기가 영어로 들을 만큼 억양이 났다. edge-tts는 `pip install -U edge-tts`(7.2.8)로 다시 됐다(임시용). 굽기 보기 `~/Videos/한강2126_새판_20261009/재촬영_v40/소리/오디션/인사_제미나이_굽기.cjs`.
 - 다시 확인: faster-whisper small로 언어 감지·강제 받아쓰기. 몽골어는 small·large-v3-turbo 모두 못 읽으니(「Sem beno」「Сэмвэн о」) 귀로 판정한다.
 
 ### 목소리 후보를 같은 대본으로 읽히면 몇 목소리는 수십 초를 지어내거나 한 문장을 두 번 읽는다
@@ -405,7 +405,7 @@
 ### Typecast 목소리 목록의 상당수는 한국어 목소리가 아니다
 - 증상: 10-19 한강2126 v40 조연 오디션에서 목록(`docs/마케팅/SHIFT_과정1편_20260921/audio/voice-catalog.json`, 359명)을 성별·쓰임새·잰 음높이로만 거르자 후보 23명 가운데 대부분이 스탈링·에이버리·노무라 토모코처럼 영어·일본어권 목소리였다. 목록에는 언어 칸이 없고 나이도 모두 young_adult다.
 - 원인: ssfm-v30이 여러 말을 하는 모델이라 목록에 나라가 섞여 있다. 한국어 이름 표기(voice_name.kor)는 모든 목소리에 붙어 있어 이름으로는 못 가린다.
-- 고침: 공식 미리듣기(preview_url) 앞 12초를 faster-whisper small(CPU)의 `detect_language`로 가려 `ko` 0.7 이상만 남긴다. 그날 거른 99개 가운데 한국어는 22개 남짓(영어 37·일본어 7·독일어·중국어 1). 그다음 YIN 음높이·억양 폭·밝기로 배역 목표에 가까운 순으로 고르고, 마지막은 들어보기 페이지로 귀에 맡긴다. 도구 `C:\Users\q1212\Videos\한강2126_새판_20261009\재촬영_v40\소리\오디션\목소리_후보고르기.py`(언어 판정은 `언어.json`에 쌓여 다시 받지 않는다).
+- 고침: 공식 미리듣기(preview_url) 앞 12초를 faster-whisper small(CPU)의 `detect_language`로 가려 `ko` 0.7 이상만 남긴다. 그날 거른 99개 가운데 한국어는 22개 남짓(영어 37·일본어 7·독일어·중국어 1). 그다음 YIN 음높이·억양 폭·밝기로 배역 목표에 가까운 순으로 고르고, 마지막은 들어보기 페이지로 귀에 맡긴다. 도구 `%USERPROFILE%\Videos\한강2126_새판_20261009\재촬영_v40\소리\오디션\목소리_후보고르기.py`(언어 판정은 `언어.json`에 쌓여 다시 받지 않는다).
 - 다시 확인: 고른 후보로 구운 줄을 받아쓰기해 대사가 한국어로 맞게 들리는지 본다(`받아쓰기_확인.py`).
 
 ### 노래 구호 「받침 없으면 는! 가! 를!」을 받아쓰면 「없으면은 가 을」로 나온다 (2026-10-21 Claude)
@@ -588,7 +588,7 @@
 - 원인: Space 안에는 토큰이 없다(Secrets에 HF_TOKEN을 넣어야 하고, 토큰 입력은 유호님 몫).
 - 고침: 생성 Space 복제본에 조건값 파일을 직접 받는 `generate_from_embeds` 입구를 더하고, 이 PC에서 조건 `/encode` → 생성 `/generate_from_embeds`를 차례로 부른다(`.tmp/h3-rehearsal-20261017/run_h3.py`). 로컬 로그인 토큰으로 부른 두 호출 모두 유호님 할당량에서 빠진다(조건 Space 기록 「the caller's own quota」).
 - 다시 확인: 조건 Space 실행 기록의 `[cond] /encode on …` 줄.
-- 10-19 한강 v40 시험 ⑧: 시작·끝 그림 둘(`last_image_path`)로 175프레임(7.3초)도 됐다. 조건 GPU 6.8초, 생성 164초(27.3초/스텝 × 6), 할당량은 둘 합쳐 341초. 첫 `encode`는 그림을 올리다 `httpx.WriteTimeout`으로 끊겼고, `Client(..., httpx_kwargs={'timeout': httpx.Timeout(600)})`로 다시 돌리자 됐다. 도구 `C:\Users\q1212\Videos\한강2126_새판_20261009\재촬영_v40\시험\8_영상모델\run_h3_G12.py`.
+- 10-19 한강 v40 시험 ⑧: 시작·끝 그림 둘(`last_image_path`)로 175프레임(7.3초)도 됐다. 조건 GPU 6.8초, 생성 164초(27.3초/스텝 × 6), 할당량은 둘 합쳐 341초. 첫 `encode`는 그림을 올리다 `httpx.WriteTimeout`으로 끊겼고, `Client(..., httpx_kwargs={'timeout': httpx.Timeout(600)})`로 다시 돌리자 됐다. 도구 `%USERPROFILE%\Videos\한강2126_새판_20261009\재촬영_v40\시험\8_영상모델\run_h3_G12.py`.
 
 ### ZeroGPU 남은 할당량은 결제 페이지 데이터에 초 단위로 있다
 - 증상: 「남은 할당량은 API로 안 나온다」로 알고 있었다(10-14).

@@ -53,7 +53,7 @@
 - 다시 확인: 빈 임시 폴더에서 `agy --input-format stream-json --output-format stream-json --model gemini-4-argon-high --effort high --print-timeout 90s --sandbox --disable-slash-commands`에 `{"event":"user","message":{"content":"…"}}` 한 줄을 보내 종료 0·결과 SUCCESS인지(10-20 15:43: 14초 성공, `--effort` 없이 16초, flash-high 10초).
 
 ### 새 노트북에 Gemini 무료 키 파일이 없다
-- 증상: `node evals/돌리기.js --자체점검`의 문 프로브가 「키없음 — 글 API 키 파일이 없다: C:/Users/q1212/SYNK_보안/제미나이_무료.txt」로 멈춘다(10-17).
+- 증상: `node evals/돌리기.js --자체점검`의 문 프로브가 「키없음 — 글 API 키 파일이 없다: ~/SYNK_보안/제미나이_무료.txt」로 멈춘다(10-17).
 - 원인: 노트북을 옮길 때 `SYNK_보안`에 무료 키 파일이 따라오지 않았다(10-17에는 타입캐스트·클로드 키만 있었다).
 - 고침: 옛 노트북 백업이나 AI Studio에서 무료 키를 다시 받아 그 경로에 둔다. 그 전까지 몽골어 검문은 `--구독`으로 돌린다(키가 없으면 무료 문을 부르기 전에 멈추므로 자동 넘김도 일어나지 않는다).
 - 다시 확인: `ls ~/SYNK_보안/` 에 `제미나이_무료.txt`.
