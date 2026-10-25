@@ -18,6 +18,6 @@ test('질문에 두 파일 경로 · 시청자 · 다섯 물음이 들어간다'
 });
 
 test('브랜드마다 시청자가 있고, 모르는 브랜드는 멈춘다', () => {
-  for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm', 'synkbrief', 'yuhobuilds']) assert.ok(시청자[brand]);
+  for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm', 'synkbrief', 'yuhobuilds', 'pulse']) assert.ok(시청자[brand]);
   assert.throws(() => buildPrompt({ brand: 'shift', sheet: 'a', speech: 'b' }), /브랜드는/);
 });

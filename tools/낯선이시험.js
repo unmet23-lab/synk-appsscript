@@ -8,7 +8,7 @@
  * 시청자 한 사람 역할)을 만든다. 판정은 답을 받은 세션이 한 장 기획의 「한 문장」과 견줘서 한다
  * (docs/마케팅/기획장부/제작절차.md §3 「낯선 사람 이해 시험」).
  *
- *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds> [--밖 <폴더>]
+ *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>]
  *
  * 만드는 것: <밖>/정지컷_2초마다.jpg · <밖>/말.txt · <밖>/질문.md(하위 에이전트에 그대로 줄 글).
  * 말.txt는 줄마다 「12.3s  들리는 말」 꼴이 좋다. .srt를 주면 그 꼴로 바꾼다.
@@ -27,6 +27,8 @@ const 시청자 = {
   'lab-mm': { 곳: '틱톡', 사람: '한국어를 이제 막 배우기 시작한 미얀마 사람(버마어로 생각한다)' },
   synkbrief: { 곳: '인스타 릴스', 사람: 'AI 도구를 가끔 쓰는 30대 한국인 직장인' },
   yuhobuilds: { 곳: '인스타 릴스', 사람: 'AI 도구를 일에 자주 쓰지만 개발자는 아닌 30대 한국인 직장인·1인 사업가' },
+  // 10-26 PULSE 포트폴리오 광고(이야기 한 장의 애니매틱 · 완성본) — 광고를 건너뛰지 않고 처음 본 사람.
+  pulse: { 곳: '유튜브', 사람: '광고를 건너뛰지 않고 끝까지 볼지 고민하는 20~30대 한국인 직장인' },
 };
 
 // .srt를 「12.3s  말」 줄로 바꾼다. 번호·시각 줄만 있는 블록은 건너뛴다.
@@ -76,12 +78,20 @@ function duration(video) {
   return sec;
 }
 
+// 가로 영상(PULSE 16:9 광고)은 세로 칸(300×534)에 넣으면 찌그러진다 — 화면 비율대로 칸을 고른다(10-26).
+function cellSize(video) {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', video],
+    { encoding: 'utf8', windowsHide: true });
+  const [w, h] = String(r.stdout).trim().split(',').map(Number);
+  return w > h ? '480:270' : '300:534';
+}
+
 // 2초마다 한 장, 왼쪽 위에 초를 찍어 6칸씩 묶는다. fps=1/2는 2초 칸의 끝 프레임을 골라 표시보다 약 1초 늦은 장면이
 // 찍혔다(10-23 yuhobuilds 보완 때) — 그래서 각 2초 지점의 첫 프레임을 select로 고르고, 표시는 그 프레임의 실제 시각이다.
 function makeSheet(video, out) {
   const rows = Math.ceil((Math.floor(duration(video) / 2) + 1) / 6);
   const font = "C\\:/Windows/Fonts/arial.ttf";
-  const vf = `select='isnan(prev_selected_t)+gte(t-prev_selected_t\\,2)',scale=300:534,drawtext=fontfile='${font}':text='%{eif\\:t\\:d}s':x=8:y=8:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6,tile=6x${rows}:padding=6:color=white`;
+  const vf = `select='isnan(prev_selected_t)+gte(t-prev_selected_t\\,2)',scale=${cellSize(video)},drawtext=fontfile='${font}':text='%{eif\\:t\\:d}s':x=8:y=8:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6,tile=6x${rows}:padding=6:color=white`;
   const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', video, '-vf', vf, '-frames:v', '1', '-q:v', '3', out],
     { encoding: 'utf8', windowsHide: true });
   if (r.status !== 0) throw new Error('ffmpeg 실패: ' + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));
@@ -95,7 +105,7 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds> [--밖 <폴더>]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>]');
     return 2;
   }
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
