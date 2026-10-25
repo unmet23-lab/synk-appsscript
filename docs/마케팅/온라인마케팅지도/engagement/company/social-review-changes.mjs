@@ -71,15 +71,16 @@ export function textChange(before,after,room=budget()){
   const midA=a.slice(start,a.length-end),midB=b.slice(start,b.length-end),pairs=lcs(midA,midB,(x,y)=>x===y,room)||[];
   const ops=a.slice(0,start).map(text=>({type:'same',text})),stats={changed:0,removed:0,added:0};
   let i=0,j=0;
-  const mark={rough:false};
+  const mark={rough:false,cut:false};
   for(const [pi,pj] of [...pairs,[midA.length,midB.length]]){hunk(ops,midA.slice(i,pi),midB.slice(j,pj),stats,room,mark);if(pi<midA.length)ops.push({type:'same',text:midA[pi]});i=pi+1;j=pj+1;}
   ops.push(...a.slice(a.length-end).map(text=>({type:'same',text})));
-  // 가벼운 비교로 짝지은 줄이 있으면 「일부만 보여요」로 알린다(바뀐 곳은 보이지만 낱말 단위가 아니다).
-  const out=fold(ops,a.length+b.length<=16,stats);return mark.rough?{...out,truncated:true}:out;
+  // 가벼운 비교로 짝지은 줄(낱말 단위가 아님)이나 잘린 짝 없는 긴 줄이 있으면 「일부만 보여요」로 알린다.
+  const out=fold(ops,a.length+b.length<=16,stats);return mark.rough||mark.cut?{...out,truncated:true}:out;
 }
 function hunk(ops,removed,added,stats,room,mark){
   let lone={removed:[],added:[]};
-  const flush=()=>{for(const text of lone.removed)ops.push({type:'removed',text:head(text,LONG_LINE)});for(const text of lone.added)ops.push({type:'added',text:head(text,LONG_LINE)});stats.removed+=lone.removed.length;stats.added+=lone.added.length;lone={removed:[],added:[]};};
+  // 짝 없는 줄이 1,500자를 넘어 잘리면 그 글은 「일부만 보여요」다 — 짝 찾기 범위(20줄)를 넘어 놓친 고친 줄일 수도 있다(GPT 10차 GA1).
+  const flush=()=>{for(const [type,list] of [['removed',lone.removed],['added',lone.added]])for(const text of list){if(chars(text).length>LONG_LINE)mark.cut=true;ops.push({type,text:head(text,LONG_LINE)});}stats.removed+=lone.removed.length;stats.added+=lone.added.length;lone={removed:[],added:[]};};
   // 뺀 줄마다 아직 짝 없는 더한 줄을 차례로 (20줄 안에서) 찾아 처음 짝이 되는 줄과 잇는다 — 자리끼리만 짝지으면 앞에 새 줄이 끼었을 때
   // 고친 줄이 짝을 못 찾고 짝 없는 긴 줄은 앞부분만 남아 바뀐 곳이 숨는다. 사이에 건너뛴 더한 줄은 그 짝 앞에 새 줄로 둔다.
   // 글자 수 예산이 바닥나면(room.rough) 그 뒤로는 자리끼리 한 번씩만, 글자 앞·뒤만 견준다 — 줄 길이에 비례해 끝나고 바뀐 가운데는 계속 보인다(GPT 8차).

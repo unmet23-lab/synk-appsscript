@@ -52,7 +52,12 @@ test('size and time stay bounded for huge texts and emoji are never cut in half'
   assert.deepEqual(unlike.rows.map(row=>row.parts.filter(p=>p.changed).map(p=>p.text[0])),[['b'],['c']]);assert.ok(unlike.rows.every(row=>row.parts[0].text.length<=81));
   // 고친 긴 줄 앞에 새 줄이 끼어도 고친 줄끼리 짝이 된다(자리끼리만 짝짓지 않는다)
   const shifted=textChange('x'.repeat(2000)+' old','새로 낀 줄\n'+'x'.repeat(2000)+' new');
-  assert.deepEqual(shifted.rows.map(r=>r.type+':'+(r.parts?r.parts.filter(p=>p.changed).map(p=>p.text).join('|'):r.text)),['added:새로 낀 줄','removed:old','added:new']);assert.deepEqual(shifted.stats,{changed:1,removed:0,added:1});
+  assert.deepEqual(shifted.rows.map(r=>r.type+':'+(r.parts?r.parts.filter(p=>p.changed).map(p=>p.text).join('|'):r.text)),['added:새로 낀 줄','removed:old','added:new']);assert.deepEqual(shifted.stats,{changed:1,removed:0,added:1});assert.equal(shifted.truncated,undefined);
+  // 짝 찾기 범위(20줄)를 넘어 놓친 긴 줄은 잘리며 「일부만」으로 알린다(GPT 10차 GA1 — 새 줄 21개), 19개면 그대로 짝이 된다
+  const far=textChange('a'.repeat(2000)+'OLD',Array.from({length:21},(_,i)=>'새 줄 '+i).join('\n')+'\n'+'a'.repeat(2000)+'NEW');assert.equal(far.truncated,true);
+  const near=textChange('a'.repeat(2000)+'OLD',Array.from({length:19},(_,i)=>'새 줄 '+i).join('\n')+'\n'+'a'.repeat(2000)+'NEW');assert.equal(near.rows.filter(r=>r.parts).length,2,'19 inserted lines still pair');assert.equal(near.truncated,undefined);
+  // 짝 없는 줄이 1,500자 이하면 다 보이므로 「일부만」이 아니다
+  assert.equal(textChange('짧은 줄','b'.repeat(1500)).truncated,undefined);assert.equal(textChange('짧은 줄','b'.repeat(1501)).truncated,true);
   // 앞·뒤가 하나도 같지 않은 긴 두 줄은 짝 없이 서로 다른 줄로(첫 글자부터 달라 앞부분에 바뀐 곳이 보인다)
   assert.deepEqual(textChange('가'.repeat(5000),'나'.repeat(5000)).stats,{changed:0,removed:1,added:1});
   const emoji=textChange('🙂'.repeat(2000),'🙃'.repeat(2000));for(const row of emoji.rows)assert.ok(!/[\uD800-\uDBFF]$|^[\uDC00-\uDFFF]/.test(row.text.replace(/…$/,'')),'surrogate cut');
