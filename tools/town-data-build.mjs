@@ -6,7 +6,7 @@
  *
  * 브라우저·talk 묶음은 JSON 대신 이 생성물을 읽는다(브라우저 모듈은 JSON을 바로 못 부르고, talk는 esbuild로 묶는다).
  * 원천을 고치면 생성물을 같은 커밋에 올린다 — 바로올리기의 짝검사와 tests/town-places.test.js가 낡은 생성물을 막는다.
- * 원고(data/lines)는 마음 한 줄(kind mood, W4)만 싣는다 — 화면이 그 판을 그리고 서버가 「본 것」 키로 받는다. 금지 말·판 길이는
+ * 원고(data/lines)는 마음 한 줄(kind mood, W4)과 W5의 카드·전해 듣기·쌍·소식 줄을 싣는다 — 화면이 그 판을 그리고 서버가 「본 것」 키로 받는다. 금지 말·판 길이는
  * 원고 검사기(tools/town-lines-check.mjs)가 보고, 허용 목록(lines-allow.json)도 검사기만 읽는다.
  */
 import fs from 'node:fs';
@@ -93,8 +93,11 @@ export function validateArchetypes(data, places) {
   return data;
 }
 
-/** The planner's factors a resident's mood table may name (§7-3; card factors arrive with W5). */
-export const MOOD_FACTORS = Object.freeze(['rain', 'cold-hands', 'tomorrow-clear', 'first-aroma', 'tomorrow-rain', 'tired', 'doze', 'busy', 'lonely']);
+/** The planner's factors a resident's mood table may name (§7-3): weather, state and neighbours, and (W5) a card ID
+ * — the card made its owner do its solving — or what a card brings: a neighbour's doing, a forerunner, the day after R4. */
+export const MOOD_FACTORS = Object.freeze(['rain', 'cold-hands', 'tomorrow-clear', 'first-aroma', 'tomorrow-rain', 'tired', 'doze', 'busy', 'lonely',
+  'pair-glad', 'tea-received', 'wobble-spotted', 'with-player-glad', 'sleepy-night', 'excited-find']);
+const CARD_ID = /^[CWR][1-6]$/;
 const REASON = /^[a-z][a-z0-9-]*$/;
 
 export function validateResidents(data, places, archetypes = { archetypes: [] }) {
@@ -117,7 +120,7 @@ export function validateResidents(data, places, archetypes = { archetypes: [] })
     if (!Array.isArray(r.moods)) fail(`${r.id}.moods`);
     const known = { chosenKinds: KINDS, chosenArchetypes: archetypeIds, baseArchetypes: archetypeIds, bands: BANDS };
     for (const m of r.moods) {
-      if (!MOOD_FACTORS.includes(m.factor) || !REASON.test(m.tag ?? '') || Object.keys(m).some(k => !['factor', 'tag', ...Object.keys(known)].includes(k))) fail(`${r.id}의 마음 ${m.factor}·${m.tag}`);
+      if (!(MOOD_FACTORS.includes(m.factor) || CARD_ID.test(m.factor)) || !REASON.test(m.tag ?? '') || Object.keys(m).some(k => !['factor', 'tag', ...Object.keys(known)].includes(k))) fail(`${r.id}의 마음 ${m.factor}·${m.tag}`);
       for (const [k, allowed] of Object.entries(known)) {
         const has = value => (allowed instanceof Set ? allowed.has(value) : allowed.includes(value));
         if (m[k] !== undefined && !(Array.isArray(m[k]) && m[k].length && m[k].every(has))) fail(`${r.id}의 마음 ${m.tag}.${k}`);
@@ -300,6 +303,114 @@ export function validateItems(data, places) {
   return data;
 }
 
+const RESIDENT_IDS = ['cafe-owner', 'workshop-owner', 'researcher'];
+const TRIGGERS = ['wear', 'rain-start', 'rain-stop', 'after-rain', 'state', 'count', 'night-clear', 'season-leaf', 'after', 'rush', 'first-visit'];
+const ROLES = ['choose', 'make', 'deliver', 'delegate', 'watch'];
+const FAMILIES = ['cafe-life', 'workshop-life', 'greenhouse-life'];
+const word = value => typeof value === 'string' && /^[a-z][a-z0-9-]{0,30}$/.test(value);
+
+/** The small need cards (§8, W5): every card of the slice once, its trigger, its three paths and what it leaves. A pair
+ * path's neighbour works in the owner's place (partnerSpot), a scene is the pair's own (pairs.json), and a player path
+ * that is ready has its choices. Locked cards (C4 until its scene, W9) keep their row and never rise. */
+export function validateCards(data, places, archetypes, pairs) {
+  const spots = new Map(places.spots.map(s => [s.id, s])), groups = places.groups || {}, kinds = new Set(archetypes.archetypes.map(a => a.id));
+  const placeOf = name => (groups[name] ? spots.get(groups[name][0]) : spots.get(name))?.place;
+  const spotOrGroup = name => spots.has(name) || Object.hasOwn(groups, name);
+  const pairOf = (a, b) => pairs.pairs.find(p => p.members.includes(a) && p.members.includes(b));
+  if (!Array.isArray(data?.cards)) fail('cards.json에는 cards가 있어요.');
+  const ids = new Set();
+  for (const c of data.cards) {
+    const where = `카드 ${c.id}`;
+    if (!CARD_ID.test(c.id ?? '') || ids.has(c.id)) fail(`${where} ID`);
+    ids.add(c.id);
+    if (!RESIDENT_IDS.includes(c.owner) || typeof c.title !== 'string' || !c.title || !FAMILIES.includes(c.family)) fail(`${where}의 주인·제목·생활 계열`);
+    const t = c.trigger || {};
+    if (!TRIGGERS.includes(t.kind)) fail(`${where}의 계기`);
+    if (['wear', 'after'].includes(t.kind) && (!OBJECTS.includes(t.object) || !integer(t.threshold, 1, 999))) fail(`${where}의 마모 문턱`);
+    if (['rain-start', 'after-rain'].includes(t.kind) && !OBJECTS.includes(t.object)) fail(`${where}의 비품`);
+    if (t.kind === 'state' && !(['energy', 'chores', 'social'].includes(t.stat) && (integer(t.below, 1, 100) || integer(t.atLeast, 1, 100)))) fail(`${where}의 상태 조건`);
+    if (t.kind === 'count' && !(kinds.has(t.archetype) && integer(t.min, 1, 99))) fail(`${where}의 차례`);
+    if (!Array.isArray(c.bands) || !c.bands.length || c.bands.some(b => !BANDS.includes(b)) || !integer(c.cooldownLifeDays, 1, 30)) fail(`${where}의 구간·쉼`);
+    if (!kinds.has(c.archetype) || !spotOrGroup(c.spot)) fail(`${where}의 원형·자리`);
+    if (c.moves !== undefined && (!OBJECTS.includes(c.moves.object) || !(c.moves.to === 'spot' || spots.has(c.moves.to)))) fail(`${where}.moves`);
+    if (c.until !== undefined && !integer(c.until, 0, 1439)) fail(`${where}.until`);
+    if (c.excites !== undefined && c.excites !== true) fail(`${where}.excites`);
+    const { self, pair, player } = c.paths || {};
+    if (!word(self?.result)) fail(`${where}의 혼자 길`);
+    const at = pair?.spot ?? c.spot;
+    if (!pair || !RESIDENT_IDS.includes(pair.partner) || pair.partner === c.owner || !kinds.has(pair.partnerArchetype) || !spotOrGroup(pair.partnerSpot)
+      || !spotOrGroup(at) || placeOf(pair.partnerSpot) !== placeOf(at) || !word(pair.result)) fail(`${where}의 둘이 길(짝은 주인과 같은 장소에서 일해요)`);
+    if (!(pair.scene === null || pair.scene === pairOf(c.owner, pair.partner)?.scene)) fail(`${where}의 쌍 장면은 그 쌍의 것이에요.`);
+    if (pair.glad !== undefined && !kinds.has(pair.glad)) fail(`${where}.paths.pair.glad`);
+    if (player?.spot !== undefined && !spotOrGroup(player.spot)) fail(`${where}의 나와 함께 자리`);
+    if (!player || !Array.isArray(player.choices) || player.choices.some(x => !word(x)) || new Set(player.choices).size !== player.choices.length
+      || !ROLES.includes(player.role) || !word(player.result) || typeof player.ready !== 'boolean' || player.ready && !player.choices.length
+      || (player.with !== undefined && !(Array.isArray(player.with) && player.with.every(npc => RESIDENT_IDS.includes(npc) && npc !== c.owner)))) fail(`${where}의 나와 함께 길`);
+    if (!(c.trace === null || OBJECTS.includes(c.trace?.object) && /^[a-z][A-Za-z]{1,20}$/.test(c.trace.field ?? ""))) fail(`${where}의 흔적`);
+    if (!(c.news === null || integer(c.news, 1, 3)) || (c.newsPaths !== undefined && !(Array.isArray(c.newsPaths) && c.newsPaths.every(p => ['self', 'pair'].includes(p))))) fail(`${where}의 소식`);
+    if (c.locked !== undefined && !/^W\d+b?$/.test(c.locked)) fail(`${where}.locked`);
+  }
+  if (ids.size !== 18) fail('카드는 열여덟 장이에요(C1~C6·W1~W6·R1~R6).');
+  return data;
+}
+
+/** The three resident pairs (§3-5·§9-1, W5) and where two residents talk in each place. */
+export function validatePairs(data, places) {
+  const spots = new Map(places.spots.map(s => [s.id, s]));
+  if (!Array.isArray(data?.pairs) || data.pairs.length !== 3) fail('pairs.json에는 쌍 셋이 있어요.');
+  const keys = new Set(), scenes = new Set();
+  for (const p of data.pairs) {
+    const members = Array.isArray(p.members) ? [...p.members].sort((a, b) => RESIDENT_IDS.indexOf(a) - RESIDENT_IDS.indexOf(b)) : [];
+    if (members.length !== 2 || members[0] === members[1] || !members.every(m => RESIDENT_IDS.includes(m)) || p.key !== members.join('|') || keys.has(p.key)) fail(`쌍 ${p.key}`);
+    if (!word(p.topic) || !/^PAIR0[1-9]$/.test(p.scene ?? '') || scenes.has(p.scene) || !Array.isArray(p.frictionCards) || p.frictionCards.some(c => !CARD_ID.test(c))) fail(`쌍 ${p.key}의 주제·장면·카드`);
+    keys.add(p.key); scenes.add(p.scene);
+  }
+  for (const [place, spot] of Object.entries(data.chatSpots || {})) {
+    if (spots.get(spot)?.place !== place || spots.get(spot).capacity < 2 || spots.get(spot).kind === 'gather') fail(`이야기 자리 ${place} → ${spot}(둘이 설 수 있는 그 장소의 자리)`);
+  }
+  return data;
+}
+
+/** The W5 lines the screen shows (§16-1): card lines (rising, solving alone, the pair's two, the player's offer and
+ * result), hearsay frames (seen·heard·news × the three speakers, with {news} and, for heard, {from}), the pairs' small
+ * differences by step and the village news. Every card that can rise has its six, every pair step its two, every news
+ * card its news line. The checker (town-lines-check) owns lengths and words. */
+export const CARD_PARTS = Object.freeze(['trigger', 'self', 'pair', 'offer', 'result']);
+export const HEARSAY = Object.freeze(['seen', 'heard', 'news']);
+export function validateTownLines(docs, cards, pairs) {
+  const lines = docs.flat().filter(entry => ['card', 'hearsay', 'pair', 'news'].includes(entry?.kind)), ids = new Set();
+  const cardById = new Map(cards.cards.map(c => [c.id, c])), sceneOf = new Map(pairs.pairs.map(p => [p.scene, p]));
+  for (const e of lines) {
+    const [npc, kind, key, n] = String(e.id).split('.');
+    if (kind !== e.kind || !/^\d+$/.test(n ?? '') || ids.has(e.id) || !['L1', 'L2', 'L3', 'L4'].every(l => typeof e.levels?.[l] === 'string')) fail(`원고 ${e.id}`);
+    ids.add(e.id);
+    const w = e.when || {};
+    if (e.kind === 'card') {
+      const card = cardById.get(w.card);
+      const speaker = w.part === 'pair' ? [card?.owner, card?.paths.pair.partner] : [card?.owner];
+      if (!card || !CARD_PARTS.includes(w.part) || key !== `${w.card}-${w.part}` || !speaker.includes(npc) || e.npc !== npc) fail(`카드 줄 ${e.id}`);
+    } else if (e.kind === 'hearsay') {
+      if (!HEARSAY.includes(w.how) || key !== w.how || !RESIDENT_IDS.includes(npc) || e.npc !== npc) fail(`전해 듣기 줄 ${e.id}`);
+    } else if (e.kind === 'pair') {
+      const pair = sceneOf.get(w.pair);
+      if (!pair || !integer(w.step, 0, 2) || key !== `${w.pair}-${w.step}` || !pair.members.includes(npc) || e.npc !== npc) fail(`쌍 줄 ${e.id}`);
+    } else if (!cardById.get(w.card)?.news || key !== w.card || npc !== 'village' || e.npc !== 'village') fail(`소식 줄 ${e.id}`);
+  }
+  // Every line a card, a pair step or the news can ask for is there (once the W5 lines exist).
+  if (lines.length) {
+    const need = [];
+    for (const c of cards.cards.filter(card => !card.locked)) {
+      for (const part of CARD_PARTS) for (const npc of part === 'pair' ? [c.owner, c.paths.pair.partner] : [c.owner]) need.push(`${npc}.card.${c.id}-${part}.1`);
+      if (c.news) need.push(`village.news.${c.id}.1`);
+    }
+    for (const p of pairs.pairs) for (let step = 0; step <= 2; step++) for (const npc of p.members) need.push(`${npc}.pair.${p.scene}-${step}.1`);
+    for (const how of HEARSAY) for (const npc of RESIDENT_IDS) need.push(`${npc}.hearsay.${how}.1`);
+    const missing = need.filter(id => !ids.has(id));
+    if (missing.length) fail(`없는 줄 ${missing.length}개: ${missing.slice(0, 6).join(', ')}${missing.length > 6 ? ' …' : ''}`);
+  }
+  return lines.map(e => ({ id: e.id, npc: e.npc, kind: e.kind, when: e.when, ...(e.icon ? { icon: e.icon } : {}), levels: e.levels }));
+}
+
 const read = name => JSON.parse(fs.readFileSync(path.join(DATA, name), 'utf8'));
 
 export function build() {
@@ -317,11 +428,16 @@ export function build() {
   const lineDocs = fs.existsSync(linesDir) ? fs.readdirSync(linesDir).filter(name => name.endsWith('.json')).sort()
     .map(name => JSON.parse(fs.readFileSync(path.join(linesDir, name), 'utf8'))).filter(Array.isArray) : [];
   const moodLines = validateMoodLines(lineDocs, residentsData);
+  const pairsData = validatePairs(read('pairs.json'), placesData);
+  const cardsData = validateCards(read('cards.json'), placesData, { archetypes }, pairsData);
+  for (const r of residentsData.residents) for (const m of r.moods) if (CARD_ID.test(m.factor) && !cardsData.cards.some(c => c.id === m.factor)) fail(`${r.id}의 마음 ${m.factor}는 카드가 아니에요.`);
+  const townLines = validateTownLines(lineDocs, cardsData, pairsData);
   // One record per line keeps the generated diff as readable as the source.
-  const rows = list => `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]`;
+  const rows = list => (list.length ? `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]` : '[]');
   const body = `{\n  places: ${rows(places)},\n  spots: ${rows(spots)},\n  groups: ${JSON.stringify(groups)},\n`
     + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n`
-    + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  stay: ${JSON.stringify(stay)},\n  music: ${JSON.stringify(music)},\n  moodLines: ${rows(moodLines)},\n}`;
+    + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  stay: ${JSON.stringify(stay)},\n  music: ${JSON.stringify(music)},\n  moodLines: ${rows(moodLines)},\n`
+    + `  cards: ${rows(cardsData.cards)},\n  pairs: ${rows(pairsData.pairs)},\n  chatSpots: ${JSON.stringify(pairsData.chatSpots)},\n  townLines: ${rows(townLines)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -339,6 +455,10 @@ export function build() {
     'export const STAY = data.stay;',
     'export const MUSIC = data.music;',
     'export const MOOD_LINES = data.moodLines;',
+    'export const CARDS = data.cards;',
+    'export const PAIRS = data.pairs;',
+    'export const CHAT_SPOTS = data.chatSpots;',
+    'export const TOWN_LINES = data.townLines;',
     '',
   ].join('\n');
 }

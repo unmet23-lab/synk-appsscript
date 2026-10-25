@@ -46,10 +46,12 @@ export function stateOf(resident, prior = {}, params) {
 }
 
 /** Waking on a new life day (§7-1 하루 시작): energy back to at least the waking value and social halfway to its
- * resting value — a time effect for everyone (§7-2). Chores carry over. Returns the state and its log. */
+ * resting value — a time effect for everyone (§7-2). Chores carry over. After a night up with its own card (R4's
+ * flowers past bedtime — prior.lateNight, W5) the resident wakes at the all-nighter's energy instead; nothing the
+ * player does can make that night (G4). Returns the state and its log. */
 export function wake(resident, prior, { atMs }, params) {
   const s = S(params), before = stateOf(resident, prior, params), log = [];
-  const next = { ...before, energy: Math.max(before.energy, s.wakeEnergy), social: (before.social + s.socialRest) >> 1 };
+  const next = { ...before, energy: prior.lateNight ? s.allNighterEnergy : Math.max(before.energy, s.wakeEnergy), social: (before.social + s.socialRest) >> 1 };
   for (const stat of STATS) if (next[stat] !== before[stat]) log.push({ npc: resident.id, atMs, stat, delta: next[stat] - before[stat], cause: 'wake' });
   return { state: next, log };
 }

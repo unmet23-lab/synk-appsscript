@@ -1,5 +1,5 @@
 {
-  "$comment": "Three residents (vertical slice design §3, §4-2). wake/sleep are minutes after the life day starts at my 05:00 (30 = 05:30, 1110 = 23:30, 1200 = 01:00 next morning). offWeekday: 0 = Monday … 6 = Sunday. habitSleep/habitWake apply only when the village keeps that visit-band habit (§10-3, W6). home is where the resident appears at waking and leaves at sleep. multipliers are per-mille personality multipliers on the base score (§3) — they also scale the candidates a state or the weather adds, so the cafe owner never dozes; crowdedRest applies to resting at a cafe seat while customers wait. W4 (§7-1·§7-3): chores is what the resident's chores count (waiting guests, orders, observations to tidy); dozeSpot is where it dozes when tired; moods says which planner factor shows which mood line (tag = <npc>.mood.<tag>.1), and only when the chosen side, the base side and the band match its conditions (chosenKinds, chosenArchetypes, baseArchetypes, bands) — a line never says what the behaviour does not do. The planner takes the reasons in priority order and uses the first whose tag and conditions fit; none fits → the behaviour changes without a line.",
+  "$comment": "Three residents (vertical slice design §3, §4-2). wake/sleep are minutes after the life day starts at my 05:00 (30 = 05:30, 1110 = 23:30, 1200 = 01:00 next morning). offWeekday: 0 = Monday … 6 = Sunday. habitSleep/habitWake apply only when the village keeps that visit-band habit (§10-3, W6). home is where the resident appears at waking and leaves at sleep. multipliers are per-mille personality multipliers on the base score (§3) — they also scale the candidates a state or the weather adds, so the cafe owner never dozes; crowdedRest applies to resting at a cafe seat while customers wait. W4 (§7-1·§7-3): chores is what the resident's chores count (waiting guests, orders, observations to tidy); dozeSpot is where it dozes when tired; moods says which planner factor shows which mood line (tag = <npc>.mood.<tag>.1), and only when the chosen side, the base side and the band match its conditions (chosenKinds, chosenArchetypes, baseArchetypes, bands) — a line never says what the behaviour does not do. The planner takes the reasons in priority order and uses the first whose tag and conditions fit; none fits → the behaviour changes without a line. W5: a factor may also be a card ID (the card made its owner do its solving), a neighbour's doing (pair-glad, tea-received, with-player-glad), a card's forerunner (wobble-spotted) or the day after a night of R4 (sleepy-night, excited-find).",
   "residents": [
     { "id": "cafe-owner", "label": "찻집 주인", "home": "cafe.counter", "wake": { "default": 30 }, "sleep": 1110, "offWeekday": null,
       "restThreshold": 25, "multipliers": { "serve": 1200, "doze": 0 }, "chores": "guests", "dozeSpot": "cafe.eaves",
@@ -8,7 +8,11 @@
         { "factor": "first-aroma", "tag": "first-aroma" },
         { "factor": "tomorrow-rain", "tag": "tomorrow-rain" },
         { "factor": "tired", "tag": "rest-poor", "chosenKinds": ["rest"] },
-        { "factor": "busy", "tag": "busy", "chosenKinds": ["work", "carry"] }
+        { "factor": "busy", "tag": "busy", "chosenKinds": ["work", "carry"] },
+        { "factor": "C3", "tag": "leaves-low" },
+        { "factor": "C6", "tag": "rest-poor", "chosenKinds": ["rest"] },
+        { "factor": "pair-glad", "tag": "pair-glad", "chosenArchetypes": ["prep-cups"] },
+        { "factor": "with-player-glad", "tag": "with-player-glad" }
       ] },
     { "id": "workshop-owner", "label": "공방 주인", "home": "workshop.bench", "wake": { "default": 0 }, "sleep": 990, "habitSleep": { "night": 1080 }, "offWeekday": 2,
       "restThreshold": 30, "multipliers": {}, "crowdedRest": 500, "chores": "orders", "dozeSpot": "workshop.rest",
@@ -16,13 +20,27 @@
         { "factor": "cold-hands", "tag": "cold-hands", "chosenKinds": ["work", "walk"] },
         { "factor": "tired", "tag": "low-energy", "chosenKinds": ["rest"] },
         { "factor": "doze", "tag": "low-energy" },
-        { "factor": "busy", "tag": "busy-orders", "bands": ["day"] }
+        { "factor": "busy", "tag": "busy-orders", "bands": ["day"] },
+        { "factor": "W2", "tag": "quiet-wish" },
+        { "factor": "W3", "tag": "wet-floor" },
+        { "factor": "W5", "tag": "new-tool" },
+        { "factor": "tea-received", "tag": "tea-received", "chosenKinds": ["rest"] },
+        { "factor": "wobble-spotted", "tag": "wobble-spotted", "chosenArchetypes": ["fix-round"] },
+        { "factor": "with-player-glad", "tag": "with-player-glad" }
       ] },
     { "id": "researcher", "label": "연구원", "home": "greenhouse.bench", "wake": { "default": 180, "off": 300 }, "habitWake": { "morning": 90 }, "sleep": 1200, "habitSleep": { "night": 1260 }, "offWeekday": 6,
       "restThreshold": 30, "multipliers": {}, "chores": "observations", "dozeSpot": "greenhouse.bench",
       "moods": [
         { "factor": "tomorrow-clear", "tag": "tomorrow-clear" },
-        { "factor": "tired", "tag": "low-energy", "chosenArchetypes": ["notes"] }
+        { "factor": "tired", "tag": "low-energy", "chosenArchetypes": ["notes"] },
+        { "factor": "sleepy-night", "tag": "sleepy-night" },
+        { "factor": "R2", "tag": "wet-board" },
+        { "factor": "R3", "tag": "too-long" },
+        { "factor": "R4", "tag": "night-bloom" },
+        { "factor": "R5", "tag": "leaf-fall" },
+        { "factor": "R6", "tag": "sleepy-night" },
+        { "factor": "excited-find", "tag": "excited-find", "chosenArchetypes": ["observe", "show-drawing"] },
+        { "factor": "with-player-glad", "tag": "with-player-glad" }
       ] }
   ]
 }

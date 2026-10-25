@@ -1,5 +1,5 @@
 {
-  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. One dated exception (2026-10-24, decision table): W4 added the state section to town-params-1, the only version any band has run, before any band ran with other state values. Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
+  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. One dated exception (2026-10-24, decision table): W4 added the state section to town-params-1, the only version any band has run, before any band ran with other state values; W5 (2026-10-25) added the cards, pairs and knowledge sections the same way, before any band ran with cards. Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
   "versions": [
     {
       "paramsVer": "town-params-1",
@@ -43,6 +43,28 @@
         "helpChores": { "bazaar": 2, "life": 1 },
         "moodLinesPerDay": 4
       },
+      "cards": {
+        "waitMinutes": 10,
+        "perResident": 2,
+        "perVillage": 4,
+        "pairShare": 600,
+        "selfShare": 400,
+        "lonelyPairMultiplier": 2000,
+        "partnerEnergyMin": 40,
+        "rushWindowMinutes": 30,
+        "rushGuests": 3,
+        "rainStopWindowMinutes": 60,
+        "seasonLeafShare": 333,
+        "wobbleShare": 700,
+        "wobbleMultiplier": 1500,
+        "pairGladMultiplier": 2000,
+        "teaReceivedMultiplier": 3000,
+        "excitedMultiplier": 1500,
+        "withPlayerGladWeight": 300,
+        "takesKept": 8
+      },
+      "pairs": { "sceneWeight": 300, "frictionBoost": 1200, "frictionMax": 2, "scenesPerDay": 3, "familyCooldownLifeDays": 2 },
+      "knowledge": { "kept": 16, "heardPerDay": 2, "newsPerDay": 2, "newsKept": 16, "noteShows": 3, "happenedKept": 24, "toldKept": 32 },
       "seen": { "countMax": 99, "perRequest": 50, "familiarAfter": 3 },
       "prefs": { "notFitMultiplier": 500, "lessOftenMultiplier": 300, "feedbackLifeDays": 30 },
       "observe": { "recentUses": 20, "window": 5, "needed": 4 },

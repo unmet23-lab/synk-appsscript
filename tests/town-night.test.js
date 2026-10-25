@@ -175,7 +175,7 @@ test('구간만 옮긴 읽기: 쓰지 않아도 그 구간을 닫으며 생긴 �
   assert.equal(f.store.peek().state.writeSeq, saved.writeSeq, '쓰지 않았다');
   const used = shown.townEvents.filter(e => e.kind === 'habit.used');
   assert.equal(used.length, 2, '약속을 지킨 둘째 이용이 답에 보인다');
-  assert.equal(shown.townSeq, used.at(-1).id.slice(2) * 1, '사건 번호와 목록이 맞는다');
+  assert.equal(shown.townSeq, shown.townEvents.at(-1).id.slice(2) * 1, '사건 번호와 목록이 맞는다');
   f.pulse(); f.send('DAY_REST');
   const kept = f.store.peek().state.townEvents.filter(e => e.kind === 'habit.used');
   assert.deepEqual(kept.map(e => e.id), used.map(e => e.id), '다음 쓰기가 같은 번호로 저장한다');

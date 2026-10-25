@@ -10,6 +10,9 @@ export class LifeError extends Error {
 const ensure = (ok, code, message, status) => { if (!ok) throw new LifeError(code, message, status); };
 const integer = value => Number.isSafeInteger(value) && value >= 0;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+const CARD = /^[CWR][1-6]$/;
+/** How long a card's settled offer stays in the ledger: the budget's window (W5) — a rise is solved long before. */
+const CARD_KEPT_U = 900000;
 const placements = Object.freeze(Object.fromEntries(Object.entries(FT_SEATS).map(([id, seat]) => [id, { x: seat.legacy2d.x, y: seat.legacy2d.y }])));
 const roles = ['planner', 'observer', 'delegated'];
 const stages = ['role', 'direction', 'preview', 'executing', 'result', 'invalid'];
@@ -39,12 +42,15 @@ export function assertLife(life) {
     || new Set(life.handledNeeds).size !== life.handledNeeds.length) throw invalid();
   const keys = new Set(), ids = new Set();
   for (const c of life.contacts) {
+    // A card's offer (W5 §8-3) shares the ledger and its budget but has no seat: it names its card and rise instead.
+    const where = c.card !== undefined ? CARD.test(c.card) && identifier(c.key) && c.contactKey === `card:${c.card}:${c.key}`
+      : integer(c.worldRevision) && Object.hasOwn(placements, c.placement);
     if (!identifier(c.id) || !identifier(c.contactKey) || keys.has(c.contactKey) || ids.has(c.id)
       || !contactStates.includes(c.status) || !integer(c.issuedU) || c.issuedU > life.uMs
-      || !identifier(c.issuedSurfaceId) || !integer(c.issuedFence) || !integer(c.worldRevision)
-      || !Object.hasOwn(placements, c.placement) || typeof c.delivered !== 'boolean') throw invalid();
+      || !identifier(c.issuedSurfaceId) || !integer(c.issuedFence) || !where || typeof c.delivered !== 'boolean') throw invalid();
     keys.add(c.contactKey); ids.add(c.id);
   }
+  if (life.declinedCards !== undefined && !(Array.isArray(life.declinedCards) && life.declinedCards.every(card => CARD.test(card)))) throw invalid();
   const r = life.routine;
   if (!r || !['waiting', 'tidying', 'walking', 'resting'].includes(r.phase) || !integer(r.elapsedMs) || r.elapsedMs > 6000
     || !(r.worldRevision === null || integer(r.worldRevision)) || !validTarget(r.placement)
@@ -102,12 +108,13 @@ function contextFor(context = {}) {
     && (context.elapsedMs === undefined || integer(context.elapsedMs)), 'invalid-life-context', '주민의 현재 자리를 다시 확인해 주세요.', 503);
   return context;
 }
-function currentContact(life) {
-  return [...life.contacts].reverse().find(c => ['issued', 'delivered'].includes(c.status)
+// The seat's invitation and a card's offer are drawn apart (review F6): an old screen knows only the first.
+function currentContact(life, card = false) {
+  return [...life.contacts].reverse().find(c => (c.card !== undefined) === card && ['issued', 'delivered'].includes(c.status)
     && c.issuedSurfaceId === life.authority.surfaceId && c.issuedFence === life.authority.fence
     && life.uMs - c.issuedU < 20000) || null;
 }
-function sameWorld(item, ctx) { return item.worldRevision === ctx.worldRevision && item.placement === ctx.placement; }
+function sameWorld(item, ctx) { return item.card !== undefined || item.worldRevision === ctx.worldRevision && item.placement === ctx.placement; }
 // A sign revision or replacing the same seat does not invent a new need.
 // This small slice has one authored invitation opportunity per actual seat area.
 function descriptorKey(ctx) { return `C1:${ctx.placement}`; }
@@ -141,10 +148,12 @@ export function advanceLife(life, context) {
   if (ctx.visitEnded === true) {
     life.activeVisit = false;
     for (const c of life.contacts) if (['issued', 'delivered'].includes(c.status)) c.status = c.delivered ? 'passed' : 'deliveryUnknown';
+    // A card's offer opened but never done ends with the visit as its take does, and can leave the ledger (review GA6).
+    for (const c of life.contacts) if (c.card !== undefined && c.status === 'detail') c.status = 'passed';
     return facts;
   }
   if (!life.activeVisit && ctx.surfaceId !== null) {
-    life.activeVisit = true; life.visitIndex++; life.visitStartU = life.uMs; life.visitDeclined = false;
+    life.activeVisit = true; life.visitIndex++; life.visitStartU = life.uMs; life.visitDeclined = false; delete life.declinedCards;
   }
   life.uMs += ctx.elapsedMs || 0;
   ensure(integer(life.uMs), 'invalid-life-context', '생활 시간을 다시 확인해 주세요.', 503);
@@ -162,19 +171,37 @@ export function advanceLife(life, context) {
   const gap = life.mode === 'lively' ? 90000 : 180000;
   const maximum = life.mode === 'lively' ? 4 : 2;
   const episodeBusy = life.episode && (!['result', 'invalid'].includes(life.episode.stage) || life.episode.open);
-  if (life.activeVisit && ctx.canContact && ctx.canRun && ctx.placement && ctx.surfaceId !== null && life.mode !== 'quiet'
-    && !life.restGuard && !life.visitDeclined && !episodeBusy && life.uMs - life.visitStartU >= 45000
-    && recent.length < maximum && (!last || life.uMs - last.issuedU >= gap)
+  // One budget for every first word (§8-3): the count and gap, quiet, the rest guard, the first seconds of a visit.
+  const budget = life.activeVisit && ctx.surfaceId !== null && life.mode !== 'quiet' && !life.restGuard && !episodeBusy
+    && life.uMs - life.visitStartU >= 45000 && recent.length < maximum && (!last || life.uMs - last.issuedU >= gap);
+  if (budget && ctx.canContact && ctx.canRun && ctx.placement && !life.visitDeclined
     && !life.handledNeeds.includes(contactKey) && !life.contacts.some(c => c.contactKey === contactKey)) {
     const id = `C1:contact:${++life.sequence}`;
     life.contacts.push({ id, contactKey, worldRevision: ctx.worldRevision, placement: ctx.placement, status: 'issued',
       delivered: false, issuedU: life.uMs, issuedSurfaceId: ctx.surfaceId, issuedFence: ctx.fence });
     facts.push(fact('cafe.C1.contact.issued', id));
+  } else if (budget && ctx.cardOffer) {
+    // A card that waits for its owner, with the player beside it (W5): its owner offers it once (core picks the card).
+    const { card, key } = ctx.cardOffer, offerKey = `card:${card}:${key}`;
+    if (!life.contacts.some(c => c.contactKey === offerKey) && !(life.declinedCards || []).includes(card))
+      life.contacts.push({ id: `card:contact:${++life.sequence}`, contactKey: offerKey, card, key, status: 'issued',
+        delivered: false, issuedU: life.uMs, issuedSurfaceId: ctx.surfaceId, issuedFence: ctx.fence });
   }
+  // A card's settled offers leave once the budget no longer counts them; the seat's stay (each seat invites once).
+  life.contacts = life.contacts.filter(c => c.card === undefined || life.uMs - c.issuedU < CARD_KEPT_U || ['issued', 'delivered', 'detail'].includes(c.status));
   assertLife(life); return facts;
 }
-function contactForCommand(life, payload, ctx, allowDetail = true) {
-  const c = life.contacts.find(row => row.id === payload.contactId);
+/** A card's offer the player answers (W5 CARD_OPEN·DECLINE·DEFER): current on this window, or opened into its detail. */
+export function cardContactFor(life, contactId, ctx, { allowDetail = true } = {}) {
+  const c = life.contacts.find(row => row.id === contactId && row.card !== undefined);
+  ensure(c && (['issued', 'delivered'].includes(c.status) && life.uMs - c.issuedU < 20000 || allowDetail && c.status === 'detail')
+    && c.issuedSurfaceId === ctx.surfaceId && c.issuedFence === ctx.fence,
+  'stale-life-contact', '이 제안은 현재 화면에서 다시 확인해 주세요. 주인에게 직접 말을 걸면 언제든 열 수 있어요.', 409);
+  return c;
+}
+function contactForCommand(life, payload, ctx, allowDetail = true, { card = false } = {}) {
+  // The seat's commands answer the seat's invitation only; a delivery receipt answers either (W5).
+  const c = life.contacts.find(row => row.id === payload.contactId && (card || row.card === undefined));
   ensure(c && (['issued', 'delivered'].includes(c.status) && life.uMs - c.issuedU < 20000 || allowDetail && c.status === 'detail')
     && sameWorld(c, ctx) && c.issuedSurfaceId === ctx.surfaceId && c.issuedFence === ctx.fence
     && life.authority.surfaceId === ctx.surfaceId && life.authority.fence === ctx.fence,
@@ -239,8 +266,8 @@ export function commandLife(life, type, payload = {}, context) {
     case 'LIFE_ACK': {
       ensure(payload.visible === true, 'incomplete-life-ack', '실제로 보인 결과만 기록해요.');
       if (payload.contactId) {
-        const c = contactForCommand(life, payload, ctx);
-        if (!c.delivered) { c.delivered = true; if (c.status === 'issued') c.status = 'delivered'; facts.push(fact('cafe.C1.contact.delivered', `${c.id}:delivered`, [c.id])); }
+        const c = contactForCommand(life, payload, ctx, true, { card: true });
+        if (!c.delivered) { c.delivered = true; if (c.status === 'issued') c.status = 'delivered'; if (c.card === undefined) facts.push(fact('cafe.C1.contact.delivered', `${c.id}:delivered`, [c.id])); }
       } else {
         const e = episodeForCommand(life, ctx, ['result']);
         ensure(payload.resultId === e.resultId, 'stale-life-result', '지금 보이는 결과를 다시 확인해 주세요.', 409);
@@ -337,5 +364,8 @@ export function viewLife(life, context = {}) {
         : ctx.ownerLine || '주인이 자기 일을 하고 있어요.' },
     contact: contact ? { id: contact.id, label: '잔을 놓을 방향을 함께 볼까요?', state: contact.status,
       issuedSurfaceId: contact.issuedSurfaceId, issuedFence: contact.issuedFence, bodyWaiting: life.uMs - contact.issuedU < 8000 } : null,
+    // A card's offer for the screens that draw cards (W5b): the owner's gesture for 8 seconds, its line for 20.
+    cardContact: (offer => offer ? { id: offer.id, card: offer.card, key: offer.key, state: offer.status, issuedSurfaceId: offer.issuedSurfaceId,
+      issuedFence: offer.issuedFence, bodyWaiting: life.uMs - offer.issuedU < 8000 } : null)(currentContact(life, true)),
     interaction, memory: life.history.slice(-6).map(memoryFor), currentAgreement: life.currentAgreement ? { ...life.currentAgreement } : null };
 }

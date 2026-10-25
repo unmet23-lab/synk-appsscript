@@ -106,3 +106,37 @@ test('대화 장면은 주민 줄과 플레이어 보기를 나눠 본다', asyn
   assert.equal(result.texts, 5);
   assert.ok((await check([{ sceneId: 'cafe-alley.x', versions: { L2: { turns: [] } } }])).problems.some(p => /L1/.test(p.message)));
 });
+
+// W5(§2-9·§16-1): 카드·쌍·소식 줄과 전해 듣기 틀.
+const W5 = { L1: '받침을 넣어요.', L2: '얇은 받침을 넣으면 안 흔들려요.', L3: '쟁반이 자꾸 기울어요. 얇은 받침을 하나 끼울게요.', L4: '쟁반이 기우는 건 바닥이 조금 패서 그래요. 받침을 끼워 두면 잔을 올려도 괜찮아요.' };
+const w5 = (id, when, levels = W5, extra = {}) => line(id, levels, { when, from: ['시험'], ...extra });
+
+test('W5 줄의 꼴 — 카드·쌍 줄은 네 판과 판 길이, 소식 줄은 더 짧고 금지 말 예외가 없으며, 전해 듣기 틀은 {news}로 채워 잰다', async () => {
+  const ok = await check([[w5('workshop-owner.card.C1-pair.1', { card: 'C1', part: 'pair' }), w5('cafe-owner.pair.PAIR01-0.1', { pair: 'PAIR01', step: 0 })]]);
+  assert.deepEqual(ok.problems, []);
+  const short = { L1: '쟁반이 안 흔들려요.', L2: '찻집 쟁반이 안 흔들려요.', L3: '찻집 쟁반이 이제 안 흔들려요.', L4: '찻집 쟁반 밑에 받침을 끼웠어요. 이제 잔을 올려도 안 흔들려요.' };
+  const news = w5('village.news.C1.1', { card: 'C1' }, short);
+  assert.deepEqual((await check([[news]])).problems, []);
+  const long = await check([[{ ...news, levels: { ...short, L2: '찻집 쟁반 밑에 받침을 끼워서 이제 안 흔들려요.' } }]]);
+  assert.ok(long.problems.some(p => p.rule === 'length' && p.level === 'L2'), '소식 L2는 다섯 어절 안');
+  const nag = await check([[{ ...news, levels: { ...short, L1: '빨리 와서 봐요.' } }]], [{ id: 'village.news.C1.1', level: 'L1', rule: 'nag', phrase: '빨리', reason: '시험' }]);
+  assert.ok(nag.problems.some(p => p.rule === 'nag'), '소식 줄은 허용 목록으로도 지나가지 않는다');
+  const frame = { L1: '{news}', L2: '{from}한테 들었는데, {news}', L3: '{news} {from}한테 들었어요.', L4: '{news} {from}한테 들은 이야기예요.' };
+  assert.deepEqual((await check([[news, w5('researcher.hearsay.heard.1', { how: 'heard' }, frame)]])).problems, []);
+  const noSlot = await check([[news, w5('researcher.hearsay.seen.1', { how: 'seen' }, { ...frame, L2: '제가 봤어요.' })]]);
+  assert.ok(noSlot.problems.some(p => p.rule === 'hearsay'), '틀에는 {news}가 있다 · {from}은 들은 것에만');
+  const tooLong = await check([[news, w5('researcher.hearsay.news.1', { how: 'news' }, { ...frame, L2: '마을 소식을 아까 쪽지에서 봤는데, {news}', L3: '{news} 마을 소식에 나왔어요.', L4: '{news} 마을 소식에서 봤어요.' })]]);
+  assert.ok(tooLong.problems.some(p => p.rule === 'length' && p.id === 'researcher.hearsay.news.1'), '채운 뒤 L2 여덟 어절을 넘는다');
+  assert.ok((await check([[w5('cafe-owner.card.C1-trigger.1', { card: 'C1', part: 'trigger' }, { ...W5, L2: '{x} 받침을 넣어요.' })]])).problems.some(p => p.rule === 'card'), '카드 줄에는 빈칸이 없다');
+});
+
+test('실제 W5 원고 — 카드마다 여섯 줄(둘이는 주인·짝), 쌍 단계마다 두 사람, 소식 카드마다 한 줄, 전해 듣기 아홉이 다 있다', async () => {
+  const fs = require('node:fs'), path = require('node:path'), { ROOT } = require('./lib/town.js');
+  const dir = path.join(ROOT, 'experiences', 'synk-town', 'town', 'data', 'lines');
+  for (const name of ['cards.json', 'pairs.json', 'news.json', 'hearsay.json']) assert.ok(fs.existsSync(path.join(dir, name)), name);
+  const { build } = await toolModule('town-data-build');
+  assert.doesNotThrow(() => build(), '생성기가 빠진 줄을 막는다');
+  const { TOWN_LINES } = await import(require('node:url').pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'town', 'data.gen.mjs')).href);
+  const count = kind => TOWN_LINES.filter(l => l.kind === kind).length;
+  assert.deepEqual([count('card'), count('pair'), count('news'), count('hearsay')], [102, 18, 8, 9]);
+});

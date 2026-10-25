@@ -81,6 +81,7 @@ test('할 일(§7-1): 찻집 손님은 구간마다 1~2번 몰려오고, 공방 
 test('G4: 플레이어 원인의 변화는 좋은 쪽뿐 · 결과 없이 닫힌 붙잡힘엔 플레이어 원인이 없다 · 붙잡힌 동안 온 손님은 기다리지 않는다', async () => {
   const s = await townModule('state');
   let together = 0, absorbedChecked = 0;
+  const full = (await townModule('params')).paramsFor().state.socialMax;
   for (const seed of ['g4-a', 'g4-b', 'g4-c']) {
     // 낮과 저녁마다 찻집 주인·연구원을 한 시간 붙잡는다 — 마을 씨앗에 따라 결과에 닿은(with) 것과 아닌 것.
     const bands = await villageDays({ seed, days: 10, habits: { 'workshop-owner': [{ spot: 'cafe.eaves-left', archetype: 'quiet-rest' }, { spot: 'workshop.bench', archetype: 'tool-care' }] },
@@ -92,6 +93,8 @@ test('G4: 플레이어 원인의 변화는 좋은 쪽뿐 · 결과 없이 닫힌
         if (s.PLAYER_CAUSES.includes(e.cause)) assert.ok(!s.worse(e.stat, e.delta), `플레이어 원인 나쁜 쪽: ${JSON.stringify(e)}`);
         if (e.cause === 'together') together++;
       }
+      // A hold that reached its result with a resident already at full social leaves no change to log (pair scenes fill it, W5).
+      together += input.reservations.filter(r => r.with && out.residents[r.npc]?.social === full && !out.stateLog.some(e => e.npc === r.npc && e.cause === 'together')).length;
       const withless = input.reservations.filter(r => !r.with).map(r => r.npc);
       for (const npc of withless) if (!input.reservations.some(r => r.npc === npc && r.with))
         assert.ok(!out.stateLog.some(e => e.npc === npc && ['together', 'help'].includes(e.cause)), '결과 없는 붙잡힘은 아무것도 바꾸지 않는다');
@@ -165,7 +168,8 @@ test('G4: 장면이 결과에 닿은 붙잡힘만 「함께한 일」 — 결과
   v = store.read().state.village;
   const plan = village.planOf(v);
   const gains = plan.stateLog.filter(e => e.cause === 'together');
-  assert.deepEqual(gains.map(e => e.npc).sort(), ['researcher', 'workshop-owner']);
+  // A resident whose social is already full gains nothing to log (pair scenes fill it, W5): each gain is one marked hold's.
+  assert.ok(gains.length > 0 && gains.every(e => marked.some(r => r.npc === e.npc)), JSON.stringify(gains));
   assert.ok(gains.every(e => e.delta > 0 && e.atMs === v.reservations.find(r => r.npc === e.npc && r.with).toMs), '붙잡힘이 끝난 때에 한 번');
 });
 
@@ -306,7 +310,7 @@ test('뷰(G2): 조각에는 마음 줄의 원고 ID만 실리고 상태 숫자�
   const scene = store.read().view.day.scene.village;
   const text = JSON.stringify(scene);
   for (const word of ['"energy"', '"chores"', '"social"', '"choresTick"', '"moodsToday"', '"reason"']) assert.ok(!text.includes(word), word);
-  for (const seg of scene.segments) assert.deepEqual(Object.keys(seg).filter(k => !['npc', 'startMs', 'arriveMs', 'endMs', 'archetype', 'spot', 'mood'].includes(k)), []);
+  for (const seg of scene.segments) assert.deepEqual(Object.keys(seg).filter(k => !['npc', 'startMs', 'arriveMs', 'endMs', 'archetype', 'spot', 'mood', 'card', 'cardRole', 'with'].includes(k)), []);
   const cafe = plan.RESIDENT_BY_ID['cafe-owner'];
   assert.equal(s.dayMoodOf(cafe, { energy: 80, chores: 4 }), 'busy');
   assert.equal(s.dayMoodOf(cafe, { energy: 20, chores: 0 }), 'sleepy');

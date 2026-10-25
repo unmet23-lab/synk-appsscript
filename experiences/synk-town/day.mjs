@@ -520,7 +520,9 @@ function sceneFor(day, ctx) {
     : { x: here.x, z: day.location === 'home' && day.home.exitTarget ? 1.2 : here.z + 2.5 },
     npcs: npcs.filter(n => !hidden.includes(n.id)), props,
     cafeReserved, summary: backgroundLine, phase: e?.open ? e.stage : day.rest ? 'resting' : 'walking',
-    ...(v ? { village: { nowMs: v.nowMs, band: v.band, segments: v.segments, startSpots: v.startSpots, holds, hidden, ...(v.sleeps ? { sleeps: true } : {}) } } : {}) };
+    // W5: the cards, traces, news and hearsay ride along for the screens that draw them (old screens ignore them).
+    ...(v ? { village: { nowMs: v.nowMs, band: v.band, segments: v.segments, startSpots: v.startSpots, holds, hidden, ...(v.sleeps ? { sleeps: true } : {}),
+      ...Object.fromEntries(['cards', 'take', 'traces', 'news', 'hearsay', 'knownMe'].filter(key => key in v).map(key => [key, v[key]])) } } : {}) };
 }
 function historySummary(h) {
   const role = h.role === 'planner' ? '함께 정함' : h.role === 'delegated' ? '분담을 맡김' : h.observedU === null ? '주민의 결과 준비됨 · 아직 관람 전' : '실제로 관람함';

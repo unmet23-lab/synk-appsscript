@@ -30,6 +30,9 @@ export const KINDS = Object.freeze({
   'item.consumed': { itemId: id, qty: count, source: id, cause: id },
   // A resident finished sitting at a habit spot (§6-5): a residents-only line, never a Trail fact.
   'habit.used': { npc: id, spot: id, archetype: id, lifeDay: Number.isSafeInteger, band: id },
+  // A small need card solved (§8, W5): its reference (band and card), the path, and whether the village may hear of it —
+  // alone or by two it is public; with the player only those in it know (§9-2, G6).
+  'card.resolved': { ref: id, card: v => /^[CWR][1-6]$/.test(v), path: v => ['self', 'pair', 'player'].includes(v), public: v => typeof v === 'boolean' },
 });
 
 /** The relationship fields of an event the player took part in, checked (§20-1). */

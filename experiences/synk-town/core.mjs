@@ -6,7 +6,7 @@
 import Trail from '../../atlas/trail-life.js';
 import Vellum from '../../atlas/vellum-life.js';
 import Loom from '../../tools/lib/loom-life.js';
-import { initialLife, assertLife, advanceLife, commandLife, viewLife, LifeError, liveSourceKey as lifeLiveKey, foldLife } from './life.mjs';
+import { initialLife, assertLife, advanceLife, commandLife, viewLife, LifeError, liveSourceKey as lifeLiveKey, foldLife, cardContactFor } from './life.mjs';
 import { initialDay, assertDay, advanceDay, commandDay, viewDay, DayError, liveSourceKey as dayLiveKey, foldDay } from './day.mjs';
 import { initialBazaar, assertBazaar, advanceBazaar, commandBazaar, viewBazaar, BazaarError } from './bazaar.mjs';
 import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSupport, SupportError, foldSupport } from './support.mjs';
@@ -14,14 +14,19 @@ import { nearbyPlace } from './walk.mjs';
 import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
 import { emptyIndex, admit, record, indexLog, isFact, projection, validIndex, foldIndex } from './town/trail-index.mjs';
 import { emptyLedger, validLedger } from './town/ledger.mjs';
-import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback, setLessOften, setApproach, setTodayOther,
-  answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses } from './town/prefs.mjs';
+import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback, setLessOften, setApproach, setTodayOther, todayOther,
+  answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses, recordUse as recordLifeUse } from './town/prefs.mjs';
 import { initialConsents, changeConsent, validConsents } from './town/consent.mjs';
-import { eventProblem, FAMILIES } from './town/events.mjs';
-import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor } from './town/params.mjs';
+import { eventProblem, FAMILIES, relation } from './town/events.mjs';
+import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten } from './town/memory.mjs';
-import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf } from './town/village.mjs';
-import { agreementSpot, RESIDENT_BY_ID } from './town/plan.mjs';
+import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput } from './town/village.mjs';
+import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
+import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf } from './town/cards.mjs';
+import { learnPrivate, hearsayFor, tell, privateOf, noteOf } from './town/knowledge.mjs';
+import { createRng } from './town/rng.mjs';
+import { PER_MILLE } from './town/state.mjs';
+import { SPOT_GROUPS } from './town/places.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -263,7 +268,9 @@ export function livingContext(state, host = {}) {
     // The owner who invites is up (the night rule): no contact is issued while it sleeps.
     canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true
       && upFor(state.village, 'cafe-owner', host.nowMs),
-    worldRevision: state.lifeSeatRevision ?? state.worldRevision, placement: state.placement };
+    worldRevision: state.lifeSeatRevision ?? state.worldRevision, placement: state.placement,
+    // A card's offer goes only to a screen that draws cards (review F6: an old one would show it as the seat's invitation).
+    cardOffer: host.canContact === true && Array.isArray(host.caps) && host.caps.includes('cards') ? cardOfferFor(state, host) : null };
 }
 function projectLifeFacts(state, facts) {
   for (const item of facts) {
@@ -306,8 +313,15 @@ function heldNow(state) {
     hold('cafe-owner', `FT:${state.worldRevision}`, 'cafe.counter', { seat: FT_SEATS[state.placement].spot });
   const job = state.day?.job;
   if (job?.status === 'preparing') hold('workshop-owner', job.id, 'workshop.bench', { toMs: job.readyAt });
+  // A card the player has open holds its owner at its spot, and C1's neighbour beside it (§8-3 나와 함께).
+  for (const take of state.village?.takes || []) if (take.open) {
+    const card = CARD_BY_ID[take.card], by = `card:${take.card}:${take.key}`;
+    hold(card.owner, by, holdSpotOf(card));
+    for (const npc of card.paths.player.with || []) hold(npc, by, firstSpot(card.paths.pair.partnerSpot));
+  }
   return held;
 }
+const firstSpot = name => SPOT_GROUPS[name]?.[0] ?? name;
 /** The night rule at a command (host.nowMs, §4-2 A): the residents a scene would begin with must be up. A scene already
  * begun goes on (resuming one is not a beginning) — a retry after its seat moved begins it again; without the host's
  * sleeps every scene stays open. */
@@ -338,6 +352,7 @@ function markTogether(state) {
   scene(state.day?.episode, null);
   scene(state.bazaar?.episode, 'bazaar');
   scene(state.life?.episode, 'life');
+  for (const take of v.takes || []) if (take.status === 'resolved') done.set(`card:${take.card}:${take.key}`, 0);
   for (const r of v.reservations) {
     if (r.toMs !== null || r.with || !done.has(r.by)) continue;
     r.with = true;
@@ -351,8 +366,11 @@ export function closeLiving(state, nowMs, { seed = 'synk-town', offsetMin = null
   if (!state.village) return state;
   const candidates = habitSpots(state);
   keepHabitSpots(state.village, candidates);
-  for (const use of closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates, sleeps }))
-    townEvent(state, 'habit.used', { ...use, actors: [use.npc] });
+  const closed = closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates, sleeps });
+  for (const use of closed) townEvent(state, 'habit.used', { ...use, actors: [use.npc] });
+  // A card the residents solved is a public event (§9-2): settled outside any visit, so it names the version only (§20-6).
+  for (const line of closed.resolved) townEvent(state, 'card.resolved', { ref: line.ref, card: line.card, path: line.path, public: true,
+    actors: line.actors, place: line.place, lifeDay: line.lifeDay, band: line.band, atMs: line.atMs, ...eventMarks(state.policy, { inVisit: false }) });
   return state;
 }
 /** A command's end, after its 0-second chain: holds follow the scenes (a new hold opens now, a released
@@ -378,6 +396,10 @@ function endVisitScenes(state, endedAt) {
   const c1 = state.life?.episode;
   if (c1?.open) { c1.open = false; if (c1.stage === 'result') c1.dismissed = true; }
   if (state.bazaar?.episode?.open) state.bazaar.episode.open = false;
+  for (const take of state.village?.takes || []) {
+    take.open = false;
+    if (['with', 'paused'].includes(take.status)) { take.status = 'ended'; take.endAt = Math.max(take.at, endedAt ?? take.at); }
+  }
   if (state.village) closeOpen(state.village, endedAt);
 }
 /** The village as a scene at the time the world last saw a window (old screens draw npcs as given; new
@@ -399,8 +421,51 @@ function villageScene(state) {
     awake: Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, upFor(v, npc, nowMs)])),
     band: { band: v.band.band, startMs: v.band.startMs, endMs: v.band.endMs },
     // A segment whose mind changed carries its mood line's ID (§7-3) — the screen shows it near that resident; never the state (G2).
-    segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot, mood }) => ({ npc, startMs, arriveMs, endMs, archetype, spot, ...(mood ? { mood } : {}) })) };
+    // W5: a card's solving names its card and part, a pair scene the neighbour it is with (old screens ignore both).
+    segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot, mood, card, cardRole, with: other }) => ({ npc, startMs, arriveMs, endMs, archetype, spot,
+      ...(mood ? { mood } : {}), ...(card ? { card, cardRole } : {}), ...(other ? { with: other } : {}) })),
+    ...cardsView(state, nowMs) };
 }
+/** The cards, traces, news and hearsay at nowMs for the screens that draw them (W5b): which cards wait and how the player
+ * may join them, the take in hand, what the village shows, the news note (no dates, G3), what each resident would tell
+ * the player and what it knows of things done with the player (without what it was asked to forget). */
+function cardsView(state, nowMs) {
+  const v = state.village, out = planOf(v), now = villageAt(bandInput(v), out.segments, out.log, nowMs);
+  const take = (v.takes || []).find(t => t.open) ?? null;
+  return { cards: cardsAt(bandInput(v), out.segments, out.log, nowMs).map(c => ({ ...c, ready: !CARD_BY_ID[c.card].locked && CARD_BY_ID[c.card].paths.player.ready })),
+    take: take && { card: take.card, key: take.key, status: take.status, choice: take.choice ?? null,
+      choices: CARD_BY_ID[take.card].paths.player.choices.filter(choice => choiceOk(CARD_BY_ID[take.card], choice, { placement: state.placement })),
+      ...(take.ref ? { ref: take.ref } : {}), ...(take.eventId ? { eventId: take.eventId } : {}) },
+    traces: now.traces, news: noteOf(v),
+    hearsay: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, hearsayFor(v, npc)]).filter(([, line]) => line)),
+    knownMe: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, privateOf(v, npc, state.forgotten || []).map(({ ref, card, path }) => ({ ref, card, path }))])) };
+}
+/** The cards and where the residents are at ms (the commands' reading of the band — the same plan the view draws). */
+function cardNow(state, ms) {
+  const v = state.village, out = planOf(v), at = Math.min(v.band.endMs - 1, Math.max(v.band.startMs, ms));
+  const startSpots = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
+  return { cards: cardsAt(bandInput(v), out.segments, out.log, at),
+    places: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, placeAt(out.segments, npc, at, startSpots)])) };
+}
+/** The card a resident may offer the player now (§8-3 나와 함께): it waits for its owner, who is up, free and at the player's
+ * place; its path is ready; the player did not turn it down this visit, set it aside today or ask not to be approached;
+ * a card set to "less often" comes up a seeded share of its rises (§20-3). The life module spends the budget. */
+function cardOfferFor(state, host) {
+  const v = state.village;
+  if (!v?.band || !state.day || state.resting || state.day.rest || !Number.isSafeInteger(host.nowMs) || (v.takes || []).some(t => t.open)) return null;
+  if (state.day.episode?.open || state.bazaar?.episode?.open || state.life?.episode?.open) return null;
+  const now = cardNow(state, host.nowMs), held = heldNow(state), prefs = state.prefs, visitId = state.policy?.visitId;
+  for (const c of now.cards) {
+    const card = CARD_BY_ID[c.card], activity = `card.${card.id}`, at = now.places[card.owner];
+    const crew = [card.owner, ...(card.paths.player.with || [])];
+    if (c.status !== 'triggered' || card.locked || !card.paths.player.ready || !at || crew.some(npc => held[npc] || !upFor(v, npc, host.nowMs))) continue;
+    if (!atDayPlace(state, at.to) || prefs?.approachOptOut.includes(activity) || (prefs && visitId && todayOther(prefs, visitId, activity))) continue;
+    if (prefs?.lessOften.includes(activity) && createRng(v.seed, 'offer', card.id, c.key).below(PER_MILLE) >= paramsFor().prefs.lessOftenMultiplier) continue;
+    return { card: card.id, key: c.key };
+  }
+  return null;
+}
+const openTake = state => (state.village?.takes || []).find(t => t.open) ?? null;
 /** One step of the living modules on a state, in place: the chain one old pulse ran. Settlement
  * (town/settle.mjs) walks unsettled time in steps of this, checking the state once around them. */
 export function stepLiving(state, host) {
@@ -668,7 +733,85 @@ const personalRoom = prefs => ensure(prefs.lessOften.length <= PERSONAL_MAX && p
   && prefs.todayOther.items.length <= PERSONAL_MAX, 'preference-full', '설정이 너무 많아요. 수첩에서 정리해 주세요.', 409);
 /** The §20 commands: the person's rights over what the town keeps, and the feedback and suggestion menus. */
 const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT',
-  'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY']);
+  'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'CARD_CONFIRM']);
+/** The small need cards with the player (§8-3 나와 함께, W5) and the greeting that tells the player what a resident knows (§9-4). */
+const CARD_COMMANDS = new Set(['CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM', 'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET']);
+function commandCard(state, type, p, host) {
+  const v = state.village;
+  ensure(state.day && state.life && v?.band && host.enabled === true && Number.isSafeInteger(host.nowMs), 'card-unavailable', '지금은 이 생활을 열 수 없어요.', 403);
+  const label = npc => RESIDENT_BY_ID[npc].label;
+  switch (type) {
+    case 'CARD_OPEN': {
+      const card = CARD_BY_ID[p.card];
+      ensure(card && typeof p.key === 'string' && ['direct', 'contact'].includes(p.source), 'invalid-card', '생활을 다시 골라 주세요.');
+      const now = cardNow(state, host.nowMs), status = now.cards.find(c => c.card === card.id && c.key === p.key)?.status;
+      ensure(mayTake(card, status), 'card-not-waiting', '그 일은 지금 함께할 수 없어요. 주인이 하는 일을 지켜봐 주세요.', 409);
+      ensure(upFor(v, card.owner, host.nowMs), 'resident-asleep', `${label(card.owner)}은 지금 자고 있어요. 아침에 다시 만나요.`, 409);
+      ensure(!(v.takes || []).some(t => t.open && !(t.card === card.id && t.key === p.key)), 'card-busy', '하던 생활을 먼저 닫아 주세요.', 409);
+      const by = `card:${card.id}:${p.key}`, heldAll = heldNow(state);
+      // Everyone the path takes is up and free (the owner, and C1's neighbour beside it — review GA3).
+      for (const npc of [card.owner, ...(card.paths.player.with || [])]) {
+        ensure(upFor(v, npc, host.nowMs), 'resident-asleep', `${label(npc)}은 지금 자고 있어요. 아침에 다시 만나요.`, 409);
+        ensure(!heldAll[npc] || heldAll[npc].by === by, 'card-owner-busy', `${label(npc)}이 하던 장면을 마친 뒤 함께할 수 있어요.`, 409);
+      }
+      ensure(now.places[card.owner] && atDayPlace(state, now.places[card.owner].to), 'card-too-far', `${label(card.owner)} 가까이 가서 말을 걸어 주세요.`, 409);
+      let contactId = null;
+      if (p.source === 'contact') {
+        const c = cardContactFor(state.life, p.contactId, host);
+        ensure(c.card === card.id && c.key === p.key, 'stale-life-contact', '이 제안은 현재 화면에서 다시 확인해 주세요.', 409);
+        c.status = 'detail'; contactId = c.id;
+      } else for (const c of state.life.contacts) if (c.contactKey === by && ['issued', 'delivered', 'detail'].includes(c.status)) c.status = 'cancelled';
+      // Opening it again goes on where it paused (§8-3 paused → withPlayer); a take the visit ended is a new one.
+      const take = (v.takes || []).find(t => t.card === card.id && t.key === p.key && ['with', 'paused'].includes(t.status));
+      if (take) Object.assign(take, { status: 'with', open: true });
+      else v.takes = [...(v.takes || []), { card: card.id, key: p.key, at: host.nowMs, status: 'with', open: true, choice: null, ...(contactId ? { contactId } : {}) }]
+        .slice(-paramsFor().cards.takesKept);
+      state.day.rest = false; state.resting = false;
+      break;
+    }
+    case 'CARD_CHOOSE': {
+      const take = openTake(state), card = take && CARD_BY_ID[take.card];
+      ensure(take?.status === 'with', 'card-not-open', '함께하던 생활을 다시 열어 주세요.', 409);
+      ensure(choiceOk(card, p.choice, { placement: state.placement }), 'invalid-card-choice', '고를 수 있는 것 가운데 골라 주세요.');
+      take.choice = p.choice; break;
+    }
+    case 'CARD_CONFIRM': {
+      const take = openTake(state), card = take && CARD_BY_ID[take.card];
+      ensure(take?.status === 'with' && take.choice, 'card-choice-first', '먼저 하나 골라 주세요.', 409);
+      const b = v.band, actors = [card.owner, ...(card.paths.player.with || [])], place = placeOfSpot(card.spot);
+      Object.assign(take, { status: 'resolved', resolvedAt: host.nowMs, ref: cardRef(b.lifeDay, b.band, card.id) });
+      // Done with the player: an event only those in it know (§9-2, G6), with the fields a relationship is computed from (§20-1).
+      take.eventId = townEvent(state, 'card.resolved', { ref: take.ref, card: card.id, path: 'player', public: false, actors: [...actors, 'player'], place,
+        lifeDay: b.lifeDay, band: b.band, atMs: host.nowMs, ...eventMarks(openVisit(state, host), { inVisit: true }), ...relation(playerRelation(card, take.choice)) });
+      learnPrivate(v, { ref: take.ref, card: card.id, path: 'player', actors: [...actors, 'player'], place });
+      state.recentLifeUse = recordLifeUse(state.recentLifeUse || [], { useId: take.ref, canonicalActivityId: `card.${card.id}`, storyFamily: card.family, direct: !take.contactId });
+      const c = take.contactId && state.life.contacts.find(row => row.id === take.contactId);
+      if (c?.status === 'detail') c.status = 'accepted';
+      break;
+    }
+    case 'CARD_CLOSE': {
+      // Closed before it was done: that card alone waits as "하던 생활"; the owner goes back to its own day (§8-3 paused).
+      const take = openTake(state);
+      if (take) { take.open = false; if (take.status === 'with') take.status = 'paused'; }
+      break;
+    }
+    case 'CARD_DECLINE': case 'CARD_DEFER': {
+      const c = cardContactFor(state.life, p.contactId, host);
+      c.status = type === 'CARD_DECLINE' ? 'declined' : 'deferred';
+      if (type === 'CARD_DECLINE') state.life.declinedCards = [...new Set([...(state.life.declinedCards || []), c.card])];
+      // Turned down or put off, the card is its owner's again at its next decision (§15-2): an opened take from it ends.
+      for (const take of v.takes || []) if (take.card === c.card && take.key === c.key && ['with', 'paused'].includes(take.status))
+        Object.assign(take, { status: 'ended', open: false, endAt: Math.max(take.at, host.nowMs) });
+      break;
+    }
+    case 'GREET': {
+      // A greeting tells the player one thing the resident knows (§9-4) — once: it never spends the first-word budget.
+      ensure(Object.hasOwn(RESIDENT_BY_ID, p.npc) && typeof p.ref === 'string', 'invalid-greet', '인사할 이웃을 다시 골라 주세요.');
+      ensure(hearsayFor(v, p.npc)?.ref === p.ref, 'stale-greet', '이웃의 이야기가 바뀌었어요. 다시 말을 걸어 주세요.', 409);
+      tell(v, p.npc, p.ref); break;
+    }
+  }
+}
 
 export function reduceCommand(previous, command, host = {}) {
   assertState(previous);
@@ -829,7 +972,9 @@ export function reduceCommand(previous, command, host = {}) {
     // The person's own rights over what the town keeps (scope rights, §20-5): the notebook and the
     // account screen use this one command path, so each change leaves its receipt, revision and event.
     case 'MEMORY_FORGET': {
-      ensure(forgettable(trailOf(state), p.npc, p.eventId), 'memory-unavailable', '그 기억을 찾지 못했어요. 수첩을 다시 열어 주세요.', 409);
+      // A thing done together is a Trail fact or, from W5, a card done with the player that the resident knows (review F11).
+      const card = typeof p.eventId === 'string' && CARD_REF.test(p.eventId) && !!state.village && privateOf(state.village, p.npc).some(e => e.ref === p.eventId);
+      ensure(card || forgettable(trailOf(state), p.npc, p.eventId), 'memory-unavailable', '그 기억을 찾지 못했어요. 수첩을 다시 열어 주세요.', 409);
       const next = forget(state.forgotten, { npc: p.npc, target: p.eventId });
       if (next.added) { state.forgotten = next.forgotten; townEvent(state, 'memory.forgotten', { npc: p.npc, target: p.eventId }); }
       break;
@@ -884,6 +1029,7 @@ export function reduceCommand(previous, command, host = {}) {
     case 'PREF_FAMILY':
       state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer)); break;
     default: {
+      if (CARD_COMMANDS.has(command.type)) { commandCard(state, command.type, p, host); break; }
       const asleep = sleepersFor(state, command, p, host.nowMs);
       ensure(!asleep.length, 'resident-asleep', `${asleep.map(npc => RESIDENT_BY_ID[npc].label).join('과 ')}은 지금 자고 있어요. 아침에 다시 만나요.`, 409);
       if (command.type.startsWith('SUPPORT_')) {

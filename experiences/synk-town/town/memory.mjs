@@ -32,8 +32,11 @@ export function memoriesOf(index, forgotten, npc) {
   return Object.entries(index.facts).filter(([target, [type, knownBy]]) => knownBy.includes(npc) && memoryFact(type) && !gone.has(target))
     .map(([target, [type]]) => ({ id: target, type }));
 }
-/** A forgotten fact the index has folded away can never be read again (ids are never reused): its entry goes. */
-export const pruneForgotten = (forgotten, index) => forgotten.filter(item => Object.hasOwn(index.facts, item.target));
+/** A card done with the player (W5) is named by its result's reference (<life day>.<band>.<card>), not a Trail fact. */
+export const CARD_MEMORY = /^\d+\.(?:morning|day|evening|night)\.[CWR][1-6]$/;
+/** A forgotten fact the index has folded away can never be read again (ids are never reused): its entry goes. A card's
+ * reference is not in the index and stays (review F11). */
+export const pruneForgotten = (forgotten, index) => forgotten.filter(item => Object.hasOwn(index.facts, item.target) || CARD_MEMORY.test(item.target));
 export function validForgotten(forgotten) {
   const pairs = new Set();
   return Array.isArray(forgotten) && forgotten.every(item => {

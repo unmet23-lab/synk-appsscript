@@ -12,16 +12,17 @@ import { branchPaths, atomicWrite, appendLines, readLines, truncateTo, removeFil
 import { lifeDayAt, offsetAt, validOffset } from './town/clock.mjs';
 import { validateOps, DEFAULT_OPS } from './town/params.mjs';
 import { eventProblem } from './town/events.mjs';
-import { ITEMS, MOOD_LINES } from './town/data.gen.mjs';
+import { ITEMS, MOOD_LINES, TOWN_LINES, PAIRS } from './town/data.gen.mjs';
 
 /** A screen may open a safe boundary at most once in this long (vertical slice §14-3). */
 export const BOUNDARY_GAP_MS = 20000;
 /** Receipts the world itself keeps, and the movement receipts the store keeps (talk's limits). */
 export const COMMAND_WINDOW = 32, WALK_RECEIPTS = 512;
 /** The keys a screen may report as seen (§20-2): what the content data knows — the cards and the
- * gathered items and the mood lines (W4 — a screen reports them from W5); pair steps, scenes and tea frames join
- * with their content (W5~W9). */
-export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id), lines: MOOD_LINES.map(line => line.id) });
+ * gathered items, the mood lines (W4) and the cards', hearsay, pair and news lines with the pairs' steps (W5); scenes and
+ * tea frames join with their content (W8~W9). */
+export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id), lines: [...MOOD_LINES, ...TOWN_LINES].map(line => line.id),
+  pairs: PAIRS.flatMap(pair => [0, 1, 2].map(step => [pair.scene, String(step)])) });
 // `|| 0`: a UTC host gives -0, which a save's JSON round trip turns into 0, so a reopened world would differ.
 const hostOffset = () => { const offset = -new Date().getTimezoneOffset() || 0; return validOffset(offset) ? offset : 540; };
 
@@ -300,13 +301,13 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     catch { throw new TownError('invalid-presence', '이 창의 연결 상태를 다시 확인해 주세요.'); }
   }
   /** The world settled to a lease, with the host stamp a pulse leaves; null when nothing changed. */
-  function settledTo(next, { nowMs, canContact = false, touch = false }) {
+  function settledTo(next, { nowMs, canContact = false, touch = false, caps = [] }) {
     if (!living()) return null;
     // The village closes its bands on every settlement (W3): its seed and offset come from the account, and a
     // visit the lease shows ended (visitEndAt reached) ends the holds opened before it — read, not recorded.
     const endAt = visitEndAt(next.presence), close = (world, at) => closeLiving(world, at, { seed: account.villageSeed,
       offsetMin: offsetAt(tz, at), visitEnd: endAt !== null && endAt <= at ? endAt : null, sleeps: sleeps === true });
-    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, close, nowMs, canContact, touch });
+    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, close, nowMs, canContact, touch, caps });
     const lifeHost = { lastForegroundAt: next.lastForegroundAt, fence: next.presence.fence };
     if (next.presence.at !== null && JSON.stringify(lifeHost) !== JSON.stringify(world.lifeHost ?? null)) {
       world = { ...world, lifeHost }; changed = true;
@@ -359,12 +360,15 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         if (report) keep({ seen: report });
         return { issued: null, throttled: true, worldSeq: state.writeSeq };
       }
-      const before = state.life.contacts.length, world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true });
+      // What the screen can draw (W5: caps ['cards']) decides whether a card's offer may be issued (review F6).
+      const caps = Array.isArray(input.caps) ? input.caps.filter(cap => cap === 'cards') : [];
+      // Issued is told by id: a card's settled offers may leave in the same settlement (review GA5).
+      const before = new Set(state.life.contacts.map(c => c.id)), world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true, caps });
       if (world) { commit(world, report ? { seen: report } : {}); lease = settledLease(lease, state.settledU); }
       else if (report) keep({ seen: report });
       lease = { ...lease, boundaryAt: at }; keepLease();
-      const issued = state.life.contacts.length > before ? state.life.contacts.at(-1) : null;
-      return { issued: issued && { id: issued.id, contactKey: issued.contactKey }, worldSeq: state.writeSeq };
+      const issued = state.life.contacts.findLast(c => !before.has(c.id)) ?? null;
+      return { issued: issued && { id: issued.id, contactKey: issued.contactKey, ...(issued.card ? { card: issued.card, key: issued.key } : {}) }, worldSeq: state.writeSeq };
     },
     presence(input) {
       requireLife(input);
@@ -388,7 +392,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       // one older than the world's window is compared with its receipt.
       const receipt = receipts.get(command?.id), recorded = !!receipt;
       const base = recorded && !state.commands.some(item => item.id === command.id) ? { ...state, commands: [receipt] } : state;
-      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_)/.test(command.type)) {
+      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|GREET$)/.test(command.type)) {
         host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
         host.ownerSurfaceId = presence.owner;

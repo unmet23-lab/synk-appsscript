@@ -16,10 +16,11 @@ test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 모두
   // 설계 목표는 한가한 PC에서 5초(§15-5) — CI에서 다른 시험과 함께 돌 때도 넘지 않을 상한을 둔다.
   assert.ok(Date.now() - started < 15000, `${Date.now() - started}ms`);
   const s = summarize(result);
-  assert.equal(s.villages, 12 * 4 * 5);
+  assert.equal(s.villages, 12 * (4 * 4 + 1), '다 받는 모습은 첫 시간대에서만');
   assert.equal(s.fail, 0, result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
-  const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside', 'energy', 'mood-lines'];
-  assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3·W4가 재는 지표');
+  const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside', 'energy', 'mood-lines',
+    'cards', 'hearsay', 'pairs', 'card-coverage'];
+  assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3·W4·W5가 재는 지표');
   assert.deepEqual(result.metrics.map(m => m.id), METRICS.map(m => m.id));
   assert.equal(runSimulation({ seeds: 12, days: 30 }).hash, result.hash, '같은 입력이면 같은 결과');
   assert.notEqual(runSimulation({ seeds: 13, days: 30 }).hash, result.hash);

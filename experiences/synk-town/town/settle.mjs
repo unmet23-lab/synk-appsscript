@@ -50,7 +50,7 @@ export function settleSteps(settledU, lease, { canContact = false, touch = false
 /** settle(world, lease, { step, check, close }) → { state, changed }. The state is checked once, after
  * the walk. close(state, nowMs), when given, runs after the steps on every settlement — the village's
  * bands follow the wall clock, not U, so they close even when no play time is unsettled (W3). */
-export function settle(previous, lease, { step: stepWorld, check, close, nowMs, canContact = false, touch = false } = {}) {
+export function settle(previous, lease, { step: stepWorld, check, close, nowMs, canContact = false, touch = false, caps = [] } = {}) {
   if (typeof stepWorld !== 'function' || typeof check !== 'function') throw new TypeError('settle needs the step and the check');
   const steps = settleSteps(previous.settledU ?? 0, lease, { canContact, touch });
   if (!steps.length && !close) return { state: previous, changed: false };
@@ -58,7 +58,7 @@ export function settle(previous, lease, { step: stepWorld, check, close, nowMs, 
   for (const step of steps) {
     stepWorld(state, { enabled: true, elapsedMs: step.elapsedMs, nowMs, surfaceId: step.span.surfaceId,
       fence: step.span.fence, surface: step.span.surface, canRun: step.span.canRun,
-      canContact: step.canContact === true, visitEnded: step.visitEnded === true, visitEndedAt: step.endedAt ?? null });
+      canContact: step.canContact === true, ...(step.canContact === true ? { caps } : {}), visitEnded: step.visitEnded === true, visitEndedAt: step.endedAt ?? null });
   }
   state.settledU = lease.uMs;
   if (close) close(state, nowMs);

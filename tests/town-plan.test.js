@@ -44,7 +44,8 @@ test('기상·취침 덮임 — 만날 수 있는 시각에는 늘 둘 이상, �
   assert.deepEqual(awakeAt(thursday, at(9)), ['cafe-owner', 'researcher', 'workshop-owner']);
   assert.deepEqual(awakeAt(thursday, at(22)), ['cafe-owner', 'researcher']);
   assert.deepEqual(awakeAt(thursday, at(23, 45)), ['researcher']);
-  assert.deepEqual(awakeAt(thursday, at(2)), []);
+  // Only R4's night flowers keep the researcher up past bedtime (§8-4, W5); everyone else sleeps.
+  assert.ok(thursday.filter(s => s.startMs <= at(2) && at(2) < s.endMs).every(s => s.card === 'R4' && s.cardRole === 'owner'));
   const sunday = await dayPlan(LIFE_DAY + 3);
   assert.deepEqual(awakeAt(sunday, DAY + 3 * 24 * HOUR + 4 * HOUR), ['cafe-owner', 'workshop-owner'], '일요일 연구원은 10시에 일어난다');
 });

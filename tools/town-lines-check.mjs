@@ -6,7 +6,8 @@
  *
  * 원고는 experiences/synk-town/town/data/lines/*.json 이다. 파일 하나는 줄 묶음(배열, §16-2 꼴) 또는
  * 대화 장면 하나(sceneId·versions, §12-2 꼴)다.
- * 지금 보는 것: 원고 ID 꼴·중복, L1 판, 금지 말(G3·G4·G10·주민:26), 마음 한 줄(kind mood, W4)의 꼴·네 판·판 길이 상한.
+ * 지금 보는 것: 원고 ID 꼴·중복, L1 판, 금지 말(G3·G4·G10·주민:26), 마음 한 줄(kind mood, W4)의 꼴·네 판·판 길이 상한,
+ * W5의 카드·쌍·소식 줄 꼴과 판 길이(소식 줄은 금지 말 예외 없음), 전해 듣기 틀을 소식 줄로 채운 판 길이.
  * 낱말·문형 층 대조와 설정 일관성은 W10에서 더한다.
  * 금지 말 목록은 이 파일 한 곳에 두고, 원칙 시험(§15-2)도 여기서 가져다 쓴다.
  */
@@ -20,8 +21,13 @@ export const ALLOW_FILE = path.join(ROOT, 'experiences/synk-town/town/data/lines
 
 export const LEVELS = ['L1', 'L2', 'L3', 'L4'];
 export const RESIDENTS = ['cafe-owner', 'workshop-owner', 'researcher'];
-/** 「그동안 달라진 것」 줄 — 금지 말을 허용 목록 없이 막는다(§10-2). */
-export const STRICT_KINDS = ['changes'];
+/** 「그동안 달라진 것」 줄과 마을 소식 줄 — 금지 말을 허용 목록 없이 막는다(§10-2, W5 §2-9). */
+export const STRICT_KINDS = ['changes', 'news'];
+/** 전해 듣기 틀의 빈칸(§9-4): {news}는 소식 줄, {from}은 전해 준 주민의 역할명. 검사기는 채운 뒤 길이를 잰다. */
+export const ROLE_LABELS = Object.freeze({ 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' });
+/** 소식 줄은 전해 듣기 틀(앞말 한 덩이·뒷말 한 문장)이 감쌀 자리를 남긴다 — L2 한 문장 5어절, L3 두 문장까지, L4 세 문장까지. */
+export const NEWS_LENGTH = Object.freeze({ L1: { sentences: [1, 1], words: 5 }, L2: { sentences: [1, 1], words: 5 },
+  L3: { sentences: [1, 2], words: 10 }, L4: { sentences: [2, 3], words: 14 } });
 
 /** 금지 말. 주민·마을 글에서 걸리면, 사람이 확인해 허용 목록에 올린 쓰임만 지나간다. */
 export const FORBIDDEN = Object.freeze([
@@ -70,6 +76,57 @@ function moodProblems(entry, file) {
   return out;
 }
 
+/** 판 길이 하나를 잰다(문장 수와 문장마다 어절 수). */
+function lengthProblems(text, level, rule, bad) {
+  const { sentences: [least, most], words } = rule, parts = sentencesOf(text);
+  if (parts.length < least || parts.length > most) bad('length', `${level}은 ${least === most ? `${least}문장` : `${least}~${most}문장`}이에요(지금 ${parts.length}).`, level);
+  for (const part of parts) if (wordsOf(part) > words) bad('length', `${level}은 문장마다 ${words}어절 안이에요 — 「${part}」 ${wordsOf(part)}어절.`, level);
+}
+
+/** W5 줄의 꼴(§16-2·§2-9): 카드 줄(card — 계기·혼자·둘이·제안·결과), 쌍 줄(pair — 단계마다 두 사람), 소식 줄(news — 마을의 말),
+ * 전해 듣기 틀(hearsay — 빈칸 {news}·{from}). 네 판이 다 있고, 빈칸은 전해 듣기 틀에만, 근거 설정(from)이 있다. */
+function townProblems(entry, file) {
+  const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
+  const [npc, kind] = entry.id.split('.');
+  if (entry.kind !== kind) bad(kind, `kind는 ID의 둘째 칸(${kind})이에요.`);
+  if (entry.npc !== npc || !(kind === 'news' ? npc === 'village' : RESIDENTS.includes(npc))) bad(kind, kind === 'news' ? '소식 줄의 npc는 village예요.' : '줄의 npc는 ID 앞의 주민이에요.');
+  if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad(kind, '뜻(meaning)이 없어요.');
+  if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(f => typeof f === 'string' && f.trim())) bad(kind, '근거 설정(from)이 없어요.');
+  for (const level of LEVELS) {
+    const text = entry.levels?.[level];
+    if (typeof text !== 'string' || !text.trim()) { bad(kind, `${level} 판이 없어요 — 네 판이 다 있어요.`, level); continue; }
+    const slots = [...text.matchAll(/\{([a-z]+)\}/g)].map(m => m[1]);
+    if (kind === 'hearsay') {
+      if (!slots.includes('news') || slots.some(s => !['news', 'from'].includes(s)) || (entry.when?.how !== 'heard' && slots.includes('from'))) bad('hearsay', `${level}: 전해 듣기 틀에는 {news}가 하나 있고, {from}은 들은 것(heard)에만 있어요.`, level);
+      continue;
+    }
+    if (/[{}]/.test(text)) bad(kind, '빈칸은 전해 듣기 틀에만 있어요.', level);
+    lengthProblems(text, level, kind === 'news' ? NEWS_LENGTH[level] : LEVEL_LENGTH[level], bad);
+  }
+  return out;
+}
+
+/** 전해 듣기 틀을 소식 줄마다(같은 판)·전해 준 주민마다 채워 보고 판 길이를 잰다 — 틀 하나에 걸린 것은 한 번만 적는다. */
+function hearsayProblems(documents) {
+  const entries = documents.flatMap(({ file, doc }) => (Array.isArray(doc) ? doc.map(entry => ({ file, entry })) : []));
+  const news = entries.filter(({ entry }) => entry?.kind === 'news').map(({ entry }) => entry);
+  const out = [];
+  for (const { file, entry } of entries.filter(({ entry }) => entry?.kind === 'hearsay')) {
+    const tellers = Object.entries(ROLE_LABELS).filter(([npc]) => npc !== entry.npc).map(([, label]) => label);
+    for (const level of LEVELS) {
+      const frame = entry.levels?.[level];
+      if (typeof frame !== 'string') continue;
+      const found = new Map();
+      for (const item of news) for (const from of tellers) {
+        const text = frame.replace('{news}', item.levels?.[level] ?? '').replace('{from}', from);
+        lengthProblems(text, level, LEVEL_LENGTH[level], (rule, message) => { if (!found.has(message)) found.set(message, item.id); });
+      }
+      for (const [message, newsId] of found) out.push({ file, id: entry.id, rule: 'length', level, message: `${message} (${newsId}로 채웠을 때)` });
+    }
+  }
+  return out;
+}
+
 /** 글 하나에서 걸린 금지 말. 플레이어 보기는 기간·탓·재촉 대상이 아니라 주제만 본다. */
 export function scanText(text, { speaker = 'resident' } = {}) {
   const hits = [];
@@ -102,6 +159,7 @@ export function collectTexts(doc, file) {
       if (extra.length) bad(id, `모르는 판: ${extra.join(', ')}`);
       if (typeof entry.levels.L1 !== 'string') bad(id, 'L1 판은 모든 줄에 있어야 해요(다리 §3-4).');
       if (entry.kind === 'mood') problems.push(...moodProblems(entry, file));
+      if (['card', 'hearsay', 'pair', 'news'].includes(entry.kind)) problems.push(...townProblems(entry, file));
       const speaker = RESIDENTS.includes(entry.npc) ? 'resident' : 'system';
       for (const [level, text] of levelTexts(entry.levels)) {
         if (typeof text !== 'string' || !text.trim()) { bad(id, `${level} 판이 비었어요.`); continue; }
@@ -162,6 +220,7 @@ export function checkDocuments(documents, { allow = [] } = {}) {
       }
     }
   }
+  problems.push(...hearsayProblems(documents));
   const unused = allow.filter(entry => !used.has(entry)).map(entry => ({ id: entry.id, phrase: entry.phrase }));
   return { texts: count, documents: documents.length, problems, unusedAllow: unused };
 }

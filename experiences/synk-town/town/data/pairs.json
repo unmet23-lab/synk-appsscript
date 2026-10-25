@@ -1,0 +1,9 @@
+{
+  "$comment": "Resident pairs (vertical slice design §3-5·§9-1, W5). key joins the two residents in resident order. topic is the small difference the two work out together — it only ever moves up a step (0~2), one step each time one of frictionCards is solved by the two of them. scene is the pair's own scene (PAIR01~03); a card's pair path and a chat between the two are both that pair's scenes. chatSpots: where two residents talk in each place (a place with no entry has no chat).",
+  "pairs": [
+    { "key": "cafe-owner|workshop-owner", "members": ["cafe-owner", "workshop-owner"], "topic": "rest-vs-work", "scene": "PAIR01", "frictionCards": ["C5", "C6"] },
+    { "key": "workshop-owner|researcher", "members": ["workshop-owner", "researcher"], "topic": "explain-length", "scene": "PAIR02", "frictionCards": ["R3", "W1"] },
+    { "key": "cafe-owner|researcher", "members": ["cafe-owner", "researcher"], "topic": "aroma-first", "scene": "PAIR03", "frictionCards": ["C3", "R4"] }
+  ],
+  "chatSpots": { "cafe": "cafe.front", "workshop": "workshop.inside", "greenhouse": "greenhouse.bed", "lane": "lane.mid" }
+}

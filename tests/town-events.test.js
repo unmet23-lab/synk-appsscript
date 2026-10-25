@@ -9,7 +9,7 @@ const relationFields = { participantRole: ['choose'], help: { by: 'player', to: 
 
 test('플레이어가 든 사건에만 관계 칸 셋·활동·계열이 있다', async () => {
   const { playerEvent, eventProblem, validEvent } = await townModule('events');
-  const base = { id: 'E-1', kind: 'card.resolved', card: 'C1', path: 'player', actors: ['cafe-owner'], place: 'cafe', public: false };
+  const base = { id: 'E-1', kind: 'card.resolved', ref: '20748.day.C1', card: 'C1', path: 'player', actors: ['cafe-owner'], place: 'cafe', public: false };
   const event = playerEvent(base, relationFields);
   assert.deepEqual(event.actors, ['cafe-owner', 'player']);
   assert.ok(validEvent(event));

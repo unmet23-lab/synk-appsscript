@@ -23,6 +23,8 @@ export const BASE = Object.freeze(new Set([
   'SUPPORT_CLOSE', 'SUPPORT_SET', 'SUPPORT_CLEAR',
   // §20-3 feedback and suggestion menus, the notebook's settings.
   'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY',
+  // W5: closing a card with the player, declining or putting off its offer, a greeting (§20-7 ③, review F5).
+  'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET',
 ]));
 export const FIRST_CHAPTER = Object.freeze(new Set([
   'CHOOSE', 'NEXT', 'COLOR', 'CRAFT', 'PREVIEW_SLOT', 'PLACE', 'CANCEL', 'SIGN_START', 'SIGN_NEXT', 'SIGN_PICTURE', 'SIGN_PREVIEW', 'SIGN_PLACE', 'SIGN_CANCEL',
@@ -31,5 +33,7 @@ export const FIRST_CHAPTER = Object.freeze(new Set([
   'LIFE_OPEN', 'LIFE_RESUME', 'LIFE_CONFIRM', 'LIFE_DIRECTION', 'LIFE_ROLE',
   'BAZAAR_START', 'BAZAAR_RESUME', 'BAZAAR_ASK', 'BAZAAR_CHOICE', 'BAZAAR_CONFIRM', 'BAZAAR_CONTINUE', 'BAZAAR_MATCH', 'BAZAAR_OWNER_TAKE', 'BAZAAR_ROLE', 'BAZAAR_TEA_NEXT',
   'SUPPORT_OPEN', 'SUPPORT_HINT', 'SUPPORT_ANSWER', 'SUPPORT_NEXT', 'SUPPORT_ACCEPT',
+  // W5: a small need card with the player — the first chapter's (§20-7 ③ 카드 「나와 함께」, review F5).
+  'CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM',
 ]));
 export const commandScope = type => RIGHTS.has(type) ? 'rights' : BASE.has(type) ? 'base' : FIRST_CHAPTER.has(type) ? 'first-chapter' : 'subscription';
