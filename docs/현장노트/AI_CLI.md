@@ -527,6 +527,13 @@
 - 고침: 갈래에는 만들기 · 대조기 · 렌더 · 검사 · 시험 재료(`질문.md`)까지 맡기고, 질문 파일 경로를 돌려받아 본 세션이 하위 에이전트(Sonnet 시험 · Opus 역번역 · Fable 교정)를 띄운다. 고칠 것은 `SendMessage`로 같은 갈래에 넘기면 맥락이 이어진다(이날 v2 · v3 두 번 그렇게 고쳤다).
 - 다시 확인: 갈래를 띄울 때 프롬프트에 「맥락 없는 시험 · 검수는 질문 파일만 만들고 넘겨라」를 적고, 돌아온 보고에 질문 파일 경로가 있는지 본다.
 
+
+### 「AI가 아무 말 없이 시키면 뭘 만드나」 기준선 실험에 이 PC `claude -p`도 API 키도 못 써 하위 에이전트로 돌렸다 — 저장소 문맥이 섞일 수 있다 (2026-10-25 Claude)
+- 증상: 10-25 yuhobuilds Y5에서 같은 요청을 맥락 없는 AI에 여러 번 주려고 공식 CLI를 저장소 밖 빈 폴더에서 `claude -p … --model sonnet`으로 띄우자 7번 다 1초 만에 「You've hit your weekly limit · resets Oct 26, 12pm」(429)로 끝났다(앱 세션은 멀쩡). `tools/lib/클로드키.js` 보내기는 「클로드키_모두소진」 — `~/SYNK_보안/클로드_키목록.json`의 「키」·「한도키」가 둘 다 빈 배열이었다.
+- 원인: 이 PC의 CLI는 `~/.claude`에 로그인된 계정으로 돌고, 데스크톱 앱 세션과 계정 · 주간 몫이 다를 수 있다. API 크레딧 키는 그날 목록에 없었다(언제 비었는지 모름).
+- 고침: 하위 에이전트(Agent `model: sonnet`, `general-purpose`)에 「파일 · 검색 · 스킬 · 웹 도구를 쓰지 말고 저장소 규칙은 무시, 결과 HTML 하나를 이 경로에 Write」만 주고 판마다 새로 하나씩 띄웠다(14+3판, 판마다 약 8만 토큰 — 대부분 하위 에이전트에 붙는 안내문). 결과는 보라색 0판이라 「지금 모델의 기본값」으로 썼지만, 하위 에이전트에는 CLAUDE.md 등 저장소 안내가 붙으므로 완전히 빈 대화와 같다고는 쓰지 않았다(편 폴더 `자료/실험/요청문.md` 「한계」).
+- 다시 확인: `claude -p "안녕" --output-format json`을 빈 폴더에서 돌려 `api_error_status`가 429인지, `node -e "console.log(require(require('os').homedir()+'/SYNK_보안/클로드_키목록.json'))"`의 「키」가 비었는지 본다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
