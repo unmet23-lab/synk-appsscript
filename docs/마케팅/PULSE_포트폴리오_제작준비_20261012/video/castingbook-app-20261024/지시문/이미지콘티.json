@@ -1,0 +1,461 @@
+{
+ "메모": "8번 캐스팅북 앱 소개 30초 · 이미지 콘티 지시문(2026-10-25 — 02_콘티.md 3절). 원본 21컷 첫 프레임과 같은 카메라 자리 · 크기 · 높이 · 빛으로 굽는다(만족 사례 장부 S31). 원본 프레임은 넣지 않고 사람 자리만 검은 실루엣 · 합성 자리만 크로마 초록으로 바꾼 배치도(배치:S<컷>, git 밖 synk-vendor/pulse-portfolio12-20261024/콘티/p8/배치 — 도구 콘티/p8/도구/배치도.py)와 카페 기준 그림(R1 · R2), 소연 참조 넷(C:/SYNK-LoRA/validation/F05_soyeon/refs)만 넣는다. 폰 화면 · 쇼핑백 · 포스터 · 스티커 · 배너는 초록 대역으로 굽고 실제 캐스팅북 화면 녹화 · 캐스팅북 사진을 합성한다(제품 · 앱 화면은 AI로 그리지 않는다). 풀기: node 지시문/풀기.mjs → synk-vendor/…/콘티/p8/ego/jobs.json, 받은 그림은 …/콘티/p8/받음/.",
+ "공통": {
+  "시작": "Create one still photograph. A cinematic film still from a Korean TV commercial, 16:9 frame.",
+  "소연_얼굴": "Use the four attached photos (Images 1 to 4) only as identity references for one Korean woman in her mid-thirties. Keep her face exactly the same in every detail: an oval face with softly rounded cheeks, dark brown almond-shaped eyes with natural double eyelids, a straight and slightly wide nose bridge, a faint natural shadow under her eyes, bright warm-toned skin with natural makeup, natural rosy-brown lips, and dark brown collarbone-length hair with the ends curled softly inward. She looks like a real woman in her mid-thirties, not a young idol. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, earrings, necklaces, tattoos, text, logos or watermarks.",
+  "소연_옷": "She wears a light-blue chambray shirt with the sleeves rolled once to the forearm, and a plain natural canvas apron tied at the waist with a neck strap.",
+  "카페": "Location: her small independent neighborhood café in Seoul, about thirty square meters. Along the back runs a light oak counter with a stainless espresso machine, a grinder, a stack of white cups and a small glass pastry case; behind the counter, a white tiled wall with open oak shelves holding glass jars of coffee beans and small green plants; a glass-door drinks fridge stands at the left end of the counter. The seating area has five small round white tables with light wood chairs. The front of the café is one large glass window with a glass door, facing a quiet street with ginkgo trees. White walls, pale wood floor, white pendant lamps hanging over the counter.",
+  "카페_짧게": "Location: her small independent neighborhood café in Seoul — light oak counter, white tiled wall with oak shelves, small round white tables, a large front window onto a quiet street.",
+  "비었음": "There are no customers at all: every table and chair is empty.",
+  "빛_차가움": "Light: a grey, overcast late-October afternoon. The café's lamps are switched off; the only light is soft, cool daylight from the front window. Colors are muted, desaturated and cool — blue-grey, slate and pale grey-green, like the quiet first minutes of a story. No warm lamp light, no golden sunlight, no orange tones.",
+  "빛_따뜻함": "Light: warm and golden. The café's pendant lamps are switched on with warm 2700K bulbs, and low late-afternoon sun pours in through the front window, catching the steam and the wood. The whole frame glows in honey, cream, soft orange and warm wood tones.",
+  "필름": "Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. No text, no logos, no watermarks.",
+  "필름_초록": "Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. Apart from the green placeholder, no text, no logos, no watermarks anywhere.",
+  "배치_실루엣": "Image {n} is a layout guide: the black silhouettes show only where the people are in the frame, how big and in what pose — match that placement, size and pose. The silhouettes have no faces, clothes or colors to copy. Its flat light-grey background is not a wall — ignore it.",
+  "배치_실루엣1": "Image {n} is a layout guide: the black silhouette shows only where the person is in the frame, how big and in what pose — match that placement, size and pose. It has no face, clothes or colors to copy. Its flat light-grey background is not a wall — ignore it.",
+  "배치_초록": "The bright green area in Image {n} marks exactly where the flat chroma-key green placeholder sits in the frame — match its position, size and angle.",
+  "카페참조": "Image {n} shows the same café from another camera position — use it only for the furniture, materials and layout of the room, not for the camera angle.",
+  "폰_초록": "The phone is a modern black smartphone with thin bezels and rounded corners. Its whole display, edge to edge, shows nothing but a flat, evenly lit chroma-key green (pure green #00B140) with a grid of small white plus-shaped tracking markers, three across and five down — no app, no icons, no status bar, no reflections, no glare. The green display will be replaced later.",
+  "대역_초록": "The placeholder is a perfectly flat, matte, evenly colored chroma-key green (pure green #00B140) with no markings, no texture, no print and no reflections — it will be replaced later with a printed photo. Keep it pure flat green.",
+  "손_소연": "The hands belong to a Korean woman in her mid-thirties: natural short nails with no polish, no rings, no bracelets, no watch, warm natural skin; the rolled cuff of her light-blue chambray shirt shows at the wrist.",
+  "클로즈업_틀": "TIGHT CLOSE-UP: her face fills the frame — from her eyebrows to her chin her face takes up about two-thirds of the frame height; the top of her head is cut off by the top edge of the frame and her shoulders are cut off by the bottom edge. No other face or body is in the frame.",
+  "클로즈업_카메라": "Camera: locked-off close-up at her eye level, 85mm lens, very shallow depth of field; the café behind her is a soft blur of the oak shelves and the white tiled wall.",
+  "거꾸로_자세": "She sits on a simple light-wood chair behind the counter and leans far back, her head tipped back over the top of the chair's backrest so that her face points up toward the ceiling, holding her phone up above her face with both hands and looking up at its screen. The camera is behind the chair at the height of her head, looking at her face from the top-of-the-head side, so in the frame her face is UPSIDE DOWN: her forehead and hairline are toward the bottom of the frame, her chin and mouth toward the top. Her dark brown hair hangs straight down from her head toward the floor, at the bottom of the frame. Her two hands and the phone (seen from behind, its back facing the camera) are above her chin, near the top of the frame. The room behind her is upright and out of focus.",
+  "표정_심심": "Her face is blank and bored — eyelids a little heavy, mouth relaxed and closed, idly scrolling.",
+  "표정_멈춤": "Her eyes have just stopped moving: they are fixed on one spot of the phone screen, a little wider than before, lips softly closed — something caught her attention.",
+  "폰_뒤": "She holds a black smartphone low in her hand at the bottom left of the frame, its back toward the camera, and looks down at its screen.",
+  "소연_얼굴_거꾸로": "Images 1 to 3 are identity references for one Korean woman in her mid-thirties — they are her real photos ROTATED UPSIDE DOWN, so they show exactly how her face looks when it is seen upside down, as in this shot. Keep her face exactly the same in every detail: an oval face with softly rounded cheeks, dark brown almond-shaped eyes with natural double eyelids, a straight and slightly wide nose bridge, a faint natural shadow under her eyes, bright warm-toned skin with natural makeup, natural rosy-brown lips, and dark brown collarbone-length hair. She looks like a real woman in her mid-thirties, not a young idol. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, earrings, necklaces, tattoos, text, logos or watermarks.",
+  "글자없음_기계": "The espresso machine, grinder, fridge and every other appliance are plain, with no brand name, lettering, label or logo anywhere.",
+  "얼굴_밝기": "Exposure is set for her face: her face is clearly lit and is the brightest skin in the frame — soft daylight bounces off the white ceiling she is facing — while the window behind her is a soft, hazy pale grey, never a white glare. She is not a silhouette.",
+  "눈동자_폰": "Her irises are turned toward the phone above her chin (toward the top of the frame), not toward the camera.",
+  "바탕_뭉개짐": "The background is so far out of focus that nothing in it can be recognized — only soft grey-blue shapes and the pale glow of the window; no table, chair or machine is readable."
+ },
+ "컷": [
+  {
+   "id": "R1",
+   "who": "카페",
+   "refs": [],
+   "text": "{시작} {카페} {비었음} Wide shot from the customer side near the front door, at standing eye level, 28mm lens, looking toward the counter: the empty round tables and chairs fill the foreground and middle of the frame, the light oak counter with the espresso machine runs across the middle, the tiled wall with the oak shelves behind it, the drinks fridge at the left end of the counter. Nobody is in the café. {빛_차가움} {필름}",
+   "메모": "카페 기준 그림 1 — 손님 쪽에서 카운터를 본다(2 와이드 · 7 · 9 · 14 · 16 뒤 배경, 19 · 20 따뜻한 판의 방 참조)."
+  },
+  {
+   "id": "R2",
+   "who": "카페",
+   "refs": [
+    "R1"
+   ],
+   "text": "{시작} Image 1 shows this exact café from the customer side near the front door. Now show the SAME café — the same light oak counter with the stainless espresso machine and the stack of white cups, the same white tiled wall with open oak shelves, the drinks fridge at the left end of the counter, the same small round white tables and light wood chairs, the same white pendant lamps (switched off), the same big glass front window and glass door onto the grey street with ginkgo trees — but from the opposite side: the camera is behind the counter, at the eye level of someone sitting on a chair there, 35mm lens, looking out over the counter toward the seating area and the front window. The counter's edge runs along the bottom of the frame, the empty round tables fill the middle, the big window fills the back. Nobody is in the café. {빛_차가움} {필름}",
+   "메모": "카페 기준 그림 2 — 카운터 안에서 창 쪽을 본다(1 · 4 거꾸로 얼굴 너머, 폰 컷들의 흐린 배경). 첫 판(15:16)은 R1과 다른 카페로 나와 R1을 참조로 넣어 다시 굽는다."
+  },
+  {
+   "id": "C01",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S01",
+    "R2"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {거꾸로_자세} {표정_심심} {배치_실루엣1:5} Medium close-up: her upside-down head and shoulders fill the lower half of the frame, her hands with the phone in the upper middle. Beyond her, out of focus and upright: the counter edge, the empty tables and the grey front window of the café. {카페참조:6} {빛_차가움} {필름}",
+   "메모": "1 0.00–1.44 거꾸로 보이는 얼굴 미디엄 클로즈업 · 심심함(바로 굽기)."
+  },
+  {
+   "id": "C01r",
+   "who": "소연",
+   "refs": [
+    "소연x4"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Top-down shot: she lies on her back on a pale wooden bench, looking straight up at a black smartphone that she holds above her face with both hands; the camera looks straight down at her from above and slightly behind her head, so in the frame her face is upright and level — forehead toward the top of the frame, chin toward the bottom — and her two hands with the phone (its back toward the camera) are in the lower middle of the frame, just below her chin. Her dark brown hair spreads out on the bench above her head toward the top edge of the frame, away from her face. {표정_심심} Medium close-up: her head and shoulders fill the upper half of the frame. Soft, cool, grey daylight from the side, muted blue-grey colors. {필름}",
+   "메모": "1 견줌 — 위에서 내려다본 바로 선 얼굴로 굽고 180° 돌려 쓰는 길(샷표 3절). 받은 판을 180° 돌려 C01과 닮음 · 자연스러움을 견준다."
+  },
+  {
+   "id": "C02",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {카페} {비었음} Wide shot from the customer side near the front door at standing eye level, 24mm lens, the same view as Image 5: the empty round tables and chairs fill the foreground and the left and right of the frame. In the middle of the frame, behind the counter, she is small — about one fifth of the frame height — sitting on a light-wood chair and leaning far back with her head tipped back over the backrest, holding her phone up above her face with both hands. Outside the front window, out of focus, one passerby walks by on the grey street, and beside the ginkgo trees stands a street lamppost with a long vertical banner hanging from two brackets — the banner's printed face is a flat chroma-key green panel, small in the frame. {대역_초록} {빛_차가움} {필름}",
+   "메모": "2 1.44–2.40 와이드 · 손님 없는 오후 카페, 카운터 뒤 젖혀 앉은 소연(원본 가운데 작은 사람 자리). 창밖 가로등 배너(초록 → 하린)는 13번의 복선 — 원본 2번 와이드 뒤 나무에 이미 뜨개 옷이 입혀진 것(1.9초)과 같은 자리(10-25 아르곤 시험)."
+  },
+  {
+   "id": "C03",
+   "who": "손",
+   "refs": [
+    "배치:S03",
+    "R2"
+   ],
+   "text": "{시작} Close-up of a smartphone held upright, filling most of the frame height: her right hand holds it from the right side, the thumb resting on the right edge and the fingers wrapped behind; the phone stands slightly right of the center of the frame, its screen facing the camera. Her left index finger comes in from the lower left corner and touches the lower part of the screen, about to swipe upward. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Behind, far out of focus: the empty café seen from behind the counter — pale tables and the grey window light, as in Image 2. 50mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "3 2.40–4.10 손에 든 폰 · 왼손 검지로 넘김 — 화면은 녹화 R3(보드 위에서 하린까지 두 번 넘김)."
+  },
+  {
+   "id": "C04",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S04",
+    "R2"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {거꾸로_자세} {표정_멈춤} {배치_실루엣1:5} CLOSE-UP: her upside-down face fills the lower two-thirds of the frame — her chin near the middle of the frame, her forehead near the bottom edge, her hanging hair cut off by the bottom edge; her hands and the phone are cut off by the top edge. Beyond her, out of focus and upright: the café, as in Image 6. Camera behind the chair, 65mm lens, shallow depth of field. {빛_차가움} {필름}",
+   "메모": "4 4.10–5.94 거꾸로 얼굴 클로즈업 · 눈이 멈춘다(영상에서 4% 다가감)."
+  },
+  {
+   "id": "C05",
+   "who": "거리",
+   "refs": [
+    "배치:S05",
+    "소연x4"
+   ],
+   "text": "{시작} Low-angle shot from the sidewalk outside the café, the camera just above the pavement, 24mm lens, looking at the café's big front window. In the foreground a passerby walks past from left to right: only their legs are in the frame — dark trousers and white sneakers, the near leg mid-stride on the right side of the frame — and from their hand, out of frame above, a white paper shopping bag with rope handles swings low on the left side of the frame, its front facing the camera. The whole front face of the shopping bag is a flat chroma-key green panel. {대역_초록} {배치_초록:1} {배치_실루엣:1} Behind them, through the window glass, inside the café, out of focus in the middle of the frame: the woman of Images 2 to 5, in a light-blue shirt and a canvas apron, sitting behind the counter and leaning far back on her chair with her head tipped back over the backrest, her phone held up above her face. {빛_차가움} The pavement is grey with a few yellow ginkgo leaves. {필름_초록}",
+   "메모": "5 5.94–7.44 낮은 앵글 — 하린 사진 쇼핑백을 든 행인 다리가 지나가고 창 너머 소연(쇼핑백 앞면 = 캐스팅북 하린 사진 합성)."
+  },
+  {
+   "id": "C06",
+   "who": "손",
+   "refs": [
+    "배치:S06"
+   ],
+   "text": "{시작} Extreme close-up of a smartphone screen: the screen fills almost the whole frame, tilted slightly, with the phone's left edge running down the left part of the frame; the camera is very close, 100mm macro lens, shallow depth of field. Her right thumb comes in large from the right edge, out of focus, its tip hovering over the right part of the screen, about to touch; two fingertips of her left hand hold the phone's lower left edge. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Soft, cool, grey daylight. {필름_초록}",
+   "메모": "6 7.44–8.81 화면 접사 · 엄지가 닿는다 — 화면은 녹화 R6(하린 모델 북 이름 줄 · 대표 사진)."
+  },
+  {
+   "id": "C07",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S07",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Locked-off medium shot from the customer side of the counter, at her seated eye level, 50mm lens, framed on the empty space where her head will be when she sits upright. Right now she is still leaning far back on her chair behind the counter with her head tipped back over the backrest, so the frame is almost empty: only her two hands holding the phone up and the tip of her chin peek into the frame at the bottom center. Behind: the white tiled wall with the oak shelves, the espresso machine at the left, out of focus. {배치_실루엣1:5} {카페참조:6} {빛_차가움} {필름}",
+   "메모": "7 8.81–11.28 첫 프레임 — 젖혀 있어 아래에 손 · 폰만, 영상에서 몸을 일으켜 바로 앉고 눈썹이 올라간다(끝 그림은 영상 시작 그림 단계에서)."
+  },
+  {
+   "id": "C08",
+   "who": "거리",
+   "refs": [
+    "배치:S08"
+   ],
+   "text": "{시작} Wide shot from across a quiet two-lane street in Seoul, 85mm lens, at standing eye level: on the opposite sidewalk, the glass front of a small neighborhood shop. Taped inside its window, a tall portrait poster in a thin white border — the poster's printed area is a flat chroma-key green panel. {대역_초록} {배치_초록:1} Two passersby in autumn coats — one in a camel coat, one in a grey padded jacket — have stopped on the sidewalk in front of the window, their backs to the camera, one on each side of the poster: the one in the camel coat points at the poster with one hand and leans toward the other, who turns her head to look at it. {배치_실루엣:1} Yellow ginkgo leaves on the sidewalk; a blurred parked bicycle in the foreground at the bottom of the frame. {빛_차가움} {필름_초록}",
+   "메모": "8 11.28–12.11 와이드(길 건너) — 하린 포스터를 건 옆 가게 앞에 멈춘 두 사람(뒷모습). 포스터 = 캐스팅북 하린 사진 합성. 원본 8번은 한 사람이 다른 사람에게 목도리를 둘러 주는 동작(11.5 · 11.9초) — 우리는 한 사람이 포스터를 가리키며 다른 사람에게 기울인다(둘 사이의 동작 하나)."
+  },
+  {
+   "id": "C09",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S09"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {클로즈업_틀} {폰_뒤} Her eyes are lowered to the phone, fully focused, her brows slightly drawn together in concentration, lips closed. She sits upright now. {배치_실루엣1:5} {클로즈업_카메라} {빛_차가움} {필름}",
+   "메모": "9 12.11–14.18 클로즈업 · 눈을 내리깔고 집중."
+  },
+  {
+   "id": "C10",
+   "who": "손",
+   "refs": [
+    "배치:S10"
+   ],
+   "text": "{시작} Extreme close-up of a smartphone held at a strong diagonal tilt: the screen fills most of the frame, its left edge running from the top left down toward the bottom middle, its right edge from the top right toward the bottom right corner; 100mm macro lens, shallow depth of field. Her right hand holds the phone from below, the thumb at the bottom right corner of the frame. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Beyond the phone, out of focus: cool grey café light. {빛_차가움} {필름_초록}",
+   "메모": "10 14.18–15.18 비스듬한 화면 극접사 — 화면은 녹화 R10(하린 모델 북 장면 격자를 빠르게 끌어 올림)."
+  },
+  {
+   "id": "C11",
+   "who": "냉장고",
+   "refs": [
+    "배치:S11"
+   ],
+   "text": "{시작} Close-up of the glass door of a small drinks fridge in a café: on the glass, a large rectangular sticker with rounded corners, slightly angled to the camera, fills the middle of the frame. The sticker's printed face is a flat chroma-key green panel. {대역_초록} {배치_초록:1} Behind the glass, out of focus: rows of plain milk and juice bottles with no labels, lit by the fridge's cool white light; the fridge's steel frame at the right edge. 65mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "11 15.18–15.85 계산대 옆 음료 냉장고 유리문의 광고 스티커 접사 — 스티커 = 캐스팅북 하린 사진 합성."
+  },
+  {
+   "id": "C12",
+   "who": "손",
+   "refs": [
+    "배치:S12"
+   ],
+   "text": "{시작} Close-up of a smartphone held upright in both of her hands, the phone a little right of the center of the frame and taller than the frame: her right hand holds it from the right side; her left index finger, large and out of focus in the foreground, comes in from the left and presses the middle of the screen, dragging it upward. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Behind, far out of focus: dark café shapes in cool grey light. 50mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "12 15.85–16.68 두 손에 든 폰 — 화면은 녹화 R12(「딸기 라떼 신메뉴」가 적힌 보드에서 01 하린 · 02 지유로 스크롤)."
+  },
+  {
+   "id": "C13",
+   "who": "거리",
+   "refs": [
+    "배치:S13"
+   ],
+   "text": "{시작} Close shot of a street lamppost on a quiet Seoul street: a long vertical banner hangs from two horizontal brackets on the post, filling the left-center of the frame from the top edge to the bottom edge; its printed face is a flat chroma-key green panel. {대역_초록} {배치_초록:1} Further down the street, small on the right side of the frame and out of focus, the same kind of banner hangs on the next lamppost, also a flat chroma-key green panel. Bare and yellowing ginkgo trees and grey buildings behind, out of focus. 85mm lens. {빛_차가움} {필름_초록}",
+   "메모": "13 16.68–17.52 가로등에 걸린 배너 속 하린(가까운 배너 · 먼 배너 모두 캐스팅북 하린 사진 합성)."
+  },
+  {
+   "id": "C14",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S14"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {클로즈업_틀} {폰_뒤} She is absorbed: her lips part slightly, her eyes widen a little and stay on the screen, her brows lift softly — she has completely forgotten everything around her. {배치_실루엣1:5} {클로즈업_카메라} {빛_차가움} {필름}",
+   "메모": "14 17.52–18.95 클로즈업 · 입을 살짝 벌리고 빠져든다."
+  },
+  {
+   "id": "C15",
+   "who": "손",
+   "refs": [
+    "배치:S15",
+    "R2"
+   ],
+   "text": "{시작} Over-the-shoulder close-up: her right hand holds the smartphone at a diagonal tilt in the right half of the frame, its top leaning to the right; her left index finger reaches in from the left toward the screen; her own shoulder in the light-blue chambray shirt is a large dark out-of-focus shape at the left edge of the frame. The left third of the frame is calm and dark. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Beyond the phone, far out of focus: the café from behind the counter, as in Image 2, cool and grey. 50mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "15 18.95–20.09 비스듬히 든 폰 — 화면은 녹화 R15(모델 북 사진 띠의 「카페 카운터 · 딸기 라떼」를 누르면 크게 보기), 왼쪽에 글자 1."
+  },
+  {
+   "id": "C16",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S16"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} EXTREME CLOSE-UP, straight on at her eye level: her face fills nearly the whole frame — her eyebrows just below the top edge, her chin near the bottom edge, her face a little right of the middle of the frame. In the lower left foreground, very close to the lens and far out of focus, the black back of her phone is a large dark shape, its top edge glowing with the cool light of the screen. Her eyes are lowered to the phone, and the cool screen glow lights her face softly from below. She is quietly decided: a small, private smile at the corners of her mouth. The far left of the frame, beside her cheek, is dark out-of-focus café. {배치_실루엣1:5} Camera locked off, 85mm lens, very shallow depth of field. {빛_차가움} {필름}",
+   "메모": "16 20.09–20.99 폰 빛을 받은 클로즈업(아래에서) · 왼쪽에 글자 2."
+  },
+  {
+   "id": "C17",
+   "who": "손",
+   "refs": [
+    "배치:S17"
+   ],
+   "text": "{시작} Extreme close-up of the lower left part of a smartphone's screen, tilted: the phone's rounded bottom-left corner and its black edge are in the lower left of the frame, and the screen fills the rest of the frame beyond the edges; 100mm macro lens, very shallow depth of field. The tip of one of her fingers, out of focus, holds the phone's bottom edge at the far left. {폰_초록} {손_소연} {배치_초록:1} Cool grey light. {필름_초록}",
+   "메모": "17 20.99–22.36 화면 극접사(영상에서 1.4초에 1.4배 다가감) — 화면은 녹화 R17(01 하린 타일 「+ 패키지」를 엄지로 누르면 베리색 「패키지에 담김」)."
+  },
+  {
+   "id": "C18",
+   "who": "손",
+   "refs": [
+    "배치:S18",
+    "R1"
+   ],
+   "text": "{시작} Close-up of her two hands at the counter of her café: her right hand pours fresh cold milk from a small stainless-steel milk pitcher into a tall clear glass held in her left hand; at the bottom of the glass sits bright red strawberry purée with small pieces of fruit, and the white milk swirls into it in soft pink clouds. No latte art, no foam pattern. Behind her hands, out of focus: her canvas apron and light-blue chambray shirt, and the warm counter. {손_소연} {배치_실루엣:1} 85mm lens, shallow depth of field. {카페참조:2} {빛_따뜻함} {필름}",
+   "메모": "18 22.36–23.62 따뜻한 카페 빛 · 스팀 피처로 딸기 라떼에 우유를 붓는 손(라테아트 없음)."
+  },
+  {
+   "id": "C19",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S19",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {카페_짧게} Medium shot across the counter at her eye level, 40mm lens: she stands behind the counter in the right half of the frame, smiling warmly with her lips parted in a soft laugh, and hands a tall glass of strawberry latte across the counter toward the left. In the left foreground, a customer is seen from behind, over the shoulder — only the back of their head with short dark hair and the shoulder of a beige knit sweater, large and out of focus, no face visible — reaching out with one hand to take the glass. Behind her, on the white wall at the upper left, hangs a framed portrait poster — its printed area is a flat chroma-key green panel — next to the bright front window full of sunlight. {글자없음_기계} {대역_초록} {배치_초록:5} {배치_실루엣:5} {카페참조:6} {빛_따뜻함} {필름_초록}",
+   "메모": "19 23.62–26.69 미디엄 — 손님 하나(어깨 너머 실루엣)에게 딸기 라떼를 건네며 웃는 소연, 뒤 벽에 하린이 나온 우리 가게 포스터(합성). (10-26 Fable 2차: 기계 글자 없음 덧붙임)"
+  },
+  {
+   "id": "C20",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S20",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {카페} High-angle wide shot from a top corner of the café near the ceiling, looking down across the room, 24mm lens: two customers sit at a round table in the foreground with their backs to the camera — one at the lower left in a dark green coat, one at the lower right in a cream cardigan — with tall glasses of strawberry latte on the table; their faces are not visible. In the middle distance, behind the counter at the right of center, she is small, smiling as she wipes the counter. The left third of the frame is open floor and window light. {배치_실루엣:5} {카페참조:6} {빛_따뜻함} {필름}",
+   "메모": "20 26.69–28.43 높은 앵글 와이드 — 손님 둘(뒷모습)이 앉은 카페, 왼쪽에 우리 제목 글자."
+  },
+  {
+   "id": "C14b",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S14"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {클로즈업_틀} {폰_뒤} She is completely absorbed: her LIPS ARE PARTED — a small open gap between her lips, as if she has forgotten to close her mouth — her eyes a little wider than usual and fixed on the screen, her brows lifted softly, her face still. Measured on the frame: the top edge of the frame cuts through her hair just above her eyebrows — the top of her head is NOT in the frame; her chin sits just above the bottom edge; from eyebrows to chin her face spans about two thirds of the frame height. {배치_실루엣1:5} {클로즈업_카메라} {빛_차가움} {필름}",
+   "메모": "14 다시(10-25) — 첫 판(C14_164206)은 입을 다물어 원본 첫 프레임(입이 살짝 벌어짐)과 달랐다. 입이 벌어진 자리를 앞에 쓴다. (10-26 Fable 2차: 틀 숫자 덧붙임)"
+  },
+  {
+   "id": "C20b",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S20",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {카페} HIGH-ANGLE WIDE SHOT from near the ceiling in a top corner of the café — the camera about three meters up, tilted steeply down at about forty degrees, 24mm lens — so the round white table in the foreground is seen from above as an oval, and the two customers sitting at it are seen from behind and above: the tops of their heads, their shoulders and backs — one at the lower left in a dark green coat, one at the lower right in a cream cardigan — with two tall glasses of strawberry latte on the table top between them. Their faces are not visible. Further away, she stands BEHIND the counter at the right of center — the counter top is between her and the camera and hides her below the waist — small, smiling as she wipes the counter top with a cloth; she is not among the tables. {글자없음_기계} The left third of the frame is open floor and a sunlit patch of the wooden floor. {배치_실루엣:5} {카페참조:6} {빛_따뜻함} {필름}",
+   "메모": "20 다시(10-25) — 첫 판(C20_164902)은 카메라가 눈높이에 가까웠다. 원본은 천장 쪽에서 탁자를 내려다본다. (10-26 Fable 2차: 카운터 뒤 · 기계 글자 없음 덧붙임)"
+  },
+  {
+   "id": "C01c",
+   "who": "소연",
+   "refs": [
+    "소연거꾸로x3",
+    "배치:S01",
+    "R2"
+   ],
+   "text": "{시작} {소연_얼굴_거꾸로} {소연_옷} {거꾸로_자세} {표정_심심} {배치_실루엣1:4} MEDIUM CLOSE-UP, as tight as the layout guide: her upside-down face is large — about one third of the frame's height — in the lower middle of the frame; her elbows are bent and she holds the phone close, about a hand's width above her chin, in the upper middle of the frame (not at arm's length). The top of the chair's backrest and her shoulders fill the bottom edge. Beyond her, out of focus and upright: the counter edge, the empty tables and the grey front window of the café. {얼굴_밝기} {눈동자_폰} {카페참조:5} {빛_차가움} {필름}",
+   "메모": "1 다시(10-26) — 첫 판(C01_014339)은 원본보다 넓고 팔을 뻗어 폰이 얼굴과 멀었고 닮음 0.309. 위에서 본 판(C01r)은 닮음 0.478이지만 뒤가 나무 판자라 카페가 안 보인다. 카페가 보이는 바로 굽기에 거꾸로 돌린 소연 참조 셋을 넣어 닮음을 올린다. (10-26 Fable 2차: 얼굴 밝기 · 눈동자 덧붙임)"
+  },
+  {
+   "id": "C04b",
+   "who": "소연",
+   "refs": [
+    "소연거꾸로x3",
+    "배치:S04",
+    "R2"
+   ],
+   "text": "{시작} {소연_얼굴_거꾸로} {소연_옷} {거꾸로_자세} {표정_멈춤} {배치_실루엣1:4} CLOSE-UP: her upside-down face fills the lower two-thirds of the frame — her chin near the middle of the frame, her forehead near the bottom edge, her hanging hair cut off by the bottom edge; her hands and the phone are cut off by the top edge. Measured on the frame: her chin is at the vertical center of the frame and her hairline just above the bottom edge, so from chin to hairline her face spans about half the frame height; her eyes sit about two thirds of the way down the frame; her face is about one third of the frame width. Only the bottom edge of the phone and her fingertips show at the very top edge of the frame — the rest of the phone and her hands are outside the frame. {눈동자_폰} {얼굴_밝기} Beyond her, out of focus and upright: the café, as in Image 5. Camera behind the chair, 65mm lens, shallow depth of field. {빛_차가움} {필름}",
+   "메모": "4 다시(10-26) — 첫 판(C04_015041)은 자리 · 크기가 원본과 잘 맞지만 닮음 0.28. 같은 지시문에 거꾸로 돌린 소연 참조 셋만 바꿔 넣는다. (10-26 Fable 2차: 크기 숫자 · 폰 잘림 · 눈동자 · 얼굴 밝기 덧붙임)"
+  },
+  {
+   "id": "C03b",
+   "who": "손",
+   "refs": [
+    "배치:S03",
+    "R2"
+   ],
+   "text": "{시작} Close-up of a smartphone held upright. The phone is LARGE in the frame: it runs from just below the top edge of the frame to just above the bottom edge (about nine tenths of the frame height) and is about one third of the frame width, standing slightly right of the center. Her right hand holds it from the right side, the thumb resting on the right edge and the fingers wrapped behind; her left index finger comes in from the lower left corner and touches the lower part of the screen, about to swipe upward. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Behind, far out of focus: the empty café seen from behind the counter — pale tables and the grey window light, as in Image 2. {바탕_뭉개짐} 50mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "3 다시(10-26) — 첫 판(C03_020529)은 폰이 화면 높이의 6할쯤으로 작았다(원본은 거의 화면 높이). 크기를 숫자로 적는다. (10-26 Fable 2차: 배경 뭉개기 덧붙임)"
+  },
+  {
+   "id": "C07b",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S07",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Locked-off medium shot from the customer side of the counter, at her seated eye level, 50mm lens, framed on the empty space where her head will be when she sits upright. Right now she is still leaning far back on her chair behind the counter with her head tipped back over the backrest, so she is almost entirely BELOW the frame: the bottom edge of the frame cuts just above her shoulders, and only her two raised hands holding the phone and the tip of her chin peek into the frame at the bottom center, in the lowest fifth of the frame. Everything above them is the empty background: the white tiled wall with the oak shelves, out of focus. {글자없음_기계} {배치_실루엣1:5} {카페참조:6} {빛_차가움} {필름}",
+   "메모": "7 다시(10-26) — 첫 판(C07_015747)은 어깨 · 얼굴까지 보여 원본 첫 프레임(아래에 손 · 폰 · 머리 끝만)보다 많이 보였고, 에스프레소 머신에 지어낸 상표 글자가 찍혔다."
+  },
+  {
+   "id": "C10b",
+   "who": "손",
+   "refs": [
+    "배치:S10"
+   ],
+   "text": "{시작} EXTREME CLOSE-UP, 100mm macro lens: the camera is so close to the phone that its screen fills nearly the whole frame — we never see the whole phone; its top and bottom ends are outside the frame. The phone is held at a strong diagonal tilt: only its left edge (the thin black bezel) is visible, running from the top left of the frame down toward the bottom middle, and the screen fills everything to the right of that edge, out to the right edge of the frame. Her thumb tip, out of focus, rests at the bottom right corner of the frame. Shallow depth of field. {폰_초록} {손_소연} {배치_초록:1} Beyond the phone's left edge, a sliver of out-of-focus cool grey café light. {빛_차가움} {필름_초록}",
+   "메모": "10 다시(10-26) — 첫 판(C10_021223)은 폰 전체가 비스듬히 보이는 크기였다(원본은 화면이 화면 가득한 극접사)."
+  },
+  {
+   "id": "C15b",
+   "who": "손",
+   "refs": [
+    "배치:S15",
+    "R2"
+   ],
+   "text": "{시작} Over-the-shoulder close-up, the camera just behind her left shoulder: her right hand holds the smartphone at a diagonal tilt, its top leaning to the right. The phone is LARGE and close: it runs from the top edge of the frame to the bottom edge and takes up about two fifths of the frame width, a little right of the center. Her left index finger reaches in from the left toward the screen. Her own shoulder in the light-blue chambray shirt is a large dark out-of-focus shape at the left edge of the frame; the left third of the frame is calm and dark. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Beyond the phone, far out of focus: the café from behind the counter, as in Image 2, cool and grey. 50mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "15 다시(10-26) — 첫 판(C15_021904)은 폰이 화면 폭의 1할쯤으로 작았다(원본은 화면 위아래를 다 채운다)."
+  },
+  {
+   "id": "C01u",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "참조:S01_돌림.png",
+    "참조:R2_돌림.png"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} This photograph is taken with the camera turned upside down. She sits on a light-wood chair behind the counter and leans far back with her head tipped over the backrest, holding her phone above her face with both hands — and because the camera is upside down, in THIS frame her face appears UPRIGHT (forehead at the top, chin at the bottom), her two hands and the phone (its back to the camera) are in the lower middle of the frame, about one head-height below her chin, and her dark brown hair streams straight UP from her head past the top edge of the frame, as if gravity pulled it toward the top of the picture. The top of the chair's backrest and her shoulders run along the top edge of the frame. Her face is large — about one third of the frame height. The café behind her, out of focus, is upside down exactly as in Image 6: the pale wood floor and the empty round table tops hang from the top of the frame, the big grey front window spans the middle, and the white ceiling with the pendant lamps is at the bottom. Image 5 is the layout guide for this inverted frame. {배치_실루엣1:5} {표정_심심} Her irises are turned toward the phone below her chin (toward the bottom of the frame), not toward the camera. {얼굴_밝기} {빛_차가움} {필름}",
+   "메모": "1 새 길(10-26 Fable 2차 의견): 카메라를 거꾸로 든 사진으로 굽는다 — 얼굴은 바로 서고 방이 거꾸로. 받은 판을 180° 돌려 쓰고 닮음은 안 돌리고 잰다. 성공 기준: 돌린 뒤 방이 바로 서고 닮음 0.4 넘음."
+  },
+  {
+   "id": "C04r",
+   "who": "소연",
+   "refs": [
+    "소연x4"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Top-down shot: she lies on her back, looking straight up at a black smartphone that she holds above her face with both hands; the camera looks straight down at her from above and slightly behind her head, so in the frame her face is upright and level — forehead toward the top of the frame, chin toward the bottom. CLOSE-UP: from chin to hairline her face spans about half the frame height; the phone and her hands are cut off by the bottom edge of the frame. The surface she lies on is a plain, featureless, out-of-focus cool grey — no planks, no floor pattern, nothing recognizable. Her hair streams straight out above her head along the surface, not fanned to the sides. {표정_멈춤} Her irises are turned toward the phone below her chin (toward the bottom of the frame), not toward the camera. Her face is clearly lit and is the brightest part of the frame. Soft, cool, grey daylight, muted blue-grey colors. {필름}",
+   "메모": "4 새 길(10-26 Fable 2차 의견): 위에서 내려다보고 굽어 180° 돌린다 — 4번은 클로즈업이라 뒤가 흐린 회청이면 된다. 받은 판을 180° 돌려 쓰고 닮음은 안 돌리고 잰다."
+  },
+  {
+   "id": "C02b",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {카페} {비었음} Wide shot from the customer side near the front door at standing eye level, 24mm lens, the same view as Image 5: the empty round tables and chairs fill the foreground and the left and right of the frame. In the middle of the frame she sits on a light-wood chair BEHIND the counter — in the gap between the counter and the white tiled back wall, to the right of the espresso machine — so the counter top hides her below the chest; she is small, about one fifth of the frame height, leaning far back with her head tipped over the backrest, holding her phone up above her face with both hands. Every chair on the customer side is empty. Outside the front window, out of focus, one passerby walks by on the grey street, and beside the ginkgo trees stands a street lamppost with a long vertical banner hanging from two brackets — the banner's printed face is a flat chroma-key green panel, small in the frame. {대역_초록} {글자없음_기계} {빛_차가움} {필름_초록}",
+   "메모": "2 다시(10-26 Fable 2차 P2 7) — 첫 판(C02_015423)은 소연이 카운터 앞 손님 자리에 앉았고 머신에 상표꼴 글자."
+  },
+  {
+   "id": "C07e",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "R1"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} {카페_짧게} Locked-off medium shot from the customer side of the counter, at her seated eye level, 50mm lens. She now sits upright on her chair behind the counter, the phone held at chest height in both hands, looking down at it with her eyebrows raised in surprise; her face is at the center of the frame; the frame is cut at her chest, the counter top just below. Behind her, out of focus: the white tiled wall with the oak shelves. {글자없음_기계} {카페참조:5} {빛_차가움} {필름}",
+   "메모": "7 끝 그림(10-26 Fable 2차 P1 4) — 7번은 2.47초로 가장 길고 얼굴이 처음 바로 서서 보이는 컷이라, 첫(C07b) · 끝 그림으로 영상을 뽑는다."
+  },
+  {
+   "id": "C16b",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "배치:S16"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} EXTREME CLOSE-UP, straight on at her eye level: her face fills nearly the whole frame — her eyebrows just below the top edge, her chin near the bottom edge, her face a little right of the middle of the frame. The top of her head is outside the frame. In the lower left foreground, very close to the lens and far out of focus, the black back of her phone is a large dark shape, its top edge glowing with the cool light of the screen. Her eyes are lowered to the phone. The only light on her face is the cool glow of the phone screen below her chin: the underside of her chin, her upper lip, her nostrils and her brow ridges are the brightest parts, her forehead and the top of her hair fall into shadow; the rest of the frame is dark. She is quietly decided: a small, private smile at the corners of her mouth. {배치_실루엣1:5} Camera locked off, 85mm lens, very shallow depth of field. Muted, cool colors. {필름}",
+   "메모": "16 다시(10-26 Fable 2차 P2 11, 자리 있을 때) — 첫 판(C16_164421)은 얼굴이 고르게 밝고 머리 위가 보였다."
+  },
+  {
+   "id": "C17b",
+   "who": "손",
+   "refs": [
+    "배치:S17"
+   ],
+   "text": "{시작} EXTREME CLOSE-UP, 100mm macro lens, very shallow depth of field: the camera is a few centimeters from the lower left part of a smartphone's screen, tilted about ten degrees. The glowing screen fills the upper four fifths of the frame and runs off the top and right edges of the frame — we never see the whole phone. The phone's thin black bottom edge, with its rounded bottom-left corner, runs across the lower part of the frame from the lower left toward the right; below that edge, only a thin sliver of out-of-focus background. One fingertip, large and out of focus, holds the phone's bottom edge at the far left of the frame. {폰_초록} {손_소연} {배치_초록:1} Cool grey light. {필름_초록}",
+   "메모": "17 다시(10-26) — 첫 판(C17_024457)은 폰이 위쪽 띠로 작게 들어가고 아래가 손 · 팔이었다(원본은 화면 귀퉁이 극접사가 프레임 대부분)."
+  },
+  {
+   "id": "C18b",
+   "who": "손",
+   "refs": [
+    "배치:S18",
+    "R1"
+   ],
+   "text": "{시작} TIGHT CLOSE-UP of her two hands only, 85mm lens, shallow depth of field: the hands, the glass and the pitcher fill the whole frame — the frame is cut just above her wrists and just below the bottom of the glass; her face, shoulders and body are NOT in the frame. Her right hand pours fresh cold milk from a small stainless-steel milk pitcher into a tall clear glass held in her left hand; at the bottom of the glass sits bright red strawberry purée with small pieces of fruit, and the white milk swirls into it in soft pink clouds. No latte art, no foam pattern. Behind her hands, far out of focus: only her canvas apron and the warm counter. {손_소연} {배치_실루엣:1} {카페참조:2} {빛_따뜻함} {필름}",
+   "메모": "18 다시(10-26) — 첫 판(C18_032403)은 상반신까지 보이는 미디엄이었다(원본은 손만 화면 가득한 클로즈업)."
+  },
+  {
+   "id": "C01d",
+   "who": "소연",
+   "refs": [
+    "소연거꾸로x3",
+    "배치:S01",
+    "R2",
+    "참조:C01r_돌림.png"
+   ],
+   "text": "{시작} {소연_얼굴_거꾸로} {소연_옷} {거꾸로_자세} {표정_심심} {배치_실루엣1:4} MEDIUM CLOSE-UP, as tight as the layout guide: her upside-down face is large — about one third of the frame's height — in the lower middle of the frame; her elbows are bent and she holds the phone close, about a hand's width above her chin, in the upper middle of the frame (not at arm's length). The top of the chair's backrest and her shoulders fill the bottom edge. Beyond her, out of focus and upright: the counter edge, the empty tables and the grey front window of the café. {얼굴_밝기} {눈동자_폰} {카페참조:5} Image 6 shows this exact moment of her: copy her upside-down face, hair, hands and phone from Image 6 exactly — the same face and the same bored expression, the same hand positions with the phone close above her chin — and only replace what is behind her with the café, upright and out of focus, as described above. {빛_차가움} {필름}",
+   "메모": "1 경계선 길(10-26 Fable 2차 의견 — C01c가 0.35 아래일 때만): C01c 지시문에 위에서 굽고 돌린 판(C01r_014658 180°)을 여섯째 참조로 넣어 얼굴 · 머리 · 손은 그대로, 뒤만 카페로 새로 굽는다. 생성 판을 참조로 쓴 것이라 기록에 「생성 판 참조」라고 남긴다. C01c 0.261 · C01u 실패(방과 사람을 함께 거꾸로 그림) 뒤."
+  },
+  {
+   "id": "C01e",
+   "who": "소연",
+   "refs": [
+    "소연x4"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Top-down shot: she lies on her back, looking straight up at a black smartphone that she holds above her face with both hands, her elbows bent; the camera looks straight down at her from above and slightly behind her head, so in the frame her face is upright and level — forehead toward the top of the frame, chin toward the bottom. MEDIUM CLOSE-UP: from chin to hairline her face spans about one third of the frame height, in the upper middle of the frame; her two hands and the phone (its back toward the camera) are in the lower middle of the frame, about one head-height below her chin; her shoulders in the light-blue chambray shirt and the apron straps are visible. The surface she lies on is a plain, featureless, out-of-focus cool grey — no planks, no floor pattern, nothing recognizable. Her hair streams straight out above her head along the surface, not fanned to the sides. {표정_심심} Her irises are turned toward the phone below her chin (toward the bottom of the frame), not toward the camera. Her face is clearly lit and is the brightest part of the frame. Soft, cool, grey daylight, muted blue-grey colors. {필름}",
+   "메모": "1 다시(10-26 새벽): 4번에서 통한 길(C04r — 위에서 굽고 돌림, 흐린 회청 바탕, 닮음 0.498)을 1번 미디엄 클로즈업 틀로. C01 0.309 · C01c 0.261 · C01u 실패 · C01d 0.327 뒤. 받은 판을 180° 돌려 쓴다."
+  },
+  {
+   "id": "C07f",
+   "who": "소연",
+   "refs": [
+    "소연x4",
+    "R1",
+    "C07"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Image 6 is the FIRST frame of this exact locked-off shot — the same camera, the same lens, the same room: keep the glass pastry case at the lower left, the toaster and the cups, the grinder and the plain espresso machine at the right, the drinks fridge at the far left, the oak shelves with jars and the white tiled wall exactly where they are and exactly as large as they are in Image 6. Only she has changed: she has sat up straight on the same light-wood chair, which stands IN FRONT of the counter on the customer side, so the counter top and the pastry case are behind her shoulders — not between her and the camera. She holds the phone at chest height in both hands and looks down at it with her eyebrows raised in surprise, lips slightly parted. Her face is at the center of the frame, in front of the lower edge of the oak shelves; the frame is cut at her chest. {글자없음_기계} {빛_차가움} {필름}",
+   "메모": "7 끝 그림 다시(10-26 Fable 3차 P1 1) — C07e는 소연이 카운터 뒤에 앉고 카메라도 첫 그림과 달랐다(SIFT 배율 1.086 · 이동 −236/−154px). 첫 그림(정지컷/C07 = C07b)을 여섯째 참조로 — 「생성 판 참조」. 받은 뒤 배경 맞춤이 배율 ±2% · 이동 20px 안인지 잰다."
+  },
+  {
+   "id": "C04s",
+   "who": "소연",
+   "refs": [
+    "소연x4"
+   ],
+   "text": "{시작} {소연_얼굴} {소연_옷} Top-down shot: she lies on her back, looking straight up at a black smartphone that she holds above her face with both hands; the camera looks straight down at her from above and slightly behind her head, so in the frame her face is upright and level — forehead toward the top of the frame, chin toward the bottom. CLOSE-UP: from chin to hairline her face spans about half the frame height; the phone and her hands are cut off by the bottom edge of the frame. Measured on this upright frame: her hairline is about one tenth of the frame height below the top edge and her hair runs out of the frame past the top edge; her eyes are about one third of the way down the frame; her chin is at the vertical center of the frame. The lower half of the frame holds her neck, her shirt collar and apron straps and her two raised forearms with the phone, the phone itself cut off by the bottom edge. The surface she lies on is a plain, featureless, out-of-focus cool grey — no planks, no floor pattern, nothing recognizable. Her hair streams straight out above her head along the surface, not fanned to the sides. {표정_멈춤} Her irises are turned toward the phone below her chin (toward the bottom of the frame), not toward the camera. Her face is clearly lit and is the brightest part of the frame. Soft, cool, grey daylight, muted blue-grey colors. {필름}",
+   "메모": "4 자리 다시(10-26 Fable 3차 P2 2) — C04r은 크기 · 닮음은 맞으나 돌리면 턱이 약 22%로 원본(세로 가운데)보다 2할 높다. 같은 지시문에 바로 선 틀 기준 자리 문장을 더한다. 닮음 0.4 넘고 자리가 맞을 때만 바꾼다."
+  },
+  {
+   "id": "C03c",
+   "who": "손",
+   "refs": [
+    "배치:S03",
+    "R2"
+   ],
+   "text": "{시작} Close-up of a smartphone held upright. The phone is so tall in the frame that its top end sits just under the top edge of the frame and its bottom end just above the bottom edge — a gap of about one finger-width at each end — and it is about one third of the frame width, standing slightly right of center. Her right hand holds it from the right side, the thumb resting on the right edge and the fingers wrapped behind; her left index finger comes in from the lower left corner and touches the lower part of the screen, about to swipe upward. {폰_초록} {손_소연} {배치_초록:1} {배치_실루엣:1} Behind, far out of focus: the empty café seen from behind the counter — pale tables and the grey window light, as in Image 2. The lens is wide open: everything behind the phone is reduced to shapeless soft grey-blue blobs with no outlines — no table, chair, lamp or window frame can be made out. 50mm lens, shallow depth of field. {빛_차가움} {필름_초록}",
+   "메모": "3 크기 다시(10-26 Fable 3차 P2 3) — C03b는 폰 76% · 뒤 카페가 읽혔다. 크기를 비율이 아니라 가장자리(손가락 한 마디 틈)로, 배경을 「윤곽 없는 덩어리」로."
+  }
+ ]
+}
