@@ -35,7 +35,7 @@ def wrap(d, text, f, width):
 W, H = 2400, 1760
 B = Image.new("RGB", (W, H), (246, 245, 242))
 d = ImageDraw.Draw(B)
-d.text((48, 36), "가칭 「오미톡 · omitok」 오미자 스파클링 355ml · 라벨 시안 " + 판 + " (2D 원본 + 블렌더 캔)", font=font(40, True), fill=(20, 24, 40))
+d.text((48, 36), "「오미톡 · omitok」 오미자 스파클링 355ml · 라벨 시안 " + 판 + " (2D 원본 + 블렌더 캔)", font=font(40, True), fill=(20, 24, 40))
 flat = Image.open(os.path.join(밖, "라벨", "라벨_오미톡_미리.png")).convert("RGB").resize((1400, 770), Image.LANCZOS)
 B.paste(flat, (48, 116))
 d.text((48, 896), "펼친 라벨(207 × 114 mm, 캔 몸통 둘레 그대로). 가운데가 앞면, 왼쪽에 아래에서 위로 읽는 큰 세로 낱말표(2번 컷 자리, 뒷면 표시와 반대쪽), 양 끝이 뒷면 표시.",

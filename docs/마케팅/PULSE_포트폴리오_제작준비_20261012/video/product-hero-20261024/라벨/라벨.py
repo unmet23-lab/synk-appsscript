@@ -3,7 +3,7 @@
 제작 규칙대로 제품 · 로고 · 글자는 AI로 그리지 않는다. 글자는 OFL 글꼴(Fraunces · SUIT)의
 윤곽을 하프버즈로 짜서 SVG 경로로 굳히고, 무늬는 이 파일의 좌표로 그린다.
 
-  python 라벨.py                    # 가칭(오미톡)으로 SVG · PNG 세 장
+  python 라벨.py                    # 오미톡(10-25 확정)으로 SVG · PNG 세 장
   python 라벨.py --이름 톡미 --라틴 tokmi
 
 나오는 것:
