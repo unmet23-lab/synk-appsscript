@@ -385,10 +385,12 @@ def mat_velvet():
 
 def mat_satin():
     """샴페인 금 공단 리본 하나로 통일(1판 top_B 결) — 길이 방향 이방성 + 결 반사, 반짝이 결은 뺐다.
-    3판(Fable 2차 P3-4): 접사에서 가죽 · 두꺼운 종이로 보여 거칠기를 낮추고, 길이 방향 실결(폭을 따라 촘촘한 물결)을 노멀로."""
+    3판(Fable 2차 P3-4): 접사에서 가죽 · 두꺼운 종이로 보여 거칠기를 낮추고, 길이 방향 실결(폭을 따라 촘촘한 물결)을 노멀로.
+    3.1판(Fable 3차 P2-1): 한 리본이 라메 · 거울 공단 · 무광 베이지 셋으로 보였다 — 금속에 가까운 반사(0.85)가 둘레를
+    면마다 다르게 비추고, 잔결 노이즈가 스침각에서 알갱이로 깨졌다. 천 공단으로: 금속 0.2 · 결 반사 크게 · 실결은 물결만 반 세기."""
     m, n, l, out = new_mat("satin")
-    b = principled(n, base=(0.84, 0.56, 0.22), metal=0.85, rough=0.16, aniso=0.88, sheen=0.15,
-                   sheen_tint=(1.0, 0.84, 0.6))
+    b = principled(n, base=(0.70, 0.45, 0.16), metal=0.3, rough=0.24, aniso=0.85, sheen=0.6, sheen_rough=0.35,
+                   sheen_tint=(1.0, 0.80, 0.48))
     tg = n.new("ShaderNodeTangent")
     tg.direction_type = "UV_MAP"
     tg.uv_map = "UVMap"
@@ -399,13 +401,10 @@ def mat_satin():
     sep = n.new("ShaderNodeSeparateXYZ")
     l.new(uv.outputs["UV"], sep.inputs["Vector"])
     threads = math_node(n, l, "SINE", math_node(n, l, "MULTIPLY", sep.outputs["Y"], 2 * math.pi * 240))  # 폭 3.6 cm에 실 240줄
-    nz = n.new("ShaderNodeTexNoise")
-    nz.inputs["Scale"].default_value = 600.0
-    weave = math_node(n, l, "ADD", math_node(n, l, "MULTIPLY", threads, 0.6), math_node(n, l, "MULTIPLY", nz.outputs["Fac"], 0.4))
     bump = n.new("ShaderNodeBump")
-    bump.inputs["Strength"].default_value = 0.05
+    bump.inputs["Strength"].default_value = 0.025
     bump.inputs["Distance"].default_value = 0.00004
-    l.new(weave, bump.inputs["Height"])
+    l.new(threads, bump.inputs["Height"])
     l.new(bump.outputs["Normal"], b.inputs["Normal"])
     l.new(b.outputs[0], out.inputs["Surface"])
     return m
@@ -814,14 +813,16 @@ def products(jar_at=None, amp_at=None):
                         coat=0.25, coat_rough=0.3)
     cream = mat_simple("cream", base=(0.97, 0.955, 0.93), rough=0.32, sss=0.6, sss_r=(0.006, 0.006, 0.005))
     # 크림 단지: 두꺼운 유리(벽 5 mm · 바닥 12 mm · 어깨 둥금) + 둥근 크림 + 금 목 고리 + 금 뚜껑
-    jx, jy, jz = jar_at or (JAR[0], JAR[1], JAR_Z + 0.070 * smooth(0.0, 0.8, RISE))
+    jx, jy, jz = jar_at or (JAR[0], JAR[1], JAR_Z + 0.095 * smooth(0.0, 0.8, RISE))  # 3.1판: 밑에 틈이 보이게 더 높이
     jar = revolve("단지", [(0.0, 0.0), (0.0330, 0.0), (0.0352, 0.0012), (0.0360, 0.0040), (0.0360, 0.0400),
                            (0.0356, 0.0428), (0.0346, 0.0450), (0.0330, 0.0462), (0.0310, 0.0462), (0.0310, 0.0150),
                            (0.0300, 0.0128), (0.0280, 0.0120), (0.0, 0.0120)], mat=glass)
     jar.location = (jx, jy, jz)
     # 3판: 크림이 안쪽 벽까지 차게(두꺼운 유리가 가운데를 키워 흰 공 · 달걀처럼 보였다) — 윗면만 낮은 둔덕
-    cr = revolve("크림", [(0.0, 0.0121), (0.0300, 0.0121), (0.0309, 0.0130), (0.0309, 0.0405), (0.0288, 0.0414),
-                          (0.0200, 0.0419), (0.0100, 0.0421), (0.0, 0.0422)], mat=cream)
+    # 3.1판(Fable 3차 P3-2): 그래도 반구로 읽혔다 — 크림과 안쪽 벽 사이 0.1 mm 공기층에서 옆쪽 빛이 전반사돼 가장자리 크림이
+    # 안 보였다. 실제 크림은 유리에 붙어 있으니 안쪽 벽 · 바닥을 0.2 mm 파고들게(광학 접촉) 하고, 유리 어깨 바로 아래까지 채운다
+    cr = revolve("크림", [(0.0, 0.0118), (0.0302, 0.0118), (0.0312, 0.0130), (0.0312, 0.0438), (0.0292, 0.0446),
+                          (0.0150, 0.0450), (0.0, 0.0451)], mat=cream)
     cr.location = (jx, jy, jz)
     ring = revolve("목고리", [(0.0330, 0.0), (0.0366, 0.0), (0.0366, 0.0018), (0.0330, 0.0018)], mat=gold)
     ring.location = (jx, jy, jz + 0.0455)
@@ -829,7 +830,7 @@ def products(jar_at=None, amp_at=None):
                               (0.0300, 0.0172), (0.0, 0.0172)], mat=mat_jar_lid())
     jl.location = (jx, jy, jz + 0.0470)
     # 앰플: 네모 유리병(벽 3 mm · 바닥 8 mm, 3판 높이 4.2 cm) · 액 70 % · 금 목 · 실리콘 스포이드
-    ax, ay, az = amp_at or (AMP[0], AMP[1], AMP_Z + 0.060 * smooth(0.2, 1.0, RISE))
+    ax, ay, az = amp_at or (AMP[0], AMP[1], AMP_Z + 0.085 * smooth(0.2, 1.0, RISE))
     amp_glass = mat_print("amp_print", "앰플_흰잉크.png", half=0.020, axis="Y", z0=-0.009, h=0.036)
     rounded_box("앰플병", 0.040, 0.040, AMP_H, (ax, ay, az + AMP_H / 2), amp_glass, bevel=0.005)
     liq_h = (AMP_H - 0.008 - 0.004) * 0.70
@@ -843,14 +844,14 @@ def products(jar_at=None, amp_at=None):
 
 
 def mat_jar_lid():
-    """금 뚜껑 윗면: 3판(Fable 2차 P2-3) — 흩뿌린 서리 엠보가 먼지 · 긁힘으로 보여 이름 음각과 가는 테 한 줄만."""
+    """금 뚜껑 윗면: 3판(Fable 2차 P2-3) — 흩뿌린 서리 엠보가 먼지 · 긁힘으로 보여 엠보를 뺐다.
+    3.1판(Fable 3차 P2-2): 음각 「유리결」도 위에서 보면 흰 덩이 셋(긁힘 · 얼룩)으로 앉아 가는 테 한 줄만 둔다
+    (이름은 상자 앞 옆띠 한 곳 — 2차 「바꾸지 말 것」)."""
     m, n, l, out = new_mat("jar_lid")
     b = principled(n, base=GOLD, metal=1.0, rough=0.16)
     t = planar_tex(n, l, img("단지뚜껑_테.png"), 0.037, "Z")
-    nm = planar_tex(n, l, img("단지뚜껑_이름.png"), 0.037, "Z")
     top = normal_mask(n, l, "Z", 1)
-    h = math_node(n, l, "MULTIPLY", math_node(n, l, "SUBTRACT", math_node(n, l, "MULTIPLY", t.outputs["Color"], -1.0),
-                                                nm.outputs["Color"]), top)
+    h = math_node(n, l, "MULTIPLY", math_node(n, l, "MULTIPLY", t.outputs["Color"], -1.0), top)
     bump = n.new("ShaderNodeBump")
     bump.inputs["Strength"].default_value = 0.6
     bump.inputs["Distance"].default_value = 0.0004
@@ -966,6 +967,11 @@ def set_look():
         # 3판: 역광 70 → 58(일어선 갈래가 역광을 받는 순간 하이라이트가 날아갔다 — 반 스톱쯤) · 채움 6 → 11(오른쪽 옆면 띠가 검게)
         area_light("역광", (0.35, 0.70, 0.35), (0, 0, 0.08), 58, 0.25, rgb=(0.55, 0.70, 1.0))
         area_light("채움", (0.75, -0.40, 0.10), (0, 0, 0.05), 11, 0.6, rgb=(1.0, 0.85, 0.65))
+        # 3.1판(Fable 3차 P2-2): 금 뚜껑 윗면이 남색 하늘을 비춰 검은 원판이 됐다 — 뒤 왼쪽 낮은 데 따뜻한 반사판(면광) 하나,
+        # 히어로 · 떠오름 카메라에서 윗면에 비치는 방향에 둔다
+        # 빛 연결로 금 뚜껑만 받게(build에서 이어 줌) — 그냥 두면 바닥 · 뒤가 밝아져 밤 기운이 빠진다
+        global LID_LIGHT
+        LID_LIGHT = area_light("뒤금빛", (-0.20, 0.55, 0.26), (0.0, 0.0, 0.12), 14, 0.7, rgb=(1.0, 0.78, 0.45))
         bokeh_lights(70, (0.1, 1.6, 0.35), (1.2, 0.4, 0.35), (1.0, 0.70, 0.32), 22.0)
         snow_particles(220, ((-0.6, 0.6), (-0.3, 0.9), (0.0, 0.7)), 0.0010, 0.0028)
     else:
@@ -981,13 +987,31 @@ def set_look():
 
 
 # ── 장면 ────────────────────────────────────────────────────────────────────
+LID_LIGHT = None
+
+
+def link_lid_light():
+    """뒤금빛(B판)은 금 뚜껑 · 금 목만 받는다 — 윗면이 하늘 대신 금빛을 비추게(Fable 3차 P2-2)."""
+    if LID_LIGHT is None:
+        return
+    recv = bpy.data.collections.new("뒤금빛_받음")
+    bpy.context.scene.collection.children.link(recv)
+    for ob in list(bpy.context.scene.objects):
+        if ob.type == "MESH" and ob.name.startswith(("단지뚜껑", "목고리", "앰플목")):
+            recv.objects.link(ob)
+    LID_LIGHT.light_linking.receiver_collection = recv
+
+
 def build():
+    global LID_LIGHT
+    LID_LIGHT = None
     reset()
     set_look()
     if SHOT == "product":
         # 3판: 제품 접사는 상자 없이 서리 바닥 위 단지(앞) · 앰플(뒤 오른쪽) — 흰 상자가 화면 한쪽을 하얗게 덮었다.
         # 유리 벽 두께 · 흰 크림 · 금 목 고리를 눈높이에서 한 프레임에, 차가운 보조광으로 금과 금을 가른다(Fable 2차 P2-3)
         products(jar_at=(0.0, 0.0, 0.0), amp_at=(0.075, 0.050, 0.0))
+        link_lid_light()
         area_light("차가운보조", (-0.26, -0.22, 0.12), (0.0, 0.0, 0.04), 7, 0.22, rgb=(0.62, 0.76, 1.0))
         area_light("유리테", (0.30, 0.20, 0.10), (0.02, 0.02, 0.04), 10, 0.10, rgb=(0.85, 0.92, 1.0))
         point_light("먼금빛", (-0.30, 0.55, 0.06), 6.0, (1.0, 0.72, 0.38), radius=0.06)  # 화면 밖 열린 상자의 빛이 뒤에 번진 것처럼
@@ -999,6 +1023,7 @@ def build():
     lid = open_box("뚜껑", L_HALF, L_H, TOP - L_H, lidm, "bottom")
     insert_with_cavities()
     products()
+    link_lid_light()
     # (2판의 인서트 위 눈 결정은 뺐다 — 상자 속 티끌로 보였다)
     # 뚜껑: 앞이 먼저 들리고(뒤 모서리 축 −5°) → 위로 떠오르며 뒤로 기운다
     if K_TILT > 0 or K_LID > 0:
@@ -1023,7 +1048,8 @@ def build():
         area_light("차가운보조", (-0.34, -0.30, 0.16), (JAR[0], -0.05, 0.06 + 0.06 * RISE), 9, 0.25, rgb=(0.62, 0.76, 1.0))
     elif SHOT == "macro":
         # 공단 결빛: 작고 센 빛 하나가 갈래 · 고리 면에 길이 방향 하이라이트 한 줄을 세운다(Fable 2차 P3-4)
-        area_light("결빛", (-0.16, 0.30, 0.34), (0.0, 0.0, TOP + 0.02), 22, 0.06, rgb=(1.0, 0.93, 0.82))
+        # 3.1판(Fable 3차 P2-1): 작고 센 빛은 실결을 알갱이로 키웠다 — 긴 면광으로 하이라이트 한 줄만
+        area_light("결빛", (-0.16, 0.30, 0.34), (0.0, 0.0, TOP + 0.02), 30, 0.40, rgb=(1.0, 0.93, 0.82), size_y=0.08)
 
 
 def shots():
@@ -1037,10 +1063,10 @@ def shots():
         camera((0.02, -0.16, 0.85), (0.0, 0.0, 0.05), lens=60, fstop=4.0)
     elif SHOT == "open":
         if RISE >= 0.5:  # 떠오른 제품: 눈을 낮춰 유리 몸통을 옆에서(위에서 보면 유리 옆면은 반사만 보인다)
-            if asp >= 1:
-                camera((0.17, -0.44, 0.21), (0.0, 0.004, 0.105), lens=55, fstop=5.6)
+            if asp >= 1:  # 3.1판: 조금 높여 제품 밑의 틈 · 상자 속이 보이게(테두리 위에 선 것처럼 읽혔다)
+                camera((0.17, -0.44, 0.25), (0.0, 0.004, 0.12), lens=55, fstop=5.6)
             else:
-                camera((0.13, -0.36, 0.22), (0.0, 0.004, 0.105), lens=45, fstop=5.6)
+                camera((0.13, -0.36, 0.26), (0.0, 0.004, 0.12), lens=45, fstop=5.6)
         elif asp >= 1:
             camera((0.20, -0.36, 0.34), (0.0, 0.004, 0.045), lens=70, fstop=3.2)
         else:
@@ -1048,7 +1074,8 @@ def shots():
     elif SHOT == "macro":
         camera((0.18, -0.26, 0.22), (0.0, 0.0, TOP + 0.02), lens=100, fstop=2.8)
     elif SHOT == "product":  # 3판: 상자 앞 바닥의 단지(앞) · 앰플(뒤 오른쪽)을 눈높이에서 — 초점은 단지 앞 유리 벽
-        camera((-0.05, -0.34, 0.05), (0.025, 0.0, 0.035), lens=70, fstop=11, focus=0.308)  # 초점은 단지 앞 유리 벽
+        # 3.1판(Fable 3차 P3-2): 크림 윗면보다 낮게 — 위에서 보면 두꺼운 유리가 크림 윗면을 키워 반구처럼 보였다
+        camera((-0.05, -0.34, 0.030), (0.025, 0.0, 0.030), lens=70, fstop=11, focus=0.308)  # 초점은 단지 앞 유리 벽
 
 
 def render_to(path):
