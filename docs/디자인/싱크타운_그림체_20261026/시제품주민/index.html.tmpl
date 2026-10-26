@@ -1,0 +1,90 @@
+<title>찻집 골목 3D 주민</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<style>
+/* Layout: the felt diorama photo fills the screen under one fixed camera; the real 3D Mongle is drawn in a
+   transparent WebGL layer on top. A glass bar on top, the wardrobe as a side card (bottom sheet on phones).
+   One committed look (the photo's sky-blue studio backdrop), so colours stay the same in both themes. */
+:root {
+  --sky: #94cefb; --sky-low: #a9dafc; --glass: rgba(22, 26, 36, .8); --glass-line: rgba(255, 255, 255, .16);
+  --paper: #fbf3ec; --muted: rgba(251, 243, 236, .66); --coral: #ee7f6b; --card: rgba(24, 28, 38, .9);
+  --font: "SUIT Variable", "SUIT", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: linear-gradient(180deg, var(--sky) 0%, var(--sky-low) 100%); color: var(--paper); font: 500 15px/1.5 var(--font); overflow: hidden; }
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); padding-block: 10px; gap: 8px; position: relative; }
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 10px; background: var(--glass); border: 1px solid var(--glass-line); border-radius: 999px; padding: 8px 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--paper); font: inherit; }
+.pill b { font-weight: 800; letter-spacing: -.01em; }
+.pill small { font-size: 12px; color: var(--muted); }
+button.pill { cursor: pointer; font-weight: 700; }
+button.pill:focus-visible, .closet button:focus-visible, .closet input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.tag { font-size: 11px; font-weight: 700; letter-spacing: .06em; background: var(--coral); color: #fff; border-radius: 999px; padding: 3px 8px; }
+.right { display: flex; gap: 8px; align-items: center; }
+.wrap { min-height: 0; overflow-x: auto; overflow-y: hidden; display: grid; place-items: center; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.wrap::-webkit-scrollbar { display: none; }
+.stage { position: relative; flex: none; touch-action: pan-x; }
+.world { position: absolute; left: 0; top: 0; width: 1536px; height: 1024px; transform-origin: 0 0; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.world > img.bg { position: absolute; inset: 0; width: 1536px; height: 1024px; max-width: none; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5%, #000 97.5%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 2.5%, #000 97.5%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent); mask-composite: intersect; }
+canvas.gl { position: absolute; left: 0; top: 0; width: 1536px; height: 1024px; pointer-events: none; }
+.shadow { position: absolute; left: 0; top: 0; width: 120px; height: 28px; margin: -14px 0 0 -60px; border-radius: 50%; background: radial-gradient(closest-side, rgba(52, 36, 26, .58), rgba(52, 36, 26, 0)); pointer-events: none; will-change: transform, opacity; }
+.hot { position: absolute; border: 0; padding: 0; background: transparent; border-radius: 50%; cursor: pointer; }
+.hot:focus-visible { outline: 4px solid #fff; outline-offset: 4px; }
+.ring { position: absolute; width: 70px; height: 30px; margin: -15px 0 0 -35px; border: 4px solid rgba(255, 255, 255, .95); border-radius: 50%; pointer-events: none; animation: ring .7s ease-out forwards; }
+.ring.water { border-color: rgba(255, 255, 255, .8); animation-duration: 1.1s; }
+@keyframes ring { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
+.bubble { position: absolute; max-width: 360px; transform: translate(-50%, -100%); background: var(--glass); border: 1px solid var(--glass-line); color: var(--paper); border-radius: 22px; padding: 14px 20px; font-size: 24px; line-height: 1.45; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; word-break: keep-all; pointer-events: none; animation: pop .22s ease-out; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.bubble::after { content: ""; position: absolute; left: 50%; bottom: -12px; margin-left: -12px; border: 12px solid transparent; border-bottom: 0; border-top-color: var(--glass); }
+.bubble .who { display: block; font-size: 16px; font-weight: 800; color: #ffd8cc; margin-bottom: 2px; }
+@keyframes pop { from { transform: translate(-50%, -92%) scale(.92); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
+.steam { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, .75); filter: blur(4px); pointer-events: none; opacity: 0; }
+.steam.on { animation: steam 2.4s ease-in infinite; }
+.steam.on.b { animation-delay: .8s; } .steam.on.c { animation-delay: 1.6s; }
+@keyframes steam { 0% { transform: translate(0, 0) scale(.6); opacity: 0; } 20% { opacity: .85; } 100% { transform: translate(8px, -70px) scale(1.6); opacity: 0; } }
+.hint { justify-self: center; display: grid; gap: 8px; justify-items: center; align-items: center; flex-wrap: wrap; justify-content: center; text-align: center; }
+.hint .pill { font-size: 14px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); flex: none; }
+.scenes { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.scenes button { font: 700 14px var(--font); color: var(--paper); background: var(--glass); border: 1px solid var(--glass-line); border-radius: 999px; padding: 9px 15px; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.scenes button.primary { background: var(--coral); border-color: transparent; color: #fff; }
+.scenes button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+body[data-busy] .scenes button:not(#btn-reset) { opacity: .5; pointer-events: none; }
+img.bg.rain { opacity: 0; transition: opacity .9s ease; }
+body.rain { background: linear-gradient(180deg, #8ea2b6 0%, #a8b7c6 100%); }
+canvas.rain { position: absolute; left: 0; top: 0; width: 1536px; height: 1024px; pointer-events: none; }
+@media (max-width: 640px) {
+  .pill { padding: 7px 13px; } .bar .pill small { display: none; } .hint .pill { font-size: 13px; }
+  .scenes button { padding: 8px 12px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .ring, .bubble, .steam.on { animation: none; } .steam.on { opacity: .6; } }
+</style>
+
+<div class="app">
+  <div class="bar">
+    <span class="pill"><b>싱크타운</b><small>찻집 골목</small><span class="tag">3D 주민 시험</span></span>
+    <span class="pill" id="state" aria-live="polite">주민 준비 중</span>
+  </div>
+  <div class="wrap" id="wrap">
+    <div class="stage" id="stage">
+      <div class="world" id="world" role="application" aria-label="찻집 골목. 땅을 누르면 몽글이 걸어가요.">
+        <img class="bg" src="bg-day.jpg" alt="">
+        <img class="bg rain" id="bg-rain" src="bg-rain.jpg" alt="">
+        <canvas class="gl" id="gl"></canvas>
+        <canvas class="rain" id="rain"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="hint"><div class="scenes" role="group" aria-label="장면">
+    <button type="button" id="btn-day" class="primary">하루 보기</button>
+    <button type="button" id="btn-pour">① 차 내기</button>
+    <button type="button" id="btn-come">② 연구원 오기</button>
+    <button type="button" id="btn-rain">③ 비 오게 하기</button>
+    <button type="button" id="btn-reset">처음으로</button>
+  </div><span class="pill"><span class="dot"></span><span id="hint">주민을 누르면 말을 걸고, 땅을 누르면 몽글이 걸어가요.</span></span></div>
+</div>
+
+<script type="module">/*APP*/</script>

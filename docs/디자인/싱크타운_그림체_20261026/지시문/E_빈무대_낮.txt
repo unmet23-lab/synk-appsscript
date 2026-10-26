@@ -1,0 +1,8 @@
+Edit reference image 1 and output ONE image (landscape, 3:2, the same size and framing as reference 1). Use the image generation tool once and output only that image.
+
+Reference image 1 is a finished photograph of a needle-felted miniature diorama of a small Korean tea-house alley. Make the exact same photograph with ONE change only: remove the two characters inside the tea house —
+1. the tea-house owner (the doll with dark hair, a cream shirt and a sage-green apron, pouring from a green teapot), together with the teapot in their hands;
+2. the lavender egg-shaped character with round black glasses and a white moustache.
+Where they stood, show what is behind them: the inside of the tea house (the wooden back counter with small jars and cups, the lattice windows, the warm glow), the round white table with its two small cups and the two wooden stools exactly as they are, the wooden floor. No shadows or traces where they stood.
+
+Keep everything else exactly as it is: the same camera, framing, crop and scale; the same buildings, roofs, awning, trees, bushes, flowers, pond, benches, stepping stones, lantern and colours; the same daylight. Do not add any character, object or text.
