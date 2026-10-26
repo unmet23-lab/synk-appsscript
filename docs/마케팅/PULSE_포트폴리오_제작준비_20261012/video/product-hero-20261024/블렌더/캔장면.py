@@ -2,9 +2,13 @@
 # 제품은 AI로 그리지 않고 블렌더로 짓는다. 라벨은 라벨/라벨.py가 만든 우리 디자인 파일.
 #   blender -b --python 캔장면.py -- --cut 2 [--frame first|mid] [--res 540x960] [--samples 64] [--save]
 #   → <밖>/렌더/c<cut>_<frame>.png   (<밖> = Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p1p3)
+# 카메라 키(10-27, 원본 카메라 곡선 그대로 — 카메라키.py → 카메라곡선_원본.json):
+#   … --cut 2 --anim [--frames 0-98]   → <밖>/렌더/움직임/c2_####.png(30fps, 컷 첫 프레임 = 0)
+#   … --cut 4 --fidx 64                → <밖>/렌더/c4_f64.png(그 프레임 한 장 — Omni 끝 그림, 쓰는 판은 렌더/최종/으로 옮김)
 # 컷: test(캔 확인) · 1(아이스박스) · 2(몸통 세로 낱말표 접사) · 3(젖은 바닥 · 네온) · 4(기운 캔 입구 · 붓기 시작 그림)
 #     5(잔 가장자리 · 기포 시작 그림) · 6(기운 로고 접사)
 # 단위는 m. 캔은 355ml 표준(몸통 지름 66 mm · 높이 122 mm).
+import json
 import math
 import os
 import random
@@ -27,10 +31,15 @@ RES = tuple(int(v) for v in arg("--res", "540x960").split("x"))
 SAMPLES = int(arg("--samples", "64"))
 SAVE = "--save" in argv
 DIAG = "--diag" in argv
+ANIM = "--anim" in argv
+FIDX = arg("--fidx", None)
+FRAMES = arg("--frames", None)
 밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-portfolio12-20261024", "콘티", "p1p3")
 LABEL = arg("--label", os.path.join(밖, "라벨", "라벨_오미톡_색.png"))
 METAL = LABEL.replace("_색.png", "_금속.png")
-OUT = arg("--out", os.path.join(밖, "렌더", f"c{CUT}_{FRAME}.png"))
+OUT = arg("--out", os.path.join(밖, "렌더", f"c{CUT}_{FRAME}.png" if FIDX is None else f"c{CUT}_f{FIDX}.png"))
+_KEYS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "카메라곡선_원본.json")
+CAMKEYS = json.load(open(_KEYS, encoding="utf-8"))["컷"] if os.path.exists(_KEYS) else {}
 MM = 0.001
 VIEW = arg("--view", "agx")
 METAL_K = float(arg("--metal_k", "0.3"))
@@ -69,6 +78,7 @@ def reset():
             continue
     sc.cycles.device = "GPU"
     sc.cycles.samples = SAMPLES
+    sc.cycles.use_animated_seed = True   # 프레임마다 노이즈 씨앗을 바꾼다 — 같은 씨앗이면 남은 노이즈가 화면에 붙은 고정 무늬가 되어 카메라 측정이 그것을 잡았다
     sc.cycles.use_denoising = True
     try:
         sc.cycles.denoiser = "OPTIX"
@@ -1124,7 +1134,9 @@ def scene_c3():
     front.location = (-0.046, -0.30, 0.0)
     front.rotation_euler = (0, 0, math.radians(30))
     back = make_can(wet_bump=0.6)
-    back.location = (0.075, 0.30, 0.0)
+    # 뒤 캔 자리 · 카메라 첫 자리는 원본 슬라이더 길을 푼 값(카메라키.py — 두 캔 화면 폭 50% · 26.8%에서 거리 0.652 · 1.216 m)
+    road = CAMKEYS.get("3", {}).get("길")
+    back.location = (road["뒤캔"][0], road["뒤캔"][1], 0.0) if road else (0.075, 0.30, 0.0)
     back.rotation_euler = (0, 0, math.radians(-25))
     ruby, white, pink = (0.62, 0.02, 0.06), (1.0, 0.97, 0.95), (0.95, 0.50, 0.62)
     cols = [white, ruby, white, pink, ruby, white, ruby, pink, white, ruby, white, pink]
@@ -1133,12 +1145,22 @@ def scene_c3():
         strength = 6.0 if c == white else 18.0
         box(f"neon{i}", (0.030, 0.02, 1.6), (x, 1.00 + 0.05 * (i % 3), 0.80), mat=mat_emit(f"ne{i}", c, strength))
     backdrop("glow", (0.50, 0.30, 0.36), 0.5, (0.0, 1.25, 0.6), size=(2.0, 1.6))
-    camera((-0.007, -0.69, 0.064), (-0.007, 0.0, 0.060), lens=100, fstop=2.8, focus=0.69)
+    if road:
+        cx0, cy0 = road["카메라x"][0], road["카메라y"][0]
+        camera((cx0, cy0, 0.064), (cx0, 0.0, 0.060), lens=100, fstop=2.8, focus=road["초점"][0])
+    else:
+        camera((-0.007, -0.69, 0.064), (-0.007, 0.0, 0.060), lens=100, fstop=2.8, focus=0.69)
     area_light("top", (0.0, -0.10, 0.45), (0, 0, 0.06), 6, 0.4, rgb=(0.95, 0.92, 1.0))
     fr = area_light("front", (-0.10, -0.50, 0.12), (0, 0, 0.06), 3.0, 0.3, rgb=(1.0, 0.92, 0.95))
     fr.visible_glossy = False
     st = area_light("strip_l", (-0.30, -0.30, 0.06), (0, 0, 0.06), 3.0, 0.04, rgb=(1.0, 0.9, 0.95), size_y=0.5)
     area_light("rim_top", (0.0, 0.25, 0.35), (0, 0, 0.10), 6.0, 0.3, rgb=(1.0, 0.85, 0.9))
+    if road:   # 뒤 캔이 0.56 m 뒤로 갔다 — 초점이 넘어간 뒤 원본처럼 또렷하게 읽히도록 같은 결의 위 · 앞 빛
+        bx, by = back.location.x, back.location.y
+        area_light("back_top", (bx, by - 0.10, 0.45), (bx, by, 0.06), 6, 0.4, rgb=(0.95, 0.92, 1.0))
+        bf = area_light("back_front", (bx - 0.10, by - 0.50, 0.12), (bx, by, 0.06), 3.0, 0.3, rgb=(1.0, 0.92, 0.95))
+        bf.visible_glossy = False
+        area_light("back_rim", (bx, by + 0.25, 0.35), (bx, by, 0.10), 6.0, 0.3, rgb=(1.0, 0.85, 0.9))
     sc.view_settings.exposure = -0.4
 
 
@@ -1378,12 +1400,187 @@ def scene_c6():
 SCENES = {"test": scene_test, "label": scene_label, "1": scene_c1, "2": scene_c2, "3": scene_c3, "4": scene_c4, "5": scene_c5, "6": scene_c6}
 
 
+SUBJECT = {"2": ("can",), "4": ("can",), "5": ("wall_drops",), "6": ("can",)}   # 컷마다 원본 곡선을 잰 면(5는 앞 잔 벽 물방울)
+REGION = {"2": (0.25, 0.15, 0.65, 0.60), "4": (0.0, 0.0, 0.82, 0.36), "5": (0.0, 0.0, 0.60, 0.52)}                     # 원본을 잰 칸(14_카메라곡선.py와 같게)
+
+
+def _subject_points(cut, cam, W, H):
+    """잰 면의 점(세계 좌표) — 면마다 넓이만큼 고르게 뿌린 점 가운데 첫 프레임에 카메라를 보고 화면(그 칸) 안에 드는 것 2,000개쯤
+    (캔 몸통은 꼭짓점이 라벨 위아래 고리에만 있어 극접사 화면 안에 꼭짓점이 거의 없다)."""
+    import numpy as np
+    rng = np.random.default_rng(0)
+    dg = bpy.context.evaluated_depsgraph_get()
+    cpos = np.array(cam.matrix_world.translation)
+    chunks = []
+    for ob in bpy.context.scene.objects:
+        if ob.type != "MESH" or not any(ob.name == s or ob.name.startswith(s + ".") for s in SUBJECT.get(cut, ())):
+            continue
+        ev = ob.evaluated_get(dg)
+        me = ev.to_mesh()
+        me.calc_loop_triangles()
+        nt = len(me.loop_triangles)
+        V = np.empty(len(me.vertices) * 3)
+        me.vertices.foreach_get("co", V)
+        V = V.reshape(-1, 3)
+        T = np.empty(nt * 3, dtype=np.int64)
+        me.loop_triangles.foreach_get("vertices", T)
+        T = T.reshape(-1, 3)
+        ev.to_mesh_clear()
+        M = np.array(ob.matrix_world)
+        Vw = V @ M[:3, :3].T + M[:3, 3]
+        a, b, c = Vw[T[:, 0]], Vw[T[:, 1]], Vw[T[:, 2]]
+        nrm = np.cross(b - a, c - a)
+        area = np.linalg.norm(nrm, axis=1) / 2
+        nrm = nrm / np.maximum(1e-12, 2 * area)[:, None]
+        k = rng.choice(nt, size=60000, p=area / area.sum())
+        r1, r2 = rng.random(60000), rng.random(60000)
+        s1 = np.sqrt(r1)
+        p = a[k] * (1 - s1)[:, None] + b[k] * (s1 * (1 - r2))[:, None] + c[k] * (s1 * r2)[:, None]
+        view = cpos - p
+        facing = (nrm[k] * view).sum(1) / np.linalg.norm(view, axis=1) > 0.15           # 카메라를 보는 면만(뒤쪽 면은 가려진다)
+        chunks.append(p[facing])
+    P = np.vstack(chunks) if chunks else np.zeros((0, 3))
+    uv = _project(P, cam.matrix_world, cam.data, W, H)
+    x0, y0, x1, y1 = REGION.get(cut, (0.0, 0.0, 1.0, 1.0))
+    ok = (uv[:, 0] > x0 * W) & (uv[:, 0] < x1 * W) & (uv[:, 1] > y0 * H) & (uv[:, 1] < y1 * H) & (uv[:, 2] > 0)
+    P = P[ok]
+    if len(P) > 2000:
+        P = P[np.random.default_rng(1).choice(len(P), 2000, replace=False)]
+    return P
+
+
+def _project(P, M, cd, W, H):
+    """세계 점 → 화면 px(x 오른쪽 · y 아래)와 깊이."""
+    import numpy as np
+    R = np.array(M.to_3x3())
+    t = np.array(M.translation)
+    C = (P - t) @ R                                   # 카메라 좌표(x 오른쪽 · y 위 · -z 앞)
+    F = cd.lens / cd.sensor_height * H if cd.sensor_fit == "VERTICAL" else cd.lens / cd.sensor_width * W
+    zc = -C[:, 2]
+    return np.stack([W / 2 + F * C[:, 0] / zc, H / 2 - F * C[:, 1] / zc, zc], 1)
+
+
+def _sim_numbers(a, b, W, H):
+    """a → b 닮음 변환(최소제곱)을 14_카메라곡선.py와 같은 수로: 배율 %, 가운데 옆 % · 위아래 %, 돎 °(+ 시계)."""
+    import numpy as np
+    ac, bc = a.mean(0), b.mean(0)
+    A, B = a - ac, b - bc
+    sxx = (A * A).sum()
+    p = (A[:, 0] * B[:, 0] + A[:, 1] * B[:, 1]).sum() / sxx
+    q = (A[:, 0] * B[:, 1] - A[:, 1] * B[:, 0]).sum() / sxx
+    s = math.hypot(p, q)
+    rot = math.degrees(math.atan2(q, p))
+    c = np.array([W / 2, H / 2])
+    cn = bc + np.array([[p, -q], [q, p]]) @ (c - ac)
+    return np.array([(s - 1) * 100, (cn[0] - c[0]) / W * 100, (cn[1] - c[1]) / H * 100, rot])
+
+
+def solve_camera_keys(cut, cam, targets, n):
+    """원본 화면 곡선(배율 · 옆 · 위아래 · 돎)이 되도록 프레임마다 카메라 자세를 푼다 — 잰 면의 점을 투영해 같은 닮음 변환으로 재고,
+    카메라 몸을 화면 축으로 옮김(옆 · 위아래 · 앞뒤)과 롤 네 값을 가우스-뉴턴으로 맞춘다(앞 프레임 값에서 시작)."""
+    import numpy as np
+    sc = bpy.context.scene
+    W, H = sc.render.resolution_x, sc.render.resolution_y
+    base = cam.matrix_world.copy()
+    R0 = base.to_3x3().normalized()
+    right, up, back = Vector(R0.col[0]), Vector(R0.col[1]), Vector(R0.col[2])
+    P = _subject_points(cut, cam, W, H)
+    uv0 = _project(P, base, cam.data, W, H)
+
+    def pose(par):
+        loc = base.translation + right * par[0] + up * par[1] - back * par[2]
+        rot = R0 @ Matrix.Rotation(math.radians(par[3]), 3, "Z")
+        return Matrix.LocRotScale(loc, rot.to_quaternion(), Vector((1, 1, 1)))
+
+    def meas(par):
+        uv = _project(P, pose(par), cam.data, W, H)
+        ok = (uv[:, 0] > 0) & (uv[:, 0] < W) & (uv[:, 1] > 0) & (uv[:, 1] < H) & (uv[:, 2] > 0)
+        return _sim_numbers(uv0[ok, :2], uv[ok, :2], W, H)
+
+    par = np.zeros(4)
+    out, err = [], []
+    steps = np.array([2e-4, 2e-4, 5e-4, 0.05])
+    for i in range(n):
+        T = np.array([targets["배율"][i], targets["옆"][i], targets["위아래"][i], targets["돎"][i]])
+        for _ in range(6):
+            m = meas(par)
+            J = np.stack([(meas(par + np.eye(4)[k] * steps[k]) - m) / steps[k] for k in range(4)], 1)
+            d = np.linalg.lstsq(J, T - m, rcond=None)[0]
+            par = par + d
+            if np.abs(d / steps).max() < 0.05:
+                break
+        out.append(par.copy())
+        err.append(np.abs(meas(par) - T).max())
+    print(f"카메라 풀기 컷 {cut}: 점 {len(P)}개, 원본 곡선과 최대 차 {max(err):.4f}(% · °), 끝 자세 옆 {out[-1][0] * 1000:.1f} mm · "
+          f"위 {out[-1][1] * 1000:.1f} mm · 앞 {out[-1][2] * 1000:.1f} mm · 롤 {out[-1][3]:.2f}°")
+    return [pose(p) for p in out], out
+
+
+def animate_camera(cut):
+    """원본 카메라 곡선(카메라곡선_원본.json)대로 카메라에 프레임마다 키를 박는다(30fps, 컷 첫 프레임 = 0).
+    2 · 4 · 5 · 6: 피사체 거리 Z의 면이 원본 화면 곡선대로 움직이게 — 그림 옆 · 위아래 → 카메라 몸을 화면 축으로(트럭 · 페디스털),
+    배율 → 앞으로(달리), 그림 시계 방향 돎 → 카메라를 자기 앞축 둘레로 같은 각(뒤에서 보아 반시계 = 그림은 시계).
+    3: 슬라이더 길(세계 x · y)과 초점 거리 키를 그대로."""
+    keys = CAMKEYS.get(cut)
+    sc = bpy.context.scene
+    cam = sc.camera
+    if not keys or cam is None:
+        return 0
+    if RES[0] > RES[1] and "길" not in keys:
+        # 원본 곡선은 세로 9:16 화면의 % — 가로 판에서 다시 풀면 화면이 넓은 만큼 카메라가 더 움직인다.
+        # 16:9 판은 세로 판에서 푼 카메라 몸 움직임(세계 좌표)을 가로 구도 카메라에 옮겨 쓴다(아직 없음 — 02_콘티 5절)
+        raise SystemExit("16:9 판 카메라 키는 세로 판 카메라 길을 옮겨 써야 한다 — 아직 없음")
+    sc.render.fps = 30
+    n = keys["프레임수"]
+    sc.frame_start, sc.frame_end = 0, n - 1
+    bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"   # 프레임마다 키라 사이는 곧게
+    bpy.context.view_layer.update()
+    base = cam.matrix_world.copy()
+    R = base.to_3x3().normalized()
+    right, up, back = R.col[0], R.col[1], R.col[2]          # 카메라 앞은 -Z
+    cd = cam.data
+    if "길" in keys:
+        road = keys["길"]
+        z0 = base.translation.z
+        for i in range(n):
+            cam.location = (road["카메라x"][i], road["카메라y"][i], z0)
+            cam.keyframe_insert("location", frame=i)
+            cd.dof.focus_distance = road["초점"][i]
+            cd.dof.keyframe_insert("focus_distance", frame=i)
+    else:
+        poses, pars = solve_camera_keys(cut, cam, keys["화면"], n)
+        f0 = cd.dof.focus_distance if cd.dof.use_dof else None
+        for i in range(n):
+            cam.matrix_world = poses[i]
+            cam.keyframe_insert("location", frame=i)
+            cam.keyframe_insert("rotation_euler", frame=i)
+            if f0 is not None:                                   # 다가간 만큼 초점도 따라 줄인다(같은 면에 맞은 그대로)
+                cd.dof.focus_distance = f0 - pars[i][2]
+                cd.dof.keyframe_insert("focus_distance", frame=i)
+    return n
+
+
 def main():
     SCENES[CUT]()
     if EXPOSURE is not None:
         bpy.context.scene.view_settings.exposure = float(EXPOSURE)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     sc = bpy.context.scene
+    if ANIM or FIDX is not None:
+        n = animate_camera(CUT)
+        if not n:
+            raise SystemExit(f"카메라 키 없음: 컷 {CUT}")
+    if ANIM:
+        a, b = (int(v) for v in FRAMES.split("-")) if FRAMES else (0, sc.frame_end)
+        sc.frame_start, sc.frame_end = a, b
+        d = os.path.join(밖, "렌더", "움직임")
+        os.makedirs(d, exist_ok=True)
+        sc.render.filepath = os.path.join(d, f"c{CUT}_")
+        bpy.ops.render.render(animation=True)
+        print("RENDERED", sc.render.filepath, a, b)
+        return
+    if FIDX is not None:
+        sc.frame_set(int(FIDX))
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     sc.render.filepath = OUT
     if SAVE:
         bpy.ops.wm.save_as_mainfile(filepath=OUT.replace(".png", ".blend"))

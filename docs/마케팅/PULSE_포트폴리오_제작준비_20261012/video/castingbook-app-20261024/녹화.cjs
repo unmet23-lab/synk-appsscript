@@ -103,7 +103,7 @@ const shoot = (page, file, clip) => page.screenshot({ path: file, ...(clip ? { c
           await page.click("#strip figure:nth-child(" + (rec.strip + 1) + ") button"); await page.waitForTimeout(500); await settleImages(page); opened = true;
         }
         if (rec.pressAt != null && !pressed && t >= rec.pressAt) {
-          await page.click(".tile[data-code='F02'] .add"); await page.waitForTimeout(150); pressed = true;
+          await page.$eval(".tile[data-code='F02'] .add", (el) => el.click()); await page.waitForTimeout(150); pressed = true;   // 마우스 없이 누른다 — 아래 극접사판 참고
         }
         const y = rec.scroll ? Math.round(rec.scroll(t) * 3) / 3 : 0;
         if (!opened) await page.evaluate((y) => scrollTo({ top: y, behavior: "instant" }), y);
@@ -120,7 +120,9 @@ const shoot = (page, file, clip) => page.screenshot({ path: file, ...(clip ? { c
       const clip = { x: 0, y: Math.max(0, box.tile.y - 40), width: 260, height: Math.min(805 - Math.max(0, box.tile.y - 40), 300) };
       const zdir = path.join(OUT, id, "zoom"); fs.rmSync(zdir, { recursive: true, force: true }); fs.mkdirSync(zdir, { recursive: true });
       await shoot(p9, path.join(zdir, "before.png"), clip);
-      await p9.click(".tile[data-code='F02'] .add"); await p9.waitForTimeout(300);
+      // 마우스로 누르면 타일 위 :hover로 사진이 0.7초에 걸쳐 1.5% 커진다(.tile:hover .ph .base — 손가락 누름에는 없는 일). 10-25 판 after는 그렇게 찍혀
+      // 가편집 17번에서 화면이 0.83초에 1.5% 튀었다(10-27 Fable P2) — 마우스 없이 누른다. 그 판은 before에 바뀐 단추 · 알림만 얹어 고쳤다(원판 after_원본.png).
+      await p9.$eval(".tile[data-code='F02'] .add", (el) => el.click()); await p9.waitForTimeout(300);
       await shoot(p9, path.join(zdir, "after.png"), clip);
       fs.writeFileSync(path.join(zdir, "clip.json"), JSON.stringify({ clip, dpr: 9, box, scrollY: 11 }, null, 1));
       console.log(id, "극접사 자리", JSON.stringify(clip), JSON.stringify(box.add));

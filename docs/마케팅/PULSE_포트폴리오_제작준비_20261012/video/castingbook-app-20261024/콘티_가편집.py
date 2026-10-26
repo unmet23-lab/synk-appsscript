@@ -59,17 +59,27 @@ def end_frames(k):
     return out
 
 
-def push(fr, s):
-    """카메라 다가감 — 가운데를 s배로 키워 자른다(원본 4번 4% · 17번 1.4배)."""
-    if s <= 1.0001:
-        return fr
+CAM = Path(r"C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/레퍼런스/원본실측/p8_네이버/카메라/곡선.json")
+# 움직이는 컷 둘의 원본 카메라 곡선(10-27, 14_카메라곡선.py — 01_샷표_원본 2-1절). 둘 다 편집기 디지털 줌이다 — 4번은
+# 프레임마다 +0.21%로 0.88초에 4.5%, 17번은 프레임마다 +6.8%로 0.33초에 1.50배까지 커지고 뚝 멈춘다. 영상은 고정으로 뽑고
+# 줌은 여기(후반)서 건다. 0.1초 매끈 곡선은 뚝 멈춤을 둥글리므로 원 곡선을 쓴다. 17번은 배율만 — 원 곡선의 옆 · 위아래에는
+# 엄지가 섞여 있고(0.83초 0.6%), 원본 첫 프레임에 바로 맞춘 값은 0.1% 안이라 가운데로 다가간다. 나머지 18컷은 고정.
+CURVES = {int(r["id"]): r["곡선"] for r in json.load(open(CAM, encoding="utf-8"))["컷"] if r["id"] in ("4", "17")} if CAM.exists() else {}
+PUSH = set(CURVES)
+AXES = {4: ("배율", "옆", "위아래", "돎"), 17: ("배율",)}
+
+
+def push(fr, n, t):
+    """원본 곡선대로 2D 카메라 — 그 시각의 배율 · 옆 · 위아래 · 돎(원 곡선)을 화면 가운데 기준 닮음 변환으로 건다."""
+    c = CURVES[n]
+    tt = np.array(c["t"])
+    z, x, y, r = (float(np.interp(t, tt, np.array(c[k]))) if k in AXES[n] else 0.0 for k in ("배율", "옆", "위아래", "돎"))
     h, w = fr.shape[:2]
-    big = cv2.resize(fr, (int(round(w * s)), int(round(h * s))), interpolation=cv2.INTER_LINEAR)
-    y0, x0 = (big.shape[0] - h) // 2, (big.shape[1] - w) // 2
-    return big[y0:y0 + h, x0:x0 + w]
-
-
-PUSH = {4: lambda u: 1 + 0.04 * u, 17: lambda u: 1.4 ** u}   # u = 컷 안 0~1
+    s, th = 1 + z / 100, np.radians(r)
+    A = np.array([[s * np.cos(th), -s * np.sin(th)], [s * np.sin(th), s * np.cos(th)]])
+    c0 = np.array([w / 2, h / 2])
+    M = np.hstack([A, (c0 + [x / 100 * w, y / 100 * h] - A @ c0)[:, None]])
+    return cv2.warpAffine(fr, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
 
 
 def our_frames(n, k):
@@ -88,12 +98,12 @@ def our_frames(n, k):
             cfg["mblur"] = 0.75 * dy   # 녹화는 3배(1pt = 3px) — 10번 극접사에서 원본 번짐 길이(1920 기준 약 45px)에 맞춘 계수(1.5는 두 배로 뭉개졌다 — Fable 3차 P3 9)
             img = H.do_screen(cut, base.copy(), cfg, {})
             if n in PUSH:
-                img = push(img, PUSH[n](i / max(1, k - 1)))
+                img = push(img, n, i / FPS)
             out.append(with_text(n, img))
         return out
     fr0 = still(n)
     if n in PUSH:
-        return [with_text(n, push(fr0, PUSH[n](i / max(1, k - 1)))) for i in range(k)]
+        return [with_text(n, push(fr0, n, i / FPS)) for i in range(k)]
     fr = with_text(n, fr0)
     return [fr] * k
 
