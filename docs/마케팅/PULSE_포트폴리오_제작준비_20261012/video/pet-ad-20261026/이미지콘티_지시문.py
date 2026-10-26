@@ -309,6 +309,30 @@ fix("S09f", ("It faces the camera dead-on with the cool, serious look of a model
      "sheer curtain and the bed are right behind the dog, just to the right of its head."),
     ("Camera: at the dog's eye level, very close, slightly from below.",
      "Camera: at the dog's eye level, very close, slightly from below, about twenty-five degrees to the dog's right side."))
+# Fable 3차(10-27 01시) — 9 끝 그림이 시작 그림(S09f, 귀 끝이 위에 닿음)보다 느슨해 다가감이 멀어짐으로 뒤집힘 → 끝을 원본 끝처럼 더 가깝게(S09d2).
+# 6은 아래 손(시계)이 개 가슴 밑에 있어 둘째 손잡이를 쥐게(S06d).
+shots["S09d2"] = {"refs": shots["S09d"]["refs"] + [ref("S09d_끝.jpg")], "prompt": shots["S09d"]["prompt"]}
+fix("S09d2", ("the sitting dog fills the whole frame — the tips of its big ears and the crest touch the top edge, its front paws resting on "
+              "the white bath mat touch the bottom edge, its body fills the width; the head fills the top 40 percent of the frame,",
+              "Image 4 shows the same dog, jacket, sunglasses and room from the same front angle — keep all of them identical, but frame it "
+              "TIGHTER: the crest and the tips of the big ears are CUT by the top edge, the head and chest fill the full width of the frame, "
+              "the front paws on the white bath mat at the very bottom edge; the head fills the top half of the frame,"))
+shots["S06d"] = {"refs": shots["S06c"]["refs"], "prompt": shots["S06c"]["prompt"]}
+fix("S06d", ("the hand closer to the dog's head grips the front handle and the other hand grips the back handle",
+             "the hand closer to the dog's head grips the front handle and the lower hand grips the SECOND handle directly behind the "
+             "first — no hand under the dog's chest"))
+# Fable 3차 P2 — 카메라를 원본대로 움직이려면 시작 그림부터 원본에 붙여야 해 1 · 7도 한 번 더(S01c는 「stands sideways」를 일어섬으로, S07b는 「looks down」을 고개 숙임으로 읽었다).
+shots["S01d"] = {"refs": shots["S01c"]["refs"], "prompt": shots["S01c"]["prompt"]}
+fix("S01d", ("the dog stands SIDEWAYS to the camera, its body runs out of the LEFT edge of the frame and only the head is turned toward the "
+             "camera; its chest is not visible;",
+             "the dog is on all FOUR legs, standing side-on to the camera on the sand; only its head, neck and the top of its back are "
+             "inside the frame, the back running out of the LEFT edge; the head is turned toward the camera and down to the lower left;"))
+shots["S07c"] = {"refs": shots["S07b"]["refs"], "prompt": shots["S07b"]["prompt"]}
+fix("S07c", ("stands DIRECTLY in front of the glass middle door — the door is right behind him, its frame visible beside his shoulders "
+             "and daylight through it backlights him — full body facing the camera, looking down at the dog,",
+             "stands in front of the glass middle door — the camera looks toward the ENTRANCE of the room, so the glass middle door is the "
+             "wall directly behind him, its white frame visible on both sides of his body, daylight through it backlighting him — full "
+             "body facing the camera, chin level and face toward the camera, his eyes behind the sunglasses turned down to the dog,"))
 for k, v in shots.items():
     v["ratio"] = "9:16"
 jobs.update(shots)
