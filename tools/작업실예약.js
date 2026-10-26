@@ -19,6 +19,8 @@
  * 잠금 링크를 예약보다 먼저 만들어, 예약이 생기는 순간부터 서버가 검토 승인을 기다린다(필수 검토가 걸린 원고는 이후 판도 계속 필수 —
  * social-review.mjs requirement). 사내 승인은 자동화 계정이 하지만 그것만으로는 보내지 않고, 실제로 보내게 하는 것은 유호님 링크 승인뿐이다.
  * 검토 링크는 가진 사람이 승인할 수 있는 열쇠라 저장소에 적지 않는다 — %LOCALAPPDATA%\synk\작업실예약\에만 두고 텔레그램으로 보낸다.
+ * 10-26 유호님 「검토 링크 하나로 같은 영상 판 함께 승인」: 링크 기록에 「함께」(작업실 판과 같은 원본 영상의 페북 · 틱톡 · 텔레그램 판 —
+ * 승인되면 14시 게시 작업이 묻지 않고 건다)와 「따로」(다른 렌더 · 글 판 — 「올려」를 따로 받는다)를 적고, 텔레그램 승인 요청에 두 줄로 보인다.
  *
  * 서버로 보내는 판: 인스타 릴스(@yuhobuilds·@synkbrief·@synk.mn)와 유튜브 쇼츠(@yuhobuilds·@synkbrief·@synkkorean) 가운데 작업실에
  * 자동 게시로 연결된 계정만. 못 보내는 판(페이스북 페이지 영상·샤오훙수·틱톡·네이버·티스토리, 연결 전 계정)은 지금처럼 14시 게시 세션이 크롬으로 한다.
@@ -355,7 +357,7 @@ async function register(bundle, ws, rows, opts = {}) {
   writeJson(stateFile(bundle), state);
   fs.mkdirSync(LOCAL_DIR, { recursive: true });
   writeJson(localLinkFile(bundle), { 편: bundle.name, 제목: prep.제목 || bundle.name, 원고: post.id, 링크: review.url, 만료: review.link.expiresAt, 만듦: state.끝, 보냄: false,
-    판: eligible.map((row) => ({ 계정: row.account, 시각: row.time })) });
+    판: eligible.map((row) => ({ 계정: row.account, 시각: row.time })), ...companions(rows) });
   mergeResults(bundle, eligible.map((row) => ({ 계정: row.account, 상태: '승인 대기', 시각: row.time, 방법: '작업실', 작업: state.판.find((p) => p.계정 === row.account)?.작업 || null,
     ...(row.notes.length ? { 후속: row.notes } : {}) })));
   return { post, jobs, url: review.url, expiresAt: review.link.expiresAt, rows: eligible };
@@ -472,14 +474,33 @@ async function handleOne(dir, ws, o) {
   return { bundle: bundle.name, registered: true, postId: done.post.id };
 }
 
+// 검토 링크 승인 하나로 함께 거는 판(유호님 10-26 「검토 링크 하나로 같은 영상 판 함께 승인」): 작업실에 올린 판과 같은 원본 영상 파일을
+// 그대로 쓰는 페북 · 틱톡 · 텔레그램 판. 다른 렌더(현지어 판 · 끝 말 바꾼 틱톡판)와 블로그 · X · 링크드인 같은 글 판은 「올려」를 따로 받는다.
+const CARRIED = new Set(['facebook', 'tiktok', 'telegram']);
+function companions(rows) {
+  const sent = new Set(rows.filter((r) => r.eligible && r.video).map((r) => path.resolve(r.video.path)));
+  const out = { 함께: [], 따로: [] };
+  for (const r of rows) {
+    if (r.eligible) continue;
+    const file = r.plate?.video?.path ? path.resolve(r.plate.video.path) : null;
+    (CARRIED.has(r.platform) && file && sent.has(file) ? out.함께 : out.따로).push({ 계정: r.account, 시각: r.time || null });
+  }
+  return out;
+}
+
 // 이 PC에 둔 링크 기록 하나를 텔레그램으로 보내고 「보냄」을 적는다. 실패하면 「보냄: false」로 남아 다음 회차(resendPending)가 다시 보낸다.
 async function sendLink(file) {
   let record;
   try { record = 묶음.readJson(file); } catch { return false; }
   if (record.보냄 || Date.parse(record.만료) <= Date.now()) return false;
   const lines = (record.판 || []).map((p) => `· ${p.계정} ${kst(p.시각)}`).join('\n');
+  const list = (xs) => xs.map((p) => `${p.계정}${p.시각 ? ` ${kst(p.시각)}` : ''}`).join(' · ');
+  const more = [
+    ...(record.함께?.length ? [`승인하시면 같은 영상으로 함께 걸어요: ${list(record.함께)}`] : []),
+    ...(record.따로?.length ? [`「올려」를 따로 받는 판: ${list(record.따로)}`] : []),
+  ];
   try {
-    await sendTelegram(`[승인 요청] ${record.제목 || record.편}\n${lines}\n\n검토 링크(누르기 전에는 올라가지 않아요):\n${record.링크}`);
+    await sendTelegram(`[승인 요청] ${record.제목 || record.편}\n${lines}${more.length ? `\n${more.join('\n')}` : ''}\n\n검토 링크(누르기 전에는 올라가지 않아요):\n${record.링크}`);
   } catch (error) {
     console.error(`  ! 텔레그램 보내기 실패 — 다음 회차에 다시 보낸다: ${error.message}`);
     return false;
@@ -555,4 +576,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, 명령이름, STATUS, LOCAL_DIR, mergeResults };
+module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, companions, 명령이름, STATUS, LOCAL_DIR, mergeResults };

@@ -105,6 +105,9 @@ test('작업실 등록 → 예약은 모두 검토 대기, 유호님 링크 승�
   const lock = links.find((l) => l.label.startsWith('잠금')), mine = links.find((l) => l.label === '유호님 승인');
   assert.ok(lock.revokedAt, '잠금 링크는 폐기');
   assert.deepEqual(requirement.linkIds, [mine.id], '필수 링크는 유호님 링크 하나');
+  // 링크 기록에 승인 하나로 함께 거는 판(같은 영상 페북 · 틱톡 · 텔레그램)과 따로 「올려」를 받는 판을 적는다(10-26) — 이 편은 티스토리 글만 따로
+  const linkRecord = JSON.parse(fs.readFileSync(path.join(process.env.SYNK_WORKSPACE_LINK_DIR, `${bundle.name}.json`), 'utf8'));
+  assert.deepEqual([linkRecord.함께, linkRecord.따로.map((p) => p.계정)], [[], ['shift-tistory']]);
   // 저장소에 남는 기록에는 링크 열쇠가 없다
   const state = JSON.parse(fs.readFileSync(path.join(f.dir, '게시', '작업실.json'), 'utf8'));
   assert.equal(state.postId, done.post.id);
@@ -282,4 +285,28 @@ test('등록할 편이 있으면 인증 실패를 빈 대기열 성공으로 숨
   assert.deepEqual(f.calls(), process.platform === 'win32' ? ['credential'] : []);
   if (process.platform === 'win32') assert.match(r.stderr, /CREDENTIAL_BLOCKED_BY_TEST/);
   assert.equal(JSON.parse(fs.readFileSync(path.join(f.linkDir, 'pending.json'), 'utf8')).보냄, false);
+});
+
+test('승인 하나로 함께 거는 판(10-26 유호님) — 작업실 판과 같은 원본 영상의 페북 · 틱톡 · 텔레그램만, 다른 렌더 · 글 판은 따로, 텔레그램 승인 요청에 두 줄', async (t) => {
+  const 예약 = require('../tools/작업실예약.js');
+  const row = (account, platform, file, eligible = false) => ({ account, platform, time: '2026-10-30T12:00:00Z', eligible, plate: { video: file ? { path: file } : null }, ...(eligible ? { video: { path: file } } : {}) });
+  const rows = [row('lab-instagram', 'instagram', '/v/mn.mp4', true), row('lab-facebook', 'facebook', '/v/mn.mp4'), row('lab-tiktok', 'tiktok', '/v/mn.mp4'),
+    row('lab-telegram', 'telegram', '/v/mn.mp4'), row('lab-mm-tiktok', 'tiktok', '/v/mm.mp4'), row('lab-cn-xiaohongshu', 'xiaohongshu', '/v/mn.mp4'),
+    row('yuhobuilds-x', 'x', '/v/mn.mp4'), row('shift-tistory', 'tistory', null)];
+  const c = 예약.companions(rows);
+  assert.deepEqual(c.함께.map((p) => p.계정), ['lab-facebook', 'lab-tiktok', 'lab-telegram']);
+  assert.deepEqual(c.따로.map((p) => p.계정), ['lab-mm-tiktok', 'lab-cn-xiaohongshu', 'yuhobuilds-x', 'shift-tistory']);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '작업실예약-함께-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const file = path.join(dir, 'a.json');
+  fs.writeFileSync(file, JSON.stringify({ ...pendingLink(), 제목: '시험 편', 판: [{ 계정: 'lab-instagram', 시각: '2026-10-30T12:00:00Z' }], ...c }));
+  const 헤르메스 = require('../tools/lib/헤르메스보내기.js');
+  const original = 헤르메스.보내기;
+  let text = null;
+  헤르메스.보내기 = (_exe, _to, body) => { text = body; return { ok: true }; };
+  t.after(() => { 헤르메스.보내기 = original; });
+  assert.equal(await 예약.sendLink(file), true);
+  assert.match(text, /^승인하시면 같은 영상으로 함께 걸어요: lab-facebook 10-30 21:00 · lab-tiktok 10-30 21:00 · lab-telegram 10-30 21:00$/m);
+  assert.match(text, /^「올려」를 따로 받는 판: lab-mm-tiktok 10-30 21:00 · lab-cn-xiaohongshu 10-30 21:00 · yuhobuilds-x 10-30 21:00 · shift-tistory 10-30 21:00$/m);
 });
