@@ -78,7 +78,7 @@ export function createNotebook(dialog, { command, onPage } = {}) {
   const act = (type, payload) => () => command?.(type, payload);
   function clearRow(kind, label, line) {
     if (confirming === kind) return h('div', { class: 'notebook-confirm' }, h('p', { class: 'field-note', text: line }),
-      h('div', { class: 'actions' }, h('button', { type: 'button', class: 'felt primary', text: label, 'data-focus': `confirm:${kind}`, onclick: () => { confirming = null; focusNext = `clear:${kind}`; command?.(kind); } }),
+      h('div', { class: 'actions' }, h('button', { type: 'button', class: 'felt primary', text: label, 'data-focus': `confirm:${kind}`, onclick: async () => { confirming = null; focusNext = `clear:${kind}`; if (!await command?.(kind)) render(snapshot); } }),
         h('button', { type: 'button', class: 'felt', text: '그만두기', 'data-focus': `cancel:${kind}`, onclick: () => { confirming = null; focusNext = `clear:${kind}`; render(snapshot); } })));
     return h('button', { type: 'button', class: 'felt subtle notebook-clear', text: label, 'data-focus': `clear:${kind}`, onclick: () => { confirming = kind; focusNext = `confirm:${kind}`; render(snapshot); } });
   }
@@ -120,5 +120,7 @@ export function createNotebook(dialog, { command, onPage } = {}) {
     const want = focusNext ?? had; focusNext = null;
     if (want !== null) ([...body.querySelectorAll('[data-focus]')].find(el => el.dataset.focus === want) || tabs.querySelector(`#notebook-tab-${page}`))?.focus();
   }
-  return { open(id = page) { if (!dialog.open) dialog.showModal(); show(id, false); }, render, page: () => page };
+  // open(page, snapshot): every way in hands over the town's answer it shows (the door note's 「수첩에서 더 보기」 opened an
+  // empty notebook until the next answer — final review F1).
+  return { open(id = page, next = null) { if (next) snapshot = next; if (!dialog.open) dialog.showModal(); show(id, false); }, render, page: () => page };
 }

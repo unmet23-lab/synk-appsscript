@@ -490,7 +490,10 @@ function residentsHere() {
 }
 // One greeting a talk (§9-4): the one shown stays until the player leaves the place or closes the panel, though the
 // server already has the next thing that resident could tell.
-let greetSession = null, placeOpens = 0, placeShownAt = null;
+let greetSession = null, placeOpens = 0;
+// What of the place's panel has been in sight since when (§20-2 — only what really showed counts): the panel scrolls, on
+// a phone at most 300px tall, so the greeting and each note line count by themselves inside it (final review F2).
+const placeSeenSince = new Map();
 function placePanelOpen() { return !walking() || walkPanel; }
 /** The place's panel (W5b): who greets the player with what it heard, the cards whose owner is here — its need and
  * 「같이 해요」, or the paused one to go on with — and at home the news note by the door (newest three, no dates). */
@@ -502,10 +505,10 @@ function renderCards() {
   else if (!greetSession.greet && model?.greet && !greeted.has(model.greet.ref)) greetSession.greet = model.greet;
   const greet = greetSession.greet, shown = !!model && (!!greet || model.needs.length > 0 || model.note.length > 0);
   panel.hidden = !shown;
-  if (!shown) { placeShownAt = null; return; }
+  if (!shown) { placeSeenSince.clear(); return; }
   const sig = JSON.stringify([greet?.ref, greet?.text, model.needs.map(n => [n.card, n.key, n.paused]), model.note.map(n => n.ref)]);
   if (signatures.get('place-cards') === sig) return;
-  signatures.set('place-cards', sig); placeShownAt = null;
+  signatures.set('place-cards', sig); placeSeenSince.clear();
   const parts = [];
   if (greet) {
     const p = document.createElement('p'); p.className = 'place-greet';
@@ -523,27 +526,32 @@ function renderCards() {
     const note = document.createElement('div'); note.className = 'place-note'; note.setAttribute('role', 'group'); note.setAttribute('aria-label', '문 앞 쪽지');
     const head = document.createElement('p'); head.className = 'eyebrow'; head.textContent = '문 앞 쪽지'; note.append(head);
     const list = document.createElement('ul');
-    for (const item of model.note) { const li = document.createElement('li'); li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
+    for (const item of model.note) { const li = document.createElement('li'); li.dataset.ref = item.ref; li.dataset.card = item.card; li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
     const more = document.createElement('button'); more.type = 'button'; more.className = 'text-button'; more.textContent = '수첩에서 더 보기';
-    more.addEventListener('click', () => notebook?.open('news'));
+    more.addEventListener('click', () => notebook?.open('news', snapshot));
     note.append(list, more); parts.push(note);
   }
   panel.replaceChildren(...parts);
 }
-/** The greeting and the note count as shown once the panel has held them in sight a moment (§20-2); the greeting then
+/** Whether a line of the place's panel has stood wholly inside the panel's box (and the window) for a moment. */
+function heldInSight(key, el, now) {
+  const box = $('nearby-panel').getBoundingClientRect(), r = el?.getBoundingClientRect();
+  if (!r?.height || r.top < Math.max(0, box.top) - 1 || r.bottom > Math.min(innerHeight, box.bottom) + 1) { placeSeenSince.delete(key); return false; }
+  if (!placeSeenSince.has(key)) placeSeenSince.set(key, now);
+  return now - placeSeenSince.get(key) >= 1200;
+}
+/** The greeting and each note line count as shown once they have stood in sight a moment (§20-2); the greeting then
  * tells the server this resident said it (GREET — never the first-word budget, §9-4). */
 function cardsFrame(now) {
   const panel = $('place-cards');
   const good = !panel.hidden && placePanelOpen() && !busy && connected && !stay?.active() && !document.querySelector('dialog[open]') && visible(panel, false);
-  if (!good) { placeShownAt = null; return; }
-  placeShownAt ??= now;
-  if (now - placeShownAt < 1200) return;
+  if (!good) { placeSeenSince.clear(); return; }
   const greet = greetSession?.greet, model = snapshot.view.day?.scene?.village;
-  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref) {
+  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref && heldInSight(`greet:${greet.ref}`, panel.querySelector('.place-greet'), now)) {
     greeted.add(greet.ref); noteSeen(greet.seen, greet.ref);
     command('GREET', { npc: greet.npc, ref: greet.ref }).then(ok => { if (!ok) greeted.delete(greet.ref); });
   }
-  for (const n of (model?.news || []).slice(0, 3)) if (snapshot.view.day.location === 'home') noteSeen([`line:village.news.${n.card}.1`], n.ref);
+  if (snapshot.view.day.location === 'home') for (const li of panel.querySelectorAll('.place-note li')) if (heldInSight(`note:${li.dataset.ref}`, li, now)) noteSeen([`line:village.news.${li.dataset.card}.1`], li.dataset.ref);
 }
 async function openCard(c, source) {
   const payload = { card: c.card, key: c.key, source, ...(source === 'contact' ? { contactId: c.id } : {}) };

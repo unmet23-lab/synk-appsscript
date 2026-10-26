@@ -193,13 +193,20 @@ async function notes(browser) {
         const home = await cards(s.page);
         check('notes', home.place && /문 앞 쪽지/.test(home.place) && !NUMBERS.test(home.place), `${device}: 집 문 앞 쪽지(날짜 없이)`, home.place);
         await shot(s.page, `notes-${device}-1-door`);
-        // The note counts as shown once in sight a moment (§20-2) — at home no boundary sends it yet.
-        await s.page.waitForFunction(() => SYNKTownDay.metrics().cards.seenPending.length > 0, null, { timeout: 5000 }).catch(() => {});
+        // A note line counts as shown once it has stood inside the panel a moment (§20-2 — the panel scrolls; on a phone the
+        // note may sit below its edge — final review F2). At home no boundary sends it yet.
+        const lines = await s.page.evaluate(() => { const box = document.getElementById('nearby-panel').getBoundingClientRect();
+          return [...document.querySelectorAll('#place-cards .place-note li')].map(li => { const r = li.getBoundingClientRect(); return { card: li.dataset.card, text: li.textContent.trim(), inside: r.top >= Math.max(0, box.top) - 1 && r.bottom <= Math.min(innerHeight, box.bottom) + 1 }; }); });
+        await delay(1600);
+        const shownKeys = (await cards(s.page)).seenPending.filter(k => k.startsWith('line:village.news.')), inside = lines.filter(l => l.inside);
+        check('notes', lines.length > 0 && shownKeys.length === inside.length && inside.every(l => shownKeys.includes(`line:village.news.${l.card}.1`)), `${device}: 판 안에 보인 쪽지 줄만 본 것으로 센다`, { lines: lines.map(l => [l.card, l.inside]), shownKeys });
         await s.page.click('#place-cards .text-button'); await s.page.waitForSelector('#notebook-dialog[open]'); await delay(300);
         for (const [i, id] of ['news', 'can', 'familiar', 'memory', 'book'].entries()) {
           await s.page.click(`#notebook-tab-${id}`); await delay(250);
           const words = await s.page.$eval('#notebook-page', el => el.textContent);
           check('notes', !NUMBERS.test(words), `${device}: 수첩 「${id}」에 숫자·날짜 없음`, words.slice(0, 120));
+          // Opened from the door note, the notebook shows the town's answer at once (final review F1 — it opened empty).
+          if (id === 'news') check('notes', lines.every(l => words.includes(l.text)), `${device}: 수첩 「마을 소식」이 문 앞 쪽지의 소식을 품는다`, { note: lines.map(l => l.text), page: words.slice(0, 160) });
           if (device === 'desktop' || ['news', 'memory'].includes(id)) await shot(s.page, `notes-${device}-2-notebook-${i + 1}-${id}`);
         }
         if (device === 'desktop') {
