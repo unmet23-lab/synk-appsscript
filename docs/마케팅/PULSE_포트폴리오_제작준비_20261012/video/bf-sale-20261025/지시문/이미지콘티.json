@@ -1,0 +1,122 @@
+{
+ "메모": "블프 세일 숏폼 이미지 콘티 지시문(2026-10-26 — 02_콘티.md 2절). 원본 컷 첫 프레임과 같은 카메라 자리 · 크기 · 높이 · 빛으로 굽는다(만족 사례 장부 S31). 원본 프레임은 넣지 않고 사람 자리만 검은 실루엣(배치:S<컷>, git 밖 synk-vendor/pulse-season4-20261025/콘티/bf-sale/배치), 스튜디오 기준 그림(R1), 채원 참조(명세서 refs 넷 + 놀란 얼굴), 장면 속 간판에 쓸 「힘껏」 로고(참조:힘껏_로고_간판.png)만 넣는다. 전광판 숫자 · 글자 카드 · 제품 칸 · 끝 카드는 굽지 않고 모션그래픽으로 얹는다. 풀기: python -X utf8 지시문/풀기.py → git 밖 콘티/bf-sale/ego/jobs.json, 받은 그림은 콘티/bf-sale/받음/.",
+ "공통": {
+  "시작": "Create one still photograph. A cinematic film still from a Korean online sports-wear brand commercial, vertical 9:16 frame, shot on a cinema camera with a fast lens.",
+  "채원_얼굴": "Use the attached photos of the same woman (Images 1 to {n}) only as identity references for one Korean woman about twenty-five years old. Keep her face exactly the same in every detail: sun-tanned warm golden-brown skin, a light dusting of small sun freckles across her nose and upper cheeks (subtle, not heavy), monolid eyes, thick straight dark eyebrows, a slightly angular jaw and a firm face line, and a short black pixie cut with a little volume on top. She looks healthy and sporty, like a real fitness instructor, not a model on a poster. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, extra marks, earrings, necklaces, tattoos, makeup glitter, text, logos or watermarks.",
+  "채원_옷": "She wears a fitted vivid red-orange half-zip training jacket with the zip pulled up to the collarbone, black high-waist leggings and white training shoes, with no logos or text on any clothing. A thin black headset microphone sits over her right ear, its slim boom arm curving toward the corner of her mouth.",
+  "스튜디오": "Location: an indoor cycling (spin) studio at night. Deep navy-violet walls, a dark charcoal floor, rows of matte white-and-silver indoor stationary bikes, thin vertical white LED light strips on the walls, cool violet-blue ambient light with soft magenta reflections. Down the middle of the floor runs a long red-orange exercise-mat runway with thin lighter orange pinstripes along its edges.",
+  "스튜디오_짧게": "Location: the same indoor cycling studio at night — deep navy-violet walls, dark charcoal floor, white-and-silver stationary bikes, cool violet light, a red-orange mat runway on the floor.",
+  "기준R1": "Image {n} is the reference photo of the studio: keep the same room, wall color, bikes, light strips and mat runway as in it.",
+  "배치": "Image {n} is a layout guide for the camera framing: the black silhouette shows exactly where she is and how large she is in the frame; the light grey area is empty background to be filled with the location. Match the camera position, camera height, lens, framing and her size exactly as in the layout guide. Do not draw the grey, the black or any guide shapes.",
+  "금지_글자": "No text, no letters, no numbers, no logos and no watermarks anywhere in the picture.",
+  "질감": "Photorealistic, natural skin texture with visible pores, real fabric texture, slight film grain, no beauty retouching, no illustration look."
+ },
+ "컷": [
+  {
+   "id": "R1",
+   "who": "없음",
+   "refs": [],
+   "text": "{시작} An empty indoor cycling studio photographed from the far end of the room, camera at chest height looking straight down the center aisle. {스튜디오} About eight stationary bikes stand in two rows on both sides of the red-orange mat runway, all empty, facing the camera. One bike stands at the far end in the middle of the runway, facing the camera, also empty. High on the back wall above the far bike is a wide blank dark display panel with a thin metal frame, switched off and showing nothing. Nobody is in the room. Light: cool violet-blue, moody and dark, with the white LED strips and the mat runway glowing softly. {금지_글자} {질감}"
+  },
+  {
+   "id": "P1",
+   "who": "없음",
+   "refs": [],
+   "ratio": "1:1",
+   "text": "Create one image: a clean 2x2 grid of four separate e-commerce product photos, each square on a warm off-white seamless background with a soft natural shadow, ghost-mannequin (invisible mannequin) style so each garment keeps a natural worn shape with no person visible. Top-left: black high-waist full-length leggings. Top-right: a vivid red-orange sports bra top. Bottom-left: a black training half-zip jacket with red-orange side panels. Bottom-right: a heather-grey pullover hoodie with red-orange drawstrings. Premium athletic fabric texture, crisp studio lighting, the four photos separated by thin white gaps. No logos, no text, no labels, no tags, no watermarks."
+  },
+  {
+   "id": "P2",
+   "who": "없음",
+   "refs": [],
+   "ratio": "1:1",
+   "text": "Create one image: a clean 2x2 grid of four separate e-commerce product photos, each square on a warm off-white seamless background with a soft natural shadow, ghost-mannequin (invisible mannequin) style so each garment keeps a natural worn shape with no person visible. Top-left: charcoal-grey tapered jogger pants with elastic cuffs. Top-right: a red-orange lightweight running cap, seen at a three-quarter angle. Bottom-left: a lightweight deep-navy windbreaker jacket with a red-orange zip and hood. Bottom-right: black running shorts with thin red-orange trim. Premium athletic fabric texture, crisp studio lighting, the four photos separated by thin white gaps. No logos, no text, no labels, no tags, no watermarks."
+  },
+  {
+   "id": "C01",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "배치:S01",
+    "R1"
+   ],
+   "text": "{시작} {채원_얼굴:4} {배치:5} {기준R1:6} {채원_옷} {스튜디오_짧게} A wide front shot at chest height: she rides a stationary bike in the middle of the frame on the red-orange mat runway, smiling broadly at the class in front of her, mid-pedal, both hands on the handlebars (nothing in her hands, no phone), full body visible from head to shoes, small in the frame as in the layout guide. Behind her the deep navy-violet wall; high on the wall above her head is a blank dark display panel with a thin metal frame, switched off, showing nothing (where the green rectangle is in the layout guide). At the far left and far right edges of the frame only the cut-off handlebars of empty bikes are visible — no other people at all. Light: dark, cool violet-blue studio light, a soft spotlight on her from above, a thin white LED strip glowing on the right wall. {금지_글자} {질감}"
+  },
+  {
+   "id": "C03",
+   "who": "없음",
+   "refs": [
+    "배치:S03",
+    "R1"
+   ],
+   "text": "{시작} {배치:1} {기준R1:2} A very low camera close to the floor beside the front flywheel of a white stationary bike (the wheel edge fills the upper left of the frame), looking along the dark floor: a red-orange exercise mat with thin orange pinstripes is unrolling across the floor toward the camera, its rolled end moving fast, with glowing orange light trails curving around the wheel like rings (as the curved lines in the layout guide show). Motion blur on the rolling mat. Light: violet-magenta studio light with a pink-violet glow on the wall behind. No people. {금지_글자} {질감}"
+  },
+  {
+   "id": "C04",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "배치:S04"
+   ],
+   "text": "{시작} {채원_얼굴:5} Image 5 shows the exact surprised expression to use (eyes wide, mouth open in a round 'O'). {배치:6} {채원_옷} A medium close-up from slightly below: her head and shoulders fill the frame as in the layout guide (head near the top edge, shoulders and the top of the jacket reaching the bottom), she looks up and to the upper right with wide eyes and her mouth open in a round surprised 'O', frozen in amazement, as if something huge just appeared above the class. No hands and no phone anywhere in the frame. The headset mic boom near her mouth. Background: a soft out-of-focus violet studio wall with a cool blue-violet light. Light: violet-magenta key light from the upper right on her face. {금지_글자} {질감}"
+  },
+  {
+   "id": "C06",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "배치:S06",
+    "R1"
+   ],
+   "text": "{시작} {채원_얼굴:4} {배치:5} {기준R1:6} {채원_옷} {스튜디오_짧게} A wide front shot from the far end of the mat runway, at chest height, slightly pushed in: she rides the stationary bike alone in the middle of the runway, small in the frame as in the layout guide, shouting to the class with an excited open smile, both hands on the handlebars. The red-orange mat runway in front of her is still rolled up into a thick roll lying across the floor near the camera, about to unroll toward the camera. Empty bikes stand on both sides of the runway, nobody else in the room. High on the back wall above her head hangs a wide dark rectangular sign board with a thin glowing red-orange frame, its face blank and dark (nothing written on it). Light: dark violet studio, the mat and the sign frame glowing. {금지_글자} {질감}"
+  },
+  {
+   "id": "C07",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "배치:S07",
+    "R1"
+   ],
+   "text": "{시작} {채원_얼굴:4} {배치:5} {기준R1:6} {채원_옷} A shot from behind her at seat height, slightly tilted (the horizon rolled about four degrees): she rides her stationary bike along the red-orange mat runway away from the camera, seen from the back (her face is not visible, her short black pixie cut and the headset band visible), toward a huge glowing doorway made of several nested rounded-rectangle frames of bright red-orange and amber neon light, like a portal opening in front of her. Bright red-orange light floods the floor and her silhouette. Empty bikes at the edges. Nobody else. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "배치:S08"
+   ],
+   "text": "{시작} {채원_얼굴:4} {배치:5} {채원_옷} A side shot (her profile facing right) moving alongside her, the camera slightly tilted: she pedals hard on a white stationary bike leaning forward, inside a tunnel made of streaking straight lines and angled frames of bright red-orange and amber neon light rushing past, strong motion blur in the light lines behind her, her body sharp. Her figure fills the frame as in the layout guide. Light: intense red-orange neon glow wrapping her, hot highlights on her jacket. {금지_글자} {질감}"
+  },
+  {
+   "id": "C10",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "배치:S10"
+   ],
+   "text": "{시작} {채원_얼굴:5} Image 5 shows the exact surprised expression to use. {배치:6} {채원_옷} A close-up: her face and shoulders as in the layout guide (head in the upper middle, shoulders at the bottom edge), she looks slightly to the right of the camera with wide eyes and her mouth open in a round surprised 'O', thrilled, frozen in that expression. No hands and no phone in the frame. The headset mic boom near her mouth. Behind her, out of focus, angled frames and diagonal lines of bright red-orange neon light. Light: warm red-orange neon light on her face and jacket, a bright rim light on her hair. {금지_글자} {질감}"
+  },
+  {
+   "id": "C12",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "배치:S12",
+    "R1"
+   ],
+   "text": "{시작} {채원_얼굴:4} {배치:5} {기준R1:6} {채원_옷} A side shot from her left at handlebar height: she sits on a white stationary bike, both hands gripping the handlebars (nothing in her hands, no phone), her body filling the frame as in the layout guide, her face in profile looking up and ahead, about to turn her head sharply forward and start pedaling hard. In the near foreground at the bottom left, a blurred white handlebar of another empty bike. Behind her, slightly out of focus, a stack of plain red-orange shopping boxes with no logos or text, and the violet studio wall. Light: cool violet studio light with red-orange reflections from the boxes. {금지_글자} {질감}"
+  },
+  {
+   "id": "C13",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "배치:S13",
+    "R1"
+   ],
+   "text": "{시작} {채원_얼굴:4} {배치:5} {기준R1:6} {채원_옷} Only the lower part of the frame matters (the dark grey top area of the layout guide will be covered later — fill it with plain out-of-focus navy-violet studio wall). In the lower part, a medium shot: she sits on her stationary bike in the studio where the silhouette is, turned toward the camera, both hands resting on the handlebars (nothing in her hands, no phone), smiling happily straight into the camera, relaxed after the ride. Another empty bike at the left edge, out of focus. Light: soft violet-magenta studio light, warm highlight on her face. {금지_글자} {질감}"
+  }
+ ]
+}
