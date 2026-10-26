@@ -276,8 +276,9 @@ function dueAt() {
   const v = snapshot?.view.day?.scene?.village, times = [];
   if (v) {
     times.push(v.band.endMs);
-    // The place's line says what its own resident is doing (the cafe owner, the researcher): read when that turns.
-    const named = { cafe: 'cafe-owner', greenhouse: 'researcher' }[snapshot.view.day.location];
+    // The place's line says what its own resident is doing (the cafe owner, the researcher), and the place's panel which
+    // of its cards still waits (W5b — the workshop's too, review B3): read when that turns.
+    const named = { cafe: 'cafe-owner', workshop: 'workshop-owner', greenhouse: 'researcher' }[snapshot.view.day.location];
     for (const seg of named ? v.segments.filter(s => s.npc === named) : []) for (const at of [seg.startMs, seg.arriveMs, seg.endMs]) if (at > v.nowMs) times.push(at);
     for (const id of RESIDENT_IDS) {
       const mine = v.segments.filter(s => s.npc === id), up = mine.some(s => s.startMs <= v.nowMs);
@@ -556,13 +557,16 @@ function renderCardDialog() {
   if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; return; }
   // A take still open (a reload, another window's answer) brings its panel back — not while this window is closing it.
   if (!dialog.open) { if (cardClosing || stay?.active()) return; cardFeedbackOpen = false; dialog.showModal(); }
+  // What has the keyboard in the panel, so it stays there when a part is drawn again (screen review B2).
+  const had = dialog.contains(document.activeElement) ? document.activeElement : null, hadChoice = had?.dataset.choice ?? null, hadAnswer = had?.dataset.feedback ?? null;
   text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]); text('card-line', m.line || '');
   if ($('card-icon').dataset.icon !== m.icon) { $('card-icon').dataset.icon = m.icon; $('card-icon').innerHTML = iconSvg(m.icon); }
   const choices = $('card-choices'), sig = JSON.stringify([m.card, m.done, m.choices]);
   if (signatures.get('card-choices') !== sig) {
     signatures.set('card-choices', sig);
     choices.replaceChildren(...(m.done ? [] : m.choices.map(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt'; b.textContent = c.label;
-      b.setAttribute('aria-pressed', String(c.chosen)); b.dataset.command = 'CARD_CHOOSE'; b.addEventListener('click', () => command('CARD_CHOOSE', { choice: c.id })); return b; })));
+      b.setAttribute('aria-pressed', String(c.chosen)); b.dataset.command = 'CARD_CHOOSE'; b.dataset.choice = c.id;
+      b.addEventListener('click', async () => { await command('CARD_CHOOSE', { choice: c.id }); refocusCard({ choice: c.id }); }); return b; })));
   }
   // The confirm waits for a choice (setBusy keeps it off while a command is out, by its data-unavailable).
   const confirm = $('card-confirm'); confirm.dataset.command = 'CARD_CONFIRM'; confirm.dataset.unavailable = String(!m.chosen);
@@ -578,11 +582,24 @@ function renderCardDialog() {
       more.setAttribute('aria-expanded', String(cardFeedbackOpen)); more.setAttribute('aria-label', '이 생활에 응답 남기기');
       more.addEventListener('click', () => { cardFeedbackOpen = !cardFeedbackOpen; renderCardDialog(); });
       const options = document.createElement('div'); options.className = 'feedback-options'; options.hidden = !cardFeedbackOpen; options.setAttribute('role', 'group'); options.setAttribute('aria-label', '응답');
-      for (const [value, label] of FEEDBACK) { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt'; b.textContent = label; b.setAttribute('aria-pressed', String(given === value)); b.dataset.command = 'FEEDBACK_GIVE';
-        b.addEventListener('click', () => { cardFeedbackOpen = false; command('FEEDBACK_GIVE', { completionId: m.eventId, value, canonicalActivityId: m.activity }); }); options.append(b); }
+      for (const [value, label] of FEEDBACK) { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt'; b.textContent = label; b.setAttribute('aria-pressed', String(given === value)); b.dataset.command = 'FEEDBACK_GIVE'; b.dataset.feedback = value;
+        b.addEventListener('click', async () => { cardFeedbackOpen = false; await command('FEEDBACK_GIVE', { completionId: m.eventId, value, canonicalActivityId: m.activity }); refocusCard(); }); options.append(b); }
       feedback.replaceChildren(more, options);
     }
   }
+  // The control that had the keyboard was drawn again or hidden (「…」 opened or closed): the same one, else 「…」, else 닫기.
+  if (had && (!had.isConnected || had.closest('[hidden]'))) refocusCard({ choice: hadChoice, answer: hadAnswer });
+}
+/** The keyboard back in the card panel (screen review B2): a command's buttons are disabled while it is out, which drops
+ * the focus, and an answer draws them again — so after it the same choice or answer, else 「…」, else 닫기. Never when
+ * the focus already sits elsewhere in the panel. */
+function refocusCard({ choice = null, answer = null } = {}) {
+  const dialog = $('card-dialog');
+  if (!dialog.open || dialog.contains(document.activeElement) && document.activeElement !== dialog && !document.activeElement.closest('[hidden]') && document.activeElement.isConnected) return;
+  const choices = $('card-choices'), feedback = $('card-feedback'), options = feedback.querySelector('.feedback-options');
+  ((choice && !choices.hidden && [...choices.children].find(b => b.dataset.choice === choice))
+    || (answer && options && !options.hidden && [...options.children].find(b => b.dataset.feedback === answer))
+    || (!feedback.hidden && feedback.querySelector('.feedback-more')) || $('card-close')).focus();
 }
 function closeCard() {
   $('card-dialog').close();
@@ -695,7 +712,8 @@ function villageFrame() {
   if (!v || !connected) { villageWalking = false; moodFrame(null); return; }
   const village = villageRows(v);
   villageWalking = village.rows.some(r => r.live && r.walking);
-  if (village.signature !== villageLive.signature) { renderScene(); moodFrame(v, village); return; }
+  // A resident arriving or leaving changes who greets and whose need shows in the place's panel too (screen review B3).
+  if (village.signature !== villageLive.signature) { renderScene(); renderCards(); moodFrame(v, village); return; }
   if (renderer && villageLive.ids.size) renderer.setResidents?.(village.rows.filter(r => villageLive.ids.has(r.id)));
   moodFrame(v, village);
 }
@@ -810,9 +828,15 @@ function closeReading() { $('reading-dialog').close(); command('SUPPORT_CLOSE').
 $('reading-close').addEventListener('click', closeReading);
 $('reading-dialog').addEventListener('cancel', event => { event.preventDefault(); closeReading(); });
 // The neighbour notebook (W5b, §20-5) — the old 「함께한 일」 list is its 「마을이 기억하는 것」 page now.
-notebook = createNotebook($('notebook-dialog'), { command: (type, payload) => command(type, payload) });
+notebook = createNotebook($('notebook-dialog'), { command: async (type, payload) => {
+  const ok = await command(type, payload);
+  // Emptying the seen record (§20-2) also drops what this window showed before it and has not told the host yet — the
+  // next boundary would write it straight back (screen review B1); what shows after it counts afresh.
+  if (ok && ['SEEN_CLEAR', 'MEMORY_CLEAR'].includes(type)) { seenQueue.clear(); seenTags.clear(); }
+  return ok;
+} });
 $('journal-open').addEventListener('click', () => { notebook.render(snapshot); notebook.open(); }); $('notebook-close').addEventListener('click', () => $('notebook-dialog').close());
-$('card-confirm').addEventListener('click', () => command('CARD_CONFIRM'));
+$('card-confirm').addEventListener('click', async () => { await command('CARD_CONFIRM'); refocusCard(); });
 $('card-close').addEventListener('click', closeCard);
 $('card-dialog').addEventListener('cancel', event => { event.preventDefault(); closeCard(); });
 $('retry').addEventListener('click', load);

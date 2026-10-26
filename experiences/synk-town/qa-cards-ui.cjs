@@ -119,14 +119,19 @@ async function offer(browser) {
       check('offer', shown.gesture, '처음 몇 초는 주인이 몸짓을 한다', shown.gesture);
       check('offer', s.boundaries.some(b => b.body.caps?.includes('cards')), '경계 신호가 caps cards를 싣는다');
       check('offer', !NUMBERS.test(shown.offer.text), '제안 글에 숫자·날짜 없음', shown.offer.text);
+      await delay(400); // past the card's .24s fade-in (reduced motion has none), so the shot shows it as it stays
       await shot(s.page, `offer-desktop-2-offer-${card.card}`);
       await s.page.click('#card-offers .offer-accept');
       await s.page.waitForSelector('#card-dialog[open]', { timeout: 10000 }); await delay(500);
       await shot(s.page, `offer-desktop-3-choose-${card.card}`);
       await s.page.click('#card-choices button >> nth=0'); await s.page.waitForFunction(() => document.querySelector('#card-choices button')?.getAttribute('aria-pressed') === 'true', null, { timeout: 8000 });
-      await s.page.waitForFunction(() => !document.querySelector('#card-confirm').disabled, null, { timeout: 8000 });
+      await s.page.waitForFunction(() => !document.querySelector('#card-confirm').disabled, null, { timeout: 8000 }); await delay(150);
+      // The buttons are disabled while a command is out and drawn again by its answer: the keyboard stays (review B2).
+      const focusOf = () => s.page.evaluate(() => ({ choice: document.activeElement?.dataset?.choice ?? null, more: !!document.activeElement?.classList.contains('feedback-more'), tag: document.activeElement?.tagName }));
+      check('offer', (await focusOf()).choice === await s.page.evaluate(() => document.querySelector('#card-choices button')?.dataset.choice), '고른 뒤 초점이 그 고르기에 남는다', await focusOf());
       await s.page.click('#card-confirm');
       await s.page.waitForSelector('#card-feedback:not([hidden])', { timeout: 10000 }); await delay(400);
+      check('offer', (await focusOf()).more, '「이렇게 할게요」 뒤 초점이 결과의 「…」로', await focusOf());
       await s.page.click('#card-feedback .feedback-more'); await delay(300);
       await shot(s.page, `offer-desktop-4-result-${card.card}`);
       await s.page.click('#card-feedback .feedback-options button >> nth=0'); await delay(1500);
@@ -175,7 +180,11 @@ async function notes(browser) {
     const pulse = () => f.store.pulse({ surfaceId: 'qa-notes', surface: 'day', foreground: true, safe: true });
     pulse(); f.store.read(); f.set(kst('2026-10-27', '10:20')); pulse(); const v = f.store.read().state.village;
     check('notes', (v.news || []).length > 0, '사흘 사이 마을 소식이 났다', (v.news || []).map(n => n.card));
+    const { PRESENCE_LEASE_MS } = await town('presence.mjs');
     for (const device of ['desktop', 'phone']) {
+      // The harness's own pulse (and the last page) holds the presence lease for its seconds: let it lapse first, or a page
+      // that opens quickly finds the walk owned by another surface (409 walk-not-owner) and waits for 「다시 연결」.
+      f.set(f.now() + PRESENCE_LEASE_MS + 500);
       const s = await open(browser, f, { device });
       try {
         // The same store goes on from the last scene: the player walks home first (by the door).
@@ -184,12 +193,30 @@ async function notes(browser) {
         const home = await cards(s.page);
         check('notes', home.place && /문 앞 쪽지/.test(home.place) && !NUMBERS.test(home.place), `${device}: 집 문 앞 쪽지(날짜 없이)`, home.place);
         await shot(s.page, `notes-${device}-1-door`);
+        // The note counts as shown once in sight a moment (§20-2) — at home no boundary sends it yet.
+        await s.page.waitForFunction(() => SYNKTownDay.metrics().cards.seenPending.length > 0, null, { timeout: 5000 }).catch(() => {});
         await s.page.click('#place-cards .text-button'); await s.page.waitForSelector('#notebook-dialog[open]'); await delay(300);
         for (const [i, id] of ['news', 'can', 'familiar', 'memory', 'book'].entries()) {
           await s.page.click(`#notebook-tab-${id}`); await delay(250);
           const words = await s.page.$eval('#notebook-page', el => el.textContent);
           check('notes', !NUMBERS.test(words), `${device}: 수첩 「${id}」에 숫자·날짜 없음`, words.slice(0, 120));
           if (device === 'desktop' || ['news', 'memory'].includes(id)) await shot(s.page, `notes-${device}-2-notebook-${i + 1}-${id}`);
+        }
+        if (device === 'desktop') {
+          // Emptying the seen record drops what the window showed and has not sent (review B1); by keyboard the focus goes
+          // to the confirm, back to its button after 「그만두기」 and after the clear (review B2).
+          await s.page.click('#notebook-tab-familiar'); await delay(250);
+          const pending = (await cards(s.page)).seenPending, focusKey = () => s.page.evaluate(() => document.activeElement?.dataset?.focus ?? document.activeElement?.tagName);
+          check('notes', pending.length > 0, '비우기 전: 문 앞 쪽지의 본 것이 아직 안 보내졌다', pending);
+          await s.page.focus('#notebook-page .notebook-clear'); await s.page.keyboard.press('Enter'); await delay(200);
+          check('notes', await focusKey() === 'confirm:SEEN_CLEAR', '비우기 → 초점이 확인 단추로', await focusKey());
+          await s.page.keyboard.press('Tab'); await s.page.keyboard.press('Enter'); await delay(200);
+          check('notes', await focusKey() === 'clear:SEEN_CLEAR', '그만두기 → 초점이 비우기 단추로', await focusKey());
+          await s.page.keyboard.press('Enter'); await delay(200); await s.page.keyboard.press('Enter');
+          await s.page.waitForFunction(() => !SYNKTownDay.metrics().cards.seenPending.length, null, { timeout: 8000 }).catch(() => {}); await delay(400);
+          const after = await cards(s.page), ledger = f.store.read().seen || {};
+          check('notes', !after.seenPending.length && !pending.some(k => ledger[k]), '비운 뒤 그 전에 본 것은 다음 경계 신호에 실리지 않는다', { pending: after.seenPending, ledger: Object.keys(ledger) });
+          check('notes', await focusKey() === 'clear:SEEN_CLEAR', '비운 뒤 초점이 비우기 단추에', await focusKey());
         }
         await s.page.keyboard.press('Escape'); await delay(300);
         if (device === 'desktop') {

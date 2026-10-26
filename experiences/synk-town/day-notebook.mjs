@@ -55,10 +55,12 @@ const h = (tag, props = {}, ...children) => {
 const empty = text => h('p', { class: 'field-note notebook-empty', text });
 
 /** The notebook dialog. render(snapshot) draws the page shown; open(page) shows it; command(type, payload) is the
- * town's command (the answer re-renders through render). */
+ * town's command (the answer re-renders through render). The page is drawn again only when what it shows changes — every
+ * answer of the town reaches render while it is open — and keyboard focus stays on the same control (its data-focus key),
+ * or moves where the step leads (the confirm, back to its button), else to the page's tab (screen review B2). */
 export function createNotebook(dialog, { command, onPage } = {}) {
   if (!dialog) return { open() {}, render() {}, page: () => null };
-  let page = 'news', snapshot = null, confirming = null, feedbackOpen = null;
+  let page = 'news', snapshot = null, confirming = null, feedbackOpen = null, journalOpen = false, drawn = null, focusNext = null;
   const tabs = dialog.querySelector('.notebook-tabs'), body = dialog.querySelector('.notebook-page');
   function tabList() {
     tabs.replaceChildren(...PAGES.map(([id, label]) => h('button', { type: 'button', role: 'tab', id: `notebook-tab-${id}`, class: 'notebook-tab', 'aria-selected': String(id === page),
@@ -76,21 +78,24 @@ export function createNotebook(dialog, { command, onPage } = {}) {
   const act = (type, payload) => () => command?.(type, payload);
   function clearRow(kind, label, line) {
     if (confirming === kind) return h('div', { class: 'notebook-confirm' }, h('p', { class: 'field-note', text: line }),
-      h('div', { class: 'actions' }, h('button', { type: 'button', class: 'felt primary', text: label, onclick: () => { confirming = null; command?.(kind); } }),
-        h('button', { type: 'button', class: 'felt', text: '그만두기', onclick: () => { confirming = null; render(snapshot); } })));
-    return h('button', { type: 'button', class: 'felt subtle notebook-clear', text: label, onclick: () => { confirming = kind; render(snapshot); } });
+      h('div', { class: 'actions' }, h('button', { type: 'button', class: 'felt primary', text: label, 'data-focus': `confirm:${kind}`, onclick: () => { confirming = null; focusNext = `clear:${kind}`; command?.(kind); } }),
+        h('button', { type: 'button', class: 'felt', text: '그만두기', 'data-focus': `cancel:${kind}`, onclick: () => { confirming = null; focusNext = `clear:${kind}`; render(snapshot); } })));
+    return h('button', { type: 'button', class: 'felt subtle notebook-clear', text: label, 'data-focus': `clear:${kind}`, onclick: () => { confirming = kind; focusNext = `confirm:${kind}`; render(snapshot); } });
   }
   function feedbackRow(item) {
-    const open = feedbackOpen === item.eventId;
+    const open = feedbackOpen === item.eventId, more = `more:${item.eventId}`;
     return h('div', { class: 'feedback' },
-      h('button', { type: 'button', class: 'felt subtle feedback-more', 'aria-expanded': String(open), 'aria-label': `${item.title}에 응답 남기기`, text: '…', onclick: () => { feedbackOpen = open ? null : item.eventId; render(snapshot); } }),
-      open ? h('div', { class: 'feedback-options', role: 'group', 'aria-label': '응답' }, FEEDBACK.map(([value, label]) => h('button', { type: 'button', class: 'felt', 'aria-pressed': String(item.given === value), text: label,
-        onclick: () => { feedbackOpen = null; command?.('FEEDBACK_GIVE', { completionId: item.eventId, value, canonicalActivityId: item.activity }); } }))) : null);
+      h('button', { type: 'button', class: 'felt subtle feedback-more', 'aria-expanded': String(open), 'aria-label': `${item.title}에 응답 남기기`, text: '…', 'data-focus': more, onclick: () => { feedbackOpen = open ? null : item.eventId; focusNext = more; render(snapshot); } }),
+      open ? h('div', { class: 'feedback-options', role: 'group', 'aria-label': '응답' }, FEEDBACK.map(([value, label]) => h('button', { type: 'button', class: 'felt', 'aria-pressed': String(item.given === value), text: label, 'data-focus': `${more}:${value}`,
+        onclick: () => { feedbackOpen = null; focusNext = more; command?.('FEEDBACK_GIVE', { completionId: item.eventId, value, canonicalActivityId: item.activity }); } }))) : null);
   }
   function render(next) {
     snapshot = next ?? snapshot;
     if (!tabs.children.length) tabList();
-    const m = notebookModel(snapshot);
+    const m = notebookModel(snapshot), sig = JSON.stringify([page, confirming, feedbackOpen, m]);
+    if (sig === drawn && body.childNodes.length) return;
+    drawn = sig;
+    const had = body.contains(document.activeElement) ? document.activeElement.dataset.focus || '' : null;
     let content;
     if (page === 'news') content = m.news.length ? h('ul', { class: 'notebook-list' }, m.news.map(n => h('li', {}, h('span', { class: 'notebook-icon', html: iconSvg('news') }), h('span', { text: n.text })))) : empty('아직 마을 소식이 없어요. 하루가 지나면 문 앞 쪽지에 소식이 붙어요.');
     else if (page === 'can') content = m.can.length ? h('ul', { class: 'notebook-list' }, m.can.map(c => h('li', {}, h('span', { class: 'notebook-icon', html: iconSvg('sparkle') }),
@@ -101,16 +106,19 @@ export function createNotebook(dialog, { command, onPage } = {}) {
       clearRow('SEEN_CLEAR', '본 것 기록 비우기', '본 것 기록을 비울까요? 마을의 일과 주민의 기억은 그대로예요.'));
     else if (page === 'memory') content = h('div', { class: 'notebook-memory' },
       h('h3', { text: '오늘 한 일' }), m.today.length ? h('ul', { class: 'notebook-list' }, m.today.map(item => h('li', { class: 'with-feedback' }, h('span', { text: `${item.title} — 같이 했어요` }), feedbackRow(item)))) : empty('오늘 같이 한 생활이 아직 없어요.'),
-      m.journal.length ? h('details', { class: 'notebook-journal' }, h('summary', { text: '함께한 일' }), h('ul', { class: 'notebook-list' }, m.journal.map(line => h('li', { text: line })))) : null,
+      m.journal.length ? h('details', { class: 'notebook-journal', open: journalOpen, ontoggle: event => { journalOpen = event.currentTarget.open; } }, h('summary', { text: '함께한 일', 'data-focus': 'journal' }),
+        h('ul', { class: 'notebook-list' }, m.journal.map(line => h('li', { text: line })))) : null,
       h('h3', { text: '주민이 아는 나' }), m.known.length ? h('ul', { class: 'notebook-list' }, m.known.map(k => h('li', { class: 'with-action' }, h('span', { text: `${NAMES[k.npc]} · ${k.title} — 같이 했어요` }),
-        h('button', { type: 'button', class: 'felt subtle', text: '잊어 주세요', onclick: act('MEMORY_FORGET', { npc: k.npc, eventId: k.ref }) })))) : empty('주민이 기억하는, 같이 한 일이 아직 없어요.'),
+        h('button', { type: 'button', class: 'felt subtle', text: '잊어 주세요', 'data-focus': `forget:${k.npc}:${k.ref}`, onclick: act('MEMORY_FORGET', { npc: k.npc, eventId: k.ref }) })))) : empty('주민이 기억하는, 같이 한 일이 아직 없어요.'),
       h('h3', { text: '마을이 맞춰 둔 것' }), m.settings.length ? h('ul', { class: 'notebook-list' }, m.settings.map(s => h('li', { class: 'with-action' }, h('span', { text: s.label }),
-        h('button', { type: 'button', class: 'felt subtle', text: s.action[2], onclick: act(s.action[0], s.action[1]) })))) : empty('마을이 맞춰 둔 것이 아직 없어요.'),
+        h('button', { type: 'button', class: 'felt subtle', text: s.action[2], 'data-focus': `set:${s.label}`, onclick: act(s.action[0], s.action[1]) })))) : empty('마을이 맞춰 둔 것이 아직 없어요.'),
       h('h3', { text: '맞춤 기록 모두 비우기' }), h('p', { class: 'field-note', text: '요즘 자주 한 생활, 남긴 응답, 본 것 기록을 비워요. 직접 정한 설정과 마을의 일은 그대로예요.' }),
       clearRow('MEMORY_CLEAR', '비우기', '맞춤 기록을 모두 비울까요?'));
     else content = empty('마을에서 모은 것을 적는 쪽이에요. 모으기가 열리면 여기에 하나씩 쌓여요.');
     body.replaceChildren(content);
     body.setAttribute('aria-labelledby', `notebook-tab-${page}`);
+    const want = focusNext ?? had; focusNext = null;
+    if (want !== null) ([...body.querySelectorAll('[data-focus]')].find(el => el.dataset.focus === want) || tabs.querySelector(`#notebook-tab-${page}`))?.focus();
   }
   return { open(id = page) { if (!dialog.open) dialog.showModal(); show(id, false); }, render, page: () => page };
 }
