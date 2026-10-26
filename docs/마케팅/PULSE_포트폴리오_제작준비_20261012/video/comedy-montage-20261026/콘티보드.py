@@ -48,7 +48,7 @@ def ours(cid):
         pick = json.load(open(pj, encoding="utf-8"))
     if cid in pick and (P / "정지컷" / pick[cid]).exists():
         return Image.open(P / "정지컷" / pick[cid]).convert("RGB")
-    for p in (P / "컷" / f"{cid}.jpg", P / "컷" / f"{cid}.png"):
+    for p in (P / "컷" / f"{cid}.jpg", P / "컷" / f"{cid}.png", P / "합성" / {"C17": "끝글_보드.png"}.get(cid, "-")):
         if p.exists():
             return Image.open(p).convert("RGB")
     g = sorted(glob.glob(str(P / "정지컷" / f"{cid}_g*.png")), key=os.path.getmtime)
@@ -81,7 +81,7 @@ CAM = {
     "C10": "0.3초 도착 팬(오른쪽) → 손떨림", "C11": "0.3초 도착 팬(왼쪽) → 손떨림", "C12": "0.3초 도착 팬(오른쪽) → 손떨림",
     "C13": "0.3초 도착 팬(왼쪽) → 손떨림", "C14": "0.3초 도착 팬(오른쪽) → 손떨림", "C15": "0.3초 도착 팬(왼쪽) → 손떨림",
     "C16a": "여행자 폰에서 시작 → 오른쪽 빠른 팬(폭 190%)", "C16": "도착 → 한 번에 1.42배 당김(줌 버튼처럼)",
-    "C16b": "손떨림 ±1% · 끝에 아래로 조금 → 휙", "C17": "—",
+    "C16b": "손떨림 ±1% · 끝에 아래로 조금 → 휙", "C17": "없음(검은 화면)",
 }
 
 

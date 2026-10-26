@@ -1,6 +1,6 @@
 # 12번 가상 여행 코스 앱 「모두의코스」 화면 · 끝 글 시안(2026-10-26) — 16b 컷의 두 폰 화면(초록 대역 자리)과 17 끝 글.
 # 앱 화면은 AI로 그리지 않고 여기서 그린다(AI 광고영상 제작 규칙 — 앱 화면은 실제 디자인 이미지). 글꼴은 SUIT(브랜드 폰트 폴더).
-#   python -X utf8 앱화면.py  →  git 밖 콘티/p12/합성/앱화면.png(1080×2340) · 앱아이콘.png(512) · 끝글.png(1080×1920)
+#   python -X utf8 앱화면.py  →  git 밖 콘티/p12/합성/앱화면.png(1080×2340) · 앱아이콘.png(512) · 끝글_1.png · 끝글.png(1080×1920) · 끝글_보드.png
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
@@ -20,16 +20,22 @@ def f(w, s):
 
 
 def icon(sz):
+    """지도 핀 + 핀으로 들어오는 점선 길 — 「코스」 앱이 한눈에(첫 판 꺾은선은 주식 · 가계부 앱으로 읽혔다, Fable 이미지콘티 P2-10)."""
     im = Image.new("RGBA", (sz, sz), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.rounded_rectangle([0, 0, sz - 1, sz - 1], radius=int(sz * 0.23), fill=MINT)
-    # 세 점을 잇는 길 — 「모두가 지난 코스」
-    pts = [(0.24, 0.70), (0.42, 0.40), (0.60, 0.62), (0.78, 0.30)]
-    P = [(int(x * sz), int(y * sz)) for x, y in pts]
-    d.line(P, fill=WHITE, width=max(3, int(sz * 0.06)), joint="curve")
-    for i, (x, y) in enumerate(P):
-        r = int(sz * (0.075 if i in (0, 3) else 0.05))
-        d.ellipse([x - r, y - r, x + r, y + r], fill=WHITE)
+    # 점선 길: 왼쪽 아래에서 굽어 올라와 핀 끝에 닿는다
+    import math
+    path = [(0.16 + 0.44 * t, 0.84 - 0.22 * t - 0.10 * math.sin(math.pi * t)) for t in [k / 24 for k in range(25)]]
+    for k in range(0, 24, 3):
+        seg = [(int(x * sz), int(y * sz)) for x, y in path[k:k + 2]]
+        d.line(seg, fill=WHITE, width=max(2, int(sz * 0.045)))
+    # 핀: 둥근 머리 + 아래로 뾰족한 끝, 가운데 구멍
+    cx, cy, r = 0.62 * sz, 0.36 * sz, 0.19 * sz
+    d.polygon([(cx - r * 0.86, cy + r * 0.5), (cx + r * 0.86, cy + r * 0.5), (cx, cy + r * 2.05)], fill=WHITE)
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHITE)
+    h = r * 0.42
+    d.ellipse([cx - h, cy - h, cx + h, cy + h], fill=MINT)
     return im
 
 
@@ -76,6 +82,14 @@ def app_screen():
     return im
 
 
+def end_card_1():
+    """끝 글 첫 판(1.2초) — 이유 한 줄. 화면 위 글은 후반에서 얹지만, 보드 · 검수에서 두 판을 함께 보도록 그림도 둔다(Fable 이미지콘티 P3-4)."""
+    W, H = 1080, 1920
+    im = Image.new("RGB", (W, H), (0, 0, 0))
+    ImageDraw.Draw(im).text((W // 2, 900), "알고 보니, 같은 코스.", font=f("ExtraBold", 76), fill=WHITE, anchor="mm")
+    return im
+
+
 def end_card():
     W, H = 1080, 1920
     im = Image.new("RGB", (W, H), (0, 0, 0))
@@ -92,4 +106,12 @@ if __name__ == "__main__":
     app_screen().save(OUT / "앱화면.png")
     icon(512).save(OUT / "앱아이콘.png")
     end_card().save(OUT / "끝글.png")
+    end_card_1().save(OUT / "끝글_1.png")
+    # 보드 칸 하나에 두 판(위 1.2초 · 아래 1.3초)
+    a, c = end_card_1(), end_card()
+    bd = Image.new("RGB", (1080, 1920), (0, 0, 0))
+    bd.paste(a.crop((0, 480, 1080, 1440)).resize((1080, 950)), (0, 0))
+    bd.paste(c.crop((0, 400, 1080, 1360)).resize((1080, 950)), (0, 970))
+    ImageDraw.Draw(bd).line([(60, 960), (1020, 960)], fill=(90, 90, 90), width=3)
+    bd.save(OUT / "끝글_보드.png")
     print(OUT)
