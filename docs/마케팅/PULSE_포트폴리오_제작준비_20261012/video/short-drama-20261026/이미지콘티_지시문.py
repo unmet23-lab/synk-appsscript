@@ -556,7 +556,7 @@ def build(k):
     parts.append(L[c["loc"]])
     fs = facebox.get(k) or []
     tight = bool(fs) and c.get("fx") and fs[c["fx"][0]]["h"] >= 0.17
-    if c["loc"] in LREF and not tight:   # 10-26 23:4x: 넓은 방 사진이 바스트 · 클로즈업을 넓은 컷으로 끌었다(S31 「방 참조가 있으면 넓은 컷」과 같은 결)
+    if c["loc"] in LREF and not tight and k not in NOLOC:   # 10-26 23:4x: 넓은 방 사진이 바스트 · 클로즈업을 넓은 컷으로 끌었다(S31 「방 참조가 있으면 넓은 컷」과 같은 결)
         refs.append(str(V / "정지컷" / f"{LREF[c['loc']]}.png"))
         parts.append(f"Image {len(refs)} shows this same {LNAME[c['loc']]} only for its furniture, materials and colors — do not copy its wide "
                      "framing; this shot keeps the framing described above.")
@@ -565,7 +565,9 @@ def build(k):
     return dict(id=k, who=c["f"] or "-", ratio="9:16", prompt=" ".join(parts), refs=[small(r) for r in refs])
 
 
-RELIGHT = {"L2b": ("L2", "night"), "L3b": ("L3", "night"), "L5b": ("L5", "bed")}
+# 장소 참조를 넣지 않는 인서트 · 접사(10-27): 현장 노트 「물건 인서트에 방 사진만 참고로 주면 사람이 앉은 방 전경을 그린다」 · 넓은 방 사진이 가까운 컷을 넓게 끈다
+NOLOC = {"1-2", "1-3", "1-24", "1-26", "1-27", "1-28", "1-41", "1-43", "2-3", "2-4", "2-12", "2-25", "2-37", "2-43", "2-44", "2-48"}
+RELIGHT = {"L2b": ("L2", "night"), "L3b": ("L3", "night"), "L4b": ("L4", "night"), "L5b": ("L5", "bed")}
 
 
 def build_relight(k):   # 10-26 23:4x: 고른 장소 그림의 구조는 두고 빛만 원본처럼 밝게(현장 노트 「고른 판을 Image 1로 빛만 바꿔라」)
