@@ -21,8 +21,13 @@ const COUNTER = { x: 806, y: 556 }, SERVE = { x: 742, y: 562 }, SEAT_R = { x: 86
 const OWNER_OUT = [{ x: 760, y: 560 }, { x: 690, y: 566 }, { x: 642, y: 602 }, { x: 640, y: 648 }, { x: 684, y: 680 }];
 const RESEARCHER_IN = [{ x: 1330, y: 640 }, { x: 1200, y: 672 }, { x: 1060, y: 690 }, { x: 960, y: 684 }, { x: 912, y: 648 }];
 const WORKBENCH = { x: 1196, y: 597 };
-// At the counter the owner turns three-quarters away, so the pouring hand and a cheek both show.
-const OWNER_WORK_YAW = 2.55;
+// The grandmother knits on the front courtyard bench; in the rain she moves to the cushioned bench under the left house's eaves.
+const BENCH = { x: 620, y: 748, lift: 40, base: 766 }, RED_BENCH = { x: 362, y: 632, lift: 38, base: 641 };
+const GRANDMA_OUT = [{ x: 600, y: 684 }, { x: 520, y: 662 }, { x: 440, y: 646 }, { x: 392, y: 640 }];
+// Props keep the scale they were made at, whoever lives here now (it was the human café owner's).
+const PROP_UNIT = 172.68;
+// Behind the round table the owner faces us and pours into the cups on it (a felt bun's face is on its front only).
+const OWNER_WORK_YAW = .35;
 // Mongle walks where the earlier prototypes let it walk.
 const WALK = [
   [[352, 652], [420, 606], [588, 606], [590, 640], [985, 640], [1000, 650], [1004, 668], [940, 680], [820, 690], [790, 698], [565, 700], [420, 698], [355, 690]],
@@ -109,10 +114,11 @@ function stepCharacter(c, dt, now) {
   let d = c.wantYaw - c.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); c.yaw += d * Math.min(1, dt * 7);
   const k = c.unit * depth(c.y);
   c.place.scale.setScalar(k); c.place.position.set(c.x, -c.y + c.drop * k + c.lift, 0); c.turn.rotation.y = c.yaw;
-  const shadow = c.holder.children[0]; shadow.position.set(c.x, -c.y + 1, -1); shadow.scale.setScalar(c.width * k);
-  shadow.userData.contact.material.opacity = c.seated ? 0 : 1; shadow.userData.pool.material.opacity = c.seated ? .45 : 1;
+  // Sitting up on a bench, the contact shadow moves onto the seat it rests on.
+  const shadow = c.holder.children[0], perched = c.seated && c.lift > 0; shadow.position.set(c.x, -c.y + 1 + (perched ? c.lift : 0), -1); shadow.scale.setScalar(c.width * k);
+  shadow.userData.contact.material.opacity = c.seated && !perched ? 0 : 1; shadow.userData.pool.material.opacity = c.seated ? .45 : 1;
   c.update(now, dt, c);
-  if (c.bubble) { c.bubble.style.left = c.x + 'px'; c.bubble.style.top = (c.y - c.height(k) - 14) + 'px'; }
+  if (c.bubble) { c.bubble.style.left = c.x + 'px'; c.bubble.style.top = (c.y - c.lift - c.height(k) - 14) + 'px'; }
 }
 function say(c, text, ms = 3600) {
   c.bubble?.remove(); const b = document.createElement('div'); b.className = 'bubble';
@@ -147,22 +153,25 @@ function propHolder(content, at, unitPx, base, { shadow = false, feet = [] } = {
 }
 
 // ── build the cast ──
-let owner, shopOwner, researcher, mongle, gardenTable, tray, served = null, weather = 'day', busy = false;
+let owner, shopOwner, researcher, grandma, mongle, gardenTable, tray, served = null, weather = 'day', busy = false;
 async function build() {
   const shared = {};
   const ownerBody = new THREE.Group(); const o = makeTownResident(ownerBody, shared, { id: 'cafe-owner', mobile: phone, felt: 'diorama' });
-  owner = makeCharacter({ name: 'owner', content: ownerBody, height: 192, refY: 600, at: COUNTER, yaw: OWNER_WORK_YAW, update: (now, dt, c) => o.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, ...c.pose }) });
-  owner.label = '찻집 주인'; owner.height = k => o.height * k * 1.05;
+  owner = makeCharacter({ name: 'owner', content: ownerBody, height: 122, refY: 600, at: COUNTER, yaw: OWNER_WORK_YAW, update: (now, dt, c) => o.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, ...c.pose }) });
+  owner.label = '찻집 주인'; owner.height = k => o.height * k * 1.05; owner.carry = { at: .36, out: .6 };
   const shopBody = new THREE.Group(); const s = makeTownResident(shopBody, shared, { id: 'workshop-owner', mobile: phone, felt: 'diorama' });
-  shopOwner = makeCharacter({ name: 'shop', content: shopBody, height: 180, refY: 600, at: WORKBENCH, yaw: Math.PI, update: (now, dt, c) => s.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, working: true, ...c.pose }) });
+  shopOwner = makeCharacter({ name: 'shop', content: shopBody, height: 148, refY: 600, at: WORKBENCH, yaw: 2.45, update: (now, dt, c) => s.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, working: true, ...c.pose }) });
   shopOwner.label = '공방 주인'; shopOwner.height = k => s.height * k * 1.05;
+  const granBody = new THREE.Group(); const g = makeTownResident(granBody, shared, { id: 'grandmother', mobile: phone, felt: 'diorama' });
+  grandma = makeCharacter({ name: 'grandma', content: granBody, height: 96, refY: 600, at: BENCH, yaw: .3, seatBase: BENCH.base, update: (now, dt, c) => g.update({ now, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, seated: c.seated, working: c.seated, ...c.pose }) });
+  grandma.label = '할머니'; grandma.height = k => g.height * k * 1.05; grandma.seated = true; grandma.lift = BENCH.lift; grandma.speed = 70;
   const resBody = new THREE.Group(); const r = makeTownResident(resBody, shared, { id: 'researcher', mobile: phone, felt: 'diorama' });
   researcher = makeCharacter({ name: 'researcher', content: resBody, height: 160, refY: 600, at: RESEARCHER_IN[0], yaw: -1.4, seatBase: 641, update: (now, dt, c) => r.update({ now, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, seated: c.seated, ...c.pose }) });
   researcher.label = '연구원'; researcher.height = k => r.height * k * 1.05; researcher.active = false;
   const av = await createMongleAvatar({ mobile: phone, anisotropy: 4 }); av.setOutfit({ body: '', neck: 'mongle-scarf-first-steps' });
   mongle = makeCharacter({ name: 'mongle', content: av.group, height: 128, refY: BASE_Y, at: { x: 520, y: 688 }, yaw: .5, update: now => av.update(now / 1000, { reducedMotion: reduced }) });
   mongle.label = '몽글'; mongle.height = k => 1.9 * k; mongle.speed = 200;
-  const unit = owner.unit;
+  const unit = PROP_UNIT;
   gardenTable = propHolder(gardenTableGroup(), GARDEN, unit, GARDEN.y, { shadow: true, feet: [0, 2.09, 4.19].map(a => [Math.cos(a) * .2, Math.sin(a) * .2]) });
   tray = propHolder(trayGroup(), { x: GARDEN.x, y: GARDEN.y }, unit, () => tray.y + 1); tray.top = .54; tray.set(GARDEN.x, GARDEN.y, tray.top * unit * depth(GARDEN.y) * Math.cos(ELEV));
 }
@@ -176,7 +185,7 @@ function gardenTableGroup() {
 
 // ── the three scenes ──
 async function pourTea() {
-  owner.pose = { working: true }; owner.wantYaw = OWNER_WORK_YAW; setStatus('찻집 주인이 카운터에서 차를 내요'); await sleep(2600);
+  owner.pose = { working: true }; owner.wantYaw = OWNER_WORK_YAW; setStatus('찻집 주인이 탁자에서 차를 따라요'); await sleep(2600);
   owner.pose = { showing: true }; owner.wantYaw = .2; say(owner, '따뜻한 보리차 나왔어요.'); await sleep(1800); owner.pose = {};
 }
 async function researcherComes() {
@@ -193,24 +202,38 @@ async function researcherComes() {
   owner.pose = { holding: true }; await walk(owner, [{ x: 780, y: 560 }, SERVE]); turnToward(owner, SEAT_R.x, SEAT_R.y);
   owner.pose = { showing: true }; await sleep(500);
   // On the photo's own table: the cup's foot sits on the table-top point, drawn after the table layer.
-  if (!served) served = propHolder(cup(), { x: 812, y: 548 }, owner.unit, 630);
+  if (!served) served = propHolder(cup(), { x: 812, y: 548 }, PROP_UNIT, 630);
   served.set(812, 548, 0); served.shown = true;
   say(owner, '천천히 드세요.'); await sleep(900); owner.pose = {}; await walk(owner, [{ x: 780, y: 558 }, COUNTER]); owner.wantYaw = OWNER_WORK_YAW; owner.pose = { working: true };
 }
 async function rainComes() {
-  setWeather('rain'); setStatus('비가 와요 — 찻집 주인이 바깥 쟁반을 처마 밑으로 들여요'); await sleep(900);
+  setWeather('rain'); setStatus('비가 와요 — 찻집 주인은 바깥 쟁반을, 할머니는 자리를 처마 밑으로 옮겨요'); await sleep(900);
+  const sheltered = grandmaShelters();
   owner.pose = {}; say(owner, '어머, 비 오네요!', 1800); await sleep(600);
   await walk(owner, OWNER_OUT); turnToward(owner, GARDEN.x, GARDEN.y); owner.pose = { holding: true }; await sleep(400);
   // The tray leaves the table and rides in the owner's hands.
-  removeDrawable(tray.drawable); tray.tilt.remove(tray.content); owner.turn.add(tray.content); tray.content.position.set(0, owner.h * HANDS_AT, owner.h * .2);
+  removeDrawable(tray.drawable); tray.tilt.remove(tray.content); owner.turn.add(tray.content); tray.content.position.set(0, owner.h * owner.carry.at, owner.h * owner.carry.out); tray.content.scale.setScalar(PROP_UNIT / owner.unit);
   await walk(owner, [...OWNER_OUT].reverse().slice(1).concat([COUNTER]));
   owner.wantYaw = Math.PI; await sleep(450);
   // Set down on the back counter (a surface in the photo, so no lift), drawn behind the owner.
-  owner.turn.remove(tray.content); tray.tilt.add(tray.content); tray.content.position.set(0, 0, 0);
+  owner.turn.remove(tray.content); tray.tilt.add(tray.content); tray.content.position.set(0, 0, 0); tray.content.scale.setScalar(1);
   tray.drawable = addDrawable(tray.place, () => 482); tray.set(770, 479, 0);
   owner.pose = {}; owner.wantYaw = .3; say(owner, '비가 오니 쟁반은 안쪽에 둘게요.'); await sleep(1600); owner.pose = { working: true }; owner.wantYaw = OWNER_WORK_YAW;
+  await sheltered;
 }
-const HANDS_AT = .5;   // the holding pose's hands, as a share of the owner's height
+// A small hop from where a character is to a spot, ending at a given lift (a seat) or on the floor.
+function hop(c, to, liftEnd = 0, ms = 480) {
+  const a = { x: c.x, y: c.y, lift: c.lift }, t0 = performance.now();
+  return new Promise(res => { const tick = now => { const t = Math.min(1, (now - t0) / ms), e = t * t * (3 - 2 * t);
+    c.x = a.x + (to.x - a.x) * e; c.y = a.y + (to.y - a.y) * e; c.lift = a.lift + (liftEnd - a.lift) * e + Math.sin(Math.PI * t) * 18;
+    if (t < 1) requestAnimationFrame(tick); else { c.lift = liftEnd; res(); } }; requestAnimationFrame(tick); });
+}
+async function grandmaShelters() {
+  grandma.pose = { talking: true }; say(grandma, '아이고, 비 오네. 저기 처마 밑으로 가야겠다.', 2400); await sleep(700);
+  grandma.seated = false; grandma.pose = {}; await hop(grandma, { x: 625, y: 696 }, 0);
+  await walk(grandma, GRANDMA_OUT);
+  grandma.seatBase = RED_BENCH.base; await hop(grandma, RED_BENCH, RED_BENCH.lift); grandma.seated = true; turnToward(grandma, 560, 720);
+}
 
 async function run(fn) { if (busy) return; busy = true; document.body.dataset.busy = '1'; try { await fn(); } finally { busy = false; delete document.body.dataset.busy; setStatus(weather === 'rain' ? '비 오는 오후' : '맑은 낮'); } }
 async function wholeDay() { await pourTea(); await sleep(600); await researcherComes(); await sleep(1200); await rainComes(); }
@@ -218,10 +241,11 @@ function resetAll() {
   if (busy) return; setWeather('day');
   owner.x = COUNTER.x; owner.y = COUNTER.y; owner.path = []; owner.pose = { working: true }; owner.wantYaw = owner.yaw = OWNER_WORK_YAW;
   researcher.active = false; researcher.seated = false; researcher.path = [];
+  Object.assign(grandma, { x: BENCH.x, y: BENCH.y, lift: BENCH.lift, seatBase: BENCH.base, seated: true, path: [], pose: {}, yaw: .3, wantYaw: .3 });
   if (served) served.shown = false;
   if (!drawables.includes(tray.drawable)) { tray.drawable = addDrawable(tray.place, () => tray.y + 1); }
   tray.set(GARDEN.x, GARDEN.y, tray.top * tray.unit * depth(GARDEN.y) * Math.cos(ELEV));
-  for (const c of [owner, researcher, shopOwner, mongle]) if (c) { c.bubble?.remove(); c.bubble = null; }
+  for (const c of [owner, researcher, shopOwner, grandma, mongle]) if (c) { c.bubble?.remove(); c.bubble = null; }
   setStatus('맑은 낮');
 }
 function setStatus(t) { $('state').textContent = t; }
@@ -255,9 +279,9 @@ function mongleRoute(to) {
 const toWorld = e => { const r = world.getBoundingClientRect(), s = r.width / 1536; return { x: (e.clientX - r.left) / s, y: (e.clientY - r.top) / s }; };
 world.addEventListener('click', e => {
   const p = toWorld(e);
-  for (const c of [owner, shopOwner, researcher]) {
-    if (!c || !c.active) continue; const k = c.unit * depth(c.y), h = c.height(k), w = c.width * k * .6;
-    if (Math.abs(p.x - c.x) < w && p.y < c.y + 6 && p.y > c.y - h) { say(c, LINES[c.name][(LINES[c.name].i = ((LINES[c.name].i ?? -1) + 1) % LINES[c.name].length)]); return; }
+  for (const c of [owner, shopOwner, researcher, grandma]) {
+    if (!c || !c.active) continue; const k = c.unit * depth(c.y), h = c.height(k), w = c.width * k * .6, bottom = c.y - c.lift;
+    if (Math.abs(p.x - c.x) < w && p.y < bottom + 6 && p.y > bottom - h) { say(c, LINES[c.name][(LINES[c.name].i = ((LINES[c.name].i ?? -1) + 1) % LINES[c.name].length)]); return; }
   }
   const t = nearestWalk(p.x, p.y); if (!t) return;
   const ring = document.createElement('span'); ring.className = 'ring'; ring.style.left = p.x + 'px'; ring.style.top = p.y + 'px'; world.appendChild(ring); setTimeout(() => ring.remove(), 800);
@@ -267,6 +291,7 @@ const LINES = {
   owner: ['어서 와요, 몽글!', '오늘은 보리차가 잘 우러났어요.', '비 오는 날엔 안쪽 자리가 좋아요.'],
   shop: ['쟁반 받침이 또 헐거워졌네요.', '공방은 언제든 구경해도 돼요.'],
   researcher: ['연못 연잎이 하나 늘었어요.', '관찰판은 비 오면 안쪽에 둬야겠어요.'],
+  grandma: ['밥은 먹었어?', '오늘은 바람이 순하네.', '조심히 가.'],
 };
 
 // ── fit and frame ──
@@ -284,7 +309,7 @@ let last = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
   if (owner) try {
-    for (const c of [owner, shopOwner, researcher, mongle]) if (c) stepCharacter(c, dt, now);
+    for (const c of [owner, shopOwner, researcher, grandma, mongle]) if (c) stepCharacter(c, dt, now);
     renderer.clear();
     const order = drawables.filter(d => !d.hidden()).sort((a, b) => a.base() - b.base());
     for (const d of drawables) d.root.visible = false;
@@ -292,7 +317,7 @@ function frame(now) {
   } catch (error) { if (!frame.failed) { frame.failed = true; console.error(error); } }
   drawRain(dt); requestAnimationFrame(frame);
 }
-Object.defineProperty(globalThis, '__residents', { value: { get owner() { return owner; }, get researcher() { return researcher; }, get gardenTable() { return gardenTable; }, run: name => run({ pour: pourTea, come: researcherComes, rain: rainComes, day: wholeDay }[name]), reset: resetAll, info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }) } });
+Object.defineProperty(globalThis, '__residents', { value: { get owner() { return owner; }, get researcher() { return researcher; }, get gardenTable() { return gardenTable; }, get grandma() { return grandma; }, run: name => run({ pour: pourTea, come: researcherComes, rain: rainComes, day: wholeDay }[name]), reset: resetAll, info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }) } });
 
 $('btn-day').addEventListener('click', () => run(wholeDay));
 $('btn-pour').addEventListener('click', () => run(pourTea));

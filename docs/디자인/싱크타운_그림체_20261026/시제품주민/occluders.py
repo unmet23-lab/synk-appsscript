@@ -30,6 +30,9 @@ LAYERS = [
     ('stool-right', [('rect', (831, 580, 898, 607)), ('rect', (836, 602, 893, 640))], 639),
     ('post-left', [('rect', (556, 360, 593, 606))], 606),
     ('post-right', [('rect', (970, 350, 1000, 604))], 604),
+    # The front courtyard bench: the grandmother sits on it, and Mongle's walk passes just behind it.
+    ('bench', [('poly', [(576, 702), (595, 691), (754, 715), (754, 725), (748, 743), (576, 723)]),
+               ('rect', (584, 718, 604, 753)), ('rect', (604, 718, 624, 741)), ('rect', (724, 733, 745, 763)), ('rect', (705, 738, 727, 775))], 762),
 ]
 meta = []
 for name, shapes, base in LAYERS + [('awning', 'coral', 612)]:

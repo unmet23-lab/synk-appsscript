@@ -509,6 +509,107 @@ function makeProfessor(parent, shared, c, mobile) {
   return { body, update, head, headHeight: 1.37 * WORLD_SCALE, height: standingHeight(body), identity: body.userData.residentIdentity };
 }
 
+// The diorama cast is a family of needle-felt creatures, not people (10-26 decision): one big felt
+// body each, bead eyes, one cream running stitch and one signature object. Their stories stay
+// human. Only `felt: 'diorama'` builds them; the live Town keeps CAST above.
+const FELT_CAST = Object.freeze({
+  'cafe-owner': { kind: 'felt-creature', form: 'bun', seed: 31, body: '#efe1c2', coat: '#8fab8b', trousers: '#6c9070', shoes: '#e7d6b3', bag: '#b78a5a', description: '주름 잡힌 찐빵 몸, 초록 앞치마, 초록 찻주전자' },
+  'workshop-owner': { kind: 'felt-creature', form: 'bean', seed: 53, body: '#7186a6', coat: '#394766', shoes: '#56698a', bag: '#a97c50', description: '키 큰 콩 몸, 남색 연장 띠와 연필, 나무망치' },
+  grandmother: { kind: 'felt-creature', form: 'ricecake', seed: 79, body: '#f0e9dd', coat: '#d48e9a', hair: '#8c8077', shoes: '#e6ddd0', bag: '#b98b5b', description: '쪽진 꼭지와 나무 비녀의 찹쌀떡 몸, 장밋빛 뜨개 숄, 뜨개질' },
+});
+// Turned profiles ([radius, height], rig units), eyes [x, height, size], arm height, hem-stitch height and a forward lean.
+const FELT_FORMS = Object.freeze({
+  bun: { profile: [[0, .03], [.62, .035], [.76, .14], [.8, .36], [.76, .62], [.64, .88], [.44, 1.1], [.2, 1.27], [0, 1.33]], depth: .92, folds: .014, eye: [.25, .84, .075], arm: .5, seam: .12, lean: 0 },
+  bean: { profile: [[0, .05], [.38, .06], [.48, .2], [.52, .55], [.47, .98], [.5, 1.42], [.5, 1.82], [.4, 2.1], [.2, 2.3], [0, 2.35]], depth: .86, folds: .012, eye: [.2, 1.84, .065], arm: 1.2, seam: .14, lean: .2 },
+  ricecake: { profile: [[0, .02], [.6, .025], [.72, .14], [.75, .32], [.7, .56], [.56, .8], [.34, .97], [0, 1.04]], depth: .9, folds: .016, eye: [.22, .66, .065], arm: .42, seam: .1, lean: .04 },
+});
+function makeFeltCreature(parent, shared, c, mobile) {
+  const form = FELT_FORMS[c.form], body = group(parent); body.scale.setScalar(WORLD_SCALE); body.name = `resident-${c.id}-felt-${c.form}`;
+  const rig = group(body), m = materialsFor(shared, c), sphere = new THREE.SphereGeometry(1, mobile ? 20 : 28, mobile ? 14 : 20);
+  const felt = m.wool; felt.color.set(c.body); felt.sheenColor.copy(new THREE.Color(c.body).lerp(new THREE.Color('#fff2df'), .35)); felt.normalScale.setScalar(napFor(c, .74));
+  put(rig, paddedShell(form.profile, form.depth, form.folds, c.seed, mobile ? 36 : 56), felt).name = `felt-${c.form}-body`;
+  // Accessories sit on the same turned surface the body was made from.
+  const samples = new THREE.CatmullRomCurve3(form.profile.map(([r, y]) => new THREE.Vector3(r, y, 0)), false, 'centripetal').getPoints(120);
+  const radiusAt = y => { for (let i = 1; i < samples.length; i++) if (samples[i].y >= y) { const a = samples[i - 1], b = samples[i]; return Math.max(0, a.x + (b.x - a.x) * (y - a.y) / Math.max(1e-6, b.y - a.y)); } return 0; };
+  const onSurface = (a, y, out = 0) => { const r = radiusAt(y) + out; return [Math.sin(a) * r, y, Math.cos(a) * r * form.depth]; };
+  const around = (y, out, from = 0, to = TAU, n = 48) => Array.from({ length: n + 1 }, (_, i) => onSurface(from + (to - from) * i / n, y, out));
+  const angleOf = (x, y) => Math.asin(THREE.MathUtils.clamp(x / Math.max(.05, radiusAt(y)), -.95, .95));
+  const top = form.profile.at(-1)[1], [ex, ey, er] = form.eye, eyes = [], arms = [], feet = [];
+  for (const side of [-1, 1]) {
+    const a = angleOf(side * ex, ey), eye = group(rig, onSurface(a, ey, -er * .25)); eye.rotation.y = a;
+    put(eye, sphere, m.eye, [0, 0, 0], [er, er * 1.08, er * .9]); put(eye, sphere, m.glint, [-er * .3, er * .38, er * .78], [er * .22, er * .26, er * .1]); eyes.push(eye);
+    const blushY = ey - er * 2.2, b = angleOf(side * (ex + .11), blushY), blush = put(rig, sphere, m.blush, onSurface(b, blushY, -.012), [.075, .045, .025]); blush.rotation.y = b;
+    const shoulder = group(rig, [side * radiusAt(form.arm) * .92, form.arm, 0]);
+    put(shoulder, sphere, felt, [side * .05, -.1, .02], [.13, .19, .13]); arms.push({ shoulder, side });
+    const footR = radiusAt(.06); feet.push({ foot: put(rig, sphere, m.shoe, [side * footR * .42, .045, footR * form.depth * .62], [.15, .075, .17]), side });
+  }
+  const mouthY = ey - er * 2.7;
+  tube(rig, [[-.06, 0], [-.03, -.011], [0, -.015], [.03, -.011], [.06, 0]].map(([x, dy]) => onSurface(angleOf(x, mouthY + dy), mouthY + dy, .004)), .008, m.lip, 10);
+  sewnPaths(rig, [around(form.seam, .006)], m.thread, `felt-${c.form}-hem-stitch`, .0075, .045);
+  let teapot = null;
+  if (c.form === 'bun') {
+    // Steamed-bun pleats gathered into a small knot on top.
+    for (let i = 0; i < 9; i++) { const a = i / 9 * TAU + .2; taperedTube(rig, [0, .08, .16, .25].map(d => onSurface(a, top - d - .004, .012)), [.012, .032, .028, .006], felt, 10, 7); }
+    put(rig, sphere, felt, [0, top + .012, 0], [.07, .05, .07]);
+    const y0 = .1, y1 = .52, apron = new THREE.LatheGeometry(Array.from({ length: 17 }, (_, i) => { const y = y0 + (y1 - y0) * i / 16; return new THREE.Vector2(radiusAt(y) + .022, y); }), 24, -.85, 1.7);
+    apron.scale(1, 1, form.depth); m.coat.side = THREE.DoubleSide; put(rig, apron, m.coat).name = 'cafe-sage-apron';
+    tube(rig, around(y1 + .004, .03), .02, m.coat, 48);
+    for (const tilt of [-.5, .5]) { const bow = put(rig, sphere, m.coat, onSurface(1.45, y1 + .01 + tilt * .05, .05), [.065, .04, .03]); bow.rotation.set(0, 1.45, tilt); }
+    sewnPaths(rig, [around(y0 + .025, .028, -.78, .78, 18)], m.thread, 'cafe-apron-hem-stitch', .0075, .04);
+    teapot = group(arms[1].shoulder, [.06, -.27, .2]); teapot.name = 'cafe-green-teapot';
+    put(teapot, sphere, m.trousers, [0, 0, 0], [.13, .11, .13]); put(teapot, sphere, m.trousers, [0, .1, 0], [.05, .025, .05]);
+    tube(teapot, [[.1, -.02, 0], [.17, .03, 0], [.21, .08, 0]], .018, m.trousers, 8);
+    tube(teapot, [[-.11, .05, 0], [-.18, .02, 0], [-.17, -.05, 0], [-.11, -.06, 0]], .014, m.trousers, 8);
+  } else if (c.form === 'bean') {
+    const waist = .98;
+    tube(rig, around(waist, .03), .042, m.coat, 48);
+    const pocket = put(rig, roundBox(.2, .17, .05, .02), m.coat, onSurface(.55, waist - .1, .035)); pocket.rotation.y = .55;
+    const pencil = put(rig, new THREE.CylinderGeometry(.016, .016, .2, 8), m.trim, onSurface(.6, waist + .02, .065)); pencil.rotation.set(0, .55, -.12);
+    sewnPaths(rig, [Array.from({ length: 13 }, (_, i) => onSurface(1.35, .22 + i * .14, .006))], m.thread, 'workshop-side-seam', .0075, .045);
+    const hammer = group(arms[0].shoulder, [-.03, -.3, .16]); hammer.rotation.x = -.5; hammer.name = 'workshop-wooden-mallet';
+    put(hammer, new THREE.CylinderGeometry(.018, .02, .34, 8), m.leather, [0, .06, 0]); put(hammer, roundBox(.16, .08, .08, .03), m.shoe, [0, .24, 0]);
+  } else if (c.form === 'ricecake') {
+    // A knitted rose shawl round the middle, below the face, its two ends hanging in front.
+    const shawl = new THREE.LatheGeometry(Array.from({ length: 13 }, (_, i) => { const y = .26 + .26 * i / 12; return new THREE.Vector2(radiusAt(y) + .03, y); }), 40);
+    shawl.scale(1, 1, form.depth); m.rib.side = THREE.DoubleSide; put(rig, shawl, m.rib).name = 'grandmother-rose-knit-shawl';
+    for (const side of [-1, 1]) { const end = put(rig, roundBox(.12, .26, .04, .02), m.rib, onSurface(side * .3, .24, .05)); end.rotation.set(-.15, side * .3, side * .12); }
+    // A small bun on top held by a wooden hairpin.
+    put(rig, sphere, m.hair, [0, top - .01, -.2], [.14, .11, .13]);
+    const pin = put(rig, new THREE.CylinderGeometry(.012, .012, .38, 8), m.leather, [0, top, -.2]); pin.rotation.z = Math.PI / 2;
+    for (const side of [-1, 1]) tube(rig, [-.045, 0, .045].map((dx, i) => { const y = ey + er * (1.9 + (i === 1 ? .35 : 0)); return onSurface(angleOf(side * ex + dx, y), y, .004); }), .008, m.hair, 6);
+    const knitting = group(rig, onSurface(0, .2, .16)); knitting.name = 'grandmother-knitting';
+    put(knitting, sphere, m.rib, [0, 0, 0], [.1, .09, .09]);
+    for (const tilt of [-.5, .5]) { const needle = put(knitting, new THREE.CylinderGeometry(.008, .008, .32, 6), m.leather, [tilt * .06, .1, .02]); needle.rotation.z = tilt; }
+  }
+  body.userData.residentIdentity = { id: c.id, kind: c.kind, description: c.description, silhouette: c.form };
+  function update({ now = 0, walkPhase, gaitBlend, walking = false, motion = true, talking = false, working = false, holding = false, showing = false, seated = false } = {}) {
+    const t = motion ? now * .001 : 0, gait = motion ? (Number.isFinite(gaitBlend) ? gaitBlend : walking ? 1 : 0) : 0;
+    const phase = Number.isFinite(walkPhase) ? walkPhase : t * 7, breath = motion ? Math.sin(t * 1.7 + c.seed) * .012 : 0;
+    // A felt creature waddles: a small hop and a rock from foot to foot.
+    rig.position.y = Math.abs(Math.sin(phase)) * .045 * gait;
+    rig.rotation.z = Math.sin(phase) * .075 * gait + Math.sin(t * 1.1 + c.seed) * .01 * (1 - gait);
+    rig.rotation.x = form.lean + (working ? .05 : 0) + (talking ? Math.sin(t * 3.4) * .02 : 0);
+    rig.scale.set(1 - breath * .5, 1 + breath - (seated ? .03 : 0), 1 - breath * .5);
+    for (const { foot, side } of feet) foot.position.y = .045 + Math.max(0, Math.sin(phase + (side < 0 ? 0 : Math.PI))) * .05 * gait;
+    for (const arm of arms) {
+      let x = Math.sin(phase + (arm.side < 0 ? Math.PI : 0)) * .45 * gait, z = arm.side * .28;
+      if (holding) { x = -1.15; z = arm.side * .1; }
+      else if (working) {
+        if (c.form === 'bean') x = arm.side < 0 ? -1.25 + Math.sin(t * 7) * .45 : -.35;
+        else if (c.form === 'ricecake') { x = -.95 + Math.sin(t * 5 + arm.side) * .06; z = arm.side * .05; }
+        else x = arm.side > 0 ? -.85 + Math.sin(t * 2.2) * .12 : -.35;
+      } else if (showing && arm.side < 0) { x = -1; z = arm.side * .5; }
+      else if (talking && arm.side < 0) x = -.4 - Math.sin(t * 2.6) * .15;
+      arm.shoulder.rotation.set(x, 0, z);
+    }
+    if (teapot) teapot.visible = !holding;
+    const blink = (t + c.seed * .07) % 4.9, openness = blink > 4.74 ? Math.max(.1, Math.abs((blink - 4.82) / .08)) : 1;
+    for (const eye of eyes) eye.scale.y = openness;
+  }
+  update();
+  return { body, update, head: rig, headHeight: ey * WORLD_SCALE, height: standingHeight(body), identity: body.userData.residentIdentity };
+}
+
 function dioramaFelt(body, mobile, seed) {
   // Runs after the height is measured, so the fibres never change the contract.
   // Fibres are batched per cloth mesh and parented to it, so a halo bends with
@@ -594,11 +695,11 @@ function dioramaFelt(body, mobile, seed) {
 }
 
 export function makeTownResident(parent, materials, { id, mobile = false, felt } = {}) {
-  const source = CAST[id];
-  if (!source) throw new Error(`Unknown town resident: ${String(id)}`);
   if (felt !== undefined && felt !== 'diorama') throw new Error(`Unknown resident felt: ${String(felt)}`);
+  const source = (felt && FELT_CAST[id]) || CAST[id];
+  if (!source) throw new Error(`Unknown town resident: ${String(id)}`);
   const c = felt ? { ...source, id, felt } : { ...source, id };
-  const resident = c.kind === 'professor' ? makeProfessor(parent, materials, c, mobile) : makeHuman(parent, materials, c, mobile);
+  const resident = c.kind === 'felt-creature' ? makeFeltCreature(parent, materials, c, mobile) : c.kind === 'professor' ? makeProfessor(parent, materials, c, mobile) : makeHuman(parent, materials, c, mobile);
   if (felt) dioramaFelt(resident.body, mobile, c.seed || 211);
   return resident;
 }
