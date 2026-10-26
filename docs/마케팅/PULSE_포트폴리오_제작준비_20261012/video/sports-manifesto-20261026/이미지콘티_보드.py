@@ -27,6 +27,10 @@ OURS = {
 }
 
 
+# 끝 그림(행: 배율 · 잘라 낼 가운데 x · y 비율) — 1행 3.13초에 1.115배(위로 0.8% 기욺), 4행 0.7초에 약 1.8배(머리가 화면 가운데 위로), 6행 2.8초에 1.069배(아래로 1% 기욺)
+END_CROP = {"S01": (1.115, 0.5, 0.496), "S04": (1.8, 0.48, 0.37), "S06": (1.069, 0.5, 0.505)}
+
+
 def src(name):
     for p in (os.path.join(V, "정지컷", f"{name}.png"), os.path.join(V, "그래픽", f"{name}.png")):
         if os.path.exists(p):
@@ -89,13 +93,13 @@ def rows_from_md():
 
 def board(rs, path, title):
     pad, gap, inner = 36, 26, 6
-    cw, ch = FW * 2 + inner, FH + 124
+    cw, ch = FW * 2 + inner, FH + 168
     W = pad * 2 + COLS * cw + (COLS - 1) * gap
     H = 130 + ((len(rs) + COLS - 1) // COLS) * (ch + gap) + 20
     im = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(im)
     d.text((pad, 28), title, font=F("ExtraBold", 38), fill=INK)
-    d.text((pad, 82), "칸마다 왼쪽 원본 첫 프레임(구도 · 카메라 · 빛을 옮긴 자리) | 오른쪽 우리 판(받은 판 그대로). 아래 글: 행 · 초 · 누구 · 화면 · 경로 · 말. 여러 칸 모자이크는 번쩍 조각 몽타주.",
+    d.text((pad, 82), "칸마다 왼쪽 원본 첫 프레임(구도 · 카메라 · 빛을 옮긴 자리) | 오른쪽 우리 판(받은 판 그대로). 아래 글: 행 · 초 · 누구 · 화면 · 카메라(원본을 프레임마다 잰 값) · 말. 여러 칸 모자이크는 번쩍 조각 몽타주.",
            font=F("Medium", 21), fill=DIM)
     for i, (n, r) in enumerate(rs):
         x = pad + (i % COLS) * (cw + gap)
@@ -111,6 +115,9 @@ def board(rs, path, title):
         ty += 32
         for ln in wrap(d, r["scene"], F("Medium", 17), cw, 3):
             d.text((x, ty), ln, font=F("Medium", 17), fill=INK)
+            ty += 22
+        for ln in wrap(d, "카메라  " + r["cam"], F("Medium", 17), cw, 2):   # 10-26: 원본을 프레임마다 잰 카메라(움직임 · 크기 · 초)
+            d.text((x, ty), ln, font=F("Medium", 17), fill=BLUE)
             ty += 22
         for ln in wrap(d, r["say"], F("Medium", 17), cw, 1):
             d.text((x, ty), ln, font=F("Medium", 17), fill=SAY)
@@ -154,6 +161,15 @@ def pick():
             im = im.rotate(180)   # 바로 선 얼굴로 굽고 원본처럼 뒤집는다
         im.save(os.path.join(V, "정지컷", f"{k}.png"))
         print(k, "←", rel, im.size)
+    # 10-26 카메라: 원본이 다가가는 행은 시작 그림을 그 배율만큼 잘라 끝 그림을 둔다(같은 구도의 끝 그림이면 영상 모델이 카메라를 멈춘다 — 9번 Veo 시험)
+    for k, (z, cx, cy) in END_CROP.items():
+        if k in sel:
+            im = Image.open(os.path.join(V, "정지컷", f"{k}.png"))
+            w, h = im.width / z, im.height / z
+            x0 = min(max(0, im.width * cx - w / 2), im.width - w)
+            y0 = min(max(0, im.height * cy - h / 2), im.height - h)
+            im.crop((round(x0), round(y0), round(x0 + w), round(y0 + h))).resize(im.size, Image.LANCZOS).save(os.path.join(V, "정지컷", f"{k}_끝.png"))
+            print(k + "_끝", f"{z}배 · 가운데 {cx:.2f},{cy:.2f}")
     g = os.path.join(V, "그래픽")
     if "S16" in sel:   # 초록 화면 자리에 심박 숫자(영상 단계에서도 같은 자리)
         im = np.asarray(Image.open(os.path.join(V, "정지컷", "S16.png")).convert("RGB")).astype(np.int16)

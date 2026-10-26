@@ -302,6 +302,7 @@
 - 원인: 앱의 배경 작업 기록과 실제 프로세스가 따로 논다. 원본 받기가 그 탭의 네트워크에서 「300KB 넘는 그림 응답」을 잡는 방식이라, 같은 탭에서 남이 연 그림도 잡힌다.
 - 고침: 큐를 다시 걸기 전에 `Get-CimInstance Win32_Process`에서 명령줄에 `run_v2`·`gem_pro`·`take.mjs`가 든 것을 찾아 `taskkill /PID <bash> /T /F`로 끈다. 받은 파일은 크기(바이트)가 같은 짝이 없는지 보고, 대화 주소가 두 작업에 겹치면 둘 다 다시 굽는다. 굳은 탭은 같은 작업 공간 안에서 `page.close()` → `task.newPage()`로 갈고, 실행기는 `task.pages()`의 마지막 탭을 쓴다.
 - 다시 확인: 기록에서 한 작업의 「sent」와 「done」 사이에 다른 작업의 줄이 끼지 않았는지.
+- 덧붙임(10-26 20:45~21:11, 5번 콘티 · Gemini 차례): 거꾸로도 된다 — 앱이 다시 켜지며 차례를 쥔 `run_turn.sh`(살아있음 · 20분 · 내려놓기를 맡은 bash)는 죽었는데, `ego-browser nodejs`로 넘긴 라운드 스크립트는 ego 안에서 계속 돌아 26분째 여섯째 장을 올리고 있었다(잠금 touch는 4분 넘게 멈춤). 실행기를 꺼도 ego 안 스크립트는 안 멈추니, 다시 시작한 뒤에는 단계 기록 끝 시각부터 보고, 돌고 있으면 내 작업 공간 탭을 닫아(`task.pages()` → `close()`) 멈춘 다음 내려놓는다. 5번 `run_turn.sh`는 20분이 되도록 「끝」이 없으면 같은 탭 닫기(`콘티/p5/ego/닫기.mjs`)를 부른 뒤 내려놓는다.
 
 ### 다른 세션의 Blender 렌더가 GPU를 쓰면 `/images`가 뼈대만 그린 채 15초를 넘겨 evaluate가 끊긴다 (2026-10-22 Claude)
 - 증상: `page.evaluate timed out after 15000ms and the Page is still unresponsive` · `page.goto timed out … navigation committed`가 번갈아 났다. 화면은 회색 자리표시만 있었고 requestAnimationFrame 한 번이 150~800ms, GPU는 지유 광고 P9 블렌더 렌더로 70~91%였다(오르내림).
@@ -472,6 +473,12 @@
 - 원인: 숨겨 붙인 폰 · 녹화처럼 몰래 찍는 장치로 읽히는 글을 막는 것으로 보인다(추정). S18은 모름.
 - 고침: 「A PHOTO TAKEN THROUGH THE WINDOW OF A SEOUL SUBWAY CAR WITH THE CAMERA PRESSED FLAT AGAINST THE INSIDE OF THE GLASS」처럼 「유리에 붙인 카메라로 찍은 사진」으로 쓰자 그렸다. 까닭 없이 글만 온 것은 새 대화에서 같은 지시문을 한 번 더 보내자 됐다.
 - 다시 확인: 실행기 기록에 「done」이 남고 받은 파일이 생겼는지.
+
+### 같은 차례 안에서도 Argon 높음이 가끔 「Direct image generation is unavailable」 글로 답한다 — 글 답을 바로 알아채 새 대화로 다시 굽는다 (2026-10-26 Claude)
+- 증상: 5번 콘티 1차(unmet25 `/u/1`, 4 Argon · 사고 수준 높음, 16:9)에서 R1(빈 실험실) · S04(얼굴)는 그림이 나왔는데, 그 사이에 보낸 R2(사람 없는 밤 트랙 + 배치도 한 장) · R3(신발 제품 사진, 참조 없음)는 그림 대신 「Direct image generation is unavailable in this environment…」와 Midjourney · Flux용 지시문을 글로 돌려줬다. 실행기는 그림을 5분 기다리다 「그림이 안 나옴」으로 끝났고, 2차에 그 대화를 다시 열어 받으려다 차례 20분을 다 썼다.
+- 원인: 모름 — 같은 계정 · 모드 · 비율에서 앞뒤 장은 그려졌다. 지시문 문구(「product photograph」 · 「Nobody is in the frame」)보다는 그때그때 도구를 안 부르는 답으로 보인다(추정).
+- 고침: 그림을 기다리는 동안 마지막 `model-response` 글에 `image generation is unavailable` · `text-only` · `Midjourney` 같은 말이 보이면 「글로 답함」으로 바로 끝내고, 라운드는 같은 컷을 새 대화로 한 번 더 굽는다(5번 `콘티/p5/ego/gen.mjs` · `run-batch.mjs`의 flaky). 글로 답한 대화는 다시 열어도 그림이 없으니 받기로 돌리지 않는다.
+- 다시 확인: 단계 기록에 「글로 답함」 다음 같은 컷의 「받음」이 남는지.
 
 ### 옆으로 달리는 새 그림이 「화면 오른쪽으로」를 적어도 반대로 달린다 — 같은 카메라의 앞 컷을 편집해 순간만 바꾼다 (2026-10-22 Claude)
 - 증상: v2 S05(폰 시점 질주) 2차를 「toward the right side of the picture … seen exactly from his right side」와 오른쪽으로 달리는 자세 실루엣으로 새로 굽자 왼쪽으로 달렸다(왼쪽 옆얼굴). 「창틀 · 고무 테두리 없음」을 적었는데도 아래에 둥근 창 모서리 · 창턱이 나왔고 턱 · 목도 다른 컷보다 무거웠다. 같은 문장 · 같은 실루엣의 S04 · S07 · S18은 맞게 나왔다.
