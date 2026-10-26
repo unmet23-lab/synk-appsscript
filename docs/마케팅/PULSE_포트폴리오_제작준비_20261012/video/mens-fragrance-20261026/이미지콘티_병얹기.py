@@ -25,6 +25,8 @@ if n < 2:
     raise SystemExit("초록 대역을 못 찾음")
 k = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
 G = lab == k
+# 손가락이 대역을 갈라 놓으면 작은 초록 덩어리가 따로 남는다(12번 1판 시험 — 404 px가 메우기에서 빠졌다) — 기울기 · 크기는 큰 덩어리로, 메우기는 50 px 넘는 덩어리 모두로
+Gall = np.isin(lab, [i for i in range(1, n) if st[i, cv2.CC_STAT_AREA] > 50])
 x, y, w, h = st[k, :4]
 
 
@@ -55,7 +57,7 @@ px, py = int(round(gcx - bcx)), int(round(gcy - bcy))
 # 깨끗한 판: 초록 자리(옅게 초록 기가 도는 가장자리까지 넓힘)를 둘레 색으로 먼저 메운 뒤 그 위에 병을 얹는다 —
 # 2판 시험에서 얹은 뒤에 메우니 병 가장자리(반투명)가 초록 위에 섞여 초록 테가 남았다
 Gw = (g > 60) & (g > r * 1.15) & (g > b * 1.05)
-Gw = cv2.dilate((Gw & cv2.dilate(G.astype(np.uint8), np.ones((15, 15), np.uint8)).astype(bool)).astype(np.uint8) | G.astype(np.uint8),
+Gw = cv2.dilate((Gw & cv2.dilate(Gall.astype(np.uint8), np.ones((15, 15), np.uint8)).astype(bool)).astype(np.uint8) | Gall.astype(np.uint8),
                 np.ones((7, 7), np.uint8))
 clean = cv2.inpaint(im.astype(np.uint8), Gw, 9, cv2.INPAINT_TELEA)
 layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -63,16 +65,18 @@ layer.paste(bot, (px, py), bot)
 comp = Image.alpha_composite(Image.fromarray(clean).convert("RGBA"), layer)
 c = np.asarray(comp.convert("RGB")).astype(np.int32)
 A = np.asarray(layer.getchannel("A")) > 8
-# 손가락 되살리기: 대역 둘레(넓힘) 안에서 초록이 아니고 병이 덮은 화소 = 대역 앞에 있던 것
-pad = int(max(w, h) * 0.08)
-box = cv2.dilate(G.astype(np.uint8), np.ones((2 * pad + 1, 2 * pad + 1), np.uint8)).astype(bool)
-front = box & A & ~Gw.astype(bool)
-# 병 바깥 테두리 쪽 바탕(초록 아님 · 손 아님)까지 되살리면 병 가장자리가 잘리므로, 살빛에 가까운 화소만(붉은 기가 파랑보다 큼)
-skin = (r > b * 0.9) & (r > 60)
-front &= skin
-c[front] = im[front]
+# 손가락 되살리기: 대역의 볼록 껍질 안에서 초록이 아닌 화소 = 대역 앞에 있던 손가락(초록을 가린 것). 껍질 밖은 손이 병 뒤에 있는 것으로 둔다.
+# 3판(10-27 01시 12번 1판 시험): 대역을 넓힌 상자 · 살빛 거르기로 고르니 손톱 · 손끝이 조각나고 손 밖 조각이 떴다 — 껍질 안을 통째로, 가장자리는 2 px 흐림
+pts = cv2.findNonZero(G.astype(np.uint8))
+hull = np.zeros((H, W), np.uint8)
+cv2.fillConvexPoly(hull, cv2.convexHull(pts), 1)
+greenish = (g > 30) & (g > r * 1.1) & (g >= b)   # 대역 옆면의 어두운 초록(g 60 아래)도 손가락이 아니다
+front = (hull > 0) & ~cv2.dilate(Gw, np.ones((3, 3), np.uint8)).astype(bool) & ~greenish & A
+fm = cv2.GaussianBlur(front.astype(np.float32), (5, 5), 0)[..., None]
+c = (c * (1 - fm) + im * fm).astype(np.int32)
+# 껍질 안인데 병이 덮지 못한 자리(병 실루엣이 대역보다 좁은 곳)는 깨끗한 판 그대로 — 위에서 이미 메웠다
 spill = Gw.astype(bool) & ~A
 os.makedirs(os.path.dirname(out), exist_ok=True)
 Image.fromarray(np.clip(c, 0, 255).astype(np.uint8)).save(out)
 print(out, {"대역": [int(x), int(y), int(w), int(h)], "대역기울기": round(g_ang, 1), "병기울기": round(b_ang, 1), "배율": round(s, 3),
-            "병": [px, py, bot.width, bot.height], "손가락화소": int(front.sum()), "번짐": int(spill.sum())})
+            "병": [px, py, bot.width, bot.height], "손가락화소": int(front.sum()), "남은초록": int(spill.sum())})
