@@ -62,7 +62,7 @@
       "profilePublishingAuthorization": "2026-10-02 사용자 '직접 게시해': 직접 화면 확인 후 게시 승인",
       "browserExecutionStatus": "unresponsive-connection-blocking-progress",
       "currentPublicProfileStatus": "not-reverified",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-br-youtube": {
       "brand": "LAB",
@@ -130,7 +130,7 @@
       "publicDescriptionCharacterCount": 480,
       "publicProfileVerifiedAt": "2026-10-02T20:52:47.000+09:00",
       "verificationTimeScope": "주 실행자의 검증 결과를 원장에 기록한 시각",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-cn-xiaohongshu": {
       "brand": "LAB",
@@ -244,7 +244,7 @@
       "avatarVerificationScope": "authenticated-tiktok-profile-after-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -288,7 +288,7 @@
       "avatarVerificationScope": "authenticated-public-channel-after-followup-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-np-facebook": {
       "brand": "LAB",
@@ -320,7 +320,7 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-kh-facebook": {
       "brand": "LAB",
@@ -353,7 +353,7 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-lk-facebook": {
       "brand": "LAB",
@@ -384,7 +384,7 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-uz-telegram": {
       "brand": "LAB",
@@ -414,7 +414,7 @@
       "avatarVerificationScope": "new-public-t-me-tab-after-crop-and-separate-save",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -431,7 +431,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-my-youtube": {
       "brand": "LAB",
@@ -448,7 +448,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-nz-youtube": {
       "brand": "LAB",
@@ -465,7 +465,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-py-youtube": {
       "brand": "LAB",
@@ -482,7 +482,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-au-youtube": {
       "brand": "LAB",
@@ -499,7 +499,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-lk-youtube": {
       "brand": "LAB",
@@ -516,7 +516,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-ph-youtube": {
       "brand": "LAB",
@@ -533,7 +533,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-us-youtube": {
       "brand": "LAB",
@@ -550,7 +550,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-kg-youtube": {
       "brand": "LAB",
@@ -567,7 +567,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-in-youtube": {
       "brand": "LAB",
@@ -584,7 +584,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-id-youtube": {
       "brand": "LAB",
@@ -601,7 +601,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-th-youtube": {
       "brand": "LAB",
@@ -618,7 +618,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-mm-youtube": {
       "brand": "LAB",
@@ -635,7 +635,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-tw-youtube": {
       "brand": "LAB",
@@ -652,7 +652,7 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-jp-youtube": {
       "brand": "LAB",
@@ -669,7 +669,7 @@
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-vn-youtube": {
       "brand": "LAB",
@@ -686,7 +686,7 @@
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     },
     "lab-youtube": {
       "brand": "LAB",
@@ -1121,7 +1121,7 @@
       },
       "publicBio": "Belajar bahasa Korea, langsung coba pakai! 🎮 synk.im/lab/",
       "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z",
-      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
+      "dailyOff": "나라별 LAB — 10-26 유호님 「지금은 안 넣기」(11-07 2주 시험 판정 때 다시)"
     }
   }
 }
