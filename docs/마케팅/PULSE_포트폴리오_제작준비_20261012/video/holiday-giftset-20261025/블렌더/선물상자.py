@@ -18,6 +18,11 @@
 #   반 바퀴 비틀리며 내려와 V 끝이 뚜껑 선 아래에 · 금빛 김은 넓은 컷(hero)에서만, 위로 갈수록 옅게 · 상자 속 결정 · 눈송이 뺌 ·
 #   단지 금 뚜껑은 이름 음각 + 가는 테만 · 스포이드 작게 · 벨벳 한 단계 밝게 · 앞 옆띠 이름 15 % 크게 · 공단 직조 결 ·
 #   제품 접사(product)는 상자 앞 바닥에 둔 단지 · 앰플을 눈높이에서, 차가운 보조광으로 금과 금을 가른다
+# 4판(02_콘티 — 15초 · 6초 움직임): --film 15|6 --frames 90-120 이면 움직임표.py의 컷 · 카메라 · u 곡선대로 프레임마다 짓고 굽는다
+#   → <밖>/움직임/<film>초_<세로|가로>/0090.png …(있는 프레임은 건너뜀). 제목(뚜껑 윗면 스침) · 금가루(뚜껑이 열릴 때 터짐 ·
+#   상자 위를 낮게 지나감 · 제품 둘레에 뜸 · 닫힘에서 화면을 덮음) · 뚜껑 나감 · 닫힘(u를 거꾸로) · 내리는 눈 · 모션 블러
+#   (카메라 · 제품 · 금가루만 앞뒤 프레임 열쇠 — 리본 · 뚜껑은 2프레임마다 한 자세라 번지지 않는다). --cam az,el,d,x,y,z,lens[,f]는
+#   한 장 시험용 카메라
 # 단위 m.
 import math
 import os
@@ -26,7 +31,7 @@ import sys
 
 import bmesh
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 
@@ -43,6 +48,15 @@ SAMPLES = int(arg("--samples", "96"))
 SAVE = "--save" in argv
 SEQ = int(arg("--seq", "0"))
 RISE = float(arg("--rise", "0"))
+FILM = arg("--film", "")
+FRAMES = arg("--frames", "")
+CAM = arg("--cam", "")
+TITLE_RAKE = float(arg("--rake", "15"))   # 제목 스침빛 세기(W) — Fable 움직임 1차 P2-2로 10 → 15
+TITLE_EXPO = float(arg("--expo", "-0.6"))  # 제목 노출(흰 판지가 날지 않게, 진주빛은 살게 −0.8 → −0.6)
+# 움직임(--film)에서 프레임마다 바뀌는 값 — 한 장 굽기에서는 None이라 3.1판과 같다
+RISE_J = RISE_A = None
+SPIN_A = BOB_J = BOB_A = LID_OUT = 0.0
+T = None
 밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-season4-20261025", "콘티", "holiday-giftset")
 라벨 = os.path.join(밖, "라벨")
 OUT = arg("--out", os.path.join(밖, "렌더", f"{SHOT}_{LOOK}_u{U:.2f}{f'_r{RISE:.2f}' if RISE > 0 else ''}"
@@ -340,7 +354,7 @@ def mat_box(name, lid=True):
         height = math_node(n, l, "ADD", math_node(n, l, "MULTIPLY", top, emb.outputs["Color"]),
                            math_node(n, l, "MULTIPLY", foil_fac, 0.5))
         bump = n.new("ShaderNodeBump")
-        bump.inputs["Strength"].default_value = 0.7
+        bump.inputs["Strength"].default_value = 1.0   # 4판: 0.7 — 멈춘 끝 그림 · 제목에서 서리꽃이 평평했다(Fable 움직임 1차 P2-2 · 3)
         bump.inputs["Distance"].default_value = 0.0002
         l.new(height, bump.inputs["Height"])
         l.new(grain.outputs["Normal"], bump.inputs["Normal"])
@@ -599,9 +613,15 @@ def arm_points(direction):
     x, z = a, H
     step = a / nt
     lift = math.sin(math.pi * min(1.0, peel * 1.15))  # 일어서는 동안 휨이 크다가 다 서면 줄어든다
+    # 4판(Fable 움직임 1차 P2-5): 다 선 순간(u 0.40~0.60) 휨이 0이 되어 곧은 종이 탭으로 보였다 — 다 서도 휨 · 비틀림이
+    # 남게 바닥값을 두고, 그 구간만 끝 처짐 · 말림 · 비틀림을 1.5배(뿌리 각은 그대로)
+    stand = smooth(0.6, 1.0, peel) * (1 - K_FALL)
+    flex = 1.0 + 0.5 * smooth(0.36, 0.44, U) * (1 - smooth(0.58, 0.66, U))
+    lift = max(lift, 0.45 * stand)
     for k in range(1, nt + 1):
         s = k / nt
-        alpha = ph1 - math.radians(38) * lift * s * s - math.radians(55) * peel * max(0.0, s - 0.72) / 0.28 * (1 - K_FALL * 0.6)
+        alpha = (ph1 - math.radians(38) * lift * s * s * flex
+                 - math.radians(55) * peel * max(0.0, s - 0.72) / 0.28 * (1 - K_FALL * 0.6) * flex)
         x += -math.cos(alpha) * step
         z += math.sin(alpha) * step
         P.append((x, max(z, H * (1 - peel) + 0.0)))
@@ -625,7 +645,8 @@ def arm_points(direction):
     dx, dy = direction
     pts = [Vector((dx * x, dy * x, z)) for x, z in out]
     w = Vector((-dy, dx, 0.0))
-    tw = [math.radians(14) * math.sin(math.pi * peel) * (i / Ltot) * (1 if dx + dy > 0 else -1) for i in range(len(pts))]
+    tw_amp = math.radians(14) * max(math.sin(math.pi * peel), 0.6 * stand) * flex
+    tw = [tw_amp * (i / Ltot) * (1 if dx + dy > 0 else -1) for i in range(len(pts))]
     return pts, [w] * len(pts), tw
 
 
@@ -804,8 +825,33 @@ def insert_with_cavities():
     return blk
 
 
+def pivot_empty(name, loc, rot_z=0.0):
+    """제품 하나의 부품을 매다는 축(바닥 가운데). 움직임에서는 이 축만 앞뒤 프레임 열쇠를 받아 모션 블러가 걸린다."""
+    e = link(bpy.data.objects.new(name, None))
+    e.location = Vector(loc)
+    e.rotation_euler = (0.0, 0.0, math.radians(rot_z))
+    return e
+
+
+def _child(ob, parent, local):
+    ob.parent = parent
+    ob.location = Vector(local)
+    return ob
+
+
+def product_pose(rise_j, rise_a, spin_a=0.0, bob_j=0.0, bob_a=0.0):
+    """움직임의 제품 축 자리: 단지가 먼저 9.5 cm, 앰플이 돌며 8.5 cm(3.1판 높이)."""
+    return ((JAR[0], JAR[1], JAR_Z + 0.095 * rise_j + bob_j),
+            (AMP[0], AMP[1], AMP_Z + 0.085 * rise_a + bob_a), spin_a)
+
+
+PROD_E = None
+
+
 def products(jar_at=None, amp_at=None):
-    """jar_at · amp_at: (x, y, 바닥 z). 없으면 인서트 홈 자리. product 컷은 상자 앞 바닥에 둔다."""
+    """jar_at · amp_at: (x, y, 바닥 z). 없으면 인서트 홈 자리. product 컷은 상자 앞 바닥에 둔다.
+    4판: 부품을 제품마다 축(빈 물체)에 매단다 — 움직임에서 축만 옮겨 모션 블러를 건다."""
+    global PROD_E
     glass = mat_glass("glass_heavy")
     gold = mat_simple("gold_cap", base=GOLD, metal=1.0, rough=0.16)
     # 3판(Fable 2차 P3-1): 흰 고무 캡슐이 알약처럼 읽혀 — 작게(지름 1.3 cm · 높이 1.7 cm) · 허리 · 둥근 윗면 · 실리콘 아이보리
@@ -813,34 +859,48 @@ def products(jar_at=None, amp_at=None):
                         coat=0.25, coat_rough=0.3)
     cream = mat_simple("cream", base=(0.97, 0.955, 0.93), rough=0.32, sss=0.6, sss_r=(0.006, 0.006, 0.005))
     # 크림 단지: 두꺼운 유리(벽 5 mm · 바닥 12 mm · 어깨 둥금) + 둥근 크림 + 금 목 고리 + 금 뚜껑
-    jx, jy, jz = jar_at or (JAR[0], JAR[1], JAR_Z + 0.095 * smooth(0.0, 0.8, RISE))  # 3.1판: 밑에 틈이 보이게 더 높이
+    if jar_at:
+        jx, jy, jz = jar_at
+    elif RISE_J is not None:
+        (jx, jy, jz), _, _ = product_pose(RISE_J, 0.0, 0.0, BOB_J)
+    else:
+        jx, jy, jz = JAR[0], JAR[1], JAR_Z + 0.095 * smooth(0.0, 0.8, RISE)  # 3.1판: 밑에 틈이 보이게 더 높이
+    jar_e = pivot_empty("단지축", (jx, jy, jz))
     jar = revolve("단지", [(0.0, 0.0), (0.0330, 0.0), (0.0352, 0.0012), (0.0360, 0.0040), (0.0360, 0.0400),
                            (0.0356, 0.0428), (0.0346, 0.0450), (0.0330, 0.0462), (0.0310, 0.0462), (0.0310, 0.0150),
                            (0.0300, 0.0128), (0.0280, 0.0120), (0.0, 0.0120)], mat=glass)
-    jar.location = (jx, jy, jz)
+    _child(jar, jar_e, (0, 0, 0))
     # 3판: 크림이 안쪽 벽까지 차게(두꺼운 유리가 가운데를 키워 흰 공 · 달걀처럼 보였다) — 윗면만 낮은 둔덕
     # 3.1판(Fable 3차 P3-2): 그래도 반구로 읽혔다 — 크림과 안쪽 벽 사이 0.1 mm 공기층에서 옆쪽 빛이 전반사돼 가장자리 크림이
     # 안 보였다. 실제 크림은 유리에 붙어 있으니 안쪽 벽 · 바닥을 0.2 mm 파고들게(광학 접촉) 하고, 유리 어깨 바로 아래까지 채운다
     cr = revolve("크림", [(0.0, 0.0118), (0.0302, 0.0118), (0.0312, 0.0130), (0.0312, 0.0438), (0.0292, 0.0446),
                           (0.0150, 0.0450), (0.0, 0.0451)], mat=cream)
-    cr.location = (jx, jy, jz)
+    _child(cr, jar_e, (0, 0, 0))
     ring = revolve("목고리", [(0.0330, 0.0), (0.0366, 0.0), (0.0366, 0.0018), (0.0330, 0.0018)], mat=gold)
-    ring.location = (jx, jy, jz + 0.0455)
+    _child(ring, jar_e, (0, 0, 0.0455))
     jl = revolve("단지뚜껑", [(0.0, 0.0), (0.0368, 0.0), (0.0373, 0.0020), (0.0373, 0.0150), (0.0362, 0.0168),
                               (0.0300, 0.0172), (0.0, 0.0172)], mat=mat_jar_lid())
-    jl.location = (jx, jy, jz + 0.0470)
+    _child(jl, jar_e, (0, 0, 0.0470))
     # 앰플: 네모 유리병(벽 3 mm · 바닥 8 mm, 3판 높이 4.2 cm) · 액 70 % · 금 목 · 실리콘 스포이드
-    ax, ay, az = amp_at or (AMP[0], AMP[1], AMP_Z + 0.085 * smooth(0.2, 1.0, RISE))
+    if amp_at:
+        ax, ay, az = amp_at
+    elif RISE_A is not None:
+        _, (ax, ay, az), _ = product_pose(0.0, RISE_A, 0.0, 0.0, BOB_A)
+    else:
+        ax, ay, az = AMP[0], AMP[1], AMP_Z + 0.085 * smooth(0.2, 1.0, RISE)
+    amp_e = pivot_empty("앰플축", (ax, ay, az), SPIN_A)
     amp_glass = mat_print("amp_print", "앰플_흰잉크.png", half=0.020, axis="Y", z0=-0.009, h=0.036)
-    rounded_box("앰플병", 0.040, 0.040, AMP_H, (ax, ay, az + AMP_H / 2), amp_glass, bevel=0.005)
+    _child(rounded_box("앰플병", 0.040, 0.040, AMP_H, (0, 0, 0), amp_glass, bevel=0.005), amp_e, (0, 0, AMP_H / 2))
     liq_h = (AMP_H - 0.008 - 0.004) * 0.70
-    rounded_box("앰플액", 0.0338, 0.0338, liq_h, (ax, ay, az + 0.008 + liq_h / 2), mat_serum(), bevel=0.003)
+    _child(rounded_box("앰플액", 0.0338, 0.0338, liq_h, (0, 0, 0), mat_serum(), bevel=0.003), amp_e,
+           (0, 0, 0.008 + liq_h / 2))
     neck = revolve("앰플목", [(0.0, 0.0), (0.0105, 0.0), (0.0108, 0.0010), (0.0108, 0.0090), (0.0100, 0.0100),
                               (0.0, 0.0100)], mat=gold)
-    neck.location = (ax, ay, az + AMP_H)
+    _child(neck, amp_e, (0, 0, AMP_H))
     bulb = revolve("스포이드", [(0.0, 0.0), (0.0068, 0.0), (0.0070, 0.0022), (0.0058, 0.0040), (0.0064, 0.0075),
                                 (0.0066, 0.0110), (0.0058, 0.0145), (0.0038, 0.0163), (0.0, 0.0170)], mat=rubber)
-    bulb.location = (ax, ay, az + AMP_H + 0.010)
+    _child(bulb, amp_e, (0, 0, AMP_H + 0.010))
+    PROD_E = (jar_e, amp_e)
 
 
 def mat_jar_lid():
@@ -895,10 +955,20 @@ def snow_particles(n, region, rmin, rmax, seed=3, mat=None):
     rnd = random.Random(seed)
     bm = bmesh.new()
     (x0, x1), (y0, y1), (z0, z1) = region
-    for _ in range(n):
+    for i in range(n):
         r = rnd.uniform(rmin, rmax)
         c = Vector((rnd.uniform(x0, x1), rnd.uniform(y0, y1), rnd.uniform(z0, z1)))
-        if abs(c.x) < 0.12 and abs(c.y) < 0.12 and c.z < 0.30:
+        if T is not None:
+            # 4판 움직임: 천천히 내리며 흔들린다(속도는 따로 뽑아 위 뽑는 순서를 지킨다). 상자 위 기둥에는 아예 두지 않는다 —
+            # 높이로 가르면 내려오던 눈송이가 상자 위에서 갑자기 사라진다
+            if abs(c.x) < 0.12 and abs(c.y) < 0.12:
+                continue
+            q = random.Random(seed * 7919 + i)
+            v, amp, w, ph = q.uniform(0.012, 0.030), q.uniform(0.002, 0.008), q.uniform(0.6, 1.4), q.uniform(0, 6.3)
+            c.z = z0 + (c.z - z0 - v * T) % (z1 - z0)
+            c.x += amp * math.sin(w * T + ph)
+            c.y += amp * math.cos(0.8 * w * T + ph)
+        elif abs(c.x) < 0.12 and abs(c.y) < 0.12 and c.z < 0.30:
             continue
         if SHOT == "product" and c.y < 0.06 and abs(c.x) < 0.30 and c.z < 0.25:  # 렌즈 앞 눈송이가 단지 앞 얼룩으로
             continue
@@ -1002,6 +1072,25 @@ def link_lid_light():
     LID_LIGHT.light_linking.receiver_collection = recv
 
 
+def scale_key(k):
+    for ob in bpy.context.scene.objects:
+        if ob.type == "LIGHT" and ob.name == "키":
+            ob.data.energy *= k
+
+
+def lid_rake(lid, energy, pos, target):
+    """뚜껑 윗면 서리꽃 엠보를 세우는 낮은 스침빛(4판) — 빛 연결로 뚜껑만 받고(바닥 · 리본이 밝아지지 않게), 그림자 연결로
+    뚜껑만 가린다(나비 · 띠가 낮은 빛에 긴 그림자를 뚜껑에 드리우지 않게). 카메라에는 안 보이게."""
+    rake = area_light("스침빛", pos, target, energy, 0.30, rgb=(1.0, 0.84, 0.62), size_y=0.03)
+    rake.visible_camera = False
+    recv = bpy.data.collections.new("스침빛_받음")
+    bpy.context.scene.collection.children.link(recv)
+    recv.objects.link(lid)
+    rake.light_linking.receiver_collection = recv
+    rake.light_linking.blocker_collection = recv
+    return rake
+
+
 def build():
     global LID_LIGHT
     LID_LIGHT = None
@@ -1025,18 +1114,21 @@ def build():
     products()
     link_lid_light()
     # (2판의 인서트 위 눈 결정은 뺐다 — 상자 속 티끌로 보였다)
-    # 뚜껑: 앞이 먼저 들리고(뒤 모서리 축 −5°) → 위로 떠오르며 뒤로 기운다
-    if K_TILT > 0 or K_LID > 0:
+    # 뚜껑: 앞이 먼저 들리고(뒤 모서리 축 −5°) → 위로 떠오르며 뒤로 기운다 → 4판 뚜껑 나감: 더 높이 · 뒤로 화면 밖까지
+    if K_TILT > 0 or K_LID > 0 or LID_OUT > 0:
         pivot = Vector((0, L_HALF, TOP))
-        ang = math.radians(-5) * K_TILT + math.radians(-17) * K_LID
+        ang = math.radians(-5) * K_TILT + math.radians(-17) * K_LID + math.radians(-26) * LID_OUT
         rot = Matrix.Rotation(ang, 4, "X")
-        lift = Matrix.Translation(Vector((0, 0.050 * K_LID, 0.16 * K_LID)))  # 3판: 더 높이 — 떠오르는 제품과 겹치지 않게
+        lift = Matrix.Translation(Vector((0, 0.050 * K_LID + 0.14 * LID_OUT,
+                                          0.16 * K_LID + 0.46 * LID_OUT)))  # 3판: 더 높이 — 떠오르는 제품과 겹치지 않게
         lid.matrix_world = lift @ Matrix.Translation(pivot) @ rot @ Matrix.Translation(-pivot)
     ribbons(mat_satin())
     if K_TILT > 0:
-        point_light("속빛", (0, 0.01, 0.075), 1.4 * max(K_TILT, K_LID), (1.0, 0.74, 0.40), radius=0.05)
+        inner = [point_light("속빛", (0, 0.01, 0.075), 1.4 * max(K_TILT, K_LID), (1.0, 0.74, 0.40), radius=0.05)]
         if SHOT == "open" and RISE == 0:  # 앞 벽 안쪽에서 제품 앞면을 비춰 두꺼운 유리 속 흰 크림이 보이게(뚜껑 그늘에 묻혔다)
-            point_light("속앞빛", (0.0, -0.062, 0.082), 3.2, (1.0, 0.88, 0.70), radius=0.03)
+            inner.append(point_light("속앞빛", (0.0, -0.062, 0.082), 3.2, (1.0, 0.88, 0.70), radius=0.03))
+        for ob in inner:  # 4판: 높은 각도로 상자 속을 들여다보므로 빛 구슬은 카메라에 안 보이게(4.83초 번쩍임은 렌즈 앞 금가루였다)
+            ob.visible_camera = False
         # 금빛 김: 넓은 컷(hero)에서만 — 상자 속이 짙고 테두리 위 2 cm에서 사라진다(접사 · 열린 상자는 우윳빛이 됐다)
         if SHOT == "hero":
             h = B_H + 0.02 - INS_TOP
@@ -1049,7 +1141,29 @@ def build():
     elif SHOT == "macro":
         # 공단 결빛: 작고 센 빛 하나가 갈래 · 고리 면에 길이 방향 하이라이트 한 줄을 세운다(Fable 2차 P3-4)
         # 3.1판(Fable 3차 P2-1): 작고 센 빛은 실결을 알갱이로 키웠다 — 긴 면광으로 하이라이트 한 줄만
-        area_light("결빛", (-0.16, 0.30, 0.34), (0.0, 0.0, TOP + 0.02), 30, 0.40, rgb=(1.0, 0.93, 0.82), size_y=0.08)
+        sheen = area_light("결빛", (-0.16, 0.30, 0.34), (0.0, 0.0, TOP + 0.02), 30, 0.40, rgb=(1.0, 0.93, 0.82), size_y=0.08)
+        # 4판(Fable 움직임 1차 P1-1): 접사에서 흰 뚜껑이 날아(250 넘는 픽셀 절반) 나비가 빠진 끝 0.3초가 빈 흰 화면이었다 —
+        # 결빛은 리본만 받게(뚜껑까지 날렸다) · 키 절반 · 노출 −0.7, 뚜껑 면에는 오른쪽 낮은 스침빛으로 서리꽃 결을
+        recv = bpy.data.collections.new("결빛_받음")
+        bpy.context.scene.collection.children.link(recv)
+        for ob in list(bpy.context.scene.objects):
+            if ob.type == "MESH" and ob.name.startswith(("갈래", "매듭", "고리", "꼬리")):
+                recv.objects.link(ob)
+        sheen.light_linking.receiver_collection = recv
+        scale_key(0.5)
+        bpy.context.scene.view_settings.exposure = -0.7
+        lid_rake(lid, TITLE_RAKE * 0.4, (0.32, 0.06, TOP + 0.03), (0.03, -0.04, TOP))
+    elif SHOT == "title":
+        # 4판 제목: 뚜껑 윗면의 서리꽃 엠보(0.2 mm)는 키 빛 아래에서 평평하다 — 키를 줄이고, 낮게 눕혀 비추는 긴 빛 하나로 결을
+        # 세운다. 자리는 리본 꼬리가 없고 서리꽃이 가장 촘촘한 뒤 왼쪽 사분면. 스침빛은 그 바깥 모서리 너머 낮은 데서 카메라
+        # 쪽으로(역광) — 나비 · 띠를 지나지 않아 그 그림자가 사분면에 안 진다
+        scale_key(0.25)
+        lid_rake(lid, TITLE_RAKE, (-0.30, 0.30, TOP + 0.024), (-0.05, 0.05, TOP))
+        bpy.context.scene.view_settings.exposure = TITLE_EXPO
+    elif SHOT == "top":
+        # 4판(Fable 움직임 1차 P2-3): 82°로 멈춘 끝 그림에서 빛이 모두 비스듬히 위에서 와 엠보가 평평 — 「서리꽃 에디션」의
+        # 서리꽃이 끝 그림에 없었다. 뒤 왼쪽 12° 높이 스침빛 하나(제목의 0.8 — 0.6은 아직 옅었다, 그림자 연결로 나비 그림자는 없다)
+        lid_rake(lid, TITLE_RAKE * 0.8, (-0.30, 0.30, TOP + 0.09), (0.0, 0.0, TOP))
 
 
 def shots():
@@ -1084,8 +1198,371 @@ def render_to(path):
     bpy.ops.render.render(write_still=True)
 
 
+# ── 4판 움직임: 카메라 길 · 모션 블러 · 금가루 ─────────────────────────────────────
+def cam_pose(c):
+    """움직임표의 구면 카메라 값 → (위치, 돌림 쿼터니언). az 0 = 앞(−y)에서 봄, el = 내려다보는 각."""
+    az, el = math.radians(c["az"]), math.radians(c["el"])
+    tgt = Vector(c["tgt"])
+    loc = tgt + c["d"] * Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)))
+    q = (tgt - loc).to_track_quat("-Z", "Y")
+    if c.get("roll"):
+        q = q @ Quaternion((0.0, 0.0, 1.0), math.radians(c["roll"]))
+    return loc, q
+
+
+def cam_tan(c):
+    """화면 반폭 · 반높이의 tan(카메라 공간 금가루를 화면 안에 흩을 때)."""
+    half = 18.0 / c["lens"]
+    return (half * RES[0] / RES[1], half) if RES[1] > RES[0] else (half, half * RES[1] / RES[0])
+
+
+def cam_matrix(c):
+    loc, q = cam_pose(c)
+    return Matrix.Translation(loc) @ q.to_matrix().to_4x4()
+
+
+def camera_motion(cs):
+    """cs = 앞 · 지금 · 뒤 프레임의 카메라 값 — 위치 · 돌림 · 렌즈 · 초점 · 조리개에 프레임 0 · 1 · 2 열쇠(1을 굽는다)."""
+    c1 = cs[1]
+    cam = camera((0, 0, 0), (0, 0, -1), lens=c1["lens"], fstop=c1["f"], focus=c1["d"])
+    cam.rotation_mode = "QUATERNION"
+    prev = None
+    for k, c in enumerate(cs):
+        loc, q = cam_pose(c)
+        if prev is not None and prev.dot(q) < 0:
+            q.negate()
+        prev = q
+        cam.location, cam.rotation_quaternion = loc, q
+        cam.keyframe_insert("location", frame=k)
+        cam.keyframe_insert("rotation_quaternion", frame=k)
+        cam.data.lens = c["lens"]
+        cam.data.keyframe_insert("lens", frame=k)
+        cam.data.dof.focus_distance = c.get("focus", c["d"])
+        cam.data.dof.aperture_fstop = c["f"]
+        cam.data.dof.keyframe_insert("focus_distance", frame=k)
+        cam.data.dof.keyframe_insert("aperture_fstop", frame=k)
+    return cam
+
+
+def product_motion(sts):
+    """제품 축(단지 · 앰플)에 앞 · 지금 · 뒤 열쇠 — 떠오르는 동안 모션 블러가 걸린다."""
+    if not PROD_E:
+        return
+    je, ae = PROD_E
+    for k, s in enumerate(sts):
+        jl, al, spin = product_pose(s["rise_j"], s["rise_a"], s["spin_a"], s["bob_j"], s["bob_a"])
+        je.location = jl
+        ae.location = al
+        ae.rotation_euler = (0.0, 0.0, math.radians(spin))
+        je.keyframe_insert("location", frame=k)
+        ae.keyframe_insert("location", frame=k)
+        ae.keyframe_insert("rotation_euler", frame=k)
+
+
+def _outline(q, kind):
+    """금가루 한 조각의 2D 꼴(반지름 1): flake 찢긴 금박 다각형 · star 여섯 갈래 별(서리 결정) · snow 눈 조각."""
+    if kind == "star":
+        return [((1.0 if k % 2 == 0 else 0.40) * math.cos(math.pi * k / 6),
+                 (1.0 if k % 2 == 0 else 0.40) * math.sin(math.pi * k / 6)) for k in range(12)]
+    n = q.randint(5, 7) if kind == "flake" else 6
+    a0 = q.uniform(0, 2 * math.pi)
+    squash = q.uniform(0.45, 1.0) if kind == "flake" else 1.0
+    pts = []
+    for k in range(n):
+        a = a0 + 2 * math.pi * k / n + q.uniform(-0.25, 0.25)
+        r = q.uniform(0.55, 1.0) if kind == "flake" else q.uniform(0.8, 1.0)
+        pts.append((r * math.cos(a), r * math.sin(a) * squash))
+    return pts
+
+
+class Mote:
+    """금가루 · 눈 한 알. pose(t) → (자리, 돌림, 크기 0~1). cam=True면 자리가 카메라 공간(렌즈 앞)이다."""
+
+    def __init__(self, q, kind, size, pos, alive, cam=False, spin=None, soft=False):
+        self.kind, self.size, self.pos, self.alive, self.cam, self.soft = kind, size, pos, alive, cam, soft
+        self.outline = _outline(q, kind)
+        ax = Vector((q.uniform(-1, 1), q.uniform(-1, 1), q.uniform(-1, 1)))
+        self.axis = ax.normalized() if ax.length > 1e-6 else Vector((0, 0, 1))
+        self.a0 = q.uniform(0, 2 * math.pi)
+        self.spin = spin if spin is not None else q.uniform(4.0, 14.0) * (1 if q.random() < 0.5 else -1)
+        self.tilt = Matrix.Rotation(q.uniform(0, math.pi), 3, Vector((q.uniform(-1, 1), q.uniform(-1, 1), 1)).normalized())
+
+    def pose(self, t):
+        p, turn, s = self.pos(t), self.spin_at(t), self.alive(t)
+        return p, Matrix.Rotation(self.a0 + turn, 3, self.axis) @ self.tilt, s
+
+    def spin_at(self, t):
+        return self.spin * t
+
+
+def _kind(q, snow=0.12, star=0.18):
+    r = q.random()
+    return "snow" if r < snow else ("star" if r < snow + star else "flake")
+
+
+def _size(q, kind, k=1.0):
+    return k * {"flake": q.uniform(0.0008, 0.0022), "star": q.uniform(0.0016, 0.0030),
+                "snow": q.uniform(0.0006, 0.0014)}[kind]
+
+
+def motes_burst(t0, n=650, seed=401):
+    """뚜껑 앞이 들리는 순간 앞 틈에서 금가루 · 눈이 터져 화면 오른쪽 아래(앞 · +x)로 쏟아지고, 일부는 위로 피었다가
+    천천히 내려앉는다(공기 저항 + 약한 무게 — 바닥에 닿으면 멎는다). 원본 3.84–4.96초 「오른쪽 아래로 금가루」."""
+    out = []
+    for i in range(n):
+        q = random.Random(seed * 1000 + i)
+        tb = t0 + 0.50 * q.random() ** 1.7
+        p0 = Vector((q.uniform(-0.078, 0.078), -0.097 + q.uniform(-0.003, 0.003), 0.100 + q.uniform(0.0, 0.012)))
+        early = 1.0 - (tb - t0) / 0.50
+        v0 = Vector((q.uniform(-0.06, 0.34), -q.uniform(0.16, 0.48), q.uniform(0.06, 0.36) + 0.40 * early * q.random()))
+        kd, g = q.uniform(1.4, 3.0), q.uniform(0.16, 0.42)
+        sw = (q.uniform(0.003, 0.010), q.uniform(1.5, 3.5), q.uniform(0, 6.3))
+        kind = _kind(q, snow=0.08, star=0.20)
+        size = _size(q, kind, 1.5)
+
+        def pos(t, p0=p0, v0=v0, kd=kd, g=g, sw=sw, tb=tb, size=size):
+            tau = max(0.0, t - tb)
+            e = (1 - math.exp(-kd * tau)) / kd
+            gk = Vector((0.0, 0.0, -g / kd))
+            p = p0 + gk * tau + (v0 - gk) * e
+            ramp_in = 1 - math.exp(-2.0 * tau)
+            p.x += sw[0] * math.sin(sw[1] * tau + sw[2]) * ramp_in
+            p.y += sw[0] * math.cos(0.7 * sw[1] * tau + sw[2]) * ramp_in
+            p.z = max(p.z, 0.0004 + size * 0.3)
+            return p
+
+        m = Mote(q, kind, size, pos, lambda t, tb=tb: smooth(tb, tb + 0.06, t))
+        m.spin_at = lambda t, m=m, tb=tb: m.spin * (1 - math.exp(-0.8 * max(0.0, t - tb))) / 0.8  # 내려앉으며 멎는다
+        out.append(m)
+    return out
+
+
+def motes_sweep(t0, t1, n=900, seed=402):
+    """상자 위를 낮게 지나는 금가루(샷표 4절 ⑧): 왼쪽에서 오른쪽으로 물결치는 띠가 열린 상자 위 5 cm를 지나간다
+    (원본 5.0–7.0초 「바닥 위 금가루 사이를 지나감」의 자리)."""
+    out = []
+    for i in range(n):
+        q = random.Random(seed * 1000 + i)
+        s = q.random()
+        r = (0.016 + 0.050 * s) * math.sqrt(q.random())
+        th = q.uniform(0, 2 * math.pi)
+        ph = q.uniform(-0.4, 0.4)
+        kind = _kind(q, snow=0.06, star=0.22)
+        size = _size(q, kind, 2.0)
+
+        def pos(t, s=s, r=r, th=th, ph=ph):
+            x = -0.62 + 1.45 * (t - t0) / (t1 - t0) - 0.55 * s
+            y = -0.055 + 0.040 * math.sin(2 * math.pi * 1.3 * x + ph) + r * math.cos(th + 3 * t)
+            z = 0.145 + 0.028 * math.sin(2 * math.pi * 1.0 * x + 0.6) + r * math.sin(th + 3 * t) + 0.025 * s
+            return Vector((x, y, z))
+
+        def alive(t, pos=pos):
+            x = pos(t).x
+            return smooth(t0, t0 + 0.05, t) * (1 - smooth(t1 - 0.25, t1, t)) * smooth(-0.62, -0.50, x) * (1 - smooth(0.62, 0.75, x))
+
+        out.append(Mote(q, kind, size, pos, alive))
+    return out
+
+
+def motes_ambient(t0, t1, n=220, seed=403):
+    """제품이 떠오르는 동안 화면 구석구석 떠다니는 작은 금빛 별 · 눈(원본 「병이 소개되는 내내」). 제품 앞자리는 비운다."""
+    out = []
+    i = 0
+    while len(out) < n:
+        q = random.Random(seed * 1000 + i)
+        i += 1
+        base = Vector((q.uniform(-0.28, 0.28), q.uniform(-0.24, 0.30), q.uniform(0.03, 0.42)))
+        if abs(base.x) < 0.11 and -0.20 < base.y < 0.08 and 0.09 < base.z < 0.28:
+            continue
+        drift = Vector((q.uniform(-0.010, 0.010), q.uniform(-0.010, 0.010), -q.uniform(0.004, 0.012)))
+        sw = (q.uniform(0.002, 0.007), q.uniform(0.5, 1.4), q.uniform(0, 6.3))
+        kind = _kind(q, snow=0.30, star=0.40)
+        size = _size(q, kind, 1.2)
+
+        def pos(t, base=base, drift=drift, sw=sw):
+            return base + drift * (t - t0) + Vector((sw[0] * math.sin(sw[1] * t + sw[2]),
+                                                     sw[0] * math.cos(0.8 * sw[1] * t + sw[2]), 0.0))
+
+        out.append(Mote(q, kind, size, pos, lambda t: smooth(t0, t0 + 0.6, t) * (1 - smooth(t1 - 0.2, t1, t)),
+                        spin=q.uniform(0.6, 2.0)))
+    return out
+
+
+def motes_cover(t0, t1, n=170, seed=404):
+    """닫힘 머리: 렌즈 바로 앞(3.5~30 cm)을 덮은 금가루가 돌며 바깥으로 흩어져 걷힌다(원본 17초 판 12.0초 금가루 소용돌이).
+    자리는 카메라 공간 — 화면 비율(가로 · 세로 tan)에 맞춰 펼친다."""
+    out = []
+    for i in range(n):
+        q = random.Random(seed * 1000 + i)
+        depth = 0.035 + 0.265 * q.random() ** 1.5
+        nx, ny = q.uniform(-1.15, 1.15), q.uniform(-1.15, 1.15)
+        w = q.uniform(0.6, 1.6) * (1 if q.random() < 0.7 else -1)
+        kind = _kind(q, snow=0.05, star=0.30)
+        size = _size(q, kind, 2.2)
+
+        def pos(t, depth=depth, nx=nx, ny=ny, w=w):
+            x = (t - t0) / (t1 - t0)
+            grow = 1.0 + 2.4 * max(0.0, x) ** 2
+            a = w * (t - t0)
+            X = (nx * math.cos(a) - ny * math.sin(a)) * grow
+            Y = (nx * math.sin(a) + ny * math.cos(a)) * grow - 0.5 * x
+            return Vector((X, Y, depth))      # 화면 비율로 바꾸는 것은 gold_dust가 한다
+
+        out.append(Mote(q, kind, size, pos, lambda t: 1.0 - smooth(t1 - 0.15, t1, t), cam=True))
+    return out
+
+
+def motes_lens(t0, t1, n=8, seed=405):
+    """금가루 띠가 지나갈 때 렌즈 바로 앞을 가로지르는 큰 조각(원본 5.0–7.0초 「큰 조각이 렌즈 앞으로」)."""
+    out = []
+    for i in range(n):
+        q = random.Random(seed * 1000 + i)
+        depth = q.uniform(0.05, 0.14)
+        tc = q.uniform(t0 + 0.1, t1 - 0.3)
+        y0 = q.uniform(0.45, 0.95) * (1 if q.random() < 0.5 else -1)   # 화면 가운데(제품 자리)는 피한다
+        sp = q.uniform(1.2, 2.0)
+        kind = "star" if q.random() < 0.35 else "flake"
+        size = _size(q, kind, 3.0)
+
+        def pos(t, depth=depth, tc=tc, y0=y0, sp=sp):
+            return Vector(((t - tc) * sp, y0 + 0.25 * (t - tc), depth))
+
+        out.append(Mote(q, kind, size, pos, lambda t, tc=tc: smooth(tc - 0.9, tc - 0.8, t) * (1 - smooth(tc + 0.8, tc + 0.9, t)),
+                        cam=True, soft=True))
+    return out
+
+
+def mat_gold_dust(glow=1.6, tint=(1.0, 0.60, 0.20), rough=0.20):
+    """금가루: 금속 금 + 약한 제 빛(밤 장면에서 반사할 것이 없는 면도 금빛으로 읽히게)."""
+    m, n, l, out = new_mat(f"gold_dust_{glow}")
+    b = principled(n, base=(1.0, 0.70, 0.28), metal=1.0, rough=rough, emit=tint, emit_s=glow)
+    l.new(b.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def gold_dust(sts):
+    """금가루 · 눈을 메시 하나로: 지금 프레임 자리가 바탕, 앞 · 뒤 프레임 자리는 모양 열쇠(프레임 0 · 2) — 모션 블러로 번진다."""
+    ev = sts[1]["dust"]
+    t1 = sts[1]["t"]
+    motes = []
+    if "burst" in ev and t1 >= ev["burst"]:
+        motes += motes_burst(ev["burst"], n=650 if FILM == "15" else 520)
+    if "sweep" in ev and ev["sweep"][0] <= t1 <= ev["sweep"][1]:
+        motes += motes_sweep(*ev["sweep"]) + motes_lens(*ev["sweep"])
+    if "ambient" in ev and ev["ambient"][0] <= t1 <= ev["ambient"][1]:
+        motes += motes_ambient(*ev["ambient"])
+    if "cover" in ev and ev["cover"][0] <= t1 <= ev["cover"][1]:
+        motes += motes_cover(*ev["cover"])
+    if not motes:
+        return None
+    cams = [cam_matrix(s["cam"]) for s in sts]
+    tans = [cam_tan(s["cam"]) for s in sts]
+    keep = [m for m in motes if any(m.alive(s["t"]) > 0.001 for s in sts)]
+    if not keep:
+        return None
+    coords = [[], [], []]
+    faces, mats = [], []
+    for m in keep:
+        base = len(coords[0])
+        for k, s in enumerate(sts):
+            p, rot, sc = m.pose(s["t"])
+            if m.cam:
+                tx, ty = tans[k]
+                p = cams[k] @ Vector((p.x * p.z * tx, p.y * p.z * ty, -p.z))
+            r = m.size * max(sc, 0.0)
+            for (ox, oy) in m.outline:
+                coords[k].append(p + rot @ Vector((ox * r, oy * r, 0.0)))
+        faces.append(list(range(base, base + len(m.outline))))
+        mats.append(1 if m.kind == "snow" else (2 if m.soft else 0))
+    me = bpy.data.meshes.new("금가루")
+    me.from_pydata([tuple(v) for v in coords[1]], [], faces)
+    me.materials.append(mat_gold_dust())
+    me.materials.append(mat_simple("snow_fleck", base=(0.96, 0.97, 1.0), rough=0.35, emit=(0.85, 0.90, 1.0), emit_s=0.35))
+    # 렌즈 바로 앞 큰 조각: 화면 반을 덮는 보케라 제 빛을 줄이고 더 짙은 금으로. 거칠기 0.6 — 0.2에서는 구르다 키 빛의
+    # 거울 각에 닿는 한 프레임만 면광을 통째로 비춰 보케 원판이 순백으로 번쩍였다(Fable 움직임 2차 P2-1)
+    me.materials.append(mat_gold_dust(0.6, (1.0, 0.55, 0.16), rough=0.6))
+    me.polygons.foreach_set("material_index", mats)
+    ob = link(bpy.data.objects.new("금가루", me))
+    ob.shape_key_add(name="Basis")
+    for name, k, keys in (("앞", 0, ((0, 1.0), (1, 0.0))), ("뒤", 2, ((1, 0.0), (2, 1.0)))):
+        kb = ob.shape_key_add(name=name, from_mix=False)
+        kb.data.foreach_set("co", [c for v in coords[k] for c in v])
+        for fr, val in keys:
+            kb.value = val
+            kb.keyframe_insert("value", frame=fr)
+    for attr in ("use_motion_blur", "use_deform_motion"):
+        try:
+            setattr(ob.cycles, attr, True)
+        except Exception:
+            pass
+    return ob
+
+
+def parse_frames(s, n):
+    if not s:
+        return list(range(n))
+    out = []
+    for part in s.split(","):
+        if "-" in part:
+            a, b = part.split("-")
+            out += list(range(int(a), int(b) + 1))
+        else:
+            out.append(int(part))
+    return out
+
+
+def film_main():
+    """움직임표.py의 컷대로 프레임을 하나씩 짓고 굽는다(블렌더 한 번에 여러 프레임, 있는 프레임은 건너뜀)."""
+    global SHOT, RISE, RISE_J, RISE_A, SPIN_A, BOB_J, BOB_A, LID_OUT, T, SAMPLES
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import 움직임표 as M
+    orient = "v" if RES[1] > RES[0] else "h"
+    d = arg("--out", os.path.join(밖, "움직임", f"{FILM}초_{'세로' if orient == 'v' else '가로'}"))
+    os.makedirs(d, exist_ok=True)
+    still = M.STILL_FROM[FILM]
+    for f in parse_frames(FRAMES, M.LEN[FILM]):
+        out = os.path.join(d, f"{f:04d}.png")
+        st = M.state(FILM, orient, f)
+        if st["scene"] == "black" or (still is not None and f > still) or (os.path.exists(out) and "--force" not in argv):
+            continue
+        sts = [M.state(FILM, orient, f, -1.0 / M.FPS), st, M.state(FILM, orient, f, 1.0 / M.FPS)]
+        SHOT, LID_OUT, T = st["scene"], st["lid_out"], st["t"]
+        set_u(st["u"])
+        RISE_J, RISE_A, SPIN_A, BOB_J, BOB_A = st["rise_j"], st["rise_a"], st["spin_a"], st["bob_j"], st["bob_a"]
+        RISE = max(RISE_J, RISE_A)
+        if "--samples" not in argv:
+            SAMPLES = st["samples"]
+        build()
+        sc = bpy.context.scene
+        bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"
+        sc.render.fps = M.FPS
+        sc.frame_start, sc.frame_end = 0, 2
+        camera_motion([s["cam"] for s in sts])
+        product_motion(sts)
+        gold_dust(sts)
+        sc.render.use_motion_blur = True
+        sc.render.motion_blur_shutter = st["shutter"]
+        sc.frame_set(1)
+        render_to(out)
+        print("RENDERED", out, f"u={st['u']:.3f} t={st['t']:.3f}")
+
+
 def main():
     global RISE
+    if FILM:
+        film_main()
+        return
+    if CAM:
+        # 한 장 시험 카메라: az,el,d,x,y,z,lens[,f] — ⑦ 높이 시험 · 장면 스틸
+        v = [float(x) for x in CAM.split(",")]
+        build()
+        c = dict(az=v[0], el=v[1], d=v[2], tgt=(v[3], v[4], v[5]), lens=v[6], f=v[7] if len(v) > 7 else 5.6, roll=0.0)
+        loc, _ = cam_pose(c)
+        camera(tuple(loc), c["tgt"], lens=c["lens"], fstop=c["f"], focus=c["d"])
+        os.makedirs(os.path.dirname(OUT), exist_ok=True)
+        render_to(OUT)
+        print("RENDERED", OUT)
+        return
     if SEQ:
         # 3판: 0~1 리본 · 뚜껑, 1~1.25 제품이 떠오름(원본 1위의 「병이 하나씩 날아오름」) — 마지막 20 %가 떠오름
         d = os.path.join(밖, "움직임", f"{SHOT}_{LOOK}")
