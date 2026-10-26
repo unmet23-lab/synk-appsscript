@@ -35,9 +35,8 @@ def screens(img):
         r = cv2.minAreaRect(c)
         if a / max(r[1][0] * r[1][1], 1) < 0.8:
             continue
-        q = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-        quad = q.reshape(-1, 2) if len(q) == 4 else cv2.boxPoints(r)
-        out.append((a, order(np.float32(quad))))
+        # 폰 화면은 모서리가 둥글어 꼭짓점 넷으로 줄이면 안쪽으로 깎인다(C16b 첫 합성에 초록 띠가 남음) — 초록 전체를 감싸는 돌린 사각형을 쓴다
+        out.append((a, order(np.float32(cv2.boxPoints(r)))))
     return [q for _, q in sorted(out, key=lambda x: -x[0])[:2]], m
 
 

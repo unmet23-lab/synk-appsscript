@@ -101,7 +101,7 @@ def cell(row):
     d.text((8, TH + 10), f"{cid[1:]}  {sec.replace(chr(8211), "~")}초  ·  {place}", font=f("ExtraBold", 26), fill=GOLD)
     y = TH + 50
     line = ""
-    for ch in what:
+    for ch in what.replace("—", "·"):  # SUIT에 「—」 글리프가 없어 빈칸으로 찍힌다
         if d.textlength(line + ch, font=f("Medium", 23)) > W - 16:
             d.text((8, y), line, font=f("Medium", 23), fill=INK); y += 30; line = ch
         else:
