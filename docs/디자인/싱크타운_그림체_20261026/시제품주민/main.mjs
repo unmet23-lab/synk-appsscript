@@ -5,6 +5,7 @@
 import * as THREE from '../../../../experiences/synk-world-home/scene-assets/three.module.js';
 import { createMongleAvatar } from '../../../../experiences/synk-world-home/avatar-v3.mjs';
 import { makeTownResident } from '../../../../experiences/synk-town/day-residents.mjs';
+import { loadBlenderResident } from './blender-residents.mjs';
 import OCCLUDERS from './occluders.json';
 
 const ELEV = 22 * Math.PI / 180, BASE_Y = 697;
@@ -154,15 +155,23 @@ function propHolder(content, at, unitPx, base, { shadow = false, feet = [] } = {
 
 // ── build the cast ──
 let owner, shopOwner, researcher, grandma, mongle, gardenTable, tray, served = null, weather = 'day', busy = false;
+// The Blender residents (modelled by 아르곤, baked by Claude) are the default; `?판=코드` shows the code-turned ones for comparison.
+const CODE_CAST = new URLSearchParams(location.search).get('판') === '코드';
+{ const t = document.getElementById('cast-toggle'); if (t) { t.href = CODE_CAST ? '?판=블렌더' : '?판=코드'; t.textContent = CODE_CAST ? '블렌더 판으로 보기' : '코드 판으로 보기'; } }
+async function resident(shared, id, form) {
+  const body = new THREE.Group();
+  if (!CODE_CAST) try { const r = await loadBlenderResident(`residents-glb/${form}.json`, form, { mobile: phone }); body.add(r.body); return { body, r }; } catch (error) { console.warn('blender resident', form, error); }
+  return { body, r: makeTownResident(body, shared, { id, mobile: phone, felt: 'diorama' }) };
+}
 async function build() {
   const shared = {};
-  const ownerBody = new THREE.Group(); const o = makeTownResident(ownerBody, shared, { id: 'cafe-owner', mobile: phone, felt: 'diorama' });
+  const { body: ownerBody, r: o } = await resident(shared, 'cafe-owner', 'bun');
   owner = makeCharacter({ name: 'owner', content: ownerBody, height: 122, refY: 600, at: COUNTER, yaw: OWNER_WORK_YAW, update: (now, dt, c) => o.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, ...c.pose }) });
   owner.label = '찻집 주인'; owner.height = k => o.height * k * 1.05; owner.carry = { at: .36, out: .6 };
-  const shopBody = new THREE.Group(); const s = makeTownResident(shopBody, shared, { id: 'workshop-owner', mobile: phone, felt: 'diorama' });
+  const { body: shopBody, r: s } = await resident(shared, 'workshop-owner', 'bean');
   shopOwner = makeCharacter({ name: 'shop', content: shopBody, height: 148, refY: 600, at: WORKBENCH, yaw: 2.45, update: (now, dt, c) => s.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, working: true, ...c.pose }) });
   shopOwner.label = '공방 주인'; shopOwner.height = k => s.height * k * 1.05;
-  const granBody = new THREE.Group(); const g = makeTownResident(granBody, shared, { id: 'grandmother', mobile: phone, felt: 'diorama' });
+  const { body: granBody, r: g } = await resident(shared, 'grandmother', 'ricecake');
   grandma = makeCharacter({ name: 'grandma', content: granBody, height: 96, refY: 600, at: BENCH, yaw: .3, seatBase: BENCH.base, update: (now, dt, c) => g.update({ now, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, seated: c.seated, working: c.seated, ...c.pose }) });
   grandma.label = '할머니'; grandma.height = k => g.height * k * 1.05; grandma.seated = true; grandma.lift = BENCH.lift; grandma.speed = 70;
   const resBody = new THREE.Group(); const r = makeTownResident(resBody, shared, { id: 'researcher', mobile: phone, felt: 'diorama' });

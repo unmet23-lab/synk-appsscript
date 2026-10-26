@@ -610,7 +610,18 @@ function makeFeltCreature(parent, shared, c, mobile) {
   return { body, update, head: rig, headHeight: ey * WORLD_SCALE, height: standingHeight(body), identity: body.userData.residentIdentity };
 }
 
-function dioramaFelt(body, mobile, seed) {
+// A baked model keeps its colour in a texture: read it once, small, so a fibre takes the colour under it.
+function texelReader(texture) {
+  const image = texture?.image; if (!image || typeof document === 'undefined') return null;
+  const size = 128, canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
+  const context = canvas.getContext('2d', { willReadFrequently: true }); context.drawImage(image, 0, 0, size, size);
+  const data = context.getImageData(0, 0, size, size).data, flip = texture.flipY;
+  return (u, v, out) => {
+    const x = Math.min(size - 1, Math.max(0, Math.floor((u % 1 + 1) % 1 * size))), y = Math.min(size - 1, Math.max(0, Math.floor((flip ? 1 - v : v) % 1 * size))), i = (y * size + x) * 4;
+    return out.setRGB(data[i] / 255, data[i + 1] / 255, data[i + 2] / 255, THREE.SRGBColorSpace);
+  };
+}
+function dioramaFelt(body, mobile, seed, unit = 1, ownMesh = false) {
   // Runs after the height is measured, so the fibres never change the contract.
   // Fibres are batched per cloth mesh and parented to it, so a halo bends with
   // its own limb; their colour stays below the cloth value, never white confetti.
@@ -624,13 +635,13 @@ function dioramaFelt(body, mobile, seed) {
     if (!o.isMesh || !o.material?.isMeshPhysicalMaterial || !o.material.normalMap) return;
     o.material.vertexColors = true; if (mottled.has(o.geometry)) return; mottled.add(o.geometry);
     toBody.multiplyMatrices(inverse, o.matrixWorld);
-    const position = o.geometry.attributes.position, colours = new Float32Array(position.count * 3), k = 14 * Math.cbrt(Math.abs(toBody.determinant()));
+    const position = o.geometry.attributes.position, colours = new Float32Array(position.count * 3), k = 14 * Math.cbrt(Math.abs(toBody.determinant())) / unit;
     for (let i = 0; i < position.count; i++) {
       const x = position.getX(i) * k, y = position.getY(i) * k, z = position.getZ(i) * k;
       const v = Math.sin(x * 1.3 + Math.sin(y * 1.7 + z * .6) + seed) * Math.sin(y * 1.1 - z * 1.5 + 1.7) + .5 * Math.sin(z * 2.3 + x * 2.9 - y * .8);
       // Felt standing on felt gathers shade toward the floor; without it a doll
       // lit evenly to its soles reads as pasted above the photograph.
-      const ground = THREE.MathUtils.smoothstep(a.fromBufferAttribute(position, i).applyMatrix4(toBody).y, 0, DIORAMA.groundShade);
+      const ground = THREE.MathUtils.smoothstep(a.fromBufferAttribute(position, i).applyMatrix4(toBody).y, 0, DIORAMA.groundShade * unit);
       colours.fill((.95 + .065 * v) * (.66 + .34 * ground), i * 3, i * 3 + 3);
     }
     o.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3));
@@ -655,10 +666,13 @@ function dioramaFelt(body, mobile, seed) {
   for (const { o, weight, areas, area, linear: m3 } of cloths) {
     const count = Math.round(budget * area * weight / Math.max(1e-6, total)); if (count < DIORAMA.minFibres) continue;
     const position = o.geometry.attributes.position, normal = o.geometry.attributes.normal, index = o.geometry.index;
+    const texel = o.material.userData.haloFromMap ? texelReader(o.material.map) : null, uvs = o.geometry.attributes.uv;
     // Every animated part here is a group, and a mesh keeps its build-time place
     // in it, so the halos of one group share a single line batch in its space.
-    if (!halos.has(o.parent)) halos.set(o.parent, { vertices: [], colours: [] });
-    const { vertices, colours } = halos.get(o.parent), base = o.material.color;
+    // A model whose meshes themselves move (a GLB) keeps each halo on its own mesh.
+    const owner = ownMesh ? o : o.parent;
+    if (!halos.has(owner)) halos.set(owner, { vertices: [], colours: [] });
+    const { vertices, colours } = halos.get(owner), base = o.material.color;
     for (let f = 0; f < count; f++) {
       const target = random() * area; let lo = 0, hi = areas.length - 1;
       while (lo < hi) { const mid = (lo + hi) >> 1; if (areas[mid] < target) lo = mid + 1; else hi = mid; }
@@ -668,14 +682,15 @@ function dioramaFelt(body, mobile, seed) {
       n.fromBufferAttribute(normal, i).multiplyScalar(1 - u - v).addScaledVector(a.fromBufferAttribute(normal, j), u).addScaledVector(b.fromBufferAttribute(normal, k), v).normalize();
       // Lengths are body units (a resident is about two tall); divide by the
       // mesh's own stretch along the normal so a scaled sphere hand gets the same fibre.
-      const stretch = Math.max(1e-4, d.copy(n).applyMatrix3(m3).length()), length = (.007 + random() * .015) / stretch, bend = (random() - .5) * .9;
+      const stretch = Math.max(1e-4, d.copy(n).applyMatrix3(m3).length()), length = (.007 + random() * .015) * unit / stretch, bend = (random() - .5) * .9;
       tangent.set(random() - .5, random() - .5, random() - .5).cross(n).normalize();
-      const start = p.clone().addScaledVector(n, .002 / stretch), middle = start.clone().addScaledVector(n, length * .55).addScaledVector(tangent, length * bend * .5), end = start.clone().addScaledVector(n, length).addScaledVector(tangent, length * bend);
-      for (const v of [start, middle, end]) v.applyMatrix4(o.matrix);
+      const start = p.clone().addScaledVector(n, .002 * unit / stretch), middle = start.clone().addScaledVector(n, length * .55).addScaledVector(tangent, length * bend * .5), end = start.clone().addScaledVector(n, length).addScaledVector(tangent, length * bend);
+      if (!ownMesh) for (const v of [start, middle, end]) v.applyMatrix4(o.matrix);
       vertices.push(...start.toArray(), ...middle.toArray(), ...middle.toArray(), ...end.toArray());
       // Unlit ends read brighter than the shaded cloth, so they sit at its shaded
       // value; only hair and wool get a few loose fibres catching the light.
-      colour.copy(base).multiplyScalar(.56 + random() * .2); if (weight > 1 && random() < .3) colour.lerp(o.material.sheenColor, .12 + random() * .12);
+      if (texel && uvs) texel(uvs.getX(i) * (1 - u - v) + uvs.getX(j) * u + uvs.getX(k) * v, uvs.getY(i) * (1 - u - v) + uvs.getY(j) * u + uvs.getY(k) * v, colour).multiply(base); else colour.copy(base);
+      colour.multiplyScalar(.56 + random() * .2); if (weight > 1 && random() < .3) colour.lerp(o.material.sheenColor, .12 + random() * .12);
       for (let q = 0; q < 4; q++) colours.push(colour.r, colour.g, colour.b);
     }
   }
@@ -693,6 +708,11 @@ function dioramaFelt(body, mobile, seed) {
     o.instanceMatrix.needsUpdate = true;
   });
 }
+
+// The same felt finish for a resident modelled elsewhere (a Blender GLB): `unit` is how many of its
+// units match one rig unit of the code cast, so mottling, floor shade and fibres keep their size;
+// `ownMesh` hangs each halo on its own mesh when the meshes themselves are what moves.
+export function feltFinish(root, { mobile = false, seed = 211, unit = 1, ownMesh = false } = {}) { dioramaFelt(root, mobile, seed, unit, ownMesh); }
 
 export function makeTownResident(parent, materials, { id, mobile = false, felt } = {}) {
   if (felt !== undefined && felt !== 'diorama') throw new Error(`Unknown resident felt: ${String(felt)}`);

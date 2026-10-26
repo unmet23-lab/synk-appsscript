@@ -19,6 +19,7 @@ body { margin: 0; background: linear-gradient(180deg, var(--sky) 0%, var(--sky-l
 .pill { display: inline-flex; align-items: center; gap: 10px; background: var(--glass); border: 1px solid var(--glass-line); border-radius: 999px; padding: 8px 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--paper); font: inherit; }
 .pill b { font-weight: 800; letter-spacing: -.01em; }
 .pill small { font-size: 12px; color: var(--muted); }
+a.pill { text-decoration: none; font-size: 13px; }
 button.pill { cursor: pointer; font-weight: 700; }
 button.pill:focus-visible, .closet button:focus-visible, .closet input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 .tag { font-size: 11px; font-weight: 700; letter-spacing: .06em; background: var(--coral); color: #fff; border-radius: 999px; padding: 3px 8px; }
@@ -66,6 +67,7 @@ canvas.rain { position: absolute; left: 0; top: 0; width: 1536px; height: 1024px
 <div class="app">
   <div class="bar">
     <span class="pill"><b>싱크타운</b><small>찻집 골목</small><span class="tag">3D 주민 시험</span></span>
+    <a class="pill" id="cast-toggle" href="?판=코드">코드 판으로 보기</a>
     <span class="pill" id="state" aria-live="polite">주민 준비 중</span>
   </div>
   <div class="wrap" id="wrap">
