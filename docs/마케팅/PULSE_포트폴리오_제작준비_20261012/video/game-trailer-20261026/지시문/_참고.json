@@ -1,4 +1,7 @@
 {
+ "T0_동네빈판": [
+  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/펠트동네_우리동네.jpg"
+ ],
  "S02a": [
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/배치/S02_배치.jpg",
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/받음/R0.png"
@@ -78,7 +81,8 @@
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/배치/S13_배치.jpg",
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/받음/R0.png",
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/펠트동네_우리동네.jpg",
-  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/정본_세친구.jpg"
+  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/정본_세친구.jpg",
+  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/주민넷_떡빵콩.jpg"
  ],
  "S14": [
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/배치/S14_배치.jpg",
@@ -86,8 +90,5 @@
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/펠트동네_우리동네.jpg",
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/정본_세친구.jpg",
   "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/펠트동네_찻집골목.jpg"
- ],
- "T0_동네빈판": [
-  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p9/참고/펠트동네_우리동네.jpg"
  ]
 }

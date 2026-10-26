@@ -86,7 +86,7 @@ The camera lies on the floor and points steeply UP at the tree (about 35 degrees
 """),
     "S13": dict(layout="S13", friends=True, body="""
 THIS SHOT (2.7 seconds, top-down, looking straight down at the floor)
-Seen from above: the wooden floor between the wrapped gift boxes (corners of boxes at the edges of the frame) has turned into green felt grass with a path of round grey felt stepping stones. On the stones nine small felt characters stand in a loose line looking up at the camera: KKAMONG, MONGLE, MARIN, the PROFESSOR (lavender egg with round glasses and white moustache), the TEA-HOUSE OWNER (dark hair, sage apron), and four more little felt townspeople in soft colours. A warm pink light washes over the scene from the right.
+Seen from above: the wooden floor between the wrapped gift boxes (corners of boxes at the edges of the frame) has turned into green felt grass with a path of round grey felt stepping stones. On the stones nine small felt characters stand in a loose group looking up at the camera: KKAMONG, MONGLE, MARIN, and six townsfolk. The townsfolk are NOT people — they are soft needle-felted creatures shaped like rice cakes, buns and beans, each one big felt body with black bead eyes, a single stitched seam and one object it always carries, exactly like reference 5: the TEA-HOUSE OWNER (a pleated steamed bun with a sage apron and a small teapot), the GRANDMOTHER (a round rice cake with a little top-knot, a pink knitted shawl and knitting needles), the RESEARCHER (a tall lavender egg with round black glasses and a white felt moustache), the CRAFTSMAN (a tall, slightly bent navy bean with a navy work apron and a small wooden mallet), and two more small round bun-shaped townsfolk in soft cream and pale green with no accessories, standing a little behind. No human-shaped dolls, no hair, no clothes on bodies except the aprons and shawl. A warm pink light washes over the scene from the right.
 """),
     "S14": dict(layout="S14", friends=True, extra_felt=True, body="""
 THIS SHOT (2.8 seconds, the title shot — the same high wide camera as reference 2)
@@ -97,7 +97,9 @@ Exactly the room and the camera of reference 2, but the whole room has now becom
 if __name__ == "__main__":
     out = HERE / "지시문"
     out.mkdir(exist_ok=True)
-    refs = {}
+    old = out / "_참고.json"
+    # T0_동네빈판처럼 지시문을 손으로 쓴 판의 참고 줄은 그대로 둔다
+    refs = {k: v for k, v in (json.loads(old.read_text(encoding="utf-8")) if old.exists() else {}).items() if k not in SHOTS}
     for name, s in SHOTS.items():
         text = HEAD + (FRIENDS if s["friends"] else "") + s["body"]
         r = [f"{V}/배치/{s['layout']}_배치.jpg", f"{V}/받음/R0.png"]
@@ -105,6 +107,8 @@ if __name__ == "__main__":
             r += [f"{V}/참고/펠트동네_우리동네.jpg", f"{V}/참고/정본_세친구.jpg"]
         if name in ("S05", "S14"):
             r.append(f"{V}/참고/펠트동네_찻집골목.jpg")  # S14는 참고 5, S05는 친구 참고가 없어 참고 3
+        if name == "S13":
+            r.append(f"{V}/참고/주민넷_떡빵콩.jpg")  # 참고 5 — 10-26 주민 몸꼴 결정(떡 · 빵 + 공방 주인 키 큰 콩) 시안에서 넷만 자른 판
         if name == "S05":
             text = text.replace("exactly like reference 5", "exactly like reference 3")
         (out / f"{name}.txt").write_text(text + TAIL, encoding="utf-8")
