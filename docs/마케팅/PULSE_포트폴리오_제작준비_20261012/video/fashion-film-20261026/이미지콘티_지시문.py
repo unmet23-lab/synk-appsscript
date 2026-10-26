@@ -85,7 +85,7 @@ J["O4"] = {"refs": FACE[:0], "prompt": " ".join([
 # ── 컷별(01_샷표 · 02_콘티의 번호). 크기 · 카메라는 원본 그대로 — 방향은 카메라가 가는 쪽.
 J["C02"] = thing("C02", "An extreme close-up of the ivory wool gabardine of the trench coat: the fine diagonal twill weave fills the whole frame, a few fibres catching the light.",
                  "Dim, low raking side light from the left so the weave shows as fine ridges; the rest falls to deep shadow; warm brown-ivory tones.",
-                 "Macro lens, perfectly still, flat to the fabric.", layout=False)
+                 "Macro lens flat to the fabric; the first frame of a very slow push in (about 2.6% over 1.5 seconds).", layout=False)
 J["C03"] = thing("C03", "The trench coat's fabric-covered belt buckle stands alone in the middle of the frame, upright on a strip of the self-fabric belt, small in the frame with grey space around it.",
                  f"{STUDIO}, soft side light.", "Still camera, eye level with the object.")
 J["C04"] = thing("C04", "An extreme close-up of one dark-brown horn button sewn on the ivory gabardine — the cross stitches of thread visible, the button filling most of the frame.",
@@ -95,62 +95,62 @@ J["C05"] = place("C05", f"A wide view of {FIELD}; the grass fills the lower thir
 J["C06"] = thing("C06", "The side of the small brown leather shoulder bag, close: the grain of the leather and a neat line of saddle stitching run diagonally up through the frame.",
                  "Against a dark warm-grey backdrop, soft light from the left so the stitching catches light.", "Close-up, still.")
 J["C07"] = place("C07", f"Night. In the yard of {HANOK}, a large old persimmon tree stands as a black silhouette; warm orange light shines up from the ground behind and below it, glowing through the bare branches.",
-                 "Deep night, the only light is the low warm orange glow; everything else near black.", "Wide, still camera at standing eye level, almost imperceptible push in.")
+                 "Deep night, the only light is the low warm orange glow; everything else near black.", "Wide, camera at standing eye level, the first frame of an almost imperceptible push in (about 1.6%).")
 J["C08"] = person("C08", f"Night. The woman stands small and full-length in the dark doorway of a crumbling clay wall of {HANOK}, framed by the ruined opening, facing the camera.",
-                  "Dim deep-red light washes the clay walls; she is barely lit, half in darkness, as if just emerging from the dark.", "Wide shot, still camera, eye level.")
+                  "Dim deep-red light washes the clay walls; she is barely lit, half in darkness, as if just emerging from the dark.", "Wide shot at eye level, the first frame of a slow tilt down of about 3% of the frame.")
 J["C09"] = thing("C09", "One of her brown leather ankle boots stands alone in the middle of the frame, seen from the side at its own height: the smooth leather, almond toe and low block heel.",
                  "A plain beige paper backdrop, soft light.", "Close-up, still, a very slight push in.")
 J["C11"] = person("C11", "An extreme close-up of her face filling the frame: the face fills about two-thirds of the frame height, the top of her head cut off by the top edge; her head tilts to her left and her eyes look down, lids lowered; the edge of the ivory trench collar just shows at the bottom edge.",
-                  "Warm skin-toned soft side light from the left; dark grey background.", "Macro-close, the camera drifts slightly left and tilts about 6 degrees.")
+                  "Warm skin-toned soft side light from the left; dark grey background.", "Macro-close; over the shot the camera drifts about 2% left while her head tilts about 4 degrees and rises slightly.")
 J["C12"] = person("C12", "In the studio, her tilted head and shoulders in the ivory trench collar over the cream knit; her eyes are closed. A piece of glass held in front of the lens makes a second, soft, slightly offset reflection of her face float beside her.",
                   f"{STUDIO}, soft grey light.", "Chest-up, still; the doubled reflection comes from the glass, not from a second person.")
 J["C13"] = person("C13", "In the studio, she stands full-length with her arms folded, the whole belted trench outfit sharp and clear, boots planted.",
                   f"{STUDIO}, soft even light.", "Full shot, still camera, eye level.")
 J["C14"] = person("C14", "In the studio, waist-up, her figure softly blurred and doubled by a piece of glass in front of the lens, so two faint overlapping images of her drift across each other.",
-                  f"{STUDIO}, soft grey light.", "Waist-up, still; one woman, doubled only by the glass.")
+                  f"{STUDIO}, soft grey light.", "Waist-up, the camera pushing in very slightly; one woman, doubled only by the glass.")
 J["C15"] = person("C15", "The same extreme close-up of her face as before: head tilted, eyes lowered; the face fills about two-thirds of the frame height, the top of the head cut off by the top edge; the ivory collar at the bottom edge.",
-                  "Warm skin-toned soft side light from the left; dark grey background.", "Macro-close; the camera pulls back about 7% and drifts left.")
+                  "Warm skin-toned soft side light from the left; dark grey background.", "Macro-close; the first frame of a shot where the camera pulls back about 4% while drifting about 5% left and 4% up.")
 J["C16"] = thing("C16", "An extreme close-up of the cream fine-knit sweater: individual loops of yarn and a few soft fibres fill the frame.",
-                 "Lit with a warm pinkish-red light from the side, glowing.", "Macro, the camera tilts slowly down.")
+                 "Lit with a warm pinkish-red light from the side, glowing.", "Macro; the first frame of a shot where the camera tilts down about 9% of the frame while pushing in 2%.")
 J["C17"] = person("C17", f"In {FIELD}, she is seen from waist up against a clear deep-blue sky, shot from below; the wind blows her hair and the lapels and collar of the ivory trench; her eyes are closed.",
                   "Bright clear afternoon, sun from behind and to the side, the sky saturated blue.", "Low angle from below, waist-up, camera almost still.")
 J["C18"] = place("C18", f"An extreme close, soft-focus view of pampas-grass seeds and fine dust drifting through the air above {FIELD}.",
                  "Strong golden backlight, everything glowing amber and out of focus.", "Close, still.")
 J["C19"] = thing("C19", "The small brown leather shoulder bag seen from directly above, lying on grey paper: the flap, the brass turn-lock and the stitching, the bag filling the middle of the frame.",
-                 f"{STUDIO}, soft even light.", "Top-down close-up, still.")
+                 f"{STUDIO}, soft even light.", "Top-down close-up; the first frame of a shot that pushes in about 4.5% while drifting up about 3%.")
 J["C20"] = person("C20", "In the studio, chest-up in the ivory trench collar over the cream knit; a piece of glass in front of the lens splits her face into two soft overlapping images that drift apart.",
-                  f"{STUDIO}, soft grey light.", "Chest-up, still camera; only the glass moves; one woman.")
+                  f"{STUDIO}, soft grey light.", "Chest-up, camera nearly still; only the glass moves, its soft second image sliding in toward the lower right; one woman.")
 J["C21"] = person("C21", f"In {FIELD}, she walks toward the right; the frame starts low on her boots, the wide cream trousers and the swinging hem of the ivory trench, the sun low behind her with a lens flare.",
-                  "Late-afternoon backlight, rim light on the coat, warm haze.", "Very low angle from the ground, walking alongside her.")
+                  "Late-afternoon backlight, rim light on the coat, warm haze.", "Very low angle from the ground, walking alongside her; from here the camera rises about 30% of the frame height and moves about 11% closer, ending on her full figure.")
 J["C21e"] = person("C21e", f"In {FIELD}, she walks to the right, now seen full-length from head to boots, the trench hem swinging, the sun low behind her with a lens flare.",
                    "Late-afternoon backlight, rim light on the coat, warm haze.", "Low angle, full shot, the camera has risen while walking alongside her.",
                    extra="This is the end frame of the same shot that began on her boots.")
 J["C22"] = person("C22", f"Inside {HANOK}, she stands full-length beside an empty window frame in the crumbling clay wall; bright sun pours through the window behind her.",
-                  "Strong daylight through the window, the room dim, warm dust in the air, she is rim-lit.", "Full shot, the camera drifts left and down and tilts about 5 degrees.")
+                  "Strong daylight through the window, the room dim, warm dust in the air, she is rim-lit.", "Full shot; the first frame of a shot where the camera pulls back about 4% while drifting about 8% left and 7% down, rolling about 1.5 degrees.")
 J["C23"] = person("C23", "In the studio, a close shot from her lips down to her shoulders: her hand rests on the neckline of the cream knit and the ivory trench collar; her face above the lips is cut off by the top edge.",
                   "Soft peach-coloured light.", "Chest-up crop, still.", extra="Do not show her eyes or nose.")
 J["C24"] = person("C24", "In the studio, waist-up, one hand on her waist over the tied trench belt, eyes closed, chin raised; a sheet of glass in front of the lens throws a soft second image across the left of the frame.",
-                  f"{STUDIO}, soft grey light.", "Waist-up; the glass turns about 15 degrees; one woman.")
+                  f"{STUDIO}, soft grey light.", "Waist-up; the camera pushes in about 2% while the blurred reflection in the glass turns about 7 degrees and slides off to the left; one woman.")
 J["C25"] = person("C25", f"Night. She stands in medium shot against the crumbling clay wall of {HANOK}; her single long shadow falls on the wall beside her.",
-                  "Deep red light from below, most of the frame in darkness.", "Medium shot, the camera tilts down slowly.", extra="Only one person; the second shape on the wall is her shadow.")
+                  "Deep red light from below, most of the frame in darkness.", "Medium shot; the first frame of a shot where the camera tilts down about 7% and rolls about 3 degrees counter-clockwise.", extra="Only one person; the second shape on the wall is her shadow.")
 J["C26"] = person("C26", f"Inside {HANOK}, she stands as a dark silhouette in front of the bright empty window frame, both arms raised above her head, the long trench outline clear.",
-                  "Strong white daylight through the window, everything else dark; she is a pure silhouette.", "Full shot, the camera drifts right a little.")
+                  "Strong white daylight through the window, everything else dark; she is a pure silhouette.", "Full shot; the first frame of a shot where the camera drifts about 4.5% right and 3% down.")
 J["C27"] = thing("C27", "Her brown leather ankle boot steps onto a dry dirt path in the yard, the hem of the wide cream trousers just above it.",
-                 "Warm daylight, low angle shadows.", "Ground-level close-up; the camera pulls back a little and tilts about 6 degrees.", extra="Show only the boot, the trouser hem and the ground.")
+                 "Warm daylight, low angle shadows.", "Ground-level close-up; the first frame of a shot where the camera pushes in about 4% and drifts slightly left as the boot steps forward.", extra="Show only the boot, the trouser hem and the ground.")
 J["C28"] = person("C28", "In the studio, from the neck down to the hips: she holds the small brown leather shoulder bag in front of her waist with both hands, the belted ivory trench and cream knit behind it.",
-                  f"{STUDIO}, soft even light.", "Waist-up crop, the camera pushes in slightly.", extra="Her face is above the top edge and not visible.")
+                  f"{STUDIO}, soft even light.", "Waist-up crop; the first frame of a shot that pushes in about 6.5%.", extra="Her face is above the top edge and not visible.")
 J["C29"] = thing("C29", "An extreme close-up of the plain ivory satin lining inside the trench coat: soft folds catch the light.",
-                 "Warm side light.", "Macro, the camera pushes in slowly.")
+                 "Warm side light.", "Macro; the first frame of a push in of about 12% in under a second.")
 J["C30"] = person("C30", f"Night. She stands full-length inside the rounded opening of a crumbling clay gateway of {HANOK}, her arms flung out, the trench hem swinging.",
-                  "Deep red light, the clay glowing red, the rest dark.", "Full shot, handheld, the camera sinks down steadily.")
+                  "Deep red light, the clay glowing red, the rest dark.", "Full shot, handheld; the first frame of a shot where the camera sinks steadily about 17% of the frame height and rolls about 9 degrees counter-clockwise.")
 J["C32"] = person("C32", f"Night. Among dry bushes in the yard of {HANOK}, she stands medium-sized and almost swallowed by darkness.",
-                  "Faint deep-red light, fading to black.", "Medium shot, still.")
+                  "Faint deep-red light, fading to black.", "Medium shot; the camera drifts up about 2% and rolls 3 degrees as the light dies.")
 J["C33"] = person("C33", "Night. Her face in profile, head bowed, lit only by a deep red glow; the ivory collar just visible.",
-                  "Deep red light, near darkness.", "Chest-up, still.", face=FACE_R)
+                  "Deep red light, near darkness.", "Chest-up, nearly still.", face=FACE_R)
 J["C34"] = person("C34", f"Night. She leans full-length against the crumbling yellow-ochre clay wall of {HANOK}, relaxed.",
                   "Deep red light raking across the wall from the side.", "Full shot, almost still.")
 J["CEND"] = thing("CEND", "An extreme close-up of the ivory wool gabardine twill, filling the frame, with a soft dark vignette; leave a calm empty area in the middle for a title added later.",
-                  "Dim warm light, low contrast.", "Macro, almost still.", layout=False)
+                  "Dim warm light, low contrast.", "Macro; the first frame of a slow steady push in of about 5%, shallow focus.", layout=False)
 
 # ── 룩북 6장(세로 3:4 — 4:5로 자르기만 한다)
 def look(i, scene, light):

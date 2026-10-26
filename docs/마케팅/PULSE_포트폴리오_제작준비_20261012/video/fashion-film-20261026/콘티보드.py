@@ -3,6 +3,7 @@
 #   python -X utf8 콘티보드.py   → 콘티/p4/보드/결채_이미지콘티_1~4.jpg · _한눈.jpg(우리 그림만) · 결채_룩북.jpg(6장)
 # 우리 그림은 콘티/p4/컷/<번호>.png(고른 판 — 색 손대지 않음). 없으면 받음/의 가장 최근 판을 쓴다. 흰 빛 번쩍(10 · 17a · 31)은 흰 칸,
 # 1은 검은 칸, 끝 화면은 우리 그림 위에 「결채」를 얹은 시안(후반 글자 자리를 보이려는 것 — 그림에는 굽지 않았다).
+# 카메라가 크게 움직이는 컷은 원본 칸 오른쪽 아래에 원본 끝 프레임을 작게 얹는다(콘티/p4/원본끝프레임/, 10-26 밤 카메라 다시 재기).
 import glob
 import json
 import os
@@ -91,7 +92,18 @@ def orig(n):
     if n == "1":
         return box("검은 화면", (0, 0, 0))
     p = os.path.join(V, "원본첫프레임", f"{cid(n)}.jpg")
-    return fit(p, TW, TH) if os.path.exists(p) else box("원본 프레임 없음", (40, 38, 42))
+    if not os.path.exists(p):
+        return box("원본 프레임 없음", (40, 38, 42))
+    im = fit(p, TW, TH)
+    # 카메라가 3% 넘게 움직이는 컷은 원본 끝 프레임을 오른쪽 아래에 작게(16_카메라_프레임별.py가 뽑는다)
+    e = os.path.join(V, "원본끝프레임", f"{cid(n)}.jpg")
+    if os.path.exists(e):
+        w, h = TW // 3, TH // 3
+        im.paste(fit(e, w, h), (TW - w - 8, TH - h - 8))
+        d = ImageDraw.Draw(im)
+        d.rectangle([TW - w - 8, TH - h - 8, TW - 8, TH - 8], outline=GOLD, width=2)
+        d.text((TW - w - 2, TH - h - 6), "끝", font=F("SemiBold", 18), fill=GOLD)
+    return im
 
 
 def wrap(d, s, f, w):
