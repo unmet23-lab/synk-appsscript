@@ -1,0 +1,237 @@
+<title>싱크타운 디오라마 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; a scene rail over a two-up frame (지금 | 시안), then the weight and frame tables. */
+:root {
+  --bg: #eff1ed; --surface: #fafbf8; --ink: #1d2431; --muted: #586172; --line: #d6dbd2; --shade: rgba(29, 36, 49, .07);
+  --giwa: #3a4968; --coral: #cf5f49; --meadow: #5f8a50; --chip: #e4e8e1;
+  --display: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --mono: "DM Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141922; --surface: #1b222d; --ink: #e8ebee; --muted: #9ba5b3; --line: #2b3441; --shade: rgba(0, 0, 0, .3);
+  --giwa: #9db0d6; --coral: #f08b74; --meadow: #9cc58a; --chip: #232b37; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #141922; --surface: #1b222d; --ink: #e8ebee; --muted: #9ba5b3; --line: #2b3441; --shade: rgba(0, 0, 0, .3);
+  --giwa: #9db0d6; --coral: #f08b74; --meadow: #9cc58a; --chip: #232b37; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.65 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 64px; display: grid; gap: 56px; }
+h1, h2 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(30px, 4.6vw, 46px); line-height: 1.2; }
+h2 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.3; }
+h3 { font-size: 15px; font-weight: 600; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 500 12px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+header { display: grid; gap: 18px; }
+.lead { font-size: 17px; color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+.fact { background: var(--surface); padding: 16px 18px; display: grid; gap: 4px; min-width: 0; }
+.fact .k { font-size: 13px; color: var(--muted); }
+.fact .v { font: 500 19px/1.35 var(--mono); font-variant-numeric: tabular-nums; }
+.fact .v b { color: var(--coral); font-weight: 500; }
+.fact .v s { color: var(--muted); text-decoration: none; }
+.fact .v.words { font: 500 17px/1.4 var(--body); }
+section { display: grid; gap: 18px; }
+.rail { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: 500 14px/1 var(--body); color: var(--ink); background: var(--chip); border: 1px solid transparent; border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+.seg button small { font: 400 12px var(--mono); color: var(--muted); margin-left: 6px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button[aria-pressed="true"] small { color: inherit; opacity: .7; }
+.seg button:focus-visible, .shot button:focus-visible, dialog button:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+.note { color: var(--muted); font-size: 14px; min-height: 2.6em; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.pair.phone { max-width: 900px; justify-self: center; width: 100%; }
+@media (max-width: 760px) { .pair.desktop { grid-template-columns: minmax(0, 1fr); } }
+.shot { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.shot .tag { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.shot .tag strong { font-weight: 600; }
+.shot .tag .who { font: 500 11px/1 var(--mono); letter-spacing: .06em; padding: 4px 7px; border-radius: 4px; color: var(--surface); }
+.shot.now .who { background: var(--giwa); } .shot.new .who { background: var(--coral); }
+.shot button { padding: 0; border: 0; background: none; cursor: zoom-in; display: block; width: 100%; }
+.shot img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 1px 0 var(--line), 0 8px 24px var(--shade); background: var(--chip); }
+.shot figcaption { font: 400 12.5px/1.5 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.tables { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.tables .scroll:first-child { max-width: 760px; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font: 500 12px var(--mono); color: var(--muted); letter-spacing: .03em; }
+thead .grp { text-align: center; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--mono); }
+td .better { color: var(--meadow); }
+.cap { font-size: 13px; color: var(--muted); }
+.verdict { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 900px) { .verdict { grid-template-columns: minmax(0, 1fr); } }
+.verdict > div { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.verdict h3 { display: flex; gap: 8px; align-items: center; }
+.verdict h3::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--c, var(--muted)); }
+.verdict ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.ask { border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 10px; }
+.ask p { font-size: 17px; }
+code { font: 13px var(--mono); background: var(--chip); padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+.how ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; max-width: 80ch; }
+footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 16px; }
+dialog { border: 0; padding: 0; background: transparent; max-width: min(96vw, 1440px); max-height: 94vh; }
+dialog::backdrop { background: rgba(10, 14, 20, .82); }
+dialog img { display: block; max-width: 100%; max-height: 88vh; border-radius: 6px; }
+dialog button { margin-top: 8px; font: 500 14px var(--body); color: #fff; background: rgba(255, 255, 255, .14); border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+@media (max-width: 640px) { .facts { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: no-preference) { .shot img { transition: opacity .18s ease; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <span class="eyebrow">SYNK TOWN · 그래픽 시안 · 2026-10-26 · 로컬 비교, 공개 안 함</span>
+    <h1>찻집 골목을 손에 드는 한 덩어리로</h1>
+    <p class="lead">지금 WORLD에 공개된 구운 마을과, 같은 마을을 텍스처와 3D 파일 없이 코드로 다시 그린 시안을 같은 시각·같은 카메라로 찍었습니다. 주민, 걷기, 시계, 소리, 화면 단추는 둘 다 같은 Town 그대로입니다. 바뀐 것은 마을을 그리는 부분뿐입니다.</p>
+    <div class="facts" id="facts"></div>
+  </header>
+
+  <section aria-labelledby="see">
+    <h2 id="see">같은 자리, 같은 시각</h2>
+    <div class="rail">
+      <div class="seg" id="scenes" role="group" aria-label="장면"></div>
+      <div class="seg" id="devices" role="group" aria-label="기기">
+        <button type="button" id="dev-desktop" data-device="desktop" aria-pressed="true">PC <small>1440</small></button>
+        <button type="button" id="dev-phone" data-device="phone" aria-pressed="false">휴대폰 <small>390</small></button>
+      </div>
+    </div>
+    <p class="note" id="note"></p>
+    <div class="pair desktop" id="pair">
+      <figure class="shot now"><div class="tag"><span class="who">지금</span><strong>구운 동네 전체 판</strong></div><button type="button" id="zoom-now" aria-label="지금 화면 크게 보기"><img id="img-now" alt=""></button><figcaption id="cap-now"></figcaption></figure>
+      <figure class="shot new"><div class="tag"><span class="who">시안</span><strong>디오라마</strong></div><button type="button" id="zoom-new" aria-label="시안 화면 크게 보기"><img id="img-new" alt=""></button><figcaption id="cap-new"></figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="weight">
+    <h2 id="weight">무게와 프레임</h2>
+    <div class="tables">
+      <div class="scroll"><table id="t-weight"></table></div>
+      <div class="scroll"><table id="t-fps"></table></div>
+    </div>
+    <p class="cap" id="fps-cap"></p>
+  </section>
+
+  <section aria-labelledby="judge">
+    <h2 id="judge">보고 고를 것</h2>
+    <div class="verdict">
+      <div style="--c: var(--coral)"><h3>시안이 나은 점</h3><ul id="v-new"></ul></div>
+      <div style="--c: var(--giwa)"><h3>지금이 나은 점</h3><ul>
+        <li>나무결, 돌 질감, 창 안쪽 깊이처럼 재료의 결이 더 깊습니다. 시안은 가까이 보면 장난감처럼 보일 수 있습니다.</li>
+        <li>찻집 선반, 공방 도구, 온실 덩굴 같은 집 안 소품이 훨씬 많습니다. 시안은 대표 소품만 다시 만들었습니다.</li>
+        <li>이미 승인하고 공개한 화면이라 검수가 끝나 있습니다.</li>
+      </ul></div>
+      <div style="--c: var(--muted)"><h3>시안에 아직 없는 것</h3><ul>
+        <li>시간대나 비를 바꿀 때 블록이 한 번 말랑하게 출렁이는 반응, 연못 물결 고리. 정지 화면 비교라 이번에는 넣지 않았습니다.</li>
+        <li>앉는 자리 높이와 주민 손 위치를 시안 가구에 맞추는 확인.</li>
+        <li>실물 휴대폰 성능, 화면 검수.</li>
+      </ul></div>
+    </div>
+    <div class="ask">
+      <p>어느 쪽이 「우리 마을」 같은지 골라 주세요. 시안 쪽이면 다음은 찻집 골목 세로 조각 일정에 맞춰 이 방식을 정식으로 옮기는 설계부터 합니다.</p>
+    </div>
+  </section>
+
+  <section class="how" aria-labelledby="how">
+    <h2 id="how">어떻게 만들었나</h2>
+    <ul>
+      <li>제품 파일은 하나도 고치지 않았습니다. 로컬 비교 서버가 주소에 <code>district=diorama</code>가 있을 때만 마을을 그리는 모듈을 바꿔 끼웁니다.</li>
+      <li>집 네 채(우리 집·찻집·공방·온실), 이웃집 여덟 채, 나무, 화단, 연못, 잘린 땅 단면은 모두 코드의 형태와 꼭짓점 색입니다. 기와지붕은 처마 끝이 들리는 곡선과 기왓골, 와구토 흰 점까지 계산으로 만듭니다.</li>
+      <li>길, 마당, 디딤돌, 연못, 화단 자리는 지금 마을에서 그대로 읽어 새 색으로 칠했습니다. 정식으로 옮기면 이 자리들을 공통 좌표 원문으로 옮깁니다.</li>
+      <li>빛과 비는 Town의 시간대 빛(W7)을 그대로 받습니다. 구운 마을은 그림자를 정오에 고정하지만, 시안에서는 해가 시각을 따라 움직입니다.</li>
+      <li>코드: <code>experiences/synk-town/qa/look-diorama-20261026/</code> · 직접 걸어 보기: <code>node experiences/synk-town/qa/look-diorama-20261026/serve.mjs</code> 뒤 <code>http://127.0.0.1:4296/day.html?play=walk&amp;district=diorama</code></li>
+    </ul>
+  </section>
+
+  <footer id="foot"></footer>
+</main>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><div><button type="button" id="zoom-close">닫기</button></div></dialog>
+
+<script>
+const DATA = /*DATA*/null;
+const R = DATA.rows;
+const SCENES = [
+  { id: 'day', label: '낮', time: '12:30', note: '10월 25일 맑은 낮. 지금 화면은 블렌더로 구운 빛과 사진 질감이고, 시안은 형태와 꼭짓점 색에 실시간 해 하나입니다.' },
+  { id: 'sunset', label: '해 질 녘', time: '17:20', note: '지금 화면은 그림자가 정오 자리에 그대로 있고 색만 붉어집니다. 시안은 해가 낮아지면서 그림자가 길게 눕습니다.' },
+  { id: 'evening', label: '저녁', time: '18:30', note: '해가 진 뒤. 두 화면 모두 창과 등불이 켜지고, 시안은 등불 아래 바닥에 빛이 고입니다.' },
+  { id: 'night', label: '밤', time: '23:45', note: '깊은 밤. 창빛과 등불만 남습니다.' },
+  { id: 'rain', label: '비', time: '12:30', note: '10월 29일 비 오는 낮. 빗줄기와 젖은 바닥은 둘 다 Town의 비를 그대로 씁니다.' },
+  { id: 'overview', label: '동네 전체', time: '낮', note: '동네 전체 보기. 시안은 마을 가장자리를 잘라 흙과 돌의 단면이 보이는 블록으로 놓았습니다.' },
+  { id: 'overview-night', label: '동네 전체', time: '밤', note: '같은 동네 전체 보기를 밤에.' },
+];
+let scene = 'day', device = 'desktop';
+const $ = id => document.getElementById(id);
+const mb = b => b == null ? '–' : (b / 1e6).toFixed(b < 1e6 ? 2 : 1) + ' MB';
+const k = n => n == null ? '–' : n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n);
+const fpsText = r => !r || r.sceneFps == null ? '–' : `${r.sceneFps}fps · ${r.cpu}ms`;
+const row = (look, dev, id) => R[`${look}-${dev}-${id}`];
+
+function facts() {
+  const n = row('now', 'desktop', 'day'), d = row('diorama', 'desktop', 'day'), np = row('now', 'phone', 'day'), dp = row('diorama', 'phone', 'day');
+  $('facts').innerHTML = [
+    ['마을 그림 내려받기 · PC', `<s>${mb(n?.art)}</s> → <b>${mb(d?.art)}</b>`],
+    ['GPU 텍스처 · PC / 휴대폰', `<s>${mb(n?.texBytes)} / ${mb(np?.texBytes)}</s> → <b>${mb(d?.texBytes)}</b>`],
+    ['해 질 녘 그림자', `<s>정오 고정</s> → <b>해를 따라감</b>`],
+  ].map(([key, v], i) => `<div class="fact"><span class="k">${key}</span><span class="v${i === 2 ? ' words' : ''}">${v}</span></div>`).join('');
+}
+function show() {
+  const s = SCENES.find(x => x.id === scene);
+  $('note').textContent = s.note;
+  $('pair').className = `pair ${device}`;
+  for (const [look, side] of [['now', 'now'], ['diorama', 'new']]) {
+    const r = row(look, device, scene), img = $(`img-${side}`);
+    img.src = r?.file || ''; img.alt = `${side === 'now' ? '지금 화면' : '디오라마 시안'} · ${s.label} ${s.time} · ${device === 'phone' ? '휴대폰' : 'PC'}`;
+    img.width = device === 'phone' ? 420 : 960; img.height = device === 'phone' ? 909 : 600;
+    $(`cap-${side}`).textContent = r ? `장면 ${r.sceneFps ?? '–'}fps · 렌더 CPU ${r.cpu ?? '–'}ms · 그리기 ${r.draw}회 · 삼각형 ${k(r.tri)}` : '측정 없음';
+  }
+  document.querySelectorAll('#scenes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.scene === scene)));
+  document.querySelectorAll('#devices button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.device === device)));
+}
+function tables() {
+  const w = [
+    ['마을 그림 내려받기', r => mb(r?.art)],
+    ['페이지 전체 내려받기', r => mb(r?.total)],
+    ['GPU 텍스처 (마을 몫)', r => mb(r?.texBytes)],
+    ['장면 삼각형 (주민 포함)', r => k(r?.tri)],
+    ['그리기 호출', r => r?.draw ?? '–'],
+    ['첫 화면까지', r => r?.readyMs == null ? '–' : (r.readyMs / 1000).toFixed(1) + '초'],
+  ];
+  $('t-weight').innerHTML = `<thead><tr><th>낮 12:30 · 따라가기</th><th class="grp" colspan="2">PC</th><th class="grp" colspan="2">휴대폰</th></tr>
+    <tr><th></th><th>지금</th><th>시안</th><th>지금</th><th>시안</th></tr></thead><tbody>` +
+    w.map(([label, f]) => `<tr><td>${label}</td>${['desktop', 'phone'].map(dev => `<td class="num">${f(row('now', dev, 'day'))}</td><td class="num">${f(row('diorama', dev, 'day'))}</td>`).join('')}</tr>`).join('') + '</tbody>';
+  const rowsF = [...SCENES.map(s => [s.id, `${s.label} ${s.time}`]), ['walk', '걷는 중 · 낮']];
+  $('t-fps').innerHTML = `<thead><tr><th>장면 프레임률 · 렌더 CPU</th><th class="grp" colspan="2">PC</th><th class="grp" colspan="2">휴대폰 (흉내)</th></tr>
+    <tr><th></th><th>지금</th><th>시안</th><th>지금</th><th>시안</th></tr></thead><tbody>` +
+    rowsF.map(([id, label]) => `<tr><td>${label}</td>${['desktop', 'phone'].map(dev => `<td class="num">${fpsText(row('now', dev, id))}</td><td class="num">${fpsText(row('diorama', dev, id))}</td>`).join('')}</tr>`).join('') + '</tbody>';
+  $('fps-cap').textContent = `프레임률은 Town이 실제로 다시 그린 프레임의 간격 중앙값(60 상한), 렌더 CPU는 한 프레임을 그리는 데 쓴 CPU 시간 중앙값입니다. 걷는 중은 측정 12초 동안 걷기 키를 누르고 있어 매 프레임 다시 그리는 경우입니다. 휴대폰은 이 PC에서 390×844 화면, 화소 배율 3, CPU 4배 늦춤으로 흉내 낸 참고값이고 실물 휴대폰 측정이 아닙니다. 그리기 호출이 둘 다 비슷한 까닭은 주민과 몽글 같은 캐릭터가 그 대부분을 차지하기 때문입니다. 마을을 가볍게 한 다음 남는 무게는 캐릭터 쪽입니다. 페이지 전체 내려받기는 실제 네트워크로 받은 것만 셉니다. GPU: ${DATA.gpu}.`;
+}
+function verdictNew() {
+  const n = row('now', 'desktop', 'day'), d = row('diorama', 'desktop', 'day');
+  $('v-new').innerHTML = [
+    `마을 그림 내려받기가 ${mb(n?.art)}에서 ${mb(d?.art)}로, GPU 텍스처가 ${mb(n?.texBytes)}에서 ${mb(d?.texBytes)}로 줄었습니다. 굽기, Git 밖 원본 창고, 텍스처 압축 단계가 없어집니다.`,
+    `해가 시각을 따라 움직입니다. 해 질 녘 그림자가 길어지고, 나중에 놓는 의자나 주민 발길로 나는 길도 같은 빛과 그림자를 받습니다.`,
+    `집, 나무, 화단은 코드로 늘어납니다. 이웃집 여덟 채가 생성기 하나에서 나왔고, 새 콘텐츠를 얹어도 다시 구울 일이 없습니다.`,
+    `동네 전체 보기가 단면이 보이는 「내 작은 마을」 블록이 됩니다.`,
+    `휴대폰 흉내에서 한 프레임을 그리는 CPU가 걷는 중 ${row('now', 'phone', 'walk')?.cpu}ms에서 ${row('diorama', 'phone', 'walk')?.cpu}ms로 줄었습니다. PC는 둘 다 대부분 60fps에 붙어 차이가 작습니다.`,
+  ].map(t => `<li>${t}</li>`).join('');
+}
+$('scenes').innerHTML = SCENES.map(s => `<button type="button" id="scene-${s.id}" data-scene="${s.id}" aria-pressed="false">${s.label}<small>${s.time}</small></button>`).join('');
+$('scenes').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { scene = b.dataset.scene; show(); } });
+$('devices').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { device = b.dataset.device; show(); } });
+const zoom = $('zoom');
+for (const side of ['now', 'new']) $(`zoom-${side}`).addEventListener('click', () => { const img = $(`img-${side}`); $('zoom-img').src = img.src; $('zoom-img').alt = img.alt; try { zoom.showModal(); } catch { zoom.setAttribute('open', ''); } });
+$('zoom-close').addEventListener('click', () => zoom.close());
+zoom.addEventListener('click', e => { if (e.target === zoom) zoom.close(); });
+$('foot').textContent = `측정 ${DATA.when} · 이 PC의 헤드리스 Edge · 같은 Town 서버와 시계(맑은 날 10월 25일, 비 오는 날 10월 29일) · 장면마다 새 창에서 처음부터 불러옴.`;
+facts(); tables(); verdictNew(); show();
+</script>
