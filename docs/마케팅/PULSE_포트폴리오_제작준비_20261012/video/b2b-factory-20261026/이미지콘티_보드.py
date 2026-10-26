@@ -28,7 +28,8 @@ def ours(n):
     for p in [P / "고름" / f"{k}.png"]:
         if p.exists():
             return p
-    cands = sorted(list((P / "받음").glob(f"{k}_*.png")) + list((P / "받음_gpt/판").glob(f"{k}_*.png")), key=lambda p: p.stat().st_mtime)
+    # Gemini 받기는 .jpg로 저장된다(받음/S01_225917.jpg) — png만 찾으면 얼굴 컷이 보드에서 빠진다
+    cands = sorted([p for d in ("받음", "받음_gpt/판") for ext in ("png", "jpg") for p in (P / d).glob(f"{k}_*.{ext}")], key=lambda p: p.stat().st_mtime)
     return cands[-1] if cands else None
 
 

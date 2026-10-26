@@ -24,7 +24,7 @@
     "준호x4",
     "배치:S01"
    ],
-   "text": "{시작} {준호_얼굴:4} Extreme close-up of his eyes and the bridge of his nose filling the frame (the top of his forehead and his mouth are cut off by the frame edges); he looks slightly down at a lit drafting table below the camera, a strong cool blue glow from the lit drafting table below lights his lower face and eyes, and clear blue line reflections of a turbine cross-section (circles and curves) fill both irises. Only a few faint freckles as in the reference photos, otherwise clean skin. On the right a soft blurred white office light. {배치:5} Light: cool soft light from below and a warm rim from the side. {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} Extreme close-up of his eyes and the bridge of his nose filling the frame (the top of his forehead and his mouth are cut off by the frame edges); he looks slightly down at a lit drafting table below the camera, a strong cool blue glow from the lit drafting table below lights his lower face and eyes, and clear blue line reflections of a turbine cross-section (circles and curves) fill both irises. Smooth clean skin with at most three or four faint freckles, no speckled texture. On the right a soft blurred white office light. {배치:5} Light: cool soft light from below and a warm rim from the side. {금지_글자} {질감}"
   },
   {
    "id": "S02",
@@ -149,7 +149,7 @@
     "R1",
     "배치:S16"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Close view of the black blade ring at the front of the finished turbine, its smooth dark nose cone in the upper left with no markings at all; on the right edge he stands in profile facing left, looking closely at the blades, calm and focused (his face in profile, lips closed). White hall light from the right. {기준R1:5} {배치:6} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Close view of the black blade ring at the front of the finished turbine, its smooth dark nose cone in the upper left with no markings at all; on the right edge he stands in profile facing left, looking closely at the blades, calm and focused (his face in profile, lips closed). Dim assembly hall behind him, no bright windows, the hall in half-light so the black blade ring dominates the frame; only a soft white light from the right touches the blade edges and his profile. {기준R1:5} {배치:6} {금지_글자} {질감}"
   },
   {
    "id": "S17",
@@ -169,7 +169,7 @@
     "R3",
     "배치:S18"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} Medium close-up from a low angle: he stands on the left of the frame in profile facing right, looking up at something high above, calm and focused; behind him the yellow overhead crane and the white hall ceiling, out of focus. {기준R3:5} {배치:6} Light: bright cool factory light from above. {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Medium close-up from a low angle: he stands on the left of the frame in profile facing right, looking up at something high above, calm and focused; behind him the yellow overhead crane in the upper left and the hall ceiling, out of focus. {기준R3:5} {배치:6} Light: dim hall light, the ceiling and crane in half-light, his face lit softly from above — about one stop darker than a bright factory. {금지_글자} {질감}"
   },
   {
    "id": "S19",
@@ -229,10 +229,9 @@
    "id": "S25",
    "who": "준호",
    "refs": [
-    "준호x4",
-    "배치:S25"
+    "준호x4"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} Close-up of his face in profile facing right, in near darkness, lit only by the faint cool glow of a monitor from the right; his eyes focused and tense, lips closed. Most of the frame is black; his face sits in the right third. {배치:5} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Extreme close-up: his face in three-quarter profile facing right fills most of the frame — from near the left edge to about three quarters across, the top of his head cut off by the top edge and his chin near the bottom edge; his eyes look down to the right, focused and tense, lips closed. Near darkness: only a dim warm amber glow from the lower right touches his nose, cheek and eye; everything else falls off into deep brown-black, with only a small soft out-of-focus amber lamp glow in the far right background (a control-room lamp, not a flame, no sparks). {금지_글자} {질감}"
   },
   {
    "id": "S26",
@@ -247,10 +246,9 @@
    "id": "S27",
    "who": "준호",
    "refs": [
-    "준호x4",
-    "배치:S27"
+    "준호x4"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} Extreme close-up of his face in three-quarter view on the left side of the frame (one eye, nose and cheek), in dim warm light, eyes fixed on something off-screen, lips closed; behind him on the right, out of focus, the shoulder of a colleague lit by a monitor (no face). {작업자} {배치:5} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Extreme close-up: his face in three-quarter view facing right fills the left two thirds of the frame — his forehead cut off by the top edge, his eyes in the upper third, his mouth at the bottom edge — no collar or shoulders visible; very dim warm light, about one stop darker than a normal interior, deep shadows with only his eye, nose and cheek lit, eyes fixed on something off-screen to the right, lips closed. Behind him on the right third, far out of focus, the shoulder of a colleague lit by a monitor (no face). {작업자} {금지_글자} {질감}"
   },
   {
    "id": "S28",
@@ -279,17 +277,16 @@
     "R1",
     "배치:S30"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Wide shot in the bright white assembly hall: the side of the finished ivory turbine fills the right two thirds of the frame, its round dark blade intake on the far right; he stands small on the floor in front of it, left of center, looking up at the machine. {기준R1:5} {배치:6} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Wide shot in the bright white assembly hall, the camera close to the machine: the finished ivory turbine's huge round intake casing fills the right 60% of the frame and runs off the top and bottom edges, its dark blade ring on the far right. He is small next to it: standing on the floor just left of the casing, a little left of center, his whole body from head to feet fitting within the lower half of the frame height; he is in profile facing right toward the machine, one hand raised to touch the casing, looking at it (his face in profile, lips closed). On the left, the hall behind him with an overhead crane and other parts, a bit out of focus. {기준R1:5} {배치:6} {금지_글자} {질감}"
   },
   {
    "id": "S31",
    "who": "준호",
    "refs": [
     "준호x4",
-    "R3",
     "배치:S31"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} Medium close-up from a low angle: he is on the left of the frame, his head turned up toward the upper right, eyes looking high above, calm; behind him the white hall ceiling with bright lights and a yellow crane, out of focus. {기준R3:5} {배치:6} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Low-angle close-up, the camera well below his chin looking up at him: only his head and shoulders, his head in the upper left of the frame with the top of his head near the top edge; his face turned up toward the upper right, eyes looking high above, calm, lips closed. Behind him only the white hall ceiling with bright strip lights, a white pillar and a yellow overhead crane, out of focus — no machine behind him. {배치:5} {금지_글자} {질감}"
   },
   {
    "id": "S32",
@@ -306,7 +303,7 @@
     "R6",
     "R1"
    ],
-   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk. Perfectly symmetrical: the camera stands on the center line of the hall at eye height; the finished ivory turbine (same as the reference) sits centered with its round dark intake facing the camera; directly behind it the huge open door is centered, framing a peach-and-pink sunset over low hills; the polished floor reflects the sunset. Do not show the machine from the side. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
+   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk, seen from BEHIND the machine. Perfectly symmetrical: the camera stands low near the floor on the center line of the hall; the finished ivory turbine (same as the reference) sits centered in the upper middle of the frame with its rear exhaust end toward the camera and its round intake pointing away from us toward the huge open door, as if it is about to leave; the open door is centered behind it, framing a peach-and-pink sunset over low hills; the wet, polished floor fills the lower 40% of the frame and reflects the machine and the sunset in a long central reflection; the hall ceiling and side walls are dark. Do not show the intake blades facing the camera, and do not show the machine from the side. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
   },
   {
    "id": "S34",
@@ -315,7 +312,7 @@
     "준호x4",
     "배치:S34"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} Outdoors at dusk, a tracking medium shot: three people walk from left to right past the camera. The nearest one on the left is out of focus and seen from behind and the side (only the back of his head and ear, no face). In the middle, in sharp focus, he walks in three-quarter view with his face clearly visible, calm, lips closed. Behind on the right a third worker is partly hidden and turned away (no face). Behind them steel equipment stands and a green hillside in warm evening light. {작업자} {배치:5} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Outdoors at dusk, a handheld medium shot of three people walking together: the nearest man fills the left third of the frame, large and out of focus, seen from behind and the side (only the back of his head and ear, no face). Right of center, in sharp focus, he walks in three-quarter view facing left with his face clearly visible, calm, lips closed. Between them, farther back and small, a third worker is turned away (no face). Behind them steel equipment stands and a green hillside in warm evening light. {작업자} {배치:5} {금지_글자} {질감}"
   },
   {
    "id": "S35",
