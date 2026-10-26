@@ -1,0 +1,51 @@
+{
+  "note": "네이버 블로그 첫 글 여섯 편 — 올리는 순서대로. body는 이 폴더 기준 경로, images는 〔그림N〕 차례, links는 앞서 올린 글 주소로 바꿀 자리.",
+  "posts": [
+    {
+      "key": "S3", "blog": "shiftclass", "category": "커리큘럼·수업 자료",
+      "title": "AI 리터러시 교육, 50분 수업 이렇게 짭니다 — AI 답 확인하고 고치기 실습 예시",
+      "body": "shift/S3_AI리터러시_수업50분.html",
+      "images": ["out/05_sq11_S3_표지.png", "out/06_sq11_S3_카드.png"],
+      "tags": ["AI리터러시교육", "AI리터러시", "AI수업", "생성형AI교육", "AI교육", "챗GPT수업", "교사연수", "직장인AI교육", "수업자료", "SYNKSHIFT"]
+    },
+    {
+      "key": "S2", "blog": "shiftclass", "category": "강사 섭외 안내",
+      "title": "강사 섭외, 프로필보다 먼저 볼 네 가지 — AI 강사·AI 진로 강사 섭외 체크리스트",
+      "body": "shift/S2_강사섭외_네가지.html",
+      "images": ["out/03_sq11_S2_표지.png", "out/04_sq11_S2_카드.png"],
+      "tags": ["강사섭외", "AI강사섭외", "AI강사", "챗GPT강사", "진로강사", "특강강사", "AI특강", "교육담당자", "기업교육강사", "SYNKSHIFT"]
+    },
+    {
+      "key": "S1", "blog": "shiftclass", "category": "AI 특강 메뉴",
+      "title": "AI 특강, 도구 구경 말고 결과물 하나 — 학교 AI 진로 강의·기업 AI 실습 강의 안내",
+      "body": "shift/S1_AI특강_안내.html",
+      "images": ["out/01_sq11_S1_표지.png", "out/02_sq11_S1_카드.png"],
+      "links": { "〔S2주소〕": "S2", "〔S3주소〕": "S3" },
+      "tags": ["AI특강", "AI강의", "AI교육", "AI진로교육", "진로특강", "기업AI교육", "생성형AI교육", "학교AI교육", "AI강사", "SYNKSHIFT"]
+    },
+    {
+      "key": "P1", "blog": "daily_with_247", "category": "포트폴리오",
+      "title": "AI 홍보영상 제작 사례 · 화성특례시 CF 「1억 년의 빛」 — 둥근 빛 하나로 1억 년을 잇는 55초",
+      "body": "pulse/P1_화성CF_1억년의빛.html",
+      "images": ["out/07_sq11_P1_표지.png", "pulse/img/cf_알.jpg", "pulse/img/cf_바닷길.jpg", "pulse/img/cf_분수.jpg", "pulse/img/cf_노을.jpg"],
+      "youtube": "https://youtu.be/dIittvXfdIE",
+      "tags": ["AI광고영상", "홍보영상제작", "지역홍보영상", "AI영상제작", "광고영상제작", "화성특례시", "별별화성Awards", "브랜드필름", "CF제작", "SYNKPULSE"]
+    },
+    {
+      "key": "P2", "blog": "daily_with_247", "category": "홍보영상·숏폼 가이드",
+      "title": "AI로 홍보영상 직접 만들어 보면 막히는 다섯 곳 — 여기까지는 혼자, 이 너머는 맡기기",
+      "body": "pulse/P2_AI홍보영상_막히는다섯곳.html",
+      "images": ["out/08_sq11_P2_표지.png", "out/09_sq11_P2_카드.png"],
+      "links": { "〔P1주소〕": "P1" },
+      "tags": ["AI영상제작", "홍보영상제작", "AI광고영상", "숏폼제작", "AI영상", "광고영상제작", "영상제작팁", "브랜드영상", "영상제작업체", "SYNKPULSE"]
+    },
+    {
+      "key": "P3", "blog": "daily_with_247", "category": "의뢰 안내",
+      "title": "홍보영상·숏폼 제작 의뢰 안내 — 네 가지 영상, 정할 여섯 가지, 받는 것",
+      "body": "pulse/P3_의뢰안내.html",
+      "images": ["out/10_sq11_P3_표지.png", "out/11_sq11_P3_카드.png"],
+      "links": { "〔P1주소〕": "P1", "〔P2주소〕": "P2" },
+      "tags": ["홍보영상제작", "숏폼제작", "광고영상제작", "영상제작업체", "AI광고제작", "제품광고영상", "브랜드필름", "룩북제작", "AI모델", "SYNKPULSE"]
+    }
+  ]
+}
