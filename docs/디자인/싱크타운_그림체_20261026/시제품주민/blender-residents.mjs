@@ -1,7 +1,7 @@
 // 블렌더 판 주민(아르곤이 모델링 · Claude가 굽기)을 불러와 코드 판 주민과 같은 손잡이(update)로 움직인다.
 // GLB 하나에 주민 하나: `<id>_body`(원점 = 바닥 가운데) 아래 눈 · 팔 · 발 · 소품이 자식으로 붙어 있다.
 import * as THREE from '../../../../experiences/synk-world-home/scene-assets/three.module.js';
-import { GLTFLoader } from '../../../../experiences/synk-world-home/scene-assets/vendor/GLTFLoader.js';
+import { GLTFLoader } from '../../../../experiences/synk-town/rendering/GLTFLoader.js';
 import { feltFinish } from '../../../../experiences/synk-town/day-residents.mjs';
 import { createAvatarTextiles } from '../../../../experiences/synk-world-home/avatar-textiles.mjs';
 

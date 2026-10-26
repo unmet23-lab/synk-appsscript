@@ -177,7 +177,8 @@ async function build() {
   const resBody = new THREE.Group(); const r = makeTownResident(resBody, shared, { id: 'researcher', mobile: phone, felt: 'diorama' });
   researcher = makeCharacter({ name: 'researcher', content: resBody, height: 160, refY: 600, at: RESEARCHER_IN[0], yaw: -1.4, seatBase: 641, update: (now, dt, c) => r.update({ now, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, seated: c.seated, ...c.pose }) });
   researcher.label = '연구원'; researcher.height = k => r.height * k * 1.05; researcher.active = false;
-  const av = await createMongleAvatar({ mobile: phone, anisotropy: 4 }); av.setOutfit({ body: '', neck: 'mongle-scarf-first-steps' });
+  // Mongle in its diorama felt (master outline, coarse felt, fuzz, hem stitch); the WORLD fitting room keeps v3 as it is.
+  const av = await createMongleAvatar({ mobile: phone, anisotropy: 4, felt: 'diorama' }); av.setOutfit({ body: '', neck: 'mongle-scarf-first-steps' });
   mongle = makeCharacter({ name: 'mongle', content: av.group, height: 128, refY: BASE_Y, at: { x: 520, y: 688 }, yaw: .5, update: now => av.update(now / 1000, { reducedMotion: reduced }) });
   mongle.label = '몽글'; mongle.height = k => 1.9 * k; mongle.speed = 200;
   const unit = PROP_UNIT;
