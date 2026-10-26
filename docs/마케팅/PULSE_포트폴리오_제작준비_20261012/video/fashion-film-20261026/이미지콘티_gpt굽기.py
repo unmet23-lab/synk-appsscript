@@ -10,7 +10,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[4]
 V = Path(os.environ["USERPROFILE"]) / "Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p4"
-GPT = ["O4", "C02", "C03", "C04", "C05", "C06", "C07", "C09", "C16", "C18", "C19", "C27", "C29", "CEND", "C26", "C28"]   # 26 · 28은 얼굴이 안 보이는 사람 컷
+GPT = ["O4", "C02", "C03", "C04", "C05", "C06", "C07", "C09", "C16", "C18", "C19", "C27", "C29", "CEND", "C26", "C28",   # 26 · 28은 얼굴이 안 보이는 사람 컷
+       "C08", "C22", "C25", "C30", "C32", "C34"]   # 10-27 05:4x: 얼굴이 아주 작거나 어둠에 묻히는 사람 컷 — 같은 참조(배치도 · 얼굴 세트 · O1)로 GPT, 닮음 0.363 아래면 Gemini로 되돌림
 jobs = json.load(open(V / "ego/jobs_p4.json", encoding="utf-8"))
 log = V / "ego/_받기기록.jsonl"
 done = {json.loads(l)["id"] for l in log.read_text(encoding="utf-8").splitlines() if l.strip()} if log.exists() else set()
