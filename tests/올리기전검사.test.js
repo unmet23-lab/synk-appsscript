@@ -189,6 +189,16 @@ test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것,
   assert.equal(검사.tiktokFindings(plates('lab-instagram'), {}, {}).filter((f) => f.code === 'tiktok-plate').length, 1, '계정 표에 줄이 없으면 ⑨가 그대로 본다');
 });
 
+test('⑫ 한 편의 틱톡 판 둘이 같은 날(한국 시각)이면 고칠 것 — 버마어 판을 다음 날로 두면 통과(10-26 유호님)', () => {
+  const tt = (account, time) => ({ account, platform: 'tiktok', time });
+  const xhs = { account: 'lab-cn-xiaohongshu', platform: 'xiaohongshu', time: '2026-10-30T22:00:00+09:00' };
+  const same = 검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T21:00:00+09:00'), tt('lab-mm-tiktok', '2026-10-30T22:30:00+09:00'), xhs]);
+  assert.deepEqual(same.map((f) => `${f.level}:${f.code}:${f.where}`), ['고칠 것:tiktok-same-day:lab-tiktok · lab-mm-tiktok']);
+  assert.deepEqual(검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T21:00:00+09:00'), tt('lab-mm-tiktok', '2026-10-31T22:30:00+09:00'), xhs]), [], '다음 날이면 된다 · 샤오훙수는 같은 날이어도 된다');
+  // 한국 시각으로 나눈다 — 10-30 23:30 KST와 10-31 00:30 KST는 다른 날
+  assert.deepEqual(검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T14:30:00Z'), tt('lab-mm-tiktok', '2026-10-30T15:30:00Z')]), []);
+});
+
 test('영상 이름표는 편 폴더 기준 — 워크트리에서 돌려 영상이 공용 작업본에 있어도 같다', () => {
   const repo = path.join(os.tmpdir(), 'wt'), main = path.join(os.tmpdir(), 'main');
   const bundle = { repo, mediaRoot: main, dir: path.join(repo, 'docs', '마케팅', 'LAB_시험') };

@@ -5,7 +5,7 @@
 | 브랜드 | 장부 |
 |---|---|
 | LAB(영어 @synkkorean · 몽골 @synk.mn + 틱톡) | [LAB.md](LAB.md) |
-| synkbrief(인스타 · 유튜브 + SHIFT 블로그 두 판) | [synkbrief.md](synkbrief.md) |
+| synkbrief(인스타 · 유튜브 · 틱톡 + SHIFT 네이버 블로그) | [synkbrief.md](synkbrief.md) |
 | yuhobuilds(인스타 · 유튜브 + 티스토리) | [yuhobuilds.md](yuhobuilds.md) |
 
 ## 상태

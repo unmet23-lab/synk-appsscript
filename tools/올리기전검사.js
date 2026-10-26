@@ -21,6 +21,8 @@
  *   ⑩ 매일 판(10-26) — 판 계정의 줄(sns-계정.json dailyLine)마다 그 줄의 (막힘 아닌) 계정 가운데 판이 없는 계정이면 확인할 것.
  *      못 가는 판(여러 장 편의 틱톡 · 그날 이미 다른 편이 찬 계정)은 준비.json 「빠진판」: {"계정": "까닭"}에 적는다(「틱톡없음」도 받는다)
  *   ⑪ 슬롯이 오늘이면 확인할 것 — 4일 앞(D+4)에 만드는 것이 기본(제작 절차 0). 같은 날 같은 계정의 두 편은 tools/예약큐.js가 본다
+ *   ⑫ 한 편의 틱톡 판 둘(몽골 @synk.mn · 버마어 @synklab.mm 등)이 같은 날이면 고칠 것(10-26 — 거의 같은 영상이 같은 날 두 계정에 나가지 않게).
+ *      LAB 두 채널 판은 그 줄의 목표 칸에 두니 편 슬롯과 날이 달라도 「시각이 슬롯 날이 아니다」를 내지 않는다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -356,6 +358,20 @@ function dailyFindings(plates, prep, known = {}) {
   return out;
 }
 
+// ⑫ 한 편의 틱톡 판 둘이 같은 날(한국 시각)이면 고칠 것 — 글자만 다른 거의 같은 영상이 우리 틱톡 둘에 같은 날 나가지 않게
+// (유호님 10-26, LAB 장부 「두 채널 판」 — 버마어 판 시각을 다른 날로).
+function tiktokDayFindings(plates) {
+  const byDay = new Map();
+  for (const p of plates) {
+    const at = Date.parse(p.time || '');
+    if (p.platform !== 'tiktok' || !Number.isFinite(at)) continue;
+    const day = kst(at).slice(0, 10);
+    byDay.set(day, [...(byDay.get(day) || []), p.account]);
+  }
+  return [...byDay].filter(([, accounts]) => accounts.length > 1).map(([day, accounts]) => ({ level: FIX, code: 'tiktok-same-day', where: accounts.join(' · '),
+    message: `같은 편의 틱톡 판 둘이 같은 날(${day})이다 — 하나(보통 버마어 판)의 「시각」을 다른 빈 날로(LAB 장부 「두 채널 판」)` }));
+}
+
 async function run(dir, opts = {}) {
   const bundle = 묶음.load(dir);
   const prep = bundle.prep;
@@ -385,7 +401,9 @@ async function run(dir, opts = {}) {
     const at = plate.time ? Date.parse(plate.time) : NaN;
     if (!plate.time || Number.isNaN(at) || !/[+-]\d{2}:?\d{2}$|Z$/.test(plate.time)) add(FIX, 'time', where, `「시각」이 시간대가 붙은 시각(YYYY-MM-DDTHH:MM+09:00)이 아니다: ${plate.time || '없음'}`);
     else {
-      if (slotOk && kst(at).slice(0, 10) !== prep.슬롯) add(LOOK, 'time-slot', where, `시각 ${plate.time}이 슬롯 ${prep.슬롯} 날이 아니다`);
+      // LAB 두 채널 판은 그 줄의 목표 칸에 두니(버마어 틱톡은 몽골 틱톡과 다른 날) 편 슬롯과 날이 달라도 된다(10-26).
+      const ownDay = bundle.accounts[plate.account]?.dailyLine === 'LAB 두 채널';
+      if (slotOk && !ownDay && kst(at).slice(0, 10) !== prep.슬롯) add(LOOK, 'time-slot', where, `시각 ${plate.time}이 슬롯 ${prep.슬롯} 날이 아니다`);
       if (at < Date.now() && !done) add(LOOK, 'time-past', where, `시각 ${plate.time}이 이미 지났다 — 슬롯을 옮긴다`);
     }
     if (plate.blog) {
@@ -417,6 +435,7 @@ async function run(dir, opts = {}) {
 
   findings.push(...tiktokFindings(plates, prep, bundle.accounts));
   findings.push(...dailyFindings(plates, prep, bundle.accounts));
+  findings.push(...tiktokDayFindings(plates));
   if (slotOk && prep.슬롯 === kst().slice(0, 10) && ![...posted.values()].some((v) => DONE.has(v))) {
     add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — 4일 앞(D+4)에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
   }
@@ -518,4 +537,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, labelOf, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, SAFE };
