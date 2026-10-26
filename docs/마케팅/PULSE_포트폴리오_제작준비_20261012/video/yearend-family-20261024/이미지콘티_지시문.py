@@ -382,6 +382,26 @@ def jobs():
         "fills the center-right of the frame from the top of her head",
         "is placed with the tip of her nose at about 40% of the frame width and the back of her head reaching about 95% (near the "
         "right edge); it fills the frame from the top of her head")}
+    # S21b(10-26 21:17)도 똑바른 옆얼굴이라 얼굴이 그대로 오른쪽(55~96% ↔ 원본 38~95%)이었다 — 원본 21번은 엄마의 왼쪽 어깨 뒤에서 비스듬히 본
+    # 돌아선 옆얼굴(머리 뒤 · 머리칼이 크게 보이고 얼굴은 가장자리만)이라 코끝이 40%에 온다. 잘라 맞추면 머리가 원본보다 커져(턱 83% ↔ 60%대) 새로 굽는다
+    J["S21c"] = {"refs": J["S21"]["refs"], "prompt": J["S21"]["prompt"].replace(
+        "CLOSE-UP IN PROFILE: her face in left profile, turned to the left, fills the center-right of the frame from the top of her "
+        "head (cut off by the top edge) to her shoulders (cut off by the bottom edge); she looks quietly into her daughter's empty "
+        "room.",
+        "CLOSE-UP FROM BEHIND HER LEFT SHOULDER, THREE-QUARTER BACK VIEW (a lost profile), exactly like the black silhouette in "
+        "Image 1: she faces the left side of the frame and her head is turned away from the camera, so we mostly see the back of "
+        "her head and her dark chin-length bob, with only the edge of her left cheek, nose and lips at the left side of her head — the tip of her nose at about "
+        "40% of the frame width, the back of her hair reaching about 80%. Her head fills the frame from the top edge (cut off) down "
+        "to about 62% of the frame height; her neck and shoulders fill the lower part of the frame. She looks down to the left into "
+        "her daughter's empty room.")}
+    # S21c(10-26 23:37)는 코끝 41%로 자리가 맞았고 머리가 원본보다 작아 가운데를 잘라 맞춘다(80.6%, 사람 40~95% ↔ 38~95%) —
+    # 다만 밝기가 150으로 원본(97)과 앞뒤(20번 127 · 22번 81)보다 튄다. 원본은 20 → 21 → 22로 차츰 어두워지니 빛만 편집으로 2/3스톱 낮춘다
+    J["S21d"] = {"refs": [str(V / "ego/refs/S21c.jpg")], "prompt": " ".join([
+        "Edit this photograph (Image 1). Change only the light: make the whole picture about two-thirds of a stop darker and softer, "
+        "like a dim overcast late afternoon in winter with every lamp in the room off — the window light behind her is weaker and "
+        "greyer, the white wall falls to a soft mid-grey, and her face and hair are in gentle low light, still readable but no longer "
+        "bright. Keep her, her pose, her head turned down to the left, her hair, her cardigan, the camera, the framing and every object "
+        "in the room exactly as they are.", EDIT_KEEP])}
     # Fable 2차 P2: 밤 둘(12 · 16)이 원본의 두 배 밝고 12는 얼굴이 읽힌다 — 고른 판을 편집으로 한 번 더 어둡게(목표 중앙값 26~43)
     NIGHT_KEEP = ("Keep her pose, clothes and place, the camera and the framing exactly. Photorealistic film still with the same slight "
                   "film grain. No text, no letters, no logos, no watermarks.")
@@ -453,6 +473,49 @@ def jobs():
         "with a small white panel fills the left 0–27%, and the edge of the half-open door is at about 62%–80%, the hallway wall "
         "beyond it at the far right. The camera is at a standing adult's eye level, looking slightly down into the room, so the top "
         "of the mattress is at about 80% of the frame height.")}
+    # Fable 3차 P2(10-27): S22c는 문틈은 맞았지만 카메라가 여전히 낮다 — 원본 머리판 윗선 47% · 매트리스 80% · 거울 65~80% · 엄마 머리 14%
+    # ↔ 우리 33% · 62~65% · 48~60% · 29%. 「매트리스 80%」를 글로 시킨 S22c도 안 따랐으니 11번처럼 두 단계로 —
+    # ① K22: 사람을 지우고 크게 흐린 원본(배치/S22_흐림) 위에 빈 방 판(거실 판 · K20이 원본 카메라 높이를 지킨 길) ② S22e: 그 판에 엄마 실루엣만 그려 넣음.
+    # 같은 차례에 숫자를 더 박은 한 번에 판(S22d — Fable 3차 고칠 말)도 견준다
+    J["K22"] = {"refs": [str(B / "K22_배치.jpg"), str(V / "ego/refs/S20.jpg")], "prompt": " ".join([
+        STILL,
+        "Image 1 is a heavily blurred layout photo of this exact shot: from a hallway we look through the gap of a half-open bedroom "
+        "door into the bedroom. Keep Image 1's camera position, height, angle, framing and lens EXACTLY, and put every big shape "
+        "exactly where it is in Image 1: the pale hallway wall on the left (about 0–22% of the frame width) with a small framed wall "
+        "switch panel on it, the dark wooden door frame (about 22–25%), the narrow view into the bedroom between about 25% and 62%, "
+        "the dark wooden edge of the half-open door between about 62% and 80%, and the pale hallway wall with a small switch panel at "
+        "the far right. The camera is at a standing adult's eye level and looks slightly DOWN into the room.",
+        "Inside the room, seen through the gap: the single bed with the light-oak slatted headboard against the back wall — the top of "
+        "the headboard at about 47% of the frame height and the top of the mattress at about 80%; a round tabletop mirror on a small "
+        "round side table at the left of the bed — the mirror between about 65% and 80% of the frame height; pale walls. Image 2 is "
+        "this same bedroom seen from inside — the bed, the headboard, the round mirror, the side table and THE NEW WINTER BLANKET must "
+        "look exactly the same. " + BLANKET + " The folded top of the blanket shows the brick-red reverse exactly as in Image 2. The "
+        "room is EMPTY — nobody is in it.",
+        "Camera: fixed, 50mm lens. Light: soft, cool overcast winter daylight from the bedroom window; the hallway side is a little "
+        "darker; the room is evenly lit, neither dark nor bright; the hallway walls are a soft mid grey. The switch panels have no "
+        "readable text.", FINISH])}
+    J["S22e"] = {"refs": [str(B / "S22e_배치.jpg")] + EUN50_REFS, "prompt": " ".join([
+        "Edit this photograph (Image 1). Paint THE MOTHER only inside the solid black silhouette seen through the door gap: she fills "
+        "that outline exactly and does not extend beyond it — the top of her head at about 14% of the frame height, her figure within "
+        "about 31%–62% of the frame width. Every pixel outside the black silhouette stays exactly as it is in Image 1 — the camera, the "
+        "framing, the light, the hallway walls, the door frame, the half-open door, the bed, the blanket, the headboard and the mirror.",
+        "Images 2 to 5 " + IDREF + " THE MOTHER is " + EUN50 + ". She is only beginning to sit down on the edge of the bed — still "
+        "standing beside it, bent forward at the hips, her head bowed so her chin-length hair falls forward and hides her face, one "
+        "hand reaching down toward the blanket. She wears a soft oat-beige knit cardigan over a pale blue shirt and a long dark-beige "
+        "skirt. Photorealistic, the same film grain and light as Image 1. No text, no logos, no watermarks."])}
+    J["S22d"] = {"refs": J["S22c"]["refs"], "prompt": J["S22c"]["prompt"].replace(
+        "caught in the middle of sitting down on the edge of the single bed with the light-oak slatted headboard — NOT yet seated: "
+        "knees bent, her body bent forward at the hips, her head bowed low so her chin-length hair falls forward and hides her face, "
+        "one hand reaching down toward the blanket.",
+        "only beginning to sit down on the edge of the single bed with the light-oak slatted headboard — still standing beside it, her "
+        "hips above the mattress, her back bent forward at about 45°, her head bowed so her chin-length hair falls forward and hides "
+        "her face, one hand reaching down toward the blanket; the top of her head at about 14% of the frame height and her knees at "
+        "about 86%.").replace(
+        "The camera is at a standing adult's eye level, looking slightly down into the room, so the top of the mattress is at about 80% "
+        "of the frame height.",
+        "The camera is at a standing adult's eye level, tilted slightly DOWN into the room: the top of the mattress at about 80% of the "
+        "frame height, the top of the slatted headboard at about 47%, and the round mirror between about 65% and 80% of the height — "
+        "the headboard is far below her bowed head.")}
     # 2판 이름(거실 판 2판 위에서 다시 굽는 컷) — 지시문은 위 그대로, 배치도는 2판 거실 위 실루엣(이미지콘티_배치도.py 합성)
     J["S01c"] = J["S01"]
     J["S04b"] = J["S04"]

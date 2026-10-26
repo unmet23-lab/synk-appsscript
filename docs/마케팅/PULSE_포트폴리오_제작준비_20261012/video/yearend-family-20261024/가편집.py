@@ -1,8 +1,11 @@
 # 6번 「연말 빈방」 가편집(2026-10-26) — 이미지 콘티 15조각을 02 콘티의 초대로 놓고, 자막 · 글판 · 끝 문구 · 로고 자리 표시를 얹고, 목소리 듣기 판을 붙인다.
 #   python -X utf8 가편집.py [--노래 노래.wav --노래시작 0.0]   → synk-vendor/…/콘티/p6/가편집/가편집_<내레이터>.mp4(1280×720, 59.99초)
-# 제작 규칙 순서 5(가편집: 콘티 이미지를 소리에 맞춰 놓고 리듬 · 장면 길이를 확정)의 판. 그림은 받은 판 그대로(컷/S##.jpg), 움직임 없이 고정.
+# 제작 규칙 순서 5(가편집: 콘티 이미지를 소리에 맞춰 놓고 리듬 · 장면 길이를 확정)의 판. 그림은 받은 판 그대로(컷/S##.jpg).
+# 카메라는 원본 실측(01 2-1절 · 02 7-1절) — 고정 컷은 그대로 두고, 움직이는 셋(19 · 20 · 21)만 그 숫자대로 그림 안에서 움직인다
+# (10-26 밤 유호님 「원본이랑 카메라 기법도 완전히 똑같게」). 그림 밖이 없으니 20 · 21은 가장자리를 9% · 6% 잘라 움직일 여유를 만든 판이다.
 # 내레이터는 10-26 유호님 「나레이션은 이미지 콘티로 만들고나서 화면을 봐야 할것같아」 — 후보마다 한 판(혜리 · 서현 · 소진).
 import argparse
+import functools
 import os
 import subprocess
 
@@ -30,12 +33,47 @@ CARDS = [(4.80, 7.57, ["열일곱 살 딸의 방문에 노크가 필요해졌다
 ENDLINES = [(52.51, 56.72, "아무도 자지 않는 방에도", 0), (54.02, 56.72, "엄마는 철마다 새 이불을 펴 둡니다", 1)]   # 화면 왼쪽(엄마는 오른쪽)
 LOGO = (57.72, TOTAL, "솜채")   # 로고는 자리 표시(글자) — 디자인은 브랜드 단계에서
 NARR = ["혜리", "서현", "소진"]
+FPS = 24
 
 
-def shot_img(n):
+def smooth(x):
+    x = min(max(x, 0.0), 1.0)
+    return x * x * (3 - 2 * x)
+
+
+def ramp(t, t0, ease, v):
+    """t0에서 들어와 ease초 동안 빨라진 뒤 초당 v로 가는 거리"""
+    if t <= t0:
+        return 0.0
+    if t <= t0 + ease:
+        return v * (t - t0) ** 2 / (2 * ease)
+    return v * (ease / 2 + (t - t0 - ease))
+
+
+# 컷 안 초 → 보이는 창(그림 비율의 왼쪽 위 x0 · y0, 배율 s). 내용이 왼쪽 · 위로 가면 창은 오른쪽 · 아래로 간다
+CAM = {
+    # 19 앞으로 다가감 — 3초 내내 같은 빠르기로 6%(먼 벽 4.9% · 가까운 문틀 5.8~7.8%의 가운데, 엄마는 문 앞), 중심 가로 44% · 세로 64%
+    19: lambda t: (lambda s: (0.44 * (1 - 1 / s), 0.64 * (1 - 1 / s), s))(1 + 0.06 * t / 3.0),
+    # 20 오른쪽으로 미끄러짐 — 2.17초 내내 같은 빠르기로 내용이 왼쪽 8.2%
+    20: lambda t: (0.082 / 1.09 * t / 2.17, (1 - 1 / 1.09) / 2, 1.09),
+    # 21 아래로 기욺(0~2.6초, 내용 위로 4.3%) → 끝 1.3초 0.8% 되돌아옴 · 오른쪽으로 돎(2.1초에 들어와 0.7초 동안 빨라져 초당 1.47% — 끝에 4.4%)
+    21: lambda t: (ramp(t, 2.1, 0.7, 0.0147) / 1.06, (0.043 * smooth(t / 2.6) - 0.008 * smooth((t - 4.14) / 1.3)) / 1.06, 1.06),
+}
+
+
+@functools.lru_cache(maxsize=None)
+def still(n):
     if n in (2, 17):
         return Image.new("RGB", (W, H), (0, 0, 0))
     return Image.open(os.path.join(CUTS, f"S{n:02d}.jpg")).convert("RGB").resize((W, H))
+
+
+def shot_img(n, tr=0.0):
+    im = still(n)
+    if n not in CAM:
+        return im.copy()
+    x0, y0, s = CAM[n](tr)
+    return im.transform((W, H), Image.AFFINE, (1 / s, 0, x0 * W, 0, 1 / s, y0 * H), resample=Image.BICUBIC)
 
 
 def text_c(d, xy, s, font, fill=(245, 243, 238)):
@@ -44,8 +82,8 @@ def text_c(d, xy, s, font, fill=(245, 243, 238)):
 
 
 def frame(t):
-    n = [s for s, st in SHOTS if st <= t + 1e-6][-1]
-    im = shot_img(n)
+    n, st = [(s, st) for s, st in SHOTS if st <= t + 1e-6][-1]
+    im = shot_img(n, t - st)
     d = ImageDraw.Draw(im)
     for a, b, lines in CARDS:
         if a <= t < b:
@@ -80,8 +118,14 @@ def song_graph(chorus, outro, outro_at=49.2):
 
 def build(narr, music=None, music_at=0.0, song=None, tag=""):
     os.makedirs(os.path.join(OUT, "프레임"), exist_ok=True)
+    moving = []   # 움직이는 컷은 1/FPS초마다 한 장
+    for k, (n, st) in enumerate(SHOTS):
+        if n in CAM:
+            en = SHOTS[k + 1][1] if k + 1 < len(SHOTS) else TOTAL
+            moving += [st + i / FPS for i in range(int((en - st) * FPS) + 1)]
     cuts = sorted({0.0, TOTAL, *[st for _, st in SHOTS], *[x for a, b, _ in SUBS for x in (a, b)],
-                   *[x for a, b, _ in CARDS for x in (a, b)], *[x for a, b, _, _ in ENDLINES for x in (a, b)], LOGO[0]})
+                   *[x for a, b, _ in CARDS for x in (a, b)], *[x for a, b, _, _ in ENDLINES for x in (a, b)], LOGO[0],
+                   *[round(x, 4) for x in moving]})
     cuts = [c for c in cuts if 0 <= c <= TOTAL]
     lst = os.path.join(OUT, "프레임", "목록.txt")
     with open(lst, "w", encoding="utf-8") as fh:

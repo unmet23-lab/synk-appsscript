@@ -12,6 +12,9 @@ from PIL import Image
 
 V = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p6/"
 REFS = {"R1", "R2", "R3", "S20", "E50", "S04"}   # S04: 3번 포스터를 4번 판과 같게(S03c 참조)
+# 16:9로 자른 뒤 원본 크기에 맞춰 한 번 더 자르는 판(왼쪽 위 가로 · 세로 비율, 남길 크기 비율) — 색 · 밝기는 손대지 않고 자리만
+# 21번(10-27): S21c · S21d는 코끝 41%로 자리가 맞았지만 머리가 원본보다 작았다 → 80.6%만 남겨 사람 40~96%(원본 38~95%), 2201×1238이라 1920×1080보다 크다
+FRAME = {"S21": (0.0765, 0.10, 0.806)}
 
 
 def pick(name, src):
@@ -26,6 +29,11 @@ def pick(name, src):
             nh = round(w * 9 / 16)
             im = im.crop((0, (h - nh) // 2, w, (h - nh) // 2 + nh))
         note += " → 가운데 16:9로 자름"
+    if name in FRAME:
+        x0, y0, s = FRAME[name]
+        w, h = im.size
+        im = im.crop((round(x0 * w), round(y0 * h), round((x0 + s) * w), round((y0 + s) * h)))
+        note += f" → 원본 크기로 잘라 맞춤(가로 {x0:.2%} · 세로 {y0:.0%}에서 {s:.1%}, {im.size[0]}×{im.size[1]})"
     os.makedirs(V + "정지컷", exist_ok=True)
     os.makedirs(V + "컷", exist_ok=True)
     shutil.copyfile(src, V + f"정지컷/{name}{os.path.splitext(src)[1]}")

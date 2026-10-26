@@ -35,8 +35,12 @@ def rows_from_02():
             continue
         cells = [c.strip() for c in m.group(2).split("|")]
         n = int(m.group(1))
-        out[n] = {"t": clean(cells[0]), "ours": RESULT.get(n, clean(cells[1])), "say": clean(cells[2]), "snd": clean(cells[3])}
+        out[n] = {"t": clean(cells[0]), "ours": RESULT.get(n, clean(cells[1])), "cam": clean(re.sub(r"\[([^]]*)\]\([^)]*\)", r"\1", cells[2])),
+                  "say": clean(cells[3]), "snd": clean(cells[4])}
     return out
+
+
+MOVING = (19, 20, 21)   # 원본 카메라가 움직이는 컷 — 원본 칸에 끝 프레임을 작게 함께(02 7-1절)
 
 
 def wrap(d, text, font, width):
@@ -84,18 +88,24 @@ def ours(n, TW, TH):
 def board(rows, ns, path, page, pages):
     TW, TH = 576, 324
     TXT = 940
-    RH = TH + 28
+    RH = TH + 64
     Wd = 40 + TW * 2 + 24 + TXT + 40
     Hd = 190 + RH * len(ns) + 30
     im = Image.new("RGB", (Wd, Hd), BG)
     d = ImageDraw.Draw(im)
     d.text((40, 34), "연말 빈방 · 이미지 콘티  ·  원본 15조각의 자리 · 초 · 구도 · 빛 그대로", font=F("ExtraBold", 40), fill=INK)
-    d.text((40, 92), f"{page}/{pages}   왼쪽: 원본 조각 첫 프레임 · 가운데: 우리 그림(같은 카메라 자리 · 크기 · 빛, 받은 색 그대로) · 오른쪽: 우리 초 · 화면 · 말 · 소리", font=F("Medium", 22), fill=DIM)
+    d.text((40, 92), f"{page}/{pages}   왼쪽: 원본 조각 첫 프레임(움직이는 컷은 끝 프레임을 작게) · 가운데: 우리 그림(같은 카메라 자리 · 크기 · 빛, 받은 색 그대로) · 오른쪽: 우리 초 · 화면 · 카메라(원본 실측) · 말 · 소리", font=F("Medium", 22), fill=DIM)
     d.text((40, 128), "글판 · 자막 · 끝 문구 · 로고는 후반에서 얹는다(2 · 17은 글판 시안). 자리 표시(AI 그림): 침대 위 새 겨울 이불(블렌더로 바꿀지 정함) · 벽 액자 속 얼굴(영상 시작 그림에서 은정 · 지유로).", font=F("Medium", 22), fill=(236, 170, 120))
     for i, n in enumerate(ns):
         y = 190 + i * RH
         r = rows[n]
         im.paste(frame(n).resize((TW, TH)), (40, y))
+        end = os.path.join(V, "원본프레임", f"F{n:02d}_끝.jpg")
+        if n in MOVING and os.path.exists(end):
+            iw, ih = TW // 3, TH // 3
+            im.paste(Image.open(end).convert("RGB").resize((iw, ih)), (40 + TW - iw - 6, y + TH - ih - 6))
+            d.rectangle([40 + TW - iw - 7, y + TH - ih - 7, 40 + TW - 6, y + TH - 6], outline=GOLD, width=2)
+            d.text((40 + TW - iw - 4, y + TH - ih - 34), "끝 프레임", font=F("ExtraBold", 20), fill=GOLD, stroke_width=2, stroke_fill=(0, 0, 0))
         b = ours(n, TW, TH)
         if b is not None:
             im.paste(b, (40 + TW + 12, y))
@@ -106,7 +116,8 @@ def board(rows, ns, path, page, pages):
         d.text((x, y - 2), f"#{n}", font=F("Heavy", 44), fill=GOLD)
         d.text((x + 100, y + 10), r["t"], font=F("ExtraBold", 24), fill=INK)
         yy = y + 62
-        for label, key, fnt, col, mx in (("화면", "ours", F("SemiBold", 21), INK, 4), ("말", "say", F("SemiBold", 21), (250, 214, 160), 4), ("소리", "snd", F("Medium", 19), DIM, 2)):
+        for label, key, fnt, col, mx in (("화면", "ours", F("SemiBold", 21), INK, 3), ("카메라", "cam", F("SemiBold", 19), (150, 205, 240), 2),
+                                         ("말", "say", F("SemiBold", 21), (250, 214, 160), 4), ("소리", "snd", F("Medium", 19), DIM, 2)):
             d.text((x, yy), label, font=F("ExtraBold", 20), fill=GOLD)
             for ln in wrap(d, r[key], fnt, TXT - 70)[:mx]:
                 d.text((x + 64, yy), ln, font=fnt, fill=col)
