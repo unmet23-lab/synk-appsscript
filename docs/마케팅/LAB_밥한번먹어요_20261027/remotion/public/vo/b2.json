@@ -1,0 +1,49 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "아, 네. 그냥, 다음에요.",
+ "dur": 2.192,
+ "words": [
+  {
+   "text": "아,",
+   "start": 0.02,
+   "end": 0.04
+  },
+  {
+   "text": "네.",
+   "start": 0.262,
+   "end": 0.363
+  },
+  {
+   "text": "그냥,",
+   "start": 0.746,
+   "end": 1.15
+  },
+  {
+   "text": "다음에요.",
+   "start": 1.331,
+   "end": 2.192
+  }
+ ],
+ "source": {
+  "key": "f4c7af739dd7015a450bd8cc4c9daecb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "바리스타가 손님에게 인사로 「다음에 밥 한번 먹어요!」라고 했는데, 손님이 진지하게 「언제요? 화요일 7시?」라며 날짜를 잡으려 한다. 바리스타는 웃음이 굳은 채 어색하게 얼버무린다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

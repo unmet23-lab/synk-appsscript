@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "POV: you learned Korean from an app… and the barista asks you to dinner?! 🍚 #learnkorean",
+  "caption": "“다음에 밥 한번 먹어요!” (Let's grab a meal sometime!) — your textbook brain says: a dinner invite! 📅\nIn real life it's usually just a friendly goodbye, like “see you around.” No date needed. 😅\n\nWhen you hear it, just say:\n👉 네, 좋아요! — Sounds good!\n(Between friends you'll hear the casual version: 다음에 밥 한번 먹자!)\n(If they really mean it, they'll ask you for a date. 😉)\n\nWhat other Korean “polite lies” do you know? 👇\n\n🎮 Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #korean",
+  "pinnedComment": "One more: 언제 한번 봐요! (Let's meet up sometime!) 😉 Usually just a friendly goodbye, too. Your turn 👇\n🎮 New to Korean? Listening & reading mini games → https://synk.im/try/learning-hub/",
+  "alt": [
+    "A needle-felted café. A small coral ghost-shaped plush stands on the counter next to an iced americano while a felt barista waves goodbye and says “다음에 밥 한번 먹어요!” (Let's grab a meal sometime!). The plush lights up, opens a felt calendar on its phone and asks “와! 언제요? 화요일 7시?” (Wow! When? Tuesday at 7?). The barista's wave freezes with an awkward smile — “아, 네. 그냥, 다음에요.” (Uh… yeah. Just… sometime.) — under a NOT A REAL PLAN stamp. A paused-café card titled REAL KOREAN THAT WORKS explains: 다음에 밥 한번 먹어요 is not a real plan, it means “See you around!”; when you hear it, just say 네, 좋아요! (Sounds good!), with a pause to say it out loud. The plush says it, the barista happily waves “네! 또 오세요!” (Great! Come again!), and the video asks what other Korean “polite lies” you know."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = bap-en v3(24.2초, 렌더 → 음량마감 −14.6 LUFS → CBR 10M 다시 담기). 표지 cover.png = 1.2초(36프레임 — POV 제목 · 손 흔드는 바리스타 · 반짝이는 몽글 · 「Let's grab a meal sometime!」). 어린이 전용 아님(댓글 놀이가 필요). 합성 표시: 필수 아님 — 펠트 인형 장면은 GPT 이미지로 구웠지만 실제 사람 · 장소 · 사건으로 보이지 않는 인형극이고, 목소리는 특정인이 아닌 TTS(E3 · 퀴즈 편과 같은 판단). 동영상 언어: 대사가 한국어(바리스타 · 해설의 한국어 줄)와 영어(해설)가 섞임 — 오디오 언어 ko, 제목 · 설명 en. 자동 더빙 끔.",
+  "version": "bap-en-v3"
+}

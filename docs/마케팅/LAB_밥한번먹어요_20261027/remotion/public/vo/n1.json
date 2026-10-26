@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "It's not a real plan. It just means, see you around!",
+ "dur": 4.15,
+ "words": [
+  {
+   "text": "It's",
+   "start": 0.05,
+   "end": 0.23
+  },
+  {
+   "text": "not",
+   "start": 0.35,
+   "end": 0.571
+  },
+  {
+   "text": "a",
+   "start": 0.631,
+   "end": 0.651
+  },
+  {
+   "text": "real",
+   "start": 0.731,
+   "end": 0.952
+  },
+  {
+   "text": "plan.",
+   "start": 1.012,
+   "end": 1.393
+  },
+  {
+   "text": "It",
+   "start": 1.754,
+   "end": 1.854
+  },
+  {
+   "text": "just",
+   "start": 1.954,
+   "end": 2.215
+  },
+  {
+   "text": "means,",
+   "start": 2.275,
+   "end": 2.716
+  },
+  {
+   "text": "see",
+   "start": 2.916,
+   "end": 3.017
+  },
+  {
+   "text": "you",
+   "start": 3.097,
+   "end": 3.197
+  },
+  {
+   "text": "around!",
+   "start": 3.257,
+   "end": 3.959
+  }
+ ],
+ "source": {
+  "key": "c2a9360250bbc339adba354e6e6d7279",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "The barista said, let's grab a meal sometime. The customer took out a calendar and tried to book a date. Here's what that phrase really means in Korean.",
+   "next": "네, 좋아요!"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

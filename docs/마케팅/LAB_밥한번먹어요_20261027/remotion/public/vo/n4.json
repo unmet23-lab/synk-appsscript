@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n4",
+ "text": "What other Korean polite lies do you know?",
+ "dur": 2.86,
+ "words": [
+  {
+   "text": "What",
+   "start": 0.02,
+   "end": 0.221
+  },
+  {
+   "text": "other",
+   "start": 0.382,
+   "end": 0.584
+  },
+  {
+   "text": "Korean",
+   "start": 0.664,
+   "end": 1.127
+  },
+  {
+   "text": "polite",
+   "start": 1.188,
+   "end": 1.63
+  },
+  {
+   "text": "lies",
+   "start": 1.691,
+   "end": 1.993
+  },
+  {
+   "text": "do",
+   "start": 2.053,
+   "end": 2.114
+  },
+  {
+   "text": "you",
+   "start": 2.194,
+   "end": 2.295
+  },
+  {
+   "text": "know?",
+   "start": 2.395,
+   "end": 2.86
+  }
+ ],
+ "source": {
+  "key": "7688e036ace86b2c67ff648632007f97",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

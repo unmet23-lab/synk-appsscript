@@ -244,7 +244,7 @@ export const KidsQuestion: React.FC<{
 
       {nextArt !== undefined && f >= TEASE ? <NextTease f={f} fps={fps} art={nextArt} ui={ui} motion={motion} /> : null}
 
-      {ui.bubble ? <HostBubble f={f} fps={fps} ui={ui} why={kidsWhy(lang, ai)} say0={say0} /> : null}
+      {ui.bubble ? <HostBubble f={f} fps={fps} ui={ui} why={kidsWhy(lang, ai)} say0={say0} first={index === 0} /> : null}
 
       {/* 몽글 진행자 — 자리 고정, 표정만 컷 */}
       <Img src={staticFile(motion ? blinkSrc(hostFor(f, index), f, index) : hostFor(f, index))} style={{ position: 'absolute', left: 4, top: 1294, width: 316, height: 'auto', filter: 'drop-shadow(0 14px 0 rgba(27,42,90,0.35))', ...(motion ? hostBreath(f, qStart(index)) : {}) }} />
@@ -255,11 +255,12 @@ export const KidsQuestion: React.FC<{
 /** 퀴즈 #7 몽골판(10-26): 몽글 말풍선 — 한국어로만 나오는 진행 소리(제목 · 땡 · 셋 둘 하나 · 딩동댕)를 그 박에 몽골어로 옮기고,
  *  정답 때는 「왜 그 뜻인지」 한 줄을 붙인다. 퀴즈 #6 몽골판이 이해 시험에서 「진행 소리를 못 알아듣고 왜 그 뜻인지 없다」로 버려진 자리.
  *  자리는 몽글 오른쪽 빈칸(SAY IT 알약이 뜨기 전까지) — 알약이 뜨면 걷는다. */
-const HostBubble: React.FC<{ f: number; fps: number; ui: KidsUi; why?: string; say0: number }> = ({ f, fps, ui, why, say0 }) => {
+const HostBubble: React.FC<{ f: number; fps: number; ui: KidsUi; why?: string; say0: number; first?: boolean }> = ({ f, fps, ui, why, say0, first }) => {
   const b = ui.bubble!;
   // [박, 큰 줄, 작은 줄, 정답인가]
   const steps: [number, string, string | undefined, boolean][] = [
-    [0, b.title, undefined, false],
+    // 10-27 v4: 첫 문제 0초는 「글자 그대로 이해하면 틀려!」를 크게 + 「이게 무슨 뜻일까?」(한 문장의 알맹이를 0초에)
+    first && b.first ? [0, b.first[0], b.first[1], false] : [0, b.title, undefined, false],
     [T.strike, b.nope[0], b.nope[1], false],
     [T.count[0], b.count[0], b.count[1], false],
     [T.reveal, b.right, why, true],
@@ -275,7 +276,7 @@ const HostBubble: React.FC<{ f: number; fps: number; ui: KidsUi; why?: string; s
     <div style={{ position: 'absolute', left: 318, top: 1316, width: 690, opacity: out, scale: `${0.86 + 0.14 * sp}`, transformOrigin: '0% 50%' }}>
       <div style={{ position: 'absolute', left: -20, top: 40, width: 40, height: 40, background: K.white, borderLeft: `7px solid ${K.navy}`, borderBottom: `7px solid ${K.navy}`, rotate: '45deg' }} />
       <div style={{ ...panel(36, 10, K.white), padding: '16px 28px 18px' }}>
-        <div style={{ font: `900 ${right ? 60 : 52}px/1.12 ${EN}`, color: right ? K.meadow : K.navy, textWrap: 'balance' }}>{ko(main)}</div>
+        <div style={{ font: `900 ${right ? 60 : first && i === 0 ? 64 : 52}px/1.12 ${EN}`, color: right ? K.meadow : first && i === 0 ? K.coral : K.navy, textWrap: 'balance' }}>{ko(main)}</div>
         {sub ? <div style={{ marginTop: 6, font: `800 40px/1.2 ${EN}`, color: K.navy, textWrap: 'balance', opacity: ramp(f, at + (right ? 6 : 3), 6) }}>{sub}</div> : null}
       </div>
     </div>

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "네! 또 오세요!",
+ "dur": 1.089,
+ "words": [
+  {
+   "text": "네!",
+   "start": 0.02,
+   "end": 0.081
+  },
+  {
+   "text": "또",
+   "start": 0.142,
+   "end": 0.264
+  },
+  {
+   "text": "오세요!",
+   "start": 0.529,
+   "end": 0.976
+  }
+ ],
+ "source": {
+  "key": "3406fa3034fb864c6ee6684b03f3dd2c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

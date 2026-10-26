@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1027,
+  "lufs": -15.5
+ },
+ "made": "2026-10-26T22:22:00.775Z",
+ "lines": [
+  {
+   "id": "b1",
+   "text": "다음에 밥 한번 먹어요!",
+   "dur": 1.511,
+   "syllablesPerSec": 5.96,
+   "src": "b1.wav",
+   "key": "84c0eddc5d62c10c09b88e3f024a9eb6",
+   "words": 4
+  },
+  {
+   "id": "b2",
+   "text": "아, 네. 그냥, 다음에요.",
+   "dur": 2.192,
+   "syllablesPerSec": 3.65,
+   "src": "b2.wav",
+   "key": "f4c7af739dd7015a450bd8cc4c9daecb",
+   "words": 4
+  },
+  {
+   "id": "b3",
+   "text": "네! 또 오세요!",
+   "dur": 1.089,
+   "syllablesPerSec": 4.59,
+   "src": "b3.wav",
+   "key": "3406fa3034fb864c6ee6684b03f3dd2c",
+   "words": 3
+  },
+  {
+   "id": "n1",
+   "text": "It's not a real plan. It just means, see you around!",
+   "dur": 4.15,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "c2a9360250bbc339adba354e6e6d7279",
+   "words": 11
+  },
+  {
+   "id": "n2",
+   "text": "네, 좋아요!",
+   "dur": 1.777,
+   "syllablesPerSec": 2.25,
+   "src": "n2.wav",
+   "key": "2c30618b097ddbe79d7e5ebe936fe72b",
+   "words": 2
+  },
+  {
+   "id": "n4",
+   "text": "What other Korean polite lies do you know?",
+   "dur": 2.86,
+   "syllablesPerSec": null,
+   "src": "n4.wav",
+   "key": "7688e036ace86b2c67ff648632007f97",
+   "words": 8
+  }
+ ]
+}

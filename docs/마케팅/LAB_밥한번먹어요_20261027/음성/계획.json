@@ -1,0 +1,66 @@
+{
+  "note": "LAB E8 「다음에 밥 한번 먹어요」 — B 갈래 인물 그대로: 바리스타 = 범수(역할 목소리), 해설 = 하나(LAB 목소리). 몽글은 말하지 않는다(말풍선 + 사운드킷 몽글 소리). n3 「Your turn. Say it out loud!」는 E3(앱으로배운한국어_20261025) 파일을 그대로 쓴다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_밥한번먹어요_20261027/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "b1",
+      "text": "다음에 밥 한번 먹어요!",
+      "lang": "ko",
+      "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+      "emotion": "happy",
+      "lufs": -15.5
+    },
+    {
+      "id": "b2",
+      "text": "아, 네. 그냥, 다음에요.",
+      "lang": "ko",
+      "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+      "emotion": "smart",
+      "prev": "바리스타가 손님에게 인사로 「다음에 밥 한번 먹어요!」라고 했는데, 손님이 진지하게 「언제요? 화요일 7시?」라며 날짜를 잡으려 한다. 바리스타는 웃음이 굳은 채 어색하게 얼버무린다.",
+      "next": "",
+      "lufs": -15.5
+    },
+    {
+      "id": "b3",
+      "text": "네! 또 오세요!",
+      "lang": "ko",
+      "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+      "emotion": "happy",
+      "lufs": -15.5
+    },
+    {
+      "id": "n1",
+      "text": "It's not a real plan. It just means, see you around!",
+      "emotion": "smart",
+      "prev": "The barista said, let's grab a meal sometime. The customer took out a calendar and tried to book a date. Here's what that phrase really means in Korean.",
+      "next": "네, 좋아요!"
+    },
+    {
+      "id": "n2",
+      "text": "네, 좋아요!",
+      "lang": "ko",
+      "emotion": "happy",
+      "tempo": 0.9
+    },
+    {
+      "id": "n4",
+      "text": "What other Korean polite lies do you know?",
+      "emotion": "happy",
+      "intensity": 1.1
+    }
+  ]
+}

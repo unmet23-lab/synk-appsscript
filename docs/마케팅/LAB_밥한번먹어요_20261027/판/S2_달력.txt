@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — second shot of the same short comedy video: the little customer takes the barista's casual "let's eat sometime" literally and eagerly opens its calendar to book a date. Needle-felted wool miniature set, photographed like a real macro photo.
+
+The FIRST attached image is the opening frame of this film: keep exactly the same café set, the same oak counter, the same iced americano cup and the same warm morning light. The other attached photos show the mascot.
+
+FORMAT: one PORTRAIT image, 2:3. The video crops about 8% off the left and right edges — keep Mongle and the phone inside the central 84% of the width.
+
+SHOT: a closer shot of Mongle on the counter, camera at counter height, slightly from the barista's side. Mongle (the coral needle-felted wool ghost-shaped mascot from the attached reference photos — use them ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped hem with the cream running stitch and glossy black bead eyes; no arms, no legs, no hands, ever) stands center-left, its body about 40% of the image height. IMPORTANT: the top of Mongle's head is at about 50% of the image height, so the whole upper half of the image is calm, out-of-focus café background (a speech bubble will be drawn there).
+Expression: SUPER EAGER — glossy bead eyes huge and shining, a wide open happy mouth, extra-pink cheeks, leaning forward, as if it just got invited to a party. Two tiny butter-yellow felt sparkle stars float beside its head (not attached to anything).
+Right next to Mongle, leaning against its hem, stands a small felt smartphone (charcoal felt frame, cream felt screen) turned so the screen faces the camera. On the screen: a simple felt calendar — a grid of small cream felt squares (5 columns, 4 rows) on a mint-green felt header bar, and ONE square circled with a thick butter-yellow felt ring. No numbers, no letters.
+The iced americano cup stands just behind the phone, a little out of focus.
+
+Background (soft focus): the cream felt wall, the charcoal-and-lapis espresso machine, the row of felt cups, the pendant lamps, and the barista's sage-green apron partly visible at the right edge, out of focus. Warm morning window light from the upper left, shallow depth of field, visible wool fibers.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image — the calendar has no digits.

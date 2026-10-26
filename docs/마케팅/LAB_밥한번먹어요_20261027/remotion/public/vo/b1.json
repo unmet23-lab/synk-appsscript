@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "다음에 밥 한번 먹어요!",
+ "dur": 1.511,
+ "words": [
+  {
+   "text": "다음에",
+   "start": 0.02,
+   "end": 0.365
+  },
+  {
+   "text": "밥",
+   "start": 0.425,
+   "end": 0.567
+  },
+  {
+   "text": "한번",
+   "start": 0.648,
+   "end": 0.911
+  },
+  {
+   "text": "먹어요!",
+   "start": 0.972,
+   "end": 1.511
+  }
+ ],
+ "source": {
+  "key": "84c0eddc5d62c10c09b88e3f024a9eb6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
