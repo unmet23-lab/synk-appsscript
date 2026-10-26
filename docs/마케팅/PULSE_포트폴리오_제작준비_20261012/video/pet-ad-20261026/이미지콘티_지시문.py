@@ -283,6 +283,16 @@ fix("S09d", ("The room behind is EMPTY and soft, out of focus:",
              "The room behind is the same studio as in the other shots, seen in the same direction: the big window with the sheer curtain, "
              "the bed and the potted plant are on the RIGHT side of the frame behind the dog, the glass middle door on the LEFT side "
              "behind. The room is EMPTY and soft, out of focus:"))
+# 9 시작 그림(10-26 밤, 유호님 「카메라 기법도 원본과 똑같게」) — 원본 9는 개 오른쪽 옆 20° 안팎에서 정면까지 2.6초 같은 빠르기로 도는 아크
+# (+ 1.09배 다가감, 원본실측 카메라_세밀.json). 그래서 S09d(정면)는 끝 그림, S09e(옆 3/4)를 시작 그림으로 굽는다 — 끝 그림을 같은 개 · 방 참고로 넣는다.
+shots["S09e"] = {"refs": shots["S09d"]["refs"] + [ref("S09d_끝.jpg")], "prompt": shots["S09d"]["prompt"]}
+fix("S09e", ("It faces the camera dead-on with the cool, serious look of a model on a magazine cover;",
+             "Image 4 is the same dog, jacket, sunglasses and room seen dead-on from the front — keep all of them identical; only the "
+             "camera stands about twenty degrees off to the dog's right side, so its body and the life jacket are seen in three-quarter "
+             "view (the right side of the jacket visible) and its head is turned a little toward the camera, with the cool, serious look "
+             "of a model on a magazine cover;"),
+    ("Camera: at the dog's eye level, very close, slightly from below.",
+     "Camera: at the dog's eye level, very close, slightly from below, about twenty degrees to the dog's right side."))
 for k, v in shots.items():
     v["ratio"] = "9:16"
 jobs.update(shots)
