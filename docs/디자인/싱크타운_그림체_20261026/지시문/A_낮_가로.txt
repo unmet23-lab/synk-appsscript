@@ -1,0 +1,25 @@
+Create ONE photograph (landscape, 3:2). Use the image generation tool once and output only that image.
+
+WHAT IT IS
+A real tabletop photograph of a handmade needle-felted wool miniature diorama: a tiny Korean neighbourhood called the "tea-house alley". It must look like the same world, the same hand and the same photo studio as reference image 1 (felt miniature town on a soft sky-blue backdrop): needle-felted wool and knitted textures everywhere, soft fuzzy fibres, visible tiny stitches, chunky rounded shapes, warm and cosy, expensive handmade quality. Not a 3D render, not plastic, not clay, not low-poly.
+
+THE DIORAMA BLOCK
+The whole alley sits on one thick square felt base block (about 2 cm thick at this scale), seen whole, floating slightly above a plain soft sky-blue paper backdrop with a soft contact shadow under it, exactly like reference 1. The base's cut edge is visible on the two near sides and shows felt layers: green grass felt on top, a brown soil felt layer, and a grey pebble-felt layer at the bottom. Leave clear empty backdrop around the block on all sides (at least 8% margin), the block fills about 75% of the frame width.
+
+LAYOUT (packed close together like a real miniature, no big empty lawns)
+- Centre, largest: the TEA HOUSE. A small open-fronted Korean pavilion with a dark navy felt tiled roof whose eaves curve and lift at the corners (Korean giwa roof, the tile rows shown as stitched felt ridges, little white dots at the eave ends). Honey-coloured wooden floor deck (maru) in front. A coral felt awning with a soft wavy scalloped edge along the front. Inside: shelves with tiny felt tea jars in cream, sage, coral and butter yellow, a counter, a warm glow. On the deck: a round white table with a felt teapot and two cups, two round wooden stools.
+- Left: OUR HOUSE. A small white felt Korean cottage with the same curved navy tile roof, a wooden door, one big round lattice window, and under the window a little wooden reading bench with a coral cushion and a window box of tiny felt flowers.
+- Right: the WORKSHOP. White walls, an asymmetric sloping navy-slate roof, open front, a wooden workbench with tiny felt tools and stacked planks, a lapis-blue felt cloth hanging from a post.
+- Behind the tea house: a small GLASSHOUSE with a sage-green frame and clear panes, felt vegetable plants and tiny red tomatoes inside.
+- In front of the three buildings: one shared courtyard of pale felt stone tiles, two small wooden benches, felt stepping stones leading off into the grass, a small round pond with felt lily pads and a white felt foam ring at its rim, one pink blossom tree and one green round tree, round felt bushes with tiny white and pink flowers along the edges.
+
+CHARACTERS (small, the same scale relation to the buildings as the friends in reference 1)
+- Mongle (reference image 2): exactly its face, shape and colour from reference 2, needle-felted; standing on the courtyard in front of the tea house, three-quarter view facing the tea house, with a soft contact shadow.
+- Two townspeople as felt dolls, redesigned in the same needle-felt toy style but keeping their identities from reference image 3: the tea-house owner (dark hair, cream shirt, sage-green apron) standing behind the round table holding a tiny teapot; the professor (the lavender egg-shaped character with round black glasses and a white moustache) sitting on a stool at the round table.
+- No other characters.
+
+CAMERA AND LIGHT
+Fixed elevated three-quarter view, looking down about 35 degrees, the block's front-left corner nearest the camera, orthographic-like (very little perspective distortion), the whole diorama sharp with only a very slight tilt-shift softness at the extreme top and bottom of the frame. Bright soft daylight from the upper left, gentle soft shadows, clean natural colours, same white balance as reference 1.
+
+DO NOT
+No letters, words, numbers, signs with writing or logos anywhere. No UI. Do not paste or cut out the reference characters; felt them fresh into the scene with real contact shadows. Do not add cars, roads, electric poles or modern apartment blocks.

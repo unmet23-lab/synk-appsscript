@@ -1,0 +1,15 @@
+Create ONE photograph (landscape, 3:2). Use the image generation tool once and output only that image.
+
+Reference image 1 is a finished photograph of a needle-felted wool miniature diorama (a small Korean tea-house alley). Photograph THE SAME DIORAMA AGAIN AT DUSK, as if the set never moved and only the studio lights were changed.
+
+KEEP EXACTLY THE SAME
+The same camera position, angle, lens and framing; the same block, buildings, roofs, awning, glasshouse, trees, bushes, pond, benches, stepping stones and props in the same places; the same three characters (the coral felt Mongle on the courtyard, the tea-house owner with the teapot behind the round table, the lavender professor with round glasses sitting at the table) in the same poses and places. Do not add, remove, move or redesign anything.
+
+CHANGE ONLY THE LIGHT
+- Early evening just after sunset: a low warm golden-pink key light from the right side of the frame, so the soft shadows of the trees, the bench and the characters now fall long towards the left (clearly longer than at noon).
+- The backdrop paper turns from sky blue to a soft dusk gradient (peach near the bottom, lavender-blue at the top).
+- Warm interior glow from the tea house, the round window of the house and the workshop; the small hanging lanterns are lit and throw warm pools of light on the wooden deck and the stone tiles; the glasshouse glows faintly from inside.
+- Overall a little darker and cosier, felt fibres still readable, gentle haze, no harsh black shadows.
+
+DO NOT
+No letters, words, numbers or logos anywhere. No UI. No new objects, no fireflies, no stars, no moon.

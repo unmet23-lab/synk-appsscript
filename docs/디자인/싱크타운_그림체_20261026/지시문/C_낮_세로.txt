@@ -1,0 +1,13 @@
+Create ONE photograph (portrait, 2:3). Use the image generation tool once and output only that image.
+
+Reference image 1 is a finished photograph of a needle-felted wool miniature diorama (a small Korean tea-house alley) in daylight. Photograph THE SAME DIORAMA AGAIN for a phone screen held upright.
+
+KEEP THE SAME
+The same diorama block with its felt layers, the same buildings, roofs, coral awning, glasshouse, trees, bushes, pond, benches, stepping stones and props, the same three characters (the coral felt Mongle on the courtyard, the tea-house owner with the teapot behind the round table, the lavender professor with round glasses sitting at the table) in the same places and poses, the same bright soft daylight from the upper left and the same sky-blue backdrop. Do not add, remove or redesign anything.
+
+CHANGE ONLY THE FRAMING
+- Portrait frame. The camera is the same fixed elevated three-quarter view looking down about 35 degrees, a little higher and a little closer so the tea house sits in the middle of the frame and the whole block still fits from left edge to right edge (the block may touch about 4% from the left and right sides).
+- Leave plain empty sky-blue backdrop in the top 14% of the frame and in the bottom 24% of the frame for on-screen buttons; the block sits in the space between, with its soft contact shadow below it.
+
+DO NOT
+No letters, words, numbers or logos anywhere. No UI drawn in the picture. Do not crop any building.
