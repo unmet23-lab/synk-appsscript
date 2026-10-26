@@ -89,7 +89,10 @@ function standingHeight(body) {
 // reads as vinyl: this mode swaps the weave for coarser matted wool, deepens the
 // nap, felts the hard trims, thickens the running stitch and adds a short fibre halo. Without
 // it every material, mesh and draw call stays exactly as before.
-const DIORAMA = Object.freeze({ nap: 2.4, napMax: 1.5, stitch: 1.8, thread: .0105, fibres: 7000, phoneFibres: 3600, minFibres: 12 });
+const DIORAMA = Object.freeze({ nap: 2.4, napMax: 1.5, stitch: 1.8, thread: .0105, groundShade: .34, fibres: 7000, phoneFibres: 3600, minFibres: 12 });
+// Doll proportions for the diorama humans (rig units; the professor is already a felt doll).
+const DOLL = Object.freeze({ legLength: .76, legGirth: 1.42, hipSpread: 1.06, armLength: .84, armGirth: 1.16, body: [1.1, 1.08], shoulderSpread: .95, shoulderY: .46, mitten: [.1, .106, .095],
+  torso: [[0, -.025], [.29, -.022], [.335, .02], [.352, .15], [.348, .32], [.33, .45], [.282, .55], [.2, .6], [0, .615]], armOut: .17, elbowRest: -.22 });
 const napFor = (c, value) => c.felt === 'diorama' ? Math.min(DIORAMA.napMax, value * DIORAMA.nap) : value;
 const textileCache = new WeakMap(), dioramaTextileCache = new WeakMap();
 function residentTextiles(shared, diorama = false) {
@@ -291,80 +294,102 @@ function makeHuman(parent, shared, c, mobile) {
   const body = group(parent); body.scale.setScalar(WORLD_SCALE); body.name = `resident-${c.id}-human`;
   const rig = group(body); rig.scale.setScalar(c.stature); const m = materialsFor(shared, c);
   const sphere = new THREE.SphereGeometry(1, mobile ? 20 : 28, mobile ? 14 : 20);
-  const pelvisY = .72, torso = group(rig, [0, .75, 0]);
-  const torsoProfile = [[0, -.025], [.27, -.022], [.32, .01], [.335, .13], [.32, .35], [.375, .48], [.30, .57], [.215, .615], [0, .615]];
+  // A diorama resident is a needle-felt doll, not a mannequin: shorter, thicker
+  // legs, a rounder body, short thick arms with mitten hands and round felt feet
+  // without a hard sole. Without the option every factor is 1 and nothing moves.
+  const doll = c.felt === 'diorama', legLength = doll ? DOLL.legLength : 1, legGirth = doll ? DOLL.legGirth : 1;
+  const armLength = doll ? DOLL.armLength : 1, armGirth = doll ? DOLL.armGirth : 1, [bodyX, bodyZ] = doll ? DOLL.body : [1, 1];
+  const shaped = (profile, girth, length) => profile.map(([r, y]) => [r * girth, y * length]);
+  const pelvisY = .72 * legLength, lower = .72 - pelvisY, torso = group(rig, [0, .75 - lower, 0]);
+  if (doll) torso.scale.set(bodyX, 1, bodyZ);
+  // The doll body is one soft bean with sloped shoulders, not a jacket with a shoulder ledge.
+  const jacket = [[0, -.025], [.27, -.022], [.32, .01], [.335, .13], [.32, .35], [.375, .48], [.30, .57], [.215, .615], [0, .615]];
+  const torsoProfile = doll ? DOLL.torso : jacket;
+  // Costume details are placed for the jacket body; on the doll's bean they move
+  // with its surface so a lapel or pocket never floats off or sinks in.
+  const radiusAt = (profile, y) => { for (let i = 1; i < profile.length; i++) if (profile[i][1] >= y) { const [r0, y0] = profile[i - 1], [r1, y1] = profile[i]; return r0 + (r1 - r0) * (y - y0) / Math.max(1e-6, y1 - y0); } return profile.at(-1)[0]; };
+  const widthAt = doll ? y => { const k = Math.min(.57, Math.max(.02, y)); return radiusAt(torsoProfile, k) / radiusAt(jacket, k); } : () => 1;
+  // A flat patch moves as one: its stitches and buttons take the patch's anchor height.
+  const onBody = doll ? ([x, y, z], anchor = y) => { const k = widthAt(anchor); return [x * k, y, z * k]; } : point => point;
+  const onPaths = (paths, anchors) => paths.map((points, i) => points.map(point => onBody(point, Array.isArray(anchors) ? anchors[i] : anchors)));
   const coat = put(torso, paddedShell(torsoProfile, .72, .027, c.seed, mobile?28:36), m.coat); coat.scale.x = c.shoulders; coat.name = `${c.costume}-body`;
-  put(rig, sphere, m.skin, [0, 1.415, 0], [.125, .145, .11]);
-  const head = group(rig, [0, 1.80, 0]); const eyes = makeFace(head, c, m, sphere); const tail = makeHair(head, c, m, sphere);
+  put(rig, sphere, m.skin, [0, 1.415 - lower, 0], [.125, .145, .11]);
+  const head = group(rig, [0, 1.80 - lower, 0]); const eyes = makeFace(head, c, m, sphere); const tail = makeHair(head, c, m, sphere);
   const legs = [], arms = [];
-  const thighGeometry=paddedShell([[0,-.365],[.099,-.35],[.115,-.29],[.123,-.15],[.131,-.015],[.102,.06],[0,.08]],.94,.027,c.seed,24);
-  const calfGeometry=paddedShell([[0,-.321],[.086,-.31],[.105,-.27],[.111,-.16],[.109,-.025],[.110,.050],[0,.068]],.96,.030,c.seed+1,24);
-  const upperSleeve=paddedShell([[0,-.349],[.089,-.338],[.105,-.286],[.125,-.14],[.137,-.035],[.103,.066],[0,.105]],1.04,.023,c.seed,24);
-  const lowerSleeve=paddedShell([[0,-.218],[.087,-.210],[.098,-.17],[.100,-.050],[.098,.015],[.071,.055],[0,.074]],1.02,.025,c.seed+2,24);
+  const thighGeometry=paddedShell(shaped([[0,-.365],[.099,-.35],[.115,-.29],[.123,-.15],[.131,-.015],[.102,.06],[0,.08]],legGirth,legLength),.94,.027,c.seed,24);
+  const calfGeometry=paddedShell(shaped([[0,-.321],[.086,-.31],[.105,-.27],[.111,-.16],[.109,-.025],[.110,.050],[0,.068]],legGirth,legLength),.96,.030,c.seed+1,24);
+  const upperSleeve=paddedShell(shaped([[0,-.349],[.089,-.338],[.105,-.286],[.125,-.14],[.137,-.035],[.103,.066],[0,.105]],armGirth,armLength),1.04,.023,c.seed,24);
+  const lowerSleeve=paddedShell(shaped([[0,-.218],[.087,-.210],[.098,-.17],[.100,-.050],[.098,.015],[.071,.055],[0,.074]],armGirth,armLength),1.02,.025,c.seed+2,24);
   for (const s of [-1, 1]) {
-    const hip = group(rig, [s * .16, pelvisY, 0]);
+    const hip = group(rig, [s * .16 * (doll ? DOLL.hipSpread : 1), pelvisY, 0]);
     put(hip, thighGeometry, m.trousers);
-    const knee = group(hip, [0, -.31, 0]);
+    const knee = group(hip, [0, -.31 * legLength, 0]);
     put(knee, calfGeometry, m.trousers);
-    const trouserHem=put(knee,new THREE.TorusGeometry(.098,.008,6,20),m.trousers,[0,-.278,0]);trouserHem.rotation.x=Math.PI/2;
-    const foot = group(knee, [0, -.393, .059]);
-    put(foot, roundBox(.225, .16, .345, .065), m.shoe, [0, .07, .025]);
-    put(foot, roundBox(.23, .04, .35, .017), m.sole, [0, .003, .023]);
-    tube(foot, [[-.064, .15, .06], [0, .153, .08], [.064, .15, .06]], .009, m.thread, 10);
+    const trouserHem=put(knee,new THREE.TorusGeometry(.098 * legGirth,.008,6,20),m.trousers,[0,-.278 * legLength,0]);trouserHem.rotation.x=Math.PI/2;
+    const foot = group(knee, [0, -.393 * legLength, .059]);
+    if (doll) {
+      // One round felt nub per foot, flat enough underneath to stand.
+      put(foot, roundBox(.27, .18, .37, .085), m.shoe, [0, .08, .035]);
+      tube(foot, [[-.07, .165, .075], [0, .172, .095], [.07, .165, .075]], .009, m.thread, 10);
+    } else {
+      put(foot, roundBox(.225, .16, .345, .065), m.shoe, [0, .07, .025]);
+      put(foot, roundBox(.23, .04, .35, .017), m.sole, [0, .003, .023]);
+      tube(foot, [[-.064, .15, .06], [0, .153, .08], [.064, .15, .06]], .009, m.thread, 10);
+    }
     legs.push({ hip, knee, foot, side: s });
-    const shoulder = group(torso, [s * (.36 * c.shoulders), .49, 0]);
+    const shoulder = group(torso, [s * (.36 * c.shoulders) * (doll ? DOLL.shoulderSpread : 1), doll ? DOLL.shoulderY : .49, 0]);
     put(shoulder, upperSleeve, m.coat, [s*.017,0,0]);
-    const elbow = group(shoulder, [s * .04, -.30, 0]);
+    const elbow = group(shoulder, [s * .04, -.30 * armLength, 0]);
     put(elbow, lowerSleeve, m.coat, [0,0,.01]);
-    const hand = put(elbow, sphere, m.skin, [0, -.248, .025], [.077, .098, .077]);
-    const cuff = put(elbow, shell([[0,-.024],[.089,-.024],[.094,-.013],[.094,.018],[.088,.025],[0,.025]],1,24), m.shirt, [0, -.191, .016]);
+    const hand = put(elbow, sphere, m.skin, [0, -.248 * armLength, .025], doll ? DOLL.mitten : [.077, .098, .077]);
+    const cuff = put(elbow, shell(shaped([[0,-.024],[.089,-.024],[.094,-.013],[.094,.018],[.088,.025],[0,.025]],armGirth,1),1,24), m.shirt, [0, -.191 * armLength, .016]);
     arms.push({ shoulder, elbow, hand, side: s });
   }
   let heldBook;
   const buttonGeo = new THREE.SphereGeometry(.018, 10, 8);
   if (c.costume === 'apron') {
     const apronProfile = [[.04, -.055], [.32, -.05], [.345, .08], [.305, .26], [.22, .30], [.205, .52], [0, .52]];
-    const apron = put(torso, paddedShell(apronProfile, .76,.035,c.seed), m.coat, [0, -.03, .027]); apron.name = 'wrap-apron';
+    const apron = put(torso, paddedShell(apronProfile, .76,.035,c.seed), m.coat, [0, -.03, .027]); apron.name = 'wrap-apron'; apron.scale.set(widthAt(.12), 1, widthAt(.12));
     // Ivory blouse sleeves and a distinct hanging apron skirt separate the silhouette.
     coat.material = m.shirt; for (const a of arms) { a.shoulder.children[0].material = m.shirt; a.elbow.children[0].material=m.shirt; }
-    put(torso, roundBox(.37, .395, .044, .019), m.coat, [0, .365, .265]).name = 'apron-front-bib';
-    for (const s of [-1, 1]) tube(torso, [[s * .17, .54, .259], [s * .20, .59, .12], [s * .19, .60, -.07], [s * .21, .41, -.20]], .030, m.coat, 20);
-    put(torso, roundBox(.24, .18, .045, .017), m.coat, [0, .14, .285]).name = 'apron-padded-pocket';
-    sewnPaths(torso, [
+    put(torso, roundBox(.37, .395, .044, .019), m.coat, onBody([0, .365, .265])).name = 'apron-front-bib';
+    for (const s of [-1, 1]) tube(torso, [[s * .17, .54, .259], [s * .20, .59, .12], [s * .19, .60, -.07], [s * .21, .41, -.20]].map(onBody), .030, m.coat, 20);
+    put(torso, roundBox(.24, .18, .045, .017), m.coat, onBody([0, .14, .285])).name = 'apron-padded-pocket';
+    sewnPaths(torso, onPaths([
       [[-.105, .214, .313], [0, .208, .317], [.105, .214, .313]],
       [[-.085, .358, .294], [-.048, .398, .294], [.004, .432, .294]],
       [[-.049, .397, .294], [-.080, .425, .294], [-.075, .443, .294]],
       [[-.033, .410, .294], [-.006, .391, .294], [.013, .397, .294]],
-    ], m.trim, 'cafe-butter-sprig-and-pocket-stitches');
-    put(torso, buttonGeo, m.metal, [-.151, .51, .292]); put(torso, buttonGeo, m.metal, [.151, .51, .292]);
+    ], [.14, .365, .365, .365]), m.trim, 'cafe-butter-sprig-and-pocket-stitches');
+    put(torso, buttonGeo, m.metal, onBody([-.151, .51, .292], .365)); put(torso, buttonGeo, m.metal, onBody([.151, .51, .292], .365));
   } else if (c.costume === 'knit') {
     const collar = put(torso, new THREE.TorusGeometry(.154, .041, 10, 32), m.rib, [0, .605, 0]); collar.rotation.x = Math.PI / 2;
-    const hem = put(torso, shell([[.29,.008],[.318,.016],[.327,.03],[.329,.079],[.312,.092]],.72,36), m.rib); hem.scale.x=c.shoulders;
-    sewnPaths(torso, [[[.13, .047, .226], [.19, .050, .205], [.24, .055, .170]]], m.trim, 'reader-lapis-hem-signature', .004, .021);
-    heldBook = book(rig, m, [.27, 1.07, .30], .9); heldBook.rotation.set(-.10, -.12, -.10);
+    const hem = put(torso, shell([[.29,.008],[.318,.016],[.327,.03],[.329,.079],[.312,.092]],.72,36), m.rib); hem.scale.set(c.shoulders * widthAt(.05), 1, widthAt(.05));
+    sewnPaths(torso, onPaths([[[.13, .047, .226], [.19, .050, .205], [.24, .055, .170]]], .05), m.trim, 'reader-lapis-hem-signature', .004, .021);
+    heldBook = book(rig, m, [.27, 1.07 - lower, .30], .9); heldBook.rotation.set(-.10, -.12, -.10);
   } else {
-    const front = put(torso, roundBox(.18, .50, .035, .014), m.shirt, [0, .31, .229]); front.rotation.x = -.045;
+    const front = put(torso, roundBox(.18, .50, .035, .014), m.shirt, onBody([0, .31, .229])); front.rotation.x = -.045;
     for (const s of [-1, 1]) {
-      const lapel = put(torso, roundBox(.105, .265, .038, .013), c.costume==='cardigan'?m.rib:m.coat, [s * .122, .435, .249]); lapel.rotation.z = s * -.21;
-      if (c.costume !== 'cardigan') { put(torso, roundBox(.145, .105, .024, .009), m.coat, [s * .205, .30, .225]); put(torso, buttonGeo, m.metal, [s * .205, .322, .244]); }
+      const lapel = put(torso, roundBox(.105, .265, .038, .013), c.costume==='cardigan'?m.rib:m.coat, onBody([s * .122, .435, .249])); lapel.rotation.z = s * -.21;
+      if (c.costume !== 'cardigan') { put(torso, roundBox(.145, .105, .024, .009), m.coat, onBody([s * .205, .30, .225])); put(torso, buttonGeo, m.metal, onBody([s * .205, .322, .244], .30)); }
     }
-    for (const y of [.39, .23, .07]) put(torso, buttonGeo, c.costume === 'cardigan' ? m.thread : m.metal, [.035, y, .256]);
+    for (const y of [.39, .23, .07]) put(torso, buttonGeo, c.costume === 'cardigan' ? m.thread : m.metal, onBody([.035, y, .256], .31));
     if (c.costume === 'cardigan') {
-      for (const s of [-1, 1]) put(torso, roundBox(.15, .135, .032, .012), m.coat, [s * .21, .12, .216]);
-      sewnPaths(torso, [[[-.265, .174, .240], [-.21, .171, .244], [-.155, .174, .240]]], m.trim, 'visitor-berry-pocket-stitches', .004, .022);
+      for (const s of [-1, 1]) put(torso, roundBox(.15, .135, .032, .012), m.coat, onBody([s * .21, .12, .216]));
+      sewnPaths(torso, onPaths([[[-.265, .174, .240], [-.21, .171, .244], [-.155, .174, .240]]], .12), m.trim, 'visitor-berry-pocket-stitches', .004, .022);
     }
     if (c.costume === 'travel-jacket') {
-      const bag = group(rig, [-.39, .77, .07]); bag.rotation.z = -.10;
+      const bag = group(rig, [-.39 * bodyX, .77 - lower, .07 * bodyZ]); bag.rotation.z = -.10;
       put(bag, roundBox(.27, .34, .17, .045), m.leather);
       put(bag, roundBox(.28, .14, .03, .013), m.leather, [0, .10, .093]);
       put(bag, roundBox(.043, .058, .019, .008), m.metal, [0, .065, .117]);
       put(bag, roundBox(.033, .073, .014, .007), m.trim, [.105, .022, .109]).name = 'companion-butter-woven-tab';
       sewnPaths(bag, [[[-.105, .151, .115], [0, .159, .117], [.105, .151, .115]]], m.trim, 'companion-satchel-seam', .0035, .022);
-      tube(rig, [[-.40, .89, .11], [-.16, 1.10, .245], [.24, 1.39, .13], [.27, 1.33, -.16], [-.26, .83, -.17]], .026, m.leather, 28);
+      tube(rig, [[-.40, .89, .11], [-.16, 1.10, .245], [.24, 1.39, .13], [.27, 1.33, -.16], [-.26, .83, -.17]].map(([x, y, z]) => [x * bodyX, y - lower, z * bodyZ]), .026, m.leather, 28);
     }
     if (c.costume === 'work-jacket') {
-      const pencil = put(torso, new THREE.CylinderGeometry(.014, .014, .125, 8), m.thread, [-.213, .375, .239]); pencil.rotation.z = -.07;
-      sewnPaths(torso, [[[-.264, .268, .244], [-.264, .297, .247], [-.226, .302, .247]]], m.trim, 'workshop-coral-pocket-corner', .005, .021);
+      const pencil = put(torso, new THREE.CylinderGeometry(.014, .014, .125, 8), m.thread, onBody([-.213, .375, .239])); pencil.rotation.z = -.07;
+      sewnPaths(torso, onPaths([[[-.264, .268, .244], [-.264, .297, .247], [-.226, .302, .247]]], .30), m.trim, 'workshop-coral-pocket-corner', .005, .021);
     }
   }
   body.userData.residentIdentity = { id: c.id, kind: c.kind, description: c.description, silhouette: `${c.hairStyle}/${c.costume}/${c.stature}/${c.shoulders}` };
@@ -389,8 +414,9 @@ function makeHuman(parent, shared, c, mobile) {
     }
     for (const arm of arms) {
       const stride = Math.sin(phase + (arm.side < 0 ? 0 : Math.PI));
-      arm.shoulder.rotation.set(stride * .32 * gait, 0, -arm.side * .075);
-      arm.elbow.rotation.x = -.055 - gait * .08;
+      // A doll's arms rest a little out and forward, never hanging straight down.
+      arm.shoulder.rotation.set(stride * .32 * gait, 0, -arm.side * (doll ? DOLL.armOut : .075));
+      arm.elbow.rotation.x = (doll ? DOLL.elbowRest : -.055) - gait * .08;
       if (heldBook && arm.side > 0) { arm.shoulder.rotation.x = -.50; arm.shoulder.rotation.z = .09; arm.elbow.rotation.x = -.45; }
       else if (showing && arm.side < 0) { arm.shoulder.rotation.x = -.63; arm.shoulder.rotation.z = -.24; arm.elbow.rotation.x = -.42; }
       else if (holding || (working && arm.side > 0)) { arm.shoulder.rotation.x = -.47; arm.elbow.rotation.x = -.36 + Math.sin(time * 4) * (working ? .10 : .025); }
@@ -408,7 +434,7 @@ function makeHuman(parent, shared, c, mobile) {
     }
   }
   update();
-  return { body, update, head, headHeight: 1.80 * c.stature * WORLD_SCALE, height: standingHeight(body), identity: body.userData.residentIdentity };
+  return { body, update, head, headHeight: (1.80 - lower) * c.stature * WORLD_SCALE, height: standingHeight(body), identity: body.userData.residentIdentity };
 }
 
 function makeProfessor(parent, shared, c, mobile) {
@@ -501,7 +527,10 @@ function dioramaFelt(body, mobile, seed) {
     for (let i = 0; i < position.count; i++) {
       const x = position.getX(i) * k, y = position.getY(i) * k, z = position.getZ(i) * k;
       const v = Math.sin(x * 1.3 + Math.sin(y * 1.7 + z * .6) + seed) * Math.sin(y * 1.1 - z * 1.5 + 1.7) + .5 * Math.sin(z * 2.3 + x * 2.9 - y * .8);
-      colours.fill(.95 + .065 * v, i * 3, i * 3 + 3);
+      // Felt standing on felt gathers shade toward the floor; without it a doll
+      // lit evenly to its soles reads as pasted above the photograph.
+      const ground = THREE.MathUtils.smoothstep(a.fromBufferAttribute(position, i).applyMatrix4(toBody).y, 0, DIORAMA.groundShade);
+      colours.fill((.95 + .065 * v) * (.66 + .34 * ground), i * 3, i * 3 + 3);
     }
     o.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3));
   });

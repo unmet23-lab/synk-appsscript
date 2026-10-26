@@ -16,8 +16,9 @@ const depth = y => 1 + (y - BASE_Y) * .001;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ── places (photo pixels) ──
-const COUNTER = { x: 806, y: 524 }, SERVE = { x: 742, y: 534 }, SEAT_R = { x: 862, y: 596 }, GARDEN = { x: 722, y: 694 };
-const OWNER_OUT = [{ x: 760, y: 530 }, { x: 690, y: 564 }, { x: 642, y: 602 }, { x: 640, y: 648 }, { x: 684, y: 680 }];
+// Behind the round table the owner's lower legs hide behind it; at the table's far edge their feet read as standing on it.
+const COUNTER = { x: 806, y: 556 }, SERVE = { x: 742, y: 562 }, SEAT_R = { x: 862, y: 596 }, GARDEN = { x: 722, y: 694 };
+const OWNER_OUT = [{ x: 760, y: 560 }, { x: 690, y: 566 }, { x: 642, y: 602 }, { x: 640, y: 648 }, { x: 684, y: 680 }];
 const RESEARCHER_IN = [{ x: 1330, y: 640 }, { x: 1200, y: 672 }, { x: 1060, y: 690 }, { x: 960, y: 684 }, { x: 912, y: 648 }];
 const WORKBENCH = { x: 1196, y: 597 };
 // At the counter the owner turns three-quarters away, so the pouring hand and a cheek both show.
@@ -68,13 +69,22 @@ for (const o of OCCLUDERS) {
 }
 
 // ── characters ──
-const blob = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 1, 32, 32, 31); g.addColorStop(0, 'rgba(40,28,20,.6)'); g.addColorStop(1, 'rgba(40,28,20,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+// Two shadows ground a figure on the photo, as under the photo's own stools: a dark, tight contact patch where the
+// felt meets the floor, and a soft wider pool falling a little back and right, away from the key light. A single pale
+// ellipse left the residents hovering over the floor.
+const shadeTexture = stops => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 63);
+  for (const [t, a] of stops) g.addColorStop(t, `rgba(34,22,14,${a})`); x.fillStyle = g; x.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const POOL = shadeTexture([[0, .36], [.45, .24], [.8, .07], [1, 0]]), CONTACT = shadeTexture([[0, .86], [.35, .7], [.7, .22], [1, 0]]);
+function groundShadow() {
+  // Sized for a figure one unit wide; the ground ellipse keeps the photo's 22° view.
+  const g = new THREE.Group(), mat = map => new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, toneMapped: false });
+  const pool = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .5), mat(POOL)), contact = new THREE.Mesh(new THREE.PlaneGeometry(.78, .22), mat(CONTACT));
+  pool.position.set(.1, .04, 0); pool.renderOrder = contact.renderOrder = -1; g.add(pool, contact); g.userData = { pool, contact }; return g;
+}
 function makeCharacter({ name, content, height, refY, at, yaw = 0, update = () => {}, footDrop = 0, seatBase = 0 }) {
   const place = new THREE.Group(), tilt = new THREE.Group(), turn = new THREE.Group(), squash = new THREE.Group();
   tilt.rotation.x = ELEV; place.add(tilt); tilt.add(turn); turn.add(squash); squash.add(content);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, .26), new THREE.MeshBasicMaterial({ map: blob, transparent: true, depthWrite: false, toneMapped: false }));
-  shadow.renderOrder = -1;
-  const holder = new THREE.Group(); holder.add(shadow, place);
+  const shadow = groundShadow(), holder = new THREE.Group(); holder.add(shadow, place);
   // Measure once, upright and unturned: pixels per unit so the figure is `height` px tall at refY.
   place.updateMatrixWorld(true); const box = new THREE.Box3().setFromObject(tilt, true);
   const c = { name, holder, place, turn, squash, content, update, x: at.x, y: at.y, yaw, wantYaw: yaw, path: [], speed: 120, gait: 0, phase: 0, pose: {}, seated: false, seatBase,
@@ -99,8 +109,8 @@ function stepCharacter(c, dt, now) {
   let d = c.wantYaw - c.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); c.yaw += d * Math.min(1, dt * 7);
   const k = c.unit * depth(c.y);
   c.place.scale.setScalar(k); c.place.position.set(c.x, -c.y + c.drop * k + c.lift, 0); c.turn.rotation.y = c.yaw;
-  c.holder.children[0].position.set(c.x, -c.y + 2, -1); c.holder.children[0].scale.set(c.width * k * 1.15, c.width * k * 1.15, 1);
-  c.holder.children[0].material.opacity = c.seated ? .35 : 1;
+  const shadow = c.holder.children[0]; shadow.position.set(c.x, -c.y + 1, -1); shadow.scale.setScalar(c.width * k);
+  shadow.userData.contact.material.opacity = c.seated ? 0 : 1; shadow.userData.pool.material.opacity = c.seated ? .45 : 1;
   c.update(now, dt, c);
   if (c.bubble) { c.bubble.style.left = c.x + 'px'; c.bubble.style.top = (c.y - c.height(k) - 14) + 'px'; }
 }
@@ -127,8 +137,11 @@ function trayGroup() {
   const a = cup(.9); a.position.set(-.14, .035, .02); g.add(a); const b = cup(.9); b.position.set(.15, .035, -.03); g.add(b);
   return g;
 }
-function propHolder(content, at, unitPx, base) {
+function propHolder(content, at, unitPx, base, { shadow = false, feet = [] } = {}) {
   const place = new THREE.Group(), tilt = new THREE.Group(); tilt.rotation.x = ELEV; place.add(tilt); tilt.add(content);
+  // The legs' centre is the place origin, on the floor; each leg also gets its own dark contact spot.
+  if (shadow) { place.updateMatrixWorld(true); const box = new THREE.Box3().setFromObject(tilt, true), g = groundShadow(); g.scale.setScalar(box.max.x - box.min.x); g.userData.contact.material.opacity = .85; place.add(g); }
+  for (const [x, z] of feet) { const spot = new THREE.Mesh(new THREE.PlaneGeometry(.3, .11), new THREE.MeshBasicMaterial({ map: CONTACT, transparent: true, depthWrite: false, toneMapped: false })); spot.position.set(x, -z * Math.sin(ELEV), 0); spot.renderOrder = -1; place.add(spot); }
   const p = { place, tilt, content, x: at.x, y: at.y, unit: unitPx, shown: true, set(x, y, lift = 0) { p.x = x; p.y = y; const k = unitPx * depth(y); place.scale.setScalar(k); place.position.set(x, -y + lift, 0); } };
   p.set(at.x, at.y); p.drawable = addDrawable(place, typeof base === 'function' ? base : () => base ?? p.y, () => !p.shown); return p;
 }
@@ -150,7 +163,7 @@ async function build() {
   mongle = makeCharacter({ name: 'mongle', content: av.group, height: 128, refY: BASE_Y, at: { x: 520, y: 688 }, yaw: .5, update: now => av.update(now / 1000, { reducedMotion: reduced }) });
   mongle.label = '몽글'; mongle.height = k => 1.9 * k; mongle.speed = 200;
   const unit = owner.unit;
-  gardenTable = propHolder(gardenTableGroup(), GARDEN, unit, GARDEN.y);
+  gardenTable = propHolder(gardenTableGroup(), GARDEN, unit, GARDEN.y, { shadow: true, feet: [0, 2.09, 4.19].map(a => [Math.cos(a) * .2, Math.sin(a) * .2]) });
   tray = propHolder(trayGroup(), { x: GARDEN.x, y: GARDEN.y }, unit, () => tray.y + 1); tray.top = .54; tray.set(GARDEN.x, GARDEN.y, tray.top * unit * depth(GARDEN.y) * Math.cos(ELEV));
 }
 function gardenTableGroup() {
@@ -177,12 +190,12 @@ async function researcherComes() {
   researcher.seated = true; turnToward(researcher, 740, 720); say(researcher, '흠, 오늘 차 향이 좋네요.');
   await sleep(1400);
   // The owner brings a cup to the table.
-  owner.pose = { holding: true }; await walk(owner, [{ x: 780, y: 530 }, SERVE]); turnToward(owner, SEAT_R.x, SEAT_R.y);
+  owner.pose = { holding: true }; await walk(owner, [{ x: 780, y: 560 }, SERVE]); turnToward(owner, SEAT_R.x, SEAT_R.y);
   owner.pose = { showing: true }; await sleep(500);
   // On the photo's own table: the cup's foot sits on the table-top point, drawn after the table layer.
   if (!served) served = propHolder(cup(), { x: 812, y: 548 }, owner.unit, 630);
   served.set(812, 548, 0); served.shown = true;
-  say(owner, '천천히 드세요.'); await sleep(900); owner.pose = {}; await walk(owner, [{ x: 780, y: 528 }, COUNTER]); owner.wantYaw = OWNER_WORK_YAW; owner.pose = { working: true };
+  say(owner, '천천히 드세요.'); await sleep(900); owner.pose = {}; await walk(owner, [{ x: 780, y: 558 }, COUNTER]); owner.wantYaw = OWNER_WORK_YAW; owner.pose = { working: true };
 }
 async function rainComes() {
   setWeather('rain'); setStatus('비가 와요 — 찻집 주인이 바깥 쟁반을 처마 밑으로 들여요'); await sleep(900);
@@ -279,7 +292,7 @@ function frame(now) {
   } catch (error) { if (!frame.failed) { frame.failed = true; console.error(error); } }
   drawRain(dt); requestAnimationFrame(frame);
 }
-Object.defineProperty(globalThis, '__residents', { value: { get owner() { return owner; }, get researcher() { return researcher; }, run: name => run({ pour: pourTea, come: researcherComes, rain: rainComes, day: wholeDay }[name]), reset: resetAll, info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }) } });
+Object.defineProperty(globalThis, '__residents', { value: { get owner() { return owner; }, get researcher() { return researcher; }, get gardenTable() { return gardenTable; }, run: name => run({ pour: pourTea, come: researcherComes, rain: rainComes, day: wholeDay }[name]), reset: resetAll, info: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }) } });
 
 $('btn-day').addEventListener('click', () => run(wholeDay));
 $('btn-pour').addEventListener('click', () => run(pourTea));
