@@ -1,0 +1,13 @@
+Create ONE photograph (landscape 3:2). Use the image generation tool once and output only that image.
+
+STYLE
+A photoreal still from a cosy Korean TV commercial for a video game, shot on a cinema camera on a December night in a young woman's small studio apartment in Seoul. Warm tungsten practical light, string-light bokeh, shallow depth of field, gentle film grain. The room, its furniture and its colours are exactly the room in reference image 2.
+
+COMPOSITION — follow reference image 1
+Reference 1 is a heavily blurred frame that only shows the camera position, framing, the layout of big shapes, where the light is and where the focus falls. Copy those. Do not copy any person, character, logo or screen picture from it. The grey bands at the top and bottom of reference 1 are crop margins: keep everything important inside the middle band.
+
+THIS SHOT (1.8 seconds, slow push-in on the screen)
+The big screen on the low wooden console fills most of the frame, seen slightly from the left. It shows the cosy game exactly like reference 3: a needle-felted wool miniature Korean village (navy tiled roofs, a tea house, a little coral ghost character walking on a stone courtyard), bright soft daylight inside the game. Around the screen in the dark room: warm fairy lights on the wall at the left, a vase of dried branches with tiny lights at the right. No readable letters on the screen.
+
+DO NOT
+No letters, words, numbers, logos or brand marks anywhere. No extra characters beyond those named.

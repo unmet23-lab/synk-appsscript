@@ -1,0 +1,7 @@
+Edit reference image 1 and output ONE photograph. Use the image generation tool once and output only that image.
+
+Reference 1 is a photograph of a needle-felted wool miniature town on a sky-blue backdrop, with three small felt characters standing on the pavement in front of the shops (a dark-brown fluffy kitten-like one, a coral ghost-like one, a navy-helmeted one).
+
+Output the SAME photograph — same camera, same framing, same buildings, same bus, same tree, same light and colours, same backdrop — with only the three characters removed: where they stood, show the empty felt pavement and kerb continuing naturally, with no shadows left behind. Change nothing else. Keep the same landscape framing and leave the same empty sky-blue space around the town.
+
+No letters, words or logos.
