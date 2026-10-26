@@ -1,0 +1,833 @@
+# 2번 · 남성 향수(가칭 솔서리 SOLSEORI) — 블렌더 제품 장면 1판 (2026-10-26, 크레딧 0)
+# 병 · 뚜껑 · 얼음 · 「ㅅ」 얼음 조각은 AI로 그리지 않고 여기서 짓는다(AI 광고영상 제작 규칙 원칙 · 경로 B).
+# 인쇄 · 각인 원고는 ../라벨/라벨.py가 만든 우리 원고. 원본(YSL Y Iced Cologne) 컷의 카메라 자리 · 크기 · 빛을 옮긴다(01_샷표_원본.md).
+#   "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" -b --python 솔서리병.py -- --shot s18 [--res 960x540] [--samples 64] [--t 0]
+#   → <밖>/렌더/<shot>[_t<t>].png   (<밖> = Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p2)
+# shot: look(병 3/4 · 디자인 확인) · s02(얼음에 박힌 라벨 아주 가까이) · s03(얼음 덩이 속 병) · s06(「ㅅ」 얼음 갈라진 자리) ·
+#       s09(물에 잠긴 뚜껑 · 위에서) · s10(「ㅅ」 얼음 조각 · 속에 솔가지) · s17(기운 병 몸통 · 뒤 밝은 빛) · s18(병을 크게 · 빛 띠)
+# --t: 그 컷 안의 진행(0 = 첫 프레임 · 1 = 끝 프레임) — 원본의 카메라 움직임(18번 0.53배 물러남 등)을 같은 비율로.
+# 단위 m. 병 46 × 30 × 88 mm · 벽 6 mm · 바닥 13 mm · 뚜껑 24 × 24 × 26 mm(솔잎 「ㅅ」 음각).
+import math
+import os
+import random
+import sys
+
+import bmesh
+import bpy
+from mathutils import Vector
+
+argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+
+
+def arg(name, default):
+    return argv[argv.index(name) + 1] if name in argv else default
+
+
+SHOT = arg("--shot", "look")
+RES = tuple(int(v) for v in arg("--res", "960x540").split("x"))
+SAMPLES = int(arg("--samples", "64"))
+T = float(arg("--t", "0"))
+LIGHT = float(arg("--light", "0.22"))   # 모든 면광 세기에 곱한다(2판: 작은 병에 40~90W는 하얗게 날았다)
+EXPO = float(arg("--expo", "0"))
+밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-portfolio12-20261024", "콘티", "p2")
+라벨 = os.path.join(밖, "라벨")
+OUT = arg("--out", os.path.join(밖, "렌더", f"{SHOT}{f'_t{T:.2f}' if T > 0 else ''}.png"))
+
+BW, BD, BH = 0.046, 0.030, 0.088     # 병 몸통
+WALL, BASE = 0.006, 0.013
+CAP = (0.024, 0.024, 0.026)
+NECK_R, NECK_H = 0.0075, 0.005
+COBALT_DEEP = (0.004, 0.018, 0.080)
+COBALT = (0.020, 0.090, 0.330)
+ICE_BLUE = (0.62, 0.80, 1.00)
+
+
+# ── 장면 · 렌더 ─────────────────────────────────────────────────────────────
+def reset():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    sc = bpy.context.scene
+    sc.render.engine = "CYCLES"
+    prefs = bpy.context.preferences.addons["cycles"].preferences
+    for kind in ("OPTIX", "CUDA"):
+        try:
+            prefs.compute_device_type = kind
+            prefs.get_devices()
+            ok = False
+            for d in prefs.devices:
+                d.use = d.type == kind
+                ok = ok or d.use
+            if ok:
+                break
+        except Exception:
+            continue
+    sc.cycles.device = "GPU"
+    sc.cycles.samples = SAMPLES
+    sc.cycles.use_denoising = True
+    try:
+        sc.cycles.denoiser = "OPTIX"
+    except Exception:
+        pass
+    sc.cycles.max_bounces = 24
+    sc.cycles.transmission_bounces = 24
+    sc.cycles.glossy_bounces = 8
+    sc.cycles.transparent_max_bounces = 16
+    sc.cycles.volume_bounces = 2
+    sc.cycles.caustics_reflective = False
+    sc.cycles.caustics_refractive = False
+    sc.cycles.blur_glossy = 0.5
+    sc.render.resolution_x, sc.render.resolution_y = RES
+    sc.render.resolution_percentage = 100
+    sc.render.image_settings.file_format = "PNG"
+    sc.render.image_settings.color_mode = "RGB"
+    # 3판: AgX는 밝은 파랑을 흰빛으로 빼 원본의 진한 코발트가 안 나왔다(면광을 꺼도 회청색) — Standard로
+    sc.view_settings.view_transform = "Standard"
+    sc.view_settings.exposure = EXPO
+    try:
+        sc.view_settings.look = "None"
+    except Exception:
+        pass
+    world = bpy.data.worlds.new("world")
+    sc.world = world
+    world.use_nodes = True
+    return sc
+
+
+def world_gradient(low, high, strength=1.0, lo=-0.3, hi=0.8):
+    nt = bpy.context.scene.world.node_tree
+    bg = nt.nodes.get("Background")
+    co = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(co.outputs["Generated"], sep.inputs["Vector"])
+    mp = nt.nodes.new("ShaderNodeMapRange")
+    mp.inputs["From Min"].default_value = lo
+    mp.inputs["From Max"].default_value = hi
+    nt.links.new(sep.outputs["Z"], mp.inputs["Value"])
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (*low, 1)
+    ramp.color_ramp.elements[1].color = (*high, 1)
+    nt.links.new(mp.outputs["Result"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bg.inputs["Color"])
+    bg.inputs["Strength"].default_value = strength
+
+
+def camera(loc, target, lens=85.0, fstop=None, focus=None, roll=0.0):
+    cd = bpy.data.cameras.new("cam")
+    cd.lens = lens
+    cd.sensor_fit = "HORIZONTAL"
+    cd.sensor_width = 36.0
+    cd.clip_start = 0.002
+    cd.clip_end = 60
+    cam = bpy.data.objects.new("cam", cd)
+    bpy.context.collection.objects.link(cam)
+    cam.location = Vector(loc)
+    d = Vector(target) - Vector(loc)
+    q = d.to_track_quat("-Z", "Y")
+    cam.rotation_euler = q.to_euler()
+    if roll:
+        cam.rotation_euler.rotate_axis("Z", math.radians(roll))
+    if fstop:
+        cd.dof.use_dof = True
+        cd.dof.aperture_fstop = fstop
+        cd.dof.focus_distance = focus if focus else d.length
+    bpy.context.scene.camera = cam
+    return cam
+
+
+def area_light(name, loc, target, energy, size, rgb=(1, 1, 1), size_y=None, spread=180):
+    ld = bpy.data.lights.new(name, "AREA")
+    ld.energy = energy * LIGHT
+    ld.color = rgb
+    if size_y:
+        ld.shape = "RECTANGLE"
+        ld.size = size
+        ld.size_y = size_y
+    else:
+        ld.shape = "DISK"
+        ld.size = size
+    ld.spread = math.radians(spread)
+    ob = bpy.data.objects.new(name, ld)
+    bpy.context.collection.objects.link(ob)
+    ob.location = Vector(loc)
+    ob.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
+    # 3판: 작은 면광이 카메라 · 얼음 너머로 그대로 보여 하얗게 탔다 — 비추기와 유리 테두리 반사로만 쓴다
+    ob.visible_camera = False
+    ob.visible_transmission = False
+    return ob
+
+
+# ── 재질 ────────────────────────────────────────────────────────────────────
+def new_mat(name):
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    return m, nt.nodes, nt.links, out
+
+
+def setin(node, name, value):
+    if name in node.inputs:
+        node.inputs[name].default_value = value
+
+
+NAMES = {"base": "Base Color", "metal": "Metallic", "rough": "Roughness", "ior": "IOR", "trans": "Transmission Weight",
+         "coat": "Coat Weight", "aniso": "Anisotropic", "emit": "Emission Color", "emit_s": "Emission Strength"}
+
+
+def principled(nodes, **kw):
+    b = nodes.new("ShaderNodeBsdfPrincipled")
+    for k, v in kw.items():
+        if k in ("base", "emit") and len(v) == 3:
+            v = (*v, 1)
+        setin(b, NAMES[k], v)
+    return b
+
+
+def shadow_pass(n, l, shader_out):
+    """굴절 물체가 그림자를 까맣게 드리우지 않게 그림자 광선에는 투명(1번 캔 · 기프트 세트 장면과 같은 처리)."""
+    lp = n.new("ShaderNodeLightPath")
+    tr = n.new("ShaderNodeBsdfTransparent")
+    mix = n.new("ShaderNodeMixShader")
+    l.new(lp.outputs["Is Shadow Ray"], mix.inputs["Fac"])
+    l.new(shader_out, mix.inputs[1])
+    l.new(tr.outputs[0], mix.inputs[2])
+    return mix
+
+
+def img(name, colorspace="Non-Color"):
+    im = bpy.data.images.load(os.path.join(라벨, name), check_existing=True)
+    im.colorspace_settings.name = colorspace
+    return im
+
+
+def _ma(n, l, src, scale, add):
+    x = n.new("ShaderNodeMath")
+    x.operation = "MULTIPLY_ADD"
+    l.new(src, x.inputs[0])
+    x.inputs[1].default_value = scale
+    x.inputs[2].default_value = add
+    return x.outputs[0]
+
+
+def planar(n, l, image, u_of, v_of):
+    """물체 좌표 두 축을 0~1로 펴서 그림을 붙인다 — u_of · v_of = (축, 최솟값, 최댓값)."""
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Object"], sep.inputs["Vector"])
+    comb = n.new("ShaderNodeCombineXYZ")
+    for ax, slot in ((u_of, "X"), (v_of, "Y")):
+        a, lo, hi = ax
+        l.new(_ma(n, l, sep.outputs[a], 1 / (hi - lo), -lo / (hi - lo)), comb.inputs[slot])
+    tex = n.new("ShaderNodeTexImage")
+    tex.image = image
+    tex.extension = "CLIP"
+    l.new(comb.outputs[0], tex.inputs["Vector"])
+    return tex
+
+
+def mat_glass_print():
+    """두꺼운 맑은 유리 + 앞면 흰 잉크(병앞_흰잉크.png, 앞면 y < 0 쪽에만)."""
+    m, n, l, out = new_mat("bottle_glass")
+    glass = principled(n, base=(1, 1, 1), rough=0.0, ior=1.50, trans=1.0)
+    ink = principled(n, base=(0.92, 0.94, 0.97), rough=0.45)
+    tex = planar(n, l, img("병앞_흰잉크.png"), ("X", -BW / 2, BW / 2), ("Z", -BH / 2, BH / 2))  # 몸통 물체 좌표는 가운데가 원점
+    # 바깥 앞면만 — 물체 좌표 y가 앞쪽 끝(-BD/2)에 붙은 자리. 1판은 법선으로 갈라 속 빈 곳의 안쪽 뒷벽에도 찍혀 여러 겹으로 비쳤다
+    tcp = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tcp.outputs["Object"], sep.inputs["Vector"])
+    front = n.new("ShaderNodeMath")
+    front.operation = "LESS_THAN"
+    l.new(sep.outputs["Y"], front.inputs[0])
+    front.inputs[1].default_value = -(BD / 2 - 0.0004)
+    mask = n.new("ShaderNodeMath")
+    mask.operation = "MULTIPLY"
+    l.new(tex.outputs["Color"], mask.inputs[0])
+    l.new(front.outputs[0], mask.inputs[1])
+    mix = n.new("ShaderNodeMixShader")
+    l.new(mask.outputs[0], mix.inputs["Fac"])
+    l.new(glass.outputs[0], mix.inputs[1])
+    l.new(ink.outputs[0], mix.inputs[2])
+    l.new(shadow_pass(n, l, mix.outputs[0]).outputs[0], out.inputs["Surface"])
+    return m
+
+
+def mat_print_decal():
+    """앞면에 붙인 흰 잉크 판 — 잉크 자리만 불투명 흰색, 나머지는 완전히 투명(굴절 없음)."""
+    m, n, l, out = new_mat("print")
+    ink = principled(n, base=(0.92, 0.94, 0.97), rough=0.45)
+    tr = n.new("ShaderNodeBsdfTransparent")
+    tex = planar(n, l, img("병앞_흰잉크.png"), ("X", -(BW - 0.004) / 2, (BW - 0.004) / 2), ("Z", -(BH - 0.004) / 2, (BH - 0.004) / 2))
+    mix = n.new("ShaderNodeMixShader")
+    l.new(tex.outputs["Color"], mix.inputs["Fac"])
+    l.new(tr.outputs[0], mix.inputs[1])
+    l.new(ink.outputs[0], mix.inputs[2])
+    l.new(mix.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def mat_glass_plain(name="glass_plain"):
+    m, n, l, out = new_mat(name)
+    b = principled(n, base=(1, 1, 1), rough=0.0, ior=1.50, trans=1.0)
+    l.new(shadow_pass(n, l, b.outputs[0]).outputs[0], out.inputs["Surface"])
+    return m
+
+
+def mat_liquid():
+    """옅은 얼음빛 파란 향수 — 표면은 굴절, 속은 아주 옅은 흡수."""
+    m, n, l, out = new_mat("liquid")
+    # 1판은 표면색이 옅은 파랑이라 우윳빛으로 탁했다 — 표면은 흰 유리, 색은 속 흡수로만
+    b = principled(n, base=(1, 1, 1), rough=0.0, ior=1.36, trans=1.0)
+    l.new(shadow_pass(n, l, b.outputs[0]).outputs[0], out.inputs["Surface"])
+    va = n.new("ShaderNodeVolumeAbsorption")
+    # 4판: 옅은 파랑은 코발트 바탕에 묻혔다 — 빙하 물빛(청록 쪽 파랑)으로 진하게. 원본의 남색과는 다른 색
+    va.inputs["Color"].default_value = (0.22, 0.66, 1.0, 1)
+    va.inputs["Density"].default_value = 48.0
+    l.new(va.outputs[0], out.inputs["Volume"])
+    return m
+
+
+def mat_cap():
+    """솔질한 은빛 금속 + 윗면 솔잎 「ㅅ」 음각(뚜껑_각인.png를 범프로)."""
+    m, n, l, out = new_mat("cap")
+    b = principled(n, base=(0.80, 0.82, 0.86), metal=1.0, rough=0.24, aniso=0.6)
+    tex = planar(n, l, img("뚜껑_각인.png"), ("X", -CAP[0] / 2, CAP[0] / 2), ("Y", -CAP[1] / 2, CAP[1] / 2))
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.9
+    bump.inputs["Distance"].default_value = 0.0004
+    bump.invert = True
+    # 윗면(법선이 위를 볼 때)에만 각인 — 옆면에 줄무늬가 번지지 않게
+    geo = n.new("ShaderNodeNewGeometry")
+    vt = n.new("ShaderNodeVectorTransform")
+    vt.vector_type = "NORMAL"
+    vt.convert_from = "WORLD"
+    vt.convert_to = "OBJECT"
+    l.new(geo.outputs["Normal"], vt.inputs["Vector"])
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(vt.outputs["Vector"], sep.inputs["Vector"])
+    top = n.new("ShaderNodeMath")
+    top.operation = "GREATER_THAN"
+    l.new(sep.outputs["Z"], top.inputs[0])
+    top.inputs[1].default_value = 0.8
+    hmask = n.new("ShaderNodeMath")
+    hmask.operation = "MULTIPLY"
+    l.new(tex.outputs["Color"], hmask.inputs[0])
+    l.new(top.outputs[0], hmask.inputs[1])
+    l.new(hmask.outputs[0], bump.inputs["Height"])
+    l.new(bump.outputs["Normal"], b.inputs["Normal"])
+    # 음각 바닥은 조금 거칠게(빛이 들면 글자가 보이게)
+    rmix = n.new("ShaderNodeMapRange")
+    rmix.inputs["To Min"].default_value = 0.22
+    rmix.inputs["To Max"].default_value = 0.55
+    l.new(tex.outputs["Color"], rmix.inputs["Value"])
+    l.new(rmix.outputs["Result"], b.inputs["Roughness"])
+    l.new(b.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def mat_ice(name="ice", frost=0.08):
+    """얼음: 굴절 1.31, 녹은 표면 결(노이즈 범프), 군데군데 젖빛(거칠기 노이즈), 속은 아주 옅은 파랑."""
+    m, n, l, out = new_mat(name)
+    b = principled(n, base=(0.92, 0.96, 1.0), rough=0.02, ior=1.31, trans=1.0)
+    tc = n.new("ShaderNodeTexCoord")
+    nz = n.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 90.0
+    nz.inputs["Detail"].default_value = 8.0
+    nz.inputs["Roughness"].default_value = 0.62
+    l.new(tc.outputs["Object"], nz.inputs["Vector"])
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.35
+    bump.inputs["Distance"].default_value = 0.0012
+    l.new(nz.outputs["Fac"], bump.inputs["Height"])
+    l.new(bump.outputs["Normal"], b.inputs["Normal"])
+    nz2 = n.new("ShaderNodeTexNoise")
+    nz2.inputs["Scale"].default_value = 22.0
+    nz2.inputs["Detail"].default_value = 4.0
+    l.new(tc.outputs["Object"], nz2.inputs["Vector"])
+    rm = n.new("ShaderNodeMapRange")
+    rm.inputs["From Min"].default_value = 0.45
+    rm.inputs["From Max"].default_value = 0.75
+    rm.inputs["To Min"].default_value = 0.0
+    rm.inputs["To Max"].default_value = frost
+    l.new(nz2.outputs["Fac"], rm.inputs["Value"])
+    l.new(rm.outputs["Result"], b.inputs["Roughness"])
+    l.new(shadow_pass(n, l, b.outputs[0]).outputs[0], out.inputs["Surface"])
+    va = n.new("ShaderNodeVolumeAbsorption")
+    va.inputs["Color"].default_value = (0.55, 0.78, 1.0, 1)
+    va.inputs["Density"].default_value = 6.0
+    l.new(va.outputs[0], out.inputs["Volume"])
+    return m
+
+
+def mat_simple(name, **kw):
+    m, n, l, out = new_mat(name)
+    b = principled(n, **kw)
+    l.new(b.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def mat_emit(name, rgb, strength):
+    m, n, l, out = new_mat(name)
+    e = n.new("ShaderNodeEmission")
+    e.inputs["Color"].default_value = (*rgb, 1)
+    e.inputs["Strength"].default_value = strength
+    l.new(e.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def mat_floor(rgb=(0.05, 0.12, 0.30), rough=0.18):
+    """빛 띠를 길게 비추는 젖은 듯한 바닥."""
+    return mat_simple("floor", base=rgb, rough=rough, coat=0.6)
+
+
+# ── 모양 ────────────────────────────────────────────────────────────────────
+def link(ob):
+    bpy.context.collection.objects.link(ob)
+    return ob
+
+
+def rounded_box(name, sx, sy, sz, loc, mat, bevel=0.003, segs=5):
+    me = bpy.data.meshes.new(name)
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    for v in bm.verts:
+        v.co.x *= sx
+        v.co.y *= sy
+        v.co.z *= sz
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new(name, me))
+    ob.location = loc
+    if bevel > 0:
+        mod = ob.modifiers.new("bevel", "BEVEL")
+        mod.width = bevel
+        mod.segments = segs
+        mod.limit_method = "NONE"
+    if mat:
+        ob.data.materials.append(mat)
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    return ob
+
+
+def cylinder(name, r, h, loc, mat, segs=96):
+    me = bpy.data.meshes.new(name)
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=segs, radius1=r, radius2=r, depth=h)
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new(name, me))
+    ob.location = loc
+    ob.data.materials.append(mat)
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    return ob
+
+
+def apply_mods(ob):
+    bpy.context.view_layer.objects.active = ob
+    for o in bpy.context.selected_objects:
+        o.select_set(False)
+    ob.select_set(True)
+    for mod in list(ob.modifiers):
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def boolean(target, cutter, op="DIFFERENCE"):
+    mod = target.modifiers.new("bool", "BOOLEAN")
+    mod.operation = op
+    mod.object = cutter
+    mod.solver = "EXACT"
+    apply_mods(target)
+    bpy.data.objects.remove(cutter, do_unlink=True)
+
+
+def bottle(loc=(0, 0, 0), rot_z=0.0, tilt=0.0, cap=True, print_through=False):
+    """병 한 벌을 빈 물체 아래에 — 몸통 유리(속 빈 곳) · 향수 · 목 · 뚜껑."""
+    root = link(bpy.data.objects.new("bottle_root", None))
+    glass, liquid, capm = mat_glass_print(), mat_liquid(), mat_cap()
+    body = rounded_box("body", BW, BD, BH, (0, 0, BH / 2), mat_glass_plain("bottle_glass"), bevel=0.0035)
+    apply_mods(body)
+    hole = rounded_box("hole", BW - 2 * WALL, BD - 2 * WALL, BH - BASE - WALL, (0, 0, BASE + (BH - BASE - WALL) / 2), None, bevel=0.003)
+    apply_mods(hole)
+    boolean(body, hole)
+    liq_h = (BH - BASE - WALL) * 0.86
+    liq = rounded_box("liquid", BW - 2 * WALL + 0.0002, BD - 2 * WALL + 0.0002, liq_h, (0, 0, BASE + liq_h / 2 - 0.0001), liquid, bevel=0.003)
+    neck = cylinder("neck", NECK_R, NECK_H, (0, 0, BH + NECK_H / 2), mat_glass_plain())
+    decal = rounded_box("print", BW - 0.004, 0.0001, BH - 0.004, (0, -BD / 2 - 0.0001, BH / 2), mat_print_decal(), bevel=0.0)
+    # 7판: 인쇄 판이 두꺼운 유리 안에서 반사 · 투과로 한 번 더 비쳐 글자가 겹쳤다 — 카메라에 곧장 보이는 것만 남긴다.
+    # 얼음 너머로 병을 보는 컷(03번)은 투과를 켜야 글자가 보인다(print_through)
+    decal.visible_glossy = False
+    decal.visible_transmission = print_through
+    decal.visible_shadow = False
+    parts = [body, liq, neck, decal]
+    if cap:
+        c = rounded_box("cap", CAP[0], CAP[1], CAP[2], (0, 0, BH + NECK_H + CAP[2] / 2 - 0.001), capm, bevel=0.0012, segs=4)
+        parts.append(c)
+    for p in parts:
+        p.parent = root
+    root.location = loc
+    root.rotation_euler = (math.radians(tilt), 0, math.radians(rot_z))
+    return root
+
+
+def jag_cut(ob, center, normal, depth, seed=3):
+    """얼음 덩이 모서리를 깨진 면으로 — 울퉁불퉁한 칼판(세분 + 노이즈)으로 잘라 낸다."""
+    me = bpy.data.meshes.new("cut")
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    for v in bm.verts:
+        v.co *= depth
+    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=6, use_grid_fill=True)
+    rnd = random.Random(seed)
+    for v in bm.verts:
+        v.co += Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(-1, 1))) * depth * 0.06
+    bm.to_mesh(me)
+    bm.free()
+    cutter = link(bpy.data.objects.new("cut", me))
+    cutter.location = Vector(center) + Vector(normal).normalized() * depth * 0.5
+    cutter.rotation_euler = Vector(normal).to_track_quat("Z", "Y").to_euler()
+    boolean(ob, cutter)
+
+
+def ice_block(size, loc, mat, cuts=(), seed=1, roughen=0.0015, hole=None):
+    ob = rounded_box("ice", *size, loc, mat, bevel=0.004, segs=3)
+    apply_mods(ob)
+    for c in cuts:
+        jag_cut(ob, *c)
+    if hole:
+        # 병 자리를 비운다(병보다 조금 큰 둥근 상자) — 겹친 굴절 물체는 Cycles에서 탁해진다
+        sx, sy, sz, hloc, rz = hole
+        h = rounded_box("icehole", sx, sy, sz, hloc, None, bevel=0.004)
+        h.rotation_euler = (0, 0, math.radians(rz))
+        apply_mods(h)
+        boolean(ob, h)
+    # 녹은 표면의 출렁임
+    sub = ob.modifiers.new("sub", "SUBSURF")
+    sub.levels = 2
+    sub.render_levels = 2
+    sub.subdivision_type = "SIMPLE"
+    tex = bpy.data.textures.new(f"icenoise{seed}", "CLOUDS")
+    tex.noise_scale = 0.03
+    disp = ob.modifiers.new("disp", "DISPLACE")
+    disp.texture = tex
+    disp.strength = roughen
+    disp.texture_coords = "OBJECT"
+    return ob
+
+
+def siot_ice(mat, h=0.20, w=0.17, thick=0.060, depth=0.060, loc=(0, 0, 0)):
+    """「ㅅ」 얼음 조각 — 위에서 맞붙은 두 기둥(안쪽 갈라진 자리가 원본 Y의 V 자리). 원본 Y는 세 갈래, 우리는 두 갈래."""
+    root = link(bpy.data.objects.new("siot_root", None))
+    ang = math.atan2(w / 2, h)
+    L = math.hypot(w / 2, h) + thick * 0.3
+    bars = []
+    for side in (-1, 1):
+        b = rounded_box(f"bar{side}", thick, depth, L, (0, 0, 0), mat, bevel=0.006, segs=3)
+        b.rotation_euler = (0, -side * ang, 0)   # 꼭짓점이 위(Λ) — 1판은 부호가 반대라 V로 섰다
+        b.location = (side * w / 4, 0, h / 2 + 0.002)
+        bars.append(b)
+    # 두 기둥을 하나로(맞붙은 자리가 매끈하게)
+    apply_mods(bars[0])
+    apply_mods(bars[1])
+    mod = bars[0].modifiers.new("u", "BOOLEAN")
+    mod.operation = "UNION"
+    mod.object = bars[1]
+    mod.solver = "EXACT"
+    apply_mods(bars[0])
+    bpy.data.objects.remove(bars[1], do_unlink=True)
+    ob = bars[0]
+    ob.name = "siot"
+    # 바닥을 평평하게, 꼭대기도 살짝 평평하게(두 기둥 머리가 W로 패이지 않게)
+    jag_cut(ob, (0, 0, 0.0), (0, 0, -1), 0.4, seed=11)
+    jag_cut(ob, (0, 0, h - 0.004), (0, 0, 1), 0.4, seed=12)
+    # 잎집 마디: 꼭대기 위로 솟은 가는 기둥(라벨 상징의 머리) — 이것이 있어야 「A」가 아니라 솔잎 한 쌍으로 읽힌다
+    sh = rounded_box("sheath", thick * 0.42, depth * 0.7, 0.060, (0, 0, h + 0.022), mat, bevel=0.006, segs=3)
+    apply_mods(sh)
+    mod = ob.modifiers.new("u2", "BOOLEAN")
+    mod.operation = "UNION"
+    mod.object = sh
+    mod.solver = "EXACT"
+    apply_mods(ob)
+    bpy.data.objects.remove(sh, do_unlink=True)
+    sub = ob.modifiers.new("sub", "SUBSURF")
+    sub.levels = 2
+    sub.render_levels = 2
+    sub.subdivision_type = "SIMPLE"
+    tex = bpy.data.textures.new("siotnoise", "CLOUDS")
+    tex.noise_scale = 0.04
+    disp = ob.modifiers.new("disp", "DISPLACE")
+    disp.texture = tex
+    disp.strength = 0.0018
+    ob.parent = root
+    root.location = loc
+    return root
+
+
+def pine_sprig(loc, length=0.10, needle=0.028, seed=5, mat_stem=None, mat_needle=None):
+    """솔가지: 가는 줄기에 솔잎이 두 가닥씩(잎집에서 갈라짐) 비스듬히 난다. 원본의 얼음 속 초록 새싹 자리."""
+    rnd = random.Random(seed)
+    stem_m = mat_stem or mat_simple("stem", base=(0.20, 0.13, 0.08), rough=0.6)
+    nd_m = mat_needle or mat_simple("needle", base=(0.05, 0.22, 0.09), rough=0.35, coat=0.3)
+    root = link(bpy.data.objects.new("sprig_root", None))
+    st = cylinder("stem", 0.0018, length, (0, 0, length / 2), stem_m, segs=16)
+    st.parent = root
+    me = bpy.data.meshes.new("needles")
+    bm = bmesh.new()
+    n_pairs = int(length / 0.0026)
+    for i in range(n_pairs):
+        z = 0.008 + (length - 0.010) * i / n_pairs
+        az = rnd.uniform(0, 2 * math.pi)
+        for side in (-0.22, 0.22):
+            a = az + side
+            el = math.radians(rnd.uniform(28, 48))
+            dirv = Vector((math.cos(a) * math.cos(el), math.sin(a) * math.cos(el), math.sin(el)))
+            ln = needle * rnd.uniform(0.85, 1.1)
+            ret = bmesh.ops.create_cone(bm, cap_ends=True, segments=5, radius1=0.00042, radius2=0.00008, depth=ln)
+            rot = dirv.to_track_quat("Z", "Y").to_matrix().to_4x4()
+            for v in ret["verts"]:
+                v.co = rot @ (v.co + Vector((0, 0, ln / 2))) + Vector((0, 0, z))
+    bm.to_mesh(me)
+    bm.free()
+    nd = link(bpy.data.objects.new("needles", me))
+    nd.data.materials.append(nd_m)
+    nd.parent = root
+    root.location = loc
+    return root
+
+
+def backdrop(rgb_low, rgb_high, strength=1.0, dist=0.6, width=3.0, height=1.6, z0=0.0, y=None):
+    """카메라 뒤편의 큰 빛판(위가 밝은 파랑) — 원본의 흐린 파란 바탕."""
+    m, n, l, out = new_mat("backdrop")
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    ramp = n.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (*rgb_low, 1)
+    ramp.color_ramp.elements[1].color = (*rgb_high, 1)
+    l.new(sep.outputs["Y"], ramp.inputs["Fac"])
+    e = n.new("ShaderNodeEmission")
+    l.new(ramp.outputs["Color"], e.inputs["Color"])
+    e.inputs["Strength"].default_value = strength
+    l.new(e.outputs[0], out.inputs["Surface"])
+    me = bpy.data.meshes.new("bd")
+    bm = bmesh.new()
+    bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
+    for v in bm.verts:
+        v.co.x *= width
+        v.co.y *= height
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new("backdrop", me))
+    ob.data.materials.append(m)
+    ob.location = (0, dist if y is None else y, z0 + height / 2)
+    ob.rotation_euler = (math.radians(90), 0, 0)
+    ob.visible_shadow = False
+    return ob
+
+
+def floor(mat, size=4.0, z=0.0):
+    me = bpy.data.meshes.new("floor")
+    bm = bmesh.new()
+    bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=size / 2)
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new("floor", me))
+    ob.data.materials.append(mat)
+    ob.location = (0, 0, z)
+    return ob
+
+
+def light_bar(loc, length, thick, strength, rgb=(0.80, 0.90, 1.0)):
+    """병 뒤의 가로 빛 띠(18번) — 흐린 초점에서 넓게 번진다."""
+    ob = rounded_box("lightbar", length, thick, thick, loc, mat_emit("bar", rgb, strength), bevel=0.0)
+    ob.visible_shadow = False
+    return ob
+
+
+def water_surface(z, size=0.25, strength=0.003, seed=2):
+    m, n, l, out = new_mat("water")
+    b = principled(n, base=(0.85, 0.93, 1.0), rough=0.0, ior=1.333, trans=1.0)
+    l.new(shadow_pass(n, l, b.outputs[0]).outputs[0], out.inputs["Surface"])
+    va = n.new("ShaderNodeVolumeAbsorption")
+    va.inputs["Color"].default_value = (0.35, 0.62, 1.0, 1)
+    va.inputs["Density"].default_value = 6.0
+    l.new(va.outputs[0], out.inputs["Volume"])
+    ob = rounded_box("water", 0.12, 0.12, 0.06, (0, 0, z - 0.03), m, bevel=0.0)   # 화면 밖은 필요 없어 작게(잘게 나눌 수 있게)
+    sub = ob.modifiers.new("sub", "SUBSURF")
+    sub.levels = 6
+    sub.render_levels = 6
+    sub.subdivision_type = "SIMPLE"
+    tex = bpy.data.textures.new("ripple", "STUCCI")
+    tex.noise_scale = 0.018
+    disp = ob.modifiers.new("disp", "DISPLACE")
+    disp.texture = tex
+    disp.strength = strength
+    disp.texture_coords = "GLOBAL"
+    disp.direction = "Z"
+    return ob
+
+
+# ── 컷 ───────────────────────────────────────────────────────────────────────
+# 2판(1판 비교 뒤): 1판은 바탕 빛판 · 바닥이 밝아 화면이 하얗게 날았다. 원본은 짙은 코발트 바탕에 유리 가장자리 · 얼음 결만 빛나는 꼴이라
+# 바탕을 어둡게(빛판 0.6~0.9) · 바닥을 짙은 파랑 광택으로 낮추고, 빛은 뒤 · 옆 테두리 위주로. 카메라는 원본 첫 프레임의 물체 자리 · 크기를
+# 화면 비율로 재어 거리 · 렌즈를 셈했다(각 컷 주석).
+def lerp(a, b, t):
+    return tuple(x + (y - x) * t for x, y in zip(a, b))
+
+
+def studio(low=(0.010, 0.060, 0.400), high=(0.001, 0.006, 0.060), strength=0.6, dist=0.8, height=1.2, width=4.0,
+           floor_rgb=(0.010, 0.030, 0.090), floor_z=0.0, use_floor=True):
+    world_gradient((0.001, 0.004, 0.020), (0.006, 0.025, 0.090), 1.0)
+    if use_floor:
+        floor(mat_simple("floor", base=floor_rgb, rough=0.22, coat=0.35), z=floor_z)
+    backdrop(low, high, strength=strength, dist=dist, height=height, width=width)
+
+
+def rims(target, e=40, size=0.08, spread=(0.16, 0.20, 0.10)):
+    sx, sy, sz = spread
+    area_light("rimL", (-sx, sy, sz), target, e, size, (0.70, 0.85, 1.0))
+    area_light("rimR", (sx, sy, sz), target, e, size, (0.70, 0.85, 1.0))
+
+
+def shot_look():
+    studio()
+    bottle((0, 0, 0), rot_z=-28)
+    area_light("key", (-0.25, -0.30, 0.30), (0, 0, 0.06), 12, 0.30, ICE_BLUE)
+    rims((0, 0, 0.06))
+    camera((0.12, -0.50, 0.09), (0, 0, 0.058), lens=70, fstop=5.6)
+
+
+def shot_s18():
+    """원본 18(15.84~20.00초): 첫 프레임은 병이 화면 왼쪽에 크게(병 가운데가 화면 폭의 0.2 · 뚜껑 위가 화면 위에 닿고 바닥은 아래로 잘림,
+    오른쪽 가운데에 흐린 빛 덩이) → 18초쯤까지 물러나며 병이 화면 가운데(0.53) · 높이의 0.55로, 병 뒤 아래쪽에 가로 빛 띠(높이 0.75)."""
+    studio(low=(0.015, 0.09, 0.55), high=(0.001, 0.008, 0.07), strength=0.6, dist=0.9)
+    light_bar((0, 0.60, 0.030), 3.0, 0.030, 2.6)   # 6판: 5판은 띠가 세고 두꺼워 병 아래 절반이 탔다 · 10판: 원본 띠(높이 0.62~0.78)만큼 굵게
+    bottle((0, 0, 0), rot_z=-6)
+    area_light("key", (-0.28, -0.30, 0.22), (0, 0, 0.06), 9, 0.30, ICE_BLUE)
+    rims((0, 0, 0.06), e=55)
+    # 9판(Fable 원본 대조 1차 P0-1 · 2): 원본은 서지 않고 20.0초까지 점점 느리게 물러나고, 병은 끝까지 화면 왼쪽 1/3에 선다.
+    # 원본 끝 프레임(19.96초): 병 높이가 화면 높이의 0.80(위 0.14 ~ 아래 0.94) · 병 가운데가 너비의 0.30 → 화면 폭 0.264 m(렌즈 70 → 0.513 m).
+    # 첫 프레임은 그 0.51배 화면(폭 0.135 m · 0.262 m) · 뚜껑 가운데가 너비의 0.215 · 뚜껑 위가 화면 위 끝.
+    # 화면 배율 키(첫 프레임 대비): 16.92초 0.77 · 17.92초 0.62 · 18.92초 0.55 · 20.00초 0.51(카메라.json · Fable 재측정)
+    keys = [(0.0, 1.0), (0.26, 0.77), (0.50, 0.62), (0.74, 0.55), (1.0, 0.51)]
+    sc_t = keys[-1][1]
+    for (t0, a0), (t1, a1) in zip(keys, keys[1:]):
+        if t0 <= T <= t1:
+            u = (T - t0) / (t1 - t0)
+            sc_t = a0 + (a1 - a0) * u
+            break
+    w = 0.115 / sc_t                      # 화면 폭(m) — 9판 0.135는 우리 병(원본보다 가늘다)이 작게 보여 0.85배로
+    k = (1.0 - sc_t) / (1.0 - 0.51)       # 0 → 1
+    tx = 0.033 + (0.045 - 0.033) * k      # 겨냥점을 병 오른쪽으로(병이 왼쪽에 서게)
+    tz = 0.0867 + (0.0646 - 0.0867) * k
+    d = w * 70 / 36
+    camera((tx, -d - BD / 2, tz + 0.004), (tx, 0, tz), lens=70, fstop=2.8 + 2.8 * k)
+
+
+def shot_s17():
+    """원본 17(14.84~15.84초): 병 몸통이 화면을 채우고(폭의 0.12~0.85) 라벨이 가운데, 병이 반시계로 약 10° 기울어 보임,
+    뚜껑은 왼쪽 위에 잘림, 오른쪽 뒤가 밝다 → 1초 동안 물러나며 돎."""
+    studio(low=(0.10, 0.32, 0.95), high=(0.004, 0.03, 0.22), strength=0.7, dist=0.5, height=0.5)
+    bottle((0, 0, 0), rot_z=-16)
+    area_light("key", (-0.20, -0.25, 0.20), (0, 0, 0.05), 8, 0.25, ICE_BLUE)
+    area_light("back", (0.25, 0.30, 0.10), (0, 0, 0.05), 120, 0.35, (0.80, 0.90, 1.0))
+    rims((0, 0, 0.05))
+    # 9판(Fable P0-4): 원본은 돌지 않는다 — 기울기 고정, 1초에 0.64배로 물러남만
+    d = 0.160 / (1 - 0.36 * T)
+    camera((0.020, -d - BD / 2, 0.046), (0.0, 0, 0.044), lens=85, fstop=8.0, roll=-15)   # 10판: 원본은 병 윗부분이 왼쪽으로 기움
+
+
+def shot_s02():
+    """원본 2(2.08~2.48초): 얼음 덩이에 박힌 병의 이름 자리를 아주 가까이 — 화면 폭 ≈ 병 폭/0.9(0.052 m, 렌즈 100 → 0.144 m),
+    이름이 화면 가운데 · 높이 0.62, 위로 뚜껑과 얼음 윗면, 왼쪽 · 오른쪽 끝에 얼음 덩이가 걸침. 0.4초에 0.98배로 살짝 물러남."""
+    studio(low=(0.015, 0.09, 0.55), high=(0.005, 0.04, 0.30), strength=0.6, dist=0.5)
+    bottle((0, 0, 0), rot_z=0)
+    ice = mat_ice()
+    ice_block((0.110, 0.075, 0.150), (0.0, 0.0, 0.075), ice,
+              cuts=[((0.040, -0.04, 0.14), (0.6, -0.7, 0.5), 0.14, 4), ((-0.045, -0.035, 0.15), (-0.4, -0.8, 0.6), 0.10, 7),
+                    ((0.0, -BD / 2 - 0.002, 0.07), (0.0, -1.0, 0.0), 0.30, 13)],
+              hole=(BW + 0.0012, BD + 0.0012, 0.30, (0, 0, 0.15 - 0.0006), 0))
+    area_light("key", (-0.20, -0.30, 0.25), (0, 0, 0.05), 8, 0.30, ICE_BLUE)
+    area_light("back", (0.0, 0.30, 0.10), (0, 0, 0.06), 60, 0.25, (0.70, 0.85, 1.0))
+    rims((0, 0, 0.05), e=30)
+    # 7판: 이름이 원본 라벨 자리(높이 0.62)보다 아래였다 — 겨냥을 내리고, 양옆 얼음이 보이게 화면 폭을 0.065 m로
+    d = 0.180 / (1 - 0.02 * T)
+    camera((0.0, -d - BD / 2, 0.041), (0.0, 0, 0.041), lens=100, fstop=8.0)
+
+
+def shot_s03():
+    """원본 3(2.48~3.20초): 모서리가 깨진 큰 얼음 덩이(화면 폭의 0.27~0.75, 병 폭의 2.5배쯤) 속에 선 병, 뚜껑 위가 화면 위 0.05,
+    병 바닥이 0.85 — 화면 높이 0.14 m(렌즈 70 → 0.484 m). 밝은 바닥 · 흐린 파란 바탕. 거의 고정(살짝 기움)."""
+    studio(low=(0.04, 0.16, 0.75), high=(0.002, 0.02, 0.16), strength=0.6, dist=0.7, floor_rgb=(0.03, 0.10, 0.32))
+    bottle((0, 0, 0), rot_z=-10, print_through=True)
+    ice = mat_ice()
+    ice_block((0.115, 0.080, 0.150), (0.004, 0.0, 0.075), ice,
+              cuts=[((0.050, -0.04, 0.14), (0.7, -0.6, 0.5), 0.13, 4), ((0.055, -0.04, 0.03), (0.9, -0.4, -0.2), 0.08, 9),
+                    ((-0.05, -0.04, 0.15), (-0.5, -0.5, 0.7), 0.06, 21)],
+              hole=(BW + 0.0012, BD + 0.0012, 0.30, (0, 0, 0.15 - 0.0006), -10))
+    area_light("key", (-0.25, -0.30, 0.25), (0, 0, 0.05), 10, 0.30, ICE_BLUE)
+    area_light("back", (0.05, 0.30, 0.10), (0, 0, 0.06), 70, 0.30, (0.70, 0.85, 1.0))
+    rims((0, 0, 0.06), e=35)
+    camera((0.007, -0.484 - 0.04, 0.060), (0.007, 0, 0.066), lens=70, fstop=5.6, roll=-2 * T)
+
+
+def shot_s06():
+    """원본 6(4.96~5.24초): 머리글자 얼음 조각의 갈라진 자리를 아주 가까이(화면 폭 ≈ 0.12 m). 원본 Y는 V 자리가 화면 높이 0.35에서
+    두 팔이 위로 벌어지고, 우리 「ㅅ」은 꼭짓점이 위라 꼭짓점을 같은 높이(0.35)에 두고 두 다리가 아래로 벌어진다(위아래만 뒤집힌 꼴)."""
+    studio(low=(0.01, 0.08, 0.50), high=(0.001, 0.01, 0.10), strength=0.6, dist=0.5, use_floor=False)
+    ice = mat_ice("ice_s", frost=0.15)
+    siot_ice(ice, loc=(0, 0, 0))
+    area_light("back", (0.0, 0.35, 0.15), (0, 0, 0.15), 90, 0.40, (0.55, 0.78, 1.0))
+    area_light("key", (-0.2, -0.25, 0.3), (0, 0, 0.15), 8, 0.3, ICE_BLUE)
+    rims((0, 0, 0.17), e=45, spread=(0.20, 0.15, 0.25))
+    # 9판(Fable P1-4 추천): 0.28초 접사라 위아래를 알 수 없다 — 카메라를 180° 돌려 「ㅅ」 꼭짓점이 아래인 V 깔때기로(원본 6번과 같은 꼴),
+    # 잎집 마디가 원본 Y 기둥 자리(꼭짓점 아래)로 온다. 꼭짓점이 화면 높이 0.35에 오게 겨냥
+    camera((0.0, -0.135 - 0.03, 0.203), (0.0, 0, 0.203), lens=60, fstop=5.6, roll=180)
+
+
+def shot_s10():
+    """원본 10(7.40~8.12초): 파란 바탕 앞 머리글자 얼음 조각이 화면 가운데(높이의 0.13~0.97 — 화면 높이 0.238 m, 렌즈 50 → 0.588 m),
+    속에 초록 새싹 → 우리 「ㅅ」 속에 솔가지. 바닥 반사 선이 0.97. 0.72초에 4.7% 다가감."""
+    studio(low=(0.03, 0.14, 0.70), high=(0.002, 0.02, 0.15), strength=0.6, dist=0.8, floor_rgb=(0.03, 0.09, 0.28))
+    ice = mat_ice("ice_s", frost=0.12)
+    siot_ice(ice, loc=(0, 0, 0))
+    # 솔가지는 오른쪽 다리 속에 다리를 따라 비스듬히(원본 새싹이 Y 기둥 속에 박힌 자리)
+    sp = pine_sprig((0.050, 0.0, 0.014), length=0.12, needle=0.024)
+    sp.rotation_euler = (0, math.radians(-21), 0)
+    area_light("back", (0.0, 0.40, 0.18), (0, 0, 0.10), 90, 0.40, (0.55, 0.78, 1.0))
+    area_light("key", (-0.25, -0.30, 0.25), (0, 0, 0.10), 8, 0.30, ICE_BLUE)
+    rims((0, 0, 0.10), e=40, spread=(0.25, 0.20, 0.20))
+    d = 0.66 / (1 + 0.047 * T)
+    camera((0.0, -d - 0.03, 0.125), (0.0, 0, 0.128), lens=50, fstop=8.0)
+
+
+def shot_s09():
+    """원본 9(6.68~7.40초): 출렁이는 물에 잠긴 뚜껑 윗면을 위에서(카메라가 수직에서 약 30° 기움) — 뚜껑 윗면이 화면 폭의 0.3,
+    가운데 약간 오른쪽(0.6, 0.45). 화면 폭 0.08 m(렌즈 85 → 0.19 m)."""
+    world_gradient((0.004, 0.03, 0.18), (0.02, 0.10, 0.45), 1.0)
+    floor(mat_simple("deep", base=(0.01, 0.04, 0.14), rough=0.3), z=-0.12)
+    bottle((0, 0, -(BH + NECK_H + CAP[2] - 0.001) - 0.002), rot_z=12)   # 뚜껑 윗면이 물 아래 2 mm
+    water_surface(0.0, strength=0.009)
+    # 물결에 비칠 위쪽 빛판(반사에만 보임) — 7판: 6판은 물 표면이 안 보여 뚜껑이 마른 채로 보였다
+    sb = rounded_box("softbox", 0.6, 0.6, 0.002, (0.10, 0.10, 0.45), mat_emit("sb", (0.75, 0.88, 1.0), 3.0), bevel=0.0)
+    sb.visible_camera = False
+    sb.visible_transmission = False
+    sb.visible_shadow = False
+    area_light("top", (0.05, -0.08, 0.40), (0, 0, 0), 30, 0.35, ICE_BLUE)
+    area_light("side", (-0.30, 0.10, 0.10), (0, 0, 0), 25, 0.20, (0.55, 0.78, 1.0))
+    a = math.radians(30)
+    d = 0.19
+    camera((-0.024, -d * math.sin(a), d * math.cos(a)), (-0.024 + 0.008, 0.0, 0.0), lens=85, fstop=5.6, roll=8 + 3 * T)
+
+
+SHOTS = {"look": shot_look, "s18": shot_s18, "s17": shot_s17, "s02": shot_s02, "s03": shot_s03,
+         "s06": shot_s06, "s10": shot_s10, "s09": shot_s09}
+
+if __name__ == "__main__":
+    sc = reset()
+    SHOTS[SHOT]()
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    sc.render.filepath = OUT
+    bpy.ops.render.render(write_still=True)
+    print("저장", OUT)

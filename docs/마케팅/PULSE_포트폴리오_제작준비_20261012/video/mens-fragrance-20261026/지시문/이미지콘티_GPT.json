@@ -1,0 +1,79 @@
+{
+ "메모": "2번 남성 향수(가칭 솔서리) · 이미지 콘티 — 얼굴 없는 물 · 잎 · 안개 여섯 컷(07 · 08 · 11 · 13 · 14 · 15)을 GPT 이미지 2.5(ChatGPT 구독 · Codex CLI, 굽기 계정 돌려쓰기)로 굽는다. Gemini 줄(사람 컷 · 아르곤)과 겹치지 않게 나눴다. 원본 프레임은 넣지 않는다 — 빛 자리만 남게 크게 흐린 배치 그림(배치/<컷>_흐림.jpg)과 우리 블렌더 렌더(배치/s06 · s10_렌더.jpg)만 참고로 넣는다. 굽기: python -I -X utf8 ../이미지콘티_GPT.py [컷 …] → git 밖 synk-vendor/pulse-portfolio12-20261024/콘티/p2/받음/<컷>_g<n>.png 08번은 1판이 바다 파도로 읽혀 「유리 수조 · 수평선 없음」을 넣은 2판(g2)으로 굽는다. 07번은 06번을 뒤집어 찍은(카메라 180°) V 깔때기 렌더를 바탕으로 2판(g2)을 굽는다 — 원본처럼 V 사이로 물줄기가 떨어진다(Fable 샷표 1차 P1-4). 06 · 09 · 10번은 블렌더 렌더(모양 · 구도 · 뚜껑 음각)를 그대로 두고 얼음 · 물 질감만 실사로 다듬은 판(S06r · S09r · S10r)을 견준다 — 병이 나오는 2 · 3 · 17 · 18번은 제품이라 블렌더 그대로.",
+ "공통": "Create exactly one photograph: a cinematic still from a luxury men's cologne commercial, 16:9 landscape (1536x864 or similar wide frame). The whole film lives in one deep cobalt-blue world: dark navy shadows, saturated cobalt mid-tones, cold white-blue highlights only on edges and droplets. Crisp high-end macro product photography, shallow depth of field, real optics, no CGI look. Absolutely no text, letters, logos, brand marks, people, hands or bottles anywhere in the frame.",
+ "배치_문단": "The attached blurred image is a LAYOUT ONLY: it shows where the light and dark areas sit in the frame. Match only that light layout (where the bright band is, where it is dark). Never copy any shape, object or detail from it.",
+ "컷": {
+  "S07": {
+   "참고": [
+    "배치/s06_렌더.jpg"
+   ],
+   "지시": "The attached image is our own 3D render of a clear ice sculpture seen very close: two thick clear-ice arms meet at a point in the lower middle of the frame and open upward into a V shape like a funnel, with a short ice stem continuing below the meeting point. Keep exactly that camera position, framing, the V-shaped ice and the cobalt light. Change only this: a thin, glassy stream of crystal-clear water now falls from above straight down into the V, lands in the meeting point and runs down along the inner faces and the stem, breaking into a few beads and a small splash where it hits the ice; tiny air bubbles inside the stream. The ice surfaces are wet and glistening. Nothing else is added."
+  },
+  "S08": {
+   "참고": [
+    "배치/S08_흐림.jpg"
+   ],
+   "지시": "Extreme close-up inside a small clear glass water tank in a dark studio: the water is being churned into a tight swirling vortex that fills the whole frame — glassy curls of water folding over each other, fine bubbles and droplets, the camera lens half under the surface so the frame is mostly underwater swirl with a band of broken surface across the middle. Strong cobalt-blue backlight shines through the water: curls glow pale blue-white, deep parts are navy. It must read as water churning in a tank right in front of the lens — NOT an ocean, no waves rolling toward a shore, no horizon, no sky. No objects, only water and light. The motion runs from lower-left up to the upper-right."
+  },
+  "S11": {
+   "참고": [
+    "배치/s10_렌더.jpg",
+    "배치/S11_흐림.jpg"
+   ],
+   "지시": "Image 1 is our own 3D render of the ㅅ-shaped clear ice sculpture with a pine sprig frozen inside its right pillar. Make an extreme macro close-up INSIDE that clear ice: a few long, thin, dark-green Korean red pine needles (growing in pairs from a small brown sheath) frozen in crystal-clear ice, with tiny trapped air bubbles, hairline cracks and a melting wet ice surface in front. Cobalt-blue light comes from behind so the ice edges glow white-blue and the needles read deep green. The needles run diagonally from lower-left to upper-right through the middle of the frame. Image 2 is the light layout only."
+  },
+  "S13": {
+   "참고": [
+    "배치/S13_흐림.jpg"
+   ],
+   "지시": "A fine cologne mist drifting in mid-air against a deep cobalt-blue background: thousands of tiny droplets, backlit so each one sparkles pale blue-white, forming a soft diagonal cloud that is densest in the upper-left and thins out toward the lower-right. Very shallow depth of field, some droplets in sharp focus, most softly blurred. No objects, no source of the spray visible."
+  },
+  "S14": {
+   "참고": [
+    "배치/S14_흐림.jpg"
+   ],
+   "지시": "Close-up of a small branch of Korean red pine (long thin needles growing in pairs) covered in fine white hoar frost crystals, in cool cobalt-blue light. The frosted needles fan out from the lower-right toward the upper-left and fill the right two thirds of the frame; behind them a softly blurred deep-blue background with a lighter band near the bottom. The frost sparkles on the needle edges; the needles themselves are a dark blue-green under the blue light."
+  },
+  "S15": {
+   "참고": [
+    "배치/S15_흐림.jpg"
+   ],
+   "지시": "Extreme macro of hoar frost on a single Korean red pine needle: the needle runs diagonally across the frame from the lower-left to the right side, its surface densely covered in tiny white ice crystals and feathery frost spikes that sparkle in cold cobalt-blue backlight. Background: a smooth deep-blue blur, slightly brighter at the bottom. Razor-thin focus on the frost crystals."
+  },
+  "S01": {
+   "참고": [
+    "배치/S01_실루엣.jpg",
+    "배치/태준_전신.jpg"
+   ],
+   "사람": true,
+   "지시": "Image 1 is a LAYOUT FRAME: the small black shape shows exactly where the man stands and how big he is, and the blurred blue shows the light layout — copy its camera position, framing and the size and position of the figure exactly, but never copy the outline of the hair. Image 2 shows only his body type (a lean, athletic, muscular Korean man, 184 cm, medium-length black hair swept back). Wide shot: a dark, empty studio stage — the edge of a long low platform runs across the lower part of the frame as a thin line of light, the floor below it in darkness; above, three wide diagonal beams of cold light cut down from the upper left through a faint haze. The man stands small near the middle of the stage, slightly right of centre, his whole body visible and about a quarter of the frame height, bare-chested in black trousers, facing the camera and stepping slowly forward. He is a near-silhouette: his outline lit by the beams, his face and body in shadow, no facial detail readable."
+  },
+  "S04": {
+   "참고": [
+    "배치/S04_실루엣.jpg",
+    "배치/태준_전신.jpg"
+   ],
+   "사람": true,
+   "지시": "Image 1 is a LAYOUT FRAME: the black shape shows exactly where his shoulder and arm are and how big they are in the frame, and the blurred blue shows the light layout — copy its camera position, framing and the size and position of the shape exactly. Image 2 shows only his body type and skin tone (a lean, athletic, muscular Korean man with medium warm-toned skin). Close-up from just behind his right shoulder, camera low: his bare right shoulder and upper back fill the left half of the frame in deep blue shadow with a cold rim of light along the skin; his right arm reaches out and up toward the upper right, the hand open with relaxed, slightly spread fingers; beyond the arm a hazy cobalt light glows with soft vertical light shapes far away. His head is out of frame except the very edge of his black hair at the top-left."
+  },
+  "S06r": {
+   "참고": [
+    "배치/s06_렌더.jpg"
+   ],
+   "지시": "The attached image is our own 3D render of a clear ice sculpture seen very close: two thick clear-ice arms meet at a point in the lower middle and open upward into a V like a funnel, a short ice stem continues below the meeting point. Keep EXACTLY the camera position, framing, composition and the shapes and positions of every object in the attached render; only make the materials, water and light photoreal, like a real macro product photograph. The ice should look like real carved clear ice: crystal clear with faint internal fractures, tiny trapped bubbles, slightly melting wet surfaces and bright cold edges, lit by cobalt-blue backlight."
+  },
+  "S09r": {
+   "참고": [
+    "배치/s09_렌더.jpg"
+   ],
+   "지시": "The attached image is our own 3D render seen from above: the square brushed-silver cap of our cologne bottle lies just under the surface of rippling clear water, with a thin engraved mark of two pine needles on its top. Keep EXACTLY the camera position, framing, composition and the shapes and positions of every object in the attached render; only make the materials, water and light photoreal, like a real macro product photograph. Keep the cap shape, its square outline and the engraved mark exactly as they are — do not add, change or remove any mark, letter or logo. Make the water real: turbulent, glassy, splashing slightly around the cap with bright caustic highlights and bubbles, cobalt-blue light."
+  },
+  "S10r": {
+   "참고": [
+    "배치/s10_렌더.jpg"
+   ],
+   "지시": "The attached image is our own 3D render: a clear ice sculpture shaped like the Korean letter ㅅ (two thick clear-ice legs leaning together, a short ice post on top) standing on a reflective floor in front of a cobalt-blue backdrop, with a pine sprig frozen inside its right leg. Keep EXACTLY the camera position, framing, composition and the shapes and positions of every object in the attached render; only make the materials, water and light photoreal, like a real macro product photograph. The ice should look like real carved clear ice with faint internal fractures, tiny bubbles and bright cold edges; the frozen pine sprig inside the right leg must be clearly visible as dark-green Korean red pine needles in pairs. The floor is glossy and reflects the sculpture; the backdrop is a smooth cobalt gradient with a soft lighter haze near the floor."
+  }
+ },
+ "공통_사람": "Create exactly one photograph: a cinematic still from a luxury men's cologne commercial, 16:9 landscape. The whole film lives in one deep cobalt-blue world: a dark studio, saturated cobalt light, cold blue-white highlights only on edges. A real photograph with natural skin texture, not airbrushed, subtle film grain. Absolutely no text, letters, logos, jewelry, necklaces, rings, bracelets, tattoos or sunglasses."
+}
