@@ -1,7 +1,7 @@
-# 콘티 v5 Seedance 2.0 웹 무제한 순서표(2026-10-26) — higgsfield.ai 웹에서 사람이 한 컷씩 내도록 컷마다 폴더와 순서표를 만든다.
+# 콘티 v5 Seedance 웹 무제한 순서표(2026-10-26) — higgsfield.ai 웹에서 사람이 한 컷씩 내도록 컷마다 폴더와 순서표를 만든다.
 # 무제한은 웹에서만, 한 번에 하나씩, 자동화 금지(Higgsfield 도움말 · 이용약관 10.6)라 내기는 유호님 손, 받기 · 검수는 Claude(show_generations).
 # 컷 폴더: 1_시작.jpg · 2_끝.jpg(#5 · #24 · #26) · 3_소리.mp3(대사 컷) · 지시문.txt(= 클립 prompt + 말없음 줄 + 공통, 영상_v5.json 그대로).
-# 순서: 시험 넷(#7 · #3 · #26 · #5)을 앞에 두고 27컷을 차례로(시험 넷은 10-26 크레딧 시험 480p에서 통과 — 기다리지 않고 이어서 낸다).
+# 순서: 넷(#7 · #3 · #26 · #5)을 앞에 두고 27컷을 차례로 — 처음 나온 #7만 눈으로 보고 기다리지 않고 이어서 낸다.
 #   python -X utf8 웹올리기_v5.py   → synk-vendor/…/영상/웹올리기_v5/NN_컷MM/ · 순서표.html(그림은 작게 줄여 안에 넣음)
 import base64
 import html
@@ -74,7 +74,7 @@ def no_ref(text):
 
 def main():
     spec = json.load(open(os.path.join(HERE, "지시문", "영상_v5.json"), encoding="utf-8"))
-    web = spec["웹 무제한(Seedance 2.0)"]
+    web = spec["웹 무제한"]
     clips = {c["id"]: c for c in spec["클립"]}
     order = FIRST + [c["id"] for c in spec["클립"] if c["id"] not in FIRST]
     if os.path.isdir(OUT):
@@ -97,7 +97,7 @@ def main():
         rows.append({"순서": k, "컷": c["컷"], "id": cid, "폴더": folder, "길이": c["길이"], "소리 생성": c["generate_audio"],
                      "끝 그림": bool(c.get("끝 그림")), "소리 참고": bool(c.get("소리 참고")), "지시문 글자 수": len(text)})
         if k == len(FIRST):
-            cards.append('<h2 class="pause">시험 넷은 10-26 크레딧 시험(480p)에서 통과했어요 — 기다리지 말고 아래 23컷을 이어서 내 주세요</h2>')
+            cards.append('<h2 class="pause">#7만 확인했으면 기다리지 말고 아래 23컷을 이어서 내 주세요</h2>')
     before = "".join(f"<li>{html.escape(s)}</li>" for s in web["시작 전에"])
     page = f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>매진 임박 Seedance 순서표</title>
@@ -128,10 +128,10 @@ button {{ margin-top:6px; padding:8px 14px; border-radius:6px; border:1px solid 
 .pause {{ border-top:2px dashed var(--acc); padding-top:16px; color:var(--acc); }}
 .cut:has(input:checked) {{ opacity:.55; }}
 </style></head><body><main>
-<h1>매진 임박 · Seedance 2.0 무제한 순서표</h1>
+<h1>매진 임박 · Seedance 2.5 무제한 순서표</h1>
 <p class="lead">공포 컷 27개(광고 카드 넷은 블렌더라 빠짐). 한 컷씩 내고, 앞 컷이 다 만들어진 뒤 다음 컷을 냅니다. 낸 컷은 왼쪽 네모에 표시해 두면 이 브라우저에 남습니다.</p>
 <h2>시작 전에</h2><ol class="before">{before}</ol>
-<h2>시험 넷(10-26 시험 통과) — 처음 #7만 눈으로 보고 이어서</h2>
+<h2>먼저 넷 — 처음 나온 #7의 첫 화면 · 입 · 흔들림만 한 번 보고 이어서</h2>
 {"".join(cards)}
 </main>
 <script>

@@ -198,6 +198,12 @@
 - 고침: 사람들이 계속 움직여야 하면 끝 그림 대신 image_references로 주고 「끝까지 각자 움직임」을 쓴다(7.9%로 늘었다).
 - 다시 확인: 끝 2초의 프레임 차이를 잰다.
 
+### 「같은 거리 · 밀지 않음」을 공통에 쓰면 원본보다 몇 배 덜 흔들리는 정적인 클립이 된다 (2026-10-26 Claude)
+- 증상: 「매진 임박」 Seedance 2.0 시험 넷이 원본보다 너무 정적이었다(유호님 「지금 우리거는 너무 정적이라 재미가 없는것같아」). 같은 자로 재니 떨림(빠른 흔들림 RMS, 화면 폭 %)이 #5 0.25 · #7 0.37 · #26 0.41로 원본 2.4 · 1.0 · 1.8의 1/4~1/10이었다(원본도 고정인 넓은 컷 #3만 0.03으로 같음).
+- 원인: 시작 그림을 지키려고 공통 줄에 「it keeps the same distance and never pushes in or zooms」와 「natural, nervous shake」만 썼고 컷 첫 문장도 「slight nervous shake」였다. 모델은 이 말을 거의 고정된 카메라로 읽는다.
+- 고침: 원본 컷마다 떨림 · 느린 흐름(팬 · 틸트 쪽) · 밀기 · 기울기를 재(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/homeshopping-horror-20261021/카메라재기_v5.py`) 세기와 방향으로 첫 문장을 쓴다 — 거의 고정(0.3% 아래) 「almost perfectly still」, 가볍게(0.3~0.8) 「small constant jitters」, 세게(0.9~3) 「strong constant shake … rolling a few degrees off level, a little motion blur on the jolts」, 격하게(3.5 넘음) 「violently shaking … lurches and swings, pushes in, tilts as much as 10 to 15 degrees off level, heavy motion blur on every jolt」. 공통에는 「real handheld camera held by an operator right next to the actors; it moves exactly as described above, never with a smooth gimbal, dolly or drone glide」. 휙 돌기는 「right after the first frame it jolts in a quick whip-pan」처럼 첫 프레임 뒤로 둔다(첫 화면은 시작 그림 그대로라).
+- 다시 확인: 받은 클립을 같은 도구로 재 원본 떨림과 견준다 — 2.5에서는 아직 확인 전(10-26).
+
 ### 시간표와 대사가 지시문보다 늦게 온다
 - 증상: 결과의 실제 시간표가 지시문보다 약 0.7초 늦고, 대사는 0.4~1.4초 늦게 나오기도 한다.
 - 원인: 모델이 지시문의 초 단위를 정확히 지키지 않는다.

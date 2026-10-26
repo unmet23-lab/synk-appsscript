@@ -29,6 +29,7 @@
 - 참고 썸네일이 떠도 올리기는 아직이다 → 수가 맞은 뒤 12초 더 기다리고 글을 넣는다 ([자세히](#썸네일이-뜬-뒤에도-참고-사진은-올라가는-중이다--빙글-표시가-남은-채-보내면-글이-지워지고-대화가-안-생긴다-2026-10-25-claude))
 - 원본 영상의 어두운 빛을 후보정 없이 맞출 때 얼굴 클로즈업만 인물 사진처럼 밝게 나온다 → 빛 칸에 「한 스톱 어둡게」 한 줄을 더하고 원본 첫 프레임과 밝기 분위로 잰다 ([자세히](#원본-영상의-어두운-빛을-후보정-없이-맞출-때--빛-문장만으로는-얼굴-클로즈업이-인물-사진처럼-밝다-한-스톱-어둡게-한-줄을-더한다-2026-10-25-claude))
 - 흰 옷이 화면 절반인 컷은 빛 문장으로 안 어두워진다 → 구도가 좋은 판을 Image 1로 「빛만 두 스톱 어둡게」 편집 꼴로 굽는다 ([자세히](#흰-옷이-화면-절반인-컷은-빛-문장으로-안-어두워진다--고른-판을-image-1로-빛만-바꿔라-편집-꼴로-굽는다-2026-10-26-claude))
+- 원본 클로즈업의 앞가림(친구 어깨 · 머리카락)이 안 나온다 → 「No other face or body」를 빼고 렌즈 가까이 흐린 앞 물건을 쓰고, 자르기 창이 그걸 안 자르게 본다 ([자세히](#원본-클로즈업의-앞가림친구-어깨--머리카락이-사라진다--no-other-face-or-body-is-in-the-frame을-빼고-렌즈-가까이-흐린-앞-물건을-쓴다-2026-10-26-claude))
 
 ## 목차
 
@@ -639,3 +640,9 @@
 - 원인: 새로 그리는 꼴에서는 「촛불이 앞에서 비춘다」를 주된 빛으로 읽어 인물 사진처럼 얼굴과 흰 옷을 고르게 노출하는 것으로 보인다(추정). 「한 스톱 어둡게」는 따로 한 문장으로 둘 때(#7 · 방 R1b)만 먹었다.
 - 고침: 구도 · 얼굴이 좋은 판 하나를 Image 1로만 주고 「Edit Image 1 … Keep everything in Image 1 exactly the same — (사람 자리 · 얼굴 · 표정 · 손 · 옷 · 구도 · 배경) … Change only the light: … exposed about two stops darker than Image 1 … the white t-shirt, the white satin dress and the white lace veil become a dim, warm grey-beige, never bright white …」로 굽는다. 84차 두 판이 L 1/17/43 · 0.9%와 1/15/40 · 0.4%(원본 5/15/43 · 0.9%)로 나왔고, 얼굴 자리 · 크기와 닮음은 Image 1 그대로였다(통2 0.58 · 리4 0.43 · 지유 0.37). 받은 그림은 Image 1과 같은 16:9(2752×1536)다.
 - 다시 확인: 고르기 판에서 L 5 · 50 · 95 분위와 120 넘는 화소 비를 원본 첫 프레임과 견주고, 얼굴 상자 자리 · 크기와 SFace 닮음이 Image 1과 같은지 본다. YuNet이 입을 가린 손을 얼굴로 하나 더 잡기도 하니 큰 얼굴 셋만 센다(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/homeshopping-horror-20261021/이미지콘티_v5_고르기.py`).
+
+### 원본 클로즈업의 앞가림(친구 어깨 · 머리카락)이 사라진다 — 「No other face or body is in the frame」을 빼고 렌즈 가까이 흐린 앞 물건을 쓴다 (2026-10-26 Claude)
+- 증상: 「매진 임박」 v5 지유 클로즈업 넷(#7 · #12 · #14 · #18)이 뒤가 소파 · 담요로 트인 깔끔한 인물 사진이었다. 원본은 왼쪽 아래 앞에 리4의 맨 어깨 · 깅엄 끈 · 머리카락이 흐리게 걸려 셋이 붙어 있는 느낌이다(유호님 「원본이랑 비교해보면 카메라 엥글 구도 기법이 너무 다른데?」).
+- 원인: 클로즈업 칸(`A_꽉`)에 넣은 「No other face or body is in the frame.」가 앞가림까지 지웠다(옆 사람 얼굴이 섞이는 것을 막으려던 줄).
+- 고침: 그 줄을 「Her friend in the red-and-white gingham cami top sits pressed against her left side: in the lower-left corner, close to the lens and fully out of focus, are that friend's bare shoulder with its thin gingham strap and a few strands of black hair; no other face appears. Only her eyes are sharp.」로 바꿨다(`A_꽉_앞`, 289자 — 4,300자 상한 안). 85~87차에서 여섯 판 가운데 넷이 원본 꼴로 나왔고(닮음 0.37~0.44), 한 판은 어깨가 화면 절반을 가려 얼굴이 밀렸다(닮음 0.22). 자동 자르기 창이 얼굴 크기만 맞추면 앞가림을 잘라내니 받은 그대로를 보고 창을 정한다(#7 `@200,0,2200`처럼). #22는 「양옆에 흐린 친구 옷 · 머리카락, 10° 기울기」로 양옆 앞가림은 나왔지만 흰 옷이 밝아(밝은 화소 26%) 위 항목의 「빛만 바꿔라」 편집으로 내렸다(15.7%). 새로 구운 판에 램프 갓이 끼면 그 편집에서 「remove the lamp and its glowing shade at the top right」를 함께 시킨다.
+- 다시 확인: 원본 첫 프레임과 나란히 놓고 앞가림 자리 · 얼굴 자리 · 닮음(0.363 위)을 본다.

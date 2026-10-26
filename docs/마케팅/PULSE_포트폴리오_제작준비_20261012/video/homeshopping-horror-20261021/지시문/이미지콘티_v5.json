@@ -36,6 +36,7 @@
   "친구손_하나": "The only other thing in the frame is her friend's hand, coming in from the left edge and resting gently on her bare shoulder to comfort her: a small, soft young woman's hand with short natural nails, and the edge of a plain white cotton t-shirt sleeve just visible at the left edge of the frame — the hand of her curly-haired girlfriend sitting right beside her on the sofa. It is clearly a woman's hand, slender and delicate. No other face or body.",
   "친구손_둘": "The only other things in the frame are her two girlfriends' hands, one coming in from each side edge and resting gently on her bare shoulders to comfort her: on the left, a small, soft young woman's hand with the edge of a plain white cotton t-shirt sleeve at the left edge; on the right, a slender young woman's hand with a thin ring and a sheer white chiffon sleeve at the right edge. Both are clearly women's hands, slender and delicate. No other face or body.",
   "A_꽉": "EXTREME CLOSE-UP: her face fills the frame from top to bottom — the top edge of the frame cuts across her forehead a little above her eyebrows and the bottom edge cuts just under her chin. No other face or body is in the frame.",
+  "A_꽉_앞": "EXTREME CLOSE-UP: her face fills the frame from top to bottom — the top edge of the frame cuts across her forehead a little above her eyebrows and the bottom edge cuts just under her chin. Her friend in the red-and-white gingham cami sits pressed against her left side: in the lower-left corner, close to the lens and fully out of focus, are that friend's bare shoulder with its thin gingham strap and a few strands of black hair; no other face appears. Only her eyes are sharp.",
   "통2_얼굴끝": "Use Images 2 to 5 only as identity references for one Korean woman about 30 years old. Keep her face and body exactly the same: her full round face with soft cheeks and a soft double chin, thick straight dark eyebrows, her short tightly curled dark-brown permed bob, her plus-size figure (163 cm, Korean clothing size 88), and — when her teeth show — only a very narrow gap between her two front teeth (both front teeth fully there). Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, freckles, marks, tattoos, text, logos or watermarks.",
   "리4_얼굴끝": "Use Images 2 to 5 only as identity references for one Korean woman about 27 years old. Keep her face exactly the same: her round face, her black hair with straight blunt bangs just above the eyebrows, her large round tortoiseshell glasses with clean clear lenses, and the small mole on her cheek exactly where it is in the reference photos. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add other moles, freckles, marks, tattoos, text, logos or watermarks.",
   "얼굴빛_밤": "This is a dark, low-key night close-up, exposed about two stops under a normal portrait: the room is barely lit, only by candles and tiny fairy lights, so her face is in dim, warm half-light — the lit side of her face is only a muted warm amber, no brighter than the candle-lit sofa behind her, the other side sinks into deep warm-brown shadow, and her eyes catch only tiny reflections of the fairy lights. The background is dark brown with small, soft glowing bokeh dots. Nothing in the frame is bright except the tiny flames and bulbs.",
@@ -199,6 +200,33 @@
    "메모": "#5 끝 그림 — 시작 그림(v5/S05)과 같은 자리에서 얼굴까지 올라간 끝(10-25 S05e2 방법)"
   },
   {
+   "id": "S18k",
+   "who": "지유",
+   "refs": [
+    "v5/S18"
+   ],
+   "text": "{시작} Edit Image 1, a frame from a handheld close-up. Keep everything in Image 1 exactly the same — the same young woman in the white lace veil, her face, expression, gaze, hair, clothes and accessories, anything out of focus in the foreground, the framing and the background. Change only the light: the room is now much dimmer, lit only by a few candles from the side, exposed about one and a half stops darker than Image 1 — a low-key night frame where the lit side of her face is only a soft, warm mid-tone and the far side falls into soft shadow; anything white becomes a dim, warm grey-beige, never bright white; the background sinks into warm dark-brown shadow (not pure black); the only bright points are the tiny fairy lights. Keep the warm orange-amber color, no pink, blue or neon light. {필름}",
+   "메모": "#18 시작 그림 — 10-26 구도 다시 굽기에서 고른 판을 Image 1로 빛만 어둡게(S10d 방법)"
+  },
+  {
+   "id": "S12k",
+   "who": "지유",
+   "refs": [
+    "v5/S12"
+   ],
+   "text": "{시작} Edit Image 1, a frame from a handheld close-up. Keep everything in Image 1 exactly the same — the same young woman in the white lace veil, her face, crying expression, tears, gaze, hair and clothes, the out-of-focus friend's shoulder and hair in the foreground, the framing and the sofa behind. Change only two things: remove the lamp and its glowing shade at the top right — that corner becomes the dim wall behind the sofa; and the room is now much dimmer, lit only by a few candles from the side, exposed about one and a half stops darker than Image 1 — a low-key night frame where the lit side of her face is only a soft, warm mid-tone and the far side falls into soft shadow; anything white becomes a dim, warm grey-beige; the background sinks into warm dark-brown shadow (not pure black); the only bright points are the tiny fairy lights. Keep the warm orange-amber color, no pink, blue or neon light. {필름}",
+   "메모": "#12 시작 그림 — 87차 S12_162350(앞가림 구도)을 Image 1로 램프 갓을 지우고 빛을 어둡게"
+  },
+  {
+   "id": "S22k",
+   "who": "리4",
+   "refs": [
+    "v5/S22"
+   ],
+   "text": "{시작} Edit Image 1, a frame from a handheld close-up. Keep everything in Image 1 exactly the same — the same woman with round glasses, the red bow and heart sunglasses, her face, expression, gaze, hair, clothes and accessories, anything out of focus in the foreground, the framing and the background. Change only the light: the room is now much dimmer, lit only by a few candles from the side, exposed about one and a half stops darker than Image 1 — a low-key night frame where the lit side of her face is only a soft, warm mid-tone and the far side falls into soft shadow; anything white becomes a dim, warm grey-beige, never bright white; the background sinks into warm dark-brown shadow (not pure black); the only bright points are the tiny fairy lights. Keep the warm orange-amber color, no pink, blue or neon light. {필름}",
+   "메모": "#22 시작 그림 — 10-26 구도 다시 굽기에서 고른 판을 Image 1로 빛만 어둡게(S10d 방법)"
+  },
+  {
    "id": "S10d",
    "who": "셋",
    "refs": [
@@ -233,7 +261,7 @@
     "F04x4",
     "배치:S07"
    ],
-   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉_앞} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil falling beside her face at the right edge. She looks up toward the upper left of the frame, at a man standing there out of frame, lips parted mid-sentence as she pleads in a trembling voice, eyes wet. {공포_얼굴} {눈길_왼쪽위} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
    "메모": "#7 8.17–9.08 A 클로즈업 · 왼쪽 위를 보며 애원 — 「이게 전부예요!」 · 원본 얼굴 상자 위 7% ~ 아래 93%, 눈 38%"
   },
   {
@@ -275,7 +303,7 @@
     "F04x4",
     "배치:S12"
    ],
-   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about one third down from the top of the frame and her face is a little right of the center, the white lace veil at the right edge. She is breaking down: her eyebrows are pulled up and together, her wet eyes look up toward the upper left at the man out of frame, tears run down her cheeks, and her trembling lips are opening with the corners pulled down as she is about to cry out. {울음_공포} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉_앞} Her eyes sit about one third down from the top of the frame and her face is a little right of the center, the white lace veil at the right edge. She is breaking down: her eyebrows are pulled up and together, her wet eyes look up toward the upper left at the man out of frame, tears run down her cheeks, and her trembling lips are opening with the corners pulled down as she is about to cry out. {울음_공포} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
    "메모": "#12 18.29–19.25 A 클로즈업 · 무너지며 입을 연다 — 「안 돼!」 · 원본 상자 4%~91%, 눈 33%, 가로 가운데 60%"
   },
   {
@@ -296,7 +324,7 @@
     "F04x4",
     "배치:S14"
    ],
-   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit a little below 45% from the top of the frame and her face is in the middle of the frame, the white lace veil at the right edge. She sobs silently in fear — her lips pressed together and trembling, the corners pulled down, her chin quivering, her eyes brimming with tears and looking to the left. {울음_공포} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉_앞} Her eyes sit a little below 45% from the top of the frame and her face is in the middle of the frame, the white lace veil at the right edge. She sobs silently in fear — her lips pressed together and trembling, the corners pulled down, her chin quivering, her eyes brimming with tears and looking to the left. {울음_공포} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
    "메모": "#14 20.92–23.33 A 클로즈업 · 입을 떨며 흐느낀다(말 없음) · 원본 상자 12%~98%, 눈 44%"
   },
   {
@@ -336,7 +364,7 @@
     "F04x4",
     "배치:S18"
    ],
-   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil at the right edge. She looks toward the upper left of the frame, silent, frozen in terror, lips closed and trembling, holding her breath, tears welling in her eyes. {공포_얼굴} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "text": "{시작} {지유_얼굴} She wears {지유_코케트}. {배치_실루엣1:5} {A_꽉_앞} Her eyes sit about 40% down from the top of the frame and her face is just right of the center, the white lace veil at the right edge. She looks toward the upper left of the frame, silent, frozen in terror, lips closed and trembling, holding her breath, tears welling in her eyes. {공포_얼굴} {배경_소파} {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
    "메모": "#18 26.67–28.38 A 클로즈업 · 왼쪽을 본다 · 말 없음 · 원본 상자 7%~93%, 눈 39%"
   },
   {
@@ -366,7 +394,7 @@
     "리4x4",
     "배치:S22"
    ],
-   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} EXTREME CLOSE-UP, handheld and shaky: her face fills most of the left half of the frame — the top edge cuts through her bangs and the heart sunglasses, her squeezed-shut eyes sit at the middle height of the frame and her chin is near the bottom edge; a little motion blur. She is crying hard, eyes squeezed shut, tears on her cheeks, her mouth pulled open in a sob. No other face or body is in the frame. {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
+   "text": "{시작} {리4_얼굴} She wears {리4_코케트}. {배치_실루엣1:5} EXTREME CLOSE-UP, handheld and shaky: her face fills most of the left half of the frame — the top edge cuts through her bangs and the heart sunglasses, her squeezed-shut eyes sit at the middle height of the frame and her chin is near the bottom edge; a little motion blur. She is crying hard, eyes squeezed shut, tears on her cheeks, her mouth pulled open in a sob. Her two friends cling to her from both sides: out-of-focus white fabric of their clothes and a blurred strand of curly brown hair fill the left and right edges of the frame, very close to the lens; no other face appears. The whole frame is tilted about ten degrees off level, as from a camera jostled in the chaos. {클로즈업_카메라} {얼굴빛} {빛} {빛_어둡게} {필름}",
    "메모": "#22 39.00–41.33 B 아주 가까이 · 크게 흔들림 · 눈 감고 울다 끝에 이를 드러냄 — 「제발요!」 · 원본 상자 22%~96%, 가로 가운데 33%"
   },
   {
