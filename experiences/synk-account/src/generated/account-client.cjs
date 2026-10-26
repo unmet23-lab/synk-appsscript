@@ -57,7 +57,9 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
         return { response, data };
       } catch (error) {
         guard();
-        if (error.code) throw error;
+        // Native AbortError has numeric code 20; it is a retryable transport
+        // interruption, not one of the account contract's named errors.
+        if (error?.name !== 'AbortError' && error?.code) throw error;
         throw fault('NETWORK', '연결을 확인하지 못했어요. 기록은 이 기기에 남겨 두고 다시 시도해요.', true);
       } finally { clearTimeout(timer); signal?.removeEventListener('abort', cancel); }
     };

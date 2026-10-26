@@ -8273,7 +8273,8 @@ var require_learning_sync = __commonJS({
         if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
         const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
         if (lost.length) {
-          if (lost.some((eventId) => !state.missing.includes(eventId))) state.recoveryCursor = 0;
+          const missing = new Set(state.missing);
+          if (lost.some((eventId) => !missing.has(eventId))) state.recoveryCursor = 0;
           state.missing = [.../* @__PURE__ */ new Set([...state.missing, ...lost])];
           port.markComplete(false);
         }
@@ -8659,7 +8660,10 @@ var require_memory_sync = __commonJS({
       };
       const accept = (entries) => {
         port.merge(stateOf(entries));
-        for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
+        for (const entry of entries) {
+          const previous = remote.get(keyOf(entry));
+          if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf(entry), entry);
+        }
       };
       async function cycle(token, held) {
         checkEpoch();
@@ -8681,11 +8685,12 @@ var require_memory_sync = __commonJS({
           for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
           const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
           if (!batch.length) return;
+          const sent = new Set(batch.map(keyOf));
           const known = serverTime;
           const response = await call("post", { revision: revision2, entries: batch }, token);
           if (!active(token)) return;
           const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
-          if (returned.size !== response.entries.length || response.entries.some((entry) => !batch.some((sent) => keyOf(sent) === keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+          if (returned.size !== response.entries.length || response.entries.some((entry) => !sent.has(keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
           for (const item of prepared) {
             const accepted = returned.get(keyOf(item.entry));
             if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
@@ -9047,16 +9052,17 @@ var require_flow = __commonJS({
           const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
           const why = basis === "memory" ? "memory" : "prior";
           const open = (goal, theta, ease, held = locked, history = changes) => {
-            const moves = [];
+            const moves = [], directions = {};
             for (let n = 0; n < limit; n += 1) {
               const off = (d) => gap(d, goal, theta[d]);
-              const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+              const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0) && (!directions[d] || directions[d] === Math.sign(off(d)))).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
               let change = null;
               for (const dimension of ranked) {
                 change = settle(dimension, Math.sign(off(dimension)), null, why, "opening", held, history);
                 if (change) break;
               }
               if (!change) break;
+              directions[change.dimension] = change.direction;
               moves.push(change);
             }
             return moves;
@@ -9969,6 +9975,8 @@ var require_game_learning = __commonJS({
             if (known.has(event?.id)) {
               if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error("Atlas: conflicting imported event"), { code: "EVENT_CONFLICT" });
             } else if (ledger && Ledger.stray(event, known)) {
+              Atlas.validate(event);
+              if (["domain", "workspace", "subject"].some((field) => event.scope[field] !== scope[field])) throw new Error("Atlas: scope mismatch");
               skipped.push(event.id);
               if (event.type === "record.excluded") gone.push(event.targetId);
               continue;
@@ -10957,7 +10965,7 @@ var PACKS = [
         scene("marine", "\uC8FC\uBB38 \uAC00\uB2A5 \uD655\uC778. \uB530\uB73B\uD55C \uCC28. \uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC08 \uD55C \uC794.")
       ], [
         question("cafe-visit-soldout-menu", "cafe-availability", "cafe-soldout", "\uC9C0\uAE08 \uC8FC\uBB38\uD560 \uC218 \uC788\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC624\uB298 \uC8FC\uC2A4 \uD488\uC808. \uB530\uB73B\uD55C \uCC28\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.", ["\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694."], "a", "\uC8FC\uC2A4\uB294 \uD488\uC808\uC774\uB77C \uC628\uB3C4\uB97C \uBC14\uAFB8\uC5B4\uB3C4 \uC8FC\uBB38\uD560 \uC218 \uC5C6\uC5B4\uC694. \uAC00\uB2A5\uD55C \uC74C\uB8CC\uB294 \uB530\uB73B\uD55C \uCC28\uC608\uC694.", transfer("\uC0C8 \uC548\uB0B4\uD310\uC5D0\uC11C \uC8FC\uBB38\uD560 \uC218 \uC788\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC624\uB298 \uC6B0\uC720 \uD488\uC808. \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.", ["\uB530\uB73B\uD55C \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uC6B0\uC720\uAC00 \uD488\uC808\uC774\uACE0 \uC8FC\uC2A4\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694. \uC0C8 \uC548\uB0B4\uB97C \uC77D\uACE0 \uACE8\uB77C\uC694.")),
-        question("cafe-visit-soldout-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC774 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uBB3C\uC5B4\uC694. \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\uD63C\uC790 \uB9C8\uC2E4 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uC138 \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694."], "c", "\uD544\uC694\uD55C \uAC83\uC740 \uD55C \uC794\uC774\uC5D0\uC694. \uC9C1\uC6D0\uC758 \uB450 \uC794 \uD655\uC778\uC5D0 \uC544\uB2C8\uC694\uB77C\uACE0 \uB2F5\uD558\uACE0 \uD55C \uC794\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uC54C\uB824 \uC8FC\uC138\uC694.", "\uCE5C\uAD6C\uC640 \uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC9C1\uC6D0: \u201C\uC8FC\uC2A4 \uD55C \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uB124, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88 \uC8FC\uBB38\uC740 \uB450 \uC0AC\uB78C\uC774 \uD55C \uC794\uC529 \uB9C8\uC2E4 \uB450 \uC794\uC774\uC5D0\uC694. \uD55C \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uACE0\uCCD0\uC694.")),
+        question("cafe-visit-soldout-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC774 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uBB3C\uC5B4\uC694. \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\uD63C\uC790 \uB9C8\uC2E4 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uB098\uC694?\u201D", ["\uC138 \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694."], "c", "\uD544\uC694\uD55C \uAC83\uC740 \uD55C \uC794\uC774\uC5D0\uC694. \uC9C1\uC6D0\uC758 \uB450 \uC794 \uD655\uC778\uC5D0 \uC544\uB2C8\uC694\uB77C\uACE0 \uB2F5\uD558\uACE0 \uD55C \uC794\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uC54C\uB824 \uC8FC\uC138\uC694.", "\uCE5C\uAD6C\uC640 \uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC9C1\uC6D0: \u201C\uC8FC\uC2A4 \uD55C \uC794 \uB9DE\uB098\uC694?\u201D", ["\uB124, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88 \uC8FC\uBB38\uC740 \uB450 \uC0AC\uB78C\uC774 \uD55C \uC794\uC529 \uB9C8\uC2E4 \uB450 \uC794\uC774\uC5D0\uC694. \uD55C \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uACE0\uCCD0\uC694.")),
         question("cafe-visit-soldout-takeout", "cafe-takeout-request", "cafe-takeout", "\uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC00\uB824\uBA74 \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "\uB530\uB73B\uD55C \uCC28\uB97C \uAC00\uC9C0\uACE0 \uACF5\uC6D0 \uBCA4\uCE58\uB85C \uAC00\uB824\uACE0 \uD574\uC694.", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "b", "\uCE74\uD398 \uBC16\uC758 \uACF5\uC6D0\uC5D0 \uAC00\uC838\uAC08 \uCC28\uC774\uBBC0\uB85C \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824 \uC8FC\uC138\uC694.", "\uBE44\uAC00 \uB9CE\uC774 \uC640\uC11C \uCE74\uD398 \uC548\uC758 \uD14C\uC774\uBE14\uC5D0\uC11C \uC8FC\uC2A4\uB97C \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694.", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uCDE8\uC18C\uD574 \uC8FC\uC138\uC694.", "\uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "c", "\uC774\uBC88\uC5D0\uB294 \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uC9C0 \uC54A\uACE0 \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694."))
       ]),
       lesson("cafe-visit-change", "visit", "\uAE4C\uBABD\uC758 \uB9C8\uC74C\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694", "\uC74C\uB8CC\xB7\uC218\uB7C9\xB7\uD3EC\uC7A5\uC744 \uBC14\uAFD4 \uB2EC\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694.", cafeChangeExpressions, [
@@ -10977,7 +10985,7 @@ var PACKS = [
         scene("marine", "\uC8FC\uBB38 \uC815\uBCF4 \uD655\uC778. \uCC28, \uB530\uB73B\uD55C \uC628\uB3C4, \uB450 \uC794.")
       ], [
         { ...question("cafe-compose-order", "cafe-compose-order", "cafe-compose", "\uAE4C\uBABD\uACFC \uB9C8\uC2E4 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD574\uC694.", "\uAE4C\uBABD\uACFC \uB0B4\uAC00 \uB530\uB73B\uD55C \uCC28\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uC9C1\uC811 \uACE8\uB77C \uC8FC\uC138\uC694.", ["\uC8FC\uBB38 \uC870\uAC74\uC744 \uBAA8\uB450 \uB9DE\uCDC4\uC5B4\uC694.", "\uD544\uC694\uD55C \uC218\uB7C9\uACFC \uB2EC\uB77C\uC694.", "\uC74C\uB8CC\uB098 \uC628\uB3C4\uAC00 \uB2EC\uB77C\uC694."], "a", "\uC74C\uB8CC\uB294 \uCC28, \uC628\uB3C4\uB294 \uB530\uB73B\uD558\uAC8C, \uC218\uB7C9\uC740 \uB450 \uC794\uC774\uC5D0\uC694. \uC138 \uC815\uBCF4\uB97C \uC5F0\uACB0\uD558\uBA74 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694\uAC00 \uB3FC\uC694.", transfer("\uC644\uC131\uD560 \uC8FC\uBB38 \uBB38\uC7A5\uC744 \uACE8\uB77C\uC694.", "\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694.", ["\uB530\uB73B\uD55C \uC8FC\uC2A4 \uC138 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uC138 \uC794 \uC8FC\uC138\uC694."], "c", "\uC8FC\uC2A4\xB7\uCC28\uAC00\uC6B4 \uC628\uB3C4\xB7\uC138 \uC794\uC744 \uBAA8\uB450 \uB2F4\uC544\uC57C \uC0C8 \uC8FC\uBB38\uC5D0 \uB9DE\uC544\uC694.")), kind: "compose", orderGoal: { drink: "tea", temperature: "warm", count: 2 } },
-        question("cafe-compose-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778\uC5D0 \uB2F5\uD574\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC6D0\uD558\uB294 \uC218\uB7C9\uACFC \uC9C1\uC6D0\uC774 \uD655\uC778\uD55C \uC218\uB7C9\uC774 \uBAA8\uB450 \uB450 \uC794\uC774\uC5D0\uC694. \uB124\uB77C\uACE0 \uB2F5\uD558\uACE0 \uB450 \uC794\uC744 \uD655\uC778\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uD655\uC778\uD574\uC694.", "\uD63C\uC790 \uB9C8\uC2E4 \uCC28\uAC00\uC6B4 \uCC28 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uD55C \uC794\uC774 \uD544\uC694\uD558\uBBC0\uB85C \uB450 \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uD55C \uC794\uC73C\uB85C \uACE0\uCCD0\uC694.")),
+        question("cafe-compose-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778\uC5D0 \uB2F5\uD574\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uB098\uC694?\u201D", ["\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC6D0\uD558\uB294 \uC218\uB7C9\uACFC \uC9C1\uC6D0\uC774 \uD655\uC778\uD55C \uC218\uB7C9\uC774 \uBAA8\uB450 \uB450 \uC794\uC774\uC5D0\uC694. \uB124\uB77C\uACE0 \uB2F5\uD558\uACE0 \uB450 \uC794\uC744 \uD655\uC778\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uD655\uC778\uD574\uC694.", "\uD63C\uC790 \uB9C8\uC2E4 \uCC28\uAC00\uC6B4 \uCC28 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB450 \uC794 \uB9DE\uB098\uC694?\u201D", ["\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uD55C \uC794\uC774 \uD544\uC694\uD558\uBBC0\uB85C \uB450 \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uD55C \uC794\uC73C\uB85C \uACE0\uCCD0\uC694.")),
         question("cafe-compose-place", "cafe-place", "cafe-here", "\uD568\uAED8 \uB9C8\uC2E4 \uC790\uB9AC\uB97C \uC815\uD574\uC694.", "\uAE4C\uBABD\uACFC \uCE74\uD398 \uC548\uC5D0\uC11C \uB530\uB73B\uD55C \uCC28\uB97C \uB9C8\uC2DC\uBA70 \uC26C\uB824\uACE0 \uD574\uC694.", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "a", "\uCE74\uD398 \uC548\uC5D0\uC11C \uD568\uAED8 \uB9C8\uC2DC\uB824\uBA74 \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824\uC694.", "\uB9C8\uB9B0\uC774 \uCC28\uB97C \uAC00\uC9C0\uACE0 \uD559\uAD50\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694. \uC9C1\uC6D0: \u201C\uB9E4\uC7A5\uC5D0\uC11C \uB4DC\uC2DC\uB098\uC694?\u201D", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694."], "c", "\uC774\uBC88\uC5D0\uB294 \uD559\uAD50\uB85C \uAC00\uC838\uAC00\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9 \uB300\uC2E0 \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694."))
       ])
     ]
@@ -11253,7 +11261,7 @@ var CAFE_VISITS = [
         b: { ...order(null, 0, "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \xB7 \uD488\uC808", "\uC900\uBE44\uB418\uC9C0 \uC54A\uC740 \uC74C\uB8CC"), previewDrink: "cold", response: "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB3C4 \uC624\uB298\uC740 \uD488\uC808\uC774\uC5D0\uC694. \uB530\uB73B\uD55C \uCC28\uB294 \uC900\uBE44\uD560 \uC218 \uC788\uC5B4\uC694.", friend: "\uC5B4? \uC8FC\uC2A4\uB294 \uC624\uB298 \uC26C\uB294 \uB0A0\uC774\uB124! \uB2E4\uB978 \uBA54\uB274\uB97C \uAC19\uC774 \uBCF4\uC790!" },
         c: { ...order(null, 0, "\uB530\uB73B\uD55C \uC8FC\uC2A4 \xB7 \uD488\uC808", "\uC900\uBE44\uB418\uC9C0 \uC54A\uC740 \uC74C\uB8CC"), previewDrink: "warm", response: "\uB530\uB73B\uD55C \uC8FC\uC2A4\uB3C4 \uD488\uC808\uC774\uC5D0\uC694. \uC8FC\uC2A4 \uB300\uC2E0 \uB530\uB73B\uD55C \uCC28\uB85C \uB4DC\uB9B4\uAE4C\uC694?", friend: "\uC624! \uC628\uB3C4\uB97C \uBC14\uAFD4\uB3C4 \uC8FC\uC2A4\uB294 \uB2E4 \uB098\uAC14\uB124! \uCC28\uB97C \uAC19\uC774 \uBCF4\uC790!" }
       } },
-      { name: "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778", staff: "\uB530\uB73B\uD55C \uCC28, \uB450 \uC794, \uB9DE\uC73C\uC2DC\uC8E0?", speaker: "marine", friend: "\uD544\uC694 \uC218\uB7C9, \uD55C \uC794. \uC8FC\uBB38 \uD655\uC778\uC744 \uACE0\uCE5C\uB2E4.", hint: "\uB450 \uC794\uC774 \uC544\uB2C8\uB77C \uD55C \uC794\uC774\uC5D0\uC694. \uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", next: "\uACF5\uC6D0\uC5D0 \uAC00\uC838\uAC08 \uCEF5 \uBD80\uD0C1\uD558\uAE30", menu: true, before: order("tea", 1, "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794", "\uC218\uB7C9 \uD655\uC778 \uC911"), options: {
+      { name: "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778", staff: "\uB530\uB73B\uD55C \uCC28, \uB450 \uC794, \uB9DE\uB098\uC694?", speaker: "marine", friend: "\uD544\uC694 \uC218\uB7C9, \uD55C \uC794. \uC8FC\uBB38 \uD655\uC778\uC744 \uACE0\uCE5C\uB2E4.", hint: "\uB450 \uC794\uC774 \uC544\uB2C8\uB77C \uD55C \uC794\uC774\uC5D0\uC694. \uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", next: "\uACF5\uC6D0\uC5D0 \uAC00\uC838\uAC08 \uCEF5 \uBD80\uD0C1\uD558\uAE30", menu: true, before: order("tea", 1, "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794", "\uC218\uB7C9 \uD655\uC778 \uC911"), options: {
         a: { ...order("tea", 3, "\uB530\uB73B\uD55C \uCC28 \uC138 \uC794"), response: "\uC138 \uC794\uC73C\uB85C \uBC14\uAFC0\uAE4C\uC694? \uD63C\uC790 \uB4DC\uC2E4 \uD55C \uC794\uC774\uBA74 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uC54C\uB824 \uC8FC\uC138\uC694.", friend: "\uD544\uC694\uD55C \uCEF5, \uD558\uB098. \uC218\uB7C9 \uC7AC\uD655\uC778." },
         b: { ...order("tea", 2, "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794"), response: "\uB450 \uC794\uC73C\uB85C \uD655\uC778\uD588\uC5B4\uC694. \uD55C \uC794\uB9CC \uD544\uC694\uD558\uBA74 \uBC14\uAFD4 \uB4DC\uB9B4\uAC8C\uC694.", friend: "\uBAA9\uD45C \uC218\uB7C9, \uD55C \uC794. \uD655\uC778\uC744 \uACE0\uCE5C\uB2E4." },
         c: { ...order("tea", 1, "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794"), response: "\uC544, \uD55C \uC794\uC774\uAD70\uC694. \uD55C \uC794\uC73C\uB85C \uD655\uC778\uD588\uC5B4\uC694. \uC5EC\uAE30\uC11C \uB4DC\uC2DC\uB098\uC694?", friend: "\uC218\uB7C9 \uD655\uC778 \uC644\uB8CC. \uD55C \uC794." }
@@ -11300,7 +11308,7 @@ var CAFE_VISITS = [
     seatStep: 2,
     steps: [
       { name: "\uB0B4 \uC8FC\uBB38 \uB9CC\uB4E4\uAE30", staff: "\uC5B4\uC11C \uC624\uC138\uC694. \uC5B4\uB5A4 \uC74C\uB8CC\uB97C \uBA87 \uC794 \uC900\uBE44\uD560\uAE4C\uC694?", speaker: "mongle", friend: "\uC624! \uAE4C\uBABD\uACFC \uD55C \uC794\uC529, \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uAC19\uC774 \uB9CC\uB4E4\uC5B4 \uBCF4\uC790!", hint: "\uCC28\uB97C \uACE0\uB974\uACE0, \uB530\uB73B\uD558\uAC8C, \uB450 \uC794\uC744 \uACE8\uB77C\uC694. \uC138 \uC815\uBCF4\uB97C \uD569\uCCD0 \uC8FC\uBB38\uD574\uC694.", next: "\uC9C1\uC6D0\uACFC \uC218\uB7C9 \uD655\uC778\uD558\uAE30", compose: true, options: {} },
-      { name: "\uC218\uB7C9 \uD655\uC778", staff: "\uB530\uB73B\uD55C \uCC28, \uB450 \uC794, \uB9DE\uC73C\uC2DC\uC8E0?", speaker: "marine", friend: "\uC8FC\uBB38 \uC815\uBCF4 \uD655\uC778. \uB530\uB73B\uD55C \uCC28, \uB450 \uC794.", hint: "\uC6D0\uD558\uB294 \uC218\uB7C9\uB3C4 \uB450 \uC794, \uC9C1\uC6D0\uC758 \uD655\uC778\uB3C4 \uB450 \uC794\uC774\uC5D0\uC694. \uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", next: "\uB9C8\uC2E4 \uACF3 \uC54C\uB824 \uC8FC\uAE30", menu: true, before: order("tea", 2, "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794", "\uC218\uB7C9 \uD655\uC778 \uC911"), options: {
+      { name: "\uC218\uB7C9 \uD655\uC778", staff: "\uB530\uB73B\uD55C \uCC28, \uB450 \uC794, \uB9DE\uB098\uC694?", speaker: "marine", friend: "\uC8FC\uBB38 \uC815\uBCF4 \uD655\uC778. \uB530\uB73B\uD55C \uCC28, \uB450 \uC794.", hint: "\uC6D0\uD558\uB294 \uC218\uB7C9\uB3C4 \uB450 \uC794, \uC9C1\uC6D0\uC758 \uD655\uC778\uB3C4 \uB450 \uC794\uC774\uC5D0\uC694. \uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", next: "\uB9C8\uC2E4 \uACF3 \uC54C\uB824 \uC8FC\uAE30", menu: true, before: order("tea", 2, "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794", "\uC218\uB7C9 \uD655\uC778 \uC911"), options: {
         a: { ...order("tea", 1, "\uB530\uB73B\uD55C \uCC28 \uD55C \uC794"), response: "\uD55C \uC794\uC73C\uB85C \uBC14\uAFC0\uAE4C\uC694? \uB450 \uBD84\uC774 \uD55C \uC794\uC529 \uB4DC\uC2DC\uBA74 \uB450 \uC794\uC774 \uD544\uC694\uD574\uC694.", friend: "\uD544\uC694 \uC218\uB7C9 \uC7AC\uD655\uC778. \uB450 \uC0AC\uB78C\uC758 \uCEF5, \uB458." },
         b: { ...order("tea", 2, "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794"), response: "\uB124, \uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uD655\uC778\uD588\uC5B4\uC694.", friend: "\uC218\uB7C9 \uD655\uC778 \uC644\uB8CC. \uB450 \uC794." },
         c: { ...order("tea", 3, "\uB530\uB73B\uD55C \uCC28 \uC138 \uC794"), response: "\uC138 \uC794\uC73C\uB85C \uBC14\uAFC0\uAE4C\uC694? \uB450 \uBD84\uC758 \uCEF5\uB9CC \uD544\uC694\uD558\uBA74 \uB450 \uC794\uC744 \uC720\uC9C0\uD560 \uC218 \uC788\uC5B4\uC694.", friend: "\uC8FC\uBB38 \uB300\uC0C1, \uB450 \uC0AC\uB78C. \uD544\uC694\uD55C \uCEF5, \uB458." }
@@ -13797,13 +13805,30 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   function importRecords({ lessons: lessons2 = {}, reviews = {}, days = {}, profile = null } = {}, { from = "guest-device" } = {}) {
     checkDailyWrite();
     const next = clone2(state), added = { lessons: 0, reviews: 0, days: 0, profile: false };
-    for (const [id, lesson2] of Object.entries(object2(lessons2) ? lessons2 : {})) if (!next.lessons[id] && Object.keys(next.lessons).length < 100) {
+    const capacitySkipped = { lessons: 0, reviews: 0, days: 0, questions: 0 }, skippedLessons = /* @__PURE__ */ new Set();
+    const result = () => ({ ...added, ...Object.values(capacitySkipped).some(Boolean) ? { capacitySkipped } : {}, status: status() });
+    for (const [id, lesson2] of Object.entries(object2(lessons2) ? lessons2 : {})) {
+      if (next.lessons[id]) continue;
+      if (Object.keys(next.lessons).length >= 100) {
+        capacitySkipped.lessons++;
+        skippedLessons.add(id);
+        continue;
+      }
       next.lessons[id] = clone2(lesson2);
-      added.lessons += 1;
+      added.lessons++;
     }
-    for (const [id, review] of Object.entries(object2(reviews) ? reviews : {})) if (!next.reviews[id] && next.lessons[review?.lessonId] && Object.keys(next.reviews).length < 400) {
+    for (const [id, review] of Object.entries(object2(reviews) ? reviews : {})) {
+      if (next.reviews[id]) continue;
+      if (!next.lessons[review?.lessonId]) {
+        if (skippedLessons.has(review?.lessonId)) capacitySkipped.reviews++;
+        continue;
+      }
+      if (Object.keys(next.reviews).length >= 400) {
+        capacitySkipped.reviews++;
+        continue;
+      }
       next.reviews[id] = clone2(review);
-      added.reviews += 1;
+      added.reviews++;
     }
     for (const [day, value] of Object.entries(object2(days) ? days : {})) {
       const daily = next.daily ??= { version: 1, days: {} }, mine = daily.days[day];
@@ -13811,13 +13836,18 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
         if (Object.keys(daily.days).length < 30) {
           daily.days[day] = clone2(value);
           added.days += 1;
-        }
+        } else capacitySkipped.days++;
         continue;
       }
       let got = 0;
-      for (const [questionId, item] of Object.entries(object2(value?.items) ? value.items : {})) if (!object2(mine.items) || !mine.items[questionId] && Object.keys(mine.items).length < 100) {
+      for (const [questionId, item] of Object.entries(object2(value?.items) ? value.items : {})) {
+        if (object2(mine.items) && mine.items[questionId]) continue;
+        if (object2(mine.items) && Object.keys(mine.items).length >= 100) {
+          capacitySkipped.questions++;
+          continue;
+        }
         (mine.items ??= {})[questionId] = clone2(item);
-        got += 1;
+        got++;
       }
       if (got) added.days += 1;
     }
@@ -13825,12 +13855,12 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       next.learningProfile = updateWorldLearningProfile(next.learningProfile, { owner, at: now(), values: clone2(profile.values), consent: true, expectedRevision: 0 });
       added.profile = true;
     }
-    if (!added.lessons && !added.reviews && !added.days && !added.profile) return { ...added, status: status() };
+    if (!added.lessons && !added.reviews && !added.days && !added.profile) return result();
     next.imports = [...Array.isArray(state.imports) ? state.imports : [], { from, at: now(), lessons: added.lessons, reviews: added.reviews, days: added.days, profile: added.profile }].slice(-20);
     next.revision = state.revision + 1;
     if (new TextEncoder().encode(JSON.stringify(next)).length > RECORD_FIT_BYTES) throw fail("PLAY_DATA_TOO_LARGE", "\uC62E\uAE38 \uAE30\uB85D\uC744 \uC800\uC7A5\uD560 \uACF5\uAC04\uC774 \uBD80\uC871\uD574\uC694. \uACC4\uC815\uACFC \uC774 \uAE30\uAE30\uC758 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uB450\uC5C8\uC5B4\uC694.");
     commit(next, { preserveDaily: true });
-    return { ...added, status: status() };
+    return result();
   }
   function summary(packs = [], flat = []) {
     check3();
@@ -14095,9 +14125,11 @@ function cafeCompletionMarkup({ photo, print = () => "", nextLesson, lessonId = 
     const a = q2 && answers[q2.id];
     return a && (!a.correct || a.helped);
   });
+  const corrected = fixes.filter(({ q: q2 }) => !answers[q2.id].correct), helped = fixes.filter(({ q: q2 }) => answers[q2.id].correct && answers[q2.id].helped);
+  const reviewNotice = [corrected.length ? `${corrected.length}\uACF3\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB790\uC5B4\uC694.` : "", helped.length ? `${helped.length}\uACF3\uC5D0\uC11C \uB3C4\uC6C0\uC744 \uBC1B\uC544 \uACE8\uB790\uC5B4\uC694.` : ""].filter(Boolean).join(" ");
   const again = fixes[0], againText = again ? lesson2?.expressions.find((e) => e.id === again.q.expressionId)?.korean || again.q.choices.find((c) => c.id === again.q.answerId)?.text || "" : "";
   const next = adaptive ? '<button class="quiet-button" data-life-next>\uB2E4\uC74C \uC5F0\uC2B5</button>' : nextLesson ? `<button class="quiet-button" data-life-lesson="${nextLesson.id}">${nextLesson.type === "compose" ? "\uB2E4\uC74C: \uB0B4 \uB9D0\uB85C \uC8FC\uBB38\uD558\uAE30" : nextLesson.type === "visit" ? "\uB2E4\uC74C \uBC29\uBB38" : "\uB2E4\uC74C \uB808\uC2A8"}</button>` : '<button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30</button>';
-  return `<div class="cafe-complete life-result cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}"><section class="life-poster life-complete-poster">${print("cafe")}<small class="life-poster-label">RESULT \xB7 VISIT ${two(visit.number)}</small><strong class="life-poster-word">\uCE74\uD398 \uC8FC\uBB38, \uB05D!</strong><span class="life-poster-sub">${esc(ending.title)} ${esc(ending.text)}</span></section><section class="cafe-receipt" aria-label="\uBC1B\uC740 \uC74C\uB8CC"><p class="life-section-label">GOT</p><div class="cafe-complete-orders ${ending.orders.length === 1 ? "is-single" : ""}">${ending.orders.map((o) => `<div data-cafe-drink="${o.drink}" data-cafe-count="${o.count}" data-cafe-received="true">${cafeDrink(o.drink, o.count)}<strong>${esc(o.label)}</strong><span>${esc(visit.seatStep === 2 ? receipt?.place || o.place : o.place)}</span></div>`).join("")}</div></section>${lesson2 ? `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">LEARNED</p><ul>${lesson2.expressions.map((e) => `<li><strong>${esc(e.korean)}</strong></li>`).join("")}</ul></section>` : ""}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${esc(againText)}</strong><small>\u300C${esc(again.step.name)}\u300D${fixes.length > 1 ? ` \uB4F1 ${fixes.length}\uACF3` : ""}\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB790\uC5B4\uC694. \uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uBCF5\uC2B5\uD574\uC694.</small></section>` : ""}${ending.lines ? `<div class="cafe-ending-lines">${ending.lines.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}</div><div class="life-actions cafe-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${next}</div>`;
+  return `<div class="cafe-complete life-result cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}"><section class="life-poster life-complete-poster">${print("cafe")}<small class="life-poster-label">RESULT \xB7 VISIT ${two(visit.number)}</small><strong class="life-poster-word">\uCE74\uD398 \uC8FC\uBB38, \uB05D!</strong><span class="life-poster-sub">${esc(ending.title)} ${esc(ending.text)}</span></section><section class="cafe-receipt" aria-label="\uBC1B\uC740 \uC74C\uB8CC"><p class="life-section-label">GOT</p><div class="cafe-complete-orders ${ending.orders.length === 1 ? "is-single" : ""}">${ending.orders.map((o) => `<div data-cafe-drink="${o.drink}" data-cafe-count="${o.count}" data-cafe-received="true">${cafeDrink(o.drink, o.count)}<strong>${esc(o.label)}</strong><span>${esc(visit.seatStep === 2 ? receipt?.place || o.place : o.place)}</span></div>`).join("")}</div></section>${lesson2 ? `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">LEARNED</p><ul>${lesson2.expressions.map((e) => `<li><strong>${esc(e.korean)}</strong></li>`).join("")}</ul></section>` : ""}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${esc(againText)}</strong><small>${reviewNotice} \uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uBCF5\uC2B5\uD574\uC694.</small></section>` : ""}${ending.lines ? `<div class="cafe-ending-lines">${ending.lines.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}</div><div class="life-actions cafe-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${next}</div>`;
 }
 
 // experiences/synk-world-app/life-ui.mjs
@@ -18618,6 +18650,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
     // 재생기의 끝(completed)·실패(failed): 시작한 문항의 대본(track)에 남긴다. 영역이 닫힌 뒤에 끝난 재생은 세지 않는다.
     delivery(status) {
       if (!["completed", "failed"].includes(status)) throw TypeError("WORLD mock: invalid audio state");
+      expire();
       const now = sounding;
       sounding = null;
       if (!now || now.row.ended !== null) return false;

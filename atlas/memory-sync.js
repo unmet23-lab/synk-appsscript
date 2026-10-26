@@ -120,7 +120,12 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
   // What the server holds now replaces older local values; its entries are remembered.
   const accept = entries => {
     port.merge(stateOf(entries));
-    for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
+    // An equal-time response is also a fresh observation. Keeping the old value here would
+    // hide a same-time conflict exposed by a transport or restored server snapshot.
+    for (const entry of entries) {
+      const previous = remote.get(keyOf(entry));
+      if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf(entry), entry);
+    }
   };
   async function cycle(token, held) {
     checkEpoch();
@@ -143,12 +148,13 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
       for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
       const batch = [...prepared.map(item => item.entry), ...all.filter(sendable)].slice(0, BATCH);
       if (!batch.length) return;
+      const sent = new Set(batch.map(keyOf));
       // The server clock known before this request is at or before the one that filters it.
       const known = serverTime;
       const response = await call('post', { revision, entries: batch }, token);
       if (!active(token)) return;
       const returned = new Map(response.entries.map(entry => [keyOf(entry), entry]));
-      if (returned.size !== response.entries.length || response.entries.some(entry => !batch.some(sent => keyOf(sent) === keyOf(entry)))) throw failure('INVALID_RESPONSE', 'Atlas memory sync: invalid acknowledgement');
+      if (returned.size !== response.entries.length || response.entries.some(entry => !sent.has(keyOf(entry)))) throw failure('INVALID_RESPONSE', 'Atlas memory sync: invalid acknowledgement');
       for (const item of prepared) {
         const accepted = returned.get(keyOf(item.entry));
         if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure('INVALID_RESPONSE', 'Atlas memory sync: missing acknowledgement');

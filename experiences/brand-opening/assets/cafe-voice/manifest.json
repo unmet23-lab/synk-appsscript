@@ -52,11 +52,11 @@
       "sha256": "496cf98c03530f15b4925ef6b3a5a5dd6d3843fe7bd1fbfdcb0060fa4218ec80"
     },
     "cafe-visit-soldout-2": {
-      "text": "따뜻한 차, 두 잔, 맞으시죠?",
+      "text": "따뜻한 차, 두 잔, 맞나요?",
       "file": "cafe-visit-soldout-2.mp3",
-      "durationSeconds": 3.028,
-      "bytes": 37484,
-      "sha256": "d4022d6e0f20c0c1b8205406242ddc8866f00962e61f431fc3904baa88535399"
+      "durationSeconds": 3.604,
+      "bytes": 44352,
+      "sha256": "b1746277f1841139c05a6e44d7c08c4dd08f1aeced3ec6eb7744b1f0fe2f58b0"
     },
     "cafe-visit-soldout-3": {
       "text": "차가 준비됐어요. 매장에서 드시나요?",
@@ -94,11 +94,11 @@
       "sha256": "5c9dd33f05f594238db3eee6a42e661b04fc1e8521fc1938a34b6b97a0b66af6"
     },
     "cafe-compose-2": {
-      "text": "따뜻한 차, 두 잔, 맞으시죠?",
+      "text": "따뜻한 차, 두 잔, 맞나요?",
       "file": "cafe-compose-2.mp3",
-      "durationSeconds": 3.028,
-      "bytes": 37484,
-      "sha256": "d4022d6e0f20c0c1b8205406242ddc8866f00962e61f431fc3904baa88535399"
+      "durationSeconds": 3.604,
+      "bytes": 44352,
+      "sha256": "b1746277f1841139c05a6e44d7c08c4dd08f1aeced3ec6eb7744b1f0fe2f58b0"
     },
     "cafe-compose-3": {
       "text": "가져가실 건가요, 여기서 드실 건가요?",

@@ -234,6 +234,7 @@ export function createMockSession({coach,sections=[],exam,clock=()=>Date.now()}=
   // 재생기의 끝(completed)·실패(failed): 시작한 문항의 대본(track)에 남긴다. 영역이 닫힌 뒤에 끝난 재생은 세지 않는다.
   delivery(status){
    if(!['completed','failed'].includes(status))throw TypeError('WORLD mock: invalid audio state');
+   expire();
    const now=sounding;sounding=null;
    if(!now||now.row.ended!==null)return false;
    const {row,cell}=now,track=cell.track;

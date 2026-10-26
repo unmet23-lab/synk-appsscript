@@ -4,23 +4,43 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { emptyState, makePerson, makeEvent, importBackup } from '../model.mjs';
 import { createTransientSession } from '../care-transient-session.mjs';
+import { sourceStatements } from '../../../tests/lib/source-statements.cjs';
 
 const source = readFileSync(new URL('../app.mjs', import.meta.url), 'utf8');
-function functionSource(name) {
-  const start = source.search(new RegExp(`^(?:async )?function ${name}\\(`, 'm'));
-  if (start < 0) throw Error(`App function not found: ${name}`);
-  const next = source.slice(start + 1).search(/^(?:async )?function /m);
-  if (next < 0) throw Error(`App function boundary not found: ${name}`);
-  return source.slice(start, start + next + 1);
-}
-function handlerSource(id) {
-  const start = source.indexOf(`on('${id}',`);
-  if (start < 0) throw Error(`App handler not found: ${id}`);
-  const rest = source.slice(start), next = rest.search(/\r?\n(?=on\()/u);
-  if (next < 0) throw Error(`App handler boundary not found: ${id}`);
-  return rest.slice(0, next);
-}
+const statements = sourceStatements(source);
+const functionSource = name => statements.function(name);
+const handlerSource = id => statements.call('on', { 0: id });
 const person = (extra = {}) => makePerson({ id: 'p', name: '친구', ...extra });
+
+test('수첩 교체의 실제 personal-memory 정리가 같은 사람·일정을 다시 열 때 준비 입력과 기록 ID를 초기화한다', () => {
+  const elements = new Map(), calls = [], who = person(), event = { id: 'event', personId: 'p', carePlan: { amountWon: 20000 } };
+  const element = id => {
+    if (!elements.has(id)) elements.set(id, { value: id === 'draft-event' ? event.id : '', hidden: false, replaceChildren() {}, insertAdjacentHTML() {} });
+    return elements.get(id);
+  };
+  const context = vm.createContext({ state: { people: [who], events: [event] }, authEpoch: 0, memoryChoice: null,
+    preparationKey: '', preparationInputs: {}, preparationResult: null, preparationLogId: null, preparationLogError: '',
+    $: element, person: () => who, selectedMemory: () => null, today: () => '2026-10-26',
+    prepareCare: input => { calls.push(input);return { status: 'needs-input', questions: [] }; },
+    renderMemoryApplication() {}, recordVisiblePreparation() {}, escapeHTML: String, won: String, createTransientSession });
+  vm.runInContext(['resetPersonalMemory', 'renderPreparation'].map(functionSource).join('\n'), context);
+  // Select the actual app owner registration, not a test-authored reset callback.
+  const transient = statements.declarationNode('transient').declarations.find(node => node.id.name === 'transient').init;
+  const owner = transient.arguments[0].elements.filter(node => node.type === 'ArrayExpression' && node.elements[0]?.value === 'personal-memory');
+  assert.equal(owner.length, 1);
+  vm.runInContext(`const transient = createTransientSession([${statements.text(owner[0])}]);renderPreparation();`, context);
+  const firstKey = context.preparationKey;
+  assert.ok(firstKey);
+  context.preparationInputs = { attendance: 'yes', timeMinutes: 90, budgetWon: 100000 };
+  context.preparationLogId = 'old-log';context.preparationLogError = 'old error';
+  vm.runInContext('transient.clearForOwnerChange()', context);
+  assert.equal(context.preparationKey, '');
+  vm.runInContext('renderPreparation()', context);
+  assert.equal(context.preparationKey, firstKey, 'the same facts still cause recomputation after owner cleanup');
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].attendance, 'undecided');assert.equal(calls[1].timeMinutes, null);assert.equal(calls[1].budgetWon, 20000);
+  assert.equal(context.preparationLogId, null);assert.equal(context.preparationLogError, '');
+});
 
 // Run the shipped functions and submit handler. Only the DOM/storage boundary
 // and unrelated rendering/media operations are replaced by small test doubles.

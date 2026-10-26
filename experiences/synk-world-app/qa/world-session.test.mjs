@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {createLifeSession,sheetResource} from '../world-session.mjs';
+import {sourceStatements} from '../../../tests/lib/source-statements.cjs';
 
 // WORLD 자원 수명 경계(E01): 실제 createLifeSession·sheetResource를 앱 셸과 같은 단계 함수 모양으로 돌린다.
 // 단계 함수는 만든 것(made)과 버린 것(log)을 남긴다. 통로·호스트·「내 성향」 답은 주인마다 문(gate)을 걸어 늦게 끝낼 수 있다.
@@ -215,10 +216,11 @@ test('시트 자원은 다른 시트 열기·닫기·패널 close 이벤트·pag
 
 // 앱 셸의 실제 시트 줄(show·attachSheet·releaseSheet·close·패널 close 이벤트)과 원고 닫기 확인 줄을 진짜 sheetResource로 돌린다.
 function shellSheets(){
- const source=readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n').split('\n');
- const line=prefix=>{const found=source.filter(text=>text.startsWith(prefix));assert.equal(found.length,1,prefix);return found[0];};
- const code=[line('function show('),line('function attachSheet('),line('function releaseSheet('),line('const confirmCourseExit='),line("document.addEventListener('click',event=>{if(!sheet?.hasDraft?.())"),
-  line("document.addEventListener('keydown',"),line('function close(){'),line("worldPanel.addEventListener('close',()=>{if(!worldPanel.open)")].join('\n');
+ const statements=sourceStatements(readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8'));
+ const sheets=sourceStatements(statements.between({name:'show'},{name:'errorText'}));
+ const code=[...['show','attachSheet','releaseSheet'].map(name=>sheets.function(name)),sheets.declaration('confirmCourseExit'),
+  sheets.call('document.addEventListener',{0:'click',2:true}),sheets.call('document.addEventListener',{0:'keydown',2:true}),
+  sheets.function('close'),statements.call('worldPanel.addEventListener',{0:'close'},{calls:'releaseSheet'})].join('\n');
  const listeners={},panel={},asked=[];let answer=false;
  const context={sheet:null,gameLaunch:0,gameRecovery:null,screen:'',hangerSignature:'',EYEBROWS:{},sheetResource,client:{snapshot:null},renderHomeHanger(){},
   home:{showPanel(){context.worldPanel.open=true;},closePanel(){/* 닫기 효과(160ms) 뒤에 패널 close 이벤트가 온다 */}},

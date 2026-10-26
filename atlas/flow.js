@@ -297,16 +297,18 @@
       const limit = basis === 'memory' ? 2 : 12, easeOnly = basis === 'memory' || calm;
       const why = basis === 'memory' ? 'memory' : 'prior';
       const open = (goal, theta, ease, held = locked, history = changes) => {
-        const moves = [];
+        const moves = [], directions = {};
         for (let n = 0; n < limit; n += 1) {
           const off = d => gap(d, goal, theta[d]);
           // The dimension furthest from its aim first; when it has no step to take (at its end, held, or
           // refused by Temper), the next one, as a response does. Each is tried once; none moving ends it.
-          const ranked = DIMENSIONS.filter(d => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+          // Large prior steps can cross the aim. Do not bounce back within this opening;
+          // the other dimension still gets its turn and real responses can ease it later.
+          const ranked = DIMENSIONS.filter(d => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0) && (!directions[d] || directions[d] === Math.sign(off(d)))).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
           let change = null;
           for (const dimension of ranked) { change = settle(dimension, Math.sign(off(dimension)), null, why, 'opening', held, history); if (change) break; }
           if (!change) break;
-          moves.push(change);
+          directions[change.dimension] = change.direction; moves.push(change);
         }
         return moves;
       };
@@ -320,7 +322,8 @@
        * value; the next round has it only when it is declared again). The held knob itself is still kept
        * where it was (`reached`), and today's round still plays it as set.
        * It is worked out apart: its own place, locks and history, inside the same Temper rails, with the
-       * same limit and step, and nothing of it is left in today's round. */
+       * same limit and step, and nothing of it is left in today's round. Ordinary auto mode does not
+       * make this separate round: its explicit knob locks remain in force during the opening. */
       let home = null;
       if (mode !== 'auto' || calm) {
         const today = indices, declaredOnly = knob => knob.follows === 'declared';

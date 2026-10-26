@@ -2398,7 +2398,8 @@ var SynkLearning = (() => {
           if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
           const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
           if (lost.length) {
-            if (lost.some((eventId) => !state.missing.includes(eventId))) state.recoveryCursor = 0;
+            const missing = new Set(state.missing);
+            if (lost.some((eventId) => !missing.has(eventId))) state.recoveryCursor = 0;
             state.missing = [.../* @__PURE__ */ new Set([...state.missing, ...lost])];
             port.markComplete(false);
           }
@@ -2784,7 +2785,10 @@ var SynkLearning = (() => {
         };
         const accept = (entries) => {
           port.merge(stateOf(entries));
-          for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
+          for (const entry of entries) {
+            const previous = remote.get(keyOf(entry));
+            if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf(entry), entry);
+          }
         };
         async function cycle(token, held) {
           checkEpoch();
@@ -2806,11 +2810,12 @@ var SynkLearning = (() => {
             for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
             const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
             if (!batch.length) return;
+            const sent = new Set(batch.map(keyOf));
             const known = serverTime;
             const response = await call("post", { revision, entries: batch }, token);
             if (!active(token)) return;
             const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
-            if (returned.size !== response.entries.length || response.entries.some((entry) => !batch.some((sent) => keyOf(sent) === keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+            if (returned.size !== response.entries.length || response.entries.some((entry) => !sent.has(keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
             for (const item of prepared) {
               const accepted = returned.get(keyOf(item.entry));
               if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
@@ -3172,16 +3177,17 @@ var SynkLearning = (() => {
             const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
             const why = basis === "memory" ? "memory" : "prior";
             const open = (goal, theta, ease, held = locked, history = changes) => {
-              const moves = [];
+              const moves = [], directions = {};
               for (let n = 0; n < limit; n += 1) {
                 const off = (d) => gap(d, goal, theta[d]);
-                const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+                const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0) && (!directions[d] || directions[d] === Math.sign(off(d)))).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
                 let change = null;
                 for (const dimension of ranked) {
                   change = settle(dimension, Math.sign(off(dimension)), null, why, "opening", held, history);
                   if (change) break;
                 }
                 if (!change) break;
+                directions[change.dimension] = change.direction;
                 moves.push(change);
               }
               return moves;
@@ -4094,6 +4100,8 @@ var SynkLearning = (() => {
               if (known.has(event?.id)) {
                 if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error("Atlas: conflicting imported event"), { code: "EVENT_CONFLICT" });
               } else if (ledger && Ledger.stray(event, known)) {
+                Atlas.validate(event);
+                if (["domain", "workspace", "subject"].some((field) => event.scope[field] !== scope[field])) throw new Error("Atlas: scope mismatch");
                 skipped.push(event.id);
                 if (event.type === "record.excluded") gone.push(event.targetId);
                 continue;

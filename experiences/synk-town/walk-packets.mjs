@@ -20,11 +20,12 @@ export function createWalkPackets() {
     /** The host's walk arrived: replay the packet in flight and the pending input over it. */
     reconcile(walk) {
       const predicted = point;
-      if (!point) heading = Math.atan2(walk.headingX || 0, walk.headingZ ?? 1);
+      heading = Math.atan2(walk.headingX || 0, walk.headingZ ?? 1);
       point = { x: walk.x, z: walk.z };
       for (const segment of [...(inflight || []), ...pending]) {
         origins.set(segment, point);
         point = movePoint(point, segment, segment.durationMs / 1000);
+        if (segment.durationMs > 0 && (segment.x || segment.z)) heading = Math.atan2(segment.x, segment.z);
       }
       correction = predicted ? Math.hypot(point.x - predicted.x, point.z - predicted.z) : 0;
       maxCorrection = Math.max(maxCorrection, correction);

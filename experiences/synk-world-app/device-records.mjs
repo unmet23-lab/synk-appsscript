@@ -164,7 +164,7 @@ export function planDeviceRecords({storage=globalThis.localStorage,learning=null
 // importLife(records): 계정 생활 진도에 없는 것만 더하고 서버에 저장됐는지까지 확인한다(app-shell). importLearning(events): 같은 것을 학습 기록에.
 export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer,hangulPort=null,guard=()=>{},importLife=null,importLearning=null}){
  // pending: 서버 확인 전에 실패했지만 계정 쪽에 이미 더한 것(다시 고를 때 「일부만」으로 치지 않으려고 판이 기억한다).
- const result={hangul:null,answer:null,life:null,learning:null,errors:[],added:{lessons:0,reviews:0,days:0,profile:false,events:0},pending:{}};
+ const result={hangul:null,answer:null,life:null,learning:null,errors:[],added:{lessons:0,reviews:0,days:0,profile:false,events:0},pending:{},capacitySkipped:{}};
  if(plan?.hangul){
   try{
    const raw=storage.getItem(plan.hangul.from);
@@ -186,6 +186,7 @@ export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,a
  if(plan?.life&&typeof importLife==='function'){
   try{guard();const added=await importLife(plan.life);guard();
    Object.assign(result.added,{lessons:added?.lessons||0,reviews:added?.reviews||0,days:added?.days||0,profile:!!added?.profile});
+   for(const key of ['lessons','reviews','days','questions'])if(Number.isSafeInteger(added?.capacitySkipped?.[key])&&added.capacitySkipped[key]>0)result.capacitySkipped[key]=added.capacitySkipped[key];
    result.life=added&&(added.lessons||added.reviews||added.days||added.profile)?'moved':'exists';}
   catch(error){const got=error?.added;if(recordObject(got)&&(got.lessons||got.reviews||got.days||got.profile))result.pending.life=got;result.errors.push(error);}
  }
@@ -311,9 +312,12 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   const movedNow=Object.values(status4).includes('moved');
   // 계정 저장이 서버에 닿았는지 모르는 부분이 하나라도 있으면(생활 진도·학습 기록·계정 한글 저장) 고른 것을 남기지 않고 다시 고르게 한다.
   if(result.errors.length&&(!movedNow||job.plan.hangul?.cloud||job.plan.life||job.plan.learning)){job.busy=false;status(T.failed,false);return null;}
-  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:job.startedAt,moved:{...carry.moved,at:now()}});
-  const partly=result.errors.length||Object.values(status4).includes('exists')||!movedNow;
-  return done(job,'moved',partly?T.partly:T.moved);
+  const capacityLimited=Object.keys(result.capacitySkipped).length>0;
+  // A capacity limit is not a decision to leave the rest behind. Keep the old
+  // cutoff so the same account can choose again; other-account/logout marks still apply.
+  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:capacityLimited?job.plan.after:job.startedAt,moved:{...carry.moved,at:now()}});
+  const partly=capacityLimited||result.errors.length||Object.values(status4).includes('exists')||!movedNow;
+  return done(job,'moved',capacityLimited?`${movedNow?T.partly:T.snapshot} ${T.snapshotBody}`:partly?T.partly:T.moved);
  }
  return Object.freeze({offer,choose,pending:()=>current?{owner:current.owner,plan:current.plan}:null});
 }

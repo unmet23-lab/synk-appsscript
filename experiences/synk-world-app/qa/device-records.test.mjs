@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {progressKey} from '../../hangul-stage/learning.mjs';
 import {emptyProgress,meet,answer as answerLetter} from '../../hangul-stage/core.mjs';
-import {createLifeProgress} from '../life-progress.mjs';
+import {createLifeProgress,LIFE_PROGRESS_KEY} from '../life-progress.mjs';
 import {HANGUL_DEVICE_KEY,GUEST_LIFE_KEY,DEVICE_RECORDS_KEY,hangulAccountKey,hangulProgressSummary,deviceHangulAnswer,planDeviceRecords,applyDeviceRecords,
  deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer,GUEST_LEARNING_KEY,guestLearningEvents,guestLifeRecords,deviceWatermark,noteDeviceSignOut,noteDeviceAccount,
  DEVICE_RECORDS_TEXT} from '../device-records.mjs';
@@ -375,4 +375,40 @@ test('the hangul text that is checked is the very text that is moved (no second 
  let reads=0;const flipping={...storage,getItem:key=>key===HANGUL_DEVICE_KEY?(reads++===0?stale:fresh):storage.getItem(key),setItem:(key,value)=>storage.setItem(key,value)};
  const result=await applyDeviceRecords(plan,{storage:flipping});
  assert.equal(result.hangul,'gone');assert.equal(storage.getItem(target),null,'the stale text never reaches the account');
+});
+
+test('capacity-limited life imports report partial progress, retain device originals and can be offered again to the same account',async()=>{
+ for(const count of [99,100]){
+  const storage=memory(),accountStorage=memory(),day='2026-10-19',item={lessonId:'lesson',observedAt:Date.parse(AT),outcome:'independent'};
+  const record=(owner,items)=>({version:1,owner,revision:0,activeLessonId:null,activeReview:null,lessons:{},reviews:{},daily:{version:1,days:{[day]:{items}}}});
+  const own=record(ACCOUNT,Object.fromEntries(Array.from({length:count},(_,i)=>['q'+i,{...item}])));
+  accountStorage.setItem(LIFE_PROGRESS_KEY,JSON.stringify(own));
+  storage.setItem(GUEST_LIFE_KEY,JSON.stringify(record('guest',{q0:{...item},qa:{...item},qb:{...item}})));
+  const original=storage.getItem(GUEST_LIFE_KEY),progress=createLifeProgress({storage:accountStorage,owner:ACCOUNT,mode:'account',now:()=>LATER,getSaveStatus:()=>({phase:'synced',pending:0})});
+  const toasts=[],responses=[];
+  const make=()=>createDeviceRecordsOffer({storage,learningStatus:()=>learning,present(){},close(){},now:()=>LATER,defer:fn=>fn(),toast:value=>toasts.push(value),
+   importLife:async records=>{const result=progress.importRecords(records);await progress.flush();responses.push(result);return result;}});
+  const offer=make(),pending=offer.offer({owner:ACCOUNT});assert.ok(pending);
+  assert.equal(await offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
+  assert.equal(responses[0].capacitySkipped.questions,count===99?1:2);
+  assert.equal(toasts.at(-1),`${count===99?DEVICE_RECORDS_TEXT.partly:DEVICE_RECORDS_TEXT.snapshot} ${DEVICE_RECORDS_TEXT.snapshotBody}`);
+  assert.equal(storage.getItem(GUEST_LIFE_KEY),original,'the guest source remains byte-identical');
+  const saved=progress.exportSnapshot();assert.equal(Object.keys(saved.daily.days[day].items).length,100);
+  for(const [id,value]of Object.entries(own.daily.days[day].items))assert.deepEqual(saved.daily.days[day].items[id],value);
+  const entry=JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT];assert.equal(entry.through,0,'the zero cutoff must not become the decision timestamp');
+  const again=make(),againPending=again.offer({owner:ACCOUNT});assert.ok(againPending,'remaining source can be offered on a fresh page');
+  assert.equal(make().offer({owner:OTHER}),null,'the prior account presence still protects its records from another account');
+  await again.choose('keep',{owner:ACCOUNT});await againPending;
+ }
+});
+
+test('capacity retry preserves a previous account cutoff and cannot bypass a later sign-out',async()=>{
+ const storage=memory(),old=Date.parse(AT)-1000,item={lessonId:'lesson',observedAt:Date.parse(AT),outcome:'independent'};
+ storage.setItem(GUEST_LIFE_KEY,JSON.stringify({version:1,owner:'guest',lessons:{},reviews:{},daily:{version:1,days:{'2026-10-19':{items:{old:{...item,observedAt:old-1000},recent:item}}}}}));
+ saveDeviceRecordsDecision(storage,ACCOUNT,'moved',old,{through:old});
+ const make=()=>createDeviceRecordsOffer({storage,learningStatus:()=>learning,present(){},close(){},now:()=>LATER,defer:fn=>fn(),toast(){},
+  importLife:async records=>{assert.deepEqual(Object.keys(records.days['2026-10-19'].items),['recent']);return {lessons:0,reviews:0,days:0,profile:false,capacitySkipped:{questions:1}};}});
+ const offer=make(),pending=offer.offer({owner:ACCOUNT});assert.ok(pending);await offer.choose('move',{owner:ACCOUNT});await pending;
+ assert.equal(JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT].through,old);
+ noteDeviceSignOut(storage,LATER+1);assert.equal(make().offer({owner:ACCOUNT}),null,'sign-out remains the privacy boundary');
 });

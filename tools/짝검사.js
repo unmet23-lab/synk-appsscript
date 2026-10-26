@@ -73,7 +73,7 @@ function 스크립트가부르는(root, 스크립트, { 없는것 = false } = {}
   try { 글 = fs.readFileSync(path.join(root, 스크립트), 'utf8'); } catch { return []; }
   const 폴더 = path.posix.dirname(슬래시(스크립트));
   const 결과 = new Set();
-  for (const m of 글.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
+  for (const m of 글.matchAll(/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)) {
     const 붙인 = path.posix.normalize(path.posix.join(폴더, m[1]));
     if (붙인.startsWith('..')) continue;
     const 후보 = /\.[a-z0-9]+$/i.test(붙인) ? [붙인] : [`${붙인}.js`, `${붙인}.mjs`, `${붙인}/index.js`];

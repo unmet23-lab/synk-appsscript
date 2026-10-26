@@ -40,7 +40,7 @@ export const CAFE_VISITS=[
     a:{...order('tea',1,'따뜻한 차 한 잔'),response:'네, 따뜻한 차 한 잔으로 준비할게요.',friend:'오! 차는 있구나! 같이 주문을 이어가자!'},
     b:{...order(null,0,'차가운 주스 · 품절','준비되지 않은 음료'),previewDrink:'cold',response:'차가운 주스도 오늘은 품절이에요. 따뜻한 차는 준비할 수 있어요.',friend:'어? 주스는 오늘 쉬는 날이네! 다른 메뉴를 같이 보자!'},
     c:{...order(null,0,'따뜻한 주스 · 품절','준비되지 않은 음료'),previewDrink:'warm',response:'따뜻한 주스도 품절이에요. 주스 대신 따뜻한 차로 드릴까요?',friend:'오! 온도를 바꿔도 주스는 다 나갔네! 차를 같이 보자!'}}},
-   {name:'직원의 수량 확인',staff:'따뜻한 차, 두 잔, 맞으시죠?',speaker:'marine',friend:'필요 수량, 한 잔. 주문 확인을 고친다.',hint:'두 잔이 아니라 한 잔이에요. 아니요, 한 잔 주세요.',next:'공원에 가져갈 컵 부탁하기',menu:true,before:order('tea',1,'따뜻한 차 한 잔','수량 확인 중'),options:{
+   {name:'직원의 수량 확인',staff:'따뜻한 차, 두 잔, 맞나요?',speaker:'marine',friend:'필요 수량, 한 잔. 주문 확인을 고친다.',hint:'두 잔이 아니라 한 잔이에요. 아니요, 한 잔 주세요.',next:'공원에 가져갈 컵 부탁하기',menu:true,before:order('tea',1,'따뜻한 차 한 잔','수량 확인 중'),options:{
     a:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔으로 바꿀까요? 혼자 드실 한 잔이면 수량을 다시 알려 주세요.',friend:'필요한 컵, 하나. 수량 재확인.'},
     b:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔으로 확인했어요. 한 잔만 필요하면 바꿔 드릴게요.',friend:'목표 수량, 한 잔. 확인을 고친다.'},
     c:{...order('tea',1,'따뜻한 차 한 잔'),response:'아, 한 잔이군요. 한 잔으로 확인했어요. 여기서 드시나요?',friend:'수량 확인 완료. 한 잔.'}}},
@@ -67,7 +67,7 @@ export const CAFE_VISITS=[
  ,{id:CAFE_COMPOSE_ID,number:5,title:'내 말로 주문해요',caption:'다섯 번째 방문 · 직접 만드는 주문',description:'음료·온도·잔 수를 골라 나의 주문 문장을 만들고 친구와 쉬어요.',seatStep:2,
   steps:[
    {name:'내 주문 만들기',staff:'어서 오세요. 어떤 음료를 몇 잔 준비할까요?',speaker:'mongle',friend:'오! 까몽과 한 잔씩, 따뜻한 차 두 잔을 같이 만들어 보자!',hint:'차를 고르고, 따뜻하게, 두 잔을 골라요. 세 정보를 합쳐 주문해요.',next:'직원과 수량 확인하기',compose:true,options:{}},
-   {name:'수량 확인',staff:'따뜻한 차, 두 잔, 맞으시죠?',speaker:'marine',friend:'주문 정보 확인. 따뜻한 차, 두 잔.',hint:'원하는 수량도 두 잔, 직원의 확인도 두 잔이에요. 네, 두 잔 주세요.',next:'마실 곳 알려 주기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','수량 확인 중'),options:{
+   {name:'수량 확인',staff:'따뜻한 차, 두 잔, 맞나요?',speaker:'marine',friend:'주문 정보 확인. 따뜻한 차, 두 잔.',hint:'원하는 수량도 두 잔, 직원의 확인도 두 잔이에요. 네, 두 잔 주세요.',next:'마실 곳 알려 주기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','수량 확인 중'),options:{
     a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔으로 바꿀까요? 두 분이 한 잔씩 드시면 두 잔이 필요해요.',friend:'필요 수량 재확인. 두 사람의 컵, 둘.'},
     b:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 따뜻한 차 두 잔 확인했어요.',friend:'수량 확인 완료. 두 잔.'},
     c:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔으로 바꿀까요? 두 분의 컵만 필요하면 두 잔을 유지할 수 있어요.',friend:'주문 대상, 두 사람. 필요한 컵, 둘.'}}},

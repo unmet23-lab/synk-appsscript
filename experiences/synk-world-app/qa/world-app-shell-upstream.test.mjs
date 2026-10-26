@@ -8,12 +8,13 @@ import {createHangulProgressPort,HANGUL_PROGRESS_KEY} from '../hangul-progress-p
 import {emptyProgress,meet} from '../../hangul-stage/core.mjs';
 import {emptyPlayState,validatePlayChanges} from '../../play-common/play-data.mjs';
 import {mountEnrollment} from '../../synk-account/src/enrollment.mjs';
+import {sourceStatements} from '../../../tests/lib/source-statements.cjs';
 
 // Execute unchanged complete shell blocks, not a reimplementation of the wiring.
 // DOM/navigation and mount ports are controlled doubles; migration uses the real
 // offer + Hangul port + game account store/CAS. This is not browser/OAuth evidence.
 const source=readFileSync(process.env.SYNK_SHELL_UNDER_TEST||new URL('../app-shell.mjs',import.meta.url),'utf8');
-function block(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a,`${start} source block`);return source.slice(a,b);}
+const statements=sourceStatements(source);
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
 const memory=()=>{const data=new Map();return {get length(){return data.size;},key:i=>[...data.keys()][i]??null,getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)};};
 const no=()=>{};
@@ -41,11 +42,11 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
  };
  vm.createContext(context);
  const run=text=>vm.runInContext(text,context);
- run(block('function show(', 'function errorText('));
- run(block('function profile(){','async function wardrobe(){'));
- run(block('function mountLifeLearning(', '// 알림 계획의 입력'));
+ run(statements.between({name:'show'},{name:'errorText'}));
+ run(statements.function('profile'));
+ run(statements.function('mountLifeLearning'));
  context.life={owner,ui:{hangulReading:()=>null},progress:{},education:{},closed:false};
- run(block('const accountLife=', 'window.__synkWorld.entry='));
+ run(statements.between({name:'accountLife'},{assignment:'window.__synkWorld.entry'}));
  return {context,run,listeners,captures,disposed,toasts,shown,confirms,nodes,client,account,home,setDraft:value=>{draft=value;},setConfirm:value=>{confirm=value;},
   fire(type,{key,id='',target=null}={}){const event={key,target:target||{id,dataset:{},closest:()=>null},prevented:0,stopped:0,preventDefault(){this.prevented++;},stopImmediatePropagation(){this.stopped++;}};for(const {fn}of listeners[type]||[])fn(event);return event;},
   mount(){const parts=[];run('mountLifeLearning')({owner,keep:(name,value,dispose=v=>v?.dispose?.())=>{parts.push(()=>dispose(value));return value;}});context.life.education=context.window.__synkEducation;return ()=>{for(const release of parts.reverse())release();};},

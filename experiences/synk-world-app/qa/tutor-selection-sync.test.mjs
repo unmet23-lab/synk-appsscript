@@ -8,6 +8,7 @@ import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {choiceKey,readTutorChoice,saveTutorChoice} from '../../brand-opening/tutor-choice.mjs';
 import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus} from '../tutor-selection-sync.mjs';
 import {createLifeSession} from '../world-session.mjs';
+import {sourceStatements} from '../../../tests/lib/source-statements.cjs';
 
 const OWNER='11111111-1111-4111-8111-111111111111';
 const failure=code=>Object.assign(Error(code),{code});
@@ -128,11 +129,9 @@ test('guest choices stay local and status distinguishes loading, syncing and rec
 // traffic. The session's stages stand in for the account life port: port=null
 // is an account whose life port failed, so it continues on the device record.
 async function reconnectContext({panel='',port={},flush=async()=>{},blocked=false}={}){
- const source=readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8').replaceAll('\r\n','\n');
- const callback=source.match(/function refreshTutorAccount\(\)\{[\s\S]*?\n\}\n/)?.[0];
- assert.ok(callback,'shell reconnect callback is present');
- const listeners=new Map(),focusListener=source.split('\n').find(line=>line.startsWith("window.addEventListener('focus',"));
- assert.ok(focusListener,'shell listens to refocus even when the document remains visible');
+ const statements=sourceStatements(readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8'));
+ const callback=statements.function('refreshTutorAccount');
+ const listeners=new Map(),focusListener=statements.call('window.addEventListener',{0:'focus'});
  const counts={flushes:0,loads:0};let generation=1;
  const life=createLifeSession({identity:()=>({owner:OWNER,generation}),
   openPort:async()=>{if(!port)throw failure('NETWORK_UNAVAILABLE');return {...port,dispose(){}};},

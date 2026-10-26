@@ -662,8 +662,9 @@ function showGameConflict(id,session){
 }
 async function launchGame(id){
  const game=games[id];if(!game)return;
- if(home.ensureTutor&&!home.tutor()?.tutor)return home.ensureTutor(()=>launchGame(id));
- let session,trialHost=null;
+ const owner=client.snapshot?.accountId;let launchTicket=gameLaunch,session,trialHost=null,companion;
+ try{
+ if(home.ensureTutor&&!home.tutor()?.tutor)return await home.ensureTutor(()=>launchGame(id));
  // 손님의 한글 만나기는 계정 놀이 기록 없이 기기 진도로, 바람길·리듬은 체험이 남아 있으면 한 판 체험으로 연다(계정 호스트를 설치하지 않는다).
  const guest=operating&&!client.snapshot,trial=guest&&guestTrials.open().includes(id);
  if(operating&&!(guest&&(GUEST_GAMES.has(id)||trial))){
@@ -671,8 +672,9 @@ async function launchGame(id){
   const accountId=client.snapshot.accountId;
   show(game.title,`<p class="panel-description" role="status">${t('account.gameLoading')}</p>`,'world-game-loading');
   const ticket=gameLaunch;
+  launchTicket=ticket;
   try{session=await account.prepareGame({target:window,onStatus:state=>{if(!session||activeGameSession!==session||screen!=='game')return;if(state.play.phase==='conflict')showGameConflict(id,session);else if(state.play.phase==='stopped')show(t('account.gameStopped'),`${notice('PLAY','check',t('account.gameStoppedNotice'),t('account.gameStoppedBody'))}<div class="world-actions"><button class="felt-button" data-world="profile">${t('account.checkMine')}</button><button class="quiet-button" data-world="home">${t('account.toTown')}</button></div>`,'world-game-error');}});}
-  catch(error){if(ticket!==gameLaunch||!worldPanel.open||home.isMaru&&home.openPanel()!=='world-game-loading')return;show(t('account.gameCheck'),`${notice('PLAY','check',t('account.gameCheckNotice'),escape(errorText(error)))}<div class="world-actions"><button class="felt-button" data-world-game="${id}">${t('account.reconnect')}</button><button class="plain-button" data-world="profile">${t('account.checkMine')}</button></div>`,'world-game-error');return;}
+  catch(error){if(ticket!==gameLaunch||client.snapshot?.accountId!==accountId||!worldPanel.open||home.isMaru&&home.openPanel()!=='world-game-loading')return;show(t('account.gameCheck'),`${notice('PLAY','check',t('account.gameCheckNotice'),escape(errorText(error)))}<div class="world-actions"><button class="felt-button" data-world-game="${id}">${t('account.reconnect')}</button><button class="plain-button" data-world="profile">${t('account.checkMine')}</button></div>`,'world-game-error');return;}
   if(ticket!==gameLaunch||!worldPanel.open||home.isMaru&&home.openPanel()!=='world-game-loading'||client.snapshot?.accountId!==accountId){session.dispose();return;}
   if(session.status().play.phase==='conflict'){showGameConflict(id,session);return;}
  }
@@ -680,9 +682,16 @@ async function launchGame(id){
  // 체험 판의 틀은 메모리 호스트를 받는다: 판이 끝나면 그 게임의 체험을 닫고 추천을 다시 고르며, 결과의 로그인 단추는 계정 연결을 연다.
  if(trial){trialHost=createGuestTrialPlayHost({game:id,onRound:()=>{guestTrials.finish(id);life.education?.refresh();},signIn:()=>setTimeout(()=>{if(client.snapshot)return;close();signIn(id);},0)});window.SYNKPlayHost=trialHost;}
  show(game.title,`<iframe class="game-frame" title="${game.title}" src="${worldUrl(game.path)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');
- const companion=home.mountGameTutor?.(id,{frame:document.querySelector('.game-frame')});
+ launchTicket=gameLaunch;
+ companion=home.mountGameTutor?.(id,{frame:document.querySelector('.game-frame')});
  if(session)activeGameSession=session;
  home.attachPanelResource({dispose:()=>{companion?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.closeGame();}if(trialHost){if(window.SYNKPlayHost===trialHost)delete window.SYNKPlayHost;trialHost.stop();}queueMicrotask(()=>refreshLife());}});
+ }catch(error){
+  companion?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.dispose();}
+  if(trialHost){if(window.SYNKPlayHost===trialHost)delete window.SYNKPlayHost;trialHost.stop();}
+  if(launchTicket!==gameLaunch||client.snapshot?.accountId!==owner)return;
+  show(t('account.gameCheck'),`${notice('PLAY','check',t('account.gameCheckNotice'),escape(errorText(error)))}<div class="world-actions"><button class="felt-button" data-world-game="${id}">${t('account.reconnect')}</button><button class="plain-button" data-world="profile">${t('account.checkMine')}</button></div>`,'world-game-error');
+ }
 }
 const learningSongs={'vowel-dance':{title:'모음 댄스',description:'모음 글자와 소리를 노래로 익혀요'},'geu-a-ga':{title:'그 아 가',description:'자음과 모음이 만나는 소리'},batchim:{title:'받침 노래',description:'글자 아래에 붙는 소리'}};
 // 노래: 카세트 인화지 한 장 + 한 줄 설명 → 1px 선 목록 줄(재생 원 · 제목 · 번호)

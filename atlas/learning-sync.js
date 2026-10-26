@@ -92,7 +92,8 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     // written over a newer one): fetch it from the server again.
     const lost = state.acknowledged.filter(eventId => !localIds.has(eventId) && !folded.has(eventId));
     if (lost.length) {
-      if (lost.some(eventId => !state.missing.includes(eventId))) state.recoveryCursor = 0;
+      const missing = new Set(state.missing);
+      if (lost.some(eventId => !missing.has(eventId))) state.recoveryCursor = 0;
       state.missing = [...new Set([...state.missing, ...lost])]; port.markComplete(false);
     }
     state.acknowledged = state.acknowledged.filter(eventId => localIds.has(eventId));

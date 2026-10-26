@@ -9,9 +9,17 @@ const cache=()=>{const data=new Map();return {getItem:key=>data.get(key)??null,s
 const stage=cafe=>({phase:'questions',sceneIndex:cafe.step,questionIndex:cafe.step,cafe,helped:false});
 const setup=(storage=cache(),owner='guest')=>{const p=createLifeProgress({storage,owner,now:()=>1000000});p.summary(PACKS,LESSONS);p.startLesson(lessonById(CAFE_COMPOSE_ID));return p;};
 const fill=(s,order)=>Object.entries(order).reduce((s,[key,value])=>updateCafeOrder(s,key,value),s);
-test('all 21 earlier lessons and transfers retain their exact data',()=>{
+test('all 21 earlier lessons and transfers retain their data except the approved quantity confirmation wording',()=>{
  const baseline=JSON.parse(fs.readFileSync(new URL('./cafe-complete-20261010/previous-lessons.json',import.meta.url)));assert.equal(baseline.length,21);
- for(const l of baseline)assert.equal(createHash('sha256').update(JSON.stringify(lessonById(l.id))).digest('hex'),l.sha256,l.id);
+ for(const l of baseline){
+  const current=structuredClone(lessonById(l.id));
+  if(l.id==='cafe-visit-soldout'){
+   const quantity=current.questions.find(q=>q.id==='cafe-visit-soldout-count');
+   assert.equal(quantity.context,'혼자 마실 한 잔을 주문했어요. 직원: “따뜻한 차 두 잔 맞나요?”');assert.equal(quantity.review.context,'친구와 둘이 한 잔씩 마셔요. 직원: “주스 한 잔 맞나요?”');
+   quantity.context=quantity.context.replace('맞나요?','맞으시죠?');quantity.review.context=quantity.review.context.replace('맞나요?','맞으시죠?');
+  }
+  assert.equal(createHash('sha256').update(JSON.stringify(current)).digest('hex'),l.sha256,l.id);
+ }
 });
 test('all 12 order combinations update the full sentence, cup count and temperature',()=>{
  for(const drink of ['juice','tea'])for(const temperature of ['cold','warm'])for(const count of [1,2,3]){

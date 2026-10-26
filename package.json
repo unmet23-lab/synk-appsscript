@@ -3,6 +3,7 @@
   "private": true,
   "description": "SYNK LAB 엔진 저장소. 개발 도구는 배포집합에 포함하지 않는다.",
   "devDependencies": {
+    "acorn": "8.15.0",
     "esbuild": "0.28.1",
     "odiff-bin": "^4.5.0",
     "playwright": "1.64.1"

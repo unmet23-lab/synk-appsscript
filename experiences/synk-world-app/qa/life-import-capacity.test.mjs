@@ -21,7 +21,7 @@ function open(value){
 }
 // 다시 열어도 읽히는지(unreadable이 아닌지)를 보고 그때의 기록을 돌려준다.
 function reload(f){const again=f.reopen(),status=again.status();assert.equal(status.phase,'synced');assert.equal(status.code,undefined);return again.exportSnapshot();}
-function take(f,records){const {status,...added}=f.progress.importRecords(records);assert.equal(status.phase,'synced');return added;}
+function take(f,records){const {status,capacitySkipped,...added}=f.progress.importRecords(records);assert.equal(status.phase,'synced');return added;}
 const shape=days=>[Object.keys(days).length,Math.max(...Object.values(days).map(day=>Object.keys(day.items).length))];
 const none={lessons:0,reviews:0,days:0,profile:false},oneDay={...none,days:1};
 
@@ -119,4 +119,28 @@ test('an import that would pass the record size limit is refused whole instead o
  // 더할 것이 없는 옮기기는 이 크기에서도 조용히 아무것도 하지 않는다.
  assert.deepEqual(take(tight,{days:{[dayKey(0)]:days[dayKey(0)]}}),none);
  assert.deepEqual(reload(tight).daily.days,days);assert.equal(tight.raw(),raw);
+});
+
+test('capacity reporting distinguishes whole days and questions from already present records',()=>{
+ const days=spanDays(30);days[dayKey(0)]=fullDay(100)[dayKey(0)];
+ const f=open(record(days)),raw=f.raw(),writes=f.storage.writes;
+ const result=f.progress.importRecords({days:{[dayKey(0)]:{items:{q0:item(0,'retry'),qnew:item(0)}},[dayKey(30)]:{items:{qnew:item(30)}}}});
+ assert.deepEqual(result.capacitySkipped,{lessons:0,reviews:0,days:1,questions:1});
+ assert.deepEqual([result.lessons,result.reviews,result.days,result.profile],[0,0,0,false]);
+ assert.equal(f.raw(),raw);assert.equal(f.storage.writes,writes);
+ const duplicate=f.progress.importRecords({days:{[dayKey(0)]:{items:{q0:item(0,'retry')}}}});
+ assert.equal(duplicate.capacitySkipped,undefined,'an existing record is not a capacity failure');
+ assert.equal(f.raw(),raw);assert.deepEqual(reload(f).daily.days,days);
+});
+
+test('a lesson rejected by capacity also reports its review, while existing lessons and reviews are not counted',()=>{
+ const lesson={attemptId:'attempt',startedAt:at(0),completedAt:null,questionIds:['q'],answers:{}};
+ const review=(id,lessonId)=>({id,questionId:'q',lessonId,packId:'pack',skillId:'skill',dueAt:at(1),lastAt:at(0),streak:0,lapses:0,intervalDays:1});
+ const lessons=Object.fromEntries(Array.from({length:100},(_,i)=>['l'+i,structuredClone(lesson)]));
+ const reviews=Object.fromEntries(Array.from({length:400},(_,i)=>['r'+i,review('r'+i,'l0')]));
+ const f=open(record({}, {lessons,reviews})),raw=f.raw(),writes=f.storage.writes;
+ const result=f.progress.importRecords({lessons:{l0:lesson,new:lesson},reviews:{r0:reviews.r0,new:review('new','new'),newKnown:review('newKnown','l0')}});
+ assert.deepEqual(result.capacitySkipped,{lessons:1,reviews:2,days:0,questions:0});
+ assert.equal(f.raw(),raw);assert.equal(f.storage.writes,writes);
+ assert.deepEqual(reload(f).lessons,lessons);assert.deepEqual(reload(f).reviews,reviews);
 });

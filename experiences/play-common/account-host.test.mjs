@@ -168,3 +168,22 @@ test('invalid acknowledgement after a commit preserves the same command for rece
  await assert.rejects(a.wallet('awardMiniGame',[{game:'word-magic',total:1,correct:1,completed:true,roundId:'malformed-ack'}]),{code:'INVALID_PLAY_STATE'});
  assert.equal(a.status().pending,1);assert.equal(a.status().rejected,0);malformed=false;await a.retry();assert.equal(a.snapshot().state.wallet.coins,25);assert.equal(a.status().pending,0);
 });
+
+test('each game read observes drafts added by another same-origin host',async t=>{
+ const remote=server(),local=storage(),a=make(remote,'a',local);t.after(()=>a.stop());await a.ready();
+ const add=(id,at,previous,value)=>local.setItem('synk.play.account.v1:a:pending:'+id,JSON.stringify({accountId:'a',at,body:{id,action:'progress',changes:[{key,previous,value}]}}));
+ add('first',1,null,'{"last":1}');const ref=a.storage();assert.equal(ref.getItem(key),'{"last":1}');
+ add('second',2,'{"last":1}','{"last":2}');assert.equal(ref.getItem(key),'{"last":2}');
+ ref.setItem(key,'{"last":3}');await a.flush();
+ assert.equal(remote.accounts.get('a').state.records[key],'{"last":3}');assert.equal(a.status().pending,0);
+});
+
+test('flush sees drafts added during status notification and an awaited send',async t=>{
+ const remote=server(),local=storage(),base=remote.client('a');let announced=false,release,started;
+ const sent=new Promise(resolve=>{started=resolve;}),gate=new Promise(resolve=>{release=resolve;});
+ const add=(id,at,previous,value)=>local.setItem('synk.play.account.v1:a:pending:'+id,JSON.stringify({accountId:'a',at,body:{id,action:'progress',changes:[{key,previous,value}]}}));
+ const a=make(remote,'a',local,{onStatus(value){if(value.phase==='saving'&&!announced){announced=true;add('second',2,'{"last":1}','{"last":2}');}},client:{...base,mutate:async body=>{if(body.id==='first'){started();await gate;}return base.mutate(body);}}});t.after(()=>a.stop());await a.ready();
+ add('first',1,null,'{"last":1}');const flushed=a.flush();await sent;
+ add('third',3,'{"last":2}','{"last":3}');release();await flushed;
+ assert.equal(remote.accounts.get('a').state.records[key],'{"last":3}');assert.equal(a.status().pending,0);assert.equal(a.status().phase,'synced');
+});

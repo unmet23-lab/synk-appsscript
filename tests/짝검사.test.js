@@ -280,3 +280,22 @@ test('모듈 원천 — 없는 확장자 생략 import는 기존 해석 후보�
   for (const p of ['shared/missing.js', 'shared/missing.mjs', 'shared/missing/index.js']) assert.equal(고른(root, [p], [줄]).length, 1);
   assert.deepEqual(고른(root, ['shared/missing.ts', 'shared/other.js'], [줄]), []);
 });
+
+test('모듈 원천 — 부수효과 import만으로 연결된 하위 원천과 삭제도 검사한다', (t) => {
+  const { root, 쓰기 } = 폴더(t, {
+    'portal/entry.mjs': "import '../shared/register.mjs'; import 'external-package';\n",
+    'shared/register.mjs': "import\n './nested.mjs';\n",
+    'shared/nested.mjs': "import '../portal/entry.mjs'; export const registered=true;\n",
+    'shared/unrelated.mjs': 'export const unused=true;\n',
+  });
+  const 줄 = 짝줄({ 원천: [], 주석원천: [], 모듈원천: ['portal/entry.mjs'] });
+  assert.deepEqual(짝.스크립트가부르는(root, 'portal/entry.mjs'), ['shared/register.mjs']);
+  for (const p of ['shared/register.mjs', 'shared/nested.mjs']) assert.equal(고른(root, [p], [줄]).length, 1, p);
+  assert.deepEqual(고른(root, ['shared/unrelated.mjs', 'node_modules/external-package/index.js'], [줄]), []);
+  fs.unlinkSync(path.join(root, 'shared/nested.mjs'));
+  assert.equal(고른(root, ['shared/nested.mjs'], [줄]).length, 1, '삭제된 부수효과 의존도 선택한다');
+  쓰기('portal/entry.mjs', "import '../shared/no-extension';\n");
+  for (const p of ['shared/no-extension.js', 'shared/no-extension.mjs', 'shared/no-extension/index.js']) {
+    assert.equal(고른(root, [p], [줄]).length, 1, p);
+  }
+});

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "status": "draft",
-  "contentHash": "da12c14fb2abe895",
+  "contentHash": "ac0b9eb225189f91",
   "note": "WORLD 말하기 연습 시범 문항(2026-10-21). 자체 창작이며 공식 기출·견본 문항을 옮기지 않았다. 자료 숫자와 인물은 가상이다. 10-21 2중 검수(검수자·근거는 qa/speaking-pilot-20261021/item-review/README.md — 공개 데이터라 모델 이름은 여기 적지 않는다)에서 시험 형식 6개는 고친 판을 두 검수자가 다시 확인했고 역할극은 고침 없이 통과했다(문항마다 review 칸). 운영 함수는 review.status가 passed인 문항·역할극만 연다(리허설 설정이면 초안도). 화면은 10-21 공개 판부터 플래그 없이 켜진다. 3번 그림은 승인 소품을 옮긴 시범 그림이라 scene·covers를 지금 그림에 맞췄다 — 정식 그림을 구우면 scene대로 굽고 다시 검수한다.",
   "basis": {
     "source": "topik.go.kr 토픽 말하기 평가 — 시험 소개·문항 구성(HMENU00048), 문항유형 및 학습방법(HMENU00023)",
@@ -122,7 +122,7 @@
           "model": "두 잔 주세요."},
         {"id": "soldout", "line": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.", "clip": "../brand-opening/assets/cafe-voice/cafe-visit-soldout-1.mp3", "asks": ["drink", "temperature", "count"], "onlyAfter": "order",
           "model": "그럼 따뜻한 차 두 잔 주세요."},
-        {"id": "confirm", "line": "따뜻한 차, 두 잔, 맞으시죠?", "clip": "../brand-opening/assets/cafe-voice/cafe-compose-2.mp3", "asks": ["answer"],
+        {"id": "confirm", "line": "따뜻한 차, 두 잔, 맞나요?", "clip": "../brand-opening/assets/cafe-voice/cafe-compose-2.mp3", "asks": ["answer"],
           "model": "네, 맞아요."},
         {"id": "place", "line": "가져가실 건가요, 여기서 드실 건가요?", "clip": "../brand-opening/assets/cafe-voice/cafe-compose-3.mp3", "asks": ["place"],
           "model": "여기서 마실게요."}

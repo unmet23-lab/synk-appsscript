@@ -111,7 +111,7 @@ var require_account_client = __commonJS({
             return { response: response2, data: data2 };
           } catch (error2) {
             guard();
-            if (error2.code) throw error2;
+            if (error2?.name !== "AbortError" && error2?.code) throw error2;
             throw fault("NETWORK", "\uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAE30\uB85D\uC740 \uC774 \uAE30\uAE30\uC5D0 \uB0A8\uACA8 \uB450\uACE0 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC694.", true);
           } finally {
             clearTimeout(timer);
@@ -8733,7 +8733,8 @@ var require_learning_sync = __commonJS({
         if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure3("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
         const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
         if (lost.length) {
-          if (lost.some((eventId) => !state.missing.includes(eventId))) state.recoveryCursor = 0;
+          const missing = new Set(state.missing);
+          if (lost.some((eventId) => !missing.has(eventId))) state.recoveryCursor = 0;
           state.missing = [.../* @__PURE__ */ new Set([...state.missing, ...lost])];
           port.markComplete(false);
         }
@@ -9119,7 +9120,10 @@ var require_memory_sync = __commonJS({
       };
       const accept = (entries) => {
         port.merge(stateOf(entries));
-        for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
+        for (const entry of entries) {
+          const previous = remote.get(keyOf(entry));
+          if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf(entry), entry);
+        }
       };
       async function cycle(token2, held) {
         checkEpoch();
@@ -9141,11 +9145,12 @@ var require_memory_sync = __commonJS({
           for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
           const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
           if (!batch.length) return;
+          const sent = new Set(batch.map(keyOf));
           const known = serverTime;
           const response = await call("post", { revision, entries: batch }, token2);
           if (!active(token2)) return;
           const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
-          if (returned.size !== response.entries.length || response.entries.some((entry) => !batch.some((sent) => keyOf(sent) === keyOf(entry)))) throw failure3("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+          if (returned.size !== response.entries.length || response.entries.some((entry) => !sent.has(keyOf(entry)))) throw failure3("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
           for (const item of prepared) {
             const accepted = returned.get(keyOf(item.entry));
             if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure3("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
@@ -9507,16 +9512,17 @@ var require_flow = __commonJS({
           const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
           const why = basis === "memory" ? "memory" : "prior";
           const open = (goal, theta, ease, held = locked, history2 = changes) => {
-            const moves = [];
+            const moves = [], directions = {};
             for (let n = 0; n < limit; n += 1) {
               const off = (d) => gap(d, goal, theta[d]);
-              const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+              const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0) && (!directions[d] || directions[d] === Math.sign(off(d)))).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
               let change = null;
               for (const dimension of ranked) {
                 change = settle(dimension, Math.sign(off(dimension)), null, why, "opening", held, history2);
                 if (change) break;
               }
               if (!change) break;
+              directions[change.dimension] = change.direction;
               moves.push(change);
             }
             return moves;
@@ -10429,6 +10435,8 @@ var require_game_learning = __commonJS({
             if (known.has(event?.id)) {
               if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error("Atlas: conflicting imported event"), { code: "EVENT_CONFLICT" });
             } else if (ledger && Ledger.stray(event, known)) {
+              Atlas.validate(event);
+              if (["domain", "workspace", "subject"].some((field) => event.scope[field] !== scope[field])) throw new Error("Atlas: scope mismatch");
               skipped.push(event.id);
               if (event.type === "record.excluded") gone.push(event.targetId);
               continue;
@@ -13487,9 +13495,9 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       throw cause;
     }
   }
-  function records() {
+  function records(entries = pending()) {
     const result = { ...state.records };
-    for (const entry of pending()) if (entry.body.action === "progress") for (const change of entry.body.changes) {
+    for (const entry of entries) if (entry.body.action === "progress") for (const change of entry.body.changes) {
       if (change.value === null) delete result[change.key];
       else result[change.key] = change.value;
     }
@@ -13515,8 +13523,9 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
       if (!loaded) await receive(() => client.load());
       check2();
       let last;
-      while (pending().length) {
+      for (; ; ) {
         const entry = pending()[0];
+        if (!entry) break;
         check2();
         emit("saving");
         let response;
@@ -13551,9 +13560,9 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     }, 250);
     emit("saving");
   }
-  function draftOf(key) {
+  function draftOf(key, entries) {
     let id;
-    for (const entry of pending()) if (entry.body.action === "progress" && entry.body.changes.some((change) => change.key === key)) id = entry.body.id;
+    for (const entry of entries) if (entry.body.action === "progress" && entry.body.changes.some((change) => change.key === key)) id = entry.body.id;
     return id;
   }
   function createGameStorage() {
@@ -13583,9 +13592,9 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
         if (!loaded) throw error("PLAY_NOT_READY");
         if (key === PLAY_WALLET_KEY) return JSON.stringify(state.wallet);
         if (!isPlayRecordKey(key)) throw error("INVALID_PLAY_KEY");
-        const value = records()[key] ?? null;
+        const entries = pending(), value = records(entries)[key] ?? null;
         observed.set(key, value);
-        basis.set(key, draftOf(key));
+        basis.set(key, draftOf(key, entries));
         return value;
       },
       setItem(key, value) {
@@ -13681,7 +13690,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     if (inflight) await inflight.catch(() => {
     });
     check2();
-    const entries = pending(), desired = records();
+    const entries = pending(), desired = records(entries);
     await receive(() => client.load());
     check2();
     const imports = entries.filter((x) => x.body.action === "import");
@@ -14399,7 +14408,7 @@ var PACKS = [
         scene("marine", "\uC8FC\uBB38 \uAC00\uB2A5 \uD655\uC778. \uB530\uB73B\uD55C \uCC28. \uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC08 \uD55C \uC794.")
       ], [
         question("cafe-visit-soldout-menu", "cafe-availability", "cafe-soldout", "\uC9C0\uAE08 \uC8FC\uBB38\uD560 \uC218 \uC788\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC624\uB298 \uC8FC\uC2A4 \uD488\uC808. \uB530\uB73B\uD55C \uCC28\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.", ["\uB530\uB73B\uD55C \uCC28 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB530\uB73B\uD55C \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694."], "a", "\uC8FC\uC2A4\uB294 \uD488\uC808\uC774\uB77C \uC628\uB3C4\uB97C \uBC14\uAFB8\uC5B4\uB3C4 \uC8FC\uBB38\uD560 \uC218 \uC5C6\uC5B4\uC694. \uAC00\uB2A5\uD55C \uC74C\uB8CC\uB294 \uB530\uB73B\uD55C \uCC28\uC608\uC694.", transfer("\uC0C8 \uC548\uB0B4\uD310\uC5D0\uC11C \uC8FC\uBB38\uD560 \uC218 \uC788\uB294 \uC74C\uB8CC\uB97C \uACE8\uB77C\uC694.", "\uC624\uB298 \uC6B0\uC720 \uD488\uC808. \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694.", ["\uB530\uB73B\uD55C \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uD55C \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC6B0\uC720 \uD55C \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uC6B0\uC720\uAC00 \uD488\uC808\uC774\uACE0 \uC8FC\uC2A4\uB294 \uC8FC\uBB38\uD560 \uC218 \uC788\uC5B4\uC694. \uC0C8 \uC548\uB0B4\uB97C \uC77D\uACE0 \uACE8\uB77C\uC694.")),
-        question("cafe-visit-soldout-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC774 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uBB3C\uC5B4\uC694. \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\uD63C\uC790 \uB9C8\uC2E4 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uC138 \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694."], "c", "\uD544\uC694\uD55C \uAC83\uC740 \uD55C \uC794\uC774\uC5D0\uC694. \uC9C1\uC6D0\uC758 \uB450 \uC794 \uD655\uC778\uC5D0 \uC544\uB2C8\uC694\uB77C\uACE0 \uB2F5\uD558\uACE0 \uD55C \uC794\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uC54C\uB824 \uC8FC\uC138\uC694.", "\uCE5C\uAD6C\uC640 \uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC9C1\uC6D0: \u201C\uC8FC\uC2A4 \uD55C \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uB124, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88 \uC8FC\uBB38\uC740 \uB450 \uC0AC\uB78C\uC774 \uD55C \uC794\uC529 \uB9C8\uC2E4 \uB450 \uC794\uC774\uC5D0\uC694. \uD55C \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uACE0\uCCD0\uC694.")),
+        question("cafe-visit-soldout-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC774 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uBB3C\uC5B4\uC694. \uC5B4\uB5BB\uAC8C \uB2F5\uD560\uAE4C\uC694?", "\uD63C\uC790 \uB9C8\uC2E4 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uB098\uC694?\u201D", ["\uC138 \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694."], "c", "\uD544\uC694\uD55C \uAC83\uC740 \uD55C \uC794\uC774\uC5D0\uC694. \uC9C1\uC6D0\uC758 \uB450 \uC794 \uD655\uC778\uC5D0 \uC544\uB2C8\uC694\uB77C\uACE0 \uB2F5\uD558\uACE0 \uD55C \uC794\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uB2E4\uC2DC \uC54C\uB824 \uC8FC\uC138\uC694.", "\uCE5C\uAD6C\uC640 \uB458\uC774 \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC9C1\uC6D0: \u201C\uC8FC\uC2A4 \uD55C \uC794 \uB9DE\uB098\uC694?\u201D", ["\uB124, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88 \uC8FC\uBB38\uC740 \uB450 \uC0AC\uB78C\uC774 \uD55C \uC794\uC529 \uB9C8\uC2E4 \uB450 \uC794\uC774\uC5D0\uC694. \uD55C \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uACE0\uCCD0\uC694.")),
         question("cafe-visit-soldout-takeout", "cafe-takeout-request", "cafe-takeout", "\uACF5\uC6D0\uC73C\uB85C \uAC00\uC838\uAC00\uB824\uBA74 \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", "\uB530\uB73B\uD55C \uCC28\uB97C \uAC00\uC9C0\uACE0 \uACF5\uC6D0 \uBCA4\uCE58\uB85C \uAC00\uB824\uACE0 \uD574\uC694.", ["\uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "b", "\uCE74\uD398 \uBC16\uC758 \uACF5\uC6D0\uC5D0 \uAC00\uC838\uAC08 \uCC28\uC774\uBBC0\uB85C \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824 \uC8FC\uC138\uC694.", "\uBE44\uAC00 \uB9CE\uC774 \uC640\uC11C \uCE74\uD398 \uC548\uC758 \uD14C\uC774\uBE14\uC5D0\uC11C \uC8FC\uC2A4\uB97C \uB9C8\uC2DC\uB824\uACE0 \uD574\uC694.", ["\uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uCDE8\uC18C\uD574 \uC8FC\uC138\uC694.", "\uB9E4\uC7A5\uC5D0\uC11C \uB9C8\uC2E4\uAC8C\uC694."], "c", "\uC774\uBC88\uC5D0\uB294 \uBC16\uC73C\uB85C \uAC00\uC838\uAC00\uC9C0 \uC54A\uACE0 \uCE74\uD398 \uC548\uC5D0\uC11C \uB9C8\uC2DC\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694."))
       ]),
       lesson("cafe-visit-change", "visit", "\uAE4C\uBABD\uC758 \uB9C8\uC74C\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694", "\uC74C\uB8CC\xB7\uC218\uB7C9\xB7\uD3EC\uC7A5\uC744 \uBC14\uAFD4 \uB2EC\uB77C\uACE0 \uBD80\uD0C1\uD574\uC694.", cafeChangeExpressions, [
@@ -14419,7 +14428,7 @@ var PACKS = [
         scene("marine", "\uC8FC\uBB38 \uC815\uBCF4 \uD655\uC778. \uCC28, \uB530\uB73B\uD55C \uC628\uB3C4, \uB450 \uC794.")
       ], [
         { ...question("cafe-compose-order", "cafe-compose-order", "cafe-compose", "\uAE4C\uBABD\uACFC \uB9C8\uC2E4 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD574\uC694.", "\uAE4C\uBABD\uACFC \uB0B4\uAC00 \uB530\uB73B\uD55C \uCC28\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694. \uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uC9C1\uC811 \uACE8\uB77C \uC8FC\uC138\uC694.", ["\uC8FC\uBB38 \uC870\uAC74\uC744 \uBAA8\uB450 \uB9DE\uCDC4\uC5B4\uC694.", "\uD544\uC694\uD55C \uC218\uB7C9\uACFC \uB2EC\uB77C\uC694.", "\uC74C\uB8CC\uB098 \uC628\uB3C4\uAC00 \uB2EC\uB77C\uC694."], "a", "\uC74C\uB8CC\uB294 \uCC28, \uC628\uB3C4\uB294 \uB530\uB73B\uD558\uAC8C, \uC218\uB7C9\uC740 \uB450 \uC794\uC774\uC5D0\uC694. \uC138 \uC815\uBCF4\uB97C \uC5F0\uACB0\uD558\uBA74 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694\uAC00 \uB3FC\uC694.", transfer("\uC644\uC131\uD560 \uC8FC\uBB38 \uBB38\uC7A5\uC744 \uACE8\uB77C\uC694.", "\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uCC28\uAC00\uC6B4 \uC8FC\uC2A4\uB97C \uD55C \uC794\uC529 \uB9C8\uC154\uC694.", ["\uB530\uB73B\uD55C \uC8FC\uC2A4 \uC138 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uCC28 \uB450 \uC794 \uC8FC\uC138\uC694.", "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4 \uC138 \uC794 \uC8FC\uC138\uC694."], "c", "\uC8FC\uC2A4\xB7\uCC28\uAC00\uC6B4 \uC628\uB3C4\xB7\uC138 \uC794\uC744 \uBAA8\uB450 \uB2F4\uC544\uC57C \uC0C8 \uC8FC\uBB38\uC5D0 \uB9DE\uC544\uC694.")), kind: "compose", orderGoal: { drink: "tea", temperature: "warm", count: 2 } },
-        question("cafe-compose-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778\uC5D0 \uB2F5\uD574\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC6D0\uD558\uB294 \uC218\uB7C9\uACFC \uC9C1\uC6D0\uC774 \uD655\uC778\uD55C \uC218\uB7C9\uC774 \uBAA8\uB450 \uB450 \uC794\uC774\uC5D0\uC694. \uB124\uB77C\uACE0 \uB2F5\uD558\uACE0 \uB450 \uC794\uC744 \uD655\uC778\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uD655\uC778\uD574\uC694.", "\uD63C\uC790 \uB9C8\uC2E4 \uCC28\uAC00\uC6B4 \uCC28 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB450 \uC794 \uB9DE\uC73C\uC2DC\uC8E0?\u201D", ["\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uD55C \uC794\uC774 \uD544\uC694\uD558\uBBC0\uB85C \uB450 \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uD55C \uC794\uC73C\uB85C \uACE0\uCCD0\uC694.")),
+        question("cafe-compose-count", "cafe-order-detail", "cafe-order", "\uC9C1\uC6D0\uC758 \uC218\uB7C9 \uD655\uC778\uC5D0 \uB2F5\uD574\uC694.", "\uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uB9DE\uB098\uC694?\u201D", ["\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC6D0\uD558\uB294 \uC218\uB7C9\uACFC \uC9C1\uC6D0\uC774 \uD655\uC778\uD55C \uC218\uB7C9\uC774 \uBAA8\uB450 \uB450 \uC794\uC774\uC5D0\uC694. \uB124\uB77C\uACE0 \uB2F5\uD558\uACE0 \uB450 \uC794\uC744 \uD655\uC778\uD574\uC694.", transfer("\uC0C8 \uC8FC\uBB38\uC758 \uC218\uB7C9\uC744 \uD655\uC778\uD574\uC694.", "\uD63C\uC790 \uB9C8\uC2E4 \uCC28\uAC00\uC6B4 \uCC28 \uD55C \uC794\uC744 \uC8FC\uBB38\uD588\uC5B4\uC694. \uC9C1\uC6D0: \u201C\uB450 \uC794 \uB9DE\uB098\uC694?\u201D", ["\uB124, \uB450 \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uD55C \uC794 \uC8FC\uC138\uC694.", "\uC544\uB2C8\uC694, \uC138 \uC794 \uC8FC\uC138\uC694."], "b", "\uC774\uBC88\uC5D0\uB294 \uD55C \uC794\uC774 \uD544\uC694\uD558\uBBC0\uB85C \uB450 \uC794\uC774\uB77C\uB294 \uD655\uC778\uC744 \uD55C \uC794\uC73C\uB85C \uACE0\uCCD0\uC694.")),
         question("cafe-compose-place", "cafe-place", "cafe-here", "\uD568\uAED8 \uB9C8\uC2E4 \uC790\uB9AC\uB97C \uC815\uD574\uC694.", "\uAE4C\uBABD\uACFC \uCE74\uD398 \uC548\uC5D0\uC11C \uB530\uB73B\uD55C \uCC28\uB97C \uB9C8\uC2DC\uBA70 \uC26C\uB824\uACE0 \uD574\uC694.", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694."], "a", "\uCE74\uD398 \uC548\uC5D0\uC11C \uD568\uAED8 \uB9C8\uC2DC\uB824\uBA74 \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694\uB85C \uB9E4\uC7A5 \uC774\uC6A9\uC744 \uB9D0\uD574\uC694.", transfer("\uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB9C8\uC2E4 \uACF3\uC744 \uC54C\uB824\uC694.", "\uB9C8\uB9B0\uC774 \uCC28\uB97C \uAC00\uC9C0\uACE0 \uD559\uAD50\uC5D0 \uAC00\uB824\uACE0 \uD574\uC694. \uC9C1\uC6D0: \u201C\uB9E4\uC7A5\uC5D0\uC11C \uB4DC\uC2DC\uB098\uC694?\u201D", ["\uB124, \uC5EC\uAE30\uC11C \uB9C8\uC2E4\uAC8C\uC694.", "\uC8FC\uBB38\uC744 \uCDE8\uC18C\uD560\uAC8C\uC694.", "\uC544\uB2C8\uC694, \uD3EC\uC7A5\uD574 \uC8FC\uC138\uC694."], "c", "\uC774\uBC88\uC5D0\uB294 \uD559\uAD50\uB85C \uAC00\uC838\uAC00\uBBC0\uB85C \uB9E4\uC7A5 \uC774\uC6A9 \uB300\uC2E0 \uD3EC\uC7A5\uC744 \uBD80\uD0C1\uD574\uC694."))
       ])
     ]
@@ -16030,7 +16039,7 @@ function planDeviceRecords({ storage = globalThis.localStorage, learning: learni
 }
 async function applyDeviceRecords(plan, { storage = globalThis.localStorage, accountAnswer = () => null, setAccountAnswer, hangulPort = null, guard = () => {
 }, importLife = null, importLearning = null }) {
-  const result = { hangul: null, answer: null, life: null, learning: null, errors: [], added: { lessons: 0, reviews: 0, days: 0, profile: false, events: 0 }, pending: {} };
+  const result = { hangul: null, answer: null, life: null, learning: null, errors: [], added: { lessons: 0, reviews: 0, days: 0, profile: false, events: 0 }, pending: {}, capacitySkipped: {} };
   if (plan?.hangul) {
     try {
       const raw = storage.getItem(plan.hangul.from);
@@ -16071,6 +16080,7 @@ async function applyDeviceRecords(plan, { storage = globalThis.localStorage, acc
       const added = await importLife(plan.life);
       guard();
       Object.assign(result.added, { lessons: added?.lessons || 0, reviews: added?.reviews || 0, days: added?.days || 0, profile: !!added?.profile });
+      for (const key of ["lessons", "reviews", "days", "questions"]) if (Number.isSafeInteger(added?.capacitySkipped?.[key]) && added.capacitySkipped[key] > 0) result.capacitySkipped[key] = added.capacitySkipped[key];
       result.life = added && (added.lessons || added.reviews || added.days || added.profile) ? "moved" : "exists";
     } catch (error2) {
       const got = error2?.added;
@@ -16270,9 +16280,10 @@ function createDeviceRecordsOffer({
       status(T.failed, false);
       return null;
     }
-    saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: cloudDone(), through: job.startedAt, moved: { ...carry.moved, at: now() } });
-    const partly = result.errors.length || Object.values(status4).includes("exists") || !movedNow;
-    return done(job, "moved", partly ? T.partly : T.moved);
+    const capacityLimited = Object.keys(result.capacitySkipped).length > 0;
+    saveDeviceRecordsDecision(storage, job.owner, "moved", now(), { cloud: cloudDone(), through: capacityLimited ? job.plan.after : job.startedAt, moved: { ...carry.moved, at: now() } });
+    const partly = capacityLimited || result.errors.length || Object.values(status4).includes("exists") || !movedNow;
+    return done(job, "moved", capacityLimited ? `${movedNow ? T.partly : T.snapshot} ${T.snapshotBody}` : partly ? T.partly : T.moved);
   }
   return Object.freeze({ offer, choose, pending: () => current ? { owner: current.owner, plan: current.plan } : null });
 }
@@ -16609,6 +16620,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
     // 재생기의 끝(completed)·실패(failed): 시작한 문항의 대본(track)에 남긴다. 영역이 닫힌 뒤에 끝난 재생은 세지 않는다.
     delivery(status) {
       if (!["completed", "failed"].includes(status)) throw TypeError("WORLD mock: invalid audio state");
+      expire();
       const now = sounding;
       sounding = null;
       if (!now || now.row.ended !== null) return false;

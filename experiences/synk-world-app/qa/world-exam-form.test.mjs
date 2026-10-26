@@ -9,6 +9,24 @@ import {examForms} from '../../../tools/build-world-topik-items.mjs';
 
 // 시험 형식(10-21 ④): 시험형 재생 규칙 · 시험 형식 연습(미니 모의) · 근거 집계. 실제 WORLD 코치(TOPIK I·II 지도)로 기록한다.
 const FORMS=examForms();
+test('미니 모의 직접 delivery도 마감 직전·정각·직후를 검사한다',()=>{
+ for(const delta of [-1,0,1]){
+  const bank=bankOf(topikIBank()),f=coachFixture('world-mock');
+  const plan=selectMock({forms:bank.forms,exam:'topik1',pool:bank.items,seen:item=>f.coach.exposure(item).seen});
+  let now=Date.parse('2026-10-21T02:00:00Z');
+  const session=createMockSession({coach:f.coach,exam:'topik1',sections:[{...plan.sections[0],minutes:1}],clock:()=>now});
+  const first=session.start();assert.equal(session.play(),'first');
+  now=first.deadline+delta;
+  // current/tick을 먼저 읽지 않고 재생기의 완료 콜백을 바로 보낸다.
+  assert.equal(session.delivery('completed'),delta<0,`마감 ${delta}ms`);
+  const result=session.results()[0];
+  assert.equal(result.items[0].plays.completed,delta<0?1:0);
+  if(delta>=0){
+   assert.equal(result.ended,'time');assert.equal(result.items[0].verdict,'unassessed');
+   assert.equal(session.answer(first.item.correctId),null);
+  }else assert.equal(session.answer(first.item.correctId).independent,true);
+ }
+});
 const memory=()=>{const values=new Map();return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};};
 function coachFixture(gameId='world-home'){
  let now=Date.parse('2026-10-21T01:00:00Z');

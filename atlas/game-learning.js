@@ -239,7 +239,13 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
         if (known.has(event?.id)) {
           if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
         // Another device's entry for an item this store already folded stays on the server.
-        } else if (ledger && Ledger.stray(event, known)) { skipped.push(event.id); if (event.type === 'record.excluded') gone.push(event.targetId); continue; }
+        } else if (ledger && Ledger.stray(event, known)) {
+          // Folded parents are no longer available for link checks. The incoming event still
+          // has to be well formed and belong to this log before it can adjust folded evidence.
+          Atlas.validate(event);
+          if (['domain', 'workspace', 'subject'].some(field => event.scope[field] !== scope[field])) throw new Error('Atlas: scope mismatch');
+          skipped.push(event.id); if (event.type === 'record.excluded') gone.push(event.targetId); continue;
+        }
         else { known.set(event?.id, event); combined.push(event); if (Ledger.folded(ledger, event)) late.push(event); }
       }
       // Identical durable history needs neither replay nor another disk write.

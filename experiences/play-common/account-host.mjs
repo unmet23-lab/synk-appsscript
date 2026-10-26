@@ -47,14 +47,14 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
     if(phase!==next||lastError!==cause)emit(next,cause);
   }
   async function receive(request){try{return accept(await request());}catch(cause){reportFailure(cause);throw cause;}}
-  function records(){const result={...state.records};for(const entry of pending())if(entry.body.action==='progress')for(const change of entry.body.changes){if(change.value===null)delete result[change.key];else result[change.key]=change.value;}return result;}
+  function records(entries=pending()){const result={...state.records};for(const entry of entries)if(entry.body.action==='progress')for(const change of entry.body.changes){if(change.value===null)delete result[change.key];else result[change.key]=change.value;}return result;}
   function queue(body){check();try{const entry={accountId,at:pending().reduce((at,x)=>Math.max(at,x.at+1),now()),body:{...body,id:body.id||uuid()}};storage.setItem(prefix+entry.body.id,JSON.stringify(entry));return entry;}catch(cause){emit('offline',error('PLAY_STORAGE_UNAVAILABLE','저장을 기다리는 기록을 이 기기에 남기지 못했어요. 기기 저장 공간을 비운 뒤 다시 해 주세요.'));throw cause;}}
   const serial=task=>locks?.request?locks.request(`synk-play-account:${accountId}`,task):task();
   async function flush(){
     check();if(inflight)return inflight;
     inflight=serial(async()=>{
       check();if(!loaded)await receive(()=>client.load());check();let last;
-      while(pending().length){const entry=pending()[0];
+      for(;;){const entry=pending()[0];if(!entry)break;
         check();emit('saving');let response;
         try{response=await client.mutate(entry.body);}
         catch(cause){check();if(!rejectedCommands.has(cause.code))throw cause;preserveRejected(entry,cause);continue;}
@@ -70,7 +70,7 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
   }
   function schedule(){clearTimeout(timer);timer=setTimeout(()=>{void flush().catch(()=>{});},250);emit('saving');}
   // The latest pending progress draft that sets this record, if any (records() shows the same one).
-  function draftOf(key){let id;for(const entry of pending())if(entry.body.action==='progress'&&entry.body.changes.some(change=>change.key===key))id=entry.body.id;return id;}
+  function draftOf(key,entries){let id;for(const entry of entries)if(entry.body.action==='progress'&&entry.body.changes.some(change=>change.key===key))id=entry.body.id;return id;}
   // `observed` is what this open game last read or wrote of a record: the CAS base of its next write,
   // so a refresh never lets a stale game overwrite another device. `basis` names the draft an
   // observation came from. Once an explicit conflict choice discarded that draft, the base is what
@@ -85,7 +85,7 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
     return Object.freeze({
     get length(){check();if(!loaded)throw error('PLAY_NOT_READY');return Object.keys(records()).length+1;},
     key(index){check();return [PLAY_WALLET_KEY,...Object.keys(records())][index]??null;},
-    getItem(key){check();if(!loaded)throw error('PLAY_NOT_READY');if(key===PLAY_WALLET_KEY)return JSON.stringify(state.wallet);if(!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');const value=records()[key]??null;observed.set(key,value);basis.set(key,draftOf(key));return value;},
+    getItem(key){check();if(!loaded)throw error('PLAY_NOT_READY');if(key===PLAY_WALLET_KEY)return JSON.stringify(state.wallet);if(!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');const entries=pending(),value=records(entries)[key]??null;observed.set(key,value);basis.set(key,draftOf(key,entries));return value;},
     setItem(key,value){check();if(!loaded)throw error('PLAY_NOT_READY');if(phase==='conflict')throw error('REVISION_CONFLICT');validatePlayValue(key,value);const previous=base(key);if(previous===value)return;const entry=queue({action:'progress',changes:[{key,previous,value}]});observed.set(key,value);basis.set(key,entry.body.id);schedule();},
     removeItem(key){check();if(!loaded||!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');if(phase==='conflict')throw error('REVISION_CONFLICT');const previous=base(key);if(previous===null)return;const entry=queue({action:'progress',changes:[{key,previous,value:null}]});observed.set(key,null);basis.set(key,entry.body.id);schedule();}
   });}
@@ -115,7 +115,7 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
   async function importLegacy(){await ready();check();if(revision!==0)throw error('PLAY_IMPORT_EXISTS','계정에 이미 게임 기록이 있어요. 기존 기록은 합치지 않았어요.');const old=legacy();if(!old)throw error('INVALID_PLAY_STATE');queue({action:'import',expected_revision:0,state:{wallet:old.wallet,records:old.records}});await flush();return status();}
   async function resolve(choice){
     check();if(!['remote','local'].includes(choice))throw error('INVALID_RESOLUTION');if(inflight)await inflight.catch(()=>{});check();
-    const entries=pending(),desired=records();await receive(()=>client.load());check();
+    const entries=pending(),desired=records(entries);await receive(()=>client.load());check();
     // Wallet commands always retain their id and server authority. Only conflicting
     // progress drafts are chosen, and old records remain available in an explicit backup.
     const imports=entries.filter(x=>x.body.action==='import');if(imports.length&&choice==='local')throw error('IMPORT_CONFLICT','계정에 이미 게임 기록이 있어요. 계정 기록을 선택해 주세요.');

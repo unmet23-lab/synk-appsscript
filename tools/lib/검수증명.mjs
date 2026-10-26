@@ -84,6 +84,13 @@ export const 사용자지정원문 = Object.freeze({
   review: '한번 니가 직접 검수해봐, 그리고 페이블 검수 대신에 아르곤 검수만 해봐',
   deployment: '그리고 배포직전에 지금 작업한거 클로드에게 배포해도되냐고 물어보고 괜찮다고하면 배포하자',
 });
+export const 단독검수원문 = Object.freeze({
+  implementationReviewDeployment: '검증을 일단 니가 단독으로 진행하고 남은거 전부 마무리 및 최적화 하고 배포까지 진행해',
+});
+export function 사용자지정판(file) {
+  const record = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+  return record.version === 2 ? 4 : 3;
+}
 const 지정작업 = 'spaghetti-refactor-20261023';
 const 지정검수자 = ['GPT', '아르곤'];
 const GPT화면경로 = {
@@ -110,21 +117,37 @@ function 지정범위맞나(scope, p) {
   if (['E11', 'E12'].includes(scope)) return 공개소비처경로.has(p);
   return false;
 }
-function 사용자지정정책(o, files, candidate) {
-  if (o.종류 !== '화면') throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
+const 단독원천추가 = new Set([
+  ...['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic', 'hangul-stage'].map(game => `experiences/${game}/atlas-learning.js`),
+  'experiences/brand-opening/content/life-standalone.mjs',
+  ...['cafe-visit-soldout-2.mp3', 'cafe-compose-2.mp3', 'manifest.json'].map(file => `experiences/brand-opening/assets/cafe-voice/${file}`),
+  ...['entry-check', 'order-rush', 'talk-rally'].map(game => `experiences/${game}/index.html`),
+  'desktop/renderer/platform-continuity.mjs', 'desktop/renderer/platform-continuity.css',
+  'docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js',
+]);
+function 단독범위맞나(scope, p, role) {
+  if (scope !== 'spaghetti-followup-20261026') return false;
+  if (role === '배포 후보') return !/(?:^|\/)(?:qa|tests|_ops)(?:\/|$)/.test(p) &&
+    (['account/dist/client.js', 'account/dist/platform.js', 'account/client.html', 'account/platform.html'].includes(p) || /^(?:id(?:-rehearsal)?\/|try\/|world\/|care\/|synk-town\/|teacher-world\/)/.test(p));
+  return 단독원천추가.has(p) || /^(?:atlas\/|account\/|experiences\/(?:synk-account|synk-world-app|synk-town|synk-teacher-world|relationship-care|play-common|path-travel)\/|tests\/|tools\/(?:lib\/|company-messenger\/|(?:build-|check-|sync-atlas|검수|짝검사)[^/]*$)|package(?:-lock)?\.json$)/.test(p);
+}
+function 사용자지정정책(o, files, candidate, 판 = 3) {
+  const 단독 = 판 === 4, 검수자 = 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
+  if (o.종류 !== '화면' && !단독) throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
+  if (단독 && !['화면', '백엔드'].includes(o.종류)) throw new Error('사용자지정 검수 종류가 잘못됐다');
   if (o.예외 || o.페이블생략 != null || (o.GPT구독 && o.GPT구독 !== '유지') || o.끝 !== '작업본') throw new Error('사용자지정은 현재 작업본의 독립 새 묶음으로만 준비하며 기존 예외와 섞지 않는다');
   const raw = fs.readFileSync(o.사용자지정), 지정 = JSON.parse(raw.toString('utf8').replace(/^\uFEFF/, ''));
   if (!지정 || typeof 지정 !== 'object' || Array.isArray(지정) || Object.keys(지정).sort().join(',') !== ['version', 'taskId', 'userStatements', 'requiredReviewers', 'finalReviewer', 'allowFallback', 'sources', 'candidate'].sort().join(',')) throw new Error('사용자지정 JSON 필드가 잘못됐다');
-  if (지정.version !== 1 || 지정.taskId !== 지정작업 || 정규해시(지정.userStatements) !== 정규해시(사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
-  if (정규해시(지정.requiredReviewers) !== 정규해시(지정검수자) || 지정.finalReviewer !== 'Claude' || 지정.allowFallback !== false) throw new Error('사용자지정은 묶음별 GPT·아르곤과 최종 전체 Claude 판정이 필요하며 대체를 허용하지 않는다');
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (단독 ? 'spaghetti-finish-20261026' : 지정작업) || 정규해시(지정.userStatements) !== 정규해시(단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  if (정규해시(지정.requiredReviewers) !== 정규해시(검수자) || 지정.finalReviewer !== 최종 || 지정.allowFallback !== false) throw new Error(`사용자지정은 묶음별 ${검수자.join('·')}와 최종 전체 ${최종} 판정이 필요하며 대체를 허용하지 않는다`);
   const checkRows = (rows, expected, role) => {
     if (!Array.isArray(rows) || rows.length !== expected.length) throw new Error(`사용자지정 ${role} 경로 전체가 맞지 않는다`);
     const seen = new Set();
     for (const row of rows) {
       안전경로(o.저장소, row.path);
-      if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author) || !지정범위맞나(row.scope, row.path)) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+      if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author) || !(단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
-      if (row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
+      if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
       const match = expected.find(f => f.path === row.path);
       if (!match || !/^[a-f0-9]{64}$/.test(row.sha256 || '') || row.sha256 !== match.sha256) throw new Error(`사용자지정 ${role} SHA 불일치: ${row.path}`);
     }
@@ -133,19 +156,20 @@ function 사용자지정정책(o, files, candidate) {
   const source = sourcePaths.map(p => ({ path: p, sha256: sha256(fs.readFileSync(안전경로(o.저장소, p))) }));
   checkRows(지정.sources, source, '소스');
   if (candidate) {
+    if (!candidate.항목.length) throw new Error('사용자지정의 배포 후보가 비었다');
     if (!지정.candidate || 지정.candidate.manifestSha256 !== candidate.manifestSha256 || 지정.candidate.rawManifestSha256 !== sha256(fs.readFileSync(path.join(o.배포후보, '후보.json')))) throw new Error('사용자지정 배포 후보 manifest SHA 불일치');
     if (candidate.항목.some(f => f.종류 === '지움')) throw new Error('사용자지정은 삭제 후보를 허용하지 않는다');
     checkRows(지정.candidate.files, candidate.항목.map(f => ({ path: f.경로, sha256: f.sha256 })), '배포 후보');
   } else if (지정.candidate !== null || !source.length) throw new Error('사용자지정의 검수 대상이 없다');
-  return { 판: 3, 작성자: '혼합', 종류: o.종류, GPT구독: '유지', 필수: [...지정검수자], 예외: null,
+  return { 판, 작성자: '혼합', 종류: o.종류, GPT구독: '유지', 필수: [...검수자], 예외: null,
     사용자지정: { ...지정, 파일sha256: sha256(raw) } };
 }
 export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
-  if (![1, 2, 3].includes(판) || (판 === 3) !== Boolean(o.사용자지정)) throw new Error(`모르는 검수 정책 판 또는 사용자지정 누락: ${판}`);
+  if (![1, 2, 3, 4].includes(판) || ([3, 4].includes(판)) !== Boolean(o.사용자지정)) throw new Error(`모르는 검수 정책 판 또는 사용자지정 누락: ${판}`);
   const candidate = 후보읽기(o.배포후보);
   const 기준이미지만 = candidate?.종류 === 'synk.im' && candidate.항목.every(f => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(f.경로));
   if (candidate && o.종류 !== (candidate.종류 === 'synk.im' && !기준이미지만 ? '화면' : '백엔드')) throw new Error(`배포 후보 ${candidate.종류}에 맞는 검수 종류가 아니다`);
-  if (판 === 3) return 사용자지정정책(o, files, candidate);
+  if ([3, 4].includes(판)) return 사용자지정정책(o, files, candidate, 판);
   const 작성자 = o.작성자 || 'Claude', 구독 = o.GPT구독 || '유지';
   if (!['Claude', 'GPT'].includes(작성자)) throw new Error('--작성자는 Claude|GPT');
   if (작성자 === 'GPT' && o.종류 === '화면') throw new Error('화면 구현은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
@@ -181,14 +205,14 @@ export function 대체순서(정책) {
 /** 지금 규칙으로 꼭 받아야 하는 검수자(대체는 빼고). 옛 판 1의 [아르곤, GPT]도 [GPT]로 본다. */
 export const 실제필수 = 정책 => (대체순서(정책) ? [대체순서(정책)[0]] : 정책.필수);
 export const 필수글 = 정책 => {
-  if (정책.사용자지정) return '묶음별 GPT · 아르곤 + 전체 후보에 대한 최종 Claude 배포 판정(대체 없음)';
+  if (정책.사용자지정) return `묶음별 ${정책.필수.join(' · ')} + 전체 후보에 대한 최종 ${정책.사용자지정.finalReviewer} 배포 판정(대체 없음)`;
   const 순서 = 대체순서(정책);
   if (정책.페이블생략) return `아르곤(Fable 생략 — ${정책.페이블생략} · 아르곤이 한도·로그인으로 막히거나 아르곤 P0·P1을 고치면 Fable)`;
   return 순서 ? `${순서[0]}(한도·로그인으로 막히면 ${순서.slice(1).join(' → ')})` : 정책.필수.join(' · ');
 };
 /** 정책 3의 candidate-only 고침: 권한·경로·작성자는 그대로이고 바이트만 바뀔 수 있다. */
 export function 사용자지정사슬검사(before, after, beforeCandidate, afterCandidate) {
-  if (!before?.사용자지정 || !after?.사용자지정 || before.판 !== 3 || after.판 !== 3) throw new Error('사용자지정은 기존 정책 사슬에 추가하지 않는다');
+  if (!before?.사용자지정 || !after?.사용자지정 || ![3, 4].includes(before.판) || before.판 !== after.판) throw new Error('사용자지정은 기존 정책 사슬에 추가하지 않는다');
   if (before.사용자지정.sources.length || after.사용자지정.sources.length || !beforeCandidate || !afterCandidate) throw new Error('사용자지정 다시는 원천 없는 배포 후보만 지원한다 — 원천은 새 묶음으로 준비한다');
   const identity = policy => {
     const { 파일sha256, candidate, ...authority } = policy.사용자지정;
@@ -250,7 +274,7 @@ export function 바뀐경로들(앞판, 지금판, 앞후보 = null, 지금후�
 /** 다시 검수자: 그 지적을 낸 검수자. GPT 작성은 GPT·Claude 둘 다, 화면은 Fable이 끝 상태를 본다, 대상이 없으면 정책의 첫 검수자.
  *  화면 Fable 생략 묶음은 다시 볼 지적이 없으면 아르곤만 — 고친 P0·P1이 있으면 화면을 보는 Fable이 함께 본다. */
 export function 다시검수자들(정책, 대상) {
-  if (정책.사용자지정) return ['GPT', '아르곤'];
+  if (정책.사용자지정) return [...정책.필수];
   if (정책.작성자 === 'GPT') return [...정책.필수];
   const 낸 = ['아르곤', 'GPT', 'Fable'].filter(w => 대상.some(t => t.출처 === w));
   if (정책.종류 === '화면') return 정책.페이블생략 && !낸.length ? ['아르곤'] : [...new Set([...낸, 'Fable'])];
