@@ -41,7 +41,8 @@
   "얼굴빛_밤": "This is a dark, low-key night close-up, exposed about two stops under a normal portrait: the room is barely lit, only by candles and tiny fairy lights, so her face is in dim, warm half-light — the lit side of her face is only a muted warm amber, no brighter than the candle-lit sofa behind her, the other side sinks into deep warm-brown shadow, and her eyes catch only tiny reflections of the fairy lights. The background is dark brown with small, soft glowing bokeh dots. Nothing in the frame is bright except the tiny flames and bulbs.",
   "빛_짧게": "Light: the same dim, warm tungsten night light as in Image 1 — only candles, the pink-shaded lamp and tiny fairy lights; low exposure and soft contrast, deep warm-brown shadows rather than black, nothing bright except the small flames and bulbs; white clothes and lace stay a muted warm beige; no pink, blue or neon light.",
   "빛_뒤램프_셋": "Light direction: the only lamp is behind and to the right of them, so their fronts and their white clothes are on the shadow side — the white t-shirt, white shorts and white satin dress read as dim warm grey-beige, their brightest fold no lighter than the beige sofa behind them; only a faint warm candle glow touches their faces.",
-  "빛_뒤램프_하나": "Light direction: the only lamp is behind and to the right of her, so her front and her white t-shirt are on the shadow side — the t-shirt reads as a dim warm grey-beige, never bright white, no lighter than the beige sofa behind her; her face is lit only softly from the side by warm candlelight."
+  "빛_뒤램프_하나": "Light direction: the only lamp is behind and to the right of her, so her front and her white t-shirt are on the shadow side — the t-shirt reads as a dim warm grey-beige, never bright white, no lighter than the beige sofa behind her; her face is lit only softly from the side by warm candlelight.",
+  "빛_촛불_셋": "Light direction: the room's lamps are out of frame; the three women are lit only dimly from the front-left by candlelight, so their white t-shirt, white satin dress and white lace veil read as dim warm grey-beige, never bright white; no lamp or lampshade is visible anywhere in the frame — the only bright points are the tiny fairy lights behind them."
  },
  "컷": [
   {
@@ -198,6 +199,15 @@
    "메모": "#5 끝 그림 — 시작 그림(v5/S05)과 같은 자리에서 얼굴까지 올라간 끝(10-25 S05e2 방법)"
   },
   {
+   "id": "S10d",
+   "who": "셋",
+   "refs": [
+    "v5/S10"
+   ],
+   "text": "{시작} Edit Image 1, a frame from a handheld three-shot. Keep everything in Image 1 exactly the same — the same three women in the same places left to right, their faces, expressions, poses, hands, clothes and accessories, the framing, the sofa, the leopard-print blanket and the fairy lights. Change only the light: the room is now much dimmer, lit only by a few candles from the front-left, exposed about two stops darker than Image 1 — a low-key night frame where the lit side of each face is only a soft, warm mid-tone and the far side falls into shadow; the white t-shirt, the white satin dress and the white lace veil become a dim, warm grey-beige, never bright white; the sofa and the blanket behind them sink into warm dark-brown shadow (not pure black); the only bright points are the tiny fairy lights. Keep the warm orange-amber color, no pink, blue or neon light. {필름}",
+   "메모": "#10 시작 그림 — 82차 판(S10_140249, 램프 없음)을 Image 1로 빛만 어둡게 하는 편집 꼴(S05r 방법)"
+  },
+  {
    "id": "S05r",
    "who": "셋",
    "refs": [
@@ -255,7 +265,7 @@
     "리4x2",
     "F04x2"
    ],
-   "text": "{시작} {배치_실루엣:1} TIGHT THREE-SHOT FROM THE SIDE, matching the silhouettes in Image 1: the camera is close, at the right end of the sofa, looking back along the row of the three women's faces, 50mm lens, handheld, slightly above their eye level. A, nearest to the camera, fills the right third of the frame and her head is the biggest; B's face is in the middle, a little smaller; C's face, farthest, is at the left; they are pressed tightly together, clutching each other, and the frame cuts them at mid-chest. All three stare up toward the upper LEFT of the frame, at the intruder standing there outside the frame, in terror — none of them looks at the camera. C covers her mouth with her hand, sobbing in fear, her eyes wide; B is frozen stiff with fear, her eyes wide open behind her glasses, lips pressed together and trembling, tears welling; A's eyes are wide with terror, eyebrows raised and pulled together, her mouth open mid-plea. Behind them, out of focus and dark: the beige sofa back, a leopard-print blanket and tiny fairy-light bokeh. {공포_몸짓} {셋_얼굴_방없이} {빛_뒤램프_셋} {빛} {필름}",
+   "text": "{시작} {배치_실루엣:1} TIGHT THREE-SHOT FROM THE SIDE, matching the silhouettes in Image 1: the camera is close, at the right end of the sofa, looking back along the row of the three women's faces, 50mm lens, handheld, slightly above their eye level. A, nearest to the camera, fills the right third of the frame and her head is the biggest; B's face is in the middle, a little smaller; C's face, farthest, is at the left; they are pressed tightly together, clutching each other, and the frame cuts them at mid-chest. All three stare up toward the upper LEFT of the frame, at the intruder standing there outside the frame, in terror — none of them looks at the camera. C covers her mouth with her hand, sobbing in fear, her eyes wide; B is frozen stiff with fear, her eyes wide open behind her glasses, lips pressed together and trembling, tears welling; A's eyes are wide with terror, eyebrows raised and pulled together, her mouth open mid-plea. Behind them, out of focus and dark: the beige sofa back, a leopard-print blanket and tiny fairy-light bokeh. {공포_몸짓} {셋_얼굴_방없이} {빛_촛불_셋} {빛} {필름}",
    "메모": "#10 11.42–14.04 셋 · 모두 왼쪽 위 — A 「안 돼 안 돼 안 돼 안 돼!」 + C 흐느낌 · 원본 얼굴 가로 A 74% · B 52% · C 30%"
   },
   {
@@ -398,7 +408,7 @@
     "v5/R2",
     "배치:S25"
    ],
-   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} Seen from very low against the warm glow of the wall sconce and a lamp directly behind his head, he is almost a black silhouette: his front, chest and masked face are in deep shadow, nearly black, with only a thin warm rim of light around his head and shoulders. His head is bowed down steeply, his chin on his chest — he peers down into the small fluffy red heart pouch that he holds open with both hands in front of his stomach near the bottom of the frame. No knife in view; his face is not visible. {강도_카메라} {강도_가까이} He is in the middle of the frame. {빛} {빛_어둡게} {필름} {사진남1}",
+   "text": "{시작} {강도방:1} {배치_실루엣1:2} {강도_옷} Seen from very low against the warm glow of the wall sconce and a lamp directly behind his head, he is a pitch-black silhouette: his front, chest, arms and masked face are completely black — the eye holes and the mouth hole cannot be seen — with only a thin warm rim of light around his head and shoulders. His head is bowed down steeply, his chin on his chest — he peers down into the small fluffy red heart pouch that he holds open with both hands just below the bottom edge of the frame; only the top of the red pouch peeks in at the bottom edge. No knife in view; his face is not visible. {강도_카메라} {강도_가까이} He is in the middle of the frame. {빛} {빛_어둡게} {필름} {사진남1}",
    "메모": "#25 47.29–48.96 아래서 · 역광 실루엣 · 고개 숙여 주머니 속을 본다 — 강도 「으!」"
   },
   {
