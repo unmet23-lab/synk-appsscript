@@ -14,6 +14,14 @@
       "시각": "2026-10-26T21:00:00+09:00",
       "방법": "lab-instagram과 같은 Business Suite 릴스 예약 한 번(위 줄). 예약됨 목록 「릴스 · SYNK · 2026년 10월 26일 월요일 9:00 · 전체 공개」(썸네일 = 표지, 캡션 끝에 게임 링크 줄).",
       "후속": "공개 뒤 릴스 주소를 이 줄에."
+    },
+    {
+      "계정": "lab-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-10-26T21:00:00+09:00",
+      "주소": "https://www.tiktok.com/@synk.mn",
+      "방법": "10-26 유호님 「틱톡 4계정도 매일 판에 넣어서 같은 편을 올리게」(제작 절차 4 「틱톡 판」) — 14:4x Claude가 ego 프로필 「TikTok synk.mn」(유호님이 막 로그인, username synk.mn 확인)의 TikTok Studio 업로드로 원본 01-ig-fb-mn/video.mp4(19.8MB) · 캡션은 캡션_mn.txt 그대로(공백 빼고 같음, 게임 링크 줄은 틱톡에서 안 눌려 뺌) · 표지는 첫 화면(「ㅋㅋ = ?」 카드) 그대로 · Schedule Oct 26, 2026 21:00 (GMT+9) · Everyone · 댓글 허용 · AI-generated content 끔 · Disclose 끔 · 음악 저작권 · 콘텐츠 검사 No issues found. 저장 허용 창은 Allow. 누른 뒤 콘텐츠 목록 「Oct 26, 9:00PM · Everyone · 00:16」 한 줄.",
+      "후속": "공개 뒤 영상 주소를 이 줄에."
     }
   ]
 }
