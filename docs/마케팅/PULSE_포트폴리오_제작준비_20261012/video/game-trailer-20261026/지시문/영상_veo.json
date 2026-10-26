@@ -1,0 +1,43 @@
+{
+ "메모": "9번 첫 영상 시험(10-26 유호님 「이런 애니메이션은 veo로 한번 해보자」) — Flow Veo 3.1 Quality 4초 x1, 시작 · 끝 그림 = 이미지 콘티 첫 · 끝 그림의 16:9 띠(1920×1080, git 밖 콘티/p9/영상/시작/p9S??a · b.jpg). 현장 노트 Veo 함정(카메라가 스스로 다가감 · 마스코트에 눈썹 · 비유를 그림으로)을 피해 쓴다.",
+ "공통": "Handmade needle-felted characters in a real room, filmed like a live-action night commercial. KKAMONG (a small dark-brown fuzzy felt furball with cat ears, round green bead eyes and a pink stitched felt paddle on its tail), MONGLE (a coral-pink felt bell shape with a wavy stitched hem and two black bead eyes) and MARIN (a small cream felt body under a big navy knitted helmet with two round yellow eye windows) keep exactly the shape, colours, bead eyes and stitches of the start image for the whole shot; none of them grows eyebrows, a nose or a mouth, and their eyes stay open. They move smoothly and gently like small living creatures with soft weight, without stretching. No new characters, no text, no logos, no subtitles. No speech and no music, only quiet room sound.",
+ "클립": [
+  {
+   "id": "S02",
+   "end": "p9S02b",
+   "prompt": "A cosy small apartment living room at night with warm tungsten light and fairy lights. In the background a young woman with long dark hair sits on the sofa with her back to us, playing a game on a big screen; we only ever see the back of her head and she never turns around. The camera starts low behind the sofa and slowly dollies backward and slightly down for the whole shot, revealing the edge of a small wooden side table in the foreground. Around one second in, the three small felt friends climb up over the near edge of that table from below, one after another, pull themselves up onto the tabletop and stand side by side with their backs to the camera, looking toward the screen. As they arrive the focus racks from the woman and the screen to the three friends on the table, so the screen turns soft and blurry. On the screen the same little felt shop street stays, but the three friends who stood on it are no longer there. A slice of strawberry cake comes into the lower right corner as the camera pulls back."
+  },
+  {
+   "id": "S08",
+   "end": "p9S08b",
+   "prompt": "Floor-level shot on a dark wooden floor at night: a big red gift box with a gold ribbon, and the three small felt friends beside it. The camera is completely locked off: no zoom, no push-in, no movement at all. At the start the three friends freeze, startled by a distant rumble of thunder. Around one second they scurry quickly behind the gift box and disappear from view; for about a second only the box is visible. Near the end MONGLE slowly peeks out from the left side of the box and MARIN peeks out from the right side, only the edge of their heads and one eye showing, and they hold still."
+  },
+  {
+   "id": "S11",
+   "end": "p9S11b",
+   "prompt": "Extreme close-up inside a dark Christmas tree at night; the string of clear glass bulbs is switched off. KKAMONG sits on top of a shiny red glass ornament. The camera is completely locked off: no zoom, no push-in. KKAMONG reaches out one paw and touches the dark light string. At about one and a half seconds a short bright purple-white flash fills the frame; right after it, every bulb along the string becomes a round glowing felt pom-pom light at the same moment and lights up warm gold, and the red ornament under KKAMONG starts turning into soft red felt with a white stitched seam. KKAMONG throws both paws up in delight, eyes wide open. Warm golden bokeh fills the background for the rest of the shot."
+  }
+ ],
+ "메모2": "2차(10-26 22시) — 1차 셋 모두 끝 그림의 구도가 시작 그림과 달라 Veo가 끝에서 컷(8번 3.4초 · 11번 1.95초)이나 녹임(2번 3.15–3.75초)으로 끝 그림에 붙었고, 까몽 · 몽글에 입이 생겼다(2 · 11번). 2번은 시작 그림만(화면 속은 제작 때 실제 녹화로 덮음), 8 · 11번은 시작 그림을 「같은 카메라로 몇 초 뒤」로 고쳐 구운 끝 그림(p9S08c · p9S11c), 감정 낱말(startled · in delight)을 빼고 얼굴은 그대로라고 적었다.",
+ "공통2": "Handmade needle-felted characters in a real room, filmed like a live-action night commercial. KKAMONG (a small dark-brown fuzzy felt furball with cat ears, round green bead eyes and a pink stitched felt paddle on its tail), MONGLE (a coral-pink felt bell shape with a wavy stitched hem and two black bead eyes) and MARIN (a small cream felt body under a big navy knitted helmet with two round yellow eye windows) keep exactly the shape, colours, bead eyes and stitches of the start image for the whole shot. Their faces never change: KKAMONG and MONGLE have no mouth at all, even while they move, and no eyebrows or nose ever appear. They move smoothly like small living creatures with soft weight, without stretching. One continuous shot with no cuts and no dissolves. No new characters, no text, no logos, no subtitles. No speech and no music, only quiet room sound.",
+ "클립2": [
+  {
+   "id": "S02v2",
+   "start": "p9S02a",
+   "end": null,
+   "prompt": "A cosy small apartment living room at night with warm tungsten light and fairy lights. In the background a young woman with long dark hair sits on the sofa with her back to us, playing a game on a big screen; we only ever see the back of her head and she never turns around. The camera slowly dollies backward and slightly down for the whole shot. Around one second in, the three small felt friends appear at the near edge of the wooden table in the foreground, climbing up facing away from the camera so we see only their backs, pull themselves up onto the tabletop one after another and stand side by side, looking toward the screen. As they stand, the focus racks from the woman and the screen to the three friends on the table, and the background turns soft and blurry. The corner of a strawberry cake slice slides into the lower right corner as the camera pulls back."
+  },
+  {
+   "id": "S08v2",
+   "start": "p9S08a",
+   "end": "p9S08c",
+   "prompt": "Floor-level shot on a dark wooden floor at night: a big red gift box with a gold ribbon, and the three small felt friends beside it. The camera is completely locked off: no zoom, no push-in, no movement at all. At the start the three friends stop and freeze for a moment at a distant rumble of thunder. Around one second they dart behind the gift box, one after another, and disappear from view; for about a second only the box is visible. Near the end MONGLE slowly peeks out from behind the left edge of the box and MARIN peeks out from behind the right edge, only part of their heads and one eye showing, and they hold still."
+  },
+  {
+   "id": "S11v2",
+   "start": "p9S11a",
+   "end": "p9S11c",
+   "prompt": "Extreme close-up inside a dark Christmas tree at night; the string of clear glass bulbs is switched off. KKAMONG sits on top of a shiny red glass ornament. The camera is completely locked off: no zoom, no push-in. KKAMONG reaches out one paw and touches the dark light string. At about one and a half seconds a short bright purple-white flash fills the frame; right after it, each clear bulb turns into a glowing felt pom-pom light at the same moment and lights up warm gold, the cable becomes twisted cream yarn, and the top of the red ornament under KKAMONG turns into soft red felt with a white stitched seam. KKAMONG raises both paws up and keeps them up. Warm golden bokeh fills the background for the rest of the shot."
+  }
+ ]
+}
