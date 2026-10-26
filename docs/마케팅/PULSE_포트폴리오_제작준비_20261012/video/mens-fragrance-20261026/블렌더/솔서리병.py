@@ -638,10 +638,115 @@ def floor(mat, size=4.0, z=0.0):
     return ob
 
 
-def light_bar(loc, length, thick, strength, rgb=(0.80, 0.90, 1.0)):
+def mat_soft_bar(name, rgb, strength, length, end=0.012):
+    """가장자리가 엷어지는 빛 띠 — 위아래는 포물선으로, 두 끝은 end(m) 안에서 사라진다(11판: 띠를 병 가까이 당기니 초점이 덜 흐려 모서리가 칼 같았다)."""
+    m, n, l, out = new_mat(name)
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    def node(op, a, b=None):
+        x = n.new("ShaderNodeMath")
+        x.operation = op
+        for i, v in enumerate((a, b)):
+            if v is None:
+                continue
+            if isinstance(v, (int, float)):
+                x.inputs[i].default_value = v
+            else:
+                l.new(v, x.inputs[i])
+        return x.outputs[0]
+    # 판은 세운 평면이라 띠 두께 방향이 생성 좌표 Y다. 아래 절반은 꽉 차게 두어 바닥 반사와 이어지게 하고(사이가 검게 비었다), 위로만 엷어진다
+    zc = node("MAXIMUM", node("SUBTRACT", node("MULTIPLY", sep.outputs["Y"], 2.0), 1.0), 0.0)
+    sz = node("MAXIMUM", node("SUBTRACT", 1.0, node("MULTIPLY", zc, zc)), 0.0)
+    xd = node("SUBTRACT", 0.5, node("ABSOLUTE", node("SUBTRACT", sep.outputs["X"], 0.5)))
+    sx = node("MINIMUM", node("MULTIPLY", xd, length / end), 1.0)
+    e = n.new("ShaderNodeEmission")
+    e.inputs["Color"].default_value = (*rgb, 1)
+    sz3 = node("POWER", sz, 3.0)   # 포물선 그대로는 빛이 하얗게 넘쳐 모서리가 여전히 칼 같았다 — 세제곱으로 엷어지는 폭을 넓힌다
+    l.new(node("MULTIPLY", node("MULTIPLY", sz3, node("MULTIPLY", sx, sx)), strength * 1.5), e.inputs["Strength"])
+    l.new(e.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def light_bar(loc, length, thick, strength, rgb=(0.80, 0.90, 1.0), soft=False):
     """병 뒤의 가로 빛 띠(18번) — 흐린 초점에서 넓게 번진다."""
-    ob = rounded_box("lightbar", length, thick, thick, loc, mat_emit("bar", rgb, strength), bevel=0.0)
+    if not soft:
+        ob = rounded_box("lightbar", length, thick, thick, loc, mat_emit("bar", rgb, strength), bevel=0.0)
+        ob.visible_shadow = False
+        return ob
+    # 11판: 상자는 윗면(생성 좌표 끝 = 빛 0)이 카메라에 검은 줄로 보였다 — 카메라를 보는 세운 평면 한 장으로
+    me = bpy.data.meshes.new("lightbar")
+    bm = bmesh.new()
+    bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
+    for v in bm.verts:
+        v.co.x *= length
+        v.co.y *= thick
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new("lightbar", me))
+    ob.data.materials.append(mat_soft_bar("bar", rgb, strength, length))
+    ob.location = loc
+    ob.rotation_euler = (math.radians(90), 0, 0)
     ob.visible_shadow = False
+    if soft:
+        ob.visible_diffuse = False   # 바닥 바로 위라 바닥을 곧장 비춰 청록 웅덩이가 졌다 — 유리 · 바닥 반사로만 보이게
+    return ob
+
+
+def mat_frost(name, fade_axis="Z", fade=(0.45, 1.0), radial=False):
+    """서리(18번): 흰 얼음 결정 알갱이 — 노이즈로 군데군데, 한쪽 끝(fade_axis 생성 좌표)으로 갈수록 엷어져 사라진다.
+    radial이면 가운데서 멀수록 엷어진다(병 밑 바닥 서리). 투명과 섞어 쓰니 그림자는 드리우지 않는다."""
+    m, n, l, out = new_mat(name)
+    b = principled(n, base=(0.86, 0.93, 1.0), rough=0.55)
+    tc = n.new("ShaderNodeTexCoord")
+    nz = n.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 260.0
+    nz.inputs["Detail"].default_value = 10.0
+    nz.inputs["Roughness"].default_value = 0.7
+    l.new(tc.outputs["Object"], nz.inputs["Vector"])
+    grain = n.new("ShaderNodeMapRange")
+    grain.inputs["From Min"].default_value = 0.42
+    grain.inputs["From Max"].default_value = 0.62
+    l.new(nz.outputs["Fac"], grain.inputs["Value"])
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    edge = n.new("ShaderNodeMapRange")
+    edge.inputs["From Min"].default_value = fade[0]
+    edge.inputs["From Max"].default_value = fade[1]
+    edge.inputs["To Min"].default_value = 1.0
+    edge.inputs["To Max"].default_value = 0.0
+    if radial:
+        vm = n.new("ShaderNodeVectorMath")
+        vm.operation = "DISTANCE"
+        vm.inputs[1].default_value = (0.5, 0.5, 1.0)   # 윗면(카메라에 보이는 면) 가운데에서 잰다
+        l.new(tc.outputs["Generated"], vm.inputs[0])
+        l.new(vm.outputs["Value"], edge.inputs["Value"])
+    else:
+        l.new(sep.outputs[fade_axis], edge.inputs["Value"])
+    mul = n.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    l.new(grain.outputs["Result"], mul.inputs[0])
+    l.new(edge.outputs["Result"], mul.inputs[1])
+    tr = n.new("ShaderNodeBsdfTransparent")
+    mix = n.new("ShaderNodeMixShader")
+    l.new(mul.outputs[0], mix.inputs["Fac"])
+    l.new(tr.outputs[0], mix.inputs[1])
+    l.new(b.outputs[0], mix.inputs[2])
+    l.new(mix.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def frost_shell(height, root=None, pad=0.0004):
+    """병 몸통 바깥에 붙는 얇은 서리 껍질(바닥에서 height까지) — 원본 18번처럼 병 밑에서 서리가 차오른다(--t로 높이를 바꾼다).
+    윗면은 서리가 엷어진 끝(투명)이라 병을 가로지르는 선이 생기지 않는다."""
+    ob = rounded_box("frost", BW + pad * 2, BD + pad * 2, height, (0, 0, height / 2), mat_frost("frost"), bevel=0.0036)
+    ob.visible_shadow = False
+    if root is not None:
+        ob.parent = root
+    if arg("--바닥서리", "1") == "0":
+        return ob
+    pad_ob = cylinder("frost_floor", 0.045, 0.0004, (0, 0, 0.0002), mat_frost("frost_floor", radial=True, fade=(0.18, 0.5)))
+    pad_ob.visible_shadow = False
     return ob
 
 
@@ -701,11 +806,32 @@ def shot_look():
 def shot_s18():
     """원본 18(15.84~20.00초): 첫 프레임은 병이 화면 왼쪽에 크게(병 가운데가 화면 폭의 0.2 · 뚜껑 위가 화면 위에 닿고 바닥은 아래로 잘림,
     오른쪽 가운데에 흐린 빛 덩이) → 18초쯤까지 물러나며 병이 화면 가운데(0.53) · 높이의 0.55로, 병 뒤 아래쪽에 가로 빛 띠(높이 0.75)."""
-    studio(low=(0.015, 0.09, 0.55), high=(0.001, 0.008, 0.07), strength=0.6, dist=0.9)
-    light_bar((0, 0.60, 0.030), 3.0, 0.030, 2.6)   # 6판: 5판은 띠가 세고 두꺼워 병 아래 절반이 탔다 · 10판: 원본 띠(높이 0.62~0.78)만큼 굵게
-    bottle((0, 0, 0), rot_z=-6)
+    # 11판(10-26 밤, 아르곤 첫 분석 · 원본 15.88~18.00초 프레임 대조): ① 원본 띠는 처음에 병 오른쪽 뒤의 둥근 빛 덩이였다가
+    # 1초 동안 양옆으로 길어져 17초쯤 화면을 가로지른다 — 길이를 --t로 늘린다. ② 끝 프레임 띠 높이 0.65~0.80(우리 10판 0.55~0.65) —
+    # 띠를 병 뒤 0.25 m · 바닥 바로 위로 당겨 낮춘다(바닥 밑으로는 못 내린다). ③ 원본 바닥은 띠를 흐리게만 비춘다(밝기 120~170, 우리 240~255) — 거칠게.
+    # ④ 원본 바탕은 위가 어둡고 띠 쪽으로 밝아진다(23 → 114, 우리는 57~62로 평평) — 바탕판 높이를 줄여 화면 안에 기울기를 넣는다.
+    studio(low=(0.030, 0.16, 0.85), high=(0.001, 0.006, 0.05), strength=0.5, dist=0.9, height=0.30)
+    fl = bpy.data.materials["floor"].node_tree.nodes["Principled BSDF"]
+    fl.inputs["Roughness"].default_value = float(arg("--바닥거칠기", "0.4"))
+    fl.inputs["Coat Weight"].default_value = 0.0
+    fl.inputs["Base Color"].default_value = (0.004, 0.014, 0.045, 1) if arg("--검은바닥", "0") == "0" else (0, 0, 0, 1)   # 띠가 바닥을 곧장 비춰 청록 웅덩이가 졌다 — 바닥을 어둡게
+    fl.inputs["Specular IOR Level"].default_value = float(arg("--바닥반사", "0.4"))
+    fl.inputs["Specular Tint"].default_value = (0.55, 0.78, 1.0, 1)   # 흰 띠가 회색 바닥으로 비쳤다 — 원본처럼 옅은 파랑으로   # 11판 시험: 거칠기만 올리니 띠 반사가 바닥 전체로 번져 하얬다
+    # 띠 두 끝(m): 원본 프레임에서 오른쪽 끝이 화면 폭의 0.52(15.88초) → 0.77(16.34) → 0.91(16.6) → 17초쯤 화면 끝, 왼쪽 끝은 병 뒤에서 나와 17초쯤 화면 왼쪽 끝
+    x0, x1 = (0.028 - 0.45 * T, 0.048 + 0.50 * T) if T < 0.30 else (-1.5, 1.5)
+    light_bar(((x0 + x1) / 2, 0.25, 0.021), x1 - x0, 0.040, 2.6, soft=True)   # 6판: 5판은 띠가 세고 두꺼워 병 아래 절반이 탔다
+    root = bottle((0, 0, 0), rot_z=-6)
+    # ⑤ 원본은 병 밑에서 서리 · 냉기가 병을 타고 차오른다(끝에서 라벨 바로 아래까지) — 서리 껍질 높이를 --t로
+    frost_shell(BH * (0.14 + 0.26 * T), root)
     area_light("key", (-0.28, -0.30, 0.22), (0, 0, 0.06), 9, 0.30, ICE_BLUE)
     rims((0, 0, 0.06), e=55)
+    # 11판: 병 뒤 테두리 조명 둘이 바닥까지 비춰 병 앞 · 오른쪽 바닥이 하얀 웅덩이가 됐다(원본 바닥은 띠 아래 밝기 120 안팎) — 빛 연결로 병만 비춘다
+    lit = bpy.data.collections.new("rim_receivers")
+    for ob in bpy.data.objects:
+        if ob.type == "MESH" and ob.name not in ("floor", "backdrop", "lightbar", "frost_floor"):
+            lit.objects.link(ob)
+    for nm in ("rimL", "rimR"):
+        bpy.data.objects[nm].light_linking.receiver_collection = lit
     # 9판(Fable 원본 대조 1차 P0-1 · 2): 원본은 서지 않고 20.0초까지 점점 느리게 물러나고, 병은 끝까지 화면 왼쪽 1/3에 선다.
     # 원본 끝 프레임(19.96초): 병 높이가 화면 높이의 0.80(위 0.14 ~ 아래 0.94) · 병 가운데가 너비의 0.30 → 화면 폭 0.264 m(렌즈 70 → 0.513 m).
     # 첫 프레임은 그 0.51배 화면(폭 0.135 m · 0.262 m) · 뚜껑 가운데가 너비의 0.215 · 뚜껑 위가 화면 위 끝.
@@ -722,7 +848,7 @@ def shot_s18():
     tx = 0.033 + (0.045 - 0.033) * k      # 겨냥점을 병 오른쪽으로(병이 왼쪽에 서게)
     tz = 0.0867 + (0.0646 - 0.0867) * k
     d = w * 70 / 36
-    camera((tx, -d - BD / 2, tz + 0.004), (tx, 0, tz), lens=70, fstop=2.8 + 2.8 * k)
+    camera((tx, -d - BD / 2, tz + 0.004), (tx, 0, tz), lens=70, fstop=2.0 + 3.6 * k)   # 11판: 원본 첫 프레임의 빛 덩이는 더 둥글게 번진다
 
 
 def shot_s17():
@@ -821,7 +947,21 @@ def shot_s09():
     camera((-0.024, -d * math.sin(a), d * math.cos(a)), (-0.024 + 0.008, 0.0, 0.0), lens=85, fstop=5.6, roll=8 + 3 * T)
 
 
-SHOTS = {"look": shot_look, "s18": shot_s18, "s17": shot_s17, "s02": shot_s02, "s03": shot_s03,
+def shot_hand():
+    """12번 손에 든 병 — 투명 바탕(병만), 이미지 콘티 · 영상 시작 그림의 초록 대역 자리에 얹는다(제품은 AI로 그리지 않는다).
+    원본 12번의 병은 몸을 비스듬히 앞에서 본 꼴(앞면 + 오른쪽 옆면), 위가 조금 기울고 약간 아래에서 올려다봄."""
+    bpy.context.scene.render.film_transparent = True
+    bpy.context.scene.render.image_settings.color_mode = "RGBA"
+    world_gradient((0.004, 0.02, 0.10), (0.03, 0.12, 0.40), 1.0)
+    backdrop((0.03, 0.14, 0.60), (0.004, 0.02, 0.10), strength=0.8, dist=0.4)   # 굴절로 비칠 바탕(카메라에는 투명으로 빠짐)
+    bpy.data.objects["backdrop"].visible_camera = False
+    bottle((0, 0, 0), rot_z=-24, print_through=False)
+    area_light("key", (-0.22, -0.30, 0.18), (0, 0, 0.06), 9, 0.30, ICE_BLUE)
+    rims((0, 0, 0.06), e=45)
+    camera((0.0, -0.40, 0.040), (0.0, 0, 0.060), lens=85, fstop=11.0, roll=-8)
+
+
+SHOTS = {"hand": shot_hand, "look": shot_look, "s18": shot_s18, "s17": shot_s17, "s02": shot_s02, "s03": shot_s03,
          "s06": shot_s06, "s10": shot_s10, "s09": shot_s09}
 
 if __name__ == "__main__":
