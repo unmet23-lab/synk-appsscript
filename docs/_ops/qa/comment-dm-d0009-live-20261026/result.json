@@ -1,0 +1,43 @@
+{
+  "schema": "synk-comment-dm-live-qa/v1",
+  "status": "blocked_before_trial",
+  "campaign": "D0009",
+  "post": "https://www.instagram.com/reel/De7LyoyCl0v/",
+  "checked_at": "2026-10-26T05:47:01.335Z",
+  "blocker": "required_test_account_not_logged_in_chrome",
+  "preflight": {
+    "approved_fields_exact": true,
+    "runtime": {
+      "version": 79,
+      "status": "ACTIVE",
+      "updated_at": 1792496198715
+    },
+    "runtime_at_registration": "not_independently_recorded",
+    "campaign_pending_queue": 0,
+    "own_pending_queue": 0,
+    "own_pending_sends": 0,
+    "target_sessions": 0,
+    "overlapping_trial_absent": "not_fully_verified"
+  },
+  "protection": {
+    "linked_optouts": 9,
+    "optouts_sha256": "8e669284ac5a163e76f1f49f3ccd1471d161629613ce8ca4337b59695fc047f5",
+    "before_after_exact": true,
+    "temporarily_removed": 0,
+    "restoration": "not_needed_no_write",
+    "watchdog_started": false
+  },
+  "actions": {
+    "comments_submitted": 0,
+    "remote_writes": 0,
+    "dm_send_triggered": 0,
+    "redeploys": 0
+  },
+  "actual_receipt": {
+    "dm_body": null,
+    "link_open": null,
+    "public_reply": null,
+    "reason": "trial_not_started"
+  },
+  "next": "Chrome에서 시험 계정 전환을 마친 뒤 사전 확인·백업·복구 감시부터 다시 시작한다."
+}
