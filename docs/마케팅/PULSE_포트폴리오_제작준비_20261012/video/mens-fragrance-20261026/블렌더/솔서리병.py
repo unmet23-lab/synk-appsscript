@@ -801,6 +801,50 @@ def frost_shell(height, root=None, pad=0.0015):   # 12판(Fable P2-10): 0.4 mm�
     return ob
 
 
+def glow_plane(x0, x1, y, z0, z1, strength, rgb=(0.80, 0.90, 1.0)):
+    """빛 띠 위로 은은히 번지는 판(18번 끝) — 아래 끝이 가장 밝고 위로 갈수록 엷어져 사라진다. 바닥 · 유리는 안 비춘다."""
+    m, n, l, out = new_mat("glow")
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    inv = n.new("ShaderNodeMath")
+    inv.operation = "SUBTRACT"
+    inv.inputs[0].default_value = 1.0
+    l.new(sep.outputs["Y"], inv.inputs[1])
+    pw = n.new("ShaderNodeMath")
+    pw.operation = "POWER"
+    l.new(inv.outputs[0], pw.inputs[0])
+    pw.inputs[1].default_value = 1.6
+    mul = n.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    l.new(pw.outputs[0], mul.inputs[0])
+    mul.inputs[1].default_value = strength
+    e = n.new("ShaderNodeEmission")
+    e.inputs["Color"].default_value = (*rgb, 1)
+    l.new(mul.outputs[0], e.inputs["Strength"])
+    tr = n.new("ShaderNodeBsdfTransparent")
+    add = n.new("ShaderNodeAddShader")
+    l.new(e.outputs[0], add.inputs[0])
+    l.new(tr.outputs[0], add.inputs[1])
+    l.new(add.outputs[0], out.inputs["Surface"])
+    me = bpy.data.meshes.new("glow")
+    bm = bmesh.new()
+    bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
+    for v in bm.verts:
+        v.co.x *= (x1 - x0)
+        v.co.y *= (z1 - z0)
+    bm.to_mesh(me)
+    bm.free()
+    ob = link(bpy.data.objects.new("glow", me))
+    ob.data.materials.append(m)
+    ob.location = ((x0 + x1) / 2, y, (z0 + z1) / 2)
+    ob.rotation_euler = (math.radians(90), 0, 0)
+    ob.visible_shadow = False
+    ob.visible_diffuse = False
+    ob.visible_glossy = False
+    return ob
+
+
 def water_surface(z, size=0.25, strength=0.003, seed=2):
     m, n, l, out = new_mat("water")
     b = principled(n, base=(0.85, 0.93, 1.0), rough=0.0, ior=1.333, trans=1.0)
@@ -876,8 +920,11 @@ def shot_s18():
     # 12판(Fable P2-11): T=0.30에서 3 m로 바꾸면 화면 왼쪽 끝이 한 프레임 튄다 — 0.36까지 이어 두 끝이 화면 밖으로 나간 뒤 바꾼다
     # 12판(P2-10): 띠를 바닥에서 띄우면 띠와 바닥 반사 사이가 검게 비고, 붙이면 바닥 반사까지 띠로 읽혀 아래 끝이 0.07 낮았다 —
     # 띠를 0.35 m 뒤로 물려 바닥선을 화면 높이 0.77쯤으로 올리고(바닥에 붙임), 바닥 반사는 줄인다. 빛 덩이 자람은 그 평면 폭(1.2배)만큼
-    x0, x1 = (0.020 - 0.54 * T, 0.100 + 0.56 * T) if T < 0.36 else (-1.5, 1.5)   # 13판(Fable 3차 P2-5): 첫 빛 덩이가 작았다 — 오른 끝 0.06 → 0.10
-    light_bar(((x0 + x1) / 2, 0.35, 0.0225), x1 - x0, 0.045, 2.0, soft=True)   # 13판(P2-7): 2.6은 띠가 두 칸 255
+    x0, x1 = (0.020 - 0.54 * T, 0.080 + 0.56 * T) if T < 0.36 else (-1.5, 1.5)   # 13판(Fable 3차 P2-5): 첫 빛 덩이가 작았다 · 14판(4차 P2-2): 0.10은 255로 타 0.08
+    grow = min(1.0, T / 0.36)
+    light_bar(((x0 + x1) / 2, 0.35, 0.0225), x1 - x0, 0.045, 1.1 + 0.9 * grow, soft=True)   # 13판: 2.6은 띠가 두 칸 255 · 14판(4차 P2-2): 첫 덩이는 1.1(원본 덩이는 부드러운 73)
+    if grow >= 1.0:
+        glow_plane(-1.5, 1.5, 0.352, 0.030, 0.085, 0.9)   # 14판(4차 P2-3): 원본은 띠 위 0.1 H에 걸쳐 번진다 — 띠 바로 위 은은한 번짐 판
     root = bottle((0, 0, 0), rot_z=-6)
     # ⑤ 원본은 병 밑에서 서리 · 냉기가 병을 타고 차오른다(끝에서 라벨 바로 아래까지) — 서리 껍질 높이를 --t로
     frost_shell(BH * (0.12 + 0.21 * T), root)   # 12판(Fable P3-4): 원본 끝은 몸통 아래 0.31쯤
@@ -913,7 +960,9 @@ def shot_s18():
 def shot_s17():
     """원본 17(14.84~15.84초): 병 몸통이 화면을 채우고(폭의 0.12~0.85) 라벨이 가운데(높이 0.55~0.66), 윗부분이 왼쪽으로 15°쯤 기울어 보임,
     어깨 유리 · 뚜껑 밑이 위에 잘려 보이고 오른쪽 뒤가 밝다 → 1초에 0.64배로 물러남(돌지 않음)."""
-    studio(low=(0.04, 0.15, 0.50), high=(0.004, 0.03, 0.22), strength=0.45, dist=0.5, height=0.5, use_floor=False)   # 13판: 바닥이 옆 유리에 비쳐 255 띠(원본 17번엔 바닥이 안 보인다) · 11판(P2-8): 가운데 값 117/86 · 12 · 13판(Fable 3차 P2-4): 밝은 바탕이 두꺼운 옆 유리로 굴절돼 255 띠 — 바탕을 낮춤
+    # 14판(Fable 4차 P2-1): 바닥을 빼니 한 단 어두워지고 오른쪽 아래가 검게 비었다 — 바탕은 되돌리고, 바닥은 두되 유리에 비치지 않게(glossy 끔)
+    studio(low=(0.06, 0.22, 0.70), high=(0.004, 0.03, 0.22), strength=0.45, dist=0.5, height=0.5)   # 11판(P2-8)
+    bpy.data.objects["floor"].visible_glossy = False   # 11판(P2-8) 가운데 값 117/86 · 12 · 13판(Fable 3차 P2-4)은 바탕을 낮췄었다
     bottle((0, 0, 0), rot_z=-16)
     area_light("key", (-0.20, -0.25, 0.20), (0, 0, 0.05), 5, 0.60, ICE_BLUE)   # 12판: 8 · 크기 0.25는 앞면 왼쪽 위에 큰 흰 반사 원 — 넓혀 퍼뜨림
     bk = area_light("back", (0.25, 0.30, 0.10), (0, 0, 0.05), 35, 0.35, (0.80, 0.90, 1.0))
