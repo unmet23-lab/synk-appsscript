@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "저는 보고, 승인만 누르면 돼요.",
+ "dur": 1.677,
+ "words": [
+  {
+   "text": "저는",
+   "start": 0.01,
+   "end": 0.191
+  },
+  {
+   "text": "보고,",
+   "start": 0.233,
+   "end": 0.414
+  },
+  {
+   "text": "승인만",
+   "start": 0.749,
+   "end": 1.056
+  },
+  {
+   "text": "누르면",
+   "start": 1.098,
+   "end": 1.32
+  },
+  {
+   "text": "돼요.",
+   "start": 1.362,
+   "end": 1.677
+  }
+ ],
+ "source": {
+  "key": "dbc25ca588b9c87bbd486962405e2738",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

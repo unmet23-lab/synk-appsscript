@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "여러분은 에이아이한테 매일 뭘 맡기고 싶어요? 댓글로 알려 주세요.",
+ "dur": 3.113,
+ "words": [
+  {
+   "text": "여러분은",
+   "start": 0.02,
+   "end": 0.341
+  },
+  {
+   "text": "에이아이한테",
+   "start": 0.394,
+   "end": 0.874
+  },
+  {
+   "text": "매일",
+   "start": 0.941,
+   "end": 1.102
+  },
+  {
+   "text": "뭘",
+   "start": 1.142,
+   "end": 1.249
+  },
+  {
+   "text": "맡기고",
+   "start": 1.289,
+   "end": 1.515
+  },
+  {
+   "text": "싶어요?",
+   "start": 1.555,
+   "end": 1.81
+  },
+  {
+   "text": "댓글로",
+   "start": 2.21,
+   "end": 2.49
+  },
+  {
+   "text": "알려",
+   "start": 2.53,
+   "end": 2.65
+  },
+  {
+   "text": "주세요.",
+   "start": 2.69,
+   "end": 3.113
+  }
+ ],
+ "source": {
+  "key": "f205be07136113da15553e7a28d6cbe3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

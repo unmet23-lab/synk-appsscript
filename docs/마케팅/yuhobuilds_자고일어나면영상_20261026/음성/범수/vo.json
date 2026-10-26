@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-26T13:17:31.329Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "자고 일어나면, 올릴 영상이 폰에 와 있어요.",
+   "dur": 2.53,
+   "syllablesPerSec": 6.72,
+   "src": "h1.wav",
+   "key": "53a71d3f1219f03cd706a90bd9eb0be7",
+   "words": 7
+  },
+  {
+   "id": "h2",
+   "text": "에이아이가 아침 일곱 시부터, 혼자 만들어서 보내 준 거예요.",
+   "dur": 3.024,
+   "syllablesPerSec": 7.94,
+   "src": "h2.wav",
+   "key": "0b34cac315af22e0a46e7994ef9b177f",
+   "words": 9
+  },
+  {
+   "id": "a1",
+   "text": "저는 보고, 승인만 누르면 돼요.",
+   "dur": 1.677,
+   "syllablesPerSec": 7.16,
+   "src": "a1.wav",
+   "key": "dbc25ca588b9c87bbd486962405e2738",
+   "words": 5
+  },
+  {
+   "id": "a2",
+   "text": "그럼 정한 시간에, 알아서 올라가요.",
+   "dur": 1.744,
+   "syllablesPerSec": 8.03,
+   "src": "a2.wav",
+   "key": "8e8cf961fff5314c820606c721bb8156",
+   "words": 5
+  },
+  {
+   "id": "r1",
+   "text": "에이아이가 혼자 올리지 못하게, 규칙 하나는 꼭 줬어요. 내가 승인하기 전엔, 올리지 마.",
+   "dur": 4.359,
+   "syllablesPerSec": 7.8,
+   "src": "r1.wav",
+   "key": "adfbca808ff99e8a62eb5b4f594f56e2",
+   "words": 13
+  },
+  {
+   "id": "p1",
+   "text": "이 규칙을 넣은 요청문은, 아래 글에 그대로 적어 뒀어요.",
+   "dur": 2.83,
+   "syllablesPerSec": 7.77,
+   "src": "p1.wav",
+   "key": "16039cd7a7ea2bd395244db5e828a552",
+   "words": 9
+  },
+  {
+   "id": "c1",
+   "text": "여러분은 에이아이한테 매일 뭘 맡기고 싶어요? 댓글로 알려 주세요.",
+   "dur": 3.113,
+   "syllablesPerSec": 8.67,
+   "src": "c1.wav",
+   "key": "f205be07136113da15553e7a28d6cbe3",
+   "words": 9
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

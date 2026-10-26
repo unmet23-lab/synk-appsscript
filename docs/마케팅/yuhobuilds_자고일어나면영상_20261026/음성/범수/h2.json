@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "에이아이가 아침 일곱 시부터, 혼자 만들어서 보내 준 거예요.",
+ "dur": 3.024,
+ "words": [
+  {
+   "text": "에이아이가",
+   "start": 0.02,
+   "end": 0.365
+  },
+  {
+   "text": "아침",
+   "start": 0.44,
+   "end": 0.634
+  },
+  {
+   "text": "일곱",
+   "start": 0.694,
+   "end": 0.86
+  },
+  {
+   "text": "시부터,",
+   "start": 0.905,
+   "end": 1.205
+  },
+  {
+   "text": "혼자",
+   "start": 1.61,
+   "end": 1.834
+  },
+  {
+   "text": "만들어서",
+   "start": 1.879,
+   "end": 2.224
+  },
+  {
+   "text": "보내",
+   "start": 2.27,
+   "end": 2.434
+  },
+  {
+   "text": "준",
+   "start": 2.479,
+   "end": 2.569
+  },
+  {
+   "text": "거예요.",
+   "start": 2.614,
+   "end": 3.024
+  }
+ ],
+ "source": {
+  "key": "0b34cac315af22e0a46e7994ef9b177f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

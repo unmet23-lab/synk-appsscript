@@ -1,0 +1,92 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "에이아이가 혼자 올리지 못하게, 규칙 하나는 꼭 줬어요. 내가 승인하기 전엔, 올리지 마.",
+ "dur": 4.359,
+ "words": [
+  {
+   "text": "에이아이가",
+   "start": 0.02,
+   "end": 0.361
+  },
+  {
+   "text": "혼자",
+   "start": 0.418,
+   "end": 0.617
+  },
+  {
+   "text": "올리지",
+   "start": 0.673,
+   "end": 0.887
+  },
+  {
+   "text": "못하게,",
+   "start": 0.93,
+   "end": 1.243
+  },
+  {
+   "text": "규칙",
+   "start": 1.328,
+   "end": 1.57
+  },
+  {
+   "text": "하나는",
+   "start": 1.612,
+   "end": 1.84
+  },
+  {
+   "text": "꼭",
+   "start": 1.882,
+   "end": 1.968
+  },
+  {
+   "text": "줬어요.",
+   "start": 2.025,
+   "end": 2.351
+  },
+  {
+   "text": "내가",
+   "start": 2.792,
+   "end": 2.934
+  },
+  {
+   "text": "승인하기",
+   "start": 2.991,
+   "end": 3.304
+  },
+  {
+   "text": "전엔,",
+   "start": 3.347,
+   "end": 3.631
+  },
+  {
+   "text": "올리지",
+   "start": 3.773,
+   "end": 3.972
+  },
+  {
+   "text": "마.",
+   "start": 4.015,
+   "end": 4.359
+  }
+ ],
+ "source": {
+  "key": "adfbca808ff99e8a62eb5b4f594f56e2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

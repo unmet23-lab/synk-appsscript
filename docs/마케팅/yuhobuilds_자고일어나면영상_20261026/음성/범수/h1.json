@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "자고 일어나면, 올릴 영상이 폰에 와 있어요.",
+ "dur": 2.53,
+ "words": [
+  {
+   "text": "자고",
+   "start": 0.02,
+   "end": 0.25
+  },
+  {
+   "text": "일어나면,",
+   "start": 0.307,
+   "end": 0.765
+  },
+  {
+   "text": "올릴",
+   "start": 1.109,
+   "end": 1.281
+  },
+  {
+   "text": "영상이",
+   "start": 1.338,
+   "end": 1.682
+  },
+  {
+   "text": "폰에",
+   "start": 1.739,
+   "end": 1.911
+  },
+  {
+   "text": "와",
+   "start": 1.969,
+   "end": 2.007
+  },
+  {
+   "text": "있어요.",
+   "start": 2.064,
+   "end": 2.53
+  }
+ ],
+ "source": {
+  "key": "53a71d3f1219f03cd706a90bd9eb0be7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

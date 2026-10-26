@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p1",
+ "text": "이 규칙을 넣은 요청문은, 아래 글에 그대로 적어 뒀어요.",
+ "dur": 2.83,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.01,
+   "end": 0.022
+  },
+  {
+   "text": "규칙을",
+   "start": 0.1,
+   "end": 0.422
+  },
+  {
+   "text": "넣은",
+   "start": 0.461,
+   "end": 0.591
+  },
+  {
+   "text": "요청문은,",
+   "start": 0.629,
+   "end": 1.068
+  },
+  {
+   "text": "아래",
+   "start": 1.481,
+   "end": 1.61
+  },
+  {
+   "text": "글에",
+   "start": 1.675,
+   "end": 1.804
+  },
+  {
+   "text": "그대로",
+   "start": 1.856,
+   "end": 2.062
+  },
+  {
+   "text": "적어",
+   "start": 2.1,
+   "end": 2.268
+  },
+  {
+   "text": "뒀어요.",
+   "start": 2.307,
+   "end": 2.83
+  }
+ ],
+ "source": {
+  "key": "16039cd7a7ea2bd395244db5e828a552",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
