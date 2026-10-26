@@ -101,7 +101,8 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
   try{
     environment=await loadWardrobeEnvironment(renderer,{signal:preparation.signal});
     preparation.signal.throwIfAborted();scene.environment=environment.texture;scene.environmentIntensity=.42;
-    avatar=await createMongleAvatar({mobile,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:true,initialSlots:slots,signal:preparation.signal});
+    // The felt Mongle (master outline, coarse felt, hem running stitch) is WORLD's Mongle since 10-27.
+    avatar=await createMongleAvatar({mobile,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:true,initialSlots:slots,signal:preparation.signal,felt:'diorama'});
   }
   catch(error){signal?.removeEventListener('abort',abort);releaseBackdrop();throw error;}
   if(cancelled){avatar.dispose();signal?.removeEventListener('abort',abort);throw new DOMException('Wardrobe closed','AbortError');}

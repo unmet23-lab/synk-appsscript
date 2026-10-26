@@ -69,7 +69,7 @@ export async function mountLivingHomeScene(container,{selectedTutor='mongle',onI
     await new Promise(resolve=>setTimeout(resolve));
     if(disposed||signal?.aborted)throw new DOMException('Home closed','AbortError');
     companions=createHomeCompanions({low:level==='low',grounded:true,onInvalidate:()=>lifecycle?.schedule()});
-    mongle=await createMongleAvatar({mobile:matchMedia('(max-width:799px)').matches,anisotropy:Math.min(4,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:level!=='low'});
+    mongle=await createMongleAvatar({mobile:matchMedia('(max-width:799px)').matches,anisotropy:Math.min(4,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:level!=='low',felt:'diorama'});
     if(disposed||signal?.aborted){mongle.dispose();throw new DOMException('Home closed','AbortError');}
     mongle.setEquipment(slotsForOutfit(slots));mongle.setDyes(dyes);
     const controllers={mongle,kkamong:companions.kkamong,marin:companions.marin};

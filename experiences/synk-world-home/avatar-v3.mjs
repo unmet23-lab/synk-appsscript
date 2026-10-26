@@ -24,7 +24,9 @@ const dioramaProfile=(()=>{const y0=.11,y1=1.845,h=y1-y0,n=MASTER_HALF.length;
 // The master's eye grammar: eye width .100 of body width, centres .338 apart, 34.2% down from the top,
 // a glint about 17% of the eye at its upper left; beads stand proud instead of pressed flat.
 // The bead's lit rim eats into its dark disc at diorama size, so the bead is a little larger than .100 to read as the master's.
-const DIORAMA={waves:12,lobes:1.6,eyeX:.302,eyeY:1.252,eyeR:.102,eyeDepth:.86,glint:.0175,stitch:.011,stitchY:.215,thread:'#f4e2c6',fibres:6500,phoneFibres:3800};
+// The master's hem hangs in round scallops with sharp points between them (not a sine zigzag): 1 - 2|cos|.
+const dioramaWave=a=>1-2*Math.abs(Math.cos(a*DIORAMA.waves/2));
+const DIORAMA={waves:12,lobes:1.6,eyeX:.302,eyeY:1.252,eyeR:.102,eyeDepth:.86,glint:.0175,stitch:.0085,stitchY:.29,thread:'#f4e2c6',fibres:6500,phoneFibres:3800};
 const seeded=seed=>()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
 function boundedTexture(loader,url,timeoutMs=12000,signal){
  return new Promise((resolve,reject)=>{let settled=false;const finish=()=>{settled=true;clearTimeout(timeout);signal?.removeEventListener('abort',abort);},abort=()=>{if(settled)return;finish();reject(new DOMException('Avatar closed','AbortError'));},timeout=setTimeout(()=>{finish();reject(Error('texture-timeout'));},timeoutMs);
@@ -52,9 +54,9 @@ function surface(fn,rows,cols,thickness=.012,shade=()=>1){
  for(let i=0;i<rim.length;i++){const a=rim[i],b=rim[(i+1)%rim.length];idx.push(a,a+n,b,b,a+n,b+n);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(idx);g.computeVertexNormals();return g;
 }
-function bodyGeometry(curve=profile,waves=10,lobes=1){
+function bodyGeometry(curve=profile,waves=10,lobes=1,waveAt=a=>Math.cos(a*waves+Math.PI)){
  const g=new THREE.LatheGeometry(Array.from({length:73},(_,i)=>{const p=curve.getPoint(i/72);return new THREE.Vector2(p.x,p.y);}),112),p=g.attributes.position;
- for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),a=Math.atan2(x,z),r=Math.hypot(x,z),f=Math.exp(-y*8.5),wave=Math.cos(a*waves+Math.PI),organic=Math.sin(a*3+y*4)*.004*Math.sin(y*1.6);const nr=r+f*wave*.049*lobes+organic;p.setXYZ(i,r>.001?x*nr/r:0,y+f*wave*.145*lobes,r>.001?z*nr/r*.91:0);}
+ for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),a=Math.atan2(x,z),r=Math.hypot(x,z),f=Math.exp(-y*8.5),wave=waveAt(a),organic=Math.sin(a*3+y*4)*.004*Math.sin(y*1.6);const nr=r+f*wave*.049*lobes+organic;p.setXYZ(i,r>.001?x*nr/r:0,y+f*wave*.145*lobes,r>.001?z*nr/r*.91:0);}
  const uv=g.attributes.uv;for(let i=0;i<p.count;i++)uv.setY(i,p.getY(i)/1.845);
  g.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(p.count*3).fill(1),3));g.computeVertexNormals();return g;
 }
@@ -69,7 +71,7 @@ function shortNap(mobile,curve=profile,waves=10){
 
 function dioramaNap(mobile,curve,waves){
  const random=seeded(7),lobes=DIORAMA.lobes,pos=[],color=[],c=new THREE.Color(),deep=new THREE.Color('#c9584a'),mid=new THREE.Color('#e8806b'),light=new THREE.Color('#f7b3a0');
- for(let i=0;i<(mobile?DIORAMA.phoneFibres:DIORAMA.fibres);i++){const t=.1+random()*.88,a=random()*TAU,p=curve.getPoint(t),w=Math.cos(a*waves+Math.PI),f=Math.exp(-p.y*8.5),r=p.x+f*w*.049*lobes+.002,x=Math.sin(a)*r,y=p.y+f*w*.145*lobes,z=Math.cos(a)*r*.91;
+ for(let i=0;i<(mobile?DIORAMA.phoneFibres:DIORAMA.fibres);i++){const t=.1+random()*.88,a=random()*TAU,p=curve.getPoint(t),w=dioramaWave(a),f=Math.exp(-p.y*8.5),r=p.x+f*w*.049*lobes+.002,x=Math.sin(a)*r,y=p.y+f*w*.145*lobes,z=Math.cos(a)*r*.91;
   if(z>.45&&Math.abs(y-DIORAMA.eyeY)<.13&&Math.abs(Math.abs(x)-DIORAMA.eyeX)<.11)continue;
   const tangent=curve.getTangent(t),n=new THREE.Vector3(Math.sin(a)*tangent.y,-tangent.x,Math.cos(a)*tangent.y/.91).normalize(),side=new THREE.Vector3(random()-.5,random()-.5,random()-.5).cross(n).normalize();
   const len=.012+random()*.026,bend=(random()-.5)*.9,s=new THREE.Vector3(x,y,z).addScaledVector(n,.002),m=s.clone().addScaledVector(n,len*.55).addScaledVector(side,len*bend*.5),e=s.clone().addScaledVector(n,len).addScaledVector(side,len*bend);
@@ -102,7 +104,7 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
  const cottonEdge=new THREE.MeshStandardMaterial({color:'#a2af98',roughness:.97});
  const lining=new THREE.MeshStandardMaterial({color:'#465b46',roughness:1});
  const materials=[bodyMaterial,thread,eye,glint,scarfMat,bandMat,cotton,pocketMat,strapMat,cottonEdge,lining];
- const body=mesh(group,bodyGeometry(curve,waves,diorama?DIORAMA.lobes:1),bodyMaterial);body.name='mongle-bell-scalloped-body';body.geometry.computeBoundingBox();group.add(diorama?dioramaNap(mobile,curve,waves):shortNap(mobile));
+ const body=mesh(group,diorama?bodyGeometry(curve,waves,DIORAMA.lobes,dioramaWave):bodyGeometry(curve,waves),bodyMaterial);body.name='mongle-bell-scalloped-body';body.geometry.computeBoundingBox();group.add(diorama?dioramaNap(mobile,curve,waves):shortNap(mobile));
  if(!diorama)for(const sign of [-1,1]){const e=mesh(group,new THREE.SphereGeometry(.091,32,24),eye);e.position.set(sign*.31,1.282,.632);e.scale.set(1,1.03,.68);e.rotation.y=sign*.19;const g=mesh(group,new THREE.SphereGeometry(.014,12,8),glint);g.position.set(sign*.31-.025,1.313,.689);}
  else for(const sign of [-1,1]){
   // Bead eyes seated on the master outline's own surface at the master's place.
@@ -112,8 +114,10 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
  }
  // Individual short stitches follow five visible hem scallops, not a thick pipe.
  // The diorama hem stitch sits on the master outline's hem and follows its twelve scallops.
- const hemR=diorama?(()=>{let best=0;for(const q of curve.getPoints(240))if(Math.abs(q.y-.2)<.03)best=Math.max(best,q.x);return best+.012;})():.884;
- const stitchPos=[];for(let i=0;i<112;i++){const a=i/112*TAU;for(const da of [-.010,.010]){const aa=a+da,r=hemR+Math.cos(aa*waves+Math.PI)*.011*(diorama?DIORAMA.lobes:1);stitchPos.push([Math.sin(aa)*r,(diorama?DIORAMA.stitchY:.178)+Math.cos(aa*waves+Math.PI)*.053*(diorama?DIORAMA.lobes:1),Math.cos(aa)*r*.915]);}}
+ const hemR=diorama?(()=>{let best=0;for(const q of curve.getPoints(240))if(Math.abs(q.y-DIORAMA.stitchY)<.03)best=Math.max(best,q.x);return best+.012;})():.884;
+ // The master's running stitch is a dash about twice as long as its gap; the v3 one is a fine short tick.
+ const stitchCount=diorama?72:112,stitchHalf=diorama?.0175:.010;
+ const stitchPos=[];for(let i=0;i<stitchCount;i++){const a=i/stitchCount*TAU;for(const da of [-stitchHalf,stitchHalf]){const aa=a+da,w=diorama?dioramaWave(aa):Math.cos(aa*waves+Math.PI),r=hemR+w*.011*(diorama?DIORAMA.lobes:1);stitchPos.push([Math.sin(aa)*r,(diorama?DIORAMA.stitchY:.178)+w*.053*(diorama?DIORAMA.lobes:1),Math.cos(aa)*r*.915]);}}
  const stitchGeo=new THREE.CylinderGeometry(diorama?DIORAMA.stitch:.0034,diorama?DIORAMA.stitch:.0034,1,5),stitches=new THREE.InstancedMesh(stitchGeo,thread,stitchPos.length/2),dummy=new THREE.Object3D();for(let i=0;i<stitchPos.length;i+=2){const a=new THREE.Vector3(...stitchPos[i]),b=new THREE.Vector3(...stitchPos[i+1]),d=b.clone().sub(a);dummy.position.copy(a).add(b).multiplyScalar(.5);dummy.scale.set(1,d.length(),1);dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());dummy.updateMatrix();stitches.setMatrixAt(i/2,dummy.matrix);}group.add(stitches);
  const scarf=new THREE.Group();scarf.name='mongle-scarf-first-steps';group.add(scarf);
  const band=(u,v)=>{const a=u*TAU+Math.PI,r=.83+Math.sin(v*Math.PI)*.046+Math.sin(a*5+v*1.9)*.013;return[Math.sin(a)*r,1.078-v*(.16+.035*Math.sin(a+.7))-Math.cos(a)*.025+Math.sin(a*2+.9)*.040+Math.sin(a*3-v*2)*.009,Math.cos(a)*r*.91];};
