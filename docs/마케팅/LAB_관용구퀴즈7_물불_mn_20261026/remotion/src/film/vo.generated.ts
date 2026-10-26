@@ -1,0 +1,1383 @@
+// 나레이션.cjs가 만든다(손으로 고치지 않음). 줄마다 시작 초·길이.
+export const VO = {
+ "q4en": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 1.407,
+   "text": "간이 콩알만 해지다!",
+   "src": "vo/q4en/q1_title.wav"
+  },
+  {
+   "id": "q1_guess",
+   "at": 1.4,
+   "dur": 0.97,
+   "text": "Liver shrinks?",
+   "src": "vo/q4en/q1_guess.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 2.36,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q4en/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q4en/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q4en/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q4en/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 5.04,
+   "dur": 1.35,
+   "text": "Super scared!",
+   "src": "vo/q4en/q1_answer.wav"
+  },
+  {
+   "id": "q1_joke",
+   "at": 6.38,
+   "dur": 0.68,
+   "text": "Yikes!",
+   "src": "vo/q4en/q1_joke.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 7.04,
+   "dur": 1.392,
+   "text": "간이 콩알만 해졌어요!",
+   "src": "vo/q4en/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.037,
+   "text": "간 떨어지다!",
+   "src": "vo/q4en/q2_title.wav"
+  },
+  {
+   "id": "q2_guess",
+   "at": 10.72,
+   "dur": 1.22,
+   "text": "Your liver falls out?",
+   "src": "vo/q4en/q2_guess.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.96,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q4en/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q4en/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q4en/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q4en/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.64,
+   "dur": 1.3,
+   "text": "Totally startled!",
+   "src": "vo/q4en/q2_answer.wav"
+  },
+  {
+   "id": "q2_joke",
+   "at": 15.92,
+   "dur": 0.7,
+   "text": "Whoa!",
+   "src": "vo/q4en/q2_joke.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 16.6,
+   "dur": 1.523,
+   "text": "간 떨어질 뻔했어요!",
+   "src": "vo/q4en/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 1.071,
+   "text": "간이 크다!",
+   "src": "vo/q4en/q3_title.wav"
+  },
+  {
+   "id": "q3_guess",
+   "at": 20.3,
+   "dur": 1.268,
+   "text": "A big liver?",
+   "src": "vo/q4en/q3_guess.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.56,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q4en/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q4en/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q4en/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q4en/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.24,
+   "dur": 1.08,
+   "text": "Fearless!",
+   "src": "vo/q4en/q3_answer.wav"
+  },
+  {
+   "id": "q3_joke",
+   "at": 25.32,
+   "dur": 1.11,
+   "text": "So brave!",
+   "src": "vo/q4en/q3_joke.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 26.45,
+   "dur": 1.251,
+   "text": "간이 크네요!",
+   "src": "vo/q4en/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 1.9,
+   "text": "Okay! How many did you get?",
+   "src": "vo/q4en/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.8,
+   "dur": 1.35,
+   "text": "Drop your score below!",
+   "src": "vo/q4en/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.6,
+   "text": "화이팅!",
+   "src": "vo/q4en/end_fighting.wav"
+  }
+ ],
+ "q4ko": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 1.037,
+   "text": "간 떨어지다!",
+   "src": "vo/q4ko/q1_title.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 1.86,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q4ko/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q4ko/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q4ko/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q4ko/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 4.86,
+   "dur": 0.73,
+   "text": "딩동댕!",
+   "src": "vo/q4ko/q1_answer.wav"
+  },
+  {
+   "id": "q1_sayit",
+   "at": 5.8,
+   "dur": 0.933,
+   "text": "따라 해 보세요!",
+   "src": "vo/q4ko/q1_sayit.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 6.84,
+   "dur": 1.748,
+   "text": "간 떨어질 뻔했어요!",
+   "src": "vo/q4ko/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.407,
+   "text": "간이 콩알만 해지다!",
+   "src": "vo/q4ko/q2_title.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.46,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q4ko/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q4ko/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q4ko/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q4ko/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.46,
+   "dur": 0.73,
+   "text": "딩동댕!",
+   "src": "vo/q4ko/q2_answer.wav"
+  },
+  {
+   "id": "q2_sayit",
+   "at": 15.4,
+   "dur": 0.933,
+   "text": "따라 해 보세요!",
+   "src": "vo/q4ko/q2_sayit.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 16.44,
+   "dur": 1.392,
+   "text": "간이 콩알만 해졌어요!",
+   "src": "vo/q4ko/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 1.071,
+   "text": "간이 크다!",
+   "src": "vo/q4ko/q3_title.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.06,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q4ko/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q4ko/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q4ko/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q4ko/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.06,
+   "dur": 0.73,
+   "text": "딩동댕!",
+   "src": "vo/q4ko/q3_answer.wav"
+  },
+  {
+   "id": "q3_sayit",
+   "at": 25,
+   "dur": 0.933,
+   "text": "따라 해 보세요!",
+   "src": "vo/q4ko/q3_sayit.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 26.04,
+   "dur": 1.313,
+   "text": "간이 크네요!",
+   "src": "vo/q4ko/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 0.996,
+   "text": "몇 개 맞혔어요?",
+   "src": "vo/q4ko/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.2,
+   "dur": 1.436,
+   "text": "댓글로 알려 주세요!",
+   "src": "vo/q4ko/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.733,
+   "text": "화이팅!",
+   "src": "vo/q4ko/end_fighting.wav"
+  }
+ ],
+ "q5en": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 1.109,
+   "text": "파리 날리다!",
+   "src": "vo/q5en/q1_title.wav"
+  },
+  {
+   "id": "q1_guess",
+   "at": 1.15,
+   "dur": 1.178,
+   "text": "Flying flies?",
+   "src": "vo/q5en/q1_guess.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 2.36,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q5en/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q5en/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q5en/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q5en/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 5.04,
+   "dur": 1.128,
+   "text": "No customers!",
+   "src": "vo/q5en/q1_answer.wav"
+  },
+  {
+   "id": "q1_joke",
+   "at": 6.2,
+   "dur": 1.01,
+   "text": "So quiet!",
+   "src": "vo/q5en/q1_joke.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 7.25,
+   "dur": 1.135,
+   "text": "파리만 날려요!",
+   "src": "vo/q5en/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.145,
+   "text": "우물 안 개구리!",
+   "src": "vo/q5en/q2_title.wav"
+  },
+  {
+   "id": "q2_guess",
+   "at": 10.76,
+   "dur": 1.196,
+   "text": "Frog in a well?",
+   "src": "vo/q5en/q2_guess.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.96,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q5en/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q5en/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q5en/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q5en/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.64,
+   "dur": 1.166,
+   "text": "Tiny world view!",
+   "src": "vo/q5en/q2_answer.wav"
+  },
+  {
+   "id": "q2_joke",
+   "at": 15.8,
+   "dur": 0.816,
+   "text": "Well, well!",
+   "src": "vo/q5en/q2_joke.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 16.85,
+   "dur": 1.552,
+   "text": "우물 안 개구리였어요!",
+   "src": "vo/q5en/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 1.124,
+   "text": "고양이 세수하듯!",
+   "src": "vo/q5en/q3_title.wav"
+  },
+  {
+   "id": "q3_guess",
+   "at": 20.38,
+   "dur": 1.156,
+   "text": "Cat face wash?",
+   "src": "vo/q5en/q3_guess.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.56,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q5en/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q5en/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q5en/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q5en/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.24,
+   "dur": 1.196,
+   "text": "A quick splash!",
+   "src": "vo/q5en/q3_answer.wav"
+  },
+  {
+   "id": "q3_joke",
+   "at": 25.4,
+   "dur": 0.914,
+   "text": "Lazy!",
+   "src": "vo/q5en/q3_joke.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 26.45,
+   "dur": 1.674,
+   "text": "고양이 세수만 했어요!",
+   "src": "vo/q5en/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 1.9,
+   "text": "Okay! How many did you get?",
+   "src": "vo/q5en/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.8,
+   "dur": 1.35,
+   "text": "Drop your score below!",
+   "src": "vo/q5en/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.6,
+   "text": "화이팅!",
+   "src": "vo/q5en/end_fighting.wav"
+  }
+ ],
+ "q5ko": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 1.109,
+   "text": "파리 날리다!",
+   "src": "vo/q5ko/q1_title.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 1.86,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q5ko/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q5ko/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q5ko/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q5ko/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 4.86,
+   "dur": 0.73,
+   "text": "딩동댕!",
+   "src": "vo/q5ko/q1_answer.wav"
+  },
+  {
+   "id": "q1_sayit",
+   "at": 5.8,
+   "dur": 0.933,
+   "text": "따라 해 보세요!",
+   "src": "vo/q5ko/q1_sayit.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 6.84,
+   "dur": 1.135,
+   "text": "파리만 날려요!",
+   "src": "vo/q5ko/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.124,
+   "text": "고양이 세수하듯!",
+   "src": "vo/q5ko/q2_title.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.46,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q5ko/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q5ko/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q5ko/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q5ko/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.46,
+   "dur": 0.73,
+   "text": "딩동댕!",
+   "src": "vo/q5ko/q2_answer.wav"
+  },
+  {
+   "id": "q2_sayit",
+   "at": 15.4,
+   "dur": 0.933,
+   "text": "따라 해 보세요!",
+   "src": "vo/q5ko/q2_sayit.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 16.44,
+   "dur": 1.674,
+   "text": "고양이 세수만 했어요!",
+   "src": "vo/q5ko/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 1.145,
+   "text": "우물 안 개구리!",
+   "src": "vo/q5ko/q3_title.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.06,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q5ko/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q5ko/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q5ko/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q5ko/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.06,
+   "dur": 0.73,
+   "text": "딩동댕!",
+   "src": "vo/q5ko/q3_answer.wav"
+  },
+  {
+   "id": "q3_sayit",
+   "at": 25,
+   "dur": 0.933,
+   "text": "따라 해 보세요!",
+   "src": "vo/q5ko/q3_sayit.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 26.04,
+   "dur": 1.552,
+   "text": "우물 안 개구리였어요!",
+   "src": "vo/q5ko/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 0.996,
+   "text": "몇 개 맞혔어요?",
+   "src": "vo/q5ko/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.2,
+   "dur": 1.436,
+   "text": "댓글로 알려 주세요!",
+   "src": "vo/q5ko/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.733,
+   "text": "화이팅!",
+   "src": "vo/q5ko/end_fighting.wav"
+  }
+ ],
+ "q6en": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 0.897,
+   "text": "바람맞다!",
+   "src": "vo/q6en/q1_title.wav"
+  },
+  {
+   "id": "q1_guess",
+   "at": 1.15,
+   "dur": 1.035,
+   "text": "Hit by the wind?",
+   "src": "vo/q6en/q1_guess.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 2.36,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q6en/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q6en/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q6en/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q6en/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 5.04,
+   "dur": 1.079,
+   "text": "Got stood up!",
+   "src": "vo/q6en/q1_answer.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 6.36,
+   "dur": 1.114,
+   "text": "바람맞았어요!",
+   "src": "vo/q6en/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.271,
+   "text": "하늘의 별 따기!",
+   "src": "vo/q6en/q2_title.wav"
+  },
+  {
+   "id": "q2_guess",
+   "at": 10.92,
+   "dur": 0.944,
+   "text": "Picking a star?",
+   "src": "vo/q6en/q2_guess.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.96,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q6en/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q6en/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q6en/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q6en/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.64,
+   "dur": 1.226,
+   "text": "Super hard to get!",
+   "src": "vo/q6en/q2_answer.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 15.96,
+   "dur": 1.857,
+   "text": "하늘의 별 따기예요!",
+   "src": "vo/q6en/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 1.353,
+   "text": "해가 서쪽에서 뜨다!",
+   "src": "vo/q6en/q3_title.wav"
+  },
+  {
+   "id": "q3_guess",
+   "at": 20.6,
+   "dur": 0.87,
+   "text": "Sun in the west?",
+   "src": "vo/q6en/q3_guess.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.56,
+   "dur": 0.73,
+   "text": "Nope!",
+   "src": "vo/q6en/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.622,
+   "text": "Three!",
+   "src": "vo/q6en/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.519,
+   "text": "Two!",
+   "src": "vo/q6en/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.5,
+   "text": "One!",
+   "src": "vo/q6en/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.24,
+   "dur": 1.193,
+   "text": "That never happens!",
+   "src": "vo/q6en/q3_answer.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 25.5,
+   "dur": 2.027,
+   "text": "해가 서쪽에서 뜨겠어요!",
+   "src": "vo/q6en/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 1.9,
+   "text": "Okay! How many did you get?",
+   "src": "vo/q6en/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.8,
+   "dur": 1.35,
+   "text": "Drop your score below!",
+   "src": "vo/q6en/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.6,
+   "text": "화이팅!",
+   "src": "vo/q6en/end_fighting.wav"
+  }
+ ],
+ "q6ko": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 0.897,
+   "text": "바람맞다!",
+   "src": "vo/q6ko/q1_title.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 1.86,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q6ko/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q6ko/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q6ko/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q6ko/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 4.86,
+   "dur": 0.649,
+   "text": "딩동댕!",
+   "src": "vo/q6ko/q1_answer.wav"
+  },
+  {
+   "id": "q1_sayit",
+   "at": 5.5,
+   "dur": 0.828,
+   "text": "따라 해 보세요!",
+   "src": "vo/q6ko/q1_sayit.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 6.36,
+   "dur": 1.114,
+   "text": "바람맞았어요!",
+   "src": "vo/q6ko/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.271,
+   "text": "하늘의 별 따기!",
+   "src": "vo/q6ko/q2_title.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.46,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q6ko/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q6ko/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q6ko/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q6ko/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.46,
+   "dur": 0.649,
+   "text": "딩동댕!",
+   "src": "vo/q6ko/q2_answer.wav"
+  },
+  {
+   "id": "q2_sayit",
+   "at": 15.1,
+   "dur": 0.828,
+   "text": "따라 해 보세요!",
+   "src": "vo/q6ko/q2_sayit.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 15.96,
+   "dur": 1.857,
+   "text": "하늘의 별 따기예요!",
+   "src": "vo/q6ko/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 1.353,
+   "text": "해가 서쪽에서 뜨다!",
+   "src": "vo/q6ko/q3_title.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.06,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q6ko/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q6ko/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q6ko/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q6ko/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.06,
+   "dur": 0.649,
+   "text": "딩동댕!",
+   "src": "vo/q6ko/q3_answer.wav"
+  },
+  {
+   "id": "q3_sayit",
+   "at": 24.7,
+   "dur": 0.828,
+   "text": "따라 해 보세요!",
+   "src": "vo/q6ko/q3_sayit.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 25.56,
+   "dur": 2.027,
+   "text": "해가 서쪽에서 뜨겠어요!",
+   "src": "vo/q6ko/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 0.996,
+   "text": "몇 개 맞혔어요?",
+   "src": "vo/q6ko/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.2,
+   "dur": 1.436,
+   "text": "댓글로 알려 주세요!",
+   "src": "vo/q6ko/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.733,
+   "text": "화이팅!",
+   "src": "vo/q6ko/end_fighting.wav"
+  }
+ ],
+ "q7ko": [
+  {
+   "id": "q1_title",
+   "at": 0.03,
+   "dur": 1.146,
+   "text": "물에 빠진 생쥐!",
+   "src": "vo/q7ko/q1_title.wav"
+  },
+  {
+   "id": "q1_nope",
+   "at": 1.86,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q7ko/q1_nope.wav"
+  },
+  {
+   "id": "q1_3",
+   "at": 3,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q7ko/q1_3.wav"
+  },
+  {
+   "id": "q1_2",
+   "at": 3.6,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q7ko/q1_2.wav"
+  },
+  {
+   "id": "q1_1",
+   "at": 4.2,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q7ko/q1_1.wav"
+  },
+  {
+   "id": "q1_answer",
+   "at": 4.86,
+   "dur": 0.649,
+   "text": "딩동댕!",
+   "src": "vo/q7ko/q1_answer.wav"
+  },
+  {
+   "id": "q1_sayit",
+   "at": 5.5,
+   "dur": 0.828,
+   "text": "따라 해 보세요!",
+   "src": "vo/q7ko/q1_sayit.wav"
+  },
+  {
+   "id": "q1_say",
+   "at": 6.36,
+   "dur": 1.351,
+   "text": "물에 빠진 생쥐가 됐어요!",
+   "src": "vo/q7ko/q1_say.wav"
+  },
+  {
+   "id": "q2_title",
+   "at": 9.63,
+   "dur": 1.319,
+   "text": "불 보듯 뻔하다!",
+   "src": "vo/q7ko/q2_title.wav"
+  },
+  {
+   "id": "q2_nope",
+   "at": 11.46,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q7ko/q2_nope.wav"
+  },
+  {
+   "id": "q2_3",
+   "at": 12.6,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q7ko/q2_3.wav"
+  },
+  {
+   "id": "q2_2",
+   "at": 13.2,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q7ko/q2_2.wav"
+  },
+  {
+   "id": "q2_1",
+   "at": 13.8,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q7ko/q2_1.wav"
+  },
+  {
+   "id": "q2_answer",
+   "at": 14.46,
+   "dur": 0.649,
+   "text": "딩동댕!",
+   "src": "vo/q7ko/q2_answer.wav"
+  },
+  {
+   "id": "q2_sayit",
+   "at": 15.1,
+   "dur": 0.828,
+   "text": "따라 해 보세요!",
+   "src": "vo/q7ko/q2_sayit.wav"
+  },
+  {
+   "id": "q2_say",
+   "at": 15.96,
+   "dur": 1.643,
+   "text": "불 보듯 뻔해요!",
+   "src": "vo/q7ko/q2_say.wav"
+  },
+  {
+   "id": "q3_title",
+   "at": 19.23,
+   "dur": 0.868,
+   "text": "물 건너가다!",
+   "src": "vo/q7ko/q3_title.wav"
+  },
+  {
+   "id": "q3_nope",
+   "at": 21.06,
+   "dur": 0.611,
+   "text": "땡!",
+   "src": "vo/q7ko/q3_nope.wav"
+  },
+  {
+   "id": "q3_3",
+   "at": 22.2,
+   "dur": 0.314,
+   "text": "셋!",
+   "src": "vo/q7ko/q3_3.wav"
+  },
+  {
+   "id": "q3_2",
+   "at": 22.8,
+   "dur": 0.489,
+   "text": "둘!",
+   "src": "vo/q7ko/q3_2.wav"
+  },
+  {
+   "id": "q3_1",
+   "at": 23.4,
+   "dur": 0.458,
+   "text": "하나!",
+   "src": "vo/q7ko/q3_1.wav"
+  },
+  {
+   "id": "q3_answer",
+   "at": 24.06,
+   "dur": 0.649,
+   "text": "딩동댕!",
+   "src": "vo/q7ko/q3_answer.wav"
+  },
+  {
+   "id": "q3_sayit",
+   "at": 24.7,
+   "dur": 0.828,
+   "text": "따라 해 보세요!",
+   "src": "vo/q7ko/q3_sayit.wav"
+  },
+  {
+   "id": "q3_say",
+   "at": 25.56,
+   "dur": 1.571,
+   "text": "물 건너갔어요!",
+   "src": "vo/q7ko/q3_say.wav"
+  },
+  {
+   "id": "end_score",
+   "at": 28.86,
+   "dur": 0.996,
+   "text": "몇 개 맞혔어요?",
+   "src": "vo/q7ko/end_score.wav"
+  },
+  {
+   "id": "end_comment",
+   "at": 30.2,
+   "dur": 1.436,
+   "text": "댓글로 알려 주세요!",
+   "src": "vo/q7ko/end_comment.wav"
+  },
+  {
+   "id": "end_fighting",
+   "at": 32.42,
+   "dur": 0.733,
+   "text": "화이팅!",
+   "src": "vo/q7ko/end_fighting.wav"
+  }
+ ]
+} as const;
+export type VoVersion = keyof typeof VO;

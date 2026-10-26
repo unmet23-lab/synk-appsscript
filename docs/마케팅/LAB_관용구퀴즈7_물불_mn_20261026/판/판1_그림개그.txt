@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — six needle-felted wool props for a kids' Korean idiom quiz about WATER & FIRE idioms, one sheet.
+
+The attached reference photo only shows the felt craft look we want (wool texture, colors, lighting, the caramel-brown teddy bear character). Do not copy its objects or layout.
+
+Layout: one landscape image, 3 columns × 2 rows, six cells of equal size. One object group per cell, centered, filling about 65–75% of the cell, with wide empty margins so no two cells touch. Seamless pure white background (#FFFFFF), flat even studio light, no floor, no cast shadows, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on signs, books, trains, tickets or screens. Nothing in the image is white or cream except the background; every outer edge is a clear saturated color or charcoal. Water, splashes, raindrops and bubbles are light blue, never white.
+
+Top row = the funny WRONG literal readings:
+1. "A MOUSE FALLEN INTO WATER" — a small grey felt mouse with pink ears that has just fallen into a round light-blue felt water tub: only its head and two tiny paws stick out of the water, eyes huge in surprise, mouth open, and big light-blue felt water splashes fly up around it. Funny, slapstick.
+2. "WATCHING A FIRE" — the caramel-brown felt teddy bear (same character as the reference) crouching very close to a small orange-red felt campfire on two brown felt logs, staring at the flames with a huge oversized magnifying glass held in both paws, one eye hugely magnified, totally absorbed.
+3. "CROSSING THE WATER" — the same bear rowing a small red wooden felt rowboat with two oars over chunky light-blue felt waves, cheeks puffed with effort, a tiny green felt island with one palm tree on the far side.
+
+Bottom row = the TRUE meanings:
+4. SOAKING WET AND MISERABLE — the same bear standing under a small dark-grey felt rain cloud with light-blue felt raindrops falling on it, completely drenched: fur flattened and dripping light-blue drops, shoulders slumped, shivering, holding a broken red felt umbrella turned inside out, a tiny light-blue puddle at its feet. Pitiful but cute.
+5. THE RESULT IS OBVIOUS — on a small wooden felt table, an orange tabby felt cat stands with both front paws on the table edge and a whole blue felt fish clamped in its mouth, looking smug; next to it an empty felt plate. The outcome is totally obvious.
+6. TOO LATE, IT'S OVER — the same bear with a yellow felt suitcase standing on the edge of a grey felt train platform, both arms up in despair, mouth open, while a short green felt train is already leaving in the distance on the right with a puff of light-blue felt steam.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, cute and playful for children, consistent soft lighting across all six cells, saturated but soft colors that will read well on a cobalt blue background. Keep each cell's pieces close together inside the cell but clearly separated from neighboring cells by white space.
