@@ -60,12 +60,14 @@ def bottle_front():
     im = Image.new("L", (W, H), 0)
     d = ImageDraw.Draw(im)
     cx = W // 2
-    needle_pair(d, cx, 470, 230, 120, 22)
-    spaced(d, cx, 1000, "솔서리", serif(170, "Medium"), 26)
-    spaced(d, cx, 1160, "SOLSEORI", ImageFont.truetype(SANS, 52), 30)
-    d.line([cx - 90, 1240, cx + 90, 1240], fill=255, width=3)
-    spaced(d, cx, 1310, "EAU DE COLOGNE", ImageFont.truetype(SANS, 34), 16)
-    spaced(d, cx, 1370, "100 ml", ImageFont.truetype(SANS, 30), 10)
+    # 2판(10-26 밤, Fable 이미지 콘티 1차 P1-6 · P2-8): 원본 라벨판은 어깨 바로 아래라 18번 첫 프레임 · 17번에 이름 자리가 보인다 —
+    # 「ㅅ」 · 「솔서리」를 몸통 위쪽으로 올리고(ㅅ 470 → 300 · 솔서리 1000 → 760) 사이를 좁혔다. 300은 향수 수면(287) 바로 아래
+    needle_pair(d, cx, 300, 230, 120, 22)
+    spaced(d, cx, 760, "솔서리", serif(170, "Medium"), 26)
+    spaced(d, cx, 920, "SOLSEORI", ImageFont.truetype(SANS, 52), 30)
+    d.line([cx - 90, 1000, cx + 90, 1000], fill=255, width=3)
+    spaced(d, cx, 1070, "EAU DE COLOGNE", ImageFont.truetype(SANS, 34), 16)
+    spaced(d, cx, 1130, "100 ml", ImageFont.truetype(SANS, 30), 10)
     im.save(os.path.join(밖, "병앞_흰잉크.png"))
 
 
@@ -74,7 +76,7 @@ def cap_top():
     S = 1040
     im = Image.new("L", (S, S), 0)
     d = ImageDraw.Draw(im)
-    needle_pair(d, S // 2, 300, 420, 230, 56)
+    needle_pair(d, S // 2, 210, 620, 320, 104)   # 2판(Fable P2-4): 0.72초 접사에서 가는 선이 안 읽혔다 — 원본 각인처럼 윗면의 60%, 선 굵기 2배
     im = im.filter(ImageFilter.GaussianBlur(3))
     im.save(os.path.join(밖, "뚜껑_각인.png"))
 

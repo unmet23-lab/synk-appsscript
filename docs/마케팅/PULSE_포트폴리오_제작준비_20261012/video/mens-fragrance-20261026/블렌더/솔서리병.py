@@ -281,8 +281,10 @@ def mat_liquid():
     l.new(shadow_pass(n, l, b.outputs[0]).outputs[0], out.inputs["Surface"])
     va = n.new("ShaderNodeVolumeAbsorption")
     # 4판: 옅은 파랑은 코발트 바탕에 묻혔다 — 빙하 물빛(청록 쪽 파랑)으로 진하게. 원본의 남색과는 다른 색
-    va.inputs["Color"].default_value = (0.22, 0.66, 1.0, 1)
-    va.inputs["Density"].default_value = 48.0
+    va.inputs["Color"].default_value = (0.22, 0.66, 0.85, 1)
+    # 11판(Fable 이미지 콘티 1차 P1-4): 밀도 48은 바탕색을 그대로 비쳐 2 · 17번은 바탕과 같고 3 · 18번은 빈 병으로 보였다 —
+    # 원본처럼 병 속이 바탕보다 어둡고 짙게(명도 0.35~0.45), 색상은 청록 쪽(200~210°)
+    va.inputs["Density"].default_value = 150.0
     l.new(va.outputs[0], out.inputs["Volume"])
     return m
 
@@ -516,7 +518,7 @@ def ice_block(size, loc, mat, cuts=(), seed=1, roughen=0.0015, hole=None):
     return ob
 
 
-def siot_ice(mat, h=0.20, w=0.17, thick=0.060, depth=0.060, loc=(0, 0, 0)):
+def siot_ice(mat, h=0.20, w=0.17, thick=0.060, depth=0.060, loc=(0, 0, 0), sheath=False):
     """「ㅅ」 얼음 조각 — 위에서 맞붙은 두 기둥(안쪽 갈라진 자리가 원본 Y의 V 자리). 원본 Y는 세 갈래, 우리는 두 갈래."""
     root = link(bpy.data.objects.new("siot_root", None))
     ang = math.atan2(w / 2, h)
@@ -541,15 +543,17 @@ def siot_ice(mat, h=0.20, w=0.17, thick=0.060, depth=0.060, loc=(0, 0, 0)):
     # 바닥을 평평하게, 꼭대기도 살짝 평평하게(두 기둥 머리가 W로 패이지 않게)
     jag_cut(ob, (0, 0, 0.0), (0, 0, -1), 0.4, seed=11)
     jag_cut(ob, (0, 0, h - 0.004), (0, 0, 1), 0.4, seed=12)
-    # 잎집 마디: 꼭대기 위로 솟은 가는 기둥(라벨 상징의 머리) — 이것이 있어야 「A」가 아니라 솔잎 한 쌍으로 읽힌다
-    sh = rounded_box("sheath", thick * 0.42, depth * 0.7, 0.060, (0, 0, h + 0.022), mat, bevel=0.006, segs=3)
-    apply_mods(sh)
-    mod = ob.modifiers.new("u2", "BOOLEAN")
-    mod.operation = "UNION"
-    mod.object = sh
-    mod.solver = "EXACT"
-    apply_mods(ob)
-    bpy.data.objects.remove(sh, do_unlink=True)
+    # 잎집 마디(꼭대기 위로 솟은 가는 기둥)는 11판부터 뺀다(sheath=False) — Fable 이미지 콘티 1차 P0-1: 뒤집어 찍은 6 · 7번에서
+    # 이 기둥이 원본 「Y」의 줄기가 되어 Y 얼음 조각 그대로 읽혔고, 세운 10번도 뒤집힌 Y(λ)로 읽혔다. 잎집은 라벨 · 뚜껑의 가는 선에만
+    if sheath:
+        sh = rounded_box("sheath", thick * 0.42, depth * 0.7, 0.060, (0, 0, h + 0.022), mat, bevel=0.006, segs=3)
+        apply_mods(sh)
+        mod = ob.modifiers.new("u2", "BOOLEAN")
+        mod.operation = "UNION"
+        mod.object = sh
+        mod.solver = "EXACT"
+        apply_mods(ob)
+        bpy.data.objects.remove(sh, do_unlink=True)
     sub = ob.modifiers.new("sub", "SUBSURF")
     sub.levels = 2
     sub.render_levels = 2
@@ -564,7 +568,7 @@ def siot_ice(mat, h=0.20, w=0.17, thick=0.060, depth=0.060, loc=(0, 0, 0)):
     return root
 
 
-def pine_sprig(loc, length=0.10, needle=0.028, seed=5, mat_stem=None, mat_needle=None):
+def pine_sprig(loc, length=0.10, needle=0.028, seed=5, mat_stem=None, mat_needle=None, el=(28, 48), az=None):
     """솔가지: 가는 줄기에 솔잎이 두 가닥씩(잎집에서 갈라짐) 비스듬히 난다. 원본의 얼음 속 초록 새싹 자리."""
     rnd = random.Random(seed)
     stem_m = mat_stem or mat_simple("stem", base=(0.20, 0.13, 0.08), rough=0.6)
@@ -577,11 +581,11 @@ def pine_sprig(loc, length=0.10, needle=0.028, seed=5, mat_stem=None, mat_needle
     n_pairs = int(length / 0.0026)
     for i in range(n_pairs):
         z = 0.008 + (length - 0.010) * i / n_pairs
-        az = rnd.uniform(0, 2 * math.pi)
+        a0 = rnd.uniform(0, 2 * math.pi) if az is None else rnd.choice(az) + rnd.uniform(-0.25, 0.25)
         for side in (-0.22, 0.22):
-            a = az + side
-            el = math.radians(rnd.uniform(28, 48))
-            dirv = Vector((math.cos(a) * math.cos(el), math.sin(a) * math.cos(el), math.sin(el)))
+            a = a0 + side
+            e = math.radians(rnd.uniform(*el))
+            dirv = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
             ln = needle * rnd.uniform(0.85, 1.1)
             ret = bmesh.ops.create_cone(bm, cap_ends=True, segments=5, radius1=0.00042, radius2=0.00008, depth=ln)
             rot = dirv.to_track_quat("Z", "Y").to_matrix().to_4x4()
@@ -700,7 +704,7 @@ def mat_frost(name, fade_axis="Z", fade=(0.45, 1.0), radial=False):
     b = principled(n, base=(0.86, 0.93, 1.0), rough=0.55)
     tc = n.new("ShaderNodeTexCoord")
     nz = n.new("ShaderNodeTexNoise")
-    nz.inputs["Scale"].default_value = 260.0
+    nz.inputs["Scale"].default_value = 140.0   # 12판(Fable P2-10): 260은 병 속 얼음 알갱이처럼 잘게 보였다
     nz.inputs["Detail"].default_value = 10.0
     nz.inputs["Roughness"].default_value = 0.7
     l.new(tc.outputs["Object"], nz.inputs["Vector"])
@@ -723,9 +727,15 @@ def mat_frost(name, fade_axis="Z", fade=(0.45, 1.0), radial=False):
         l.new(vm.outputs["Value"], edge.inputs["Value"])
     else:
         l.new(sep.outputs[fade_axis], edge.inputs["Value"])
+    # 12판(Fable P2-10): 알갱이만 있으면 덩어리가 병 속 얼음처럼 보였다 — 옅은 젖빛 막(0.35) 위에 알갱이를 얹는다
+    haze = n.new("ShaderNodeMath")
+    haze.operation = "MULTIPLY_ADD"
+    l.new(grain.outputs["Result"], haze.inputs[0])
+    haze.inputs[1].default_value = 0.65
+    haze.inputs[2].default_value = 0.35
     mul = n.new("ShaderNodeMath")
     mul.operation = "MULTIPLY"
-    l.new(grain.outputs["Result"], mul.inputs[0])
+    l.new(haze.outputs[0], mul.inputs[0])
     l.new(edge.outputs["Result"], mul.inputs[1])
     tr = n.new("ShaderNodeBsdfTransparent")
     mix = n.new("ShaderNodeMixShader")
@@ -736,7 +746,7 @@ def mat_frost(name, fade_axis="Z", fade=(0.45, 1.0), radial=False):
     return m
 
 
-def frost_shell(height, root=None, pad=0.0004):
+def frost_shell(height, root=None, pad=0.0015):   # 12판(Fable P2-10): 0.4 mm는 유리와 같은 자리라 병 속 서리로 읽혔다
     """병 몸통 바깥에 붙는 얇은 서리 껍질(바닥에서 height까지) — 원본 18번처럼 병 밑에서 서리가 차오른다(--t로 높이를 바꾼다).
     윗면은 서리가 엷어진 끝(투명)이라 병을 가로지르는 선이 생기지 않는다."""
     ob = rounded_box("frost", BW + pad * 2, BD + pad * 2, height, (0, 0, height / 2), mat_frost("frost"), bevel=0.0036)
@@ -804,25 +814,31 @@ def shot_look():
 
 
 def shot_s18():
-    """원본 18(15.84~20.00초): 첫 프레임은 병이 화면 왼쪽에 크게(병 가운데가 화면 폭의 0.2 · 뚜껑 위가 화면 위에 닿고 바닥은 아래로 잘림,
-    오른쪽 가운데에 흐린 빛 덩이) → 18초쯤까지 물러나며 병이 화면 가운데(0.53) · 높이의 0.55로, 병 뒤 아래쪽에 가로 빛 띠(높이 0.75)."""
+    """원본 18(15.84~20.00초): 첫 프레임은 병이 화면 왼쪽에 크게(뚜껑 가운데가 화면 폭의 0.22 · 뚜껑 위가 화면 위에 잘리고 바닥은 아래로 잘림,
+    병 오른쪽 아래에 흐린 둥근 빛 덩이) → 20.0초까지 서지 않고 점점 느리게 물러나(0.51배) 병이 화면 왼쪽 1/3(가운데 0.30)에 서고,
+    빛 덩이는 17초쯤까지 가로 빛 띠(높이 0.62~0.80)로 길어지며, 병 밑에서 서리가 차오른다."""
     # 11판(10-26 밤, 아르곤 첫 분석 · 원본 15.88~18.00초 프레임 대조): ① 원본 띠는 처음에 병 오른쪽 뒤의 둥근 빛 덩이였다가
     # 1초 동안 양옆으로 길어져 17초쯤 화면을 가로지른다 — 길이를 --t로 늘린다. ② 끝 프레임 띠 높이 0.65~0.80(우리 10판 0.55~0.65) —
     # 띠를 병 뒤 0.25 m · 바닥 바로 위로 당겨 낮춘다(바닥 밑으로는 못 내린다). ③ 원본 바닥은 띠를 흐리게만 비춘다(밝기 120~170, 우리 240~255) — 거칠게.
     # ④ 원본 바탕은 위가 어둡고 띠 쪽으로 밝아진다(23 → 114, 우리는 57~62로 평평) — 바탕판 높이를 줄여 화면 안에 기울기를 넣는다.
-    studio(low=(0.030, 0.16, 0.85), high=(0.001, 0.006, 0.05), strength=0.5, dist=0.9, height=0.30)
+    # 12판(Fable 이미지 콘티 1차 P2-9 · 10): 첫 프레임 위가 원본의 2.3배 밝고 바탕판 아래 끝이 띠처럼 보였다 — 바탕을 어둡게, 기울기는 아래로 길게
+    studio(low=(0.022, 0.13, 0.75), high=(0.0005, 0.003, 0.025), strength=0.5, dist=0.9, height=0.40)   # 0.35는 띠 위 바탕이 원본(114)보다 어두웠다(46)
+    bpy.data.objects["backdrop"].location.z -= 0.10
     fl = bpy.data.materials["floor"].node_tree.nodes["Principled BSDF"]
     fl.inputs["Roughness"].default_value = float(arg("--바닥거칠기", "0.4"))
     fl.inputs["Coat Weight"].default_value = 0.0
     fl.inputs["Base Color"].default_value = (0.004, 0.014, 0.045, 1) if arg("--검은바닥", "0") == "0" else (0, 0, 0, 1)   # 띠가 바닥을 곧장 비춰 청록 웅덩이가 졌다 — 바닥을 어둡게
-    fl.inputs["Specular IOR Level"].default_value = float(arg("--바닥반사", "0.4"))
-    fl.inputs["Specular Tint"].default_value = (0.55, 0.78, 1.0, 1)   # 흰 띠가 회색 바닥으로 비쳤다 — 원본처럼 옅은 파랑으로   # 11판 시험: 거칠기만 올리니 띠 반사가 바닥 전체로 번져 하얬다
+    fl.inputs["Specular IOR Level"].default_value = float(arg("--바닥반사", "0.25"))
+    fl.inputs["Specular Tint"].default_value = (0.55, 0.78, 1.0, 1)   # 흰 띠가 회색 바닥으로 비쳤다 — 원본처럼 옅은 파랑으로
     # 띠 두 끝(m): 원본 프레임에서 오른쪽 끝이 화면 폭의 0.52(15.88초) → 0.77(16.34) → 0.91(16.6) → 17초쯤 화면 끝, 왼쪽 끝은 병 뒤에서 나와 17초쯤 화면 왼쪽 끝
-    x0, x1 = (0.028 - 0.45 * T, 0.048 + 0.50 * T) if T < 0.30 else (-1.5, 1.5)
-    light_bar(((x0 + x1) / 2, 0.25, 0.021), x1 - x0, 0.040, 2.6, soft=True)   # 6판: 5판은 띠가 세고 두꺼워 병 아래 절반이 탔다
+    # 12판(Fable P2-11): T=0.30에서 3 m로 바꾸면 화면 왼쪽 끝이 한 프레임 튄다 — 0.36까지 이어 두 끝이 화면 밖으로 나간 뒤 바꾼다
+    # 12판(P2-10): 띠를 바닥에서 띄우면 띠와 바닥 반사 사이가 검게 비고, 붙이면 바닥 반사까지 띠로 읽혀 아래 끝이 0.07 낮았다 —
+    # 띠를 0.35 m 뒤로 물려 바닥선을 화면 높이 0.77쯤으로 올리고(바닥에 붙임), 바닥 반사는 줄인다. 빛 덩이 자람은 그 평면 폭(1.2배)만큼
+    x0, x1 = (0.020 - 0.54 * T, 0.060 + 0.60 * T) if T < 0.36 else (-1.5, 1.5)   # 빛 덩이를 병 오른쪽으로 조금 더(P2-9)
+    light_bar(((x0 + x1) / 2, 0.35, 0.0225), x1 - x0, 0.045, 2.6, soft=True)
     root = bottle((0, 0, 0), rot_z=-6)
     # ⑤ 원본은 병 밑에서 서리 · 냉기가 병을 타고 차오른다(끝에서 라벨 바로 아래까지) — 서리 껍질 높이를 --t로
-    frost_shell(BH * (0.14 + 0.26 * T), root)
+    frost_shell(BH * (0.12 + 0.21 * T), root)   # 12판(Fable P3-4): 원본 끝은 몸통 아래 0.31쯤
     area_light("key", (-0.28, -0.30, 0.22), (0, 0, 0.06), 9, 0.30, ICE_BLUE)
     rims((0, 0, 0.06), e=55)
     # 11판: 병 뒤 테두리 조명 둘이 바닥까지 비춰 병 앞 · 오른쪽 바닥이 하얀 웅덩이가 됐다(원본 바닥은 띠 아래 밝기 120 안팎) — 빛 연결로 병만 비춘다
@@ -852,75 +868,98 @@ def shot_s18():
 
 
 def shot_s17():
-    """원본 17(14.84~15.84초): 병 몸통이 화면을 채우고(폭의 0.12~0.85) 라벨이 가운데, 병이 반시계로 약 10° 기울어 보임,
-    뚜껑은 왼쪽 위에 잘림, 오른쪽 뒤가 밝다 → 1초 동안 물러나며 돎."""
-    studio(low=(0.10, 0.32, 0.95), high=(0.004, 0.03, 0.22), strength=0.7, dist=0.5, height=0.5)
+    """원본 17(14.84~15.84초): 병 몸통이 화면을 채우고(폭의 0.12~0.85) 라벨이 가운데(높이 0.55~0.66), 윗부분이 왼쪽으로 15°쯤 기울어 보임,
+    어깨 유리 · 뚜껑 밑이 위에 잘려 보이고 오른쪽 뒤가 밝다 → 1초에 0.64배로 물러남(돌지 않음)."""
+    studio(low=(0.10, 0.32, 0.95), high=(0.004, 0.03, 0.22), strength=0.5, dist=0.5, height=0.5)   # 11판(P2-8): 가운데 값 117/86
     bottle((0, 0, 0), rot_z=-16)
     area_light("key", (-0.20, -0.25, 0.20), (0, 0, 0.05), 8, 0.25, ICE_BLUE)
-    area_light("back", (0.25, 0.30, 0.10), (0, 0, 0.05), 120, 0.35, (0.80, 0.90, 1.0))
+    area_light("back", (0.25, 0.30, 0.10), (0, 0, 0.05), 70, 0.35, (0.80, 0.90, 1.0))   # 11판(Fable P2-8): 120은 원본보다 밝고 모서리가 탔다
     rims((0, 0, 0.05))
-    # 9판(Fable P0-4): 원본은 돌지 않는다 — 기울기 고정, 1초에 0.64배로 물러남만
-    d = 0.160 / (1 - 0.36 * T)
-    camera((0.020, -d - BD / 2, 0.046), (0.0, 0, 0.044), lens=85, fstop=8.0, roll=-15)   # 10판: 원본은 병 윗부분이 왼쪽으로 기움
+    # 9판(Fable P0-4): 원본은 돌지 않는다 — 기울기 고정, 1초에 0.64배로 물러남만 · 11판(P2-8): 어깨 유리가 위에 걸리게 조금 물림
+    d = 0.190 / (1 - 0.36 * T)
+    # 11판: 라벨 2판에서 「솔서리」가 z 0.0497로 올라 겨냥도 올린다(이름이 원본 라벨 자리 높이 0.55~0.66에). 어깨까지 넣으면 병이 작아져 어깨는 뺀다
+    camera((0.020, -d - BD / 2, 0.056), (0.0, 0, 0.054), lens=85, fstop=8.0, roll=-15)   # 10판: 원본은 병 윗부분이 왼쪽으로 기움
 
 
 def shot_s02():
     """원본 2(2.08~2.48초): 얼음 덩이에 박힌 병의 이름 자리를 아주 가까이 — 화면 폭 ≈ 병 폭/0.9(0.052 m, 렌즈 100 → 0.144 m),
     이름이 화면 가운데 · 높이 0.62, 위로 뚜껑과 얼음 윗면, 왼쪽 · 오른쪽 끝에 얼음 덩이가 걸침. 0.4초에 0.98배로 살짝 물러남."""
-    studio(low=(0.015, 0.09, 0.55), high=(0.005, 0.04, 0.30), strength=0.6, dist=0.5)
+    studio(low=(0.015, 0.09, 0.55), high=(0.005, 0.04, 0.30), strength=0.9, dist=0.5)   # 11판(Fable P2-1): 원본보다 어두웠다(가운데 값 67/96)
     bottle((0, 0, 0), rot_z=0)
-    ice = mat_ice()
+    ice = mat_ice(frost=0.25)   # 11판(P2-1): 맑은 얼음이 바탕과 같아 양옆 얼음 덩이가 안 보였다 — 젖빛 결을 더
     ice_block((0.110, 0.075, 0.150), (0.0, 0.0, 0.075), ice,
               cuts=[((0.040, -0.04, 0.14), (0.6, -0.7, 0.5), 0.14, 4), ((-0.045, -0.035, 0.15), (-0.4, -0.8, 0.6), 0.10, 7),
                     ((0.0, -BD / 2 - 0.002, 0.07), (0.0, -1.0, 0.0), 0.30, 13)],
               hole=(BW + 0.0012, BD + 0.0012, 0.30, (0, 0, 0.15 - 0.0006), 0))
-    area_light("key", (-0.20, -0.30, 0.25), (0, 0, 0.05), 8, 0.30, ICE_BLUE)
+    area_light("key", (-0.20, -0.30, 0.25), (0, 0, 0.05), 12, 0.30, ICE_BLUE)
     area_light("back", (0.0, 0.30, 0.10), (0, 0, 0.06), 60, 0.25, (0.70, 0.85, 1.0))
     rims((0, 0, 0.05), e=30)
     # 7판: 이름이 원본 라벨 자리(높이 0.62)보다 아래였다 — 겨냥을 내리고, 양옆 얼음이 보이게 화면 폭을 0.065 m로
-    d = 0.180 / (1 - 0.02 * T)
-    camera((0.0, -d - BD / 2, 0.041), (0.0, 0, 0.041), lens=100, fstop=8.0)
+    # 11판: 라벨 2판에서 「솔서리」가 z 0.0497로 올라 겨냥도 올리고(이름이 높이 0.60), 조금 물려 위에 「ㅅ」 전체가 들게(화면 폭 0.070 m)
+    d = 0.195 / (1 - 0.02 * T)
+    camera((0.0, -d - BD / 2, 0.0537), (0.0, 0, 0.0537), lens=100, fstop=8.0)
 
 
 def shot_s03():
     """원본 3(2.48~3.20초): 모서리가 깨진 큰 얼음 덩이(화면 폭의 0.27~0.75, 병 폭의 2.5배쯤) 속에 선 병, 뚜껑 위가 화면 위 0.05,
     병 바닥이 0.85 — 화면 높이 0.14 m(렌즈 70 → 0.484 m). 밝은 바닥 · 흐린 파란 바탕. 거의 고정(살짝 기움)."""
-    studio(low=(0.04, 0.16, 0.75), high=(0.002, 0.02, 0.16), strength=0.6, dist=0.7, floor_rgb=(0.03, 0.10, 0.32))
-    bottle((0, 0, 0), rot_z=-10, print_through=True)
+    # 11판(Fable 이미지 콘티 1차 P2-2): 원본은 얼음 왼쪽 위 모서리가 크게 깨졌고 병이 얼음 앞 오른쪽에 나와 있다 · 위 바탕이 밝았다(90/57)
+    studio(low=(0.04, 0.16, 0.75), high=(0.002, 0.02, 0.16), strength=0.45, dist=0.7, floor_rgb=(0.03, 0.10, 0.32))
+    BX, BY = 0.010, -0.020
+    bottle((BX, BY, 0), rot_z=-10, print_through=True)
     ice = mat_ice()
     ice_block((0.115, 0.080, 0.150), (0.004, 0.0, 0.075), ice,
               cuts=[((0.050, -0.04, 0.14), (0.7, -0.6, 0.5), 0.13, 4), ((0.055, -0.04, 0.03), (0.9, -0.4, -0.2), 0.08, 9),
-                    ((-0.05, -0.04, 0.15), (-0.5, -0.5, 0.7), 0.06, 21)],
-              hole=(BW + 0.0012, BD + 0.0012, 0.30, (0, 0, 0.15 - 0.0006), -10))
+                    ((-0.05, -0.04, 0.15), (-0.5, -0.5, 0.7), 0.06, 21), ((-0.034, -0.030, 0.112), (-0.55, -0.45, 0.70), 0.20, 31)],
+              hole=(BW + 0.0012, BD + 0.0012, 0.30, (BX, BY, 0.15 - 0.0006), -10))
     area_light("key", (-0.25, -0.30, 0.25), (0, 0, 0.05), 10, 0.30, ICE_BLUE)
     area_light("back", (0.05, 0.30, 0.10), (0, 0, 0.06), 70, 0.30, (0.70, 0.85, 1.0))
     rims((0, 0, 0.06), e=35)
-    camera((0.007, -0.484 - 0.04, 0.060), (0.007, 0, 0.066), lens=70, fstop=5.6, roll=-2 * T)
+    camera((0.007, -0.484 - 0.04, 0.049), (0.007, 0, 0.055), lens=70, fstop=5.6, roll=-2 * T)   # 11판(P2-2): 병이 원본보다 0.08 아래였다 — 겨냥을 11 mm 내림
 
 
 def shot_s06():
     """원본 6(4.96~5.24초): 머리글자 얼음 조각의 갈라진 자리를 아주 가까이(화면 폭 ≈ 0.12 m). 원본 Y는 V 자리가 화면 높이 0.35에서
     두 팔이 위로 벌어지고, 우리 「ㅅ」은 꼭짓점이 위라 꼭짓점을 같은 높이(0.35)에 두고 두 다리가 아래로 벌어진다(위아래만 뒤집힌 꼴)."""
     studio(low=(0.01, 0.08, 0.50), high=(0.001, 0.01, 0.10), strength=0.6, dist=0.5, use_floor=False)
-    ice = mat_ice("ice_s", frost=0.15)
+    ice = mat_ice("ice_s", frost=0.05)   # 11판(Fable 이미지 콘티 1차 P2-3): 0.15 · 테두리 45는 모서리가 흰 선으로 타 아크릴 CG 같았다
     siot_ice(ice, loc=(0, 0, 0))
     area_light("back", (0.0, 0.35, 0.15), (0, 0, 0.15), 90, 0.40, (0.55, 0.78, 1.0))
     area_light("key", (-0.2, -0.25, 0.3), (0, 0, 0.15), 8, 0.3, ICE_BLUE)
-    rims((0, 0, 0.17), e=45, spread=(0.20, 0.15, 0.25))
-    # 9판(Fable P1-4 추천): 0.28초 접사라 위아래를 알 수 없다 — 카메라를 180° 돌려 「ㅅ」 꼭짓점이 아래인 V 깔때기로(원본 6번과 같은 꼴),
-    # 잎집 마디가 원본 Y 기둥 자리(꼭짓점 아래)로 온다. 꼭짓점이 화면 높이 0.35에 오게 겨냥
+    rims((0, 0, 0.17), e=20, spread=(0.20, 0.15, 0.25))
+    # 9판(Fable P1-4 추천): 0.28초 접사라 위아래를 알 수 없다 — 카메라를 180° 돌려 「ㅅ」 꼭짓점이 아래인 V 깔때기로(원본 6번과 같은 꼴).
+    # 11판: 잎집 기둥을 빼 꼭짓점 아래가 비었다(기둥이 있으면 원본 Y 그대로 — Fable P0-1). 꼭짓점이 화면 높이 0.62에 오게 겨냥
     camera((0.0, -0.135 - 0.03, 0.203), (0.0, 0, 0.203), lens=60, fstop=5.6, roll=180)
+
+
+def shot_s07():
+    """원본 7(5.24~5.72초): 6번보다 낮고 가까운 카메라 — 갈라진 자리(꼭짓점)가 화면 위 끝에 흐리게 걸리고 그 아래로 물이 흘러내린다.
+    11판(Fable 이미지 콘티 1차 P1-2): 7번이 6번 렌더를 그대로 써 컷이 바뀌어도 카메라가 안 바뀐 것처럼 보였다 — 따로 찍는다.
+    우리 V에는 원본의 아래 기둥이 없어(P0-1) 꼭짓점 아래는 빈 파랑이고, 물줄기는 GPT 결 입히기에서 꼭짓점에서 쏟아진다."""
+    studio(low=(0.01, 0.08, 0.50), high=(0.001, 0.01, 0.10), strength=0.6, dist=0.5, use_floor=False)
+    ice = mat_ice("ice_s", frost=0.05)
+    siot_ice(ice, loc=(0, 0, 0))
+    area_light("back", (0.0, 0.35, 0.15), (0, 0, 0.15), 90, 0.40, (0.55, 0.78, 1.0))
+    area_light("key", (-0.2, -0.25, 0.3), (0, 0, 0.15), 8, 0.3, ICE_BLUE)
+    rims((0, 0, 0.17), e=20, spread=(0.20, 0.15, 0.25))
+    # 화면 폭 0.060 m(렌즈 60 → 0.10 m, 6번 0.081 m보다 가까이), V 아래 꼭짓점이 화면 높이 0.45쯤(겨냥 z 0.212 — 0.22면 0.3, 0.19면 화면 아래 끝).
+    # 원본처럼 위 끝에 붙이면 기둥 없는 우리 V는 화면 아래 2/3가 빈 파랑이라, 두 팔 안쪽 면이 위 절반에 걸리게 했다
+    camera((0.0, -0.10 - 0.03, 0.212), (0.0, 0, 0.212), lens=60, fstop=16.0, focus=0.10, roll=180)   # 4.0 · 8.0은 초점이 얼음 앞면(0.10 m)을 벗어나 꼴이 안 읽혔다
 
 
 def shot_s10():
     """원본 10(7.40~8.12초): 파란 바탕 앞 머리글자 얼음 조각이 화면 가운데(높이의 0.13~0.97 — 화면 높이 0.238 m, 렌즈 50 → 0.588 m),
     속에 초록 새싹 → 우리 「ㅅ」 속에 솔가지. 바닥 반사 선이 0.97. 0.72초에 4.7% 다가감."""
-    studio(low=(0.03, 0.14, 0.70), high=(0.002, 0.02, 0.15), strength=0.6, dist=0.8, floor_rgb=(0.03, 0.09, 0.28))
+    # 11판(Fable 이미지 콘티 1차 P2-5): 원본보다 어두웠다(가운데 값 42/92, 아래 1/3 104/187 — 원본은 흰 바닥 안개가 화면 아래를 채움)
+    studio(low=(0.06, 0.22, 0.85), high=(0.002, 0.02, 0.15), strength=0.8, dist=0.8, floor_rgb=(0.10, 0.22, 0.50))
     ice = mat_ice("ice_s", frost=0.12)
     siot_ice(ice, loc=(0, 0, 0))
-    # 솔가지는 오른쪽 다리 속에 다리를 따라 비스듬히(원본 새싹이 Y 기둥 속에 박힌 자리)
-    sp = pine_sprig((0.050, 0.0, 0.014), length=0.12, needle=0.024)
+    # 솔가지는 오른쪽 다리 속에 다리를 따라 비스듬히(원본 새싹이 Y 기둥 속에 박힌 자리) — 11판(P2-5): 짧은 바늘잎이 사방으로 나 가문비처럼 보였다 →
+    # 긴 솔잎 두 가닥씩, 다리 면(좌우)을 따라 눕혀 얼음 밖으로 안 나오게, 밝은 초록
+    sp = pine_sprig((0.050, 0.0, 0.014), length=0.12, needle=0.046, el=(14, 30), az=(0.0, math.pi),
+                    mat_needle=mat_simple("needle_b", base=(0.10, 0.42, 0.14), rough=0.35, coat=0.3))
     sp.rotation_euler = (0, math.radians(-21), 0)
+    area_light("floorglow", (0.0, -0.10, 0.03), (0, 0.10, 0.0), 8, 0.50, (0.70, 0.85, 1.0))   # 바닥 안개 자리를 밝게(30은 하얗게 탔다)
     area_light("back", (0.0, 0.40, 0.18), (0, 0, 0.10), 90, 0.40, (0.55, 0.78, 1.0))
     area_light("key", (-0.25, -0.30, 0.25), (0, 0, 0.10), 8, 0.30, ICE_BLUE)
     rims((0, 0, 0.10), e=40, spread=(0.25, 0.20, 0.20))
@@ -936,33 +975,35 @@ def shot_s09():
     bottle((0, 0, -(BH + NECK_H + CAP[2] - 0.001) - 0.002), rot_z=12)   # 뚜껑 윗면이 물 아래 2 mm
     water_surface(0.0, strength=0.009)
     # 물결에 비칠 위쪽 빛판(반사에만 보임) — 7판: 6판은 물 표면이 안 보여 뚜껑이 마른 채로 보였다
-    sb = rounded_box("softbox", 0.6, 0.6, 0.002, (0.10, 0.10, 0.45), mat_emit("sb", (0.75, 0.88, 1.0), 3.0), bevel=0.0)
+    sb = rounded_box("softbox", 0.6, 0.6, 0.002, (0.10, 0.10, 0.45), mat_emit("sb", (0.75, 0.88, 1.0), 1.8), bevel=0.0)   # 11판: 가까이 가니 하얗게 떴다(가운데 값 121/82)
     sb.visible_camera = False
     sb.visible_transmission = False
     sb.visible_shadow = False
-    area_light("top", (0.05, -0.08, 0.40), (0, 0, 0), 30, 0.35, ICE_BLUE)
+    area_light("top", (0.05, -0.08, 0.40), (0, 0, 0), 18, 0.35, ICE_BLUE)
     area_light("side", (-0.30, 0.10, 0.10), (0, 0, 0), 25, 0.20, (0.55, 0.78, 1.0))
     a = math.radians(30)
-    d = 0.19
-    camera((-0.024, -d * math.sin(a), d * math.cos(a)), (-0.024 + 0.008, 0.0, 0.0), lens=85, fstop=5.6, roll=8 + 3 * T)
+    # 11판(Fable 이미지 콘티 1차 P2-4): 원본 뚜껑 윗면은 가운데 (0.58, 0.40) · 폭 0.38, 우리 10판은 (0.66, 0.56) · 0.30 — 가까이(0.19 → 0.15) · 겨냥을 뚜껑 쪽으로
+    d = 0.15
+    tx, ty = -0.005, -0.0066
+    camera((tx, ty - d * math.sin(a), d * math.cos(a)), (tx, ty, 0.0), lens=85, fstop=5.6, roll=8 + 3 * T)
 
 
 def shot_hand():
     """12번 손에 든 병 — 투명 바탕(병만), 이미지 콘티 · 영상 시작 그림의 초록 대역 자리에 얹는다(제품은 AI로 그리지 않는다).
-    원본 12번의 병은 몸을 비스듬히 앞에서 본 꼴(앞면 + 오른쪽 옆면), 위가 조금 기울고 약간 아래에서 올려다봄."""
+    원본 12번의 병은 앞면 + 왼쪽 옆면이 보이고, 윗부분(뚜껑)이 화면 오른쪽으로 17°쯤 기울었다(10-26 밤 원본 첫 프레임 눈금으로 잼 — 1판은 반대로 기울었다)."""
     bpy.context.scene.render.film_transparent = True
     bpy.context.scene.render.image_settings.color_mode = "RGBA"
     world_gradient((0.004, 0.02, 0.10), (0.03, 0.12, 0.40), 1.0)
     backdrop((0.03, 0.14, 0.60), (0.004, 0.02, 0.10), strength=0.8, dist=0.4)   # 굴절로 비칠 바탕(카메라에는 투명으로 빠짐)
     bpy.data.objects["backdrop"].visible_camera = False
-    bottle((0, 0, 0), rot_z=-24, print_through=False)
+    bottle((0, 0, 0), rot_z=22, print_through=False)
     area_light("key", (-0.22, -0.30, 0.18), (0, 0, 0.06), 9, 0.30, ICE_BLUE)
     rims((0, 0, 0.06), e=45)
-    camera((0.0, -0.40, 0.040), (0.0, 0, 0.060), lens=85, fstop=11.0, roll=-8)
+    camera((0.0, -0.40, 0.040), (0.0, 0, 0.060), lens=85, fstop=11.0, roll=17)
 
 
 SHOTS = {"hand": shot_hand, "look": shot_look, "s18": shot_s18, "s17": shot_s17, "s02": shot_s02, "s03": shot_s03,
-         "s06": shot_s06, "s10": shot_s10, "s09": shot_s09}
+         "s06": shot_s06, "s07": shot_s07, "s10": shot_s10, "s09": shot_s09}
 
 if __name__ == "__main__":
     sc = reset()
