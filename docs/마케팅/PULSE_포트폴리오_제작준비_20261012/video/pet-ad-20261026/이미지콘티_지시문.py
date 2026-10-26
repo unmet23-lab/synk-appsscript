@@ -333,6 +333,19 @@ fix("S07c", ("stands DIRECTLY in front of the glass middle door — the door is 
              "stands in front of the glass middle door — the camera looks toward the ENTRANCE of the room, so the glass middle door is the "
              "wall directly behind him, its white frame visible on both sides of his body, daylight through it backlighting him — full "
              "body facing the camera, chin level and face toward the camera, his eyes behind the sunglasses turned down to the dog,"))
+# Fable 4차(10-27 02시) — 보이기엔 되지만 영상 전에: 9 시작 그림의 유리문이 화면 안이라 배경이 끝보다 오른쪽(원본은 시작 → 끝에 배경이 오른쪽으로 흐름)
+# → 유리문을 왼쪽 밖으로(S09g). 1은 먼 해변 사람 다섯 · 눈이 반쯤 뜸 · 머리가 작음(S01e).
+shots["S09g"] = {"refs": shots["S09f"]["refs"], "prompt": shots["S09f"]["prompt"]}
+fix("S09g", ("the glass middle door is at the far LEFT edge of the frame, partly cut off, and the big window with the sheer curtain and the "
+             "bed are right behind the dog, just to the right of its head.",
+             "the glass middle door is OUT of the frame beyond the LEFT edge — not visible at all; directly behind the dog's head is the "
+             "big window with the sheer curtain, the bed to the right of it."))
+shots["S01e"] = {"refs": shots["S01d"]["refs"], "prompt": shots["S01d"]["prompt"]}
+fix("S01e", ("the head is turned toward the camera and down to the lower left;",
+             "the head is turned toward the camera and down to the lower left, and fills about half the frame width (the camera a little "
+             "closer);"),
+    ("squints its eyes almost shut against the wind", "squints its eyes almost shut against the wind — only a thin amber line shows"),
+    ("Camera: handheld, very close,", "The beach is EMPTY — no people, no animals, no objects anywhere. Camera: handheld, very close,"))
 for k, v in shots.items():
     v["ratio"] = "9:16"
 jobs.update(shots)
