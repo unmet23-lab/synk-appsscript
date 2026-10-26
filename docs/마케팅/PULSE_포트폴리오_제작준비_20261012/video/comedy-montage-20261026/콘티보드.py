@@ -67,9 +67,27 @@ def fit(im):
     return im.resize((TW, TH), Image.LANCZOS)
 
 
+# 칸마다 카메라 한 줄(02_콘티 3-1절 — 원본 0.2초 실측 숫자, 10-26 밤 유호님 「카메라 기법도 완전히 똑같게」)
+CAM = {
+    "C01": "왼쪽으로 쓸림 폭 40% · 0.9초 최고 → 1.3초 뚝 멈춤",
+    "C02": "오른쪽 도착 팬 폭 34% · 처음 0.25초 최고 → 느려지며 멈춤",
+    "C03": "오른쪽 꾸준한 팬 폭 93% / 3.3초",
+    "C04": "바닥 → 위로 들며 왼쪽 팬 → 멈춤 → 오른쪽으로 빨라짐 · 걸어 다가감",
+    "C05": "걸어 다가감 1.4배 · 끝 0.9초 왼쪽으로 빨라지며 비켜 감",
+    "C06": "가리키는 손 → 오른쪽으로 크게 휘두름(번짐) → 느린 팬으로 그를 지나침",
+    "C07": "오른쪽 → 위로 살짝 → 왼쪽 쓸림 폭 35% · 살짝 물러남",
+    "C08": "거의 멈춘 손떨림 ±1~2%",
+    "C09": "왼쪽 팬 → 멈춤 → 오른쪽 조금 → 왼쪽으로 빨라지며 지나침",
+    "C10": "0.3초 도착 팬(오른쪽) → 손떨림", "C11": "0.3초 도착 팬(왼쪽) → 손떨림", "C12": "0.3초 도착 팬(오른쪽) → 손떨림",
+    "C13": "0.3초 도착 팬(왼쪽) → 손떨림", "C14": "0.3초 도착 팬(오른쪽) → 손떨림", "C15": "0.3초 도착 팬(왼쪽) → 손떨림",
+    "C16a": "여행자 폰에서 시작 → 오른쪽 빠른 팬(폭 190%)", "C16": "도착 → 한 번에 1.42배 당김(줌 버튼처럼)",
+    "C16b": "손떨림 ±1% · 끝에 아래로 조금 → 휙", "C17": "—",
+}
+
+
 def cell(row):
     cid, sec, orig, place, what = row
-    W, H = TW * 2 + 18, TH + 150
+    W, H = TW * 2 + 18, TH + 190
     c = Image.new("RGB", (W, H), CARD)
     d = ImageDraw.Draw(c)
     o = fit(Image.open(P / "원본대표프레임" / f"{orig}.png").convert("RGB")) if orig else None
@@ -80,7 +98,7 @@ def cell(row):
         else:
             d.rectangle([x, 0, x + TW, TH], fill=(40, 36, 33))
         d.text((x + 8, 6), lab, font=f("ExtraBold", 20), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
-    d.text((8, TH + 10), f"{cid[1:]}  {sec}초  ·  {place}", font=f("ExtraBold", 26), fill=GOLD)
+    d.text((8, TH + 10), f"{cid[1:]}  {sec.replace(chr(8211), "~")}초  ·  {place}", font=f("ExtraBold", 26), fill=GOLD)
     y = TH + 50
     line = ""
     for ch in what:
@@ -89,6 +107,14 @@ def cell(row):
         else:
             line += ch
     d.text((8, y), line, font=f("Medium", 23), fill=INK)
+    y += 34
+    line = ""
+    for ch in "카메라 " + CAM.get(cid, ""):
+        if d.textlength(line + ch, font=f("Medium", 21)) > W - 16:
+            d.text((8, y), line, font=f("Medium", 21), fill=(170, 220, 170)); y += 27; line = ch
+        else:
+            line += ch
+    d.text((8, y), line, font=f("Medium", 21), fill=(170, 220, 170))
     return c
 
 
