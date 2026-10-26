@@ -1,0 +1,349 @@
+{
+ "메모": "10번 B2B 제조 홍보영상 이미지 콘티 지시문(2026-10-26 — 02_콘티.md 2절 · 6절). 원본 컷 첫 프레임과 같은 카메라 자리 · 크기 · 높이 · 빛으로 굽는다(만족 사례 장부 S31). 원본 프레임은 넣지 않고 배치도(사람 = 검은 실루엣, 기계 · 공간 = 크게 흐린 윤곽선 — git 밖 콘티/p10/배치)와 기준 그림(R1~R6, 콘티/p10/참조), 준호 참조(명세서 refs 넷)만 넣는다. 33 · 37은 원본 비행기 모양이 남아 배치도를 넣지 않는다. 화면 글자 · 회사 이름은 굽지 않고 후반에서 얹는다. 풀기: python -X utf8 지시문/풀기.py → git 밖 콘티/p10/ego/jobs.json, 받은 그림은 콘티/p10/받음/.",
+ "공통": {
+  "시작": "Create one still photograph. A cinematic film still from a Korean heavy-industry company's brand film, wide 16:9 landscape frame, shot on a cinema camera with a fast prime lens and natural shallow depth of field. Keep the main subject inside the middle band of the frame; the top and bottom edges will later be covered by thin black bars.",
+  "준호_얼굴": "Use the attached photos of the same man (Images 1 to {n}) only as identity references for one Korean man about forty years old. Keep his face exactly the same as in those photos: an oval face with a broad, smooth forehead and a gently rounded jaw; warm light-tan skin with a few faint small freckles on the cheeks; natural eyes with soft double eyelids and fine crow's-feet lines at the outer corners; straight dark eyebrows; a straight nose with a softly rounded tip; clean-shaven with no beard or stubble; short black hair neatly swept to one side with a side part. His expression is calm, steady and serious, with his lips closed and relaxed (no smile). Ignore the backgrounds, clothing and lighting of the reference photos. Do not add glasses, moles, scars, earrings, text, logos or watermarks.",
+  "준호_옷": "He wears a dark navy work jacket with a small stand-up collar, zipped halfway, over a plain light-grey crew-neck T-shirt, with no logos, no name badges and no text on the clothes.",
+  "작업자": "Any other worker in the picture shows no face at all: seen from behind, cropped above the shoulders, or with the face hidden by a cap, a white safety helmet seen from above, or a welding mask. Workers wear plain dark-grey work clothes with no logos or text.",
+  "터빈": "The machine is a large industrial gas turbine for a power plant: a long horizontal machine about four meters tall with a clean warm-ivory (off-white) painted outer casing of bolted curved panels, a large round air intake at the front with a ring of many dark charcoal blades around a smooth dark nose cone with no markings, and a tapered exhaust at the back.",
+  "기준R1": "Image {n} is the reference photo of the finished gas turbine: keep exactly the same machine shape, ivory casing, bolt lines, round dark blade intake and plain dark nose cone.",
+  "기준R2": "Image {n} is the reference photo of the bare compressor blade ring: keep the same slim silver blades and the same machined central disc.",
+  "기준R3": "Image {n} is the reference photo of the assembly hall: keep the same bright white hall, yellow overhead bridge crane, light-grey floor and cool white light.",
+  "기준R4": "Image {n} is the reference photo of the test cell: keep the same long tunnel with rows of small white square acoustic panels on dark walls.",
+  "기준R5": "Image {n} is the reference photo of the transport trailer: keep the same low multi-axle trailer, the same plain white truck and the same yellow diamond sticker with only a baby-face pictogram.",
+  "기준R6": "Image {n} is the reference photo of the power plant at dusk: keep the same plain grey turbine hall, slim exhaust stacks, transmission towers and dusk sky.",
+  "배치": "Image {n} is a layout guide for the camera framing, made from another film: black silhouettes show exactly where people are and how large they are; grey lines are the soft outline of the large shapes in the frame (machine edges, walls, floor lines) and show their position and size; the light grey area is empty and must be filled with the scene described here. Match the camera position, camera height, lens, framing and the size and position of every shape exactly as in the layout guide, filling the whole 16:9 frame. Do not draw the grey, the black, the lines or any guide shapes.",
+  "금지_글자": "No text, no letters, no numbers, no logos, no brand marks, no signs with writing and no watermarks anywhere in the picture.",
+  "질감": "Photorealistic, natural skin texture with visible pores, real metal, paint and concrete textures, slight film grain, no beauty retouching, no illustration look, no CGI sheen."
+ },
+ "컷": [
+  {
+   "id": "S01",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "배치:S01"
+   ],
+   "text": "{시작} {준호_얼굴:4} Extreme close-up of his eyes and the bridge of his nose filling the frame (the top of his forehead and his mouth are cut off by the frame edges); he looks slightly down at a lit drafting table below the camera, and tiny reflections of glowing blue technical lines (circles and curves of a turbine cross-section) shine in his dark eyes. On the right a soft blurred white office light. {배치:5} Light: cool soft light from below and a warm rim from the side. {금지_글자} {질감}"
+  },
+  {
+   "id": "S02",
+   "who": "없음",
+   "refs": [
+    "배치:S02"
+   ],
+   "text": "{시작} Extreme close-up of a large blue technical drawing lying on a dark drafting table: fine white and light-blue lines of a gas turbine cross-section — concentric circles, blade curves and bolt circles — with no writing and no numbers; the edge of the sheet and a steel ruler on the lower right. Very shallow focus. {배치:1} Light: dark room, the sheet lit softly from above. {금지_글자} {질감}"
+  },
+  {
+   "id": "S03",
+   "who": "없음",
+   "refs": [
+    "배치:S03"
+   ],
+   "text": "{시작} A dark factory floor, camera low and close: hundreds of bright orange grinding sparks fly in from the upper left and bounce across the dark concrete floor, glowing streaks and small sparks, a dim warm glow in the background. No person visible. {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S04",
+   "who": "없음",
+   "refs": [
+    "배치:S04"
+   ],
+   "text": "{시작} Close-up of a thick steel plate on a welding table: a welding rod comes in from the upper left, and a bright white-orange welding arc flares at the right, lighting the plate and the air amber, white smoke rising. No person visible. {배치:1} Light: hot amber light from the arc, deep shadows around. {금지_글자} {질감}"
+  },
+  {
+   "id": "S05",
+   "who": "작업자",
+   "refs": [
+    "배치:S05"
+   ],
+   "text": "{시작} In near darkness, a welder in a dark welding helmet (face fully hidden behind the mask) bends over a metal part in the lower middle of the frame, seen from the side; a small blue-white welding arc and white smoke in the center, a few sparks. Most of the frame is black. {작업자} {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S06",
+   "who": "작업자",
+   "refs": [
+    "배치:S06"
+   ],
+   "text": "{시작} A welder seen close from the side in dim light, wearing dark tinted welding goggles, a black respirator mask and a hood that hide the face completely, a dark red-brown work jacket; a bright welding glare flares at the upper left with a soft lens flare, metal machine parts around him. {작업자} {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S07",
+   "who": "작업자",
+   "refs": [
+    "배치:S07"
+   ],
+   "text": "{시작} {터빈} Close-up inside the turbine's dense web of metal pipes, brackets and wiring: two hands in black work gloves tighten a fitting among the pipes in the lower middle; on the right edge the blurred shoulder and back of the worker's head (no face). {작업자} {배치:1} Light: dim warm work light glinting on the pipes. {금지_글자} {질감}"
+  },
+  {
+   "id": "S08",
+   "who": "작업자",
+   "refs": [
+    "R2",
+    "배치:S08"
+   ],
+   "text": "{시작} Straight frontal view of a huge bare compressor blade ring standing upright on a stand, filling the whole frame like a giant circle of radiating silver blades; through the open center of the ring, far behind, one worker stands small as a dark back-lit silhouette (no face), and beyond him a wide factory window shows green trees. {기준R2:1} {작업자} {배치:2} Light: cool white factory light from behind. {금지_글자} {질감}"
+  },
+  {
+   "id": "S09",
+   "who": "없음",
+   "refs": [
+    "R2",
+    "배치:S09"
+   ],
+   "text": "{시작} Close-up of the center of the bare compressor blade ring: the dark machined central disc and the roots of dozens of silver blades radiating out around it, a thin yellow safety strap along the top edge, dark surroundings. {기준R2:1} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S10",
+   "who": "작업자",
+   "refs": [
+    "R3",
+    "배치:S10"
+   ],
+   "text": "{시작} Wide shot of the bright white assembly hall: on the left a partly assembled gas turbine rotor (rings of blades and pipes, no casing yet) lies horizontally on a heavy steel stand; on the right a large round section of the ivory turbine casing stands upright; two workers in dark clothes stand small beside the machine, seen from behind. {기준R3:1} {작업자} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S11",
+   "who": "작업자",
+   "refs": [
+    "R1",
+    "배치:S11"
+   ],
+   "text": "{시작} {터빈} Very low camera under the curved belly of the turbine casing, which fills the top of the frame in dark shadow; in the lower left a worker crouches under the machine, seen from above so only his white safety helmet and shoulders show (no face); behind him the bright factory hall with work stands. {기준R1:1} {작업자} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S12",
+   "who": "작업자",
+   "refs": [
+    "배치:S12"
+   ],
+   "text": "{시작} Medium shot in the factory: a worker in a dark work shirt stands at a work-station monitor in the middle, seen from behind over his shoulder (no face), the bright factory hall, workbenches and storage racks behind. {작업자} {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S13",
+   "who": "작업자",
+   "refs": [
+    "R3",
+    "배치:S13"
+   ],
+   "text": "{시작} A worker seen from behind reaches up with both arms to support a large curved dark-charcoal casing panel above him on the left; another worker stands further back on the right, out of focus and turned away. White hall walls and steel columns behind. {기준R3:1} {작업자} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S14",
+   "who": "작업자",
+   "refs": [
+    "배치:S14"
+   ],
+   "text": "{시작} Over-the-shoulder close shot: a worker's gloved hands press and align a seam of the curved dark casing panel; only the worker's arm, shoulder and the back of the head are visible on the right (no face); the bright white hall behind. {작업자} {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S15",
+   "who": "작업자",
+   "refs": [
+    "배치:S15"
+   ],
+   "text": "{시작} Dark close-up among the black curved blades of the turbine's front blade ring: an arm in a dark sleeve and a black glove reaches in from the right between the blades. Low-key light glinting on the blade edges, most of the frame dark. {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S16",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "R1",
+    "배치:S16"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Close view of the black blade ring at the front of the finished turbine, its smooth dark nose cone in the upper left with no markings at all; on the right edge he stands in profile facing left, looking closely at the blades, calm and focused (his face in profile, lips closed). White hall light from the right. {기준R1:5} {배치:6} {금지_글자} {질감}"
+  },
+  {
+   "id": "S17",
+   "who": "작업자",
+   "refs": [
+    "R1",
+    "R3",
+    "배치:S17"
+   ],
+   "text": "{시작} {터빈} Wide frontal shot in the bright white assembly hall: the finished gas turbine faces the camera with some outer casing panels opened around the front, its dark round blade intake in the center filling the middle of the frame; below it three workers stand small on the floor, far away, no faces. Yellow crane, white walls, work stands. {기준R1:1} {기준R3:2} {작업자} {배치:3} {금지_글자} {질감}"
+  },
+  {
+   "id": "S18",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "R3",
+    "배치:S18"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Medium close-up from a low angle: he stands on the left of the frame in profile facing right, looking up at something high above, calm and focused; behind him the yellow overhead crane and the white hall ceiling, out of focus. {기준R3:5} {배치:6} Light: bright cool factory light from above. {금지_글자} {질감}"
+  },
+  {
+   "id": "S19",
+   "who": "없음",
+   "refs": [
+    "R5",
+    "배치:S19"
+   ],
+   "text": "{시작} Close-up of the rear wheels and the dusty off-white mud flap of a heavy-haul trailer: in the middle of the mud flap a single yellow diamond-shaped sticker showing only a simple black baby-face pictogram, with no words at all; round red tail lights on the left, black tires on the right. Bright overcast daylight. {기준R5:1} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S20",
+   "who": "작업자",
+   "refs": [
+    "배치:S20"
+   ],
+   "text": "{시작} Close-up inside a truck cab: the driver's right hand in a light-grey sleeve grips the gear lever, his forearm entering from the left; the dark dashboard and the lower curve of the steering wheel around it. Only the hand and forearm are visible. {배치:1} Light: soft daylight from the window. {금지_글자} {질감}"
+  },
+  {
+   "id": "S21",
+   "who": "없음",
+   "refs": [
+    "R5",
+    "배치:S21"
+   ],
+   "text": "{시작} View from inside a truck cab through the open passenger window: the chrome side-mirror arm and a round convex mirror; in the mirror, the ivory gas turbine strapped on the trailer behind. The concrete yard and parked machines softly out of focus. {기준R5:1} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S22",
+   "who": "없음",
+   "refs": [
+    "R1",
+    "배치:S22"
+   ],
+   "text": "{시작} {터빈} Daylight outdoors: the ivory gas turbine hangs from a large steel test-stand frame under a concrete roof, seen from below at a low angle; tall steel columns at the sides, a green wooded hill and blue sky behind; the top of a plain white truck below. {기준R1:1} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S23",
+   "who": "작업자",
+   "refs": [
+    "R1",
+    "배치:S23"
+   ],
+   "text": "{시작} {터빈} Daylight wide shot of a huge concrete engine test building with a tall open door: under a steel frame at the entrance the ivory turbine is mounted, one tiny worker stands below; grass and a paved apron in front. {기준R1:1} {작업자} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S24",
+   "who": "작업자",
+   "refs": [
+    "R4",
+    "R1",
+    "배치:S24"
+   ],
+   "text": "{시작} {터빈} Inside the dark test cell: a long tunnel lined with rows of small white square acoustic panels on dark walls, leading to the far end where the finished turbine faces the camera on its test stand; in the lower middle a worker stands with his back to the camera, small (no face). {기준R4:1} {기준R1:2} {작업자} {배치:3} Light: dim, warm-neutral work light near the machine. {금지_글자} {질감}"
+  },
+  {
+   "id": "S25",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "배치:S25"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Close-up of his face in profile facing right, in near darkness, lit only by the faint cool glow of a monitor from the right; his eyes focused and tense, lips closed. Most of the frame is black; his face sits in the right third. {배치:5} {금지_글자} {질감}"
+  },
+  {
+   "id": "S26",
+   "who": "작업자",
+   "refs": [
+    "R1",
+    "배치:S26"
+   ],
+   "text": "{시작} Control room: two monitors at the top show a live camera image of the turbine's round front with its dark blades and simple blue-green status graphics with no readable text; in the lower middle a hand in a dark sleeve pushes a black throttle lever on a console with small red and amber buttons. Dim blue light. {기준R1:1} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S27",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "배치:S27"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Extreme close-up of his face in three-quarter view on the left side of the frame (one eye, nose and cheek), in dim warm light, eyes fixed on something off-screen, lips closed; behind him on the right, out of focus, the shoulder of a colleague lit by a monitor (no face). {작업자} {배치:5} {금지_글자} {질감}"
+  },
+  {
+   "id": "S28",
+   "who": "없음",
+   "refs": [
+    "R4",
+    "R1",
+    "배치:S28"
+   ],
+   "text": "{시작} {터빈} Straight frontal view inside the dark test cell: the turbine's round ivory intake with its ring of dark blades spinning (slight motion blur on the blades), centered and filling the middle third; rows of white square acoustic panels glowing on the dark walls on both sides. {기준R4:1} {기준R1:2} {배치:3} {금지_글자} {질감}"
+  },
+  {
+   "id": "S29",
+   "who": "준호손",
+   "refs": [
+    "R1",
+    "배치:S29"
+   ],
+   "text": "{시작} Side-view close-up: a man's right hand, with the cuff of a dark navy work jacket, rests flat, palm down, on the smooth curved ivory casing of the turbine, which fills the right side of the frame; behind, on the left, the bright white hall softly out of focus with a yellow crane. Calm and still. {기준R1:1} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S30",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "R1",
+    "배치:S30"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Wide shot in the bright white assembly hall: the side of the finished ivory turbine fills the right two thirds of the frame, its round dark blade intake on the far right; he stands small on the floor in front of it, left of center, looking up at the machine. {기준R1:5} {배치:6} {금지_글자} {질감}"
+  },
+  {
+   "id": "S31",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "R3",
+    "배치:S31"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Medium close-up from a low angle: he is on the left of the frame, his head turned up toward the upper right, eyes looking high above, calm; behind him the white hall ceiling with bright lights and a yellow crane, out of focus. {기준R3:5} {배치:6} {금지_글자} {질감}"
+  },
+  {
+   "id": "S32",
+   "who": "준호",
+   "refs": [
+    "배치:S32"
+   ],
+   "text": "{시작} Medium close-up from a low angle: a man in a dark work jacket is a dark back-lit silhouette against a dim warm background, head tilted up toward the upper right, with no facial detail visible at all. Very dark, only the outline of his head and shoulders against a faint warm glow. {배치:1} {금지_글자} {질감}"
+  },
+  {
+   "id": "S33",
+   "who": "없음",
+   "refs": [
+    "R6",
+    "R1"
+   ],
+   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk, a symmetrical frontal view toward a huge open roller door at the far end; through the door a peach-and-pink sunset sky over low hills; in the middle of the hall the ivory gas turbine is installed on its foundation, seen from behind and slightly low; the polished floor reflects the sunset. Camera at standing eye height, centered, wide lens. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S34",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "배치:S34"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Outdoors at dusk, a tracking medium shot: three people walk from left to right past the camera. The nearest one on the left is out of focus and seen from behind and the side (only the back of his head and ear, no face). In the middle, in sharp focus, he walks in three-quarter view with his face clearly visible, calm, lips closed. Behind on the right a third worker is partly hidden and turned away (no face). Behind them steel equipment stands and a green hillside in warm evening light. {작업자} {배치:5} {금지_글자} {질감}"
+  },
+  {
+   "id": "S35",
+   "who": "작업자",
+   "refs": [
+    "R6",
+    "배치:S35"
+   ],
+   "text": "{시작} Outdoors at dusk: three people stand with their backs to the camera in the foreground as dark silhouettes; the one in the middle wears a dark navy work jacket and has short black hair. They look toward a row of large steel equipment and, beyond it, the power plant's two slim exhaust stacks with white vapor and transmission towers against a pink-and-blue sunset sky with a few small clouds. No faces are visible. {기준R6:1} {작업자} {배치:2} {금지_글자} {질감}"
+  },
+  {
+   "id": "S36",
+   "who": "준호",
+   "refs": [
+    "준호x4",
+    "배치:S36"
+   ],
+   "text": "{시작} {준호_얼굴:4} {준호_옷} Medium close-up outdoors at dusk: he stands right of center, his face lit by warm sunset light from the left, looking slightly upward and far away, calm, lips closed; behind him out-of-focus steel equipment, a green hillside and a soft blue sky. {배치:5} {금지_글자} {질감}"
+  },
+  {
+   "id": "S37",
+   "who": "없음",
+   "refs": [
+    "R6"
+   ],
+   "text": "{시작} High above at dusk, just below a layer of soft peach-and-pink clouds: high-voltage power lines and the top of a steel transmission tower pass close on the left side of the frame, the cables leading away toward a distant Korean city at the horizon where the first lights glow in clusters; a low sun near the horizon, warm light on the cloud undersides. {기준R6:1} {금지_글자} {질감}"
+  }
+ ]
+}
