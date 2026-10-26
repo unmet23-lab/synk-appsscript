@@ -132,11 +132,14 @@ J = dict([
         "evenly spaced like the three snow globes of a shop window. Behind them, sharp in the background at the far side of the desk, he "
         "stands bent over and lines up the laptop, the tablet and a phone in a precise row, checking their alignment.",
         WEAR, DEADPAN, DAY, FILM, 메모="6 · 8.61–10.45 작전 책상 와이드 · 꼬리표 「훈련 · 장비 점검」(합성)"),
-    job("S07", FACE4 + ["방:H", LAY("S07_실루엣.png")],
-        START, JUNHO,
-        "Location: the same apartment entrance hall as in Image 5 — use it for the room and the light.", LAY_SIL.format(n=6),
-        "Medium shot at eye level, 50mm lens: he stands at the right of center in front of the shoe cabinet, holding an open glossy shopping "
-        "flyer in both hands at chest height, reading it; his whole face is visible above it. The flyer faces the camera: a big photo of a "
+    job("S07", FACE4 + [LAY("S07_실루엣.png"), "방:H"],
+        START, JUNHO, LAY_SIL.format(n=5),
+        "Location: the apartment entrance hall shown in Image 6 — use Image 6 ONLY for how the place looks (the grey front door, the white "
+        "shoe cabinet, the warm ceiling light); do NOT copy its wide camera position (10-26: copying it gave a small full-body figure).",
+        "MEDIUM SHOT, camera about 1.2 m in front of him at chest height, 50mm lens: he fills the right half of the frame from the top of his "
+        "head, near the top edge, down to his waist at the bottom edge — no legs, no feet, no floor; the front door and shoe cabinet behind "
+        "him are out of focus. He holds an open glossy shopping flyer in both hands at chest height, reading it; his whole face is visible "
+        "above it. The flyer faces the camera: a big photo of a "
         "huge flat-screen TV, bold amber-orange price blocks and badges, no readable words. Thin black reading glasses have slid down to "
         "the tip of his nose and his eyes look over them at the price.",
         WEAR, "EXPRESSION: frozen, deadly serious, eyes slightly narrowed in disbelief at the price, lips closed — not smiling, not shouting.",
@@ -150,8 +153,10 @@ J = dict([
     job("S09", FACE4 + ["방:B", LAY("S09_실루엣.png")],
         START, JUNHO,
         "Location: the same small bathroom as in Image 5 — use it for the room and the round mirror, but not for the light.", LAY_SIL.format(n=6),
-        "Over-the-shoulder shot into the round mirror, 50mm lens: the back of his head and shoulder fill the right third of the frame, out "
-        "of focus; in the round mirror at the left of center we see his reflection from the chest up, facing the camera, sharp. Two thick "
+        "Over-the-shoulder shot into the round mirror, 50mm lens. LEFT and RIGHT as seen in the picture, exactly as in Image 6 and not "
+        "mirrored: the round mirror is in the LEFT half of the frame and his reflection in it is left of center, facing the camera, sharp, "
+        "from the chest up; the back of his head and his shoulder are at the RIGHT edge of the frame, filling the right third, out of focus. "
+        "No other reflections of him anywhere else (no second face in glass or tiles). Two thick "
         "black camouflage stripes are painted across each cheek like a soldier's face paint, and he holds a black face-paint stick near his "
         "cheek.",
         WEAR, "EXPRESSION: grim and determined, jaw set, lips firmly closed, a single small nod — no smile.",
