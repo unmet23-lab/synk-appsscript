@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "그랬더니 글을 보여 주기도 전에, 올리기부터 해 버렸어요.",
+ "dur": 2.926,
+ "words": [
+  {
+   "text": "그랬더니",
+   "start": 0.01,
+   "end": 0.376
+  },
+  {
+   "text": "글을",
+   "start": 0.539,
+   "end": 0.741
+  },
+  {
+   "text": "보여",
+   "start": 0.796,
+   "end": 0.958
+  },
+  {
+   "text": "주기도",
+   "start": 0.999,
+   "end": 1.228
+  },
+  {
+   "text": "전에,",
+   "start": 1.269,
+   "end": 1.472
+  },
+  {
+   "text": "올리기부터",
+   "start": 1.838,
+   "end": 2.258
+  },
+  {
+   "text": "해",
+   "start": 2.298,
+   "end": 2.339
+  },
+  {
+   "text": "버렸어요.",
+   "start": 2.38,
+   "end": 2.926
+  }
+ ],
+ "source": {
+  "key": "5c53c9167b8cabc6a82e335357bb0246",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

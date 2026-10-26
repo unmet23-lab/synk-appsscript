@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h3",
+ "text": "진짜였으면, 확인도 못 하고 그대로 올라갔을 거예요.",
+ "dur": 2.732,
+ "words": [
+  {
+   "text": "진짜였으면,",
+   "start": 0.02,
+   "end": 0.742
+  },
+  {
+   "text": "확인도",
+   "start": 0.81,
+   "end": 1.124
+  },
+  {
+   "text": "못",
+   "start": 1.165,
+   "end": 1.288
+  },
+  {
+   "text": "하고",
+   "start": 1.342,
+   "end": 1.506
+  },
+  {
+   "text": "그대로",
+   "start": 1.655,
+   "end": 1.888
+  },
+  {
+   "text": "올라갔을",
+   "start": 1.929,
+   "end": 2.283
+  },
+  {
+   "text": "거예요.",
+   "start": 2.324,
+   "end": 2.732
+  }
+ ],
+ "source": {
+  "key": "bcc68c2654ab01eaac1f0a954997f61a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,23 @@
+// 라운드 1: 새 시크릿 채팅(휴대폰 폭)에 연습용 올리기 파일을 붙이고 한 장 찍는다.
+const step = logger("r01");
+watchdog(step, 150_000);
+step("시작");
+const task = await taskSpace("yuhobuilds Y9 v2 채팅 실험 1027");
+const page = task.page("p1");
+await phone(page);
+step("phone");
+await page.goto("https://claude.ai/new?incognito=true");
+await page.waitForLoadState();
+await page.waitForTimeout(3500);
+step("goto");
+const inputs = await page.evaluate(() => [...document.querySelectorAll("input[type=file]")].map((i) => ({ id: i.id, testid: i.dataset.testid, accept: i.accept.slice(0, 60), multiple: i.multiple })));
+console.log(JSON.stringify(inputs));
+const t = inputs.find((i) => i.testid);
+const sel = t ? `input[type=file][data-testid=${t.testid}]` : "input[type=file] >> nth=0";
+await page.setInputFiles(sel, ["C:/Users/q1212/ego/y9v2-20261027/files/인스타_올리기.py"]);
+await page.waitForTimeout(4000);
+step("attached");
+await shot(page, `${ROOT}/r01_attached.jpg`);
+console.log(await page.snapshot());
+step("끝");
+process.exit(0);

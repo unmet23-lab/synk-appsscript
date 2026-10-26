@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r2",
+ "text": "내가 승인이라고 하기 전엔, 올리지 마.",
+ "dur": 1.872,
+ "words": [
+  {
+   "text": "내가",
+   "start": 0.02,
+   "end": 0.167
+  },
+  {
+   "text": "승인이라고",
+   "start": 0.21,
+   "end": 0.619
+  },
+  {
+   "text": "하기",
+   "start": 0.663,
+   "end": 0.765
+  },
+  {
+   "text": "전엔,",
+   "start": 0.809,
+   "end": 1.071
+  },
+  {
+   "text": "올리지",
+   "start": 1.232,
+   "end": 1.467
+  },
+  {
+   "text": "마.",
+   "start": 1.51,
+   "end": 1.872
+  }
+ ],
+ "source": {
+  "key": "57fa9c81ee29b4b290c04c5a531c2674",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "에이아이한테 올리기까지 맡길 땐, 이 한 줄 꼭 붙이세요.",
+ "dur": 2.764,
+ "words": [
+  {
+   "text": "에이아이한테",
+   "start": 0.02,
+   "end": 0.475
+  },
+  {
+   "text": "올리기까지",
+   "start": 0.547,
+   "end": 0.946
+  },
+  {
+   "text": "맡길",
+   "start": 0.989,
+   "end": 1.202
+  },
+  {
+   "text": "땐,",
+   "start": 1.245,
+   "end": 1.487
+  },
+  {
+   "text": "이",
+   "start": 1.701,
+   "end": 1.715
+  },
+  {
+   "text": "한",
+   "start": 1.771,
+   "end": 1.857
+  },
+  {
+   "text": "줄",
+   "start": 1.9,
+   "end": 1.957
+  },
+  {
+   "text": "꼭",
+   "start": 2,
+   "end": 2.099
+  },
+  {
+   "text": "붙이세요.",
+   "start": 2.142,
+   "end": 2.764
+  }
+ ],
+ "source": {
+  "key": "7e5d346ff8ac947da34273b90851a465",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -25,6 +25,8 @@ const 목록 = [
   [`${EP}/자료/검토화면/인스타_프로필.png`, 'shot/ig_profile.png'],
   // 검토 페이지가 트는 그 영상(Y5 올리기판, git 밖 — Y5 remotion/out)
   [`${Y5}/remotion/out/ig-v9_upload.mp4`, 'clip/y5.mp4'],
+  // v2(10-27): ego에서 휴대폰 폭(430 CSS px · 가로 1080px)으로 찍은 claude.ai 시크릿 채팅 실제 화면을 자른 판 — 자료/채팅실험/
+  ...['A_부탁', 'A_답', 'B_부탁', 'B_답', 'B_승인'].map((n) => [`${EP}/자료/채팅실험/${n}.jpg`, `chat/${n}.jpg`]),
 ];
 for (const [from, to] of 목록) {
   const dst = path.join(OUT, to);

@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "그래서 부탁 끝에, 이 한 줄을 붙였어요.",
+ "dur": 2.131,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.236
+  },
+  {
+   "text": "부탁",
+   "start": 0.28,
+   "end": 0.453
+  },
+  {
+   "text": "끝에,",
+   "start": 0.496,
+   "end": 0.728
+  },
+  {
+   "text": "이",
+   "start": 1.218,
+   "end": 1.233
+  },
+  {
+   "text": "한",
+   "start": 1.305,
+   "end": 1.407
+  },
+  {
+   "text": "줄을",
+   "start": 1.45,
+   "end": 1.58
+  },
+  {
+   "text": "붙였어요.",
+   "start": 1.623,
+   "end": 2.131
+  }
+ ],
+ "source": {
+  "key": "c0ed6e2de1ee3f19fa335b9b5883d43a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

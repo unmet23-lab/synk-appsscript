@@ -1,0 +1,92 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "에이아이 채팅에 빵집 인스타 글을 써서 올려 달라고 했어요. 시험이라 가짜 올리기 파일로요.",
+ "dur": 4.515,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.03,
+   "end": 0.326
+  },
+  {
+   "text": "채팅에",
+   "start": 0.393,
+   "end": 0.742
+  },
+  {
+   "text": "빵집",
+   "start": 0.822,
+   "end": 1.145
+  },
+  {
+   "text": "인스타",
+   "start": 1.185,
+   "end": 1.413
+  },
+  {
+   "text": "글을",
+   "start": 1.454,
+   "end": 1.601
+  },
+  {
+   "text": "써서",
+   "start": 1.641,
+   "end": 1.829
+  },
+  {
+   "text": "올려",
+   "start": 1.883,
+   "end": 2.031
+  },
+  {
+   "text": "달라고",
+   "start": 2.071,
+   "end": 2.3
+  },
+  {
+   "text": "했어요.",
+   "start": 2.34,
+   "end": 2.621
+  },
+  {
+   "text": "시험이라",
+   "start": 3.024,
+   "end": 3.333
+  },
+  {
+   "text": "가짜",
+   "start": 3.4,
+   "end": 3.642
+  },
+  {
+   "text": "올리기",
+   "start": 3.709,
+   "end": 3.924
+  },
+  {
+   "text": "파일로요.",
+   "start": 3.978,
+   "end": 4.515
+  }
+ ],
+ "source": {
+  "key": "c0385d69179f7dcbd4076caed38e66b6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

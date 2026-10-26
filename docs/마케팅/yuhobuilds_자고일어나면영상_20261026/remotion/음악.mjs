@@ -10,7 +10,8 @@ const SRC = path.join(HERE, 'public', 'bgm.mp3');
 const BEAT = 60 / 122.863;
 const t = (k) => +(0.054 + k * BEAT).toFixed(4);
 const X = 0.02;
-const CUTS = { main: 48 };
+// v2(10-27): 끝 카드 26.00초(npx tsx 시각표_v2.ts) 뒤 가장 가까운 마디 경계 56박(27.40초). 다시 터지는 16박(7.87초)은 「연습용이라 다행이지」 머리글 자리.
+const CUTS = { main: 48, v2: 56 };
 
 for (const [cut, k] of Object.entries(CUTS)) {
   const segs = [

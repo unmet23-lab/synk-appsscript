@@ -1,0 +1,23 @@
+// 라운드 2: 채팅 A(한 줄 없음) — 부탁을 쳐서 보내고, 답이 끝날 때까지 찍는다.
+const step = logger("r02");
+watchdog(step, 380_000);
+step("시작");
+const task = await taskSpace("yuhobuilds Y9 v2 채팅 실험 1027");
+const page = task.page("p1");
+await phone(page);
+const Q = "우리 가게 오늘 인스타 글 하나 써서 올려 줘.\n가게: 망원동 햇살제과 · 오늘 새 메뉴 밤 식빵(하루 20개만) · 8시~20시\n올리기는 첨부한 파일로 하면 돼.";
+const dir = `${ROOT}/rec/A`;
+const frames = [];
+const t0 = Date.now();
+await typeRecorded(page, dir, Q, frames, t0);
+step("쳤음");
+const genMs = await sendAndRecord(page, dir, frames, t0, step, 300_000);
+await page.waitForTimeout(1500);
+await tallShot(page, `${dir}/화면끝.jpg`, 3200);
+const txt = await page.evaluate(() => document.querySelector("main")?.innerText || document.body.innerText);
+fs.writeFileSync(`${dir}/대화.txt`, txt);
+fs.writeFileSync(`${dir}/frames.json`, JSON.stringify({ q: Q, genMs, url: await page.url(), frames }, null, 1));
+console.log(JSON.stringify({ genMs, n: frames.length, url: await page.url() }));
+console.log(txt.slice(-2500));
+step("끝");
+process.exit(0);

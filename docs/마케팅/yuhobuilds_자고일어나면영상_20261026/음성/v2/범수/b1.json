@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "그러자 글만 보여 주고, 아직 안 올렸다며 기다려요.",
+ "dur": 2.627,
+ "words": [
+  {
+   "text": "그러자",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "글만",
+   "start": 0.311,
+   "end": 0.575
+  },
+  {
+   "text": "보여",
+   "start": 0.616,
+   "end": 0.783
+  },
+  {
+   "text": "주고,",
+   "start": 0.825,
+   "end": 1.006
+  },
+  {
+   "text": "아직",
+   "start": 1.338,
+   "end": 1.505
+  },
+  {
+   "text": "안",
+   "start": 1.547,
+   "end": 1.63
+  },
+  {
+   "text": "올렸다며",
+   "start": 1.686,
+   "end": 2.032
+  },
+  {
+   "text": "기다려요.",
+   "start": 2.074,
+   "end": 2.627
+  }
+ ],
+ "source": {
+  "key": "cefb110260f9b433a72964dc9cebd6ff",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
