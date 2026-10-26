@@ -1,0 +1,13 @@
+0.1s  Which sound is...
+1.9s  빨. (Korean sound)
+2.6s  팔. 팔. (Korean sound, said twice — card 1 lights up)
+3.8s  빨. 빨. (Korean sound, said twice — card 2 lights up)
+4.9s  발. 발. (Korean sound, said twice — card 3 lights up)
+6.1s  Say it to a paper!
+7.5s  팔. (Korean sound)
+8.1s  Big puff!
+9.4s  빨. (Korean sound)
+10.0s  No air. It's two!
+11.9s  발. (Korean sound)
+12.5s  A little air.
+13.9s  Grab a paper and try it!

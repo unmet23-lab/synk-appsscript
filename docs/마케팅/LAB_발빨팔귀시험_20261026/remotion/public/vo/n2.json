@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "Two.",
+ "dur": 0.553,
+ "words": [
+  {
+   "text": "Two.",
+   "start": 0.02,
+   "end": 0.553
+  }
+ ],
+ "source": {
+  "key": "79bdc59bf47eb5cf7f78604d2ef739ed",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

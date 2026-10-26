@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "x1",
+ "text": "Can't hear it? Watch the paper!",
+ "dur": 2.536,
+ "words": [
+  {
+   "text": "Can't",
+   "start": 0.02,
+   "end": 0.362
+  },
+  {
+   "text": "hear",
+   "start": 0.482,
+   "end": 0.723
+  },
+  {
+   "text": "it?",
+   "start": 0.843,
+   "end": 1.004
+  },
+  {
+   "text": "Watch",
+   "start": 1.285,
+   "end": 1.646
+  },
+  {
+   "text": "the",
+   "start": 1.706,
+   "end": 1.807
+  },
+  {
+   "text": "paper!",
+   "start": 1.887,
+   "end": 2.536
+  }
+ ],
+ "source": {
+  "key": "8c2b287e53f288db7aefa5539e45a5da",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

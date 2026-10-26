@@ -1,0 +1,133 @@
+{
+  "note": "LAB E6 「발 · 빨 · 팔 귀 시험」 나레이션 — LAB 낱말 편 목소리 하나(관용구 퀴즈 · 처음 쓰는 ㄹ과 같은 목소리), 영어 줄 + 한국어 소리(팔 · 빨 · 발). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_발빨팔귀시험_20261026/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1026,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "Which one is",
+      "emotion": "smart",
+      "prev": "A ten-second Korean ear test. Three sounds that look almost the same.",
+      "next": "빨?"
+    },
+    {
+      "id": "kq",
+      "text": "빨?",
+      "lang": "ko",
+      "emotion": "toneup"
+    },
+    {
+      "id": "n1",
+      "text": "One."
+    },
+    {
+      "id": "n2",
+      "text": "Two."
+    },
+    {
+      "id": "n3",
+      "text": "Three."
+    },
+    {
+      "id": "kp",
+      "text": "팔.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.9
+    },
+    {
+      "id": "kpp",
+      "text": "빨.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.9
+    },
+    {
+      "id": "kb",
+      "text": "발.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.9
+    },
+    {
+      "id": "c1",
+      "text": "One, two, or three?",
+      "emotion": "smart",
+      "prev": "You heard three Korean sounds.",
+      "next": "Paper test!"
+    },
+    {
+      "id": "p1",
+      "text": "Paper test!",
+      "emotion": "happy",
+      "intensity": 1.1
+    },
+    {
+      "id": "a1",
+      "text": "Nothing moves. It's two!",
+      "emotion": "happy",
+      "prev": "Paper test! The paper stays still.",
+      "next": "Now this one blows it away."
+    },
+    {
+      "id": "e1",
+      "text": "Grab a paper and try it!",
+      "emotion": "happy",
+      "intensity": 1.1
+    },
+    {
+      "id": "h2",
+      "text": "Which sound is",
+      "emotion": "smart",
+      "prev": "A ten-second Korean ear test. Three Korean sounds that look almost the same.",
+      "next": "빨?"
+    },
+    {
+      "id": "t1",
+      "text": "Say it to a paper!",
+      "emotion": "happy",
+      "prev": "Now let's check with a paper strip in front of the mouth.",
+      "next": "팔!"
+    },
+    {
+      "id": "b1",
+      "text": "Big puff!",
+      "emotion": "happy",
+      "intensity": 1.1
+    },
+    {
+      "id": "a2",
+      "text": "No air. It's two!",
+      "emotion": "happy",
+      "prev": "The paper does not move at all.",
+      "next": "A little air."
+    },
+    {
+      "id": "l1",
+      "text": "A little air.",
+      "emotion": "smart",
+      "prev": "No air. It's two!",
+      "next": "Grab a paper and try it!"
+    },
+    {
+      "id": "x1",
+      "text": "Can't hear it? Watch the paper!",
+      "emotion": "happy",
+      "prev": "Three Korean sounds that sound almost the same.",
+      "next": "팔!"
+    }
+  ]
+}

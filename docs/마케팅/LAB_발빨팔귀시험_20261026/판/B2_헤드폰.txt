@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a listening shot for a vertical short video called "10-second ear test", staged as a needle-felted wool miniature set and photographed like a real macro photo.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video will crop about 8% off the left and right edges, so keep everything important inside the central 84% of the width.
+
+CHARACTER — Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos. Use the references ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever.
+Mongle sits on a warm oak table top, centered horizontally, seen from the front, its hem resting on the table with a soft contact shadow. Its body is about 24% of the image height and its top is at about 40% of the image height. It wears a pair of chunky butter-yellow felt headphones over the top of its head (a thick felt band and two round cushioned ear cups pressed against the sides of its body near the top). Expression: listening very carefully — eyes closed as two small curved dark stitched lines, a tiny serious flat mouth, small pink felt cheeks, body tilted a few degrees to one side as if leaning in to hear.
+
+SET: a calm, simple tabletop studio. Warm oak table across the lower 30% of the image. Behind it a smooth soft pastel mint-green felt wall, evenly lit, slightly out of focus. The TOP 30% of the image is plain mint wall with nothing in it (a title will go there). The BOTTOM 25% is plain oak table surface with nothing on it (three big number cards will go there). No other objects.
+Colors: mint green wall, warm oak wood, butter yellow headphones. Do not use coral anywhere except Mongle.
+
+PHOTOGRAPHY: real handmade needle-felt craft shot with a macro lens, visible wool fibers and wood grain, soft warm daylight from the upper left, shallow depth of field, cute but not babyish — for teenagers and university students.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.

@@ -1,0 +1,44 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l1",
+ "text": "A little air.",
+ "dur": 1.242,
+ "words": [
+  {
+   "text": "A",
+   "start": 0.02,
+   "end": 0.04
+  },
+  {
+   "text": "little",
+   "start": 0.241,
+   "end": 0.544
+  },
+  {
+   "text": "air.",
+   "start": 0.725,
+   "end": 1.242
+  }
+ ],
+ "source": {
+  "key": "b55af6d63d562618aedb77f4d27b8047",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "No air. It's two!",
+   "next": "Grab a paper and try it!"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

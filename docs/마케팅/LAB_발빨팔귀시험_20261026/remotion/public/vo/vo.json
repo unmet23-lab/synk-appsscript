@@ -1,0 +1,183 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1026,
+  "lufs": -17
+ },
+ "made": "2026-10-26T12:42:56.674Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "Which one is",
+   "dur": 1.605,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "91ac7894486608d0a1d8679195d91444",
+   "words": 3
+  },
+  {
+   "id": "kq",
+   "text": "빨?",
+   "dur": 0.549,
+   "syllablesPerSec": 1.82,
+   "src": "kq.wav",
+   "key": "9340f44e06f4b7477b01b7fb0ec10eee",
+   "words": 1
+  },
+  {
+   "id": "n1",
+   "text": "One.",
+   "dur": 0.548,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "ab2934023bfddba34d59cf67fbb6825c",
+   "words": 1
+  },
+  {
+   "id": "n2",
+   "text": "Two.",
+   "dur": 0.553,
+   "syllablesPerSec": null,
+   "src": "n2.wav",
+   "key": "79bdc59bf47eb5cf7f78604d2ef739ed",
+   "words": 1
+  },
+  {
+   "id": "n3",
+   "text": "Three.",
+   "dur": 0.54,
+   "syllablesPerSec": null,
+   "src": "n3.wav",
+   "key": "6ed7982a0cf60d740aa6773e60294bc5",
+   "words": 1
+  },
+  {
+   "id": "kp",
+   "text": "팔.",
+   "dur": 0.468,
+   "syllablesPerSec": 2.14,
+   "src": "kp.wav",
+   "key": "614c5a23d6862b2c4519f0d9a375cdfd",
+   "words": 1
+  },
+  {
+   "id": "kpp",
+   "text": "빨.",
+   "dur": 0.561,
+   "syllablesPerSec": 1.78,
+   "src": "kpp.wav",
+   "key": "fa3a1b351888500392a900198ecb8bc7",
+   "words": 1
+  },
+  {
+   "id": "kb",
+   "text": "발.",
+   "dur": 0.47,
+   "syllablesPerSec": 2.13,
+   "src": "kb.wav",
+   "key": "d1da770db4376fb3908f0b1b10e6b852",
+   "words": 1
+  },
+  {
+   "id": "c1",
+   "text": "One, two, or three?",
+   "dur": 2.35,
+   "syllablesPerSec": null,
+   "src": "c1.wav",
+   "key": "3bb19f28ff31d77d934d880b90c78d31",
+   "words": 4
+  },
+  {
+   "id": "p1",
+   "text": "Paper test!",
+   "dur": 1.322,
+   "syllablesPerSec": null,
+   "src": "p1.wav",
+   "key": "721c9ea2f77ee218215da1c33fa72914",
+   "words": 2
+  },
+  {
+   "id": "a1",
+   "text": "Nothing moves. It's two!",
+   "dur": 2.606,
+   "syllablesPerSec": null,
+   "src": "a1.wav",
+   "key": "68460e35e25a5c894bde5268d5bf560d",
+   "words": 4
+  },
+  {
+   "id": "e1",
+   "text": "Grab a paper and try it!",
+   "dur": 2.016,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "24e7742c539725dab519c8e58fc3d35a",
+   "words": 6
+  },
+  {
+   "id": "h2",
+   "text": "Which sound is",
+   "dur": 1.9,
+   "syllablesPerSec": null,
+   "src": "h2.wav",
+   "key": "60cd072a85e94a1cb792f557f3fd5db2",
+   "words": 3
+  },
+  {
+   "id": "t1",
+   "text": "Say it to a paper!",
+   "dur": 1.352,
+   "syllablesPerSec": null,
+   "src": "t1.wav",
+   "key": "3f7ccb31f13805027e727a5d74c46c90",
+   "words": 5
+  },
+  {
+   "id": "b1",
+   "text": "Big puff!",
+   "dur": 1.158,
+   "syllablesPerSec": null,
+   "src": "b1.wav",
+   "key": "8ea0e6a2b538ca5edc129f91965f211e",
+   "words": 2
+  },
+  {
+   "id": "a2",
+   "text": "No air. It's two!",
+   "dur": 1.775,
+   "syllablesPerSec": null,
+   "src": "a2.wav",
+   "key": "903a8c75cb14b94753e8af9880ff40e1",
+   "words": 4
+  },
+  {
+   "id": "l1",
+   "text": "A little air.",
+   "dur": 1.242,
+   "syllablesPerSec": null,
+   "src": "l1.wav",
+   "key": "b55af6d63d562618aedb77f4d27b8047",
+   "words": 3
+  },
+  {
+   "id": "x1",
+   "text": "Can't hear it? Watch the paper!",
+   "dur": 2.536,
+   "syllablesPerSec": null,
+   "src": "x1.wav",
+   "key": "8c2b287e53f288db7aefa5539e45a5da",
+   "words": 6
+  }
+ ]
+}

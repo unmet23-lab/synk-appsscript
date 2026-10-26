@@ -1,0 +1,44 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "Which one is",
+ "dur": 1.605,
+ "words": [
+  {
+   "text": "Which",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "one",
+   "start": 0.463,
+   "end": 0.704
+  },
+  {
+   "text": "is",
+   "start": 0.986,
+   "end": 1.569
+  }
+ ],
+ "source": {
+  "key": "91ac7894486608d0a1d8679195d91444",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "A ten-second Korean ear test. Three sounds that look almost the same.",
+   "next": "빨?"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

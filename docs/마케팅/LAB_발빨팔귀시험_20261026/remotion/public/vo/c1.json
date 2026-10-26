@@ -1,0 +1,49 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "One, two, or three?",
+ "dur": 2.35,
+ "words": [
+  {
+   "text": "One,",
+   "start": 0.09,
+   "end": 0.371
+  },
+  {
+   "text": "two,",
+   "start": 0.572,
+   "end": 0.954
+  },
+  {
+   "text": "or",
+   "start": 1.275,
+   "end": 1.356
+  },
+  {
+   "text": "three?",
+   "start": 1.476,
+   "end": 2.159
+  }
+ ],
+ "source": {
+  "key": "3bb19f28ff31d77d934d880b90c78d31",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "You heard three Korean sounds.",
+   "next": "Paper test!"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

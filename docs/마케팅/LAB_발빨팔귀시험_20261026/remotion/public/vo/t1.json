@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t1",
+ "text": "Say it to a paper!",
+ "dur": 1.352,
+ "words": [
+  {
+   "text": "Say",
+   "start": 0.02,
+   "end": 0.201
+  },
+  {
+   "text": "it",
+   "start": 0.262,
+   "end": 0.322
+  },
+  {
+   "text": "to",
+   "start": 0.383,
+   "end": 0.443
+  },
+  {
+   "text": "a",
+   "start": 0.544,
+   "end": 0.564
+  },
+  {
+   "text": "paper!",
+   "start": 0.644,
+   "end": 1.352
+  }
+ ],
+ "source": {
+  "key": "3f7ccb31f13805027e727a5d74c46c90",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

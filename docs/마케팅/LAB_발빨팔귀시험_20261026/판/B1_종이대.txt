@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the main shot of a vertical short video: a "paper test" for Korean pronunciation, staged as a needle-felted wool miniature set and photographed like a real macro photo.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video will crop about 8% off the left and right edges, so keep everything important inside the central 84% of the width.
+
+CHARACTER — Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos. Use the references ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. Mongle never holds anything.
+Mongle sits on a warm oak table top in the LEFT half of the image, its hem resting on the table with a soft contact shadow. Its body is about 26% of the image height; its left edge is at least 14% of the image width from the left edge of the image, and the body's center is at about 33% of the image width. The bottom of the hem is at about 70% of the image height. Mongle is turned in a three-quarter view toward the RIGHT side of the image, face clearly visible. Expression: focused and ready to speak — glossy bead eyes looking right, a small round open "o" mouth made of dark brown felt, tiny pink felt cheeks.
+
+PROP — a tiny paper-test stand made of natural light wood, standing on the same table to the RIGHT of Mongle: a small round wooden base disc at about 60% of the image width, a thin vertical wooden dowel rising from it, and at the top a short thin horizontal wooden arm reaching LEFT toward Mongle's face. At the left end of that arm a small natural-wood clothespin is clipped, hanging straight down. The clothespin's lower tip is at about 46% of the image height and at about 52% of the image width — a little to the right of and above Mongle's open mouth. The clothespin holds NOTHING: it is completely empty, no paper, no ribbon, no string, no tag hangs from it. Leave clear empty air below the clothespin down to the table (a paper strip will be added there later).
+
+SET: a calm, simple tabletop studio. Warm oak table across the lower 30% of the image. Behind it a smooth soft pastel mint-green felt wall, evenly lit, slightly out of focus. The TOP 25% of the image is plain mint wall with nothing in it (a title will go there). The BOTTOM 20% is plain oak table surface with nothing on it (labels will go there). No other objects.
+Colors: mint green wall, warm oak wood, cream accents. Do not use coral anywhere except Mongle, so Mongle pops.
+
+PHOTOGRAPHY: real handmade needle-felt craft shot with a macro lens, visible wool fibers and wood grain, soft warm daylight from the upper left, shallow depth of field (wall softly blurred, Mongle and the stand in focus), cute but not babyish — for teenagers and university students.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.

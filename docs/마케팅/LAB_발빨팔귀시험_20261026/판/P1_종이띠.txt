@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a single prop photographed for cut-out: ONE narrow strip of thin white tissue paper.
+
+FORMAT: one PORTRAIT image, 2:3.
+
+The strip is a clean rectangle of thin, slightly translucent white tissue paper, about 1 unit wide and 6 units tall, hanging perfectly straight and vertical, centered in the image, filling about 75% of the image height. Its top edge is straight (as if just released from a clip), its bottom edge is a soft slightly uneven torn edge. The paper has a very gentle natural vertical wave and fine paper fibers, soft realistic shading, no folds or creases, no printing.
+
+BACKGROUND: a perfectly flat, evenly lit, solid saturated royal blue (#1E4BFF) seamless background with no gradient, no texture, no vignette. The paper casts NO shadow on the background. Nothing else in the image.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.
