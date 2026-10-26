@@ -65,11 +65,12 @@ def frame(t):
     return im
 
 
-def song_graph(chorus, outro):
+def song_graph(chorus, outro, outro_at=49.2):
     """노래 두 자리(02 4절): ① 후렴 첫 낱말을 31.63초에 — 0.5초 앞에서 0.4초에 걸쳐 들어와 44.43초에 0.35초로 끝남
-    ② 맺음 첫 낱말을 49.2초에 — 46.5초부터 1초에 걸쳐 들어와 −18dB로 속말 밑에 깔리고 52.4초까지 0.6초로 풀림(끝 내레이션 아래엔 음악 없음)"""
+    ② 맺음 첫 낱말을 outro_at초에(기본 49.2, 노래 A는 맺음을 길게 불러 「불 켜 둘게」가 다 들리게 47.5) — 46.5초부터 1초에 걸쳐 들어와
+    −18dB로 속말 밑에 깔리고 52.4초까지 0.6초로 풀림(끝 내레이션 아래엔 음악 없음)"""
     a1, s1, e1 = 31.63 - 0.5, chorus - 0.5, chorus + 12.8
-    a2, s2, e2 = 46.5, outro - 2.7, outro + 3.2
+    a2, s2, e2 = 46.5, outro - (outro_at - 46.5), outro + (52.4 - outro_at)
     d1, d2 = e1 - s1, e2 - s2
     return (f"[2:a]asplit=2[sa][sb];"
             f"[sa]atrim=start={s1:.3f}:end={e1:.3f},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.4,afade=t=out:st={d1 - 0.35:.3f}:d=0.35,adelay={int(a1 * 1000)}|{int(a1 * 1000)}[m1];"
@@ -96,9 +97,9 @@ def build(narr, music=None, music_at=0.0, song=None, tag=""):
     out = os.path.join(OUT, f"가편집{tag}_{narr}.mp4")
     args = ["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-i", voice]
     flt = "[1:a]anull[a]"
-    if song:   # (파일, 후렴 첫 낱말 초, 맺음 첫 낱말 초)
+    if song:   # (파일, 후렴 첫 낱말 초, 맺음 첫 낱말 초, 맺음을 놓을 초)
         args += ["-i", song[0]]
-        flt = song_graph(song[1], song[2])
+        flt = song_graph(song[1], song[2], song[3])
     elif music:
         ms = int(round(music_at * 1000))
         args += ["-i", music]
@@ -115,9 +116,10 @@ if __name__ == "__main__":
     ap.add_argument("--노래시작", type=float, default=0.0)
     ap.add_argument("--후렴", type=float, default=None, help="노래 파일 안 후렴 첫 낱말 초(주면 02 4절의 두 자리로 얹는다)")
     ap.add_argument("--맺음", type=float, default=None, help="노래 파일 안 맺음 첫 낱말 초")
+    ap.add_argument("--맺음자리", type=float, default=49.2, help="맺음 첫 낱말을 놓을 영상 초(기본 원본 자리 49.2)")
     ap.add_argument("--판", default=",".join(NARR), help="내레이터 후보(쉼표)")
     ap.add_argument("--이름", default="", help="출력 이름 덧말(예: _노래A)")
     a = ap.parse_args()
-    song = (a.노래, a.후렴, a.맺음) if a.노래 and a.후렴 is not None and a.맺음 is not None else None
+    song = (a.노래, a.후렴, a.맺음, a.맺음자리) if a.노래 and a.후렴 is not None and a.맺음 is not None else None
     for n in a.판.split(","):
         build(n, a.노래, a.노래시작, song, a.이름)
