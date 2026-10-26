@@ -450,7 +450,7 @@ const ROUTE = {
   threads: ['스레드 웹 예약(ego)', '로그인 뒤 확인'],
   x: ['X 웹 예약(ego)', '로그인 뒤 확인'],
   linkedin: ['링크드인 웹 예약(ego)', '로그인 뒤 확인'],
-  'naver-clip': ['네이버 클립 — 웹 올리기 확인 전', '확인 전'],
+  'naver-clip': ['네이버 앱 전용 — 웹 올리기 없음(10-26 확인)', '—'],
   rutube: ['러튜브 스튜디오(손)', '확인 전'],
 };
 const LINE_WHAT = { 'LAB 영어': 'LAB 영어 편', 'LAB 몽골': 'LAB 몽골 편', synkbrief: 'synkbrief 편', yuhobuilds: 'yuhobuilds 편' };
