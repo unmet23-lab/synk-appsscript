@@ -823,7 +823,7 @@
       "connection": "needs-threads-app",
       "profileStatus": "existing-yuhobuilds-login-via-correct-Instagram-session-confirmed-2026-09-14-without-extra-user-verification; bio-114-saved-and-full-public-profile-reloaded-rechecked-2026-09-14; name-photo-two-links-switches-unchanged; no-new-thread-or-account-created",
       "dailyLine": "yuhobuilds",
-      "dailyBlocked": "ego에서 스레드 로그아웃(10-26 확인) — 유호님 로그인(@yuhobuilds 인스타 계정으로)"
+      "dailyBlocked": "ego에서 스레드 로그아웃(10-26 확인) — 유호님이 스레드 로그인 화면에 인스타 @yuhobuilds로 로그인(ego 인스타는 @synkbrief 그대로)"
     },
     "synkbrief-threads": {
       "brand": "SHIFT",
@@ -835,8 +835,7 @@
       "operationDecision": "defer-creation-2026-09-13; user-confirmed-overlap-based-deferral-2026-09-14",
       "decisionBasis": "no distinct recurring conversation or method series yet; overlaps existing yuhobuilds Threads; user agreed with this operating judgment; not a verified signup or login error",
       "remainingAction": "reconsider when independent method-application questions and a recurring series exist; preserve existing personal accounts",
-      "dailyLine": "synkbrief",
-      "dailyBlocked": "ego에서 스레드 로그아웃(10-26 확인) — 유호님 로그인(@synkbrief 인스타 계정으로)"
+      "dailyOff": "스레드 @synkbrief는 아직 없는 계정 — 09-19 「@yuhobuilds와 역할이 겹쳐」 개설 보류(만들려면 유호님 가입)"
     },
     "yuhobuilds-linkedin": {
       "brand": "SHIFT",
@@ -874,7 +873,7 @@
       "websiteStatus": "contact-info-company-website-added-and-saved-2026-09-14; reloaded-contact-card-shows-clickable-synk-im; actual-click-opened-https-synk-im-homepage; other-contact-fields-unchanged",
       "remainingAction": "profile-preparation-complete; use-unmet25-only-for-LinkedIn-personal-profile-and-SYNK-company-page; duplicate-closure-and-migration-cancelled-by-user; new-content-publication-remains-separate",
       "dailyLine": "yuhobuilds",
-      "dailyBlocked": "ego에서 링크드인 로그아웃(10-26 확인) — 유호님 로그인"
+      "dailyBlocked": "ego에서 링크드인 로그아웃(10-26 확인) — 유호님이 unmet25 구글로 로그인(회사 페이지도 같은 계정)"
     },
     "synk-linkedin-company": {
       "brand": "SYNK",
@@ -1040,7 +1039,7 @@
       "contentStatus": "first-text-post-published",
       "firstPostUrl": "https://x.com/yuhobuilds/status/2098402542854275312",
       "dailyLine": "yuhobuilds",
-      "dailyBlocked": "ego에서 X 로그아웃(10-26 확인) — 유호님 로그인"
+      "dailyBlocked": "ego에서 X 로그아웃(10-26 확인) — 유호님 로그인(로그인 수단 기록 없음)"
     },
     "yuhobuilds-behance": {
       "brand": "SHIFT",
