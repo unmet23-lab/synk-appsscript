@@ -5,6 +5,13 @@
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 shows this film's corridor set on a snowy night. Keep its building design — the dark grey steel front doors with lever handles, the stained cream-grey painted concrete walls with pipes and meter boxes, the bare concrete ceiling, the waist-high concrete parapet on the right and the old low-rise neighborhood beyond it — but this is a different night and a different camera position, described below. There is NO snow anywhere, and the caged ceiling lamp of Image 1 does not exist. Time: a damp late-autumn night around 11 pm; a few dry fallen leaves on the wet concrete floor; bare trees and power lines beyond the parapet. Location: the open-air outdoor corridor on the 5th floor of an old Korean corridor-style apartment block from the 1990s: on the LEFT the building wall with a row of identical dark grey steel front doors, each set back in a shallow alcove, the only lamps being small round frosted-glass motion-sensor lamps on the ceiling, one right above each door alcove; on the RIGHT a waist-high concrete parapet with a thin metal handrail; at the far end the stairwell landing, about twenty meters away, glowing with a dim, cold light. Beyond the parapet, across the street below: a small 24-hour convenience store glowing warm amber-orange through its glass front; its sign is a plain warm amber-orange band with no letters (not striped), among dark rooftops. The two doors that matter: the second door alcove on the left, about six to seven meters from the camera, belongs to a lonely man — its sensor lamp is dead, so his alcove is a pitch-black hole where the keyhole cannot be seen; the very next alcove after it, a little farther, belongs to the noisy neighbor — its lamp is ON and pours a small warm pool of light only onto its own doorstep. All the other door lamps are off. Nobody is in the corridor. Camera: fixed on a tripod in the middle of the corridor near its closed end, at standing eye level (about 1.5 m), level and tilted only very slightly down, about 28 mm lens, looking straight down the corridor so that its far end sits slightly left of the frame center; the left wall runs from the left edge toward the far end, the parapet from the lower right corner; the dark alcove of the man's door sits at about 38–45% of the frame width from the left. Light: low-key night — most of the frame is dark: cool blue-grey night ambient, the warm pool at the neighbor's door, the amber glow of the store across the street, the dim cold stairwell light at the far end. Soft light, no harsh shadows. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
+ "PL1b": {
+  "refs": [
+   "PL_원근.jpg",
+   "PL1.jpg"
+  ],
+  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide of this exact shot: copy its camera position, height, angle, lens and framing exactly — where the near left wall with the big first door, the thin dark gap of the second door, the ceiling, the floor, the parapet face on the right, the bright far end and the band of the store's glow sit in the frame — and ignore its grey tones. Image 2 shows this film's corridor for its look only — the dark grey steel doors, the stained walls with pipes and meter boxes, the small round ceiling lamps, the concrete parapet with its metal handrail, the fallen leaves, the convenience store across the street and the night light — but Image 2's camera stands too close to the doors; this shot is taken from Image 1's camera, farther back, so the corridor looks long. Time: the same damp late-autumn night around 11 pm; no snow; a few dry fallen leaves on the wet concrete floor. The doors on the left wall: the first door, about three meters away, is large at the left of the frame; the second door, about seven meters away, belongs to a lonely man — its sensor lamp is dead and its doorway is a pitch-black gap at about 40% of the frame width; the third door right after it belongs to the noisy neighbor — its small round sensor lamp is the only lit lamp in the corridor and pours a small warm pool of light onto its own doorstep, just beyond the man's dark door; the farther doors are dark. Beyond the parapet on the right, across the street: a small 24-hour convenience store glowing warm amber-orange through its glass front; its sign is a plain warm amber-orange band with no letters. Nobody is in the corridor. Camera: fixed on a tripod in the middle of the corridor near its closed end, at standing eye level (about 1.5 m), level, the horizon at about 42% of the frame height from the top, about 28 mm lens, looking straight down the long corridor — about twenty-three meters to the lit stairwell landing at the far end, which sits just right of the frame center. Light: low-key night — most of the frame is dark: cool blue-grey night ambient, the warm pool at the neighbor's door, the amber glow of the store across the street, the dim cold stairwell light at the far end. Soft light, no harsh shadows. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
  "H3": {
   "refs": [
    "F02_angle-back.jpg",
@@ -42,7 +49,7 @@
  },
  "C04": {
   "refs": [
-   "S04.jpg",
+   "S04o.jpg",
    "M04_angle-left.jpg",
    "M04_angle-back.jpg",
    "M04_hair-3.jpg"
@@ -51,9 +58,10 @@
  },
  "C05": {
   "refs": [
-   "S05.jpg"
+   "S05t.jpg"
   ],
-  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing, and the black silhouette's position and size in the frame — the silhouette marks exactly where and how large the man is. Ignore its grey tones and its background; the place, the light and the pose are described below. LOW and close, at night in the outdoor corridor of an old Korean apartment block: THE MAN, a young man seen only from the chest down inside the silhouette, stands at his dark steel front door and bends his knees a little to set a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) (a lunch box inside) down on the floor by his feet with his right hand, freeing his hands for the key. Dark chinos, worn white sneakers, the hem of a thin dark-navy blouson. Dry fallen leaves on the damp concrete floor; the dark door and its frame along the left edge of the frame; the vertical posts of the corridor's metal handrail along the right edge. Dim: only the cold night and a faint warm glow from a neighbor's lamp further down. The camera will tilt down to the bag and the sneakers. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 4:3 frame. Image 1 is a heavily blurred grey layout guide of this exact tall frame: copy its camera position, height and angle, its lens and framing, and the black silhouette's position and size — ignore its grey tones and its background. This tall picture is the whole strip of space that one slow downward camera tilt travels over, in one continuous scene with one camera and nothing repeated: the UPPER part is where the shot begins — THE MAN, a young man seen only from the chest down inside the silhouette, at his dark steel front door at night, bending his knees a little to set a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) (a lunch box inside) down by his feet with his right hand, freeing his hands for the key; the LOWER part is where the tilt ends — the same white bag now resting on the damp concrete floor right next to his worn white sneakers, among dry fallen leaves. Dark chinos, the hem of a thin dark-navy blouson. The dark door and its frame along the left edge, the vertical posts of the corridor's metal handrail along the right edge. Dim: only the cold night and a faint warm glow from a neighbor's lamp further down the corridor. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere.",
+  "ratio": "4:3"
  },
  "C06": {
   "refs": [],
@@ -61,7 +69,7 @@
  },
  "C07": {
   "refs": [
-   "S07.jpg",
+   "S07o.jpg",
    "M04_angle-back.jpg",
    "M04_hair-3.jpg",
    "M04_fullbody.jpg"
@@ -70,7 +78,7 @@
  },
  "C08": {
   "refs": [
-   "S08.jpg",
+   "S08o.jpg",
    "H3.jpg",
    "F02_angle-back.jpg",
    "F02_hair-3.jpg"
@@ -79,7 +87,7 @@
  },
  "C09": {
   "refs": [
-   "S09.jpg",
+   "S09o.jpg",
    "H3.jpg",
    "F02_angle-back.jpg",
    "F02_hair-3.jpg"
@@ -92,7 +100,7 @@
  },
  "C11": {
   "refs": [
-   "S11.jpg",
+   "S11o.jpg",
    "M04_angle-left.jpg",
    "M04_angle-back.jpg",
    "M04_hair-3.jpg"
@@ -128,7 +136,7 @@
  },
  "C15": {
   "refs": [
-   "S15.jpg",
+   "S15o.jpg",
    "H3.jpg",
    "F02_angle-back.jpg",
    "F02_hair-3.jpg"
@@ -137,7 +145,7 @@
  },
  "C16": {
   "refs": [
-   "S16.jpg",
+   "S16o.jpg",
    "M04_angle-back.jpg",
    "M04_hair-3.jpg",
    "M04_fullbody.jpg"
@@ -175,11 +183,11 @@
    "M04_hair-3.jpg",
    "M04_fullbody.jpg"
   ],
-  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is this film's corridor, seen from its fixed camera, with a solid black silhouette placeholder in it. Keep Image 1's camera position, framing and lens exactly, and keep the walls, the doors and their alcoves, the lamps, the parapet and the store across the street exactly where they are. Paint THE MAN exactly inside the black silhouette's outline: the head, body and feet fill the outline and do not extend beyond it, so the person is exactly as large and as far from the camera as the silhouette — nothing of the silhouette remains. The same corridor weeks later on a night of heavy rain: rain blows in over the parapet in slanting sheets and the floor shines wet; the noisy neighbor's alcove now has a string of warm fairy lights hanging around it (the first Christmas decoration), the elderly neighbor's door far down has a small wreath; his alcove stays bare and pitch dark under its dead lamp. THE MAN: the Korean man of Images 2 to 4, which are identity references only — ignore their backgrounds, clothes and lighting. He is twenty-eight, about 175 cm, average build, short black hair with messy straight bangs. In the silhouette: THE MAN in a dark navy hooded raincoat with the hood up, dark chinos, worn white sneakers wet with rain, seen from behind, standing at his door. His face is not visible. Camera exactly as in Image 1. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is this film's corridor, seen from its fixed camera, with a solid black silhouette placeholder in it. Keep Image 1's camera position, framing and lens exactly, and keep the walls, the doors and their alcoves, the lamps, the parapet and the store across the street exactly where they are. Paint THE MAN exactly inside the black silhouette's outline: the head, body and feet fill the outline and do not extend beyond it, so the person is exactly as large and as far from the camera as the silhouette — nothing of the silhouette remains. The same corridor weeks later on a night of heavy rain: rain blows in over the parapet in slanting sheets and the floor shines wet; the noisy neighbor's alcove now has a string of warm fairy lights hanging around it (the first Christmas decoration), the elderly neighbor's door far down has a small wreath; his alcove stays bare and pitch dark under its dead lamp. THE MAN: the Korean man of Images 2 to 4, which are identity references only — ignore their backgrounds, clothes and lighting. He is twenty-eight, about 175 cm, average build, short black hair with messy straight bangs. In the silhouette: THE MAN in a dark navy hooded raincoat with the hood up, dark chinos, worn white sneakers wet with rain, seen from behind, standing at his door. His face is not visible. Two other neighbors in rain ponchos with their hoods up carry a small potted Christmas tree between them along the corridor, walking toward the camera in the middle distance beyond him — smaller than him (their heads at about 40% of the frame height from the top, their feet at about 62%), giving him a small nod as they pass; their faces hidden under their hoods. Camera exactly as in Image 1. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
  "C21": {
   "refs": [
-   "S21.jpg",
+   "S21o.jpg",
    "M04_angle-back.jpg",
    "M04_hair-3.jpg",
    "M04_fullbody.jpg"
@@ -196,7 +204,7 @@
  },
  "C23": {
   "refs": [
-   "S23.jpg"
+   "S23o.jpg"
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing — where the large shapes sit — and ignore its grey tones and its contents. First snow, daytime. LOW at ankle height on a snowy sidewalk of an old Seoul neighborhood: a young man's legs from the knees down walk to the left through the right half of the frame (dark chinos, worn white sneakers pressing into fresh thin snow); at his knee a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) swings in his hand. Bright overcast snow light, soft. A low old wall and a parked bicycle softly out of focus behind. The camera tracks sideways with him. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
@@ -228,7 +236,7 @@
  },
  "C27": {
   "refs": [
-   "S27.jpg",
+   "S27o.jpg",
    "M04_angle-left.jpg",
    "M04_angle-back.jpg",
    "M04_hair-3.jpg"
@@ -280,6 +288,30 @@
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing, and the black silhouette's position and size in the frame — the silhouette marks exactly where and how large the man's head is. Ignore its grey tones and its background; the place, the light and the pose are described below. TIGHT CLOSE-UP, exactly the size and place of the black silhouette (right of center, the head large): THE MAN's face in three-quarter view, tilted up toward the sensor lamp above him (just out of frame at the top left), which bathes his face in soft warm light from above; behind him, blue snowy dusk and the warm out-of-focus bokeh of fairy lights. A few snowflakes in his hair and on the collar of his navy padded jacket and his grey knitted scarf. Expression: he has just noticed — his eyebrows lift slightly and a faint closed-mouth smile begins. Lips closed. THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy straight bangs). Images 2 to 5 are identity references only — ignore their backgrounds, clothes and lighting. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
+ "C30r": {
+  "refs": [
+   "S30.jpg",
+   "M04_hero.jpg",
+   "M04_angle-left.jpg",
+   "M04_angle-right.jpg",
+   "M04_hair-3.jpg"
+  ],
+  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing, and the black silhouette's position and size in the frame — the silhouette marks exactly where and how large the man's head is. Ignore its grey tones and its background; the place, the light and the pose are described below. TIGHT CLOSE-UP, exactly the size and place of the black silhouette (right of center, the head large): THE MAN's face in three-quarter view, tilted up toward the small sensor lamp above his front door (just out of frame at the top left), which bathes his face in soft warm light from above. He stands in the open-air outdoor corridor on the 5th floor of his old apartment block, so behind him, out of focus, is the corridor's concrete parapet with a line of fresh snow on its edge low in the frame, and beyond it, five floors up, the blue dusk sky over the snowy rooftops of the old neighborhood, warm window lights and the round bokeh of a string of fairy lights on a neighbor's door — not a street, not an alley. A few snowflakes in his hair and on the collar of his navy padded jacket and his grey knitted scarf. Expression: calm and almost neutral — only the corners of his closed mouth lift very slightly, a tiny private smile. Lips closed. THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy straight bangs). Images 2 to 5 are identity references only — ignore their backgrounds, clothes and lighting. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C30e": {
+  "refs": [
+   "C30.jpg",
+   "M04_hero.jpg",
+   "M04_angle-left.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). It is the FIRST frame of a 2.3-second handheld shot; make the LAST frame of the same shot. The camera has slowly circled around THE MAN to the left while staying on his face: he stays exactly the same person, the same size and at the same place in the frame, with the same face and the same expression, lips closed; but the out-of-focus background behind him has swept to the right by about half of the frame width — now the blurred corridor wall with a neighbor's door strung with warm fairy lights fills the left part of the background — and the whole picture is tilted about 7 degrees counter-clockwise. Images 2 and 3 are his identity references — do not change his face. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C19e": {
+  "refs": [
+   "C19.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). It is the FIRST frame of a 1.4-second handheld shot; make the LAST frame of the same shot. As the man in the foreground raises his hand higher in a small wave, the handheld camera swings with him: everything in the picture has shifted to the left by about a fifth of the frame width and up a little, and the whole picture is tilted about 10 degrees clockwise; his shoulder and the back of his head stay out of focus in the foreground; the woman far away at the bright stairwell landing stays small and keeps waving. Same light, same moment. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
  "C31": {
   "refs": [
    "S31.jpg",
@@ -291,7 +323,7 @@
  },
  "C32": {
   "refs": [
-   "S32.jpg",
+   "S32o.jpg",
    "C02.jpg"
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing — where the large shapes sit — and ignore its grey tones and its contents. EXTREME CLOSE-UP, fixed, on the top of a low wooden shoe cabinet by a young woman's front door at night: the blackened burnt-out light bulb with the dried dead moth still stuck on its glass (the very bulb inside the lamp of Image 2), a small white box for two light bulbs, printed with one large simple light-bulb drawing and a round red sticker on its corner (no letters, no numbers) lying open with one new bulb still inside and one empty slot, and a small screwdriver; a folded step stool leans against the cabinet at the edge. Behind, out of focus, the warm fairy lights of her window make round bokeh. No letters or numbers on anything. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
@@ -305,7 +337,7 @@
  },
  "C34a": {
   "refs": [
-   "S34.jpg",
+   "S34o.jpg",
    "H3.jpg",
    "F02_hero.jpg",
    "F02_angle-left.jpg",
@@ -315,7 +347,7 @@
  },
  "C34b": {
   "refs": [
-   "S34.jpg",
+   "S34o.jpg",
    "H3.jpg",
    "F02_hero.jpg",
    "F02_angle-left.jpg",
@@ -325,7 +357,7 @@
  },
  "C34c": {
   "refs": [
-   "S34.jpg",
+   "S34o.jpg",
    "H3.jpg",
    "F02_hero.jpg",
    "F02_angle-left.jpg",
@@ -341,7 +373,7 @@
  },
  "C36": {
   "refs": [
-   "S36.jpg"
+   "S36o.jpg"
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing — where the large shapes sit — and ignore its grey tones and its contents. Christmas Eve night, snow falling: a quiet snow-covered street of an old Seoul neighborhood, WIDE, from the middle of the street at a low height: on one side the old five-storey corridor-style apartment block with its open outdoor corridors (a row of small warm door lamps on the 5th floor), and across the street a small 24-hour convenience store glowing warm amber-orange through its glass front; its sign is a plain warm amber-orange band with no letters, its light spilling onto the fresh snow. Street lamps, power lines, parked cars under snow. Calm and warm. The camera slowly pulls back. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  }

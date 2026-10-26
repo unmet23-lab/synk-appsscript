@@ -34,7 +34,7 @@ def rows_from_02():
             continue
         c = [x.strip() for x in m.group(2).split("|")]
         n = int(m.group(1))
-        out[n] = {"t": clean(c[0]), "ours": clean(RESULT.get(n, c[1])), "cam": clean(c[2] + " · " + c[3]), "snd": clean(c[4])}
+        out[n] = {"t": clean(c[0]), "ours": clean(RESULT.get(n, c[1])) + " / 빛: " + clean(c[3]), "cam": clean(c[2]), "snd": clean(c[4])}
     return out
 
 
@@ -72,13 +72,19 @@ def overlay(n, im):
     return im
 
 
-def frame(n):
-    p = os.path.join(V, "원본프레임", f"F{n:02d}_첫.jpg")
+def frame(n, end=False):
+    p = os.path.join(V, "원본프레임", f"F{n:02d}_{'끝' if end else '첫'}.jpg")
     return Image.open(p).convert("RGB")
 
 
-def ours(n, TW, TH, raw=False):
-    p = os.path.join(CUTS, f"C{n:02d}.jpg")
+def ours(n, TW, TH, raw=False, end=False):
+    """우리 그림 — 움직이는 컷은 카메라무브.py가 자른 처음 · 끝 창(컷/C04_처음.jpg · _끝.jpg), 아니면 받은 판 그대로"""
+    base = os.path.join(CUTS, f"C{n:02d}")
+    p = base + ("_끝.jpg" if end else "_처음.jpg")
+    if not os.path.exists(p):
+        if end:
+            return None
+        p = base + ".jpg"
     if not os.path.exists(p):
         return None
     im = Image.open(p).convert("RGB").resize((TW, TH))
@@ -86,37 +92,46 @@ def ours(n, TW, TH, raw=False):
 
 
 def board(rows, ns, path, page, pages):
-    TW, TH = 576, 324
-    TXT = 960
+    TW, TH = 432, 243
+    TXT = 900
     RH = TH + 28
-    Wd = 40 + TW * 2 + 24 + TXT + 40
-    Hd = 190 + RH * len(ns) + 30
+    Wd = 40 + TW * 4 + 8 * 3 + 30 + TXT + 40
+    Hd = 230 + RH * len(ns) + 30
     im = Image.new("RGB", (Wd, Hd), BG)
     d = ImageDraw.Draw(im)
-    d.text((40, 34), "옆집의 크리스마스 · 이미지 콘티  ·  원본 36컷의 자리 · 초 · 카메라 그대로", font=F("ExtraBold", 40), fill=INK)
-    d.text((40, 92), f"{page}/{pages}   왼쪽: 원본 컷 첫 프레임 · 가운데: 우리 그림(받은 색 그대로) · 오른쪽: 우리 초 · 화면 · 카메라와 빛 · 말과 소리", font=F("Medium", 22), fill=DIM)
-    d.text((40, 128), "간판 「늘켬」 · 봉투 마크 · 1+1 표시 · 자막 · 끝 문구 · 로고는 후반에 얹는다(35 · 36은 시안). 얼굴은 30 · 34뿐.", font=F("Medium", 22), fill=(236, 170, 120))
+    d.text((40, 34), "옆집의 크리스마스 · 이미지 콘티  ·  원본 36컷의 자리 · 초 · 카메라 기법 그대로", font=F("ExtraBold", 40), fill=INK)
+    d.text((40, 92), f"{page}/{pages}   원본 처음 · 원본 끝  |  우리 처음 · 우리 끝(움직이는 컷은 받은 판에서 카메라 움직임대로 자른 두 창) · 오른쪽: 초 · 화면 · 카메라 · 말과 소리", font=F("Medium", 22), fill=DIM)
+    d.text((40, 128), "간판 「늘켬」 · 봉투 마크 · 1+1 표시 · 자막 · 끝 문구 · 로고는 후반에 얹는다(35 · 36은 시안). 얼굴은 30 · 34뿐. 고정 컷은 끝 칸을 비운다.", font=F("Medium", 22), fill=(236, 170, 120))
+    xs = [40, 40 + TW + 8, 40 + 2 * (TW + 8) + 30, 40 + 3 * (TW + 8) + 30]
+    for j, lab in enumerate(("원본 처음", "원본 끝", "우리 처음", "우리 끝")):
+        d.text((xs[j], 186), lab, font=F("ExtraBold", 22), fill=GOLD if j >= 2 else DIM)
     for i, n in enumerate(ns):
-        y = 190 + i * RH
+        y = 230 + i * RH
         r = rows[n]
-        im.paste(frame(n).resize((TW, TH)), (40, y))
-        b = ours(n, TW, TH)
-        if b is not None:
-            im.paste(b, (40 + TW + 12, y))
-        else:
-            d.rectangle([40 + TW + 12, y, 40 + 2 * TW + 12, y + TH], outline=LINE, width=2)
-            d.text((40 + TW + 40, y + TH // 2 - 14), "(아직)", font=F("Medium", 26), fill=DIM)
-        x = 40 + TW * 2 + 36
-        d.text((x, y - 2), f"#{n}", font=F("Heavy", 44), fill=GOLD)
-        d.text((x + 100, y + 10), r["t"], font=F("ExtraBold", 24), fill=INK)
-        yy = y + 58
-        for label, key, fnt, col, mx in (("화면", "ours", F("SemiBold", 20), INK, 5), ("카메라", "cam", F("Medium", 18), DIM, 2),
-                                          ("말 · 소리", "snd", F("SemiBold", 19), (250, 214, 160), 2)):
-            d.text((x, yy), label, font=F("ExtraBold", 18), fill=GOLD)
-            for ln in wrap(d, r[key], fnt, TXT - 110)[:mx]:
-                d.text((x + 96, yy), ln, font=fnt, fill=col)
-                yy += 25
-            yy += 5
+        moving = not r["cam"].startswith("고정")
+        im.paste(frame(n).resize((TW, TH)), (xs[0], y))
+        if moving:
+            im.paste(frame(n, end=True).resize((TW, TH)), (xs[1], y))
+        for j, end in ((2, False), (3, True)):
+            if end and not moving:
+                continue
+            b = ours(n, TW, TH, end=end)
+            if b is not None:
+                im.paste(b, (xs[j], y))
+            else:
+                d.rectangle([xs[j], y, xs[j] + TW, y + TH], outline=LINE, width=2)
+                d.text((xs[j] + 24, y + TH // 2 - 14), "(아직)", font=F("Medium", 24), fill=DIM)
+        x = xs[3] + TW + 30
+        d.text((x, y - 2), f"#{n}", font=F("Heavy", 40), fill=GOLD)
+        d.text((x + 90, y + 8), r["t"], font=F("ExtraBold", 22), fill=INK)
+        yy = y + 50
+        for label, key, fnt, col, mx in (("화면", "ours", F("SemiBold", 18), INK, 4), ("카메라", "cam", F("Medium", 17), (170, 210, 255), 3),
+                                          ("말 · 소리", "snd", F("SemiBold", 17), (250, 214, 160), 2)):
+            d.text((x, yy), label, font=F("ExtraBold", 17), fill=GOLD)
+            for ln in wrap(d, r[key], fnt, TXT - 100)[:mx]:
+                d.text((x + 86, yy), ln, font=fnt, fill=col)
+                yy += 22
+            yy += 4
         d.line([(40, y + TH + 13), (Wd - 40, y + TH + 13)], fill=LINE, width=1)
     im.save(path, quality=88)
     print(path, im.size)

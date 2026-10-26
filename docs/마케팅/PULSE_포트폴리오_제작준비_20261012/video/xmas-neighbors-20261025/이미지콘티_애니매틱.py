@@ -1,5 +1,7 @@
 # 시즌 1 「옆집의 크리스마스」 이미지 콘티 첫 판 → 60초 애니매틱(낯선 사람 이해 시험 15차, 2026-10-26).
-# 이야기스케치 애니매틱_13.py(연필 판)와 같은 초 · 자막 · 들리는 소리에, 그림만 이미지 콘티(git 밖 컷/C01~C36.jpg)로 바꾼다.
+# 이야기스케치 애니매틱_13.py(연필 판)와 같은 초 · 자막 · 들리는 소리에, 그림만 이미지 콘티(git 밖 정지컷/C01~C36)로 바꾼다.
+# 10-26 밤 유호님 「카메라 기법도 원본과 똑같게」: 정지 그림을 그냥 잇지 않고 컷마다 원본에서 잰 움직임(카메라무브.py — 시작 · 끝 창,
+# 시작 · 멈춤 초, 고른 속도 · 점점 느려짐 · 점점 빨라짐, 손떨림)대로 받은 판 안에서 창을 옮겨 30fps로 굽는다. 끝 그림을 따로 구운 19 · 30은 두 그림을 겹쳐 넘긴다.
 # 화면 글자(간판 「늘켬」 · 봉투 마크 · 1+1 · 끝 문구 · 로고)는 후반에 얹는 것이라 여기서도 애니매틱 표시로 얹는다(LABELS — 그림을 보고 자리를 잰다).
 #   python -X utf8 이미지콘티_애니매틱.py  → git 밖 콘티/xmas-neighbors/시험/애니매틱_콘티1.mp4 · 말_콘티1.txt · 컷_콘티1.txt(--컷에 줄 초)
 import os
@@ -88,36 +90,84 @@ def ends(img, n):
         d.text((W / 2, H / 2 + 150), "옆집까지 늘 켜 둡니다", font=ImageFont.truetype(FONT_B, 64), fill=(255, 255, 255), anchor="mm")
 
 
+def load(pic, n):
+    for p in (os.path.join(V, "정지컷", f"{pic}.png"), os.path.join(V, "컷", f"{pic}.jpg"), os.path.join(V, "컷", f"C{n:02d}.jpg")):
+        if os.path.exists(p):
+            return Image.open(p).convert("RGB")
+    raise FileNotFoundError(pic)
+
+
+def ease(x, kind):
+    x = min(1.0, max(0.0, x))
+    if kind == "점점 느려짐":
+        return 1 - (1 - x) ** 2
+    if kind == "점점 빨라짐":
+        return x * x
+    return x
+
+
 if __name__ == "__main__":
-    os.makedirs(os.path.join(OUT, "칸"), exist_ok=True)
-    for old in os.listdir(os.path.join(OUT, "칸")):
-        os.remove(os.path.join(OUT, "칸", old))
-    segs = []
-    for k, (n, a, b, pic, s) in enumerate(SEGS):
-        p = os.path.join(V, "컷", f"{pic}.jpg")
-        if not os.path.exists(p):
-            p = os.path.join(V, "컷", f"C{n:02d}.jpg")
-        img = Image.open(p).convert("RGB").resize((W, H)).convert("RGBA")
-        for kind, fx, fy, kk in LABELS.get(pic, LABELS.get(f"C{n:02d}", [])):
-            label(img, kind, fx, fy, kk)
-        ends(img, n)
-        if s:
-            sub(img, s)
-        q = os.path.join(OUT, "칸", f"{k:02d}.png")
-        img.convert("RGB").save(q)
-        segs.append((q, b - a))
-    lst = os.path.join(OUT, "칸", "목록.txt")
-    with open(lst, "w", encoding="utf-8") as f:
-        for q, d in segs:
-            f.write(f"file '{q.replace(os.sep, '/')}'\nduration {d:.3f}\n")
-        f.write(f"file '{segs[-1][0].replace(os.sep, '/')}'\n")
+    import importlib.util
+    import math
+
+    import cv2
+    import numpy as np
+    spec = importlib.util.spec_from_file_location("cm", os.path.join(HERE, "카메라무브.py"))
+    cm = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cm)
+    FPS = 30
+    os.makedirs(OUT, exist_ok=True)
     out = os.path.join(OUT, "애니매틱_콘티1.mp4")
-    subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-f", "lavfi", "-i",
-                    "anullsrc=r=48000:cl=stereo", "-shortest", "-vf", "fps=30,format=yuv420p", "-c:v", "libx264", "-crf", "20",
-                    "-c:a", "aac", "-t", "60.04", out], check=True)
+    enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
+                            "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-shortest", "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p",
+                            "-c:a", "aac", "-t", "60.04", out], stdin=subprocess.PIPE)
+    total = 0
+    for (n, a, b, pic, sub_text) in SEGS:
+        src = load(pic, n).convert("RGBA")
+        for kind, fx, fy, kk in LABELS.get(pic, LABELS.get(f"C{n:02d}", [])):
+            label(src, kind, fx, fy, kk)   # 간판 · 봉투 표시는 그림에 붙여 카메라와 함께 움직인다
+        src = np.asarray(src.convert("RGB"))
+        end_pic = os.path.join(V, "정지컷", f"C{n:02d}e.png")
+        alt = np.asarray(Image.open(end_pic).convert("RGB").resize((src.shape[1], src.shape[0]))) if (n in (19, 30) and os.path.exists(end_pic)) else None
+        if alt is not None:
+            w0 = w1 = [0.5, 0.5, 1.0, 1.0, 0.0]
+        else:
+            w0, w1 = cm.cut_windows(f"C{n:02d}")
+        k, s_, dx, dy, r, t0, t1, ek, shake, note = cm.CAM[n]
+        t0 = a if t0 is None else t0
+        t1 = b if t1 is None else t1
+        # 화면에 얹는 글(자막 · 끝 문구 · 로고)은 창을 옮긴 뒤 얹는다
+        ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ends(ov, n)
+        if sub_text:
+            sub(ov, sub_text)
+        ova = np.asarray(ov).astype(np.float32) / 255.0
+        nf = int(round(b * FPS)) - int(round(a * FPS))
+        rng = np.random.default_rng(n)
+        ph = rng.uniform(0, 6.28, 6)
+        for f in range(nf):
+            t = a + f / FPS
+            u = ease((t - t0) / max(1e-3, t1 - t0), ek)
+            win = [w0[i] + (w1[i] - w0[i]) * u for i in range(5)]
+            if shake and shake >= 0.08:   # 손떨림: 잰 떨림 크기(화면 %)의 느린 흔들림
+                amp = shake / 100
+                win[0] += amp * (math.sin(t * 2.1 + ph[0]) + 0.5 * math.sin(t * 5.3 + ph[1])) / 1.5 * win[2]
+                win[1] += amp * (math.sin(t * 1.7 + ph[2]) + 0.5 * math.sin(t * 4.9 + ph[3])) / 1.5 * win[3]
+            fr = cm.crop(src[:, :, ::-1].copy(), win)[:, :, ::-1]
+            if alt is not None:
+                fr2 = cm.crop(alt[:, :, ::-1].copy(), win)[:, :, ::-1]
+                fr = (fr * (1 - u) + fr2 * u).astype(np.uint8)
+            frf = fr.astype(np.float32)
+            frf = frf * (1 - ova[..., 3:4]) + ova[..., :3] * 255 * ova[..., 3:4]
+            enc.stdin.write(frf.astype(np.uint8).tobytes())
+            total += 1
+        print(n, a, b, pic, "창", [round(x, 3) for x in w0], "→", [round(x, 3) for x in w1], ek or "고정")
+    enc.stdin.close()
+    enc.wait()
     with open(os.path.join(OUT, "말_콘티1.txt"), "w", encoding="utf-8") as f:
-        for t, s in SOUND:
-            f.write(f"{t:.1f}s  {s}\n")
+        for t, s2 in SOUND:
+            f.write(f"{t:.1f}s  {s2}\n")
+    starts = sorted({round(a, 2) for (_, a, _, _, _) in SEGS})
     with open(os.path.join(OUT, "컷_콘티1.txt"), "w", encoding="utf-8") as f:
-        f.write(",".join(f"{a:.2f}" for _, a, _, _, _ in SEGS))
-    print("끝", out)
+        f.write(",".join(f"{a:.2f}" for a in starts))
+    print("끝", out, total, "프레임")

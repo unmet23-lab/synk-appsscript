@@ -146,6 +146,46 @@ def place(name, plate, src, box, flip=False):
     print(name, plate, "놓음", box_of(tgt))
 
 
+def tilt(n, end_t, shift, ratio=(4, 3)):
+    """큰 위아래 기울임(5번 아래로 43%)을 한 장에: 원본 처음 프레임(위)과 끝 프레임(아래)을 기울인 만큼 겹쳐 이어 붙인 세로 판 —
+    Gemini 비율(4:3)에 맞춰 양옆을 늘이고, 받은 판에서 위 창(시작) · 아래 창(끝)을 잘라 쓴다(카메라무브.py)."""
+    img, m = mask_for(n)
+    SRC = Path(r"C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/레퍼런스/원본영상/hq_3cAzAf6s3ic/hq_3cAzAf6s3ic_h264.mp4")
+    cap = cv2.VideoCapture(str(SRC))
+    cap.set(cv2.CAP_PROP_POS_FRAMES, int(round(end_t * 25)))
+    ok, end = cap.read()
+    top = grey_blur(img, m, 24, n in NIGHT)
+    em = person_mask(end)
+    bot = grey_blur(end, em, 24, n in NIGHT)
+    off = int(round(H * shift))
+    ch = H + off
+    canvas = np.zeros((ch, W, 3), np.uint8)
+    canvas[off:off + H] = bot
+    # 겹친 띠는 위(시작)에서 아래(끝)로 부드럽게 넘긴다(바탕만) — 사람은 처음 · 끝 두 실루엣을 합쳐 끊김 없이 검게
+    for y in range(H):
+        a = 1.0 if y < off else max(0.0, 1.0 - (y - off) / max(1, H - off))
+        canvas[y] = (top[y] * a + canvas[y] * (1 - a)).astype(np.uint8)
+    # 끝 프레임 실루엣은 처음 실루엣 아래쪽(다리)의 가로 폭 안만 — 원본의 개 · 장바구니 끌개는 다리와 붙어 한 덩이라 폭으로 자른다(우리 판은 봉투 · 발)
+    leg = m[int(H * 0.8):]
+    xs = np.nonzero(leg)[1]
+    x0, x1 = (max(0, xs.min() - 30), min(W, xs.max() + 30)) if len(xs) else (0, W)
+    keep = np.zeros_like(em)
+    keep[:, x0:x1] = em[:, x0:x1]
+    sil = np.zeros((ch, W), np.uint8)
+    sil[:H] |= m
+    sil[off:off + H] |= keep
+    canvas[sil > 0] = (14, 14, 14)
+    cw = int(round(ch * ratio[0] / ratio[1]))
+    pad = max(0, (cw - W) // 2)
+    canvas = cv2.copyMakeBorder(canvas, 0, 0, pad, cw - W - pad, cv2.BORDER_REPLICATE)
+    name = f"S{n:02d}t"
+    imwrite(OUT / f"{name}_배치.png", canvas)
+    (V / "ego" / "refs" / "배치").mkdir(parents=True, exist_ok=True)
+    imwrite(V / "ego" / "refs" / "배치" / f"{name}.jpg", cv2.resize(canvas, (1600, int(1600 * canvas.shape[0] / canvas.shape[1])), interpolation=cv2.INTER_AREA))
+    json.dump({"shift": shift, "pad_frac": pad / cw, "win_w_frac": W / cw, "win_h_frac": H / ch}, open(OUT / f"{name}_창.json", "w", encoding="utf-8"))
+    print(name, "기울임 판", canvas.shape[1], "×", canvas.shape[0], "창 가로", round(W / cw, 3), "세로", round(H / ch, 3))
+
+
 if __name__ == "__main__":
     mode, args = sys.argv[1], sys.argv[2:]
     if mode == "실루엣":
@@ -154,5 +194,7 @@ if __name__ == "__main__":
         close([int(x) for x in args])
     elif mode == "흐림":
         close([int(x) for x in args], with_sil=False)
+    elif mode == "기울임":   # 기울임 5 8.56 0.43 — 컷 · 원본 끝 프레임 초 · 기울인 양(화면 높이 비)
+        tilt(int(args[0]), float(args[1]), float(args[2]))
     elif mode == "놓기":
         place(args[0], args[1], args[2], args[3], len(args) > 4 and args[4] == "뒤집기")

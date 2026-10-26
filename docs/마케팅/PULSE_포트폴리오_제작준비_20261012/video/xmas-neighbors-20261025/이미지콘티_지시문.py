@@ -19,7 +19,9 @@ def ref(name):
 
 
 def lay(name):
-    p = B / f"{name}.jpg"
+    # 움직이는 컷은 넓힌 배치도(카메라무브.py 배치 → S04o 등)가 있으면 그것으로 — 받은 판에서 시작 · 끝 창을 둘 다 잘라 낸다
+    o = B / f"{name}o.jpg"
+    p = o if (name.startswith("S") and o.exists()) else B / f"{name}.jpg"
     return str(p) if p.exists() else f"(아직 없음) {p}"
 
 
@@ -99,6 +101,28 @@ def jobs():
         "Light: low-key night — most of the frame is dark: cool blue-grey night ambient, the warm pool at the neighbor's door, the amber glow "
         "of the store across the street, the dim cold stairwell light at the far end. Soft light, no harsh shadows.", FINISH)
 
+    # 1판(PL1_200637)은 카메라가 첫 문 2.5 m 앞이라 민재의 깜깜한 문이 화면 30%에 왔다 — 원본 1의 사람 자리(머리 34% · 발 70% · 가로
+    # 40~49%)에 서게 원근을 잰 배치도(복도배치도.py → 배치/PL_원근)로 다시 굽는다. 1판은 생김새 참조로만.
+    J_["PL1b"] = J([lay("PL_원근"), ref("PL1.jpg")], STILL,
+        "Image 1 is a heavily blurred grey layout guide of this exact shot: copy its camera position, height, angle, lens and framing "
+        "exactly — where the near left wall with the big first door, the thin dark gap of the second door, the ceiling, the floor, the "
+        "parapet face on the right, the bright far end and the band of the store's glow sit in the frame — and ignore its grey tones. "
+        "Image 2 shows this film's corridor for its look only — the dark grey steel doors, the stained walls with pipes and meter boxes, the "
+        "small round ceiling lamps, the concrete parapet with its metal handrail, the fallen leaves, the convenience store across the street "
+        "and the night light — but Image 2's camera stands too close to the doors; this shot is taken from Image 1's camera, farther back, "
+        "so the corridor looks long.",
+        "Time: the same damp late-autumn night around 11 pm; no snow; a few dry fallen leaves on the wet concrete floor.",
+        "The doors on the left wall: the first door, about three meters away, is large at the left of the frame; the second door, about "
+        "seven meters away, belongs to a lonely man — its sensor lamp is dead and its doorway is a pitch-black gap at about 40% of the frame "
+        "width; the third door right after it belongs to the noisy neighbor — its small round sensor lamp is the only lit lamp in the "
+        "corridor and pours a small warm pool of light onto its own doorstep, just beyond the man's dark door; the farther doors are dark. "
+        f"Beyond the parapet on the right, across the street: {STORE}. Nobody is in the corridor.",
+        "Camera: fixed on a tripod in the middle of the corridor near its closed end, at standing eye level (about 1.5 m), level, the horizon "
+        "at about 42% of the frame height from the top, about 28 mm lens, looking straight down the long corridor — about twenty-three meters "
+        "to the lit stairwell landing at the far end, which sits just right of the frame center.",
+        "Light: low-key night — most of the frame is dark: cool blue-grey night ambient, the warm pool at the neighbor's door, the amber "
+        "glow of the store across the street, the dim cold stairwell light at the far end. Soft light, no harsh shadows.", FINISH)
+
     J_["H3"] = J([ref("F02_angle-back.jpg"), ref("F02_hair-3.jpg"), ref("F02_angle-left.jpg"), ref("F02_hero.jpg"), ref("H1.jpg")],
         "Create one photograph. A natural hair-and-wardrobe reference photo, 3:4 frame. Images 1 to 4 are identity references of one Korean "
         "woman in her early twenties — keep her exactly the same person with the same hair color, length and bangs: a round soft face with a "
@@ -142,13 +166,18 @@ def jobs():
         "(a neighbor's warm lamp, the cold stairwell light), so his profile is only a near-black outline with a thin warm rim of light "
         "along the back of his hair and his shoulder; his face is completely in shadow — no eyes, nose or mouth can be read.",
         MAN.format(a=2, b=4), f"He wears {M_AUTUMN}. Late-autumn night in the outdoor corridor of an old Korean apartment block.", FINISH)
-    J_["C05"] = J([lay("S05")], STILL, LAYOUT_SIL.format(who="the man"),
-        "LOW and close, at night in the outdoor corridor of an old Korean apartment block: THE MAN, a young man seen only from the chest down "
-        "inside the silhouette, stands at his dark steel front door and bends his knees a little to set "
-        f"{BAG} (a lunch box inside) down on the floor by his feet with his right hand, freeing his hands for the key. Dark chinos, worn white "
-        "sneakers, the hem of a thin dark-navy blouson. Dry fallen leaves on the damp concrete floor; the dark door and its frame along the "
-        "left edge of the frame; the vertical posts of the corridor's metal handrail along the right edge. Dim: only the cold night and a "
-        "faint warm glow from a neighbor's lamp further down. The camera will tilt down to the bag and the sneakers.", FINISH)
+    # 5번은 아래로 43% 기울이는 컷(원본 실측 7.04~8.52초, 점점 느려짐) — 시작(위)과 끝(아래)을 한 장에 담은 세로 4:3 판으로 굽고
+    # 카메라무브.py가 위 창 · 아래 창을 잘라 시작 · 끝 그림을 만든다(10-26 23:2x 유호님 「카메라 기법도 완전히 똑같게」).
+    J_["C05"] = J([lay("S05t")], STILL.replace("16:9 frame", "4:3 frame"),
+        "Image 1 is a heavily blurred grey layout guide of this exact tall frame: copy its camera position, height and angle, its lens and "
+        "framing, and the black silhouette's position and size — ignore its grey tones and its background.",
+        "This tall picture is the whole strip of space that one slow downward camera tilt travels over, in one continuous scene with one "
+        "camera and nothing repeated: the UPPER part is where the shot begins — THE MAN, a young man seen only from the chest down inside "
+        f"the silhouette, at his dark steel front door at night, bending his knees a little to set {BAG} (a lunch box inside) down by his "
+        "feet with his right hand, freeing his hands for the key; the LOWER part is where the tilt ends — the same white bag now resting on "
+        "the damp concrete floor right next to his worn white sneakers, among dry fallen leaves. Dark chinos, the hem of a thin dark-navy "
+        "blouson. The dark door and its frame along the left edge, the vertical posts of the corridor's metal handrail along the right edge. "
+        "Dim: only the cold night and a faint warm glow from a neighbor's lamp further down the corridor.", FINISH, ratio="4:3")
     J_["C06"] = J([], STILL,
         "EXTREME CLOSE-UP of the old brass key cylinder (keyhole) on a dark grey steel apartment front door, at night: around the keyhole "
         "the grey paint is covered in fine bright scratches — a rough half-circle of them below and around it, worn in by years of keys "
@@ -253,6 +282,9 @@ def jobs():
         "the noisy neighbor's alcove now has a string of warm fairy lights hanging around it (the first Christmas decoration), the elderly "
         "neighbor's door far down has a small wreath; his alcove stays bare and pitch dark under its dead lamp.",
         MAN.format(a=2, b=4), f"In the silhouette: THE MAN in {M_RAIN}, seen from behind, standing at his door. His face is not visible.",
+        "Two other neighbors in rain ponchos with their hoods up carry a small potted Christmas tree between them along the corridor, walking "
+        "toward the camera in the middle distance beyond him — smaller than him (their heads at about 40% of the frame height from the top, "
+        "their feet at about 62%), giving him a small nod as they pass; their faces hidden under their hoods.",
         "Camera exactly as in Image 1.", FINISH)
     J_["C21"] = J([lay("S21")] + M_REFS_BACK, STILL, LAYOUT_SIL.format(who="the man"),
         "Heavy rain, night, the outdoor corridor. MEDIUM, the size and place of the black silhouette: THE MAN in a dark navy hooded raincoat "
@@ -325,6 +357,36 @@ def jobs():
             "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
             "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
             "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+
+    # 30 다시(C30r): 표정 시험 a를 고른 뒤 배경만 못 박는다 — a · b · c 모두 지상 골목 · 공원처럼 나왔다(그는 5층 바깥 복도 자기 문 앞에서
+    # 문 위 등을 올려다보니, 카메라 쪽에서 본 그의 뒤는 난간 너머 5층 높이의 동네다).
+    J_["C30r"] = J([lay("S30")] + M_REFS_FACE, STILL, LAYOUT_SIL.format(who="the man's head"),
+        "TIGHT CLOSE-UP, exactly the size and place of the black silhouette (right of center, the head large): THE MAN's face in "
+        "three-quarter view, tilted up toward the small sensor lamp above his front door (just out of frame at the top left), which bathes "
+        "his face in soft warm light from above. He stands in the open-air outdoor corridor on the 5th floor of his old apartment block, so "
+        "behind him, out of focus, is the corridor's concrete parapet with a line of fresh snow on its edge low in the frame, and beyond it, "
+        "five floors up, the blue dusk sky over the snowy rooftops of the old neighborhood, warm window lights and the round bokeh of a "
+        "string of fairy lights on a neighbor's door — not a street, not an alley. A few snowflakes in his hair and on the collar of his "
+        f"navy padded jacket and his grey knitted scarf. Expression: {VAR30['C30a']}. Lips closed.",
+        "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
+        "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+        "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+
+    # 끝 그림 둘(19 · 30): 사람을 따라 손으로 크게 도는 컷이라 받은 판을 잘라서는 끝을 못 만든다(사람은 그 자리, 바탕만 흐름) — 고른 시작 그림을
+    # Image 1로 「같은 사람 · 같은 자리 · 같은 표정, 바탕만 흘러간 마지막 프레임」 편집으로 굽는다(얼굴 컷 고치기는 한 번까지 — 현장노트 gemini).
+    J_["C30e"] = J([ref("C30.jpg")] + M_REFS_FACE[:2],
+        "Edit this photograph (Image 1). It is the FIRST frame of a 2.3-second handheld shot; make the LAST frame of the same shot. The "
+        "camera has slowly circled around THE MAN to the left while staying on his face: he stays exactly the same person, the same size and "
+        "at the same place in the frame, with the same face and the same expression, lips closed; but the out-of-focus background behind "
+        "him has swept to the right by about half of the frame width — now the blurred corridor wall with a neighbor's door strung with "
+        "warm fairy lights fills the left part of the background — and the whole picture is tilted about 7 degrees counter-clockwise. "
+        "Images 2 and 3 are his identity references — do not change his face.", FINISH)
+    J_["C19e"] = J([ref("C19.jpg")],
+        "Edit this photograph (Image 1). It is the FIRST frame of a 1.4-second handheld shot; make the LAST frame of the same shot. As the "
+        "man in the foreground raises his hand higher in a small wave, the handheld camera swings with him: everything in the picture has "
+        "shifted to the left by about a fifth of the frame width and up a little, and the whole picture is tilted about 10 degrees "
+        "clockwise; his shoulder and the back of his head stay out of focus in the foreground; the woman far away at the bright stairwell "
+        "landing stays small and keeps waving. Same light, same moment.", FINISH)
 
     # ── ⑤ 정체 31~34 ──
     J_["C31"] = J([lay("S31")] + [ref("H3.jpg"), ref("F02_angle-back.jpg"), ref("M04_angle-back.jpg")], STILL,
