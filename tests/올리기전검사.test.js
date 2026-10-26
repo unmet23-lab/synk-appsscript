@@ -165,6 +165,13 @@ test('틱톡 판(10-26) — 캡션 4,000자 · DM 약속은 고칠 것, 짝 틱�
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
+test('영상 이름표는 편 폴더 기준 — 워크트리에서 돌려 영상이 공용 작업본에 있어도 같다', () => {
+  const repo = path.join(os.tmpdir(), 'wt'), main = path.join(os.tmpdir(), 'main');
+  const bundle = { repo, mediaRoot: main, dir: path.join(repo, 'docs', '마케팅', 'LAB_시험') };
+  assert.equal(검사.labelOf(bundle, path.join(main, 'docs', '마케팅', 'LAB_시험', '게시', '01-mn', 'video.mp4')), '게시/01-mn/video.mp4');
+  assert.equal(검사.labelOf(bundle, path.join(repo, 'docs', '마케팅', 'LAB_시험', 'remotion', 'out', 'a.mp4')), 'remotion/out/a.mp4');
+});
+
 test('참·거짓 칸 읽기', () => {
   assert.deepEqual(['켬(AI 음성)', '아님', true, 'false', '끔', '예', 'no', null, '모름'].map(묶음.yesNo), [true, false, true, false, false, true, false, null, null]);
 });

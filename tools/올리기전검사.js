@@ -309,6 +309,13 @@ function kitCheck(bundle, file, out) {
   return failed;
 }
 
+// 편 폴더 기준 이름표(「게시/01-mn/video.mp4」). 워크트리에서 돌려 영상이 공용 작업본에 있어도 같은 이름표가 되게 저장소 기준 경로에서 편 경로를 뗀다.
+function labelOf(bundle, file) {
+  const 편 = path.relative(bundle.repo, bundle.dir).split(path.sep).join('/');
+  const rel = 묶음.rel(bundle, file);
+  return rel.startsWith(`${편}/`) ? rel.slice(편.length + 1) : rel;
+}
+
 // ⑨ 틱톡 판. 같은 말을 쓰는 틱톡 계정엔 같은 최종본을 올리되, 끝 말이 인스타 키워드 DM · 유튜브 고정 댓글을 가리키면 틱톡엔 그 길이 없다.
 function tiktokFindings(plates, prep) {
   const out = [];
@@ -396,7 +403,7 @@ async function run(dir, opts = {}) {
   const hanLanguage = (plate) => /^(zh|ja)/.test(plate.language || '') || plate.platform === 'xiaohongshu';
   for (const [file, users] of videos) {
     try {
-      const label = path.relative(bundle.dir, file).split(path.sep).join('/');
+      const label = labelOf(bundle, file);
       const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label });
       findings.push(...r.findings);
       ocrFindings.push(...r.ocrFindings);
@@ -487,4 +494,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, labelOf, SAFE };
