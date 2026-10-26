@@ -11,7 +11,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 B = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-season4-20261025", "콘티", "bf-sale")
 REFS = os.path.join(B, "ego", "refs")
 REF4 = [f"C:/SYNK-LoRA/validation/F07_chaewon/refs/{n}.jpg" for n in ("01_hero", "02_left90", "03_right90", "04_fullbody")]
-MODELS = {"채원x4": REF4, "채원놀람x5": REF4 + ["C:/SYNK-LoRA/casting/wave1_20261019/세트/F07_exp-surprised.jpg"]}
+MODELS = {"채원x4": REF4, "채원놀람x5": REF4 + ["C:/SYNK-LoRA/casting/wave1_20261019/세트/F07_exp-surprised.jpg"],
+          "채원옆x4": [REF4[2], REF4[1], REF4[0], REF4[3]]}   # 옆얼굴 컷 — 옆 정본 둘을 앞에(Fable 10-26 P3)
 spec = json.load(open(os.path.join(HERE, "이미지콘티.json"), encoding="utf-8"))
 
 

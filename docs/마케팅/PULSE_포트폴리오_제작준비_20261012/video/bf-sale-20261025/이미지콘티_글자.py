@@ -67,7 +67,20 @@ def product(name, box):
     p = os.path.join(OUT, f"제품_{name}.png")
     x, y, w, h = box
     if os.path.exists(p):
-        im = Image.open(p).convert("RGBA")
+        im = Image.open(p).convert("RGB")
+        # 사진 바탕(밝은 회백 상자)을 네 귀퉁이에서 채워 투명으로 — 크림 칸 위에 상자 테두리가 비쳤다(Fable 10-26 P2 8)
+        key = (255, 0, 255)
+        ff = im.copy()
+        for c in ((0, 0), (im.width - 1, 0), (0, im.height - 1), (im.width - 1, im.height - 1)):
+            ImageDraw.floodfill(ff, c, key, thresh=44)   # 44 — 22면 바닥 그림자 줄이 남았다
+        mask = Image.new("L", im.size, 255)
+        px, mp = ff.load(), mask.load()
+        for yy in range(im.height):
+            for xx in range(im.width):
+                if px[xx, yy] == key:
+                    mp[xx, yy] = 0
+        im = im.convert("RGBA")
+        im.putalpha(mask.filter(ImageFilter.GaussianBlur(1.2)))
         im.thumbnail((w, h))
         return im
     ph = Image.new("RGBA", (w, h), (200, 200, 205, 255))
@@ -109,7 +122,11 @@ def grid(names, clock, out, extra=True):
     # 위 띠 — 행사 이름 + 카운트다운(원본: 행사 이름 · 날짜 띠)
     l = logo(92)
     im.alpha_composite(l, (90, 120))
-    d.text((90 + l.width + 24, 132), "블랙프라이데이", font=F("ExtraBold", 66), fill=(255, 255, 255))
+    # 「운동복」 — 낯선 사람 시험 15초 · 6초 둘 다 「힘껏이 무엇을 파는지 모른다」(10-26), Fable: 끝 카드만으론 늦어 ⑨ ⑪ 띠에도
+    t, fs = "운동복 블랙프라이데이", 66
+    while 90 + l.width + 24 + d.textlength(t, font=F("ExtraBold", fs)) > 1000:
+        fs -= 2
+    d.text((90 + l.width + 24, 132 + (66 - fs) // 2), t, font=F("ExtraBold", fs), fill=(255, 255, 255))
     pill = f"자정까지 {clock}"
     pw = d.textlength(pill, font=F("ExtraBold", 40))
     d.rounded_rectangle([990 - pw - 40, 236, 990, 300], radius=14, fill=DAHONG)
@@ -130,15 +147,15 @@ def card02():
     im.convert("RGB").save(os.path.join(OUT, "G02.png"))
 
 
-def card13():
+def card13(clock="00:59:46", out="G13위.png"):
     im = Image.new("RGBA", (W, 830), NAVY + (255,))
     d = ImageDraw.Draw(im)
     l = logo(150)
     im.alpha_composite(l, ((W - l.width) // 2, 70))
-    d.text((W // 2, 300), "블랙프라이데이", font=F("ExtraBold", 72), fill=(255, 255, 255), anchor="mm")
+    d.text((W // 2, 300), "운동복 블랙프라이데이", font=F("ExtraBold", 72), fill=(255, 255, 255), anchor="mm")
     d.text((W // 2, 410), "오늘 자정까지 전 품목 70%", font=F("Heavy", 68), fill=DAHONG, anchor="mm")
     d.rounded_rectangle([300, 480, 780, 600], radius=24, outline=DAHONG, width=6)
-    d.text((W // 2, 540), "00:59:46", font=F("Heavy", 84), fill=(255, 255, 255), anchor="mm")
+    d.text((W // 2, 540), clock, font=F("Heavy", 84), fill=(255, 255, 255), anchor="mm")
     d.text((W // 2, 680), "지금 힘껏 앱에서", font=F("ExtraBold", 56), fill=CREAM, anchor="mm")
     # 주황 조각(12.9–13.5초에 터지는 자리 — 정지 판엔 퍼진 뒤 모습)
     import random
@@ -150,18 +167,45 @@ def card13():
         s = random.randint(14, 34)
         col = random.choice([DAHONG, AMBER, (255, 214, 150)])
         d.polygon([(x, y), (x + s, y + s // 3), (x + s // 2, y + s)], fill=col)
-    im.save(os.path.join(OUT, "G13위.png"))
+    im.save(os.path.join(OUT, out))
 
 
 def board01():
-    # 1번 전광판(원본 초록 자리 327×94px) — 어두운 판 위 다홍 빛 숫자
-    im = Image.new("RGBA", (327, 94), (12, 8, 24, 255))
+    # 1번 전광판 — 굽은 판의 벽 화면(이미지콘티_합성.py BOX01 480×138)에 맞춘 투명 판 위 다홍 빛 숫자.
+    # 두 줄(한 줄이면 「자정까지」와 숫자가 붙어 보였다), 바탕은 투명(어두운 상자가 화면 톤과 달라 「화면 속 상자」로 보였다 — Fable 10-26 P2 5)
+    im = Image.new("RGBA", (480, 138), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    d.text((14, 47), "자정까지", font=F("ExtraBold", 26), fill=(255, 150, 110), anchor="lm")
-    d.text((318, 47), "00:59:59", font=F("Heavy", 50), fill=(255, 110, 60), anchor="rm")
-    im.save(os.path.join(OUT, "G01전광판.png"))
+    d.text((240, 26), "자정까지", font=F("ExtraBold", 42), fill=(255, 160, 120, 255), anchor="mm")   # 42 — 폰 390px에서 15px 남짓
+    d.text((240, 94), "00:59:59", font=F("Heavy", 80), fill=(255, 110, 60, 255), anchor="mm")
+    g = im.filter(ImageFilter.GaussianBlur(7))
+    out = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    out.alpha_composite(g); out.alpha_composite(im)
+    out.save(os.path.join(OUT, "G01전광판.png"))
 
 
+def sign06():
+    # ⑥ 벽 간판의 마지막 모습(넘김판 글자가 4.24초에 「힘껏」으로 맞춰진 뒤) — 굽은 빈 간판 판 위에 얹는다
+    Image.open(os.path.join(B, "참조", "힘껏_로고_간판.png")).convert("RGBA").save(os.path.join(OUT, "G06간판.png"))
+
+
+def cards08():
+    # ⑧ 터널 벽에 떠서 지나가는 「힘껏」 제품 카드 둘(사진만, 글자 없음) — 기운 크림 카드에 다홍 테두리, 투명 판 1080×1920.
+    # 원본처럼 터널 벽 속 · 중간 높이 · 반투명, 사람 뒤(합성에서 사람을 다시 얹는다 — Fable 10-26 P1 1)
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    for (name, x, y, s, rot) in (("레깅스", 60, 700, 230, 9), ("바람막이", 820, 560, 200, -7)):
+        c = Image.new("RGBA", (s + 40, int(s * 1.15) + 40), (0, 0, 0, 0))
+        ImageDraw.Draw(c).rounded_rectangle([20, 20, s + 20, int(s * 1.15) + 20], radius=22, fill=CREAM + (240,), outline=DAHONG + (255,), width=7)
+        pr = product(name, (0, 0, s - 30, int(s * 1.15) - 30))
+        c.alpha_composite(pr, (35, 35))
+        c = c.rotate(rot, expand=True, resample=Image.BICUBIC)
+        c.putalpha(c.getchannel("A").point(lambda v: int(v * 0.82)))
+        im.alpha_composite(c.filter(ImageFilter.GaussianBlur(10)), (x, y))
+        im.alpha_composite(c, (x, y))
+    im.save(os.path.join(OUT, "G08카드.png"))
+
+
+sign06()
+cards08()
 card02()
 # 칸 배정(Fable 샷표 P2 12 · P3 22): ⑨ 위 · 가운데에 가장 보여 줄 레깅스 · 바람막이(내레이션 「바람막이도」와 같은 때), 아래 브라탑.
 # ⑪ 8.60 하드 컷에 후디 · 조거 · 캡 → 10.2 묶음 회전에서 가운데 · 아래만 집업 재킷 · 반바지로. 시계는 ① 0.5초에 59 → 58로 시작해 1초마다(⑨ 6.16 = 53, ⑪ 8.60 = 50, 10.5 = 48).
@@ -169,5 +213,8 @@ grid(["레깅스", "바람막이", "브라탑"], "00:59:53", "G09.png", extra=Fa
 grid(["후디", "조거 팬츠", "러닝 캡"], "00:59:50", "G11a.png")
 grid(["후디", "집업 재킷", "반바지"], "00:59:48", "G11b.png")
 card13()
+# 6초 판(02 3절) — 같은 판을 쓰면 6초 안에 시계가 13초 흘렀다(Fable 10-26 P2 7). ① 59(0–0.9) → ⑨ 57(2.2) → ⑬ 55(4.6)
+grid(["레깅스", "바람막이", "브라탑"], "00:59:57", "G09_6.png", extra=False)
+card13("00:59:55", "G13위_6.png")
 board01()
 print("ok", OUT)

@@ -2,14 +2,16 @@
  "메모": "블프 세일 숏폼 이미지 콘티 지시문(2026-10-26 — 02_콘티.md 2절). 원본 컷 첫 프레임과 같은 카메라 자리 · 크기 · 높이 · 빛으로 굽는다(만족 사례 장부 S31). 원본 프레임은 넣지 않고 사람 자리만 검은 실루엣(배치:S<컷>, git 밖 synk-vendor/pulse-season4-20261025/콘티/bf-sale/배치), 스튜디오 기준 그림(R1), 채원 참조(명세서 refs 넷 + 놀란 얼굴), 장면 속 간판에 쓸 「힘껏」 로고(참조:힘껏_로고_간판.png)만 넣는다. 전광판 숫자 · 글자 카드 · 제품 칸 · 끝 카드는 굽지 않고 모션그래픽으로 얹는다. 풀기: python -X utf8 지시문/풀기.py → git 밖 콘티/bf-sale/ego/jobs.json, 받은 그림은 콘티/bf-sale/받음/.",
  "공통": {
   "시작": "Create one still photograph. A cinematic film still from a Korean online sports-wear brand commercial, vertical 9:16 frame, shot on a cinema camera with a fast lens.",
-  "채원_얼굴": "Use the attached photos of the same woman (Images 1 to {n}) only as identity references for one Korean woman about twenty-five years old. Keep her face exactly the same in every detail: sun-tanned warm golden-brown skin, a light dusting of small sun freckles across her nose and upper cheeks (subtle, not heavy), monolid eyes, thick straight dark eyebrows, a slightly angular jaw and a firm face line, and a short black pixie cut with a little volume on top. She looks healthy and sporty, like a real fitness instructor, not a model on a poster. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, extra marks, earrings, necklaces, tattoos, makeup glitter, text, logos or watermarks.",
-  "채원_옷": "She wears a fitted vivid red-orange half-zip training jacket with the zip pulled up to the collarbone, black high-waist leggings and white training shoes, with no logos or text on any clothing. A thin black headset microphone sits over her right ear, its slim boom arm curving toward the corner of her mouth.",
+  "채원_얼굴": "Use the attached photos of the same woman (Images 1 to {n}) only as identity references for one Korean woman about twenty-five years old. Keep her face exactly the same as in those photos: a short, fairly broad oval face with wide cheekbones and a soft rounded chin (not long, not narrow, not sharply angular); sun-tanned warm golden-brown skin with a light dusting of small sun freckles across her nose and upper cheeks (as light as in the photos, never heavier); natural eyes with thin eyelids, thick straight dark eyebrows, a small straight nose with a softly rounded tip, natural full lips; and a short black pixie cut with a little volume on top and short sideburns. She looks healthy and sporty, like a real fitness instructor, not a model on a poster. Ignore the backgrounds, clothing and lighting of the reference photos. Do not add moles, extra marks, earrings, necklaces, tattoos, makeup glitter, text, logos or watermarks.",
+  "채원_옷": "She wears a fitted vivid red-orange half-zip training jacket with the zip pulled up to the collarbone, black high-waist leggings and white training shoes, with no logos or text on any clothing. A thin black headset microphone sits over her RIGHT ear (the ear on the left side of the picture when she faces the camera), its slim boom arm curving from that ear toward the corner of her mouth.",
   "스튜디오": "Location: an indoor cycling (spin) studio at night. Deep navy-violet walls, a dark charcoal floor, rows of matte white-and-silver indoor stationary bikes, thin vertical white LED light strips on the walls, cool violet-blue ambient light with soft magenta reflections. Down the middle of the floor runs a long red-orange exercise-mat runway with thin lighter orange pinstripes along its edges.",
   "스튜디오_짧게": "Location: the same indoor cycling studio at night — deep navy-violet walls, dark charcoal floor, white-and-silver stationary bikes, cool violet light, a red-orange mat runway on the floor.",
   "기준R1": "Image {n} is the reference photo of the studio: keep the same room, wall color, bikes, light strips and mat runway as in it.",
   "배치": "Image {n} is a layout guide for the camera framing: the black silhouette shows exactly where she is and how large she is in the frame; the light grey area is empty background to be filled with the location. Match the camera position, camera height, lens, framing and her size exactly as in the layout guide. Do not draw the grey, the black or any guide shapes.",
   "금지_글자": "No text, no letters, no numbers, no logos and no watermarks anywhere in the picture.",
-  "질감": "Photorealistic, natural skin texture with visible pores, real fabric texture, slight film grain, no beauty retouching, no illustration look."
+  "질감": "Photorealistic, natural skin texture with visible pores, real fabric texture, slight film grain, no beauty retouching, no illustration look.",
+  "머리흐림": "Image {n} is a layout frame: copy exactly its camera position, lens, framing, the size and place of her head and shoulders, the jacket, the headset and the background. Her head is blurred out on purpose — never copy that blur; draw her face sharp, clear and in focus.",
+  "머리흐림_틀만": "Image {n} is a layout frame: copy exactly its camera position, lens, framing and the size and place of her head and shoulders. Her head is blurred out on purpose — never copy that blur; draw her face sharp, clear and in focus. Do not copy its background."
  },
  "컷": [
   {
@@ -117,6 +119,93 @@
     "R1"
    ],
    "text": "{시작} {채원_얼굴:4} {배치:5} {기준R1:6} {채원_옷} Only the lower part of the frame matters (the dark grey top area of the layout guide will be covered later — fill it with plain out-of-focus navy-violet studio wall). In the lower part, a medium shot: she sits on her stationary bike in the studio where the silhouette is, turned toward the camera, both hands resting on the handlebars (nothing in her hands, no phone), smiling happily straight into the camera, relaxed after the ride. Another empty bike at the left edge, out of focus. Light: soft violet-magenta studio light, warm highlight on her face. {금지_글자} {질감}"
+  },
+  {
+   "id": "C04b",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "참조:C04_머리흐림.png"
+   ],
+   "text": "{시작} A medium close-up from slightly below: a woman in a violet spin studio, her head and shoulders filling the frame, looks up and to the upper right, frozen in amazement, as if something huge just appeared above the class. {머리흐림:6} {채원_얼굴:5} Image 5 shows her surprised expression: eyes wide and mouth open in a small round 'O' about the same size as in Image 5 — do not drop the jaw further, keep her face length the same as in the photos. {채원_옷} No hands and no phone anywhere in the frame. Light: violet-magenta key light from the upper right, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C10b",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "참조:C10_머리흐림.png"
+   ],
+   "text": "{시작} A close-up: a woman in front of out-of-focus angled red-orange neon frames looks slightly to the right of the camera, thrilled, frozen in that expression. {머리흐림:6} {채원_얼굴:5} Image 5 shows her surprised expression: eyes wide and mouth open in a small round 'O' about the same size as in Image 5 — do not drop the jaw further, keep her face length the same as in the photos. {채원_옷} No hands and no phone in the frame. Light: warm red-orange neon light on her jacket and a bright rim light on her hair, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C03b",
+   "who": "없음",
+   "refs": [
+    "배치:S03"
+   ],
+   "text": "{시작} Image 1 is a layout guide for the camera framing (traced edges of the shapes); match its camera position, height and framing. Do not draw the guide lines. A very low camera lying on the floor right beside the white base (the front stabilizer foot) of a stationary bike, which stands at the left edge of the frame and is cut off by it. Behind it only a plain deep navy-violet studio wall with one thin horizontal magenta light line about a quarter from the top, and a smooth violet floor — no screen, no other bikes, no room details. Close to the lens, bright orange and magenta light rings swirl in big loose circles, and the rolled end of a red-orange exercise mat with thin orange pinstripes rolls from the left toward the lower right, unrolling diagonally across the floor toward the camera. Motion blur on the rings and on the rolling mat. Light: violet studio light, the rings and the mat glowing. No people. {금지_글자} {질감}"
+  },
+  {
+   "id": "C04c",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "참조:C04c_구도.png"
+   ],
+   "text": "{시작} A medium close-up from slightly below: a woman in a violet spin studio. Her face is large and on the LEFT third of the frame — the face about 37% of the frame width, the top of her head touching the top edge, her shoulders filling the bottom — and she looks up and to the upper right, frozen in amazement, as if something huge just appeared above the class. {머리흐림:6} {채원_얼굴:5} Her freckles are very light and sparse, exactly as in the photos. Image 5 shows her surprised expression: eyes wide and mouth open in a small round 'O' about the same size as in Image 5 — do not drop the jaw further, keep her face short and broad as in the photos. {채원_옷} No hands and no phone anywhere in the frame. Light: violet-magenta key light from the upper right, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C04d",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "참조:C04c_구도.png"
+   ],
+   "text": "{시작} A medium close-up from slightly below: a woman in a violet spin studio. Her face is large and on the LEFT third of the frame — the face about 37% of the frame width, the top of her head touching the top edge, her shoulders filling the bottom — and she looks up and to the upper right, frozen in amazement, as if something huge just appeared above the class. {머리흐림:6} {채원_얼굴:5} Her freckles are very light and sparse, exactly as in the photos. Image 5 shows her surprised expression: eyes wide and mouth open in a small round 'O' about the same size as in Image 5 — do not drop the jaw further, keep her face short and broad as in the photos. {채원_옷} No hands and no phone anywhere in the frame. Light: violet-magenta key light from the upper right, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C10c",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "참조:C10_머리흐림.png"
+   ],
+   "text": "{시작} A close-up: a woman looks slightly to the right of the camera, thrilled, eyes wide and mouth open in a small round 'O', frozen in that expression. {머리흐림_틀만:6} {채원_얼굴:5} Her freckles are very light and sparse, exactly as in the photos. Image 5 shows her surprised expression — keep the 'O' small, do not drop the jaw, keep her face short and broad as in the photos. {채원_옷} No hands and no phone in the frame. Behind her there is no room at all: an abstract virtual space of bright red-orange and hot-pink neon light lines and angled neon frames over a deep red glow, slightly out of focus — no ceiling, no lamps, no bikes, no pillars, no walls. Light: warm red neon light wrapping her jacket and a bright rim light on her hair, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08b",
+   "who": "채원",
+   "refs": [
+    "채원옆x4",
+    "배치:S08"
+   ],
+   "text": "{시작} {채원_얼굴:4} Images 1 and 2 are her exact side profiles. {배치:5} {채원_옷} A side shot (her profile facing right) from a little distance, moving alongside her, the camera slightly tilted: she pedals hard on a white stationary bike leaning forward, and she and the WHOLE bike are visible from her head down to the floor — as small as the black silhouette in the layout guide (her head about 30% from the top of the frame, the base of the bike about 80%, lots of space around her). Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She is inside a tunnel made of streaking straight lines and angled frames of bright red-orange, hot-pink and amber neon light rushing past, strong motion blur in the light lines behind her, her body sharp. Light: intense red neon glow wrapping her, hot highlights on her jacket. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08c",
+   "who": "채원",
+   "refs": [
+    "채원옆x4",
+    "배치:S08"
+   ],
+   "text": "{시작} {채원_얼굴:4} Images 1 and 2 are her exact side profiles. {배치:5} {채원_옷} A side shot (her profile facing right) from a little distance, moving alongside her, the camera slightly tilted: she pedals hard on a white stationary bike leaning forward, and she and the WHOLE bike are visible from her head down to the floor — as small as the black silhouette in the layout guide (her head about 30% from the top of the frame, the base of the bike about 80%, lots of space around her). Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She is inside a tunnel made of streaking straight lines and angled frames of bright red-orange, hot-pink and amber neon light rushing past, strong motion blur in the light lines behind her, her body sharp. Light: intense red neon glow wrapping her, hot highlights on her jacket. {금지_글자} {질감}"
+  },
+  {
+   "id": "C03c",
+   "who": "없음",
+   "refs": [
+    "배치:S03"
+   ],
+   "text": "{시작} Image 1 is a layout guide for the camera framing (traced edges of the shapes); match its camera position, height and framing. Do not draw the guide lines. A very low camera lying on the floor right beside the front of a white stationary bike: the big round white-and-silver flywheel of the bike fills the upper left third of the frame, very close to the lens and cut off by the top and left edges, with the white base foot of the bike below it. Behind it only a plain deep navy-violet studio wall with one thin horizontal magenta light line about a quarter from the top, and a smooth violet floor — no screen, no other bikes, no room details. Bright orange and magenta light rings spin around the flywheel in big loose circles. In the upper right, the rolled end of a red-orange exercise mat with thin orange pinstripes has just started to roll in, about to unroll diagonally across the floor toward the camera in the lower left. Motion blur on the rings and on the rolling mat. Light: violet studio light, the rings glowing. No people. {금지_글자} {질감}"
+  },
+  {
+   "id": "C03d",
+   "who": "없음",
+   "refs": [
+    "배치:S03"
+   ],
+   "text": "{시작} Image 1 is a layout guide for the camera framing (traced edges of the shapes); match its camera position, height and framing. Do not draw the guide lines. A very low camera on the floor beside a white stationary bike. Only the edge of the bike is in the picture: a thin curved sliver of its white-and-silver flywheel at the very top-left corner (cut off by the top and left edges, no wider than about one eighth of the frame), with the white base foot of the bike just below it at the left edge. The rest of the frame is empty: a plain deep navy-violet studio wall with one thin horizontal magenta light line about a quarter from the top, and a smooth violet floor — no screen, no other bikes, no room details. In the empty middle-left of the frame, close to the lens, bright orange and magenta light rings swirl in big loose circles, spinning off the flywheel. A faint red-orange exercise mat, still rolled, is just entering from the upper right. Motion blur on the rings. Light: violet studio light, the rings glowing. No people. {금지_글자} {질감}"
   }
  ]
 }

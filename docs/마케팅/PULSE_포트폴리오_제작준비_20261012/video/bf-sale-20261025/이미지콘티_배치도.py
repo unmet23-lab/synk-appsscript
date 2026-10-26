@@ -22,7 +22,9 @@ CUT = {
     4: {"seg": True, "drop": [(880, 1250, 1080, 1920)]},                      # 얼굴 미디엄 클로즈업(오른쪽 아래 남의 손 · 수건 뺌)
     6: {"seg": True, "drop": [(0, 0, 400, 1920), (700, 0, 1080, 1920)]},        # 스튜디오 와이드 — 가운데 강사만(양옆 수강생 뺌)
     7: {"seg": True, "drop": [(0, 0, 230, 1920), (860, 0, 1080, 1920)]},        # 뒷모습 — 양옆 수강생 뺌
-    8: {"seg": True},                                                           # 터널 옆모습
+    8: {"seg": True, "model": "u2net", "drop": [(0, 0, 355, 1920), (0, 1560, 1080, 1920)]},
+    # 터널 옆모습 — 사람 + 자전거만(왼쪽 떠 있는 카드 뺌). 10-26 첫 판(사람 따기 모델)은 센 네온 줄기까지 사람으로 잡아
+    # 사람이 원본의 1.8배로 구워졌다(Fable P1) — 이 컷만 일반 모델 u2net이 사람 + 자전거를 깔끔하게 딴다
     10: {"seg": True},                                                          # 얼굴 놀람
     12: {"seg": True, "drop": [(0, 1500, 300, 1920)]},                          # 옆모습 페달(앞 자전거 흐림은 사람 아님)
     13: {"seg": True, "drop": [(0, 0, 1080, 830), (0, 830, 330, 1920)],         # 아래 절반 — 가운데 남자 자리에 채원(왼쪽 강사 · 위 끝 카드 뺌)
@@ -52,7 +54,8 @@ def main(cuts):
             e = cv2.dilate(e, np.ones((9, 9), np.uint8))
             lay[e > 0] = 70
         if cfg.get("seg"):
-            mm = np.asarray(remove(im, session=ses, only_mask=True)).astype(np.float32) / 255
+            s2 = new_session(cfg["model"]) if cfg.get("model") else ses
+            mm = np.asarray(remove(im, session=s2, only_mask=True)).astype(np.float32) / 255
             m = ((mm > 0.5) * 255).astype(np.uint8)
             m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
             for (x0, y0, x1, y1) in cfg.get("drop", []):
