@@ -23,7 +23,8 @@
 
   /* ── 저장: 이 브라우저에만 남는 편의 기능. 막혀 있어도 화면은 그대로 쓴다 ── */
   const KEY = 'pulse-casting-v3';
-  const state = { pkg: [], sel: {}, ask: '', format: 'kmong', lead: '', ...load() };
+  const state = { pkg: [], sel: {}, ask: '', lead: '', ...load() };
+  delete state.format; // 10-26 전 판의 글 모양(크몽 메시지 · 발주서 메모) 고르기는 뺐다
   state.pkg = state.pkg.filter(byCode);
   function load() {
     try {
@@ -33,12 +34,12 @@
       const o = JSON.parse(localStorage.getItem('pulse-casting-v2') || 'null');
       if (o && typeof o === 'object') {
         const sel = {}; for (const p of o.picks || []) sel[p.code] = { hair: p.hair || 0, voice: p.voice || 0, memo: p.memo || '' };
-        return { pkg: [...new Set([...(o.picks || []).map((p) => p.code), ...(o.compare || [])])], sel, ask: (o.brief && o.brief.touched && o.brief.product) || '', format: o.format || 'kmong' };
+        return { pkg: [...new Set([...(o.picks || []).map((p) => p.code), ...(o.compare || [])])], sel, ask: (o.brief && o.brief.touched && o.brief.product) || '' };
       }
     } catch { /* 저장이 막힌 브라우저 */ }
     return {};
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify({ pkg: state.pkg, sel: state.sel, ask: state.ask, format: state.format, lead: state.lead })); } catch { /* 무시 */ } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ pkg: state.pkg, sel: state.sel, ask: state.ask, lead: state.lead })); } catch { /* 무시 */ } }
   const selOf = (c) => ({ hair: 0, voice: 0, memo: '', ...(state.sel[c] || {}) });
   const inPkg = (c) => state.pkg.includes(c);
   function setSel(c, patch) { state.sel[c] = { ...selOf(c), ...patch }; save(); }
@@ -278,7 +279,7 @@
     }
     const tiles = order.map((m) => { const r = recs.find((x) => x.model.code === m.code); return tileHTML(m, r, r ? recs.indexOf(r) + 1 : 0, recs.length && !r); }).join('');
     body.innerHTML = `<section class="board pad" aria-label="모델 보드">${tiles || ''}
-      <div class="slot"><h2>찾는 얼굴이 없나요?</h2><p>10대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><button type="button" class="link" data-act="new-model">새 모델 문의 글 복사</button></div></section>`;
+      <div class="slot"><h2>찾는 얼굴이 없나요?</h2><p>10대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><a class="link" href="${E(formUrl(newModelText()))}" target="_blank" rel="noopener" data-act="new-model">새 모델 문의하기 <span aria-hidden="true">↗</span></a></div></section>`;
     wireLoops(body);
   }
   // 움직이는 사진: 마우스를 올리면(휴대폰은 화면에 보이면) 짧게 돈다
@@ -533,7 +534,23 @@
         <p class="mt-help">고른 모델이 문의 글 맨 위에 「진행하고 싶은 모델」로 들어가요.</p></div>`;
   }
   function inquiryOf(items) {
-    return L.inquiryText({ picks: items, models: D.models, brief: { product: state.ask, industry: '', moods: [], touched: !!state.ask.trim() }, compare: [], taxonomy: TAX, format: state.format, lead: leadOf(items) });
+    return L.inquiryText({ picks: items, models: D.models, brief: { product: state.ask, industry: '', moods: [], touched: !!state.ask.trim() }, compare: [], taxonomy: TAX, format: 'kmong', lead: leadOf(items) });
+  }
+  // 문의 보낼 곳(2026-10-26): synk.im의 문의 양식(Google Forms)과 hello@synk.im. 양식은 유형을 PULSE로 고르고 「문의 내용」 칸에 글을 채워 연다.
+  // 칸 번호 · 유형 글은 그 양식 그대로이고, SYNK-website 원격 원고(10-26 02c8cbe) site-v10/content/ko.mjs의 PULSE 쪽 의뢰 양식과 같다.
+  // 예전 안내(크몽 메시지 · 발주서 메모에 붙여 넣기)는 synk.im에서 그리로 가는 길이 없어 뺐다. 글 자체는 담당자 칸이 그대로 읽는 편지 꼴이다.
+  const CONTACT = { email: 'hello@synk.im', form: 'https://docs.google.com/forms/d/e/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg/viewform',
+    type: ['entry.1425474537', 'PULSE · 제작 협업·작품 이용·광고'], text: 'entry.1372278933' };
+  // 이보다 긴 주소는 글 없이 열고 글은 복사해 둔다. 양식은 10-26 4.5KB 주소가 그대로 채워짐을 확인했고,
+  // 메일은 Windows에서 브라우저 → 메일 앱으로 넘어가는 mailto가 2,000자 안팎에서 본문이 비거나 잘릴 수 있어 더 짧게 둔다(한글 한 자 = 인코딩 9자).
+  const FORM_MAX = 6000, MAIL_MAX = 1800;
+  const fitUrl = (base, key, text, max) => { const full = `${base}&${key}=${encodeURIComponent(text)}`; return full.length <= max ? full : base; };
+  const formUrl = (text) => fitUrl(`${CONTACT.form}?usp=pp_url&${CONTACT.type[0]}=${encodeURIComponent(CONTACT.type[1])}`, CONTACT.text, text, FORM_MAX);
+  const mailUrl = (subject, text) => fitUrl(`mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}`, 'body', text, MAIL_MAX);
+  function subjectOf(items) {
+    const lead = leadOf(items), first = byCode(lead || (items[0] && items[0].code));
+    if (!first) return '[PULSE] 모델 캐스팅 문의';
+    return `[PULSE] 모델 캐스팅 문의 — ${first.name}${items.length > 1 ? ` 외 ${items.length - 1}명` : ''}`;
   }
   const topLevel = (() => { try { return window.top === window.self && /^https?:/.test(location.protocol); } catch { return false; } })();
   const shareBase = topLevel ? `${location.origin}${location.pathname}${location.search}` : (D.shareBase || '');
@@ -575,18 +592,25 @@
   function inqHTML(items) {
     return `<section class="inq pad" id="inq" aria-labelledby="inq-title">
       <div><h2 id="inq-title">문의 글</h2>
-        <p>${items.length ? '담은 모델과 고른 헤어·목소리, 보드에 적은 광고 내용이 들어가요. 이 글을 보내 주시면 제작을 시작할 때 같은 조합으로 준비해 드려요. 이 페이지에서 자동으로 보내지는 않으니 복사해서 붙여 넣어 주세요.' :'아직 담은 모델이 없어요. 새 모델이 필요하거나 상담부터 받고 싶다면 이 글로 시작해 주세요.'}</p>
+        <p>${items.length ? '담은 모델과 고른 헤어·목소리, 보드에 적은 광고 내용이 들어가요. 이 글을 문의 양식이나 메일로 보내 주시면 제작을 시작할 때 같은 조합으로 준비해 드려요.' :'아직 담은 모델이 없어요. 새 모델이 필요하거나 상담부터 받고 싶다면 이 글로 시작해 주세요.'}</p>
         ${leadHTML(items)}
-        <div class="fmt" role="group" aria-label="글 모양"><button type="button" class="tg" data-act="format" data-v="kmong" aria-pressed="${state.format === 'kmong'}">크몽 메시지</button><button type="button" class="tg" data-act="format" data-v="order" aria-pressed="${state.format === 'order'}">발주서 메모</button></div>
       </div>
       <div><label class="sec-h" for="inq-text">보낼 글</label><textarea id="inq-text" readonly rows="10"></textarea>
-        <div class="row"><button type="button" class="btn ink" data-act="copy-inq">글 복사하기</button><span class="mt-help" id="inq-where"></span></div></div>
+        <div class="row"><a class="btn ink" id="inq-form" href="${E(CONTACT.form)}" target="_blank" rel="noopener" data-act="send-inq" data-v="form">문의 양식으로 보내기 <span aria-hidden="true">↗</span></a><a class="btn line" id="inq-mail" href="mailto:${CONTACT.email}" data-act="send-inq" data-v="mail">메일로 보내기</a><button type="button" class="btn line" data-act="copy-inq">글 복사하기</button></div>
+        <p class="mt-help" id="inq-where"></p></div>
     </section>`;
   }
   function wireInq(items) {
     const ta = $('#inq-text'); if (!ta) return;
-    ta.value = items.length ? inquiryOf(items) : newModelText();
-    $('#inq-where').textContent = state.format === 'order' ? '발주서 「장면·모델」 메모 칸에 붙여 넣어 주세요.' : '크몽 메시지 창에 그대로 붙여 넣어 주세요.';
+    const text = items.length ? inquiryOf(items) : newModelText();
+    ta.value = text;
+    const form = formUrl(text), mail = mailUrl(items.length ? subjectOf(items) : '[PULSE] 새 모델 문의', text);
+    const fa = $('#inq-form'), ma = $('#inq-mail');
+    fa.href = form; fa.dataset.full = form.includes(`&${CONTACT.text}=`) ? '1' : '';
+    ma.href = mail; ma.dataset.full = mail.includes('&body=') ? '1' : '';
+    $('#inq-where').textContent = fa.dataset.full
+      ? `문의 양식은 이 글이 채워진 채로 새 창에 열려요. 답장 받을 이메일을 적고 개인정보 동의에 표시한 뒤 보내 주세요. 메일은 ${CONTACT.email}으로 가요.`
+      : `글이 길어 양식에 다 담지 못해요. 누르면 글을 복사해 둘 테니 양식의 「문의 내용」 칸에 붙여 넣고, 이메일과 개인정보 동의를 채워 보내 주세요. 메일은 ${CONTACT.email}으로 가요.`;
   }
   function newModelText() {
     const blocks = [['안녕하세요. PULSE 모델 캐스팅북을 보고 문의드려요.'], ['[찾는 모델]', '성별·나이대: ', '분위기: ']];
@@ -821,7 +845,7 @@
       case 'eg': state.ask = v; save(); $('#q').value = v; drawBoard(route === 'lineup' ? 'lineup' : 'board'); break;
       case 'ask-clear': state.ask = ''; save(); $('#q').value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); $('#q').focus(); break;
       case 'filters-clear': for (const k of Object.keys(filters)) filters[k] = ''; for (const s of $$('.filters select')) s.value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); break;
-      case 'new-model': copy(newModelText(), '새 모델 문의 글을 복사했어요. 크몽 메시지에 붙여 넣어 주세요.'); break;
+      case 'new-model': t.href = formUrl(newModelText()); break; // 보드에 적은 광고 내용이 그 사이 바뀌었을 수 있어 누를 때 다시 채운다(새 창 열기는 링크 그대로)
       case 'ask-this': if (!inPkg(code)) state.pkg.push(code); state.lead = code; save(); break;
       case 'tab': drawTab(byCode(curCode), v); try { history.replaceState(null, '', `#m-${curCode}-${v}`); } catch { /* 무시 */ } break;
       case 'strip': stepStrip(Number(t.dataset.d)); break;
@@ -839,8 +863,12 @@
       case 'take-share': { const items = readShare(view.dataset.shared); for (const x of items) { if (!inPkg(x.code)) state.pkg.push(x.code); setSel(x.code, { hair: x.hair, voice: x.voice }); } save(); toast(`${items.length}명을 내 패키지에 담았어요`); go('#pkg'); break; }
       case 'share-link': copy(`${shareBase}#p-${shareCode(myItems())}`, '공유 링크를 복사했어요. 받은 사람도 같은 조합으로 볼 수 있어요.'); break;
       case 'to-inq': e.preventDefault(); $('#inq')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); break;
-      case 'format': state.format = v; save(); for (const b of $$('[data-act="format"]')) b.setAttribute('aria-pressed', b === t); wireInq(view.dataset.shared ? readShare(view.dataset.shared) : myItems()); break;
-      case 'copy-inq': copy($('#inq-text').value, '글을 복사했어요. 붙여 넣기만 하면 돼요.'); break;
+      // 양식 · 메일은 링크 그대로 열고, 글이 주소에 다 담기지 않았거나 메일 앱이 없을 때를 위해 글을 복사해 둔다
+      case 'send-inq':
+        if (v === 'mail') copy($('#inq-text').value, t.dataset.full ? `메일 앱을 여는 중이에요. 열리지 않으면 복사해 둔 글을 ${CONTACT.email}으로 보내 주세요.` : '메일 앱을 여는 중이에요. 본문에 복사해 둔 글을 붙여 넣어 보내 주세요.');
+        else if (!t.dataset.full) copy($('#inq-text').value, '글을 복사해 뒀어요. 양식의 「문의 내용」 칸에 붙여 넣어 주세요.');
+        break;
+      case 'copy-inq': copy($('#inq-text').value, `글을 복사했어요. 문의 양식이나 ${CONTACT.email}으로 보내 주세요.`); break;
       case 'lead': { state.lead = code; save(); const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(), lead = leadOf(items) || 'none'; for (const b of $$('[data-act="lead"]')) b.setAttribute('aria-pressed', b.dataset.code === lead); wireInq(items); break; }
       case 'save-card': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); const x = items.find((y) => y.code === code); const m = byCode(code); exportCanvas(() => drawCard(x), `PULSE_${m.code}_${m.name}_컴프카드`); break; }
       case 'save-sheet': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); exportCanvas(() => drawSheet(items), `PULSE_모델패키지_${items.length}명`); break; }

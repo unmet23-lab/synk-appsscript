@@ -306,6 +306,21 @@ test('모델 북은 사진만: 움직임 탭도, 모델별 참고 영상 자료�
   assert.doesNotMatch(fs.readFileSync(path.join(dir, 'site-src', 'style.css'), 'utf8'), /\.motions/);
 });
 
+// 10-26 광고주 문의 길: synk.im에는 크몽 · 발주서로 가는 길이 없어, 문의 글은 synk.im 문의 양식(유형 PULSE · 글 채움)과 hello@synk.im으로 보낸다.
+test('문의 글은 문의 양식과 hello@synk.im으로 보내고, 크몽 · 발주서 안내와 글 모양 고르기가 없다', () => {
+  const fs = require('node:fs');
+  const app = fs.readFileSync(path.join(dir, 'site-src', 'app.js'), 'utf8');
+  const code = app.replace(/\/\/[^\n]*/g, ''); // 주석의 옛 안내 설명은 뺀다
+  assert.doesNotMatch(code, /크몽|발주서|data-act="format"/);
+  assert.match(app, /form: 'https:\/\/docs\.google\.com\/forms\/d\/e\/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg\/viewform'/);
+  assert.match(app, /type: \['entry\.1425474537', 'PULSE · 제작 협업·작품 이용·광고'\], text: 'entry\.1372278933'/);
+  assert.match(app, /email: 'hello@synk\.im'/);
+  for (const id of ['inq-form', 'inq-mail']) assert.match(app, new RegExp(`id="${id}"`));
+  assert.match(app, /format: 'kmong', lead: leadOf\(items\)/, '화면은 담당자 칸이 읽는 편지 꼴 하나만 쓴다');
+  assert.match(app, /const FORM_MAX = 6000, MAIL_MAX = 1800;/, 'mailto는 Windows 메일 앱이 자르지 않게 더 짧게');
+  assert.match(code, /이메일을 적고 개인정보 동의에 표시한 뒤 보내 주세요/, '양식의 필수 칸(이메일 · 개인정보 동의)을 그대로 안내한다');
+});
+
 test('문장 듣기 서버: 타입캐스트 목소리만 받고, 길이·빈 문장·없는 목소리를 막는다(타입캐스트는 부르지 않는다)', async () => {
   const say = require(path.join(dir, 'say-server.cjs'));
   const table = say.voiceTable();

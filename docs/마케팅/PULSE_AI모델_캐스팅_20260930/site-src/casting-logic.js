@@ -186,7 +186,7 @@
     return (picks || []).filter((p) => /^[A-Z]\d\d$/.test(String((p && p.code) || ''))).map((p) => `${p.code}.${Number(p.hair) || 0}.${Number(p.voice) || 0}`).join('~');
   }
 
-  // 문의용 글. format: 'kmong'(크몽 메시지) | 'order'(발주서 「장면·모델」 메모)
+  // 문의용 글. format: 'kmong'(편지 꼴 — 10-26부터 캐스팅북 화면은 이것만 쓴다) | 'order'(발주서 「장면·모델」 메모). 담당자 칸은 둘 다 읽는다.
   // lead: 손님이 「누구로 진행할까요?」에서 고른 모델 코드. 고르면 그 모델이 「진행하고 싶은 모델」로 맨 위에 오고 나머지는
   // 「함께 고민 중인 모델」이 된다. 담은 모델이 여럿인데 고르지 않았으면 「진행할 모델」을 상담에서 정하고 싶은 것에 넣는다.
   function inquiryText({ picks, models, brief, compare, taxonomy, format = 'kmong', lead = '' }) {
