@@ -873,7 +873,7 @@
       "websiteStatus": "contact-info-company-website-added-and-saved-2026-09-14; reloaded-contact-card-shows-clickable-synk-im; actual-click-opened-https-synk-im-homepage; other-contact-fields-unchanged",
       "remainingAction": "profile-preparation-complete; use-unmet25-only-for-LinkedIn-personal-profile-and-SYNK-company-page; duplicate-closure-and-migration-cancelled-by-user; new-content-publication-remains-separate",
       "dailyLine": "yuhobuilds",
-      "dailyBlocked": "ego에서 링크드인 로그아웃(10-26 확인) — 유호님이 unmet25 구글로 로그인(회사 페이지도 같은 계정)"
+      "loginVerifiedAt": "2026-10-26"
     },
     "synk-linkedin-company": {
       "brand": "SYNK",
@@ -1039,7 +1039,8 @@
       "contentStatus": "first-text-post-published",
       "firstPostUrl": "https://x.com/yuhobuilds/status/2098402542854275312",
       "dailyLine": "yuhobuilds",
-      "dailyBlocked": "ego에서 X 로그아웃(10-26 확인) — 유호님 로그인(로그인 수단 기록 없음)"
+      "loginAlias": "unmet23",
+      "loginVerifiedAt": "2026-10-26"
     },
     "yuhobuilds-behance": {
       "brand": "SHIFT",

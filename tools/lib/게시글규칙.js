@@ -61,6 +61,18 @@ function urls(text) {
     .filter((u) => !/^[\d.]+$/.test(u));
 }
 
+// X 글 칸 수 — 라틴 · 일반 문장부호는 한 칸, 그 밖(한글 · 한자 · 이모지)은 두 칸, 주소는 23칸(X twitter-text 기준).
+function xWeight(text) {
+  let s = String(text || '');
+  let n = 0;
+  for (const u of list(URL, s)) { s = s.replace(u, ''); n += 23; }
+  for (const ch of s) {
+    const c = ch.codePointAt(0);
+    n += (c <= 0x10FF || (c >= 0x2000 && c <= 0x200D) || (c >= 0x2010 && c <= 0x201F) || (c >= 0x2032 && c <= 0x2037)) ? 1 : 2;
+  }
+  return n;
+}
+
 // 글 하나(where = '캡션' 등)에 대한 공통 검사. 블로그·링크드인 원고(article)는 만든 과정을 풀어 쓰는 글이라 도구 이름을 확인만 한다.
 function checkText(text, { where, brand, language, platform, article = false }) {
   const out = [];
@@ -116,6 +128,12 @@ function checkPlate(texts, { brand, language, platform }) {
     // 틱톡엔 키워드 DM 자동 답이 없다(10-26) — 약속하면 아무도 받지 못한다. 줄 자료는 캡션에 글로 쓴다.
     const dm = caption.match(TIKTOK_DM);
     if (dm) add(FIX, 'tiktok-dm', '캡션', `「${dm[0].trim()}」 — 틱톡엔 키워드 DM 자동 답이 없다. 줄 자료(한 줄 전문 · 주소)는 캡션에 글로 쓴다`);
+  }
+  // 매일 판에 든 글 플랫폼(10-26). X는 한글 · 한자를 두 칸, 주소를 23칸으로 센다(무료 계정 280칸 — 한글이면 140자 안팎).
+  if (platform === 'x' && xWeight(caption) > 280) add(FIX, 'caption-length', '캡션', `캡션 ${xWeight(caption)}칸 — X 한도 280칸(한글은 한 자에 두 칸)`);
+  const TEXT_LIMIT = { threads: 500, linkedin: 3000, telegram: 1024 };
+  if (TEXT_LIMIT[platform] && [...caption].length > TEXT_LIMIT[platform]) {
+    add(FIX, 'caption-length', '캡션', `캡션 ${[...caption].length}자 — ${{ threads: '스레드', linkedin: '링크드인', telegram: '텔레그램 영상 설명' }[platform]} 한도 ${TEXT_LIMIT[platform].toLocaleString('en-US')}자`);
   }
   if (platform === 'youtube') {
     const title = texts.title || '';
@@ -185,4 +203,4 @@ function compareNumbers(docs, reference) {
   return out;
 }
 
-module.exports = { FIX, LOOK, checkPlate, checkText, hashtags, urls, numbers, spelledNumbers, compareNumbers, sinoToNumber };
+module.exports = { FIX, LOOK, checkPlate, checkText, hashtags, urls, xWeight, numbers, spelledNumbers, compareNumbers, sinoToNumber };

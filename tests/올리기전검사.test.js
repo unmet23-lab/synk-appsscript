@@ -128,6 +128,11 @@ test('틱톡 판(10-26) — 캡션 4,000자 · DM 약속은 고칠 것, 짝 틱�
   assert.ok(!tt('훅 문장\n\n한 줄 전문은 아래에 — 친구에게 보내 주세요').includes('고칠 것:tiktok-dm'), '친구에게 보내기는 DM 약속이 아니다');
   assert.ok(tt('가'.repeat(4001)).includes('고칠 것:caption-length'));
   assert.ok(!tt('가'.repeat(2500)).includes('고칠 것:caption-length'), '인스타 한도 2,200자보다 길어도 된다');
+  // 매일 판 글 플랫폼(10-26): X는 한글 두 칸 · 주소 23칸으로 280칸, 스레드 500 · 링크드인 3,000 · 텔레그램 영상 설명 1,024자
+  const len = (caption, platform) => codes(규칙.checkPlate({ caption }, { brand: 'yuhobuilds', language: 'ko', platform })).includes('고칠 것:caption-length');
+  assert.deepEqual([규칙.xWeight('abc'), 규칙.xWeight('한글'), 규칙.xWeight('보기 https://synk.im/prompts')], [3, 4, 28]);
+  assert.deepEqual([len('가'.repeat(140), 'x'), len('가'.repeat(141), 'x'), len('a'.repeat(280), 'x')], [false, true, false]);
+  assert.deepEqual([len('가'.repeat(500), 'threads'), len('가'.repeat(501), 'threads'), len('가'.repeat(3001), 'linkedin'), len('가'.repeat(1025), 'telegram')], [false, true, true, true]);
 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-'));
   fs.mkdirSync(path.join(root, 'tools'));
