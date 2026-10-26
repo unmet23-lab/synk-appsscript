@@ -23,9 +23,10 @@ def font(size, weight="Regular"):
     return f
 
 
-def frost_flowers(size=2048, seeds=16, seed=11, edge_bias=0.85, avoid=None):
+def frost_flowers(size=2048, seeds=16, seed=11, edge_bias=0.85, avoid=None, lengths=(0.20, 0.34), width=1.0):
     """서리꽃(유리창에 피는 성에 무늬): 곧은 줄기 양쪽으로 60° 깃털 가지가 고르게 나고 끝으로 갈수록 짧아지는
-    고사리 꼴. 흰 획 = 볼록(범프). avoid=(cx, cy, r)이면 그 둘레에는 씨앗을 두지 않는다(이름 자리)."""
+    고사리 꼴. 흰 획 = 볼록(범프). avoid=(cx, cy, r)이면 그 둘레에는 씨앗을 두지 않는다(이름 자리).
+    lengths · width: 줄기 길이(그림 폭 비율)와 획 굵기 배수 — 더 넓은 종이를 같은 실제 크기로 그릴 때."""
     rnd = random.Random(seed)
     S = 2  # 두 배로 그리고 줄여 매끈하게
     im = Image.new("L", (size * S, size * S), 0)
@@ -61,14 +62,14 @@ def frost_flowers(size=2048, seeds=16, seed=11, edge_bias=0.85, avoid=None):
         else:
             x, y = rnd.uniform(0, size * S), rnd.uniform(0, size * S)
             ang = rnd.uniform(0, 2 * math.pi)
-        length = rnd.uniform(0.20, 0.34) * size * S
+        length = rnd.uniform(*lengths) * size * S
         if avoid:
             cx, cy, r = (v * S for v in avoid)
             tip = (x + math.cos(ang) * length, y + math.sin(ang) * length)
             if any(math.hypot(px - cx, py - cy) < r for px, py in ((x, y), tip,
                                                                     ((x + tip[0]) / 2, (y + tip[1]) / 2))):
                 continue
-        feather(x, y, ang, length, rnd.uniform(2.6, 3.4) * S, 2)
+        feather(x, y, ang, length, rnd.uniform(2.6, 3.4) * S * width, 2)
         placed += 1
     im = im.resize((size, size), Image.LANCZOS)
     return im
@@ -165,6 +166,10 @@ def main():
     lid_front().save(os.path.join(밖, "뚜껑앞_금박.png"))
     # 2판 윗면은 엠보만(이름 없이) — 이름 자리를 비워 둔 1판 엠보에서 빈자리 없이 다시
     frost_flowers(2048, seeds=18, seed=11, edge_bias=0.85).save(os.path.join(밖, "뚜껑_엠보2.png"))
+    # 움직임 카메라 2판 제목: 서리꽃 포장지 55 cm 한 장 — 뚜껑과 같은 실제 크기의 서리꽃을 가운데까지 고르게(뚜껑 무늬는
+    # 리본 자리라 가운데가 비어, 되풀이하면 카메라가 지나는 줄이 빈 종이였다)
+    frost_flowers(4096, seeds=150, seed=29, edge_bias=0.0, lengths=(0.067, 0.113), width=0.7).save(
+        os.path.join(밖, "포장지_엠보.png"))
     w, g = ampoule_label()
     w.save(os.path.join(밖, "앰플_흰잉크.png"))
     g.save(os.path.join(밖, "앰플_금.png"))

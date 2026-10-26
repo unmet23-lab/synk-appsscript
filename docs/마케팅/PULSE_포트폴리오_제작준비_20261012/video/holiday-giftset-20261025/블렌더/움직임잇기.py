@@ -122,7 +122,7 @@ def spaced(d, cx, y, text, f, fill, spacing):
 
 
 def name_card(size, kind):
-    """이름 한 덩이(RGBA): title = 「유리결」 + YURIGYEOL(뚜껑 앞 옆띠와 같은 짜임, 흰 판지 위라 짙은 남색) ·
+    """이름 한 덩이(RGBA): title = 「유리결」 + YURIGYEOL(뚜껑 앞 옆띠와 같은 짜임, 남색 포장지 위라 상아색) ·
     end = 「유리결」 + 서리꽃 홀리데이 에디션(검은 끝 화면 위라 상아색)."""
     from PIL import Image, ImageDraw, ImageFilter
     W, H = size
@@ -131,12 +131,13 @@ def name_card(size, kind):
     d = ImageDraw.Draw(im)
     cx, cy = W / 2, H / 2
     if kind == "title":
-        ink = (27, 34, 58, 255)
+        # 카메라 2판: 제목 포장지가 남색 밤 종이 · 금박 서리꽃이 되어 원본처럼 밝은 글자(상아)로, 금박 위에서도 읽히게 옅은 어두운 테
+        ink = (243, 236, 222, 255)
         d.text((cx, cy - u * 0.020), "유리결", font=font(int(u * 0.115), "SemiBold"), fill=ink, anchor="mm")
         spaced(d, cx, cy + u * 0.075, "YURIGYEOL", font(int(u * 0.026), "Regular"), ink, u * 0.016)
-        glow = im.split()[3].filter(ImageFilter.GaussianBlur(u * 0.012))   # 흰 판지에서 글자가 뜨게 아주 옅은 밝은 테
-        halo = Image.new("RGBA", (W, H), (255, 252, 246, 0))
-        halo.putalpha(glow.point(lambda a: int(a * 0.55)))
+        glow = im.split()[3].filter(ImageFilter.GaussianBlur(u * 0.014))
+        halo = Image.new("RGBA", (W, H), (6, 10, 24, 0))
+        halo.putalpha(glow.point(lambda a: int(a * 0.6)))
         return Image.alpha_composite(halo, im)
     ink = (243, 236, 222, 255)
     d.text((cx, cy - u * 0.022), "유리결", font=font(int(u * 0.100), "Medium"), fill=ink, anchor="mm")

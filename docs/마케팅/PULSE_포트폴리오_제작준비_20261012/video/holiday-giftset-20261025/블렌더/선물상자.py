@@ -54,8 +54,12 @@ CAM = arg("--cam", "")
 TITLE_RAKE = float(arg("--rake", "15"))   # 제목 스침빛 세기(W) — Fable 움직임 1차 P2-2로 10 → 15
 TITLE_EXPO = float(arg("--expo", "-0.6"))  # 제목 노출(흰 판지가 날지 않게, 진주빛은 살게 −0.8 → −0.6)
 # 움직임(--film)에서 프레임마다 바뀌는 값 — 한 장 굽기에서는 None이라 3.1판과 같다
-RISE_J = RISE_A = None
-SPIN_A = BOB_J = BOB_A = LID_OUT = 0.0
+PROD = None          # {"jar": ((x, y, 바닥 z), 돎 °, (기울기 x, y °)), "amp": …} — 움직임표 prod_of
+HERO_X = None        # 카메라 2판: 제품이 바닥에 서는 자리(세계 x) — 그 둘레에 두 번째 빛 묶음 · 결정 비움
+PRINT_X = None       # 카메라 2판: 바닥 서리꽃 무늬가 시작되는 x(열림 컷만)
+RIM_FADE = None      # 카메라 2판: 상자용 역광을 끄는 때(열림 컷만, 움직임표 RIM_FADE)
+FLOOR_LIGHT = float(arg("--floor-light", "10"))  # 바닥 무늬 빛 세기(W) — 시험 6 · 15 W 사이
+LID_OUT = 0.0
 T = None
 밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-season4-20261025", "콘티", "holiday-giftset")
 라벨 = os.path.join(밖, "라벨")
@@ -612,6 +616,11 @@ def arm_points(direction):
     # 윗도막: 모서리 T에서 안쪽으로, 각 α(s) = 뿌리 각 + 끝 처짐 + 끝 말림을 이어 붙인다
     x, z = a, H
     step = a / nt
+    if FILM == "6" and tuple(direction) == (1, 0):
+        # 카메라 2판 6초: 쓰러진 +x 갈래 끝(상자에서 0.29 m)이 제품 컷 가로 화면 왼쪽 끝에 1.8초 걸려 떨어진 종이 조각으로
+        # 읽혔다(Fable 3차 P2-3). 6초는 매듭(u 0.30)에서 열림(u 0.78)으로 컷이 넘어가 갈래가 서고 쓰러지는 때가 안 보이니,
+        # 쓰러진 뒤에만 윗도막을 0.15배로 — 끝이 0.21 m(가로 화면 왼끝은 2.95초 0.24 m)
+        step *= 1 - 0.85 * K_FALL
     lift = math.sin(math.pi * min(1.0, peel * 1.15))  # 일어서는 동안 휨이 크다가 다 서면 줄어든다
     # 4판(Fable 움직임 1차 P2-5): 다 선 순간(u 0.40~0.60) 휨이 0이 되어 곧은 종이 탭으로 보였다 — 다 서도 휨 · 비틀림이
     # 남게 바닥값을 두고, 그 구간만 끝 처짐 · 말림 · 비틀림을 1.5배(뿌리 각은 그대로)
@@ -825,24 +834,24 @@ def insert_with_cavities():
     return blk
 
 
-def pivot_empty(name, loc, rot_z=0.0):
+def pivot_empty(name, loc, rot=(0.0, 0.0, 0.0)):
     """제품 하나의 부품을 매다는 축(바닥 가운데). 움직임에서는 이 축만 앞뒤 프레임 열쇠를 받아 모션 블러가 걸린다."""
     e = link(bpy.data.objects.new(name, None))
     e.location = Vector(loc)
-    e.rotation_euler = (0.0, 0.0, math.radians(rot_z))
+    e.rotation_euler = tuple(math.radians(v) for v in rot)
     return e
+
+
+def prod_rot(pr):
+    """움직임표 제품 값 → 축 돌림(x · y 기울기, z 돎) °."""
+    (_, spin, (tx, ty)) = pr
+    return (tx, ty, spin)
 
 
 def _child(ob, parent, local):
     ob.parent = parent
     ob.location = Vector(local)
     return ob
-
-
-def product_pose(rise_j, rise_a, spin_a=0.0, bob_j=0.0, bob_a=0.0):
-    """움직임의 제품 축 자리: 단지가 먼저 9.5 cm, 앰플이 돌며 8.5 cm(3.1판 높이)."""
-    return ((JAR[0], JAR[1], JAR_Z + 0.095 * rise_j + bob_j),
-            (AMP[0], AMP[1], AMP_Z + 0.085 * rise_a + bob_a), spin_a)
 
 
 PROD_E = None
@@ -859,13 +868,14 @@ def products(jar_at=None, amp_at=None):
                         coat=0.25, coat_rough=0.3)
     cream = mat_simple("cream", base=(0.97, 0.955, 0.93), rough=0.32, sss=0.6, sss_r=(0.006, 0.006, 0.005))
     # 크림 단지: 두꺼운 유리(벽 5 mm · 바닥 12 mm · 어깨 둥금) + 둥근 크림 + 금 목 고리 + 금 뚜껑
+    jr = (0.0, 0.0, 0.0)
     if jar_at:
         jx, jy, jz = jar_at
-    elif RISE_J is not None:
-        (jx, jy, jz), _, _ = product_pose(RISE_J, 0.0, 0.0, BOB_J)
+    elif PROD is not None:
+        (jx, jy, jz), jr = PROD["jar"][0], prod_rot(PROD["jar"])
     else:
         jx, jy, jz = JAR[0], JAR[1], JAR_Z + 0.095 * smooth(0.0, 0.8, RISE)  # 3.1판: 밑에 틈이 보이게 더 높이
-    jar_e = pivot_empty("단지축", (jx, jy, jz))
+    jar_e = pivot_empty("단지축", (jx, jy, jz), jr)
     jar = revolve("단지", [(0.0, 0.0), (0.0330, 0.0), (0.0352, 0.0012), (0.0360, 0.0040), (0.0360, 0.0400),
                            (0.0356, 0.0428), (0.0346, 0.0450), (0.0330, 0.0462), (0.0310, 0.0462), (0.0310, 0.0150),
                            (0.0300, 0.0128), (0.0280, 0.0120), (0.0, 0.0120)], mat=glass)
@@ -882,13 +892,14 @@ def products(jar_at=None, amp_at=None):
                               (0.0300, 0.0172), (0.0, 0.0172)], mat=mat_jar_lid())
     _child(jl, jar_e, (0, 0, 0.0470))
     # 앰플: 네모 유리병(벽 3 mm · 바닥 8 mm, 3판 높이 4.2 cm) · 액 70 % · 금 목 · 실리콘 스포이드
+    ar = (0.0, 0.0, 0.0)
     if amp_at:
         ax, ay, az = amp_at
-    elif RISE_A is not None:
-        _, (ax, ay, az), _ = product_pose(0.0, RISE_A, 0.0, 0.0, BOB_A)
+    elif PROD is not None:
+        (ax, ay, az), ar = PROD["amp"][0], prod_rot(PROD["amp"])
     else:
         ax, ay, az = AMP[0], AMP[1], AMP_Z + 0.085 * smooth(0.2, 1.0, RISE)
-    amp_e = pivot_empty("앰플축", (ax, ay, az), SPIN_A)
+    amp_e = pivot_empty("앰플축", (ax, ay, az), ar)
     amp_glass = mat_print("amp_print", "앰플_흰잉크.png", half=0.020, axis="Y", z0=-0.009, h=0.036)
     _child(rounded_box("앰플병", 0.040, 0.040, AMP_H, (0, 0, 0), amp_glass, bevel=0.005), amp_e, (0, 0, AMP_H / 2))
     liq_h = (AMP_H - 0.008 - 0.004) * 0.70
@@ -930,6 +941,8 @@ def crystals(n, rmin, rmax, inner, outer, z, seed=21, mat=None, flat=True):
         a = rnd.uniform(0, 2 * math.pi)
         c = Vector((r * math.cos(a), r * math.sin(a) + 0.04, z))
         size = rnd.uniform(rmin, rmax)
+        if HERO_X is not None and abs(c.x - HERO_X) < 0.10 and abs(c.y) < 0.07:   # 카메라 2판: 제품이 서는 자리는 비운다
+            continue
         geom = bmesh.ops.create_circle(bm, cap_ends=True, segments=6, radius=size)
         vs = geom["verts"]
         rot = Matrix.Rotation(rnd.uniform(0, math.pi), 3, "Z")
@@ -1001,8 +1014,10 @@ def bokeh_lights(n, center, spread, rgb, strength, seed=9, rmin=0.006, rmax=0.01
     return ob
 
 
-def floor_mat(base, rough, coat, coat_rough):
-    """바닥: 거친 광택 + 얇은 서리(미세 범프)."""
+def floor_mat(base, rough, coat, coat_rough, print_x=None):
+    """바닥: 거친 광택 + 얇은 서리(미세 범프). print_x(카메라 2판): 그 x부터 12 cm에 걸쳐 제목 포장지와 같은 남색 종이 · 금박
+    서리꽃으로 바뀐다 — 원본 3번은 병이 서는 바닥에 금 선화가 깔려 옆 이동이 읽혔다(상자 둘레 바닥은 무늬 없음).
+    매끈한 밤 바닥 그대로는 카메라가 옆으로 흘러도 보이는 것이 금가루뿐이라 멈춘 화면처럼 읽혔다."""
     m, n, l, out = new_mat("floor")
     b = principled(n, base=base, rough=rough, coat=coat, coat_rough=coat_rough)
     nz = n.new("ShaderNodeTexNoise")
@@ -1015,7 +1030,42 @@ def floor_mat(base, rough, coat, coat_rough):
     l.new(bump.outputs["Normal"], b.inputs["Normal"])
     if "Coat Normal" in b.inputs:
         l.new(bump.outputs["Normal"], b.inputs["Coat Normal"])
-    l.new(b.outputs[0], out.inputs["Surface"])
+    if print_x is None:
+        l.new(b.outputs[0], out.inputs["Surface"])
+        return m
+    paper = principled(n, base=(0.022, 0.030, 0.062), rough=0.62)
+    foil = principled(n, base=(0.86, 0.62, 0.27), metal=1.0, rough=0.26)
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Object"], sep.inputs["Vector"])
+    comb = n.new("ShaderNodeCombineXYZ")
+    l.new(_ma(n, l, sep.outputs["X"], 1 / 0.55, 0.17), comb.inputs["X"])
+    l.new(_ma(n, l, sep.outputs["Y"], 1 / 0.55, 0.61), comb.inputs["Y"])
+    t = n.new("ShaderNodeTexImage")
+    t.image = img("포장지_엠보.png")
+    t.extension = "REPEAT"
+    l.new(comb.outputs[0], t.inputs["Vector"])
+    pmix = n.new("ShaderNodeMixShader")
+    l.new(t.outputs["Color"], pmix.inputs["Fac"])
+    l.new(paper.outputs[0], pmix.inputs[1])
+    l.new(foil.outputs[0], pmix.inputs[2])
+    pb = n.new("ShaderNodeBump")
+    pb.inputs["Strength"].default_value = 0.6
+    pb.inputs["Distance"].default_value = 0.0001
+    l.new(t.outputs["Color"], pb.inputs["Height"])
+    l.new(paper_grain(n, l).outputs["Normal"], pb.inputs["Normal"])
+    for sh in (paper, foil):
+        l.new(pb.outputs["Normal"], sh.inputs["Normal"])
+    mr = n.new("ShaderNodeMapRange")
+    mr.interpolation_type = "SMOOTHSTEP"
+    mr.inputs["From Min"].default_value = print_x
+    mr.inputs["From Max"].default_value = print_x + 0.12
+    l.new(sep.outputs["X"], mr.inputs["Value"])
+    mix = n.new("ShaderNodeMixShader")
+    l.new(mr.outputs["Result"], mix.inputs["Fac"])
+    l.new(b.outputs[0], mix.inputs[1])
+    l.new(pmix.outputs[0], mix.inputs[2])
+    l.new(mix.outputs[0], out.inputs["Surface"])
     return m
 
 
@@ -1031,11 +1081,25 @@ def set_look():
         snow_particles(260, ((-0.6, 0.6), (-0.3, 0.9), (0.0, 0.7)), 0.0012, 0.0032)
     elif LOOK == "B":
         world_gradient((0.004, 0.006, 0.016), (0.012, 0.018, 0.045), 1.0)
-        rounded_box("바닥", 3.0, 3.0, 0.02, (0, 0, -0.01), floor_mat((0.012, 0.014, 0.024), 0.46, 0.25, 0.35), bevel=0.0)
+        floor = rounded_box("바닥", 3.0, 3.0, 0.02, (0, 0, -0.01),
+                            floor_mat((0.012, 0.014, 0.024), 0.46, 0.25, 0.35, print_x=PRINT_X), bevel=0.0)
+        if PRINT_X is not None and HERO_X is not None:
+            # 바닥 무늬 빛: 제품 자리 뒤 조금 왼쪽, 카메라(45°)를 바닥에 비춘 쪽(36°)의 넓은 면광 — 금박 서리꽃이 결마다
+            # 반짝이고 종이는 남색 결빛만. 바닥만 받는다(제품 빛은 따로). 제품은 그림자를 앞으로 부드럽게 드리워 바닥에 선다
+            # (46°로 높이거나 제품 그림자를 빼도 단지 앞 오른쪽이 어두운 것은 같았다 — 빛이 비스듬히 닿는 쪽의 자연스러운 낙차)
+            fl = area_light("바닥빛", (HERO_X - 0.10, 0.55, 0.40), (HERO_X, 0.0, 0.0), FLOOR_LIGHT, 0.8,
+                            rgb=(1.0, 0.84, 0.62))
+            fl.visible_camera = False
+            recv = bpy.data.collections.new("바닥빛_받음")
+            bpy.context.scene.collection.children.link(recv)
+            recv.objects.link(floor)
+            fl.light_linking.receiver_collection = recv
         crystals(1100, 0.0005, 0.0020, 0.135, 0.85, 0.0002)
         area_light("키", (-0.60, -0.55, 0.60), (0, 0, 0.06), 45, 0.7, rgb=(1.0, 0.82, 0.58))
         # 3판: 역광 70 → 58(일어선 갈래가 역광을 받는 순간 하이라이트가 날아갔다 — 반 스톱쯤) · 채움 6 → 11(오른쪽 옆면 띠가 검게)
-        area_light("역광", (0.35, 0.70, 0.35), (0, 0, 0.08), 58, 0.25, rgb=(0.55, 0.70, 1.0))
+        # 카메라 2판: 열림 컷에서 카메라가 상자 오른쪽으로 빠지는 동안 끈다(반질한 바닥에 비친 역광이 화면 한가운데 흰 덩이가 됐다)
+        rim = 58 * (1 - smooth(*RIM_FADE, T)) if RIM_FADE and T is not None else 58
+        area_light("역광", (0.35, 0.70, 0.35), (0, 0, 0.08), rim, 0.25, rgb=(0.55, 0.70, 1.0))
         area_light("채움", (0.75, -0.40, 0.10), (0, 0, 0.05), 11, 0.6, rgb=(1.0, 0.85, 0.65))
         # 3.1판(Fable 3차 P2-2): 금 뚜껑 윗면이 남색 하늘을 비춰 검은 원판이 됐다 — 뒤 왼쪽 낮은 데 따뜻한 반사판(면광) 하나,
         # 히어로 · 떠오름 카메라에서 윗면에 비치는 방향에 둔다
@@ -1043,7 +1107,17 @@ def set_look():
         global LID_LIGHT
         LID_LIGHT = area_light("뒤금빛", (-0.20, 0.55, 0.26), (0.0, 0.0, 0.12), 14, 0.7, rgb=(1.0, 0.78, 0.45))
         bokeh_lights(70, (0.1, 1.6, 0.35), (1.2, 0.4, 0.35), (1.0, 0.70, 0.32), 22.0)
-        snow_particles(220, ((-0.6, 0.6), (-0.3, 0.9), (0.0, 0.7)), 0.0010, 0.0028)
+        if SHOT != "title":    # 카메라 2판 제목은 포장지 3 cm 위를 미끄러진다 — 렌즈 앞 눈송이가 얼룩이 된다
+            x1 = 0.6 if HERO_X is None else HERO_X + 0.6     # 제품 자리까지(눈 밀도는 그대로)
+            snow_particles(int(220 * (x1 + 0.6) / 1.2), ((-0.6, x1), (-0.3, 0.9), (0.0, 0.7)), 0.0010, 0.0028)
+        if HERO_X is not None:
+            # 카메라 2판: 제품이 바닥에 서는 자리(상자에서 오른쪽 HERO_X)에 같은 빛 묶음 하나 더 — 제품만 받게 build에서 잇는다
+            # (그냥 두면 반질한 밤 바닥이 그 빛을 비춰 화면이 회색으로 떴다)
+            global HERO_RIG
+            hx = HERO_X
+            HERO_RIG = [area_light("키2", (hx - 0.60, -0.55, 0.60), (hx, 0, 0.04), 45, 0.7, rgb=(1.0, 0.82, 0.58)),
+                        area_light("역광2", (hx + 0.35, 0.70, 0.35), (hx, 0, 0.05), 58, 0.25, rgb=(0.55, 0.70, 1.0)),
+                        area_light("채움2", (hx + 0.75, -0.40, 0.10), (hx, 0, 0.03), 11, 0.6, rgb=(1.0, 0.85, 0.65))]
     else:
         world_gradient((0.16, 0.20, 0.27), (0.62, 0.70, 0.80), 0.7)
         icem = mat_glass("ice", rough=0.04, tint=(0.90, 0.96, 1.0))
@@ -1058,6 +1132,20 @@ def set_look():
 
 # ── 장면 ────────────────────────────────────────────────────────────────────
 LID_LIGHT = None
+HERO_RIG = []
+
+
+def link_hero_rig():
+    """카메라 2판: 제품 자리 빛 묶음은 제품(단지 · 앰플 부품)만 받는다."""
+    if not HERO_RIG:
+        return
+    recv = bpy.data.collections.new("제품빛_받음")
+    bpy.context.scene.collection.children.link(recv)
+    for ob in list(bpy.context.scene.objects):
+        if ob.type == "MESH" and ob.parent is not None and ob.parent.name in ("단지축", "앰플축"):
+            recv.objects.link(ob)
+    for lt in HERO_RIG:
+        lt.light_linking.receiver_collection = recv
 
 
 def link_lid_light():
@@ -1091,11 +1179,76 @@ def lid_rake(lid, energy, pos, target):
     return rake
 
 
+def mat_wrap_paper():
+    """서리꽃 포장지(카메라 2판 제목): 룩 B의 남색 밤 종이에 뚜껑과 같은 크기의 서리꽃을 금박(살짝 돋움)으로 고르게 깐 55 cm
+    한 장(../라벨/포장.py 포장지_엠보.png). 원본 제목 종이(짙은 붉은 바탕 · 금 선화)처럼 흐려도 무늬가 읽히게 — 흰 판지에
+    흰 엠보 · 금박은 얕은 초점 속에서 흰 판으로 묻혔다. 상자 뚜껑은 정본대로 흰 판지 · 엠보만."""
+    m, n, l, out = new_mat("wrap_paper")
+    # 결 반사(sheen) · 코트는 뺀다 — 3 cm 높이에서 낮게 보는 제목 카메라에는 비스듬한 결 반사가 종이 전체를 하얗게 띄웠다
+    paper = principled(n, base=(0.022, 0.030, 0.062), rough=0.62)
+    foil = principled(n, base=(0.86, 0.62, 0.27), metal=1.0, rough=0.26)
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Object"], sep.inputs["Vector"])
+    comb = n.new("ShaderNodeCombineXYZ")
+    l.new(_ma(n, l, sep.outputs["X"], 1 / 0.55, 0.5), comb.inputs["X"])
+    l.new(_ma(n, l, sep.outputs["Y"], 1 / 0.55, 0.3), comb.inputs["Y"])
+    t = n.new("ShaderNodeTexImage")
+    t.image = img("포장지_엠보.png")
+    t.extension = "REPEAT"
+    l.new(comb.outputs[0], t.inputs["Vector"])
+    mix = n.new("ShaderNodeMixShader")
+    l.new(t.outputs["Color"], mix.inputs["Fac"])
+    l.new(paper.outputs[0], mix.inputs[1])
+    l.new(foil.outputs[0], mix.inputs[2])
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.6
+    bump.inputs["Distance"].default_value = 0.0001
+    l.new(t.outputs["Color"], bump.inputs["Height"])
+    l.new(paper_grain(n, l).outputs["Normal"], bump.inputs["Normal"])
+    for sh in (paper, foil):
+        l.new(bump.outputs["Normal"], sh.inputs["Normal"])
+    l.new(mix.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def build_title():
+    """카메라 2판 제목: 원본 1번처럼 포장지 위를 낮게 빠르게 미끄러진다 — 상자 · 리본 없이 넓은 서리꽃 포장지 한 장
+    (가로 1.2 · 세로 1.6 m)과 앞에서 낮게 비추는 스침빛(종이만 받음), 키 1/4 · 노출."""
+    bm = bmesh.new()
+    bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
+    for v in bm.verts:
+        v.co.x *= 1.2
+        v.co.y = v.co.y * 1.6 + 0.5
+        v.co.z = 0.0005
+    me = bpy.data.meshes.new("포장지")
+    bm.to_mesh(me)
+    bm.free()
+    sheet = link(bpy.data.objects.new("포장지", me))
+    me.materials.append(mat_wrap_paper())
+    scale_key(0.25)
+    # 상자용 역광 · 채움 · 뒤금빛은 끈다 — 역광(58 W)이 낮게 보는 카메라 바로 앞이라 종이 면의 비스듬한 반사가 화면을 뿌옇게 띄웠다
+    for ob in bpy.context.scene.objects:
+        if ob.type == "LIGHT" and ob.name in ("역광", "채움", "뒤금빛"):
+            ob.data.energy = 0.0
+    # 금박이 빛나게 앞 왼쪽 낮은 데서 카메라 쪽으로(역광) — 남색 종이에는 부드러운 결빛만 진다
+    lid_rake(sheet, 10.0, (-0.35, 1.10, 0.06), (0.0, 0.25, 0.0))
+    # 남색이 살게 위에서 약한 푸른 빛 하나(종이만 받음)
+    cool = area_light("제목남빛", (0.0, 0.10, 0.60), (0.0, 0.20, 0.0), 6, 0.8, rgb=(0.55, 0.68, 1.0))
+    cool.visible_camera = False
+    cool.light_linking.receiver_collection = bpy.data.collections["스침빛_받음"]
+    bpy.context.scene.view_settings.exposure = 0.0
+
+
 def build():
-    global LID_LIGHT
+    global LID_LIGHT, HERO_RIG
     LID_LIGHT = None
+    HERO_RIG = []
     reset()
     set_look()
+    if SHOT == "title" and FILM:
+        build_title()
+        return
     if SHOT == "product":
         # 3판: 제품 접사는 상자 없이 서리 바닥 위 단지(앞) · 앰플(뒤 오른쪽) — 흰 상자가 화면 한쪽을 하얗게 덮었다.
         # 유리 벽 두께 · 흰 크림 · 금 목 고리를 눈높이에서 한 프레임에, 차가운 보조광으로 금과 금을 가른다(Fable 2차 P2-3)
@@ -1112,7 +1265,19 @@ def build():
     lid = open_box("뚜껑", L_HALF, L_H, TOP - L_H, lidm, "bottom")
     insert_with_cavities()
     products()
+    if PROD is not None and LID_LIGHT is not None:
+        # 카메라 2판: 제품이 바닥 자리로 옮겨 가도 뒤금빛이 같은 자리 관계로 따라가게(금 뚜껑 윗면이 검은 원판이 되지 않게)
+        (jx, jy, jz) = PROD["jar"][0]
+        aim = Vector((jx - JAR[0], 0.0, jz + 0.06))
+        LID_LIGHT.location = aim + Vector((-0.20, 0.55, 0.20))
+        if HERO_X is not None and jz < 0.001:
+            # 바닥에 선 단지(정면 45° 카메라): 뚜껑 윗면을 카메라가 비춰 보는 쪽(뒤 45°)에 둔다 — 옛 자리(뒤 왼쪽 19°)는
+            # 정면에서 윗면에 반만 비쳐 금 뚜껑이 속이 빈 그릇처럼 어둡게 읽혔다
+            aim = Vector((jx, jy, jz + 0.064))
+            LID_LIGHT.location = aim + Vector((-0.05, 0.32, 0.32))
+        LID_LIGHT.rotation_euler = (aim - LID_LIGHT.location).to_track_quat("-Z", "Y").to_euler()
     link_lid_light()
+    link_hero_rig()
     # (2판의 인서트 위 눈 결정은 뺐다 — 상자 속 티끌로 보였다)
     # 뚜껑: 앞이 먼저 들리고(뒤 모서리 축 −5°) → 위로 떠오르며 뒤로 기운다 → 4판 뚜껑 나감: 더 높이 · 뒤로 화면 밖까지
     if K_TILT > 0 or K_LID > 0 or LID_OUT > 0:
@@ -1138,6 +1303,10 @@ def build():
     if SHOT == "open":
         # 차가운 보조광 하나 — 금 뚜껑과 금박 속벽(금 위에 금)을 가르고 유리 모서리를 세운다
         area_light("차가운보조", (-0.34, -0.30, 0.16), (JAR[0], -0.05, 0.06 + 0.06 * RISE), 9, 0.25, rgb=(0.62, 0.76, 1.0))
+        if HERO_X is not None:    # 카메라 2판: 바닥에 선 제품 자리에도 같은 보조광 — 제품만 받게(바닥 앞에 차가운 빛 웅덩이가 졌다)
+            cool2 = area_light("차가운보조2", (HERO_X - 0.34, -0.30, 0.13), (HERO_X, -0.05, 0.03), 9, 0.25, rgb=(0.62, 0.76, 1.0))
+            if bpy.data.collections.get("제품빛_받음") is not None:
+                cool2.light_linking.receiver_collection = bpy.data.collections["제품빛_받음"]
     elif SHOT == "macro":
         # 공단 결빛: 작고 센 빛 하나가 갈래 · 고리 면에 길이 방향 하이라이트 한 줄을 세운다(Fable 2차 P3-4)
         # 3.1판(Fable 3차 P2-1): 작고 센 빛은 실결을 알갱이로 키웠다 — 긴 면광으로 하이라이트 한 줄만
@@ -1249,14 +1418,17 @@ def product_motion(sts):
     if not PROD_E:
         return
     je, ae = PROD_E
+    now = sts[1]
     for k, s in enumerate(sts):
-        jl, al, spin = product_pose(s["rise_j"], s["rise_a"], s["spin_a"], s["bob_j"], s["bob_a"])
-        je.location = jl
-        ae.location = al
-        ae.rotation_euler = (0.0, 0.0, math.radians(spin))
-        je.keyframe_insert("location", frame=k)
-        ae.keyframe_insert("location", frame=k)
-        ae.keyframe_insert("rotation_euler", frame=k)
+        for e, key in ((je, "jar"), (ae, "amp")):
+            pr = s[key]
+            # 카메라 2판: 화면 밖에서 바닥 자리로 옮기는 프레임은 앞뒤 열쇠를 잇지 않는다(옛 자리와 새 자리 사이 긴 번짐이 화면을 가로지른다)
+            if (Vector(pr[0]) - Vector(now[key][0])).length > 0.08:
+                pr = now[key]
+            e.location = pr[0]
+            e.rotation_euler = tuple(math.radians(v) for v in prod_rot(pr))
+            e.keyframe_insert("location", frame=k)
+            e.keyframe_insert("rotation_euler", frame=k)
 
 
 def _outline(q, kind):
@@ -1364,15 +1536,16 @@ def motes_sweep(t0, t1, n=900, seed=402):
     return out
 
 
-def motes_ambient(t0, t1, n=220, seed=403):
-    """제품이 떠오르는 동안 화면 구석구석 떠다니는 작은 금빛 별 · 눈(원본 「병이 소개되는 내내」). 제품 앞자리는 비운다."""
+def motes_ambient(t0, t1, cx=0.0, n=220, seed=403):
+    """제품이 소개되는 동안 화면 구석구석 떠다니는 작은 금빛 별 · 눈(원본 「병이 소개되는 내내」). 제품 앞자리는 비운다.
+    카메라 2판: 제품이 서는 바닥 자리(cx) 둘레로."""
     out = []
     i = 0
     while len(out) < n:
         q = random.Random(seed * 1000 + i)
         i += 1
-        base = Vector((q.uniform(-0.28, 0.28), q.uniform(-0.24, 0.30), q.uniform(0.03, 0.42)))
-        if abs(base.x) < 0.11 and -0.20 < base.y < 0.08 and 0.09 < base.z < 0.28:
+        base = Vector((cx + q.uniform(-0.28, 0.28), q.uniform(-0.24, 0.30), q.uniform(0.01, 0.40)))
+        if -0.12 < base.x - cx < 0.30 and -0.20 < base.y < 0.10 and base.z < 0.16:   # 단지가 오른쪽에서 미끄러져 오는 길까지 비운다
             continue
         drift = Vector((q.uniform(-0.010, 0.010), q.uniform(-0.010, 0.010), -q.uniform(0.004, 0.012)))
         sw = (q.uniform(0.002, 0.007), q.uniform(0.5, 1.4), q.uniform(0, 6.3))
@@ -1388,17 +1561,41 @@ def motes_ambient(t0, t1, n=220, seed=403):
     return out
 
 
-def motes_cover(t0, t1, n=170, seed=404):
-    """닫힘 머리: 렌즈 바로 앞(3.5~30 cm)을 덮은 금가루가 돌며 바깥으로 흩어져 걷힌다(원본 17초 판 12.0초 금가루 소용돌이).
-    자리는 카메라 공간 — 화면 비율(가로 · 세로 tan)에 맞춰 펼친다."""
+def motes_cloud(t0, t1, xa, xb, n=900, seed=406):
+    """카메라 2판: 원본 5.2–6.4초처럼 카메라가 옆으로 빠르게 지나며 금가루 사이를 뚫고 간다 — 상자와 제품 자리 사이 바닥 위
+    (x xa~xb)에 떠 있는 금가루 구름. 천천히 내리며 돌고, 시작 · 끝 0.25초에 옅어진다.
+    원본의 별 조각은 화면 폭의 5 %쯤으로 크고 초점 안에 촘촘했다 — 1차 2판(앞뒤 75 cm · 높이 60 cm에 흩고 1.6배)은 대부분 초점
+    밖 작은 점이라 비어 보였다. 겨냥점 앞뒤(−25~+15 cm) · 낮게(40 cm 아래)로 모으고 3배로, 별을 반쯤."""
     out = []
     for i in range(n):
         q = random.Random(seed * 1000 + i)
-        depth = 0.035 + 0.265 * q.random() ** 1.5
+        base = Vector((q.uniform(xa, xb + 0.2), q.uniform(-0.25, 0.15), 0.005 + 0.395 * q.random() ** 1.6))
+        drift = Vector((q.uniform(-0.02, 0.02), q.uniform(-0.02, 0.02), -q.uniform(0.01, 0.04)))
+        sw = (q.uniform(0.003, 0.010), q.uniform(1.0, 2.5), q.uniform(0, 6.3))
+        kind = _kind(q, snow=0.10, star=0.45)
+        size = _size(q, kind, 3.0)
+
+        def pos(t, base=base, drift=drift, sw=sw):
+            p = base + drift * (t - t0) + Vector((sw[0] * math.sin(sw[1] * t + sw[2]), sw[0] * math.cos(sw[1] * t + sw[2]), 0.0))
+            p.z = max(p.z, 0.0006)
+            return p
+
+        out.append(Mote(q, kind, size, pos, lambda t: smooth(t0, t0 + 0.25, t) * (1 - smooth(t1 - 0.25, t1, t)), soft=True))
+    return out
+
+
+def motes_cover(t0, t1, n=220, seed=404):
+    """닫힘 머리: 화면을 덮은 금가루가 돌며 바깥으로 흩어져 걷힌다(원본 17초 판 12.0초 금가루 소용돌이).
+    자리는 카메라 공간 — 화면 비율(가로 · 세로 tan)에 맞춰 펼친다. 카메라 2판(Fable 3차 P3-1): 원본은 별 조각이 초점 안에서
+    돈다 — 렌즈 바로 앞(3.5~30 cm)은 모두 큰 보케 원판이라 금가루보다 빛 번짐으로 읽혀, 초점면(53 cm) 앞 40~52 cm에 3배 크기로."""
+    out = []
+    for i in range(n):
+        q = random.Random(seed * 1000 + i)
+        depth = 0.40 + 0.12 * q.random()
         nx, ny = q.uniform(-1.15, 1.15), q.uniform(-1.15, 1.15)
         w = q.uniform(0.6, 1.6) * (1 if q.random() < 0.7 else -1)
-        kind = _kind(q, snow=0.05, star=0.30)
-        size = _size(q, kind, 2.2)
+        kind = _kind(q, snow=0.05, star=0.45)
+        size = _size(q, kind, 3.0)
 
         def pos(t, depth=depth, nx=nx, ny=ny, w=w):
             x = (t - t0) / (t1 - t0)
@@ -1449,6 +1646,8 @@ def gold_dust(sts):
         motes += motes_burst(ev["burst"], n=650 if FILM == "15" else 520)
     if "sweep" in ev and ev["sweep"][0] <= t1 <= ev["sweep"][1]:
         motes += motes_sweep(*ev["sweep"]) + motes_lens(*ev["sweep"])
+    if "cloud" in ev and ev["cloud"][0] <= t1 <= ev["cloud"][1]:
+        motes += motes_cloud(*ev["cloud"]) + motes_lens(*ev["cloud"][:2])
     if "ambient" in ev and ev["ambient"][0] <= t1 <= ev["ambient"][1]:
         motes += motes_ambient(*ev["ambient"])
     if "cover" in ev and ev["cover"][0] <= t1 <= ev["cover"][1]:
@@ -1513,7 +1712,7 @@ def parse_frames(s, n):
 
 def film_main():
     """움직임표.py의 컷대로 프레임을 하나씩 짓고 굽는다(블렌더 한 번에 여러 프레임, 있는 프레임은 건너뜀)."""
-    global SHOT, RISE, RISE_J, RISE_A, SPIN_A, BOB_J, BOB_A, LID_OUT, T, SAMPLES
+    global SHOT, RISE, PROD, HERO_X, PRINT_X, RIM_FADE, LID_OUT, T, SAMPLES
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import 움직임표 as M
     orient = "v" if RES[1] > RES[0] else "h"
@@ -1528,8 +1727,11 @@ def film_main():
         sts = [M.state(FILM, orient, f, -1.0 / M.FPS), st, M.state(FILM, orient, f, 1.0 / M.FPS)]
         SHOT, LID_OUT, T = st["scene"], st["lid_out"], st["t"]
         set_u(st["u"])
-        RISE_J, RISE_A, SPIN_A, BOB_J, BOB_A = st["rise_j"], st["rise_a"], st["spin_a"], st["bob_j"], st["bob_a"]
-        RISE = max(RISE_J, RISE_A)
+        PROD = {"jar": st["jar"], "amp": st["amp"]}
+        HERO_X = st["hero"] if SHOT == "open" else None
+        PRINT_X = st["print_x"] if SHOT == "open" else None
+        RIM_FADE = st["rim_fade"] if SHOT == "open" else None
+        RISE = 1.0 if st["jar"][0][2] > JAR_Z + 0.005 or abs(st["jar"][0][0] - JAR[0]) > 0.005 else 0.0
         if "--samples" not in argv:
             SAMPLES = st["samples"]
         build()
