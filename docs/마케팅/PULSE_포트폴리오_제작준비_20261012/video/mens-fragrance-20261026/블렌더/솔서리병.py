@@ -7,6 +7,7 @@
 #       s09(물에 잠긴 뚜껑 · 위에서) · s10(「ㅅ」 얼음 조각 · 속에 솔가지) · s17(기운 병 몸통 · 뒤 밝은 빛) · s18(병을 크게 · 빛 띠)
 # --t: 그 컷 안의 진행(0 = 첫 프레임 · 1 = 끝 프레임) — 원본의 카메라 움직임(18번 0.53배 물러남 등)을 같은 비율로.
 # 단위 m. 병 46 × 30 × 88 mm · 벽 6 mm · 바닥 13 mm · 뚜껑 24 × 24 × 26 mm(솔잎 「ㅅ」 음각).
+import json
 import math
 import os
 import random
@@ -31,6 +32,9 @@ LIGHT = float(arg("--light", "0.22"))   # 모든 면광 세기에 곱한다(2판
 EXPO = float(arg("--expo", "0"))
 밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-portfolio12-20261024", "콘티", "p2")
 라벨 = os.path.join(밖, "라벨")
+# 원본 카메라 곡선(../원본카메라_재기.py가 git 밖에 쓴 것) — 컷마다 프레임별 화면 배율 · 이동(화면 폭 %) · 회전
+CURVES = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-portfolio12-20261024", "레퍼런스", "p2",
+                      "원본실측", "YSL아이스_yi_Fjg4OLJA", "카메라_프레임.json")
 OUT = arg("--out", os.path.join(밖, "렌더", f"{SHOT}{f'_t{T:.2f}' if T > 0 else ''}.png"))
 
 BW, BD, BH = 0.046, 0.030, 0.088     # 병 몸통
@@ -131,6 +135,43 @@ def camera(loc, target, lens=85.0, fstop=None, focus=None, roll=0.0):
         cd.dof.focus_distance = focus if focus else d.length
     bpy.context.scene.camera = cam
     return cam
+
+
+def orig_at(n, t):
+    """원본 n번 컷의 진행 t(0~1) 자리 (화면 배율, 이동 x %, 이동 y %, 회전 °) — 첫 프레임 대비. 곡선이 없거나 잴 수 없던 컷은 움직이지 않음."""
+    try:
+        sh = json.load(open(CURVES, encoding="utf-8"))["shots"][n - 1]
+    except (OSError, ValueError, IndexError):
+        return 1.0, 0.0, 0.0, 0.0
+    if sh.get("잴 수 없음"):
+        return 1.0, 0.0, 0.0, 0.0
+    out = []
+    for key, base in (("배율_곡선", 1.0), ("x_곡선", 0.0), ("y_곡선", 0.0), ("회전_곡선", 0.0)):
+        arr = [base] + sh[key]
+        f = min(max(t, 0.0), 1.0) * (len(arr) - 1)
+        i = int(f)
+        u = f - i
+        out.append(arr[i] if i + 1 >= len(arr) else arr[i] * (1 - u) + arr[i + 1] * u)
+    return tuple(out)
+
+
+def follow_camera(n, loc, target, lens=85.0, roll=0.0, **kw):
+    """첫 프레임 카메라(loc → target)에서 원본 n번 컷의 카메라 곡선을 --t 자리까지 따라간다(10-26 밤 유호님 「카메라 기법도 완전히 똑같게」).
+    화면 배율은 겨냥점 쪽으로 다가가거나 물러나는 것으로(거리 = 처음 거리 ÷ 배율), 화면 이동은 카메라를 반대쪽으로 옮겨서
+    (카메라 오른쪽 · 위 축 — roll 180으로 뒤집어 찍은 컷은 반대), 회전은 roll에 더해서. 곡선의 빠르기 모양(고른 · 점점 느려짐 등)이 그대로 따라온다."""
+    sc, dx, dy, rot = orig_at(n, T)
+    loc, target = Vector(loc), Vector(target)
+    f = target - loc
+    d0 = f.length
+    f.normalize()
+    right = f.cross(Vector((0, 0, 1)))
+    right.normalize()
+    up = right.cross(f)
+    flip = -1 if abs((roll % 360) - 180) < 1 else 1
+    d = d0 / sc
+    wf = d * 36 / lens
+    tgt = target + right * (-dx / 100 * wf * flip) + up * (dy / 100 * wf * flip)
+    return camera(tuple(tgt - f * d), tuple(tgt), lens=lens, roll=roll + rot, **kw)
 
 
 def area_light(name, loc, target, energy, size, rgb=(1, 1, 1), size_y=None, spread=180):
@@ -876,9 +917,9 @@ def shot_s17():
     area_light("back", (0.25, 0.30, 0.10), (0, 0, 0.05), 70, 0.35, (0.80, 0.90, 1.0))   # 11판(Fable P2-8): 120은 원본보다 밝고 모서리가 탔다
     rims((0, 0, 0.05))
     # 9판(Fable P0-4): 원본은 돌지 않는다 — 기울기 고정, 1초에 0.64배로 물러남만 · 11판(P2-8): 어깨 유리가 위에 걸리게 조금 물림
-    d = 0.190 / (1 - 0.36 * T)
+    d = 0.190   # 12판: 물러남은 원본 곡선으로(follow_camera — 천천히 시작 · 가운데가 빠름 · 천천히 멈춤)
     # 11판: 라벨 2판에서 「솔서리」가 z 0.0497로 올라 겨냥도 올린다(이름이 원본 라벨 자리 높이 0.55~0.66에). 어깨까지 넣으면 병이 작아져 어깨는 뺀다
-    camera((0.020, -d - BD / 2, 0.056), (0.0, 0, 0.054), lens=85, fstop=8.0, roll=-15)   # 10판: 원본은 병 윗부분이 왼쪽으로 기움
+    follow_camera(17, (0.020, -d - BD / 2, 0.056), (0.0, 0, 0.054), lens=85, fstop=8.0, roll=-15)   # 10판: 원본은 병 윗부분이 왼쪽으로 기움
 
 
 def shot_s02():
@@ -896,8 +937,8 @@ def shot_s02():
     rims((0, 0, 0.05), e=30)
     # 7판: 이름이 원본 라벨 자리(높이 0.62)보다 아래였다 — 겨냥을 내리고, 양옆 얼음이 보이게 화면 폭을 0.065 m로
     # 11판: 라벨 2판에서 「솔서리」가 z 0.0497로 올라 겨냥도 올리고(이름이 높이 0.60), 조금 물려 위에 「ㅅ」 전체가 들게(화면 폭 0.070 m)
-    d = 0.195 / (1 - 0.02 * T)
-    camera((0.0, -d - BD / 2, 0.0537), (0.0, 0, 0.0537), lens=100, fstop=8.0)
+    d = 0.195
+    follow_camera(2, (0.0, -d - BD / 2, 0.0537), (0.0, 0, 0.0537), lens=100, fstop=8.0)
 
 
 def shot_s03():
@@ -915,7 +956,7 @@ def shot_s03():
     area_light("key", (-0.25, -0.30, 0.25), (0, 0, 0.05), 10, 0.30, ICE_BLUE)
     area_light("back", (0.05, 0.30, 0.10), (0, 0, 0.06), 70, 0.30, (0.70, 0.85, 1.0))
     rims((0, 0, 0.06), e=35)
-    camera((0.007, -0.484 - 0.04, 0.049), (0.007, 0, 0.055), lens=70, fstop=5.6, roll=-2 * T)   # 11판(P2-2): 병이 원본보다 0.08 아래였다 — 겨냥을 11 mm 내림
+    follow_camera(3, (0.007, -0.484 - 0.04, 0.049), (0.007, 0, 0.055), lens=70, fstop=5.6)   # 11판(P2-2): 병이 원본보다 0.08 아래였다 — 겨냥을 11 mm 내림
 
 
 def shot_s06():
@@ -929,7 +970,7 @@ def shot_s06():
     rims((0, 0, 0.17), e=20, spread=(0.20, 0.15, 0.25))
     # 9판(Fable P1-4 추천): 0.28초 접사라 위아래를 알 수 없다 — 카메라를 180° 돌려 「ㅅ」 꼭짓점이 아래인 V 깔때기로(원본 6번과 같은 꼴).
     # 11판: 잎집 기둥을 빼 꼭짓점 아래가 비었다(기둥이 있으면 원본 Y 그대로 — Fable P0-1). 꼭짓점이 화면 높이 0.62에 오게 겨냥
-    camera((0.0, -0.135 - 0.03, 0.203), (0.0, 0, 0.203), lens=60, fstop=5.6, roll=180)
+    follow_camera(6, (0.0, -0.135 - 0.03, 0.203), (0.0, 0, 0.203), lens=60, fstop=5.6, roll=180)
 
 
 def shot_s07():
@@ -944,7 +985,7 @@ def shot_s07():
     rims((0, 0, 0.17), e=20, spread=(0.20, 0.15, 0.25))
     # 화면 폭 0.060 m(렌즈 60 → 0.10 m, 6번 0.081 m보다 가까이), V 아래 꼭짓점이 화면 높이 0.45쯤(겨냥 z 0.212 — 0.22면 0.3, 0.19면 화면 아래 끝).
     # 원본처럼 위 끝에 붙이면 기둥 없는 우리 V는 화면 아래 2/3가 빈 파랑이라, 두 팔 안쪽 면이 위 절반에 걸리게 했다
-    camera((0.0, -0.10 - 0.03, 0.212), (0.0, 0, 0.212), lens=60, fstop=16.0, focus=0.10, roll=180)   # 4.0 · 8.0은 초점이 얼음 앞면(0.10 m)을 벗어나 꼴이 안 읽혔다
+    follow_camera(7, (0.0, -0.10 - 0.03, 0.212), (0.0, 0, 0.212), lens=60, fstop=16.0, focus=0.10, roll=180)   # 4.0 · 8.0은 초점이 얼음 앞면(0.10 m)을 벗어나 꼴이 안 읽혔다
 
 
 def shot_s10():
@@ -963,8 +1004,8 @@ def shot_s10():
     area_light("back", (0.0, 0.40, 0.18), (0, 0, 0.10), 90, 0.40, (0.55, 0.78, 1.0))
     area_light("key", (-0.25, -0.30, 0.25), (0, 0, 0.10), 8, 0.30, ICE_BLUE)
     rims((0, 0, 0.10), e=40, spread=(0.25, 0.20, 0.20))
-    d = 0.66 / (1 + 0.047 * T)
-    camera((0.0, -d - 0.03, 0.125), (0.0, 0, 0.128), lens=50, fstop=8.0)
+    d = 0.66
+    follow_camera(10, (0.0, -d - 0.03, 0.125), (0.0, 0, 0.128), lens=50, fstop=8.0)
 
 
 def shot_s09():
@@ -985,7 +1026,7 @@ def shot_s09():
     # 11판(Fable 이미지 콘티 1차 P2-4): 원본 뚜껑 윗면은 가운데 (0.58, 0.40) · 폭 0.38, 우리 10판은 (0.66, 0.56) · 0.30 — 가까이(0.19 → 0.15) · 겨냥을 뚜껑 쪽으로
     d = 0.15
     tx, ty = -0.005, -0.0066
-    camera((tx, ty - d * math.sin(a), d * math.cos(a)), (tx, ty, 0.0), lens=85, fstop=5.6, roll=8 + 3 * T)
+    follow_camera(9, (tx, ty - d * math.sin(a), d * math.cos(a)), (tx, ty, 0.0), lens=85, fstop=5.6, roll=8)
 
 
 def shot_hand():
