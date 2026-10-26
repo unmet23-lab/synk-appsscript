@@ -127,10 +127,12 @@ J = dict([
         HAND, DAY, FILM_NUM, 메모="5 · 7.61–8.61 달력 — 24일 X · 「D-3」(합성, 원본 간격 D-7 · D-3 · D-2 · D-1 · D — Fable 1차)"),
     job("S06", FACE4 + ["방:R1", LAY("S06_틀.png")],
         START, JUNHO, ROOM_R1.format(n=5), LAY_FRAME.format(n=6),
-        "Wide shot from low, just above the operation desk, 28mm lens: in the near foreground three places for 'trophies' in a row on the "
-        "desk, large and slightly out of focus — a phone on a stand, a second phone on a stand, and a third empty stand waiting for one more, "
-        "evenly spaced like the three snow globes of a shop window. Behind them, sharp in the background at the far side of the desk, he "
-        "stands bent over and lines up the laptop, the tablet and a phone in a precise row, checking their alignment.",
+        "Wide shot from low, the lens just above the near edge of the operation desk, 28mm lens: in the near foreground, very close to the "
+        "lens, three 'trophies' in a row on the desk — a phone on a stand, a second phone on a stand, and a third empty wooden stand waiting "
+        "for one more — so big that together they fill the lower half of the frame, each about a third of the frame height, slightly out "
+        "of focus, evenly spaced like the three snow globes of a shop window (10-26: the first take made them small at the bottom edge). "
+        "Behind them, sharp in the background at the far side of the desk and in the CENTER of the frame, he stands bent over and lines up "
+        "the laptop, the tablet and a phone in a precise row, checking their alignment.",
         WEAR, DEADPAN, DAY, FILM, 메모="6 · 8.61–10.45 작전 책상 와이드 · 꼬리표 「훈련 · 장비 점검」(합성)"),
     job("S07", FACE4 + [LAY("S07_실루엣.png"), "방:H"],
         START, JUNHO, LAY_SIL.format(n=5),
@@ -146,8 +148,10 @@ J = dict([
         DAY, FILM, 메모="7 · 10.45–13.80 현관 전단(원본처럼 가슴 높이) · 안경 코끝(벗는 동작은 영상에서) · 속마음 「반값…」(전단 글은 합성)"),
     job("S08", FACE4 + ["방:R1", LAY("S08_실루엣.png")],
         START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
-        "A fast whip-pan frame with strong horizontal motion blur: in the left two thirds, a living-room shelf rushes past, lined with rows "
-        "of energy-drink cans, eye-drop bottles and wrist braces, smeared sideways. At the right edge he rushes into the frame, sharper, "
+        "A fast whip-pan frame: the camera is swinging hard to the left, so everything except him is smeared into long horizontal motion "
+        "streaks — in the left two thirds, a living-room shelf rushes past, lined with rows of plain unbranded drink cans in solid colors "
+        "(no logos, no brand names, no printed words — 10-26: real energy-drink logos appeared), small white eye-drop bottles and black "
+        "wrist braces, all smeared sideways so their shapes are only readable as streaks. At the right edge he rushes into the frame, sharper, "
         "wearing a black gaming headset with a microphone, glancing at the shelf as he runs past it to the left.",
         WEAR, DEADPAN, DAY, FILM, 메모="8 · 13.80–15.09 휙 팬 · 헤드셋 · 꼬리표 「훈련 · 보급」(합성)"),
     job("S09", FACE4 + ["방:B", LAY("S09_실루엣.png")],
@@ -237,6 +241,23 @@ J = dict([
         WEAR, "EXPRESSION: deeply asleep, relaxed slack face, eyes fully closed, mouth slightly open — peaceful, not smiling.",
         NIGHT, FILM, 메모="19 · 팬 끝 — 잠든 준호 · 알림 「주무세요. 선착순 없어요.」 · 끝 카드(합성)"),
 ])
+
+# ── 달력 컷 다시(10-27) — Gemini가 그린 달력은 다섯 번 모두 글자가 틀려, 코드로 정확히 그린 판(달력판.py)에 손과 펜만 더한다 ──
+CAL_PLATE = lambda k: str(V / "달력판" / f"{k}.png").replace("/", "\\")
+CAL_EDIT = ("Edit Image 1. Image 1 is a photo of a paper wall calendar — keep the calendar EXACTLY as it is: every printed number, every red "
+            "X, the half-drawn red stroke and the handwritten red '00:00' must stay exactly where they are and look the same; do not add, "
+            "remove, redraw or move any number, letter or mark, and keep the framing and perspective. Only add, in front of the paper: ")
+CAL_LOOK = ("Make the whole picture look like a real photograph of paper on a wall: soft daylight from the left, fine paper texture, natural "
+            "lens falloff, the hand slightly out of focus where it is closest to the lens. No other changes.")
+for k, where in {
+    "C02": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 20th, as if it has just drawn that stroke",
+    "C05": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 24th, as if it has just drawn that stroke",
+    "C13": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 25th, as if it has just drawn that stroke",
+    "C15": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the upper-right corner area of the box for the 26th, about to draw the second stroke of the X",
+    "C18": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the red circle around '00:00' in the box for the 27th, as if it has just finished drawing the circle",
+}.items():
+    J[k] = {"ratio": "16:9", "refs": [CAL_PLATE(k)], "prompt": " ".join([CAL_EDIT + where + ".", HAND, CAL_LOOK]),
+            "메모": f"{k[1:]} 달력 — 판은 달력판.py(숫자 · X · 00:00 정확), Gemini는 손 · 펜만"}
 
 # 방 기준 그림 고른 판으로 「방:X」 바꾸기 — 아직이면 괄호로 남겨 실행기가 막는다
 for j in J.values():

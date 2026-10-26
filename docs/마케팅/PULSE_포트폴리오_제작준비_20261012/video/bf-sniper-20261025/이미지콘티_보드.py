@@ -21,9 +21,9 @@ picked = json.load(open(V + "정지컷/_고른판.json", encoding="utf-8")) if o
 # (#, 시작, 끝, 우리 판 id, 화면 글, 원본 대표 프레임, 보드 글)
 SHOTS = [
     (1, 0.00, 1.00, None, ("title",), None, "검은 화면 + 「작전명: 블프」 · 속삭임 「작전명… 블프.」"),
-    (2, 1.00, 2.68, "S02", ("cal", "D-7", "27일 칸: 블프 00:00 · 75인치 TV 반값"), "K02", "달력 「2026년 11월」 — 20일에 X · 음악 시작 · 펜"),
+    (2, 1.00, 2.68, "S02", ("cal", "D-7", "27일 00:00 블프 · 75인치 TV 반값"), "K02", "달력 「2026년 11월」 — 20일에 X · 음악 시작 · 펜"),
     (3, 2.68, 5.27, "S03", ("drill", "체력", "tv"), "K03", "TV 자리 벽 앞 바닥 윗몸일으키기 · 입 다문 숨"),
-    (4, 5.27, 7.61, "S04", ("drill", "엄지", None), "K04", "링 라이트 원 너머 휴대폰 아령 → 로봇 청소기에 목례"),
+    (4, 5.27, 7.61, "S04", ("drill", "엄지 근력", None), "K04", "링 라이트 원 너머 휴대폰 아령 → 로봇 청소기에 목례"),
     (5, 7.61, 8.61, "S05", ("cal", "D-3", None), "K05", "달력 24일 X(원본 간격 D-3) · 펜"),
     (6, 8.61, 10.45, "S06", ("drill", "장비 점검", None), "K06", "작전 책상 — 앞에 알람 셋 트로피, 뒤에서 화면 셋 줄 맞춤"),
     (7, 10.45, 13.80, "S07", ("flyer",), "K07", "현관 전단(가슴 높이) · 돋보기를 벗음 · 속마음 「반값…」"),
@@ -44,9 +44,9 @@ SHOTS = [
 # 애니매틱 칸(시작, 끝, 우리 판 id, 글, 자막) — 19번은 셋으로 나눈다
 SEGS = [
     (0.00, 1.00, None, ("title",), "(속삭임) 작전명… 블프."),
-    (1.00, 2.68, "S02", ("cal", "D-7", "27일 칸: 블프 00:00 · 75인치 TV 반값"), None),
+    (1.00, 2.68, "S02", ("cal", "D-7", "27일 00:00 블프 · 75인치 TV 반값"), None),
     (2.68, 5.27, "S03", ("drill", "체력", "tv"), None),
-    (5.27, 7.61, "S04", ("drill", "엄지", None), None),
+    (5.27, 7.61, "S04", ("drill", "엄지 근력", None), None),
     (7.61, 8.61, "S05", ("cal", "D-3", None), None),
     (8.61, 10.45, "S06", ("drill", "장비 점검", None), None),
     (10.45, 13.80, "S07", ("flyer",), "(속마음) 반값…"),
@@ -123,8 +123,8 @@ def overlay(img, ov):
     kind = ov[0]
     if kind == "cal":
         tag(d, (W / 2, H * 0.14), ov[1], 110, bg=(200, 40, 50, 230))
-        if ov[2]:
-            tag(d, (W / 2, H * 0.30), ov[2], 60, fg=(40, 30, 30), bg=(255, 250, 240, 235))
+        if ov[2]:   # 10-27 낯선이 7차 셋 다 「27일 칸 글씨가 작다」 — 크게
+            tag(d, (W / 2, H * 0.32), ov[2], 80, fg=(40, 30, 30), bg=(255, 250, 240, 240))
     elif kind == "title":
         d.text((W / 2, H * 0.42), "작전명:", font=ImageFont.truetype(FONT_B, 90), fill=(200, 200, 200), anchor="mm")
         d.text((W / 2, H * 0.58), "블프", font=ImageFont.truetype(FONT_B, 200), fill=(255, 255, 255), anchor="mm")
@@ -143,8 +143,10 @@ def overlay(img, ov):
         tw = d.textlength("198만 원", font=f)
         d.line((x0, box[1] + 205, x0 + tw, box[1] + 205), fill=(200, 40, 50), width=6)
         d.text((x0 + tw + 30, box[1] + 175), "99만 원", font=f, fill=(200, 40, 50))
-        d.text((x0, box[1] + 250), "블프 반값", font=ImageFont.truetype(FONT_B, 84), fill=(200, 40, 50))
-        d.text((x0, box[1] + 355), "11/27 00:00부터 일주일 내내 · 선착순 없음", font=ImageFont.truetype(FONT_B, 34), fill=(70, 70, 70))
+        d.text((x0, box[1] + 240), "블프 반값", font=ImageFont.truetype(FONT_B, 80), fill=(200, 40, 50))
+        # 10-27 낯선이 7차 셋 다 「선착순 없음을 못 읽음」 — 따로 한 줄로 크게
+        tag(d, (x0 + 16, box[1] + 375), "선착순 없음", 54, fg=(255, 255, 255), bg=(200, 40, 50, 240), anchor="lm", pad=16)
+        d.text((x0 + 350, box[1] + 375), "11/27부터 일주일 내내", font=ImageFont.truetype(FONT_B, 36), fill=(60, 60, 60), anchor="lm")
     elif kind == "open":
         tag(d, (W / 2, H * 0.22), "11/27 00:00", 130)
         tag(d, (W / 2, H * 0.42), "블프 OPEN", 80, bg=(200, 40, 50, 230))
@@ -164,6 +166,7 @@ def overlay(img, ov):
         d.text((cx, H * 0.56), BRAND, font=ImageFont.truetype(FONT_B, 150), fill=AMBER, anchor="mm")
         d.text((cx, H * 0.70), "가전 · 생활 온라인몰", font=ImageFont.truetype(FONT_B, 58), fill=(70, 60, 50), anchor="mm")
         d.text((cx, H * 0.79), "선착순 없음 · 블프 반값 일주일 내내", font=ImageFont.truetype(FONT_B, 50), fill=(200, 40, 50), anchor="mm")
+        d.text((cx, H * 0.88), "앱에서 「느지막」 검색", font=ImageFont.truetype(FONT_B, 46), fill=(90, 80, 70), anchor="mm")   # 10-27 낯선이 7차 「어디서 사는지 모름」
     return img.convert("RGB")
 
 
