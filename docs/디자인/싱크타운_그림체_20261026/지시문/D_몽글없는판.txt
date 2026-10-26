@@ -1,0 +1,6 @@
+Edit reference image 1 and output ONE image (landscape, 3:2, the same size and framing as reference 1). Use the image generation tool once and output only that image.
+
+Reference image 1 is a finished photograph of a needle-felted miniature diorama. Make the exact same photograph with ONE change only:
+remove the small coral-red felt character (the round blob with two black bead eyes and a wavy hem) that stands on the pale stone courtyard in front of the tea house, left of centre. Where it stood, show what is behind it: the same pale felt stone tiles of the courtyard and the front edge of the wooden deck, with the same light. No shadow left where it stood.
+
+Keep everything else exactly as it is: the same camera, framing, crop and scale, the same buildings, roofs, awning, trees, bushes, flowers, pond, benches, stepping stones, lantern, the tea-house owner pouring tea and the lavender professor at the round table, the same colours and the same daylight. Do not move, add or redesign anything. No letters or words.
