@@ -98,15 +98,15 @@ L = {
 LREF = {"office": "L1", "dining": "L2", "entry": "L3", "laundry": "L4", "bedroom": "L5", "cafe": "L6"}
 LNAME = {"office": "office", "dining": "dining corner and kitchen", "entry": "entrance hallway", "laundry": "laundry nook",
          "bedroom": "bedroom", "cafe": "café"}
-LIGHT = {
-    "night": ("Light: night inside the apartment. Warm 2700K tungsten light from the pendant lamp and ceiling lights only — honey, amber and "
-              "soft cream tones with gentle shadows; any window is dark. Keep the exposure about one stop darker than a portrait photo, like "
-              "a real night interior in a TV drama."),
-    "evening": ("Light: early evening inside the apartment with the warm 2700K lamps on — honey and cream tones, soft shadows, the window "
-                "outside already blue-dark. About one stop darker than a portrait photo."),
-    "bed": ("Light: night in the bedroom, lit only by the warm bedside lamp — low-key warm amber light, deep soft shadows, about two stops "
-            "darker than a portrait photo."),
-    "morning": ("Light: a weekend morning; soft neutral daylight from a window mixed with the warm entrance light."),
+LIGHT = {   # 10-26 23:4x: 원본은 밤 집 장면도 밝은 TV 드라마 빛이다(자막 띠를 뺀 평균 밝기 집 100~135 · 침실 113~135) — 첫 판의 「한 스톱 어둡게」는 뺐다
+    "night": ("Light: night at home, but lit brightly and softly like a Korean TV romantic comedy — warm 3000K ceiling and pendant light filling the "
+              "whole room, soft fill light on the faces, bright clean skin tones, gentle shadows, no dark corners; the window is dark blue. "
+              "Overall brightness of a well-lit TV drama interior, not moody or dim."),
+    "evening": ("Light: early evening at home, lit brightly and softly like a Korean TV romantic comedy — warm 3000K room light everywhere, soft "
+                "fill on the faces, bright clean skin tones, gentle shadows; the window outside is blue dusk. Not moody or dim."),
+    "bed": ("Light: night in the bedroom, but lit like a Korean TV drama — the warm bedside lamp plus soft warm fill light from above, so the bed, "
+            "the walls and both faces are clearly and evenly lit; bright, soft and cozy, not dark or moody."),
+    "morning": ("Light: a weekend morning; bright, soft neutral daylight from a window mixed with the warm entrance light, faces bright and clean."),
     "office": ("Light: bright, even, cool-white office light from the ceiling panels plus soft daylight from the windows; clean bright "
                "whites, slightly high-key, like a Korean office drama."),
     "cafe": ("Light: bright late-morning daylight pouring through the big windows; airy, soft and high-key, fresh greens and warm wood."),
@@ -114,14 +114,22 @@ LIGHT = {
 }
 
 
-def framing(k, idx=0, who="his"):   # 원본 첫 프레임의 얼굴 상자 → 화면 안 숫자
+def framing(k, idx=0, who="his"):   # 원본 첫 프레임의 얼굴 상자 → 화면 안 경계(현장 노트 「클로즈업은 화면 안 경계로」 — 첫 판은 「얼굴이 화면 높이의 25%」를 무시하고 넓게 나왔다)
     fs = facebox.get(k) or []
     if len(fs) <= idx:
         return ""
     f = fs[idx]
-    h, cy, cx = f["h"], f["y"] + f["h"] / 2, f["x"] + f["w"] / 2
-    return (f"Framing: {who} face (eyebrows to chin) is about {round(h * 100)}% of the frame height, its center about "
-            f"{round(cy * 100)}% down from the top edge and {round(cx * 100)}% in from the left edge.")
+    top = f["y"] - 0.55 * f["h"]           # 정수리(상자 위는 눈썹 언저리)
+    chin = f["y"] + f["h"]
+    cx = f["x"] + f["w"] / 2
+    head = ("the top of the head is cut off by the top edge of the frame" if top < 0.01
+            else f"the top of the head is about {round(top * 100)}% down from the top edge")
+    size = ("a tight close-up" if f["h"] >= 0.3 else "a medium close-up (head and shoulders)" if f["h"] >= 0.2
+            else "a medium shot" if f["h"] >= 0.12 else "a wide shot")
+    return (f"Shot size — follow exactly, this is {size}: {who} face is big in the frame, about {round(f['w'] * 100)}% of the frame width; "
+            f"{head}; the chin is about {round(chin * 100)}% down from the top edge; the face is centered about {round(cx * 100)}% in from "
+            "the left edge. Do not pull the camera back to show more of the room.")
+
 
 
 # ── 컷마다 ──
@@ -268,9 +276,10 @@ C = {
                     "lower foreground: Minjae sits slumped over his desk with both arms stretched out on it, and Ian, standing at the left, "
                     "shuffles toward him looking defeated. Both are small in the frame."),
     "1-38": dict(f="IM", loc="office", light="office", w=["I_office", "M_office"], fx=(1, "Ian's"),
-                  t="Close-up from desk height: Minjae lies with his cheek on the white desk in the lower half of the frame, eyes open and "
-                    "patient; Ian has draped himself over Minjae's back from behind, his chin resting on Minjae's shoulder in the upper half, "
-                    "whining softly with his lips slightly parted. Both faces in the frame, Ian's above Minjae's."),
+                  t="Close-up from desk height: Minjae sits slumped forward with his cheek on the white desk, his face in the lower half of the "
+                    "frame, eyes open and patient. Ian is bent forward over Minjae's back from behind — his chest pressed on Minjae's back, "
+                    "his arms around Minjae's shoulders, his own head resting just above Minjae's head — so Ian's face is in the upper half, "
+                    "close to Minjae's, whining softly with a pained little frown and his lips slightly parted. Ian is not standing upright."),
     "1-39": dict(f="MI", loc="office", light="office", w=["M_office", "I_office"], fx=(0, "Minjae's"),
                   t="Close-up from desk height: Minjae lies with the side of his head on the desk, half-closed eyes looking ahead; the lower "
                     "part of his face is hidden behind Ian's navy sleeve, whose arm hangs over his shoulder from above. Only Ian's chin and "
@@ -327,10 +336,18 @@ C = {
     "2-9": dict(f="S", loc="entry", light="night", w=["S_out"], fx=(0, "her"),
                  t="Close-up of Seojin in the hallway, 85mm lens, glancing back over her shoulder with a small mysterious smile, lips "
                    "slightly parted."),
-    "2-10": dict(f="S", loc="entry", light="night", w=["S_out"], fx=(0, "her"),
-                  t="Low-angle wide shot from near the floor of the narrow hallway, 24mm lens: Seojin walks away down the hallway past the "
-                    "camera in her new outfit, full body from her heeled boots at the bottom to her head near the top edge, chin up, a "
-                    "little black shoulder bag in her hand. White walls close on both sides."),
+    # 2-10: 원본은 바닥 가까운 로우 앵글 고정 — 걸어오는 서진이 카메라 옆을 스쳐 지나가면 복도 끝에 혼자 선 이안이 드러난다(10-26 프레임 줄로 확인).
+    # 시작 그림은 서진이 화면을 채운 순간, 끝 그림(2-10e)은 서진이 지나간 뒤 복도 끝의 이안 — 영상은 둘 사이를 잇는다.
+    "2-10": dict(f="S", loc="entry", light="night", w=["S_out"], fx=None,
+                  t="Very low-angle shot from a camera placed almost on the floor of the narrow hallway, 18mm lens, pointing up and down the "
+                    "hallway: Seojin walks straight toward the camera in her new outfit and is about to pass right beside it — her body fills "
+                    "most of the frame from the hem of her dress at the bottom to her shoulders near the top edge, her head partly cut off by "
+                    "the top edge, slightly soft from her motion. White walls close on both sides."),
+    "2-10e": dict(f="I", loc="entry", light="night", w=["I_home"], fx=None,
+                   t="The same very low-angle shot from almost on the floor of the narrow hallway, 18mm lens, a moment later: Seojin has "
+                     "just walked out of the frame past the camera, and now the empty hallway is revealed with Ian standing alone at the far "
+                     "end, small in the frame, full body in the upper middle, arms hanging, staring after her, stunned. Light oak floor "
+                     "leading toward him, white walls close on both sides."),
     # ── 2화 ② 회사 ──
     "2-11": dict(f="MI", loc="office", light="office", w=["M_office", "I_office"], fx=(1, "Minjae's"),
                   t="Bust shot of Minjae leaning over the low desk partition toward Ian, pointing at what Ian is eating, eyebrows raised; "
@@ -497,6 +514,9 @@ def small(src):   # 긴 변 1,400px JPEG 사본(ego/refs) — 올리기가 빠�
     return str(dst)
 
 
+EXTRA = ["2-10e"]   # 끝 그림(영상이 카메라 · 사람 움직임을 잇도록) — 10-26 9번 세션 전달: 끝 그림을 시작과 같은 구도로 구우면 영상 모델이 카메라를 멈춘다
+
+
 def person_refs(code, n):
     p = P[code]
     return [f"{LORA}/{p['dir']}/refs/{r}.jpg" for r in p["refs"][:n]]
@@ -505,8 +525,10 @@ def person_refs(code, n):
 def build(k):
     c = C[k]
     refs, parts = [], [START]
+    fsb = facebox.get(k) or []
+    big2 = len(c["f"]) == 2 and len(fsb) >= 2 and min(fsb[0]["h"], fsb[1]["h"]) >= 0.2   # 둘 다 크게 나오는 컷(1-38 · 40 등) — 첫 판은 참조 4 + 2로 둘 다 닮지 않았다
     for j, code in enumerate(c["f"]):
-        n = 4 if j == 0 else 2
+        n = 4 if j == 0 or big2 else 2
         a = len(refs) + 1
         refs += person_refs(code, n)
         rng = f"Images {a} to {a + n - 1}" if n > 2 else f"Images {a} and {a + 1}"
@@ -514,7 +536,11 @@ def build(k):
     if c["f"]:
         parts.append(ID_TAIL)
     parts += [W[w] for w in c["w"]]
-    parts.append(c["t"])
+    t = c["t"]
+    fs0 = facebox.get(k) or []
+    if fs0 and c.get("fx") and fs0[c["fx"][0]]["h"] >= 0.2:   # 원본 얼굴이 화면 높이 20% 넘는 컷은 「미디엄」이 아니라 미디엄 클로즈업(첫 판이 넓게 나옴)
+        t = t.replace("Medium over-the-shoulder shot", "Close over-the-shoulder shot").replace("Medium shot", "Medium close-up (head and shoulders)")
+    parts.append(t)
     if c.get("fx"):
         fr = framing(k, *c["fx"])
         if fr:
@@ -528,13 +554,26 @@ def build(k):
     if c.get("g"):
         parts.append(GREEN.format(n=lay_n))
     parts.append(L[c["loc"]])
-    if c["loc"] in LREF:
+    fs = facebox.get(k) or []
+    tight = bool(fs) and c.get("fx") and fs[c["fx"][0]]["h"] >= 0.17
+    if c["loc"] in LREF and not tight:   # 10-26 23:4x: 넓은 방 사진이 바스트 · 클로즈업을 넓은 컷으로 끌었다(S31 「방 참조가 있으면 넓은 컷」과 같은 결)
         refs.append(str(V / "정지컷" / f"{LREF[c['loc']]}.png"))
-        parts.append(f"Image {len(refs)} shows this same {LNAME[c['loc']]} — keep its furniture, materials and colors exactly, seen from "
-                     "this shot's camera position.")
+        parts.append(f"Image {len(refs)} shows this same {LNAME[c['loc']]} only for its furniture, materials and colors — do not copy its wide "
+                     "framing; this shot keeps the framing described above.")
     parts.append(LIGHT[c["light"]])
     parts.append(TAIL_G if c.get("g") else TAIL)
     return dict(id=k, who=c["f"] or "-", ratio="9:16", prompt=" ".join(parts), refs=[small(r) for r in refs])
+
+
+RELIGHT = {"L2b": ("L2", "night"), "L3b": ("L3", "night"), "L5b": ("L5", "bed")}
+
+
+def build_relight(k):   # 10-26 23:4x: 고른 장소 그림의 구조는 두고 빛만 원본처럼 밝게(현장 노트 「고른 판을 Image 1로 빛만 바꿔라」)
+    src, light = RELIGHT[k]
+    prompt = " ".join([START, "Image 1 is a photograph of a room. Recreate exactly this same photograph — the same camera position, lens, framing, "
+                       "walls, doors, furniture, objects and colors, nothing added or removed — and change only the lighting.", LIGHT[light],
+                       "Nobody is in the frame.", TAIL])
+    return dict(id=k, who="장소", ratio="9:16", prompt=prompt, refs=[small(V / "정지컷" / f"{src}.png")])
 
 
 def build_loc(k):
@@ -545,9 +584,12 @@ def build_loc(k):
 
 def main():
     jobs = {k: build_loc(k) for k in LOCJ}
+    jobs.update({k: build_relight(k) for k in RELIGHT})
     for k in cuts:
         if k not in C:
             raise SystemExit(f"{k}: 지시문 없음")
+        jobs[k] = build(k)
+    for k in EXTRA:   # 컷목록에 없는 끝 그림
         jobs[k] = build(k)
     for j in jobs.values():
         if len(j["prompt"]) > 4300:
