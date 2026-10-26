@@ -61,7 +61,8 @@
       "profilePublishingAuthorized": true,
       "profilePublishingAuthorization": "2026-10-02 사용자 '직접 게시해': 직접 화면 확인 후 게시 승인",
       "browserExecutionStatus": "unresponsive-connection-blocking-progress",
-      "currentPublicProfileStatus": "not-reverified"
+      "currentPublicProfileStatus": "not-reverified",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-br-youtube": {
       "brand": "LAB",
@@ -128,7 +129,8 @@
       "profileSaved": true,
       "publicDescriptionCharacterCount": 480,
       "publicProfileVerifiedAt": "2026-10-02T20:52:47.000+09:00",
-      "verificationTimeScope": "주 실행자의 검증 결과를 원장에 기록한 시각"
+      "verificationTimeScope": "주 실행자의 검증 결과를 원장에 기록한 시각",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-cn-xiaohongshu": {
       "brand": "LAB",
@@ -163,7 +165,8 @@
       "profileCopy": "온라인마케팅지도/intl-social/copy.json",
       "profilePreparation": "온라인마케팅지도/intl-social/rednote-profile/profile.json",
       "profileEvidence": "온라인마케팅지도/intl-social/execution-20260920.json",
-      "setupEvidence": "온라인마케팅지도/intl-social/execution-20260920.json"
+      "setupEvidence": "온라인마케팅지도/intl-social/execution-20260920.json",
+      "dailyLine": "LAB 두 채널"
     },
     "lab-mm-tiktok": {
       "brand": "LAB",
@@ -203,7 +206,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "authenticated-tiktok-profile-after-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyLine": "LAB 두 채널"
     },
     "lab-vn-tiktok": {
       "brand": "LAB",
@@ -239,7 +243,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "authenticated-tiktok-profile-after-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -282,7 +287,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "authenticated-public-channel-after-followup-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-np-facebook": {
       "brand": "LAB",
@@ -313,7 +319,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-kh-facebook": {
       "brand": "LAB",
@@ -345,7 +352,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-lk-facebook": {
       "brand": "LAB",
@@ -375,7 +383,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-uz-telegram": {
       "brand": "LAB",
@@ -404,7 +413,8 @@
       "avatarAsset": "docs/마케팅/온라인마케팅지도/jp-vn-profile/kkamong-profile-v4-open-eyes.png",
       "avatarVerificationScope": "new-public-t-me-tab-after-crop-and-separate-save",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
-      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited"
+      "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -420,7 +430,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-my-youtube": {
       "brand": "LAB",
@@ -436,7 +447,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-nz-youtube": {
       "brand": "LAB",
@@ -452,7 +464,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-py-youtube": {
       "brand": "LAB",
@@ -468,7 +481,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-au-youtube": {
       "brand": "LAB",
@@ -484,7 +498,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-lk-youtube": {
       "brand": "LAB",
@@ -500,7 +515,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-ph-youtube": {
       "brand": "LAB",
@@ -516,7 +532,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-us-youtube": {
       "brand": "LAB",
@@ -532,7 +549,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-kg-youtube": {
       "brand": "LAB",
@@ -548,7 +566,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-in-youtube": {
       "brand": "LAB",
@@ -564,7 +583,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-id-youtube": {
       "brand": "LAB",
@@ -580,7 +600,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-th-youtube": {
       "brand": "LAB",
@@ -596,7 +617,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-mm-youtube": {
       "brand": "LAB",
@@ -612,7 +634,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-tw-youtube": {
       "brand": "LAB",
@@ -628,7 +651,8 @@
       "profileStatus": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-jp-youtube": {
       "brand": "LAB",
@@ -644,7 +668,8 @@
       "profileStatus": "localized-bio-and-white-felt-glass-banner-v2-preserved; kkamong-open-eyes-profile-v4-publicly-verified-2026-09-20; name-handle-website-existing-video-preserved",
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-vn-youtube": {
       "brand": "LAB",
@@ -660,7 +685,8 @@
       "profileStatus": "localized-bio-and-white-felt-glass-banner-v2-preserved; kkamong-open-eyes-profile-v4-publicly-verified-2026-09-20; name-handle-website-mongle-watermark-and-timing-preserved",
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
-      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json"
+      "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     },
     "lab-youtube": {
       "brand": "LAB",
@@ -677,7 +703,8 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "loginAlias": "unmet23",
-      "loginVerifiedAt": "2026-09-20"
+      "loginVerifiedAt": "2026-09-20",
+      "dailyLine": "LAB 영어"
     },
     "lab-instagram": {
       "brand": "LAB",
@@ -687,7 +714,8 @@
       "connection": "needs-meta-app-and-media-host",
       "profileStatus": "MN-KR-bio-publicly-rechecked-2026-09-14-after-user-mobile-edit; trailing-SYNK-LAB-dot-preserved-as-user-current-value; clickable-website-user-saved-and-agent-click-through-verified; name-photo-handle-unchanged; posts-remain-0; native-language-review-incomplete",
       "websiteUrl": "https://synk.im/",
-      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate"
+      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
+      "dailyLine": "LAB 몽골"
     },
     "lab-tiktok": {
       "brand": "LAB",
@@ -698,7 +726,8 @@
       "loginVerifiedAt": "2026-09-14",
       "publisher": "direct-after-review",
       "connection": "needs-reviewed-app",
-      "profileStatus": "google77-owner-login-confirmed-and-new-bio-79-saved-then-public-profile-reloaded-heading-exact-match-confirmed-2026-09-14; approved-LAB-instagram-copy-with-only-dot-synk-im-suffix-removed-for-80-char-limit; name-handle-photo-existing-videos-unchanged; no-new-posts; native-language-review-incomplete"
+      "profileStatus": "google77-owner-login-confirmed-and-new-bio-79-saved-then-public-profile-reloaded-heading-exact-match-confirmed-2026-09-14; approved-LAB-instagram-copy-with-only-dot-synk-im-suffix-removed-for-80-char-limit; name-handle-photo-existing-videos-unchanged; no-new-posts; native-language-review-incomplete",
+      "dailyLine": "LAB 몽골"
     },
     "yuhobuilds-youtube": {
       "brand": "SHIFT",
@@ -710,7 +739,8 @@
       "madeForKids": false,
       "connection": "needs-oauth",
       "profileStatus": "v6-full-bio-v4-banner-portrait-and-three-links-publicly-rechecked-2026-09-20; no-profile-change-in-final-audit",
-      "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json"
+      "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
+      "dailyLine": "yuhobuilds"
     },
     "yuhobuilds-instagram": {
       "brand": "SHIFT",
@@ -721,7 +751,8 @@
       "profileStatus": "user-mobile-save-completed-2026-09-14-after-web-save-reverted-again; agent-reopened-public-profile-and-confirmed-full-new-four-line-bio-including-user-added-hamkke; previous-89-no-longer-current; clickable-website-also-user-saved-and-agent-click-through-verified; no-post-created",
       "publicBio": "AI와 함께 회사를 만드는 유호입니다.\n만든 것과 고친 이유를 나눕니다.\nSYNK SHIFT · 기관 강의·기업 컨설팅·브랜딩·광고, 유학·취업 연계.\n개인과 조직의 성장이 서로의 기회가 되는 미래를 만듭니다.",
       "websiteUrl": "https://synk.im/",
-      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate"
+      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
+      "dailyLine": "yuhobuilds"
     },
     "yuhobuilds-tiktok": {
       "brand": "SHIFT",
@@ -735,7 +766,8 @@
       "profileStatus": "approved-portrait-confirmed-2026-09-13; new-bio-69-saved-and-full-public-heading-rechecked-after-second-save-2026-09-14; reflection-delay-cause-unverified",
       "displayNameStatus": "current-name-change-eligible-from-2026-09-15; rechecked-in-editor-2026-09-13",
       "remainingAction": "new-bio-publicly-rechecked-2026-09-14; prior-display-name-target-유호 · AI와 회사 만들기-pending-after-platform-date-limit; no-name-change-performed; new-first-post-preparation-only-no-publication",
-      "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17"
+      "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17",
+      "dailyLine": "yuhobuilds"
     },
     "synkbrief-youtube": {
       "brand": "SHIFT",
@@ -747,7 +779,8 @@
       "madeForKids": false,
       "connection": "needs-oauth",
       "profileStatus": "v6-full-bio-v4-banner-embroidered-avatar-and-three-links-publicly-rechecked-2026-09-20; no-profile-change-in-final-audit",
-      "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json"
+      "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
+      "dailyLine": "synkbrief"
     },
     "synkbrief-instagram": {
       "brand": "SHIFT",
@@ -757,7 +790,8 @@
       "connection": "needs-meta-app-and-media-host",
       "profileStatus": "bio-90-saved-and-full-public-profile-rechecked-2026-09-14; clickable-website-user-saved-and-agent-click-through-verified-2026-09-14; photo-name-unchanged; posts-remain-0",
       "websiteUrl": "https://synk.im/",
-      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate"
+      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
+      "dailyLine": "synkbrief"
     },
     "synkbrief-tiktok": {
       "brand": "SHIFT",
@@ -769,7 +803,8 @@
       "publisher": "direct-after-review",
       "connection": "needs-reviewed-app",
       "profileStatus": "owner-login-confirmed-and-bio-57-saved-profile-updated-toast-then-full-public-heading-reloaded-exact-match-confirmed-2026-09-14; name-photo-handle-unchanged; no-new-posts",
-      "contentStatus": "no-content-confirmed"
+      "contentStatus": "no-content-confirmed",
+      "dailyLine": "synkbrief"
     },
     "lab-facebook": {
       "brand": "LAB",
@@ -777,7 +812,8 @@
       "handle": "facebook.com/synkworld",
       "publisher": "direct-after-connection",
       "connection": "needs-meta-page-token",
-      "profileStatus": "bio-196-saved-and-full-MN-KR-public-visibility-rechecked-2026-09-14; cover-saved-directly-by-user-and-public-page-reloaded-top-PNG-full-logo-two-MN-lines-one-KR-vision-line-no-clipping-confirmed-2026-09-14; user-authorized-public-system-cover-update-one-observed-separate-from-zero-new-content-posts; native-language-review-incomplete"
+      "profileStatus": "bio-196-saved-and-full-MN-KR-public-visibility-rechecked-2026-09-14; cover-saved-directly-by-user-and-public-page-reloaded-top-PNG-full-logo-two-MN-lines-one-KR-vision-line-no-clipping-confirmed-2026-09-14; user-authorized-public-system-cover-update-one-observed-separate-from-zero-new-content-posts; native-language-review-incomplete",
+      "dailyLine": "LAB 몽골"
     },
     "yuhobuilds-threads": {
       "brand": "SHIFT",
@@ -785,7 +821,9 @@
       "handle": "@yuhobuilds",
       "publisher": "direct-after-connection",
       "connection": "needs-threads-app",
-      "profileStatus": "existing-yuhobuilds-login-via-correct-Instagram-session-confirmed-2026-09-14-without-extra-user-verification; bio-114-saved-and-full-public-profile-reloaded-rechecked-2026-09-14; name-photo-two-links-switches-unchanged; no-new-thread-or-account-created"
+      "profileStatus": "existing-yuhobuilds-login-via-correct-Instagram-session-confirmed-2026-09-14-without-extra-user-verification; bio-114-saved-and-full-public-profile-reloaded-rechecked-2026-09-14; name-photo-two-links-switches-unchanged; no-new-thread-or-account-created",
+      "dailyLine": "yuhobuilds",
+      "dailyBlocked": "ego에서 스레드 로그아웃(10-26 확인) — 유호님 로그인(@yuhobuilds 인스타 계정으로)"
     },
     "synkbrief-threads": {
       "brand": "SHIFT",
@@ -796,7 +834,9 @@
       "profileStatus": "not-created-confirmed-2026-09-12",
       "operationDecision": "defer-creation-2026-09-13; user-confirmed-overlap-based-deferral-2026-09-14",
       "decisionBasis": "no distinct recurring conversation or method series yet; overlaps existing yuhobuilds Threads; user agreed with this operating judgment; not a verified signup or login error",
-      "remainingAction": "reconsider when independent method-application questions and a recurring series exist; preserve existing personal accounts"
+      "remainingAction": "reconsider when independent method-application questions and a recurring series exist; preserve existing personal accounts",
+      "dailyLine": "synkbrief",
+      "dailyBlocked": "ego에서 스레드 로그아웃(10-26 확인) — 유호님 로그인(@synkbrief 인스타 계정으로)"
     },
     "yuhobuilds-linkedin": {
       "brand": "SHIFT",
@@ -812,7 +852,8 @@
       "profileStatus": "owner-login-and-yuhobuilds-profile-rechecked-2026-09-14; user-reported-photo-removed-and-cleanup-finished; photo-removal-not-independently-rechecked; account-closure-not-performed; closure-work-cancelled-by-user",
       "targetStatus": "exclude-from-operations-no-further-closure-or-migration-per-user-final-decision-2026-09-14",
       "archiveStatus": "downloaded-2026-09-14; Basic_LinkedInDataExport_09-13-2026.zip.zip; 6339-bytes; 18-entries; profile-positions-connections-messages-present; rich-media-URLs-only; SHA256-cd06a568fe5972f5f057f1ada6f9e7010a2fb4f1ceed95889c8535470115f0e0",
-      "remainingAction": "none-per-user-decision; do-not-resume-closure-password-creation-or-migration-without-new-request; use-unmet25-only-for-LinkedIn; other-platforms-unchanged"
+      "remainingAction": "none-per-user-decision; do-not-resume-closure-password-creation-or-migration-without-new-request; use-unmet25-only-for-LinkedIn; other-platforms-unchanged",
+      "dailyOff": "중복 계정 — 쓰지 않음"
     },
     "yuho-linkedin-primary": {
       "brand": "SHIFT",
@@ -831,7 +872,9 @@
       "experienceStatus": "existing-position-3006805923-linked-to-official-SYNK-company-143833958-2026-09-14; saved-toast-and-profile-company-link-confirmed; planner-title-and-2026-09-start-current-employment-preserved; network-update-notification-disabled-for-save",
       "websiteUrl": "https://synk.im/",
       "websiteStatus": "contact-info-company-website-added-and-saved-2026-09-14; reloaded-contact-card-shows-clickable-synk-im; actual-click-opened-https-synk-im-homepage; other-contact-fields-unchanged",
-      "remainingAction": "profile-preparation-complete; use-unmet25-only-for-LinkedIn-personal-profile-and-SYNK-company-page; duplicate-closure-and-migration-cancelled-by-user; new-content-publication-remains-separate"
+      "remainingAction": "profile-preparation-complete; use-unmet25-only-for-LinkedIn-personal-profile-and-SYNK-company-page; duplicate-closure-and-migration-cancelled-by-user; new-content-publication-remains-separate",
+      "dailyLine": "yuhobuilds",
+      "dailyBlocked": "ego에서 링크드인 로그아웃(10-26 확인) — 유호님 로그인"
     },
     "synk-linkedin-company": {
       "brand": "SYNK",
@@ -850,7 +893,8 @@
       "publicTagline": "저마다의 삶을 온전히 누리는 미래를 만듭니다.",
       "publicAbout": "한 사람을 깊이 이해한 개인화 시스템을 만듭니다.\n각각의 필요와 가능성을 이해하고, 그 이해에 기술의 진보를 더해 한 사람에게 필요한 도움을 정확하게 제공하는 시스템으로 끊임없이 발전시킵니다.\n\n저마다의 삶을 온전히 누리는 미래를 만듭니다.\nAI가 넓힌 가능성을 배움과 일, 문화로 연결합니다.\n\nSYNK LAB\n삶의 방향을 구체화하며, 배움과 경험의 최적화된 경로를 설계합니다.\n가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.\n\nSYNK SHIFT\n올바른 가치관과 탄탄한 역량이 기회를 만나도록, 개인과 조직을 연결합니다.\n기관 강의와 기업 컨설팅으로 현장의 역량과 일하는 방식을 발전시킵니다. 브랜딩과 광고로 기업의 가치를 알리고, 고객과 연결합니다. 유학부터 취업까지 교육기관과 기업을 연결해, 개인이 배운 것을 펼치고 역량을 발휘할 기회를 넓힙니다.\n개인과 조직의 성장이 서로의 기회가 되는 미래를 만듭니다.\n\nSYNK PULSE\n감정의 폭과 깊이를 넓히는 작품을 만듭니다.\n함께한 시간이, 각자의 이야기로 이어지는 문화를 만듭니다.",
       "targetStatus": "official-external-channel",
-      "remainingAction": "company-profile-preparation-complete-including-canonical-website; operate-through-unmet25; new-content-publication-is-separate"
+      "remainingAction": "company-profile-preparation-complete-including-canonical-website; operate-through-unmet25; new-content-publication-is-separate",
+      "dailyOff": "회사 페이지 — 개인 프로필 글을 공유하는 쪽(개인 로그인 뒤 함께)"
     },
     "lab-telegram": {
       "brand": "LAB",
@@ -859,7 +903,8 @@
       "chatId": "@synkmn",
       "publisher": "direct-after-connection",
       "connection": "needs-bot-admin",
-      "profileStatus": "bio-218-of-255-saved-and-full-four-line-new-public-page-rechecked-2026-09-14; channel-photo-name-personal-info-visibility-bot-permissions-links-unchanged; existing-copy-reused; native-language-review-incomplete; no-posts-sent"
+      "profileStatus": "bio-218-of-255-saved-and-full-four-line-new-public-page-rechecked-2026-09-14; channel-photo-name-personal-info-visibility-bot-permissions-links-unchanged; existing-copy-reused; native-language-review-incomplete; no-posts-sent",
+      "dailyLine": "LAB 몽골"
     },
     "yuhobuilds-telegram": {
       "brand": "SHIFT",
@@ -871,7 +916,8 @@
       "contentRole": "Yuho and SHIFT public contact route",
       "publisher": "manual-contact",
       "connection": "public-profile-confirmed-no-message-sent",
-      "profileStatus": "contact-bio-47-saved-and-full-public-profile-rechecked-2026-09-14; name-handle-phone-links-unchanged; no-messages-sent"
+      "profileStatus": "contact-bio-47-saved-and-full-public-profile-rechecked-2026-09-14; name-handle-phone-links-unchanged; no-messages-sent",
+      "dailyOff": "개인 연락처 프로필 — 채널이 아님"
     },
     "synklab-substack": {
       "brand": "SHIFT",
@@ -884,7 +930,8 @@
       "connection": "official-editor",
       "profileStatus": "publisher-admin-login-confirmed-2026-09-14; publication-hero-text-73-and-author-bio-saved-and-rechecked; counted-as-one-account; default-English-about-body-replaced-with-LAB-MN-KR-and-SHIFT-purpose-reading-and-contact-copy-saved-and-public-reloaded-2026-09-14; 390px-Chrome-emulation-no-horizontal-overflow-and-readable-sections-verified; publication-name-colors-sections-subscription-and-payment-settings-unchanged; no-posts-or-mails-sent",
       "aboutUrl": "https://synklab.substack.com/about",
-      "aboutSource": "docs/마케팅/전사새출발_20260914/Substack_About.md"
+      "aboutSource": "docs/마케팅/전사새출발_20260914/Substack_About.md",
+      "dailyOff": "뉴스레터 — 올리면 구독자에게 메일이 나가 매일 판과 맞지 않음"
     },
     "synk-instagram": {
       "brand": "SYNK",
@@ -895,7 +942,8 @@
       "connection": "account-not-confirmed",
       "operationDecision": "user-will-create-or-prepare-synk-hq-and-notify-2026-09-14; agent-must-not-create-or-convert-existing-account-now",
       "decisionBasis": "existing approved monthly completed-work showcase; distinct from personal building-process channels",
-      "remainingAction": "wait-for-user-report-of-synk-hq-preparation-then-verify-handle-and-owner; availability-check-passed-2026-09-14-but-not-reserved; preserve-existing-personal-accounts"
+      "remainingAction": "wait-for-user-report-of-synk-hq-preparation-then-verify-handle-and-owner; availability-check-passed-2026-09-14-but-not-reserved; preserve-existing-personal-accounts",
+      "dailyOff": "계정 확인 안 됨"
     },
     "shift-naverblog": {
       "brand": "SHIFT",
@@ -941,7 +989,8 @@
         "https://x.com/yuhobuilds",
         "https://www.behance.net/gallery/255583141/-AI-SYNK-"
       ],
-      "remainingAction": "mobile-public-view-390px-Chrome-emulation-verified-2026-09-14-title-portrait-bio-and-existing-post-readable-no-horizontal-overflow; mobile-background-remains-existing-grey-cover-distinct-from-PC-new-cover; current-browser-session-not-blog-owner-so-mobile-cover-not-edited; no separate profile-link fields were exposed in the basic-info screen"
+      "remainingAction": "mobile-public-view-390px-Chrome-emulation-verified-2026-09-14-title-portrait-bio-and-existing-post-readable-no-horizontal-overflow; mobile-background-remains-existing-grey-cover-distinct-from-PC-new-cover; current-browser-session-not-blog-owner-so-mobile-cover-not-edited; no separate profile-link fields were exposed in the basic-info screen",
+      "dailyLine": "synkbrief"
     },
     "shift-kakao": {
       "brand": "SHIFT",
@@ -953,7 +1002,8 @@
       "publisher": "manual-assisted",
       "editorUrl": "https://center-pf.kakao.com/",
       "connection": "official-admin-center",
-      "profileStatus": "bio-41-of-55-saved-confirmation-and-full-public-channel-home-rechecked-2026-09-14; photo-contact-service-links-posts-unchanged; existing-basic-info-card-title-unchanged; no-independent-cover-control-shown"
+      "profileStatus": "bio-41-of-55-saved-confirmation-and-full-public-channel-home-rechecked-2026-09-14; photo-contact-service-links-posts-unchanged; existing-basic-info-card-title-unchanged; no-independent-cover-control-shown",
+      "dailyOff": "카카오 채널 — 메시지 발송은 돈이 들어 매일 판과 맞지 않음"
     },
     "shift-tistory": {
       "brand": "SHIFT",
@@ -963,7 +1013,8 @@
       "editorUrl": "https://yuhobuilds.tistory.com/manage/newpost",
       "connection": "official-editor",
       "profileStatus": "bio-114-saved-and-publicly-rechecked-2026-09-14; title-nickname-photo-unchanged; posts-remain-0; skin-slogan-two-fields-and-main-PC-cover-applied-earlier; existing-CSS-fit-rules-and-navigation-footer-SYNK-links-preserved; PC1440x540-and-mobile390x300-cover-full-logo-vision-business-copy-verified-2026-09-14-in-actual-390px-and-1440px-Chrome-emulated-viewports; no-horizontal-overflow; initial-blank-observation-resolved-on-followup-render-cause-unverified; followup-added-no-skin-change-or-upload; physical-phone-not-tested; cover-counted-once",
-      "mobileVerification": "docs/홍보물/새첫게시물_20260914/커버/qa/Tistory_모바일_검증.json"
+      "mobileVerification": "docs/홍보물/새첫게시물_20260914/커버/qa/Tistory_모바일_검증.json",
+      "dailyLine": "yuhobuilds"
     },
     "shift-pinterest": {
       "brand": "SHIFT",
@@ -974,7 +1025,8 @@
       "publicUrlEvidence": "공개 프로필에서 SYNK SHIFT·사용자 이름 synkshift·synk.im/shift 링크 확인; kr.pinterest.com/synkshift/로 지역 리디렉션",
       "publisher": "direct-after-approval",
       "connection": "needs-standard-api-access",
-      "profileStatus": "bio-128-and-cover-1600x900-saved-and-publicly-rechecked-2026-09-14; actual-crop-logo-vision-support-copy-not-clipped-and-public-reload-screenshot-full-copy-confirmed; cover-sha256-89658dfc4d5fed95e375702432cbe70b603c8ade95bbdcf8401a7d4cd2b27e95; file-access-block-resolved; no-pins-published"
+      "profileStatus": "bio-128-and-cover-1600x900-saved-and-publicly-rechecked-2026-09-14; actual-crop-logo-vision-support-copy-not-clipped-and-public-reload-screenshot-full-copy-confirmed; cover-sha256-89658dfc4d5fed95e375702432cbe70b603c8ade95bbdcf8401a7d4cd2b27e95; file-access-block-resolved; no-pins-published",
+      "dailyOff": "핀터레스트 — API 승인 전, 나중"
     },
     "yuhobuilds-x": {
       "brand": "SHIFT",
@@ -986,7 +1038,9 @@
       "connection": "account-confirmed-no-api",
       "profileStatus": "bio-114-and-banner-1500x500-saved-and-publicly-rechecked-2026-09-14; existing-one-post-preserved",
       "contentStatus": "first-text-post-published",
-      "firstPostUrl": "https://x.com/yuhobuilds/status/2098402542854275312"
+      "firstPostUrl": "https://x.com/yuhobuilds/status/2098402542854275312",
+      "dailyLine": "yuhobuilds",
+      "dailyBlocked": "ego에서 X 로그아웃(10-26 확인) — 유호님 로그인"
     },
     "yuhobuilds-behance": {
       "brand": "SHIFT",
@@ -998,7 +1052,8 @@
       "connection": "account-confirmed-no-api",
       "profileStatus": "bio-128-and-revised-cover-3200x410-saved-and-publicly-rechecked-2026-09-14; original-cover-upload-cancelled-after-crop-defect; existing-one-project-preserved",
       "contentStatus": "first-project-published",
-      "firstProjectUrl": "https://www.behance.net/gallery/255583141/-AI-SYNK-"
+      "firstProjectUrl": "https://www.behance.net/gallery/255583141/-AI-SYNK-",
+      "dailyOff": "포트폴리오 — 매일 판이 아님"
     },
     "yuhobuilds-naver-clip": {
       "brand": "SHIFT",
@@ -1020,7 +1075,9 @@
       "uploadPackage": null,
       "retiredUploadRecord": "docs/마케팅/전사새출발_20260914/구후보_폐기기록.md",
       "currentPreparation": "docs/마케팅/전사새출발_20260914/진행과검증.md",
-      "remainingAction": "new-bio-saved-and-publicly-rechecked-2026-09-14; new-first-post-preparation-only-no-publication; 2026-09-14-account-connect-UI-has-no-synkshift-blog-target-only-unrelated-MY-place-reviews; no-connection-made; official-linking-imports-content-and-cannot-be-unlinked-not-a-simple-external-URL; reconsider-only-if-correct-blog-and-intended-import-are-confirmed"
+      "remainingAction": "new-bio-saved-and-publicly-rechecked-2026-09-14; new-first-post-preparation-only-no-publication; 2026-09-14-account-connect-UI-has-no-synkshift-blog-target-only-unrelated-MY-place-reviews; no-connection-made; official-linking-imports-content-and-cannot-be-unlinked-not-a-simple-external-URL; reconsider-only-if-correct-blog-and-intended-import-are-confirmed",
+      "dailyLine": "yuhobuilds",
+      "dailyBlocked": "ego 로그인은 됨(10-26) — 웹에서 올리기·예약하는 길을 Claude가 확인 전"
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -1064,7 +1121,8 @@
         "nextCheckAt": "2026-10-19T00:21:36.342Z"
       },
       "publicBio": "Belajar bahasa Korea, langsung coba pakai! 🎮 synk.im/lab/",
-      "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z"
+      "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z",
+      "dailyOff": "나라별 LAB — 매일 판에 넣을지 유호님 답 전(추천: 11-07 2주 시험 판정 뒤 다시)"
     }
   }
 }

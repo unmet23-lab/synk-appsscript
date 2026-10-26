@@ -165,6 +165,25 @@ test('틱톡 판(10-26) — 캡션 4,000자 · DM 약속은 고칠 것, 짝 틱�
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
+test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것, 「빠진판」 · 「틱톡없음」 · 막힌 계정은 넘어가고, 짝 틱톡이 매일 판이면 ⑨는 말하지 않는다', () => {
+  const known = {
+    'lab-instagram': { platform: 'instagram', dailyLine: 'LAB 몽골' }, 'lab-facebook': { platform: 'facebook', dailyLine: 'LAB 몽골' },
+    'lab-tiktok': { platform: 'tiktok', dailyLine: 'LAB 몽골' }, 'lab-telegram': { platform: 'telegram', dailyLine: 'LAB 몽골' },
+    'lab-youtube': { platform: 'youtube', dailyLine: 'LAB 영어' },
+    'yuhobuilds-instagram': { platform: 'instagram', dailyLine: 'yuhobuilds' }, 'yuhobuilds-x': { platform: 'x', dailyLine: 'yuhobuilds', dailyBlocked: '로그인' },
+    'lab-us-youtube': { platform: 'youtube', dailyOff: '나라별' } };
+  const plates = (...accounts) => accounts.map((account) => ({ account, video: { path: 'v.mp4' }, texts: {} }));
+  const codes = (list, prep = {}) => 검사.dailyFindings(list, prep, known).map((f) => `${f.code}:${f.where}`);
+  assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook')), ['daily-plate:lab-tiktok', 'daily-plate:lab-telegram']);
+  assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook'), { 빠진판: { 'lab-tiktok': '여러 장 편', 'lab-telegram': '그날 다른 편' } }), []);
+  assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook', 'lab-telegram'), { 틱톡없음: '여러 장 편' }), [], '옛 「틱톡없음」도 받는다');
+  assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook'), { 빠진판: { 'lab-tiktok': ' ' } }), ['daily-plate:lab-tiktok', 'daily-plate:lab-telegram'], '빈 까닭은 까닭이 아니다');
+  assert.deepEqual(codes(plates('yuhobuilds-instagram')), [], '막힌 계정은 판이 없어도 된다');
+  assert.deepEqual(codes(plates('lab-youtube', 'lab-us-youtube')), [], '줄 하나에 계정 하나 · 매일 판 밖 계정은 줄을 만들지 않는다');
+  assert.deepEqual(검사.tiktokFindings(plates('lab-instagram'), {}, known).filter((f) => f.code === 'tiktok-plate'), [], '짝 틱톡이 매일 판이면 ⑩이 본다');
+  assert.equal(검사.tiktokFindings(plates('lab-instagram'), {}, {}).filter((f) => f.code === 'tiktok-plate').length, 1, '계정 표에 줄이 없으면 ⑨가 그대로 본다');
+});
+
 test('영상 이름표는 편 폴더 기준 — 워크트리에서 돌려 영상이 공용 작업본에 있어도 같다', () => {
   const repo = path.join(os.tmpdir(), 'wt'), main = path.join(os.tmpdir(), 'main');
   const bundle = { repo, mediaRoot: main, dir: path.join(repo, 'docs', '마케팅', 'LAB_시험') };

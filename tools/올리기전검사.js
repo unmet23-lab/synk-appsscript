@@ -18,6 +18,9 @@
  *   ⑧ 가져갈 프롬프트(10-22, yuhobuilds만) — 준비.json 「프롬프트」가 없으면 확인할 것, 있으면 synk.im/prompts 응답 200과 그 항목이 공개본에 있는지
  *   ⑨ 틱톡 판(10-26, 제작 절차 4) — 인스타 영상 판에 짝 틱톡 판이 없거나(「틱톡없음」에 까닭이 없을 때), 틱톡 판이 키워드 DM 인스타 판 ·
  *      고정 댓글 유튜브 판과 같은 영상이면(끝 말이 틱톡에 없는 길을 가리킬 수 있다) 확인할 것
+ *   ⑩ 매일 판(10-26) — 판 계정의 줄(sns-계정.json dailyLine)마다 그 줄의 (막힘 아닌) 계정 가운데 판이 없는 계정이면 확인할 것.
+ *      못 가는 판(여러 장 편의 틱톡 · 그날 이미 다른 편이 찬 계정)은 준비.json 「빠진판」: {"계정": "까닭"}에 적는다(「틱톡없음」도 받는다)
+ *   ⑪ 슬롯이 오늘이면 확인할 것 — 4일 앞(D+4)에 만드는 것이 기본(제작 절차 0). 같은 날 같은 계정의 두 편은 tools/예약큐.js가 본다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -317,13 +320,14 @@ function labelOf(bundle, file) {
 }
 
 // ⑨ 틱톡 판. 같은 말을 쓰는 틱톡 계정엔 같은 최종본을 올리되, 끝 말이 인스타 키워드 DM · 유튜브 고정 댓글을 가리키면 틱톡엔 그 길이 없다.
-function tiktokFindings(plates, prep) {
+// 짝 틱톡 계정이 매일 판 줄에 있으면 빠진 판은 ⑩이 본다(같은 말을 두 번 하지 않는다).
+function tiktokFindings(plates, prep, known = {}) {
   const out = [];
   const add = (code, where, message) => out.push({ level: LOOK, code, where, message });
   const accounts = new Set(plates.map((p) => p.account));
   for (const p of plates) {
     const pair = TIKTOK_PAIR[p.account];
-    if (!pair || !p.video || accounts.has(pair) || prep.틱톡없음) continue;
+    if (!pair || !p.video || accounts.has(pair) || prep.틱톡없음 || known[pair]?.dailyLine) continue;
     add('tiktok-plate', p.account, `짝 틱톡 판(${pair})이 없다 — 제작 절차 4 「틱톡 판」. 달지 않을 까닭이 있으면 준비.json 「틱톡없음」에 적는다`);
   }
   for (const t of plates.filter((p) => p.platform === 'tiktok' && p.video)) {
@@ -331,6 +335,22 @@ function tiktokFindings(plates, prep) {
       if (p === t || !p.video || p.video.path !== t.video.path) continue;
       if (p.platform === 'instagram' && p.keywordDm) add('tiktok-ending', t.account, `키워드 DM(「${p.keywordDm}」) 인스타 판과 같은 영상이다 — 끝 말이 DM을 약속하면 끝 말만 바꾼 틱톡판을 렌더한다`);
       if (p.platform === 'youtube' && p.texts.pinnedComment) add('tiktok-ending', t.account, '고정 댓글이 있는 유튜브 판과 같은 영상이다 — 끝 말이 고정 댓글을 가리키면 끝 말만 바꾼 틱톡판을 렌더한다');
+    }
+  }
+  return out;
+}
+
+// ⑩ 매일 판. 한 편은 그 줄의 모든 계정에 간다(유호님 10-26 「하루에 모든 계정에 하나씩」). 막힌 계정(dailyBlocked)은 빼고 본다.
+function dailyFindings(plates, prep, known = {}) {
+  const out = [];
+  const have = new Set(plates.map((p) => p.account));
+  const excused = prep.빠진판 && typeof prep.빠진판 === 'object' && !Array.isArray(prep.빠진판) ? prep.빠진판 : {};
+  const lines = [...new Set(plates.map((p) => known[p.account]?.dailyLine).filter(Boolean))];
+  for (const line of lines) {
+    for (const [key, a] of Object.entries(known)) {
+      if (a.dailyLine !== line || a.dailyBlocked || have.has(key) || String(excused[key] || '').trim()) continue;
+      if (a.platform === 'tiktok' && prep.틱톡없음) continue;
+      out.push({ level: LOOK, code: 'daily-plate', where: key, message: `매일 판 「${line}」 계정인데 판이 없다 — 판을 달거나, 못 가면 준비.json 「빠진판」에 {"${key}": "까닭"}` });
     }
   }
   return out;
@@ -395,7 +415,11 @@ async function run(dir, opts = {}) {
     if (!plate.cover && ['youtube', 'instagram', 'tiktok', 'xiaohongshu'].includes(plate.platform)) add(LOOK, 'cover', where, '표지 파일이 없다 — 첫 화면이 표지가 된다');
   }
 
-  findings.push(...tiktokFindings(plates, prep));
+  findings.push(...tiktokFindings(plates, prep, bundle.accounts));
+  findings.push(...dailyFindings(plates, prep, bundle.accounts));
+  if (slotOk && prep.슬롯 === kst().slice(0, 10) && ![...posted.values()].some((v) => DONE.has(v))) {
+    add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — 4일 앞(D+4)에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
+  }
 
   const fileSummaries = [];
   const ocrFindings = [];
@@ -494,4 +518,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, labelOf, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, labelOf, SAFE };
