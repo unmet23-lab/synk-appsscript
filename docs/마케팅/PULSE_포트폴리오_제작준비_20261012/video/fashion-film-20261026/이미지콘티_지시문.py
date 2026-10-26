@@ -261,6 +261,24 @@ J["C22"] = person("C22", f"Inside {HANOK}. Composition: a single large, bright e
                   "Backlit by the low sun through the window behind her, so her body is nearly a silhouette with a golden rim on her hair and coat edges; the front of the coat is in shadow; warm dust in the air.",
                   "Full shot; the first frame of a shot where the camera pulls back about 4% while drifting about 8% left and 7% down, rolling about 1.5 degrees.")
 
+# ── 10-27 09시 Fable 2차(답2.md) — 가방 쪽(옷 기준 O1: 모델의 오른쪽 어깨 = 화면 왼쪽)이 뒤집힌 21 끝 · 22, 허리띠 · 단추가 풀린 21 첫, 아직 밝은 4, 방향이 거울인 6
+BAG = "The small brown leather bag hangs from HER RIGHT shoulder, which is on the LEFT side of the picture as we face her; the coat is belted (belt tied at the waist) and buttoned."
+J["C21"] = person("C21", f"In {FIELD}, first frame of a walking shot, seen from the side as she walks to the right. Only the lower half of her body is in the frame: the top edge cuts across her hips at the tied belt knot — nothing above her waist is visible, no face. "
+                  "The buttoned coat hem, the wide cream trousers and her brown boots on the dirt path fill the left half; the camera is at ankle height, tilted so the horizon slopes about 8 degrees; a big pale sky fills the upper right with a sun flare at the upper left.",
+                  "Late-afternoon backlight, rim light on the coat, warm haze.", "Very low angle from the ground, walking alongside her; from here the camera rises about 30% of the frame height and moves about 11% closer.",
+                  extra="The coat is belted with the belt tied and buttoned all the way down, exactly as in the end frame of this shot.")
+J["C21e"] = person("C21e", f"In {FIELD}, end frame of the same walking shot: her full figure from the top of her head to mid-shin, walking to the right in side view, the belted, buttoned trench hem swinging, the sun behind her right shoulder with a lens flare.",
+                   "Late-afternoon backlight, rim light on the coat, warm haze.", "Low camera, full figure.",
+                   extra="She walks to the right, so we see her left side: the bag hangs from her right shoulder on her far side and is hidden behind her body. This is the end frame of the same shot that began on her belt and boots.")
+J["C22"] = person("C22", f"Inside {HANOK}. Composition: a single large, bright empty window opening in the crumbling clay wall, and she stands squarely in front of it so that her body blocks the middle of the window — "
+                  "the glowing window shows on both sides of her hips and legs and above her shoulders; she is centred at about 45% across, framed from her head to mid-thigh; the window occupies the lower-left-centre of the frame. " + BAG,
+                  "Strong backlight from the low sun through the window behind her: her body, face and the front of the coat are nearly a dark silhouette, only a golden rim on her hair and coat edges; warm dust in the air.",
+                  "Full shot; the first frame of a shot where the camera pulls back about 4% while drifting about 8% left and 7% down, rolling about 1.5 degrees.")
+J["C04"] = thing("C04", "An extreme close-up of one dark-brown horn button sewn on the ivory gabardine — the cross stitches of thread visible, the button filling most of the frame.",
+                 "Very low-key, like a dim room at night: almost the whole frame is deep shadow, the ivory cloth reads dark grey-brown; one thin soft raking side light catches only the rim of the button and the thread.", "Macro lens, still.")
+J["C06"] = thing("C06", "A narrow edge of the small brown leather shoulder bag rises from the lower left toward the upper centre, leaning to the right like a stalk of grass, its stitching catching the light; the right half and the top of the frame are empty dark grey.",
+                 "Against a dark warm-grey backdrop, soft light from the left.", "Close-up, still.")
+
 (V / "ego").mkdir(parents=True, exist_ok=True)
 (V / "ego" / "jobs_p4.json").write_text(json.dumps(J, ensure_ascii=False, indent=1), encoding="utf-8")
 (HERE / "지시문").mkdir(exist_ok=True)
