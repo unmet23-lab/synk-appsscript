@@ -2,7 +2,7 @@
 #   python -X utf8 이미지콘티_지시문.py   → synk-vendor/…/콘티/p11/ego/jobs_p11.json(실행기 gen.mjs가 읽음) · 같은 폴더의 지시문/이미지콘티.json(저장소 사본)
 # 길은 6번 「연말 빈방」 · 「매진 임박」 v4(만족 사례 S31)와 같다: 원본 첫 프레임에서 사람 · 개를 지우고 크게 흐린 배치도 위,
 # 사람 자리는 검은 실루엣 · 개 자리는 짙은 회색 실루엣(이미지콘티_배치도.py)을 Image 1로 주고, 민재는 캐스팅북 사진 넷, 개는 기준 그림으로 굽는다.
-# 개는 컷마다 같은 개체여야 해서 기준 그림(D1 정면 앉음 · D2 옆 서 있음 · D3 조끼 + 선글라스)을 먼저 정하고 모든 개 컷에 넣는다.
+# 개는 컷마다 같은 개체여야 해서 기준 그림(D1 정면 앉음 · D2 옆 서 있음 · D3 조끼)을 먼저 정하고 모든 개 컷에 넣는다.
 # 빛 · 계절은 지시문에 쓰고 받은 색을 그대로 쓴다(장부 공통 원칙 3 — 후보정 없음).
 import json
 from pathlib import Path
@@ -160,6 +160,100 @@ shots["S09b"] = {"refs": [lay(9), ref("D3.jpg"), ref("D1.jpg")],
                  "with the cool, serious look of a model on a magazine cover; in the blue mirrored lenses a tiny dark reflection of a person "
                  "holding a phone. The room behind is soft and out of focus. Camera: at the dog's eye level, very close, slightly from below."
                  + DEADPAN + TAIL}
+shots["S04b"] = {"refs": shots["S04"]["refs"],
+                 "prompt": shots["S04"]["prompt"].replace("Camera: fixed on a tripod at chest height.",
+                 "Framing (important): a MEDIUM shot from close to the foot of the bed — the bed with its striped duvet fills the whole bottom "
+                 "third of the frame in the foreground; the man is on the RIGHT, seen from his thighs up, his head at about one quarter from the "
+                 "top and partly cut by the right edge, holding the open box up at chest height over the bed; the dog on the chair is on the "
+                 "LEFT at the same distance as the man, from its paws to its ear tips, filling the left third of the frame. Nothing of the room is "
+                 "visible above the man's head except a little wall. Camera: fixed on a tripod at the man's chest height, close.")}
+shots["S06b"] = {"refs": shots["S06"]["refs"],
+                 "prompt": shots["S06"]["prompt"].replace("grip the two navy grab handles on top of the jacket",
+                 "grip the TWO navy grab handles on top of the jacket — one hand on the handle near the shoulders, one hand on the handle near "
+                 "the hips, both handles clearly visible; the jacket is strapped around the dog's chest and back exactly like in Image 2 (not "
+                 "like a sweater or a bib)").replace("Camera: fixed at chair height.",
+                 "Framing: medium-wide — the whole chair and the dog standing on it in the center, the dog about one third of the frame height, "
+                 "the room soft behind. Camera: fixed at chair height.")}
+shots["S09c"] = {"refs": shots["S09b"]["refs"],
+                 "prompt": shots["S09b"]["prompt"].replace("only its head, neck and chest are in the frame — the tips of its big "
+                 "ears and the crest touch the top edge, the frame cuts across its chest and front legs at the bottom edge; the head fills "
+                 "the top half of the frame.", "the sitting dog fills the whole frame — the tips of its big ears and the crest touch the top "
+                 "edge, its front paws resting on the white bath mat touch the bottom edge, its body fills the width; the head fills the top "
+                 "40 percent of the frame, turned very slightly to the right of the frame.").replace("the navy grab handle visible on its back.",
+                 "the navy grab handle visible on its back, every strap buckled flat — nothing dangling.").replace("The room behind is soft and out of focus.",
+                 "The room behind is EMPTY and soft, out of focus: no other person anywhere in the room — nobody in the doorway, nobody "
+                 "behind the glass middle door; the only hint of a person is the tiny reflection in the lenses.")}
+# Fable 1차(10-26 20:2x) 반영 — 조끼 손잡이는 원본처럼 「등 가운데 나란히」(고른 8 · 10과 같은 꼴, 정지컷 S08을 조끼 참고로).
+HANDLES = ("the two navy grab handles sit side by side in the middle of the dog's back, a hand's width apart (as in the life-jacket "
+           "reference, which is only a reference for the jacket)")
+
+
+def fix(k, *pairs):
+    for old, new in pairs:
+        assert old in shots[k]["prompt"], (k, old)
+        shots[k]["prompt"] = shots[k]["prompt"].replace(old, new)
+
+
+fix("S04b", ("from its paws to its ear tips, filling the left third of the frame.",
+             "seen from the chest up — its legs and the chair seat are hidden behind the bed in the foreground, its head level with the "
+             "box."),
+    ("visible above the man's head except a little wall.",
+     "visible above the man's head except a little wall. The room is the same as in Image 4: the big window with the sheer curtain is "
+     "on the RIGHT wall beyond the head of the bed; the LEFT wall is plain white with the glass middle door at its far end; the chair "
+     "stands against the left wall."))
+shots["S06b"]["refs"] = shots["S06b"]["refs"] + [ref("S08_조끼참고.jpg")]
+fix("S06b", ("one hand on the handle near the shoulders, one hand on the handle near the hips, both handles clearly visible; the jacket "
+             "is strapped around the dog's chest and back exactly like in Image 2 (not like a sweater or a bib)",
+             HANDLES.replace("the life-jacket reference", "Image 4") + "; one hand grips each, both handles clearly visible; the jacket "
+             "lies over the dog's back like a saddle and is strapped around its chest (not like a sweater or a bib)"),
+    ("two hands of the man come in from the right edge of the frame",
+     "the man's two forearms come in from the right edge of the frame at about the dog's back height, not from above,"),
+    ("Framing: medium-wide — the whole chair and the dog standing on it in the center, the dog about one third of the frame height, "
+     "the room soft behind.",
+     "Framing: wide — the whole chair and the dog standing on it, the dog about one fifth of the frame height, the chair seat about "
+     "three quarters down the frame, the room (ceiling, far wall) filling the upper half."))
+fix("S09c", ("every strap buckled flat — nothing dangling.",
+             "every strap buckled flat — nothing dangling. The pink patch is LOW on the chest and mostly hidden under the jacket — the "
+             "throat and neck are plain slate grey (as in Image 3)."))
+shots["S03c"] = {"refs": shots["S03b"]["refs"], "prompt": shots["S03b"]["prompt"]}
+fix("S03c", ("runs AWAY from the camera", "runs AWAY from the camera, mid-trot with its legs in motion,"),
+    ("the two of them take a small step back in surprise, one raising a hand",
+     "the two of them lean back away from the dog and take a step back, startled — one with a hand raised in front of the chest as if "
+     "to stop it; NOT waving, NOT smiling"))
+shots["S05"]["refs"] = shots["S05"]["refs"] + [ref("S08_조끼참고.jpg")]
+fix("S05", ("is buckling the lemon-yellow life jacket from Image 4 around the dog's chest with both hands.",
+            "is putting the lemon-yellow life jacket from Image 4 on the dog: the jacket already lies over the dog's BACK like a saddle, "
+            + HANDLES.replace("the life-jacket reference", "Image 6") + ", and with both hands he is fastening the navy buckle strap "
+            "under the dog's chest."))
+shots["S10b"] = {"refs": shots["S10"]["refs"] + [ref("S08_조끼참고.jpg")], "prompt": shots["S10"]["prompt"]}
+fix("S10b", ("In front of the glass middle door, the man wears blue mirrored sunglasses and the dog wears matching " + SUN + " and its "
+             "lemon-yellow life jacket — a matching-sunglasses duo.",
+             "The man stands DIRECTLY in front of the glass middle door — the door fills the frame behind him and daylight through it "
+             "backlights him. He wears blue mirrored sunglasses; the dog wears its lemon-yellow life jacket and NO sunglasses (only the man "
+             "wears sunglasses here); " + HANDLES.replace("the life-jacket reference", "Image 5") + "."))
+# 08차(Fable 1차 P2) — 1 옆 3/4 · 수평선 위 1/5, 2 하늘 없음 · 걷는 중, 7 유리문 바로 앞 · 개를 내려다봄 · 시계 왼손목.
+shots["S01c"] = {"refs": shots["S01b"]["refs"], "prompt": shots["S01b"]["prompt"]}
+fix("S01c", ("seen in three-quarter view from its right side;",
+             "seen in three-quarter view from its right side — the dog stands SIDEWAYS to the camera, its body runs out of the LEFT edge "
+             "of the frame and only the head is turned toward the camera; its chest is not visible;"),
+    ("Camera: handheld, very close, at the dog's eye level.",
+     "Camera: handheld, very close, a little above the dog's eye level and tilted slightly down, so the sea horizon sits in the top "
+     "fifth of the frame and the sand fills everything below the head."))
+shots["S02b"] = {"refs": shots["S02"]["refs"], "prompt": shots["S02"]["prompt"]}
+fix("S02b", ("has just turned away and walks off toward the right edge of the frame across the sand,",
+             "has just turned away and walks off toward the right edge of the frame across the sand, caught mid-step with one front paw "
+             "lifted, a little left of the center of the frame,"),
+    ("Camera: handheld, slightly above the dog, close.",
+     "No sky — the top of the frame is the sea. Camera: handheld, slightly above the dog and tilted down, close."))
+shots["S07b"] = {"refs": shots["S07"]["refs"] + [ref("S08_조끼참고.jpg")], "prompt": shots["S07"]["prompt"]}
+fix("S07b", ("stands in front of the glass middle door at the end of the room, full body facing the camera,",
+             "stands DIRECTLY in front of the glass middle door — the door fills the frame behind him and daylight through it backlights "
+             "him — full body facing the camera, looking down at the dog,"),
+    ("by the two navy grab handles of its lemon-yellow life jacket like carrying a bag",
+     "by the two navy grab handles of its lemon-yellow life jacket like carrying a bag (" + HANDLES.replace("the life-jacket reference",
+     "Image 5") + ")"),
+    ("Backlight from the glass door.", "The black sports watch is on his LEFT wrist (the hand on the right side of the frame). "
+     "Backlight from the glass door."))
 for k, v in shots.items():
     v["ratio"] = "9:16"
 jobs.update(shots)
