@@ -48,7 +48,7 @@
    "refs": [
     "배치:S04"
    ],
-   "text": "{시작} Almost entirely black frame; a single thin welding rod enters from the upper left and one small bright white-blue arc point flares at the right on a thin steel plate, lighting only the plate amber — no open flames, no fire, only a little thin smoke. No person visible. {배치:1} {금지_글자} {질감}"
+   "text": "{시작} Almost entirely black frame; a single thin welding rod enters from the upper left and one small bright white-blue arc point flares just right of the frame center (about 55% across, a little below the middle) on a thin steel plate, lighting only the plate amber — no open flames, no fire, only a little thin smoke. No person visible. {배치:1} {금지_글자} {질감}"
   },
   {
    "id": "S05",
@@ -260,7 +260,7 @@
     "R1",
     "배치:S28"
    ],
-   "text": "{시작} {터빈} Straight frontal view inside the dark test cell: the turbine's round ivory intake with its ring of dark blades spinning (slight motion blur on the blades), centered and filling the middle third; rows of clearly white square acoustic panels on near-black walls on both sides, cool dim light. {기준R4:1} {기준R1:2} {배치:3} {금지_글자} {질감}"
+   "text": "{시작} {터빈} Closer than the previous wide test-cell shot (no worker in frame): straight frontal view of the turbine's round ivory intake, centered, the intake ring filling about half of the frame width and reaching near the top edge; the ring of dark blades is a soft circular motion blur, clearly spinning; rows of clearly white square acoustic panels on near-black walls on both sides, cool dim light. {기준R4:1} {기준R1:2} {배치:3} {금지_글자} {질감}"
   },
   {
    "id": "S29",
