@@ -203,6 +203,7 @@
 - 원인: 시작 그림을 지키려고 공통 줄에 「it keeps the same distance and never pushes in or zooms」와 「natural, nervous shake」만 썼고 컷 첫 문장도 「slight nervous shake」였다. 모델은 이 말을 거의 고정된 카메라로 읽는다.
 - 고침: 원본 컷마다 떨림 · 느린 흐름(팬 · 틸트 쪽) · 밀기 · 기울기를 재(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/homeshopping-horror-20261021/카메라재기_v5.py`) 세기와 방향으로 첫 문장을 쓴다 — 거의 고정(0.3% 아래) 「almost perfectly still」, 가볍게(0.3~0.8) 「small constant jitters」, 세게(0.9~3) 「strong constant shake … rolling a few degrees off level, a little motion blur on the jolts」, 격하게(3.5 넘음) 「violently shaking … lurches and swings, pushes in, tilts as much as 10 to 15 degrees off level, heavy motion blur on every jolt」. 공통에는 「real handheld camera held by an operator right next to the actors; it moves exactly as described above, never with a smooth gimbal, dolly or drone glide」. 휙 돌기는 「right after the first frame it jolts in a quick whip-pan」처럼 첫 프레임 뒤로 둔다(첫 화면은 시작 그림 그대로라).
 - 다시 확인: 받은 클립을 같은 도구로 재 원본 떨림과 견준다 — 2.5에서는 아직 확인 전(10-26).
+- 10-26 밤(유호님 「원본이랑 카메라 기법도 완전히 똑같게」): 세기 · 방향만이 아니라 움직임마다 종류 · 크기 · 쪽 · 시작 · 멈춤 초 · 가감속을 숫자로 쓴다(`…/homeshopping-horror-20261021/카메라시간대_v5.py --지시문`). 화면 전체로 재면 클로즈업에서 사람 움직임이 섞여 떨림이 2~5배 크게 나오니 가장자리 띠(가운데 60%×60%를 뺀 곳)로 잰다(#7 1.0 → 0.2%, #22 7.1 → 2.7%). 어두운 컷은 사람 · 물건이 나타나며 선명도가 오르는 것을 번짐으로 잘못 잡으니, 카메라가 프레임마다 0.8% 넘게 움직일 때만 번짐으로 본다. 시작과 같은 구도의 끝 그림은 카메라를 멈추게 하므로(9번 세션) 얼굴이 안 나오는 컷은 끝 그림을 뺀다.
 
 ### 시간표와 대사가 지시문보다 늦게 온다
 - 증상: 결과의 실제 시간표가 지시문보다 약 0.7초 늦고, 대사는 0.4~1.4초 늦게 나오기도 한다.
