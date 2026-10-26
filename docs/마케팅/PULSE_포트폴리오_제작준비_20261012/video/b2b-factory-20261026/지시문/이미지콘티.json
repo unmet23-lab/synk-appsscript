@@ -24,7 +24,7 @@
     "준호x4",
     "배치:S01"
    ],
-   "text": "{시작} {준호_얼굴:4} Extreme close-up of his eyes and the bridge of his nose filling the frame (the top of his forehead and his mouth are cut off by the frame edges); he looks slightly down at a lit drafting table below the camera, and tiny reflections of glowing blue technical lines (circles and curves of a turbine cross-section) shine in his dark eyes. On the right a soft blurred white office light. {배치:5} Light: cool soft light from below and a warm rim from the side. {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} Extreme close-up of his eyes and the bridge of his nose filling the frame (the top of his forehead and his mouth are cut off by the frame edges); he looks slightly down at a lit drafting table below the camera, a strong cool blue glow from the lit drafting table below lights his lower face and eyes, and clear blue line reflections of a turbine cross-section (circles and curves) fill both irises. Only a few faint freckles as in the reference photos, otherwise clean skin. On the right a soft blurred white office light. {배치:5} Light: cool soft light from below and a warm rim from the side. {금지_글자} {질감}"
   },
   {
    "id": "S02",
@@ -32,7 +32,7 @@
    "refs": [
     "배치:S02"
    ],
-   "text": "{시작} Extreme close-up of a large blue technical drawing lying on a dark drafting table: fine white and light-blue lines of a gas turbine cross-section — concentric circles, blade curves and bolt circles — with no writing and no numbers; the edge of the sheet and a steel ruler on the lower right. Very shallow focus. {배치:1} Light: dark room, the sheet lit softly from above. {금지_글자} {질감}"
+   "text": "{시작} Extreme close-up on a dark drafting table, much closer than a whole drawing: only a few fine white and light-blue concentric curves and two or three straight lines of a turbine cross-section fill the frame, the rest soft and out of focus; the edge of the sheet and a steel ruler on the lower right; absolutely no small marks that look like letters or numbers. {배치:1} Light: dark room, the sheet lit softly from above. {금지_글자} {질감}"
   },
   {
    "id": "S03",
@@ -40,7 +40,7 @@
    "refs": [
     "배치:S03"
    ],
-   "text": "{시작} A dark factory floor, camera low and close: hundreds of bright orange grinding sparks fly in from the upper left and bounce across the dark concrete floor, glowing streaks and small sparks, a dim warm glow in the background. No person visible. {배치:1} {금지_글자} {질감}"
+   "text": "{시작} A dark factory floor, camera low and close: a small cluster of bright orange grinding sparks bounces across the dark concrete in the lower left of the frame, a few streaks flying from the upper left; the background is almost black. No person visible. {배치:1} Light: very dark frame overall, most of the picture near black, only one small warm practical light on the subject — match the darkness of the layout guide. {금지_글자} {질감}"
   },
   {
    "id": "S04",
@@ -48,7 +48,7 @@
    "refs": [
     "배치:S04"
    ],
-   "text": "{시작} Close-up of a thick steel plate on a welding table: a welding rod comes in from the upper left, and a bright white-orange welding arc flares at the right, lighting the plate and the air amber, white smoke rising. No person visible. {배치:1} Light: hot amber light from the arc, deep shadows around. {금지_글자} {질감}"
+   "text": "{시작} Almost entirely black frame; a single thin welding rod enters from the upper left and one small bright white-blue arc point flares at the right on a thin steel plate, lighting only the plate amber — no open flames, no fire, only a little thin smoke. No person visible. {배치:1} {금지_글자} {질감}"
   },
   {
    "id": "S05",
@@ -72,25 +72,23 @@
    "refs": [
     "배치:S07"
    ],
-   "text": "{시작} {터빈} Close-up inside the turbine's dense web of metal pipes, brackets and wiring: two hands in black work gloves tighten a fitting among the pipes in the lower middle; on the right edge the blurred shoulder and back of the worker's head (no face). {작업자} {배치:1} Light: dim warm work light glinting on the pipes. {금지_글자} {질감}"
+   "text": "{시작} {터빈} Close-up inside the turbine's dense web of metal pipes, brackets and wiring: two hands in black work gloves hold a wrench still on a fitting among the pipes in the lower middle; on the right edge the blurred shoulder and back of the worker's head (no face). {작업자} {배치:1} Light: very dark frame overall, most of the picture near black, only one small warm practical light on the subject — match the darkness of the layout guide. {금지_글자} {질감}"
   },
   {
    "id": "S08",
    "who": "작업자",
    "refs": [
-    "R2",
     "배치:S08"
    ],
-   "text": "{시작} Straight frontal view of a huge bare compressor blade ring standing upright on a stand, filling the whole frame like a giant circle of radiating silver blades; through the open center of the ring, far behind, one worker stands small as a dark back-lit silhouette (no face), and beyond him a wide factory window shows green trees. {기준R2:1} {작업자} {배치:2} Light: cool white factory light from behind. {금지_글자} {질감}"
+   "text": "{시작} Straight frontal view of a huge bare compressor blade ring standing upright on a stand, filling the whole frame like a giant circle of radiating blades — the same dark charcoal blades as the finished turbine's intake, bare, without casing; through the open center of the ring, far behind, one worker stands small as a dark back-lit silhouette (no face), and beyond him a wide factory window shows green trees. {작업자} {배치:1} Light: cool white factory light from behind, the blade ring mostly in shadow. {금지_글자} {질감}"
   },
   {
    "id": "S09",
    "who": "없음",
    "refs": [
-    "R2",
     "배치:S09"
    ],
-   "text": "{시작} Close-up of the center of the bare compressor blade ring: the dark machined central disc and the roots of dozens of silver blades radiating out around it, a thin yellow safety strap along the top edge, dark surroundings. {기준R2:1} {배치:2} {금지_글자} {질감}"
+   "text": "{시작} Close-up of the center of the bare compressor blade ring: the dark machined central disc and the roots of dozens of dark charcoal blades (the same blades as the finished turbine's intake) radiating out around it, a thin bright yellow safety strap running along the top edge of the frame. {배치:1} Light: very dark frame overall, most of the picture near black, only one small warm practical light on the subject — match the darkness of the layout guide. {금지_글자} {질감}"
   },
   {
    "id": "S10",
@@ -108,7 +106,7 @@
     "R1",
     "배치:S11"
    ],
-   "text": "{시작} {터빈} Very low camera under the curved belly of the turbine casing, which fills the top of the frame in dark shadow; in the lower left a worker crouches under the machine, seen from above so only his white safety helmet and shoulders show (no face); behind him the bright factory hall with work stands. {기준R1:1} {작업자} {배치:2} {금지_글자} {질감}"
+   "text": "{시작} {터빈} Camera very close and low under the dark belly of the casing: a worker crouches large in the lower left third, only the top of his white safety helmet and his shoulders visible (no face), filling about a third of the frame; the casing is a dark shadow across the top; the hall behind is dim and out of focus. {기준R1:1} {작업자} {배치:2} {금지_글자} {질감}"
   },
   {
    "id": "S12",
@@ -116,7 +114,7 @@
    "refs": [
     "배치:S12"
    ],
-   "text": "{시작} Medium shot in the factory: a worker in a dark work shirt stands at a work-station monitor in the middle, seen from behind over his shoulder (no face), the bright factory hall, workbenches and storage racks behind. {작업자} {배치:1} {금지_글자} {질감}"
+   "text": "{시작} Medium shot in the factory: a worker in a dark work shirt stands at a work-station monitor in the middle, seen from behind over his shoulder (no face), workbenches and storage racks behind in dim light. {작업자} {배치:1} Light: very dark frame overall, most of the picture near black, only one small warm practical light on the subject — match the darkness of the layout guide. {금지_글자} {질감}"
   },
   {
    "id": "S13",
@@ -180,7 +178,7 @@
     "R5",
     "배치:S19"
    ],
-   "text": "{시작} Close-up of the rear wheels and the dusty off-white mud flap of a heavy-haul trailer: in the middle of the mud flap a single yellow diamond-shaped sticker showing only a simple black baby-face pictogram, with no words at all; round red tail lights on the left, black tires on the right. Bright overcast daylight. {기준R5:1} {배치:2} {금지_글자} {질감}"
+   "text": "{시작} Close-up of the rear wheels and the dusty off-white mud flap of a heavy-haul trailer: in the middle of the mud flap a single yellow diamond-shaped sticker showing a clear simple black pictogram of a baby with a pacifier, unmistakably a baby, with no words at all; round red tail lights on the left, black tires on the right. Bright overcast daylight. {기준R5:1} {배치:2} {금지_글자} {질감}"
   },
   {
    "id": "S20",
@@ -225,7 +223,7 @@
     "R1",
     "배치:S24"
    ],
-   "text": "{시작} {터빈} Inside the dark test cell: a long tunnel lined with rows of small white square acoustic panels on dark walls, leading to the far end where the finished turbine faces the camera on its test stand; in the lower middle a worker stands with his back to the camera, small (no face). {기준R4:1} {기준R1:2} {작업자} {배치:3} Light: dim, warm-neutral work light near the machine. {금지_글자} {질감}"
+   "text": "{시작} {터빈} Inside the dark test cell: a long tunnel lined with rows of clearly white small square acoustic panels on near-black walls, leading to the far end where the finished turbine faces the camera on its test stand, large in the upper middle of the frame; in the lower middle a worker stands with his back to the camera (no face). {기준R4:1} {기준R1:2} {작업자} {배치:3} Light: dim and cool, only a little warm work light near the machine. {금지_글자} {질감}"
   },
   {
    "id": "S25",
@@ -243,7 +241,7 @@
     "R1",
     "배치:S26"
    ],
-   "text": "{시작} Control room: two monitors at the top show a live camera image of the turbine's round front with its dark blades and simple blue-green status graphics with no readable text; in the lower middle a hand in a dark sleeve pushes a black throttle lever on a console with small red and amber buttons. Dim blue light. {기준R1:1} {배치:2} {금지_글자} {질감}"
+   "text": "{시작} Control room in dim blue light: the right monitor shows the live test-cell camera view — the turbine's round dark intake facing the camera in the dark test cell with rows of white square acoustic panels (the same as the test-cell scene), not a bright hall; the left monitor shows only simple blue-green shapes and bars with no text at all; a hand in a dark sleeve enters from the lower right and rests on a black throttle lever on a console with small red and amber buttons. {기준R1:1} {배치:2} {금지_글자} {질감}"
   },
   {
    "id": "S27",
@@ -262,7 +260,7 @@
     "R1",
     "배치:S28"
    ],
-   "text": "{시작} {터빈} Straight frontal view inside the dark test cell: the turbine's round ivory intake with its ring of dark blades spinning (slight motion blur on the blades), centered and filling the middle third; rows of white square acoustic panels glowing on the dark walls on both sides. {기준R4:1} {기준R1:2} {배치:3} {금지_글자} {질감}"
+   "text": "{시작} {터빈} Straight frontal view inside the dark test cell: the turbine's round ivory intake with its ring of dark blades spinning (slight motion blur on the blades), centered and filling the middle third; rows of clearly white square acoustic panels on near-black walls on both sides, cool dim light. {기준R4:1} {기준R1:2} {배치:3} {금지_글자} {질감}"
   },
   {
    "id": "S29",
@@ -308,7 +306,7 @@
     "R6",
     "R1"
    ],
-   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk, a symmetrical frontal view toward a huge open roller door at the far end; through the door a peach-and-pink sunset sky over low hills; in the middle of the hall the ivory gas turbine is installed on its foundation, seen from behind and slightly low; the polished floor reflects the sunset. Camera at standing eye height, centered, wide lens. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
+   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk. Perfectly symmetrical: the camera stands on the center line of the hall at eye height; the finished ivory turbine (same as the reference) sits centered with its round dark intake facing the camera; directly behind it the huge open door is centered, framing a peach-and-pink sunset over low hills; the polished floor reflects the sunset. Do not show the machine from the side. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
   },
   {
    "id": "S34",
@@ -343,7 +341,7 @@
    "refs": [
     "R6"
    ],
-   "text": "{시작} High above at dusk, just below a layer of soft peach-and-pink clouds: high-voltage power lines and the top of a steel transmission tower pass close on the left side of the frame, the cables leading away toward a distant Korean city at the horizon where the first lights glow in clusters; a low sun near the horizon, warm light on the cloud undersides. {기준R6:1} {금지_글자} {질감}"
+   "text": "{시작} Camera high in the air among soft peach-and-pink dusk clouds — no ground-level plant, no chimneys, no river; only the top of one steel transmission tower and its cables pass very close on the left edge, large and slightly out of focus, and below on the right a Korean city spreads at medium distance with its first lights just coming on in clusters; the center and upper part of the frame are calm sky, kept empty for a title. {기준R6:1} {금지_글자} {질감}"
   }
  ]
 }
