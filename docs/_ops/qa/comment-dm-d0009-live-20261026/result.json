@@ -1,10 +1,18 @@
 {
-  "schema": "synk-comment-dm-live-qa/v1",
-  "status": "blocked_before_trial",
+  "schema": "synk-comment-dm-live-qa/v2",
+  "status": "passed",
   "campaign": "D0009",
   "post": "https://www.instagram.com/reel/De7LyoyCl0v/",
-  "checked_at": "2026-10-26T05:47:01.335Z",
-  "blocker": "required_test_account_not_logged_in_chrome",
+  "completed_at": "2026-10-26T06:24:55.478Z",
+  "scope": {
+    "comments_submitted": 1,
+    "dm_sent": 1,
+    "public_replies_sent": 1,
+    "second_comment_submitted": false,
+    "redeploys": 0,
+    "history_mutations": 0,
+    "other_campaign_mutations": 0
+  },
   "preflight": {
     "approved_fields_exact": true,
     "runtime": {
@@ -12,32 +20,94 @@
       "status": "ACTIVE",
       "updated_at": 1792496198715
     },
-    "runtime_at_registration": "not_independently_recorded",
     "campaign_pending_queue": 0,
     "own_pending_queue": 0,
     "own_pending_sends": 0,
-    "target_sessions": 0,
-    "overlapping_trial_absent": "not_fully_verified"
+    "target_sessions_before": 0,
+    "overlap_check": "no_active_trial_process_or_inflight_own_work",
+    "runtime_registration_comparison": "inferred_unchanged_from_runtime_updated_at_before_registration"
   },
-  "protection": {
-    "linked_optouts": 9,
-    "optouts_sha256": "8e669284ac5a163e76f1f49f3ccd1471d161629613ce8ca4337b59695fc047f5",
-    "before_after_exact": true,
-    "temporarily_removed": 0,
-    "restoration": "not_needed_no_write",
-    "watchdog_started": false
-  },
-  "actions": {
-    "comments_submitted": 0,
-    "remote_writes": 0,
-    "dm_send_triggered": 0,
-    "redeploys": 0
+  "delivery": {
+    "confirmed_at": "2026-10-26T06:19:14.982Z",
+    "sends": [
+      {
+        "stage": "opening",
+        "state": "sent",
+        "http_status": 200
+      },
+      {
+        "stage": "public_reply",
+        "state": "sent",
+        "http_status": 200
+      }
+    ],
+    "queue_done": 2,
+    "pending_payloads": 0
   },
   "actual_receipt": {
-    "dm_body": null,
-    "link_open": null,
-    "public_reply": null,
-    "reason": "trial_not_started"
+    "body_verified_at": "2026-10-26T06:20:44.329Z",
+    "body_exact": true,
+    "body_sha256": "b4d278fc44b6d53d1a73a860f67958f6a6b06cba46ce038a4eb4a80ff6adbb29",
+    "link_opened_at": "2026-10-26T06:21:07.051Z",
+    "link_url": "https://synk.im/prompts/",
+    "public_reply_verified_at": "2026-10-26T06:21:35.291Z",
+    "public_reply_exact": true,
+    "public_reply_sha256": "bd4620168c8bd044294f5dbd900d2135548cbdbd47b60f1ab8d7d837fab27c90",
+    "link_page_title": "프롬프트 모음 · 영상에서 푼 문제를 그대로 | SYNK",
+    "link_page_loaded": true
   },
-  "next": "Chrome에서 시험 계정 전환을 마친 뒤 사전 확인·백업·복구 감시부터 다시 시작한다."
+  "protection": {
+    "temporarily_removed": 3,
+    "kinds": [
+      "commenter",
+      "sender",
+      "username"
+    ],
+    "source_blocks_removed": 0,
+    "restored_at": "2026-10-26T06:19:15.568Z",
+    "original_values_exact": true,
+    "all_account_suppressions_count": 17,
+    "all_account_suppressions_exact": true,
+    "all_account_suppressions_sha256": "4a0f63184a3c9da2e64042ce1a30ecbb3ae023748b01b1e02026c0e7ac1c5952",
+    "old_scoped_history_exact": true,
+    "watchdog_finished": true
+  },
+  "verification": {
+    "synthetic": {
+      "passed": 7,
+      "failed": 0,
+      "network_disabled": true
+    },
+    "GPT": "self_review",
+    "Claude": {
+      "initial_p0_p1": 0,
+      "delta_p0_p1": 0,
+      "followups": "P2 diagnostic suggestions retained for future tools"
+    },
+    "tool_sha256": "efb31afb6124603343a3dfeda8d1a2fca45cf45e36083ccd1244fd8f5b236d66"
+  },
+  "earlier_pause": {
+    "at": "2026-10-26T05:47:01.335Z",
+    "reason": "browser_test_account_not_confirmed",
+    "comments": 0,
+    "remote_writes": 0,
+    "resolved": "ego_reload_confirmed_test_account"
+  },
+  "evidence": {
+    "private_root": ".tmp/comment-dm-d0009-live-20261026/run-27544b21-a37e-465a-9ff3-111b862bc7cc/",
+    "files": [
+      "snapshot.json",
+      "comment-intent.json",
+      "received-dm-ui.txt",
+      "received-dm.png",
+      "ui-proof.json",
+      "prompts-from-received-dm.png",
+      "public-reply-ui.txt",
+      "public-reply.png",
+      "delivery.json",
+      "restored.json"
+    ],
+    "privacy": "Recipient rows, inbox screenshots, provider identifiers and credentials are excluded from this public result."
+  },
+  "remaining_required_actions": []
 }
