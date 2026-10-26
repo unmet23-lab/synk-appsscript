@@ -1,6 +1,6 @@
 # 9번 Veo 첫 시험(2026-10-26) — 원본 그 컷 | 우리 Veo 판을 나란히 놓은 비교 영상과 0.5초 간격 프레임 판.
 # 우리 판(4초)이 원본 컷보다 짧으면 마지막 프레임을 늘려 길이를 맞춘다(비교용 — 편집본에는 쓰지 않음). 원본 프레임이 들어가므로 git 밖에만 쓴다.
-#   python -X utf8 영상_비교판.py [S02 S08 S11]   → 콘티/p9/영상/veo시험/비교_<컷>.mp4 · 비교_<컷>_프레임.jpg · 비교_셋.mp4
+#   python -X utf8 영상_비교판.py [S02 S08 S11 | S02v2 …]   → 콘티/p9/영상/veo시험/비교_<컷>.mp4 · 비교_<컷>_프레임.jpg · 비교_셋(_v2).mp4
 import os
 import subprocess
 import sys
@@ -33,7 +33,7 @@ def label(text):
 
 
 def one(cut):
-    t0, t1 = CUTS[cut]
+    t0, t1 = CUTS[cut[:3]]   # S02v2 같은 다시 낸 판도 원본 컷 시각은 앞 세 글자로
     dur = t1 - t0
     ours = os.path.join(OUT, f"{cut}_a.mp4")
     if not os.path.exists(ours):
@@ -71,8 +71,10 @@ if __name__ == "__main__":
     if len(done) > 1:
         lst = os.path.join(OUT, "_비교목록.txt")
         open(lst, "w", encoding="utf-8").write("\n".join(f"file '{p}'" for p in done).replace("\\", "/"))
-        ff("-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", os.path.join(OUT, "비교_셋.mp4"))
-        print(os.path.join(OUT, "비교_셋.mp4"))
+        tail = "".join(sorted({c[3:] for c in (sys.argv[1:] or list(CUTS))}))
+        name = "비교_셋" + (f"_{tail}" if tail else "") + ".mp4"
+        ff("-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", os.path.join(OUT, name))
+        print(os.path.join(OUT, name))
     for f in os.listdir(OUT):
         if f.startswith("_글자_"):
             os.remove(os.path.join(OUT, f))
