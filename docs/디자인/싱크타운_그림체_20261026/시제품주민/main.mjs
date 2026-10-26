@@ -69,13 +69,6 @@ for (const o of OCCLUDERS) {
 
 // ── characters ──
 const blob = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 1, 32, 32, 31); g.addColorStop(0, 'rgba(40,28,20,.6)'); g.addColorStop(1, 'rgba(40,28,20,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
-function feltUp(root) {
-  // At diorama size the fitting-room cloth reads as clay: bigger fibres, a stronger nap. Only this page changes.
-  const seen = new Set();
-  root.traverse(o => { for (const m of [o.material].flat()) { if (!m || seen.has(m) || !m.isMeshPhysicalMaterial) continue; seen.add(m);
-    if (m.normalMap) { for (const k of ['map', 'normalMap', 'roughnessMap', 'aoMap']) if (m[k]) { m[k] = m[k].clone(); m[k].repeat.multiplyScalar(.5); m[k].needsUpdate = true; } m.normalScale.multiplyScalar(1.7); }
-    if (m.sheen !== undefined) { m.sheen = Math.max(m.sheen, .8); m.sheenRoughness = .7; } m.needsUpdate = true; } });
-}
 function makeCharacter({ name, content, height, refY, at, yaw = 0, update = () => {}, footDrop = 0, seatBase = 0 }) {
   const place = new THREE.Group(), tilt = new THREE.Group(), turn = new THREE.Group(), squash = new THREE.Group();
   tilt.rotation.x = ELEV; place.add(tilt); tilt.add(turn); turn.add(squash); squash.add(content);
@@ -144,13 +137,13 @@ function propHolder(content, at, unitPx, base) {
 let owner, shopOwner, researcher, mongle, gardenTable, tray, served = null, weather = 'day', busy = false;
 async function build() {
   const shared = {};
-  const ownerBody = new THREE.Group(); const o = makeTownResident(ownerBody, shared, { id: 'cafe-owner', mobile: phone }); feltUp(ownerBody);
+  const ownerBody = new THREE.Group(); const o = makeTownResident(ownerBody, shared, { id: 'cafe-owner', mobile: phone, felt: 'diorama' });
   owner = makeCharacter({ name: 'owner', content: ownerBody, height: 192, refY: 600, at: COUNTER, yaw: OWNER_WORK_YAW, update: (now, dt, c) => o.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, ...c.pose }) });
   owner.label = '찻집 주인'; owner.height = k => o.height * k * 1.05;
-  const shopBody = new THREE.Group(); const s = makeTownResident(shopBody, shared, { id: 'workshop-owner', mobile: phone }); feltUp(shopBody);
+  const shopBody = new THREE.Group(); const s = makeTownResident(shopBody, shared, { id: 'workshop-owner', mobile: phone, felt: 'diorama' });
   shopOwner = makeCharacter({ name: 'shop', content: shopBody, height: 180, refY: 600, at: WORKBENCH, yaw: Math.PI, update: (now, dt, c) => s.update({ now, deltaSeconds: dt, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, working: true, ...c.pose }) });
   shopOwner.label = '공방 주인'; shopOwner.height = k => s.height * k * 1.05;
-  const resBody = new THREE.Group(); const r = makeTownResident(resBody, shared, { id: 'researcher', mobile: phone }); feltUp(resBody);
+  const resBody = new THREE.Group(); const r = makeTownResident(resBody, shared, { id: 'researcher', mobile: phone, felt: 'diorama' });
   researcher = makeCharacter({ name: 'researcher', content: resBody, height: 160, refY: 600, at: RESEARCHER_IN[0], yaw: -1.4, seatBase: 641, update: (now, dt, c) => r.update({ now, walkPhase: c.phase, gaitBlend: c.gait, walking: c.gait > .05, seated: c.seated, ...c.pose }) });
   researcher.label = '연구원'; researcher.height = k => r.height * k * 1.05; researcher.active = false;
   const av = await createMongleAvatar({ mobile: phone, anisotropy: 4 }); av.setOutfit({ body: '', neck: 'mongle-scarf-first-steps' });

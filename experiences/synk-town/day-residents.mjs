@@ -84,11 +84,26 @@ function standingHeight(body) {
   });
   return Math.max(0, bounds.max.y) * WORLD_SCALE;
 }
-const textileCache = new WeakMap();
-function residentTextiles(shared) {
-  if (textileCache.has(shared)) return textileCache.get(shared);
+// Diorama felt is opt-in. A photographed needle-felt set shows a resident at
+// roughly 150-200 px, where the fitting-room micro-weave vanishes and the cloth
+// reads as vinyl: this mode swaps the weave for coarser matted wool, deepens the
+// nap, felts the hard trims, thickens the running stitch and adds a short fibre halo. Without
+// it every material, mesh and draw call stays exactly as before.
+const DIORAMA = Object.freeze({ nap: 2.4, napMax: 1.5, stitch: 1.8, thread: .0105, fibres: 7000, phoneFibres: 3600, minFibres: 12 });
+const napFor = (c, value) => c.felt === 'diorama' ? Math.min(DIORAMA.napMax, value * DIORAMA.nap) : value;
+const textileCache = new WeakMap(), dioramaTextileCache = new WeakMap();
+function residentTextiles(shared, diorama = false) {
+  const cache = diorama ? dioramaTextileCache : textileCache;
+  if (cache.has(shared)) return cache.get(shared);
   const kit = createAvatarTextiles({ anisotropy: 4 });
-  const sets = {
+  // Needle felt has no weave: in the diorama the woven cotton becomes the same
+  // matted wool at a coarser scale, and only knitwear stays knitted.
+  const sets = diorama ? {
+    wool: kit.fabric('wool', [1.15, .9]),
+    skin: kit.fabric('wool', [1.5, 1.1]),
+    cotton: kit.fabric('wool', [.8, .8]),
+    knit: kit.fabric('knit', [1.1, .72]),
+  } : {
     wool: kit.fabric('wool', [2.3, 1.8]),
     skin: kit.fabric('cotton', [2.4, 1.6]),
     cotton: kit.fabric('cotton', [1.4, 1.4]),
@@ -99,31 +114,43 @@ function residentTextiles(shared) {
   // shared within one scene and the scene's material traversal owns disposal.
   const used = new Set(Object.values(sets).flatMap(set => Object.values(set)));
   for (const texture of kit.textures) if (!used.has(texture)) texture.dispose();
-  textileCache.set(shared, sets); return sets;
+  cache.set(shared, sets); return sets;
 }
 function materialsFor(shared, c) {
-  const textiles = residentTextiles(shared);
+  const diorama = c.felt === 'diorama', textiles = residentTextiles(shared, diorama);
+  const nap = value => napFor(c, value);
   const cloth = (color, kind = 'cotton') => new THREE.MeshPhysicalMaterial({
-    color, ...textiles[kind], normalScale: new THREE.Vector2(kind === 'knit' ? .55 : .40, kind === 'knit' ? .55 : .40),
-    roughness: .97, aoMapIntensity: .35, sheen: kind === 'wool' ? .72 : .52, sheenRoughness: .94,
+    color, ...textiles[kind], normalScale: new THREE.Vector2(nap(kind === 'knit' ? .55 : .40), nap(kind === 'knit' ? .55 : .40)),
+    roughness: .97, aoMapIntensity: diorama ? .6 : .35, sheen: diorama ? (kind === 'wool' ? .92 : .82) : kind === 'wool' ? .72 : .52, sheenRoughness: diorama ? .7 : .94,
     sheenColor: new THREE.Color(color).lerp(new THREE.Color('#fff2df'), .35),
   });
-  const plain = (color, roughness = .82) => new THREE.MeshStandardMaterial({ color, roughness });
+  const hard = (color, roughness = .82) => new THREE.MeshStandardMaterial({ color, roughness });
+  // A felted doll's shoes, lips, soles and bag are wool too; only the bead
+  // eyes, their glint, glasses and metal keep a hard surface.
+  const plain = diorama ? color => cloth(color, 'wool') : hard;
   const knitted = ['knit', 'cardigan'].includes(c.costume);
   const coat = cloth(c.coat || '#b7b3d5', knitted ? 'knit' : 'cotton');
-  if (c.kind === 'human') { coat.normalScale.setScalar(knitted ? .48 : .32); coat.sheen = knitted ? .62 : .40; coat.roughness = .94; }
-  return {
-    skin: new THREE.MeshPhysicalMaterial({ color: c.skin || '#b8b2df', ...textiles.skin, normalScale: new THREE.Vector2(.19,.19), roughness: .94, sheen: .33, sheenRoughness: .92, sheenColor: '#ffe6d0' }),
+  if (c.kind === 'human') { coat.normalScale.setScalar(nap(knitted ? .48 : .32)); coat.sheen = diorama ? .82 : knitted ? .62 : .40; coat.roughness = .94; }
+  const m = {
+    skin: new THREE.MeshPhysicalMaterial({ color: c.skin || '#b8b2df', ...textiles.skin, normalScale: new THREE.Vector2(diorama ? .5 : .19, diorama ? .5 : .19), roughness: .94, sheen: diorama ? .6 : .33, sheenRoughness: diorama ? .8 : .92, sheenColor: '#ffe6d0' }),
     hair: cloth(c.hair || '#bbb6dd', 'wool'), hairLight: cloth(new THREE.Color(c.hair || '#bbb6dd').lerp(new THREE.Color('#eee1c9'), .09), 'wool'),
     coat, shirt: cloth(c.shirt || '#f3e5cf'), trousers: cloth(c.trousers || '#716283'),
     rib: cloth(c.coat || '#b7b3d5', 'knit'), wool: cloth('#b8b5da', 'wool'), moustache: cloth('#eddfc9', 'wool'),
     shoe: plain(c.shoes || '#6c4d3e', .72), sole: plain('#352e2b'), thread: cloth('#d6c2a4'),
-    eye: new THREE.MeshPhysicalMaterial({color:'#171516', roughness:.12, clearcoat:1, clearcoatRoughness:.08}), glint: shared.glint || plain('#fff9e8', .3),
+    eye: new THREE.MeshPhysicalMaterial({color:'#171516', roughness:.12, clearcoat:1, clearcoatRoughness:.08}), glint: shared.glint || hard('#fff9e8', .3),
     socket: cloth(new THREE.Color(c.skin || '#b8b5da').multiplyScalar(.86)),
     lip: plain('#956354'), blush: cloth('#c99282'), metal: new THREE.MeshStandardMaterial({ color: '#a78b51', roughness: .35, metalness: .7 }),
-    glassFrame: new THREE.MeshPhysicalMaterial({ color: '#292728', roughness: .26, metalness: .35, clearcoat: .5 }), paper: shared.paper || plain('#f3e4c9'), book: cloth(c.book || '#46625d'), leather: plain(c.bag || '#996f4d', .69),
+    glassFrame: new THREE.MeshPhysicalMaterial({ color: '#292728', roughness: .26, metalness: .35, clearcoat: .5 }), paper: shared.paper || hard('#f3e4c9'), book: cloth(c.book || '#46625d'), leather: plain(c.bag || '#996f4d', .69),
     trim: cloth(c.trim || TOWN_BRAND.butter), patch: cloth(TOWN_BRAND.lapis),
   };
+  if (diorama) {
+    // Halo density per material: hair and the professor's wool fuzz most, a
+    // felted face only lightly, and thread and the small facial felt not at all.
+    for (const key of ['hair', 'hairLight', 'wool', 'moustache']) m[key].userData.feltHalo = 1.25;
+    m.skin.userData.feltHalo = .25;
+    for (const key of ['thread', 'socket', 'blush', 'lip', 'trim']) m[key].userData.feltHalo = 0;
+  }
+  return m;
 }
 
 function paddedShell(profile, depth = 1, folds = 0, phase = 0, segments = 32) {
@@ -390,7 +417,7 @@ function makeProfessor(parent, shared, c, mobile) {
   const controls = [[0, .025], [.49, .026], [.61, .105], [.67, .35], [.685, .69], [.655, 1.08], [.58, 1.50], [.43, 1.83], [.22, 2.025], [0, 2.10]];
   const profileCurve = new THREE.CatmullRomCurve3(controls.map(([r, y]) => new THREE.Vector3(r, y, 0)), false, 'centripetal');
   const profile = profileCurve.getPoints(mobile ? 64 : 104).map(p => [Math.max(0, p.x), Math.max(.025, p.y)]);
-  const material = m.wool; material.normalScale.set(.74,.74); material.sheen=.84; material.sheenColor.set('#efdded');
+  const material = m.wool; material.normalScale.setScalar(napFor(c, .74)); material.sheen=c.felt === 'diorama' ? .92 : .84; material.sheenColor.set('#efdded');
   put(rig, shell(profile, .79, mobile ? 36 : 56), material).name = 'professor-oval-felt-body';
   const face = group(rig, [0, 0, .085]), head = group(rig, [0, 1.37, .510]); const eyes = [];
   for (const side of [-1, 1]) {
@@ -400,7 +427,7 @@ function makeProfessor(parent, shared, c, mobile) {
   }
   glasses(face, .245, 1.38, .479, .207, m.glassFrame,.019);
   // Two cream moustache lobes. Deliberately no nose, mouth or eyebrows.
-  const moustacheMaterial = m.moustache;moustacheMaterial.normalScale.set(.63,.63);
+  const moustacheMaterial = m.moustache;moustacheMaterial.normalScale.setScalar(napFor(c, .63));
   for (const side of [-1, 1]) {
     taperedTube(face, [[side * .024, 1.10, .458], [side * .17, 1.00, .496], [side * .32, 1.03, .441], [side * .43, 1.13, .383]], [.035, .105, .065, .002], moustacheMaterial, 28, 12);
   }
@@ -456,11 +483,95 @@ function makeProfessor(parent, shared, c, mobile) {
   return { body, update, head, headHeight: 1.37 * WORLD_SCALE, height: standingHeight(body), identity: body.userData.residentIdentity };
 }
 
-export function makeTownResident(parent, materials, { id, mobile = false } = {}) {
+function dioramaFelt(body, mobile, seed) {
+  // Runs after the height is measured, so the fibres never change the contract.
+  // Fibres are batched per cloth mesh and parented to it, so a halo bends with
+  // its own limb; their colour stays below the cloth value, never white confetti.
+  body.updateWorldMatrix(true, true);
+  const inverse = body.matrixWorld.clone().invert(), toBody = new THREE.Matrix4(), linear = new THREE.Matrix3();
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), d = new THREE.Vector3(), cloths = [], mottled = new Set();
+  // Needle felt is never one flat dye: a soft, cloudy unevenness of a few per
+  // cent, sized in body units so a scaled sphere hand and a long sleeve match.
+  // Every mesh of a felt material gets the colours (a stitch too), else it would draw black.
+  body.traverse(o => {
+    if (!o.isMesh || !o.material?.isMeshPhysicalMaterial || !o.material.normalMap) return;
+    o.material.vertexColors = true; if (mottled.has(o.geometry)) return; mottled.add(o.geometry);
+    toBody.multiplyMatrices(inverse, o.matrixWorld);
+    const position = o.geometry.attributes.position, colours = new Float32Array(position.count * 3), k = 14 * Math.cbrt(Math.abs(toBody.determinant()));
+    for (let i = 0; i < position.count; i++) {
+      const x = position.getX(i) * k, y = position.getY(i) * k, z = position.getZ(i) * k;
+      const v = Math.sin(x * 1.3 + Math.sin(y * 1.7 + z * .6) + seed) * Math.sin(y * 1.1 - z * 1.5 + 1.7) + .5 * Math.sin(z * 2.3 + x * 2.9 - y * .8);
+      colours.fill(.95 + .065 * v, i * 3, i * 3 + 3);
+    }
+    o.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3));
+  });
+  body.traverse(o => {
+    if (!o.isMesh || o.isInstancedMesh || !o.material?.isMeshPhysicalMaterial || !o.material.normalMap) return;
+    const weight = o.material.userData.feltHalo ?? 1; if (!weight) return;
+    toBody.multiplyMatrices(inverse, o.matrixWorld);
+    const position = o.geometry.attributes.position, index = o.geometry.index, triangles = index ? index.count / 3 : position.count / 3, areas = new Float32Array(triangles);
+    let area = 0;
+    for (let t = 0; t < triangles; t++) {
+      const [i, j, k] = [0, 1, 2].map(n => index ? index.getX(t * 3 + n) : t * 3 + n);
+      a.fromBufferAttribute(position, j).applyMatrix4(toBody).sub(d.fromBufferAttribute(position, i).applyMatrix4(toBody));
+      b.fromBufferAttribute(position, k).applyMatrix4(toBody).sub(d);
+      area += a.cross(b).length() / 2; areas[t] = area;
+    }
+    cloths.push({ o, weight, areas, area, linear: linear.clone().setFromMatrix4(toBody) });
+  });
+  const budget = mobile ? DIORAMA.phoneFibres : DIORAMA.fibres, total = cloths.reduce((sum, x) => sum + x.area * x.weight, 0);
+  const random = rng(seed), material = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .32, depthWrite: false });
+  const n = new THREE.Vector3(), p = new THREE.Vector3(), tangent = new THREE.Vector3(), colour = new THREE.Color(), halos = new Map();
+  for (const { o, weight, areas, area, linear: m3 } of cloths) {
+    const count = Math.round(budget * area * weight / Math.max(1e-6, total)); if (count < DIORAMA.minFibres) continue;
+    const position = o.geometry.attributes.position, normal = o.geometry.attributes.normal, index = o.geometry.index;
+    // Every animated part here is a group, and a mesh keeps its build-time place
+    // in it, so the halos of one group share a single line batch in its space.
+    if (!halos.has(o.parent)) halos.set(o.parent, { vertices: [], colours: [] });
+    const { vertices, colours } = halos.get(o.parent), base = o.material.color;
+    for (let f = 0; f < count; f++) {
+      const target = random() * area; let lo = 0, hi = areas.length - 1;
+      while (lo < hi) { const mid = (lo + hi) >> 1; if (areas[mid] < target) lo = mid + 1; else hi = mid; }
+      const [i, j, k] = [0, 1, 2].map(q => index ? index.getX(lo * 3 + q) : lo * 3 + q);
+      let u = random(), v = random(); if (u + v > 1) { u = 1 - u; v = 1 - v; }
+      p.fromBufferAttribute(position, i).multiplyScalar(1 - u - v).addScaledVector(a.fromBufferAttribute(position, j), u).addScaledVector(b.fromBufferAttribute(position, k), v);
+      n.fromBufferAttribute(normal, i).multiplyScalar(1 - u - v).addScaledVector(a.fromBufferAttribute(normal, j), u).addScaledVector(b.fromBufferAttribute(normal, k), v).normalize();
+      // Lengths are body units (a resident is about two tall); divide by the
+      // mesh's own stretch along the normal so a scaled sphere hand gets the same fibre.
+      const stretch = Math.max(1e-4, d.copy(n).applyMatrix3(m3).length()), length = (.007 + random() * .015) / stretch, bend = (random() - .5) * .9;
+      tangent.set(random() - .5, random() - .5, random() - .5).cross(n).normalize();
+      const start = p.clone().addScaledVector(n, .002 / stretch), middle = start.clone().addScaledVector(n, length * .55).addScaledVector(tangent, length * bend * .5), end = start.clone().addScaledVector(n, length).addScaledVector(tangent, length * bend);
+      for (const v of [start, middle, end]) v.applyMatrix4(o.matrix);
+      vertices.push(...start.toArray(), ...middle.toArray(), ...middle.toArray(), ...end.toArray());
+      // Unlit ends read brighter than the shaded cloth, so they sit at its shaded
+      // value; only hair and wool get a few loose fibres catching the light.
+      colour.copy(base).multiplyScalar(.56 + random() * .2); if (weight > 1 && random() < .3) colour.lerp(o.material.sheenColor, .12 + random() * .12);
+      for (let q = 0; q < 4; q++) colours.push(colour.r, colour.g, colour.b);
+    }
+  }
+  for (const [parent, { vertices, colours }] of halos) {
+    const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); geometry.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3));
+    const halo = new THREE.LineSegments(geometry, material); halo.name = 'resident-diorama-felt-halo'; halo.raycast = () => {}; parent.add(halo);
+  }
+  // A fine running stitch must survive at diorama size: widen each sewn
+  // instance in place, up to one common thread width (the professor's is already there).
+  const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), scale = new THREE.Vector3(), at = new THREE.Vector3();
+  body.traverse(o => {
+    if (!o.isInstancedMesh) return;
+    const widen = Math.max(1, Math.min(DIORAMA.stitch, DIORAMA.thread / (o.geometry.parameters?.radiusTop || DIORAMA.thread)));
+    for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, matrix); matrix.decompose(at, rotation, scale); scale.x *= widen; scale.z *= widen; o.setMatrixAt(i, matrix.compose(at, rotation, scale)); }
+    o.instanceMatrix.needsUpdate = true;
+  });
+}
+
+export function makeTownResident(parent, materials, { id, mobile = false, felt } = {}) {
   const source = CAST[id];
   if (!source) throw new Error(`Unknown town resident: ${String(id)}`);
-  const c = { ...source, id };
-  return c.kind === 'professor' ? makeProfessor(parent, materials, c, mobile) : makeHuman(parent, materials, c, mobile);
+  if (felt !== undefined && felt !== 'diorama') throw new Error(`Unknown resident felt: ${String(felt)}`);
+  const c = felt ? { ...source, id, felt } : { ...source, id };
+  const resident = c.kind === 'professor' ? makeProfessor(parent, materials, c, mobile) : makeHuman(parent, materials, c, mobile);
+  if (felt) dioramaFelt(resident.body, mobile, c.seed || 211);
+  return resident;
 }
 
 export const TOWN_RESIDENT_CAST = Object.freeze(Object.fromEntries(Object.entries(CAST).map(([id, c]) => [id, Object.freeze({ id, kind: c.kind, description: c.description })])));
