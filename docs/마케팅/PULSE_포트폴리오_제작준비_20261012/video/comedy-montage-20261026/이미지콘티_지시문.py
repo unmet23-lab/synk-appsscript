@@ -1,0 +1,199 @@
+# 12번 이미지 콘티 지시문(2026-10-26) — 컷마다 Gemini Ultra 웹 나노바나나 2.1(4 Argon · 사고 수준 최고가)로 새 대화에 굽는다.
+# 짜임은 만족 사례 장부 S33(「이제 닮았어」 — korea-run-montage ego/v3/jobs_v3.py) 그대로:
+#   장면 → 배치도 문단 → HIS FACE → HAIR → BODY AND WARDROBE → EXPRESSION → LIGHT → FINISH
+# 참고 그림: 1 · 2 확정 얼굴 B · C, 3~5 실제 사진(pro02 · V181 · V204), (6 오른쪽 45° 승인 각도 — 어깨 너머로 돌아보는 컷), 끝 = 배치도(이미지콘티_배치도.py).
+# 속사포 6컷(C10~C15)은 원본 프레임이 없어 배치도 없이 화면 안 자리를 숫자로 쓴다(현장노트 gemini_사진 10-25).
+#   python -X utf8 이미지콘티_지시문.py  →  git 밖 콘티/p12/ego/jobs.json (run.sh가 id로 읽는다)
+import json
+import os
+
+V = "C:/Users/q1212/Documents/synk-vendor/"
+R = V + "korea-run-montage-20261021/참조_유호/"          # 고정 얼굴 세트 사본(장부 S33과 같은 다섯 장 · 읽기만)
+P = V + "pulse-portfolio12-20261024/콘티/p12/"
+LAY = P + "배치/"
+OUT = P + "정지컷/"
+FACE = [R + "1_B정면.jpg", R + "2_C정면.jpg", R + "3_실제_pro02.jpg", R + "4_실제_V181.jpg", R + "5_실제_V204.jpg"]
+R45 = R + "6_각도_R45a.jpg"
+
+PHONE = ("It is a real vertical smartphone photo taken by a fellow traveler holding the phone at eye height — candid, natural handheld framing, "
+         "like a single frame from a travel video, not a posed portrait. It is late October in Jeju. Any bystanders are adults with their faces "
+         "turned away or softly out of focus, unless described otherwise.")
+LAYOUT = ("Image {L} is a layout map from our storyboard: the black silhouette is him, dark grey silhouettes are other people, and the flat light grey "
+          "is only empty background. Copy exactly the camera position, height and angle, the framing, and his position, size and pose in the picture; "
+          "put the other people where the dark grey silhouettes are. Do not copy the grey — draw the real place described above.")
+HIS_FACE = ("HIS FACE: he is the exact same Korean man as in Images 1 and 2 — keep exactly that face in every detail. "
+            "Images 3 to 5 are his real photos, for identity only (ignore the short hair in Image 3 and all backgrounds and clothing).{angle} "
+            "Show him at his best, as on a good shooting day: well-rested, freshly groomed, clear healthy skin, bright eyes. "
+            "His skin is fair and bright with the natural warm undertone it has in Images 1 and 2 — not pale grey, not porcelain-white.")
+ANGLE = " Image 6 is a real photo of him with his face turned the same way as in this shot, also for identity only."
+HAIR = ("HAIR: his real hair as in Images 1, 2, 4 and 5 — about ten thin, tight cornrows braided straight back flat against the scalp, "
+        "every row a separate line all the way to the nape, ending in short thin separate braided tails that only just touch the collar. "
+        "No long braids, not gathered into a bun or ponytail. No hat, no cap. He does not wear glasses or sunglasses.")
+BODY = ("BODY AND WARDROBE: a slim, lean build — not muscular, not broad. {w} Plain fabrics with no logo, no print, no lettering. "
+        "No jewelry, no watch, no rings, no bracelet.")
+FINISH = ("FINISH: a real photograph, natural colors, true-to-life skin texture (not airbrushed, no beauty filter, no plastic sheen), "
+          "realistic lens perspective, no distortion of his face. No text, no letters, no numbers, no logos, no signs with readable writing, no watermark.")
+DAY = ("LIGHT: bright clear Jeju daylight, plus a large soft light on his face from the camera side — gentle natural shadows modelling his cheekbones, "
+       "nose and jaw, no harsh contrast, no dark shadow on his face.")
+LOOK = "calm and relaxed, a natural neutral face, lips closed, no smile, eyes open and looking straight into the lens."
+
+W_TEE = "A plain white crew-neck T-shirt with a regular fit, light beige chino trousers."
+W_LINEN = "An ivory linen shirt with the sleeves rolled to the elbow and the top button open, light beige linen trousers, white low-top canvas sneakers."
+W_CAMEL = "A camel-colored lightweight windbreaker jacket, unzipped, over a plain white T-shirt; light beige chino trousers; white low-top sneakers."
+W_KNIT = "A fine ivory crew-neck knit sweater, light beige chino trousers."
+W_CHAR = "A fine charcoal-grey crew-neck knit sweater, dark trousers."
+
+
+def job(id_, scene, wardrobe, expression=LOOK, light=DAY, layout=True, angle=False):
+    refs = list(FACE) + ([R45] if angle else []) + ([LAY + id_[:3] + ".png"] if layout else [])
+    L = len(refs)
+    paras = [scene.format(L=L) + " " + PHONE]
+    if layout:
+        paras.append(LAYOUT.format(L=L))
+    paras += [HIS_FACE.format(angle=ANGLE if angle else ""), HAIR, BODY.format(w=wardrobe), "EXPRESSION: " + expression, light, FINISH]
+    return {"id": id_, "ratio": "9:16", "refs": refs, "prompt": "\n\n".join(paras)}
+
+
+JOBS = [
+    job("C01",
+        "INSIDE A KOREAN DOMESTIC AIRLINER CABIN ON A FLIGHT FROM SEOUL TO JEJU, 9:16, exactly as in Image {L}: seen from across the aisle at seated eye "
+        "height and very close, he sits in the middle seat of a row, filling most of the picture from the top of his head down to his lap, his upper body "
+        "turned a little toward the camera. A woman companion sits in the seat beside him on the right side of the picture, looking ahead, her face mostly "
+        "turned away. Grey seat backs and other passengers' heads behind; small oval windows with bright daylight at the upper left.",
+        W_TEE,
+        # 원본은 0초부터 이미 이쪽을 보고 있다가 1.2초에 돌린다(Fable 1차 P1-1)
+        expression="he is already looking straight into the lens with his head turned toward it — a calm neutral face, lips closed, one eyebrow "
+                   "raised very slightly, a tiny dry questioning look; no smile.",
+        light="LIGHT: soft bright daylight from the cabin windows plus a large soft frontal light on his face from the camera side — gentle natural shadows."),
+    # 원본은 밤 · 뒤보기 좌석 · 왼손으로 천장 손잡이 · 동행은 카메라 앞 좌석(Fable 1차 P1-2)
+    job("C02",
+        "AT NIGHT INSIDE AN AIRPORT RENTAL-CAR SHUTTLE BUS IN JEJU, 9:16, exactly as in Image {L}: seen from a seat a couple of rows away at seated eye "
+        "height, he sits in a rear-facing grey bus seat on the right side of the picture, his body facing the camera, his left arm raised holding the "
+        "overhead grab handle. In the seat right in front of the camera, at the lower left of the picture, only the back of a woman companion's head (hair "
+        "clip) and a man companion's shoulder show. Grey bus seats, half-drawn curtains, and dark windows with orange streetlights outside.",
+        W_TEE,
+        expression="he is already looking straight into the lens — eyes a little wide and both eyebrows lifted very slightly, a mild surprised deadpan, "
+                   "lips closed, no smile.",
+        light="LIGHT: warm interior bus lights at night, dark outside, plus a large soft frontal light on his face from the camera side — his face clearly lit."),
+    job("C03",
+        "A HOTEL INFINITY POOL ON THE JEJU COAST, 9:16, exactly as in Image {L}: a wide view across bright turquoise water from the pool edge at standing "
+        "eye height. He floats in the middle of the pool, small in the picture — his head at about 40 percent of the picture height from the top, a little "
+        "right of center — resting his arms on a white-and-blue striped swim ring, his wet head and shoulders above the water, looking toward the camera. "
+        "Along the far side: palm trees, white sun loungers with a few guests, a low stone hotel building; beyond the infinity edge the dark blue sea and "
+        "a pale sky at the top.",
+        "A plain white short-sleeve rash guard, wet.",
+        light="LIGHT: bright clear midday sun, sparkling water, soft reflected light from the water on his face."),
+    job("C04",
+        "ON THE DECK OF A WHITE TOUR YACHT OFF THE JEJU COAST, 9:16, exactly as in Image {L}: seen from a few steps away at standing height looking slightly "
+        "down, he sits on the white bench along the rail in the upper right of the picture, leaning forward with his forearms on his knees; a woman companion sits "
+        "on the same bench to the left of him, and a man companion sits nearer the camera in the lower middle of the picture, turned away toward the sea. Striped shadows from the canopy fall across the white "
+        "deck in the lower half. Beyond the rail: deep blue sea and a green island with a low volcanic peak on the horizon.",
+        W_LINEN),
+    job("C05",
+        "AT A BEACH CAFE ON JEJU'S NORTH COAST, 9:16, exactly as in Image {L}: under a sand-colored canvas sun shade, he sits cross-legged on a large white "
+        "outdoor daybed with white cushions in the center of the picture, holding a small white plate with a slice of orange cake on his lap with both hands. "
+        "More empty white daybeds and canvas shades behind him, palm-like green plants, and a glimpse of emerald sea and white sand. Seen from standing "
+        "height a few steps away, looking slightly down.",
+        "An ivory linen short-sleeve shirt with an open collar and camel linen shorts, barefoot."),
+    job("C06",
+        "ON A GRASSY VOLCANIC HILL (OREUM) IN JEJU IN AUTUMN, 9:16, exactly as in Image {L}: silver eulalia grass covers the slope, a gentle green ridge and "
+        "a soft blue sky behind. He sits on the grass beside the dirt trail in the center of the picture, a little below camera height, his body facing the "
+        "left side of the picture and his head turned to the lens. Behind him on the slope stands a small cone-shaped Jeju stone tower made of black lava "
+        "rocks, and a few hikers far away on the ridge.",
+        W_CAMEL),
+    job("C07",
+        "AT AN ATV RIDING PARK IN JEJU, 9:16, exactly as in Image {L}: seen from behind at standing height a few steps away, he sits astride a red "
+        "four-wheel ATV in the center of the picture with his back to the camera, both hands on the handlebars — only the back of his head with the "
+        "cornrows, his neck and shoulders show, no face. Dark volcanic-rock gravel ground, a low black stone wall, other ATVs parked at the left, and a "
+        "green oreum ridge with blue sky in the distance.",
+        "A plain white T-shirt, a plain grey neck gaiter loose around his neck, light beige trousers.",
+        expression="not visible — he faces away from the camera.",
+        light="LIGHT: bright clear Jeju daylight from the side, soft shadows."),
+    job("C08",
+        "THE SAME ATV PARK, 9:16, exactly as in Image {L}: a close bust shot from his left front at standing height — he sits on the red ATV turned toward "
+        "the camera and pulls a plain grey neck gaiter up over his nose with his right hand — on the left side of the picture. The gaiter covers his mouth "
+        "and nose; his eyes and brows are fully visible. Behind him: a green volcanic ridge and blue sky, another red ATV.",
+        "A plain white T-shirt, the plain grey neck gaiter pulled up over his nose and mouth.",
+        expression="his eyes look straight into the lens, calm and completely deadpan above the gaiter."),
+    job("C09",
+        "ON A WHITE-SAND BEACH IN JEJU WITH A SMALL GREEN ISLAND OFFSHORE, 9:16, exactly as in Image {L}: seen from standing height looking down a little, "
+        "he crouches on the sand in the middle of the picture beside a small child who is building a sand castle in the lower left of the picture (the "
+        "child is seen from behind, wearing a sun hat — no child's face). Clear turquoise shallow water, the small island in the distance, a row of beach "
+        "umbrellas far away.",
+        "A white long-sleeve rash guard and beige swim shorts, barefoot.",
+        expression="he looks up from the sand straight into the lens — a calm neutral face, lips closed, no smile."),
+    # 속사포 6컷 — 0.7초씩이라 장소가 한눈에 읽히고 얼굴이 커야 한다(얼굴 폭을 숫자로). 순서는 얼굴이 큰 컷부터, 해 질 녘 → 밤(Fable 1차 P2-9 · P2-10)
+    job("C10",
+        "IN A QUEUE OUTSIDE A HAENYEO (WOMEN DIVERS) SEAFOOD RESTAURANT ON THE JEJU COAST, 9:16: the camera is right behind him in the line at eye height; "
+        "he stands just in front of the camera and looks back over his left shoulder straight into the lens — his head and shoulders fill the upper half "
+        "of the picture, his face about one third of the picture width. Beyond him: a low black-stone house with a plain wooden board (no writing), other "
+        "people waiting in line, the sea and black lava rocks.",
+        W_CAMEL, layout=False, angle=True),
+    job("C11",
+        "ON A COASTAL ROAD ON UDO ISLAND, JEJU, 9:16: shot from a bicycle riding right beside him — he rides a rental bicycle next to the camera, seen from "
+        "his left side at handlebar height, his head turned to look straight into the lens; his head and shoulders in the upper middle, his face about one "
+        "quarter of the picture width. Turquoise sea, black lava rocks and a low black stone wall behind, slight horizontal motion blur in the background.",
+        W_CAMEL, layout=False, angle=True),
+    job("C12",
+        "IN A TANGERINE ORCHARD IN JEJU, 9:16: dense dark-green tangerine trees full of orange fruit; he stands between two trees, framed by leafy branches "
+        "in the near foreground (softly out of focus), holding a small wicker basket of tangerines at his chest; his head and shoulders in the upper "
+        "middle, his face about one quarter of the picture width; he looks straight into the lens through the gap in the branches.",
+        W_KNIT, layout=False),
+    job("C13",
+        "AT THE TOP OF SEONGSAN ILCHULBONG (SUNRISE PEAK) IN JEJU, 9:16: a group of adult tourists poses in two rows for a group photo at the crater-rim "
+        "viewpoint, the huge green grassy crater bowl and the sea behind them. Seen at standing eye height from close by: he stands at the right end of the "
+        "front row, nearest the camera, his head and shoulders large in the right half of the picture, his face about one quarter of the picture width; "
+        "the people beside him look at another camera to the left, but he looks straight into our lens.",
+        W_CAMEL, layout=False),
+    job("C14",
+        "IN A SEASIDE CAFE IN AEWOL, JEJU, AT SUNSET, 9:16: seen from our table at seated eye height, he sits at the next table by a big window and has just "
+        "lowered his phone after photographing the same slice of orange cake that is on his table; his head and shoulders in the middle of the picture, "
+        "his face about one quarter of the picture width, looking straight into the lens. Behind him through the glass the sea glows orange under the "
+        "setting sun.",
+        W_CHAR, layout=False,
+        light="LIGHT: warm golden sunset light from the window behind him plus a large soft frontal light on his face from the camera side, so his face "
+              "is clearly and evenly lit, not a silhouette."),
+    job("C15",
+        "AT A NIGHT MARKET IN JEJU CITY AFTER DARK, 9:16: a skewer stall with a glowing charcoal grill and drifting white smoke in the foreground; "
+        "through the smoke he stands in the queue just behind the grill, his head and shoulders in the middle of the picture, his face about one quarter "
+        "of the picture width, looking straight into the lens. Warm string lights and a blurred crowd of adults behind.",
+        W_CHAR, layout=False,
+        light="LIGHT: warm night-market light — string bulbs and the orange glow of the grill on his face, plus a soft frontal fill from the camera side; "
+              "his face clearly lit, the background darker."),
+    job("C16",
+        "IN THE YARD OF A JEJU BLACK-PORK BARBECUE RESTAURANT IN THE EVENING, 9:16, exactly as in Image {L}: at the next table he sits facing the camera "
+        "with his two companions; the woman companion in the foreground sits with her back to the camera on the left (no face). A round charcoal grill "
+        "with thick black-pork slices in the middle of the table, small side dishes. Warm string lights, green leaves and a black-stone wall behind.",
+        W_CHAR,
+        light="LIGHT: warm evening light from string bulbs and the grill, plus a large soft frontal light on his face from the camera side; his face "
+              "clearly lit."),
+    # 16번 첫 1초 — 여행자 손의 폰(원본의 「다른 손님 폰 불빛」 자리, Fable 1차 P1-6 ③). 그는 아직 안 보여 얼굴 참고 없이
+    {"id": "C16a", "ratio": "9:16", "refs": [], "prompt": "\n\n".join([
+        "IN THE YARD OF A JEJU BLACK-PORK BARBECUE RESTAURANT IN THE EVENING, 9:16: a real vertical smartphone photo taken at seated eye height. In the "
+        "lower left foreground, our own hand (a woman's hand, seen from the camera side) holds a smartphone with its screen facing the camera — the screen "
+        "is a flat, evenly bright chroma-key green rectangle with nothing on it; the phone is sharp and fills about a third of the picture width. Beyond it, "
+        "softly out of focus: the warm-lit yard with wooden tables, round charcoal grills with smoke, string bulbs, green leaves and a black-stone wall, a "
+        "few adult diners with their faces turned away. It is late October.",
+        "LIGHT: warm evening light from string bulbs and grills.",
+        "FINISH: a real photograph, natural colors, realistic lens perspective. No text, no letters, no numbers, no logos, no signs with readable "
+        "writing, no watermark."])},
+    job("C16b",
+        "THE SAME BLACK-PORK RESTAURANT TABLE IN THE EVENING, 9:16, exactly as in Image {L}: at the next table he holds up a smartphone at chest height with "
+        "its screen facing the camera — the screen is a flat, evenly bright chroma-key green rectangle with nothing on it. At the same moment, at the bottom "
+        "center of the picture, our own hand (a woman's hand, from the camera side) holds up another smartphone whose screen also faces the camera and is "
+        "the same flat chroma-key green. The woman companion in the foreground on the left sits with her back to the camera (no face).",
+        W_CHAR,
+        expression="calm and deadpan, lips closed, eyes on the lens, his chin lowered by a hair as if giving the smallest nod.",
+        light="LIGHT: warm evening light from string bulbs and the grill, plus a large soft frontal light on his face from the camera side; his face "
+              "clearly lit."),
+]
+
+if __name__ == "__main__":
+    os.makedirs(OUT, exist_ok=True)
+    for j in JOBS:
+        for r in j["refs"]:
+            assert os.path.exists(r), r
+        j["out"] = OUT + j["id"] + "_g{n}.png"
+        assert len(j["prompt"]) < 4300, (j["id"], len(j["prompt"]))
+        print(j["id"], len(j["refs"]), "장", len(j["prompt"]), "자")
+    json.dump(JOBS, open(P + "ego/jobs.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
