@@ -8,9 +8,10 @@
  * 시청자 한 사람 역할)을 만든다. 판정은 답을 받은 세션이 한 장 기획의 「한 문장」과 견줘서 한다
  * (docs/마케팅/기획장부/제작절차.md §3 「낯선 사람 이해 시험」).
  *
- *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>]
+ *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>]
  *
  * 만드는 것: <밖>/정지컷_2초마다.jpg · <밖>/말.txt · <밖>/질문.md(하위 에이전트에 그대로 줄 글).
+ * 2초보다 짧은 컷이 많은 영상은 --컷에 컷이 시작하는 초를 주면 정지컷_컷마다.jpg(컷마다 한 장)로 찍는다.
  * 말.txt는 줄마다 「12.3s  들리는 말」 꼴이 좋다. .srt를 주면 그 꼴로 바꾼다.
  */
 const fs = require('node:fs');
@@ -51,13 +52,16 @@ function readSpeech(file) {
   return text.replace(/\r\n/g, '\n').trimEnd() + '\n';
 }
 
-function buildPrompt({ brand, sheet, speech }) {
+function buildPrompt({ brand, sheet, speech, cuts = false }) {
   const who = 시청자[brand];
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${brand}`);
+  const every = cuts
+    ? '컷이 바뀔 때마다 한 장(그 컷의 가운데 장면), 각 칸 왼쪽 위 숫자는 그 컷이 화면에 나오는 초(시작-끝)다 — 짧은 컷은 그만큼 잠깐 지나간다.'
+    : '2초마다 한 장, 각 칸 왼쪽 위 숫자가 영상의 초다.';
   return [
     `너는 ${who.곳}를 넘기다가 이 영상을 처음 본 사람이다. ${who.사람}이고, 이 계정도 만든 사람도 이 영상의 배경도 모른다. 아래 두 파일만 Read 도구로 열어 보고 답해라. 다른 파일·폴더·인터넷은 보지 마라.`,
     '',
-    `- 정지컷 묶음(그림): ${sheet} — 2초마다 한 장, 각 칸 왼쪽 위 숫자가 영상의 초다. 왼쪽에서 오른쪽, 위에서 아래 순서.`,
+    `- 정지컷 묶음(그림): ${sheet} — ${every} 왼쪽에서 오른쪽, 위에서 아래 순서.`,
     `- 들리는 말: ${speech} — 줄 앞 숫자는 그 말이 시작하는 초. 배경음악은 따로 깔려 있다.`,
     '',
     '한국어로, 아래 양식 그대로 답해라(전체 500자 안팎). 겉치레 칭찬은 하지 말고, 모르는 것은 모른다고 써라.',
@@ -97,6 +101,38 @@ function makeSheet(video, out) {
   if (r.status !== 0) throw new Error('ffmpeg 실패: ' + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));
 }
 
+// --컷 「0,3.56,4.52,…」(컷이 시작하는 초). 2초보다 짧은 컷이 많은 영상은 2초 정지컷이 컷을 통째로 빠뜨린다 — 원본 1:1
+// 리메이크 「옆집의 크리스마스」 36컷/60초는 10컷이 묶음에 없었다(10-26). 그래서 컷마다 그 컷 가운데 장면 한 장을 찍는다.
+// 칸이 모두 같은 크기라 0.5초 컷도 3초 컷만큼 무게를 얻으니, 표시는 그 컷이 나오는 「시작-끝」 초로 한다.
+function parseCuts(text, end) {
+  const starts = String(text).split(',').map((x) => Number(x.trim()));
+  if (!starts.length || starts.some((s, i) => !(s >= 0) || s >= end || (i > 0 && s <= starts[i - 1]))) {
+    throw new Error(`--컷은 0 이상 ${end.toFixed(2)}초 미만에서 커지는 초를 쉼표로 잇는다: ${text}`);
+  }
+  return starts;
+}
+
+function makeCutSheet(video, out, starts, end) {
+  const font = "C\\:/Windows/Fonts/arial.ttf";
+  const dir = fs.mkdtempSync(path.join(path.dirname(out), '.컷-'));
+  try {
+    starts.forEach((s, i) => {
+      const e = i + 1 < starts.length ? starts[i + 1] : end;
+      const mid = (s + e) / 2;
+      const vf = `scale=${cellSize(video)},drawtext=fontfile='${font}':text='${s.toFixed(1)}-${e.toFixed(1)}s':x=8:y=8:fontsize=30:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=6`;
+      const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-ss', mid.toFixed(3), '-i', video, '-vf', vf, '-frames:v', '1',
+        path.join(dir, `${String(i).padStart(3, '0')}.png`)], { encoding: 'utf8', windowsHide: true });
+      if (r.status !== 0) throw new Error(`ffmpeg 실패(${s}초 컷): ` + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));
+    });
+    const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', path.join(dir, '%03d.png'),
+      '-vf', `tile=6x${Math.ceil(starts.length / 6)}:padding=6:color=white`, '-frames:v', '1', '-q:v', '3', out],
+    { encoding: 'utf8', windowsHide: true });
+    if (r.status !== 0) throw new Error('ffmpeg 실패: ' + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 function main(argv) {
   const args = { _: [] };
   for (let i = 0; i < argv.length; i += 1) {
@@ -105,17 +141,23 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>]');
     return 2;
   }
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
   const out = path.resolve(args['밖'] || path.join(ROOT, '.tmp', '낯선이시험', `${path.basename(video, path.extname(video))}-${stamp}`));
   fs.mkdirSync(out, { recursive: true });
-  const sheet = path.join(out, '정지컷_2초마다.jpg');
+  const cuts = args['컷'] !== undefined;
+  const sheet = path.join(out, cuts ? '정지컷_컷마다.jpg' : '정지컷_2초마다.jpg');
   const speech = path.join(out, '말.txt');
-  makeSheet(path.resolve(video), sheet);
+  if (cuts) {
+    const end = duration(path.resolve(video));
+    makeCutSheet(path.resolve(video), sheet, parseCuts(args['컷'], end), end);
+  } else {
+    makeSheet(path.resolve(video), sheet);
+  }
   fs.writeFileSync(speech, readSpeech(path.resolve(args['말'])));
-  const prompt = buildPrompt({ brand: args['브랜드'], sheet, speech });
+  const prompt = buildPrompt({ brand: args['브랜드'], sheet, speech, cuts });
   fs.writeFileSync(path.join(out, '질문.md'), prompt);
   console.log(`재료: ${out}`);
   console.log('다음: 질문.md를 이 대화 맥락이 없는 새 하위 에이전트(Agent model sonnet)에 그대로 주고, 답을 한 장 기획의 「한 문장」과 견준다(제작절차 §3).');
@@ -124,4 +166,4 @@ function main(argv) {
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { srtToLines, readSpeech, buildPrompt, 시청자 };
+module.exports = { srtToLines, readSpeech, buildPrompt, parseCuts, 시청자 };
