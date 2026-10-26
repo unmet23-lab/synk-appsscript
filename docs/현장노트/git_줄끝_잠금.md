@@ -546,6 +546,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 공용 인덱스·HEAD는 그대로 두고 임시 인덱스로 origin 위에 내 경로만 얹었다 — `GIT_INDEX_FILE=<임시> git read-tree origin/master` → 경로마다 `git hash-object -w --path=<경로> <경로>`(줄끝 정규화 — 이 저장소 blob은 LF라 `--no-filters`로 넣으면 작업본 CRLF가 그대로 들어가 파일 전체가 바뀐 커밋이 된다, 첫 시도 +927/−893) → `git update-index --cacheinfo 100644,<blob>,<경로>` → `write-tree` → `commit-tree -p origin/master -F <메시지>` → `node tools/공개검사.js --바탕 <O> --머리 <C>` · `node tools/git-storage-check.cjs --base <O> --head <C>` → `git push origin <C>:refs/heads/master`(거절되면 다시 받아 다시 만든다, 그 사이 내 경로를 남이 고쳤으면 멈춘다).
 - 다시 확인: `git diff --stat <O> <C>`가 내 줄 수만(+43/−9), 새 blob의 CRLF 0, `git merge-base --is-ancestor <C> origin/master`(10-22 `70c0fe285`).
 
+### 따라가기 뒤 예약큐가 「검사 뒤 영상 바뀜(다시 검사)」를 띄우는데 내용은 그대로다 — 수정 시각을 1밀리초까지 예약큐 방식으로 맞춘다 (2026-10-26 Claude)
+- 증상: 10-26 14시 게시 세션에서 `node tools/예약큐.js`가 LAB_TOPIK4빈칸규칙_mn(여러 장 6장)을 10-27 ✗ 「검사 뒤 영상 바뀜(다시 검사)」로 띄웠다. 6장 모두 바이트가 검사 기록과 같고 `git status`도 깨끗했다(06.jpg는 `git hash-object` = 기록을 담은 커밋 `cd8be45cb`의 blob). 10-24에도 같은 편이 같은 꼴이었다.
+- 원인: 두 가지다. ① 커밋 뒤 공용 작업본 따라가기가 파일을 다시 써서 수정 시각만 바뀐다(06.jpg 09:40:33 → 09:44:34). ② 예약큐 `checkOf()`는 `new Date(stat.mtimeMs).toISOString()`(밀리초 버림)과 기록의 「수정」을 글자 그대로 견주는데, 10-24에 손으로 맞춘 값은 `stat.mtime.toISOString()`(반올림)이라 02 · 03 · 04장이 1밀리초씩 어긋난 채 남아 있었다.
+- 고침: 바이트가 같고 git 개체가 기록 커밋과 같은지 먼저 본 뒤, 준비.json `검사.파일[].수정`을 `new Date(fs.statSync(경로).mtimeMs).toISOString()`으로 다시 적었다(같은 값이 한 번만 있는지 세고 글자 치환 — JSON을 통째로 다시 쓰지 않는다). 여러 장 글은 `올리기전검사.js`를 다시 돌리면 「파일에 영상이 없다」를 고칠 것으로 내고 확인 메모를 덮으니 다시 돌리지 않는다.
+- 다시 확인: `node tools/예약큐.js --일수 2`에서 그 편 줄이 「검사 확인할 것」이고 계정 칸이 ✗가 아니라 ○.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
