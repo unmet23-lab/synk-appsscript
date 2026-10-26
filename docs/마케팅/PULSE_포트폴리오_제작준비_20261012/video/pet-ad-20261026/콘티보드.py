@@ -14,6 +14,7 @@ SUIT = os.path.join(REPO, "docs", "브랜드_폰트", "SUIT")
 F = lambda w, s: ImageFont.truetype(os.path.join(SUIT, f"SUIT-{w}.otf"), s)
 BG, INK, DIM, GOLD, LINE = (17, 16, 18), (236, 234, 230), (160, 156, 150), (240, 200, 120), (60, 58, 62)
 ORIG = {n: n for n in range(1, 10)} | {10: 12}   # 우리 컷 → 원본 컷
+END = {9: ("F09_끝.jpg", "S09_끝.jpg")}          # 시작 · 끝 그림을 따로 굽는 컷(카메라가 도는 9 — 원본 끝 | 우리 끝을 글 칸 아래에 작게)
 FW, FH = 300, 533                                 # 세로 그림 칸
 TX = 760                                          # 글 칸 너비
 
@@ -84,6 +85,15 @@ def board(rows, ns, path, title):
                 d.text((x, ty), ln, font=F("Medium", 23), fill=col)
                 ty += 31
             ty += 8
+        if n in END:
+            ty0 = ty + 6                                   # 글이 끝난 자리 아래 남는 높이에만
+            th = min(267, y + FH - ty0); tw = th * 9 // 16
+            for i, (folder, f, lab) in enumerate((("원본프레임", END[n][0], "원본 끝"), ("정지컷", END[n][1], "우리 끝"))):
+                q = os.path.join(V, folder, f)
+                if os.path.exists(q) and th > 60:
+                    t = Image.open(q).convert("RGB").resize((tw, th))
+                    im.paste(t, (x + i * (tw + 12), ty0))
+                    d.text((x + i * (tw + 12) + 6, ty0 + 4), lab, font=F("ExtraBold", 18), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
         d.line([(pad, y + FH + gap // 2), (W - pad, y + FH + gap // 2)], fill=LINE, width=1)
         y += FH + gap
     im.save(path, quality=88)

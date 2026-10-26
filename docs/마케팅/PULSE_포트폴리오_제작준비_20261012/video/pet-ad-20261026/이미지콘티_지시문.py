@@ -293,6 +293,22 @@ fix("S09e", ("It faces the camera dead-on with the cool, serious look of a model
              "of a model on a magazine cover;"),
     ("Camera: at the dog's eye level, very close, slightly from below.",
      "Camera: at the dog's eye level, very close, slightly from below, about twenty degrees to the dog's right side."))
+# 9 시작 그림 다시(10-27 00:2x) — S09e는 끝 그림(S09d)을 그대로 베껴 배경이 같아짐(시작 · 끝이 같으면 영상 모델이 카메라를 멈춤).
+# 끝 그림은 생김새 참고로만 쓰고, 카메라가 개 오른쪽 옆에 서면 배경이 왼쪽으로 밀리는 것(원본 9 실측 — 배경이 컷 동안 오른쪽으로 흐름)을 글로 못 박는다.
+shots["S09f"] = {"refs": shots["S09d"]["refs"] + [ref("S09d_끝.jpg")], "prompt": shots["S09d"]["prompt"]}
+fix("S09f", ("It faces the camera dead-on with the cool, serious look of a model on a magazine cover;",
+             "Image 4 is the END of a camera move, seen from straight in front — use it ONLY for how the dog, the jacket, the sunglasses "
+             "and the room look; do NOT copy its camera angle. This picture is the START: the camera stands about twenty-five degrees off "
+             "to the dog's right side, so the dog's body and the life jacket are seen in three-quarter view (its right shoulder and the right "
+             "side of the jacket toward the camera, its chest pointing toward the right of the frame), the chair seat is seen at an angle, "
+             "and its head is turned toward the right of the frame, with the cool, serious look of a model on a magazine cover;"),
+    ("The room behind is the same studio as in the other shots, seen in the same direction: the big window with the sheer curtain, "
+     "the bed and the potted plant are on the RIGHT side of the frame behind the dog, the glass middle door on the LEFT side behind.",
+     "The room behind is the same studio, but because the camera stands off to the dog's right side the background is shifted to the "
+     "LEFT compared with Image 4: the glass middle door is at the far LEFT edge of the frame, partly cut off, and the big window with the "
+     "sheer curtain and the bed are right behind the dog, just to the right of its head."),
+    ("Camera: at the dog's eye level, very close, slightly from below.",
+     "Camera: at the dog's eye level, very close, slightly from below, about twenty-five degrees to the dog's right side."))
 for k, v in shots.items():
     v["ratio"] = "9:16"
 jobs.update(shots)
