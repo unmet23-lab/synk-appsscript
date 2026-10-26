@@ -32,7 +32,7 @@
    "refs": [
     "배치:S02"
    ],
-   "text": "{시작} Extreme close-up on a dark drafting table, much closer than a whole drawing: only a few fine white and light-blue concentric curves and two or three straight lines of a turbine cross-section fill the frame, the rest soft and out of focus; the edge of the sheet and a steel ruler on the lower right; absolutely no small marks that look like letters or numbers. {배치:1} Light: dark room, the sheet lit softly from above. {금지_글자} {질감}"
+   "text": "{시작} Extreme close-up on a dark drafting table, much closer than a whole drawing: only a few fine white and light-blue concentric curves and two or three straight lines of a turbine cross-section fill the frame, the rest soft and out of focus; the edge of the sheet and a steel ruler on the lower right; a dark, soft, out-of-focus band (the shadow of an object close to the lens) crosses the frame diagonally; absolutely no small marks that look like letters or numbers. {배치:1} Light: dark room, the sheet lit softly from above. {금지_글자} {질감}"
   },
   {
    "id": "S03",
@@ -64,7 +64,7 @@
    "refs": [
     "배치:S06"
    ],
-   "text": "{시작} A welder seen close from the side in dim light, wearing dark tinted welding goggles, a black respirator mask and a hood that hide the face completely, a dark red-brown work jacket; a bright welding glare flares at the upper left with a soft lens flare, metal machine parts around him. {작업자} {배치:1} {금지_글자} {질감}"
+   "text": "{시작} A welder seen close from the side in dim light, wearing dark tinted welding goggles, a black respirator mask and a hood that hide the face completely, a dark red-brown work jacket; a bright welding glare flares at the upper left with a soft lens flare, metal machine parts around him; in the foreground, close to the lens and out of focus, dark pipes frame the gap through which we see him. {작업자} {배치:1} {금지_글자} {질감}"
   },
   {
    "id": "S07",
@@ -277,7 +277,7 @@
     "R1",
     "배치:S30"
    ],
-   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Wide shot in the bright white assembly hall, the camera close to the machine: the finished ivory turbine's huge round intake casing fills the right 60% of the frame and runs off the top and bottom edges, its dark blade ring on the far right. He is small next to it: standing on the floor just left of the casing, a little left of center, his whole body from head to feet fitting within the lower half of the frame height; he is in profile facing right toward the machine, one hand raised to touch the casing, looking at it (his face in profile, lips closed). On the left, the hall behind him with an overhead crane and other parts, a bit out of focus. {기준R1:5} {배치:6} {금지_글자} {질감}"
+   "text": "{시작} {준호_얼굴:4} {준호_옷} {터빈} Wide shot in the bright white assembly hall, the camera close to the machine: the finished ivory turbine's huge round intake casing fills the right 60% of the frame and runs off the top and bottom edges, its dark blade ring on the far right. He is small next to it: standing on the floor just left of the casing, a little left of center, his whole body from head to feet fitting within the lower half of the frame height; he is in profile facing right toward the machine, one hand raised to touch the casing, looking at it (his face in profile, lips closed). On the left, the hall behind him with an overhead crane and other parts, a bit out of focus. Light: the assembly hall in soft, dim half-light, about one stop darker than a bright factory; no blown-out white windows. {기준R1:5} {배치:6} {금지_글자} {질감}"
   },
   {
    "id": "S31",
@@ -303,7 +303,7 @@
     "R6",
     "R1"
    ],
-   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk, seen from BEHIND the machine. Perfectly symmetrical: the camera stands low near the floor on the center line of the hall; the finished ivory turbine (same as the reference) sits centered in the upper middle of the frame with its rear exhaust end toward the camera and its round intake pointing away from us toward the huge open door, as if it is about to leave; the open door is centered behind it, framing a peach-and-pink sunset over low hills; the wet, polished floor fills the lower 40% of the frame and reflects the machine and the sunset in a long central reflection; the hall ceiling and side walls are dark. Do not show the intake blades facing the camera, and do not show the machine from the side. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
+   "text": "{시작} {터빈} Inside a large power-plant turbine hall at dusk, seen from BEHIND the machine. Perfectly symmetrical: the camera stands low near the floor on the center line of the hall; the finished ivory turbine (same as the reference) sits centered in the upper middle of the frame with its rear exhaust end toward the camera and its round intake pointing away from us toward the huge open door, as if it is about to leave; the open door is centered behind it, framing a pale, hazy peach-and-blue dusk sky with low contrast (not a saturated orange sunset) over a flat horizon and low hills — no chimneys or towers; the wet, polished floor fills the lower 40% of the frame and reflects the machine and the sunset in a long central reflection; the hall interior is cool grey and dim, the ceiling and side walls dark; the floor reflection soft and pale. Do not show the intake blades facing the camera, and do not show the machine from the side. {기준R6:1} {기준R1:2} {금지_글자} {질감}"
   },
   {
    "id": "S34",
