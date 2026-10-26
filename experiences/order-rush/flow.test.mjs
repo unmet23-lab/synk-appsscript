@@ -25,6 +25,7 @@ function shift({quick=0.3,missEvery=0,mode='auto'}={}){
    session.tune(tuningFrom(out.settings.values));if(out.line)lines.push(out.line.text);continue;
   }
   session.time=t.born+t.patience*quick;
+  coach.delivery(pid,{audio:'completed'});
   const judged=judgeOrder(t.order,cupsFor(t.order));
   const out=live.answer(pid,{...orderAnswer(judged,{audioCompleted:true}),attemptNo:1},{pressure:pressureOf(t,session)});
   session.submit(t.uid,cupsFor(t.order));session.tune(tuningFrom(out.settings.values));if(out.line)lines.push(out.line.text);

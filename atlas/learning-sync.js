@@ -192,8 +192,14 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   };
   const flushQueue = async token => {
     let emptyAcks = 0;
-    for (let batch = 0; batch < maxPages; batch++) {
+    // The budget counts uploads. The queue is collected again after each acknowledgement (an answer or
+    // another context may have added entries): one the last allowed upload emptied is complete; only
+    // entries still queued wait for the next try. A status observer that stopped or blocked this sync
+    // ends it before anything more is collected or saved.
+    for (let batch = 0; ; batch++) {
+      if (!active(token)) return;
       collect(); if (!state.pending.length) return;
+      if (batch >= maxPages) throw failure('NETWORK_ERROR', 'Atlas sync: batch limit reached; remaining events stay queued');
       const local = new Map(port.events().map(event => [event.id, event]));
       const events = state.pending.slice(0, batchSize).map(eventId => clone(local.get(eventId))), sent = new Set(events.map(event => event.id));
       const response = await request('post', { revision, events }, token);
@@ -209,7 +215,6 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       for (const eventId of accepted) acknowledged.add(eventId);
       state.acknowledged = [...acknowledged]; state.pending = state.pending.filter(eventId => !accepted.has(eventId)); save(); publish();
     }
-    throw failure('NETWORK_ERROR', 'Atlas sync: batch limit reached; remaining events stay queued');
   };
   function run(pullOnly = false) {
     if (stopped || phase === 'blocked') return Promise.resolve(status());

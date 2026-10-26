@@ -8386,9 +8386,11 @@ var SynkLearning = (() => {
         };
         const flushQueue = async (token) => {
           let emptyAcks = 0;
-          for (let batch = 0; batch < maxPages; batch++) {
+          for (let batch = 0; ; batch++) {
+            if (!active(token)) return;
             collect();
             if (!state.pending.length) return;
+            if (batch >= maxPages) throw failure("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
             const local = new Map(port.events().map((event) => [event.id, event]));
             const events = state.pending.slice(0, batchSize).map((eventId) => clone(local.get(eventId))), sent = new Set(events.map((event) => event.id));
             const response = await request("post", { revision, events }, token);
@@ -8407,7 +8409,6 @@ var SynkLearning = (() => {
             save();
             publish();
           }
-          throw failure("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
         };
         function run(pullOnly = false) {
           if (stopped || phase === "blocked") return Promise.resolve(status());
@@ -8504,6 +8505,7 @@ var SynkLearning = (() => {
       var BATCH = 100;
       var ROUNDS = 50;
       var MAX_BYTES = 4096;
+      var AHEAD_MS = 864e5;
       var KINDS = Object.freeze(["presentation", "flow", "declined"]);
       var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
       var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
@@ -8528,6 +8530,7 @@ var SynkLearning = (() => {
       var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
       var canonical = (value) => JSON.stringify(value, (_key, part) => object(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
       var sameEntry = (a, b) => canonical(a) === canonical(b);
+      var sameValue = (a, b) => canonical(a.value ?? null) === canonical(b.value ?? null);
       function entriesOf(state) {
         const out = [];
         if (object(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
@@ -8577,10 +8580,14 @@ var SynkLearning = (() => {
           if (typeof port.epoch === "function" && port.epoch() !== epoch) throw failure("MEMORY_SESSION_ENDED", "Atlas memory sync: local memory epoch changed");
         };
         const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
+        const contested = (entry) => {
+          const there = remote.get(keyOf(entry));
+          return !!there && Date.parse(there.at) === Date.parse(entry.at) && !sameValue(there, entry);
+        };
         const intents = () => durable ? port.pending() : [];
         const legacyPending = () => {
           const owned = new Set(intents().map((item) => keyOf(item.entry)));
-          return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && newer(entry.at, remote.get(keyOf(entry))) && refused.get(keyOf(entry)) !== entry.at);
+          return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && (newer(entry.at, remote.get(keyOf(entry))?.at) || contested(entry)) && refused.get(keyOf(entry)) !== entry.at);
         };
         const pending = () => [...intents().map((item) => item.entry), ...legacyPending()];
         const status = () => {
@@ -8630,9 +8637,9 @@ var SynkLearning = (() => {
         };
         const accept = (entries) => {
           port.merge(stateOf(entries));
-          for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+          for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
         };
-        async function cycle(token) {
+        async function cycle(token, held) {
           checkEpoch();
           if (!pulled || intents().some((item) => !item.assignedAt)) {
             accept((await call("get", { revision }, token)).entries);
@@ -8643,15 +8650,16 @@ var SynkLearning = (() => {
             for (const item of intents().slice(0, BATCH)) {
               if (!sendable(item.entry)) throw failure("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
               const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
-              const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))) || 0) + 1)).toISOString();
-              if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + 864e5) throw failure("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
+              const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))?.at) || 0) + 1)).toISOString();
+              if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + AHEAD_MS) throw failure("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
               const value = port.prepare(item.id, at);
               if (value) prepared.push(value);
             }
-            const all = legacyPending();
+            const all = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
             for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
             const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
             if (!batch.length) return;
+            const known = serverTime;
             const response = await call("post", { revision, entries: batch }, token);
             if (!active(token)) return;
             const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
@@ -8662,10 +8670,24 @@ var SynkLearning = (() => {
               if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
               port.acknowledge(item.id, accepted);
             }
+            const clock = known ?? serverTime;
+            let invalid = false;
+            for (const entry of batch.slice(prepared.length)) {
+              const accepted = returned.get(keyOf(entry));
+              if (accepted) {
+                if (Date.parse(accepted.at) < Date.parse(entry.at)) invalid = true;
+                else if (Date.parse(accepted.at) === Date.parse(entry.at) && !sameValue(accepted, entry)) held.set(keyOf(entry), entry.at);
+              } else if (clock != null && Date.parse(entry.at) > Date.parse(clock) + AHEAD_MS) held.set(keyOf(entry), entry.at);
+              else invalid = true;
+            }
             accept(response.entries);
-            for (const entry of batch) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+            if (invalid) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
           }
-          throw failure("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
+          if (!active(token)) return;
+          checkEpoch();
+          const rest = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
+          for (const entry of rest) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+          if (intents().length || rest.some(sendable)) throw failure("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
         }
         function run({ pull = false } = {}) {
           if (stopped || phase === "blocked") return Promise.resolve(status());
@@ -8678,15 +8700,17 @@ var SynkLearning = (() => {
           phase = "syncing";
           code = null;
           publish();
+          const held = /* @__PURE__ */ new Map();
           running = (async () => {
             try {
               do {
                 again = false;
-                await cycle(token);
+                await cycle(token, held);
               } while (again && active(token));
               if (active(token)) {
-                phase = failedLocalEdits.size ? "offline" : "synced";
-                code = failedLocalEdits.size ? "STORAGE_ERROR" : null;
+                const left = held.size > 0 ? legacyPending().filter((entry) => held.get(keyOf(entry)) === entry.at) : [];
+                code = failedLocalEdits.size ? "STORAGE_ERROR" : left.some(contested) ? "MEMORY_CONFLICT" : left.length ? "MEMORY_CLOCK_AHEAD" : null;
+                phase = code === "MEMORY_CONFLICT" ? "conflict" : code ? "offline" : "synced";
                 publish();
               }
             } catch (error) {
@@ -8969,23 +8993,23 @@ var SynkLearning = (() => {
             if (knob.kind === "support") return "more-help";
             return "content-miss";
           }
-          function settle(dimension, direction, observed, reason, phase = "response") {
-            const pool = spec.knobs.filter((knob) => dimensionOf(knob) === dimension && !locked(knob) && (direction < 0 || knob.kind !== "support"));
+          function settle(dimension, direction, observed, reason, phase = "response", held = locked, history = changes) {
+            const pool = spec.knobs.filter((knob) => dimensionOf(knob) === dimension && !held(knob) && (direction < 0 || knob.kind !== "support"));
             const byWeight = (list) => [...list].sort((a, b) => direction > 0 ? a.weight - b.weight : b.weight - a.weight);
             const ordered = [...byWeight(pool.filter((k) => k.kind !== "support")), ...byWeight(pool.filter((k) => k.kind === "support"))];
             for (const knob of ordered) {
               const from = indices[knob.id], to = from + direction;
               if (to < 0 || to >= knob.values.length) continue;
               if (direction > 0 && phase === "response" && reason !== "quiet-streak" && gap(dimension) - knob.weight <= -DEADBAND) continue;
-              if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history: changes, frozen: !adaptive }).ok) continue;
+              if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history, frozen: !adaptive }).ok) continue;
               indices[knob.id] = to;
               const change = { step, phase, knob: knob.id, kind: knob.kind, dimension, from, to, direction, because: reason || because(direction, knob, observed), value: knob.values[to] };
-              changes.push(change);
+              history.push(change);
               return change;
             }
             return null;
           }
-          const ordinaryTheta = Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(estimates[d].theta, ...span(d, ordinary))]));
+          const unbound = Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta]));
           for (const dimension of DIMENSIONS) bound(dimension);
           const opening = [];
           if (adaptive && returning) {
@@ -9000,13 +9024,16 @@ var SynkLearning = (() => {
           } else if (adaptive) {
             const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
             const why = basis === "memory" ? "memory" : "prior";
-            const open = (goal, theta, ease) => {
+            const open = (goal, theta, ease, held = locked, history = changes) => {
               const moves = [];
               for (let n = 0; n < limit; n += 1) {
                 const off = (d) => gap(d, goal, theta[d]);
-                const dimension = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)))[0];
-                if (!dimension) break;
-                const change = settle(dimension, Math.sign(off(dimension)), null, why, "opening");
+                const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+                let change = null;
+                for (const dimension of ranked) {
+                  change = settle(dimension, Math.sign(off(dimension)), null, why, "opening", held, history);
+                  if (change) break;
+                }
                 if (!change) break;
                 moves.push(change);
               }
@@ -9014,11 +9041,11 @@ var SynkLearning = (() => {
             };
             let home = null;
             if (mode !== "auto" || calm) {
-              const from = { ...indices };
-              open(ordinary, ordinaryTheta, basis === "memory");
+              const today = indices, declaredOnly = (knob) => knob.follows === "declared";
+              indices = Object.fromEntries(spec.knobs.map((knob) => [knob.id, declaredOnly(knob) ? knob.start : reached[knob.id]]));
+              open(ordinary, Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(unbound[d], ...span(d, ordinary))])), basis === "memory", declaredOnly, []);
               home = indices;
-              indices = from;
-              changes.length = 0;
+              indices = today;
             }
             for (const change of open(aim, Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta])), easeOnly)) {
               if (home && (home[change.knob] - change.from) * change.direction <= 0) {

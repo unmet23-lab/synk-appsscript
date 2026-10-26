@@ -259,9 +259,10 @@
       return 'content-miss';
     }
     // One knob, one step, in one dimension, inside Temper's rails. Content eases content knobs
-    // before adding help; less help is never chosen here.
-    function settle(dimension, direction, observed, reason, phase = 'response') {
-      const pool = spec.knobs.filter(knob => dimensionOf(knob) === dimension && !locked(knob) && (direction < 0 || knob.kind !== 'support'));
+    // before adding help; less help is never chosen here. `held` and `history` are today's round
+    // unless the ordinary round below is worked out apart.
+    function settle(dimension, direction, observed, reason, phase = 'response', held = locked, history = changes) {
+      const pool = spec.knobs.filter(knob => dimensionOf(knob) === dimension && !held(knob) && (direction < 0 || knob.kind !== 'support'));
       // Raise gently (the smallest step first); ease firmly (the largest relief first, help last).
       const byWeight = list => [...list].sort((a, b) => direction > 0 ? a.weight - b.weight : b.weight - a.weight);
       const ordered = [...byWeight(pool.filter(k => k.kind !== 'support')), ...byWeight(pool.filter(k => k.kind === 'support'))];
@@ -271,10 +272,10 @@
         // A raise that would land where the next answer eases it again is not taken (a big step waits
         // for a clearer lead). A quiet-streak step is tentative and checked on its own below.
         if (direction > 0 && phase === 'response' && reason !== 'quiet-streak' && gap(dimension) - knob.weight <= -DEADBAND) continue;
-        if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history: changes, frozen: !adaptive }).ok) continue;
+        if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history, frozen: !adaptive }).ok) continue;
         indices[knob.id] = to;
         const change = { step, phase, knob: knob.id, kind: knob.kind, dimension, from, to, direction, because: reason || because(direction, knob, observed), value: knob.values[to] };
-        changes.push(change); return change;
+        history.push(change); return change;
       }
       return null;
     }
@@ -282,8 +283,8 @@
      * the person left off and only eases, where its estimate or today's choice asks; after a long gap
      * it starts one step lighter than last time, and the estimate is brought down to agree with that
      * start. A tired day's opening only eases. */
-    // The estimates as an ordinary day bounds them, before today's aims do.
-    const ordinaryTheta = Object.fromEntries(DIMENSIONS.map(d => [d, clamp(estimates[d].theta, ...span(d, ordinary))]));
+    // The estimates before today's aims bound them; an ordinary day bounds them in its own place below.
+    const unbound = Object.fromEntries(DIMENSIONS.map(d => [d, estimates[d].theta]));
     for (const dimension of DIMENSIONS) bound(dimension);
     const opening = [];
     if (adaptive && returning) {
@@ -295,26 +296,38 @@
     } else if (adaptive) {
       const limit = basis === 'memory' ? 2 : 12, easeOnly = basis === 'memory' || calm;
       const why = basis === 'memory' ? 'memory' : 'prior';
-      const open = (goal, theta, ease) => {
+      const open = (goal, theta, ease, held = locked, history = changes) => {
         const moves = [];
         for (let n = 0; n < limit; n += 1) {
           const off = d => gap(d, goal, theta[d]);
-          const dimension = DIMENSIONS.filter(d => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)))[0];
-          if (!dimension) break;
-          const change = settle(dimension, Math.sign(off(dimension)), null, why, 'opening');
+          // The dimension furthest from its aim first; when it has no step to take (at its end, held, or
+          // refused by Temper), the next one, as a response does. Each is tried once; none moving ends it.
+          const ranked = DIMENSIONS.filter(d => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+          let change = null;
+          for (const dimension of ranked) { change = settle(dimension, Math.sign(off(dimension)), null, why, 'opening', held, history); if (change) break; }
           if (!change) break;
           moves.push(change);
         }
         return moves;
       };
-      // On a day chosen easier or harder, or a tired one, the same opening is first worked out at the
-      // ordinary aims and set aside. Steps toward that place are the prior's or memory's and are kept;
-      // the difference from it, steps past it or steps it took that today did not, is today's alone.
+      /* On a day chosen easier or harder, or a tired one, the opening of the ordinary round is first worked
+       * out and set aside: the same person, prior and memory, with no mode, no condition and nothing set by
+       * hand. Steps toward that place are the prior's or memory's and are kept; the difference from it, steps
+       * past it or steps it took that today did not, is today's alone.
+       * That round plays as a round without today's choices would: a held knob starts where adapted play had
+       * reached and moves as any other knob, so the step the prior or memory asks of it is never moved onto
+       * another knob; a declared-only knob stays at the content's own value (memory never keeps a declared
+       * value; the next round has it only when it is declared again). The held knob itself is still kept
+       * where it was (`reached`), and today's round still plays it as set.
+       * It is worked out apart: its own place, locks and history, inside the same Temper rails, with the
+       * same limit and step, and nothing of it is left in today's round. */
       let home = null;
       if (mode !== 'auto' || calm) {
-        const from = { ...indices };
-        open(ordinary, ordinaryTheta, basis === 'memory');
-        home = indices; indices = from; changes.length = 0;
+        const today = indices, declaredOnly = knob => knob.follows === 'declared';
+        indices = Object.fromEntries(spec.knobs.map(knob => [knob.id, declaredOnly(knob) ? knob.start : reached[knob.id]]));
+        // The estimates as that round bounds them, in its own place.
+        open(ordinary, Object.fromEntries(DIMENSIONS.map(d => [d, clamp(unbound[d], ...span(d, ordinary))])), basis === 'memory', declaredOnly, []);
+        home = indices; indices = today;
       }
       for (const change of open(aim, Object.fromEntries(DIMENSIONS.map(d => [d, estimates[d].theta])), easeOnly)) {
         if (home && (home[change.knob] - change.from) * change.direction <= 0) {

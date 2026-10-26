@@ -8868,9 +8868,11 @@ var require_learning_sync = __commonJS({
       };
       const flushQueue = async (token2) => {
         let emptyAcks = 0;
-        for (let batch = 0; batch < maxPages; batch++) {
+        for (let batch = 0; ; batch++) {
+          if (!active(token2)) return;
           collect();
           if (!state.pending.length) return;
+          if (batch >= maxPages) throw failure3("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
           const local = new Map(port.events().map((event) => [event.id, event]));
           const events = state.pending.slice(0, batchSize).map((eventId) => clone2(local.get(eventId))), sent = new Set(events.map((event) => event.id));
           const response = await request("post", { revision, events }, token2);
@@ -8889,7 +8891,6 @@ var require_learning_sync = __commonJS({
           save();
           publish();
         }
-        throw failure3("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
       };
       function run(pullOnly = false) {
         if (stopped || phase === "blocked") return Promise.resolve(status());
@@ -8986,6 +8987,7 @@ var require_memory_sync = __commonJS({
     var BATCH = 100;
     var ROUNDS = 50;
     var MAX_BYTES = 4096;
+    var AHEAD_MS = 864e5;
     var KINDS = Object.freeze(["presentation", "flow", "declined"]);
     var object4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
     var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
@@ -9010,6 +9012,7 @@ var require_memory_sync = __commonJS({
     var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
     var canonical = (value) => JSON.stringify(value, (_key, part) => object4(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
     var sameEntry = (a, b) => canonical(a) === canonical(b);
+    var sameValue = (a, b) => canonical(a.value ?? null) === canonical(b.value ?? null);
     function entriesOf(state) {
       const out = [];
       if (object4(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
@@ -9059,10 +9062,14 @@ var require_memory_sync = __commonJS({
         if (typeof port.epoch === "function" && port.epoch() !== epoch) throw failure3("MEMORY_SESSION_ENDED", "Atlas memory sync: local memory epoch changed");
       };
       const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
+      const contested = (entry) => {
+        const there = remote.get(keyOf(entry));
+        return !!there && Date.parse(there.at) === Date.parse(entry.at) && !sameValue(there, entry);
+      };
       const intents = () => durable ? port.pending() : [];
       const legacyPending = () => {
         const owned = new Set(intents().map((item) => keyOf(item.entry)));
-        return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && newer(entry.at, remote.get(keyOf(entry))) && refused.get(keyOf(entry)) !== entry.at);
+        return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && (newer(entry.at, remote.get(keyOf(entry))?.at) || contested(entry)) && refused.get(keyOf(entry)) !== entry.at);
       };
       const pending = () => [...intents().map((item) => item.entry), ...legacyPending()];
       const status = () => {
@@ -9112,9 +9119,9 @@ var require_memory_sync = __commonJS({
       };
       const accept = (entries) => {
         port.merge(stateOf(entries));
-        for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+        for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
       };
-      async function cycle(token2) {
+      async function cycle(token2, held) {
         checkEpoch();
         if (!pulled || intents().some((item) => !item.assignedAt)) {
           accept((await call("get", { revision }, token2)).entries);
@@ -9125,15 +9132,16 @@ var require_memory_sync = __commonJS({
           for (const item of intents().slice(0, BATCH)) {
             if (!sendable(item.entry)) throw failure3("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
             const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
-            const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))) || 0) + 1)).toISOString();
-            if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + 864e5) throw failure3("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
+            const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))?.at) || 0) + 1)).toISOString();
+            if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + AHEAD_MS) throw failure3("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
             const value = port.prepare(item.id, at);
             if (value) prepared.push(value);
           }
-          const all = legacyPending();
+          const all = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
           for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
           const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
           if (!batch.length) return;
+          const known = serverTime;
           const response = await call("post", { revision, entries: batch }, token2);
           if (!active(token2)) return;
           const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
@@ -9144,10 +9152,24 @@ var require_memory_sync = __commonJS({
             if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure3("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
             port.acknowledge(item.id, accepted);
           }
+          const clock2 = known ?? serverTime;
+          let invalid = false;
+          for (const entry of batch.slice(prepared.length)) {
+            const accepted = returned.get(keyOf(entry));
+            if (accepted) {
+              if (Date.parse(accepted.at) < Date.parse(entry.at)) invalid = true;
+              else if (Date.parse(accepted.at) === Date.parse(entry.at) && !sameValue(accepted, entry)) held.set(keyOf(entry), entry.at);
+            } else if (clock2 != null && Date.parse(entry.at) > Date.parse(clock2) + AHEAD_MS) held.set(keyOf(entry), entry.at);
+            else invalid = true;
+          }
           accept(response.entries);
-          for (const entry of batch) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+          if (invalid) throw failure3("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
         }
-        throw failure3("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
+        if (!active(token2)) return;
+        checkEpoch();
+        const rest = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
+        for (const entry of rest) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+        if (intents().length || rest.some(sendable)) throw failure3("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
       }
       function run({ pull = false } = {}) {
         if (stopped || phase === "blocked") return Promise.resolve(status());
@@ -9160,15 +9182,17 @@ var require_memory_sync = __commonJS({
         phase = "syncing";
         code = null;
         publish();
+        const held = /* @__PURE__ */ new Map();
         running = (async () => {
           try {
             do {
               again = false;
-              await cycle(token2);
+              await cycle(token2, held);
             } while (again && active(token2));
             if (active(token2)) {
-              phase = failedLocalEdits.size ? "offline" : "synced";
-              code = failedLocalEdits.size ? "STORAGE_ERROR" : null;
+              const left = held.size > 0 ? legacyPending().filter((entry) => held.get(keyOf(entry)) === entry.at) : [];
+              code = failedLocalEdits.size ? "STORAGE_ERROR" : left.some(contested) ? "MEMORY_CONFLICT" : left.length ? "MEMORY_CLOCK_AHEAD" : null;
+              phase = code === "MEMORY_CONFLICT" ? "conflict" : code ? "offline" : "synced";
               publish();
             }
           } catch (error2) {
@@ -9451,23 +9475,23 @@ var require_flow = __commonJS({
           if (knob.kind === "support") return "more-help";
           return "content-miss";
         }
-        function settle(dimension, direction, observed, reason, phase = "response") {
-          const pool = spec.knobs.filter((knob) => dimensionOf(knob) === dimension && !locked(knob) && (direction < 0 || knob.kind !== "support"));
+        function settle(dimension, direction, observed, reason, phase = "response", held = locked, history2 = changes) {
+          const pool = spec.knobs.filter((knob) => dimensionOf(knob) === dimension && !held(knob) && (direction < 0 || knob.kind !== "support"));
           const byWeight = (list) => [...list].sort((a, b) => direction > 0 ? a.weight - b.weight : b.weight - a.weight);
           const ordered = [...byWeight(pool.filter((k) => k.kind !== "support")), ...byWeight(pool.filter((k) => k.kind === "support"))];
           for (const knob of ordered) {
             const from = indices[knob.id], to = from + direction;
             if (to < 0 || to >= knob.values.length) continue;
             if (direction > 0 && phase === "response" && reason !== "quiet-streak" && gap(dimension) - knob.weight <= -DEADBAND) continue;
-            if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history: changes, frozen: !adaptive }).ok) continue;
+            if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history: history2, frozen: !adaptive }).ok) continue;
             indices[knob.id] = to;
             const change = { step, phase, knob: knob.id, kind: knob.kind, dimension, from, to, direction, because: reason || because(direction, knob, observed), value: knob.values[to] };
-            changes.push(change);
+            history2.push(change);
             return change;
           }
           return null;
         }
-        const ordinaryTheta = Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(estimates[d].theta, ...span(d, ordinary))]));
+        const unbound = Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta]));
         for (const dimension of DIMENSIONS) bound(dimension);
         const opening = [];
         if (adaptive && returning) {
@@ -9482,13 +9506,16 @@ var require_flow = __commonJS({
         } else if (adaptive) {
           const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
           const why = basis === "memory" ? "memory" : "prior";
-          const open = (goal, theta, ease) => {
+          const open = (goal, theta, ease, held = locked, history2 = changes) => {
             const moves = [];
             for (let n = 0; n < limit; n += 1) {
               const off = (d) => gap(d, goal, theta[d]);
-              const dimension = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)))[0];
-              if (!dimension) break;
-              const change = settle(dimension, Math.sign(off(dimension)), null, why, "opening");
+              const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0)).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+              let change = null;
+              for (const dimension of ranked) {
+                change = settle(dimension, Math.sign(off(dimension)), null, why, "opening", held, history2);
+                if (change) break;
+              }
               if (!change) break;
               moves.push(change);
             }
@@ -9496,11 +9523,11 @@ var require_flow = __commonJS({
           };
           let home = null;
           if (mode !== "auto" || calm) {
-            const from = { ...indices };
-            open(ordinary, ordinaryTheta, basis === "memory");
+            const today = indices, declaredOnly = (knob) => knob.follows === "declared";
+            indices = Object.fromEntries(spec.knobs.map((knob) => [knob.id, declaredOnly(knob) ? knob.start : reached[knob.id]]));
+            open(ordinary, Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(unbound[d], ...span(d, ordinary))])), basis === "memory", declaredOnly, []);
             home = indices;
-            indices = from;
-            changes.length = 0;
+            indices = today;
           }
           for (const change of open(aim, Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta])), easeOnly)) {
             if (home && (home[change.knob] - change.from) * change.direction <= 0) {
@@ -13355,7 +13382,7 @@ var rejectedCommands = /* @__PURE__ */ new Set(["INVALID_PLAY_COMMAND", "INVALID
 function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
 }, storage = globalThis.localStorage, locks = globalThis.navigator?.locks, uuid = () => crypto.randomUUID(), now = Date.now }) {
   if (typeof accountId !== "string" || !accountId || typeof guard !== "function" || typeof client?.load !== "function" || typeof client?.mutate !== "function") throw TypeError("Verified WORLD play account required");
-  const prefix = `synk.play.account.v1:${encodeURIComponent(accountId)}:pending:`, rejectedPrefix = `synk.play.account.v1:${encodeURIComponent(accountId)}:rejected:`, listeners = /* @__PURE__ */ new Set(), waitingWallets = /* @__PURE__ */ new Map();
+  const prefix = `synk.play.account.v1:${encodeURIComponent(accountId)}:pending:`, rejectedPrefix = `synk.play.account.v1:${encodeURIComponent(accountId)}:rejected:`, listeners = /* @__PURE__ */ new Set(), waitingWallets = /* @__PURE__ */ new Map(), discarded = /* @__PURE__ */ new Map();
   let stopped = false, loaded = false, revision = 0, state = emptyPlayState(), phase = "loading", lastError = null, inflight = null, timer = null, initial = null;
   function check2() {
     guard();
@@ -13524,8 +13551,23 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     }, 250);
     emit("saving");
   }
+  function draftOf(key) {
+    let id;
+    for (const entry of pending()) if (entry.body.action === "progress" && entry.body.changes.some((change) => change.key === key)) id = entry.body.id;
+    return id;
+  }
   function createGameStorage() {
-    const observed = /* @__PURE__ */ new Map();
+    const observed = /* @__PURE__ */ new Map(), basis = /* @__PURE__ */ new Map();
+    const base = (key) => {
+      for (const seen = /* @__PURE__ */ new Set(); ; ) {
+        const id = basis.get(key), chosen = discarded.get(id)?.get(key);
+        if (!chosen || seen.has(id)) break;
+        seen.add(id);
+        observed.set(key, chosen.value);
+        basis.set(key, chosen.basis);
+      }
+      return observed.has(key) ? observed.get(key) : records()[key] ?? null;
+    };
     return Object.freeze({
       get length() {
         check2();
@@ -13543,6 +13585,7 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
         if (!isPlayRecordKey(key)) throw error("INVALID_PLAY_KEY");
         const value = records()[key] ?? null;
         observed.set(key, value);
+        basis.set(key, draftOf(key));
         return value;
       },
       setItem(key, value) {
@@ -13550,20 +13593,22 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
         if (!loaded) throw error("PLAY_NOT_READY");
         if (phase === "conflict") throw error("REVISION_CONFLICT");
         validatePlayValue(key, value);
-        const previous = observed.has(key) ? observed.get(key) : records()[key] ?? null;
+        const previous = base(key);
         if (previous === value) return;
-        queue({ action: "progress", changes: [{ key, previous, value }] });
+        const entry = queue({ action: "progress", changes: [{ key, previous, value }] });
         observed.set(key, value);
+        basis.set(key, entry.body.id);
         schedule();
       },
       removeItem(key) {
         check2();
         if (!loaded || !isPlayRecordKey(key)) throw error("INVALID_PLAY_KEY");
         if (phase === "conflict") throw error("REVISION_CONFLICT");
-        const previous = observed.has(key) ? observed.get(key) : records()[key] ?? null;
+        const previous = base(key);
         if (previous === null) return;
-        queue({ action: "progress", changes: [{ key, previous, value: null }] });
+        const entry = queue({ action: "progress", changes: [{ key, previous, value: null }] });
         observed.set(key, null);
+        basis.set(key, entry.body.id);
         schedule();
       }
     });
@@ -13643,13 +13688,26 @@ function createWorldPlayHost({ accountId, client, guard, onStatus = () => {
     if (imports.length && choice === "local") throw error("IMPORT_CONFLICT", "\uACC4\uC815\uC5D0 \uC774\uBBF8 \uAC8C\uC784 \uAE30\uB85D\uC774 \uC788\uC5B4\uC694. \uACC4\uC815 \uAE30\uB85D\uC744 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.");
     const drafts = entries.filter((x) => x.body.action === "progress" || x.body.action === "import");
     if (drafts.length) storage.setItem(`synk.play.account.v1:${encodeURIComponent(accountId)}:recovery:${uuid()}`, JSON.stringify({ accountId, at: now(), drafts }));
-    for (const entry of drafts) storage.removeItem(prefix + entry.body.id);
-    if (choice === "local") {
-      const keys = new Set(drafts.flatMap((x) => x.body.changes.map((c) => c.key)));
-      for (const key of keys) {
-        const previous = state.records[key] ?? null, value = desired[key] ?? null;
-        if (previous !== value) queue({ action: "progress", changes: [{ key, previous, value }] });
+    const chosen = /* @__PURE__ */ new Map(), written = [];
+    for (const entry of drafts) if (entry.body.action === "progress") for (const change of entry.body.changes) chosen.set(change.key, { value: (choice === "local" ? desired : state.records)[change.key] ?? null });
+    if (choice === "local") try {
+      for (const [key, base] of chosen) {
+        const previous = state.records[key] ?? null;
+        if (previous !== base.value) {
+          base.basis = queue({ action: "progress", changes: [{ key, previous, value: base.value }] }).body.id;
+          written.push(base.basis);
+        }
       }
+    } catch (cause) {
+      for (const id of written) try {
+        storage.removeItem(prefix + id);
+      } catch {
+      }
+      throw cause;
+    }
+    for (const entry of drafts) {
+      storage.removeItem(prefix + entry.body.id);
+      discarded.set(entry.body.id, chosen);
     }
     await flush();
     return status();

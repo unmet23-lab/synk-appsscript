@@ -9,7 +9,7 @@ const rejectedCommands=new Set(['INVALID_PLAY_COMMAND','INVALID_PLAY_REQUEST','I
 /** Authenticated WORLD owns this host; iframe games receive methods, never credentials. */
 export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},storage=globalThis.localStorage,locks=globalThis.navigator?.locks,uuid=()=>crypto.randomUUID(),now=Date.now}){
   if(typeof accountId!=='string'||!accountId||typeof guard!=='function'||typeof client?.load!=='function'||typeof client?.mutate!=='function')throw TypeError('Verified WORLD play account required');
-  const prefix=`synk.play.account.v1:${encodeURIComponent(accountId)}:pending:`,rejectedPrefix=`synk.play.account.v1:${encodeURIComponent(accountId)}:rejected:`,listeners=new Set(),waitingWallets=new Map();
+  const prefix=`synk.play.account.v1:${encodeURIComponent(accountId)}:pending:`,rejectedPrefix=`synk.play.account.v1:${encodeURIComponent(accountId)}:rejected:`,listeners=new Set(),waitingWallets=new Map(),discarded=new Map();
   let stopped=false,loaded=false,revision=0,state=emptyPlayState(),phase='loading',lastError=null,inflight=null,timer=null,initial=null;
   function check(){guard();if(stopped)throw error('PLAY_SESSION_ENDED','로그인이 끝나 이 계정에 게임 기록을 저장할 수 없어요.');}
   function pending(){
@@ -69,12 +69,25 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
     return inflight;
   }
   function schedule(){clearTimeout(timer);timer=setTimeout(()=>{void flush().catch(()=>{});},250);emit('saving');}
-  function createGameStorage(){const observed=new Map();return Object.freeze({
+  // The latest pending progress draft that sets this record, if any (records() shows the same one).
+  function draftOf(key){let id;for(const entry of pending())if(entry.body.action==='progress'&&entry.body.changes.some(change=>change.key===key))id=entry.body.id;return id;}
+  // `observed` is what this open game last read or wrote of a record: the CAS base of its next write,
+  // so a refresh never lets a stale game overwrite another device. `basis` names the draft an
+  // observation came from. Once an explicit conflict choice discarded that draft, the base is what
+  // the person chose at that moment, never a value a later refresh brings; observations of confirmed
+  // account values stay. A chosen local draft can itself be replaced by a later choice: the base
+  // follows those explicit choices to the last one, however many this game did not see.
+  function createGameStorage(){const observed=new Map(),basis=new Map();
+    const base=key=>{
+      for(const seen=new Set();;){const id=basis.get(key),chosen=discarded.get(id)?.get(key);if(!chosen||seen.has(id))break;seen.add(id);observed.set(key,chosen.value);basis.set(key,chosen.basis);}
+      return observed.has(key)?observed.get(key):records()[key]??null;
+    };
+    return Object.freeze({
     get length(){check();if(!loaded)throw error('PLAY_NOT_READY');return Object.keys(records()).length+1;},
     key(index){check();return [PLAY_WALLET_KEY,...Object.keys(records())][index]??null;},
-    getItem(key){check();if(!loaded)throw error('PLAY_NOT_READY');if(key===PLAY_WALLET_KEY)return JSON.stringify(state.wallet);if(!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');const value=records()[key]??null;observed.set(key,value);return value;},
-    setItem(key,value){check();if(!loaded)throw error('PLAY_NOT_READY');if(phase==='conflict')throw error('REVISION_CONFLICT');validatePlayValue(key,value);const previous=observed.has(key)?observed.get(key):records()[key]??null;if(previous===value)return;queue({action:'progress',changes:[{key,previous,value}]});observed.set(key,value);schedule();},
-    removeItem(key){check();if(!loaded||!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');if(phase==='conflict')throw error('REVISION_CONFLICT');const previous=observed.has(key)?observed.get(key):records()[key]??null;if(previous===null)return;queue({action:'progress',changes:[{key,previous,value:null}]});observed.set(key,null);schedule();}
+    getItem(key){check();if(!loaded)throw error('PLAY_NOT_READY');if(key===PLAY_WALLET_KEY)return JSON.stringify(state.wallet);if(!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');const value=records()[key]??null;observed.set(key,value);basis.set(key,draftOf(key));return value;},
+    setItem(key,value){check();if(!loaded)throw error('PLAY_NOT_READY');if(phase==='conflict')throw error('REVISION_CONFLICT');validatePlayValue(key,value);const previous=base(key);if(previous===value)return;const entry=queue({action:'progress',changes:[{key,previous,value}]});observed.set(key,value);basis.set(key,entry.body.id);schedule();},
+    removeItem(key){check();if(!loaded||!isPlayRecordKey(key))throw error('INVALID_PLAY_KEY');if(phase==='conflict')throw error('REVISION_CONFLICT');const previous=base(key);if(previous===null)return;const entry=queue({action:'progress',changes:[{key,previous,value:null}]});observed.set(key,null);basis.set(key,entry.body.id);schedule();}
   });}
   async function ready(){check();if(phase==='conflict')throw error('REVISION_CONFLICT',status().message);if(loaded)return status();if(!initial)initial=retry().catch(cause=>{initial=null;throw cause;});return initial;}
   async function retry(){check();clearTimeout(timer);await flush();check();await receive(()=>client.load());check();emit(pending().length?'saving':'synced');return status();}
@@ -108,11 +121,18 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
     const imports=entries.filter(x=>x.body.action==='import');if(imports.length&&choice==='local')throw error('IMPORT_CONFLICT','계정에 이미 게임 기록이 있어요. 계정 기록을 선택해 주세요.');
     const drafts=entries.filter(x=>x.body.action==='progress'||x.body.action==='import');
     if(drafts.length)storage.setItem(`synk.play.account.v1:${encodeURIComponent(accountId)}:recovery:${uuid()}`,JSON.stringify({accountId,at:now(),drafts}));
-    for(const entry of drafts)storage.removeItem(prefix+entry.body.id);
-    if(choice==='local'){
-      const keys=new Set(drafts.flatMap(x=>x.body.changes.map(c=>c.key)));
-      for(const key of keys){const previous=state.records[key]??null,value=desired[key]??null;if(previous!==value)queue({action:'progress',changes:[{key,previous,value}]});}
-    }
+    // For each record the drafts set, the choice fixes the base of an open game that saw one of them:
+    // the account value or the chosen local draft as of this choice. A later refresh does not move it,
+    // so unseen progress still meets the CAS.
+    const chosen=new Map(),written=[];
+    for(const entry of drafts)if(entry.body.action==='progress')for(const change of entry.body.changes)chosen.set(change.key,{value:(choice==='local'?desired:state.records)[change.key]??null});
+    // Outbox order: backup, every chosen local draft, and only then removal of the drafts they replace.
+    // If storing a chosen draft fails, the ones already stored are taken back and the old drafts stay:
+    // the choice is not applied, the failure is reported, and the next flush shows the conflict again.
+    if(choice==='local')try{for(const [key,base] of chosen){const previous=state.records[key]??null;if(previous!==base.value){base.basis=queue({action:'progress',changes:[{key,previous,value:base.value}]}).body.id;written.push(base.basis);}}}
+    catch(cause){for(const id of written)try{storage.removeItem(prefix+id);}catch{}throw cause;}
+    // The choice replaces these drafts now, even if the next flush fails.
+    for(const entry of drafts){storage.removeItem(prefix+entry.body.id);discarded.set(entry.body.id,chosen);}
     await flush();return status();
   }
   const api=Object.freeze({ready,retry,flush,wallet,importLegacy,resolve,hasLegacy,status,storage:()=>{check();return createGameStorage();},subscribe(fn){check();listeners.add(fn);fn(status());return()=>listeners.delete(fn);},stop(){if(stopped)return;stopped=true;clearTimeout(timer);emit('stopped');listeners.clear();},snapshot(){check();return {accountId,revision,state:clone({...state,records:records()})};}});

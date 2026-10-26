@@ -27,12 +27,13 @@ function trimDaily(daily){
   for(const id of ids.slice(100))delete day.items[id];
  }
 }
+const RECORD_FIT_BYTES=480000;
 function fitDailyRecord(value){
  if(!value.daily)return;
  // Preserve the original answer/checkpoint payload and stay below both the
  // reader's 500k character limit and the account port's 512 KiB value limit.
  const bytes=()=>new TextEncoder().encode(JSON.stringify(value)).length;
- while(bytes()>480000){
+ while(bytes()>RECORD_FIT_BYTES){
   const oldest=Object.keys(value.daily.days).sort()[0];if(!oldest)break;
   delete value.daily.days[oldest];
  }
@@ -303,11 +304,12 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   for(const [id,lesson]of Object.entries(object(lessons)?lessons:{}))if(!next.lessons[id]&&Object.keys(next.lessons).length<100){next.lessons[id]=clone(lesson);added.lessons+=1;}
   for(const [id,review]of Object.entries(object(reviews)?reviews:{}))if(!next.reviews[id]&&next.lessons[review?.lessonId]&&Object.keys(next.reviews).length<400){next.reviews[id]=clone(review);added.reviews+=1;}
   // 날: 계정에 없는 날은 통째로, 있는 날은 그 날에 없는 문항만 — 문항을 더한 날도 더한 날로 센다(옮긴 결과가 「이미 있음」으로 보이지 않게, 10-21 백엔드 검수).
+  // 레슨·복습처럼 남은 자리(날 30·하루 문항 100)에만 더한다 — 계정의 날·문항을 밀어내지 않고, 못 들어간 것은 손님 기록에 그대로 남는다(10-26 GQ1).
   for(const [day,value]of Object.entries(object(days)?days:{})){
    const daily=next.daily??={version:1,days:{}},mine=daily.days[day];
-   if(!mine){daily.days[day]=clone(value);added.days+=1;continue;}
+   if(!mine){if(Object.keys(daily.days).length<30){daily.days[day]=clone(value);added.days+=1;}continue;}
    let got=0;
-   for(const [questionId,item]of Object.entries(object(value?.items)?value.items:{}))if(!object(mine.items)||!mine.items[questionId]){(mine.items??={})[questionId]=clone(item);got+=1;}
+   for(const [questionId,item]of Object.entries(object(value?.items)?value.items:{}))if(!object(mine.items)||!mine.items[questionId]&&Object.keys(mine.items).length<100){(mine.items??={})[questionId]=clone(item);got+=1;}
    if(got)added.days+=1;
   }
   if(object(profile?.values)&&readWorldLearningProfile(next.learningProfile,{owner,at:now()}).profile.status==='new'){
@@ -315,7 +317,11 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   }
   if(!added.lessons&&!added.reviews&&!added.days&&!added.profile)return {...added,status:status()};
   next.imports=[...(Array.isArray(state.imports)?state.imports:[]),{from,at:now(),lessons:added.lessons,reviews:added.reviews,days:added.days,profile:added.profile}].slice(-20);
-  commit(next);return {...added,status:status()};
+  // 옮기기는 계정 기록을 지우지 않는다: 더한 결과가 저장 상한(fitDailyRecord와 같은 바이트)을 넘으면 계정의 지난 날을 잘라 맞추지 않고
+  // 아무것도 쓰지 않고 거절한다(10-26 GQ1). 계정·손님 원본은 그대로이고, 옮기기 판은 기존 「옮기지 못했어요」로 남는다.
+  next.revision=state.revision+1;
+  if(new TextEncoder().encode(JSON.stringify(next)).length>RECORD_FIT_BYTES)throw fail('PLAY_DATA_TOO_LARGE','옮길 기록을 저장할 공간이 부족해요. 계정과 이 기기의 기록은 그대로 두었어요.');
+  commit(next,{preserveDaily:true});return {...added,status:status()};
  }
  function summary(packs=[],flat=[]){
   check();catalog(packs,flat);const ordered=packs.flatMap(pack=>(pack.lessons||[]).map(value=>typeof value==='string'?lessons.get(value):lessons.get(value.id)).filter(Boolean));

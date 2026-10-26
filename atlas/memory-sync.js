@@ -3,11 +3,13 @@
 // each content's moment memory and declined less-help offers (game-flow.js, coach.memoryPort).
 // Today's condition stays on the device. New local edits carry a durable intent in game-flow's
 // own record. After reading the server, an intent receives one timestamp for all its retries.
-// Older adapters and unmarked records retain their timestamp-based compatibility path.
-// Authenticated hosts provide the
+// Older adapters and unmarked records retain their timestamp-based compatibility path, but
+// only the server's acknowledgement marks one as held remotely. Authenticated hosts provide the
 // transport (GET/POST synk-learning?view=memory); this module never reads identities or the log.
 const ID = /^[a-zA-Z0-9_.:-]{1,120}$/;
 const BATCH = 100, ROUNDS = 50, MAX_BYTES = 4096;
+// The server leaves out, in a successful reply, entries dated over one day past its own clock.
+const AHEAD_MS = 86400000;
 const KINDS = Object.freeze(['presentation', 'flow', 'declined']);
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const instant = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
@@ -20,6 +22,7 @@ const keyOf = entry => `${entry.kind}\u0000${entry.key}`;
 const canonical = value => JSON.stringify(value, (_key, part) => object(part)
   ? Object.fromEntries(Object.keys(part).sort().map(key => [key, part[key]])) : part);
 const sameEntry = (a, b) => canonical(a) === canonical(b);
+const sameValue = (a, b) => canonical(a.value ?? null) === canonical(b.value ?? null);
 
 // game-flow.js state() as the server's entries, and back.
 function entriesOf(state) {
@@ -56,7 +59,7 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
     || typeof port.state !== 'function' || typeof port.merge !== 'function' || typeof port.subscribe !== 'function'
     || typeof transport?.get !== 'function' || typeof transport?.post !== 'function') throw new TypeError('Atlas memory sync: an authenticated account adapter and transport are required');
   if (!Number.isFinite(delayMs) || delayMs < 0 || !Number.isInteger(timeoutMs) || timeoutMs < 1) throw new TypeError('Atlas memory sync: invalid timing');
-  // The newest time the server is known to hold per entry, and entries it would refuse.
+  // The newest entry (time and value) the server is known to hold per key, and entries it would refuse.
   const remote = new Map(), refused = new Map();
   const durable = ['pending', 'prepare', 'acknowledge'].every(name => typeof port[name] === 'function');
   let serverTime = null;
@@ -70,12 +73,18 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
     if (typeof port.epoch === 'function' && port.epoch() !== epoch) throw failure('MEMORY_SESSION_ENDED', 'Atlas memory sync: local memory epoch changed');
   };
   const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
-  // Local entries the server does not have yet (or has an older value of).
+  // The server holds another value at this entry's very time. Its strict-newer rule lets neither
+  // replace the other, so the local value is not held there: it stays queued as a conflict.
+  const contested = entry => {
+    const there = remote.get(keyOf(entry));
+    return !!there && Date.parse(there.at) === Date.parse(entry.at) && !sameValue(there, entry);
+  };
+  // Local entries the server does not have yet (or has an older or another same-time value of).
   const intents = () => durable ? port.pending() : [];
   const legacyPending = () => {
     const owned = new Set(intents().map(item => keyOf(item.entry)));
     return entriesOf(port.state()).filter(entry => !owned.has(keyOf(entry)) && instant(entry.at)
-      && newer(entry.at, remote.get(keyOf(entry))) && refused.get(keyOf(entry)) !== entry.at);
+      && (newer(entry.at, remote.get(keyOf(entry))?.at) || contested(entry)) && refused.get(keyOf(entry)) !== entry.at);
   };
   const pending = () => [...intents().map(item => item.entry), ...legacyPending()];
   const status = () => {
@@ -108,12 +117,12 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
       return response;
     } finally { clearTimeout(deadline); controllers.delete(controller); }
   };
-  // What the server holds now replaces older local values; its times are remembered.
+  // What the server holds now replaces older local values; its entries are remembered.
   const accept = entries => {
     port.merge(stateOf(entries));
-    for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+    for (const entry of entries) if (newer(entry.at, remote.get(keyOf(entry))?.at)) remote.set(keyOf(entry), entry);
   };
-  async function cycle(token) {
+  async function cycle(token, held) {
     checkEpoch();
     // A fresh edit observes the current server value before receiving its immutable upload
     // timestamp. GET never overwrites that edit; game-flow keeps its pending intent.
@@ -123,16 +132,19 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
       for (const item of intents().slice(0, BATCH)) {
         if (!sendable(item.entry)) throw failure('INVALID_MEMORY', 'Atlas memory sync: local intent is invalid');
         const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
-        const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))) || 0) + 1)).toISOString();
+        const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))?.at) || 0) + 1)).toISOString();
         // The existing server refuses clocks over one day ahead. Do not erase the intent or
         // report success if an older stored value leaves no timestamp within that limit.
-        if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + 86400000) throw failure('MEMORY_CLOCK_AHEAD', 'Atlas memory sync: server memory is ahead of its clock');
+        if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + AHEAD_MS) throw failure('MEMORY_CLOCK_AHEAD', 'Atlas memory sync: server memory is ahead of its clock');
         const value = port.prepare(item.id, at); if (value) prepared.push(value);
       }
-      const all = legacyPending();
+      // An unmarked entry the server left out earlier in this run waits for the next run.
+      const all = legacyPending().filter(entry => held.get(keyOf(entry)) !== entry.at);
       for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
       const batch = [...prepared.map(item => item.entry), ...all.filter(sendable)].slice(0, BATCH);
       if (!batch.length) return;
+      // The server clock known before this request is at or before the one that filters it.
+      const known = serverTime;
       const response = await call('post', { revision, entries: batch }, token);
       if (!active(token)) return;
       const returned = new Map(response.entries.map(entry => [keyOf(entry), entry]));
@@ -145,21 +157,53 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
         // intent a fresh time after a lost ACK, and never clear a newer local intent id.
         port.acknowledge(item.id, accepted);
       }
+      // An unmarked entry has no intent to keep, so only its acknowledgement (the newer of the two
+      // values, as stored) records it remotely, through accept(). The one lawful omission is an
+      // entry dated past the server's window: it stays queued, unchanged, and is offered again by
+      // the next run until that clock reaches it. Any other omission or an older reply is invalid.
+      // Another value acknowledged at the same time stays on the server; the local one is offered
+      // once a run and kept as a conflict, never given a new time.
+      const clock = known ?? serverTime;
+      let invalid = false;
+      for (const entry of batch.slice(prepared.length)) {
+        const accepted = returned.get(keyOf(entry));
+        if (accepted) {
+          if (Date.parse(accepted.at) < Date.parse(entry.at)) invalid = true;
+          else if (Date.parse(accepted.at) === Date.parse(entry.at) && !sameValue(accepted, entry)) held.set(keyOf(entry), entry.at);
+        }
+        else if (clock != null && Date.parse(entry.at) > Date.parse(clock) + AHEAD_MS) held.set(keyOf(entry), entry.at);
+        else invalid = true;
+      }
       accept(response.entries);
-      // The server kept the newer of the two; either way it has seen these times.
-      for (const entry of batch) if (newer(entry.at, remote.get(keyOf(entry)))) remote.set(keyOf(entry), entry.at);
+      if (invalid) throw failure('INVALID_RESPONSE', 'Atlas memory sync: missing acknowledgement');
     }
-    throw failure('NETWORK_ERROR', 'Atlas memory sync: too many rounds; the rest waits for the next sync');
+    // The budget counts uploads. If the last allowed one left nothing to send (an entry offered once
+    // this run waits for the next), the cycle is complete; anything else waits for the next sync.
+    // This check prepares, merges and saves nothing, and ends a stopped run or a replaced memory first.
+    if (!active(token)) return;
+    checkEpoch();
+    const rest = legacyPending().filter(entry => held.get(keyOf(entry)) !== entry.at);
+    for (const entry of rest) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+    if (intents().length || rest.some(sendable)) throw failure('NETWORK_ERROR', 'Atlas memory sync: too many rounds; the rest waits for the next sync');
   }
   function run({ pull = false } = {}) {
     if (stopped || phase === 'blocked') return Promise.resolve(status());
     if (pull) pulled = false;
     if (running) { again = true; return running; }
     const token = generation; phase = 'syncing'; code = null; publish();
+    // Unmarked entries offered once this run and not held by the server (key → local time): left
+    // out lawfully, or met by another value at the same time. A joined run does not offer them
+    // again; one still unchanged here keeps the run unsynced, as a conflict when another value
+    // holds its time, otherwise until the server clock reaches it.
+    const held = new Map();
     running = (async () => {
       try {
-        do { again = false; await cycle(token); } while (again && active(token));
-        if (active(token)) { phase = failedLocalEdits.size ? 'offline' : 'synced'; code = failedLocalEdits.size ? 'STORAGE_ERROR' : null; publish(); }
+        do { again = false; await cycle(token, held); } while (again && active(token));
+        if (active(token)) {
+          const left = held.size > 0 ? legacyPending().filter(entry => held.get(keyOf(entry)) === entry.at) : [];
+          code = failedLocalEdits.size ? 'STORAGE_ERROR' : left.some(contested) ? 'MEMORY_CONFLICT' : left.length ? 'MEMORY_CLOCK_AHEAD' : null;
+          phase = code === 'MEMORY_CONFLICT' ? 'conflict' : code ? 'offline' : 'synced'; publish();
+        }
       } catch (error) {
         if (active(token)) { code = errorCode(error); phase = code === 'MEMORY_CONFLICT' ? 'conflict' : FATAL.has(code) ? 'blocked' : 'offline'; publish(); }
       } finally { running = null; }

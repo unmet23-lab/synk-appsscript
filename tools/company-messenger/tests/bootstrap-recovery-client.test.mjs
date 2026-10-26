@@ -133,3 +133,27 @@ test('returning from the browser cache resumes an interrupted bootstrap but pres
     assert.equal(f.get('#app').innerHTML,'workspace ready');assert.equal(f.timers.size,0);
   }
 });
+
+// A regular API read is not a bootstrap request: its stale-response guard must
+// also distinguish two logins of the same standalone messenger account.
+for (const status of [200, 401]) test(`same-account re-entry rejects the prior API ${status} without expiring the new login`, async () => {
+  const f = fixture();
+  f.context.firstSession = signedIn(); f.run('enterWorkspace(firstSession)');
+  const generation = f.state.transferSession;
+  const pending = f.run("api('/api/channels')").then(value => ({ value }), error => ({ error }));
+  assert.equal(f.requests.length, 1);
+  assert.equal(f.state.integrated, null);
+  f.run("sessionOwner.leave(); renderAuth('login')");
+  assert.equal(f.state.user, null);
+  f.context.nextSession = signedIn(); f.run('enterWorkspace(nextSession)');
+  assert.ok(f.state.transferSession > generation);
+  assert.equal(f.state.user.id, 'user-a');
+  assert.equal(f.state.integrated, null);
+  f.respond(0, status, { marker: 'prior login', error: 'expired prior login' });
+  const result = await pending;
+  assert.match(result.error?.message || '', /로그인이 바뀌어 하던 요청을 멈췄어요/);
+  assert.equal(f.state.user.id, 'user-a');
+  assert.equal(f.get('#app').innerHTML, 'workspace ready');
+  assert.equal(f.notices.some(message => message.type === 'messenger:auth-expired'), false);
+  assert.equal(f.timers.size, 0);
+});

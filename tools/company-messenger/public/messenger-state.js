@@ -49,8 +49,8 @@ export function enterWorkspaceState(state, data) {
 // sends are bound to. A request captured under one identity is stale once the
 // messenger user, the company link object or its CSRF token changes.
 export function createSessionOwner(state) {
-  const identity = () => ({ userId: state.user?.id, integrated: state.integrated, csrf: state.integrated?.csrfToken });
-  const identityCurrent = snapshot => snapshot.userId === state.user?.id && snapshot.integrated === state.integrated && snapshot.csrf === state.integrated?.csrfToken;
+  const identity = () => ({ userId: state.user?.id, integrated: state.integrated, csrf: state.integrated?.csrfToken, session: state.transferSession });
+  const identityCurrent = snapshot => snapshot.userId === state.user?.id && snapshot.integrated === state.integrated && snapshot.csrf === state.integrated?.csrfToken && snapshot.session === state.transferSession;
   const transferContext = () => ({ userId: state.user?.id, session: state.transferSession });
   const transferCurrent = context => Boolean(context.userId && context.userId === state.user?.id && context.session === state.transferSession);
   function resetTransfers() {
