@@ -326,11 +326,12 @@ const Lesson: React.FC<{ L: LocText }> = ({ L }) => {
   const notLit = sec >= tNot && sec < tSee;
   const seeLit = sec >= tSee && sec < T.n2;
   const seeBump = interpolate(frame, [fr(tSee), fr(tSee) + 4, fr(tSee) + 10], [1, 1.1, 1], clamp);
+  const k = L.lessonScale ?? 1;
   return (
     <AbsoluteFill>
       {/* 카페가 멈춘 장면(⏸) 위에서 배운다 — 바리스타는 손을 든 채, 몽글은 반짝이는 채 */}
       {/* 올리기 전 검사 「정지 27% · 15~18.5초 정지」(v3) — 11초 칸이라 E3보다 배경을 더 크게 밀어 들어간다 */}
-      <Scene src="s1.jpg" from={T.lesson} to={T.s5} ox={-20} focus={[620, 900]} zoom={[1.03, 1.3]} css="grayscale(0.85) brightness(0.6)" />
+      <Scene src="s1.jpg" from={T.lesson} to={T.s5} ox={-20} focus={[620, 900]} zoom={[1.03, 1.3]} css={L.freezeCss ?? 'grayscale(0.85) brightness(0.6)'} />
       <AbsoluteFill style={{ background: 'linear-gradient(180deg, rgba(14,10,8,0.6) 0%, rgba(14,10,8,0.4) 60%, rgba(14,10,8,0.18) 100%)' }} />
       <div style={{ position: 'absolute', top: 285, left: 0, width: 1080, textAlign: 'center', transform: `translateY(${(1 - inP) * 40}px)`, opacity: inP }}>
         <span
@@ -358,10 +359,10 @@ const Lesson: React.FC<{ L: LocText }> = ({ L }) => {
         </Line>
       </div>
       <div style={{ position: 'absolute', top: 545, left: 0, width: 1080, textAlign: 'center', fontFamily: EN, fontWeight: 800, opacity: glossP }}>
-        <div style={{ fontSize: 46, color: notLit ? BUTTER : 'rgba(255,255,255,0.85)', textShadow: '0 3px 12px rgba(0,0,0,0.6)' }}>✗ {L.lesson.notPlan}</div>
+        <div style={{ fontSize: 46 * k, color: notLit ? BUTTER : 'rgba(255,255,255,0.85)', textShadow: '0 3px 12px rgba(0,0,0,0.6)' }}>{L.lesson.notPlan}</div>
         <div
           style={{
-            fontSize: 60,
+            fontSize: 60 * k,
             marginTop: 6,
             color: seeLit ? BUTTER : '#fff',
             textShadow: '0 3px 14px rgba(0,0,0,0.65)',
@@ -381,7 +382,7 @@ const Lesson: React.FC<{ L: LocText }> = ({ L }) => {
           textAlign: 'center',
           fontFamily: EN,
           fontWeight: 800,
-          fontSize: 44,
+          fontSize: 44 * k,
           color: '#fff',
           opacity: glossP,
           textShadow: '0 3px 12px rgba(0,0,0,0.6)',
@@ -396,7 +397,7 @@ const Lesson: React.FC<{ L: LocText }> = ({ L }) => {
             네, 좋아요!
           </Line>
         </div>
-        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 42, color: '#fff', marginTop: 12, opacity: glossP }}>{L.lesson.joayo}</div>
+        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 42 * k, color: '#fff', marginTop: 12, opacity: glossP }}>{L.lesson.joayo}</div>
       </div>
       {frame >= fr(T.n3) ? (
         <div style={{ position: 'absolute', top: 1095, left: 0, width: 1080, textAlign: 'center', opacity: turnP, transform: `scale(${0.7 + 0.3 * turnP})` }}>
@@ -412,7 +413,7 @@ const Lesson: React.FC<{ L: LocText }> = ({ L }) => {
               borderRadius: 999,
             }}
           >
-            {L.lesson.turn}
+            {L.lesson.again && sec < T.turnGap[0] ? L.lesson.again : L.lesson.turn}
           </div>
           <div style={{ width: 520, height: 14, margin: '22px auto 0', borderRadius: 7, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
             <div style={{ width: `${gap * 100}%`, height: '100%', background: BUTTER, borderRadius: 7 }} />
@@ -474,7 +475,7 @@ const Sound: React.FC<{ voice: boolean }> = ({ voice }) => {
   const talk: [number, number][] = [
     [T.b1, T.b1 + 1.55],
     [T.b2, T.b2 + 2.25],
-    ...(voice ? [[T.n1, T.n1 + 4.2] as [number, number]] : []),
+    voice ? [T.n1, T.n1 + 4.2] : [T.n1 + 0.2, T.n1 + 1.8],
     [T.n2, T.n2 + 1.8],
     [T.n3, T.turnGap[1]],
     [T.b3, T.b3 + 1.15],
@@ -504,7 +505,8 @@ const Sound: React.FC<{ voice: boolean }> = ({ voice }) => {
       <Sfx file="bassdown.wav" t={T.s3 + 0.15} vol={0.3} />
       <Vo id="b2" t={T.b2} />
       <Sfx file="whoosh.wav" t={T.lesson - 0.1} vol={0.3} />
-      {voice ? <Vo id="n1" t={T.n1} /> : null}
+      {/* 목소리 없는 판(간체)은 해설 자리에 바리스타의 그 말을 한 번 더 — 들은 말과 뜻 줄이 이어지게, 8~12초가 조용히 멈추지 않게 */}
+      {voice ? <Vo id="n1" t={T.n1} /> : <Vo id="b1" t={T.n1 + 0.2} />}
       <Sfx file="pop.wav" t={T.n1 + N1_WORDS.see} vol={0.25} />
       <Vo id="n2" t={T.n2} />
       <Sfx file="pop.wav" t={T.n2 + N2_WORDS.ne} vol={0.25} />

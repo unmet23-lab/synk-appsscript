@@ -1,0 +1,6 @@
+0.5s  다음에 밥 한번 먹어요! (Korean, man's voice)
+5.0s  아, 네. 그냥, 다음에요. (Korean, man's voice)
+8.1s  다음에 밥 한번 먹어요! (Korean, man's voice — 한 번 더)
+12.2s  네, 좋아요! (Korean, woman's voice)
+14.2s  네, 좋아요! (Korean, woman's voice — 한 번 더)
+19.2s  네! 또 오세요! (Korean, man's voice)

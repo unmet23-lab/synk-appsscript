@@ -2,7 +2,7 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { ITEMS, MN, Msg } from './data';
+import { ITEMS, LOCS, Loc, LocText, Msg } from './data';
 import { CARD, fr, MSGS, T } from './timeline';
 
 const C = {
@@ -19,6 +19,10 @@ const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE = Easing.bezier(0.16, 1, 0.3, 1);
 const EMOJI = "'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
 
+// 10-27 두 채널 판: 판별 글은 이 문맥으로 내려 준다(몽골판이 기본)
+const LocCtx = React.createContext<LocText>(LOCS.mn);
+const useL = () => React.useContext(LocCtx);
+
 const useSpringAt = (t: number, cfg: { damping?: number; stiffness?: number; mass?: number } = {}) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -28,16 +32,17 @@ const useSpringAt = (t: number, cfg: { damping?: number; stiffness?: number; mas
 // ── 위 띠 · 대화 머리 ───────────────────────────────────────────────
 /** 위 띠: 처음엔 「한국 친구와 채팅할 때」, 첫 풀이부터 그 아래 규칙 한 줄을 크게 남긴다. */
 const Band: React.FC = () => {
+  const L = useL();
   const s = useSpringAt(T.rule, { damping: 14, stiffness: 190 });
   const on = useCurrentFrame() >= fr(T.rule);
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 430, background: C.coral }}>
-      <div style={{ position: 'absolute', left: 70, width: 830, top: on ? 274 : 284, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: on ? 34 : 54, lineHeight: 1.12, color: C.brown, opacity: on ? 0.75 : 1 }}>
-        {MN.band}
+      <div style={{ position: 'absolute', left: 70, width: 830, top: on ? 274 : 284, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: on ? 34 : L.size.band, lineHeight: 1.12 * L.lh, color: C.brown, opacity: on ? (L.ruleTwoLines ? 0 : 0.75) : 1 }}>
+        {L.band}
       </div>
       {on ? (
-        <div style={{ position: 'absolute', left: 70, width: 830, top: 318, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 50, lineHeight: 1.06, color: '#FFFFFF', opacity: interpolate(s, [0, 0.5], [0, 1], clamp), transform: `scale(${0.85 + 0.15 * s})` }}>
-          {MN.rule}
+        <div style={{ position: 'absolute', left: 70, width: 830, top: L.ruleTwoLines ? 284 : 318, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: L.size.rule, lineHeight: 1.06 * L.lh, color: '#FFFFFF', opacity: interpolate(s, [0, 0.5], [0, 1], clamp), transform: `scale(${0.85 + 0.15 * s})` }}>
+          {L.rule}
         </div>
       ) : null}
     </div>
@@ -48,7 +53,7 @@ const Header: React.FC = () => (
   <div style={{ position: 'absolute', left: 0, top: 430, width: 1080, height: 110, background: '#FFFFFF', borderBottom: `2px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 22, paddingLeft: 40 }}>
     <div style={{ fontFamily: EN, fontSize: 64, color: C.brown, opacity: 0.6, marginTop: -8 }}>‹</div>
     <div style={{ width: 70, height: 70, borderRadius: 35, background: C.coral, color: '#FFFFFF', fontFamily: KO, fontWeight: 800, fontSize: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>민</div>
-    <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 40, color: C.brown }}>{MN.friend}</div>
+    <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 40, color: C.brown }}>{LOCS.mn.friend}</div>
     <div style={{ width: 14, height: 14, borderRadius: 7, background: '#4CC17A', marginLeft: -6, marginTop: 4 }} />
   </div>
 );
@@ -217,7 +222,9 @@ const MongleBadge: React.FC<{ phase: number }> = ({ phase }) => (
   </div>
 );
 
-const HookCard: React.FC = () => (
+const HookCard: React.FC = () => {
+  const L = useL();
+  return (
   <CardShell from={0} to={T.cards[0]} bg={C.bake} instant>
     <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
       <div style={{ width: 360, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -227,18 +234,20 @@ const HookCard: React.FC = () => (
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 116, lineHeight: 1, color: C.brown, letterSpacing: 2 }}>
           {ITEMS[0].bubble} <span style={{ fontFamily: EN, color: '#FFFFFF' }}>= ?</span>
         </div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 54, lineHeight: 1.08, color: C.brown }}>{MN.hook}</div>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.hook, lineHeight: 1.08 * L.lh, color: C.brown }}>{L.hook}</div>
       </div>
     </div>
   </CardShell>
-);
+  );
+};
 
 const ItemCard: React.FC<{ i: number }> = ({ i }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const c = T.cards[i];
   const next = i < T.cards.length - 1 ? T.cards[i + 1] : T.end;
-  const it = ITEMS[i];
+  const L = useL();
+  const it = L.items[i];
   const sylS = useSpringAt(c + CARD.syl);
   const readS = useSpringAt(c + CARD.read);
   const meanS = useSpringAt(c + CARD.mean);
@@ -269,7 +278,7 @@ const ItemCard: React.FC<{ i: number }> = ({ i }) => {
         <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 46, color: C.coralShade, marginTop: 10, opacity: interpolate(readS, [0, 0.5], [0, 1], clamp), transform: `translateY(${(1 - readS) * 16}px)` }}>
           [{it.read}]
         </div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 64, color: C.brown, lineHeight: 1.05, textAlign: 'left', paddingRight: 40, opacity: interpolate(meanS, [0, 0.5], [0, 1], clamp), transform: `translateY(${(1 - meanS) * 20}px)` }}>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.mean, color: C.brown, lineHeight: 1.05 * L.lh, textAlign: 'left', paddingRight: 40, opacity: interpolate(meanS, [0, 0.5], [0, 1], clamp), transform: `translateY(${(1 - meanS) * 20}px)` }}>
           {it.mean}
         </div>
       </div>
@@ -278,6 +287,7 @@ const ItemCard: React.FC<{ i: number }> = ({ i }) => {
 };
 
 const EndCard: React.FC = () => {
+  const L = useL();
   const s2 = useSpringAt(T.end + 0.5);
   const s3 = useSpringAt(T.end + 1.1);
   return (
@@ -287,11 +297,11 @@ const EndCard: React.FC = () => {
           <Mongle src="img/mongle_laugh.jpg" size={350} hop />
         </div>
         <div style={{ flex: 1, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 58, lineHeight: 1.05, color: C.brown }}>{MN.endQ}</div>
-          <div style={{ alignSelf: 'flex-start', whiteSpace: 'nowrap', background: '#FFFFFF', borderRadius: 18, padding: '10px 18px 12px', fontFamily: EN, fontWeight: 800, fontSize: 40, color: C.coralShade, opacity: interpolate(s2, [0, 0.5], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * s2})`, transformOrigin: 'left center' }}>
-            {MN.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
+          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.endQ, lineHeight: 1.05 * L.lh, color: C.brown }}>{L.endQ}</div>
+          <div style={{ alignSelf: 'flex-start', whiteSpace: 'nowrap', background: '#FFFFFF', borderRadius: 18, padding: '10px 18px 12px', fontFamily: EN, fontWeight: 800, fontSize: L.size.endC, lineHeight: 1.2 * L.lh, color: C.coralShade, opacity: interpolate(s2, [0, 0.5], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * s2})`, transformOrigin: 'left center' }}>
+            {L.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
           </div>
-          <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 30, lineHeight: 1.15, color: C.brown, paddingRight: 10, opacity: interpolate(s3, [0, 0.5], [0, 1], clamp) }}>{MN.endS}</div>
+          <div style={{ fontFamily: EN, fontWeight: 600, fontSize: L.size.endS, lineHeight: 1.15 * L.lh, color: C.brown, paddingRight: 10, opacity: interpolate(s3, [0, 0.5], [0, 1], clamp) }}>{L.endS}</div>
         </div>
       </div>
     </CardShell>
@@ -320,8 +330,9 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => (
-  <AbsoluteFill style={{ backgroundColor: C.paper }}>
+export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => (
+  <LocCtx.Provider value={LOCS[loc]}>
+  <AbsoluteFill style={{ backgroundColor: C.paper, ...(LOCS[loc].font ? ({ '--kids-font': LOCS[loc].font } as React.CSSProperties) : {}) }}>
     <Wallpaper />
     <Chat />
     <Header />
@@ -333,4 +344,5 @@ export const Film: React.FC = () => (
     <EndCard />
     <Sound />
   </AbsoluteFill>
+  </LocCtx.Provider>
 );

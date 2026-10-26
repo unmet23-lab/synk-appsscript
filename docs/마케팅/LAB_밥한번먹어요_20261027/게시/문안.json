@@ -1,5 +1,5 @@
 {
- "_설명": "E8 「다음에 밥 한번 먹어요」 게시글 정본(10-27). 화면 글 정본은 ../remotion/src/film/locale.ts · Film.tsx, 시간표는 timeline.ts. 판별 글(01-youtube-en/)은 이 파일에서 만든다. 학습 허브 링크는 10-27 07:3x 응답 200 확인.",
+ "_설명": "E8 「다음에 밥 한번 먹어요」 게시글 정본(10-27). 화면 글 정본은 ../remotion/src/film/locale.ts · Film.tsx, 시간표는 timeline.ts. 판별 글(01-youtube-en/)은 이 파일에서 만든다. 학습 허브 링크는 10-27 07:3x 응답 200 확인. 10-27 두 채널 판: 샤오훙수 간체 「zhs」 칸 — 화면 글 정본은 ../remotion/src/film/locale.ts, 글은 03-xiaohongshu-cn/게시문안.txt.",
  "_ko": {
   "title": "POV: 앱으로 한국어를 배웠는데… 바리스타가 밥 먹자고 한다?! 🍚",
   "description": "「다음에 밥 한번 먹어요!」 — 교과서 머리로는 저녁 초대! 📅\n실제로는 대개 「또 봐요」 같은 다정한 인사야. 날짜를 안 잡아도 돼. 😅\n\n이 말을 들으면 이렇게만 해:\n👉 네, 좋아요! — 좋아요!\n(친구끼리는 반말로 「다음에 밥 한번 먹자!」)\n(정말 만나고 싶으면 상대가 먼저 날짜를 물어 올 거야 😉)\n\n또 아는 한국어 「예의상 하는 말」은? 👇\n\n🎮 한국어 듣기·읽기 미니 게임: https://synk.im/try/learning-hub/",
@@ -11,5 +11,11 @@
   "description": "“다음에 밥 한번 먹어요!” (Let's grab a meal sometime!) — your textbook brain says: a dinner invite! 📅\nIn real life it's usually just a friendly goodbye, like “see you around.” No date needed. 😅\n\nWhen you hear it, just say:\n👉 네, 좋아요! — Sounds good!\n(Between friends you'll hear the casual version: 다음에 밥 한번 먹자!)\n(If they really mean it, they'll ask you for a date. 😉)\n\nWhat other Korean “polite lies” do you know? 👇\n\n🎮 Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #korean",
   "pinned_comment": "One more: 언제 한번 봐요! (Let's meet up sometime!) 😉 Usually just a friendly goodbye, too. Your turn 👇\n🎮 New to Korean? Listening & reading mini games → https://synk.im/try/learning-hub/",
   "alt": "A needle-felted café. A small coral ghost-shaped plush stands on the counter next to an iced americano while a felt barista waves goodbye and says “다음에 밥 한번 먹어요!” (Let's grab a meal sometime!). The plush lights up, opens a felt calendar on its phone and asks “와! 언제요? 화요일 7시?” (Wow! When? Tuesday at 7?). The barista's wave freezes with an awkward smile — “아, 네. 그냥, 다음에요.” (Uh… yeah. Just… sometime.) — under a NOT A REAL PLAN stamp. A paused-café card titled REAL KOREAN THAT WORKS explains: 다음에 밥 한번 먹어요 is not a real plan, it means “See you around!”; when you hear it, just say 네, 좋아요! (Sounds good!), with a pause to say it out loud. The plush says it, the barista happily waves “네! 또 오세요!” (Great! Come again!), and the video asks what other Korean “polite lies” you know."
+ },
+ "zhs": {
+  "account": "샤오훙수 SYNK LAB(lab-cn-xiaohongshu, 제목 20자 제한)",
+  "title": "韩国店员约我吃饭？别当真🍚",
+  "caption": "用App学韩语，听到店员说这句，你会不会当真？🍚\n\n다음에 밥 한번 먹어요!（下次一起吃个饭吧！）\n😅 课本脑：这是真邀请！马上打开日历约时间……\n其实大多只是客套话，意思是“回头见”，不用约时间。\n就像我们常说的“改天一起吃个饭”一样～\n\n听到这句，回一句就好：\n👉 네, 좋아요! — 好呀！\n（朋友之间用半语说：다음에 밥 한번 먹자!）\n（如果对方真想约，会主动问你什么时候有空😉）\n\n跟读一下：네, 좋아요!\n\n你还知道哪些韩国人的“客套话”？评论区告诉我👇\n\nSYNK LAB｜和Mongle一起学韩语\n#学韩语 #韩语学习 #韩语入门 #韩国文化",
+  "_ko": "[게시 제목] 한국 카페 직원이 나한테 밥 먹자고 한다고? 진지하게 받아들이지 마 / [게시글] 앱으로 한국어를 배웠는데, 직원이 이 말을 하면 진짜로 믿을래? / 다음에 밥 한번 먹어요!(다음에 같이 밥 한번 먹자!) / 교과서 머리: 진짜 초대다! 바로 달력을 열고 시간을 잡는다…… / 사실 대개 인사치레라 「또 봐요」라는 뜻이고, 시간을 잡을 필요 없어. / 우리가 흔히 「언제 같이 밥 한번 먹자」라고 하는 것과 같아 / 이 말을 들으면 한마디만 대답하면 돼: 네, 좋아요! — 좋아! / (친구끼리는 반말로 말해: 다음에 밥 한번 먹자!) / (상대가 정말 만나고 싶으면 먼저 언제 시간 되냐고 물어볼 거야) / 따라 읽어 봐: 네, 좋아요! / 한국 사람들의 「인사치레 말」 또 뭘 알아? 댓글로 알려 줘 / SYNK LAB｜몽글과 함께 배우는 한국어"
  }
 }
