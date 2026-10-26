@@ -435,6 +435,7 @@
 - 고침: 앞 컷을 고칠 그림으로 두고 「Edit the first attached photo (Image 1). Keep exactly the same camera position and height, … Pull the camera back just enough to fit the whole action. Change only the moment - …」로 순간만 바꾸면 카메라·배경이 그대로 남았다(6판). 이때 화면 밖이던 것(그의 신발)은 새로 그리며 틀릴 수 있어 같은 대화에서 「신발만 흰 운동화로」를 한 번 더 했다.
 - 다시 확인: 두 컷을 나란히 놓고 배경의 수평선·난간 선이 같은 높이·같은 기울기인지.
 - 10-19 밤 더: 이렇게 앞 컷에서 이어 그린 그림은 앞 컷의 잘못(까몽이 가방 옆면, 뿌연 하늘)도 그대로 물려받는다 — 고칠 때 이어진 컷을 같이 고친다. 물건을 「옮겨 달라」면 하나가 더 생길 수 있다(K03 8판: 공중에 하나 + 가슴 끈에 하나) → 같은 대화에서 「exactly ONE …, keep the one …, remove the second …」로 하나만 남기면 됐다.
+- 10-26 더(Claude): 자세가 크게 바뀌어(젖혀 앉음 → 바로 앉음) 편집 꼴 대신 첫 그림을 여섯째 참조로 「Image 6 is the FIRST frame of this exact locked-off shot … keep … exactly where they are and exactly as large」라고 새로 굽자 소품 · 배경은 그대로 왔지만 카메라가 9% 멀어지고 옆으로 138px(2752 폭) 옮겨졌다(PULSE 8번 7번 컷). 사람 자리를 뺀 배경만으로 SIFT 닮음 변환을 재 그 역변환으로 끝 그림을 첫 그림 틀에 옮기면 배율 1.000 · 어긋남 1px — 색 · 얼굴을 손대지 않는 틀 맞춤이라 후보정 금지와 부딪히지 않는다(`castingbook-app-20261024/이미지콘티_고름.py`의 `END` · `fit_end`). 맞춘 끝 그림은 도구가 만들게 둔다 — 일회성 코드로 만든 판은 고름 도구를 다시 돌릴 때 옛 판으로 덮였다.
 
 ### 영상 끝 그림 · 시작 그림은 앞 클립 프레임이나 확정 그림을 「편집」으로 고친다
 - 증상: 10-20 하린 컷 2 둘째 뽑기에 시작 그림과 카메라가 같고 물방울만 다른 그림이 필요했다. 새로 그리게 하면 구도가 달라져, 영상 모델이 그 차이를 카메라 이동이나 하드컷으로 잇는다(현장 노트 Higgsfield 「구도가 다른 시작 · 끝 그림」).
