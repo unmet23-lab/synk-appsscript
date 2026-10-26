@@ -254,6 +254,35 @@ fix("S07b", ("stands in front of the glass middle door at the end of the room, f
      "Image 5") + ")"),
     ("Backlight from the glass door.", "The black sports watch is on his LEFT wrist (the hand on the right side of the frame). "
      "Backlight from the glass door."))
+# 6 다시(7차 S06b가 손 하나 · 위에서 · 개가 큼) — 손은 오른쪽 가장자리에서 개 등 높이로 수평, 두 손이 손잡이 하나씩, 개는 작게.
+shots["S06c"] = {"refs": shots["S06b"]["refs"], "prompt": shots["S06b"]["prompt"]}
+fix("S06c", ("the man's two forearms come in from the right edge of the frame at about the dog's back height, not from above,",
+             "the man, crouching just outside the right edge of the frame, reaches in with BOTH arms held level at the height of the dog's "
+             "back — two forearms and TWO hands are clearly visible, never reaching down from above,"),
+    ("; one hand grips each,", "; the nearer hand grips the handle toward the dog's shoulders and the other hand grips the handle toward its "
+     "hips — two hands, two handles,"),
+    ("the dog about one fifth of the frame height,", "the camera is far back and the dog is SMALL in the frame — from its ear tips to its "
+     "paws it takes only about one fifth of the frame height,"))
+# Fable 2차(10-26 21:5x) — 굽기 전 손질: S01c 머리 꼭대기는 수평선 바로 아래(귀 끝이 위 가장자리에 닿는다는 앞 문장과 부딪힘),
+# S02b 하늘 문장 뺌, 7 · 10 문은 「바로 뒤 · 어깨 옆에 문틀」, 손잡이는 이 참고를 따름, 민재 머리 참고는 Image 2. 9는 방 방향(창 오른쪽)으로 다시.
+fix("S01c", ("the crest of hair and the tips of the big ears touch the top edge,",
+             "the top of the head (the crest) sits about a third of the way down the frame, just below the sea horizon; the big upright "
+             "ears rise above the horizon into the sky but are NOT cut by the top edge;"))
+fix("S02b", ("a soft blue sky with a few white clouds, ", ""))
+STRICT = " — if another image shows the handles elsewhere, follow this one"
+for k in ("S07b", "S10b"):
+    fix(k, ("the door fills the frame behind him", "the door is right behind him, its frame visible beside his shoulders"),
+        ("(as in Image 1)", "(as in Image 2)"))
+for k, n in (("S06c", "4"), ("S07b", "5"), ("S10b", "5")):
+    fix(k, (f"(as in Image {n}, which is only a reference for the jacket)", f"(as in Image {n}, which is only a reference for the jacket{STRICT})"))
+fix("S06c", ("the nearer hand grips the handle toward the dog's shoulders and the other hand grips the handle toward its hips",
+             "the two handles sit one behind the other along the spine; the hand closer to the dog's head grips the front handle and the "
+             "other hand grips the back handle"))
+shots["S09d"] = {"refs": shots["S09c"]["refs"], "prompt": shots["S09c"]["prompt"]}
+fix("S09d", ("The room behind is EMPTY and soft, out of focus:",
+             "The room behind is the same studio as in the other shots, seen in the same direction: the big window with the sheer curtain, "
+             "the bed and the potted plant are on the RIGHT side of the frame behind the dog, the glass middle door on the LEFT side "
+             "behind. The room is EMPTY and soft, out of focus:"))
 for k, v in shots.items():
     v["ratio"] = "9:16"
 jobs.update(shots)
