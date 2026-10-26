@@ -225,3 +225,58 @@ test('기본표 — 10-20~10-22 master 빨강을 낸 push의 경로는 골리고
   assert.deepEqual(이름(['docs/_ops/트랙.md', 'docs/_ops/결정.md', 'docs/현장노트/git_줄끝_잠금.md', 'README.md', 'AGENTS.md']), []);
   assert.deepEqual(이름(['docs/마케팅/제작양식/만족사례_장부.md', 'tools/바로올리기.js']), []);
 });
+
+test('기본표 — 포털 외부 계정 원천과 실제 하위 의존은 선택하고 무관한 게임 파일은 제외한다', () => {
+  const 포털 = (p) => 짝.고르기({ root: REPO, 바뀐: [p] }).some((x) => x.줄.이름 === '계정 포털·교사 연결 묶음');
+  // 실제 account-view → account-host → play-data → 두 검증 모듈. 빌드된 사본의 주석에 의존하지 않는다.
+  for (const p of ['experiences/play-common/account-host.mjs', 'experiences/play-common/play-data.mjs',
+    'experiences/korean-racing/garage-core.js', 'experiences/hangul-stage/progress-data.mjs']) {
+    assert.equal(포털(p), true, `포털에 묶이는 외부 원천을 놓쳤다: ${p}`);
+  }
+  for (const p of ['experiences/play-common/racing-command.mjs', 'experiences/play-common/account-host.test.mjs',
+    'experiences/korean-racing/campaign.js', 'docs/_ops/트랙.md']) assert.equal(포털(p), false, p);
+});
+
+test('모듈 원천 — 실제 import 사슬만 따라 순환·중복·저장소 밖을 막고 생성물 누락도 잡는다', async (t) => {
+  const { root } = 폴더(t, {
+    'portal/entry.mjs': "import {host} from '../shared/host.mjs'; import('../shared/host.mjs');\n",
+    'shared/host.mjs': "export {data as host} from './data.mjs';\n",
+    'shared/data.mjs': "import '../portal/entry.mjs'; import {x} from '../portal/entry.mjs'; import('../../outside.mjs'); import('external-package'); export const data=1;\n",
+    'shared/unrelated.mjs': 'export const other=1;\n',
+  });
+  const 표 = [짝줄({ 원천: [], 주석원천: [], 모듈원천: ['portal/entry.mjs', 'portal/entry.mjs', '../outside.mjs'] })];
+  const 고름 = 고른(root, ['shared/data.mjs'], 표);
+  assert.equal(고름.length, 1, '두 겹 아래 실제 원천이 바뀌면 생성물 검사를 선택한다');
+  assert.deepEqual(고른(root, ['shared/unrelated.mjs', '../outside.mjs', 'node_modules/external-package/index.js'], 표), []);
+  assert.equal(짝.보는파일(root, 표[0], { 읽기: false }).파일.has('shared/data.mjs'), false, '문서만 바꾸면 모듈 파일을 열지 않는다');
+  const 결과 = await 짝.돌리기({ root, 고름, 올린: ['shared/data.mjs'], 더러운: [
+    { 경로: 'shared/data.mjs', 추적: true }, { 경로: 'out/가.txt', 추적: true },
+  ] });
+  assert.equal(결과.결과[0].판정, '통과', '가짜 생성기 자체는 정상인 상태에서 빠뜨린 파일을 확인한다');
+  assert.equal(결과.결과[0].막음, true);
+  assert.deepEqual(결과.결과[0].안올린, [{ 경로: 'out/가.txt', 결과물: true }]);
+});
+
+for (const 지울 of ['experiences/play-common/account-host.mjs', 'experiences/play-common/play-data.mjs',
+  'experiences/korean-racing/garage-core.js']) test(`기본표 — 실제 포털 의존 삭제도 선택한다: ${지울}`, (t) => {
+  const { root } = 폴더(t, {});
+  const 줄 = 짝.기본표(REPO).find((x) => x.이름 === '계정 포털·교사 연결 묶음');
+  // 실제 원천을 격리 사본으로 옮긴 뒤 하나만 지운다. 작업본 원천·생성물은 건드리지 않는다.
+  for (const p of 짝.보는파일(REPO, 줄).파일.keys()) {
+    const 원본 = path.join(REPO, p);
+    if (!fs.existsSync(원본) || !fs.statSync(원본).isFile()) continue;
+    fs.mkdirSync(path.dirname(path.join(root, p)), { recursive: true });
+    fs.copyFileSync(원본, path.join(root, p));
+  }
+  assert.equal(고른(root, [지울], [줄]).length, 1);
+  fs.unlinkSync(path.join(root, 지울));
+  assert.equal(고른(root, [지울], [줄]).length, 1, '삭제된 공유 원천도 생성기 검사를 선택해야 한다');
+});
+
+test('모듈 원천 — 없는 확장자 생략 import는 기존 해석 후보만 보고 일반 스크립트 계약은 유지한다', (t) => {
+  const { root } = 폴더(t, { 'portal/entry.mjs': "export {x} from '../shared/missing';\n" });
+  const 줄 = 짝줄({ 원천: [], 주석원천: [], 모듈원천: ['portal/entry.mjs'] });
+  assert.deepEqual(짝.스크립트가부르는(root, 'portal/entry.mjs'), []);
+  for (const p of ['shared/missing.js', 'shared/missing.mjs', 'shared/missing/index.js']) assert.equal(고른(root, [p], [줄]).length, 1);
+  assert.deepEqual(고른(root, ['shared/missing.ts', 'shared/other.js'], [줄]), []);
+});

@@ -13,9 +13,10 @@
  *
  * 표의 줄(기본표) — CI가 같은 단계에서 도는 결정적 검사 하나:
  *   { 이름, 단계(CI 단계·시험 파일), 명령(node 인자) | 시험[파일, 이름무늬] | 함수(root)→{통과, 글}, 고침(보일 명령),
- *     결과물[], 원천[], 주석원천[], 있어야[], 환경[], 낡음(무늬), 작업본대조(기본 true) }
+ *     결과물[], 원천[], 주석원천[], 모듈원천[], 있어야[], 환경[], 낡음(무늬), 작업본대조(기본 true) }
  *   원천·결과물은 저장소 기준 파일이나 무늬(`*` 한 칸 · `**` 여러 칸)다. 주석원천은 esbuild 묶음 파일이고, 그 안의 `// <경로>` 줄이
  *   묶인 모듈이다(묶음을 다시 만들 때마다 저절로 따라온다). 명령 스크립트가 상대 경로로 부르는 파일(import·require)도 원천이다.
+ *   모듈원천은 실제 빌드 진입점이다. 상대 import·require 사슬을 따라 저장소 안 원천만 더한다.
  *   명령 스크립트·시험 파일·있어야 파일이 이 저장소에 없으면 그 줄은 없는 셈이다(시험용 임시 저장소).
  * 고르기: 이번 push의 경로가 그 줄의 원천·결과물에 걸릴 때만 고른다. 상관없는 push(문서·장부)는 아무것도 안 돈다.
  * 돌리기: 작업본에서 돈다(줄끼리 함께). 그래서 작업본이 올릴 판과 같아야 뜻이 있다 — 그 줄이 보는 파일이 작업본에서 바뀌었는데
@@ -67,7 +68,7 @@ function 묶인모듈(root, 묶음) {
 }
 
 /** 명령 스크립트가 상대 경로로 부르는 저장소 안 파일(import·require 한 겹). 확장자 없는 것은 .js·.mjs·/index.js 순으로 찾는다. */
-function 스크립트가부르는(root, 스크립트) {
+function 스크립트가부르는(root, 스크립트, { 없는것 = false } = {}) {
   let 글;
   try { 글 = fs.readFileSync(path.join(root, 스크립트), 'utf8'); } catch { return []; }
   const 폴더 = path.posix.dirname(슬래시(스크립트));
@@ -78,6 +79,7 @@ function 스크립트가부르는(root, 스크립트) {
     const 후보 = /\.[a-z0-9]+$/i.test(붙인) ? [붙인] : [`${붙인}.js`, `${붙인}.mjs`, `${붙인}/index.js`];
     const 있는 = 후보.find((p) => fs.existsSync(path.join(root, p)));
     if (있는) 결과.add(있는);
+    else if (없는것) for (const p of 후보) 결과.add(p); // 모듈 원천은 삭제도 검사해야 한다.
   }
   return [...결과];
 }
@@ -142,6 +144,8 @@ function 기본표(root = 뿌리) {
     원천: ['experiences/synk-account/src/**', 'experiences/synk-account/index.html', 'experiences/synk-account/package.json',
       'experiences/mascot-render-lab/three/**', 'account/world-learning-host.js', 'desktop/renderer/member-insight.css',
       'tools/build-synk-account.js', 'tools/build-member-activity.js', 'tools/build-messenger-teaching.cjs'],
+    // build-synk-account.js의 여섯 진입점: account-host 같은 외부 공유 모듈도 실제 의존 사슬로 고른다.
+    모듈원천: ['app', 'client', 'preview', 'platform', 'local-world', 'teacher'].map((name) => `experiences/synk-account/src/${name}.mjs`),
     낡음: /^FAIL /m,
   });
   표.push({
@@ -182,6 +186,16 @@ function 보는파일(root, 줄, { 읽기 = true } = {}) {
   if (줄.명령) { 넣기(줄.명령[0], false); for (const p of 스크립트가부르는(root, 줄.명령[0])) 넣기(p, false); }
   if (줄.시험) 넣기(줄.시험[0], false);
   if (읽기) for (const 묶음 of 줄.주석원천 || []) for (const p of 묶인모듈(root, 묶음)) 넣기(p, false);
+  if (읽기) {
+    const 읽을 = [...(줄.모듈원천 || [])], 읽은 = new Set();
+    while (읽을.length) {
+      const p = path.posix.normalize(슬래시(읽을.pop()));
+      if (p === '..' || p.startsWith('../') || path.isAbsolute(p) || 읽은.has(p)) continue;
+      읽은.add(p);
+      넣기(p, false);
+      읽을.push(...스크립트가부르는(root, p, { 없는것: true }));
+    }
+  }
   return { 파일, 무늬 };
 }
 
