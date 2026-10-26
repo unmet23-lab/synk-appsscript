@@ -65,10 +65,10 @@ JOBS = [
         expression="he is already looking straight into the lens with his head turned toward it — a calm neutral face, lips closed, one eyebrow "
                    "raised very slightly, a tiny dry questioning look; no smile.",
         light="LIGHT: soft bright daylight from the cabin windows plus a large soft frontal light on his face from the camera side — gentle natural shadows."),
-    # 원본은 밤 · 뒤보기 좌석 · 왼손으로 천장 손잡이 · 동행은 카메라 앞 좌석(Fable 1차 P1-2)
+    # 원본은 밤 · 뒤보기 좌석 · 오른손(화면 왼쪽)으로 천장 손잡이 · 동행은 카메라 앞 좌석(Fable 1차 P1-2)
     job("C02",
         "AT NIGHT INSIDE AN AIRPORT RENTAL-CAR SHUTTLE BUS IN JEJU, 9:16, exactly as in Image {L}: seen from a seat a couple of rows away at seated eye "
-        "height, he sits in a rear-facing grey bus seat on the right side of the picture, his body facing the camera, his left arm raised holding the "
+        "height, he sits in a rear-facing grey bus seat on the right side of the picture, his body facing the camera, his right arm (on the left side of the picture) raised holding the "
         "overhead grab handle. In the seat right in front of the camera, at the lower left of the picture, only the back of a woman companion's head (hair "
         "clip) and a man companion's shoulder show. Grey bus seats, half-drawn curtains, and dark windows with orange streetlights outside.",
         W_TEE,
@@ -78,7 +78,7 @@ JOBS = [
     job("C03",
         "A HOTEL INFINITY POOL ON THE JEJU COAST, 9:16, exactly as in Image {L}: a wide view across bright turquoise water from the pool edge at standing "
         "eye height. He floats in the middle of the pool, small in the picture — his head at about 40 percent of the picture height from the top, a little "
-        "right of center — resting his arms on a white-and-blue striped swim ring, his wet head and shoulders above the water, looking toward the camera. "
+        "right of center — leaning on a large inflatable swim ring with wide white and blue stripes that floats in front of his chest — the ring is clearly visible and bigger than his head — his wet head, shoulders and forearms above the water, looking toward the camera. "
         "Along the far side: palm trees, white sun loungers with a few guests, a low stone hotel building; beyond the infinity edge the dark blue sea and "
         "a pale sky at the top.",
         "A plain white short-sleeve rash guard, wet.",
@@ -101,27 +101,34 @@ JOBS = [
         "left side of the picture and his head turned to the lens. Behind him on the slope stands a small cone-shaped Jeju stone tower made of black lava "
         "rocks, and a few hikers far away on the ridge.",
         W_CAMEL),
+    # 원본 7 · 8: 두건으로 코까지 덮은 채 뒤돌아 앉아 있다가(7) 가까이 붙으면 손가락으로 두건을 턱 밑까지 내려 얼굴을 드러낸다(8, 21.9~22.3초 — 아르곤 대조 · 0.1초 프레임)
     job("C07",
         "AT AN ATV RIDING PARK IN JEJU, 9:16, exactly as in Image {L}: seen from behind at standing height a few steps away, he sits astride a red "
-        "four-wheel ATV in the center of the picture with his back to the camera, both hands on the handlebars — only the back of his head with the "
-        "cornrows, his neck and shoulders show, no face. Dark volcanic-rock gravel ground, a low black stone wall, other ATVs parked at the left, and a "
-        "green oreum ridge with blue sky in the distance.",
-        "A plain white T-shirt, a plain grey neck gaiter loose around his neck, light beige trousers.",
+        "four-wheel ATV in the center of the picture with his back to the camera, his left hand on the handlebar and his right hand raised to his face "
+        "adjusting a grey neck gaiter that is pulled up over his nose — only the back of his head with the cornrows, the gaiter band, his neck and "
+        "shoulders show, no face. Dark volcanic-rock gravel ground, a low black stone wall, other ATVs parked at the left, and a green oreum ridge with "
+        "blue sky in the distance.",
+        "A plain white T-shirt, a plain grey neck gaiter pulled up over his nose and mouth, light beige trousers.",
         expression="not visible — he faces away from the camera.",
         light="LIGHT: bright clear Jeju daylight from the side, soft shadows."),
     job("C08",
-        "THE SAME ATV PARK, 9:16, exactly as in Image {L}: a close bust shot from his left front at standing height — he sits on the red ATV turned toward "
-        "the camera and pulls a plain grey neck gaiter up over his nose with his right hand — on the left side of the picture. The gaiter covers his mouth "
-        "and nose; his eyes and brows are fully visible. Behind him: a green volcanic ridge and blue sky, another red ATV.",
-        "A plain white T-shirt, the plain grey neck gaiter pulled up over his nose and mouth.",
-        expression="his eyes look straight into the lens, calm and completely deadpan above the gaiter."),
+        "THE SAME ATV PARK, 9:16, exactly as in Image {L}: a close shot from just behind him at standing height — he sits on the red ATV with his back "
+        "mostly to the camera, his shoulder and upper arm filling the left side of the picture, and he looks back over his shoulder straight into the "
+        "lens. With the fingers of his right hand he has just hooked the plain grey neck gaiter down from his nose to under his chin, so his whole face "
+        "is revealed. In the lower foreground two dark riding helmets rest on the ATV's rear rack; behind him other red ATVs at the right, a dark "
+        "volcanic ridge and blue sky.",
+        "A plain white T-shirt, the plain grey neck gaiter pulled down and bunched under his chin.",
+        expression="his eyes look straight into the lens, calm and completely deadpan — lips closed, no smile, as if this is the most normal place to meet again.",
+        angle=True),
     job("C09",
         "ON A WHITE-SAND BEACH IN JEJU WITH A SMALL GREEN ISLAND OFFSHORE, 9:16, exactly as in Image {L}: seen from standing height looking down a little, "
         "he crouches on the sand in the middle of the picture beside a small child who is building a sand castle in the lower left of the picture (the "
-        "child is seen from behind, wearing a sun hat — no child's face). Clear turquoise shallow water, the small island in the distance, a row of beach "
-        "umbrellas far away.",
+        "child is seen from behind, wearing a sun hat and striped arm floats — no child's face); his hand rests on a small light-blue plastic sand bucket. "
+        "Clear turquoise shallow water, the small island in the distance, a row of beach umbrellas far away.",
         "A white long-sleeve rash guard and beige swim shorts, barefoot.",
-        expression="he looks up from the sand straight into the lens — a calm neutral face, lips closed, no smile."),
+        # 원본 9: 아이와 웃으며 놀다가(23.9 · 24.3초) 고개를 들어 웃음을 거두고 정색해 노려본다(24.8초부터 — 아르곤 대조 · 0.1초 프레임)
+        expression="he has just looked up from playing with the child straight into the lens and his smile has just dropped — a serious, slightly stern "
+                   "straight face, brows drawn together a little, lips closed, no smile."),
     # 속사포 6컷 — 0.7초씩이라 장소가 한눈에 읽히고 얼굴이 커야 한다(얼굴 폭을 숫자로). 순서는 얼굴이 큰 컷부터, 해 질 녘 → 밤(Fable 1차 P2-9 · P2-10)
     job("C10",
         "IN A QUEUE OUTSIDE A HAENYEO (WOMEN DIVERS) SEAFOOD RESTAURANT ON THE JEJU COAST, 9:16: the camera is right behind him in the line at eye height; "
