@@ -1,7 +1,8 @@
 # 4번 「결채 — 한 벌」 이미지 콘티 지시문(2026-10-26) — Gemini Ultra(나노바나나 2.1, 4 Argon · 사고 수준 높음)에 보낼 작업 목록을 만든다.
 #   python -X utf8 이미지콘티_지시문.py   → synk-vendor/…/콘티/p4/ego/jobs_p4.json(실행기 gen.mjs가 읽음) · 같은 폴더의 지시문/이미지콘티.json(저장소 사본)
 # 길은 만족 사례 장부 S31(「매진 임박」 v4) · 6번 이미지 콘티와 같다: 원본 첫 프레임에서 사람을 검은 실루엣으로 바꾸고 크게 흐린 배치도
-# + 유나 고정 얼굴 세트(캐스팅 원본) + 옷 기준 그림(O1 · O3 — 먼저 굽는다). 빛 · 장소 · 카메라는 지시문에 쓰고 받은 색을 그대로 쓴다(공통 원칙 3).
+# + 유나 고정 얼굴 세트(캐스팅 원본) + 옷 기준 그림(O1 — 먼저 굽는다). 10-27부터 옷 펼침 O4와 얼굴 없는 옷감 · 소품 · 장소 컷은 GPT 이미지 2.5(이미지콘티_gpt굽기.py),
+# O1~O3은 O4를 옷 참조로 받아 Gemini가 굽는다. 빛 · 장소 · 카메라는 지시문에 쓰고 받은 색을 그대로 쓴다(공통 원칙 3).
 # 정해진 것(결정 10-26): 옷 한 벌 「가을 트렌치」 · 회색 스튜디오 · 가을 억새밭 · 황토 흙담 빈 한옥 · 가상 브랜드 결채(그림에는 글자를 굽지 않음) · 원본 전환 살림.
 import json
 from pathlib import Path
@@ -16,6 +17,7 @@ GOT = V / "받음"   # 옷 기준 그림을 받으면 여기 O1.png …
 FACE = [str(R / n) for n in ("F01_front.jpg", "F01_profile-left.jpg", "F01_face-close.jpg")]
 FACE_R = [str(R / n) for n in ("F01_front.jpg", "F01_profile-right.jpg", "F01_face-close.jpg")]
 OUTFIT_REFS = [str(GOT / "O1.png")]   # 옷 기준(앞) — 받기 전에는 실행기가 멈춘다
+OUTFIT_FLAT = [str(GOT / "O4.png")]   # 옷 펼침(GPT 이미지 2.5, 10-27) — 옷 기준 셋(O1~O3)과 옷감 · 소품 컷의 옷 생김새 기준
 
 YUNA = ("a Korean woman in her early twenties — a small face with a slim jaw, full lips, dark-brown upturned cat-eye eyes with a long "
         "winged eyeliner, rose-coral lips, smooth bright neutral skin; long dark-brown wavy hair worn loose with a center part, falling "
@@ -49,10 +51,10 @@ def person(cid, shot, light, camera, face=FACE, extra=""):
 
 
 def thing(cid, what, light, camera, layout=True, extra=""):
-    refs = ([str(B / f"{cid}.png")] if layout else []) + OUTFIT_REFS
+    refs = ([str(B / f"{cid}.png")] if layout else []) + OUTFIT_FLAT
     lay = LAYOUT.replace("The black silhouette marks exactly where the woman is. ", "") if layout else ""
     k = 2 if layout else 1
-    p = " ".join([STILL, lay, f"Image {k} shows the outfit this detail belongs to — match its material and colour exactly.",
+    p = " ".join([STILL, lay, f"Image {k} shows the pieces of the outfit this detail belongs to, laid flat — match its material and colour exactly.",
                   what, light, camera, "No person, no hands unless written.", extra, FINISH])
     return {"refs": refs, "prompt": p.replace("  ", " ").strip(), "ratio": "16:9"}
 
@@ -67,11 +69,12 @@ J = {}
 # ── 옷 기준 그림(먼저) — 얼굴 세트만 참조. 세로 3:4 전신 앞 · 뒤 · 옆, 가로 부분판.
 def outfit_ref(view, extra):
     p = " ".join(["Create one photograph. A clean full-length fashion lookbook photo, 3:4 vertical frame.",
-                  f"Images 1 to 3 {IDREF}", f"The woman is {YUNA}.", f"She wears {OUTFIT}.",
+                  f"Images 1 to 3 {IDREF}", "Image 4 shows the exact pieces of her outfit laid flat — dress her in exactly these pieces (colour, cut, buttons, belt, length).",
+                  f"The woman is {YUNA}.", f"She wears {OUTFIT}.",
                   f"She stands on {STUDIO}, whole body in frame from the top of the hair to the boots with a little space above and below, {view}.",
                   "Soft, even studio light from the front-left, a gentle shadow on the paper. Hands relaxed at her sides (the bag hangs from her left shoulder).",
                   CALM, extra, FINISH])
-    return {"refs": FACE, "prompt": p, "ratio": "3:4"}
+    return {"refs": FACE + OUTFIT_FLAT, "prompt": p, "ratio": "3:4"}
 
 J["O1"] = outfit_ref("facing the camera straight on", "The coat is closed and belted; the full outfit is clearly visible.")
 J["O2"] = outfit_ref("seen from directly behind, her face not visible, hair falling down her back", "Show the back yoke, the belt loops and the back vent of the coat.")
