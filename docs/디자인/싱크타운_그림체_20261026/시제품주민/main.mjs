@@ -155,8 +155,8 @@ function propHolder(content, at, unitPx, base, { shadow = false, feet = [] } = {
 
 // ── build the cast ──
 let owner, shopOwner, researcher, grandma, mongle, gardenTable, tray, served = null, weather = 'day', busy = false;
-// The Blender residents (modelled by 아르곤, baked by Claude) are the default; `?판=코드` shows the code-turned ones for comparison.
-const CODE_CAST = new URLSearchParams(location.search).get('판') === '코드';
+// The code-turned residents are the cast (10-26 decision); `?판=블렌더` shows the Blender pass (modelled by 아르곤, baked by Claude) for comparison.
+const CODE_CAST = new URLSearchParams(location.search).get('판') !== '블렌더';
 { const t = document.getElementById('cast-toggle'); if (t) { t.href = CODE_CAST ? '?판=블렌더' : '?판=코드'; t.textContent = CODE_CAST ? '블렌더 판으로 보기' : '코드 판으로 보기'; } }
 async function resident(shared, id, form) {
   const body = new THREE.Group();
