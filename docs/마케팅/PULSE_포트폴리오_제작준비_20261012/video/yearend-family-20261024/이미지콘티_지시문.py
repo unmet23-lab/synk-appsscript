@@ -494,6 +494,16 @@ def jobs():
         "Camera: fixed, 50mm lens. Light: soft, cool overcast winter daylight from the bedroom window; the hallway side is a little "
         "darker; the room is evenly lit, neither dark nor bright; the hallway walls are a soft mid grey. The switch panels have no "
         "readable text.", FINISH])}
+    # K22(10-27 02:15)는 복도 벽 · 문틀 · 스위치 자리가 원본과 같았지만 방 안이 아직 높았다(머리판 윗선 40% · 거울 51~66% ↔ 원본 48% · 64~80%) —
+    # 시그마 26 배치도에서 침대 · 거울이 거의 안 보여서다. 덜 흐린(시그마 10) 배치도로 한 번 더(사람 자리는 메운 얼룩)
+    J["K22b"] = {"refs": [str(B / "K22b_배치.jpg"), str(V / "ego/refs/S20.jpg")], "prompt": J["K22"]["prompt"].replace(
+        "Image 1 is a heavily blurred layout photo of this exact shot:",
+        "Image 1 is a slightly blurred layout photo of this exact shot (the soft smudge in the middle is where a person was removed — "
+        "ignore it):").replace(
+        "pale walls. Image 2 is",
+        "pale walls. Keep the headboard, the round mirror, the side table and the bed exactly at the place and size they have in Image "
+        "1 — low in the frame, mostly below the middle; the upper half of the view into the room is the plain wall above the "
+        "headboard. Image 2 is")}
     J["S22e"] = {"refs": [str(B / "S22e_배치.jpg")] + EUN50_REFS, "prompt": " ".join([
         "Edit this photograph (Image 1). Paint THE MOTHER only inside the solid black silhouette seen through the door gap: she fills "
         "that outline exactly and does not extend beyond it — the top of her head at about 14% of the frame height, her figure within "
@@ -503,6 +513,15 @@ def jobs():
         "standing beside it, bent forward at the hips, her head bowed so her chin-length hair falls forward and hides her face, one "
         "hand reaching down toward the blanket. She wears a soft oat-beige knit cardigan over a pale blue shirt and a long dark-beige "
         "skirt. Photorealistic, the same film grain and light as Image 1. No text, no logos, no watermarks."])}
+    # Fable 3차-b(10-27): S22e는 써도 되지만 카메라 높이 P2가 남음(머리판 40 ↔ 48% · 거울 51~66 ↔ 64~80% · 매트리스 ~63 ↔ ~82%) — 세로 자리를 숫자로 박은
+    # 세 판이 모두 같은 높이라 글로는 안 움직인다. 「글이 아닌 배치도로 한 번만」: K22의 문틈 안만 13점 내린 또렷한 배치도(이미지콘티_배치도.py 틈내림 → K22c,
+    # 머리판 53 · 거울 64~79 · 매트리스 ~76%) 위에 S22e와 같은 길로 엄마만(S22g). 판 자체를 깨끗하게 다시 굽는 K22c도 같은 차례에 견준다(→ 쓰면 S22f)
+    J["S22g"] = {"refs": [str(B / "S22g_배치.jpg")] + EUN50_REFS, "prompt": J["S22e"]["prompt"]}
+    J["K22c"] = {"refs": [str(B / "K22c_배치.jpg")], "prompt": " ".join([
+        "Edit this photograph (Image 1). Keep Image 1 exactly — the same camera, the same framing, and every object at exactly the "
+        "same place and size: the hallway walls and switch panels, the door frame, the half-open door, the headboard, the bed, the "
+        "blanket, the round mirror and its side table. Only make it one clean, seamless photograph — remove any visible seam or "
+        "stretched texture on the wall above the headboard. Nobody is in the room.", EDIT_KEEP])}
     J["S22d"] = {"refs": J["S22c"]["refs"], "prompt": J["S22c"]["prompt"].replace(
         "caught in the middle of sitting down on the edge of the single bed with the light-oak slatted headboard — NOT yet seated: "
         "knees bent, her body bent forward at the hips, her head bowed low so her chin-length hair falls forward and hides her face, "

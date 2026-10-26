@@ -95,11 +95,12 @@ def frame(t):
     for a, b, s in SUBS:
         if a <= t < b:
             text_c(d, (W / 2, H - 132), s, F("SemiBold", 50))
+    # 끝 문구 · 로고는 원본 자리 · 크기로(10-27 원본 86.7 · 90.5초 실측: 글 가로 10.6~28.4% · 줄 46.3~49.0 · 50.2~52.9%, 로고 10.2~24.3% · 46.5~53.5%)
     for a, b, s, row in ENDLINES:
         if a <= t < b:
-            d.text((150, 400 + row * 84), s, font=F("Medium", 56), fill=(248, 246, 240), stroke_width=2, stroke_fill=(20, 20, 20))
+            d.text((204, 498 + row * 42), s, font=F("Medium", 31), fill=(248, 246, 240), stroke_width=1, stroke_fill=(20, 20, 20))
     if LOGO[0] <= t < LOGO[1]:
-        d.text((150, 470), LOGO[2], font=F("ExtraBold", 120), fill=(248, 246, 240), stroke_width=3, stroke_fill=(20, 20, 20))
+        d.text((196, 494), LOGO[2], font=F("ExtraBold", 44), fill=(248, 246, 240), stroke_width=1, stroke_fill=(20, 20, 20))
     return im
 
 

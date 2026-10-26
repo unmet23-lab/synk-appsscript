@@ -6,6 +6,9 @@
 #   python -X utf8 이미지콘티_배치도.py 합성 01=R1 …   → 배치/S01_배치.png = 우리 거실 판(정지컷/R1.png) 위 같은 자리에 검은 실루엣(11d=S11m: 엄마만 구운 판 위에 딸 실루엣)
 #   python -X utf8 이미지콘티_배치도.py 가까이 19 21 22 → 배치/S19_배치.png = 사람을 지우고 크게 흐린 원본 위 검은 실루엣(끝 넷 — 새 카메라 자리)
 #   python -X utf8 이미지콘티_배치도.py 실루엣만 11      → 배치/S11_실루엣만.png = 밝은 회색 바탕 + 검은 실루엣(11번 「방 참조 없는 판」)
+#   python -X utf8 이미지콘티_배치도.py 빈방 22 10 K22b  → 배치/K22b_배치.png = 사람을 지우고 덜 흐린(시그마 10) 원본 — 22번 빈 방 판(10-27, 시그마 26 판 K22는 방 안이 8~13점 높게 나옴)
+#   python -X utf8 이미지콘티_배치도.py 틈내림 K22 0.244 0.618 13 K22c → 배치/K22c_배치.png = 빈 방 판의 문틈 안(가로 24.4~61.8%, 양쪽 어두운 문틀 · 문짝 안쪽에서 자름)만
+#                                                     13점 아래로 내리고 위는 벽 띠를 늘려 메운 또렷한 배치도 — Fable 3차-b 「글이 아닌 배치도로 한 번만」(K22c → S22f)
 # 원본 프레임 · 배치도는 git 밖(synk-vendor/pulse-portfolio12-20261024/콘티/p6/)에만 둔다.
 import sys
 from pathlib import Path
@@ -139,3 +142,17 @@ if __name__ == "__main__":
         close([int(x) for x in args])
     elif mode == "실루엣만":
         bare([int(x) for x in args])
+    elif mode == "빈방":
+        img, m = mask_for(int(args[0]))
+        blur_layout(img, m, float(args[1]), f"{args[2]}_배치")
+        print(args[2], "빈 방 배치도")
+    elif mode == "틈내림":
+        plate = cv2.resize(imread(ST / f"{args[0]}.png"), (W, H), interpolation=cv2.INTER_AREA)
+        x0, x1, down, name = int(float(args[1]) * W), int(float(args[2]) * W), int(round(float(args[3]) / 100 * H)), args[4]
+        band = int(0.30 * H)   # 문틈 안 위쪽 30%는 빈 벽 — 이 띠를 늘려 내린 만큼 메운다
+        out = plate.copy()
+        col = plate[:, x0:x1]
+        out[:band + down, x0:x1] = cv2.resize(col[:band], (x1 - x0, band + down), interpolation=cv2.INTER_CUBIC)
+        out[band + down:, x0:x1] = col[band:H - down]
+        imwrite(OUT / f"{name}_배치.png", out)
+        print(name, f"틈 안 {args[1]}~{args[2]}를 {args[3]}점 내림")

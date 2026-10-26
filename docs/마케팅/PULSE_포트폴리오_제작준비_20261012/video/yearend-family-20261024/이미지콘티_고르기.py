@@ -42,7 +42,7 @@ def pick(name, src):
         r = im.copy()
         r.thumbnail((1600, 1600))
         r.save(V + f"ego/refs/{name}.jpg", quality=92)
-    if name in ("R1", "R2", "R3", "S11m"):   # 실루엣 합성(이미지콘티_배치도.py 합성)이 정지컷/R1.png를 읽는다 — S11m은 11번 둘째 단계(딸 더하기)의 판
+    if name in ("R1", "R2", "R3", "S11m", "K22", "K22b"):   # 실루엣 합성(이미지콘티_배치도.py 합성)이 정지컷/R1.png를 읽는다 — S11m은 11번 둘째 단계(딸 더하기), K22는 22번 빈 방 판
         im.save(V + f"정지컷/{name}.png")
     return note
 
