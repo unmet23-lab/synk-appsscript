@@ -4,7 +4,7 @@
 
 ### 이 브랜드에서만
 
-- **판:** 인스타 @yuhobuilds 릴스(`yuhobuilds-instagram`) + YouTube @yuhobuilds 쇼츠(`yuhobuilds-youtube`). 한국어, 범수 목소리(Typecast), 모션그래픽은 만족 사례 S22(`../yuhobuilds_자동DM말투_20261019`)의 방식에서 시작한다.
+- **판:** 인스타 @yuhobuilds 릴스(`yuhobuilds-instagram`) + YouTube @yuhobuilds 쇼츠(`yuhobuilds-youtube`) + 틱톡 @yuhobuilds(`yuhobuilds-tiktok` — [제작 절차](제작절차.md) 4 「틱톡 판」). 한국어, 범수 목소리(Typecast), 모션그래픽은 만족 사례 S22(`../yuhobuilds_자동DM말투_20261019`)의 방식에서 시작한다.
 - **소재:** 남이 지금 쓸 실물(스킬 · 스크립트 · 설정을 파일째, 새 기능을 우리 일에 써 본 결과). 우리 제작 사정 · 내부 사고는 소재가 아니라 증거 한 마디로만.
 - **화면:** 실제 화면만, 메일 · 개인 계정 · 남의 이름 · 비공개 작업은 가린다.
 - **가져갈 프롬프트:** 편마다 그대로 가져갈 것(프롬프트 · 명령 한 줄 · 체크리스트 · 파일 본문)을 [prompts 절차](../맞춤도구/prompts/README.md)대로 새 하위 에이전트로 돌려 보고 synk.im/prompts에 공개한 뒤 글에 링크한다(준비.json `"프롬프트"`). 공개가 막히면 링크 없이 진행하고 남은위험에 적는다. 새 공개 저장소는 만들지 않고, 비밀값은 `node tools/공개검사.js`로 본다.

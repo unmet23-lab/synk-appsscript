@@ -6,7 +6,7 @@
  * 무엇인지, AI 표시·아동용·언어가 판에 있는지 편 머리에 있는지. 여기서 한 모양으로 맞춘다.
  *
  * 판 하나(plate)는 { account, platform, time, video:{path, exists, reduced, from}, cover, texts:{title, caption,
- * firstComment, pinnedComment, source}, language, audioLanguage, ai, kids }로 돌려준다. 못 찾은 칸은 null이다.
+ * firstComment, pinnedComment, source}, keywordDm(원고.json dm.keyword), language, audioLanguage, ai, kids }로 돌려준다. 못 찾은 칸은 null이다.
  * 판단(무엇이 빠지면 고칠 것인지)은 부르는 쪽이 한다.
  */
 const fs = require('node:fs');
@@ -213,7 +213,7 @@ function plates(bundle) {
     const { texts, manuscript, manuscriptFile: msFile } = blog ? { texts: {}, manuscript: null, manuscriptFile: null } : plateTexts(bundle, plate, platform);
     const coverPath = resolve(bundle, plate.표지 || (prep.표지 && typeof prep.표지 === 'object' ? prep.표지[account] : prep.표지));
     const lang = plate.언어 || manuscript?.language || (platform === 'youtube' ? prep['유튜브 언어'] : null)
-      || (['synkbrief', 'yuhobuilds'].includes(brand) && ['youtube', 'instagram'].includes(platform) ? 'ko' : null);
+      || (['synkbrief', 'yuhobuilds'].includes(brand) && ['youtube', 'instagram', 'tiktok'].includes(platform) ? 'ko' : null);
     const first = (...values) => values.find((v) => v !== undefined && v !== null);
     return {
       index, account, platform, blog, time: plate.시각 || null, raw: plate,
@@ -221,6 +221,7 @@ function plates(bundle) {
       article: blog ? resolve(bundle, plate.파일 || plate.게시글) : null,
       cover: coverPath && fs.existsSync(coverPath) ? coverPath : null,
       texts, manuscriptFile: msFile,
+      keywordDm: manuscript?.dm?.keyword || null,
       language: lang || null,
       audioLanguage: first(plate.말언어, plate.동영상언어, manuscript?.audioLanguage, lang) || null,
       ai: yesNo(first(plate.AI표시, plate['AI 표시'], prep['AI 표시'], prep.AI표시, manuscript?.alteredContent)),

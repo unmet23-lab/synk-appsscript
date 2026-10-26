@@ -121,6 +121,50 @@ test('준비.json 판을 한 모양으로 — 원고.json 판, md 코드 블록 
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
+test('틱톡 판(10-26) — 캡션 4,000자 · DM 약속은 고칠 것, 짝 틱톡 판이 없거나 끝 말이 DM · 고정 댓글 판과 같은 영상이면 확인할 것', () => {
+  const tt = (caption) => codes(규칙.checkPlate({ caption }, { brand: 'yuhobuilds', language: 'ko', platform: 'tiktok' }));
+  assert.ok(tt('훅 문장\n\n댓글에 「한줄」이라고 남겨 주시면 DM으로 보내 드려요').includes('고칠 것:tiktok-dm'));
+  assert.ok(tt('훅 문장\n\n메시지로 보내 드릴게요').includes('고칠 것:tiktok-dm'));
+  assert.ok(!tt('훅 문장\n\n한 줄 전문은 아래에 — 친구에게 보내 주세요').includes('고칠 것:tiktok-dm'), '친구에게 보내기는 DM 약속이 아니다');
+  assert.ok(tt('가'.repeat(4001)).includes('고칠 것:caption-length'));
+  assert.ok(!tt('가'.repeat(2500)).includes('고칠 것:caption-length'), '인스타 한도 2,200자보다 길어도 된다');
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-'));
+  fs.mkdirSync(path.join(root, 'tools'));
+  try {
+    fs.mkdirSync(path.join(root, 'docs', '마케팅'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'docs', '마케팅', 'sns-계정.json'), JSON.stringify({ accounts: {
+      'yuhobuilds-instagram': { platform: 'instagram' }, 'yuhobuilds-youtube': { platform: 'youtube' }, 'yuhobuilds-tiktok': { platform: 'tiktok' },
+      'lab-instagram': { platform: 'instagram' }, 'lab-facebook': { platform: 'facebook' }, 'lab-tiktok': { platform: 'tiktok' } } }));
+    const files = {
+      'out/ig.mp4': 'x', 'out/yt.mp4': 'x', 'out/tt.mp4': 'x',
+      '게시/01-ig/원고.json': JSON.stringify({ caption: '훅', dm: { keyword: '한줄' } }),
+      '게시/02-yt/원고.json': JSON.stringify({ title: '제목', caption: '설명', pinnedComment: '한 줄 전문' }),
+      '게시/03-tt/원고.json': JSON.stringify({ caption: '훅 · 한 줄 전문' }),
+    };
+    const ig = { 계정: 'yuhobuilds-instagram', 파일: 'out/ig.mp4', 원고: '게시/01-ig/원고.json' };
+    const yt = { 계정: 'yuhobuilds-youtube', 파일: 'out/yt.mp4', 원고: '게시/02-yt/원고.json' };
+    const run = (name, 판, more = {}) => {
+      const prep = { 브랜드: 'yuhobuilds', 슬롯: '2026-10-27', 판, ...more };
+      return 검사.tiktokFindings(묶음.plates(묶음.load(편만들기(root, name, prep, files))), prep).map((f) => `${f.code}:${f.where}`);
+    };
+    assert.deepEqual(run('짝없음', [ig, yt]), ['tiktok-plate:yuhobuilds-instagram']);
+    assert.deepEqual(run('까닭', [ig, yt], { 틱톡없음: '여러 장 편' }), []);
+    assert.deepEqual(run('끝말판', [ig, yt, { 계정: 'yuhobuilds-tiktok', 파일: 'out/tt.mp4', 원고: '게시/03-tt/원고.json' }]), [], '끝 말만 바꾼 틱톡판');
+    assert.deepEqual(run('인스타같음', [ig, yt, { 계정: 'yuhobuilds-tiktok', 파일: 'out/ig.mp4', 원고: '게시/03-tt/원고.json' }]), ['tiktok-ending:yuhobuilds-tiktok']);
+    assert.deepEqual(run('유튜브같음', [ig, yt, { 계정: 'yuhobuilds-tiktok', 파일: 'out/yt.mp4', 원고: '게시/03-tt/원고.json' }]), ['tiktok-ending:yuhobuilds-tiktok']);
+    // LAB 몽골 화면 글 편은 인스타 · 페북 · 틱톡이 같은 영상 · 같은 캡션이어도 된다(DM · 고정 댓글이 없다).
+    const mn = { '게시/01-mn/video.mp4': 'x', '게시/01-mn/캡션_mn.txt': 'Таагаарай!' };
+    const labPrep = (판) => ({ 브랜드: 'LAB', 슬롯: '2026-10-27', 판 });
+    const labPlate = (계정) => ({ 계정, 파일: '게시/01-mn/video.mp4', 게시글: '게시/01-mn/캡션_mn.txt' });
+    const labRun = (name, 판) => 검사.tiktokFindings(묶음.plates(묶음.load(편만들기(root, name, labPrep(판), mn))), labPrep(판)).map((f) => `${f.code}:${f.where}`);
+    assert.deepEqual(labRun('LAB_짝없음', [labPlate('lab-instagram'), labPlate('lab-facebook')]), ['tiktok-plate:lab-instagram']);
+    assert.deepEqual(labRun('LAB_짝', [labPlate('lab-instagram'), labPlate('lab-facebook'), labPlate('lab-tiktok')]), []);
+    const [, , ttPlate] = 묶음.plates(묶음.load(편만들기(root, 'yuho_말', { 브랜드: 'yuhobuilds', 슬롯: '2026-10-27', 판: [ig, yt, { 계정: 'yuhobuilds-tiktok', 파일: 'out/tt.mp4', 원고: '게시/03-tt/원고.json' }] }, files)));
+    assert.equal(ttPlate.language, 'ko', 'synkbrief · yuhobuilds 틱톡 판은 한국어로 본다');
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
 test('참·거짓 칸 읽기', () => {
   assert.deepEqual(['켬(AI 음성)', '아님', true, 'false', '끔', '예', 'no', null, '모름'].map(묶음.yesNo), [true, false, true, false, false, true, false, null, null]);
 });

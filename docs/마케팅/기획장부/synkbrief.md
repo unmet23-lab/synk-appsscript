@@ -4,7 +4,7 @@
 
 ### 이 브랜드에서만
 
-- **판:** 인스타 @synkbrief 릴스(`synkbrief-instagram`) + YouTube 「SYNK 브리핑」 쇼츠(`synkbrief-youtube`). 한국어, 범수 목소리(Typecast), [SNS 키트](../../디자인/SNS키트/README.md).
+- **판:** 인스타 @synkbrief 릴스(`synkbrief-instagram`) + YouTube 「SYNK 브리핑」 쇼츠(`synkbrief-youtube`) + 틱톡 @synkbrief(`synkbrief-tiktok` — [제작 절차](제작절차.md) 4 「틱톡 판」). 한국어, 범수 목소리(Typecast), [SNS 키트](../../디자인/SNS키트/README.md).
 - **화면:** 실제 화면 녹화와 실제 전후 결과(메일 · 계정 · 남의 이름은 가림). 글자 카드만으로 만들지 않는다. 유호님 계정의 설정을 바꿔야 보이는 화면(보안 · PIN 등)은 녹화하지 않는다.
 - **사실:** 공식 도움말 · 요금은 원문을 다시 열어 확인하고 읽은 날을 남긴다. 약관에 걸릴 길(다계정 우회 등)은 권하지 않는다.
 - **복붙문:** 유튜브는 고정 댓글 · 설명란, 인스타는 키워드 DM(상시 승인 문구).

@@ -6,7 +6,8 @@
  * 쓰지 않는다」(도구 이름은 LAB만 — synkbrief·yuhobuilds는 AI 도구 쓰는 법이 내용이라 제작 도구 이름만 본다), 결정 표 10-02
  * 「어떤 AI로 만들었는지 쓰지 않는다」, Fable 완성본 검수 10-21 P1(티스토리 글의 옛 숫자) → 영상·게시글·블로그의 숫자 대조.
  * 각 항목은 { level: '고칠 것'|'확인할 것', code, message }다. 플랫폼 한도(인스타 2,200자·해시태그 30개, 유튜브 제목 100자·
- * 설명 5,000바이트·제목의 < >)는 서버·API가 거절하는 값이라 「고칠 것」이다.
+ * 설명 5,000바이트·제목의 < >, 틱톡 캡션 4,000자)는 서버·API가 거절하는 값이라 「고칠 것」이다. 틱톡 캡션의 DM 약속도 「고칠 것」이다
+ * (10-26 — 틱톡엔 키워드 DM 자동 답이 없다).
  */
 
 const FIX = '고칠 것';
@@ -16,6 +17,7 @@ const FIRST = 125;
 const URL = /\bhttps?:\/\/[^\s)>\]」』"']+|\b(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:im|com|net|org|kr|me|io|co|ly|gg|app|dev|page)(?:\/[^\s)>\]」』"']*)?/gi;
 // 숫자만인 「#5」(퀴즈 번호)는 해시태그가 아니다.
 const HASHTAG = /(?:^|[^\p{L}\p{N}_&#])#(?=[\p{N}_]*\p{L})([\p{L}\p{N}_]+)/gu;
+const TIKTOK_DM = /\bDMs?\b|디엠|(?:다이렉트\s?)?메시지로\s?(?:보내|드려|드릴)|direct message|私信|мессежээр/i;
 const GREETING = /^\s*(안녕하세요|안녕|반가워요|반갑습니다|여러분 안녕|hello\b|hi\b|hey\b|сайн байна уу|сайн уу|大家好|你好|မင်္ဂလာပါ)/i;
 
 // 상대 날짜: 게시일은 승인 뒤에 정해지므로 「어제·오늘」은 틀린 말이 된다(메모 10-12, 지시문 「날짜를 쓴다」).
@@ -108,6 +110,12 @@ function checkPlate(texts, { brand, language, platform }) {
     if (platform === 'instagram' && n > 5) add(FIX, 'hashtag-count', '캡션+첫 댓글', `해시태그 ${n}개 — 인스타는 캡션과 첫 댓글 합쳐 5개(07시 지시문)`);
     if ([...caption].length > 2200) add(FIX, 'caption-length', '캡션', `캡션 ${[...caption].length}자 — 인스타 한도 2,200자`);
     if (hashtags(caption).length > 30) add(FIX, 'hashtag-limit', '캡션', '해시태그 30개 넘음 — 인스타가 거절한다');
+  }
+  if (platform === 'tiktok') {
+    if ([...caption].length > 4000) add(FIX, 'caption-length', '캡션', `캡션 ${[...caption].length}자 — 틱톡 한도 4,000자`);
+    // 틱톡엔 키워드 DM 자동 답이 없다(10-26) — 약속하면 아무도 받지 못한다. 줄 자료는 캡션에 글로 쓴다.
+    const dm = caption.match(TIKTOK_DM);
+    if (dm) add(FIX, 'tiktok-dm', '캡션', `「${dm[0].trim()}」 — 틱톡엔 키워드 DM 자동 답이 없다. 줄 자료(한 줄 전문 · 주소)는 캡션에 글로 쓴다`);
   }
   if (platform === 'youtube') {
     const title = texts.title || '';

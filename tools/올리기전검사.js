@@ -16,6 +16,8 @@
  *      블로그·링크드인 원고의 숫자가 영상(화면 글·나레이션)·게시글과 맞는지
  *   ⑦ 올릴 칸 — 원본 파일(화질 낮춘 사본 아님), 유튜브 제목·언어·아동용 아님, AI 표시, 시각·슬롯·시한, 글 속 링크 응답 200
  *   ⑧ 가져갈 프롬프트(10-22, yuhobuilds만) — 준비.json 「프롬프트」가 없으면 확인할 것, 있으면 synk.im/prompts 응답 200과 그 항목이 공개본에 있는지
+ *   ⑨ 틱톡 판(10-26, 제작 절차 4) — 인스타 영상 판에 짝 틱톡 판이 없거나(「틱톡없음」에 까닭이 없을 때), 틱톡 판이 키워드 DM 인스타 판 ·
+ *      고정 댓글 유튜브 판과 같은 영상이면(끝 말이 틱톡에 없는 길을 가리킬 수 있다) 확인할 것
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -37,6 +39,8 @@ const SMALL_TEXT = 16; // 글자 상자 높이(1080 폭 기준). 키트 최소 2
 const END_CARD = [2.5, 6];
 const FRAME_STEP = 0.5;
 const API_PLATFORMS = new Set(['youtube', 'instagram', 'facebook']);
+// 인스타 영상 판 → 같은 말을 쓰는 틱톡 계정(10-26 유호님 「틱톡 4계정도 매일」). 버마어 lab-mm-tiktok은 LAB 두 채널 판이 따로 만든다.
+const TIKTOK_PAIR = { 'yuhobuilds-instagram': 'yuhobuilds-tiktok', 'synkbrief-instagram': 'synkbrief-tiktok', 'lab-instagram': 'lab-tiktok' };
 const SERVER_YOUTUBE_LIMIT = 100 * 1024 * 1024;
 const LANG = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/;
 const DONE = new Set(['예약됨', '게시됨']);
@@ -305,6 +309,26 @@ function kitCheck(bundle, file, out) {
   return failed;
 }
 
+// ⑨ 틱톡 판. 같은 말을 쓰는 틱톡 계정엔 같은 최종본을 올리되, 끝 말이 인스타 키워드 DM · 유튜브 고정 댓글을 가리키면 틱톡엔 그 길이 없다.
+function tiktokFindings(plates, prep) {
+  const out = [];
+  const add = (code, where, message) => out.push({ level: LOOK, code, where, message });
+  const accounts = new Set(plates.map((p) => p.account));
+  for (const p of plates) {
+    const pair = TIKTOK_PAIR[p.account];
+    if (!pair || !p.video || accounts.has(pair) || prep.틱톡없음) continue;
+    add('tiktok-plate', p.account, `짝 틱톡 판(${pair})이 없다 — 제작 절차 4 「틱톡 판」. 달지 않을 까닭이 있으면 준비.json 「틱톡없음」에 적는다`);
+  }
+  for (const t of plates.filter((p) => p.platform === 'tiktok' && p.video)) {
+    for (const p of plates) {
+      if (p === t || !p.video || p.video.path !== t.video.path) continue;
+      if (p.platform === 'instagram' && p.keywordDm) add('tiktok-ending', t.account, `키워드 DM(「${p.keywordDm}」) 인스타 판과 같은 영상이다 — 끝 말이 DM을 약속하면 끝 말만 바꾼 틱톡판을 렌더한다`);
+      if (p.platform === 'youtube' && p.texts.pinnedComment) add('tiktok-ending', t.account, '고정 댓글이 있는 유튜브 판과 같은 영상이다 — 끝 말이 고정 댓글을 가리키면 끝 말만 바꾼 틱톡판을 렌더한다');
+    }
+  }
+  return out;
+}
+
 async function run(dir, opts = {}) {
   const bundle = 묶음.load(dir);
   const prep = bundle.prep;
@@ -363,6 +387,8 @@ async function run(dir, opts = {}) {
     if (plate.ai === null) add(API_PLATFORMS.has(plate.platform) ? FIX : LOOK, 'ai-label', where, '「AI표시」 칸이 없다(AI 목소리·AI 그림이 있으면 true)');
     if (!plate.cover && ['youtube', 'instagram', 'tiktok', 'xiaohongshu'].includes(plate.platform)) add(LOOK, 'cover', where, '표지 파일이 없다 — 첫 화면이 표지가 된다');
   }
+
+  findings.push(...tiktokFindings(plates, prep));
 
   const fileSummaries = [];
   const ocrFindings = [];
@@ -461,4 +487,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, SAFE };
