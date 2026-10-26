@@ -23,5 +23,17 @@
       "방법": "10-26 유호님 「틱톡 4계정도 매일 판에 넣어서 같은 편을 올리게」(제작 절차 4 「틱톡 판」) — 14:4x Claude가 ego 프로필 「TikTok synk.mn」(유호님이 막 로그인, username synk.mn 확인)의 TikTok Studio 업로드로 원본 01-ig-fb-mn/video.mp4(19.8MB) · 캡션은 캡션_mn.txt 그대로(공백 빼고 같음, 게임 링크 줄은 틱톡에서 안 눌려 뺌) · 표지는 첫 화면(「ㅋㅋ = ?」 카드) 그대로 · Schedule Oct 26, 2026 21:00 (GMT+9) · Everyone · 댓글 허용 · AI-generated content 끔 · Disclose 끔 · 음악 저작권 · 콘텐츠 검사 No issues found. 저장 허용 창은 Allow. 누른 뒤 콘텐츠 목록 「Oct 26, 9:00PM · Everyone · 00:16」 한 줄.",
       "후속": "공개 뒤 영상 주소를 이 줄에."
     }
+  ],
+  "추가게시": [
+    {
+      "계정": "lab-telegram",
+      "상태": "게시됨",
+      "시각": "2026-10-27T01:25:00+09:00",
+      "주소": "https://t.me/synkmn/5",
+      "방법": "유호님 10-27 01시대 「승인 — 지금 ego로 올려: ① … ⑤」 ④ — ego 텔레그램 웹 K(채널 SYNK LAB 첫 글) · 원본 01-ig-fb-mn/video.mp4를 입력칸에 파일 붙여 넣기(paste)로 「Send Video」 창 → 캡션은 캡션_mn.txt에서 댓글 부탁 줄(채널에 댓글 칸 없음)과 「Бид SYNK LAB …」 소개 줄(채널 이름이 SYNK LAB)만 빼고 첫댓글_mn.txt 게임 링크 줄을 붙임(몽골어 문장은 원문 그대로, 518자) → Send",
+      "공개확인": "01:37 t.me/synkmn/5?embed=1에 video_player",
+      "편ID": "LAB_채팅줄임말_mn_20261024",
+      "플랫폼": "telegram"
+    }
   ]
 }
