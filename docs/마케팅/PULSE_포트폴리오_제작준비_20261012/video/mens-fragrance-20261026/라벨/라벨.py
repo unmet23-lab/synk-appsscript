@@ -34,8 +34,10 @@ def spaced(d, cx, y, text, f, spacing, fill=255):
 
 def needle_pair(d, cx, top, h, spread, width, fill=255):
     """가는 잎집에서 두 솔잎이 아래로 갈라지는 「ㅅ」. 1판은 동그란 머리 + 곧은 두 다리라 제도용 컴퍼스로 읽혀,
-    잎집을 가늘고 길쭉하게(머리 폭의 0.7배) 줄이고 솔잎은 머리카락처럼 가늘게 끝을 모으며 바깥으로 살짝 휘게, 오른쪽을 7 % 길게 했다."""
-    sw, sh = width * 0.7, width * 3.2
+    잎집을 가늘고 길쭉하게(머리 폭의 0.7배) 줄이고 솔잎은 머리카락처럼 가늘게 끝을 모으며 바깥으로 살짝 휘게, 오른쪽을 7 % 길게 했다.
+    3판(10-26 밤, Fable 이미지 콘티 2차 P1-3 · P2-1): 잎집이 글자 높이의 20~40%라 꼭대기가 기둥으로 솟아 λ(뒤집은 Y) · 人으로 읽혔다 —
+    잎집을 작은 마디(폭 × 1.0, 글자 높이의 10% 안)로 줄여 두 획이 꼭대기에서 바로 갈라지게."""
+    sw, sh = width * 0.7, width * 1.0
     d.rounded_rectangle([cx - sw / 2, top, cx + sw / 2, top + sh], radius=sw / 2, fill=fill)
     for side, longer in ((-1, 1.0), (1, 1.07)):
         pts = []
@@ -76,7 +78,7 @@ def cap_top():
     S = 1040
     im = Image.new("L", (S, S), 0)
     d = ImageDraw.Draw(im)
-    needle_pair(d, S // 2, 210, 620, 320, 104)   # 2판(Fable P2-4): 0.72초 접사에서 가는 선이 안 읽혔다 — 원본 각인처럼 윗면의 60%, 선 굵기 2배
+    needle_pair(d, S // 2, 260, 430, 220, 90)   # 2판(Fable P2-4): 0.72초 접사에서 가는 선이 안 읽혔다 — 선 굵기 2배 · 3판(Fable 2차 P1-3): 2판은 다리 끝이 윗면 밖으로 나가 잘렸다 — 윗면의 75% 안
     im = im.filter(ImageFilter.GaussianBlur(3))
     im.save(os.path.join(밖, "뚜껑_각인.png"))
 
