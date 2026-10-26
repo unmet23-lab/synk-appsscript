@@ -20,13 +20,15 @@ COLS, PER = 3, 12
 # 행 → 우리 칸에 들어갈 판(하나면 그 판, 여럿이면 모자이크). 정지컷 이름 또는 그래픽 이름(G_ · 로고).
 OURS = {
     1: ["S01"], 2: ["S02"], 3: ["S03"], 4: ["S04"],
-    5: ["F1", "G_빛줄기", "S06", "G_판", "G_숫자_172", "F2"],   # 번쩍 몽타주 2.63초 — 사람 조각 · 전구 · 빛줄기 · 판 · 숫자
+    5: ["F4", "F1", "F3", "G_빛줄기", "G_판", "F2"],   # 번쩍 몽타주 2.63초 — 사람 조각 · 전구 · 빛줄기 · 판 · 숫자
     6: ["S06"], 7: ["G_숫자_흐림"], 8: ["S08"], 9: ["S09"], 10: ["S10"], 11: ["S11"],
     12: ["G_심박", "S12a", "G_숫자_흐림", "S12b"], 13: ["S13"], 14: ["G_판", "G_숫자_172"], 15: ["S15"],
     16: ["S16_합성"], 17: ["S17"], 18: ["S18", "G_막대"], 19: ["S19"], 20: ["G_빛줄기_20"], 21: ["S21_로고"],
 }
 
 
+# 원본 얼굴 크기 · 자리에 맞춰 자른다(행: 배율 · 가운데 x · y) — Fable 10-27: 11행 끝 그림이 원본 끝보다 25% 작고 오른쪽, 12행 옆얼굴이 20% 작음
+FIT_CROP = {"S11": (1.32, 0.552, 0.47), "S12a": (1.24, 0.467, 0.55)}
 # 끝 그림(행: 배율 · 잘라 낼 가운데 x · y 비율) — 1행 3.13초에 1.115배(위로 0.8% 기욺), 4행 0.7초에 약 1.8배(머리가 화면 가운데 위로), 6행 2.8초에 1.069배(아래로 1% 기욺)
 END_CROP = {"S01": (1.115, 0.5, 0.496), "S04": (1.8, 0.48, 0.37), "S06": (1.069, 0.5, 0.505)}
 
@@ -104,9 +106,10 @@ def board(rs, path, title):
     for i, (n, r) in enumerate(rs):
         x = pad + (i % COLS) * (cw + gap)
         y = 130 + (i // COLS) * (ch + gap)
-        im.paste(fit(os.path.join(V, "원본첫프레임", f"S{n:02d}.png")), (x, y))
+        # 11행은 우리 판이 고개 든 끝 그림이라 원본도 끝 프레임과 짝짓는다(Fable 10-27)
+        im.paste(fit(os.path.join(V, "원본첫프레임", "S11끝.png" if n == 11 else f"S{n:02d}.png")), (x, y))
         im.paste(ours(n), (x + FW + inner, y))
-        d.text((x + 6, y + 4), "원본", font=F("ExtraBold", 18), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
+        d.text((x + 6, y + 4), "원본 끝" if n == 11 else "원본", font=F("ExtraBold", 18), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
         d.text((x + FW + inner + 6, y + 4), "우리", font=F("ExtraBold", 18), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
         ty = y + FH + 8
         d.text((x, ty), f"{n}행  {r['a']:.2f}초 · {r['len']:.2f}초  {r['who']}", font=F("ExtraBold", 22), fill=GOLD)
@@ -159,6 +162,11 @@ def pick():
         im = Image.open(os.path.join(V, rel)).convert("RGB")
         if k == "S09":
             im = im.rotate(180)   # 바로 선 얼굴로 굽고 원본처럼 뒤집는다
+        if k in FIT_CROP:
+            z, cx, cy = FIT_CROP[k]
+            w, h = im.width / z, im.height / z
+            x0 = min(max(0, im.width * cx - w / 2), im.width - w); y0 = min(max(0, im.height * cy - h / 2), im.height - h)
+            im = im.crop((round(x0), round(y0), round(x0 + w), round(y0 + h))).resize(im.size, Image.LANCZOS)
         im.save(os.path.join(V, "정지컷", f"{k}.png"))
         print(k, "←", rel, im.size)
     # 10-26 카메라: 원본이 다가가는 행은 시작 그림을 그 배율만큼 잘라 끝 그림을 둔다(같은 구도의 끝 그림이면 영상 모델이 카메라를 멈춘다 — 9번 Veo 시험)
@@ -173,12 +181,19 @@ def pick():
     g = os.path.join(V, "그래픽")
     if "S16" in sel:   # 초록 화면 자리에 심박 숫자(영상 단계에서도 같은 자리)
         im = np.asarray(Image.open(os.path.join(V, "정지컷", "S16.png")).convert("RGB")).astype(np.int16)
-        key = (im[..., 1] > 120) & (im[..., 1] > im[..., 0] + 50) & (im[..., 1] > im[..., 2] + 50)
+        key = (im[..., 1] > 90) & (im[..., 1] > im[..., 0] + 30) & (im[..., 1] > im[..., 2] + 30)
+        import cv2
+        key = cv2.dilate(key.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0   # 초록 가장자리(번진 화소)까지 덮는다
         ys, xs = np.nonzero(key)
         out = Image.fromarray(im.astype(np.uint8))
         if len(xs) > 500:
             x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
-            num = Image.open(os.path.join(g, "G_숫자_172.png")).convert("RGB").resize((x1 - x0 + 1, y1 - y0 + 1), Image.LANCZOS)
+            bw, bh = x1 - x0 + 1, y1 - y0 + 1
+            num = Image.open(os.path.join(g, "G_모니터.png")).convert("RGB")   # 그래픽조각.py 모니터() — 심박 172 · 심박 선 · 페이스
+            k = min(bw / num.width, bh / num.height) * 0.94   # 비율을 지키고 화면 안에 다 들어가게 — 남는 곳은 화면 바탕색
+            small = num.resize((round(num.width * k), round(num.height * k)), Image.LANCZOS)
+            num = Image.new("RGB", (bw, bh), num.getpixel((4, 4)))
+            num.paste(small, ((bw - small.width) // 2, (bh - small.height) // 2))
             m = Image.fromarray((key[y0:y1 + 1, x0:x1 + 1] * 255).astype(np.uint8))
             out.paste(num, (x0, y0), m)
         out.save(os.path.join(V, "정지컷", "S16_합성.png"))

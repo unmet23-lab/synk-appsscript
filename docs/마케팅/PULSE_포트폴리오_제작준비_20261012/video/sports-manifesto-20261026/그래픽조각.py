@@ -161,10 +161,10 @@ def 회색판():
 
 
 def 로고():
-    # 21행 끝(28.49 켜짐 · 28.53 꺼짐 · 28.57 다시 켜짐): 「가쁨」 흰 네온 + 작은 GAPPEUM — 투명 판 하나, 빛 기둥 옆에 얹는다
+    # 21행 끝(28.49 켜짐 · 28.53 꺼짐 · 28.57 다시 켜짐): 「가쁨」 흰 네온 + 작은 GAPPEUM RUNNING — 투명 판 하나, 빛 기둥 옆에 얹는다
     LW, LH = 900, 520
     m = mask_text("가쁨", font("SUIT/SUIT-ExtraBold.otf", 300), (LW // 2, 230), (LW, LH), "mm")
-    m += mask_text("G A P P E U M", font("InterTight/InterTight-SemiBold.ttf", 54), (LW // 2, 430), (LW, LH), "mm")
+    m += mask_text("GAPPEUM  RUNNING", font("InterTight/InterTight-SemiBold.ttf", 50), (LW // 2, 430), (LW, LH), "mm")   # 10-27 낯선 사람 시험 「가쁨이 앱인지 브랜드인지 모른다」 — 러닝 브랜드임을 작은 줄로
     m = np.clip(m, 0, 1)
     core = blur(m, 1.2)
     halo = blur(m, 14) * 0.9 + blur(m, 48) * 0.6
@@ -179,8 +179,33 @@ def 로고():
     return "로고_가쁨"
 
 
+
+def 모니터():
+    # 16행: 측정 기계 모니터 화면 한 장(초록 화면 자리에 얹는다) — 위에 청록 심박 선, 가운데 큰 172 · BPM, 아래 페이스 4'05" /km · VO2 52.4
+    MW, MH = 1600, 1000
+    img = np.zeros((MH, MW, 3), np.float32) + np.array([0.02, 0.035, 0.04], np.float32)
+    m = Image.new("L", (MW, MH), 0)
+    d = ImageDraw.Draw(m)
+    beat = [(0, 0), (40, 0), (60, -25), (80, 0), (110, 0), (125, 35), (145, -170), (168, 110), (186, 0), (230, -18), (270, 0)]
+    pts, x = [], 40
+    while x < MW - 40:
+        pts += [(x + bx, 190 + by) for bx, by in beat if x + bx < MW - 40]
+        x += 300
+    d.line(pts, fill=255, width=7, joint="curve")
+    d.text((90, 330), "172", font=font("InterTight/InterTight-SemiBold.ttf", 420), fill=255)
+    d.text((930, 620), "BPM", font=font("InterTight/InterTight-SemiBold.ttf", 90), fill=200)
+    d.text((90, 840), "PACE 4'05\" /km", font=font("DM_Mono/DMMono-Medium.ttf", 64), fill=170)
+    d.text((960, 840), "VO2 52.4", font=font("DM_Mono/DMMono-Medium.ttf", 64), fill=170)
+    a = np.asarray(m, np.float32) / 255
+    a = np.clip(blur(a, 1.2) + blur(a, 16) * 0.45, 0, 1)
+    img = img + a[..., None] * TEAL[None, None, :]
+    img = np.clip(grain(img, 0.01), 0, 1)
+    OUT.mkdir(parents=True, exist_ok=True)
+    Image.fromarray((img * 255).astype(np.uint8)).save(OUT / "G_모니터.png")
+    return "G_모니터"
+
 ALL = {"숫자": 숫자, "심박": 심박, "막대": 막대, "판": 판, "빛줄기": lambda: (빛줄기(), 빛줄기("G_빛줄기_20", 3, 1.6)),
-       "번쩍": 번쩍, "회색판": 회색판, "로고": 로고}
+       "번쩍": 번쩍, "회색판": 회색판, "로고": 로고, "모니터": 모니터}
 
 if __name__ == "__main__":
     for k in sys.argv[1:] or list(ALL):
