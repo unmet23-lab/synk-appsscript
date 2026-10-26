@@ -505,6 +505,7 @@
 - 원인: 앱 재시작이 세션의 작업 추적만 끊고 자식 node 프로세스는 남겨 두는 때가 있다. 추적이 끊긴 프로세스는 끝나도 새 세션에 알림을 주지 않는다.
 - 고침: 다시 걸기 전에 PowerShell로 그 스크립트 이름이 든 node 프로세스를 찾아 끈다 — `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*watch-chain.cjs*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }`. 감시는 「시작 뒤 파일 시각」으로 다시 훑는 꼴로 짜고, 새로 걸 때 이전과 같은 `--after`를 줘서 끊긴 사이의 사건을 놓치지 않는다.
 - 다시 확인: 10-23 재시작마다 남은 감시 하나씩을 끄고 다시 걸어 사슬 24·25·26 armed를 모두 받았다(`local/watch.log`).
+- 덧붙임(10-26 PULSE 12번): `TaskStop`으로 멈춘 유튜브 잠금 대기 bash 고리(`잠금돌기.sh`) 셋이 살아남아, 공용 차례가 번호표로 바뀐 뒤에도 줄을 무시하고 잠금을 두 번 잡았다(16:19 · 16:31, 같은 검색 파일에 둘이 겹쳐 씀). 대기 · 잠금 스크립트를 멈추거나 바꿀 땐 `ps -ef | grep <스크립트 이름>`으로 bash와 그 자식 python을 찾아 `kill -9`로 끄고(SIGKILL이면 trap이 돌지 않아 남의 잠금을 지우지 않는다), 잠금 `owner.txt`가 내 것일 때만 지운다.
 
 ### 스킬을 끌지 고를 때 Skill 호출 수만 세면 실제 쓰임을 놓친다 — 파일을 직접 읽은 세션과 엔진을 가져다 쓰는 곳까지 센다 (2026-10-24 Claude)
 - 증상: 10-24 경량화에서 대화 기록의 `"name":"Skill","input":{"skill":"…"}` 호출만 세어 `last30days`(3번)·HyperFrames 계열(2번)·Remotion(0번)·Higgsfield(0번)를 끄자고 권했다. 다시 세어 보니 이 스킬 파일을 Read로 바로 연 세션이 하루 1~21개였고, 레딧 원문 읽기는 `.claude/skills/last30days/scripts` 엔진을 불러 쓰며([브라우저·게시](브라우저_게시.md)), 만족 사례 S16·S17·S22·S23의 방법에 Remotion이 들어 있었다. 그대로 껐으면 수요 조사·영상 재현 품질이 떨어질 뻔했다.
