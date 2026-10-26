@@ -1,7 +1,8 @@
 # 5번 스포츠 매니페스토 이미지 콘티의 배치도(2026-10-26) — Gemini에 원본 프레임 대신 넣는 그림. 「매진 임박」 v4 · 8번 · 6번과 같은 길(만족 사례 장부 S31):
 # 원본 선수의 얼굴 · 몸 · 옷 · 머리카락이 옮겨 오지 않게 사람 자리만 검은 실루엣으로 두고, 나머지는 밝기 결만 남긴 회색으로 흐린다
 # (빛 기둥 · 유리창 · 러닝머신처럼 구도를 잡는 큰 덩어리는 남고, 원본의 질감 · 상표는 사라진다).
-#   python -X utf8 이미지콘티_배치도.py [행 번호…]   → 배치/S01.png …(1456×816) · 배치/_확인/S01.jpg(원본 위에 실루엣을 겹친 확인판)
+#   python -X utf8 이미지콘티_배치도.py [행 번호 · 이름…]   → 배치/S01.png …(1456×816) · 배치/_확인/S01.jpg(원본 위에 실루엣을 겹친 확인판)
+#   이름은 원본첫프레임/<이름>.png를 쓴다 — S11끝(고개 든 끝 그림) · S12b(12행 신발 조각) · S09r(9행을 180° 돌린 판: 바로 선 얼굴로 굽고 돌리려고)
 # 원본 프레임 · 배치도는 git 밖(synk-vendor/pulse-portfolio12-20261024/콘티/p5/)에만 둔다. 번쩍 조각 · 그래픽 행(5 · 7 · 14 · 20)은 배치도를 만들지 않는다(후반).
 import sys
 from pathlib import Path
@@ -22,6 +23,7 @@ ROWS = {
     8: {"seg": True}, 9: {"seg": True}, 10: {"seg": True}, 11: {"seg": True}, 12: {"seg": True},
     13: {"seg": True}, 15: {"seg": True}, 16: {"seg": True}, 17: {"seg": True}, 18: {"seg": True},
     19: {"seg": True}, 21: {"seg": True},
+    "S11끝": {"seg": True}, "S12b": {"seg": True}, "S09r": {"seg": True, "src": "S09", "rot180": True},
 }
 
 
@@ -47,8 +49,11 @@ def person_mask(img):
 
 
 def build(n):
-    src = imread(F / f"S{n:02d}.png")
     cfg = ROWS[n]
+    name = n if isinstance(n, str) else f"S{n:02d}"
+    src = imread(F / f"{cfg.get('src', name)}.png")
+    if cfg.get("rot180"):
+        src = cv2.rotate(src, cv2.ROTATE_180)
     mask = person_mask(src) if cfg.get("seg") else np.zeros(src.shape[:2], np.uint8)
     for poly in cfg.get("hand", []):
         cv2.fillPoly(mask, [np.array(poly, np.int32)], 255)
@@ -61,14 +66,14 @@ def build(n):
     out = cv2.resize(out, (W, H), interpolation=cv2.INTER_AREA)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "_확인").mkdir(exist_ok=True)
-    imwrite(OUT / f"S{n:02d}.png", out)
+    imwrite(OUT / f"{name}.png", out)
     chk = src.copy()
     chk[mask > 0] = (chk[mask > 0] * 0.3 + np.array([0, 0, 180]) * 0.7).astype(np.uint8)
-    imwrite(OUT / "_확인" / f"S{n:02d}.jpg", cv2.resize(chk, (960, 540)))
+    imwrite(OUT / "_확인" / f"{name}.jpg", cv2.resize(chk, (960, 540)))
     return int((mask > 0).mean() * 1000) / 10
 
 
 if __name__ == "__main__":
-    rows = [int(a) for a in sys.argv[1:]] or sorted(ROWS)
+    rows = [int(a) if a.isdigit() else a for a in sys.argv[1:]] or list(ROWS)
     for n in rows:
-        print(f"S{n:02d} 사람 자리 {build(n)}%", flush=True)
+        print(n, f"사람 자리 {build(n)}%", flush=True)
