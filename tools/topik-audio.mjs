@@ -24,6 +24,15 @@ const TEMPO = { 'topik-i': 0.95, 'topik-ii': 1 };
 // 목소리마다 덮는 값(10-21 Fable 굽기 권고): 범수는 느리게 구우면 말끝이 뭉개져 시험과 상관없이 1.0(0.97 아래로 내리지 않는다),
 // 낮은 남자 목소리가 폰 스피커에서 작게 들려 줄 음량을 1.5dB 올린다. 감정은 모두 normal 그대로.
 export const VOICE_TUNE = Object.freeze({ 범수: { tempo: 1, lufs: -15.5 } });
+// 줄마다 고른 seed(<단위>/<줄> → seed, 없으면 기본 1003). 10-28 잘림 고침으로 다시 사니 받아쓰기가 옛 판보다 못하거나
+// 목소리가 거칠어진 줄만 후보 seed 서넛을 사서 받아쓰기·엉킴(tools/목소리엉킴.py)으로 골랐다. 대본 줄 순서를 바꾸면 이 표도 고친다.
+export const LINE_SEEDS = Object.freeze({
+  'ti-l-b-008/l04': 1005, // 「있어요」가 「써요」로
+  'ti-l-d-004/l04': 1004, // 「역에서」가 「여기서」로
+  'ti-l-d-027/l04': 1008, // 하나 엉킴 44% → 26%, 「잘못 탔어요」 그대로 들림(1005는 8%지만 「왔어요」로)
+  'tii-l-a-010/l01': 1004, // 「부스」가 「보스」로
+  'tii-l-b-003/l01': 1004, // 「자전거」가 「자전과」로
+});
 const SAMPLES = [
   { id: 'sample-topik1', exam: 'topik-i', script: [
     { speaker: '여자', text: '민수 씨, 이번 주 토요일에 시간 있어요?' },
@@ -43,7 +52,10 @@ export function planFor(unit, pair, outDir) {
   return { voices: { 남자: voices.남자, 여자: voices.여자 },
     defaults: { model: 'ssfm-v30', lang: 'ko', emotion: 'normal', intensity: 1, tempo: TEMPO[unit.exam] || 1, seed: 1003, lufs: -17 },
     out: path.join(outDir, 'lines'), trim: 'both',
-    lines: unit.script.map((line, index) => ({ id: `l${String(index + 1).padStart(2, '0')}`, role: line.speaker, text: line.text, ...VOICE_TUNE[voices[line.speaker]?.name] })),
+    lines: unit.script.map((line, index) => {
+      const id = `l${String(index + 1).padStart(2, '0')}`, seed = LINE_SEEDS[`${unit.id}/${id}`];
+      return { id, role: line.speaker, text: line.text, ...VOICE_TUNE[voices[line.speaker]?.name], ...(seed ? { seed } : {}) };
+    }),
     take: { lead: 0.4, gap: 0.7, tail: 0.6, lufs: -16, limiter: 0.89, wav: path.join(outDir, 'take.wav'), mp3: path.join(outDir, 'take.mp3') } };
 }
 
@@ -106,6 +118,8 @@ async function main([command, ...argv]) {
     for (const unit of list) {
       const log = bake(unit, pair, { cap, preview: command === '미리보기' });
       if (command === '미리보기') { console.log(`${unit.id}: ${log.trim().split('\n').slice(-1)[0]}`); continue; }
+      // 산 양과 경고(원본 잘림·받아쓰기로 볼 줄)는 굽기 기록을 삼키지 말고 보인다
+      for (const note of log.split('\n').filter(l => l.startsWith('사기 끝') || l.startsWith('⚠'))) console.log(`${unit.id}: ${note}`);
       const seconds = encode(path.join(workDir, pair, unit.id, 'take.mp3'), path.join(bankDir, 'audio', `${unit.id}.mp3`));
       markReady(unit, pair, seconds);
       console.log(`${unit.id} → audio/${unit.id}.mp3 · ${seconds}초 · 문항 ${unit.items.join(',')}`);
