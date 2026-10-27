@@ -24,6 +24,15 @@
       "주소": "https://www.tiktok.com/@synk.mn/video/7700858703938948372",
       "방법": "10-26 유호님 「틱톡 4계정도 매일 판에 넣어서 같은 편을 올리게」(제작 절차 4 「틱톡 판」) — 14:4x Claude가 ego 프로필 「TikTok synk.mn」(유호님이 막 로그인, username synk.mn 확인)의 TikTok Studio 업로드로 원본 01-ig-fb-mn/video.mp4(19.8MB) · 캡션은 캡션_mn.txt 그대로(공백 빼고 같음, 게임 링크 줄은 틱톡에서 안 눌려 뺌) · 표지는 첫 화면(「ㅋㅋ = ?」 카드) 그대로 · Schedule Oct 26, 2026 21:00 (GMT+9) · Everyone · 댓글 허용 · AI-generated content 끔 · Disclose 끔 · 음악 저작권 · 콘텐츠 검사 No issues found. 저장 허용 창은 Allow. 누른 뒤 콘텐츠 목록 「Oct 26, 9:00PM · Everyone · 00:16」 한 줄.",
       "공개확인": "10-27 14시 오늘 편 게시 점검 — 작업실 서버 대조(04:21Z 읽음)의 그 채널 게시물 2026-10-26T21:00:00+09:00 공개 확인"
+    },
+    {
+      "계정": "lab-mm-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-10-27T22:30:00+09:00",
+      "방법": "10-27 14:46 유호님 「승인 — LAB_채팅줄임말_mn_20261024 버마어 판을 틱톡 @synklab.mm에 오늘 22:30 예약」 → ego 기본 프로필(Profile 1, username synklab.mm 확인) TikTok Studio · 원본 04-tiktok-mm/video.mp4 · 캡션 게시문안.txt 그대로(공백 빼고 같음) · 표지 첫 화면 · AI 표시 끔(준비.json false) · 예약 2026-10-27 22:30(시각 목록 칸에 표시를 붙여 page.click — 누를 때마다 is-active를 읽어 맞춤) → 「예약」",
+      "공개확인": "14:47 콘텐츠 목록 「10월 27일 오후 10:30 · 모두」 한 줄",
+      "편ID": "LAB_채팅줄임말_mn_20261024",
+      "플랫폼": "tiktok"
     }
   ],
   "추가게시": [
