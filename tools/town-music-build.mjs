@@ -6,7 +6,8 @@
  *
  * 기본은 미리 보기다(원곡의 길이·표지와 만들 파일 이름만 보인다). --실행이면:
  *  ① 원곡의 메타데이터에서 Suno 공식 내려받기본의 표지(comment = made with suno; created=…; id=…)를 읽는다 — 표지가
- *     없으면 권리를 확인할 수 없어 멈춘다(음악 원본 장부의 Suno 약관 줄).
+ *     없으면 권리를 확인할 수 없어 멈춘다(음악 원본 장부의 Suno 약관 줄). Suno 스튜디오에서 내보낸 원곡의 표지
+ *     (made with suno studio; …)도 받고 그 종류를 source.suno.export에 남긴다(유호님 10-27 — 권리 검사는 앱이 마무리되면 직접).
  *  ② ffmpeg loudnorm 두 번(재기 → 맞추기)으로 −16 LUFS·최대 −1.5 dBTP, 44.1kHz 스테레오 MP3 128kbps를 만든다. 태그는
  *     싣지 않는다(공개 화면에 제작 도구 이름이 남지 않게).
  *  ③ experiences/synk-town/assets/music/<id>-<파일 해시 앞 8자>.mp3에 쓰고(git 밖 — 공개 사이트에만 올린다),
@@ -22,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TARGET_LUFS = -16, TARGET_PEAK = -1.5, BITRATE = '128k', RATE = 44100;
-const SUNO = /made with suno; created=([^;]+); id=([0-9a-f-]{36})/;
+const SUNO = /made with suno( studio)?; created=([^;]+); id=([0-9a-f-]{36})/;
 
 const run = (cmd, args) => {
   const result = spawnSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -36,7 +37,7 @@ export function probe(file) {
   const info = JSON.parse(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration:format_tags', '-of', 'json', file]).stdout);
   const tags = info.format?.tags || {}, comment = tags.comment ?? tags.COMMENT ?? '';
   const mark = SUNO.exec(comment);
-  return { durationMs: Math.round(Number(info.format?.duration) * 1000), suno: mark ? { created: mark[1], id: mark[2] } : null };
+  return { durationMs: Math.round(Number(info.format?.duration) * 1000), suno: mark ? { created: mark[2], id: mark[3], ...(mark[1] ? { export: 'studio' } : {}) } : null };
 }
 /** loudnorm이 stderr 끝에 적는 JSON 한 덩어리. */
 function loudness(stderr) {

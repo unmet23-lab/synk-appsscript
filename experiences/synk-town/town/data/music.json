@@ -1,5 +1,5 @@
 {
-  "$comment": "머무는 모드의 SYNK 음악 곡 목록(세로 조각 W7b). 곡은 10-27 유호님이 맡기셔서 Claude가 골랐다(노랫말 없는 연주곡 다섯) — 후보와 고른 까닭은 docs/디자인/싱크타운_머무는모드_곡후보_20261025.md. 공개 생성물에는 곡마다 id·제목·파일·길이만 가고, 아래 출처·권리 기록은 이 파일에만 남는다. 고른 곡은 tools/town-music-build.mjs가 원곡에서 앱 파일(assets/music/<id>-<파일 해시 앞 8자>.mp3 — 이름이 바뀌지 않는 한 내용도 그대로라 오래 캐시한다, git 밖 — 공개 사이트에만)과 이 목록의 항목을 만든다. 목록이 비면 화면에 음악 스위치가 없고 아무것도 받지 않는다. 길이 durationMs, 음량 lufsTenths(정수 열 배, −16.0 LUFS = −160), peakTenths(dBTP 열 배), 원본은 장부 번호·원곡 파일 해시·Suno 표지.",
+  "$comment": "머무는 모드의 SYNK 음악 곡 목록(세로 조각 W7b). 곡은 10-27 유호님이 맡기셔서 Claude가 골랐다(노랫말 없는 연주곡 다섯 — 21번은 유호님이 더하라고 해 여섯, 권리 검사는 앱이 마무리되면 유호님이 직접) — 후보와 고른 까닭은 docs/디자인/싱크타운_머무는모드_곡후보_20261025.md. 공개 생성물에는 곡마다 id·제목·파일·길이만 가고, 아래 출처·권리 기록은 이 파일에만 남는다. 고른 곡은 tools/town-music-build.mjs가 원곡에서 앱 파일(assets/music/<id>-<파일 해시 앞 8자>.mp3 — 이름이 바뀌지 않는 한 내용도 그대로라 오래 캐시한다, git 밖 — 공개 사이트에만)과 이 목록의 항목을 만든다. 목록이 비면 화면에 음악 스위치가 없고 아무것도 받지 않는다. 길이 durationMs, 음량 lufsTenths(정수 열 배, −16.0 LUFS = −160), peakTenths(dBTP 열 배), 원본은 장부 번호·원곡 파일 해시·Suno 표지.",
   "musicVer": "town-music-1",
   "tracks": [
     {
@@ -99,6 +99,27 @@
         "suno": {
           "created": "2026-09-07T21:52:26Z",
           "id": "2c51ca98-1534-4249-8bca-0cd36e70b4ee"
+        }
+      }
+    },
+    {
+      "id": "forest-rain",
+      "title": "숲에 내리는 비",
+      "file": "assets/music/forest-rain-dfc642f9.mp3",
+      "durationMs": 268979,
+      "bytes": 4304560,
+      "fileSha256": "dfc642f9fd81402867a21247af5cdd22b8fc55f4af2436b3982ecd0efef7abe5",
+      "lufsTenths": -164,
+      "peakTenths": -19,
+      "rights": "suno-paid-official-download",
+      "source": {
+        "ledger": 21,
+        "original": "비 오는 숲의 책상.wav",
+        "sha256": "acb89c2c7c32e97ab12f59257d1be65060de475b853e34dd0147bb74809c4e9d",
+        "suno": {
+          "created": "2026-09-23T14:32:51Z",
+          "id": "934255e3-4a42-4750-824e-5f37be00eccb",
+          "export": "studio"
         }
       }
     }

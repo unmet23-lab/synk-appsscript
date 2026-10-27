@@ -47,3 +47,14 @@ test('Suno 표지가 없는 원곡은 만들지 않는다 — 권리를 확인�
     assert.throws(() => buildTrack({ original, ledger: 1, title: '출처 모름', folder: path.join(dir, 'music'), list: path.join(dir, 'music.json') }), /표지/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('Suno 스튜디오 내보내기본의 표지도 받고 그 종류를 남긴다(유호님 10-27)', { skip: !ffmpeg && 'ffmpeg 없음' }, async () => {
+  const { probe } = await toolModule('town-music-build');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'town-music-')), studio = path.join(dir, 'studio.wav'), plain = path.join(dir, 'plain.wav');
+  try {
+    tone(studio, 'made with suno studio; created=2026-09-23T14:32:51Z; id=934255e3-4a42-4750-824e-5f37be00eccb');
+    tone(plain, 'made with suno; created=2026-09-07T21:58:56Z; id=676b506d-b475-43e0-9d6f-d519f11623bd');
+    assert.deepEqual(probe(studio).suno, { created: '2026-09-23T14:32:51Z', id: '934255e3-4a42-4750-824e-5f37be00eccb', export: 'studio' });
+    assert.deepEqual(probe(plain).suno, { created: '2026-09-07T21:58:56Z', id: '676b506d-b475-43e0-9d6f-d519f11623bd' });
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
