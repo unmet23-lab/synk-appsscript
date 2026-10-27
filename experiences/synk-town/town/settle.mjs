@@ -57,7 +57,7 @@ export function settle(previous, lease, { step: stepWorld, check, close, nowMs, 
   if (typeof stepWorld !== 'function' || typeof check !== 'function') throw new TypeError('settle needs the step and the check');
   const steps = settleSteps(previous.settledU ?? 0, lease, { canContact, touch });
   if (!steps.length && !close) return { state: previous, changed: false };
-  // Each step hears when the visit it belongs to began (the lease's startAts, GPT A1); a lease from before keeps the
+  // Each step hears when the visit it belongs to began (the lease's startAts, backend review A1); a lease from before keeps the
   // presence's latest start.
   const state = structuredClone(previous), latest = Number.isSafeInteger(lease.presence?.visitStartAt) ? lease.presence.visitStartAt : null;
   const startFor = u => { let found = null, at = -1; for (const [key, ms] of Object.entries(lease.startAts || {})) if (Number(key) <= u && Number(key) > at) { at = Number(key); found = ms; } return found ?? latest; };

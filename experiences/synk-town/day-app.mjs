@@ -601,19 +601,20 @@ function cardsFrame(now) {
 }
 async function openCard(c, source) {
   const payload = { card: c.card, key: c.key, source, ...(source === 'contact' ? { contactId: c.id } : {}) };
-  if (await freeCommand('CARD_OPEN', payload)) renderCardDialog();
+  if (await freeCommand('CARD_OPEN', payload)) { cardOpenedHere = c.card; renderCardDialog(); }
 }
 /** 「나와 함께」's panel (§8-3): the card, its owner's words, the choices the server allows, then the result with 「…」
  * (Atlas's four answers, §20-3). Closing before it is done leaves it 「하던 생활」 (CARD_CLOSE → paused). */
-let cardFeedbackOpen = false, cardClosing = false;
+// The card this window opened itself (final review F3): its panel opens here though another window holds the town.
+let cardFeedbackOpen = false, cardClosing = false, cardOpenedHere = null;
 function renderCardDialog() {
   const dialog = $('card-dialog'), m = takeModel(snapshot.view.day?.scene?.village?.take);
-  if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; return; }
+  if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; cardOpenedHere = null; return; }
   // A card whose 「나와 함께」 is a life activity (W8: C5 the order, R6 the one-cup board) is done on that board, not here.
   if (CARD_BY_ID.get(m.card)?.paths?.player?.activity) { if (dialog.open) dialog.close(); return; }
   // A take still open (a reload, another window's answer) brings its panel back — not while this window is closing it, and
   // only in the window holding the town (review F5): a second window does not pop the panel over its own view.
-  if (!dialog.open) { if (cardClosing || stay?.active() || !presence?.owner) return; cardFeedbackOpen = false; dialog.showModal(); }
+  if (!dialog.open) { if (cardClosing || stay?.active() || !presence?.owner && cardOpenedHere !== m.card) return; cardFeedbackOpen = false; dialog.showModal(); }
   // What has the keyboard in the panel, so it stays there when a part is drawn again (screen review B2).
   const had = dialog.contains(document.activeElement) ? document.activeElement : null, hadChoice = had?.dataset.choice ?? null, hadAnswer = had?.dataset.feedback ?? null;
   text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]); text('card-line', m.line || '');
@@ -859,7 +860,8 @@ function frame(now) {
   if (stay?.active()) {
     // Seated (W7b): the app's loop runs on a timer — at the scene's pace while a resident walks or a gamepad is connected
     // (its buttons are read here, and a short press must not fall between two reads), slowly otherwise.
-    villageFrame(); const padded = stay.frame();
+    // The notices and the place's panel hear the seat too (screen review B1): what they showed stops counting while seated.
+    villageFrame(); cardsFrame(now); noticesFrame(now); const padded = stay.frame();
     appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking || padded ? QUIET.appHz : QUIET.idleHz));
     return;
   }

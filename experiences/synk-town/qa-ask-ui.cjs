@@ -16,7 +16,9 @@ const only = arg('--only', '') ? new Set(arg('--only', '').split(',')) : null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const kst = (date, time) => Date.parse(`${date}T${time}:00+09:00`);
 const MIN = 60000, HOUR = 60 * MIN, DAY = 24 * HOUR;
-const DEVICES = { desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, reducedMotion: 'reduce' }, phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' } };
+const DEVICES = { desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, reducedMotion: 'reduce' }, phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' },
+  // The short windows the final review measured (F1): a small phone and a phone held sideways.
+  small: { viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: 'reduce' }, landscape: { viewport: { width: 844, height: 390 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' } };
 const known404 = /avatar-textiles-v1/;
 const report = { started: new Date().toISOString(), scenes: {}, failures: [] };
 const check = (scene, ok, what, detail) => { (report.scenes[scene] ||= { checks: [] }).checks.push({ ok: !!ok, what, ...(detail === undefined ? {} : { detail }) }); if (!ok) report.failures.push(`${scene}: ${what}${detail === undefined ? '' : ` — ${JSON.stringify(detail).slice(0, 400)}`}`); };
@@ -193,7 +195,7 @@ async function taste(browser) {
  * notebook's row → 「그만 쓰기」 with one more confirm (phone). The tutor this device remembers draws its own picture. */
 async function consent(browser) {
   const { EVAL_CONSENT } = await town('town/data.gen.mjs');
-  for (const [device, answer] of [['desktop', 'no'], ['phone', 'yes']]) {
+  for (const [device, answer] of [['desktop', 'no'], ['phone', 'yes'], ['small', 'no'], ['landscape', 'no']]) {
     const f = await askWorld(`consent-${device}`, (world, lifeDay) => { world.recentLifeUse = []; world.townVisit = { ...world.townVisit, firstDay: lifeDay - 1, done: true }; });
     try {
       const s = await open(browser, f, { device });
@@ -207,6 +209,18 @@ async function consent(browser) {
         const img = await s.page.$eval('#ask-card img', el => ({ ok: el.complete && el.naturalWidth > 0, src: el.src }));
         check('consent', img.ok && (device === 'phone' ? /marin-consent/.test(img.src) : /mongle-consent/.test(img.src)), `${device}: 그림(${device === 'phone' ? '마린 — 이 기기의 튜터' : '몽글'})`, img);
         await shot(s.page, `consent-${device}-1-card`);
+        // The card stays inside the notices: inside the window, off the joystick, the talk button and the status line; its
+        // answers are reachable (in sight, or by scrolling the card itself — final review F1).
+        const fit = await s.page.evaluate(() => { const card = document.getElementById('ask-card').getBoundingClientRect(), hud = ['walk-joystick', 'walk-interact', 'walk-status']
+          .map(id => document.getElementById(id)).filter(el => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width).map(el => ({ id: el.id, r: el.getBoundingClientRect().toJSON() }));
+          const c = document.getElementById('ask-card'); return { card: card.toJSON(), inner: innerHeight, hud, scrolls: c.scrollHeight > c.clientHeight + 1 }; });
+        check('consent', fit.card.bottom <= fit.inner + 1 && fit.card.top >= 0, `${device}: 카드가 창 안에 선다`, fit.card);
+        check('consent', fit.hud.every(h => !overlap({ x: fit.card.left, y: fit.card.top, width: fit.card.width, height: fit.card.height }, { x: h.r.left, y: h.r.top, width: h.r.width, height: h.r.height })), `${device}: 카드가 조이스틱·이야기 단추·상태 줄을 덮지 않는다`, fit);
+        // The picture keeps its own row: it never lies over the mascot's name or the question (a squashed grid row did, F1 fix).
+        const rows = await s.page.evaluate(() => ['.ask-picture', '.ask-head', '#ask-line'].map(sel => document.querySelector(`#ask-card ${sel}`).getBoundingClientRect().toJSON()));
+        const [pic, head, ln] = rows.map(r => ({ x: r.left, y: r.top, width: r.width, height: r.height }));
+        check('consent', !overlap(pic, head) && !overlap(pic, ln) && pic.height > 40, `${device}: 그림이 이름 줄·물음과 겹치지 않는다`, rows);
+        await s.page.locator(`#ask-card [data-answer="${answer}"]`).scrollIntoViewIfNeeded();
         if (device === 'desktop') {
           await s.page.click('#ask-card .ask-more'); await delay(300);
           const detail = await s.page.$eval('#ask-detail', el => ({ hidden: el.hidden, text: el.innerText }));

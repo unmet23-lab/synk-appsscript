@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+const { execFileSync } = require('node:child_process');
 const { ROOT } = require('./lib/town.js');
 
 const load = file => import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', file)).href);
@@ -55,16 +56,11 @@ test('동의 물음 — 계약 생성물의 쉬운 판 다섯 줄·단추(손으
   assert.equal(askModel({ key: 'consent', kind: 'consent' }, { consent: null }), null);
 });
 
-test('마스코트 그림 — 튜터 셋 × 물음 둘의 그림이 자산에 있고, 공개 그림이라 생성 도구 표시가 없다', async () => {
+test('마스코트 그림 — 튜터 셋 × 물음 둘의 그림이 저장소 자산으로 있다(바이트·생성 도구 표시는 공개 도구가 본다)', async () => {
+  // CI의 희소 체크아웃은 그림을 빼므로 파일을 열지 않고 색인만 본다(tools/ci읽기대조.cjs ③).
   const { TUTORS } = await load('day-ask.mjs');
-  for (const tutor of Object.keys(TUTORS)) for (const kind of ['taste', 'consent']) {
-    const file = path.join(ROOT, 'experiences/synk-town/assets/ask', `${tutor}-${kind}.webp`);
-    assert.ok(fs.existsSync(file), `${tutor}-${kind}.webp`);
-    const bytes = fs.readFileSync(file);
-    assert.equal(bytes.subarray(0, 4).toString('latin1'), 'RIFF');
-    assert.ok(!bytes.includes(Buffer.from('c2pa')) && !bytes.includes(Buffer.from('caBX')), `${tutor}-${kind} 생성 도구 표시`);
-    assert.ok(bytes.length < 120000, `${tutor}-${kind} 크기 ${bytes.length}`);
-  }
+  const listed = execFileSync('git', ['ls-files', 'experiences/synk-town/assets/ask'], { cwd: ROOT, encoding: 'utf8' }).split(/\r?\n/).filter(Boolean);
+  for (const tutor of Object.keys(TUTORS)) for (const kind of ['taste', 'consent']) assert.ok(listed.includes(`experiences/synk-town/assets/ask/${tutor}-${kind}.webp`), `${tutor}-${kind}.webp`);
 });
 
 test('그동안 달라진 것 — 주민 이름을 채운 줄, 첫 맥박보다 30분 넘게 앞인 방문·빈 목록·모르는 줄은 판 없음, 기간 말 없음', async () => {

@@ -109,12 +109,17 @@ export function createAsk(host, { command = async () => false, live, tutor = () 
   }
   function update({ ask, blocked = false, now = performance.now() } = {}) {
     model = askModel(ask, { tutor: tutor() });
+    // No question open: the keys answered or reported here are forgotten, so the same question asked again on a later
+    // life day draws and reports afresh (final review F2 — a window may stay open for days).
+    if (!ask) { gone.clear(); reported.clear(); }
     const shown = !!model && !gone.has(model.key) && !blocked && !document.hidden;
     if (!shown) { if (!card.hidden) card.hidden = true; seenSince = null; if (!model) detailOpen = false; return { shown: false, drawn: null }; }
     if (card.hidden) { card.hidden = false; if (live) live.textContent = `${model.name}의 물음: ${model.line}`; }
     paint();
-    // Drawn = the question's line has stood wholly in the window a moment (the consent card may scroll on a phone).
-    const r = line.getBoundingClientRect(), whole = r.height > 0 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth + 1;
+    // Drawn = the question's line has stood wholly in the window and in the card's own box a moment (the card scrolls
+    // within the notices on a short window — final review F1).
+    const r = line.getBoundingClientRect(), box = card.getBoundingClientRect();
+    const whole = r.height > 0 && r.top >= Math.max(0, box.top) - 1 && r.bottom <= Math.min(innerHeight, box.bottom) + 1 && r.left >= 0 && r.right <= innerWidth + 1;
     if (!whole) { seenSince = null; return { shown: true, drawn: null }; }
     seenSince ??= now;
     if (now - seenSince < DRAWN_AFTER_MS || reported.has(model.key)) return { shown: true, drawn: null };

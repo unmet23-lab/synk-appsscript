@@ -16,7 +16,7 @@ const V = params => (params ?? paramsFor()).visitBands;
 export const HABIT_BANDS = Object.freeze(['night', 'morning']);
 /** The life days a settlement may still plan behind the one it writes (the seven-day absence limit, and that day itself):
  * the ring keeps them beside the thirty it judges by, so writing today never drops a day a band still being opened
- * counts (GPT A2). */
+ * counts (backend review A2). */
 const CATCH_UP_DAYS = 8;
 const sizeOf = params => V(params).ringLifeDays + CATCH_UP_DAYS;
 export const initialVisitBands = params => ({ ring: Array(sizeOf(params)).fill(null), day: null, off: false });
