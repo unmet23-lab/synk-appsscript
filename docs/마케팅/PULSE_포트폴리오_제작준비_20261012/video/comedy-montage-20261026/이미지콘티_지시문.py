@@ -91,12 +91,14 @@ JOBS = [
         "A plain white short-sleeve rash guard, wet.",
         light="LIGHT: bright clear midday sun, sparkling water, soft reflected light from the water on his face."),
     job("C04",
-        "ON THE DECK OF A WHITE TOUR YACHT OFF THE JEJU COAST, 9:16, exactly as in Image {L}: seen from a few steps away at standing height looking slightly "
-        "down, he sits on the seat of the white bench along the rail in the upper right of the picture with both feet flat on the deck, knees apart, leaning "
-        "forward with his forearms crossed on his knees, his head in the top fifth of the picture; a woman companion sits "
-        "on the same bench to the left of him, and a man companion sits nearer the camera in the lower middle of the picture, turned away toward the sea. Striped shadows from the canopy fall across the white "
-        "deck in the lower half. Beyond the rail: deep blue sea and a green island with a low volcanic peak on the horizon.",
-        W_LINEN),
+        # 4판(10-27 Fable 2차): 배치도를 넣으면 한 발을 벤치에 올리거나 난간 위에 앉힌다(1 · 3판) — 배치도 없이 자세를 말로만
+        "ON THE DECK OF A WHITE TOUR YACHT OFF THE JEJU COAST, 9:16: seen from a few steps away at standing height looking slightly down, he sits on the "
+        "low seat of the white bench along the rail in the upper right of the picture, his head in the top fifth of the picture: both sneakers flat on the "
+        "deck, knees apart, leaning forward with his forearms crossed on his knees — not sitting on the rail or the bench back, no foot up on the bench. "
+        "A young woman companion sits on the same bench to the left of him, and a young man companion sits on the deck bench nearer the camera in the lower "
+        "middle of the picture, turned away toward the sea. Striped shadows from the canopy fall across the white deck in the lower half. Beyond the rail: "
+        "deep blue sea and a green island with a low volcanic peak on the horizon.",
+        W_LINEN, layout=False),
     job("C05",
         "AT A BEACH CAFE ON JEJU'S NORTH COAST, 9:16, exactly as in Image {L}: under a sand-colored canvas sun shade, he sits cross-legged on a large white "
         "outdoor daybed with white cushions in the center of the picture, his body turned three-quarters to the left, the small white plate with a slice of "
