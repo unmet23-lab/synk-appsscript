@@ -29,6 +29,8 @@ OURS = {
 
 # 원본 얼굴 크기 · 자리에 맞춰 자른다(행: 배율 · 가운데 x · y) — Fable 10-27: 11행 끝 그림이 원본 끝보다 25% 작고 오른쪽, 12행 옆얼굴이 20% 작음
 FIT_CROP = {"S11": (1.32, 0.552, 0.47), "S12a": (1.24, 0.467, 0.55)}
+# 바탕이 순검정인 컷은 줄이고 내려 원본 자리에 놓는다(행: 배율 · 우리 머리 꼭대기 y · 원본 머리 꼭대기 y) — 6행은 세 번 구워도 머리가 위(18%)에 남았다(원본 35.7%, 어깨 폭 0.20/0.22)
+FIT_PAD = {"S06": (0.91, 0.182, 0.357)}
 # 끝 그림(행: 배율 · 잘라 낼 가운데 x · y 비율) — 1행 3.13초에 1.115배(위로 0.8% 기욺), 4행 0.7초에 약 1.8배(머리가 화면 가운데 위로), 6행 2.8초에 1.069배(아래로 1% 기욺)
 END_CROP = {"S01": (1.115, 0.5, 0.496), "S04": (1.8, 0.48, 0.37), "S06": (1.069, 0.5, 0.505)}
 
@@ -162,6 +164,18 @@ def pick():
         im = Image.open(os.path.join(V, rel)).convert("RGB")
         if k == "S09":
             im = im.rotate(180)   # 바로 선 얼굴로 굽고 원본처럼 뒤집는다
+        if k in FIT_PAD:
+            z, ys, yd = FIT_PAD[k]
+            small = im.resize((round(im.width * z), round(im.height * z)), Image.LANCZOS)
+            a = np.asarray(small)
+            edge = np.concatenate([a[:40].reshape(-1, 3), a[:, :40].reshape(-1, 3), a[:, -40:].reshape(-1, 3)])
+            canvas = Image.new("RGB", im.size, tuple(int(v) for v in np.median(edge, 0)))   # 판 가장자리 색(아주 어두운 회색)으로 채운다
+            fm = np.ones(a.shape[:2], np.float32)
+            r = np.minimum(np.arange(fm.shape[0]), 10**6)[:, None]; c = np.arange(fm.shape[1])[None, :]
+            fm = np.minimum(np.minimum(r, fm.shape[0] - 1 - r), np.minimum(c, fm.shape[1] - 1 - c)) / 40.0   # 경계 40화소를 부드럽게
+            mask = Image.fromarray((np.clip(fm, 0, 1) * 255).astype(np.uint8))
+            canvas.paste(small, (round(im.width * (1 - z) / 2), round(im.height * yd - im.height * ys * z)), mask)
+            im = canvas
         if k in FIT_CROP:
             z, cx, cy = FIT_CROP[k]
             w, h = im.width / z, im.height / z
