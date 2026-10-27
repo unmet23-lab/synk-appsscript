@@ -19,7 +19,8 @@ const kst = (date, time) => Date.parse(`${date}T${time}:00+09:00`);
 const MIN = 60000, HOUR = 60 * MIN;
 const DEVICES = { desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 }, phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' },
   tablet: { viewport: { width: 768, height: 1024 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, landscape: { viewport: { width: 844, height: 390 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
-  'landscape-small': { viewport: { width: 667, height: 375 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } };
+  'landscape-small': { viewport: { width: 667, height: 375 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  'tablet-landscape': { viewport: { width: 1024, height: 768 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, 'landscape-low': { viewport: { width: 640, height: 360 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } };
 const known404 = /avatar-textiles-v1/;
 const report = { started: new Date().toISOString(), scenes: {}, failures: [] };
 const check = (scene, ok, what, detail) => { (report.scenes[scene] ||= { checks: [] }).checks.push({ ok: !!ok, what, ...(detail === undefined ? {} : { detail }) }); if (!ok) report.failures.push(`${scene}: ${what}${detail === undefined ? '' : ` — ${JSON.stringify(detail)}`}`); };
@@ -373,12 +374,13 @@ async function oneCupScene(browser, { simple = false } = {}) {
   } finally { await f.close(); }
 }
 
-/** Folded with a cup in hand where the walking controls come back with less room — a tablet upright (the band up to 1040px
- * where an open board hides them, screen re-review FA1) and low landscape phones: 「펼치기」 in the right column's tea slot and the
- * chip above it lie over none of the joystick, the talk and seat buttons, the status line, the map or the top bar; T opens it. */
+/** Folded with a cup in hand where the walking controls come back with less room — tablets (the band up to 1040px where an open
+ * board hides them, screen re-review FA1) and low landscape phones: 「펼치기」 in the right column's tea slot and the chip above it
+ * lie over none of the joystick, the talk and seat buttons, the status line, the map or the top bar. E away from a guest opens
+ * the place's panel: the two step back while it is open and come back when Esc closes it (r3 FA1 · FA2); T opens the board. */
 async function foldScene(browser) {
   const scene = 'fold-widths';
-  for (const device of ['tablet', 'landscape', 'landscape-small']) {
+  for (const device of ['tablet', 'tablet-landscape', 'landscape', 'landscape-small', 'landscape-low']) {
     const f = await fixture(kst('2026-10-28', '13:00'));
     const s = await open(browser, f, { device, init: () => { try { localStorage.setItem('synk.world.town-tea-simple', 'false'); } catch {} } });
     try {
@@ -392,6 +394,14 @@ async function foldScene(browser) {
       const over = { unfold: await clashes(page, '.tea-unfold', around), chip: await clashes(page, '#tea-hand', around) };
       check(scene, m.folded && m.chip && !over.unfold.length && !over.chip.length, `${size} — 잔을 든 채 접은 「펼치기」 · 손 칩이 걷기 조작 · 상태 줄 · 지도 · 위쪽 막대와 겹치지 않는다`, { folded: m.folded, chip: m.chip, over });
       await shot(page, `tea-folded-${size}`);
+      // The stand by the counter is just beyond a guest's reach, so E opens the cafe's panel (it never covers the pieces: they step back).
+      await page.locator('#scene').focus(); await page.keyboard.press('e'); await delay(900);
+      const shown = () => page.evaluate(() => ['#tea-hand', '.tea-unfold'].filter(s => { const e = document.querySelector(s); return e && !e.hidden && getComputedStyle(e).display !== 'none'; }));
+      const engaged = await page.evaluate(() => document.body.classList.contains('walk-engaged')), during = await shown();
+      check(scene, engaged && !during.length && (await tea(page)).chip, `${size} — 접은 채 E로 연 장소 판 동안 손 칩 · 펼치기는 비킨다(잔은 손에 남음)`, { engaged, during });
+      await page.keyboard.press('Escape'); await delay(500);
+      const after = await shown();
+      check(scene, after.length === 2 && (await tea(page)).folded, `${size} — 판을 닫으면 손 칩 · 펼치기가 돌아온다`, after);
       await page.keyboard.press('t'); await delay(400);
       check(scene, !(await tea(page)).folded, `${size} — T로 판이 다시 열린다`);
       check(scene, s.errors.length === 0, `${size} — 콘솔 오류 0`, s.errors);

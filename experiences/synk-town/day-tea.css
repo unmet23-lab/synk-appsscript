@@ -143,21 +143,24 @@ body.tea-mode.walk-mode .scene-caption{display:none}
   .tea-open-walk.felt{width:164px;bottom:calc(var(--bottom) + 144px);font-size:13.5px}
   .tea-bubble{width:min(260px,calc(100% - 16px))}
 }
-/* On a phone 「주문 같이 받기」 and 「펼치기」 take the right column just over the joystick row, where the walking status line and the
-   scene's words run edge to edge: those make room (the W6b · W8 merged screen). A low landscape phone keeps its own bottom row. */
+/* On a phone 「주문 같이 받기」 and 「펼치기」 take the right column just over the joystick row, where the walking status line runs
+   edge to edge: it makes room (the W6b · W8 merged screen). A low landscape phone keeps its own bottom row. */
 @media(max-width:599px),(min-width:600px) and (max-width:760px) and (min-height:601px){
-  body.walk-mode.tea-entry .walk-status,body.walk-mode.tea-entry .scene-caption,body.walk-mode.tea-folded .walk-status,body.walk-mode.tea-folded .scene-caption{right:calc(var(--edge) + 172px)}
+  body.walk-mode.tea-entry .walk-status,body.walk-mode.tea-folded .walk-status{right:calc(var(--edge) + 172px)}
 }
-/* Wider, the scene's words sit centred just under that slot and would reach into it below about 1040px: they narrow to clear it. */
-@media(min-width:761px) and (min-height:601px){
-  body.walk-mode.tea-entry .scene-caption,body.walk-mode.tea-folded .scene-caption{width:min(540px,calc(100% - 400px),calc(100% - 2 * (var(--edge) + 224px)))}
-}
+/* While the place's panel is open (E away from a guest) the folded pieces step back, as the notices do — the panel runs down to
+   their band on a wide screen. The cup stays in hand; they come back when it closes (screen re-review FA1 · FA2 of r3). */
+body.walk-mode.walk-engaged.tea-folded .tea-hand,body.walk-mode.walk-engaged.tea-folded .tea-unfold{display:none}
 /* A low landscape screen keeps the map at the top left: the folded chip keeps to the right of it, and its words step aside for
-   the cup's picture (still read out) so it stays under the top bar. */
+   the cup's picture (still read out) so it stays under the top bar — on the lowest ones with smaller buttons. */
 @media(max-height:600px) and (min-width:600px){
   body.tea-folded .tea-hand{flex-wrap:nowrap;margin-inline:auto 0;max-width:calc(100% - 2 * var(--edge,16px) - 200px)}
   body.tea-folded .tea-hand-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   body.tea-folded .tea-hand-actions{min-width:0}
+}
+@media(max-height:400px) and (min-width:600px){
+  body.tea-folded .tea-hand{gap:6px;padding:6px 10px}
+  body.tea-folded .tea-hand-actions .felt{min-height:36px;padding:0 10px;font-size:12.5px}
 }
 @media(max-width:360px){.tea-pick{min-width:52px}.tea-slot{width:46px}}
 
