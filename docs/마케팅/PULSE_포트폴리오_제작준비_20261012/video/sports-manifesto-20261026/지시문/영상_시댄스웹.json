@@ -92,11 +92,11 @@
   },
   {
    "id": "p5-11", "컷": ["11"], "길이": 4,
-   "설명": "실험실 창 쪽 어두운 구석 — 고개를 든 한결이 입 다물고 코로 거칠게 숨 쉼(시작 그림이 고개 든 끝 상태라 숙였다 드는 몸짓은 대안 p5-11b)",
+   "설명": "실험실 창 쪽 어두운 구석 — 숙였던 한결이 고개를 들며 렌즈 쪽으로 기울어 얼굴이 1.5배(시작 S11s 숙인 판 10-28 새로 구움 · 끝 S11 고개 든 판). 끝 그림이 안 되면 대안 p5-11b",
    "샷": [
-    {"그림": "S11.png", "쓰는초": 2.13, "누구": ["HANGYEOL"],
-     "동작": "In a dark corner of the lab — the soft blue glow of the lab window at the upper left, a warm key light from the upper right on his face — Hangyeol has just lifted his bowed head and leans toward the lens, breathing hard through his nose with his mouth closed: his shoulders and chest heave with each breath and his nostrils flare; a relaxed brow, eyes soft and slightly narrowed, looking ahead; big drops of sweat on his forehead and temples, one bead runs down. He leans only slightly closer.",
-     "카메라": "almost static camera (shake about 0.1%) — the camera itself does not move; only he moves."}
+    {"그림": "S11s.png", "끝그림": "S11.png", "쓰는초": 2.13, "누구": ["HANGYEOL"],
+     "동작": "In a dark corner of the lab — the soft blue glow of the lab window at the upper left, a warm key light from the upper right — Hangyeol starts bent forward with his head bowed, catching his breath; within about 1.5 s he lifts his head and leans toward the lens until his face is about 1.5x larger, exactly as in the last frame, then holds there breathing hard through his nose with his mouth closed: his shoulders and chest heave, his nostrils flare; a relaxed brow, eyes soft and slightly narrowed, looking ahead; big drops of sweat on his forehead and temples, one bead runs down.",
+     "카메라": "almost static camera (shake about 0.1%) — the camera itself does not move; only he moves toward it."}
    ]
   },
   {

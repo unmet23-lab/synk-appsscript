@@ -133,7 +133,8 @@ JOBS = [
         # — 얼굴이 안 보이는 7번 뒷모습 판을 장소 참고로 넣는다(장소 참고에는 그의 얼굴이 든 그림을 넣지 않는다 — 장부 S12)
         "Image {S} is the wide shot of this same moment from a few steps further back: keep exactly its place and daylight behind him — the same "
         "dark volcanic-rock gravel ground, the same low black stone wall, the same green grassy oreum ridge and the same soft blue sky with light "
-        "white clouds; only the camera has moved closer to him (the bystanders in Image {S} need not be copied). No lettering, decals or labels on "
+        "white clouds; only the camera has moved closer to him (the bystanders in Image {S} need not be copied). The two riding helmets on the rear "
+        "rack are the very same two glossy black vented riding helmets as in Image {S}, with the same ridges and vents. No lettering, decals or labels on "
         "clothing, signs or vehicles.",
         "A plain white T-shirt, light beige chino trousers, the plain grey neck gaiter pulled down and bunched under his chin.",
         expression="his eyes look straight into the lens, calm and completely deadpan — lips closed, no smile, as if this is the most normal place to meet again.",
