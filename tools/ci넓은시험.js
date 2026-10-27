@@ -30,6 +30,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { tap실패 } = require('./lib/tap실패.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -107,14 +108,24 @@ function 돌리기(묶음, { root = ROOT, 시험한도ms = 120000 } = {}) {
   const 파일들 = 목록(묶음, root);
   if (!파일들.length) return { 파일: 0, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 };
   const tap = path.join(os.tmpdir(), `synk-ci넓은시험-${묶음}-${process.pid}.tap`);
+  const 제외기록 = `${tap}.skipped.jsonl`;
   const env = { ...process.env };
   delete env.NODE_TEST_CONTEXT;
   const 시작 = Date.now();
   const r = spawnSync(process.execPath, ['--test', `--test-timeout=${시험한도ms}`, '--test-reporter=tap', `--test-reporter-destination=${tap}`,
-    '--test-reporter=dot', '--test-reporter-destination=stdout', ...파일들], { cwd: root, env, stdio: ['ignore', 'inherit', 'inherit'] });
+    '--test-reporter=dot', '--test-reporter-destination=stdout',
+    `--test-reporter=${pathToFileURL(path.join(__dirname, 'lib', '시험제외보고기.cjs')).href}`, `--test-reporter-destination=${제외기록}`,
+    ...파일들], { cwd: root, env, stdio: ['ignore', 'inherit', 'inherit'] });
   let 글 = '';
-  try { 글 = fs.readFileSync(tap, 'utf8'); } catch { /* 아래 */ } finally { fs.rmSync(tap, { force: true }); }
-  return { 파일: 파일들.length, 종료: r.status, ...실패읽기(글, root), 초: Math.round((Date.now() - 시작) / 1000) };
+  let 기록 = [];
+  try {
+    글 = fs.readFileSync(tap, 'utf8');
+    기록 = fs.readFileSync(제외기록, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l));
+  } catch { /* 실행·기록 누락은 아래 완전성 판정에서 드러낸다. */ }
+  finally { fs.rmSync(tap, { force: true }); fs.rmSync(제외기록, { force: true }); }
+  const 제외 = 기록.filter((x) => x.종류 !== 'suite');
+  const 제외묶음 = 기록.filter((x) => x.종류 === 'suite');
+  return { 파일: 파일들.length, 종료: r.status, ...실패읽기(글, root), 제외, 제외묶음, 초: Math.round((Date.now() - 시작) / 1000) };
 }
 
 /** wide-tests run 하나의 후보(artifact wide-baseline-*, 묶음마다 그 run의 실패)를 받는다 → { 묶음: [{파일, 시험, 오류}] } */
@@ -234,7 +245,9 @@ function main(argv = process.argv.slice(2)) {
   // 이번 실패는 늘 후보로 남긴다 — 기준선줄이기가 통과하기 시작한 줄을 그 run으로 뺀다.
   for (const 파일 of [처음후보, 후보].filter(Boolean)) {
     fs.mkdirSync(path.dirname(path.resolve(파일)), { recursive: true });
-    fs.writeFileSync(파일, JSON.stringify({ 묶음, 만든때: new Date().toISOString(), 실패: r.실패 }, null, 2));
+    fs.writeFileSync(파일, JSON.stringify({ 묶음, 만든때: new Date().toISOString(), 실패: r.실패,
+      실행: { 파일: r.파일, 시험: r.시험, 통과: r.통과, 실패수: r.실패수, 취소: r.취소, 건너뜀: r.건너뜀 },
+      제외: r.제외, 제외묶음: r.제외묶음 }, null, 2));
   }
   if (처음후보) {
     console.log(`  기준선 후보 ${r.실패.length}줄 → ${처음후보} (기준선이 없어 이번 판정은 막지 않는다)`);
@@ -253,6 +266,10 @@ function main(argv = process.argv.slice(2)) {
 function 종료판정(r, 기준줄들) {
   const { 새, 남은, 풀린, 좁힐 } = 견주기(r.실패, 기준줄들);
   const 줄들 = [];
+  if (r.제외 && r.제외.length !== r.건너뜀) {
+    줄들.push(`TAP의 제외 ${r.건너뜀}개와 실제 이벤트 기록 ${r.제외.length}개가 다르다 — 제외 목록을 완전히 수집하지 못했다`);
+    return { 코드: 1, 줄들 };
+  }
   if (남은.length) 줄들.push(`알려진 실패 ${남은.length}개(기준선) — 그대로`);
   for (const x of 풀린) 줄들.push(`✓ 이제 통과 — 기준선에서 뺀다: ${x.파일} — ${x.시험}`);
   for (const x of 좁힐) 줄들.push(`◐ 파일째 죽던 것이 풀려 안의 시험만 깨진다 — 기준선줄이기가 그 줄로 좁힌다: ${x.파일}`);

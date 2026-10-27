@@ -25,7 +25,7 @@ concurrency:
 jobs:
   records:
     if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' || vars.SYNK_SELFHOSTED == 'on' }}
-    runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
+    runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-24.04' || fromJSON('["self-hosted","linux"]') }}
     timeout-minutes: 10
     defaults:
       run:

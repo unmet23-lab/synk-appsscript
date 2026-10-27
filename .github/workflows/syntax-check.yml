@@ -28,7 +28,7 @@ jobs:
   check:
     # Private hosted CI is opt-in, after verifying the account's spending stop.
     if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' || vars.SYNK_SELFHOSTED == 'on' }}
-    runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-latest' || fromJSON('["self-hosted","linux"]') }}
+    runs-on: ${{ (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') && 'ubuntu-24.04' || fromJSON('["self-hosted","linux"]') }}
     timeout-minutes: 30
     defaults:
       run:
@@ -171,7 +171,7 @@ jobs:
       - name: 시험 읽기 지도 올리기
         if: ${{ success() || failure() }}
         continue-on-error: true
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: test-read-map
           path: ${{ runner.temp }}/test-read-map.json
