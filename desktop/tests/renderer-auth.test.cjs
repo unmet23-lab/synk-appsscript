@@ -286,7 +286,7 @@ test('both signup buttons open registration and preserve guest state without sta
   let opens=0;const f=await fixture({bridgeOverrides:{authSignUp:async()=>{opens++;return {ok:true};},authSignIn:async()=>assert.fail('signup must not authenticate'),authSignOut:async()=>assert.fail('signup must not sign out')}});await f.ready;
   const storage=JSON.stringify([...f.storage]);assert.equal(f.element('account-label').textContent,'로그인');
   for(const id of ['signup-button','sign-up']){assert.equal(f.element(id).hidden,false);assert.equal(f.element(id).disabled,false);assert.equal(f.element(id).textContent,'회원가입');await f.click(id);}
-  assert.equal(opens,2);assert.equal(f.element('account-dialog').open,true);assert.match(f.element('account-state').textContent,/가입을 마쳤다면 위의 「로그인」/);assert.equal(f.element('sign-in').hidden,false);assert.equal(f.element('sign-in').disabled,false);assert.deepEqual(f.ids(),['world']);assert.equal(JSON.stringify([...f.storage]),storage);
+  assert.equal(opens,2);assert.equal(f.element('account-dialog').open,true);assert.match(f.element('account-state').textContent,/가입을 마쳤다면 「로그인」을 눌러/);assert.equal(f.element('sign-in').hidden,false);assert.equal(f.element('sign-in').disabled,false);assert.deepEqual(f.ids(),['world']);assert.equal(JSON.stringify([...f.storage]),storage);
 });
 test('signup blocks double opens and concurrent login, reports failures, and ignores late account changes',async()=>{
   const pending=deferred();let opens=0,logins=0;const f=await fixture({bridgeOverrides:{authSignUp:()=>{opens++;return pending.promise;},authSignIn:async()=>{logins++;}}});await f.ready;
@@ -370,8 +370,26 @@ test('temporary library refresh preserves the same account selection and search'
 });
 test('late authentication completions and errors cannot overwrite a newer account',async()=>{
   for(const [button,method,initial,result]of [['sign-in','authSignIn',signedOut,'reject'],['sign-out','authSignOut',signedIn,'resolve'],['cancel-sign-in','authCancelSignIn',{...signedOut,status:'signing-in'},'reject']]){
-    const operation=deferred();const f=await fixture({initialAuth:initial,bridgeOverrides:{[method]:()=>operation.promise}});assert.equal(await f.ready,'true');const pending=f.click(button);f.emit('auth',account('new-teacher',['teacher'],{sessionGeneration:9}));operation[result](result==='reject'?new Error('old request failed'):{ok:true,serverRevoked:true,serverSessionRevoked:true});await pending;assert.deepEqual(f.ids(),['teacher']);assert.equal(f.element('account-label').textContent,'합성 new-teacher');assert.equal(f.element('toast').hidden,true);
+    const operation=deferred();const f=await fixture({initialAuth:initial,bridgeOverrides:{[method]:()=>operation.promise}});assert.equal(await f.ready,'true');const pending=f.click(button);f.emit('auth',account('new-teacher',['teacher'],{sessionGeneration:9}));operation[result](result==='reject'?new Error('old request failed'):{ok:true,serverRevoked:true,serverSessionRevoked:true});await pending;assert.deepEqual(f.ids(),['teacher']);assert.equal(f.element('account-label').textContent,'합성 new-teacher');
+    // No late error notice; a sign-in that finished while this one was pending says whose account came back.
+    assert.equal(f.element('toast').hidden?'':f.element('toast').textContent,method==='authSignOut'?'':'합성 new-teacher 님으로 로그인했어요.');
   }
+});
+// The main process answers authSignIn once the browser opens ('signing-in'); the finished sign-in arrives as an auth event.
+test('a sign-in finished in the browser closes the account dialog and names the account once',async()=>{
+  const f=await fixture({initialAuth:signedOut,bridgeOverrides:{authSignIn:async()=>({...signedOut,status:'signing-in'}),authStatus:async()=>({...signedOut,status:'signing-in'})}});assert.equal(await f.ready,'true');
+  f.element('account-dialog').showModal();await f.click('sign-in');assert.equal(f.element('account-dialog').open,true);assert.equal(f.element('toast').hidden,true);
+  // auth-service install(): the new session is checked ('restoring') before it is signed in.
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:1});assert.equal(f.element('account-dialog').open,true);assert.equal(f.element('toast').hidden,true);
+  f.emit('auth',account('student-a',['world']));
+  assert.equal(f.element('account-dialog').open,false);assert.equal(f.element('toast').textContent,'합성 student-a 님으로 로그인했어요.');
+  // A later token refresh passes 'restoring' again and says nothing.
+  f.element('toast').hidden=true;f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:2});f.emit('auth',account('student-a',['world'],{sessionGeneration:3}));assert.equal(f.element('toast').hidden,true);
+});
+// The start-up restore is not a sign-in.
+test('restoring a saved sign-in at start-up says nothing',async()=>{
+  const f=await fixture({initialAuth:{...signedOut,status:'restoring'}});assert.equal(await f.ready,'true');
+  f.emit('auth',account('student-a',['world']));assert.equal(f.element('toast').hidden,true);
 });
 for(const [label,result,pattern]of [
   ['failed local deletion',{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃하지 못했어요/],
@@ -683,4 +701,53 @@ for(const outcome of ['resolve','reject'])test('account dialog late retry '+outc
 test('account dialog explicit fresh login still invokes OAuth once without a preserving load',async()=>{
   let loads=0,oauth=0;const f=await fixture({initialAuth:retryableConnectionError(),bridgeOverrides:{accountRequest:async()=>{loads++;return {ok:true};},authSignIn:async()=>{oauth++;f.setAuth(account('dialog-explicit-login',['fortune']));return {ok:true};}}});await f.ready;
   assert.equal(f.element('sign-in').textContent,'새로 로그인');await f.click('sign-in');assert.equal(oauth,1);assert.equal(loads,0);assert.deepEqual(f.ids(),[]);assert.equal(f.element('account-label').textContent,'합성 dialog-explicit-login');
+});
+
+// ---- PC 로그인 창 손질(10-27): the sign-in entry, the recover step, 「지난번 이 PC」, and how a browser sign-in ends.
+const RECENT_SIGN_IN='synk.platform.recent-sign-in.v1',recentValue=JSON.stringify({v:1,masked:'me***@synthetic.test',way:'email',at:1});
+// The main process answers authSignIn once the browser opens; until then the app reads signed out.
+const browserSignIn=({onSignIn=()=>{}}={})=>{let started=false;return {authSignIn:async()=>{onSignIn();started=true;return {...signedOut,status:'signing-in'};},authStatus:async()=>started?{...signedOut,status:'signing-in'}:signedOut};};
+test('signed out, the sign-in entry opens the dialog and starts the browser sign-in once; a failed restore only opens the dialog',async()=>{
+  let oauth=0;const f=await fixture({bridgeOverrides:browserSignIn({onSignIn:()=>oauth++})});assert.equal(await f.ready,'true');
+  await f.click('account-button');assert.equal(f.element('account-dialog').open,true);assert.equal(oauth,1);
+  await settleLibrary();await f.click('account-button');assert.equal(oauth,1);
+  let again=0;const e=await fixture({initialAuth:retryableConnectionError(),bridgeOverrides:{authSignIn:async()=>{again++;return {ok:true};}}});await e.ready;
+  await e.click('account-button');await settleLibrary();assert.equal(e.element('account-dialog').open,true);assert.equal(again,0);
+  // The saved sign-in comes first: 「저장된 로그인 다시 확인」 is the white button, 「새로 로그인」 steps back, the 「로그인」 help hides.
+  assert.equal(e.element('account-retry').hidden,false);assert.equal(e.element('account-retry').className,'primary');
+  assert.equal(e.element('sign-in').className,'ghost-button');assert.equal(e.element('sign-in').textContent,'새로 로그인');assert.equal(e.element('signup-help').hidden,true);
+});
+test('a session the server ended says so once',async()=>{
+  const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');assert.equal(f.element('toast').hidden,true);
+  f.emit('auth',{...signedOut,sessionGeneration:2,error:{code:'AUTH_REQUIRED',message:'SYNK ID로 다시 로그인해 주세요.'}});
+  assert.equal(f.element('toast').hidden,false);assert.equal(f.element('toast').textContent,'로그인이 끝났어요. 다시 쓰려면 「로그인」을 눌러 주세요.');
+  f.element('toast').hidden=true;f.emit('auth',{...signedOut,sessionGeneration:3,error:{code:'AUTH_REQUIRED',message:'SYNK ID로 다시 로그인해 주세요.'}});assert.equal(f.element('toast').hidden,true);
+});
+test('「비밀번호를 잊었어요」 opens the recover step, and its answer shows with the dialog closed',async()=>{
+  let recovers=0;const f=await fixture({bridgeOverrides:{authRecover:async()=>{recovers++;return {ok:true};}}});await f.ready;
+  f.element('account-dialog').showModal();assert.equal(f.element('forgot-password').hidden,false);assert.equal(f.element('forgot-password').disabled,false);
+  await f.click('forgot-password');assert.equal(recovers,1);assert.equal(f.element('account-dialog').open,false);assert.match(f.element('toast').textContent,/「비밀번호를 다시 정해요」를 열었어요/);
+  const g=await fixture({bridgeOverrides:{authRecover:async()=>({ok:false,code:'AUTH_RECOVER_OPEN_FAILED'})}});await g.ready;g.element('account-dialog').showModal();
+  await g.click('forgot-password');assert.equal(g.element('account-dialog').open,false);assert.match(g.element('toast').textContent,/브라우저를 열지 못했어요/);
+  const s=await fixture({initialAuth:signedIn,bridgeOverrides:{authRecover:async()=>({ok:true})}});await s.ready;assert.equal(s.element('forgot-password').hidden,true);
+});
+test('「지난번 이 PC」 shows signed out and while signing in in the browser, not signing out or signed in',async()=>{
+  const f=await fixture({storageEntries:[[RECENT_SIGN_IN,recentValue]],bridgeOverrides:browserSignIn()});assert.equal(await f.ready,'true');
+  assert.equal(f.element('account-title').textContent,'SYNK 시작하기');
+  assert.equal(f.element('account-recent').hidden,false);assert.equal(f.element('account-recent').textContent,'지난번 이 PC: me***@synthetic.test · 이메일 — 브라우저의 SYNK ID에서 로그인했어요.');
+  await f.click('account-button');await settleLibrary();assert.equal(f.element('account-title').textContent,'브라우저에서 로그인 중');assert.equal(f.element('account-recent').hidden,false);
+  f.emit('auth',account('student-a',['world']));assert.equal(f.element('account-recent').hidden,true);
+  f.emit('auth',{...signedOut,status:'signing-out',sessionGeneration:3});assert.equal(f.element('account-recent').hidden,true);
+  const none=await fixture();await none.ready;assert.equal(none.element('account-recent').hidden,true);
+});
+test('a browser sign-in that ends badly while the dialog is closed says why once; a cancel says nothing',async()=>{
+  for(const [code,message,shown]of [['AUTH_TIMEOUT','로그인 시간이 지났어요. 다시 시작해 주세요.',true],['AUTH_FAILED','로그인을 마치지 못했어요. 다시 해 주세요.',true],['AUTH_CANCELLED','로그인을 취소했어요.',false]]){
+    const f=await fixture({bridgeOverrides:browserSignIn()});await f.ready;await f.click('account-button');await settleLibrary();f.element('account-dialog').close();
+    f.emit('auth',{...signedOut,sessionGeneration:2,error:{code,message}});
+    assert.equal(f.element('toast').hidden?'':f.element('toast').textContent,shown?message:'',code);
+  }
+  // With the dialog open the state line already says it.
+  const o=await fixture({bridgeOverrides:browserSignIn()});await o.ready;await o.click('account-button');await settleLibrary();
+  o.emit('auth',{...signedOut,sessionGeneration:2,error:{code:'AUTH_TIMEOUT',message:'로그인 시간이 지났어요. 다시 시작해 주세요.'}});
+  assert.equal(o.element('toast').hidden,true);assert.match(o.element('account-state').textContent,/로그인 시간이 지났어요/);
 });

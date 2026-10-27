@@ -50,3 +50,10 @@ test('account preferences restore only their owner and survive another account c
   assert.equal(accountStorageKey('view','anonymous-local'),'view');
   assert.notEqual(accountStorageKey('view','teacher/a'),accountStorageKey('view','teacher%2Fa'));
 });
+// A browser sign-in waits for the member, not the app: the library says where to finish it (restoring and signing out keep 「불러오는 중」).
+test('the waiting library names a browser sign-in and keeps the plain wait for restoring and signing out',async()=>{
+  const {resolveLibrary,libraryCopy}=await libraryModule;
+  const signing=resolveLibrary({status:'signing-in',signedIn:false});assert.equal(signing.status,'loading');assert.equal(signing.phase,'signing-in');
+  assert.equal(libraryCopy(signing).caption,'브라우저에서 로그인 중');assert.match(libraryCopy(signing).note,/열린 SYNK ID 창/);
+  for(const status of ['restoring','signing-out']){const waiting=resolveLibrary({status,signedIn:false});assert.equal(waiting.phase,undefined);assert.equal(libraryCopy(waiting).caption,'불러오는 중');}
+});

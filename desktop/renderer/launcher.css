@@ -505,6 +505,8 @@ dialog .fine-print{margin-top:18px;font-size:.75rem;color:var(--ink-3)}
 .account-state{margin:18px 0 4px;padding:14px 16px;border-radius:14px;background:color-mix(in srgb,var(--bg) 70%,transparent);border:1px solid var(--line);font-size:.8125rem;line-height:1.65;color:var(--ink-2);white-space:pre-line}
 .account-state:empty{display:none}
 .signup-help{margin-top:14px;font-size:.8125rem;line-height:1.65;text-align:center}
+.account-recent{margin-top:12px;padding:10px 14px;border-radius:12px;border:1px solid var(--line-2);font-size:.8125rem;line-height:1.6}
+#forgot-password{display:flex;width:max-content;margin:10px auto 0;font-size:.8125rem}
 .leave-dialog{width:440px}
 .leave-dialog h2{font-size:1.625rem}
 .leave-dialog .leave-actions .solid-button,.leave-dialog .leave-actions .ghost-button{flex:1;width:auto;margin:0;height:46px}
