@@ -11,7 +11,8 @@ const BEAT = 60 / 122.863;
 const t = (k) => +(0.054 + k * BEAT).toFixed(4);
 const X = 0.02;
 // v2(10-27): 끝 카드 26.00초(npx tsx 시각표_v2.ts) 뒤 가장 가까운 마디 경계 56박(27.40초). 다시 터지는 16박(7.87초)은 「연습용이라 다행이지」 머리글 자리.
-const CUTS = { main: 48, v2: 56 };
+// v3(10-27 새 꼴): 끝 카드 20.47 · 20.50초(npx tsx 시각표_v3.ts — 첫 렌더 시험 뒤 판) 뒤 가장 가까운 마디 경계 44박(21.54초) — 두 판 같다.
+const CUTS = { main: 48, v2: 56, v3_main: 44, v3_yt: 44 };
 
 for (const [cut, k] of Object.entries(CUTS)) {
   const segs = [

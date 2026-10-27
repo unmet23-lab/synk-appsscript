@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "이 한 줄은 아래 글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
+ "dur": 3.326,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.04,
+   "end": 0.053
+  },
+  {
+   "text": "한",
+   "start": 0.121,
+   "end": 0.229
+  },
+  {
+   "text": "줄은",
+   "start": 0.27,
+   "end": 0.458
+  },
+  {
+   "text": "아래",
+   "start": 0.512,
+   "end": 0.634
+  },
+  {
+   "text": "글에",
+   "start": 0.688,
+   "end": 0.823
+  },
+  {
+   "text": "적어",
+   "start": 0.864,
+   "end": 1.039
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.079,
+   "end": 1.417
+  },
+  {
+   "text": "부탁",
+   "start": 1.875,
+   "end": 2.078
+  },
+  {
+   "text": "맨",
+   "start": 2.119,
+   "end": 2.186
+  },
+  {
+   "text": "끝에",
+   "start": 2.24,
+   "end": 2.456
+  },
+  {
+   "text": "그대로",
+   "start": 2.51,
+   "end": 2.712
+  },
+  {
+   "text": "붙이세요.",
+   "start": 2.753,
+   "end": 3.326
+  }
+ ],
+ "source": {
+  "key": "83cf6446bcf2607378f97bb677648ddc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1y",
+ "text": "이 한 줄은 고정 댓글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
+ "dur": 3.36,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.01,
+   "end": 0.022
+  },
+  {
+   "text": "한",
+   "start": 0.123,
+   "end": 0.199
+  },
+  {
+   "text": "줄은",
+   "start": 0.237,
+   "end": 0.413
+  },
+  {
+   "text": "고정",
+   "start": 0.476,
+   "end": 0.678
+  },
+  {
+   "text": "댓글에",
+   "start": 0.728,
+   "end": 0.967
+  },
+  {
+   "text": "적어",
+   "start": 1.005,
+   "end": 1.143
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.181,
+   "end": 1.484
+  },
+  {
+   "text": "부탁",
+   "start": 1.9,
+   "end": 2.139
+  },
+  {
+   "text": "맨",
+   "start": 2.177,
+   "end": 2.29
+  },
+  {
+   "text": "끝에",
+   "start": 2.328,
+   "end": 2.529
+  },
+  {
+   "text": "그대로",
+   "start": 2.593,
+   "end": 2.794
+  },
+  {
+   "text": "붙이세요.",
+   "start": 2.832,
+   "end": 3.36
+  }
+ ],
+ "source": {
+  "key": "36c24e90856c2d67ddbc045c089add9a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

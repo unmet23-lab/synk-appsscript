@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "승인이라고 답했더니, 그때 올렸어요.",
+ "dur": 2.1,
+ "words": [
+  {
+   "text": "승인이라고",
+   "start": 0.02,
+   "end": 0.453
+  },
+  {
+   "text": "답했더니,",
+   "start": 0.498,
+   "end": 0.931
+  },
+  {
+   "text": "그때",
+   "start": 1.23,
+   "end": 1.41
+  },
+  {
+   "text": "올렸어요.",
+   "start": 1.484,
+   "end": 2.1
+  }
+ ],
+ "source": {
+  "key": "c67739643b351462412c5181396ceffa",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-27T10:47:07.361Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "에이아이 채팅에 가게 인스타 글을 써서 올려 달라고 했더니, 글을 보여 주기도 전에, 먼저 올리겠대요.",
+   "dur": 4.973,
+   "syllablesPerSec": 8.04,
+   "src": "h1.wav",
+   "key": "37fce40a82b48d84e7210d997d3a9a9c",
+   "words": 15
+  },
+  {
+   "id": "h2",
+   "text": "그런데 한 줄을 붙였더니, 아직 안 올렸다며 기다려요.",
+   "dur": 2.596,
+   "syllablesPerSec": 8.09,
+   "src": "h2.wav",
+   "key": "f5075d90fa51ec14ef7b06b8abb146c8",
+   "words": 8
+  },
+  {
+   "id": "r1",
+   "text": "부탁 맨 끝에 이 한 줄을 붙였어요. 단, 내가 승인이라고 하기 전엔 올리지 마.",
+   "dur": 3.902,
+   "syllablesPerSec": 7.43,
+   "src": "r1.wav",
+   "key": "836ff9799484d6f161503dbcf34d0d81",
+   "words": 14
+  },
+  {
+   "id": "b1",
+   "text": "승인이라고 답했더니, 그때 올렸어요.",
+   "dur": 2.1,
+   "syllablesPerSec": 7.14,
+   "src": "b1.wav",
+   "key": "c67739643b351462412c5181396ceffa",
+   "words": 4
+  },
+  {
+   "id": "c1",
+   "text": "이 한 줄은 아래 글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
+   "dur": 3.326,
+   "syllablesPerSec": 7.52,
+   "src": "c1.wav",
+   "key": "83cf6446bcf2607378f97bb677648ddc",
+   "words": 12
+  },
+  {
+   "id": "c1y",
+   "text": "이 한 줄은 고정 댓글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
+   "dur": 3.36,
+   "syllablesPerSec": 7.74,
+   "src": "c1y.wav",
+   "key": "36c24e90856c2d67ddbc045c089add9a",
+   "words": 12
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.093,
+   "syllablesPerSec": 7.17,
+   "src": "fo.wav",
+   "key": "e5e603a6e35f2a6e66831f682daa78bf",
+   "words": 5
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "그런데 한 줄을 붙였더니, 아직 안 올렸다며 기다려요.",
+ "dur": 2.596,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.06,
+   "end": 0.297
+  },
+  {
+   "text": "한",
+   "start": 0.347,
+   "end": 0.434
+  },
+  {
+   "text": "줄을",
+   "start": 0.471,
+   "end": 0.621
+  },
+  {
+   "text": "붙였더니,",
+   "start": 0.658,
+   "end": 1.082
+  },
+  {
+   "text": "아직",
+   "start": 1.406,
+   "end": 1.555
+  },
+  {
+   "text": "안",
+   "start": 1.617,
+   "end": 1.668
+  },
+  {
+   "text": "올렸다며",
+   "start": 1.73,
+   "end": 2.09
+  },
+  {
+   "text": "기다려요.",
+   "start": 2.129,
+   "end": 2.596
+  }
+ ],
+ "source": {
+  "key": "f5075d90fa51ec14ef7b06b8abb146c8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

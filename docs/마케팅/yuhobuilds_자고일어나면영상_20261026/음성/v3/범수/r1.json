@@ -1,0 +1,97 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "부탁 맨 끝에 이 한 줄을 붙였어요. 단, 내가 승인이라고 하기 전엔 올리지 마.",
+ "dur": 3.902,
+ "words": [
+  {
+   "text": "부탁",
+   "start": 0.02,
+   "end": 0.254
+  },
+  {
+   "text": "맨",
+   "start": 0.296,
+   "end": 0.379
+  },
+  {
+   "text": "끝에",
+   "start": 0.42,
+   "end": 0.682
+  },
+  {
+   "text": "이",
+   "start": 0.778,
+   "end": 0.792
+  },
+  {
+   "text": "한",
+   "start": 0.875,
+   "end": 0.971
+  },
+  {
+   "text": "줄을",
+   "start": 1.012,
+   "end": 1.15
+  },
+  {
+   "text": "붙였어요.",
+   "start": 1.191,
+   "end": 1.606
+  },
+  {
+   "text": "단,",
+   "start": 1.95,
+   "end": 2.129
+  },
+  {
+   "text": "내가",
+   "start": 2.39,
+   "end": 2.556
+  },
+  {
+   "text": "승인이라고",
+   "start": 2.611,
+   "end": 3.011
+  },
+  {
+   "text": "하기",
+   "start": 3.052,
+   "end": 3.163
+  },
+  {
+   "text": "전엔",
+   "start": 3.204,
+   "end": 3.383
+  },
+  {
+   "text": "올리지",
+   "start": 3.425,
+   "end": 3.659
+  },
+  {
+   "text": "마.",
+   "start": 3.7,
+   "end": 3.902
+  }
+ ],
+ "source": {
+  "key": "836ff9799484d6f161503dbcf34d0d81",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
