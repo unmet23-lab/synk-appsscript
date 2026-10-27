@@ -103,10 +103,11 @@ copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollme
 // 바람길·말의 리듬이 ../social-conversion.mjs(SNS로 들어온 방문의 익명 체험 기록, synk.im에서만 동작)를 정적으로 부른다.
 copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
-const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','day-district.mjs','day-light.mjs','day-mood.mjs','day-cards.mjs','day-notebook.mjs','day-stay.mjs','day-stay.css','day-sound.mjs','day-observation.mjs','walk.mjs','walk-controls.mjs','walk-packets.mjs','town-layout.mjs'];
+const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','day-district.mjs','day-light.mjs','day-mood.mjs','day-cards.mjs','day-notebook.mjs','day-stay.mjs','day-stay.css','day-sound.mjs','day-tea.mjs','day-tea.css','day-sfx.mjs','day-observation.mjs','walk.mjs','walk-controls.mjs','walk-packets.mjs','town-layout.mjs'];
 for(const name of dayFiles)copyFile(path.join(town,name),'town/'+name);
 // The town runtime layer (experiences/synk-town/town, vertical slice design §2-5): plain modules only — data sources, tests and tools stay out.
-for(const name of fs.readdirSync(path.join(town,'town')).filter(name=>/^[a-z0-9-]+(?:\.gen)?\.mjs$/.test(name)).sort())copyFile(path.join(town,'town',name),'town/town/'+name);
+// W8: and its life activities (town/activities — the tea order), one folder down.
+for(const folder of ['','activities'])for(const name of fs.readdirSync(path.join(town,'town',folder)).filter(name=>/^[a-z0-9-]+(?:\.gen)?\.mjs$/.test(name)).sort())copyFile(path.join(town,'town',folder,name),['town/town',folder,name].filter(Boolean).join('/'));
 // assets/district holds the baked town sets. Only the whole merged town, WORLD's
 // default since 10-19 (day-district.mjs WORLD_DEFAULT_DISTRICT), is published; the
 // other sets are local comparisons. Its GLBs and list are kept out of Git (storage

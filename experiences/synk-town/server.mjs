@@ -397,7 +397,8 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         return { issued: null, throttled: true, worldSeq: state.writeSeq };
       }
       // What the screen can draw (W5: caps ['cards']) decides whether a card's offer may be issued (review F6).
-      const caps = Array.isArray(input.caps) ? input.caps.filter(cap => ['cards', 'asks'].includes(cap)) : [];
+      // W8: 'tea' — a screen that draws the tea board; the life cards (C5·R6) are offered only to it (review F13).
+      const caps = Array.isArray(input.caps) ? input.caps.filter(cap => ['cards', 'asks', 'tea'].includes(cap)) : [];
       // Issued is told by id: a card's settled offers may leave in the same settlement (review GA5).
       const before = new Set(state.life.contacts.map(c => c.id)), added = lastAdded, prior = state;
       let world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true, caps });
@@ -486,9 +487,10 @@ function fileFor(route, previewEnabled) {
   // SYNK music for staying (W7b): the app files tools/town-music-build.mjs makes, outside git like the baked district.
   if (/^\/assets\/music\/[a-z0-9-]+-[0-9a-f]{8}\.mp3$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/basis\/basis_transcoder\.(?:js|wasm)$/.test(route)) return path.join(root, route.slice(1));
-  if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/day-light.mjs', '/day-mood.mjs', '/day-cards.mjs', '/day-notebook.mjs', '/day-stay.mjs', '/day-stay.css', '/day-sound.mjs', '/day-observation.mjs', '/walk.mjs', '/walk-controls.mjs', '/walk-packets.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
+  if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/day-light.mjs', '/day-mood.mjs', '/day-cards.mjs', '/day-notebook.mjs', '/day-stay.mjs', '/day-stay.css', '/day-sound.mjs', '/day-tea.mjs', '/day-tea.css', '/day-sfx.mjs', '/day-observation.mjs', '/walk.mjs', '/walk-controls.mjs', '/walk-packets.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
   // The town runtime layer the browser shares with the host (vertical slice §2-5): modules only, never data sources.
-  if (/^\/town\/[a-z0-9-]+(?:\.gen)?\.mjs$/.test(route)) return path.join(root, route.slice(1));
+  // W8: and its life activities (town/activities — the tea order's hand state machine runs on the device too).
+  if (/^\/town\/(?:activities\/)?[a-z0-9-]+(?:\.gen)?\.mjs$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise|GLTFLoader|BufferGeometryUtils|KTX2Loader|WorkerPool|ktx-parse\.module|zstddec\.module|ColorSpaces|meshopt_decoder\.module)\.js$/.test(route)) return path.join(root, route.slice(1));
   if (route === '/avatar-v3.mjs') return path.join(repo, 'experiences/synk-world-home/avatar-v3.mjs');
   if (route === '/avatar-textiles.mjs') return path.join(repo, 'experiences/synk-world-home/avatar-textiles.mjs');

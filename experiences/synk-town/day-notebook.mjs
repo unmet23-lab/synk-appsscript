@@ -15,7 +15,9 @@ const PAIR_LIST = generated.PAIRS || [];
 // The parameter version's own threshold (§8-1 familiarAfter): more than this many times through the same card or pair scene.
 const FAMILIAR_AFTER = (Array.isArray(generated.PARAMS) ? generated.PARAMS[0] : null)?.seen?.familiarAfter ?? 3;
 const familyCount = (seen, prefix) => Object.entries(seen || {}).reduce((sum, [key, n]) => sum + (key.startsWith(prefix) && Number.isFinite(n) ? n : 0), 0);
-export const activityLabel = activity => { const card = /^card\.([CWR][1-6])$/.exec(activity || '')?.[1]; return card && CARD_BY_ID.get(card) ? CARD_BY_ID.get(card).title : '마을에서 한 생활'; };
+// The life activities by name (W8: the tea order — 「찻집 주문」 as the player's thing done, 「찻집 일」 as what the owner remembers).
+const ACTIVITY_LABELS = Object.freeze({ 'tea-order': '찻집 주문' }), ACTIVITY_MEMORY_LABELS = Object.freeze({ 'tea-order': '찻집 일' });
+export const activityLabel = activity => { if (ACTIVITY_LABELS[activity]) return ACTIVITY_LABELS[activity]; const card = /^card\.([CWR][1-6])$/.exec(activity || '')?.[1]; return card && CARD_BY_ID.get(card) ? CARD_BY_ID.get(card).title : '마을에서 한 생활'; };
 
 /** The pages' content from a town answer ({ state, view, seen }). */
 export function notebookModel(snapshot) {
@@ -31,8 +33,12 @@ export function notebookModel(snapshot) {
   // Today's (the band's life day): the cards done with the player, newest first — by name, never by time.
   const today = [...(v?.takes || [])].reverse().filter(t => t.status === 'resolved' && t.eventId && lifeDay !== null && String(t.ref || '').startsWith(`${lifeDay}.`) && CARD_BY_ID.has(t.card))
     .map(t => ({ eventId: t.eventId, card: t.card, title: CARD_BY_ID.get(t.card).title, activity: `card.${t.card}`, given: given.get(t.eventId) ?? null }));
+  // The tea order's one thing done together today (W8, §11-6) — the day's event, with the same 「…」.
+  const teaDay = state.activities?.['tea-order']?.day;
+  if (teaDay?.together && lifeDay !== null && teaDay.lifeDay === lifeDay) today.push({ eventId: teaDay.together, card: null, title: ACTIVITY_LABELS['tea-order'], activity: 'tea-order', given: given.get(teaDay.together) ?? null });
   const journal = [...new Set([...(snapshot?.view?.notebook || []), ...(snapshot?.view?.day?.history || []).map(row => row.summary), ...(snapshot?.view?.bazaar?.history || []).map(row => row.summary)].filter(Boolean))];
-  const known = Object.entries(scene?.knownMe || {}).flatMap(([npc, list]) => (list || []).filter(e => CARD_BY_ID.has(e.card)).map(e => ({ npc, ref: e.ref, card: e.card, title: CARD_BY_ID.get(e.card).title })));
+  const known = Object.entries(scene?.knownMe || {}).flatMap(([npc, list]) => (list || []).filter(e => CARD_BY_ID.has(e.card) || ACTIVITY_MEMORY_LABELS[e.activity])
+    .map(e => ({ npc, ref: e.ref, card: e.card ?? null, title: e.activity ? ACTIVITY_MEMORY_LABELS[e.activity] : CARD_BY_ID.get(e.card).title })));
   const settings = [
     ...(prefs?.preferredFamily ? [{ kind: 'family', label: `먼저 보여 줄 생활 · ${FAMILY_LABELS[prefs.preferredFamily] || prefs.preferredFamily}`, action: ['PREF_FAMILY', { family: prefs.preferredFamily, answer: 'clear' }, '먼저 보여 주지 않아도 돼요'] }] : []),
     ...(prefs?.observed ? [{ kind: 'observed', label: `요즘 자주 한 생활 · ${FAMILY_LABELS[prefs.observed] || prefs.observed}`, action: ['OBSERVED_CORRECT', { family: prefs.observed }, '그때만 한 거예요'] }] : []),

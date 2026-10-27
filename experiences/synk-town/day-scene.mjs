@@ -634,6 +634,9 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     for (const id of ['cafe-owner', 'workshop-owner', 'researcher', 'book-guest', 'companion']) if (!npcIds.has(id)) actors.get(id).group.visible = false;
     actors.get('workshop-owner').label.position.set(bazaarActive ? 1.1 : 0, bazaarActive ? .8 : actors.get('workshop-owner').height + .26, 0);
     updateProps(data.legacy?.active ? data.props?.filter(p => p.id !== 'ft-seat') : data.props); updateMemories(data.memories); updateLegacy(data, now);
+    // The tea order's guests (W8, day-tea.mjs teaGuests) after the old cafe scene: the regular reader leaves the player's seat
+    // to order at the counter and goes back to it pleased (review F2); the two passers-by wait and sit where the order put them.
+    for (const guest of data.teaGuests || []) setActor(guest.id, guest, now, true);
     // The owner and its cup are C1's only while the C1 scene holds the owner (W3); otherwise the plan draws it.
     lifeCup.visible = !!data.lifeHold?.prop && data.lifeHold.prop.pose !== 'hidden';
     if (data.lifeHold?.owner) setActor('cafe-owner', cafePoint(data.lifeHold.owner), now, true);

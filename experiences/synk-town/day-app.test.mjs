@@ -39,7 +39,8 @@ const event = (type, extra = {}) => ({ type, repeat: false, isComposing: false, 
 class Element {
   constructor(tag, doc) {
     Object.assign(this, target()); this.tagName = tag.toUpperCase(); this.doc = doc; this.children = []; this.parentNode = null; this.attrs = new Map(); this.classes = new Set();
-    this.dataset = {}; this.style = {}; this.hidden = false; this.disabled = false; this.open = false; this.textContent = ''; this.value = ''; this.type = '';
+    this.dataset = {}; this.hidden = false; this.disabled = false; this.open = false; this.textContent = ''; this.value = ''; this.type = '';
+    this.style = { setProperty(name, value) { this[name] = String(value); }, removeProperty(name) { delete this[name]; } };
     const classes = this.classes;
     this.classList = { add: (...n) => n.forEach(c => classes.add(c)), remove: (...n) => n.forEach(c => classes.delete(c)), contains: c => classes.has(c),
       toggle: (c, force = !classes.has(c)) => { if (force) classes.add(c); else classes.delete(c); return force; } };
@@ -58,6 +59,16 @@ class Element {
   getAttribute(name) { return name.startsWith('data-') ? this.dataset[camel(name.slice(5))] ?? null : ['hidden', 'disabled', 'open'].includes(name) ? (this[name] ? '' : null) : this.attrs.get(name) ?? null; }
   removeAttribute(name) { if (['hidden', 'disabled', 'open'].includes(name)) this[name] = false; else this.attrs.delete(name); }
   append(...nodes) { for (const node of nodes) if (typeof node !== 'string') { node.parentNode = this; this.children.push(node); } }
+  // The tea board (W8, day-tea.mjs) builds its controls with these.
+  prepend(...nodes) { const own = nodes.filter(node => typeof node !== 'string'); for (const node of own) node.parentNode = this; this.children.unshift(...own); }
+  remove() { if (this.parentNode) { const siblings = this.parentNode.children; siblings.splice(siblings.indexOf(this), 1); this.parentNode = null; } }
+  get firstChild() { return this.children[0] || null; }
+  get isConnected() { let node = this; while (node.parentNode) node = node.parentNode; return node.tagName === '#ROOT'; }
+  get offsetWidth() { return this.getBoundingClientRect().width; }
+  get offsetHeight() { return this.getBoundingClientRect().height; }
+  get offsetTop() { return this.getBoundingClientRect().top; }
+  get clientWidth() { return this.getBoundingClientRect().width; }
+  get clientHeight() { return this.getBoundingClientRect().height; }
   before(...nodes) { if (!this.parentNode) return; const siblings = this.parentNode.children; for (const node of nodes) node.parentNode = this.parentNode; siblings.splice(siblings.indexOf(this), 0, ...nodes); }
   closest(selector) { for (let node = this; node; node = node.parentNode) if (node.matches(selector)) return node; return null; }
   contains(other) { for (let node = other; node; node = node.parentNode) if (node === this) return true; return false; }
@@ -98,6 +109,7 @@ function createDocument() {
   }
   const ids = new Map(root.querySelectorAll('[id]').map(el => [el.id, el]));
   Object.assign(doc, { body: root.querySelector('body'), head: root.querySelector('head'), getElementById: id => ids.get(id) || root.querySelector('#' + id), createElement: tag => new Element(tag, doc),
+    createTextNode: value => Object.assign(new Element('#text', doc), { textContent: String(value) }),
     querySelectorAll: selector => root.querySelectorAll(selector), querySelector: selector => root.querySelector(selector), hasFocus: () => doc.focused,
     // A hidden element (or one in a hidden parent or closed dialog) has no box; others fill a 100×40 box unless a test moves it.
     rectOf(el) {
