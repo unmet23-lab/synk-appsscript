@@ -1,0 +1,13 @@
+{
+ "_설명": "M3 「내 몽골 이름을 한글로」 게시글 정본(10-27 17시 회차). 화면 글 정본은 ../remotion/src/name/data.ts. 몽골어는 세 겹 검수(검문/캡션.txt — 한국어 원문 / 몽골어, 대조 1~4차 · Opus 역번역 · Fable)를 거친 글이다. 도구 링크 synk.im/name 응답 200(10-27, /name → /name/ 301).",
+ "_ko": {
+  "caption": "내 몽골 이름을 한글로 어떻게 쓸까요? ✍️\n이름을 키릴 글자로 치면 한글로 바로 나와요.\nБатбаяр → 바트바야르\nЦэцэг → 체첵\n어떤 이름은 한글로 두 가지로 써요(예: 이름 끝의 «н» — Наран → 나란 / 나랑). 그럴 때는 두 표기를 함께 보여 줘요.\n당신 이름은 한글로 어떻게 써요? 댓글로 남겨 주세요 👇\n한국어를 배우고 있는 친구에게 보내 주세요.\n저희는 SYNK LAB — 몽골 학생, 대학생에게 한국어를 가르치는 팀이에요.",
+  "first_comment": "✍️ 내 이름 한글로 보기: synk.im/name"
+ },
+ "mn": {
+  "account": "인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB",
+  "caption": "Монгол нэрээ солонгос үсгээр яаж бичих вэ? ✍️\nНэрээ кирилл үсгээр бичихэд солонгос үсгээр шууд гарна.\n\nБатбаяр → 바트바야르\nЦэцэг → 체첵\n\nЗарим нэрийг солонгос үсгээр хоёр янзаар бичдэг (жишээ нь нэрийн төгсгөлийн «н» — Наран → 나란 / 나랑). Ийм үед хоёр хувилбарыг хамт харуулна.\n\nТаны нэрийг солонгос үсгээр яаж бичих вэ? Сэтгэгдэлд үлдээгээрэй 👇\nСолонгос хэл сурч байгаа найздаа илгээгээрэй.\n\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "first_comment": "✍️ Нэрээ солонгос үсгээр харах: synk.im/name",
+  "alt": "A felt study desk: a coral ghost-shaped felt mascot looks at a blank name card that reads Батбаяр → ? under the question «Монгол нэрээ солонгос үсгээр бичвэл?» (If you write your Mongolian name in Korean letters?). Then the real synk.im/name page: typing Батбаяр letter by letter makes the Korean 바트바야르 grow under the field (circled), and typing Цэцэг shows 체첵. The mascot cheers next to a card with a question mark — «Таны нэрийг солонгос үсгээр яаж бичих вэ?» (How do you write your name in Korean letters?) — and the video ends on the empty input field of synk.im/name with a blinking cursor and «Гарсан нэрээ сэтгэгдэлд бичээрэй 👇» (Write the name you got in the comments)."
+ }
+}
