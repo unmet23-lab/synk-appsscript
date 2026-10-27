@@ -120,6 +120,19 @@ test('warning baselines stay limited to the reviewed pages and metadata, never e
  });
 });
 
+test('real binary baseline image reaches the sealed review and still requires the whole GPT decision',async t=>{
+ const f=fixture(t,{candidateOnly:true}),target='.github/site-check/baseline/mobile/world~hangul-stage.png';
+ const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=','base64');
+ f.write(path.join(f.candidate,target),bytes);const m=JSON.parse(fs.readFileSync(path.join(f.candidate,'후보.json')));m.항목[0]={...m.항목[0],경로:target,sha256:sha256(bytes)};f.write(path.join(f.candidate,'후보.json'),JSON.stringify(m));
+ f.record.candidate.files[0]={...f.record.candidate.files[0],path:target,sha256:sha256(bytes)};f.record.candidate.manifestSha256=후보읽기(f.candidate).manifestSha256;f.record.candidate.rawManifestSha256=sha256(fs.readFileSync(path.join(f.candidate,'후보.json')));f.write(f.recordFile,JSON.stringify(f.record));
+ const c=후보읽기(f.candidate);assert.throws(()=>api.후보항목들(c,[bytes],{동일본문참조:true}),/UTF-8/);
+ assert.throws(()=>api.후보항목들(c,[Buffer.from('wrong')],{동일본문참조:true,단독기준그림검수:true}),/원시 SHA/);
+ const invalid=Buffer.from('not a png');assert.throws(()=>api.후보항목들({...c,항목:[{...c.항목[0],sha256:sha256(invalid)}]},[invalid],{동일본문참조:true,단독기준그림검수:true}),/형식/);
+ const p=await api.준비하기({...f.options,종류:'백엔드'});assert.equal(api.검수확인(p.폴더).통과,false);review(p);
+ assert.equal(api.검수확인(p.폴더).통과,false);assert.equal(api.배포판정받기(p.폴더,JSON.stringify(final(api.배포판정준비(p.폴더)))).통과,true);
+ f.write(path.join(f.candidate,target),Buffer.concat([bytes,Buffer.from([0])]));assert.equal(api.검수확인(p.폴더).통과,false);
+});
+
 test('policy 4 candidate-only correction preserves old evidence and requires a fresh GPT whole-chain decision',async t=>{
  const f=fixture(t,{candidateOnly:true}),p=await api.준비하기(f.options);review(p);
  api.배포판정받기(p.폴더,JSON.stringify(final(api.배포판정준비(p.폴더))));

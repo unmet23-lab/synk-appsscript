@@ -5,7 +5,7 @@
     "head": "fe91d930178804755bf1ec70f07a559417811096",
     "run": 40455034677,
     "total": 104,
-    "passed": 96,
+    "passed": 97,
     "rows": [
       {
         "file": "tests/Git보관묶음.test.cjs",
@@ -508,8 +508,10 @@
         "line": 259,
         "name": "real Linux flock times out at the fixed 120 seconds without starting backup work",
         "originalSkipReason": "Opt in only inside the isolated Linux container for the real 120-second timeout",
-        "status": "Linux CI 실행 대기",
-        "evidence": []
+        "status": "통과",
+        "evidence": [
+          "Source CI 40464290501 company: fixed 120s enabled; no skip and all tests pass"
+        ]
       },
       {
         "file": "desktop/tests/installations-asar.test.cjs",
@@ -1040,7 +1042,16 @@
           "source-local-ci"
         ]
       }
-    ]
+    ],
+    "followup": {
+      "head": "9736724a837fc19fb1f3ecf94fe7489bb0e5a895",
+      "wide": 40464290501,
+      "syntax": 40464287772,
+      "records": 40463717526,
+      "passed": 13059,
+      "failed": 0,
+      "skipped": 103
+    }
   },
   "talkInventory": {
     "head": "8f48430027ca0550d780783482854b1257c59ebb",
@@ -1303,5 +1314,6 @@
     "학생 화면 대조3은 현재 PC의 미추적 원문과 읽기 전용 대조로 통과했다. 기존 APK에 해당 화면이 들어 있다는 뜻은 아니다.",
     "과거 고정 WORLD 판4는 실행했지만 현재 시험과 맞지 않았다. 현 공개판으로 바꿔도 옛 선택자와 맞지 않아 통과로 처리하지 않았다.",
     "원 실패·제외·과거 승인·현재 미확인 상태를 보존한다. 시험 실행 수는 서로 겹쳐 합산하지 않는다."
-  ]
+  ],
+  "latestReceipt": "../제외시험_최종_20261027.jsonl"
 }

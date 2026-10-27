@@ -535,7 +535,7 @@ async function 자료모으기(설정, 폴더, { 시험 = true, 캡처 = true, �
 }
 
 /** 정책 3에서만 같은 원시 바이트 본문을 한 번 싣는다. 경로별 검증·manifest·스냅샷은 그대로 남는다. */
-export function 후보항목들(candidate, contents, { 동일본문참조 = false, 단독음성검수 = false } = {}) {
+export function 후보항목들(candidate, contents, { 동일본문참조 = false, 단독음성검수 = false, 단독기준그림검수 = false } = {}) {
   if (contents.length !== candidate.항목.length) throw new Error('배포 후보 내용 수 불일치');
   const items = [항목('P00', '배포 후보 manifest — 실제 올릴 내용과 삭제·모드', JSON.stringify(candidate, null, 2))], seen = new Map();
   for (const [i, f] of candidate.항목.entries()) {
@@ -546,6 +546,14 @@ export function 후보항목들(candidate, contents, { 동일본문참조 = fals
     if (음성자산) {
       if (!Buffer.isBuffer(b) || sha(b) !== f.sha256) throw new Error(`배포 후보 원시 SHA 불일치: ${f.경로}`);
       items.push(항목(prefix, title, `음성 자산 원시 SHA: ${f.sha256}\n바이트 수: ${b.length}\n이 항목은 본문 생략이나 검수 완료 표시가 아니다. 최종 검수자는 음성 내용(STT 등)·재생·대응 대사·해시 검증 근거를 확인하고 실제 직접 청취 여부와 한계를 응답에 적는다. 필요한 검증 근거가 빠졌으면 coverage.complete를 true로 쓰지 않는다.`, '코드', null));
+      continue;
+    }
+    const 기준그림 = 단독기준그림검수 && /^\.github\/site-check\/baseline\/(?:desktop|mobile)\/(?:name(?:~family)?|nombre|rl|privacy|lab~topik4|world~hangul-stage)\.(?:jpg|png)$/.test(f.경로);
+    if (기준그림) {
+      if (!Buffer.isBuffer(b) || sha(b) !== f.sha256) throw new Error(`배포 후보 원시 SHA 불일치: ${f.경로}`);
+      const signature = f.경로.endsWith('.png') ? b.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex')) : b.length >= 4 && b[0] === 255 && b[1] === 216 && b[2] === 255 && b.at(-2) === 255 && b.at(-1) === 217;
+      if (!signature) throw new Error(`기준 그림 형식 불일치: ${f.경로}`);
+      items.push(항목(prefix, title, `기준 그림 원시 SHA: ${f.sha256}\n바이트 수: ${b.length}\n이 항목은 생략이나 자동 승인 표시가 아니다. 최종 검수자는 실제 성공 CI 그림을 열어 의도한 변경과 비교하고, 원본 artifact digest·그림 해시·비대상 metadata 보존 근거를 확인한다. 해독·검토·근거가 빠졌으면 coverage.complete를 true로 쓰지 않는다.`, '코드', null));
       continue;
     }
     if (동일본문참조 && (b.includes(0) || !Buffer.from(b.toString('utf8')).equals(b))) throw new Error(`사용자지정 본문 참조는 손실 없는 UTF-8 코드만 지원한다: ${f.경로}`);
@@ -596,7 +604,7 @@ function 항목만들기(자료, 설정, 폴더) {
     });
   }
   if (자료.배포후보) {
-    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: [3, 4].includes(설정.정책판), 단독음성검수: 설정.정책판 === 4 }));
+    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: [3, 4].includes(설정.정책판), 단독음성검수: 설정.정책판 === 4, 단독기준그림검수: 설정.정책판 === 4 }));
   }
   return 항목들;
 }
