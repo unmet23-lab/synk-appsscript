@@ -11,7 +11,10 @@
   "금지_글자": "No text, no letters, no numbers, no logos and no watermarks anywhere in the picture.",
   "질감": "Photorealistic, natural skin texture with visible pores, real fabric texture, slight film grain, no beauty retouching, no illustration look.",
   "머리흐림": "Image {n} is a layout frame: copy exactly its camera position, lens, framing, the size and place of her head and shoulders, the jacket, the headset and the background. Her head is blurred out on purpose — never copy that blur; draw her face sharp, clear and in focus.",
-  "머리흐림_틀만": "Image {n} is a layout frame: copy exactly its camera position, lens, framing and the size and place of her head and shoulders. Her head is blurred out on purpose — never copy that blur; draw her face sharp, clear and in focus. Do not copy its background."
+  "머리흐림_틀만": "Image {n} is a layout frame: copy exactly its camera position, lens, framing and the size and place of her head and shoulders. Her head is blurred out on purpose — never copy that blur; draw her face sharp, clear and in focus. Do not copy its background.",
+  "구도_헤드셋빼고": "Image {n} is a layout frame: copy exactly its camera position, lens and framing, the room, the bikes, the mat, the light, and the size, place and pose of her body. Her head is blurred out on purpose — never copy that blur; draw her face sharp, clear and in focus, and draw the headset only as described below (ignore any headset in the layout frame).",
+  "헤드셋_정면": "Headset — follow Image {n} exactly: a thin black headset whose earpiece sits on the ear at the LEFT side of the picture (her right ear), its slim boom running from that ear along the left side of her face in the picture to the corner of her mouth. Nothing at all is on the ear at the right side of the picture. Image {n} is only for the headset placement; her face comes from the identity photos.",
+  "헤드셋_정면2": "Headset — exactly as in Image {n}: one thin black earpiece hooked over her RIGHT ear, which is the ear on the LEFT side of the picture; a slim black boom runs down from that earpiece along her right cheek (on the left side of the picture) to the right corner of her mouth (also on the left side of the picture). Her other ear, on the right side of the picture, is bare — nothing on it at all. Nothing crosses in front of her face."
  },
  "컷": [
   {
@@ -206,6 +209,106 @@
     "배치:S03"
    ],
    "text": "{시작} Image 1 is a layout guide for the camera framing (traced edges of the shapes); match its camera position, height and framing. Do not draw the guide lines. A very low camera on the floor beside a white stationary bike. Only the edge of the bike is in the picture: a thin curved sliver of its white-and-silver flywheel at the very top-left corner (cut off by the top and left edges, no wider than about one eighth of the frame), with the white base foot of the bike just below it at the left edge. The rest of the frame is empty: a plain deep navy-violet studio wall with one thin horizontal magenta light line about a quarter from the top, and a smooth violet floor — no screen, no other bikes, no room details. In the empty middle-left of the frame, close to the lens, bright orange and magenta light rings swirl in big loose circles, spinning off the flywheel. A faint red-orange exercise mat, still rolled, is just entering from the upper right. Motion blur on the rings. Light: violet studio light, the rings glowing. No people. {금지_글자} {질감}"
+  },
+  {
+   "id": "C01r",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "참조:C01_구도2.png",
+    "참조:헤드셋_오른쪽귀.png"
+   ],
+   "text": "{시작} {구도_헤드셋빼고:5} {채원_얼굴:4} {채원_옷} {헤드셋_정면:6} She rides the stationary bike in the middle of the mat runway, smiling broadly at the class, mid-pedal, both hands on the handlebars (nothing in her hands), exactly the pose of the layout frame. The dark display panel high on the wall above her head stays blank and switched off. Light: dark cool violet-blue studio light, a soft light on her face. {금지_글자} {질감}"
+  },
+  {
+   "id": "C06r",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "참조:C06_구도2.png",
+    "참조:헤드셋_오른쪽귀.png"
+   ],
+   "text": "{시작} {구도_헤드셋빼고:5} {채원_얼굴:4} {채원_옷} {헤드셋_정면:6} She rides the stationary bike alone in the middle of the runway, shouting to the class with an excited open smile, both hands on the handlebars, exactly the pose of the layout frame. The rolled-up mat near the camera, the empty bikes on both sides and the blank dark sign board with its thin glowing frame high on the back wall stay exactly as in the layout frame (nothing written on the sign). Light: dark violet studio, the mat and the sign frame glowing. {금지_글자} {질감}"
+  },
+  {
+   "id": "C13r",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "참조:C13_구도2.png",
+    "참조:헤드셋_오른쪽귀.png"
+   ],
+   "text": "{시작} {구도_헤드셋빼고:5} {채원_얼굴:4} {채원_옷} {헤드셋_정면:6} She sits on her stationary bike turned toward the camera, both hands resting on the handlebars (nothing in her hands), smiling happily straight into the camera, relaxed after the ride, exactly the pose of the layout frame. Light: soft violet-magenta studio light, warm highlight on her face. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08r",
+   "who": "채원",
+   "refs": [
+    "채원옆x4",
+    "참조:C08_구도2.png",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:4} Images 1 and 2 are her exact side profiles. Image 5 is a layout frame: copy exactly its camera position, lens and framing, and the size, place and pose of her and the white bike; her head is blurred out on purpose — never copy that blur, draw her face sharp. Image 6 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 6, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
+  },
+  {
+   "id": "C10r",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "배치:S10",
+    "참조:BG10.png"
+   ],
+   "text": "{시작} {채원_얼굴:5} Her freckles are very light and sparse, exactly as in the photos. Image 5 shows her surprised expression — keep the 'O' small, do not drop the jaw, keep her face short and broad as in the photos. {배치:6} Image 7 is the background: put her in front of exactly this background, slightly out of focus — an abstract space of red, hot-pink and red-orange neon frames and lines, with no room, no ceiling, no lamps, no bikes and no pillars. {채원_옷} She is turned a little toward the right of the picture, so the headset earpiece on her right ear is on the left side of the picture, its boom running along her cheek to her mouth. A close-up: she looks slightly to the right of the camera, thrilled, eyes wide and mouth open in a small round 'O', frozen in that expression. No hands in the frame. Light: warm red neon light on her jacket and a bright rim light on her hair, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C10s",
+   "who": "채원",
+   "refs": [
+    "채원놀람x5",
+    "배치:S10",
+    "참조:BG10.png"
+   ],
+   "text": "{시작} {채원_얼굴:5} Her freckles are very light and sparse, exactly as in the photos. Image 5 shows her surprised expression — keep the 'O' small, do not drop the jaw, keep her face short and broad as in the photos. {배치:6} Image 7 is the background: put her in front of exactly this background, slightly out of focus — an abstract space of red, hot-pink and red-orange neon frames and lines, with no room, no ceiling, no lamps, no bikes and no pillars. {채원_옷} She is turned a little toward the right of the picture, so the headset earpiece on her right ear is on the left side of the picture, its boom running along her cheek to her mouth. A close-up: she looks slightly to the right of the camera, thrilled, eyes wide and mouth open in a small round 'O', frozen in that expression. No hands in the frame. Light: warm red neon light on her jacket and a bright rim light on her hair, plus a large soft light in front of her face so it is clearly lit. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08s",
+   "who": "채원",
+   "refs": [
+    "채원오른옆x3",
+    "참조:C08_구도2.png",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:3} Image 1 is her exact side profile facing right. Image 4 is a layout frame: copy exactly its camera position, lens and framing, and the size, place, direction and pose of her and the white bike — she faces the RIGHT side of the picture (her nose points toward the right edge) and the bike points right too, its handlebars on the right side of the picture, exactly as in Image 4; never facing left. Her head is blurred out on purpose in Image 4 — never copy that blur, draw her face sharp. Image 5 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 5, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08t",
+   "who": "채원",
+   "refs": [
+    "채원오른옆x3",
+    "참조:C08_구도2.png",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:3} Image 1 is her exact side profile facing right. Image 4 is a layout frame: copy exactly its camera position, lens and framing, and the size, place, direction and pose of her and the white bike — she faces the RIGHT side of the picture (her nose points toward the right edge) and the bike points right too, its handlebars on the right side of the picture, exactly as in Image 4; never facing left. Her head is blurred out on purpose in Image 4 — never copy that blur, draw her face sharp. Image 5 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 5, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
+  },
+  {
+   "id": "C13s",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "참조:헤드셋_오른쪽귀.png",
+    "참조:C13_구도2.png"
+   ],
+   "text": "{시작} {채원_얼굴:4} {헤드셋_정면2:5} Image 5 is only for the headset; her face comes from Images 1 to 4. {구도_헤드셋빼고:6} {채원_옷} She sits on her stationary bike turned toward the camera, both hands resting on the handlebars (nothing in her hands), smiling happily straight into the camera, relaxed after the ride, exactly the pose of the layout frame. Light: soft violet-magenta studio light, warm highlight on her face. {금지_글자} {질감}"
+  },
+  {
+   "id": "C13t",
+   "who": "채원",
+   "refs": [
+    "채원x4",
+    "참조:헤드셋_오른쪽귀.png",
+    "참조:C13_구도2.png"
+   ],
+   "text": "{시작} {채원_얼굴:4} {헤드셋_정면2:5} Image 5 is only for the headset; her face comes from Images 1 to 4. {구도_헤드셋빼고:6} {채원_옷} She sits on her stationary bike turned toward the camera, both hands resting on the handlebars (nothing in her hands), smiling happily straight into the camera, relaxed after the ride, exactly the pose of the layout frame. Light: soft violet-magenta studio light, warm highlight on her face. {금지_글자} {질감}"
   }
  ]
 }
