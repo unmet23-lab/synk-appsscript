@@ -1,0 +1,31 @@
+{
+  "도구": "tools/작업실예약.js",
+  "작업실": "https://workspace.synk.im",
+  "시작": "2026-10-27T11:30:29.004Z",
+  "자산": {
+    "docs/마케팅/synkbrief_빈방채우기_20261027/게시/room-a_master.mp4": "8cf4c6c1-93c5-4e70-b6e9-adf6d0004707",
+    "docs/마케팅/synkbrief_빈방채우기_20261027/게시/room-b_master.mp4": "2a441820-46b0-4e33-8c6c-2fadef76bbd8"
+  },
+  "판": [
+    {
+      "계정": "synkbrief-instagram",
+      "채널": "620ff779-b81c-4c04-81d4-e9e842cab6a8",
+      "작업": "77282554674759540a8d0c827daed1ffc62851a9ffe2b36deceb333ca4048cdb",
+      "시각": "2026-10-28T21:00:00+09:00",
+      "영상": "docs/마케팅/synkbrief_빈방채우기_20261027/게시/room-a_master.mp4"
+    },
+    {
+      "계정": "synkbrief-youtube",
+      "채널": "cffc89eb-dcc4-472e-9b29-7b2013d25602",
+      "작업": "66527f6fcc1b109ee0331d0c9cb3c980f5f98e1655b3589089932042d081f120",
+      "시각": "2026-10-28T21:00:00+09:00",
+      "영상": "docs/마케팅/synkbrief_빈방채우기_20261027/게시/room-b_master.mp4"
+    }
+  ],
+  "postId": "59d242da-c88f-40de-8760-d4bce01ccf2e",
+  "링크": {
+    "id": "e20d5cf4-6e24-415b-b8cf-2f88edc8d06d",
+    "만료": "2026-10-29T12:31:16.340Z"
+  },
+  "끝": "2026-10-27T11:31:14.281Z"
+}
