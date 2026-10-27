@@ -243,6 +243,18 @@ test('external-browser OAuth uses real HTTP callback, S256, state and public cli
   const f=await fixture(t);await f.login();const url=new URL(f.opened);assert.equal(url.searchParams.get('code_challenge_method'),'S256');assert.equal(url.searchParams.get('response_type'),'code');assert.equal(url.searchParams.get('state').length,43);assert.equal(f.codeCount,1);assert.equal(f.service.status().account.synk_user_id,'stable-synthetic-id');assert.doesNotMatch(JSON.stringify(f.service.status()),/synthetic-access|synthetic-refresh|code_verifier/);
   const load=await f.service.accountRequest('load');assert.equal(load.ok,true);assert.equal(load.access_token,undefined);assert.equal(f.requests.find(r=>r.path==='/functions/v1/synk-account').headers['x-synk-product'],'platform');
 });
+// The browser tab a sign-in ends in: a plain Korean page, not bare text — and still no script, frames or outside loads.
+test('the callback answers with one Korean page whose only style is allowed by hash',async t=>{
+  const f=await fixture(t);await f.service.signIn();const callback=new URL(f.config.redirectUri);
+  const check=async(response,status,heading)=>{
+    assert.equal(response.status,status);assert.equal(response.headers.get('content-type'),'text/html; charset=utf-8');assert.equal(response.headers.get('x-content-type-options'),'nosniff');assert.equal(response.headers.get('cache-control'),'no-store');
+    const html=await response.text(),style=/<style>([^<]*)<\/style>/.exec(html)?.[1],csp=response.headers.get('content-security-policy');
+    assert.ok(style);assert.match(csp,/^default-src 'none'; /);assert.match(csp,/frame-ancestors 'none'/);assert.ok(csp.includes(`style-src 'sha256-${crypto.createHash('sha256').update(style).digest('base64')}'`));
+    assert.doesNotMatch(html,/<script|<img|<link|<iframe|\son\w+=|https?:\/\//i);assert.match(html,new RegExp(`<h1>${heading}</h1>`));return html;
+  };
+  await check(await fetch(callback.href+'?code=x&state=wrong'),400,'로그인을 마치지 못했어요');
+  assert.match(await check(await fetch(f.opened),200,'SYNK 앱으로 돌아가요'),/이 탭은 닫아도 돼요/);await waitFor(()=>f.service.status().signedIn);
+});
 test('wrong state, duplicate state/code, wrong path and forged Host cannot consume callback',async t=>{
   const f=await fixture(t);await f.service.signIn();const start=new URL(f.opened),callback=new URL(f.config.redirectUri),state=start.searchParams.get('state');
   for(const query of [`?code=x&state=wrong`,`?code=x&state=${state}&state=${state}`,`?code=x&code=y&state=${state}`])assert.equal((await fetch(callback.href+query)).status,400);

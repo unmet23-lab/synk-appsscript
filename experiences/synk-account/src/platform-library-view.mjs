@@ -11,7 +11,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
 }, native = false, getDevice = () => ({}), getAppIds = () => ACTIVE_PLATFORM_APP_IDS, onChange = () => {
 }, onFavoritesChanged = () => {}, onOpen = () => {
 }, onLogin = () => {
-}, onManage = onLogin, storage = globalThis.localStorage } = {}) {
+}, onManage = onLogin, signIn = null, storage = globalThis.localStorage } = {}) {
   let notebook = null, doc = emptyPlatformLibrary(), draft = { appId: "world", title: "" }, message = "", modeVersion = 0, submitting = false, pageSuspended = false, connecting = false, disposed = false, resumeId = null, initialExpansionPending = false, connectOnResume = false;
   let editing = null, parkedDraft = null, deletedNotes = [], completedExpanded = false, noteQuery = "", noteFilter = "all";
   let recoveryOwner = null;
@@ -76,14 +76,35 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     })();
     nativeVerification = task;
   }
+  // A guest with the host's own sign-in (signIn) takes it from the panel's 「SYNK ID로 로그인」 too, so that way in keeps the
+  // dialog and the way back; 「계정 연결 다시 확인」 and 「현재 로그인 계정으로 전환」 keep their own handling.
+  mount.addEventListener('click', event => {
+    const target = event.target?.closest?.('button[data-notebook="signin"]');
+    if (!target || !signIn?.guest?.() || target.textContent !== 'SYNK ID로 로그인') return;
+    event.preventDefault();event.stopImmediatePropagation();
+    signIn.open();
+  }, true);
   if (native) mount.addEventListener('click', verifyNativeConnection, true);
   const recovery = createLibraryRecovery({ getHost, getOwner: () => recoveryOwner, canUse: () => native && !pageSuspended && !disposed && !!notebook?.active && notebook.canEdit && doc.consent, getPayload: () => { capture(); return { draft, editing, parkedDraft }; }, onChange: () => render() });
   const entryIds = () => getAppIds().filter((id2) => ACTIVE_PLATFORM_APP_IDS.includes(id2));
   const displayIds = () => platformDisplayAppIds(entryIds());
+  // Signed out, everything behind 「계정 라이브러리 연결」 or a folded 「메모·계정 설정」 waits for a sign-in, so the card's
+  // button is that sign-in. signIn ({guest, open}: the PC app's own sign-in, with its dialog and way back) opens it when
+  // given; otherwise the panel's own 「SYNK ID로 로그인」 does. An open panel still folds.
+  function guestSignIn() {
+    if (signIn?.guest?.()) return panel.hidden || !notebook ? signIn.open : null;
+    const button = mount.querySelector('button[data-notebook="signin"]');
+    return panel.hidden && notebook && button && !button.hidden && !button.disabled && button.textContent === "SYNK ID로 로그인" ? () => button.click?.() : null;
+  }
+  function labelToggle() {
+    const guest = !!guestSignIn();
+    toggle.textContent = guest ? "SYNK ID로 로그인" : panel.hidden ? "메모·계정 설정" : "접어두기";
+    if (guest) toggle.removeAttribute("aria-expanded"); else toggle.setAttribute("aria-expanded", String(!panel.hidden));
+    if (!connecting) connect.textContent = signIn?.guest?.() ? "SYNK ID로 로그인" : "계정 라이브러리 연결";
+  }
   function expand(value) {
     panel.hidden = !value;
-    toggle.setAttribute("aria-expanded", String(value));
-    toggle.textContent = value ? "접어두기" : "메모·계정 설정";
+    labelToggle();
   }
   // 아직 계정에 저장하지 않을 때 다음 한 걸음: 로그인 전 / 로그인했지만 연결 전 / 연결했지만 계정 저장을 켜기 전.
   function nextStep() {
@@ -103,6 +124,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     resumeButton.hidden = !available || !resumeId && !hasDraft;
     resumeButton.textContent = hasDraft ? "계속 작성" : "이어서 열기";
     toggle.hidden = !notebook;
+    labelToggle();
   }
   function capture() {
     const field = content.querySelector("[name=title]");
@@ -380,15 +402,16 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
       if (!disposed) {
         connect.disabled = false;
         connect.setAttribute("aria-busy", "false");
-        connect.textContent = "계정 라이브러리 연결";
         summary();
       }
     }
   }
-  connect.onclick = connectLibrary;
+  connect.onclick = () => signIn?.guest?.() ? signIn.open() : connectLibrary();
   toggle.onclick = () => {
     capture();
     initialExpansionPending = false;
+    const open = guestSignIn();
+    if (open) { open(); return; }
     expand(panel.hidden);
     summary();
   };
@@ -556,6 +579,8 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
   globalThis.addEventListener("beforeunload", beforeUnload);
   return {
     connect: connectLibrary,
+    // The host's sign-in state moved (signIn.guest): relabel the card's way in.
+    authChanged: () => { if (!disposed) summary(); },
     ready,
     connected: () => !!notebook?.active && doc.consent,
     projection() {

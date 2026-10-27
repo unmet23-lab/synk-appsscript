@@ -25,10 +25,10 @@ let personal=createPersonal(),personalState=personal.current({appIds:displayLibr
 // WORLD 「놀이」의 게임 셋(브랜드 오프닝 글 표 game.*와 같은 이름). 그림은 지금 WORLD 게임 화면을 찍은 것이다.
 const games={runner:{name:'바람길',image:'runner.jpg',tag:'들은 말대로 90초 동안 달려요',description:'짧은 한국어 지시를 듣고 그대로 움직이는 달리기 게임이에요. 하라는 말도, 하지 말라는 말도 끝까지 듣고 길을 바꾸거나 뛰어요.'},rhythm:{name:'말의 리듬',image:'rhythm.jpg',tag:'노래를 듣다가 O·X로 답해요',description:'노래를 들으며 두 단추로 박자를 맞추고, 들은 내용이 맞으면 O, 아니면 X를 골라요. 박자 점수와 듣기 답은 따로 기록해요.'},hangul:{name:'한글 만나기',image:'hangul.jpg',tag:'소리와 글자를 짝지어요',description:'한글을 처음 배우는 사람을 위한 게임이에요. 소리를 듣고 글자를 고르거나 글자를 보고 소리를 고르고, 손가락으로 글자를 따라 써요.'}};
 const worldExtras=[['TOPIK 연습','짧은 진단으로 TOPIK I 내 위치를 보고, 듣기·읽기 연습과 TOPIK II 쓰기 연습을 해요.'],['첫 문장 놀이','짧은 문장 세 개를 읽고 상황에 어울리는 답을 골라요.'],['싱크타운','내가 고른 차림 그대로 광장을 걸어요.'],['옷장','세 친구에게 옷을 입혀 보고 사진으로 남겨요.'],['노래 듣기','한글 노래와 뮤직비디오를 들어요.']];
-let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer;
+let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer,toastSeq=0;
 let selectedBenefit=null,environmentRevision=0,sessionPurpose=null,sessionPurposeOwner=null,leaveDecision=null;
 let continuity=null,convenience=null,platformUpdates=null,libraryActionQueue=Promise.resolve(),pendingLibraryActions=0;
-let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false,rememberedOwner=null,signInLanding=false;
+let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false,rememberedOwner=null,signInLanding=false,landing=null;
 // Screens register their account-change reset, render and draft hooks here (the list after the library mount).
 // ownerEpoch mirrors the registry's ownership generation so every existing guard keeps reading one variable.
 const accountLifecycle=createAccountLifecycle({onEpoch:epoch=>{ownerEpoch=epoch;}});
@@ -47,7 +47,7 @@ const accountPage=mountAccountPage($('view-account'),{bridge,getIdentity:()=>aut
 function openAccount(){if(bridge&&auth.signedIn){showView('account');return;}if(!$('account-dialog').open)$('account-dialog').showModal();if(bridge&&auth.configured&&auth.status==='signed-out')void startSignIn();}
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');$('view-home').before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./platform-continuity.css';document.head.append(continuityStyle);
-continuity=mountPlatformLibrary(continuityRoot,{native:true,getHost:()=>bridge,getAppIds:()=>library.appIds,getDevice:()=>({favorites:prefs.favorites,recent:Object.entries(prefs.lastLaunch).filter(([,at])=>at).map(([id,at])=>({id,at,mode:'client'}))}),onChange:()=>{renderLibrary();renderSelected();memberHome.render();convenience?.refresh();},onFavoritesChanged:()=>memberActivity.syncFavorites(),onOpen:id=>{if(allowed(id))launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');},storage:localStorage});
+continuity=mountPlatformLibrary(continuityRoot,{native:true,getHost:()=>bridge,signIn:{guest:()=>!!bridge&&auth.configured===true&&!auth.signedIn&&(['signed-out','signing-in'].includes(auth.status)||auth.status==='error'&&auth.error?.retryable!==true),open:()=>openAccount()},getAppIds:()=>library.appIds,getDevice:()=>({favorites:prefs.favorites,recent:Object.entries(prefs.lastLaunch).filter(([,at])=>at).map(([id,at])=>({id,at,mode:'client'}))}),onChange:()=>{renderLibrary();renderSelected();memberHome.render();convenience?.refresh();},onFavoritesChanged:()=>memberActivity.syncFavorites(),onOpen:id=>{if(allowed(id))launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');},storage:localStorage});
 function effectivePrefs(){const cloud=continuity?.projection();return projectLibraryPreferences(cloud?{...prefs,accountLibrary:true,favorites:cloud.favorites,lastLaunch:Object.fromEntries(cloud.recent.map(row=>[row.entryId||row.id,row.at]))}:prefs,library);}
 // Account lifecycle participants. Registration order is the order every phase runs in: identity updates,
 // resets after an account change, renders, unsaved-draft checks (first hit wins), discards and flushes.
@@ -60,7 +60,7 @@ accountLifecycle.register('dialogs-and-toast',{onAccountChange:()=>{
   if($('leave-dialog').open)$('leave-dialog').close('keep');
   for(const id of ['content-dialog','personal-dialog'])if($(id).open)$(id).close();
   $('content-title').textContent='';$('content-description').textContent='';$('content-image').removeAttribute('src');$('personal-message').textContent='';
-  clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';
+  toastSeq++;clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';
 }});
 accountLifecycle.register('device-preferences',{onAccountChange:({ownerChanged})=>{if(ownerChanged){prefs=parsePreferences(readPrefs());personal=createPersonal();}}});
 accountLifecycle.register('pulse-drafts',{hasUnsavedDrafts:()=>pulseClient.hasUnsavedChanges(),discardDraft:()=>pulseClient.discard()});
@@ -109,7 +109,12 @@ function setAuth(snapshot,{environmentOnly=false}={}){
   const next=resolveLibrary(snapshot,environment),changed=JSON.stringify([library.owner,library.status,library.appIds,auth.sessionGeneration])!==JSON.stringify([next.owner,next.status,next.appIds,snapshot?.sessionGeneration]);
   // The registered screens own the resets and renders; changed accounts also advance ownerEpoch.
   const wasSignedIn=auth.signedIn===true;
+  // Where a sign-in or sign-out lands (see takeLanding): a session the server ended opens the guest home, like 「로그아웃」.
+  if(wasSignedIn&&next.owner==='anonymous-local')landing={route:{view:'home'},guest:true};
   accountLifecycle.transition({changed,ownerChanged:library.owner!==next.owner,commit:()=>{auth=snapshot||{status:'error',signedIn:false};library=next;}});
+  // A sign-in that ended without an account (cancelled, refused, timed out) has no screen to come back to any more. A retryable
+  // 'error' keeps it: 「계정 연결 다시 확인」 can still finish that sign-in. One that failed before the browser drops it in startSignIn.
+  if(landing&&!landing.guest&&!auth.signedIn&&auth.status==='signed-out'&&auth.error)landing=null;
   if(bridge&&auth.signedIn&&library.owner)void continuity?.connect();
   // 「지난번 이 PC」 for the sign-in dialog: the main process's own reading of the account's address, once per account.
   if(bridge&&auth.signedIn&&library.owner&&rememberedOwner!==library.owner&&typeof bridge.accountIdentity==='function'){const owner=rememberedOwner=library.owner;const retry=()=>{if(rememberedOwner===owner)rememberedOwner=null;};void Promise.resolve(bridge.accountIdentity()).then(identity=>{if(identity?.ok===true&&library.owner===owner)rememberSignIn(localStore,identity);else retry();}).catch(retry);}
@@ -153,7 +158,14 @@ function confirmDraftExit(message){
 }
 async function confirmUpdateInstall(){const epoch=ownerEpoch;return await confirmDraftExit('돌아가서 저장하거나, 메모를 버리고 업데이트할 수 있어요.')&&epoch===ownerEpoch&&!hasUnsavedDrafts();}
 async function windowAction(action){if(!bridge?.windowAction)return;const epoch=ownerEpoch;if(action==='close'&&environment?.closeToTray!==true&&(!await confirmDraftExit('돌아가서 저장하거나, 메모를 버리고 창을 닫을 수 있어요.')||epoch!==ownerEpoch))return;try{await bridge.windowAction(action);}catch{toast('창을 바꾸지 못했어요.');}}
-function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,5500);}
+// A longer notice stays longer (about the time to read it), and one said while the window was behind another (a sign-in
+// that timed out in the browser) starts counting only once the window is back in front.
+function toast(message){
+  const seq=++toastSeq,wait=Math.min(12000,Math.max(5500,2000+90*[...String(message)].length));
+  $('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);
+  const start=()=>{if(seq!==toastSeq)return;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{if(seq===toastSeq)$('toast').hidden=true;},wait);};
+  if(globalThis.document?.hasFocus?.()===false&&typeof globalThis.addEventListener==='function')globalThis.addEventListener('focus',start,{once:true});else start();
+}
 function errorText(result){const code=result?.code||result?.error?.code;return ({
   RELEASE_UNAVAILABLE:'이 기기에 맞는 설치 파일이 아직 없어요.',INVALID_INSTALLATION:'설치된 앱을 열 수 없는 상태예요. 설치 파일을 다시 준비해 주세요.',NOT_INSTALLED:'앱을 설치한 뒤 열어 주세요.',LAUNCH_FAILED:'앱을 열지 못했어요. 다시 눌러 보고, 계속 안 되면 다시 설치해 주세요.',AUTH_NOT_CONFIGURED:'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.',AUTH_CANCELLED:'로그인을 취소했어요.',PACKAGE_HASH_MISMATCH:'설치 파일이 온전하지 않아요. 다시 준비해 주세요.',PACKAGE_SIZE_MISMATCH:'설치 파일 크기가 맞지 않아요. 다시 준비해 주세요.',PACKAGE_NOT_FOUND:'플랫폼 안에서 설치 파일을 찾지 못했어요. 플랫폼을 업데이트해 주세요.',INSTALLER_OPEN_FAILED:'설치 파일을 열지 못했어요. 다시 준비해 주세요.',PREPARATION_CANCELLED:'설치 파일 준비를 취소했어요.',PACKAGE_NOT_READY:'먼저 설치 파일을 준비해 주세요.',PREVIEW_DEVELOPMENT_ONLY:'이 판에서는 열 수 없어요. 웹에서 열어 주세요.',PREVIEW_LAUNCH_FAILED:'앱을 열지 못했어요. 잠시 뒤 다시 눌러 주세요.',PREVIEW_NOT_IN_LIBRARY:'이 계정에는 이 앱이 열려 있지 않아요. 학교나 회사 담당자에게 물어봐 주세요.',UNKNOWN_CLIENT:'알 수 없는 앱이에요. 플랫폼을 다시 열어 주세요.'})[code]||'처리하지 못했어요. 잠시 뒤 다시 눌러 주세요.';}
 function preserveFocus(render){const el=document.activeElement,key=el?.dataset?.focusKey;render();if(key){const found=[...document.querySelectorAll('[data-focus-key]')].find(node=>node.dataset.focusKey===key);found?.focus({preventScroll:true});}}
@@ -214,7 +226,7 @@ function renderAuth(){
   const recent=!signedIn&&auth.status!=='signing-out'?recentSignIn(localStore):null;$('account-recent').hidden=!recent;$('account-recent').textContent=recentSignInText(recent);
   $('account-retry').hidden=!retryable;$('account-retry').className=retryable?'primary':'ghost-button';$('sign-in').className=retryable?'ghost-button':'primary';$('account-retry').disabled=accountRetryPending||signUpPending;
   $('sign-in').textContent=retryable?'새로 로그인':'로그인';$('sign-in').hidden=signedIn||signing;$('sign-in').disabled=!bridge||!auth.configured||accountRetryPending||signUpPending;
-  $('sign-out').hidden=!signedIn;$('cancel-sign-in').hidden=auth.status!=='signing-in';$('settings-account').textContent=signedIn?`${name} 님으로 로그인됨`:auth.configured?'로그인하지 않음':'로그인 설정 없음';renderSettings();accountPage.authChanged();
+  $('sign-out').hidden=!signedIn;$('cancel-sign-in').hidden=auth.status!=='signing-in';continuity?.authChanged?.();$('settings-account').textContent=signedIn?`${name} 님으로 로그인됨`:auth.configured?'로그인하지 않음':'로그인 설정 없음';renderSettings();accountPage.authChanged();
 }
 function readRoute(){return {view,appId:prefs.selected,detail,benefitId:selectedBenefit,scroll:$('main').scrollTop,pageScroll:globalThis.scrollY||0};}
 function showView(next,{restore=false,...route}={}){if(!['home','library','benefits','downloads','settings','account'].includes(next))return;if(convenience&&!restore){convenience.navigate({view:next,appId:prefs.selected,...route});return;}view=next;if(view!=='benefits'){memberInsight.setVisible(false);subscriptionsBoard.setVisible(false);$('benefit-detail').innerHTML='';}if(allowed(route.appId))prefs.selected=route.appId;detail=route.detail||'overview';selectedBenefit=view==='benefits'?route.benefitId||null:null;for(const name of ['home','library','benefits','downloads','settings','account'])$('view-'+name).hidden=name!==view;
@@ -311,12 +323,12 @@ $('sign-in').addEventListener('click',()=>startSignIn());
 $('forgot-password').addEventListener('click',async()=>{const say=text=>{if($('account-dialog').open)$('account-dialog').close();toast(text);};try{const result=await bridge?.authRecover?.();if(result?.ok===true)say('기본 브라우저에서 SYNK ID 「비밀번호를 다시 정해요」를 열었어요. 가입한 이메일로 새 비밀번호를 정하는 메일을 받아 주세요.');else say('브라우저를 열지 못했어요. synk.im/id에서 「비밀번호를 잊었어요」를 눌러 주세요.');}catch{say('브라우저를 열지 못했어요. synk.im/id에서 「비밀번호를 잊었어요」를 눌러 주세요.');}});
 async function startSignIn(){
   if(!bridge||!auth.configured||auth.signedIn||['restoring','signing-in','signing-out'].includes(auth.status)||accountRetryPending||signUpPending)return;
-  setAuth({...auth,status:'signing-in',signedIn:false,account:null,library:{status:'unavailable',appIds:[]}});const revision=authRevision;
+  landing={route:readRoute(),guest:false};setAuth({...auth,status:'signing-in',signedIn:false,account:null,library:{status:'unavailable',appIds:[]}});const revision=authRevision;
   try{
     const result=await bridge.authSignIn();if(revision!==authRevision)return;await refreshAuth();
-    if(result?.ok===false&&!auth.signedIn)toast(errorText(result));
+    if(result?.ok===false&&!auth.signedIn){if(!landing?.guest)landing=null;toast(errorText(result));}
   }
-  catch{if(revision===authRevision)setAuth({status:'error',configured:true,signedIn:false,error:{message:'로그인 창을 열지 못했어요. 다시 눌러 주세요.'}});}
+  catch{if(revision===authRevision){if(!landing?.guest)landing=null;setAuth({status:'error',configured:true,signedIn:false,error:{message:'로그인 창을 열지 못했어요. 다시 눌러 주세요.'}});}}
 }
 // The sign-out button and 「내 계정」's sign-out share this action. While a logout is pending the button is
 // disabled, and signOutPending keeps the account page from starting a second one in that window.
@@ -325,7 +337,7 @@ async function signOut(){
   if(!await confirmDraftExit('저장하지 않은 내용은 로그아웃하면 사라져요. 돌아가서 저장하거나, 저장 없이 로그아웃할 수 있어요.')||leaveEpoch!==ownerEpoch||!auth.signedIn)return;
   signOutPending=true;$('sign-out').disabled=true;
   const signedOutGeneration=Number.isSafeInteger(auth.sessionGeneration)?auth.sessionGeneration+1:null;
-  setAuth({status:'signing-out',configured:auth.configured,signedIn:false});const revision=authRevision;
+  landing={route:{view:'home'},guest:true};setAuth({status:'signing-out',configured:auth.configured,signedIn:false});const revision=authRevision;
   const sameLogout=()=>revision===authRevision||signedOutGeneration!==null&&auth.sessionGeneration===signedOutGeneration&&auth.status==='signed-out'&&!auth.signedIn;
   try{
     const result=await bridge.authSignOut();if(!sameLogout())return;
@@ -370,7 +382,10 @@ $('personal-form').addEventListener('submit',event=>{event.preventDefault();if(!
 $('personal-skip').addEventListener('click',()=>{$('personal-dialog').close();});
 $('personal-clear').addEventListener('click',()=>{if(!library.owner)return;try{personal.clear();sessionPurpose=null;applyPersonalization();renderLibrary();$('personal-dialog').close();toast('저장한 설정을 지웠어요. 기본 순서로 돌아왔어요.');}catch(error){$('personal-message').textContent=error.message;}});
 function windowState(state){$('maximize').setAttribute('aria-label',state?.maximized?'창 크기 복원':'최대화');$('maximize').dataset.maximized=String(!!state?.maximized);}
-convenience=mountConvenience({bridge,storage:localStore,apps,getSnapshot:()=>({owner:library.owner,appIds:library.appIds,prefs:effectivePrefs(),environment,auth,clients}),readRoute,applyRoute:route=>showView(route.view,{...route,restore:true}),launchApp:launchFromHome,onToast:toast,onFavorite:toggleFavorite,onMoveFavorite:moveFavorite,onLibrarySearch:()=>{showView('library');openLibrarySearch();},getNotes:query=>[...(memberHome.searchRecords?.(query)||[]).map(row=>({...row,source:'device'})),...(continuity?.searchNotes?.(query)||[]).map(row=>({...row,source:'account'}))],openNote:note=>note.source==='account'?continuity?.openNote?.(note.id):memberHome.focusRecord?.(note.id),onDesktopPreferences:snapshot=>{if(environment)environment.closeToTray=snapshot.preferences?.closeToTray===true&&snapshot.capabilities?.tray===true;}});
+// A sign-in comes back to the screen it started from and a sign-out opens the guest home, not each account's last place.
+// Each landing waits for its own side: the main process reports a plain signed-out (its discard) before 'signing-in', and
+// that guest step must not use up the sign-in's landing. A sign-in that ends without an account drops it (see setAuth).
+convenience=mountConvenience({takeLanding:owner=>{if(!landing||(owner==='anonymous-local')!==landing.guest)return null;const {route}=landing;landing=null;return route;},bridge,storage:localStore,apps,getSnapshot:()=>({owner:library.owner,appIds:library.appIds,prefs:effectivePrefs(),environment,auth,clients}),readRoute,applyRoute:route=>showView(route.view,{...route,restore:true}),launchApp:launchFromHome,onToast:toast,onFavorite:toggleFavorite,onMoveFavorite:moveFavorite,onLibrarySearch:()=>{showView('library');openLibrarySearch();},getNotes:query=>[...(memberHome.searchRecords?.(query)||[]).map(row=>({...row,source:'device'})),...(continuity?.searchNotes?.(query)||[]).map(row=>({...row,source:'account'}))],openNote:note=>note.source==='account'?continuity?.openNote?.(note.id):memberHome.focusRecord?.(note.id),onDesktopPreferences:snapshot=>{if(environment)environment.closeToTray=snapshot.preferences?.closeToTray===true&&snapshot.capabilities?.tray===true;}});
 platformUpdates=mountPlatformUpdates({bridge,document,getEnvironment:()=>environment,confirmInstall:confirmUpdateInstall});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)accountLifecycle.flushDrafts();});
 async function init(){

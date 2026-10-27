@@ -13,6 +13,7 @@ const {configuration}=require('./auth-config.cjs');
 const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService,publicError}=require('./auth-service.cjs');
+const {createSignInReturn,bringToFront}=require('./sign-in-return.cjs');
 const {WORLD_ROUTE_NAMES}=require('./world-requests.cjs');
 const {suiteKey,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('./suite-session.cjs');
 const {createCompanyRequests}=require('./company-requests.cjs');
@@ -223,7 +224,8 @@ function createWindow(){
   let smokeDownload=null;const smokeNetworkRequests=[],smokeConsoleErrors=[];
   const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
-    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);}});
+    const signInReturn=createSignInReturn();
+    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);if(signInReturn(state))bringToFront(window,{app});}});
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
   if(runtime.clientId==='platform'&&!careNotifications){

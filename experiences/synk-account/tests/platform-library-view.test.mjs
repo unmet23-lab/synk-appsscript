@@ -27,7 +27,7 @@ class Element {
   set textContent(value) { this._text = String(value); this.children = []; }
   get textContent() { return this._text + this.children.map(child => child.textContent).join(''); }
   setAttribute(key, value) { this.attributes.set(key, String(value)); if (key.startsWith('data-')) this.dataset[dataKey(key.slice(5))] = String(value); else if (key === 'class') this.className = value; else if (key === 'value') this.value = value; else if (['hidden','disabled','checked'].includes(key)) this[key] = true; }
-  getAttribute(key) { return this.attributes.get(key) ?? null; }
+  getAttribute(key) { return this.attributes.get(key) ?? null; } removeAttribute(key) { this.attributes.delete(key); }
   append(...nodes) { for (const node of nodes) { node.parentElement = this; this.children.push(node); } }
   replaceChildren(...nodes) { this.children = []; this.append(...nodes); }
   addEventListener(name, callback, options) {
@@ -47,6 +47,7 @@ class Element {
     return true;
   }
   closest(selector) { for (let node = this; node; node = node.parentElement) if (node.matches(selector)) return node; return null; }
+  click() { for (let node = this; node; node = node.parentElement) node.listeners?.get('click')?.({ target: this }); }
   querySelectorAll(selector) {
     const selectors = selector.split(','), descendants = node => node.children.flatMap(child => [child, ...descendants(child)]);
     return descendants(this).filter(node => selectors.some(part => { const segments = part.trim().split(/\s+/); if (!node.matches(segments.pop())) return false; let parent = node.parentElement; while (segments.length) { const previous = segments.pop(); while (parent && !parent.matches(previous)) parent = parent.parentElement; if (!parent) return false; parent = parent.parentElement; } return true; }));
@@ -63,7 +64,7 @@ const clickCloud = (f,action,id) => { const target=f.content.querySelector(`[dat
 const memoryStorage = () => { const data = new Map(); return { data, getItem: key => data.get(key) ?? null, setItem: (key,value) => data.set(key,value), removeItem: key => data.delete(key), key: i => [...data.keys()][i] ?? null, get length() { return data.size; } }; };
 let activeFixtures=0,originalGlobals;
 
-async function fixture(t, { records = new Map(), storage = memoryStorage(), device = {}, initial = signed(), onChange = () => {}, onFavoritesChanged = () => {}, native=true, ensureReady=async()=>{},getAppIds,recoveryHost={} } = {}) {
+async function fixture(t, { records = new Map(), storage = memoryStorage(), device = {}, initial = signed(), onChange = () => {}, onFavoritesChanged = () => {}, native=true, ensureReady=async()=>{},getAppIds,recoveryHost={},signIn } = {}) {
   if(activeFixtures++===0)originalGlobals=['document','addEventListener','removeEventListener','confirm'].map(key => [key,Object.getOwnPropertyDescriptor(globalThis,key)]);
   const lifecycle = new Map(), lifecycleListeners = new Map(), confirms = [], calls = [], holds = new Map(); let current = initial, listener, failSave = false;
   Object.assign(globalThis, { document: { createElement: tag => new Element(tag) }, addEventListener: (name, fn) => { if(!lifecycleListeners.has(name))lifecycleListeners.set(name,new Set());const listeners=lifecycleListeners.get(name);listeners.add(fn);lifecycle.set(name,event=>{for(const callback of listeners)callback(event);}); }, removeEventListener: (name,fn) => {const listeners=lifecycleListeners.get(name);listeners?.delete(fn);if(!listeners?.size){lifecycle.delete(name);lifecycleListeners.delete(name);}}, confirm: text => { confirms.push(text); return true; } });
@@ -85,7 +86,7 @@ async function fixture(t, { records = new Map(), storage = memoryStorage(), devi
   host.identity=()=>({...current,accountId:current.account?.synk_user_id});host.refresh=async()=>host.identity();host.request=host.accountRequest;
   Object.assign(host,recoveryHost);
   host.subscribe=fn=>host.onAuthChanged(value=>fn({...value,accountId:value.account?.synk_user_id}));
-  const opened=[],root = new Element(), view = mountPlatformLibrary(root, { native, ensureReady, getHost:() => host, getDevice:() => device,...(getAppIds?{getAppIds}:{}), storage, onChange, onFavoritesChanged, onOpen:id=>opened.push(id) });
+  const opened=[],root = new Element(), view = mountPlatformLibrary(root, { native, ensureReady, getHost:() => host, getDevice:() => device,...(getAppIds?{getAppIds}:{}), storage, onChange, onFavoritesChanged, onOpen:id=>opened.push(id),...(signIn?{signIn}:{}) });
   const content = root.querySelector('[data-cloud-content]'), mount = root.querySelector('[data-notebook-mount]');
   t.after(() => { view.dispose(); if(--activeFixtures===0)for (const [key,descriptor] of originalGlobals) { if (descriptor) Object.defineProperty(globalThis,key,descriptor); else delete globalThis[key]; } });
   return { view, root, content, mount, records, storage, confirms, calls, lifecycle, opened, host,
@@ -431,6 +432,25 @@ test('suspension and disposal release ready waiters with false even while the ac
   }
 });
 
+// Signed out, 「계정 라이브러리 연결」 and a folded 「메모·계정 설정」 only lead to a sign-in, so the card's button is that sign-in.
+test('signed out, the card button signs in: through the host hook when given, else the panel button', async t => {
+  let guest=true,opened=0;const out={configured:true,status:'signed-out',signedIn:false,sessionGeneration:1};
+  const f=await fixture(t,{initial:out,signIn:{guest:()=>guest,open:()=>{opened++;}}}),connect=f.root.querySelector('[data-connect-button]'),toggle=f.root.querySelector('[data-panel-toggle]'),panel=f.root.querySelector('[data-library-panel]');
+  f.view.authChanged();assert.equal(connect.textContent,'SYNK ID로 로그인');connect.onclick();assert.equal(opened,1);assert.equal(f.calls.length,0,'no library connection for a guest');
+  guest=false;f.view.authChanged();assert.equal(connect.textContent,'계정 라이브러리 연결');
+  await f.auth(signed());await f.connect();assert.equal(toggle.hidden,false);assert.equal(toggle.textContent,panel.hidden?'메모·계정 설정':'접어두기');
+  guest=true;await f.auth({...out,sessionGeneration:2});f.view.authChanged();if(!panel.hidden)toggle.onclick();
+  assert.equal(panel.hidden,true);assert.equal(toggle.textContent,'SYNK ID로 로그인');assert.equal(toggle.getAttribute('aria-expanded'),null);toggle.onclick();assert.equal(opened,2);assert.equal(panel.hidden,true);
+  // A guest whose panel stayed open takes the host sign-in from the panel's own button too (not the library's direct one).
+  let direct=0;const hostSignIn=f.host.authSignIn;f.host.authSignIn=async()=>{direct++;return hostSignIn();};
+  guest=false;await f.auth(signed('A',3));f.view.authChanged();if(panel.hidden)toggle.onclick();assert.equal(panel.hidden,false);
+  guest=true;await f.auth({...out,sessionGeneration:4});f.view.authChanged();assert.equal(panel.hidden,false);assert.equal(toggle.textContent,'접어두기');
+  assert.equal(f.button('signin').textContent,'SYNK ID로 로그인');await f.click('signin');assert.equal(opened,3);assert.equal(direct,0);
+  // Without a hook (the web page) the folded card presses the panel's own 「SYNK ID로 로그인」.
+  const web=await fixture(t);let signIns=0;const signInHost=web.host.authSignIn;web.host.authSignIn=async()=>{signIns++;return signInHost();};await web.connect();
+  await web.auth({...out,sessionGeneration:2});const webToggle=web.root.querySelector('[data-panel-toggle]'),webPanel=web.root.querySelector('[data-library-panel]');if(!webPanel.hidden)webToggle.onclick();
+  assert.equal(web.button('signin').hidden,false);assert.equal(webToggle.textContent,'SYNK ID로 로그인');webToggle.onclick();await settle();assert.equal(signIns,1);
+});
 test('the compact library chooses an unfinished note and keeps editing controls collapsed until opened', async t => {
   const record=state();record.notes=[{id:'done',appId:'world',title:'이미 끝낸 메모',done:true,createdAt:2},{id:'next',appId:'fortune',title:'다음 대화 이어쓰기',done:false,createdAt:1}];
   const f=await fixture(t,{records:new Map([['A',{revision:1,state:record}]])});await f.connect();

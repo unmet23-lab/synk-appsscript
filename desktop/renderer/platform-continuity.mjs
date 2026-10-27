@@ -2388,7 +2388,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
 }, onFavoritesChanged = () => {
 }, onOpen = () => {
 }, onLogin = () => {
-}, onManage = onLogin, storage = globalThis.localStorage } = {}) {
+}, onManage = onLogin, signIn = null, storage = globalThis.localStorage } = {}) {
   let notebook = null, doc = emptyPlatformLibrary(), draft = { appId: "world", title: "" }, message = "", modeVersion = 0, submitting = false, pageSuspended = false, connecting = false, disposed = false, resumeId = null, initialExpansionPending = false, connectOnResume = false;
   let editing = null, parkedDraft = null, deletedNotes = [], completedExpanded = false, noteQuery = "", noteFilter = "all";
   let recoveryOwner = null;
@@ -2451,6 +2451,13 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     })();
     nativeVerification = task;
   }
+  mount.addEventListener("click", (event) => {
+    const target = event.target?.closest?.('button[data-notebook="signin"]');
+    if (!target || !signIn?.guest?.() || target.textContent !== "SYNK ID로 로그인") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    signIn.open();
+  }, true);
   if (native) mount.addEventListener("click", verifyNativeConnection, true);
   const recovery = createLibraryRecovery({ getHost, getOwner: () => recoveryOwner, canUse: () => native && !pageSuspended && !disposed && !!notebook?.active && notebook.canEdit && doc.consent, getPayload: () => {
     capture();
@@ -2458,10 +2465,21 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   }, onChange: () => render() });
   const entryIds = () => getAppIds().filter((id2) => ACTIVE_PLATFORM_APP_IDS.includes(id2));
   const displayIds = () => platformDisplayAppIds(entryIds());
+  function guestSignIn() {
+    if (signIn?.guest?.()) return panel.hidden || !notebook ? signIn.open : null;
+    const button = mount.querySelector('button[data-notebook="signin"]');
+    return panel.hidden && notebook && button && !button.hidden && !button.disabled && button.textContent === "SYNK ID로 로그인" ? () => button.click?.() : null;
+  }
+  function labelToggle() {
+    const guest = !!guestSignIn();
+    toggle.textContent = guest ? "SYNK ID로 로그인" : panel.hidden ? "메모·계정 설정" : "접어두기";
+    if (guest) toggle.removeAttribute("aria-expanded");
+    else toggle.setAttribute("aria-expanded", String(!panel.hidden));
+    if (!connecting) connect.textContent = signIn?.guest?.() ? "SYNK ID로 로그인" : "계정 라이브러리 연결";
+  }
   function expand(value) {
     panel.hidden = !value;
-    toggle.setAttribute("aria-expanded", String(value));
-    toggle.textContent = value ? "접어두기" : "메모·계정 설정";
+    labelToggle();
   }
   function nextStep() {
     const signedIn = !!(accountAdapter?.status?.()?.signedIn ?? getHost?.()?.identity?.()?.signedIn);
@@ -2480,6 +2498,7 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
     resumeButton.hidden = !available || !resumeId && !hasDraft;
     resumeButton.textContent = hasDraft ? "계속 작성" : "이어서 열기";
     toggle.hidden = !notebook;
+    labelToggle();
   }
   function capture() {
     const field = content.querySelector("[name=title]");
@@ -2764,15 +2783,19 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       if (!disposed) {
         connect.disabled = false;
         connect.setAttribute("aria-busy", "false");
-        connect.textContent = "계정 라이브러리 연결";
         summary();
       }
     }
   }
-  connect.onclick = connectLibrary;
+  connect.onclick = () => signIn?.guest?.() ? signIn.open() : connectLibrary();
   toggle.onclick = () => {
     capture();
     initialExpansionPending = false;
+    const open = guestSignIn();
+    if (open) {
+      open();
+      return;
+    }
     expand(panel.hidden);
     summary();
   };
@@ -2953,6 +2976,10 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
   globalThis.addEventListener("beforeunload", beforeUnload);
   return {
     connect: connectLibrary,
+    // The host's sign-in state moved (signIn.guest): relabel the card's way in.
+    authChanged: () => {
+      if (!disposed) summary();
+    },
     ready,
     connected: () => !!notebook?.active && doc.consent,
     projection() {

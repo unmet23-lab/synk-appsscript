@@ -6,6 +6,11 @@ const {projectLibrary}=require('./library-access.cjs');
 const MESSAGES={AUTH_CONFIG:'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.',AUTH_REQUIRED:'SYNK ID로 다시 로그인해 주세요.',AUTH_CANCELLED:'로그인을 취소했어요.',AUTH_TIMEOUT:'로그인 시간이 지났어요. 다시 시작해 주세요.',CALLBACK_UNAVAILABLE:'로그인 창과 연결하지 못했어요. 잠시 뒤 다시 해 주세요.',AUTH_FAILED:'로그인을 마치지 못했어요. 다시 해 주세요.',AUTH_CHANGED:'로그인 상태가 바뀌었어요.',SECURE_STORAGE_UNAVAILABLE:'이 PC의 암호화 저장소를 쓸 수 없어 로그인을 저장하지 못했어요.',NETWORK:'서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.',INVALID_REQUEST:'요청을 처리하지 못했어요. 다시 해 주세요.',AUTH_SERVER_UNAVAILABLE:'로그인 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.'};
 MESSAGES.PLATFORM_AUTH_REQUIRED='SYNK Platform에서 로그인하면 이 앱도 같은 계정으로 연결돼요.';
 MESSAGES.PLATFORM_ACCOUNT_MISMATCH='브라우저의 SYNK ID가 플랫폼 계정과 달라요. 브라우저의 SYNK ID에서 로그아웃한 뒤 플랫폼과 같은 계정으로 다시 로그인해 주세요.';
+// The browser tab a sign-in ends in: one plain Korean page instead of bare text — no script, its one style allowed by hash.
+const CALLBACK_STYLE='body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111113;color:#f4f2ed;font:17px/1.65 system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif}main{max-width:30rem;padding:2rem}.mark{margin:0 0 1.25rem;font-size:.78rem;font-weight:800;letter-spacing:.14em;color:#8f8b82}h1{margin:0 0 .75rem;font-size:1.9rem;line-height:1.3}p{margin:0;color:#cfcbc2}';
+const CALLBACK_CSP=`default-src 'none'; style-src 'sha256-${crypto.createHash('sha256').update(CALLBACK_STYLE).digest('base64')}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
+const escapeHtml=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+function callbackPage(code,text){return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SYNK ID</title><style>${CALLBACK_STYLE}</style></head><body><main><p class="mark">SYNK ID</p><h1>${code===200?'SYNK 앱으로 돌아가요':'로그인을 마치지 못했어요'}</h1><p>${escapeHtml(text)}</p></main></body></html>`;}
 function fault(code,status,retryable=false){return Object.assign(new Error(MESSAGES[code]||'요청을 완료하지 못했어요.'),{code,status,retryable});}
 function publicError(error){return {code:error.code||'AUTH_FAILED',message:MESSAGES[error.code]||'요청을 완료하지 못했어요.',retryable:!!error.retryable,...(error.status?{status:error.status}:{}),...missingAsset(error)};}
 function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,appVersion='0.1.0',now=Date.now,timeoutMs=12000,loginTimeoutMs=300000,onChange=()=>{}}){
@@ -89,14 +94,14 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
   async function prepareSignIn(expected){
     await discard();check(expected);const redirect=new URL(config.redirectUri),state=crypto.randomBytes(32).toString('base64url'),verifier=crypto.randomBytes(32).toString('base64url'),challenge=crypto.createHash('sha256').update(verifier).digest('base64url'),expiresAt=now()+loginTimeoutMs;
     const server=http.createServer({maxHeaderSize:8192},(req,res)=>{
-      const reply=(code,text)=>{res.writeHead(code,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",'Referrer-Policy':'no-referrer','Connection':'close'});res.end(text);};
+      const reply=(code,text)=>{res.writeHead(code,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':CALLBACK_CSP,'Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Connection':'close'});res.end(callbackPage(code,text));};
       if(!pending||pending.expected!==expected||pending.consumed)return reply(410,'이미 끝났거나 취소한 로그인이에요. SYNK 앱에서 다시 로그인해 주세요.');
       if(now()>expiresAt||now()<expiresAt-loginTimeoutMs){reply(410,'로그인 시간이 지났어요. SYNK 앱에서 다시 시작해 주세요.');void discard('AUTH_TIMEOUT');return;}
       if(req.method!=='GET'||req.headers.host!==redirect.host||req.socket.remoteAddress!=='127.0.0.1'||typeof req.url!=='string'||!req.url.startsWith(redirect.pathname+'?')||req.url.length>8192)return reply(400,'SYNK 앱이 연 로그인 주소가 아니에요. SYNK 앱에서 다시 로그인해 주세요.');
       const incoming=new URL(req.url,redirect.origin),params=incoming.searchParams;
       if(incoming.pathname!==redirect.pathname||incoming.hash||params.getAll('state').length!==1||params.get('state')!==state||[...params.keys()].some(k=>!['state','code','error','error_description'].includes(k))||params.has('code')===params.has('error')||params.getAll('code').length>1||params.getAll('error').length>1)return reply(400,'로그인 요청을 확인하지 못했어요. SYNK 앱에서 다시 로그인해 주세요.');
       const code=params.get('code');if(code&&code.length>4096||!code&&!params.get('error'))return reply(400,'로그인 코드를 확인하지 못했어요. SYNK 앱에서 다시 로그인해 주세요.');
-      pending.consumed=true;reply(200,'로그인 정보를 받았어요. 이 창을 닫고 SYNK 앱으로 돌아가 주세요.');server.close();
+      pending.consumed=true;reply(200,'로그인 정보를 SYNK 앱에 넘겼어요. 앱 창이 보이지 않으면 SYNK 앱 아이콘을 눌러 주세요. 이 탭은 닫아도 돼요.');server.close();
       if(params.has('error')){void discard(params.get('error')==='access_denied'?'AUTH_CANCELLED':'AUTH_FAILED');return;}
       void (async()=>{try{const next=await tokens({grant_type:'authorization_code',client_id:config.clientId,redirect_uri:config.redirectUri,code,code_verifier:verifier});check(expected);if(now()>expiresAt)throw fault('AUTH_TIMEOUT');await install(next,expected);closePending();}catch(error){if(expected===epoch){if(error.retryable){closePending();status='error';account=null;lastError=publicError(error);emit();}else await discard(error.code||'AUTH_FAILED');}}})();
     });

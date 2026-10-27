@@ -67,7 +67,7 @@ function realmScript(file){
 
 // Actual renderer handlers, including adversarial IPC ordering. This DOM double
 // is not layout, real authentication, or an operating-service assertion.
-async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bridgeOverrides={},initialPreferences=null,personalPreferences=null,storageEntries=[],native=true,libraryDOM=false}={}) {
+async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bridgeOverrides={},initialPreferences=null,personalPreferences=null,storageEntries=[],native=true,libraryDOM=false,navigation=false}={}) {
   const nodes=new Map(),subscriptions=new Map(),documentHandlers=new Map(),lifecycleHandlers=new Map(),windowHandlers=new Map(),timers=new Map(),ready=deferred();let currentAuth=initialAuth,timerId=0;
   function element(id) {
     if(!nodes.has(id)) {
@@ -97,7 +97,13 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   const launcher=realmScript('launcher.mjs'),continuity=realmScript('platform-continuity.mjs'),modules={};
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
-  const seams={convenience:{mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})}};
+  // navigation:true keeps each account's real route memory (convenience-state), driven the way convenience.mjs drives it.
+  const {createNavigation}=await import('../renderer/convenience-state.mjs');
+  const seams={convenience:{mountConvenience:options=>{
+    if(!navigation)return {navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}};
+    const nav=createNavigation({storage:options.storage,getAppIds:()=>options.getSnapshot().appIds,read:options.readRoute,apply:options.applyRoute});let owner=null;
+    return {navigate:route=>nav.navigate(route),refresh(){const next=options.getSnapshot().owner;if(owner!==next){owner=next;nav.owner(owner,owner?options.takeLanding(owner):null);}},capture:()=>nav.capture(),clientsChanged(){}};
+  }}};
   // The shipped continuity bundle runs in the same realm as the renderer (below), so mount, projection and
   // dispatch use this fixture's timers and storage. Every other launcher import is the real module.
   for(const specifier of launcher.imports)if(specifier!=='platform-continuity')modules[specifier]=seams[specifier]||await import('../renderer/'+specifier+'.mjs');
@@ -111,7 +117,7 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   vm.runInContext('structuredClone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value))',context);
   if(native&&bridge.accountRequest)vm.runInContext('synkDesktop.accountRequest=((request)=>async(...args)=>{const value=await request(...args);return value===undefined?undefined:JSON.parse(JSON.stringify(value));})(synkDesktop.accountRequest)',context);
   vm.runInContext('(function(){'+continuity.script+'\n})();',context,{filename:'desktop/renderer/platform-continuity.mjs'});vm.runInContext(launcher.script,context,{filename:'desktop/renderer/launcher.mjs'});
-  return {element,bridge,storage,document,lifecycleHandlers,ready:ready.promise,setAuth:value=>{currentAuth=value;},continuity:()=>vm.runInContext('continuity',context),continuityRoot:()=>element('view-home').beforeNodes[0],
+  return {element,bridge,storage,document,lifecycleHandlers,ready:ready.promise,setAuth:value=>{currentAuth=value;},view:()=>vm.runInContext('view',context),continuity:()=>vm.runInContext('continuity',context),continuityRoot:()=>element('view-home').beforeNodes[0],
     async flushLibrary(){for(let round=0;round<20;round++){const saves=[...timers].filter(([,timer])=>timer.delay===400);if(!saves.length)return;for(const [id,timer]of saves){timers.delete(id);timer.callback();}await settleLibrary();}assert.fail('library save did not settle');},
     beforeUnload(){const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};windowHandlers.get('beforeunload')?.(event);return event.defaultPrevented;},
     ids:()=>[...element('app-list').innerHTML.matchAll(/data-app="([^"]+)"/g)].map(match=>match[1]),
@@ -385,6 +391,50 @@ test('a sign-in finished in the browser closes the account dialog and names the 
   assert.equal(f.element('account-dialog').open,false);assert.equal(f.element('toast').textContent,'합성 student-a 님으로 로그인했어요.');
   // A later token refresh passes 'restoring' again and says nothing.
   f.element('toast').hidden=true;f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:2});f.emit('auth',account('student-a',['world'],{sessionGeneration:3}));assert.equal(f.element('toast').hidden,true);
+});
+// Each account keeps its own last screen for start-up, but a sign-out opens the guest home (not the guest's old place)
+// and a browser sign-in comes back to the screen it started from (not where that account signed out last time).
+test('a sign-out lands on the guest home and a sign-in on the screen it started from',async()=>{
+  const route=owner=>'synk-platform-route-v1:'+encodeURIComponent(owner);let generation=1;
+  // The main process's own order: prepareSignIn discards first (a plain signed-out event) and only then reports 'signing-in'.
+  const signIn=async()=>{f.emit('auth',{...signedOut,sessionGeneration:++generation});const signing={...signedOut,status:'signing-in',sessionGeneration:++generation};f.emit('auth',signing);return signing;};
+  const f=await fixture({initialAuth:signedIn,navigation:true,storageEntries:[[route('anonymous-local'),JSON.stringify({view:'downloads'})]],
+    bridgeOverrides:{authSignOut:async()=>{f.setAuth({...signedOut,sessionGeneration:++generation});return {ok:true,serverRevoked:true,serverSessionRevoked:true};},authSignIn:signIn}});
+  assert.equal(await f.ready,'true');assert.equal(f.view(),'home');
+  await f.click('footer-settings');assert.equal(f.view(),'settings');
+  await f.click('sign-out');assert.equal(f.view(),'home','not the saved guest place 「설치·업데이트」');assert.match(f.element('toast').textContent,/^로그아웃했어요\./);
+  assert.equal(JSON.parse(f.storage.get(route('student-a'))).view,'settings','the account still keeps its own place for the next start-up');
+  await f.click('download-shortcut');assert.equal(f.view(),'downloads');
+  await f.click('sign-in');assert.equal(f.view(),'home','the wait in the browser shows the home');
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:++generation});f.emit('auth',account('student-a',['world'],{sessionGeneration:++generation}));
+  assert.equal(f.view(),'downloads','back where the sign-in started, not the saved account place 「설정」');assert.equal(f.element('toast').textContent,'합성 student-a 님으로 로그인했어요.');
+  // A session the server ended also opens the guest home.
+  await f.click('footer-settings');f.emit('auth',{...signedOut,sessionGeneration:++generation,error:{code:'AUTH_REQUIRED',message:'SYNK ID로 다시 로그인해 주세요.'}});assert.equal(f.view(),'home');
+  // A cancelled sign-in stays where it started and leaves nothing behind: the next account restore goes to its own place.
+  await f.click('download-shortcut');await f.click('sign-in');f.emit('auth',{...signedOut,sessionGeneration:++generation,error:{code:'AUTH_CANCELLED',message:'로그인을 취소했어요.'}});assert.equal(f.view(),'downloads');
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:++generation});f.emit('auth',account('student-a',['world'],{sessionGeneration:++generation}));assert.equal(f.view(),'settings');
+  // A start-up restore still brings an account back to its own place.
+  const later=await fixture({initialAuth:{...signedOut,status:'restoring'},navigation:true,storageEntries:[[route('student-a'),JSON.stringify({view:'settings'})]]});assert.equal(await later.ready,'true');
+  later.emit('auth',account('student-a',['world']));assert.equal(later.view(),'settings');
+});
+// A sign-in that fails before the browser (the window could not open) leaves no landing for a later account restore.
+test('a sign-in that fails before the browser drops its landing',async()=>{
+  const route=owner=>'synk-platform-route-v1:'+encodeURIComponent(owner);
+  const f=await fixture({initialAuth:signedOut,navigation:true,storageEntries:[[route('student-a'),JSON.stringify({view:'settings'})]],bridgeOverrides:{authSignIn:async()=>{throw new Error('ipc failed');}}});
+  assert.equal(await f.ready,'true');await f.click('download-shortcut');await f.click('sign-in');assert.match(f.element('account-state').textContent,/로그인 창을 열지 못했어요/);
+  // That state is still a guest's: the library card's button is the app's own sign-in.
+  assert.equal(f.continuityRoot().querySelector('[data-connect-button]').textContent,'SYNK ID로 로그인');
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:2});f.emit('auth',account('student-a',['world'],{sessionGeneration:3}));assert.equal(f.view(),'settings');
+});
+// A browser sign-in whose new session could not be checked yet (a retryable 'error') can still finish through
+// 「계정 연결 다시 확인」, and then it comes back to where it started.
+test('a sign-in finished after a retryable check still lands where it started',async()=>{
+  const route=owner=>'synk-platform-route-v1:'+encodeURIComponent(owner);let generation=1;
+  const f=await fixture({initialAuth:signedOut,navigation:true,storageEntries:[[route('student-a'),JSON.stringify({view:'settings'})]],
+    bridgeOverrides:{authSignIn:async()=>{f.emit('auth',{...signedOut,sessionGeneration:++generation});const signing={...signedOut,status:'signing-in',sessionGeneration:++generation};f.emit('auth',signing);return signing;}}});
+  assert.equal(await f.ready,'true');await f.click('download-shortcut');await f.click('sign-in');
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:++generation});f.emit('auth',{...signedOut,status:'error',sessionGeneration:++generation,error:{code:'NETWORK',message:'서버에 연결하지 못했어요.',retryable:true}});
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:++generation});f.emit('auth',account('student-a',['world'],{sessionGeneration:++generation}));assert.equal(f.view(),'downloads');
 });
 // The start-up restore is not a sign-in.
 test('restoring a saved sign-in at start-up says nothing',async()=>{

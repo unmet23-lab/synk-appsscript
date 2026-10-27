@@ -12,7 +12,8 @@ export function createNavigation({storage,getAppIds=()=>[],read,apply,onChange=(
   function capture(){if(index>=0)entries[index]=clean(read());save();}
   function changed(){onChange({canBack:index>0,canForward:index<entries.length-1});}
   return {
-    owner(next){if(owner===next)return false;owner=next;entries=[];index=-1;let route={view:'home'};if(key())try{route=JSON.parse(storage.getItem(key()))||route;}catch{}entries=[clean(route)];index=0;apply(entries[0]);changed();return true;},
+    // Each account comes back to its own last place; a landing (a sign-in or sign-out the member just did) wins over it.
+    owner(next,landing=null){if(owner===next)return false;owner=next;entries=[];index=-1;let route={view:'home'};if(landing)route=landing;else if(key())try{route=JSON.parse(storage.getItem(key()))||route;}catch{}entries=[clean(route)];index=0;apply(entries[0]);if(landing)save();changed();return true;},
     navigate(route){capture();const next=clean(route);if(index>=0&&routeIdentity(entries[index])===routeIdentity(next)){entries[index]={...next,scroll:entries[index].scroll,pageScroll:entries[index].pageScroll};}else{entries=entries.slice(0,index+1);entries.push(next);if(entries.length>40)entries.shift();index=entries.length-1;}apply(entries[index]);save();changed();},
     move(delta){const next=index+delta;if(next<0||next>=entries.length)return false;capture();index=next;entries[index]=clean(entries[index]);apply(entries[index]);save();changed();return true;},
     capture,
