@@ -139,7 +139,7 @@ function earGeometry(side,low){
 }
 // 10-27: the felt master's small dragon wings, which replaced the raised arms. A brown felt bone runs from the
 // shoulder up to a rounded elbow and out to the tip, one rib hangs from the elbow to the middle scallop, and a
-// coral felt membrane fills below with a softly scalloped lower edge. Points are the master's front view [x, y];
+// olive felt membrane fills below with a softly scalloped lower edge. Points are the master's front view [x, y];
 // the wing plane is swept back from its root so the three-quarter view sees it at an angle.
 const WING={root:[.540,1.322],knob:[.669,1.452],tip:[.895,1.262],rib:[.730,1.110],low:[.568,1.055],attach:[.470,1.077],sweep:.14,z:-.06,bone:.046,elbow:.060,ribRadius:.024};
 function wingFrame(side){
@@ -183,7 +183,7 @@ function wingRibGeometry(side,low){
 }
 
 // 10-27: the felt master's dragon tail — out of the lower right side, a thick round root that tapers in a
-// gentle S to a soft rounded point. The coral felt spikes on its ridge are separate meshes (tailSpikes).
+// gentle S to a soft rounded point. The olive felt spikes on its ridge are separate meshes (placeSpikes).
 const TAIL_CURVE=[[.30,.80,-.20],[.55,.745,-.25],[.78,.655,-.235],[.95,.630,-.175],[1.06,.700,-.110],[1.105,.775,-.075]];
 const tailRadius=t=>Math.max(.006,.200*Math.pow(1-t,.45)*(1-.25*t));
 function tailCurve(){return new THREE.CatmullRomCurve3(TAIL_CURVE.map(p=>new THREE.Vector3(...p)));}
@@ -227,8 +227,8 @@ function earShade(x,y,normalZ){
 // wisps, not a standing pile. The surface takes the shared photographed felt (felt-coral.webp) by luminance only,
 // remapped to the master's cocoa fibres, over the wool normal map; a thin halo of short translucent fibres
 // softens the outline. Vertex colours carry a soft cloudy mottle, the ears' darker inside and the neck's shade.
-const FELT={dark:'#221715',light:'#76594c',coralDark:'#a84c4a',coralLight:'#f2a69c',range:[.20,.42],fuzz:{body:[7200,3800],ear:[460,240],tail:[1200,640],bone:[300,160],rib:[90,50],membrane:[280,150]},length:[.012,.042],opacity:.34};
-const FUZZ_BROWN=['#3a2925','#4d3a34','#5f4a42','#7a5d50','#8f7061','#6c605d','#7a4c3c'],FUZZ_CORAL=['#c2605c','#de8a80','#f0b0a6'];
+const FELT={dark:'#221715',light:'#76594c',wingDark:'#4a6127',wingLight:'#b9d07c',range:[.20,.42],fuzz:{body:[7200,3800],ear:[460,240],tail:[1200,640],bone:[300,160],rib:[90,50],membrane:[280,150]},length:[.012,.042],opacity:.34};
+const FUZZ_BROWN=['#3a2925','#4d3a34','#5f4a42','#7a5d50','#8f7061','#6c605d','#7a4c3c'],FUZZ_OLIVE=['#5d7a32','#88a64a','#bdd388'];
 function feltShade(geometry,{body=false,ear=false}={}){
  const position=geometry.getAttribute('position'),normal=geometry.getAttribute('normal'),colors=new Float32Array(position.count*3);
  for(let i=0;i<position.count;i++){
@@ -288,21 +288,22 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
  const brownFelt=new Set([bodyMaterial,earMaterial,tailMaterial,boneMaterial]);
  const clay=new THREE.MeshStandardMaterial({color:'#aaa398',roughness:.88,metalness:0});
  const silhouette=new THREE.MeshBasicMaterial({color:'#131313'});ownedMaterials.add(clay);ownedMaterials.add(silhouette);
- // The wing membranes and tail spikes: the same felt photo remapped to the master's soft pink coral.
- const coral=cocoaFelt(.6,.6,'coral',{base:kit.tailCoral||kit.feltBrown,dark:FELT.coralDark,light:FELT.coralLight,sheen:'#f4c4b8',vertexColors:false});
+ // The wing membranes and tail spikes: the same felt photo remapped to the olive of the master's eyes (10-27,
+ // so Kkamong keeps its own colour next to coral Mongle and navy Marin).
+ const wingFelt=cocoaFelt(.6,.6,'olive',{base:kit.feltBrown,dark:FELT.wingDark,light:FELT.wingLight,sheen:'#d6e2b0',vertexColors:false});
  function attach(geometry,mat,parent=group,{name='',eye=false}={}){ownedGeometry.add(geometry);const object=new THREE.Mesh(geometry,mat);object.name=name;object.castShadow=object.receiveShadow=true;parent.add(object);meshes.push({object,original:mat,eye});return object;}
  function ellipsoidMesh(radii,mat,position,parent=group,segments=32,eye=false){const object=attach(new THREE.SphereGeometry(1,segments,Math.max(12,Math.floor(segments*.68))),mat,parent,{eye});object.scale.set(...radii);object.position.set(...position);return object;}
  const body=feltShade(verticalLoft(BODY_PROFILE,{radial:low?48:80,rows:low?64:104}),{body:true});attach(body,bodyMaterial,group,{name:'kkamong-anatomical-body'});
  for(const side of [-1,1]){
   const name=side<0?'left':'right';attach(feltShade(earGeometry(side,low),{ear:true}),earMaterial,group,{name:`kkamong-${name}-rounded-ear`});
   const wing=new THREE.Group();wing.name=`kkamong-${name}-wing`;group.add(wing);wings.push(wing);
-  attach(wingMembraneGeometry(side,low),coral,wing,{name:`kkamong-${name}-wing-membrane`});
+  attach(wingMembraneGeometry(side,low),wingFelt,wing,{name:`kkamong-${name}-wing-membrane`});
   attach(feltShade(wingBoneGeometry(side,low)),boneMaterial,wing,{name:`kkamong-${name}-wing-bone`});attach(feltShade(wingRibGeometry(side,low)),boneMaterial,wing,{name:`kkamong-${name}-wing-rib`});
  }
  const tailRoot=new THREE.Group();tailRoot.name='kkamong-soft-tail';group.add(tailRoot);
  attach(feltShade(tailGeometry(low)),tailMaterial,tailRoot,{name:'kkamong-fabric-tail'});
  const spikeShape=spikeGeometry(low);ownedGeometry.add(spikeShape);
- let spikeIndex=0;placeSpikes(tailRoot,parent=>{const spike=new THREE.Mesh(spikeShape,coral);spike.name=`kkamong-tail-spike-${++spikeIndex}`;spike.castShadow=spike.receiveShadow=true;parent.add(spike);meshes.push({object:spike,original:coral,eye:false});return spike;});
+ let spikeIndex=0;placeSpikes(tailRoot,parent=>{const spike=new THREE.Mesh(spikeShape,wingFelt);spike.name=`kkamong-tail-spike-${++spikeIndex}`;spike.castShadow=spike.receiveShadow=true;parent.add(spike);meshes.push({object:spike,original:wingFelt,eye:false});return spike;});
  const iris=new THREE.MeshPhysicalMaterial({color:'#86a446',emissive:'#86a446',emissiveIntensity:.06,roughness:.23,clearcoat:1,clearcoatRoughness:.12,ior:1.48,metalness:0});
  const pupil=new THREE.MeshPhysicalMaterial({color:'#09080a',roughness:.10,clearcoat:1,clearcoatRoughness:.06,ior:1.5,metalness:0});
  const glint=new THREE.MeshBasicMaterial({color:'#fff9ee'});ownedMaterials.add(iris);ownedMaterials.add(pupil);ownedMaterials.add(glint);
@@ -314,13 +315,13 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
   const g=EYES.r/.095;ellipsoidMesh([.0205*g,.022*g,.006],glint,[-.027*g,.032*g,.086],eye,16,true);
  }
  const eyeCentres=eyes.map(eye=>eye.position.clone());
- // The fuzz halo: brown on the felt parts, coral on the wing membranes; none over the eyes or under the floor line.
+ // The fuzz halo: brown on the felt parts, olive on the wing membranes; none over the eyes or under the floor line.
  const fuzzMaterial=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:FELT.opacity,depthWrite:false});ownedMaterials.add(fuzzMaterial);
  let fuzzFibres=0;
  for(const record of meshes.filter(record=>brownFelt.has(record.original)||record.object.name.includes('wing-membrane'))){
   const {object}=record,name=object.name,kind=name==='kkamong-anatomical-body'?'body':name.includes('rounded-ear')?'ear':name==='kkamong-fabric-tail'?'tail':name.includes('wing-membrane')?'membrane':name.includes('wing-rib')?'rib':'bone';
   const floorY=grounded?BODY.groundY+.03:-Infinity,eyeR=EYES.r*1.2;
-  const geometry=feltFuzz(object.geometry,{count:FELT.fuzz[kind][low?1:0],seed:17+fuzz.length*31,palette:kind==='membrane'?FUZZ_CORAL:FUZZ_BROWN,length:kind==='body'||kind==='tail'?FELT.length:[.008,.024],skip:(point,normal)=>point.y<floorY||kind==='body'&&normal.z>.3&&eyeCentres.some(centre=>Math.hypot(point.x-centre.x,point.y-centre.y)<eyeR)});
+  const geometry=feltFuzz(object.geometry,{count:FELT.fuzz[kind][low?1:0],seed:17+fuzz.length*31,palette:kind==='membrane'?FUZZ_OLIVE:FUZZ_BROWN,length:kind==='body'||kind==='tail'?FELT.length:[.008,.024],skip:(point,normal)=>point.y<floorY||kind==='body'&&normal.z>.3&&eyeCentres.some(centre=>Math.hypot(point.x-centre.x,point.y-centre.y)<eyeR)});
   ownedGeometry.add(geometry);lineGeometries.add(geometry);fuzzFibres+=geometry.getAttribute('position').count/4;
   const lines=new THREE.LineSegments(geometry,fuzzMaterial);lines.name=`${name}-felt-fuzz`;lines.userData.decorativeFur=true;lines.raycast=()=>{};lines.frustumCulled=false;object.parent.add(lines);fuzz.push(lines);
  }
@@ -344,7 +345,7 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
  function metrics(){
   let geometryBytes=0,furBytes=0;for(const geometry of ownedGeometry){let bytes=geometry.index?.array.byteLength||0;for(const attribute of Object.values(geometry.attributes))bytes+=attribute.array.byteLength;geometryBytes+=bytes;if(lineGeometries.has(geometry))furBytes+=bytes;}
   const triangles=meshes.reduce((sum,{object})=>sum+Math.floor((object.geometry.index?.count||object.geometry.getAttribute('position').count)/3),0);
-  return {id:'kkamong',actual3D:true,productionAsset:false,contract:'kkamong-profile-shape-review-v1',revision:'felt-surface-r19',improvementPass:19,quality,surface:currentSurface,pose:grounded?'floor-rest':'reference',shapeMethod:'body-only-vertical-cross-section-loft',continuousBody:true,separateHands:false,anatomicalBounds:{...BODY,basis:'felt master silhouette with 5% shorter home body'},bodyBounds:{min:body.boundingBox.min.toArray(),max:body.boundingBox.max.toArray(),groundY:BODY.groundY},proportionAdjustment:{bodyHeightScale:BODY_HEIGHT_SCALE,roundHead:true,neckShade:true},eyes:{centerY:EYES.y,diameter:EYES.r*2,verticalDiameter:EYES.r*2.20,centerDistance:EYES.x*2,pupilRatio:EYES.pupilRatio,crownFraction:(BODY.crownY-EYES.y)/BODY.height,rotation:'gentle inward',centerZ:eyeZ},fur:{stage:'matted felt with a translucent fuzz halo',textureStatus:feltSource?'felt-coral luminance remapped to cocoa':'flat cocoa',textureLoaded:feltReady.value===1,fuzzFibres,segmentsPerFibre:2,geometryBytes:furBytes,lowAllocation:low},geometryBytes,triangles,lineSegments:fuzzFibres*2,disposed};
+  return {id:'kkamong',actual3D:true,productionAsset:false,contract:'kkamong-profile-shape-review-v1',revision:'olive-wings-r20',improvementPass:20,quality,surface:currentSurface,pose:grounded?'floor-rest':'reference',shapeMethod:'body-only-vertical-cross-section-loft',continuousBody:true,separateHands:false,anatomicalBounds:{...BODY,basis:'felt master silhouette with 5% shorter home body'},bodyBounds:{min:body.boundingBox.min.toArray(),max:body.boundingBox.max.toArray(),groundY:BODY.groundY},proportionAdjustment:{bodyHeightScale:BODY_HEIGHT_SCALE,roundHead:true,neckShade:true},eyes:{centerY:EYES.y,diameter:EYES.r*2,verticalDiameter:EYES.r*2.20,centerDistance:EYES.x*2,pupilRatio:EYES.pupilRatio,crownFraction:(BODY.crownY-EYES.y)/BODY.height,rotation:'gentle inward',centerZ:eyeZ},fur:{stage:'matted felt with a translucent fuzz halo',textureStatus:feltSource?'felt-coral luminance remapped to cocoa':'flat cocoa',textureLoaded:feltReady.value===1,fuzzFibres,segmentsPerFibre:2,geometryBytes:furBytes,lowAllocation:low},geometryBytes,triangles,lineSegments:fuzzFibres*2,disposed};
  }
  function dispose(){if(disposed)return;disposed=true;group.removeFromParent();ownedGeometry.forEach(value=>value.dispose());ownedMaterials.forEach(value=>value.dispose());ownedTextures.forEach(value=>value.dispose());group.clear();}
  // Initialise without requesting a frame from an owner that is still building.

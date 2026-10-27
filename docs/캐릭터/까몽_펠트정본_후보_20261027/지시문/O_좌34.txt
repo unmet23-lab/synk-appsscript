@@ -1,0 +1,9 @@
+Create ONE photograph (square, 1:1). Use the image generation tool once and output only that image.
+
+Reference image 1 is the master photograph of the mascot KKAMONG: a small dark-brown needle-felted wool toy (a cat-like creature with cat ears, olive-green glass bead eyes, two small felt dragon wings raised at its sides and a dragon tail with five felt spikes) on a plain white studio background. It is the three-quarter view (we see the toy's left side and front) — keep this angle.
+
+TASK
+Re-photograph exactly this toy with ONLY ONE CHANGE OF COLOUR: the two wing membranes and the five tail spikes, which are coral pink now, become a soft olive-green felt — the same olive green as the toy's glass bead eyes, a touch lighter and fresher like matcha (around #9AB35E), still matte needle felt with the same fibres. The dark-brown wing frames (the bones and the rib) stay brown. Everything else stays exactly as in reference 1: the body, its shape and size, the wool, the ears, the eyes, the wing and tail shapes, the pose, the camera angle, the framing, the white background, the light and the soft contact shadow.
+
+DO NOT
+No coral or pink anywhere any more. No letters, words, logos, props or other characters. Do not change any shape. No blur, no glow, no fog around the outline.

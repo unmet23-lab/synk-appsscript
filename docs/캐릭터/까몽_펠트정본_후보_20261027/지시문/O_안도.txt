@@ -1,0 +1,9 @@
+Create ONE photograph (square, 1:1). Use the image generation tool once and output only that image.
+
+Reference image 1 is a photograph of the mascot KKAMONG (a small dark-brown needle-felted wool toy with cat ears, two small felt dragon wings and a dragon tail with five felt spikes) showing one facial expression. Reference image 2 is its master photograph, which shows the correct colours.
+
+TASK
+Re-photograph reference 1 exactly — the same eyes and expression, the same body, ears, wing and tail shapes, pose, camera angle, framing, white background, light and soft contact shadow — with ONLY ONE CHANGE OF COLOUR: the two wing membranes and the five tail spikes, coral pink in reference 1, become the soft olive-green felt of reference 2 (the same olive green as the eyes, a touch lighter, like matcha). The dark-brown wing frames stay brown.
+
+DO NOT
+No coral or pink on the wings or the tail any more. No nose, no mouth. No letters, words, logos, props or other characters. Do not change any shape or the expression. No blur, no glow, no fog around the outline.

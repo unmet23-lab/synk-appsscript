@@ -1,0 +1,13 @@
+Create ONE photograph (square, 1:1). Use the image generation tool once and output only that image.
+
+Reference image 1 is the master photograph of the mascot KKAMONG: a small dark-brown needle-felted wool toy (a cat-like creature with cat ears, two small coral-pink felt dragon wings raised at its sides, and a dragon tail with coral-pink felt spikes) on a plain white studio background, front view. Reference image 2 is an OLDER picture of the same mascot (long cloudy fur, arms instead of wings, a coral patch on its tail) showing one facial expression — use it ONLY for the expression of the eyes; ignore its fur, arms and tail.
+
+TASK
+Re-photograph exactly the toy of reference 1 — the same body shape and size, wool, colours, ears, wings, dragon tail with its spikes, pose, camera angle, framing, white background, light and soft contact shadow — with ONLY ITS EYES changed to this expression:
+Winking: the toy's right eye (our left) is closed as a rounded upward arch of olive-green yarn; the toy's left eye (our right) stays an open olive-green glass bead eye.
+
+EYES
+The toy's eyes are part of the felt toy: open eyes are the same olive-green glass bead eyes as in reference 1 (large black pupil, one small white highlight); closed eyes are a short cord of the same olive-green wool yarn stitched onto the felt in the shape described, at the same place as the bead eyes. Keep the eyes the same size and position as reference 1 unless the expression says otherwise.
+
+DO NOT
+No nose, no mouth, no eyebrows, no whiskers, no blush unless described. No letters, words, logos, props or other characters. Do not change the body, ears, wings, tail or the camera angle. No blur, no glow, no fog around the outline.
