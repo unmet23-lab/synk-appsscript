@@ -173,6 +173,12 @@
 - 고침: 파일마다 앞 40초를 `loudnorm=print_format=json`으로 재 두고(`input_i`), 목표 LUFS(바탕 -28~-33, 발소리 · 비 -24)에서 뺀 값을 게인으로 준다. 0.3초짜리 스위치처럼 짧은 소리는 LUFS가 `-inf`라 `volumedetect`의 `max_volume`으로 목표 최고 dBFS에 맞춘다. 같은 파일을 여러 컷에 쓰면 `atrim` 시작을 컷마다 다르게. 끝 크기 맞추기는 두 번 잰다(`measured_*` + `linear=true`). 도구: `.tmp/contests-20261019/seoullo/anim/영상/소리.py`.
 - 다시 확인: 컷 구간마다 바탕만 뽑은 크기가 음악보다 10~14 LU 아래에 드는지.
 
+### ffmpeg 9에서 `-vsync`가 없어졌고, 음악을 늦게 넣으려고 건 `adelay` 앞뒤의 `afade`가 늦춤을 지우거나 음악을 통째로 무음으로 만든다 (2026-10-28 Claude)
+- 증상: ① ffmpeg 9.0.2(gyan full)에서 `-vsync 0`이 「Unrecognized option 'vsync'」. ② `[곡]afade=t=in:d=1.5,adelay=4933|4933,apad,atrim=0:75.33,…`의 늦춤이 먹지 않아 곡이 0초에 시작하고 70초에서 끝났다(`adelay`를 앞에 두고 `afade=t=in:st=4.9`로 바꿔도 같음). ③ 거기에 끝 페이드를 `areverse,afade=t=in,areverse`로 걸자 음악 줄기가 −70 LUFS(무음)가 됐고, 뒤의 `loudnorm`이 +10dB를 올려 바람 소리만 음악만큼 커졌다. ④ `loudnorm`(동적)은 바람만 있는 처음 5초를 −18dB까지 끌어올렸다.
+- 원인: ①은 판이 바뀌며 옵션이 빠짐. ②③은 확인 못 함 — `adelay`만 따로, `afade`만 따로는 정상이었다.
+- 고침: ① `-fps_mode passthrough`. ② 늦춤은 `anullsrc=r=48000:cl=stereo,atrim=0:<초>`를 앞에 `concat`으로 붙인다. ③ 끝 페이드는 `afade=t=out:st=<길이−1>:d=1`. ④ 섞은 소리를 `ebur128`로 한 번 재서 고정 게인 + `alimiter`로 맞춘다(`.tmp/contests-20261019/seoullo/nature/편집.py`).
+- 다시 확인: 음악 줄기만 따로 0.5초 RMS를 찍어 늦춘 앞부분이 −180dB, 길이가 영상 길이와 같은지.
+
 ## 색 맞춤(LUT·bt709 표시)
 
 ### `-color_primaries bt709 -color_trc bt709`를 줘도 원색·감마가 unknown으로 남는다
