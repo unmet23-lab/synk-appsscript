@@ -13,7 +13,7 @@ import { initialSupport, assertSupport, commandSupport, viewSupport, snapshotSup
 import { nearbyPlace } from './walk.mjs';
 import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
 import { emptyIndex, admit, record, indexLog, isFact, projection, validIndex, foldIndex } from './town/trail-index.mjs';
-import { emptyLedger, validLedger } from './town/ledger.mjs';
+import { emptyLedger, validLedger, grant, transfer, held, ITEM_BY_ID, LedgerError } from './town/ledger.mjs';
 import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback, setLessOften, setApproach, setTodayOther, todayOther,
   answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses, recordUse as recordLifeUse,
   observedFamily, mayAsk, recordAsk, firstAsk } from './town/prefs.mjs';
@@ -21,7 +21,7 @@ import { initialConsents, changeConsent, validConsents } from './town/consent.mj
 import { eventProblem, FAMILIES, relation } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten, ACTIVITY_MEMORY } from './town/memory.mjs';
-import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput } from './town/village.mjs';
+import { initialVillage, validVillage, GIVES_MAX, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput } from './town/village.mjs';
 import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
 import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf } from './town/cards.mjs';
 import { learnPrivate, hearsayFor, tell, privateOf, noteOf } from './town/knowledge.mjs';
@@ -29,7 +29,7 @@ import { createRng, hashString, seedKey } from './town/rng.mjs';
 import { PER_MILLE } from './town/state.mjs';
 import { SPOT_GROUPS } from './town/places.mjs';
 import { VISIT_IDLE_MS } from './presence.mjs';
-import { bandAt, BAND_IDS } from './town/clock.mjs';
+import { bandAt, BAND_IDS, clockAt, afterRainAt } from './town/clock.mjs';
 import { initialVisitBands, writeBand, setVisitBands, clearVisitBands, validVisitBands } from './town/visits.mjs';
 import { meanwhileLines } from './town/meanwhile.mjs';
 import { ACTIVITIES, ACTIVITY_BY_ID, activityOfCommand, initialActivities, restoreActivities, validActivities } from './town/activities/index.mjs';
@@ -859,7 +859,16 @@ export function viewFor(state) {
   if (state.asks?.open) view.ask = { key: state.asks.open.key, kind: state.asks.open.kind, ...(state.asks.open.family ? { family: state.asks.open.family } : {}) };
   // The tea order the screen draws (W8): its guests, what they asked (ids and values — the words are the screen's), who sits.
   if (state.activities?.['tea-order']) view.tea = ACTIVITY_BY_ID['tea-order'].view(state.activities['tea-order'], { nowMs: state.lifeHost?.lastForegroundAt ?? 0 });
+  // The gathering loop (W8b): what grows where now and what is left (as leaves), the basket and the field book from the
+  // ledger, the tea of the day, the cafe owner now — old screens ignore it.
+  if (state.day && state.village?.band && ACTIVITY_BY_ID.gather) view.gather = gatherView(state);
   return view;
+}
+function gatherView(state) {
+  const a = ACTIVITY_BY_ID.gather, v = state.village, ledger = state.ledger || emptyLedger();
+  const nowMs = Math.min(v.band.endMs - 1, Math.max(v.band.startMs, state.lifeHost?.lastForegroundAt ?? v.band.startMs));
+  const basket = [...new Set(ledger.inventory.map(line => line.itemId))].map(itemId => ({ item: itemId, qty: held(ledger, itemId) }));
+  return a.view(slotOf(state, a), { ...activityCtx(state, a, { nowMs }), basket, book: Object.keys(ledger.discoveries) });
 }
 export function snapshot(state) { assertState(state); return { state: copy(state), view: viewFor(state) }; }
 
@@ -894,14 +903,64 @@ const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_COR
 /** The level a scene's lines show at: the reading seat's stable level — W9's ladder plugs in here (now L2, the same as
  * the one-line texts, day-mood.mjs lineLevel). */
 const sceneLevel = () => 'L2';
-/** What an activity may read of the world at a command: only values the server gives (§2-3). */
+/** What an activity may read of the world at a command: only values the server gives (§2-3). The functions read only when
+ * called (W8b: who does what now, which card waits for the player, what the ledger holds). */
 function activityCtx(state, a, host, extra = {}) {
   const v = state.village, b = v.band, seed = v.seed ?? host.villageSeed ?? 'synk-town', nowMs = host.nowMs;
-  const segments = planOf(v).segments, paramsVer = state.policy?.paramsVer;
+  const segments = planOf(v).segments, paramsVer = state.policy?.paramsVer, ledger = state.ledger || emptyLedger();
+  let now = null;
+  const nowAt = () => (now ||= cardNow(state, nowMs));
   return { id: `T-${state.revision + 1}`, nowMs, villageSeed: seed, lifeDay: b.lifeDay, band: b.band, level: sceneLevel(state),
     paramsVer, params: paramsFor(paramsVer), location: dayPlace(state), raining: weatherAt(seed, nowMs) === 'rain',
     playerSeat: state.placement ? FT_SEATS[state.placement]?.spot ?? null : null,
-    busy: (spot, fromMs, toMs) => segments.some(seg => seg.spot === spot && seg.arriveMs < toMs && seg.endMs > fromMs), ...extra };
+    busy: (spot, fromMs, toMs) => segments.some(seg => seg.spot === spot && seg.arriveMs < toMs && seg.endMs > fromMs),
+    // W8b: the clock's facts now, where the walking player stands, a resident now, a card waiting for the player, the
+    // ledger's holdings (a device never states them), and what the activities tell each other (the tea of the day).
+    clock: clockFacts(v, seed, nowMs), walk: state.day?.walk?.enabled ? { x: state.day.walk.x, z: state.day.walk.z } : null,
+    resident: npc => residentNow(v, npc, nowAt().places[npc], nowMs),
+    takeable: card => nowAt().cards.some(c => c.card === card && CARD_BY_ID[card] && mayTake(CARD_BY_ID[card], c.status)),
+    holding: itemId => held(ledger, itemId), room: itemId => roomFor(ledger, itemId),
+    facts: activityFacts(state, b.lifeDay), ...extra };
+}
+/** The clock's facts a life activity reads (W8b — what grows): the band in my time, the season and the weather now and of
+ * the Korean date, and whether it is the span after a rain stops (from that moment until the band after the one it stopped
+ * in is over — §20-8 「비가 그친 뒤 처음 맞는 구간」). */
+function clockFacts(v, seed, nowMs) {
+  const c = clockAt({ villageSeed: seed, hostNowMs: nowMs, tz: v.tz });
+  return { band: c.band, season: c.season, weatherNow: c.weatherNow, weatherDay: c.weatherDay, afterRain: afterRainAt(seed, v.tz, nowMs) };
+}
+/** A resident now (placeAt): awake, where, doing which archetype, walking or arrived. */
+function residentNow(v, npc, at, nowMs) {
+  return { up: !!at && upFor(v, npc, nowMs), x: at?.x ?? null, z: at?.z ?? null, place: at?.to ?? null, spot: at?.spot ?? null,
+    archetype: at?.archetype ?? null, walking: !!at?.walking };
+}
+const roomFor = (ledger, itemId) => (ITEM_BY_ID[itemId]?.stackMax ?? 0) - (ledger.inventory.find(line => line.itemId === itemId && line.source === 'gather')?.qty ?? 0);
+/** What each activity tells the others for a life day (W8b: the gathering loop's tea of the day — the tea order reads it). */
+const activityFacts = (state, lifeDay) => Object.fromEntries(ACTIVITIES.filter(x => x.facts).map(x => [x.id, x.facts(slotOf(state, x), lifeDay)]));
+/** The ledger moves with the command that moved it (§20-7 ①): a grant's cause is the event that caused it (its id hashes the
+ * account — the village seed, the host's account id — the cause and the item, so a cause never pays twice); a gift moves
+ * every line of the item, one event a source. A grant past a line's limit changes nothing (the command fails whole). */
+function ledgerOps(state, ops, ids, marks) {
+  for (const op of ops) {
+    try {
+      if (op.grant) {
+        const { itemId, qty, cause } = op.grant;
+        const out = grant(state.ledger ||= emptyLedger(), { accountId: state.village.seed ?? 'synk-town', causeId: ids[cause], itemId, qty });
+        state.ledger = out.ledger;
+        for (const { id, kind, ...fields } of out.events) townEvent(state, kind, { ...fields, ...marks });
+      } else if (op.transfer) {
+        const { itemId, to } = op.transfer;
+        for (const line of (state.ledger ||= emptyLedger()).inventory.filter(row => row.itemId === itemId)) {
+          const out = transfer(state.ledger, { eventId: `E-${state.townSeq + 1}`, itemId, qty: line.qty, to, source: line.source });
+          state.ledger = out.ledger;
+          for (const { id, kind, ...fields } of out.events) townEvent(state, kind, { ...fields, ...marks });
+        }
+      }
+    } catch (error) {
+      if (!(error instanceof LedgerError)) throw error;
+      throw new TownError(error.code === 'stack-full' ? 'gather-full' : 'ledger-refused', error.code === 'stack-full' ? '바구니가 가득 찼어요.' : '바구니를 다시 확인해 주세요.', 409);
+    }
+  }
 }
 /** A card done with the player (§8-3 나와 함께): an event only those in it know (§9-2, G6), with the fields a relationship
  * is computed from (§20-1) — by CARD_CONFIRM's choice, or by the life activity the card opened (W8: C5 · R6). */
@@ -927,7 +986,15 @@ function openTakeFor(state, card, key, host, contactId = null) {
  * take of a card's order that closed (review F5). */
 function afterActivity(state, a, out, host, { inVisit }) {
   const marks = eventMarks(inVisit ? openVisit(state, host) : state.policy, { inVisit }), v = state.village;
-  for (const { kind, ...fields } of out.events) townEvent(state, kind, { ...fields, ...marks });
+  const ids = out.events.map(({ kind, ...fields }) => townEvent(state, kind, { ...fields, ...marks }));
+  // W8b (§20-7 ①·②): what an activity asks of the world besides its own slot — the ledger, a thing worn less from now (a
+  // time-ordered input of the band, like a take), a card it settles with the player, the life day's one thing done with a
+  // resident, and a use of the activity (its habit).
+  if (out.ledger?.length) ledgerOps(state, out.ledger, ids, marks);
+  if (out.gives?.length) v.gives = [...(v.gives || []), ...out.gives.map(g => ({ atMs: host.nowMs, object: g.object, relief: Math.min(999, g.relief), npc: g.npc }))].slice(-GIVES_MAX);
+  if (out.resolve) settleWith(state, a, out.resolve, host, { inVisit });
+  if (out.together) togetherWith(state, a, out.together, host, marks);
+  if (out.use) state.recentLifeUse = recordLifeUse(state.recentLifeUse || [], { useId: `${v.band.lifeDay}.${a.id}`, canonicalActivityId: a.canonicalActivityId, storyFamily: a.storyFamily, direct: true });
   if (out.completed?.card) {
     const take = (v.takes || []).find(t => t.card === out.completed.card.id && t.key === out.completed.card.key && ['with', 'paused'].includes(t.status));
     if (take && out.completed.served > 0) resolveTake(state, host, take, CARD_BY_ID[take.card], null, { inVisit });
@@ -947,6 +1014,31 @@ function afterActivity(state, a, out, host, { inVisit }) {
     const take = (v.takes || []).find(t => t.card === out.closed.card.id && t.key === out.closed.card.key && t.open);
     if (take) { take.open = false; if (take.status === 'with') take.status = 'paused'; }
   }
+}
+/** A card an activity settles with the player while it waits for the player (W8b: leaves into the jar settle C3 —
+ * deliver): the take opens, takes the activity's choice (the card's trace — the tea the leaves make), resolves and closes in
+ * the one command, so no resident is held for it; the plan knows it as a resolved take (takeCovers). Its event is the life
+ * day's thing done together for the activity. */
+function settleWith(state, a, r, host, { inVisit }) {
+  const card = CARD_BY_ID[r.card], waiting = card && cardNow(state, host.nowMs).cards.find(c => c.card === card.id && mayTake(card, c.status));
+  if (!waiting) return;
+  openTakeFor(state, card, waiting.key, host);
+  const take = state.village.takes.find(t => t.card === card.id && t.key === waiting.key && t.open);
+  take.choice = r.choice;
+  resolveTake(state, host, take, card, 'give', { inVisit });
+  take.open = false;
+  const slot = state.activities[a.id];
+  if (!slot.day?.[r.day]) slot.day = { ...slot.day, [r.day]: take.eventId };
+}
+/** The life day's one thing done with a resident by an activity that holds no one (W8b: a gift, picking beside her): its
+ * event (only those in it know — G6), the resident's knowing it privately (「잊어 주세요」), its id in the activity's day. */
+function togetherWith(state, a, t, host, marks) {
+  const v = state.village, b = v.band, slot = state.activities[a.id];
+  if (slot.day?.[t.day]) return;
+  const id = townEvent(state, t.kind, { public: false, actors: [...t.actors], place: t.place, lifeDay: b.lifeDay, band: b.band, atMs: host.nowMs, ...marks,
+    ...relation({ participantRole: t.roles, help: t.help, deliveredSegmentIds: [], canonicalActivityId: a.canonicalActivityId, storyFamily: a.storyFamily }) });
+  slot.day = { ...slot.day, [t.day]: id };
+  learnPrivate(v, { ref: `${b.lifeDay}.${a.id}`, activity: a.id, path: 'player', actors: [...t.actors], place: t.place });
 }
 /** Runs an activity's confirm rule and writes what it returns. */
 function runActivity(state, a, type, payload, host, extra = {}) {

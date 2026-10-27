@@ -438,7 +438,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       // one older than the world's window is compared with its receipt.
       const receipt = receipts.get(command?.id), recorded = !!receipt;
       const base = recorded && !state.commands.some(item => item.id === command.id) ? { ...state, commands: [receipt] } : state;
-      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|TEA_|GREET$)/.test(command.type)) {
+      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|TEA_|GATHER_|GREET$)/.test(command.type)) {
         host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
         host.ownerSurfaceId = presence.owner;

@@ -239,6 +239,10 @@ export function applyTake(vs, take) {
     place: placeOfSpot(card.spot), atMs: take.resolvedAt, startMs: take.resolvedAt, choice: take.choice });
 }
 
+/** The band's gifts as time-ordered items (W8b): after the segments and takes of the same instant, so a gift never reaches
+ * back before the moment it was given. */
+export const givesItems = input => (input.gives || []).filter(give => give.atMs >= input.startMs && give.atMs < input.endMs)
+  .map(give => ({ ms: give.atMs, npc: give.npc, rank: 1.6, give }));
 /** The band's shared state read from its final segments (§2-1 — the close and the view use this, the planner the same
  * steps while placing): triggers, segments by piece and the player's results, in time order (a decision's trigger
  * before the segment it placed, residents in their order). */
@@ -252,10 +256,12 @@ export function villageAfter(input, segments, log, { archetypes = ARCHETYPE_BY_I
     }),
     ...takes.filter(take => take.status === 'resolved' && take.resolvedAt >= input.startMs && take.resolvedAt < input.endMs)
       .map(take => ({ ms: take.resolvedAt, npc: CARD_BY_ID[take.card]?.owner ?? 'cafe-owner', rank: 1.5, take })),
+    ...givesItems(input),
   ].sort((a, b) => a.ms - b.ms || order(a.npc) - order(b.npc) || a.rank - b.rank);
   for (const item of items) {
     if (item.trigger) applyTrigger(vs, item.trigger);
     else if (item.take) applyTake(vs, item.take);
+    else if (item.give) applyGive(vs, item.give);
     else applySegment(vs, item.seg, { archetypes, segments, takes, first: item.first });
   }
   return vs;
@@ -297,8 +303,13 @@ export function choiceOk(card, choice, { placement = null } = {}) {
 }
 /** The relation fields of a card done with the player (§20-1 매핑): choosing, or watching for the sitting, the practice
  * and the night flowers — and a choice named watch is watching. */
+/** The player's leaves given to the jar's owner (W8b §20-8): the jar is worn that much less from that moment, never below none. */
+export function applyGive(vs, give) {
+  if (WEAR_OBJECTS.includes(give.object)) vs.wear[give.object] = Math.max(0, (vs.wear[give.object] ?? 0) - give.relief);
+}
+/** The relationship fields of a card done with the player — a gift that settled it (W8b: leaves into the jar) delivered. */
 export function playerRelation(card, choice) {
-  const role = choice === 'watch' ? 'watch' : card.paths.player.role;
+  const role = choice === 'watch' ? 'watch' : choice === 'give' ? 'deliver' : card.paths.player.role;
   return { participantRole: [role], help: { by: 'player', to: [card.owner, ...(card.paths.player.with || [])] },
     deliveredSegmentIds: [], canonicalActivityId: `card.${card.id}`, storyFamily: card.family };
 }

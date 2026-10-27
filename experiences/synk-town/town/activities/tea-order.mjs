@@ -114,9 +114,12 @@ export function judge(request, cup) {
   const got = { tea: cup.tea, temp: cup.vessel, sweet: cup.honey };
   return AXES.filter(axis => Object.hasOwn(request, axis) && request[axis] !== got[axis]);
 }
-/** The line a guest answers a served cup with, and what fills it (§11-3 reacting). */
-export function reactFor(g, cup, missed) {
+/** The line a guest answers a served cup with, and what fills it (§11-3 reacting). today: the tea of the day the player gave
+ * (W8b §20-8) — a guest pleased with a cup of it says something of that tea. */
+export function reactFor(g, cup, missed, today = null) {
   if (!missed.length) {
+    const special = cup.tea === 'today' && today?.tea ? line('react', w => w.is === 'today' && w.tea === today.tea) : null;
+    if (special) return { line: special, values: {} };
     if (g.regular && g.note) return { line: line('regular', w => w.is === 'match'), values: {} };
     if (!Object.hasOwn(g.request, 'sweet')) return { line: line('react', w => w.is === 'match' && w.free === 'sweet' && w.value === cup.honey), values: {} };
     if (!Object.hasOwn(g.request, 'temp')) return { line: line('react', w => w.is === 'match' && w.free === 'temp' && w.value === cup.vessel), values: {} };
@@ -160,7 +163,9 @@ export function valid(slot) {
     && !!slot.regular && typeof slot.regular.met === 'boolean' && nat(slot.regular.since)
     && (slot.regular.pref === null || isId(slot.regular.pref.frame) && okRequest(slot.regular.pref.request))
     && Array.isArray(slot.seated) && slot.seated.every(s => isId(s.who) && isId(s.spot) && Number.isSafeInteger(s.fromMs) && Number.isSafeInteger(s.toMs))
-    && (slot.day === null || nat(slot.day.lifeDay) && nat(slot.day.requests) && (slot.day.together === null || isId(slot.day.together)));
+    && (slot.day === null || nat(slot.day.lifeDay) && nat(slot.day.requests) && (slot.day.together === null || isId(slot.day.together))
+      // W8b: the gift a guest asked for (its event), said once — absent in an older slot.
+      && (slot.day.found === undefined || slot.day.found === null || isId(slot.day.found)));
 }
 export const restore = raw => (raw && valid(raw) ? raw : initial());
 
@@ -211,6 +216,13 @@ function open(slot, ctx) {
   slot.regular = regularNow ? { ...slot.regular, met: true, since: 0 } : { ...slot.regular, since: slot.regular.since + 1 };
   slot.open = { id: ctx.id, kind: 'order', card: ctx.card ? { id: ctx.card.id, key: ctx.card.key } : null, level: ctx.level, lifeDay: ctx.lifeDay, band: ctx.band,
     openedAt: ctx.nowMs, completed: null, guests };
+  // A guest asks for the tea of the day the player's leaves made (W8b §20-8): the cafe owner says so once a gift-day —
+  // 「손님이 오늘의 차를 찾았어요.」 (she was given them, so she knows — G6). Petals alone make no tea (backend review GA2).
+  const today = ctx.facts?.gather?.today, gift = today?.tea ? today.gift ?? null : null;
+  if (gift && guests.some(g => g.request.tea === 'today')) {
+    const day = slot.day?.lifeDay === ctx.lifeDay ? slot.day : { lifeDay: ctx.lifeDay, requests: 0, together: null };
+    if (day.found !== gift) { slot.day = { ...day, found: gift }; slot.open.found = true; }
+  }
 }
 function addAsks(s, asks) {
   if (asks === undefined) return true;
@@ -251,7 +263,7 @@ export function apply(current, command, ctx) {
       const where = s.kind === 'one-cup' ? ctx.ownerPlace : 'cafe';
       if (ctx.location !== where) return fail('tea-too-far', s.kind === 'one-cup' ? '잔을 들고 가까이 가서 드려 주세요.' : '찻집에서 내 주세요.');
       const missed = s.kind === 'one-cup' ? [] : judge(g.request, p.cup);
-      g.react = reactFor(g, p.cup, missed);
+      g.react = reactFor(g, p.cup, missed, ctx.facts?.gather?.today);
       if (missed.length) {
         g.tries += 1;
         if (g.tries >= P(ctx.paramsVer).ownerAfter && g.owner === null) g.owner = 'asked';
@@ -308,7 +320,7 @@ export function results(slot) {
 export function view(slot, { nowMs, nextFirst = true } = {}) {
   const s = slot.open;
   return {
-    open: s ? { id: s.id, kind: s.kind, card: s.card, level: s.level, done: s.completed !== null,
+    open: s ? { id: s.id, kind: s.kind, card: s.card, level: s.level, done: s.completed !== null, found: s.found === true,
       guests: s.guests.map(g => ({ slot: g.slot, who: g.who, regular: g.regular, frame: g.frame, note: g.note, request: { ...g.request },
         tries: g.tries, owner: g.owner, react: g.react, done: g.done && { by: g.done.by, spot: g.done.spot, takeaway: g.done.by === 'player' && s.kind === 'order' && !g.done.spot } })) } : null,
     seated: slot.seated.filter(x => x.toMs > nowMs).map(x => ({ who: x.who, spot: x.spot })),

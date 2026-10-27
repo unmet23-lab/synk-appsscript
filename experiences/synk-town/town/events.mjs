@@ -38,6 +38,11 @@ export const KINDS = Object.freeze({
   // … and one guest's request finished: the result place the learning adapter (W9) reads — ids and values, no words (G7).
   'tea.request': { order: id, guest: id, who: id, level: v => ['L1', 'L2', 'L3', 'L4'].includes(v), by: v => ['player', 'owner'].includes(v),
     result: v => ['made', 'owner', 'stopped'].includes(v), tries: v => Number.isSafeInteger(v) && v >= 0, lifeDay: Number.isSafeInteger },
+  // W8b (§20-8): a leaf picked (the cause of its grant — not social, no actors), and the life day's one gift to the cafe
+  // owner and one picking beside her — only those in them know, never news (G6).
+  'gather.picked': { spot: id, item: id, lifeDay: Number.isSafeInteger, band: id, alongside: v => typeof v === 'boolean' },
+  'gather.given': { public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
+  'gather.together': { public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
 });
 
 /** The relationship fields of an event the player took part in, checked (§20-1). */

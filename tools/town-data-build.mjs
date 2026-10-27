@@ -322,7 +322,9 @@ export function validateTeaLines(docs, tea) {
       if (named.join() !== open) fail(`요청 틀 ${e.id}의 빈칸(${named.join()})이 정할 축(${open})과 달라요.`);
     } else if (w.part === 'react') {
       const ok = npc === 'guest' && (w.is === 'match' && (w.free === undefined || w.free === 'sweet' && valueOk('sweet', w.value) || w.free === 'temp' && valueOk('temp', w.value))
-        || w.is === 'differ' && (w.axis === 'tea' || w.axis === 'temp' && valueOk('temp', w.want) || w.axis === 'sweet' && ['less', 'more'].includes(w.dir)) || w.is === 'takeaway');
+        || w.is === 'differ' && (w.axis === 'tea' || w.axis === 'temp' && valueOk('temp', w.want) || w.axis === 'sweet' && ['less', 'more'].includes(w.dir)) || w.is === 'takeaway'
+        // W8b: a guest pleased with the tea of the day the player's gift made — one line per tea a gift makes.
+        || w.is === 'today' && ['green', 'mint', 'chrysanthemum'].includes(w.tea));
       if (!ok || (named.length && !(w.is === 'differ' && w.axis === 'tea' && named.join() === 'tea'))) fail(`찻집 반응 ${e.id}`);
     } else if (w.part === 'regular') { if (npc !== 'guest' || !['usual', 'match'].includes(w.is) || named.length) fail(`단골 줄 ${e.id}`); }
     else if (w.part === 'owner') { if (npc !== 'cafe-owner' || !['offer', 'took', 'finish', 'done'].includes(w.is) || named.length) fail(`주인 줄 ${e.id}`); }
@@ -365,8 +367,60 @@ export function validateItems(data, places) {
   return data;
 }
 
+/** The gathering loop's table (town/data/gather.json, W8b §20-8): each gather spot's name and plant, each gathered item's
+ * name, empty-cell line, when it grows (clock rules only — no chance) and look, the teas a gift makes and where gifts go.
+ * Every gathered item of items.json has a row and every row is a gathered item; a tea an item makes is named here. */
+export const GATHER_GROWS = Object.freeze(['bands', 'seasons', 'weatherNow', 'weatherDay', 'afterRain']);
+export const GATHER_SHAPES = Object.freeze(['leaf', 'dew', 'mint', 'flower', 'petal']);
+export function validateGather(data, items, places, cards, archetypes) {
+  const text = (v, max = 40) => typeof v === 'string' && v.trim().length > 0 && v.length <= max && !/[0-9]/.test(v);
+  const color = v => /^#[0-9a-f]{6}$/.test(v ?? '');
+  const gathered = items.items.filter(item => item.sources.includes('gather'));
+  const spots = places.spots.filter(spot => spot.kind === 'gather').map(spot => spot.id);
+  if (!data || Object.keys(data.spots || {}).sort().join() !== [...spots].sort().join()
+    || !Object.values(data.spots).every(s => text(s.label, 20) && ['tea', 'pot', 'wall'].includes(s.plant))) fail('gather.json spots(채집 자리 셋)');
+  if (Object.keys(data.items || {}).sort().join() !== gathered.map(item => item.id).sort().join()) fail('gather.json items(채집 재료 모두)');
+  const BANDS = ['morning', 'day', 'evening', 'night'], SEASONS = ['spring', 'summer', 'autumn', 'winter'];
+  for (const [id, row] of Object.entries(data.items)) {
+    const g = row.grows || {};
+    if (!text(row.name, 12) || !text(row.hint, 40) || !Object.keys(g).length || !Object.keys(g).every(k => GATHER_GROWS.includes(k))
+      || (g.bands !== undefined && !(Array.isArray(g.bands) && g.bands.length && g.bands.every(b => BANDS.includes(b))))
+      || (g.seasons !== undefined && !(Array.isArray(g.seasons) && g.seasons.length && g.seasons.every(s => SEASONS.includes(s))))
+      || (g.weatherNow !== undefined && !['clear', 'rain'].includes(g.weatherNow))
+      || (g.weatherDay !== undefined && !['clear-day', 'rain-day', 'pm-rain', 'am-rain-clearing', 'evening-shower'].includes(g.weatherDay))
+      || (g.afterRain !== undefined && g.afterRain !== true)
+      || !GATHER_SHAPES.includes(row.look?.shape) || !color(row.look?.color)) fail(`gather.json items.${id}`);
+  }
+  const teas = new Set(gathered.map(item => item.tea).filter(tea => tea !== 'petal'));
+  if (Object.keys(data.teas || {}).sort().join() !== [...teas].sort().join() || !Object.values(data.teas).every(t => text(t.name, 8) && color(t.color))) fail('gather.json teas(재료가 내는 차)');
+  if (!text(data.petal?.label, 12)) fail('gather.json petal');
+  const card = cards.cards.find(c => c.id === data.tinCard);
+  if (!card || card.trigger.kind !== 'wear' || card.trigger.object !== data.tin || card.owner !== data.owner) fail('gather.json tin · tinCard(잎 통 마모 카드)');
+  if (!archetypes.some(a => a.id === data.picking?.archetype) || !places.places.some(p => p.id === data.picking?.place)) fail('gather.json picking');
+  return data;
+}
+/** The gathering loop's lines (kind gather, W8b): the cafe owner's four (a gift, a gift that settles C3, a guest who asked for
+ * the tea of the day, picking beside her) and the field book's description of each gathered item. */
+export function validateGatherLines(docs, gather) {
+  const lines = docs.flat().filter(entry => entry?.kind === 'gather'), ids = new Set(), LV = ['L1', 'L2', 'L3', 'L4'];
+  for (const e of lines) {
+    const [npc, kind, key, n] = String(e.id).split('.'), w = e.when || {};
+    if (kind !== 'gather' || n !== '1' || ids.has(e.id) || e.npc !== npc || !LV.every(l => typeof e.levels?.[l] === 'string')) fail(`채집 줄 ${e.id}`);
+    ids.add(e.id);
+    const ok = w.part === 'owner' ? npc === 'cafe-owner' && ['gift', 'c3', 'found', 'with'].includes(w.is) && key === w.is
+      : w.part === 'book' && npc === 'village' && Object.hasOwn(gather.items, w.item) && key === `desc-${w.item}`;
+    if (!ok) fail(`채집 줄 ${e.id}의 when`);
+  }
+  if (lines.length) {
+    const missing = [...['gift', 'c3', 'found', 'with'].filter(is => !lines.some(e => e.when?.part === 'owner' && e.when.is === is)),
+      ...Object.keys(gather.items).filter(item => !lines.some(e => e.when?.part === 'book' && e.when.item === item))];
+    if (missing.length) fail(`채집 줄이 모자라요: ${missing.join(', ')}`);
+  }
+  return lines.map(e => ({ id: e.id, npc: e.npc, kind: e.kind, when: e.when, levels: e.levels }));
+}
+
 const RESIDENT_IDS = ['cafe-owner', 'workshop-owner', 'researcher'];
-const TRIGGERS = ['wear', 'rain-start', 'rain-stop', 'after-rain', 'state', 'count', 'night-clear', 'season-leaf', 'after', 'rush', 'first-visit'];
+const TRIGGERS =['wear', 'rain-start', 'rain-stop', 'after-rain', 'state', 'count', 'night-clear', 'season-leaf', 'after', 'rush', 'first-visit'];
 const ROLES = ['choose', 'make', 'deliver', 'delegate', 'watch'];
 const FAMILIES = ['cafe-life', 'workshop-life', 'greenhouse-life'];
 const word = value => typeof value === 'string' && /^[a-z][a-z0-9-]{0,30}$/.test(value);
@@ -544,13 +598,16 @@ export function build() {
   const tea = validateTea(read('tea.json')), { $comment: teaNote, ...teaTable } = tea, teaLines = validateTeaLines(lineDocs, tea);
   const evalConsent = validateEvalConsent(JSON.parse(fs.readFileSync(EVAL_CONSENT_FILE, 'utf8')));
   const askLines = validateAskLines(lineDocs);
+  const { $comment: gatherNote, ...gather } = validateGather(read('gather.json'), { items }, placesData, cardsData, archetypes);
+  const gatherLines = validateGatherLines(lineDocs, gather);
   // One record per line keeps the generated diff as readable as the source.
   const rows = list => (list.length ? `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]` : '[]');
   const body = `{\n  places: ${rows(places)},\n  spots: ${rows(spots)},\n  groups: ${JSON.stringify(groups)},\n`
     + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n`
     + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  stay: ${JSON.stringify(stay)},\n  music: ${JSON.stringify(musicShown)},\n  moodLines: ${rows(moodLines)},\n`
     + `  cards: ${rows(cardsData.cards)},\n  pairs: ${rows(pairsData.pairs)},\n  chatSpots: ${JSON.stringify(pairsData.chatSpots)},\n  townLines: ${rows(townLines)},\n`
-    + `  tea: ${JSON.stringify(teaTable)},\n  teaLines: ${rows(teaLines)},\n  evalConsent: ${JSON.stringify(evalConsent)},\n  askLines: ${rows(askLines)},\n}`;
+    + `  tea: ${JSON.stringify(teaTable)},\n  teaLines: ${rows(teaLines)},\n  evalConsent: ${JSON.stringify(evalConsent)},\n  askLines: ${rows(askLines)},\n`
+    + `  gather: ${JSON.stringify(gather)},\n  gatherLines: ${rows(gatherLines)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -576,6 +633,8 @@ export function build() {
     'export const TEA_LINES = data.teaLines;',
     'export const EVAL_CONSENT = data.evalConsent;',
     'export const ASK_LINES = data.askLines;',
+    'export const GATHER = data.gather;',
+    'export const GATHER_LINES = data.gatherLines;',
     '',
   ].join('\n');
 }

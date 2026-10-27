@@ -10,7 +10,7 @@ import { bandAt, clockAt, lifeDayStartAt, recordOffset, validOffset, BAND_IDS, D
 import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
 import { paramsFor } from './params.mjs';
 import { wake } from './state.mjs';
-import { START_OBJECTS, CARD_BY_ID, validCards, validWear, validTraces, pairKeyOf } from './cards.mjs';
+import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf } from './cards.mjs';
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
 import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
 import { habitOf, HABIT_BANDS } from './visits.mjs';
@@ -58,6 +58,11 @@ const validTakes = takes => takes === undefined || Array.isArray(takes) && takes
     && (t.choice === undefined || t.choice === null || id(t.choice)) && (t.status !== 'resolved' || integer(t.resolvedAt) && t.resolvedAt >= t.at && id(t.ref))
     && (t.endAt === undefined || integer(t.endAt) && t.endAt >= t.at) && (t.eventId === undefined || /^E-\d+$/.test(t.eventId))
     && (t.open === undefined || typeof t.open === 'boolean') && (t.contactId === undefined || id(t.contactId)));
+/** The player's gifts into the village's things (W8b §20-8): when, which thing, how much less worn, whose — kept until their
+ * band has closed, read by the band as time-ordered inputs like the takes (an old world has none). */
+export const GIVES_MAX = 16;
+const validGives = gives => gives === undefined || Array.isArray(gives) && gives.length <= GIVES_MAX
+  && gives.every(g => plain(g) && integer(g.atMs) && WEAR_OBJECTS.includes(g.object) && Number.isSafeInteger(g.relief) && g.relief > 0 && g.relief <= 999 && npcId(g.npc));
 /** The pairs' long state (§9-1): their scenes by family, agreements, the small difference's step, when they last met. */
 function validPairs(pairs) {
   const max = paramsFor().pairs.frictionMax;
@@ -82,7 +87,7 @@ export function validVillage(v) {
     && (b.pairs === undefined || validPairs(b.pairs)) && (b.marks === undefined || validMarks(b.marks))
     // W6 (§10-3): the visit habit the band was planned with — only the bands it fills.
     && (b.visitHabit === undefined || HABIT_BANDS.includes(b.visitHabit)))) return false;
-  if (!validTakes(v.takes) || !validKnowledge(v) || !validChanges(v.changes)) return false;
+  if (!validTakes(v.takes) || !validGives(v.gives) || !validKnowledge(v) || !validChanges(v.changes)) return false;
   if (!Array.isArray(v.reservations) || v.reservations.length > RESERVATIONS_MAX || !v.reservations.every(r => plain(r) && id(r.id) && npcId(r.npc)
     && integer(r.fromMs) && (r.toMs === null || integer(r.toMs) && r.toMs >= r.fromMs) && id(r.by) && spotId(r.spot)
     && (r.seat === undefined || spotId(r.seat))
@@ -107,7 +112,9 @@ export function bandInput(v, b = v.band, visitEnd = null) {
     .map(t => (t.endAt === undefined && t.status !== 'resolved' && visitEnd !== null && t.at <= visitEnd ? { ...t, endAt: visitEnd } : t))
     .map(({ card, key, at, status, endAt, resolvedAt, choice }) => ({ card, key, at, status, ...(endAt !== undefined ? { endAt } : {}),
       ...(resolvedAt !== undefined ? { resolvedAt } : {}), ...(choice ? { choice } : {}) }));
-  return { villageSeed: v.seed, lifeDay: b.lifeDay, band: b.band, startMs: b.startMs, endMs: b.endMs, dayStartMs: b.dayStartMs,
+  // W8b: the player's gifts in the band, in time order — only when there are some, so an old band's input is as it was.
+  const gives = (v.gives || []).filter(g => g.atMs >= b.startMs && g.atMs < b.endMs).map(({ atMs, object, relief, npc }) => ({ atMs, object, relief, npc }));
+  return { villageSeed: v.seed, lifeDay: b.lifeDay, band: b.band, startMs: b.startMs, endMs: b.endMs, dayStartMs: b.dayStartMs, ...(gives.length ? { gives } : {}),
     planCmdRev: b.planCmdRev, weatherTomorrow: clock.weatherTomorrow, season: clock.season, visitHabit: b.visitHabit ?? null,
     residents: b.residents, objects: b.objects,
     // W5: the village the band starts from (absent in an old world: every card idle, nothing worn) and the player's takes.
@@ -253,6 +260,8 @@ export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = nul
     // A take that ended with the visit or was done leaves once its band has closed (the card has moved on).
     // A result still on screen stays until the player closes it.
     if (v.takes) v.takes = v.takes.filter(t => t.open || !(t.status === 'resolved' ? t.resolvedAt < b.endMs : t.endAt !== undefined && t.endAt <= b.endMs));
+    // A gift has reached the band's end wear (W8b): the next band starts from it.
+    if (v.gives) v.gives = v.gives.filter(g => g.atMs >= b.endMs);
     // Promises kept in the band are done; one the rain put off moves to the next band (§4-5).
     const deferred = new Set(out.deferredPromises.map(p => p.id)), kept = new Set(out.segments.filter(s => s.promise).map(s => s.promise));
     const cut = nowMs - b.endMs > ABSENCE_LIMIT_MS, nextAt = cut ? nowMs - ABSENCE_LIMIT_MS : b.endMs;

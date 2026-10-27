@@ -1,0 +1,25 @@
+{
+  "$comment": "채집 고리(세로 조각 설계 §20-8, W8b)의 표 — 자리 · 재료의 화면 글과 나는 때, 드린 잎이 가는 물건, 오늘의 차 이름. 재료의 정의(보관 · 한도 · 출처 · 자리 · 차)는 items.json, 하루 몫 · 닿는 거리 · 잎 통 마모 줄임은 params.json의 gather 묶음이다. 나는 때는 시계로만 정한다 — 구간(내 시각) · 지금 날씨 · 그 한국 날짜의 날씨 꼴 · 한국 달의 계절 · 「비가 그친 때부터 그다음 구간이 끝날 때까지」. 무작위 희귀 확률이 없다(경제:479). 이름 · 빈칸 한 줄 · 자리 이름은 화면 글이라 판이 없고, 도감 설명과 찻집 주인의 줄은 lines/gather.json의 네 판이다. look은 화면 판의 SVG 모양(잎 · 이슬 잎 · 박하 · 꽃 · 꽃잎)과 색이다.",
+  "tin": "leaf-jar",
+  "tinCard": "C3",
+  "owner": "cafe-owner",
+  "picking": { "archetype": "pick-leaves", "place": "greenhouse" },
+  "spots": {
+    "greenhouse.bed-edge": { "label": "온실 화단 가장자리", "plant": "tea" },
+    "cafe.pots": { "label": "찻집 화분", "plant": "pot" },
+    "lane.wall": { "label": "골목 담장 아래", "plant": "wall" }
+  },
+  "items": {
+    "leaf-young": { "name": "어린 찻잎", "hint": "아침이나 낮에 온실에서 볼 수 있어요", "grows": { "bands": ["morning", "day"] }, "look": { "shape": "leaf", "color": "#a6cf6b" } },
+    "leaf-dew": { "name": "이슬 맺힌 잎", "hint": "아침 비가 그친 날, 맑은 아침에 볼 수 있어요", "grows": { "bands": ["morning"], "weatherDay": "am-rain-clearing", "weatherNow": "clear" }, "look": { "shape": "dew", "color": "#8cc27a" } },
+    "mint": { "name": "박하 잎", "hint": "낮이나 저녁, 맑을 때 찻집 화분에서 볼 수 있어요", "grows": { "bands": ["day", "evening"], "weatherNow": "clear" }, "look": { "shape": "mint", "color": "#74c49a" } },
+    "chrysanthemum": { "name": "노란 국화", "hint": "가을에 찻집 화분에서 볼 수 있어요", "grows": { "seasons": ["autumn"] }, "look": { "shape": "flower", "color": "#f0c43f" } },
+    "petal-rain": { "name": "비 온 뒤 꽃잎", "hint": "비가 그친 뒤에 골목 담장 아래에서 볼 수 있어요", "grows": { "afterRain": true, "weatherNow": "clear" }, "look": { "shape": "petal", "color": "#efb3c6" } }
+  },
+  "teas": {
+    "green": { "name": "녹차", "color": "#93b350" },
+    "mint": { "name": "박하차", "color": "#6db78f" },
+    "chrysanthemum": { "name": "국화차", "color": "#e2b33a" }
+  },
+  "petal": { "label": "꽃잎을 띄운" }
+}

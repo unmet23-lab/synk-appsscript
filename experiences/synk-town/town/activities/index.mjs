@@ -4,8 +4,9 @@
  * what ends with a visit, and writes the events it returns — so an activity never repeats scope, holds, events or
  * the card take. */
 import teaOrder from './tea-order.mjs';
+import gather from './gather.mjs';
 
-export const ACTIVITIES = Object.freeze([teaOrder]);
+export const ACTIVITIES = Object.freeze([teaOrder, gather]);
 export const ACTIVITY_BY_ID = Object.freeze(Object.fromEntries(ACTIVITIES.map(a => [a.id, a])));
 const BY_COMMAND = new Map(ACTIVITIES.flatMap(a => Object.keys(a.commands).map(type => [type, a])));
 /** The activity a command belongs to, or null. */

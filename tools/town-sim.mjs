@@ -26,6 +26,7 @@ import { SPOT_BY_ID, SPOT_GROUPS } from '../experiences/synk-town/town/places.mj
 import { ROUTINES, CARDS, TOWN_LINES } from '../experiences/synk-town/town/data.gen.mjs';
 import { initialVisitBands, writeBand } from '../experiences/synk-town/town/visits.mjs';
 import { meanwhileLines } from '../experiences/synk-town/town/meanwhile.mjs';
+import { GATHER, ITEM_BY_ID as GATHERED, grows } from '../experiences/synk-town/town/activities/gather.mjs';
 import { FORBIDDEN, ROLE_LABELS } from './town-lines-check.mjs';
 const cardsById = cards.CARD_BY_ID;
 
@@ -36,7 +37,8 @@ const MINUTE = 60_000, HOUR = 60 * MINUTE, DAY = 24 * HOUR;
 /** 2026-10-01T00:00Z. 시작을 고정해 같은 입력이면 같은 결과다. */
 export const SIM_START_MS = 1790812800000;
 export const TIMEZONES = Object.freeze([540, 480, 420, -300]);
-export const PROFILES = Object.freeze(['absent', 'daily-random', 'night-only', 'away-7', 'daily-all']);
+// W8b: the sixth — comes daily, picks what grows and gives it to the cafe owner (§20-8; takes no card).
+export const PROFILES = Object.freeze(['absent', 'daily-random', 'night-only', 'away-7', 'daily-all', 'daily-gather']);
 /** 내 시각 기준 구간(§4-2). 생활일은 05:00에 시작한다. 값은 생활일 시작부터의 분. */
 export const BANDS = Object.freeze([
   { id: 'morning', from: 0, to: 6 * 60 },
@@ -92,18 +94,44 @@ const ROUTINE_SPAN_MIN = 120;
  * 듣기가 구간을 넘어 이어진다(W5 검토 F13). 「나와 함께」는 매일 와서 다 받는 모습(accept)만 한다: 방문 안에서 카드가 생기면 1분 뒤 열고
  * 2분 뒤 첫 고르기로 확정하고 1분 뒤 닫는다 — core의 CARD_OPEN·CONFIRM·CLOSE가 마을에 남기는 것(take·주인을 붙잡는 예약·함께한 일
  * 표시·당사자의 앎)과 같다. 명령이 없는 모습은 마을이 같으므로(§15-2) 한 번만 센다. */
-function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], accept = visits.length > 0, habits = false, watch = false }) {
+function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], accept = visits.length > 0, habits = false, watch = false, gather = false }) {
   const result = { meetableShortMinutes: 0, placeDays: 0, placeShortDays: 0, repeats: 0, orderPairs: 0, sameOrder: 0, rainOutside: 0, segments: 0,
     // W4: 주민마다 깨어 있는 분·기운 문턱 아래 분·문턱 아래로 간 날, 줄이 뜬 이유(주민:이유 → 횟수), 하루 가장 많은 줄, 상한 전 이유가 넷을 넘은 날.
     awakeMinutes: {}, belowMinutes: {}, belowDays: {}, moods: {}, moodsMaxPerDay: 0, reasonsOverCap: 0, residentDays: 0,
     // W5: 카드마다 생긴 수·푼 길, 상한·쿨다운을 넘은 것, 플레이어 없이 「나와 함께」로 끝난 것, 퍼진 플레이어 사건, 하루 들은 것이 넘은 것, 쌍 장면이 넘은 날·내려간 단계.
     rose: {}, solved: {}, playerBy: {}, capOver: 0, cooldownOver: 0, playerPaths: 0, playerSpread: 0, heardOver: 0, scenesOverDays: 0, stepDown: 0, scenes: 0,
     // W6: 돌아온 방문(앞 방문 뒤 닫힌 구간이 있는)·그중 줄이 선 것·가장 많은 줄·금지 말이 든 줄, 습관 구간·습관 조각·플레이어 일과의 나쁜 쪽 변화.
-    returns: 0, returnsWithLines: 0, linesMax: 0, linesBad: 0, habitBands: 0, habitSegments: 0, habitWorse: 0, habits };
+    returns: 0, returnsWithLines: 0, linesMax: 0, linesBad: 0, habitBands: 0, habitSegments: 0, habitWorse: 0, habits,
+    // W8b: the leaf jar's wear at each band's end, and (gathering) what grew at the visits, what was picked and given.
+    jarWear: 0, jarBands: 0, gather, growing: 0, picked: 0, relief: 0, gatherOver: 0 };
   const P = paramsFor(), v = village.initialVillage();
   let rev = 1, ring = initialVisitBands(), lastEnd = null;
   const close = nowMs => village.closeBands(v, { nowMs, seed: villageSeed, offsetMin: tzOffsetMin, revision: rev, ...(habits ? { visitBands: ring } : {}) });
   const takers = accept ? visits : [];
+  // W8b gathering: picked of each item on a life day, held in the basket, what grew at a visit (once an item a day).
+  const picked = {}, held = {}, grew = new Set(), G = P.gather;
+  const gatherAt = visit => {
+    const at = visit.fromMs + 2 * MINUTE, facts = { ...clock.clockAt({ villageSeed, hostNowMs: at, tz: tzOffsetMin }), afterRain: clock.afterRainAt(villageSeed, tzOffsetMin, at) };
+    const day = v.band.lifeDay;
+    for (const item of GATHERED.keys()) {
+      if (!grows(item, facts)) continue;
+      const key = `${day}|${item}`;
+      if (!grew.has(key)) { grew.add(key); result.growing += G.quota[item]; }
+      const left = G.quota[item] - (picked[key] || 0);
+      if (left > 0) { picked[key] = (picked[key] || 0) + left; held[item] = (held[item] || 0) + left; result.picked += left; }
+      if ((held[item] || 0) > GATHERED.get(item).stackMax) result.gatherOver++;
+    }
+    // Given to the cafe owner when she is up (§20-8): the jar is worn that much less from then — a time-ordered input.
+    const give = visit.fromMs + 10 * MINUTE, relief = Object.entries(held).reduce((n, [item, qty]) => n + (G.tinRelief[item] || 0) * qty, 0);
+    // As the command does (backend review GB1): she is up and has arrived where she is going (the player walks to her).
+    const startSpots = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
+    const owner = give < v.band.endMs ? village.placeAt(village.planOf(v).segments, GATHER.owner, give, startSpots) : null;
+    if (relief > 0 && village.upFor(v, GATHER.owner, give) && owner && !owner.walking) {
+      v.gives = [...(v.gives || []), { atMs: give, object: GATHER.tin, relief: Math.min(999, relief), npc: GATHER.owner }];
+      result.relief += relief;
+      for (const item of Object.keys(held)) delete held[item];
+    }
+  };
   close(startMs);
   const lastOrder = new Map(), linesPerDay = P.state.moodLinesPerDay, endAll = startMs + days * clock.DAY, lastSolved = {};
   for (let day = 0; day < days; day++) {
@@ -151,6 +179,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
           t = done + MINUTE;
         }
       }
+      if (gather) for (const visit of visits.filter(x => x.fromMs >= b.startMs && x.fromMs < b.endMs)) gatherAt(visit);
       const out = village.planOf(v), before = residentsOf(v);
       daySegments.push(...out.segments);
       if (v.band.visitHabit) result.habitBands++;
@@ -191,6 +220,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       scenesToday += out.scenes.length; result.scenes += out.scenes.length;
       const steps = Object.fromEntries(Object.entries(b.pairs || {}).map(([key, s]) => [key, s.friction.step]));
       close(b.endMs);
+      result.jarWear += v.band.wear?.['leaf-jar'] ?? 0; result.jarBands++;
       for (const [key, step] of Object.entries(steps)) if ((v.band.pairs?.[key]?.friction.step ?? 0) < step) result.stepDown++;
       // Nothing the player took part in spreads (G6), and no one hears more than a few things a day (§9-3).
       for (const list of Object.values(v.knowledge?.known || {})) result.playerSpread += list.filter(e => e.path === 'player' && e.how !== 'private').length;
@@ -272,12 +302,12 @@ const HABIT_SEEDS = new Set(villageSeeds(4));
 export const TOWN_RUNTIME = Object.freeze({
   name: 'town-w5',
   cache: new Map(),
-  life(args, accept = false, { habits = false } = {}) {
+  life(args, accept = false, { habits = false, gather = false } = {}) {
     // Watching what changed meanwhile only reads the village, so the shared life of the first zone carries the away profile's
     // visits as its watch points (W6) at no extra life.
-    const watch = !accept && !habits && Array.isArray(args.watchVisits);
-    const key = `${args.villageSeed}|${args.tzOffsetMin}|${args.startMs}|${args.days}|${accept}|${habits}|${watch}`;
-    if (!this.cache.has(key)) this.cache.set(key, lifeOfVillage({ ...args, visits: watch ? args.watchVisits : accept || habits ? args.visits : [], accept, habits, watch }));
+    const watch = !accept && !habits && !gather && Array.isArray(args.watchVisits);
+    const key = `${args.villageSeed}|${args.tzOffsetMin}|${args.startMs}|${args.days}|${accept}|${habits}|${watch}|${gather}`;
+    if (!this.cache.has(key)) this.cache.set(key, lifeOfVillage({ ...args, visits: watch ? args.watchVisits : accept || habits || gather ? args.visits : [], accept, habits, watch, gather }));
     return this.cache.get(key);
   },
   createVillage(args) { return { args, visits: [] }; },
@@ -288,13 +318,15 @@ export const TOWN_RUNTIME = Object.freeze({
   finish(village) {
     const { profile, firstZone, villageSeed } = village.args, args = { ...village.args, visits: village.visits };
     if (profile === 'daily-all') return this.life(args, true);
+    if (profile === 'daily-gather') return this.life(args, false, { gather: true });
     if (profile === 'night-only' && firstZone && HABIT_SEEDS.has(villageSeed)) return this.life(args, false, { habits: true });
     return this.life(args);
   },
   measure(id, run) {
     // A village that lived with its ring (W6 night habit) is a life of its own in every invariant (GPT GB2).
-    const lives = [...new Map(run.villages.map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.profile === 'daily-all'}|${v.result.habits === true}`, v.result])).values()];
-    const plain = [...new Map(run.villages.filter(v => v.profile !== 'daily-all').map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.result.habits === true}`, v.result])).values()];
+    // A gathering village (W8b) is a life of its own too; the dead-card and player-path measures stay on profiles one to five.
+    const lives = [...new Map(run.villages.map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.profile === 'daily-all'}|${v.result.habits === true}|${v.result.gather === true}`, v.result])).values()];
+    const plain = [...new Map(run.villages.filter(v => v.profile !== 'daily-all' && v.profile !== 'daily-gather').map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.result.habits === true}`, v.result])).values()];
     const accept = [...new Map(run.villages.filter(v => v.profile === 'daily-all').map(v => [`${v.villageSeed}|${v.tzOffsetMin}`, v.result])).values()];
     const sum = (key, list = lives) => list.reduce((n, life) => n + life[key], 0);
     const per = (key, npc) => lives.reduce((n, life) => n + (life[key][npc] || 0), 0);
@@ -362,6 +394,19 @@ export const TOWN_RUNTIME = Object.freeze({
       const ok = nights.length > 0 && formed === nights.length && n('habitSegments') > 0 && n('habitWorse') === 0;
       return { status: ok ? 'pass' : 'fail', value: `습관이 선 마을 ${formed}/${nights.length} · 습관 구간 ${n('habitBands')} · 습관 조각 ${n('habitSegments')} · 나쁜 쪽 ${n('habitWorse')}` };
     }
+    // W8b: the gathering villages pick what grows and give it — the jar wears less and C3 rises no more often than in the
+    // same seeds' villages that never gather (§20-8; the dead-card measure stays on the others), nothing over a line's limit.
+    if (id === 'gather') {
+      if (!run.profiles.includes('daily-gather')) return { status: 'pending', value: '채집 모습 없이 돈 판' };
+      const pairs = run.villages.filter(x => x.profile === 'daily-gather')
+        .map(x => ({ g: x.result, p: run.villages.find(y => y.profile === 'daily-random' && y.villageSeed === x.villageSeed && y.tzOffsetMin === x.tzOffsetMin)?.result })).filter(r => r.p);
+      const g = pairs.map(r => r.g), p = pairs.map(r => r.p), n = (list, key) => list.reduce((total, life) => total + life[key], 0);
+      const c3 = list => list.reduce((total, life) => total + (life.rose.C3 || 0), 0), wear = list => n(list, 'jarWear') / Math.max(1, n(list, 'jarBands'));
+      // The jar must be seen to wear less where it wears at all (backend review GB2); C3 may only come as often or less.
+      const ok = pairs.length > 0 && n(g, 'picked') > 0 && n(g, 'relief') > 0 && c3(g) <= c3(p) && (wear(p) > 0 ? wear(g) < wear(p) : wear(g) === 0)
+        && n(g, 'gatherOver') === 0 && n(g, 'playerSpread') === 0;
+      return { status: ok ? 'pass' : 'fail', value: `채집 마을 ${pairs.length} · 몫 쓴 비율 ${percent(n(g, 'picked'), n(g, 'growing'))}% · 잎 통 마모(구간 끝 평균) ${wear(g).toFixed(1)}(안 하는 마을 ${wear(p).toFixed(1)}) · C3 ${c3(g)}(안 하는 마을 ${c3(p)})` };
+    }
     return undefined;
   },
 });
@@ -383,6 +428,7 @@ export const METRICS = Object.freeze([
   ['energy', '기운 문턱 아래 시간 15% 이하'],
   ['mood-lines', '이유 태그마다 30일에 한 번 이상, 하루 넷 이하'],
   ['card-coverage', '18장 모두 30일에 한 번 이상, 첫 C4는 플레이어 몫'],
+  ['gather', '매일 채집·드리기(여섯째 모습) — 잎 통 마모가 줄고 C3가 더 잦지 않다, 한도 넘김 0'],
 ].map(([id, label]) => Object.freeze({ id, label })));
 
 export function canonicalJson(value) {
@@ -391,13 +437,15 @@ export function canonicalJson(value) {
 }
 export const sha256 = text => crypto.createHash('sha256').update(text).digest('hex');
 
-export function runSimulation({ seeds = 100, days = 30, timezones = TIMEZONES, profiles = PROFILES, runtime = TOWN_RUNTIME, startMs = SIM_START_MS } = {}) {
+export function runSimulation({ seeds = 100, days = 30, timezones = TIMEZONES, profiles = PROFILES, runtime = TOWN_RUNTIME, startMs = SIM_START_MS, only = null } = {}) {
   if (!Number.isSafeInteger(seeds) || seeds < 1 || !Number.isSafeInteger(days) || days < 1) throw new RangeError('seeds·days는 1 이상의 정수예요.');
   const villages = [];
   for (const villageSeed of villageSeeds(seeds)) for (const tzOffsetMin of timezones) for (const profile of profiles) {
     // The profile that takes every card is measured in the first time zone: what it shows (cards with the player, their
     // gladness, what stays private) does not turn on the zone, and every other profile already runs in all four (W5).
     if (profile === 'daily-all' && tzOffsetMin !== timezones[0]) continue;
+    // The gathering profile lives apart in the first zone's first seeds only, as the night habit does (the CI budget, W8b).
+    if (profile === 'daily-gather' && !(tzOffsetMin === timezones[0] && HABIT_SEEDS.has(villageSeed))) continue;
     const visits = visitPlan(profile, { villageSeed, tzOffsetMin, days, startMs });
     const firstZone = tzOffsetMin === timezones[0];
     const village = runtime.createVillage({ villageSeed, tzOffsetMin, profile, startMs: firstLifeDayStart(tzOffsetMin, startMs), days, firstZone,
@@ -407,7 +455,8 @@ export function runSimulation({ seeds = 100, days = 30, timezones = TIMEZONES, p
     villages.push({ villageSeed, tzOffsetMin, profile, visits: observed, result: runtime.finish(village) });
   }
   const run = { runtime: runtime.name, seeds, days, timezones: [...timezones], profiles: [...profiles], villages };
-  const metrics = METRICS.map(metric => ({ id: metric.id, label: metric.label, ...(runtime.measure?.(metric.id, run) ?? { status: 'pending' }) }));
+  // only: the metrics a run measures (the rest wait) — a small run for one measure skips the season lives the others read.
+  const metrics = METRICS.map(metric => ({ id: metric.id, label: metric.label, ...((!only || only.includes(metric.id)) && runtime.measure?.(metric.id, run) || { status: 'pending' }) }));
   const hash = sha256(canonicalJson({ villages, metrics }));
   return { ...run, metrics, hash };
 }

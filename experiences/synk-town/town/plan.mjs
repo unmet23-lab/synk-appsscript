@@ -30,7 +30,7 @@ import { dayKindOf, weatherAt as clockWeatherAt, weatherChangesBetween, rainBetw
 import { paramsFor } from './params.mjs';
 import { PER_MILLE, perMille, stateOf, running, keptState, bandEvents, advance, finishSegment, replay, stateFactors, stateCandidates, available, playerMade } from './state.mjs';
 import { CARD_BY_ID, CARDS_OF, WEAR_THRESHOLDS, cardKey, statusOf, roseToday, villageStart, villageAfter, keptVillage, applySegment, applyTrigger, applyTake,
-  triggerHolds, pairChosen, partnerMinutes, solvingSpot, takeCovers, sceneFree, frictionStep, pairKeyOf } from './cards.mjs';
+  applyGive, givesItems, triggerHolds, pairChosen, partnerMinutes, solvingSpot, takeCovers, sceneFree, frictionStep, pairKeyOf } from './cards.mjs';
 
 const CHAT_SPOTS = DATA.CHAT_SPOTS ?? {};
 export const ARCHETYPE_BY_ID = Object.freeze(Object.fromEntries(ARCHETYPES.map(a => [a.id, a])));
@@ -204,8 +204,11 @@ export function planBand(input) {
     // The rest of the band starts from the state the hold left: guests it attended to, its end done together (§7-2).
     const prior = summarize(npc, [...before, holding], s.prior, ctx, to);
     const fixedLog = log.filter(e => e.npc !== npc || e.atMs < from);
-    // A card done with the player leaves those it held glad of it at their next choice (§7-3 with-player-glad).
-    const glad = hold.with && typeof hold.by === 'string' && hold.by.startsWith('card:') ? { key: 'with-player-glad', card: hold.by.split(':')[1] } : null;
+    // A card done with the player leaves those it held glad of it at their next choice (§7-3 with-player-glad) — not one the
+    // player settled by giving leaves (W8b, design review F2): the jar was just filled, so its owner is not sent to pick more.
+    const [, gladCard, gladKey] = typeof hold.by === 'string' ? hold.by.split(':') : [];
+    const gave = (input.takes || []).some(t => t.card === gladCard && t.key === gladKey && t.choice === 'give');
+    const glad = hold.with && typeof hold.by === 'string' && hold.by.startsWith('card:') && !gave ? { key: 'with-player-glad', card: gladCard } : null;
     const after = to < s.end ? planRange([npc], { [npc]: { ...s, t: to, prior } }, [...fixed, ...others, ...before, holding], ctx,
       () => createRng(villageSeed, 'replan', lifeDay, band, npc, planCmdRev, Math.floor((to - startMs) / MINUTE), hold.id),
       // A promise already begun before the hold is not made up afterwards (§6-4; review P1-4).
@@ -364,7 +367,10 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
   const fixedItems = [...(range.log || []).map(e => ({ ms: e.atMs, npc: e.npc, rank: 0, trigger: e })),
     ...all.flatMap(seg => (seg.cardRole ? [seg.startMs] : seg.pieceStarts ?? [seg.startMs]).map((ms, i) => ({ ms, npc: seg.npc, rank: 1, seg, first: i === 0 }))),
     ...takes.filter(take => take.status === 'resolved' && take.resolvedAt >= input.startMs && take.resolvedAt < input.endMs)
-      .map(take => ({ ms: take.resolvedAt, npc: CARD_BY_ID[take.card].owner, rank: 1.5, take }))]
+      .map(take => ({ ms: take.resolvedAt, npc: CARD_BY_ID[take.card].owner, rank: 1.5, take })),
+    // The player's gifts (W8b) reach every pass — the first one too — as its decisions pass their times: a jar given leaves
+    // wears less from then, so a card on it rises later; nothing before the gift changes.
+    ...givesItems(input)]
     .sort((a, b) => a.ms - b.ms || order(a.npc) - order(b.npc) || a.rank - b.rank);
   let fi = 0;
   const catchUp = (t, npc) => {
@@ -372,6 +378,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
       const item = fixedItems[fi];
       if (item.trigger) applyTrigger(vs, item.trigger);
       else if (item.take) applyTake(vs, item.take);
+      else if (item.give) applyGive(vs, item.give);
       else applySegment(vs, item.seg, { ...step, first: item.first });
     }
   };

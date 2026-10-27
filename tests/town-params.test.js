@@ -11,12 +11,12 @@ const leaves = value => (Array.isArray(value) ? value.flatMap(leaves) : value &&
 const codeOf = file => fs.readFileSync(path.join(TOWN, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 const numbersIn = code => new Set((code.match(/(?<![\w.$])\d+(?:\.\d+)?(?![\w.])/g) || []).map(Number));
 
-// 판에서만 읽어야 하는 이름 묶음 — 모듈이 늘면 여기에 그 모듈과 묶음을 더한다(gather는 채집 생활 W8b, brake는 되돌림 작업이 붙을 때).
+// 판에서만 읽어야 하는 이름 묶음 — 모듈이 늘면 여기에 그 모듈과 묶음을 더한다(brake는 되돌림 작업이 붙을 때).
 const READS = { 'plan.mjs': ['planner', 'cards', 'pairs'], 'state.mjs': ['state'], 'seen.mjs': ['seen'], 'prefs.mjs': ['prefs', 'observe', 'asks'], 'eval.mjs': ['eval'],
   // W5: the cards and pairs, what residents know of each other.
   'cards.mjs': ['cards', 'pairs'], 'knowledge.mjs': ['knowledge'],
-  // W8: the tea order — the first life activity.
-  'activities/tea-order.mjs': ['tea'] };
+  // W8: the tea order — the first life activity. W8b: gathering — the second.
+  'activities/tea-order.mjs': ['tea'], 'activities/gather.mjs': ['gather'] };
 
 test('〔초기값〕은 판에서만 읽는다 — 그 값을 코드에 숫자로 쓴 곳이 없다', async () => {
   const { paramsFor, FIRST_PARAMS_VER } = await townModule('params');

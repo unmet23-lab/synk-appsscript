@@ -223,6 +223,15 @@ export function weatherChangesBetween(villageSeed, fromMs, toMs) {
   return out.sort((a, b) => a.atMs - b.atMs).filter((change, i, list) => i === 0 || change.atMs !== list[i - 1].atMs);
 }
 
+/** Whether ms is in the span after a rain stops (§20-8 비 온 뒤, W8b): clear now, and before the end of the band (in my
+ * time) that comes after the one the rain stopped in — a rain that stops leaves the rest of its band and the whole next. */
+export function afterRainAt(villageSeed, tz, ms) {
+  ensureTime(ms);
+  if (weatherAt(villageSeed, ms) !== 'clear') return false;
+  const stop = weatherChangesBetween(villageSeed, ms - DAY, ms + 1).filter(change => change.to === 'clear').at(-1);
+  return !!stop && ms < bandAt(tz, bandAt(tz, stop.atMs).endMs).endMs;
+}
+
 // ── the whole clock (§4-7) ─────────────────────────────────────────────────────
 
 function lightKeyAt(minuteOfDay) {
