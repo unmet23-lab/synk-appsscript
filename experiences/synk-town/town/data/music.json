@@ -1,5 +1,106 @@
 {
   "$comment": "머무는 모드의 SYNK 음악 곡 목록(세로 조각 W7b). 곡은 유호님이 고른다 — 후보는 docs/디자인/싱크타운_머무는모드_곡후보_20261025.md. 고른 곡은 tools/town-music-build.mjs가 원곡에서 앱 파일(assets/music/<id>-<파일 해시 앞 8자>.mp3 — 이름이 바뀌지 않는 한 내용도 그대로라 오래 캐시한다, git 밖 — 공개 사이트에만)과 이 목록의 항목을 만든다. 목록이 비면 화면에 음악 스위치가 없고 아무것도 받지 않는다. 길이 durationMs, 음량 lufsTenths(정수 열 배, −16.0 LUFS = −160), peakTenths(dBTP 열 배), 원본은 장부 번호·원곡 파일 해시·Suno 표지.",
   "musicVer": "town-music-1",
-  "tracks": []
+  "tracks": [
+    {
+      "id": "quiet-dawn",
+      "title": "고요한 새벽",
+      "file": "assets/music/quiet-dawn-df7888d5.mp3",
+      "durationMs": 269720,
+      "bytes": 4316681,
+      "fileSha256": "df7888d5b307fb69049378ad37e43cf6e4b8348b521528cfc6b761f9a63af6f1",
+      "lufsTenths": -164,
+      "peakTenths": -34,
+      "rights": "suno-paid-official-download",
+      "source": {
+        "ledger": 22,
+        "original": "새벽 물가의 숨.wav",
+        "sha256": "8db13cbcceec42dff4948b42473a7f9c99eb882968a85489fe19ac132f3dc5be",
+        "suno": {
+          "created": "2026-09-23T14:20:40Z",
+          "id": "6e5b4ef2-c451-445f-be2e-af438db7e946"
+        }
+      }
+    },
+    {
+      "id": "morning-light",
+      "title": "아침 햇살",
+      "file": "assets/music/morning-light-c3605f92.mp3",
+      "durationMs": 157960,
+      "bytes": 2528234,
+      "fileSha256": "c3605f924aa4b9903aff005c4e415445388d0e72d50c6d49297785e4cce42015",
+      "lufsTenths": -164,
+      "peakTenths": -39,
+      "rights": "suno-paid-official-download",
+      "source": {
+        "ledger": 4,
+        "original": "Quiet Morning Light.wav",
+        "sha256": "6b8cfd981b0cccb6bf2880b2c6b1f7bd583fb75667ed59ac8e1fceb4b8f2316d",
+        "suno": {
+          "created": "2026-09-07T21:58:56Z",
+          "id": "676b506d-b475-43e0-9d6f-d519f11623bd"
+        }
+      }
+    },
+    {
+      "id": "autumn-afternoon",
+      "title": "가을 오후",
+      "file": "assets/music/autumn-afternoon-34c6c303.mp3",
+      "durationMs": 158120,
+      "bytes": 2531159,
+      "fileSha256": "34c6c303e9d401f07afc206e1d677ba7c4dfe1da3466f36b0bffdb2211fe300a",
+      "lufsTenths": -164,
+      "peakTenths": -44,
+      "rights": "suno-paid-official-download",
+      "source": {
+        "ledger": 6,
+        "original": "Golden Autumn Light.wav",
+        "sha256": "032a7efec7a7933f2cbd8eefda7f1d4fb6220831a1d809ad44a59a474cf7a5c7",
+        "suno": {
+          "created": "2026-09-07T21:59:07Z",
+          "id": "d9676821-cbbf-4da2-a0aa-405a155b37e9"
+        }
+      }
+    },
+    {
+      "id": "autumn-sea",
+      "title": "가을 바다",
+      "file": "assets/music/autumn-sea-d0f8c8e7.mp3",
+      "durationMs": 159600,
+      "bytes": 2554565,
+      "fileSha256": "d0f8c8e7ab30c327421511b079af893e5e7f142947b79b9124634431b34926f6",
+      "lufsTenths": -164,
+      "peakTenths": -36,
+      "rights": "suno-paid-official-download",
+      "source": {
+        "ledger": 3,
+        "original": "Autumn Sea Hush.wav",
+        "sha256": "db8bc9218c28f1e326d2c7789ba76fc453ad131035ae3e1a1eee3fdc92d13295",
+        "suno": {
+          "created": "2026-09-07T21:59:20Z",
+          "id": "122e0a8f-753c-41f3-8f2a-f7613e6e27b4"
+        }
+      }
+    },
+    {
+      "id": "in-the-rain",
+      "title": "빗속에서",
+      "file": "assets/music/in-the-rain-4c68574f.mp3",
+      "durationMs": 230000,
+      "bytes": 3680965,
+      "fileSha256": "4c68574fce30ecf5d962f17c4cbd6503b59f35e0e77d5279f2c8baca2a9244f4",
+      "lufsTenths": -164,
+      "peakTenths": -22,
+      "rights": "suno-paid-official-download",
+      "source": {
+        "ledger": 7,
+        "original": "Velvet Rain.wav",
+        "sha256": "472c9b9280692f7aec1eeb6bc8a26118daa474da91cf05f092b85f1d98590a5f",
+        "suno": {
+          "created": "2026-09-07T21:52:26Z",
+          "id": "2c51ca98-1534-4249-8bca-0cd36e70b4ee"
+        }
+      }
+    }
+  ]
 }

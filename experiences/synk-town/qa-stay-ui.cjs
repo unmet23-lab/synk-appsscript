@@ -7,7 +7,7 @@
 // browser that cannot store starting both off, a dropped connection leaving the player seated, the first step after
 // standing up not pulled back, and the battery measures (rAF wake-ups, frames drawn, render time, requests, audio
 // nodes) standing still versus seated. Phone figures are an emulation (DPR 3, 4× CPU) — the real phone is W11's.
-//   node experiences/synk-town/qa-stay-ui.cjs [--out <dir>] [--only flows,switches,mic,storage,offline,step,gamepad,battery,captures,overview,samples]
+//   node experiences/synk-town/qa-stay-ui.cjs [--out <dir>] [--only flows,switches,music,mic,storage,offline,step,gamepad,battery,captures,overview,samples]
 const fs = require('node:fs'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -35,6 +35,8 @@ async function instrument(context) {
     const raf = window.requestAnimationFrame.bind(window); globalThis.__rafCalls = 0;
     window.requestAnimationFrame = fn => raf(t => { globalThis.__rafCalls++; fn(t); });
     globalThis.__audioNodes = 0; const AC = window.AudioContext;
+    // The music's <audio> pair is not in the page: keep a hand on each so the QA can move a song near its end.
+    const RealAudio = window.Audio; globalThis.__qaAudios = []; window.Audio = function (...a) { const el = new RealAudio(...a); globalThis.__qaAudios.push(el); return el; }; window.Audio.prototype = RealAudio.prototype;
     if (AC) for (const name of ['createGain', 'createOscillator', 'createBufferSource', 'createBiquadFilter', 'createStereoPanner']) { const real = AC.prototype[name]; if (real) AC.prototype[name] = function (...a) { globalThis.__audioNodes++; return real.apply(this, a); }; }
   });
 }
@@ -158,7 +160,7 @@ async function switches(browser) {
     await sitAt(page, 'bench');
     let m = await metrics(page);
     check(scene, m.sound.prefs.village === true && m.sound.prefs.music === false, '처음 값: 마을 소리 켬·음악 끔', m.sound.prefs);
-    check(scene, await page.evaluate(() => document.querySelector('#stay-card .stay-switch[data-sound-pref="music"]').closest('.stay-switch-row').hidden), '곡이 없으면 음악 스위치 줄이 없다');
+    check(scene, await page.evaluate(() => document.querySelector('#stay-card .stay-switch[data-sound-pref="music"]').closest('.stay-switch-row').hidden) === !m.sound.tracks, '음악 스위치 줄은 곡이 있을 때만', { tracks: m.sound.tracks });
     check(scene, (await level(page, 1500)) > .002, '마을 소리가 난다', await level(page));
     await page.locator(village).click(); await delay(2500);
     m = await metrics(page); check(scene, m.sound.prefs.village === false, '직접 누르면 꺼진다', m.sound.prefs);
@@ -256,6 +258,46 @@ async function step(browser) {
     const after = (await metrics(page)).walk;
     check(scene, after.x - before.x > .8, '일어나 걷는다', { before, after });
     check(scene, after.maxCorrection - before.maxCorrection < .05, '첫 걸음이 되돌려지지 않는다(보정 거리)', { before: before.maxCorrection, after: after.maxCorrection });
+    check(scene, s.errors.length === 0, '오류 없음', s.errors);
+  } finally { await s.close(); }
+}
+
+/** SYNK music (the songs chosen 10-27): its switch shows once there are songs and starts off; on, a song flows only
+ * while seated — it stops when turned off or on standing up, comes back on sitting again, and goes to 0 while a
+ * microphone is open in another window. */
+async function music(browser) {
+  const scene = 'music', s = await open(browser, { start: kst('2026-10-25', '12:30') });
+  try {
+    const { page, context, base } = s, button = '#stay-card .stay-switch[data-sound-pref="music"]';
+    // A faded card takes the first touch only to wake (the design): wake it, then press the switch.
+    const press = async () => { await page.mouse.move(8, 8); await page.mouse.move(24, 24); await delay(400); await page.locator(button).click(); };
+    await sitAt(page, 'bench');
+    let m = await metrics(page);
+    check(scene, m.sound.tracks > 0 && await page.evaluate(sel => !document.querySelector(sel).closest('.stay-switch-row').hidden, button), '곡이 있으면 음악 스위치가 보인다', { tracks: m.sound.tracks });
+    check(scene, m.sound.prefs.music === false && !m.sound.music.playing, '처음엔 꺼져 있다', m.sound.music);
+    await press(); await delay(4000);
+    m = await metrics(page);
+    check(scene, m.sound.prefs.music === true && m.sound.music.playing && m.sound.buses.music > 0 && !!m.sound.music.track, '켜면 곡이 흐른다', { prefs: m.sound.prefs, music: m.sound.music, buses: m.sound.buses });
+    check(scene, await page.evaluate(() => document.querySelector('#stay-card .stay-line').textContent.includes('SYNK 음악')), '판 글이 음악을 말한다');
+    // Near its end a song hands over to the next one (a 3-second crossfade) and only one plays after.
+    const first = m.sound.music.track;
+    await page.evaluate(() => { const a = globalThis.__qaAudios.find(x => !x.paused); if (a?.duration) a.currentTime = Math.max(0, a.duration - 6); });
+    await delay(9000); m = await metrics(page);
+    const playing = await page.evaluate(() => globalThis.__qaAudios.filter(x => !x.paused).length);
+    check(scene, m.sound.music.playing && m.sound.music.track !== first && playing === 1, '곡 끝에서 다음 곡으로 넘어가고 하나만 흐른다', { first, now: m.sound.music.track, playing, audio: await page.evaluate(() => globalThis.__qaAudios.map(x => [Math.round(x.currentTime), Math.round(x.duration), x.paused])) });
+    await page.keyboard.press('Escape'); await delay(3800);
+    m = await metrics(page); check(scene, !m.sound.music.playing && m.sound.buses.music === 0, '일어나면 음악이 멈춘다', { music: m.sound.music, buses: m.sound.buses });
+    await page.keyboard.press('f'); await delay(4000);
+    m = await metrics(page); check(scene, m.sound.prefs.music === true && m.sound.music.playing, '다시 앉으면 켜 둔 음악이 다시 흐른다', m.sound.music);
+    const other = await context.newPage(); await other.goto(`${base}/day-style.css`);
+    await other.evaluate(() => { localStorage.setItem('synk.world.mic', String(Date.now())); new BroadcastChannel('synk-world-audio').postMessage({ type: 'mic', open: true }); });
+    await delay(1500); m = await metrics(page);
+    check(scene, m.sound.recording && m.sound.buses.music === 0 && !m.sound.music.playing, '다른 창이 녹음하면 음악도 0', { recording: m.sound.recording, music: m.sound.music, buses: m.sound.buses });
+    await other.evaluate(() => { localStorage.removeItem('synk.world.mic'); new BroadcastChannel('synk-world-audio').postMessage({ type: 'mic', open: false }); }); await delay(4000);
+    m = await metrics(page); check(scene, m.sound.music.playing && m.sound.buses.music > 0, '녹음이 끝나면 다시 흐른다', m.sound.music);
+    await other.close();
+    await press(); await delay(3800);
+    m = await metrics(page); check(scene, m.sound.prefs.music === false && !m.sound.music.playing, '끄면 멈춘다', m.sound.music);
     check(scene, s.errors.length === 0, '오류 없음', s.errors);
   } finally { await s.close(); }
 }
@@ -370,7 +412,7 @@ async function samples(browser) {
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const gpu = await (async () => { const page = await browser.newPage(); await page.setContent('<canvas></canvas>'); const r = await page.evaluate(() => { const gl = document.querySelector('canvas').getContext('webgl2'), e = gl?.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : null; }); await page.close(); return r; })();
   report.gpu = gpu;
-  const scenes = { flows, captures, switches, mic, storage, offline, step, gamepad, battery, overview, samples };
+  const scenes = { flows, captures, switches, music, mic, storage, offline, step, gamepad, battery, overview, samples };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;

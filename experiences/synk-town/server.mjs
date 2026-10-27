@@ -426,7 +426,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
 }
 const MIME = { '.html': 'text/html; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png',
-  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.glb': 'model/gltf-binary', '.json': 'application/json; charset=utf-8', '.wasm': 'application/wasm' };
+  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.glb': 'model/gltf-binary', '.json': 'application/json; charset=utf-8', '.wasm': 'application/wasm', '.mp3': 'audio/mpeg' };
 function fileFor(route, previewEnabled) {
   if (route === '/' || route === '/index.html') return path.join(root, 'index.html');
   if (route === '/style.css') return path.join(root, 'style.css');
@@ -435,6 +435,8 @@ function fileFor(route, previewEnabled) {
   if (!previewEnabled) return null;
   // Baked district comparison only (?district=); v20 never requests these.
   if (/^\/assets\/district\/[a-z0-9-]+\.(?:glb|json)$/.test(route)) return path.join(root, route.slice(1));
+  // SYNK music for staying (W7b): the app files tools/town-music-build.mjs makes, outside git like the baked district.
+  if (/^\/assets\/music\/[a-z0-9-]+-[0-9a-f]{8}\.mp3$/.test(route)) return path.join(root, route.slice(1));
   if (/^\/rendering\/basis\/basis_transcoder\.(?:js|wasm)$/.test(route)) return path.join(root, route.slice(1));
   if (['/day.html', '/day-app.mjs', '/day-style.css', '/day-scene.mjs', '/day-character.mjs', '/day-residents.mjs', '/day-environment.mjs', '/day-materials.mjs', '/day-rendering.mjs', '/day-district.mjs', '/day-light.mjs', '/day-mood.mjs', '/day-cards.mjs', '/day-notebook.mjs', '/day-stay.mjs', '/day-stay.css', '/day-sound.mjs', '/day-observation.mjs', '/walk.mjs', '/walk-controls.mjs', '/walk-packets.mjs', '/town-layout.mjs'].includes(route)) return path.join(root, route.slice(1));
   // The town runtime layer the browser shares with the host (vertical slice §2-5): modules only, never data sources.
@@ -514,7 +516,19 @@ export function createServer({ previewEnabled = false, store = createStore({ dir
     if (!['GET', 'HEAD'].includes(req.method)) return json(res, 405, { error: 'method-not-allowed' });
     const file = fileFor(route, previewEnabled);
     if (!file || !fs.existsSync(file)) return json(res, 404, { error: 'not-found' });
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+    const type = MIME[path.extname(file)] || 'application/octet-stream';
+    // The music's <audio> reads in byte ranges (seeking, the next song near the end), as on the public site.
+    if (path.extname(file) === '.mp3') {
+      const size = fs.statSync(file).size, range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+      if (range && (range[1] || range[2])) {
+        const start = range[1] ? Number(range[1]) : size - Number(range[2]), end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+        if (!(start >= 0 && start <= end)) { res.writeHead(416, { 'Content-Range': `bytes */${size}` }); return res.end(); }
+        res.writeHead(206, { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': end - start + 1 });
+        if (req.method === 'HEAD') return res.end();
+        return fs.createReadStream(file, { start, end }).on('error', () => res.destroy()).pipe(res);
+      }
+      res.writeHead(200, { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Content-Length': size });
+    } else res.writeHead(200, { 'Content-Type': type });
     if (req.method === 'HEAD') return res.end();
     fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);
   });
