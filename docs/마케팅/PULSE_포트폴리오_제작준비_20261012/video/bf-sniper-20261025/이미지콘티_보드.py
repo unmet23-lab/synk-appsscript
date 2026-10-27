@@ -26,7 +26,7 @@ SHOTS = [
     (4, 5.27, 7.61, "S04", ("drill", "엄지 근력", None), "K04", "링 라이트 원 너머 휴대폰 아령 → 로봇 청소기에 목례"),
     (5, 7.61, 8.61, "S05", ("cal", "D-3", None), "K05", "달력 24일 X(원본 간격 D-3) · 펜"),
     (6, 8.61, 10.45, "S06", ("drill", "장비 점검", None), "K06", "작전 책상 — 앞에 알람 셋 트로피, 뒤에서 화면 셋 줄 맞춤"),
-    (7, 10.45, 13.80, "S07", ("flyer",), "K07", "현관 전단(가슴 높이) · 돋보기를 벗음 · 속마음 「반값…」"),
+    (7, 10.45, 13.80, "S07", None, "K07", "현관 전단(가슴 높이) · 돋보기를 벗음 · 속마음 「반값…」"),
     (8, 13.80, 15.09, "S08", ("drill", "보급", None), "K08", "선반 휙 팬 · 헤드셋 준호"),
     (9, 15.09, 16.72, "S09", ("drill", "위장", None), "K09", "욕실 거울 위장 줄 · 속마음 「이번엔… 이긴다.」"),
     (10, 16.72, 17.23, "S10", ("drill", "반응 속도", None), "K10", "초시계 엄지 · 삑"),
@@ -49,7 +49,7 @@ SEGS = [
     (5.27, 7.61, "S04", ("drill", "엄지 근력", None), None),
     (7.61, 8.61, "S05", ("cal", "D-3", None), None),
     (8.61, 10.45, "S06", ("drill", "장비 점검", None), None),
-    (10.45, 13.80, "S07", ("flyer",), "(속마음) 반값…"),
+    (10.45, 13.80, "S07", None, "(속마음) 반값…"),   # 10-27 전단은 그림 안에 느지막 전단 그대로(전단판.py) — 옆 카드 뺌
     (13.80, 15.09, "S08", ("drill", "보급", None), None),
     (15.09, 16.72, "S09", ("drill", "위장", None), "(속삭임) 이번엔… 이긴다."),
     (16.72, 17.23, "S10", ("drill", "반응 속도", None), None),
@@ -161,12 +161,12 @@ def overlay(img, ov):
     elif kind == "end":
         d.rectangle((W * 0.50, 0, W, H), fill=(250, 246, 238, 255))
         cx = W * 0.75
-        d.text((cx, H * 0.22), "블프,", font=ImageFont.truetype(FONT_B, 110), fill=(40, 36, 30), anchor="mm")
-        d.text((cx, H * 0.36), "자고 일어나서.", font=ImageFont.truetype(FONT_B, 110), fill=(40, 36, 30), anchor="mm")
-        d.text((cx, H * 0.56), BRAND, font=ImageFont.truetype(FONT_B, 150), fill=AMBER, anchor="mm")
-        d.text((cx, H * 0.70), "가전 · 생활 온라인몰", font=ImageFont.truetype(FONT_B, 58), fill=(70, 60, 50), anchor="mm")
-        d.text((cx, H * 0.79), "선착순 없음 · 블프 반값 일주일 내내", font=ImageFont.truetype(FONT_B, 50), fill=(200, 40, 50), anchor="mm")
-        d.text((cx, H * 0.88), "앱에서 「느지막」 검색", font=ImageFont.truetype(FONT_B, 46), fill=(90, 80, 70), anchor="mm")   # 10-27 낯선이 7차 「어디서 사는지 모름」
+        d.text((cx, H * 0.17), "블프,", font=ImageFont.truetype(FONT_B, 110), fill=(40, 36, 30), anchor="mm")
+        d.text((cx, H * 0.30), "자고 일어나서.", font=ImageFont.truetype(FONT_B, 110), fill=(40, 36, 30), anchor="mm")
+        d.text((cx, H * 0.47), BRAND, font=ImageFont.truetype(FONT_B, 150), fill=AMBER, anchor="mm")
+        d.text((cx, H * 0.60), "가전 · 생활 온라인몰", font=ImageFont.truetype(FONT_B, 58), fill=(70, 60, 50), anchor="mm")
+        d.text((cx, H * 0.69), "선착순 없음 · 블프 반값 일주일 내내", font=ImageFont.truetype(FONT_B, 50), fill=(200, 40, 50), anchor="mm")
+        d.text((cx, H * 0.77), "앱에서 「느지막」 검색", font=ImageFont.truetype(FONT_B, 46), fill=(90, 80, 70), anchor="mm")   # 10-27 낯선이 7차 「어디서 사는지 모름」 · 8차 「자막에 가림」 → 끝 카드 글을 위로
     return img.convert("RGB")
 
 

@@ -250,10 +250,10 @@ CAL_EDIT = ("Edit Image 1. Image 1 is a photo of a paper wall calendar — keep 
 CAL_LOOK = ("Make the whole picture look like a real photograph of paper on a wall: soft daylight from the left, fine paper texture, natural "
             "lens falloff, the hand slightly out of focus where it is closest to the lens. No other changes.")
 for k, where in {
-    "C02": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 20th, as if it has just drawn that stroke",
+    "C02": "a man's right hand coming in from the BOTTOM edge of the frame, just below the box for the 20th, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 20th, as if it has just drawn that stroke. The hand is SMALL in the frame — only the fingers, the marker and a little of the grey sleeve show, below and around the box for the 20th; it must NOT cover the boxes for the 1st to the 19th, nor the 27th with its '00:00' (10-27: a big hand covering the 11th-19th made viewers think the pen was on the 15th)",
     "C05": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 24th, as if it has just drawn that stroke",
     "C13": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 25th, as if it has just drawn that stroke",
-    "C15": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the upper-right corner area of the box for the 26th, about to draw the second stroke of the X",
+    "C15": "a man's right hand coming in from the lower left of the frame, holding an uncapped marker with a RED body (the same red marker as in the other calendar shots) whose tip touches the upper-right corner area INSIDE the box for the 26th — left of the vertical line between the 26th and the 27th, never inside the box for the 27th — about to draw the second stroke of the X. The half-drawn stroke already in the box for the 26th must stay exactly as it is, in the same direction (10-27: the stroke was redrawn the other way and the pen tip landed in the 27th)",
     "C18": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the red circle around '00:00' in the box for the 27th, as if it has just finished drawing the circle",
 }.items():
     J[k] = {"ratio": "16:9", "refs": [CAL_PLATE(k)], "prompt": " ".join([CAL_EDIT + where + ".", HAND, CAL_LOOK]),
@@ -261,23 +261,29 @@ for k, where in {
 
 # ── 10-27 Fable 이미지 콘티 1차 다시(상 4 · 중) — 같은 id로 덮어쓴다 ──
 FLYER = str(V / "달력판" / "전단.png").replace("/", "\\")
-NO_LOGO = " His sweatshirt and pants have no emblem, patch or logo anywhere."
+NO_LOGO = (" His sweatshirt and pants have no emblem, patch or logo anywhere. Every laptop, tablet and phone is a plain unbranded device "
+           "— no logo or mark on any back or lid (10-27: a real brand logo appeared on a tablet back).")
+# 10-27 Opus 확인: 원본 K04 · K17 실측은 원 가운데 x≈52% · 바깥 지름이 화면 폭의 48~50%(1차의 「40% · 42%」는 틀린 목표였다)
 RING = ("a large switched-on LED ring light stands very close in front of the camera, out of focus — its thin glowing white ring is a "
-        "circle whose center is about 40% from the left edge of the frame, about 42% of the frame width across and nearly the full frame "
-        "height; outside the ring the rest of the living room shows, blurred; ")
+        "circle centered in the frame (center about 52% from the left edge), its OUTER diameter about HALF the frame width (about 90% of "
+        "the frame height), so a strip of the room shows on both sides of the ring; outside the ring the rest of the living room shows, "
+        "blurred; ")
 J.update(dict([
     job("S04", FACE4 + ["방:R1", LAY("S04_실루엣.png")],
         START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
         "Wide shot framed through a big ring light: " + RING + "through the ring, in the middle of the living room and in the CENTER "
         "of the ring, he stands with his feet apart, about 60% of the ring's height, and curls two smartphones in his hands like dumbbells, "
         "the phones clearly visible, thumbs tapping the screens. In the lower foreground a round robot vacuum glides past, blurred with motion.",
-        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="4 다시(Fable 1차 중) — 링 자리 · 크기를 원본 원(가운데 x≈40% · 폭 42%)과 17번에 맞춤 · 바지 엠블럼 없앰"),
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="4 다시(Fable 1차 중) — 링 자리 · 크기를 원본 원(실측 가운데 x≈52% · 바깥 지름 화면 폭의 약 50%)과 17번에 맞춤 · 바지 엠블럼 없앰"),
     job("S17", FACE4 + ["방:R1", LAY("S17_실루엣.png")],
         START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
         "Wide shot framed through the big ring light, exactly the same camera and ring as the previous ring shot: " + RING + "inside "
         "the ring, in the middle of the living room and in the CENTER of the ring, he stands tall with his feet apart, about 60% of the "
         "ring's height, ARMS DOWN at his sides with a smartphone in each hand — the moment before he spreads them. In the lower right "
-        "foreground a round robot vacuum glides past, blurred with motion. Nobody else is there.",
+        "foreground a round robot vacuum glides past, blurred with motion. Nobody else is there. The room is exactly as in Image 5: on "
+        "the wall behind him the blue masking-tape rectangle WITH the printed TV photo taped inside it and the child's crayon drawing "
+        "outside it; to the right of him, inside the ring, the low oak operation desk with the laptop, the tablet and a phone on stands "
+        "and a mouse; no floor lamp or side table that is not in Image 5 (10-27: the room lost the TV photo and the desk).",
         WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="17 다시(Fable 1차 중) — 원본 23.04~23.8 시작 자세는 팔 내림(벌림은 영상 안에서) · 링 자리 4번과 같게"),
     job("S06", FACE4 + ["방:R1", LAY("S06_틀.png")],
         START, JUNHO, ROOM_R1.format(n=5), LAY_FRAME.format(n=6),
