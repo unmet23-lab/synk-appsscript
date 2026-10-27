@@ -62,6 +62,7 @@ jobs:
             /desktop/assets/launcher/*.webp
             /experiences/synk-account/assets/**
             /experiences/learning-hub/assets/**
+            /experiences/synk-town/assets/ask/**
             /experiences/path-vr/assets/path-vr-felt-800.webp
             /docs/_ops/코스튬_20261008/assets/**
             /docs/디자인/SNS키트/assets/**
