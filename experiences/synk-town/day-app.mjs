@@ -831,7 +831,7 @@ function offerFrame(v, blocked, labelAt) {
  * panel, a dialog, the seat or the tea board (W8). The question waits while the board is up; once drawn, its key waits for the next boundary. */
 function noticesFrame(now) {
   if (!meanwhileUi || !askUi) return;
-  const blocked = !snapshot || !connected || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.metrics?.().order;
+  const blocked = !snapshot || !connected || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.();
   const board = meanwhileUi.update({ meanwhile: snapshot?.view.day?.scene?.village?.meanwhile, firstPulseAt, blocked, now });
   const ask = askUi.update({ ask: snapshot?.view.ask, blocked: blocked || board.shown, now });
   if (ask.drawn) askReport = ask.drawn;

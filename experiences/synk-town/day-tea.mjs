@@ -307,6 +307,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     const tv = tea, o = tv?.open ?? null, show = !!o && ctx.connected && !ctx.seated && (o.kind === 'one-cup' || ctx.location === 'cafe');
     const entry = !o && ctx.connected && !ctx.seated && ctx.location === 'cafe' && ctx.ownerAwake && !ctx.cafeBusy;
     openWalk.hidden = !(entry && ctx.walking && !ctx.panel);
+    // On a phone the walking status line makes room for it (day-tea.css — the W6b · W8 merged screen).
+    document.body.classList.toggle('tea-entry', !openWalk.hidden);
     const label = `${ctx.inputMode === 'gamepad' ? 'Y · ' : ctx.inputMode === 'touch' ? '' : 'T · '}주문 같이 받기`; if (openWalk.textContent !== label) openWalk.textContent = label; openPanel.disabled = ctx.busy || inflight; openWalk.disabled = ctx.busy || inflight;
     panel.hidden = !(entry && (!ctx.walking || ctx.panel));
     const holding = !!o && hand?.hand !== null && hand?.hand !== undefined && !!hand?.tray?.[hand.hand];
@@ -465,14 +467,17 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     const boardH = board.hidden ? 0 : board.offsetHeight + 8; if (boardH !== placedBoardH) { placedBoardH = boardH; scene.style.setProperty('--tea-board-h', `${boardH}px`); }
     if (bubbles.hidden || !bubbles.children.length) return;
     const box = { width: scene.clientWidth, height: scene.clientHeight }, taken = [];
+    // The top bar's brand · 수첩 · 내 속도 sit over the scene: a bubble under one of them starts below it (a docked one on a phone).
+    const own = scene.getBoundingClientRect(), bar = [...document.querySelectorAll('.topbar .brand, #journal-open, #settings-open')].map(n => n.getBoundingClientRect())
+      .filter(r => r.height).map(r => ({ left: r.left - own.left, right: r.right - own.left, bottom: r.bottom - own.top }));
+    const floorAt = (x, w) => bar.reduce((top, r) => r.left < x + w && r.right > x ? Math.max(top, r.bottom + 8) : top, 8);
     for (const card of bubbles.children) {
       const slot = card.dataset.slot, g = order?.guests.find(x => x.slot === slot), id = card.dataset.anchor || (order?.kind === 'one-cup' ? 'researcher' : g?.who);
-      const at = id ? labelAt(id) : null, w = card.offsetWidth || 240, h = card.offsetHeight || 80;
+      const at = id ? labelAt(id) : null, w = card.offsetWidth || 240, h = card.offsetHeight || 80, fit = v => Math.max(8, Math.min(box.width - w - 8, v));
       let x, y;
-      // Over the speaker's head while it shows above the board; a head behind the board docks over it (screen review F5).
-      if (at && at.x > 8 && at.x < box.width - 8 && at.y > h + 8 && (board.hidden || at.y <= board.offsetTop)) { x = at.x - w / 2; y = at.y - h - 14; }
-      else { x = box.width / 2 - w / 2; y = Math.max(8, (board.hidden ? box.height - 140 : board.offsetTop) - h - 12); }
-      x = Math.max(8, Math.min(box.width - w - 8, x));
+      // Over the speaker's head while it shows above the board and below the top bar; a head behind the board docks over it (screen review F5).
+      if (at && at.x > 8 && at.x < box.width - 8 && (board.hidden || at.y <= board.offsetTop) && at.y - h - 14 >= floorAt(fit(at.x - w / 2), w)) { x = fit(at.x - w / 2); y = at.y - h - 14; }
+      else { x = fit(box.width / 2 - w / 2); y = Math.max(floorAt(x, w), (board.hidden ? box.height - 140 : board.offsetTop) - h - 12); }
       for (const t of taken) if (Math.abs(t.x - x) < w * .9 && Math.abs(t.y - y) < h) y = t.y - h - 8;
       taken.push({ x, y });
       const transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`; if (card.style.transform !== transform) card.style.transform = transform;
@@ -588,7 +593,7 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     metrics: () => ({ order: order?.id ?? null, kind: order?.kind ?? null, phase: hand?.phase ?? null, board: hand?.board ?? null, tray: hand?.tray ?? null, hand: hand?.hand ?? null,
       folded, simple, sounds: [...played], boardShown: !board.hidden, chip: !handChip.hidden, bubbles: [...bubbles.children].map(c => c.dataset.slot), entry: !openWalk.hidden || !panel.hidden, sound: sfx.stats() }),
     sound: () => sfx,
-    dispose() { disposed = true; removeEventListener('keydown', keydown, true); sfx.dispose(); for (const node of [bubbles, board, unfold, handChip, live, openWalk, panel]) node.remove(); document.body.classList.remove('tea-mode', 'tea-folded'); },
+    dispose() { disposed = true; removeEventListener('keydown', keydown, true); sfx.dispose(); for (const node of [bubbles, board, unfold, handChip, live, openWalk, panel]) node.remove(); document.body.classList.remove('tea-mode', 'tea-folded', 'tea-entry'); },
   };
 }
 

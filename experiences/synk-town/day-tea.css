@@ -142,6 +142,11 @@ body.tea-mode.walk-mode .scene-caption{display:none}
   .tea-open-walk.felt{width:164px;bottom:calc(var(--bottom) + 144px);font-size:13.5px}
   .tea-bubble{width:min(260px,calc(100% - 16px))}
 }
+/* On a phone 「주문 같이 받기」 and 「펼치기」 take the right column just over the joystick row, where the walking status line and the
+   scene's words run edge to edge: those make room (the W6b · W8 merged screen). A low landscape phone keeps its own bottom row. */
+@media(max-width:599px),(min-width:600px) and (max-width:760px) and (min-height:601px){
+  body.walk-mode.tea-entry .walk-status,body.walk-mode.tea-entry .scene-caption,body.walk-mode.tea-folded .walk-status,body.walk-mode.tea-folded .scene-caption{right:calc(var(--edge) + 172px)}
+}
 @media(max-width:360px){.tea-pick{min-width:52px}.tea-slot{width:46px}}
 
 @keyframes tea-drop{0%{transform:translateY(-10px) scale(1,1)}60%{transform:translateY(0) scale(1.06,.9)}100%{transform:none}}

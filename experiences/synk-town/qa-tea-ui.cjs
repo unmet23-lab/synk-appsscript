@@ -82,10 +82,20 @@ async function makeWithKeys(page, cup) {
   await page.keyboard.press('Enter'); await delay(200);
 }
 async function waitTea(page, test, arg, timeout = 8000) { await page.waitForFunction(test, arg, { timeout }); await delay(250); }
-async function startOrder(page, scene) {
+/** The selectors among these whose visible box lies over this one's. */
+const HUD_FOOT = ['#walk-status', '#scene-caption', '#walk-interact', '#walk-joystick'];
+const clashes = (page, one, others = HUD_FOOT) => page.evaluate(([one, others]) => {
+  const box = s => { const e = document.querySelector(s); if (!e || e.hidden) return null; const r = e.getBoundingClientRect(); return r.width && r.height ? r : null; };
+  const a = box(one); return a ? others.filter(s => { const b = box(s); return b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }) : [];
+}, [one, others]);
+async function startOrder(page, scene, entryShot = null) {
   await walkTo(page, ROUTES.cafe);
   await page.waitForFunction(() => SYNKTownDay.metrics().tea?.entry, null, { timeout: 10000 }).catch(() => {});
   const m = await tea(page); check(scene, m?.entry, '찻집 앞에서 「주문 같이 받기」가 보인다', m);
+  // On a phone it takes the right column over the joystick row, where the walking status line runs (W6b·W8 merged screen).
+  const clash = await clashes(page, '#tea-open');
+  check(scene, !clash.length, '「주문 같이 받기」가 걷기 상태 줄 · 장면 글 · 이야기 단추 · 조이스틱과 겹치지 않는다', clash);
+  if (entryShot) await shot(page, entryShot);
   await page.locator('#tea-open:visible, #tea-panel .felt:visible').first().click();
   await waitTea(page, () => SYNKTownDay.metrics().tea?.order && SYNKTownDay.metrics().tea.bubbles.length > 0);
 }
@@ -173,7 +183,12 @@ async function simpleScene(browser) {
   const s = await open(browser, f, { device: 'phone' });
   try {
     const { page } = s;
-    await startOrder(page, scene);
+    await startOrder(page, scene, 'tea-entry-390');
+    // The board is tall here, so the words dock over it — below the top bar's brand · 수첩 · 내 속도, never under them.
+    await delay(300);
+    const under = await page.evaluate(() => { const bar = [...document.querySelectorAll('.topbar .brand, #journal-open, #settings-open')].map(n => n.getBoundingClientRect()).filter(r => r.height);
+      return [...document.querySelectorAll('.tea-bubble')].filter(b => { const r = b.getBoundingClientRect(); return bar.some(t => t.left < r.right && t.right > r.left && t.top < r.bottom && t.bottom > r.top); }).map(b => b.dataset.slot); });
+    check(scene, !under.length, '판 위에 붙은 말풍선이 위쪽 막대(브랜드 · 수첩 · 내 속도) 밑으로 들어가지 않는다', under);
     await shot(page, 'tea-listen-390');
     for (const slot of ['a', 'b']) { await page.locator(`.tea-bubble[data-slot="${slot}"]`).getByRole('button', { name: '네, 알겠어요' }).click(); await delay(300); }
     const m = await tea(page); check(scene, m.simple === true, '움직임 줄이기 기기는 간단히 만들기가 처음 켜져 있다', m.simple);
@@ -312,6 +327,15 @@ async function oneCupScene(browser, { simple = false } = {}) {
       const hint = await page.locator('#tea-board .tea-hint').innerText(), pick = simple ? '#tea-board .tea-simple-cup' : '#tea-board .tea-cup-pick';
       check(scene, /찻집에서/.test(hint) && await page.locator(pick).first().isDisabled(), '온실에서는 「찻집에서 한 잔 만들어 가요」 — 판은 찻집에서만 담긴다', hint);
       await shot(page, `tea-r6-board-${width}`);
+      if (simple) {
+        // Folded on a phone the joystick and the talk button come back: 「펼치기」 keeps to the right column, clear of them and of the status line.
+        await page.locator('#tea-board .tea-fold').click(); await delay(400);
+        const folded = await clashes(page, '.tea-unfold');
+        check(scene, (await tea(page)).folded && !folded.length, '휴대폰에서 접으면 「펼치기」가 걷기 상태 줄 · 장면 글 · 이야기 단추 · 조이스틱과 겹치지 않는다', folded);
+        await shot(page, 'tea-r6-folded-390');
+        await page.locator('.tea-unfold').click(); await delay(400);
+        check(scene, !(await tea(page)).folded, '「펼치기」로 판이 다시 열린다');
+      }
       await walkTo(page, ROUTES.cafeFromGreenhouse);
       await page.waitForFunction(p => !document.querySelector(p)?.disabled, pick, { timeout: 10000 }).catch(() => {});
       // The giving button: the hand chip's when the cup is made by hand, the picked cup's row in 「간단히 만들기」 (review A2).
