@@ -125,10 +125,17 @@ const 단독원천추가 = new Set([
   'desktop/renderer/platform-continuity.mjs', 'desktop/renderer/platform-continuity.css',
   'docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js',
 ]);
+// 같은 단독 마감의 10-27 후속: 사용자가 남은 경고 정리를 직접 요청한 여섯 공개 쪽.
+// 기본 정책·원천 범위·검수자·해시/최종 판정 조건은 넓히지 않는다.
+const 단독경고공개 = new Set([
+  'name/index.html', 'name/family/index.html', 'nombre/index.html',
+  'rl/index.html', 'privacy/index.html', 'lab/topik4/index.html',
+]);
+const 단독경고기준 = /^\.github\/site-check\/baseline\/(?:axe\.json|manifest\.json|(?:desktop|mobile)\/(?:name(?:~family)?|nombre|rl|privacy|lab~topik4|world~hangul-stage)\.(?:jpg|png))$/;
 function 단독범위맞나(scope, p, role) {
   if (scope !== 'spaghetti-followup-20261026') return false;
   if (role === '배포 후보') return !/(?:^|\/)(?:qa|tests|_ops)(?:\/|$)/.test(p) &&
-    (['account/dist/client.js', 'account/dist/platform.js', 'account/client.html', 'account/platform.html'].includes(p) || /^(?:id(?:-rehearsal)?\/|try\/|world\/|care\/|synk-town\/|teacher-world\/)/.test(p));
+    (단독경고공개.has(p) || 단독경고기준.test(p) || ['account/dist/client.js', 'account/dist/platform.js', 'account/client.html', 'account/platform.html'].includes(p) || /^(?:id(?:-rehearsal)?\/|try\/|world\/|care\/|synk-town\/|teacher-world\/)/.test(p));
   return 단독원천추가.has(p) || /^(?:atlas\/|account\/|experiences\/(?:synk-account|synk-world-app|synk-town|synk-teacher-world|relationship-care|play-common|path-travel)\/|tests\/|tools\/(?:lib\/|company-messenger\/|(?:build-|check-|sync-atlas|검수|짝검사)[^/]*$)|package(?:-lock)?\.json$)/.test(p);
 }
 function 사용자지정정책(o, files, candidate, 판 = 3) {

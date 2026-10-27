@@ -9,7 +9,10 @@ test('WORLD callback payload freezes real account storage and all dynamic wardro
  for(const [name,digest]of Object.entries(manifest.files))assert.equal(sha(await fs.readFile(path.join(payload,name))),digest,name);
  assert.equal(manifest.deployed,false);assert.equal(manifest.userLoginVerified,false);assert.equal(manifest.files['platform.html'],undefined);assert.equal(manifest.files['dist/platform.js'],undefined);
  const source=await fs.readFile(path.join(payload,'dist/client.js'),'utf8');assert.match(source,/SYNKPlayHost/);assert.match(source,/synk-play/);assert.match(source,/플랫폼 또는 WORLD/);
- const html=await fs.readFile(path.join(payload,'client.html'),'utf8');assert.match(html,/src="\/try\/learning-hub\/atlas-learning.js"/);assert.match(html,/href="https:\/\/synk.im\/world\/"/);assert.match(html,/<nav>[\s\S]*href="\/try\/learning-hub\/">기본 학습<\/a>/);assert.doesNotMatch(html,/href="\.\.\/learning-hub\/"/);
+ const html=await fs.readFile(path.join(payload,'client.html'),'utf8');
+ const learningScript=new URL(/src="([^"]*atlas-learning\.js[^\"]*)"/.exec(html)[1],'https://synk.im/account/client.html');
+ assert.equal(learningScript.pathname,'/try/learning-hub/atlas-learning.js');assert.ok(learningScript.searchParams.get('v'));
+ assert.match(html,/href="https:\/\/synk.im\/world\/"/);assert.match(html,/<nav>[\s\S]*href="\/try\/learning-hub\/">기본 학습<\/a>/);assert.doesNotMatch(html,/href="\.\.\/learning-hub\/"/);
  for(const name of ['wardrobe.css','world.webmanifest','dist/wardrobe-three.js'])assert.ok(manifest.files[name]);
  assert.deepEqual(JSON.parse(await fs.readFile(path.join(payload,'config.json'),'utf8')),config);await assert.rejects(prepare(input,out),/EEXIST/);
  const invalid=path.join(dir,'invalid.json');await fs.writeFile(invalid,JSON.stringify({...config,authorizationClients:[]}));await assert.rejects(prepare(invalid,path.join(dir,'invalid')),/WORLD_PUBLIC_CONFIG_NOT_VERIFIED/);

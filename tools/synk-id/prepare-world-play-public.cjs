@@ -9,7 +9,7 @@ const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
 function once(text,from,to){if(text.split(from).length!==2)throw Error('WORLD_PUBLIC_SOURCE_CHANGED');return text.replace(from,to);}
 function transform(name,text){
  if(name===SOURCE+'/src/client.mjs')return once(text,"if (!PRODUCTS[product]) throw new Error('등록된 SYNK 제품 주소를 확인해 주세요.');","if (!['platform','world'].includes(product)) throw new Error('등록된 플랫폼 또는 WORLD 계정 주소로 이동해 주세요.');");
- if(name===SOURCE+'/client.html')return text.replaceAll('href="../learning-hub/"','href="/try/learning-hub/"').replace('href="./index.html"','href="https://synk.im/id/"').replace('src="../learning-hub/atlas-learning.js"','src="/try/learning-hub/atlas-learning.js"');
+ if(name===SOURCE+'/client.html')return text.replaceAll('href="../learning-hub/"','href="/try/learning-hub/"').replace('href="./index.html"','href="https://synk.im/id/"').replace('src="../learning-hub/atlas-learning.js?v=atlas-learning"','src="/try/learning-hub/atlas-learning.js?v=atlas-learning"');
  return text;
 }
 async function prepare(configPath,out,{includePlatform=false,platformSourceRoot=ROOT}={}){

@@ -115,6 +115,8 @@ jobs:
       - name: run tests (기준선보다 늘어난 실패만 빨강)
         env:
           BUNDLE: ${{ matrix.bundle }}
+          # 운영 서버를 쓰지 않는 격리 fixture에서 실제 Linux flock의 120초 대기까지 확인한다.
+          SYNK_TEST_REAL_BACKUP_LOCK_TIMEOUT: ${{ matrix.bundle == '회사' && '1' || '0' }}
         run: |
           if [ -f tests/ci넓은시험_알려진실패.json ]; then
             node tools/ci넓은시험.js "$BUNDLE" --후보 "$RUNNER_TEMP/wide-baseline.json"

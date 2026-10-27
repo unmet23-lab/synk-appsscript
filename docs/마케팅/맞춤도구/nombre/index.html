@@ -18,7 +18,7 @@
   @font-face{font-family:'SUIT Variable';src:url('assets/fonts/SUIT-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
   :root{
     --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8;
-    --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
+    --oat:#EDE7DC; --stone:#C7BFB2; --ash:#6F675D; --deepwool:#575046;
     --coral:#F96859; --coral-wash:#FEF0E9; --rim:#941F19;
     --kr:'SUIT Variable','SUIT',system-ui,sans-serif;
     --en:'Inter Tight','SUIT Variable',system-ui,sans-serif;
@@ -33,11 +33,11 @@
   .bar{position:sticky; top:0; z-index:9; background:rgba(251,247,240,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--stitch)}
   .bar .inner{max-width:720px; margin:0 auto; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; gap:8px}
   .home{font-size:15px; font-weight:750; letter-spacing:-0.03em; color:var(--ink); text-decoration:none}
-  .home b{color:var(--coral)}
+  .home b{color:var(--rim)}
   .langbtns{display:flex; gap:6px}
   .langbtn{font-family:var(--en); font-size:13px; font-weight:650; color:var(--deepwool); background:transparent;
     border:1px solid var(--stitch); border-radius:99px; padding:5px 13px; cursor:pointer}
-  .langbtn[aria-pressed="true"]{background:var(--coral); border-color:var(--coral); color:#fff}
+  .langbtn[aria-pressed="true"]{background:var(--coral); border-color:var(--coral); color:var(--ink)}
   .wrap{max-width:720px; margin:0 auto; padding:0 20px}
   section{padding:40px 0; border-bottom:1px solid var(--stitch)}
   section:last-of-type{border-bottom:0}
@@ -70,7 +70,7 @@
   .alts .opts{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
   .alts button{font-family:var(--kr); font-size:20px; font-weight:800; letter-spacing:-0.03em; background:#fff; color:var(--ink);
     border:1.5px solid rgba(249,104,89,.45); border-radius:12px; padding:6px 14px; cursor:pointer}
-  .alts button[aria-pressed="true"]{background:var(--coral); color:#fff; border-color:var(--coral)}
+  .alts button[aria-pressed="true"]{background:var(--coral); color:var(--ink); border-color:var(--coral)}
   .alts small{display:block; font-family:var(--en); font-size:12px; font-weight:600; letter-spacing:0; opacity:.85}
   .why{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:7px}
   .why li{background:var(--paper); border:1px solid var(--stitch); border-radius:12px; padding:10px 13px; font-size:14.5px}
@@ -86,7 +86,7 @@
   .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
   .btn{font-family:var(--en); font-size:14px; font-weight:650; border-radius:99px; padding:9px 17px; cursor:pointer;
     border:1px solid var(--stitch); background:#fff; color:var(--deepwool)}
-  .btn.primary{background:var(--coral); border-color:var(--coral); color:#fff}
+  .btn.primary{background:var(--coral); border-color:var(--coral); color:var(--ink)}
   .btn:disabled{opacity:.5; cursor:default}
   .missing{margin-top:16px; padding:14px 16px; background:var(--oat); border-radius:12px; font-size:14.5px}
   .missing[hidden]{display:none}
@@ -105,14 +105,14 @@
 </style>
 </head>
 <body data-ui="es">
-<div class="bar"><div class="inner">
+<header class="bar"><div class="inner">
   <a class="home" href="https://synk.im/lab/">SYNK <b>LAB</b></a>
   <div class="langbtns" role="group" aria-label="Language">
     <button class="langbtn" data-ui="es" aria-pressed="true">ES</button>
     <button class="langbtn" data-ui="pt" aria-pressed="false">PT</button>
     <button class="langbtn" data-ui="en" aria-pressed="false">EN</button>
   </div>
-</div></div>
+</div></header>
 
 <main class="wrap">
   <section>

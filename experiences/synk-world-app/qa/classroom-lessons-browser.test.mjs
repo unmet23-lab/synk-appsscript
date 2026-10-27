@@ -136,15 +136,17 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
   async function shoot(tag,name){
    await page.evaluate(()=>document.fonts.ready);
    await page.evaluate(()=>{document.querySelector('#world-panel').style.scrollBehavior='auto';document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]').scrollIntoView({block:'start'});});await page.waitForTimeout(120);
-   const total=await section.evaluate(el=>Math.round(el.getBoundingClientRect().height)),parts=[];let covered=0;
+   // 바깥쪽 픽셀 경계로 자른다. 양끝을 안쪽으로 반올림하면 전체가 보이는
+   // 194.64px 칸도 193px만 찍혀, 더 내릴 곳이 없는데 같은 조각을 반복한다.
+   const total=await section.evaluate(el=>{const r=el.getBoundingClientRect();return Math.ceil(r.bottom)-Math.floor(r.top);}),parts=[];let covered=0;
    for(let i=0;i<20&&covered<total;i++){
     const g=await page.evaluate(()=>{const panel=document.querySelector('#world-panel'),r=document.querySelector('#world-classroom-lessons .ws-class[data-label="CLASS"]').getBoundingClientRect(),p=panel.getBoundingClientRect();
-     const top=Math.max(r.top,p.top+panel.clientTop),bottom=Math.min(r.bottom,p.top+panel.clientTop+panel.clientHeight);return {x:Math.round(r.left),width:Math.round(r.width),top:Math.ceil(top),bottom:Math.floor(bottom),offset:Math.ceil(top-r.top)};});
+     const top=Math.max(r.top,p.top+panel.clientTop),bottom=Math.min(r.bottom,p.top+panel.clientTop+panel.clientHeight);return {x:Math.floor(r.left),width:Math.ceil(r.right)-Math.floor(r.left),top:Math.floor(top),bottom:Math.ceil(bottom),offset:Math.floor(top)-Math.floor(r.top)};});
     const height=g.bottom-g.top;if(height<=0)break;
     parts.push({offset:g.offset,width:g.width,buffer:await page.screenshot({clip:{x:g.x,y:g.top,width:g.width,height}})});covered=g.offset+height;
     if(covered>=total)break;await page.evaluate(step=>{document.querySelector('#world-panel').scrollTop+=step;},height-4);await page.waitForTimeout(80);
    }
-   assert.ok(covered>=total-1,`${tag}-${name}: 칸 전체를 담지 못했다 ${covered}/${total}`);
+   assert.ok(covered>=total,`${tag}-${name}: 칸 전체를 담지 못했다 ${covered}/${total}`);
    const width=parts[0].width,sheet=await browser.newPage({viewport:{width,height:Math.min(total,4000)}});
    await sheet.setContent(`<body style="margin:0;background:#0C0D10"><div id="s" style="position:relative;width:${width}px;height:${total}px">${parts.map(p=>`<img style="position:absolute;left:0;top:${p.offset}px;display:block" src="data:image/png;base64,${p.buffer.toString('base64')}">`).join('')}</div></body>`);
    await sheet.evaluate(()=>Promise.all([...document.images].map(img=>img.decode())));

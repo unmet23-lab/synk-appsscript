@@ -17,6 +17,7 @@ function inline(s) {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 function render(text, numberClass, locale) {
+  let tableNumber = 0;
   const lines = text.trim().split('\n'), blocks = [];
   for (let i = 0; i < lines.length;) {
     const line = lines[i].trim();
@@ -31,7 +32,7 @@ function render(text, numberClass, locale) {
       const rows = [];
       while (i < lines.length && lines[i].trim().startsWith('|')) rows.push(lines[i++].trim().slice(1, -1).split('|').map(x => x.trim()));
       if (rows.length < 2 || !rows[1].every(x => /^:?-+:?$/.test(x))) throw new Error('Invalid table');
-      blocks.push('<div class="tbl-scroll" tabindex="0" role="region" aria-label="' + (locale === 'ko' ? '개인정보 안내 표' : 'Privacy information table') + '"><table><thead><tr>' + rows[0].map(x => '<th scope="col">' + inline(x) + '</th>').join('') + '</tr></thead><tbody>' + rows.slice(2).map(row => '<tr>' + row.map(x => '<td>' + inline(x) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>'); continue;
+      blocks.push('<div class="tbl-scroll" tabindex="0" role="region" aria-label="' + (locale === 'ko' ? '개인정보 안내 표' : 'Privacy information table') + ' ' + (++tableNumber) + '"><table><thead><tr>' + rows[0].map(x => '<th scope="col">' + inline(x) + '</th>').join('') + '</tr></thead><tbody>' + rows.slice(2).map(row => '<tr>' + row.map(x => '<td>' + inline(x) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>'); continue;
     }
     if (line.startsWith('- ')) {
       const items=[];

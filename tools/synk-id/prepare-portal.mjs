@@ -123,7 +123,7 @@ export async function preparePortal({ targetName, out, configPath, currentPath, 
   const icons = [16, 32, 48].map(size => `<link rel="icon" type="image/png" sizes="${size}x${size}" href="/assets/favicon-synk-20260919-${size}.png">`).join('\n')
     + '\n<link rel="icon" type="image/svg+xml" sizes="any" media="(prefers-color-scheme: dark)" href="/assets/favicon-synk-dark-20260919.svg">';
   swap('<meta name="referrer" content="no-referrer">', `<meta name="referrer" content="no-referrer">\n<meta name="robots" content="noindex,nofollow">\n${icons}`, 1);
-  swap('src="../learning-hub/atlas-learning.js"', 'src="./vendor/atlas-learning.js"', 1);
+  swap('src="../learning-hub/atlas-learning.js?v=atlas-learning"', 'src="./vendor/atlas-learning.js?v=atlas-learning"', 1);
   swap('<nav><a href="./platform.html">플랫폼</a><a href="./client.html?product=world">WORLD</a></nav>', '<nav><a href="https://synk.im/">synk.im</a></nav>', 1);
   swap('<a class="brand" href="./platform.html">', '<a class="brand" href="./">', 1);
   swap('href="../learning-hub/"', 'href="https://synk.im/"', html.split('href="../learning-hub/"').length - 1);

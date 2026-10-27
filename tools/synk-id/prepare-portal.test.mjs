@@ -49,7 +49,11 @@ test('explicit generated configuration preserves Fortune browser/native and lega
   }
   assert.throws(() => core.trustedConsentRedirect('http://127.0.0.1:4296/?code=synthetic', checked, 'synthetic-fortune-browser'));
   const html = fs.readFileSync(path.join(result.output, 'index.html'), 'utf8');
-  assert.match(html, /noindex,nofollow/);assert.match(html, /src="\.\/vendor\/atlas-learning.js"/);assert.doesNotMatch(html, /href="\.\/platform.html"/);
+  assert.match(html, /noindex,nofollow/);
+  const learningScript = new URL(/src="([^"]*atlas-learning\.js[^\"]*)"/.exec(html)[1], 'https://synk.im/id/');
+  assert.equal(learningScript.pathname, '/id/vendor/atlas-learning.js');
+  assert.ok(learningScript.searchParams.get('v'));
+  assert.doesNotMatch(html, /href="\.\/platform.html"/);
   assert.equal(result.files.length, 14);assert.equal(result.clients, 4);
   assert.deepEqual(fs.readFileSync(path.join(result.output, 'dist/app.js')), fs.readFileSync(path.join(options.root, 'experiences/synk-account/dist/app.js')));
 });

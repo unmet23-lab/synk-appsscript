@@ -158,7 +158,7 @@ function renderHome() {
     if (s.readable) b.addEventListener('click', () => audio.say(s.text));
     return b;
   }));
-  $('plate').replaceChildren(...v.plate.map(s => el('div', { class: 'syl', 'aria-label': s.text },
+  $('plate').replaceChildren(...v.plate.map(s => el('div', { class: 'syl', role: 'img', 'aria-label': s.text },
     s.cells.map(c => el('span', { class: `cell${c.filled ? ' filled' : ''}${c.later ? ' later' : ''}`, 'aria-hidden': 'true' }, c.glyph)))));
   $('amounts').replaceChildren(...[5, 10, 15].map(n => el('button', { class: 'amount', type: 'button', role: 'radio', 'aria-checked': String(progress.amount === n),
     onclick: () => { progress = readProgress({ ...progress, amount: n }); save(); renderHome(); } }, tr('amount', { n }))));
@@ -703,7 +703,7 @@ function endSession() {
 const GRAD_WORDS = ['한국어', '안녕', '사랑', '김밥'];
 function showGraduation() {
   const v = view(progress, pack, now());
-  $('grad-plate').replaceChildren(...v.plate.map(s => el('div', { class: 'syl', 'aria-label': s.text }, s.cells.map(c => el('span', { class: `cell${c.filled ? ' filled' : ''}`, 'aria-hidden': 'true' }, c.glyph)))));
+  $('grad-plate').replaceChildren(...v.plate.map(s => el('div', { class: 'syl', role: 'img', 'aria-label': s.text }, s.cells.map(c => el('span', { class: `cell${c.filled ? ' filled' : ''}`, 'aria-hidden': 'true' }, c.glyph)))));
   const known = new Set(v.letters.filter(l => l.state !== 'unmet').map(l => l.id));
   const words = readableWords(pack, known).filter(w => w.letters.some(isFinal));
   const shown = [...GRAD_WORDS.map(t => words.find(w => w.text === t)).filter(Boolean), ...words].filter((w, i, all) => all.indexOf(w) === i).slice(0, 4);

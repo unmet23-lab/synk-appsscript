@@ -1,0 +1,1307 @@
+{
+  "date": "2026-10-27",
+  "scope": "기존47건 마감과 구분한 제외시험·경고 후속",
+  "sourceInventory": {
+    "head": "fe91d930178804755bf1ec70f07a559417811096",
+    "run": 40455034677,
+    "total": 104,
+    "passed": 96,
+    "rows": [
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 29,
+        "name": "stdout bundle is encrypted, header and pack validated, and fixture history restores exactly",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 94,
+        "name": "detached commits bundle from isolated refs without changing any original ref, HEAD, index, or files",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 121,
+        "name": "public unpublished heads, stash, and detached history archive only what the public origin lacks, without a remote write (10-19)",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 182,
+        "name": "a new branch name on a bundled commit stays covered by the last verified bundle; a newer commit waits for the next apply",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 235,
+        "name": "a branch that moves after the scan still bundles the scanned commit without touching the original refs (10-19)",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 262,
+        "name": "a public origin with no refs yet still gets a self-contained bundle that restores into an empty repository (10-19)",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 296,
+        "name": "a Drive-verified bundle becomes the base: the next bundle holds only new objects, names its chain, and restores after it (10-20)",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 396,
+        "name": "public prerequisites take the first reaching remote ref (branches first, then ls-remote order) from one rev-list, however many remote refs (10-20)",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/Git보관묶음.test.cjs",
+        "line": 449,
+        "name": "chain prerequisites take the earliest reaching earlier bundle from one graph, however many receipts and prerequisites (10-20)",
+        "originalSkipReason": "local archive encryption module unavailable",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/atlas-dating-deploy.test.mjs",
+        "line": 42,
+        "name": "actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts",
+        "originalSkipReason": "Set SYNK_QA_CADDY to an explicitly installed Caddy binary; no download is performed.",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 55,
+        "name": "Windows exclusive apply preserves branch, staged index, current dirty bytes and durable backup; retry does not reapply",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 65,
+        "name": "changed source after validation holds all writes including additions",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 76,
+        "name": "Windows applies bounded additions/deletions through owned handles",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 80,
+        "name": "Windows actual open writer prevents application and preserves bytes",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 87,
+        "name": "Windows journal restart resumes only unapplied deltas and keeps original preimage backup",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 93,
+        "name": "Windows partial journal bytes or external recovery edits hold without overwriting them",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 98,
+        "name": "Windows source index movement after validation holds before touching content",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 102,
+        "name": "Windows hardlink target holds before changing any linked file",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-integration.test.cjs",
+        "line": 114,
+        "name": "Windows final locked source-set check catches files added after Node recapture",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 46,
+        "name": "a gateway still on the generation it booted with is not touched",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 52,
+        "name": "the 10-19 case: anthropic published a new generation after the gateway booted",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 61,
+        "name": "drift that cannot be proven leaves the gateway alone",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 82,
+        "name": "restart waits for Hermes to report no active agents, background processes or tool children",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 98,
+        "name": "a running tool child process counts as busy",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 120,
+        "name": "a drifted gateway is restarted once: after a second sighting, only while idle, never twice",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 158,
+        "name": "a restart that times out or fails is reported and not retried",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 173,
+        "name": "a gateway that stays busy for half an hour is still left alone but no longer reported as routine",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 191,
+        "name": "dot-sourcing loads the functions without running recovery, and a missing gateway is still reported",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/hermes-synk-recovery.test.cjs",
+        "line": 200,
+        "name": "each check leaves a small ASCII status record that the AI-free monitor reads as is",
+        "originalSkipReason": "Windows PowerShell only",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/large-backup-receipt.test.cjs",
+        "line": 69,
+        "name": "large upload receipt encrypts exact bytes and rejects remote checksum mismatch and unsafe prior copies",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/large-backup-receipt.test.cjs",
+        "line": 99,
+        "name": "changed large receipt is reclassified and encrypted; concurrent edits and size overflow fail closed",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/member-statement-v4-evaluation.test.cjs",
+        "line": 38,
+        "name": "ko4 disclosed regression H04 negation",
+        "originalSkipReason": "Original label overstates rejection of written-only communication as rejection of all writing; preserve raw label and separate adjudication.",
+        "status": "원본 라벨 판단 보류",
+        "evidence": []
+      },
+      {
+        "file": "tests/member-statement-v4-evaluation.test.cjs",
+        "line": 38,
+        "name": "ko4 disclosed regression H30 compound",
+        "originalSkipReason": "Original gold condition scope is ambiguous; retain raw40 and excluded38 sensitivity separately.",
+        "status": "원본 라벨 판단 보류",
+        "evidence": []
+      },
+      {
+        "file": "tests/onedrive-backup.test.cjs",
+        "line": 620,
+        "name": "the folder-listing link check over many paths still blocks a junction like the per-path check (10-19)",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/onedrive-backup.test.cjs",
+        "line": 834,
+        "name": "an unchanged worktree reuses its last git result and any file, index or head change runs git again (10-19)",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 20,
+        "name": "protected source encrypts and restores exact bytes; same content reuses and changed content appends",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 34,
+        "name": "protected-source inventory cannot expand a scope or pass a stale fingerprint/reparse flag",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 43,
+        "name": "a source changing during encryption never becomes an accepted destination",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 53,
+        "name": "embedded media source can be encrypted only with a matching prior OneDrive copy receipt",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 70,
+        "name": "a check run counts a protected version first seen after the last apply as waiting, never an apply run or a seen version",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 84,
+        "name": "a source edited after the inventory is re-classified once and kept under its current fingerprint only",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 111,
+        "name": "a removed worktree skips only its rows while an existing unauthorized root still stops the batch",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 125,
+        "name": "a temporary repository folder removed after the inventory skips only its rows; a remaining one stops and names the row (10-19)",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 142,
+        "name": "prior OneDrive copy re-reads a ctime-only change once but never accepts persistent or content drift",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 191,
+        "name": "a reconcile checks reparse points in four batches and reads the copy manifest once, however many media and edited rows it has (10-21)",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 220,
+        "name": "the status file keeps the previous evidence until every row is done, also when a run stops early (10-21)",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/보호소스보관.test.cjs",
+        "line": 240,
+        "name": "a stale inventory waits for a running OneDrive run to write the new one, and stops at once when none is running (10-21)",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "tests/음량마감.test.mjs",
+        "line": 80,
+        "name": "기존 회차 재현: 세션 공유 v14 확정본을 그 회차 설정으로 다시 만들면 바이트까지 같다",
+        "originalSkipReason": "이 PC에 렌더 원본·확정본이 없음(git 밖 파일)",
+        "status": "통과",
+        "evidence": [
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+        "line": 17,
+        "name": "Caddy adapter advertises only reachable TCP protocols and clears cached alternatives",
+        "originalSkipReason": "Set SYNK_QA_CADDY to an existing Caddy binary; no download is performed.",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+        "line": 45,
+        "name": "Caddy runtime proxy error redacts a synthetic media capability URI",
+        "originalSkipReason": "Set SYNK_QA_CADDY to an existing Caddy binary.",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+        "line": 259,
+        "name": "real Linux flock times out at the fixed 120 seconds without starting backup work",
+        "originalSkipReason": "Opt in only inside the isolated Linux container for the real 120-second timeout",
+        "status": "Linux CI 실행 대기",
+        "evidence": []
+      },
+      {
+        "file": "desktop/tests/installations-asar.test.cjs",
+        "line": 44,
+        "name": "Electron inspects physical ASAR bytes while preserving pins and path boundaries",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-environment-retry"
+        ]
+      },
+      {
+        "file": "desktop/tests/lifecycle.test.cjs",
+        "line": 83,
+        "name": "newer launch-only pins preserve available installers without offering a downgrade as an update",
+        "originalSkipReason": "설치판 경로가 Windows 꼴(path.win32)이라 Windows에서만 실제 파일로 잰다",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "desktop/tests/native-logout-provider.test.cjs",
+        "line": 24,
+        "name": "exact installed source reproduces false refresh report after server confirmed success and second logout403",
+        "originalSkipReason": "git-ignored 10-09 installed source is not on this PC: <작업본>/desktop/artifacts/platform-convenience-candidate-2026-10-09T12-10-17-238Z/src/auth-service.cjs",
+        "status": "옛 설치 원문 부재",
+        "evidence": []
+      },
+      {
+        "file": "desktop/tests/program-root.test.cjs",
+        "line": 27,
+        "name": "missing LocalAppData finds a real pinned fixture and still rejects changed bytes",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+        "line": 23,
+        "name": "actual public-transformed bundles never prefix the next learning route twice",
+        "originalSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+        "status": "통과",
+        "evidence": [
+          "source-assets",
+          "source-assets-retry",
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+        "line": 30,
+        "name": "public daily experiment and free fallback use exactly one /try prefix",
+        "originalSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+        "status": "통과",
+        "evidence": [
+          "source-assets",
+          "source-assets-retry",
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+        "line": 35,
+        "name": "source hosting and public nested racing hosting remain valid after canonical generation",
+        "originalSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+        "status": "통과",
+        "evidence": [
+          "source-assets",
+          "source-assets-retry",
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+        "line": 39,
+        "name": "last local source reconstructs the double-prefix failure before the release fix",
+        "originalSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+        "status": "통과",
+        "evidence": [
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/reward-cas.test.mjs",
+        "line": 20,
+        "name": "the prior guidance read reproduces a silently accepted stale first-shop overwrite",
+        "originalSkipReason": "CI 체크아웃에는 없다 — ./collection.before-read-record.js (git 밖 10-09 출시 사본)",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/brand-opening/qa/home-room-first-frame.test.mjs",
+        "line": 77,
+        "name": "셰이더를 엮는 동안 방을 닫으면 오류 없이 접히고 캔버스도 남지 않는다",
+        "originalSkipReason": "KHR_parallel_shader_compile 없음",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/daily-fortune/tests/account-contract.test.mjs",
+        "line": 13,
+        "name": "실제 운세 서버 계약과 브라우저 클라이언트로 두 계정·두 기기의 저장과 복원을 왕복한다",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+        "line": 19,
+        "name": "every published video quality and reference resolves inside root and nested deployments",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+        "line": 38,
+        "name": "room and comparison pages keep images, styles and media under the deployment mount",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/seedance-sample.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+        "line": 52,
+        "name": "speech model, microphone worklet and worker retain their deployment directory",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "line": 46,
+        "name": "public manifest preserves exact continuity, clip hashes and both qualities",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets",
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "line": 78,
+        "name": "Pages overlay is minimal, deterministic and source-audited",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "line": 135,
+        "name": "Pages rebuild refuses to overwrite an unexpected PATH introduction",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "line": 146,
+        "name": "published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+        "line": 170,
+        "name": "Pages verification detects changed published bytes",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-server-package.test.mjs",
+        "line": 40,
+        "name": "model GET and HEAD ranges return exact bytes and denied sources stay private",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/path-vr/tests/interview-server-package.test.mjs",
+        "line": 195,
+        "name": "standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/account-browser.test.mjs",
+        "line": 23,
+        "name": "actual Chromium account-mode Maru preserves life progress, guarded games, Town, enrollment and logout",
+        "originalSkipReason": "CI 체크아웃에는 없다 — experiences/synk-world-home/assets/avatar-textiles-v1 · experiences/synk-town/assets/district/townwide-merged.json (git 밖 WORLD 자산) · WORLD 서버의 SYNK-talk lib/world-v1-server.js",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/cafe-static.test.mjs",
+        "line": 13,
+        "name": "frozen /world cafe completes and restores the physical checkpoint through the official account transport",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-cafe-20261010-r2/world (git 밖 고정 /world 판)",
+        "status": "과거 고정판 불일치",
+        "evidence": []
+      },
+      {
+        "file": "experiences/synk-world-app/qa/classroom-homework-browser.test.mjs",
+        "line": 104,
+        "name": "계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·읽기 내기·쓰기 내기·첨삭 보기·상태별 화면 (390·1280)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/classroom-homework.test.mjs",
+        "line": 39,
+        "name": "주차·마감이 SYNK-talk 과제 서버와 같다",
+        "originalSkipReason": "과제 서버(lib/synk-classroom-homework.js)가 있는 SYNK-talk 사본이 없다",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci",
+          "duplicate-parity"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/classroom-lessons-browser.test.mjs",
+        "line": 53,
+        "name": "계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태별 화면·재조회·탭 복귀·로그인 유지 (390·1280)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+        "status": "통과",
+        "evidence": [
+          "classroom-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+        "line": 176,
+        "name": "상태 이름·안내·화면 문구가 학생 앱 원문과 같다",
+        "originalSkipReason": "SYNK-talk 학생 앱 수업 화면(src/수업영상화면.js)이 이 PC에 없다",
+        "status": "통과",
+        "evidence": [
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+        "line": 188,
+        "name": "계약판과 회의 주소 규칙이 학생 앱·서버 원문과 같다",
+        "originalSkipReason": "SYNK-talk 학생 앱 수업 화면(src/수업영상화면.js)이 이 PC에 없다",
+        "status": "통과",
+        "evidence": [
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+        "line": 194,
+        "name": "서버 presentClass가 낼 수 있는 상태는 모두 이름이 있고, 안내가 필요한 상태는 학생 앱과 같은 안내를 단다",
+        "originalSkipReason": "SYNK-talk 학생 앱 수업 화면(src/수업영상화면.js)이 이 PC에 없다",
+        "status": "통과",
+        "evidence": [
+          "source-remaining"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/client.test.mjs",
+        "line": 137,
+        "name": "real browser tabs retain separate accounts across reload and logout",
+        "originalSkipReason": "명시적 skip",
+        "status": "통과",
+        "evidence": [
+          "two-tabs"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/daily-tutor-static.test.mjs",
+        "line": 16,
+        "name": "frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-daily-tutor-20261011/world (git 밖 고정 /world 판)",
+        "status": "과거 고정판 불일치",
+        "evidence": []
+      },
+      {
+        "file": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
+        "line": 17,
+        "name": "frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-home-tutor-20261011/world (git 밖 고정 /world 판)",
+        "status": "과거 고정판 불일치",
+        "evidence": []
+      },
+      {
+        "file": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
+        "line": 15,
+        "name": "frozen /world tutor follows owner choice, preserves guided records and disposes on logout",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-life-tutor-20261011-r2/world (git 밖 고정 /world 판)",
+        "status": "과거 고정판 불일치",
+        "evidence": []
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 125,
+        "name": "동기화를 끈 학습자: 잠긴 시트가 이유를 나눠 알리고, 준비 확인을 마치면 마을이 열린다(390·1440 캡처)",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 153,
+        "name": "준비 확인이 아직이면 숫자 없이 다시 볼 수 있다고 알리고 연습 하나를 권한다 — 「확인 그만하기」는 마을 시트로 돌아간다",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 168,
+        "name": "확인은 마쳤는데 체험·이용권이 없으면 학습 미통과가 아니라 이용권 범위로 알린다",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 176,
+        "name": "동기화를 켠 학습자: 시트를 열 때 서버에 모인 답으로 먼저 확인하고(답을 싣지 않고), 고지 줄이 없다",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 186,
+        "name": "준비 확인을 통과했는데 체험·이용권이 없으면 미통과가 아니라 「마쳤어요」와 이용권 범위로 알린다(아르곤 A1)",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 200,
+        "name": "동기화를 켠 학습자: 준비 확인을 마친 뒤 같은 확인을 조용히 다시 부르지 않는다(아르곤 A3)",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+        "line": 210,
+        "name": "동기화를 켠 학습자: 시트를 연 직후 시작해도 30초 규칙에 멈추지 않고 바로 문항을 낸다(Fable F1)",
+        "originalSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+        "status": "통과",
+        "evidence": [
+          "source-assets"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "line": 9,
+        "name": "candidate differs from deployed v9 only by the canonical life record allowlist entry",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "line": 16,
+        "name": "exact deployable ESM imports and its model matches the tested CJS module",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "line": 22,
+        "name": "deployed v9 rejects the life record before reaching database storage",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "line": 28,
+        "name": "new life record keeps previous bounds, secret rejection and CAS value validation",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+        "line": 35,
+        "name": "exact candidate retains disabled-by-default feature gating without storage access",
+        "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+        "status": "통과",
+        "evidence": [
+          "source-assets-retry"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/world-exam-link-browser.test.mjs",
+        "line": 38,
+        "name": "WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜고 저장 → 이번 주 계획(쓰기 칸 → 쓰기 목록 · 배우기 판 생활 팩 위 쓰기 줄), 다시 열면 계획, 한글 단계·주소 없음은 그대로 (375·1280 × 몽골어·한국어)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/world-push-browser.test.mjs",
+        "line": 46,
+        "name": "WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 → 누름 → 끄기, 휴대폰 묻는 카드, 아이폰 안내, 세 언어 (390·1280)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/world-reminders-browser.test.mjs",
+        "line": 41,
+        "name": "WORLD 학습 알림: 앱 안 묻기 → OS 권한 → 예약 → 알림 → 누르면 그 자리, 거절·끄기·막힘, 시험일 점검, 세 언어 (390·1280)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/world-speaking-browser.test.mjs",
+        "line": 42,
+        "name": "리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·동의·녹음·자동 피드백(가짜)·역할극·세 언어 (390·1280)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/synk-world-app/qa/world-writing-browser.test.mjs",
+        "line": 31,
+        "name": "계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·규칙 점검·자동 피드백·예시답·세 언어 (390·1280)",
+        "originalSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/teacher-world/homework-review.test.mjs",
+        "line": 32,
+        "name": "주차·마감이 SYNK-talk 과제 서버와 같다",
+        "originalSkipReason": "과제 서버(lib/synk-classroom-homework.js)가 있는 SYNK-talk 사본이 없다",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci",
+          "duplicate-parity"
+        ]
+      },
+      {
+        "file": "experiences/teacher-world/homework-review.test.mjs",
+        "line": 104,
+        "name": "첨삭 꼴은 서버(validFeedback)가 받는 꼴이고, 회사 중계의 본문 상한 아래다",
+        "originalSkipReason": "SYNK-talk 사본이 없다",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      },
+      {
+        "file": "experiences/teacher-world/qa/homework-review-browser.test.mjs",
+        "line": 180,
+        "name": "과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 임시 저장·돌려주기 → 학생이 받는 첨삭, 판 겹침, 390·1280",
+        "originalSkipReason": "SYNK-talk 과제 가지(lib/synk-classroom-homework.js·tools/qa-synk-classroom-fixture.cjs)가 없다",
+        "status": "통과",
+        "evidence": [
+          "source-local-ci"
+        ]
+      }
+    ]
+  },
+  "talkInventory": {
+    "head": "8f48430027ca0550d780783482854b1257c59ebb",
+    "total": 23,
+    "passed": 21,
+    "rows": [
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "real local PostgreSQL export creates private paired/latest inputs accepted by the dating restore gate",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "latest uses a new central transaction and exposes a new hold missing from the old paired backup",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "latest preserves the dispatcher timestamps for availability and terminal deletion",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "transaction rejects real writes, rolls back on error, closes, and leaves no output",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "database errors and close errors are sanitized and do not publish evidence",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "product changes during the central read fail instead of exporting a mixed pair",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "an output race preserves the other file and partial staging writes never publish a final JSON",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-account-restore-export.test.js"
+        ],
+        "name": "latest refuses changed paired evidence or an old database clock without writing its destination",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/synk-classroom-homework.test.js"
+        ],
+        "name": "새 수정 과제를 시작한 반만 기존 제출이 읽기 전용이 되고 이전 글·반환은 보존한다",
+        "originalSkipReason": "운영 classroom 묶음(v7 위 칸 바꿔 끼우기)에 course-writing 모델을 아직 싣지 않았다 — 화면 공개 때 Atlas 판을 맞춰 다시 굽는다",
+        "status": "미출시 기능 유지",
+        "evidence": "기본 비활성 course-writing"
+      },
+      {
+        "files": [
+          "tests/synk-course-writing.test.js"
+        ],
+        "name": "generated course runtime persists originals and revisions, scopes roles and purges account-owned copies",
+        "originalSkipReason": "운영 classroom 묶음(v7 위 칸 바꿔 끼우기)에 course-writing 모델을 아직 싣지 않았다 — 화면 공개 때 Atlas 판을 맞춰 다시 굽는다",
+        "status": "미출시 기능 유지",
+        "evidence": "기본 비활성 course-writing"
+      },
+      {
+        "files": [
+          "tests/synk-personal-build.test.js"
+        ],
+        "name": "the committed runtime is reproducible from its complete source graph",
+        "originalSkipReason": "canonical source repository is not checked out",
+        "status": "통과",
+        "evidence": "Talk CI 40343911530 personal_source"
+      },
+      {
+        "files": [
+          "tests/synk-personal-build.test.js"
+        ],
+        "name": "source builds are independent of the checkout directory and junction target",
+        "originalSkipReason": "canonical source repository is not checked out",
+        "status": "통과",
+        "evidence": "Talk CI 40343911530 personal_source"
+      },
+      {
+        "files": [
+          "tests/town-w5-integration.test.js"
+        ],
+        "name": "나와 함께(계정 타운): 카드를 그리는 화면에만 제안이 나고, 체험으로 열고 고르고 확정하면 당사자만 아는 플레이어의 일이다",
+        "originalSkipReason": "talk 옆 ../SYNK-appsscript 원천이 없다 — 카드가 설 때를 찾지 못함",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/world-push.test.js"
+        ],
+        "name": "생성 사본: lib/world-reminders.js가 SYNK-appsscript 원본에서 만든 것과 같다(옆 저장소가 있을 때)",
+        "originalSkipReason": "옆 저장소 SYNK-appsscript 없음(CI)",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/강사지식.test.js"
+        ],
+        "name": "생성물이 원본과 같다 (형제 저장소 없으면 skip · F296)",
+        "originalSkipReason": "형제 저장소가 없다(<CI 작업본>) — as: 원문을 못 읽는다. 낡음은 «안 쟀다».",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/계약.test.js"
+        ],
+        "name": "형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외)",
+        "originalSkipReason": "형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/계약동기.test.js"
+        ],
+        "name": "계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다",
+        "originalSkipReason": "정본 저장소가 이 기계에 없다(<CI 작업본>) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/깊이.test.js"
+        ],
+        "name": "드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다",
+        "originalSkipReason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+        "status": "통과",
+        "evidence": "talk-reference-retry"
+      },
+      {
+        "files": [
+          "tests/배포빚.test.js"
+        ],
+        "name": "재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다",
+        "originalSkipReason": "49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/배포빚.test.js"
+        ],
+        "name": "⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip)",
+        "originalSkipReason": "작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/소리.test.js"
+        ],
+        "name": "SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일",
+        "originalSkipReason": "형제 저장소 부재 — 바이트 대조는 로컬에서만",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/옛글자.test.js"
+        ],
+        "name": "🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다",
+        "originalSkipReason": "형제 저장소가 없다 — 대조 «못 했다»",
+        "status": "통과",
+        "evidence": "talk-local"
+      },
+      {
+        "files": [
+          "tests/혼잣말.test.js"
+        ],
+        "name": "반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지)",
+        "originalSkipReason": "형제 저장소 부재 — 정본 대조는 로컬에서만",
+        "status": "통과",
+        "evidence": "talk-reference-retry"
+      }
+    ]
+  },
+  "proofs": {
+    "source-local-ci": {
+      "file": "source-local-ci/result.tap",
+      "sha256": "d4be6f3ecd9f41de4950e8be78ae331db5d6761304cbef589292cdf24ce5f1c0"
+    },
+    "source-assets": {
+      "file": "source-assets/result.tap",
+      "sha256": "2b2f0241dfaa492d6e7c3d7d9809313b7d07df32ba3b8a6d90f640a741932027"
+    },
+    "source-remaining": {
+      "file": "source-remaining/result.tap",
+      "sha256": "8f82a4f72600dd87bba3bb24c09fa5f3356cf352fbe7e9ab07d318caafb1e879"
+    },
+    "source-environment-retry": {
+      "file": "source-environment-retry/result.tap",
+      "sha256": "ad2b8a7fab31dbff87bca95589693aa8105a99aef7ceac187a56c5f35b7ca7bc"
+    },
+    "source-assets-retry": {
+      "file": "source-assets-retry/result.tap",
+      "sha256": "6a3a966577cbe7040ad8b1238ffe9a817340539ac9e6801b58263e24f7eef6c1"
+    },
+    "classroom-retry": {
+      "file": "classroom-retry/result.tap",
+      "sha256": "c9861f63fc8b21d13c39f4e9f5dae8bc661c8f3147542a3ce3d9796129557ff2"
+    },
+    "two-tabs": {
+      "file": "two-tabs/result.tap",
+      "sha256": "27467611d229cf8729cdaec67b8bd2fd794f8b236dd9a7ba954553ce9c28e36f"
+    },
+    "talk-local": {
+      "file": "talk-local/result.tap",
+      "sha256": "23904f2d25837c0c87dceb24c2d1d308f4b334461b67c2f19f6bb8a3c05310f1"
+    },
+    "talk-reference-retry": {
+      "file": "talk-reference-retry/result.tap",
+      "sha256": "74d2592dfaf790497cc4c6b0c6636595b028c82a9d8e16eeccb0d4fcb915ce50"
+    },
+    "duplicate-parity": {
+      "file": "duplicate-parity/result.tap",
+      "sha256": "bfa434ffe7a07db4478db3d092322f1c9484d041357c86ec9e1685417bfb8a04"
+    }
+  },
+  "limitations": [
+    "원천 Windows/Linux·의존성·합성 계정에 맞춰 실행한 별도 검증이며 CI104 제외 조건 자체를 없애지 않는다.",
+    "학생 화면 대조3은 현재 PC의 미추적 원문과 읽기 전용 대조로 통과했다. 기존 APK에 해당 화면이 들어 있다는 뜻은 아니다.",
+    "과거 고정 WORLD 판4는 실행했지만 현재 시험과 맞지 않았다. 현 공개판으로 바꿔도 옛 선택자와 맞지 않아 통과로 처리하지 않았다.",
+    "원 실패·제외·과거 승인·현재 미확인 상태를 보존한다. 시험 실행 수는 서로 겹쳐 합산하지 않는다."
+  ]
+}

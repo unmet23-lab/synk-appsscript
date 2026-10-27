@@ -152,12 +152,12 @@ p{text-wrap:pretty}
 .road .done .stop{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
 .road .now .stop{background:var(--w-face);color:var(--w-on-face);box-shadow:0 0 0 5px rgba(249,104,89,.2)}
 .road .started .stop{color:var(--w-face-text);box-shadow:inset 0 0 0 1.5px rgba(255,180,169,.7)}
-.road .later .stop{color:var(--w-ink-4);box-shadow:inset 0 0 0 1px var(--w-line)}
+.road .later .stop{color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line)}
 .road .glyphs{font-size:14px;line-height:1.35;font-weight:var(--wt-label);letter-spacing:.04em;color:var(--w-ink-2)}
 .road .now .glyphs{color:var(--w-ink)}
 .road .next .glyphs{color:var(--w-ink-3)}
-.road .later .glyphs{color:var(--w-ink-q)}
-.road .later .glyphs::after{content:"준비 중";display:block;margin-top:2px;font-size:13px;font-weight:var(--wt-label);letter-spacing:0;color:var(--w-ink-q)}
+.road .later .glyphs{color:var(--w-ink-3)}
+.road .later .glyphs::after{content:"준비 중";display:block;margin-top:2px;font-size:13px;font-weight:var(--wt-label);letter-spacing:0;color:var(--w-ink-3)}
 
 /* 글자 상자: 모음 · 자음 · 받침. 만남 = 면, 익히는 중 = 코랄 글자, 익힘 = 흰 바탕으로 뒤집힘 */
 .box-groups{display:grid;gap:20px}

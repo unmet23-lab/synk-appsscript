@@ -93,6 +93,33 @@ test('P0 and empty candidate paths remain blocking even under the explicit solo 
  await assert.rejects(api.준비하기({...empty.options,종류:'백엔드'}),/비었다|대상|manifest/);
 });
 
+test('same-task warning followup accepts only six named public pages, with the existing sealed GPT decision',async t=>{
+ for(const target of ['name/index.html','name/family/index.html','nombre/index.html','rl/index.html','privacy/index.html','lab/topik4/index.html','name/private.html','privacy/source.md','.github/workflows/site-check.yml'])await t.test(target,async t=>{
+  const f=fixture(t,{candidateOnly:true}),allowed=target.endsWith('index.html');
+  const bytes=fs.readFileSync(path.join(f.candidate,f.candidatePath));f.write(path.join(f.candidate,target),bytes);
+  const manifest=JSON.parse(fs.readFileSync(path.join(f.candidate,'후보.json')));manifest.항목[0].경로=target;
+  f.write(path.join(f.candidate,'후보.json'),JSON.stringify(manifest));f.record.candidate.files[0].path=target;
+  f.record.candidate.manifestSha256=후보읽기(f.candidate).manifestSha256;
+  f.record.candidate.rawManifestSha256=sha256(fs.readFileSync(path.join(f.candidate,'후보.json')));f.write(f.recordFile,JSON.stringify(f.record));
+  if(!allowed){await assert.rejects(api.준비하기(f.options),/사용자지정 범위/);return;}
+  const p=await api.준비하기(f.options);assert.equal(api.검수확인(p.폴더).통과,false);review(p);
+  assert.equal(api.검수확인(p.폴더).통과,false,'whole-candidate final decision still required');
+  assert.equal(api.배포판정받기(p.폴더,JSON.stringify(final(api.배포판정준비(p.폴더)))).통과,true);
+ });
+});
+
+test('warning baselines stay limited to the reviewed pages and metadata, never executable CI or unrelated pictures',async t=>{
+ for(const target of ['.github/site-check/baseline/manifest.json','.github/site-check/baseline/axe.json','.github/site-check/baseline/desktop/name.jpg','.github/site-check/baseline/mobile/world~hangul-stage.png','.github/site-check/baseline/desktop/world~korean-rhythm.jpg','.github/site-check/baseline/mobile/name.js','.github/workflows/site-check.yml'])await t.test(target,t=>{
+  const f=fixture(t,{candidateOnly:true});f.write(path.join(f.candidate,target),'fixture\n');
+  const manifest=JSON.parse(fs.readFileSync(path.join(f.candidate,'후보.json')));manifest.항목[0].경로=target;manifest.항목[0].sha256=sha256(Buffer.from('fixture\n'));f.write(path.join(f.candidate,'후보.json'),JSON.stringify(manifest));
+  f.record.candidate.files[0]={...f.record.candidate.files[0],path:target,sha256:manifest.항목[0].sha256};f.record.candidate.manifestSha256=후보읽기(f.candidate).manifestSha256;f.record.candidate.rawManifestSha256=sha256(fs.readFileSync(path.join(f.candidate,'후보.json')));f.write(f.recordFile,JSON.stringify(f.record));
+  const imageOrMetadata=/^\.github\/site-check\/baseline\/.+\.(json|jpg|png)$/.test(target);
+  const o={...f.options,끝:'작업본',종류:imageOrMetadata?'백엔드':'화면'};const allowed=imageOrMetadata&&!target.includes('korean-rhythm');
+  if(allowed){const p=정책만들기(o,[],{판:4});assert.deepEqual(p.필수,['GPT']);assert.equal(p.사용자지정.finalReviewer,'GPT');}
+  else assert.throws(()=>정책만들기(o,[],{판:4}),/사용자지정 범위/);
+ });
+});
+
 test('policy 4 candidate-only correction preserves old evidence and requires a fresh GPT whole-chain decision',async t=>{
  const f=fixture(t,{candidateOnly:true}),p=await api.준비하기(f.options);review(p);
  api.배포판정받기(p.폴더,JSON.stringify(final(api.배포판정준비(p.폴더))));
