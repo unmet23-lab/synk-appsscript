@@ -309,6 +309,54 @@
     "참조:C13_구도2.png"
    ],
    "text": "{시작} {채원_얼굴:4} {헤드셋_정면2:5} Image 5 is only for the headset; her face comes from Images 1 to 4. {구도_헤드셋빼고:6} {채원_옷} She sits on her stationary bike turned toward the camera, both hands resting on the handlebars (nothing in her hands), smiling happily straight into the camera, relaxed after the ride, exactly the pose of the layout frame. Light: soft violet-magenta studio light, warm highlight on her face. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08u",
+   "who": "채원",
+   "refs": [
+    "채원오른옆x3",
+    "배치:S08",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:3} Image 1 is her exact side profile facing right. {배치:4} Size and place, exactly like the silhouette in Image 4: she and the WHOLE white bike are small in the frame — the top of her head about 30% from the top of the frame, the base of the bike about 80% from the top, she and the bike filling only the middle half of the frame height, with lots of glowing floor below and neon tunnel above. She faces the RIGHT side of the picture (her nose points toward the right edge) and the bike points right too, its handlebars on the right side of the picture; never facing left. Image 5 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 5, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. A side tracking shot: she pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08v",
+   "who": "채원",
+   "refs": [
+    "채원오른옆x3",
+    "배치:S08",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:3} Image 1 is her exact side profile facing right. {배치:4} Size and place, exactly like the silhouette in Image 4: she and the WHOLE white bike are small in the frame — the top of her head about 30% from the top of the frame, the base of the bike about 80% from the top, she and the bike filling only the middle half of the frame height, with lots of glowing floor below and neon tunnel above. She faces the RIGHT side of the picture (her nose points toward the right edge) and the bike points right too, its handlebars on the right side of the picture; never facing left. Image 5 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 5, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. A side tracking shot: she pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08z",
+   "who": "채원",
+   "refs": [
+    "참조:C08t.png"
+   ],
+   "text": "Image 1 is a still from a commercial. Create one still photograph, vertical 9:16, that is the same moment filmed from farther away: the camera pulls back so the same woman on the same white bike becomes smaller — the top of her head about 30% from the top of the frame and the base of the bike about 80% from the top, she and the bike filling only the middle half of the frame height — and more of the same neon tunnel shows above her and more of the same bright glowing pink-white floor shows below her. Keep her face, short black hair, headset on her right ear, red-orange jacket, black leggings, white shoes, pose, the bike and the direction (facing the right side of the picture) exactly the same as in Image 1; keep the same tunnel and the same glowing floor. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08w",
+   "who": "채원",
+   "refs": [
+    "채원오른옆x3",
+    "참조:C08_구도2.png",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:3} Image 1 is her exact side profile facing right. Image 4 is a layout frame: copy EXACTLY its camera position, lens and framing, and the size, place, direction and pose of her and the white stationary indoor spin bike (a gym exercise bike with a heavy front flywheel and a flat base on the floor — not a road bicycle, no wheels that roll). In Image 4 she and the bike fill only the middle half of the frame height: the top of her head about 30% from the top of the frame and the base of the bike about 80% from the top — keep exactly that size, do not move the camera closer. Her head is blurred out on purpose in Image 4 — never copy that blur, draw her face sharp. She faces the RIGHT side of the picture; never facing left. Image 5 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 5, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
+  },
+  {
+   "id": "C08x",
+   "who": "채원",
+   "refs": [
+    "채원오른옆x3",
+    "참조:C08_구도2.png",
+    "참조:BG08.png"
+   ],
+   "text": "{시작} {채원_얼굴:3} Image 1 is her exact side profile facing right. Image 4 is a layout frame: copy EXACTLY its camera position, lens and framing, and the size, place, direction and pose of her and the white stationary indoor spin bike (a gym exercise bike with a heavy front flywheel and a flat base on the floor — not a road bicycle, no wheels that roll). In Image 4 she and the bike fill only the middle half of the frame height: the top of her head about 30% from the top of the frame and the base of the bike about 80% from the top — keep exactly that size, do not move the camera closer. Her head is blurred out on purpose in Image 4 — never copy that blur, draw her face sharp. She faces the RIGHT side of the picture; never facing left. Image 5 shows the place: the same tunnel of neon frames, and the floor must glow bright pink-white exactly as in Image 5, washed with white light — never a dark floor. {채원_옷} Her right side faces the camera, so the headset earpiece on her right ear is visible, its boom running along her cheek to her mouth. She pedals hard leaning forward. Light: intense red-pink neon glow wrapping her, the bright glowing floor lighting her legs and the bike from below. {금지_글자} {질감}"
   }
  ]
 }
