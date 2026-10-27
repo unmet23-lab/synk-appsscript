@@ -5,20 +5,15 @@
  * together with 「잊어 주세요」, the settings the village keeps for the player — W6: filling the spots at the time the player
  * usually comes — the evaluation-only signals' consent (W6) and emptying the personal record) and the
  * field book (opens with gathering, W8b). Every change goes through the town's own commands (§20 — rights and base);
- * nothing here counts, dates or ranks (G2·G3). Screen-only module.
+ * nothing here counts, dates or ranks (G2·G3). Screen-only module. The rows of what the village remembers and of the familiar
+ * life come from town/records.mjs, which the account screens' 「마을 기록」 card reads too (W6c — the same rules there).
  */
 import * as generated from './town/data.gen.mjs';
 import { CARD_BY_ID, NAMES, lineText, newsLine, takeable, FEEDBACK, iconSvg } from './day-cards.mjs';
+import { ACTIVITY_LABELS, DETAIL_ROWS, activityLabel, evalRecord, familiarOf, knownOf, settingsOf } from './town/records.mjs';
 
 export const PAGES = Object.freeze([['news', '마을 소식'], ['can', '할 수 있는 생활'], ['familiar', '익숙한 생활'], ['memory', '마을이 기억하는 것'], ['book', '도감']]);
-const FAMILY_LABELS = Object.freeze({ 'cafe-life': '찻집 생활', 'workshop-life': '공방 생활', 'greenhouse-life': '온실 생활', gather: '모으기' });
-const PAIR_LIST = generated.PAIRS || [];
-// The parameter version's own threshold (§8-1 familiarAfter): more than this many times through the same card or pair scene.
-const FAMILIAR_AFTER = (Array.isArray(generated.PARAMS) ? generated.PARAMS[0] : null)?.seen?.familiarAfter ?? 3;
-const familyCount = (seen, prefix) => Object.entries(seen || {}).reduce((sum, [key, n]) => sum + (key.startsWith(prefix) && Number.isFinite(n) ? n : 0), 0);
-// The life activities by name (W8: the tea order — 「찻집 주문」 as the player's thing done, 「찻집 일」 as what the owner remembers).
-const ACTIVITY_LABELS = Object.freeze({ 'tea-order': '찻집 주문' }), ACTIVITY_MEMORY_LABELS = Object.freeze({ 'tea-order': '찻집 일' });
-export const activityLabel = activity => { if (ACTIVITY_LABELS[activity]) return ACTIVITY_LABELS[activity]; const card = /^card\.([CWR][1-6])$/.exec(activity || '')?.[1]; return card && CARD_BY_ID.get(card) ? CARD_BY_ID.get(card).title : '마을에서 한 생활'; };
+export { activityLabel };
 
 /** The pages' content from a town answer ({ state, view, seen }). */
 export function notebookModel(snapshot) {
@@ -26,10 +21,7 @@ export function notebookModel(snapshot) {
   const lifeDay = v?.band?.lifeDay ?? null;
   const news = [...(v?.news || [])].reverse().map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card)) })).filter(n => n.text);
   const can = (scene?.cards || []).filter(takeable).map(c => ({ card: c.card, title: CARD_BY_ID.get(c.card).title, owner: c.owner, paused: c.status === 'paused' }));
-  const familiar = [
-    ...[...CARD_BY_ID.values()].filter(card => familyCount(seen, `card:${card.id}:`) > FAMILIAR_AFTER).map(card => ({ key: `card:${card.id}`, title: card.title })),
-    ...PAIR_LIST.filter(pair => familyCount(seen, `pair:${pair.scene}:`) > FAMILIAR_AFTER).map(pair => ({ key: `pair:${pair.scene}`, title: `${NAMES[pair.members[0]]}과 ${NAMES[pair.members[1]]}의 이야기` })),
-  ];
+  const familiar = familiarOf(seen);
   const given = new Map((prefs?.feedback || []).map(f => [f.completionId, f.value]));
   // Today's (the band's life day): the cards done with the player, newest first — by name, never by time.
   const today = [...(v?.takes || [])].reverse().filter(t => t.status === 'resolved' && t.eventId && lifeDay !== null && String(t.ref || '').startsWith(`${lifeDay}.`) && CARD_BY_ID.has(t.card))
@@ -38,19 +30,7 @@ export function notebookModel(snapshot) {
   const teaDay = state.activities?.['tea-order']?.day;
   if (teaDay?.together && lifeDay !== null && teaDay.lifeDay === lifeDay) today.push({ eventId: teaDay.together, card: null, title: ACTIVITY_LABELS['tea-order'], activity: 'tea-order', given: given.get(teaDay.together) ?? null });
   const journal = [...new Set([...(snapshot?.view?.notebook || []), ...(snapshot?.view?.day?.history || []).map(row => row.summary), ...(snapshot?.view?.bazaar?.history || []).map(row => row.summary)].filter(Boolean))];
-  const known = Object.entries(scene?.knownMe || {}).flatMap(([npc, list]) => (list || []).filter(e => CARD_BY_ID.has(e.card) || ACTIVITY_MEMORY_LABELS[e.activity])
-    .map(e => ({ npc, ref: e.ref, card: e.card ?? null, title: e.activity ? ACTIVITY_MEMORY_LABELS[e.activity] : CARD_BY_ID.get(e.card).title })));
-  const bands = state.visitBands && typeof state.visitBands === 'object' ? state.visitBands : null;
-  const settings = [
-    // The time the player usually comes (§10-3, W6): filling the village's spots then is on until the player turns it off.
-    ...(bands ? [bands.off ? { kind: 'visit-bands', label: '자주 오는 때에 맞춰 마을 자리 채우기 · 꺼 둠', action: ['PREF_VISIT_BANDS', { on: true }, '켜기'] }
-      : { kind: 'visit-bands', label: '내가 자주 오는 때에 맞춰 마을 자리를 채워요', action: ['PREF_VISIT_BANDS', { on: false }, '끄기'] }] : []),
-    ...(prefs?.preferredFamily ? [{ kind: 'family', label: `먼저 보여 줄 생활 · ${FAMILY_LABELS[prefs.preferredFamily] || prefs.preferredFamily}`, action: ['PREF_FAMILY', { family: prefs.preferredFamily, answer: 'clear' }, '먼저 보여 주지 않아도 돼요'] }] : []),
-    ...(prefs?.observed ? [{ kind: 'observed', label: `요즘 자주 한 생활 · ${FAMILY_LABELS[prefs.observed] || prefs.observed}`, action: ['OBSERVED_CORRECT', { family: prefs.observed }, '그때만 한 거예요'] }] : []),
-    ...(prefs?.lessOften || []).map(activity => ({ kind: 'less', label: `덜 추천하는 생활 · ${activityLabel(activity)}`, action: ['PREF_LESS_OFTEN', { activity, on: false }, '다시 추천해도 돼요'] })),
-    ...(prefs?.approachOptOut || []).map(activity => ({ kind: 'approach', label: `먼저 말 걸지 않는 생활 · ${activityLabel(activity)}`, action: ['PREF_APPROACH', { activity, optOut: false }, '다시 말 걸어도 돼요'] })),
-    ...(prefs?.feedback || []).map(f => ({ kind: 'feedback', label: `내가 남긴 응답 · ${activityLabel(f.canonicalActivityId)} · ${FEEDBACK.find(([value]) => value === f.value)?.[1] || ''}`, action: ['FEEDBACK_REMOVE', { eventId: f.completionId }, '응답 지우기'] })),
-  ];
+  const known = knownOf(scene?.knownMe), settings = settingsOf(state);
   return { news, can, familiar, today, journal, known, settings, evalRecord: evalRecordOf(snapshot) };
 }
 
@@ -58,15 +38,10 @@ export function notebookModel(snapshot) {
  * not (the privacy notice first), only a consent already given shows, with 「그만 쓰기」 alone (design review F8). An academy-linked
  * account is never asked and cannot turn it on. */
 export function evalRecordOf(snapshot) {
-  const state = snapshot?.state || {}, consent = state.consents?.evalSignals?.state ?? null;
-  if (!consent || !EVAL_CONSENT) return null;
-  const on = consent === 'granted', host = snapshot?.capabilities?.evalSignals === true;
-  if (String(state.scope?.subject || '').startsWith('linked-')) return on ? { on, stopOnly: true } : { academy: true };
-  if (!host && !on) return null;
-  return { on, stopOnly: !host, ver: EVAL_CONSENT.ver, detail: EVAL_CONSENT.detail };
+  const state = snapshot?.state || {};
+  return evalRecord({ consent: state.consents?.evalSignals?.state ?? null, host: snapshot?.capabilities?.evalSignals === true, academy: String(state.scope?.subject || '').startsWith('linked-') });
 }
 const EVAL_CONSENT = generated.EVAL_CONSENT || null;
-const DETAIL_ROWS = Object.freeze([['purpose', '무엇을 위해'], ['uses', '쓰는 것'], ['notUsed', '쓰지 않는 것'], ['keep', '보관'], ['choose', '고르기'], ['notAsked', '묻지 않는 경우'], ['contact', '문의']]);
 
 const h = (tag, props = {}, ...children) => {
   const el = document.createElement(tag);
