@@ -732,3 +732,9 @@
 - 원인: 격자 속 숫자 · 표식의 자리 맞춤은 모델이 지키지 못하는 것으로 보인다(추정).
 - 고침: 달력을 코드로 그린다(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/bf-sniper-20261025/달력판.py` — 숫자는 글꼴, X는 한 번만 휜 마커 획, 손글씨는 Segoe Print, 원본 컷 크기대로 잘라 원근 · 종이결 · 주변 어둡게). 그 판을 Image 1로 「Edit Image 1 … keep the calendar EXACTLY as it is … Only add … a man's right hand holding an uncapped red marker」로 굽자 C18 · C02 둘 다 숫자 · X · 동그라미가 그대로 남고 손 · 소매만 더해졌다.
 - 다시 확인: 받은 판을 코드 판과 나란히 놓고 숫자 · X 칸을 하나씩 대본다. 손이 원본보다 크게 들어와 칸을 가리면(C02) 손이 차지할 자리 · 크기를 문장에 적는다.
+
+### 방 기준 그림을 참조로 넣으면 그 그림의 넓은 카메라를 따라간다 — 배치도를 앞에, 방 그림은 「생김새만」, 미디엄은 화면 안 경계로 (2026-10-27 Claude)
+- 증상: PULSE 블프 스나이퍼 S07(현관에서 전단 읽기, 원본은 허리 위 미디엄) 두 판이 모두 현관 기준 그림과 같은 넓은 구도의 작은 전신으로 나왔다(얼굴 폭 110px 남짓 · SFace 0.37 · 0.38).
+- 원인: 방 그림이 실루엣 배치도보다 앞(Image 5)에 있고 글에 미디엄 경계가 없어, 방 그림의 카메라 자리를 그대로 쓴 것으로 보인다(추정 — 같은 꼴의 거실 컷들은 배치도 실루엣이 커서 덜 걸렸다).
+- 고침: 배치도를 방 그림 앞(Image 5)으로, 방 그림 문장을 「use Image 6 ONLY for how the place looks … do NOT copy its wide camera position」으로, 카메라를 「MEDIUM SHOT, camera about 1.2 m in front of him at chest height, 50mm: he fills the right half of the frame from the top of his head, near the top edge, down to his waist at the bottom edge — no legs, no feet, no floor」로 쓰자 두 판 모두 허리 위 미디엄이 됐다(얼굴 폭 270~280px · SFace 0.43 · 0.50).
+- 다시 확인: 받은 판의 얼굴 폭이 화면 폭의 10% 남짓인지, 바닥 · 발이 안 보이는지.

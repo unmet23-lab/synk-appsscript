@@ -124,7 +124,7 @@ def overlay(img, ov):
     if kind == "cal":
         tag(d, (W / 2, H * 0.14), ov[1], 110, bg=(200, 40, 50, 230))
         if ov[2]:   # 10-27 낯선이 7차 셋 다 「27일 칸 글씨가 작다」 — 크게
-            tag(d, (W / 2, H * 0.32), ov[2], 80, fg=(40, 30, 30), bg=(255, 250, 240, 240))
+            tag(d, (W / 2, H * 0.68), ov[2], 80, fg=(40, 30, 30), bg=(255, 250, 240, 240))   # 27일 줄 바로 위(Fable 1차 하)
     elif kind == "title":
         d.text((W / 2, H * 0.42), "작전명:", font=ImageFont.truetype(FONT_B, 90), fill=(200, 200, 200), anchor="mm")
         d.text((W / 2, H * 0.58), "블프", font=ImageFont.truetype(FONT_B, 200), fill=(255, 255, 255), anchor="mm")
@@ -193,6 +193,14 @@ def boards():
             y = 90 + i * (TH + 20)
             org = Image.open(V + f"원본첫프레임/{key}.png").convert("RGB").resize((TW, TH)) if key else Image.new("RGB", (TW, TH))
             ours = overlay(still(sid), ov).resize((TW, TH)) if sid or ov else Image.new("RGB", (TW, TH))
+            if sid == "S19b":   # 19번은 시작 그림(S19a)과 끝 그림(S19b)을 나란히 — 「왼쪽으로 따라가다 27.0에 닿음」(Fable 1차)
+                a19 = overlay(still("S19a"), ("open",)).resize((TW // 2, TH // 2))
+                b19 = ours.resize((TW // 2, TH // 2))
+                ours = Image.new("RGB", (TW, TH), (20, 20, 20))
+                ours.paste(a19, (0, TH // 4))
+                ours.paste(b19, (TW // 2, TH // 4))
+                ImageDraw.Draw(ours).text((8, TH // 4 - 34), "시작 26.17", font=ImageFont.truetype(FONT_B, 26), fill="white")
+                ImageDraw.Draw(ours).text((TW // 2 + 8, TH // 4 - 34), "27.0 도착 · 알림", font=ImageFont.truetype(FONT_B, 26), fill="white")
             page.paste(org, (20, y))
             page.paste(ours, (20 + TW + 10, y))
             x = 20 + TW * 2 + 30

@@ -259,6 +259,90 @@ for k, where in {
     J[k] = {"ratio": "16:9", "refs": [CAL_PLATE(k)], "prompt": " ".join([CAL_EDIT + where + ".", HAND, CAL_LOOK]),
             "메모": f"{k[1:]} 달력 — 판은 달력판.py(숫자 · X · 00:00 정확), Gemini는 손 · 펜만"}
 
+# ── 10-27 Fable 이미지 콘티 1차 다시(상 4 · 중) — 같은 id로 덮어쓴다 ──
+FLYER = str(V / "달력판" / "전단.png").replace("/", "\\")
+NO_LOGO = " His sweatshirt and pants have no emblem, patch or logo anywhere."
+RING = ("a large switched-on LED ring light stands very close in front of the camera, out of focus — its thin glowing white ring is a "
+        "circle whose center is about 40% from the left edge of the frame, about 42% of the frame width across and nearly the full frame "
+        "height; outside the ring the rest of the living room shows, blurred; ")
+J.update(dict([
+    job("S04", FACE4 + ["방:R1", LAY("S04_실루엣.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
+        "Wide shot framed through a big ring light: " + RING + "through the ring, in the middle of the living room and in the CENTER "
+        "of the ring, he stands with his feet apart, about 60% of the ring's height, and curls two smartphones in his hands like dumbbells, "
+        "the phones clearly visible, thumbs tapping the screens. In the lower foreground a round robot vacuum glides past, blurred with motion.",
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="4 다시(Fable 1차 중) — 링 자리 · 크기를 원본 원(가운데 x≈40% · 폭 42%)과 17번에 맞춤 · 바지 엠블럼 없앰"),
+    job("S17", FACE4 + ["방:R1", LAY("S17_실루엣.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
+        "Wide shot framed through the big ring light, exactly the same camera and ring as the previous ring shot: " + RING + "inside "
+        "the ring, in the middle of the living room and in the CENTER of the ring, he stands tall with his feet apart, about 60% of the "
+        "ring's height, ARMS DOWN at his sides with a smartphone in each hand — the moment before he spreads them. In the lower right "
+        "foreground a round robot vacuum glides past, blurred with motion. Nobody else is there.",
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="17 다시(Fable 1차 중) — 원본 23.04~23.8 시작 자세는 팔 내림(벌림은 영상 안에서) · 링 자리 4번과 같게"),
+    job("S06", FACE4 + ["방:R1", LAY("S06_틀.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_FRAME.format(n=6),
+        "Wide shot from very low: the lens sits just above the top of the operation desk, hidden behind three 'trophies' in a row on the "
+        "desk right in front of it — a phone on a wooden stand, a second phone on a wooden stand, and a third EMPTY wooden stand waiting for "
+        "one more — so close and big that together they fill the lower 60% of the frame, slightly out of focus, evenly spaced like the "
+        "three snow globes of a shop window. Above and between them, sharp in the background at the far side of the desk and in the CENTER "
+        "of the frame, he stands bent over and lines up the laptop, the tablet and a phone in a precise row. On the wall behind, the blue "
+        "masking-tape rectangle has the printed TV photo taped INSIDE it and the child's crayon drawing OUTSIDE it, to its right.",
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="6 다시(Fable 1차 중) — 붐 업 시작 자리(탁자 윗면 높이 · 트로피가 아래 60%) · 빈 받침 · 테이프 안 TV 사진"),
+    job("S08", FACE4 + ["방:R1", LAY("S08_실루엣.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
+        "A fast whip-pan frame: the camera is swinging hard to the left, so everything is smeared into long horizontal motion streaks — "
+        "almost the whole frame is a living-room shelf rushing past, lined with rows of plain unbranded drink cans in solid colors (no logos, "
+        "no brand names, no printed words), small white eye-drop bottles and black wrist braces, all smeared sideways so their shapes are only "
+        "readable as streaks. At the very RIGHT EDGE of the frame he is just entering — only his shoulder and half of his head with a black "
+        "gaming headset are inside the frame, the rest of him still outside the edge.",
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="8 다시(Fable 1차 중) — 원본 첫 프레임엔 사람이 없고 14.8초쯤 들어옴 → 오른쪽 끝에 반만 · 상표 없는 캔"),
+    job("S07", FACE4 + [LAY("S07_실루엣.png"), "방:H", FLYER],
+        START, JUNHO, LAY_SIL.format(n=5),
+        "Location: the apartment entrance hall shown in Image 6 — use Image 6 ONLY for how the place looks (the grey front door, the white "
+        "shoe cabinet, the warm ceiling light); do NOT copy its wide camera position.",
+        "MEDIUM CLOSE SHOT, camera about 1 m in front of him at his FACE height, level (not looking down), 50mm lens: his face is right of "
+        "center and about 15% of the frame width across; the top of his head is near the top edge; the open flyer he holds in both hands at "
+        "chest height fills the lower half of the frame, facing the camera. THE FLYER IS PRINTED EXACTLY WITH THE DESIGN OF IMAGE 7 — the same "
+        "orange header with the word 느지막, the TV picture, the same Korean words and numbers in the same places (198만 원 crossed out, 99만 원, "
+        "블프 반값, the red band) — glossy paper, slightly curved in his hands; do not invent any other text, prices or pictures on it. Thin "
+        "black reading glasses have slid down to the tip of his nose and his eyes look over them at the price.",
+        WEAR + NO_LOGO, "EXPRESSION: frozen, deadly serious, eyes slightly narrowed in disbelief at the price, lips closed — not smiling.",
+        DAY, FILM.replace("No text, no letters, no logos", "Apart from the flyer of Image 7, no text, no letters, no logos"),
+        메모="7 다시(Fable 1차 상) — 전단 면을 느지막 전단(전단판.py)으로 · 얼굴 폭 15% · 얼굴 높이 수평"),
+    job("S10", ["방:R1", LAY("S10_흐림.png")],
+        START, LAY_BLUR.format(n=2).replace("the calendar grid, the hand and the pen", "the torso, the hands and the desk"),
+        "Close-up from his chest height looking down at the desk at about 30 degrees, 50mm lens, in the same living room as Image 1 (its "
+        "white wall and grey sofa far behind, out of focus): he sits facing the camera, only his heather-grey sweatshirt chest at the top of "
+        "the frame — no face. His RIGHT hand — on the LEFT side of the picture, because he faces the camera — rests on a wired mouse; his "
+        "LEFT hand — on the RIGHT side of the picture — holds a smartphone with a large stopwatch on its screen, the screen facing up toward "
+        "the camera, its thumb hovering right above the start button.",
+        HAND, DAY, FILM.replace("no letters, ", ""), 메모="10 다시(Fable 1차 상) — 마우스는 오른손(그림 왼쪽) · 배경 R1 거실 · 초시계 화면이 카메라 쪽"),
+    job("S12", ["방:R1", LAY("S12_흐림.png")],
+        START, LAY_BLUR.format(n=2).replace("the calendar grid, the hand and the pen", "the torso, the hands and the desk"),
+        "Close-up from his chest height looking down at the desk at about 30 degrees, 50mm lens, strong motion blur, in the same living room "
+        "as Image 1 (its white wall and grey sofa far behind, out of focus — no bookshelves, no study): he sits facing the camera, his "
+        "heather-grey sweatshirt fills the top of the frame — no face. His RIGHT hand — on the LEFT side of the picture — hammers a wired mouse, "
+        "and his LEFT hand — on the RIGHT side of the picture — hammers a keyboard, so fast that the fingers smear into a blur.",
+        HAND, DAY, FILM, 메모="12 다시(Fable 1차 상) — 마우스는 오른손(그림 왼쪽, 11 · 14 · 19와 같게) · 배경 R1 거실"),
+    job("S14", FACE4 + ["방:R1"],
+        START, JUNHO, ROOM_R1.format(n=5),
+        "Wide shot from a low camera about 40 cm above the floor, level, 24mm lens, from the side: in the CENTER of the frame he lies flat on "
+        "his stomach on the floor like a sniper in position, propped on his elbows, a thick blue-grey fleece blanket draped over his back and "
+        "head as camouflage, only his face and two hands sticking out — his RIGHT hand on a mouse on the floor — his face toward the operation "
+        "desk at camera-right, eyes level with the three screens on it. On the wall behind: the blue masking-tape rectangle with the printed "
+        "TV photo INSIDE it, the child's crayon drawing OUTSIDE it to its right, and the big white paper wall calendar exactly as in Image 5 "
+        "(no readable letters or numbers). The rest of the living room is calm and empty.",
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="14 다시(Fable 1차 상) — 테이프 안 TV 사진 · 그림 밖 · 영문 달력 없앰 · 담요 19와 같은 플리스 · 가운데"),
+    job("S16", FACE4 + ["방:R1", LAY("S16_실루엣.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
+        "MEDIUM SHOT at eye level, 40mm lens: he stands behind the operation desk in the middle of the frame, seen from the top of his head "
+        "to his waist, the near edge of the desk at the bottom of the frame. On the desk, at the back, the laptop, the tablet and a phone on "
+        "stands stand in a row; in front of them a row of 'trophies' — two phones on wooden stands and a third empty wooden stand at the end. "
+        "With a precise, ceremonial gesture he sets an old-fashioned twin-bell alarm clock down onto that empty wooden stand, completing the "
+        "row of three, and lifts his head toward the camera.",
+        WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="16 다시(Fable 1차 상) — 6번과 짝(빈 받침에 시계) · 화면 셋 그대로 · 미디엄 · 바지 엠블럼 없앰"),
+]))
+
 # 방 기준 그림 고른 판으로 「방:X」 바꾸기 — 아직이면 괄호로 남겨 실행기가 막는다
 for j in J.values():
     j["refs"] = [ROOM(r[2:]) if r.startswith("방:") else r for r in j["refs"]]
