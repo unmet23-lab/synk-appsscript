@@ -1,0 +1,13 @@
+Create ONE photograph (square, 1:1). Use the image generation tool once and output only that image.
+
+Reference image 1 is the master photograph of the mascot KKAMONG: a small dark-brown needle-felted wool toy (a cat-like creature with cat ears, olive-green glass bead eyes, two small olive-felt dragon wings raised at its sides and a dragon tail with olive felt spikes) on a plain white studio background, front view.
+
+CHARACTER
+Kkamong is a little dragon who wants to look cool and brave — a show-off who calls itself "this great one" — even though it cannot breathe fire yet. Its everyday face should say "heh, of course I can do it": confident, a little cheeky and full of itself, but still cute and soft, a toy a child wants to hug. Never mean, never scary.
+
+TASK
+Re-photograph exactly the toy of reference 1 — the same body, wool, colours, ears, wings, tail, pose, camera angle, framing, white background, light and soft contact shadow — with ONLY ITS FACE changed:
+Smug, self-satisfied: both olive-green glass bead eyes are half-lidded — a soft dark-brown felt eyelid covers the top third of each bead, the lid edge flat and slightly tilted — and the pupils look a little up and to the side, as if saying 'heh'. Below the eyes, a little to one side where a mouth would be, ONE tiny cream-white felt fang peeks out (a small soft rounded triangle, like a baby dragon's tooth). No other mouth line.
+
+DO NOT
+No eyebrows drawn as lines, no whiskers, no letters, no props, no other characters. Do not change the body, ears, wings, tail or the camera angle. No blur, no glow, no fog around the outline.

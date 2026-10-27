@@ -1,0 +1,13 @@
+Create ONE photograph (square, 1:1). Use the image generation tool once and output only that image.
+
+Reference image 1 is the master photograph of the mascot MARIN: a small needle-felted wool toy — a big round navy-blue felt diving helmet with two round yellow felt lenses as its eyes, on a little beige felt body with short arms and legs and a tiny shoulder bag with a daisy — on a plain white studio background.
+
+CHARACTER
+Marin is calm, dry and matter-of-fact: it reports and counts, never gushes, never uses exclamation marks. Its everyday face should read as deadpan and unimpressed — "hm. noted." — quietly funny and cute, never angry, never scary.
+
+TASK
+Re-photograph exactly the toy of reference 1 — the same helmet, felt, colours, body, bag and daisy, pose, camera angle, framing, white background, light and soft contact shadow — with ONLY ITS LENS EYES changed:
+Very flat, unimpressed: navy felt lids close each yellow lens from the top and the bottom so only a narrow, level yellow band shows across the middle of each lens — like 'ㅡ ㅡ'. Both lenses the same.
+
+DO NOT
+No mouth, no eyebrows, no letters, no props, no other characters. Do not change the helmet shape, the body or the camera angle. No blur, no glow, no fog around the outline.
