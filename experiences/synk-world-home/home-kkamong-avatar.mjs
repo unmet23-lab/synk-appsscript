@@ -334,7 +334,7 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
  const eyeCentres=eyes.map(eye=>eye.position.clone());
  for(const record of meshes.filter(record=>record.original===bodyMaterial||record.object.name.includes('wing-membrane'))){
   const {object}=record,isBody=object.name==='kkamong-anatomical-body',isTail=object.name==='kkamong-fabric-tail',isEar=object.name.includes('rounded-ear'),isWing=object.name.includes('-wing-'),isCoral=object.name.includes('wing-membrane'),floorY=grounded?BODY.groundY:null,inset=isCoral?.004:isBody?.036:isWing?.006:.027;
-  record.envelope=object.geometry;record.core=insetCoatCore(record.envelope,{inset:isBody?.055:inset,floorY,ear:isEar,body:isBody,tail:isTail||isWing});ownedGeometry.add(record.core);
+  record.envelope=object.geometry;record.core=insetCoatCore(record.envelope,{inset:isBody?.055:inset,floorY,ear:isEar,body:isBody,tail:isTail||isWing&&!isCoral});ownedGeometry.add(record.core);
   // Ears and the wing bones carry a shorter coat; the tail a little less than the body.
   const coat=shellCoat(record.core,{eyes:isBody?eyeCentres:[],eyeRadius:isBody?EYES.r*1.25:0,floorY,length:isCoral?.016:isBody?FUR.length:isTail?FUR.length*.6:isEar?FUR.length*.5:FUR.length*.35,density:isCoral?FUR.density*1.3:FUR.density,seed:coats.length*.173,low,colors:isCoral?CORAL_FELT:FUR});
   coat.name=`${object.name}-shell-coat`;ownedMaterials.add(coat.material);object.parent.add(coat);coats.push(coat);
