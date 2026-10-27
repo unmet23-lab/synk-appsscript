@@ -33,7 +33,8 @@ export type Msg = { from: 'me' | 'friend'; text: string; emoji?: boolean; at: nu
 // 몽골판(mn)은 10-24 올린 그대로다. 버마어판(mm, 틱톡 @synklab.mm)은 한글(채팅 · 줄임말 · 음절 · 첫 글자)을 그대로 두고,
 // 띠 · 질문 · 규칙 · 뜻 · 끝 카드는 버마어로 다시 쓴다. 읽는 법은 키릴 대신 영어 로마자(장부 머리말 「두 채널 판」).
 // 「크크 = 웃음」은 버마어 웃음 글자 ဟားဟား에 견준다. 버마어는 위아래로 쌓이는 글자라 줄 높이 · 크기를 판마다 둔다.
-export type Loc = 'mn' | 'mm';
+// 10-27 15시 회차: 간체판(zhs, 샤오훙수 SYNK LAB)을 더함 — 대기 표 T1 「간체판만 남음」. 「크크 = 웃음」은 중국어 웃음 글자 哈哈에 견준다.
+export type Loc = 'mn' | 'mm' | 'zhs';
 export type LocText = typeof MN & {
   items: Item[];
   font: string | null; // --kids-font(EN 글꼴 줄) 자리에 깔 글꼴 줄 — null이면 몽골판 그대로
@@ -61,6 +62,24 @@ export const LOCS: Record<Loc, LocText> = {
     lh: 1.4,
     size: { band: 54, rule: 42, hook: 56, mean: 66, endQ: 44, endC: 38, endS: 30 }, // Fable P2: 끝 작은 줄 26px은 실제 글자 상자 약 18px — 몽골판과 같은 30 // 버마어는 같은 px에서 라틴 · 키릴보다 작게 보인다(첫 렌더) · 끝 카드는 400px 상자에 들게
     ruleTwoLines: true,
+  },
+  zhs: {
+    band: '和韩国朋友聊天时',
+    hook: '这是什么意思？', // 첫 정지컷: 「朋友这是什么意思？」는 「思？」만 다음 줄로 꺾였다
+    rule: '缩写时，只写每个音节的第一个辅音',
+    endQ: '你还知道哪些缩写？', // 「韩语缩写？」는 「写？」가 꺾였다
+    endC: '写在评论区吧',
+    endS: '转给正在学韩语的朋友看看',
+    friend: '민지',
+    items: [
+      { ...ITEMS[0], read: 'keu keu', mean: '哈哈（在笑）' },
+      { ...ITEMS[1], read: 'eung eung', mean: '嗯嗯' },
+      { ...ITEMS[2], read: 'gamsa', mean: '谢谢' },
+    ],
+    font: "'Inter Tight', 'Microsoft YaHei', sans-serif",
+    lh: 1.12,
+    size: { band: 56, rule: 46, hook: 58, mean: 70, endQ: 50, endC: 40, endS: 32 },
+    ruleTwoLines: false,
   },
 };
 
