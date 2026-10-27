@@ -253,7 +253,7 @@ for k, where in {
     "C02": "a man's right hand coming in from the BOTTOM edge of the frame, just below the box for the 20th, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 20th, as if it has just drawn that stroke. The hand is SMALL in the frame — only the fingers, the marker and a little of the grey sleeve show, below and around the box for the 20th; it must NOT cover the boxes for the 1st to the 19th, nor the 27th with its '00:00' (10-27: a big hand covering the 11th-19th made viewers think the pen was on the 15th)",
     "C05": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 24th, as if it has just drawn that stroke",
     "C13": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the lower-right end of the half-drawn red stroke in the box for the 25th, as if it has just drawn that stroke",
-    "C15": "a man's right hand coming in from the lower left of the frame, holding an uncapped marker with a RED body (the same red marker as in the other calendar shots) whose tip touches the upper-right corner area INSIDE the box for the 26th — left of the vertical line between the 26th and the 27th, never inside the box for the 27th — about to draw the second stroke of the X. The half-drawn stroke already in the box for the 26th must stay exactly as it is, in the same direction (10-27: the stroke was redrawn the other way and the pen tip landed in the 27th)",
+    "C15": "a man's right hand coming in from the lower left of the frame, holding an uncapped marker with a RED body (the same red marker as in the other calendar shots) whose tip touches the TOP-RIGHT corner INSIDE the box for the 26th — just below the box's top line and just left of the vertical line between the 26th and the 27th, at the opposite top corner from where the existing stroke starts (NOT at the number 26), never inside the box for the 27th — about to draw the second stroke of the X from top-right down to bottom-left. The half-drawn stroke already in the box for the 26th must stay exactly as it is, in the same direction (10-27: the stroke was redrawn the other way and the pen tip landed in the 27th)",
     "C18": "a man's right hand coming in from the lower left of the frame, holding an uncapped red marker whose tip touches the red circle around '00:00' in the box for the 27th, as if it has just finished drawing the circle",
 }.items():
     J[k] = {"ratio": "16:9", "refs": [CAL_PLATE(k)], "prompt": " ".join([CAL_EDIT + where + ".", HAND, CAL_LOOK]),
@@ -264,19 +264,27 @@ FLYER = str(V / "달력판" / "전단.png").replace("/", "\\")
 NO_LOGO = (" His sweatshirt and pants have no emblem, patch or logo anywhere. Every laptop, tablet and phone is a plain unbranded device "
            "— no logo or mark on any back or lid (10-27: a real brand logo appeared on a tablet back).")
 # 10-27 Opus 확인: 원본 K04 · K17 실측은 원 가운데 x≈52% · 바깥 지름이 화면 폭의 48~50%(1차의 「40% · 42%」는 틀린 목표였다)
-RING = ("a large switched-on LED ring light stands very close in front of the camera, out of focus — its thin glowing white ring is a "
-        "circle centered in the frame (center about 52% from the left edge), its OUTER diameter about HALF the frame width (about 90% of "
-        "the frame height), so a strip of the room shows on both sides of the ring; outside the ring the rest of the living room shows, "
+# 10-27 라운드 11도 링이 화면 폭의 72~75%로 나와(글로 준 숫자를 안 따름), 링을 코드로 그린 배치도(배치도.py 「링」)를 넣는다
+RING = ("a big switched-on LED ring light on a stand is between the camera and him, about 1.5 m in front of the lens, and we look at him "
+        "THROUGH its round opening. Its glowing white band is EXACTLY the white ring of Image 6 — same size, same place: centered a little "
+        "right of the middle of the frame, its outer edge only about HALF the frame width across, its top and bottom just inside the top "
+        "and bottom edges of the frame, never cut off. Wide strips of the living room show on the LEFT and the RIGHT of the ring, slightly "
         "blurred; ")
+LAY_RING = ("Image 6 is the exact framing guide of this shot: the white ring is the ring light — keep it exactly that size and at exactly "
+            "that place in the frame — and the black silhouette is where he stands inside it, how big and in what pose. The flat grey "
+            "of Image 6 becomes the living room.")
 J.update(dict([
-    job("S04", FACE4 + ["방:R1", LAY("S04_실루엣.png")],
-        START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
+    job("S04", FACE4 + ["방:R1", LAY("S04_링.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_RING,
         "Wide shot framed through a big ring light: " + RING + "through the ring, in the middle of the living room and in the CENTER "
-        "of the ring, he stands with his feet apart, about 60% of the ring's height, and curls two smartphones in his hands like dumbbells, "
-        "the phones clearly visible, thumbs tapping the screens. In the lower foreground a round robot vacuum glides past, blurred with motion.",
+        "of the ring, he stands in a low wide squat, about half of the ring's height, and curls two smartphones in his hands like dumbbells, "
+        "the phones clearly visible, thumbs tapping the screens. In the lower right foreground, outside his feet, a round robot vacuum "
+        "glides past, blurred with motion. The room is exactly as in Image 5: on the wall behind him the blue masking-tape rectangle WITH "
+        "the printed TV photo taped inside it and the child's crayon drawing outside it, to its right; the low oak operation desk with the "
+        "laptop, the tablet and a phone to his right (10-27: the TV photo went missing).",
         WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="4 다시(Fable 1차 중) — 링 자리 · 크기를 원본 원(실측 가운데 x≈52% · 바깥 지름 화면 폭의 약 50%)과 17번에 맞춤 · 바지 엠블럼 없앰"),
-    job("S17", FACE4 + ["방:R1", LAY("S17_실루엣.png")],
-        START, JUNHO, ROOM_R1.format(n=5), LAY_SIL.format(n=6),
+    job("S17", FACE4 + ["방:R1", LAY("S17_링.png")],
+        START, JUNHO, ROOM_R1.format(n=5), LAY_RING,
         "Wide shot framed through the big ring light, exactly the same camera and ring as the previous ring shot: " + RING + "inside "
         "the ring, in the middle of the living room and in the CENTER of the ring, he stands tall with his feet apart, about 60% of the "
         "ring's height, ARMS DOWN at his sides with a smartphone in each hand — the moment before he spreads them. In the lower right "

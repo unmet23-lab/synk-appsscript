@@ -5,6 +5,7 @@
 #   python -X utf8 이미지콘티_배치도.py 실루엣   → 배치/S??_실루엣.png · _확인/S??.jpg(사람 컷)
 #   python -X utf8 이미지콘티_배치도.py 흐림     → 배치/S??_흐림.png(달력 · 손 접사)
 #   python -X utf8 이미지콘티_배치도.py 틀       → 배치/S??_틀.png(흐린 원본 + 실루엣 — 앞 소품이 짜임을 잡는 4 · 6 · 17, 실루엣 뒤에)
+#   python -X utf8 이미지콘티_배치도.py 링       → 배치/S04_링.png · S17_링.png(코드로 그린 링 라이트 + 우리 판에서 딴 실루엣, 10-27)
 # 원본 프레임 · 배치도는 git 밖(synk-vendor/pulse-season4-20261025/콘티/bf-sniper/)에만 둔다.
 import sys
 from pathlib import Path
@@ -100,5 +101,39 @@ def framed():
     print("소품 틀", len(FRAMED))
 
 
+# 10-27 링 배치도 — 실루엣 · 틀로는 Gemini가 링을 화면 폭의 72~75%로 키워(원본 원은 가운데 x≈52% · 바깥 지름 약 50%),
+# 링 자체를 코드로 정확한 자리 · 크기에 그리고, 사람 자리는 우리 판(17 S17_160442 · 4 S04_180024)의 준호에서 딴 실루엣을 둔다.
+RING_C, RING_R, RING_BAND = (0.52, 0.50), 0.26, 0.13   # 가운데(폭 · 높이 비), 바깥 반지름(폭 비), 띠 두께(반지름 비)
+RING_SRC = {4: "S04_180024.jpg", 17: "S17_160442.jpg"}   # 17은 다리가 책상에 안 가린 판
+
+
+def ring():
+    cx, cy, R = int(W * RING_C[0]), int(H * RING_C[1]), int(W * RING_R)
+    r = int(R * (1 - RING_BAND))
+    # 두 판에서 링 크기가 거의 같아(72 · 74%) 같은 배율로 줄인다 — 서 있는 17번 키가 링 바깥 지름의 60%
+    s = None
+    for n in (17, 4):
+        img = imread(V / "받음" / RING_SRC[n])
+        img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
+        m = person_mask(img)
+        k, lab, st, _ = cv2.connectedComponentsWithStats(m)
+        m = np.where(lab == 1 + int(np.argmax(st[1:, 4])), 255, 0).astype(np.uint8)
+        ys, xs = np.nonzero(m)
+        x0, y0, x1, y1 = xs.min(), ys.min(), xs.max(), ys.max()
+        s = s or 0.6 * 2 * R / (y1 - y0)
+        crop = cv2.resize(m[y0:y1 + 1, x0:x1 + 1], None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
+        out = np.full((H, W, 3), 205, np.uint8)
+        glow = np.zeros((H, W), np.float32)
+        cv2.circle(glow, (cx, cy), (R + r) // 2, 1.0, R - r)
+        glow = np.maximum(glow, cv2.GaussianBlur(glow, (0, 0), 18) * 0.8)
+        out = (out * (1 - glow[..., None]) + 252 * glow[..., None]).astype(np.uint8)
+        ch, cw = crop.shape
+        fx, fy = cx - cw // 2, int(H * 0.88) - ch   # 발은 링 안쪽 아래 가까이
+        sub = out[fy:fy + ch, fx:fx + cw]
+        sub[crop > 127] = (18, 18, 18)
+        imwrite(OUT / f"S{n:02d}_링.png", out)
+        print(n, "링 가운데", (cx, cy), "바깥 지름", 2 * R, f"({2 * R / W:.0%} 폭)", "사람 키", ch, f"({ch / (2 * R):.0%} 링)")
+
+
 if __name__ == "__main__":
-    {"프레임": frames, "실루엣": silhouettes, "흐림": blurred, "틀": framed}[sys.argv[1]]()
+    {"프레임": frames, "실루엣": silhouettes, "흐림": blurred, "틀": framed, "링": ring}[sys.argv[1]]()
