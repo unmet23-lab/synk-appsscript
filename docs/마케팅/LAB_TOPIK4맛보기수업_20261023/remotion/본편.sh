@@ -32,8 +32,11 @@ ffmpeg -v error -y -i "$OUT/lesson-master.mp4" -map 0:v -map 0:a -c:a copy -c:v 
   -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -movflags +faststart "$OUT/lesson-upload.mp4"
 
 echo "== 신청 페이지용(1080p, 50MB 안쪽)"
+# AAC 384k → 128k로 다시 담으면 봉우리가 솟는다(10-28 −1.3 → 0.0 dBFS, 꽉 찬 표본 3) — 담기 직전에 봉우리만 누른다
+# (현장노트 영상·소리 「이미 AAC인 소리를 다시 AAC로 뽑으면 순간 최대가 올라간다」).
 ffmpeg -v error -y -i "$OUT/lesson-master.mp4" -map 0:v -map 0:a -c:v libx264 -preset slow -profile:v high -pix_fmt yuv420p -crf 23 \
-  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv -c:a aac -b:a 128k -movflags +faststart "$OUT/lesson-web.mp4"
+  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv \
+  -af "alimiter=limit=0.76:level=false:attack=1:release=60" -c:a aac -b:a 128k -movflags +faststart "$OUT/lesson-web.mp4"
 
 ls -la "$OUT"
 for f in lesson-upload.mp4 lesson-web.mp4 lesson-phone.mp4; do
