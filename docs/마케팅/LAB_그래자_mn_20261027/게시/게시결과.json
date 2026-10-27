@@ -1,0 +1,33 @@
+{
+  "판": [
+    {
+      "계정": "lab-instagram",
+      "상태": "예약됨",
+      "시각": "2026-10-28T21:00:00+09:00",
+      "편ID": "LAB_그래자_mn_20261027",
+      "방법": "유호님 10-27 22:0x 앱 세션에서 「승인 — 10-28 예약: synkbrief_빈방채우기_20261027 틱톡 ＠synkbrief 21:00 · 네이버 블로그 synkshift 21:10, E4 「아니」 ＠synkkorean 유튜브 21:00, 「그래 = за」 ＠synk.mn 인스타 · 페북 · 틱톡 · 텔레그램 21:00, 채팅 줄임말 간체 판 샤오훙수 22:00」 → 10-27 21:18 Claude가 ego로 Business Suite 릴스 만들기(SYNK · synk.mn 한 번에 교차 게시) — 원본 01-ig-fb-mn/video.mp4(23.3MB) · 썸네일 「이미지 업로드」 cover.png · 캡션은 캡션_mn.txt 끝에 첫댓글_mn.txt(게임 링크 줄)를 한 문단으로 붙여 keyboard.paste(공백 빼고 같음) · 인스타 미리 보기 캡션 보임 · 저작권 문제 없음 · Facebook 스토리 공유 꺼짐 · 예약 2026-10-28 오후 09:00 Asia/Jayapura(UTC+9 = 한국 시각) 두 줄 → 「릴스 예약됨 — Facebook · Instagram 2026. 10. 28.」(스크립트 C:/Users/q1212/ego/b8-post-20261027/m15-*.mjs). AI 표시 없음(준비.json 판단)"
+    },
+    {
+      "계정": "lab-facebook",
+      "상태": "예약됨",
+      "시각": "2026-10-28T21:00:00+09:00",
+      "편ID": "LAB_그래자_mn_20261027",
+      "방법": "lab-instagram과 같은 Business Suite 릴스 예약 한 번(위 줄)"
+    },
+    {
+      "계정": "lab-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-10-28T21:00:00+09:00",
+      "편ID": "LAB_그래자_mn_20261027",
+      "방법": "유호님 10-27 22:0x 앱 세션에서 「승인 — 10-28 예약: synkbrief_빈방채우기_20261027 틱톡 ＠synkbrief 21:00 · 네이버 블로그 synkshift 21:10, E4 「아니」 ＠synkkorean 유튜브 21:00, 「그래 = за」 ＠synk.mn 인스타 · 페북 · 틱톡 · 텔레그램 21:00, 채팅 줄임말 간체 판 샤오훙수 22:00」 → 10-27 21:33 Claude가 ego 프로필 「TikTok synk.mn」(username synk.mn 확인) TikTok Studio · 원본 01-ig-fb-mn/video.mp4 · 캡션 캡션_mn.txt 그대로(공백 빼고 같음, 게임 링크 줄은 틱톡에서 안 눌려 뺌) · AI 표시 끔 · Schedule Oct 28, 2026 21:00 (GMT+9) · Everyone. 콘텐츠 목록 「Oct 28, 9:00 PM · Everyone」 한 줄. 첫 시도(21:28)는 「Schedule」을 누른 뒤 바로 목록으로 옮겨 가 걸리지 않았고(목록에 없음 확인) 같은 판을 다시 채워 걸었다"
+    },
+    {
+      "계정": "lab-telegram",
+      "상태": "예약됨",
+      "시각": "2026-10-28T21:00:00+09:00",
+      "편ID": "LAB_그래자_mn_20261027",
+      "방법": "유호님 10-27 22:0x 앱 세션에서 「승인 — 10-28 예약: synkbrief_빈방채우기_20261027 틱톡 ＠synkbrief 21:00 · 네이버 블로그 synkshift 21:10, E4 「아니」 ＠synkkorean 유튜브 21:00, 「그래 = за」 ＠synk.mn 인스타 · 페북 · 틱톡 · 텔레그램 21:00, 채팅 줄임말 간체 판 샤오훙수 22:00」 → 10-27 21:42 Claude가 ego 텔레그램 웹 K SYNK LAB 채널(t.me/synkmn) — 입력칸에 원본 파일 붙여 넣기 → 「Send Video」 창 캡션(인스타 캡션에서 댓글 부탁 줄 · 「Бид SYNK LAB」 줄을 빼고 게임 링크 줄을 붙인 541자, 공백 빼고 같음) → 보내기 단추 오른쪽 클릭 「Schedule Message」 → 10월 28일 21:00 「SEND ON OCT 28 AT 09:00 PM」. 예약 글 화면 「Scheduled for October 28 · 09:00 PM」 한 건, 공개 채널 t.me/s/synkmn 마지막 글은 그대로 5번"
+    }
+  ],
+  "설명": "편마다 판별 게시 결과. 시각은 KST."
+}

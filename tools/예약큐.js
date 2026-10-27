@@ -145,7 +145,9 @@ function collect(server, accounts, now) {
           const job = server.jobs.find((j) => j.id === local.작업);
           // 게시물 ID까지 적힌 「게시됨」은 공개를 직접 확인한 판 — 서버가 「확인 필요」로 내려도 그대로 둔다(10-27 관용구 퀴즈 #6 유튜브: AI 표시 비교 오판으로 unknown).
           const confirmed = local.상태 === '게시됨' && local.게시물ID;
-          if (job && !confirmed) { state = serverState(job); url = job.publicationUrl || url; }
+          // 검토 링크를 승인해도 서버는 내보내는 순간까지 reviewWaiting을 남긴다 — 게시결과에 「승인」을 적은 「예약됨」은 예약됨으로 센다(10-27 E4 · B8).
+          const approved = local.상태 === '예약됨' && local.승인;
+          if (job && !confirmed) { state = serverState(job); if (approved && state === '승인 대기') state = '예약됨'; url = job.publicationUrl || url; }
           else if (!job && ['승인 대기', '예약됨'].includes(local.상태)) {
             warnings.push(`예약됨인데 서버에 없음: ${p.계정} · ${dir.name}`);
             state = '서버에 없음';

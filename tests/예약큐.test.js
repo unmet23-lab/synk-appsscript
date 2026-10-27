@@ -376,8 +376,8 @@ test('게시물 ID까지 적힌 「게시됨」 작업실 판은 서버가 「�
     ['held', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '보류' }] }],
   ]);
   const cache = path.join(base, '서버.json');
-  fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-10-21T02:00:00Z', channels: [], posts: [],
-    jobs: [{ id: 'job-u', channelId: 'x', status: 'unknown' }, { id: 'job-v', channelId: 'x', status: 'unknown' }] }));
+  fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-10-21T02:00:00Z', channels: [{ id: 'x', platform: 'youtube' }], posts: [],
+    jobs: [{ id: 'job-u', channelId: 'x', status: 'unknown', scheduledAt: '2026-10-20T12:00:00Z' }, { id: 'job-v', channelId: 'x', status: 'unknown', scheduledAt: '2026-10-19T12:00:00Z' }] }));
   const r = 매일큐(base, ['--오늘', '2026-10-21', '--서버캐시', cache]);
   assert.ok(!r.warnings.some((w) => w.includes('ws-seen')), r.warnings.join('\n'));
   // 게시물 ID가 없는 판은 서버 상태를 그대로 따른다
@@ -386,4 +386,18 @@ test('게시물 ID까지 적힌 「게시됨」 작업실 판은 서버가 「�
     { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(base, '상태') } });
   assert.equal(t.status, 0, t.stderr);
   assert.match(t.stdout, /10-22 보류 — 나가지 않아 새 편 칸/);
+});
+
+test('작업실 검토 링크를 승인한 판(게시결과 「예약됨」 + 「승인」)은 서버가 아직 reviewWaiting이어도 예약됨으로 센다', () => {
+  const base = 매일판('승인함', [
+    ['ok', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 승인: '유호님 승인 → 링크 승인', 방법: '작업실', 작업: 'job-a' }] }],
+    ['wait', 한편('LAB', '2026-10-23', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '승인 대기', 방법: '작업실', 작업: 'job-b' }] }],
+  ]);
+  const cache = path.join(base, '서버.json');
+  fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-10-21T02:00:00Z', channels: [{ id: 'x', platform: 'youtube' }], posts: [],
+    jobs: [{ id: 'job-a', channelId: 'x', status: 'scheduled', reviewWaiting: true, scheduledAt: '2026-10-22T12:00:00Z' }, { id: 'job-b', channelId: 'x', status: 'scheduled', reviewWaiting: true, scheduledAt: '2026-10-23T12:00:00Z' }] }));
+  const r = 매일큐(base, ['--오늘', '2026-10-21', '--서버캐시', cache]);
+  const row = r.accounts.find((x) => x.account === 'lab-youtube');
+  assert.equal(row.byDay['2026-10-22'][0].state, '예약됨');
+  assert.equal(row.byDay['2026-10-23'][0].state, '승인 대기');
 });
