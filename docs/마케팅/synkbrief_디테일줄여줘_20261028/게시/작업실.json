@@ -1,0 +1,31 @@
+{
+  "도구": "tools/작업실예약.js",
+  "작업실": "https://workspace.synk.im",
+  "시작": "2026-10-27T23:21:15.348Z",
+  "자산": {
+    "docs/마케팅/synkbrief_디테일줄여줘_20261028/게시/detail-a_master.mp4": "9499f980-450b-42c1-adc9-2162eaa87528",
+    "docs/마케팅/synkbrief_디테일줄여줘_20261028/게시/detail-b_master.mp4": "9d9e35d9-7cef-4542-b217-81efec2a1b7e"
+  },
+  "판": [
+    {
+      "계정": "synkbrief-instagram",
+      "채널": "620ff779-b81c-4c04-81d4-e9e842cab6a8",
+      "작업": "9e7c9e7e3dea00f85af03c3be874ecf6176872eb64b6efce2b934f3d04dea99e",
+      "시각": "2026-10-29T21:00:00+09:00",
+      "영상": "docs/마케팅/synkbrief_디테일줄여줘_20261028/게시/detail-a_master.mp4"
+    },
+    {
+      "계정": "synkbrief-youtube",
+      "채널": "cffc89eb-dcc4-472e-9b29-7b2013d25602",
+      "작업": "8c459ab8d56e001d149282c7ff2e01d497c27ffc56962cb923ddf994d962358a",
+      "시각": "2026-10-29T21:00:00+09:00",
+      "영상": "docs/마케팅/synkbrief_디테일줄여줘_20261028/게시/detail-b_master.mp4"
+    }
+  ],
+  "postId": "684a1838-8f24-4de4-a97a-54747d98b598",
+  "링크": {
+    "id": "5e1a993a-1de8-4012-ba33-517b40e56799",
+    "만료": "2026-10-30T12:21:22.446Z"
+  },
+  "끝": "2026-10-27T23:21:22.906Z"
+}
