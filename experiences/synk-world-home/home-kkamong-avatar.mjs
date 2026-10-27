@@ -141,11 +141,12 @@ function earGeometry(side,low){
 // shoulder up to a rounded elbow and out to the tip, one rib hangs from the elbow to the middle scallop, and a
 // olive felt membrane fills below with a softly scalloped lower edge. Points are the master's front view [x, y];
 // the wing plane is swept back from its root so the three-quarter view sees it at an angle.
-const WING={root:[.540,1.322],knob:[.669,1.452],tip:[.895,1.262],rib:[.730,1.110],low:[.568,1.055],attach:[.470,1.077],sweep:.14,z:-.06,bone:.046,elbow:.060,ribRadius:.024};
+const WING={root:[.540,1.322],knob:[.669,1.452],tip:[.895,1.262],rib:[.730,1.110],low:[.568,1.055],attach:[.470,1.077],sweep:.14,raise:.62,z:-.06,bone:.046,elbow:.060,ribRadius:.024};
 function wingFrame(side){
  // Front-view points to world space: the outward distance is stretched by 1/cos(sweep), then the plane turns back.
- const c=Math.cos(WING.sweep),matrix=new THREE.Matrix4().makeRotationY(side*WING.sweep).premultiply(new THREE.Matrix4().makeTranslation(side*WING.root[0],0,WING.z));
- const local=([x,y],z=0)=>new THREE.Vector3(side*(x-WING.root[0])/c,y,z);
+ // 10-27 default pose ("ta-da"): both wings lift a little more about the shoulder (raise), spread wide.
+ const c=Math.cos(WING.sweep),matrix=new THREE.Matrix4().makeTranslation(side*WING.root[0],WING.root[1],WING.z).multiply(new THREE.Matrix4().makeRotationZ(side*WING.raise)).multiply(new THREE.Matrix4().makeRotationY(side*WING.sweep));
+ const local=([x,y],z=0)=>new THREE.Vector3(side*(x-WING.root[0])/c,y-WING.root[1],z);
  return {matrix,local,world:(point,z=0)=>local(point,z).applyMatrix4(matrix)};
 }
 function wingMembraneGeometry(side,low){
@@ -183,8 +184,9 @@ function wingRibGeometry(side,low){
 }
 
 // 10-27: the felt master's dragon tail — out of the lower right side, a thick round root that tapers in a
-// gentle S to a soft rounded point. The olive felt spikes on its ridge are separate meshes (placeSpikes).
-const TAIL_CURVE=[[.30,.80,-.20],[.55,.745,-.25],[.78,.655,-.235],[.95,.630,-.175],[1.06,.700,-.110],[1.105,.775,-.075]];
+// gentle S to a soft rounded point that curls up proudly (the 10-27 default pose). The olive felt spikes on its
+// ridge are separate meshes (placeSpikes).
+const TAIL_CURVE=[[.30,.80,-.20],[.55,.735,-.25],[.80,.665,-.235],[.98,.690,-.175],[1.08,.800,-.110],[1.09,.930,-.075]];
 const tailRadius=t=>Math.max(.006,.200*Math.pow(1-t,.45)*(1-.25*t));
 function tailCurve(){return new THREE.CatmullRomCurve3(TAIL_CURVE.map(p=>new THREE.Vector3(...p)));}
 function tailGeometry(low=false){
@@ -205,7 +207,8 @@ function placeSpikes(parent,attachSpike){
  const curve=tailCurve(),up=new THREE.Vector3(),tangent=new THREE.Vector3(),side=new THREE.Vector3(),basis=new THREE.Matrix4();
  for(const [t,height,length] of TAIL_SPIKES){
   const center=curve.getPointAt(t);tangent.copy(curve.getTangentAt(t));
-  up.set(0,1,0).addScaledVector(tangent,-tangent.y).normalize();side.crossVectors(tangent,up).normalize();
+  // The ridge follows the curl: the top side is the tangent turned a quarter turn up in the tail's plane.
+  up.set(-tangent.y,tangent.x,0).normalize();side.crossVectors(tangent,up).normalize();
   const spike=attachSpike(parent);basis.makeBasis(tangent,up,side);spike.quaternion.setFromRotationMatrix(basis);
   spike.scale.set(length,height,length);spike.position.copy(center).addScaledVector(up,tailRadius(t)*.86);
  }
@@ -345,7 +348,7 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
  function metrics(){
   let geometryBytes=0,furBytes=0;for(const geometry of ownedGeometry){let bytes=geometry.index?.array.byteLength||0;for(const attribute of Object.values(geometry.attributes))bytes+=attribute.array.byteLength;geometryBytes+=bytes;if(lineGeometries.has(geometry))furBytes+=bytes;}
   const triangles=meshes.reduce((sum,{object})=>sum+Math.floor((object.geometry.index?.count||object.geometry.getAttribute('position').count)/3),0);
-  return {id:'kkamong',actual3D:true,productionAsset:false,contract:'kkamong-profile-shape-review-v1',revision:'olive-wings-r20',improvementPass:20,quality,surface:currentSurface,pose:grounded?'floor-rest':'reference',shapeMethod:'body-only-vertical-cross-section-loft',continuousBody:true,separateHands:false,anatomicalBounds:{...BODY,basis:'felt master silhouette with 5% shorter home body'},bodyBounds:{min:body.boundingBox.min.toArray(),max:body.boundingBox.max.toArray(),groundY:BODY.groundY},proportionAdjustment:{bodyHeightScale:BODY_HEIGHT_SCALE,roundHead:true,neckShade:true},eyes:{centerY:EYES.y,diameter:EYES.r*2,verticalDiameter:EYES.r*2.20,centerDistance:EYES.x*2,pupilRatio:EYES.pupilRatio,crownFraction:(BODY.crownY-EYES.y)/BODY.height,rotation:'gentle inward',centerZ:eyeZ},fur:{stage:'matted felt with a translucent fuzz halo',textureStatus:feltSource?'felt-coral luminance remapped to cocoa':'flat cocoa',textureLoaded:feltReady.value===1,fuzzFibres,segmentsPerFibre:2,geometryBytes:furBytes,lowAllocation:low},geometryBytes,triangles,lineSegments:fuzzFibres*2,disposed};
+  return {id:'kkamong',actual3D:true,productionAsset:false,contract:'kkamong-profile-shape-review-v1',revision:'tada-pose-r21',improvementPass:21,quality,surface:currentSurface,pose:grounded?'floor-rest':'reference',shapeMethod:'body-only-vertical-cross-section-loft',continuousBody:true,separateHands:false,anatomicalBounds:{...BODY,basis:'felt master silhouette with 5% shorter home body'},bodyBounds:{min:body.boundingBox.min.toArray(),max:body.boundingBox.max.toArray(),groundY:BODY.groundY},proportionAdjustment:{bodyHeightScale:BODY_HEIGHT_SCALE,roundHead:true,neckShade:true},eyes:{centerY:EYES.y,diameter:EYES.r*2,verticalDiameter:EYES.r*2.20,centerDistance:EYES.x*2,pupilRatio:EYES.pupilRatio,crownFraction:(BODY.crownY-EYES.y)/BODY.height,rotation:'gentle inward',centerZ:eyeZ},fur:{stage:'matted felt with a translucent fuzz halo',textureStatus:feltSource?'felt-coral luminance remapped to cocoa':'flat cocoa',textureLoaded:feltReady.value===1,fuzzFibres,segmentsPerFibre:2,geometryBytes:furBytes,lowAllocation:low},geometryBytes,triangles,lineSegments:fuzzFibres*2,disposed};
  }
  function dispose(){if(disposed)return;disposed=true;group.removeFromParent();ownedGeometry.forEach(value=>value.dispose());ownedMaterials.forEach(value=>value.dispose());ownedTextures.forEach(value=>value.dispose());group.clear();}
  // Initialise without requesting a frame from an owner that is still building.

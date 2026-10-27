@@ -176,6 +176,26 @@ export function createMarinHomeAvatar({kit,low=false}={}){
     const footJoinCurve=new THREE.CatmullRomCurve3(footJoin);fibers(foot,(u,v)=>{const p=footJoinCurve.getPoint(u),n=new THREE.Vector3(p.x,.5,p.z).normalize();return {p:p.addScaledVector(n,.004),n};},500,'#e6d4c1',side+211,.042,null,.27);
   }
 
+  // 10-27 default pose (마린_본체.png): Marin reports for duty — its right arm (our left) up in a salute at the side
+  // of the helmet, its left arm holding a small cream felt notebook to its chest. Each arm turns about its shoulder.
+  // Each arm turns about its shoulder so its hand reaches a point given in body space: the salute hand rests in front
+  // of the helmet's lower edge beside the right lens, the other hand on the notebook's edge.
+  const SHOULDER=[.425,.70,.005],SALUTE_HAND=[-.70,1.06,.56],HOLD_HAND=[.36,.60,.40],SALUTE_REACH=1.32;
+  function shoulder(arm,side,hand,reach=1){
+   const pivot=new THREE.Group();pivot.name=`marin-${side<0?'right':'left'}-shoulder`;pivot.position.set(side*SHOULDER[0],SHOULDER[1],SHOULDER[2]);body.add(pivot);
+   // A longer reach stretches the arm along its own length and keeps its top end at the shoulder.
+   const rest=arm.position.clone().sub(pivot.position).multiplyScalar(reach);pivot.add(arm);arm.position.copy(rest);arm.scale.y=reach;
+   // The resting arm hangs from the shoulder through its centre; turn that line towards the hand.
+   pivot.quaternion.setFromUnitVectors(rest.clone().normalize(),new THREE.Vector3(...hand).sub(pivot.position).normalize());pivot.userData.rest=pivot.quaternion.clone();
+   return pivot;
+  }
+  // The salute arm reaches a little further so its hand shows beside the lens rather than under the brim.
+  const shoulders=[shoulder(arms[0],-1,SALUTE_HAND,SALUTE_REACH),shoulder(arms[1],1,HOLD_HAND)];
+  const notebookFelt=ownMaterial(cloth('#ece2cf',{sheen:.3,normal:.22}));
+  const notebook=new THREE.Group();notebook.name='marin-felt-notebook';notebook.position.set(.21,.63,.355);notebook.rotation.set(-.14,-.16,-.22);body.add(notebook);
+  add(notebook,new THREE.BoxGeometry(.17,.22,.032,2,2,1),notebookFelt);
+  // Two pressed lines suggest its pages; the left hand presses on its right edge.
+  for(const y of [.035,-.025])yarn(notebook,[new THREE.Vector3(-.06,y,.017),new THREE.Vector3(.06,y,.017)],.0028,creamHem,8);
   const helmet=new THREE.Group();helmet.name='wide-panelled-felt-helmet';group.add(helmet);
   const panelCloth=ownMaterial(navy.clone());panelCloth.vertexColors=true;
   const shell=clothOcclusion(parametric((u,v)=>headPoint(u*TAU,v),192,100),(u,v)=>panelRelief(u*TAU,v).shade);add(helmet,shell,panelCloth);
@@ -265,9 +285,10 @@ export function createMarinHomeAvatar({kit,low=false}={}){
     group.scale.set(1,reducedMotion?1:1+Math.sin(seconds*1.22+2)*.0018,1);
     group.rotation.x=hello?Math.sin(greeting/1.2*Math.PI)*.035:0;
     group.rotation.z=hello?Math.sin(greeting/1.2*TAU)*.013:0;
-    arms.forEach((arm,i)=>{const side=i===0?-1:1;arm.rotation.z=side*.49+(hello&&i===1?Math.sin(greeting/1.2*Math.PI)*-.12:0);});
+    // The greeting lifts the salute a touch; the notebook arm stays put.
+    arms.forEach((arm,i)=>{const side=i===0?-1:1;arm.rotation.z=side*.49;});shoulders[0].quaternion.copy(shoulders[0].userData.rest);if(hello)shoulders[0].rotateZ(Math.sin(greeting/1.2*Math.PI)*-.10);
   }
-  function metrics(){return {id:'marin',revision:8,improvementPass:5,proportionRevision:1,actual3D:true,productionAsset:false,contract:'marin-4k-connected-body-ratios-v2',quality,dimensions:{height:HEIGHT,width:WIDTH,widthToHeight:WIDTH/HEIGHT,helmetHeight:HEAD_HEIGHT,helmetHeightRatio:HEAD_HEIGHT/HEIGHT,helmetDepthRatio:HEAD_DEPTH,eyeWidth:EYE_WIDTH,eyeWidthRatio:EYE_WIDTH/WIDTH,eyeHeightRatio:EYE_HEIGHT/EYE_WIDTH,eyeCenterSpacing:EYE_SPACING,eyeSpacingRatio:EYE_SPACING/EYE_WIDTH,eyeHeightFromTop:.468062,bodyForwardOffset:body.position.z,torsoWidth:.920,armCenterSpacing:1.060},eyeMaterial:'matte-yellow-felt-without-pupil-or-highlight',ownedResources:{geometries:geometrySet.size,materials:materialSet.size,textures:textureSet.size},disposed};}
+  function metrics(){return {id:'marin',revision:9,pose:'salute-with-notebook',improvementPass:5,proportionRevision:1,actual3D:true,productionAsset:false,contract:'marin-4k-connected-body-ratios-v2',quality,dimensions:{height:HEIGHT,width:WIDTH,widthToHeight:WIDTH/HEIGHT,helmetHeight:HEAD_HEIGHT,helmetHeightRatio:HEAD_HEIGHT/HEIGHT,helmetDepthRatio:HEAD_DEPTH,eyeWidth:EYE_WIDTH,eyeWidthRatio:EYE_WIDTH/WIDTH,eyeHeightRatio:EYE_HEIGHT/EYE_WIDTH,eyeCenterSpacing:EYE_SPACING,eyeSpacingRatio:EYE_SPACING/EYE_WIDTH,eyeHeightFromTop:.468062,bodyForwardOffset:body.position.z,torsoWidth:.920,armCenterSpacing:1.060},eyeMaterial:'matte-yellow-felt-without-pupil-or-highlight',ownedResources:{geometries:geometrySet.size,materials:materialSet.size,textures:textureSet.size},disposed};}
   function dispose(){if(disposed)return;disposed=true;group.removeFromParent();geometrySet.forEach(g=>g.dispose());materialSet.forEach(m=>m.dispose());textureSet.forEach(t=>t.dispose());}
   setQuality(quality);return {group,update,setQuality,metrics,dispose};
 }
