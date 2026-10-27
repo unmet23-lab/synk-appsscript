@@ -1,0 +1,14 @@
+{
+ "posts": [
+  { "key": "S4", "blog": "shiftclass", "category": "AI 리터러시 이야기",
+    "title": "AI 업무 자동화, 맡기기 전에 붙일 한 줄 — 「승인」 전엔 올리지 않게 하는 AI 리터러시 교육 활동",
+    "body": "shift/S4_승인전엔_한줄.html",
+    "images": ["out/shift_S4_표지.png", "shift/img/S4_실험화면_전후.jpg", "out/shift_S4_카드.png"],
+    "tags": ["AI업무자동화", "AI리터러시교육", "AI리터러시", "직장인AI교육", "생성형AI교육", "기업AI교육", "AI교육", "AI에이전트", "프롬프트", "SYNKSHIFT"] },
+  { "key": "P4", "blog": "daily_with_247", "category": "제작 과정",
+    "title": "홍보영상 제작 과정 · 55초 AI 광고영상을 만든 일곱 단계 — 화성 CF 「1억 년의 빛」 기획부터 검수까지",
+    "body": "pulse/P4_화성CF_제작과정.html",
+    "images": ["out/pulse_P4_표지.png", "pulse/img/p4_콘티_55초.jpg", "pulse/img/p4_비눗방울_8초중2초.jpg", "pulse/img/p4_해안도로_다시자르기.jpg"],
+    "tags": ["홍보영상제작", "광고영상제작", "AI광고제작", "기업홍보영상", "숏폼제작", "AI영상제작", "AI광고영상", "영상제작과정", "CF제작", "SYNKPULSE"] }
+ ]
+}
