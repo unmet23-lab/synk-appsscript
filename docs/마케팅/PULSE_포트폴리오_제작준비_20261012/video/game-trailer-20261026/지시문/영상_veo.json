@@ -68,9 +68,22 @@
    "start": "p9S11u",
    "end": null,
    "prompt": "Inside a dark Christmas tree at night; the string of clear glass bulbs is switched off. KKAMONG is falling straight down through the frame. The camera whip-tilts down fast to follow it, a quick continuous tilt of about two-thirds of the frame height in only a quarter of a second with motion blur, revealing the branches below, and stops as KKAMONG lands on top of a shiny red glass ornament in the lower left of the frame. From then on the camera holds still with only a tiny settle. KKAMONG steadies itself, reaches out one paw and touches the dark light string at about one and a half seconds. At about two and a half seconds a short bright purple-white flash fills the frame; right after it every clear bulb on the string changes into a round fuzzy needle-felted pom-pom light glowing warm gold and the dark cable becomes twisted cream yarn. The red ornament stays a smooth shiny red glass ball and only reflects the warm light. KKAMONG raises both paws up and keeps them up."
+  },
+  {
+   "id": "S11tA",
+   "start": "p9S11w1",
+   "end": "p9S11w2",
+   "prompt": "Inside a dark Christmas tree at night; the string of clear glass bulbs is switched off. KKAMONG drops straight down through the frame and the camera whip-tilts down fast to follow it, one continuous tilt during the first quarter of a second with motion blur, and stops as KKAMONG lands on the gold cap of the red glass ornament. From then on the camera and everything else stay completely still and KKAMONG sits steady, looking up at the light string."
+  },
+  {
+   "id": "S11tB",
+   "start": "p9S11w2",
+   "end": "p9S11w3",
+   "prompt": "Inside a dark Christmas tree at night; the string of clear glass bulbs is switched off. KKAMONG sits on the gold cap of a shiny red glass ornament. The camera holds still with only a tiny settle. KKAMONG reaches out one paw and touches the dark light string at about one second. At about two seconds a short bright purple-white flash fills the frame; right after it every clear bulb changes into a round fuzzy needle-felted pom-pom light glowing warm gold at the same moment, and the dark cable becomes twisted cream yarn. The red ornament stays a smooth shiny red glass ball and only reflects the warm light. KKAMONG raises both paws up and keeps them up."
   }
  ],
  "메모3": "10-26 유호님 「이 부분이 갑자기 왜 이렇게 바뀌는거야 ? 이거 다시 뽑아」(11번 S11v2 2초쯤 장식 공 윗부분이 펠트 · 바늘땀으로 바뀜) — 콘티의 「장식 공이 털실 결로 바뀌기 시작」을 끝 그림에 넣은 탓. S11v3는 장식 공을 유리 그대로 두고 전구만 펠트(끝 그림 p9S11d), 펠트 번짐은 12번부터.",
  "메모4": "10-26 23:2x 유호님 「원본이랑 카메라 기법이 너무 다른데? … 우리버전은 너무 고정되있고 딱딱하고 지루해」 — 원본 카메라를 프레임마다 다시 잼(원본카메라_실측.py): 2번 1.97–4.81초 배율 −19.1% · 화면 위로 2.6% · 돎 −1.2°, 초점 위 → 아래 / 11번 22.84–23.10초 빠른 아래 틸트(화면 높이의 2/3, 떨어지는 친구를 따라감) 뒤 고정 / 8번은 원본도 고정(−0.2%). 카메라를 시작 · 끝 그림의 구도에 담는다 — 2번 시작 = 끝 구도에서 19% 안쪽 · 조금 위 · 1.2° 돈 창(p9S02d), 11번 시작 = 위쪽(떨어지는 까몽, p9S11u).",
- "메모5": "10-27 0시 카메라 다시 결과 — S02v4: 물러남 −15.7% · 화면 위로 2.6% · −1.2° 돎(원본 −15~19% · 2.6% · −1.2°)로 원본과 맞음, 3.38초 한 프레임에 몽글 머리 위 작은 점이 사라지는 튐. S11v4: 장식 공은 유리 그대로지만 위쪽 시작 그림과 끝 그림이 따로 구운 판이라 겹치는 자리가 없어 Veo가 틸트 대신 바꿔 그림(세로 −9.5%, 원본 −67%). S11v5는 위쪽 시작 그림만 주고 틸트 · 내려앉음 · 펠트 전구를 지시문으로."
+ "메모5": "10-27 0시 카메라 다시 결과 — S02v4: 물러남 −15.7% · 화면 위로 2.6% · −1.2° 돎(원본 −15~19% · 2.6% · −1.2°)로 원본과 맞음, 3.38초 한 프레임에 몽글 머리 위 작은 점이 사라지는 튐. S11v4: 장식 공은 유리 그대로지만 위쪽 시작 그림과 끝 그림이 따로 구운 판이라 겹치는 자리가 없어 Veo가 틸트 대신 바꿔 그림(세로 −9.5%, 원본 −67%). S11v5는 위쪽 시작 그림만 주고 틸트 · 내려앉음 · 펠트 전구를 지시문으로.",
+ "메모6": "10-27 유호님 「응, 11번 틸트는 두 판 이어 붙이는 방법으로 Flow 200크레딧 써서 해 봐.」 — 세로로 긴 트리 판 한 장(영상판_S11세로)에서 위 · 아래 창을 잘라(영상_틸트창.py, 틸트 = 띠 높이의 0.67) 첫 판 S11tA는 위 창(떨어지는 까몽) → 아래 창(내려앉은 까몽, 어두움)의 순수한 아래 틸트, 둘째 판 S11tB는 그 아래 창 → 같은 구도로 켜진 판. 첫 판 0.6초까지 + 둘째 판으로 이어 붙인다(이음매는 같은 그림)."
 }
