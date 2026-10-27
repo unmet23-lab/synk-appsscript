@@ -28,10 +28,10 @@ const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/
 const writeJson = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + '\n'); fs.renameSync(tmp, file); };
 
-export const WRITING_RUBRIC_ID = 'topik-review-writing-r2';
+export const WRITING_RUBRIC_ID = 'topik-review-writing-r3';
 export function rubricText(kind = 'choice') {
   if (kind === 'writing') {
-    const text = fs.readFileSync(path.join(bankDir, 'review/rubric-writing-r2.md'), 'utf8').replace(/\r\n/g, '\n');
+    const text = fs.readFileSync(path.join(bankDir, 'review/rubric-writing-r3.md'), 'utf8').replace(/\r\n/g, '\n');
     return { text, sha: sha(text).slice(0, 16), id: WRITING_RUBRIC_ID };
   }
   const rubric = fs.readFileSync(path.join(bankDir, 'review/rubric-r1.md'), 'utf8').replace(/\r\n/g, '\n');
@@ -220,7 +220,7 @@ export function claudeRequests(packet, rubric = rubricText(), writingRubric = pa
   return packet.units.flatMap(unit => unit.kind === 'writing' ? [
     { custom_id: `${unit.ref}-review`, params: { model: CLAUDE_MODEL, max_tokens: 16000, system: writingSystem,
       output_config: { effort: 'high', format: { type: 'json_schema', schema: WRITING_SCHEMA } },
-      messages: [{ role: 'user', content: `아래 쓰기 문항을 위 기준대로 검수하라. 51·52는 예시답과 다른 바른 답을 altAnswers에 한두 개 적고 인정 범위가 그것을 받는지 본다(53·54는 빈 목록).\n\n${JSON.stringify(unit.view, null, 1)}` }] } },
+      messages: [{ role: 'user', content: `아래 쓰기 문항을 위 기준대로 검수하라. 51·52와 study-form은 예시답(정답)과 다른 바른 답을 altAnswers에 한두 개 적고 인정 범위가 그것을 받는지 본다(53·54·study-find는 빈 목록).\n\n${JSON.stringify(unit.view, null, 1)}` }] } },
   ] : [
     { custom_id: `${unit.ref}-blind`, params: { model: CLAUDE_MODEL, max_tokens: 6000, system,
       output_config: { effort: 'medium', format: { type: 'json_schema', schema: BLIND_SCHEMA } },
@@ -267,7 +267,7 @@ export const ARGON_WRITING_SCHEMA = { type: 'object', additionalProperties: fals
     required: ['ref', ...WRITING_SCHEMA.required], properties: { ref: { type: 'string' }, ...WRITING_SCHEMA.properties } } } } };
 export function argonWritingPrompt(units, rubric = rubricText('writing')) {
   const marker = `END-OF-ITEMS-${sha(units.map(u => u.ref).join(',')).slice(0, 8)}`;
-  return { marker, prompt: `${rubric.text}\n\n---\n\n# 이번에 검수할 쓰기 문항 ${units.length}개\n\n각 문항을 위 기준대로 따로 검수하라. 51·52는 예시답과 다른 바른 답을 altAnswers에 한두 개 적고 인정 범위가 그것을 받는지 본다(53·54는 빈 목록). 53·54 예시 글의 글자 수(띄어쓰기 포함)를 직접 세어 modelLength·분량과 대조한다.\n`
+  return { marker, prompt: `${rubric.text}\n\n---\n\n# 이번에 검수할 쓰기 문항 ${units.length}개\n\n각 문항을 위 기준대로 따로 검수하라. 51·52와 study-form은 예시답(정답)과 다른 바른 답을 altAnswers에 한두 개 적고 인정 범위가 그것을 받는지 본다(53·54·study-find는 빈 목록). 53·54 예시 글의 글자 수(띄어쓰기 포함)를 직접 세어 modelLength·분량과 대조한다.\n`
     + `seen에는 읽은 문항의 ref를 모두 적는다. 문항 목록은 「${marker}」 줄에서 끝난다 — 그 줄을 보지 못했으면 seen에 「truncated」를 넣는다.\n\n`
     + units.map(unit => `## ref ${unit.ref}\n${JSON.stringify(unit.view, null, 1)}`).join('\n\n') + `\n\n${marker}\n` };
 }
@@ -429,7 +429,9 @@ export function applyToWriting(packet, merged, { at = new Date().toISOString(), 
     JSON.parse(text);
     fs.writeFileSync(file, text);
   }
-  if (rebuild && changed.length && fs.existsSync(path.join(root, 'tools/build-world-writing-items.mjs'))) {
+  // WORLD 문항 파일이 바뀐 때만 그 생성 도구로 지문을 다시 쓴다(한국어 공부의 학습 보조 문항 파일은 그 쪽 build.mjs가 읽는다).
+  const worldChanged = units.some(unit => unit.file.replace(/\\/g, '/').endsWith('synk-world-app/world-writing-items.json') && changed.includes(unit.id));
+  if (rebuild && worldChanged && fs.existsSync(path.join(root, 'tools/build-world-writing-items.mjs'))) {
     execFileSync(process.execPath, [path.join(root, 'tools/build-world-writing-items.mjs'), '--write'], { cwd: root, stdio: 'inherit' });
   }
   return changed;

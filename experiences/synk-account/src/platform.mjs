@@ -114,9 +114,13 @@ function recentSection() {
  const recents=library.read().recent;
  return recents.length?`<section class="home-section"><div class="section-heading"><div><p class="sb-eyebrow">RECENT</p><h2>최근에 연 앱</h2></div>${button('기록 지우기','clear-recent','','plain')}</div><p class="home-section-note">${continuity?.connected()?'계정에 저장한 최근 기록이에요.':'이 기기에서 연 기록이에요.'} 앱 안에서 어디까지 했는지는 각 앱에 남아요.</p><div class="quick-grid">${recents.map(item=>quickCard(item.id,item)).join('')}</div></section>`:'';
 }
+// 한국어 공부(synk.im/study/ · experiences/korean-study): WORLD 밖에서 바로 하는 학습. 앱 목록·라이브러리 계약(PLATFORM_APP_IDS)에 넣지 않는 링크 칸이라
+// 계정 문서·저장 형식은 그대로다. WORLD 입구(아래 줄)보다 먼저 보인다.
+const STUDY_URL='https://synk.im/study/';
+function studyEntry() { return `<section class="home-section study-entry" data-study-entry><div><p class="sb-eyebrow">KOREAN STUDY</p><h2>한국어 공부</h2><p>TOPIK II 쓰기를 한 가지씩 같이 고쳐 가요. 설치나 캐릭터 설정 없이 바로 시작해요.</p></div><a class="sb-btn" href="${STUDY_URL}" target="_blank" rel="noopener noreferrer">바로 시작하기 ↗</a></section>`; }
 function homePage() {
  const state=library.read(), hasShortcuts=state.recent.length||state.favorites.length;
- return `<section class="home-welcome"><p class="sb-eyebrow">HOME</p><h1>SYNK 앱과 회원 혜택</h1><p>${hasShortcuts?'즐겨찾기와 최근에 연 앱을 아래에서 바로 열어요.':'설치 없이 열 수 있는 것부터 아래에 모았어요. 자주 쓰는 앱은 소개 화면에서 즐겨찾기에 담아요.'}</p><div class="actions"><a href="#discover" class="sb-btn soft">${hasShortcuts?'다른 앱 둘러보기':'전체 둘러보기'} →</a><a href="#library" class="plain">내 라이브러리</a></div></section>`+accountPanel()+recentSection()
+ return `<section class="home-welcome"><p class="sb-eyebrow">HOME</p><h1>SYNK 앱과 회원 혜택</h1><p>${hasShortcuts?'즐겨찾기와 최근에 연 앱을 아래에서 바로 열어요.':'설치 없이 열 수 있는 것부터 아래에 모았어요. 자주 쓰는 앱은 소개 화면에서 즐겨찾기에 담아요.'}</p><div class="actions"><a href="#discover" class="sb-btn soft">${hasShortcuts?'다른 앱 둘러보기':'전체 둘러보기'} →</a><a href="#library" class="plain">내 라이브러리</a></div></section>`+studyEntry()+accountPanel()+recentSection()
  + (state.favorites.length?`<section class="home-section"><div class="section-heading"><div><p class="sb-eyebrow">FAVORITES</p><h2>즐겨찾기</h2></div><a href="#library">라이브러리 관리 →</a></div><div class="quick-grid">${state.favorites.map(id=>quickCard(id)).join('')}</div></section>`:'')
  + (!hasShortcuts?`<section class="home-section"><div class="section-heading"><div><p class="sb-eyebrow">ON THE WEB</p><h2>설치 없이 바로 열 수 있어요</h2></div><a href="#benefits">회원 혜택 보기 →</a></div><div class="quick-grid">${['world','path','care'].map(id=>quickCard(id)).join('')}</div></section>`:'')
  + '<p class="home-device-note">'+(continuity?.connected()?'즐겨찾기와 최근 기록은 계정에, 담은 목록과 컬렉션은 이 기기에 저장해요.':'즐겨찾기와 최근 기록은 이 기기에만 저장해요.')+' <a href="#settings">저장 설정</a></p>';
