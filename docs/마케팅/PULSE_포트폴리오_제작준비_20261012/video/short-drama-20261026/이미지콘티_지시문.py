@@ -148,18 +148,20 @@ C = {
                   "in the middle, and the corner of the side-dish compartment shows it is completely empty. White desk below, 85mm lens, "
                   "shallow depth of field."),
     "1-3": dict(f="", loc="office", light="office", w=[], fx=None,
-                t=f"Insert close-up from above at an angle, 85mm lens: the square side-dish compartment of {LUNCH} — completely empty and "
-                  "clean, only a pair of light wooden chopsticks lying across it. Out-of-focus white desk around it."),
+                t=f"Tight insert close-up from above at an angle, 85mm macro lens: the square side-dish compartment of {LUNCH} — completely "
+                  "empty and clean, only a pair of light wooden chopsticks lying across it. The empty compartment fills most of the frame; "
+                  "the rest is the out-of-focus edge of the box and a pale blur. No desk, no office, no second container visible."),   # 10-27 첫 판이 책상 위 상자 둘로 넓게 나옴
     "1-4": dict(f="IM", loc="office", light="office", w=["I_office"], fx=(0, "his"),
                 t=f"Bust shot of Ian seated at his desk, 50mm lens at his eye level. He holds {LUNCH} near his chest with both hands, palms "
                   "up, in a small apologetic shrug, eyebrows slightly raised and lips slightly parted as if starting to explain. Only "
                   "Minjae's two hands (in his charcoal cardigan sleeves) rest on Ian's shoulders from behind at the upper left edge — Minjae's "
                   "face is not in the frame."),
     # ── 1화 ② 회상 — 집 식탁(밤) ──
-    "1-5": dict(f="S", loc="dining", light="night", w=["S_home"], fx=(0, "her"),
-                t="Medium shot of Seojin seated at the dining table at night, 50mm lens at her seated eye level. She holds an open small "
-                  "planner notebook up in both hands toward the person opposite her (off screen right), looking straight at him calmly and "
-                  "seriously, lips slightly parted as if starting to speak. A wooden door and the warm wall behind her."),
+    "1-5": dict(f="SI", loc="dining", light="night", w=["S_home", "I_home"], fx=(0, "her"),
+                t="Medium over-the-shoulder shot from behind Ian, 50mm lens at seated eye level: along the right edge the back of Ian's dark "
+                  "head and his hand holding a glass of green tea are large and out of focus. Across the dining table at night Seojin holds "
+                  "an open small planner notebook up in both hands toward him, looking straight at him calmly and seriously, lips slightly "
+                  "parted as if starting to speak. A wooden door and the warm wall behind her."),   # 10-28 Opus 원본 대조: 원본 5는 남자 어깨 너머(오른쪽 끝 머리 · 녹차 잔)
     "1-6": dict(f="I", loc="dining", light="night", w=["I_home", "S_home"], fx=(0, "his"),
                 t="Medium over-the-shoulder shot from behind Seojin: the back of her head and her cream knit shoulder fill the lower left "
                   "corner, large and out of focus. Across the table Ian sits drinking water from a clear glass held to his lips with his "
@@ -170,8 +172,9 @@ C = {
                   "soft and warm."),
     "1-8": dict(f="I", loc="dining", light="night", w=["I_home", "S_home"], fx=(0, "his"),
                 t="Medium over-the-shoulder shot: Seojin's cream knit shoulder and the back of her head out of focus along the left edge. "
-                  "Across the table Ian, still recovering, holds a white paper napkin over his mouth with his left hand and raises his right "
-                  "palm toward her in a small 'wait a second' gesture; a glass of water on the table in front of him."),
+                  "Across the table Ian, still recovering from a cough, presses a crumpled white paper napkin against his mouth with his left "
+                  "hand — the napkin covers his mouth and chin completely, only his eyes and nose show — and raises his right palm toward her "
+                  "in a small 'wait a second' gesture; a glass of water on the table in front of him."),   # 10-27 첫 판은 냅킨 없이 컵을 듦
     "1-9": dict(f="S", loc="dining", light="night", w=["S_home", "I_home"], fx=(0, "her"),
                 t="Medium over-the-shoulder shot from behind Ian: the back of his head and his charcoal shoulder out of focus along the right "
                   "edge. Seojin sits across the table, leaning slightly forward, explaining to him patiently with a small sigh, lips slightly "
@@ -376,9 +379,10 @@ C = {
                     "parted, his eyes sad."),
     # ── 2화 ④ 회사 · ⑤ 카페 ──
     "2-19": dict(f="IM", loc="office", light="office", w=["I_office", "M_office"], fx=None,
-                  t="Wide shot of the office from a high corner, 24mm lens: Ian leans all the way back in his office chair at the left-"
-                    "middle of the frame, staring at the ceiling, a sandwich in his hand; Minjae sits at the next desk on the right, "
-                    "turned toward him. Both small in the frame; empty desks in front."),
+                  t="Wide shot of the office from standing eye height in a corner, 24mm lens: Ian leans all the way back in his office chair "
+                    "at the left-middle of the frame, staring at the ceiling, a sandwich in his hand; Minjae sits right beside him on the "
+                    "next chair, leaning in and holding Ian's forearm with one hand, both faces visible. Both small in the frame; empty "
+                    "desks in front."),   # 10-28 Opus 원본 대조: 원본 30은 동료가 옆에서 팔을 붙잡음 · 서서 본 눈높이
     "2-20": dict(f="YS", loc="cafe", light="cafe", w=["Y_cafe", "S_cafe2"], fx=(0, "her"),
                   t="Medium shot at a bright café window: Soyeon at the left laughs out loud holding a white paper takeaway cup, while "
                     "Seojin, behind her shoulder, buries her face in Soyeon's shoulder and squirms — only Seojin's black hair and navy "
@@ -397,10 +401,11 @@ C = {
     "2-24": dict(f="S", loc="bedroom", light="bed", w=["S_pj", "I_night"], fx=(0, "her"),
                   t="Bust shot of Seojin sitting up in bed against the headboard, the bedside lamp glowing behind her, looking down at Ian "
                     "with a startled, guarded look; Ian's head on the pillow is a large dark out-of-focus shape in the lower foreground."),
-    "2-25": dict(f="", loc="bedroom", light="bed", w=["S_pj", "I_night"], fx=None,
-                  t="Insert shot of Seojin's hands rubbing hand cream into her fingers from a small white unlabeled tube, in the middle of "
-                    "the frame; her dusty-rose sleeve; the edge of her face out of focus at the left edge, and Ian lying in bed in the soft "
-                    "background."),
+    "2-25": dict(f="IS", loc="bedroom", light="bed", w=["I_night", "S_pj"], fx=(0, "his"),
+                  t="Over-the-shoulder shot from just behind Seojin, who sits up in bed: her dark hair fills the upper left corner and her "
+                    "hands rubbing hand cream from a small white unlabeled tube fill the lower part of the frame — hair, hands and her "
+                    "dusty-rose sleeve all large and out of focus. Beyond her, Ian lies on his side with his head on the pillow in the upper "
+                    "middle of the frame, in sharp focus, eyes open, looking toward her; his mouth is half hidden by the pillow."),   # 10-28 Opus 원본 대조: 원본 42는 여자 머리 · 손(앞 흐림) 너머 또렷한 남자
     "2-26": dict(f="I", loc="bedroom", light="bed", w=["I_night"], fx=(0, "his"),
                   t="Medium shot of Ian lying in bed, the lower half of his face pressed into the white pillow so his mouth is half hidden, "
                     "his eyes looking up, hurt."),
@@ -422,9 +427,10 @@ C = {
                     "right, lips closed, regret rising in her eyes."),
     # ── 2화 ⑦ 복선 · ⑧ 자백 — 식탁(밤) ──
     "2-32": dict(f="I", loc="dining", light="night", w=["I_night"], fx=None,
-                  t="Wide shot of the dining corner at night from a high angle, 28mm lens: Ian stands bent over the light-oak table writing "
-                    "carefully on a sheet of white paper with a pen; the table fills the lower half of the frame. Nothing on the paper is "
-                    "readable from this distance."),
+                  t="Wide shot of the dining corner at night from a high angle, 28mm lens: Ian stands with both hands on the edge of the "
+                    "light-oak table, looking down at a sheet of white paper and a pen lying on it, about to sit down — he is not writing, his "
+                    "hands do not touch the pen. The table fills the lower half of the frame. Nothing on the paper is readable from this "
+                    "distance."),   # 10-28 Opus 원본 대조: 원본 50b는 쓰는 손을 감춘 복선(식탁을 짚고 내려다보며 앉음)
     "2-33": dict(f="I", loc="dining", light="night", w=["I_night"], fx=(0, "his"),
                   t="Bust shot of Ian sitting at the table with his head bowed, looking down at the paper below the frame, breathing out "
                     "slowly, lips closed."),
@@ -439,18 +445,22 @@ C = {
                   t="High-angle medium shot looking down at the floor: Seojin kneels and bows all the way down with her forehead to the "
                     "floor, her hair spread out, her face hidden; Ian's dark head out of focus at the lower left corner."),
     "2-37": dict(f="S", loc="dining", light="night", w=["S_pj"], fx=None,
-                  t="Close-up of Seojin kneeling, starting to lift her head from the bow, her hair falling around her face, tearful eyes "
-                    "coming up, lips parted as if starting to speak. Framing: her face is in the middle of the frame, its center about 40% "
-                    "down from the top edge, face about 25% of the frame height."),
+                  t="Close-up of Seojin kneeling, her head still bowed low from the bow and only just beginning to lift: we see the top of "
+                    "her head and her long dark hair falling forward over her face, her face still hidden behind the hair, only a glimpse of "
+                    "her forehead. Her shoulders in the dusty-rose pajama fill the lower half of the frame. Do not show her full face."),   # 10-27 첫 판은 이미 고개를 든 얼굴 — 원본 첫 프레임은 정수리
     "2-38": dict(f="I", loc="dining", light="night", w=["I_night", "S_pj"], fx=(0, "his"),
-                  t="Wide shot over Seojin's kneeling back (dusty-rose, large and out of focus in the lower right foreground): Ian sits at "
-                    "the table behind, looking down at her, his eyes welling."),
+                  t="Wide shot over Seojin's kneeling back (dusty-rose, large and out of focus, filling the lower right foreground): Ian sits "
+                    "at the table further back, small in the frame — his face only about one seventh of the frame height, in the upper "
+                    "middle — with the near edge of the table between them in the foreground. He looks down at her, his eyes welling. 28mm "
+                    "lens, keep the camera far from him."),   # 10-27 첫 판은 이안이 미디엄만큼 큼(얼굴 0.22 · 원본 0.14)
     "2-39": dict(f="I", loc="dining", light="night", w=["I_night"], fx=(0, "his"),
-                  t="Bust shot of Ian at the table, tears welling and glistening in his eyes without falling, his lips trembling and "
-                    "slightly parted as he begins to speak — quiet, held-back emotion, not loud crying."),
+                  t="Bust shot of Ian at the table, his eyes red-rimmed and visibly wet, tears glistening on his lower lids and one thin tear "
+                    "line on his cheek, his brows drawn together, his lips trembling and slightly parted as he begins to speak — quiet, "
+                    "held-back emotion, not loud crying."),   # 10-27 첫 판은 눈물 없이 담담함
     "2-40": dict(f="S", loc="dining", light="night", w=["S_pj"], fx=(0, "her"),
-                  t="Bust shot of Seojin moving toward him, crying softly, eyes wet, lips parted as if speaking, her hand reaching forward "
-                    "past the right edge."),
+                  t="Bust shot of Seojin moving toward him, openly crying: tears running down both cheeks, her eyes red and squeezed "
+                    "narrow, brows pinched upward, face crumpled with emotion, lips parted as if speaking through sobs, her hand reaching "
+                    "forward past the right edge."),   # 10-27 첫 판은 울지 않고 걱정하는 얼굴
     "2-41": dict(f="I", loc="dining", light="night", w=["I_night", "S_pj"], fx=(0, "his"),
                   t="Bust shot of Ian over Seojin's out-of-focus dusty-rose shoulder and hair at the right edge, teary but steady, lips "
                     "slightly parted as if speaking."),

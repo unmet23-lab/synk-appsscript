@@ -3,6 +3,7 @@
 #   python -X utf8 콘티보드.py   → 콘티/p7/보드/사랑한칸_이미지콘티_<화>_<n>.jpg · _한눈_<화>.jpg(우리 그림만 차례로) · _장소.jpg(장소 기준 그림)
 # 우리 그림은 콘티/p7/정지컷/<화>-<컷>.jpg(고른 판 그대로 — 색 손대지 않음, 9:16 아닌 판만 가운데로 잘라 맞춤).
 import json
+import sys
 import os
 
 from PIL import Image, ImageDraw, ImageFont
@@ -114,6 +115,48 @@ def places(path):
     im.save(path, quality=88)
     print(path, im.size)
 
+
+def review(cs, path, title):
+    """검수용 판(10-28 아르곤 검수) — 한 장에 12쌍(4 × 3)을 보드보다 크게, 아래에 화면 · 카메라 · 말을 다 적는다. 우리 그림이 없는 컷은 뺀다."""
+    w, h, inner, gap, pad = 300, 533, 6, 24, 30
+    cw, th = w * 2 + inner, 150
+    im = Image.new("RGB", (pad * 2 + 4 * cw + 3 * gap, 90 + 3 * (h + th + gap)), BG)
+    d = ImageDraw.Draw(im)
+    d.text((pad, 24), title, font=F("ExtraBold", 32), fill=INK)
+    for i, c in enumerate(cs):
+        k = f"{c['화']}-{c['컷']}"
+        x, y = pad + (i % 4) * (cw + gap), 90 + (i // 4) * (h + th + gap)
+        im.paste(fit(os.path.join(V, "원본첫프레임", f"{k}.jpg"), w, h), (x, y))
+        im.paste(fit(ours(k), w, h), (x + w + inner, y))
+        d.text((x + 6, y + 4), "원본", font=F("ExtraBold", 22), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
+        d.text((x + w + inner + 6, y + 4), f"우리 {k}", font=F("ExtraBold", 22), fill=(255, 230, 0), stroke_width=2, stroke_fill=(0, 0, 0))
+        ty = y + h + 6
+        d.text((x, ty), f"{k}  {c['길이']:.2f}초  얼굴: {c.get('얼굴') or '-'}" + ("  · 입 맞춤" if c["입맞춤"] == "있음" else ""), font=F("ExtraBold", 19), fill=GOLD)
+        ty += 26
+        for ln in wrap(d, "화면: " + c["화면"], F("Medium", 16), cw, 2):
+            d.text((x, ty), ln, font=F("Medium", 16), fill=INK)
+            ty += 21
+        for ln in wrap(d, "카메라: " + (c.get("카메라") or "-"), F("Medium", 16), cw, 2):
+            d.text((x, ty), ln, font=F("Medium", 16), fill=(170, 190, 230))
+            ty += 21
+        for ln in wrap(d, "말: " + c["말"], F("Medium", 16), cw, 1):
+            d.text((x, ty), ln, font=F("Medium", 16), fill=SAY)
+            ty += 21
+    im.save(path, quality=88)
+    print(path, im.size)
+
+
+if __name__ == "__main__" and "--검수" in sys.argv:
+    # python -X utf8 콘티보드.py --검수 <폴더 이름>   → 콘티/p7/검수/<폴더 이름>/판_<n>.jpg
+    allc = json.load(open(os.path.join(V, "컷목록.json"), encoding="utf-8"))
+    have = [c for c in allc if os.path.exists(ours(f"{c['화']}-{c['컷']}"))]
+    out = os.path.join(V, "검수", sys.argv[sys.argv.index("--검수") + 1])
+    os.makedirs(out, exist_ok=True)
+    for p in range(0, len(have), 12):
+        part = have[p:p + 12]
+        review(part, os.path.join(out, f"판_{p // 12 + 1}.jpg"),
+               f"7번 「사랑 한 칸」 이미지 콘티 검수 판 {p // 12 + 1}/{(len(have) + 11) // 12} — 칸마다 왼쪽 원본 첫 프레임 | 오른쪽 우리 그림 ({part[0]['화']}-{part[0]['컷']} ~ {part[-1]['화']}-{part[-1]['컷']})")
+    sys.exit(0)
 
 if __name__ == "__main__":
     allc = json.load(open(os.path.join(V, "컷목록.json"), encoding="utf-8"))
