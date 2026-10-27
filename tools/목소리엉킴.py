@@ -1,0 +1,77 @@
+"""목소리 엉킴 재기 — TTS 원본의 모음에서 배음이 엇갈려 흩뿌려진(지지직 깨지는) 프레임 비율을 잰다(2026-10-28).
+
+    python -X utf8 tools/목소리엉킴.py <wav…> [--문턱 0.35]
+
+모음(유성) 프레임마다 기본 주파수를 자기상관으로 잡고, 0.08~5kHz 에너지 가운데 배음(기본 주파수의 정수배 ±12%) 밖에 있는
+비율을 센다. 깨끗한 모음은 배음 줄에 모여 0.0x, Typecast 「하나」의 감탄사 결함(「Nope!」 첫머리)은 0.35~0.5까지 오른다.
+파일마다 「엉킨 프레임」(문턱 넘은 비율) · 최악 세 프레임 평균 · 중앙값을 낸다.
+같은 글을 목소리 · 설정끼리 견줄 때만 쓴다 — 자음이 많은 줄이나 낮은 남자 목소리는 결함 없이도 높게 나올 수 있고, 귀로 듣기를 대신하지 않는다.
+"""
+import subprocess
+import sys
+
+import numpy as np
+
+SR = 16000
+
+
+def load(path):
+    r = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True)
+    return np.frombuffer(r.stdout, dtype=np.float32).astype(np.float64)
+
+
+def frames(x, n=640, hop=160):
+    w = np.hanning(n)
+    for i in range(0, len(x) - n, hop):
+        yield i, x[i:i + n] * w
+
+
+def f0_of(seg, fmin=90, fmax=600):
+    ac = np.correlate(seg, seg, 'full')[len(seg) - 1:]
+    ac = ac / (ac[0] + 1e-12)
+    lo, hi = int(SR / fmax), int(SR / fmin)
+    k = lo + int(np.argmax(ac[lo:hi]))
+    return SR / k, ac[k]
+
+
+def analyse(x):
+    """[(초, 배음 밖 비율, 기본 주파수)] — 큰 소리의 모음 프레임만."""
+    pk = np.abs(x).max() + 1e-9
+    nfft = 4096
+    fq = np.fft.rfftfreq(nfft, 1 / SR)
+    band = (fq > 80) & (fq < 5000)
+    out = []
+    for i, seg in frames(x):
+        if np.sqrt((seg ** 2).mean()) < pk * 0.12:
+            continue
+        f0, r = f0_of(seg)
+        if r < 0.3:
+            continue
+        P = np.abs(np.fft.rfft(seg, nfft)) ** 2
+        k = fq / f0
+        near = (np.abs(k - np.round(k)) < 0.12) & (np.round(k) >= 1)
+        out.append((i / SR, 1 - P[band & near].sum() / P[band].sum(), f0))
+    return out
+
+
+def main(argv):
+    limit = 0.35
+    if '--문턱' in argv:
+        i = argv.index('--문턱')
+        limit = float(argv[i + 1])
+        argv = argv[:i] + argv[i + 2:]
+    if not argv:
+        print(__doc__)
+        return 0
+    for path in argv:
+        a = analyse(load(path))
+        if not a:
+            print(f'{path}\t모음 없음')
+            continue
+        v = np.array([x[1] for x in a])
+        print(f'{path}\t엉킨 프레임 {100 * (v > limit).mean():5.1f}% · 최악 3프레임 {np.sort(v)[-3:].mean():.2f} · 중앙 {np.median(v):.2f} · 프레임 {len(v)}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
