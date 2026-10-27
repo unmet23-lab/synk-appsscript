@@ -11,9 +11,11 @@
         "유튜브 표지 그림은 서버가 못 올린다 — 첫 화면이 표지"
       ],
       "편ID": "LAB_관용구퀴즈6_하늘_20261026",
-      "주소": "https://www.youtube.com/shorts/1rWhA5mlp04",
-      "공개확인": "10-26 21:00 슬롯에 검토 승인이 없어 안 나갔고, 유호님 10-27 01시대 「승인 — 지금 ego로 올려: ① … ⑤」 ①로 10-27 01:11 Claude가 ego에서 검토 링크 「승인하기」 → 시각이 지나 서버가 바로 보냄. 01:36 @synkkorean 쇼츠 목록 맨 위 「Korean idiom quiz 🌬️⭐☀️」(1rWhA5mlp04) 확인",
-      "원고ID": "ffbc51ec-69b5-487e-9675-b8393cee1716"
+      "주소": "https://www.youtube.com/watch?v=1rWhA5mlp04",
+      "공개확인": "10-26 21:00 슬롯에 검토 승인이 없어 안 나갔고, 유호님 10-27 01시대 「승인 — 지금 ego로 올려: ① … ⑤」 ①로 10-27 01:11 Claude가 ego에서 검토 링크 「승인하기」 → 시각이 지나 서버가 바로 보냄. 01:36 @synkkorean 쇼츠 목록 맨 위 「Korean idiom quiz 🌬️⭐☀️」(1rWhA5mlp04) 확인 · 10-27 14시 점검: 서버 작업이 unknown · PUBLICATION_OPTIONS_MISMATCH(10-26과 같은 AI 표시 비교 오판)라 상태 맞추기가 「확인 필요」로 내렸지만 YouTube oembed 200(공개)과 서버 게시물 목록 16:12Z로 다시 확인해 게시됨으로 둠",
+      "원고ID": "ffbc51ec-69b5-487e-9675-b8393cee1716",
+      "플랫폼": "youtube",
+      "게시물ID": "1rWhA5mlp04"
     }
   ]
 }
