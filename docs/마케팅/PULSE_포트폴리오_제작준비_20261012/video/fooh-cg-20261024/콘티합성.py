@@ -7,6 +7,7 @@
 (영상 단계 바탕은 틀의 1.40배로 넓혀 뽑는다 — 02_콘티 1절). 결과는 git 밖 <밖>/바탕/프레임.
   python 콘티합성.py              → 박 정지 그림 b1 … b6(FOOH_VER 판의 문 렌더)
   python 콘티합성.py --움직임      → 14.13초 카메라 움직임 시험(540×960 · 30fps, 박마다 문 상태) 움직임_<판>.mp4
+  … --넓힘 <넓힌 바탕>             → 거울 반사 대신 1.40배 넓힌 바탕(바탕넓힘.py)으로 — 이름에 _넓힘, 빈 곳은 검정으로 드러낸다
 """
 import json
 import os
@@ -38,6 +39,7 @@ BEATS = [
 STATES = [(0.0, "closed"), (1.0, "pull"), (2.0, "closed"), (2.4, "seam"), (3.0, "half"), (5.5, "open"), (11.0, "closing"),
           (12.0, "seam"), (13.0, "closed")]
 판 = os.environ.get("FOOH_VER", "v6")
+넓힘 = sys.argv[sys.argv.index("--넓힘") + 1] if "--넓힘" in sys.argv else None
 
 
 def plate(name):
@@ -47,14 +49,22 @@ def plate(name):
     return Image.open(os.path.join(밖, "받음", cands[-1])).convert("RGBA")
 
 
-def affine(t, W, H, w_out=None, h_out=None):
-    """바탕(W×H, 2.0초 틀) → 그 시각 화면(w_out×h_out) 2×3 변환 — 곡선의 원본 px 행렬을 양쪽 크기에 맞춰."""
+def wide():
+    """넓힌 바탕과 그 안의 2.0초 틀 자리(바탕넓힘.py 자리.json 「큰판틀」)."""
+    X, Y, w, h = json.load(open(os.path.join(밖, "넓힘", "자리.json"), encoding="utf-8"))["큰판틀"]
+    return Image.open(넓힘).convert("RGBA"), (X, Y, w, h)
+
+
+def affine(t, W, H, w_out=None, h_out=None, off=(0, 0)):
+    """바탕(W×H, 2.0초 틀) → 그 시각 화면(w_out×h_out) 2×3 변환 — 곡선의 원본 px 행렬을 양쪽 크기에 맞춰.
+    넓힌 바탕이면 off(틀의 왼쪽 위 자리)만큼 먼저 옮긴다."""
     i = int(np.argmin(np.abs(RT - t)))
     M = np.vstack([np.array(ROWS[i]["행렬"]), [0, 0, 1]])
     w_out, h_out = w_out or W, h_out or H
     S_in = np.diag([OW / W, OH / H, 1.0])
     S_out = np.diag([w_out / OW, h_out / OH, 1.0])
-    return (S_out @ M @ S_in)[:2].astype(np.float32), ROWS[i]
+    T = np.array([[1, 0, -off[0]], [0, 1, -off[1]], [0, 0, 1]], float)
+    return (S_out @ M @ S_in @ T)[:2].astype(np.float32), ROWS[i]
 
 
 def glow(layer, radius=26, gain=1.6):
@@ -67,13 +77,17 @@ def glow(layer, radius=26, gain=1.6):
     return np.asarray(g).astype(np.float32) / 255.0 * gain
 
 
-def compose(pl, state, W, H):
+def compose(pl, state, W, H, off=(0, 0)):
     img = pl
     extra = None
     if state:
         lay = Image.open(os.path.join(밖, "렌더", f"문_{state}_{판}.png")).convert("RGBA")
         if lay.size != (W, H):
             lay = lay.resize((W, H), Image.LANCZOS)
+        if pl.size != (W, H):                  # 넓힌 바탕 — 문 렌더(틀 크기)를 틀 자리에 얹는다
+            big = Image.new("RGBA", pl.size, (0, 0, 0, 0))
+            big.paste(lay, off)
+            lay = big
         img = Image.alpha_composite(pl, lay)
         if state in ("seam", "closing"):
             extra = glow(lay)
@@ -103,18 +117,22 @@ def stills():
 def motion(fps=30, w_out=540, h_out=960):
     base = plate("F1")
     W, H = base.size
+    off, border, tag = (0, 0), cv2.BORDER_REFLECT, ""
+    if 넓힘:
+        base, (X, Y, W, H) = wide()
+        off, border, tag = (X, Y), cv2.BORDER_CONSTANT, "_넓힘"
     cache = {}
     n = int(round(곡선["컷"][0]["길이"] * fps))
-    path = os.path.join(밖, "프레임", f"움직임_{판}.mp4")
+    path = os.path.join(밖, "프레임", f"움직임_{판}{tag}.mp4")
     ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w_out}x{h_out}", "-r", str(fps), "-i", "-",
                            "-c:v", "libx264", "-crf", "16", "-pix_fmt", "yuv420p", path], stdin=subprocess.PIPE)
     for i in range(n):
         t = i / fps
         state = [s for t0, s in STATES if t0 <= t][-1]
         if state not in cache:
-            cache[state] = compose(base, state, W, H)
-        M, _ = affine(t, W, H, w_out, h_out)
-        ff.stdin.write(cv2.warpAffine(cache[state], M, (w_out, h_out), flags=cv2.INTER_AREA, borderMode=cv2.BORDER_REFLECT).tobytes())
+            cache[state] = compose(base, state, W, H, off)
+        M, _ = affine(t, W, H, w_out, h_out, off)
+        ff.stdin.write(cv2.warpAffine(cache[state], M, (w_out, h_out), flags=cv2.INTER_AREA, borderMode=border).tobytes())
     ff.stdin.close()
     ff.wait()
     print(path, n, "프레임")
