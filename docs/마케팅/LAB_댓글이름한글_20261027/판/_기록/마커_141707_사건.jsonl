@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a17bca-7257-75d3-bb4a-a4be0487cccf"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one square product cut-out image matching your brief."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A single uncapped, unbranded black bullet-tip marker lies diagonally on a white background."}}
+{"type":"turn.completed","usage":{"input_tokens":36840,"cached_input_tokens":29824,"cache_write_input_tokens":0,"output_tokens":375,"reasoning_output_tokens":0}}

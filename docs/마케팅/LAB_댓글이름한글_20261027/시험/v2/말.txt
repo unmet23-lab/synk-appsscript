@@ -1,0 +1,9 @@
+0.1s  Comment your name, and I'll write it in Korean!
+2.7s  마크. (Korean)
+4.0s  James?
+6.3s  제임스. (Korean)
+7.5s  Grace?
+10.0s  그레이스! (Korean)
+10.8s  One syllable in English. Four in Korean!
+15.0s  Korean writes your name by sound.
+18.0s  Your turn! Comment your name, and I'll write it in Korean.

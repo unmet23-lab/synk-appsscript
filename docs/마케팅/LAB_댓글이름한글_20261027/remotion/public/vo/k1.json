@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "k1",
+ "text": "마크.",
+ "dur": 0.814,
+ "words": [
+  {
+   "text": "마크.",
+   "start": 0.04,
+   "end": 0.814
+  }
+ ],
+ "source": {
+  "key": "537fe4c9db0112ba9c628fe69c3e88e8",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.95,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

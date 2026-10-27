@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h0",
+ "text": "Comment your name, and I'll write it in Korean!",
+ "dur": 2.309,
+ "words": [
+  {
+   "text": "Comment",
+   "start": 0.02,
+   "end": 0.355
+  },
+  {
+   "text": "your",
+   "start": 0.394,
+   "end": 0.485
+  },
+  {
+   "text": "name,",
+   "start": 0.55,
+   "end": 0.873
+  },
+  {
+   "text": "and",
+   "start": 0.989,
+   "end": 1.053
+  },
+  {
+   "text": "I'll",
+   "start": 1.105,
+   "end": 1.222
+  },
+  {
+   "text": "write",
+   "start": 1.274,
+   "end": 1.506
+  },
+  {
+   "text": "it",
+   "start": 1.545,
+   "end": 1.584
+  },
+  {
+   "text": "in",
+   "start": 1.623,
+   "end": 1.674
+  },
+  {
+   "text": "Korean!",
+   "start": 1.739,
+   "end": 2.309
+  }
+ ],
+ "source": {
+  "key": "8620b3ba4b347c948644e70abed9de34",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.05,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1.08,
+  "cut": null
+ }
+}

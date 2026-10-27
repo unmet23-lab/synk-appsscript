@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one marker pen, product cut-out photo, square image.
+
+A single plain black permanent marker with its cap OFF (no cap in the image): a round matte black barrel and a black rounded bullet felt tip. Shot from directly above, lying flat. The marker runs diagonally across the square image: the felt tip is in the lower-left area at about 12% from the left edge and 88% from the top, and the back end of the barrel is in the upper-right area, near the top-right corner but fully inside the frame with a margin.
+
+Seamless pure white background (#FFFFFF), flat even studio light, NO cast shadow, no reflection, no floor texture. The marker is sharp and crisp with a clean outline. Absolutely no text, brand names, letters, numbers, labels or logos printed on the marker or anywhere else.

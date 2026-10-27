@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "happy",
+  "intensity": 1.05,
+  "tempo": 1,
+  "seed": 1027,
+  "lufs": -17
+ },
+ "made": "2026-10-27T05:32:54.087Z",
+ "lines": [
+  {
+   "id": "h0",
+   "text": "Comment your name, and I'll write it in Korean!",
+   "dur": 2.309,
+   "syllablesPerSec": null,
+   "src": "h0.wav",
+   "key": "8620b3ba4b347c948644e70abed9de34",
+   "words": 9
+  },
+  {
+   "id": "k1",
+   "text": "마크.",
+   "dur": 0.814,
+   "syllablesPerSec": 2.46,
+   "src": "k1.wav",
+   "key": "537fe4c9db0112ba9c628fe69c3e88e8",
+   "words": 1
+  },
+  {
+   "id": "e2",
+   "text": "James?",
+   "dur": 0.947,
+   "syllablesPerSec": null,
+   "src": "e2.wav",
+   "key": "4edb638ccf59ebc5d6e285f298f3276f",
+   "words": 1
+  },
+  {
+   "id": "k2",
+   "text": "제임스.",
+   "dur": 0.748,
+   "syllablesPerSec": 4.01,
+   "src": "k2.wav",
+   "key": "881d69e2a1190f5c0c2443f89663d400",
+   "words": 1
+  },
+  {
+   "id": "e3",
+   "text": "Grace?",
+   "dur": 0.607,
+   "syllablesPerSec": null,
+   "src": "e3.wav",
+   "key": "3aacaf09b4952bdda4ccac8a9bfea3f1",
+   "words": 1
+  },
+  {
+   "id": "k3",
+   "text": "그레이스!",
+   "dur": 0.687,
+   "syllablesPerSec": 5.82,
+   "src": "k3.wav",
+   "key": "157494f3ee8e1c0b9da1181309d24899",
+   "words": 1
+  },
+  {
+   "id": "e4",
+   "text": "One syllable in English. Four in Korean!",
+   "dur": 3.707,
+   "syllablesPerSec": null,
+   "src": "e4.wav",
+   "key": "4bf400e1bfa100e946910d2b5d2c053d",
+   "words": 7
+  },
+  {
+   "id": "e5",
+   "text": "Korean writes the sounds you hear.",
+   "dur": 2.862,
+   "syllablesPerSec": null,
+   "src": "e5.wav",
+   "key": "40d36ca35e0c06b5d814e02f8cfdebd1",
+   "words": 6
+  },
+  {
+   "id": "k4",
+   "text": "그, 레, 이, 스.",
+   "dur": 2.832,
+   "syllablesPerSec": 1.41,
+   "src": "k4.wav",
+   "key": "9f7775a58e83a0d6076ecf953092d983",
+   "words": 4
+  },
+  {
+   "id": "e6",
+   "text": "Your turn! Comment your name, and I'll write it in Korean.",
+   "dur": 3.569,
+   "syllablesPerSec": null,
+   "src": "e6.wav",
+   "key": "1f263400c84d1656b2435dfa04251b14",
+   "words": 11
+  }
+ ]
+}

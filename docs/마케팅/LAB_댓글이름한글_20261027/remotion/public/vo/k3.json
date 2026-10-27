@@ -1,0 +1,32 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "k3",
+ "text": "그레이스!",
+ "dur": 0.687,
+ "words": [
+  {
+   "text": "그레이스!",
+   "start": 0.02,
+   "end": 0.687
+  }
+ ],
+ "source": {
+  "key": "157494f3ee8e1c0b9da1181309d24899",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 0.95,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

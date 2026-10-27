@@ -1,0 +1,97 @@
+{
+  "note": "LAB E1 「댓글에 이름 → 한글로」 나레이션 — LAB 낱말 편 목소리 하나(E5 · 관용구 퀴즈와 같은 목소리), 영어 이름은 영어로 묻고 한글 표기는 한국어로 읽는다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_댓글이름한글_20261027/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h0",
+      "text": "Comment your name, and I'll write it in Korean!",
+      "emotion": "happy",
+      "intensity": 1.05,
+      "prev": "A black marker is writing on a HELLO my name is sticker.",
+      "next": "마크.",
+      "speed": 1.08
+    },
+    {
+      "id": "k1",
+      "text": "마크.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.95
+    },
+    {
+      "id": "e2",
+      "text": "James?",
+      "emotion": "smart",
+      "prev": "Mark? 마크.",
+      "next": "Grace?"
+    },
+    {
+      "id": "k2",
+      "text": "제임스.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.95
+    },
+    {
+      "id": "e3",
+      "text": "Grace?",
+      "emotion": "smart",
+      "prev": "James? 제임스.",
+      "next": "One syllable in English. Four in Korean!"
+    },
+    {
+      "id": "k3",
+      "text": "그레이스!",
+      "lang": "ko",
+      "emotion": "happy",
+      "intensity": 1,
+      "tempo": 0.95
+    },
+    {
+      "id": "e4",
+      "text": "One syllable in English. Four in Korean!",
+      "emotion": "smart",
+      "prev": "Grace? 그레이스! The short English name became a long Korean name.",
+      "next": "Korean writes your name by sound.",
+      "speed": 1.12
+    },
+    {
+      "id": "e5",
+      "text": "Korean writes the sounds you hear.",
+      "emotion": "smart",
+      "prev": "One syllable in English. Four in Korean!",
+      "next": "그, 레, 이, 스.",
+      "speed": 1.12
+    },
+    {
+      "id": "k4",
+      "text": "그, 레, 이, 스.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.85,
+      "speed": 1.2
+    },
+    {
+      "id": "e6",
+      "text": "Your turn! Comment your name, and I'll write it in Korean.",
+      "emotion": "happy",
+      "intensity": 1.1,
+      "prev": "그, 레, 이, 스.",
+      "next": ""
+    }
+  ]
+}

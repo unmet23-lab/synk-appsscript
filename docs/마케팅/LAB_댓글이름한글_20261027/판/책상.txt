@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — overhead photo background for a vertical (9:16) short video where names are hand-written in Korean with a black marker on a name sticker.
+
+A real top-down photograph, shot straight down from above (no perspective tilt), of a clean light natural oak desk with a fine, even wood grain running vertically. Soft window daylight from the upper left, very gentle and even, no hard shadows, no glare.
+
+The whole middle of the desk is EMPTY and calm: from about 8% to 92% of the image width and from about 14% to 86% of the image height there is nothing but wood grain (a name sticker will be placed there later by the editor).
+
+Only at the very edges, partly cut off by the frame: in the top-right corner a small ceramic cup of black coffee seen from above (only about a third of it visible); in the bottom-left corner the corner of a small stack of plain white blank paper sheets (no printing). Nothing else.
+
+Absolutely no text, letters, numbers, logos, symbols, stickers or watermarks anywhere in the image. Photorealistic, warm natural colors, calm and clean.

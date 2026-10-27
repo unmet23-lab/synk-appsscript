@@ -1,0 +1,34 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3",
+ "text": "Grace?",
+ "dur": 0.607,
+ "words": [
+  {
+   "text": "Grace?",
+   "start": 0.02,
+   "end": 0.607
+  }
+ ],
+ "source": {
+  "key": "3aacaf09b4952bdda4ccac8a9bfea3f1",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "James? 제임스.",
+   "next": "One syllable in English. Four in Korean!"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
