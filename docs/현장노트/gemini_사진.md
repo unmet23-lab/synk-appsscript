@@ -758,3 +758,9 @@
 - 원인: 방 그림이 실루엣 배치도보다 앞(Image 5)에 있고 글에 미디엄 경계가 없어, 방 그림의 카메라 자리를 그대로 쓴 것으로 보인다(추정 — 같은 꼴의 거실 컷들은 배치도 실루엣이 커서 덜 걸렸다).
 - 고침: 배치도를 방 그림 앞(Image 5)으로, 방 그림 문장을 「use Image 6 ONLY for how the place looks … do NOT copy its wide camera position」으로, 카메라를 「MEDIUM SHOT, camera about 1.2 m in front of him at chest height, 50mm: he fills the right half of the frame from the top of his head, near the top edge, down to his waist at the bottom edge — no legs, no feet, no floor」로 쓰자 두 판 모두 허리 위 미디엄이 됐다(얼굴 폭 270~280px · SFace 0.43 · 0.50).
 - 다시 확인: 받은 판의 얼굴 폭이 화면 폭의 10% 남짓인지, 바닥 · 발이 안 보이는지.
+
+### 앞을 가리는 큰 소품(링 라이트 · 둥근 창)의 크기 · 자리를 글 숫자로만 주면 키워서 그린다 — 소품을 코드로 그린 배치도를 넣는다 (2026-10-27 Claude)
+- 증상: PULSE 블프 스나이퍼 4 · 17번(원본은 빨간 벽 둥근 구멍 너머, 원은 가운데 x≈52% · 바깥 지름 화면 폭의 약 50~54%)을 「링 라이트 바깥 지름이 화면 폭의 절반 · 가운데 52%」 글과 원본 사람 실루엣(또는 흐린 원본 틀)으로 굽자 다섯 판 모두 링이 화면 폭의 72~75%로 커져 화면 위아래가 잘렸다.
+- 원인: 글의 % 숫자보다 「카메라 바로 앞의 큰 링 라이트」라는 장면을 앞세우는 것으로 보인다(추정). 흐린 원본 틀의 빨간 구멍은 링 라이트로 옮겨 읽지 않았다.
+- 고침: 소품 자체를 코드로 정확한 자리 · 크기에 그린 배치도를 넣었다 — 회색 바탕에 흰 링(가운데 52% · 바깥 지름 52%) + 우리 앞 판에서 딴 사람 실루엣(`docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/bf-sniper-20261025/이미지콘티_배치도.py 링`), 글은 「Image 6 is the exact framing guide … the white ring is the ring light — keep it exactly that size and at exactly that place」 · 「about 1.5 m in front of the lens … never cut off; wide strips of the room on the LEFT and the RIGHT」. 네 판 모두 링이 화면 폭의 52~59% · 가운데 50~52%로 나왔다. 사람은 실루엣보다 10~20% 크게 나온다. 같은 자리를 쓰는 둘째 컷은 새로 굽지 않고 고른 첫 판을 「Edit Image 1 … keep EVERYTHING … The ONLY change is his pose — it must be clearly different」 + 자세 실루엣으로 한 번 편집하면 링 · 소품 · 얼굴까지 같아진다(새로 구운 4번은 스탠드 · 러그 · 앞 수납장이 17번과 달랐다).
+- 다시 확인: 받은 판에서 링 바깥 지름을 화면 폭 대비 %로 재고, 같은 자리를 쓰는 두 컷(4 · 17)의 링 · 방(소파 · 책상 자리)이 서로 같은지 본다.

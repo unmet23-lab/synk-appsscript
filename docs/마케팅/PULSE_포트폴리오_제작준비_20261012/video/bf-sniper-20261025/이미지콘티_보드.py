@@ -124,7 +124,8 @@ def overlay(img, ov):
     if kind == "cal":
         tag(d, (W / 2, H * 0.14), ov[1], 110, bg=(200, 40, 50, 230))
         if ov[2]:   # 10-27 낯선이 7차 셋 다 「27일 칸 글씨가 작다」 — 크게
-            tag(d, (W / 2, H * 0.68), ov[2], 80, fg=(40, 30, 30), bg=(255, 250, 240, 240))   # 27일 줄 바로 위(Fable 1차 하)
+            # 맨 아래 빈 줄(30일 오른쪽) — 10-27 Opus 확인: 27일 줄 위(H*0.68)에 두니 손을 작게 고친 뒤 20일 획 · 펜 끝을 가렸다
+            tag(d, (W * 0.535, H * 0.945), ov[2], 72, fg=(40, 30, 30), bg=(255, 250, 240, 240))
     elif kind == "title":
         d.text((W / 2, H * 0.42), "작전명:", font=ImageFont.truetype(FONT_B, 90), fill=(200, 200, 200), anchor="mm")
         d.text((W / 2, H * 0.58), "블프", font=ImageFont.truetype(FONT_B, 200), fill=(255, 255, 255), anchor="mm")

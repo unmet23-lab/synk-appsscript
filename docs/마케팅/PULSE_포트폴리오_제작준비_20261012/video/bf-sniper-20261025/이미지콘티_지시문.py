@@ -357,6 +357,28 @@ J.update(dict([
         WEAR + NO_LOGO, DEADPAN, DAY, FILM, 메모="16 다시(Fable 1차 상) — 6번과 짝(빈 받침에 시계) · 화면 셋 그대로 · 미디엄 · 바지 엠블럼 없앰"),
 ]))
 
+# ── 10-27 Opus 3차 확인(중) — 4 · 17 방 소품(스탠드 · 러그 · 앞 수납장)과 4번 시무룩한 얼굴: 고른 17번 판을 한 번만 편집해 자세만 바꾼다
+#    (현장노트 gemini 「영상 끝 그림 · 시작 그림은 … 확정 그림을 편집으로」 · 「고치기는 한 번까지」), 15 펜 끝이 칸 꼭짓점 선 위 → 칸 안쪽으로 ──
+J["S04"] = {"ratio": "16:9", "refs": [str(V / "받음" / picked["S17"]).replace("/", "\\"), LAY("S04_링.png")], "prompt": " ".join([
+    "Edit Image 1. Image 1 is a film still of a man standing in a living room, seen through a big glowing ring light. Keep EVERYTHING in "
+    "Image 1 exactly as it is — the camera, the framing, the ring light (same size, same place, same white light), the room and every "
+    "object in it (the blue masking-tape rectangle with the TV photo, the child's crayon drawing, the sofa, the operation desk with its "
+    "devices, the window, the floor), the light, his face, hair and clothes. Do NOT add any lamp, rug, cabinet or other object.",
+    "The ONLY change is his pose — it must be clearly different from Image 1: he now drops into a low wide squat in the same spot, knees "
+    "bent outward, exactly like the black silhouette in Image 2, and curls the two smartphones in his hands up to chest height like "
+    "dumbbells, the phones clearly visible. The round robot vacuum glides past in the lower right foreground, blurred with motion.",
+    "EXPRESSION: the same calm, neutral deadpan face as in Image 1 — eyebrows relaxed, lips closed. Not sad, not worried, not smiling.",
+    FILM]), "메모": "4 다시(Opus 3차 중) — 고른 17번 판을 편집해 자세만(같은 방 · 링 · 얼굴), 스탠드 · 러그 · 앞 수납장 없음 · 무표정"}
+for a, b in [("a man's right hand coming in from the lower left of the frame, holding an uncapped marker with a RED body",
+               "a man's right hand coming up from the bottom of the frame, below the boxes for the 25th and the 26th, holding an uncapped "
+               "marker with a RED body"),
+              ("whose tip touches the TOP-RIGHT corner INSIDE the box for the 26th — just below the box's top line and just left of the "
+               "vertical line between the 26th and the 27th,",
+               "whose tip touches the paper INSIDE the box for the 26th a little in from its top-right corner — about a finger's width "
+               "below the box's top line and a finger's width left of the vertical line to the 27th, touching NEITHER line,")]:
+    assert J["C15"]["prompt"].count(a) == 1, a[:50]
+    J["C15"]["prompt"] = J["C15"]["prompt"].replace(a, b)
+
 # 방 기준 그림 고른 판으로 「방:X」 바꾸기 — 아직이면 괄호로 남겨 실행기가 막는다
 for j in J.values():
     j["refs"] = [ROOM(r[2:]) if r.startswith("방:") else r for r in j["refs"]]
