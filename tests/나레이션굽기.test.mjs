@@ -11,7 +11,7 @@ import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import T from '../tools/lib/타입캐스트.cjs';
-import { onsetSeconds, shiftWords, filterFor, loadPlan } from '../tools/나레이션굽기.mjs';
+import { onsetSeconds, shiftWords, filterFor, loadPlan, readWavMono16, clippedSamples, REQUEST_LUFS } from '../tools/나레이션굽기.mjs';
 
 const run = promisify(execFile);
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,12 +23,13 @@ const dirs = [];
 after(() => { for (const d of dirs) fs.rmSync(d, { recursive: true, force: true }); });
 
 // 가짜 Typecast: 잔량은 보낸 글자만큼 줄고, 말소리 대신 0.25초 무음 + 글 길이만큼 떨리는 소리(44.1kHz 16비트 wav)를 돌려준다.
-function toneWav(text) {
+// amp가 1을 넘으면 진짜 Typecast처럼 16비트 끝에서 잘라 보낸다.
+function toneWav(text, amp = 0.3) {
   const rate = 44100, speech = Math.min(3, Math.max(0.6, [...text].length * 0.08)), seconds = speech + 0.6;
   const n = Math.round(rate * seconds), data = Buffer.alloc(n * 2);
   for (let i = 0; i < n; i++) {
     const t = i / rate, on = t > 0.25 && t < 0.25 + speech ? 1 : 0;
-    data.writeInt16LE(Math.round(32767 * on * 0.3 * Math.sin(2 * Math.PI * 220 * t)), i * 2);
+    data.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(32767 * on * amp * Math.sin(2 * Math.PI * 220 * t)))), i * 2);
   }
   const head = Buffer.alloc(44);
   head.write('RIFF', 0); head.writeUInt32LE(36 + data.length, 4); head.write('WAVE', 8); head.write('fmt ', 12); head.writeUInt32LE(16, 16); head.writeUInt16LE(1, 20); head.writeUInt16LE(1, 22);
@@ -37,7 +38,8 @@ function toneWav(text) {
   return { audio: Buffer.concat([head, data]).toString('base64'), audio_duration: seconds, audio_format: 'wav', words };
 }
 function mockTypecast() {
-  const m = { tts: 0, subs: 0, used: 0, plan: 200000, refuse: false, keys: new Set(), bodies: [] };
+  // loud: 목표 크기를 −20보다 높게 요청하면 잘린 소리를 돌려준다(진짜 Typecast가 −15.5·−17에서 그런다)
+  const m = { tts: 0, subs: 0, used: 0, plan: 200000, refuse: false, loud: false, keys: new Set(), bodies: [] };
   m.server = http.createServer(async (req, res) => {
     let raw = ''; for await (const c of req) raw += c;
     m.keys.add(req.headers['x-api-key']);
@@ -47,7 +49,7 @@ function mockTypecast() {
     if (req.url === '/v1/text-to-speech/with-timestamps' && req.method === 'POST') {
       const body = JSON.parse(raw);
       m.tts++; m.used += [...body.text].length; m.bodies.push(body);
-      return send(200, toneWav(body.text));
+      return send(200, toneWav(body.text, m.loud && body.output.target_lufs > -20 ? 1.4 : 0.3));
     }
     send(404, {});
   });
@@ -104,6 +106,64 @@ test('낱말 시각은 다듬은 줄 파일의 첫 소리에 맞춰 옮기고 sp
   assert.deepEqual(shiftWords(words, { onset: 0.02, speed: 1.25 }).map((w) => w.start), [0.02, 0.26]);
   assert.match(filterFor({ speed: 1.05, cut: 1.06 }, 'both'), /^atempo=1\.05,silenceremove.*areverse.*,atrim=end=1\.06,afade=t=out:st=1\.000:d=0\.06$/);
   assert.doesNotMatch(filterFor({}, 'start'), /areverse/);
+  // 크기 맞춤은 무음 자르기 앞(자르기 문턱이 말소리에 견줘 옛 판과 같은 자리), 옛 원본(gain null)은 손대지 않는다
+  assert.match(filterFor({ speed: 0.85, gain: 9 }, 'both'), /^atempo=0\.85,volume=9dB,alimiter=limit=0\.89:attack=5:release=50:level=false:latency=1,silenceremove/);
+  assert.doesNotMatch(filterFor({ gain: null }, 'both'), /volume|alimiter/);
+  assert.equal(clippedSamples({ x: Float32Array.from([0.2, 1, -1, 32766 / 32768, 0.99]) }), 3);
+});
+
+test('Typecast에는 낮은 크기(−26)로 요청하고 줄의 lufs까지는 우리 쪽에서 키운다 — lufs만 바꾸면 다시 사지 않는다', () => {
+  const w = workspace({ voice: VOICE, defaults: { lufs: -15.5 }, lines: [{ id: 'b1', text: '아니?!' }, { id: 'n1', text: 'Not always no!', lang: 'en', lufs: -17 }] });
+  const [b1, n1] = loadPlan(w.planFile).versions[0].lines;
+  assert.equal(REQUEST_LUFS, -26);
+  assert.deepEqual([b1.req.output.target_lufs, b1.gain, n1.req.output.target_lufs, n1.gain], [-26, 10.5, -26, 9]);
+  assert.equal(b1.legacyKey, T.cacheKey(T.request(b1.settings, b1.text)), '옛 열쇠 = 줄의 lufs로 요청하던 셈');
+  fs.writeFileSync(w.planFile, JSON.stringify({ voice: VOICE, defaults: { lufs: -17 }, lines: [{ id: 'b1', text: '아니?!' }] }));
+  assert.equal(loadPlan(w.planFile).versions[0].lines[0].key, b1.key, 'lufs가 달라도 같은 원본');
+  fs.writeFileSync(w.planFile, JSON.stringify({ voice: VOICE, requestLufs: 'line', defaults: { lufs: -15.5 }, lines: [{ id: 'b1', text: '아니?!' }] }));
+  const legacy = loadPlan(w.planFile).versions[0].lines[0];
+  assert.deepEqual([legacy.req.output.target_lufs, legacy.gain, legacy.key, legacy.legacyKey], [-15.5, null, b1.legacyKey, null]);
+  for (const bad of [-10, 'loud']) {
+    fs.writeFileSync(w.planFile, JSON.stringify({ voice: VOICE, requestLufs: bad, lines: [{ id: 'b1', text: '아니?!' }] }));
+    assert.match(loadPlan(w.planFile).problems.join('\n'), /requestLufs는/);
+  }
+});
+
+test('가짜 Typecast로: 잘린 옛 원본만 낮은 크기로 다시 사고, 깨끗한 옛 원본은 그대로 다듬고, 잘림은 알린다', { skip: !hasFfmpeg && 'ffmpeg 없음', timeout: 120000 }, async () => {
+  const m = await mockTypecast();
+  m.loud = true;
+  try {
+    const w = workspace({ voice: { id: VOICE, name: '범수' }, defaults: { model: 'ssfm-v30', lang: 'ko', emotion: 'normal', intensity: 1, tempo: 1, seed: 1027, lufs: -15.5 }, out: 'vo',
+      lines: [{ id: 'b1', text: '아니?!' }, { id: 'b2', text: '서비스예요!' }] });
+    const env = { SYNK_TYPECAST_API: m.origin, SYNK_TYPECAST_CACHE: w.cache };
+    // 옛 도구가 줄의 lufs(−15.5)로 산 원본: b1은 잘려 왔고 b2는 깨끗하다
+    const [b1, b2] = loadPlan(w.planFile).versions[0].lines;
+    T.saveCached(T.request(b1.settings, b1.text), toneWav(b1.text, 1.4), {}, env);
+    T.saveCached(T.request(b2.settings, b2.text), toneWav(b2.text, 0.3), {}, env);
+    const preview = await tool([w.planFile], env);
+    assert.equal(preview.code, 0, preview.out);
+    assert.match(preview.out, /b1 .*잘린 옛 원본\(\d+\) → 새로 삼/);
+    assert.match(preview.out, /b2 .*옛 크기 원본/);
+    assert.match(preview.out, /새로 살 줄 1개 4자/);
+    const baked = await tool([w.planFile, '--굽기', '--키파일', w.key], env);
+    assert.equal(baked.code, 0, baked.out);
+    assert.deepEqual(m.bodies.map((b) => [b.text, b.output.target_lufs]), [['아니?!', -26]]);
+    assert.doesNotMatch(baked.out, /잘려 왔습니다|꽉 찬 표본/);
+    const j1 = JSON.parse(fs.readFileSync(path.join(w.dir, 'vo', 'b1.json'), 'utf8')), j2 = JSON.parse(fs.readFileSync(path.join(w.dir, 'vo', 'b2.json'), 'utf8'));
+    assert.deepEqual(j1.level, { requestLufs: -26, gainDb: 10.5, limit: 0.89, clippedSource: 0, clippedOut: 0 });
+    assert.deepEqual([j1.source.key, j2.source.key, j2.level.requestLufs, j2.level.gainDb], [b1.key, b2.legacyKey, -15.5, null]);
+    // −26 원본(0.3)을 10.5 dB 키우면 1을 넘는다 → 리미터가 −1 dBFS 아래로 누른다(잘리지 않음)
+    const x = readWavMono16(path.join(w.dir, 'vo', 'b1.wav')).x;
+    const peak = x.reduce((p, v) => Math.max(p, Math.abs(v)), 0);
+    assert.ok(peak > 0.8 && peak <= 0.9, '리미터 천장 근처 ' + peak);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(w.dir, 'vo', 'vo.json'), 'utf8')).lines.map((l) => l.key), [b1.key, b2.legacyKey]);
+    // 옛 판 그대로("requestLufs": "line") 다듬으면 잘린 원본을 쓰되 알린다
+    fs.writeFileSync(w.planFile, JSON.stringify({ ...JSON.parse(fs.readFileSync(w.planFile, 'utf8')), requestLufs: 'line' }));
+    const legacy = await tool([w.planFile, '--다듬기'], env);
+    assert.equal(legacy.code, 0, legacy.out);
+    assert.match(legacy.out, /b1: Typecast 원본이 \d+표본 잘려 왔습니다\(-15\.5 LUFS로 요청\)/);
+    assert.equal(m.tts, 1);
+  } finally { m.server.close(); }
 });
 
 test('옛 계획 모양(segments·variants·previous·smart)도 읽고 틀린 설정은 굽기 전에 잡는다', () => {

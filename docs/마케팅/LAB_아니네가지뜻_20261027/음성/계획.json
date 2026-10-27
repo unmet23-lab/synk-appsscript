@@ -1,5 +1,5 @@
 {
-  "note": "LAB E4 「아니」 — B 갈래 인물 그대로: 바리스타 = 범수(역할 목소리), 해설 = 하나(LAB 목소리). 몽글은 말하지 않는다(말풍선 + 사운드킷 몽글 소리). b1 · b2는 억양시험.json의 what_b · aww_b와 같은 요청이라 캐시에서 나온다. n3 「Your turn. Say it out loud!」는 E3(앱으로배운한국어_20261025) 파일을 그대로 쓴다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_아니네가지뜻_20261027/음성/계획.json --굽기 · 10-27 다시 살림(v6): n5 「Same word. Different tone. Your turn!」 한 줄만 새로 굽는다(오해 고리를 뺀 「한 낱말 · 두 억양」 판).",
+  "note": "LAB E4 「아니」 — B 갈래 인물 그대로: 바리스타 = 범수(역할 목소리), 해설 = 하나(LAB 목소리). 몽글은 말하지 않는다(말풍선 + 사운드킷 몽글 소리). b1 · b2는 억양시험.json의 what_b · aww_b와 같은 요청이라 캐시에서 나온다. n3 「Your turn. Say it out loud!」는 E3(앱으로배운한국어_20261025) 파일을 그대로 쓴다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_아니네가지뜻_20261027/음성/계획.json --굽기 · 10-27 다시 살림(v6): n5 「Same word. Different tone. Your turn!」 한 줄만 새로 굽는다(오해 고리를 뺀 「한 낱말 · 두 억양」 판). · 10-28: b1 · n4는 Typecast 원본이 잘려 와(지지직) 낮은 크기로 다시 샀다 — seed마다 연기가 달라 옛 줄과 길이 · 억양이 가장 가까운 seed 1029를 골랐다(b1은 이제 억양시험 what_b와 다른 원본).",
   "voice": {
     "id": "tc_61659cc118732016a95fe7c6",
     "name": "하나"
@@ -27,7 +27,8 @@
       "emotion": "smart",
       "prev": "손님이 동전이 가득 든 유리병을 계산대에 와르르 쏟는다. 바리스타가 눈이 휘둥그레져서 깜짝 놀라 소리친다.",
       "next": "",
-      "lufs": -15.5
+      "lufs": -15.5,
+      "seed": 1029
     },
     {
       "id": "b2",
@@ -64,7 +65,8 @@
       "id": "n4",
       "text": "Which one have you heard in K-dramas?",
       "emotion": "happy",
-      "intensity": 1.1
+      "intensity": 1.1,
+      "seed": 1029
     },
     {
       "id": "n5",

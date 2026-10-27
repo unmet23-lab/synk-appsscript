@@ -2,26 +2,26 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "q3_answer",
  "text": "Ban means half!",
- "dur": 1.235,
+ "dur": 1.25,
  "words": [
   {
    "text": "Ban",
-   "start": 0.06,
-   "end": 0.294
+   "start": 0.02,
+   "end": 0.339
   },
   {
    "text": "means",
-   "start": 0.395,
-   "end": 0.663
+   "start": 0.44,
+   "end": 0.708
   },
   {
    "text": "half!",
-   "start": 0.78,
-   "end": 1.235
+   "start": 0.877,
+   "end": 1.25
   }
  ],
  "source": {
-  "key": "17f068d902d8c3cbc886331739dad6bb",
+  "key": "d1ea4792809c65f218f324d6dc9d332c",
   "voice": {
    "id": "tc_61659cc118732016a95fe7c6",
    "name": "하나"
@@ -32,11 +32,18 @@
    "emotion": "happy",
    "intensity": 1.2,
    "tempo": 1.15,
-   "seed": 1003,
+   "seed": 1013,
    "lufs": -17,
    "voiceId": "tc_61659cc118732016a95fe7c6"
   },
   "speed": 1.2,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
  }
 }

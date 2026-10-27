@@ -17,7 +17,7 @@ const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다(현장 노트)
 
 // 시간표(초). 목소리 길이는 public/vo/*.json
-const B1 = 0.495; // 아니?!
+const B1 = 0.45; // 아니?! (10-28 잘림 없이 다시 구움, seed 1029)
 const B2 = 1.935; // 아니~ 뭘 이런 걸!
 export const T2 = {
   b1: 0.35,

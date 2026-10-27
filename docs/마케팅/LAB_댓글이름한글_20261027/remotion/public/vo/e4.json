@@ -60,5 +60,12 @@
   },
   "speed": 1.12,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -17,
+  "gainDb": null,
+  "limit": null,
+  "clippedSource": 0,
+  "clippedOut": 0
  }
 }

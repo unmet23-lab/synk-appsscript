@@ -4,7 +4,7 @@ export const VO = {
   {
    "id": "q1_title",
    "at": 0.03,
-   "dur": 2.163,
+   "dur": 1.926,
    "text": "Two number systems? One rule!",
    "src": "vo/ten/q1_title.wav"
   },
@@ -53,7 +53,7 @@ export const VO = {
   {
    "id": "q2_title",
    "at": 9.63,
-   "dur": 1.177,
+   "dur": 1.183,
    "text": "And this one?",
    "src": "vo/ten/q2_title.wav"
   },
@@ -151,7 +151,7 @@ export const VO = {
   {
    "id": "q3_answer",
    "at": 24.24,
-   "dur": 1.235,
+   "dur": 1.25,
    "text": "Ban means half!",
    "src": "vo/ten/q3_answer.wav"
   },

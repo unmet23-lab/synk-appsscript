@@ -2,41 +2,41 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "e5",
  "text": "Korean writes the sounds you hear.",
- "dur": 2.862,
+ "dur": 2.858,
  "words": [
   {
    "text": "Korean",
-   "start": 0,
-   "end": 0.449
+   "start": 0.08,
+   "end": 0.618
   },
   {
    "text": "writes",
-   "start": 0.557,
-   "end": 0.898
+   "start": 0.673,
+   "end": 0.978
   },
   {
    "text": "the",
-   "start": 1.168,
-   "end": 1.257
+   "start": 1.032,
+   "end": 1.122
   },
   {
    "text": "sounds",
-   "start": 1.365,
-   "end": 1.725
+   "start": 1.23,
+   "end": 1.751
   },
   {
    "text": "you",
-   "start": 1.796,
-   "end": 1.904
+   "start": 1.841,
+   "end": 2.002
   },
   {
    "text": "hear.",
-   "start": 2.012,
-   "end": 2.767
+   "start": 2.182,
+   "end": 2.847
   }
  ],
  "source": {
-  "key": "40d36ca35e0c06b5d814e02f8cfdebd1",
+  "key": "6d6eea7511c85f6cde638a8dc280d46b",
   "voice": {
    "id": "tc_61659cc118732016a95fe7c6",
    "name": "하나"
@@ -55,5 +55,12 @@
   },
   "speed": 1.12,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
  }
 }

@@ -2,16 +2,16 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "b1",
  "text": "아니?!",
- "dur": 0.495,
+ "dur": 0.45,
  "words": [
   {
    "text": "아니?!",
-   "start": 0.02,
-   "end": 0.495
+   "start": 0.03,
+   "end": 0.45
   }
  ],
  "source": {
-  "key": "3114092e57eff97bcfc66c09c0214687",
+  "key": "cfb9c71ddfd1d61e1fcd5f81795ad073",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -22,7 +22,7 @@
    "emotion": "smart",
    "intensity": 1,
    "tempo": 1,
-   "seed": 1027,
+   "seed": 1029,
    "lufs": -15.5,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
    "prev": "손님이 동전이 가득 든 유리병을 계산대에 와르르 쏟는다. 바리스타가 눈이 휘둥그레져서 깜짝 놀라 소리친다.",
@@ -30,5 +30,12 @@
   },
   "speed": 1,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10.5,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
  }
 }

@@ -15,24 +15,24 @@
   "seed": 1027,
   "lufs": -15.5
  },
- "made": "2026-10-26T22:22:00.775Z",
+ "made": "2026-10-27T16:16:02.551Z",
  "lines": [
   {
    "id": "b1",
    "text": "다음에 밥 한번 먹어요!",
-   "dur": 1.511,
-   "syllablesPerSec": 5.96,
+   "dur": 1.617,
+   "syllablesPerSec": 5.57,
    "src": "b1.wav",
-   "key": "84c0eddc5d62c10c09b88e3f024a9eb6",
+   "key": "bf22477fc986501e7c8bd4ff3b092354",
    "words": 4
   },
   {
    "id": "b2",
    "text": "아, 네. 그냥, 다음에요.",
-   "dur": 2.192,
-   "syllablesPerSec": 3.65,
+   "dur": 2.378,
+   "syllablesPerSec": 3.36,
    "src": "b2.wav",
-   "key": "f4c7af739dd7015a450bd8cc4c9daecb",
+   "key": "2033bead9a94cef72ba85b9c33202b75",
    "words": 4
   },
   {

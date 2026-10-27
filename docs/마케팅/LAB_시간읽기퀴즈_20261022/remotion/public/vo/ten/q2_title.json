@@ -2,26 +2,26 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "q2_title",
  "text": "And this one?",
- "dur": 1.177,
+ "dur": 1.183,
  "words": [
   {
    "text": "And",
    "start": 0.02,
-   "end": 0.202
+   "end": 0.181
   },
   {
    "text": "this",
-   "start": 0.303,
-   "end": 0.546
+   "start": 0.321,
+   "end": 0.603
   },
   {
    "text": "one?",
-   "start": 0.748,
-   "end": 1.177
+   "start": 0.804,
+   "end": 1.183
   }
  ],
  "source": {
-  "key": "5259b0bdadf0d451770682f37733f960",
+  "key": "e575279339f85cd7965555e06e4b7b7f",
   "voice": {
    "id": "tc_61659cc118732016a95fe7c6",
    "name": "하나"
@@ -32,11 +32,18 @@
    "emotion": "happy",
    "intensity": 1.2,
    "tempo": 1.15,
-   "seed": 1003,
+   "seed": 1006,
    "lufs": -17,
    "voiceId": "tc_61659cc118732016a95fe7c6"
   },
   "speed": 1,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
  }
 }

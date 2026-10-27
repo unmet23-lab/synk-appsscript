@@ -15,7 +15,7 @@
   "seed": 1027,
   "lufs": -17
  },
- "made": "2026-10-27T05:32:54.087Z",
+ "made": "2026-10-27T15:56:20.849Z",
  "lines": [
   {
    "id": "h0",
@@ -83,10 +83,10 @@
   {
    "id": "e5",
    "text": "Korean writes the sounds you hear.",
-   "dur": 2.862,
+   "dur": 2.858,
    "syllablesPerSec": null,
    "src": "e5.wav",
-   "key": "40d36ca35e0c06b5d814e02f8cfdebd1",
+   "key": "6d6eea7511c85f6cde638a8dc280d46b",
    "words": 6
   },
   {

@@ -473,9 +473,9 @@ const Sound: React.FC<{ voice: boolean }> = ({ voice }) => {
   const total = fr(T.total);
   // 말하는 동안 배경음을 낮추고(목소리 아래로), 바리스타가 굳는 장면에서는 멈춘다
   const talk: [number, number][] = [
-    [T.b1, T.b1 + 1.55],
-    [T.b2, T.b2 + 2.25],
-    voice ? [T.n1, T.n1 + 4.2] : [T.n1 + 0.2, T.n1 + 1.8],
+    [T.b1, T.b1 + 1.65],
+    [T.b2, T.b2 + 2.4],
+    voice ? [T.n1, T.n1 + 4.2] : [T.n1 + 0.2, T.n1 + 1.9],
     [T.n2, T.n2 + 1.8],
     [T.n3, T.turnGap[1]],
     [T.b3, T.b3 + 1.15],

@@ -12,19 +12,19 @@
   "emotion": "happy",
   "intensity": 1.2,
   "tempo": 1.15,
-  "seed": 1003,
+  "seed": 1004,
   "lufs": -17
  },
- "made": "2026-10-21T23:21:18.924Z",
+ "made": "2026-10-27T16:13:55.362Z",
  "lines": [
   {
    "id": "q1_title",
    "text": "Two number systems? One rule!",
    "at": 0.03,
-   "dur": 2.163,
+   "dur": 1.926,
    "syllablesPerSec": null,
    "src": "vo/ten/q1_title.wav",
-   "key": "a2c5099a74def56d4ffa579561b3385f",
+   "key": "bc2f4056d882210c28a89507bf8d5e62",
    "words": 5
   },
   {
@@ -91,10 +91,10 @@
    "id": "q2_title",
    "text": "And this one?",
    "at": 9.63,
-   "dur": 1.177,
+   "dur": 1.183,
    "syllablesPerSec": null,
    "src": "vo/ten/q2_title.wav",
-   "key": "5259b0bdadf0d451770682f37733f960",
+   "key": "e575279339f85cd7965555e06e4b7b7f",
    "words": 3
   },
   {
@@ -231,10 +231,10 @@
    "id": "q3_answer",
    "text": "Ban means half!",
    "at": 24.24,
-   "dur": 1.235,
+   "dur": 1.25,
    "syllablesPerSec": null,
    "src": "vo/ten/q3_answer.wav",
-   "key": "17f068d902d8c3cbc886331739dad6bb",
+   "key": "d1ea4792809c65f218f324d6dc9d332c",
    "words": 3
   },
   {

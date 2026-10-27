@@ -2,31 +2,31 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "b1",
  "text": "다음에 밥 한번 먹어요!",
- "dur": 1.511,
+ "dur": 1.617,
  "words": [
   {
    "text": "다음에",
    "start": 0.02,
-   "end": 0.365
+   "end": 0.344
   },
   {
    "text": "밥",
-   "start": 0.425,
-   "end": 0.567
+   "start": 0.405,
+   "end": 0.547
   },
   {
    "text": "한번",
-   "start": 0.648,
-   "end": 0.911
+   "start": 0.628,
+   "end": 0.891
   },
   {
    "text": "먹어요!",
-   "start": 0.972,
-   "end": 1.511
+   "start": 0.951,
+   "end": 1.617
   }
  ],
  "source": {
-  "key": "84c0eddc5d62c10c09b88e3f024a9eb6",
+  "key": "bf22477fc986501e7c8bd4ff3b092354",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -43,5 +43,12 @@
   },
   "speed": 1,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10.5,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
  }
 }

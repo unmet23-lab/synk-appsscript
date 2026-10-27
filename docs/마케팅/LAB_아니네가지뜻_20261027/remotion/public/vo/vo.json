@@ -12,18 +12,18 @@
   "emotion": "smart",
   "intensity": 1,
   "tempo": 1,
-  "seed": 1027,
+  "seed": 1029,
   "lufs": -15.5
  },
- "made": "2026-10-27T09:12:39.658Z",
+ "made": "2026-10-27T16:13:49.418Z",
  "lines": [
   {
    "id": "b1",
    "text": "아니?!",
-   "dur": 0.495,
-   "syllablesPerSec": 4.04,
+   "dur": 0.45,
+   "syllablesPerSec": 4.44,
    "src": "b1.wav",
-   "key": "3114092e57eff97bcfc66c09c0214687",
+   "key": "cfb9c71ddfd1d61e1fcd5f81795ad073",
    "words": 1
   },
   {
@@ -56,10 +56,10 @@
   {
    "id": "n4",
    "text": "Which one have you heard in K-dramas?",
-   "dur": 2.734,
+   "dur": 2.804,
    "syllablesPerSec": null,
    "src": "n4.wav",
-   "key": "0777cd72038466f6c384b9eec69c0d01",
+   "key": "7783ffd532e33ffe9a25813296e08b5a",
    "words": 7
   },
   {

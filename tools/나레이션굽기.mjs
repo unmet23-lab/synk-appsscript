@@ -25,6 +25,10 @@
 //   옛 모양도 읽는다: segments(= lines)·variants(이어 붙이지 않는 추가 줄)·voices+role·previous(= prev)·smart:true(= emotion smart).
 //   emotion은 normal·happy·sad·angry·whisper·toneup·tonedown 또는 smart(앞뒤 글 prev·next를 읽고 감정을 정함, ssfm-v30만).
 //   speed는 굽고 나서 atempo(음높이 그대로, 요청에 안 들어가 다시 사지 않음), cut은 받아쓰기로 잰 말끝에서 자르고 0.06초 페이드.
+//   lufs는 줄 파일의 크기다(2026-10-28부터). Typecast에는 늘 requestLufs(기본 −26)로 요청하고, 다듬을 때 그 차이만큼 키운 뒤
+//   리미터(−1 dBFS)로 봉우리만 누른다 — Typecast는 목표 크기를 맞추며 0 dBFS를 넘는 봉우리를 그냥 잘라 보내서다(−15.5로 산 줄의 70%).
+//   lufs만 바꾸면 다시 사지 않는다. 옛 계획을 그때 산 원본 그대로 다시 다듬을 때만 계획에 "requestLufs": "line"(줄의 lufs로 요청, 키우기 없음).
+//   다듬을 때 캐시 원본의 꽉 찬 표본(잘림)을 세어 3개 이상이면 알린다.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -36,6 +40,8 @@ import T from './lib/타입캐스트.cjs';
 const run = promisify(execFile);
 const FFMPEG = process.env.SYNK_FFMPEG_EXE || 'ffmpeg', FFPROBE = process.env.SYNK_FFPROBE_EXE || 'ffprobe';
 const DEFAULTS = { model: 'ssfm-v30', lang: 'ko', emotion: 'normal', intensity: 1, tempo: 1, seed: 1003, lufs: -17 };
+// 요청 크기: 말소리 봉우리는 크기보다 15~17 dB 위라 −15.5·−17로 요청하면 0 dBFS를 넘어 잘린다. −26이면 26 dB 여유.
+export const REQUEST_LUFS = -26, LIMIT = 0.89, CLIP_WARN = 3;
 const ID = /^[A-Za-z0-9가-힣._-]{1,60}$/;
 const TOOL = 'tools/나레이션굽기.mjs';
 const hangul = (text) => [...String(text)].filter((c) => /[가-힣]/.test(c)).length;
@@ -48,7 +54,7 @@ function pickVoice(v) {
   if (!T.VOICE_ID.test(voice.id || '')) throw Error('목소리 id 모양이 아닙니다(tc_… 24자리): ' + JSON.stringify(v));
   return voice;
 }
-function normLine(raw, base, voices, problems, where, forced = null) {
+function normLine(raw, base, voices, problems, where, forced = null, requestLufs = REQUEST_LUFS) {
   const l = { ...raw };
   if (l.previous !== undefined && l.prev === undefined) l.prev = l.previous;
   if (l.smart === true) l.emotion = 'smart';
@@ -70,9 +76,12 @@ function normLine(raw, base, voices, problems, where, forced = null) {
   if (l.cut !== undefined && !(l.cut > 0.1)) problems.push(`${where}/${id}: cut은 0.1초보다 커야 함 ${l.cut}`);
   const settings = { model: s.model, lang: s.lang, emotion: s.emotion, intensity: s.intensity, tempo: s.tempo, seed: s.seed, lufs: s.lufs,
     voiceId: voice?.id, ...(s.emotion === 'smart' ? { prev: s.prev || '', next: s.next || '' } : {}) };
-  const req = voice ? T.request(settings, String(l.text)) : null;
+  if (!(s.lufs >= -40 && s.lufs <= -6)) problems.push(`${where}/${id}: lufs는 −40~−6 ${s.lufs}`);
+  const legacy = requestLufs === 'line';
+  const req = voice ? T.request({ ...settings, lufs: legacy ? settings.lufs : requestLufs }, String(l.text)) : null;
   return { id, text: String(l.text ?? ''), show: l.show, scene: l.scene, at: l.at, cut: l.cut, speed: l.speed, trim: l.trim, variant: !!raw.__variant,
-    voice, settings, req, key: req ? T.cacheKey(req) : null, chars: T.chars(l.text ?? '') };
+    voice, settings, req, key: req ? T.cacheKey(req) : null, chars: T.chars(l.text ?? ''), gain: legacy ? null : +(s.lufs - requestLufs).toFixed(2),
+    legacyKey: voice && !legacy ? T.cacheKey(T.request(settings, String(l.text))) : null };
 }
 export function loadPlan(file, overrides = {}) {
   const planFile = path.resolve(file), dir = path.dirname(planFile);
@@ -82,28 +91,41 @@ export function loadPlan(file, overrides = {}) {
   const topVoice = forced || (raw.voice ? pickVoice(raw.voice) : null);
   const versionEntries = raw.versions ? Object.entries(raw.versions) : [['', { lines: raw.lines || raw.segments || [] }]];
   if (!raw.versions && !(raw.lines || raw.segments)) problems.push('계획에 lines(또는 segments·versions)가 없음');
+  const requestLufs = raw.requestLufs ?? REQUEST_LUFS;
+  if (requestLufs !== 'line' && !(requestLufs >= -40 && requestLufs <= -20)) problems.push(`requestLufs는 −40~−20 또는 "line" ${JSON.stringify(raw.requestLufs)}`);
   const out = path.resolve(dir, overrides.out || raw.out || 'vo');
   const versions = versionEntries.map(([name, v]) => {
     const voiceObj = forced || (v.voice ? pickVoice(v.voice) : topVoice);
     const base = { ...DEFAULTS, ...(raw.defaults || {}), ...(v.defaults || {}), voiceObj };
     const extra = !raw.versions && raw.variants ? Object.entries(raw.variants).map(([id, x]) => ({ ...x, id, __variant: true })) : [];
-    const lines = [...(v.lines || []), ...extra].map((l) => normLine(l, base, raw.voices, problems, name || '줄', forced));
+    const lines = [...(v.lines || []), ...extra].map((l) => normLine(l, base, raw.voices, problems, name || '줄', forced, requestLufs));
     const seen = new Set();
     for (const l of lines) { if (seen.has(l.id)) problems.push(`${name || '줄'}: 같은 id가 두 번 ${l.id}`); seen.add(l.id); }
     return { name, lines, out: name ? path.join(out, name) : out };
   });
   const take = raw.take && !raw.versions && (raw.take.wav || raw.take.mp3) ? raw.take : null;
-  return { file: planFile, dir, raw, out, versions, take, trim: raw.trim || 'both', limits: raw.limits || [],
+  return { file: planFile, dir, raw, out, versions, take, requestLufs, trim: raw.trim || 'both', limits: raw.limits || [],
     srcBase: overrides.srcBase || raw.srcBase ? path.resolve(dir, overrides.srcBase || raw.srcBase) : null, ts: overrides.ts || raw.ts ? path.resolve(dir, overrides.ts || raw.ts) : null, problems };
 }
 
 // ── 캐시와 미리보기 ──────────────────────────────────────────────────────
+// 줄의 원본: 낮은 크기로 산 원본, 없으면 줄의 lufs로 산 옛 원본이 잘리지 않았을 때만 그것(키우기 없이 옛 다듬기 그대로).
+// 잘린 옛 원본은 없는 셈 쳐서 --굽기가 낮은 크기로 다시 산다.
+function findSource(l, { copyLegacy = false } = {}) {
+  const cached = l.key && T.findCached(l.voice.id, l.key, { copyLegacy });
+  if (cached || !l.legacyKey) return { cached, oldTarget: false, clippedOld: 0 };
+  const old = T.findCached(l.voice.id, l.legacyKey, { copyLegacy });
+  if (!old) return { cached: null, oldTarget: false, clippedOld: 0 };
+  let clipped = 0;
+  try { clipped = clippedSamples(readWavMono16(old.wav)); } catch {}
+  return clipped >= CLIP_WARN ? { cached: null, oldTarget: false, clippedOld: clipped } : { cached: old, oldTarget: true, clippedOld: 0 };
+}
 export function survey(plan, { only = null, versions = null, copyLegacy = false } = {}) {
   const chosen = plan.versions.filter((v) => !versions || versions.includes(v.name));
   const lines = chosen.flatMap((v) => v.lines.map((l) => ({ ...l, version: v.name })));
   const wanted = lines.filter((l) => !only || only.includes(l.id));
   const seen = new Set(), unique = wanted.filter((l) => l.key && !seen.has(l.key) && seen.add(l.key)); // 같은 요청은 먼저 나온 줄 하나로
-  for (const l of unique) l.cached = T.findCached(l.voice.id, l.key, { copyLegacy });
+  for (const l of unique) Object.assign(l, findSource(l, { copyLegacy }));
   const todo = unique.filter((l) => !l.cached);
   return { chosen, lines, wanted, unique, todo, newChars: todo.reduce((n, l) => n + l.chars, 0),
     cacheRoot: T.cacheRoot(), cacheExists: fs.existsSync(T.cacheRoot()), fromLegacy: unique.filter((l) => l.cached?.from === 'legacy').length };
@@ -114,7 +136,7 @@ function printSurvey(plan, s) {
     console.log(`\n${v.name ? `판 ${v.name}` : '줄'} → ${v.out}`);
     for (const l of v.lines) {
       const u = s.unique.find((x) => x.key === l.key);
-      const state = !u ? '(이번엔 안 고름)' : u.cached ? (u.cached.from === 'legacy' ? '옛 캐시' : '캐시') : '새로 삼';
+      const state = !u ? '(이번엔 안 고름)' : u.cached ? (u.cached.from === 'legacy' ? '옛 캐시' : u.oldTarget ? '옛 크기 원본' : '캐시') : u.clippedOld ? `잘린 옛 원본(${u.clippedOld}) → 새로 삼` : '새로 삼';
       console.log(`  ${l.id.padEnd(12)} ${String(l.chars).padStart(4)}자 ${state.padEnd(8)} ${l.voice?.name || '?'} ${l.settings.emotion}·${l.settings.tempo} ${l.text}`);
     }
   }
@@ -157,7 +179,7 @@ async function buy(plan, s, { keyFile, maxChars, say = console.log }) {
 }
 
 // ── 다듬기(무료): 캐시 원본 → 출력 폴더의 줄 wav·낱말 시각·목록 ─────────────
-function readWavMono16(file) {
+export function readWavMono16(file) {
   const b = fs.readFileSync(file);
   if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WAVE') throw Error('wav가 아님: ' + file);
   let p = 12, rate = 0, channels = 0, bits = 0, data = null;
@@ -187,12 +209,20 @@ export function shiftWords(words, { onset, speed = 1, duration = Infinity }) {
   const shift = onset - words[0].start / speed;
   return words.map((w) => ({ text: w.text, start: +Math.max(0, w.start / speed + shift).toFixed(3), end: +Math.min(duration, w.end / speed + shift).toFixed(3) }));
 }
+// 크기는 무음 자르기 앞에서 맞춘다 — 자르기 문턱(−50 dB)이 말소리에 견줘 옛 판과 같은 자리에 오게.
 export function filterFor(line, trim) {
   const tempo = line.speed && line.speed !== 1 ? `atempo=${line.speed},` : '';
+  const level = typeof line.gain === 'number' ? `volume=${line.gain}dB,alimiter=limit=${LIMIT}:attack=5:release=50:level=false:latency=1,` : '';
   const head = 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.02';
   const tail = (line.trim || trim) === 'start' ? '' : ',areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse';
   const cut = line.cut ? `,atrim=end=${line.cut},afade=t=out:st=${Math.max(0, line.cut - 0.06).toFixed(3)}:d=0.06` : '';
-  return tempo + head + tail + cut;
+  return tempo + level + head + tail + cut;
+}
+// 꽉 찬 표본(16비트 최대 ±32767 근처) 수 — Typecast가 봉우리를 잘라 보낸 흔적.
+export function clippedSamples({ x }) {
+  let n = 0;
+  for (let i = 0; i < x.length; i++) if (Math.abs(x[i]) >= 32766 / 32768) n++;
+  return n;
 }
 const probeSeconds = async (file) => Number((await run(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { windowsHide: true })).stdout.trim());
 async function ffmpegTo(out, args) {
@@ -219,25 +249,33 @@ async function processVersion(plan, v, say) {
   const manifestFile = path.join(v.out, 'vo.json');
   const previous = fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : null;
   const made = [], missing = [], warnings = [];
+  const clippedOld = [];
   for (const l of v.lines) {
-    const cached = l.key && T.findCached(l.voice.id, l.key);
-    if (!cached) { missing.push(l.id); continue; }
+    const { cached, oldTarget, clippedOld: oldClips } = findSource(l, { copyLegacy: true });
+    if (!cached) { missing.push(l.id); if (oldClips) clippedOld.push(`${l.id}(${oldClips})`); continue; }
+    const key = oldTarget ? l.legacyKey : l.key, gain = oldTarget ? null : l.gain;
+    const source16 = readWavMono16(cached.wav), sourceClipped = clippedSamples(source16);
     const wav = path.join(v.out, l.id + '.wav');
-    await ffmpegTo(wav, ['-i', cached.wav, '-af', filterFor(l, plan.trim), '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le']);
-    const dur = +(await probeSeconds(wav)).toFixed(3);
+    await ffmpegTo(wav, ['-i', cached.wav, '-af', filterFor({ ...l, gain }, plan.trim), '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le']);
+    const dur = +(await probeSeconds(wav)).toFixed(3), out16 = readWavMono16(wav), outClipped = clippedSamples(out16);
     const meta = cached.json ? JSON.parse(fs.readFileSync(cached.json, 'utf8')) : null;
-    const words = meta?.words ? shiftWords(meta.words, { onset: onsetSeconds(readWavMono16(wav)), speed: l.speed || 1, duration: dur }) : [];
+    const words = meta?.words ? shiftWords(meta.words, { onset: onsetSeconds(out16), speed: l.speed || 1, duration: dur }) : [];
     const wordCount = l.text.trim().split(/\s+/).length;
     if (meta?.words && meta.words.length !== wordCount) warnings.push(`${l.id}: Typecast 낱말 ${meta.words.length}개 ≠ 띄어쓰기 낱말 ${wordCount}개(낱말 시각을 그대로 믿지 마세요)`);
+    const requested = oldTarget || gain === null ? l.settings.lufs : plan.requestLufs;
+    if (sourceClipped >= CLIP_WARN) warnings.push(`${l.id}: Typecast 원본이 ${sourceClipped}표본 잘려 왔습니다(${requested} LUFS로 요청) — 지직거릴 수 있습니다. ${gain === null ? '계획의 requestLufs: "line"을 빼고' : 'requestLufs를 더 낮춰'} --굽기 --줄 ${l.id}로 다시 사세요.`);
+    if (outClipped >= CLIP_WARN) warnings.push(`${l.id}: 다듬은 줄에 꽉 찬 표본 ${outClipped}개 — 들어 보고 lufs를 낮추세요.`);
     fs.writeFileSync(path.join(v.out, l.id + '.json'), JSON.stringify({ tool: TOOL, id: l.id, text: l.text, ...(l.show ? { show: l.show } : {}), dur, words,
-      ...(meta ? {} : { note: '옛 캐시라 Typecast 낱말 시각이 없음' }), source: { key: l.key, voice: l.voice, settings: l.settings, speed: l.speed || 1, cut: l.cut || null } }, null, 1) + '\n');
+      ...(meta ? {} : { note: '옛 캐시라 Typecast 낱말 시각이 없음' }), source: { key, voice: l.voice, settings: l.settings, speed: l.speed || 1, cut: l.cut || null },
+      level: { requestLufs: requested, gainDb: gain, limit: gain === null ? null : LIMIT, clippedSource: sourceClipped, clippedOut: outClipped } }, null, 1) + '\n');
     const w = rateWarning(l, dur); if (w) warnings.push(w);
     made.push({ id: l.id, text: l.text, ...(l.show ? { show: l.show } : {}), ...(l.scene ? { scene: l.scene } : {}), ...(l.at !== undefined ? { at: l.at } : {}),
-      dur, syllablesPerSec: hangul(l.text) ? +(hangul(l.text) / dur).toFixed(2) : null, src: rel(plan.srcBase || plan.out, wav), key: l.key, words: words.length, ...(l.variant ? { variant: true } : {}) });
+      dur, syllablesPerSec: hangul(l.text) ? +(hangul(l.text) / dur).toFixed(2) : null, src: rel(plan.srcBase || plan.out, wav), key, words: words.length, ...(l.variant ? { variant: true } : {}) });
   }
   // 원본이 없는 줄이 하나라도 있으면 목록(vo.json)·지난 줄 정리를 건드리지 않는다 — 캐시를 안 옮긴 새 PC에서 목록이 비지 않게.
   if (missing.length) {
     say(`${v.name ? `판 ${v.name}` : '줄'}: 원본 없음 ${missing.join(',')} — 목록(vo.json)은 그대로 둡니다(사려면 --굽기, 새 PC면 캐시 폴더부터 옮기기).`);
+    if (clippedOld.length) say(`  그 가운데 ${clippedOld.join(', ')}은 옛 원본이 잘려 있어 쓰지 않았습니다 — --굽기로 낮은 크기로 다시 삽니다(옛 판 그대로 다듬으려면 계획에 "requestLufs": "line").`);
     return { version: v.name, made, missing, warnings };
   }
   // 이 도구가 지난번에 만든 줄 가운데 계획에서 빠진 것만 지운다(이 도구가 만든 파일이 아니면 건드리지 않는다).
