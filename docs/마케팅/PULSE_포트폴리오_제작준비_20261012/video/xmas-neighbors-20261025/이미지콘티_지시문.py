@@ -74,6 +74,12 @@ KEEP_PLATE = ("Image 1 is this film's corridor, seen from its fixed camera, with
               "the street exactly where they are. Paint {who} exactly inside the black silhouette's outline: the head, body and feet fill the "
               "outline and do not extend beyond it, so the person is exactly as large and as far from the camera as the silhouette — nothing of "
               "the silhouette remains.")
+# 10-27: 1차 C01은 판은 지켰으나 민재를 카메라 3.5 m 앞에 화면 높이 64%로 크게 그렸다(실루엣은 35%) — 크기 · 자리를 숫자로 못 박는다
+SMALL = ("He is SMALL and far from the camera, exactly where the silhouette is: the top of his head at about {top}% of the frame height from "
+         "the top, his feet on the floor at about {bot}%, his body between about {x0}% and {x1}% of the frame width — his whole figure is "
+         "only about a third of the frame height, {where}. Do not bring him closer to the camera or make him larger; the corridor floor "
+         "between him and the camera stays empty.")
+AT_DOOR = "standing right at the second door on the left"
 
 
 def J(refs, *parts, ratio=None):
@@ -167,7 +173,7 @@ def jobs():
         "Photorealistic, natural skin texture, slight film grain. No text, no letters, no logos, no watermarks.", ratio="3:4")
 
     # ── ① 혼자의 고생 1~6 ──
-    J_["C01"] = J([lay("W01")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"),
+    J_["C01"] = J([lay("W01")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"), SMALL.format(top=36, bot=71.5, x0=42, x1=47.5, where=AT_DOOR),
         "He stands in the pitch-black alcove of his door (the second alcove on the left), right before the neighbor's warmly lit doorstep.",
         MAN.format(a=2, b=4), f"He wears {M_AUTUMN}.",
         f"What he does: he stands with his back to the camera, facing his door; his left hand holds his phone to his left ear (so its screen "
@@ -194,6 +200,13 @@ def jobs():
         "Out of focus in the right foreground, very close to the lens, the dark edge of a vertical pipe across the right fifth of the frame. "
         "Everything is cold dark blue-grey night, faintly lit from far down the corridor; the lamp reads as a dark, dead shape. Shallow "
         "depth of field, fixed camera.", FINISH)
+    # 2 고침(C02e, 10-27 19:4x): 다시 구운 C02r은 자리는 맞았으나 등이 감시 카메라 돔처럼 읽혔다. 등으로 잘 읽힌 1차 판에서 필라멘트 빛만 끈다
+    # (한 가지만 고치는 편집 — 현장노트 gemini). 등을 원본 매듭 자리(왼쪽 위)로 옮기는 것은 고를 때 잘라서(이미지콘티_고르기.py @상자).
+    J_["C02e"] = J([ref("C02.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: the light bulb inside the glass globe is dead — its filament is completely "
+        "dark and broken, with no glow, no orange light, nothing lit anywhere in the lamp; the globe catches only the same faint cold blue "
+        "night light as the rest of the picture. Keep everything else in Image 1 exactly: the same cracked globe, the same dead moth on the "
+        "bulb, the same camera and framing, the same door frame and blank nameplate.", FINISH)
     J_["C03"] = J([lay("S03")] + M_REFS_BACK, STILL, LAYOUT_SIL.format(who="the man"),
         f"Night in the outdoor corridor ({CORRIDOR}). MEDIUM, the camera slowly pushing in a little: THE MAN stands at his own door inside "
         "the black silhouette, seen in three-quarter back view — he has just hung up and now holds his phone up in his left hand so its "
@@ -277,7 +290,7 @@ def jobs():
         "blue-grey glow; his face shows no readable features, only its outline.", MAN.format(a=2, b=4), f"He wears {M_AUTUMN}.", FINISH)
 
     # ── ③ 되풀이 12~24 ──
-    J_["C12"] = J([lay("W12")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"),
+    J_["C12"] = J([lay("W12")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"), SMALL.format(top=36, bot=71.5, x0=42, x1=47.5, where=AT_DOOR),
         "He finally gets his door open: the steel door of his dark alcove (the second on the left) stands half open and he slips in sideways "
         "through the gap into the darkness, seen from behind and a little from the side, small.", MAN.format(a=2, b=4),
         f"He wears {M_AUTUMN}, {BAG} in his hand.",
@@ -333,7 +346,7 @@ def jobs():
         "velvet ribbon bow of her half-up hair showing under it (the woman of Image 5) — has turned back and gives him a small wave, her face "
         "small and shaded by the brim; her friends already on the stairs. His own door lamp is still dead. Warm stairwell light, blue dusk.",
         MAN.format(a=2, b=4), FINISH)
-    J_["C20m"] = J([lay("W20")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"),
+    J_["C20m"] = J([lay("W20")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"), SMALL.format(top=36, bot=71.5, x0=42, x1=47.5, where=AT_DOOR),
         "The same corridor weeks later on a night of heavy rain: rain blows in over the parapet in slanting sheets and the floor shines wet; "
         "the noisy neighbor's alcove now has a string of warm fairy lights hanging around it (the first Christmas decoration), the elderly "
         "neighbor's door far down has a small wreath; his alcove stays bare and pitch dark under its dead lamp.",
@@ -376,7 +389,7 @@ def jobs():
         "ribbon bow of her half-up hair at the center of the picture. Beside her at the left, a small Christmas tree with warm lights. "
         "Outside, blue dusk. Her face is not visible. The camera slowly pushes in.",
         WOMAN.format(a=2, b=4), f"She wears {W_HOME}.", FINISH)
-    J_["C26"] = J([lay("W26")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"),
+    J_["C26"] = J([lay("W26")] + M_REFS_BACK, STILL, KEEP_PLATE.format(who="THE MAN"), SMALL.format(top=36.5, bot=69.5, x0=47, x1=52.5, where="walking in the middle of the corridor just beyond the second door, toward the camera"),
         "Christmas Eve at blue dusk, snow falling softly, lying on the parapet's top and along the corridor's edges; every other door is now "
         "decorated and glowing — fairy lights around the alcoves, wreaths, a tiny lit tree by the neighbor's door — and the neighbor's lamp "
         "is on; only his alcove (the second on the left) is bare and pitch dark under its dead lamp.", MAN.format(a=2, b=4),
@@ -495,6 +508,64 @@ def jobs():
             "THE WOMAN: the Korean woman of Images 2 to 5 — keep her face exactly the same person (a round soft face with a small chin, a "
             "rounded nose tip, double eyelids with soft aegyo-sal, dark brown eyes, bright warm-toned skin, natural coral lips, light-brown "
             "hair with see-through bangs). Images 2 to 5 " + IDREF, f"She wears {W_HOME}.", FINISH)
+
+    # 고정 와이드 두 걸음(10-27 20:5x): 사람 · 기준 사진을 함께 넣으면 Gemini가 민재를 가장 가까운 첫 문 앞(3.5~4 m)으로 당겨 화면 높이
+    # 52~64%로 그렸다(C01 · C01r · C12 · C20m — 실루엣 35%, 크기 숫자도 소용없음). 편집(「Image 1을 고쳐라」)은 틀을 지켰으므로(2 고침),
+    # ① 복도 판(PL1)에서 계절 · 장식만 바꾼 판(PL12 · PL20 · PL26 — 사람 없음)을 편집으로 굽고 ② 그 판에 실루엣을 놓은 배치도(W12 · W20 · W26)의
+    # 실루엣만 같은 크기 · 자리의 민재로 바꾸는 편집으로 굽는다(C01e · C12e · C20e · C26e). 503 = 둘째 문간(화면 가로 40% 어귀) — 첫 문은 남의 집.
+    KEEP_ALL = "Keep the camera position, framing and lens and everything else in Image 1 exactly."
+    D503 = ("the dark second doorway on the left wall, at about 40% of the frame width (the first, nearest door at the far left belongs to "
+            "another neighbor)")
+    J_["PL12"] = J([ref("PL1.jpg")],
+        "Edit this photograph (Image 1). The same corridor on another late-autumn night, the same light — change only the doors' "
+        "decorations: far down the corridor near the stairwell one door now has a small maple-leaf wreath, and the third door on the left, "
+        "just beyond the dark second doorway, now has a little garland of dried autumn leaves and a tiny pumpkin by its threshold. "
+        f"{D503[0].upper() + D503[1:]} stays bare and pitch dark. No people. " + KEEP_ALL, FINISH)
+    J_["PL20"] = J([ref("PL1.jpg")],
+        "Edit this photograph (Image 1). The same corridor weeks later, on a night of heavy rain: rain blows in over the parapet in slanting "
+        "sheets and the floor shines wet; the third door on the left now has a string of warm fairy lights around its alcove (the first "
+        "Christmas decoration) and a door far down has a small wreath; " + D503 + " stays bare and pitch dark under its dead lamp. Far down "
+        "the corridor near the stairwell, two neighbors in clear rain ponchos with their hoods up carry a small potted Christmas tree "
+        "between them, walking toward the camera, small (their heads at about 38% of the frame height from the top, their feet at about "
+        "62%), their faces hidden under their hoods. No one else. " + KEEP_ALL, FINISH)
+    J_["PL26"] = J([ref("PL1.jpg")],
+        "Edit this photograph (Image 1). The same corridor on Christmas Eve at blue dusk, snow falling softly and lying on the parapet's top "
+        "and along the corridor's edges, the sky beyond the parapet a deep blue dusk: every door is now decorated and glowing — fairy lights "
+        "around the alcoves, wreaths, a tiny lit tree by the third door on the left, whose lamp is on — except " + D503 + ", which stays "
+        "bare and pitch dark under its dead lamp. No people. " + KEEP_ALL, FINISH)
+    PUT = ("Edit this photograph (Image 1). Replace only the solid black silhouette of a man with a real man of exactly the same size, in "
+           "exactly the same place: {pos}. He is small and far from the camera; nothing of the silhouette remains and the corridor floor "
+           "between him and the camera stays empty. ")
+    POS_DOOR = ("the top of his head at about 36% of the frame height from the top, his feet at about 71.5%, between about 42% and 47.5% "
+                "of the frame width, right in front of " + D503)
+    MAN_FAR = ("He is a Korean man of twenty-eight, about 175 cm, average build, short black hair with messy straight bangs (Image 2 shows "
+               "his hair from behind — identity only).")
+    J_["C01e"] = J([lay("W01"), ref("M04_hair-3.jpg")], PUT.format(pos=POS_DOOR), MAN_FAR,
+        f"He wears {M_AUTUMN}. He stands with his back to the camera, facing his door; his left hand holds his phone to his left ear (its "
+        f"screen gives no light); his right hand holds {BAG} and a ring of keys whose tip scratches blindly around the keyhole in the dark. "
+        "His body is a dark shape against the warm pool of the far lamp. His face is not visible. " + KEEP_ALL, FINISH)
+    J_["C12e"] = J([lay("W12"), ref("M04_hair-3.jpg")], PUT.format(pos=POS_DOOR), MAN_FAR,
+        f"He wears {M_AUTUMN}, {BAG} in his hand. He finally gets his door open: the steel door of the dark second doorway stands half "
+        "open and he slips in sideways through the gap into the darkness, seen from behind and a little from the side. His lamp is still "
+        "dead. " + KEEP_ALL, FINISH)
+    J_["C20e"] = J([lay("W20"), ref("M04_hair-3.jpg")], PUT.format(pos=POS_DOOR), MAN_FAR,
+        f"He wears {M_RAIN}, seen from behind, standing at his dark door in the rain; the two neighbors with the potted tree farther down "
+        "the corridor give him a small nod as they pass. His face is not visible. " + KEEP_ALL, FINISH)
+    J_["C26e"] = J([lay("W26"), ref("M04_hair-3.jpg")],
+        PUT.format(pos="the top of his head at about 36.5% of the frame height from the top, his feet at about 69.5%, between about 47% "
+                       "and 52.5% of the frame width, walking in the middle of the corridor just beyond " + D503 + ", toward the camera"),
+        MAN_FAR, f"He wears {M_WINTER}, {BAG} in his hand, having just come up from the stairwell at the far end. He is backlit by the "
+        "decorations' glow behind him and his head is lowered, so his face falls into shadow and cannot be read. " + KEEP_ALL, FINISH)
+
+    # 1 다시(C01r): 크기 · 자리 숫자를 넣은 C01 그대로
+    J_["C01r"] = dict(J_["C01"])
+    # 34 끝 그림(C34t, 10-27): 고른 C34e에서 52.2초쯤 고개를 창 쪽(왼쪽)으로 돌린 순간 — 말(52.40~53.60)은 입이 안 보일 때(3절)
+    J_["C34t"] = J([ref("C34e.jpg"), ref("H3.jpg")],
+        "Edit this photograph (Image 1). It is the first frame of a 3-second shot; make the moment about 1.4 seconds later in the same shot: "
+        "she has turned her head toward the night window at the LEFT edge of the frame, so we now see the side and the back of her head — "
+        "her cheek and the line of her jaw from behind, her mouth hidden — and the crimson velvet ribbon bow of her half-up hair is now "
+        "clearly visible at the back of her head (as in Image 2, which shows the ribbon from behind). The same person, the same place in "
+        "the frame, the same camera and the same light. Keep everything else in Image 1 exactly.", FINISH)
 
     # ── ⑥ 끝 35~36 ──
     J_["C35"] = J([ref("C26.jpg")],
