@@ -8,7 +8,7 @@ import {PACKS,LESSONS} from './life-content.mjs';
 import {createLifeProgress} from './life-progress.mjs';
 import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus,createWorldEntryGate} from './tutor-selection-sync.mjs';
 import {createLifeExperience} from './life-ui.mjs';
-import {createWritingPractice,writingRow,loadWritingBank,writingReady,WRITING_CANDIDATES,readWritingSummary} from './world-writing-practice.mjs';
+import {createWritingPractice,writingRow,loadWritingBank,writingReady,writingCandidates,readWritingSummary} from './world-writing-practice.mjs';
 import {createWorldReminders,createTrailTimes} from './world-reminder-device.mjs';
 import {createWorldPush} from './world-push.mjs';
 import {createTownWorldHost} from './world-town-client.mjs';
@@ -318,7 +318,7 @@ function mountLifeLearning({owner,keep}){
   }:null,
   launchGame,startLesson:id=>ui.start(id),startReview:(id,ids)=>ui.reviewStart(id,ids),
   // 시험 계획(10-20): 온라인 반 「이번 주 과제」를 그 주의 연습으로 먼저 세고, TOPIK II 쓰기 연습은 문항이 열렸을 때만 계획에 넣는다.
-  readClasswork:classworkThisWeek,writingPractice:{candidates:()=>writingReady()?WRITING_CANDIDATES:[],open:route=>openWriting({dataset:{writingRoute:route}}),attempts:()=>readWritingSummary({storage:localStorage,owner:writingOwnerId()}).times},
+  readClasswork:classworkThisWeek,writingPractice:{candidates:()=>writingReady()?writingCandidates({storage:localStorage,owner:writingOwnerId()}):[],open:route=>openWriting({dataset:{writingRoute:route}}),attempts:()=>readWritingSummary({storage:localStorage,owner:writingOwnerId()}).times},
   // 말하기 연습(10-21 공개 판 · 기본 켜짐): 모듈이 문항을 읽은 뒤에만 시험 정보의 「말하기 평가도 준비해요」(이 기기 기록)와 이번 주 계획의 말하기 칸이 생긴다
   // (이 기기에서 끄는 스위치를 켰으면 모듈을 부르지 않아 지금과 같다 — 아래 speakingOn).
   // 이 파일은 모듈을 정적으로 부르지 않으므로 그 모듈의 읽기·쓰기 함수를 감싸 넘긴다. owner는 학습 화면의 주인(계정·손님)이다.

@@ -16940,7 +16940,8 @@ function createWorldEducation({
       audioRequired: mock.sections.some((row) => row.section === "listening" && row.status === "ready"),
       modality: "reading"
     });
-    const writing = exam?.type === "topik2" ? writingList().map((row) => ({ id: row.id, label: writingLabel(row.route), route: "writing", routeId: row.route, minutes: row.minutes, minutesEstimated: true, targets: [], goals: ["exam", "prepare", "writing"], audioRequired: false, modality: "writing" })) : [];
+    const need = (row) => row.practiceNeed && Date.parse(row.practiceNeed.at) <= now ? { practiceNeed: row.practiceNeed } : {};
+    const writing = exam?.type === "topik2" ? writingList().map((row) => ({ id: row.id, label: writingLabel(row.route), route: "writing", routeId: row.route, minutes: row.minutes, minutesEstimated: true, targets: [], goals: ["exam", "prepare", "writing"], audioRequired: false, modality: "writing", ...need(row) })) : [];
     extra.push(...writing);
     const speaking = exam && ["topik1", "topik2"].includes(exam.type) && speakingChosen() ? speakingThisWeek(now) : null;
     if (speaking) extra.push(...speaking.recommend);

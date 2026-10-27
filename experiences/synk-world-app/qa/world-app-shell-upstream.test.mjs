@@ -34,7 +34,7 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
   mountEnrollment:args=>{captures.enrollment=args;return {dispose:()=>disposed.push('enrollment')};},homeworkJson:no,
   createLifeExperience:()=>({dispose:()=>disposed.push('life-ui')}),worldUrl:v=>v,worldLearning:{},createWorldLearningPlan:no,
   createWorldEducation:args=>{captures.education=args;return {dispose:()=>disposed.push('education')};},worldPosition:{},responsesOn:false,
-  launchGame:no,classworkThisWeek:no,writingReady:()=>false,WRITING_CANDIDATES:[],openWriting:no,readWritingSummary:()=>({times:[]}),writingOwnerId:()=>owner,
+  launchGame:no,classworkThisWeek:no,writingReady:()=>false,writingCandidates:()=>[],openWriting:no,readWritingSummary:()=>({times:[]}),writingOwnerId:()=>owner,
   speakingModule:null,openSpeaking:no,worldTownCheck:{},town:no,quietTownCheck:no,createTrailTimes:()=>({dispose:()=>disposed.push('trail')}),
   createWorldReminders:()=>({schedule:no,dispose:()=>disposed.push('reminders')}),reminderInputs:no,openReminder:no,repaintReminderCard:no,worldPush:null,pushOn:false,
   refreshLife:no,repaintWritingRow:no,showEntryRecovery:no,commands:{},accountPrint:()=>'',initialRestoreReady:Promise.resolve(),sessionTask:null,sessionConfirmed:true,restoreSession:async()=>{},prepareWorldTutor:no,

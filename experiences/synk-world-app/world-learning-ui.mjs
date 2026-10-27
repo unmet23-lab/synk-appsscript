@@ -213,9 +213,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const mock=exam&&summary.evidenceComplete?mockPlan({coachNow,values}):null;
   if(mock?.status==='ready')extra.push({id:'world.mock',label:'시험 형식 연습',route:'mock',minutes:mock.minutes,minutesEstimated:false,targets:[],goals:['exam','prepare'],
    audioRequired:mock.sections.some(row=>row.section==='listening'&&row.status==='ready'),modality:'reading'});
-  // 쓰기 연습(③ world-writing-practice.mjs WRITING_CANDIDATES): TOPIK II를 고른 사람만. 쓰기 항목(ko2.writing.*)은 아직 WORLD의 Core 지도에 없어
-  // 학습 항목을 겨누지 않는 후보로 넘긴다(관측하지 않은 쓰기를 약점으로 세지 않는다). 여는 길은 호스트의 openWriting(route)다.
-  const writing=exam?.type==='topik2'?writingList().map(row=>({id:row.id,label:writingLabel(row.route),route:'writing',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','writing'],audioRequired:false,modality:'writing'})):[];
+  // 쓰기 연습(③ world-writing-practice.mjs writingCandidates): TOPIK II를 고른 사람만. 쓰기 시도는 Trail에 「채점 안 함」으로만 남아(코치 지도의
+  // ko2.writing.*) 능력 근거가 없으므로 학습 항목을 겨누지 않는 후보로 넘긴다. 여는 길은 호스트의 openWriting(route)다.
+  // 「한 가지 고치기」(10-27)가 열려 있으면 53번 후보에 호스트 사실 practiceNeed가 온다 — Core가 급한 줄로 올린다. 계획 시각보다 늦은 사실은 넘기지 않는다(Core가 거절한다).
+  const need=row=>row.practiceNeed&&Date.parse(row.practiceNeed.at)<=now?{practiceNeed:row.practiceNeed}:{};
+  const writing=exam?.type==='topik2'?writingList().map(row=>({id:row.id,label:writingLabel(row.route),route:'writing',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','writing'],audioRequired:false,modality:'writing',...need(row)})):[];
   extra.push(...writing);
   // 말하기 연습(10-21): TOPIK I·II를 고르고 시험 정보에서 「말하기 평가도 준비해요」를 켠 학생만(이 기기 기록, 계정·손님마다). 말하기 항목은 Core 지도에
   // 없어 학습 항목을 겨누지 않는 후보로 넘기고(소리가 필요하다 — 소리를 끈 날은 Core가 뺀다), 계획에는 이번 주 시각과 아직 안 해 본 유형 수를 넘긴다.
@@ -234,7 +236,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 쓰기 과제마다 겨누는 항목(숙제는 그 항목을 겨누는 과제만)과, 다음 확인 간격을 잴 지난 다시 확인 시각.
   const writingAvailable=exam.type==='topik2'?writingList().map(row=>({id:row.id,routeId:row.route,skillIds:(Array.isArray(row.targets)?row.targets:[]).filter(id=>typeof id==='string')})):[];
   let lastCheckAt=null;try{lastCheckAt=position.exam.lastRecheck?.({events,before:week.start})??null;}catch{lastCheckAt=null;}
-  // 쓰기 연습은 아직 Trail에 남지 않아 기기 기록의 규칙 점검 시각으로 센다(③ readWritingSummary times).
+  // 쓰기 연습은 Trail에 「채점 안 함」으로만 남고 게스트·지도 밖 기록도 있어, 기기 기록의 규칙 점검 시각으로 센다(③ readWritingSummary times).
   let writingTimes=[];if(exam.type==='topik2'&&typeof writingPractice?.attempts==='function'){try{const times=writingPractice.attempts();writingTimes=Array.isArray(times)?times:[];}catch{writingTimes=[];}}
   // 말하기를 고른 학생만 시험 정보에 speaking:true · 말하기 후보 · 필요 · 이번 주 시각이 더해진다(고르지 않은 학생의 계획 입력은 그대로다).
   const examPlan=position.exam.buildExamPlan({exam:speaking?{...exam,speaking:true}:exam,summary,now,audioAvailable,classwork:classworkRows(),lastCheckAt,...(speaking?{speakingNeeds:speaking.untried}:{}),

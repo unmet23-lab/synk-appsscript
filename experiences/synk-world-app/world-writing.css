@@ -41,6 +41,8 @@
 .ww-list-box{display:grid;gap:4px;font-size:var(--t-help);line-height:1.6}
 .ww-list-box ul{padding-left:1.1em}
 .ww-answer{display:grid;gap:10px;min-width:0}
+/* 문제지|답안 한 줄: 휴대폰은 위아래로 쌓고, 넓은 판(아래 @container)은 두 단 — 문제지 sticky는 이 줄 안에서만 붙는다. */
+.ww-pair{display:grid;gap:14px;min-width:0}
 .ww-blank{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;min-width:0}
 .ww-mark{font-size:var(--t-title-s);line-height:1;font-weight:var(--wt-title)}
 .ww-blank input,.ww textarea{box-sizing:border-box;width:100%;min-width:0;padding:12px 14px;border:0;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font:var(--wt-body) 16px/1.7 var(--w-sans)}
@@ -87,9 +89,42 @@
 .ww-model-blank{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6}
 .ww-model-blank>div{display:grid;gap:4px}
 .ww-model ul,.ww-feedback ul:not(.ww-checks):not(.ww-cats){padding-left:1.1em;font-size:var(--t-help);line-height:1.6}
+/* 한 가지 고치기(53번 글의 끝맺음 · world-writing-focus.mjs): 점검 위 카드·목록 요약은 1px 선 면, 연습은 단계마다 선으로 나눈다.
+ * 바구니 단추는 선 알약 셋(정답은 초록 LED 선, 고른 오답은 빨강 선) — 흰 알약은 연습 화면의 「도움 없이 다른 53번 쓰기」 하나. */
+.ww-focus{display:grid;gap:8px;min-width:0;padding:14px 16px;border-radius:var(--w-r-sm);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--t-help);line-height:1.6;word-break:keep-all}
+.ww-focus .ww-section-title{font-size:var(--t-body)}
+.ww-focus-forms{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ww-focus-count{font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-label);font-variant-numeric:tabular-nums;color:var(--w-ink-2)}
+.ww-focus-banner{padding:10px 14px;border-radius:var(--w-r-sm);background:var(--w-check-wash);font-size:var(--t-help);line-height:1.6;word-break:keep-all}
+.ww-focus-rows{display:grid;padding:0;list-style:none}
+.ww-focus-rows li{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--w-line)}
+.ww-focus-rows strong{flex-shrink:0;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.ww-focus-rows li[data-done=true] strong{color:var(--w-ok-text)}
+.ww-focus-step{display:grid;gap:10px;min-width:0;padding-top:14px;border-top:1px solid var(--w-line)}
+.ww-focus-list{display:grid;gap:4px;margin:0;padding-left:1.3em;font-size:var(--t-help);line-height:1.6;word-break:keep-all}
+.ww-focus-table{display:grid;gap:0;margin:0}
+.ww-focus-table>div{display:grid;grid-template-columns:minmax(7em,auto) 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--w-line);font-size:var(--t-help);line-height:1.6}
+.ww-focus-table dt{color:var(--w-ink-3)}
+.ww-focus-table dd{margin:0;font-weight:var(--wt-strong);word-break:keep-all}
+.ww-focus-progress{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:var(--t-label);line-height:1.5;font-weight:var(--wt-label);font-variant-numeric:tabular-nums;color:var(--w-ink-2)}
+.ww-focus-sentence{padding:14px 16px;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:var(--t-lead);line-height:1.8;word-break:keep-all}
+.ww-focus-sentence mark{padding:1px 6px;border-radius:6px;background:var(--w-check-wash);color:var(--w-ink)}
+.ww-focus-bins{display:grid;grid-template-columns:1fr;gap:8px}
+.ww-focus-bin.plain-button{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 6px;min-height:52px;padding:6px 12px;font-size:14px;line-height:1.35;text-align:center}
+.ww-focus-bin[disabled]{cursor:default;opacity:.55}
+.ww-focus-bin[data-answer=true]{opacity:1;box-shadow:inset 0 0 0 2px var(--w-led-ok)}
+.ww-focus-bin[data-wrong=true]{opacity:1;box-shadow:inset 0 0 0 2px var(--w-led-alert)}
+.ww-focus-result,.ww-focus-done{font-size:var(--t-help);line-height:1.6;font-weight:var(--wt-strong)}
+.ww-focus-result[data-ok=true]{color:var(--w-ok-text)}
+.ww-focus-mine{display:grid;gap:6px;min-width:0;padding:8px 0;border-bottom:1px solid var(--w-line)}
+.ww-focus-mine input{box-sizing:border-box;width:100%;min-width:0;min-height:48px;padding:12px 14px;border:0;border-radius:var(--w-r-sm);background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);font:var(--wt-body) 16px/1.7 var(--w-sans)}
+.ww-focus-mine input:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.ww-focus-mine-state{min-height:1.5em;font-size:var(--t-label);line-height:1.5;color:var(--w-ink-3)}
+.ww-focus-mine-state[data-ok=true]{color:var(--w-ok-text)}
+.ww-focus-mine-state[data-ok=false]{color:var(--w-check-text)}
 @container (min-width:900px){
- .ww-task{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;align-items:start}
- .ww-task>:is(.ww-bar,.ww-actions-wrap,.ww-results,.ww-feedback,.ww-model){grid-column:1/-1}
- .ww-task>.ww-question{grid-column:1;position:sticky;top:0}
- .ww-task>.ww-answer{grid-column:2}
+ .ww-pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px;align-items:start}
+ .ww-pair>.ww-question{grid-column:1;position:sticky;top:0}
+ .ww-pair>.ww-answer{grid-column:2}
 }
+@container (min-width:560px){.ww-focus-bins{grid-template-columns:repeat(3,minmax(0,1fr))}}
