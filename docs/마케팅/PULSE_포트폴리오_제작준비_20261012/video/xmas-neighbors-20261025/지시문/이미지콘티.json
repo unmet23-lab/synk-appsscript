@@ -458,6 +458,32 @@
   ],
   "prompt": "Edit this photograph (Image 1). Replace only the solid black silhouette of a man with a real man of exactly the same size, in exactly the same place: the top of his head at about 36.5% of the frame height from the top, his feet at about 69.5%, between about 47% and 52.5% of the frame width, walking in the middle of the corridor just beyond the dark second doorway on the left wall, at about 40% of the frame width (the first, nearest door at the far left belongs to another neighbor), toward the camera. He is small and far from the camera; nothing of the silhouette remains and the corridor floor between him and the camera stays empty.  He is a Korean man of twenty-eight, about 175 cm, average build, short black hair with messy straight bangs (Image 2 shows his hair from behind — identity only). He wears a navy hooded padded jacket, a soft grey knitted scarf wrapped around his neck, dark chinos, worn white sneakers, a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) in his hand, having just come up from the stairwell at the far end. He is backlit by the decorations' glow behind him and his head is lowered, so his face falls into shadow and cannot be read. Keep the camera position, framing and lens and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
+ "PL12f": {
+  "refs": [
+   "PL12.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: take the little garland of dried autumn leaves and the tiny pumpkin away from the dark doorway at about 38–42% of the frame width, so that this doorway is completely bare and pitch dark again, with nothing on it, around it or on the floor in front of it; hang the same little garland of dried autumn leaves and the tiny pumpkin instead on the next door just beyond it, the lighter grey door at about 43–46% of the frame width. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "PL20f": {
+  "refs": [
+   "PL20.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: take the string of warm fairy lights away from the dark doorway at about 38–42% of the frame width, so that this doorway is completely bare and pitch dark again, with nothing on it, around it or on the floor in front of it; hang the same string of warm fairy lights instead on the next door just beyond it, the lighter grey door at about 43–46% of the frame width. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C34t2": {
+  "refs": [
+   "C34e.jpg",
+   "H3.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). It is the first frame of a 3-second shot; make the moment about 1.4 seconds later in the same shot: she has turned her head away from the camera toward the night window with the blurred fairy lights at the LEFT of the frame — away from the warm lamp at the right — so far that we see mostly the side and the back of her head: her ear, her cheek from behind, and the crimson velvet ribbon bow of her half-up hair, now clearly visible (as in Image 2, which shows the ribbon from behind); her eyes and her mouth are hidden from the camera. The same person, the same place in the frame, the same camera and the same light. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C26e2": {
+  "refs": [
+   "W26.jpg",
+   "M04_hair-3.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Replace only the solid black silhouette of a man with a real man of exactly the same size, in exactly the same place: the top of his head at about 36.5% of the frame height from the top, his feet at about 69.5%, between about 47% and 52.5% of the frame width, walking in the middle of the corridor just beyond the dark second doorway on the left wall, at about 40% of the frame width (the first, nearest door at the far left belongs to another neighbor), toward the camera. He is small and far from the camera; nothing of the silhouette remains and the corridor floor between him and the camera stays empty.  He is a Korean man of twenty-eight, about 175 cm, average build, short black hair with messy straight bangs (Image 2 shows his hair from behind — identity only). He wears a navy hooded padded jacket, a soft grey knitted scarf wrapped around his neck, dark chinos, worn white sneakers, a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) in his hand, having just come up from the stairwell at the far end. His head is bowed low, chin tucked into his grey scarf, eyes on the floor, and all the light is behind him — the decorations' glow rims his shoulders and hair — so his face is in deep shadow and none of his features can be read. Keep the camera position, framing and lens and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
  "C01r": {
   "refs": [
    "W01.jpg",
@@ -476,9 +502,9 @@
  },
  "C35": {
   "refs": [
-   "C26.jpg"
+   "PL26.jpg"
   ],
-  "prompt": "Edit this photograph (Image 1). The same corridor, the same camera, framing and lens, the same decorations — later that night: the sky beyond the parapet is now dark night blue, snow still falling; the man has gone inside: remove him from the corridor. His door is swinging shut — in the narrowing gap of his alcove only the end of a grey knitted scarf and a corner of a white bag are still visible — and his sensor lamp is now ON: the two lamps, his and the neighbor's, glow warm side by side. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+  "prompt": "Edit this photograph (Image 1). The same corridor, the same camera, framing and lens, the same decorations — later that night: the sky beyond the parapet is now dark night blue, snow still falling. The man who lives behind the dark doorway at about 40% of the frame width has just gone inside: that door is swinging shut — in the narrowing gap of his alcove only the end of a grey knitted scarf and a corner of a white bag are still visible — and his sensor lamp is now ON: the two lamps, his and the neighbor's, glow warm side by side. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
  "C36": {
   "refs": [

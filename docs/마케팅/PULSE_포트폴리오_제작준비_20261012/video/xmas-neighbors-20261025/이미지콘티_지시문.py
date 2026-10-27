@@ -557,6 +557,31 @@ def jobs():
         MAN_FAR, f"He wears {M_WINTER}, {BAG} in his hand, having just come up from the stairwell at the far end. He is backlit by the "
         "decorations' glow behind him and his head is lowered, so his face falls into shadow and cannot be read. " + KEEP_ALL, FINISH)
 
+    # 판 고침 바로잡기(10-27 21:4x): PL12는 마른 잎 줄 · 호박을, PL20은 전구 줄을 503(어두운 둘째 문간)에 달았다 — 받은 판에서 그것만 옆 문(504)으로
+    # 옮긴다(한 가지만 고치는 편집). PL26은 503이 비고 504에 리스 · 전구 · 작은 트리라 그대로 쓴다.
+    MOVE = ("Edit this photograph (Image 1). Change only one thing: take the {what} away from the dark doorway at about 38–42% of the frame "
+            "width, so that this doorway is completely bare and pitch dark again, with nothing on it, around it or on the floor in front of "
+            "it; hang the same {what} instead on the next door just beyond it, the lighter grey door at about 43–46% of the frame width. "
+            "Keep everything else in Image 1 exactly.")
+    J_["PL12f"] = J([ref("PL12.jpg")], MOVE.format(what="little garland of dried autumn leaves and the tiny pumpkin"), FINISH)
+    J_["PL20f"] = J([ref("PL20.jpg")], MOVE.format(what="string of warm fairy lights"), FINISH)
+    # 34 끝 다시(C34t2): 1차 C34t는 고개를 오른쪽(스탠드 쪽)으로 돌려 입이 옆으로 보였다 — 창은 화면 왼쪽이다
+    J_["C34t2"] = J([ref("C34e.jpg"), ref("H3.jpg")],
+        "Edit this photograph (Image 1). It is the first frame of a 3-second shot; make the moment about 1.4 seconds later in the same shot: "
+        "she has turned her head away from the camera toward the night window with the blurred fairy lights at the LEFT of the frame — away "
+        "from the warm lamp at the right — so far that we see mostly the side and the back of her head: her ear, her cheek from behind, "
+        "and the crimson velvet ribbon bow of her half-up hair, now clearly visible (as in Image 2, which shows the ribbon from behind); "
+        "her eyes and her mouth are hidden from the camera. The same person, the same place in the frame, the same camera and the same "
+        "light. Keep everything else in Image 1 exactly.", FINISH)
+
+    # 26 원판 다시(C26e2): 1차 C26e는 고개를 들고 앞에서 빛을 받아 작게나마 얼굴이 읽혔다(얼굴은 30에서 처음) — 고개를 숙여 그늘
+    J_["C26e2"] = J([lay("W26"), ref("M04_hair-3.jpg")],
+        PUT.format(pos="the top of his head at about 36.5% of the frame height from the top, his feet at about 69.5%, between about 47% "
+                       "and 52.5% of the frame width, walking in the middle of the corridor just beyond " + D503 + ", toward the camera"),
+        MAN_FAR, f"He wears {M_WINTER}, {BAG} in his hand, having just come up from the stairwell at the far end. His head is bowed low, "
+        "chin tucked into his grey scarf, eyes on the floor, and all the light is behind him — the decorations' glow rims his shoulders and "
+        "hair — so his face is in deep shadow and none of his features can be read. " + KEEP_ALL, FINISH)
+
     # 1 다시(C01r): 크기 · 자리 숫자를 넣은 C01 그대로
     J_["C01r"] = dict(J_["C01"])
     # 34 끝 그림(C34t, 10-27): 고른 C34e에서 52.2초쯤 고개를 창 쪽(왼쪽)으로 돌린 순간 — 말(52.40~53.60)은 입이 안 보일 때(3절)
@@ -568,10 +593,11 @@ def jobs():
         "the frame, the same camera and the same light. Keep everything else in Image 1 exactly.", FINISH)
 
     # ── ⑥ 끝 35~36 ──
-    J_["C35"] = J([ref("C26.jpg")],
+    # 35(10-27 22:4x): 26은 판(PL26)에 민재를 합성해 앉혔으므로, 사람이 없는 PL26에서 바로 고친다
+    J_["C35"] = J([ref("PL26.jpg")],
         "Edit this photograph (Image 1). The same corridor, the same camera, framing and lens, the same decorations — later that night: the "
-        "sky beyond the parapet is now dark night blue, snow still falling; the man has gone inside: remove him from the corridor. His door "
-        "is swinging shut — in the narrowing gap of his alcove only the end of a grey knitted scarf and a corner of a white bag are still "
+        "sky beyond the parapet is now dark night blue, snow still falling. The man who lives behind the dark doorway at about 40% of the "
+        "frame width has just gone inside: that door is swinging shut — in the narrowing gap of his alcove only the end of a grey knitted scarf and a corner of a white bag are still "
         "visible — and his sensor lamp is now ON: the two lamps, his and the neighbor's, glow warm side by side. Keep everything else in "
         "Image 1 exactly.", FINISH)
     J_["C36"] = J([lay("S36")], STILL, LAYOUT_GREY,
