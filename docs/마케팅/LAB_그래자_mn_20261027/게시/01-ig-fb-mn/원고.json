@@ -1,0 +1,16 @@
+{
+ "id": "01-ig-fb-mn",
+ "brand": "LAB",
+ "platform": "instagram+facebook",
+ "account": "@synk.mn · SYNK(synkworld)",
+ "format": "reels",
+ "language": "mn",
+ "audioLanguage": "zxx",
+ "caption": "Солонгос найз тань «밥 먹자!» гэвэл юу гэж хариулах вэ? 🤔\nМонгол хэлний 'за' шиг солонгос хэлний «그래» (гырэ) ч найзын үгэнд өгөх бараг бүх хариултад тохирдог.\n\n🍜 «밥 먹자!» (Хоол идье!) → «그래!» = За!\n😢 «미안, 좀 늦어» (Уучлаарай, жаахан хоцорно) → «그래» = За\n🌙 «잘 자!» (Сайхан амраарай!) → «그래» = За\n\n⚠️ «그래» бол найзтайгаа 'чи' гэж ярихад л хэлдэг үг. 'Та' гэж ярих хүнд — багш, ахмад хүнд — «네» (нэ) гэж хэлээрэй.\n\nӨдөрт хэдэн удаа 'за' гэдэг вэ? Сэтгэгдэлд бичээрэй 👇\n\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+ "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+ "alt": [
+  "A felt mascot and a phone chat with a Korean friend: the friend says 밥 먹자! (let's eat), 미안, 좀 늦어 (sorry, I'm a bit late) and 잘 자! (good night), and each time the reply is 그래. A card under each message shows the friend's line in Mongolian, 그래 with the Cyrillic reading [гырэ] and = За (the Mongolian word for it). A green card warns: to friends 그래, to teachers and elders 그래 is crossed out → 네 [нэ]. The last card asks in Mongolian how many times a day you say за."
+ ],
+ "_비고": "video.mp4 = gurae-mn v4(18.2초, 화면 글 몽골어 · 목소리 없음 · 배경음과 알림 소리, 렌더 → 음량마감 −14.5 LUFS → CBR 10M 다시 담기). Business Suite 릴스 하나로 인스타 @synk.mn · 페북 SYNK 교차 게시(M2와 같은 길). 틱톡 @synk.mn · 텔레그램 SYNK LAB(t.me/synkmn)은 같은 영상 · 같은 캡션(준비.json 판). Meta AI 번역(더빙 · 입 맞추기)은 끈다. 해시태그 4개. 첫 댓글(학습 허브)은 선택. 표지 cover.png = 0초(채팅 「밥 먹자!」 + 궁금한 몽글 「'За' = ?」 «Солонгосоор яаж хэлэх вэ?»).",
+ "version": "gurae-mn-v4"
+}

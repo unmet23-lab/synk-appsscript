@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — four scenes of "Mongle" for a short video about one Korean word that answers almost anything (like saying "okay"), needle-felted wool photography, one sheet.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). Make Mongle's wool a slightly lighter, warmer peach-coral than the background so it stands out clearly. No arms, no legs, no hands, ever. Mongle stands upright and front-facing in all four cells, the same size in all cells. Props stand or lean beside the hem; Mongle never holds anything.
+
+Layout: one SQUARE image, 2 columns × 2 rows, four cells of equal size. One scene per cell, centered, the whole group filling about 62% of the cell height, with wide empty margins so the cells never touch. Seamless flat coral background (#F96859) across the whole image, flat even studio light, no floor line, only a very soft contact shadow, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on the phone screen, not on bubbles.
+
+Cell 1 (top left) — "HOW DO I SAY THIS?": Mongle CURIOUS and thinking (big glossy bead eyes looking up and to the side, small pink felt cheeks, mouth a tiny "o", head tilted). Leaning against the right side of the hem stands a felt smartphone (charcoal felt frame, cream felt screen); on the screen one small butter-yellow felt speech bubble with three charcoal felt dots in a row. Above Mongle's head floats a small lapis-blue felt question-mark-shaped swirl made of a single curved felt strand with a dot (abstract, not a printed character).
+
+Cell 2 (top right) — "OKAY, LET'S GO!": Mongle CHEERFUL and eager (eyes closed as happy upward arcs, wide open smiling mouth, pink cheeks, body bouncing up a little). Beside the hem stands a tiny felt bowl of noodles with a pair of felt chopsticks. Three tiny butter-yellow felt sparkle shapes around its head.
+
+Cell 3 (bottom left) — "THERE, THERE…": Mongle GENTLE and comforting (soft half-closed kind eyes, a small warm closed smile, extra-pink cheeks, body leaning a little to the right as if offering a hug). Beside the hem floats a small soft pink felt heart. No tears on Mongle.
+
+Cell 4 (bottom right) — "OKAY, GOOD NIGHT!": Mongle SLEEPY and sweet (eyes closed as relaxed downward arcs, a tiny content smile, pink cheeks) wearing a small mint-green felt nightcap with a cream pom-pom. Above its head floats a small butter-yellow felt crescent moon.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft and warm, cute but not babyish (for teenagers and university students), consistent lighting in all four cells.
