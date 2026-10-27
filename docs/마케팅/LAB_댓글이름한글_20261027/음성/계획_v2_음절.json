@@ -1,0 +1,90 @@
+{
+  "note": "LAB E1 다시 살림 — 「그 · 레 · 이 · 스」를 한 음절씩 따로 산다(한 줄을 잘라 쓰면 레 · 이가 붙어 나오는 seed가 있어서). seed 둘 가운데 엉킴이 낮은 판을 고른다.",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo2/syl",
+  "trim": "both",
+  "versions": {
+    "s1027": {
+      "defaults": {
+        "seed": 1027
+      },
+      "lines": [
+        {
+          "id": "g1",
+          "text": "그.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "g2",
+          "text": "레.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "g3",
+          "text": "이.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "g4",
+          "text": "스.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        }
+      ]
+    },
+    "s2028": {
+      "defaults": {
+        "seed": 2028
+      },
+      "lines": [
+        {
+          "id": "g1",
+          "text": "그.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "g2",
+          "text": "레.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "g3",
+          "text": "이.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "g4",
+          "text": "스.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        }
+      ]
+    }
+  }
+}

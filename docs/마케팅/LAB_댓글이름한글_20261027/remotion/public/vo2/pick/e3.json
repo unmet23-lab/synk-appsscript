@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3",
+ "text": "Grace? One syllable.",
+ "dur": 2.049,
+ "words": [
+  {
+   "text": "Grace?",
+   "start": 0.02,
+   "end": 0.476
+  },
+  {
+   "text": "One",
+   "start": 1.006,
+   "end": 1.189
+  },
+  {
+   "text": "syllable.",
+   "start": 1.39,
+   "end": 2.049
+  }
+ ],
+ "source": {
+  "key": "67c0720e526f82418b73511468ac511b",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "Mark? 마크.",
+   "next": "그, 레, 이, 스."
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

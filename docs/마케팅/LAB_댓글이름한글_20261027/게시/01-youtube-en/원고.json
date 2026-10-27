@@ -1,20 +1,20 @@
 {
-  "id": "01-youtube-en",
-  "brand": "LAB",
-  "platform": "youtube",
-  "account": "@synkkorean",
-  "format": "shorts",
-  "language": "en",
-  "audioLanguage": "en",
-  "title": "Grace = 1 syllable in English… 4 in Korean?! Comment your name 👇 #learnkorean",
-  "caption": "Mark → 마크 (ma·keu)\nJames → 제임스 (je·im·seu)\nGrace → 그레이스 (geu·re·i·seu)\n\nKorean writes names by how they sound, not by spelling — every consonant sound gets its own block, so short names get longer. (These follow the official Korean spelling for foreign names.)\n\n✍️ Comment just your first name 👇 I'll reply with it in Hangul for the first 3 days.\n(First name only, please — no full names or personal info.)\n\n🔤 Try it yourself: https://synk.im/nombre/ — free, no sign-up (common English, Spanish & Portuguese names)\n\nSYNK LAB\n#learnkorean #studykorean #hangul #koreanname",
-  "pinnedComment": "Comment just your first name 👇 I'll reply with it in Hangul for the first 3 days ✍️\n(e.g. Emily → 에밀리)",
-  "alt": [
-    "Top-down view of a wooden desk. Under a caption COMMENT YOUR NAME 👇 / I'll write it in Korean, a speech bubble shows an English name and a black marker writes it in Korean on a red HELLO my name is sticker, stroke by stroke: Mark → 마크, James → 제임스, Grace → 그레이스, with the sound of each block under it (ma keu, je im seu, geu re i seu). Pills say 1 syllable in English → 4 in Korean! and Korean writes the sounds you hear, while a voice reads 그, 레, 이, 스 and each block bounces. Finally a blank sticker gets a question mark, the bubble says Your name, and a pill says Comment your name 👇 / I'll write it in Korean ✍️."
-  ],
-  "madeForKids": false,
-  "alteredContent": false,
-  "category": "Education",
-  "_비고": "video.mp4 = name-en v4(25.0초 — 이해 시험 통과한 v3에 끝 정지만 0.08초 늘림, 렌더 → 음량마감 −14.5 LUFS → CBR 10M 다시 담기). 표지 cover.png = 0초(마커가 「마」를 쓰는 중 · COMMENT YOUR NAME 👇). 어린이 전용 아님(댓글 놀이가 필요). 합성 표시: 필수 아님 — 책상 · 마커 사진은 GPT 이미지로 구웠지만 실제 사람 · 장소 · 사건이 아니고, 글씨는 코드로 그은 획, 목소리는 특정인이 아닌 TTS. 오디오 언어 en(해설 영어 + 한국어 이름 읽기), 자동 더빙 끔.",
-  "version": "name-en-v4"
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "Grace = 1 sound in English… 4 in Korean?! Comment your name 👇 #learnkorean",
+ "caption": "Grace → 그레이스 (geu·re·i·seu)\nMore: Mark → 마크 (ma·keu) · James → 제임스 (je·im·seu)\n\nKorean writes names by how they sound, not by spelling — sounds like the g in \"gr-\" and the final s get their own block (그 · 스), so a one-syllable name becomes four blocks. (These follow the official Korean spelling for foreign names.)\n\n✍️ Comment just your first name 👇 I'll reply with it in Hangul for the first 3 days.\n(First name only, please — no full names or personal info.)\n\n🔤 Try it yourself: https://synk.im/nombre/ — free, no sign-up (common English, Spanish & Portuguese names)\n\nSYNK LAB\n#learnkorean #studykorean #hangul #koreanname",
+ "pinnedComment": "Comment just your first name 👇 I'll reply with it in Hangul for the first 3 days ✍️\n(e.g. Emily → 에밀리)",
+ "alt": [
+  "Top-down view of a wooden desk. Under a caption COMMENT YOUR NAME 👇 / I'll write it in Korean, a speech bubble says Grace and a black marker writes it in Korean on a red HELLO my name is sticker, one block at a time: 그 · 레 · 이 · 스. As each block is finished a voice reads it, a number 1 to 4 pops above it and its sound appears under it (geu re i seu). A voice says 그레이스!, then One sound in English. Four in Korean! while pills say 1 sound in English → 4 in Korean! and the four blocks bounce. Finally a blank sticker gets a question mark, the bubble says Your name, and pills say Comment your name 👇 / I'll write it in Korean ✍️."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = name-en-v2 r5(14.0초 — 다시 살림 고침 2, 이해 시험 4점 통과한 렌더 → 음량마감 −14.5 LUFS → CBR 10M 다시 담기). 표지 cover.png = 0초(Grace 말풍선 · 마커가 ㄱ을 긋는 중 · COMMENT YOUR NAME 👇). 어린이 전용 아님(댓글 놀이가 필요). 합성 표시: 필수 아님 — 책상 · 마커 사진은 GPT 이미지로 구웠지만 실제 사람 · 장소 · 사건이 아니고, 글씨는 코드로 그은 획, 목소리는 특정인이 아닌 TTS. 오디오 언어 en(해설 영어 + 한국어 음절 읽기), 자동 더빙 끔. 첫 판(name-en-v4, 버림)은 ../v1/.",
+ "version": "name-en-v2-r5"
 }

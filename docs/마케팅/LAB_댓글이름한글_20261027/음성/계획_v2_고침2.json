@@ -1,0 +1,65 @@
+{
+  "note": "LAB E1 다시 살림 고침 2 — 「syllable」이 낯설다는 이해 시험(고침 1)에 따라 「One sound in English. Four in Korean!」. seed 셋 가운데 엉킴이 낮은 판.",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo2/fix2",
+  "trim": "both",
+  "versions": {
+    "s1027": {
+      "defaults": {
+        "seed": 1027
+      },
+      "lines": [
+        {
+          "id": "e4s",
+          "text": "One sound in English. Four in Korean!",
+          "emotion": "smart",
+          "prev": "그, 레, 이, 스. 그레이스!",
+          "next": "Your turn!",
+          "speed": 1.08
+        }
+      ]
+    },
+    "s2028": {
+      "defaults": {
+        "seed": 2028
+      },
+      "lines": [
+        {
+          "id": "e4s",
+          "text": "One sound in English. Four in Korean!",
+          "emotion": "smart",
+          "prev": "그, 레, 이, 스. 그레이스!",
+          "next": "Your turn!",
+          "speed": 1.08
+        }
+      ]
+    },
+    "s3029": {
+      "defaults": {
+        "seed": 3029
+      },
+      "lines": [
+        {
+          "id": "e4s",
+          "text": "One sound in English. Four in Korean!",
+          "emotion": "smart",
+          "prev": "그, 레, 이, 스. 그레이스!",
+          "next": "Your turn!",
+          "speed": 1.08
+        }
+      ]
+    }
+  }
+}

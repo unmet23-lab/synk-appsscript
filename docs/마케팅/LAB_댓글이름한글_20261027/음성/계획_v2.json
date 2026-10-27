@@ -1,0 +1,209 @@
+{
+  "note": "LAB E1 다시 살림(10-28 07시 회차) 나레이션 — 예시 둘(Mark → Grace), Grace를 한 칸씩 쓰며 「그, 레, 이, 스」를 세는 판. 목소리는 그대로 하나(장부 머리말 「역할마다 하나」 · 10-28 결정 「하나 유지」). −26 LUFS로 사서 우리 쪽 리미터로 키우고, seed 셋을 사서 줄마다 엉킴(tools/목소리엉킴.py)이 가장 낮은 판을 고른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_댓글이름한글_20261027/음성/계획_v2.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo2",
+  "trim": "both",
+  "versions": {
+    "s1027": {
+      "defaults": {
+        "seed": 1027
+      },
+      "lines": [
+        {
+          "id": "h0",
+          "text": "Comment your name, and I'll write it in Korean!",
+          "emotion": "happy",
+          "intensity": 1.05,
+          "prev": "A black marker is writing on a HELLO my name is sticker.",
+          "next": "마크.",
+          "speed": 1.08
+        },
+        {
+          "id": "k1",
+          "text": "마크.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.95
+        },
+        {
+          "id": "e3",
+          "text": "Grace? One syllable.",
+          "emotion": "smart",
+          "prev": "Mark? 마크.",
+          "next": "그, 레, 이, 스.",
+          "speed": 1.1
+        },
+        {
+          "id": "k4",
+          "text": "그, 레, 이, 스.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.85,
+          "speed": 1.2
+        },
+        {
+          "id": "k3",
+          "text": "그레이스!",
+          "lang": "ko",
+          "emotion": "happy",
+          "intensity": 1,
+          "tempo": 0.95
+        },
+        {
+          "id": "e4",
+          "text": "Four in Korean!",
+          "emotion": "smart",
+          "prev": "Grace? One syllable. 그, 레, 이, 스. 그레이스!",
+          "next": "Your turn!",
+          "speed": 1.05
+        },
+        {
+          "id": "e6",
+          "text": "Your turn! Comment your name, and I'll write it in Korean.",
+          "emotion": "happy",
+          "intensity": 1.1,
+          "prev": "Four in Korean!",
+          "next": ""
+        }
+      ]
+    },
+    "s2028": {
+      "defaults": {
+        "seed": 2028
+      },
+      "lines": [
+        {
+          "id": "h0",
+          "text": "Comment your name, and I'll write it in Korean!",
+          "emotion": "happy",
+          "intensity": 1.05,
+          "prev": "A black marker is writing on a HELLO my name is sticker.",
+          "next": "마크.",
+          "speed": 1.08
+        },
+        {
+          "id": "k1",
+          "text": "마크.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.95
+        },
+        {
+          "id": "e3",
+          "text": "Grace? One syllable.",
+          "emotion": "smart",
+          "prev": "Mark? 마크.",
+          "next": "그, 레, 이, 스.",
+          "speed": 1.1
+        },
+        {
+          "id": "k4",
+          "text": "그, 레, 이, 스.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.85,
+          "speed": 1.2
+        },
+        {
+          "id": "k3",
+          "text": "그레이스!",
+          "lang": "ko",
+          "emotion": "happy",
+          "intensity": 1,
+          "tempo": 0.95
+        },
+        {
+          "id": "e4",
+          "text": "Four in Korean!",
+          "emotion": "smart",
+          "prev": "Grace? One syllable. 그, 레, 이, 스. 그레이스!",
+          "next": "Your turn!",
+          "speed": 1.05
+        },
+        {
+          "id": "e6",
+          "text": "Your turn! Comment your name, and I'll write it in Korean.",
+          "emotion": "happy",
+          "intensity": 1.1,
+          "prev": "Four in Korean!",
+          "next": ""
+        }
+      ]
+    },
+    "s3029": {
+      "defaults": {
+        "seed": 3029
+      },
+      "lines": [
+        {
+          "id": "h0",
+          "text": "Comment your name, and I'll write it in Korean!",
+          "emotion": "happy",
+          "intensity": 1.05,
+          "prev": "A black marker is writing on a HELLO my name is sticker.",
+          "next": "마크.",
+          "speed": 1.08
+        },
+        {
+          "id": "k1",
+          "text": "마크.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.95
+        },
+        {
+          "id": "e3",
+          "text": "Grace? One syllable.",
+          "emotion": "smart",
+          "prev": "Mark? 마크.",
+          "next": "그, 레, 이, 스.",
+          "speed": 1.1
+        },
+        {
+          "id": "k4",
+          "text": "그, 레, 이, 스.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.85,
+          "speed": 1.2
+        },
+        {
+          "id": "k3",
+          "text": "그레이스!",
+          "lang": "ko",
+          "emotion": "happy",
+          "intensity": 1,
+          "tempo": 0.95
+        },
+        {
+          "id": "e4",
+          "text": "Four in Korean!",
+          "emotion": "smart",
+          "prev": "Grace? One syllable. 그, 레, 이, 스. 그레이스!",
+          "next": "Your turn!",
+          "speed": 1.05
+        },
+        {
+          "id": "e6",
+          "text": "Your turn! Comment your name, and I'll write it in Korean.",
+          "emotion": "happy",
+          "intensity": 1.1,
+          "prev": "Four in Korean!",
+          "next": ""
+        }
+      ]
+    }
+  }
+}
