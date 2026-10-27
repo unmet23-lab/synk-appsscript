@@ -251,7 +251,8 @@ C = {
                   t="Medium over-the-shoulder shot: the back of Ian's head and his navy shoulder out of focus along the right edge. Seojin, "
                     "in her apron, clings to his upper arm with both hands and presses the lower half of her face against his navy sleeve — "
                     "her nose, mouth and chin are hidden behind his arm, only her eyes and forehead show above it, looking up at him with "
-                    "coaxing eyes. The kitchen shelves behind her."),
+                    "coaxing eyes. The kitchen shelves behind her. Her mouth must not be visible at all — everything below her eyes is "
+                    "pressed into and covered by his navy sleeve (this line is spoken off-mouth)."),   # 10-28 아르곤 검수: 두 판 모두 입이 드러남
     "1-30": dict(f="I", loc="dining", light="evening", w=["I_suit_home", "S_apron"], fx=(0, "his"),
                   t="Bust shot of Ian over the back of Seojin's head (her sleek black ponytail, out of focus in the lower left foreground): "
                     "he looks down at her, uneasy and gentle at once, lips slightly parted as if speaking."),
@@ -288,7 +289,8 @@ C = {
     "1-39": dict(f="MI", loc="office", light="office", w=["M_office", "I_office"], fx=(0, "Minjae's"),
                   t="Close-up from desk height: Minjae lies with the side of his head on the desk, half-closed eyes looking ahead; the lower "
                     "part of his face is hidden behind Ian's navy sleeve, whose arm hangs over his shoulder from above. Only Ian's chin and "
-                    "mouth peek in at the very top left edge."),
+                    "mouth peek in at the very top left edge. Minjae's nose, mouth and chin must be completely covered by Ian's forearm lying "
+                    "across them — only Minjae's eyes, brow and hair are visible."),   # 10-28 아르곤 검수: 민재 입이 드러남
     "1-40": dict(f="IM", loc="office", light="office", w=["I_office", "M_office"], fx=(0, "Ian's"),
                   t="Close-up: Ian, draped over Minjae's back, rests his chin on his folded hands on Minjae's shoulder, his face large in the "
                     "upper part of the frame, speaking with a sulky, self-assured little pout, lips slightly parted; Minjae's head lies on "
@@ -315,7 +317,8 @@ C = {
     "2-1": dict(f="I", loc="laundry", light="night", w=["I_home"], fx=None,
                  t=f"Wide shot of the laundry nook at night, 28mm lens: Ian stands with his back to the camera at the white top-loading "
                    f"washing machine, folding laundry from the pale-blue basket, and lifts out {DRESS}. He is small, standing in the left-"
-                   "middle of the frame, full body from head to slippers."),
+                   "middle of the frame, full body from head to slippers. The camera looks straight at his back: we see the back of his head "
+                   "and his navy sweater, not his face or profile, and the washing machine is right in front of him, clearly visible."),   # 10-28 첫 판은 복도에서 옆으로 선 이안 · 세탁기 안 보임
     "2-2": dict(f="I", loc="laundry", light="night", w=["I_home"], fx=(0, "his"),
                  t=f"Bust shot of Ian holding up {DRESS} — the dress fills the lower left foreground, out of focus — and looking at it "
                    "with a puzzled tilt of his head, lips closed."),
@@ -347,7 +350,9 @@ C = {
                   t="Very low-angle shot from a camera placed almost on the floor of the narrow hallway, 18mm lens, pointing up and down the "
                     "hallway: Seojin walks straight toward the camera in her new outfit and is about to pass right beside it — her body fills "
                     "most of the frame from the hem of her dress at the bottom to her shoulders near the top edge, her head partly cut off by "
-                    "the top edge, slightly soft from her motion. White walls close on both sides."),
+                    "the top edge, slightly soft from her motion. White walls close on both sides. She is very close to the lens: her face is "
+                    "not visible — it is above the top edge of the frame; we see her from the shoulders down, large. Do not show her full "
+                    "body from a distance."),   # 10-28 첫 판은 멀리 선 전신(원본은 몸이 화면을 채우고 머리가 잘림)
     "2-10e": dict(f="I", loc="entry", light="night", w=["I_home"], fx=None,
                    t="The same very low-angle shot from almost on the floor of the narrow hallway, 18mm lens, a moment later: Seojin has "
                      "just walked out of the frame past the camera, and now the empty hallway is revealed with Ian standing alone at the far "
@@ -442,8 +447,10 @@ C = {
                   t="Wide shot from floor level beside the table: Ian sits at the far side of the light-oak table, startled, half rising "
                     "from his chair; in the foreground at the bottom edge, Seojin's dusty-rose back out of focus, kneeling on the floor."),
     "2-36": dict(f="S", loc="dining", light="night", w=["S_pj", "I_night"], fx=None,
-                  t="High-angle medium shot looking down at the floor: Seojin kneels and bows all the way down with her forehead to the "
-                    "floor, her hair spread out, her face hidden; Ian's dark head out of focus at the lower left corner."),
+                  t="High-angle medium shot from close above, looking down at the wooden floor: Seojin kneels and bows all the way down "
+                    "with her forehead to the floor, her hair spread out, her face hidden — her bowed body is large and fills the middle of "
+                    "the frame almost from the left edge to the right edge. Only the light wooden floor around her, no furniture or kitchen "
+                    "visible. Ian's dark head is large and out of focus in the lower left corner. Do not pull the camera back."),   # 10-28 첫 판은 부엌까지 넓게 나와 서진이 작았다(원본은 화면 폭 60%)
     "2-37": dict(f="S", loc="dining", light="night", w=["S_pj"], fx=None,
                   t="Close-up of Seojin kneeling, her head still bowed low from the bow and only just beginning to lift: we see the top of "
                     "her head and her long dark hair falling forward over her face, her face still hidden behind the hair, only a glimpse of "
@@ -482,8 +489,9 @@ C = {
                     "through tears, lips parted as if speaking; her dusty-rose back and arm fill the lower right foreground, her head "
                     "turned away at the right edge."),
     "2-46": dict(f="S", loc="dining", light="night", w=["S_pj", "I_night"], fx=(0, "her"),
-                  t="Bust shot of Seojin in the hug, her face pressed against Ian's shoulder so her mouth is hidden by his oatmeal t-shirt, "
-                    "eyes squeezed and crying softly; his arm around her back, the back of his head out of focus at the right edge."),
+                  t="Bust shot of Seojin in the hug, her face buried in Ian's shoulder: her nose, mouth and chin are completely pressed into "
+                    "his oatmeal t-shirt and not visible at all — only her eyes squeezed shut with tears, her brows and forehead show above "
+                    "his shoulder, crying; his arm around her back, the back of his head out of focus at the right edge."),   # 10-28 아르곤 검수: 입이 드러남
     "2-47": dict(f="S", loc="dining", light="night", w=["S_pj", "I_night"], fx=(0, "her"),
                   t="Close-up of the hug: Seojin's tearful face over Ian's shoulder in the upper middle, eyes closed, calming down; the back "
                     "of Ian's head and his shoulder fill the lower half of the frame, out of focus."),
@@ -578,7 +586,7 @@ def build(k):
 
 
 # 장소 참조를 넣지 않는 인서트 · 접사(10-27): 현장 노트 「물건 인서트에 방 사진만 참고로 주면 사람이 앉은 방 전경을 그린다」 · 넓은 방 사진이 가까운 컷을 넓게 끈다
-NOLOC = {"1-2", "1-3", "1-24", "1-26", "1-27", "1-28", "1-41", "1-43", "2-3", "2-4", "2-12", "2-25", "2-37", "2-43", "2-44", "2-48"}
+NOLOC = {"1-2", "1-3", "1-24", "1-26", "1-27", "1-28", "1-41", "1-43", "2-3", "2-4", "2-12", "2-25", "2-10", "2-36", "2-37", "2-43", "2-44", "2-48"}   # 2-36: 10-28 부엌 사진이 컷을 넓게 끌었다
 RELIGHT = {"L2b": ("L2", "night"), "L3b": ("L3", "night"), "L4b": ("L4", "night"), "L5b": ("L5", "bed")}
 
 
