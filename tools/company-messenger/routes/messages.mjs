@@ -103,15 +103,16 @@ export function createMessagesRoutes({ AppError, EMOJI, all, assert, canonical, 
         const extras = collaboration.prepareMessage(body, channel, context.user.id, null, integration?.origin || `http://${req.headers.host}`);
         assert(content || fileIds.length || extras.workspaceLink, 400, '메시지를 쓰거나 파일·화면 링크를 첨부해 주세요.');
         if (replyToId !== null) assert(one('SELECT id FROM messages WHERE id=? AND channel_id=?', replyToId, channelId), 404, '답글을 달 메시지가 이 대화방에 없어요. 대화를 새로 불러와 주세요.');
-        const created = transaction(() => {
+        const created = collaboration.unitOfWork.run(() => {
           for (const id of fileIds) assert(one('SELECT 1 FROM files WHERE id=? AND channel_id=? AND uploader_id=? AND message_id IS NULL', id, channelId, context.user.id), 400, '첨부할 수 없는 파일이 있어요. 첨부를 빼고 다시 올려 주세요.');
           const id = Number(run('INSERT INTO messages(channel_id,user_id,body,created_at,reply_to_id) VALUES(?,?,?,?,?)', channelId, context.user.id, content, now(), replyToId === null ? null : Number(replyToId)).lastInsertRowid);
           for (const fileId of fileIds) run('UPDATE files SET message_id=? WHERE id=?', id, fileId);
           collaboration.applyMessage(id, extras);
           if (clientMessageId) run('INSERT INTO message_send_requests(user_id,channel_id,request_id,payload_hash,message_id,created_at) VALUES(?,?,?,?,?,?)', context.user.id, channelId, clientMessageId, fingerprint, id, now());
-          return one('SELECT * FROM messages WHERE id=?', id);
+          const message = one('SELECT * FROM messages WHERE id=?', id);
+          collaboration.notifyMessage(message);
+          return message;
         });
-        collaboration.notifyMessage(created);
         publish('message', channelId);
         return respond(201, { message: messageShape(created, context.user.id) });
       }
@@ -163,8 +164,11 @@ export function createMessagesRoutes({ AppError, EMOJI, all, assert, canonical, 
         const content = textField(body.body, '메시지', 8000);
         const extras = collaboration.prepareMessage(body, channel, context.user.id, message, integration?.origin || `http://${req.headers.host}`);
         assert(content || extras.workspaceLink || one('SELECT id FROM files WHERE message_id=? LIMIT 1', message.id), 400, '빈 메시지로는 고칠 수 없어요. 내용을 적어 주세요.');
-        transaction(() => { run('UPDATE messages SET body=?,edited_at=? WHERE id=?', content, now(), message.id); collaboration.applyMessage(message.id, extras, { edit: true }); });
-        collaboration.notifyMessage(one('SELECT * FROM messages WHERE id=?', message.id), { edit: true });
+        collaboration.unitOfWork.run(() => {
+          run('UPDATE messages SET body=?,edited_at=? WHERE id=?', content, now(), message.id);
+          collaboration.applyMessage(message.id, extras, { edit: true });
+          collaboration.notifyMessage(one('SELECT * FROM messages WHERE id=?', message.id), { edit: true });
+        });
         publish('message', message.channel_id);
         return respond(200, { message: messageShape(one('SELECT * FROM messages WHERE id=?', message.id), context.user.id) });
       }

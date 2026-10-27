@@ -654,9 +654,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       const readMarker = messageReadMarker(p, method);
       const personalMutation = collaboration.personalMutation(p, method) || personalVoiceMutation(p, method);
       const revalidate = () => {
-        if (!integration) return;
+        // Standalone sessions can also be revoked while the body or file IO waits.
+        // Public entry points without an original session retain their own checks.
+        if (!integration && !originalToken) return;
         const latest = session(req);
-        assert(latest && latest.token === originalToken, 401, '로그인 상태가 바뀌었어요. 회사 계정으로 다시 로그인해 주세요.');
+        assert(latest && latest.token === originalToken && latest.user.id === user.id, 401, integration ? '로그인 상태가 바뀌었어요. 회사 계정으로 다시 로그인해 주세요.' : '로그인 상태가 바뀌었어요. 다시 로그인해 주세요.');
+        if (!integration) { auth = latest; user = latest.user; return; }
         assert(latest.identity.role === originalRole, 401, '회사 계정의 권한이 바뀌었어요. 다시 로그인해 주세요.');
         assert(bridge.accessKey(latest.user.id) === originalAccess, 401, '소속 팀이 바뀌었어요. 대화 목록을 새로 불러와 주세요.');
         if (mutation) {
@@ -666,7 +669,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         auth = latest; user = latest.user;
       };
       const readBody = async () => { const body = await jsonBody(req); revalidate(); return body; };
-      const respond = (status, body) => { if (integration && p.startsWith('/api/')) revalidate(); return json(res, status, body); };
+      const sessionEntry = ['/api/setup', '/api/login', '/api/join', '/api/logout'].includes(p);
+      const respond = (status, body) => {
+        if (p.startsWith('/api/') && (integration || (originalToken && !sessionEntry))) revalidate();
+        return json(res, status, body);
+      };
       if (integration && p.startsWith('/api/')) {
         assert(user, 401, '회사 계정으로 로그인해 주세요.');
         if (/^\/api\/(setup|login|join|logout|invites)(\/|$)/.test(p)) throw new AppError(403, '계정과 초대는 회사 앱에서 관리해 주세요.');
