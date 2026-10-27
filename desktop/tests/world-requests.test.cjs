@@ -63,3 +63,8 @@ test('native WORLD boundary carries what the town screen showed and what it can 
   for(const caps of ['cards',[1],Array(9).fill('cards'),['x'.repeat(33)]])assert.throws(()=>send({route:'town/boundary',body:{surfaceId:'world-main',fence:3,caps}}),{code:'INVALID_REQUEST'},JSON.stringify(caps));
   assert.throws(()=>send({route:'town/boundary',body:{surfaceId:'world-main',fence:3,other:true}}),{code:'INVALID_REQUEST'});
 });
+test('native WORLD boundary carries the mascot question the town screen drew (W6 asked) — one short word',()=>{
+  const body={surfaceId:'world-main',fence:3,caps:['cards','asks'],asked:'taste:cafe-life'};
+  assert.deepEqual(send({route:'town/boundary',body}),{path:'synk-town/boundary',method:'POST',body});
+  for(const asked of [7,'',['consent'],'x'.repeat(81),'consent now'])assert.throws(()=>send({route:'town/boundary',body:{surfaceId:'world-main',fence:3,asked}}),{code:'INVALID_REQUEST'},JSON.stringify(asked));
+});

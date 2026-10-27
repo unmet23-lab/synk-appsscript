@@ -347,6 +347,7 @@ const data = freeze({
     {"id":"cafe-owner.tea.owner-finish.1","npc":"cafe-owner","kind":"tea","when":{"part":"owner","is":"finish"},"levels":{"L1":"나머지는 제가 할게요.","L2":"괜찮으니까 나머지는 제가 낼게요.","L3":"여기까지 같이 했더니 손이 한결 가벼워졌어요. 나머지는 제가 마저 낼게요.","L4":"여기까지 도와준 것만으로도 충분해요. 남은 잔은 제가 천천히 마저 낼게요."}},
     {"id":"cafe-owner.tea.owner-done.1","npc":"cafe-owner","kind":"tea","when":{"part":"owner","is":"done"},"levels":{"L1":"고마워요.","L2":"같이 하니까 금방 끝났어요.","L3":"같이 해 줬더니 손님들이 금방 자리를 잡았어요. 고마워요.","L4":"같이 주문을 받으니까 손님들이 금방 자리를 잡았네요. 혼자 했으면 한참 걸렸을 텐데요."}},
   ],
+  evalConsent: {"ver":"town-eval-signals-1","easy":{"ask":"마을을 더 좋게 만드는 데 내 이용 기록을 써도 될까요?","uses":"쓰는 것: 마을에 온 날과 때(아침·낮·저녁·밤)와 머문 시간(대략), 한 일(생활의 종류와 수·처음 본 일과 지금까지 본 일의 수·중간에 그만둔 장면 수), 남긴 응답(좋았어요 같은 응답·제안에 한 답·되묻기 수), 그때 쓰던 마을 설정의 이름","where":"쓰는 곳: 마을이 오래 써도 나에게 잘 맞는지 확인하고 고치는 데만 써요. 주민의 말이나 추천에는 쓰지 않아요.","keep":"180일이 지나면 지워요.","choose":"안 해도 돼요. 안 해도 마을은 똑같아요. 수첩에서 언제든 그만할 수 있고, 그만하면 모은 기록을 지워요.","buttons":{"no":"아니요","yes":"좋아요","more":"자세히"}},"detail":{"title":"마을을 더 좋게 만드는 데 쓰는 기록","purpose":"싱크타운이 오래 써도 나에게 잘 맞는지 확인하고, 맞지 않는 곳을 고치는 데 씁니다. 여러 사람의 기록을 묶은 숫자로만 보고, 한 칸에 30명이 안 되면 견주지 않습니다.","uses":"마을에 온 날과 때(아침·낮·저녁·밤), 머문 시간(대략), 한 생활의 종류와 수, 처음 본 일과 지금까지 본 일의 수, 중간에 그만둔 장면 수, 남긴 응답(좋았어요·안 맞았어요·많았어요·더 하고 싶어요), 제안에 한 답(오늘은 다른 일·덜 추천·말 넓히기), 되묻기 수(다시·천천히·무슨 뜻이에요), 그때 쓰던 마을 설정의 이름.","notUsed":"이름·직접 쓴 글·문항의 답·정확한 시각은 모으지 않습니다. 주민의 말, 추천, 말 수준을 고르는 데 쓰지 않습니다. 강사·학원·다른 이용자에게 보이지 않고, 광고에 쓰거나 외부 AI에 보내지 않습니다.","keep":"180일이 지나면 지웁니다. 사람을 알아볼 수 없게 묶은 숫자는 남습니다.","choose":"안 해도 됩니다. 안 해도 마을은 똑같습니다. 이웃 수첩 「마을이 기억하는 것」이나 계정 화면에서 언제든 그만할 수 있고, 그만하면 그때까지 모은 기록을 바로 지웁니다.","notAsked":"학원 소속 계정에는 묻지 않습니다.","contact":"hello@synk.im"},"items":{"날과 때":["lifeDay","band"],"머문 시간":["lengthBucket"],"한 일":["did","newSeenBy","seenTotalBy","stoppedScenes"],"남긴 응답":["feedback","lessOften","todayOther","ladderOffer","help"],"마을 설정의 이름":["paramsVer","arm","consentVer"]}},
 });
 export const PLACES = data.places;
 export const SPOTS = data.spots;
@@ -367,3 +368,4 @@ export const CHAT_SPOTS = data.chatSpots;
 export const TOWN_LINES = data.townLines;
 export const TEA = data.tea;
 export const TEA_LINES = data.teaLines;
+export const EVAL_CONSENT = data.evalConsent;

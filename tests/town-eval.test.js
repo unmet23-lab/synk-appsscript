@@ -5,6 +5,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { ROOT, TOWN, townModule, runtimeFiles } = require('./lib/town.js');
 
 const line = extra => ({ id: 'V-20748-2', lifeDay: 20748, band: 'evening', lengthBucket: '10-30m', paramsVer: 'town-params-1', arm: 'adapted',
@@ -50,4 +51,46 @@ test('방문 줄의 칸은 동의 항목의 칸뿐이고, 이름·자유 입력�
   const kept = e.retainVisits([line({ id: 'old', lifeDay: 100 }), line({ id: 'new', lifeDay: 100 + keep - 1 })], 100 + keep);
   assert.deepEqual(kept.map(l => l.id), ['new']);
   assert.equal(e.comparable(paramsFor().eval.minGroup - 1), false);
+});
+
+test('방문 요약의 칸 ⊆ 동의 계약 파일의 칸 — 항목과 칸이 계약 그대로이고 동의판이 같다(talk 사본은 tests/계약동기.test.js)', async () => {
+  const e = await townModule('eval'), { EVAL_CONSENT } = await townModule('data.gen');
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, '계약', '마을평가신호_선택응답_계약.json'), 'utf8')).선택응답;
+  assert.equal(contract.동의판, e.CONSENT_VER);
+  assert.equal(EVAL_CONSENT.ver, e.CONSENT_VER);
+  assert.deepEqual(JSON.parse(JSON.stringify(e.CONSENT_ITEMS)), contract.칸);
+  const named = Object.values(contract.칸).flat();
+  assert.deepEqual(e.VISIT_FIELDS.filter(field => field !== 'id').filter(field => !named.includes(field)), [], '동의 문구가 이름 대지 않은 칸');
+  // 쉬운 판은 계약의 다섯 줄과 단추 셋 그대로다(화면이 이 생성물로 묻는다 — W6b).
+  assert.equal(EVAL_CONSENT.easy.ask, contract.쉬운판.물음);
+  assert.deepEqual(EVAL_CONSENT.easy.buttons, { no: contract.쉬운판.단추.아니요, yes: contract.쉬운판.단추.좋아요, more: contract.쉬운판.단추.자세히 });
+});
+
+test('평가 줄 쓰기가 실패해도 그 요청이 센 것은 기다렸다가 다음 요청의 줄에 그대로 든다(GPT 검수 GA5)', async () => {
+  const { createStore } = await import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'server.mjs')).href);
+  const e = await townModule('eval');
+  // 세계가 그대로이고 평가 줄만 바뀌는 쓰기(keep)만 실패시킨다 — 명령의 저장은 그대로 된다.
+  let failing = false, lastWorld = null, saved = null;
+  const save = next => {
+    const { evalLines = [], ...world } = next, text = JSON.stringify(world);
+    if (failing && text === lastWorld) throw new Error('disk full');
+    lastWorld = text; saved = { evalLines };
+  };
+  let now = Date.UTC(2026, 9, 23, 3, 0, 0), sequence = 0, receipt;
+  const s = createStore({ now: () => now, tz: 540, villageSeed: 'acct-ga5', save });
+  const pulse = () => { now += 1000; receipt = s.pulse({ surfaceId: 'day-a', surface: 'day', foreground: true, safe: true }).presence; };
+  const send = (type, payload) => s.execute({ id: `ga5-${++sequence}`, type, expectedRevision: s.read().state.revision, payload });
+  for (let i = 0; i < 4; i++) pulse();
+  send('EVAL_CONSENT', { state: 'granted', ver: e.CONSENT_VER });
+  for (let i = 0; i < 25; i++) pulse();
+  s.boundary({ surfaceId: receipt.surfaceId, fence: receipt.fence });
+  assert.equal(saved.evalLines.length, 1);
+  assert.equal(saved.evalLines[0].todayOther, 0);
+  failing = true;
+  send('PREF_TODAY_OTHER', { activity: 'card.C1' });
+  assert.equal(saved.evalLines[0].todayOther, 0, '줄 쓰기만 실패했다');
+  failing = false;
+  send('PREF_TODAY_OTHER', { activity: 'card.C3' });
+  assert.equal(saved.evalLines.length, 1);
+  assert.equal(saved.evalLines[0].todayOther, 2, '실패한 요청이 센 하나도 남는다');
 });

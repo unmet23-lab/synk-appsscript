@@ -8,18 +8,14 @@
  */
 import { paramsFor } from './params.mjs';
 import { CONSENT_VER, mayWrite } from './consent.mjs';
+import { EVAL_CONSENT } from './data.gen.mjs';
 
 // The consent's state is the world's, so the authority reads it from town/consent.mjs and never this module.
 export { CONSENT_VER, CONSENT_STATES, initialConsents, changeConsent, mayWrite, validConsents } from './consent.mjs';
-/** Each field of the visit line pairs with one item of the consent wording (§20-4 「칸과 동의 문구는
- * 짝이다」); W6 moves this table into the consent contract file and the check reads it there. */
-export const CONSENT_ITEMS = Object.freeze({
-  '날과 때': ['lifeDay', 'band'],
-  '머문 시간': ['lengthBucket'],
-  '한 일': ['did', 'newSeenBy', 'seenTotalBy', 'stoppedScenes'],
-  '남긴 응답': ['feedback', 'lessOften', 'todayOther', 'ladderOffer', 'help'],
-  '마을 설정의 이름': ['paramsVer', 'arm', 'consentVer'],
-});
+/** Each field of the visit line pairs with one item of the consent wording (§20-4 「칸과 동의 문구는 짝이다」): the table is
+ * the consent contract file's (계약/마을평가신호_선택응답_계약.json — the talk copy holds the same bytes), read through the
+ * generated data, so a field the wording does not name cannot be written (tests/town-eval.test.js). */
+export const CONSENT_ITEMS = EVAL_CONSENT.items;
 export const VISIT_FIELDS = Object.freeze(['id', ...Object.values(CONSENT_ITEMS).flat()]);
 const BANDS = ['morning', 'day', 'evening', 'night'], LENGTHS = ['under-10m', '10-30m', '30m-1h', 'over-1h'];
 const id = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,80}$/.test(value);

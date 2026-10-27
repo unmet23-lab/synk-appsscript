@@ -282,16 +282,21 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
   }
   /** The evaluation-only line of the visit in progress after a boundary or a command (§20-4, W6): only on a host that
    * keeps them, under the consent, never for an academy-linked account; the line carries its own tallies and lines past
-   * the keeping period go with the write. Nothing the town computes reads it (G11). */
+   * the keeping period go with the write. Nothing the town computes reads it (G11).
+   * Lines whose write failed wait in memory with what they counted (evalWaiting), so the next request builds on them
+   * and nothing a saved request counted is lost (GPT review GA5); a restart drops them. */
+  let evalWaiting = null;
   function keepVisitLine(before, command, added) {
-    if (!account.evalSignals || account.academy || !mayWrite(state.consents)) return;
+    if (!account.evalSignals || account.academy || !mayWrite(state.consents)) { evalWaiting = null; return; }
     // The request is already saved: a line that fails to be made or kept never turns it into an error (Fable F12).
     try {
-      const fields = visitSummary(evalLines.find(line => line.id === state.policy?.visitId) ?? null, { before, after: state, command, added, seen });
+      const lines = evalWaiting ?? evalLines;
+      const fields = visitSummary(lines.find(line => line.id === state.policy?.visitId) ?? null, { before, after: state, command, added, seen });
       if (!fields || state.townVisit?.endedAt !== undefined) return;
-      const next = retainVisits(writeVisit(evalLines, state.consents, fields), fields.lifeDay);
-      if (JSON.stringify(next) !== JSON.stringify(evalLines)) keep({ evalLines: next });
-    } catch { /* the line waits for the next request */ }
+      const next = retainVisits(writeVisit(lines, state.consents, fields), fields.lifeDay);
+      if (JSON.stringify(next) === JSON.stringify(evalLines)) { evalWaiting = null; return; }
+      try { keep({ evalLines: next }); evalWaiting = null; } catch { evalWaiting = next; }
+    } catch { /* a line that cannot be made is not written */ }
   }
   /** The lease after a restart. Without a saved lease only the world's host stamp survives for the
    * 30-minute logical-visit boundary. A saved lease keeps the play time a pulse recorded, but no
