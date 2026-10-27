@@ -373,6 +373,21 @@ def jobs():
         "walk to the left through the right half of the frame (dark chinos, worn white sneakers pressing into fresh thin snow); at his knee "
         f"{BAG} swings in his hand. Bright overcast snow light, soft. A low old wall and a parked bicycle softly out of focus behind. The "
         "camera tracks sideways with him.", FINISH)
+    # 22 · 23 다시(10-27 23:3x): 1차 22는 거울 위 테가 코 아래를 잘라 입 · 턱이 비쳤다(실루엣 머리 자리가 얼굴을 부름 — 배치도를 실루엣 없는 흐림으로),
+    # 1차 23은 배경에 둔 자전거 손잡이에 봉투가 걸리고 오른쪽으로 걸었다
+    J_["C22r"] = J([lay("S22"), ref("M1.jpg")], STILL, LAYOUT_GREY,
+        "Christmas Eve morning in a small entryway: a round wall mirror with a dark wooden frame fills the frame like an oval vignette (the "
+        "frame and the dark wall in the four corners). The mirror's upper rim crosses the man's neck just below his chin, so the mirror "
+        "shows only his shoulders, his chest and his two hands — no part of his face at all, not even his chin or his lips. In the mirror: "
+        "a young man's navy hooded padded jacket and his two hands wrapping a soft grey knitted scarf around his neck. Soft warm morning "
+        "light from the side; in the reflection behind him, an ordinary small entryway (a coat hook, a white wall). The camera slowly "
+        "pushes in.", "Image 2 shows his navy padded jacket — for look only.", FINISH)
+    J_["C23r"] = J([lay("S23")], STILL, LAYOUT_GREY,
+        "First snow, daytime. LOW at ankle height on a snowy sidewalk of an old Seoul neighborhood: a young man's legs from the knees down "
+        "walk to the LEFT through the right half of the frame — both worn white sneakers point toward the left edge of the frame, pressing "
+        f"into fresh thin snow, dark chinos — and {BAG} hangs from his hand and swings at his knee as he walks. Nothing else is near him: "
+        "only a low old wall softly out of focus behind and the snowy pavement. Bright overcast snow light, soft. The camera tracks "
+        "sideways with him.", FINISH)
     J_["C24"] = J([lay("S24")] + [ref("M04_angle-back.jpg"), ref("M1.jpg")], STILL, LAYOUT_SIL.format(who="the man"),
         "Christmas Eve, late afternoon turning to dusk: a snow-covered narrow street of an old Seoul residential neighborhood, WIDE and nearly "
         "fixed. THE MAN — at the place and size of the black silhouette, about half the frame height — walks away from the camera along the snowy street toward his "
@@ -600,6 +615,11 @@ def jobs():
         "frame width has just gone inside: that door is swinging shut — in the narrowing gap of his alcove only the end of a grey knitted scarf and a corner of a white bag are still "
         "visible — and his sensor lamp is now ON: the two lamps, his and the neighbor's, glow warm side by side. Keep everything else in "
         "Image 1 exactly.", FINISH)
+    # 35 더하기(C35b, 10-27 23:1x): C35는 503 문 틈의 목도리 끝 · 봉투 귀퉁이까지 나왔으나 503 등이 켜지지 않았다 — 그 한 가지만 더한다
+    J_["C35b"] = J([ref("C35.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: add a small round frosted-glass ceiling lamp, switched ON and glowing warm, "
+        "on the ceiling right above the half-closed door at about 40% of the frame width, so that two warm lamps now glow side by side "
+        "over the two neighboring doors. Keep everything else in Image 1 exactly.", FINISH)
     J_["C36"] = J([lay("S36")], STILL, LAYOUT_GREY,
         "Christmas Eve night, snow falling: a quiet snow-covered street of an old Seoul neighborhood, WIDE, from the middle of the street at "
         "a low height: on one side the old five-storey corridor-style apartment block with its open outdoor corridors (a row of small warm "

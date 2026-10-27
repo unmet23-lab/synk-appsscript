@@ -235,6 +235,19 @@
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing — where the large shapes sit — and ignore its grey tones and its contents. First snow, daytime. LOW at ankle height on a snowy sidewalk of an old Seoul neighborhood: a young man's legs from the knees down walk to the left through the right half of the frame (dark chinos, worn white sneakers pressing into fresh thin snow); at his knee a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) swings in his hand. Bright overcast snow light, soft. A low old wall and a parked bicycle softly out of focus behind. The camera tracks sideways with him. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
+ "C22r": {
+  "refs": [
+   "S22.jpg",
+   "M1.jpg"
+  ],
+  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing — where the large shapes sit — and ignore its grey tones and its contents. Christmas Eve morning in a small entryway: a round wall mirror with a dark wooden frame fills the frame like an oval vignette (the frame and the dark wall in the four corners). The mirror's upper rim crosses the man's neck just below his chin, so the mirror shows only his shoulders, his chest and his two hands — no part of his face at all, not even his chin or his lips. In the mirror: a young man's navy hooded padded jacket and his two hands wrapping a soft grey knitted scarf around his neck. Soft warm morning light from the side; in the reflection behind him, an ordinary small entryway (a coat hook, a white wall). The camera slowly pushes in. Image 2 shows his navy padded jacket — for look only. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C23r": {
+  "refs": [
+   "S23o.jpg"
+  ],
+  "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing — where the large shapes sit — and ignore its grey tones and its contents. First snow, daytime. LOW at ankle height on a snowy sidewalk of an old Seoul neighborhood: a young man's legs from the knees down walk to the LEFT through the right half of the frame — both worn white sneakers point toward the left edge of the frame, pressing into fresh thin snow, dark chinos — and a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) hangs from his hand and swings at his knee as he walks. Nothing else is near him: only a low old wall softly out of focus behind and the snowy pavement. Bright overcast snow light, soft. The camera tracks sideways with him. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
  "C24": {
   "refs": [
    "S24.jpg",
@@ -505,6 +518,12 @@
    "PL26.jpg"
   ],
   "prompt": "Edit this photograph (Image 1). The same corridor, the same camera, framing and lens, the same decorations — later that night: the sky beyond the parapet is now dark night blue, snow still falling. The man who lives behind the dark doorway at about 40% of the frame width has just gone inside: that door is swinging shut — in the narrowing gap of his alcove only the end of a grey knitted scarf and a corner of a white bag are still visible — and his sensor lamp is now ON: the two lamps, his and the neighbor's, glow warm side by side. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C35b": {
+  "refs": [
+   "C35.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: add a small round frosted-glass ceiling lamp, switched ON and glowing warm, on the ceiling right above the half-closed door at about 40% of the frame width, so that two warm lamps now glow side by side over the two neighboring doors. Keep everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
  "C36": {
   "refs": [

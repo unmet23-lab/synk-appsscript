@@ -75,8 +75,39 @@ def door(plate, out_name, box, base="PL1"):
     print(out_name, "←", plate, "문간", box, "←", base)
 
 
+def lamp(src, out_name, frm, to, scale, size="6,4"):
+    """35의 503 등 — 「503 · 504 두 등이 나란히 켜짐」을 편집으로 더하게 했으나(C35b) 등이 안 생겼다. 같은 판의 켜진 등(504)을 둘레 빛과 함께 떠서
+    그보다 가까운 503 자리(같은 복도 가운데 줄, 더 앞 · 위)에 거리만큼 키워 「밝게만 더하기」(max)로 얹는다 — 천장 무늬는 옮기지 않는다."""
+    s = imread(V / "정지컷" / f"{src}.png").astype(np.float32)
+    hp, wp = s.shape[:2]
+    fx, fy = [float(v) / 100 for v in frm.split(",")]
+    tx, ty = [float(v) / 100 for v in to.split(",")]
+    sw, sh = [float(v) / 100 for v in size.split(",")]
+    k = float(scale)
+    pw, ph = round(sw * wp), round(sh * hp)
+    x0, y0 = round(fx * wp - pw / 2), round(fy * hp - ph / 2)
+    patch = cv2.resize(s[y0:y0 + ph, x0:x0 + pw], (round(pw * k), round(ph * k)), interpolation=cv2.INTER_CUBIC)
+    qh, qw = patch.shape[:2]
+    yy, xx = np.mgrid[0:qh, 0:qw]
+    m = np.clip(1 - np.hypot((xx - qw / 2) / (qw / 2), (yy - qh / 2) / (qh / 2)), 0, 1)[..., None] ** 0.7
+    X0, Y0 = round(tx * wp - qw / 2), round(ty * hp - qh / 2)
+    reg = s[Y0:Y0 + qh, X0:X0 + qw]
+    s[Y0:Y0 + qh, X0:X0 + qw] = np.maximum(reg, reg * (1 - m) + patch * m)
+    out = s.astype(np.uint8)
+    imwrite(V / "정지컷" / f"{out_name}.png", out)
+    imwrite(V / "컷" / f"{out_name}.jpg", cv2.resize(out, (1920, 1080), interpolation=cv2.INTER_AREA))
+    imwrite(V / "ego" / "refs" / f"{out_name}.jpg", cv2.resize(out, (1600, 900), interpolation=cv2.INTER_AREA))
+    lp = V / "정지컷" / "_고른판.json"
+    log = json.load(open(lp, encoding="utf-8")) if lp.exists() else {}
+    log[out_name] = {"src": f"{src}.png", "note": f"켜진 등({frm}%)을 {to}%에 {scale}배로 밝게만 더함"}
+    json.dump(log, open(lp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print(out_name, "←", src, "등", frm, "→", to, "×", scale)
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "문간":   # python -X utf8 고정와이드_합성.py 문간 PL20 PL20d 39.6,29,42.2,74
         door(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif sys.argv[1] == "등":   # python -X utf8 고정와이드_합성.py 등 C35 C35L 49.65,25.2 49.4,20.5 1.3
+        lamp(*sys.argv[2:])
     else:
         seat(*sys.argv[1:5])
