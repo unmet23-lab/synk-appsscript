@@ -136,3 +136,11 @@ test('소리 표 검사 — 층·빛 기준점·열두 달·처마·소리 나�
   assert.throws(broken(d => { d.quiet.wakeLock = 2; }), /quiet/);
   assert.throws(broken(d => { d.seats.push({ ...d.seats[0] }); }), /자리/);
 });
+
+test('화면에 가는 곡 목록은 재생에 쓰는 칸만 — 곡의 출처·권리 기록과 제작 도구 이름은 저장소의 music.json에만 남는다', async () => {
+  const { TRACKS } = await townModule('soundscape');
+  const listed = JSON.parse(fs.readFileSync(path.join(TOWN, 'data/music.json'), 'utf8')).tracks;
+  assert.equal(TRACKS.length, listed.length, '실은 곡이 모두 화면에 간다');
+  for (const track of TRACKS) assert.deepEqual(Object.keys(track).sort(), ['durationMs', 'file', 'id', 'title'], track.id);
+  assert.doesNotMatch(fs.readFileSync(path.join(TOWN, 'data.gen.mjs'), 'utf8'), /suno/i, '공개되는 생성물에 제작 도구 이름이 없다');
+});
