@@ -73,6 +73,7 @@ jobs:
         with:
           node-version: 24
       - name: install dependencies
+        timeout-minutes: 8
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
           BUNDLE: ${{ matrix.bundle }}
@@ -82,7 +83,14 @@ jobs:
           if [ "$BUNDLE" = "experiences" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
           # 영상·납품 묶음 시험이 ffmpeg를 부른다 — 10-21 첫 실행에서 회사 19·루트 5개가 「spawn ffmpeg ENOENT」였다.
           # 경험 앱은 초보 게임 음성 시험이 후처리 도구(ffmpeg·ffprobe)를 확인한다(10-22).
-          if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ] || [ "$BUNDLE" = "experiences" ]; then sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg; fi
+          if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ] || [ "$BUNDLE" = "experiences" ]; then
+            if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+              sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 update -qq
+              sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 install -y -qq --no-install-recommends ffmpeg
+            fi
+            ffmpeg -version >/dev/null
+            ffprobe -version >/dev/null
+          fi
       # 형제 저장소 자리의 시험 도구 — PC에서 형제 저장소의 node_modules가 하는 몫을 시험이 쓰는 꾸러미만으로 채운다(앱 의존성 Expo 등은 받지 않는다).
       # SYNK-talk 쪽(PGlite·postgres·postcss)은 그 저장소 lock의 판 그대로, parse5는 PC의 SYNK-website 판이다.
       - name: sibling repository test tools
