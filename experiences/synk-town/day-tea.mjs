@@ -24,6 +24,8 @@ const SPOONS = Object.freeze(['꿀 없이', '꿀 한 숟가락', '꿀 두 숟가
 const KEYS = Object.freeze({ Digit1: ['cup', 'warm'], Digit2: ['cup', 'cold'], Digit3: ['pour', 'barley'], Digit4: ['pour', 'yuzu'], Digit5: ['pour', 'today'],
   Numpad1: ['cup', 'warm'], Numpad2: ['cup', 'cold'], Numpad3: ['pour', 'barley'], Numpad4: ['pour', 'yuzu'], Numpad5: ['pour', 'today'] });
 const REACT_MS = 450, NEAR_GUEST = 1.6;
+// The hand actions that change the board's cup — done only at the cafe (picking up, putting down and serving go anywhere).
+const BOARD_ACTIONS = new Set(['cup', 'pour', 'honey', 'done', 'empty', 'place']);
 const el = (tag, props = {}, ...children) => { const node = Object.assign(document.createElement(tag), props); node.append(...children.filter(c => c !== null && c !== undefined)); return node; };
 const teaColor = tea => TEA?.axes?.tea?.[tea]?.color || '#b8763a';
 
@@ -88,6 +90,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   const sound = (name, opts) => { if (sfx.play(name, opts)) { played.push(name); if (played.length > 40) played.shift(); return true; } return false; };
   let order = null, tea = null, hand = null, ctx = {}, folded = false, simple = readSimple(reduced.matches), inflight = false, opener = null, disposed = false;
   let listen = {}, reacts = {}, padPrev = {}, jarIndex = 0, feedbackOpen = false, lastSig = '', lastAnnounce = '', placedBoardH = -1;
+  // The control to give the keys back to once its part is drawn again (its data-focus key — review A3, as the notebook does).
+  let focusNext = null;
 
   // The entry: 「주문 같이 받기」 by the talk button while walking near the cafe, and in the place's panel otherwise.
   const openWalk = el('button', { type: 'button', id: 'tea-open', className: 'felt tea-open-walk', hidden: true, textContent: '주문 같이 받기' });
@@ -103,18 +107,18 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   const live = el('p', { className: 'visually-hidden' }); live.setAttribute('aria-live', 'polite');
   const tray = el('div', { className: 'tea-tray' }); tray.setAttribute('role', 'group'); tray.setAttribute('aria-label', '쟁반');
   const notes = el('div', { className: 'tea-notes' });
-  const foldButton = el('button', { type: 'button', className: 'tea-fold', textContent: '접기' }); foldButton.setAttribute('aria-label', '차 만들기 판 접기'); foldButton.setAttribute('aria-keyshortcuts', 'Escape');
+  const foldButton = el('button', { type: 'button', className: 'tea-fold', textContent: '접기' }); foldButton.setAttribute('aria-label', '차 만들기 판 접기'); foldButton.setAttribute('aria-keyshortcuts', 'Escape'); foldButton.dataset.focus = 'fold';
   const band = el('div', { className: 'tea-band' }, tray, notes, foldButton);
   const mug = cupFigure('tea-figure tea-mug'), stream = el('span', { className: 'tea-stream' }); stream.setAttribute('aria-hidden', 'true');
   const cupButtons = Object.keys(CUP_NAMES).map((vessel, i) => { const b = el('button', { type: 'button', className: 'tea-pick tea-cup-pick', textContent: CUP_NAMES[vessel] });
-    b.dataset.vessel = vessel; b.setAttribute('aria-keyshortcuts', String(i + 1)); b.prepend(cupFigure('tea-figure tea-mini')); paintCup(b.firstChild, { vessel }); return b; });
+    b.dataset.vessel = vessel; b.dataset.focus = `make:cup:${vessel}`; b.setAttribute('aria-keyshortcuts', String(i + 1)); b.prepend(cupFigure('tea-figure tea-mini')); paintCup(b.firstChild, { vessel }); return b; });
   const jarButtons = Object.keys(TEA_NAMES).map((name, i) => { const b = el('button', { type: 'button', className: 'tea-pick tea-jar', textContent: TEA_NAMES[name] });
-    b.dataset.tea = name; b.style.setProperty('--tea', teaColor(name)); b.setAttribute('aria-keyshortcuts', String(i + 3)); b.prepend(el('span', { className: 'tea-jar-body' })); return b; });
-  const honeyButton = el('button', { type: 'button', className: 'tea-pick tea-honey', textContent: '꿀' }); honeyButton.setAttribute('aria-keyshortcuts', 'H');
+    b.dataset.tea = name; b.dataset.focus = `make:jar:${name}`; b.style.setProperty('--tea', teaColor(name)); b.setAttribute('aria-keyshortcuts', String(i + 3)); b.prepend(el('span', { className: 'tea-jar-body' })); return b; });
+  const honeyButton = el('button', { type: 'button', className: 'tea-pick tea-honey', textContent: '꿀' }); honeyButton.setAttribute('aria-keyshortcuts', 'H'); honeyButton.dataset.focus = 'make:honey';
   honeyButton.prepend(el('span', { className: 'tea-honey-pot' }));
-  const doneButton = el('button', { type: 'button', className: 'felt primary tea-done', textContent: '다 됐어요' }); doneButton.setAttribute('aria-keyshortcuts', 'Enter');
-  const emptyButton = el('button', { type: 'button', className: 'felt subtle tea-empty', textContent: '잔 비우기' }); emptyButton.setAttribute('aria-keyshortcuts', 'Backspace');
-  const stopButton = el('button', { type: 'button', className: 'text-button tea-stop', textContent: '그만할래요' });
+  const doneButton = el('button', { type: 'button', className: 'felt primary tea-done', textContent: '다 됐어요' }); doneButton.setAttribute('aria-keyshortcuts', 'Enter'); doneButton.dataset.focus = 'make:done';
+  const emptyButton = el('button', { type: 'button', className: 'felt subtle tea-empty', textContent: '잔 비우기' }); emptyButton.setAttribute('aria-keyshortcuts', 'Backspace'); emptyButton.dataset.focus = 'make:empty';
+  const stopButton = el('button', { type: 'button', className: 'text-button tea-stop', textContent: '그만할래요' }); stopButton.dataset.focus = 'make:stop';
   const make = el('div', { className: 'tea-make' }, el('div', { className: 'tea-cups' }, ...cupButtons), el('div', { className: 'tea-stage' }, stream, mug),
     el('div', { className: 'tea-jars' }, ...jarButtons, honeyButton));
   make.querySelector('.tea-cups').setAttribute('role', 'group'); make.querySelector('.tea-cups').setAttribute('aria-label', '잔');
@@ -159,6 +163,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   }
   function apply(action) {
     if (!hand || !order) return;
+    // The board is filled only at the cafe — keys, pad, a dropped jar and the buttons alike (review A1).
+    if (BOARD_ACTIONS.has(action.type) && !atMaking()) return;
     const out = input(hand, action); hand = out.state; play(out.cues);
     if (['cup', 'pour', 'honey', 'empty'].includes(action.type)) say(boardWords(hand.board));
     if (action.type === 'done' && out.cues.some(c => c.type === 'done')) say('다 만든 잔을 쟁반에 올렸어요.');
@@ -189,6 +195,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
    * answer, REACT_MS later — or when the server answers, if it is later (§2-4 「낸 순간」). */
   async function serve(slot, mode = 'make') {
     if (!order || inflight) return false;
+    // Served by the guest only — the order at the cafe, the one-cup board by the researcher (the server refuses it elsewhere, F15).
+    if (ctx.location !== (order.kind === 'one-cup' ? ctx.ownerPlace : 'cafe')) return false;
     const body = finish(hand, order, slot, { mode }); if (!body) return false;
     const sentAt = performance.now(); sfx.unlock(); sound('serve');
     if (!reduced.matches) { handChip.classList.remove('slide'); void handChip.offsetWidth; handChip.classList.add('slide'); }
@@ -225,12 +233,12 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     else said.textContent = words;
     // 「무슨 뜻이에요?」 at the first level: the cup, the jar and the spoons beside the words.
     if (state.level === 'L1' && state.meaning) said.append(el('span', { className: 'tea-picture' }, ...pictureOf(g.request)));
-    const askButton = (label, kind) => { const b = el('button', { type: 'button', className: 'tea-ask', textContent: label }); b.dataset.sound = 'none';
+    const askButton = (label, kind) => { const b = el('button', { type: 'button', className: 'tea-ask', textContent: label }); b.dataset.sound = 'none'; b.dataset.focus = `${g.slot}:ask:${kind}`;
       b.addEventListener('click', () => ask(g, kind)); return b; };
     const slowNext = state.slow && state.slow < chunks(words).length;
-    const heard = el('button', { type: 'button', className: 'felt primary tea-heard', textContent: '네, 알겠어요' }); heard.dataset.sound = 'none';
+    const heard = el('button', { type: 'button', className: 'felt primary tea-heard', textContent: '네, 알겠어요' }); heard.dataset.sound = 'none'; heard.dataset.focus = `${g.slot}:heard`;
     heard.addEventListener('click', () => fold(g.slot));
-    const ownerAsk = el('button', { type: 'button', className: 'text-button tea-owner-ask', textContent: '주인에게 부탁하기' }); ownerAsk.dataset.sound = 'none';
+    const ownerAsk = el('button', { type: 'button', className: 'text-button tea-owner-ask', textContent: '주인에게 부탁하기' }); ownerAsk.dataset.sound = 'none'; ownerAsk.dataset.focus = `${g.slot}:owner-ask`;
     ownerAsk.addEventListener('click', () => owner(g.slot, 'owner'));
     card.append(el('p', { className: 'tea-who', textContent: guestName(order, g) }), said,
       el('div', { className: 'tea-asks' }, askButton('다시 말해 주세요', 'repeat'), askButton(slowNext ? '다음 말' : '천천히 말해 주세요', 'slower'), askButton('무슨 뜻이에요?', 'meaning')),
@@ -259,8 +267,10 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     if (!hand) return;
     const state = listen[slot]; if (state) state.open = false;
     if (!hand.heard[slot]) hand = input(hand, { type: 'fold', slot }).state;
+    // The keys go on to the next guest's words (review A3) — or, once the last request is folded, to the board.
+    const next = waiting().find(g => !hand.heard[g.slot]);
+    if (next && ctx.inputMode !== 'gamepad') focusNext = `${next.slot}:heard`;
     render(true);
-    // Folding the last request moves the keys to the board.
     if (hand.phase === 'make' && !Object.values(listen).some(s => s.open)) focusBoard();
   }
   function reopen(slot) {
@@ -274,7 +284,24 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
 
   /* ── drawing ── */
   const waiting = () => order ? order.guests.filter(g => !g.done) : [];
-  const atMaking = () => !!order && (order.kind === 'order' ? ctx.location === 'cafe' : ctx.location === 'cafe' || hand?.hand !== null);
+  // The board is the cafe's: the one-cup board's cup is made there too and carried in the hand (review A1).
+  const atMaking = () => !!order && ctx.location === 'cafe';
+  /** Gives the keys back after a part is drawn again (review A3): to the control with the same data-focus key — after its
+   * command answers if it is out — else, if the keys were lost with it, to the next thing to press. Not for a gamepad. */
+  function restoreFocus(had) {
+    const want = focusNext ?? had; if (want === null) return;
+    if (ctx.inputMode === 'gamepad') { focusNext = null; return; }
+    const again = ownParts().flatMap(part => [...part.querySelectorAll('[data-focus]')]).find(x => x.dataset.focus === want), now = document.activeElement;
+    const usable = again && !again.disabled && !again.closest('[hidden]');
+    if (again && !usable && (ctx.busy || inflight)) { focusNext = want; return; }
+    focusNext = null;
+    const lost = !now || now === document.body;
+    if (usable) { if (now !== again && (lost || isOwn(now))) again.focus({ preventScroll: true }); return; }
+    if (lost) [...bubbles.querySelectorAll('button'), ...board.querySelectorAll('button')].find(b => !b.disabled && !b.closest('[hidden]'))?.focus({ preventScroll: true });
+  }
+  // This board's own parts over the scene — the keys it gives back stay among them (other layers share #scene).
+  const ownParts = () => [bubbles, board, handChip];
+  const isOwn = node => !!node && ownParts().some(part => part.contains(node));
   function render(force = false) {
     if (disposed) return;
     const tv = tea, o = tv?.open ?? null, show = !!o && ctx.connected && !ctx.seated && (o.kind === 'one-cup' || ctx.location === 'cafe');
@@ -285,27 +312,37 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     const holding = !!o && hand?.hand !== null && hand?.hand !== undefined && !!hand?.tray?.[hand.hand];
     const sig = JSON.stringify([o, hand, folded, simple, inflight, ctx.busy, ctx.location, ctx.connected, ctx.seated, listen, Object.keys(reacts), feedbackOpen, tv?.together, tv?.nextFirst]);
     if (!force && sig === lastSig) return; lastSig = sig;
+    const focused = document.activeElement, had = isOwn(focused) ? focused.closest('[data-focus]')?.dataset.focus ?? null : null;
     document.body.classList.toggle('tea-mode', show && !folded);
+    // Folded, the hand chip sits above 「차 만들기 펼치기」, never over it (screen review F1).
+    document.body.classList.toggle('tea-folded', show && folded);
     board.hidden = !show || folded; unfold.hidden = !show || !folded; handChip.hidden = !holding || !o;
     bubbles.hidden = !show;
-    if (!o) { bubbles.replaceChildren(); return; }
+    if (!o) { bubbles.replaceChildren(); focusNext = null; return; }
     const off = ctx.busy || inflight;
     // The result (every guest done): the owner's word, 「다음 손님」 · 「오늘은 여기까지」 and 「…」 (§20-3).
     result.hidden = !o.done; hint.hidden = o.done; make.hidden = o.done || simple; simpleRows.hidden = o.done || !simple; actionsRow.hidden = o.done; band.hidden = o.done;
     if (o.done) drawResult(o, tv, off);
     else {
       drawBand(o, off); drawMake(off); drawSimple(o, off);
-      doneButton.disabled = off || !hand?.board?.vessel || !hand?.board?.tea || !hand.tray.includes(null);
-      emptyButton.disabled = off || !(hand?.board?.vessel || hand?.board?.tea || hand?.board?.honey);
+      // 간단히 만들기 picks finished cups: the empty tray, 「다 됐어요」 and 「잔 비우기」 stay out of its way (a cup already on the tray stays).
+      tray.hidden = simple && !hand?.tray?.some(Boolean); doneButton.hidden = simple; emptyButton.hidden = simple;
+      doneButton.disabled = off || !atMaking() || !hand?.board?.vessel || !hand?.board?.tea || !hand.tray.includes(null);
+      emptyButton.disabled = off || !atMaking() || !(hand?.board?.vessel || hand?.board?.tea || hand?.board?.honey);
       stopButton.disabled = off;
       hint.textContent = hintFor(o);
     }
     drawHand(o, off);
     drawBubbles(o, off);
+    restoreFocus(had);
   }
   function hintFor(o) {
-    if (o.kind === 'one-cup' && ctx.location !== 'cafe' && !hand?.tray?.some(Boolean)) return '찻집에서 한 잔 만들어 가요.';
-    if (o.kind === 'one-cup') return hand?.tray?.some(Boolean) ? '잔을 들고 연구원 곁에서 드려요.' : '마음에 드는 대로 한 잔 만들어요.';
+    if (o.kind === 'one-cup') {
+      // In 간단히 만들기 the one-cup board's cup is picked at the cafe and carried as the hand's cup is (review A2).
+      const carried = hand?.tray?.some(Boolean) || simple && waiting().some(g => hand?.simple?.[g.slot] !== undefined);
+      if (carried) return '잔을 들고 연구원 곁에서 드려요.';
+      return ctx.location !== 'cafe' ? '찻집에서 한 잔 만들어 가요.' : simple ? '마음에 드는 잔을 골라 들고 가요.' : '마음에 드는 대로 한 잔 만들어요.';
+    }
     if (hand?.phase === 'listen') return '손님 말을 끝까지 들어요.';
     if (simple) return '손님마다 알맞은 잔을 골라 내요.';
     if (hand?.tray?.some(Boolean)) return '다 만든 잔은 쟁반에서 집어 손님에게 내요.';
@@ -313,13 +350,14 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   }
   function drawBand(o, off) {
     tray.replaceChildren(...(hand?.tray || []).map((cup, i) => {
-      const b = el('button', { type: 'button', className: 'tea-slot', disabled: off || !cup }); b.dataset.sound = 'none'; b.dataset.index = String(i);
+      const b = el('button', { type: 'button', className: 'tea-slot', disabled: off || !cup }); b.dataset.sound = 'none'; b.dataset.index = String(i); b.dataset.focus = `tray:${i}`;
       b.setAttribute('aria-keyshortcuts', String(i + 6)); b.setAttribute('aria-label', cup ? `쟁반의 ${cupWords(cup)} 잔 들기` : '쟁반 빈자리');
       b.setAttribute('aria-pressed', String(hand.hand === i));
       const f = cupFigure('tea-figure tea-mini'); paintCup(f, cup); b.append(f);
       b.addEventListener('click', () => apply({ type: 'pick', index: i })); return b; }));
-    notes.replaceChildren(...waiting().map(g => {
-      const b = el('button', { type: 'button', className: 'tea-note', textContent: `${guestName(o, g)} 쪽지` }); b.dataset.sound = 'none'; b.dataset.slot = g.slot;
+    // The one-cup board has no request to fold, so no note (screen review F7).
+    notes.replaceChildren(...(o.kind === 'one-cup' ? [] : waiting()).map(g => {
+      const b = el('button', { type: 'button', className: 'tea-note', textContent: `${guestName(o, g)} 쪽지` }); b.dataset.sound = 'none'; b.dataset.slot = g.slot; b.dataset.focus = `note:${g.slot}`;
       b.disabled = o.kind === 'one-cup' || !hand?.heard?.[g.slot] || listen[g.slot]?.open; b.addEventListener('click', () => reopen(g.slot)); return b; }));
   }
   function drawMake(off) {
@@ -331,14 +369,18 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   }
   function drawSimple(o, off) {
     if (!simple) return;
+    // The one-cup board's cup is picked at the cafe and given by the researcher (review A2 — as the hand's cup is made and
+    // carried); an order is drawn only at the cafe, where its guests are.
+    const oneCup = o.kind === 'one-cup', there = ctx.location === (oneCup ? ctx.ownerPlace : 'cafe');
     simpleRows.replaceChildren(...waiting().map(g => {
       const cups = previewCups(o, g), chosen = hand?.simple?.[g.slot];
       const row = el('div', { className: 'tea-simple-row' }); row.setAttribute('role', 'group'); row.setAttribute('aria-label', `${guestName(o, g)}에게 낼 잔`);
       row.append(el('p', { className: 'tea-who', textContent: guestName(o, g) }), el('div', { className: 'tea-simple-cups' }, ...cups.map((cup, i) => {
-        const b = el('button', { type: 'button', className: 'tea-pick tea-simple-cup', disabled: off || !hand?.heard?.[g.slot] }, cupFigure('tea-figure tea-mini'), el('span', { textContent: cupWords(cup) }));
-        b.dataset.sound = 'none'; paintCup(b.firstChild, cup); b.setAttribute('aria-pressed', String(chosen === i));
-        b.addEventListener('click', () => { hand = input(hand, { type: 'choose', slot: g.slot, index: i }).state; sound('cup', { vessel: cup.vessel }); render(true); }); return b; })));
-      const go = el('button', { type: 'button', className: 'felt primary', textContent: '이대로 낼게요', disabled: off || chosen === undefined }); go.dataset.sound = 'none';
+        const b = el('button', { type: 'button', className: 'tea-pick tea-simple-cup', disabled: off || !hand?.heard?.[g.slot] || !atMaking() }, cupFigure('tea-figure tea-mini'), el('span', { textContent: cupWords(cup) }));
+        b.dataset.sound = 'none'; b.dataset.focus = `simple:${g.slot}:${i}`; paintCup(b.firstChild, cup); b.setAttribute('aria-pressed', String(chosen === i));
+        b.addEventListener('click', () => { if (!atMaking()) return; hand = input(hand, { type: 'choose', slot: g.slot, index: i }).state; sound('cup', { vessel: cup.vessel }); render(true); }); return b; })));
+      const go = el('button', { type: 'button', className: 'felt primary', textContent: oneCup ? '연구원에게 드리기' : '이대로 낼게요', disabled: off || chosen === undefined || !there });
+      go.dataset.sound = 'none'; go.dataset.focus = `simple:${g.slot}:go`;
       go.addEventListener('click', () => serve(g.slot, 'preview')); row.append(go); return row; }));
   }
   function drawHand(o, off) {
@@ -347,19 +389,19 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     // Served where the guest is: the order at the cafe, the one-cup board by the researcher (the server checks it too, review F15).
     const there = ctx.location === (o.kind === 'one-cup' ? ctx.ownerPlace : 'cafe');
     const targets = waiting().map(g => { const b = el('button', { type: 'button', className: 'felt primary', textContent: o.kind === 'one-cup' ? '연구원에게 드리기' : `${guestName(o, g)}에게 내기`, disabled: off || !there });
-      b.dataset.sound = 'none'; b.addEventListener('click', () => serve(g.slot)); return b; });
+      b.dataset.sound = 'none'; b.dataset.focus = `hand:serve:${g.slot}`; b.addEventListener('click', () => serve(g.slot)); return b; });
     const place = el('button', { type: 'button', className: 'felt subtle', textContent: '판에 놓기', disabled: off || !!(hand.board.vessel || hand.board.tea || hand.board.honey) || !atMaking() });
-    place.dataset.sound = 'none'; place.addEventListener('click', () => apply({ type: 'place' }));
-    const put = el('button', { type: 'button', className: 'felt subtle', textContent: '쟁반에 두기', disabled: off }); put.dataset.sound = 'none';
+    place.dataset.sound = 'none'; place.dataset.focus = 'hand:place'; place.addEventListener('click', () => apply({ type: 'place' }));
+    const put = el('button', { type: 'button', className: 'felt subtle', textContent: '쟁반에 두기', disabled: off }); put.dataset.sound = 'none'; put.dataset.focus = 'hand:put';
     put.addEventListener('click', () => apply({ type: 'put' }));
     handActions.replaceChildren(...targets, place, put);
   }
   function drawResult(o, tv, off) {
     const card = o.card, line = card ? townLine(`${o.kind === 'one-cup' ? 'researcher' : 'cafe-owner'}.card.${card.id}-result.1`) : lineWords('cafe-owner.tea.owner-done.1', 'L2');
     const head = el('p', { className: 'tea-result-line', textContent: `${o.kind === 'one-cup' ? '연구원' : '찻집 주인'}: ${line || '고마워요.'}` });
-    const next = el('button', { type: 'button', className: 'felt primary', textContent: '다음 손님', disabled: off }); next.dataset.sound = 'none';
+    const next = el('button', { type: 'button', className: 'felt primary', textContent: '다음 손님', disabled: off }); next.dataset.sound = 'none'; next.dataset.focus = 'result:next';
     next.addEventListener('click', () => { reacts = {}; listen = {}; act('TEA_OPEN', {}); });
-    const stop = el('button', { type: 'button', className: 'felt', textContent: o.kind === 'one-cup' ? '닫기' : '오늘은 여기까지', disabled: off }); stop.dataset.sound = 'none';
+    const stop = el('button', { type: 'button', className: 'felt', textContent: o.kind === 'one-cup' ? '닫기' : '오늘은 여기까지', disabled: off }); stop.dataset.sound = 'none'; stop.dataset.focus = 'result:stop';
     stop.addEventListener('click', close);
     // The amount lever (§20-3 nextFirst): the button the person likely wants first.
     const buttons = o.kind === 'one-cup' ? [stop] : tv?.nextFirst === false ? [stop, next] : [next, stop];
@@ -371,12 +413,12 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   function feedbackOf(card) { const take = ctx.take; return take?.card === card.id && take.eventId ? { id: take.eventId, activity: `card.${card.id}` } : null; }
   function feedbackRow({ id, activity }, off) {
     const given = (ctx.feedback || []).find(f => f.completionId === id)?.value ?? null;
-    const more = el('button', { type: 'button', className: 'felt subtle feedback-more', textContent: '…' }); more.dataset.sound = 'none';
+    const more = el('button', { type: 'button', className: 'felt subtle feedback-more', textContent: '…' }); more.dataset.sound = 'none'; more.dataset.focus = 'result:more';
     more.setAttribute('aria-expanded', String(feedbackOpen)); more.setAttribute('aria-label', '이 생활에 응답 남기기');
     more.addEventListener('click', () => { feedbackOpen = !feedbackOpen; render(true); });
     const options = el('div', { className: 'feedback-options', hidden: !feedbackOpen }); options.setAttribute('role', 'group'); options.setAttribute('aria-label', '응답');
     for (const [value, label] of [['helpful', '좋았어요'], ['not_fit', '안 맞았어요'], ['too_much', '많았어요'], ['want_more', '더 하고 싶어요']]) {
-      const b = el('button', { type: 'button', className: 'felt', textContent: label, disabled: off }); b.dataset.sound = 'none'; b.setAttribute('aria-pressed', String(given === value));
+      const b = el('button', { type: 'button', className: 'felt', textContent: label, disabled: off }); b.dataset.sound = 'none'; b.dataset.focus = `result:feedback:${value}`; b.setAttribute('aria-pressed', String(given === value));
       b.addEventListener('click', async () => { feedbackOpen = false; await act('FEEDBACK_GIVE', { completionId: id, value, canonicalActivityId: activity }); }); options.append(b);
     }
     return el('div', { className: 'tea-feedback' }, more, options);
@@ -410,6 +452,7 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   }
   function ownerBubble(o, g, off) {
     const yes = el('button', { type: 'button', className: 'felt primary', textContent: '부탁해요', disabled: off }), no = el('button', { type: 'button', className: 'felt', textContent: '제가 다시 해 볼게요', disabled: off });
+    yes.dataset.focus = `owner-${g.slot}:yes`; no.dataset.focus = `owner-${g.slot}:no`;
     yes.addEventListener('click', () => owner(g.slot, 'owner')); no.addEventListener('click', () => owner(g.slot, 'self'));
     const card = el('div', { className: 'tea-bubble tea-owner' }, el('p', { className: 'tea-who', textContent: '찻집 주인' }), el('p', { className: 'tea-words', textContent: lineWords('cafe-owner.tea.owner-offer.1', 'L2') || '' }),
       el('div', { className: 'tea-bubble-foot' }, yes, no));
@@ -426,7 +469,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
       const slot = card.dataset.slot, g = order?.guests.find(x => x.slot === slot), id = card.dataset.anchor || (order?.kind === 'one-cup' ? 'researcher' : g?.who);
       const at = id ? labelAt(id) : null, w = card.offsetWidth || 240, h = card.offsetHeight || 80;
       let x, y;
-      if (at && at.x > 8 && at.x < box.width - 8 && at.y > h + 8) { x = at.x - w / 2; y = at.y - h - 14; }
+      // Over the speaker's head while it shows above the board; a head behind the board docks over it (screen review F5).
+      if (at && at.x > 8 && at.x < box.width - 8 && at.y > h + 8 && (board.hidden || at.y <= board.offsetTop)) { x = at.x - w / 2; y = at.y - h - 14; }
       else { x = box.width / 2 - w / 2; y = Math.max(8, (board.hidden ? box.height - 140 : board.offsetTop) - h - 12); }
       x = Math.max(8, Math.min(box.width - w - 8, x));
       for (const t of taken) if (Math.abs(t.x - x) < w * .9 && Math.abs(t.y - y) < h) y = t.y - h - 8;
@@ -440,16 +484,19 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   const boardOpen = () => !board.hidden && !folded && !!order && !order.done && !ctx.busy && !inflight;
   const entryShown = () => !openWalk.hidden || !panel.hidden;
   function keydown(event) {
-    if (disposed || event.ctrlKey || event.metaKey || event.altKey || event.isComposing || typing()) return;
+    // A held key sounds once: one press, one sound (screen review F8 — the pad reads edges already).
+    if (disposed || event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.isComposing || typing()) return;
     // T opens an order where 「주문 같이 받기」 shows (as F sits where a seat is near).
     if (!order) { if (event.code === 'KeyT' && !event.repeat && entryShown() && !ctx.busy && !inflight) { event.preventDefault(); sfx.unlock(); opener = openWalk.hidden ? openPanel : openWalk; act('TEA_OPEN', {}); } return; }
     sfx.unlock();
+    // T opens the folded board again (screen review F1 — its button may sit under the walking controls on a phone).
+    if (folded && event.code === 'KeyT' && !unfold.hidden) { event.preventDefault(); setFolded(false); return; }
     if (!boardOpen()) return;
     const key = KEYS[event.code];
     if (key && !simple && atMaking()) { event.preventDefault(); apply(key[0] === 'cup' ? { type: 'cup', vessel: key[1] } : { type: 'pour', tea: key[1] }); return; }
     if (event.code === 'KeyH' && !simple && atMaking()) { event.preventDefault(); apply({ type: 'honey' }); return; }
     if ((event.code === 'Digit6' || event.code === 'Digit7') && !simple) { event.preventDefault(); apply({ type: 'pick', index: event.code === 'Digit6' ? 0 : 1 }); return; }
-    if (event.code === 'Backspace' && !simple) { event.preventDefault(); apply({ type: 'empty' }); return; }
+    if (event.code === 'Backspace' && !simple && atMaking()) { event.preventDefault(); apply({ type: 'empty' }); return; }
     if (event.code === 'Enter' && !simple && !document.activeElement?.matches('button, a') && !doneButton.disabled) { event.preventDefault(); apply({ type: 'done' }); }
   }
   addEventListener('keydown', keydown, true);
@@ -463,7 +510,7 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   // A jar dragged onto the cup pours too (a press is the main way — §2-16 ④).
   for (const b of jarButtons) { b.draggable = true; b.addEventListener('dragstart', event => { event.dataTransfer?.setData('text/plain', b.dataset.tea); }); }
   mug.addEventListener('dragover', event => event.preventDefault());
-  mug.addEventListener('drop', event => { event.preventDefault(); const name = event.dataTransfer?.getData('text/plain'); if (VALUES.tea.includes(name)) apply({ type: 'pour', tea: name }); });
+  mug.addEventListener('drop', event => { event.preventDefault(); const name = event.dataTransfer?.getData('text/plain'); if (VALUES.tea.includes(name) && boardOpen() && !simple) apply({ type: 'pour', tea: name }); });
   function setFolded(value) {
     folded = value; render(true);
     (folded ? unfold : (board.querySelector('.tea-pick:not(:disabled)') || board)).focus({ preventScroll: true });
@@ -505,6 +552,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
       if ([3, 4, 5, 6, 7, 10].some(edge) && ctx.inputMode !== 'gamepad') { ctx = { ...ctx, inputMode: 'gamepad' }; onInputMode('gamepad'); }
       // Y opens an order where 「주문 같이 받기」 shows (the board's honey once it is up).
       if (!order && edge(3) && entryShown() && !ctx.busy && !inflight) { sfx.unlock(); opener = openWalk.hidden ? openPanel : openWalk; act('TEA_OPEN', {}); }
+      // Y opens a folded board again, as T does (screen review F1).
+      else if (order && folded && edge(3) && !unfold.hidden) { setFolded(false); for (let i = 0; i < 16; i++) padPrev[i] = pressed(i); return true; }
       const stick = { x: pad.axes[2] || 0, y: pad.axes[3] || 0 }, flick = Math.hypot(stick.x, stick.y) > .7 ? (stick.y < -.6 ? 'yuzu' : stick.x < 0 ? 'barley' : 'today') : null;
       if (boardOpen() && !simple && atMaking()) {
         if (edge(4)) apply({ type: 'cup', vessel: 'warm' });
@@ -539,7 +588,7 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     metrics: () => ({ order: order?.id ?? null, kind: order?.kind ?? null, phase: hand?.phase ?? null, board: hand?.board ?? null, tray: hand?.tray ?? null, hand: hand?.hand ?? null,
       folded, simple, sounds: [...played], boardShown: !board.hidden, chip: !handChip.hidden, bubbles: [...bubbles.children].map(c => c.dataset.slot), entry: !openWalk.hidden || !panel.hidden, sound: sfx.stats() }),
     sound: () => sfx,
-    dispose() { disposed = true; removeEventListener('keydown', keydown, true); sfx.dispose(); for (const node of [bubbles, board, unfold, handChip, live, openWalk, panel]) node.remove(); document.body.classList.remove('tea-mode'); },
+    dispose() { disposed = true; removeEventListener('keydown', keydown, true); sfx.dispose(); for (const node of [bubbles, board, unfold, handChip, live, openWalk, panel]) node.remove(); document.body.classList.remove('tea-mode', 'tea-folded'); },
   };
 }
 

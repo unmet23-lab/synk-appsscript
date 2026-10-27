@@ -10,7 +10,7 @@
 .tea-slot:disabled{cursor:default;opacity:.5}
 .tea-slot[aria-pressed=true]{background:var(--w-ink);box-shadow:0 0 0 2px color-mix(in srgb,var(--w-glow) 45%,transparent)}
 .tea-slot.arrive .tea-figure{animation:tea-arrive .34s var(--w-ease)}
-.tea-notes{display:flex;flex:1;gap:6px;min-width:0;overflow-x:auto}
+.tea-notes{display:flex;flex:1;flex-wrap:wrap;gap:6px;min-width:0}
 .tea-note{flex:0 0 auto;min-height:40px;padding:0 12px;border:0;border-radius:999px;background:#efe3c9;color:#3b2f22;font:inherit;font-size:13px;font-weight:var(--wt-label);box-shadow:0 2px 0 rgba(0,0,0,.18);transform:rotate(-1.5deg);cursor:pointer;touch-action:manipulation}
 .tea-note:nth-child(2){transform:rotate(1.5deg)}
 .tea-note:disabled{opacity:.55;cursor:default}
@@ -70,7 +70,7 @@
 .tea-actions .tea-stop{margin-left:auto}
 .tea-simple{display:grid;gap:10px}
 .tea-simple-row{display:grid;gap:6px}
-.tea-simple-cups{display:flex;flex-wrap:wrap;gap:6px}
+.tea-simple-cups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
 .tea-simple-cup{flex-direction:row;min-height:52px;font-size:12.5px}
 .tea-who{margin:0;color:var(--w-ink-3);font-size:12px;font-weight:var(--wt-label)}
 .tea-result{display:grid;gap:10px}
@@ -109,8 +109,11 @@
 .tea-sparks i:nth-child(2){animation-delay:.08s}.tea-sparks i:nth-child(3){animation-delay:.16s}
 
 /* 손에 든 잔 — 장소를 넘어 남는 작은 칩(손님에게 내기·판에 놓기·쟁반에 두기) */
-.tea-hand{position:absolute;left:50%;bottom:calc(var(--bottom,20px) + 8px);z-index:9;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;max-width:calc(100% - 2 * var(--edge,16px));padding:8px 12px;border-radius:999px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 10px 30px rgba(0,0,0,.3);transform:translateX(-50%);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+/* Centred between both edges (not left:50% — that shrink-wraps to half the screen, screen review F2). */
+.tea-hand{position:absolute;left:var(--edge,16px);right:var(--edge,16px);bottom:calc(var(--bottom,20px) + 8px);z-index:9;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:fit-content;max-width:calc(100% - 2 * var(--edge,16px));margin-inline:auto;padding:8px 12px;border-radius:28px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 10px 30px rgba(0,0,0,.3);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
 body.tea-mode .tea-hand{bottom:calc(var(--bottom,20px) + 8px + var(--tea-board-h,300px))}
+/* Folded: above 「차 만들기 펼치기」, never over it (screen review F1). */
+body.tea-folded .tea-hand{bottom:calc(var(--bottom,20px) + 64px)}
 .tea-hand-label{font-size:13.5px;font-weight:var(--wt-label)}
 .tea-hand-actions{display:flex;flex-wrap:wrap;gap:6px}
 .tea-hand-actions .felt{min-height:40px;padding:0 14px;font-size:13.5px}
@@ -123,10 +126,14 @@ body.tea-mode .tea-hand{bottom:calc(var(--bottom,20px) + 8px + var(--tea-board-h
 
 /* 판이 펼쳐진 동안 걷는 화면의 아래 조작은 판 위로 비킨다(좁은 화면은 판이 아래를 다 쓰니 조이스틱·이야기 단추를 숨긴다 — 접으면 돌아온다) */
 body.tea-mode.walk-mode .scene-caption{display:none}
-@media(min-width:761px){body.tea-mode.walk-mode .walk-status{display:none}}
+@media(min-width:1041px){body.tea-mode.walk-mode .walk-status{display:none}}
+/* Up to 1040px the board reaches the walking controls at the foot, so they stay out while it is open (screen review F3). */
+@media(max-width:1040px){body.tea-mode.walk-mode .walk-joystick,body.tea-mode.walk-mode .walk-interact,body.tea-mode.walk-mode .walk-status,body.tea-mode.walk-mode .walk-help,body.tea-mode.walk-mode .walk-sit{display:none!important}}
 @media(max-width:760px){
   .tea-board{width:calc(100% - 16px);bottom:calc(env(safe-area-inset-bottom) + 8px);padding:10px 10px 12px;gap:8px}
-  body.tea-mode.walk-mode .walk-joystick,body.tea-mode.walk-mode .walk-interact,body.tea-mode.walk-mode .walk-status,body.tea-mode.walk-mode .walk-help,body.tea-mode.walk-mode .walk-sit{display:none!important}
+  /* Folded on a phone the joystick and the talk button come back: 「펼치기」 takes the right column, the chip goes above it (F1·F4). */
+  .tea-unfold.felt{left:auto;right:var(--edge,16px);transform:none;bottom:calc(var(--bottom,20px) + 144px)}
+  body.tea-folded .tea-hand{bottom:calc(var(--bottom,20px) + 200px)}
   .tea-make{grid-template-columns:1fr auto;grid-template-areas:"cups stage" "jars jars"}
   .tea-cups{grid-area:cups}.tea-stage{grid-area:stage;width:88px;height:96px}.tea-jars{grid-area:jars;justify-content:space-between}
   .tea-pick{min-width:58px;min-height:64px;padding:5px 6px;font-size:12px}
@@ -143,7 +150,7 @@ body.tea-mode.walk-mode .scene-caption{display:none}
 @keyframes tea-shine{0%{background-position:-120% 0;opacity:1}100%{background-position:220% 0;opacity:0}}
 @keyframes tea-tip{0%{height:70%}100%{height:0}}
 @keyframes tea-arrive{0%{transform:translateY(-14px) scale(.9);opacity:.4}100%{transform:none;opacity:1}}
-@keyframes tea-slide{0%{transform:translateX(-50%) translateY(0)}45%{transform:translateX(-50%) translateY(-10px)}100%{transform:translateX(-50%) translateY(0)}}
+@keyframes tea-slide{0%{transform:translateY(0)}45%{transform:translateY(-10px)}100%{transform:translateY(0)}}
 @keyframes tea-steam{0%,100%{transform:translateY(0) scaleY(1);opacity:.55}50%{transform:translateY(-4px) scaleY(1.2);opacity:.2}}
 @keyframes tea-spark{0%{transform:translateY(4px) scale(.4);opacity:0}40%{opacity:1}100%{transform:translateY(-10px) scale(1);opacity:0}}
 

@@ -7,7 +7,7 @@
 // with caps tea and its order bound to the card; no sound while a microphone is open; no numbers on the board (G2); console
 // errors 0. Captures at 1440 and 390. Samples: every hand sound and one cup's flow, rendered offline from the same scores
 // (day-sfx.mjs) as MP3 for Yuho's ear check, with their peak, K-weighted momentary loudness and length.
-//   node experiences/synk-town/qa-tea-ui.cjs [--out <dir>] [--only order,simple,pad,card,mic,samples]
+//   node experiences/synk-town/qa-tea-ui.cjs [--out <dir>] [--only order,simple,pad,card,one-cup,one-cup-simple,mic,samples]
 const fs = require('node:fs'), path = require('node:path'), { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -60,7 +60,8 @@ async function walkTo(page, steps) {
     await page.keyboard.up(key); await delay(400);
   }
 }
-const ROUTES = { cafe: [['z', 3.9], ['x', 0], ['z', 2.6]], greenhouse: [['z', 3.9], ['x', 0], ['z', -3.6]] };
+// The greenhouse lies behind the row of houses (walk.mjs back walls at z −2): round by the gap between the cafe and the workshop.
+const ROUTES = { cafe: [['z', 3.9], ['x', 0], ['z', 2.6]], greenhouse: [['z', 3.9], ['x', 3], ['z', -4.2], ['x', 0]], cafeFromGreenhouse: [['x', 3], ['z', 3.9], ['x', 0], ['z', 2.6]] };
 const shot = (page, name) => page.screenshot({ path: path.join(output, `${name}.jpg`), type: 'jpeg', quality: 82 });
 const cupFor = request => ({ vessel: request.temp ?? 'warm', tea: request.tea ?? 'barley', honey: request.sweet ?? 1 });
 function missOne(request) {
@@ -108,8 +109,11 @@ async function orderScene(browser) {
     await bubble.getByRole('button', { name: '천천히 말해 주세요' }).click(); await delay(200);
     const slow = await bubble.locator('.tea-words').innerText();
     check(scene, slow.length < said.length + 3 && await bubble.getByRole('button', { name: '다음 말' }).count() === 1, '「천천히」는 어절 묶음씩 — 누를 때마다 다음', slow);
+    const focusKey = () => page.evaluate(() => document.activeElement?.dataset?.focus ?? document.activeElement?.tagName);
+    check(scene, await focusKey() === 'a:ask:slower', '다시 그려도 누른 단추에 초점이 남는다(「다음 말」, 검수 A3)', await focusKey());
     await bubble.getByRole('button', { name: '네, 알겠어요' }).click();
     await waitTea(page, () => SYNKTownDay.metrics().tea.bubbles.join() === 'b');
+    check(scene, await focusKey() === 'b:heard', '앞 손님 말을 접으면 초점이 뒤 손님의 「네, 알겠어요」로(검수 A3)', await focusKey());
     await page.locator('.tea-bubble[data-slot="b"]').getByRole('button', { name: '네, 알겠어요' }).click();
     await waitTea(page, () => SYNKTownDay.metrics().tea.phase === 'make');
     m = await tea(page); check(scene, m.boardShown && !m.bubbles.length, '둘 다 들으면 판으로 — 말풍선은 쪽지로 접힌다', m);
@@ -123,6 +127,11 @@ async function orderScene(browser) {
     await shot(page, 'tea-made-1440');
     await page.keyboard.press('6'); await delay(200);
     m = await tea(page); check(scene, m.chip && m.hand === 0, '쟁반 잔을 들면 손 칩', m);
+    // Folded with a cup in hand: 「차 만들기 펼치기」 stays reachable and T opens the board again (screen review F1).
+    await page.locator('#tea-board .tea-fold').click(); await delay(300);
+    const reach = await page.evaluate(() => { const u = document.querySelector('.tea-unfold'), r = u.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !u.hidden && (top === u || u.contains(top)); });
+    await page.keyboard.press('t'); await delay(300);
+    check(scene, reach && !(await tea(page)).folded, '잔을 든 채 접어도 펼치기 단추가 가려지지 않고 T로 다시 펼친다(검수 F1)', { reach });
     const quiet = (await tea(page)).sounds.length;
     await page.locator('#tea-hand').getByRole('button', { name: /앞 손님에게 내기|단골손님에게 내기/ }).click();
     await waitTea(page, () => SYNKTownDay.snapshot().view.tea.open?.guests[0].tries === 1, null, 10000);
@@ -217,36 +226,122 @@ async function padScene(browser) {
   } finally { await s.close(); await f.close(); }
 }
 
+/** Waits for a card's offer on the screen; if it never comes, the check carries what the host held every 15 s (the visit's
+ * play time — the offer waits for 45 s of it —, the contacts, the card's status, where the day stands). */
+async function waitOffer(scene, page, f, cardId, what) {
+  const waited = [], why = () => { const { state, view } = f.store.read(), life = state.life || {};
+    return { playMs: (life.uMs ?? 0) - (life.visitStartU ?? 0), contacts: (life.contacts || []).map(c => [c.card || 'C1', c.status]), mode: life.mode,
+      card: (view?.day?.scene?.village?.cards || []).filter(c => c.card === cardId).map(c => c.status), location: state.day?.location, take: view?.day?.scene?.village?.take?.status ?? null }; };
+  const tick = setInterval(() => { try { waited.push(why()); } catch {} }, 15000);
+  await page.waitForFunction(() => !!document.querySelector('#card-offers .offer-card:not([hidden])'), null, { timeout: 150000 })
+    .then(() => check(scene, true, what), e => check(scene, false, what, { error: e.message, waited }))
+    .finally(() => clearInterval(tick));
+}
+
 /** Card C5 「손님이 몰렸어요」: its offer reaches only a screen with caps tea (this one), 「같이 해요」 opens the order bound to it. */
 async function cardScene(browser) {
   const scene = 'card', f = await fixture(kst('2026-10-23', '12:00'), 'acct-together');
   try {
     const village = await town('town/village.mjs');
     let found = null;
+    // The owner by the cafe when it stands and still there four minutes on (the offer waits for the visit's first 45 s).
     for (let step = 0; step < 48 && !found; step++) {
       const v = f.store.read().state.village, out = village.planOf(v), t = f.now();
       const start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, x]) => x));
       const e = out.log.find(x => x.atMs > t && x.card === 'C5');
-      const at = e && village.placeAt(out.segments, e.npc, e.atMs + 20000, start);
-      if (at && !at.walking && at.to === 'cafe') found = e; else f.set(f.now() + HOUR);
+      const a = e && village.placeAt(out.segments, e.npc, e.atMs + 20000, start), b = e && village.placeAt(out.segments, e.npc, e.atMs + 4 * MIN, start);
+      if (a && b && !a.walking && !b.walking && a.to === 'cafe' && b.to === 'cafe') found = e; else f.set(f.now() + HOUR);
     }
     check(scene, found, 'C5가 찻집에서 서는 때를 찾았다', found && { key: found.key });
     if (!found) return;
-    f.set(found.atMs - 40000);
+    // Open once it stands (W5 QA's way): the offer needs the card triggered and the visit's first 45 s of play behind it.
+    f.set(found.atMs + 5000);
     const s = await open(browser, f);
     try {
       const { page } = s;
-      // A boundary is safe where the player stood still after talking there (W5b): walk up, talk (E), wait.
-      await walkTo(page, ROUTES.cafe); await page.keyboard.press('e'); await delay(1500);
-      await page.waitForFunction(() => !!document.querySelector('#card-offers .offer-card:not([hidden])'), null, { timeout: 90000 })
-        .then(() => check(scene, true, 'caps tea 화면에 C5 제안이 뜬다'), e => check(scene, false, 'caps tea 화면에 C5 제안이 뜬다', e.message));
+      // A boundary is safe where the player stood still after talking there (W5b — day.location is the cafe): walk up, talk (E),
+      // then close the place's panel (Esc) — no offer is drawn over an open panel — and wait.
+      await walkTo(page, ROUTES.cafe); await page.keyboard.press('e'); await delay(1500); await page.keyboard.press('Escape'); await delay(600);
+      await waitOffer(scene, page, f, 'C5', 'caps tea 화면에 C5 제안이 뜬다');
       check(scene, s.boundaries.some(b => (b.caps || []).includes('tea')), '경계 신호에 caps tea', s.boundaries.map(b => b.caps));
+      await delay(400); // past the offer card's .24s fade-in, so the shot shows it as it stays (W5 QA)
       await shot(page, 'tea-c5-offer-1440');
       await page.locator('#card-offers .offer-card:not([hidden]) button').filter({ hasText: /같이/ }).first().click();
       await waitTea(page, () => SYNKTownDay.snapshot().view.tea.open?.card?.id === 'C5', null, 10000);
       const m = await tea(page), dialogOpen = await page.evaluate(() => document.querySelector('#card-dialog').open);
       check(scene, m.boardShown || m.bubbles.length, '「같이 해요」가 C5에 묶인 주문을 연다', m);
       check(scene, !dialogOpen, '생활 카드는 고르기 판(대화 상자)을 띄우지 않는다', dialogOpen);
+      check(scene, s.errors.length === 0, '콘솔 오류 0', s.errors);
+    } finally { await s.close(); }
+  } finally { await f.close(); }
+}
+
+/** Card R6 「밤새 관찰해서 졸려요」: the one-cup board — 「같이 해요」 by the researcher, the cup made at the cafe, carried
+ * back and given by the researcher's side (review F15); a cup served at the cafe is not offered there, and a cup in hand
+ * never makes the greenhouse a counter (screen review A1). simple: the same on a phone in 「간단히 만들기」 — the cup picked
+ * at the cafe and given by the researcher (A2). */
+async function oneCupScene(browser, { simple = false } = {}) {
+  const scene = simple ? 'one-cup-simple' : 'one-cup', f = await fixture(kst('2026-10-23', '12:00'), 'acct-together');
+  try {
+    const village = await town('town/village.mjs');
+    let found = null;
+    // R6 follows a night up (R4) in a lived village: an hourly pulse plays the days as tests/town-tea.test.js does.
+    for (let step = 0; step < 72 && !found; step++) {
+      f.store.pulse({ surfaceId: 'qa-search', surface: 'day', foreground: true, safe: true });
+      const v = f.store.read().state.village, out = village.planOf(v), t = f.now();
+      const start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, x]) => x));
+      const e = out.log.find(x => x.atMs > t && x.card === 'R6');
+      const a = e && village.placeAt(out.segments, e.npc, e.atMs + 20000, start), b = e && village.placeAt(out.segments, e.npc, e.atMs + 6 * MIN, start);
+      if (a && b && !a.walking && !b.walking && a.to === 'greenhouse' && b.to === 'greenhouse') found = e; else f.set(f.now() + HOUR);
+    }
+    check(scene, found, 'R6가 온실에서 서는 때를 찾았다', found && { key: found.key });
+    if (!found) return;
+    f.set(found.atMs + 5000);
+    const s = await open(browser, f, simple ? { device: 'phone' } : {});
+    const width = simple ? 390 : 1440;
+    try {
+      const { page } = s;
+      await walkTo(page, ROUTES.greenhouse);
+      const by = await walkPoint(page); check(scene, by.nearby === 'greenhouse', '온실 곁까지 걸었다', by);
+      await page.keyboard.press('e'); await delay(1500); await page.keyboard.press('Escape'); await delay(600);
+      await waitOffer(scene, page, f, 'R6', '연구원 곁에 R6 제안이 뜬다');
+      await page.locator('#card-offers .offer-card:not([hidden]) button').filter({ hasText: /같이/ }).first().click();
+      await waitTea(page, () => SYNKTownDay.snapshot().view.tea.open?.card?.id === 'R6', null, 10000);
+      let m = await tea(page);
+      check(scene, m.kind === 'one-cup' && m.boardShown && m.simple === simple, '「같이 해요」가 한 잔 판을 연다', m);
+      const hint = await page.locator('#tea-board .tea-hint').innerText(), pick = simple ? '#tea-board .tea-simple-cup' : '#tea-board .tea-cup-pick';
+      check(scene, /찻집에서/.test(hint) && await page.locator(pick).first().isDisabled(), '온실에서는 「찻집에서 한 잔 만들어 가요」 — 판은 찻집에서만 담긴다', hint);
+      await shot(page, `tea-r6-board-${width}`);
+      await walkTo(page, ROUTES.cafeFromGreenhouse);
+      await page.waitForFunction(p => !document.querySelector(p)?.disabled, pick, { timeout: 10000 }).catch(() => {});
+      // The giving button: the hand chip's when the cup is made by hand, the picked cup's row in 「간단히 만들기」 (review A2).
+      const give = simple ? page.locator('#tea-board .tea-simple-row').getByRole('button', { name: '연구원에게 드리기' }) : page.locator('#tea-hand').getByRole('button', { name: '연구원에게 드리기' });
+      if (simple) {
+        await page.locator(pick).first().click(); await delay(250);
+        const carried = await page.locator('#tea-board .tea-hint').innerText();
+        check(scene, /들고/.test(carried) && await page.locator(pick).first().getAttribute('aria-pressed') === 'true', '찻집에서 잔을 골랐다 — 「잔을 들고 연구원 곁에서 드려요」', carried);
+      } else {
+        await makeWithKeys(page, { vessel: 'warm', tea: 'barley', honey: 2 }); await page.keyboard.press('6'); await delay(250);
+        m = await tea(page); check(scene, m.chip && m.hand !== null, '찻집에서 만든 잔을 들었다', { chip: m.chip, hand: m.hand, tray: m.tray });
+      }
+      check(scene, await give.isDisabled(), '찻집에서는 「연구원에게 드리기」가 닫혀 있다');
+      await walkTo(page, ROUTES.greenhouse);
+      if (!simple) {
+        // A cup in hand never makes the greenhouse a counter (screen review A1): no pouring by key, no 「판에 놓기」.
+        const before = (await tea(page)).board; await page.locator('#tea-board').focus().catch(() => {}); await page.keyboard.press('4'); await delay(200);
+        m = await tea(page);
+        check(scene, JSON.stringify(m.board) === JSON.stringify(before) && await page.locator(pick).first().isDisabled() && await page.locator('#tea-hand').getByRole('button', { name: '판에 놓기' }).isDisabled(),
+          '온실에서는 잔을 든 채로도 판이 잠긴다(검수 A1)', { before, after: m.board });
+      } else check(scene, await page.locator(pick).first().isDisabled(), '온실에서는 잔을 다시 고르지 않는다(검수 A2)');
+      await page.waitForFunction(([sel, name]) => [...document.querySelectorAll(sel)].some(b => b.textContent === name && !b.disabled), [simple ? '#tea-board .tea-simple-row button' : '#tea-hand button', '연구원에게 드리기'], { timeout: 10000 })
+        .then(() => check(scene, true, '온실에 오면 「연구원에게 드리기」가 열린다'), e => check(scene, false, '온실에 오면 「연구원에게 드리기」가 열린다', e.message));
+      await give.click();
+      await page.waitForFunction(() => SYNKTownDay.snapshot().view.day?.scene?.village?.take?.card === 'R6' && SYNKTownDay.snapshot().view.day.scene.village.take.status === 'resolved', null, { timeout: 10000 })
+        .then(() => check(scene, true, '연구원 곁에서 내면 R6가 풀린다'), e => check(scene, false, '연구원 곁에서 내면 R6가 풀린다', e.message));
+      await delay(900);
+      const result = await page.locator('.tea-result').innerText().catch(() => '');
+      check(scene, /연구원/.test(result) && /닫기/.test(result) && !/다음 손님/.test(result), '결과: 연구원의 한마디와 「닫기」(다음 손님 없음)', result);
+      await shot(page, `tea-r6-result-${width}`);
       check(scene, s.errors.length === 0, '콘솔 오류 0', s.errors);
     } finally { await s.close(); }
   } finally { await f.close(); }
@@ -322,7 +417,7 @@ async function samplesScene(browser) {
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
-  const scenes = { order: orderScene, simple: simpleScene, pad: padScene, card: cardScene, mic: micScene, samples: samplesScene };
+  const scenes = { order: orderScene, simple: simpleScene, pad: padScene, card: cardScene, 'one-cup': oneCupScene, 'one-cup-simple': b => oneCupScene(b, { simple: true }), mic: micScene, samples: samplesScene };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;

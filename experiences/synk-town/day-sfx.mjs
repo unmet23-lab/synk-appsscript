@@ -23,9 +23,11 @@ export const PREFS = Object.freeze({ sound: 'synk.world.sound', haptic: 'synk.wo
 const N = { G3: 196, A3: 220, C4: 261.63, G4: 392, A4: 440, C5: 523.25, D5: 587.33, E5: 659.26, G5: 783.99, A5: 880,
   C6: 1046.5, D6: 1174.66, E6: 1318.51, G6: 1567.98 };
 export const PITCHES = Object.freeze(Object.values(N));
-/** Whole level of each sound — fitted by the offline K-weighted loudness of the samples (qa-tea-ui samples) so the
- * busiest press stays below the kit's 「획득」 (-20.8) and the guest's pleasure sits at it. */
-export const LEVEL = Object.freeze({ cup: .9, pour: .8, spoon: .75, done: .8, empty: .7, pick: .6, serve: .9, match: .85, final: .8 });
+/** Whole level of each sound — fitted to the design targets by the offline K-weighted momentary loudness of the samples
+ * (qa-tea-ui samples): a cup set down and a cup served ≈ -24, pouring ≈ -26, honey ≈ -27, 「다 됐어요」 ≈ -23, a guest
+ * pleased ≈ -21 and the last guest just under the kit's 「획득」 (-20.8); emptying and lifting stay soft. The walking town's
+ * layer sits near -27~-26, so a press reads just above it (10-27, the levels left to Claude by Yuho). */
+export const LEVEL = Object.freeze({ cup: 1.8, pour: 1.35, spoon: 1.6, done: 1.25, empty: 1.75, pick: 2.2, serve: 1.5, match: 1.75, final: 1.7 });
 
 const tone = (type, at, f0, f1, glide, attack, decay, level, pan = 0) => ({ kind: 'tone', type, at, f0, f1: f1 ?? f0, glide: glide ?? 0, attack, decay, level, pan });
 const stroke = (at, dur, filter, from, to, level, pan = 0, pink = true) => ({ kind: 'noise', at, dur, filter, from, to: to ?? from, level, pan, pink });
