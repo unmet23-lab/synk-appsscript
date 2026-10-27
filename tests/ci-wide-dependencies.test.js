@@ -12,19 +12,29 @@ const script = step.match(/        run: \|\n([\s\S]*)/)[1].split('\n').map(line 
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
 const posix = p => process.platform === 'win32' ? p.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_, drive) => '/' + drive.toLowerCase()) : p;
 
-function run(t, { missing = [], updateExit = 0, probeExit = 0 } = {}) {
+function run(t, { missing = [], updateExit = 0, updateFailures = 0, timeoutFailures = 0, probeExit = 0 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-deps-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const bin = path.join(root, 'bin'), log = path.join(root, 'calls');
   fs.mkdirSync(bin); fs.mkdirSync(path.join(root, 'experiences/synk-account'), { recursive: true });
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
   executable('npm', 'exit 0\n');
+  executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"
+n=0; if [ -f "$TIMEOUT_COUNT" ]; then read -r n < "$TIMEOUT_COUNT"; fi
+n=$((n+1)); printf '%s\\n' "$n" > "$TIMEOUT_COUNT"
+if [ "$n" -le "$TIMEOUT_FAILURES" ]; then exit 124; fi
+shift; shift; exec "$@"
+`);
   for (const name of ['ffmpeg', 'ffprobe']) if (!missing.includes(name)) {
     executable(name, `printf '%s\\n' '${name} version' >> "$CALLS"\nexit ${name === 'ffprobe' ? probeExit : 0}\n`);
   }
   executable('sudo', `printf '%s\\n' "$*" >> "$CALLS"
 case "$*" in
-  *update*) exit "$UPDATE_EXIT";;
+  *update*)
+    n=0; if [ -f "$UPDATE_COUNT" ]; then read -r n < "$UPDATE_COUNT"; fi
+    n=$((n+1)); printf '%s\\n' "$n" > "$UPDATE_COUNT"
+    if [ "$n" -le "$UPDATE_FAILURES" ]; then exit 23; fi
+    exit "$UPDATE_EXIT";;
   *install*)
     for name in ffmpeg ffprobe; do
       printf '#!/bin/sh\\nprintf "%%s\\n" "%s version" >> "$CALLS"\\nexit 0\\n' "$name" > "$FIXTURE_BIN/$name"
@@ -33,9 +43,9 @@ case "$*" in
   *) exit 99;;
 esac
 `);
-  const result = spawnSync(bash, ['-e', '-c', script], {
+  const result = spawnSync(bash, ['-e', '-c', 'export PATH="$FIXTURE_BIN"\n'+script], {
     cwd: root, encoding: 'utf8', timeout: 10000,
-    env: { ...process.env, PATH: posix(bin), BUNDLE: 'experiences', CALLS: posix(log), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit) },
+    env: { ...process.env, PATH: posix(bin), BUNDLE: 'experiences', CALLS: posix(log), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit), UPDATE_FAILURES: String(updateFailures), UPDATE_COUNT: posix(path.join(root,'update-count')), TIMEOUT_FAILURES: String(timeoutFailures), TIMEOUT_COUNT: posix(path.join(root,'timeout-count')) },
   });
   assert.equal(result.error, undefined, result.error?.message);
   return { ...result, calls: fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n') : [] };
@@ -52,13 +62,15 @@ test('either missing media executable triggers bounded installation and verifies
   for (const name of ['ffmpeg', 'ffprobe']) await t.test(name, t => {
     const r = run(t, { missing: [name] }); assert.equal(r.status, 0, r.stderr);
     assert.equal(r.calls.filter(x => x.startsWith('apt-get ')).length, 2);
-    for (const call of r.calls.slice(0, 2)) {
+    for (const call of r.calls.filter(x=>x.startsWith('apt-get '))) {
       for (const kind of ['http', 'https']) {
         const seconds = Number(call.match(new RegExp(`Acquire::${kind}::Timeout=(\\d+)`))?.[1]);
         assert.ok(seconds > 0 && seconds <= 60, call);
       }
       assert.match(call, /Acquire::Retries=[1-3]\b/);
+      assert.match(call, /Acquire::ForceIPv4=true/);
     }
+    assert.equal(r.calls.filter(x=>/^timeout --kill-after=5s (90|120)s sudo apt-get /.test(x)).length,2,r.stderr+'\n'+r.calls.join('\n'));
     assert.deepEqual(r.calls.slice(-2), ['ffmpeg version', 'ffprobe version']);
   });
 });
@@ -66,7 +78,22 @@ test('either missing media executable triggers bounded installation and verifies
 test('apt failure stops setup without continuing to installation or tests', t => {
   const r = run(t, { missing: ['ffprobe'], updateExit: 23 });
   assert.equal(r.status, 23, r.stderr);
-  assert.equal(r.calls.length, 1); assert.match(r.calls[0], /update/);
+  assert.equal(r.calls.filter(x=>x.startsWith('apt-get ')).length,2);
+  assert.ok(r.calls.every(x=>x.includes('update')));
+});
+
+test('a failed update retries in a new process and then continues to tool validation', t => {
+  const r=run(t,{missing:['ffprobe'],updateFailures:1});
+  assert.equal(r.status,0,r.stderr);
+  assert.equal(r.calls.filter(x=>x.startsWith('apt-get ')&&x.includes('update')).length,2);
+  assert.deepEqual(r.calls.slice(-2),['ffmpeg version','ffprobe version']);
+});
+
+test('a timed-out process is retried without treating timeout as success', t => {
+  const r=run(t,{missing:['ffprobe'],timeoutFailures:1});
+  assert.equal(r.status,0,r.stderr);
+  assert.equal(r.calls.filter(x=>x.startsWith('timeout ')).length,3);
+  assert.deepEqual(r.calls.slice(-2),['ffmpeg version','ffprobe version']);
 });
 
 test('an installed but unusable ffprobe still fails setup', t => {

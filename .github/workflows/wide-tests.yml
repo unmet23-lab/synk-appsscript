@@ -85,8 +85,21 @@ jobs:
           # 경험 앱은 초보 게임 음성 시험이 후처리 도구(ffmpeg·ffprobe)를 확인한다(10-22).
           if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ] || [ "$BUNDLE" = "experiences" ]; then
             if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
-              sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 update -qq
-              sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 install -y -qq --no-install-recommends ffmpeg
+              apt_bounded() {
+                local limit="$1" status=0
+                shift
+                for attempt in 1 2; do
+                  if timeout --kill-after=5s "$limit" sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o DPkg::Lock::Timeout=30 "$@"; then
+                    return 0
+                  else
+                    status=$?
+                  fi
+                  echo "::warning::APT attempt $attempt failed ($status): $*"
+                done
+                return "$status"
+              }
+              apt_bounded 90s update
+              apt_bounded 120s install -y --no-install-recommends ffmpeg
             fi
             ffmpeg -version >/dev/null
             ffprobe -version >/dev/null
