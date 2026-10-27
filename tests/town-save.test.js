@@ -73,7 +73,8 @@ test('이관: 옛 한 파일 저장은 읽기 전용 원본 — 폴더를 한 �
   clock.at = old.clock.at;
   const moved = open();
   assert.deepEqual(moved.store.read(), before, '옮긴 폴더는 옛 저장과 같은 답');
-  assert.equal(moved.store.stats().evalLines, 1);
+  // 동의한 방문의 줄(W6 — 서버가 경계 신호·명령 때 씀)과 손으로 쓴 줄.
+  assert.equal(moved.store.stats().evalLines, 2);
   moved.run('PREF_LESS_OFTEN', { activity: 'card.C4', on: true });
   assert.equal(fs.readFileSync(file, 'utf8'), bytes, '옛 파일은 지우지도 덮지도 않는다');
   const later = moved.store.read();

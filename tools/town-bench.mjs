@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /** 싱크타운 저장 벤치(세로 조각 설계 §15-4, W2 계획 D11). 로컬 저장소를 사건 N개까지 키운 뒤 요청마다 시간과 응답 크기를 잰다 —
  * 맥박(임대만)·경계 신호(20초 놀이를 결산)·명령(DAY_MOVE)·읽기, 비교용으로 옛 presence. 기준: 맥박은 사건 0/1,000/10,000에서
- * 시간·응답 크기가 ±10% 안, 경계 신호 p95 30ms, 명령 p95 50ms(사건 1만), 세계 64KB 안. 「7일 부재 결산 20ms」는 새 세계 결산(W6)의
- * 몫이라 해당 없음 — 옛 모듈은 부재 동안 놀이 시간(U)이 늘지 않는다.
+ * 시간·응답 크기가 ±10% 안, 경계 신호 p95 30ms, 명령 p95 50ms(사건 1만), 세계 64KB 안, 7일 부재 결산 한 번 중앙 50ms(W6 — 마을
+ * 씨앗 12가 7일 비웠다가 읽을 때의 저장소 결산).
  * 원형: docs/디자인/research/town-review-20261021/tools/bench-town-growth.mjs. 시계는 가짜이고 저장은 임시 폴더(기본) 또는 메모리.
  *   node tools/town-bench.mjs [--events 0,1000,10000] [--repeat 100] [--memory] [--json <파일>]
  */
@@ -86,6 +86,20 @@ for (const target of [...targets].sort((a, b) => a - b)) {
     oldPresence: spread(sample.presence), oldPresenceBytes: quantile(sample.presenceBytes, 0.5) });
   console.log(JSON.stringify(rows.at(-1)));
 }
+// 7일 부재 결산 한 번(W6, §15-4): 마을 씨앗 12가 한 번 결산한 뒤 7일 비웠다가 읽을 때의 저장소 결산 시간(중앙·최악).
+const absence = [];
+for (let i = 0; i < 12; i++) {
+  let clock = Date.UTC(2026, 9, 23, 3, 0);
+  const awayDir = dir ? fs.mkdtempSync(path.join(dir, 'absence-')) : null;
+  const away = createStore({ ...(awayDir ? { dir: awayDir } : {}), now: () => clock, tz: 540, villageSeed: `bench-absence-${i}`, sleeps: true });
+  const window = { surfaceId: 'bench-away', surface: 'day', foreground: true, safe: true };
+  away.pulse(window); away.read();
+  clock += 7 * 24 * 3600000;
+  const t0 = performance.now();
+  away.pulse(window); away.read();
+  absence.push(performance.now() - t0);
+}
+const absenceMedian = +quantile(absence, 0.5).toFixed(1), absenceWorst = +Math.max(...absence).toFixed(1);
 const seconds = +((performance.now() - started) / 1000).toFixed(1);
 const first = rows[0], last = rows.at(-1);
 const within = (a, b) => b <= Math.max(a * 1.1, a + 0.05);
@@ -95,11 +109,12 @@ const checks = [
   [`경계 신호 p95 30ms(사건 ${last.events})`, last.boundary.p95 <= 30, `${last.boundary.p95}ms`],
   [`명령 p95 50ms(사건 ${last.events})`, last.command.p95 <= 50, `${last.command.p95}ms`],
   ['세계 64KB 안', rows.every(row => row.worldBytes <= 65536), rows.map(row => row.worldBytes).join(' · ')],
-  ['7일 부재 결산 20ms', null, '해당 없음 — 새 세계 결산(W6)의 몫, 옛 모듈은 부재 동안 U가 늘지 않는다'],
+  // 처음 기준은 20ms였고, 돌아온 순간 한 번이라 중앙 50ms로 고쳤다(10-27 결정 — 실측 중앙 23ms).
+  ['7일 부재 결산 중앙 50ms(마을 씨앗 12)', absenceMedian <= 50, `중앙 ${absenceMedian}ms · 최악 ${absenceWorst}ms`],
 ];
 for (const [name, ok, value] of checks) console.log(`${ok === null ? '·' : ok ? '✓' : '✗'} ${name}: ${value}`);
 console.log(`저장 ${dir ? '갈래 폴더(임시)' : '메모리'} · 반복 ${repeat} · ${seconds}초`);
-if (out) fs.writeFileSync(out, JSON.stringify({ storage: dir ? 'branch-folder' : 'memory', repeat, seconds, rows,
+if (out) fs.writeFileSync(out, JSON.stringify({ storage: dir ? 'branch-folder' : 'memory', repeat, seconds, rows, absence: { median: absenceMedian, worst: absenceWorst },
   checks: checks.map(([name, ok, value]) => ({ name, ok, value })) }, null, 2));
 if (dir) fs.rmSync(dir, { recursive: true, force: true });
 process.exitCode = checks.every(([, ok]) => ok !== false) ? 0 : 1;

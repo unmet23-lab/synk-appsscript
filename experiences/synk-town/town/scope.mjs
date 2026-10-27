@@ -3,7 +3,8 @@
  * runs; this copy is what the town's own code and tests read, and talk's test compares the two.
  *   rights         the person's own rights over what the town keeps: take something out of a
  *                  resident's memory, remove a response, "I only did that then", clear what was
- *                  seen, clear all personalisation, the evaluation consent. Any active account's
+ *                  seen, clear all personalisation, the evaluation consent, filling spots at the
+ *                  time the player usually comes (off empties that record, W6). Any active account's
  *                  own records — no entry check, trial or subscription (§20-5, G12).
  *   base           walking, greetings, the notebook and its settings, feedback and suggestion menus,
  *                  closing a scene — the widest scope inside the town: entry passed and trial or
@@ -13,7 +14,8 @@
  *                  scene never opens on a trial by mistake.
  */
 export const SCOPES = Object.freeze(['rights', 'base', 'first-chapter', 'subscription']);
-export const RIGHTS = Object.freeze(new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT']));
+// W6 (Fable F7): turning the time the player usually comes off empties that record — the person's own right, so rights.
+export const RIGHTS = Object.freeze(new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT', 'PREF_VISIT_BANDS']));
 export const BASE = Object.freeze(new Set([
   'ACK', 'RESET', 'VISIT', 'LEAVE', 'SIT', 'REARRANGE', 'REMOVE', 'SIGN_REMOVE',
   'DAY_MOVE', 'DAY_WALK', 'DAY_WALK_ENABLE', 'DAY_WALK_DISABLE', 'DAY_EXIT', 'DAY_REST', 'DAY_WAKE', 'DAY_OBSERVED', 'DAY_CLOSE',
@@ -25,6 +27,8 @@ export const BASE = Object.freeze(new Set([
   'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY',
   // W5: closing a card with the player, declining or putting off its offer, a greeting (§20-7 ③, review F5).
   'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET',
+  // W6: closing the mascot's question unanswered (§20-3).
+  'ASK_CLOSE',
 ]));
 export const FIRST_CHAPTER = Object.freeze(new Set([
   'CHOOSE', 'NEXT', 'COLOR', 'CRAFT', 'PREVIEW_SLOT', 'PLACE', 'CANCEL', 'SIGN_START', 'SIGN_NEXT', 'SIGN_PICTURE', 'SIGN_PREVIEW', 'SIGN_PLACE', 'SIGN_CANCEL',

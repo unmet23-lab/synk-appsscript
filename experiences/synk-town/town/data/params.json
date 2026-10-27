@@ -71,7 +71,10 @@
       "asks": { "perLifeDay": 1, "sameQuestionLifeDays": 7, "quietAfterVisitSeconds": 45 },
       "gather": { "quota": { "leaf-young": 3, "leaf-dew": 1, "mint": 2, "chrysanthemum": 2, "petal-rain": 2 } },
       "eval": { "retainLifeDays": 180, "minGroup": 30 },
-      "brake": { "minArms": 100, "minDays": 7, "dropPoints": 5 }
+      "brake": { "minArms": 100, "minDays": 7, "dropPoints": 5 },
+      "absence": { "chores": 1 },
+      "meanwhile": { "lines": 3, "changesKept": 16 },
+      "visitBands": { "ringLifeDays": 30, "least": 3, "sharePerMille": 600 }
     }
   ]
 }

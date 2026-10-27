@@ -12,12 +12,15 @@ import { paramsFor } from './params.mjs';
 import { wake } from './state.mjs';
 import { START_OBJECTS, CARD_BY_ID, validCards, validWear, validTraces, pairKeyOf } from './cards.mjs';
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
+import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
+import { habitOf, HABIT_BANDS } from './visits.mjs';
 // The generated data is read as a namespace: a browser still holding an older data.gen.mjs (the ten-minute cache)
 // keeps its module links and only lacks the W5 tables, as the mood lines did in W4.
 import * as DATA from './data.gen.mjs';
 const PAIRS = DATA.PAIRS ?? [];
 
-/** An absence longer than this starts again this far back (§10-1; W6 replaces the plain cut). */
+/** An absence longer than this starts again this far back (§10-1, R9): nothing before it is planned or kept, and the
+ * residents start that life day from its waking values (W6 — absenceResidents). */
 export const ABSENCE_LIMIT_MS = 7 * DAY;
 /** The most promises or habit spots a village keeps. */
 export const VILLAGE_MAX = 32;
@@ -76,8 +79,10 @@ export function validVillage(v) {
     && plain(b.objects) && Object.values(b.objects).every(o => plain(o) && spotId(o.spot))
     // W5 (§8·§9-1): the cards, the objects' wear and traces, the pairs and the day's marks — each absent in an old world.
     && (b.cards === undefined || validCards(b.cards)) && (b.wear === undefined || validWear(b.wear)) && (b.traces === undefined || validTraces(b.traces))
-    && (b.pairs === undefined || validPairs(b.pairs)) && (b.marks === undefined || validMarks(b.marks)))) return false;
-  if (!validTakes(v.takes) || !validKnowledge(v)) return false;
+    && (b.pairs === undefined || validPairs(b.pairs)) && (b.marks === undefined || validMarks(b.marks))
+    // W6 (§10-3): the visit habit the band was planned with — only the bands it fills.
+    && (b.visitHabit === undefined || HABIT_BANDS.includes(b.visitHabit)))) return false;
+  if (!validTakes(v.takes) || !validKnowledge(v) || !validChanges(v.changes)) return false;
   if (!Array.isArray(v.reservations) || v.reservations.length > RESERVATIONS_MAX || !v.reservations.every(r => plain(r) && id(r.id) && npcId(r.npc)
     && integer(r.fromMs) && (r.toMs === null || integer(r.toMs) && r.toMs >= r.fromMs) && id(r.by) && spotId(r.spot)
     && (r.seat === undefined || spotId(r.seat))
@@ -103,7 +108,7 @@ export function bandInput(v, b = v.band, visitEnd = null) {
     .map(({ card, key, at, status, endAt, resolvedAt, choice }) => ({ card, key, at, status, ...(endAt !== undefined ? { endAt } : {}),
       ...(resolvedAt !== undefined ? { resolvedAt } : {}), ...(choice ? { choice } : {}) }));
   return { villageSeed: v.seed, lifeDay: b.lifeDay, band: b.band, startMs: b.startMs, endMs: b.endMs, dayStartMs: b.dayStartMs,
-    planCmdRev: b.planCmdRev, weatherTomorrow: clock.weatherTomorrow, season: clock.season, visitHabit: null,
+    planCmdRev: b.planCmdRev, weatherTomorrow: clock.weatherTomorrow, season: clock.season, visitHabit: b.visitHabit ?? null,
     residents: b.residents, objects: b.objects,
     // W5: the village the band starts from (absent in an old world: every card idle, nothing worn) and the player's takes.
     cards: b.cards || {}, wear: b.wear || {}, traces: b.traces || {}, pairs: b.pairs || {}, marks: b.marks || {}, takes,
@@ -136,12 +141,23 @@ export function nextLifeDay(residents, { seed, lifeDay, atMs }) {
   }));
 }
 
-function openBand(v, atMs, planCmdRev, carried) {
+/** The residents an absence longer than the limit starts again from (§10-1): each at the life day's waking values —
+ * energy and social at their waking and resting values, the version's chores — and nothing else of before (no recent
+ * choices, places or moods; each starts at home). The waking of that life day then runs as on any other. */
+export function absenceResidents(params) {
+  const p = params ?? paramsFor(), resident = { recent: [], placesToday: [], lastSpot: null, firstOfDay: true,
+    energy: p.state.wakeEnergy, chores: p.absence.chores, social: p.state.socialRest, choresTick: 0 };
+  return Object.fromEntries(RESIDENT_IDS.map(npc => [npc, { ...resident }]));
+}
+
+function openBand(v, atMs, planCmdRev, carried, visitBands = null) {
   const w = bandAt(v.tz, atMs), sameDay = carried?.lifeDay === w.lifeDay;
   const residents = sameDay ? { ...carried.residents } : nextLifeDay(carried?.residents, { seed: v.seed, lifeDay: w.lifeDay, atMs: w.startMs });
+  // The time the player usually comes (§10-3): read from the life days before this one, fixed for the band (W6).
+  const visitHabit = habitOf(visitBands, w.lifeDay);
   v.band = { lifeDay: w.lifeDay, band: w.band, startMs: w.startMs, endMs: w.endMs, dayStartMs: lifeDayStartAt(v.tz, w.startMs),
     planCmdRev, residents, objects: structuredClone(carried?.objects || START_OBJECTS),
-    ...(carried?.village ? structuredClone(carried.village) : {}) };
+    ...(carried?.village ? structuredClone(carried.village) : {}), ...(visitHabit ? { visitHabit } : {}) };
   // A new life day opens with the last day's news (§9-3).
   if (carried && !sameDay) morningNews(v, carried.lifeDay);
 }
@@ -156,7 +172,7 @@ export function closeOpen(v, atMs) {
  * player's seat anyone's — a resident resting at its own bench is not a trace of the player (§6-5). */
 const candidateFor = (candidates, npc, spot) => candidates.some(c => c.spot === spot && (!c.npc || c.npc === npc));
 /** A habit use (§6-5): a resident finished resting at a candidate spot in a band it had not used it in. */
-function countUses(v, b, out, candidates) {
+function countUses(v, b, out, candidates, times = []) {
   const used = [];
   for (const s of out.segments) {
     if (s.archetype === 'reserved' || ARCHETYPE_BY_ID[s.archetype]?.kind !== 'rest' || s.arriveMs >= s.endMs || !candidateFor(candidates, s.npc, s.spot)) continue;
@@ -168,8 +184,21 @@ function countUses(v, b, out, candidates) {
     habit.uses = [...habit.uses, key].slice(-USES_KEPT);
     if (habit.uses.length >= 2) habit.formed = true;
     used.push({ npc: s.npc, spot: s.spot, archetype: s.archetype, lifeDay: b.lifeDay, band: b.band });
+    times.push({ npc: s.npc, spot: s.spot, atMs: s.endMs });
   }
   return used;
+}
+
+/** The pair steps a band took (§9-1 의견 차이): for each pair whose step rose, its first scenes over its own cards. */
+function pairSteps(before, out) {
+  const steps = [];
+  for (const pair of PAIRS) {
+    const rose = (out.pairs?.[pair.key]?.friction?.step ?? 0) - (before?.[pair.key]?.friction?.step ?? 0);
+    if (rose <= 0) continue;
+    const own = (out.scenes || []).filter(s => s.pair === pair.key && s.card && pair.frictionCards.includes(s.card)).slice(0, rose);
+    for (const s of own) steps.push({ pair: pair.key, members: [...pair.members], atMs: s.atMs });
+  }
+  return steps;
 }
 
 /** Record a use that happened in a scene the player saw (the first-day agreement's own rest, §6-5). */
@@ -204,17 +233,19 @@ export function placeOfAt(segments, npc, ms, startSpots = {}) {
 /** Close every band that ended by nowMs and open the next one (§14-4 settle). visitEnds are the wall
  * time the current visit ended at when it has (visitEndAt reached, read only). Returns the habit uses the
  * closed bands made, with .resolved the cards the residents solved (W5), for the caller to record as town events. */
-export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = null, candidates = [], sleeps = false }) {
+export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = null, candidates = [], sleeps = false, visitBands = null }) {
   if (!integer(nowMs) || !integer(revision)) throw new TypeError('closeBands needs the clock and the command revision');
   if (v.seed === null) v.seed = seed;
   if (sleeps === true) v.sleeps = true; else delete v.sleeps;
   if (validOffset(offsetMin)) v.tz = v.tz.length ? recordOffset(v.tz, nowMs, offsetMin) : [{ fromMs: 0, offsetMin }];
   else if (!v.tz.length) v.tz = [{ fromMs: 0, offsetMin: 540 }];
-  if (!v.band) openBand(v, nowMs, revision, null);
+  if (!v.band) openBand(v, nowMs, revision, null, visitBands);
   const uses = [], resolved = [];
   while (v.band.endMs <= nowMs) {
-    const b = v.band, out = planOf(v, b, visitEnd);
-    uses.push(...countUses(v, b, out, candidates));
+    const b = v.band, out = planOf(v, b, visitEnd), times = [];
+    uses.push(...countUses(v, b, out, candidates, times));
+    // What a returning player can see changed (§10-2): the residents' own results, kept with the band's end (W6).
+    keepChanges(v, bandChanges({ bandEndMs: b.endMs, resolved: out.resolved, cardOf: id => CARD_BY_ID[id], uses: times, steps: pairSteps(b.pairs, out) }));
     // What the band's cards did reaches the village (§9-3): seen by whoever was there, passed on at the pair scenes.
     const startSpots = Object.fromEntries(Object.entries(b.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
     learnBand(v, { lifeDay: b.lifeDay, resolved: out.resolved, scenes: out.scenes }, (npc, ms) => placeOfAt(out.segments, npc, ms, startSpots));
@@ -224,13 +255,15 @@ export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = nul
     if (v.takes) v.takes = v.takes.filter(t => t.open || !(t.status === 'resolved' ? t.resolvedAt < b.endMs : t.endAt !== undefined && t.endAt <= b.endMs));
     // Promises kept in the band are done; one the rain put off moves to the next band (§4-5).
     const deferred = new Set(out.deferredPromises.map(p => p.id)), kept = new Set(out.segments.filter(s => s.promise).map(s => s.promise));
-    const nextAt = nowMs - b.endMs > ABSENCE_LIMIT_MS ? nowMs - ABSENCE_LIMIT_MS : b.endMs;
+    const cut = nowMs - b.endMs > ABSENCE_LIMIT_MS, nextAt = cut ? nowMs - ABSENCE_LIMIT_MS : b.endMs;
     const next = bandAt(v.tz, nextAt);
     v.promises = v.promises.filter(p => !kept.has(p.id) && p.lifeDay >= next.lifeDay - 7)
       .map(p => (deferred.has(p.id) && p.lifeDay === b.lifeDay && p.band === b.band ? { ...p, lifeDay: next.lifeDay, band: next.band } : p));
     v.reservations = v.reservations.filter(r => r.toMs === null || r.toMs > b.endMs);
-    openBand(v, nextAt, revision, { lifeDay: b.lifeDay, residents: out.residents, objects: out.objects,
-      village: { cards: out.cards, wear: out.wear, traces: out.traces, pairs: out.pairs, marks: out.marks } });
+    // Past the limit the residents start again from the waking values (§10-1, W6); the village's things — cards, wear,
+    // traces, pairs and the cards' marks — are results and stay.
+    openBand(v, nextAt, revision, { lifeDay: b.lifeDay, residents: cut ? absenceResidents() : out.residents, objects: out.objects,
+      village: { cards: out.cards, wear: out.wear, traces: out.traces, pairs: out.pairs, marks: out.marks } }, visitBands);
   }
   // Not an own enumerable field: callers that compare the uses keep comparing only them.
   return Object.defineProperty(uses, 'resolved', { value: resolved });
@@ -239,7 +272,9 @@ export function closeBands(v, { nowMs, seed, offsetMin, revision, visitEnd = nul
 /** Whether a resident is up at ms (its waking hours on that life day, §4-2). */
 export function awakeAt(v, npc, ms) {
   if (!v.tz.length) return true;
-  const w = bandAt(v.tz, ms), { wakeMs, sleepMs } = awakeWindow(npc, w.lifeDay, lifeDayStartAt(v.tz, ms));
+  // The band's visit habit stretches the waking hours of its life day (§10-3) — the plan's own window.
+  const w = bandAt(v.tz, ms), visitHabit = v.band?.lifeDay === w.lifeDay ? v.band.visitHabit ?? null : null;
+  const { wakeMs, sleepMs } = awakeWindow(npc, w.lifeDay, lifeDayStartAt(v.tz, ms), { visitHabit });
   return wakeMs <= ms && ms < sleepMs;
 }
 /** Whether a scene may begin with a resident at ms (the night rule, §4-2 · 10-23 「밤 첫 방문 A」): a

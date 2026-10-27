@@ -23,7 +23,10 @@ import * as cards from '../experiences/synk-town/town/cards.mjs';
 import * as knowledge from '../experiences/synk-town/town/knowledge.mjs';
 import { paramsFor } from '../experiences/synk-town/town/params.mjs';
 import { SPOT_BY_ID, SPOT_GROUPS } from '../experiences/synk-town/town/places.mjs';
-import { ROUTINES, CARDS } from '../experiences/synk-town/town/data.gen.mjs';
+import { ROUTINES, CARDS, TOWN_LINES } from '../experiences/synk-town/town/data.gen.mjs';
+import { initialVisitBands, writeBand } from '../experiences/synk-town/town/visits.mjs';
+import { meanwhileLines } from '../experiences/synk-town/town/meanwhile.mjs';
+import { FORBIDDEN, ROLE_LABELS } from './town-lines-check.mjs';
 const cardsById = cards.CARD_BY_ID;
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -89,15 +92,18 @@ const ROUTINE_SPAN_MIN = 120;
  * 듣기가 구간을 넘어 이어진다(W5 검토 F13). 「나와 함께」는 매일 와서 다 받는 모습(accept)만 한다: 방문 안에서 카드가 생기면 1분 뒤 열고
  * 2분 뒤 첫 고르기로 확정하고 1분 뒤 닫는다 — core의 CARD_OPEN·CONFIRM·CLOSE가 마을에 남기는 것(take·주인을 붙잡는 예약·함께한 일
  * 표시·당사자의 앎)과 같다. 명령이 없는 모습은 마을이 같으므로(§15-2) 한 번만 센다. */
-function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [] }) {
+function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], accept = visits.length > 0, habits = false, watch = false }) {
   const result = { meetableShortMinutes: 0, placeDays: 0, placeShortDays: 0, repeats: 0, orderPairs: 0, sameOrder: 0, rainOutside: 0, segments: 0,
     // W4: 주민마다 깨어 있는 분·기운 문턱 아래 분·문턱 아래로 간 날, 줄이 뜬 이유(주민:이유 → 횟수), 하루 가장 많은 줄, 상한 전 이유가 넷을 넘은 날.
     awakeMinutes: {}, belowMinutes: {}, belowDays: {}, moods: {}, moodsMaxPerDay: 0, reasonsOverCap: 0, residentDays: 0,
     // W5: 카드마다 생긴 수·푼 길, 상한·쿨다운을 넘은 것, 플레이어 없이 「나와 함께」로 끝난 것, 퍼진 플레이어 사건, 하루 들은 것이 넘은 것, 쌍 장면이 넘은 날·내려간 단계.
-    rose: {}, solved: {}, playerBy: {}, capOver: 0, cooldownOver: 0, playerPaths: 0, playerSpread: 0, heardOver: 0, scenesOverDays: 0, stepDown: 0, scenes: 0 };
+    rose: {}, solved: {}, playerBy: {}, capOver: 0, cooldownOver: 0, playerPaths: 0, playerSpread: 0, heardOver: 0, scenesOverDays: 0, stepDown: 0, scenes: 0,
+    // W6: 돌아온 방문(앞 방문 뒤 닫힌 구간이 있는)·그중 줄이 선 것·가장 많은 줄·금지 말이 든 줄, 습관 구간·습관 조각·플레이어 일과의 나쁜 쪽 변화.
+    returns: 0, returnsWithLines: 0, linesMax: 0, linesBad: 0, habitBands: 0, habitSegments: 0, habitWorse: 0, habits };
   const P = paramsFor(), v = village.initialVillage();
-  let rev = 1;
-  const close = nowMs => village.closeBands(v, { nowMs, seed: villageSeed, offsetMin: tzOffsetMin, revision: rev });
+  let rev = 1, ring = initialVisitBands(), lastEnd = null;
+  const close = nowMs => village.closeBands(v, { nowMs, seed: villageSeed, offsetMin: tzOffsetMin, revision: rev, ...(habits ? { visitBands: ring } : {}) });
+  const takers = accept ? visits : [];
   close(startMs);
   const lastOrder = new Map(), linesPerDay = P.state.moodLinesPerDay, endAll = startMs + days * clock.DAY, lastSolved = {};
   for (let day = 0; day < days; day++) {
@@ -105,8 +111,25 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [] })
     let scenesToday = 0;
     while (v.band.startMs < dayStartMs + clock.DAY && v.band.startMs < endAll) {
       const b = v.band;
+      // W6: a visit that begins in this band writes the ring (its life day's first) and, watched, reads what changed meanwhile
+      // — the lines core's view gives (the bands closed since the last visit's end, the traces standing now).
+      for (const visit of visits.filter(x => x.fromMs >= b.startMs && x.fromMs < b.endMs)) {
+        if (habits) ring = writeBand(ring, b.lifeDay, b.band);
+        if (watch && lastEnd !== null && (v.changes || []).some(c => c.bandEnd > lastEnd && c.bandEnd <= visit.fromMs)) {
+          const out = village.planOf(v), now = cards.villageAt(village.bandInput(v), out.segments, out.log, visit.fromMs);
+          const lines = meanwhileLines(v.changes, { startAt: visit.fromMs, since: lastEnd }, now.traces);
+          result.returns++; if (lines.length) result.returnsWithLines++;
+          result.linesMax = Math.max(result.linesMax, lines.length);
+          for (const line of lines) {
+            const entry = TOWN_LINES.find(e => e.id === line.id);
+            const texts = entry ? Object.values(entry.levels).map(t => t.replace('{npc2}', ROLE_LABELS[line.npc2] || '').replace('{npc}', ROLE_LABELS[line.npc] || '')) : [''];
+            if (!entry || texts.some(t => FORBIDDEN.some(group => group.patterns.some(re => re.test(t))))) result.linesBad++;
+          }
+        }
+        lastEnd = visit.toMs;
+      }
       // A visit that takes every card it meets (the accept profile): open, choose, confirm, close — at the village's own fields.
-      for (const visit of visits.filter(x => x.fromMs < b.endMs && x.toMs > b.startMs)) {
+      for (const visit of takers.filter(x => x.fromMs < b.endMs && x.toMs > b.startMs)) {
         let t = Math.max(visit.fromMs, b.startMs);
         const until = Math.min(visit.toMs, b.endMs);
         for (;;) {
@@ -130,6 +153,9 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [] })
       }
       const out = village.planOf(v), before = residentsOf(v);
       daySegments.push(...out.segments);
+      if (v.band.visitHabit) result.habitBands++;
+      result.habitSegments += out.segments.filter(x => x.visitHabit).length;
+      result.habitWorse += out.stateLog.filter(x => x.cause === 'player-routine' && (x.stat === 'chores' ? x.delta > 0 : x.delta < 0)).length;
       // 기운은 구간 시작 값에 변화 기록을 시각 차례로 더해, 결정 시각마다(조각을 놓기 전) 문턱 아래였던 시간을 센다.
       for (const npc of plan.RESIDENT_IDS) {
         const log = out.stateLog.filter(e => e.npc === npc && e.stat === 'energy'), threshold = plan.RESIDENT_BY_ID[npc].restThreshold;
@@ -240,22 +266,35 @@ const SEASONAL = new Set(CARDS.filter(c => ['rain-start', 'rain-stop', 'after-ra
 const RAIN_MOMENT = new Set(CARDS.filter(c => ['rain-start', 'rain-stop', 'after-rain'].includes(c.trigger.kind)).map(c => c.id));
 /** 「나와 함께」로만 나오는 이유는 매일 와서 다 받는 모습에서 잰다. */
 const WITH_PLAYER = new Set(['with-player-glad']);
+/** 밤 습관을 고리와 함께 사는 밤에만 마을(첫 시간대의 앞 씨앗 넷 — CI 시간 몫). */
+const HABIT_SEEDS = new Set(villageSeeds(4));
 
 export const TOWN_RUNTIME = Object.freeze({
   name: 'town-w5',
   cache: new Map(),
-  life(args, accept = false) {
-    const key = `${args.villageSeed}|${args.tzOffsetMin}|${args.startMs}|${args.days}|${accept}`;
-    if (!this.cache.has(key)) this.cache.set(key, lifeOfVillage({ ...args, visits: accept ? args.visits : [] }));
+  life(args, accept = false, { habits = false } = {}) {
+    // Watching what changed meanwhile only reads the village, so the shared life of the first zone carries the away profile's
+    // visits as its watch points (W6) at no extra life.
+    const watch = !accept && !habits && Array.isArray(args.watchVisits);
+    const key = `${args.villageSeed}|${args.tzOffsetMin}|${args.startMs}|${args.days}|${accept}|${habits}|${watch}`;
+    if (!this.cache.has(key)) this.cache.set(key, lifeOfVillage({ ...args, visits: watch ? args.watchVisits : accept || habits ? args.visits : [], accept, habits, watch }));
     return this.cache.get(key);
   },
   createVillage(args) { return { args, visits: [] }; },
   visit(village, visit) { village.visits.push(visit); return { changes: [] }; },
-  // A profile that never takes a card leaves the village as absence does (§15-2): one life for all of them.
-  finish(village) { const accept = village.args.profile === 'daily-all'; return this.life({ ...village.args, visits: village.visits }, accept); },
+  // A profile that never takes a card leaves the village as absence does (§15-2): one life for all of them — but a night
+  // habit fills spots (§10-3), so a few night-only villages of the first time zone live with their ring (W6), and the
+  // seven-day-away profile of the first zone is watched for what changed meanwhile (the CI budget keeps both to those).
+  finish(village) {
+    const { profile, firstZone, villageSeed } = village.args, args = { ...village.args, visits: village.visits };
+    if (profile === 'daily-all') return this.life(args, true);
+    if (profile === 'night-only' && firstZone && HABIT_SEEDS.has(villageSeed)) return this.life(args, false, { habits: true });
+    return this.life(args);
+  },
   measure(id, run) {
-    const lives = [...new Map(run.villages.map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.profile === 'daily-all'}`, v.result])).values()];
-    const plain = [...new Map(run.villages.filter(v => v.profile !== 'daily-all').map(v => [`${v.villageSeed}|${v.tzOffsetMin}`, v.result])).values()];
+    // A village that lived with its ring (W6 night habit) is a life of its own in every invariant (GPT GB2).
+    const lives = [...new Map(run.villages.map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.profile === 'daily-all'}|${v.result.habits === true}`, v.result])).values()];
+    const plain = [...new Map(run.villages.filter(v => v.profile !== 'daily-all').map(v => [`${v.villageSeed}|${v.tzOffsetMin}|${v.result.habits === true}`, v.result])).values()];
     const accept = [...new Map(run.villages.filter(v => v.profile === 'daily-all').map(v => [`${v.villageSeed}|${v.tzOffsetMin}`, v.result])).values()];
     const sum = (key, list = lives) => list.reduce((n, life) => n + life[key], 0);
     const per = (key, npc) => lives.reduce((n, life) => n + (life[key][npc] || 0), 0);
@@ -309,6 +348,20 @@ export const TOWN_RUNTIME = Object.freeze({
       return { status: ok ? 'pass' : 'fail', value: `바로 이은 반복 ${sum('repeats')} · 이틀 같은 순서 ${percent(sum('sameOrder'), sum('orderPairs'))}%` };
     }
     if (id === 'rain-outside') return { status: sum('rainOutside') === 0 ? 'pass' : 'fail', value: `비 맞은 바깥 조각 ${sum('rainOutside')}` };
+    // W6: 7일 비우고 돌아오는 모습(첫 시간대)의 돌아온 방문 — 줄은 셋까지, 금지 말 0, 줄이 선 방문이 있다(F20: 닫힌 구간이 있는 복귀만 셈).
+    if (id === 'changes-summary') {
+      const watched = run.villages.filter(x => x.profile === 'away-7' && x.tzOffsetMin === run.timezones[0]).map(x => x.result);
+      const n = key => watched.reduce((total, life) => total + life[key], 0), max = Math.max(0, ...watched.map(life => life.linesMax));
+      const ok = n('returns') > 0 && n('returnsWithLines') > 0 && max <= paramsFor().meanwhile.lines && n('linesBad') === 0;
+      return { status: ok ? 'pass' : 'fail', value: `돌아온 방문 ${n('returns')} · 줄 선 방문 ${percent(n('returnsWithLines'), n('returns'))}% · 가장 많은 줄 ${max} · 금지 말 ${n('linesBad')}` };
+    }
+    // W6: 밤에만 오는 마을(첫 시간대 앞 씨앗 넷)에 밤 습관이 서고 그 조각이 있으며, 플레이어가 만든 일과의 나쁜 쪽 변화가 0.
+    if (id === 'visit-habit') {
+      const nights = run.villages.filter(x => x.profile === 'night-only' && x.tzOffsetMin === run.timezones[0] && HABIT_SEEDS.has(x.villageSeed)).map(x => x.result);
+      const n = key => nights.reduce((total, life) => total + life[key], 0), formed = nights.filter(life => life.habitBands > 0).length;
+      const ok = nights.length > 0 && formed === nights.length && n('habitSegments') > 0 && n('habitWorse') === 0;
+      return { status: ok ? 'pass' : 'fail', value: `습관이 선 마을 ${formed}/${nights.length} · 습관 구간 ${n('habitBands')} · 습관 조각 ${n('habitSegments')} · 나쁜 쪽 ${n('habitWorse')}` };
+    }
     return undefined;
   },
 });
@@ -325,6 +378,7 @@ export const METRICS = Object.freeze([
   ['hearsay', '전해 듣기 — 플레이어 사건 0, 주민당 생활일 2건 이하'],
   ['pairs', '쌍 장면 생활일 셋 이하, 의견 차이 내려감 0'],
   ['changes-summary', '그동안 달라진 것 1~3줄, 금지 말 0'],
+  ['visit-habit', '밤에만 오면 밤 습관이 서고 그 조각이 나쁜 쪽 변화를 만들지 않는다(G4)'],
   ['rain-outside', '비 오는 동안 바깥 자리에 앉은 주민 0'],
   ['energy', '기운 문턱 아래 시간 15% 이하'],
   ['mood-lines', '이유 태그마다 30일에 한 번 이상, 하루 넷 이하'],
@@ -345,7 +399,10 @@ export function runSimulation({ seeds = 100, days = 30, timezones = TIMEZONES, p
     // gladness, what stays private) does not turn on the zone, and every other profile already runs in all four (W5).
     if (profile === 'daily-all' && tzOffsetMin !== timezones[0]) continue;
     const visits = visitPlan(profile, { villageSeed, tzOffsetMin, days, startMs });
-    const village = runtime.createVillage({ villageSeed, tzOffsetMin, profile, startMs: firstLifeDayStart(tzOffsetMin, startMs), days });
+    const firstZone = tzOffsetMin === timezones[0];
+    const village = runtime.createVillage({ villageSeed, tzOffsetMin, profile, startMs: firstLifeDayStart(tzOffsetMin, startMs), days, firstZone,
+      // W6: the first zone's shared life is watched at the seven-day-away profile's visits (what changed meanwhile).
+      ...(firstZone && profiles.includes('away-7') ? { watchVisits: visitPlan('away-7', { villageSeed, tzOffsetMin, days, startMs }) } : {}) });
     const observed = visits.map(visit => ({ ...visit, ...runtime.visit(village, visit) }));
     villages.push({ villageSeed, tzOffsetMin, profile, visits: observed, result: runtime.finish(village) });
   }

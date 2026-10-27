@@ -4,6 +4,8 @@ export const PRESENCE_LEASE_MS = 3000;
 export const VISIT_IDLE_MS = 30 * 60 * 1000;
 export const initialPresence = () => ({ at: null, surfaces: {}, owner: null, fence: 0,
   lastActiveAt: null, idleClosed: false });
+/** When the visit in progress began (W6), or null: a presence from before W6 has no such field. */
+export const visitStartOf = presence => (Number.isSafeInteger(presence?.visitStartAt) ? presence.visitStartAt : null);
 
 /** The wall time the current visit ends at if nothing comes back (W3, review P1-1): 30 minutes after
  * the last stretch of play the presence covers — a foreground window counts to its lease's end. The
@@ -38,6 +40,9 @@ export function updatePresence(previous, input, now) {
   const foreground = Object.keys(next.surfaces).filter(id => next.surfaces[id].foreground);
   const owner = foreground.includes(next.owner) ? next.owner : foreground[0] || null;
   if (owner !== next.owner) { next.owner = owner; next.fence++; }
+  // A foreground window that opens a new visit (the last one ended, or none began) marks when it began (W6): only a
+  // pulse sees that moment, so the visit's band never turns on when the world is next settled or read (§15-3).
+  if (foreground.length && (visitEnded || previous.idleClosed || previous.lastActiveAt === null || previous.lastActiveAt === undefined)) next.visitStartAt = now;
   if (foreground.length) { next.lastActiveAt = now; next.idleClosed = false; }
   next.at = now;
   return { next, elapsedMs, visitEnded, endedAt: visitEnded ? endAt : null, context: {
@@ -64,17 +69,29 @@ const settledSpans = (lease, settledU) => lease.spans.filter((span, i) => span.u
  * at exactly the settled U is still to come: a rest that brought no play time ends the visit at the
  * U the world already stands on, and the next settlement ends it there. */
 export function pruneLease(lease, settledU) {
-  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u >= settledU), breakAts: breakAtsWhere(lease, u => u >= settledU) };
+  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u >= settledU), breakAts: breakAtsWhere(lease, u => u >= settledU),
+    ...(lease.startAts ? { startAts: startAtsWhere(lease, u => u >= settledU) } : {}) };
+}
+/** startAts keeps, by the U a visit's play begins at, the wall time a pulse saw it begin (W6, GPT A1) — so visits settled
+ * together each open with their own start. Those the world has walked past go once settled. */
+const startAtsWhere = (lease, keep) => Object.fromEntries(Object.entries(lease.startAts || {}).filter(([u]) => keep(Number(u))));
+/** The wall time the visit a step at u belongs to began, from the lease (null: no start recorded at or before u). */
+export function visitStartFor(lease, u) {
+  let found = null, at = -1;
+  for (const [key, ms] of Object.entries(lease?.startAts || {})) if (Number(key) <= u && Number(key) > at) { at = Number(key); found = ms; }
+  return found;
 }
 /** breakAts keeps, by the break's U, the wall time that visit ended at (W3) — beside breaks, never in it. */
 const breakAtsWhere = (lease, keep) => Object.fromEntries(Object.entries(lease.breakAts || {}).filter(([u]) => keep(Number(u))));
 /** The lease after the world settled to settledU and that settlement was saved: every break up to it
  * has ended its visit, so none is applied twice (a command at that U may open the next visit). */
 export function settledLease(lease, settledU) {
-  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u > settledU), breakAts: breakAtsWhere(lease, u => u > settledU) };
+  return { ...lease, spans: settledSpans(lease, settledU), breaks: lease.breaks.filter(u => u > settledU), breakAts: breakAtsWhere(lease, u => u > settledU),
+    ...(lease.startAts ? { startAts: startAtsWhere(lease, u => u >= settledU) } : {}) };
 }
 /** More spans or breaks than a lease keeps: the store settles now instead of dropping unsettled play. */
-export const leaseFull = lease => lease.spans.length > LEASE_ENTRIES || lease.breaks.length > LEASE_ENTRIES;
+export const leaseFull = lease => lease.spans.length > LEASE_ENTRIES || lease.breaks.length > LEASE_ENTRIES
+  || Object.keys(lease.startAts || {}).length > LEASE_ENTRIES;
 
 export function pulseLease(previous, input, now, { away = false, settledU = 0 } = {}) {
   const pulse = updatePresence(previous.presence, { ...input, foreground: input.foreground === true && !away }, now);
@@ -89,6 +106,8 @@ export function pulseLease(previous, input, now, { away = false, settledU = 0 } 
   // Two visit ends at one U (no play between them) keep the first one's wall time: the holds the first visit
   // opened end there, as they would had the world settled right after it.
   if (pulse.visitEnded && !next.breaks.includes(next.uMs)) { next.breaks = [...next.breaks, next.uMs]; next.breakAts = { ...next.breakAts, [next.uMs]: pulse.endedAt }; }
+  // A pulse that opened a visit marks where its play begins (W6, GPT A1): the U after this pulse, beside the break it may have made.
+  if (Number.isSafeInteger(pulse.next.visitStartAt) && pulse.next.visitStartAt !== before.visitStartAt) next.startAts = { ...(base.startAts || {}), [next.uMs]: pulse.next.visitStartAt };
   if (input.foreground === true && !away) next.lastForegroundAt = pulse.next.at;
   // A walk is timed only while the same window keeps holding the town without a gap.
   const previousOwner = before.surfaces[before.owner];

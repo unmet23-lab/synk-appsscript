@@ -15,7 +15,8 @@ import { FT_SEATS, SIGN_SLOTS as SIGN_SPOTS } from './town/places.mjs';
 import { emptyIndex, admit, record, indexLog, isFact, projection, validIndex, foldIndex } from './town/trail-index.mjs';
 import { emptyLedger, validLedger } from './town/ledger.mjs';
 import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback, setLessOften, setApproach, setTodayOther, todayOther,
-  answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses, recordUse as recordLifeUse } from './town/prefs.mjs';
+  answerFamily, correctObserved, clearPersonal, validPrefs, validAsks, validUses, recordUse as recordLifeUse,
+  observedFamily, mayAsk, recordAsk, firstAsk } from './town/prefs.mjs';
 import { initialConsents, changeConsent, validConsents } from './town/consent.mjs';
 import { eventProblem, FAMILIES, relation } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks } from './town/params.mjs';
@@ -24,9 +25,13 @@ import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, kee
 import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
 import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf } from './town/cards.mjs';
 import { learnPrivate, hearsayFor, tell, privateOf, noteOf } from './town/knowledge.mjs';
-import { createRng } from './town/rng.mjs';
+import { createRng, hashString, seedKey } from './town/rng.mjs';
 import { PER_MILLE } from './town/state.mjs';
 import { SPOT_GROUPS } from './town/places.mjs';
+import { VISIT_IDLE_MS } from './presence.mjs';
+import { bandAt, BAND_IDS } from './town/clock.mjs';
+import { initialVisitBands, writeBand, setVisitBands, clearVisitBands, validVisitBands } from './town/visits.mjs';
+import { meanwhileLines } from './town/meanwhile.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -49,12 +54,24 @@ const ensure = (condition, code, message, status) => { if (!condition) throw new
  * forget. Town events (the §20-1 kinds) wait in townEvents until the store moves them to the event
  * branch; townSeq names them across a reset, as the Trail sequence does. */
 const TOWN_FIELDS = Object.freeze({ ledger: emptyLedger, prefs: initialPrefs, asks: initialAsks, recentLifeUse: () => [],
-  consents: initialConsents, policy: () => null, forgotten: () => [], townSeq: () => 0, townEvents: () => [] });
+  consents: initialConsents, policy: () => null, forgotten: () => [], townSeq: () => 0, townEvents: () => [],
+  // W6: the visit (its start, the last one's end, its band) and the time the player usually comes (§10-3) — the player's side.
+  townVisit: () => null, visitBands: () => initialVisitBands() });
 const townFields = () => Object.fromEntries(Object.entries(TOWN_FIELDS).map(([key, make]) => [key, make()]));
 /** The most entries a person's own setting lists keep (less often, not approached first, today's others, responses). */
 export const PERSONAL_MAX = 64;
 const validPolicy = policy => policy === null || !!policy && Object.keys(policy).length === 3 && typeof policy.visitId === 'string'
   && /^[A-Za-z0-9_.:-]{1,80}$/.test(policy.visitId) && Object.hasOwn(PARAMS_BY_VER, policy.paramsVer) && ARMS.includes(policy.arm);
+/** The visit in progress or the last one (W6): when it began, the last play of the one before (null: none or unknown),
+ * its life day and band once the village's clock places it, the world's first visited life day, whether the player
+ * finished something with a resident in it, and when it ended. */
+const VISIT_KEYS = Object.freeze(['startAt', 'since', 'endedAt', 'lifeDay', 'band', 'firstDay', 'done']);
+const validVisit = visit => visit === null || !!visit && typeof visit === 'object' && !Array.isArray(visit) && Number.isSafeInteger(visit.startAt)
+  && (visit.since === null || Number.isSafeInteger(visit.since) && visit.since <= visit.startAt)
+  && (visit.endedAt === undefined || visit.endedAt === null || Number.isSafeInteger(visit.endedAt))
+  && (visit.lifeDay === undefined && visit.band === undefined || Number.isSafeInteger(visit.lifeDay) && BAND_IDS.includes(visit.band))
+  && (visit.firstDay === undefined || Number.isSafeInteger(visit.firstDay)) && (visit.done === undefined || visit.done === true)
+  && Object.keys(visit).every(key => VISIT_KEYS.includes(key));
 const townEventsValid = state => Number.isSafeInteger(state.townSeq) && state.townSeq >= 0 && Array.isArray(state.townEvents)
   && state.townEvents.every(event => eventProblem(event) === null && /^E-\d+$/.test(event.id) && Number(event.id.slice(2)) <= state.townSeq);
 // Two counters (vertical slice §14-4, W2 plan D4): revision is the command revision — it rises only
@@ -214,12 +231,14 @@ export function assertState(state) {
   ensure((!has('ledger') || validLedger(state.ledger)) && (!has('prefs') || validPrefs(state.prefs))
     && (!has('asks') || validAsks(state.asks)) && (!has('recentLifeUse') || validUses(state.recentLifeUse))
     && (!has('consents') || validConsents(state.consents)) && (!has('policy') || validPolicy(state.policy))
-    && (!has('forgotten') || validForgotten(state.forgotten)) && (!has('townSeq') && !has('townEvents') || townEventsValid(state)),
+    && (!has('forgotten') || validForgotten(state.forgotten)) && (!has('townSeq') && !has('townEvents') || townEventsValid(state))
+    && (!has('townVisit') || validVisit(state.townVisit)) && (!has('visitBands') || validVisitBands(state.visitBands)),
   'invalid-save', '마을 기록을 확인할 수 없어요.', 503);
   return state;
 }
 
-const atDayPlace = (state, place) => state.day?.location === place && (!state.day.walk?.enabled || nearbyPlace(state.day.walk) === place);
+// Walking, the player is where it walks (W6 — W5 follow-up: a place counted only after the player spoke there once).
+const atDayPlace = (state, place) => (state.day?.walk?.enabled ? nearbyPlace(state.day.walk) === place : state.day?.location === place);
 export function dayContext(state, host = {}) {
   const c1 = state.life?.episode;
   return { elapsedMs: host.elapsedMs || 0, nowMs: host.nowMs ?? state.lifeHost?.lastForegroundAt ?? 0,
@@ -266,7 +285,7 @@ export function livingContext(state, host = {}) {
   return { surfaceId: state.life?.authority.surfaceId ?? null, fence: state.life?.authority.fence ?? 0,
     ...host, canRun: ready && host.canRun !== false && !dayOwns,
     // The owner who invites is up (the night rule): no contact is issued while it sleeps.
-    canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true
+    canContact: ready && !dayOwns && !state.resting && !(host.surface === 'day' && state.day?.rest) && host.canContact === true && !state.asks?.open
       && upFor(state.village, 'cafe-owner', host.nowMs),
     worldRevision: state.lifeSeatRevision ?? state.worldRevision, placement: state.placement,
     // A card's offer goes only to a screen that draws cards (review F6: an old one would show it as the seat's invitation).
@@ -356,22 +375,109 @@ function markTogether(state) {
   for (const r of v.reservations) {
     if (r.toMs !== null || r.with || !done.has(r.by)) continue;
     r.with = true;
+    // The visit finished something with a resident (W6 — the consent question waits for such a visit, §20-4).
+    if (state.townVisit && state.townVisit.endedAt === undefined) state.townVisit.done = true;
     if (r.npc === 'cafe-owner' && done.get(r.by)) r.help = done.get(r.by);
   }
 }
 /** The settlement's close step (town/settle.mjs close): bands that ended by nowMs close and the next
  * opens; habit uses become town events. The host gives the village seed, its offset and visitEnd, and
  * sleeps when it keeps the residents' nights (an account's town; village.mjs upFor). */
-export function closeLiving(state, nowMs, { seed = 'synk-town', offsetMin = null, visitEnd = null, sleeps = false } = {}) {
+export function closeLiving(state, nowMs, { seed = 'synk-town', offsetMin = null, visitEnd = null, sleeps = false, ask = null } = {}) {
   if (!state.village) return state;
   const candidates = habitSpots(state);
   keepHabitSpots(state.village, candidates);
-  const closed = closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates, sleeps });
+  // A visit the host knows has ended (visitEndAt reached — the wall time a visit-end step would write) ends here too, so a
+  // read before the next pulse never shows the last visit's lines as new (Fable F1); its band is placed before the bands
+  // close, so the ring a new life day plans with never turns on when the world was settled (F5).
+  if (state.townVisit && state.townVisit.endedAt === undefined && Number.isSafeInteger(visitEnd)) { placeVisit(state); endVisit(state, visitEnd); }
+  placeVisit(state);
+  const closed = closeBands(state.village, { nowMs, seed, offsetMin, revision: state.revision, visitEnd, candidates, sleeps, visitBands: state.visitBands ?? null });
   for (const use of closed) townEvent(state, 'habit.used', { ...use, actors: [use.npc] });
   // A card the residents solved is a public event (§9-2): settled outside any visit, so it names the version only (§20-6).
   for (const line of closed.resolved) townEvent(state, 'card.resolved', { ref: line.ref, card: line.card, path: line.path, public: true,
     actors: line.actors, place: line.place, lifeDay: line.lifeDay, band: line.band, atMs: line.atMs, ...eventMarks(state.policy, { inVisit: false }) });
+  placeVisit(state);
+  // The settlement's last step was a safe boundary (ask: { canContact, caps, academy, evalSignals }): the mascot may ask.
+  if (ask) offerAsk(state, ask);
   return state;
+}
+/** The visit's band (W6, §10-3): once the village's clock stands, the band the visit began in is its own, the first
+ * visited life day is kept, and the ring of the time the player usually comes takes it (the first visit of the day). */
+function placeVisit(state) {
+  const visit = state.townVisit, v = state.village;
+  if (!visit || visit.lifeDay !== undefined || !v?.tz.length) return;
+  const w = bandAt(v.tz, visit.startAt);
+  state.townVisit = { ...visit, lifeDay: w.lifeDay, band: w.band, firstDay: visit.firstDay ?? w.lifeDay };
+  if (state.visitBands) state.visitBands = writeBand(state.visitBands, w.lifeDay, w.band);
+}
+/** The seat and sign steps that are an input in progress (choose, ready and away are not — a player who never placed a
+ * seat is asked as anyone, Fable F2). */
+const PLACING = Object.freeze(['outside-preview', 'inside-preview', 'color', 'place', 'sign-intro', 'sign-picture', 'sign-place']);
+/** Whether the player is in something now — a scene, a card, an invitation, a rest, placing a seat (§20-3 묻지 않는 때). */
+function sceneOpen(state) {
+  return !!(state.resting || state.day?.rest || state.day?.episode?.open || state.bazaar?.episode?.open || state.life?.episode?.open
+    || state.pendingUse || PLACING.includes(state.phase) || (state.village?.takes || []).some(t => t.open)
+    || (state.life?.contacts || []).some(c => ['issued', 'delivered', 'detail'].includes(c.status)));
+}
+/** A visit ends (its step, or the host's known end): its end is kept for the next visit's window, its question goes. */
+function endVisit(state, endedAt) {
+  state.townVisit = { ...state.townVisit, endedAt: endedAt ?? null };
+  if (state.asks?.open) { const { open, ...rest } = state.asks; state.asks = rest; }
+}
+/** The screen drew the mascot's question (W6, Fable F9 — reported beside a boundary like what it showed, never a command,
+ * so it moves no command revision): it counts against the day's one question and the same question's rest, and a taste
+ * question shows its family as 「요즘 자주 한 생활」. Unknown or stale keys change nothing. */
+export function askDrawn(state, key) {
+  const open = state.asks?.open;
+  if (!open || open.key !== key || open.delivered) return false;
+  state.asks = { ...recordAsk(state.asks, { lifeDay: open.lifeDay, key: open.key }), open: { ...open, delivered: true } };
+  if (open.kind === 'taste') state.prefs = { ...state.prefs, observed: open.family };
+  return true;
+}
+/** The mascot's one question (§20-3·§20-4, W6): at a safe boundary of a screen that draws it, never inside something,
+ * in a visit's first seconds or on the world's first visited life day; one a life day, the order widening > taste >
+ * consent (widening comes with W9). Taste: the family the player keeps opening themself (the adapted arm only, never one
+ * answered no). Consent: on hosts that turned the evaluation signals on, never to an academy-linked account, never again
+ * once shown, and only in a visit that finished something with a resident. The question waits as asks.open until the
+ * screen says it drew it (ASK_ACK — then it counts) or the visit ends. */
+function offerAsk(state, ctx) {
+  const v = state.village, visit = state.townVisit, asks = state.asks, life = state.life;
+  if (ctx.canContact !== true || !Array.isArray(ctx.caps) || !ctx.caps.includes('asks') || !asks || asks.open || !life) return;
+  if (!visit || visit.endedAt !== undefined || visit.lifeDay === undefined || !v?.band || sceneOpen(state)) return;
+  const lifeDay = v.band.lifeDay, secondsIntoVisit = Math.floor((life.uMs - life.visitStartU) / 1000);
+  if (lifeDay === visit.firstDay) return;
+  const found = {};
+  const family = observedFamily(state.recentLifeUse || [], state.prefs, { policy: state.policy });
+  if (family && mayAsk(asks, { lifeDay, key: `taste:${family}`, secondsIntoVisit })) found.taste = { key: `taste:${family}`, family };
+  const academy = ctx.academy === true || state.scope.subject.startsWith('linked-');
+  if (ctx.evalSignals === true && !academy && state.consents?.evalSignals.state === 'unasked' && asks.asked.consent === undefined
+    && visit.done === true && mayAsk(asks, { lifeDay, key: 'consent', secondsIntoVisit })) found.consent = { key: 'consent' };
+  const kind = firstAsk(Object.keys(found));
+  if (kind) state.asks = { ...asks, open: { kind, ...found[kind], lifeDay, delivered: false } };
+}
+/** The visit (W6, §10-2·§10-3·§20-6): a step held by a window after the last visit ended opens the next one. It began when
+ * the lease's presence says (only a pulse saw it; an old lease: this settlement), and what a returning player sees changed
+ * comes from after the last one's last play. Its version and arm open with it from the account the host names, so a
+ * visit with no command still has them. Its band is placed when the village closes its bands (placeVisit). A visit that
+ * ends drops its open question. */
+function trackVisit(state, host) {
+  if (!Object.hasOwn(state, 'townVisit')) return;
+  const visit = state.townVisit;
+  if (host.visitEnded) {
+    if (visit && visit.endedAt === undefined) { placeVisit(state); endVisit(state, host.visitEndedAt ?? null); }
+    return;
+  }
+  if (!host.surfaceId || visit && visit.endedAt === undefined) return;
+  const since = Number.isSafeInteger(visit?.endedAt) ? visit.endedAt - VISIT_IDLE_MS : null;
+  const begun = Number.isSafeInteger(host.visitStartAt) ? host.visitStartAt : host.nowMs;
+  // The old pulse path gives no clock: no visit is recorded there.
+  if (!Number.isSafeInteger(begun)) return;
+  state.townVisit = { startAt: Math.max(begun, since ?? begun), since, ...(visit?.firstDay !== undefined ? { firstDay: visit.firstDay } : {}) };
+  // The id comes from when the visit began (visitIdOf) — a command revision would differ between a world settled every
+  // second and one settled at a command.
+  if (typeof host.villageSeed === 'string' && host.villageSeed) state.policy ||= { ...policyFor({ villageSeed: host.villageSeed,
+    visitId: visitIdOf(state, host.villageSeed), ops: host.ops ?? DEFAULT_OPS }) };
 }
 /** A command's end, after its 0-second chain: holds follow the scenes (a new hold opens now, a released
  * one ends now), and a new first-day agreement is its first use and tomorrow's promise (§6-5). */
@@ -438,7 +544,9 @@ function cardsView(state, nowMs) {
       ...(take.ref ? { ref: take.ref } : {}), ...(take.eventId ? { eventId: take.eventId } : {}) },
     traces: now.traces, news: noteOf(v),
     hearsay: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, hearsayFor(v, npc)]).filter(([, line]) => line)),
-    knownMe: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, privateOf(v, npc, state.forgotten || []).map(({ ref, card, path }) => ({ ref, card, path }))])) };
+    knownMe: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, privateOf(v, npc, state.forgotten || []).map(({ ref, card, path }) => ({ ref, card, path }))])),
+    // What changed while the player was away (W6, §10-2): the same lines for the whole visit, none on a first visit.
+    ...(state.townVisit && state.townVisit.endedAt === undefined ? { meanwhile: { visit: state.townVisit.startAt, lines: meanwhileLines(v.changes, state.townVisit, now.traces) } } : {}) };
 }
 /** The cards and where the residents are at ms (the commands' reading of the band — the same plan the view draws). */
 function cardNow(state, ms) {
@@ -452,7 +560,7 @@ function cardNow(state, ms) {
  * a card set to "less often" comes up a seeded share of its rises (§20-3). The life module spends the budget. */
 function cardOfferFor(state, host) {
   const v = state.village;
-  if (!v?.band || !state.day || state.resting || state.day.rest || !Number.isSafeInteger(host.nowMs) || (v.takes || []).some(t => t.open)) return null;
+  if (!v?.band || !state.day || state.resting || state.day.rest || !Number.isSafeInteger(host.nowMs) || (v.takes || []).some(t => t.open) || state.asks?.open) return null;
   if (state.day.episode?.open || state.bazaar?.episode?.open || state.life?.episode?.open) return null;
   const now = cardNow(state, host.nowMs), held = heldNow(state), prefs = state.prefs, visitId = state.policy?.visitId;
   for (const c of now.cards) {
@@ -475,6 +583,7 @@ export function stepLiving(state, host) {
   if (host.visitEnded) endVisitScenes(state, host.visitEndedAt ?? null);
   advanceUse(state, host);
   runLife(state, () => advanceLife(state.life, livingContext(state, host)));
+  trackVisit(state, host);
   if (state.day) runLife(state, () => advanceDay(state.day, dayContext(state, host)));
   if (state.bazaar) runLife(state, () => advanceBazaar(state.bazaar, bazaarContext(state, host)));
   markTogether(state);
@@ -709,6 +818,8 @@ export function viewFor(state) {
   if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, { ...bazaarContext(state, { surface: 'day' }),
     ownerAsleep: !ownerUp, workshopAsleep: village?.awake['workshop-owner'] === false });
   if (state.support) view.support = viewSupport(state.support, supportContext(state));
+  // The mascot's question waiting to be drawn or answered (W6, §20-3·§20-4) — old screens ignore it.
+  if (state.asks?.open) view.ask = { key: state.asks.open.key, kind: state.asks.open.kind, ...(state.asks.open.family ? { family: state.asks.open.family } : {}) };
   return view;
 }
 export function snapshot(state) { assertState(state); return { state: copy(state), view: viewFor(state) }; }
@@ -723,9 +834,13 @@ function townEvent(state, kind, fields) {
 /** This visit's version and arm, fixed when the first thing in the visit needs them (§20-6); the id is
  * the command revision that opened it, so no two visits share one. */
 function openVisit(state, host) {
-  state.policy ||= { ...policyFor({ villageSeed: host.villageSeed ?? 'synk-town', visitId: `V-${state.revision + 1}`, ops: host.ops ?? DEFAULT_OPS }) };
+  state.policy ||= { ...policyFor({ villageSeed: host.villageSeed ?? 'synk-town', visitId: visitIdOf(state, host.villageSeed ?? 'synk-town'), ops: host.ops ?? DEFAULT_OPS }) };
   return state.policy;
 }
+/** A visit's id (W6, Fable F15): from when it began, hashed — never the clock itself — so it is the same however late the
+ * world is settled (§15-3); a world from before W6 (no visit record) keeps the command revision's form. */
+const visitIdOf = (state, villageSeed) => (Number.isSafeInteger(state.townVisit?.startAt) && state.townVisit.endedAt === undefined
+  ? `V-${hashString(seedKey(villageSeed, 'visit', state.townVisit.startAt)).toString(36)}` : `V-${state.revision + 1}`);
 function preference(change) {
   try { return change(); } catch { throw new TownError('invalid-preference', '설정을 다시 골라 주세요.'); }
 }
@@ -733,7 +848,9 @@ const personalRoom = prefs => ensure(prefs.lessOften.length <= PERSONAL_MAX && p
   && prefs.todayOther.items.length <= PERSONAL_MAX, 'preference-full', '설정이 너무 많아요. 수첩에서 정리해 주세요.', 409);
 /** The §20 commands: the person's rights over what the town keeps, and the feedback and suggestion menus. */
 const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT',
-  'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'CARD_CONFIRM']);
+  'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'CARD_CONFIRM',
+  // W6: the mascot's question closed, the time the player usually comes turned on or off.
+  'ASK_CLOSE', 'PREF_VISIT_BANDS']);
 /** The small need cards with the player (§8-3 나와 함께, W5) and the greeting that tells the player what a resident knows (§9-4). */
 const CARD_COMMANDS = new Set(['CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM', 'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET']);
 function commandCard(state, type, p, host) {
@@ -828,6 +945,9 @@ export function reduceCommand(previous, command, host = {}) {
   let state = copy(previous);
   const p = command.payload;
   if (TOWN_COMMANDS.has(command.type)) for (const [key, make] of Object.entries(TOWN_FIELDS)) if (!Object.hasOwn(state, key)) state[key] = make();
+  // A command from a window that holds the town is play: it opens the visit when no settlement step has yet (W6 — the
+  // first command can come before any play time), from the same start the lease saw, so it is the same visit either way.
+  if (typeof host.surfaceId === 'string' && host.surfaceId && Object.hasOwn(state, 'townVisit')) { trackVisit(state, host); placeVisit(state); }
   const ftMutation = ['CHOOSE', 'NEXT', 'COLOR', 'CRAFT', 'PREVIEW_SLOT', 'PLACE', 'CANCEL', 'REARRANGE', 'REMOVE', 'SIT',
     'SIGN_START', 'SIGN_NEXT', 'SIGN_PICTURE', 'SIGN_PREVIEW', 'SIGN_PLACE', 'SIGN_CANCEL', 'SIGN_REMOVE'].includes(command.type);
   if (ftMutation && (host.surface === 'day' || state.day?.walk?.enabled)) ensure(atDayPlace(state, 'cafe'),
@@ -965,7 +1085,7 @@ export function reduceCommand(previous, command, host = {}) {
       // What the person said and chose stays theirs (§20-5): the consent, the settings and responses,
       // the question budget and the uses behind an observation. The world's things, the visit and what
       // was forgotten of the old world's facts start again; town event ids go on.
-      for (const key of ['prefs', 'asks', 'recentLifeUse', 'consents']) if (Object.hasOwn(old, key)) state[key] = old[key];
+      for (const key of ['prefs', 'asks', 'recentLifeUse', 'consents', 'visitBands', 'townVisit']) if (Object.hasOwn(old, key)) state[key] = old[key];
       state.townSeq = old.townSeq ?? 0;
       state.commands = old.commands; break;
     }
@@ -987,13 +1107,21 @@ export function reduceCommand(previous, command, host = {}) {
     case 'OBSERVED_CORRECT': {
       ensure(FAMILIES.includes(p.family), 'invalid-preference', '설정을 다시 골라 주세요.');
       const next = correctObserved(state.recentLifeUse, state.prefs, p.family);
-      state.recentLifeUse = next.uses; state.prefs = next.prefs; break;
+      state.recentLifeUse = next.uses; state.prefs = next.prefs;
+      // A taste question waiting on that family goes with the uses behind it (GPT A4).
+      if (state.asks.open?.kind === 'taste' && state.asks.open.family === p.family) { const { open, ...rest } = state.asks; state.asks = rest; }
+      break;
     }
     // The seen ledger is the store's own branch; this command is how the store is told to empty it.
     case 'SEEN_CLEAR': break;
     case 'MEMORY_CLEAR': {
       const next = clearPersonal({ prefs: state.prefs, uses: state.recentLifeUse });
-      state.prefs = next.prefs; state.recentLifeUse = next.uses; break;
+      state.prefs = next.prefs; state.recentLifeUse = next.uses;
+      // The ring of the time the player usually comes empties too; turning it off stays the player's (§20-5, W6). A taste
+      // question waiting on the observation goes with it (GPT A4).
+      state.visitBands = clearVisitBands(state.visitBands);
+      if (state.asks.open?.kind === 'taste') { const { open, ...rest } = state.asks; state.asks = rest; }
+      break;
     }
     case 'EVAL_CONSENT': {
       // A linked (academy) world is never asked and cannot turn it on; withdrawing is always taken.
@@ -1004,7 +1132,11 @@ export function reduceCommand(previous, command, host = {}) {
         if (error.code === 'eval-consent-version') throw new TownError(error.code, '동의 내용이 바뀌었어요. 다시 확인해 주세요.', 409);
         throw new TownError('invalid-consent', '동의 상태를 다시 골라 주세요.');
       }
-      townEvent(state, 'consent.changed', { consent: 'evalSignals', ...state.consents.evalSignals }); break;
+      // Until the host turns the evaluation signals on (the privacy notice first — W6), nobody can turn them on.
+      ensure(p.state !== 'granted' || host.evalSignals === true, 'eval-unavailable', '아직 쓸 수 없어요.', 403);
+      townEvent(state, 'consent.changed', { consent: 'evalSignals', ...state.consents.evalSignals });
+      if (state.asks.open?.kind === 'consent') { askDrawn(state, state.asks.open.key); const { open, ...rest } = state.asks; state.asks = rest; }
+      break;
     }
     // Feedback and the suggestion menus (scope base, §20-3).
     case 'FEEDBACK_GIVE': {
@@ -1027,7 +1159,19 @@ export function reduceCommand(previous, command, host = {}) {
       state.prefs = preference(() => setTodayOther(state.prefs, visitId, p.activity)); personalRoom(state.prefs); break;
     }
     case 'PREF_FAMILY':
-      state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer)); break;
+      state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer));
+      // The answer to the mascot's taste question closes it (§20-3, W6).
+      // An answer before the drawn report still counts the question (GPT A3), then it goes.
+      if (state.asks.open?.kind === 'taste' && state.asks.open.family === p.family) { askDrawn(state, state.asks.open.key); const { open, ...rest } = state.asks; state.asks = rest; }
+      break;
+    // The mascot's question closed unanswered (§20-3·§20-4, W6): a person closed what they saw, so it counts as drawn if the
+    // boundary had not said so yet (Fable F3), then it goes. A question already gone changes nothing.
+    case 'ASK_CLOSE':
+      if (state.asks.open?.key === p.key) { askDrawn(state, p.key); const { open, ...rest } = state.asks; state.asks = rest; }
+      break;
+    case 'PREF_VISIT_BANDS':
+      ensure(typeof p.on === 'boolean', 'invalid-preference', '설정을 다시 골라 주세요.');
+      state.visitBands = setVisitBands(state.visitBands, p.on); break;
     default: {
       if (CARD_COMMANDS.has(command.type)) { commandCard(state, command.type, p, host); break; }
       const asleep = sleepersFor(state, command, p, host.nowMs);

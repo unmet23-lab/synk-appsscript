@@ -32,8 +32,11 @@ test('금지 말 네 갈래를 모두 잡는다', async () => {
 });
 
 test('「그동안 달라진 것」 줄은 허용 목록으로도 지나가지 않는다', async () => {
-  const doc = [line('town.changes.habit-seat.1', { L1: '공방 주인이 내 자리에서 쉬었어요.', L2: '내가 없는 동안 공방 주인이 쉬었어요.' })];
-  const allow = [{ id: 'town.changes.habit-seat.1', level: '*', rule: 'period', phrase: '없는 동안', reason: '시험' }];
+  // W6 꼴(village.changes.<틀>.1 — 네 판·뜻·근거): 꼴이 맞아도 기간 말 하나는 허용 목록으로 지나가지 않는다.
+  const doc = [line('village.changes.habit.1', { L1: '공방 주인이 내 자리에서 쉬었어요.', L2: '내가 없는 동안 공방 주인이 쉬었어요.',
+    L3: '내가 만든 자리에서 공방 주인이 쉬었어요. 편했나 봐요.', L4: '내가 만든 자리에서 공방 주인이 잠깐 쉬어 갔어요. 그 자리가 편했나 봐요.' },
+  { when: { frame: 'habit' }, from: ['시험'] })];
+  const allow = [{ id: 'village.changes.habit.1', level: '*', rule: 'period', phrase: '없는 동안', reason: '시험' }];
   const result = await check([doc], allow);
   assert.equal(result.problems.length, 1);
   assert.equal(result.problems[0].rule, 'period');

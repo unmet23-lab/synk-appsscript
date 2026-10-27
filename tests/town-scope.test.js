@@ -24,10 +24,11 @@ test('이 조각의 모든 명령에 범위가 있다 — 정액 범위로 닫�
   assert.deepEqual(commands.filter(type => commandScope(type) === 'subscription'), []);
 });
 
-test('본인 권리 명령 여섯은 rights, 수첩·피드백·제안 메뉴는 base, 장면은 first-chapter', async () => {
+test('본인 권리 명령 일곱은 rights, 수첩·피드백·제안 메뉴는 base, 장면은 first-chapter', async () => {
   const { commandScope, SCOPES, RIGHTS, BASE, FIRST_CHAPTER } = await townModule('scope');
   assert.deepEqual(SCOPES, ['rights', 'base', 'first-chapter', 'subscription']);
-  assert.deepEqual([...RIGHTS].sort(), ['EVAL_CONSENT', 'FEEDBACK_REMOVE', 'MEMORY_CLEAR', 'MEMORY_FORGET', 'OBSERVED_CORRECT', 'SEEN_CLEAR']);
+  // W6: 자주 오는 때에 맞춰 자리 채우기의 끄기는 그 기록을 비우는 본인 권리라 rights(Fable F7).
+  assert.deepEqual([...RIGHTS].sort(), ['EVAL_CONSENT', 'FEEDBACK_REMOVE', 'MEMORY_CLEAR', 'MEMORY_FORGET', 'OBSERVED_CORRECT', 'PREF_VISIT_BANDS', 'SEEN_CLEAR']);
   for (const type of ['FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'DAY_MOVE', 'ACK']) assert.equal(commandScope(type), 'base', type);
   for (const type of ['PLACE', 'DAY_START', 'LIFE_OPEN', 'BAZAAR_START', 'SUPPORT_ANSWER']) assert.equal(commandScope(type), 'first-chapter', type);
   assert.equal(commandScope('SOME_PAID_SCENE'), 'subscription', '표에 없는 명령은 정액');
@@ -38,6 +39,8 @@ test('talk 범위 표와 같다(형제 저장소 SYNK-talk가 이 판을 가졌�
   const talk = path.resolve(ROOT, '..', 'SYNK-talk', 'lib', 'town-scope.js');
   const source = fs.existsSync(talk) ? fs.readFileSync(talk, 'utf8') : '';
   if (!source.includes('RIGHTS')) return t.skip('talk 범위 표가 아직 rights를 갖지 않는 판이다(W2b에서 맞춘다)');
+  // W6a: 엔진이 먼저 올라가고 talk 표는 W6a talk 반영(같은 묶음 다시 굽기)에서 맞춘다 — 그 사이만 건너뛴다(W2b와 같은 꼴).
+  if (!source.includes('PREF_VISIT_BANDS')) return t.skip('talk 범위 표가 아직 W6 판이 아니다(W6a talk 반영에서 맞춘다)');
   const mine = await townModule('scope'), theirs = require(talk);
   for (const key of ['RIGHTS', 'BASE', 'FIRST_CHAPTER']) assert.deepEqual([...theirs[key]].sort(), [...mine[key]].sort(), key);
 });

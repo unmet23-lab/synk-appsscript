@@ -377,8 +377,10 @@ export function validatePairs(data, places) {
  * card its news line. The checker (town-lines-check) owns lengths and words. */
 export const CARD_PARTS = Object.freeze(['trigger', 'self', 'pair', 'offer', 'result']);
 export const HEARSAY = Object.freeze(['seen', 'heard', 'news']);
+/** 「그동안 달라진 것」 틀(§10-2·§16-1, W6): 흔적 넷(쟁반 받침·관찰판·오늘의 차·새 차)·습관·쌍 — town/meanwhile.mjs FRAMES와 같다(시험이 견줌). */
+export const CHANGE_FRAMES = Object.freeze(['tray', 'board', 'today-tea', 'new-tea', 'habit', 'pair']);
 export function validateTownLines(docs, cards, pairs) {
-  const lines = docs.flat().filter(entry => ['card', 'hearsay', 'pair', 'news'].includes(entry?.kind)), ids = new Set();
+  const lines = docs.flat().filter(entry => ['card', 'hearsay', 'pair', 'news', 'changes'].includes(entry?.kind)), ids = new Set();
   const cardById = new Map(cards.cards.map(c => [c.id, c])), sceneOf = new Map(pairs.pairs.map(p => [p.scene, p]));
   for (const e of lines) {
     const [npc, kind, key, n] = String(e.id).split('.');
@@ -394,6 +396,8 @@ export function validateTownLines(docs, cards, pairs) {
     } else if (e.kind === 'pair') {
       const pair = sceneOf.get(w.pair);
       if (!pair || !integer(w.step, 0, 2) || key !== `${w.pair}-${w.step}` || !pair.members.includes(npc) || e.npc !== npc) fail(`쌍 줄 ${e.id}`);
+    } else if (e.kind === 'changes') {
+      if (!CHANGE_FRAMES.includes(w.frame) || key !== w.frame || npc !== 'village' || e.npc !== 'village') fail(`그동안 달라진 것 줄 ${e.id}`);
     } else if (!cardById.get(w.card)?.news || key !== w.card || npc !== 'village' || e.npc !== 'village') fail(`소식 줄 ${e.id}`);
   }
   // Every line a card, a pair step or the news can ask for is there (once the W5 lines exist).
@@ -405,6 +409,8 @@ export function validateTownLines(docs, cards, pairs) {
     }
     for (const p of pairs.pairs) for (let step = 0; step <= 2; step++) for (const npc of p.members) need.push(`${npc}.pair.${p.scene}-${step}.1`);
     for (const how of HEARSAY) for (const npc of RESIDENT_IDS) need.push(`${npc}.hearsay.${how}.1`);
+    // W6: every frame of 「그동안 달라진 것」, once its lines exist.
+    if (lines.some(e => e.kind === 'changes')) for (const frame of CHANGE_FRAMES) need.push(`village.changes.${frame}.1`);
     const missing = need.filter(id => !ids.has(id));
     if (missing.length) fail(`없는 줄 ${missing.length}개: ${missing.slice(0, 6).join(', ')}${missing.length > 6 ? ' …' : ''}`);
   }

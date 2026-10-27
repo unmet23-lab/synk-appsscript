@@ -83,6 +83,33 @@ function lengthProblems(text, level, rule, bad) {
   for (const part of parts) if (wordsOf(part) > words) bad('length', `${level}은 문장마다 ${words}어절 안이에요 — 「${part}」 ${wordsOf(part)}어절.`, level);
 }
 
+/** 「그동안 달라진 것」 줄(§10-2·§16-1, W6)의 판 길이 — 판의 첫 줄은 크게 보이는 한 줄이라 L2까지 한 문장, 채울 이름은 가장 긴 역할명으로 잰다. */
+export const CHANGES_LENGTH = Object.freeze({ L1: { sentences: [1, 1], words: 5 }, L2: { sentences: [1, 1], words: 8 },
+  L3: { sentences: [1, 2], words: 10 }, L4: { sentences: [1, 3], words: 14 } });
+/** 「그동안 달라진 것」 줄의 빈칸: {npc}·{npc2}는 주민 역할명뿐이다(G5 — 허용 값만). */
+export const CHANGES_SLOTS = Object.freeze(['npc', 'npc2']);
+const LONGEST_LABEL = Object.values(ROLE_LABELS).reduce((a, b) => (b.split(/\s+/).length > a.split(/\s+/).length ? b : a));
+
+/** 「그동안 달라진 것」 줄 하나의 꼴(W6): ID = village.changes.<틀>.<번호>, npc village, 네 판·뜻·근거, 빈칸은 역할명 둘까지(쌍 틀은
+ * 둘 다), 채운 판 길이. 금지 말은 STRICT_KINDS로 허용 목록 없이 막는다. */
+function changesProblems(entry, file) {
+  const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
+  const [npc, , frame] = entry.id.split('.');
+  if (npc !== 'village' || entry.npc !== 'village') bad('changes', '그동안 달라진 것 줄의 npc는 village예요.');
+  if (entry.when?.frame !== frame || Object.keys(entry.when || {}).length !== 1) bad('changes', 'when은 ID의 틀 하나({ frame })예요.');
+  if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad('changes', '뜻(meaning)이 없어요.');
+  if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(f => typeof f === 'string' && f.trim())) bad('changes', '근거 설정(from)이 없어요.');
+  for (const level of LEVELS) {
+    const text = entry.levels?.[level];
+    if (typeof text !== 'string' || !text.trim()) { bad('changes', `${level} 판이 없어요 — 네 판이 다 있어요.`, level); continue; }
+    const slots = [...text.matchAll(/\{([a-z0-9]+)\}/g)].map(m => m[1]);
+    if (slots.some(slot => !CHANGES_SLOTS.includes(slot)) || /[{}]/.test(text.replace(/\{(?:npc|npc2)\}/g, ''))) bad('changes', `${level}: 빈칸은 {npc}·{npc2}뿐이에요.`, level);
+    if (frame === 'pair' && !(slots.includes('npc') && slots.includes('npc2'))) bad('changes', `${level}: 쌍 틀에는 {npc}와 {npc2}가 다 있어요.`, level);
+    lengthProblems(text.replace(/\{npc2?\}/g, LONGEST_LABEL), level, CHANGES_LENGTH[level], bad);
+  }
+  return out;
+}
+
 /** W5 줄의 꼴(§16-2·§2-9): 카드 줄(card — 계기·혼자·둘이·제안·결과), 쌍 줄(pair — 단계마다 두 사람), 소식 줄(news — 마을의 말),
  * 전해 듣기 틀(hearsay — 빈칸 {news}·{from}). 네 판이 다 있고, 빈칸은 전해 듣기 틀에만, 근거 설정(from)이 있다. */
 function townProblems(entry, file) {
@@ -160,6 +187,7 @@ export function collectTexts(doc, file) {
       if (typeof entry.levels.L1 !== 'string') bad(id, 'L1 판은 모든 줄에 있어야 해요(다리 §3-4).');
       if (entry.kind === 'mood') problems.push(...moodProblems(entry, file));
       if (['card', 'hearsay', 'pair', 'news'].includes(entry.kind)) problems.push(...townProblems(entry, file));
+      if (entry.kind === 'changes') problems.push(...changesProblems(entry, file));
       const speaker = RESIDENTS.includes(entry.npc) ? 'resident' : 'system';
       for (const [level, text] of levelTexts(entry.levels)) {
         if (typeof text !== 'string' || !text.trim()) { bad(id, `${level} 판이 비었어요.`); continue; }

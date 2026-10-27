@@ -36,6 +36,10 @@ test('§15-2 — 엿새를 비운 마을과 날마다 집에만 머문 마을의
   const [a, b] = [away, home].map(h => h.store.read().state.village);
   assert.ok(a.happened?.length > 0 && a.news?.length > 0 && Object.keys(a.band.cards || {}).length > 0, '엿새 동안 카드가 서고 풀리고 소식이 났다');
   assert.deepEqual(residentsSide(b), residentsSide(a));
+  // W6: 날마다 낮에 온 기록(접속 구간 고리·방문)은 플레이어 쪽이라 마을 밖에 있고, 낮 습관은 구간 계획에 남지 않는다.
+  const [ringAway, ringHome] = [away, home].map(h => h.store.read().state.visitBands.ring.filter(Boolean).length);
+  assert.ok(ringHome > ringAway, `날마다 온 마을의 고리 ${ringHome} > 비운 마을 ${ringAway}`);
+  assert.equal(b.band.visitHabit, undefined, '낮 습관은 계획을 바꾸지 않는다');
 });
 
 test('나와 함께 — 연 카드는 주인을 붙잡고, 고르고 확정하면 플레이어의 결과(당사자만 앎)이고, 닫으면 주인은 자기 하루로', async () => {

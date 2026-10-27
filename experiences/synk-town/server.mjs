@@ -3,11 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { initialState, restoreState, reduceCommand, snapshot, stepLiving, closeLiving, assertState, foldWorld, FOLD_LIMITS, TownError } from './core.mjs';
+import { initialState, restoreState, reduceCommand, snapshot, stepLiving, closeLiving, assertState, foldWorld, FOLD_LIMITS, TownError, askDrawn } from './core.mjs';
 import { initialPresence, commandPresence, initialLease, pulseLease, boundaryPresence, pruneLease, settledLease, leaseFull, LEASE_ENTRIES, visitEndAt, VISIT_IDLE_MS } from './presence.mjs';
 import { settle } from './town/settle.mjs';
 import { contentCatalog, recordSeen, clearSeen, validSeen } from './town/seen.mjs';
-import { writeVisit, visitLine, mayWrite } from './town/eval.mjs';
+import { writeVisit, visitLine, mayWrite, visitSummary, retainVisits } from './town/eval.mjs';
 import { branchPaths, atomicWrite, appendLines, readLines, truncateTo, removeFile } from './save.mjs';
 import { lifeDayAt, offsetAt, validOffset } from './town/clock.mjs';
 import { validateOps, DEFAULT_OPS } from './town/params.mjs';
@@ -81,14 +81,19 @@ const count = value => Number.isSafeInteger(value) && value >= 0, stamp = value 
 /** Whether a saved lease is whole enough to take its play time back (anything else falls back to the
  * world's host stamp). */
 /** Whether a settled world differs from the saved one only in what the village recomputes (W3). */
-const villageOnly = (world, saved) => JSON.stringify({ ...world, village: null, townEvents: null, townSeq: null })
-  === JSON.stringify({ ...saved, village: null, townEvents: null, townSeq: null });
+// The close step's own products beside the village (W6): a visit the host knows ended, its band in the ring, the question
+// that went with it — the next settlement makes them the same way, so a read that made only these does not write either.
+const CLOSE_ONLY = Object.freeze({ village: null, townEvents: null, townSeq: null, townVisit: null, asks: null, visitBands: null });
+const villageOnly = (world, saved) => JSON.stringify({ ...world, ...CLOSE_ONLY }) === JSON.stringify({ ...saved, ...CLOSE_ONLY });
 /** The windows of a saved lease, each whole (the restart reads their times — visitEndAt). */
 const validSurfaces = surfaces => !!surfaces && typeof surfaces === 'object' && !Array.isArray(surfaces) && Object.keys(surfaces).length <= 16
   && Object.values(surfaces).every(item => !!item && typeof item === 'object' && count(item.at) && typeof item.foreground === 'boolean'
     && (item.safe === undefined || typeof item.safe === 'boolean') && ['classic', 'day'].includes(item.surface));
 function validLease(lease) {
   return !!lease && count(lease.uMs) && stamp(lease.lastForegroundAt) && !!lease.presence && stamp(lease.presence.at)
+    && (lease.presence.visitStartAt === undefined || stamp(lease.presence.visitStartAt))
+    && (lease.startAts === undefined || !!lease.startAts && typeof lease.startAts === 'object' && !Array.isArray(lease.startAts)
+      && Object.keys(lease.startAts).length <= LEASE_ENTRIES && Object.entries(lease.startAts).every(([u, at]) => /^\d+$/.test(u) && count(at)))
     && stamp(lease.presence.lastActiveAt) && typeof lease.presence.idleClosed === 'boolean' && count(lease.presence.fence)
     && (lease.presence.owner === null || typeof lease.presence.owner === 'string') && validSurfaces(lease.presence.surfaces)
     && Array.isArray(lease.spans) && lease.spans.length <= LEASE_ENTRIES && lease.spans.every(span => count(span?.u)
@@ -127,11 +132,13 @@ function validLease(lease) {
  *         §20 branches inline), kept for the stores its tests open.
  *   save  a function given that one-file shape at every commit (tests). */
 export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS,
-  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town', sleeps = false } = {}) {
+  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town', sleeps = false, evalSignals = true } = {}) {
   let state = initialState({ lifeEnabled }), log = [], townLog = [], seen = {}, evalLines = [], loadError = null, savedLease = null;
   const receipts = new Map(), walks = [];
   const paths = dir ? branchPaths(dir) : null, sizes = { events: 0, receipts: 0, receiptLines: 0 };
-  const account = { academy: academy === true, ops: validateOps(ops), villageSeed };
+  // evalSignals: whether this host may ask for and keep the evaluation-only signals (§20-4) — on for this preview and its
+  // tests; the account service keeps it off until the privacy notice says so (W6).
+  const account = { academy: academy === true, ops: validateOps(ops), villageSeed, evalSignals: evalSignals === true };
   lifeDayAt(tz, 0); // the offset (or offset history) is checked once, here
   const hostOf = at => ({ ...account, lifeDay: lifeDayAt(tz, at) });
   function remember(records) {
@@ -211,7 +218,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
   const current = (world = state) => {
     const shown = snapshot(world);
     shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = [...townLog, ...(world.townEvents || [])];
-    return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled } };
+    return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled, evalSignals: account.evalSignals } };
   };
   /** The old one-file shape; it carries the seen ledger and the evaluation lines only when they hold something. */
   const oneFile = (world, change) => ({ ...world, events: [...change.kept, ...change.lines], townEvents: [...townLog, ...change.town],
@@ -261,12 +268,28 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     catch { throw failed(); }
     seen = nextSeen; evalLines = nextEval;
   }
-  /** A screen's report of what it really showed: the next ledger, or null when nothing was added. */
+  /** A screen's report of what it really showed: the next ledger, or null when nothing was added (lastAdded: what it added). */
+  let lastAdded = [];
   function seenReport(keys) {
+    lastAdded = [];
     if (keys === undefined) return null;
     if (!Array.isArray(keys) || !keys.every(key => typeof key === 'string')) throw new TownError('invalid-seen', '보인 것 기록을 다시 보내 주세요.');
     const report = recordSeen(seen, keys, { known: SEEN_CATALOG });
+    lastAdded = report.added;
     return report.added.length ? report.seen : null;
+  }
+  /** The evaluation-only line of the visit in progress after a boundary or a command (§20-4, W6): only on a host that
+   * keeps them, under the consent, never for an academy-linked account; the line carries its own tallies and lines past
+   * the keeping period go with the write. Nothing the town computes reads it (G11). */
+  function keepVisitLine(before, command, added) {
+    if (!account.evalSignals || account.academy || !mayWrite(state.consents)) return;
+    // The request is already saved: a line that fails to be made or kept never turns it into an error (Fable F12).
+    try {
+      const fields = visitSummary(evalLines.find(line => line.id === state.policy?.visitId) ?? null, { before, after: state, command, added, seen });
+      if (!fields || state.townVisit?.endedAt !== undefined) return;
+      const next = retainVisits(writeVisit(evalLines, state.consents, fields), fields.lifeDay);
+      if (JSON.stringify(next) !== JSON.stringify(evalLines)) keep({ evalLines: next });
+    } catch { /* the line waits for the next request */ }
   }
   /** The lease after a restart. Without a saved lease only the world's host stamp survives for the
    * 30-minute logical-visit boundary. A saved lease keeps the play time a pulse recorded, but no
@@ -280,8 +303,10 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     // window's lease), so the restarted presence keeps that time as its last activity.
     const p = savedLease.presence, endAt = visitEndAt(p);
     return pruneLease({ ...initialLease({ uMs: Math.max(savedLease.uMs, settledU), lastForegroundAt: savedLease.lastForegroundAt,
-      presence: { ...initialPresence(), at: p.at, lastActiveAt: endAt === null ? p.lastActiveAt : endAt - VISIT_IDLE_MS, idleClosed: p.idleClosed, fence: Math.max(p.fence, host?.fence || 0) } }),
-    spans: savedLease.spans, breaks: savedLease.breaks, breakAts: savedLease.breakAts || {} }, settledU);
+      presence: { ...initialPresence(), at: p.at, lastActiveAt: endAt === null ? p.lastActiveAt : endAt - VISIT_IDLE_MS, idleClosed: p.idleClosed, fence: Math.max(p.fence, host?.fence || 0),
+        // When the visit in progress began (W6) survives a restart as its end does.
+        ...(Number.isSafeInteger(p.visitStartAt) ? { visitStartAt: p.visitStartAt } : {}) } }),
+    spans: savedLease.spans, breaks: savedLease.breaks, breakAts: savedLease.breakAts || {}, ...(savedLease.startAts ? { startAts: savedLease.startAts } : {}) }, settledU);
   }
   let lease = leaseAfterRestart();
   /** The lease file follows every lease change. It is a restart's aid, never the authority: a write
@@ -305,9 +330,11 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
     if (!living()) return null;
     // The village closes its bands on every settlement (W3): its seed and offset come from the account, and a
     // visit the lease shows ended (visitEndAt reached) ends the holds opened before it — read, not recorded.
-    const endAt = visitEndAt(next.presence), close = (world, at) => closeLiving(world, at, { seed: account.villageSeed,
-      offsetMin: offsetAt(tz, at), visitEnd: endAt !== null && endAt <= at ? endAt : null, sleeps: sleeps === true });
-    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, close, nowMs, canContact, touch, caps });
+    // The close hears whether the walk ended at a safe boundary, for the mascot's question (W6).
+    const endAt = visitEndAt(next.presence), close = (world, at, walk = {}) => closeLiving(world, at, { seed: account.villageSeed,
+      offsetMin: offsetAt(tz, at), visitEnd: endAt !== null && endAt <= at ? endAt : null, sleeps: sleeps === true,
+      ...(walk.canContact ? { ask: { canContact: true, caps: walk.caps, academy: account.academy, evalSignals: account.evalSignals } } : {}) });
+    let { state: world, changed } = settle(state, next, { step: stepLiving, check: assertState, close, nowMs, canContact, touch, caps, account });
     const lifeHost = { lastForegroundAt: next.lastForegroundAt, fence: next.presence.fence };
     if (next.presence.at !== null && JSON.stringify(lifeHost) !== JSON.stringify(world.lifeHost ?? null)) {
       world = { ...world, lifeHost }; changed = true;
@@ -357,15 +384,24 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       // What the screen showed is recorded even when the boundary itself is too soon to settle.
       const report = seenReport(input.seen);
       if (lease.boundaryAt !== null && at - lease.boundaryAt < BOUNDARY_GAP_MS) {
+        const added = lastAdded;
         if (report) keep({ seen: report });
+        keepVisitLine(state, null, added);
         return { issued: null, throttled: true, worldSeq: state.writeSeq };
       }
       // What the screen can draw (W5: caps ['cards']) decides whether a card's offer may be issued (review F6).
-      const caps = Array.isArray(input.caps) ? input.caps.filter(cap => cap === 'cards') : [];
+      const caps = Array.isArray(input.caps) ? input.caps.filter(cap => ['cards', 'asks'].includes(cap)) : [];
       // Issued is told by id: a card's settled offers may leave in the same settlement (review GA5).
-      const before = new Set(state.life.contacts.map(c => c.id)), world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true, caps });
+      const before = new Set(state.life.contacts.map(c => c.id)), added = lastAdded, prior = state;
+      let world = settledTo(lease, { nowMs: at, canContact: holder.canContact, touch: true, caps });
+      // The mascot's question the screen drew (W6): beside the boundary like what it showed — no command revision.
+      if (typeof input.asked === 'string' && (world || state).asks?.open?.key === input.asked) {
+        const next = structuredClone(world || state);
+        if (askDrawn(next, input.asked)) world = assertState(next);
+      }
       if (world) { commit(world, report ? { seen: report } : {}); lease = settledLease(lease, state.settledU); }
       else if (report) keep({ seen: report });
+      keepVisitLine(prior, null, added);
       lease = { ...lease, boundaryAt: at }; keepLease();
       const issued = state.life.contacts.findLast(c => !before.has(c.id)) ?? null;
       return { issued: issued && { id: issued.id, contactKey: issued.contactKey, ...(issued.card ? { card: issued.card, key: issued.key } : {}) }, worldSeq: state.writeSeq };
@@ -387,6 +423,8 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       let host = { enabled: lifeEnabled, canContact: false, elapsedMs: 0,
         surfaceId: presence.owner, fence: presence.fence, nowMs: at,
         surface: presence.surfaces[presence.owner]?.surface || 'classic' };
+      // When the visit in progress began (W6): a command may open it before any play time was settled.
+      const visitStartAt = Number.isSafeInteger(presence.visitStartAt) ? presence.visitStartAt : null;
       // An already committed request can be recovered after a lease expired.
       // The reducer still compares the entire signed request before returning;
       // one older than the world's window is compared with its receipt.
@@ -396,6 +434,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
         host.ownerSurfaceId = presence.owner;
+        host.visitStartAt = visitStartAt;
       }
       if (!recorded && command?.type === 'DAY_WALK') {
         const walk = lease.walkClock;
@@ -403,12 +442,13 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         host.walkElapsedMs = elapsed >= 0 ? Math.min(250, elapsed) : 0;
       }
       // A command settles first and is saved with what the settlement changed (§14-3).
-      const result = reduceCommand((!recorded && settledTo(lease, { nowMs: at })) || base, command, { ...host, ...hostOf(at) });
+      const settled = (!recorded && settledTo(lease, { nowMs: at })) || base;
+      const result = reduceCommand(settled, command, { visitStartAt, ...host, ...hostOf(at) });
       if (!result.duplicate) {
         // Clearing empties the seen ledger (the keys sent with it are not counted); a consent that is no
         // longer granted takes the account's evaluation lines with it at once.
         const clears = ['SEEN_CLEAR', 'MEMORY_CLEAR'].includes(command.type);
-        const nextSeen = clears ? clearSeen() : seenReport(shown) || seen;
+        const nextSeen = clears ? clearSeen() : seenReport(shown) || seen, added = clears ? [] : lastAdded;
         const nextEval = command.type === 'EVAL_CONSENT' && result.state.consents.evalSignals.state !== 'granted' ? [] : evalLines;
         commit(result.state, { seen: nextSeen, evalLines: nextEval });
         const before = lease;
@@ -419,6 +459,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
         else if (command.type === 'LEAVE') lease = { ...lease, presence: { ...lease.presence, at: Math.max(now(), lease.presence.at ?? 0),
           surfaces: {}, owner: null, fence: lease.presence.fence + 1 } };
         if (JSON.stringify(lease) !== JSON.stringify(before)) keepLease();
+        keepVisitLine(settled, command, added);
       }
       return { ...current(), duplicate: result.duplicate };
     },

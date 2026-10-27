@@ -96,9 +96,15 @@ export function suggestionWeight(prefs, { activity, card = null, lifeDay, policy
  * what the player declared (less often, the family first, no approach, a no) stays. */
 export const clearPersonal = ({ prefs, uses }) => ({ prefs: { ...prefs, observed: null, feedback: [] }, uses: [] });
 
+/** The question waiting to be drawn or answered (W6): its key, kind, family for a taste question, its life day and
+ * whether the screen drew it. */
+const validOpen = open => !!open && typeof open === 'object' && ASK_ORDER.includes(open.kind) && unit(open.key) && day(open.lifeDay)
+  && typeof open.delivered === 'boolean' && (open.kind === 'taste' ? FAMILIES.includes(open.family) && open.key === `taste:${open.family}` : open.family === undefined)
+  && Object.keys(open).every(key => ['kind', 'key', 'family', 'lifeDay', 'delivered'].includes(key));
 /** Whether a stored question budget is whole: life days only, no clock. */
 export const validAsks = asks => !!asks && (asks.lastLifeDay === null || day(asks.lastLifeDay)) && !!asks.asked
-  && typeof asks.asked === 'object' && !Array.isArray(asks.asked) && Object.values(asks.asked).every(day);
+  && typeof asks.asked === 'object' && !Array.isArray(asks.asked) && Object.values(asks.asked).every(day)
+  && (asks.open === undefined || validOpen(asks.open)) && Object.keys(asks).every(key => ['lastLifeDay', 'asked', 'open'].includes(key));
 /** Whether stored uses are whole: the newest few, counted and never timed. */
 export const validUses = (uses, params = paramsFor()) => Array.isArray(uses) && uses.length <= params.observe.recentUses
   && uses.every(use => unit(use?.useId) && unit(use.canonicalActivityId) && FAMILIES.includes(use.storyFamily) && typeof use.direct === 'boolean');

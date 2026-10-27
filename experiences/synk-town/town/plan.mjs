@@ -56,10 +56,11 @@ export function awakeWindow(npc, lifeDay, dayStartMs, { visitHabit = null } = {}
   return { wakeMs: dayStartMs + wake * MINUTE, sleepMs: dayStartMs + sleep * MINUTE };
 }
 
-/** The routine pool for a resident at a band, with the visit-habit pool when it applies. */
+/** The routine pool for a resident at a band, with the visit-habit pool when it applies — its items say so, for the
+ * segments they make are a routine the player's visits made (G4, W6). */
 export function routineCell(npc, lifeDay, band, { visitHabit = null } = {}) {
   const cell = ROUTINE_BY_KEY[`${npc}|${dayKindFor(npc, lifeDay)}|${band}`];
-  return visitHabit && cell.habitPool?.[visitHabit] ? cell.habitPool[visitHabit] : cell.pool;
+  return visitHabit && cell.habitPool?.[visitHabit] ? cell.habitPool[visitHabit].map(item => ({ ...item, visitHabit: true })) : cell.pool;
 }
 
 /** The spot a first-day agreement points at (§6-5): an FT seat, or the place's own resting spot. */
@@ -273,6 +274,12 @@ function priorOf(npc, input, params) {
     moodsToday: r.moodsToday || [], showsToday: r.showsToday ?? 0, allNighter: r.allNighter === true, start, state: running(resident, start) };
 }
 
+/** Whether ms is outside a resident's usual waking hours that life day — the part a visit habit stretched (W6). */
+function outsideUsual(npc, ms, input) {
+  const { wakeMs, sleepMs } = awakeWindow(npc, input.lifeDay, input.dayStartMs);
+  return ms < wakeMs || ms >= sleepMs;
+}
+
 function startOf(npc, input, params) {
   const { wakeMs, sleepMs } = awakeWindow(npc, input.lifeDay, input.dayStartMs, { visitHabit: input.visitHabit });
   const t = Math.max(input.startMs, wakeMs), end = Math.min(input.endMs, sleepMs);
@@ -408,11 +415,15 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
     if (end <= t) end = Math.min(t + MINUTE, p.end);
     const arriveMs = Math.min(t + walk, end);
     const cause = c.cause || 'routine', reason = picked.reason ?? null, habit = c.habit === true;
+    // What the time the player usually comes added (§10-3, W6): a pick from the habit pool, or the hours it stretched the
+    // resident's day by — a routine the player's visits made, so it never changes the state for the worse (G4).
+    const fromVisits = c.visitHabit === true || !!input.visitHabit && outsideUsual(npc, t, input);
     const extra = { ...(c.card ? { card: c.card, key: c.key, cardRole: c.cardRole } : {}), ...(c.with ? { with: c.with } : {}), ...(c.joined ? { joined: true } : {}) };
     const previous = made.findLast(x => x.npc === npc);
     let segment;
     if (!c.card && !c.with && previous && !previous.cardRole && !previous.with && previous.endMs === t && previous.archetype === archetype.id
-      && previous.spot === spot && previous.cause === cause && (previous.reason ?? null) === reason && (previous.habit === true) === habit) {
+      && previous.spot === spot && previous.cause === cause && (previous.reason ?? null) === reason && (previous.habit === true) === habit
+      && (previous.visitHabit === true) === fromVisits) {
       // Going on with the same thing in the same place, for the same reason, is one longer segment, not a restart;
       // each piece still changes the state (review P3-1), at its own decision time.
       previous.endMs = end;
@@ -424,7 +435,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
       const mood = reason && !p.moodsToday.includes(reason) && p.moodsToday.length < linesPerDay ? `${npc}.mood.${reason}.1` : null;
       if (mood) p.moodsToday.push(reason);
       segment = { npc, startMs: t, arriveMs, endMs: end, archetype: archetype.id, spot, cause,
-        ...(reason ? { reason } : {}), ...(mood ? { mood } : {}), ...(habit ? { habit: true } : {}),
+        ...(reason ? { reason } : {}), ...(mood ? { mood } : {}), ...(habit ? { habit: true } : {}), ...(fromVisits ? { visitHabit: true } : {}),
         ...(c.promise ? { promise: c.promise } : {}), ...(p.rainMoved === archetype.id ? { moved: 'rain' } : {}), ...extra,
         ...(picked.basis && reason ? { basis: picked.basis } : {}),
         base: picked.base ? { archetype: picked.base.archetype, spot: picked.base.spot } : null };
@@ -433,7 +444,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
       if (segment.archetype === 'deliver-tea') teas.push(segment);
       if (opts.apply !== false) applySegment(vs, segment, { ...step, first: true });
     }
-    finishSegment(p.state, ARCHETYPE_BY_ID[archetype.id] ?? null, { atMs: t, playerMade: playerMade({ habit, cause }) }, [], params);
+    finishSegment(p.state, ARCHETYPE_BY_ID[archetype.id] ?? null, { atMs: t, playerMade: playerMade({ habit, cause, visitHabit: fromVisits }) }, [], params);
     p.recent = [...p.recent, archetype.id].slice(-P.recentWindow);
     if (!p.placesToday.includes(placeOf(spot))) p.placesToday.push(placeOf(spot));
     if (archetype.id === 'show-drawing' && !c.card) p.showsToday += 1;

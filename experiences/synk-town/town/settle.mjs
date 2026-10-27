@@ -49,19 +49,27 @@ export function settleSteps(settledU, lease, { canContact = false, touch = false
 
 /** settle(world, lease, { step, check, close }) → { state, changed }. The state is checked once, after
  * the walk. close(state, nowMs), when given, runs after the steps on every settlement — the village's
- * bands follow the wall clock, not U, so they close even when no play time is unsettled (W3). */
-export function settle(previous, lease, { step: stepWorld, check, close, nowMs, canContact = false, touch = false, caps = [] } = {}) {
+ * bands follow the wall clock, not U, so they close even when no play time is unsettled (W3). account is what
+ * the host knows of the account (W6: the village seed and operating line a visit's version and arm come from,
+ * whether it is academy-linked, whether evaluation signals are on); every step gets it, and the wall time the
+ * visit in progress began (the lease's presence — only a pulse saw that moment). */
+export function settle(previous, lease, { step: stepWorld, check, close, nowMs, canContact = false, touch = false, caps = [], account = {} } = {}) {
   if (typeof stepWorld !== 'function' || typeof check !== 'function') throw new TypeError('settle needs the step and the check');
   const steps = settleSteps(previous.settledU ?? 0, lease, { canContact, touch });
   if (!steps.length && !close) return { state: previous, changed: false };
-  const state = structuredClone(previous);
+  // Each step hears when the visit it belongs to began (the lease's startAts, GPT A1); a lease from before keeps the
+  // presence's latest start.
+  const state = structuredClone(previous), latest = Number.isSafeInteger(lease.presence?.visitStartAt) ? lease.presence.visitStartAt : null;
+  const startFor = u => { let found = null, at = -1; for (const [key, ms] of Object.entries(lease.startAts || {})) if (Number(key) <= u && Number(key) > at) { at = Number(key); found = ms; } return found ?? latest; };
   for (const step of steps) {
-    stepWorld(state, { enabled: true, elapsedMs: step.elapsedMs, nowMs, surfaceId: step.span.surfaceId,
+    stepWorld(state, { ...account, visitStartAt: startFor(step.u), enabled: true, elapsedMs: step.elapsedMs, nowMs, surfaceId: step.span.surfaceId,
       fence: step.span.fence, surface: step.span.surface, canRun: step.span.canRun,
       canContact: step.canContact === true, ...(step.canContact === true ? { caps } : {}), visitEnded: step.visitEnded === true, visitEndedAt: step.endedAt ?? null });
   }
   state.settledU = lease.uMs;
-  if (close) close(state, nowMs);
+  // The close also hears whether the walk ended at a safe boundary (W6: the mascot's question is asked after the bands close,
+  // on the life day they leave open).
+  if (close) close(state, nowMs, { canContact: steps.at(-1)?.canContact === true, caps });
   check(state);
   const changed = state.settledU !== previous.settledU || JSON.stringify(state) !== JSON.stringify(previous);
   return { state, changed };

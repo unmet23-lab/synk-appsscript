@@ -28,7 +28,11 @@
     { "npc": "cafe-owner", "dayKind": "weekday", "band": "night", "pool": [
       { "archetype": "night-tea", "spot": "cafe.counter", "weight": 450 },
       { "archetype": "menu-note", "spot": "cafe.counter", "weight": 300 },
-      { "archetype": "prep-cups", "spot": "cafe.prep", "weight": 250 } ] },
+      { "archetype": "prep-cups", "spot": "cafe.prep", "weight": 250 } ],
+      "habitPool": { "night": [
+        { "archetype": "night-tea", "spot": "cafe.counter", "weight": 675 },
+        { "archetype": "menu-note", "spot": "cafe.counter", "weight": 300 },
+        { "archetype": "prep-cups", "spot": "cafe.prep", "weight": 250 } ] } },
     { "npc": "cafe-owner", "dayKind": "weekend", "band": "morning", "sameAs": "weekday" },
     { "npc": "cafe-owner", "dayKind": "weekend", "band": "day", "pool": [
       { "archetype": "serve", "spot": "cafe.seats", "weight": 500 },
@@ -88,7 +92,12 @@
       { "archetype": "water", "spot": "greenhouse.bed", "weight": 350 },
       { "archetype": "observe", "spot": "greenhouse.board", "weight": 350 },
       { "archetype": "board-fold", "spot": "greenhouse.board", "weight": 300 },
-      { "archetype": "notes", "spot": "greenhouse.bench", "weight": 100 } ] },
+      { "archetype": "notes", "spot": "greenhouse.bench", "weight": 100 } ],
+      "habitPool": { "morning": [
+        { "archetype": "observe", "spot": "greenhouse.bed", "weight": 600 },
+        { "archetype": "water", "spot": "greenhouse.bed", "weight": 250 },
+        { "archetype": "board-fold", "spot": "greenhouse.board", "weight": 250 },
+        { "archetype": "notes", "spot": "greenhouse.bench", "weight": 100 } ] } },
     { "npc": "researcher", "dayKind": "weekday", "band": "day", "pool": [
       { "archetype": "observe", "spot": "cafe.front", "weight": 300 },
       { "archetype": "show-drawing", "spot": "cafe.seats", "weight": 300 },
@@ -110,7 +119,11 @@
     { "npc": "researcher", "dayKind": "off", "band": "morning", "pool": [
       { "archetype": "notes", "spot": "cafe.eaves", "weight": 600 },
       { "archetype": "quiet-rest", "spot": "cafe.eaves", "weight": 200 },
-      { "archetype": "observe", "spot": "cafe.front", "weight": 200 } ] },
+      { "archetype": "observe", "spot": "cafe.front", "weight": 200 } ],
+      "habitPool": { "morning": [
+        { "archetype": "observe", "spot": "greenhouse.bed", "weight": 600 },
+        { "archetype": "notes", "spot": "cafe.eaves", "weight": 300 },
+        { "archetype": "quiet-rest", "spot": "cafe.eaves", "weight": 100 } ] } },
     { "npc": "researcher", "dayKind": "off", "band": "day", "pool": [
       { "archetype": "quiet-rest", "spot": "cafe.eaves", "weight": 400 },
       { "archetype": "stroll", "spot": "lane.mid", "weight": 300 },
