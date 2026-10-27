@@ -114,8 +114,9 @@ export function createNotebook(dialog, { command, onPage } = {}) {
       open ? h('div', { class: 'feedback-options', role: 'group', 'aria-label': '응답' }, FEEDBACK.map(([value, label]) => h('button', { type: 'button', class: 'felt', 'aria-pressed': String(item.given === value), text: label, 'data-focus': `${more}:${value}`,
         onclick: () => { feedbackOpen = null; focusNext = more; command?.('FEEDBACK_GIVE', { completionId: item.eventId, value, canonicalActivityId: item.activity }); } }))) : null);
   }
-  /** The evaluation-only signals' row (§20-4): its state, 「좋아요」 where the host keeps them, 「그만 쓰기」 with one more
-   * confirm (it deletes what was kept), and the whole consent text under 「자세히」. */
+  /** The evaluation-only signals' row (§20-4): its state (with the keeping line from the consent contract, so the days
+   * never drift from it), 「좋아요」 where the host keeps them, 「그만 쓰기」 with one more confirm (it deletes what was
+   * kept), and the whole consent text under 「자세히」. */
   function evalSection(record) {
     if (!record) return null;
     const title = h('h3', { text: '마을을 낫게 하는 데 쓰는 기록' });
@@ -129,7 +130,7 @@ export function createNotebook(dialog, { command, onPage } = {}) {
       onclick: () => { evalDetailOpen = !evalDetailOpen; focusNext = 'eval:more'; render(snapshot); } }) : null;
     const detail = record.detail && evalDetailOpen ? h('div', { class: 'notebook-eval-detail' }, h('p', { class: 'notebook-sub', text: record.detail.title }),
       DETAIL_ROWS.filter(([key]) => record.detail[key]).map(([key, label]) => h('p', { class: 'field-note' }, h('strong', { text: `${label}: ` }), h('span', { text: record.detail[key] })))) : null;
-    return h('div', { class: 'notebook-eval' }, title, h('p', { class: 'field-note', text: record.on ? '쓰고 있어요. 180일이 지나면 지워요.' : '쓰지 않고 있어요. 안 써도 마을은 똑같아요.' }),
+    return h('div', { class: 'notebook-eval' }, title, h('p', { class: 'field-note', text: record.on ? ['쓰고 있어요.', EVAL_CONSENT?.easy?.keep].filter(Boolean).join(' ') : '쓰지 않고 있어요. 안 써도 마을은 똑같아요.' }),
       actions.length ? h('div', { class: 'actions' }, ...actions) : null, more, detail);
   }
   function render(next) {

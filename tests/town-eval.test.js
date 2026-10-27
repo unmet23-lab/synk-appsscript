@@ -66,6 +66,14 @@ test('방문 요약의 칸 ⊆ 동의 계약 파일의 칸 — 항목과 칸이 
   assert.deepEqual(EVAL_CONSENT.easy.buttons, { no: contract.쉬운판.단추.아니요, yes: contract.쉬운판.단추.좋아요, more: contract.쉬운판.단추.자세히 });
 });
 
+test('보관 날수는 판 하나 — 계약의 보관 문구 셋과 생성물이 판의 eval.retainLifeDays와 같은 날수이고, 수첩은 날수를 다시 쓰지 않는다(10-27 180 → 30)', async () => {
+  const { paramsFor } = await townModule('params'), { EVAL_CONSENT } = await townModule('data.gen');
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, '계약', '마을평가신호_선택응답_계약.json'), 'utf8')).선택응답;
+  const days = `${paramsFor().eval.retainLifeDays}일`;
+  for (const text of [contract.보관, contract.쉬운판.보관, contract.자세히.보관, EVAL_CONSENT.easy.keep, EVAL_CONSENT.detail.keep]) assert.deepEqual(text.match(/\d+일/g), [days], text);
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'experiences', 'synk-town', 'day-notebook.mjs'), 'utf8'), /\d+일이 지나면/, '수첩은 계약 문구(EVAL_CONSENT.easy.keep)를 쓴다');
+});
+
 test('평가 줄 쓰기가 실패해도 그 요청이 센 것은 기다렸다가 다음 요청의 줄에 그대로 든다(GPT 검수 GA5)', async () => {
   const { createStore } = await import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'server.mjs')).href);
   const e = await townModule('eval');
