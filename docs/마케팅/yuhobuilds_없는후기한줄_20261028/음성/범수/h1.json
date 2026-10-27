@@ -1,0 +1,124 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "에이아이 채팅에 빵집 홈페이지 글을 손님 후기까지 써 달라고 했더니, 아무도 안 쓴 후기를 세 개나 지어 넣었어요.",
+ "dur": 5.304,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.267
+  },
+  {
+   "text": "채팅에",
+   "start": 0.304,
+   "end": 0.626
+  },
+  {
+   "text": "빵집",
+   "start": 0.736,
+   "end": 1.009
+  },
+  {
+   "text": "홈페이지",
+   "start": 1.046,
+   "end": 1.404
+  },
+  {
+   "text": "글을",
+   "start": 1.453,
+   "end": 1.65
+  },
+  {
+   "text": "손님",
+   "start": 1.762,
+   "end": 1.997
+  },
+  {
+   "text": "후기까지",
+   "start": 2.034,
+   "end": 2.38
+  },
+  {
+   "text": "써",
+   "start": 2.417,
+   "end": 2.479
+  },
+  {
+   "text": "달라고",
+   "start": 2.516,
+   "end": 2.726
+  },
+  {
+   "text": "했더니,",
+   "start": 2.763,
+   "end": 3.035
+  },
+  {
+   "text": "아무도",
+   "start": 3.455,
+   "end": 3.677
+  },
+  {
+   "text": "안",
+   "start": 3.739,
+   "end": 3.813
+  },
+  {
+   "text": "쓴",
+   "start": 3.85,
+   "end": 3.962
+  },
+  {
+   "text": "후기를",
+   "start": 4.01,
+   "end": 4.246
+  },
+  {
+   "text": "세",
+   "start": 4.283,
+   "end": 4.357
+  },
+  {
+   "text": "개나",
+   "start": 4.407,
+   "end": 4.542
+  },
+  {
+   "text": "지어",
+   "start": 4.604,
+   "end": 4.752
+  },
+  {
+   "text": "넣었어요.",
+   "start": 4.79,
+   "end": 5.304
+  }
+ ],
+ "source": {
+  "key": "1c1a410bad8fdfa985de062f8a23f9fe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

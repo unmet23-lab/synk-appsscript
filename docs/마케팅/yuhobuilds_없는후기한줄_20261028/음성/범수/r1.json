@@ -1,0 +1,119 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "부탁 맨 끝에 이 한 줄을 붙였어요. 단, 모르는 숫자, 후기, 이름은 지어내지 말고 빈칸으로 남겨 줘.",
+ "dur": 5.62,
+ "words": [
+  {
+   "text": "부탁",
+   "start": 0.05,
+   "end": 0.277
+  },
+  {
+   "text": "맨",
+   "start": 0.321,
+   "end": 0.382
+  },
+  {
+   "text": "끝에",
+   "start": 0.427,
+   "end": 0.64
+  },
+  {
+   "text": "이",
+   "start": 0.73,
+   "end": 0.745
+  },
+  {
+   "text": "한",
+   "start": 0.805,
+   "end": 0.88
+  },
+  {
+   "text": "줄을",
+   "start": 0.926,
+   "end": 1.062
+  },
+  {
+   "text": "붙였어요.",
+   "start": 1.107,
+   "end": 1.531
+  },
+  {
+   "text": "단,",
+   "start": 1.954,
+   "end": 2.136
+  },
+  {
+   "text": "모르는",
+   "start": 2.407,
+   "end": 2.664
+  },
+  {
+   "text": "숫자,",
+   "start": 2.709,
+   "end": 2.891
+  },
+  {
+   "text": "후기,",
+   "start": 3.208,
+   "end": 3.39
+  },
+  {
+   "text": "이름은",
+   "start": 3.737,
+   "end": 3.964
+  },
+  {
+   "text": "지어내지",
+   "start": 4.009,
+   "end": 4.297
+  },
+  {
+   "text": "말고",
+   "start": 4.341,
+   "end": 4.523
+  },
+  {
+   "text": "빈칸으로",
+   "start": 4.735,
+   "end": 5.098
+  },
+  {
+   "text": "남겨",
+   "start": 5.142,
+   "end": 5.354
+  },
+  {
+   "text": "줘.",
+   "start": 5.4,
+   "end": 5.62
+  }
+ ],
+ "source": {
+  "key": "4656b5df1fb48e9f4625fc41ad189123",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

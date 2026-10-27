@@ -1,0 +1,74 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "그런데 한 줄을 붙였더니, 후기 자리를 빈칸으로 남겨요.",
+ "dur": 2.657,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.252
+  },
+  {
+   "text": "한",
+   "start": 0.291,
+   "end": 0.394
+  },
+  {
+   "text": "줄을",
+   "start": 0.433,
+   "end": 0.563
+  },
+  {
+   "text": "붙였더니,",
+   "start": 0.602,
+   "end": 1.029
+  },
+  {
+   "text": "후기",
+   "start": 1.287,
+   "end": 1.455
+  },
+  {
+   "text": "자리를",
+   "start": 1.494,
+   "end": 1.752
+  },
+  {
+   "text": "빈칸으로",
+   "start": 1.791,
+   "end": 2.179
+  },
+  {
+   "text": "남겨요.",
+   "start": 2.218,
+   "end": 2.657
+  }
+ ],
+ "source": {
+  "key": "1dc25ef683607a0c91e17902e8a98b4d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

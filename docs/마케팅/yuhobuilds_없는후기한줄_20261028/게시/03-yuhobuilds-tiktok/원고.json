@@ -1,0 +1,13 @@
+{
+ "id": "03-yuhobuilds-tiktok",
+ "brand": "yuhobuilds",
+ "platform": "tiktok",
+ "account": "@yuhobuilds",
+ "format": "video",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "caption": "AI 채팅에 빵집 홈페이지 글을 손님 후기까지 써 달라고 했더니, 아무도 안 쓴 후기를 세 개나 지어 넣었어요(「예시입니다」 안내와 함께 — 통째로 올리면 없는 후기가 그대로 나가요).\n\n부탁 맨 끝에 붙일 한 줄 👇\n단, 모르는 숫자 · 후기 · 이름은 지어내지 말고 [빈칸]으로 남겨 줘.\n\n이 한 줄을 붙인 새 대화에서는 후기 · 작성자 · 가게 이름 · 가격을 [빈칸]으로 남겼어요. AI 채팅 임시 대화에서 두 번씩 해 본 결과예요. 요청문은 synk.im/prompts\n\nAI가 쓴 글에서 이것만은 꼭 고친다, 있으세요?\n\n#AI활용 #홈페이지 #1인창업 #자영업 #AI글쓰기",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음(영상 끝 말은 「이 한 줄은 아래 글에」 — 유튜브는 「고정 댓글에」)."
+}

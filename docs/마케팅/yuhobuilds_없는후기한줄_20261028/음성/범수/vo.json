@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-27T23:09:48.734Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "에이아이 채팅에 빵집 홈페이지 글을 손님 후기까지 써 달라고 했더니, 아무도 안 쓴 후기를 세 개나 지어 넣었어요.",
+   "dur": 5.304,
+   "syllablesPerSec": 8.48,
+   "src": "h1.wav",
+   "key": "1c1a410bad8fdfa985de062f8a23f9fe",
+   "words": 18
+  },
+  {
+   "id": "h2",
+   "text": "그런데 한 줄을 붙였더니, 후기 자리를 빈칸으로 남겨요.",
+   "dur": 2.657,
+   "syllablesPerSec": 8.28,
+   "src": "h2.wav",
+   "key": "1dc25ef683607a0c91e17902e8a98b4d",
+   "words": 8
+  },
+  {
+   "id": "r1",
+   "text": "부탁 맨 끝에 이 한 줄을 붙였어요. 단, 모르는 숫자, 후기, 이름은 지어내지 말고 빈칸으로 남겨 줘.",
+   "dur": 5.62,
+   "syllablesPerSec": 6.58,
+   "src": "r1.wav",
+   "key": "4656b5df1fb48e9f4625fc41ad189123",
+   "words": 17
+  },
+  {
+   "id": "b1",
+   "text": "가게 이름이랑 가격도 빈칸이에요. 내가 아는 걸로 채우면 돼요.",
+   "dur": 3.398,
+   "syllablesPerSec": 7.36,
+   "src": "b1.wav",
+   "key": "ddf0c0051c38d2d61be9c4234ff23611",
+   "words": 9
+  },
+  {
+   "id": "c1",
+   "text": "이 한 줄은 아래 글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
+   "dur": 3.597,
+   "syllablesPerSec": 6.95,
+   "src": "c1.wav",
+   "key": "e4cc083243540bae821a6a7a8046bdf1",
+   "words": 12
+  },
+  {
+   "id": "c1y",
+   "text": "이 한 줄은 고정 댓글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
+   "dur": 3.36,
+   "syllablesPerSec": 7.74,
+   "src": "c1y.wav",
+   "key": "36c24e90856c2d67ddbc045c089add9a",
+   "words": 12
+  },
+  {
+   "id": "fo",
+   "text": "팔로우하면 다음 편도 보여 드릴게요.",
+   "dur": 2.023,
+   "syllablesPerSec": 7.41,
+   "src": "fo.wav",
+   "key": "fc80dd656a54278ae88c678cc2ba37d2",
+   "words": 5
+  }
+ ]
+}

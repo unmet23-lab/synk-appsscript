@@ -1,0 +1,79 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "가게 이름이랑 가격도 빈칸이에요. 내가 아는 걸로 채우면 돼요.",
+ "dur": 3.398,
+ "words": [
+  {
+   "text": "가게",
+   "start": 0.06,
+   "end": 0.284
+  },
+  {
+   "text": "이름이랑",
+   "start": 0.343,
+   "end": 0.656
+  },
+  {
+   "text": "가격도",
+   "start": 0.716,
+   "end": 0.97
+  },
+  {
+   "text": "빈칸이에요.",
+   "start": 1.014,
+   "end": 1.566
+  },
+  {
+   "text": "내가",
+   "start": 2.162,
+   "end": 2.326
+  },
+  {
+   "text": "아는",
+   "start": 2.37,
+   "end": 2.52
+  },
+  {
+   "text": "걸로",
+   "start": 2.565,
+   "end": 2.699
+  },
+  {
+   "text": "채우면",
+   "start": 2.758,
+   "end": 2.997
+  },
+  {
+   "text": "돼요.",
+   "start": 3.042,
+   "end": 3.398
+  }
+ ],
+ "source": {
+  "key": "ddf0c0051c38d2d61be9c4234ff23611",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}
