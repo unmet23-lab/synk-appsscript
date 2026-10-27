@@ -368,3 +368,22 @@ test('슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제
   const row = r.accounts.find((x) => x.account === 'lab-youtube');
   assert.deepEqual(['2026-10-22', '2026-10-23', '2026-10-24', '2026-10-25'].map((d) => row.byDay[d].length), [0, 1, 1, 0]);
 });
+
+test('게시물 ID까지 적힌 「게시됨」 작업실 판은 서버가 「확인 필요」로 내려도 게시됨이고, 보류 칸은 「새 편 칸」으로 보인다', () => {
+  const base = 매일판('확인됨', [
+    ['ws-seen', 한편('LAB', '2026-10-20', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '게시됨', 방법: '작업실', 작업: 'job-u', 게시물ID: 'abc' }] }],
+    ['ws-unknown', 한편('LAB', '2026-10-19', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-v' }] }],
+    ['held', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '보류' }] }],
+  ]);
+  const cache = path.join(base, '서버.json');
+  fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-10-21T02:00:00Z', channels: [], posts: [],
+    jobs: [{ id: 'job-u', channelId: 'x', status: 'unknown' }, { id: 'job-v', channelId: 'x', status: 'unknown' }] }));
+  const r = 매일큐(base, ['--오늘', '2026-10-21', '--서버캐시', cache]);
+  assert.ok(!r.warnings.some((w) => w.includes('ws-seen')), r.warnings.join('\n'));
+  // 게시물 ID가 없는 판은 서버 상태를 그대로 따른다
+  assert.ok(r.warnings.some((w) => w.includes('ws-unknown')));
+  const t = spawnSync(process.execPath, [tool, '--폴더', base, '--서버캐시', cache, '--오늘', '2026-10-21'],
+    { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(base, '상태') } });
+  assert.equal(t.status, 0, t.stderr);
+  assert.match(t.stdout, /10-22 보류 — 나가지 않아 새 편 칸/);
+});

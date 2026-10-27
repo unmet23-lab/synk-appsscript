@@ -143,8 +143,10 @@ function collect(server, accounts, now) {
         let url = local.주소 || null;
         if (server && local.방법 === '작업실') {
           const job = server.jobs.find((j) => j.id === local.작업);
-          if (job) { state = serverState(job); url = job.publicationUrl || url; }
-          else if (['승인 대기', '예약됨'].includes(local.상태)) {
+          // 게시물 ID까지 적힌 「게시됨」은 공개를 직접 확인한 판 — 서버가 「확인 필요」로 내려도 그대로 둔다(10-27 관용구 퀴즈 #6 유튜브: AI 표시 비교 오판으로 unknown).
+          const confirmed = local.상태 === '게시됨' && local.게시물ID;
+          if (job && !confirmed) { state = serverState(job); url = job.publicationUrl || url; }
+          else if (!job && ['승인 대기', '예약됨'].includes(local.상태)) {
             warnings.push(`예약됨인데 서버에 없음: ${p.계정} · ${dir.name}`);
             state = '서버에 없음';
           }
@@ -336,7 +338,7 @@ function accountMark(list) {
   return '○';
 }
 
-const WHY = { 빔: '만든 편 없음', 만듦: '승인·예약 전', '고칠 것': '검사 고칠 것', 보류: '보류' };
+const WHY = { 빔: '만든 편 없음', 만듦: '승인·예약 전', '고칠 것': '검사 고칠 것', 보류: '보류 — 나가지 않아 새 편 칸' };
 
 // 줄마다 내일~D+4에서 채움이 아닌 칸 — 「10-29 만든 편 없음 · 10-30 lab-tiktok 승인·예약 전」
 function gapsOf(line, range) {
