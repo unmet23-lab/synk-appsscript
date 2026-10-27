@@ -101,13 +101,31 @@ function inspect(root, pins, validator) {
   for (const [key, pin] of Object.entries(pins)) read(path.join(root, pin.path), pin);
   return { ...result, used, documents };
 }
-function writeNew(root, files) {
+function writeNew(root, files, validate = () => {}) {
+  a.ok(path.isAbsolute(root), 'ABSOLUTE_OUTPUT_REQUIRED');
   a.equal(fs.existsSync(root), false, 'NEW_RELEASE_DIRECTORY_REQUIRED');
-  fs.mkdirSync(root); // The parent must already exist; do not create an accidental path tree.
+  const parent = path.dirname(root);
+  for (let cursor = parent;; cursor = path.dirname(cursor)) {
+    const stat = fs.lstatSync(cursor);
+    a.ok(stat.isDirectory() && !stat.isSymbolicLink(), 'REGULAR_OUTPUT_PARENT_REQUIRED');
+    if (path.dirname(cursor) === cursor) break;
+  }
+  const planned = new Map();
   for (const [relative, raw] of files) {
-    name(relative); const file = path.join(root, relative);
+    name(relative); a.ok(Buffer.isBuffer(raw), 'OUTPUT_BYTES_REQUIRED');
+    planned.set(relative, Buffer.from(raw));
+  }
+  // A failed build stays quarantined; the requested destination never becomes a partial release.
+  const stage = fs.mkdtempSync(path.join(parent, '.' + path.basename(root) + '.preparing-'));
+  for (const [relative, raw] of planned) {
+    const file = path.join(stage, relative);
     fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, raw, { flag: 'wx', mode: 0o600 });
   }
+  validate(stage);
+  for (const [relative, raw] of planned) read(path.join(stage, relative), record(relative, raw));
+  exactDirectory(stage, planned.keys());
+  a.equal(fs.existsSync(root), false, 'NEW_RELEASE_DIRECTORY_REQUIRED');
+  fs.renameSync(stage, root);
 }
 function preserve({ root, pins, output }) {
   a.ok(path.isAbsolute(root) && path.isAbsolute(output));
@@ -121,8 +139,7 @@ function preserve({ root, pins, output }) {
   const seal = { schema: 'synk-completed-company-release/v1', manifestSha256: result.manifestSha256, imageId: result.imageId, sourceFiles: result.source.size, imageFiles: result.image.size, selectedTests: result.tests.length, productionTests: result.productionTests, evidence, historicalRevalidation: true, currentLiveStateVerified: false, deploymentAuthorized: false };
   files.set('completed-release.json', encode(seal));
   inspect(root, pins, require(validatorFile).validate);
-  writeNew(output, files);
-  verify(output, sha(encode(seal)));
+  writeNew(output, files, stage => verify(stage, sha(encode(seal))));
   return { manifest: result.manifestSha256, sealSha256: sha(encode(seal)), output, files: files.size, historicalRevalidation: true, currentLiveStateVerified: false };
 }
 function verify(root, sealSha256) {

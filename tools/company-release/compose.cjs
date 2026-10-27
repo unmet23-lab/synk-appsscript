@@ -51,9 +51,10 @@ function compose({ parent, sealSha256, carryFile, carrySha256, output }) {
   // Recheck all parent and donor inputs before creating any output.
   R.verify(parent, sealSha256); R.read(carryFile, { sha256: carrySha256 });
   for (const row of carry.files) R.read(path.join(path.dirname(carryFile), 'files', row.path), row);
-  R.writeNew(output, files);
-  for (const row of sourceRows) R.read(path.join(output, 'candidate', row.path), row);
-  R.exactDirectory(path.join(output, 'candidate'), [...graph.keys(), 'release-manifest.json']);
+  R.writeNew(output, files, stage => {
+    for (const row of sourceRows) R.read(path.join(stage, 'candidate', row.path), row);
+    R.exactDirectory(path.join(stage, 'candidate'), [...graph.keys(), 'release-manifest.json']);
+  });
   return { status: composition.status, manifestSha256, sourceFiles: sourceRows.length, imageFiles: images.length, deltaFiles: delta.length, runtimeDeltaFiles: runtimeDeltaPaths.length, selectedTests: tests.length, output, remoteCalls: 0 };
 }
 module.exports = { compose };
