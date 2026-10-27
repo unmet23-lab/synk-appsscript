@@ -1,0 +1,59 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n5",
+ "text": "Same word. Different tone. Your turn!",
+ "dur": 2.658,
+ "words": [
+  {
+   "text": "Same",
+   "start": 0,
+   "end": 0.242
+  },
+  {
+   "text": "word.",
+   "start": 0.303,
+   "end": 0.585
+  },
+  {
+   "text": "Different",
+   "start": 0.826,
+   "end": 1.189
+  },
+  {
+   "text": "tone.",
+   "start": 1.33,
+   "end": 1.491
+  },
+  {
+   "text": "Your",
+   "start": 1.733,
+   "end": 1.935
+  },
+  {
+   "text": "turn!",
+   "start": 2.015,
+   "end": 2.519
+  }
+ ],
+ "source": {
+  "key": "adbfcd919b86a64825402516f297c7f7",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "The barista said the same Korean word twice: once shocked by a pile of coins, once blushing at a little flower. Here is the trick:",
+   "next": "Say it out loud with him."
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

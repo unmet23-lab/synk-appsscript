@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "아니 = “no”… right? 🤔 Same word, different tone #learnkorean",
+  "caption": "아니 = “no”… right? Not always! 🤔\nSame word, different tone:\n😲 아니?! [a-ni?!] (tone goes up) — “What?!” — when you’re shocked\n🎁 아니~ 뭘 이런 걸! [a-ni~ mwol i-reon geol!] (up and down) — “Aww, you shouldn’t have!” — when someone gives you a gift\n\nYour turn: say both out loud! 🎤\n\nWhich 아니 will you try first? Comment below 👇\n\n🎮 Korean listening & reading mini games: https://synk.im/try/learning-hub/\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #korean",
+  "pinnedComment": "Tip: a polite “no” is 아니요 [a-ni-yo] 🙂 (아니 alone is casual — friends only)\n🎮 New to Korean? Listening & reading mini games → https://synk.im/try/learning-hub/",
+  "alt": [
+    "A needle-felted café. A felt barista stares at a pile of coins spilled on the counter and gasps “아니?!” — the caption reads 아니?! [a-ni?!] = “What?!” — not “no”! with a rising tone line. Next, a small coral ghost-shaped plush stands beside a tiny flower pot tagged “a gift”, and the barista blushes, waving his hands: “아니~ 뭘 이런 걸!” [a-ni~ mwol i-reon geol!] = “Aww, you shouldn’t have!” with a wavy tone line. A card titled “Same word. Different tone.” shows both lines, then each scene plays again with “YOUR TURN: say it out loud!” and a short pause, and the video asks which 아니 you will try first."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = ani2-en v11(15.7초, E4 다시 살림 — 렌더 → 음량마감 −14.7 LUFS → CBR 10M 다시 담기). 표지 cover.png = 0.8초(24프레임 — 「아니 = “no”… right? 🤔」 · 동전에 놀란 바리스타 · 「아니?! = What?!」). 어린이 전용 아님(댓글 놀이가 필요). 합성 표시: 필수 아님 — 펠트 인형 장면은 GPT 이미지로 구웠지만 실제 사람 · 장소 · 사건으로 보이지 않는 인형극이고, 목소리는 특정인이 아닌 TTS(E3 · E8 · 퀴즈 편과 같은 판단). 동영상 언어: 바리스타의 한국어 두 줄 + 영어 해설 두 줄 — 오디오 언어 ko, 제목 · 설명 en. 자동 더빙 끔.",
+  "version": "ani2-en-v11"
+}

@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n6",
+ "text": "Which one will you try first?",
+ "dur": 2.094,
+ "words": [
+  {
+   "text": "Which",
+   "start": 0.03,
+   "end": 0.272
+  },
+  {
+   "text": "one",
+   "start": 0.474,
+   "end": 0.615
+  },
+  {
+   "text": "will",
+   "start": 0.696,
+   "end": 0.837
+  },
+  {
+   "text": "you",
+   "start": 0.897,
+   "end": 0.998
+  },
+  {
+   "text": "try",
+   "start": 1.079,
+   "end": 1.361
+  },
+  {
+   "text": "first?",
+   "start": 1.462,
+   "end": 2.094
+  }
+ ],
+ "source": {
+  "key": "efdac8ffb12934bd1792fe7f434414f2",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
