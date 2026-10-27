@@ -3,11 +3,16 @@
 // separate 「로그인과 보안」 card (portal-security.mjs), where the account is signed in, the learning link and its
 // summary, the records download and account deletion. It replaces the shared account view (account-view.mjs) on this
 // page only; WORLD's web client keeps that one. Every reply is bound to the account and the read it answered: a sign-out
-// or another account drops what is shown and any reply still on its way.
+// or another account drops what is shown and any reply still on its way. SYNK TOWN's 「마을 기록」 card (the PC app's
+// town-records-card.mjs) sits under the learning link: what the town keeps of the person, taken out or cleared with the
+// person's own rights commands even when the town no longer opens for them.
 import { nameProblem, profileChange, sessionRows, membershipLines, pendingDeletion } from '../../../desktop/renderer/account-page.mjs';
 import { SETTING_WORDS, REASON_WORDS } from './atlas-summary-words.mjs';
+import { createTownRecords, attachTownRecords, townExport } from '../../../desktop/renderer/town-records-card.mjs';
 
 const SESSIONS_SHOWN = 6;
+// The town card in this page's own controls.
+const TOWN_CLASSES = Object.freeze({ button: 'sb-btn soft', note: 'small', link: 'link-button', retry: 'sb-btn soft' });
 const MESSAGES = Object.freeze({
   PROFILE_CONFLICT: '다른 곳에서 먼저 이름을 바꿨어요. 지금 이름을 확인한 뒤 다시 저장해 주세요.',
   REVISION_CONFLICT: '다른 곳에서 학습 기록 연결을 먼저 바꿨어요. 지금 상태를 다시 불러왔어요.',
@@ -25,6 +30,13 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
   const doc = document, profileRoot = doc.getElementById('account-profile'), root = doc.getElementById('account');
   let data = null, ended = false, epoch = 0, pendingFocus = null, editingName = false, nameDraft = '', allSessions = false, deleteRequestId = null, summary = null, summaryState = 'idle';
   const busy = new Set();
+  // The town card is read once per signed-in account and redrawn in place (drawTown — the block is rebuilt on every render).
+  let drawTown = null, townFor = null;
+  const town = createTownRecords({
+    load: async () => { const reply = await client.townRecords();live();return reply; },
+    send: async command => { const reply = await client.townRights(command);live();return reply; },
+    confirm: ({ title, ok }) => confirm({ title, body: [], ok }), onChange: () => drawTown?.(), randomId,
+  });
   const h = (tag, props = {}, ...children) => {
     const node = doc.createElement(tag);
     for (const [key, value] of Object.entries(props)) { if (value === undefined || value === null || value === false) continue;if (key === 'className') node.className = value;else if (key === 'text') node.textContent = value;else if (key.startsWith('on')) node[key] = value;else node.setAttribute(key, value === true ? '' : String(value)); }
@@ -141,6 +153,13 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
         (practice.skills || []).slice(0, 3).filter(skill => typeof skill?.line === 'string').map(skill => h('li', {}, skill.line))),
       h('p', { className: 'small' }, summary.shared === 'practice-and-settings' ? '다른 SYNK 앱도 이 요약을 보고 시작해요. 내가 고른 것과 실제 연습만 담고, 나이나 성격은 짐작하지 않아요.' : '「학습 기록 연결」이 꺼져 있어 다른 SYNK 앱에는 직접 고른 배우는 이유만 전해요.'));
   }
+  function townBlock() {
+    if (typeof client.townRecords !== 'function') return null;
+    const body = h('div', {});
+    const block = h('section', { className: 'account-block town-block', 'aria-labelledby': 'town-heading' }, h('h3', { id: 'town-heading' }, '마을 기록'), body);
+    drawTown = attachTownRecords(town, body, { classes: TOWN_CLASSES, headingLevel: 4 });
+    return block;
+  }
   function rightsBlock() {
     const rows = (data?.entitlements || []).filter(Boolean);
     if (!rows.length) return null;
@@ -153,7 +172,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     return h('section', { className: 'account-block account-danger', 'aria-labelledby': 'data-heading' },
       h('h3', { id: 'data-heading' }, '내 데이터와 계정 삭제'),
       h('div', { className: 'switch-row-line' },
-        h('div', {}, h('strong', {}, '연습 기록 내려받기'), h('p', { className: 'small' }, '계정에 저장한 연습 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.')),
+        h('div', {}, h('strong', {}, '연습 기록 내려받기'), h('p', { className: 'small' }, '계정에 저장한 연습 기록과 내 정보, 마을 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.')),
         h('button', { className: 'sb-btn soft', type: 'button', 'data-key': 'export', disabled: busy.has('export') || preview, onclick: () => void act('export', download, { reload: false }) }, busy.has('export') ? '준비 중…' : '연습 기록 내려받기')),
       h('div', { className: 'switch-row-line' },
         h('div', {}, h('strong', {}, deletion ? '삭제 요청을 받았어요' : deleting ? '삭제를 처리하고 있어요' : '계정 삭제'),
@@ -174,14 +193,17 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     });
   }
   async function download() {
-    const events = [], meta = [];let after = 0, until, memory;
+    const events = [], meta = [];let after = 0, until, memory, myInfo, townData;
     for (let page = 0; page < 1000; page++) {
       const result = await client.exportPage({ after, until });live();
       if (after === 0 && Array.isArray(result.atlasMemory)) memory = result.atlasMemory;
+      // The first page carries the town's first page (W6c); 「내 정보」 rides every page.
+      if (after === 0 && Object.hasOwn(result, 'town')) townData = await townExport(result.town, async page => { const reply = await client.townExportPage(page);live();return reply; });
+      if (Object.hasOwn(result, 'myInfo')) myInfo = result.myInfo;
       if (!Array.isArray(result.events) || !Number.isSafeInteger(result.cursor) || result.cursor < after || result.hasMore && result.cursor <= after) throw new Error('내려받기가 중간에 멈췄어요. 다시 해 주세요.');
       until ??= result.until;events.push(...result.events);if (Array.isArray(result.eventMeta)) meta.push(...result.eventMeta);after = result.cursor;
       if (!result.hasMore) {
-        const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(memory ? { atlasMemory: memory } : {}), until, events, eventMeta: meta }, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(myInfo !== undefined ? { myInfo } : {}), ...(memory ? { atlasMemory: memory } : {}), ...(townData !== undefined ? { town: townData } : {}), until, events, eventMeta: meta }, null, 2)], { type: 'application/json' });
         const link = h('a', { href: URL.createObjectURL(blob), download: 'synk-connected-learning.json' });doc.body.append(link);link.click();link.remove();setTimeout(() => URL.revokeObjectURL(link.href), 1000);
         notice('연습 기록을 내려받았어요. 과제와 AI 기록은 이 파일에 들어 있지 않아요.', false, false, 'success');return;
       }
@@ -195,7 +217,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     const active = doc.activeElement, inside = !!active && (!!root.contains?.(active) || !!profileRoot?.contains?.(active));
     const key = inside ? active.dataset?.key : null, typing = inside && active.id === 'profile-name-input' ? [active.selectionStart, active.selectionEnd] : null;
     if (scope !== 'main') { profileRoot.hidden = false;profileRoot.replaceChildren(profile()); }
-    root.hidden = false;root.replaceChildren(h('div', { className: 'account-blocks' }, sessionsBlock(), learningBlock(), rightsBlock(), dataBlock()));
+    root.hidden = false;root.replaceChildren(h('div', { className: 'account-blocks' }, sessionsBlock(), learningBlock(), townBlock(), rightsBlock(), dataBlock()));
     // The keyboard stays where it was, found by a control's key (its words may change), or comes back to the control
     // that started a change once it is enabled again.
     if (typing && editingName) { const input = doc.getElementById('profile-name-input');if (input && doc.activeElement !== input) { input.focus?.({ preventScroll: true });input.setSelectionRange?.(...typing); }return; }
@@ -215,11 +237,12 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     const token = ++epoch, result = await client.load();live();if (token !== epoch) return;
     if (data?.account?.synk_user_id && result?.account?.synk_user_id !== data.account.synk_user_id) throw Object.assign(new Error('계정이 바뀌었어요. 다시 로그인해 주세요.'), { code: 'ACCOUNT_CHANGED' });
     data = result;render();void loadSummary(token);
+    if (townFor !== data.account?.synk_user_id) { townFor = data.account?.synk_user_id ?? null;void town.refresh(); }
   }
   return Object.freeze({
     load,
     sessions: () => (data?.sessions || []).map(row => ({ ...row })),
-    stop() { ended = true;epoch++;busy.clear();doc.body.classList.remove('account-open');profileRoot.replaceChildren();profileRoot.hidden = true;root.replaceChildren();root.hidden = true; },
+    stop() { ended = true;epoch++;busy.clear();town.reset();drawTown = null;townFor = null;doc.body.classList.remove('account-open');profileRoot.replaceChildren();profileRoot.hidden = true;root.replaceChildren();root.hidden = true; },
   });
 }
 

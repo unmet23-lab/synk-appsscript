@@ -26,7 +26,7 @@ test('first existing account GET carries verified signup attribution; slow track
   const sdk={auth:{initialize:async()=>({}),onAuthStateChange(){},getSession:async()=>({data:{session:{user,access_token:'synthetic-access'}}}),getUser:async()=>({data:{user}})}};
   const mounting=mountPortal({config:{configured:true,portalUrl:'https://synk.im/id/',learningUrl:'/',accountApiUrl:'https://account.example.test',supabasePublishableKey:'synthetic-public'},sdk});
   await settled();assert.equal(calls.length,0);releaseDigest();await mounting;await settled();
-  assert.equal(calls.filter(call=>!new URL(call.url).search).length,1);assert.equal(new URL(calls[0].url).pathname,'/functions/v1/synk-account');
+  assert.equal(calls.filter(call=>!new URL(call.url).search&&new URL(call.url).pathname==='/functions/v1/synk-account').length,1);assert.equal(new URL(calls[0].url).pathname,'/functions/v1/synk-account');
   assert.equal(calls[0].options.headers['x-synk-social-click'],clickId);assert.match(calls[0].options.headers['x-synk-social-event'],/^[a-f0-9-]{36}$/);
   assert.equal(calls[0].options.headers.Authorization,'Bearer synthetic-access');assert.equal(get('account').hidden,false);
   for(const call of calls.slice(1))assert.equal(call.options.headers['x-synk-social-click'],undefined);

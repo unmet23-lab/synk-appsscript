@@ -5,12 +5,33 @@ import { createWardrobeView } from './wardrobe-view.mjs';
 import { createWorldPlayHost } from '../../play-common/account-host.mjs';
 import { takeWorldPlayEntry,worldGameHref } from './world-play-entry.mjs';
 import { createClassroomTownHost } from './classroom-town-host.mjs';
+// SYNK TOWN's 「마을 기록」 card (W6c — the PC app's town-records-card.mjs, shared with the portal and the PC 「내 계정」).
+import { createTownRecords, attachTownRecords, townExport } from '../../../desktop/renderer/town-records-card.mjs';
+const TOWN_CLASSES = Object.freeze({ button: 'plain', note: 'small', link: 'plain link', retry: 'plain' });
+// A small modal question for the town card with a safe default (「취소」 keeps everything as it is).
+function confirmTown({ title, ok }) {
+  return new Promise(resolve => {
+    const dialog = element('dialog');if (typeof dialog.showModal !== 'function') { resolve(false);return; }
+    const form = element('form', null, 'actions');form.method = 'dialog';
+    const yes = element('button', ok, 'plain');yes.value = 'ok';const no = element('button', '취소', 'plain');no.value = 'cancel';no.autofocus = true;
+    form.append(yes, no);dialog.append(element('h2', title), form);
+    dialog.addEventListener('close', () => { resolve(dialog.returnValue === 'ok');dialog.remove(); }, { once: true });
+    document.body.append(dialog);dialog.showModal();
+  });
+}
 const memberLabel = member => ({ student: '학생', teacher: '강사', director: '원장', reviewer: '검수 담당' })[member.role] || (member.kind === 'staff' ? '교직원' : '회원');
 const element = (tag, text, className) => { const node = document.createElement(tag);if (text != null) node.textContent = text;if (className) node.className = className;return node; };
 // 기기 시각으로 「10월 10일 05:00」(계정 지우기 취소 기한).
 const dueText = value => { const d = new Date(value);if (!value || Number.isNaN(d.getTime())) return '';return `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null, classConnection = null }) {
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, playHost, wardrobeView, ended = false, deleteRequestId, gameFrame, gameGeneration=0, loadVersion=0, stopPreferences, learningPending=false, learningUnconfirmed=false,playEntryUsed=false;
+  // The town card is read once per signed-in account (townFor) and redrawn in place; a reply after stop() is dropped.
+  let drawTown = null, townFor = null;
+  const town = createTownRecords({
+    load: async () => { const reply = await client.townRecords();guard();if (ended) throw Object.assign(new Error('closed'), { code: 'ACCOUNT_CHANGED' });return reply; },
+    send: async command => { const reply = await client.townRights(command);guard();if (ended) throw Object.assign(new Error('closed'), { code: 'ACCOUNT_CHANGED' });return reply; },
+    confirm: confirmTown, onChange: () => drawTown?.(),
+  });
   const closeGame=()=>{gameGeneration++;if(window.SYNKTownHost)delete window.SYNKTownHost;try{host?.closeRun?.();}catch{}if(gameFrame){gameFrame.removeAttribute?.('src');gameFrame.hidden=true;}};
   // Back in front: read what other devices chose (help style, moment memory); going to the background: send what changed here.
   const retryPlay = () => { if(playHost&&!['conflict','stopped'].includes(playHost.status().phase))void playHost.retry().catch(()=>{}); };
@@ -136,6 +157,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     if(classConnection){const context=await classConnection.client.load();guard();if(ended || version!==loadVersion)return;if(context?.account?.synk_user_id!==result.account?.synk_user_id)throw new Error('수업 계정이 바뀌었어요. 다시 로그인해 주세요.');result.classroom=context;classConnection.onContext?.(context);}
     if(preserveWorld && !classConnection && applyAccount(result))return;
     learningUnconfirmed=false;data = result;render();
+    if(!localConnection&&typeof client.townRecords==='function'&&townFor!==data.account?.synk_user_id){townFor=data.account?.synk_user_id??null;void town.refresh();}
   }
   // A foreground account read may update labels and device sessions without
   // replacing the running WORLD host. Changed identity/consent requires re-entry.
@@ -209,19 +231,24 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     }
     if (!canEnable) learning.append(element('p', deleting ? (pendingDeletion ? '계정 삭제를 요청해서 학습 기록 연결을 켤 수 없어요. 아래에서 요청을 취소하면 다시 켤 수 있어요.' : '계정 삭제를 처리하고 있어 학습 기록 연결을 켤 수 없어요.') : '학습 기록 연결은 아직 준비 중이에요. 이 기기에서 하는 연습은 그대로 할 수 있어요.', 'small'));
     const memory = card('내 학습 요약');memory.classList.add('atlas-card');memory.append(element('p', '요약을 불러오고 있어요.', 'small'));void atlas(memory);
+    // 「마을 기록」: what the town keeps of this account, taken out or cleared with the person's own rights (not on the development connection).
+    let townCard = null;if (!localConnection && typeof client.townRecords === 'function') { townCard = card('마을 기록');townCard.classList.add('town-card');const body = element('div');townCard.append(body);drawTown = attachTownRecords(town, body, { classes: TOWN_CLASSES, headingLevel: 4 }); }
     const rights = card('이용 권한');rights.append(list((data.entitlements || []).map(e => `${e.key}${e.product ? ` · ${PRODUCTS[e.product] || e.product}` : ''}${e.status ? ` · ${e.status}` : ''}${e.valid_until ? ` · ${new Date(e.valid_until).toLocaleDateString('ko-KR')}까지` : ''}`), '받은 이용 권한이 없어요.'));
     const sessions = card('로그인한 곳');
     for (const session of data.sessions || []) { const row = element('div', null, 'session-row');row.append(element('p', `${session.label || PRODUCTS[session.product] || session.product || '로그인'}${session.current ? ' · 지금 쓰는 곳' : ''}${session.revoked ? ' · 종료됨' : ''}`, 'small'));if (!session.revoked) row.append(button('종료', async () => { if (session.current) await signOut();else { await client.revokeSession(session.id);await load({preserveWorld:true}); } }));sessions.append(row); }
     if (!(data.sessions || []).length) sessions.append(element('p', '표시할 로그인 기록이 없어요.', 'small'));
-    if(!localConnection)sessions.append(button('모든 SYNK 앱에서 로그아웃', () => signOut('all')));grid.append(identity, learning, memory, rights, sessions);root.append(grid);
+    if(!localConnection)sessions.append(button('모든 SYNK 앱에서 로그아웃', () => signOut('all')));grid.append(identity, learning, memory, ...(townCard ? [townCard] : []), rights, sessions);root.append(grid);
     if(!localConnection){
     const actions = element('div', null, 'actions');actions.append(button('연습 기록 내려받기', async () => {
-      const events = [], metadata = [];let after = 0, until, atlasMemory;
+      const events = [], metadata = [];let after = 0, until, atlasMemory, myInfo, townData;
       for (let page = 0; page < 1000; page++) { const result = await client.exportPage({ after, until });guard();
         if (after === 0 && Array.isArray(result.atlasMemory)) atlasMemory = result.atlasMemory;
+        // The first page carries the town's first page (W6c); 「내 정보」 rides every page.
+        if (after === 0 && Object.hasOwn(result, 'town')) townData = await townExport(result.town, async page => { const reply = await client.townExportPage(page);guard();return reply; });
+        if (Object.hasOwn(result, 'myInfo')) myInfo = result.myInfo;
         if (!Array.isArray(result.events) || !Number.isSafeInteger(result.cursor) || result.cursor < after || result.hasMore && result.cursor <= after) throw new Error('내려받기가 중간에 멈췄어요. 다시 시도해 주세요.');
         until ??= result.until;events.push(...result.events);if (Array.isArray(result.eventMeta)) metadata.push(...result.eventMeta);after = result.cursor;
-        if (!result.hasMore) { const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(atlasMemory ? { atlasMemory } : {}), until, events, eventMeta: metadata }, null, 2)], { type: 'application/json' });const a = element('a');a.href = URL.createObjectURL(blob);a.download = 'synk-connected-learning.json';a.click();setTimeout(() => URL.revokeObjectURL(a.href), 1000);notice('연습 기록을 내려받았어요. 과제와 AI 기록은 이 파일에 들어 있지 않아요.');return; }
+        if (!result.hasMore) { const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(myInfo !== undefined ? { myInfo } : {}), ...(atlasMemory ? { atlasMemory } : {}), ...(townData !== undefined ? { town: townData } : {}), until, events, eventMeta: metadata }, null, 2)], { type: 'application/json' });const a = element('a');a.href = URL.createObjectURL(blob);a.download = 'synk-connected-learning.json';a.click();setTimeout(() => URL.revokeObjectURL(a.href), 1000);notice('연습 기록을 내려받았어요. 과제와 AI 기록은 이 파일에 들어 있지 않아요.');return; }
       }throw new Error('기록이 많아 한 번에 마치지 못했어요. 잠시 뒤 다시 시도해 주세요.');
     }, 'sb-btn soft'));
     const deleteButton = button(deleting ? '계정 삭제를 요청했어요' : '계정 삭제 요청', async () => { const dialog = element('dialog');dialog.append(element('h2', '계정 삭제를 요청할까요?'), element('p', '요청하면 학습 기록 연결을 바로 멈춰요. 7일 동안은 이 화면에서 요청을 취소할 수 있고, 그 뒤에 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요(늦어도 요청 후 30일 안에). 지운 뒤에는 되돌릴 수 없어요.', 'small'));
@@ -255,5 +282,5 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   }
   // The SYNK ID page tidies this list after a password change ends the other sessions in Auth.
   const sessions = () => (data?.sessions || []).map(session => ({ ...session }));
-  return { load,applyAccount,launchRun,closeGame,sessions, stop() { ended = true;loadVersion++;document.body.classList.remove('account-open');stopWorld();root.replaceChildren();root.hidden = true; } };
+  return { load,applyAccount,launchRun,closeGame,sessions, stop() { ended = true;loadVersion++;town.reset();drawTown = null;townFor = null;document.body.classList.remove('account-open');stopWorld();root.replaceChildren();root.hidden = true; } };
 }

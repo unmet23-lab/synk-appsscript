@@ -32,7 +32,7 @@ test('names follow the account server limits and a change keeps the saved langua
 
 test('the screen reads accountView and identity, never the library-resetting load, and shows what the member owns',async()=>{
   const h=harness({replies:{accountView:accountView(),identity:identity()}}),page=await mount(h);page.show();await settle();
-  assert.deepEqual(h.calls.map(row=>row.operation).sort(),['accountView','identity']);
+  assert.deepEqual(h.calls.map(row=>row.operation).sort(),['accountView','identity','townRecords']);
   const html=h.root.innerHTML;
   for(const text of ['내 계정','합성 회원','member@synthetic.invalid','2026년 10월 1일','학생 · S-01','이메일·비밀번호','SYNK 플랫폼','이 PC','SYNK WORLD','모두 로그아웃','학습 기록 연결','내려받기','지우기 요청…','비밀번호 바꾸기','Google 연결하기'])assert.ok(html.includes(text),text);
   assert.ok(html.indexOf('이 PC')<html.indexOf('SYNK WORLD'),'this PC comes first');assert.equal((html.match(/data-session=/g)||[]).length,2,'ended sessions are not listed');
@@ -103,4 +103,37 @@ test('a confirmation left open while the account changes closes and never acts o
 test('no native bridge renders a pointer to the PC app or synk.im/id without requests',async()=>{
   const {renderAccountPage}=await loaded;
   assert.match(renderAccountPage({native:false,signedIn:false}),/PC 앱에서 볼 수 있어요/);
+});
+
+// SYNK TOWN's 「마을 기록」 (W6c): the card the town's records route sends, drawn under the records; only rights commands go out.
+const townCard=(revision=5,extra={})=>({ok:true,scope:'synk-town-records',accountId:ID,records:{available:true,started:true,revision,sections:[
+  {id:'known',title:'주민이 아는 나',empty:'주민이 기억하는, 같이 한 일이 아직 없어요.',rows:[{text:'찻집 주인 · 찻집 일 — 같이 했어요',action:{type:'MEMORY_FORGET',payload:{npc:'cafe-owner',eventId:'20749.tea-order'},label:'잊어 주세요'}}]},
+  {id:'clear',title:'맞춤 기록 모두 비우기',lines:['요즘 자주 한 생활, 남긴 응답, 본 것 기록을 비워요.'],actions:[{type:'MEMORY_CLEAR',payload:{},label:'비우기',confirm:'맞춤 기록을 모두 비울까요?'}]}],...extra}});
+const pressTown=async(h,key)=>{h.handlers.click({target:{closest:selector=>selector==='[data-town]'?{dataset:{town:key},disabled:false}:null}});await settle();};
+test('the town records card sits under the records as 05 TOWN, sends rights commands at its revision and asks once more before clearing',async()=>{
+  const h=harness({replies:{accountView:accountView(),identity:identity(),townRecords:townCard(5),townRights:params=>townCard(6)}}),page=await mount(h);page.show();await settle();
+  const html=h.root.innerHTML;
+  assert.ok(html.includes('05 / TOWN')&&html.includes('마을 기록')&&html.includes('찻집 주인 · 찻집 일 — 같이 했어요'),'the card under the records');
+  assert.ok(html.indexOf('04 / RECORDS')<html.indexOf('05 / TOWN')&&html.indexOf('05 / TOWN')<html.indexOf('06 / DELETE'),'the sections count on');
+  await pressTown(h,'known.r0');
+  const sent=h.calls.filter(row=>row.operation==='townRights');assert.equal(sent.length,1);
+  assert.deepEqual({...sent[0].params,id:undefined},{id:undefined,type:'MEMORY_FORGET',payload:{npc:'cafe-owner',eventId:'20749.tea-order'},expectedRevision:5});
+  assert.ok(h.root.innerHTML.includes('그 주민의 기억에서 뺐어요.'));
+  // Clearing asks once more; cancelling sends nothing.
+  await pressTown(h,'clear.a0');assert.equal(h.dialogs.length,1);h.confirmNext('cancel');await settle();
+  assert.equal(h.calls.filter(row=>row.operation==='townRights').length,1,'cancelled: nothing sent');
+  await pressTown(h,'clear.a0');h.confirmNext('confirm');await settle();
+  const cleared=h.calls.filter(row=>row.operation==='townRights');assert.equal(cleared.length,2);assert.equal(cleared[1].params.type,'MEMORY_CLEAR');assert.equal(cleared[1].params.expectedRevision,6);
+});
+test('the town card: not entered yet, not ready, a stale revision reloads, a reply after an account switch is dropped',async()=>{
+  const empty=harness({replies:{accountView:accountView(),identity:identity(),townRecords:{ok:true,scope:'synk-town-records',accountId:ID,records:{available:true,started:false}}}}),p1=await mount(empty);p1.show();await settle();
+  assert.ok(empty.root.innerHTML.includes('싱크타운에 들어가면')&&!empty.root.innerHTML.includes('data-town='),'no buttons before the town');
+  const off=harness({replies:{accountView:accountView(),identity:identity(),townRecords:{ok:true,scope:'synk-town-records',accountId:ID,records:{available:false}}}}),p2=await mount(off);p2.show();await settle();
+  assert.ok(off.root.innerHTML.includes('마을 기록은 아직 쓸 수 없어요.'));
+  let reads=0;const stale=harness({replies:{accountView:accountView(),identity:identity(),townRecords:()=>townCard(5+reads++),townRights:{ok:false,error:{code:'stale-command'}}}}),p3=await mount(stale);p3.show();await settle();
+  await pressTown(stale,'known.r0');
+  assert.equal(stale.calls.filter(row=>row.operation==='townRecords').length,2,'reloaded after the conflict');assert.ok(stale.root.innerHTML.includes('다른 곳에서 먼저 바뀌었어요.'));
+  let release;const late=harness({replies:{accountView:accountView(),identity:identity(),townRecords:()=>new Promise(resolve=>{release=resolve;})}}),p4=await mount(late);p4.show();await settle();
+  late.state.auth=signedIn(OTHER,2);p4.authChanged();release(townCard(5));await settle();
+  assert.ok(!late.root.innerHTML.includes('찻집 주인 · 찻집 일'),'the other account never sees the town of the first');
 });

@@ -190,6 +190,12 @@ var require_account_client = __commonJS({
         // the stored practice (only while learning storage is on). Never evaluation answers.
         atlasSummary: (options) => request("synk-account?view=atlas", void 0, options),
         exportAiPage: ({ after = 0, until } = {}) => request(`synk-account?view=ai-export&after=${encodeURIComponent(after)}${until == null ? "" : `&until=${encodeURIComponent(until)}`}`),
+        // The town part of the export pages on under its own cursors (the first export page carries its first page).
+        townExportPage: ({ afterCommand = "", afterEvent = "", at = "" } = {}) => request(`synk-account?view=town-export&afterCommand=${encodeURIComponent(afterCommand)}&afterEvent=${encodeURIComponent(afterEvent)}&at=${encodeURIComponent(at)}`),
+        // SYNK TOWN's 「마을 기록」 (SYNK-appsscript vertical slice design §20-5, W6c): the card of what the town keeps of the
+        // person, and the person's own rights over it — only rights commands, sent at the card's revision.
+        townRecords: (options) => request("synk-town/records", void 0, options),
+        townRights: ({ id, type, payload = {}, expectedRevision }) => request("synk-town/records", { id, type, payload, expectedRevision }),
         learning: Object.freeze({
           get: ({ after, revision, signal }) => request(`synk-learning?after=${encodeURIComponent(after)}&revision=${encodeURIComponent(revision)}`, void 0, { signal }),
           post: ({ revision, events, signal }) => request("synk-learning", { revision, events }, { signal })

@@ -32,7 +32,26 @@
 .ap-support summary{cursor:pointer;font-weight:700}
 .ap-support p{margin:8px 0 6px}
 .ap-support code{display:inline-block;padding:6px 10px;border-radius:var(--r-md);background:var(--surface-2);color:var(--ink);overflow-wrap:anywhere}
+/* 05 TOWN 「마을 기록」 (town-records-card.mjs): 갈래마다 작은 제목 · 줄과 단추는 설정 줄처럼 한 줄, 좁으면 단추가 아래로. */
+.ap-town{padding:18px 22px}
+.ap-town .town-records{display:grid;gap:18px}
+.ap-town .ap-town-note{margin:0;color:var(--ink-2);font-size:.875rem;word-break:keep-all;overflow-wrap:anywhere}
+.ap-town .town-records-lead{color:var(--ink-3)}
+.ap-town .town-records-message{padding:10px 14px;border-radius:var(--r-md);background:var(--surface-2);color:var(--ink)}
+.ap-town .town-records-message.is-error{background:color-mix(in srgb,#F96859 16%,var(--surface-1))}
+.ap-town .town-records-section{display:grid;gap:8px;padding-top:16px;border-top:1px solid var(--line)}
+.ap-town .town-records-section h3{margin:0;font-size:.96875rem;font-weight:800;letter-spacing:-.02em}
+.ap-town .town-records-rows{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.ap-town .town-records-row{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:40px}
+.ap-town .town-records-text{min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.ap-town .town-records-row .ghost-button,.ap-town .town-records-actions .ghost-button{flex:none}
+.ap-town .town-records-actions{display:flex;gap:10px;flex-wrap:wrap}
+.ap-town .town-records-detail{display:grid;gap:6px;padding:12px 14px;border-radius:var(--r-md);background:var(--surface-2)}
+.ap-town .town-records-detail p{margin:0}
+.ap-town .text-link{justify-self:start}
 @media (max-width:760px){
+  .ap-town{padding:16px}
+  .ap-town .town-records-row{flex-direction:column;align-items:flex-start;gap:8px}
   .ap-hero{padding:18px}
   .ap-avatar{width:52px;height:52px;font-size:1.375rem}
   .ap-actions,.ap-chips{justify-content:flex-start}

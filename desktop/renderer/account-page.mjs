@@ -4,13 +4,17 @@
 // app never takes a password. Reads use `accountView` (not `load`, which empties the verified library while it
 // runs) and `accountIdentity` (Auth's own e-mail and providers; the account server never returns e-mail).
 // Everything is bound to the signed-in SYNK ID and session generation: another account or a sign-out drops
-// what was shown and any reply still on its way.
+// what was shown and any reply still on its way. SYNK TOWN's 「마을 기록」 card (town-records-card.mjs) sits under the records:
+// what the town keeps of the person, taken out or cleared with the person's own rights commands even without entering the town.
+import { createTownRecords, restoreTownFocus, townExport } from './town-records-card.mjs';
 const PRODUCT_NAMES = Object.freeze({ platform: 'SYNK 플랫폼', world: 'SYNK WORLD', messenger: 'SYNK Workspace' });
 const ROLE_NAMES = Object.freeze({ student: '학생', teacher: '강사', director: '원장', reviewer: '검수 담당' });
 const PROVIDER_NAMES = Object.freeze({ email: '이메일·비밀번호', google: 'Google' });
 export const NAME_MAX = 60;
 const SESSIONS_SHOWN = 6;
 const SECURITY_HINT_MS = 30 * 60000;
+// The card in this page's own controls (settings rows, ghost buttons, text links).
+const TOWN_CLASSES = Object.freeze({ button: 'ghost-button', note: 'ap-town-note', link: 'text-link', retry: 'ghost-button' });
 const MESSAGES = Object.freeze({
   PROFILE_CONFLICT: '다른 곳에서 먼저 이름을 바꿨어요. 지금 이름을 확인한 뒤 다시 저장해 주세요.',
   REVISION_CONFLICT: '다른 곳에서 학습 기록 연결을 먼저 바꿨어요. 지금 상태를 확인한 뒤 다시 해 주세요.',
@@ -65,7 +69,7 @@ export function signInMethods(identity) {
 
 // Pure view of one state; the controller below owns requests and events.
 export function renderAccountPage(state) {
-  const { signedIn, native, auth = {}, data, identity, loadError, identityError, loading, message, editingName, nameDraft = '', busy = new Set(), allSessions, workspace, securityHint } = state;
+  const { signedIn, native, auth = {}, data, identity, loadError, identityError, loading, message, editingName, nameDraft = '', busy = new Set(), allSessions, workspace, securityHint, town = null } = state;
   const head = `<div class="section-title ap-title"><div><button class="text-link ap-back" type="button" data-account-action="back"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>설정</button><span class="label">MY SYNK ID</span><h1 id="account-page-title" tabindex="-1">내 계정</h1><p>SYNK ID 하나로 쓰는 모든 SYNK 앱의 회원정보예요.</p></div>${signedIn ? '<button class="ghost-button" type="button" data-account-action="sign-out">로그아웃</button>' : ''}</div>`;
   if (!native) return `${head}<div class="quiet-note"><strong>PC 앱에서 볼 수 있어요</strong><p>회원정보는 SYNK Platform PC 앱이나 synk.im/id에서 보고 바꿔요.</p></div>`;
   if (!signedIn) return `${head}<div class="quiet-note"><strong>로그인하면 회원정보를 볼 수 있어요</strong><p>${securityHint ? '비밀번호를 바꿨다면 새 비밀번호로 다시 로그인해 주세요. ' : ''}이름, 로그인 방법, 로그인한 곳, 계정 지우기를 여기서 해요.</p><button class="solid-button" type="button" data-account-action="sign-in">로그인</button></div>`;
@@ -97,27 +101,35 @@ export function renderAccountPage(state) {
   const learningOn = data?.learning?.enabled === true, canEnable = data?.capabilities?.learningSync === true && !deleting;
   const dataBlock = `${section('04', 'RECORDS', '학습 기록과 내 데이터')}<div class="settings-group">`
     + `<div class="setting-row"><div><h3>학습 기록 연결</h3><p>${learningOn ? '켜져 있어요. 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요.' : canEnable ? '꺼져 있어요. 켜면 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요.' : deleting ? '계정 삭제를 요청해서 켤 수 없어요. 요청을 취소하면 다시 켤 수 있어요.' : '지금은 켤 수 없어요. 이 기기에서 하는 연습은 그대로 할 수 있어요.'}</p></div><button class="ghost-button ap-switch" type="button" role="switch" aria-checked="${learningOn}" aria-label="학습 기록 연결" data-account-action="learning"${account && (learningOn || canEnable) ? disabled('learning') : ' disabled'}>${learningOn ? '켜짐' : '꺼짐'}</button></div>`
-    + `<div class="setting-row"><div><h3>연습 기록 내려받기</h3><p>계정에 저장한 연습 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.</p></div><button class="ghost-button" type="button" data-account-action="export"${account ? disabled('export') : ' disabled'}>${busy.has('export') ? '준비 중…' : '내려받기'}</button></div></div>`;
-  const workspaceBlock = workspace ? `${section('05', 'WORKSPACE', '연결된 서비스')}<div class="settings-group"><div class="setting-row"><div><h3>SYNK Workspace(작업실)</h3><p>작업실 계정은 SYNK ID와 따로예요. 작업실 로그인 비밀번호는 작업실의 「설정 → 내 로그인 비밀번호」에서 바꿔요.</p></div><button class="ghost-button" type="button" data-account-action="workspace">작업실 열기</button></div></div>` : '';
-  const removal = `${section(workspace ? '06' : '05', 'DELETE', '계정 지우기')}<div class="settings-group ap-danger-group">${deletion
+    + `<div class="setting-row"><div><h3>연습 기록 내려받기</h3><p>계정에 저장한 연습 기록과 내 정보, 마을 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.</p></div><button class="ghost-button" type="button" data-account-action="export"${account ? disabled('export') : ' disabled'}>${busy.has('export') ? '준비 중…' : '내려받기'}</button></div></div>`;
+  // The sections count on from 04: the town's records (when the page has the card), then Workspace, then deletion.
+  const numbers = ['05', '06', '07'].slice(0, (town !== null) + !!workspace + 1), next = () => numbers.shift();
+  const townBlock = town !== null ? `${section(next(), 'TOWN', '마을 기록')}<div class="settings-group ap-town">${town}</div>` : '';
+  const workspaceBlock = workspace ? `${section(next(), 'WORKSPACE', '연결된 서비스')}<div class="settings-group"><div class="setting-row"><div><h3>SYNK Workspace(작업실)</h3><p>작업실 계정은 SYNK ID와 따로예요. 작업실 로그인 비밀번호는 작업실의 「설정 → 내 로그인 비밀번호」에서 바꿔요.</p></div><button class="ghost-button" type="button" data-account-action="workspace">작업실 열기</button></div></div>` : '';
+  const removal = `${section(next(), 'DELETE', '계정 지우기')}<div class="settings-group ap-danger-group">${deletion
     ? `<div class="setting-row"><div><h3>삭제 요청을 받았어요</h3><p>${due ? `${esc(due)}까지는 ` : '7일 동안은 '}여기서 취소할 수 있고, 그 뒤에 계정과 기록을 지워요(늦어도 요청 후 30일 안).</p></div><button class="solid-button" type="button" data-account-action="delete-cancel"${disabled('delete')}>삭제 요청 취소</button></div>`
     : deleting ? '<div class="setting-row"><div><h3>삭제를 처리하고 있어요</h3><p>늦어도 요청 후 30일 안에 계정과 기록을 지워요.</p></div></div>'
     : `<div class="setting-row"><div><h3>계정 지우기 요청</h3><p>요청하면 7일 동안은 취소할 수 있고, 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요.</p></div><button class="ghost-button ap-danger" type="button" data-account-action="delete-request"${account ? disabled('delete') : ' disabled'}>지우기 요청…</button></div>`}</div>`;
   const support = account ? `<details class="ap-support"><summary>문의할 때 쓰는 계정 번호</summary><p>hello@synk.im에 문의할 때 이 번호를 같이 적어 주세요.</p><code class="mono">${esc(account.synk_user_id)}</code></details>` : '';
-  return head + hero + note + failed + profile + security + sessionsBlock + dataBlock + workspaceBlock + removal + support;
+  return head + hero + note + failed + profile + security + sessionsBlock + dataBlock + townBlock + workspaceBlock + removal + support;
 }
 
 export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => [], onBack, onSignIn, onSignOut, onWorkspace, onAccountChanged = () => {}, toast = () => {}, now = Date.now, randomId = () => globalThis.crypto.randomUUID(), timeoutMs = 15000 } = {}) {
   let binding = '', epoch = 0, data = null, identity = null, loadError = '', identityError = false, loading = false, visible = false;
-  let editingName = false, nameDraft = '', message = null, allSessions = false, deleteRequestId = null, securityOpenedAt = 0, openConfirm = null;
+  let editingName = false, nameDraft = '', message = null, allSessions = false, deleteRequestId = null, securityOpenedAt = 0, openConfirm = null, townFocus = null;
   const busy = new Set();
   const native = typeof bridge?.accountRequest === 'function';
+  // The town card reads and writes for the bound account only: a reply after a switch or sign-out is dropped (call's epoch).
+  const town = createTownRecords({
+    load: () => call('townRecords', {}, epoch), send: command => call('townRights', command, epoch),
+    confirm: ({ title, ok }) => confirmDialog({ title, body: [], confirm: ok }), onChange: () => render(), randomId,
+  });
   const owner = () => { const auth = getIdentity() || {};return { auth, id: auth.account?.synk_user_id || null, signedIn: auth.signedIn === true && !!auth.account?.synk_user_id }; };
   const keyOf = value => JSON.stringify([value.signedIn, value.id, value.auth.sessionGeneration]);
   function sync() {
     const current = owner(), next = keyOf(current);
     // A confirmation opened for the previous account must not act on the next one.
-    if (next !== binding) { if (openConfirm?.open) openConfirm.close('cancel');binding = next;epoch++;data = null;identity = null;loadError = '';identityError = false;loading = false;editingName = false;nameDraft = '';message = null;allSessions = false;deleteRequestId = null;busy.clear(); }
+    if (next !== binding) { if (openConfirm?.open) openConfirm.close('cancel');town.reset();binding = next;epoch++;data = null;identity = null;loadError = '';identityError = false;loading = false;editingName = false;nameDraft = '';message = null;allSessions = false;deleteRequestId = null;busy.clear(); }
     return current;
   }
   // One request for the bound account; a later sign-in, sign-out or switch drops its reply.
@@ -137,10 +149,14 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
   function render() {
     const current = sync(), doc = root.ownerDocument, active = doc?.activeElement, inside = !!active && root.contains?.(active) && active !== root;
     const focusKey = inside ? [active.dataset?.accountAction, active.dataset?.session, active.id] : null;
+    // A town control is disabled while its command is on its way: the keyboard comes back to it (or to the card) afterwards.
+    if (inside) townFocus = active.dataset?.town || null;
     root.innerHTML = renderAccountPage({ native, signedIn: current.signedIn, auth: current.auth, data, identity, loadError, identityError, loading, message, editingName, nameDraft, busy, allSessions,
-      workspace: current.signedIn && getAppIds().includes('messenger'), securityHint: !current.signedIn && securityOpenedAt && now() - securityOpenedAt < SECURITY_HINT_MS });
+      workspace: current.signedIn && getAppIds().includes('messenger'), securityHint: !current.signedIn && securityOpenedAt && now() - securityOpenedAt < SECURITY_HINT_MS,
+      town: native && current.signedIn ? town.html({ classes: TOWN_CLASSES, headingLevel: 3 }) : null });
     if (live) { root.append?.(live);const text = message?.text || '';if (live.textContent !== text) live.textContent = text; }
     if (editingName) { const input = root.querySelector?.('#account-name-input');if (input && root.ownerDocument?.activeElement !== input) { input.focus();input.setSelectionRange?.(input.value.length, input.value.length); } }
+    else if (townFocus) restoreTownFocus(root, townFocus, next => { townFocus = next; });
     else if (focusKey) {
       const [action, session, id] = focusKey, same = [...(root.querySelectorAll?.('[data-account-action]') || [])].find(node => node.dataset.accountAction === action && (node.dataset.session || undefined) === session);
       (same || (id && root.querySelector?.('#' + id)) || root.querySelector?.('#account-page-title'))?.focus?.({ preventScroll: true });
@@ -149,6 +165,7 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
   async function refresh({ quiet = false } = {}) {
     const current = sync();if (!native || !current.signedIn || loading) { render();return; }
     const token = epoch;loading = true;if (!quiet) loadError = '';render();
+    if (!quiet) void town.refresh();
     const [view, who] = await Promise.allSettled([call('accountView', {}, token), call('identity', {}, token)]);
     if (token !== epoch) return;
     loading = false;
@@ -177,14 +194,17 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
     doc.body.append(dialog);dialog.showModal();
   });
   async function download(token) {
-    const events = [], meta = [];let after = 0, until, memory, account;
+    const events = [], meta = [];let after = 0, until, memory, account, myInfo, town;
     for (let page = 0; page < 1000; page++) {
       const result = await call('exportPage', until == null ? { after } : { after, until }, token);
       if (after === 0 && Array.isArray(result.atlasMemory)) memory = result.atlasMemory;
+      // The first page carries the town's first page (W6c); 「내 정보」 rides every page.
+      if (after === 0 && Object.hasOwn(result, 'town')) town = await townExport(result.town, page => call('townExportPage', page, token));
+      if (Object.hasOwn(result, 'myInfo')) myInfo = result.myInfo;
       if (!Array.isArray(result.events) || !Number.isSafeInteger(result.cursor) || result.cursor < after || result.hasMore && result.cursor <= after) throw failure('EXPORT_BROKEN', '내려받기가 중간에 멈췄어요. 다시 해 주세요.');
       until ??= result.until;account ??= result.account;events.push(...result.events);if (Array.isArray(result.eventMeta)) meta.push(...result.eventMeta);after = result.cursor;
       if (!result.hasMore) {
-        const doc = root.ownerDocument, blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: account || data?.account, ...(memory ? { atlasMemory: memory } : {}), until, events, eventMeta: meta }, null, 2)], { type: 'application/json' });
+        const doc = root.ownerDocument, blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: account || data?.account, ...(myInfo !== undefined ? { myInfo } : {}), ...(memory ? { atlasMemory: memory } : {}), ...(town !== undefined ? { town } : {}), until, events, eventMeta: meta }, null, 2)], { type: 'application/json' });
         const link = doc.createElement('a');link.href = URL.createObjectURL(blob);link.download = 'synk-connected-learning.json';doc.body.append(link);link.click();link.remove();setTimeout(() => URL.revokeObjectURL(link.href), 1000);
         say('연습 기록 파일을 준비했어요. 저장할 곳을 골라 주세요.');return;
       }
@@ -236,6 +256,8 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
     }),
   };
   root.addEventListener('click', event => {
+    const townButton = event.target.closest?.('[data-town]');
+    if (townButton?.dataset?.town && root.contains(townButton)) { if (!townButton.disabled) void town.press(townButton.dataset.town);return; }
     const button = event.target.closest?.('[data-account-action]');if (!button || !root.contains(button) || button.disabled) return;
     const run = actions[button.dataset.accountAction];if (run) void run(button);
   });

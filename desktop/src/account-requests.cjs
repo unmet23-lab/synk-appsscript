@@ -2,6 +2,9 @@
 const {classroomRequestSpec}=require('./classroom-requests.cjs');
 const {worldRequestSpec}=require('./world-requests.cjs');
 const {PERSONAL_OPERATIONS,PLATFORM_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
+// SYNK TOWN's own rights (SYNK-talk lib/town-scope.js RIGHTS — the only commands the town's records route takes) and their payload words.
+const TOWN_RIGHTS=Object.freeze(['MEMORY_FORGET','FEEDBACK_REMOVE','OBSERVED_CORRECT','SEEN_CLEAR','MEMORY_CLEAR','EVAL_CONSENT','PREF_VISIT_BANDS']);
+const TOWN_WORDS=Object.freeze(['npc','eventId','family','state','ver']);
 function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   if(operation==='worldRequest')return worldRequestSpec(params,product,clientKey);
   // WORLD reads the person's 「내 성향」 answers to choose practice: a read of the same document, never a write.
@@ -64,6 +67,24 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
     case 'learningPost':keys(['revision','events']);if(!Array.isArray(params.events)||params.events.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,events:params.events}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),events:params.events}};
     case 'memoryGet':keys(['revision']);return {path:`synk-learning?view=memory&revision=${integer(params.revision)}`};
     case 'memoryPost':keys(['revision','entries']);if(!Array.isArray(params.entries)||params.entries.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,memory:params.entries}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),memory:params.entries}};
+    // SYNK TOWN's 「마을 기록」 (SYNK-appsscript vertical slice design §20-5, W6c): the platform 「내 계정」 reads what the town keeps
+    // of the person (townRecords) and sends only the person's own rights commands at the card's revision (townRights — the server
+    // refuses anything else too). The records download pages the town part on under its own cursors (townExportPage).
+    case 'townRecords':keys([]);if(product!=='platform'||clientKey!=='platform')invalid();return {path:'synk-town/records'};
+    case 'townRights':{
+      keys(['id','type','payload','expectedRevision']);if(product!=='platform'||clientKey!=='platform')invalid();
+      const payload=params.payload;
+      if(typeof params.id!=='string'||!/^[A-Za-z0-9_.:-]{1,100}$/.test(params.id)||!TOWN_RIGHTS.includes(params.type)||!payload||typeof payload!=='object'||Array.isArray(payload))invalid();
+      for(const [key,value] of Object.entries(payload))if(key==='on'?typeof value!=='boolean':!TOWN_WORDS.includes(key)||typeof value!=='string'||!value||value.length>100)invalid();
+      return {path:'synk-town/records',body:{id:params.id,type:params.type,payload:{...payload},expectedRevision:integer(params.expectedRevision)}};
+    }
+    case 'townExportPage':{
+      keys(['afterCommand','afterEvent','at']);if(product!=='platform'||clientKey!=='platform')invalid();
+      const {afterCommand='',afterEvent='',at=''}=params;
+      if(typeof afterCommand!=='string'||afterCommand&&!/^[A-Za-z0-9_.:-]{1,100}$/.test(afterCommand)||typeof afterEvent!=='string'||afterEvent&&!/^(trail|town):[1-9][0-9]{0,15}$/.test(afterEvent)
+        ||typeof at!=='string'||at&&!(Number.isFinite(Date.parse(at))&&new Date(at).toISOString()===at)||(afterCommand||afterEvent)&&!at)invalid();
+      return {path:`synk-account?view=town-export&afterCommand=${encodeURIComponent(afterCommand)}&afterEvent=${encodeURIComponent(afterEvent)}&at=${encodeURIComponent(at)}`};
+    }
     case 'careLoad':keys([]);if(product!=='platform')invalid();return {path:'synk-care'};
     case 'careSave':{
       keys(['expected_revision','state','messageLibraryVersion','checkinPreferenceVersion']);

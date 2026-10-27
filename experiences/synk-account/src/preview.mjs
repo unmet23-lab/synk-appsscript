@@ -25,7 +25,8 @@ const accountFactory = () => ({
     sessions: [{ id: 'preview-session', product: 'world', label: '이 브라우저 예시', current: true, revoked: false }], dataRequests: deleting && deletion ? [deletionRow('pending')] : [] }),
   setLearning: async value => { enabled = value;revision++; }, revokeSession: async () => ({}), revokeAll: async () => ({ refreshRevoked: false, legacyAccessGuard: false }), requestDeletion: async id => { if (!/^[\da-f-]{36}$/.test(id)) throw new Error('삭제 요청 UUID 없음');if (!deleting) deletion = { request_id: id, requested_at: new Date().toISOString() };deleting = true;enabled = false;revision++;return { request: deletionRow('pending') }; },
   cancelDeletion: async id => { if (!deleting || id !== deletion?.request_id) throw new Error('취소할 삭제 요청이 없어요.');deleting = false;const row = deletionRow('cancelled');deletion = null;return { request: row }; },
-  exportPage: async () => ({ events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [] }),
+  exportPage: async () => ({ events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [], myInfo: null, town: { state: null, world: null, seen: null, evalSignals: [], entry: null, commands: [], events: [], exportAt: new Date(0).toISOString(), afterCommand: '', afterEvent: '', hasMore: false } }),
+  ...townClient,
   // A synthetic Atlas summary in the shape synk-account ?view=atlas returns.
   atlasSummary: async () => ({ shared: enabled ? 'practice-and-settings' : 'declared-only', learning: { enabled, revision }, summary: {
     presentation: enabled ? { support: 'step', textSize: 'large' } : null, reasons: ['travel', 'life'],
@@ -35,6 +36,43 @@ const accountFactory = () => ({
       .map(situation) }],
     practice: enabled ? { answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 듣고 세부 정보 찾기를 조금 더 연습해 봐요.' }, { line: '낱말 듣기를 최근 혼자 해냈어요. 가볍게 이어가요.' }] } : { answered: 0, independent: 0, assisted: 0, skills: [] } } })
 });
+// SYNK TOWN's 「마을 기록」 in the shape talk's records route sends (synthetic — ?town=new|unready|switch|granted|academy|fail picks a state).
+const townMode = params.get('town') || 'entered';let townRevision = 7, townBands = true, townConsent = townMode === 'granted' ? 'granted' : 'unasked';
+let townKnown = [['찻집 주인', '찻집 일', 'cafe-owner', '20749.tea-order'], ['연구원', '관찰 카드가 날려요', 'researcher', '20748.R1']], townObserved = true, townFeedback = true, townFamiliar = ['쟁반이 기울어요', '찻집 주인과 공방 주인의 이야기'];
+const townDetail = { title: '마을을 더 좋게 만드는 데 쓰는 기록', rows: [['무엇을 위해', '싱크타운이 오래 써도 나에게 잘 맞는지 확인하고, 맞지 않는 곳을 고치는 데 씁니다.'], ['보관', '30일이 지나면 지웁니다. 사람을 알아볼 수 없게 묶은 숫자는 남습니다.'], ['문의', 'hello@synk.im']].map(([label, text]) => ({ label, text })) };
+function townCard() {
+  if (townMode === 'unready') return { available: false };
+  if (townMode === 'new') return { available: true, started: false };
+  const evalSection = townMode === 'academy' ? [{ id: 'eval', title: '마을을 낫게 하는 데 쓰는 기록', lines: ['학원 소속 계정에는 묻지 않아요.'] }]
+    : townMode === 'switch' || townConsent === 'granted' ? [{ id: 'eval', title: '마을을 낫게 하는 데 쓰는 기록', lines: [townConsent === 'granted' ? '쓰고 있어요. 30일이 지나면 지워요.' : '쓰지 않고 있어요. 안 써도 마을은 똑같아요.'],
+      actions: townConsent === 'granted' ? [{ type: 'EVAL_CONSENT', payload: { state: 'withdrawn' }, label: '그만 쓰기', confirm: '그만 쓸까요? 지금까지 모은 기록을 지워요.' }] : townMode === 'switch' ? [{ type: 'EVAL_CONSENT', payload: { state: 'granted', ver: 'town-eval-signals-1' }, label: '좋아요' }] : [],
+      ...(townMode === 'switch' ? { detail: townDetail } : {}) }] : [];
+  return { available: true, started: true, revision: townRevision, sections: [
+    { id: 'known', title: '주민이 아는 나', empty: '주민이 기억하는, 같이 한 일이 아직 없어요.', rows: townKnown.map(([name, title, npc, eventId]) => ({ text: `${name} · ${title} — 같이 했어요`, action: { type: 'MEMORY_FORGET', payload: { npc, eventId }, label: '잊어 주세요' } })) },
+    { id: 'settings', title: '마을이 맞춰 둔 것', empty: '마을이 맞춰 둔 것이 아직 없어요.', rows: [
+      townBands ? { text: '내가 자주 오는 때에 맞춰 마을 자리를 채워요', action: { type: 'PREF_VISIT_BANDS', payload: { on: false }, label: '끄기' } } : { text: '자주 오는 때에 맞춰 마을 자리 채우기 · 꺼 둠', action: { type: 'PREF_VISIT_BANDS', payload: { on: true }, label: '켜기' } },
+      ...(townObserved ? [{ text: '요즘 자주 한 생활 · 찻집 생활', action: { type: 'OBSERVED_CORRECT', payload: { family: 'cafe-life' }, label: '그때만 한 거예요' } }] : []),
+      { text: '덜 추천하는 생활 · 비 오는데 바깥에 비품이', action: null },
+      ...(townFeedback ? [{ text: '내가 남긴 응답 · 찻집 주문 · 좋았어요', action: { type: 'FEEDBACK_REMOVE', payload: { eventId: 'E-5' }, label: '응답 지우기' } }] : [])], note: '단추가 없는 줄은 마을 안 이웃 수첩에서 바꿀 수 있어요.' },
+    { id: 'familiar', title: '익숙한 생활', empty: '여러 번 함께한 생활이 여기에 모여요.', rows: townFamiliar.map(text => ({ text })), note: '본 것 기록을 비우면 모두 다시 새 이야기로 보여요.',
+      actions: [{ type: 'SEEN_CLEAR', payload: {}, label: '본 것 기록 비우기', confirm: '본 것 기록을 비울까요? 마을의 일과 주민의 기억은 그대로예요.' }] },
+    ...evalSection,
+    { id: 'clear', title: '맞춤 기록 모두 비우기', lines: ['요즘 자주 한 생활, 남긴 응답, 본 것 기록을 비워요. 직접 정한 설정과 마을의 일은 그대로예요.'], actions: [{ type: 'MEMORY_CLEAR', payload: {}, label: '비우기', confirm: '맞춤 기록을 모두 비울까요?' }] }] };
+}
+const townAnswer = () => ({ ok: true, scope: 'synk-town-records', accountId: 'SYNK-PREVIEW-ONLY', records: townCard() });
+async function townRights({ type, payload, expectedRevision }) {
+  if (expectedRevision !== townRevision) throw Object.assign(new Error('합성 판 충돌'), { code: 'stale-command' });
+  if (type === 'MEMORY_FORGET') townKnown = townKnown.filter(row => row[3] !== payload.eventId);
+  if (type === 'OBSERVED_CORRECT') townObserved = false;
+  if (type === 'FEEDBACK_REMOVE') townFeedback = false;
+  if (type === 'PREF_VISIT_BANDS') townBands = payload.on === true;
+  if (type === 'SEEN_CLEAR') townFamiliar = [];
+  if (type === 'MEMORY_CLEAR') { townFamiliar = [];townObserved = false;townFeedback = false; }
+  if (type === 'EVAL_CONSENT') townConsent = payload.state;
+  townRevision++;return townAnswer();
+}
+const townClient = { townRecords: async () => { if (townMode === 'fail') throw Object.assign(new Error('합성 연결 실패'), { code: 'NETWORK', retryable: true });return townAnswer(); }, townRights,
+  townExportPage: async () => ({ ok: true, scope: 'synk-town-data', town: { state: null, commands: [], events: [], exportAt: new Date(0).toISOString(), afterCommand: '', afterEvent: '', hasMore: false } }) };
 const notice = text => { document.getElementById('notice').textContent = `합성 화면 예시 · ${text}`; };
 document.getElementById('preview-banner').hidden = false;
 document.getElementById('preview-banner').textContent = '합성 화면 예시예요. 실제 로그인·가입·서버 저장은 일어나지 않아요.';

@@ -118,11 +118,20 @@ code{font-size:16px}footer{margin-top:40px;padding-top:24px;font-size:16px;line-
 .support-id{margin:14px 0 0;font-size:14px;color:var(--muted)}.support-id summary{cursor:pointer;font-weight:700;display:list-item;padding:12px 0}.support-id code{display:inline-block;padding:6px 10px;border-radius:8px;background:var(--brand-wash);color:var(--ink);overflow-wrap:anywhere}
 .account-next{display:block;margin:0 0 28px;padding:0}.account-next h2{margin:0 0 10px;font-size:20px}.next-links{display:flex;gap:10px;flex-wrap:wrap}
 .next-links a{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border-radius:999px;background:#fff;box-shadow:var(--hairline);font-weight:700;text-decoration:none}
+/* 「마을 기록」 (desktop/renderer/town-records-card.mjs): 포털 블록(.town-block)과 WORLD 계정 카드(.town-card) — 갈래마다 작은 제목, 줄은 글과 단추 한 줄 */
+.town-records{display:grid;gap:16px}.town-records .small{margin:0;overflow-wrap:anywhere;word-break:keep-all}.town-records-lead{color:var(--muted)}
+.town-records-message{padding:10px 14px;border-radius:14px;background:var(--brand-wash);color:var(--ink)}.town-records-message.is-error{background:#fdecea}
+.town-records-section{display:grid;gap:8px;padding-top:14px;border-top:1px solid #e3e7ef}.town-records-section h4{margin:0;font-size:16px}
+.town-records-rows{display:grid;gap:6px;margin:0;padding:0;list-style:none}.town-records-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center;min-height:44px}
+.town-records-text{min-width:0;overflow-wrap:anywhere;word-break:keep-all}.town-records-actions{display:flex;gap:10px;flex-wrap:wrap}
+.town-records-detail{display:grid;gap:6px;padding:12px 14px;border-radius:14px;background:var(--brand-wash)}.town-records-detail p{margin:0}
+.town-records .link-button,.town-records .plain.link{justify-self:start}
 .portal-confirm .actions .danger-fill{background:none!important;background-color:var(--coral-deep)!important;color:#fff!important;border-radius:14px}
 @media(max-width:700px){
   .profile-head{grid-template-columns:auto minmax(0,1fr)}.profile-actions{grid-column:1/-1;justify-items:stretch}.profile-avatar{width:52px;height:52px;font-size:22px}
   .profile-facts{grid-template-columns:minmax(0,1fr);gap:2px}.profile-facts dd{margin-bottom:10px}
   .security-row{grid-template-columns:minmax(0,1fr)}.security-row>.sb-btn{width:100%}.account-security .google-linking{justify-items:stretch;padding:0;margin:0}.google-linking .google-btn{width:100%}
   .account-block{padding:20px}.switch-row-line{grid-template-columns:minmax(0,1fr)}.session-list .session-row{flex-wrap:wrap}
+  .town-records-row{grid-template-columns:minmax(0,1fr)}.town-records-row>button{justify-self:start}
   .recent-login{padding:12px 14px}
 }
