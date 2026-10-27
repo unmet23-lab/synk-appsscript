@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — second shot of the same short comedy video: the little customer heard the barista shout "아니?!" and, because its textbook says that word means "no", it panics that its payment was refused. Needle-felted wool miniature set, photographed like a real macro photo.
+
+The FIRST attached image is the opening frame of this film: keep exactly the same café set, the same oak counter, the same tipped glass jar and pile of plain felt coins, and the same warm morning light. The other attached photos show the mascot.
+
+FORMAT: one PORTRAIT image, 2:3. The video crops about 8% off the left and right edges — keep Mongle inside the central 84% of the width.
+
+SHOT: a closer shot of Mongle on the counter, camera at counter height, slightly from the barista's side. Mongle (the coral needle-felted wool ghost-shaped mascot from the attached reference photos — use them ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped hem with the cream running stitch and glossy black bead eyes; no arms, no legs, no hands, ever) stands center-left, its body about 40% of the image height. IMPORTANT: the top of Mongle's head is at about 50% of the image height, so the whole upper half of the image is calm, out-of-focus café background (a speech bubble will be drawn there).
+Expression: PANICKED AND CONFUSED — glossy bead eyes wide and wobbly, small worried wavy mouth, eyebrows tilted up in the middle, two tiny clear glass-bead sweat drops flying off the side of its head, body leaning back a little.
+Around Mongle's hem, plain round felt coins (golden-yellow and silver-grey, no marks) are scattered on the counter, and the tipped glass jar lies just behind it, a little out of focus.
+
+Background (soft focus): the cream felt wall, the charcoal-and-lapis espresso machine, the row of felt cups, the pendant lamps, and the barista's sage-green apron partly visible at the right edge, out of focus. Warm morning window light from the upper left, shallow depth of field, visible wool fibers.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.

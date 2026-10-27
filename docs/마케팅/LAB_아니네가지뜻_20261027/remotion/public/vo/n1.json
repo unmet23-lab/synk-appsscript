@@ -1,0 +1,44 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "Not always no!",
+ "dur": 1.891,
+ "words": [
+  {
+   "text": "Not",
+   "start": 0.05,
+   "end": 0.292
+  },
+  {
+   "text": "always",
+   "start": 0.535,
+   "end": 1.141
+  },
+  {
+   "text": "no!",
+   "start": 1.323,
+   "end": 1.891
+  }
+ ],
+ "source": {
+  "key": "8e62173824f594c8cce2f7ad60838602",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "The barista said the same Korean word twice. Once in shock, once blushing at a gift. The customer's textbook says that word means no. But listen:",
+   "next": "When you're shocked, and when you get a gift."
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

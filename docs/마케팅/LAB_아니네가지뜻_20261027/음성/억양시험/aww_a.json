@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "aww_a",
+ "text": "아니~ 뭘 이런 걸!",
+ "dur": 1.756,
+ "words": [
+  {
+   "text": "아니~",
+   "start": 0.02,
+   "end": 0.583
+  },
+  {
+   "text": "뭘",
+   "start": 0.724,
+   "end": 0.986
+  },
+  {
+   "text": "이런",
+   "start": 1.046,
+   "end": 1.267
+  },
+  {
+   "text": "걸!",
+   "start": 1.327,
+   "end": 1.756
+  }
+ ],
+ "source": {
+  "key": "f3019df15e80745ccd66593c0092690d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1.2,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

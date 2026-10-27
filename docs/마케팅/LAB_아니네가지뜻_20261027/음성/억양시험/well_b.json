@@ -1,0 +1,39 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "well_b",
+ "text": "아니… 그게…",
+ "dur": 1.104,
+ "words": [
+  {
+   "text": "아니…",
+   "start": 0.03,
+   "end": 0.232
+  },
+  {
+   "text": "그게…",
+   "start": 0.575,
+   "end": 1.079
+  }
+ ],
+ "source": {
+  "key": "caafdb235b8b77268ca65e9fa536989a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "손님이 「동전으로 계산해도 돼요?」라고 묻는다. 바리스타가 곤란해서 웃음 지으며 말끝을 길게 흐린다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

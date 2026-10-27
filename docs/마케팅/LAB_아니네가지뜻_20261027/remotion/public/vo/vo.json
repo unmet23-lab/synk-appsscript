@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1027,
+  "lufs": -15.5
+ },
+ "made": "2026-10-27T06:42:32.899Z",
+ "lines": [
+  {
+   "id": "b1",
+   "text": "아니?!",
+   "dur": 0.495,
+   "syllablesPerSec": 4.04,
+   "src": "b1.wav",
+   "key": "3114092e57eff97bcfc66c09c0214687",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "아니~ 뭘 이런 걸!",
+   "dur": 1.935,
+   "syllablesPerSec": 3.1,
+   "src": "b2.wav",
+   "key": "c56efe4294386ae408d87f90360b415e",
+   "words": 4
+  },
+  {
+   "id": "b3",
+   "text": "서비스예요!",
+   "dur": 1.048,
+   "syllablesPerSec": 4.77,
+   "src": "b3.wav",
+   "key": "6de192f020e79a32db6f150f123d0e29",
+   "words": 1
+  },
+  {
+   "id": "n1",
+   "text": "Not always no!",
+   "dur": 1.891,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "8e62173824f594c8cce2f7ad60838602",
+   "words": 3
+  },
+  {
+   "id": "n4",
+   "text": "Which one have you heard in K-dramas?",
+   "dur": 2.734,
+   "syllablesPerSec": null,
+   "src": "n4.wav",
+   "key": "0777cd72038466f6c384b9eec69c0d01",
+   "words": 7
+  }
+ ]
+}

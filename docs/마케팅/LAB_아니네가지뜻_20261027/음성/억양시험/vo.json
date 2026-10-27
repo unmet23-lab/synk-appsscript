@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../억양시험.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "tonedown",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1027,
+  "lufs": -15.5
+ },
+ "made": "2026-10-27T06:26:11.331Z",
+ "lines": [
+  {
+   "id": "no_a",
+   "text": "아니.",
+   "dur": 0.445,
+   "syllablesPerSec": 4.49,
+   "src": "no_a.wav",
+   "key": "4bdca8eacb65058cd0f41cc255c0d685",
+   "words": 1
+  },
+  {
+   "id": "no_b",
+   "text": "아니.",
+   "dur": 0.484,
+   "syllablesPerSec": 4.13,
+   "src": "no_b.wav",
+   "key": "5a8f40a79eebbd9a477ac81d3349827f",
+   "words": 1
+  },
+  {
+   "id": "what_a",
+   "text": "아니?!",
+   "dur": 0.384,
+   "syllablesPerSec": 5.21,
+   "src": "what_a.wav",
+   "key": "11eefd11ea0595e25091a0dc9daf02a0",
+   "words": 1
+  },
+  {
+   "id": "what_b",
+   "text": "아니?!",
+   "dur": 0.495,
+   "syllablesPerSec": 4.04,
+   "src": "what_b.wav",
+   "key": "3114092e57eff97bcfc66c09c0214687",
+   "words": 1
+  },
+  {
+   "id": "well_a",
+   "text": "아니… 그게…",
+   "dur": 1.264,
+   "syllablesPerSec": 3.16,
+   "src": "well_a.wav",
+   "key": "dd5071c08c516874babdc0e1890958a8",
+   "words": 2
+  },
+  {
+   "id": "well_b",
+   "text": "아니… 그게…",
+   "dur": 1.104,
+   "syllablesPerSec": 3.62,
+   "src": "well_b.wav",
+   "key": "caafdb235b8b77268ca65e9fa536989a",
+   "words": 2
+  },
+  {
+   "id": "aww_a",
+   "text": "아니~ 뭘 이런 걸!",
+   "dur": 1.756,
+   "syllablesPerSec": 3.42,
+   "src": "aww_a.wav",
+   "key": "f3019df15e80745ccd66593c0092690d",
+   "words": 4
+  },
+  {
+   "id": "aww_b",
+   "text": "아니~ 뭘 이런 걸!",
+   "dur": 1.935,
+   "syllablesPerSec": 3.1,
+   "src": "aww_b.wav",
+   "key": "c56efe4294386ae408d87f90360b415e",
+   "words": 4
+  }
+ ]
+}

@@ -1,0 +1,61 @@
+{
+  "note": "LAB E4 「아니」 — B 갈래 인물 그대로: 바리스타 = 범수(역할 목소리), 해설 = 하나(LAB 목소리). 몽글은 말하지 않는다(말풍선 + 사운드킷 몽글 소리). b1 · b2는 억양시험.json의 what_b · aww_b와 같은 요청이라 캐시에서 나온다. n3 「Your turn. Say it out loud!」는 E3(앱으로배운한국어_20261025) 파일을 그대로 쓴다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_아니네가지뜻_20261027/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "b1",
+      "text": "아니?!",
+      "lang": "ko",
+      "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+      "emotion": "smart",
+      "prev": "손님이 동전이 가득 든 유리병을 계산대에 와르르 쏟는다. 바리스타가 눈이 휘둥그레져서 깜짝 놀라 소리친다.",
+      "next": "",
+      "lufs": -15.5
+    },
+    {
+      "id": "b2",
+      "text": "아니~ 뭘 이런 걸!",
+      "lang": "ko",
+      "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+      "emotion": "smart",
+      "prev": "단골손님이 작은 꽃 한 송이를 선물로 내민다. 바리스타가 얼굴이 빨개져서 수줍게 감동하며 손사래를 친다.",
+      "next": "",
+      "lufs": -15.5
+    },
+    {
+      "id": "b3",
+      "text": "서비스예요!",
+      "lang": "ko",
+      "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+      "emotion": "happy",
+      "lufs": -15.5
+    },
+    {
+      "id": "n1",
+      "text": "Not always no!",
+      "emotion": "smart",
+      "prev": "The barista said the same Korean word twice. Once in shock, once blushing at a gift. The customer's textbook says that word means no. But listen:",
+      "next": "When you're shocked, and when you get a gift."
+    },
+    {
+      "id": "n4",
+      "text": "Which one have you heard in K-dramas?",
+      "emotion": "happy",
+      "intensity": 1.1
+    }
+  ]
+}

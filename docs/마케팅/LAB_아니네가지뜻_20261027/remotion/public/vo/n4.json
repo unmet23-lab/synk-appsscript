@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n4",
+ "text": "Which one have you heard in K-dramas?",
+ "dur": 2.734,
+ "words": [
+  {
+   "text": "Which",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "one",
+   "start": 0.442,
+   "end": 0.603
+  },
+  {
+   "text": "have",
+   "start": 0.664,
+   "end": 0.825
+  },
+  {
+   "text": "you",
+   "start": 0.885,
+   "end": 0.986
+  },
+  {
+   "text": "heard",
+   "start": 1.046,
+   "end": 1.328
+  },
+  {
+   "text": "in",
+   "start": 1.409,
+   "end": 1.489
+  },
+  {
+   "text": "K-dramas?",
+   "start": 1.57,
+   "end": 2.734
+  }
+ ],
+ "source": {
+  "key": "0777cd72038466f6c384b9eec69c0d01",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1.1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

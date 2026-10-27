@@ -1,0 +1,49 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "아니~ 뭘 이런 걸!",
+ "dur": 1.935,
+ "words": [
+  {
+   "text": "아니~",
+   "start": 0.02,
+   "end": 0.462
+  },
+  {
+   "text": "뭘",
+   "start": 0.643,
+   "end": 0.803
+  },
+  {
+   "text": "이런",
+   "start": 0.884,
+   "end": 1.085
+  },
+  {
+   "text": "걸!",
+   "start": 1.145,
+   "end": 1.935
+  }
+ ],
+ "source": {
+  "key": "c56efe4294386ae408d87f90360b415e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "단골손님이 작은 꽃 한 송이를 선물로 내민다. 바리스타가 얼굴이 빨개져서 수줍게 감동하며 손사래를 친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,25 @@
+{
+  "note": "LAB E4 「먼저:」 — 바리스타(범수) 목소리로 「아니」 네 억양이 또렷이 갈리는지 1시간 시험. 줄마다 프리셋 감정판(a)과 앞뒤 글을 읽는 smart판(b)을 굽고, 받아쓰기 · 음높이 곡선으로 가른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_아니네가지뜻_20261027/음성/억양시험.json --굽기",
+  "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -15.5
+  },
+  "out": "억양시험",
+  "trim": "both",
+  "lines": [
+    { "id": "no_a", "text": "아니.", "emotion": "tonedown" },
+    { "id": "no_b", "text": "아니.", "emotion": "smart", "prev": "친구가 「너 어제 그 영화 봤어?」라고 묻는다. 안 봤다고 짧고 담담하게 대답한다.", "next": "" },
+    { "id": "what_a", "text": "아니?!", "emotion": "toneup", "intensity": 1.4 },
+    { "id": "what_b", "text": "아니?!", "emotion": "smart", "prev": "손님이 동전이 가득 든 유리병을 계산대에 와르르 쏟는다. 바리스타가 눈이 휘둥그레져서 깜짝 놀라 소리친다.", "next": "" },
+    { "id": "well_a", "text": "아니… 그게…", "emotion": "sad", "intensity": 0.8 },
+    { "id": "well_b", "text": "아니… 그게…", "emotion": "smart", "prev": "손님이 「동전으로 계산해도 돼요?」라고 묻는다. 바리스타가 곤란해서 웃음 지으며 말끝을 길게 흐린다.", "next": "" },
+    { "id": "aww_a", "text": "아니~ 뭘 이런 걸!", "emotion": "happy", "intensity": 1.2 },
+    { "id": "aww_b", "text": "아니~ 뭘 이런 걸!", "emotion": "smart", "prev": "단골손님이 작은 꽃 한 송이를 선물로 내민다. 바리스타가 얼굴이 빨개져서 수줍게 감동하며 손사래를 친다.", "next": "" }
+  ]
+}

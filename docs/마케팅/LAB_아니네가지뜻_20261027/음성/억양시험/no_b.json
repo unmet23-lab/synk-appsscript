@@ -1,0 +1,34 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "no_b",
+ "text": "아니.",
+ "dur": 0.484,
+ "words": [
+  {
+   "text": "아니.",
+   "start": 0.03,
+   "end": 0.484
+  }
+ ],
+ "source": {
+  "key": "5a8f40a79eebbd9a477ac81d3349827f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "친구가 「너 어제 그 영화 봤어?」라고 묻는다. 안 봤다고 짧고 담담하게 대답한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

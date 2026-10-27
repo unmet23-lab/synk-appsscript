@@ -1,0 +1,37 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "well_a",
+ "text": "아니… 그게…",
+ "dur": 1.264,
+ "words": [
+  {
+   "text": "아니…",
+   "start": 0.05,
+   "end": 0.251
+  },
+  {
+   "text": "그게…",
+   "start": 0.735,
+   "end": 1.264
+  }
+ ],
+ "source": {
+  "key": "dd5071c08c516874babdc0e1890958a8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 0.8,
+   "tempo": 1,
+   "seed": 1027,
+   "lufs": -15.5,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
