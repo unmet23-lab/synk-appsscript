@@ -43,7 +43,8 @@ export function signInMethods(user) {
 }
 export function createPortalSecurity({ config, sdk, bounded, notice, errorMessage, rateLimit, preview = false,
   setBusy = () => {}, hostBusy = () => false, onPasswordChanged = () => {}, fetcher = (...args) => globalThis.fetch(...args) }) {
-  let user = null, generation = 0, busy = false, formOpen = false, closed = false;
+  // Both forms start folded under their buttons (10-27): the card reads as three lines — e-mail, ways, password.
+  let user = null, generation = 0, busy = false, formOpen = false, emailOpen = false, closed = false;
   const status = (text, kind = 'info') => { const node = $('security-status');node.textContent = text;node.setAttribute('data-kind', kind);node.className = `small security-status${kind === 'error' ? ' error' : ''}`; };
   const message = error => {
     const code = error?.code || error?.error_code;
@@ -60,7 +61,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   const clearFields = () => { for (const id of [...PASSWORD_FIELDS, 'new-email']) $(id).value = '';for (const id of PASSWORD_FIELDS) $(id).type = 'password';$('password-visible').checked = false; };
   function lock(value) {
     busy = value;setBusy(value);
-    for (const id of ['password-change-submit', 'password-mail', 'password-form-toggle', 'email-change-submit']) { const node = $(id);if (node) node.disabled = value; }
+    for (const id of ['password-change-submit', 'password-mail', 'password-form-toggle', 'email-change-submit', 'email-form-toggle']) { const node = $(id);if (node) node.disabled = value; }
   }
   // Starts one operation at a time, never while the page signs in or out; returns its account check.
   function begin(pending) {
@@ -78,14 +79,17 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     const pending = typeof user.new_email === 'string' && user.new_email ? user.new_email : '';
     $('security-pending-email').hidden = !pending;
     $('security-pending-email').textContent = pending ? `새 이메일 ${pending} 확인을 기다리고 있어요. 두 주소로 간 메일의 「변경 확인하기」를 모두 누르면 바뀌어요.` : '';
-    // A Google-only account starts from the reset mail; the current-password form stays one tap away.
-    const open = methods.email || formOpen;
-    $('password-change-form').hidden = !open;
-    $('password-form-toggle').hidden = open;
-    $('password-mail-heading').textContent = methods.email ? '현재 비밀번호를 모르겠어요' : '비밀번호 만들기';
+    // A Google-only account starts from the mail that sets a password; the current-password form stays one tap away.
+    $('password-change-form').hidden = !formOpen;
+    $('password-form-toggle').textContent = formOpen ? '접기' : methods.email ? '비밀번호 바꾸기' : '이미 만든 비밀번호 바꾸기';
+    $('password-form-toggle').setAttribute('aria-expanded', String(formOpen));
+    $('email-change-form').hidden = !emailOpen;
+    $('email-form-toggle').textContent = emailOpen ? '접기' : '이메일 바꾸기';
+    $('email-form-toggle').setAttribute('aria-expanded', String(emailOpen));
+    $('password-mail-heading').textContent = methods.email ? '현재 비밀번호를 모르겠어요' : 'Google로 가입한 계정이에요';
     $('password-mail-copy').textContent = methods.email
-      ? `${user.email || '가입한 이메일'}로 재설정 메일을 보내요. 메일의 단추를 누르면 새 비밀번호를 정할 수 있어요.`
-      : `Google로 가입한 계정이에요. 이메일과 비밀번호로도 로그인하려면 ${user.email || '가입한 이메일'}로 메일을 받아 비밀번호를 정해 주세요.`;
+      ? `${user.email || '가입한 이메일'}로 재설정 메일을 보내요.`
+      : `이메일과 비밀번호로도 로그인하려면 ${user.email || '가입한 이메일'}로 메일을 받아 비밀번호를 정해 주세요.`;
     $('password-mail').textContent = methods.email ? '재설정 메일 보내기' : '비밀번호 정하는 메일 받기';
   }
   // The current password is checked with a separate, immediately ended Auth session, so this browser's own
@@ -120,7 +124,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
       status('새 비밀번호를 저장하고 있어요…', 'pending');
       const result = await bounded(sdk.auth.updateUser({ password: values.next }));check();
       if (result.error) throw result.error;
-      clearFields();
+      clearFields();formOpen = false;render();$('password-form-toggle').focus?.();
       status('비밀번호를 바꿨어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', 'success');
       notice('비밀번호를 바꿨어요. 이 브라우저는 로그인된 채예요.', false, false, 'success');
       onPasswordChanged();
@@ -148,7 +152,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
       const result = await bounded(sdk.auth.updateUser({ email: next }, { emailRedirectTo: callback.href }));check();
       if (result.error) throw result.error;
       if (result.data?.user?.id === user.id) user = result.data.user;
-      $('new-email').value = '';render();
+      $('new-email').value = '';emailOpen = false;render();
       // The mails' token-hash links open on any device (10-23), each with one more tap on the page.
       status(`${user.email}, ${next} 두 주소로 확인 메일을 보냈어요. 두 메일의 「변경 확인하기」를 모두 눌러야 바뀌어요. 메일은 어느 기기에서 열어도 되고, 열린 화면에서 「이메일 변경 확인하기」를 눌러 주세요.`, 'success');
     } catch (error) { if (!closed) status(message(error), 'error'); }
@@ -157,17 +161,26 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   $('password-change-form').onsubmit = event => { void changePassword(event); };
   $('email-change-form').onsubmit = event => { void changeEmail(event); };
   $('password-mail').onclick = () => { void sendReset(); };
-  $('password-form-toggle').onclick = () => { formOpen = true;render();$('current-password').focus?.(); };
+  $('password-form-toggle').onclick = () => { formOpen = !formOpen;if (!formOpen) for (const id of PASSWORD_FIELDS) $(id).value = '';render();if (formOpen) $('current-password').focus?.(); };
+  $('email-form-toggle').onclick = () => { emailOpen = !emailOpen;if (!emailOpen) $('new-email').value = '';render();if (emailOpen) $('new-email').focus?.(); };
   $('password-visible').onchange = () => { for (const id of PASSWORD_FIELDS) $(id).type = $('password-visible').checked ? 'text' : 'password'; };
   return Object.freeze({
-    // `value` is the Auth user this page verified (sdk.auth.getUser), never one read from storage alone.
-    show(value, { focus = false } = {}) {
+    // `value` is the Auth user this page verified (sdk.auth.getUser), never one read from storage alone. `section`
+    // (password · email · google, from ?view=security&focus=…, e.g. the PC app's buttons) opens that line.
+    show(value, { focus = false, section = null } = {}) {
       if (closed) return;
-      if (user?.id !== value?.id) { generation++;formOpen = false;status('');clearFields(); }
-      user = value?.id ? value : null;render();
-      if (focus && user) { $('account-security').scrollIntoView?.({ block: 'start' });$('account-security-heading').focus?.({ preventScroll: true }); }
+      if (user?.id !== value?.id) { generation++;formOpen = false;emailOpen = false;status('');clearFields(); }
+      user = value?.id ? value : null;
+      if (focus && user && section === 'password') formOpen = true;
+      if (focus && user && section === 'email') emailOpen = true;
+      render();
+      if (focus && user) {
+        $('account-security').scrollIntoView?.({ block: 'start' });
+        const target = section === 'password' ? $('current-password') : section === 'email' ? $('new-email') : section === 'google' && !$('google-link')?.hidden ? $('google-link') : null;
+        (target || $('account-security-heading')).focus?.({ preventScroll: true });
+      }
     },
-    hide() { generation++;user = null;formOpen = false;status('');clearFields();render(); },
+    hide() { generation++;user = null;formOpen = false;emailOpen = false;status('');clearFields();render(); },
     // The page is going away: forget the account without touching the document.
     stop() { closed = true;generation++;user = null; },
   });

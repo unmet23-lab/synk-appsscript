@@ -108,6 +108,23 @@ test('signup IPC refuses connected and changing sessions, sibling clients and un
   f.frame.url='https://synk.im/id/';await assert.rejects(open(f.event),/UNTRUSTED_SENDER/);assert.equal(f.calls.length,0);
 });
 
+// 10-27: 「비밀번호를 잊었어요」 opens only the fixed recover step; 「로그인과 보안」 opens only one of three named lines.
+test('recover and security IPC open only fixed SYNK ID addresses with an allow-listed line',async()=>{
+  let bridge;const calls=[];
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
+  await bridge.authRecover('https://untrusted.invalid/');await bridge.authSecurity('password');await bridge.authSecurity('javascript:alert(1)');
+  assert.deepEqual(calls,[['synk:auth-recover'],['synk:auth-security','password'],['synk:auth-security',null]]);
+  const out=await mainFixture();assert.equal((await out.handlers.get('synk:auth-recover')(out.event,'https://untrusted.invalid/')).ok,true);assert.deepEqual(out.calls,['https://synk.im/id/?view=recover']);
+  for(const authState of [{signedIn:true,status:'signed-in'},...['restoring','signing-in','signing-out'].map(status=>({signedIn:false,status}))]){
+    const f=await mainFixture({authState});assert.equal((await f.handlers.get('synk:auth-recover')(f.event)).code,'AUTH_RECOVER_UNAVAILABLE');assert.equal(f.calls.length,0);
+  }
+  const signed=await mainFixture({authState:{signedIn:true,status:'signed-in'}}),security=signed.handlers.get('synk:auth-security');
+  for(const section of ['password','email','google',null,'../evil','focus=password&x=1'])assert.equal((await security(signed.event,section)).ok,true);
+  assert.deepEqual(signed.calls,['https://synk.im/id/?view=security&focus=password','https://synk.im/id/?view=security&focus=email','https://synk.im/id/?view=security&focus=google',
+    'https://synk.im/id/?view=security','https://synk.im/id/?view=security','https://synk.im/id/?view=security']);
+  const guest=await mainFixture();assert.equal((await guest.handlers.get('synk:auth-security')(guest.event,'password')).code,'AUTH_REQUIRED');assert.equal(guest.calls.length,0);
+});
+
 test('packaged development Platform wires the real public capability without account or company requests',async()=>{
   const f=await mainFixture(),environment=await f.handlers.get('synk:environment')(f.event);
   assert.deepEqual(environment.publicAppsAvailable,['care','fortune','path']);

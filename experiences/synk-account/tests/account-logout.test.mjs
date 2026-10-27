@@ -198,7 +198,8 @@ test('portal logout cannot clear a newer account received while revocation was p
   assert.deepEqual(page.calls, ['all']);assert.deepEqual(page.cleanupAccounts, [], 'SDK cleanup must not sign out the newer account received during revocation');
   assert.equal(page.saved().user.id, 'synthetic-new-user');assert.equal(page.root.hidden, false);
   const text = node => [node.textContent, ...node.children.map(text)].join(' ');
-  assert.match(text(page.root), /SYNK ID · synthetic-new-user/);assert.match(page.notice().textContent, /로그인됐어요/);
+  // The account number sits under 「문의할 때 쓰는 계정 번호」 (10-27).
+  assert.match(text(page.root), /synthetic-new-user/);assert.match(page.notice().textContent, /로그인됐어요/);
 });
 
 test('installed Auth SDK removes its persisted local session even when remote logout returns 503', async () => {

@@ -68,7 +68,7 @@ export async function publicLoginSettings(config, fetcher = fetch) {
 export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled = false, storage, getSession, generation, setBusy, hostBusy = () => false,
   notice, bounded = promise => promise, continuePortal, endSession, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
   const node = id => document.getElementById(id), button = node('google-login'), link = node('google-link'), section = node('google-onboarding');
-  let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null;
+  let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null, signedIn = false, mode = 'login';
   try { flow = consumeGoogleFlow({ storage, url: initialUrl, now: now() }); } catch (error) { flowError = error; }
   const check = (token, subject) => { if (closed || generation() !== token || getSession()?.user?.id !== subject) throw fault('ACCOUNT_CHANGED', '로그인 상태가 바뀌었어요.'); };
   const errorMessage = error => ({ ONBOARDING_REQUIRED: phoneRequired ? '휴대폰 인증과 가입 정보를 먼저 완료해 주세요.' : '가입 정보를 먼저 완료해 주세요.', PHONE_UNVERIFIED: '휴대폰 번호를 먼저 인증해 주세요.', PHONE_VERIFICATION_REQUIRED: '서버에서 휴대폰 인증을 확인하지 못했어요. 번호를 다시 인증해 주세요.', INVALID_REGISTRATION: '국가·나이·성별을 다시 보고, 개인정보 안내에 체크해 주세요.', GOOGLE_FLOW_INVALID: error?.message,
@@ -81,7 +81,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
   };
   function render() {
     if (button) { button.disabled = !enabled || busy || hostBusy();text('google-login-label', busy ? 'Google 연결을 확인하고 있어요…' : 'Google로 계속하기'); }
-    text('google-availability', enabled ? '처음이라면 Google 계정으로 가입할 수 있어요.' : '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.');
+    text('google-availability', !enabled ? '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.' : mode === 'signup' ? 'Google로 가입하면 비밀번호를 따로 만들지 않아요.' : '처음이어도 이 단추로 몇 가지만 적고 바로 가입해요.');
     if (node('google-linking')) node('google-linking').hidden = !enabled || !accountVisible || required;
     if (link) link.disabled = !enabled || busy || hostBusy() || !user;
     for (const id of ['google-phone-send', 'google-phone-verify']) if (node(id)) node(id).disabled = busy || hostBusy() || !phoneRequired || !phoneEnabled;
@@ -183,7 +183,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     async check(verified, guard) {
       guard();user = verified;render();
       if (flowError) throw flowError;
-      if (flow && checkedSubject !== verified.id) { verifiedGoogleUser(verified, flow);checkedSubject = verified.id;flow = null; }
+      if (flow && checkedSubject !== verified.id) { verifiedGoogleUser(verified, flow);checkedSubject = verified.id;signedIn = flow.action === 'login';flow = null; }
       if (!verified.identities?.some(identity => identity.provider === 'google')) { required = false;if (section) section.hidden = true;return true; }
       const result = await request();guard();
       if (typeof result.registration?.required !== 'boolean') throw fault('REGISTRATION_UNAVAILABLE', '가입을 마쳤는지 확인하지 못했어요. 다시 시도해 주세요.');
@@ -200,13 +200,15 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     showAccount(show) { accountVisible = show;render(); },
     refreshControls: render,
     settings(value) { enabled = value?.google === true;phoneEnabled = value?.phone === true;render(); },
-    clearCallback() { flow = null;flowError = null; },
-    reset() { operationSequence++;if (busy) { busy = false;setBusy(false); }required = false;phoneRequired = true;accountVisible = false;user = null;confirmedPhone = sentPhone = null;sendAfter = 0;if (section) section.hidden = true;if (node('google-linking')) node('google-linking').hidden = true;
+    clearCallback() { flow = null;flowError = null;signedIn = false; },
+    // Once: whether the page's own Google sign-in (not a link to an account already signed in) just came back verified.
+    takeSignedIn() { const value = signedIn;signedIn = false;return value; },
+    reset() { operationSequence++;if (busy) { busy = false;setBusy(false); }required = false;signedIn = false;phoneRequired = true;accountVisible = false;user = null;confirmedPhone = sentPhone = null;sendAfter = 0;if (section) section.hidden = true;if (node('google-linking')) node('google-linking').hidden = true;
       for (const id of ['google-phone', 'google-phone-code', 'google-age', 'google-gender-text']) if (node(id)) node(id).value = '';
       for (const id of ['google-country', 'google-gender']) if (node(id)) node(id).value = '';
       for (const id of ['google-privacy', 'google-learning']) if (node(id)) node(id).checked = false;
       if (node('google-gender-text-label')) node('google-gender-text-label').hidden = true;render(); },
-    authMode(mode) { if (node('google-signin')) node('google-signin').hidden = !['login', 'signup'].includes(mode);if (node('email-divider')) node('email-divider').hidden = !['login', 'signup'].includes(mode); },
+    authMode(next) { mode = next;if (node('google-signin')) node('google-signin').hidden = !['login', 'signup'].includes(mode);if (node('email-divider')) node('email-divider').hidden = !['login', 'signup'].includes(mode);render(); },
     stop() { closed = true;operationSequence++;user = null;confirmedPhone = sentPhone = null;for (const id of ['google-phone-code', 'google-phone', 'google-gender-text']) if (node(id)) node(id).value = ''; },
   };
 }

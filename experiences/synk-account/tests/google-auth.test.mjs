@@ -31,7 +31,7 @@ class Element {
   setAttribute(key, value) { this[key] = value; }
   querySelector(selector) { return selector === 'span:last-child' ? this.children.at(-1) : null; }
 }
-function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequired, storage = memoryStorage() } = {}) {
+function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequired, storage = memoryStorage(), initialUrl } = {}) {
   const writes = [], notices = [], calls = [], nodes = new Map(), redirects = [], continued = [];
   for (const id of ['google-login', 'google-link', 'google-availability', 'google-onboarding', 'google-onboarding-form',
     'google-phone', 'google-phone-send', 'google-phone-code', 'google-phone-verify', 'google-phone-status', 'google-country',
@@ -67,7 +67,7 @@ function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequ
   const access = createGoogleAccess({ config, sdk, enabled, phoneEnabled, storage, getSession: () => session, generation: () => epoch,
     setBusy: value => writes.push({ id: 'portal', key: 'busy', value }), notice: (...args) => { notices.push(args);writes.push({ id: 'portal', key: 'notice', value: args }); },
     continuePortal: async () => continued.push(session?.user?.id), endSession: async () => { session = null;epoch++; },
-    fetcher, now: () => time, initialUrl: location.href });
+    fetcher, now: () => time, initialUrl: initialUrl || location.href });
   const get = id => { const node = nodes.get(id);assert.ok(node, `Expected fixture node ${id}`);return node; };
   const guard = () => {};
   const check = () => access.check(session.user, guard);
@@ -316,4 +316,16 @@ test('deferred signup cannot carry its policy or late completion into a differen
   assert.equal(f.get('google-phone-fields').hidden, false);assert.equal(f.get('google-phone').required, true);
   gate.resolve(new Response(JSON.stringify({ ok: true, registration: { required: false, phoneVerificationRequired: false } })));await pending;
   assert.equal(f.continued.length, 0);assert.equal(f.writes.length, writes);assert.equal(f.notices.length, notices);
+});
+
+// 「지난번 이 기기 로그인」 (2026-10-27): the portal records Google as this browser's way in only when its own Google
+// sign-in came back verified — not when Google was linked to an account already signed in by e-mail.
+for (const [action, expected] of [['login', true], ['link', false]]) test(`a verified Google ${action} is ${expected ? '' : 'not '}reported once as this browser's sign-in`, async t => {
+  const storage = memoryStorage(), flow = beginGoogleFlow({ config, storage, action, subject: action === 'link' ? 'synthetic-a' : null, now: 1000000, nonce: NONCE });
+  const f = fixture(t, { storage, initialUrl: flow.redirectTo });
+  assert.equal(f.access.takeSignedIn(), false, 'nothing is reported before the account is verified');
+  await f.check();assert.equal(f.access.takeSignedIn(), expected);assert.equal(f.access.takeSignedIn(), false);
+});
+test('a page without a returning Google flow never reports a Google sign-in', async t => {
+  const f = fixture(t);await f.check();assert.equal(f.access.takeSignedIn(), false);
 });

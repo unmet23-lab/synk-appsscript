@@ -467,7 +467,8 @@ for (const outcome of ['success', 'failure']) test(`an unresolved callback locks
   assert.equal(page.get('email').value, 'synthetic@example.test');assert.equal(page.get('password').value, 'synthetic-password');
   assert.equal(page.get('signup-age').checked, true);assert.equal(page.get('signup-learning').checked, true);
   pending.resolve();await settled();assert.equal(page.get('auth-submit').disabled, false);assert.equal(page.get('auth-submit').textContent, '로그인');
-  assert.doesNotMatch(page.notice.textContent, /확인 링크 처리 중|요청을 보내고 있어요/);assert.equal(page.notice['data-kind'], outcome === 'failure' ? 'error' : 'info');
+  assert.doesNotMatch(page.notice.textContent, /확인 링크 처리 중|요청을 보내고 있어요/);// The sign-in form speaks for itself; the status line stays quiet (idle) until there is news (10-27).
+  assert.equal(page.notice['data-kind'], outcome === 'failure' ? 'error' : 'idle');
   page.mode('signup');assert.equal(page.feedback.hidden, true);page.mode('recover');assert.equal(page.feedback.hidden, true);page.mode('login');
   page.replies.signInWithPassword = { error: { code: 'invalid_credentials' } };await page.submit();
   assert.equal(page.calls.length, 1);assert.equal(page.calls[0].method, 'signInWithPassword');assert.match(page.notice.textContent, /이메일 또는 비밀번호가 맞지 않아요/);
@@ -790,7 +791,9 @@ test('the reload grace never opens the new-password form for another account', a
 test('「로그인과 보안」 checks the current password with a separate, ended Auth session, then changes it on this browser session', async t => {
   const page = await fixture(t, { initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner') });
   const requests = stubFetch(t, url => url.includes('/auth/v1/token') ? reply(200, { access_token: 'synthetic-check', user: { id: 'owner' } }) : reply(200, {}));
-  assert.equal(page.get('account-security').hidden, false);assert.equal(page.get('password-change-form').hidden, false);assert.equal(page.get('security-methods').textContent, '이메일·비밀번호');
+  assert.equal(page.get('account-security').hidden, false);assert.equal(page.get('password-change-form').hidden, true);assert.equal(page.get('security-methods').textContent, '이메일·비밀번호');
+  // The form opens under its button (10-27).
+  page.get('password-form-toggle').onclick();assert.equal(page.get('password-change-form').hidden, false);
   page.get('current-password').value = 'synthetic-old';page.get('new-password').value = 'synthetic-next';page.get('new-password-confirm').value = 'synthetic-next';
   page.replies.updateUser = { data: { user: { id: 'owner' } }, error: null };await submitForm(page, 'password-change-form');await settled();
   assert.equal(requests[0].url, 'https://auth.example.test/auth/v1/token?grant_type=password');assert.deepEqual(JSON.parse(requests[0].options.body), { email: 'owner@example.test', password: 'synthetic-old' });
@@ -819,11 +822,13 @@ test('a Google-only account starts from a mail that sets a password, with the cu
   stubFetch(t, url => url.includes('view=registration') ? reply(200, { ok: true, registration: { required: false, completed: true, phoneVerificationRequired: false } }) : reply(404, {}));
   const page = await fixture(t, { initial: member('google-owner', 'google@example.test', ['google']), accountResponse: syntheticAccount('google-owner') });
   assert.equal(page.get('security-methods').textContent, 'Google');assert.equal(page.get('password-change-form').hidden, true);assert.equal(page.get('password-form-toggle').hidden, false);
-  assert.equal(page.get('password-mail-heading').textContent, '비밀번호 만들기');
+  assert.equal(page.get('password-mail-heading').textContent, 'Google로 가입한 계정이에요');assert.equal(page.get('password-mail').textContent, '비밀번호 정하는 메일 받기');
   page.replies.resetPasswordForEmail = { data: {}, error: null };await page.get('password-mail').onclick();await settled();
   assert.deepEqual(page.calls.at(-1), { method: 'resetPasswordForEmail', args: ['google@example.test', { redirectTo: 'https://id.example.test/?view=reset' }] });
   assert.match(page.get('security-status').textContent, /google@example\.test로 메일을 보냈어요/);
-  page.get('password-form-toggle').onclick();assert.equal(page.get('password-change-form').hidden, false);assert.equal(page.get('password-form-toggle').hidden, true);
+  // The form folds under its button for every account (10-27); the button folds it back.
+  page.get('password-form-toggle').onclick();assert.equal(page.get('password-change-form').hidden, false);assert.equal(page.get('password-form-toggle').textContent, '접기');
+  page.get('password-form-toggle').onclick();assert.equal(page.get('password-change-form').hidden, true);
 });
 
 test('a login e-mail change sends two confirmations, shows the wait and explains a taken address', async t => {
@@ -944,4 +949,12 @@ test('an e-mail-change link of the wrong shape is ignored, and still leaves the 
 test('a recovery token on the security view does not start the e-mail-change step', async t => {
   const other = await fixture(t, { callbackQuery: `view=security&token_hash=${TOKEN_HASH}&type=recovery` });
   assert.equal(other.get('auth-submit').textContent, '로그인');assert.equal(other.calls.length, 0);
+});
+
+// 10-27 (Fable F4): after a sign-up mail the submit button stays 「이메일로 가입」 (its password field was just
+// emptied), and the mail is sent again by address through 「확인 메일 다시 받기」 (sdk.auth.resend, type signup).
+test('after a sign-up mail the resend control appears and the submit button keeps its own job', async t => {
+  const page = await fixture(t);page.mode('signup');page.replies.signUp = { data: { session: null } };await page.submit();
+  assert.equal(page.get('resend-confirm').hidden, false);assert.equal(page.get('password').value, '');assert.equal(page.get('auth-submit').textContent, '이메일로 가입');
+  page.mode('recover');assert.equal(page.get('resend-confirm').hidden, true);
 });

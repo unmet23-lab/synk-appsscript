@@ -1,24 +1,37 @@
 import { createAccountClient } from './generated/account-client.cjs';
 import { PRODUCTS, firstPartyAuthorization, trustedConsentRedirect } from './core.mjs';
-import { createAccountView } from './account-view.mjs';
+import { createPortalAccount } from './portal-account.mjs';
 import { createGoogleAccess } from './google-auth.mjs';
 import { createSignupConversion } from './social-signup-conversion.mjs';
-import { createPortalSecurity, passwordProblem } from './portal-security.mjs';
+import { createPortalSecurity, passwordProblem, signInMethods } from './portal-security.mjs';
+import { readRecentLogin, writeRecentLogin, forgetRecentLogin, recentMethodName } from './recent-login.mjs';
 const $ = id => document.getElementById(id);
 const AUTH_LABELS = { login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장', 'email-change': '이메일 변경 확인하기' };
-const RATE_ACTIONS = { login: '로그인', signup: '가입 메일', recover: '비밀번호 재설정 메일', reset: '비밀번호 변경', 'email-change': '이메일 변경 확인', consent: '계정 연결' };
+// After a mail went out, the same button sends it again for the same address.
+const RESEND_LABELS = { recover: '메일 다시 보내기' };
+const RATE_ACTIONS = { login: '로그인', signup: '가입 메일', recover: '비밀번호 재설정 메일', reset: '비밀번호 변경', 'email-change': '이메일 변경 확인', consent: '계정 연결', resend: '확인 메일' };
+// The words above the card for each step; the login step greets a returning browser differently.
+const MODE_COPY = {
+  login: ['SYNK 계정으로 시작해요.', '처음이면 「Google로 계속하기」가 가장 빨라요. 이메일로 가입했다면 아래에 이메일과 비밀번호를 넣어 주세요.'],
+  'login-no-google': ['SYNK 계정으로 시작해요.', '이메일과 비밀번호로 로그인해요. 처음이면 아래 「이메일로 가입하기」를 눌러 주세요.'],
+  recent: ['다시 오셨네요.', '지난번에 쓴 방법에 「최근 사용」을 붙여 뒀어요. 다른 방법도 그대로 쓸 수 있어요.'],
+  signup: ['SYNK 계정을 만들어요.', '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요. Google 계정이 있으면 위의 단추로 더 빨리 가입할 수 있어요.'],
+  recover: ['비밀번호를 다시 정해요.', '가입한 이메일로 새 비밀번호를 정하는 링크를 보내 드려요. Google로 가입했다면 비밀번호가 필요 없어요 — 아래 「로그인하기」로 돌아가 「Google로 계속하기」를 눌러 주세요.'],
+};
+const SWITCH_COPY = { login: '처음이세요?', signup: '이미 계정이 있나요?', recover: '비밀번호가 생각났나요?', reset: '' };
 const RATE_CODES = new Set(['over_email_send_rate_limit', 'over_sms_send_rate_limit', 'over_request_rate_limit', 'rate_limit_exceeded']);
 export function authErrorMessage(error) {
   if (error?.code === 'GOOGLE_CALLBACK_INCOMPLETE' && error.reason === 'identity_already_exists')
     return '이 Google 계정은 다른 SYNK 계정에 연결돼 있어요. 그 계정으로 로그인하거나 hello@synk.im으로 문의해 주세요.';
   const messages = {
-    invalid_credentials: '이메일 또는 비밀번호가 맞지 않아요. 다시 입력해 주세요.',
-    email_not_confirmed: '이메일 확인이 아직 끝나지 않았어요. 받은 메일의 확인 버튼을 누른 뒤 다시 로그인해 주세요.',
+    // Never says whether the address has an account; it only names the other way in.
+    invalid_credentials: '이메일 또는 비밀번호가 맞지 않아요. 다시 입력해 주세요. Google로 가입했다면 「Google로 계속하기」를 눌러 주세요.',
+    email_not_confirmed: '이메일 확인이 아직 끝나지 않았어요. 받은 메일의 확인 버튼을 누른 뒤 다시 로그인해 주세요. 메일이 없으면 아래 「확인 메일 다시 받기」를 눌러 주세요.',
     weak_password: '비밀번호가 너무 단순해요. 8자 이상으로 영문·숫자·기호를 섞어 주세요.',
     same_password: '현재 비밀번호와 다른 새 비밀번호를 입력해 주세요.',
     email_address_invalid: '이메일 주소 형식이 맞지 않아요. 다시 입력해 주세요.',
-    user_already_exists: '이미 가입한 이메일이에요. 로그인하거나 비밀번호 찾기를 이용해 주세요.',
-    email_exists: '이미 가입한 이메일이에요. 로그인하거나 비밀번호 찾기를 이용해 주세요.',
+    user_already_exists: '이미 가입한 이메일이에요. 아래 「로그인하기」로 돌아가 로그인해 주세요. 비밀번호가 생각나지 않으면 그 화면의 「비밀번호를 잊었어요」를 눌러 주세요.',
+    email_exists: '이미 가입한 이메일이에요. 아래 「로그인하기」로 돌아가 로그인해 주세요. 비밀번호가 생각나지 않으면 그 화면의 「비밀번호를 잊었어요」를 눌러 주세요.',
     signup_disabled: '지금은 새 가입을 받지 않아요. 잠시 뒤 다시 시도해 주세요.',
     AUTH_RECOVERY_REQUIRED: '비밀번호 재설정 링크를 먼저 열어 주세요. 새 링크가 필요하면 가입한 이메일로 요청해 주세요.',
     AUTH_RECOVERY_CALLBACK: '이 재설정 링크는 만료됐거나 이 브라우저에서 열 수 없어요. 아래에서 재설정 메일을 다시 요청해 주세요.',
@@ -63,7 +76,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   $('learning-link').href = config.learningUrl;
   if (!config.configured) { $('setup').hidden = false;notice('지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
   const requestedView = new URL(location.href).searchParams.get('view');
-  let mode = requestedView === 'reset' ? 'reset' : requestedView === 'signup' ? 'signup' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
+  // ?view=recover is the PC app's 「비밀번호를 잊었어요」 (and any 「비밀번호 찾기」 link): the mail form straight away.
+  let mode = requestedView === 'reset' ? 'reset' : requestedView === 'signup' ? 'signup' : requestedView === 'recover' ? 'recover' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
   // A reset mail's token-hash link works in any browser or device. Its one-time token is used only after a
   // tap here, so a mail scanner that opens links cannot use it up. The new-password form opens only after
   // such a link (or the SDK's own PASSWORD_RECOVERY) on this page; a plain signed-in ?view=reset gets the
@@ -81,6 +95,14 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const linkFragment = new URLSearchParams(new URL(location.href).hash.slice(1)), emailChangeHalf = requestedView === 'security' && (linkParams.has('message') || linkFragment.has('message')) && !linkParams.has('code');
   if (emailChangeHalf) { const clean = cleanAuthCallbackUrl(location.href);if (clean !== location.href) window.history?.replaceState(window.history.state, '', clean); }
   let recoveryReady = false, recoveredOver = null, focusSecurity = requestedView === 'security';
+  // ?view=security&focus=password|email|google opens that line of 「로그인과 보안」 (the PC app's three buttons).
+  const securitySection = focusSecurity && ['password', 'email', 'google'].includes(linkParams.get('focus')) ? linkParams.get('focus') : null;
+  // 「지난번 이 기기 로그인」 (recent-login.mjs): only this browser, never in the synthetic preview.
+  let recentStore = null;if (!preview) { try { recentStore = window.localStorage || null; } catch { /* no hint */ } }
+  const recentRealm = (() => { try { return new URL(config.portalUrl).pathname; } catch { return undefined; } })();
+  const recent = () => readRecentLogin({ storage: recentStore, realm: recentRealm });
+  // The way this tab is signing in, set by the step that started it and written once the account is verified.
+  let pendingMethod = null, sent = null, googleAvailable = null;
   let landingNotice = emailChangeHalf ? { text: '한 주소의 확인이 끝났어요. 다른 주소로 간 메일의 「변경 확인하기」도 눌러 주세요. 둘 다 누르면 로그인 이메일이 바뀌어요.', error: false } : null;
   const resetLinkStep = () => mode === 'reset' && !!recoveryLink && !recoveryReady;
   const emailChangeStep = () => mode === 'email-change' && !!emailChangeLink;
@@ -96,7 +118,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const feedback = target => { const node = document.createElement('p');node.className = 'notice error';node.hidden = true;target.before(node);return node; };
   const authFeedback = feedback($('auth-submit')), consentFeedback = feedback($('approve').closest('.actions'));
   const remaining = scope => Math.max(0, Math.ceil(((cooldowns.get(scope)?.until || 0) - cooldownClock.now()) / 1000));
-  const scopeVisible = scope => scope === 'consent' ? !$('consent').hidden : !$('auth-panel').hidden && scope === mode;
+  const scopeVisible = scope => scope === 'consent' ? !$('consent').hidden : scope === 'resend' ? !$('auth-panel').hidden && ['login', 'signup'].includes(mode) : !$('auth-panel').hidden && scope === mode;
   const cooldownText = (scope, waiting) => waiting
     ? `${RATE_ACTIONS[scope]} 요청이 잠시 제한됐어요. 버튼의 남은 시간이 지나면 다시 눌러 주세요. 자동으로 다시 보내지 않아요.`
     : '대기 시간이 지났어요. 입력 내용을 확인한 뒤 버튼을 눌러 다시 요청해 주세요. 자동으로 다시 보내지 않아요.';
@@ -104,8 +126,11 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   function renderControls() {
     const authSeconds = remaining(mode), consentSeconds = remaining('consent'), callbackWaiting = hadCallback && !initializationFinished;
     $('auth-submit').disabled = callbackWaiting || authOperation || authSeconds > 0;
-    setText($('auth-submit'), callbackWaiting ? '확인 링크 처리 중…' : authOperation ? '요청을 보내고 있어요…' : authSeconds ? `${authSeconds}초 뒤 다시 요청` : resetLinkStep() ? '링크 확인하고 계속' : AUTH_LABELS[mode]);
+    const resend = sent?.mode === mode && sent.email === $('email').value.trim() ? RESEND_LABELS[mode] : null;
+    setText($('auth-submit'), callbackWaiting ? '확인 링크 처리 중…' : authOperation ? '요청을 보내고 있어요…' : authSeconds ? `${authSeconds}초 뒤 다시 요청` : resetLinkStep() ? '링크 확인하고 계속' : resend || AUTH_LABELS[mode]);
     document.querySelectorAll('[data-view]').forEach(button => { button.disabled = authOperation; });
+    const resendSeconds = remaining('resend');
+    if ($('resend-confirm')) { $('resend-confirm').disabled = authOperation || resendSeconds > 0;setText($('resend-confirm'), resendSeconds ? `${resendSeconds}초 뒤 다시 요청` : '확인 메일 다시 받기'); }
     $('approve').disabled = $('deny').disabled = !!consentOperation || consentSeconds > 0;
     setText($('approve'), consentSeconds ? `${consentSeconds}초 뒤 다시 요청` : '연결하기');
     for (const [scope, node] of [[mode, authFeedback], ['consent', consentFeedback]]) {
@@ -158,7 +183,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // A used or expired reset link: a signed-in browser gets the card's own reset mail, anyone else the recover form.
   async function recoveryLinkFailed() {
     recoveryLink = null;feedbacks.delete('reset');
-    if (session) { mode = 'login';focusSecurity = true;landingNotice = { text: `이 재설정 링크는 이미 썼거나 만료됐어요. 이 브라우저에는 ${session.user?.email || '다른'} 계정이 로그인돼 있어요 — 이 계정이면 아래 「로그인과 보안」에서 재설정 메일을 다시 받고, 다른 계정이면 로그아웃한 뒤 「비밀번호 찾기」로 새 메일을 받아 주세요.`, error: true };await enter();return; }
+    if (session) { mode = 'login';focusSecurity = true;landingNotice = { text: `이 재설정 링크는 이미 썼거나 만료됐어요. 이 브라우저에는 ${session.user?.email || '다른'} 계정이 로그인돼 있어요 — 이 계정이면 아래 「로그인과 보안」에서 재설정 메일을 다시 받고, 다른 계정이면 로그아웃한 뒤 「비밀번호를 잊었어요」로 새 메일을 받아 주세요.`, error: true };await enter();return; }
     setMode('recover');const text = '이 재설정 링크는 이미 썼거나 만료됐어요. 가입한 이메일을 넣으면 새 링크를 보내 드려요.';
     feedbacks.set('recover', { text, kind: 'error' });notice(text, true, true);renderControls();
   }
@@ -173,8 +198,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   }
   // Provider discovery must not hold up email login or the SDK's PKCE callback.
   if (typeof loginSettings?.then === 'function') void Promise.resolve(loginSettings).then(
-    value => { if (!closed) google.settings(preview ? { google: false, phone: false } : value); },
-    () => { if (!closed) google.settings({ google: false, phone: false }); });
+    value => { if (!closed) { google.settings(preview ? { google: false, phone: false } : value);googleAvailable = !preview && value?.google === true;renderCopy(); } },
+    () => { if (!closed) { google.settings({ google: false, phone: false });googleAvailable = false;renderCopy(); } });
   const callbackWaitText = '확인 링크 처리 중… 잠시 기다려 주세요. 계속 같으면 페이지를 새로고침해 주세요.';
   const showCallbackWaiting = (reveal = false) => {
     feedbacks.set(mode, { text: callbackWaitText, kind: 'pending' });notice(callbackWaitText, false, reveal, 'pending');renderControls();
@@ -184,21 +209,43 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     const email = session?.user?.email;
     return `${email ? `${email} 계정의 새 비밀번호예요. ` : ''}${recoveredOver ? `이 브라우저에 로그인돼 있던 ${recoveredOver} 계정은 로그아웃했어요. ` : ''}저장하면 이 브라우저를 뺀 다른 기기와 앱에서는 로그아웃돼요.`;
   };
+  // The last way this browser signed in: a line above the buttons, 「최근 사용」 on that way, the address filled in for e-mail.
+  function renderRecent() {
+    const last = mode === 'login' ? recent() : null;
+    $('recent-login').hidden = !last;
+    setText($('recent-login-text'), last ? `이 기기에서 지난번에 ${recentMethodName(last.method)}로 로그인했어요 · ${last.masked}` : '');
+    $('google-recent').hidden = last?.method !== 'google';$('email-recent').hidden = last?.method !== 'email';
+    if (last?.email && !$('email').value) $('email').value = last.email;
+  }
+  // The words above the card; the login step follows a returning browser and whether Google sign-in is on.
+  function renderCopy() {
+    const key = mode === 'login' ? recent() ? 'recent' : googleAvailable === false ? 'login-no-google' : 'login' : mode;
+    const [heading, copy] = MODE_COPY[key] || [];
+    $('auth-heading').textContent = heading || ({ reset: '새 비밀번호를 정해 주세요.', 'email-change': '이메일 변경을 확인해요.' })[mode];
+    $('auth-copy').textContent = mode === 'reset' ? resetCopy()
+      : mode === 'email-change' ? '메일에서 연 이메일 변경 확인 링크예요. 아래 단추를 누르면 이 주소를 확인해요. 두 주소로 간 메일을 모두 확인하면 로그인 이메일이 바뀌어요.' : copy;
+  }
   const setMode = value => {
-    mode = value;$('auth-heading').textContent = ({ login: '다시 만나서 반가워요.', signup: 'SYNK 계정을 만들어요.', recover: '비밀번호를 다시 정해요.', reset: '새 비밀번호를 정해 주세요.', 'email-change': '이메일 변경을 확인해요.' })[mode];
-    $('auth-copy').textContent = mode === 'recover' ? '가입한 이메일로 재설정 링크를 보내 드려요.' : mode === 'signup' ? '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.' : mode === 'reset' ? resetCopy()
-      : mode === 'email-change' ? '메일에서 연 이메일 변경 확인 링크예요. 아래 단추를 누르면 이 주소를 확인해요. 두 주소로 간 메일을 모두 확인하면 로그인 이메일이 바뀌어요.' : '이메일과 비밀번호, 또는 Google 계정으로 로그인해요.';
+    mode = value;renderCopy();
     const linkStep = resetLinkStep() || mode === 'email-change', newPassword = mode === 'reset' && !linkStep;
     $('password-label').hidden = mode === 'recover' || linkStep;$('password').required = mode !== 'recover' && !linkStep;$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
-    // The label's own text node (the input sits inside the label).
-    const labelText = $('password-label').firstChild;if (labelText?.nodeType === 3) labelText.textContent = newPassword ? '새 비밀번호' : '비밀번호';
+    // Password managers pair 「username」 with the current password; a new account's address is just an e-mail.
+    $('email').autocomplete = mode === 'signup' ? 'email' : 'username';
+    $('forgot-row').hidden = mode !== 'login';$('caps-warning').hidden = true;
+    // The new-password step finishes on its own button: switching away there would leave the recovery half done.
+    $('switch-row').hidden = mode === 'email-change' || mode === 'reset';setText($('switch-copy'), SWITCH_COPY[mode] || '');
+    if (mode !== 'login' && mode !== 'signup') $('resend-confirm').hidden = true;
+    for (const id of ['password', 'password-confirm']) { $(id).type = 'password';$(`${id}-toggle`)?.setAttribute('aria-pressed', 'false'); }
+    renderRecent();
+    setText($('password-label-text'), newPassword ? '새 비밀번호' : '비밀번호');
     $('password-confirm-label').hidden = !newPassword;$('password-confirm').required = newPassword;if (!newPassword) $('password-confirm').value = '';
     const noEmail = mode === 'reset' || mode === 'email-change';
     $('email').closest('label').hidden = noEmail;$('email').required = !noEmail;$('signup-choices').hidden = mode !== 'signup';
     google?.authMode(mode);
     renderControls();
-    // The e-mail-change step is a single tap with no other form beside it.
-    document.querySelectorAll('[data-view]').forEach(button => { button.hidden = mode === 'email-change' || button.dataset.view === mode || mode === 'login' && button.dataset.view === 'login'; });
+    // The e-mail-change step is a single tap with no other form beside it; finding a password does not offer sign-up.
+    document.querySelectorAll('[data-view]').forEach(button => { button.hidden = mode === 'email-change' || button.dataset.view === mode || mode === 'login' && button.dataset.view === 'login'
+      || ['recover', 'reset'].includes(mode) && button.dataset.view === 'signup'; });
   };
   const guarded = token => () => { if (token !== generation || !session) throw Object.assign(new Error('로그인 상태가 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
   async function loadConsent(check) {
@@ -235,9 +282,15 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     } catch (error) { operation.redirecting = false;if (!closed && token === generation) report(error, 'consent'); }
     finally { if (consentOperation === operation && !operation.redirecting) { consentOperation = null;renderControls(); } }
   }
+  // The hero names what the page is for: signing in, or this browser's own account once it is open.
+  function hero(signedIn) {
+    const mark = document.createElement('span');mark.className = 'sb-mark';mark.textContent = signedIn ? '내 SYNK 계정' : 'SYNK 계정';
+    if ($('hero-title')) $('hero-title').replaceChildren(...(signedIn ? [mark] : [mark, ' 하나로 로그인해요.']));
+    if ($('hero-copy')) setText($('hero-copy'), signedIn ? '이름·로그인 방법·로그인한 곳을 여기서 보고 바꿔요.' : 'WORLD와 회원 혜택, PC 앱을 같은 계정으로 써요.');
+  }
   async function enter() {
     if (closed) return;
-    view?.stop();view = null;$('consent').hidden = true;$('account').hidden = true;
+    view?.stop();view = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;hero(false);
     google?.showAccount(false);security?.hide();
     if ($('account-next')) $('account-next').hidden = true;
     const token = generation, entry = ++entryId;
@@ -253,14 +306,23 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       $('auth-panel').hidden = false;setMode(mode);
       if (mode === 'email-change') { notice('메일의 이메일 변경 확인 링크를 열었어요. 「이메일 변경 확인하기」를 눌러 주세요.');return; }
       if (mode !== 'reset' && landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(error ? text : text + ' 이 기기에서 로그인하지 않아도 돼요.', error, true, error ? 'error' : 'success');return; }
-      notice(mode !== 'reset' ? '로그인하거나, 처음이라면 회원가입해 주세요.' : resetLinkStep() ? '메일의 재설정 링크를 열었어요. 「링크 확인하고 계속」을 눌러 주세요.' : '두 칸에 같은 비밀번호를 넣고 새 비밀번호를 저장해 주세요.');
+      // The sign-in form says what to do itself; the status line stays quiet until there is news.
+      if (mode !== 'reset') notice('', false, false, 'idle');
+      else notice(resetLinkStep() ? '메일의 재설정 링크를 열었어요. 「링크 확인하고 계속」을 눌러 주세요.' : '두 칸에 같은 비밀번호를 넣고 새 비밀번호를 저장해 주세요.');
       return;
     }
     $('auth-panel').hidden = true;
     notice('로그인 정보를 확인하고 내 계정을 불러오고 있어요…', false, false, 'pending');
     try {
       const checked = await bounded(sdk.auth.getUser());check();if (checked.error || typeof checked.data?.user?.id !== 'string' || !checked.data.user.id || checked.data.user.id !== session?.user?.id) throw new Error('로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.');
-      if (!await google.check(checked.data.user, check)) { $('auth-panel').hidden = true;return; }check();
+      const verified = checked.data.user;
+      if (!await google.check(verified, check)) { $('auth-panel').hidden = true;return; }check();
+      // Only a sign-in that reached the account counts: a Google sign-in that just came back (not a link to an account
+      // already signed in) and finished any sign-up step, or this tab's password sign-in. A first Google visit that
+      // stops at the sign-up step records nothing until that step is done (the flag waits in google-auth until then).
+      if (google.takeSignedIn?.()) pendingMethod = 'google';
+      if (pendingMethod) { writeRecentLogin(pendingMethod, verified.email, { storage: recentStore, realm: recentRealm });pendingMethod = null; }
+      else if (!recent()) { const ways = signInMethods(verified);if (ways.email !== ways.google) writeRecentLogin(ways.google ? 'google' : 'email', verified.email, { storage: recentStore, realm: recentRealm }); }
       // Only local pending-owner validation is awaited. Tracking never adds an authentication request.
       const conversionHeaders=await signupConversion?.confirmedHeaders(checked.data.user)||{};check();
       void signupConversion?.confirmedUser(checked.data.user);
@@ -272,10 +334,11 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           const accountGet=target.origin===expected.origin&&target.pathname==='/functions/v1/synk-account'&&!target.search&&(!options.method||options.method==='GET');
           return fetch(url,accountGet?{...options,headers:{...options.headers,...conversionHeaders}}:options);
         } });
-      view = createAccountView({ client, product: 'platform', guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 관리할 수 있어요.', false, false, 'success');
+      view = createPortalAccount({ client, user: verified, guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();hero(true);
+      notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 보고 바꿀 수 있어요.', false, false, 'success');
       if ($('account-next')) $('account-next').hidden = preview || callbackBlocked;
       google.showAccount(!preview);
-      security.show(checked.data.user, { focus: focusSecurity });focusSecurity = false;
+      security.show(verified, { focus: focusSecurity, section: securitySection });focusSecurity = false;
       if (landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(text, error, true, error ? 'error' : 'success'); }
     } catch (error) {
       if (token !== generation || entry !== entryId || error.code === 'ACCOUNT_CHANGED') return;
@@ -292,6 +355,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // Fence ordinary requests before either remote revocation or SDK storage cleanup can await.
     view?.stop();view = null;session = null;subject = null;consentOperation = null;clearCooldowns();
     google?.reset();
+    // Leaving every SYNK app means leaving this device too: the 「지난번 로그인」 hint goes with it.
+    if (request.scope === 'all') forgetRecentLogin({ storage: recentStore, realm: recentRealm });
     authOperation = true;
     mode = 'login';void enter();
     notice('현재 계정 화면을 닫았어요. 브라우저 로그인 저장과 서버의 연결 종료를 확인하고 있어요…', false, false, 'pending');
@@ -341,15 +406,44 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
     if (closed || authOperation) return;
     setMode(button.dataset.view);
+    // The pressed link hides in its own step; the keyboard moves to the step's first field.
+    if (!$('email').closest('label')?.hidden) $('email').focus?.();else $('password').focus?.();
     if (hadCallback && !initializationFinished) { showCallbackWaiting();return; }
     if (cooldowns.has(mode)) { notice(cooldownMessage(mode), true);noticeScope = mode;tickCooldowns(); }
-    else notice(({ signup: '가입할 이메일과 비밀번호를 넣어 주세요.', recover: '가입한 이메일을 넣으면 비밀번호 재설정 메일을 보내요.' })[mode] || '이메일과 비밀번호를 넣어 주세요.');
+    // The step's own heading already says what to fill in.
+    else notice('', false, false, 'idle');
   }; });
+  // Small helps on the form: show what was typed, warn about Caps Lock, forget this device's hint, resend a sign-up mail.
+  for (const id of ['password', 'password-confirm']) {
+    const toggle = $(`${id}-toggle`);
+    if (toggle) toggle.onclick = () => { const shown = $(id).type === 'password';$(id).type = shown ? 'text' : 'password';toggle.setAttribute('aria-pressed', String(shown)); };
+    const caps = on => { $('caps-warning').hidden = !on;if (on) $(id).setAttribute('aria-describedby', 'caps-warning');else $(id).removeAttribute?.('aria-describedby'); };
+    $(id).onkeyup = $(id).onkeydown = event => { if (typeof event?.getModifierState === 'function') caps(event.getModifierState('CapsLock')); };
+    $(id).onblur = () => caps(false);
+  }
+  $('email').oninput = () => renderControls();
+  $('recent-login-forget').onclick = () => {
+    const last = recent();forgetRecentLogin({ storage: recentStore, realm: recentRealm });
+    if (last?.email && $('email').value.trim() === last.email) $('email').value = '';
+    setMode(mode);notice('이 기기에 남은 지난번 로그인 기록을 지웠어요.', false, false, 'success');$('email').focus?.();
+  };
+  $('resend-confirm').onclick = async () => {
+    if (closed || authOperation || remaining('resend') > 0 || !['login', 'signup'].includes(mode)) return;
+    const email = $('email').value.trim(), token = generation;if (!email) { notice('확인 메일을 받을 이메일을 넣어 주세요.', true, true);return; }
+    authOperation = true;renderControls();notice('확인 메일을 다시 요청하고 있어요…', false, false, 'pending');
+    try {
+      const callback = new URL(config.portalUrl);if (authorizationId) callback.searchParams.set('authorization_id', authorizationId);
+      const result = await bounded(sdk.auth.resend({ type: 'signup', email, options: { emailRedirectTo: callback.href } }));
+      if (closed || token !== generation) return;if (result?.error) throw result.error;
+      feedbacks.delete(mode);notice('확인 메일을 다시 요청했어요. 메일함에서 메일을 열고 안의 단추를 눌러 주세요. 안 보이면 스팸함도 봐 주세요.', false, true, 'success');
+    } catch (error) { if (!closed && token === generation) report(error, 'resend'); }
+    finally { authOperation = false;renderControls(); }
+  };
   $('auth-form').onsubmit = async event => {
     event.preventDefault();if (closed || authOperation || remaining(mode) > 0) return;
     if (hadCallback && !initializationFinished) { showCallbackWaiting(true);return; }
     const requestMode = mode, token = ++generation, requestStartedAt = Date.now(), verifying = resetLinkStep(), confirmingEmail = emailChangeStep(), previous = session?.user || null;
-    authOperation = true;cooldowns.delete(requestMode);feedbacks.set(requestMode, { text: '요청을 보내고 있어요. 잠시만 기다려 주세요.', kind: 'pending' });renderControls();notice('요청을 보내고 있어요. 잠시만 기다려 주세요.', false, false, 'pending');
+    authOperation = true;cooldowns.delete(requestMode);$('resend-confirm').hidden = true;feedbacks.set(requestMode, { text: '요청을 보내고 있어요. 잠시만 기다려 주세요.', kind: 'pending' });renderControls();notice('요청을 보내고 있어요. 잠시만 기다려 주세요.', false, false, 'pending');
     try {
       let result;
       const email = $('email').value.trim(), password = $('password').value;
@@ -396,17 +490,27 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         await enter();
       }
       else if (requestMode === 'recover' || requestMode === 'signup' && !result.data?.session) {
-        const text = `${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 메일을 열고 안에 있는 단추를 눌러 주세요. 안 보이면 스팸함도 봐 주세요.`;
-        feedbacks.set(requestMode, { text, kind: 'success' });notice(text, false, true, 'success');
+        const text = `${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 메일을 열고 안에 있는 단추를 눌러 주세요. 안 보이면 스팸함도 보고, 그래도 없으면 아래 단추로 다시 보내 주세요.`;
+        sent = { mode: requestMode, email };feedbacks.set(requestMode, { text, kind: 'success' });notice(text, false, true, 'success');
+        // A sign-up mail is sent again by address alone (the password field was just emptied).
+        if (requestMode === 'signup') $('resend-confirm').hidden = false;
       }
       else if (requestMode === 'reset') {
+        // A new password is the way back in next time.
+        if (session?.user?.email) writeRecentLogin('email', session.user.email, { storage: recentStore, realm: recentRealm });
         mode = 'login';feedbacks.delete('reset');recoveryReady = false;recoveredOver = null;rememberRecovery(null);
         const clean = new URL(location.href);clean.searchParams.delete('view');window.history?.replaceState(window.history.state, '', clean.href);
         await enter();if (!$('account').hidden) notice('새 비밀번호를 저장했어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', false, true, 'success');
         void tidySessions(generation);
       }
-      else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;clearCooldowns();await enter(); }
-    } catch (error) { if (token === generation && mode === requestMode) report(error, requestMode);else if (!closed) await enter(); }
+      else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;clearCooldowns();pendingMethod = 'email';await enter(); }
+    } catch (error) {
+      if (token === generation && mode === requestMode) {
+        report(error, requestMode);
+        // An unconfirmed sign-up can ask for its mail again from here.
+        if (requestMode === 'login' && (error?.code === 'email_not_confirmed' || /email not confirmed/i.test(error?.message || ''))) $('resend-confirm').hidden = false;
+      } else if (!closed) await enter();
+    }
     finally { authOperation = false;renderControls(); }
   };
   for (const [id, method] of [['approve', 'approveAuthorization'], ['deny', 'denyAuthorization']]) $(id).onclick = () => respondToAuthorization(method);

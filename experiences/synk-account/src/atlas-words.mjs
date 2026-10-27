@@ -1,11 +1,6 @@
 // Words for Core's account summary (synk-account ?view=atlas) and the WORLD games with the
 // situations they practise. A summary describes choices and practice, never ability or a trait.
-export const SETTING_WORDS = { support: { step: '단계별로 도와줘요', choose: '그때그때 맞춰 줘요', independent: '혼자 해 볼게요' },
-  textSize: { standard: '보통 글씨', large: '큰 글씨' }, explanation: { brief: '짧은 설명', standard: '보통 설명', detailed: '자세한 설명' },
-  motion: { full: '움직임 그대로', reduced: '움직임 줄이기' }, audio: { off: '소리 끄기', available: '소리 쓰기' } };
-// Short names of the learning reasons (계약/배우는이유_선택응답_계약.json, every 값; a test keeps them equal).
-export const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한국 여행', people: '가족·친구와 이야기', life: '한국 생활', study: '한국에서 공부',
-  work: '한국에서 일', career: '지금 하는 일', exam: '시험·자격', hobby: '배우는 즐거움', other: '다른 이유' };
+export { SETTING_WORDS, REASON_WORDS } from './atlas-summary-words.mjs';
 // A game names a Strata situation only where that situation is the game's own practice (a café's
 // orders, an entrance notice, spoken directions); a game that merely touches many everyday topics
 // names none. These links are a draft for teacher review. `slug` is the same game's folder under

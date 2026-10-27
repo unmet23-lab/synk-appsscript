@@ -54,7 +54,8 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   authSignOut:()=>ipcRenderer.invoke('synk:auth-sign-out'),
   accountRequest:(operation,params={})=>ipcRenderer.invoke('synk:account-request',operation,params),
   accountIdentity:()=>ipcRenderer.invoke('synk:account-identity'),
-  authSecurity:()=>ipcRenderer.invoke('synk:auth-security'),
+  authSecurity:section=>ipcRenderer.invoke('synk:auth-security',['password','email','google'].includes(section)?section:null),
+  authRecover:()=>ipcRenderer.invoke('synk:auth-recover'),
   companyRequest:(operation,params={})=>ipcRenderer.invoke('synk:company-request',operation,params),
   openPulseApp:()=>ipcRenderer.invoke('synk:pulse-app-open'),
   subscriptions:Object.freeze({

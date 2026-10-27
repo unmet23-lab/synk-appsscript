@@ -97,11 +97,21 @@ async function openAccountSignUp(){
   catch{return {ok:false,code:'AUTH_SIGNUP_OPEN_FAILED'};}
 }
 // Password and login e-mail change in the browser's SYNK ID (「로그인과 보안」); this app never takes a password.
-async function openAccountSecurity(){
+// The renderer may name one line to open (password · email · google); anything else opens the card's top.
+const SECURITY_SECTIONS=new Set(['password','email','google']);
+async function openAccountSecurity(section){
   if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
   if(!accountStatus()?.signedIn)return {ok:false,code:'AUTH_REQUIRED'};
-  try{await shell.openExternal('https://synk.im/id/?view=security');return {ok:true};}
+  try{await shell.openExternal('https://synk.im/id/?view=security'+(SECURITY_SECTIONS.has(section)?'&focus='+section:''));return {ok:true};}
   catch{return {ok:false,code:'AUTH_SECURITY_OPEN_FAILED'};}
+}
+// 「비밀번호를 잊었어요」 before signing in: the browser's SYNK ID opens straight on the reset-mail step (?view=recover).
+async function openAccountRecover(){
+  if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
+  const state=accountStatus();
+  if(!state||state.signedIn||['restoring','signing-in','signing-out'].includes(state.status))return {ok:false,code:'AUTH_RECOVER_UNAVAILABLE'};
+  try{await shell.openExternal('https://synk.im/id/?view=recover');return {ok:true};}
+  catch{return {ok:false,code:'AUTH_RECOVER_OPEN_FAILED'};}
 }
 async function signOutAccount(){
   const owner=accountStatus()?.account?.synk_user_id;
@@ -299,7 +309,7 @@ function createWindow(){
     'synk:window-state':windowState,'synk:window-action':action=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};if(action==='minimize')window.minimize();else if(action==='toggle-maximize'){if(window.isMaximized())window.unmaximize();else window.maximize();}else if(action==='close')window.close();else return {ok:false,code:'INVALID_WINDOW_ACTION'};return {ok:true};},
     'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-sign-up':openAccountSignUp,'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
-    'synk:account-identity':()=>isPlatform?requireSuite(()=>auth.identity()):{ok:false,code:'LAUNCHER_ONLY'},'synk:auth-security':openAccountSecurity,
+    'synk:account-identity':()=>isPlatform?requireSuite(()=>auth.identity()):{ok:false,code:'LAUNCHER_ONLY'},'synk:auth-security':section=>openAccountSecurity(section),'synk:auth-recover':openAccountRecover,
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
     'synk:subscriptions-snapshot':options=>subscriptionCall(s=>s.snapshot({refreshTools:options?.refreshTools===true})),
     'synk:subscriptions-check':ids=>subscriptionCall(s=>s.check(Array.isArray(ids)?{ids:ids.filter(id=>typeof id==='string')}:{})),

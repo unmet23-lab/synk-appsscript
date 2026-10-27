@@ -286,7 +286,7 @@ test('both signup buttons open registration and preserve guest state without sta
   let opens=0;const f=await fixture({bridgeOverrides:{authSignUp:async()=>{opens++;return {ok:true};},authSignIn:async()=>assert.fail('signup must not authenticate'),authSignOut:async()=>assert.fail('signup must not sign out')}});await f.ready;
   const storage=JSON.stringify([...f.storage]);assert.equal(f.element('account-label').textContent,'로그인');
   for(const id of ['signup-button','sign-up']){assert.equal(f.element(id).hidden,false);assert.equal(f.element(id).disabled,false);assert.equal(f.element(id).textContent,'회원가입');await f.click(id);}
-  assert.equal(opens,2);assert.equal(f.element('account-dialog').open,true);assert.match(f.element('account-state').textContent,/가입을 마쳤다면 아래 로그인/);assert.equal(f.element('sign-in').hidden,false);assert.equal(f.element('sign-in').disabled,false);assert.deepEqual(f.ids(),['world']);assert.equal(JSON.stringify([...f.storage]),storage);
+  assert.equal(opens,2);assert.equal(f.element('account-dialog').open,true);assert.match(f.element('account-state').textContent,/가입을 마쳤다면 위의 「로그인」/);assert.equal(f.element('sign-in').hidden,false);assert.equal(f.element('sign-in').disabled,false);assert.deepEqual(f.ids(),['world']);assert.equal(JSON.stringify([...f.storage]),storage);
 });
 test('signup blocks double opens and concurrent login, reports failures, and ignores late account changes',async()=>{
   const pending=deferred();let opens=0,logins=0;const f=await fixture({bridgeOverrides:{authSignUp:()=>{opens++;return pending.promise;},authSignIn:async()=>{logins++;}}});await f.ready;
@@ -376,14 +376,14 @@ test('late authentication completions and errors cannot overwrite a newer accoun
 for(const [label,result,pattern]of [
   ['failed local deletion',{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃하지 못했어요/],
   ['local-only revocation',{ok:true,serverRevoked:false,serverSessionRevoked:false},/이 PC에서는 로그아웃/],
-  ['fully confirmed logout',{ok:true,serverRevoked:true,serverSessionRevoked:true},/^로그아웃했어요\.$/],
+  ['fully confirmed logout',{ok:true,serverRevoked:true,serverSessionRevoked:true},/^로그아웃했어요\. 브라우저의 SYNK ID 로그인은 그대로라, 다른 계정으로 바꾸려면 브라우저에서도 로그아웃해 주세요\.$/],
 ])for(const emitEvent of [false,true])test(label+' retains honest account feedback '+(emitEvent?'after native signed-out event':'without event'),async()=>{const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');f.bridge.authSignOut=async()=>{const out={...signedOut,sessionGeneration:signedIn.sessionGeneration+1};if(emitEvent)f.emit('auth',out);else f.setAuth(out);return result;};await f.click('sign-out');assert.match(f.element('toast').textContent,pattern);assert.equal(f.element('sign-out').disabled,false);assert.deepEqual(f.ids(),['world']);});
 
 for(const [label,result,pattern]of [
   ['confirmed logout with failed draft cleanup',{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/^로그아웃했어요\.[\s\S]*임시 저장한 메모를 지우지 못했어요[\s\S]*같은 SYNK ID/],
   ['incomplete server logout with failed draft cleanup',{ok:true,serverRevoked:false,serverSessionRevoked:false,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/이 PC에서는 로그아웃[\s\S]*서버 쪽 로그인[\s\S]*임시 저장한 메모를 지우지 못했어요/],
   ['failed authentication cleanup with failed draft cleanup',{ok:false,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/로그아웃하지 못했어요[\s\S]*임시 저장한 메모를 지우지 못했어요/],
-  ['truthy draft cleanup flag is not a failure',{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:'false'}},/^로그아웃했어요\.$/],
+  ['truthy draft cleanup flag is not a failure',{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:'false'}},/^로그아웃했어요\. 브라우저의 SYNK ID 로그인은 그대로라, 다른 계정으로 바꾸려면 브라우저에서도 로그아웃해 주세요\.$/],
 ])for(const emitEvent of [false,true])test(label+' reports distinct outcomes '+(emitEvent?'after native event':'without event'),async()=>{
   const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');
   f.bridge.authSignOut=async()=>{const out={...signedOut,sessionGeneration:signedIn.sessionGeneration+1};if(emitEvent)f.emit('auth',out);else f.setAuth(out);return result;};
@@ -425,7 +425,7 @@ test('logout status refresh cannot close a fresh sign-in dialog or publish an ol
 
 test('accepted logout closes the account modal before its outcome while sign-in cancellation keeps the dialog',async()=>{
   for(const [result,pattern]of [
-    [{ok:true,serverRevoked:true,serverSessionRevoked:true},/^로그아웃했어요\.$/],
+    [{ok:true,serverRevoked:true,serverSessionRevoked:true},/^로그아웃했어요\. 브라우저의 SYNK ID 로그인은 그대로라, 다른 계정으로 바꾸려면 브라우저에서도 로그아웃해 주세요\.$/],
     [{ok:false,serverRevoked:true,serverSessionRevoked:true,error:{code:'AUTH_FAILED'}},/로그아웃하지 못했어요/],
     [{ok:true,serverRevoked:false,serverSessionRevoked:false},/서버 쪽 로그인은 인터넷이 연결된 뒤/],
     [{ok:true,serverRevoked:true,serverSessionRevoked:true,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}},/임시 저장한 메모를 지우지 못했어요[\s\S]*같은 SYNK ID/],
@@ -450,7 +450,7 @@ test('「내 계정」 sign-out runs the sign-out button action and cannot start
   f.emit('auth',signedIn);await pageSignOut();await f.click('sign-out');assert.equal(calls,1);
   operation.resolve({ok:true,serverRevoked:true,serverSessionRevoked:true});await settleLibrary();assert.equal(f.element('sign-out').disabled,false);
   f.bridge.authSignOut=async()=>{calls++;f.setAuth({...signedOut,sessionGeneration:2});return {ok:true,serverRevoked:true,serverSessionRevoked:true};};
-  await pageSignOut();assert.equal(calls,2);assert.match(f.element('toast').textContent,/^로그아웃했어요\.$/);assert.deepEqual(f.ids(),['world']);
+  await pageSignOut();assert.equal(calls,2);assert.match(f.element('toast').textContent,/^로그아웃했어요\. 브라우저의 SYNK ID 로그인은 그대로라, 다른 계정으로 바꾸려면 브라우저에서도 로그아웃해 주세요\.$/);assert.deepEqual(f.ids(),['world']);
 });
 
 test('PULSE favorite runs the favorite button action for the selected PULSE app',async()=>{

@@ -16,6 +16,7 @@ import {mountConvenience} from './convenience.mjs';
 import {mountPlatformUpdates} from './update-view.mjs';
 import {mountAccountPage} from './account-page.mjs';
 import {createAccountLifecycle} from './account-lifecycle.mjs';
+import {rememberSignIn,recentSignIn,recentSignInText} from './recent-sign-in.mjs';
 const $=id=>document.getElementById(id),bridge=globalThis.synkDesktop,asset='/assets/launcher/';
 const apps=APPS;
 const localStore={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
@@ -27,7 +28,7 @@ const worldExtras=[['TOPIK 연습','짧은 진단으로 TOPIK I 내 위치를 �
 let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer;
 let selectedBenefit=null,environmentRevision=0,sessionPurpose=null,sessionPurposeOwner=null,leaveDecision=null;
 let continuity=null,convenience=null,platformUpdates=null,libraryActionQueue=Promise.resolve(),pendingLibraryActions=0;
-let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false;
+let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false,rememberedOwner=null;
 // Screens register their account-change reset, render and draft hooks here (the list after the library mount).
 // ownerEpoch mirrors the registry's ownership generation so every existing guard keeps reading one variable.
 const accountLifecycle=createAccountLifecycle({onEpoch:epoch=>{ownerEpoch=epoch;}});
@@ -41,7 +42,9 @@ const memberHome=mountMemberHome($('view-home'),{storage:localStore,getSnapshot:
 const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getContext:()=>({owner:library.owner,status:library.status}),getFavorite:()=>effectivePrefs().favorites.includes('pulse'),onFavorite:toggleSelectedFavorite,onToast:toast,onOpenApp:()=>command('pulse-app','pulse')});
 // 「내 계정」: signed-in entry points open it; signed out they keep the sign-in dialog.
 const accountPage=mountAccountPage($('view-account'),{bridge,getIdentity:()=>auth,getAppIds:()=>library.appIds,onBack:()=>showView('settings'),onSignIn:()=>$('account-dialog').showModal(),onSignOut:signOut,onWorkspace:()=>{if(allowed('messenger'))launchFromHome('messenger');else toast('이 계정에서는 작업실을 열 수 없어요.');},onAccountChanged:()=>void refreshAuth({reload:true}),toast:message=>toast(message)});
-function openAccount(){if(bridge&&auth.signedIn)showView('account');else $('account-dialog').showModal();}
+// Signed out, a sign-in entry starts the browser sign-in at once and the dialog shows how it goes; a saved sign-in that
+// failed to load (status 'error') or one in progress keeps the dialog first, where 「저장된 로그인 다시 확인」 lives.
+function openAccount(){if(bridge&&auth.signedIn){showView('account');return;}if(!$('account-dialog').open)$('account-dialog').showModal();if(bridge&&auth.configured&&auth.status==='signed-out')void startSignIn();}
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');$('view-home').before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./platform-continuity.css';document.head.append(continuityStyle);
 continuity=mountPlatformLibrary(continuityRoot,{native:true,getHost:()=>bridge,getAppIds:()=>library.appIds,getDevice:()=>({favorites:prefs.favorites,recent:Object.entries(prefs.lastLaunch).filter(([,at])=>at).map(([id,at])=>({id,at,mode:'client'}))}),onChange:()=>{renderLibrary();renderSelected();memberHome.render();convenience?.refresh();},onFavoritesChanged:()=>memberActivity.syncFavorites(),onOpen:id=>{if(allowed(id))launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');},storage:localStorage});
@@ -105,8 +108,13 @@ function setAuth(snapshot,{environmentOnly=false}={}){
   if(!environmentOnly)authRevision++;
   const next=resolveLibrary(snapshot,environment),changed=JSON.stringify([library.owner,library.status,library.appIds,auth.sessionGeneration])!==JSON.stringify([next.owner,next.status,next.appIds,snapshot?.sessionGeneration]);
   // The registered screens own the resets and renders; changed accounts also advance ownerEpoch.
+  const wasSignedIn=auth.signedIn===true;
   accountLifecycle.transition({changed,ownerChanged:library.owner!==next.owner,commit:()=>{auth=snapshot||{status:'error',signedIn:false};library=next;}});
   if(bridge&&auth.signedIn&&library.owner)void continuity?.connect();
+  // 「지난번 이 PC」 for the sign-in dialog: the main process's own reading of the account's address, once per account.
+  if(bridge&&auth.signedIn&&library.owner&&rememberedOwner!==library.owner&&typeof bridge.accountIdentity==='function'){const owner=rememberedOwner=library.owner;void Promise.resolve(bridge.accountIdentity()).then(identity=>{if(identity?.ok===true&&library.owner===owner)rememberSignIn(localStore,identity);}).catch(()=>{});}
+  // A session the server ended (a password changed elsewhere, 「모두 로그아웃」) says so once instead of a silent 「로그인」.
+  if(wasSignedIn&&!auth.signedIn&&!signOutPending&&auth.status==='signed-out'&&auth.error?.code==='AUTH_REQUIRED')toast('로그인이 끝났어요. 다시 쓰려면 「로그인」을 눌러 주세요.');
 }
 async function refreshAuth({reload=false}={}){
   if(!bridge)return;const revision=authRevision;
@@ -180,15 +188,19 @@ function renderSettings(){renderPersonalization();$('density').value=prefs.densi
 function renderAuth(){
   const signedIn=auth.signedIn,signing=['signing-in','restoring','signing-out'].includes(auth.status),retryable=!!bridge&&auth.configured&&!signedIn&&!signing&&auth.status==='error'&&auth.error?.retryable===true&&typeof bridge.accountRequest==='function',name=auth.account?.display_name||'SYNK 회원';
   $('account-button').dataset.signedIn=String(!!signedIn);$('account-button').setAttribute('aria-label',signedIn?'내 계정':'SYNK ID 로그인');$('settings-login').textContent=signedIn?'내 계정':'로그인';
-  $('account-label').textContent=signedIn?name:signing?'로그인 중':'로그인';
-  $('account-title').textContent=signedIn?`${name} 님`:signing?'로그인 중':'SYNK 시작하기';
-  $('account-description').textContent=signedIn?'앱마다 쓸 수 있는 범위는 따로 정해져 있어요.':retryable?'저장된 로그인을 다시 불러오거나 새로 로그인해 주세요.':'처음이라면 회원가입, 계정이 있다면 로그인해 주세요.';
-  let message=signedIn?'로그인돼 있어요.':!bridge?'회원가입과 로그인은 SYNK Platform PC 앱에서 해요.':!auth.configured?'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.':signing?'기본 브라우저에서 로그인을 마쳐 주세요.':signUpOpened?'회원가입 페이지를 열었어요. 가입을 마쳤다면 아래 로그인 버튼을 눌러 주세요.':'아직 로그인하지 않았어요.';
+  const phase=auth.status==='signing-in'?'signing-in':auth.status==='restoring'?'restoring':auth.status==='signing-out'?'signing-out':null;
+  $('account-label').textContent=signedIn?name:phase==='signing-out'?'로그아웃 중':phase==='restoring'?'로그인 확인 중':signing?'로그인 중':'로그인';
+  const avatar=$('account-button').querySelector?.('.avatar'),initial=signedIn?[...name][0]||'S':'S';if(avatar&&avatar.textContent!==initial)avatar.textContent=initial;
+  $('account-title').textContent=signedIn?`${name} 님`:phase==='signing-in'?'브라우저에서 로그인 중':phase==='restoring'?'로그인 확인 중':phase==='signing-out'?'로그아웃 중':'SYNK 시작하기';
+  $('account-description').textContent=signedIn?'앱마다 쓸 수 있는 범위는 따로 정해져 있어요.':phase==='signing-in'?'기본 브라우저에 SYNK ID 로그인 화면을 열었어요. Google이나 이메일로 로그인하면 이 앱으로 돌아와요.':retryable?'저장된 로그인을 다시 불러오거나 새로 로그인해 주세요.':'SYNK ID 하나로 WORLD·회원 혜택·Workspace를 써요. 로그인과 가입은 기본 브라우저의 SYNK ID 화면에서 해요.';
+  let message=signedIn?'로그인돼 있어요.':!bridge?'회원가입과 로그인은 SYNK Platform PC 앱에서 해요.':!auth.configured?'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.':phase==='signing-in'?'브라우저 창에서 로그인을 마쳐 주세요. 창이 안 보이면 「로그인 취소」를 누른 뒤 다시 로그인해 주세요.':phase==='restoring'?'저장된 로그인을 확인하고 있어요.':phase==='signing-out'?'로그아웃하고 있어요.':signUpOpened?'회원가입 페이지를 열었어요. 가입을 마쳤다면 위의 「로그인」을 눌러 주세요.':'아직 로그인하지 않았어요.';
   if(auth.error)message+='\n'+(auth.error.message||'로그인을 완료하지 못했어요. 다시 시도해 주세요.');
   // A password changed in the browser's SYNK ID ends this app's session too.
   if(!signedIn&&auth.error?.code==='AUTH_REQUIRED'&&accountPage.securityVisitedRecently())message+='\n비밀번호를 바꿨다면 새 비밀번호로 다시 로그인해 주세요.';$('account-state').textContent=message;
   for(const id of ['signup-button','sign-up']){$(id).hidden=!!signedIn;$(id).disabled=typeof bridge?.authSignUp!=='function'||signing||signUpPending||accountRetryPending;$(id).textContent=signUpPending?'여는 중…':'회원가입';}
   $('signup-help').hidden=!!signedIn||signing;
+  $('forgot-password').hidden=!!signedIn||signing||!bridge||!auth.configured;$('forgot-password').disabled=typeof bridge?.authRecover!=='function';
+  const recent=!signedIn&&!signing?recentSignIn(localStore):null;$('account-recent').hidden=!recent;$('account-recent').textContent=recentSignInText(recent);
   $('account-retry').hidden=!retryable;$('account-retry').disabled=accountRetryPending||signUpPending;
   $('sign-in').textContent=retryable?'새로 로그인':'로그인';$('sign-in').hidden=signedIn||signing;$('sign-in').disabled=!bridge||!auth.configured||accountRetryPending||signUpPending;
   $('sign-out').hidden=!signedIn;$('cancel-sign-in').hidden=auth.status!=='signing-in';$('settings-account').textContent=signedIn?`${name} 님으로 로그인됨`:auth.configured?'로그인하지 않음':'로그인 설정 없음';renderSettings();accountPage.authChanged();
@@ -281,12 +293,19 @@ for(const id of ['signup-button','sign-up'])$(id).addEventListener('click',openS
 $('density').addEventListener('change',event=>{prefs.density=event.target.value;savePrefs();renderSettings();});
 $('reset-preferences').addEventListener('click',()=>{prefs=parsePreferences(null);reconcileSelection();filter='all';search='';$('search').value='';savePrefs();renderLibrary();renderSelected();renderSettings();toast('보기 설정을 처음 상태로 되돌렸어요.');});
 $('content-go-world').addEventListener('click',()=>{if(!allowed('world'))return;$('content-dialog').close();selectApp('world');$('primary-action').focus();});
-$('sign-in').addEventListener('click',async()=>{
+$('sign-in').addEventListener('click',()=>startSignIn());
+$('forgot-password').addEventListener('click',async()=>{try{const result=await bridge?.authRecover?.();if(result?.ok===true)toast('기본 브라우저에서 SYNK ID 「비밀번호를 다시 정해요」를 열었어요. 가입한 이메일로 새 비밀번호를 정하는 메일을 받아 주세요.');else toast('브라우저를 열지 못했어요. synk.im/id에서 「비밀번호를 잊었어요」를 눌러 주세요.');}catch{toast('브라우저를 열지 못했어요. synk.im/id에서 「비밀번호를 잊었어요」를 눌러 주세요.');}});
+async function startSignIn(){
   if(!bridge||!auth.configured||auth.signedIn||['restoring','signing-in','signing-out'].includes(auth.status)||accountRetryPending||signUpPending)return;
   setAuth({...auth,status:'signing-in',signedIn:false,account:null,library:{status:'unavailable',appIds:[]}});const revision=authRevision;
-  try{const result=await bridge.authSignIn();if(revision!==authRevision)return;await refreshAuth();if(result?.ok===false&&!auth.signedIn)toast(errorText(result));}
+  try{
+    const result=await bridge.authSignIn();if(revision!==authRevision)return;await refreshAuth();
+    if(result?.ok===false&&!auth.signedIn)toast(errorText(result));
+    // Back from the browser signed in: the dialog's work is done.
+    else if(auth.signedIn){if($('account-dialog').open)$('account-dialog').close();toast(`${auth.account?.display_name||'SYNK 회원'} 님으로 로그인했어요.`);}
+  }
   catch{if(revision===authRevision)setAuth({status:'error',configured:true,signedIn:false,error:{message:'로그인 창을 열지 못했어요. 다시 눌러 주세요.'}});}
-});
+}
 // The sign-out button and 「내 계정」's sign-out share this action. While a logout is pending the button is
 // disabled, and signOutPending keeps the account page from starting a second one in that window.
 async function signOut(){
@@ -301,7 +320,7 @@ async function signOut(){
     const refreshedRevision=await refreshAuth();
     if((authRevision!==refreshedRevision&&!sameLogout())||auth.status==='signing-in')return;
     if(!auth.signedIn){
-      const notice=result?.ok===false?'로그아웃하지 못했어요. 잠시 뒤 다시 눌러 주세요.':result?.serverSessionRevoked===false||result?.serverRevoked===false?'이 PC에서는 로그아웃했어요. 서버 쪽 로그인은 인터넷이 연결된 뒤 다시 로그인했다 로그아웃하면 정리돼요.':'로그아웃했어요.';
+      const notice=result?.ok===false?'로그아웃하지 못했어요. 잠시 뒤 다시 눌러 주세요.':(result?.serverSessionRevoked===false||result?.serverRevoked===false?'이 PC에서는 로그아웃했어요. 서버 쪽 로그인은 인터넷이 연결된 뒤 다시 로그인했다 로그아웃하면 정리돼요.':'로그아웃했어요.')+' 브라우저의 SYNK ID 로그인은 그대로라, 다른 계정으로 바꾸려면 브라우저에서도 로그아웃해 주세요.';
       const cleanupNotice=result?.draftRecoveryCleanup?.ok===false?' 이 PC에 임시 저장한 메모를 지우지 못했어요. 같은 SYNK ID로 다시 로그인해 설정에서 「쓰던 메모 되살리기」를 꺼 주세요.':'';
       if($('account-dialog').open)$('account-dialog').close();
       toast(notice+cleanupNotice);
