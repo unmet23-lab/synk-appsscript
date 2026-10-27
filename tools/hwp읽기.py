@@ -366,12 +366,13 @@ def main():
             print(f'{k}: {v}')
         return
     text = '\n'.join(lines) + '\n'
+    # 공고문 글머리 기호가 짝 없는 대리 문자로 남는 일이 잦다(10-21·10-27) — 그 글자만 ?로 쓴다
     if a.out:
-        with open(a.out, 'w', encoding='utf-8', newline='\n') as f:
+        with open(a.out, 'w', encoding='utf-8', errors='replace', newline='\n') as f:
             f.write(text)
         print(f'{len(lines)}줄 → {a.out}', file=sys.stderr)
     else:
-        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
         sys.stdout.write(text)
 
 
