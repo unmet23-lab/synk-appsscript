@@ -18,7 +18,8 @@ const before = measure(src);
 // 리미터가 봉우리를 누르면 통합 크기가 조금 내려가니, 한 번 재고 모자란 만큼 한 번 더 올린다.
 let gain = +(TARGET - before.I).toFixed(2);
 // 리미터는 표본 봉우리를 누르고 AAC가 0.2dB쯤 다시 솟게 해서, 0.89(−1.0 dBFS)면 v4에서 참 봉우리 −0.8이 났다 → 0.87(−1.2).
-const run = (g) => execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-c:v', 'copy', '-af', `volume=${g}dB,alimiter=limit=0.87:level=false:attack=3:release=60`, '-c:a', 'aac', '-b:a', '384k', '-ar', '48000', '-movflags', '+faststart', out]);
+// 10-27 B8 v6은 0.87에서도 −0.9가 나서(올리기 전 검사 ④ 최대 −1.2 dBFS) 0.84(−1.5)로 내렸다.
+const run = (g) => execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-c:v', 'copy', '-af', `volume=${g}dB,alimiter=limit=0.84:level=false:attack=3:release=60`, '-c:a', 'aac', '-b:a', '384k', '-ar', '48000', '-movflags', '+faststart', out]);
 run(gain);
 let after = measure(out);
 if (Math.abs(after.I - TARGET) > 0.3) { gain = +(gain + TARGET - after.I).toFixed(2); run(gain); after = measure(out); }
