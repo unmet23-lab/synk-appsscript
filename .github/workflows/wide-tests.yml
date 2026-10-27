@@ -85,11 +85,17 @@ jobs:
           # 경험 앱은 초보 게임 음성 시험이 후처리 도구(ffmpeg·ffprobe)를 확인한다(10-22).
           if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ] || [ "$BUNDLE" = "experiences" ]; then
             if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+              # Azure mirrorlist는 작은 색인은 받아도 큰 패키지에서 멈췄다. 이 설치만 Ubuntu 공식 HTTPS 원천을 쓴다.
+              media_sources="$RUNNER_TEMP/synk-media-ubuntu.list"
+              printf '%s\n' \
+                'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu noble main restricted universe multiverse' \
+                'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse' \
+                'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse' > "$media_sources"
               apt_bounded() {
                 local limit="$1" status=0
                 shift
                 for attempt in 1 2; do
-                  if timeout --kill-after=5s "$limit" sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o DPkg::Lock::Timeout=30 "$@"; then
+                  if timeout --kill-after=5s "$limit" sudo apt-get -o "Dir::Etc::sourcelist=$media_sources" -o Dir::Etc::sourceparts=- -o APT::Get::List-Cleanup=0 -o Acquire::ForceIPv4=true -o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o DPkg::Lock::Timeout=30 "$@"; then
                     return 0
                   else
                     status=$?

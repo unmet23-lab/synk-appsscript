@@ -1333,5 +1333,23 @@
         "browser"
       ]
     }
-  ]
+  ],
+  "ciInstallFollowUp": {
+    "failedRun": 40518045251,
+    "failedHead": "650c55eeaf09b5b212e9b115badb0a3f089f4424",
+    "phase": "install dependencies before tests",
+    "bundles": [
+      "루트",
+      "회사",
+      "experiences"
+    ],
+    "exitCode": 124,
+    "cause": "Azure package download stalled twice after a fast index update",
+    "change": "Per-invocation signed official Ubuntu HTTPS source list; preserve all existing limits and failure propagation",
+    "localRegression": {
+      "passed": 20,
+      "failed": 0
+    },
+    "remoteVerdict": "Verify the new commit; the failed run remains failed"
+  }
 }

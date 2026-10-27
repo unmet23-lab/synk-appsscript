@@ -45,17 +45,37 @@ esac
 `);
   const result = spawnSync(bash, ['-e', '-c', 'export PATH="$FIXTURE_BIN"\n'+script], {
     cwd: root, encoding: 'utf8', timeout: 10000,
-    env: { ...process.env, PATH: posix(bin), BUNDLE: 'experiences', CALLS: posix(log), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit), UPDATE_FAILURES: String(updateFailures), UPDATE_COUNT: posix(path.join(root,'update-count')), TIMEOUT_FAILURES: String(timeoutFailures), TIMEOUT_COUNT: posix(path.join(root,'timeout-count')) },
+    env: { ...process.env, PATH: posix(bin), RUNNER_TEMP: posix(root), BUNDLE: 'experiences', CALLS: posix(log), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit), UPDATE_FAILURES: String(updateFailures), UPDATE_COUNT: posix(path.join(root,'update-count')), TIMEOUT_FAILURES: String(timeoutFailures), TIMEOUT_COUNT: posix(path.join(root,'timeout-count')) },
   });
   assert.equal(result.error, undefined, result.error?.message);
-  return { ...result, calls: fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n') : [] };
+  const sources = path.join(root, 'synk-media-ubuntu.list');
+  return { ...result, sources: fs.existsSync(sources) ? fs.readFileSync(sources, 'utf8') : null, calls: fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n') : [] };
 }
 
 test('wide dependency setup has a bounded step and avoids apt when both tools work', t => {
   const limit = Number(step.match(/timeout-minutes: (\d+)/)?.[1]);
   assert.ok(limit > 0 && limit <= 10, 'dependency setup must finish within ten minutes');
   const r = run(t); assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.sources, null, 'preinstalled tools must not prepare any APT source');
   assert.deepEqual(r.calls, ['ffmpeg version', 'ffprobe version']);
+});
+
+test('missing tools use only signed official Ubuntu pockets for every APT process, bypassing the slow runner mirrorlist', t => {
+  const r = run(t, { missing: ['ffmpeg'], updateFailures: 1 });
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(r.sources.trim().split('\n'), [
+    'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu noble main restricted universe multiverse',
+    'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse',
+    'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse',
+  ]);
+  const apt = r.calls.filter(call => call.startsWith('apt-get '));
+  assert.equal(apt.length, 3, 'both update attempts and installation use the same isolated source list');
+  for (const call of apt) {
+    assert.match(call, /Dir::Etc::sourcelist=\S+\/synk-media-ubuntu\.list/);
+    assert.match(call, /Dir::Etc::sourceparts=-(?:\s|$)/);
+    assert.match(call, /APT::Get::List-Cleanup=0\b/);
+    assert.doesNotMatch(call, /allow-unauthenticated|AllowInsecure|trusted=yes/);
+  }
 });
 
 test('either missing media executable triggers bounded installation and verifies both tools', async t => {
