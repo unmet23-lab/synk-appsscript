@@ -26,7 +26,7 @@ export const PITCHES = Object.freeze(Object.values(N));
 /** Whole level of each sound — fitted to the design targets by the offline K-weighted momentary loudness of the samples
  * (qa-tea-ui samples): a cup set down and a cup served ≈ -24, pouring ≈ -26, honey ≈ -27, 「다 됐어요」 ≈ -23, a guest
  * pleased ≈ -21 and the last guest just under the kit's 「획득」 (-20.8); emptying and lifting stay soft. The walking town's
- * layer sits near -27~-26, so a press reads just above it (10-27, the levels left to Claude by Yuho). */
+ * layer sits near -27~-26, so a press reads just above it (10-27). */
 export const LEVEL = Object.freeze({ cup: 1.8, pour: 1.35, spoon: 1.6, done: 1.25, empty: 1.75, pick: 2.2, serve: 1.5, match: 1.75, final: 1.7 });
 
 const tone = (type, at, f0, f1, glide, attack, decay, level, pan = 0) => ({ kind: 'tone', type, at, f0, f1: f1 ?? f0, glide: glide ?? 0, attack, decay, level, pan });
