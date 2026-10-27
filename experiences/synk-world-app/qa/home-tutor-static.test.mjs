@@ -1,3 +1,4 @@
+import {handleWorldProfileRead,assetFailure} from './static-world-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -9,8 +10,8 @@ import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {lessonById} from '../life-content.mjs';
 
 const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
-// 지난 출시의 고정 /world 판(.tmp/world-app-home-tutor-20261011/world)은 git 밖 빌드 산출물이다 — CI 체크아웃에는 없어 이름 대고 건너뛴다.
-const payload=path.resolve(process.env.SYNK_HOME_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-home-tutor-20261011/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-app-home-tutor-20261011/world (git 밖 고정 /world 판)'};
+// 검증할 공개 /world 판은 Git 밖에 둔다. 현재 기준은 c55d5a78(2026-10-27), 환경 변수로 입력 폴더를 명시할 수 있다.
+const payload=path.resolve(process.env.SYNK_HOME_TUTOR_STATIC_PAYLOAD||'.tmp/world-static-c55d5a78-20261027/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111',LIFE='synk.life-korean.progress.v1';
 const core=value=>JSON.stringify({owner:value.owner,version:value.version,lessons:value.lessons,reviews:value.reviews,activeLessonId:value.activeLessonId,activeReview:value.activeReview});
 
@@ -41,7 +42,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
    localStorage.setItem('synk.world.tutor.v1:'+account,JSON.stringify({version:1,completed:true,tutor:'kkamong'}));
    if(corruptGuest)localStorage.setItem('synk.life-korean.progress.v1:guest','unreadable synthetic history');
   },{account:A,signedIn,corruptGuest});
-  await context.route('**/*',async route=>{
+  await context.route('**/*',async route=>{if(await handleWorldProfileRead(route,config.accountApiUrl,A))return;
    const request=route.request(),u=new URL(request.url());if(u.origin===base)return route.continue();
    if(u.origin!==new URL(config.accountApiUrl).origin){outside.push(u.pathname);return route.abort();}
    const body=request.postDataJSON();calls.push({path:u.pathname,action:body?.action||null});let data;
@@ -56,7 +57,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
    }else{outside.push(u.pathname);return route.abort();}
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'Access-Control-Allow-Origin':'*'}});
   });
-  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)assets.push({path:new URL(r.url()).pathname,status:r.status()});});
+  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(assetFailure(r,config.accountApiUrl))assets.push({path:new URL(r.url()).pathname,status:r.status()});});
  }
  async function closeContext(){if(page&&!page.isClosed()){await context.unrouteAll({behavior:'ignoreErrors'});await page.goto('about:blank').catch(()=>{});}await context?.close();context=null;page=null;}
  try{
@@ -76,14 +77,14 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   await page.locator(`[data-life-choice="${wrong}"]`).click();
   await page.waitForFunction(()=>document.querySelector('.life-save-status')?.dataset.savePhase==='synced');
   await page.locator('#panel-close').click();
-  check('an actual first wrong answer keeps guided help beside the selected next activity',(await home()).practiceRecommendation?.id===q.id&&(await home()).recommendation.command==='learn'&&await page.locator('#home-tutor .home-tutor-practice').isVisible()&&(await read()).progress.lessons['greetings-expressions'].answers[q.id].correct===false);
+  check('an actual first wrong answer keeps guided help beside the selected next activity',(await home()).practiceRecommendation?.id===q.id&&(await home()).recommendation.command==='learn'&&await page.locator('#home-tutor .home-tutor-practice:not(.home-tutor-review)').isVisible()&&(await read()).progress.lessons['greetings-expressions'].answers[q.id].correct===false);
   await page.setViewportSize({width:320,height:740});
-  check('the guided-help button stays visible and tappable above navigation at 320 pixels',await page.locator('#home-tutor .home-tutor-practice').evaluate(button=>{const box=button.getBoundingClientRect(),nav=document.querySelector('.world-nav').getBoundingClientRect(),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);return box.width>=44&&box.height>=44&&box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=nav.top&&button.contains(hit);}));
+  check('the guided-help button stays visible and tappable above navigation at 320 pixels',await page.locator('#home-tutor .home-tutor-practice:not(.home-tutor-review)').evaluate(button=>{const box=button.getBoundingClientRect(),nav=document.querySelector('.world-nav').getBoundingClientRect(),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);return box.width>=44&&box.height>=44&&box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=nav.top&&button.contains(hit);}));
   await page.screenshot({path:path.join(out,'account-home-memory.png')});
   const checkpoint=(await read()).progress,writeCount=calls.filter(c=>c.action).length;
   await page.reload();await page.waitForFunction(id=>window.__synkHome?.homeTutor()?.practiceRecommendation?.id===id,q.id);
   check('reload restores the chosen tutor and the same remembered expression from account progress',(await home()).tutor==='kkamong'&&JSON.stringify((await read()).progress)===JSON.stringify(checkpoint));
-  await page.locator('#home-tutor .home-tutor-practice').click();
+  await page.locator('#home-tutor .home-tutor-practice:not(.home-tutor-review)').click();
   check('home guided-help action opens the canonical transfer directly without opening the lesson panel',await page.locator('.life-expression-question h4').textContent()===q.review.prompt&&!await page.locator('#world-panel').evaluate(el=>el.open));
   await page.locator(`[data-expression-choice="${q.review.choices.find(c=>c.id!==q.review.answerId).id}"]`).click();
   check('wrong guided response keeps the practice available with the chosen tutor reaction',await page.locator('.life-expression-practice').getAttribute('data-correct')==='false'&&await page.locator('.life-expression-return').isDisabled());
@@ -92,7 +93,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   check('guided success is account-saved at the successful choice before leaving practice',day?.tutorId==='kkamong'&&day.lessonId==='greetings-expressions'&&day.outcome==='retry'&&JSON.stringify(stored)===JSON.stringify(guided)&&await page.locator('.life-expression-practice[open]').count()===1);
   await page.locator('.life-expression-return').click();
   check('guided success returns to a celebrating home without replacing the original first response',(await home()).completed===q.id&&(await home()).companion.kind==='practiceSuccess'&&core((await read()).progress)===core(checkpoint)&&core(stored)===core(checkpoint));
-  check('saved guided help retires its secondary button while preserving the selected activity',(await home()).practiceRecommendation===null&&await page.locator('#home-tutor .home-tutor-practice').isHidden()&&(await home()).recommendation.command==='learn');
+  check('saved guided help retires its secondary button while preserving the selected activity',(await home()).practiceRecommendation===null&&await page.locator('#home-tutor .home-tutor-practice:not(.home-tutor-review)').isHidden()&&(await home()).recommendation.command==='learn');
   check('guided completion adds one life progress write without any mastery or wallet mutation',calls.filter(c=>c.action).length===writeCount+1&&JSON.stringify(state.wallet)===wallet&&calls.filter(c=>c.action).every(c=>c.action==='progress'));
   await page.screenshot({path:path.join(out,'account-home-success.png')});
   await page.locator('[data-view=me]').first().click();await page.locator('[data-world=logout]').click();await page.waitForFunction(()=>window.__synkWorld.life()?.owner==='guest');
@@ -103,7 +104,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   await page.screenshot({path:path.join(out,'standalone-first-home.png')});
   await closeContext();await newContext({signedIn:false,corruptGuest:true});
   await page.goto(base+'/world/brand-opening/home.html?opening=off');await page.waitForFunction(()=>window.__synkHome?.homeTutor()?.recommendation.kind==='unavailable');
-  check('standalone unreadable history shows connection guidance without a false memory or practice',(await home()).tutor==='marin'&&!(await home()).recommendation.id&&await page.locator('#home-tutor .home-tutor-action').textContent()==='연결 상태 보기');
+  check('standalone unreadable history shows connection guidance without a false memory or practice',(await home()).tutor==='marin'&&!(await home()).recommendation.id&&await page.locator('#home-tutor .home-tutor-action').textContent()==='내 계정 열기');
   check('unreadable guest source remains byte-for-byte intact',await page.evaluate(()=>localStorage.getItem('synk.life-korean.progress.v1:guest'))==='unreadable synthetic history');
   await closeContext();state.records[LIFE]=JSON.stringify({version:999,owner:A});await newContext();
   await page.goto(base+'/world/mobile.html?opening=off');await page.waitForFunction(()=>window.__synkHome?.homeTutor()?.owner==='11111111-1111-4111-8111-111111111111'&&window.__synkHome.homeTutor().recommendation.kind==='unavailable');

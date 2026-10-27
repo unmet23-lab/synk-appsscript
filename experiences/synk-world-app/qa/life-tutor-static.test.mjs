@@ -1,3 +1,4 @@
+import {handleWorldProfileRead,assetFailure,openWorldLibrary} from './static-world-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -8,8 +9,8 @@ import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {lessonById} from '../life-content.mjs';
 const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
-// 지난 출시의 고정 /world 판(.tmp/world-app-life-tutor-20261011-r2/world)은 git 밖 빌드 산출물이다 — CI 체크아웃에는 없어 이름 대고 건너뛴다.
-const payload=path.resolve(process.env.SYNK_LIFE_TUTOR_STATIC_PAYLOAD||'.tmp/world-app-life-tutor-20261011-r2/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-app-life-tutor-20261011-r2/world (git 밖 고정 /world 판)'};
+// 검증할 공개 /world 판은 Git 밖에 둔다. 현재 기준은 c55d5a78(2026-10-27), 환경 변수로 입력 폴더를 명시할 수 있다.
+const payload=path.resolve(process.env.SYNK_LIFE_TUTOR_STATIC_PAYLOAD||'.tmp/world-static-c55d5a78-20261027/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111';
 const core=value=>JSON.stringify({owner:value.owner,version:value.version,lessons:value.lessons,reviews:value.reviews,activeLessonId:value.activeLessonId,activeReview:value.activeReview});
 test('frozen /world tutor follows owner choice, preserves guided records and disposes on logout',{timeout:90000,...frozen},async()=>{
@@ -22,13 +23,13 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
  const state=emptyPlayState(),wallet=JSON.stringify(state.wallet),commands=new Map(),checks=[],calls=[],errors=[],assets=[],outside=[];let revision=0,browser,context,page,failure;
  const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
  const read=()=>page.evaluate(()=>window.__synkWorld.life());
- const library=async()=>{await page.locator('.world-nav [data-view=play]').click();await page.locator('#world-panel [data-view=packs]').click();};
+ const library=async()=>{await openWorldLibrary(page);};
  const synced=()=>page.waitForFunction(()=>document.querySelector('.life-save-status')?.dataset.savePhase==='synced');
  const snapshot={ok:true,accountId:A,revision:1,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[],activeRun:null};
  try{
   browser=await chromium.launch({channel:'msedge',headless:true});context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(15000);
   await context.addInitScript(account=>{sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-life-tutor-static',refresh_token:null,expires_at:Date.now()+3600000}));localStorage.setItem('synk.world.tutor.v1:guest',JSON.stringify({version:1,completed:true,tutor:'marin'}));localStorage.setItem('synk.world.tutor.v1:'+account,JSON.stringify({version:1,completed:true,tutor:'kkamong'}));},A);
-  await context.route('**/*',async route=>{
+  await context.route('**/*',async route=>{if(await handleWorldProfileRead(route,config.accountApiUrl,A))return;
    const request=route.request(),u=new URL(request.url());if(u.origin===base)return route.continue();
    if(u.origin!==new URL(config.accountApiUrl).origin){outside.push(u.pathname);return route.abort();}
    const body=request.postDataJSON();calls.push({path:u.pathname,action:body?.action||null});let data;
@@ -41,7 +42,7 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
    }else{outside.push(u.pathname);return route.abort();}
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'Access-Control-Allow-Origin':'*'}});
   });
-  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)assets.push({path:new URL(r.url()).pathname,status:r.status()});});
+  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(assetFailure(r,config.accountApiUrl))assets.push({path:new URL(r.url()).pathname,status:r.status()});});
   await page.goto(base+'/world/mobile.html?opening=off&cafe=1');await page.waitForFunction(()=>window.__synkWorld?.life()?.owner==='11111111-1111-4111-8111-111111111111');
   check('account choice overrides the different guest tutor',(await read()).tutor.tutor==='kkamong');
   await page.locator('.cafe-visit-list [data-life-lesson=cafe-visit-soldout]').click();await page.locator('[data-life-cafe-mode=read]').click();await page.locator('[data-life-cafe-next]').click();
@@ -53,7 +54,7 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
   await page.reload();await page.locator('.cafe-pack-preview [data-life-lesson=cafe-visit-soldout]').click();
   check('frozen account page restores selected tutor and the actual repair checkpoint',(await read()).tutor.tutor==='kkamong'&&(await read()).cafe.phase==='repair'&&!(await read()).progress.lessons['cafe-visit-soldout'].answers[q.id].correct);
   await page.locator('[data-life-cafe-pause],[data-life-pause]').first().click();await library();await page.locator('[data-life-pack=plans]').click();await page.locator('[data-life-lesson=plans-story]').click();await page.locator('[data-life-begin]').click();
-  check('story keeps its three distinct actors beside the selected mentor',await page.locator('.life-cast .life-friend').count()===3&&(await read()).tutor.tutor==='kkamong');await page.screenshot({path:path.join(out,'account-story.png')});
+  check('story keeps its three distinct actors beside the selected mentor',(await page.locator('.life-story-photo img[alt*="몽글·까몽·마린"]').count()===1||await page.locator('.life-cast .life-friend').count()===3)&&(await read()).tutor.tutor==='kkamong');await page.screenshot({path:path.join(out,'account-story.png')});
   await page.locator('[data-life-pause]').click();await page.locator('[data-view=me]').first().click();await page.locator('[data-world=logout]').click();await page.waitForFunction(()=>window.__synkWorld.life()?.owner==='guest');
   if(await page.locator('[data-world=guest]').count())await page.locator('[data-world=guest]').click();await library();await page.locator('[data-life-pack=cafe]').click();await page.locator('.life-tutor-help').click();
   check('logout restores guest tutor and does not leak account difficulties',(await read()).owner==='guest'&&(await read()).tutor.tutor==='marin'&&await page.locator('.life-tutor-difficulties [data-life-expression]').count()===0);await page.locator('.life-tutor-resume').click();await page.locator('#panel-close').click();

@@ -5,7 +5,7 @@
     "head": "fe91d930178804755bf1ec70f07a559417811096",
     "run": 40455034677,
     "total": 104,
-    "passed": 97,
+    "passed": 101,
     "rows": [
       {
         "file": "tests/Git보관묶음.test.cjs",
@@ -743,8 +743,10 @@
         "line": 13,
         "name": "frozen /world cafe completes and restores the physical checkpoint through the official account transport",
         "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-cafe-20261010-r2/world (git 밖 고정 /world 판)",
-        "status": "과거 고정판 불일치",
-        "evidence": []
+        "status": "통과",
+        "evidence": [
+          "static-canonical-final"
+        ]
       },
       {
         "file": "experiences/synk-world-app/qa/classroom-homework-browser.test.mjs",
@@ -822,24 +824,30 @@
         "line": 16,
         "name": "frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history",
         "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-daily-tutor-20261011/world (git 밖 고정 /world 판)",
-        "status": "과거 고정판 불일치",
-        "evidence": []
+        "status": "통과",
+        "evidence": [
+          "static-canonical-final"
+        ]
       },
       {
         "file": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
         "line": 17,
         "name": "frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout",
         "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-home-tutor-20261011/world (git 밖 고정 /world 판)",
-        "status": "과거 고정판 불일치",
-        "evidence": []
+        "status": "통과",
+        "evidence": [
+          "static-canonical-final"
+        ]
       },
       {
         "file": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
         "line": 15,
         "name": "frozen /world tutor follows owner choice, preserves guided records and disposes on logout",
         "originalSkipReason": "CI 체크아웃에는 없다 — .tmp/world-app-life-tutor-20261011-r2/world (git 밖 고정 /world 판)",
-        "status": "과거 고정판 불일치",
-        "evidence": []
+        "status": "통과",
+        "evidence": [
+          "static-canonical-final"
+        ]
       },
       {
         "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
@@ -1307,12 +1315,40 @@
     "duplicate-parity": {
       "file": "duplicate-parity/result.tap",
       "sha256": "bfa434ffe7a07db4478db3d092322f1c9484d041357c86ec9e1685417bfb8a04"
+    },
+    "static-canonical-final": {
+      "file": "static-canonical-final/result.tap",
+      "sha256": "8e32621524f13e6403859c28f0fa56bf484df39aa05448ce1204d91474285da2",
+      "publicSnapshot": "c55d5a78fc97626e5085916b5445461493c5672e",
+      "staticGitBlobsVerified": 2456,
+      "sourceFiles": [
+        {
+          "file": "experiences/synk-world-app/qa/cafe-static.test.mjs",
+          "normalizedLFSha256": "594e5f164c610ddb41adad5b30fea581f8aa1937ddd28413e861472c2e0dc1e6"
+        },
+        {
+          "file": "experiences/synk-world-app/qa/daily-tutor-static.test.mjs",
+          "normalizedLFSha256": "e2c64f4c7d704f6575fbb7f5b3036f782229ecefab7fa8a3e93ac1afdd091169"
+        },
+        {
+          "file": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
+          "normalizedLFSha256": "0194a3ee6b4b536ff458e4ec780bbcc8780f7d62887b2fa2c997be143959129b"
+        },
+        {
+          "file": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
+          "normalizedLFSha256": "dc21873949e19cb15b2b76a564f5b119beb5a14078d72bae79733334f9ccd6e2"
+        },
+        {
+          "file": "experiences/synk-world-app/qa/static-world-fixture.mjs",
+          "normalizedLFSha256": "c4bcbbf04e865a2add6eb7c3dce2668f14fbc2130a510bb5572304f5b7d7ef0b"
+        }
+      ]
     }
   },
   "limitations": [
     "원천 Windows/Linux·의존성·합성 계정에 맞춰 실행한 별도 검증이며 CI104 제외 조건 자체를 없애지 않는다.",
     "학생 화면 대조3은 현재 PC의 미추적 원문과 읽기 전용 대조로 통과했다. 기존 APK에 해당 화면이 들어 있다는 뜻은 아니다.",
-    "과거 고정 WORLD 판4는 실행했지만 현재 시험과 맞지 않았다. 현 공개판으로 바꿔도 옛 선택자와 맞지 않아 통과로 처리하지 않았다.",
+    "과거 고정판의 원 실패는 보존했다. 네 시험은 현재 공개판c55의 자료·UI·읽기 API 계약에 맞춰 정비한 뒤 기존 핵심 상태 검증을 유지해 통과했다. 옛 사본 자체가 최신 동작과 같다는 뜻은 아니다.",
     "원 실패·제외·과거 승인·현재 미확인 상태를 보존한다. 시험 실행 수는 서로 겹쳐 합산하지 않는다."
   ],
   "latestReceipt": "../제외시험_최종_20261027.jsonl"

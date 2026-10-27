@@ -1,3 +1,4 @@
+import {handleWorldProfileRead,assetFailure,openWorldLibrary} from './static-world-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -7,8 +8,8 @@ import http from 'node:http';
 import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
-// 지난 출시의 고정 /world 판(.tmp/world-app-cafe-20261010-r2/world)은 git 밖 빌드 산출물이다 — CI 체크아웃에는 없어 이름 대고 건너뛴다.
-const payload=path.resolve(process.env.SYNK_CAFE_PUBLIC_PAYLOAD||'.tmp/world-app-cafe-20261010-r2/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-app-cafe-20261010-r2/world (git 밖 고정 /world 판)'};
+// 검증할 공개 /world 판은 Git 밖에 둔다. 현재 기준은 c55d5a78(2026-10-27), 환경 변수로 입력 폴더를 명시할 수 있다.
+const payload=path.resolve(process.env.SYNK_CAFE_PUBLIC_PAYLOAD||'.tmp/world-static-c55d5a78-20261027/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111';
 test('frozen /world cafe completes and restores the physical checkpoint through the official account transport',{timeout:90000,...frozen},async()=>{
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
@@ -23,7 +24,7 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
  try{
   browser=await chromium.launch({channel:'msedge',headless:true});context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});page=await context.newPage();page.setDefaultTimeout(15000);
   await context.addInitScript(()=>{sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-cafe-static',refresh_token:null,expires_at:Date.now()+3600000}));localStorage.setItem('synk.world.tutor.v1:11111111-1111-4111-8111-111111111111',JSON.stringify({version:1,completed:true,tutor:'kkamong'}));});
-  await context.route('**/*',async route=>{
+  await context.route('**/*',async route=>{if(await handleWorldProfileRead(route,config.accountApiUrl,A))return;
    const request=route.request(),u=new URL(request.url());if(u.origin===base)return route.continue();
    if(u.origin!==new URL(config.accountApiUrl).origin){unexpected.push(request.url());return route.abort();}
    const body=request.postDataJSON();calls.push({path:u.pathname,action:body?.action||null});let data;
@@ -35,9 +36,9 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
    }else{unexpected.push(u.pathname);return route.abort();}
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'Access-Control-Allow-Origin':'*'}});
   });
-  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)assets.push({url:r.url(),status:r.status()});});
+  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(assetFailure(r,config.accountApiUrl))assets.push({url:r.url(),status:r.status()});});
   const key='synk.life-korean.progress.v1',entry=base+'/world/mobile.html?opening=off&cafe=1';
-  const cafe=async()=>{await page.locator('.world-nav [data-view=play]').click();await page.locator('#world-panel [data-view=packs]').click();await page.locator('[data-life-pack=cafe]').click();};
+  const cafe=async()=>{await openWorldLibrary(page);await page.locator('[data-life-pack=cafe]').click();};
   const open=async()=>{await page.locator('.cafe-pack-preview [data-life-lesson=cafe-apply]').click();};
   const next=async()=>{if(await page.locator('.cafe-welcome [data-life-cafe-mode=read]').count())await page.locator('[data-life-cafe-mode=read]').click();await page.locator('[data-life-cafe-next]').click();},choose=id=>page.locator(`[data-life-cafe-choice=${id}]`).click();
   const synced=()=>page.waitForFunction(()=>document.querySelector('.life-save-status')?.dataset.savePhase==='synced');
