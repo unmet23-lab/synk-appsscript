@@ -164,7 +164,7 @@ def 로고():
     # 21행 끝(28.49 켜짐 · 28.53 꺼짐 · 28.57 다시 켜짐): 「가쁨」 흰 네온 + 작은 GAPPEUM RUNNING — 투명 판 하나, 빛 기둥 옆에 얹는다
     LW, LH = 900, 520
     m = mask_text("가쁨", font("SUIT/SUIT-ExtraBold.otf", 300), (LW // 2, 230), (LW, LH), "mm")
-    m += mask_text("GAPPEUM  RUNNING", font("InterTight/InterTight-SemiBold.ttf", 50), (LW // 2, 430), (LW, LH), "mm")   # 10-27 낯선 사람 시험 「가쁨이 앱인지 브랜드인지 모른다」 — 러닝 브랜드임을 작은 줄로
+    m += mask_text("GAPPEUM  RUNNING", font("InterTight/InterTight-SemiBold.ttf", 76), (LW // 2, 440), (LW, LH), "mm")   # 10-27 2차 시험 「작아서 읽기 힘듦」 — 50 → 76   # 10-27 낯선 사람 시험 「가쁨이 앱인지 브랜드인지 모른다」 — 러닝 브랜드임을 작은 줄로
     m = np.clip(m, 0, 1)
     core = blur(m, 1.2)
     halo = blur(m, 14) * 0.9 + blur(m, 48) * 0.6

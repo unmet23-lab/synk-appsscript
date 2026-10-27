@@ -215,7 +215,7 @@ def pick():
     if "S21" in sel:   # 빛 기둥 오른쪽 위에 로고(28.49초부터 켜진 판)
         im = Image.open(os.path.join(V, "정지컷", "S21.png")).convert("RGB")
         lg = Image.open(os.path.join(g, "로고_가쁨.png"))
-        s = im.width * 0.2 / lg.width
+        s = im.width * 0.24 / lg.width   # 10-27: 로고 폭 화면의 20% → 24%(아래 줄이 읽히게)
         lg = lg.resize((round(lg.width * s), round(lg.height * s)), Image.LANCZOS)
         a = np.asarray(im).astype(np.float32).mean(2)
         cx = int(np.argmax(a.mean(0)))   # 가장 밝은 세로줄 = 빛 기둥
