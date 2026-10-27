@@ -4,9 +4,12 @@ import * as THREE from './scene-assets/three.module.js';
 // belly anchors exclude ears, side folds, tail and all decorative fibres.
 const TAU=Math.PI*2;
 const BODY_HEIGHT_SCALE=.95;
+// 10-27: the master's body is width/height about .78, the measured loft .84 — slimmed sideways only. Eyes, ears and
+// sleeves move in with it, so the eye spacing keeps its share of the face.
+const BODY_WIDTH_SCALE=.93;
 const homeHeight=y=>.280+(y-.280)*BODY_HEIGHT_SCALE;
 const BODY={crownY:homeHeight(1.980),groundY:.280,height:1.700*BODY_HEIGHT_SCALE,centerX:0};
-const EYES={x:.2495,y:homeHeight(1.524)-.010,r:.095,pupilRatio:.74};
+const EYES={x:.2495*BODY_WIDTH_SCALE,y:homeHeight(1.524)-.010,r:.095,pupilRatio:.74};
 const EYE_COAT_SCALE=EYES.r/.092;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
@@ -55,6 +58,7 @@ function bodySectionAt(y){
  const belly=Math.sqrt(Math.max(0,1-((t-.56)/.56)**2))*.675,bellyBlend=.60*Math.exp(-(((t-.30)/.40)**4));
  value[1]+=(belly-value[1])*bellyBlend;
  value[2]=.520*depth+.018*Math.exp(-(((t-.33)/.20)**2))*Math.sin(t*Math.PI);value[3]=.360*depth;value[4]=.015*(1-ease);value[5]=-.100+.106*ease;
+ value[1]*=BODY_WIDTH_SCALE;value[4]*=BODY_WIDTH_SCALE;
  return value;
 }
 
@@ -131,7 +135,7 @@ function earGeometry(side,low){
   [2.060,.058,.052,.042,side*.398,-.066],
   // A cat's ear narrows to a rounded point, not a bear's half disc; its fleece stays short so the point survives.
   [2.110,0,0,0,side*.400,-.068]
- ].map(row=>[homeHeight(row[0]),...row.slice(1)]);
+ ].map(row=>[homeHeight(row[0]),row[1],row[2],row[3],row[4]*BODY_WIDTH_SCALE,row[5]]);
  return verticalLoft(profile,{radial:low?28:48,rows:low?28:44});
 }
 function foldGeometry(side,low){
@@ -144,7 +148,7 @@ function foldGeometry(side,low){
   [.710,0,0,0,side*-.040,.088]
  ];
  const geometry=verticalLoft(profile,{radial:low?28:48,rows:low?26:40});
- geometry.rotateZ(-side*.83);geometry.translate(side*.460,.970,-.180);geometry.scale(1,BODY_HEIGHT_SCALE,1);geometry.translate(0,BODY.groundY*(1-BODY_HEIGHT_SCALE),0);geometry.computeBoundingBox();return geometry;
+ geometry.rotateZ(-side*.83);geometry.translate(side*.460*BODY_WIDTH_SCALE,.970,-.180);geometry.scale(1,BODY_HEIGHT_SCALE,1);geometry.translate(0,BODY.groundY*(1-BODY_HEIGHT_SCALE),0);geometry.computeBoundingBox();return geometry;
 }
 
 function tailGeometry(lift=0,low=false){
@@ -165,7 +169,7 @@ function coatNoise(x,y,z){
 }
 
 function earShade(x,y,normalZ){
- return 1-.48*Math.exp(-(((Math.abs(x)-.390)/.102)**2+((y-homeHeight(1.991))/(.108*BODY_HEIGHT_SCALE))**2))*clamp(normalZ*2.2,0,1);
+ return 1-.48*Math.exp(-(((Math.abs(x)-.390*BODY_WIDTH_SCALE)/.102)**2+((y-homeHeight(1.991))/(.108*BODY_HEIGHT_SCALE))**2))*clamp(normalZ*2.2,0,1);
 }
 
 function createCoatGeometry(envelope,{count=32000,seed=7,inset=.036,floorY=null,eyeClearance=false,ear=false,fold=false}={}){
