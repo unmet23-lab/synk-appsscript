@@ -1,0 +1,88 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v05",
+ "text": "이렇게 기억되는 게 싫다면, 설정의 개인 맞춤 설정에서 메모리를 끌 수 있어요.",
+ "show": "이렇게 기억되는 게 싫다면, 설정의 개인 맞춤 설정에서 메모리를 끌 수 있어요.",
+ "dur": 4.227,
+ "words": [
+  {
+   "text": "이렇게",
+   "start": 0.02,
+   "end": 0.225
+  },
+  {
+   "text": "기억되는",
+   "start": 0.279,
+   "end": 0.661
+  },
+  {
+   "text": "게",
+   "start": 0.702,
+   "end": 0.743
+  },
+  {
+   "text": "싫다면,",
+   "start": 0.784,
+   "end": 1.274
+  },
+  {
+   "text": "설정의",
+   "start": 1.779,
+   "end": 2.133
+  },
+  {
+   "text": "개인",
+   "start": 2.201,
+   "end": 2.406
+  },
+  {
+   "text": "맞춤",
+   "start": 2.446,
+   "end": 2.678
+  },
+  {
+   "text": "설정에서",
+   "start": 2.719,
+   "end": 3.128
+  },
+  {
+   "text": "메모리를",
+   "start": 3.21,
+   "end": 3.564
+  },
+  {
+   "text": "끌",
+   "start": 3.605,
+   "end": 3.687
+  },
+  {
+   "text": "수",
+   "start": 3.728,
+   "end": 3.782
+  },
+  {
+   "text": "있어요.",
+   "start": 3.823,
+   "end": 4.227
+  }
+ ],
+ "source": {
+  "key": "1fa5ce08055c3ab8ff51539820cfe56e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

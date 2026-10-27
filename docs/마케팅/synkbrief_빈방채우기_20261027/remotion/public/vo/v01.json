@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "챗지피티에 빈 방 사진을 주고, 내가 좋아할 만한 물건으로 채워 달라고 해 보세요.",
+ "show": "ChatGPT에 빈 방 사진을 주고, 내가 좋아할 만한 물건으로 채워 달라고 해 보세요.",
+ "dur": 4.123,
+ "words": [
+  {
+   "text": "챗지피티에",
+   "start": 0.07,
+   "end": 0.572
+  },
+  {
+   "text": "빈",
+   "start": 0.641,
+   "end": 0.767
+  },
+  {
+   "text": "방",
+   "start": 0.809,
+   "end": 0.892
+  },
+  {
+   "text": "사진을",
+   "start": 0.934,
+   "end": 1.213
+  },
+  {
+   "text": "주고,",
+   "start": 1.255,
+   "end": 1.422
+  },
+  {
+   "text": "내가",
+   "start": 2.049,
+   "end": 2.203
+  },
+  {
+   "text": "좋아할",
+   "start": 2.259,
+   "end": 2.523
+  },
+  {
+   "text": "만한",
+   "start": 2.565,
+   "end": 2.719
+  },
+  {
+   "text": "물건으로",
+   "start": 2.761,
+   "end": 3.123
+  },
+  {
+   "text": "채워",
+   "start": 3.165,
+   "end": 3.332
+  },
+  {
+   "text": "달라고",
+   "start": 3.374,
+   "end": 3.597
+  },
+  {
+   "text": "해",
+   "start": 3.639,
+   "end": 3.681
+  },
+  {
+   "text": "보세요.",
+   "start": 3.722,
+   "end": 4.123
+  }
+ ],
+ "source": {
+  "key": "bcba926a856bdf936623973c9f881689",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

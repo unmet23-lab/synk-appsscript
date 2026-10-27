@@ -1,0 +1,48 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v06",
+ "text": "여러분 방엔, 뭐가 들어왔나요?",
+ "show": "여러분 방엔, 뭐가 들어왔나요?",
+ "dur": 1.449,
+ "words": [
+  {
+   "text": "여러분",
+   "start": 0.02,
+   "end": 0.27
+  },
+  {
+   "text": "방엔,",
+   "start": 0.308,
+   "end": 0.532
+  },
+  {
+   "text": "뭐가",
+   "start": 0.595,
+   "end": 0.757
+  },
+  {
+   "text": "들어왔나요?",
+   "start": 0.807,
+   "end": 1.449
+  }
+ ],
+ "source": {
+  "key": "d828b3538184a8bd3001d98ccde847fa",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

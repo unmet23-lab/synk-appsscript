@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "챗지피티 메모리가 그동안 나눈 대화를 기억해서, 저를 짐작한 거예요.",
+ "show": "ChatGPT 메모리가 그동안 나눈 대화를 기억해서, 저를 짐작한 거예요.",
+ "dur": 3.59,
+ "words": [
+  {
+   "text": "챗지피티",
+   "start": 0.01,
+   "end": 0.4
+  },
+  {
+   "text": "메모리가",
+   "start": 0.455,
+   "end": 0.789
+  },
+  {
+   "text": "그동안",
+   "start": 0.859,
+   "end": 1.151
+  },
+  {
+   "text": "나눈",
+   "start": 1.193,
+   "end": 1.388
+  },
+  {
+   "text": "대화를",
+   "start": 1.43,
+   "end": 1.708
+  },
+  {
+   "text": "기억해서,",
+   "start": 1.764,
+   "end": 2.126
+  },
+  {
+   "text": "저를",
+   "start": 2.543,
+   "end": 2.738
+  },
+  {
+   "text": "짐작한",
+   "start": 2.78,
+   "end": 3.142
+  },
+  {
+   "text": "거예요.",
+   "start": 3.183,
+   "end": 3.59
+  }
+ ],
+ "source": {
+  "key": "c41deb72ca81d0a39feeec1aef262e41",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

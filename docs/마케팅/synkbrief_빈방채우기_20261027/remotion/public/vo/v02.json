@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "제 건 이렇게 채워졌어요. 게임 패드에 헤드폰, 식물까지.",
+ "show": "제 건 이렇게 채워졌어요. 게임 패드에 헤드폰, 식물까지.",
+ "dur": 3.292,
+ "words": [
+  {
+   "text": "제",
+   "start": 0.02,
+   "end": 0.083
+  },
+  {
+   "text": "건",
+   "start": 0.145,
+   "end": 0.24
+  },
+  {
+   "text": "이렇게",
+   "start": 0.287,
+   "end": 0.46
+  },
+  {
+   "text": "채워졌어요.",
+   "start": 0.507,
+   "end": 1.057
+  },
+  {
+   "text": "게임",
+   "start": 1.482,
+   "end": 1.639
+  },
+  {
+   "text": "패드에",
+   "start": 1.702,
+   "end": 1.985
+  },
+  {
+   "text": "헤드폰,",
+   "start": 2.048,
+   "end": 2.425
+  },
+  {
+   "text": "식물까지.",
+   "start": 2.645,
+   "end": 3.292
+  }
+ ],
+ "source": {
+  "key": "07988fbc3e8f5bd2d3ec2afcbf0dcbd5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018,
+  "lufs": -17
+ },
+ "made": "2026-10-27T08:45:07.612Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "챗지피티에 빈 방 사진을 주고, 내가 좋아할 만한 물건으로 채워 달라고 해 보세요.",
+   "show": "ChatGPT에 빈 방 사진을 주고, 내가 좋아할 만한 물건으로 채워 달라고 해 보세요.",
+   "scene": "1 훅",
+   "dur": 4.123,
+   "syllablesPerSec": 7.76,
+   "src": "v01.wav",
+   "key": "bcba926a856bdf936623973c9f881689",
+   "words": 13
+  },
+  {
+   "id": "v02",
+   "text": "제 건 이렇게 채워졌어요. 게임 패드에 헤드폰, 식물까지.",
+   "show": "제 건 이렇게 채워졌어요. 게임 패드에 헤드폰, 식물까지.",
+   "scene": "2 결과",
+   "dur": 3.292,
+   "syllablesPerSec": 6.68,
+   "src": "v02.wav",
+   "key": "07988fbc3e8f5bd2d3ec2afcbf0dcbd5",
+   "words": 8
+  },
+  {
+   "id": "v03",
+   "text": "챗지피티 메모리가 그동안 나눈 대화를 기억해서, 저를 짐작한 거예요.",
+   "show": "ChatGPT 메모리가 그동안 나눈 대화를 기억해서, 저를 짐작한 거예요.",
+   "scene": "3 기억",
+   "dur": 3.59,
+   "syllablesPerSec": 7.8,
+   "src": "v03.wav",
+   "key": "c41deb72ca81d0a39feeec1aef262e41",
+   "words": 9
+  },
+  {
+   "id": "v04",
+   "text": "기억을 안 쓰는 임시 채팅에선, 아직 저를 잘 모른다고 했어요.",
+   "show": "기억을 안 쓰는 임시 채팅에선, 아직 저를 잘 모른다고 했어요.",
+   "scene": "4 임시 채팅",
+   "dur": 3.313,
+   "syllablesPerSec": 7.24,
+   "src": "v04.wav",
+   "key": "385e779594bd2f6dc4217bbf1fc1aaf7",
+   "words": 10
+  },
+  {
+   "id": "v05",
+   "text": "이렇게 기억되는 게 싫다면, 설정의 개인 맞춤 설정에서 메모리를 끌 수 있어요.",
+   "show": "이렇게 기억되는 게 싫다면, 설정의 개인 맞춤 설정에서 메모리를 끌 수 있어요.",
+   "scene": "5 끄는 곳",
+   "dur": 4.227,
+   "syllablesPerSec": 7.33,
+   "src": "v05.wav",
+   "key": "1fa5ce08055c3ab8ff51539820cfe56e",
+   "words": 12
+  },
+  {
+   "id": "v06",
+   "text": "여러분 방엔, 뭐가 들어왔나요?",
+   "show": "여러분 방엔, 뭐가 들어왔나요?",
+   "scene": "6 끝",
+   "dur": 1.449,
+   "syllablesPerSec": 8.28,
+   "src": "v06.wav",
+   "key": "d828b3538184a8bd3001d98ccde847fa",
+   "words": 4
+  }
+ ]
+}

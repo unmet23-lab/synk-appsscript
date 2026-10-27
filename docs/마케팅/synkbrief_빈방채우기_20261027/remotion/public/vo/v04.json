@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "기억을 안 쓰는 임시 채팅에선, 아직 저를 잘 모른다고 했어요.",
+ "show": "기억을 안 쓰는 임시 채팅에선, 아직 저를 잘 모른다고 했어요.",
+ "dur": 3.313,
+ "words": [
+  {
+   "text": "기억을",
+   "start": 0.02,
+   "end": 0.33
+  },
+  {
+   "text": "안",
+   "start": 0.387,
+   "end": 0.457
+  },
+  {
+   "text": "쓰는",
+   "start": 0.513,
+   "end": 0.711
+  },
+  {
+   "text": "임시",
+   "start": 0.767,
+   "end": 0.936
+  },
+  {
+   "text": "채팅에선,",
+   "start": 0.978,
+   "end": 1.528
+  },
+  {
+   "text": "아직",
+   "start": 1.88,
+   "end": 2.021
+  },
+  {
+   "text": "저를",
+   "start": 2.063,
+   "end": 2.26
+  },
+  {
+   "text": "잘",
+   "start": 2.303,
+   "end": 2.429
+  },
+  {
+   "text": "모른다고",
+   "start": 2.472,
+   "end": 2.782
+  },
+  {
+   "text": "했어요.",
+   "start": 2.838,
+   "end": 3.313
+  }
+ ],
+ "source": {
+  "key": "385e779594bd2f6dc4217bbf1fc1aaf7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
