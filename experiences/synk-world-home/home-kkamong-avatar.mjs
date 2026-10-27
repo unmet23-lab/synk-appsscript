@@ -126,10 +126,11 @@ function earGeometry(side,low){
   [1.620,.020,.040,.040,side*.342,-.010],
   [1.720,.154,.180,.120,side*.344,-.016],
   [1.820,.182,.190,.130,side*.357,-.025],
-  [1.920,.155,.150,.110,side*.380,-.045],
-  [2.014,.115,.100,.080,side*.392,-.060],
-  [2.045,.084,.067,.054,side*.391,-.065],
-  [2.080,0,0,0,side*.386,-.065]
+  [1.920,.150,.145,.106,side*.380,-.045],
+  [2.010,.098,.088,.070,side*.394,-.060],
+  [2.060,.058,.052,.042,side*.398,-.066],
+  // A cat's ear narrows to a rounded point, not a bear's half disc; its fleece stays short so the point survives.
+  [2.110,0,0,0,side*.400,-.068]
  ].map(row=>[homeHeight(row[0]),...row.slice(1)]);
  return verticalLoft(profile,{radial:low?28:48,rows:low?28:44});
 }
@@ -251,6 +252,54 @@ function createCoatGeometry(envelope,{count=32000,seed=7,inset=.036,floorY=null,
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.BufferAttribute(normals,3,true));geometry.setAttribute('color',new THREE.BufferAttribute(colors,4,true));geometry.setIndex(new THREE.BufferAttribute(indices,1));geometry.setDrawRange(0,written*segments*2);geometry.computeBoundingBox();geometry.computeBoundingSphere();geometry.userData.fibreCount=written;geometry.userData.segmentsPerFibre=segments;geometry.userData.clusterGuides=guideCount;return geometry;
 }
 
+// Shell coat (10-27): the master's long, soft, slightly clumped fleece. One instanced mesh per body part
+// draws its core again in N offset layers; each layer keeps only the tapering strand sections of a
+// tangent-plane cell pattern, darker at the roots and warm at the tips, with a soft rim glow. This
+// replaced the one-pixel line fibres, which read as dust and grain on a smooth core in the home room.
+const FUR={length:.15,gravity:.03,curl:.045,density:88,clump:4.2,root:'#1d1719',tip:'#5f4e4c',glow:'#b08f7d',shells:{low:12,balanced:22,high:28,detail:28}};
+function shellCoat(base,{eyes=[],eyeRadius=0,floorY=null,length=FUR.length,density=FUR.density,seed=0,low=false}={}){
+ const max=FUR.shells.high,material=new THREE.MeshStandardMaterial({color:'#ffffff',vertexColors:true,roughness:.96,metalness:0,alphaToCoverage:true});
+ const uniforms={uFurLength:{value:length},uFurGravity:{value:FUR.gravity},uFurCurl:{value:FUR.curl},uFurDensity:{value:density},uFurClump:{value:FUR.clump},uFurShells:{value:low?FUR.shells.low:FUR.shells.balanced},uFurSeed:{value:seed},
+  uFurFloor:{value:floorY===null?-1e4:floorY},uFurRoot:{value:new THREE.Color(FUR.root)},uFurTip:{value:new THREE.Color(FUR.tip)},uFurGlow:{value:new THREE.Color(FUR.glow)},
+  uFurEyes:{value:[0,1].map(i=>eyes[i]?.clone()||new THREE.Vector3(1e4,1e4,1e4))},uFurEyeR:{value:eyeRadius}};
+ material.onBeforeCompile=shader=>{
+  Object.assign(shader.uniforms,uniforms);
+  shader.vertexShader='uniform float uFurLength,uFurGravity,uFurCurl,uFurShells,uFurFloor;\nvarying float vFurH;\nvarying vec3 vFurObj;\nvarying vec3 vFurN;\n'+shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+   float furH=float(gl_InstanceID+1)/max(1.,uFurShells);vFurH=furH;vFurObj=position;vFurN=normalize(objectNormal);
+   // Strands lean and curl a little with height, so the fleece reads as soft locks rather than radial spikes.
+   vec3 curl=vec3(sin(position.y*11.+position.x*6.3),cos(position.x*9.1+position.z*7.7),sin(position.z*10.3-position.y*5.9));curl-=dot(curl,vFurN)*vFurN;
+   transformed+=vFurN*(furH*uFurLength)+curl*(furH*furH*uFurCurl);transformed.y-=furH*furH*uFurGravity;transformed.y=max(transformed.y,uFurFloor+furH*.004);`);
+  shader.fragmentShader='uniform float uFurDensity,uFurClump,uFurSeed,uFurEyeR;\nuniform vec3 uFurRoot,uFurTip,uFurGlow;\nuniform vec3 uFurEyes[2];\nvarying float vFurH;\nvarying vec3 vFurObj;\nvarying vec3 vFurN;\n'
+   +'float furHash(vec3 p){p=fract(p*.3183099+vec3(.71,.113,.419)+uFurSeed);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}\n'
+   +'float furNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(furHash(i),furHash(i+vec3(1,0,0)),f.x),mix(furHash(i+vec3(0,1,0)),furHash(i+vec3(1,1,0)),f.x),f.y),mix(mix(furHash(i+vec3(0,0,1)),furHash(i+vec3(1,0,1)),f.x),mix(furHash(i+vec3(0,1,1)),furHash(i+vec3(1,1,1)),f.x),f.y),f.z);}\n'
+   +shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+   {
+    // Clumps: a slow noise lengthens and shortens neighbouring strands together, so the fleece reads as soft tufts.
+    float clump=furNoise(vFurObj*uFurClump),h=vFurH;
+    vec3 p=vFurObj*uFurDensity,cell=floor(p),f=fract(p)-.5,off=vec3(furHash(cell+11.),furHash(cell+23.),furHash(cell+37.))-.5;
+    vec3 d=f-off*.55;d-=dot(d,vFurN)*vFurN;
+    float strand=furHash(cell),len=.34+.46*clump+.26*strand;
+    if(h>.001){
+     if(h>len)discard;
+     float t=h/len;if(length(d)>mix(.78,.2,t))discard;
+     if(uFurEyeR>0.&&(distance(vFurObj,uFurEyes[0])<uFurEyeR||distance(vFurObj,uFurEyes[1])<uFurEyeR))discard;
+    }
+    float tipT=smoothstep(.05,1.,h/max(.2,len));
+    vec3 coat=mix(uFurRoot,uFurTip,tipT)*(.84+.3*strand)*(.88+.24*clump);
+    // The master is lit from above: the crown's tips catch light, the belly stays in its own shade.
+    float up=clamp(vFurN.y*.5+.5,0.,1.);coat*=mix(.62,1.28,up)*mix(1.,1.08,tipT);
+    diffuseColor.rgb*=coat*mix(.56,1.,smoothstep(0.,.75,h));
+   }`).replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+   {float rim=1.-abs(dot(normalize(normal),normalize(vViewPosition)));totalEmissiveRadiance+=uFurGlow*pow(rim,2.)*smoothstep(.25,1.,vFurH)*.42;}`);
+ };
+ material.customProgramCacheKey=()=>'kkamong-shell-coat-v3';
+ const mesh=new THREE.InstancedMesh(base,material,max);mesh.count=low?FUR.shells.low:FUR.shells.balanced;
+ const identity=new THREE.Matrix4();for(let i=0;i<max;i++)mesh.setMatrixAt(i,identity);mesh.instanceMatrix.needsUpdate=true;
+ mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.userData.decorativeFur=true;mesh.raycast=()=>{};
+ mesh.userData.setShells=n=>{mesh.count=n;uniforms.uFurShells.value=n;};mesh.userData.shells=()=>mesh.count;
+ return mesh;
+}
+
 function insetCoatCore(envelope,{inset=.036,floorY=null,ear=false}={}){
  const geometry=envelope.clone(),position=geometry.getAttribute('position'),normal=geometry.getAttribute('normal'),colors=new Float32Array(position.count*3);
  for(let i=0;i<position.count;i++){
@@ -295,23 +344,21 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
   const pr=EYES.r*EYES.pupilRatio;ellipsoidMesh([pr,pr*1.10,.018],pupil,[0,0,.067],eye,36,true);
   ellipsoidMesh([.0205,.022,.006],glint,[-.027,.032,.086],eye,16,true);
  }
- const fibreMaterial=new THREE.MeshStandardMaterial({color:'#ffffff',vertexColors:true,roughness:1,metalness:0,transparent:true,opacity:.17,depthWrite:false,side:THREE.FrontSide,emissive:'#3d373a',emissiveIntensity:.12,toneMapped:true});ownedMaterials.add(fibreMaterial);
+ const eyeCentres=eyes.map(eye=>eye.position.clone());
  for(const record of meshes.filter(record=>record.original===bodyMaterial)){
-  const {object}=record,isBody=object.name==='kkamong-anatomical-body',isTail=object.name==='kkamong-fabric-tail',isEar=object.name.includes('rounded-ear'),isFold=object.name.includes('soft-fold');
-  const count=isBody?(low?34000:112000):isTail?(low?2400:6000):isEar?(low?3500:9000):(low?4800:13000),floorY=grounded?BODY.groundY:null,inset=isBody?.036:.027;
+  const {object}=record,isBody=object.name==='kkamong-anatomical-body',isTail=object.name==='kkamong-fabric-tail',isEar=object.name.includes('rounded-ear'),floorY=grounded?BODY.groundY:null,inset=isBody?.036:.027;
   record.envelope=object.geometry;record.core=insetCoatCore(record.envelope,{inset:isBody?.080:inset,floorY,ear:isEar});ownedGeometry.add(record.core);
-  const geometry=createCoatGeometry(record.envelope,{count,seed:71+coats.length*193,inset,floorY,eyeClearance:isBody,ear:isEar,fold:isFold});ownedGeometry.add(geometry);lineGeometries.add(geometry);
-  const fibres=new THREE.LineSegments(geometry,fibreMaterial);fibres.name=`${object.name}-independent-fibres`;fibres.userData.decorativeFur=true;fibres.raycast=()=>{};fibres.castShadow=false;fibres.receiveShadow=true;object.parent.add(fibres);coats.push(fibres);
+  // Ears and sleeves carry shorter fleece; the tail a little less than the body.
+  const coat=shellCoat(record.core,{eyes:isBody?eyeCentres:[],eyeRadius:isBody?EYES.r*1.32:0,floorY,length:isBody?FUR.length:isTail?FUR.length*.8:isEar?FUR.length*.42:FUR.length*.62,seed:coats.length*.173,low});
+  coat.name=`${object.name}-shell-coat`;ownedMaterials.add(coat.material);object.parent.add(coat);coats.push(coat);
  }
  function setSurface(mode){
   if(disposed)return currentSurface;currentSurface=['fur','clay','silhouette'].includes(mode)?mode:'clay';
   for(const {object,original,eye,envelope,core} of meshes){object.material=currentSurface==='silhouette'?silhouette:currentSurface==='clay'&&!eye?clay:original;if(envelope)object.geometry=currentSurface==='fur'?core:envelope;object.castShadow=currentSurface!=='silhouette';object.receiveShadow=currentSurface!=='silhouette';}
-  for(const fibres of coats)fibres.visible=currentSurface==='fur';
+  for(const coat of coats)coat.visible=currentSurface==='fur';
   onInvalidate();return currentSurface;
  }
- function setQuality(level){if(disposed)return quality;quality=['low','balanced','high','detail'].includes(level)?level:'balanced';const fraction=quality==='low'?(low?.85:.45):quality==='balanced'?(low?.93:.76):1;for(const fibres of coats){const geometry=fibres.geometry;geometry.setDrawRange(0,Math.floor(geometry.userData.fibreCount*fraction)*geometry.userData.segmentsPerFibre*2);}
-  // Fewer sampled fibres still need to cover the same opaque core at each LOD.
-  fibreMaterial.opacity=Math.min(.35,.17/Math.pow(fraction,.8));return quality;
+ function setQuality(level){if(disposed)return quality;quality=['low','balanced','high','detail'].includes(level)?level:'balanced';const shells=low?Math.min(FUR.shells[quality],FUR.shells.low+4):FUR.shells[quality];for(const coat of coats)coat.userData.setShells(shells);onInvalidate();return quality;
  }
  function update(seconds,{reducedMotion=false,greeting=-1}={}){
   if(disposed)return;const active=!reducedMotion&&greeting>=0&&greeting<1.25;
@@ -320,8 +367,8 @@ export function createKkamongHomeAvatar({kit,low=false,grounded=false,onInvalida
  }
  function metrics(){
   let geometryBytes=0,furBytes=0;for(const geometry of ownedGeometry){let bytes=geometry.index?.array.byteLength||0;for(const attribute of Object.values(geometry.attributes))bytes+=attribute.array.byteLength;geometryBytes+=bytes;if(lineGeometries.has(geometry))furBytes+=bytes;}
-  const triangles=meshes.reduce((sum,{object})=>sum+Math.floor((object.geometry.index?.count||object.geometry.getAttribute('position').count)/3),0),fineFibres=coats.reduce((sum,{geometry})=>sum+geometry.userData.fibreCount,0),activeFibres=coats.reduce((sum,{geometry})=>sum+geometry.drawRange.count/(geometry.userData.segmentsPerFibre*2),0);
-  return {id:'kkamong',actual3D:true,productionAsset:false,contract:'kkamong-profile-shape-review-v1',revision:'measured-loft-cluster-r16',improvementPass:16,quality,surface:currentSurface,pose:grounded?'floor-rest':'reference',shapeMethod:'body-only-vertical-cross-section-loft',continuousBody:true,separateHands:false,anatomicalBounds:{...BODY,basis:'reference coat envelope with 5% shorter home body; fur core is inset'},bodyBounds:{min:body.boundingBox.min.toArray(),max:body.boundingBox.max.toArray(),groundY:BODY.groundY},proportionAdjustment:{bodyHeightScale:BODY_HEIGHT_SCALE,eyeScale:EYE_COAT_SCALE,eyeDrop:.010,roundedLowerBelly:true},eyes:{centerY:EYES.y,diameter:EYES.r*2,verticalDiameter:EYES.r*2.20,centerDistance:EYES.x*2,pupilRatio:EYES.pupilRatio,crownFraction:(BODY.crownY-EYES.y)/BODY.height,rotation:'gentle inward',centerZ:eyeZ},fur:{stage:'distributed roots with overlapping coherent front locks',textureStatus:'not-used',textureLoaded:false,fineFibres,activeFibres,segmentsPerFibre:5,geometryBytes:furBytes,lowAllocation:low,opacity:fibreMaterial.opacity,packedAttributes:'snorm16 normals; unorm16 RGBA'},geometryBytes,triangles,lineSegments:currentSurface==='fur'?activeFibres*5:0,disposed};
+  const triangles=meshes.reduce((sum,{object})=>sum+Math.floor((object.geometry.index?.count||object.geometry.getAttribute('position').count)/3),0),fineFibres=0,activeFibres=0,coatShells=coats.reduce((sum,coat)=>sum+coat.userData.shells(),0);
+  return {id:'kkamong',actual3D:true,productionAsset:false,contract:'kkamong-profile-shape-review-v1',revision:'shell-coat-r17',improvementPass:17,quality,surface:currentSurface,pose:grounded?'floor-rest':'reference',shapeMethod:'body-only-vertical-cross-section-loft',continuousBody:true,separateHands:false,anatomicalBounds:{...BODY,basis:'reference coat envelope with 5% shorter home body; fur core is inset'},bodyBounds:{min:body.boundingBox.min.toArray(),max:body.boundingBox.max.toArray(),groundY:BODY.groundY},proportionAdjustment:{bodyHeightScale:BODY_HEIGHT_SCALE,eyeScale:EYE_COAT_SCALE,eyeDrop:.010,roundedLowerBelly:true},eyes:{centerY:EYES.y,diameter:EYES.r*2,verticalDiameter:EYES.r*2.20,centerDistance:EYES.x*2,pupilRatio:EYES.pupilRatio,crownFraction:(BODY.crownY-EYES.y)/BODY.height,rotation:'gentle inward',centerZ:eyeZ},fur:{stage:'distributed roots with overlapping coherent front locks',textureStatus:'not-used',textureLoaded:false,fineFibres,activeFibres,segmentsPerFibre:5,geometryBytes:furBytes,lowAllocation:low,coatShells,packedAttributes:'snorm16 normals; unorm16 RGBA'},geometryBytes,triangles,lineSegments:0,disposed};
  }
  function dispose(){if(disposed)return;disposed=true;group.removeFromParent();ownedGeometry.forEach(value=>value.dispose());ownedMaterials.forEach(value=>value.dispose());group.clear();}
  // Initialise without requesting a frame from an owner that is still building.
