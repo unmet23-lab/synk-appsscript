@@ -1,0 +1,175 @@
+{
+ "메모": "12번 B급 코미디 몽타주 「모두의코스」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p12/정지컷, _고름.json의 판 그대로). 카메라 문장은 02_콘티 3-1절(원본 0.2초 실측) 그대로, 동작은 02_콘티 3절 「우리 화면」 · 「그 사람」대로, 그가 이쪽을 보거나 몸을 움직이는 시각은 시댄스가 0.7초쯤 늦게 오는 몫을 보아 0.4초쯤 앞당겼다. 정지컷은 그가 이쪽을 보는 순간(원본 대표 프레임)이라, 카메라가 돌아서 그를 찾는 컷(2 · 4 · 6 · 9 · 10~15)은 첫 프레임 바로 뒤에 원본 컷의 첫 구도 쪽으로 비켜 도는 앞 움직임을 넣고 그다음부터 원본 카메라를 쓴다 — 편집은 판마다 설명에 적은 초부터 쓴다. 16번은 원본의 한 번에 1.42배 당김(폰 디지털 줌)을 하드컷으로 보고 C16a(여행자 폰 → 팬) · C16b(줌 뒤) 두 샷으로 묶었다(C16은 정지컷을 구울 때 쓴 장소 참고라 영상에는 넣지 않음). 말은 없고 음악 · 현장음은 따로라 영상은 소리 끔 · 입 다묾. 길이는 앞 움직임 + 쓰는 구간 + 0.8초(시댄스 늦음)를 올림, 최소 4초. 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p12",
+ "이름": "12번 B급 코미디 몽타주 「모두의코스」",
+ "비율": "9:16",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p12/정지컷",
+ "공통": {
+  "장르": "real handheld smartphone travel footage filmed by a fellow traveler on a Jeju trip",
+  "누구": {
+   "MAN": "the same young Korean man throughout — slim and lean (not muscular), fair skin, clean-shaven, about ten thin tight cornrows braided straight back flat against the scalp, ending in short thin braided tails at the nape; no hat, no glasses, no jewelry. Wherever his face shows it is exactly the face in the pictures. He never speaks and his lips stay closed; his face is calm and deadpan unless described otherwise.",
+   "PHONES":"every phone screen facing the camera shows the same green travel-course app screen, and the phone screen stays exactly as in the first frame of its shot — same layout, same letters, nothing new appears on it."
+  },
+  "보기": "LOOK: real smartphone video — true-to-life skin, real human motion, natural motion blur on fast moves; the phone is held in a traveler's hand and moves exactly as described, never like a smooth gimbal, dolly or drone; no focus pulls; keep the first frame's colors, brightness and white balance to the very end; no beauty filter; no new text, letters, captions or logos; no extra people suddenly appear.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p12-01", "컷": ["1"], "길이": 4,
+   "설명": "기내 — 통로 건너 가운데 좌석의 그가 처음부터 이쪽을 봄(한쪽 눈썹 살짝) → 0.8초 앞을 봄, 카메라는 왼쪽으로 쓸리다 뚝 멈춤",
+   "샷": [
+    {"그림": "C01_g1.png", "쓰는초": 1.87, "누구": ["MAN"],
+     "동작": "Inside a domestic airliner cabin in daylight, seen from across the aisle: the man, in a plain white T-shirt and light beige chinos, sits in the middle seat and is already looking straight into the lens with one eyebrow raised very slightly — a tiny dry questioning look. At about 0.8 s he calmly turns his face away to look straight ahead like everyone else and stays facing forward. The woman beside him keeps looking ahead; the passengers behind stay seated.",
+     "카메라": "handheld phone at seated eye height. From 0.3 s to 1.2 s it drifts left about 40% of the frame width — fastest at 0.9 s — so he slides toward the right side of the picture; it stops abruptly at 1.3 s and then keeps a small natural handheld jitter (about 1–3% of the frame) to the end."}
+   ]
+  },
+  {
+   "id": "p12-02", "컷": ["2"], "길이": 4,
+   "설명": "밤 렌터카 셔틀버스 — 뒤보기 좌석에서 손잡이를 쥔 그가 처음부터 이쪽(양 눈썹 살짝) → 1.0초 손을 놓음 · 앞 0.5초는 비켜 도는 몫(0.5초부터 2.0초 씀)",
+   "샷": [
+    {"그림": "C02_g1.png", "쓰는초": 2.0, "누구": ["MAN"],
+     "동작": "At night inside an airport rental-car shuttle bus: the man, in a plain white T-shirt and light beige chinos, has just sat down in a rear-facing seat facing the camera, his right arm (on the left of the picture) raised holding the overhead strap. He looks straight into the lens the whole time — eyes a little wide, both eyebrows lifted very slightly, a mild surprised deadpan. At about 1.0 s he lets go of the strap and lowers his hand to his knee. His two companions sit in the seat right in front of the camera with their backs to us (a woman with a hair clip and a man) and stay still.",
+     "카메라": "handheld phone at seated eye height. Right after the first frame it swings away to the left by about a third of the frame width (0–0.4 s), so he slides to the right edge and his companions' heads come to the middle of the picture; at about 0.5 s it whips back right — fastest right at the start of the whip — and eases to a stop back on him, on the opening framing, by about 1.9 s; then a gentle handheld hold (about ±1%) to the end."}
+   ]
+  },
+  {
+   "id": "p12-03", "컷": ["3"], "길이": 5,
+   "설명": "호텔 수영장 — 튜브에 기대 이쪽을 보는 그를 오른쪽 꾸준한 팬이 밀어내 약 2.5초에 왼쪽으로 나감",
+   "샷": [
+    {"그림": "C03_g3.png", "쓰는초": 3.33, "누구": ["MAN"],
+     "동작": "At a hotel infinity pool on the Jeju coast at midday: the man, in a wet plain white short-sleeve rash guard, rests his chest and forearms on a large white-and-blue striped swim ring in the turquoise water and looks toward the camera with a calm deadpan face, bobbing gently in place. He keeps looking at the camera until the pan carries him out of the frame on the left at about 2.5 s; after that only turquoise water, white sun loungers, palm trees and the sea fill the picture.",
+     "카메라": "handheld phone at standing eye height at the pool edge, looking a little down across the water: one steady pan to the right across the pool, almost the full frame width over 3.3 s — accelerating slightly in the first second, then constant — with no vertical bob and only a very light jitter."}
+   ]
+  },
+  {
+   "id": "p12-04", "컷": ["4"], "길이": 7,
+   "설명": "요트 갑판 — 앞 0.8초에 바닥 쪽으로 비켜 돈 뒤(0.8초부터 4.53초 씀) 줄무늬 갑판 → 위로 들며 왼쪽 팬 → 2.3초 이쪽을 보는 그에게 멈춤 → 오른쪽 팬 · 걸어 다가감",
+   "샷": [
+    {"그림": "C04_g5.png", "쓰는초": 4.53, "누구": ["MAN"],
+     "동작": "On the deck of a white tour yacht off the Jeju coast at midday, under a striped canopy: the man, in an ivory linen shirt with rolled sleeves, light beige linen trousers and white canvas sneakers, sits on the white bench by the rail leaning forward with his forearms on his knees; his young woman companion sits further along the bench on the left of the picture and his young man companion sits nearer the camera looking out to sea. At about 2.3 s, just as the camera reaches him, he turns from the sea to look straight into the lens with a calm deadpan face and holds that look to the end; the companions keep looking at the sea.",
+     "카메라": "handheld phone at standing height. Right after the first frame it dips down about one frame height and swings right about one frame width (0–0.7 s), until it looks down at the striped canopy shadows on the white deck with nobody in view. From 0.8 s it tilts back up about one frame height within a second while swinging left, keeps panning left — fastest at about 2.5 s, so he slides in from the left edge — and slows to a stop on the opening framing at about 4.2 s; from 4.3 s it pans back right with increasing speed (about half a frame width by 5.3 s). From about 2.7 s the operator also walks slowly forward (about 1.3x closer by 5.3 s). Big handheld wobble while it looks at the deck, lighter once it is on the people."}
+   ]
+  },
+  {
+   "id": "p12-05", "컷": ["5"], "길이": 5,
+   "설명": "해변 카페 데이베드 — 케이크를 먹다 0.9초 눈을 들어 2.3초까지 이쪽, 걸어 다가가다 2.5초부터 왼쪽으로 비켜 감",
+   "샷": [
+    {"그림": "C05_g2.png", "쓰는초": 3.37, "누구": ["MAN"],
+     "동작": "Under a sand-colored canvas sun shade at a beach cafe by an emerald sea: the man, in an ivory linen short-sleeve shirt, camel linen shorts and bare feet, sits cross-legged on a white daybed holding a small plate of orange cake in his left hand and a fork in his right. Right after the first frame he drops his eyes to the cake and keeps chewing; at about 0.9 s he lifts his eyes sideways to the lens again — a flat, unimpressed stare, still chewing — holds it until about 2.3 s, then looks back down at his plate. The guests on the daybeds behind stay where they are.",
+     "카메라": "handheld phone at standing height: the operator walks toward him from the start (about 1.4x closer by 3.4 s) while the phone drifts slowly right (about a quarter of the frame width by 2.1 s); from 2.5 s it swings left with increasing speed (about a third of the frame width, fastest at the very end) so he slides out of the frame on the right; only a small walking bob."}
+   ]
+  },
+  {
+   "id": "p12-06", "컷": ["6"], "길이": 5,
+   "설명": "억새 오름 — 앞 0.7초에 왼쪽으로 비켜 돌아 일행 손이 오른쪽을 가리킴(0.7초부터 3.2초 씀) → 오른쪽으로 크게 휘두름 → 느린 팬이 앉아서 이쪽을 보는 그를 지나 오르는 사람들로",
+   "샷": [
+    {"그림": "C06_g1.png", "쓰는초": 3.2, "누구": ["MAN"],
+     "동작": "On a grassy volcanic hill (oreum) covered in silver eulalia grass, under a soft blue sky: the man, in a camel windbreaker over a white T-shirt, light beige chinos and white sneakers, sits on the grass beside the dirt trail with a cone-shaped black lava-stone tower behind him. When the phone swings left away from him, our own companion's hand and forearm (only the hand, sleeve and shoulder) come into the lower left of the frame and point to the right; the hand leaves the frame as the camera whips back right. The man stays seated and keeps looking straight into the lens, deadpan, the whole time he is in view. A few hikers walk far away on the ridge.",
+     "카메라": "handheld phone at standing eye height. Right after the first frame it swings left about one and a half frame widths away from him across the grassy slope (0–0.6 s) and stops close on our companion's pointing hand. From 1.0 s it whips hard to the right with heavy motion blur, fastest at 1.2 s; from 1.6 s it keeps panning right more slowly but never stops — he comes in from the right edge at about 2.4 s, crosses the frame and leaves it on the left at about 3.6 s (he is passed, not held) — and the pan carries on toward the hikers on the ridge to the end."}
+   ]
+  },
+  {
+   "id": "p12-07-08", "컷": ["7", "8"], "길이": 6, "자르는초": 4.1, "낱판": ["p12-07", "p12-08"],
+   "설명": "ATV 체험장 — 뒤에서 본 그가 넥게이터를 매만지다 어깨 너머로 돌아봄(얼굴은 가림) → 등 뒤 가까이, 넥게이터를 턱 밑으로 내린 무표정(두 샷 묶음)",
+   "샷": [
+    {"그림": "C07_g2.png", "쓰는초": 3.47, "누구": ["MAN"],
+     "동작": "At an ATV riding park in Jeju, seen from behind: the man, in a plain white T-shirt and light beige trousers, sits astride a red four-wheel ATV with two black helmets on its rear rack right in front of us; a plain grey neck gaiter is pulled up over his nose and mouth. Right after the first frame he shifts and settles on the seat; at about 1.5 s his right hand tugs the gaiter by his ear to straighten it, and at about 2.4 s he turns his head to look back over his right shoulder toward the camera — the gaiter still covers his nose and mouth, so only his eyes show — and holds that look. Other visitors stand far away by the parked ATVs.",
+     "카메라": "handheld phone at standing height just behind his ATV: from 0.3 s it pans right with increasing speed (about 30% of the frame width by 1.1 s); from 1.3 s to 1.7 s it tilts up a little (about a fifth of the frame height) as he settles; from 2.1 s it drifts left about a third of the frame width — fastest at 2.7 s — and stops at 3.3 s, easing back slightly to the end."},
+    {"그림": "C08_g2.png", "쓰는초": 1.1, "누구": ["MAN"],
+     "동작": "A close view from just behind him on the same red ATV: he looks back over his right shoulder straight into the lens and, in the first 0.3 s after the cut, gives the grey gaiter one last small tug down under his chin with his hooked fingers, then lowers his hand — his whole face uncovered, calm and completely deadpan. The two black helmets stay on the rear rack in the lower foreground; a few other visitors stand by the red ATVs behind him.",
+     "카메라": "close handheld, nearly still — only a light natural hand tremor (about 1–2% of the frame)."}
+   ]
+  },
+  {
+   "id": "p12-09", "컷": ["9"], "길이": 6,
+   "설명": "해변 — 앞 0.5초에 오른쪽으로 비켜 돈 뒤(0.5초부터 4.2초 씀) 왼쪽 팬으로 아이와 웃으며 노는 그를 찾음 → 2.0초 정색해 노려봄 → 다시 왼쪽으로 크게 지나침",
+   "샷": [
+    {"그림": "C09_g1.png", "쓰는초": 4.2, "누구": ["MAN"],
+     "동작": "On a white-sand beach in Jeju with a small green island offshore: the man, in a white long-sleeve rash guard, beige swim shorts and bare feet, crouches on the sand beside a small child who is building a sand castle (the child is seen only from behind — sun hat, striped arm floats — and never turns around); a light-blue plastic bucket is by his hand. Right after the first frame he looks down at the child and plays along, patting the sand castle and smiling warmly with his lips closed; at about 2.0 s he looks up straight into the lens and the smile drops at once — a serious, slightly stern straight face, brows drawn together a little — and he holds that stare until about 3.2 s.",
+     "카메라": "handheld phone at standing height, looking a little down. Right after the first frame it swings right about half a frame width (0–0.4 s), so he and the child slide to the left edge. From 0.7 s it pans left at a steady pace — they come back into full view — slowing to settle on him at about 2.1 s; from 2.4 s to 3.2 s it nudges slightly right (about a fifth of the frame width); then from 3.5 s it pans left again with increasing speed (about the full frame width by 4.7 s), leaving him behind on the right until only empty sand and sea fill the frame."}
+   ]
+  },
+  {
+   "id": "p12-10", "컷": ["10"], "길이": 4,
+   "설명": "속사포 해녀 식당 줄 — 바로 앞사람이 어깨 너머로 돌아본 그(이미 이쪽) · 앞 0.4초 비켜 돈 뒤 오른쪽 도착 팬(0.4초부터 0.7초 씀)",
+   "샷": [
+    {"그림": "C10_g1.png", "쓰는초": 0.7, "누구": ["MAN"],
+     "동작": "In a queue outside a black-stone haenyeo seafood restaurant on the Jeju coast: the man, in a camel windbreaker over a white T-shirt, stands right in front of the camera in the line and is already looking back over his shoulder straight into the lens, deadpan, and keeps looking. The people ahead of him in the line shuffle slightly; the sea and black lava rocks lie behind.",
+     "카메라": "handheld phone at eye height. Right after the first frame it swings away to the left by about a third of the frame width (0–0.3 s); at about 0.4 s it whips back right, lands on him within 0.3 s with motion blur and eases to a stop on the opening framing by about 0.8 s; then a light handheld hold (about 1–2% jitter) to the end."}
+   ]
+  },
+  {
+   "id": "p12-11", "컷": ["11"], "길이": 4,
+   "설명": "속사포 우도 해안 도로 — 나란히 달리는 옆 자전거 위 그(고개만 이쪽) · 앞 0.4초 비켜 돈 뒤 왼쪽 도착 팬(0.4초부터 0.7초 씀)",
+   "샷": [
+    {"그림": "C11_g2.png", "쓰는초": 0.7, "누구": ["MAN"],
+     "동작": "On a coastal road on Udo island: the man, in a camel windbreaker over a white T-shirt and dark trousers, rides a plain rental bicycle right beside the camera at an easy steady pace, both hands on the handlebar, only his head turned to look straight into the lens, deadpan, the whole time. The turquoise sea, black lava rocks and a low stone wall stream past behind him.",
+     "카메라": "handheld phone on a bicycle riding right beside him at the same speed, the background streaming past with horizontal motion blur the whole time. Right after the first frame it swings away to the right, toward the road ahead, by about a third of the frame width (0–0.3 s); at about 0.4 s it whips back left, lands on him within 0.3 s with motion blur and eases to a stop on the opening framing by about 0.8 s; then it rides along beside him with a light bumpy jitter to the end."}
+   ]
+  },
+  {
+   "id": "p12-12", "컷": ["12"], "길이": 4,
+   "설명": "속사포 감귤밭 — 가지 사이로 귤 바구니를 든 그 · 앞 0.4초 비켜 돈 뒤 오른쪽 도착 팬(0.4초부터 0.7초 씀)",
+   "샷": [
+    {"그림": "C12_g1.png", "쓰는초": 0.7, "누구": ["MAN"],
+     "동작": "In a tangerine orchard: the man, in a fine ivory crew-neck knit sweater and light beige chinos, stands between two trees full of orange fruit holding a small wicker basket of tangerines at his chest, and looks straight into the lens through the gap in the leafy branches, still and deadpan. The leaves stir a little in the breeze.",
+     "카메라": "handheld phone at eye height. Right after the first frame it swings away to the left by about a third of the frame width (0–0.3 s); at about 0.4 s it whips back right, lands on him within 0.3 s with motion blur and eases to a stop on the opening framing by about 0.8 s; then a light handheld hold (about 1–2% jitter) to the end."}
+   ]
+  },
+  {
+   "id": "p12-13", "컷": ["13"], "길이": 4,
+   "설명": "속사포 성산일출봉 — 단체 사진 앞줄 끝, 다들 사진사를 보는데 혼자 이쪽 · 앞 0.4초 비켜 돈 뒤 왼쪽 도착 팬(0.4초부터 0.7초 씀)",
+   "샷": [
+    {"그림": "C13_g3.png", "쓰는초": 0.7, "누구": ["MAN"],
+     "동작": "On the crater rim of Seongsan Ilchulbong, with the huge green crater and the sea behind: a group of adult tourists poses in two rows for a group photo, smiling and waving at a photographer at the left edge who holds up a phone with his back to us. The man, in a camel windbreaker over a white T-shirt, stands at the right end of the front row nearest to our camera — the only one not posing — and looks straight into our lens, deadpan, the whole time.",
+     "카메라": "handheld phone at standing eye height. Right after the first frame it swings away to the right by about a third of the frame width (0–0.3 s); at about 0.4 s it whips back left, lands on him within 0.3 s with motion blur and eases to a stop on the opening framing by about 0.8 s; then a light handheld hold (about 1–2% jitter) to the end."}
+   ]
+  },
+  {
+   "id": "p12-14", "컷": ["14"], "길이": 4,
+   "설명": "속사포 바다 카페 노을 — 옆 테이블에서 같은 케이크를 찍던 그가 폰을 내리고 봄 · 앞 0.4초 비켜 돈 뒤 오른쪽 도착 팬(0.4초부터 0.7초 씀)",
+   "샷": [
+    {"그림": "C14_g1.png", "쓰는초": 0.7, "누구": ["MAN"],
+     "동작": "In a seaside cafe at sunset: the man, in a fine charcoal-grey crew-neck knit sweater, sits at the next table by the big window with the same slice of orange cake on his plate; he has just photographed it and lowers his phone toward the table, looking straight into the lens, deadpan. Behind him the sea glows orange through the glass.",
+     "카메라": "handheld phone at seated eye height. Right after the first frame it swings away to the left by about a third of the frame width (0–0.3 s); at about 0.4 s it whips back right, lands on him within 0.3 s with motion blur and eases to a stop on the opening framing by about 0.8 s; then a light handheld hold (about 1–2% jitter) to the end."}
+   ]
+  },
+  {
+   "id": "p12-15", "컷": ["15"], "길이": 4,
+   "설명": "속사포 야시장 밤 — 꼬치 연기 너머 줄의 그 · 앞 0.4초 비켜 돈 뒤 왼쪽 도착 팬(0.4초부터 0.7초 씀)",
+   "샷": [
+    {"그림": "C15_g2.png", "쓰는초": 0.7, "누구": ["MAN"],
+     "동작": "At a night market after dark: white smoke drifts up from a glowing charcoal skewer grill in the foreground, where the vendor's gloved hand turns the skewers. Behind the grill the man, in a fine charcoal-grey crew-neck knit sweater, stands in the queue and looks straight into the lens through the smoke, deadpan; the crowd behind him moves a little under paper lanterns, red and yellow awnings and string bulbs.",
+     "카메라": "handheld phone at eye height. Right after the first frame it swings away to the right by about a third of the frame width (0–0.3 s); at about 0.4 s it whips back left, lands on him within 0.3 s with motion blur and eases to a stop on the opening framing by about 0.8 s; then a light handheld hold (about 1–2% jitter) to the end."}
+   ]
+  },
+  {
+   "id": "p12-16", "컷": ["16"], "길이": 6, "자르는초": 2.0, "낱판": ["p12-16a", "p12-16b"],
+   "설명": "흑돼지 식당 마당 — 여행자 손의 모두의코스 화면 → 오른쪽 빠른 팬으로 맞은편 테이블의 그에게 도착 → (1.42배 줌 자리에서 컷) 그가 똑같은 화면의 폰을 들어 보이며 끄덕 → 동행 쪽으로 기울임 → 휙(두 샷 묶음)",
+   "샷": [
+    {"그림": "C16a_g2_합성.png", "쓰는초": 1.2, "누구": ["MAN", "PHONES"],
+     "동작": "In the yard of a black-pork barbecue restaurant in the evening, under warm string lights in front of a black lava-stone wall: our own hand (a woman's hand) holds a smartphone in the lower left foreground with its screen facing the camera. The camera whips away from it to the right, so our phone leaves the frame on the left, and comes to rest on the next table — the same table, people and wall as in the second picture but seen from about 1.4 times farther — where the man, in a fine charcoal-grey crew-neck knit sweater, sits facing the camera and is already looking straight into the lens, deadpan; his woman companion (long dark hair, beige sweater) sits nearest to us with her back to the camera and his man companion sits at the right side of the table in profile.",
+     "카메라": "handheld phone at seated eye height: right after the first frame it whips right fast past our phone — fastest at 0.5 s, about two frame widths in all — and decelerates to a stop on the next table by 1.0 s, with him near the middle of the picture; then it holds with a light handheld jitter."},
+    {"그림": "C16b_g2_합성_줌.png", "쓰는초": 2.67, "누구": ["MAN", "PHONES"],
+     "동작": "About 1.4 times closer on the same table: the man holds up his own smartphone at chest height with its screen facing the camera, and at the bottom of the picture our own hand holds up our phone the same way — the two screens show the same app screen. He looks straight into the lens, calm and deadpan, and gives the smallest nod about 0.4 s after the cut. About 1.8 s after the cut, still holding the phone up, he leans his head and shoulders toward his man companion sitting just out of frame on the right side of the picture, as if about to whisper in his ear. His woman companion's long dark hair stays at the left edge and a few other diners sit behind on the right; the grill keeps smoking gently.",
+     "카메라": "handheld phone held still — only a light jitter (about ±1%); about 2.3 s after the cut it drifts slightly down, and about 2.6 s after the cut it ends with a quick whip to the right with heavy motion blur."}
+   ]
+  },
+  {"id": "p12-07", "컷": ["7"], "길이": 5, "대안": true, "설명": "묶음 대신 — ATV에 앉은 그의 뒷모습, 넥게이터를 매만지다 어깨 너머로 돌아봄(얼굴은 가림)",
+   "샷": [{"그림": "C07_g2.png", "쓰는초": 3.47, "누구": ["MAN"],
+     "동작": "At an ATV riding park in Jeju, seen from behind: the man, in a plain white T-shirt and light beige trousers, sits astride a red four-wheel ATV with two black helmets on its rear rack right in front of us; a plain grey neck gaiter is pulled up over his nose and mouth. Right after the first frame he shifts and settles on the seat; at about 1.5 s his right hand tugs the gaiter by his ear to straighten it, and at about 2.4 s he turns his head to look back over his right shoulder toward the camera — the gaiter still covers his nose and mouth, so only his eyes show — and holds that look. Other visitors stand far away by the parked ATVs.",
+     "카메라": "handheld phone at standing height just behind his ATV: from 0.3 s it pans right with increasing speed (about 30% of the frame width by 1.1 s); from 1.3 s to 1.7 s it tilts up a little (about a fifth of the frame height) as he settles; from 2.1 s it drifts left about a third of the frame width — fastest at 2.7 s — and stops at 3.3 s, easing back slightly to the end."}]},
+  {"id": "p12-08", "컷": ["8"], "길이": 4, "대안": true, "설명": "묶음 대신 — 등 뒤 가까이, 넥게이터를 턱 밑으로 내린 무표정",
+   "샷": [{"그림": "C08_g2.png", "쓰는초": 1.1, "누구": ["MAN"],
+     "동작": "A close view from just behind him on a red ATV: he looks back over his right shoulder straight into the lens and, in the first 0.3 s, gives the grey gaiter one last small tug down under his chin with his hooked fingers, then lowers his hand — his whole face uncovered, calm and completely deadpan. The two black helmets stay on the rear rack in the lower foreground; a few other visitors stand by the red ATVs behind him.",
+     "카메라": "close handheld, nearly still — only a light natural hand tremor (about 1–2% of the frame)."}]},
+  {"id": "p12-16a", "컷": ["16"], "길이": 4, "대안": true, "설명": "묶음 대신 — 16번 앞(31.27~32.47초): 여행자 손의 모두의코스 화면 → 오른쪽 빠른 팬으로 맞은편 테이블의 그에게 도착",
+   "샷": [{"그림": "C16a_g2_합성.png", "쓰는초": 1.2, "누구": ["MAN", "PHONES"],
+     "동작": "In the yard of a black-pork barbecue restaurant in the evening, under warm string lights in front of a black lava-stone wall: our own hand (a woman's hand) holds a smartphone in the lower left foreground with its screen facing the camera. The camera whips away from it to the right, so our phone leaves the frame on the left, and comes to rest on the next table, where the man, in a fine charcoal-grey crew-neck knit sweater, sits facing the camera and is already looking straight into the lens, deadpan; his woman companion (long dark hair, beige sweater) sits nearest to us with her back to the camera and his man companion sits at the right side of the table in profile, around a round steel charcoal-grill table with thick pork slices.",
+     "카메라": "handheld phone at seated eye height: right after the first frame it whips right fast past our phone — fastest at 0.5 s, about two frame widths in all — and decelerates to a stop on the next table by 1.0 s, with him near the middle of the picture; then it holds with a light handheld jitter to the end."}]},
+  {"id": "p12-16b", "컷": ["16"], "길이": 4, "대안": true, "설명": "묶음 대신 — 16번 뒤(32.47~35.14초, 1.42배 줌 뒤): 똑같은 화면의 폰을 들어 보이며 끄덕 → 동행 쪽으로 기울임 → 휙",
+   "샷": [{"그림": "C16b_g2_합성_줌.png", "쓰는초": 2.67, "누구": ["MAN", "PHONES"],
+     "동작": "At an evening black-pork barbecue table: the man holds up his own smartphone at chest height with its screen facing the camera, and at the bottom of the picture our own hand holds up our phone the same way — the two screens show the same app screen. He looks straight into the lens, calm and deadpan, and gives the smallest nod at about 0.4 s. At about 1.8 s, still holding the phone up, he leans his head and shoulders toward his man companion sitting just out of frame on the right side of the picture, as if about to whisper in his ear. His woman companion's long dark hair stays at the left edge and a few other diners sit behind on the right; the grill keeps smoking gently.",
+     "카메라": "handheld phone held still — only a light jitter (about ±1%); at about 2.3 s it drifts slightly down, and at about 2.6 s it ends with a quick whip to the right with heavy motion blur."}]}
+ ]
+}

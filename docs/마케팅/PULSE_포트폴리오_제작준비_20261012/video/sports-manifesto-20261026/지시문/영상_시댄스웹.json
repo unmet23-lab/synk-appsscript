@@ -1,0 +1,195 @@
+{
+ "메모": "5번 스포츠 매니페스토 「가쁨 GAPPEUM RUNNING」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p5/정지컷, 받은 판 그대로). 끝 그림은 1 · 4행만(원본 배율만큼 자른 S01_끝 · S04_끝). 6행 S06_끝은 시작 그림을 1/1.07로 자른 판이라 옆빛이 켜지고 눈을 감은 채여서 「옆빛이 꺼지고 어둠 속에서 눈을 뜸」과 부딪힌다 — 끝 그림 없이 내고 다가감 7%는 글로 적었다. 카메라는 02_콘티 3절 「카메라 — 원본과 행마다 같게」의 영어 문장에 샷표 실측 숫자를 더해 그대로, 동작은 3절 「우리 화면」대로 시작 그림에서 바로 잇는다. 슬로모션은 3 · 8 · 9 · 13 · 17 · 19행. 말은 내레이터 후시녹음이라 영상은 소리 끔 · 입 다묾. 묶음은 12a · 12b 하나(같은 실험실 러닝머신의 같은 순간, 사이 그래픽 조각은 후반) — 나머지는 실험실 · 밤 트랙 · 검은 스튜디오가 번갈아 붙은 같은 곳이 없고, 1 → 2는 1에 끝 그림이 있어 묶지 않는다. 16행은 모니터가 초록 화면인 S16으로 굽는다(심박 숫자는 후반 합성). 11행 시작 그림은 고개를 든 끝 상태라(숙인 시작 그림은 아직 없음) 첫 판은 숨만, 숙였다 드는 몸짓은 대안 p5-11b. 9행은 180° 돌린 정지컷을 그대로 넣는다. 길이 = max(4, 쓰는 구간 + 시댄스가 늦게 오는 0.8초 올림). 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p5",
+ "이름": "5번 스포츠 매니페스토 「가쁨 GAPPEUM RUNNING」",
+ "비율": "16:9",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p5/정지컷",
+ "공통": {
+  "장르": "a premium cinematic sports commercial about running",
+  "누구": {
+   "HANGYEOL": "the same Korean man in his early twenties as in the first frame — short black cropped hair with a slightly messy fringe, monolid eyes, a straight nose, ears that stick out slightly, a swimmer's build with broad straight shoulders; a plain charcoal sleeveless running singlet, black running shorts and a matte black running watch on his left wrist, no logos or text. He never speaks; whenever his mouth shows, his lips stay closed.",
+   "HANGYEOL_LEGS": "the same young man's bare, sweaty, muscular legs exactly as shown, in black running shorts, with a matte black watch on his left wrist when his hands show.",
+   "MASK": "his clear silicone metabolic-testing breathing mask over his nose and mouth, held by a grey head harness, with a white ribbed breathing hose; faint fog and tiny water drops inside it. The straps stay buckled.",
+   "CHAEWON": "the same Korean woman in her mid-twenties as in the first frame — a very short black pixie cut, thick straight eyebrows, single eyelids, sun-tanned skin with light freckles across her nose and cheekbones, a firm jaw, an athletic build; a plain black sleeveless high-neck running top that covers her stomach, black running shorts and a matte black running watch on her left wrist, no logos or text. She never speaks; her lips stay closed.",
+   "CHAEWON_LEGS": "the same young woman's bare, sweaty, athletic legs exactly as shown, in black running shorts.",
+   "SHOES": "the same white running shoes exactly as shown — white knit upper, white laces, translucent white midsole, one thin amber-orange stripe at the heel, no logos or text; they keep exactly this look in every frame."
+  },
+  "보기": "LOOK: premium sports-commercial film shot on a cinema camera — photorealistic, natural skin texture and real sweat, natural motion blur, fine film grain. Keep the first frame's own light to the very end — its direction, colour, contrast and darkness, whether it is the bright cool blue-grey lab, the near-black smoky night track lit only by its white light pillar, or the pitch-black studio with a single beam of light; the light changes only where the ACTION says so. No new lights, flares, light streaks or haze; no new text, letters, numbers or logos; no new people.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p5-01", "컷": ["1"], "길이": 4,
+   "설명": "실험실 유리창 너머 — 마스크 쓴 한결이 러닝머신을 달림, 슬라이더로 천천히 다가감(끝 그림 있음)",
+   "샷": [
+    {"그림": "S01.png", "끝그림": "S01_끝.png", "쓰는초": 3.13, "누구": ["HANGYEOL", "MASK"],
+     "동작": "Seen from a dark corridor through a wide horizontal window cut into a black wall, inside the bright, cool blue-grey lab: Hangyeol runs steadily on the black treadmill in left side view, facing left, at a real running pace — arms swinging, a natural stride, staying in the same place on the moving belt; the white hose from his mask to the testing cart sways a little with each step, and the cart's small monitor keeps showing its blue waveform. The black wall around the window stays pitch black.",
+     "카메라": "slow smooth dolly-in on a slider, about 11.5% closer over 3 seconds, starting very gently and speeding up (about 1 : 1.4 : 1.9 from the first to the last third), a slight upward tilt (about 0.8% of the frame height), no shake."}
+   ]
+  },
+  {
+   "id": "p5-02", "컷": ["2"], "길이": 4,
+   "설명": "실험실 — 마스크 쓴 한결 얼굴 · 어깨 미디엄 클로즈업, 달리는 박자로 출렁임",
+   "샷": [
+    {"그림": "S02.png", "쓰는초": 1.5, "누구": ["HANGYEOL", "MASK"],
+     "동작": "In the bright, cool blue-grey lab, against a plain blue-grey wall, Hangyeol runs on the treadmill below the frame, leaning slightly forward in the breathing mask, eyes focused ahead and slightly down; his head and shoulders bob with each stride and his bent elbows swing at the frame edges; he breathes hard into the mask, the fog inside it thickening and clearing with each breath; sweat beads on his forehead. Real running pace.",
+     "카메라": "almost static tripod camera with a very slight push-in (about 2.4% over 1.5 seconds) that is fastest at the start and slows down (about 1 : 0.6 : 0.35); the camera itself does not shake — only the runner's head and shoulders bob with each stride."}
+   ]
+  },
+  {
+   "id": "p5-03", "컷": ["3"], "길이": 4,
+   "설명": "밤 트랙 — 빛 기둥을 등지고 카메라 쪽으로 달리는 채원의 다리(슬로모션)",
+   "샷": [
+    {"그림": "S03.png", "쓰는초": 0.79, "누구": ["CHAEWON_LEGS", "SHOES"], "슬로": true,
+     "동작": "On the dark, smoky night track, lit only from far behind by the small white light pillar down the lanes, Chaewon's legs — from just below her shorts down to her shoes — run straight toward the camera: the planted foot at the bottom of the frame rolls off its toes and pushes off while the other knee swings forward and down; the backlight rims the edges of her legs; low smoke drifts slowly on both sides. Her upper body and face stay out of frame.",
+     "카메라": "locked-off camera on the ground, no movement at all, slow motion."}
+   ]
+  },
+  {
+   "id": "p5-04", "컷": ["4"], "길이": 4,
+   "설명": "검은 스튜디오 — 어깨 너머로 돌아본 채원에게 손 카메라가 오른쪽으로 돌며 빠르게 다가감(끝 그림 있음)",
+   "샷": [
+    {"그림": "S04.png", "끝그림": "S04_끝.png", "쓰는초": 0.71, "누구": ["CHAEWON"],
+     "동작": "In the pitch-black studio, a single narrow beam of hard light from above lights only her head and shoulder. Seen from behind her left shoulder, Chaewon has turned her head over her shoulder; her head turns the last few degrees toward the lens and she holds a calm, serious look straight into the camera, mouth closed, a low breath through her nose.",
+     "카메라": "fast handheld push-in arcing to the right around her as she turns to the lens: right from the start she grows to about 1.8x in 0.7 seconds (her head from about 10% to 19% of the frame width) and ends centred in frame, with a slight roll; then the camera settles on that framing and holds it, with only a faint handheld float, to the end."}
+   ]
+  },
+  {
+   "id": "p5-06", "컷": ["6"], "길이": 4,
+   "설명": "검은 스튜디오 — 눈 감고 선 채원, 따뜻한 옆빛이 천천히 꺼지고 어둠 속에서 눈을 뜸(S06_끝은 빛 · 눈이 달라 안 씀)",
+   "샷": [
+    {"그림": "S06.png", "쓰는초": 2.79, "누구": ["CHAEWON"],
+     "동작": "In the pitch-black studio, Chaewon stands still facing the camera, arms relaxed at her sides, eyes closed, calm and gathered, mouth closed. After a moment the warm apricot-gold side light from the left slowly fades over about two seconds until only a faint glow is left on her face; then, in that near-darkness, she opens her eyes and looks straight into the lens, and holds it.",
+     "카메라": "slow smooth push-in, about 7% closer over 2.2 seconds within the shot, easing out (about 1 : 0.8 : 0.65), a slight downward tilt (about 1%), no shake."}
+   ]
+  },
+  {
+   "id": "p5-08", "컷": ["8"], "길이": 4,
+   "설명": "밤 트랙 땅 높이 — 딛은 가쁨 러닝화가 뒤꿈치를 들며 밀어냄(슬로모션)",
+   "샷": [
+    {"그림": "S08.png", "쓰는초": 2.25, "누구": ["CHAEWON_LEGS", "SHOES"], "슬로": true,
+     "동작": "Ground-level close-up on the dark night track: her foot in the white running shoe is already planted on the red rubber track in the left half of the frame, toe angled toward the lower left. Her weight rolls forward — over about two seconds the heel slowly lifts off the track and the sole flexes as the foot pushes off from the forefoot; the toe is still on the ground at the end. A hard white backlight from far behind rims the shoe; only her lower leg and the shoe are in frame.",
+     "카메라": "locked-off camera on the ground, no movement at all, slow motion."}
+   ]
+  },
+  {
+   "id": "p5-09", "컷": ["9"], "길이": 4,
+   "설명": "검은 바탕 — 뒤집힌 채원 얼굴 큰 접사, 둘레에 물방울이 별처럼 떠 있음(슬로모션 · 거꾸로 그림 그대로)",
+   "샷": [
+    {"그림": "S09.png", "쓰는초": 2.54, "누구": ["CHAEWON"], "슬로": true,
+     "동작": "Against pure black, a big close-up of Chaewon's face seen upside down near the top of the frame — her chin and shoulders toward the top edge, her forehead and hair toward the bottom — lit by a hard light from the forehead side, below. Eyes closed, mouth closed, exhausted and still, only a slow, soft breath; around her face tiny drops of water and sweat float in the black air like stars, sharply lit, drifting slowly. The picture stays upside down exactly as in the first frame — never rotate or flip it.",
+     "카메라": "very slow steady push-in (about 2.4% over 2.5 seconds) with a barely perceptible roll (0.7°), even speed, no shake, slow motion."}
+   ]
+  },
+  {
+   "id": "p5-10", "컷": ["10"], "길이": 4,
+   "설명": "실험실 러닝머신 낮은 자리 — 한결의 뛰는 다리와 가쁨 러닝화, 밑창이 카메라 쪽으로 크게",
+   "샷": [
+    {"그림": "S10.png", "쓰는초": 2.29, "누구": ["HANGYEOL_LEGS", "SHOES"],
+     "동작": "Low view at treadmill-belt height in the bright lab, from behind him between the black curved handrails: Hangyeol's legs run on the moving belt at a real running pace — each foot strikes the belt, then kicks back and up so the white outsole swings large toward the camera; sweat shines on his calves and his hands swing at the top edge; his face never comes into frame. The blown-out blue-grey wall and the testing cart stay softly out of focus beyond him.",
+     "카메라": "locked-off camera; only his legs move — no movement, no zoom, no shake."}
+   ]
+  },
+  {
+   "id": "p5-11", "컷": ["11"], "길이": 4,
+   "설명": "실험실 창 쪽 어두운 구석 — 고개를 든 한결이 입 다물고 코로 거칠게 숨 쉼(시작 그림이 고개 든 끝 상태라 숙였다 드는 몸짓은 대안 p5-11b)",
+   "샷": [
+    {"그림": "S11.png", "쓰는초": 2.13, "누구": ["HANGYEOL"],
+     "동작": "In a dark corner of the lab — the soft blue glow of the lab window at the upper left, a warm key light from the upper right on his face — Hangyeol has just lifted his bowed head and leans toward the lens, breathing hard through his nose with his mouth closed: his shoulders and chest heave with each breath and his nostrils flare; a relaxed brow, eyes soft and slightly narrowed, looking ahead; big drops of sweat on his forehead and temples, one bead runs down. He leans only slightly closer.",
+     "카메라": "almost static camera (shake about 0.1%) — the camera itself does not move; only he moves."}
+   ]
+  },
+  {
+   "id": "p5-12a-12b", "컷": ["12a", "12b"], "길이": 4, "자르는초": 1.0, "낱판": ["p5-12a", "p5-12b"],
+   "설명": "실험실 — 마스크 쓴 한결 옆얼굴 → 러닝머신 위 가쁨 러닝화 낮게(두 샷 묶음, 사이 그래픽 조각은 후반)",
+   "샷": [
+    {"그림": "S12a.png", "쓰는초": 0.29, "누구": ["HANGYEOL", "MASK"],
+     "동작": "In the bright lab, a tight left-profile close-up: Hangyeol runs in the breathing mask, facing left, eyes half-lowered and focused, his head bobbing slightly with each stride; he breathes hard into the mask and the fog inside it thickens and clears.",
+     "카메라": "quick slight pull-back (about 4% in 0.3 seconds) with a 3° tilt — the frame rolls about 3° — and a little handheld wobble."},
+    {"그림": "S12b.png", "쓰는초": 0.29, "누구": ["HANGYEOL_LEGS", "SHOES"],
+     "동작": "At treadmill-belt level, his two feet in the white running shoes run on the black slatted belt at a real running pace — one foot strikes the moving belt and pushes back while the other swings forward; only his bare, sweaty shins and the shoes are in frame, against the blown-out blue-grey wall.",
+     "카메라": "locked-off camera, no movement at all."}
+   ]
+  },
+  {
+   "id": "p5-13", "컷": ["13"], "길이": 4,
+   "설명": "밤 트랙 — 빛 기둥 바로 앞 먼 채원, 카메라 쪽으로 전력 질주 자세(슬로모션)",
+   "샷": [
+    {"그림": "S13.png", "쓰는초": 0.67, "누구": ["CHAEWON"], "슬로": true,
+     "동작": "On the smoky night track, small and far away right in front of the glowing white light pillar, Chaewon sprints toward the camera in a full-effort sprint pose — arms driving hard, body leaning forward; backlit by the pillar she is mostly a dark silhouette with a bright rim, her long shadow stretching toward the camera along the lanes; smoke drifts slowly on both sides. She comes only a little closer — her size stays almost the same.",
+     "카메라": "locked-off camera on the ground, no movement at all, slow motion."}
+   ]
+  },
+  {
+   "id": "p5-15", "컷": ["15"], "길이": 4,
+   "설명": "검은 스튜디오 — 정면의 채원이 고개를 화면 오른쪽 옆으로 돌림(뒤로 끌리는 빛 잔상은 후반)",
+   "샷": [
+    {"그림": "S15.png", "쓰는초": 0.5, "누구": ["CHAEWON"],
+     "동작": "In the pitch-black studio, lit by a cool hard light from the front-right, Chaewon (chest up, small in the centre of the frame) faces the camera with a calm, determined face, mouth closed; then she turns her head to her left — toward the right side of the frame — in one quick, smooth move of about half a second until her face is in profile, and holds it. Only her head turns; her shoulders stay still.",
+     "카메라": "locked-off camera; only her head moves — no movement, no zoom, no shake."}
+   ]
+  },
+  {
+   "id": "p5-16", "컷": ["16"], "길이": 4,
+   "설명": "실험실 — 한결의 등 · 어깨 너머 손이 모니터 단추를 누름, 카메라가 오른쪽으로 흐름(모니터는 초록 — 숫자는 후반 합성)",
+   "샷": [
+    {"그림": "S16.png", "쓰는초": 0.42, "누구": ["HANGYEOL"],
+     "동작": "In the bright lab, an extreme close-up at waist height: Hangyeol's back and shoulder in the charcoal singlet fill the left of the frame, softly out of focus; on the right stands a medical monitor, and his hand presses the round knob below its screen with his fingers. The monitor's screen stays a perfectly flat, evenly lit pure chroma-green rectangle the whole time — nothing appears on it, no reflections, no glare.",
+     "카메라": "smooth lateral move: the camera slides right so the scene shifts 1.5% of the frame to the left over 0.4 seconds — keep that same even speed through the whole shot."}
+   ]
+  },
+  {
+   "id": "p5-17", "컷": ["17"], "길이": 4,
+   "설명": "밤 트랙 — 13보다 더 먼 채원의 질주 자세, 기둥보다 큼(슬로모션 · 빛줄기 두 프레임은 후반)",
+   "샷": [
+    {"그림": "S17.png", "쓰는초": 0.58, "누구": ["CHAEWON"], "슬로": true,
+     "동작": "On the smoky night track, Chaewon — far away, just in front of the glowing white light pillar and taller than it — sprints toward the camera in a full-effort sprint pose, arms driving hard, body leaning forward; backlit, she is a dark silhouette with a bright rim; smoke drifts slowly on both sides. She comes only a little closer — her size stays almost the same.",
+     "카메라": "locked-off camera on the ground, no movement at all, slow motion."}
+   ]
+  },
+  {
+   "id": "p5-18", "컷": ["18"], "길이": 4,
+   "설명": "어두운 회색 바탕 — 한결 정면 얼굴, 바람에 앞머리 · 땀방울, 손 카메라가 좌우로 크게 흔들림",
+   "샷": [
+    {"그림": "S18.png", "쓰는초": 0.29, "누구": ["HANGYEOL"],
+     "동작": "Against a flat, near-black dark-grey background under a hard frontal light, Hangyeol's face fills the frame straight on: eyes open and locked ahead, mouth closed, breathing hard through his nose; a strong wind from the side blows his fringe and flings small drops of sweat off his face. No mist or haze — the background stays flat dark grey.",
+     "카메라": "handheld close-up shaking left and right in strong wind (about 4% of the frame within 0.3 seconds), continuously through the shot."}
+   ]
+  },
+  {
+   "id": "p5-19", "컷": ["19"], "길이": 4,
+   "설명": "실험실 — 마스크 쓴 한결 정면 큰 접사, 바람에 앞머리 · 끈 끝 · 땀방울(정점 · 슬로모션)",
+   "샷": [
+    {"그림": "S19.png", "쓰는초": 1.08, "누구": ["HANGYEOL", "MASK"], "슬로": true,
+     "동작": "In the bright lab, against a plain pale blue-grey wall, an extreme close-up: Hangyeol in the breathing mask stares straight into the lens with total focus; a strong wind from the right blows his fringe, flicks the singlet strap and flings drops of sweat off his face, and fog blooms inside the mask with each breath. The mask straps stay buckled — only their loose ends flutter.",
+     "카메라": "slow-motion extreme close-up; in the first 0.3 seconds the camera tilts so his face rises 15% in frame, then holds with heavy wind shake and a 2% push-in."}
+   ]
+  },
+  {
+   "id": "p5-21", "컷": ["21"], "길이": 5,
+   "설명": "밤 트랙 옆 와이드 — 왼쪽 빛 기둥, 오른쪽 아주 작은 채원이 기둥 쪽으로 거의 제자리 달림(로고는 후반)",
+   "샷": [
+    {"그림": "S21.png", "쓰는초": 3.38, "누구": ["CHAEWON"],
+     "동작": "A wide side view of the night track: on the left the tall glowing white light pillar stands on the track, smoke and glittering particles drifting slowly out of it to the right; on the right, tiny and far away, Chaewon runs toward the left — toward the pillar — in side view with a light, steady stride, but barely advances: only about 7% of the frame width over the whole shot, so she stays small and far from the pillar. The dark space beside the pillar stays empty.",
+     "카메라": "static wide on a tripod with an almost imperceptible pull-back (1.3% over 3.4 seconds), even, no shake."}
+   ]
+  },
+  {
+   "id": "p5-11b", "컷": ["11"], "길이": 5, "대안": true,
+   "설명": "11번 둘째 길 — 한 번 숙였다가 고개를 들며 다가옴(원본의 숙였다 들기를 한 판 안에서 — 숙이는 앞부분은 버림)",
+   "샷": [
+    {"그림": "S11.png", "쓰는초": 2.13, "누구": ["HANGYEOL"],
+     "동작": "In a dark corner of the lab — the soft blue glow of the lab window at the upper left, a warm key light from the upper right on his face — Hangyeol, breathing hard through his nose with his mouth closed, first lowers his head toward his chest within the first second, catching his breath; then he slowly lifts it again and leans toward the lens until his face is back at the first frame's size and place, a relaxed brow, eyes soft and slightly narrowed, big drops of sweat on his forehead and temples.",
+     "카메라": "almost static camera (shake about 0.1%); he lifts his bowed head and leans toward the lens until his face is about 1.5x larger."}
+   ]
+  },
+  {"id": "p5-12a", "컷": ["12a"], "길이": 4, "대안": true, "설명": "묶음 대신 — 마스크 쓴 한결 옆얼굴 접사",
+   "샷": [{"그림": "S12a.png", "쓰는초": 0.29, "누구": ["HANGYEOL", "MASK"],
+     "동작": "In the bright lab, a tight left-profile close-up: Hangyeol runs in the breathing mask, facing left, eyes half-lowered and focused, his head bobbing slightly with each stride; he breathes hard into the mask and the fog inside it thickens and clears.",
+     "카메라": "quick slight pull-back (about 4% in 0.3 seconds) with a 3° tilt — the frame rolls about 3° — and a little handheld wobble, then it settles."}]},
+  {"id": "p5-12b", "컷": ["12b"], "길이": 4, "대안": true, "설명": "묶음 대신 — 러닝머신 위 가쁨 러닝화 낮게",
+   "샷": [{"그림": "S12b.png", "쓰는초": 0.29, "누구": ["HANGYEOL_LEGS", "SHOES"],
+     "동작": "At treadmill-belt level, his two feet in the white running shoes run on the black slatted belt at a real running pace — one foot strikes the moving belt and pushes back while the other swings forward; only his bare, sweaty shins and the shoes are in frame, against the blown-out blue-grey wall.",
+     "카메라": "locked-off camera, no movement at all."}]}
+ ]
+}

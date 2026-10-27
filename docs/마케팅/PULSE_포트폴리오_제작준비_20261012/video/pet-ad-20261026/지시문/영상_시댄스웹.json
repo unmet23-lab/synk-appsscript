@@ -1,0 +1,124 @@
+{
+ "메모": "11번 반려동물 「첨벙댕」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p11/정지컷, 받은 판 그대로). 카메라 문장은 02_콘티 6절 「영상 지시문의 카메라」(원본 프레임 실측) 그대로, 동작은 02_콘티 2절 · 6절 「영상으로 옮길 때」(Fable 1차)대로. 말은 민재 후시녹음이라 영상은 소리 끔 · 입 다묾. 이어지는 짧은 컷(같은 곳 · 같은 사람)은 두 샷 한 판으로 묶고, 묶음이 안 될 때 쓸 낱판을 「대안」으로 둔다. 길이는 쓰는 구간 + 시댄스가 0.7초쯤 늦게 오는 몫. 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p11",
+ "이름": "11번 반려동물 「첨벙댕」",
+ "비율": "9:16",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p11/정지컷",
+ "공통": {
+  "장르": "real smartphone footage for a Korean pet-product ad",
+  "누구": {
+   "DOG": "the same hairless dog as in the first frame in every frame — smooth bare slate-grey skin with pinkish-grey patches on the chest and belly, a silver-white mohawk standing up on top of its head, huge bat ears, amber almond eyes, a thin tail with a silver tuft at the tip. It is a real dog and moves like one.",
+   "VEST": "the lemon-yellow dog life vest with navy trim, a navy chest buckle strap and two navy handles side by side in the middle of the back — no printing, no logo.",
+   "MINJAE": "the same Korean man in his thirties as in the first frame — short black hair, cobalt-blue sleeveless top, white shorts, white socks, black sneakers, a black watch on his left wrist. He does not speak; his lips stay closed unless he smiles."
+  },
+  "보기": "LOOK: true-to-life colors and natural daylight, natural motion blur; keep the first frame's colors, brightness and white balance to the very end; no beauty filter, no text, no letters, no logos, no extra people or animals.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p11-01-02", "컷": ["1", "2"], "길이": 5, "자르는초": 2.5, "낱판": ["p11-01", "p11-02"],
+   "설명": "해변 — 외계 옆얼굴 접사 → 뒤에서 본 외계가 오른쪽으로 걸어 나감(두 샷 묶음)",
+   "샷": [
+    {"그림": "S01.jpg", "쓰는초": 2.17, "누구": ["DOG"],
+     "동작": "On a windy East Sea beach, the dog stands sideways with only its head turned toward the camera, bowed a little to the lower left; the wind tosses its silver mohawk; it squints so only a thin amber line of each eye shows, then lifts its head slightly. Blue waves roll in behind.",
+     "카메라": "handheld phone with a light natural shake; in the first 0.9 s a small pan to the right (about 9% of the frame) and most of the way back; then the camera physically lowers and pushes in to about 1.1x on the dog's head while the picture tilts so the horizon's RIGHT end dips about 4°; it holds still for the last quarter second."},
+    {"그림": "S02.jpg", "쓰는초": 1.63, "누구": ["DOG"],
+     "동작": "Seen from behind and a little above, the same dog trots briskly away to the right across the sand, leaving paw prints; within about 1.5 s it walks out of the frame on the right and only its fresh footprints remain in the sand.",
+     "카메라": "virtually locked off — under 2% of drift to the right, no shake."}
+   ]
+  },
+  {
+   "id": "p11-03", "컷": ["3"], "길이": 4,
+   "설명": "해변 롱숏 — 발자국 따라 달려가는 외계, 멀리 두 사람이 한 걸음 물러섬",
+   "샷": [
+    {"그림": "S03.jpg", "쓰는초": 2.7, "누구": ["DOG"],
+     "동작": "A long shot down a trail of paw prints in the sand toward two people standing far away on the beach. The dog runs along the trail toward them; as it reaches them, the two people flinch and each steps back one step, leaning away in surprise.",
+     "카메라": "handheld; the operator walks forward along the footprint trail with a natural walking bob, fastest in the middle. The camera tilts up gradually from the start and faster after 1.5 s, when it also turns left by about half the frame width; at the end the sky fills the top 40 percent of the frame. The horizon is never quite level — its RIGHT end sits a few degrees low (about 5° around 1.5–2 s, 4° at the end)."}
+   ]
+  },
+  {
+   "id": "p11-04", "컷": ["4"], "길이": 6,
+   "설명": "원룸 — 침대 위 상자를 웃으며 열고 레몬색 조끼를 꺼내 보임, 의자 위 외계가 지켜봄",
+   "샷": [
+    {"그림": "S04.jpg", "쓰는초": 4.73, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "In his bright one-room apartment, Minjae, smiling, opens the plain brown cardboard box on the bed, lifts out the lemon-yellow dog life vest and holds it up toward the camera with both hands to show it off, then sets the empty box aside on the bed. On the dark wooden chair at the left, sitting on its folded white mat, the dog raises its head and watches him.",
+     "카메라": "locked off on a tripod at chest height — no movement, no zoom, no shake."}
+   ]
+  },
+  {
+   "id": "p11-05-06", "컷": ["5", "6"], "길이": 4, "자르는초": 2.0, "낱판": ["p11-05", "p11-06"],
+   "설명": "창가 의자 — 조끼 버클을 채우는 민재 → 앞에서 본 두 손이 손잡이 둘을 쥠(두 샷 묶음)",
+   "샷": [
+    {"그림": "S05.jpg", "쓰는초": 1.6, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "By the window, Minjae bends over the dog standing on the chair and fastens the vest's navy chest buckle with both hands; the dog stands still and calm.",
+     "카메라": "locked off on a tripod, a little above eye level looking slightly down — no movement, no zoom, no shake."},
+    {"그림": "S06.jpg", "쓰는초": 0.63, "누구": ["DOG", "VEST"],
+     "동작": "The same chair seen from the front: Minjae's two hands, reaching in from the right edge of the frame, already hold the two navy handles on the vest's back and give them one small tug upward; the dog keeps standing on the chair.",
+     "카메라": "locked off on a tripod — no movement, no zoom, no shake."}
+   ]
+  },
+  {
+   "id": "p11-07-08", "컷": ["7", "8"], "길이": 4, "자르는초": 2.0, "낱판": ["p11-07", "p11-08"],
+   "설명": "유리 중문 앞 — 선글라스 쓴 민재가 손잡이로 외계를 가방처럼 듦 → 무릎 높이, 다리 사이에 매달린 외계(두 샷 묶음)",
+   "샷": [
+    {"그림": "S07.jpg", "쓰는초": 1.43, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "In front of the glass interior door, Minjae in blue mirrored sunglasses holds the dog up by the two vest handles like a handbag, at waist height. The dog is already up from the first frame: it just hangs calmly and sways a little; he does not lift it any higher.",
+     "카메라": "locked off on a tripod at waist height, backlit by the glass door — no movement, no zoom, no shake."},
+    {"그림": "S08.jpg", "쓰는초": 1.37, "누구": ["DOG", "VEST"],
+     "동작": "At knee height, between Minjae's legs, the dog hangs from the two handles with its front paws dangling, the tips of its toes almost touching the toes of his black sneakers; it sways very slightly and stares to the right with a deadpan face.",
+     "카메라": "locked off on a tripod at knee height — no movement, no zoom, no shake."}
+   ]
+  },
+  {
+   "id": "p11-09", "컷": ["9"], "길이": 4,
+   "설명": "의자 위 외계 접사 — 파란 미러 고글 + 조끼, 옆 20°에서 정면으로 도는 아크(끝 그림 있음)",
+   "샷": [
+    {"그림": "S09.jpg", "끝그림": "S09_끝.jpg", "쓰는초": 3.07, "누구": ["DOG", "VEST"],
+     "동작": "The dog sits still on the chair wearing blue mirrored dog goggles and the vest, facing forward with a deadpan face; the person filming is reflected small in its goggles. The dog and its goggles stay exactly the same — only the camera moves.",
+     "카메라": "the camera arcs smoothly around the dog from about 20° on its right side to dead-on front while pushing in about 8–10%; it starts gently, reaches a steady pace by about 0.8 s and keeps that pace right to the last frame — no hold at the end; gimbal-smooth, almost no shake."}
+   ]
+  },
+  {
+   "id": "p11-10", "컷": ["10"], "길이": 5,
+   "설명": "선글라스 쓴 민재 전신 — 손잡이를 잡았다 놓고 쓰다듬은 뒤 카메라 보며 엄지척 · 미소",
+   "샷": [
+    {"그림": "S10.jpg", "쓰는초": 2.73, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "Minjae in blue mirrored sunglasses, bent over the dog, holds the vest handles, lets go, pats the dog's head once, then straightens up, looks straight into the lens and gives a thumbs-up with a big warm smile by about 2 s, holding it to the end. The dog, without goggles, stands calmly beside his legs.",
+     "카메라": "locked off on a tripod at waist height — no movement, no zoom, no shake."}
+   ]
+  },
+  {
+   "id": "p11-10b", "컷": ["10"], "길이": 4, "대안": true,
+   "설명": "10번 둘째 길 — 쓰다듬기 없이 놓자마자 엄지척(첫 판이 늦으면)",
+   "샷": [
+    {"그림": "S10.jpg", "쓰는초": 2.73, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "Minjae in blue mirrored sunglasses, bent over the dog, lets go of the vest handles, straightens up at once, looks straight into the lens and gives a thumbs-up with a big warm smile by about 1.5 s, holding it to the end. The dog, without goggles, stands calmly beside his legs.",
+     "카메라": "locked off on a tripod at waist height — no movement, no zoom, no shake."}
+   ]
+  },
+  {"id": "p11-01", "컷": ["1"], "길이": 4, "대안": true, "설명": "묶음 대신 — 해변 외계 옆얼굴 접사",
+   "샷": [{"그림": "S01.jpg", "쓰는초": 2.17, "누구": ["DOG"],
+     "동작": "On a windy East Sea beach, the dog stands sideways with only its head turned toward the camera, bowed a little to the lower left; the wind tosses its silver mohawk; it squints so only a thin amber line of each eye shows, then lifts its head slightly. Blue waves roll in behind.",
+     "카메라": "handheld phone with a light natural shake. 0–0.9 s a small pan to the right (about 9% of the frame) and most of the way back; 0.9–1.9 s the camera physically lowers and pushes in to about 1.1x on the dog's head, and the picture tilts a little so the horizon's RIGHT end dips about 4° by the end; holds still for the last quarter second."}]},
+  {"id": "p11-02", "컷": ["2"], "길이": 4, "대안": true, "설명": "묶음 대신 — 뒤에서 본 외계가 오른쪽으로 걸어 나감",
+   "샷": [{"그림": "S02.jpg", "쓰는초": 1.63, "누구": ["DOG"],
+     "동작": "Seen from behind and a little above, the dog trots briskly away to the right across the sand, leaving paw prints; within about 1.5 s it walks out of the frame on the right and only its fresh footprints remain in the sand.",
+     "카메라": "virtually locked off — under 2% of drift to the right, no shake."}]},
+  {"id": "p11-05", "컷": ["5"], "길이": 4, "대안": true, "설명": "묶음 대신 — 조끼 버클을 채우는 민재",
+   "샷": [{"그림": "S05.jpg", "쓰는초": 1.6, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "By the window, Minjae bends over the dog standing on the chair and fastens the vest's navy chest buckle with both hands; the dog stands still and calm.",
+     "카메라": "locked off on a tripod, a little above eye level looking slightly down — no movement, no zoom, no shake."}]},
+  {"id": "p11-06", "컷": ["6"], "길이": 4, "대안": true, "설명": "묶음 대신 — 손잡이 둘을 쥐고 살짝 당김",
+   "샷": [{"그림": "S06.jpg", "쓰는초": 0.63, "누구": ["DOG", "VEST"],
+     "동작": "The chair seen from the front: Minjae's two hands, reaching in from the right edge of the frame, already hold the two navy handles on the vest's back and give them one small tug upward; the dog keeps standing on the chair.",
+     "카메라": "locked off on a tripod — no movement, no zoom, no shake."}]},
+  {"id": "p11-07", "컷": ["7"], "길이": 4, "대안": true, "설명": "묶음 대신 — 손잡이로 외계를 든 민재",
+   "샷": [{"그림": "S07.jpg", "쓰는초": 1.43, "누구": ["MINJAE", "DOG", "VEST"],
+     "동작": "In front of the glass interior door, Minjae in blue mirrored sunglasses holds the dog up by the two vest handles like a handbag, at waist height. The dog is already up from the first frame: it just hangs calmly and sways a little; he does not lift it any higher.",
+     "카메라": "locked off on a tripod at waist height, backlit by the glass door — no movement, no zoom, no shake."}]},
+  {"id": "p11-08", "컷": ["8"], "길이": 4, "대안": true, "설명": "묶음 대신 — 무릎 높이, 다리 사이에 매달린 외계",
+   "샷": [{"그림": "S08.jpg", "쓰는초": 1.37, "누구": ["DOG", "VEST"],
+     "동작": "At knee height, between Minjae's legs, the dog hangs from the two handles with its front paws dangling, the tips of its toes almost touching the toes of his black sneakers; it sways very slightly and stares to the right with a deadpan face.",
+     "카메라": "locked off on a tripod at knee height — no movement, no zoom, no shake."}]}
+ ]
+}

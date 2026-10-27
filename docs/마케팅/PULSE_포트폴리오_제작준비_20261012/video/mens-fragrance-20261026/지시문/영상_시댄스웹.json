@@ -1,0 +1,144 @@
+{
+ "메모": "2번 남성 향수 필름 「솔서리」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). AI 영상 11컷은 02_콘티 6절 그대로(1 · 4 · 5 · 7 · 8 · 11 · 12 · 13 · 14 · 15 · 16 — 블렌더 2 · 3 · 6 · 9 · 10 · 17 · 18은 이 꾸러미 밖). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p2 — 받음 GPT 판 · 정지컷 Gemini 판, 받은 판 그대로). 카메라 문장은 01_샷표 2절 · 02_콘티 2절의 원본 실측(원본카메라_재기.py · 카메라_요약.txt) 숫자 그대로 — 고정(locked off)은 1 · 4 · 8 · 13번만. 동작은 02_콘티 2절 「우리 화면」대로. 화면 속 태준은 말하지 않아 영상은 소리 끔 · 입 다묾. 이어지는 같은 곳 · 같은 사람/물건 짧은 컷(4-5 · 7-8 · 14-15)은 두 샷 한 판으로 묶고, 묶음이 안 될 때 쓸 낱판을 「대안」으로 둔다. 12 · 16번은 시작 그림 얼굴이 원본 첫 프레임의 1.4배(원본 끝 크기 — 02_콘티 4절 · Fable 3차 P1-1)라, 원본 숫자 판을 주판으로 두고 덜 다가가는 둘째 길(12b · 16b)을 대안으로 둔다. 13번 안개만 슬로(아르곤 첫 분석 「슬로모션으로 퍼짐」). 길이는 쓰는 구간 + 시댄스가 0.7초쯤 늦게 오는 몫(최소 4초). 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p2",
+ "이름": "2번 남성 향수 「솔서리」",
+ "비율": "16:9",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p2",
+ "공통": {
+  "장르": "cinematic studio footage for a luxury men's cologne commercial",
+  "누구": {
+   "TAEJUN": "the same Korean man as in the first frame, in every frame — early thirties, lean athletic build, bare-chested with no shirt, plain black trousers, jet-black medium-length hair swept back with a few loose strands over the brow, light stubble; no jewelry, no watch, no sunglasses, no tattoos. He never speaks or sings: lips closed, a calm neutral face, no smile.",
+   "BOTTLE": "the cologne bottle exactly as in the first frame — a square bottle of thick blue glass with a square brushed-silver cap and white print on the front: the mark ㅅ, the name 솔서리, SOLSEORI, EAU DE COLOGNE and 100 ml. Its shape and print stay exactly the same in every frame — never warped, blurred into new letters or rewritten.",
+   "ICE SCULPTURE": "the carved clear-ice ㅅ sculpture from the first frame — an upright Λ of two thick legs of crystal-clear wet ice joined at a ridge at the top, with faint fractures and tiny bubbles inside. It keeps exactly this shape and never becomes a Y: no stem, post or third leg anywhere.",
+   "PINE": "Korean red pine needles — long, thin needles growing in pairs from a small brown sheath, dark blue-green under the blue light.",
+   "FROST": "fine granular white rime frost — tiny dry ice grains like sugar crystals along every needle; no snowflake or star shapes, no round water drops. The frost does not melt, grow or fall."
+  },
+  "보기": "LOOK: one cold cobalt-blue world from the first frame to the last — saturated cobalt light, deep navy shadows, cold blue-white highlights on edges; keep the first frame's colors, brightness, contrast and white balance to the very end; real cinema-camera footage with natural motion blur, no CGI look, no beauty filter; no added text, letters, logos or watermarks (any lettering already in the first frame stays exactly as it is), no extra people.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p2-01", "컷": ["1"], "길이": 4,
+   "설명": "어두운 무대 — 빛줄기 셋 아래 태준 실루엣이 카메라 쪽으로 또박또박 걸어 나옴(고정)",
+   "샷": [
+    {"그림": "받음/S01_g6.png", "쓰는초": 2.08, "누구": ["TAEJUN"],
+     "동작": "On the dark, empty stage, Taejun — a near-silhouette, only his outline rim-lit by the beams, face and body in shadow, no facial detail readable — walks straight toward the camera with steady, deliberate steps: three to four steps in about 2 s, growing to about 1.2x his first-frame size while staying at the same spot across the frame (a little right of centre). The three wide diagonal beams of cold light behind him drift slowly and breathe — bright at first, dimmest around 1.0–1.2 s, bright again by 2 s (about ±10%). The thin glowing stage-edge line stays put and the floor below it stays pure black, with no reflections.",
+     "카메라": "locked off on a tripod — no movement, no zoom, no shake; the stage-edge line and his place across the frame stay exactly where they are from start to end; only he and the light move."}
+   ]
+  },
+  {
+   "id": "p2-04-05", "컷": ["4", "5"], "길이": 4, "자르는초": 1.5, "낱판": ["p2-04", "p2-05"],
+   "설명": "등 뒤 어깨 너머 — 팔을 빛 쪽으로 올리며 손을 폄 → 낮은 각도 정면, 팔 벌리고 고개 젖힌 태준이 팔을 휘두르며 다가옴(두 샷 묶음)",
+   "샷": [
+    {"그림": "받음/S04_g5.png", "쓰는초": 0.8, "누구": ["TAEJUN"],
+     "동작": "Very close from just behind his bare right shoulder: the rounded shoulder fills the left half of the frame, and his right arm already reaches forward below shoulder height with a loose fist from the first frame. Within about 0.8 s he raises the arm toward the bright light at the upper right and opens his hand, fingers spreading; his shoulder and upper back turn a little with the arm, changing the shoulder's shape. Only the edge of his black hair shows at the top left — his face never comes into view.",
+     "카메라": "locked off — no movement, no zoom, no shake; the far lights and floor line in the background stay exactly in place; only his arm and shoulder move."},
+    {"그림": "정지컷/S05.png", "쓰는초": 0.96, "누구": ["TAEJUN"],
+     "동작": "Low angle from the front: Taejun already stands with both arms spread wide to the sides, hands half open, head tilted back, eyes closed, face up into the hazy light pouring down from above, and holds it for about 0.6 s after the cut; then, about 0.65 s after the cut, he swings both arms up fast and surges toward the camera, the arms blurring with motion by about 1 s after the cut. Lips closed.",
+     "카메라": "low angle in front of him, pushing in slowly and steadily from the cut while he moves toward it, so his body grows to about 1.5x its size by about 1 s after the cut; the last 0.3 s carries motion blur from his fast arm swing; no camera shake."}
+   ]
+  },
+  {
+   "id": "p2-07-08", "컷": ["7", "8"], "길이": 4, "자르는초": 1.2, "낱판": ["p2-07", "p2-08"],
+   "설명": "세운 「ㅅ」 얼음 — 등마루에서 갈라져 두 다리 앞면으로 흐르는 물막 → 얼음벽 사이 물보라가 솟아 렌즈를 덮음(두 샷 묶음)",
+   "샷": [
+    {"그림": "받음/S07_g6.png", "쓰는초": 0.48, "누구": ["ICE SCULPTURE"],
+     "동작": "Low and very close in front of the ice sculpture — its ridge at the very top of the frame, its two thick legs sloping down to the lower left and lower right: clear water is already pouring onto the ridge from the first frame, splitting there and running down the front faces of both legs as wide, glassy sheets, with droplets splashing up in the middle of the frame. The ice itself does not move.",
+     "카메라": "a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height; fast at first and easing to almost still within about 0.5 s; only a very slight tremor."},
+    {"그림": "받음/S08_g5.png", "쓰는초": 0.96,
+     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; about 0.6 s after the cut it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s after the cut the whole frame is filled with rushing water.",
+     "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}
+   ]
+  },
+  {
+   "id": "p2-11", "컷": ["11"], "길이": 4,
+   "설명": "얼음 덩이 속 솔잎 — 가로 금을 따라 물이 반짝, 1.13배 다가가며 얼음이 오른쪽 아래로 점점 빨리 미끄러짐",
+   "샷": [
+    {"그림": "받음/S11_g5.png", "쓰는초": 0.84, "누구": ["PINE"],
+     "동작": "Inside the tall block of clear ice, the frozen pine needles and tiny bubbles stay fixed in the ice; water already seeps along the horizontal crack across the middle from the first frame and keeps glistening there, a few bright drops running along it. The block stays whole — no new cracks, no flying pieces.",
+     "카메라": "a steady push-in to about 1.13x over about 0.85 s while the ice block slides toward the lower right of the frame — about 9% right and 7% down by 0.85 s — slow at first and faster and faster (the camera drifts up and to the left); no easing at the end, no shake."}
+   ]
+  },
+  {
+   "id": "p2-12", "컷": ["12"], "길이": 4,
+   "설명": "태준이 왼손에 든 솔서리 병을 목 옆으로 가져감(누르지 않음 · 안개 없음) — 고른 다가감 1.4배 · 시계 반대 5°",
+   "샷": [
+    {"그림": "정지컷/S12.png", "쓰는초": 1.24, "누구": ["TAEJUN", "BOTTLE"],
+     "동작": "Taejun, in three-quarter view turned toward frame right, already holds the bottle up in his left hand at the right of the frame from the first frame. Within about 1 s he calmly brings it in toward the left side of his neck, keeping its printed front toward the camera, and tilts the nozzle toward his neck, ready to spray, then holds it there. He never presses the cap: no spray, no mist. His gaze stays fixed past frame right.",
+     "카메라": "one steady, constant-speed push-in from the first frame — his face about 1.2x larger by 0.8 s, his chest about 1.4x by 1.25 s — while the picture slowly rolls about 5° counterclockwise (its right side rises), the roll complete by about 1.1 s; the push does not ease or stop before 1.3 s; his eyes, chin and the whole bottle stay inside the frame; no shake."}
+   ]
+  },
+  {
+   "id": "p2-12b", "컷": ["12"], "길이": 4, "대안": true,
+   "설명": "12번 둘째 길 — 시작 그림이 원본 끝 크기라 덜 다가감(1.15배), 첫 판이 너무 조이면",
+   "샷": [
+    {"그림": "정지컷/S12.png", "쓰는초": 1.24, "누구": ["TAEJUN", "BOTTLE"],
+     "동작": "Taejun, in three-quarter view turned toward frame right, already holds the bottle up in his left hand at the right of the frame from the first frame. Within about 1 s he calmly brings it in toward the left side of his neck, keeping its printed front toward the camera, and tilts the nozzle toward his neck, ready to spray, then holds it there. He never presses the cap: no spray, no mist. His gaze stays fixed past frame right.",
+     "카메라": "one steady, constant-speed, gentle push-in from the first frame to about 1.15x by 1.25 s, while the picture slowly rolls about 5° counterclockwise (its right side rises), the roll complete by about 1.1 s; the push does not ease or stop before 1.3 s; his eyes, chin and the whole bottle stay inside the frame; no shake."}
+   ]
+  },
+  {
+   "id": "p2-13", "컷": ["13"], "길이": 4,
+   "설명": "파란 바탕 향수 안개가 화면 가득 오른쪽으로 흘러감(고정 · 슬로)",
+   "샷": [
+    {"그림": "받음/S13_g5.png", "쓰는초": 0.52, "슬로": true,
+     "동작": "A fine cologne mist already fills the frame against deep cobalt blue — thousands of tiny backlit droplets sparkling pale blue-white, a brighter band of denser mist running from the lower left to the upper right. The whole cloud drifts steadily to the right across the frame, droplets twinkling as they pass through the light. No bottle, hand or source of the spray in view.",
+     "카메라": "locked off — no movement, no zoom, no shake; only the mist moves, drifting to the right."}
+   ]
+  },
+  {
+   "id": "p2-14-15", "컷": ["14", "15"], "길이": 4, "자르는초": 1.5, "낱판": ["p2-14", "p2-15"],
+   "설명": "서리 앉은 솔가지 — 살짝 다가가며 가지가 위로 오르고 초점이 풀림 → 서리 솔잎 두 가닥 접사, 화면이 왼쪽으로 · 초점이 맞아 감(두 샷 묶음)",
+   "샷": [
+    {"그림": "받음/S14_g5.png", "쓰는초": 0.84, "누구": ["PINE", "FROST"],
+     "동작": "Close-up of a frosted Korean red pine branch fanning out from the lower right toward the upper left, every needle coated in fine rime that glitters in the cold cobalt light. The branch itself stays still — no wind, no falling frost.",
+     "카메라": "a slight push-in to about 1.03x while the branch rises about 6% of the frame height and turns about 2.5° clockwise in the frame; fast at first and easing to almost still by about 0.85 s; toward the end the focus softens slightly; no shake."},
+    {"그림": "받음/S15_g6.png", "쓰는초": 0.76, "누구": ["PINE", "FROST"],
+     "동작": "Extreme macro of two frosted pine needles lying side by side diagonally across the frame, densely coated in tiny ice grains; nothing moves except the light glinting on the grains.",
+     "카메라": "a slow, even push-in to about 1.03x at constant speed while the needles slide about 2.5% to the left and turn about 2° counterclockwise in the frame; the focus pulls in so the frost grains grow crisper by the end; no shake."}
+   ]
+  },
+  {
+   "id": "p2-16", "컷": ["16"], "길이": 4,
+   "설명": "태준 얼굴 클로즈업 — 첫 1초 빠르게 다가가다 멈추고, 1.1초부터 화면 오른쪽으로 고개를 돌려 옆얼굴(오른쪽 1/3)",
+   "샷": [
+    {"그림": "정지컷/S16.png", "쓰는초": 2.52, "누구": ["TAEJUN"],
+     "동작": "Close-up: Taejun already faces the camera from the first frame, calm and still, his gaze as in the first frame. At about 1.1 s he slowly turns his head toward frame right into a clean profile, finishing by about 2.3 s, and holds it; at the end his face sits in the right third of the frame (his nose tip about 70% across) and the cold blue light at the right grows a little as he turns into it. He stays exactly the man in the first frame, also in profile.",
+     "카메라": "a fast push-in for the first second, easing to almost still: about 1.15x by 0.3 s, 1.25x by 0.6 s and about 1.3x by 1.1 s, then almost no movement to the end; the camera does not follow his turn or re-center his face; his eyes, mouth and chin stay inside the frame; no shake."}
+   ]
+  },
+  {
+   "id": "p2-16b", "컷": ["16"], "길이": 4, "대안": true,
+   "설명": "16번 둘째 길 — 시작 그림이 원본 끝 크기보다 커서 덜 다가감(1.1배), 첫 판에서 얼굴이 잘리면",
+   "샷": [
+    {"그림": "정지컷/S16.png", "쓰는초": 2.52, "누구": ["TAEJUN"],
+     "동작": "Close-up: Taejun already faces the camera from the first frame, calm and still, his gaze as in the first frame. At about 1.1 s he slowly turns his head toward frame right into a clean profile, finishing by about 2.3 s, and holds it; at the end his face sits in the right third of the frame (his nose tip about 70% across) and the cold blue light at the right grows a little as he turns into it. He stays exactly the man in the first frame, also in profile.",
+     "카메라": "a gentle push-in for the first second, easing to almost still: about 1.05x by 0.3 s and about 1.1x by 1.1 s, then almost no movement to the end; the camera does not follow his turn or re-center his face; his eyes, mouth and chin stay inside the frame; no shake."}
+   ]
+  },
+  {"id": "p2-04", "컷": ["4"], "길이": 4, "대안": true, "설명": "묶음 대신 — 등 뒤 어깨 너머, 팔을 빛 쪽으로 올리며 손을 폄",
+   "샷": [{"그림": "받음/S04_g5.png", "쓰는초": 0.8, "누구": ["TAEJUN"],
+     "동작": "Very close from just behind his bare right shoulder: the rounded shoulder fills the left half of the frame, and his right arm already reaches forward below shoulder height with a loose fist from the first frame. Within about 0.8 s he raises the arm toward the bright light at the upper right and opens his hand, fingers spreading; his shoulder and upper back turn a little with the arm, changing the shoulder's shape. Only the edge of his black hair shows at the top left — his face never comes into view.",
+     "카메라": "locked off — no movement, no zoom, no shake; the far lights and floor line in the background stay exactly in place; only his arm and shoulder move."}]},
+  {"id": "p2-05", "컷": ["5"], "길이": 4, "대안": true, "설명": "묶음 대신 — 낮은 각도 정면, 팔 벌리고 고개 젖혔다가 팔을 휘두르며 다가옴",
+   "샷": [{"그림": "정지컷/S05.png", "쓰는초": 0.96, "누구": ["TAEJUN"],
+     "동작": "Low angle from the front: Taejun already stands with both arms spread wide to the sides, hands half open, head tilted back, eyes closed, face up into the hazy light pouring down from above, and holds it for about 0.6 s; then, at about 0.65 s, he swings both arms up fast and surges toward the camera, the arms blurring with motion by about 1 s. Lips closed.",
+     "카메라": "low angle in front of him, pushing in slowly and steadily from the first frame while he moves toward it, so his body grows to about 1.5x its first-frame size by about 1 s; the last 0.3 s carries motion blur from his fast arm swing; no camera shake."}]},
+  {"id": "p2-07", "컷": ["7"], "길이": 4, "대안": true, "설명": "묶음 대신 — 세운 「ㅅ」 얼음 두 다리 앞면으로 흐르는 물막",
+   "샷": [{"그림": "받음/S07_g6.png", "쓰는초": 0.48, "누구": ["ICE SCULPTURE"],
+     "동작": "Low and very close in front of the ice sculpture — its ridge at the very top of the frame, its two thick legs sloping down to the lower left and lower right: clear water is already pouring onto the ridge from the first frame, splitting there and running down the front faces of both legs as wide, glassy sheets, with droplets splashing up in the middle of the frame. The ice itself does not move.",
+     "카메라": "a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height; fast at first and easing to almost still within about 0.5 s; only a very slight tremor."}]},
+  {"id": "p2-08", "컷": ["8"], "길이": 4, "대안": true, "설명": "묶음 대신 — 얼음벽 사이 물보라가 솟아 렌즈를 덮음",
+   "샷": [{"그림": "받음/S08_g5.png", "쓰는초": 0.96,
+     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; at about 0.6 s it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s the whole frame is filled with rushing water.",
+     "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}]},
+  {"id": "p2-14", "컷": ["14"], "길이": 4, "대안": true, "설명": "묶음 대신 — 서리 앉은 솔가지, 살짝 다가가며 위로 오르고 초점이 풀림",
+   "샷": [{"그림": "받음/S14_g5.png", "쓰는초": 0.84, "누구": ["PINE", "FROST"],
+     "동작": "Close-up of a frosted Korean red pine branch fanning out from the lower right toward the upper left, every needle coated in fine rime that glitters in the cold cobalt light. The branch itself stays still — no wind, no falling frost.",
+     "카메라": "a slight push-in to about 1.03x while the branch rises about 6% of the frame height and turns about 2.5° clockwise in the frame; fast at first and easing to almost still by about 0.85 s; toward the end the focus softens slightly; no shake."}]},
+  {"id": "p2-15", "컷": ["15"], "길이": 4, "대안": true, "설명": "묶음 대신 — 서리 솔잎 두 가닥 접사, 화면이 왼쪽으로 · 초점이 맞아 감",
+   "샷": [{"그림": "받음/S15_g6.png", "쓰는초": 0.76, "누구": ["PINE", "FROST"],
+     "동작": "Extreme macro of two frosted pine needles lying side by side diagonally across the frame, densely coated in tiny ice grains; nothing moves except the light glinting on the grains.",
+     "카메라": "a slow, even push-in to about 1.03x at constant speed while the needles slide about 2.5% to the left and turn about 2° counterclockwise in the frame; the focus pulls in so the frost grains grow crisper by the end; no shake."}]}
+ ]
+}

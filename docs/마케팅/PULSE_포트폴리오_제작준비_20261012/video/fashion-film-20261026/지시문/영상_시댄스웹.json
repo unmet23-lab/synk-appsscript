@@ -1,0 +1,261 @@
+{
+ "메모": "4번 패션 필름 「결채」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). 시작 그림은 10-27 확정 이미지 콘티(git 밖 콘티/p4/컷, 받은 판 그대로). 영상은 25컷이다 — 02_콘티 5절대로 번쩍 일곱(3 · 4 · 5 · 6 · 12 · 13 · 14)은 정지 그림으로 쓰고, 검은 화면 · 흰 빛(1 · 10 · 17a · 31)은 편집에서 만든다(5절의 「26개」는 1번 검은 화면까지 센 수). 카메라 문장은 02_콘티 2절 카메라 칸(원본 프레임별 실측)의 숫자 그대로 — 이동 방향은 카메라가 가는 쪽, 돎(°)은 실측 도구(레퍼런스/p4/스크립트/16_카메라_프레임별.py)의 부호대로 화면이 도는 쪽이다. 동작은 2절 「우리 화면」대로 한 가지만, 얼굴은 무표정 · 입 다묾, 말 · 음악 없음(소리 끔). 같은 곳 · 같은 때 · 같은 사람으로 바로 붙은 컷은 두 샷 한 판(28-29 · 33-34)으로 묶고 낱판을 「대안」으로 둔다 — 둘째 샷의 초는 컷 뒤 기준으로 쓴다. 21은 끝 그림(C21e) 판이고, 구도가 크게 다른 끝 그림이 하드컷을 부르면(현장노트 higgsfield) 끝 그림 없는 대안 21b를 낸다. 길이 = max(4, ⌈쓰는 초 + 0.8⌉), 묶음은 ⌈자르는 초 + 둘째 쓰는 초 + 0.8⌉. 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p4",
+ "이름": "4번 패션 필름 「결채」",
+ "비율": "16:9",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p4/컷",
+ "공통": {
+  "장르": "a quiet, high-end Korean fashion campaign film",
+  "누구": {
+   "YUNA": "the same young Korean woman as in the first frame, in every frame — long dark-brown wavy hair worn loose with a center part, small gold stud earrings, long winged eyeliner, rose-coral lips. Her face stays calm and expressionless with her lips closed; she never smiles and never speaks.",
+   "OUTFIT": "her one outfit, exactly as in the first frame and never changing — an ivory wool-gabardine double-breasted long trench coat falling below the knee, with wide notched lapels, two rows of dark-brown horn buttons and a self-fabric belt at the waist with a fabric-covered buckle; a cream crew-neck fine-knit sweater; matching ivory wide-leg trousers; brown leather ankle boots with a low block heel; a small brown leather shoulder bag with a flap and a round brass turn-lock on a thin strap. No logos, no labels, no check pattern.",
+   "TWILL": "the ivory wool gabardine of her trench coat — a fine, tight diagonal twill weave, matte, with a few soft fibers; exactly the cloth and color of the first frame.",
+   "KNIT": "her cream fine-knit sweater — small, even knit loops and a few soft fibers; exactly the yarn and color of the first frame.",
+   "BAG": "her small brown leather shoulder bag — smooth, lightly grained leather, tonal stitching along the edges, a flap with a round brass turn-lock, a thin strap on brass rings; no logo.",
+   "BOOT": "her brown leather ankle boot — smooth leather, a slim almond toe, a low stacked block heel; no logo.",
+   "LINING": "the plain ivory satin lining inside her trench coat — smooth and softly glossy, one solid color, no pattern, no check."
+  },
+  "보기": "LOOK: a high-end fashion campaign film — cinema camera, vintage prime lens, fine film grain, gentle lens falloff, natural skin and fabric texture, true-to-life colors. Each shot keeps its first frame's light — direction, color and white balance — to the very end; in the night shots under red light the ivory coat keeps exactly the red-tinted color it has in the first frame and never turns white or neutral. Only the brightness and focus changes written in CAMERA may happen. No new text, letters, logos or labels. Never add a person who is not in the first frame; when she is in the shot she is the only person, and any doubled image of her comes only from glass in front of the lens.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p4-02", "컷": ["2"], "길이": 4,
+   "설명": "스튜디오 · 어둡게 — 아이보리 개버딘 능직 결 극접사, 어둠에서 살짝 밝아지며 2.6% 다가감",
+   "샷": [
+    {"그림": "C02.png", "쓰는초": 1.88, "누구": ["TWILL"],
+     "동작": "An extreme close-up of the coat's ivory gabardine filling the whole frame: the fine diagonal twill ridges lie in deep warm shadow, and a thin, dim raking light from the left makes a few fibers glint faintly. The cloth stays still; nothing enters the frame, no hands.",
+     "카메라": "macro lens flat to the cloth, steady, no shake. In the first 0.6 s the light lifts gently from the dim first frame, like a slow fade-up of exposure (not a focus change), then holds — the cloth stays low-key, never bright. From 0.17 s to 1.63 s the camera pushes in very slowly by about 2.6% at a perfectly even speed, and it keeps that same slow, even push to the end."}
+   ]
+  },
+  {
+   "id": "p4-07", "컷": ["7"], "길이": 4,
+   "설명": "흙담 빈집 · 밤 — 아래에서 주황빛을 받은 감나무 실루엣(사람 없음), 1.6% 다가감",
+   "샷": [
+    {"그림": "C07.png", "쓰는초": 0.79, "누구": [],
+     "동작": "Night in the yard of an abandoned old Korean house with crumbling yellow-ochre clay walls: a large old persimmon tree stands as a black silhouette, lit from the ground behind and below by a low warm orange glow that shines through its bare branches; everything else is near black. The scene is still — only the dry grass at the bottom stirs very slightly. No people.",
+     "카메라": "wide, at standing eye level, smooth and steady, no shake. From 0.08 s to 0.58 s the camera pushes in by about 1.6% at an even speed, and it keeps that same very slow, even push to the end; no pan, no tilt."}
+   ]
+  },
+  {
+   "id": "p4-08", "컷": ["8"], "길이": 4,
+   "설명": "흙담 빈집 · 밤 붉은빛 — 대문간에 작게 선 유나, 빛이 0.42초에 가장 밝았다 어둠으로 가라앉음",
+   "샷": [
+    {"그림": "C08.png", "쓰는초": 1.17, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Yuna stands small and full-length in the dark doorway of the crumbling clay wall, facing the camera with her arms at her sides, mostly in shadow under a dim deep-red light. She stays completely still the whole time, like a figure surfacing from the dark and sinking back into it.",
+     "카메라": "wide, eye level, no shake. From 0.08 s to 0.75 s the camera tilts down about 2.9% of the frame height, fastest at first and slowing to a stop (the picture drifts up), then holds. The light changes with the shot: from the first frame the dim red light swells a little to its brightest at about 0.42 s, then fades so that by about 1.2 s she and the doorway have sunk back into near-darkness, and it stays that dark to the end."}
+   ]
+  },
+  {
+   "id": "p4-09", "컷": ["9"], "길이": 4,
+   "설명": "스튜디오 · 베이지 배경 — 갈색 가죽 앵클부츠 한 짝 접사, 1.3% 다가감(빨라짐)",
+   "샷": [
+    {"그림": "C09.png", "쓰는초": 0.5, "누구": ["BOOT"],
+     "동작": "One brown leather ankle boot stands alone and empty, seen from the side at its own height against a plain beige paper backdrop in soft studio light, filling the frame from top to bottom. It stays still; no foot, no hands, nothing else enters the frame.",
+     "카메라": "close-up, steady, no shake. From 0.08 s to 0.38 s the camera pushes in by about 1.3%, starting slowly and speeding up, then keeps pushing in gently at that speed to the end."}
+   ]
+  },
+  {
+   "id": "p4-11", "컷": ["11"], "길이": 4,
+   "설명": "스튜디오 — 유나 얼굴 극접사, 고개 기울이고 눈 내리깖(초점이 0.25초에 빠졌다 1.0초에 맞음)",
+   "샷": [
+    {"그림": "C11.png", "쓰는초": 1.34, "누구": ["YUNA"],
+     "동작": "An extreme close-up: Yuna's face overflows the frame, her head tilted so her chin points to the lower left, her eyes cast down with lids lowered, lips closed. Over the shot she slowly lifts her head a little and straightens it by a few degrees — one small, calm movement; her gaze stays down and her face stays expressionless. A warm skin-toned side light from the left; the far side of her face and the background stay in deep shadow.",
+     "카메라": "macro-close, the face filling the frame, no shake. From 0.13 s to 1.17 s her face rises about 3.6% of the frame height in the picture and the picture turns about 4.3° counter-clockwise (her small head lift is part of this); from 0.63 s to 1.21 s the camera also drifts left about 2% of the frame width, starting slowly and speeding up. Focus: sharp in the first frame, it slips soft by about 0.25 s, then pulls back to sharp by about 1.0 s and stays sharp."}
+   ]
+  },
+  {
+   "id": "p4-15", "컷": ["15"], "길이": 4,
+   "설명": "스튜디오 — 11과 같은 얼굴 극접사로 돌아옴, 4.1% 물러나며 왼쪽 위로 · 시계 2.2°(처음 흐렸다 초점 들어옴)",
+   "샷": [
+    {"그림": "C15.png", "쓰는초": 0.83, "누구": ["YUNA"],
+     "동작": "The same extreme close-up of Yuna's face, framed a little further left and higher: head tilted with her chin to the lower left, eyes cast down with lids lowered, lips closed, expressionless. She stays almost still — only a slight settle of her head. Warm skin-toned side light from the left; the rest falls into deep shadow.",
+     "카메라": "macro-close, no shake. From 0.08 s to 0.67 s, at an even speed, the camera pulls back about 4.1% while drifting about 5.4% of the frame width to the left and about 3.8% of the frame height up, and the picture turns about 2.2° clockwise (her slight head movement is part of this); then it holds. Focus: in the first quarter second the image is soft, then the focus pulls in to sharp by about 0.25 s and stays sharp."}
+   ]
+  },
+  {
+   "id": "p4-16", "컷": ["16"], "길이": 4,
+   "설명": "스튜디오 · 붉은빛 — 크림 니트 올 극접사, 카메라 아래로 8.7% + 다가감 2.3%",
+   "샷": [
+    {"그림": "C16.png", "쓰는초": 0.76, "누구": ["KNIT"],
+     "동작": "An extreme close-up of the cream fine-knit sweater lying in soft folds: individual knit loops and a few fine fibers fill the frame, glowing under a warm pinkish-red side light. The knit stays still; no person, no hands.",
+     "카메라": "macro, smooth, no shake. From 0.08 s to 0.63 s, at an even speed, the camera moves down about 8.7% of the frame height (the knit slides up through the frame) while pushing in about 2.3%, and it keeps the same slow downward glide to the end."}
+   ]
+  },
+  {
+   "id": "p4-17", "컷": ["17"], "길이": 4,
+   "설명": "억새밭 · 맑은 낮 — 파란 하늘 앞 낮은 앵글 허리 위, 눈 감은 유나의 머리 · 트렌치 깃이 바람에 날림(카메라 거의 고정)",
+   "샷": [
+    {"그림": "C17.png", "쓰는초": 0.92, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Shot from far below against a clear deep-blue sky, the sun right behind her head: Yuna stands with her eyes closed and her chin lifted into a strong, steady wind that keeps blowing hard for the whole shot and never dies down — her long hair streams out to the side with a few strands blowing across her face, and the trench's lapels and collar flutter; her hair never settles. Her body stays in place, her eyes stay closed, her face calm with lips closed.",
+     "카메라": "low angle from below, waist-up, almost perfectly still on a tripod — no push, no pan, no tilt; only her hair and the coat move in the wind."}
+   ]
+  },
+  {
+   "id": "p4-18", "컷": ["18"], "길이": 4,
+   "설명": "억새밭 · 역광 — 금빛 역광 속 억새 씨앗 · 흙먼지가 날리는 흐린 접사(거의 고정)",
+   "샷": [
+    {"그림": "C18.png", "쓰는초": 0.54, "누구": [],
+     "동작": "A soft-focus close view into silver pampas-grass plumes in strong golden backlight: fluffy seeds and fine dust float and drift through the air, glinting amber, while the plumes sway gently in the wind. Everything stays soft and out of focus. No people.",
+     "카메라": "close, almost still, no shake: in the first 0.3 s it eases back about 1.3%, slowing to a stop, and over the first 0.4 s the picture turns about 1.2° clockwise; then it holds."}
+   ]
+  },
+  {
+   "id": "p4-19", "컷": ["19"], "길이": 4,
+   "설명": "스튜디오 — 위에서 본 가죽 숄더백(덮개 · 잠금 · 바느질), 4.5% 다가감 + 위로 2.9%, 0.5초에 초점 들어옴",
+   "샷": [
+    {"그림": "C19.png", "쓰는초": 1.04, "누구": ["BAG"],
+     "동작": "The small brown leather shoulder bag lies on grey paper, seen from directly above — the flap, the round brass turn-lock and the edge stitching facing the camera, the strap running off the top edge. It lies perfectly still; no hands, no person.",
+     "카메라": "top-down close-up, no shake. From 0.04 s to 0.83 s, at an even speed, the camera pushes in about 4.5% while moving about 2.9% toward the top of the frame (the bag slides slightly down in the picture). Focus: it starts soft and the focus pulls in to sharp at about 0.5 s, then stays sharp."}
+   ]
+  },
+  {
+   "id": "p4-20", "컷": ["20"], "길이": 4,
+   "설명": "스튜디오 — 눈 감고 고개 기울인 유나, 렌즈 앞 유리 상이 오른쪽 아래에서 밀려들어 흐린 겹상으로(카메라 거의 고정)",
+   "샷": [
+    {"그림": "C20.png", "쓰는초": 0.92, "누구": ["YUNA", "OUTFIT"],
+     "동작": "In the grey studio, chest-up, Yuna stands still with her eyes closed and her head tilted toward her left shoulder, lips closed, expressionless. The soft, blurred second image of her face at the lower right is a reflection in a piece of glass held in front of the lens — not another person — and it is there from the first frame.",
+     "카메라": "chest-up, the camera nearly still with only a tiny handheld tremor (about ±0.2% of the frame). From 0.33 s to 0.83 s, speeding up, the glass in front of the lens slides so its blurred image surges in from the lower right and spreads across her, until her sharp face has turned into a soft, doubled blur; it stays blurred to the end."}
+   ]
+  },
+  {
+   "id": "p4-21", "컷": ["21"], "길이": 4,
+   "설명": "억새밭 · 역광 — 걷는 유나, 허리띠 아래에서 머리~정강이 옆모습까지 카메라가 30.8% 솟음(끝 그림 C21e)",
+   "샷": [
+    {"그림": "C21.png", "끝그림": "C21e.png", "쓰는초": 1.17, "누구": ["YUNA", "OUTFIT"],
+     "동작": "In the late-afternoon pampas field, Yuna walks steadily to the right along the dirt path in side view at an unhurried pace: the belted trench hem swings, the wide trousers move with each step, her brown boots press into the dirt, and the low sun flares behind her. When her face comes into view it is calm, lips closed, looking ahead.",
+     "카메라": "handheld while walking alongside her, low near the ground and tilted so the horizon slopes. In one unbroken move from 0.08 s to 0.9 s the camera rises about 30.8% of the frame height, pushes in about 11% and moves about 4.8% to the right — fast at first, slowing to a stop — taking the frame from her hips and boots up to her whole figure from head to mid-shin; then it walks along with her at that framing to the end, with a light walking bob (about ±0.3% of the frame) throughout. It never cuts: the last framing is reached only by this rising move."}
+   ]
+  },
+  {
+   "id": "p4-22", "컷": ["22"], "길이": 4,
+   "설명": "흙담 빈집 · 낮 역광 — 빈 창틀 앞에 선 유나(거의 실루엣), 3.9% 물러나며 왼쪽 8% · 아래로 7.2% · 반시계 1.5°",
+   "샷": [
+    {"그림": "C22.png", "쓰는초": 1.75, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Inside the abandoned clay-walled house, Yuna stands still in front of a large bright empty window, her hands in her coat pockets, her body blocking the middle of it; the low sun pours through the window behind her so she is nearly a dark silhouette with a golden rim on her hair and coat edges, and warm dust drifts in the light. She stays still — only loose strands of hair stir at the edges.",
+     "카메라": "full shot, smooth, no shake. From 0.15 s to 1.55 s the camera pulls back about 3.9% while drifting about 8% of the frame width to the left and about 7.2% of the frame height down — the downward move speeding up toward the end — and the picture turns about 1.5° counter-clockwise; after that it keeps drifting gently the same way to the end."}
+   ]
+  },
+  {
+   "id": "p4-23", "컷": ["23"], "길이": 4,
+   "설명": "스튜디오 · 복숭아빛 — 목 옆 깃에 손을 댄 유나가 카메라 쪽을 흘김(눈썹 아래 얼굴, 1% 다가감)",
+   "샷": [
+    {"그림": "C23.png", "쓰는초": 0.33, "누구": ["YUNA", "OUTFIT"],
+     "동작": "In the studio under a peach key light from the left with a faint cool fill from the right, a close shot of Yuna from just above her eyebrows to her collarbone: her head slightly lowered, she keeps a sidelong glance toward the camera, one hand resting on the side of her neck at the ivory trench collar over the cream knit. She holds the pose almost perfectly still; lips closed, expressionless.",
+     "카메라": "close shot, no shake. Within the first 0.17 s the camera pushes in about 1%, then holds almost perfectly still to the end."}
+   ]
+  },
+  {
+   "id": "p4-24", "컷": ["24"], "길이": 4,
+   "설명": "스튜디오 — 허리에 손 올리고 눈 감은 유나, 렌즈 앞 유리의 흐린 몸이 7° 돌며 왼쪽으로 빠져 또렷해짐(2.2% 다가감)",
+   "샷": [
+    {"그림": "C24.png", "쓰는초": 0.71, "누구": ["YUNA", "OUTFIT"],
+     "동작": "In the grey studio, waist-up, Yuna stands with one hand on her waist over the belted trench, eyes closed and chin raised, lips closed, expressionless; she holds the pose. The soft blurred shape across the left of the frame is a reflection in a sheet of glass in front of the lens — not another person — and it is there in the first frame.",
+     "카메라": "waist-up, no shake. From 0.08 s to 0.46 s the blurred glass reflection turns about 7° clockwise and slides away out of the left side of the frame, fast at first and slowing, so that she becomes clear and sharp behind it; from 0.17 s to 0.54 s the camera pushes in about 2.2% at an even speed. Then it holds steady to the end."}
+   ]
+  },
+  {
+   "id": "p4-25", "컷": ["25"], "길이": 4,
+   "설명": "흙담 빈집 · 밤 붉은빛 — 흙담 앞 유나(어둡게)와 벽의 긴 그림자 하나, 아래로 7.3% · 반시계 3.1° · 다가감 1.3%",
+   "샷": [
+    {"그림": "C25.png", "쓰는초": 0.88, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Yuna stands still just left of center against the crumbling clay wall, framed from the knees up, lit only by a dim deep-red light; her single long shadow falls large on the wall to her right. She keeps her pose and her gaze as in the first frame, lips closed. The dark shape on the wall is only her shadow — there is no second person.",
+     "카메라": "medium shot, no shake. From 0.17 s to 0.75 s the camera tilts down about 7.3% of the frame height, starting slowly and speeding up (the picture slides up), while the picture turns about 3.1° counter-clockwise and the camera pushes in about 1.3%; then it holds."}
+   ]
+  },
+  {
+   "id": "p4-26", "컷": ["26"], "길이": 4,
+   "설명": "흙담 빈집 · 낮 역광 — 빈 창틀 속 실루엣, 두 팔을 머리 위로(오른쪽 4.5% · 아래로 2.9% · 반시계 2.3°)",
+   "샷": [
+    {"그림": "C26.png", "쓰는초": 1.83, "누구": ["OUTFIT"],
+     "동작": "Inside the roofless clay ruin, seen from low among dry grass: the woman stands right inside a large empty window opening as a pure black silhouette against the bright white sky, both arms raised above her head with her hands on the top of the frame, her long hair hanging loose and the long outline of the trench clear; the low sun flares just behind her legs at the bottom of the opening. She sways very slightly with her arms still raised; her face is never visible and she stays a silhouette.",
+     "카메라": "full shot, smooth, no shake. From 0.38 s to 1.5 s the camera drifts about 4.5% of the frame width to the right at an even speed, while it also moves down about 2.9% of the frame height and the picture turns about 2.3° counter-clockwise, the turn speeding up toward the end; after that it keeps drifting gently the same way."}
+   ]
+  },
+  {
+   "id": "p4-27", "컷": ["27"], "길이": 4,
+   "설명": "흙담 마당 · 낮 — 흙길을 딛는 갈색 앵클부츠와 와이드 바지 자락, 부츠가 어둠으로 나아감(3.8% 다가감)",
+   "샷": [
+    {"그림": "C27.png", "쓰는초": 1.09, "누구": ["BOOT"],
+     "동작": "Ground-level close-up on the dry dirt path of the yard: her brown leather ankle boot, with the hem of her ivory wide-leg trousers just above it, presses into the dirt and then carries on forward, the toe leading toward the left of the frame into the dark shadow. Only the boot, the trouser hem and the ground are seen — nothing else.",
+     "카메라": "ground-level close-up, no shake. From 0.21 s to 1.0 s the camera pushes in about 3.8%, starting slowly and speeding up, while it drifts about 1.9% to the left and the picture turns about 1.5° counter-clockwise; then it holds."}
+   ]
+  },
+  {
+   "id": "p4-28-29", "컷": ["28", "29"], "길이": 5, "자르는초": 2.3, "낱판": ["p4-28", "p4-29"],
+   "설명": "스튜디오 — 허리 앞에 가방을 든 두 손(목 아래) → 트렌치 안감 극접사(두 샷 묶음)",
+   "샷": [
+    {"그림": "C28.png", "쓰는초": 1.62, "누구": ["OUTFIT"],
+     "동작": "In the grey studio, framed from her neck down past the hips, the woman holds the small brown leather bag in front of her waist with both hands, the belted ivory trench and cream knit behind it, her long dark hair falling over one shoulder. She stands still and holds the bag steady; the top edge of the frame stays at her neck — her face never comes into view.",
+     "카메라": "from 0.21 s to 1.33 s the camera pushes in about 6.5% at an even speed while rising slightly, about 1.6% of the frame height; no shake."},
+    {"그림": "C29.png", "쓰는초": 1.05, "누구": ["LINING"],
+     "동작": "An extreme close-up of the plain ivory satin lining inside the trench coat: soft folds radiate from the top of the frame, their crests glowing ivory in a low warm side light, the hollows in soft warm-brown shadow. The satin lies still; no hands, no person.",
+     "카메라": "macro. Starting about 0.1 s after the cut, the camera pushes in fast and evenly by about 11.7% over about 0.75 s, and the motion blur grows heavier as it goes, ending in a streaking zoom blur."}
+   ]
+  },
+  {
+   "id": "p4-30", "컷": ["30"], "길이": 4,
+   "설명": "흙담 빈집 · 밤 붉은빛 — 아치 대문 안에서 팔을 벌려 흔드는 유나, 손 카메라 아래로 17.1% · 반시계 9.5° · 왼쪽 3.5%",
+   "샷": [
+    {"그림": "C30.png", "쓰는초": 1.71, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Inside the dark rounded opening of a crumbling clay gateway whose edges glow deep red, Yuna, framed from head to knees, keeps swinging through a slow turn with both arms spread wide — one raised above her shoulder — so the trench hem flares out around her legs. She is mostly in shadow, caught only by the dim red light from below; her face stays calm, lips closed.",
+     "카메라": "handheld, full shot, with a faint handheld tremor (about ±0.12% of the frame) throughout. From 0.21 s to 1.5 s the camera sinks steadily about 17.1% of the frame height (the arch slides up in the picture); from 0.04 s to 1.13 s the picture turns about 9.5° counter-clockwise at an even rate; over the first 0.9 s it also drifts about 3.5% of the frame width to the left. After that it keeps sinking gently to the end."}
+   ]
+  },
+  {
+   "id": "p4-32", "컷": ["32"], "길이": 4,
+   "설명": "흙담 마당 · 밤 붉은빛 — 마른 덤불 속 유나, 0.3초부터 빛이 꺼지며 어둠으로 가라앉음(위로 2.2% · 반시계 3.1°)",
+   "샷": [
+    {"그림": "C32.png", "쓰는초": 0.54, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Among dry bushes in the yard, Yuna stands medium-sized and almost swallowed by darkness, looking toward the camera, lips closed; she stays still while the faint deep-red light on her and the bushes dies away.",
+     "카메라": "medium shot, no shake. From 0.04 s to 0.38 s the camera rises about 2.2% of the frame height and the picture turns about 3.1° counter-clockwise, quick at first and slowing to a stop. From about 0.3 s the light goes out: by about 0.6 s she and the bushes have sunk into near-black, and the frame stays dark to the end."}
+   ]
+  },
+  {
+   "id": "p4-33-34", "컷": ["33", "34"], "길이": 4, "자르는초": 1.0, "낱판": ["p4-33", "p4-34"],
+   "설명": "흙담 빈집 · 밤 붉은빛 — 고개 숙인 옆얼굴 → 붉은 흙담에 기댄 유나(두 샷 묶음)",
+   "샷": [
+    {"그림": "C33.png", "쓰는초": 0.33, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Yuna's bowed profile, chest-up, in red darkness: head bowed, eyes lowered, lips closed, the ivory collar just visible; a warm light from the front-left catches her profile and the edges of her hair, while her clothes and the background fall to black. She stays still.",
+     "카메라": "chest-up. Within the first 0.21 s the camera tilts down about 1.5% at an even speed, then holds almost still."},
+    {"그림": "C34.png", "쓰는초": 1.01, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Yuna leans one shoulder against the crumbling clay wall lit deep red from the side, framed from the thighs up just left of center, one hand in her coat pocket, her face turned toward the camera, calm, lips closed. She stays relaxed and still.",
+     "카메라": "almost perfectly still: starting about 0.1 s after the cut, the camera drifts about 1% of the frame width to the right at an even speed over about half a second, then holds."}
+   ]
+  },
+  {
+   "id": "p4-end", "컷": ["끝"], "길이": 5,
+   "설명": "끝 화면 · 스튜디오 어둡게 — 개버딘 결 극접사, 4.7% 일정하게 다가감(「결채」 글자 · 마지막 어둡게 사라짐은 편집에서)",
+   "샷": [
+    {"그림": "CEND.png", "쓰는초": 3.72, "누구": ["TWILL"],
+     "동작": "An extreme close-up of the ivory wool gabardine twill in warm brown low-key light, a soft fold rising across the frame; a few tiny bright glints catch the light along the ridges where it rakes from the upper right, and the middle of the frame stays calm and dark. The cloth lies still; no hands, no text.",
+     "카메라": "macro with shallow focus, no shake. From 0.38 s to 3.29 s the camera pushes in about 4.7% at a slow, perfectly even speed; no other movement. The light stays the same to the very end — no fade."}
+   ]
+  },
+  {
+   "id": "p4-21b", "컷": ["21"], "길이": 4, "대안": true,
+   "설명": "21 둘째 길 — 끝 그림 없이 끝 구도를 글로만(끝 그림 판이 하드컷이 되면)",
+   "샷": [
+    {"그림": "C21.png", "쓰는초": 1.17, "누구": ["YUNA", "OUTFIT"],
+     "동작": "In the late-afternoon pampas field, Yuna walks steadily to the right along the dirt path in side view at an unhurried pace: the belted trench hem swings, the wide trousers move with each step, her brown boots press into the dirt, and the low sun flares behind her. When her face comes into view it is calm, lips closed, looking ahead.",
+     "카메라": "handheld while walking alongside her, low near the ground and tilted so the horizon slopes. In one unbroken move from 0.08 s to 0.9 s the camera rises about 30.8% of the frame height, pushes in about 11% and moves about 4.8% to the right — fast at first, slowing to a stop — taking the frame from her hips and boots up to her whole figure from the top of her head to mid-shin, walking in side view with the low sun just to the right of her and a soft lens flare; then it walks along with her at that framing to the end, with a light walking bob (about ±0.3% of the frame) throughout. It never cuts and never jumps — the whole figure is reached only by this rising move."}
+   ]
+  },
+  {"id": "p4-28", "컷": ["28"], "길이": 4, "대안": true, "설명": "묶음 대신 — 허리 앞에 가방을 든 두 손(목 아래)",
+   "샷": [{"그림": "C28.png", "쓰는초": 1.62, "누구": ["OUTFIT"],
+     "동작": "In the grey studio, framed from her neck down past the hips, the woman holds the small brown leather bag in front of her waist with both hands, the belted ivory trench and cream knit behind it, her long dark hair falling over one shoulder. She stands still and holds the bag steady; the top edge of the frame stays at her neck — her face never comes into view.",
+     "카메라": "waist-up, no shake. From 0.21 s to 1.33 s the camera pushes in about 6.5% at an even speed while rising slightly, about 1.6% of the frame height; then it keeps the same slow push to the end."}]},
+  {"id": "p4-29", "컷": ["29"], "길이": 4, "대안": true, "설명": "묶음 대신 — 트렌치 안감 극접사, 11.7% 다가가며 움직임 흐림",
+   "샷": [{"그림": "C29.png", "쓰는초": 1.05, "누구": ["LINING"],
+     "동작": "An extreme close-up of the plain ivory satin lining inside the trench coat: soft folds radiate from the top of the frame, their crests glowing ivory in a low warm side light, the hollows in soft warm-brown shadow. The satin lies still; no hands, no person.",
+     "카메라": "macro. From 0.13 s to 0.88 s the camera pushes in fast and evenly by about 11.7%, and the motion blur grows heavier as it goes, ending in a streaking zoom blur."}]},
+  {"id": "p4-33", "컷": ["33"], "길이": 4, "대안": true, "설명": "묶음 대신 — 붉은 어둠 속 고개 숙인 옆얼굴",
+   "샷": [{"그림": "C33.png", "쓰는초": 0.33, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Yuna's bowed profile, chest-up, in red darkness: head bowed, eyes lowered, lips closed, the ivory collar just visible; a warm light from the front-left catches her profile and the edges of her hair, while her clothes and the background fall to black. She stays still.",
+     "카메라": "chest-up. Within the first 0.21 s the camera tilts down about 1.5% at an even speed, then holds almost still to the end."}]},
+  {"id": "p4-34", "컷": ["34"], "길이": 4, "대안": true, "설명": "묶음 대신 — 붉은 흙담에 기댄 유나(거의 고정)",
+   "샷": [{"그림": "C34.png", "쓰는초": 1.01, "누구": ["YUNA", "OUTFIT"],
+     "동작": "Night. Yuna leans one shoulder against the crumbling clay wall lit deep red from the side, framed from the thighs up just left of center, one hand in her coat pocket, her face turned toward the camera, calm, lips closed. She stays relaxed and still.",
+     "카메라": "almost perfectly still: from 0.13 s to 0.67 s the camera drifts about 1% of the frame width to the right at an even speed, then holds."}]}
+ ]
+}

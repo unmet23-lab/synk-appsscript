@@ -128,11 +128,17 @@ JOBS = [
         "THE SAME ATV PARK, 9:16, exactly as in Image {L}: a close shot from just behind him at standing height — he sits on the red ATV with his back "
         "mostly to the camera, his shoulder and upper arm filling the left side of the picture, and he looks back over his shoulder straight into the "
         "lens. With the fingers of his right hand he has just hooked the plain grey neck gaiter down from his nose to under his chin, so his whole face "
-        "is revealed. In the lower foreground two dark riding helmets rest on the ATV's rear rack; behind him other red ATVs at the right, a dark "
-        "volcanic ridge and blue sky.",
+        "is revealed. In the lower foreground two dark riding helmets rest on the ATV's rear rack; behind him other red ATVs at the right. "
+        # 10-28 시댄스 앞 일관성 검수: 7(초록 오름 · 옅은 하늘) ↔ 8(검은 송이 언덕 · 짙은 하늘)이 같은 순간인데 장소가 달랐다(02_콘티 6절 「시작 그림을 구울 때 맞춘다」)
+        # — 얼굴이 안 보이는 7번 뒷모습 판을 장소 참고로 넣는다(장소 참고에는 그의 얼굴이 든 그림을 넣지 않는다 — 장부 S12)
+        "Image {S} is the wide shot of this same moment from a few steps further back: keep exactly its place and daylight behind him — the same "
+        "dark volcanic-rock gravel ground, the same low black stone wall, the same green grassy oreum ridge and the same soft blue sky with light "
+        "white clouds; only the camera has moved closer to him (the bystanders in Image {S} need not be copied). No lettering, decals or labels on "
+        "clothing, signs or vehicles.",
         "A plain white T-shirt, light beige chino trousers, the plain grey neck gaiter pulled down and bunched under his chin.",
         expression="his eyes look straight into the lens, calm and completely deadpan — lips closed, no smile, as if this is the most normal place to meet again.",
-        angle=True),
+        light="LIGHT: the same bright clear Jeju daylight from the side as in the wide shot, plus a large soft light on his face from the camera side — gentle natural shadows.",
+        angle=True, place=OUT + "C07_g2.png"),
     job("C09",
         "ON A WHITE-SAND BEACH IN JEJU WITH A SMALL GREEN ISLAND OFFSHORE, 9:16, exactly as in Image {L}: seen from standing height looking down a little, "
         "he crouches on the sand in the middle of the picture beside a small child who is building a sand castle in the lower left of the picture (the "
