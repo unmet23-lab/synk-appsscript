@@ -79,7 +79,9 @@
 .tea-result-actions .felt{flex:1}
 .tea-feedback{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .tea-feedback .feedback-options{display:flex;flex-wrap:wrap;gap:6px}
-.tea-unfold.felt{position:absolute;left:50%;bottom:calc(var(--bottom,20px) + 8px);z-index:7;transform:translateX(-50%);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+/* Folded, the walking controls come back at the foot: 「펼치기」 takes the tea slot of the right column (where 「주문 같이 받기」
+   stands — over the talk and seat buttons) at every width, and the hand chip the band above it (screen review F1 · F4 · FA1). */
+.tea-unfold.felt{position:absolute;right:var(--edge,16px);bottom:calc(var(--bottom,20px) + 148px);z-index:7;width:216px;min-height:48px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
 
 /* 머리 위 말풍선 — 손님의 말·되묻기 셋·「네, 알겠어요」, 반응 한마디, 주인의 「제가 해 볼까요?」 */
 .tea-bubbles{position:absolute;inset:0;z-index:8;pointer-events:none}
@@ -112,8 +114,8 @@
 /* Centred between both edges (not left:50% — that shrink-wraps to half the screen, screen review F2). */
 .tea-hand{position:absolute;left:var(--edge,16px);right:var(--edge,16px);bottom:calc(var(--bottom,20px) + 8px);z-index:9;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:fit-content;max-width:calc(100% - 2 * var(--edge,16px));margin-inline:auto;padding:8px 12px;border-radius:28px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 10px 30px rgba(0,0,0,.3);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
 body.tea-mode .tea-hand{bottom:calc(var(--bottom,20px) + 8px + var(--tea-board-h,300px))}
-/* Folded: above 「차 만들기 펼치기」, never over it (screen review F1). */
-body.tea-folded .tea-hand{bottom:calc(var(--bottom,20px) + 64px)}
+/* Folded: over the right column's top (「차 만들기 펼치기」), clear of the joystick, the talk button and the status line. */
+body.tea-folded .tea-hand{bottom:calc(var(--bottom,20px) + 204px)}
 .tea-hand-label{font-size:13.5px;font-weight:var(--wt-label)}
 .tea-hand-actions{display:flex;flex-wrap:wrap;gap:6px}
 .tea-hand-actions .felt{min-height:40px;padding:0 14px;font-size:13.5px}
@@ -131,8 +133,7 @@ body.tea-mode.walk-mode .scene-caption{display:none}
 @media(max-width:1040px){body.tea-mode.walk-mode .walk-joystick,body.tea-mode.walk-mode .walk-interact,body.tea-mode.walk-mode .walk-status,body.tea-mode.walk-mode .walk-help,body.tea-mode.walk-mode .walk-sit{display:none!important}}
 @media(max-width:760px){
   .tea-board{width:calc(100% - 16px);bottom:calc(env(safe-area-inset-bottom) + 8px);padding:10px 10px 12px;gap:8px}
-  /* Folded on a phone the joystick and the talk button come back: 「펼치기」 takes the right column, the chip goes above it (F1·F4). */
-  .tea-unfold.felt{left:auto;right:var(--edge,16px);transform:none;bottom:calc(var(--bottom,20px) + 144px)}
+  .tea-unfold.felt{width:164px;bottom:calc(var(--bottom,20px) + 144px)}
   body.tea-folded .tea-hand{bottom:calc(var(--bottom,20px) + 200px)}
   .tea-make{grid-template-columns:1fr auto;grid-template-areas:"cups stage" "jars jars"}
   .tea-cups{grid-area:cups}.tea-stage{grid-area:stage;width:88px;height:96px}.tea-jars{grid-area:jars;justify-content:space-between}
@@ -146,6 +147,17 @@ body.tea-mode.walk-mode .scene-caption{display:none}
    scene's words run edge to edge: those make room (the W6b · W8 merged screen). A low landscape phone keeps its own bottom row. */
 @media(max-width:599px),(min-width:600px) and (max-width:760px) and (min-height:601px){
   body.walk-mode.tea-entry .walk-status,body.walk-mode.tea-entry .scene-caption,body.walk-mode.tea-folded .walk-status,body.walk-mode.tea-folded .scene-caption{right:calc(var(--edge) + 172px)}
+}
+/* Wider, the scene's words sit centred just under that slot and would reach into it below about 1040px: they narrow to clear it. */
+@media(min-width:761px) and (min-height:601px){
+  body.walk-mode.tea-entry .scene-caption,body.walk-mode.tea-folded .scene-caption{width:min(540px,calc(100% - 400px),calc(100% - 2 * (var(--edge) + 224px)))}
+}
+/* A low landscape screen keeps the map at the top left: the folded chip keeps to the right of it, and its words step aside for
+   the cup's picture (still read out) so it stays under the top bar. */
+@media(max-height:600px) and (min-width:600px){
+  body.tea-folded .tea-hand{flex-wrap:nowrap;margin-inline:auto 0;max-width:calc(100% - 2 * var(--edge,16px) - 200px)}
+  body.tea-folded .tea-hand-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  body.tea-folded .tea-hand-actions{min-width:0}
 }
 @media(max-width:360px){.tea-pick{min-width:52px}.tea-slot{width:46px}}
 

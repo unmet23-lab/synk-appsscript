@@ -7,7 +7,7 @@
 // with caps tea and its order bound to the card; no sound while a microphone is open; no numbers on the board (G2); console
 // errors 0. Captures at 1440 and 390. Samples: every hand sound and one cup's flow, rendered offline from the same scores
 // (day-sfx.mjs) as MP3 for Yuho's ear check, with their peak, K-weighted momentary loudness and length.
-//   node experiences/synk-town/qa-tea-ui.cjs [--out <dir>] [--only order,simple,pad,card,one-cup,one-cup-simple,mic,samples]
+//   node experiences/synk-town/qa-tea-ui.cjs [--out <dir>] [--only order,simple,pad,card,one-cup,one-cup-simple,fold-widths,mic,samples]
 const fs = require('node:fs'), path = require('node:path'), { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -17,7 +17,9 @@ const only = arg('--only', '') ? new Set(arg('--only', '').split(',')) : null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const kst = (date, time) => Date.parse(`${date}T${time}:00+09:00`);
 const MIN = 60000, HOUR = 60 * MIN;
-const DEVICES = { desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 }, phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' } };
+const DEVICES = { desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 }, phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' },
+  tablet: { viewport: { width: 768, height: 1024 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, landscape: { viewport: { width: 844, height: 390 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
+  'landscape-small': { viewport: { width: 667, height: 375 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } };
 const known404 = /avatar-textiles-v1/;
 const report = { started: new Date().toISOString(), scenes: {}, failures: [] };
 const check = (scene, ok, what, detail) => { (report.scenes[scene] ||= { checks: [] }).checks.push({ ok: !!ok, what, ...(detail === undefined ? {} : { detail }) }); if (!ok) report.failures.push(`${scene}: ${what}${detail === undefined ? '' : ` — ${JSON.stringify(detail)}`}`); };
@@ -371,6 +373,32 @@ async function oneCupScene(browser, { simple = false } = {}) {
   } finally { await f.close(); }
 }
 
+/** Folded with a cup in hand where the walking controls come back with less room — a tablet upright (the band up to 1040px
+ * where an open board hides them, screen re-review FA1) and low landscape phones: 「펼치기」 in the right column's tea slot and the
+ * chip above it lie over none of the joystick, the talk and seat buttons, the status line, the map or the top bar; T opens it. */
+async function foldScene(browser) {
+  const scene = 'fold-widths';
+  for (const device of ['tablet', 'landscape', 'landscape-small']) {
+    const f = await fixture(kst('2026-10-28', '13:00'));
+    const s = await open(browser, f, { device, init: () => { try { localStorage.setItem('synk.world.town-tea-simple', 'false'); } catch {} } });
+    try {
+      const { page } = s, size = `${DEVICES[device].viewport.width}x${DEVICES[device].viewport.height}`;
+      await startOrder(page, `${scene}`);
+      for (const slot of ['a', 'b']) { await page.locator(`.tea-bubble[data-slot="${slot}"]`).getByRole('button', { name: '네, 알겠어요' }).click(); await delay(350); }
+      await waitTea(page, () => SYNKTownDay.metrics().tea.phase === 'make');
+      await makeWithKeys(page, { vessel: 'warm', tea: 'yuzu', honey: 1 }); await page.keyboard.press('6'); await delay(300);
+      await page.keyboard.press('Escape'); await delay(500);
+      const m = await tea(page), around = [...HUD_FOOT, '.walk-sit', '#town-map', '.topbar .brand', '#journal-open', '#settings-open', '#camera-toggle'];
+      const over = { unfold: await clashes(page, '.tea-unfold', around), chip: await clashes(page, '#tea-hand', around) };
+      check(scene, m.folded && m.chip && !over.unfold.length && !over.chip.length, `${size} — 잔을 든 채 접은 「펼치기」 · 손 칩이 걷기 조작 · 상태 줄 · 지도 · 위쪽 막대와 겹치지 않는다`, { folded: m.folded, chip: m.chip, over });
+      await shot(page, `tea-folded-${size}`);
+      await page.keyboard.press('t'); await delay(400);
+      check(scene, !(await tea(page)).folded, `${size} — T로 판이 다시 열린다`);
+      check(scene, s.errors.length === 0, `${size} — 콘솔 오류 0`, s.errors);
+    } finally { await s.close(); await f.close(); }
+  }
+}
+
 /** No hand sound while a microphone is open in this origin (WORLD's recording keeps synk.world.mic fresh). */
 async function micScene(browser) {
   const scene = 'mic', f = await fixture(kst('2026-10-28', '13:00'));
@@ -441,7 +469,7 @@ async function samplesScene(browser) {
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
-  const scenes = { order: orderScene, simple: simpleScene, pad: padScene, card: cardScene, 'one-cup': oneCupScene, 'one-cup-simple': b => oneCupScene(b, { simple: true }), mic: micScene, samples: samplesScene };
+  const scenes = { order: orderScene, simple: simpleScene, pad: padScene, card: cardScene, 'one-cup': oneCupScene, 'one-cup-simple': b => oneCupScene(b, { simple: true }), 'fold-widths': foldScene, mic: micScene, samples: samplesScene };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;
