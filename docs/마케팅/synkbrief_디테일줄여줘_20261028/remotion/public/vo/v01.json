@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "에이아이 포스터가 이렇게 복잡할 땐, 한 줄이면 이렇게 돼요.",
+ "show": "AI 포스터가 이렇게 복잡할 땐, 한 줄이면 이렇게 돼요.",
+ "dur": 3.17,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.306
+  },
+  {
+   "text": "포스터가",
+   "start": 0.351,
+   "end": 0.698
+  },
+  {
+   "text": "이렇게",
+   "start": 0.744,
+   "end": 0.955
+  },
+  {
+   "text": "복잡할",
+   "start": 1,
+   "end": 1.407
+  },
+  {
+   "text": "땐,",
+   "start": 1.452,
+   "end": 1.664
+  },
+  {
+   "text": "한",
+   "start": 1.965,
+   "end": 2.071
+  },
+  {
+   "text": "줄이면",
+   "start": 2.116,
+   "end": 2.403
+  },
+  {
+   "text": "이렇게",
+   "start": 2.448,
+   "end": 2.674
+  },
+  {
+   "text": "돼요.",
+   "start": 2.719,
+   "end": 3.17
+  }
+ ],
+ "source": {
+  "key": "7b4e2006e54aa5aed13346537a530809",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

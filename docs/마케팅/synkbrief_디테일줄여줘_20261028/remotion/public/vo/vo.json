@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018,
+  "lufs": -17
+ },
+ "made": "2026-10-27T22:52:32.446Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "에이아이 포스터가 이렇게 복잡할 땐, 한 줄이면 이렇게 돼요.",
+   "show": "AI 포스터가 이렇게 복잡할 땐, 한 줄이면 이렇게 돼요.",
+   "scene": "1 훅",
+   "dur": 3.17,
+   "syllablesPerSec": 7.57,
+   "src": "v01.wav",
+   "key": "7b4e2006e54aa5aed13346537a530809",
+   "words": 9
+  },
+  {
+   "id": "v02",
+   "text": "챗지피티가 만든 포스터에, 같은 대화로 이 한 줄만 보냈어요. 디테일 줄여 줘.",
+   "show": "ChatGPT가 만든 포스터에, 같은 대화로 이 한 줄만 보냈어요. 디테일 줄여 줘.",
+   "scene": "2 한 줄 — v4부터 쓰지 않음",
+   "dur": 4.179,
+   "syllablesPerSec": 7.18,
+   "src": "v02.wav",
+   "key": "ea4e5aa0da08509776901b68d9426f2e",
+   "words": 12
+  },
+  {
+   "id": "v03",
+   "text": "글씨는 열한 군데에서 세 군데로, 잔 하나가 딱 보여요.",
+   "show": "글씨는 열한 군데에서 세 군데로, 잔 하나가 딱 보여요.",
+   "scene": "3 견줌",
+   "dur": 3.121,
+   "syllablesPerSec": 6.73,
+   "src": "v03.wav",
+   "key": "217131ad6932aa76acb073cdc5f0f541",
+   "words": 9
+  },
+  {
+   "id": "v04",
+   "text": "에이아이 그림이 너무 복잡하면, 디테일 줄여 줘. 이 한 줄이에요.",
+   "show": "AI 그림이 너무 복잡하면, 디테일 줄여 줘. 이 한 줄이에요.",
+   "scene": "4 정리(v2 — 1018 판이 「줄여져」로 들려 씨앗만 바꿈) — v4부터 쓰지 않음",
+   "dur": 3.324,
+   "syllablesPerSec": 7.52,
+   "src": "v04.wav",
+   "key": "5539e4aa8609ff61754e8e7cd80aaa57",
+   "words": 10
+  },
+  {
+   "id": "v05",
+   "text": "여러분 가게엔, 어느 쪽이 더 어울려요?",
+   "show": "여러분 가게엔, 어느 쪽이 더 어울려요?",
+   "scene": "5 끝(v1 — 쓰지 않음)",
+   "dur": 2.064,
+   "syllablesPerSec": 7.27,
+   "src": "v05.wav",
+   "key": "2e4cd2a9be97b983ba386ee9cd888c00",
+   "words": 6
+  },
+  {
+   "id": "v06",
+   "text": "여러분은 처음이랑 한 줄 뒤, 어느 쪽이 좋아요?",
+   "show": "여러분은 처음이랑 한 줄 뒤, 어느 쪽이 좋아요?",
+   "scene": "5 끝(v2 — 「가게엔」이 갑작스럽다는 이해 시험 v1 지적) — v4부터 쓰지 않음",
+   "dur": 2.393,
+   "syllablesPerSec": 7.52,
+   "src": "v06.wav",
+   "key": "c0af90f12a388e5e00e0811d6c9b3e08",
+   "words": 8
+  },
+  {
+   "id": "v07",
+   "text": "같은 대화에 이 한 줄만 보냈어요. 디테일 줄여 줘.",
+   "show": "같은 대화에 이 한 줄만 보냈어요. 디테일 줄여 줘.",
+   "scene": "2 한 줄(v4 — 이해 시험 v3 「4~8초 지루」로 줄임)",
+   "dur": 2.861,
+   "syllablesPerSec": 6.64,
+   "src": "v07.wav",
+   "key": "ea0a0921ffd5c5ddb9d6ff551983709d",
+   "words": 9
+  },
+  {
+   "id": "v08",
+   "text": "에이아이 그림이 너무 복잡하면, 디테일 줄여 줘.",
+   "show": "AI 그림이 너무 복잡하면, 디테일 줄여 줘.",
+   "scene": "4 정리(v4 — 「13초 뒤 같은 말 반복」으로 줄임)",
+   "dur": 2.611,
+   "syllablesPerSec": 7.28,
+   "src": "v08.wav",
+   "key": "add0bd1a5b972bbb4761822ee532ddab",
+   "words": 7
+  },
+  {
+   "id": "v09",
+   "text": "여러분은 어느 포스터가 더 좋아요?",
+   "show": "여러분은 어느 포스터가 더 좋아요?",
+   "scene": "5 끝(v4 — 「처음 · 한 줄 뒤」가 모호하다는 지적)",
+   "dur": 1.674,
+   "syllablesPerSec": 8.36,
+   "src": "v09.wav",
+   "key": "b2fec93796a81b3bec155bfd75a62ff7",
+   "words": 5
+  }
+ ]
+}

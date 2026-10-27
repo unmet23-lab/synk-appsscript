@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v07",
+ "text": "같은 대화에 이 한 줄만 보냈어요. 디테일 줄여 줘.",
+ "show": "같은 대화에 이 한 줄만 보냈어요. 디테일 줄여 줘.",
+ "dur": 2.861,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.273
+  },
+  {
+   "text": "대화에",
+   "start": 0.32,
+   "end": 0.605
+  },
+  {
+   "text": "이",
+   "start": 0.7,
+   "end": 0.716
+  },
+  {
+   "text": "한",
+   "start": 0.763,
+   "end": 0.858
+  },
+  {
+   "text": "줄만",
+   "start": 0.906,
+   "end": 1.112
+  },
+  {
+   "text": "보냈어요.",
+   "start": 1.159,
+   "end": 1.555
+  },
+  {
+   "text": "디테일",
+   "start": 1.982,
+   "end": 2.299
+  },
+  {
+   "text": "줄여",
+   "start": 2.346,
+   "end": 2.52
+  },
+  {
+   "text": "줘.",
+   "start": 2.568,
+   "end": 2.861
+  }
+ ],
+ "source": {
+  "key": "ea0a0921ffd5c5ddb9d6ff551983709d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

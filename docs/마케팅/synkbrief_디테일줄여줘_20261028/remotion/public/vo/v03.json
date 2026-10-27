@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "글씨는 열한 군데에서 세 군데로, 잔 하나가 딱 보여요.",
+ "show": "글씨는 열한 군데에서 세 군데로, 잔 하나가 딱 보여요.",
+ "dur": 3.121,
+ "words": [
+  {
+   "text": "글씨는",
+   "start": 0.03,
+   "end": 0.376
+  },
+  {
+   "text": "열한",
+   "start": 0.421,
+   "end": 0.601
+  },
+  {
+   "text": "군데에서",
+   "start": 0.646,
+   "end": 1.022
+  },
+  {
+   "text": "세",
+   "start": 1.067,
+   "end": 1.157
+  },
+  {
+   "text": "군데로,",
+   "start": 1.202,
+   "end": 1.502
+  },
+  {
+   "text": "잔",
+   "start": 1.983,
+   "end": 2.103
+  },
+  {
+   "text": "하나가",
+   "start": 2.148,
+   "end": 2.389
+  },
+  {
+   "text": "딱",
+   "start": 2.434,
+   "end": 2.569
+  },
+  {
+   "text": "보여요.",
+   "start": 2.614,
+   "end": 3.121
+  }
+ ],
+ "source": {
+  "key": "217131ad6932aa76acb073cdc5f0f541",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}
