@@ -1,0 +1,312 @@
+{
+ "G": {
+  "rows": [
+   {
+    "f": "t001.jpg",
+    "ms": 1509,
+    "tag": "empty"
+   },
+   {
+    "f": "t002.jpg",
+    "ms": 1851,
+    "tag": "type"
+   },
+   {
+    "f": "t003.jpg",
+    "ms": 3021,
+    "tag": "type"
+   },
+   {
+    "f": "t004.jpg",
+    "ms": 3156,
+    "tag": "type"
+   },
+   {
+    "f": "t005.jpg",
+    "ms": 3329,
+    "tag": "type"
+   },
+   {
+    "f": "t006.jpg",
+    "ms": 3504,
+    "tag": "type"
+   },
+   {
+    "f": "t007.jpg",
+    "ms": 3658,
+    "tag": "type"
+   },
+   {
+    "f": "t008.jpg",
+    "ms": 3868,
+    "tag": "type"
+   },
+   {
+    "f": "t009.jpg",
+    "ms": 4090,
+    "tag": "type"
+   },
+   {
+    "f": "t010.jpg",
+    "ms": 4299,
+    "tag": "type"
+   },
+   {
+    "f": "t011.jpg",
+    "ms": 4497,
+    "tag": "type"
+   },
+   {
+    "f": "t012.jpg",
+    "ms": 4667,
+    "tag": "type"
+   },
+   {
+    "f": "t013.jpg",
+    "ms": 4863,
+    "tag": "type"
+   },
+   {
+    "f": "t014.jpg",
+    "ms": 5035,
+    "tag": "type"
+   },
+   {
+    "f": "t015.jpg",
+    "ms": 5182,
+    "tag": "type"
+   },
+   {
+    "f": "t016.jpg",
+    "ms": 5346,
+    "tag": "type"
+   },
+   {
+    "f": "t017.jpg",
+    "ms": 6558,
+    "tag": "type"
+   },
+   {
+    "f": "t018.jpg",
+    "ms": 6734,
+    "tag": "type"
+   },
+   {
+    "f": "t019.jpg",
+    "ms": 6885,
+    "tag": "type"
+   },
+   {
+    "f": "t020.jpg",
+    "ms": 7056,
+    "tag": "type"
+   },
+   {
+    "f": "t021.jpg",
+    "ms": 7223,
+    "tag": "type"
+   },
+   {
+    "f": "t022.jpg",
+    "ms": 7353,
+    "tag": "type"
+   },
+   {
+    "f": "t023.jpg",
+    "ms": 7466,
+    "tag": "type"
+   },
+   {
+    "f": "t024.jpg",
+    "ms": 7617,
+    "tag": "type"
+   },
+   {
+    "f": "t025.jpg",
+    "ms": 7762,
+    "tag": "type"
+   },
+   {
+    "f": "t026.jpg",
+    "ms": 7896,
+    "tag": "type"
+   },
+   {
+    "f": "t027.jpg",
+    "ms": 8053,
+    "tag": "type"
+   },
+   {
+    "f": "t028.jpg",
+    "ms": 8210,
+    "tag": "type"
+   },
+   {
+    "f": "t029.jpg",
+    "ms": 8368,
+    "tag": "type"
+   },
+   {
+    "f": "t030.jpg",
+    "ms": 8523,
+    "tag": "type"
+   },
+   {
+    "f": "t031.jpg",
+    "ms": 8684,
+    "tag": "type"
+   },
+   {
+    "f": "t032.jpg",
+    "ms": 8888,
+    "tag": "type"
+   },
+   {
+    "f": "t033.jpg",
+    "ms": 9026,
+    "tag": "type"
+   },
+   {
+    "f": "t034.jpg",
+    "ms": 9157,
+    "tag": "type"
+   },
+   {
+    "f": "t035.jpg",
+    "ms": 9710,
+    "tag": "typed"
+   },
+   {
+    "tag": "sent",
+    "ms": 10348
+   },
+   {
+    "f": "g036.jpg",
+    "ms": 11970,
+    "tag": "gen"
+   },
+   {
+    "f": "g038.jpg",
+    "ms": 14517,
+    "tag": "gen"
+   },
+   {
+    "f": "g040.jpg",
+    "ms": 17801,
+    "tag": "gen"
+   },
+   {
+    "f": "g042.jpg",
+    "ms": 18009,
+    "tag": "gen"
+   },
+   {
+    "f": "g044.jpg",
+    "ms": 18195,
+    "tag": "gen"
+   },
+   {
+    "f": "g046.jpg",
+    "ms": 21545,
+    "tag": "gen"
+   },
+   {
+    "f": "g048.jpg",
+    "ms": 23971,
+    "tag": "gen"
+   },
+   {
+    "f": "g050.jpg",
+    "ms": 24390,
+    "tag": "gen"
+   },
+   {
+    "f": "g052.jpg",
+    "ms": 24649,
+    "tag": "gen"
+   },
+   {
+    "f": "g053.jpg",
+    "ms": 24979,
+    "tag": "gen"
+   },
+   {
+    "f": "g054.jpg",
+    "ms": 25110,
+    "tag": "gen"
+   },
+   {
+    "f": "g055.jpg",
+    "ms": 25245,
+    "tag": "gen"
+   },
+   {
+    "f": "전체.jpg",
+    "ms": 25624,
+    "tag": "final"
+   }
+  ],
+  "crop": {
+   "type": [
+    0,
+    4700,
+    1080,
+    5526
+   ],
+   "gen": [
+    0,
+    0,
+    1080,
+    1500
+   ],
+   "all": [
+    0,
+    0,
+    1080,
+    3300
+   ]
+  }
+ },
+ "X": {
+  "rows": [
+   {
+    "f": "x01.jpg",
+    "tag": "before"
+   },
+   {
+    "f": "x02.jpg",
+    "tag": "paste-B"
+   },
+   {
+    "f": "x03.jpg",
+    "tag": "paste-C"
+   },
+   {
+    "f": "x04.jpg",
+    "tag": "paste-D"
+   },
+   {
+    "f": "x05.jpg",
+    "tag": "sel-row"
+   },
+   {
+    "f": "x06.jpg",
+    "tag": "fill"
+   },
+   {
+    "f": "x07.jpg",
+    "tag": "clean"
+   }
+  ],
+  "size": [
+   1080,
+   758
+  ],
+  "crop": [
+   12,
+   328,
+   1530,
+   1394
+  ]
+ }
+}

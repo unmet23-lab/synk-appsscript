@@ -1,0 +1,58 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "바로 옆 칸에 하나씩 붙여 넣고,",
+ "show": "바로 옆 칸에 하나씩 붙여 넣고,",
+ "dur": 1.641,
+ "words": [
+  {
+   "text": "바로",
+   "start": 0.02,
+   "end": 0.208
+  },
+  {
+   "text": "옆",
+   "start": 0.252,
+   "end": 0.353
+  },
+  {
+   "text": "칸에",
+   "start": 0.397,
+   "end": 0.585
+  },
+  {
+   "text": "하나씩",
+   "start": 0.629,
+   "end": 0.905
+  },
+  {
+   "text": "붙여",
+   "start": 0.948,
+   "end": 1.122
+  },
+  {
+   "text": "넣고,",
+   "start": 1.166,
+   "end": 1.641
+  }
+ ],
+ "source": {
+  "key": "5a589a056b7acc6d1d24570bb777196b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

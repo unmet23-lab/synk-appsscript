@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v05",
+ "text": "아래로 끌어 내리면, 주문 전부가 세 칸으로 나뉩니다.",
+ "show": "아래로 끌어 내리면, 주문 전부가 세 칸으로 나뉩니다.",
+ "dur": 2.689,
+ "words": [
+  {
+   "text": "아래로",
+   "start": 0.02,
+   "end": 0.245
+  },
+  {
+   "text": "끌어",
+   "start": 0.29,
+   "end": 0.469
+  },
+  {
+   "text": "내리면,",
+   "start": 0.514,
+   "end": 0.888
+  },
+  {
+   "text": "주문",
+   "start": 1.022,
+   "end": 1.262
+  },
+  {
+   "text": "전부가",
+   "start": 1.307,
+   "end": 1.606
+  },
+  {
+   "text": "세",
+   "start": 1.71,
+   "end": 1.8
+  },
+  {
+   "text": "칸으로",
+   "start": 1.86,
+   "end": 2.099
+  },
+  {
+   "text": "나뉩니다.",
+   "start": 2.144,
+   "end": 2.689
+  }
+ ],
+ "source": {
+  "key": "049c1bfbf2642a13b3aa14dc01b06ebe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

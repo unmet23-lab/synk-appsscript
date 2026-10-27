@@ -340,7 +340,7 @@
 - 다시 확인: 가로 직선 하나에 필터를 건 정지컷에서 획 굵기가 strokeWidth대로 보인다.
 
 ### 다른 편 `node_modules`에 연결(junction)하면 그 편도 연결이라 끝이 빈 폴더일 수 있다 — `.bin\remotion.cmd`가 있는 실제 폴더에 건다 (2026-10-24 Claude)
-- 증상: 10-24 yuhobuilds 스킬 편에서 멈춘시간재기 편의 `node_modules`에 연결을 걸었더니 `npx remotion render`가 「npm error could not determine executable to run」로 1초 만에 끝났다. 10-27에는 예전에 잘 돌던 편(yuhobuilds 전기요금)에서 같은 오류가 났다 — 그 편이 걸어 둔 끝(yuhobuilds_세션공유4기가)의 `node_modules`가 10-27 아침에 `@esbuild` · `@remotion` · `@rspack` 세 폴더만 남은 채 비워져 있었다(자고일어나면영상 · AI화면한줄 편도 같은 곳에 걸려 있다).
+- 증상: 10-24 yuhobuilds 스킬 편에서 멈춘시간재기 편의 `node_modules`에 연결을 걸었더니 `npx remotion render`가 「npm error could not determine executable to run」로 1초 만에 끝났다. 10-27에는 예전에 잘 돌던 편(yuhobuilds 전기요금)에서 같은 오류가 났다 — 그 편이 걸어 둔 끝(yuhobuilds_세션공유4기가)의 `node_modules`가 10-27 아침에 `@esbuild` · `@remotion` · `@rspack` 세 폴더만 남은 채 비워져 있었다(자고일어나면영상 · AI화면한줄 편도 같은 곳에 걸려 있다). synkbrief 본보기 편(AI질문전후_20261024)도 같은 끝에 걸려 있어, 그 편을 복사한 10-27 B10이 연결째 따라와 `node_modules\remotion\package.json`이 없었다(10-27 Claude).
 - 원인: 그 편의 `node_modules`부터가 자동DM말투 편으로 가는 연결이었고, 끝 폴더는 비어 있었다(끝난 편의 node_modules는 공간 지킴이가 지운다). 연결의 연결이 빈 자리를 가리켰다. 실제 폴더에 건 연결도 그 편이 끝나 비워지면 같이 끊긴다.
 - 고침: 내 연결만 끊고(PowerShell `[System.IO.Directory]::Delete(<연결>)` — 안쪽은 안 지운다) 실제 폴더가 있는 편(10-24는 yuhobuilds_세션공유4기가, 10-27은 LAB_처음쓰는ㄹ_20261024 — 4.0.535)에 다시 걸었다.
 - 다시 확인: 걸 곳의 `(Get-Item <편>\remotion\node_modules -Force).LinkType`이 비어 있고 `Test-Path <편>\remotion\node_modules\.bin\remotion.cmd`가 True다. 렌더 전에 내 편의 `Test-Path remotion\node_modules\.bin\remotion.cmd`부터 본다(어제 돌던 연결도 오늘 끊겨 있을 수 있다).

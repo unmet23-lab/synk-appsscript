@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018,
+  "lufs": -17
+ },
+ "made": "2026-10-27T05:56:01.879Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "엑셀 한 칸에 여러 개가 몰려 있으면, 에이아이한테 나누는 수식을 달라고 하세요.",
+   "show": "엑셀 한 칸에 여러 개가 몰려 있으면, AI한테 나누는 수식을 달라고 하세요.",
+   "scene": "1 훅",
+   "dur": 3.922,
+   "syllablesPerSec": 8.16,
+   "src": "v01.wav",
+   "key": "ca7f1e689c1b1c1e3569ebbd06786029",
+   "words": 12
+  },
+  {
+   "id": "v02",
+   "text": "이렇게요. 세 칸으로 나누는 엑셀 수식 줘. 옛날 엑셀에서도 되게. 그래야 어느 엑셀에서나 돼요.",
+   "show": "이렇게요. 「세 칸으로 나누는 엑셀 수식 줘. 옛날 엑셀에서도 되게.」 그래야 어느 엑셀에서나 돼요.",
+   "scene": "2 묻기",
+   "dur": 5.515,
+   "syllablesPerSec": 6.71,
+   "src": "v02.wav",
+   "key": "2c9c335ae2c11e369e05d5178b7254a0",
+   "words": 14
+  },
+  {
+   "id": "v03",
+   "text": "칸마다 넣을 수식이 하나씩 나와요. 몰라도 돼요, 복사만 하세요.",
+   "show": "칸마다 넣을 수식이 하나씩 나와요. 몰라도 돼요, 복사만 하세요.",
+   "scene": "3 답",
+   "dur": 3.633,
+   "syllablesPerSec": 6.88,
+   "src": "v03.wav",
+   "key": "693fc3b4859364e16f7b2356ec122cbf",
+   "words": 9
+  },
+  {
+   "id": "v04",
+   "text": "바로 옆 칸에 하나씩 붙여 넣고,",
+   "show": "바로 옆 칸에 하나씩 붙여 넣고,",
+   "scene": "4 붙이기",
+   "dur": 1.641,
+   "syllablesPerSec": 7.31,
+   "src": "v04.wav",
+   "key": "5a589a056b7acc6d1d24570bb777196b",
+   "words": 6
+  },
+  {
+   "id": "v05",
+   "text": "아래로 끌어 내리면, 주문 전부가 세 칸으로 나뉩니다.",
+   "show": "아래로 끌어 내리면, 주문 전부가 세 칸으로 나뉩니다.",
+   "scene": "5 채우기",
+   "dur": 2.689,
+   "syllablesPerSec": 7.81,
+   "src": "v05.wav",
+   "key": "049c1bfbf2642a13b3aa14dc01b06ebe",
+   "words": 8
+  },
+  {
+   "id": "v06",
+   "text": "엑셀에서 또 귀찮은 거 있으면, 댓글로 알려 주세요.",
+   "show": "엑셀에서 또 귀찮은 거 있으면, 댓글로 알려 주세요.",
+   "scene": "6 끝",
+   "dur": 2.66,
+   "syllablesPerSec": 7.52,
+   "src": "v06.wav",
+   "key": "7d96110a346471442d77152875eb67f9",
+   "words": 8
+  }
+ ]
+}

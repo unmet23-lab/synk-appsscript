@@ -1,0 +1,68 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v06",
+ "text": "엑셀에서 또 귀찮은 거 있으면, 댓글로 알려 주세요.",
+ "show": "엑셀에서 또 귀찮은 거 있으면, 댓글로 알려 주세요.",
+ "dur": 2.66,
+ "words": [
+  {
+   "text": "엑셀에서",
+   "start": 0.02,
+   "end": 0.369
+  },
+  {
+   "text": "또",
+   "start": 0.423,
+   "end": 0.49
+  },
+  {
+   "text": "귀찮은",
+   "start": 0.557,
+   "end": 0.865
+  },
+  {
+   "text": "거",
+   "start": 0.906,
+   "end": 0.946
+  },
+  {
+   "text": "있으면,",
+   "start": 0.986,
+   "end": 1.335
+  },
+  {
+   "text": "댓글로",
+   "start": 1.67,
+   "end": 2.006
+  },
+  {
+   "text": "알려",
+   "start": 2.046,
+   "end": 2.193
+  },
+  {
+   "text": "주세요.",
+   "start": 2.234,
+   "end": 2.66
+  }
+ ],
+ "source": {
+  "key": "7d96110a346471442d77152875eb67f9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

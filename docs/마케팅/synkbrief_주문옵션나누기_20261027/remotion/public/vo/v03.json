@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "칸마다 넣을 수식이 하나씩 나와요. 몰라도 돼요, 복사만 하세요.",
+ "show": "칸마다 넣을 수식이 하나씩 나와요. 몰라도 돼요, 복사만 하세요.",
+ "dur": 3.633,
+ "words": [
+  {
+   "text": "칸마다",
+   "start": 0.02,
+   "end": 0.352
+  },
+  {
+   "text": "넣을",
+   "start": 0.402,
+   "end": 0.551
+  },
+  {
+   "text": "수식이",
+   "start": 0.601,
+   "end": 0.85
+  },
+  {
+   "text": "하나씩",
+   "start": 0.9,
+   "end": 1.165
+  },
+  {
+   "text": "나와요.",
+   "start": 1.215,
+   "end": 1.514
+  },
+  {
+   "text": "몰라도",
+   "start": 1.912,
+   "end": 2.161
+  },
+  {
+   "text": "돼요,",
+   "start": 2.21,
+   "end": 2.41
+  },
+  {
+   "text": "복사만",
+   "start": 2.858,
+   "end": 3.189
+  },
+  {
+   "text": "하세요.",
+   "start": 3.256,
+   "end": 3.633
+  }
+ ],
+ "source": {
+  "key": "693fc3b4859364e16f7b2356ec122cbf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}
