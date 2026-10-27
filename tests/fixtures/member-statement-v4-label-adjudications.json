@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "scope": "Developer-adjudicated disclosed synthetic regression; not a new holdout score or an actual user's preference.",
+  "source": "member-statement-v4-disclosed-evaluation.json",
+  "sourceSha256": "98051afef660401b2107d404b37eb7e4924993662a46c7901abfd87813efcd12",
+  "originalLabelsUnchanged": true,
+  "cases": [
+    {
+      "id": "H04",
+      "reason": "Disliking written-only communication does not establish disliking written communication itself. Preserve the exclusivity boundary and ask for confirmation.",
+      "readings": [
+        { "mode": "clarify", "expect": [] }
+      ]
+    },
+    {
+      "id": "H30",
+      "reason": "The initial teamwork condition can cover both coordinated clauses or just the first. Both readings are linguistically admissible here; no actual user's scope is adjudicated. The first preference must remain teamwork-scoped and neither field nor polarity may change.",
+      "readings": [
+        {
+          "mode": "direct",
+          "expect": [["communication", "written", "prefer", "teamwork"], ["explanation", "brief", "prefer", "teamwork"]]
+        },
+        {
+          "mode": "direct",
+          "expect": [["communication", "written", "prefer", "teamwork"], ["explanation", "brief", "prefer", null]]
+        }
+      ]
+    }
+  ]
+}

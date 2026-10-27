@@ -1,10 +1,18 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
-// The 0.4.0 installed source lives only in a git-ignored 10-09 candidate folder, gone from this PC since before the 10-17 laptop move.
-// Only the reproduction needs it; the current-source cases below always run (docs/현장노트/시험_화면확인.md).
-const originalFile='C:/Users/q1212/Documents/SYNK-appsscript/desktop/artifacts/platform-convenience-candidate-2026-10-09T12-10-17-238Z/src/auth-service.cjs';
-const originalMissing=!fs.existsSync(originalFile)&&'git-ignored 10-09 installed source is not on this PC: '+originalFile;
-const loadOriginal=()=>{assert.equal(crypto.createHash('sha256').update(fs.readFileSync(originalFile)).digest('hex'),'d2b97ccdb468fce8ecc26ebc44d88a9f2f996c3e1fb9d989b9a3ae28509a1ffd');return require(originalFile).createAuthService;};
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+// The exact 10-09 installed source is unavailable. Reproduce the same defect
+// using the immutable tracked predecessor, with all five original dependencies.
+// This proves the old failure, not byte identity with the missing installation.
+const historical=path.join(__dirname,'fixtures/native-logout-pre-fix');
+const sourceHash=bytes=>crypto.createHash('sha256').update(bytes.toString().replace(/\r\n/g,'\n')).digest('hex');
+const loadOriginal=()=>{
+ const bytes=fs.readFileSync(path.join(historical,'manifest.json'));
+ assert.equal(sourceHash(bytes),'1f46e4d7ee396f7392b2b115b8c0d20ce646297a74e210af60dcf64521e5e13b');
+ const manifest=JSON.parse(bytes);
+ assert.equal(manifest.sourceCommit,'4127b4bc5d639a058ae85aec2a57b0c96ad9fe49');
+ for(const item of Object.values(manifest.files))assert.equal(sourceHash(fs.readFileSync(path.join(historical,item.file))),item.sha256);
+ return require(path.join(historical,'auth-service.cjs')).createAuthService;
+};
 const candidate=require('../src/auth-service.cjs').createAuthService;
 async function actor(t,factory,{reply={ok:true,current:true,refreshRevoked:true},status=200,providerStatus=403,offline=false}={}){
  let vault={refreshToken:'synthetic-restore-refresh',subject:'synthetic-subject'},otherVault='untouched-synthetic-other-product';const calls=[];
@@ -21,7 +29,7 @@ async function actor(t,factory,{reply={ok:true,current:true,refreshRevoked:true}
  return{auth,calls,logout};
 }
 
-test('exact installed source reproduces false refresh report after server confirmed success and second logout403',{skip:originalMissing},async t=>{
+test('pinned historical source reproduces false refresh report after server confirmed success and second logout403',async t=>{
  const f=await actor(t,loadOriginal()),result=await f.logout();assert.equal(result.serverSessionRevoked,true);assert.equal(result.refreshRevoked,false);assert.equal(result.serverRevoked,false);assert.equal(f.calls.filter(c=>c.path==='/auth/v1/logout').length,1);
 });
 test('candidate preserves current provider confirmation and avoids the duplicate request',async t=>{

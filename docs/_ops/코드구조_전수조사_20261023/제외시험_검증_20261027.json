@@ -322,16 +322,30 @@
         "line": 38,
         "name": "ko4 disclosed regression H04 negation",
         "originalSkipReason": "Original label overstates rejection of written-only communication as rejection of all writing; preserve raw label and separate adjudication.",
-        "status": "원본 라벨 판단 보류",
-        "evidence": []
+        "status": "라벨 정비 회귀 통과",
+        "evidence": [
+          "finish-five-source"
+        ],
+        "validation": {
+          "kind": "adjudicated-disclosed-regression",
+          "originalGoldPreserved": true,
+          "fixture": "tests/fixtures/member-statement-v4-label-adjudications.json"
+        }
       },
       {
         "file": "tests/member-statement-v4-evaluation.test.cjs",
         "line": 38,
         "name": "ko4 disclosed regression H30 compound",
         "originalSkipReason": "Original gold condition scope is ambiguous; retain raw40 and excluded38 sensitivity separately.",
-        "status": "원본 라벨 판단 보류",
-        "evidence": []
+        "status": "라벨 정비 회귀 통과",
+        "evidence": [
+          "finish-five-source"
+        ],
+        "validation": {
+          "kind": "adjudicated-disclosed-regression",
+          "originalGoldPreserved": true,
+          "fixture": "tests/fixtures/member-statement-v4-label-adjudications.json"
+        }
       },
       {
         "file": "tests/onedrive-backup.test.cjs",
@@ -538,8 +552,16 @@
         "line": 24,
         "name": "exact installed source reproduces false refresh report after server confirmed success and second logout403",
         "originalSkipReason": "git-ignored 10-09 installed source is not on this PC: <작업본>/desktop/artifacts/platform-convenience-candidate-2026-10-09T12-10-17-238Z/src/auth-service.cjs",
-        "status": "옛 설치 원문 부재",
-        "evidence": []
+        "status": "추적 원문 대체 회귀 통과",
+        "evidence": [
+          "finish-five-source"
+        ],
+        "validation": {
+          "kind": "pinned-historical-equivalent-reproduction",
+          "sourceCommit": "4127b4bc5d639a058ae85aec2a57b0c96ad9fe49",
+          "originalInstalledBytesRecovered": false,
+          "currentTestName": "pinned historical source reproduces false refresh report after server confirmed success and second logout403"
+        }
       },
       {
         "file": "desktop/tests/program-root.test.cjs",
@@ -1059,6 +1081,12 @@
       "passed": 13059,
       "failed": 0,
       "skipped": 103
+    },
+    "completed": 104,
+    "completionBreakdown": {
+      "originalVerificationPassed": 101,
+      "adjudicatedRegressionPassed": 2,
+      "historicalEquivalentRegressionPassed": 1
     }
   },
   "talkInventory": {
@@ -1144,8 +1172,13 @@
         ],
         "name": "새 수정 과제를 시작한 반만 기존 제출이 읽기 전용이 되고 이전 글·반환은 보존한다",
         "originalSkipReason": "운영 classroom 묶음(v7 위 칸 바꿔 끼우기)에 course-writing 모델을 아직 싣지 않았다 — 화면 공개 때 Atlas 판을 맞춰 다시 굽는다",
-        "status": "미출시 기능 유지",
-        "evidence": "기본 비활성 course-writing"
+        "status": "격리 재빌드 검증 통과",
+        "evidence": "finish-five-talk",
+        "validation": {
+          "kind": "canonical-local-build",
+          "productReleaseUnchanged": true,
+          "productionFeatureEnabled": false
+        }
       },
       {
         "files": [
@@ -1153,8 +1186,13 @@
         ],
         "name": "generated course runtime persists originals and revisions, scopes roles and purges account-owned copies",
         "originalSkipReason": "운영 classroom 묶음(v7 위 칸 바꿔 끼우기)에 course-writing 모델을 아직 싣지 않았다 — 화면 공개 때 Atlas 판을 맞춰 다시 굽는다",
-        "status": "미출시 기능 유지",
-        "evidence": "기본 비활성 course-writing"
+        "status": "격리 재빌드 검증 통과",
+        "evidence": "finish-five-talk",
+        "validation": {
+          "kind": "canonical-local-build",
+          "productReleaseUnchanged": true,
+          "productionFeatureEnabled": false
+        }
       },
       {
         "files": [
@@ -1273,7 +1311,9 @@
         "status": "통과",
         "evidence": "talk-reference-retry"
       }
-    ]
+    ],
+    "completed": 23,
+    "isolatedCandidatePassed": 2
   },
   "proofs": {
     "source-local-ci": {
@@ -1343,13 +1383,50 @@
           "normalizedLFSha256": "c4bcbbf04e865a2add6eb7c3dce2668f14fbc2130a510bb5572304f5b7d7ef0b"
         }
       ]
+    },
+    "finish-five-source": {
+      "file": ".tmp/finish-five-20261027/source-tests/result.tap",
+      "sha256": "46f1e71a29c2967d5d66d3946917b6f6100be99709c458c2e30e8f74ddb9d2e4",
+      "passed": 158,
+      "failed": 0,
+      "skipped": 0
+    },
+    "finish-five-talk": {
+      "file": ".tmp/finish-five-20261027/talk-tests/result.tap",
+      "sha256": "db8c5ac2919beeb1296225de2dc0d43170d9c4ee8305f4c2d9ee354f25859e23",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "sourceHead": "4d5f32a4ff75ad610d433c0fac2e46ef59f239a0",
+      "talkHead": "8f48430027ca0550d780783482854b1257c59ebb",
+      "runtimeBefore": "4a517a0845e5bb8c24835103598b8ee20e852bc899dfd65a5a965ec706fa4fac",
+      "runtimeAfter": "1e9d70a28ffef19262040024b1261288c27230f7240e1b7a6b2971c56e0841e9",
+      "testHashes": {
+        "tests/synk-course-writing.test.js": "4dc4145f6e0cabeae836dcefaf153847f329cf7ad856ce177a1244c63acca97a",
+        "tests/synk-classroom-homework.test.js": "3560455336dc3325e55b9c3ffc262c5b91023905c18bb3e0d409c7d566ab4329"
+      },
+      "originalTestsUnchanged": true
     }
   },
   "limitations": [
-    "원천 Windows/Linux·의존성·합성 계정에 맞춰 실행한 별도 검증이며 CI104 제외 조건 자체를 없애지 않는다.",
+    "일반 CI의 환경별 제외 조건은 유지하되 합성 라벨2건과 옛 파일 의존1건은 재현 가능한 회귀로 정비했다. 전체 CI 제외0이라는 뜻은 아니다.",
     "학생 화면 대조3은 현재 PC의 미추적 원문과 읽기 전용 대조로 통과했다. 기존 APK에 해당 화면이 들어 있다는 뜻은 아니다.",
     "과거 고정판의 원 실패는 보존했다. 네 시험은 현재 공개판c55의 자료·UI·읽기 API 계약에 맞춰 정비한 뒤 기존 핵심 상태 검증을 유지해 통과했다. 옛 사본 자체가 최신 동작과 같다는 뜻은 아니다.",
     "원 실패·제외·과거 승인·현재 미확인 상태를 보존한다. 시험 실행 수는 서로 겹쳐 합산하지 않는다."
   ],
-  "latestReceipt": "../제외시험_최종_20261027.jsonl"
+  "latestReceipt": "../제외시험_최종_20261027.jsonl",
+  "finalFive": {
+    "at": "2026-10-27T08:44:19.481Z",
+    "completed": 5,
+    "remainingFunctionalVerification": 0,
+    "userDecisionRequired": false,
+    "productChanges": 0,
+    "productionDeployments": 0,
+    "operatingDataWrites": 0,
+    "limits": [
+      "10-09 설치판과 같은 바이트의 원문은 복구하지 못했다. 수정 직전의 추적 원문과 전체 의존 파일로 같은 결함을 재현한 대체 회귀다.",
+      "원래 gold40과 raw 점수·38개 민감도 결과는 유지한다. 새 2건은 명시한 허용 해석의 합성 회귀이며 새 미공개 정확도 점수가 아니다.",
+      "Talk 2건은 재빌드한 격리 후보의 검증이며 운영 출시는 하지 않는다."
+    ]
+  }
 }
