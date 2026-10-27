@@ -155,7 +155,8 @@ C = {
                 t=f"Bust shot of Ian seated at his desk, 50mm lens at his eye level. He holds {LUNCH} near his chest with both hands, palms "
                   "up, in a small apologetic shrug, eyebrows slightly raised and lips slightly parted as if starting to explain. Only "
                   "Minjae's two hands (in his charcoal cardigan sleeves) rest on Ian's shoulders from behind at the upper left edge — Minjae's "
-                  "face is not in the frame."),
+                  "face is not in the frame. Inside the open lunchbox the rice compartment holds plain white rice with one red pickled plum, "
+                  "and the side-dish compartment is completely EMPTY and clean — no food at all in it."),   # 10-28 이해 시험 두 명 모두: 반찬 칸이 차 있어 「반찬이 끊겼어」와 어긋남
     # ── 1화 ② 회상 — 집 식탁(밤) ──
     "1-5": dict(f="SI", loc="dining", light="night", w=["S_home", "I_home"], fx=(0, "her"),
                 t="Medium over-the-shoulder shot from behind Ian, 50mm lens at seated eye level: along the right edge the back of Ian's dark "

@@ -143,6 +143,74 @@ def build(ep, cs, out):
     concat(segs, tmp, "n", os.path.join(out, f"사랑한칸_가편집_{ep}화_나란히.mp4"))
 
 
+def sound(say):
+    """그림 판 아래 「소리」 한 줄 — 대사(「」 안)는 자막으로 이미 보이니 빼고, 효과음 · 노래 · 화면 밖 목소리만 남긴다."""
+    if "「" in say:
+        return "화면 밖 목소리" if "화면 밖" in say else ""
+    if say.strip() in ("-", "(이어짐)"):
+        return ""
+    # 만든 쪽 말(배역 이름 · J컷)은 보는 사람이 모르니 뺀다
+    say = re.sub(r"\(J컷\)|\d+초 ", "", say)
+    say = re.sub(r"(서진|이안|민재|소연)(의|이|가)? ?", "", say)
+    return say.replace("첫말이 ", "목소리가 ").strip(" ·")
+
+
+# 후반 합성 자리(크로마 초록)와 끝 글자 — 시험 판에서만 흉내 낸다(정지컷 · 보드는 그대로 초록)
+합성 = {"1-26": "혼인신고서\n(빈 칸)", "1-27": "혼인신고서\n남편 ____ 아내 ____", "2-4": "칸찬\n반찬 정기배송",
+        "2-43": "혼인신고서", "2-44": "혼인신고서\n남편 이안 · 아내 서진\n(이름이 다 적힘)"}
+끝글자 = {"1-45": "다음 화에", "2-48": "사랑 한 칸\n반찬 정기배송 칸찬"}
+
+
+def mock(k, im):
+    if k in 합성:
+        import numpy as np
+        a = np.asarray(im).astype(int)
+        g = (a[:, :, 1] > 140) & (a[:, :, 0] < 90) & (a[:, :, 2] < 130)
+        if g.sum() > 500:
+            ys, xs = np.nonzero(g)
+            a[g] = (242, 240, 232)
+            im = Image.fromarray(a.astype("uint8"))
+            d = ImageDraw.Draw(im)
+            cx, cy = (xs.min() + xs.max()) // 2, (ys.min() + ys.max()) // 2
+            size = max(28, min(90, (xs.max() - xs.min()) // 9))
+            d.multiline_text((cx, cy), 합성[k], font=F("ExtraBold", size), fill=(60, 50, 50), anchor="mm", align="center", spacing=12)
+    if k in 끝글자:
+        im = im.copy()
+        ImageDraw.Draw(im).multiline_text((W // 2, 380), 끝글자[k], font=F("ExtraBold", 96), fill=(255, 255, 255), anchor="mm", align="center",
+                                          stroke_width=6, stroke_fill=(0, 0, 0), spacing=20)
+    return im
+
+
+def sheets(ep, cs, out):
+    """낯선 사람 이해 시험용 그림 판(10-28) — 자막을 얹은 정지컷을 차례대로 한 장에 12컷(4 × 3), 칸 아래에 차례 · 초 · 소리만. 만든 쪽 정보(배역 · 카메라 · 원본)는 넣지 않는다."""
+    w, h, gap, pad = 300, 533, 18, 24
+    for p in range(0, len(cs), 12):
+        part = cs[p:p + 12]
+        im = Image.new("RGB", (pad * 2 + 4 * w + 3 * gap, 70 + 3 * (h + 64)), (17, 16, 18))
+        d = ImageDraw.Draw(im)
+        d.text((pad, 20), f"{ep}화 — 장면 {p + 1}~{p + len(part)} / {len(cs)} (왼쪽 위부터 차례로)", font=F("ExtraBold", 28), fill=(236, 234, 230))
+        for i, c in enumerate(part):
+            x, y = pad + (i % 4) * (w + gap), 70 + (i // 4) * (h + 64)
+            k = f"{c['화']}-{c['컷']}"
+            im.paste(subtitle(mock(k, still(k)), c["말"]).resize((w, h), Image.LANCZOS), (x, y))
+            d.text((x, y + h + 6), f"{p + i + 1}  ({c['시작']:.1f}초~, {c['길이']:.1f}초)", font=F("ExtraBold", 20), fill=(240, 200, 120))
+            s = sound(c["말"])
+            if s:
+                d.text((x, y + h + 34), "소리: " + s[:24], font=F("Medium", 18), fill=(170, 220, 170))
+        path = os.path.join(out, f"그림_{ep}화_{p // 12 + 1}.jpg")
+        im.save(path, quality=88)
+        print(path)
+
+
+if __name__ == "__main__" and "--시험" in sys.argv:
+    # python -X utf8 가편집.py --시험   → git 밖 콘티/p7/시험/그림_<화>화_<n>.jpg
+    allc = json.load(open(os.path.join(V, "컷목록.json"), encoding="utf-8"))
+    out = os.path.join(V, "시험")
+    os.makedirs(out, exist_ok=True)
+    for ep in (1, 2):
+        sheets(ep, [c for c in allc if c["화"] == ep], out)
+    sys.exit(0)
+
 if __name__ == "__main__":
     allc = json.load(open(os.path.join(V, "컷목록.json"), encoding="utf-8"))
     out = os.path.join(V, "가편집")
