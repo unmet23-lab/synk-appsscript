@@ -143,7 +143,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
           const spot = name => SPOT_GROUPS[name]?.[0] ?? name;
           village.holdResidents(v, { [card.owner]: { by, spot: cards.holdSpotOf(card) }, ...Object.fromEntries((card.paths.player.with || []).map(npc => [npc, { by, spot: spot(card.paths.pair.partnerSpot) }])) }, open, ++rev);
           const done = open + 2 * MINUTE, place = cards.placeOfSpot(card.spot), actors = [card.owner, ...(card.paths.player.with || []), 'player'];
-          Object.assign(take, { status: 'resolved', resolvedAt: done, ref: cards.cardRef(b.lifeDay, b.band, card.id), choice: card.paths.player.choices[0] });
+          Object.assign(take, { status: 'resolved', resolvedAt: done, ref: cards.cardRef(b.lifeDay, b.band, card.id), choice: card.paths.player.choices[0] ?? null });   // a card whose 「나와 함께」 is a life activity (W8: C5 · R6) has no choice
           for (const r of v.reservations) if (r.by === by && r.toMs === null) r.with = true;
           knowledge.learnPrivate(v, { ref: take.ref, card: card.id, path: 'player', actors, place });
           take.open = false;

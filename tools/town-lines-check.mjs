@@ -133,6 +133,25 @@ function townProblems(entry, file) {
   return out;
 }
 
+/** 찻집 주문 줄(W8, §11 · §22): 손님(guest)과 찻집 주인의 말. 빈칸은 낱말 표(town/data/tea.json)의 꼴뿐이고, 길이는
+ * 빈칸마다 가장 긴 값(「오늘의 차」·「조금 달게」·「꿀은 조금만」…)으로 채워 판 상한으로 잰다. */
+export const TEA_FILL = Object.freeze({ tea: '오늘의 차', 'temp.adn': '따뜻한', 'temp.adv': '따뜻하게', 'sweet.adn': '조금 단', 'sweet.adv': '조금 달게', 'sweet.honey': '꿀은 조금만' });
+function teaProblems(entry, file) {
+  const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
+  const [npc] = entry.id.split('.');
+  if (entry.npc !== npc || !['guest', 'cafe-owner'].includes(npc)) bad('tea', '찻집 줄의 npc는 guest(손님)나 cafe-owner예요.');
+  if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad('tea', '뜻(meaning)이 없어요.');
+  if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(x => typeof x === 'string' && x.trim())) bad('tea', '근거 설정(from)이 없어요.');
+  for (const level of LEVELS) {
+    const text = entry.levels?.[level];
+    if (typeof text !== 'string' || !text.trim()) { bad('tea', `${level} 판이 없어요 — 네 판이 다 있어요.`, level); continue; }
+    const unknown = [...text.matchAll(/\{([^}]*)\}/g)].map(m => m[1]).filter(slot => !Object.hasOwn(TEA_FILL, slot));
+    if (unknown.length) bad('tea', `${level}: 모르는 빈칸 ${unknown.map(s => `{${s}}`).join(' ')}`, level);
+    lengthProblems(text.replace(/\{([^}]*)\}/g, (_, slot) => TEA_FILL[slot] ?? slot), level, LEVEL_LENGTH[level], bad);
+  }
+  return out;
+}
+
 /** 전해 듣기 틀을 소식 줄마다(같은 판)·전해 준 주민마다 채워 보고 판 길이를 잰다 — 틀 하나에 걸린 것은 한 번만 적는다. */
 function hearsayProblems(documents) {
   const entries = documents.flatMap(({ file, doc }) => (Array.isArray(doc) ? doc.map(entry => ({ file, entry })) : []));
@@ -188,6 +207,7 @@ export function collectTexts(doc, file) {
       if (entry.kind === 'mood') problems.push(...moodProblems(entry, file));
       if (['card', 'hearsay', 'pair', 'news'].includes(entry.kind)) problems.push(...townProblems(entry, file));
       if (entry.kind === 'changes') problems.push(...changesProblems(entry, file));
+      if (entry.kind === 'tea') problems.push(...teaProblems(entry, file));
       const speaker = RESIDENTS.includes(entry.npc) ? 'resident' : 'system';
       for (const [level, text] of levelTexts(entry.levels)) {
         if (typeof text !== 'string' || !text.trim()) { bad(id, `${level} 판이 비었어요.`); continue; }

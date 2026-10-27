@@ -51,7 +51,7 @@ test('나와 함께 — 연 카드는 주인을 붙잡고, 고르고 확정하�
   for (let step = 0; step < 48 && !found; step++) {
     const v = h.store.read().state.village, out = village.planOf(v);
     const start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, s]) => s));
-    for (const e of out.log.filter(x => x.atMs > h.now && cards.CARD_BY_ID[x.card].paths.player.ready)) {
+    for (const e of out.log.filter(x => x.atMs > h.now && cards.CARD_BY_ID[x.card].paths.player.ready && !cards.CARD_BY_ID[x.card].paths.player.activity)) {
       const at = village.placeAt(out.segments, e.npc, e.atMs + 20000, start);
       if (at && !at.walking && ['cafe', 'workshop', 'greenhouse'].includes(at.to)) { found = { ...e, place: at.to }; break; }
     }

@@ -13,7 +13,12 @@
  *   subscription   everything else; a command missing from the lists closes here, so a new paid
  *                  scene never opens on a trial by mistake.
  */
+import { ACTIVITY_COMMANDS } from './activities/index.mjs';
+
 export const SCOPES = Object.freeze(['rights', 'base', 'first-chapter', 'subscription']);
+// W8: each life activity names its commands' scopes (town/activities — the tea order's TEA_OPEN · TEA_SERVE · TEA_OWNER
+// are the first chapter's, TEA_CLOSE is base: closing is always open). talk lib/town-scope.js lists them by name.
+const activityIn = scope => Object.entries(ACTIVITY_COMMANDS).filter(([, s]) => s === scope).map(([type]) => type);
 // W6 (Fable F7): turning the time the player usually comes off empties that record — the person's own right, so rights.
 export const RIGHTS = Object.freeze(new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT', 'PREF_VISIT_BANDS']));
 export const BASE = Object.freeze(new Set([
@@ -29,6 +34,7 @@ export const BASE = Object.freeze(new Set([
   'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET',
   // W6: closing the mascot's question unanswered (§20-3).
   'ASK_CLOSE',
+  ...activityIn('base'),
 ]));
 export const FIRST_CHAPTER = Object.freeze(new Set([
   'CHOOSE', 'NEXT', 'COLOR', 'CRAFT', 'PREVIEW_SLOT', 'PLACE', 'CANCEL', 'SIGN_START', 'SIGN_NEXT', 'SIGN_PICTURE', 'SIGN_PREVIEW', 'SIGN_PLACE', 'SIGN_CANCEL',
@@ -39,5 +45,6 @@ export const FIRST_CHAPTER = Object.freeze(new Set([
   'SUPPORT_OPEN', 'SUPPORT_HINT', 'SUPPORT_ANSWER', 'SUPPORT_NEXT', 'SUPPORT_ACCEPT',
   // W5: a small need card with the player — the first chapter's (§20-7 ③ 카드 「나와 함께」, review F5).
   'CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM',
+  ...activityIn('first-chapter'),
 ]));
 export const commandScope = type => RIGHTS.has(type) ? 'rights' : BASE.has(type) ? 'base' : FIRST_CHAPTER.has(type) ? 'first-chapter' : 'subscription';

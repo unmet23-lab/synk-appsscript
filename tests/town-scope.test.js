@@ -10,7 +10,9 @@ const { ROOT, townModule } = require('./lib/town.js');
 /** 타운 권한이 받아들이는 명령 이름 — switch의 case 글자와 접두어 묶음에서. */
 function commandsInRuntime() {
   const names = new Set();
-  for (const file of ['core.mjs', 'day.mjs', 'life.mjs', 'bazaar.mjs', 'support.mjs']) {
+  // W8: a life activity's commands live in its own module (town/activities — the tea order's TEA_*).
+  const activities = fs.readdirSync(path.join(ROOT, 'experiences/synk-town/town/activities')).filter(f => f.endsWith('.mjs') && f !== 'index.mjs').map(f => `town/activities/${f}`);
+  for (const file of ['core.mjs', 'day.mjs', 'life.mjs', 'bazaar.mjs', 'support.mjs', ...activities]) {
     const code = fs.readFileSync(path.join(ROOT, 'experiences/synk-town', file), 'utf8');
     for (const [, name] of code.matchAll(/case '([A-Z][A-Z_]+)'/g)) names.add(name);
   }

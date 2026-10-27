@@ -12,7 +12,7 @@ import { branchPaths, atomicWrite, appendLines, readLines, truncateTo, removeFil
 import { lifeDayAt, offsetAt, validOffset } from './town/clock.mjs';
 import { validateOps, DEFAULT_OPS } from './town/params.mjs';
 import { eventProblem } from './town/events.mjs';
-import { ITEMS, MOOD_LINES, TOWN_LINES, PAIRS } from './town/data.gen.mjs';
+import { ITEMS, MOOD_LINES, TOWN_LINES, PAIRS, TEA_LINES } from './town/data.gen.mjs';
 
 /** A screen may open a safe boundary at most once in this long (vertical slice §14-3). */
 export const BOUNDARY_GAP_MS = 20000;
@@ -22,7 +22,9 @@ export const COMMAND_WINDOW = 32, WALK_RECEIPTS = 512;
  * gathered items, the mood lines (W4) and the cards', hearsay, pair and news lines with the pairs' steps (W5); scenes and
  * tea frames join with their content (W8~W9). */
 export const SEEN_CATALOG = contentCatalog({ items: ITEMS.map(item => item.id), lines: [...MOOD_LINES, ...TOWN_LINES].map(line => line.id),
-  pairs: PAIRS.flatMap(pair => [0, 1, 2].map(step => [pair.scene, String(step)])) });
+  pairs: PAIRS.flatMap(pair => [0, 1, 2].map(step => [pair.scene, String(step)])),
+  // W8: a tea order's request frame shown to the player (tea:<frame> — W9's first exposure).
+  teaFrames: TEA_LINES.filter(line => line.when.part === 'request').map(line => line.id) });
 // `|| 0`: a UTC host gives -0, which a save's JSON round trip turns into 0, so a reopened world would differ.
 const hostOffset = () => { const offset = -new Date().getTimezoneOffset() || 0; return validOffset(offset) ? offset : 540; };
 
@@ -430,7 +432,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       // one older than the world's window is compared with its receipt.
       const receipt = receipts.get(command?.id), recorded = !!receipt;
       const base = recorded && !state.commands.some(item => item.id === command.id) ? { ...state, commands: [receipt] } : state;
-      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|GREET$)/.test(command.type)) {
+      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|TEA_|GREET$)/.test(command.type)) {
         host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
         host.ownerSurfaceId = presence.owner;

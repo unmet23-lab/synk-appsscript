@@ -20,7 +20,7 @@ import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback
 import { initialConsents, changeConsent, validConsents } from './town/consent.mjs';
 import { eventProblem, FAMILIES, relation } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks } from './town/params.mjs';
-import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten } from './town/memory.mjs';
+import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten, ACTIVITY_MEMORY } from './town/memory.mjs';
 import { initialVillage, validVillage, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput } from './town/village.mjs';
 import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
 import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf } from './town/cards.mjs';
@@ -32,6 +32,8 @@ import { VISIT_IDLE_MS } from './presence.mjs';
 import { bandAt, BAND_IDS } from './town/clock.mjs';
 import { initialVisitBands, writeBand, setVisitBands, clearVisitBands, validVisitBands } from './town/visits.mjs';
 import { meanwhileLines } from './town/meanwhile.mjs';
+import { ACTIVITIES, ACTIVITY_BY_ID, activityOfCommand, initialActivities, restoreActivities, validActivities } from './town/activities/index.mjs';
+import { weatherAt } from './town/clock.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -56,7 +58,7 @@ const ensure = (condition, code, message, status) => { if (!condition) throw new
 const TOWN_FIELDS = Object.freeze({ ledger: emptyLedger, prefs: initialPrefs, asks: initialAsks, recentLifeUse: () => [],
   consents: initialConsents, policy: () => null, forgotten: () => [], townSeq: () => 0, townEvents: () => [],
   // W6: the visit (its start, the last one's end, its band) and the time the player usually comes (§10-3) — the player's side.
-  townVisit: () => null, visitBands: () => initialVisitBands() });
+  townVisit: () => null, visitBands: () => initialVisitBands(), activities: initialActivities });
 const townFields = () => Object.fromEntries(Object.entries(TOWN_FIELDS).map(([key, make]) => [key, make()]));
 /** The most entries a person's own setting lists keep (less often, not approached first, today's others, responses). */
 export const PERSONAL_MAX = 64;
@@ -107,6 +109,8 @@ export function restoreState(saved, { lifeEnabled = false } = {}) {
   if (state && !Object.hasOwn(state, 'settledU')) state.settledU = 0;
   // Saves from before the §20 fields gain them empty.
   if (state?.schema === 1 && state.scope) for (const [key, make] of Object.entries(TOWN_FIELDS)) if (!Object.hasOwn(state, key)) state[key] = make();
+  // An activity the world never met (W8: the tea order) reads at its start value — added fields, no migration.
+  if (state?.activities) state.activities = restoreActivities(state.activities);
   // A log kept in the state (an old save, the linked teacher fixture, the old talk row) is read
   // whole once, here. A world whose log lives in the event branch carries none, and its index is
   // the record: it is trusted once its shape holds (W2 plan D7).
@@ -232,7 +236,8 @@ export function assertState(state) {
     && (!has('asks') || validAsks(state.asks)) && (!has('recentLifeUse') || validUses(state.recentLifeUse))
     && (!has('consents') || validConsents(state.consents)) && (!has('policy') || validPolicy(state.policy))
     && (!has('forgotten') || validForgotten(state.forgotten)) && (!has('townSeq') && !has('townEvents') || townEventsValid(state))
-    && (!has('townVisit') || validVisit(state.townVisit)) && (!has('visitBands') || validVisitBands(state.visitBands)),
+    && (!has('townVisit') || validVisit(state.townVisit)) && (!has('visitBands') || validVisitBands(state.visitBands))
+    && (!has('activities') || validActivities(state.activities)),
   'invalid-save', '마을 기록을 확인할 수 없어요.', 503);
   return state;
 }
@@ -251,17 +256,20 @@ export function dayContext(state, host = {}) {
     resumeBlocked: !!state.bazaar?.episode?.open && state.day?.episode?.location === 'cafe',
     ftReady: !!state.placement && !!state.goals[SEATS[state.placement].branch],
     signReady: !!state.sign.target,
-    cafeBusy: bazaarOwns(state) || !!state.pendingUse || state.phase !== 'ready' || !(state.activity === 'sign' ? state.sign.delivered : state.delivered)
+    cafeBusy: bazaarOwns(state) || teaOwns(state) || !!state.pendingUse || state.phase !== 'ready' || !(state.activity === 'sign' ? state.sign.delivered : state.delivered)
       || !!c1 && (c1.stage === 'executing' || c1.open && !['result', 'invalid'].includes(c1.stage)) };
 }
 function bazaarOwns(state) { return !!state.bazaar?.episode?.open && state.day?.location === 'cafe'; }
+/** An open tea order (or one-cup board) while the player is at the cafe: the cafe's other scenes wait for it (W8, review F6). */
+function teaOwns(state) { return !!state.activities?.['tea-order']?.open && state.day?.location === 'cafe'; }
+const slotOf = (state, a) => state.activities?.[a.id] ?? a.initial();
 function bazaarContext(state, host = {}, requestedKind) {
   const episode = state.day?.episode, life = state.life?.episode;
   return { elapsedMs: host.elapsedMs || 0, canRun: host.canRun !== false && host.surface === 'day' && !state.day?.rest && atDayPlace(state, 'cafe'),
     location: state.day?.location || 'home', support: state.day?.support || 'demo',
     languageSupport: state.support ? snapshotSupport(state.support).mode : 'plain',
     languageSupportBasis: state.support ? snapshotSupport(state.support) : undefined,
-    cafeBusy: !!state.pendingUse || state.phase !== 'ready' || !state.placement
+    cafeBusy: teaOwns(state) || !!state.pendingUse || state.phase !== 'ready' || !state.placement
       || !(state.activity === 'sign' ? state.sign.delivered : state.delivered)
       || (requestedKind || state.bazaar?.episode?.kind) === 'pictureMenu' && state.day?.job?.status === 'preparing'
       || !!episode?.open && episode.location === 'cafe' && episode.stage !== 'invalid'
@@ -281,7 +289,7 @@ export function livingContext(state, host = {}) {
   const episode = state.day?.episode;
   const dayEpisodeOwns = !!episode && episode.location === state.day.location
     && episode.open && episode.stage !== 'invalid' && episode.kind === 'tea';
-  const dayOwns = bazaarOwns(state) || dayEpisodeOwns || host.surface === 'day' && !atDayPlace(state, 'cafe');
+  const dayOwns = bazaarOwns(state) || teaOwns(state) || dayEpisodeOwns || host.surface === 'day' && !atDayPlace(state, 'cafe');
   return { surfaceId: state.life?.authority.surfaceId ?? null, fence: state.life?.authority.fence ?? 0,
     ...host, canRun: ready && host.canRun !== false && !dayOwns,
     // The owner who invites is up (the night rule): no contact is issued while it sleeps.
@@ -332,6 +340,8 @@ function heldNow(state) {
     hold('cafe-owner', `FT:${state.worldRevision}`, 'cafe.counter', { seat: FT_SEATS[state.placement].spot });
   const job = state.day?.job;
   if (job?.status === 'preparing') hold('workshop-owner', job.id, 'workshop.bench', { toMs: job.readyAt });
+  // A life activity holds whom it says (W8: the tea order, the cafe owner at the counter while the player is at the cafe).
+  for (const a of ACTIVITIES) for (const h of a.held(slotOf(state, a), { location: state.day?.location })) hold(h.npc, h.by, h.spot);
   // A card the player has open holds its owner at its spot, and C1's neighbour beside it (§8-3 나와 함께).
   for (const take of state.village?.takes || []) if (take.open) {
     const card = CARD_BY_ID[take.card], by = `card:${take.card}:${take.key}`;
@@ -350,7 +360,7 @@ function sleepersFor(state, command, p, nowMs) {
   const needs = command.type === 'DAY_START' ? DAY_MEMBERS[p.kind] || [] : command.type === 'DAY_RETRY' ? DAY_MEMBERS[state.day?.episode?.kind] || []
     : command.type === 'DAY_JOB_START' ? ['workshop-owner']
     : command.type === 'BAZAAR_START' ? ['cafe-owner', ...(p.kind === 'pictureMenu' ? ['workshop-owner'] : [])]
-      : command.type === 'LIFE_OPEN' ? ['cafe-owner'] : [];
+      : command.type === 'LIFE_OPEN' || command.type === 'TEA_OPEN' ? ['cafe-owner'] : [];
   return needs.filter(npc => !upFor(v, npc, nowMs));
 }
 /** Where a habit may form (§6-5): the player's seat (anyone) and the first day's agreed spot (the workshop owner). */
@@ -372,12 +382,20 @@ function markTogether(state) {
   scene(state.bazaar?.episode, 'bazaar');
   scene(state.life?.episode, 'life');
   for (const take of v.takes || []) if (take.status === 'resolved') done.set(`card:${take.card}:${take.key}`, 0);
+  // A life activity says what the player finished in it so far (W8: one chore lighter for each guest the player
+  // served — on its card's hold when a card opened it). A mark grows while its hold is open (review F1).
+  for (const a of ACTIVITIES) for (const [by, help] of a.results(slotOf(state, a))) done.set(by, Math.max(done.get(by) ?? 0, help));
+  // A scene held again after the player stepped away and back has a second hold with the same `by`: what an earlier,
+  // ended one already lightened is not given twice (review GA1).
+  const credited = new Map();
+  for (const r of v.reservations) if (r.toMs !== null && r.npc === 'cafe-owner' && done.has(r.by)) credited.set(r.by, (credited.get(r.by) ?? 0) + (r.help ?? 0));
   for (const r of v.reservations) {
-    if (r.toMs !== null || r.with || !done.has(r.by)) continue;
+    if (r.toMs !== null || !done.has(r.by)) continue;
     r.with = true;
     // The visit finished something with a resident (W6 — the consent question waits for such a visit, §20-4).
     if (state.townVisit && state.townVisit.endedAt === undefined) state.townVisit.done = true;
-    if (r.npc === 'cafe-owner' && done.get(r.by)) r.help = done.get(r.by);
+    const due = done.get(r.by) - (credited.get(r.by) ?? 0);
+    if (r.npc === 'cafe-owner' && due > (r.help ?? 0)) r.help = due;
   }
 }
 /** The settlement's close step (town/settle.mjs close): bands that ended by nowMs close and the next
@@ -497,7 +515,16 @@ function settleVillage(state, host) {
 }
 /** A visit that ended stops its scenes (§14-3 P1): open episodes close as their close commands would,
  * and holds end at the wall time the visit ended (the lease break's visitEndAt). */
-function endVisitScenes(state, endedAt) {
+function endVisitScenes(state, endedAt, host = {}) {
+  // A life activity closes first (the tea order as 「그만할래요」), and what the player finished marks its holds
+  // before they end at the visit's end (review F1). Its events are outside the visit (review F14).
+  const at = endedAt ?? host.nowMs ?? state.lifeHost?.lastForegroundAt ?? 0;
+  for (const a of ACTIVITIES) if (state.activities?.[a.id]?.open && state.village?.band) {
+    const out = a.endVisit(state.activities[a.id], activityCtx(state, a, { ...host, nowMs: at }));
+    state.activities[a.id] = out.slot;
+    afterActivity(state, a, out, { ...host, nowMs: at }, { inVisit: false });
+  }
+  if (state.village?.reservations) markTogether(state);
   if (state.day?.episode?.open) state.day.episode.open = false;
   const c1 = state.life?.episode;
   if (c1?.open) { c1.open = false; if (c1.stage === 'result') c1.dismissed = true; }
@@ -544,7 +571,7 @@ function cardsView(state, nowMs) {
       ...(take.ref ? { ref: take.ref } : {}), ...(take.eventId ? { eventId: take.eventId } : {}) },
     traces: now.traces, news: noteOf(v),
     hearsay: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, hearsayFor(v, npc)]).filter(([, line]) => line)),
-    knownMe: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, privateOf(v, npc, state.forgotten || []).map(({ ref, card, path }) => ({ ref, card, path }))])),
+    knownMe: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, privateOf(v, npc, state.forgotten || []).map(({ ref, card, activity, path }) => ({ ref, ...(activity ? { activity } : { card }), path }))])),
     // What changed while the player was away (W6, §10-2): the same lines for the whole visit, none on a first visit.
     ...(state.townVisit && state.townVisit.endedAt === undefined ? { meanwhile: { visit: state.townVisit.startAt, lines: meanwhileLines(v.changes, state.townVisit, now.traces) } } : {}) };
 }
@@ -555,18 +582,23 @@ function cardNow(state, ms) {
   return { cards: cardsAt(bandInput(v), out.segments, out.log, at),
     places: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, placeAt(out.segments, npc, at, startSpots)])) };
 }
+/** Whether a card's offer may go to a screen with these capabilities: a card whose 「나와 함께」 is a life activity only to
+ * a screen that draws that board (W8: caps 'tea' — an older screen would show an offer it cannot open, review F13). */
+export const offerReaches = (card, caps) => !card.paths.player.activity || Array.isArray(caps) && caps.includes(ACTIVITY_BY_ID[card.paths.player.activity].cap);
 /** The card a resident may offer the player now (§8-3 나와 함께): it waits for its owner, who is up, free and at the player's
  * place; its path is ready; the player did not turn it down this visit, set it aside today or ask not to be approached;
  * a card set to "less often" comes up a seeded share of its rises (§20-3). The life module spends the budget. */
 function cardOfferFor(state, host) {
   const v = state.village;
   if (!v?.band || !state.day || state.resting || state.day.rest || !Number.isSafeInteger(host.nowMs) || (v.takes || []).some(t => t.open) || state.asks?.open) return null;
-  if (state.day.episode?.open || state.bazaar?.episode?.open || state.life?.episode?.open) return null;
+  if (state.day.episode?.open || state.bazaar?.episode?.open || state.life?.episode?.open || ACTIVITIES.some(a => state.activities?.[a.id]?.open)) return null;
   const now = cardNow(state, host.nowMs), held = heldNow(state), prefs = state.prefs, visitId = state.policy?.visitId;
   for (const c of now.cards) {
     const card = CARD_BY_ID[c.card], activity = `card.${card.id}`, at = now.places[card.owner];
     const crew = [card.owner, ...(card.paths.player.with || [])];
     if (c.status !== 'triggered' || card.locked || !card.paths.player.ready || !at || crew.some(npc => held[npc] || !upFor(v, npc, host.nowMs))) continue;
+    // A card whose 「나와 함께」 is a life activity goes only to a screen that draws that board (W8: caps 'tea', review F13).
+    if (!offerReaches(card, host.caps)) continue;
     if (!atDayPlace(state, at.to) || prefs?.approachOptOut.includes(activity) || (prefs && visitId && todayOther(prefs, visitId, activity))) continue;
     if (prefs?.lessOften.includes(activity) && createRng(v.seed, 'offer', card.id, c.key).below(PER_MILLE) >= paramsFor().prefs.lessOftenMultiplier) continue;
     return { card: card.id, key: c.key };
@@ -580,7 +612,7 @@ export function stepLiving(state, host) {
   ensure(state.life && host?.enabled === true, 'life-unavailable', '이 체험에서는 이웃 생활을 열 수 없어요.', 403);
   // A visit that ended in a long rest takes its version and arm with it; the next visit opens its own.
   if (host.visitEnded && state.policy) state.policy = null;
-  if (host.visitEnded) endVisitScenes(state, host.visitEndedAt ?? null);
+  if (host.visitEnded) endVisitScenes(state, host.visitEndedAt ?? null, host);
   advanceUse(state, host);
   runLife(state, () => advanceLife(state.life, livingContext(state, host)));
   trackVisit(state, host);
@@ -820,6 +852,8 @@ export function viewFor(state) {
   if (state.support) view.support = viewSupport(state.support, supportContext(state));
   // The mascot's question waiting to be drawn or answered (W6, §20-3·§20-4) — old screens ignore it.
   if (state.asks?.open) view.ask = { key: state.asks.open.key, kind: state.asks.open.kind, ...(state.asks.open.family ? { family: state.asks.open.family } : {}) };
+  // The tea order the screen draws (W8): its guests, what they asked (ids and values — the words are the screen's), who sits.
+  if (state.activities?.['tea-order']) view.tea = ACTIVITY_BY_ID['tea-order'].view(state.activities['tea-order'], { nowMs: state.lifeHost?.lastForegroundAt ?? 0 });
   return view;
 }
 export function snapshot(state) { assertState(state); return { state: copy(state), view: viewFor(state) }; }
@@ -851,6 +885,120 @@ const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_COR
   'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'CARD_CONFIRM',
   // W6: the mascot's question closed, the time the player usually comes turned on or off.
   'ASK_CLOSE', 'PREF_VISIT_BANDS']);
+/* ── life activities (§20-7 ②, W8) ── the runtime's half: an activity's context, its commands, what it returns. */
+/** The level a scene's lines show at: the reading seat's stable level — W9's ladder plugs in here (now L2, the same as
+ * the one-line texts, day-mood.mjs lineLevel). */
+const sceneLevel = () => 'L2';
+/** What an activity may read of the world at a command: only values the server gives (§2-3). */
+function activityCtx(state, a, host, extra = {}) {
+  const v = state.village, b = v.band, seed = v.seed ?? host.villageSeed ?? 'synk-town', nowMs = host.nowMs;
+  const segments = planOf(v).segments, paramsVer = state.policy?.paramsVer;
+  return { id: `T-${state.revision + 1}`, nowMs, villageSeed: seed, lifeDay: b.lifeDay, band: b.band, level: sceneLevel(state),
+    paramsVer, params: paramsFor(paramsVer), location: state.day?.location ?? null, raining: weatherAt(seed, nowMs) === 'rain',
+    playerSeat: state.placement ? FT_SEATS[state.placement]?.spot ?? null : null,
+    busy: (spot, fromMs, toMs) => segments.some(seg => seg.spot === spot && seg.arriveMs < toMs && seg.endMs > fromMs), ...extra };
+}
+/** A card done with the player (§8-3 나와 함께): an event only those in it know (§9-2, G6), with the fields a relationship
+ * is computed from (§20-1) — by CARD_CONFIRM's choice, or by the life activity the card opened (W8: C5 · R6). */
+function resolveTake(state, host, take, card, choice, { inVisit = true } = {}) {
+  const v = state.village, b = v.band, actors = [card.owner, ...(card.paths.player.with || [])], place = placeOfSpot(card.spot);
+  Object.assign(take, { status: 'resolved', resolvedAt: host.nowMs, ref: cardRef(b.lifeDay, b.band, card.id) });
+  take.eventId = townEvent(state, 'card.resolved', { ref: take.ref, card: card.id, path: 'player', public: false, actors: [...actors, 'player'], place,
+    lifeDay: b.lifeDay, band: b.band, atMs: host.nowMs, ...eventMarks(inVisit ? openVisit(state, host) : state.policy, { inVisit }), ...relation(playerRelation(card, choice)) });
+  learnPrivate(v, { ref: take.ref, card: card.id, path: 'player', actors: [...actors, 'player'], place });
+  state.recentLifeUse = recordLifeUse(state.recentLifeUse || [], { useId: take.ref, canonicalActivityId: `card.${card.id}`, storyFamily: card.family, direct: !take.contactId });
+  const c = take.contactId && state.life.contacts.find(row => row.id === take.contactId);
+  if (c?.status === 'detail') c.status = 'accepted';
+}
+/** The player joins a card (§8-3): opening it again goes on where it paused; a take the visit ended is a new one. */
+function openTakeFor(state, card, key, host, contactId = null) {
+  const v = state.village, take = (v.takes || []).find(t => t.card === card.id && t.key === key && ['with', 'paused'].includes(t.status));
+  if (take) Object.assign(take, { status: 'with', open: true });
+  else v.takes = [...(v.takes || []), { card: card.id, key, at: host.nowMs, status: 'with', open: true, choice: null, ...(contactId ? { contactId } : {}) }]
+    .slice(-paramsFor().cards.takesKept);
+}
+/** What an activity returned, written as the world's: its events (the id, command revision and the visit's marks are the
+ * runtime's), the result it reached — the card that opened it resolves, or the day's one thing done together — and the
+ * take of a card's order that closed (review F5). */
+function afterActivity(state, a, out, host, { inVisit }) {
+  const marks = eventMarks(inVisit ? openVisit(state, host) : state.policy, { inVisit }), v = state.village;
+  for (const { kind, ...fields } of out.events) townEvent(state, kind, { ...fields, ...marks });
+  if (out.completed?.card) {
+    const take = (v.takes || []).find(t => t.card === out.completed.card.id && t.key === out.completed.card.key && ['with', 'paused'].includes(t.status));
+    if (take && out.completed.served > 0) resolveTake(state, host, take, CARD_BY_ID[take.card], null, { inVisit });
+  } else if (out.completed?.served > 0 && a.together) {
+    const slot = state.activities[a.id], b = v.band;
+    if (!(slot.day?.lifeDay === b.lifeDay && slot.day.together)) {
+      // The day's one thing done with the cafe owner (§11-6): only she knows it (G6), the notebook shows it, she can forget it.
+      const actors = [...a.reserves, 'player'], place = placeOfSpot(a.places[0]), ref = `${b.lifeDay}.${a.id}`;
+      const id = townEvent(state, a.together.kind, { order: out.completed.id, public: false, actors, place, lifeDay: b.lifeDay, band: b.band, atMs: host.nowMs, ...marks,
+        ...relation({ participantRole: a.together.roles, help: { by: 'player', to: [...a.reserves] }, deliveredSegmentIds: [], canonicalActivityId: a.canonicalActivityId, storyFamily: a.storyFamily }) });
+      slot.day = { ...(slot.day?.lifeDay === b.lifeDay ? slot.day : { lifeDay: b.lifeDay, requests: 0 }), together: id };
+      learnPrivate(v, { ref, activity: a.id, path: 'player', actors, place });
+      state.recentLifeUse = recordLifeUse(state.recentLifeUse || [], { useId: ref, canonicalActivityId: a.canonicalActivityId, storyFamily: a.storyFamily, direct: true });
+    }
+  }
+  if (out.closed?.card) {
+    const take = (v.takes || []).find(t => t.card === out.closed.card.id && t.key === out.closed.card.key && t.open);
+    if (take) { take.open = false; if (take.status === 'with') take.status = 'paused'; }
+  }
+}
+/** Runs an activity's confirm rule and writes what it returns. */
+function runActivity(state, a, type, payload, host, extra = {}) {
+  state.activities ||= initialActivities();
+  const out = a.apply(slotOf(state, a), { type, payload }, activityCtx(state, a, host, extra));
+  if (out.error) ensure(false, ...out.error);
+  state.activities[a.id] = out.slot;
+  afterActivity(state, a, out, host, { inVisit: true });
+}
+/** A card whose 「나와 함께」 is a life activity opens it bound to the take (W8: C5 the order, R6 the one-cup board); opening
+ * the card again goes on with the board it already has (review GA3). */
+function openActivityFor(state, card, key, host) {
+  const a = ACTIVITY_BY_ID[card.paths.player.activity], s = slotOf(state, a).open;
+  if (s?.card?.id === card.id && s.card.key === key) return;
+  runActivity(state, a, a.opens, {}, host, { card: { id: card.id, key, cup: card.paths.player.cup, owner: card.owner } });
+}
+/** A card's take closing closes the activity it opened (its guests are served by the owner). */
+function closeActivityFor(state, take, host) {
+  const a = ACTIVITY_BY_ID[CARD_BY_ID[take.card].paths.player.activity], s = slotOf(state, a).open;
+  if (s?.card?.id === take.card && s.card.key === take.key) runActivity(state, a, a.closes, {}, host);
+}
+/** A life activity's own command (W8): the runtime's checks — the place, who must be up and free, what else the cafe is
+ * doing — then the activity's confirm rule. Closing is always open (base); serving happens where the guest is (review F15). */
+function commandActivity(state, a, type, p, host) {
+  const v = state.village;
+  ensure(state.day && v?.band && host.enabled === true && host.surface === 'day' && Number.isSafeInteger(host.nowMs), 'activity-unavailable', '지금은 이 생활을 열 수 없어요.', 403);
+  state.activities ||= initialActivities();
+  const s = slotOf(state, a).open;
+  let extra = {};
+  if (type === a.opens) {
+    ensure(p.card === undefined && p.key === undefined, 'invalid-command', '다시 눌러 주세요.');
+    ensure(atDayPlace(state, 'cafe'), 'day-walk-too-far', '찻집 가까이 가서 주문을 받아 주세요.', 409);
+    const e = state.day.episode;
+    ensure(!bazaarOwns(state) && !state.pendingUse && !(e?.open && e.location === 'cafe' && e.stage !== 'invalid') && !state.life?.episode?.open,
+      'tea-cafe-busy', '찻집에서 하던 생활을 먼저 마쳐 주세요.', 409);
+    // The order before, done and opened by a card, lets its take go as the next opens (review F5).
+    if (s?.card && s.completed !== null) for (const t of v.takes || []) if (t.card === s.card.id && t.key === s.card.key) t.open = false;
+    ensure(!(v.takes || []).some(t => t.open), 'card-busy', '하던 생활을 먼저 닫아 주세요.', 409);
+    const held = heldNow(state)['cafe-owner'];
+    ensure(!held || held.by.startsWith('tea:'), 'card-owner-busy', '찻집 주인이 하던 장면을 마친 뒤 함께할 수 있어요.', 409);
+    // A rush the cafe owner is in (C5) is this order — one path, one event (review F16).
+    const rush = cardNow(state, host.nowMs).cards.find(c => CARD_BY_ID[c.card].paths.player.activity === a.id && CARD_BY_ID[c.card].paths.player.cup === 'order'
+      && mayTake(CARD_BY_ID[c.card], c.status));
+    if (rush) {
+      const card = CARD_BY_ID[rush.card];
+      openTakeFor(state, card, rush.key, host);
+      extra = { card: { id: card.id, key: rush.key, cup: card.paths.player.cup, owner: card.owner } };
+    }
+    state.day.rest = false; state.resting = false;
+  } else if (type !== a.closes) {
+    const place = s?.kind === 'one-cup' ? placeOfSpot(holdSpotOf(CARD_BY_ID[s.card.id])) : 'cafe';
+    ensure(!s || atDayPlace(state, place), 'day-walk-too-far', place === 'cafe' ? '찻집 가까이 가서 내 주세요.' : '잔을 들고 가까이 가서 드려 주세요.', 409);
+    extra = { ownerPlace: place };
+  }
+  runActivity(state, a, type, p, host, extra);
+}
+
 /** The small need cards with the player (§8-3 나와 함께, W5) and the greeting that tells the player what a resident knows (§9-4). */
 const CARD_COMMANDS = new Set(['CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM', 'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET']);
 function commandCard(state, type, p, host) {
@@ -878,11 +1026,9 @@ function commandCard(state, type, p, host) {
         ensure(c.card === card.id && c.key === p.key, 'stale-life-contact', '이 제안은 현재 화면에서 다시 확인해 주세요.', 409);
         c.status = 'detail'; contactId = c.id;
       } else for (const c of state.life.contacts) if (c.contactKey === by && ['issued', 'delivered', 'detail'].includes(c.status)) c.status = 'cancelled';
-      // Opening it again goes on where it paused (§8-3 paused → withPlayer); a take the visit ended is a new one.
-      const take = (v.takes || []).find(t => t.card === card.id && t.key === p.key && ['with', 'paused'].includes(t.status));
-      if (take) Object.assign(take, { status: 'with', open: true });
-      else v.takes = [...(v.takes || []), { card: card.id, key: p.key, at: host.nowMs, status: 'with', open: true, choice: null, ...(contactId ? { contactId } : {}) }]
-        .slice(-paramsFor().cards.takesKept);
+      openTakeFor(state, card, p.key, host, contactId);
+      // A card whose 「나와 함께」 is a life activity opens it bound to the take (W8: C5 the order, R6 the one-cup board).
+      if (card.paths.player.activity) openActivityFor(state, card, p.key, host);
       state.day.rest = false; state.resting = false;
       break;
     }
@@ -895,20 +1041,14 @@ function commandCard(state, type, p, host) {
     case 'CARD_CONFIRM': {
       const take = openTake(state), card = take && CARD_BY_ID[take.card];
       ensure(take?.status === 'with' && take.choice, 'card-choice-first', '먼저 하나 골라 주세요.', 409);
-      const b = v.band, actors = [card.owner, ...(card.paths.player.with || [])], place = placeOfSpot(card.spot);
-      Object.assign(take, { status: 'resolved', resolvedAt: host.nowMs, ref: cardRef(b.lifeDay, b.band, card.id) });
-      // Done with the player: an event only those in it know (§9-2, G6), with the fields a relationship is computed from (§20-1).
-      take.eventId = townEvent(state, 'card.resolved', { ref: take.ref, card: card.id, path: 'player', public: false, actors: [...actors, 'player'], place,
-        lifeDay: b.lifeDay, band: b.band, atMs: host.nowMs, ...eventMarks(openVisit(state, host), { inVisit: true }), ...relation(playerRelation(card, take.choice)) });
-      learnPrivate(v, { ref: take.ref, card: card.id, path: 'player', actors: [...actors, 'player'], place });
-      state.recentLifeUse = recordLifeUse(state.recentLifeUse || [], { useId: take.ref, canonicalActivityId: `card.${card.id}`, storyFamily: card.family, direct: !take.contactId });
-      const c = take.contactId && state.life.contacts.find(row => row.id === take.contactId);
-      if (c?.status === 'detail') c.status = 'accepted';
+      resolveTake(state, host, take, card, take.choice);
       break;
     }
     case 'CARD_CLOSE': {
-      // Closed before it was done: that card alone waits as "하던 생활"; the owner goes back to its own day (§8-3 paused).
+      // Closed before it was done: that card alone waits as "하던 생활" for the player (§8-3 paused); a life activity the
+      // card opened closes with it, the owner serving who is left (W8).
       const take = openTake(state);
+      if (take && CARD_BY_ID[take.card].paths.player.activity) closeActivityFor(state, take, host);
       if (take) { take.open = false; if (take.status === 'with') take.status = 'paused'; }
       break;
     }
@@ -953,6 +1093,7 @@ export function reduceCommand(previous, command, host = {}) {
   if (ftMutation && (host.surface === 'day' || state.day?.walk?.enabled)) ensure(atDayPlace(state, 'cafe'),
     'day-place-conflict', '찻집에서 현재 자리를 확인해 주세요.', 409);
   if (ftMutation) ensure(!bazaarOwns(state), 'bazaar-cafe-busy', '손님 응대를 닫은 뒤 자리를 바꿔 주세요.', 409);
+  if (ftMutation) ensure(!teaOwns(state), 'tea-cafe-busy', '주문을 닫은 뒤 자리를 바꿔 주세요.', 409);
   const dayEpisode = state.day?.episode;
   if (ftMutation && dayEpisode?.open && dayEpisode.location === state.day.location && dayEpisode.kind === 'tea' && dayEpisode.stage !== 'invalid')
     ensure(false, 'day-cafe-busy', '함께 하던 생활을 닫은 뒤 자리를 바꿔 주세요.', 409);
@@ -1093,7 +1234,8 @@ export function reduceCommand(previous, command, host = {}) {
     // account screen use this one command path, so each change leaves its receipt, revision and event.
     case 'MEMORY_FORGET': {
       // A thing done together is a Trail fact or, from W5, a card done with the player that the resident knows (review F11).
-      const card = typeof p.eventId === 'string' && CARD_REF.test(p.eventId) && !!state.village && privateOf(state.village, p.npc).some(e => e.ref === p.eventId);
+      // W8: and the day a life activity was done with the player (<life day>.<activity> — 「찻집 일을 같이 했다」).
+      const card = typeof p.eventId === 'string' && (CARD_REF.test(p.eventId) || ACTIVITY_MEMORY.test(p.eventId)) && !!state.village && privateOf(state.village, p.npc).some(e => e.ref === p.eventId);
       ensure(card || forgettable(trailOf(state), p.npc, p.eventId), 'memory-unavailable', '그 기억을 찾지 못했어요. 수첩을 다시 열어 주세요.', 409);
       const next = forget(state.forgotten, { npc: p.npc, target: p.eventId });
       if (next.added) { state.forgotten = next.forgotten; townEvent(state, 'memory.forgotten', { npc: p.npc, target: p.eventId }); }
@@ -1176,6 +1318,8 @@ export function reduceCommand(previous, command, host = {}) {
       if (CARD_COMMANDS.has(command.type)) { commandCard(state, command.type, p, host); break; }
       const asleep = sleepersFor(state, command, p, host.nowMs);
       ensure(!asleep.length, 'resident-asleep', `${asleep.map(npc => RESIDENT_BY_ID[npc].label).join('과 ')}은 지금 자고 있어요. 아침에 다시 만나요.`, 409);
+      const activity = activityOfCommand(command.type);
+      if (activity) { commandActivity(state, activity, command.type, p, host); break; }
       if (command.type.startsWith('SUPPORT_')) {
         ensure(state.support && host.enabled === true && host.surface === 'day', 'support-unavailable', '첫 하루에서 읽기 도움을 확인해 주세요.', 403);
         runLife(state, () => { commandSupport(state.support, command.type, p, supportContext(state, host)); return []; });
@@ -1194,7 +1338,7 @@ export function reduceCommand(previous, command, host = {}) {
           'day-unavailable', '첫 하루 화면에서 현재 생활을 확인해 주세요.', 403);
         if (command.type.startsWith('DAY_WALK') || command.type === 'DAY_INTERACT') ensure(host.canRun && host.surfaceId
           && host.ownerSurfaceId === host.surfaceId, 'walk-not-owner', '지금 조작 중인 마을 창에서 걸어 주세요.', 409);
-        if (['DAY_START', 'DAY_RESUME', 'DAY_RETRY'].includes(command.type)) ensure(!bazaarOwns(state)
+        if (['DAY_START', 'DAY_RESUME', 'DAY_RETRY'].includes(command.type)) ensure(!bazaarOwns(state) && !teaOwns(state)
           && !(command.type === 'DAY_RESUME' && state.bazaar?.episode?.open && state.day.episode?.location === 'cafe'),
           'bazaar-cafe-busy', '손님과 하던 생활을 닫은 뒤 이어가 주세요.', 409);
         if (command.type === 'DAY_JOB_START') ensure(!(bazaarOwns(state) && state.bazaar.episode.kind === 'pictureMenu'),

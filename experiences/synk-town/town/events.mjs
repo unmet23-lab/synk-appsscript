@@ -33,6 +33,11 @@ export const KINDS = Object.freeze({
   // A small need card solved (§8, W5): its reference (band and card), the path, and whether the village may hear of it —
   // alone or by two it is public; with the player only those in it know (§9-2, G6).
   'card.resolved': { ref: id, card: v => /^[CWR][1-6]$/.test(v), path: v => ['self', 'pair', 'player'].includes(v), public: v => typeof v === 'boolean' },
+  // W8 (§11-6): the day's one tea order done with the player — only those in it know, never news (G6) …
+  'tea.together': { order: id, public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
+  // … and one guest's request finished: the result place the learning adapter (W9) reads — ids and values, no words (G7).
+  'tea.request': { order: id, guest: id, who: id, level: v => ['L1', 'L2', 'L3', 'L4'].includes(v), by: v => ['player', 'owner'].includes(v),
+    result: v => ['made', 'owner', 'stopped'].includes(v), tries: v => Number.isSafeInteger(v) && v >= 0, lifeDay: Number.isSafeInteger },
 });
 
 /** The relationship fields of an event the player took part in, checked (§20-1). */

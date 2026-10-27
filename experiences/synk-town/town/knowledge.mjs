@@ -16,7 +16,7 @@ const K = params => (params ?? paramsFor()).knowledge;
 export const HOWS = Object.freeze(['direct', 'heard', 'news', 'private']);
 export const initialKnowledge = () => ({ lifeDay: null, heard: {}, known: {} });
 
-const entryOf = (line, how, from = null) => ({ ref: line.ref, card: line.card, path: line.path, actors: [...line.actors], place: line.place, how, ...(from ? { from } : {}) });
+const entryOf = (line, how, from = null) => ({ ref: line.ref, ...(line.activity ? { activity: line.activity } : { card: line.card }), path: line.path, actors: [...line.actors], place: line.place, how, ...(from ? { from } : {}) });
 const knows = (k, npc, ref) => (k.known[npc] || []).some(e => e.ref === ref);
 /** A resident learns one thing (once; its newest few are kept). */
 function learn(k, npc, entry, params) {
@@ -100,7 +100,9 @@ export const noteOf = (village, params) => [...(village.news || [])].reverse().s
   .map(({ ref, card, path, actors, place }) => ({ ref, card, path, actors: [...actors], place }));
 
 const id = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,120}$/.test(value);
-const entryOk = e => !!e && id(e.ref) && Object.hasOwn(CARD_BY_ID, e.card) && ['self', 'pair', 'player'].includes(e.path)
+// A life activity's day (W8) is known privately only, by the ones in it — never news or hearsay.
+const ACTIVITY_MEMORY = /^\d+\.[a-z][a-z-]{1,30}$/;
+const entryOk = e => !!e && id(e.ref) && (Object.hasOwn(CARD_BY_ID, e.card) && e.activity === undefined || e.card === undefined && typeof e.activity === 'string' && ACTIVITY_MEMORY.test(e.ref) && e.how === 'private' && e.path === 'player') && ['self', 'pair', 'player'].includes(e.path)
   && Array.isArray(e.actors) && e.actors.every(id) && typeof e.place === 'string' && HOWS.includes(e.how) && (e.from === undefined || Object.hasOwn(ROLE, e.from));
 /** Whether the stored knowledge, news, happenings and what was told are whole. */
 export function validKnowledge(village, params) {

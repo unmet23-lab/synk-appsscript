@@ -1,0 +1,29 @@
+{
+  "$comment": "찻집 주문(세로 조각 설계 §11, W8)의 낱말 표 · 손님 · 3D 자리. 요청 원고(lines/tea.json)의 빈칸은 이 표의 값으로만 채운다(G5). 차 이름은 모두 「차」로 끝나 뒤 조사가 늘 같다(가 · 를 · 로 · 는). 값 키: tea barley·yuzu·today, temp warm·cold(잔이 정한다 — 따뜻한 잔 · 찬 잔), sweet 0·1·2(꿀 숟가락 수). stand는 찻집(가운데 0,0) 안 손님 A(서빙대 앞)·B(뒤에서 기다림)의 그림 자리 — 계획기의 자리가 아니다.",
+  "axes": {
+    "tea": {
+      "barley": { "name": "보리차", "color": "#b8763a" },
+      "yuzu": { "name": "유자차", "color": "#e3b33c" },
+      "today": { "name": "오늘의 차", "color": "#7f9a54" }
+    },
+    "temp": {
+      "warm": { "adn": "따뜻한", "adv": "따뜻하게", "cup": "따뜻한 잔" },
+      "cold": { "adn": "차가운", "adv": "차갑게", "cup": "찬 잔" }
+    },
+    "sweet": {
+      "0": { "adn": "안 단", "adv": "안 달게", "honey": "꿀 없이", "spoons": "꿀 없음" },
+      "1": { "adn": "조금 단", "adv": "조금 달게", "honey": "꿀은 조금만", "spoons": "꿀 한 숟가락" },
+      "2": { "adn": "단", "adv": "달게", "honey": "꿀을 넉넉히", "spoons": "꿀 두 숟가락" }
+    }
+  },
+  "guests": {
+    "regular": "visitor-tea-reader",
+    "walkers": ["book-guest", "companion"],
+    "labels": { "visitor-tea-reader": "책을 든 단골손님", "book-guest": "손님", "companion": "손님" }
+  },
+  "stand": {
+    "a": { "x": -0.05, "z": 0.25 },
+    "b": { "x": 0.85, "z": 1.15 },
+    "out": { "x": 3, "z": 2.6 }
+  }
+}

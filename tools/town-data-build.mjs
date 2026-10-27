@@ -276,6 +276,67 @@ export function validateMusic(data) {
 
 /** The mood lines the screen shows (§7-3, W4): one record per line with its four levels and picture; every
  * tag a resident's mood table names has its first variant. The checker (town-lines-check) owns the wording rules. */
+/** The life activities a card's 「나와 함께」 may open (town/activities). */
+export const ACTIVITY_IDS = Object.freeze(['tea-order']);
+/** The tea order's word table (town/data/tea.json, W8): the three axes and their forms, the guests and where they stand. */
+export const TEA_AXES = Object.freeze({ tea: ['name'], temp: ['adn', 'adv', 'cup'], sweet: ['adn', 'adv', 'honey', 'spoons'] });
+export const TEA_SLOTS = Object.freeze(['tea', 'temp.adn', 'temp.adv', 'sweet.adn', 'sweet.adv', 'sweet.honey']);
+export function validateTea(data) {
+  const text = v => typeof v === 'string' && v.trim().length > 0 && v.length <= 20;
+  const point = p => p && Number.isFinite(p.x) && Number.isFinite(p.z) && Math.abs(p.x) <= 14 && Math.abs(p.z) <= 13;
+  for (const [axis, forms] of Object.entries(TEA_AXES)) {
+    const values = data?.axes?.[axis];
+    if (!values || !Object.keys(values).length || !Object.values(values).every(v => forms.every(form => text(v[form])))) fail(`tea.json axes.${axis}`);
+  }
+  const keys = axis => Object.keys(data.axes[axis]).sort().join();
+  if (keys('tea') !== 'barley,today,yuzu' || keys('temp') !== 'cold,warm' || keys('sweet') !== '0,1,2') fail('tea.json의 축 값(차 셋 · 온도 둘 · 단맛 셋)');
+  if (!Object.values(data.axes.tea).every(v => /^#[0-9a-f]{6}$/.test(v.color ?? ''))) fail('tea.json 차 색');
+  const g = data.guests || {}, looks = [g.regular, ...(g.walkers || [])];
+  if (!word(g.regular) || !Array.isArray(g.walkers) || g.walkers.length !== 2 || new Set(looks).size !== 3 || !looks.every(id => word(id) && text(g.labels?.[id]))) fail('tea.json guests');
+  if (!['a', 'b', 'out'].every(k => point(data.stand?.[k]))) fail('tea.json stand');
+  return data;
+}
+/** The tea order's lines (kind tea, W8): request frames (part request — the axes they settle, the values they fix, the
+ * level they are written for, the axis 「같은 걸로」 borrows), the guests' answers, the regular's, the cafe owner's.
+ * Every blank is a form of the table, and all four levels name the same axes. The checker owns lengths and words. */
+export function validateTeaLines(docs, tea) {
+  const lines = docs.flat().filter(entry => entry?.kind === 'tea'), ids = new Set(), axes = Object.keys(TEA_AXES), LV = ['L1', 'L2', 'L3', 'L4'];
+  const valueOk = (axis, value) => Object.hasOwn(tea.axes[axis], String(value)) && (axis !== 'sweet' || Number.isSafeInteger(value));
+  const slotAxes = text => [...String(text).matchAll(/\{([a-z]+(?:\.[a-z]+)?)\}/g)].map(m => { if (!TEA_SLOTS.includes(m[1])) fail(`찻집 줄의 빈칸 {${m[1]}}`); return m[1].split('.')[0]; });
+  for (const e of lines) {
+    const [npc, kind, key, n] = String(e.id).split('.'), w = e.when || {};
+    if (kind !== 'tea' || !/^\d+$/.test(n ?? '') || !/^[a-z][a-z0-9-]*$/.test(key ?? '') || ids.has(e.id) || e.npc !== npc || !LV.every(l => typeof e.levels?.[l] === 'string')) fail(`찻집 줄 ${e.id}`);
+    ids.add(e.id);
+    const blanks = LV.map(l => [...new Set(slotAxes(e.levels[l]))].sort().join());
+    // 「같은 걸로」의 L1은 빌린 차를 풀어 말하고(「무슨 뜻이에요?」), 위 판은 「같은 차로」라 그 축만 빈칸에서 빠진다.
+    const borrowed = w.part === 'request' ? w.same : undefined, drop = list => list.split(',').filter(a => a && a !== borrowed).join();
+    if (new Set(blanks.map(drop)).size !== 1 || borrowed && !blanks[0].split(',').includes(borrowed)) fail(`찻집 줄 ${e.id}의 네 판 빈칸이 달라요.`);
+    const named = blanks[0].split(',').filter(Boolean);
+    if (w.part === 'request') {
+      if (npc !== 'guest' || !LV.includes(w.home) || !Array.isArray(w.axes) || !w.axes.length || !w.axes.every(a => axes.includes(a)) || new Set(w.axes).size !== w.axes.length
+        || (w.fixed !== undefined && !Object.entries(w.fixed).every(([a, v]) => w.axes.includes(a) && valueOk(a, v)))
+        || (w.same !== undefined && !(w.same === 'tea' && w.axes.includes('tea') && w.axes.length > 1 && !Object.hasOwn(w.fixed || {}, 'tea')))) fail(`요청 틀 ${e.id}`);
+      // The blanks name exactly the axes the frame settles that it does not fix (the borrowed tea is named too).
+      const open = w.axes.filter(a => !Object.hasOwn(w.fixed || {}, a)).sort().join();
+      if (named.join() !== open) fail(`요청 틀 ${e.id}의 빈칸(${named.join()})이 정할 축(${open})과 달라요.`);
+    } else if (w.part === 'react') {
+      const ok = npc === 'guest' && (w.is === 'match' && (w.free === undefined || w.free === 'sweet' && valueOk('sweet', w.value) || w.free === 'temp' && valueOk('temp', w.value))
+        || w.is === 'differ' && (w.axis === 'tea' || w.axis === 'temp' && valueOk('temp', w.want) || w.axis === 'sweet' && ['less', 'more'].includes(w.dir)) || w.is === 'takeaway');
+      if (!ok || (named.length && !(w.is === 'differ' && w.axis === 'tea' && named.join() === 'tea'))) fail(`찻집 반응 ${e.id}`);
+    } else if (w.part === 'regular') { if (npc !== 'guest' || !['usual', 'match'].includes(w.is) || named.length) fail(`단골 줄 ${e.id}`); }
+    else if (w.part === 'owner') { if (npc !== 'cafe-owner' || !['offer', 'took', 'finish', 'done'].includes(w.is) || named.length) fail(`주인 줄 ${e.id}`); }
+    else fail(`찻집 줄 ${e.id}의 part`);
+  }
+  if (lines.length) {
+    const has = test => lines.some(e => test(e.when || {}));
+    const need = [['L1 · L2 · L3 · L4 요청 틀', LV.every(l => has(w => w.part === 'request' && w.home === l))],
+      ['맞음 반응(꿀 셋 · 온도 둘 · 그 밖)', [0, 1, 2].every(v => has(w => w.is === 'match' && w.free === 'sweet' && w.value === v)) && ['warm', 'cold'].every(v => has(w => w.is === 'match' && w.free === 'temp' && w.value === v)) && has(w => w.part === 'react' && w.is === 'match' && !w.free)],
+      ['다름 반응(차 · 온도 둘 · 단맛 둘)', has(w => w.is === 'differ' && w.axis === 'tea') && ['warm', 'cold'].every(v => has(w => w.axis === 'temp' && w.want === v)) && ['less', 'more'].every(d => has(w => w.axis === 'sweet' && w.dir === d))],
+      ['들고 감 · 단골 둘 · 주인 넷', has(w => w.is === 'takeaway') && ['usual', 'match'].every(i => has(w => w.part === 'regular' && w.is === i)) && ['offer', 'took', 'finish', 'done'].every(i => has(w => w.part === 'owner' && w.is === i))]];
+    for (const [what, ok] of need) if (!ok) fail(`찻집 줄이 모자라요: ${what}`);
+  }
+  return lines.map(e => ({ id: e.id, npc: e.npc, kind: e.kind, when: e.when, levels: e.levels }));
+}
 export function validateMoodLines(docs, residents) {
   const lines = docs.flat().filter(entry => entry?.kind === 'mood'), ids = new Set();
   for (const entry of lines) {
@@ -343,8 +404,9 @@ export function validateCards(data, places, archetypes, pairs) {
     if (!(pair.scene === null || pair.scene === pairOf(c.owner, pair.partner)?.scene)) fail(`${where}의 쌍 장면은 그 쌍의 것이에요.`);
     if (pair.glad !== undefined && !kinds.has(pair.glad)) fail(`${where}.paths.pair.glad`);
     if (player?.spot !== undefined && !spotOrGroup(player.spot)) fail(`${where}의 나와 함께 자리`);
+    if (player?.activity !== undefined && !(ACTIVITY_IDS.includes(player.activity) && ['order', 'one'].includes(player.cup) && !player.choices?.length)) fail(`${where}의 나와 함께 생활(activity · cup)`);
     if (!player || !Array.isArray(player.choices) || player.choices.some(x => !word(x)) || new Set(player.choices).size !== player.choices.length
-      || !ROLES.includes(player.role) || !word(player.result) || typeof player.ready !== 'boolean' || player.ready && !player.choices.length
+      || !ROLES.includes(player.role) || !word(player.result) || typeof player.ready !== 'boolean' || player.ready && !player.choices.length && !player.activity
       || (player.with !== undefined && !(Array.isArray(player.with) && player.with.every(npc => RESIDENT_IDS.includes(npc) && npc !== c.owner)))) fail(`${where}의 나와 함께 길`);
     if (!(c.trace === null || OBJECTS.includes(c.trace?.object) && /^[a-z][A-Za-z]{1,20}$/.test(c.trace.field ?? ""))) fail(`${where}의 흔적`);
     if (!(c.news === null || integer(c.news, 1, 3)) || (c.newsPaths !== undefined && !(Array.isArray(c.newsPaths) && c.newsPaths.every(p => ['self', 'pair'].includes(p))))) fail(`${where}의 소식`);
@@ -441,12 +503,14 @@ export function build() {
   const cardsData = validateCards(read('cards.json'), placesData, { archetypes }, pairsData);
   for (const r of residentsData.residents) for (const m of r.moods) if (CARD_ID.test(m.factor) && !cardsData.cards.some(c => c.id === m.factor)) fail(`${r.id}의 마음 ${m.factor}는 카드가 아니에요.`);
   const townLines = validateTownLines(lineDocs, cardsData, pairsData);
+  const tea = validateTea(read('tea.json')), { $comment: teaNote, ...teaTable } = tea, teaLines = validateTeaLines(lineDocs, tea);
   // One record per line keeps the generated diff as readable as the source.
   const rows = list => (list.length ? `[\n${list.map(item => `    ${JSON.stringify(item)}`).join(',\n')},\n  ]` : '[]');
   const body = `{\n  places: ${rows(places)},\n  spots: ${rows(spots)},\n  groups: ${JSON.stringify(groups)},\n`
     + `  archetypes: ${rows(archetypes)},\n  residents: ${rows(residentsData.residents)},\n  routines: ${rows(routines)},\n  rainAlt: ${JSON.stringify(rainAlt)},\n`
     + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  stay: ${JSON.stringify(stay)},\n  music: ${JSON.stringify(musicShown)},\n  moodLines: ${rows(moodLines)},\n`
-    + `  cards: ${rows(cardsData.cards)},\n  pairs: ${rows(pairsData.pairs)},\n  chatSpots: ${JSON.stringify(pairsData.chatSpots)},\n  townLines: ${rows(townLines)},\n}`;
+    + `  cards: ${rows(cardsData.cards)},\n  pairs: ${rows(pairsData.pairs)},\n  chatSpots: ${JSON.stringify(pairsData.chatSpots)},\n  townLines: ${rows(townLines)},\n`
+    + `  tea: ${JSON.stringify(teaTable)},\n  teaLines: ${rows(teaLines)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -468,6 +532,8 @@ export function build() {
     'export const PAIRS = data.pairs;',
     'export const CHAT_SPOTS = data.chatSpots;',
     'export const TOWN_LINES = data.townLines;',
+    'export const TEA = data.tea;',
+    'export const TEA_LINES = data.teaLines;',
     '',
   ].join('\n');
 }

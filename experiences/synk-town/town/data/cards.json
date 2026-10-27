@@ -34,7 +34,7 @@
       "bands": ["day", "evening"], "cooldownLifeDays": 5, "archetype": "serve", "spot": "cafe.seats",
       "paths": { "self": { "result": "hurried" },
         "pair": { "partner": "workshop-owner", "partnerArchetype": "fix-round", "partnerSpot": "cafe.counter", "scene": null, "result": "guided" },
-        "player": { "choices": [], "role": "make", "result": "served", "ready": false } },
+        "player": { "activity": "tea-order", "cup": "order", "spot": "cafe.counter", "choices": [], "role": "make", "result": "served", "ready": true } },
       "trace": null, "news": null },
     { "id": "C6", "owner": "cafe-owner", "title": "오늘은 좀 앉고 싶은데", "family": "cafe-life",
       "trigger": { "kind": "state", "stat": "energy", "below": 25 },
@@ -126,7 +126,7 @@
       "bands": ["morning", "day"], "cooldownLifeDays": 3, "archetype": "doze", "spot": "greenhouse.bench",
       "paths": { "self": { "result": "dozed" },
         "pair": { "partner": "cafe-owner", "partnerArchetype": "deliver-tea", "partnerSpot": "greenhouse.bed", "scene": null, "result": "strong-tea" },
-        "player": { "choices": [], "role": "make", "result": "strong-tea", "ready": false } },
+        "player": { "activity": "tea-order", "cup": "one", "choices": [], "role": "deliver", "result": "strong-tea", "ready": true } },
       "trace": null, "news": null }
   ]
 }
