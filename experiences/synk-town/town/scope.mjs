@@ -19,7 +19,7 @@ export const SCOPES = Object.freeze(['rights', 'base', 'first-chapter', 'subscri
 // W8: each life activity names its commands' scopes (town/activities — the tea order's TEA_OPEN · TEA_SERVE · TEA_OWNER
 // are the first chapter's, TEA_CLOSE is base: closing is always open). talk lib/town-scope.js lists them by name.
 const activityIn = scope => Object.entries(ACTIVITY_COMMANDS).filter(([, s]) => s === scope).map(([type]) => type);
-// W6 (Fable F7): turning the time the player usually comes off empties that record — the person's own right, so rights.
+// W6 (design review F7): turning the time the player usually comes off empties that record — the person's own right, so rights.
 export const RIGHTS = Object.freeze(new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT', 'PREF_VISIT_BANDS']));
 export const BASE = Object.freeze(new Set([
   'ACK', 'RESET', 'VISIT', 'LEAVE', 'SIT', 'REARRANGE', 'REMOVE', 'SIGN_REMOVE',

@@ -1,0 +1,21 @@
+/* 「그동안 달라진 것」 판(W6b, §10-2): 방문을 시작할 때 한 번, 첫 줄을 크게 보이고 나머지는 「더 보기」로 연다. 기간·횟수·날짜는
+ * 보이지 않는다(G3). 자리는 day-ask.css의 알림 자리(.town-notices)다. day-meanwhile.mjs가 이 파일을 잇는다. */
+.meanwhile-card{display:grid;gap:8px;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 18px 44px rgba(0,0,0,.24);color:var(--w-ink);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);animation:meanwhile-in .3s ease-out both}
+.meanwhile-card[hidden]{display:none}
+.meanwhile-title{margin:0}
+.meanwhile-first{margin:0;font-size:16.5px;line-height:1.5;font-weight:var(--wt-strong);text-wrap:pretty;word-break:keep-all}
+.meanwhile-line{display:flex;align-items:flex-start;gap:9px}
+.meanwhile-icon{display:inline-grid;place-items:center;flex:none;color:var(--w-face)}
+.meanwhile-icon svg{width:22px;height:22px;margin-top:1px}
+.meanwhile-rest{display:grid;gap:6px;margin:0;padding:6px 0 0;list-style:none;border-top:1px solid var(--w-line)}
+.meanwhile-rest[hidden]{display:none}
+.meanwhile-rest li{font-size:14px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty;word-break:keep-all}
+.meanwhile-rest .meanwhile-icon svg{width:18px;height:18px}
+.meanwhile-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.meanwhile-more[hidden]{display:none}
+.meanwhile-more{min-height:40px;padding:0;font-size:13.5px}
+.meanwhile-close.felt{margin-left:auto;min-height:38px;padding:0 14px;font-size:13px}
+@keyframes meanwhile-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(max-width:760px){.meanwhile-card{padding:11px 12px}.meanwhile-first{font-size:15.5px}}
+@media(prefers-reduced-transparency:reduce){.meanwhile-card{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){.meanwhile-card{background:Canvas;color:CanvasText;border:1px solid CanvasText}.meanwhile-icon{color:CanvasText}}

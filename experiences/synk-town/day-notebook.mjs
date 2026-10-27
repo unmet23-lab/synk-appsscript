@@ -2,7 +2,8 @@
  * their days), what the player can do now (the cards waiting for the player, opened by talking to their owner), the
  * familiar life (what the player has been through more than a few times, from the seen ledger, and emptying it), what
  * the village remembers (what the player did today with its 「…」 feedback, what each resident knows of things done
- * together with 「잊어 주세요」, the settings the village keeps for the player, emptying the personal record) and the
+ * together with 「잊어 주세요」, the settings the village keeps for the player — W6: filling the spots at the time the player
+ * usually comes — the evaluation-only signals' consent (W6) and emptying the personal record) and the
  * field book (opens with gathering, W8b). Every change goes through the town's own commands (§20 — rights and base);
  * nothing here counts, dates or ranks (G2·G3). Screen-only module.
  */
@@ -39,15 +40,33 @@ export function notebookModel(snapshot) {
   const journal = [...new Set([...(snapshot?.view?.notebook || []), ...(snapshot?.view?.day?.history || []).map(row => row.summary), ...(snapshot?.view?.bazaar?.history || []).map(row => row.summary)].filter(Boolean))];
   const known = Object.entries(scene?.knownMe || {}).flatMap(([npc, list]) => (list || []).filter(e => CARD_BY_ID.has(e.card) || ACTIVITY_MEMORY_LABELS[e.activity])
     .map(e => ({ npc, ref: e.ref, card: e.card ?? null, title: e.activity ? ACTIVITY_MEMORY_LABELS[e.activity] : CARD_BY_ID.get(e.card).title })));
+  const bands = state.visitBands && typeof state.visitBands === 'object' ? state.visitBands : null;
   const settings = [
+    // The time the player usually comes (§10-3, W6): filling the village's spots then is on until the player turns it off.
+    ...(bands ? [bands.off ? { kind: 'visit-bands', label: '자주 오는 때에 맞춰 마을 자리 채우기 · 꺼 둠', action: ['PREF_VISIT_BANDS', { on: true }, '켜기'] }
+      : { kind: 'visit-bands', label: '내가 자주 오는 때에 맞춰 마을 자리를 채워요', action: ['PREF_VISIT_BANDS', { on: false }, '끄기'] }] : []),
     ...(prefs?.preferredFamily ? [{ kind: 'family', label: `먼저 보여 줄 생활 · ${FAMILY_LABELS[prefs.preferredFamily] || prefs.preferredFamily}`, action: ['PREF_FAMILY', { family: prefs.preferredFamily, answer: 'clear' }, '먼저 보여 주지 않아도 돼요'] }] : []),
     ...(prefs?.observed ? [{ kind: 'observed', label: `요즘 자주 한 생활 · ${FAMILY_LABELS[prefs.observed] || prefs.observed}`, action: ['OBSERVED_CORRECT', { family: prefs.observed }, '그때만 한 거예요'] }] : []),
     ...(prefs?.lessOften || []).map(activity => ({ kind: 'less', label: `덜 추천하는 생활 · ${activityLabel(activity)}`, action: ['PREF_LESS_OFTEN', { activity, on: false }, '다시 추천해도 돼요'] })),
     ...(prefs?.approachOptOut || []).map(activity => ({ kind: 'approach', label: `먼저 말 걸지 않는 생활 · ${activityLabel(activity)}`, action: ['PREF_APPROACH', { activity, optOut: false }, '다시 말 걸어도 돼요'] })),
     ...(prefs?.feedback || []).map(f => ({ kind: 'feedback', label: `내가 남긴 응답 · ${activityLabel(f.canonicalActivityId)} · ${FEEDBACK.find(([value]) => value === f.value)?.[1] || ''}`, action: ['FEEDBACK_REMOVE', { eventId: f.completionId }, '응답 지우기'] })),
   ];
-  return { news, can, familiar, today, journal, known, settings };
+  return { news, can, familiar, today, journal, known, settings, evalRecord: evalRecordOf(snapshot) };
 }
+
+/** 「마을을 낫게 하는 데 쓰는 기록」 (§20-4·§20-5, W6): shown where the host keeps the evaluation-only signals; where it does
+ * not (the privacy notice first), only a consent already given shows, with 「그만 쓰기」 alone (design review F8). An academy-linked
+ * account is never asked and cannot turn it on. */
+export function evalRecordOf(snapshot) {
+  const state = snapshot?.state || {}, consent = state.consents?.evalSignals?.state ?? null;
+  if (!consent || !EVAL_CONSENT) return null;
+  const on = consent === 'granted', host = snapshot?.capabilities?.evalSignals === true;
+  if (String(state.scope?.subject || '').startsWith('linked-')) return on ? { on, stopOnly: true } : { academy: true };
+  if (!host && !on) return null;
+  return { on, stopOnly: !host, ver: EVAL_CONSENT.ver, detail: EVAL_CONSENT.detail };
+}
+const EVAL_CONSENT = generated.EVAL_CONSENT || null;
+const DETAIL_ROWS = Object.freeze([['purpose', '무엇을 위해'], ['uses', '쓰는 것'], ['notUsed', '쓰지 않는 것'], ['keep', '보관'], ['choose', '고르기'], ['notAsked', '묻지 않는 경우'], ['contact', '문의']]);
 
 const h = (tag, props = {}, ...children) => {
   const el = document.createElement(tag);
@@ -66,7 +85,7 @@ const empty = text => h('p', { class: 'field-note notebook-empty', text });
  * or moves where the step leads (the confirm, back to its button), else to the page's tab (screen review B2). */
 export function createNotebook(dialog, { command, onPage } = {}) {
   if (!dialog) return { open() {}, render() {}, page: () => null };
-  let page = 'news', snapshot = null, confirming = null, feedbackOpen = null, journalOpen = false, drawn = null, focusNext = null;
+  let page = 'news', snapshot = null, confirming = null, feedbackOpen = null, journalOpen = false, drawn = null, focusNext = null, evalDetailOpen = false;
   const tabs = dialog.querySelector('.notebook-tabs'), body = dialog.querySelector('.notebook-page');
   function tabList() {
     tabs.replaceChildren(...PAGES.map(([id, label]) => h('button', { type: 'button', role: 'tab', id: `notebook-tab-${id}`, class: 'notebook-tab', 'aria-selected': String(id === page),
@@ -95,10 +114,28 @@ export function createNotebook(dialog, { command, onPage } = {}) {
       open ? h('div', { class: 'feedback-options', role: 'group', 'aria-label': '응답' }, FEEDBACK.map(([value, label]) => h('button', { type: 'button', class: 'felt', 'aria-pressed': String(item.given === value), text: label, 'data-focus': `${more}:${value}`,
         onclick: () => { feedbackOpen = null; focusNext = more; command?.('FEEDBACK_GIVE', { completionId: item.eventId, value, canonicalActivityId: item.activity }); } }))) : null);
   }
+  /** The evaluation-only signals' row (§20-4): its state, 「좋아요」 where the host keeps them, 「그만 쓰기」 with one more
+   * confirm (it deletes what was kept), and the whole consent text under 「자세히」. */
+  function evalSection(record) {
+    if (!record) return null;
+    const title = h('h3', { text: '마을을 낫게 하는 데 쓰는 기록' });
+    if (record.academy) return h('div', {}, title, h('p', { class: 'field-note', text: '학원 소속 계정에는 묻지 않아요.' }));
+    const stop = confirming === 'EVAL_STOP' ? h('div', { class: 'notebook-confirm' }, h('p', { class: 'field-note', text: '그만 쓸까요? 지금까지 모은 기록을 지워요.' }),
+      h('div', { class: 'actions' }, h('button', { type: 'button', class: 'felt primary', text: '그만 쓰기', 'data-focus': 'confirm:EVAL_STOP', onclick: async () => { confirming = null; focusNext = 'eval:more'; if (!await command?.('EVAL_CONSENT', { state: 'withdrawn' })) render(snapshot); } }),
+        h('button', { type: 'button', class: 'felt', text: '그만두기', 'data-focus': 'cancel:EVAL_STOP', onclick: () => { confirming = null; focusNext = 'eval:stop'; render(snapshot); } })))
+      : h('button', { type: 'button', class: 'felt subtle', text: '그만 쓰기', 'data-focus': 'eval:stop', onclick: () => { confirming = 'EVAL_STOP'; focusNext = 'confirm:EVAL_STOP'; render(snapshot); } });
+    const actions = record.on ? [stop] : record.stopOnly ? [] : [h('button', { type: 'button', class: 'felt subtle', text: '좋아요', 'data-focus': 'eval:yes', onclick: act('EVAL_CONSENT', { state: 'granted', ver: record.ver }) })];
+    const more = record.detail ? h('button', { type: 'button', class: 'text-button', 'aria-expanded': String(evalDetailOpen), text: evalDetailOpen ? '자세히 접기' : '자세히', 'data-focus': 'eval:more',
+      onclick: () => { evalDetailOpen = !evalDetailOpen; focusNext = 'eval:more'; render(snapshot); } }) : null;
+    const detail = record.detail && evalDetailOpen ? h('div', { class: 'notebook-eval-detail' }, h('p', { class: 'notebook-sub', text: record.detail.title }),
+      DETAIL_ROWS.filter(([key]) => record.detail[key]).map(([key, label]) => h('p', { class: 'field-note' }, h('strong', { text: `${label}: ` }), h('span', { text: record.detail[key] })))) : null;
+    return h('div', { class: 'notebook-eval' }, title, h('p', { class: 'field-note', text: record.on ? '쓰고 있어요. 180일이 지나면 지워요.' : '쓰지 않고 있어요. 안 써도 마을은 똑같아요.' }),
+      actions.length ? h('div', { class: 'actions' }, ...actions) : null, more, detail);
+  }
   function render(next) {
     snapshot = next ?? snapshot;
     if (!tabs.children.length) tabList();
-    const m = notebookModel(snapshot), sig = JSON.stringify([page, confirming, feedbackOpen, m]);
+    const m = notebookModel(snapshot), sig = JSON.stringify([page, confirming, feedbackOpen, evalDetailOpen, m]);
     if (sig === drawn && body.childNodes.length) return;
     drawn = sig;
     const had = body.contains(document.activeElement) ? document.activeElement.dataset.focus || '' : null;
@@ -118,6 +155,7 @@ export function createNotebook(dialog, { command, onPage } = {}) {
         h('button', { type: 'button', class: 'felt subtle', text: '잊어 주세요', 'data-focus': `forget:${k.npc}:${k.ref}`, onclick: act('MEMORY_FORGET', { npc: k.npc, eventId: k.ref }) })))) : empty('주민이 기억하는, 같이 한 일이 아직 없어요.'),
       h('h3', { text: '마을이 맞춰 둔 것' }), m.settings.length ? h('ul', { class: 'notebook-list' }, m.settings.map(s => h('li', { class: 'with-action' }, h('span', { text: s.label }),
         h('button', { type: 'button', class: 'felt subtle', text: s.action[2], 'data-focus': `set:${s.label}`, onclick: act(s.action[0], s.action[1]) })))) : empty('마을이 맞춰 둔 것이 아직 없어요.'),
+      evalSection(m.evalRecord),
       h('h3', { text: '맞춤 기록 모두 비우기' }), h('p', { class: 'field-note', text: '요즘 자주 한 생활, 남긴 응답, 본 것 기록을 비워요. 직접 정한 설정과 마을의 일은 그대로예요.' }),
       clearRow('MEMORY_CLEAR', '비우기', '맞춤 기록을 모두 비울까요?'));
     else content = empty('마을에서 모은 것을 적는 쪽이에요. 모으기가 열리면 여기에 하나씩 쌓여요.');

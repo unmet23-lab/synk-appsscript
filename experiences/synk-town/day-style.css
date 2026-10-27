@@ -469,3 +469,11 @@ body.stay-mode .card-offers{display:none!important}
 @media(max-width:600px){.offer-card{max-width:min(272px,calc(100% - 32px))}.offer-text{font-size:13.5px}.notebook-tab{padding:0 12px;font-size:13.5px}}
 @media(prefers-reduced-transparency:reduce){.offer-card{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media(forced-colors:active){.offer-card,.place-greet,.place-need{background:Canvas;color:CanvasText;border:1px solid CanvasText}.offer-icon,.place-icon,.notebook-icon,.card-icon{color:CanvasText}.notebook-tab[aria-selected=true]{outline:2px solid Highlight}}
+/* W6b: 수첩의 「마을을 낫게 하는 데 쓰는 기록」 자세히, 휴대폰에서 붙은 제안 카드는 상태 알약·조이스틱 위로(W5b 검수 F3), 좁은 폭 수첩 탭은
+ * 두 줄로 접어 다섯 쪽이 다 보이게(F6). */
+.notebook-eval .actions{margin-top:8px}
+.notebook-eval .text-button{min-height:44px;padding:0}
+.notebook-eval-detail{display:grid;gap:4px;margin-top:4px;padding:10px 12px;border-radius:12px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.notebook-eval-detail .field-note{margin:0}
+@media(max-width:760px){.walk-mode .offer-card.is-docked{bottom:calc(var(--bottom) + 192px)}}
+@media(max-width:600px){.notebook-tabs{flex-wrap:wrap;overflow-x:visible}}

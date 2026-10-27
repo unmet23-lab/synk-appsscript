@@ -53,7 +53,7 @@ export function habitOf(visitBands, lifeDay, params) {
 }
 
 /** Off empties the ring and writes nothing more; on starts again from an empty ring — and the setting it already has
- * changes nothing (a repeated on keeps the ring, Fable F13). */
+ * changes nothing (a repeated on keeps the ring, design review F13). */
 export const setVisitBands = (visitBands, on, params) => (visitBands.off === (on !== true) ? visitBands : { ...initialVisitBands(params), off: on !== true });
 /** "Clear all my personalisation" (§20-5) empties the ring; the player's own setting (off) stays. */
 export const clearVisitBands = (visitBands, params) => ({ ...initialVisitBands(params), off: visitBands.off });

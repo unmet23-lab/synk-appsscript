@@ -15,7 +15,7 @@ const M = params => (params ?? paramsFor()).meanwhile;
 /** The traces that make a line, by the card's trace object and field (null: any field of the object). */
 export const TRACE_FRAMES = Object.freeze([
   Object.freeze({ object: 'cafe-tray', field: 'shim', frame: 'tray' }),
-  Object.freeze({ object: 'observation-board', field: null, frame: 'board' }), // every field: 「손봐 두었어요」 is true of each (Fable F6)
+  Object.freeze({ object: 'observation-board', field: null, frame: 'board' }), // every field: 「손봐 두었어요」 is true of each (design review F6)
   Object.freeze({ object: 'leaf-jar', field: 'tea', frame: 'today-tea' }),
   Object.freeze({ object: 'leaf-jar', field: 'menu', frame: 'new-tea' }),
 ]);
@@ -39,7 +39,7 @@ export function bandChanges({ bandEndMs, resolved = [], cardOf, uses = [], steps
   return out.sort((a, b) => a.at - b.at || RANK[a.kind] - RANK[b.kind]);
 }
 /** The village keeps its newest few changes; past the bound the lowest rank goes first — a pair's step, then a habit, then
- * the oldest trace — so a trace still on screen is never pushed out by later small things (Fable F4). */
+ * the oldest trace — so a trace still on screen is never pushed out by later small things (design review F4). */
 export function keepChanges(village, changes, params) {
   if (!changes.length) return;
   const kept = [...(village.changes || []), ...changes], max = M(params).changesKept;

@@ -11,6 +11,8 @@ import { createMoodLines, moodAt } from './day-mood.mjs';
 import { createOffer, offerModel, placeModel, takeModel, sceneLine, pairSteps, lineText, iconSvg, FEEDBACK, NAMES as CARD_NAMES, CARD_BY_ID } from './day-cards.mjs';
 import { createNotebook } from './day-notebook.mjs';
 import { createStay } from './day-stay.mjs';
+import { createAsk, tutorOnDevice } from './day-ask.mjs';
+import { createMeanwhile } from './day-meanwhile.mjs';
 import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
 import { createTeaBoard, teaGuests } from './day-tea.mjs';
@@ -68,6 +70,12 @@ let reading = false, bounding = false, lastBoundary = 0, dueReadAt = 0;
 // greeting and the offer receipt in flight.
 let capsOk = true, cardOfferUi = null, notebook = null, greeted = new Set(), offerAckPending = null, offerSeenAt = null, offerGesture = null;
 const seenQueue = new Set(), seenTags = new Set(), SEEN_PER_REQUEST = 50;
+// The returning visit and the mascot's question (W6b): the notices over the scene, whether this window may say it draws
+// questions (asks — dropped when an older PC app refuses the drawn report), the drawn key waiting for the next boundary,
+// the server time of this window's first pulse (a visit begun long before it was another window's arrival) and the
+// player's mascot as this device remembers its WORLD tutor.
+let notices = null, meanwhileUi = null, askUi = null, asksOk = true, askReport = null, firstPulseAt = null, tutor = tutorOnDevice();
+addEventListener('storage', event => { if (!event.key || event.key.startsWith('synk.world.tutor.v1:')) tutor = tutorOnDevice(); });
 /** Record keys the screen really showed — never while seated (the seat's quiet view shows none, W7b). */
 function noteSeen(keys, occurrence = '') {
   if (stay?.active()) return;
@@ -235,7 +243,7 @@ async function pulseNow() {
     throw error;
   }
   lastPulse = requestedAt;
-  syncClock(data.serverNow, requestedAt, performance.now());
+  syncClock(data.serverNow, requestedAt, performance.now()); firstPulseAt ??= serverNow();
   if (data.presence?.surfaceId === surfaceId) presence = data.presence;
   // A pulse only keeps the lease (F11): the town is read again only when the world was written.
   if (data.worldSeq !== snapshot?.state.writeSeq) read();
@@ -264,15 +272,21 @@ function boundary() {
   if (bounding || legacyHost || !presence?.owner) return;
   bounding = true; lastBoundary = performance.now();
   // A screen that draws the cards says so (W5b, review F6) — not while seated (no offer reaches a quiet seat) — and
-  // carries what it showed (§20-2, up to a request's worth).
+  // carries what it showed (§20-2, up to a request's worth). It draws the mascot's question too (W6b) and says which
+  // question it drew beside the boundary (asked — never a command, so no command revision moves).
   // W8: and one that draws the tea board says 'tea' — the life cards (C5·R6) are offered only to it (review F13).
-  const caps = capsOk && !stay?.active() ? ['cards', ...(tea ? [tea.caps] : [])] : null, seen = [...seenQueue].slice(0, SEEN_PER_REQUEST);
+  const caps = capsOk && !stay?.active() ? ['cards', ...(asksOk ? ['asks'] : []), ...(tea ? [tea.caps] : [])] : null, seen = [...seenQueue].slice(0, SEEN_PER_REQUEST);
+  const asked = asksOk ? askReport : null;
   queue(async () => {
-    const data = await request('boundary', { surfaceId, fence: presence.fence, ...(caps ? { caps } : {}), ...(seen.length ? { seen } : {}) });
+    const data = await request('boundary', { surfaceId, fence: presence.fence, ...(caps ? { caps } : {}), ...(seen.length ? { seen } : {}), ...(asked ? { asked } : {}) });
     for (const key of seen) seenQueue.delete(key);
+    // A boundary too soon after the last settles nothing: the drawn question goes with the next one.
+    if (asked && !data.throttled && askReport === asked) askReport = null;
     if (data.issued || data.worldSeq !== snapshot?.state.writeSeq) accept(await request('state'));
   }).catch(error => {
-    // An older PC app's WORLD window takes no caps: this window goes on as one that does not draw the cards' offers.
+    // An older PC app's WORLD window takes no drawn report (and before that no caps): this window goes on without the
+    // mascot's question, or as one that does not draw the cards' offers.
+    if (asked && error?.code === 'INVALID_REQUEST') { asksOk = false; askReport = null; return; }
     if (caps && error?.code === 'INVALID_REQUEST') { capsOk = false; return; }
     if (error.status !== 409) showError(error.message);
   }).finally(() => { bounding = false; });
@@ -319,7 +333,8 @@ function tick() {
   const now = performance.now(), t = serverNow(), due = dueAt();
   if (timed()) read();
   else if (due !== null && t !== null && t >= due && now >= dueReadAt) { dueReadAt = now + 2000; read(); }
-  if (now - lastBoundary >= BOUNDARY_GAP_MS && flags().safe) boundary();
+  // A question the screen drew is told at the next boundary the gap allows, safe point or not (it issues nothing there).
+  if (now - lastBoundary >= BOUNDARY_GAP_MS && (flags().safe || askReport && asksOk && !stay?.active())) boundary();
 }
 async function command(type, payload = {}) {
   if (busy || !available()) return false;
@@ -343,6 +358,17 @@ async function command(type, payload = {}) {
 async function freeCommand(type, payload = {}) {
   for (let i = 0; i < 30 && busy; i++) await new Promise(resolve => setTimeout(resolve, 100));
   return command(type, payload);
+}
+/** The mascot's question answered or closed (W6b): it waits for a receipt in flight like freeCommand, and a question the
+ * host no longer holds or an answer it cannot take now (403·409 — another window answered, the switch went off) is no
+ * connection trouble: the town is read again and the card follows it. */
+async function askCommand(type, payload) {
+  for (let i = 0; i < 30 && busy; i++) await new Promise(resolve => setTimeout(resolve, 100));
+  if (busy || !available()) return false;
+  setBusy(true);
+  try { await queue(async () => accept(await request('command', { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision }))); clearError(); return true; }
+  catch (error) { if ([403, 409].includes(error?.status)) read(); else showError(error.message); return false; }
+  finally { setBusy(false); }
 }
 function button(action) {
   const b = document.createElement('button'); b.type = 'button'; b.className = `felt${action.primary ? ' primary' : ''}`; b.textContent = action.label;
@@ -551,10 +577,12 @@ function renderCards() {
   }
   panel.replaceChildren(...parts);
 }
-/** Whether a line of the place's panel has stood wholly inside the panel's box (and the window) for a moment. */
+/** Whether a line of the place's panel has stood wholly inside the panel's box (and the window) for a moment. A line
+ * taller than what the box shows (a long greeting on a small phone) counts once it fills the box (review FA1). */
 function heldInSight(key, el, now) {
-  const box = $('nearby-panel').getBoundingClientRect(), r = el?.getBoundingClientRect();
-  if (!r?.height || r.top < Math.max(0, box.top) - 1 || r.bottom > Math.min(innerHeight, box.bottom) + 1) { placeSeenSince.delete(key); return false; }
+  const box = $('nearby-panel').getBoundingClientRect(), r = el?.getBoundingClientRect(), top = Math.max(0, box.top), bottom = Math.min(innerHeight, box.bottom);
+  const whole = r?.height && r.top >= top - 1 && r.bottom <= bottom + 1, fills = r?.height > bottom - top && r.top <= top + 1 && r.bottom >= bottom - 1;
+  if (!whole && !fills) { placeSeenSince.delete(key); return false; }
   if (!placeSeenSince.has(key)) placeSeenSince.set(key, now);
   return now - placeSeenSince.get(key) >= 1200;
 }
@@ -583,8 +611,9 @@ function renderCardDialog() {
   if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; return; }
   // A card whose 「나와 함께」 is a life activity (W8: C5 the order, R6 the one-cup board) is done on that board, not here.
   if (CARD_BY_ID.get(m.card)?.paths?.player?.activity) { if (dialog.open) dialog.close(); return; }
-  // A take still open (a reload, another window's answer) brings its panel back — not while this window is closing it.
-  if (!dialog.open) { if (cardClosing || stay?.active()) return; cardFeedbackOpen = false; dialog.showModal(); }
+  // A take still open (a reload, another window's answer) brings its panel back — not while this window is closing it, and
+  // only in the window holding the town (review F5): a second window does not pop the panel over its own view.
+  if (!dialog.open) { if (cardClosing || stay?.active() || !presence?.owner) return; cardFeedbackOpen = false; dialog.showModal(); }
   // What has the keyboard in the panel, so it stays there when a part is drawn again (screen review B2).
   const had = dialog.contains(document.activeElement) ? document.activeElement : null, hadChoice = had?.dataset.choice ?? null, hadAnswer = had?.dataset.feedback ?? null;
   text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]); text('card-line', m.line || '');
@@ -760,9 +789,11 @@ function moodFrame(v, village) {
   // Where the canvas sits in the scene, read only when a card is placed (no layout reads on frames without one).
   let offset = null, scene = null;
   const canvasOffset = () => { if (!offset) { const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); offset = { x: c.left - s.left, y: c.top - s.top }; } return offset; };
-  // The walking HUD's panels the cards keep off (the map and the view button — the W4 screen review's follow-up).
-  const avoid = () => { scene ||= $('scene').getBoundingClientRect(); return walking() ? ['town-map', 'camera-toggle'].map(id => $(id)?.getBoundingClientRect()).filter(r => r?.width)
-    .map(r => ({ x: r.left - scene.left, y: r.top - scene.top, w: r.width, h: r.height })) : []; };
+  // The walking HUD's panels the cards keep off (the map and the view button — the W4 screen review's follow-up), the
+  // card offer standing (W5b review F4) and the notices over the scene (W6b).
+  const avoid = () => { scene ||= $('scene').getBoundingClientRect();
+    const boxes = [...(walking() ? ['town-map', 'camera-toggle'].map(id => $(id)) : []), document.querySelector('#card-offers .offer-card:not([hidden])'), ...(notices?.children || [])];
+    return boxes.filter(node => node && !node.hidden).map(node => node.getBoundingClientRect()).filter(r => r.width).map(r => ({ x: r.left - scene.left, y: r.top - scene.top, w: r.width, h: r.height })); };
   const labelAt = id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const o = canvasOffset(); return { x: p.x + o.x, y: p.y + o.y }; };
   moodLines.update({ segments: v?.segments, t: village?.t ?? null, rows: blocked ? [] : village.rows.filter(r => villageLive.ids.has(r.id)),
     player: blocked ? null : renderer.playerPoint?.(), names: roleNames, blocked, labelAt,
@@ -795,6 +826,16 @@ function offerFrame(v, blocked, labelAt) {
     command('LIFE_ACK', { contactId: offer.id, visible: true }).then(ok => { if (!ok) offerAckPending = null; });
   }
 }
+/** The notices over the scene (W6b): 「그동안 달라진 것」 once a visit, then the mascot's question — never over the place's
+ * panel, a dialog, the seat or the tea board (W8). The question waits while the board is up; once drawn, its key waits for the next boundary. */
+function noticesFrame(now) {
+  if (!meanwhileUi || !askUi) return;
+  const blocked = !snapshot || !connected || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.metrics?.().order;
+  const board = meanwhileUi.update({ meanwhile: snapshot?.view.day?.scene?.village?.meanwhile, firstPulseAt, blocked, now });
+  const ask = askUi.update({ ask: snapshot?.view.ask, blocked: blocked || board.shown, now });
+  if (ask.drawn) askReport = ask.drawn;
+  document.body.classList.toggle('town-notice', board.shown || ask.shown);
+}
 /** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
  * same village at the same time looks the same on every device. Before the village keeps a zone (a first visit) the
  * device's offset stands in — the server records that same offset with its first band; with no clock at all the
@@ -822,7 +863,7 @@ function frame(now) {
     appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking || padded ? QUIET.appHz : QUIET.idleHz));
     return;
   }
-  walkFrame(now); observe(now); villageFrame(); cardsFrame(now); stay?.frame(); tea?.frame(); raf = requestAnimationFrame(frame);
+  walkFrame(now); observe(now); villageFrame(); cardsFrame(now); noticesFrame(now); stay?.frame(); tea?.frame(); raf = requestAnimationFrame(frame);
 }
 async function load() {
   setBusy(true);
@@ -945,6 +986,10 @@ try {
     beforeCommand: async () => { if (walking()) await flushWalk(true); }, noteSeen, onInputMode: mode => { walkInputMode = mode; },
     labelAt: id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); return { x: p.x + c.left - s.left, y: p.y + c.top - s.top }; } });
   if (snapshot) tea?.update(snapshot.view.tea, teaContext());
+  // The returning visit's board and the mascot's question (W6b), stacked over the scene in that order.
+  notices = Object.assign(document.createElement('div'), { className: 'town-notices' }); $('scene').append(notices);
+  meanwhileUi = createMeanwhile(notices, { live: $('mood-live'), onSeen: noteSeen });
+  askUi = createAsk(notices, { command: askCommand, live: $('mood-live'), tutor: () => tutor });
   paintLight(); setInterval(paintLight, 1000); // the hour's light (W7), before the first frame shows
   renderScene(); applyWalkView(); if (walking()) $('scene').focus({ preventScroll: true });
   raf = requestAnimationFrame(frame); setInterval(tick, 1000);
@@ -960,6 +1005,8 @@ globalThis.SYNKTownDay = Object.freeze({ metrics: () => ({ ...(renderer?.stats()
     offer: (el => el ? { text: el.querySelector('.offer-text')?.textContent ?? '', docked: el.classList.contains('is-docked'), rect: el.getBoundingClientRect().toJSON() } : null)(document.querySelector('#card-offers .offer-card:not([hidden])')),
     lines: [...document.querySelectorAll('#mood-lines .mood-card:not([hidden])')].map(el => ({ npc: el.dataset.npc, line: el.dataset.line, rect: el.getBoundingClientRect().toJSON() })),
     place: $('place-cards').hidden ? null : $('place-cards').textContent },
+  // W6b: the returning visit's board and the mascot's question as this window draws them.
+  notices: { meanwhile: meanwhileUi?.metrics() ?? null, ask: askUi?.metrics() ?? null, asksOk, askReport, firstPulseAt },
   lightClock: lightShown && { source: lightSource, seedKind: typeof snapshot?.state?.village?.seed === 'string' ? 'string' : snapshot?.state?.village?.seed == null ? 'none' : 'other',
     key: lightShown.key, band: lightShown.band, localMinute: lightShown.localMinute, rain: { raining: lightShown.rain.raining, drops: lightShown.rain.drops, overcast: lightShown.rain.overcast, wet: lightShown.rain.wet } },
   walk: { enabled: walking(), ...walk.point, heading: walk.heading, moving: walk.moving, inputActive: walk.inputActive, nearby: nearby(walk.point), interactionOpen: walkPanel, input: walkInputMode,

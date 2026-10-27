@@ -110,6 +110,28 @@ function changesProblems(entry, file) {
   return out;
 }
 
+/** 마스코트 묻기 줄(§20-3, W6b)의 판 길이 — 알아챈 것 한 문장과 묻는 한 문장이라 L1부터 두 문장까지. */
+export const ASKS_LENGTH = Object.freeze({ L1: { sentences: [1, 2], words: 5 }, L2: { sentences: [1, 2], words: 6 },
+  L3: { sentences: [2, 3], words: 10 }, L4: { sentences: [2, 4], words: 14 } });
+export const ASK_FAMILIES = Object.freeze(['cafe-life', 'workshop-life', 'greenhouse-life', 'gather']);
+
+/** 마스코트 묻기 줄 하나의 꼴(W6b): ID = mascot.asks.<생활>.1, npc mascot, when { family }, 네 판·뜻·근거, 빈칸 없음, 판 길이. */
+function asksProblems(entry, file) {
+  const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
+  const [npc, , family, n] = entry.id.split('.');
+  if (npc !== 'mascot' || entry.npc !== 'mascot') bad('asks', '마스코트 묻기 줄의 npc는 mascot이에요.');
+  if (!ASK_FAMILIES.includes(family) || n !== '1' || entry.when?.family !== family || Object.keys(entry.when || {}).length !== 1) bad('asks', 'ID는 mascot.asks.<생활>.1, when은 그 생활 하나({ family })예요.');
+  if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad('asks', '뜻(meaning)이 없어요.');
+  if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(f => typeof f === 'string' && f.trim())) bad('asks', '근거 설정(from)이 없어요.');
+  for (const level of LEVELS) {
+    const text = entry.levels?.[level];
+    if (typeof text !== 'string' || !text.trim()) { bad('asks', `${level} 판이 없어요 — 네 판이 다 있어요.`, level); continue; }
+    if (/[{}]/.test(text)) bad('asks', '마스코트 묻기 줄에는 빈칸이 없어요.', level);
+    lengthProblems(text, level, ASKS_LENGTH[level], bad);
+  }
+  return out;
+}
+
 /** W5 줄의 꼴(§16-2·§2-9): 카드 줄(card — 계기·혼자·둘이·제안·결과), 쌍 줄(pair — 단계마다 두 사람), 소식 줄(news — 마을의 말),
  * 전해 듣기 틀(hearsay — 빈칸 {news}·{from}). 네 판이 다 있고, 빈칸은 전해 듣기 틀에만, 근거 설정(from)이 있다. */
 function townProblems(entry, file) {
@@ -208,6 +230,7 @@ export function collectTexts(doc, file) {
       if (['card', 'hearsay', 'pair', 'news'].includes(entry.kind)) problems.push(...townProblems(entry, file));
       if (entry.kind === 'changes') problems.push(...changesProblems(entry, file));
       if (entry.kind === 'tea') problems.push(...teaProblems(entry, file));
+      if (entry.kind === 'asks') problems.push(...asksProblems(entry, file));
       const speaker = RESIDENTS.includes(entry.npc) ? 'resident' : 'system';
       for (const [level, text] of levelTexts(entry.levels)) {
         if (typeof text !== 'string' || !text.trim()) { bad(id, `${level} 판이 비었어요.`); continue; }
