@@ -723,3 +723,9 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 모른다(패턴이 많으면 줄마다 패턴을 하나씩 대 보는 쪽으로 가는 것으로 보인다). 같은 자료를 Node로 읽으면 14초였다.
 - 고침: `git ls-tree -r -l origin/master`로 글 blob 목록(16,232개·473MB)을 만들어 `git cat-file --batch`로 한 번에 읽고, 줄을 경로 꼴 낱말로 쪼개 「파일 이름 → 찾는 경로」 표에서 찾았다. 상대 링크는 문서 폴더 기준으로 풀어 맞춘다. 스크립트는 공유 노트 `미추적판정_20261021/refs.cjs`.
 - 다시 확인: 같은 패턴 파일로 `timeout 60 git grep -c -F -f <패턴> origin/master -- '*.md'`가 60초 안에 끝나는지 본다.
+
+### Windows 줄끝이 음성 모델의 업로드 revision을 바꾼다 (2026-10-27 GPT)
+- 증상: 원본 모델과 업로드 영수증이 있는데 PATH Pages 준비가 `Speech model revision is not uploaded`로 실패했다.
+- 원인: `core.autocrlf=true`인 체크아웃에서 모델 JSON·문서10개가 CRLF로 바뀌었다. 공개 모델 주소는 파일 SHA 묶음으로 계산하므로 원래 LF 모델과 다른 revision이 됐다.
+- 고침: `.gitattributes`에서 `experiences/path-vr/models/whisper-base/`의 JSON·TXT·MD만 `text eol=lf`로 고정했다. 바뀐 줄끝은 Git blob 바이트로 복원했고 가중치·영수증·내용은 바꾸지 않았다.
+- 다시 확인: 실제 모델·영상 패키지 관련 묶음29/29, `core.autocrlf=true` Git archive의 모델 텍스트11개가 원 blob과 전량 바이트 일치. 기존 작업본은 새 속성으로 재체크아웃한 뒤 재검사한다.

@@ -4,6 +4,11 @@
 # 형제 저장소와 계약 파일의 바이트를 맞춘다.
 계약/** text eol=lf
 
+# PATH 음성 모델의 공개 주소·업로드 영수증은 파일 SHA로 정한다. Windows 체크아웃도 같은 바이트를 쓴다.
+experiences/path-vr/models/whisper-base/*.json text eol=lf
+experiences/path-vr/models/whisper-base/*.txt text eol=lf
+experiences/path-vr/models/whisper-base/*.md text eol=lf
+
 # 생성 지면은 생성기와 같은 LF를 사용해 내용 없는 차이를 막는다.
 docs/이해대장.html text eol=lf
 

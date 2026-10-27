@@ -1,0 +1,1337 @@
+{
+  "date": "2026-10-27",
+  "sourceHead": "5b3e7356f1fd67900b5b69ac149e170808f0b781",
+  "ci": {
+    "run": 40510990684,
+    "tests": 13190,
+    "passed": 13090,
+    "failed": 0,
+    "skipped": 100
+  },
+  "local": {
+    "originalSkippedTests": 100,
+    "files": 38,
+    "passed": 100,
+    "failed": 0,
+    "unexecuted": 0,
+    "ciSkipPolicyUnchanged": true
+  },
+  "scope": {
+    "syntheticAccounts": true,
+    "operationalDataChanged": false,
+    "providerCalls": false,
+    "historicalBytesReplacedWithStubs": false
+  },
+  "evidenceRoot": ".tmp/excluded-100-20261027 (공용 작업본)",
+  "reports": [
+    {
+      "id": "windows-and-local",
+      "file": "windows-and-local.tap",
+      "pass": 120,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "66ef09a5ebc2051b1c9d41358842e31eee0942cf545f6eb6235b1c73f8c117e8"
+    },
+    {
+      "id": "assets-final",
+      "file": "assets-final.tap",
+      "pass": 29,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "8e40af9cc291c7b9feb92a601fd5b983182204402a01eb3fad48e456b3d1d0cd"
+    },
+    {
+      "id": "contracts-and-caddy",
+      "file": "contracts-and-caddy.tap",
+      "pass": 65,
+      "fail": 0,
+      "skipped": 6,
+      "sha256": "8d25fd2a6f71a11f8627ae689cf636c794280e15341d9849cc879d8503b4aa03"
+    },
+    {
+      "id": "student-contract-final",
+      "file": "student-contract-final.tap",
+      "pass": 19,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "a82e3cb31e3562323a7e03db2c5d1d6e1564fdc4275ea9ba8c235acecce69659"
+    },
+    {
+      "id": "static",
+      "file": "static.tap",
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "77293c836653caffeda70e79b22026fb1685eb70d653d0b42eea85eb25751bca"
+    },
+    {
+      "id": "client",
+      "file": "client.tap",
+      "pass": 15,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "e03c772c684c819b5bc854dd17a55ad8b425659070ebb5e007d24b758858f53a"
+    },
+    {
+      "id": "account-final",
+      "file": "account-final.tap",
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "bf1cc7c3b849fc4c947364a1e56407730cb39dc60ed7d113987aab321ef84f0b"
+    },
+    {
+      "id": "browser",
+      "file": "browser.tap",
+      "pass": 15,
+      "fail": 1,
+      "skipped": 0,
+      "sha256": "f9269411f35bc88bc63130cbc1237e7a62fec1e7edc7ed26fad884cfe313da55"
+    }
+  ],
+  "inputs": [
+    {
+      "file": "copied-inputs.json",
+      "sha256": "390e0457296d7a98d1c1d5400e0664cca4840e988fa4fb7929247f6c5e74d858"
+    },
+    {
+      "file": "test-sources.json",
+      "sha256": "b61e7532d3830c5712d2a96b29e50d537659835813e24a984b290f37d9237a80"
+    },
+    {
+      "file": "talk-input.json",
+      "sha256": "a4d03a4758b72b3aa35866a6e55137d5b735922ff29f3a0a6f52b5f9a978d450"
+    },
+    {
+      "file": "frozen-inputs.json",
+      "sha256": "67165adb18f0d649a5b65e129fc10ae34314fe0997b14d65cac87b9bb8f49f62"
+    },
+    {
+      "file": "windows-model-proof.json",
+      "sha256": "fb7fdcfb7188e519658970d2ff2949a025ca1b3a70dab41bf0684c20443acb42"
+    }
+  ],
+  "initialFailures": [
+    {
+      "report": "assets-and-gpu.tap",
+      "cause": "추가 출시 사본 누락 1건 · Windows 줄끝으로 모델 revision 변경 1건과 후속 3건",
+      "resolvedBy": [
+        "assets-final",
+        "windows-model-proof.json"
+      ]
+    },
+    {
+      "report": "browser.tap",
+      "cause": "Town 구운 GLB 누락으로 계정 통합 시험 자산 500",
+      "resolvedBy": [
+        "account-final"
+      ]
+    }
+  ],
+  "additionalLocalSkips": {
+    "count": 3,
+    "reason": "원래 제외100에 없는 Linux flock 2건과 symlink 1건. 원격 Linux CI에서 실행한 검증이며 Windows 통과로 세지 않는다."
+  },
+  "rows": [
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 29,
+      "name": "stdout bundle is encrypted, header and pack validated, and fixture history restores exactly",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 94,
+      "name": "detached commits bundle from isolated refs without changing any original ref, HEAD, index, or files",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 121,
+      "name": "public unpublished heads, stash, and detached history archive only what the public origin lacks, without a remote write (10-19)",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 182,
+      "name": "a new branch name on a bundled commit stays covered by the last verified bundle; a newer commit waits for the next apply",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 235,
+      "name": "a branch that moves after the scan still bundles the scanned commit without touching the original refs (10-19)",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 262,
+      "name": "a public origin with no refs yet still gets a self-contained bundle that restores into an empty repository (10-19)",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 296,
+      "name": "a Drive-verified bundle becomes the base: the next bundle holds only new objects, names its chain, and restores after it (10-20)",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 396,
+      "name": "public prerequisites take the first reaching remote ref (branches first, then ls-remote order) from one rev-list, however many remote refs (10-20)",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/Git보관묶음.test.cjs",
+      "line": 449,
+      "name": "chain prerequisites take the earliest reaching earlier bundle from one graph, however many receipts and prerequisites (10-20)",
+      "originalCiSkipReason": "local archive encryption module unavailable",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/atlas-dating-deploy.test.mjs",
+      "line": 42,
+      "name": "actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts",
+      "originalCiSkipReason": "Set SYNK_QA_CADDY to an explicitly installed Caddy binary; no download is performed.",
+      "required": "명시한 Caddy 바이너리 · 임시 localhost 설정",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 55,
+      "name": "Windows exclusive apply preserves branch, staged index, current dirty bytes and durable backup; retry does not reapply",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 65,
+      "name": "changed source after validation holds all writes including additions",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 76,
+      "name": "Windows applies bounded additions/deletions through owned handles",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 80,
+      "name": "Windows actual open writer prevents application and preserves bytes",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 87,
+      "name": "Windows journal restart resumes only unapplied deltas and keeps original preimage backup",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 93,
+      "name": "Windows partial journal bytes or external recovery edits hold without overwriting them",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 98,
+      "name": "Windows source index movement after validation holds before touching content",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 102,
+      "name": "Windows hardlink target holds before changing any linked file",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "line": 114,
+      "name": "Windows final locked source-set check catches files added after Node recapture",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 46,
+      "name": "a gateway still on the generation it booted with is not touched",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 52,
+      "name": "the 10-19 case: anthropic published a new generation after the gateway booted",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 61,
+      "name": "drift that cannot be proven leaves the gateway alone",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 82,
+      "name": "restart waits for Hermes to report no active agents, background processes or tool children",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 98,
+      "name": "a running tool child process counts as busy",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 120,
+      "name": "a drifted gateway is restarted once: after a second sighting, only while idle, never twice",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 158,
+      "name": "a restart that times out or fails is reported and not retried",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 173,
+      "name": "a gateway that stays busy for half an hour is still left alone but no longer reported as routine",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 191,
+      "name": "dot-sourcing loads the functions without running recovery, and a missing gateway is still reported",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "line": 200,
+      "name": "each check leaves a small ASCII status record that the AI-free monitor reads as is",
+      "originalCiSkipReason": "Windows PowerShell only",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/large-backup-receipt.test.cjs",
+      "line": 69,
+      "name": "large upload receipt encrypts exact bytes and rejects remote checksum mismatch and unsafe prior copies",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/large-backup-receipt.test.cjs",
+      "line": 99,
+      "name": "changed large receipt is reclassified and encrypted; concurrent edits and size overflow fail closed",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/onedrive-backup.test.cjs",
+      "line": 620,
+      "name": "the folder-listing link check over many paths still blocks a junction like the per-path check (10-19)",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/onedrive-backup.test.cjs",
+      "line": 834,
+      "name": "an unchanged worktree reuses its last git result and any file, index or head change runs git again (10-19)",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 20,
+      "name": "protected source encrypts and restores exact bytes; same content reuses and changed content appends",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 34,
+      "name": "protected-source inventory cannot expand a scope or pass a stale fingerprint/reparse flag",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 43,
+      "name": "a source changing during encryption never becomes an accepted destination",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 53,
+      "name": "embedded media source can be encrypted only with a matching prior OneDrive copy receipt",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 70,
+      "name": "a check run counts a protected version first seen after the last apply as waiting, never an apply run or a seen version",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 84,
+      "name": "a source edited after the inventory is re-classified once and kept under its current fingerprint only",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 111,
+      "name": "a removed worktree skips only its rows while an existing unauthorized root still stops the batch",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 125,
+      "name": "a temporary repository folder removed after the inventory skips only its rows; a remaining one stops and names the row (10-19)",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 142,
+      "name": "prior OneDrive copy re-reads a ctime-only change once but never accepts persistent or content drift",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 191,
+      "name": "a reconcile checks reparse points in four batches and reads the copy manifest once, however many media and edited rows it has (10-21)",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 220,
+      "name": "the status file keeps the previous evidence until every row is done, also when a run stops early (10-21)",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/보호소스보관.test.cjs",
+      "line": 240,
+      "name": "a stale inventory waits for a running OneDrive run to write the new one, and stops at once when none is running (10-21)",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "로컬 암호화 모듈 · 임시 RSA 키와 가짜 저장소",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "루트",
+      "file": "tests/음량마감.test.mjs",
+      "line": 80,
+      "name": "기존 회차 재현: 세션 공유 v14 확정본을 그 회차 설정으로 다시 만들면 바이트까지 같다",
+      "originalCiSkipReason": "이 PC에 렌더 원본·확정본이 없음(git 밖 파일)",
+      "required": "보관 원본 영상 · ffmpeg/ffprobe",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "회사",
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+      "line": 17,
+      "name": "Caddy adapter advertises only reachable TCP protocols and clears cached alternatives",
+      "originalCiSkipReason": "Set SYNK_QA_CADDY to an existing Caddy binary; no download is performed.",
+      "required": "명시한 Caddy 바이너리 · 임시 localhost 설정",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "회사",
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+      "line": 45,
+      "name": "Caddy runtime proxy error redacts a synthetic media capability URI",
+      "originalCiSkipReason": "Set SYNK_QA_CADDY to an existing Caddy binary.",
+      "required": "명시한 Caddy 바이너리 · 임시 localhost 설정",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "desktop",
+      "file": "desktop/tests/installations-asar.test.cjs",
+      "line": 44,
+      "name": "Electron inspects physical ASAR bytes while preserving pins and path boundaries",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "desktop",
+      "file": "desktop/tests/lifecycle.test.cjs",
+      "line": 83,
+      "name": "newer launch-only pins preserve available installers without offering a downgrade as an update",
+      "originalCiSkipReason": "설치판 경로가 Windows 꼴(path.win32)이라 Windows에서만 실제 파일로 잰다",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "desktop",
+      "file": "desktop/tests/program-root.test.cjs",
+      "line": 27,
+      "name": "missing LocalAppData finds a real pinned fixture and still rejects changed bytes",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "Windows · PowerShell 또는 Electron ASAR (합성 임시 경로)",
+      "status": "passed",
+      "evidence": [
+        "windows-and-local"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "line": 23,
+      "name": "actual public-transformed bundles never prefix the next learning route twice",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+      "required": "Git 밖 10-09 출시 원본 사본",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "line": 30,
+      "name": "public daily experiment and free fallback use exactly one /try prefix",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+      "required": "Git 밖 10-09 출시 원본 사본",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "line": 35,
+      "name": "source hosting and public nested racing hosting remain valid after canonical generation",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+      "required": "Git 밖 10-09 출시 원본 사본",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "line": 39,
+      "name": "last local source reconstructs the double-prefix failure before the release fix",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — ./public-transform-source.mjs (git 밖 10-09 출시 사본)",
+      "required": "Git 밖 10-09 출시 원본 사본",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/reward-cas.test.mjs",
+      "line": 20,
+      "name": "the prior guidance read reproduces a silently accepted stale first-shop overwrite",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — ./collection.before-read-record.js (git 밖 10-09 출시 사본)",
+      "required": "Git 밖 10-09 출시 원본 사본",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/brand-opening/qa/home-room-first-frame.test.mjs",
+      "line": 77,
+      "name": "셰이더를 엮는 동안 방을 닫으면 오류 없이 접히고 캔버스도 남지 않는다",
+      "originalCiSkipReason": "KHR_parallel_shader_compile 없음",
+      "required": "실제 GPU의 KHR_parallel_shader_compile",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/daily-fortune/tests/account-contract.test.mjs",
+      "line": 13,
+      "name": "실제 운세 서버 계약과 브라우저 클라이언트로 두 계정·두 기기의 저장과 복원을 왕복한다",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "격리한 SYNK-talk 실제 운세 서비스 · 메모리 저장소",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+      "line": 19,
+      "name": "every published video quality and reference resolves inside root and nested deployments",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+      "line": 38,
+      "name": "room and comparison pages keep images, styles and media under the deployment mount",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/seedance-sample.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+      "line": 52,
+      "name": "speech model, microphone worklet and worker retain their deployment directory",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "line": 46,
+      "name": "public manifest preserves exact continuity, clip hashes and both qualities",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "line": 78,
+      "name": "Pages overlay is minimal, deterministic and source-audited",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "line": 135,
+      "name": "Pages rebuild refuses to overwrite an unexpected PATH introduction",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "line": 146,
+      "name": "published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "line": 170,
+      "name": "Pages verification detects changed published bytes",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-server-package.test.mjs",
+      "line": 40,
+      "name": "model GET and HEAD ranges return exact bytes and denied sources stay private",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/path-vr/tests/interview-server-package.test.mjs",
+      "line": 195,
+      "name": "standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/path-vr/assets/interview/film/strict-question-4k.mp4 (git 밖 PATH 면접 미디어)",
+      "required": "Git 밖 모델·영상 · 실제 업로드 영수증과 동일한 SHA",
+      "status": "passed",
+      "evidence": [
+        "assets-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/account-browser.test.mjs",
+      "line": 23,
+      "name": "actual Chromium account-mode Maru preserves life progress, guarded games, Town, enrollment and logout",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — experiences/synk-world-home/assets/avatar-textiles-v1 · experiences/synk-town/assets/district/townwide-merged.json (git 밖 WORLD 자산) · WORLD 서버의 SYNK-talk lib/world-v1-server.js",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "account-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/cafe-static.test.mjs",
+      "line": 14,
+      "name": "frozen /world cafe completes and restores the physical checkpoint through the official account transport",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)",
+      "required": "공개 c55d5a78의 Git blob 2456개",
+      "status": "passed",
+      "evidence": [
+        "static"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/classroom-homework-browser.test.mjs",
+      "line": 104,
+      "name": "계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·읽기 내기·쓰기 내기·첨삭 보기·상태별 화면 (390·1280)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/classroom-homework.test.mjs",
+      "line": 39,
+      "name": "주차·마감이 SYNK-talk 과제 서버와 같다",
+      "originalCiSkipReason": "과제 서버(lib/synk-classroom-homework.js)가 있는 SYNK-talk 사본이 없다",
+      "required": "학생 앱·과제 서버 원문이 있는 SYNK-talk 격리 사본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/classroom-lessons-browser.test.mjs",
+      "line": 53,
+      "name": "계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태별 화면·재조회·탭 복귀·로그인 유지 (390·1280)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+      "line": 176,
+      "name": "상태 이름·안내·화면 문구가 학생 앱 원문과 같다",
+      "originalCiSkipReason": "SYNK-talk 학생 앱 수업 화면(src/수업영상화면.js)이 이 PC에 없다",
+      "required": "학생 앱·과제 서버 원문이 있는 SYNK-talk 격리 사본",
+      "status": "passed",
+      "evidence": [
+        "student-contract-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+      "line": 188,
+      "name": "계약판과 회의 주소 규칙이 학생 앱·서버 원문과 같다",
+      "originalCiSkipReason": "SYNK-talk 학생 앱 수업 화면(src/수업영상화면.js)이 이 PC에 없다",
+      "required": "학생 앱·과제 서버 원문이 있는 SYNK-talk 격리 사본",
+      "status": "passed",
+      "evidence": [
+        "student-contract-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+      "line": 194,
+      "name": "서버 presentClass가 낼 수 있는 상태는 모두 이름이 있고, 안내가 필요한 상태는 학생 앱과 같은 안내를 단다",
+      "originalCiSkipReason": "SYNK-talk 학생 앱 수업 화면(src/수업영상화면.js)이 이 PC에 없다",
+      "required": "학생 앱·과제 서버 원문이 있는 SYNK-talk 격리 사본",
+      "status": "passed",
+      "evidence": [
+        "student-contract-final"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/client.test.mjs",
+      "line": 137,
+      "name": "real browser tabs retain separate accounts across reload and logout",
+      "originalCiSkipReason": "명시적 skip",
+      "required": "격리 localhost 리허설 서버 · 임시 PostgreSQL · 실제 두 탭",
+      "status": "passed",
+      "evidence": [
+        "client"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/daily-tutor-static.test.mjs",
+      "line": 17,
+      "name": "frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)",
+      "required": "공개 c55d5a78의 Git blob 2456개",
+      "status": "passed",
+      "evidence": [
+        "static"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
+      "line": 18,
+      "name": "frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)",
+      "required": "공개 c55d5a78의 Git blob 2456개",
+      "status": "passed",
+      "evidence": [
+        "static"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
+      "line": 16,
+      "name": "frozen /world tutor follows owner choice, preserves guided records and disposes on logout",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)",
+      "required": "공개 c55d5a78의 Git blob 2456개",
+      "status": "passed",
+      "evidence": [
+        "static"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 125,
+      "name": "동기화를 끈 학습자: 잠긴 시트가 이유를 나눠 알리고, 준비 확인을 마치면 마을이 열린다(390·1440 캡처)",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 153,
+      "name": "준비 확인이 아직이면 숫자 없이 다시 볼 수 있다고 알리고 연습 하나를 권한다 — 「확인 그만하기」는 마을 시트로 돌아간다",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 168,
+      "name": "확인은 마쳤는데 체험·이용권이 없으면 학습 미통과가 아니라 이용권 범위로 알린다",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 176,
+      "name": "동기화를 켠 학습자: 시트를 열 때 서버에 모인 답으로 먼저 확인하고(답을 싣지 않고), 고지 줄이 없다",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 186,
+      "name": "준비 확인을 통과했는데 체험·이용권이 없으면 미통과가 아니라 「마쳤어요」와 이용권 범위로 알린다(아르곤 A1)",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 200,
+      "name": "동기화를 켠 학습자: 준비 확인을 마친 뒤 같은 확인을 조용히 다시 부르지 않는다(아르곤 A3)",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "line": 210,
+      "name": "동기화를 켠 학습자: 시트를 연 직후 시작해도 30초 규칙에 멈추지 않고 바로 문항을 낸다(Fable F1)",
+      "originalCiSkipReason": "실제 Chrome·소리 파일이 필요한 화면 확인 — CI에서는 건너뛴다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "line": 9,
+      "name": "candidate differs from deployed v9 only by the canonical life record allowlist entry",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+      "required": "해시 고정 10-12 출시 후보와 되돌림 원본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "line": 16,
+      "name": "exact deployable ESM imports and its model matches the tested CJS module",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+      "required": "해시 고정 10-12 출시 후보와 되돌림 원본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "line": 22,
+      "name": "deployed v9 rejects the life record before reaching database storage",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+      "required": "해시 고정 10-12 출시 후보와 되돌림 원본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "line": 28,
+      "name": "new life record keeps previous bounds, secret rejection and CAS value validation",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+      "required": "해시 고정 10-12 출시 후보와 되돌림 원본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "line": 35,
+      "name": "exact candidate retains disabled-by-default feature gating without storage access",
+      "originalCiSkipReason": "CI 체크아웃에는 없다 — .tmp/tutor-life-backend-20261012 (git 밖 10-12 출시 후보 판)",
+      "required": "해시 고정 10-12 출시 후보와 되돌림 원본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/world-exam-link-browser.test.mjs",
+      "line": 38,
+      "name": "WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜고 저장 → 이번 주 계획(쓰기 칸 → 쓰기 목록 · 배우기 판 생활 팩 위 쓰기 줄), 다시 열면 계획, 한글 단계·주소 없음은 그대로 (375·1280 × 몽골어·한국어)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/world-push-browser.test.mjs",
+      "line": 46,
+      "name": "WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 → 누름 → 끄기, 휴대폰 묻는 카드, 아이폰 안내, 세 언어 (390·1280)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/world-reminders-browser.test.mjs",
+      "line": 41,
+      "name": "WORLD 학습 알림: 앱 안 묻기 → OS 권한 → 예약 → 알림 → 누르면 그 자리, 거절·끄기·막힘, 시험일 점검, 세 언어 (390·1280)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/world-speaking-browser.test.mjs",
+      "line": 42,
+      "name": "리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·동의·녹음·자동 피드백(가짜)·역할극·세 언어 (390·1280)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/synk-world-app/qa/world-writing-browser.test.mjs",
+      "line": 31,
+      "name": "계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·규칙 점검·자동 피드백·예시답·세 언어 (390·1280)",
+      "originalCiSkipReason": "형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 가리킨다)",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/teacher-world/homework-review.test.mjs",
+      "line": 32,
+      "name": "주차·마감이 SYNK-talk 과제 서버와 같다",
+      "originalCiSkipReason": "과제 서버(lib/synk-classroom-homework.js)가 있는 SYNK-talk 사본이 없다",
+      "required": "학생 앱·과제 서버 원문이 있는 SYNK-talk 격리 사본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/teacher-world/homework-review.test.mjs",
+      "line": 104,
+      "name": "첨삭 꼴은 서버(validFeedback)가 받는 꼴이고, 회사 중계의 본문 상한 아래다",
+      "originalCiSkipReason": "SYNK-talk 사본이 없다",
+      "required": "학생 앱·과제 서버 원문이 있는 SYNK-talk 격리 사본",
+      "status": "passed",
+      "evidence": [
+        "contracts-and-caddy"
+      ]
+    },
+    {
+      "bundle": "experiences",
+      "file": "experiences/teacher-world/qa/homework-review-browser.test.mjs",
+      "line": 180,
+      "name": "과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 임시 저장·돌려주기 → 학생이 받는 첨삭, 판 겹침, 390·1280",
+      "originalCiSkipReason": "SYNK-talk 과제 가지(lib/synk-classroom-homework.js·tools/qa-synk-classroom-fixture.cjs)가 없다",
+      "required": "격리 SYNK-talk 코드 · 실제 Edge · 합성 API/시계/계정 · 외부 요청 차단",
+      "status": "passed",
+      "evidence": [
+        "browser"
+      ]
+    }
+  ]
+}
