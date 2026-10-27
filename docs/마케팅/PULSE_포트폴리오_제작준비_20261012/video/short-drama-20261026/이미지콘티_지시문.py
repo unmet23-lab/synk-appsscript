@@ -240,13 +240,15 @@ C = {
                     "sheet is the flat green placeholder (it will become a blank marriage registration form); a strip of oak table shows at "
                     "the upper left."),
     "1-28": dict(f="", loc="dining", light="evening", w=["I_suit_home", "S_apron"], fx=None,
-                  t="Insert medium shot at waist height: Seojin's two hands (white sleeves) come in from the left edge and take hold of Ian's "
-                    "hand and navy suit sleeve, gently pulling him toward the table; his body in the suit, shirt and belt fills the right "
-                    "half, his face out of the frame."),
+                  t="Tight insert at waist height, 85mm lens, no faces and no heads anywhere in the frame: only hands and clothes fill the "
+                    "frame — Seojin's two hands in white sleeves come in from the left edge and grip Ian's hand and the cuff of his navy suit "
+                    "sleeve, pulling it; his navy suit jacket, white shirt and belt buckle fill the right half of the frame, cut off at the "
+                    "chest by the top edge and at the thighs by the bottom edge. Warm kitchen wall soft behind."),
     "1-29": dict(f="S", loc="dining", light="evening", w=["S_apron", "I_suit_home"], fx=(0, "her"),
                   t="Medium over-the-shoulder shot: the back of Ian's head and his navy shoulder out of focus along the right edge. Seojin, "
-                    "in her apron, clings to his upper arm with both hands and rests her cheek against his sleeve, looking up at him with "
-                    "coaxing eyes; her mouth is hidden behind his arm. The kitchen shelves behind her."),
+                    "in her apron, clings to his upper arm with both hands and presses the lower half of her face against his navy sleeve — "
+                    "her nose, mouth and chin are hidden behind his arm, only her eyes and forehead show above it, looking up at him with "
+                    "coaxing eyes. The kitchen shelves behind her."),
     "1-30": dict(f="I", loc="dining", light="evening", w=["I_suit_home", "S_apron"], fx=(0, "his"),
                   t="Bust shot of Ian over the back of Seojin's head (her sleek black ponytail, out of focus in the lower left foreground): "
                     "he looks down at her, uneasy and gentle at once, lips slightly parted as if speaking."),
@@ -288,12 +290,12 @@ C = {
                   t="Close-up: Ian, draped over Minjae's back, rests his chin on his folded hands on Minjae's shoulder, his face large in the "
                     "upper part of the frame, speaking with a sulky, self-assured little pout, lips slightly parted; Minjae's head lies on "
                     "the desk at the lower right, partly cut off by the frame."),
-    "1-41": dict(f="MI", loc="office", light="office", w=["M_office", "I_office"], fx=None,
-                  t="Close-up from desk height: Minjae lies on the desk in the lower half of the frame, turning his face up toward Ian, "
-                    "speaking with a calm warning look, lips parted as if speaking; Ian's face rests on top of Minjae's head at the upper "
-                    "left, partly hidden by Minjae's hair. Framing: Minjae's face (eyebrows to chin) is about 25% of the frame height, its "
-                    "center about 70% down from the top edge and 55% in from the left edge."),
-    # ── 1화 ⑦ 걸이 — 카페 ──
+    "1-41": dict(f="MI", loc="office", light="office", w=["M_office", "I_office"], fx=(0, "Ian's"),
+                  t="Close-up from desk height, both faces very close to the lens and filling the frame: Minjae lies on the desk in the "
+                    "lower half of the frame, his cheek on his folded arms, turning his face up toward Ian and speaking with a calm warning "
+                    "look, lips parted; Ian is draped over Minjae's back, his face in the upper left, partly hidden behind Minjae's messy "
+                    "black hair, eyes looking down at him. Minjae's face is about one third of the frame width, centered about 70% down from "
+                    "the top edge. No wide view of the office — only blurred desk and ceiling light behind."),
     "1-42": dict(f="Y", loc="cafe", light="cafe", w=["Y_cafe", "S_cafe"], fx=(0, "her"),
                   t="Bust shot of Soyeon leaning in across the café table with a sly little smile, lips closed, about to share a secret; "
                     "Seojin's out-of-focus shoulder at the lower right."),
