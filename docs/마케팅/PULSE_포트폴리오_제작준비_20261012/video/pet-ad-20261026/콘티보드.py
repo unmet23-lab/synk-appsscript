@@ -114,7 +114,7 @@ def glance(ns, path):
 
 
 def refs(path):
-    names = [("D1.jpg", "외계 · 정면 앉음(D1)"), ("D2.jpg", "외계 · 옆 서 있음(D2)"), ("D3.jpg", "외계 · 조끼(D3)"), ("P1.jpg", "둥실멍 구명조끼(P1)"), ("M1.jpg", "민재 · 옷 · 원룸(M1)")]
+    names = [("D1.jpg", "외계 · 정면 앉음(D1)"), ("D2.jpg", "외계 · 옆 서 있음(D2)"), ("D3.jpg", "외계 · 조끼(D3)"), ("P1.jpg", "첨벙댕 구명조끼(P1)"), ("M1.jpg", "민재 · 옷 · 원룸(M1)")]
     w, h, gap = 360, 480, 16
     im = Image.new("RGB", (gap + len(names) * (w + gap), h + 120), BG)
     d = ImageDraw.Draw(im)
