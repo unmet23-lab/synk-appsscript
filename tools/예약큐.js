@@ -156,7 +156,9 @@ function collect(server, accounts, now) {
         if (Number.isFinite(at) && at + GRACE_MS < now && at > now - LOOKBACK_DAYS * 86400000 && !DONE.has(state) && state !== '보류') {
           warnings.push(`슬롯이 지났는데 예약도 게시도 안 됨: ${p.계정} · ${kstDate(at)} · ${dir.name}`);
         }
-        return { account: p.계정, platform: accounts[p.계정]?.platform || null, time: p.시각 || null, state: state || null, method: local.방법 || null, url };
+        // 슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제 시각으로 센다(10-27 — 10-26 22:00 간체 판이 10-27 01:14에 나갔는데 10-26 칸에 잡혀 10-27 칸이 비어 보였다).
+        const posted = DONE.has(state) && !local.방법?.startsWith?.('작업실') && Number.isFinite(Date.parse(local.시각 || '')) ? local.시각 : null;
+        return { account: p.계정, platform: accounts[p.계정]?.platform || null, time: posted || p.시각 || null, state: state || null, method: local.방법 || null, url };
       });
       const filled = states.filter((s) => DONE.has(s.state)).length;
       const held = states.filter((s) => s.state === '보류').length;

@@ -358,3 +358,13 @@ test('실제 sns-계정.json — 모든 계정이 매일 판 줄 · 매일 판 �
     if (a.dailyLine) assert.ok(lines.has(a.dailyLine), `${key}: 줄 이름 ${a.dailyLine}`);
   }
 });
+
+test('슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제 시각 날로 센다(작업실 판은 그대로)', () => {
+  const base = 매일판('늦게', [
+    ['late-xhs', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '게시됨', 시각: '2026-10-23T01:14:00+09:00', 방법: '슬롯을 놓쳐 다음 날 손으로' }] }],
+    ['ws', 한편('LAB', '2026-10-24', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 시각: '2026-10-25T09:00:00+09:00', 방법: '작업실', 작업: 'job-x' }] }],
+  ]);
+  const r = 매일큐(base, ['--오늘', '2026-10-21']);
+  const row = r.accounts.find((x) => x.account === 'lab-youtube');
+  assert.deepEqual(['2026-10-22', '2026-10-23', '2026-10-24', '2026-10-25'].map((d) => row.byDay[d].length), [0, 1, 1, 0]);
+});
