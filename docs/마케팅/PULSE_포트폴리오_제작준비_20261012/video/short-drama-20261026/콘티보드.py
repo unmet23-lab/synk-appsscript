@@ -150,6 +150,9 @@ if __name__ == "__main__" and "--검수" in sys.argv:
     # python -X utf8 콘티보드.py --검수 <폴더 이름>   → 콘티/p7/검수/<폴더 이름>/판_<n>.jpg
     allc = json.load(open(os.path.join(V, "컷목록.json"), encoding="utf-8"))
     have = [c for c in allc if os.path.exists(ours(f"{c['화']}-{c['컷']}"))]
+    if "--컷" in sys.argv:   # 이 컷들만(2차 검수 — 바뀐 판만)
+        only = sys.argv[sys.argv.index("--컷") + 1].split(",")
+        have = [c for c in have if f"{c['화']}-{c['컷']}" in only]
     out = os.path.join(V, "검수", sys.argv[sys.argv.index("--검수") + 1])
     os.makedirs(out, exist_ok=True)
     for p in range(0, len(have), 12):

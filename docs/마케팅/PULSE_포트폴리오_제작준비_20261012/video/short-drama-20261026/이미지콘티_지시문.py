@@ -16,9 +16,9 @@ facebox = json.load(open(V / "원본첫프레임" / "_얼굴.json", encoding="ut
 
 START = "Create one still photograph. A cinematic film still from a Korean romantic-comedy web drama, vertical 9:16 frame."
 TAIL = ("Photorealistic film still with natural skin texture, slight film grain and natural lens falloff, shot on a cinema camera. "
-        "No text, no subtitles, no letters, no logos, no watermarks anywhere.")
+        "Nobody in the frame looks into the camera lens. No text, no subtitles, no letters, no logos, no watermarks anywhere.")   # 10-28 Opus 2차: 렌즈를 보는 시선(1-4 · 1-39 · 2-39)
 TAIL_G = ("Photorealistic film still with natural skin texture, slight film grain and natural lens falloff, shot on a cinema camera. "
-          "Apart from the flat green placeholder, no text, no letters, no logos, no watermarks anywhere.")
+          "Nobody in the frame looks into the camera lens. Apart from the flat green placeholder, no text, no letters, no logos, no watermarks anywhere.")
 ACT = ("The acting is subtle and natural, as in a calm Korean romance drama: small, believable expressions, never exaggerated or cartoonish.")
 LAYOUT = ("Image {n} is a layout guide: the black silhouettes show only where the people are in the frame, how big they are and in what pose "
           "— match that placement, size and pose exactly, including how much of each person is cut off by the frame edges. The silhouettes "
@@ -577,14 +577,101 @@ def build(k):
     parts.append(L[c["loc"]])
     fs = facebox.get(k) or []
     tight = bool(fs) and c.get("fx") and fs[c["fx"][0]]["h"] >= 0.17
-    if c["loc"] in LREF and not tight and k not in NOLOC:   # 10-26 23:4x: 넓은 방 사진이 바스트 · 클로즈업을 넓은 컷으로 끌었다(S31 「방 참조가 있으면 넓은 컷」과 같은 결)
+    if c["loc"] in LREF and not tight and k not in NOLOC and k not in NOLOC2:   # 10-26 23:4x: 넓은 방 사진이 바스트 · 클로즈업을 넓은 컷으로 끌었다(S31 「방 참조가 있으면 넓은 컷」과 같은 결)
         refs.append(str(V / "정지컷" / f"{LREF[c['loc']]}.png"))
         parts.append(f"Image {len(refs)} shows this same {LNAME[c['loc']]} only for its furniture, materials and colors — do not copy its wide "
                      "framing; this shot keeps the framing described above.")
+    if c.get("xref"):   # 10-28: 짝 컷의 정지컷을 같은 장소 · 같은 카메라 자리의 기준으로(2-10 ← 2-10e)
+        refs.append(str(V / "정지컷" / f"{c['xref'][0]}.jpg"))
+        parts.append(c["xref"][1].format(n=len(refs)))
     parts.append(LIGHT[c["light"]])
     parts.append(TAIL_G if c.get("g") else TAIL)
     return dict(id=k, who=c["f"] or "-", ratio="9:16", prompt=" ".join(parts), refs=[small(r) for r in refs])
 
+
+# ── 10-28 Opus 2차 검수(Fable 주간 한도로 대신, git 밖 콘티/p7/검수/opus_이미지콘티_2차/답.md) — 상 8 · 중 11과 짝 2-10e를 원본 첫 프레임대로 다시 쓴다 ──
+# 얼굴이 안 잡히는 컷은 잘라 맞춤이 돌지 않으니 크기 · 자리를 숫자로, 긴 통로 장소 그림이 구도를 끈 컷은 장소 참조를 뺀다(NOLOC2).
+OPUS2 = {
+    "1-4": "Bust shot from slightly above. Ian tilts his head down to the left, looking down at the open lunchbox he holds low in his left hand "
+           f"({LUNCH} — plain white rice with one red pickled plum, and the side-dish compartment completely EMPTY and clean), wincing "
+           "sheepishly; his right hand is raised palm up at chest height in an explaining gesture. He does not look at the camera. His face is "
+           "in the upper left part of the frame. From behind, Minjae's two hands rest one on each of Ian's shoulders (one hand per shoulder, "
+           "charcoal cardigan sleeves); Minjae's face is not in the frame.",
+    "1-5": "Seojin leans her upper body far toward Ian across the dining table (toward the right of the frame) and holds out a closed planner "
+           "notebook with her right hand toward the front right of the camera — the notebook is blurred at the right edge of the frame and its "
+           "pages are not visible. Her face is in the upper middle, about 45% of the frame width, looking at him seriously, lips slightly "
+           "parted as if starting to speak. At the right edge, part of Ian's blurred dark head and a glass of green tea.",
+    "1-22": "Insert, locked-off: a closed inner door with a light wooden frame and a grid of frosted glass panes fills the whole frame, seen "
+            "straight on from close up; its handle is in the middle-right of the frame. Through the frosted glass, the blurred silhouette of "
+            "Ian in a dark suit — his torso, his hand reaching for the handle and his legs — shows faintly. A thin strip of white wall at the "
+            "right edge. The door is still closed. No hallway is visible.",
+    "1-23": "The camera stands inside the hallway about 2 m from the inner door. Ian, in his suit, is just stepping in through the open "
+            "frosted-glass grid door, in the left-middle of the frame (his head about 15% of the frame width), coming home. The lower part "
+            "of his face is hidden by Seojin passing right in front of the camera — she covers the left half of the frame, very large and "
+            "very blurred (sage-green apron, white long sleeves). The focus is on Ian.",
+    "1-37": "The camera is low behind a row of monitors, looking straight across the row of office desks; behind them a plain white wall with "
+            "a notice board — no deep aisle, no windows. Minjae sits in the middle of the frame with both arms stretched across his desk and "
+            "his head bowed; Ian walks in from the left edge toward him, at the same distance as Minjae and about the same size. The lower "
+            "half of the frame is the blurred backs of monitors.",
+    "1-38": "Close-up: Minjae rests his cheek on the desk; Ian lies chest-down on Minjae's back with his chin resting right on top of "
+            "Minjae's head — the two heads touch. Ian has a sulky, whiny, almost-crying face (soft, not slapstick) and looks toward the front "
+            "right of the frame — not down at Minjae and not into the lens; his left hand is on Minjae's shoulder; Ian's mouth is visible.",
+    "1-39": "Close-up from desk height: Minjae rests his head sideways on Ian's arm — a navy suit sleeve wrapped around his neck from the upper "
+            "left — so Minjae's nose, mouth and chin are hidden by the arm; his eyes look toward the lower right of the frame, not into the "
+            "lens. In the upper left corner Ian's chin and mouth just peek in. Minjae has the same round face as in the other shots.",
+    "2-1": "A narrow laundry corner at night, the camera at chest height about 2 m away: Ian, seen in three-quarter back view from head to "
+           "slippers, fills about 85% of the frame height. At the left of the frame he bends over a white top-loading washing machine with "
+           "both hands inside the drum, taking out laundry; a pale-blue laundry basket at his feet; the right side of the frame is a plain "
+           "white wall. No hallway is visible.",
+    "2-10e": "Very low-angle shot from a camera about 40 cm above the floor of the narrow hallway, tilted slightly up, a moment after Seojin "
+             "has walked past the camera and out of frame: Ian now stands alone by the middle door of the hallway, about 55% of the frame "
+             "height, arms hanging, staring after her, stunned. Light oak floor leading toward him, white walls close on both sides.",
+    "2-10": "Seojin in her burgundy knit dress, holding a small handbag, walks straight toward the camera so her torso and legs block the middle "
+            "of the frame completely — her face is cut off above the top edge of the frame; the far end of the hallway is hidden behind her "
+            "body. Light oak floor at the bottom, white walls close on both sides.",
+    "2-19": "The camera is at standing eye height, looking sideways across a row of office desks (no deep aisle, no windows). In the upper left "
+            "of the frame Ian leans far back in his office chair, head tilted back, holding a sandwich; right next to him Minjae sits close, "
+            "laughing hard and grabbing Ian's arm; together the two span about 80% of the frame width. In front, a white desktop crosses the "
+            "middle of the frame; the lower third is empty chairs and dark carpet. The monitors have no logos.",
+    "2-25": "The camera is right behind Seojin at shoulder height as she sits on the bed: in the left foreground, very blurred, her profile and "
+            "her two hands rubbing hand cream (dusty-rose pajamas). Beyond her, about 1 m away, Ian lies on his side with his back turned to "
+            "her — we see only the back of his head, his ear and the nape of his neck; his face and mouth are turned toward the pillow and "
+            "are not visible. Ian's head spans about 40% of the frame width; the focus is on Ian.",
+    "2-30": "The left half of the foreground is covered by the blurred back of Seojin's head (low-tied black hair) and her dusty-rose pajama "
+            "shoulder. Beyond her, Ian is halfway out through the bedroom doorway with his back to us — his head already past the door frame "
+            "and cut off — his right hand holding the inner door handle, starting to pull the door shut.",
+    "2-32": "The camera is at the far end of the dining table, just above the tabletop, looking along it: the tabletop fills the lower two "
+            "thirds of the frame. In the upper left, Ian leans his upper body deep over the table with both hands planted on it, about to sit "
+            "down (upper body only, his head about 25% of the frame width). A sheet of white paper and a pen lie in the middle of the frame; "
+            "his hands do not touch the pen.",
+    "2-34": "The camera is high behind the shoulder of Ian, who sits at the dining table, looking down at the wooden floor at 45 degrees: most "
+            "of the frame is wooden floor. At the top center, Seojin in dusty-rose pajamas rushes in and starts to slide in her socks (her "
+            "whole body about 40% of the frame height, motion-blurred). In the lower left corner the blurred back of Ian's head; in the lower "
+            "right the table corner and the corner of a white sheet of paper.",
+    "2-35": "The camera is low behind Seojin, who lies prostrate on the floor, about 50 cm above the floor, looking up: Ian is still sitting "
+            "at the dining table and leans back in surprise (he does not stand up). On the table only a sheet of paper and a pen — no bowls. "
+            "The blurred back of Seojin fills the lower foreground; the table edge cuts diagonally across the upper left.",
+    "2-37": "Close-up from the front, slightly above: Seojin kneels on the floor with her head bowed deeply — the crown of her head and her "
+            "forehead fill the upper middle of the frame (her head about 65% of the frame width); her face is almost hidden by her falling "
+            "hair; the collar of her dusty-rose pajamas fills the bottom; behind her only a blurred wall and door frame. No other person is in "
+            "the frame.",
+    "2-38": "The camera is about 50 cm above the floor, looking up: the lower half of the frame is covered by the blurred back of Seojin "
+            "kneeling (dusty-rose pajamas, low-tied hair); beyond her, Ian sits at the dining table in the upper middle of the frame, looking "
+            "down at her with welling eyes; the table edge cuts diagonally across the upper left.",
+    "2-39": "Bust shot of Ian at the table, eyes red-rimmed and welling with tears, his gaze dropped toward the lower left of the frame (toward "
+            "Seojin on the floor), his head bowed slightly, leaning toward the table with one hand resting on it; quiet, held-back emotion; "
+            "he does not look into the lens; his mouth is visible.",
+}
+for _k, _t in OPUS2.items():
+    C[_k]["t"] = _t
+C["1-29"]["t"] += (" The back of Ian's head in the right foreground is his wavy brown hair (the same as in his other shots), slightly out of "
+                   "focus, with his navy suit shoulder.")
+C["1-22"]["f"] = ""
+C["2-25"].update(f="IS", fx=None)
+C["2-10"]["xref"] = ("2-10e", "Image {n} is the same hallway seen from the same camera position a moment later, after she has passed — "
+                     "match the hallway, the doors, the floor and the camera height exactly; Ian stands behind her where he is in that "
+                     "image, hidden by her body.")
+NOLOC2 = {"1-22", "1-23", "1-37", "2-1", "2-19", "2-34"}
 
 # 장소 참조를 넣지 않는 인서트 · 접사(10-27): 현장 노트 「물건 인서트에 방 사진만 참고로 주면 사람이 앉은 방 전경을 그린다」 · 넓은 방 사진이 가까운 컷을 넓게 끈다
 NOLOC = {"1-2", "1-3", "1-24", "1-26", "1-27", "1-28", "1-41", "1-43", "2-3", "2-4", "2-12", "2-25", "2-10", "2-36", "2-37", "2-43", "2-44", "2-48"}   # 2-36: 10-28 부엌 사진이 컷을 넓게 끌었다
