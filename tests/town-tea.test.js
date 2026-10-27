@@ -316,3 +316,19 @@ test('찻집을 떠났다 돌아와도 같은 주문의 일 덜기는 한 번만
   for (let i = 0; i < 30; i++) st = t.input(st, { type: 'ask', slot: 'a', kind: 'repeat' }).state;
   assert.equal(st.asks.a.repeat, asksMax, '기기도 상한에서 멈춘다');
 });
+
+test('걸어서 찻집 가까이 왔을 뿐(거기서 말을 건 적 없음)이어도 주문을 열고 잔을 내며 주인이 카운터에 잡힌다 — 걷기 위치가 그 자리다(W8 헤드리스)', async () => {
+  const w = await cafe();
+  // The walk stands by the cafe; the place last spoken at is still home (the town opens there).
+  w.state = { ...w.state, day: { ...w.state.day, location: 'home', walk: { enabled: true, x: 0, z: 2.4, headingX: 0, headingZ: -1 } } };
+  w.send('TEA_OPEN');
+  const order = w.order();
+  assert.ok(order, '주문이 열린다');
+  assert.ok(w.state.village.reservations.some(r => r.by === `tea:${order.id}` && r.toMs === null && r.npc === 'cafe-owner'), '주인이 카운터에 잡힌다');
+  w.send('TEA_SERVE', { order: order.id, guest: 'a', cup: cupFor(order.guests[0].request), mode: 'make' });
+  assert.equal(w.order().guests[0].done?.by, 'player', '낸 잔을 받는다');
+  // Walked away from the cafe, the cup is too far — refused, nothing changed.
+  w.state = { ...w.state, day: { ...w.state.day, walk: { ...w.state.day.walk, x: 6, z: 2.4 } } };
+  assert.throws(() => w.send('TEA_SERVE', { order: order.id, guest: 'b', cup: cupFor(order.guests[1].request), mode: 'make' }), /찻집 가까이|too-far/);
+  assert.equal(w.order().guests[1].done, null);
+});

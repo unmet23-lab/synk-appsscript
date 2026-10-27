@@ -207,6 +207,20 @@ test('마스코트 묻기 — 생활일에 한 번, 취향 확인 다음 동의,
   assert.equal(close(run(drawn, 'ASK_CLOSE', { key: 'taste:cafe-life' })).asks.open, undefined, '그날 묻기는 한 번');
   const no = run(drawn, 'PREF_FAMILY', { family: 'cafe-life', answer: 'no' });
   assert.equal(no.asks.open, undefined); assert.deepEqual(no.prefs.denied, ['cafe-life']);
+  // An answer before the drawn report counts the question, and the answer has the last word (W8 r3 GA2) — either order, one result.
+  for (const answer of ['no', 'yes']) {
+    const early = run(structuredClone(taste), 'PREF_FAMILY', { family: 'cafe-life', answer }), late = run(structuredClone(drawn), 'PREF_FAMILY', { family: 'cafe-life', answer });
+    assert.equal(early.asks.open, undefined); assert.equal(early.asks.lastLifeDay, lifeDay, '먼저 온 답도 그날 묻기로 센다');
+    assert.deepEqual([early.prefs.observed, early.prefs.denied, early.prefs.preferredFamily], [late.prefs.observed, late.prefs.denied, late.prefs.preferredFamily], `「${answer}」는 그린 보고 앞뒤가 같다`);
+    assert.equal(early.prefs.observed, null);
+  }
+  // An open tea order (W8) is something the player is in: no question during it (r3 GA1).
+  const teaOrder = await import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'town', 'activities', 'tea-order.mjs')).href);
+  const opened = teaOrder.apply(teaOrder.initial(), { type: 'TEA_OPEN', payload: {} },
+    { id: 'T-1', nowMs: h.now, villageSeed: 'acct-w6', lifeDay, band: base.village.band.band, level: 'L2', raining: false, playerSeat: null, busy: () => false }).slot;
+  const ordering = ready(s => { s.activities = { ...s.activities, 'tea-order': opened }; return s; });
+  assert.ok(ordering.activities['tea-order'].open, '찻집 주문이 열렸다');
+  assert.equal(close(ordering).asks.open, undefined, '찻집 주문 중에는 묻지 않는다');
   const later = structuredClone(no); later.asks.lastLifeDay = lifeDay - 30;
   assert.equal(close(later).asks.open, undefined, '「아니요」 뒤에는 시간이 지나도 다시 묻지 않는다');
   // Consent: after something done with a resident, never to an academy account or where the host keeps it off, once.

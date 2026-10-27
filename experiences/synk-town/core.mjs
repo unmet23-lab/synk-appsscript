@@ -244,6 +244,9 @@ export function assertState(state) {
 
 // Walking, the player is where it walks (W6 — W5 follow-up: a place counted only after the player spoke there once).
 const atDayPlace = (state, place) => (state.day?.walk?.enabled ? nearbyPlace(state.day.walk) === place : state.day?.location === place);
+// The same place by name, for what an activity reads (W8 headless: walking up to the cafe without talking there first left
+// day.location at the last place spoken at, so the order opened and every cup served was refused as too far).
+const dayPlace = state => (state.day?.walk?.enabled ? nearbyPlace(state.day.walk) ?? null : state.day?.location ?? null);
 export function dayContext(state, host = {}) {
   const c1 = state.life?.episode;
   return { elapsedMs: host.elapsedMs || 0, nowMs: host.nowMs ?? state.lifeHost?.lastForegroundAt ?? 0,
@@ -261,7 +264,7 @@ export function dayContext(state, host = {}) {
 }
 function bazaarOwns(state) { return !!state.bazaar?.episode?.open && state.day?.location === 'cafe'; }
 /** An open tea order (or one-cup board) while the player is at the cafe: the cafe's other scenes wait for it (W8, review F6). */
-function teaOwns(state) { return !!state.activities?.['tea-order']?.open && state.day?.location === 'cafe'; }
+function teaOwns(state) { return !!state.activities?.['tea-order']?.open && dayPlace(state) === 'cafe'; }
 const slotOf = (state, a) => state.activities?.[a.id] ?? a.initial();
 function bazaarContext(state, host = {}, requestedKind) {
   const episode = state.day?.episode, life = state.life?.episode;
@@ -341,7 +344,7 @@ function heldNow(state) {
   const job = state.day?.job;
   if (job?.status === 'preparing') hold('workshop-owner', job.id, 'workshop.bench', { toMs: job.readyAt });
   // A life activity holds whom it says (W8: the tea order, the cafe owner at the counter while the player is at the cafe).
-  for (const a of ACTIVITIES) for (const h of a.held(slotOf(state, a), { location: state.day?.location })) hold(h.npc, h.by, h.spot);
+  for (const a of ACTIVITIES) for (const h of a.held(slotOf(state, a), { location: dayPlace(state) })) hold(h.npc, h.by, h.spot);
   // A card the player has open holds its owner at its spot, and C1's neighbour beside it (§8-3 나와 함께).
   for (const take of state.village?.takes || []) if (take.open) {
     const card = CARD_BY_ID[take.card], by = `card:${take.card}:${take.key}`;
@@ -436,6 +439,8 @@ const PLACING = Object.freeze(['outside-preview', 'inside-preview', 'color', 'pl
 function sceneOpen(state) {
   return !!(state.resting || state.day?.rest || state.day?.episode?.open || state.bazaar?.episode?.open || state.life?.episode?.open
     || state.pendingUse || PLACING.includes(state.phase) || (state.village?.takes || []).some(t => t.open)
+    // A life activity going on (W8 — the tea order or its one-cup board) is something the player is in too (r3 GA1).
+    || Object.values(state.activities || {}).some(slot => slot?.open)
     || (state.life?.contacts || []).some(c => ['issued', 'delivered', 'detail'].includes(c.status)));
 }
 /** A visit ends (its step, or the host's known end): its end is kept for the next visit's window, its question goes. */
@@ -894,7 +899,7 @@ function activityCtx(state, a, host, extra = {}) {
   const v = state.village, b = v.band, seed = v.seed ?? host.villageSeed ?? 'synk-town', nowMs = host.nowMs;
   const segments = planOf(v).segments, paramsVer = state.policy?.paramsVer;
   return { id: `T-${state.revision + 1}`, nowMs, villageSeed: seed, lifeDay: b.lifeDay, band: b.band, level: sceneLevel(state),
-    paramsVer, params: paramsFor(paramsVer), location: state.day?.location ?? null, raining: weatherAt(seed, nowMs) === 'rain',
+    paramsVer, params: paramsFor(paramsVer), location: dayPlace(state), raining: weatherAt(seed, nowMs) === 'rain',
     playerSeat: state.placement ? FT_SEATS[state.placement]?.spot ?? null : null,
     busy: (spot, fromMs, toMs) => segments.some(seg => seg.spot === spot && seg.arriveMs < toMs && seg.endMs > fromMs), ...extra };
 }
@@ -1300,12 +1305,16 @@ export function reduceCommand(previous, command, host = {}) {
       const { visitId } = openVisit(state, host);
       state.prefs = preference(() => setTodayOther(state.prefs, visitId, p.activity)); personalRoom(state.prefs); break;
     }
-    case 'PREF_FAMILY':
-      state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer));
+    case 'PREF_FAMILY': {
       // The answer to the mascot's taste question closes it (§20-3, W6).
-      // An answer before the drawn report still counts the question (GPT A3), then it goes.
-      if (state.asks.open?.kind === 'taste' && state.asks.open.family === p.family) { askDrawn(state, state.asks.open.key); const { open, ...rest } = state.asks; state.asks = rest; }
+      // An answer before the drawn report still counts the question (GPT A3) — counted first, so the answer has the last word
+      // (W8 r3 GA2: counting it after the answer wrote 「요즘 자주 한 생활」 back over the 「아니요」 or 「네」).
+      const asked = state.asks.open?.kind === 'taste' && state.asks.open.family === p.family;
+      if (asked) askDrawn(state, state.asks.open.key);
+      state.prefs = preference(() => answerFamily(state.prefs, p.family, p.answer));
+      if (asked) { const { open, ...rest } = state.asks; state.asks = rest; }
       break;
+    }
     // The mascot's question closed unanswered (§20-3·§20-4, W6): a person closed what they saw, so it counts as drawn if the
     // boundary had not said so yet (Fable F3), then it goes. A question already gone changes nothing.
     case 'ASK_CLOSE':
