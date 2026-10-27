@@ -1,0 +1,39 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "바.",
+ "dur": 0.436,
+ "words": [
+  {
+   "text": "바.",
+   "start": 0.05,
+   "end": 0.436
+  }
+ ],
+ "source": {
+  "key": "087be6b546f11091d7586e3faaff6b71",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 3029,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

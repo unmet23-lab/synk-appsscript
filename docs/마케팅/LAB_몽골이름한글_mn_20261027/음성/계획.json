@@ -1,0 +1,170 @@
+{
+  "note": "LAB M3 다시 살림(10-28 07시 회차) — 「바트바야르」를 한 칸씩 쓸 때마다 그 음절 소리, 끝에 이름 전체. 목소리는 LAB 낱말 편 하나(E1 다시 살림과 같은 방식) · −26 LUFS로 사서 우리 쪽 리미터. seed 셋 가운데 줄마다 엉킴(tools/목소리엉킴.py)이 낮은 판을 remotion/public/vo/pick으로 고른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_몽골이름한글_mn_20261027/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_61659cc118732016a95fe7c6",
+    "name": "하나"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "versions": {
+    "s1027": {
+      "defaults": {
+        "seed": 1027
+      },
+      "lines": [
+        {
+          "id": "b1",
+          "text": "바.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "t2",
+          "text": "트.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "b3",
+          "text": "바.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "y4",
+          "text": "야.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "r5",
+          "text": "르.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "full",
+          "text": "바트바야르!",
+          "lang": "ko",
+          "emotion": "happy",
+          "intensity": 1,
+          "tempo": 0.95
+        }
+      ]
+    },
+    "s2028": {
+      "defaults": {
+        "seed": 2028
+      },
+      "lines": [
+        {
+          "id": "b1",
+          "text": "바.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "t2",
+          "text": "트.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "b3",
+          "text": "바.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "y4",
+          "text": "야.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "r5",
+          "text": "르.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "full",
+          "text": "바트바야르!",
+          "lang": "ko",
+          "emotion": "happy",
+          "intensity": 1,
+          "tempo": 0.95
+        }
+      ]
+    },
+    "s3029": {
+      "defaults": {
+        "seed": 3029
+      },
+      "lines": [
+        {
+          "id": "b1",
+          "text": "바.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "t2",
+          "text": "트.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "b3",
+          "text": "바.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "y4",
+          "text": "야.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "r5",
+          "text": "르.",
+          "lang": "ko",
+          "emotion": "normal",
+          "tempo": 0.9
+        },
+        {
+          "id": "full",
+          "text": "바트바야르!",
+          "lang": "ko",
+          "emotion": "happy",
+          "intensity": 1,
+          "tempo": 0.95
+        }
+      ]
+    }
+  }
+}

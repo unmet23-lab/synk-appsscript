@@ -1,0 +1,39 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t2",
+ "text": "트.",
+ "dur": 0.526,
+ "words": [
+  {
+   "text": "트.",
+   "start": 0.02,
+   "end": 0.526
+  }
+ ],
+ "source": {
+  "key": "1c326a960f3ab602c16ef92e7d6b5c8b",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 2028,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

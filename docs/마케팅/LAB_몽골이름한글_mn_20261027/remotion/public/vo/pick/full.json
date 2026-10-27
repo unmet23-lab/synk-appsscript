@@ -1,0 +1,39 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "full",
+ "text": "바트바야르!",
+ "dur": 1.432,
+ "words": [
+  {
+   "text": "바트바야르!",
+   "start": 0.05,
+   "end": 1.432
+  }
+ ],
+ "source": {
+  "key": "66686da505853a263283ee13d7f067d5",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 0.95,
+   "seed": 2028,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}
