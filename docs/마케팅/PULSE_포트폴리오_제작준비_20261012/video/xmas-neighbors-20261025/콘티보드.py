@@ -81,6 +81,8 @@ def ours(n, TW, TH, raw=False, end=False):
     """우리 그림 — 움직이는 컷은 카메라무브.py가 자른 처음 · 끝 창(컷/C04_처음.jpg · _끝.jpg), 아니면 받은 판 그대로"""
     base = os.path.join(CUTS, f"C{n:02d}")
     p = base + ("_끝.jpg" if end else "_처음.jpg")
+    if n in (19, 30) and os.path.exists(base + "e.jpg"):   # 사람을 따라 크게 도는 두 컷은 처음 판 → 끝 그림(애니매틱과 같이)
+        p = base + ("e.jpg" if end else ".jpg")
     if not os.path.exists(p):
         if end:
             return None
