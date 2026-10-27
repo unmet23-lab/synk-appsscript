@@ -1,0 +1,58 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v08",
+ "text": "챗지피티에 보낸 말은, 이 한 줄이에요.",
+ "show": "ChatGPT에 보낸 말은, 이 한 줄이에요.",
+ "dur": 2.257,
+ "words": [
+  {
+   "text": "챗지피티에",
+   "start": 0.02,
+   "end": 0.523
+  },
+  {
+   "text": "보낸",
+   "start": 0.583,
+   "end": 0.784
+  },
+  {
+   "text": "말은,",
+   "start": 0.844,
+   "end": 1.085
+  },
+  {
+   "text": "이",
+   "start": 1.447,
+   "end": 1.467
+  },
+  {
+   "text": "한",
+   "start": 1.547,
+   "end": 1.628
+  },
+  {
+   "text": "줄이에요.",
+   "start": 1.688,
+   "end": 2.257
+  }
+ ],
+ "source": {
+  "key": "1b530c967a8b19248d5c41bec52d08ba",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

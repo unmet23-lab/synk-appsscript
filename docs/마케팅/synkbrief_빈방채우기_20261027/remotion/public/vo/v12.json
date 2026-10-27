@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v12",
+ "text": "빈 방 사진 한 장을 챗지피티에 줬더니, 이렇게 채워 줬어요.",
+ "show": "빈 방 사진 한 장을 ChatGPT에 줬더니, 이렇게 채워 줬어요.",
+ "dur": 2.893,
+ "words": [
+  {
+   "text": "빈",
+   "start": 0.02,
+   "end": 0.13
+  },
+  {
+   "text": "방",
+   "start": 0.167,
+   "end": 0.265
+  },
+  {
+   "text": "사진",
+   "start": 0.301,
+   "end": 0.497
+  },
+  {
+   "text": "한",
+   "start": 0.534,
+   "end": 0.607
+  },
+  {
+   "text": "장을",
+   "start": 0.644,
+   "end": 0.815
+  },
+  {
+   "text": "챗지피티에",
+   "start": 0.852,
+   "end": 1.328
+  },
+  {
+   "text": "줬더니,",
+   "start": 1.365,
+   "end": 1.72
+  },
+  {
+   "text": "이렇게",
+   "start": 1.976,
+   "end": 2.184
+  },
+  {
+   "text": "채워",
+   "start": 2.221,
+   "end": 2.38
+  },
+  {
+   "text": "줬어요.",
+   "start": 2.416,
+   "end": 2.893
+  }
+ ],
+ "source": {
+  "key": "881e9620826946cf2c58959d568576c6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

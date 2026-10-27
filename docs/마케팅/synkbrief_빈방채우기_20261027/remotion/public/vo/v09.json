@@ -1,0 +1,88 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v09",
+ "text": "네가 아는 나를 바탕으로, 내가 좋아할 만한 물건들로 이 방을 채워 줘.",
+ "show": "네가 아는 나를 바탕으로, 내가 좋아할 만한 물건들로 이 방을 채워 줘.",
+ "dur": 3.936,
+ "words": [
+  {
+   "text": "네가",
+   "start": 0.02,
+   "end": 0.231
+  },
+  {
+   "text": "아는",
+   "start": 0.291,
+   "end": 0.472
+  },
+  {
+   "text": "나를",
+   "start": 0.517,
+   "end": 0.712
+  },
+  {
+   "text": "바탕으로,",
+   "start": 0.758,
+   "end": 1.149
+  },
+  {
+   "text": "내가",
+   "start": 1.495,
+   "end": 1.66
+  },
+  {
+   "text": "좋아할",
+   "start": 1.721,
+   "end": 2.006
+  },
+  {
+   "text": "만한",
+   "start": 2.052,
+   "end": 2.217
+  },
+  {
+   "text": "물건들로",
+   "start": 2.262,
+   "end": 2.729
+  },
+  {
+   "text": "이",
+   "start": 3.075,
+   "end": 3.09
+  },
+  {
+   "text": "방을",
+   "start": 3.165,
+   "end": 3.361
+  },
+  {
+   "text": "채워",
+   "start": 3.406,
+   "end": 3.571
+  },
+  {
+   "text": "줘.",
+   "start": 3.616,
+   "end": 3.936
+  }
+ ],
+ "source": {
+  "key": "0776b93e6813d4ad257763c7f7504fe0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

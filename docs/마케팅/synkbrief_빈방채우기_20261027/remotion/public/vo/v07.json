@@ -1,0 +1,63 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v07",
+ "text": "빈 방 사진 한 장이, 이렇게 바뀌었어요.",
+ "show": "빈 방 사진 한 장이, 이렇게 바뀌었어요.",
+ "dur": 2.413,
+ "words": [
+  {
+   "text": "빈",
+   "start": 0.02,
+   "end": 0.165
+  },
+  {
+   "text": "방",
+   "start": 0.213,
+   "end": 0.325
+  },
+  {
+   "text": "사진",
+   "start": 0.373,
+   "end": 0.55
+  },
+  {
+   "text": "한",
+   "start": 0.598,
+   "end": 0.662
+  },
+  {
+   "text": "장이,",
+   "start": 0.71,
+   "end": 0.919
+  },
+  {
+   "text": "이렇게",
+   "start": 1.432,
+   "end": 1.625
+  },
+  {
+   "text": "바뀌었어요.",
+   "start": 1.673,
+   "end": 2.413
+  }
+ ],
+ "source": {
+  "key": "3435de87e1d227e9d085644aff2c3cc7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

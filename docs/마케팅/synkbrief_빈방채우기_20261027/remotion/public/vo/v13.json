@@ -1,0 +1,53 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v13",
+ "text": "보낸 말은, 이 한 줄이에요.",
+ "show": "보낸 말은, 이 한 줄이에요.",
+ "dur": 1.343,
+ "words": [
+  {
+   "text": "보낸",
+   "start": 0.02,
+   "end": 0.249
+  },
+  {
+   "text": "말은,",
+   "start": 0.298,
+   "end": 0.494
+  },
+  {
+   "text": "이",
+   "start": 0.56,
+   "end": 0.576
+  },
+  {
+   "text": "한",
+   "start": 0.625,
+   "end": 0.74
+  },
+  {
+   "text": "줄이에요.",
+   "start": 0.789,
+   "end": 1.343
+  }
+ ],
+ "source": {
+  "key": "003d4c2074cd9ee55060cefc2a3bd296",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

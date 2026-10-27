@@ -1,0 +1,58 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v10",
+ "text": "제 챗지피티가 기억하는 저는, 이랬나 봐요.",
+ "show": "제 ChatGPT가 기억하는 저는, 이랬나 봐요.",
+ "dur": 2.58,
+ "words": [
+  {
+   "text": "제",
+   "start": 0.02,
+   "end": 0.103
+  },
+  {
+   "text": "챗지피티가",
+   "start": 0.187,
+   "end": 0.736
+  },
+  {
+   "text": "기억하는",
+   "start": 0.786,
+   "end": 1.152
+  },
+  {
+   "text": "저는,",
+   "start": 1.202,
+   "end": 1.434
+  },
+  {
+   "text": "이랬나",
+   "start": 1.8,
+   "end": 2.05
+  },
+  {
+   "text": "봐요.",
+   "start": 2.1,
+   "end": 2.58
+  }
+ ],
+ "source": {
+  "key": "0a32c45210610294d4efd1f7fd2802eb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

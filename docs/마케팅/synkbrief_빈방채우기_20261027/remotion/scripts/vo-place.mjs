@@ -17,12 +17,13 @@ const B = Object.fromEntries([...read('src/full/time.ts').match(/export const B 
 const VO = Object.fromEntries([...read('src/full/vo.ts').matchAll(/^\s+(\w+): \{ dur: ([\d.]+), speech: ([\d.]+)/gm)].map((m) => [m[1], { dur: Number(m[2]), speech: Number(m[3]) }]));
 
 // [줄, 장면, 착지 박에서 몇 프레임 뒤]
+// v6(이해 시험 v5 3점 뒤): 첫 말 v12 · 「메모리를 켜 둔 ChatGPT가 짐작」 v15 · 물건 v11 · 「여러분도 … 이 한 줄만」 v16 · 옛 끝 줄 v06.
+// v3 · v4(v07~v10) · v5(v13 · v14)의 줄 자리는 git 이력에 있다.
 const PLAN = [
-  ['v01', 'hook', 2],
-  ['v02', 'res', 8], // 밀어 넘기기가 시작된 뒤
-  ['v03', 'mem', 4],
-  ['v04', 'tmp', 4],
-  ['v05', 'off', 4],
+  ['v12', 'hook', 2],
+  ['v15', 'why', 2],
+  ['v11', 'items', 2],
+  ['v16', 'line', 4],
   ['v06', 'end', 4],
 ];
 

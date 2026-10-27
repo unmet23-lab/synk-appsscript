@@ -1,0 +1,73 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v14",
+ "text": "챗지피티가 저에 대해 아는 걸로 짐작한 저는, 이랬나 봐요.",
+ "show": "ChatGPT가 저에 대해 아는 걸로 짐작한 저는, 이랬나 봐요.",
+ "dur": 2.969,
+ "words": [
+  {
+   "text": "챗지피티가",
+   "start": 0.02,
+   "end": 0.529
+  },
+  {
+   "text": "저에",
+   "start": 0.586,
+   "end": 0.77
+  },
+  {
+   "text": "대해",
+   "start": 0.826,
+   "end": 0.94
+  },
+  {
+   "text": "아는",
+   "start": 1.01,
+   "end": 1.166
+  },
+  {
+   "text": "걸로",
+   "start": 1.209,
+   "end": 1.364
+  },
+  {
+   "text": "짐작한",
+   "start": 1.421,
+   "end": 1.746
+  },
+  {
+   "text": "저는,",
+   "start": 1.789,
+   "end": 2.015
+  },
+  {
+   "text": "이랬나",
+   "start": 2.341,
+   "end": 2.581
+  },
+  {
+   "text": "봐요.",
+   "start": 2.624,
+   "end": 2.969
+  }
+ ],
+ "source": {
+  "key": "8b8de67c2b1bcb8ce1a932bcba818207",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

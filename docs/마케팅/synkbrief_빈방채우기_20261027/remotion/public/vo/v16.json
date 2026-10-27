@@ -1,0 +1,78 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v16",
+ "text": "여러분도 빈 방 사진에, 이 한 줄만 붙여 보내 보세요.",
+ "show": "여러분도 빈 방 사진에, 이 한 줄만 붙여 보내 보세요.",
+ "dur": 2.902,
+ "words": [
+  {
+   "text": "여러분도",
+   "start": 0.02,
+   "end": 0.392
+  },
+  {
+   "text": "빈",
+   "start": 0.438,
+   "end": 0.562
+  },
+  {
+   "text": "방",
+   "start": 0.609,
+   "end": 0.701
+  },
+  {
+   "text": "사진에,",
+   "start": 0.748,
+   "end": 1.058
+  },
+  {
+   "text": "이",
+   "start": 1.584,
+   "end": 1.6
+  },
+  {
+   "text": "한",
+   "start": 1.677,
+   "end": 1.77
+  },
+  {
+   "text": "줄만",
+   "start": 1.817,
+   "end": 2.033
+  },
+  {
+   "text": "붙여",
+   "start": 2.095,
+   "end": 2.235
+  },
+  {
+   "text": "보내",
+   "start": 2.281,
+   "end": 2.421
+  },
+  {
+   "text": "보세요.",
+   "start": 2.467,
+   "end": 2.902
+  }
+ ],
+ "source": {
+  "key": "697c1748cbb7d7704227cee26f3f2509",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ }
+}

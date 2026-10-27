@@ -1,0 +1,63 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v11",
+ "text": "게임 패드, 헤드폰, 포스터, 식물, 그리고 인형까지.",
+ "show": "게임 패드, 헤드폰, 포스터, 식물, 그리고 인형까지.",
+ "dur": 4.087,
+ "words": [
+  {
+   "text": "게임",
+   "start": 0.05,
+   "end": 0.225
+  },
+  {
+   "text": "패드,",
+   "start": 0.29,
+   "end": 0.532
+  },
+  {
+   "text": "헤드폰,",
+   "start": 0.968,
+   "end": 1.405
+  },
+  {
+   "text": "포스터,",
+   "start": 1.798,
+   "end": 2.17
+  },
+  {
+   "text": "식물,",
+   "start": 2.607,
+   "end": 2.978
+  },
+  {
+   "text": "그리고",
+   "start": 3.153,
+   "end": 3.415
+  },
+  {
+   "text": "인형까지.",
+   "start": 3.48,
+   "end": 4.087
+  }
+ ],
+ "source": {
+  "key": "0156360bc36d5a2b5c77887e0675e2f8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 0.92,
+  "cut": null
+ }
+}
