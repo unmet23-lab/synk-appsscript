@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "cm",
+ "text": "몇 원일 것 같았어요? 댓글로 알려 주세요.",
+ "dur": 2.142,
+ "words": [
+  {
+   "text": "몇",
+   "start": 0.01,
+   "end": 0.103
+  },
+  {
+   "text": "원일",
+   "start": 0.157,
+   "end": 0.317
+  },
+  {
+   "text": "것",
+   "start": 0.357,
+   "end": 0.422
+  },
+  {
+   "text": "같았어요?",
+   "start": 0.476,
+   "end": 0.876
+  },
+  {
+   "text": "댓글로",
+   "start": 1.196,
+   "end": 1.501
+  },
+  {
+   "text": "알려",
+   "start": 1.541,
+   "end": 1.688
+  },
+  {
+   "text": "주세요.",
+   "start": 1.728,
+   "end": 2.142
+  }
+ ],
+ "source": {
+  "key": "efe9d8894eede11d94ccaf0e4642c0c5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

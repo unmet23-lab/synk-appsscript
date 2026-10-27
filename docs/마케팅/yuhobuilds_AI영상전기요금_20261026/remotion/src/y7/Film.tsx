@@ -15,7 +15,7 @@ import { POWER, POWER_END, POWER_LIMIT } from './power.generated';
 import { at, lineEnd, TIMING, VO, type Cut, type Timing } from './time';
 import { ease, EASE_MOVE, Line } from './Type';
 
-const MASTER = 0.8; // Remotion은 합친 소리가 0 dBFS를 넘으면 잘라 낸다 — 모든 소리에 같은 값을 곱한다(현장 노트)
+export const MASTER = 0.8; // Remotion은 합친 소리가 0 dBFS를 넘으면 잘라 낸다 — 모든 소리에 같은 값을 곱한다(현장 노트)
 const MUTED = '#8E8B84';
 const FRAME = '#3A3833';
 const CARD = '#161614';
@@ -80,7 +80,7 @@ const VideoPanel: React.FC = () => {
   );
 };
 
-const Dot: React.FC<{ f: number; on: boolean }> = ({ f, on }) => {
+export const Dot: React.FC<{ f: number; on: boolean }> = ({ f, on }) => {
   const pulse = on ? 0.55 + 0.45 * Math.abs(Math.sin((f / 30) * Math.PI * 1.6)) : 1;
   return <div style={{ width: 16, height: 16, borderRadius: 8, background: on ? '#E5534B' : INK, opacity: pulse }} />;
 };
@@ -176,7 +176,7 @@ const Cost: React.FC<{ f: number; ask: number }> = ({ f, ask }) => {
 };
 
 /** 숫자 바퀴 두 칸 + 소수점(9.8). film/parts의 Odometer와 같은 계산에 점만 끼웠다. */
-const Wheels: React.FC<{ value: number; prev: number; size: number; color: string }> = ({ value, prev, size, color }) => {
+export const Wheels: React.FC<{ value: number; prev: number; size: number; color: string }> = ({ value, prev, size, color }) => {
   const H = size * 0.94;
   const W = size * 0.6;
   const pos = (v: number, p: number) => {

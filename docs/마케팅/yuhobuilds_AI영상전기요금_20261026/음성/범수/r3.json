@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r3",
+ "text": "십 원짜리 동전 하나 값도 안 나왔어요.",
+ "dur": 1.858,
+ "words": [
+  {
+   "text": "십",
+   "start": 0.01,
+   "end": 0.097
+  },
+  {
+   "text": "원짜리",
+   "start": 0.145,
+   "end": 0.418
+  },
+  {
+   "text": "동전",
+   "start": 0.455,
+   "end": 0.701
+  },
+  {
+   "text": "하나",
+   "start": 0.739,
+   "end": 0.849
+  },
+  {
+   "text": "값도",
+   "start": 0.911,
+   "end": 1.133
+  },
+  {
+   "text": "안",
+   "start": 1.182,
+   "end": 1.244
+  },
+  {
+   "text": "나왔어요.",
+   "start": 1.281,
+   "end": 1.858
+  }
+ ],
+ "source": {
+  "key": "eda7b8d09edf371bebc0845792aaf3d5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}

@@ -15,7 +15,7 @@
   "seed": 1017,
   "lufs": -17
  },
- "made": "2026-10-25T23:13:55.873Z",
+ "made": "2026-10-27T05:27:12.104Z",
  "lines": [
   {
    "id": "h1",
@@ -88,6 +88,33 @@
    "src": "yt.wav",
    "key": "83a90e56350fca3fdb60f6ede030a21a",
    "words": 8
+  },
+  {
+   "id": "r3",
+   "text": "십 원짜리 동전 하나 값도 안 나왔어요.",
+   "dur": 1.858,
+   "syllablesPerSec": 8.07,
+   "src": "r3.wav",
+   "key": "eda7b8d09edf371bebc0845792aaf3d5",
+   "words": 7
+  },
+  {
+   "id": "w2",
+   "text": "이 정도면, 전기요금 걱정은 안 해도 되겠어요.",
+   "dur": 2.363,
+   "syllablesPerSec": 7.62,
+   "src": "w2.wav",
+   "key": "e21fd00db05605eafa9a1b92b5f1ecf1",
+   "words": 7
+  },
+  {
+   "id": "cm",
+   "text": "몇 원일 것 같았어요? 댓글로 알려 주세요.",
+   "dur": 2.142,
+   "syllablesPerSec": 7.47,
+   "src": "cm.wav",
+   "key": "efe9d8894eede11d94ccaf0e4642c0c5",
+   "words": 7
   },
   {
    "id": "fo",

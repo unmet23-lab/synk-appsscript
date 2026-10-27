@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w2",
+ "text": "이 정도면, 전기요금 걱정은 안 해도 되겠어요.",
+ "dur": 2.363,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.02,
+   "end": 0.033
+  },
+  {
+   "text": "정도면,",
+   "start": 0.086,
+   "end": 0.518
+  },
+  {
+   "text": "전기요금",
+   "start": 0.729,
+   "end": 1.149
+  },
+  {
+   "text": "걱정은",
+   "start": 1.188,
+   "end": 1.515
+  },
+  {
+   "text": "안",
+   "start": 1.555,
+   "end": 1.581
+  },
+  {
+   "text": "해도",
+   "start": 1.633,
+   "end": 1.765
+  },
+  {
+   "text": "되겠어요.",
+   "start": 1.817,
+   "end": 2.363
+  }
+ ],
+ "source": {
+  "key": "e21fd00db05605eafa9a1b92b5f1ecf1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ }
+}
