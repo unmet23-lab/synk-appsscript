@@ -65,8 +65,9 @@ export function createStay({ scene, hud, nearby, settings, sound, renderer, befo
       // cellular connection it waits for Wi-Fi with its switch left as it is.
       if (name === 'music') { button.closest('.stay-switch-row').hidden = !music; const note = button.closest('.stay-switch-row').querySelector('.stay-switch-note'); note.textContent = on && held ? '와이파이에서만 흘러요.' : NOTES.music; }
     }
-    const musicOn = music && prefs.music && !held;
-    line.textContent = prefs.village || musicOn ? musicOn ? prefs.village ? '마을 소리와 SYNK 음악이 흘러요.' : 'SYNK 음악이 흘러요.' : '마을 소리만 흘러요.' : '소리를 모두 꺼 두었어요. 화면만 조용히 머물러요.';
+    // Paused from a headset, a media key or the lock screen: the switch stays on and the words say the music rests.
+    const musicPaused = music && prefs.music && !held && !!sound.musicPaused?.(), musicOn = music && prefs.music && !held && !musicPaused;
+    line.textContent = prefs.village || musicOn ? musicOn ? prefs.village ? '마을 소리와 SYNK 음악이 흘러요.' : 'SYNK 음악이 흘러요.' : '마을 소리만 흘러요.' : musicPaused ? 'SYNK 음악이 멈춰 있어요. 화면만 조용히 머물러요.' : '소리를 모두 꺼 두었어요. 화면만 조용히 머물러요.';
   }
   sound.onPrefs(() => { paintSwitches(); onChange(); });
   paintSwitches();

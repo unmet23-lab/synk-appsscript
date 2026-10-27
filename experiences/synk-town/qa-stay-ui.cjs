@@ -37,6 +37,10 @@ async function instrument(context) {
     globalThis.__audioNodes = 0; const AC = window.AudioContext;
     // The music's <audio> pair is not in the page: keep a hand on each so the QA can move a song near its end.
     const RealAudio = window.Audio; globalThis.__qaAudios = []; window.Audio = function (...a) { const el = new RealAudio(...a); globalThis.__qaAudios.push(el); return el; }; window.Audio.prototype = RealAudio.prototype;
+    // Whether each <audio> is touched inside a person's input (WebKit's per-element rule; the QA's stand-in is the page's
+    // transient activation), and the media-session handlers, to press pause and play as a headset would.
+    for (const name of ['load', 'play']) { const real = HTMLMediaElement.prototype[name]; HTMLMediaElement.prototype[name] = function (...a) { if (this.__qaFirst === undefined) { this.__qaFirst = navigator.userActivation?.isActive === true; this.__qaHow = name + "@" + Math.round(performance.now()) + (this.getAttribute("src") ? ":src" : ":empty"); } return real.apply(this, a); }; }
+    globalThis.__qaMedia = {}; if (navigator.mediaSession?.setActionHandler) { const set = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession); navigator.mediaSession.setActionHandler = (action, handler) => { globalThis.__qaMedia[action] = handler; return set(action, handler); }; }
     if (AC) for (const name of ['createGain', 'createOscillator', 'createBufferSource', 'createBiquadFilter', 'createStereoPanner']) { const real = AC.prototype[name]; if (real) AC.prototype[name] = function (...a) { globalThis.__audioNodes++; return real.apply(this, a); }; }
   });
 }
@@ -281,9 +285,16 @@ async function music(browser) {
     check(scene, await page.evaluate(() => document.querySelector('#stay-card .stay-line').textContent.includes('SYNK 음악')), '판 글이 음악을 말한다');
     // Near its end a song hands over to the next one (a 3-second crossfade) and only one plays after.
     const first = m.sound.music.track;
+    await delay(6000); // past the browser's few seconds of transient activation, so the handover runs outside any input
     await page.evaluate(() => { const a = globalThis.__qaAudios.find(x => !x.paused); if (a?.duration) a.currentTime = Math.max(0, a.duration - 6); });
     await delay(9000); m = await metrics(page);
     const playing = await page.evaluate(() => globalThis.__qaAudios.filter(x => !x.paused).length);
+    check(scene, await page.evaluate(() => globalThis.__qaAudios.length === 2 && globalThis.__qaAudios.every(a => /^load@[0-9]+:empty$/.test(a.__qaHow || ''))), '음악의 두 <audio>는 곡을 받기 전에 입력 처리 안에서 load()로 먼저 깨워진다(아이폰의 요소별 재생 제한)', await page.evaluate(() => globalThis.__qaAudios.map(a => [a.__qaFirst, a.__qaHow, Math.round(performance.now())])));
+    // A headset's pause: the music rests (its switch stays on) and the card's words say so; play brings it back.
+    await page.evaluate(() => globalThis.__qaMedia.pause?.()); await delay(3800); m = await metrics(page);
+    check(scene, m.sound.prefs.music === true && !m.sound.music.playing && await page.evaluate(() => document.querySelector('#stay-card .stay-line').textContent === '마을 소리만 흘러요.'), '헤드셋으로 멈추면 음악이 쉬고 판 글이 마을 소리만', { music: m.sound.music, line: await page.evaluate(() => document.querySelector('#stay-card .stay-line').textContent) });
+    await page.evaluate(() => globalThis.__qaMedia.play?.()); await delay(4000); m = await metrics(page);
+    check(scene, m.sound.music.playing && await page.evaluate(() => document.querySelector('#stay-card .stay-line').textContent.includes('SYNK 음악')), '다시 재생하면 음악과 판 글이 돌아온다', m.sound.music);
     check(scene, m.sound.music.playing && m.sound.music.track !== first && playing === 1, '곡 끝에서 다음 곡으로 넘어가고 하나만 흐른다', { first, now: m.sound.music.track, playing, audio: await page.evaluate(() => globalThis.__qaAudios.map(x => [Math.round(x.currentTime), Math.round(x.duration), x.paused])) });
     await page.keyboard.press('Escape'); await delay(3800);
     m = await metrics(page); check(scene, !m.sound.music.playing && m.sound.buses.music === 0, '일어나면 음악이 멈춘다', { music: m.sound.music, buses: m.sound.buses });

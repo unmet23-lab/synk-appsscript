@@ -297,6 +297,7 @@ export function createTownSound({ surfaceId = crypto.randomUUID() } = {}) {
       if (!(prefs.village || prefs.music && TRACKS.length)) { apply(); return; }
       const c = ensure(); if (!c) return;
       if (c.state !== 'running' && !(last.buses.village === 0 && last.buses.music === 0)) c.resume().then(() => { interrupted = false; }, () => {});
+      music.prime();
       apply();
     },
     prefs: () => ({ ...prefs }),
@@ -313,6 +314,8 @@ export function createTownSound({ surfaceId = crypto.randomUUID() } = {}) {
     hasMusic: () => TRACKS.length > 0,
     /** Why music waits though its switch is on ('data' — a saving or cellular connection), or null. */
     musicHeld: () => music.held(),
+    /** Music paused from a headset, a media key or the lock screen (its switch stays on). */
+    musicPaused: () => music.paused(),
     /** The output's loudness now (RMS, 0~1) — for the QA. */
     level() { if (!tap) return 0; const data = new Float32Array(tap.fftSize); tap.getFloatTimeDomainData(data); let sum = 0; for (const v of data) sum += v * v; return Math.sqrt(sum / data.length); },
     stats: () => ({ context: ctx?.state ?? 'none', prefs: { ...prefs }, storage: storageWorks, sounding: sounding(), buses: { ...last.buses }, recording: !!last.recording, sheltered: !!last.sheltered,
@@ -333,12 +336,12 @@ function session(type) { try { const value = navigator.audioSession; if (value &
  * on a data-saving or cellular connection (the village design's Wi-Fi rule for downloads — the switch stays as it
  * is), and a headset's or the lock screen's pause is a pause, never the switch. */
 function createMusic({ onChange = () => {} } = {}) {
-  let ctx = null, out = null, players = [], current = 0, order = [], index = 0, dayKey = null, target = 0, timer = 0, paused = false;
+  let ctx = null, out = null, players = [], current = 0, order = [], index = 0, dayKey = null, target = 0, timer = 0, paused = false, retry = null;
   const shuffle = seed => { const list = TRACKS.map((t, i) => i); let s = seed >>> 0; for (let i = list.length - 1; i > 0; i--) { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; const j = s % (i + 1); [list[i], list[j]] = [list[j], list[i]]; } return list; };
   const held = () => { const c = navigator.connection; return TRACKS.length && (c?.saveData === true || c?.type === 'cellular') ? 'data' : null; };
   function start(player, track) {
     player.audio.src = new URL(track.file, location.href).href; player.audio.currentTime = 0; player.track = track;
-    player.audio.play().then(() => session('ambient'), () => {});
+    player.audio.play().then(() => session('ambient'), () => { retry = player; });
     try { if (navigator.mediaSession) navigator.mediaSession.metadata = new MediaMetadata({ title: track.title }); } catch {}
   }
   function next() {
@@ -364,11 +367,17 @@ function createMusic({ onChange = () => {} } = {}) {
     },
     held,
     paused: () => paused,
+    /** From inside a person's own input (a tap, a click, a key): WebKit lets each <audio> play only once a gesture has
+     * touched it, so the pair not yet given a song is loaded here, and a song the browser refused is tried again. */
+    prime() {
+      for (const p of players) if (!p.audio.getAttribute('src')) p.audio.load();
+      if (retry && target > 0 && !paused) { const p = retry; retry = null; if (p === players[current]) p.audio.play().then(() => session('ambient'), () => { retry = p; }); }
+    },
     day(at) { if (!TRACKS.length || !Number.isFinite(at)) return; const key = Math.floor(at / DAY); if (key !== dayKey) { dayKey = key; order = shuffle(key); } },
     level(value, fade) {
       if (!players.length) return;
       if (value === target) return; clearTimeout(timer); const now = ctx.currentTime, was = target; target = value;
-      if (value > 0 && was === 0) { if (!players[current].track) { next(); return; } players[current].audio.play().catch(() => {}); }
+      if (value > 0 && was === 0) { if (!players[current].track) { next(); return; } const p = players[current]; p.audio.play().catch(() => { retry = p; }); }
       const p = players[current]; p.gain.gain.cancelScheduledValues(now); p.gain.gain.setValueAtTime(p.gain.gain.value, now); p.gain.gain.linearRampToValueAtTime(value, now + fade);
       if (value === 0) timer = setTimeout(() => { for (const q of players) q.audio.pause(); }, fade * 1000 + 100);
     },
