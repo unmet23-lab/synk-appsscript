@@ -157,22 +157,24 @@ def glance(rows, ns, path):
 
 
 def faces(path):
-    """30 · 34 표정 시험: 원본 첫 프레임 | a · b · c(고른 판 표시) + SFace 닮음(이미지콘티_닮음.py가 쓴 정지컷/_닮음.json)"""
-    TW, TH = 560, 315
+    """30 · 34 얼굴 시험: 원본 첫 프레임 | 시험 판들(고른 판 금색 테) + SFace 닮음(이미지콘티_닮음.py가 쓴 정지컷/_닮음.json)
+    10-28: 1차 a · b · c가 원본과 반대 방향 · 작게 나와 다시 구운 판(30 r · 34 d · e)과 34 꼬리(t2 — 고개를 창 쪽으로)까지 한 줄에 둔다(Opus 검수 P3)"""
+    TW, TH = 448, 252
+    ROWS = {30: ["a", "b", "c", "r"], 34: ["a", "b", "c", "d", "e", "t2"]}
     sim = {}
     sp = os.path.join(V, "정지컷", "_닮음.json")
     if os.path.exists(sp):
         sim = json.load(open(sp, encoding="utf-8"))
     picked = json.load(open(os.path.join(V, "정지컷", "_고른판.json"), encoding="utf-8")) if os.path.exists(os.path.join(V, "정지컷", "_고른판.json")) else {}
-    im = Image.new("RGB", (40 + 4 * (TW + 20), 170 + 2 * (TH + 110)), BG)
+    im = Image.new("RGB", (40 + 7 * (TW + 20), 170 + 2 * (TH + 110)), BG)
     d = ImageDraw.Draw(im)
-    d.text((40, 30), "30 · 34 얼굴 표정 시험  ·  a 거의 무표정 · b 작은 미소 · c 알아차림 / 고개 돌림", font=F("ExtraBold", 36), fill=INK)
+    d.text((40, 30), "30 · 34 얼굴 시험  ·  a · b · c 1차(방향 · 크기가 원본과 달라 다시) · 30 r · 34 d · e 다시 · 34 t2 꼬리(고개를 창 쪽으로)", font=F("ExtraBold", 32), fill=INK)
     d.text((40, 86), "닮음 = SFace 코사인(캐스팅북 고정 얼굴 세트 평균, 같은 사람 기준선 0.363) · 금색 테 = 고른 판", font=F("Medium", 22), fill=DIM)
     for row, (n, lab) in enumerate(((30, "민재 30 · 알아차림"), (34, "하린 34 · 정체"))):
         y = 150 + row * (TH + 110)
         im.paste(frame(n).resize((TW, TH)), (40, y))
         d.text((40, y + TH + 10), f"원본 #{n}", font=F("ExtraBold", 24), fill=DIM)
-        for j, v in enumerate("abc"):
+        for j, v in enumerate(ROWS[n]):
             k = f"C{n}{v}"
             x = 40 + (j + 1) * (TW + 20)
             p = os.path.join(CUTS, f"{k}.jpg")
@@ -180,7 +182,7 @@ def faces(path):
                 im.paste(Image.open(p).convert("RGB").resize((TW, TH)), (x, y))
             else:
                 d.rectangle([x, y, x + TW, y + TH], outline=LINE, width=2)
-            chosen = picked.get(f"C{n}", {}).get("src", "").startswith(k + "_")
+            chosen = picked.get(f"C{n}", {}).get("src", "").startswith(k + "_") or (k == "C34t2")
             if chosen:
                 d.rectangle([x - 4, y - 4, x + TW + 4, y + TH + 4], outline=GOLD, width=5)
             s = sim.get(k)

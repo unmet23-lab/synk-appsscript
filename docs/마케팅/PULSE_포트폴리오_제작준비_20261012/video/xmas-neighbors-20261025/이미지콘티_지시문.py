@@ -222,6 +222,16 @@ def jobs():
         "eyes are pure black like a cut-out paper silhouette; only a thin warm rim of light outlines the back of his hair, his ear and his "
         "shoulder. No eyes, nose or mouth can be seen.",
         MAN.format(a=2, b=4), f"He wears {M_AUTUMN}. Late-autumn night in the outdoor corridor of an old Korean apartment block.", FINISH)
+    # 4 다시 둘째(C04b, 10-28 00:3x): 「뒤에서만 빛」을 써도 두 번 모두 옆얼굴에 빛이 들어 눈 · 코 · 입이 읽혔다 — 11처럼 난간 너머 흐린 밤하늘을
+    # 등지게 해서 하늘 앞 검은 실루엣으로(11은 이 꼴로 됐다)
+    J_["C04b"] = J([lay("S04")] + M_REFS_SIDE, STILL, LAYOUT_SIL.format(who="the man"),
+        "CLOSE-UP from slightly below, the size and place of the black silhouette: THE MAN's head and shoulders in profile facing the LEFT "
+        "edge of the frame, giving a small polite bow of the head in reply, his head tipped forward and down. Behind him there is only the "
+        "open night sky over the old rooftops beyond the corridor's parapet — a dull blue-grey glow, soft and out of focus — and no light "
+        "falls on him from the camera side, so his head and shoulders are a near-black silhouette against the sky: his face is a black shape "
+        "whose outline (forehead, nose, lips, chin) reads against the glow, with no eyes, no skin and no features lit. A thin warm rim of "
+        "light from the corridor touches the back of his hair and his shoulder.",
+        MAN.format(a=2, b=4), f"He wears {M_AUTUMN}. Late-autumn night in the outdoor corridor of an old Korean apartment block.", FINISH)
     # 5번은 아래로 43% 기울이는 컷(원본 실측 7.04~8.52초, 점점 느려짐) — 시작(위)과 끝(아래)을 한 장에 담은 세로 4:3 판으로 굽고
     # 카메라무브.py가 위 창 · 아래 창을 잘라 시작 · 끝 그림을 만든다(10-26 23:2x 유호님 「카메라 기법도 완전히 똑같게」).
     J_["C05"] = J([lay("S05t")], STILL.replace("16:9 frame", "4:3 frame"),
@@ -324,6 +334,15 @@ def jobs():
         "flashlight finds the keyhole — the light is weaker than before, a dim bluish circle. Framed low: we see him from about the shoulders "
         "down, his head cut off by the top edge of the frame (the camera will tilt up to him); the parcel box and the bag in the middle; the "
         "dark steel door at the left. Fallen leaves blown onto the floor.", MAN.format(a=2, b=4), f"He wears {M_COAT}.", FINISH)
+    # 16 다시(C16r, 10-28 00:3x): 1차는 문에 디지털 도어락(번호판 달린 손잡이)과 벽 인터폰이 달렸다 — 이야기는 어둠 속 열쇠 구멍이다
+    J_["C16r"] = J([lay("S16")] + M_REFS_BACK, STILL, LAYOUT_SIL.format(who="the man"),
+        "A few days later, late at night, at his dark front door in the outdoor corridor: THE MAN seen from behind, now in a long camel-brown "
+        f"wool overcoat, juggling {BAG} and a small cardboard parcel box under one arm, holding up his phone with the other hand so its "
+        "flashlight finds the keyhole — the light is weaker than before, a dim bluish circle. The door is an old dark steel door with an old "
+        "brass key lock: a simple lever handle and a small round brass keyhole just below it — no digital door lock, no keypad, no "
+        "electronic panel and no intercom anywhere on the door or on the wall. Framed low: we see him from about the shoulders down, his head "
+        "cut off by the top edge of the frame (the camera will tilt up to him); the parcel box and the bag in the middle; the dark steel "
+        "door at the left. Fallen leaves blown onto the floor.", MAN.format(a=2, b=4), f"He wears {M_COAT}.", FINISH)
     J_["C17"] = J([], STILL,
         "EXTREME CLOSE-UP over a man's shoulder at night: his hand holds his phone with the screen toward us and its flashlight on the back "
         "pointing at the door; the screen is dark except one small red battery shape in its top corner (no numbers, no text); the dim "
@@ -606,6 +625,41 @@ def jobs():
         "her cheek and the line of her jaw from behind, her mouth hidden — and the crimson velvet ribbon bow of her half-up hair is now "
         "clearly visible at the back of her head (as in Image 2, which shows the ribbon from behind). The same person, the same place in "
         "the frame, the same camera and the same light. Keep everything else in Image 1 exactly.", FINISH)
+
+    # Opus 검수(10-28 01시, Fable 주간 한도로 Opus가 대신 확인) 반영 다시 굽기 — 18 · 33은 P1, 17 · 27 · 4는 P2
+    J_["C18r"] = J([lay("S18")] + W_REFS_BACK + [ref("M04_angle-back.jpg")], STILL, LAYOUT_SIL.format(who="each person"),
+        "The silhouettes mark where and how large they are (him at the left, the three young women in the middle). Halloween, at blue dusk "
+        f"in the outdoor corridor ({CORRIDOR}); the neighbor's lamp on, the man's lamp still dead; beyond the neighbor's warm lamp the "
+        "corridor falls into dim blue dusk. THE WOMAN in a witch costume — a black pointed witch hat tilted back so the crimson ribbon bow "
+        "of her half-up hair shows below it, a short black cape over her cream cardigan — and her two friends in costumes (one with cat "
+        "ears, one with a small halo), carrying little candy buckets, have just come out of the neighbor's door and walk away down the "
+        "dim corridor toward the stairwell, laughing, seen from behind. At the left, by his dark alcove, THE MAN in a long camel overcoat, "
+        "seen from behind, stretches his arm out low toward them with his phone in his hand: its bright white flashlight beam falls on the "
+        "floor right in front of their feet as a clear oval pool of light, lighting their way in the dim corridor. His other hand is not on "
+        "his door. Nobody's face is visible. Fixed camera.", WOMAN.format(a=2, b=4), "Image 5 shows the man's hair from behind.", FINISH)
+    J_["C33e"] = J([ref("C33.jpg"), ref("C29.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: the light bulb in her hand becomes a clear glass bulb with a visible "
+        "filament — exactly the same kind of bulb as the new bulb glowing in the lamp of Image 2 (the other bulb of the same two-pack). "
+        "Keep everything else in Image 1 exactly.", FINISH)
+    J_["C17e"] = J([ref("C17.jpg"), ref("C06.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: the lock on the door becomes exactly the lock of Image 2 — the same old round "
+        "brass keyhole with the same half-circle of scratches in the paint around it, on the same blue-grey steel door. Keep the hand, the "
+        "phone, the coat sleeve, the dim flashlight light and everything else in Image 1 exactly.", FINISH)
+    J_["C27r"] = J([lay("S27")] + M_REFS_SIDE, STILL, LAYOUT_SIL.format(who="the man"),
+        "CLOSE-UP, the size and place of the black silhouette: THE MAN's head and shoulders, tired, seen from behind his shoulder in lost "
+        "profile — his face turned away from the camera and in shadow, only the line of his cheek and his ear — looking down at the phone in "
+        "his hand as he switches on its flashlight out of habit (the small light just coming on at the bottom edge). Behind him, out of "
+        "focus: the outdoor corridor of his old apartment block — dark grey steel front doors set in concrete walls, strung with warm "
+        "fairy lights and small wreaths that blur into round golden bokeh, and the snowy concrete parapet; blue snowy dusk. No wooden "
+        "doors, no nameplates, no signs. A few snowflakes on his hair.", MAN.format(a=2, b=4), f"He wears {M_WINTER}.", FINISH)
+    J_["C04c"] = J([lay("S04")] + M_REFS_SIDE, STILL, LAYOUT_SIL.format(who="the man"),
+        "Late-autumn NIGHT in the outdoor corridor of an old Korean apartment block. CLOSE-UP from slightly below, the size and place of the "
+        "black silhouette: THE MAN's head and shoulders in profile facing the LEFT edge of the frame, giving a small polite bow of the head "
+        "in reply, his head tipped forward and down. Right behind his head: the dark night sky beyond the parapet — deep navy, nearly black, "
+        "with only a faint orange city glow low over the rooftops — and further back, out of focus, the warm lamp of a neighbor's door far "
+        "down the corridor. No light falls on him from the camera side, so his head and face are a pure black silhouette: no eyes, no skin "
+        "and no features lit; a thin warm rim of light from that far lamp outlines the back of his hair, his ear and his shoulder.",
+        MAN.format(a=2, b=4), f"He wears {M_AUTUMN}.", FINISH)
 
     # ── ⑥ 끝 35~36 ──
     # 35(10-27 22:4x): 26은 판(PL26)에 민재를 합성해 앉혔으므로, 사람이 없는 PL26에서 바로 고친다
