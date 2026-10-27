@@ -26,6 +26,11 @@ def lay(name):
 
 
 STILL = "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame."
+# 10-27: 첫머리의 「Christmas short film」이 늦가을 컷에도 크리스마스 장식을 불렀다(1차 C08 — 504 안쪽 문에 리스). 1~19는 늦가을 첫머리,
+# 20 · 21(첫 장식이 하나둘 — 장면 글이 말함)은 계절 말 없는 첫머리로 바꾼다(jobs() 끝 season()).
+STILL_AUTUMN = ("Create one still photograph. A cinematic film still from a quiet, tender Korean short film, 16:9 frame. It is late autumn, weeks "
+                "before Christmas: there are no Christmas decorations anywhere — no wreaths, no fairy lights, no Christmas trees, no ornaments.")
+STILL_PLAIN = "Create one still photograph. A cinematic film still from a quiet, tender Korean short film, 16:9 frame."
 FINISH = ("Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. "
           "True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere.")
 IDREF = "are identity references only — ignore their backgrounds, clothes and lighting."
@@ -123,6 +128,30 @@ def jobs():
         "Light: low-key night — most of the frame is dark: cool blue-grey night ambient, the warm pool at the neighbor's door, the amber "
         "glow of the store across the street, the dim cold stairwell light at the far end. Soft light, no harsh shadows.", FINISH)
 
+    # PL1b도 1판을 생김새 참조로 넣자 1판 카메라(첫 문 2.5 m 앞)를 그대로 따랐다(10-27 01:45) — 참조 그림 없이 원근 배치도와 글만으로(PL1c).
+    J_["PL1c"] = J([lay("PL_원근")], STILL,
+        "Image 1 is a heavily blurred grey layout guide of this exact shot: copy its camera position, height, angle, lens and framing "
+        "exactly — the big near door at the left, the thin dark gap of the second door at about 40% of the frame width, the ceiling and the "
+        "floor converging to the far end just right of the frame center, the long parapet face on the right, the small bright far end and "
+        "the band of a store's glow beyond the parapet — and ignore its grey tones. The corridor is LONG: the camera stands far back at its "
+        "closed end.",
+        "Location and time: the open-air outdoor corridor on the 5th floor of an old Korean corridor-style apartment block from the 1990s, "
+        "on a damp late-autumn night around 11 pm; no snow; a few dry fallen leaves on the wet concrete floor. On the LEFT, the building "
+        "wall of stained cream-grey painted concrete with pipes and small grey meter boxes, and a row of identical dark grey steel front "
+        "doors with lever handles; the only lamps are small round frosted-glass motion-sensor lamps on the ceiling, one above each door. "
+        "On the RIGHT, a waist-high concrete parapet with a thin metal handrail on top. At the far end, about twenty-three meters away, the "
+        f"stairwell landing glows with a dim, cold light. Beyond the parapet, across the street below: {STORE}, among dark rooftops, bare "
+        "trees and power lines.",
+        "The doors on the left wall: the first door, about three meters away, is large at the left of the frame, its lamp off; the second "
+        "door, about seven meters away, belongs to a lonely man — its sensor lamp is dead and its doorway is a pitch-black gap at about "
+        "40% of the frame width; the third door right after it belongs to the noisy neighbor — its small round sensor lamp is the only lit "
+        "lamp in the corridor and pours a small warm pool of light onto its own doorstep, just beyond the man's dark door; the farther "
+        "doors are dark. Nobody is in the corridor.",
+        "Camera: fixed on a tripod in the middle of the corridor near its closed end, at standing eye level (about 1.5 m), level, the "
+        "horizon at about 42% of the frame height from the top, about 28 mm lens, looking straight down the long corridor.",
+        "Light: low-key night — most of the frame is dark: cool blue-grey night ambient, the warm pool at the neighbor's door, the amber "
+        "glow of the store across the street, the dim cold stairwell light at the far end. Soft light, no harsh shadows.", FINISH)
+
     J_["H3"] = J([ref("F02_angle-back.jpg"), ref("F02_hair-3.jpg"), ref("F02_angle-left.jpg"), ref("F02_hero.jpg"), ref("H1.jpg")],
         "Create one photograph. A natural hair-and-wardrobe reference photo, 3:4 frame. Images 1 to 4 are identity references of one Korean "
         "woman in her early twenties — keep her exactly the same person with the same hair color, length and bangs: a round soft face with a "
@@ -153,6 +182,18 @@ def jobs():
         "metal nameplate plate with nothing written on it — clearly the lamp of this very door. Caught in its last moment: the bulb's "
         "filament gives one weak, dying orange flicker, the only warm light. Out of focus in the right foreground, very close to the lens, "
         "the dark edge of a vertical pipe. Everything else is cold dark blue-grey night. Shallow depth of field, fixed camera.", FINISH)
+    # 2 다시(C02r, 10-27): 1차는 「마지막 깜박임」 글 때문에 필라멘트가 주황으로 빛나 켜진 등으로 읽혔고(몇 달째 꺼진 등이다), 등이 원본 매듭
+    # 자리(왼쪽 위)가 아니라 가운데에 왔다. 꺼진 등 · 자리 숫자로 다시 — 29(새 전구 편집) · 32(이 전구)는 이 판을 고른 뒤 굽는다.
+    J_["C02r"] = J([lay("S02")], STILL, LAYOUT_GREY,
+        "EXTREME CLOSE-UP, looking up from just below: the small round frosted-glass motion-sensor ceiling lamp above the lonely man's front "
+        "door in the outdoor corridor of an old Korean apartment block, at night. The lamp is OFF and has been dead for months: through its "
+        "dusty frosted-glass dome, chipped at the rim, we see the dark shape of a blackened burnt-out bulb with a dried dead moth stuck on "
+        "it — no glow, no light, nothing warm anywhere in the lamp. The lamp sits in the UPPER-LEFT of the frame: its dome spans about 12% "
+        "to 38% of the frame width and about 8% to 50% of the frame height. Right below it, the top of the dark grey steel door frame, and on "
+        "the wall to the right of the lamp a small blank metal nameplate with nothing written on it — clearly the lamp of this very door. "
+        "Out of focus in the right foreground, very close to the lens, the dark edge of a vertical pipe across the right fifth of the frame. "
+        "Everything is cold dark blue-grey night, faintly lit from far down the corridor; the lamp reads as a dark, dead shape. Shallow "
+        "depth of field, fixed camera.", FINISH)
     J_["C03"] = J([lay("S03")] + M_REFS_BACK, STILL, LAYOUT_SIL.format(who="the man"),
         f"Night in the outdoor corridor ({CORRIDOR}). MEDIUM, the camera slowly pushing in a little: THE MAN stands at his own door inside "
         "the black silhouette, seen in three-quarter back view — he has just hung up and now holds his phone up in his left hand so its "
@@ -161,10 +202,12 @@ def jobs():
         "maple-leaf wreath on her own door under her lamp and gives him a small silent bow of the head.",
         MAN.format(a=2, b=4), f"He wears {M_AUTUMN}. His face is not visible. Late autumn, no snow; fallen leaves on the floor.", FINISH)
     J_["C04"] = J([lay("S04")] + M_REFS_SIDE, STILL, LAYOUT_SIL.format(who="the man"),
-        "CLOSE-UP from slightly below, the size and place of the black silhouette: THE MAN's head and shoulders seen from the side, giving "
-        "a small polite bow of the head in reply — his head tipped forward and down. Behind him the far corridor glows softly out of focus "
-        "(a neighbor's warm lamp, the cold stairwell light), so his profile is only a near-black outline with a thin warm rim of light "
-        "along the back of his hair and his shoulder; his face is completely in shadow — no eyes, nose or mouth can be read.",
+        "CLOSE-UP from slightly below, the size and place of the black silhouette: THE MAN's head and shoulders seen from slightly behind "
+        "his shoulder in lost profile — his face turned away from the camera toward the far end of the corridor — giving a small polite "
+        "bow of the head in reply, his head tipped forward and down. The ONLY light is behind him: the far corridor glows softly out of focus "
+        "(a neighbor's warm lamp, the cold stairwell light) and there is no light at all on the camera side, so his face, his front and his "
+        "eyes are pure black like a cut-out paper silhouette; only a thin warm rim of light outlines the back of his hair, his ear and his "
+        "shoulder. No eyes, nose or mouth can be seen.",
         MAN.format(a=2, b=4), f"He wears {M_AUTUMN}. Late-autumn night in the outdoor corridor of an old Korean apartment block.", FINISH)
     # 5번은 아래로 43% 기울이는 컷(원본 실측 7.04~8.52초, 점점 느려짐) — 시작(위)과 끝(아래)을 한 장에 담은 세로 4:3 판으로 굽고
     # 카메라무브.py가 위 창 · 아래 창을 잘라 시작 · 끝 그림을 만든다(10-26 23:2x 유호님 「카메라 기법도 완전히 똑같게」).
@@ -190,8 +233,10 @@ def jobs():
     J_["C07"] = J([lay("S07")] + M_REFS_BACK, STILL, LAYOUT_SIL.format(who="the man"),
         "Night in the outdoor corridor of an old Korean apartment block, late autumn. Over THE MAN's right shoulder: his back and the back of "
         "his head, out of focus, fill the place of the black silhouette in the right part of the frame. Beyond him, a little farther down "
-        "the corridor on the left wall, the neighbor's steel door has just swung wide open outward: warm golden light and the backlit shapes "
-        "of three laughing young women spill out of the doorway into the dark corridor (small, in the middle distance, faces not readable). "
+        "the corridor on the left wall, the neighbor's steel door has just swung wide open outward: warm golden light pours out into the "
+        "dark corridor. Three laughing young women stand just INSIDE the open doorway with the bright warm room light directly behind them, "
+        "so they are dark backlit silhouettes — their faces are completely black, no features can be seen; the one in the middle has a "
+        "small crimson ribbon bow in her half-up hair, visible only as a small dark shape against the light. "
         "His own alcove beside it stays dark. The parapet along the right edge, the dark city beyond. The camera follows him a little "
         "sideways.", MAN.format(a=2, b=4), f"He wears {M_AUTUMN}.", FINISH)
     J_["C08"] = J([lay("S08")] + W_REFS_BACK, STILL, LAYOUT_SIL.format(who="each of the three young women"),
@@ -202,6 +247,17 @@ def jobs():
         "edge, seen from behind. Warm golden light pours out of the open doorway; the friends' faces are in shadow against it. Just left of "
         "the doorway, the next alcove (the lonely man's) is pitch dark under its dead lamp.",
         WOMAN.format(a=2, b=4), f"She wears {W_HOME}. Her face is not visible.", FINISH)
+    # 8 다시(C08r): 1차 C08은 자리 · 크기는 맞았으나 안쪽 문에 크리스마스 리스, 503 쪽 천장등이 환히 켜짐, 왼쪽 친구 얼굴이 밝게 드러남
+    J_["C08r"] = J([lay("S08")] + W_REFS_BACK, STILL, LAYOUT_SIL.format(who="each of the three young women"),
+        "The silhouettes mark where and how large the three are, not their poses. Night, late autumn, in the outdoor corridor of an old Korean "
+        "apartment block, MEDIUM-WIDE, seen from the corridor almost square-on to the neighbor's open front doorway: THE WOMAN (the middle "
+        "silhouette) stands with her back to the camera, facing into her doorway, laughing; her two friends, young women in their twenties, "
+        "chat with her — one in a denim jacket standing at the left in deep shadow, turned away toward the doorway so that we see only the "
+        "back of her head and her shoulder, never her face; one in a grey hoodie close to the camera at the right edge, seen from behind. "
+        "The corridor itself is unlit — its ceiling lamps are dead and dark — so the only light is the warm golden glow pouring out of the "
+        "open doorway, rimming the three from behind. Just left of the doorway, the next door (the lonely man's) stands in pitch darkness. "
+        "Inside the doorway: a plain warm entryway with shoes and a shoe cabinet, nothing hung on any door.",
+        WOMAN.format(a=2, b=4), f"She wears {W_HOME}. No face is visible.", FINISH)
     J_["C09"] = J([lay("S09")] + W_REFS_BACK, STILL, LAYOUT_SIL.format(who="the woman"),
         "CLOSE-UP, the size and place of the black silhouette (the right half of the frame): THE WOMAN, turned three-quarters away from the "
         "camera toward her friends, throws her head back laughing, a canned drink in her hand at the bottom edge. She stands in front of her "
@@ -361,9 +417,11 @@ def jobs():
     # 30 다시(C30r): 표정 시험 a를 고른 뒤 배경만 못 박는다 — a · b · c 모두 지상 골목 · 공원처럼 나왔다(그는 5층 바깥 복도 자기 문 앞에서
     # 문 위 등을 올려다보니, 카메라 쪽에서 본 그의 뒤는 난간 너머 5층 높이의 동네다).
     J_["C30r"] = J([lay("S30")] + M_REFS_FACE, STILL, LAYOUT_SIL.format(who="the man's head"),
-        "TIGHT CLOSE-UP, exactly the size and place of the black silhouette (right of center, the head large): THE MAN's face in "
-        "three-quarter view, tilted up toward the small sensor lamp above his front door (just out of frame at the top left), which bathes "
-        "his face in soft warm light from above. He stands in the open-air outdoor corridor on the 5th floor of his old apartment block, so "
+        "TIGHT CLOSE-UP, exactly the size and place of the black silhouette: his head is very large in the frame — the top of his hair is "
+        "cut off by the top edge, his chin sits at about 78% of the frame height and his face spans roughly from 40% to 72% of the frame "
+        "width. THE MAN's face in three-quarter view turned toward the LEFT edge of the frame (we see more of his right cheek), tilted up "
+        "toward the small sensor lamp above his front door (just out of frame at the top left), which bathes his face in soft warm light "
+        "from above. He stands in the open-air outdoor corridor on the 5th floor of his old apartment block, so "
         "behind him, out of focus, is the corridor's concrete parapet with a line of fresh snow on its edge low in the frame, and beyond it, "
         "five floors up, the blue dusk sky over the snowy rooftops of the old neighborhood, warm window lights and the round bokeh of a "
         "string of fairy lights on a neighbor's door — not a street, not an alley. A few snowflakes in his hair and on the collar of his "
@@ -420,6 +478,24 @@ def jobs():
             "rounded nose tip, double eyelids with soft aegyo-sal, dark brown eyes, bright warm-toned skin, natural coral lips, light-brown "
             "hair with see-through bangs). Images 2 to 5 " + IDREF, f"She wears {W_HOME}.", FINISH)
 
+    # 34 다시(10-27): 1차 a · b · c(닮음 0.60 · 0.56 · 0.57)는 표정은 좋으나 모두 오른쪽을 보고 · 작고(턱 65%) · 따뜻한 빛이 오른쪽 —
+    # 원본 34 첫 프레임은 거의 정면에서 왼쪽으로 조금 돈 얼굴, 고개를 숙여 눈은 왼쪽 아래, 찬빛이 왼쪽, 머리가 화면을 꽉 채운다(턱 85%).
+    VAR34R = {"C34d": "calm and almost neutral, the corners of her closed mouth lifting very slightly",
+              "C34e": "a small, quiet closed-mouth smile, her eyes soft"}
+    for k, v in VAR34R.items():
+        J_[k] = J([lay("S34")] + W_REFS_FACE, STILL, LAYOUT_SIL.format(who="the woman's head"),
+            "EXTREME CLOSE-UP, exactly the place and size of the black silhouette: her head is very large in the frame — the top of her hair "
+            "is cut off by the top edge, her chin is at about 85% of the frame height, and her face spans roughly from 36% to 66% of the frame "
+            "width, centered. She sits upright at her desk at night, her face almost frontal, turned only slightly toward the LEFT edge of the "
+            "frame, her head bowed a little, her eyes lowered toward the lower left. Cold blue-white light from the night window at the "
+            "frame's left lights the left side of her face; the small desk lamp she has just switched on, low at the frame's right and just "
+            "out of frame, adds a soft warm glow to the right side of her face and her hair. Out of focus behind her: at the left, the window "
+            "with round warm bokeh of the fairy lights in the corridor outside; at the right, the dark wall of her room. Behind her head on the "
+            f"right, the crimson velvet ribbon bow of her half-up hair clearly peeks out. Expression: {v}. Lips closed. No hand near her face.",
+            "THE WOMAN: the Korean woman of Images 2 to 5 — keep her face exactly the same person (a round soft face with a small chin, a "
+            "rounded nose tip, double eyelids with soft aegyo-sal, dark brown eyes, bright warm-toned skin, natural coral lips, light-brown "
+            "hair with see-through bangs). Images 2 to 5 " + IDREF, f"She wears {W_HOME}.", FINISH)
+
     # ── ⑥ 끝 35~36 ──
     J_["C35"] = J([ref("C26.jpg")],
         "Edit this photograph (Image 1). The same corridor, the same camera, framing and lens, the same decorations — later that night: the "
@@ -432,6 +508,12 @@ def jobs():
         "a low height: on one side the old five-storey corridor-style apartment block with its open outdoor corridors (a row of small warm "
         f"door lamps on the 5th floor), and across the street {STORE}, its light spilling onto the fresh snow. Street lamps, power lines, "
         "parked cars under snow. Calm and warm. The camera slowly pulls back.", FINISH)
+    for k, v in J_.items():
+        n = int(k[1:3]) if k[:1] == "C" and k[1:3].isdigit() else 0
+        if 1 <= n <= 19:
+            v["prompt"] = v["prompt"].replace(STILL, STILL_AUTUMN)
+        elif n in (20, 21):
+            v["prompt"] = v["prompt"].replace(STILL, STILL_PLAIN)
     return J_
 
 

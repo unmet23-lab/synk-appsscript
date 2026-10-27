@@ -12,7 +12,7 @@ import sys
 from PIL import Image
 
 V = "C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/콘티/xmas-neighbors/"
-PORTRAIT = {"H3"}
+PORTRAIT = {"H3", "C05"}   # H3 세로 기준 · C05 세로 4:3 판(카메라무브가 위 · 아래 창을 자름) — 16:9로 자르지 않는다
 
 
 def pick(name, src):
@@ -32,7 +32,7 @@ def pick(name, src):
     shutil.copyfile(src, V + f"정지컷/{name}{os.path.splitext(src)[1]}")
     if name not in PORTRAIT:
         im.resize((1920, 1080), Image.LANCZOS).save(V + f"컷/{name}.jpg", quality=92)
-        im.save(V + f"정지컷/{name}.png")
+    im.save(V + f"정지컷/{name}.png")
     r = im.copy()
     r.thumbnail((1600, 1600))
     r.save(V + f"ego/refs/{name}.jpg", quality=92)
