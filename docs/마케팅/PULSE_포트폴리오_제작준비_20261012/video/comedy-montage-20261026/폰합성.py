@@ -1,6 +1,8 @@
 # 12번 16컷 폰 화면 합성(2026-10-26) — Gemini가 구운 정지컷의 초록 화면(C16a 여행자 폰 · C16b 그의 폰과 여행자 폰)에
 # 앱화면.py가 만든 「모두의코스」 화면 한 장을 원근대로 얹는다. 두 화면이 한눈에 같아 보이는 것이 16컷의 웃음 자리다(02_콘티 1절).
 #   python -X utf8 폰합성.py C16a_g1.png C16b_g1.png  →  git 밖 콘티/p12/정지컷/<이름>_합성.png
+#   python -X utf8 폰합성.py --줌 1.42 C16b_g2_합성.png  →  <이름>_줌.png — 원본 10번의 1.42배 당김은 폰 디지털 줌(0.1초에 뚝)이라
+#     16b는 16과 같은 자리에서 구운 판을 가장 큰 얼굴(그) 둘레로 잘라 키운다. 얼굴은 원본 줌 뒤 프레임처럼 높이 37%에 둔다.
 # 초록 판은 채도 · 밝기가 높은 초록 덩어리 가운데 사각형에 가까운 것(넓이가 바깥 사각형의 80% 넘음)만 고른다 — 뒤의 나뭇잎은 어둡고 들쭉날쭉해 빠진다.
 import sys
 from pathlib import Path
@@ -54,7 +56,27 @@ def paste(img, quad, app):
     return (img * (1 - mask) + warped * mask).astype(np.uint8)
 
 
+def zoom(name, k):
+    src = P / "정지컷" / name
+    img = read(src)
+    H, W = img.shape[:2]
+    import os
+    fd = cv2.FaceDetectorYN.create(os.path.join(os.environ["USERPROFILE"], ".rembg", "models", "yunet", "face_detection_yunet_2023mar.onnx"), "", (W, H), 0.6, 0.3, 5000)
+    _, faces = fd.detect(img)
+    x, y, w, h = max(faces, key=lambda f: f[2] * f[3])[:4]
+    cw, ch = int(W / k), int(H / k)
+    x0 = int(min(max(x + w / 2 - cw / 2, 0), W - cw))
+    y0 = int(min(max(y + h / 2 - 0.37 * ch, 0), H - ch))
+    out = cv2.resize(img[y0:y0 + ch, x0:x0 + cw], (W, H), interpolation=cv2.INTER_LANCZOS4)
+    dst = src.with_name(src.stem + "_줌.png")
+    cv2.imencode(".png", out)[1].tofile(str(dst))
+    print(name, "얼굴", int(x), int(y), int(w), "→ 자름", x0, y0, cw, ch, "->", dst)
+
+
 if __name__ == "__main__":
+    if sys.argv[1] == "--줌":
+        zoom(sys.argv[3], float(sys.argv[2]))
+        sys.exit(0)
     app = read(APP)
     for name in sys.argv[1:]:
         src = P / "정지컷" / name

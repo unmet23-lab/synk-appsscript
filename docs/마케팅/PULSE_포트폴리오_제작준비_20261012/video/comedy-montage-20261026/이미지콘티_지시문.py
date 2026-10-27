@@ -57,6 +57,9 @@ def job(id_, scene, wardrobe, expression=LOOK, light=DAY, layout=True, angle=Fal
     return {"id": id_, "ratio": "9:16", "refs": refs, "prompt": "\n\n".join(paras)}
 
 
+# 10-27 Fable 이미지콘티 1차(답 git 밖 레퍼런스/p12/검수/fable_이미지콘티_20261027/답.md)로 고친 컷: 3 · 4 구도 · 자세 원본대로, 5 3/4 몸 · 곁눈,
+# 7 넥게이터 귀 위 · 헬멧 둘, 8 바지, 11 옆모습 · 번짐, 13 「다들 사진사를 보는데 그만 이쪽」(2판은 그가 작아 3판에서 가슴 위로), 15 간판 글자 없음,
+# 16 줌 전 크기 · 16a · 16b는 16 2판을 장소 참고로. 공통 — 둘레 얼굴은 흐리게 쓰면 픽셀 모자이크가 나와 「돌리거나 가림」으로.
 JOBS = [
     job("C01",
         "INSIDE A KOREAN DOMESTIC AIRLINER CABIN ON A FLIGHT FROM SEOUL TO JEJU, 9:16, exactly as in Image {L}: seen from across the aisle at seated eye "
@@ -159,8 +162,9 @@ JOBS = [
         "AT THE TOP OF SEONGSAN ILCHULBONG (SUNRISE PEAK) IN JEJU, 9:16: a group of eight to ten adult tourists poses in two rows for a group photo at the "
         "crater-rim viewpoint, the huge green grassy crater bowl and the sea behind them. A photographer holding up a phone stands at the LEFT edge of the "
         "picture with his back to us. Every person in the group smiles at that photographer, their faces turned three-quarters to the left, away from our "
-        "lens. Seen at standing eye height from a few steps away: he stands at the right end of the front row, only a little nearer than the others, his "
-        "face about one quarter of the picture width — the only one not posing, looking straight into our lens.",
+        "lens. Seen at standing eye height from a few steps away: he stands at the right end of the front row as the person nearest to our camera, seen "
+        "from the chest up and filling the right third of the picture, his face about one fifth of the picture width — the only one not posing, looking "
+        "straight into our lens; the photographer and the group stay fully visible to his left.",
         W_CAMEL, layout=False),
     job("C14",
         "IN A SEASIDE CAFE IN AEWOL, JEJU, AT SUNSET, 9:16: seen from our table at seated eye height, he sits at the next table by a big window and has just "
