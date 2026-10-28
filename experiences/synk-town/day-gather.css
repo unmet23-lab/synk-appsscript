@@ -66,7 +66,7 @@ body.tea-entry .gather-actions{bottom:calc(var(--bottom,20px) + 204px)}
 .gather-found>span:last-child{display:grid;gap:2px}
 .gather-found-head{color:#7a6a58;font-size:12px;font-weight:var(--wt-label)}
 .gather-found strong{font-size:16px}
-.gather-toast{position:absolute;left:50%;top:72px;z-index:9;max-width:calc(100% - 32px);margin:0;padding:10px 16px;border-radius:999px;background:#fbf7ef;color:#2b241d;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);transform:translateX(-50%);pointer-events:none}
+.gather-toast{position:absolute;left:50%;top:calc(var(--top,12px) + 60px);z-index:9;max-width:calc(100% - 32px);margin:0;padding:10px 16px;border-radius:999px;background:#fbf7ef;color:#2b241d;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);transform:translateX(-50%);pointer-events:none}
 
 /* 판이 펼쳐진 동안 걷는 화면의 아래 조작은 비킨다(좁은 화면은 판이 아래를 다 쓴다 — 닫으면 돌아온다). 찻집의 손 칩도 그동안 비킨다(잔은 손에 남는다). */
 body.gather-mode.walk-mode .scene-caption{display:none}
@@ -82,6 +82,8 @@ body.gather-mode .tea-hand{display:none}
   .gather-actions{width:164px;bottom:calc(var(--bottom,20px) + 144px)}
   body.tea-entry .gather-actions{bottom:calc(var(--bottom,20px) + 200px)}
   .gather-open-walk.felt,.gather-give.felt,.gather-give-one.felt{font-size:13.5px}
+  /* Under the top bar's 「가까이 보기」 on a phone (screen review F6). */
+  .gather-toast{top:calc(var(--top,12px) + 108px)}
 }
 /* On a phone the walking status line runs edge to edge under the right column: it makes room for 「E · 잎 따기」 as for the tea entry. */
 @media(max-width:599px),(min-width:600px) and (max-width:760px) and (min-height:601px){
@@ -92,7 +94,10 @@ body.gather-mode .tea-hand{display:none}
 @media(max-height:600px) and (min-width:600px){
   .gather-board{left:auto;right:var(--edge,16px);width:min(460px,calc(100% - 260px));gap:6px;padding:8px 12px 10px;transform:none}
   .gather-branch{height:112px}
+  /* The field book's note at the bottom left, beside the board — the owner's word docks over the board (screen review F5). */
+  .gather-found{left:var(--edge,16px);bottom:calc(var(--bottom,20px) + 8px);max-width:calc(100% - 492px);min-width:160px;transform:none;animation-name:gather-rise-plain}
 }
+@keyframes gather-rise-plain{0%{transform:translateY(12px);opacity:0}100%{transform:none;opacity:1}}
 @media(max-width:360px){.gather-leaf{width:52px;height:52px}.gather-leaf.young{width:50px;height:50px}.gather-leaf.dark{width:58px;height:58px}.gather-actions{width:148px}}
 
 @keyframes gather-bounce{0%{transform:scale(1)}40%{transform:scale(1.08,.86)}100%{transform:scale(1)}}

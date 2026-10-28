@@ -182,6 +182,15 @@ async function pickScene(browser) {
     m = await gather(page);
     const back = await page.evaluate(() => document.activeElement?.id || document.activeElement?.className);
     check(scene, !m.open && back === 'gather-open', 'Esc로 닫고 초점은 「잎 따기」로', back);
+    // By the greenhouse door the bed's spot and the place's talk reach meet (screen review F1): the talk button talks there.
+    await walkTo(page, [['z', -5.95], ['x', -0.3]]); await delay(500);
+    const both = await page.evaluate(() => ({ entry: SYNKTownDay.metrics().gather.entry, gnear: SYNKTownDay.metrics().gather.near, open: SYNKTownDay.metrics().gather.open, at: [SYNKTownDay.metrics().walk.x, SYNKTownDay.metrics().walk.z], near: SYNKTownDay.metrics().walk.nearby, panel: SYNKTownDay.metrics().walk.interactionOpen, talk: !document.getElementById('walk-interact').disabled, label: document.getElementById('walk-interact').textContent }));
+    if (both.entry && both.near === 'greenhouse') {
+      await page.locator('#walk-interact').click(); await delay(1200);
+      const after = await page.evaluate(() => ({ panel: document.body.classList.contains('walk-engaged'), board: SYNKTownDay.metrics().gather.open }));
+      check(scene, both.talk && !/^E · /.test(both.label) && after.panel && !after.board, '온실 문 쪽 겹친 자리 — 이야기 단추(키 표시 없음)는 장소 판을 연다(검수 F1)', { both, after });
+      await page.keyboard.press('Escape'); await delay(400);
+    } else check(scene, false, '온실 문 쪽에서 잎 따기와 말 걸기가 함께 보이는 자리에 섰다', both);
     // Opened again and walked off: the board folds by itself.
     await page.keyboard.press('e'); await waitGather(page, () => SYNKTownDay.metrics().gather.open);
     await walkTo(page, [['x', 0.4], ['z', -4.6]]); await delay(400);

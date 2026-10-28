@@ -174,12 +174,15 @@ async function flushWalk(force = false) {
   }).catch(error => { walk.discard(); walkControls?.stop(); showError(error.message); }).finally(() => { walkFlushing = null; applyWalkView(); });
   return walkFlushing;
 }
-async function interactWalk() {
-  if (!walking() || busy || !connected) return;
+async function interactWalk({ talk = false } = {}) {
+  if (!walking() || !connected || stay?.active()) return;
   // E · A at the tea board: serve the guest the player stands by, or 「다 됐어요」 (review F7) — then the gathering board
-  // (a leaf, or opening it by a spot — W8b) — else the walk's talk.
+  // (a leaf, or opening it by a spot — W8b), whose presses queue behind a command already out (design review F3, screen
+  // review F2) — else the walk's talk. The talk button itself always talks (screen review F1: by the greenhouse door the
+  // bed's spot and the place's talk reach meet).
   if (tea?.interact()) return;
-  if (gather?.interact()) return;
+  if (!talk && gather?.interact()) return;
+  if (busy) return;
   if (walkPanel) { const action = $('nearby-panel').querySelector('button[data-command]:not(:disabled)'); if (action) action.click(); return; }
   walkControls?.stop(); await flushWalk(true); const place = nearby(walk.point); if (!place) return;
   if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; placeOpens++; applyWalkView(); renderCards(); }
@@ -985,7 +988,7 @@ $('camera-toggle').addEventListener('click', () => {
   camera = walking() ? {follow:'close',close:'wide',wide:'follow'}[camera] || 'follow' : camera === 'wide' ? 'close' : 'wide';
   updateCameraControl(); renderScene();
 });
-$('walk-interact').addEventListener('click', interactWalk); $('walk-close').addEventListener('click', dismissWalkPanel);
+$('walk-interact').addEventListener('click', () => interactWalk({ talk: true })); $('walk-close').addEventListener('click', dismissWalkPanel);
 for (const button of $('contact-options').querySelectorAll('button')) button.addEventListener('click', () => command('LIFE_PREFERENCE', { mode: button.dataset.mode }));
 for (const value of ['balanced', 'experience']) $(`quality-${value}`).addEventListener('click', () => { quality = value; for (const v of ['balanced', 'experience']) $(`quality-${v}`).setAttribute('aria-pressed', String(v === quality)); renderScene(); });
 const noteIds = ['note-choice', 'note-autonomy', 'note-comfort'];

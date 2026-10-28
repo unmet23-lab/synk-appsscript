@@ -9,9 +9,11 @@ export function createWalkControls({ surface, joystick, thumb, canMove, onIntera
   function keydown(event) {
     if (disposed || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || editing()) return;
     if (event.code === 'Escape') { onCancel(); stop(); return; }
+    // E (and Space off a button) goes to the town even while a command is out — the town decides (a board queues its press,
+    // the place's talk waits for the answer); only the walking keys wait on canMove.
+    if ((event.code === 'KeyE' || event.code === 'Space' && !document.activeElement?.matches('button, a')) && !event.repeat) { event.preventDefault(); onInputMode('keyboard'); onInteract(); return; }
     if (!canMove()) return;
     if (directions[event.code]) { event.preventDefault(); keys.add(event.code); onInputMode('keyboard'); }
-    if ((event.code === 'KeyE' || event.code === 'Space' && !document.activeElement?.matches('button, a')) && !event.repeat) { event.preventDefault(); onInputMode('keyboard'); onInteract(); }
   }
   function keyup(event) { keys.delete(event.code); }
   function pointermove(event) {
