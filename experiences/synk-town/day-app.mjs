@@ -18,7 +18,7 @@ import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
 import { createTeaBoard, teaGuests } from './day-tea.mjs';
 import { goodbye } from './new-tea.mjs';
-import { createGatherBoard, REFUSALS as GATHER_REFUSALS, jarFillers, itemName as gatherItemName } from './day-gather.mjs';
+import { createGatherBoard, REFUSALS as GATHER_REFUSALS, refusalWords as gatherRefusalWords, jarFillers, itemName as gatherItemName } from './day-gather.mjs';
 import { paramsFor } from './town/params.mjs';
 
 const $ = id => document.getElementById(id);
@@ -401,7 +401,7 @@ function gatherCommand(type, payload) {
       } catch (error) {
         const code = error?.code ?? null;
         if (code === 'stale-command' || code === 'stale-surface') { if (code === 'stale-surface') lastPulse = 0; try { await queue(async () => accept(await request('state'))); } catch {} continue; }
-        if (GATHER_REFUSALS.includes(code)) { read(); return { ok: false, code, message: error.message }; }
+        if (GATHER_REFUSALS.includes(code)) { read(); return { ok: false, code, message: gatherRefusalWords(type, code, error.message) }; }
         showError(error.message); return { ok: false, code, message: error.message };
       } finally { setBusy(false); }
     }

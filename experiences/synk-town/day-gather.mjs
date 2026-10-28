@@ -30,6 +30,14 @@ const MARK_Y = Object.freeze({ 'greenhouse.bed-edge': .75, 'cafe.pots': 2.05, 'l
 // The town's own refusals: the leaf goes back (or the gift stays in the basket) and nothing is wrong with the connection.
 export const REFUSALS = Object.freeze(['gather-too-far', 'gather-not-now', 'gather-done', 'gather-full', 'gather-spot', 'gather-item',
   'gather-owner-asleep', 'gather-owner-walking', 'gather-none']);
+// Their words, the town's own (activities/gather.mjs). Through a WORLD account the error keeps only its code (the town's
+// answer nests the words under error), so the board says these instead of the bare code (pub review).
+const REFUSAL_WORDS = Object.freeze({ 'gather-spot': '딸 것을 다시 골라 주세요.', 'gather-too-far': '조금 더 가까이 가서 따 주세요.',
+  'gather-not-now': '지금은 여기서 딸 것이 없어요.', 'gather-done': '여기는 오늘 다 땄어요.', 'gather-full': '바구니가 가득 찼어요.',
+  'gather-item': '드릴 것을 다시 골라 주세요.', 'gather-owner-asleep': '찻집 주인은 지금 자고 있어요. 아침에 다시 만나요.',
+  'gather-owner-walking': '찻집 주인이 자리에 닿으면 드려 주세요.', 'gather-none': '바구니에 그 잎이 없어요.' });
+export const refusalWords = (type, code, message) => message && message !== code ? message
+  : code === 'gather-too-far' && type === 'GATHER_GIVE' ? '찻집 주인 가까이 가서 드려 주세요.' : REFUSAL_WORDS[code] ?? message ?? null;
 const LINES = new Map(GATHER_LINES.map(line => [line.id, line]));
 const DARK = Object.freeze({ tea: '#56703f', pot: '#4f6b44', wall: '#4b6650' });
 const el = (tag, props = {}, ...children) => { const node = Object.assign(document.createElement(tag), props); node.append(...children.filter(c => c !== null && c !== undefined)); return node; };
@@ -145,6 +153,8 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
   const sound = (name, opts) => { if (sfx.play(name, opts)) { played.push(name); if (played.length > 40) played.shift(); return true; } return false; };
   let gv = null, ctx = {}, nearId = null, hand = null, simple = false, disposed = false, opener = null, lastSig = '', lastAnnounce = '';
   let giveOpen = false, pending = [], quickBusy = false, giving = false, bubble = null, found = null, toast = null, withShown = null, lineNote = null, padPrev = {}, placedBoardH = -1;
+  // The leaves still in the air: each goes into the basket's picture when it lands, not when it is pressed (pub review F3).
+  let inAir = [];
   const timers = new Set(), flights = new Map();
   const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); if (!disposed) fn(); }, ms); timers.add(t); return t; };
 
@@ -270,7 +280,7 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
       if (cue.type === 'leaf') {
         sound('leaf', { step: cue.step, last: cue.last });
         const body = finish(hand, cue.index), firstFind = !(gv?.book || []).includes(cue.item), entry = sendPick(cue.item);
-        fly(cue.index, cue.last);
+        fly(cue.index, cue.last, cue.item);
         say(`${picked(cue.item)} 바구니에 담았어요.`);
         afterPick(cue.index);
         send(body, cue.index, firstFind, entry);
@@ -320,11 +330,13 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
   }
   function swayLeaf(index) { const b = leafButton(index); if (!b || reduced.matches) return; b.classList.remove('sway'); void b.offsetWidth; b.classList.add('sway'); }
   /** The leaf off the branch in a small arc to the basket (the stem gives a 40ms tug first — W8b §2-9). */
-  function fly(index, last) {
+  function fly(index, last, item) {
     const b = leafButton(index); if (!b) return;
     b.classList.add('gone'); b.disabled = true;
     const arrive = () => { bounceBasket(); sound('basket'); if (last) rustle(); render(true); };
     if (reduced.matches || !b.animate) { arrive(); return; }
+    inAir.push(item);
+    const land = () => { const at = inAir.indexOf(item); if (at >= 0) inAir.splice(at, 1); };
     branch.classList.remove('tug'); void branch.offsetWidth; branch.classList.add('tug');
     // The flyer starts where the leaf is, the same size and turn (its box is the leaf's own, not the turned one's bounds).
     const from = b.getBoundingClientRect(), to = basketBox.getBoundingClientRect(), own = board.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
@@ -334,14 +346,14 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
     board.append(flyer);
     const dx = to.left + to.width / 2 - cx, dy = to.top + to.height * .35 - cy, tilt = (getComputedStyle(b).getPropertyValue('--tilt') || '0deg').trim() || '0deg';
     // A refusal while the leaf is still in the air stops it short of the basket (review A1).
-    const stop = () => { flights.delete(index); motion.onfinish = null; motion.cancel(); flyer.remove(); };
+    const stop = () => { flights.delete(index); land(); motion.onfinish = null; motion.cancel(); flyer.remove(); };
     flights.set(index, stop);
     const motion = flyer.animate([
       { transform: `translate(0,0) rotate(${tilt}) scale(1)`, opacity: 1 },
       { transform: `translate(${dx * .45}px, ${dy * .45 - 46}px) rotate(calc(${tilt} - 70deg)) scale(.82)`, opacity: 1, offset: .5 },
       { transform: `translate(${dx}px, ${dy}px) rotate(calc(${tilt} - 140deg)) scale(.46)`, opacity: .9 }], { duration: FLY_MS, delay: 40, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'forwards' });
-    motion.onfinish = () => { flights.delete(index); flyer.remove(); arrive(); };
-    later(() => { if (flyer.isConnected) { flights.delete(index); flyer.remove(); arrive(); } }, FLY_MS + 400);
+    motion.onfinish = () => { flights.delete(index); flyer.remove(); land(); arrive(); };
+    later(() => { if (flyer.isConnected) { flights.delete(index); flyer.remove(); land(); arrive(); } }, FLY_MS + 400);
   }
   function bounceBasket() { if (reduced.matches) return; basketBox.classList.remove('bounce'); void basketBox.offsetWidth; basketBox.classList.add('bounce'); }
   function rustle() { if (reduced.matches) return; branch.classList.remove('rustle'); void branch.offsetWidth; branch.classList.add('rustle'); }
@@ -401,7 +413,7 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
     if (found && now > found.until) found = null;
     if (toast && now > toast.until) toast = null;
     const near = ok ? spotView(nearId) : null, spot = hand ? spotView(hand.spot) : null;
-    const sig = JSON.stringify([gv, ok, nearId, !!hand && [hand.spot, hand.picked, hand.focus], simple, giveOpen, giving, quickBusy, unseen(), lineNote, bubble?.words, found?.item, toast?.words,
+    const sig = JSON.stringify([gv, ok, nearId, !!hand && [hand.spot, hand.picked, hand.focus], simple, giveOpen, giving, quickBusy, unseen(), inAir, lineNote, bubble?.words, found?.item, toast?.words,
       ctx.inputMode, ctx.busy, ownerNear(), ctx.panel]);
     if (!force && sig === lastSig) return; lastSig = sig;
     // 「E · 잎 따기」 by a spot (the board closed, the place's panel not open over it).
@@ -439,7 +451,8 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
       line.hidden = !line.textContent;
       branch.hidden = simple; quick.hidden = !simple || !left;
       if (simple) { const item = spot ? quickPick({ ...spot, items: leftNow(spot) })?.item : null; quick.textContent = item ? `바로 ${verb(item)} · ${itemName(item)}` : '바로 따기'; quick.disabled = !item; }
-      basketLeaves.replaceChildren(...basketPictures([...basket(), ...waiting.map(item => ({ item, qty: 1 }))].reduce((all, b) => { const had = all.find(x => x.item === b.item); if (had) had.qty += b.qty; else all.push({ ...b }); return all; }, []))
+      // The town's basket and the picks on their way, but a leaf still in the air goes in only when it lands (pub review F3).
+      basketLeaves.replaceChildren(...basketPictures([...basket(), ...waiting.map(item => ({ item, qty: 1 })), ...inAir.map(item => ({ item, qty: -1 }))].reduce((all, b) => { const had = all.find(x => x.item === b.item); if (had) had.qty += b.qty; else all.push({ ...b }); return all; }, []))
         .slice(0, 7).map((p, i) => { const s = el('span', { className: 'gather-basket-leaf' }); s.innerHTML = itemPicture(p.item); s.style.setProperty('--i', String(i)); return s; }));
     }
     bubbleBox.hidden = !bubble;

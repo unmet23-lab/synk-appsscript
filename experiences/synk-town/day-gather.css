@@ -82,12 +82,14 @@ body.gather-mode .tea-hand{display:none}
   .gather-actions{width:164px;bottom:calc(var(--bottom,20px) + 144px)}
   body.tea-entry .gather-actions{bottom:calc(var(--bottom,20px) + 200px)}
   .gather-open-walk.felt,.gather-give.felt,.gather-give-one.felt{font-size:13.5px}
-  /* Under the top bar's 「가까이 보기」 on a phone (screen review F6). */
-  .gather-toast{top:calc(var(--top,12px) + 108px)}
 }
 /* On a phone the walking status line runs edge to edge under the right column: it makes room for 「E · 잎 따기」 as for the tea entry. */
 @media(max-width:599px),(min-width:600px) and (max-width:760px) and (min-height:601px){
   body.walk-mode.gather-entry .walk-status{right:calc(var(--edge) + 172px)}
+  /* The toast under the map at the left, only as wide as the room beside the right column — clear of the map, 「가까이 보기」
+     and the chips (screen review F6 · pub reviews F1 · s2 FA2); with the keys walking, under their help (s2 FA3). */
+  .gather-toast{left:var(--edge,12px);top:calc(var(--top,12px) + 216px);max-width:calc(100% - 2 * var(--edge,12px) - 172px);border-radius:18px;transform:none}
+  body:not([data-walk-input=touch]) .gather-toast{top:calc(var(--top,12px) + 296px)}
 }
 /* A low landscape screen: a shorter board at the bottom right, clear of the map at the top left (the walking controls step
    back while it is open) — the branch keeps its leaves within reach of a thumb. */
@@ -96,9 +98,16 @@ body.gather-mode .tea-hand{display:none}
   .gather-branch{height:112px}
   /* The field book's note at the bottom left, beside the board — the owner's word docks over the board (screen review F5). */
   .gather-found{left:var(--edge,16px);bottom:calc(var(--bottom,20px) + 8px);max-width:calc(100% - 492px);min-width:160px;transform:none;animation-name:gather-rise-plain}
+  /* The toast under the top row, centred in the room right of the map. */
+  .gather-toast{top:calc(var(--top,12px) + 54px);left:calc(var(--edge,16px) + 192px);right:var(--edge,16px);width:fit-content;max-width:none;margin:0 auto;transform:none}
+  /* No room above the chips under the top bar here: the give choices open left of the column, from the give chip's line
+     down (pub review s2 FA1 — the first one sat under 「수첩」 · 「내 속도」). */
+  .gather-give-choices{position:absolute;top:0;right:calc(100% + 8px);width:min(200px,calc(100vw - 448px));max-height:188px}
 }
 @keyframes gather-rise-plain{0%{transform:translateY(12px);opacity:0}100%{transform:none;opacity:1}}
-@media(max-width:360px){.gather-leaf{width:52px;height:52px}.gather-leaf.young{width:50px;height:50px}.gather-leaf.dark{width:58px;height:58px}.gather-actions{width:148px}}
+@media(max-width:360px){.gather-leaf{width:52px;height:52px}.gather-leaf.young{width:50px;height:50px}.gather-leaf.dark{width:58px;height:58px}.gather-actions{width:148px}
+  /* The map steps under the view buttons there, so the toast goes lower with it (the keys' help rule above still wins). */
+  .gather-toast{top:calc(var(--top,12px) + 256px)}}
 
 @keyframes gather-bounce{0%{transform:scale(1)}40%{transform:scale(1.08,.86)}100%{transform:scale(1)}}
 @keyframes gather-tug{0%{transform:translateY(0)}25%{transform:translateY(2px)}100%{transform:translateY(0)}}

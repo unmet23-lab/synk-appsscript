@@ -586,6 +586,12 @@
 - 고침: 하위 에이전트(Agent `model: sonnet`, `general-purpose`)에 「파일 · 검색 · 스킬 · 웹 도구를 쓰지 말고 저장소 규칙은 무시, 결과 HTML 하나를 이 경로에 Write」만 주고 판마다 새로 하나씩 띄웠다(14+3판, 판마다 약 8만 토큰 — 대부분 하위 에이전트에 붙는 안내문). 결과는 보라색 0판이라 「지금 모델의 기본값」으로 썼지만, 하위 에이전트에는 CLAUDE.md 등 저장소 안내가 붙으므로 완전히 빈 대화와 같다고는 쓰지 않았다(편 폴더 `자료/실험/요청문.md` 「한계」).
 - 다시 확인: `claude -p "안녕" --output-format json`을 빈 폴더에서 돌려 `api_error_status`가 429인지, `node -e "console.log(require(require('os').homedir()+'/SYNK_보안/클로드_키목록.json'))"`의 「키」가 비었는지 본다.
 
+### Fable 검수 에이전트가 자기 헤드리스 탐침을 백그라운드로 돌려 놓고 「자기 백그라운드 작업을 기다린다」로 멈춘 채 깨어나지 않는다 — 탐침은 앞에서 돌리라고 적고, 멈추면 SendMessage로 잇는다 (2026-10-28 Claude)
+- 증상: 싱크타운 W8b 공개 2단계 다시 검수(`town-w8b-screen-pub-s2`)를 맡긴 Fable(Agent `model: fable`)이 17:53께 「is waiting on its own background work」 알림 뒤 25분 넘게 답 파일을 안 썼다. 그 탐침(`narrow.cjs` 등)은 이미 끝나 있었고(로그 끝 EXIT 1) 도는 node 프로세스도 없었다. SendMessage로 잇게 하자 이번에는 Claude 세션 한도(429, 18:30 초기화)로 멈췄고, 초기화 뒤 다시 SendMessage → 또 탐침 하나를 백그라운드로 돌리고 멈춤 → 세 번째 SendMessage에서야 답을 썼다(검수 한 회차에 1시간 넘게).
+- 원인: 하위 에이전트가 Bash `run_in_background`로 돌린 일이 끝나도 그 에이전트가 저절로 다시 깨어나지 않을 때가 있다. 본 세션에는 「기다리는 중」 알림만 오고 결과는 오지 않는다.
+- 고침: 검수 에이전트에게 주는 글에 「탐침 · 헤드리스는 백그라운드로 돌리지 말고 앞에서 돌려 결과를 받은 뒤 이어서 마쳐라, 오래 걸리면 `--only`로 나눠라」를 적는다(3회차 `-s3`부터). 「기다리는 중」 알림이 오면 그 에이전트의 출력 폴더 파일 시각과 node 프로세스(`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`)를 보고, 도는 것이 없으면 SendMessage로 「도는 작업은 없다, 지금 결과로 답을 써라」를 보낸다. 한도로 멈춘 에이전트는 새로 띄우지 않고 초기화 뒤 SendMessage로 잇는다(위 「곁 에이전트 넷을 …」 항목과 같다).
+- 다시 확인: 답 파일(`Fable-답-A.json` · `페이블-답.json`)이 생기고 `페이블받기`가 지적을 넣는다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.

@@ -10,7 +10,7 @@
 // 820 · 768 · 390 · 844×390 · 667×375 with no overlap of the board, the right column and the walking controls; console errors 0.
 // Samples: every gathering sound and one spot's flow, rendered offline from the same scores (day-sfx.mjs) as MP3 for Yuho's ear
 // check, with their peak, K-weighted momentary loudness and length.
-//   node experiences/synk-town/qa-gather-ui.cjs [--out <dir>] [--only explore,pick,pad,simple,give,book,mic,widths,samples]
+//   node experiences/synk-town/qa-gather-ui.cjs [--out <dir>] [--only explore,pick,pad,simple,give,choices,book,mic,widths,samples]
 const fs = require('node:fs'), path = require('node:path'), { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -23,7 +23,9 @@ const MIN = 60000, HOUR = 60 * MIN;
 const DEVICES = { desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 }, phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' },
   tablet: { viewport: { width: 768, height: 1024 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, landscape: { viewport: { width: 844, height: 390 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
   'landscape-small': { viewport: { width: 667, height: 375 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
-  'tablet-landscape': { viewport: { width: 1024, height: 768 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, ipad: { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } };
+  'tablet-landscape': { viewport: { width: 1024, height: 768 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, ipad: { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+  // A short phone (an address bar showing) and a narrow window walked with the keys, where the walking help stands (pub review s2).
+  'phone-short': { viewport: { width: 360, height: 560 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true }, 'narrow-keys': { viewport: { width: 600, height: 800 }, deviceScaleFactor: 1 } };
 const known404 = /avatar-textiles-v1/;
 const report = { started: new Date().toISOString(), scenes: {}, failures: [] };
 const check = (scene, ok, what, detail) => { (report.scenes[scene] ||= { checks: [] }).checks.push({ ok: !!ok, what, ...(detail === undefined ? {} : { detail }) }); if (!ok) report.failures.push(`${scene}: ${what}${detail === undefined ? '' : ` — ${JSON.stringify(detail)}`}`); };
@@ -140,9 +142,13 @@ async function pickScene(browser) {
     check(scene, m.sounds.slice(before).join() === 'sway' && s.commands.length === sent && !m.picked.includes(dark[0].index), '짙은 잎은 「사락」뿐 — 명령도 소모도 없다', { sounds: m.sounds.slice(before), commands: s.commands.length - sent });
     // Young leaves: a key, a click, Enter on the leaf the keys moved to.
     before = m.sounds.length;
-    await page.keyboard.press(String(young[0].index + 1)); await delay(900);
+    const pictures = () => page.evaluate(() => document.querySelectorAll('.gather-basket-leaf').length);
+    const inBasket = await pictures();
+    await page.keyboard.press(String(young[0].index + 1)); await delay(120);
+    const midAir = await pictures(); await delay(780);
     m = await gather(page);
     const one = m.sounds.slice(before);
+    check(scene, midAir === inBasket && await pictures() === inBasket + 1, '잎이 바구니에 닿을 때 그림이 든다(날아가는 동안은 그대로)', { before: inBasket, midAir, after: await pictures() });
     check(scene, one[0] === 'leaf' && one.includes('basket'), '키로 딴 잎 — 누른 순간 「톡」, 바구니에 닿으면 「폭」', one);
     let v = await view(page);
     check(scene, v.basket.some(b => b.item === 'leaf-young' && b.qty === 1) && v.book.includes('leaf-young'), '서버가 원장에 지급 · 도감에 적음', { basket: v.basket, book: v.book });
@@ -151,10 +157,11 @@ async function pickScene(browser) {
     // The keys stay where they were (the dark leaf clicked before) — never lost to the page.
     const kept = await page.evaluate(() => document.activeElement?.closest?.('.gather-leaf')?.dataset.index ?? document.activeElement?.tagName);
     check(scene, kept === String(dark[0].index), '키로 따도 초점은 있던 잎에 남는다', kept);
-    // A refusal of the town's own (screen review A1): the leaf comes back pressable, and it never lands in the basket.
-    let refuse = true;
+    // A refusal of the town's own (screen review A1): the leaf comes back pressable, and it never lands in the basket. The second
+    // comes as through a WORLD account — the code alone, the town's words nested away — and the board still says why (pub review).
+    const refusals = [{ error: 'gather-too-far', message: '조금 더 가까이 가서 따 주세요.' }, { error: 'gather-full', message: 'gather-full' }];
     await page.route('**/api/preview/command', async route => { const body = JSON.parse(route.request().postData() || '{}');
-      if (refuse && body.type === 'GATHER_PICK') { refuse = false; return route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'gather-too-far', message: '조금 더 가까이 가서 따 주세요.' }) }); }
+      if (refusals.length && body.type === 'GATHER_PICK') return route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify(refusals.shift()) });
       return route.continue(); });
     before = (await gather(page)).sounds.length;
     await page.locator(`.gather-leaf[data-index="${young[1].index}"]`).click(); await delay(900);
@@ -162,6 +169,9 @@ async function pickScene(browser) {
     const returned = await page.evaluate(i => { const b = document.querySelector(`.gather-leaf[data-index="${i}"]`); return { gone: b.classList.contains('gone'), disabled: b.disabled }; }, young[1].index);
     check(scene, !returned.gone && !returned.disabled && !m.picked.includes(young[1].index) && !m.sounds.slice(before).includes('basket') && /가까이/.test(m.line || ''), '거절된 잎은 가지로 돌아와 다시 눌린다 · 바구니 소리 없음 · 까닭 한 줄', { returned, sounds: m.sounds.slice(before), line: m.line });
     check(scene, !(await page.evaluate(() => document.getElementById('error') && !document.getElementById('error').hidden)), '도메인 거절은 연결 오류로 띄우지 않는다');
+    await page.locator(`.gather-leaf[data-index="${young[1].index}"]`).click(); await delay(900);
+    m = await gather(page);
+    check(scene, m.line === '바구니가 가득 찼어요.', '코드만 온 거절(WORLD 계정 꼴)도 까닭은 마을 말로', m.line);
     await page.unroute('**/api/preview/command');
     before = (await gather(page)).sounds.length;
     await page.locator(`.gather-leaf[data-index="${young[1].index}"]`).click(); await delay(900);
@@ -176,7 +186,7 @@ async function pickScene(browser) {
     check(scene, /다 땄어요/.test(m.line) && /찻집 화분에서 딸 수 있어요/.test(m.line), '빈 가지 — 「여기는 오늘 다 땄어요」 + 지금 딸 것이 있는 다른 자리', m.line);
     const words = await visibleText(page);
     check(scene, !NUMBERS.test(words), '판의 보이는 글에 숫자 없음(G2)', words);
-    check(scene, s.commands.filter(c => c.type === 'GATHER_PICK').length === 4 && s.commands.every(c => c.payload.surfaceId && Number.isSafeInteger(c.payload.fence)), '명령 넷(거절 하나 포함) · 창 울타리(surfaceId · fence) 실림', s.commands.map(c => c.type));
+    check(scene, s.commands.filter(c => c.type === 'GATHER_PICK').length === 5 && s.commands.every(c => c.payload.surfaceId && Number.isSafeInteger(c.payload.fence)), '명령 다섯(거절 둘 포함) · 창 울타리(surfaceId · fence) 실림', s.commands.map(c => c.type));
     await shot(page, 'gather-done-1440');
     await page.keyboard.press('Escape'); await delay(400);
     m = await gather(page);
@@ -268,6 +278,49 @@ async function giveScene(browser) {
   } finally { await f.close(); }
 }
 
+/** Giving on a low landscape phone with two kinds in the basket: the choices open left of the right column, never under the
+ * top bar (pub review s2 FA1 — the first one sat under 「수첩」 · 「내 속도」 there), and the first choice takes its own tap. */
+async function choicesScene(browser) {
+  const scene = 'choices';
+  for (const device of ['landscape-small', 'landscape']) {
+    const f = await fixture(kst('2026-10-28', '12:00'));
+    try {
+      const found = await ownerAtCafe(f, kst('2026-10-28', '12:00')), size = `${DEVICES[device].viewport.width}x${DEVICES[device].viewport.height}`;
+      check(scene, found, `${size} — 찻집 주인이 찻집에 선 때`, found);
+      if (!found) continue;
+      f.set(found.at);
+      const s = await open(browser, f, { device });
+      try {
+        const { page } = s;
+        await walkTo(page, ROUTES.pots);
+        await page.keyboard.press('e'); await waitGather(page, () => SYNKTownDay.metrics().gather.open);
+        let m = await gather(page);
+        for (const leaf of m.leaves.filter(l => l.item)) { await page.keyboard.press(String(leaf.index + 1)); await delay(700); }
+        await delay(800); await page.keyboard.press('Escape'); await delay(500);
+        const before = (await view(page)).basket;
+        check(scene, before.length >= 2, `${size} — 바구니에 두 가지(고르기 목록이 서는 때)`, before);
+        await page.keyboard.press('g'); await delay(500);
+        m = await gather(page);
+        const first = await page.evaluate(() => {
+          const b = document.querySelector('.gather-give-one'); if (!b) return null;
+          const r = b.getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          const bar = [...document.querySelectorAll('.topbar .brand, #journal-open, #settings-open, #camera-toggle, #town-map')].map(e => e.getBoundingClientRect()).filter(q => q.width && q.height);
+          return { box: [r.left, r.top, r.right, r.bottom].map(Math.round), own: !!hit && b.contains(hit), under: bar.some(q => r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top),
+            inView: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth };
+        });
+        check(scene, m.giveChoices && first?.own && !first.under && first.inView, `${size} — 고르기 첫 단추가 화면 안 · 위쪽 막대 · 지도 밖 · 제 누름을 받는다`, first);
+        await shot(page, `gather-choices-${size}`);
+        await page.locator('.gather-give-one').first().click();
+        await page.waitForFunction(() => !!SYNKTownDay.snapshot()?.view?.gather?.today, null, { timeout: 8000 }).catch(() => {});
+        await delay(600);
+        const after = (await view(page)).basket, count = b => b.reduce((n, x) => n + x.qty, 0);
+        check(scene, count(after) < count(before), `${size} — 첫 단추로 드렸다`, { before, after });
+        check(scene, s.errors.length === 0, `${size} — 콘솔 오류 0`, s.errors);
+      } finally { await s.close(); }
+    } finally { await f.close(); }
+  }
+}
+
 /** 「바로 따기」 on a phone with reduced motion (간단히 만들기 is on there by default): one button, the sound and the basket stay. */
 async function simpleScene(browser) {
   const scene = 'simple', f = await fixture(kst('2026-10-28', '10:30'));
@@ -334,7 +387,7 @@ async function padScene(browser) {
 /** Widths: the board, the right column and the walking controls never overlap; the board stays inside the screen. */
 async function widthsScene(browser) {
   const scene = 'widths';
-  for (const device of ['desktop', 'tablet-landscape', 'ipad', 'tablet', 'phone', 'landscape', 'landscape-small']) {
+  for (const device of ['desktop', 'tablet-landscape', 'ipad', 'tablet', 'phone', 'landscape', 'landscape-small', 'phone-short', 'narrow-keys']) {
     const f = await fixture(kst('2026-10-28', '10:30')), s = await open(browser, f, { device });
     try {
       const { page } = s, size = `${DEVICES[device].viewport.width}x${DEVICES[device].viewport.height}`;
@@ -342,6 +395,20 @@ async function widthsScene(browser) {
       await page.waitForFunction(() => SYNKTownDay.metrics().gather?.entry, null, { timeout: 8000 }).catch(() => {});
       const entryClash = await clashes(page, '#gather-open', [...HUD_FOOT, '#town-map', '.walk-help']);
       check(scene, (await gather(page)).entry && !entryClash.length && await inView(page, '#gather-open'), `${size} — 「잎 따기」가 화면 안 · 겹침 없음`, entryClash);
+      // The toast (a gift's word or why it could not be given) with its longest line: clear of the map, 「가까이 보기」, the top
+      // bar, the right column and the keys' walking help (pub reviews F1 · s2 FA2 · FA3) — walked by the keys as here, and on
+      // a touch screen (where the help hides).
+      await page.evaluate(() => { const t = document.querySelector('.gather-toast'); t.textContent = '찻집 주인은 지금 자고 있어요. 아침에 다시 만나요.'; t.hidden = false; });
+      const walkInput = await page.evaluate(() => document.body.dataset.walkInput ?? null);
+      for (const input of ['keys', 'touch']) {
+        if (input === 'touch') await page.evaluate(() => { document.body.dataset.walkInput = 'touch'; });
+        const toastClash = await clashes(page, '.gather-toast', ['#town-map', '#camera-toggle', '.topbar .brand', '#journal-open', '#settings-open', '#gather-open', '.gather-actions', '.walk-help', ...HUD_FOOT]);
+        const mapShown = await page.evaluate(() => { const e = document.querySelector('#town-map'); return !!e && getComputedStyle(e).display !== 'none'; });
+        const box = await page.evaluate(() => { const r = document.querySelector('.gather-toast').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); });
+        check(scene, mapShown && await inView(page, '.gather-toast') && !toastClash.length, `${size} · ${input === 'keys' ? '키' : '터치'} — 토스트(가장 긴 글)가 화면 안 · 지도 · 가까이 보기 · 위쪽 막대 · 오른쪽 열 · 걷기 도움말과 겹치지 않는다`, { toastClash, mapShown, box, walkInput });
+        if (input === 'touch' && device === 'phone') await shot(page, 'gather-toast-390x844');
+      }
+      await page.evaluate(was => { const t = document.querySelector('.gather-toast'); t.hidden = true; if (was === null) delete document.body.dataset.walkInput; else document.body.dataset.walkInput = was; }, walkInput);
       await page.locator('#gather-open').click(); await waitGather(page, () => SYNKTownDay.metrics().gather.open).catch(() => {});
       const boardClash = await clashes(page, '#gather-board', [...HUD_FOOT, '#gather-open', '#town-map', '.topbar .brand', '#journal-open', '#settings-open']);
       check(scene, (await gather(page)).open && await inView(page, '#gather-board') && !boardClash.length, `${size} — 판이 화면 안 · 걷기 조작 · 지도 · 위쪽 막대와 겹치지 않는다`, boardClash);
@@ -424,7 +491,7 @@ async function samplesScene(browser) {
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
-  const scenes = { explore: exploreScene, pick: pickScene, give: giveScene, simple: simpleScene, pad: padScene, widths: widthsScene, mic: micScene, samples: samplesScene };
+  const scenes = { explore: exploreScene, pick: pickScene, give: giveScene, choices: choicesScene, simple: simpleScene, pad: padScene, widths: widthsScene, mic: micScene, samples: samplesScene };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;

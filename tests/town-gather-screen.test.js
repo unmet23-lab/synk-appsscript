@@ -87,6 +87,20 @@ test('거절 코드는 엔진과 같은 목록 — 판은 잎을 되돌리고 �
   assert.match(app, /function gatherCommand/, '채집 명령은 자기 줄로 간다(바쁘면 버리지 않음)');
 });
 
+test('거절 글 — WORLD 계정 경로는 코드만 남아도(마을 답이 글을 error 안에 둔다) 판은 엔진과 같은 마을 말로 까닭을 말한다', async () => {
+  const { REFUSALS, refusalWords } = await load('day-gather.mjs');
+  const engine = fs.readFileSync(path.join(TOWN, 'town', 'activities', 'gather.mjs'), 'utf8');
+  // What the engine says, command by command (its GATHER_PICK case, then its GATHER_GIVE case).
+  const give = engine.indexOf("case 'GATHER_GIVE'");
+  const said = [...engine.matchAll(/fail\('(gather-[a-z-]+)', '([^']+)'/g)].map(m => ({ type: m.index > give ? 'GATHER_GIVE' : 'GATHER_PICK', code: m[1], words: m[2] }));
+  assert.ok(give > 0 && said.length >= REFUSALS.length, '엔진의 거절 글을 다 읽었다');
+  for (const { type, code, words } of said) assert.equal(refusalWords(type, code, code), words, `${type} ${code}: 엔진이 말하는 글과 같다`);
+  for (const code of REFUSALS) assert.ok(!/[a-z]/.test(refusalWords('GATHER_PICK', code, code) || 'x'), `${code}: 코드가 아니라 마을 말`);
+  assert.equal(refusalWords('GATHER_PICK', 'gather-too-far', '서버가 준 글'), '서버가 준 글', '마을이 준 글이 있으면 그 글');
+  const app = fs.readFileSync(path.join(TOWN, 'day-app.mjs'), 'utf8');
+  assert.match(app, /gatherRefusalWords\(type, code, error\.message\)/, '채집 명령의 거절은 이 글로');
+});
+
 test('간단히 만들기 — 찻집 판과 같은 스위치 · 보이는 글에 숫자 없음 · 단추는 WORLD 누름 소리를 내지 않음', async () => {
   const gather = await load('day-gather.mjs'), tea = await load('day-tea.mjs'), { GATHER } = await load('town/activities/gather.mjs');
   assert.equal(gather.SIMPLE_KEY, tea.SIMPLE_KEY);
