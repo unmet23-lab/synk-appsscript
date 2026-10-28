@@ -104,6 +104,36 @@ def lid_top(size=2048):
     return bump, gold
 
 
+# 끝 보강(10-28 유호님 「뚜껑까지 바꿔」): 이름 자리 = 앞 오른쪽 사분면(리본 띠 ±1.8 cm · 꼬리 둘 · 나비 고리를 비킴).
+# 움직임표.py NAME과 같은 자리 — 닫힘 카메라가 여기에 멎고 끝 화면 이름이 이 이름 위에 겹친다.
+NAME_UV = (0.784, 0.773)
+
+
+def lid_top_foil(size=2048):
+    """뚜껑 윗면 금박: 가장자리에서 안쪽으로 자라는 서리꽃 + 안쪽 두 줄 테 + 앞 오른쪽 사분면에 이름.
+    원본 1위의 끝 그림은 영상에서 가장 화려한 판(금박 그림 뚜껑 · 뚜껑 위 이름)인데, 3.1판 흰 엠보 뚜껑은 끝 그림 거리에서
+    무늬 · 이름이 안 보여 가장 밋밋한 판이었다. 획은 끝 그림(뚜껑 폭 ≈ 화면 0.53)에서 금선 1~2 px로 읽히게 굵게.
+    돌려주는 것: (금박 전체, 이름만) — 이름만은 끝 화면 이름을 뚜껑 이름에 맞춰 겹칠 때 움직임잇기.py가 쓴다."""
+    cx, cy = int(size * NAME_UV[0]), int(size * NAME_UV[1])
+    # 서리꽃은 네 변에서만 안쪽으로(가운데 나비 자리는 비움 — 한가운데 외톨이 깃이 지저분했다)
+    foil = frost_flowers(size, seeds=26, seed=17, edge_bias=1.0, avoid=(cx, cy, size * 0.23),
+                         lengths=(0.15, 0.27), width=2.8)  # 끝 그림에서 금선 2~3 px
+    clear = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(clear).ellipse((cx - size * 0.20, cy - size * 0.13, cx + size * 0.18, cy + size * 0.13), fill=255)
+    foil = ImageChops.subtract(foil, clear.filter(ImageFilter.GaussianBlur(30)))
+    d = ImageDraw.Draw(foil)
+    for inset, w in ((0.024, 6), (0.036, 3)):     # 안쪽 두 줄 테(4.4 · 6.6 mm 안)
+        a, b = size * inset, size * (1 - inset)
+        d.rectangle((a, a, b, b), outline=255, width=w)
+    # 이름 덩이는 세로 리본 띠 오른쪽 끝(x 1225)과 안쪽 테(1974) 사이 가운데 — 양쪽 6 mm 넘게 띄운다
+    name = Image.new("L", (size, size), 0)
+    dn = ImageDraw.Draw(name)
+    centered(dn, (cx, cy - 46), "유리결", font(210, "SemiBold"))
+    centered(dn, (cx, cy + 104), "YURIGYEOL", font(52, "Regular"), spacing=22)
+    centered(dn, (cx, cy + 168), "SEORIKKOT  HOLIDAY  EDITION", font(28, "Regular"), spacing=6)
+    return ImageChops.lighter(foil, name), name
+
+
 def lid_side(w=4096, h=512):
     """뚜껑 옆띠: 가운데에 작은 금박 글자 한 줄(리본이 가운데를 덮으니 양쪽 끝 가까이 둘)."""
     gold = Image.new("L", (w, h), 0)
@@ -166,6 +196,13 @@ def main():
     lid_front().save(os.path.join(밖, "뚜껑앞_금박.png"))
     # 2판 윗면은 엠보만(이름 없이) — 이름 자리를 비워 둔 1판 엠보에서 빈자리 없이 다시
     frost_flowers(2048, seeds=18, seed=11, edge_bias=0.85).save(os.path.join(밖, "뚜껑_엠보2.png"))
+    # 끝 보강(10-28): 윗면은 금박 서리꽃 + 이름(엠보2 대신 — 블렌더 mat_box가 이 판을 쓴다)
+    top_foil, top_name = lid_top_foil()
+    top_foil.save(os.path.join(밖, "뚜껑윗면_금박.png"))
+    top_name.save(os.path.join(밖, "뚜껑윗면_이름.png"))
+    prev2 = Image.new("RGB", (2048, 2048), (236, 236, 240))
+    prev2.paste((198, 160, 92), (0, 0), top_foil)
+    prev2.save(os.path.join(밖, "_보기_뚜껑윗면.jpg"), quality=88)
     # 움직임 카메라 2판 제목: 서리꽃 포장지 55 cm 한 장 — 뚜껑과 같은 실제 크기의 서리꽃을 가운데까지 고르게(뚜껑 무늬는
     # 리본 자리라 가운데가 비어, 되풀이하면 카메라가 지나는 줄이 빈 종이였다)
     frost_flowers(4096, seeds=150, seed=29, edge_bias=0.0, lengths=(0.067, 0.113), width=0.7).save(

@@ -145,6 +145,104 @@ def name_card(size, kind):
     return im
 
 
+def cam_project(c, orient, W, H, pts):
+    """움직임표 카메라 값으로 세계 점들을 화면 픽셀로 — 선물상자.py cam_pose(to_track_quat −Z · Y 뒤 로컬 Z 둘레 roll) ·
+    cam_tan과 같은 셈(세로는 세로 화각, 가로는 가로 화각이 18/lens)."""
+    import numpy as np
+    az, el, roll = (math.radians(c[k]) for k in ("az", "el", "roll"))
+    tgt = np.array(c["tgt"], dtype=float)
+    loc = tgt + c["d"] * np.array([math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)])
+    fwd = (tgt - loc) / np.linalg.norm(tgt - loc)
+    up0 = np.array([0.0, 0.0, 1.0]) - fwd * fwd[2]
+    up0 /= np.linalg.norm(up0)
+    right0 = np.cross(fwd, up0)
+    right = right0 * math.cos(roll) + up0 * math.sin(roll)
+    up = -right0 * math.sin(roll) + up0 * math.cos(roll)
+    half = 18.0 / c["lens"]
+    tx, ty = (half * W / H, half) if orient == "v" else (half, half * H / W)
+    out = []
+    for p in pts:
+        v = np.asarray(p, dtype=float) - loc
+        z = v @ fwd
+        out.append((W / 2 * (1 + (v @ right) / z / tx), H / 2 * (1 - (v @ up) / z / ty)))
+    return out
+
+
+def persp_coeffs(dst, src):
+    """화면 네 점(dst) → 원고 네 점(src)으로 가는 PIL PERSPECTIVE 계수."""
+    import numpy as np
+    A, b = [], []
+    for (x, y), (u, v) in zip(dst, src):
+        A += [[x, y, 1, 0, 0, 0, -u * x, -u * y], [0, 0, 0, x, y, 1, -v * x, -v * y]]
+        b += [u, v]
+    return np.linalg.solve(np.array(A, float), np.array(b, float)).tolist()
+
+
+_MASK = {}
+
+
+def lid_name_mask():
+    """뚜껑 윗면 이름 원고(../라벨/포장.py lid_top_foil의 이름만, 뚜껑 윗면 2048²) — 셋째 줄(영문 에디션)은 끝 화면에서 8 px라 뺀다."""
+    if "m" not in _MASK:
+        from PIL import Image, ImageFilter
+        m = Image.open(os.path.join(밖, "라벨", "뚜껑윗면_이름.png")).convert("L")
+        cut = int(m.height * M.NAME_UV[1]) + 136
+        m.paste(0, (0, cut, m.width, m.height))
+        _MASK["m"] = m.filter(ImageFilter.GaussianBlur(1.2))    # 4분의 1 넘게 줄어들 때 가는 획이 깨지지 않게
+    return _MASK["m"]
+
+
+def lid_corners(film, o, W, H, t):
+    """뚜껑 윗면 원고 네 모서리(왼위 · 오위 · 오아래 · 왼아래)의 화면 자리 — 15초 닫힘 카메라(t는 닫힘 안으로 묶음)."""
+    cut = next(c for c in M.CUTS["15"] if c[0] == "닫힘")
+    tt = min(t, (cut[2] - 1) / M.FPS)
+    c = M.cam_at("15", "v" if o == "세로" else "h", cut, tt)
+    h, z = M.LID_HALF, M.TOP
+    return cam_project(c, "v" if o == "세로" else "h", W, H, [(-h, h, z), (h, h, z), (h, -h, z), (-h, -h, z)])
+
+
+END_SCALE = 1.5   # 끝 화면 이름 = 뚜껑 이름의 1.5배, 같은 가운데(원본은 1.9배 — 뚜껑 글자 위에 큰 끝 글자가 덮인다, Fable P2-1)
+
+
+def name_layer(corners, W, H, shift=(0.0, 0.0), scale=END_SCALE):
+    """뚜껑 이름을 화면 네 점에 맞춰 편 알파(0~1, float)와 이름 가운데 · 반폭(px). 이름 가운데를 두고 scale배로 키운다.
+    두 배로 펴서 줄인다."""
+    import numpy as np
+    from PIL import Image
+    m = lid_name_mask()
+    s = 2
+    if scale != 1.0:      # 원고 네 모서리 → 이름 가운데(NAME_UV)의 화면 자리를 쌍선형으로 잡고 그 둘레로 키운다
+        u, v = M.NAME_UV
+        (x0, y0), (x1, y1), (x2, y2), (x3, y3) = corners
+        cx = (1 - v) * ((1 - u) * x0 + u * x1) + v * ((1 - u) * x3 + u * x2)
+        cy = (1 - v) * ((1 - u) * y0 + u * y1) + v * ((1 - u) * y3 + u * y2)
+        corners = [(cx + (x - cx) * scale, cy + (y - cy) * scale) for x, y in corners]
+    dst = [((x + shift[0]) * s, (y + shift[1]) * s) for x, y in corners]
+    src = [(0, 0), (m.width, 0), (m.width, m.height), (0, m.height)]
+    big = m.transform((W * s, H * s), Image.PERSPECTIVE, persp_coeffs(dst, src), Image.BICUBIC)
+    al = np.asarray(big.resize((W, H), Image.LANCZOS), dtype=np.float32) / 255
+    ys, xs = np.nonzero(al > 0.2)
+    return al, ((xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2), (xs.max() - xs.min()) / 2, ys.max()
+
+
+def edition_line(W, H, cx, y_top):
+    """끝 화면 이름 아래 한 줄 「서리꽃 홀리데이 에디션」(RGBA float) — 뚜껑의 영문 셋째 줄은 끝 화면에서 8 px라 이 줄이 대신한다."""
+    import numpy as np
+    from PIL import Image, ImageDraw
+    u = min(W, H)
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    spaced(ImageDraw.Draw(im), cx, y_top + u * 0.030, "서리꽃 홀리데이 에디션", font(int(u * 0.024), "Regular"),
+           (214, 190, 140, 255), u * 0.004)
+    a = np.asarray(im, dtype=np.float32)
+    return a[..., :3], a[..., 3:] / 255
+
+
+def soft_disc_at(W, H, cx, cy, r):
+    import numpy as np
+    y, x = np.mgrid[0:H, 0:W]
+    return np.clip(1 - np.hypot(x - cx, y - cy) / r, 0, 1) ** 1.5
+
+
 def soft_disc(size, radius):
     """가운데 부드러운 원(L, 0~255): 반지름 = 짧은 변 × radius, 가장자리로 갈수록 0."""
     from PIL import Image
@@ -260,6 +358,216 @@ def synth(film):
     return out
 
 
+# ── 소리(끝 보강 10-28): Suno 새 연주곡 + 녹음 모음 한 타씩(어택을 사건 프레임에) + 만든 매듭 한 방 + 공간 소리 ──────────
+# 화면 사건이 블렌더 프레임으로 정확히 정해져 있어 녹음 모음 소리를 그 프레임에 한 타씩 놓는다(AI 광고영상 제작 규칙 「소리」 2순위 길).
+# 세기는 소리마다 가장 큰 0.1초 RMS를 dBFS로 맞춘다 — 원본 17초 판 실측(음악 −13~−16, 매듭 한 방 −8, 그 뒤 공간 −41)이 기준.
+LIB = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "sound-library")
+SFX = {   # 녹음 모음(Sonniss GDC 2026 · Fairlight)에서 이름 조각으로 찾는다
+    "종이": "Wrapping Paper, Opening Present 1", "천": "ClothMovement29", "천2": "ClothMovement24",
+    "천3": "Cloth Canvas Bag Slide Light 02", "휘익": "Low Whoosh x2", "쏟아짐": "Cofetti Whoosh Pluck Spill",
+    "방울": "Magic Christmas Bells 2", "결정": "Crystal Fragments Sharp Shards Dry 05", "유리": "Glass Clink Toast",
+    "스냅": "Interface Accept Glassy Snap", "종": "Bell Clang Resonance High", "반짝": "Button Arp Twinkle",
+    "바람": "WINDDsgn_Wind, Rush, Whoosh, Long x5",
+}
+_SRC = {}
+
+
+def load_audio(path, t0=0.0, dur=None):
+    """ffmpeg로 48 kHz 스테레오 float32(n, 2)."""
+    import numpy as np
+    cmd = ["ffmpeg", "-v", "error", "-ss", f"{t0:.4f}"] + (["-t", f"{dur:.4f}"] if dur else []) + \
+          ["-i", path, "-ac", "2", "-ar", str(SR), "-f", "f32le", "-"]
+    raw = subprocess.run(cmd, capture_output=True).stdout
+    return np.frombuffer(raw, dtype=np.float32).reshape(-1, 2).copy()
+
+
+def sfx(name):
+    if name not in _SRC:
+        for dp, _, fs in os.walk(LIB):
+            hit = next((f for f in fs if SFX[name] in f), None)
+            if hit:
+                _SRC[name] = load_audio(os.path.join(dp, hit))
+                break
+        else:
+            raise FileNotFoundError(SFX[name])
+    return _SRC[name]
+
+
+def win_rms(x, w=0.1):
+    """가장 큰 w초 RMS(선형)와 그 창의 시작 표본."""
+    import numpy as np
+    p = (x.astype(np.float64) ** 2).mean(axis=1)
+    k = max(1, int(w * SR))
+    c = np.convolve(p, np.ones(k) / k, mode="valid")
+    i = int(np.argmax(c))
+    return float(np.sqrt(c[i])), i
+
+
+def attack(x, rel_db=-24):
+    """어택 표본: 10 ms 포락선이 그 소리 최대의 rel_db를 처음 넘는 곳."""
+    import numpy as np
+    p = np.abs(x).max(axis=1)
+    env = np.sqrt(np.convolve(p ** 2, np.ones(480) / 480, mode="same"))
+    return int(np.argmax(env > env.max() * 10 ** (rel_db / 20)))
+
+
+def mix(film):
+    """움직임표 SOUND · MUSIC대로 섞는다. 원본 두 판처럼 15초는 음악이 닫힘 머리(10.5)에서 끊기고 닫힘 바닥 소리는 −30 dB 아래,
+    매듭 완성(12.07)이 가장 큰 한 방, 그 뒤는 디지털 무음 대신 작은 공간 소리가 끝까지 잦아든다(원본 −41 dBFS → 끝 −97).
+    6초는 마지막 유리 한 방(4.15)에서 음악이 끝난다."""
+    import numpy as np
+    n = int(M.LEN[film] / M.FPS * SR)
+    out = np.zeros((n, 2), np.float32)
+
+    def place(t, sig, level, at="attack", pan=0.0, length=None, fade_out=None, fade_in=None):
+        """sig의 어택(attack) · 처음(start) · 가장 큰 0.1초(peak)를 영상 t초에 놓고, 가장 큰 0.1초 RMS를 level dBFS로."""
+        sig = sig[: int(length * SR)].copy() if length else sig.copy()
+        if fade_in:
+            k = min(len(sig), int(fade_in * SR))
+            sig[:k] *= np.linspace(0, 1, k)[:, None]
+        if fade_out:
+            k = min(len(sig), int(fade_out * SR))
+            sig[len(sig) - k:] *= np.linspace(1, 0, k)[:, None]
+        r, ipk = win_rms(sig)
+        sig *= db(level) / max(r, 1e-9)
+        ref = {"attack": attack(sig), "start": 0, "peak": ipk + int(0.05 * SR)}[at]
+        i0 = int(round(t * SR)) - ref
+        s0 = max(0, -i0)
+        i0 = max(0, i0)
+        seg = sig[s0: s0 + n - i0]
+        if pan:
+            seg = seg * np.array([1 - max(0.0, pan), 1 + min(0.0, pan)], np.float32)
+        out[i0: i0 + len(seg)] += seg
+
+    mu = M.MUSIC.get(film)
+    if mu:
+        L = mu["cut"] - mu["start"]
+        x = load_audio(os.path.join(밖, "소리", "suno", mu["file"]), t0=mu["src_cut"] - L, dur=L)
+        loud, _ = win_rms(x, 1.0)
+        # 곡의 가장 큰 1초를 −16.5 dBFS로(원본 음악 −13~−16) — 매듭 한 방이 리미터 안에서 음악보다 4 dB 넘게 크게
+        x *= db(-16.5) / loud
+        k = int(mu["fade_in"] * SR)
+        x[:k] *= np.linspace(0, 1, k)[:, None]
+        k = int(0.02 * SR)                        # 닫힘 머리에서 끊는다 — 끝 20 ms만 잦아들게
+        x[-k:] *= np.linspace(1, 0, k)[:, None]
+        i0 = int(mu["start"] * SR)
+        out[i0: i0 + len(x)] += x[: n - i0]
+    rng = np.random.default_rng(7)
+    glass = 0
+    closing = 10.5 if film == "15" else None
+    for kind, t0, t1 in M.SOUND[film]:
+        L = max(t1 - t0, 0.01)
+        quiet = -6 if closing is not None and t0 >= closing and kind not in ("매듭", "빛", "공간") else 0
+        if kind == "바람":            # 포장지 스침(제목)
+            # 원본 0–2초는 바람 · 포장지 스침이 −15~−18로 처음부터 크다(10-28 곡선 대조 — 첫 판 −30은 0.2초에 −45)
+            # 포장지 스침은 띄엄띄엄이라(0.3초에 −41로 꺼졌다) 이어지는 바람 한 줄을 밑에 깐다
+            w = sfx("바람")
+            place(t0, w[attack(w):], -22, at="start", length=L, fade_in=0.04, fade_out=0.30)
+            place(t0, sfx("종이")[int(2.0 * SR):], -24, at="start", length=L, fade_in=0.05, fade_out=0.25)
+        elif kind == "마찰":          # 리본이 풀리고 · 쓰러지고 · 다시 묶이는 공단 마찰
+            src = sfx("천3") if L < 0.5 else (sfx("천2") if t0 > 11 else sfx("천"))
+            place(t0, src, -27 + quiet, length=L + 0.25, fade_out=0.2, pan=-0.15)
+        elif kind == "휘익":          # 휘둘러 넘김 — 가장 큰 자리를 넘김 한가운데에
+            if closing is not None and abs(t0 + t1 - 2 * closing) < 0.3:
+                # 음악이 끊기는 닫힘 머리: 원본은 이 자리가 −6 dB 큰 한 방이다(10-28 곡선 대조) — 휘익을 키우고 낮은 쿵을 겹친다
+                place((t0 + t1) / 2, sfx("휘익")[: int(0.62 * SR)], -11, at="peak", fade_out=0.08)
+                x = np.arange(int(0.6 * SR)) / SR
+                boom = (np.sin(2 * math.pi * 46 * x) * np.exp(-x / 0.12)).astype(np.float32)
+                place(closing, np.stack([boom, boom], 1), -13, at="start")
+            else:
+                place((t0 + t1) / 2, sfx("휘익")[: int(0.62 * SR)], -19, at="peak", fade_out=0.08)
+        elif kind == "반짝":          # 뚜껑이 열리며 금가루가 쏟아짐 · 닫힘에서 화면을 덮은 금가루가 돎
+            if quiet:
+                place(t0, sfx("방울")[int(13.0 * SR):], -31, at="start", length=L + 0.3, fade_in=0.1, fade_out=0.4)
+            else:
+                place(t0, sfx("쏟아짐"), -19, pan=0.2)
+                place(t0 + 0.05, sfx("방울")[int(13.0 * SR):], -27, at="start", length=1.6, fade_in=0.05, fade_out=0.6)
+        elif kind == "금가루":        # 금가루 구름 속을 빠르게 지남
+            place(t0 + 0.25, sfx("결정"), -24, at="peak", fade_out=0.3, pan=0.25)
+        elif kind == "유리":          # 단지 · 앰플이 멎음
+            if film == "6" and glass == 1:
+                # 6초 끝 한 방(Fable P2-4): −17 dB는 앞 유리 · 음악보다 작아 「음악이 멎음」이었다 — 유리 + 짧은 종 꼬리를 한 덩이로
+                # 묶어 크레스트를 줄여 놓는다(유리 「팅」은 순간 최대가 커서 따로 키우면 마지막 리미터에 그대로 눌렸다)
+                # 유리 「팅」은 몸통이 없어 0.1초 RMS를 키울 수 없다 — 단지가 바닥에 앉는 낮은 쿵(66 Hz)을 밑에 깐다
+                x_ = np.arange(int(1.3 * SR)) / SR
+                thud = (np.sin(2 * math.pi * 66 * x_) * np.exp(-x_ / 0.14)).astype(np.float32)
+                hit = np.stack([thud, thud], 1) * db(-8)
+                for nm, pk_db, ln in (("유리", -6, None), ("종", -14, 1.2)):
+                    s_ = sfx(nm)[attack(sfx(nm)):]
+                    s_ = s_[: int(ln * SR)].copy() if ln else s_.copy()
+                    if ln:
+                        k_ = int(0.8 * SR)
+                        s_[-k_:] *= np.linspace(1, 0, k_)[:, None]
+                    s_ *= db(pk_db) / np.abs(s_).max()
+                    hit[: min(len(s_), len(hit))] += s_[: len(hit)]
+                place(t0, limiter(hit, -6.0), -9, at="start", pan=0.12)
+            else:
+                place(t0, sfx("유리"), -15 - 2 * glass, pan=(0.12 if glass else -0.12))
+            glass += 1
+        elif kind == "매듭":          # 가장 큰 한 방: 낮은 쿵(만든 소리) + 유리빛 탁(녹음) + 짧은 종(녹음) — 한 덩이로 묶어 세기를 맞춘다
+            # 따로 놓으면 탁의 순간 최대가 마지막 리미터를 눌러 한 방이 음악보다 작아졌다(−14 대 −11, 10-28 첫 섞기)
+            m = int(1.6 * SR)
+            x = np.arange(m) / SR
+            thud = (np.sin(2 * math.pi * 58 * x) * np.exp(-x / 0.16)).astype(np.float32)
+            hit = np.stack([thud, thud], 1) * db(-6)
+            for nm, pk_db, ln, fo in (("스냅", -12, None, None), ("종", -16, 1.4, 1.0)):
+                s = sfx(nm)[attack(sfx(nm)):]
+                s = s[: int(ln * SR)].copy() if ln else s.copy()
+                if fo:
+                    k = int(fo * SR)
+                    s[-k:] *= np.linspace(1, 0, k)[:, None]
+                s *= db(pk_db) / np.abs(s).max()
+                hit[: len(s)] += s[:m]
+            hit = limiter(hit, -3.0)
+            place(t0, hit, -6, at="start")      # 음악 큰 자리보다 4~5 dB 위(원본 매듭 −8 · 음악 −13)
+        elif kind == "빛":            # 빛줄기가 금박 · 금 뚜껑 위를 지남 — 작은 반짝임 한 줄
+            place(t0 + 0.05, sfx("반짝"), -28, fade_out=0.5, pan=0.3)
+        elif kind == "공간":          # 디지털 무음 대신 작은 공간 소리 — 끝까지 잦아든다
+            m = int((t1 - t0) * SR)
+            from scipy.signal import butter, sosfilt
+            air = sosfilt(butter(2, [60, 1800], btype="band", fs=SR, output="sos"), rng.standard_normal((m, 2)), axis=0)
+            # 원본은 한 방 뒤 −38~−40이 평평하게 남다가 끝 화면 반쯤부터 잦아든다(10-28 곡선 대조 — 첫 판 −47은 곧장 가라앉았다)
+            air = (air / np.sqrt((air ** 2).mean()) * db(-41)).astype(np.float32)
+            env = np.ones(m, np.float32)
+            env[: int(0.3 * SR)] = np.linspace(0, 1, int(0.3 * SR))
+            f1 = M.FADE[film][1]
+            tail = max(1, m - int((f1 + 0.35 * (t1 - f1) - t0) * SR))
+            env[-tail:] *= np.linspace(1, 0, tail) ** 2          # 끝 화면 3분의 1 지나 잦아들어 마지막 프레임에 0
+            i0 = int(t0 * SR)
+            out[i0: i0 + m] += (air * env[:, None])[: n - i0]
+    # 크기: 통합 −15 LUFS(플랫폼 기준 −14 근처 — 원본 17초 판은 −11.6)로 맞추고, 순간 최대만 미리 보는 리미터로 −1.5 dBFS 안에.
+    # 끝에서 통째로 최대를 맞추면 매듭의 순간 최대 때문에 전체가 5 dB 내려가 −20.8 LUFS가 됐다(10-28 첫 섞기)
+    out *= db(-15.0 - lufs_of(out))
+    return limiter(out, -2.5)      # AAC가 −1.5 표본을 +0.3 dBTP로 넘겼다(Fable P3-5)
+
+
+def lufs_of(x):
+    """ffmpeg ebur128로 잰 통합 크기(LUFS)."""
+    import re
+    import tempfile
+    p = os.path.join(tempfile.gettempdir(), f"_giftset_lufs_{os.getpid()}.wav")
+    write_wav(p, x)
+    err = subprocess.run(["ffmpeg", "-hide_banner", "-i", p, "-af", "ebur128", "-f", "null", "-"],
+                         capture_output=True, text=True, errors="ignore").stderr
+    os.remove(p)
+    return float(re.findall(r"I:\s+(-?[\d.]+) LUFS", err)[-1])
+
+
+def limiter(x, ceiling_db=-1.5, look=0.005, release=0.08):
+    """미리 보는(5 ms) 피크 리미터 — 넘는 순간만 이득을 내리고 80 ms에 걸쳐 놓아준다."""
+    import numpy as np
+    from scipy.ndimage import minimum_filter1d
+    need = np.minimum(1.0, db(ceiling_db) / np.maximum(np.abs(x).max(axis=1), 1e-9))
+    g = minimum_filter1d(need, size=2 * int(look * SR) + 1, mode="nearest")
+    rel = math.exp(-1.0 / (release * SR))
+    gain = np.empty_like(g)
+    cur = 1.0
+    for i, v in enumerate(g):
+        cur = v if v < cur else v + (cur - v) * rel
+        gain[i] = cur
+    return (x * gain[:, None]).astype(np.float32)
+
+
 def write_wav(path, data):
     import numpy as np
     pcm = (np.clip(data, -1, 1) * 32767).astype("<i2")
@@ -278,8 +586,8 @@ def assemble(args):
     root = opt(args, "--원천", 움직임)
     tail = opt(args, "--이름", "")
     for film in films:
-        wav = os.path.join(root, f"소리자리_{film}초.wav")
-        write_wav(wav, synth(film))
+        wav = os.path.join(root, f"소리_{film}초.wav")      # 끝 보강(10-28): 자리 표시 합성음(synth) 대신 섞은 소리
+        write_wav(wav, mix(film))
         for o in orients:
             d = os.path.join(root, f"{film}초_{o}")
             names = sorted(n for n in os.listdir(d) if n.endswith(".png"))
@@ -288,10 +596,14 @@ def assemble(args):
                 continue
             W, H = Image.open(os.path.join(d, names[0])).size
             title = name_card((W, H), "title")
-            end = name_card((W, H), "end")
-            scrim_f = (np.asarray(soft_disc((W, H), 0.35), dtype=np.float32) / 255)[..., None]
-            end_np = np.asarray(end, dtype=np.float32)
-            end_rgb, end_a = end_np[..., :3], end_np[..., 3:] / 255
+            # 끝 보강(10-28 유호님 「뚜껑까지 바꿔」): 끝 화면 이름은 뚜껑 윗면 금박 이름 그 자리 · 크기로 겹쳐 든다(원본 1위처럼 상자가
+            # 사라지고 이름만 남음). 닫힘 카메라가 이름에 멎어 끝 자리는 화면 가운데 — 6초는 같은 크기로 가운데에
+            ink = np.array([243, 236, 222], dtype=np.float32)
+            end_c = lid_corners(film, o, W, H, 99.0)
+            end_al, end_cen, end_hw, end_bot = name_layer(end_c, W, H)
+            if film == "6":
+                end_al, end_cen, end_hw, end_bot = name_layer(end_c, W, H, (W / 2 - end_cen[0], H / 2 - end_cen[1]))
+            ed_rgb, ed_a = edition_line(W, H, end_cen[0], end_bot)
             rng = np.random.default_rng(11)
             outp = os.path.join(root, f"기프트세트_{film}초_{o}{tail}.mp4")
             cmd = ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(M.FPS),
@@ -329,11 +641,19 @@ def assemble(args):
                     x = min(1.0, (t - f0) / (f1 - f0))
                     a = min(1.0, max(0.0, (t - f0 - 0.15) / (f1 - f0 - 0.15)))
                     v = np.asarray(im, dtype=np.float32) * (1 - (1 - (1 - x) ** 2))
+                    if film == "15" and t < f1:      # 디졸브 동안은 그 프레임 카메라로 뚜껑 이름 위에 정확히
+                        al_n, cen, hw, _ = name_layer(lid_corners(film, o, W, H, t), W, H)
+                    else:
+                        al_n, cen, hw = end_al, end_cen, end_hw
                     if a > 0 and x < 1:
-                        v *= 1 - scrim_f * (0.5 * a)
+                        v *= 1 - soft_disc_at(W, H, cen[0], cen[1], hw * 2.4)[..., None] * (0.5 * a)
                     if a > 0:
-                        al = end_a * a
-                        v = v * (1 - al) + end_rgb * al
+                        al = (al_n * a)[..., None]
+                        v = v * (1 - al) + ink * al
+                    b = min(1.0, max(0.0, (t - f1 + 0.25) / 0.35))   # 에디션 한 줄은 이름이 다 든 뒤에
+                    if b > 0:
+                        al = ed_a * b
+                        v = v * (1 - al) + ed_rgb * al
                     v += rng.random(v.shape, dtype=np.float32) - rng.random(v.shape, dtype=np.float32)
                     im = Image.fromarray(np.clip(np.rint(v), 0, 255).astype(np.uint8), "RGB")
                 p.stdin.write(im.tobytes())

@@ -61,6 +61,13 @@ RIM_FADE = None      # 카메라 2판: 상자용 역광을 끄는 때(열림 컷
 FLOOR_LIGHT = float(arg("--floor-light", "10"))  # 바닥 무늬 빛 세기(W) — 시험 6 · 15 W 사이
 LID_OUT = 0.0
 T = None
+CAMC = None          # 끝 보강: 지금 프레임 카메라 값(움직임표 cam) — 금박 빛을 카메라에 비치는 자리에 둘 때
+SWEEP = None         # 끝 보강: (시작, 끝) 빛줄기가 한 번 지나가는 때(움직임표 SWEEP)
+FOIL_SOFT = float(arg("--foil-soft", "3"))     # 금박이 금으로 읽히게 비추는 넓은 면광(W, 반사로만)
+SWEEP_E = float(arg("--sweep", "6"))            # 지나가는 빛줄기(W, 반사로만) — 24부터 뚜껑 왼쪽 반이 하얗게 날았고 14도 0.13초 동안
+                                                # 상자의 11 %가 255였다(Fable P2-3)
+GLINT_E = float(arg("--glint", "22"))          # 6초 제품 뒤 세로 띠 빛(W, 반사로만) — 30은 단지 뚜껑이 4.27초에 하얗게 날았다
+FLOOR_TOP = float(arg("--floor-top", "18"))     # 닫힘 바닥만 받는 남빛(W)
 밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-season4-20261025", "콘티", "holiday-giftset")
 라벨 = os.path.join(밖, "라벨")
 OUT = arg("--out", os.path.join(밖, "렌더", f"{SHOT}_{LOOK}_u{U:.2f}{f'_r{RISE:.2f}' if RISE > 0 else ''}"
@@ -339,11 +346,16 @@ def paper_grain(n, l, strength=0.06):
 
 
 def mat_box(name, lid=True):
-    """진주빛 흰 판지 — 뚜껑 윗면은 서리꽃 엠보(0.2 mm), 앞 옆띠에 금박 이름(0.1 mm 돋움)."""
+    """진주빛 흰 판지 — 뚜껑 윗면은 금박 서리꽃 + 이름, 앞 옆띠에 금박 이름(금박은 0.1 mm 돋움).
+    끝 보강(10-28 유호님 「뚜껑까지 바꿔」): 3.1판 윗면은 흰 엠보만이라 끝 그림 거리에서 무늬도 이름도 안 보여, 원본 1위와 달리
+    끝 그림이 영상에서 가장 밋밋한 판이었다 — 윗면을 ../라벨/포장.py lid_top_foil(뚜껑윗면_금박.png)로."""
     m, n, l, out = new_mat(name)
     paper = principled(n, base=(0.90, 0.902, 0.92), rough=0.52, sheen=0.3, sheen_tint=(0.95, 0.95, 1.0),
                        coat=0.06, coat_rough=0.3, film=120.0, film_ior=1.4)
-    foil = principled(n, base=(0.66, 0.44, 0.15), metal=1.0, rough=0.24)  # 3판: 짙은 금 — 흰 판지 위에서 글자가 서고 역광에서 번쩍
+    # 3판: 짙은 금 — 흰 판지 위에서 글자가 서고 역광에서 번쩍. 끝 보강: 거칠기 0.24 → 0.16(지나가는 빛줄기가 금박에 또렷이 흐르게)
+    # 흰 판지 위에서 짙은 금으로 서게 — 끝 보강 2(Fable P2-2): 닫힘에서 (0.60, 0.37, 0.09)는 서리꽃 S 0.12 · 이름 S 0.25로
+    # 베이지였다. 닫힘만 더 짙게(매듭 접사 · 열림은 그대로 — Fable이 그 자리 금박은 알맞다고 봤고 다시 굽지 않는다)
+    foil = principled(n, base=(0.50, 0.29, 0.05) if SHOT == "top" else (0.60, 0.37, 0.09), metal=1.0, rough=0.16)
     mix = n.new("ShaderNodeMixShader")
     l.new(paper.outputs[0], mix.inputs[1])
     l.new(foil.outputs[0], mix.inputs[2])
@@ -351,12 +363,12 @@ def mat_box(name, lid=True):
     if lid:
         top = normal_mask(n, l, "Z", 1)
         front = normal_mask(n, l, "Y", -1)
-        emb = planar_tex(n, l, img("뚜껑_엠보2.png"), L_HALF, "Z")
+        top_t = planar_tex(n, l, img("뚜껑윗면_금박.png"), L_HALF, "Z")
         name_t = planar_tex(n, l, img("뚜껑앞_금박.png"), L_HALF, "Y", z0=TOP - L_H, h=L_H)
-        foil_fac = math_node(n, l, "MULTIPLY", front, name_t.outputs["Color"])
+        foil_fac = math_node(n, l, "ADD", math_node(n, l, "MULTIPLY", top, top_t.outputs["Color"]),
+                             math_node(n, l, "MULTIPLY", front, name_t.outputs["Color"]), clamp=True)
         l.new(foil_fac, mix.inputs["Fac"])
-        height = math_node(n, l, "ADD", math_node(n, l, "MULTIPLY", top, emb.outputs["Color"]),
-                           math_node(n, l, "MULTIPLY", foil_fac, 0.5))
+        height = math_node(n, l, "MULTIPLY", foil_fac, 0.5)
         bump = n.new("ShaderNodeBump")
         bump.inputs["Strength"].default_value = 1.0   # 4판: 0.7 — 멈춘 끝 그림 · 제목에서 서리꽃이 평평했다(Fable 움직임 1차 P2-2 · 3)
         bump.inputs["Distance"].default_value = 0.0002
@@ -407,8 +419,9 @@ def mat_satin():
     3.1판(Fable 3차 P2-1): 한 리본이 라메 · 거울 공단 · 무광 베이지 셋으로 보였다 — 금속에 가까운 반사(0.85)가 둘레를
     면마다 다르게 비추고, 잔결 노이즈가 스침각에서 알갱이로 깨졌다. 천 공단으로: 금속 0.2 · 결 반사 크게 · 실결은 물결만 반 세기."""
     m, n, l, out = new_mat("satin")
-    b = principled(n, base=(0.70, 0.45, 0.16), metal=0.3, rough=0.24, aniso=0.85, sheen=0.6, sheen_rough=0.35,
-                   sheen_tint=(1.0, 0.80, 0.48))
+    # 끝 보강(10-28): 끝 그림에서 옅은 크림색으로 흰 상자에 묻혀 한 단계 짙은 금으로(바탕 · 결 반사 색 · 결 반사 세기)
+    b = principled(n, base=(0.64, 0.40, 0.12), metal=0.3, rough=0.24, aniso=0.85, sheen=0.5, sheen_rough=0.35,
+                   sheen_tint=(1.0, 0.76, 0.42))
     tg = n.new("ShaderNodeTangent")
     tg.direction_type = "UV_MAP"
     tg.uv_map = "UVMap"
@@ -715,7 +728,7 @@ def bow(mat, center):
     floor_z = TOP + OFF + RIB_T * 3  # 아래 가닥이 뚜껑에 얹히는 높이
     elev, lean = math.radians(18), math.radians(35)
     for side in (1, -1):
-        Ls, Hs = 0.072 * s, 0.030 * s
+        Ls, Hs = 0.064 * s, 0.028 * s    # 끝 보강(10-28): 7.2 → 6.4 cm — 고리가 뚜껑 폭을 거의 다 덮어 무늬 · 이름 자리를 먹었다
         e1 = Matrix.Rotation(math.radians(-8 * side), 3, "Z") @ Vector((side, 0, 0))  # 고리 끝이 살짝 뒤로
         el = (e1 * math.cos(elev) + up * math.sin(elev)).normalized()
         eo0 = (-e1 * math.sin(elev) + up * math.cos(elev)).normalized()
@@ -1081,8 +1094,11 @@ def set_look():
         snow_particles(260, ((-0.6, 0.6), (-0.3, 0.9), (0.0, 0.7)), 0.0012, 0.0032)
     elif LOOK == "B":
         world_gradient((0.004, 0.006, 0.016), (0.012, 0.018, 0.045), 1.0)
-        floor = rounded_box("바닥", 3.0, 3.0, 0.02, (0, 0, -0.01),
-                            floor_mat((0.012, 0.014, 0.024), 0.46, 0.25, 0.35, print_x=PRINT_X), bevel=0.0)
+        # 끝 보강(10-28): 닫힘(위에서 내려다봄)에서는 반질한 밤 바닥이 키를 왼쪽 아래 회백 얼룩으로, 역광을 오른쪽 위 흰 덩이로
+        # 비춰 흰 상자가 바탕에서 안 떴다 — 원본 끝 그림처럼 고른 무광 바탕(짙은 남색)으로
+        fm = (floor_mat((0.010, 0.013, 0.030), 0.92, 0.0, 0.35) if SHOT == "top"
+              else floor_mat((0.012, 0.014, 0.024), 0.46, 0.25, 0.35, print_x=PRINT_X))
+        floor = rounded_box("바닥", 3.0, 3.0, 0.02, (0, 0, -0.01), fm, bevel=0.0)
         if PRINT_X is not None and HERO_X is not None:
             # 바닥 무늬 빛: 제품 자리 뒤 조금 왼쪽, 카메라(45°)를 바닥에 비춘 쪽(36°)의 넓은 면광 — 금박 서리꽃이 결마다
             # 반짝이고 종이는 남색 결빛만. 바닥만 받는다(제품 빛은 따로). 제품은 그림자를 앞으로 부드럽게 드리워 바닥에 선다
@@ -1177,6 +1193,124 @@ def lid_rake(lid, energy, pos, target):
     rake.light_linking.receiver_collection = recv
     rake.light_linking.blocker_collection = recv
     return rake
+
+
+def mirror_xy(p_xy, cam_loc, h, z0=TOP):
+    """높이 z0 면의 점 p에 비친 빛이 카메라에 들어오려면 빛(z0 + h)이 놓일 xy — 면에 비친 카메라 상과 빛을 잇는 선이 p를 지난다."""
+    k = h / (cam_loc.z - z0 + h)
+    return (Vector(p_xy) - k * Vector((cam_loc.x, cam_loc.y))) / (1 - k)
+
+
+def gloss_light(name, xy, z, energy, size, size_y=None, angle=0.0, rgb=(1.0, 0.88, 0.70), receivers=()):
+    """반사로만 비추는 아래 보는 면광(확산 빛은 안 줘 흰 판지가 밝아지지 않는다) — 빛 연결로 받을 물체를 정한다."""
+    ld = bpy.data.lights.new(name, "AREA")
+    ld.energy = energy
+    ld.color = rgb
+    ld.shape = "RECTANGLE" if size_y else "DISK"
+    ld.size = size
+    if size_y:
+        ld.size_y = size_y
+    ob = link(bpy.data.objects.new(name, ld))
+    ob.location = (xy[0], xy[1], z)
+    ob.rotation_euler = (0.0, 0.0, angle)
+    ob.visible_camera = False
+    ob.visible_diffuse = False
+    recv = bpy.data.collections.new(f"{name}_받음")
+    bpy.context.scene.collection.children.link(recv)
+    for o in receivers:
+        recv.objects.link(o)
+    ob.light_linking.receiver_collection = recv
+    return ob
+
+
+def foil_light(lid):
+    """끝 보강(10-28): 금박은 비칠 빛이 없으면 둘레의 밤을 비춰 회색 · 검은 글자로 찍혔다(시험 0060 · 0095 · 0362).
+    뚜껑 윗면(지금 자세 — 들리고 기운 것까지)에 카메라를 비춘 쪽 45 cm에 넓은 면광 하나 — 반사로만, 뚜껑만 받는다."""
+    if CAMC is None:
+        return
+    cam_loc, _ = cam_pose(CAMC)
+    mw = lid.matrix_world
+    pc = mw @ Vector((0.0, 0.0, TOP))
+    nrm = (mw.to_3x3() @ Vector((0.0, 0.0, 1.0))).normalized()
+    v = (cam_loc - pc).normalized()
+    r = 2 * nrm.dot(v) * nrm - v
+    ld = bpy.data.lights.new("금박빛", "AREA")
+    warm = (1.0, 0.80, 0.50) if SHOT == "top" else (1.0, 0.88, 0.70)   # 닫힘은 따뜻하게 — 흰 빛은 금을 크림으로 눌렀다
+    ld.energy, ld.color, ld.shape, ld.size = FOIL_SOFT, warm, "DISK", 0.55
+    ob = link(bpy.data.objects.new("금박빛", ld))
+    ob.location = pc + r * 0.45
+    ob.rotation_euler = (pc - ob.location).to_track_quat("-Z", "Y").to_euler()
+    ob.visible_camera = False
+    ob.visible_diffuse = False
+    recv = bpy.data.collections.new("금박빛_받음")
+    bpy.context.scene.collection.children.link(recv)
+    recv.objects.link(lid)
+    ob.light_linking.receiver_collection = recv
+
+
+def floor_alone():
+    """끝 보강(10-28) 닫힘: 키 · 역광 · 채움 · 보케가 무광 바닥까지 비춰 바탕이 회청색(127 · 146 · 182)으로 떴다 — 연결이 없는
+    빛은 바닥을 빼고(바닥 말고 모든 물체만 받게 — 금가루까지 지은 뒤 부른다), 바닥은 왼쪽 앞 위 넓은 남빛 하나로 고르게
+    (상자 그림자는 그대로 진다). 원본 끝 그림의 고른 진홍 바탕 자리."""
+    sc = bpy.context.scene
+    floor = sc.objects.get("바닥")
+    if floor is None:
+        return
+    rest = bpy.data.collections.new("바닥뺌")
+    sc.collection.children.link(rest)
+    for ob in list(sc.objects):
+        if ob.type == "MESH" and ob is not floor:
+            rest.objects.link(ob)
+    for ob in list(sc.objects):
+        if ob.type == "LIGHT" and ob.light_linking.receiver_collection is None:
+            ob.light_linking.receiver_collection = rest
+    fl = area_light("바닥남빛", (-0.30, -0.30, 1.00), (0.04, 0.02, 0.0), FLOOR_TOP, 1.4, rgb=(0.62, 0.74, 1.0))
+    fl.visible_camera = False
+    only = bpy.data.collections.new("바닥남빛_받음")
+    sc.collection.children.link(only)
+    only.objects.link(floor)
+    fl.light_linking.receiver_collection = only
+
+
+def top_foil_lights(lid):
+    """끝 보강(10-28): 매듭 한 방(SWEEP)에 긴 띠 빛이 비친 자리가 뚜껑 뒤 왼쪽 → 앞 오른쪽(이름 쪽)으로 흐른다(뚜껑 · 리본이 받음).
+    원본 끝 그림은 금박이 번쩍인다 — 늘 비추는 금박빛(foil_light)에 더해 한 번."""
+    if CAMC is None:
+        return
+    cam_loc, _ = cam_pose(CAMC)
+    if SWEEP is None or T is None or not (SWEEP[0] - 0.04 <= T <= SWEEP[1] + 0.04):
+        return
+    x = smooth(SWEEP[0], SWEEP[1], T)
+    d = Vector((math.sqrt(0.5), -math.sqrt(0.5)))           # 뒤 왼쪽 → 앞 오른쪽
+    p = d * (-0.17 + 0.34 * x)                              # 뚜껑 모서리(대각 0.13) 밖에서 밖으로
+    rib = [o for o in bpy.context.scene.objects if o.type == "MESH" and o.name.startswith(("갈래", "매듭", "고리", "꼬리"))]
+    gloss_light("빛줄기", mirror_xy(p, cam_loc, 0.25), TOP + 0.25, SWEEP_E, 0.50, size_y=0.022,
+                angle=math.radians(45), rgb=(1.0, 0.82, 0.52), receivers=[lid] + rib)   # 따뜻하게 — 흰 띠는 금박 이름을 흰 글자로 바꿨다
+
+
+def product_glint():
+    """끝 보강(10-28) 6초: 마지막 유리 한 방(SWEEP)에 제품 뒤 위로 세로 띠 빛이 왼쪽 → 오른쪽으로 지나 금 뚜껑 · 유리에 빛줄기가
+    흐른다(제품만 받음). 6초는 제품 둘이 서자마자 어두워져 끝이 맹했다."""
+    if SWEEP is None or T is None or HERO_X is None or not (SWEEP[0] - 0.04 <= T <= SWEEP[1] + 0.04):
+        return
+    recv = bpy.data.collections.get("제품빛_받음")
+    if recv is None:
+        return
+    # 끝 보강 2(Fable P2-4): S 곡선으로 상자 양옆에서 들어오니 띠가 4.27~4.43초에야 제품 뒤에 닿고 +5~9/255로 안 보였다 —
+    # 앰플(가운데 −4 cm) 뒤에서 곧게 출발해 4.15 앰플 · 4.23 단지 순으로 금 뚜껑에 비치게(카메라 45°의 거울 자리: 뒤 25 cm · 높이 30 cm)
+    k = min(1.0, max(0.0, (T - SWEEP[0]) / (SWEEP[1] - SWEEP[0])))
+    x = HERO_X - 0.05 + 0.40 * k
+    ld = bpy.data.lights.new("제품빛줄기", "AREA")
+    ld.energy = GLINT_E
+    ld.color = (1.0, 0.84, 0.58)
+    ld.shape = "RECTANGLE"
+    ld.size, ld.size_y = 0.06, 0.45
+    ob = link(bpy.data.objects.new("제품빛줄기", ld))
+    ob.location = (x, 0.25, 0.30)
+    ob.rotation_euler = (Vector((x, 0.0, 0.05)) - ob.location).to_track_quat("-Z", "Y").to_euler()
+    ob.visible_camera = False
+    ob.visible_diffuse = False
+    ob.light_linking.receiver_collection = recv
 
 
 def mat_wrap_paper():
@@ -1288,6 +1422,8 @@ def build():
                                           0.16 * K_LID + 0.46 * LID_OUT)))  # 3판: 더 높이 — 떠오르는 제품과 겹치지 않게
         lid.matrix_world = lift @ Matrix.Translation(pivot) @ rot @ Matrix.Translation(-pivot)
     ribbons(mat_satin())
+    if SHOT in ("macro", "open", "top"):
+        foil_light(lid)
     if K_TILT > 0:
         inner = [point_light("속빛", (0, 0.01, 0.075), 1.4 * max(K_TILT, K_LID), (1.0, 0.74, 0.40), radius=0.05)]
         if SHOT == "open" and RISE == 0:  # 앞 벽 안쪽에서 제품 앞면을 비춰 두꺼운 유리 속 흰 크림이 보이게(뚜껑 그늘에 묻혔다)
@@ -1307,6 +1443,8 @@ def build():
             cool2 = area_light("차가운보조2", (HERO_X - 0.34, -0.30, 0.13), (HERO_X, -0.05, 0.03), 9, 0.25, rgb=(0.62, 0.76, 1.0))
             if bpy.data.collections.get("제품빛_받음") is not None:
                 cool2.light_linking.receiver_collection = bpy.data.collections["제품빛_받음"]
+            if FILM == "6":
+                product_glint()
     elif SHOT == "macro":
         # 공단 결빛: 작고 센 빛 하나가 갈래 · 고리 면에 길이 방향 하이라이트 한 줄을 세운다(Fable 2차 P3-4)
         # 3.1판(Fable 3차 P2-1): 작고 센 빛은 실결을 알갱이로 키웠다 — 긴 면광으로 하이라이트 한 줄만
@@ -1333,6 +1471,9 @@ def build():
         # 4판(Fable 움직임 1차 P2-3): 82°로 멈춘 끝 그림에서 빛이 모두 비스듬히 위에서 와 엠보가 평평 — 「서리꽃 에디션」의
         # 서리꽃이 끝 그림에 없었다. 뒤 왼쪽 12° 높이 스침빛 하나(제목의 0.8 — 0.6은 아직 옅었다, 그림자 연결로 나비 그림자는 없다)
         lid_rake(lid, TITLE_RAKE * 0.8, (-0.30, 0.30, TOP + 0.09), (0.0, 0.0, TOP))
+        top_foil_lights(lid)
+        # 끝 보강 2(Fable P2-2 · P3-3): 밝은 흰 판지 · 공단을 AgX가 눌러 금박 S 0.25 · 리본 S 0.27로 옅었다 — 닫힘만 노출 −0.3
+        bpy.context.scene.view_settings.exposure = -0.3
 
 
 def shots():
@@ -1642,7 +1783,9 @@ def gold_dust(sts):
     ev = sts[1]["dust"]
     t1 = sts[1]["t"]
     motes = []
-    if "burst" in ev and t1 >= ev["burst"]:
+    # 끝 보강(10-28): 닫힘에서는 열림 때 바닥에 내려앉은 금가루 더미를 뺀다 — 카메라가 이름에 멎자 화면 아래 40 %를 덮어 상자와
+    # 다퉜다(원본 닫힘 바닥은 몇 알뿐)
+    if "burst" in ev and t1 >= ev["burst"] and SHOT != "top":
         motes += motes_burst(ev["burst"], n=650 if FILM == "15" else 520)
     if "sweep" in ev and ev["sweep"][0] <= t1 <= ev["sweep"][1]:
         motes += motes_sweep(*ev["sweep"]) + motes_lens(*ev["sweep"])
@@ -1712,10 +1855,11 @@ def parse_frames(s, n):
 
 def film_main():
     """움직임표.py의 컷대로 프레임을 하나씩 짓고 굽는다(블렌더 한 번에 여러 프레임, 있는 프레임은 건너뜀)."""
-    global SHOT, RISE, PROD, HERO_X, PRINT_X, RIM_FADE, LID_OUT, T, SAMPLES
+    global SHOT, RISE, PROD, HERO_X, PRINT_X, RIM_FADE, LID_OUT, T, SAMPLES, CAMC, SWEEP
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import 움직임표 as M
     orient = "v" if RES[1] > RES[0] else "h"
+    SWEEP = M.SWEEP.get(FILM)
     d = arg("--out", os.path.join(밖, "움직임", f"{FILM}초_{'세로' if orient == 'v' else '가로'}"))
     os.makedirs(d, exist_ok=True)
     still = M.STILL_FROM[FILM]
@@ -1725,7 +1869,7 @@ def film_main():
         if st["scene"] == "black" or (still is not None and f > still) or (os.path.exists(out) and "--force" not in argv):
             continue
         sts = [M.state(FILM, orient, f, -1.0 / M.FPS), st, M.state(FILM, orient, f, 1.0 / M.FPS)]
-        SHOT, LID_OUT, T = st["scene"], st["lid_out"], st["t"]
+        SHOT, LID_OUT, T, CAMC = st["scene"], st["lid_out"], st["t"], st["cam"]
         set_u(st["u"])
         PROD = {"jar": st["jar"], "amp": st["amp"]}
         HERO_X = st["hero"] if SHOT == "open" else None
@@ -1742,6 +1886,8 @@ def film_main():
         camera_motion([s["cam"] for s in sts])
         product_motion(sts)
         gold_dust(sts)
+        if SHOT == "top":
+            floor_alone()
         sc.render.use_motion_blur = True
         sc.render.motion_blur_shutter = st["shutter"]
         sc.frame_set(1)
