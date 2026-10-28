@@ -3,7 +3,7 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { ITEMS, MN, Msg } from './data';
+import { ITEMS, LOCS, Loc, LocText, MN, Msg } from './data';
 import { CARD, fr, MSGS, T } from './timeline';
 
 const C = {
@@ -29,19 +29,24 @@ const useSpringAt = (t: number, cfg: { damping?: number; stiffness?: number; mas
   return spring({ frame: f - fr(t), fps, config: { damping: 15, stiffness: 180, mass: 0.7, ...cfg } });
 };
 
+// 판별 글(10-28 두 채널 판) — 몽골판은 LOCS.mn = MN · ITEMS 그대로
+const LocCtx = React.createContext<LocText>(LOCS.mn);
+const useL = () => React.useContext(LocCtx);
+
 // ── 위 띠 · 대화 머리 ───────────────────────────────────────────────
 /** 위 띠: 처음엔 「교수님께 처음 문자를 쓸 때」, 다시 쓰기부터 그 아래 규칙 한 줄을 크게 남긴다. */
 const Band: React.FC = () => {
   const s = useSpringAt(T.rule, { damping: 14, stiffness: 190 });
   const on = useCurrentFrame() >= fr(T.rule);
+  const L = useL();
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 430, background: C.coral }}>
-      <div style={{ position: 'absolute', left: 70, width: 830, top: on ? 274 : 284, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: on ? 34 : 54, lineHeight: 1.12, color: C.brown, opacity: on ? 0.75 : 1 }}>
-        {MN.band}
+      <div style={{ position: 'absolute', left: 70, width: 830, top: on ? 274 : 284, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: on ? 34 : L.size.band, lineHeight: 1.12 * L.lh, color: C.brown, opacity: on ? 0.75 : 1 }}>
+        {L.band}
       </div>
       {on ? (
-        <div style={{ position: 'absolute', left: 70, width: 840, top: 326, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 39, lineHeight: 1.06, whiteSpace: 'nowrap', color: '#FFFFFF', opacity: interpolate(s, [0, 0.5], [0, 1], clamp), transform: `scale(${0.85 + 0.15 * s})` }}>
-          {MN.rule}
+        <div style={{ position: 'absolute', left: 70, width: 840, top: 326, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: L.size.rule, lineHeight: 1.06 * L.lh, whiteSpace: 'nowrap', color: '#FFFFFF', opacity: interpolate(s, [0, 0.5], [0, 1], clamp), transform: `scale(${0.85 + 0.15 * s})` }}>
+          {L.rule}
         </div>
       ) : null}
     </div>
@@ -243,6 +248,7 @@ const MongleBadge: React.FC<{ src: string; phase: number; hop?: boolean }> = ({ 
  *  → 흰 카드로 위 띠 · 말풍선의 코랄과 떼고, 까닭 한 줄을 더하고, 글을 키운다. */
 const HookCard: React.FC = () => {
   const s = useSpringAt(T.stamp, { damping: 12, stiffness: 220, mass: 0.6 });
+  const L = useL();
   return (
     <CardShell from={0} to={T.cards[0]} bg="#FFFFFF" instant>
       <div style={{ position: 'absolute', left: 14, top: 100, width: 220, height: 220, borderRadius: 110, background: C.bake, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -250,11 +256,18 @@ const HookCard: React.FC = () => {
       </div>
       <div style={{ position: 'absolute', left: 256, right: 30, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>
         {/* 올릴 파일 시험: 「0~2초 몽골어가 작다」 — 반말 문자의 뜻 줄(36px)은 빼고(캡션에 있음) 제목 · 까닭을 키운다 */}
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 62, lineHeight: 1.03, color: C.red }}>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.hookNo, lineHeight: 1.03 * L.lh, color: C.red, whiteSpace: 'pre-line' }}>
           <span style={{ display: 'inline-block', marginRight: 12, transform: `scale(${0.6 + 0.4 * s})`, opacity: interpolate(s, [0, 0.3], [0, 1], clamp) }}>✕</span>
-          {MN.hookNo}
+          {L.hookNo}
         </div>
-        <div style={{ fontFamily: `${EN.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: 50, lineHeight: 1.06, color: C.brown }}>{MN.hookWhy}</div>
+        <div style={{ fontFamily: `${EN.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: L.size.hookWhy, lineHeight: 1.06 * L.lh, color: C.brown }}>{L.hookWhy}</div>
+        {/* 두 채널 판 v2 시험: 「✕ 두 문장에 번역이 없다」(작은 코랄 줄을 번역으로 못 봄) — 「=」를 붙이고 까닭 줄 가까이 크게 */}
+        {L.hookGloss ? (
+          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: Math.round(L.size.hookWhy * 0.92), lineHeight: 1.1 * L.lh, color: C.brown, whiteSpace: 'pre-line' }}>
+            <span style={{ opacity: 0.45 }}>= </span>
+            {L.hookGloss}
+          </div>
+        ) : null}
       </div>
     </CardShell>
   );
@@ -263,11 +276,13 @@ const HookCard: React.FC = () => {
 const ItemCard: React.FC<{ i: number }> = ({ i }) => {
   const c = T.cards[i];
   const next = i === 1 ? T.reply : i < T.cards.length - 1 ? T.cards[i + 1] : T.end;
-  const it = ITEMS[i];
-  const koS = useSpringAt(c + CARD.ko, { damping: 11, stiffness: 210, mass: 0.6 });
-  const readS = useSpringAt(c + CARD.read);
-  const mnS = useSpringAt(c + CARD.mn, { damping: 11, stiffness: 210, mass: 0.6 });
-  const noteS = useSpringAt(c + CARD.note);
+  const L = useL();
+  const it = L.items[i];
+  const CA = L.cardAt ?? CARD;
+  const koS = useSpringAt(c + CA.ko, { damping: 11, stiffness: 210, mass: 0.6 });
+  const readS = useSpringAt(c + CA.read);
+  const mnS = useSpringAt(c + CA.mn, { damping: 11, stiffness: 210, mass: 0.6 });
+  const noteS = useSpringAt(c + CA.note);
   return (
     <CardShell from={c} to={next} bg="#FFFFFF">
       <MongleBadge src={it.mongle} phase={i * 0.7} hop={i === 2} />
@@ -278,12 +293,12 @@ const ItemCard: React.FC<{ i: number }> = ({ i }) => {
         <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 38, marginTop: 10, color: C.coralShade, opacity: interpolate(readS, [0, 0.5], [0, 1], clamp) }}>[{it.read}]</div>
       </div>
       {/* = 몽골 뜻 */}
-      <div style={{ position: 'absolute', left: 52, right: 30, top: 232, fontFamily: EN, fontWeight: 800, fontSize: 52, lineHeight: 1.06, color: C.brown, opacity: interpolate(mnS, [0, 0.4], [0, 1], clamp), transform: `translateY(${(1 - mnS) * 30}px)` }}>
+      <div style={{ position: 'absolute', left: 52, right: 30, top: 232, fontFamily: EN, fontWeight: 800, fontSize: L.size.mean, lineHeight: 1.06 * L.lh, color: C.brown, opacity: interpolate(mnS, [0, 0.4], [0, 1], clamp), transform: `translateY(${(1 - mnS) * 30}px)` }}>
         <span style={{ opacity: 0.45 }}>= </span>
         {it.mn}
       </div>
       {it.note ? (
-        <div style={{ position: 'absolute', left: 40, top: 300, whiteSpace: 'nowrap', fontFamily: `${KO.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: 42, color: C.mintInk, background: C.mint, borderRadius: 14, padding: '4px 16px 6px', opacity: interpolate(noteS, [0, 0.5], [0, 1], clamp) }}>
+        <div style={{ position: 'absolute', left: 40, top: 300, whiteSpace: 'nowrap', fontFamily: `${L.font ? L.font.replace(', sans-serif', '') + ', SUIT' : KO.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: L.size.note, lineHeight: 1.2 * L.lh, color: C.mintInk, background: C.mint, borderRadius: 14, padding: '4px 16px 6px', opacity: interpolate(noteS, [0, 0.5], [0, 1], clamp) }}>
           {it.note}
         </div>
       ) : null}
@@ -293,7 +308,8 @@ const ItemCard: React.FC<{ i: number }> = ({ i }) => {
 
 /** 답장 카드 — 예의 바르게 쓰니 교수님이 바로 답했다(결과). 몽골어만. */
 const ReplyCard: React.FC = () => {
-  const s2 = useSpringAt(T.reply + 0.45);
+  const s2 = useSpringAt(T.reply + useL().replyGlossAt);
+  const L = useL();
   return (
     <CardShell from={T.reply} to={T.cards[2]} bg={C.mint}>
       <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -301,10 +317,10 @@ const ReplyCard: React.FC = () => {
           <Mongle src="img/mongle_happy.jpg" size={370} hop />
         </div>
         <div style={{ flex: 1, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 66, lineHeight: 1.04, color: C.mintInk }}>
-            {MN.replyTitle} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>🎉</span>
+          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.replyTitle, lineHeight: 1.04 * L.lh, color: C.mintInk, whiteSpace: 'pre-line' }}>
+            {L.replyTitle} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>🎉</span>
           </div>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 54, color: C.brown, opacity: interpolate(s2, [0, 0.5], [0, 1], clamp) }}>{MN.replyGloss}</div>
+          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.replyGloss, lineHeight: 1.1 * L.lh, color: C.brown, whiteSpace: 'pre-line', opacity: interpolate(s2, [0, 0.5], [0, 1], clamp) }}>{L.replyGloss}</div>
         </div>
       </div>
     </CardShell>
@@ -313,6 +329,7 @@ const ReplyCard: React.FC = () => {
 
 const EndCard: React.FC = () => {
   const s2 = useSpringAt(T.end + 0.5);
+  const L = useL();
   return (
     <CardShell from={T.end} to={null} bg={C.bake}>
       <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -320,10 +337,10 @@ const EndCard: React.FC = () => {
           <Mongle src="img/mongle_happy.jpg" size={350} hop />
         </div>
         <div style={{ flex: 1, minWidth: 0, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 56, lineHeight: 1.04, color: C.brown }}>{MN.endQ}</div>
+          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.endQ, lineHeight: 1.04 * L.lh, color: C.brown, whiteSpace: 'pre-line' }}>{L.endQ}</div>
           {/* v1 이해 시험: 끝 카드 아래 글씨가 작고 짧게 지나감 — 키우고 끝 카드를 3.8초로 · 올릴 파일 시험: 셋째 줄(친구에게 보내기)은 캡션으로만 */}
-          <div style={{ alignSelf: 'flex-start', whiteSpace: 'nowrap', background: '#FFFFFF', borderRadius: 18, padding: '8px 16px 10px', fontFamily: EN, fontWeight: 800, fontSize: 40, lineHeight: 1.2, color: C.coralShade, opacity: interpolate(s2, [0, 0.5], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * s2})`, transformOrigin: 'left center' }}>
-            {MN.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
+          <div style={{ alignSelf: 'flex-start', whiteSpace: 'nowrap', background: '#FFFFFF', borderRadius: 18, padding: '8px 16px 10px', fontFamily: EN, fontWeight: 800, fontSize: L.size.endC, lineHeight: 1.2 * L.lh, color: C.coralShade, opacity: interpolate(s2, [0, 0.5], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * s2})`, transformOrigin: 'left center' }}>
+            {L.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
           </div>
         </div>
       </div>
@@ -355,18 +372,20 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => (
-  <AbsoluteFill style={{ backgroundColor: C.paper }}>
-    <Wallpaper />
-    <Chat />
-    <Header />
-    <Band />
-    <HookCard />
-    {ITEMS.map((_, i) => (
-      <ItemCard key={i} i={i} />
-    ))}
-    <ReplyCard />
-    <EndCard />
-    <Sound />
-  </AbsoluteFill>
+export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => (
+  <LocCtx.Provider value={LOCS[loc]}>
+    <AbsoluteFill style={{ backgroundColor: C.paper, ...(LOCS[loc].font ? ({ '--kids-font': LOCS[loc].font } as React.CSSProperties) : {}) }}>
+      <Wallpaper />
+      <Chat />
+      <Header />
+      <Band />
+      <HookCard />
+      {ITEMS.map((_, i) => (
+        <ItemCard key={i} i={i} />
+      ))}
+      <ReplyCard />
+      <EndCard />
+      <Sound />
+    </AbsoluteFill>
+  </LocCtx.Provider>
 );
