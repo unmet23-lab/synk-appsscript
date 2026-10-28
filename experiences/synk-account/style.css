@@ -126,6 +126,7 @@ code{font-size:16px}footer{margin-top:40px;padding-top:24px;font-size:16px;line-
 .town-records-text{min-width:0;overflow-wrap:anywhere;word-break:keep-all}.town-records-actions{display:flex;gap:10px;flex-wrap:wrap}
 .town-records-detail{display:grid;gap:6px;padding:12px 14px;border-radius:14px;background:var(--brand-wash)}.town-records-detail p{margin:0}
 .town-records .link-button,.town-records .plain.link{justify-self:start}
+.town-records button{min-width:44px}
 .portal-confirm .actions .danger-fill{background:none!important;background-color:var(--coral-deep)!important;color:#fff!important;border-radius:14px}
 @media(max-width:700px){
   .profile-head{grid-template-columns:auto minmax(0,1fr)}.profile-actions{grid-column:1/-1;justify-items:stretch}.profile-avatar{width:52px;height:52px;font-size:22px}

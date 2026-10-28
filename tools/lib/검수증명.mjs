@@ -181,12 +181,13 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   // 일반 정책·검수 원문·SHA 사슬·P0/P1 처리·배포 바이트 검사는 그대로다.
   if (o.담당예외 != null) {
     const source = p => /^experiences\/korean-study\//.test(p)
-      || /^experiences\/synk-account\/(?:src\/(?:client|study-login)\.mjs|dist\/client\.js|build-manifest\.json)$/.test(p)
+      || /^experiences\/synk-account\/qa\/study-town-style-20261028\/[a-z0-9-]+\.mjs$/.test(p)
+      || /^experiences\/synk-account\/(?:src\/(?:client|study-login)\.mjs|dist\/client\.js|build-manifest\.json|style\.css|client\.html)$/.test(p)
       || /^(?:atlas\/learning\.js|experiences\/[^/]+\/atlas-learning\.js|experiences\/synk-world-app\/world-account\.bundle\.mjs|experiences\/brand-opening\/content\/life-standalone\.mjs)$/.test(p)
       || /^(?:docs\/(?:_ops\/(?:결정\.md|트랙\.md|몽골어검문\.jsonl|관문_자동화\.md)|아틀라스_설계\.md|아틀라스_구현명세\.md|미니게임_TOPIK_I_학습기준\.md)|tests\/(?:atlas-learning\.test\.js|atlas-size-budget\.test\.js|검수담당예외\.test\.mjs)|tools\/(?:검수묶음\.mjs|lib\/검수증명\.mjs))$/.test(p)
       || /^(?:lib\/(?:study-writing-feedback|world-writing-runtime)\.js|tests\/(?:study-writing|world-writing)\.test\.js|supabase\/functions\/world-writing\/동봉\.json|docs\/study-semantic\.md)$/.test(p);
     const validPath=p=>typeof p==='string'&&!p.includes('\\')&&!p.includes(':')&&!p.split('/').some(x=>!x||x==='.'||x==='..');
-    const publish = p => /^study\//.test(p) || ['account/client.js','account/dist/client.js','account/client.html'].includes(p);
+    const publish = p => /^study\//.test(p) || ['account/client.js','account/dist/client.js','account/client.html','account/style.css'].includes(p);
     if (o.담당예외 !== 'topik-writing-semantic-20261028' || o.작성자 !== 'GPT' || !['화면','백엔드'].includes(o.종류)
       || o.사용자지정 || o.예외 || o.페이블생략 || o.GPT구독 && o.GPT구독 !== '유지'
       || !files.length || files.some(f => f.상태 === 'D' || !validPath(f.경로) || !source(f.경로))
