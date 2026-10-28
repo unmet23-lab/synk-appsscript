@@ -74,6 +74,15 @@ test('보관 날수는 판 하나 — 계약의 보관 문구 셋과 생성물�
   assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'experiences', 'synk-town', 'day-notebook.mjs'), 'utf8'), /\d+일이 지나면/, '수첩은 계약 문구(EVAL_CONSENT.easy.keep)를 쓴다');
 });
 
+test('방문 줄의 열쇠는 주간 묶음(talk 20261029040000)이 세는 목록 안이다 — did는 card.<카드 id>, 본 것은 SEEN_KINDS 여섯(10-29 W6d)', async () => {
+  // 주간 묶음은 이 목록 밖의 열쇠를 건너뛰고 그 수만 남긴다 — 엔진이 갈래·열쇠를 더하면 talk 조각의 허용 목록도 같은 변경에서 고친다.
+  const { SEEN_KINDS } = await townModule('seen'), { CARDS } = await townModule('data.gen');
+  assert.deepEqual([...SEEN_KINDS], ['line', 'card', 'pair', 'scene', 'tea', 'gather'], 'newSeen·seenTotal 허용 목록과 같다');
+  const source = fs.readFileSync(path.join(TOWN, 'eval.mjs'), 'utf8');
+  assert.deepEqual([...source.matchAll(/\bdid = add\(did, ([^)]*)\)/g)].map(m => m[1]), ['`card.${take.card}`'], 'did 열쇠를 만드는 곳은 카드 하나');
+  for (const card of CARDS) assert.match(`card.${card.id}`, /^card\.[A-Za-z0-9_-]{1,40}$/, card.id);
+});
+
 test('평가 줄 쓰기가 실패해도 그 요청이 센 것은 기다렸다가 다음 요청의 줄에 그대로 든다(GPT 검수 GA5)', async () => {
   const { createStore } = await import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'server.mjs')).href);
   const e = await townModule('eval');
