@@ -28,6 +28,8 @@
 .tea-pick:focus-visible,.tea-slot:focus-visible,.tea-note:focus-visible,.tea-fold:focus-visible,.tea-ask:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
 .tea-jar-body{display:block;width:26px;height:32px;border-radius:7px 7px 9px 9px;background:linear-gradient(180deg,rgba(255,255,255,.35) 0 18%,var(--tea) 18% 100%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 .tea-jar[aria-pressed=true] .tea-jar-body{transform:rotate(-14deg)}
+/* The tea of the day the player gave (W8b) under 「오늘의 차」 — its name small, the jar in its colour. */
+.tea-jar-sub{display:block;max-width:84px;color:var(--w-ink-3);font-size:11px;font-weight:var(--wt-label);line-height:1.2;text-align:center}
 .tea-honey-pot{position:relative;display:block;width:30px;height:28px;border-radius:12px 12px 14px 14px;background:#d9a23a;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
 .tea-honey-pot::after{content:'';position:absolute;left:50%;top:-8px;width:4px;height:16px;border-radius:2px;background:#cfc6b4;transform:translateX(-50%) rotate(18deg)}
 .tea-honey[data-honey="1"] .tea-honey-pot::before,.tea-honey[data-honey="2"] .tea-honey-pot::before{content:'';position:absolute;right:-6px;top:-4px;width:8px;height:8px;border-radius:50%;background:#f3c45a}

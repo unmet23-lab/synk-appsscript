@@ -1,5 +1,5 @@
 {
-  "$comment": "Places and spots, one list (vertical slice design §5). Coordinates are town meters. Spots marked measured:false are invisible anchors placed by reading the 3D layout; check them in 3D when residents first use them (W3). legacy2d is the old 2D cafe screen (percent). area names the region a place is loaded with — one region in memory at a time (§20-9); this slice is all cafe-alley. Gather spots are the player's (§20-8) and residents never plan into them.",
+  "$comment": "Places and spots, one list (vertical slice design §5). Coordinates are town meters. Spots marked measured:false are invisible anchors placed by reading the 3D layout; check them in 3D when residents first use them (W3). legacy2d is the old 2D cafe screen (percent). area names the region a place is loaded with — one region in memory at a time (§20-9); this slice is all cafe-alley. Gather spots are the player's (§20-8) and residents never plan into them; they were measured in the baked town (W8b) — the left bed's edge, the herb pot hung on the cafe's left pier, the foot of the workshop's side wall in the lane — each beyond a place's talk reach, so E opens the board there.",
   "places": [
     { "id": "home", "area": "cafe-alley", "player": true, "labels": { "text": "집", "scene": "우리 집", "map": "나의 집" }, "center": { "x": -6, "z": 0 }, "spawn": { "x": -6, "z": 1.7 } },
     { "id": "cafe", "area": "cafe-alley", "player": true, "labels": { "text": "찻집", "scene": "찻집", "map": "찻집" }, "center": { "x": 0, "z": 0 }, "spawn": { "x": 0, "z": 2.5 } },
@@ -29,9 +29,9 @@
     { "id": "greenhouse.board", "place": "greenhouse", "kind": "display", "capacity": 1, "sheltered": true, "owner": "researcher", "at": { "x": 0.3, "z": -6 }, "measured": true },
     { "id": "greenhouse.bench", "place": "greenhouse", "kind": "sit", "capacity": 1, "sheltered": true, "owner": "researcher", "at": { "x": 1.3, "z": -5.3 }, "measured": false },
     { "id": "greenhouse.door", "place": "greenhouse", "kind": "stand", "capacity": 2, "sheltered": false, "owner": "public", "at": { "x": 0, "z": -4.6 }, "measured": false },
-    { "id": "greenhouse.bed-edge", "place": "greenhouse", "kind": "gather", "capacity": 1, "sheltered": true, "owner": "player", "at": { "x": -0.9, "z": -6.6 }, "measured": false },
-    { "id": "cafe.pots", "place": "cafe", "kind": "gather", "capacity": 1, "sheltered": false, "owner": "player", "at": { "x": -1.5, "z": 2.2 }, "measured": false },
-    { "id": "lane.wall", "place": "lane", "kind": "gather", "capacity": 1, "sheltered": false, "owner": "player", "at": { "x": 3.6, "z": 3.1 }, "measured": false }
+    { "id": "greenhouse.bed-edge", "place": "greenhouse", "kind": "gather", "capacity": 1, "sheltered": true, "owner": "player", "at": { "x": -0.9, "z": -6.6 }, "measured": true },
+    { "id": "cafe.pots", "place": "cafe", "kind": "gather", "capacity": 1, "sheltered": false, "owner": "player", "at": { "x": -1.67, "z": -1.47 }, "measured": true },
+    { "id": "lane.wall", "place": "lane", "kind": "gather", "capacity": 1, "sheltered": false, "owner": "player", "at": { "x": 4, "z": -1.3 }, "measured": true }
   ],
   "groups": {
     "cafe.seats": ["cafe.garden", "cafe.garden-right", "cafe.eaves-left", "cafe.eaves-right"],

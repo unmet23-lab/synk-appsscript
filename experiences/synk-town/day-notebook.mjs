@@ -4,15 +4,19 @@
  * the village remembers (what the player did today with its 「…」 feedback, what each resident knows of things done
  * together with 「잊어 주세요」, the settings the village keeps for the player — W6: filling the spots at the time the player
  * usually comes — the evaluation-only signals' consent (W6) and emptying the personal record) and the
- * field book (opens with gathering, W8b). Every change goes through the town's own commands (§20 — rights and base);
+ * field book (W8b: each thing gathered once shows its picture, name and line; the rest their silhouette and when they are
+ * found — no count, no share). Every change goes through the town's own commands (§20 — rights and base);
  * nothing here counts, dates or ranks (G2·G3). Screen-only module. The rows of what the village remembers and of the familiar
  * life come from town/records.mjs, which the account screens' 「마을 기록」 card reads too (W6c — the same rules there).
  */
 import * as generated from './town/data.gen.mjs';
 import { CARD_BY_ID, NAMES, lineText, newsLine, takeable, FEEDBACK, iconSvg } from './day-cards.mjs';
 import { ACTIVITY_LABELS, DETAIL_ROWS, activityLabel, evalRecord, familiarOf, knownOf, settingsOf } from './town/records.mjs';
+import { bookCells, itemPicture } from './day-gather.mjs';
 
 export const PAGES = Object.freeze([['news', '마을 소식'], ['can', '할 수 있는 생활'], ['familiar', '익숙한 생활'], ['memory', '마을이 기억하는 것'], ['book', '도감']]);
+// The gathering loop's things done with the cafe owner on a life day (W8b, design review F5): picked beside her, the day's gift.
+const GATHER_DAY = Object.freeze([['with', '찻집 주인과 잎 따기'], ['given', '찻집 주인에게 잎 드리기']]);
 export { activityLabel };
 
 /** The pages' content from a town answer ({ state, view, seen }). */
@@ -29,9 +33,16 @@ export function notebookModel(snapshot) {
   // The tea order's one thing done together today (W8, §11-6) — the day's event, with the same 「…」.
   const teaDay = state.activities?.['tea-order']?.day;
   if (teaDay?.together && lifeDay !== null && teaDay.lifeDay === lifeDay) today.push({ eventId: teaDay.together, card: null, title: ACTIVITY_LABELS['tea-order'], activity: 'tea-order', given: given.get(teaDay.together) ?? null });
+  // Gathering's (W8b): a gift that settled 「잎 통이 비어 가요」 is that card's row already, so it is not written twice.
+  const gatherDay = state.activities?.gather?.day;
+  if (gatherDay && lifeDay !== null && gatherDay.lifeDay === lifeDay) for (const [key, title] of GATHER_DAY) {
+    const id = gatherDay[key]; if (id && !today.some(t => t.eventId === id)) today.push({ eventId: id, card: null, title, activity: 'gather', given: given.get(id) ?? null });
+  }
   const journal = [...new Set([...(snapshot?.view?.notebook || []), ...(snapshot?.view?.day?.history || []).map(row => row.summary), ...(snapshot?.view?.bazaar?.history || []).map(row => row.summary)].filter(Boolean))];
   const known = knownOf(scene?.knownMe), settings = settingsOf(state);
-  return { news, can, familiar, today, journal, known, settings, evalRecord: evalRecordOf(snapshot) };
+  // The field book (W8b): from the ledger's first finds — none where the host has no gathering yet.
+  const book = snapshot?.view?.gather ? bookCells(snapshot.view.gather.book) : null;
+  return { news, can, familiar, today, journal, known, settings, evalRecord: evalRecordOf(snapshot), book };
 }
 
 /** 「마을을 낫게 하는 데 쓰는 기록」 (§20-4·§20-5, W6): shown where the host keeps the evaluation-only signals; where it does
@@ -134,7 +145,11 @@ export function createNotebook(dialog, { command, onPage } = {}) {
       evalSection(m.evalRecord),
       h('h3', { text: '맞춤 기록 모두 비우기' }), h('p', { class: 'field-note', text: '요즘 자주 한 생활, 남긴 응답, 본 것 기록을 비워요. 직접 정한 설정과 마을의 일은 그대로예요.' }),
       clearRow('MEMORY_CLEAR', '비우기', '맞춤 기록을 모두 비울까요?'));
-    else content = empty('마을에서 모은 것을 적는 쪽이에요. 모으기가 열리면 여기에 하나씩 쌓여요.');
+    else if (!m.book) content = empty('마을에서 모은 것을 적는 쪽이에요. 모으기가 열리면 여기에 하나씩 쌓여요.');
+    else content = h('div', {}, h('p', { class: 'field-note', text: '마을에서 처음 모은 것이 그림으로 남아요.' }),
+      h('ul', { class: 'notebook-book' }, m.book.map(c => h('li', { class: `book-cell${c.found ? ' found' : ''}` },
+        h('span', { class: 'book-pic', html: itemPicture(c.item, { silhouette: !c.found }) }),
+        h('span', { class: 'book-words' }, h('strong', { text: c.name }), h('span', { class: 'notebook-sub', text: c.text }))))));
     body.replaceChildren(content);
     body.setAttribute('aria-labelledby', `notebook-tab-${page}`);
     const want = focusNext ?? had; focusNext = null;

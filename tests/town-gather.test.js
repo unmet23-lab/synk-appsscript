@@ -13,7 +13,7 @@ const load = file => import(pathToFileURL(path.join(ROOT, 'experiences', 'synk-t
 const TZ = 540, MIN = 60000, HOUR = 60 * MIN, DAY = 24 * HOUR;
 const kst = (month, day, h, m = 0) => Date.UTC(2026, month - 1, day, h - 9, m);
 const MORNING = kst(10, 23, 9, 30);   // 2026-10-23 09:30 KST — morning band, autumn
-const BED = { x: -0.9, z: -6.6 }, POTS = { x: -1.5, z: 2.2 }, WALL = { x: 3.6, z: 3.1 };
+const BED = { x: -0.9, z: -6.6 }, POTS = { x: -1.67, z: -1.47 }, WALL = { x: 4, z: -1.3 };
 
 /** A world at a time, the player walking, commands sent straight to the reducer (the store settled it at that time). */
 async function world({ at = MORNING, seed = 'acct-gather' } = {}) {

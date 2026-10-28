@@ -17,8 +17,9 @@ const RESIDENT_IDS = Object.freeze(RESIDENTS.map(resident => resident.id));
 export const RESIDENT_NAMES = Object.freeze({ 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' });
 export const FEEDBACK_WORDS = Object.freeze([['helpful', '좋았어요'], ['not_fit', '안 맞았어요'], ['too_much', '많았어요'], ['want_more', '더 하고 싶어요']]);
 export const FAMILY_LABELS = Object.freeze({ 'cafe-life': '찻집 생활', 'workshop-life': '공방 생활', 'greenhouse-life': '온실 생활', gather: '모으기' });
-// The life activities by name (W8: the tea order — 「찻집 주문」 as the player's thing done, 「찻집 일」 as what the owner remembers).
-export const ACTIVITY_LABELS = Object.freeze({ 'tea-order': '찻집 주문' }), ACTIVITY_MEMORY_LABELS = Object.freeze({ 'tea-order': '찻집 일' });
+// The life activities by name (W8: the tea order — 「찻집 주문」 as the player's thing done, 「찻집 일」 as what the owner remembers;
+// W8b: gathering — 「잎 모으기」 both ways, picked beside the cafe owner or given to her).
+export const ACTIVITY_LABELS = Object.freeze({ 'tea-order': '찻집 주문', gather: '잎 모으기' }), ACTIVITY_MEMORY_LABELS = Object.freeze({ 'tea-order': '찻집 일', gather: '잎 모으기' });
 // The consent's whole text under 「자세히」, row by row (the contract's detail keys).
 export const DETAIL_ROWS = Object.freeze([['purpose', '무엇을 위해'], ['uses', '쓰는 것'], ['notUsed', '쓰지 않는 것'], ['keep', '보관'], ['choose', '고르기'], ['notAsked', '묻지 않는 경우'], ['contact', '문의']]);
 const CARD_BY_ID = new Map(CARDS.map(card => [card.id, card]));

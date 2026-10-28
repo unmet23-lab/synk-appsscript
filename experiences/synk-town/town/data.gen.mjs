@@ -30,9 +30,9 @@ const data = freeze({
     {"id":"greenhouse.board","place":"greenhouse","kind":"display","capacity":1,"sheltered":true,"owner":"researcher","at":{"x":0.3,"z":-6},"measured":true},
     {"id":"greenhouse.bench","place":"greenhouse","kind":"sit","capacity":1,"sheltered":true,"owner":"researcher","at":{"x":1.3,"z":-5.3},"measured":false},
     {"id":"greenhouse.door","place":"greenhouse","kind":"stand","capacity":2,"sheltered":false,"owner":"public","at":{"x":0,"z":-4.6},"measured":false},
-    {"id":"greenhouse.bed-edge","place":"greenhouse","kind":"gather","capacity":1,"sheltered":true,"owner":"player","at":{"x":-0.9,"z":-6.6},"measured":false},
-    {"id":"cafe.pots","place":"cafe","kind":"gather","capacity":1,"sheltered":false,"owner":"player","at":{"x":-1.5,"z":2.2},"measured":false},
-    {"id":"lane.wall","place":"lane","kind":"gather","capacity":1,"sheltered":false,"owner":"player","at":{"x":3.6,"z":3.1},"measured":false},
+    {"id":"greenhouse.bed-edge","place":"greenhouse","kind":"gather","capacity":1,"sheltered":true,"owner":"player","at":{"x":-0.9,"z":-6.6},"measured":true},
+    {"id":"cafe.pots","place":"cafe","kind":"gather","capacity":1,"sheltered":false,"owner":"player","at":{"x":-1.67,"z":-1.47},"measured":true},
+    {"id":"lane.wall","place":"lane","kind":"gather","capacity":1,"sheltered":false,"owner":"player","at":{"x":4,"z":-1.3},"measured":true},
   ],
   groups: {"cafe.seats":["cafe.garden","cafe.garden-right","cafe.eaves-left","cafe.eaves-right"],"cafe.eaves":["cafe.eaves-left","cafe.eaves-right"],"cafe.outside":["cafe.garden","cafe.garden-right"]},
   archetypes: [

@@ -14,6 +14,7 @@ import * as generated from './town/data.gen.mjs';
 import { start, input, finish, previewCups, lineWords, keyWords, easier, VALUES } from './town/activities/tea-order.mjs';
 import { createTeaSfx } from './day-sfx.mjs';
 import { SPOT_BY_ID } from './town/places.mjs';
+import { todayTeaWords, todayTeaColor, lineWords as gatherLine } from './day-gather.mjs';
 
 const TEA = generated.TEA ?? null;
 const LINES = new Map([...(generated.TOWN_LINES || [])].map(line => [line.id, line]));
@@ -23,7 +24,7 @@ const CUP_NAMES = Object.freeze({ warm: '따뜻한 잔', cold: '찬 잔' });
 const SPOONS = Object.freeze(['꿀 없이', '꿀 한 숟가락', '꿀 두 숟가락']);
 const KEYS = Object.freeze({ Digit1: ['cup', 'warm'], Digit2: ['cup', 'cold'], Digit3: ['pour', 'barley'], Digit4: ['pour', 'yuzu'], Digit5: ['pour', 'today'],
   Numpad1: ['cup', 'warm'], Numpad2: ['cup', 'cold'], Numpad3: ['pour', 'barley'], Numpad4: ['pour', 'yuzu'], Numpad5: ['pour', 'today'] });
-const REACT_MS = 450, NEAR_GUEST = 1.6;
+const REACT_MS = 450, NEAR_GUEST = 1.6, FOUND_MS = 6000;
 // The hand actions that change the board's cup — done only at the cafe (picking up, putting down and serving go anywhere).
 const BOARD_ACTIONS = new Set(['cup', 'pour', 'honey', 'done', 'empty', 'place']);
 const el = (tag, props = {}, ...children) => { const node = Object.assign(document.createElement(tag), props); node.append(...children.filter(c => c !== null && c !== undefined)); return node; };
@@ -90,6 +91,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   const sound = (name, opts) => { if (sfx.play(name, opts)) { played.push(name); if (played.length > 40) played.shift(); return true; } return false; };
   let order = null, tea = null, hand = null, ctx = {}, folded = false, simple = readSimple(reduced.matches), inflight = false, opener = null, disposed = false;
   let listen = {}, reacts = {}, padPrev = {}, jarIndex = 0, feedbackOpen = false, lastSig = '', lastAnnounce = '', placedBoardH = -1;
+  // The owner's 「손님이 오늘의 차를 찾았어요」 (W8b): once an order, from the moment its 「오늘의 차」 guest is heard.
+  let foundAt = { order: null, at: 0 };
   // The control to give the keys back to once its part is drawn again (its data-focus key — review A3, as the notebook does).
   let focusNext = null;
 
@@ -141,7 +144,7 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   simpleSwitch.setAttribute('role', 'switch'); simpleSwitch.setAttribute('aria-describedby', 'tea-simple-note');
   simpleSwitch.addEventListener('click', () => { simple = !simple; writeSimple(simple); paintSimpleSwitch(); render(true); });
   settings?.append(el('fieldset', { className: 'sound-settings tea-settings' }, el('legend', { textContent: '찻집 주문' }), simpleSwitch,
-    el('p', { className: 'field-note', id: 'tea-simple-note', textContent: '손으로 담는 대신 다 만든 잔 가운데 하나를 골라 내요. 이 기기에 기억해요.' })));
+    el('p', { className: 'field-note', id: 'tea-simple-note', textContent: '손으로 담는 대신 다 만든 잔 가운데 하나를 골라 내요. 잎은 「바로 따기」로 따요. 이 기기에 기억해요.' })));
   function paintSimpleSwitch() { simpleSwitch.setAttribute('aria-checked', String(simple)); simpleSwitch.querySelector('.stay-switch-state').textContent = simple ? '켜짐' : '꺼짐'; }
   paintSimpleSwitch();
 
@@ -312,7 +315,8 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     const label = `${ctx.inputMode === 'gamepad' ? 'Y · ' : ctx.inputMode === 'touch' ? '' : 'T · '}주문 같이 받기`; if (openWalk.textContent !== label) openWalk.textContent = label; openPanel.disabled = ctx.busy || inflight; openWalk.disabled = ctx.busy || inflight;
     panel.hidden = !(entry && (!ctx.walking || ctx.panel));
     const holding = !!o && hand?.hand !== null && hand?.hand !== undefined && !!hand?.tray?.[hand.hand];
-    const sig = JSON.stringify([o, hand, folded, simple, inflight, ctx.busy, ctx.location, ctx.connected, ctx.seated, listen, Object.keys(reacts), feedbackOpen, tv?.together, tv?.nextFirst]);
+    const sig = JSON.stringify([o, hand, folded, simple, inflight, ctx.busy, ctx.location, ctx.connected, ctx.seated, listen, Object.keys(reacts), feedbackOpen, tv?.together, tv?.nextFirst, ctx.today,
+      foundAt.order === o?.id && performance.now() - foundAt.at < FOUND_MS]);
     if (!force && sig === lastSig) return; lastSig = sig;
     const focused = document.activeElement, had = isOwn(focused) ? focused.closest('[data-focus]')?.dataset.focus ?? null : null;
     document.body.classList.toggle('tea-mode', show && !folded);
@@ -366,6 +370,14 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     const b = hand?.board || { vessel: null, tea: null, honey: 0 }, can = !off && atMaking();
     for (const button of cupButtons) { button.setAttribute('aria-pressed', String(b.vessel === button.dataset.vessel)); button.disabled = !can; }
     for (const button of jarButtons) { button.setAttribute('aria-pressed', String(b.tea === button.dataset.tea)); button.disabled = !can; }
+    // The third jar shows the tea of the day the player gave (W8b): its name under 「오늘의 차」 and its colour.
+    const todayJar = jarButtons.find(button => button.dataset.tea === 'today'), words = todayTeaWords(ctx.today);
+    if (todayJar) {
+      let sub = todayJar.querySelector('.tea-jar-sub');
+      if (words) { if (!sub) { sub = el('span', { className: 'tea-jar-sub' }); todayJar.append(sub); } if (sub.textContent !== words) sub.textContent = words; } else sub?.remove();
+      todayJar.style.setProperty('--tea', todayTeaColor(ctx.today) || teaColor('today'));
+      todayJar.setAttribute('aria-label', words ? `오늘의 차 — ${words}` : '오늘의 차');
+    }
     honeyButton.disabled = !can; honeyButton.dataset.honey = String(b.honey); honeyButton.setAttribute('aria-label', `꿀 넣기 — 지금 ${SPOONS[b.honey]}`);
     paintCup(mug, b); mug.dataset.empty = String(!b.vessel);
   }
@@ -440,6 +452,14 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
       if (open && (hand?.heard?.[g.slot] || first?.slot === g.slot)) { listen[g.slot] = { ...(listen[g.slot] || { level: o.level, repeat: 0, slow: null }), open: true }; nodes.push(bubbleFor(g)); const shown = hand?.heard?.[g.slot] && g.note ? g.note : g.frame; if (shown) noteSeen([`tea:${shown}`], `${o.id}:${g.slot}:${shown}`); }
       else if (reacts[g.slot] && g.react?.line) nodes.push(reactBubble(o, g, g.react));
       if (g.owner === 'asked') nodes.push(ownerBubble(o, g, off));
+    }
+    // A guest asked for the tea of the day the player gave (W8b, design review F6): the owner says so once, over her head.
+    const asking = o.found ? o.guests.find(g => g.request?.tea === 'today') : null;
+    if (asking && hand?.heard?.[asking.slot] && foundAt.order !== o.id) { foundAt = { order: o.id, at: performance.now() }; setTimeout(() => render(true), FOUND_MS + 30); }
+    if (foundAt.order === o.id && performance.now() - foundAt.at < FOUND_MS) {
+      const words = gatherLine('cafe-owner.gather.found.1', o.level || 'L2');
+      if (words) { const card = el('div', { className: 'tea-bubble tea-react' }, el('p', { className: 'tea-who', textContent: '찻집 주인' }), el('p', { className: 'tea-words', textContent: words }));
+        card.dataset.slot = 'found'; card.dataset.anchor = 'cafe-owner'; card.setAttribute('role', 'status'); nodes.push(card); }
     }
     bubbles.replaceChildren(...nodes);
     for (const b of bubbles.querySelectorAll('button')) { b.dataset.sound = 'none'; if (off) b.disabled = true; }

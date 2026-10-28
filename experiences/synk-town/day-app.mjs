@@ -16,6 +16,8 @@ import { createMeanwhile } from './day-meanwhile.mjs';
 import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
 import { createTeaBoard, teaGuests } from './day-tea.mjs';
+import { createGatherBoard, REFUSALS as GATHER_REFUSALS, jarFillers, itemName as gatherItemName } from './day-gather.mjs';
+import { paramsFor } from './town/params.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -25,6 +27,8 @@ const sound = createTownSound({ surfaceId });
 let stay = null, stayPoint = null, villageWalking = false, appTimer = 0, lightPaintedAt = 0, seatedRetry = 0, walkWarm = true;
 // The tea order's board (W8): guests' words, the hand's board and the cup in hand — day-tea.mjs.
 let tea = null;
+// The gathering board (W8b): the spots' sparkles, the branch and the basket, giving to the cafe owner — day-gather.mjs.
+let gather = null;
 const unlockSound = () => sound.unlock();
 addEventListener('pointerdown', unlockSound, { capture: true, passive: true }); addEventListener('keydown', unlockSound, true);
 // A touch's pointerdown is no user activation: phones (iPhones above all) let the sound start only in touchend or click.
@@ -99,7 +103,9 @@ function applyWalkView(force = false) {
   if (walkPanel && place !== snapshot?.view.day.location) dismissWalkPanel();
   // Walking can update at display refresh rate. Rewrite the HUD only when its
   // meaning changes, rather than repeating DOM mutations between each step.
-  const signature = [enabled, walkPanel, place, busy, connected, walkInputMode, snapshot?.view.day.location].join('|');
+  // By a gathering spot E opens the board (W8b): the talk button then shows no key of its own.
+  const gatherKey = !!gather?.holdsKey?.();
+  const signature = [enabled, walkPanel, place, busy, connected, walkInputMode, snapshot?.view.day.location, gatherKey].join('|');
   if (!force && signature === walkViewSignature) return;
   walkViewSignature = signature;
   document.body.classList.toggle('walk-mode', enabled); document.body.classList.toggle('walk-engaged', enabled && walkPanel);
@@ -109,7 +115,7 @@ function applyWalkView(force = false) {
   const button = $('walk-interact');
   text('scene-badge', place ? names[place] : '동네 산책');
   button.disabled = !place || busy || !connected;
-  text('walk-interact', place ? `${walkInputMode === 'touch' ? '' : walkInputMode === 'gamepad' ? 'A · ' : 'E · '}${place === 'home' ? '집 살펴보기' : `${names[place]}에서 이야기하기`}` : '가까이 가면 이야기해요');
+  text('walk-interact', place ? `${walkInputMode === 'touch' || gatherKey ? '' : walkInputMode === 'gamepad' ? 'A · ' : 'E · '}${place === 'home' ? '집 살펴보기' : `${names[place]}에서 이야기하기`}` : '가까이 가면 이야기해요');
   text('walk-status', place ? `${names[place]} 앞이에요. 원할 때 이야기해요.` : '길을 따라 걸어 보세요.');
   text('walk-help', walkInputMode === 'gamepad' ? '왼쪽 스틱 · 방향 패드 이동 / A 이야기 / X 앉기 / B 닫기' : walkInputMode === 'touch' ? '조이스틱으로 걷고, 가까이 가면 이야기해요' : 'WASD · 방향키로 걷기 / E 이야기 / F 앉기 / Esc 닫기');
 }
@@ -137,7 +143,18 @@ function teaContext() {
   const ownerAwake = !!(v && Number.isSafeInteger(at) && placeAt(v.segments, 'cafe-owner', Math.min(v.band.endMs - 1, Math.max(v.nowMs, at)), v.startSpots));
   return { walking: walking(), panel: walkPanel, location: walking() ? nearby(walk.point) : snapshot?.view.day?.location ?? null, point: walk.point, connected, busy, inputMode: walkInputMode,
     seated: !!stay?.active(), ownerAwake, cafeBusy: bazaarActive() || dayActive() || !!snapshot?.state.life?.episode?.open || v?.take?.status === 'with',
-    ownerPlace: spot.split('.')[0] || null, take: v?.take ?? null, feedback: snapshot?.state.prefs?.feedback || [] };
+    ownerPlace: spot.split('.')[0] || null, take: v?.take ?? null, feedback: snapshot?.state.prefs?.feedback || [],
+    // The tea of the day the player gave (W8b): the third jar's name and colour under 「오늘의 차」.
+    today: snapshot?.view.gather?.today ?? null };
+}
+/** What the gathering board needs (W8b): where the player walks, whether the town takes its commands now, what else is on
+ * the screen (a dialog, the place's panel, the seat, the tea board or its folded pieces), the life day, and the cafe owner
+ * at the server's time (leaves are given where she stands — design review F1). */
+function gatherContext() {
+  const v = snapshot?.view.day?.scene?.village, at = v ? villageRows(v).places['cafe-owner'] : null;
+  return { walking: walking(), point: walk.point, connected, busy, seated: !!stay?.active(), dialog: !!document.querySelector('dialog[open]'), panel: walkPanel,
+    teaShown: document.body.classList.contains('tea-mode') || document.body.classList.contains('tea-folded'), inputMode: walkInputMode,
+    lifeDay: snapshot?.state.village?.band?.lifeDay ?? null, owner: at ? { up: true, x: at.x, z: at.z, walking: !!at.walking } : v ? { up: false } : null };
 }
 function reconcileWalk() {
   if (!walking()) return;
@@ -159,8 +176,10 @@ async function flushWalk(force = false) {
 }
 async function interactWalk() {
   if (!walking() || busy || !connected) return;
-  // E · A at the tea board: serve the guest the player stands by, or 「다 됐어요」 (review F7) — else the walk's talk.
+  // E · A at the tea board: serve the guest the player stands by, or 「다 됐어요」 (review F7) — then the gathering board
+  // (a leaf, or opening it by a spot — W8b) — else the walk's talk.
   if (tea?.interact()) return;
+  if (gather?.interact()) return;
   if (walkPanel) { const action = $('nearby-panel').querySelector('button[data-command]:not(:disabled)'); if (action) action.click(); return; }
   walkControls?.stop(); await flushWalk(true); const place = nearby(walk.point); if (!place) return;
   if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; placeOpens++; applyWalkView(); renderCards(); }
@@ -170,7 +189,7 @@ function walkFrame(now) {
   const due = walk.step(now, walkControls.read(), walkWarm);
   renderer?.setPlayerPose?.(walk.pose()); paintMap(nearby(walk.point));
   if (due) flushWalk();
-  applyWalkView(); stay?.update(stayContext()); tea?.update(snapshot.view.tea, teaContext());
+  applyWalkView(); stay?.update(stayContext()); tea?.update(snapshot.view.tea, teaContext()); gather?.update(snapshot.view.gather, gatherContext());
 }
 
 function text(id, value = '') { if ($(id).textContent !== value) $(id).textContent = value; }
@@ -185,7 +204,7 @@ function available() { return connected && snapshot?.capabilities?.day === true;
 function setBusy(value) {
   busy = value; $('day-app').setAttribute('aria-busy', String(value));
   for (const b of document.querySelectorAll('[data-command], [data-destination], [data-mode], #life-open, #life-contact-open, #life-resume')) b.disabled = value || !available() || b.dataset.unavailable === 'true';
-  stay?.update(stayContext()); if (snapshot) tea?.update(snapshot.view.tea, teaContext());
+  stay?.update(stayContext()); if (snapshot) { tea?.update(snapshot.view.tea, teaContext()); gather?.update(snapshot.view.gather, gatherContext()); }
 }
 // state and command answer with the whole town; pulse and boundary with a few fields (vertical slice §14-3, F11).
 // The old heartbeat (presence) answers the whole town like a read — without worldSeq on an account's town.
@@ -202,7 +221,7 @@ async function request(path, body) {
   }
   const response = await fetch(`/api/preview/${path}`, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' } : { cache: 'no-store' });
   const result = await response.json();
-  if (!response.ok || !answered(path, result)) throw Object.assign(new Error(result.message || '첫 하루를 열 수 없어요. 개발 체험 서버를 확인해 주세요.'), { status: response.status });
+  if (!response.ok || !answered(path, result)) throw Object.assign(new Error(result.message || '첫 하루를 열 수 없어요. 개발 체험 서버를 확인해 주세요.'), { status: response.status, code: result.error });
   return result;
 }
 function visible(element, whole = true) {
@@ -225,8 +244,9 @@ function flags() {
   // A seated window is in front while it is seen, focused or not (W7b): the town beside a study window is still with
   // the person — it is never a spoofed focus, and it walks nowhere.
   return { surfaceId, surface: 'day', foreground: !document.hidden && (!walking() || document.hasFocus() || !!stay?.active()) && sceneReady && connected,
+    // Picking leaves is no safe point (W8b): no contact is issued over the board.
     safe: !!((lifeAvailable() && (!walking() || nearby(walk.point) === 'cafe' && !walk.moving && !walk.inputActive) || cardPlaceQuiet())
-      && !busy && !document.querySelector('dialog[open]') && !editing && sceneVisible()) };
+      && !busy && !gather?.active() && !document.querySelector('dialog[open]') && !editing && sceneVisible()) };
 }
 async function pulseNow() {
   // The host lease starts when the request is processed, not when a slow GPU
@@ -341,7 +361,7 @@ async function command(type, payload = {}) {
   setBusy(true);
   try {
     await queue(async () => {
-      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|GREET$)/.test(type)) {
+      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|GATHER_|GREET$)/.test(type)) {
         await ensureFreshPresence();
         payload = { ...payload, surfaceId, fence: presence.fence };
       }
@@ -352,6 +372,38 @@ async function command(type, payload = {}) {
     return true;
   } catch (e) { showError(e.message); return false; }
   finally { setBusy(false); }
+}
+/** The gathering board's commands (W8b, design review F3): one after another in a line of their own — a quick second pick
+ * waits for the first instead of being dropped as busy — each at the revision then, with the walk sent first (the server
+ * measures the reach from where it saw the player); a revision another window outran goes again once the town is read.
+ * Answers { ok, id, revision } or { ok: false, code, message }: a refusal of the town's own (too far, all picked, the basket full)
+ * reads the town again and is no connection trouble — the board puts its leaf back. */
+let gatherLine = Promise.resolve();
+function gatherCommand(type, payload) {
+  const run = async () => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      for (let i = 0; i < 60 && busy; i++) await new Promise(resolve => setTimeout(resolve, 50));
+      if (busy || !available()) return { ok: false, code: 'unavailable' };
+      if (walking()) await flushWalk(true);
+      const id = crypto.randomUUID();
+      setBusy(true);
+      try {
+        await queue(async () => {
+          await ensureFreshPresence();
+          accept(await request('command', { id, type, payload: { ...payload, surfaceId, fence: presence.fence }, expectedRevision: snapshot.state.revision }));
+        });
+        clearError(); return { ok: true, id, revision: snapshot.state.revision };
+      } catch (error) {
+        const code = error?.code ?? null;
+        if (code === 'stale-command' || code === 'stale-surface') { if (code === 'stale-surface') lastPulse = 0; try { await queue(async () => accept(await request('state'))); } catch {} continue; }
+        if (GATHER_REFUSALS.includes(code)) { read(); return { ok: false, code, message: error.message }; }
+        showError(error.message); return { ok: false, code, message: error.message };
+      } finally { setBusy(false); }
+    }
+    return { ok: false, code: 'stale-command' };
+  };
+  const next = gatherLine.then(run, run); gatherLine = next.catch(() => {});
+  return next;
 }
 /** A command the player asked for from a layer that does not wait on busy (an offer's answer, closing a card): it goes
  * once the receipt or read in flight is done, instead of being dropped. */
@@ -590,7 +642,7 @@ function heldInSight(key, el, now) {
  * tells the server this resident said it (GREET — never the first-word budget, §9-4). */
 function cardsFrame(now) {
   const panel = $('place-cards');
-  const good = !panel.hidden && placePanelOpen() && !busy && connected && !stay?.active() && !document.querySelector('dialog[open]') && visible(panel, false);
+  const good = !panel.hidden && placePanelOpen() && !busy && connected && !stay?.active() && !gather?.active() && !document.querySelector('dialog[open]') && visible(panel, false);
   if (!good) { placeSeenSince.clear(); return; }
   const greet = greetSession?.greet, model = snapshot.view.day?.scene?.village;
   if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref && heldInSight(`greet:${greet.ref}`, panel.querySelector('.place-greet'), now)) {
@@ -619,17 +671,24 @@ function renderCardDialog() {
   const had = dialog.contains(document.activeElement) ? document.activeElement : null, hadChoice = had?.dataset.choice ?? null, hadAnswer = had?.dataset.feedback ?? null;
   text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]); text('card-line', m.line || '');
   if ($('card-icon').dataset.icon !== m.icon) { $('card-icon').dataset.icon = m.icon; $('card-icon').innerHTML = iconSvg(m.icon); }
-  const choices = $('card-choices'), sig = JSON.stringify([m.card, m.done, m.choices]);
+  // 「잎 통이 비어 가요」 (C3, §8-4): 「내가 딴 잎 드리기」 beside the two scents while the basket holds leaves that fill the jar
+  // (W8b — the gift settles the card with the player, GATHER_GIVE); several kinds give one by one by name.
+  const fillers = m.card === 'C3' && !m.done ? jarFillers(snapshot.view.gather?.basket, paramsFor(snapshot.state.policy?.paramsVer).gather?.tinRelief) : [];
+  const choices = $('card-choices'), sig = JSON.stringify([m.card, m.done, m.choices, fillers]);
   if (signatures.get('card-choices') !== sig) {
     signatures.set('card-choices', sig);
     choices.replaceChildren(...(m.done ? [] : m.choices.map(c => { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt'; b.textContent = c.label;
       b.setAttribute('aria-pressed', String(c.chosen)); b.dataset.command = 'CARD_CHOOSE'; b.dataset.choice = c.id;
-      b.addEventListener('click', async () => { await command('CARD_CHOOSE', { choice: c.id }); refocusCard({ choice: c.id }); }); return b; })));
+      b.addEventListener('click', async () => { await command('CARD_CHOOSE', { choice: c.id }); refocusCard({ choice: c.id }); }); return b; })),
+      ...fillers.map(item => { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt card-give'; b.textContent = fillers.length === 1 ? '내가 딴 잎 드리기' : `${gatherItemName(item)} 드리기`;
+        b.dataset.choice = `give:${item}`; b.dataset.sound = 'none';
+        b.addEventListener('click', async () => { gather?.play?.('give'); const answer = await gatherCommand('GATHER_GIVE', { item }); if (!answer.ok && answer.message) text('card-note', answer.message); refocusCard(); }); return b; }));
   }
   // The confirm waits for a choice (setBusy keeps it off while a command is out, by its data-unavailable).
   const confirm = $('card-confirm'); confirm.dataset.command = 'CARD_CONFIRM'; confirm.dataset.unavailable = String(!m.chosen);
   choices.hidden = m.done; confirm.hidden = m.done; confirm.disabled = busy || !available() || !m.chosen;
-  text('card-note', m.done ? '고른 대로 남았어요. 닫아도 그대로예요.' : '닫으면 하던 생활로 남아요. 주인에게 다시 말을 걸면 이어서 해요.');
+  // The note keeps a refused gift's reason until the card changes (W8b).
+  if (signatures.get('card-note') !== JSON.stringify([m.card, m.done])) { signatures.set('card-note', JSON.stringify([m.card, m.done])); text('card-note', m.done ? '고른 대로 남았어요. 닫아도 그대로예요.' : '닫으면 하던 생활로 남아요. 주인에게 다시 말을 걸면 이어서 해요.'); }
   const feedback = $('card-feedback'); feedback.hidden = !m.done || !m.eventId;
   if (m.done && m.eventId) {
     noteSeen([`line:${m.lineId}`, `card:${m.card}:player`], m.eventId);
@@ -691,7 +750,7 @@ function accept(data) {
   reconcileWalk(); applyWalkView();
   // Another window moved the player from where it sat down (or left home in the classic view): stand up quietly (W7b).
   if (stay?.active() && (walking() ? !walk.point || !stayPoint || Math.hypot(walk.point.x - stayPoint.x, walk.point.z - stayPoint.z) > stay.seat().reach : day.location !== 'home')) stay.leave('moved');
-  clearTimeout(seatedRetry); stay?.update(stayContext()); soundFrame(); tea?.update(data.view.tea, teaContext());
+  clearTimeout(seatedRetry); stay?.update(stayContext()); soundFrame(); tea?.update(data.view.tea, teaContext()); gather?.update(data.view.gather, gatherContext());
 }
 function currentObservation() {
   if (!bazaarActive()) return snapshot?.view.day?.observation;
@@ -801,7 +860,8 @@ function moodFrame(v, village) {
     lineAt: id => residentLine(v, id, village.t), skip: offerGesture ? [offerGesture] : [], day: v?.band ? snapshot?.state?.village?.band?.lifeDay ?? null : null,
     avoid, onSeen: noteSeen });
   // The offer also reaches the text alternative (docked at the scene's foot — there is no name to hang it by).
-  offerFrame(v, !v || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active(), renderer && !fallback ? labelAt : () => null);
+  // The gathering board up (W8b review F9): the offer waits — it is never lost, only drawn once the board is closed.
+  offerFrame(v, !v || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!gather?.active(), renderer && !fallback ? labelAt : () => null);
 }
 /** The card offer standing for this window (§8-3): by its owner's name for 20 seconds, the owner gesturing for the
  * first 8; its delivery receipt once it has been in sight a moment (LIFE_ACK, like the seat's invitation). Never while
@@ -828,10 +888,11 @@ function offerFrame(v, blocked, labelAt) {
   }
 }
 /** The notices over the scene (W6b): 「그동안 달라진 것」 once a visit, then the mascot's question — never over the place's
- * panel, a dialog, the seat or the tea board (W8). The question waits while the board is up; once drawn, its key waits for the next boundary. */
+ * panel, a dialog, the seat, the tea board (W8) or the gathering board (W8b review F9). The question waits while a board is
+ * up; once drawn, its key waits for the next boundary. */
 function noticesFrame(now) {
   if (!meanwhileUi || !askUi) return;
-  const blocked = !snapshot || !connected || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.();
+  const blocked = !snapshot || !connected || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.() || !!gather?.active?.();
   const board = meanwhileUi.update({ meanwhile: snapshot?.view.day?.scene?.village?.meanwhile, firstPulseAt, blocked, now });
   const ask = askUi.update({ ask: snapshot?.view.ask, blocked: blocked || board.shown, now });
   if (ask.drawn) askReport = ask.drawn;
@@ -865,7 +926,7 @@ function frame(now) {
     appTimer = setTimeout(() => { appTimer = 0; raf = requestAnimationFrame(frame); }, 1000 / (villageWalking || padded ? QUIET.appHz : QUIET.idleHz));
     return;
   }
-  walkFrame(now); observe(now); villageFrame(); cardsFrame(now); noticesFrame(now); stay?.frame(); tea?.frame(); raf = requestAnimationFrame(frame);
+  walkFrame(now); observe(now); villageFrame(); cardsFrame(now); noticesFrame(now); stay?.frame(); tea?.frame(); gather?.frame(); raf = requestAnimationFrame(frame);
 }
 async function load() {
   setBusy(true);
@@ -970,7 +1031,7 @@ try {
   }
   walkControls = createWalkControls({ surface: $('scene'), joystick: $('walk-joystick'), thumb: $('walk-thumb'), canMove: () => walking() && connected && !busy && !stay?.active(),
     // Esc · B fold the tea board first when it is up (review F7), then close the place's panel.
-    onInteract: interactWalk, onCancel: () => { if (!tea?.cancel()) dismissWalkPanel(); }, onMoveStart: dismissWalkPanel, onInputMode: mode => { walkInputMode = mode; } });
+    onInteract: interactWalk, onCancel: () => { if (!tea?.cancel() && !gather?.cancel()) dismissWalkPanel(); }, onMoveStart: dismissWalkPanel, onInputMode: mode => { walkInputMode = mode; } });
   // Staying (W7b): the seats, their quiet view and the sound switches. Sitting sends the steps taken so far; standing
   // up starts the walk clock again with a zero step, so the first real step is never pulled back.
   stay = createStay({ scene: $('scene'), hud: $('walk-hud'), nearby: $('nearby-panel'), settings: $('settings-dialog'), sound, renderer: () => renderer,
@@ -988,6 +1049,13 @@ try {
     beforeCommand: async () => { if (walking()) await flushWalk(true); }, noteSeen, onInputMode: mode => { walkInputMode = mode; },
     labelAt: id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); return { x: p.x + c.left - s.left, y: p.y + c.top - s.top }; } });
   if (snapshot) tea?.update(snapshot.view.tea, teaContext());
+  // The gathering board (W8b): its commands in their own line (F3); a spot's point and the owner's head from the scene.
+  const sceneOffset = () => { const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); return { x: c.left - s.left, y: c.top - s.top }; };
+  gather = createGatherBoard({ scene: $('scene'), hud: $('walk-hud'), command: gatherCommand, sfx: tea?.sound?.() ?? null, onInputMode: mode => { walkInputMode = mode; },
+    beforeCommand: async () => { if (walking()) await flushWalk(true); },
+    pointAt: point => { const p = renderer?.pointScreen?.(point); if (!p) return null; const o = sceneOffset(); return { x: p.x + o.x, y: p.y + o.y }; },
+    labelAt: id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const o = sceneOffset(); return { x: p.x + o.x, y: p.y + o.y }; } });
+  if (snapshot) gather?.update(snapshot.view.gather, gatherContext());
   // The returning visit's board and the mascot's question (W6b), stacked over the scene in that order.
   notices = Object.assign(document.createElement('div'), { className: 'town-notices' }); $('scene').append(notices);
   meanwhileUi = createMeanwhile(notices, { live: $('mood-live'), onSeen: noteSeen });
@@ -1001,7 +1069,7 @@ try {
 // Read-only instrumentation for the isolated QA runner. It cannot mutate state or time.
 globalThis.SYNKTownDay = Object.freeze({ metrics: () => ({ ...(renderer?.stats() || { renderer: 'text-alternative' }), reducedMotion: reduced.matches, connected, fallback, worldLinked: worldHostRequested,
   village: { serverNow: serverNow(), live: [...villageLive.ids], signature: villageLive.signature, due: dueAt(), timed: timed() },
-  stay: stay?.metrics() ?? null, sound: { ...sound.stats(), level: sound.level() }, foreground: flags().foreground, tea: tea?.metrics() ?? null,
+  stay: stay?.metrics() ?? null, sound: { ...sound.stats(), level: sound.level() }, foreground: flags().foreground, tea: tea?.metrics() ?? null, gather: gather?.metrics() ?? null,
   // W5b: what this window draws of the cards — the offer, the residents' lines, the place's panel — and its seen keys still to send.
   cards: { capsOk, safe: flags().safe, seenPending: [...seenQueue], gesture: offerGesture, take: snapshot?.view.day?.scene?.village?.take?.status ?? null,
     offer: (el => el ? { text: el.querySelector('.offer-text')?.textContent ?? '', docked: el.classList.contains('is-docked'), rect: el.getBoundingClientRect().toJSON() } : null)(document.querySelector('#card-offers .offer-card:not([hidden])')),

@@ -483,6 +483,15 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     if (Math.abs(labelPoint.x) > 1 || Math.abs(labelPoint.y) > 1 || labelPoint.z > 1) return null;
     return { x: (labelPoint.x + 1) * canvas.clientWidth / 2, y: (1 - labelPoint.y) * canvas.clientHeight / 2 };
   }
+  /** Where a point of the town ({ x, y, z } in metres) is on the canvas, in CSS px (W8b — a gathering spot's sparkle):
+   * null while it is behind the camera or off screen. */
+  const screenPoint = new THREE.Vector3();
+  function pointScreen({ x, y = 0, z }) {
+    if (disposed || !Number.isFinite(x) || !Number.isFinite(z)) return null;
+    screenPoint.set(x, y, z).project(camera);
+    if (Math.abs(screenPoint.x) > 1 || Math.abs(screenPoint.y) > 1 || screenPoint.z > 1) return null;
+    return { x: (screenPoint.x + 1) * canvas.clientWidth / 2, y: (1 - screenPoint.y) * canvas.clientHeight / 2 };
+  }
   /** Where the player stands in the town now ({ x, z }), walking or not. */
   function playerPoint() { const p = actors.get('player')?.group.position; return p ? { x: p.x, z: p.z } : null; }
   function setActor(id, value, now, immediate = false) {
@@ -823,5 +832,5 @@ export function createDayScene(canvas, { onDestination = () => {}, onError = () 
     try { await Promise.race([initialAssets.catch(() => {}), new Promise(resolve => { timer = setTimeout(resolve, 5000); })]); }
     finally { clearTimeout(timer); }
   }
-  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setStay, shelteredAt, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose, labelScreen, playerPoint };
+  resize(); if (!deferInitialRender) render({ location: 'home' , player: { x: -6, z: 1.1 }, npcs: [] }); return { render, setPlayerPose, setResidents, setLight, setStay, shelteredAt, setAppearance, prepareInitialAssets, resize, stats: () => ({ ...stats(), light: townLight.stats() }), dispose, labelScreen, pointScreen, playerPoint };
 }

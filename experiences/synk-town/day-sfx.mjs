@@ -1,6 +1,7 @@
-/** The tea board's hand sounds (vertical slice W8, design §11-4 · W8 note §2-9): one short synthesised sound the
- * moment a hand does something — a cup set down, tea poured, a spoon of honey, 「다 됐어요」, a cup carried and served,
- * a guest pleased. Like blank-slice/sfx.mjs and talk-rally/sfx.mjs this is the brand sound kit's third family, game
+/** The town's hand sounds (vertical slice W8, design §11-4 · W8 note §2-9; W8b gathering, design §20-8): one short
+ * synthesised sound the moment a hand does something — a cup set down, tea poured, a spoon of honey, 「다 됐어요」, a cup
+ * carried and served, a guest pleased; a young leaf picked, its landing in the basket, a dark leaf brushed, leaves given
+ * to the cafe owner, a first find written in the field book. Like blank-slice/sfx.mjs and talk-rally/sfx.mjs this is the brand sound kit's third family, game
  * sounds (docs/브랜드_사운드킷/_사운드킷.md), and keeps its four rules: ① one sound lasts 400ms or less (presses stay
  * under 250ms — a slow sound reads as lag), ② no failure sound (a cup a guest wants changed makes none, emptying a cup
  * is a soft brush, never a falling buzzer), ③ tones are sine or triangle only, ④ every pitch, and both ends of every
@@ -21,21 +22,24 @@ export const PREFS = Object.freeze({ sound: 'synk.world.sound', haptic: 'synk.wo
 
 // C pentatonic (도·레·미·솔·라) — the only pitches a score may name.
 const N = { G3: 196, A3: 220, C4: 261.63, G4: 392, A4: 440, C5: 523.25, D5: 587.33, E5: 659.26, G5: 783.99, A5: 880,
-  C6: 1046.5, D6: 1174.66, E6: 1318.51, G6: 1567.98 };
+  C6: 1046.5, D6: 1174.66, E6: 1318.51, G6: 1567.98, A6: 1760, C7: 2093 };
 export const PITCHES = Object.freeze(Object.values(N));
 /** Whole level of each sound — fitted to the design targets by the offline K-weighted momentary loudness of the samples
  * (qa-tea-ui samples): a cup set down and a cup served ≈ -24, pouring ≈ -26, honey ≈ -27, 「다 됐어요」 ≈ -23, a guest
  * pleased ≈ -21 and the last guest just under the kit's 「획득」 (-20.8); emptying and lifting stay soft. The walking town's
- * layer sits near -27~-26, so a press reads just above it (10-27). */
-export const LEVEL = Object.freeze({ cup: 1.8, pour: 1.35, spoon: 1.6, done: 1.25, empty: 1.75, pick: 2.2, serve: 1.5, match: 1.75, final: 1.7 });
+ * layer sits near -27~-26, so a press reads just above it (10-27). Gathering (W8b, qa-gather-ui samples): a leaf picked
+ * ≈ -24, its landing in the basket ≈ -27, a dark leaf's brush ≈ -34, leaves given ≈ -23, a first find ≈ -21.5. */
+export const LEVEL = Object.freeze({ cup: 1.8, pour: 1.35, spoon: 1.6, done: 1.25, empty: 1.75, pick: 2.2, serve: 1.5, match: 1.75, final: 1.7,
+  leaf: 1.95, basket: 1.84, sway: .97, give: 2.1, discover: 1.7 });
 
 const tone = (type, at, f0, f1, glide, attack, decay, level, pan = 0) => ({ kind: 'tone', type, at, f0, f1: f1 ?? f0, glide: glide ?? 0, attack, decay, level, pan });
 const stroke = (at, dur, filter, from, to, level, pan = 0, pink = true) => ({ kind: 'noise', at, dur, filter, from, to: to ?? from, level, pan, pink });
 const ring = (at, f, decay, level, pan = 0) => [tone('triangle', at, f, f, 0, .004, decay, level, pan), tone('sine', at, f * 2, f * 2, 0, .004, decay * .8, level * .3, pan)];
 
-/** The notes of one sound. opts: cup { vessel: 'warm'|'cold' } · pour { tea } · spoon { honey: 0|1|2 }. variant
- * turns a sound heard twice in a row a little (the second spoon, the same jar again). */
-export function score(name, { vessel = 'warm', tea = 'barley', honey = 1, variant = 0 } = {}) {
+/** The notes of one sound. opts: cup { vessel: 'warm'|'cold' } · pour { tea } · spoon { honey: 0|1|2 } · leaf { step
+ * (the branch's young leaves picked before it), last }. variant turns a sound heard twice in a row a little (the second
+ * spoon, the same jar again, the next landing). */
+export function score(name, { vessel = 'warm', tea = 'barley', honey = 1, step = 0, last = false, variant = 0 } = {}) {
   const v = variant % 2;
   switch (name) {
     case 'cup': {   // a cup set on the felt board: a soft thump and a short ceramic knock (warm lower, cold higher)
@@ -63,6 +67,21 @@ export function score(name, { vessel = 'warm', tea = 'barley', honey = 1, varian
       return [...ring(0, N.G5, .2, .3, -.05), ...ring(.07, N.C6, .26, .3, .05)];
     case 'final':   // the order's last guest seated: do · mi · sol
       return [...ring(0, N.C6, .2, .26, -.1), ...ring(.06, N.E6, .2, .24), ...ring(.12, N.G6, .24, .22, .1)];
+    case 'leaf': {  // a young leaf picked (W8b): a felt pluck and one triangle note a step higher each leaf (mi · sol · la),
+      // the branch's last leaf landing on do and mi together — the run of picks is the rhythm (W8b note §2-15 ②)
+      const pluck = [stroke(0, .03, 'lowpass', 1500, 700, .34, -.05), tone('sine', 0, N.G4, N.G4, 0, .002, .04, .12)];
+      if (last) return [...pluck, ...ring(.006, N.C6, .14, .26, -.05), ...ring(.006, N.E6, .14, .2, .05)];
+      return [...pluck, ...ring(.006, [N.E6, N.G6, N.A6][Math.min(2, Math.max(0, step))], .13, .28)];
+    }
+    case 'basket':  // the leaf lands in the basket: a low felt pat and a soft sol (la the next time)
+      return [stroke(0, .05, 'lowpass', 620, 320, .42), tone('sine', .004, v ? N.A4 : N.G4, v ? N.A4 : N.G4, 0, .003, .1, .3)];
+    case 'sway':    // a dark leaf brushed: a faint rustle of broad noise, no note at all — nothing is wrong
+      return [stroke(0, .09, 'bandpass', v ? 2300 : 2600, v ? 3100 : 3400, .22, -.08, false), stroke(.06, .12, 'highpass', 3000, 4200, .12, .08, false)];
+    case 'give':    // leaves given into the jar: a brush with three small rising notes, then the lid's low tap
+      return [stroke(0, .2, 'bandpass', 1800, 3000, .12), ...[N.C6, N.E6, N.G6].map((f, i) => tone('triangle', i * .06, f, f, 0, .003, .1, .2 - i * .03)),
+        stroke(.22, .04, 'lowpass', 700, 400, .36), tone('sine', .22, N.C5, N.C5, 0, .003, .08, .28)];
+    case 'discover':// the field book's first find: mi · sol · do above, a little under the kit's 「획득」
+      return [...ring(0, N.E6, .18, .24, -.1), ...ring(.07, N.G6, .18, .22), ...ring(.14, N.C7, .2, .2, .1)];
     default: return [];
   }
 }
@@ -129,7 +148,7 @@ export function render(bus, notes, t, level = 1) {
 
 const readPref = key => { try { const raw = localStorage.getItem(key); if (raw === 'false') return false; } catch {} return true; };
 const readStamp = key => { try { const value = Number(localStorage.getItem(key)); return Number.isFinite(value) && value > 0 ? value : null; } catch { return null; } };
-const VIBRATE = Object.freeze({ cup: 8, pour: 6, spoon: 6, done: 10, pick: 6, serve: 10, match: 12 });
+const VIBRATE = Object.freeze({ cup: 8, pour: 6, spoon: 6, done: 10, pick: 6, serve: 10, match: 12, leaf: 8, basket: 6, give: 10, discover: 12 });
 
 /** The live player. play(name, opts) sounds now (returns whether it did); unlock() is called from a person's own
  * input so the browser lets the context run. */

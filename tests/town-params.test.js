@@ -84,7 +84,8 @@ test('장소마다 지역(area)이 있고, 채집 자리 셋은 주민 일과에
   const { ROUTINES } = await townModule('data.gen');
   assert.ok(PLACES.every(place => place.area === 'cafe-alley'));
   const gather = ['greenhouse.bed-edge', 'cafe.pots', 'lane.wall'];
-  for (const id of gather) assert.deepEqual([SPOT_BY_ID[id].kind, SPOT_BY_ID[id].owner, SPOT_BY_ID[id].measured], ['gather', 'player', false], id);
+  // Measured in the baked town at W8b (the screen's sparkle and reach) — each beyond a place's talk reach.
+  for (const id of gather) assert.deepEqual([SPOT_BY_ID[id].kind, SPOT_BY_ID[id].owner, SPOT_BY_ID[id].measured], ['gather', 'player', true], id);
   assert.equal(SPOT_BY_ID['greenhouse.bed-edge'].sheltered, true);
   const planned = new Set(ROUTINES.flatMap(cell => [...cell.pool, ...Object.values(cell.habitPool || {}).flat()]).flatMap(item => spotsOf(item.spot).map(s => s.id)));
   for (const id of gather) assert.ok(!planned.has(id), `${id}가 주민 일과에 있다`);

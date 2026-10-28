@@ -1,0 +1,114 @@
+/* 싱크타운 잎 따기 판(세로 조각 W8b, 설계 §20-8 · W8b 노트 §2-8·§2-9) — 자리 위 작은 반짝임, 오른쪽 열의 「E · 잎 따기」·「찻집 주인에게 드리기」,
+ * 장면 아래 펠트 판 하나(자리 이름 · 한 줄 · 바구니 · 가지와 잎 서넛). 밝고 작은 어린잎은 누르면 줄기가 한 번 멈칫하고 호를 그리며 바구니로
+ * 날아가고(바구니가 눌렸다 펴짐), 짙은 잎은 살랑일 뿐 — 카메라는 흔들지 않는다. 움직임 줄이기에서는 상태만 바로 바뀐다(맨 끝). day-gather.mjs가
+ * 이 파일을 붙인다(day.html은 고치지 않는다). 토큰은 day-style.css의 :root 그대로. 화면 글에 숫자 없음(G2). */
+.gather-board{position:absolute;left:50%;bottom:calc(var(--bottom,20px) + 8px);z-index:7;display:grid;gap:8px;width:min(520px,calc(100% - 2 * var(--edge,16px)));padding:12px 14px 14px;border-radius:var(--w-r-lg);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 18px 50px rgba(0,0,0,.36);color:var(--w-ink);transform:translateX(-50%);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);outline:none}
+.gather-board:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.gather-head{display:flex;align-items:center;gap:10px}
+.gather-place{flex:1;margin:0;color:var(--w-ink-2);font-size:13px;font-weight:var(--wt-label)}
+.gather-close{flex:0 0 auto;min-height:40px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--w-ink-3);font:inherit;font-size:13px;cursor:pointer;touch-action:manipulation}
+.gather-close:hover{color:var(--w-ink)}
+.gather-line{margin:0;color:var(--w-ink-2);font-size:13.5px;line-height:1.45}
+.gather-body{display:grid;grid-template-columns:96px 1fr;align-items:end;gap:10px}
+
+/* 바구니: 펠트 바구니 그림 위에 담은 것의 그림이 겹쳐 쌓인다(숫자 없음) */
+.gather-basket{position:relative;width:96px;height:64px;margin-bottom:6px;transform-origin:50% 100%}
+.gather-basket>svg{position:absolute;inset:0;width:100%;height:100%}
+.gather-basket-leaves{position:absolute;left:12px;right:12px;top:-14px;height:34px}
+.gather-basket-leaf{position:absolute;left:calc(var(--i) * 9px);top:calc(4px + (var(--i) % 2) * 6px);width:26px;height:26px;transform:rotate(calc(-24deg + var(--i) * 17deg));filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.gather-basket-leaf svg,.gather-pic svg,.gather-flyer svg,.gather-leaf svg{display:block;width:100%;height:100%}
+.gather-basket.bounce{animation:gather-bounce .2s var(--w-ease)}
+
+/* 가지와 잎 — 잎 하나하나가 단추(터치 44px 넘게), 밝고 작은 어린잎은 은은한 빛, 짙은 잎은 크고 어둡다 */
+.gather-branch{position:relative;height:150px;min-width:0}
+.gather-branch>svg{position:absolute;inset:8px 0;width:100%;height:calc(100% - 16px);overflow:visible}
+.gather-branch.tug>svg{animation:gather-tug .16s var(--w-ease)}
+.gather-branch.rustle{animation:gather-rustle .5s ease-in-out}
+.gather-leaf{position:absolute;display:grid;place-items:center;width:58px;height:58px;padding:4px;border:0;border-radius:50%;background:transparent;transform:translate(-50%,-50%) rotate(var(--tilt,0deg));cursor:pointer;touch-action:manipulation;filter:drop-shadow(0 2px 2px rgba(0,0,0,.28));transition:transform .1s var(--w-ease)}
+.gather-leaf.young{width:54px;height:54px}
+.gather-leaf.young::before{content:'';position:absolute;inset:2px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,248,205,.5),rgba(255,248,205,0));pointer-events:none}
+.gather-leaf.dark{width:66px;height:66px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.32)) saturate(.85)}
+.gather-leaf:active:not(:disabled){transform:translate(-50%,-50%) rotate(var(--tilt,0deg)) scale(.92)}
+.gather-leaf:focus-visible{outline:2px solid var(--w-ink);outline-offset:1px}
+.gather-leaf.cursor{box-shadow:0 0 0 3px var(--w-ink)}
+.gather-leaf.gone{visibility:hidden}
+.gather-leaf.sway{animation:gather-sway .28s ease-in-out}
+.gather-flyer{position:absolute;z-index:3;display:block;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+.gather-flyer.small{width:28px;height:28px;z-index:9}
+.gather-quick.felt{min-height:56px;font-size:15px}
+
+/* 자리 위 반짝임 — 가까운 하나만 누를 수 있다(나머지는 보이기만) */
+.gather-marks{position:absolute;inset:0;z-index:6;pointer-events:none}
+.gather-mark{position:absolute;left:0;top:0;width:34px;height:34px;padding:0;border:0;background:transparent;pointer-events:none}
+.gather-mark::before{content:'';position:absolute;inset:3px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,240,180,.55),rgba(255,240,180,0))}
+.gather-mark.near{pointer-events:auto;cursor:pointer}
+.gather-mark i{position:absolute;inset:4px;background:#fff4c4;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 4px rgba(255,236,160,.9));animation:gather-twinkle 1.8s ease-in-out infinite}
+.gather-mark i+i{inset:9px;transform:rotate(45deg) scale(.6);opacity:.8;animation-delay:.6s}
+.gather-mark.near i{background:#fffbe6}
+
+/* 오른쪽 열: 「E · 잎 따기」·「찻집 주인에게 드리기」 — 찻집 자리(+148), 「주문 같이 받기」가 서 있으면 그 위 띠(+204) */
+.gather-actions{position:absolute;right:var(--edge,16px);bottom:calc(var(--bottom,20px) + 148px);z-index:6;display:flex;flex-direction:column;gap:8px;width:216px;pointer-events:none}
+body.tea-entry .gather-actions{bottom:calc(var(--bottom,20px) + 204px)}
+.gather-actions>*{pointer-events:auto}
+.gather-open-walk.felt,.gather-give.felt,.gather-give-one.felt{width:100%;min-height:48px;touch-action:manipulation;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);color:var(--w-ink);font-size:14px;-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.gather-give.felt,.gather-give-one.felt{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 12px;font-size:13.5px}
+.gather-give-pics{display:inline-flex}
+.gather-give-pics .gather-pic+.gather-pic{margin-left:-8px}
+.gather-give-choices{display:grid;gap:6px;max-height:40vh;overflow:auto}
+.gather-pic{display:inline-block;flex:0 0 auto;width:22px;height:22px}
+.gather-pic.big{width:44px;height:44px}
+
+/* 찻집 주인의 한마디(머리 위), 도감에 처음 적은 것, 짧은 알림 */
+.gather-bubble{position:absolute;left:0;top:0;z-index:8;display:grid;gap:4px;width:min(280px,calc(100% - 24px));padding:12px 14px;border-radius:18px;background:#fbf7ef;color:#2b241d;box-shadow:0 10px 30px rgba(0,0,0,.28);pointer-events:none}
+.gather-who{margin:0;color:#7a6a58;font-size:12px;font-weight:var(--wt-label)}
+.gather-words{margin:0;font-size:15px;line-height:1.55;font-weight:var(--wt-strong)}
+.gather-found{position:absolute;left:50%;bottom:calc(var(--bottom,20px) + 16px + var(--gather-board-h,0px));z-index:9;display:flex;align-items:center;gap:12px;padding:10px 18px 10px 12px;border-radius:20px;background:#fbf7ef;color:#2b241d;box-shadow:0 0 0 2px #f3c45a,0 12px 34px rgba(0,0,0,.3);transform:translateX(-50%);animation:gather-rise .32s var(--w-ease);pointer-events:none}
+.gather-found>span:last-child{display:grid;gap:2px}
+.gather-found-head{color:#7a6a58;font-size:12px;font-weight:var(--wt-label)}
+.gather-found strong{font-size:16px}
+.gather-toast{position:absolute;left:50%;top:72px;z-index:9;max-width:calc(100% - 32px);margin:0;padding:10px 16px;border-radius:999px;background:#fbf7ef;color:#2b241d;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);transform:translateX(-50%);pointer-events:none}
+
+/* 판이 펼쳐진 동안 걷는 화면의 아래 조작은 비킨다(좁은 화면은 판이 아래를 다 쓴다 — 닫으면 돌아온다). 찻집의 손 칩도 그동안 비킨다(잔은 손에 남는다). */
+body.gather-mode.walk-mode .scene-caption{display:none}
+@media(min-width:1041px){body.gather-mode.walk-mode .walk-status{display:none}}
+@media(max-width:1040px){body.gather-mode.walk-mode .walk-joystick,body.gather-mode.walk-mode .walk-interact,body.gather-mode.walk-mode .walk-status,body.gather-mode.walk-mode .walk-help,body.gather-mode.walk-mode .walk-sit{display:none!important}}
+body.gather-mode .tea-hand{display:none}
+@media(max-width:760px){
+  .gather-board{width:calc(100% - 16px);bottom:calc(env(safe-area-inset-bottom) + 8px);padding:10px 10px 12px}
+  .gather-body{grid-template-columns:76px 1fr}
+  .gather-basket{width:76px;height:52px}
+  .gather-basket-leaves{left:8px;right:8px}
+  .gather-branch{height:132px}
+  .gather-actions{width:164px;bottom:calc(var(--bottom,20px) + 144px)}
+  body.tea-entry .gather-actions{bottom:calc(var(--bottom,20px) + 200px)}
+  .gather-open-walk.felt,.gather-give.felt,.gather-give-one.felt{font-size:13.5px}
+}
+/* On a phone the walking status line runs edge to edge under the right column: it makes room for 「E · 잎 따기」 as for the tea entry. */
+@media(max-width:599px),(min-width:600px) and (max-width:760px) and (min-height:601px){
+  body.walk-mode.gather-entry .walk-status{right:calc(var(--edge) + 172px)}
+}
+/* A low landscape screen: a shorter board at the bottom right, clear of the map at the top left (the walking controls step
+   back while it is open) — the branch keeps its leaves within reach of a thumb. */
+@media(max-height:600px) and (min-width:600px){
+  .gather-board{left:auto;right:var(--edge,16px);width:min(460px,calc(100% - 260px));gap:6px;padding:8px 12px 10px;transform:none}
+  .gather-branch{height:112px}
+}
+@media(max-width:360px){.gather-leaf{width:52px;height:52px}.gather-leaf.young{width:50px;height:50px}.gather-leaf.dark{width:58px;height:58px}.gather-actions{width:148px}}
+
+@keyframes gather-bounce{0%{transform:scale(1)}40%{transform:scale(1.08,.86)}100%{transform:scale(1)}}
+@keyframes gather-tug{0%{transform:translateY(0)}25%{transform:translateY(2px)}100%{transform:translateY(0)}}
+@keyframes gather-rustle{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.2deg)}60%{transform:rotate(1deg)}}
+@keyframes gather-sway{0%,100%{transform:translate(-50%,-50%) rotate(var(--tilt,0deg))}30%{transform:translate(-50%,-50%) rotate(calc(var(--tilt,0deg) - 6deg))}70%{transform:translate(-50%,-50%) rotate(calc(var(--tilt,0deg) + 6deg))}}
+@keyframes gather-twinkle{0%,100%{transform:scale(.72);opacity:.65}50%{transform:scale(1.08);opacity:1}}
+@keyframes gather-rise{0%{transform:translate(-50%,12px);opacity:0}100%{transform:translate(-50%,0);opacity:1}}
+
+@media(prefers-reduced-motion:reduce){
+  .gather-board *,.gather-board,.gather-marks *,.gather-found{animation:none!important;transition:none!important}
+  .gather-mark i{opacity:1;transform:none}
+  .gather-mark i+i{transform:rotate(45deg) scale(.6)}
+}
+@media(prefers-reduced-transparency:reduce){.gather-board,.gather-open-walk.felt,.gather-give.felt,.gather-give-one.felt{background:var(--w-s2);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(forced-colors:active){.gather-board,.gather-bubble,.gather-found,.gather-toast{background:Canvas;color:CanvasText;border:1px solid CanvasText}.gather-leaf.cursor,.gather-leaf:focus-visible{outline:2px solid Highlight}.gather-mark i{background:Highlight}}
+
+/* 앉아 머무는 동안(W7b)에는 판·단추·반짝임이 모두 빠진다 */
+body.stay-mode .gather-board,body.stay-mode .gather-actions,body.stay-mode .gather-marks,body.stay-mode .gather-bubble,body.stay-mode .gather-found{display:none!important}
