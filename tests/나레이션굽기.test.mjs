@@ -11,7 +11,7 @@ import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import T from '../tools/lib/타입캐스트.cjs';
-import { onsetSeconds, shiftWords, filterFor, loadPlan, readWavMono16, clippedSamples, REQUEST_LUFS } from '../tools/나레이션굽기.mjs';
+import { onsetSeconds, shiftWords, filterFor, loadPlan, readWavMono16, clippedSamples, topPitch, REQUEST_LUFS, PITCH_WARN } from '../tools/나레이션굽기.mjs';
 
 const run = promisify(execFile);
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -112,6 +112,20 @@ test('낱말 시각은 다듬은 줄 파일의 첫 소리에 맞춰 옮기고 sp
   assert.equal(clippedSamples({ x: Float32Array.from([0.2, 1, -1, 32766 / 32768, 0.99]) }), 3);
 });
 
+test('최고 음높이: 말소리 높이는 그대로, 끝에서 뒤집혀 치솟는 소리는 기준(560Hz)을 넘는다', () => {
+  // 48kHz 배음 셋인 목소리 비슷한 소리 — 0.4초 동안 f0
+  const voice = (parts) => {
+    const rate = 48000, x = [];
+    let ph = 0;
+    for (const [hz, sec] of parts) for (let i = 0; i < rate * sec; i++) { ph += 2 * Math.PI * hz / rate; x.push(0.5 * Math.sin(ph) + 0.25 * Math.sin(2 * ph) + 0.12 * Math.sin(3 * ph)); }
+    return { rate, x: Float32Array.from(x) };
+  };
+  assert.ok(Math.abs(topPitch(voice([[300, 0.4]])) - 300) <= 3);
+  assert.ok(topPitch(voice([[440, 0.3]])) <= PITCH_WARN);
+  assert.ok(Math.abs(topPitch(voice([[440, 0.3], [640, 0.15]])) - 640) <= 6, '끝에서 640Hz로 뛴 소리');
+  assert.equal(topPitch({ rate: 48000, x: new Float32Array(48000) }), null);
+});
+
 test('Typecast에는 낮은 크기(−26)로 요청하고 줄의 lufs까지는 우리 쪽에서 키운다 — lufs만 바꾸면 다시 사지 않는다', () => {
   const w = workspace({ voice: VOICE, defaults: { lufs: -15.5 }, lines: [{ id: 'b1', text: '아니?!' }, { id: 'n1', text: 'Not always no!', lang: 'en', lufs: -17 }] });
   const [b1, n1] = loadPlan(w.planFile).versions[0].lines;
@@ -150,7 +164,10 @@ test('가짜 Typecast로: 잘린 옛 원본만 낮은 크기로 다시 사고, �
     assert.deepEqual(m.bodies.map((b) => [b.text, b.output.target_lufs]), [['아니?!', -26]]);
     assert.doesNotMatch(baked.out, /잘려 왔습니다|꽉 찬 표본/);
     const j1 = JSON.parse(fs.readFileSync(path.join(w.dir, 'vo', 'b1.json'), 'utf8')), j2 = JSON.parse(fs.readFileSync(path.join(w.dir, 'vo', 'b2.json'), 'utf8'));
-    assert.deepEqual(j1.level, { requestLufs: -26, gainDb: 10.5, limit: 0.89, clippedSource: 0, clippedOut: 0 });
+    const { topPitchHz, ...level } = j1.level;
+    assert.deepEqual(level, { requestLufs: -26, gainDb: 10.5, limit: 0.89, clippedSource: 0, clippedOut: 0 });
+    assert.ok(Math.abs(topPitchHz - 220) <= 3, '가짜 소리 220Hz ' + topPitchHz);
+    assert.doesNotMatch(baked.out, /최고 음높이/);
     assert.deepEqual([j1.source.key, j2.source.key, j2.level.requestLufs, j2.level.gainDb], [b1.key, b2.legacyKey, -15.5, null]);
     // −26 원본(0.3)을 10.5 dB 키우면 1을 넘는다 → 리미터가 −1 dBFS 아래로 누른다(잘리지 않음)
     const x = readWavMono16(path.join(w.dir, 'vo', 'b1.wav')).x;

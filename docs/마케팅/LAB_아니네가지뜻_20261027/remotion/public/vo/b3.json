@@ -34,6 +34,7 @@
   "gainDb": null,
   "limit": null,
   "clippedSource": 0,
-  "clippedOut": 0
+  "clippedOut": 0,
+  "topPitchHz": 221
  }
 }

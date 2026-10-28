@@ -15,7 +15,7 @@
   "seed": 1029,
   "lufs": -15.5
  },
- "made": "2026-10-27T16:13:49.418Z",
+ "made": "2026-10-28T04:52:50.937Z",
  "lines": [
   {
    "id": "b1",
@@ -65,19 +65,19 @@
   {
    "id": "n5",
    "text": "Same word. Different tone. Your turn!",
-   "dur": 2.658,
+   "dur": 2.602,
    "syllablesPerSec": null,
    "src": "n5.wav",
-   "key": "adbfcd919b86a64825402516f297c7f7",
+   "key": "e7001eb3c2bcc109ac5daf22132b0f51",
    "words": 6
   },
   {
    "id": "n6",
    "text": "Which one will you try first?",
-   "dur": 2.094,
+   "dur": 1.912,
    "syllablesPerSec": null,
    "src": "n6.wav",
-   "key": "efdac8ffb12934bd1792fe7f434414f2",
+   "key": "30b6ac9baec473ea9de56bd36b84f0e2",
    "words": 6
   }
  ]

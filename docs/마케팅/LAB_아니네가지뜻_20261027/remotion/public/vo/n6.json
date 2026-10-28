@@ -2,63 +2,64 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "n6",
  "text": "Which one will you try first?",
- "dur": 2.094,
+ "dur": 1.912,
  "words": [
   {
    "text": "Which",
-   "start": 0.03,
-   "end": 0.272
+   "start": 0.02,
+   "end": 0.261
   },
   {
    "text": "one",
-   "start": 0.474,
-   "end": 0.615
+   "start": 0.402,
+   "end": 0.522
   },
   {
    "text": "will",
-   "start": 0.696,
-   "end": 0.837
+   "start": 0.582,
+   "end": 0.723
   },
   {
    "text": "you",
-   "start": 0.897,
-   "end": 0.998
+   "start": 0.783,
+   "end": 0.884
   },
   {
    "text": "try",
-   "start": 1.079,
-   "end": 1.361
+   "start": 0.944,
+   "end": 1.185
   },
   {
    "text": "first?",
-   "start": 1.462,
-   "end": 2.094
+   "start": 1.286,
+   "end": 1.912
   }
  ],
  "source": {
-  "key": "efdac8ffb12934bd1792fe7f434414f2",
+  "key": "30b6ac9baec473ea9de56bd36b84f0e2",
   "voice": {
-   "id": "tc_61659cc118732016a95fe7c6",
-   "name": "하나"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
   },
   "settings": {
    "model": "ssfm-v30",
    "lang": "en",
    "emotion": "happy",
-   "intensity": 1.1,
+   "intensity": 1,
    "tempo": 1,
-   "seed": 1027,
+   "seed": 1029,
    "lufs": -17,
-   "voiceId": "tc_61659cc118732016a95fe7c6"
+   "voiceId": "tc_666a9871abcf27a5169850d0"
   },
   "speed": 1,
   "cut": null
  },
  "level": {
-  "requestLufs": -17,
-  "gainDb": null,
-  "limit": null,
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
   "clippedSource": 0,
-  "clippedOut": 0
+  "clippedOut": 0,
+  "topPitchHz": 491
  }
 }

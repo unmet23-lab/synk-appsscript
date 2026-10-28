@@ -1,5 +1,5 @@
 {
-  "note": "LAB E4 「아니」 — B 갈래 인물 그대로: 바리스타 = 범수(역할 목소리), 해설 = 하나(LAB 목소리). 몽글은 말하지 않는다(말풍선 + 사운드킷 몽글 소리). b1 · b2는 억양시험.json의 what_b · aww_b와 같은 요청이라 캐시에서 나온다. n3 「Your turn. Say it out loud!」는 E3(앱으로배운한국어_20261025) 파일을 그대로 쓴다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_아니네가지뜻_20261027/음성/계획.json --굽기 · 10-27 다시 살림(v6): n5 「Same word. Different tone. Your turn!」 한 줄만 새로 굽는다(오해 고리를 뺀 「한 낱말 · 두 억양」 판). · 10-28: b1 · n4는 Typecast 원본이 잘려 와(지지직) 낮은 크기로 다시 샀다 — seed마다 연기가 달라 옛 줄과 길이 · 억양이 가장 가까운 seed 1029를 골랐다(b1은 이제 억양시험 what_b와 다른 원본).",
+  "note": "LAB E4 「아니」 — B 갈래 인물 그대로: 바리스타 = 범수(역할 목소리), 해설 = 하나(LAB 목소리). 몽글은 말하지 않는다(말풍선 + 사운드킷 몽글 소리). b1 · b2는 억양시험.json의 what_b · aww_b와 같은 요청이라 캐시에서 나온다. n3 「Your turn. Say it out loud!」는 E3(앱으로배운한국어_20261025) 파일을 그대로 쓴다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_아니네가지뜻_20261027/음성/계획.json --굽기 · 10-27 다시 살림(v6): n5 「Same word. Different tone. Your turn!」 한 줄만 새로 굽는다(오해 고리를 뺀 「한 낱말 · 두 억양」 판). · 10-28: b1 · n4는 Typecast 원본이 잘려 와(지지직) 낮은 크기로 다시 샀다 — seed마다 연기가 달라 옛 줄과 길이 · 억양이 가장 가까운 seed 1029를 골랐다(b1은 이제 억양시험 what_b와 다른 원본). · 10-28 저녁: 해설 n5 · n6은 하나 → 소진(유호님 「소진 세기 1.0으로」 — 하나는 감탄사에서 배음이 엉키고 n6이 646Hz로 뒤집힘), 감정 세기 1.0, seed는 넷 가운데 최고 음높이 560Hz 아래 · 엉킴이 적고 「Your」가 「YOUR TURN」 칩(1.68초)에 맞는 n5 1028 · n6 1029.",
   "voice": {
     "id": "tc_61659cc118732016a95fe7c6",
     "name": "하나"
@@ -71,6 +71,11 @@
     {
       "id": "n5",
       "text": "Same word. Different tone. Your turn!",
+      "voice": {
+        "id": "tc_666a9871abcf27a5169850d0",
+        "name": "소진"
+      },
+      "seed": 1028,
       "emotion": "smart",
       "prev": "The barista said the same Korean word twice: once shocked by a pile of coins, once blushing at a little flower. Here is the trick:",
       "next": "Say it out loud with him."
@@ -78,8 +83,13 @@
     {
       "id": "n6",
       "text": "Which one will you try first?",
+      "voice": {
+        "id": "tc_666a9871abcf27a5169850d0",
+        "name": "소진"
+      },
+      "seed": 1029,
       "emotion": "happy",
-      "intensity": 1.1
+      "intensity": 1
     }
   ]
 }

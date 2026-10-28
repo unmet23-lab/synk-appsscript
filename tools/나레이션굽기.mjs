@@ -29,6 +29,7 @@
 //   리미터(−1 dBFS)로 봉우리만 누른다 — Typecast는 목표 크기를 맞추며 0 dBFS를 넘는 봉우리를 그냥 잘라 보내서다(−15.5로 산 줄의 70%).
 //   lufs만 바꾸면 다시 사지 않는다. 옛 계획을 그때 산 원본 그대로 다시 다듬을 때만 계획에 "requestLufs": "line"(줄의 lufs로 요청, 키우기 없음).
 //   다듬을 때 캐시 원본의 꽉 찬 표본(잘림)을 세어 3개 이상이면 알린다.
+//   다듬은 줄의 최고 음높이도 재어 560Hz를 넘으면 알린다 — 감정 세기 1.3 · toneup 1.2는 여자 목소리를 600Hz 넘게 올려 목소리가 뒤집혀 깨진다(10-28).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -41,7 +42,7 @@ const run = promisify(execFile);
 const FFMPEG = process.env.SYNK_FFMPEG_EXE || 'ffmpeg', FFPROBE = process.env.SYNK_FFPROBE_EXE || 'ffprobe';
 const DEFAULTS = { model: 'ssfm-v30', lang: 'ko', emotion: 'normal', intensity: 1, tempo: 1, seed: 1003, lufs: -17 };
 // 요청 크기: 말소리 봉우리는 크기보다 15~17 dB 위라 −15.5·−17로 요청하면 0 dBFS를 넘어 잘린다. −26이면 26 dB 여유.
-export const REQUEST_LUFS = -26, LIMIT = 0.89, CLIP_WARN = 3;
+export const REQUEST_LUFS = -26, LIMIT = 0.89, CLIP_WARN = 3, PITCH_WARN = 560;
 const ID = /^[A-Za-z0-9가-힣._-]{1,60}$/;
 const TOOL = 'tools/나레이션굽기.mjs';
 const hangul = (text) => [...String(text)].filter((c) => /[가-힣]/.test(c)).length;
@@ -224,6 +225,31 @@ export function clippedSamples({ x }) {
   for (let i = 0; i < x.length; i++) if (Math.abs(x[i]) >= 32766 / 32768) n++;
   return n;
 }
+// 큰 소리 프레임의 YIN 음높이(포물선 보간) 가운데 가장 높은 값(Hz), 모음이 없으면 null. 24kHz 안팎으로 줄여 40ms 창 · 10ms 간격
+// (tools/목소리엉킴.py와 같은 셈 — 10-28 소진 「Three!」 세기 1.3 638Hz 깨짐 ↔ 세기 1.0 498Hz 괜찮음).
+export function topPitch({ rate, x }) {
+  const step = rate >= 44100 ? 2 : 1, sr = rate / step, n = Math.floor(x.length / step), y = new Float64Array(n);
+  for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < step; k++) s += x[i * step + k]; y[i] = s / step; }
+  const w = Math.round(sr * 0.04), hop = Math.round(sr * 0.01), tmin = Math.floor(sr / 1100), tmax = Math.floor(sr / 120);
+  let pk = 0; for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(y[i]));
+  if (pk < 1e-4) return null; // 무음
+  const d = new Float64Array(tmax + 2), dn = new Float64Array(tmax + 2);
+  let best = null;
+  for (let i = 0; i + w + tmax + 2 < n; i += hop) {
+    let e = 0; for (let j = 0; j < w; j++) e += y[i + j] * y[i + j];
+    if (Math.sqrt(e / w) < pk * 0.12) continue;
+    for (let t = 0; t < tmax + 2; t++) { let s = 0; for (let j = 0; j < w; j++) { const q = y[i + j] - y[i + j + t]; s += q * q; } d[t] = s; }
+    let cum = 0; dn[0] = 1;
+    for (let t = 1; t < tmax + 2; t++) { cum += d[t]; dn[t] = d[t] * t / (cum + 1e-12); }
+    let t = -1;
+    for (let k = tmin; k < tmax; k++) if (dn[k] < 0.1) { t = k; break; }
+    if (t < 0) continue;
+    while (t + 1 < tmax && dn[t + 1] < dn[t]) t++;
+    const a = dn[t - 1], b = dn[t], c = dn[t + 1], hz = sr / (t + 0.5 * (a - c) / (a - 2 * b + c + 1e-12));
+    if (best === null || hz > best) best = hz;
+  }
+  return best === null ? null : Math.round(best);
+}
 const probeSeconds = async (file) => Number((await run(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { windowsHide: true })).stdout.trim());
 async function ffmpegTo(out, args) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
@@ -265,9 +291,11 @@ async function processVersion(plan, v, say) {
     const requested = oldTarget || gain === null ? l.settings.lufs : plan.requestLufs;
     if (sourceClipped >= CLIP_WARN) warnings.push(`${l.id}: Typecast 원본이 ${sourceClipped}표본 잘려 왔습니다(${requested} LUFS로 요청) — 지직거릴 수 있습니다. ${gain === null ? '계획의 requestLufs: "line"을 빼고' : 'requestLufs를 더 낮춰'} --굽기 --줄 ${l.id}로 다시 사세요.`);
     if (outClipped >= CLIP_WARN) warnings.push(`${l.id}: 다듬은 줄에 꽉 찬 표본 ${outClipped}개 — 들어 보고 lufs를 낮추세요.`);
+    const pitch = topPitch(out16);
+    if (pitch > PITCH_WARN) warnings.push(`${l.id}: 최고 음높이 ${pitch}Hz — ${PITCH_WARN}Hz를 넘으면 목소리가 뒤집혀 깨질 수 있습니다. 감정 세기를 1.0으로 낮추거나 seed를 바꿔 다시 사세요.`);
     fs.writeFileSync(path.join(v.out, l.id + '.json'), JSON.stringify({ tool: TOOL, id: l.id, text: l.text, ...(l.show ? { show: l.show } : {}), dur, words,
       ...(meta ? {} : { note: '옛 캐시라 Typecast 낱말 시각이 없음' }), source: { key, voice: l.voice, settings: l.settings, speed: l.speed || 1, cut: l.cut || null },
-      level: { requestLufs: requested, gainDb: gain, limit: gain === null ? null : LIMIT, clippedSource: sourceClipped, clippedOut: outClipped } }, null, 1) + '\n');
+      level: { requestLufs: requested, gainDb: gain, limit: gain === null ? null : LIMIT, clippedSource: sourceClipped, clippedOut: outClipped, topPitchHz: pitch } }, null, 1) + '\n');
     const w = rateWarning(l, dur); if (w) warnings.push(w);
     made.push({ id: l.id, text: l.text, ...(l.show ? { show: l.show } : {}), ...(l.scene ? { scene: l.scene } : {}), ...(l.at !== undefined ? { at: l.at } : {}),
       dur, syllablesPerSec: hangul(l.text) ? +(hangul(l.text) / dur).toFixed(2) : null, src: rel(plan.srcBase || plan.out, wav), key, words: words.length, ...(l.variant ? { variant: true } : {}) });
