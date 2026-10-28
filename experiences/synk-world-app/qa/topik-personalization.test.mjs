@@ -356,8 +356,14 @@ test('위치판: 높은 난도의 첫 정답 뒤에도 앞 난도의 「혼자 �
  assert.equal(stale.status,'review');assert.equal(stale.note.kind,'review');assert.equal(stale.note.done,true);
  assert.match(view.noteText(stale.note),/^다시 확인할 때 · .+ 혼자 해냄$/);
  const missed=student();for(const [n,correct]of [[1,false],[2,false],[3,true]])answerAs(missed,{key:`m-${n}`,correct});missed.advance(8*DAY);
+ const needingPractice=position.buildPositionMap({summary:missed.coach.summary(),events:missed.coach.events(),policy:Learning.POLICY}).skills.find(skill=>skill.id==='ko.reading.detail');
+ // learning-priority-4: 틀린 근거가 최근 창에 남아 있으면 시간이 흘러도 연습 우선순위를 낮추지 않는다.
+ assert.equal(needingPractice.status,'practice');assert.equal(needingPractice.priority,1);
+ assert.deepEqual(needingPractice.note,{kind:'practice',n:3,wrong:2});
+ assert.doesNotMatch(view.noteText(needingPractice.note),/혼자 해냄|다시 확인할 때/);
+ missed.advance(23*DAY); // 31일: 최근 근거 창 밖이면 재확인하되 혼자 해냈다고 만들지 않는다.
  const old=position.buildPositionMap({summary:missed.coach.summary(),events:missed.coach.events(),policy:Learning.POLICY}).skills.find(skill=>skill.id==='ko.reading.detail');
- assert.equal(old.note.done,false);assert.match(view.noteText(old.note),/^다시 확인할 때 · 마지막 기록 /,'혼자 해낸 적이 없으면 마지막 기록 날짜만');
+ assert.equal(old.status,'review');assert.equal(old.note.done,false);assert.match(view.noteText(old.note),/^다시 확인할 때 · 마지막 기록 /,'혼자 해낸 적이 없으면 마지막 기록 날짜만');
 });
 
 // 계획이 숙제 항목을 앞세울 때 이유 한 줄도 그 숙제 항목(= 실제로 먼저 낼 문항의 항목)을 말한다.
