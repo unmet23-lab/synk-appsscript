@@ -126,6 +126,9 @@ function avgClassSize(inp, stageKey, seats) {
   return Math.min(cap, Math.max(f.min, f.base + seats / f.perSeats));
 }
 
+// 위성 강사 수(기본 성과급 인원): 4실 편제는 댄스·뷰티·보컬 3명, 옛 단계는 댄스 1명. 10-28 시간표안 비교는 staff.v23.satelliteHeads로 댄스 1명만 둔다
+const satelliteHeads = (v23) => (v23 ? (v23.satelliteHeads ?? 3) : 1);
+
 // 단계 고정비(₮/월). mult는 그달 물가 계단(wage·rent) — 넓히는 기준·멈춤 규칙이 그달 값으로 재게 한다 [아르곤 코드 검수 10-18]
 function labStageFixed(inp, stageKey, opts = {}, mult = {}) {
   const L = inp.lab; const S = L.stages[stageKey]; const st = L.staff; const o = L.other;
@@ -136,7 +139,7 @@ function labStageFixed(inp, stageKey, opts = {}, mult = {}) {
   const v23 = stageKey === 'v23' ? st.v23 : null; // 08-01 4실 편제: 댄스(전일+토)·뷰티·보컬 위성 강사
   const wages = (st.director + ops + (v23 ? v23.dance + v23.beauty + v23.vocal : st.dance)) * w;
   const avgUtil = (S.areaM2 * L.utilitiesPerM2MNT) * ri * (Object.values(L.utilitiesSeason).reduce((a, b) => a + b, 0) + (12 - Object.keys(L.utilitiesSeason).length)) / 12;
-  const headcountBase = opsN + (v23 ? 3 : 1) /* 댄스(+뷰티·보컬) */;
+  const headcountBase = opsN + satelliteHeads(v23) /* 댄스(+뷰티·보컬) */;
   const HS = L.hosted || {};
   const hostRentFixed = stageKey === 'host' && HS.fixedPerRoomMNT ? HS.fixedPerRoomMNT * (mult.hostRooms || S.rooms) * ri : 0; // 고정 임대로 계약하면 기관 몫이 고정비가 된다
   const rentMNT = S.rentFixedMNT ? S.rentFixedMNT : S.areaM2 * L.rentPerM2MNT; // 08-01 4실은 77평 임대 월 1,500만₮
@@ -208,7 +211,7 @@ function labCapacityV23(inp, wkdSlots, satSlots, sizeFixed) { // sizeFixed: 반�
   const wkdPer = reg * (1 - L.weekendShare) + 0.5 * L.lightShare; const satPer = reg * L.weekendShare;
   const seatEq = reg + 0.5 * L.lightShare;
   const fits = (n) => { const size = sizeFixed || avgClassSize(inp, 'v23', n * seatEq); return Math.ceil(n * wkdPer / size - 1e-9) <= wkdSlots && Math.ceil(n * satPer / size - 1e-9) <= satSlots; };
-  let lo = 0; let hi = (wkdSlots + satSlots) * L.stages.v23.targetClassSize / Math.min(wkdPer, satPer || 1);
+  let lo = 0; let hi = (wkdSlots + satSlots) * (sizeFixed || L.stages.v23.targetClassSize) / Math.min(wkdPer, satPer || 1); // [10-28] 설계 16석으로 셀 때는 상한도 16석(토요일 칸이 없으면 13명 상한에 걸려 정원이 낮게 나왔다)
   for (let k = 0; k < 80; k += 1) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
   return lo;
 }
@@ -461,7 +464,7 @@ function run(inp, scName, opts = {}) {
     const kInfl = (L.inflation?.steps || []).filter((s) => m >= s).length;
     const bepNow = bepAt(stageKey, { ...multNow, rooms, hostRooms: stageKey === 'host' ? rooms : undefined }, kInfl); // 그달 물가·교실 수로 다시 잰 손익분기
     const ratio = isOpen ? students / bepNow : 0;
-    const headcount = isOpen ? Math.ceil(Math.max(0, teacherClasses - (lab.satClasses || 0)) / 2) + opsCount + (v23s ? 3 : 1) : 0; // [페이블 4차] 토요일 반은 평일 강사가 겹쳐 맡는다
+    const headcount = isOpen ? Math.ceil(Math.max(0, teacherClasses - (lab.satClasses || 0)) / 2) + opsCount + satelliteHeads(v23s) : 0; // [페이블 4차] 토요일 반은 평일 강사가 겹쳐 맡는다
     const baseEach = labBaseBonus(inp, ratio);
     const baseBonus = isOpen ? baseEach * headcount : 0;
     const fieldBonus = isOpen ? labFieldBonus(inp, lab.revenue) : 0;
@@ -940,7 +943,7 @@ function unitEconomics(inp, scName, res, y = 2029) {
 }
 
 // ───────── 실행 ─────────
-export { labBep, labPremium, labSaturdaySeats, labClasses, setPremiumClasses, run };
+export { labBep, labPremium, labSaturdaySeats, labClasses, labCapacityV23, setPremiumClasses, run, summarize };
 // import로 계산 규칙을 시험할 때 저장된 사업 문서를 덮어쓰지 않는다.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 // [10-19 유호님 「4실 기준」] 본 결과는 08-01 확정 4실 24반 직영이다. 모자라는 돈은 투자·차입으로 채운다고 보고(2절 「필요 자금」) 멈춤 규칙은 쓰지 않는다.
