@@ -141,6 +141,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 생성기 입력과 `--check`의 출력 텍스트 비교를 LF로 통일하는 두 줄을 고치고 원천 지도 해시 한 곳을 갱신했다. 생성 런타임 CJS 본문은 보존하고 LF·CRLF·해시·실행 결과·실제 원문 변경 거절을 확인하는 회귀 시험을 추가했다.
 - 다시 확인: `tests/build-talk-publication-runtime.test.cjs` 1/1과 Talk 작업 원천·동결 원천 각각 10파일의 `--check`가 통과했다. 생성 CJS SHA `5178005e2b11e2dc79cc15d2c239cc7a6952c0ded86d2fa697bf9eb88adf2252`는 그대로다.
 
+- 10-29 덧붙임(Study, GPT): Windows에서 만든 index.html의 CSS 토큰이 Linux CI에서만 달랐다. CSS 원고의 CRLF를 그대로 복사·해시한 것이 원인이었다. 빌더의 CSS·HTML 입력과 텍스트 대조를 LF로 고정하고 바이너리 글꼴은 원시 바이트로 유지했다. 실제 별도 폴더에서 LF 생성 → 원고·체크아웃 CRLF 전환 → 읽기 전용 check → 재생성을 수행해 출력·캐시 토큰이 전부 같고 check가 쓰지 않는 것을 tests/study-build-portability.test.mjs로 확인한다.
+
 ### 워크트리에서 만든 묶음의 지도 판(map_ver)이 바뀐다
 - 증상: 워크트리에서 `node tools/build-game-learning.js`를 돌리자 묶음의 `map_ver`와 Strata 원본 sha256이 바뀐다(내용은 같음). 옮겨 쓴 `atlas-learning.js`가 메인 `--check`에서 「Learning source differs」로 실패한다(10-03).
 - 원인: 워크트리 체크아웃이 `strata/*.json`을 CRLF로 꺼내 바이트 해시가 달라졌다. 옮기기 스크립트도 CRLF로 썼다. 생성기는 LF로 쓰고 바이트로 비교한다.

@@ -21,6 +21,8 @@ const FONT = path.join(REPO, 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2');
 const check = process.argv.includes('--check');
 const OUT = check ? fs.mkdtempSync(path.join(os.tmpdir(), 'synk-study-')) : path.join(HERE, 'dist/study');
 const sha = buf => createHash('sha256').update(buf).digest('hex');
+const text = file => fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+const fileSha = file => /\.(?:html|css|js|json)$/.test(file) ? sha(text(file)) : sha(fs.readFileSync(file));
 
 // 화면이 쓰는 칸만. 51·52는 지문(카드 문장), 53은 자료(쓰기). 예시답(model·blanks)·채점 메모는 학생 화면에 가지 않는다.
 const KEEP = {
@@ -61,7 +63,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const write = (name, data) => fs.writeFileSync(path.join(OUT, name), data);
 
   { const reused = await reusedCopy(), file = path.join(SRC, 'copy-reused.mjs');
-    if (check) { if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== reused) { console.error('src/copy-reused.mjs가 world-strings와 달라요 — node experiences/korean-study/build.mjs'); process.exit(1); } }
+    if (check) { if (!fs.existsSync(file) || text(file) !== reused) { console.error('src/copy-reused.mjs가 world-strings와 달라요 — node experiences/korean-study/build.mjs'); process.exit(1); } }
     else fs.writeFileSync(file, reused); }
   write('items.json', `${JSON.stringify(studyBank(JSON.parse(fs.readFileSync(BANK, 'utf8'))))}\n`);
   write('study.json', `${JSON.stringify(studyContent(JSON.parse(fs.readFileSync(path.join(HERE, 'content/ending-53.json'), 'utf8'))))}
@@ -70,10 +72,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const built = esbuild.buildSync({ entryPoints: [path.join(SRC, 'app.mjs')], bundle: true, write: false, format: 'esm', platform: 'browser',
     target: ['es2022'], charset: 'utf8', legalComments: 'none', define: { __ITEMS_TOKEN__: JSON.stringify(itemsToken) } });
   write('app.js', built.outputFiles[0].contents);
-  write('study.css', fs.readFileSync(path.join(SRC, 'study.css')));
+  write('study.css', text(path.join(SRC, 'study.css')));
   fs.copyFileSync(FONT, path.join(OUT, 'assets/SUIT-Variable.woff2'));
 
-  let html = fs.readFileSync(path.join(SRC, 'index.html'), 'utf8');
+  let html = text(path.join(SRC, 'index.html'));
   for (const f of ['study.css', 'app.js']) {
     const before = html;
     html = html.replace(new RegExp(`(["'])${f.replace('.', '\\.')}\\1`), `$1${f}?v=${sha(fs.readFileSync(path.join(OUT, f))).slice(0, 12)}$1`);
@@ -84,7 +86,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   if (check) {
     const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(dir, e.name)).map(f => `${e.name}/${f}`) : [e.name]).sort();
     const real = path.join(HERE, 'dist/study'), a = walk(OUT), b = fs.existsSync(real) ? walk(real) : [];
-    const diff = [...new Set([...a, ...b])].filter(f => !a.includes(f) || !b.includes(f) || sha(fs.readFileSync(path.join(OUT, f))) !== sha(fs.readFileSync(path.join(real, f))));
+    const diff = [...new Set([...a, ...b])].filter(f => !a.includes(f) || !b.includes(f) || fileSha(path.join(OUT, f)) !== fileSha(path.join(real, f)));
     fs.rmSync(OUT, { recursive: true, force: true });
     if (diff.length) { console.error(`dist/study가 원고와 달라요: ${diff.join(', ')} — node experiences/korean-study/build.mjs`); process.exit(1); }
     console.log('dist/study 최신');
