@@ -92,6 +92,13 @@ export const 최적화검수원문 = Object.freeze({
   implementation: '1,2,3,4 전부 지금 최적화 및 보안 진행하자.',
   independentReview: '이번 작업은 GPT 구현·독립 GPT 검수로 계속 진행',
 });
+// 별도 후속 요청: 플랫폼 목록·검색의 PATH 표시만 숨긴다. 기존 작업의 권한에는 합치지 않는다.
+export const PATH비공개작업ID = 'platform-path-private-20261028';
+export const PATH비공개원문 = Object.freeze({
+  implementation: '아 그리고 지금 synk 플렛폼 왼쪽 목록에 synk path도 있잖아.  이거는 일단 비공개처리하자.',
+  independentReview: '이번 작업은 GPT 구현·독립 GPT 검수로 계속 진행',
+  visibilityScope: '플랫폼 목록·검색에서만 숨김',
+});
 export const Atlas작업원문 = Object.freeze({ implementationReview: '이번 작업은 GPT 구현·독립 GPT 검수로 진행' });
 export const Atlas작업ID = 'atlas-world-learning-20261028';
 export function 사용자지정판(file) {
@@ -194,6 +201,20 @@ function 최적화범위맞나(scope, p, role, kind) {
     /^(?:account|experiences\/synk-account)\/dist\/[a-z-]+\.(?:js|json)$/.test(p) || p === 'experiences/synk-account/build-manifest.json' ||
     /^tests\/(?:ci[^/]*|build-member-activity|build-world-account|account-bundle-scope|member-understanding[^/]*|world-[a-z-]+|검수[^/]*|desktop-[a-z-]+)\.test\.(?:js|mjs|cjs)$/.test(p);
 }
+const PATH비공개원천 = new Set([
+  ...['library', 'launcher', 'member-home'].map(name => `desktop/renderer/${name}.mjs`),
+  'desktop/tests/development-catalog.test.cjs', 'desktop/tests/path-visibility.test.mjs',
+  'tools/lib/검수증명.mjs', 'tests/검수PATH비공개.test.mjs',
+]);
+const PATH비공개빌드 = new Set([
+  '.github/desktop-preview/unified/release-input.json',
+  ...['library', 'launcher', 'member-home'].map(name => `.github/desktop-preview/unified/source/renderer/${name}.mjs`),
+]);
+function PATH비공개범위맞나(scope, p, role, kind) {
+  if (scope === 'platform-path-private-publication-20261028') return 최적화범위맞나('optimization-pc-publication-20261028', p, role, kind);
+  if (scope !== PATH비공개작업ID) return false;
+  return (role === '배포 후보' ? PATH비공개빌드 : PATH비공개원천).has(p);
+}
 function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 단독 = 판 === 4, 검수자 = 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
   if (o.종류 !== '화면' && !단독) throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
@@ -203,9 +224,11 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   if (!지정 || typeof 지정 !== 'object' || Array.isArray(지정) || Object.keys(지정).sort().join(',') !== ['version', 'taskId', 'userStatements', 'requiredReviewers', 'finalReviewer', 'allowFallback', 'sources', 'candidate'].sort().join(',')) throw new Error('사용자지정 JSON 필드가 잘못됐다');
   const atlas = 단독 && 지정.taskId === Atlas작업ID;
   const 최적화 = 단독 && 지정.taskId === 'optimization-security-20261028';
-  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
-    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  const PATH비공개 = 단독 && 지정.taskId === PATH비공개작업ID;
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
+    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
   if (atlas && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('Atlas 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
+  if (PATH비공개 && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('PATH 비공개 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   if (정규해시(지정.requiredReviewers) !== 정규해시(검수자) || 지정.finalReviewer !== 최종 || 지정.allowFallback !== false) throw new Error(`사용자지정은 묶음별 ${검수자.join('·')}와 최종 전체 ${최종} 판정이 필요하며 대체를 허용하지 않는다`);
   const checkRows = (rows, expected, role) => {
     if (!Array.isArray(rows) || rows.length !== expected.length) throw new Error(`사용자지정 ${role} 경로 전체가 맞지 않는다`);
@@ -214,7 +237,7 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
       안전경로(o.저장소, row.path);
       const match = expected.find(f => f.path === row.path);
       if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author)
-        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
       if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
       if (!match || !/^[a-f0-9]{64}$/.test(row.sha256 || '') || row.sha256 !== match.sha256) throw new Error(`사용자지정 ${role} SHA 불일치: ${row.path}`);

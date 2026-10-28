@@ -101,7 +101,7 @@ export function buildHomeModel({library,personal,prefs,clients=[],records=[],act
   const pendingReady=pending.find(row=>available.includes(row.appId));
   const recentReady=recent.find(row=>available.includes(row.id));
   const purposeChoice=personal?.sessionOnly&&allowed.includes(personal.selected)?personal.selected:null;
-  const first=purposeChoice||pendingReady?.appId||recentReady?.id||available[0]||pending[0]?.appId||recent[0]?.id||order[0]||null;
+  const first=purposeChoice||pendingReady?.appId||recentReady?.id||available[0]||pending.find(row=>allowed.includes(row.appId))?.appId||recent[0]?.id||order[0]||null;
   const nextTask=pending.find(row=>row.appId===first)||null;
   const firstEntry=nextTask?.entryId||recent.find(row=>row.id===first)?.entryId||(first==='messenger'&&!homeLaunchTarget(actions[first])&&library.appIds.includes('teacher')&&homeLaunchTarget(actions.teacher)?'teacher':first);
   return {canSave:canSave(library),order,recent,first,firstEntry,nextTask,nextKind:nextTask?'task':recent.some(row=>row.id===first)?'recent':'start',available,favorites:[...new Set(prefs?.favorites||[])].filter(id=>order.includes(id)),tasks,notes:visibleRecords.filter(row=>row.kind==='note'),clients};

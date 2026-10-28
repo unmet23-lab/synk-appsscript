@@ -39,8 +39,20 @@ export function visibleSelection(selected,appIds){
 export function displayLibraryAppId(id,library){
   return id==='teacher'&&library?.appIds?.includes('messenger')&&library.appIds.includes('teacher')?'messenger':id;
 }
+// Temporarily hide PATH discovery without changing account grants or saved notes.
+export function visibleLibraryAppIds(library){
+  return (library?.appIds||[]).filter(id=>id!=='path');
+}
 export function displayLibraryAppIds(library){
-  return [...new Set((library?.appIds||[]).map(id=>displayLibraryAppId(id,library)))];
+  return [...new Set(visibleLibraryAppIds(library).map(id=>displayLibraryAppId(id,library)))];
+}
+export function moveLibraryFavorite(favorites,appIds,id,direction){
+  if(![-1,1].includes(direction))return null;
+  const visible=favorites.filter(entry=>appIds.includes(entry)),from=visible.indexOf(id),to=from+direction;
+  if(from<0||to<0||to>=visible.length)return null;
+  [visible[from],visible[to]]=[visible[to],visible[from]];
+  let index=0;
+  return favorites.map(entry=>appIds.includes(entry)?visible[index++]:entry);
 }
 export function projectLibraryPreferences(prefs,library){
   const favorites=[...new Set((prefs.favorites||[]).map(id=>displayLibraryAppId(id,library)))],lastLaunch={},launchEntries={};

@@ -11,8 +11,8 @@ test('a signed-in account with no menu grants sees all development apps without 
   const auth=signed('member-with-no-grants'),before=JSON.stringify(auth);
   const library=resolveLibrary(auth,preview);
   assert.deepEqual(library.appIds,APP_IDS);assert.equal(library.owner,'member-with-no-grants');assert.equal(library.status,'ready');
-  // Every catalogue app gets a card except teacher, which opens inside Messenger's; a fixed count broke whenever a benefit was added or retired.
-  const cards=APP_IDS.filter(id=>id!=='teacher');
+  // PATH is temporarily hidden; teacher opens inside Messenger's card; a fixed count broke whenever a benefit was added or retired.
+  const cards=APP_IDS.filter(id=>id!=='teacher'&&id!=='path');
   assert.equal(library.developmentCatalog,true);assert.deepEqual(displayLibraryAppIds(library),cards);assert.ok(libraryCopy(library).note.includes('앱 '+cards.length+'개'));
   assert.equal(JSON.stringify(auth),before);assert.deepEqual(auth.library.appIds,[]);
 });
