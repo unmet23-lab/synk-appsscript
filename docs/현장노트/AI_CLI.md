@@ -751,6 +751,12 @@
 - 고침: DM 모델 바꾸기·되돌리기는 위 「개인 대화를 Claude로 바꿀 때 …」의 줄끝을 지키는 바꾸기로 한다(10-21 판 `.tmp/hermes-telegram-opus-20261021/switch.cjs`, 되돌리기 `--restore`). 다시 켜기는 같은 폴더 `restart-when-idle.ps1`을 PowerShell 7(`pwsh`)로 돌린다 — BOM 없는 한글 스크립트라 Windows PowerShell 5.1은 깨뜨린다([윈도우 셸](윈도우_셸.md) 「Windows PowerShell 5.1이 BOM 없는 .ps1에서 …」). DM이 갑자기 답하지 않으면 게이트웨이보다 그 조직 크레딧부터 본다.
 - 다시 확인: 10-24 읽기만 — `%LOCALAPPDATA%\hermes\config.yaml`에 `channel_overrides:` 아래 DM 대화 하나(provider·model·system_prompt)와 맨 위 `fallback_providers: []`가 있고, `restart-when-idle.ps1`은 BOM 없이 한글 주석으로 시작한다(첫 바이트 `23 20 ED`).
 
+### 크레딧 부족으로 실패한 턴 뒤 `active_agents`가 1에 머물러 「쉬는 때 다시 켜기」가 10분을 다 쓰고, 공식 restart는 내린 뒤 못 올린다 (2026-10-28 Claude)
+- 증상: synk.yuh 크레딧 바닥(13:31 DM 턴 실패) 뒤 `.env` 키를 unmet29로 바꾸고 `restart-when-idle.ps1`을 돌렸더니 「쉬는 때를 찾지 못해 다시 켜지 않음」으로 끝났다. 진행 대화(`runtime/active_sessions.json`)·`processes.json`·자식 프로세스는 다 비었는데 `gateway_state.json`의 `active_agents`가 1이었다. 그래서 복구 작업을 끄고 공식 `hermes gateway restart`를 바로 불렀더니 90초 뒤 「The service definition exists, but the service manager did not recover it」로 끝나고 게이트웨이가 내려간 채였다.
+- 원인: `active_agents`는 대화만이 아니라 예약 작업 · API 실행 · 턴보다 오래 산 실행기 일꾼까지 센다(`gateway/run_shutdown.py` `_active_work_count`). 실패한 턴의 일꾼이 끝나지 않고 남은 것으로 보인다(13:36 · 14:35 `control-pipe timed out … worker abandoned`). 그 사이 복구 작업 한 회차(14:49:35)가 이미 돌고 있었다 — `Disable-ScheduledTask`는 돌고 있는 회차를 멈추지 않는다. 다시 뜬 게이트웨이는 텔레그램 플러그인 불러오기가 10초 제한(`plugins.load_timeout_seconds`)에 걸려 처음엔 텔레그램 없이 떴다. 스크립트의 `"확인 $checks번"`은 PowerShell이 `$checks번`을 한 변수 이름으로 읽어 빈칸으로 찍혔다(`.tmp` 판은 `$($checks)번`으로 고침).
+- 고침: 내려간 게이트웨이는 복구 작업(2분마다)이 14:53에 공식 `gateway start`로 다시 띄웠고, 텔레그램은 백그라운드 재연결이 14:57:32에 붙였다(14:57:43 `polling confirmed healthy`) — 끊긴 시간은 약 7분. 진행 대화가 0인데 `active_agents`만 1이면 10분을 기다리지 말고 공식 restart를 부른다. 다시 안 뜨면 억지로 띄우지 말고, restart 뒤 다시 켠 복구 작업이 다음 회차(2분 안)에 띄우는지 본다.
+- 다시 확인: `gateway.log`에 `Connected to Telegram`과 `polling confirmed healthy`, 그 뒤 `hermes chat -q "Reply with the single word OK." --oneshot --provider anthropic -m claude-opus-5-5 --max-turns 1`이 agent.log에 `API call #1: model=claude-opus-5-5 … out=4`(10-28 14:58, 약 2.5만 토큰 캐시 쓰기)로 찍힌다. 크레딧이 바닥난 키는 자격 풀에 `exhausted`로 남지만 1시간 뒤 풀리고, `.env` 값을 바꾸면 새 값으로 다시 시도한다.
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다
