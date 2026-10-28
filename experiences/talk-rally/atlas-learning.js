@@ -6719,8 +6719,8 @@ var SynkLearning = (() => {
         else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
       })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
         "use strict";
-        const VERSION = "atlas-2.4.1";
-        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", "atlas-2.4.0", VERSION];
+        const VERSION = "atlas-2.4.0";
+        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
         const trail = () => {
           const module2 = getTrail();
           if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");

@@ -9,6 +9,16 @@ const Life = require('../atlas/trail-life');
 const scope = { domain: 'LAB', workspace: 'personalization-review', subject: 'synthetic' };
 const at = '2026-10-29T00:00:00.000Z';
 
+test('a corrective release preserves the decision wire policy accepted by already-open clients', () => {
+  let id = 0;
+  const session = Core.createSession({ scope, clock: () => at, id: () => `wire.${++id}` });
+  session.plan('reading', [{ id: 'one', minutes: 3, pace: 'standard' }]);
+  const record = session.events().find(event => event.type === 'decision.made');
+  // The deployed 2.4.0 validator rejects a new policy. A future policy migration
+  // needs its own compatibility rollout; this patch changes no schema.
+  assert.equal(record.policy, 'atlas-2.4.0');
+});
+
 test('confirmation qualifies the observation shown then, including equal-clock append order', () => {
   for (const kind of ['need', 'due', 'trait']) {
     for (const later of [at, '2026-10-30T00:00:00.000Z']) {
