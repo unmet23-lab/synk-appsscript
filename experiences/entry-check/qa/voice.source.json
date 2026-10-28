@@ -3,7 +3,7 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "지금 voice.mjs encode()와 같음: 앞뒤 -48dB 자르기, loudnorm I=-17 TP=-1.5 LRA=11, 앞 40ms·끝 0.12초 → MP3 mono 24kHz 48kbps",
- "updatedAt": "2026-10-09T08:41:47.386Z",
+ "updatedAt": "2026-10-28T07:08:35.754Z",
  "voices": {
   "narrator": {
    "label": "해설",
@@ -119,119 +119,119 @@
  "lines": {
   "nar-tut-guest": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "839686fc79b4b66544021a91c8484109",
+   "key": "fe20564120e1a2dc779197380a326aa4",
    "sha": {
-    "assets/voice/nar-tut-guest.mp3": "342bfdfdb134382e"
+    "assets/voice/nar-tut-guest.mp3": "82021fcd57f110ea"
    }
   },
   "nar-tut-notice": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "470f6a7dd113c1e1e0fbf46f0b8f2b32",
+   "key": "d873c7e5217ba40fdf3310d12b61244a",
    "sha": {
-    "assets/voice/nar-tut-notice.mp3": "55b360ac405f1b11"
+    "assets/voice/nar-tut-notice.mp3": "984e514be02e96f2"
    }
   },
   "nar-tut-papers": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "4a233b6a6010e0793f2d46187e392fd7",
+   "key": "3425753e19e9f17df43a51b24c8b6c31",
    "sha": {
-    "assets/voice/nar-tut-papers.mp3": "4e7f1b7997921b78"
+    "assets/voice/nar-tut-papers.mp3": "86d33a45e5daf995"
    }
   },
   "nar-tut-pass": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "3f88a47641f7e366d35ac52201301c01",
+   "key": "fca278a4377694907132eba9742b3394",
    "sha": {
-    "assets/voice/nar-tut-pass.mp3": "7c564be972a287e7"
+    "assets/voice/nar-tut-pass.mp3": "8e29decc2552d909"
    }
   },
   "nar-tut-why": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f4b40cf651a2c6037ae846f3217c5953",
+   "key": "14c8e4cfe37596be6ceb379f9dfc7ae4",
    "sha": {
-    "assets/voice/nar-tut-why.mp3": "29a9e7435b05fb20"
+    "assets/voice/nar-tut-why.mp3": "83fdd311ac586349"
    }
   },
   "nar-tut-tray": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "9de61fe46fe8288eb4f8ea64eb11f3ba",
+   "key": "ebc8396870ba0c3403f80177f96ffaa7",
    "sha": {
-    "assets/voice/nar-tut-tray.mp3": "2af0c87a4e2a1103"
+    "assets/voice/nar-tut-tray.mp3": "3bd59ae2049ce126"
    }
   },
   "nar-tut-rule": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f739332ad6ccc5efbc03c25a1ebf3d78",
+   "key": "4b8417ef0de8b9d66374df4f0c2a331a",
    "sha": {
-    "assets/voice/nar-tut-rule.mp3": "9e33bc32da980763"
+    "assets/voice/nar-tut-rule.mp3": "9da4b95cf8f34f58"
    }
   },
   "nar-tut-reject": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f2e9f17703d9e578979991350a967a84",
+   "key": "0b67caabf0785e9c16713a9cb0b1c6a6",
    "sha": {
-    "assets/voice/nar-tut-reject.mp3": "ec7707d30daa0b6c"
+    "assets/voice/nar-tut-reject.mp3": "5c8893de00f09b98"
    }
   },
   "nar-tut-choose": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "4b8f41811cde629943a489dac6ffae8b",
+   "key": "6d83d1be882f12a8d26b56a74c48d06f",
    "sha": {
-    "assets/voice/nar-tut-choose.mp3": "952c2dc5494ed55d"
+    "assets/voice/nar-tut-choose.mp3": "cd0341cfe7a4eaa5"
    }
   },
   "nar-tut-why2": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "907d44f2a66be821bde45fcb5c8f92ba",
+   "key": "b3fb5c6e3af7b2550515c8daf4c3ff6e",
    "sha": {
-    "assets/voice/nar-tut-why2.mp3": "db9c5bdf08fdf7a7"
+    "assets/voice/nar-tut-why2.mp3": "5647f42616def526"
    }
   },
   "nar-tut-hint": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "00b6eabc554a705dfb4e7468c7efa97a",
+   "key": "74c73a4c30f05a516a7c25b37920206b",
    "sha": {
-    "assets/voice/nar-tut-hint.mp3": "4fb367ec440f0d5e"
+    "assets/voice/nar-tut-hint.mp3": "a447590f2e3c58fc"
    }
   },
   "nar-tut-free": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "6d1bd8b709b0877a0e4bcbe4c2d83632",
+   "key": "b7065e6932bf780fbccf0b0328567eea",
    "sha": {
-    "assets/voice/nar-tut-free.mp3": "419b62f0748423ab"
+    "assets/voice/nar-tut-free.mp3": "eeb0c7010ace7077"
    }
   },
   "nar-brief-pool": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "e8c4e27b0a123f319af8bcfb3ed1e574",
+   "key": "6271af7315fed6655ad72a3d0bb8a24e",
    "sha": {
-    "assets/voice/nar-brief-pool.mp3": "b175685bfa20be1e"
+    "assets/voice/nar-brief-pool.mp3": "994cc68f5ec1b9ef"
    }
   },
   "line-pool-01": {
@@ -254,11 +254,11 @@
   },
   "nar-oops-pool-01": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "75f051ab132de51954f51a8cd9d44d5b",
+   "key": "77552bb6087d0cb4790770339fb78e3b",
    "sha": {
-    "assets/voice/nar-oops-pool-01.mp3": "b98e87de76fc0baf"
+    "assets/voice/nar-oops-pool-01.mp3": "5bf79aebfab441d8"
    }
   },
   "line-pool-02": {
@@ -281,11 +281,11 @@
   },
   "nar-oops-pool-02": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "4d645096a4d1869bf1e55d1046398d6c",
+   "key": "1224b9146ced58eec00e114df965f7cd",
    "sha": {
-    "assets/voice/nar-oops-pool-02.mp3": "087b6c7ab2a6a40a"
+    "assets/voice/nar-oops-pool-02.mp3": "cc40a7585a97b187"
    }
   },
   "line-pool-03": {
@@ -308,11 +308,11 @@
   },
   "nar-oops-pool-03": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "c5c234c394f09a1eb86a56b071785e6f",
+   "key": "2ba1f9a9b25f6e04ec75b0ab5e4dff70",
    "sha": {
-    "assets/voice/nar-oops-pool-03.mp3": "7e14862c914bf74b"
+    "assets/voice/nar-oops-pool-03.mp3": "be328fd93a52ed0e"
    }
   },
   "line-pool-04": {
@@ -335,11 +335,11 @@
   },
   "nar-oops-pool-04": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "7481ad7b44963bdba0b81732e373f6f4",
+   "key": "d42e68565df0e96499f26430ed01f787",
    "sha": {
-    "assets/voice/nar-oops-pool-04.mp3": "d99bde04bbc96668"
+    "assets/voice/nar-oops-pool-04.mp3": "fe98b26e3813e2c9"
    }
   },
   "line-pool-05": {
@@ -362,11 +362,11 @@
   },
   "nar-oops-pool-05": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "617af6c99e9adb8b09a30579438f2f88",
+   "key": "d492e8d7b40e12fb845dab0cc7629ff7",
    "sha": {
-    "assets/voice/nar-oops-pool-05.mp3": "2668cd5d0bb1b6c6"
+    "assets/voice/nar-oops-pool-05.mp3": "c34249499c3f0e39"
    }
   },
   "line-pool-06": {
@@ -389,11 +389,11 @@
   },
   "nar-oops-pool-06": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "95b61d2ae8bd0ca2060a5b012dab1c78",
+   "key": "4d06d2c80645932cd6a27eb5c07e9b36",
    "sha": {
-    "assets/voice/nar-oops-pool-06.mp3": "e3cef38f7052cd50"
+    "assets/voice/nar-oops-pool-06.mp3": "a7273e2a25997107"
    }
   },
   "line-pool-07": {
@@ -416,11 +416,11 @@
   },
   "nar-oops-pool-07": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "c5564391292422b99008f6fdf7474f2d",
+   "key": "c9bf50694b0cf5e22bc5df04d8748df7",
    "sha": {
-    "assets/voice/nar-oops-pool-07.mp3": "00da19ba3474fa81"
+    "assets/voice/nar-oops-pool-07.mp3": "18fda790b7451b16"
    }
   },
   "line-pool-08": {
@@ -443,20 +443,20 @@
   },
   "nar-oops-pool-08": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "1933685ebfdf3a5ca98f76db94cece52",
+   "key": "f9bc99c589daabaa5b4ad64e5d34e2ec",
    "sha": {
-    "assets/voice/nar-oops-pool-08.mp3": "aac286c6776d7bdd"
+    "assets/voice/nar-oops-pool-08.mp3": "835675292aded51e"
    }
   },
   "nar-brief-library": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "741ef45681699bee9b4c9eddd25ae9eb",
+   "key": "e8ec5e6584df9b1b46f5e2e19fdf4c3a",
    "sha": {
-    "assets/voice/nar-brief-library.mp3": "68b9939460614b09"
+    "assets/voice/nar-brief-library.mp3": "cddc603f6abcae31"
    }
   },
   "line-library-01": {
@@ -479,11 +479,11 @@
   },
   "nar-oops-library-01": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "63f0510d2f6b0f3a16fd3e8abe2c9610",
+   "key": "968f135ca9063a35b1381389af14096a",
    "sha": {
-    "assets/voice/nar-oops-library-01.mp3": "e9abde3fa5aff45f"
+    "assets/voice/nar-oops-library-01.mp3": "1d3573a561e3a10f"
    }
   },
   "line-library-02": {
@@ -506,11 +506,11 @@
   },
   "nar-oops-library-02": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "fb2efb64131221e344d76414261179ff",
+   "key": "686a84b42ead23d83739ba2eeb3f7857",
    "sha": {
-    "assets/voice/nar-oops-library-02.mp3": "f686467f05371a8e"
+    "assets/voice/nar-oops-library-02.mp3": "01a864bca4ebef68"
    }
   },
   "line-library-03": {
@@ -533,11 +533,11 @@
   },
   "nar-oops-library-03": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f5c6264104b3fa09845f4e3fbb9279a1",
+   "key": "fd9a0c35fd178e5ef3f6f113bcd82fd1",
    "sha": {
-    "assets/voice/nar-oops-library-03.mp3": "61ae411c7b87dc34"
+    "assets/voice/nar-oops-library-03.mp3": "a7788bcc2e982a5e"
    }
   },
   "line-library-04": {
@@ -560,11 +560,11 @@
   },
   "nar-oops-library-04": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "9ab6b19dc71500d0536a4d0cdcf3a65d",
+   "key": "68eac94425c75be5e87f137cae291c2f",
    "sha": {
-    "assets/voice/nar-oops-library-04.mp3": "a55f13b8f8fa049f"
+    "assets/voice/nar-oops-library-04.mp3": "5bea149f5009873b"
    }
   },
   "line-library-05": {
@@ -587,11 +587,11 @@
   },
   "nar-oops-library-05": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "106d2c7cad547ffa425ced885b07ca09",
+   "key": "4644ce37fb865e5d88f8365d60eea695",
    "sha": {
-    "assets/voice/nar-oops-library-05.mp3": "da4cb31e3548056c"
+    "assets/voice/nar-oops-library-05.mp3": "895c50d388be3190"
    }
   },
   "line-library-06": {
@@ -614,11 +614,11 @@
   },
   "nar-oops-library-06": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f46f50aed8567f048f29b6c3e3294434",
+   "key": "529e1ec41159e00c0a2494353ffd75d7",
    "sha": {
-    "assets/voice/nar-oops-library-06.mp3": "bb69f5482358d062"
+    "assets/voice/nar-oops-library-06.mp3": "52d3a11d53c43d6e"
    }
   },
   "line-library-07": {
@@ -641,11 +641,11 @@
   },
   "nar-oops-library-07": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "7d3e8b8bcd7b2f4b91aba569f87abbd8",
+   "key": "03eb51e9cb3af72f53959d75d536fed0",
    "sha": {
-    "assets/voice/nar-oops-library-07.mp3": "39f781a7d910920b"
+    "assets/voice/nar-oops-library-07.mp3": "ab7a80dc6a4b7a98"
    }
   },
   "line-library-08": {
@@ -668,11 +668,11 @@
   },
   "nar-oops-library-08": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "ed2a53788c62b29c774bd114e275db80",
+   "key": "16c196b3618deb867ee8eea9481130ee",
    "sha": {
-    "assets/voice/nar-oops-library-08.mp3": "f6cfacca7559e6e4"
+    "assets/voice/nar-oops-library-08.mp3": "f7f29ac4af8ad2db"
    }
   },
   "line-library-09": {
@@ -695,20 +695,20 @@
   },
   "nar-oops-library-09": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "e653708c4a07bfc5e7c2614a78ab0cb8",
+   "key": "b942df89000e2aba4710a13c242d2cfa",
    "sha": {
-    "assets/voice/nar-oops-library-09.mp3": "48c39192fe4538d7"
+    "assets/voice/nar-oops-library-09.mp3": "959c78586ea3434f"
    }
   },
   "nar-brief-museum": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "150d8959a4da20d06f42786044904054",
+   "key": "1ea2a3b0b883a44de0c075216d7d30f3",
    "sha": {
-    "assets/voice/nar-brief-museum.mp3": "61f09c46d19b61f7"
+    "assets/voice/nar-brief-museum.mp3": "addaf1f0aa703120"
    }
   },
   "line-museum-01": {
@@ -731,11 +731,11 @@
   },
   "nar-oops-museum-01": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "d600a6fa7897fc1293de50080a584125",
+   "key": "049ae350ef5b8df6bf96f45716356e35",
    "sha": {
-    "assets/voice/nar-oops-museum-01.mp3": "6c3b54f953c4e7db"
+    "assets/voice/nar-oops-museum-01.mp3": "321ecf9bf4df5a78"
    }
   },
   "line-museum-02": {
@@ -758,11 +758,11 @@
   },
   "nar-oops-museum-02": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "023bb0f618fce6ba8dbe5a4f36da28d3",
+   "key": "da7a57c5958ab384c17089ba915c302c",
    "sha": {
-    "assets/voice/nar-oops-museum-02.mp3": "ffd7cb56878d011c"
+    "assets/voice/nar-oops-museum-02.mp3": "f55a17d65bd8d263"
    }
   },
   "line-museum-03": {
@@ -785,11 +785,11 @@
   },
   "nar-oops-museum-03": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "19c04f43f6f4a9371f244fc22761678e",
+   "key": "040a1087dd9f5533782cb1f9fc09c39d",
    "sha": {
-    "assets/voice/nar-oops-museum-03.mp3": "b4fed0c9ce81a444"
+    "assets/voice/nar-oops-museum-03.mp3": "f7d14a1f6c0b2977"
    }
   },
   "line-museum-04": {
@@ -812,11 +812,11 @@
   },
   "nar-oops-museum-04": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "133d86ab99316e9ee26e66d3b6f6b7b2",
+   "key": "548cdb9cfa692d43a4c7607c7d9f12d5",
    "sha": {
-    "assets/voice/nar-oops-museum-04.mp3": "c83c5b0f9efb0c55"
+    "assets/voice/nar-oops-museum-04.mp3": "a2764f1411b0e4a6"
    }
   },
   "line-museum-05": {
@@ -839,11 +839,11 @@
   },
   "nar-oops-museum-05": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "85f2aa8422d625db2a2cca57f577a6df",
+   "key": "f67868406e90652175fa79e178a0ddd5",
    "sha": {
-    "assets/voice/nar-oops-museum-05.mp3": "41adccabf14669c4"
+    "assets/voice/nar-oops-museum-05.mp3": "c1d92de5678c492b"
    }
   },
   "line-museum-06": {
@@ -866,11 +866,11 @@
   },
   "nar-oops-museum-06": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "7c50be1ea4eee9d8e62f206aa4f1be7d",
+   "key": "e5b2284ab12b1343c2ee3bf030419043",
    "sha": {
-    "assets/voice/nar-oops-museum-06.mp3": "2a9c9a7bbe4d3571"
+    "assets/voice/nar-oops-museum-06.mp3": "e10c8cb323ed70fb"
    }
   },
   "line-museum-07": {
@@ -893,11 +893,11 @@
   },
   "nar-oops-museum-07": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "64736cd3e42a07604425531a37a0fe48",
+   "key": "0263009580184294244d0cac664538f3",
    "sha": {
-    "assets/voice/nar-oops-museum-07.mp3": "735f6b164627f391"
+    "assets/voice/nar-oops-museum-07.mp3": "cf99ccf38e92851f"
    }
   },
   "line-museum-08": {
@@ -920,20 +920,20 @@
   },
   "nar-oops-museum-08": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "5c355754b6bc1b83ad4f2e2aa3b086b2",
+   "key": "d0e70a1debd2a4fd3f6ea77c1c231bb6",
    "sha": {
-    "assets/voice/nar-oops-museum-08.mp3": "a46e3a184f6aadfd"
+    "assets/voice/nar-oops-museum-08.mp3": "b1ab9268f3cb9a0e"
    }
   },
   "nar-brief-concert": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "4300640c32bbd1fbe10eb8e3ef43f490",
+   "key": "f4f0e51f73a6440b0f0eb7c70e6b5ab7",
    "sha": {
-    "assets/voice/nar-brief-concert.mp3": "ad59abe87f295ec6"
+    "assets/voice/nar-brief-concert.mp3": "cfe9606b7c761810"
    }
   },
   "line-concert-01": {
@@ -956,11 +956,11 @@
   },
   "nar-oops-concert-01": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "ecf8ab9ed43ce653c1f9e7606bc87d2d",
+   "key": "85eb60bd0dc329619e6fe8b92813de41",
    "sha": {
-    "assets/voice/nar-oops-concert-01.mp3": "3e39cb82e51d038e"
+    "assets/voice/nar-oops-concert-01.mp3": "ff6e53b6eaa16801"
    }
   },
   "line-concert-02": {
@@ -983,11 +983,11 @@
   },
   "nar-oops-concert-02": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "e5047c73a6367319543fb800bdce3bf7",
+   "key": "c604b863eea20aca7e6d0f8c5bf38887",
    "sha": {
-    "assets/voice/nar-oops-concert-02.mp3": "888226b6d0babc7f"
+    "assets/voice/nar-oops-concert-02.mp3": "612e00cca639db2d"
    }
   },
   "line-concert-03": {
@@ -1010,11 +1010,11 @@
   },
   "nar-oops-concert-03": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "7002b763a7a751d7b1d1780f3e74586a",
+   "key": "90cdd227f90a3ae2a892d01e2ffded1c",
    "sha": {
-    "assets/voice/nar-oops-concert-03.mp3": "8446750cc87818b5"
+    "assets/voice/nar-oops-concert-03.mp3": "275551a3f0ff88e4"
    }
   },
   "line-concert-04": {
@@ -1037,11 +1037,11 @@
   },
   "nar-oops-concert-04": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "fa0e664355da8a56976d0681a5f385e1",
+   "key": "6f9c40dbec9b17fa49d962082380c528",
    "sha": {
-    "assets/voice/nar-oops-concert-04.mp3": "5cd706d8c4b55d2d"
+    "assets/voice/nar-oops-concert-04.mp3": "7b8e47d25723d015"
    }
   },
   "line-concert-05": {
@@ -1064,11 +1064,11 @@
   },
   "nar-oops-concert-05": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f3ffec4c1bce2f22194410b956d93bc5",
+   "key": "14f7448d0ff7c4d5c510107794870e3d",
    "sha": {
-    "assets/voice/nar-oops-concert-05.mp3": "18960e5e7b133598"
+    "assets/voice/nar-oops-concert-05.mp3": "83455cd28c359300"
    }
   },
   "line-concert-06": {
@@ -1091,11 +1091,11 @@
   },
   "nar-oops-concert-06": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "0f2da429c74f4619bacf1d64f2536e5d",
+   "key": "05975730cac2a9ae0b66f58fa995e4c6",
    "sha": {
-    "assets/voice/nar-oops-concert-06.mp3": "f459a82b84ab70fc"
+    "assets/voice/nar-oops-concert-06.mp3": "53a07b36ea9e2d4b"
    }
   },
   "line-concert-07": {
@@ -1118,11 +1118,11 @@
   },
   "nar-oops-concert-07": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "f838cafe9a1193e0a44a7f979261b985",
+   "key": "6845bd7339edcdf30b3bfc7e8f80ace5",
    "sha": {
-    "assets/voice/nar-oops-concert-07.mp3": "07efaa014bc685ae"
+    "assets/voice/nar-oops-concert-07.mp3": "552c94f762a72c4e"
    }
   },
   "line-concert-08": {
@@ -1145,11 +1145,11 @@
   },
   "nar-oops-concert-08": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "d573e2863da6ab106bf9b894bd089c11",
+   "key": "15d0fd1880e71c7955cf9f4aabb5c0c2",
    "sha": {
-    "assets/voice/nar-oops-concert-08.mp3": "f74a2a7876841025"
+    "assets/voice/nar-oops-concert-08.mp3": "d3803a90e29970f8"
    }
   },
   "line-concert-09": {
@@ -1172,56 +1172,56 @@
   },
   "nar-oops-concert-09": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "3ef34939349757bdd4dcd052524bc4a7",
+   "key": "9c74fc4a24246815ae940eb6be39fd18",
    "sha": {
-    "assets/voice/nar-oops-concert-09.mp3": "8f66f4e7c5ac855d"
+    "assets/voice/nar-oops-concert-09.mp3": "cb21bd7995c39258"
    }
   },
   "nar-memo": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "8eb3a3e21243591864a39a5a1f0b7f84",
+   "key": "0fa30dd27d39139f9ea4fa0dedc22d6b",
    "sha": {
-    "assets/voice/nar-memo.mp3": "73583cb281cbe93d"
+    "assets/voice/nar-memo.mp3": "83340c16c09672cc"
    }
   },
   "nar-result-0": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "e4df768c8eb0061e3a1a8040c959bdba",
+   "key": "a005be8a9b24f2b087afe65f19ff68ca",
    "sha": {
-    "assets/voice/nar-result-0.mp3": "3c4751ea0c0e26f8"
+    "assets/voice/nar-result-0.mp3": "1ce997a33e9e6cfe"
    }
   },
   "nar-result-1": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "ae6ac888480fb3439b5789a41cbea65a",
+   "key": "2458396781c13f5d3af5def8d862698a",
    "sha": {
-    "assets/voice/nar-result-1.mp3": "a0aa3f9824be376c"
+    "assets/voice/nar-result-1.mp3": "05a9a320c9aacc1e"
    }
   },
   "nar-result-2": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "95e08b07d0d611502b98b26639b3d21b",
+   "key": "d73494c95971f1a0fdbbdfba11efcb23",
    "sha": {
-    "assets/voice/nar-result-2.mp3": "6015c2b9f40dca50"
+    "assets/voice/nar-result-2.mp3": "8a115cef1ad49f68"
    }
   },
   "nar-result-3": {
    "role": "narrator",
-   "voice": "하나",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "9cca737fc6be0851a6453c47deee63fb",
+   "key": "7820917c2ffc2f18b85aa6c186ea0302",
    "sha": {
-    "assets/voice/nar-result-3.mp3": "62aaf7b0fc2b255b"
+    "assets/voice/nar-result-3.mp3": "08e07d79e2bf00c3"
    }
   },
   "thanks-bear": {

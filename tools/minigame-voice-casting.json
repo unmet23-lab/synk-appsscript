@@ -1,5 +1,5 @@
 {
-  "note": "미니게임 목소리 배역 제안(2026-10-07, tools/미니게임_목소리.cjs가 읽는다). 해설(서현)·바람(혜리)은 유호님이 고른 목소리이고 나머지는 제안이다 — 화면에서 공식 미리듣기와 샘플을 듣고 「이 목소리로 바꾸기」로 고른다. 후보는 Typecast ssfm-v30 한국어 목록 359개 가운데 공식 미리듣기의 말소리가 한국어로 받아 적힌 목소리(237개 — 영어 105·일본어 13·중국어 2·기타 2개 미리듣기는 뺌)에서, 성별은 지금 게임과 같게 두고, 미리듣기에서 잰 음높이·밝기·억양 폭·빠르기와 쓰임새(애니·게임·교육·오디오북 등)·미리듣기 말투로 골랐다. 목록의 나이 칸은 모두 young_adult라 아이·노인 배역은 음높이·빠르기·쓰임새로 고른 것이다. 측정은 귀로 듣는 판단을 대신하지 않는다. 빠르기(tempo)는 지금 파이프라인이 느리게 읽히던 곳(레이싱 rate -1, 이야기 교실 -3~-10%, 리듬·말 랠리 -6~-8%, 입장 검사 「초급이 알아듣게 느긋하게」, 주문 폭주 rate -1)은 0.92(조금 느리게), 그대로였던 바람길(rate 0)은 1.0, 말 랠리 안내는 4.5초 한도가 있어 0.94. 감정은 모두 normal(배역의 색은 목소리 고르기로 낸다). 10-09 해설은 하나·소진 가운데 게임마다 한 명(games), 칭찬·위로·놀람·이야기 줄만 감정 smart(lines, tools/미니게임_목소리_연출.cjs) — 나머지 배역·줄은 지금처럼 normal.",
+  "note": "미니게임 목소리 배역 제안(2026-10-07, tools/미니게임_목소리.cjs가 읽는다). 해설(서현)·바람(혜리)은 유호님이 고른 목소리이고 나머지는 제안이다 — 화면에서 공식 미리듣기와 샘플을 듣고 「이 목소리로 바꾸기」로 고른다. 후보는 Typecast ssfm-v30 한국어 목록 359개 가운데 공식 미리듣기의 말소리가 한국어로 받아 적힌 목소리(237개 — 영어 105·일본어 13·중국어 2·기타 2개 미리듣기는 뺌)에서, 성별은 지금 게임과 같게 두고, 미리듣기에서 잰 음높이·밝기·억양 폭·빠르기와 쓰임새(애니·게임·교육·오디오북 등)·미리듣기 말투로 골랐다. 목록의 나이 칸은 모두 young_adult라 아이·노인 배역은 음높이·빠르기·쓰임새로 고른 것이다. 측정은 귀로 듣는 판단을 대신하지 않는다. 빠르기(tempo)는 지금 파이프라인이 느리게 읽히던 곳(레이싱 rate -1, 이야기 교실 -3~-10%, 리듬·말 랠리 -6~-8%, 입장 검사 「초급이 알아듣게 느긋하게」, 주문 폭주 rate -1)은 0.92(조금 느리게), 그대로였던 바람길(rate 0)은 1.0, 말 랠리 안내는 4.5초 한도가 있어 0.94. 감정은 모두 normal(배역의 색은 목소리 고르기로 낸다). 10-09 해설은 하나·소진 가운데 게임마다 한 명(games), 칭찬·위로·놀람·이야기 줄만 감정 smart(lines, tools/미니게임_목소리_연출.cjs) — 나머지 배역·줄은 지금처럼 normal. 10-28 하나는 음이 600Hz 넘게 오르면 목소리가 뒤집혀 깨져(유호님 귀 「1번만 깨져」) 입장 검사·말의 리듬·말 랠리 해설은 소진(세기 1.0, games의 targetLufs -26 — Typecast가 -17로는 봉우리를 잘라 보낸다), 레이싱은 하나 그대로 최고 음높이가 560Hz를 넘던 18줄만 lines의 seed·targetLufs로 다시 구웠다. 감정으로는 계속 높던 9줄은 보통(tools/미니게임_목소리_연출.cjs PLAIN).",
   "model": "ssfm-v30",
   "language": "kor",
   "defaults": {
@@ -47,7 +47,7 @@
           "why": "10-09까지의 해설 — 유호님 「힘 빠지는 목소리」로 하나·소진으로 바꿈"
         }
       ],
-      "why": "10-09 유호님 「목소리가 힘 빠지는 목소리야. 다른 애로 바꿔, 상큼한 애로」 → 견본·게임 문장 들어 보기 → 「하나 또는 소진」. 게임마다 한 목소리: 레이싱 하나(낱말 하나를 듣고 고르는 게임이라 발음이 또렷한 쪽(10-10 귀 확인) — 낱말·보기는 끝에 마침표) · 이야기 교실 하나(이야기 해설도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」)) · 말 랠리 하나(안내도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」) — 하나는 느긋해도 안내 4.5초 한도 안(가장 긴 하루 도전 안내 4.2초)) · 입장 검사 하나(읽는 게임이라 느긋하게(초급) — 손님 사고 이야기에 억양 폭이 산다) · 말의 리듬 하나(듣고 뜻을 가리는 문장이라 느긋하고 또렷하게). 다른 게임은 기본값 하나."
+      "why": "10-09 유호님 「목소리가 힘 빠지는 목소리야. 다른 애로 바꿔, 상큼한 애로」 → 견본·게임 문장 들어 보기 → 「하나 또는 소진」. 게임마다 한 목소리: 레이싱 하나(낱말 하나를 듣고 고르는 게임이라 발음이 또렷한 쪽(10-10 귀 확인) — 낱말·보기는 끝에 마침표) · 이야기 교실 하나(이야기 해설도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」)) · 말 랠리 소진(안내는 소진으로(10-28 하나 높은 음 깨짐 → 「짧은 게임은 소진」) — 안내 4.5초 한도 안(가장 긴 시작 안내 3.3초)) · 입장 검사 소진(읽는 게임이라 또렷하게(초급, 10-28 하나 높은 음 깨짐 → 「짧은 게임은 소진」)) · 말의 리듬 소진(듣고 뜻을 가리는 문장이라 또렷하게(10-28 하나 높은 음 깨짐 → 「짧은 게임은 소진」)). 다른 게임은 기본값 하나."
     },
     "wind": {
       "label": "바람",
@@ -635,9 +635,10 @@
       "narrator": {
         "tempo": 0.94,
         "voice": {
-          "id": "tc_61659cc118732016a95fe7c6",
-          "name": "하나"
-        }
+          "id": "tc_666a9871abcf27a5169850d0",
+          "name": "소진"
+        },
+        "targetLufs": -26
       }
     },
     "korean-racing": {
@@ -659,17 +660,19 @@
     "entry-check": {
       "narrator": {
         "voice": {
-          "id": "tc_61659cc118732016a95fe7c6",
-          "name": "하나"
-        }
+          "id": "tc_666a9871abcf27a5169850d0",
+          "name": "소진"
+        },
+        "targetLufs": -26
       }
     },
     "korean-rhythm": {
       "narrator": {
         "voice": {
-          "id": "tc_61659cc118732016a95fe7c6",
-          "name": "하나"
-        }
+          "id": "tc_666a9871abcf27a5169850d0",
+          "name": "소진"
+        },
+        "targetLufs": -26
       }
     },
     "beginner-games": {
@@ -685,7 +688,9 @@
     "korean-racing/intro": {
       "emotion": "smart",
       "previousText": "레이스가 시작됐어요.",
-      "nextText": ""
+      "nextText": "",
+      "seed": 1028,
+      "targetLufs": -26
     },
     "korean-racing/correct": {
       "emotion": "smart",
@@ -710,7 +715,9 @@
     "korean-racing/shield-ready": {
       "emotion": "smart",
       "previousText": "세 문제를 이어서 맞혔어요.",
-      "nextText": ""
+      "nextText": "",
+      "seed": 1028,
+      "targetLufs": -26
     },
     "korean-racing/shield-block": {
       "emotion": "smart",
@@ -728,14 +735,15 @@
       "nextText": ""
     },
     "korean-racing/mission-complete": {
-      "emotion": "smart",
-      "previousText": "오늘의 미션을 해냈어요.",
-      "nextText": ""
+      "seed": 1028,
+      "targetLufs": -26
     },
     "korean-racing/finale-unlock": {
       "emotion": "smart",
       "previousText": "결승전을 통과했어요.",
-      "nextText": ""
+      "nextText": "",
+      "seed": 1032,
+      "targetLufs": -26
     },
     "korean-racing/tutorial-welcome": {
       "emotion": "smart",
@@ -765,7 +773,8 @@
     "talk-rally/intro": {
       "emotion": "smart",
       "previousText": "말 랠리를 시작해요.",
-      "nextText": "안녕하세요?"
+      "nextText": "안녕하세요?",
+      "seed": 1030
     },
     "talk-rally/practice-done": {
       "emotion": "smart",
@@ -775,11 +784,6 @@
     "talk-rally/daily-best": {
       "emotion": "smart",
       "previousText": "하루 도전이 끝났어요. 지금까지 가운데 가장 높은 기록이에요.",
-      "nextText": ""
-    },
-    "talk-rally/result-3": {
-      "emotion": "smart",
-      "previousText": "랠리가 끝났어요. 공을 하나도 놓치지 않았어요.",
       "nextText": ""
     },
     "talk-rally/result-2": {
@@ -810,7 +814,8 @@
     "entry-check/nar-tut-tray": {
       "emotion": "smart",
       "previousText": "다음 손님 구리 씨가 짐을 보여 줬어요.",
-      "nextText": "안내문의 두 번째 규칙을 봐요. 음식은 가지고 들어갈 수 없어요."
+      "nextText": "안내문의 두 번째 규칙을 봐요. 음식은 가지고 들어갈 수 없어요.",
+      "seed": 1029
     },
     "entry-check/nar-tut-why2": {
       "emotion": "smart",
@@ -838,19 +843,16 @@
       "nextText": ""
     },
     "entry-check/nar-result-0": {
-      "emotion": "smart",
-      "previousText": "근무가 끝났어요. 놓친 손님이 많았어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-pool-01": {
       "emotion": "smart",
       "previousText": "손님이 말했어요. “안녕하세요! 수영하러 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
-      "nextText": ""
+      "nextText": "",
+      "seed": 1029
     },
     "entry-check/nar-oops-pool-02": {
-      "emotion": "smart",
-      "previousText": "손님이 말했어요. “점심은 수영장 안에서 먹을 거예요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-pool-03": {
       "emotion": "smart",
@@ -860,12 +862,11 @@
     "entry-check/nar-oops-pool-04": {
       "emotion": "smart",
       "previousText": "손님이 말했어요. “모자는 집에 두고 왔어요. 그냥 들어가도 되지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
-      "nextText": ""
+      "nextText": "",
+      "seed": 1029
     },
     "entry-check/nar-oops-pool-05": {
-      "emotion": "smart",
-      "previousText": "손님이 말했어요. “아빠는 주차장에 있어요. 저 먼저 들어갈게요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-pool-06": {
       "emotion": "smart",
@@ -883,9 +884,7 @@
       "nextText": ""
     },
     "entry-check/nar-oops-library-01": {
-      "emotion": "smart",
-      "previousText": "손님이 말했어요. “책을 돌려주러 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-library-02": {
       "emotion": "smart",
@@ -903,9 +902,7 @@
       "nextText": ""
     },
     "entry-check/nar-oops-library-05": {
-      "emotion": "smart",
-      "previousText": "손님이 말했어요. “이 카드도 되지요? 제 카드예요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-library-06": {
       "emotion": "smart",
@@ -933,9 +930,7 @@
       "nextText": ""
     },
     "entry-check/nar-oops-museum-02": {
-      "emotion": "smart",
-      "previousText": "손님이 말했어요. “바다 그림을 꼭 찍고 싶어요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-museum-03": {
       "emotion": "smart",
@@ -953,9 +948,7 @@
       "nextText": ""
     },
     "entry-check/nar-oops-museum-06": {
-      "emotion": "smart",
-      "previousText": "손님이 말했어요. “엄마가 표를 사 줬어요!” 규칙을 다 지킨 손님인데 거절했어요.",
-      "nextText": ""
+      "seed": 1029
     },
     "entry-check/nar-oops-museum-07": {
       "emotion": "smart",
@@ -1000,7 +993,8 @@
     "entry-check/nar-oops-concert-07": {
       "emotion": "smart",
       "previousText": "손님이 말했어요. “언니는 다음 버스로 와요. 먼저 들어갈게요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
-      "nextText": ""
+      "nextText": "",
+      "seed": 1029
     },
     "entry-check/nar-oops-concert-08": {
       "emotion": "smart",
@@ -1027,6 +1021,71 @@
     },
     "beginner-games/apple-3": {
       "seed": 2001
+    },
+    "korean-racing/c08q2q": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c06q4q": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/f02q2a": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c05q2q": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/f04q4a": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c04q2a": {
+      "seed": 1031,
+      "targetLufs": -26
+    },
+    "korean-racing/c12q2a": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c09q2q": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c06q4a": {
+      "seed": 1029,
+      "targetLufs": -26
+    },
+    "korean-racing/c04q2q": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c08q3q": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/f06q4a": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/c05q3a": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "korean-racing/f02q4a": {
+      "seed": 1028,
+      "targetLufs": -26
+    },
+    "talk-rally/daily-intro": {
+      "seed": 1029
+    },
+    "entry-check/nar-brief-library": {
+      "seed": 1029
+    },
+    "talk-rally/result-3": {
+      "seed": 1030
     }
   }
 }

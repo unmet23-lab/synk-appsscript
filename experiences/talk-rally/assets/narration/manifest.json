@@ -1,95 +1,95 @@
 {
-  "generatedAt": "2026-10-09T17:59:04.647Z",
+  "generatedAt": "2026-10-28T07:10:47.872Z",
   "humanRecording": false,
-  "normalization": "앞뒤 빈 소리 자름, 문장 사이 쉼 0.28초로 줄임, 통합 음량을 재어 -20.5 LUFS로 고정 이득(몽글의 말 -18.4보다 조금 낮게); mono 24 kHz MP3 96 kbps",
+  "normalization": "앞뒤 빈 소리 자름, 문장 사이 쉼 0.28초로 줄임, 통합 음량을 재어 -21.5 LUFS로 고정 이득(몽글의 말 -18.4보다 조금 낮게), 봉우리는 리미터로 -3.5 dBFS까지; mono 24 kHz MP3 96 kbps",
   "lines": [
     {
       "id": "intro",
       "text": "몽글이 말을 걸어요! 알맞은 대답으로 받아쳐요!",
       "file": "assets/narration/intro.mp3",
-      "sha256": "e283b150b061707768c2bb389851a6373aee4b4559b57fe91ff2274c43d5b87f",
-      "bytes": 43244,
-      "durationSeconds": 3.514,
-      "peakDbfs": -4.05,
-      "rmsDbfs": -22.26,
-      "integratedLufs": -21
+      "sha256": "58cce32a180b142f00d4f11b1ada2e38089539c32711144c520c8ef3b2286200",
+      "bytes": 40364,
+      "durationSeconds": 3.273,
+      "peakDbfs": -5.46,
+      "rmsDbfs": -22.98,
+      "integratedLufs": -22
     },
     {
       "id": "practice-done",
       "text": "좋아요! 이제 진짜 시작이에요.",
       "file": "assets/narration/practice-done.mp3",
-      "sha256": "2c5a587369b02541ad0b10117817dfeda2ae2969499d7ea11320684b0ee89321",
-      "bytes": 29708,
-      "durationSeconds": 2.396,
-      "peakDbfs": -7.2,
-      "rmsDbfs": -23.14,
-      "integratedLufs": -21
+      "sha256": "722d84519752f6dbc917be5e11f21f2ed022530a81215e1f4c94984d8a10cb6c",
+      "bytes": 25964,
+      "durationSeconds": 2.081,
+      "peakDbfs": -5.87,
+      "rmsDbfs": -24.13,
+      "integratedLufs": -22
     },
     {
       "id": "daily-intro",
       "text": "하루 도전! 오늘은 모두 같은 공 열두 개예요.",
       "file": "assets/narration/daily-intro.mp3",
-      "sha256": "c892d41709e7ada0497f93bdc10d633e488a173bd9fc7894cce773a4f4bffa9c",
-      "bytes": 51596,
-      "durationSeconds": 4.202,
-      "peakDbfs": -4.27,
-      "rmsDbfs": -21.53,
-      "integratedLufs": -21
+      "sha256": "887b536776624bca7eb74767ac8b7e1f0ee9b071cdbbb5ceb0be7c2b1b6297e0",
+      "bytes": 43244,
+      "durationSeconds": 3.52,
+      "peakDbfs": -3.95,
+      "rmsDbfs": -23.18,
+      "integratedLufs": -22
     },
     {
       "id": "daily-best",
       "text": "와, 오늘 최고 기록이에요!",
       "file": "assets/narration/daily-best.mp3",
-      "sha256": "c7faa5e291d5a2255de45b0d7a2e3f737ebbf1483233e77e48f1020d8af3367a",
-      "bytes": 27692,
-      "durationSeconds": 2.212,
-      "peakDbfs": -6.35,
-      "rmsDbfs": -22.22,
-      "integratedLufs": -20.9
+      "sha256": "12c7440dc51968411910a52ee24bfa787c4400d1f023e49986d5428859f77861",
+      "bytes": 30572,
+      "durationSeconds": 2.454,
+      "peakDbfs": -8.16,
+      "rmsDbfs": -23.59,
+      "integratedLufs": -22
     },
     {
       "id": "result-3",
       "text": "완벽해요! 하나도 안 놓쳤어요.",
       "file": "assets/narration/result-3.mp3",
-      "sha256": "6bd4ec81205325f13b261caeb6d79a57628907c7a0ace3d9257a146d1a1d99d6",
-      "bytes": 35468,
-      "durationSeconds": 2.858,
-      "peakDbfs": -4.14,
-      "rmsDbfs": -21.89,
-      "integratedLufs": -20.9
+      "sha256": "68c49c50d55df40e6bc47c9dfeab07da58a8f664012c18b637e29f0910c98d29",
+      "bytes": 26540,
+      "durationSeconds": 2.117,
+      "peakDbfs": -6.24,
+      "rmsDbfs": -23.28,
+      "integratedLufs": -22
     },
     {
       "id": "result-2",
       "text": "아주 잘했어요! 거의 다 받아쳤어요.",
       "file": "assets/narration/result-2.mp3",
-      "sha256": "32982203b0b5abaf527c8aa0de8e8f8d1e1daa4f4e3854c490d66be6314aa06c",
-      "bytes": 35468,
-      "durationSeconds": 2.87,
-      "peakDbfs": -4.24,
-      "rmsDbfs": -21.48,
-      "integratedLufs": -21
+      "sha256": "821ccd91309e6cfa7fd9c4bef1df1d2721f4862ea48cf36215e07af2167f39e8",
+      "bytes": 32876,
+      "durationSeconds": 2.643,
+      "peakDbfs": -4.63,
+      "rmsDbfs": -22.99,
+      "integratedLufs": -21.9
     },
     {
       "id": "result-1",
       "text": "잘했어요! 다음엔 더 많이 받아칠 수 있어요.",
       "file": "assets/narration/result-1.mp3",
-      "sha256": "411d5f396ff21b01b4c875ce341d28f1fb708a96d12e1fe811b5e1a4d8039b6b",
-      "bytes": 41804,
-      "durationSeconds": 3.402,
-      "peakDbfs": -4,
-      "rmsDbfs": -22.08,
-      "integratedLufs": -21
+      "sha256": "5d04d3d245771db3c1dd5d7c7ebe9b94d48da3480ec0ea6913f209c46258746c",
+      "bytes": 39500,
+      "durationSeconds": 3.202,
+      "peakDbfs": -5.16,
+      "rmsDbfs": -23.45,
+      "integratedLufs": -21.9
     },
     {
       "id": "result-0",
       "text": "괜찮아요. 한 번 더 해 볼까요?",
       "file": "assets/narration/result-0.mp3",
-      "sha256": "f444ab9f3426684962091d3d4da6ff8f0dcd53d7060b2f719379c0863eeb015c",
-      "bytes": 29708,
-      "durationSeconds": 2.378,
-      "peakDbfs": -7.18,
-      "rmsDbfs": -21.92,
-      "integratedLufs": -20.9
+      "sha256": "763e230bb939f1f7a65c2a855321540a4375abf70c6b37ec7e0e1c1a7966fccd",
+      "bytes": 26252,
+      "durationSeconds": 2.111,
+      "peakDbfs": -5.26,
+      "rmsDbfs": -22.83,
+      "integratedLufs": -21.9
     }
   ]
 }

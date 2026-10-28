@@ -24,20 +24,20 @@
   "vs_earn_lu": 9.2
  },
  "voice-f01": {
-  "peak_dbfs": -5.1,
+  "peak_dbfs": -6.0,
   "clipped_samples": 0,
-  "loudness_lufs_m": -14.0,
-  "audible_ms": 1105,
-  "centroid_hz": 3309,
-  "vs_earn_lu": 6.8
+  "loudness_lufs_m": -14.3,
+  "audible_ms": 1132,
+  "centroid_hz": 3145,
+  "vs_earn_lu": 6.5
  },
  "voice-r06": {
-  "peak_dbfs": -6.2,
+  "peak_dbfs": -3.6,
   "clipped_samples": 0,
-  "loudness_lufs_m": -14.2,
-  "audible_ms": 1566,
-  "centroid_hz": 2554,
-  "vs_earn_lu": 6.6
+  "loudness_lufs_m": -14.3,
+  "audible_ms": 1591,
+  "centroid_hz": 3011,
+  "vs_earn_lu": 6.5
  },
  "hit-ok": {
   "peak_dbfs": -2.0,
@@ -112,11 +112,11 @@
   "vs_earn_lu": -2.2
  },
  "exchange": {
-  "peak_dbfs": -1.7,
+  "peak_dbfs": -1.6,
   "clipped_samples": 0,
   "loudness_lufs_m": -14.0,
-  "audible_ms": 3940,
-  "centroid_hz": 3727,
+  "audible_ms": 3939,
+  "centroid_hz": 3388,
   "vs_earn_lu": 6.8
  },
  "wrong": {
@@ -138,10 +138,10 @@
  "stress": {
   "peak_dbfs": -0.7,
   "clipped_samples": 0,
-  "loudness_lufs_m": -8.3,
-  "audible_ms": 1557,
-  "centroid_hz": 2268,
-  "vs_earn_lu": 12.5
+  "loudness_lufs_m": -8.7,
+  "audible_ms": 1590,
+  "centroid_hz": 2666,
+  "vs_earn_lu": 12.1
  },
  "stars": {
   "peak_dbfs": -2.9,
@@ -152,83 +152,83 @@
   "vs_earn_lu": 6.4
  },
  "narr-intro": {
-  "peak_dbfs": -5.9,
-  "clipped_samples": 0,
-  "loudness_lufs_m": -14.7,
-  "audible_ms": 3667,
-  "centroid_hz": 1791,
-  "vs_earn_lu": 6.1
- },
- "narr-practice": {
-  "peak_dbfs": -5.7,
-  "clipped_samples": 0,
-  "loudness_lufs_m": -15.2,
-  "audible_ms": 2065,
-  "centroid_hz": 3159,
-  "vs_earn_lu": 5.6
- },
- "narr-daily": {
-  "peak_dbfs": -7.2,
-  "clipped_samples": 0,
-  "loudness_lufs_m": -15.5,
-  "audible_ms": 3911,
-  "centroid_hz": 1364,
-  "vs_earn_lu": 5.3
- },
- "narr-best": {
-  "peak_dbfs": -8.0,
-  "clipped_samples": 0,
-  "loudness_lufs_m": -15.5,
-  "audible_ms": 1414,
-  "centroid_hz": 1907,
-  "vs_earn_lu": 5.3
- },
- "narr-r3": {
   "peak_dbfs": -5.4,
   "clipped_samples": 0,
-  "loudness_lufs_m": -15.6,
-  "audible_ms": 2445,
-  "centroid_hz": 1977,
-  "vs_earn_lu": 5.2
+  "loudness_lufs_m": -15.4,
+  "audible_ms": 3175,
+  "centroid_hz": 2189,
+  "vs_earn_lu": 5.4
+ },
+ "narr-practice": {
+  "peak_dbfs": -5.9,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -17.0,
+  "audible_ms": 1992,
+  "centroid_hz": 3869,
+  "vs_earn_lu": 3.8
+ },
+ "narr-daily": {
+  "peak_dbfs": -3.8,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -15.0,
+  "audible_ms": 3408,
+  "centroid_hz": 1957,
+  "vs_earn_lu": 5.8
+ },
+ "narr-best": {
+  "peak_dbfs": -8.1,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.8,
+  "audible_ms": 1835,
+  "centroid_hz": 3359,
+  "vs_earn_lu": 6.0
+ },
+ "narr-r3": {
+  "peak_dbfs": -6.2,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -14.7,
+  "audible_ms": 2012,
+  "centroid_hz": 2043,
+  "vs_earn_lu": 6.1
  },
  "narr-r2": {
-  "peak_dbfs": -7.5,
+  "peak_dbfs": -8.5,
   "clipped_samples": 0,
-  "loudness_lufs_m": -16.6,
-  "audible_ms": 995,
-  "centroid_hz": 3412,
-  "vs_earn_lu": 4.2
+  "loudness_lufs_m": -17.9,
+  "audible_ms": 1478,
+  "centroid_hz": 2599,
+  "vs_earn_lu": 2.9
  },
  "narr-r1": {
-  "peak_dbfs": -6.7,
-  "clipped_samples": 0,
-  "loudness_lufs_m": -15.2,
-  "audible_ms": 2437,
-  "centroid_hz": 2069,
-  "vs_earn_lu": 5.6
- },
- "narr-r0": {
-  "peak_dbfs": -6.8,
+  "peak_dbfs": -5.1,
   "clipped_samples": 0,
   "loudness_lufs_m": -15.6,
-  "audible_ms": 2211,
-  "centroid_hz": 2842,
+  "audible_ms": 2941,
+  "centroid_hz": 2280,
   "vs_earn_lu": 5.2
+ },
+ "narr-r0": {
+  "peak_dbfs": -5.3,
+  "clipped_samples": 0,
+  "loudness_lufs_m": -16.1,
+  "audible_ms": 2068,
+  "centroid_hz": 1820,
+  "vs_earn_lu": 4.7
  },
  "results": {
   "peak_dbfs": -2.9,
   "clipped_samples": 0,
   "loudness_lufs_m": -14.4,
-  "audible_ms": 3545,
-  "centroid_hz": 1764,
+  "audible_ms": 3102,
+  "centroid_hz": 1957,
   "vs_earn_lu": 6.4
  },
  "intro-then-line": {
-  "peak_dbfs": -5.1,
+  "peak_dbfs": -5.4,
   "clipped_samples": 0,
-  "loudness_lufs_m": -14.0,
-  "audible_ms": 5393,
-  "centroid_hz": 2093,
-  "vs_earn_lu": 6.8
+  "loudness_lufs_m": -14.3,
+  "audible_ms": 5535,
+  "centroid_hz": 2562,
+  "vs_earn_lu": 6.5
  }
 }

@@ -5,9 +5,9 @@
     {
       "id": "shield-ready",
       "text": "연속 정답! 보호막이 생겼어. 한 번은 부딪혀도 괜찮아.",
-      "duration": 5.564,
-      "bytes": 33932,
-      "rms": 1927
+      "duration": 5.894,
+      "bytes": 35948,
+      "rms": 1924
     },
     {
       "id": "shield-block",
@@ -33,16 +33,16 @@
     {
       "id": "mission-complete",
       "text": "와, 오늘의 미션도 성공! 미션 코인까지 받았어.",
-      "duration": 4.927,
-      "bytes": 30188,
-      "rms": 1814
+      "duration": 4.793,
+      "bytes": 29324,
+      "rms": 1958
     },
     {
       "id": "finale-unlock",
       "text": "결승전 통과! 특별한 상품이 열렸어. 차고에서 바로 써 보자!",
-      "duration": 5.679,
-      "bytes": 34652,
-      "rms": 1848
+      "duration": 5.772,
+      "bytes": 35228,
+      "rms": 1929
     }
   ]
 }

@@ -368,14 +368,16 @@ const rhythm = {
 };
 
 // 말 랠리: 몽글의 말(content.mjs) → generate-voice.py와 같은 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 → MP3 96kbps.
-// 안내(narration.mjs) → generate-narration.py와 같은 자르기·쉼 줄이기 → 재어서 -20.5 LUFS 고정 이득 → MP3 96kbps.
+// 안내(narration.mjs) → generate-narration.py와 같은 자르기·쉼 줄이기 → 재어서 -21.5 LUFS 고정 이득 · 봉우리는 리미터 -3.5 dBFS → MP3 96kbps.
 // 게임은 소리 길이에 맞춰 공을 친다(audio.mjs buf.duration) — 몽글의 말은 2.5초 미만, 안내는 4.5초 이하(core·narration 시험).
 const RALLY_TRIM = 'silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.08,areverse';
 const RALLY_PAUSE = 'silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB:stop_silence=0.28';
-const RALLY_NARRATION_I = -20.5;
+// 안내 통합 음량: 10-28 소진은 같은 -20.5에서 게임 소리 길의 순간 음량이 몽글의 말보다 커져(-13.8 > -14.3, narration.test) 1 dB 낮춘다.
+const RALLY_NARRATION_I = -21.5, RALLY_PEAK = -3.5;   // 꼭대기는 리미터에서 -3.5(MP3로 구우면 조금 오른다)
+const RALLY_LIMIT = `alimiter=limit=${(10 ** (RALLY_PEAK / 20)).toFixed(3)}:attack=5:release=50:level=false:latency=1`;   // tools/나레이션굽기.mjs와 같은 설정
 const rally = {
   id: 'talk-rally', label: '말 랠리', speakers: { mongle: 'mongle', narrator: 'narrator' },
-  post: '몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps',
+  post: '몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -21.5 LUFS · 리미터 -3.5 dBFS → MP3 mono 24kHz 96kbps',
   async jobs(repo = REPO) {
     const dir = gameDir(this.id, repo);
     const { ITEMS, PRACTICE } = await importFile(path.join(dir, 'content.mjs'));
@@ -399,8 +401,9 @@ const rally = {
     } else {
       const mid = mp3 + '.mid.wav';
       await ff(['-i', raw, '-map_metadata', '-1', '-af', RALLY_TRIM + ',' + RALLY_PAUSE, '-ar', '24000', '-ac', '1', mid]);
+      // 이득 뒤 봉우리만 리미터로 누른다(narration.test 꼭대기 -3 이하 — 10-28 소진 「하루 도전!」은 -20.5로 올리면 -2.2, 덜 올리면 -22.6 LUFS로 너무 작다).
       const gain = RALLY_NARRATION_I - await integratedLufs(mid);
-      await ff(['-i', mid, '-map_metadata', '-1', '-af', `volume=${gain.toFixed(2)}dB`, '-ar', '24000', '-ac', '1', '-codec:a', 'libmp3lame', '-b:a', '96k', mp3]);
+      await ff(['-i', mid, '-map_metadata', '-1', '-af', `volume=${gain.toFixed(2)}dB,${RALLY_LIMIT}`, '-ar', '24000', '-ac', '1', '-codec:a', 'libmp3lame', '-b:a', '96k', mp3]);
       fs.rmSync(mid, { force: true });
       extra.integratedLufs = await integratedLufs(mp3);
     }
@@ -429,7 +432,7 @@ const rally = {
       return next;
     });
     const normalization = group === 'voice' ? '앞뒤 빈 소리 자름, loudnorm I=-18 TP=-2.5 LRA=7; mono 24 kHz MP3 96 kbps'
-      : `앞뒤 빈 소리 자름, 문장 사이 쉼 0.28초로 줄임, 통합 음량을 재어 ${RALLY_NARRATION_I} LUFS로 고정 이득(몽글의 말 -18.4보다 조금 낮게); mono 24 kHz MP3 96 kbps`;
+      : `앞뒤 빈 소리 자름, 문장 사이 쉼 0.28초로 줄임, 통합 음량을 재어 ${RALLY_NARRATION_I} LUFS로 고정 이득(몽글의 말 -18.4보다 조금 낮게), 봉우리는 리미터로 ${RALLY_PEAK} dBFS까지; mono 24 kHz MP3 96 kbps`;
     return { generatedAt: at, humanRecording: false, normalization, lines };
   },
   finalize(results, dir, { now = new Date().toISOString() } = {}) {

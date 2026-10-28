@@ -3,15 +3,15 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.15초·끝 0.85초 여백, 고정 이득(MP3 -23.5 LUFS) → MP3 mono 24kHz 48kbps (지금 Windows 음성 파일의 실측과 같게)",
- "updatedAt": "2026-10-09T16:52:21.035Z",
+ "updatedAt": "2026-10-28T07:07:02.047Z",
  "voices": {
   "narrator": {
    "label": "해설",
-   "id": "tc_666a9871abcf27a5169850d0",
-   "name": "소진",
-   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
-   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
-   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142725_61659cc118732016a95fe7c6_SSFM-V3_0.mp3",
+   "measure": "음높이 281Hz · 밝기 1433Hz · 억양 폭 17반음 · 빠르기 5.08 · 숏폼",
+   "why": "억양 폭이 가장 넓은 상큼한 목소리, 읽는 속도는 느긋하다"
   }
  },
  "lines": {
@@ -19,9 +19,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "a8172cb2652699c51a45a7afe90d24ca",
+   "key": "cd0610ec21e3370e3744e921e0f4732a",
    "sha": {
-    "assets/narration/intro.mp3": "850119398125269e"
+    "assets/narration/intro.mp3": "3560358bfebd3e8d"
    }
   },
   "cue-picture": {
@@ -18379,18 +18379,18 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "e4aef5989ef84ab444d950cca3d108c7",
+   "key": "ed1a87cfd4238568e2a68a33b8f53088",
    "sha": {
-    "assets/narration/c04q2q.mp3": "4e02ded00854b268"
+    "assets/narration/c04q2q.mp3": "eb0aeb1799e8b0eb"
    }
   },
   "c04q2a": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "6a5232758677fcffc547a731cb02895d",
+   "key": "71d4fa4c977e8513623ba35a08939cb0",
    "sha": {
-    "assets/narration/c04q2a.mp3": "8dfd2bf63a97238b"
+    "assets/narration/c04q2a.mp3": "a9ed3064c79c40d8"
    }
   },
   "c04q3q": {
@@ -18469,9 +18469,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "42e42df6861929567563de35d673bd8a",
+   "key": "d458fa45b2d894c8ea58e380a41d3093",
    "sha": {
-    "assets/narration/c05q2q.mp3": "8a2f9e3751bc12f0"
+    "assets/narration/c05q2q.mp3": "637b75dcb4df63a2"
    }
   },
   "c05q2a": {
@@ -18496,9 +18496,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "037096814d0f01af5b69b84214a3b34f",
+   "key": "bd8d8fd32ca8890209adc91ddaa9e878",
    "sha": {
-    "assets/narration/c05q3a.mp3": "2af5976d9dff3490"
+    "assets/narration/c05q3a.mp3": "551691bd1a2ef6b2"
    }
   },
   "c05q4q": {
@@ -18595,18 +18595,18 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "980837ce81d84c946827308c5d98010c",
+   "key": "e484f780527f5999e4998533d0cbde71",
    "sha": {
-    "assets/narration/c06q4q.mp3": "4bed70d5f9cad55f"
+    "assets/narration/c06q4q.mp3": "b1db41871c384443"
    }
   },
   "c06q4a": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "cabefe64279571408be42ff1f538dfd9",
+   "key": "26ecd4ef9790cb83f567ed7e1f926c9d",
    "sha": {
-    "assets/narration/c06q4a.mp3": "5fc3de59d431794a"
+    "assets/narration/c06q4a.mp3": "a4bc8b8bb87d37d9"
    }
   },
   "c06q5q": {
@@ -18739,9 +18739,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "0c47e959b4db823d14997bc87655361e",
+   "key": "f8778586bf52932289eb6b8eae8d7245",
    "sha": {
-    "assets/narration/c08q2q.mp3": "c4ba05e9db4a39c0"
+    "assets/narration/c08q2q.mp3": "91d6b9d499b7dd78"
    }
   },
   "c08q2a": {
@@ -18757,9 +18757,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "5937f5c7f8f46f4e0743ec0e84f99668",
+   "key": "f3bafc4924a78d5ab5144a240a690f5c",
    "sha": {
-    "assets/narration/c08q3q.mp3": "2a9bf3617f6ae650"
+    "assets/narration/c08q3q.mp3": "318a400132749395"
    }
   },
   "c08q3a": {
@@ -18829,9 +18829,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "56884accb2cbaf707d2f0398e195c072",
+   "key": "17043ce00fa7ba84e67f065d2c3536d9",
    "sha": {
-    "assets/narration/c09q2q.mp3": "69650542973fd49c"
+    "assets/narration/c09q2q.mp3": "35cb460695dc849c"
    }
   },
   "c09q2a": {
@@ -19108,9 +19108,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "e7316d3b1217935208650a767b4022a9",
+   "key": "77d485ed599ebe43c22da12c70be0cc0",
    "sha": {
-    "assets/narration/c12q2a.mp3": "eef1c0085c253b85"
+    "assets/narration/c12q2a.mp3": "cb0299428a552ef5"
    }
   },
   "c12q3q": {
@@ -21097,9 +21097,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "16830257f3cb04cb96fe8a3d9acb05c7",
+   "key": "8b96037914a7f04bfdeb4d14d650710e",
    "sha": {
-    "assets/narration/f02q2a.mp3": "a31ab8ac73befd9a"
+    "assets/narration/f02q2a.mp3": "55c81511a24e50ae"
    }
   },
   "f02q2o0": {
@@ -21187,9 +21187,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "db7b3e6ecebbe17800d7bc99c32e67a2",
+   "key": "ce1741f440b9bace340a6fc29b6dc452",
    "sha": {
-    "assets/narration/f02q4a.mp3": "f558bd1bd7d140a4"
+    "assets/narration/f02q4a.mp3": "d81a7b0b50425f81"
    }
   },
   "f02q4o0": {
@@ -21637,9 +21637,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "56937a2cd76d676e91fb16c56c16dc6a",
+   "key": "b2eb4c688fde8e30478a07cb4953a06a",
    "sha": {
-    "assets/narration/f04q4a.mp3": "b4b304344ecba97c"
+    "assets/narration/f04q4a.mp3": "5bb1dc401ad95dea"
    }
   },
   "f04q4o0": {
@@ -22087,9 +22087,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "f27330f32eb63d2e6a3918ad62c73ed1",
+   "key": "66b7f03fa0f72a4d70a5c7aa5e18272f",
    "sha": {
-    "assets/narration/f06q4a.mp3": "22e148ed74153500"
+    "assets/narration/f06q4a.mp3": "4e753c0b41767caa"
    }
   },
   "f06q4o0": {
@@ -22168,9 +22168,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "b857205d68d1937696c5660808dd2c0f",
+   "key": "7af05b8d0d6ff68c6cbfd8f7c56247f3",
    "sha": {
-    "assets/narration/shield-ready.mp3": "918130cd18656109"
+    "assets/narration/shield-ready.mp3": "5bb76a32eb42b183"
    }
   },
   "shield-block": {
@@ -22204,18 +22204,18 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "de15571f22d9e2333deb6ad48973526f",
+   "key": "9d3bc04db7d940a207833ac2e7d06574",
    "sha": {
-    "assets/narration/mission-complete.mp3": "dbd996b381be18de"
+    "assets/narration/mission-complete.mp3": "179bf5da323cdd0e"
    }
   },
   "finale-unlock": {
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "7a69c2fd0d25fb5e5a5b9ab00b321f59",
+   "key": "e08b7fb79792971e7b821ff231fdb817",
    "sha": {
-    "assets/narration/finale-unlock.mp3": "da746c8fed02b24d"
+    "assets/narration/finale-unlock.mp3": "f0f4d34dadd32b70"
    }
   },
   "tutorial-welcome": {

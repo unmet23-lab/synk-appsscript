@@ -55,7 +55,12 @@ function writeRecord(game, results, casting, repo = G.REPO) {
   const roles = [...new Set(Object.values(lines).map(l => l.role))];
   return { note: '미니게임 목소리 제작 기록(tools/미니게임_목소리.cjs). qa/·*.source.json이라 공개 묶음에서 빠진다. 배역·설정의 원본은 tools/minigame-voice-casting.json.',
     provider: 'Typecast', model: casting.model, post: G.GAMES[game].post, updatedAt: new Date().toISOString(),
-    voices: Object.fromEntries(roles.map(r => [r, { label: casting.roles[r]?.label, ...(casting.roles[r]?.voice || {}), settings: casting.roles[r]?.settings }])), lines };
+    voices: Object.fromEntries(roles.map(r => [r, { label: casting.roles[r]?.label, ...gameVoice(casting, game, r), settings: casting.roles[r]?.settings }])), lines };
+}
+// 배역 머리에는 이 게임이 쓰는 목소리(games.<게임>.<배역>.voice — 10-28부터 짧은 게임 셋 해설은 소진)를, 미리듣기·잰 값은 배역의 기본·후보에서 찾아 적는다.
+function gameVoice(casting, game, role) {
+  const r = casting.roles[role] || {}, own = casting.games?.[game]?.[role]?.voice;
+  return [r.voice, ...(r.alternates || [])].find(v => v && v.id === (own || r.voice || {}).id) || own || r.voice || {};
 }
 async function applyGame(game, jobs, { onStep = () => {}, stopped = () => false } = {}) {
   const adapter = G.GAMES[game], casting = V.loadCasting();
@@ -500,4 +505,4 @@ function serve() {
 }
 
 if (require.main === module) (async () => { if (!(await cli())) serve(); })().catch(e => { console.error(e.message); process.exitCode = 1; });
-module.exports = { applyGame, buildSamples, auditionTasks, allowed: (req, url) => allowed(req, url), sourceInfo, writeRecord };
+module.exports = { applyGame, buildSamples, auditionTasks, allowed: (req, url) => allowed(req, url), sourceInfo, writeRecord, gameVoice };

@@ -1,8 +1,8 @@
 {
-  "sourceKey": "e59fc669ce2273db114f8dafb53c6e40",
+  "sourceKey": "3515ed2968dcfc3779bb433923711ecb",
   "text": "와, 오늘 최고 기록이에요!",
-  "voice": "하나",
-  "voiceId": "tc_61659cc118732016a95fe7c6",
+  "voice": "소진",
+  "voiceId": "tc_666a9871abcf27a5169850d0",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",
@@ -10,6 +10,6 @@
   "nextText": "",
   "tempo": 0.94,
   "seed": 1007,
-  "targetLufs": -17,
-  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps"
+  "targetLufs": -26,
+  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -21.5 LUFS · 리미터 -3.5 dBFS → MP3 mono 24kHz 96kbps"
 }

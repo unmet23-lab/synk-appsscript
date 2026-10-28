@@ -20,9 +20,11 @@ const GAME_VOICE = {
   'korean-racing': [HANA, '낱말 하나를 듣고 고르는 게임이라 발음이 또렷한 쪽(10-10 귀 확인) — 낱말·보기는 끝에 마침표'],
   // 10-10 유호님 소진·하나 비교(이야기 교실·말 랠리 해설 10줄) 뒤 「둘 다 하나로 바꿔줘」 → 모든 게임 해설이 하나.
   'story-classroom': [HANA, '이야기 해설도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」)'],
-  'talk-rally': [HANA, '안내도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」) — 하나는 느긋해도 안내 4.5초 한도 안(가장 긴 하루 도전 안내 4.2초)'],
-  'entry-check': [HANA, '읽는 게임이라 느긋하게(초급) — 손님 사고 이야기에 억양 폭이 산다'],
-  'korean-rhythm': [HANA, '듣고 뜻을 가리는 문장이라 느긋하고 또렷하게'],
+  // 10-28 하나는 음이 600Hz 넘게 오르면 목소리가 뒤집혀 깨진다(유호님 귀 「1번만 깨져」) → 「짧은 게임은 소진」: 해설을 통째로 소진(세기 1.0, 원본 -26 LUFS로 사서 게임 후처리로 맞춤).
+  // 레이싱은 하나 그대로 높은 18줄만 seed를 바꿔 다시 굽고, 이야기 교실·초급 게임·한글 단계는 귀로 듣고 하나 유지.
+  'talk-rally': [SOJIN, '안내는 소진으로(10-28 하나 높은 음 깨짐 → 「짧은 게임은 소진」) — 안내 4.5초 한도 안(가장 긴 시작 안내 3.3초)'],
+  'entry-check': [SOJIN, '읽는 게임이라 또렷하게(초급, 10-28 하나 높은 음 깨짐 → 「짧은 게임은 소진」)'],
+  'korean-rhythm': [SOJIN, '듣고 뜻을 가리는 문장이라 또렷하게(10-28 하나 높은 음 깨짐 → 「짧은 게임은 소진」)'],
 };
 
 // 레이싱: 보상·응원 줄만 감정. 낱말·보기·문제·풀이·길 이름·고르기 안내는 보통.
@@ -66,6 +68,9 @@ const ENTRY = {
   'nar-result-1': ['근무가 끝났어요. 몇 명은 놓쳤어요.', ''],
   'nar-result-0': ['근무가 끝났어요. 놓친 손님이 많았어요.', ''],
 };
+// 감정 자리지만 보통으로 굽는 줄(10-28) — 감정으로는 seed를 두세 번 바꿔도 최고 음높이가 572~661Hz로 깨짐 문턱(560) 위였고, 보통은 375~527Hz.
+const PLAIN = new Set(['korean-racing/mission-complete', 'talk-rally/result-3', 'entry-check/nar-result-0',
+  ...['pool-02', 'pool-05', 'library-01', 'library-05', 'museum-02', 'museum-06'].map(c => `entry-check/nar-oops-${c}`)]);
 const importFile = file => import(pathToFileURL(file).href);
 
 async function direction(repo = G.REPO) {
@@ -91,7 +96,7 @@ async function plan(repo = G.REPO) {
   const narrator = jobs.filter(j => j.role === 'narrator');
   const missing = Object.keys(smart).filter(k => !narrator.some(j => `${j.game}/${j.id}` === k));
   if (missing.length) throw Error('해설 줄에 없는 id: ' + missing.join(', '));
-  // 기본값은 하나(10-10부터 모든 게임 해설이 하나), 후보는 소진과 옛 해설(서현) 둘(배역마다 기본 + 후보 둘).
+  // 기본값은 하나(10-10부터, 10-28부터 짧은 게임 셋은 소진), 후보는 소진과 옛 해설(서현) 둘(배역마다 기본 + 후보 둘).
   const r = casting.roles.narrator, earlier = [r.voice, ...(r.alternates || [])].filter(v => ![HANA.id, SOJIN.id].includes(v.id));
   r.voice = HANA;
   r.alternates = [SOJIN, ...earlier.map(v => v.id === 'tc_69f2e455ea79fd197aa0476f' ? { ...v, why: '10-09까지의 해설 — 유호님 「힘 빠지는 목소리」로 하나·소진으로 바꿈' } : v)].slice(0, 2);
@@ -102,8 +107,12 @@ async function plan(repo = G.REPO) {
   casting.games ||= {};
   for (const [g, [v]] of Object.entries(GAME_VOICE)) casting.games[g] = { ...(casting.games[g] || {}), narrator: { ...(casting.games[g]?.narrator || {}), voice: { id: v.id, name: v.name } } };
   casting.lines ||= {};
-  for (const k of Object.keys(casting.lines)) if (k.split('/')[0] in GAME_VOICE && casting.lines[k].emotion === V.SMART && narrator.some(j => `${j.game}/${j.id}` === k)) delete casting.lines[k];
-  for (const [k, [prev, next]] of Object.entries(smart)) casting.lines[k] = { ...(casting.lines[k] || {}), emotion: V.SMART, previousText: prev, nextText: next };
+  // 감정 설정만 지우고 줄별 seed·targetLufs(10-28 높은 음 다시 굽기)는 남긴다.
+  for (const k of Object.keys(casting.lines)) if (k.split('/')[0] in GAME_VOICE && casting.lines[k].emotion === V.SMART && narrator.some(j => `${j.game}/${j.id}` === k)) {
+    const { emotion, previousText, nextText, ...keep } = casting.lines[k];
+    if (Object.keys(keep).length) casting.lines[k] = keep; else delete casting.lines[k];
+  }
+  for (const [k, [prev, next]] of Object.entries(smart)) if (!PLAIN.has(k)) casting.lines[k] = { ...(casting.lines[k] || {}), emotion: V.SMART, previousText: prev, nextText: next };
   if (!casting.note.includes('10-09')) casting.note += ' 10-09 해설은 하나·소진 가운데 게임마다 한 명(games), 칭찬·위로·놀람·이야기 줄만 감정 smart(lines, tools/미니게임_목소리_연출.cjs) — 나머지 배역·줄은 지금처럼 normal.';
   const after = await V.allJobs({ casting, repo, games: Object.keys(GAME_VOICE) });
   const summary = Object.keys(GAME_VOICE).map(g => {
@@ -119,4 +128,4 @@ if (require.main === module) (async () => {
   if (process.argv.includes('--write')) { fs.writeFileSync(V.CASTING_FILE, JSON.stringify(casting, null, 2) + '\n'); console.log('적음: ' + path.relative(G.REPO, V.CASTING_FILE)); }
   else console.log('(보기만 — 적으려면 --write)');
 })().catch(e => { console.error(e.message); process.exitCode = 1; });
-module.exports = { GAME_VOICE, HANA, SOJIN, direction, plan };
+module.exports = { GAME_VOICE, HANA, SOJIN, PLAIN, direction, plan };
