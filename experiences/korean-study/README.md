@@ -4,6 +4,8 @@
 
 유호님 10-28: 「AI가 선생님이야」 · 「지금 이건 synk world랑 아예 별개인거지? synk world 입장하기 전에 제공하는 것들이어야 해」. 학생은 SYNK에서 AI 튜터와 바로 한국어 공부를 시작하고, WORLD는 따로 골라서 들어간다. 이 폴더가 그 독립 학습의 원문이다. 개발 기준은 [AI 튜터의 책임](../synk-world-app/README.md#ai-teacher-topik4-20261028)이다.
 
+**이름과 역할:** Study는 `/study/` 주소의 「한국어 공부」 화면이다. Atlas는 공통 학습 판단·기록 엔진, WORLD는 마을·캐릭터·게임 학습 화면, Study는 AI 튜터와 바로 공부하는 독립 학습 입구다. 현재 학습 범위는 TOPIK II 쓰기 중심이며, 별도 엔진을 뜻하는 이름이 아니다.
+
 WORLD 쪽 상태(구분): WORLD 쓰기 연습 51~54와 자동 피드백은 10-21 synk.im/world에 공개됐다. 그 위의 53번 「한 가지 고치기」 고도화(커밋 `ad409b96`·`20234254`, [설계](../synk-world-app/qa/writing-focus-20261027/설계.md))는 `writing-focus-s2` Fable 최종 검수가 끝나지 않아 **라이브 미공개**다. 이 폴더는 그 코드의 화면 없는 순수 판정만 빌려 쓴다.
 
 **한 줄:** 학생 글에서 한 가지 근거 있는 문제를 찾고 → 짧은 확인으로 도움을 조절하고 → 이해했으면 적용으로, 헷갈리면 예문으로 → 자기 글을 고치고 → 새로운 자료로 이어진다. 로그인하면 의미 AI가 이를 맡고, 연결할 수 없으면 기기 안의 제한된 끝맺음 연습을 명확히 안내한다.
@@ -12,7 +14,7 @@ WORLD 쪽 상태(구분): WORLD 쓰기 연습 51~54와 자동 피드백은 10-21
 
 | 칸 | 정한 것 |
 |---|---|
-| 주소 | `synk.im/study/`(초기판 공개, 이번 Atlas 보완판은 공개 전). 원고 `src/` → `node experiences/korean-study/build.mjs` → `dist/study/` → 루트가 검증 뒤 `tools/공개.js` |
+| 주소 | `synk.im/study/` — Atlas 보완판까지 공개 완료(10-28, `4a537bf1`). 원고 `src/` → `node experiences/korean-study/build.mjs` → `dist/study/` → `tools/공개.js`. 최소 진도·계정 전환·충돌 보호와 최종 CI 근거는 [작업 검증 기록](../../docs/_ops/qa/atlas-world-learning-20261028/README.md) |
 | 들어오는 길(이번에 연결) | ① 주소 직접 ② **SYNK 계정 포털** `synk.im/account/platform.html#home` — 환영 칸 바로 아래, 즐겨찾기·「설치 없이」 줄보다 먼저 「한국어 공부」 칸 하나(`experiences/synk-account/src/platform.mjs` `homePage()` · `platform.css`). 앱 목록·라이브러리 계약(`PLATFORM_APP_IDS`, 계정 문서 검사)은 건드리지 않는 링크 칸이라 계정 API·저장 계약 변경이 없다. 묶음은 `node tools/check-account-bundles.js --build`로 다시 만든다. 기존 WORLD 입구는 그대로 |
 | 들어오는 길(후속) | synk.im 첫 화면(`synk-policy`의 공개 첫 쪽) — 루트가 공개 때 함께 볼 것 |
 | WORLD와의 관계 | WORLD 세션·캐릭터·마을·재화·오프닝·게임 온보딩·WORLD 계정 모듈을 하나도 부르지 않는다. 학습 화면에 WORLD로 가는 필수 단계가 없다(끝 화면의 「WORLD도 따로 있어요」 같은 링크도 이번엔 두지 않는다). 가져오는 것은 빌드가 묶는 순수 판정(`world-writing-check.mjs` 문장 나누기·끝 꼴, `world-writing-focus.mjs` 카드 풀·카드 고르기·끝 꼴 확인)과 검수 통과 문항, 검수된 화면 글 일부(`brand-opening/world-strings.mjs`에서 빌드가 고른 키만)뿐이다 |
