@@ -169,7 +169,11 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
     const [view, who] = await Promise.allSettled([call('accountView', {}, token), call('identity', {}, token)]);
     if (token !== epoch) return;
     loading = false;
-    if (view.status === 'fulfilled') { data = view.value;loadError = ''; } else if (view.reason?.code !== 'changed') loadError = errorText(view.reason);
+    if (view.status === 'fulfilled') {
+      const was = data?.account?.status;data = view.value;loadError = '';
+      // A deletion request or its cancelling changes what the town shows: a quiet read reads the card again too.
+      if (quiet && was !== undefined && was !== data?.account?.status) void town.refresh();
+    } else if (view.reason?.code !== 'changed') loadError = errorText(view.reason);
     if (who.status === 'fulfilled') { identity = who.value;identityError = false; } else if (who.reason?.code !== 'changed') identityError = true;
     render();
   }

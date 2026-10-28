@@ -137,3 +137,15 @@ test('the town card: not entered yet, not ready, a stale revision reloads, a rep
   late.state.auth=signedIn(OTHER,2);p4.authChanged();release(townCard(5));await settle();
   assert.ok(!late.root.innerHTML.includes('찻집 주인 · 찻집 일'),'the other account never sees the town of the first');
 });
+test('the town card closes while a deletion request stands and reads again once it is cancelled',async()=>{
+  const deleting=accountView({account:{...accountView().account,status:'deletion-requested'},dataRequests:[{request_id:'77777777-7777-4777-8777-777777777777',kind:'delete',status:'pending',due_at:'2026-10-29T18:17:00Z'}],learning:{enabled:false,revision:3}});
+  let status='active';
+  const h=harness({replies:{accountView:()=>status==='active'?accountView():deleting,identity:identity(),townRecords:()=>status==='active'?townCard(5):{ok:false,error:{code:'ACCOUNT_UNAVAILABLE'}},
+    requestDeletion:{ok:true,request:{due_at:'2026-10-29T18:17:00Z'}},cancelDeletion:{ok:true}}}),page=await mount(h);page.show();await settle();
+  assert.ok(h.root.innerHTML.includes('찻집 주인 · 찻집 일 — 같이 했어요'));
+  status='deleting';await h.click('delete-request');h.confirmNext('confirm');await settle();
+  assert.ok(h.root.innerHTML.includes('계정 삭제를 요청한 동안에는 마을 기록을 볼 수 없어요.')&&!h.root.innerHTML.includes('data-town="known.r0"'),'the card closes over the rows it showed');
+  status='active';await h.click('delete-cancel');
+  assert.ok(h.root.innerHTML.includes('찻집 주인 · 찻집 일 — 같이 했어요'),'cancelling opens the card again');
+  assert.equal(h.calls.filter(row=>row.operation==='townRecords').length,3);
+});

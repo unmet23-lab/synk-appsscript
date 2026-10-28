@@ -70,8 +70,13 @@ export function createTownRecords({ load, send, confirm, onChange = () => {}, ra
   const quiet = error => error?.code === 'changed' || error?.code === 'ACCOUNT_CHANGED';
   async function refresh({ keepMessage = false } = {}) {
     const token = ++epoch;state = { ...state, phase: state.records ? state.phase : 'loading', message: keepMessage ? state.message : null };changed();
-    try { const reply = await load();if (token !== epoch) return;state = { ...state, phase: 'ready', records: reply?.records ?? null }; }
-    catch (error) { if (token !== epoch || quiet(error)) return;state = { ...state, phase: state.records ? state.phase : 'failed', failure: LOAD_ERRORS[error?.code] || null, ...(state.records ? { message: { text: errorText(error), tone: 'error' } } : {}) }; }
+    try { const reply = await load();if (token !== epoch) return;state = { ...state, phase: 'ready', records: reply?.records ?? null, failure: null }; }
+    catch (error) {
+      if (token !== epoch || quiet(error)) return;
+      // A reason the account gives (a deletion request) closes the card even over rows already shown; a passing failure keeps them.
+      const failure = LOAD_ERRORS[error?.code] || null;
+      state = failure || !state.records ? { ...state, phase: 'failed', records: null, open: [], message: null, failure } : { ...state, message: { text: errorText(error), tone: 'error' } };
+    }
     changed();
   }
   async function press(key) {

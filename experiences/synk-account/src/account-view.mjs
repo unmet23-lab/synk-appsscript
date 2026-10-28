@@ -25,7 +25,7 @@ const element = (tag, text, className) => { const node = document.createElement(
 const dueText = value => { const d = new Date(value);if (!value || Number.isNaN(d.getTime())) return '';return `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null, classConnection = null }) {
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, playHost, wardrobeView, ended = false, deleteRequestId, gameFrame, gameGeneration=0, loadVersion=0, stopPreferences, learningPending=false, learningUnconfirmed=false,playEntryUsed=false;
-  // The town card is read once per signed-in account (townFor) and redrawn in place; a reply after stop() is dropped.
+  // The town card is read once per signed-in account and account state (townFor) and redrawn in place; a reply after stop() is dropped.
   let drawTown = null, townFor = null;
   const town = createTownRecords({
     load: async () => { const reply = await client.townRecords();guard();if (ended) throw Object.assign(new Error('closed'), { code: 'ACCOUNT_CHANGED' });return reply; },
@@ -157,7 +157,9 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     if(classConnection){const context=await classConnection.client.load();guard();if(ended || version!==loadVersion)return;if(context?.account?.synk_user_id!==result.account?.synk_user_id)throw new Error('수업 계정이 바뀌었어요. 다시 로그인해 주세요.');result.classroom=context;classConnection.onContext?.(context);}
     if(preserveWorld && !classConnection && applyAccount(result))return;
     learningUnconfirmed=false;data = result;render();
-    if(!localConnection&&typeof client.townRecords==='function'&&townFor!==data.account?.synk_user_id){townFor=data.account?.synk_user_id??null;void town.refresh();}
+    // Read again when the account or its state changes: a deletion request closes the card, cancelling it opens the card again.
+    const townKey=`${data.account?.synk_user_id??''}:${data.account?.status??''}`;
+    if(!localConnection&&typeof client.townRecords==='function'&&townFor!==townKey){townFor=townKey;void town.refresh();}
   }
   // A foreground account read may update labels and device sessions without
   // replacing the running WORLD host. Changed identity/consent requires re-entry.

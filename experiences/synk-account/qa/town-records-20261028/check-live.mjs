@@ -20,7 +20,7 @@ const TYPES = { '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; char
 
 // --- synthetic account project ------------------------------------------------------------------------------------------
 const USER = { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', email: 'member-a@synthetic.test', password: 'synthetic-pass-a1' };
-let town = null, log = [];
+let town = null, log = [], accountStatus = 'active';
 function resetTown(state) {
   town = { state, revision: 7, bands: true, observed: true, feedback: true, consent: 'unasked',
     known: [['찻집 주인', '찻집 일', 'cafe-owner', '20749.tea-order'], ['연구원', '관찰 카드가 날려요', 'researcher', '20748.R1']], familiar: ['쟁반이 기울어요', '찻집 주인과 차를 골라요'] };
@@ -52,8 +52,9 @@ function townCommand({ type, payload, expectedRevision }) {
   if (type === 'MEMORY_CLEAR') { town.familiar = [];town.observed = false;town.feedback = false; }
   town.revision++;return [200, { ...townAnswer(), duplicate: false }];
 }
-const account = () => ({ ok: true, account: { synk_user_id: USER.id, status: 'active', profile: { display_name: '합성 회원 A' }, profile_revision: 1, providers: ['email'] }, memberships: [], entitlements: [],
-  learning: { enabled: false, revision: 1 }, capabilities: { learningSync: true }, sessions: [{ id: 'a-current', product: 'platform', label: '', current: true, revoked: false, last_seen: new Date().toISOString() }], dataRequests: [] });
+const account = () => ({ ok: true, account: { synk_user_id: USER.id, status: accountStatus, profile: { display_name: '합성 회원 A' }, profile_revision: 1, providers: ['email'] }, memberships: [], entitlements: [],
+  learning: { enabled: false, revision: 1 }, capabilities: { learningSync: true }, sessions: [{ id: 'a-current', product: 'platform', label: '', current: true, revoked: false, last_seen: new Date().toISOString() }],
+  dataRequests: accountStatus === 'deletion-requested' ? [{ request_id: '77777777-7777-4777-8777-777777777777', kind: 'delete', status: 'pending', due_at: new Date(Date.now() + 6 * 86400000).toISOString() }] : [] });
 const TOWN_FIRST = { state: { revision: 7 }, commands: [{ id: 'C-1' }], events: [{ id: 'E-1' }], exportAt: '2026-10-28T00:00:00.000Z', afterCommand: 'C-1', afterEvent: 'E-1', hasMore: true };
 const CORS = { 'Access-Control-Allow-Origin': 'https://synk.im', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Expose-Headers': '*', 'x-supabase-api-version': '2024-01-01' };
 async function answer(route) {
@@ -70,6 +71,8 @@ async function answer(route) {
   if (url.pathname === '/auth/v1/user') return json(200, session().user);
   if (url.pathname === '/auth/v1/logout') return route.fulfill({ status: 204, headers: CORS, body: '' });
   if (url.pathname === '/functions/v1/synk-town/records') {
+    // The route answers only an active account (a deletion request in its grace closes the records).
+    if (accountStatus !== 'active') return json(403, { ok: false, error: { code: 'ACCOUNT_UNAVAILABLE', message: 'account unavailable' } });
     if (town.state === 'fail') return json(503, { ok: false, error: { code: 'TOWN_UNAVAILABLE', message: 'synthetic outage' } });
     if (method === 'GET') return json(200, townAnswer());
     const [status, data] = townCommand(body);return json(status, data);
@@ -80,6 +83,7 @@ async function answer(route) {
     if (view === 'atlas') return json(200, { ok: true, shared: 'declared-only', learning: { enabled: false, revision: 1 }, summary: { reasons: ['travel'], presentation: null, practice: { answered: 6, independent: 2, assisted: 4, skills: [] }, forReasons: [] } });
     if (view === 'export') return json(200, { ok: true, account: account().account, events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [], myInfo: { profile: { display_name: '합성 회원 A' } }, town: TOWN_FIRST });
     if (view === 'town-export') return json(200, { ok: true, scope: 'synk-town-data', town: { commands: [{ id: 'C-2' }], events: [{ id: 'E-2' }], afterCommand: 'C-2', afterEvent: 'E-2', hasMore: false } });
+    if (method === 'POST' && body.action === 'delete-cancel') { accountStatus = 'active';return json(200, { ok: true }); }
     if (method === 'POST') return json(200, { ok: true, current: false, refreshRevoked: true, legacyAccessGuard: true });
     return json(200, account());
   }
@@ -94,8 +98,8 @@ const SURFACES = {
   portal: { url: 'https://synk.im/id/', card: '#account .town-block', product: 'platform' },
   world: { url: 'https://synk.im/account/client.html?product=world', card: '#account .town-card', product: 'world' },
 };
-async function open(surface, state, width) {
-  resetTown(state);log = [];
+async function open(surface, state, width, status = 'active') {
+  resetTown(state);log = [];accountStatus = status;
   const context = await browser.newContext({ viewport: { width, height: width > 500 ? 1000 : 844 }, acceptDownloads: true }), errors = [], { url } = SURFACES[surface];
   if (surface === 'world') await context.addInitScript(() => { if (location.origin === 'https://synk.im') sessionStorage.setItem('synk.oauth.session.world', JSON.stringify({ access_token: 'synthetic-world-access', refresh_token: 'synthetic-world-refresh', token_type: 'bearer', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600 })); });
   await context.route(`${project}/**`, answer);
@@ -107,7 +111,7 @@ async function open(surface, state, width) {
   await context.route(request => { const u = new URL(request); return u.origin !== 'https://synk.im' && u.origin !== project && !/^(?:data|blob):/.test(u.protocol); }, route => route.abort());
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(String(error).slice(0, 200)));
-  page.on('console', message => { if (message.type() === 'error' && !/status of (?:404|409|503)|ERR_FAILED|net::ERR/.test(message.text())) errors.push(message.text().slice(0, 200)); });
+  page.on('console', message => { if (message.type() === 'error' && !/status of (?:403|404|409|503)|ERR_FAILED|net::ERR/.test(message.text())) errors.push(message.text().slice(0, 200)); });
   await page.goto(`${url}${url.includes('?') ? '&' : '?'}probe=w6c-${Date.now()}`, { waitUntil: 'domcontentloaded' });
   if (surface === 'portal') { await page.waitForSelector('#auth-panel:not([hidden])');await page.fill('#email', USER.email);await page.fill('#password', USER.password);await page.click('#auth-submit');await page.waitForSelector('#account-profile:not([hidden])'); }
   await page.waitForSelector('#account:not([hidden])', { timeout: 20000 });
@@ -152,6 +156,14 @@ try {
       }
       await context.close();
     }
+    // A deletion request in its grace closes the card; cancelling it on the same screen reads the card again (Argon E1).
+    { const { context, page, errors } = await open(surface, 'entered', 1440, 'deletion-requested');await settle(page, card);
+      const closed = await page.locator(card).innerText();
+      await page.locator('button', { hasText: '삭제 요청 취소' }).first().click();
+      const reopened = await page.waitForFunction(selector => /주민이 아는 나/.test(document.querySelector(selector)?.textContent || ''), card, { timeout: 15000 }).then(() => true, () => false);
+      check(`${surface}: a deletion request closes the card and cancelling it on the same screen opens the card again`, closed.includes('계정 삭제를 요청한 동안에는 마을 기록을 볼 수 없어요.') && !closed.includes('주민이 아는 나')
+        && reopened && log.some(row => row.body?.action === 'delete-cancel') && !errors.length, { errors, screenshot: await page.locator(card).screenshot({ path: path.join(outDir, `${surface}-after-cancel-1440.png`) }).then(() => `${surface}-after-cancel-1440.png`) });
+      await context.close(); }
     for (const [state, line] of [['new', '싱크타운에 들어가면'], ['unready', '마을 기록은 아직 쓸 수 없어요.'], ['fail', '마을 기록을 불러오지 못했어요.']]) {
       const { context, page, errors } = await open(surface, state, 1440);await settle(page, card);
       const text = await page.locator(card).innerText(), buttons = await page.locator(`${card} [data-town]:not([data-town="retry"])`).count();

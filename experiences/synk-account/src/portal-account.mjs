@@ -237,7 +237,9 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     const token = ++epoch, result = await client.load();live();if (token !== epoch) return;
     if (data?.account?.synk_user_id && result?.account?.synk_user_id !== data.account.synk_user_id) throw Object.assign(new Error('계정이 바뀌었어요. 다시 로그인해 주세요.'), { code: 'ACCOUNT_CHANGED' });
     data = result;render();void loadSummary(token);
-    if (townFor !== data.account?.synk_user_id) { townFor = data.account?.synk_user_id ?? null;void town.refresh(); }
+    // Read again when the account or its state changes: a deletion request closes the card, cancelling it opens the card again.
+    const townKey = `${data.account?.synk_user_id ?? ''}:${data.account?.status ?? ''}`;
+    if (townFor !== townKey) { townFor = townKey;void town.refresh(); }
   }
   return Object.freeze({
     load,

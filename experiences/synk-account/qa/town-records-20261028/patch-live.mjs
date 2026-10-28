@@ -81,9 +81,9 @@ const prior = await portalScope(priorRev);
 if (prior.text !== live.slice(start, end)) throw new Error(`the published portal scope is not ${priorRev}'s portal`);
 const next = await portalScope(null);
 // Every module in the new scope is either unchanged since <prior rev> or changed by W6c alone (no one's unpublished work).
-const since = git('log', '--format=%h', `${priorRev}..HEAD`, '--', ...next.inputs).toString().trim().split('\n').filter(Boolean);
-const W6C = ['9e3f7045d'], foreign = since.filter(hash => !W6C.some(own => own.startsWith(hash) || hash.startsWith(own)));
-if (foreign.length) throw new Error('portal modules changed since the prior publish by ' + foreign.join(' '));
+const since = git('log', '--format=%h %s', `${priorRev}..HEAD`, '--', ...next.inputs).toString().trim().split('\n').filter(Boolean);
+const foreign = since.filter(row => !/^\S+ \w+\(싱크타운 W6c[ )]/.test(row));
+if (foreign.length) throw new Error('portal modules changed since the prior publish by ' + foreign.join(' | '));
 for (const needle of ['마을 기록', 'town-block', 'town-heading', 'townExport', '연습 기록과 내 정보, 마을 기록', 'createPortalSecurity', 'synk.id.recent-login.v1']) if (!next.text.includes(needle)) throw new Error('patched scope lacks ' + needle);
 for (const needle of UNPUBLISHED) if (next.text.includes(needle)) throw new Error('patched scope carries unpublished ' + needle);
 const appClient = withClient(live.slice(0, start), 'id/dist/app.js');
@@ -92,7 +92,7 @@ if (appClient.text.slice(0, appClient.at) + appClient.text.slice(appClient.at + 
 
 // --- account/dist/client.js: the card into the published account view --------------------------------------------------
 const liveClient = read('account__dist__client.js');
-for (const name of ['__synkTownRecords', 'createTownRecords', 'attachTownRecords', 'townExport', 'TOWN_CLASSES', 'confirmTown', 'drawTown', 'townFor', 'townCard', 'townData', 'myInfo'])
+for (const name of ['__synkTownRecords', 'createTownRecords', 'attachTownRecords', 'townExport', 'TOWN_CLASSES', 'confirmTown', 'drawTown', 'townFor', 'townKey', 'townCard', 'townData', 'myInfo'])
   if (new RegExp(`\\b${name}\\b`).test(liveClient)) throw new Error('account/dist/client.js already uses the name ' + name);
 const card = (await esbuild.build({ stdin: { contents: 'export { createTownRecords, attachTownRecords, townExport } from "./town-records-card.mjs";', resolveDir: path.join(repo, 'desktop/renderer'), loader: 'js' },
   bundle: true, write: false, format: 'iife', globalName: '__synkTownRecords', target: ['es2022'], charset: 'utf8', minifyWhitespace: true, metafile: true }));
@@ -109,7 +109,7 @@ const HUNKS = [
   ['view state', 'learningPending=false,learningUnconfirmed=false,playEntryUsed=false;const closeGame=()=>{',
     'learningPending=false,learningUnconfirmed=false,playEntryUsed=false;let drawTown=null,townFor=null;const town=createTownRecords({load:async()=>{const reply=await client.townRecords();guard();if(ended)throw Object.assign(new Error("closed"),{code:"ACCOUNT_CHANGED"});return reply},send:async command=>{const reply=await client.townRights(command);guard();if(ended)throw Object.assign(new Error("closed"),{code:"ACCOUNT_CHANGED"});return reply},confirm:confirmTown,onChange:()=>drawTown?.()});const closeGame=()=>{'],
   ['first read', 'learningUnconfirmed=false;data=result;render()}function applyAccount(',
-    'learningUnconfirmed=false;data=result;render();if(!localConnection&&typeof client.townRecords==="function"&&townFor!==data.account?.synk_user_id){townFor=data.account?.synk_user_id??null;void town.refresh()}}function applyAccount('],
+    'learningUnconfirmed=false;data=result;render();const townKey=`${data.account?.synk_user_id??""}:${data.account?.status??""}`;if(!localConnection&&typeof client.townRecords==="function"&&townFor!==townKey){townFor=townKey;void town.refresh()}}function applyAccount('],
   ['card', 'void atlas(memory);const rights=card("이용 권한");',
     'void atlas(memory);let townCard=null;if(!localConnection&&typeof client.townRecords==="function"){townCard=card("마을 기록");townCard.classList.add("town-card");const body=element2("div");townCard.append(body);drawTown=attachTownRecords(town,body,{classes:TOWN_CLASSES,headingLevel:4})}const rights=card("이용 권한");'],
   ['grid', 'grid.append(identity,learning,memory,rights,sessions);root.append(grid);', 'grid.append(identity,learning,memory,...townCard?[townCard]:[],rights,sessions);root.append(grid);'],

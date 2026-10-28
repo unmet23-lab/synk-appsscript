@@ -48,6 +48,12 @@ test('a stale revision reloads the card with the reason; a reply that comes afte
   const pending=late.refresh();late.reset();release(card());await pending;assert.equal(late.state().records,null);assert.equal(late.state().phase,'idle');
   let fail=true;const flaky=createTownRecords({load:async()=>{if(fail)throw Object.assign(new Error('x'),{code:'NETWORK',retryable:true});return card();},send:async()=>card(),confirm:async()=>true});
   await flaky.refresh();assert.equal(flaky.state().phase,'failed');fail=false;await flaky.press('retry');assert.equal(flaky.state().phase,'ready');
+  // A passing failure over rows already shown keeps them with a line; a deletion request closes the card over them.
+  fail=true;await flaky.refresh();assert.equal(flaky.state().phase,'ready');assert.ok(flaky.state().records);assert.equal(flaky.state().message.tone,'error');
+  let gone=false;const deleting=createTownRecords({load:async()=>{if(gone)throw Object.assign(new Error('x'),{code:'ACCOUNT_UNAVAILABLE'});return card();},send:async()=>card(),confirm:async()=>true});
+  await deleting.refresh();gone=true;await deleting.refresh();
+  assert.equal(deleting.state().phase,'failed');assert.equal(deleting.state().records,null);assert.equal(deleting.state().failure,'계정 삭제를 요청한 동안에는 마을 기록을 볼 수 없어요. 요청을 취소하면 다시 보여요.');
+  gone=false;await deleting.refresh();assert.equal(deleting.state().phase,'ready');assert.equal(deleting.state().failure,null);
   const academy=createTownRecords({load:async()=>card(),send:async()=>{throw Object.assign(new Error('x'),{code:'eval-consent-academy'});},confirm:async()=>true});
   await academy.refresh();await academy.press('eval.a0');assert.equal(academy.state().message.text,'학원 소속 계정에는 묻지 않아요.');assert.equal(academy.state().message.tone,'error');
 });
