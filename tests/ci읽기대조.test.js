@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { 대조, 희소목록, 시험목록 } = require('../tools/ci읽기대조.cjs');
+const { 대조, 희소대조, 희소목록, 시험목록 } = require('../tools/ci읽기대조.cjs');
 const { 푸시필터 } = require('../tools/원격ci.js');
 
 const ROOT = path.join(__dirname, '..');
@@ -103,4 +103,77 @@ test('읽기 기록은 실제 프로세스의 읽기·자식 명령을 남기고
   const 부모 = 기록들.find((x) => x.spawns.length);
   assert.ok(부모.reads.some(([p, kinds]) => p === path.resolve(대상) && kinds.includes('read')));
   assert.equal(부모.spawns[0].args[0], '-e');
+});
+
+test('wide 희소 검사는 exists와 자식 도구의 파일 인자도 막고, 다른 저장소·폴더 나열은 섞지 않는다', () => {
+  const root = path.join(os.tmpdir(), 'wide-sparse-root');
+  const 파일 = 'docs/캐릭터/unused.png';
+  const 희소빠짐 = new Set([파일]);
+  const 읽기 = 프로세스(root, 10, 0, ['experiences/a/check.test.mjs'], [[파일, ['exists']]]);
+  const 자식 = 프로세스(root, 20, 0, ['tools/media.test.cjs'], [], [{ command: 'ffmpeg', cwd: root, args: ['-i', 파일] }]);
+  assert.equal(희소대조({ root, 기록들: [읽기, 자식], 희소빠짐 }).어긋남.length, 2);
+  const 다른 = 프로세스(root, 30, 0, ['tests/fixture.test.cjs'], [], [{ command: 'git', cwd: root, args: ['-C', os.tmpdir(), 'show', 'HEAD:' + 파일] }]);
+  const 폴더 = 프로세스(root, 40, 0, ['tests/walk.test.cjs'], [['docs/캐릭터', ['dir']]]);
+  assert.deepEqual(희소대조({ root, 기록들: [다른, 폴더], 희소빠짐 }).어긋남, []);
+});
+
+test('wide 희소 CLI는 실제 skip-worktree 파일의 존재 검사와 손상·빈 추적을 통과시키지 않는다', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-wide-sparse-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const root = path.join(dir, 'repo'), trace = path.join(dir, 'trace');
+  fs.mkdirSync(path.join(root, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'assets/hidden.png'), 'fixture');
+  fs.writeFileSync(path.join(root, 'source.js'), 'fixture');
+  const git = (args, input) => {
+    const r = spawnSync('git', args, { cwd: root, encoding: 'utf8', input, windowsHide: true });
+    assert.equal(r.status, 0, r.stderr);
+  };
+  git(['init', '-q']); git(['add', '.']);
+  git(['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture']);
+  git(['sparse-checkout', 'set', '--no-cone', '--stdin'], '/*\n!/assets/*.png\n');
+  assert.equal(fs.existsSync(path.join(root, 'assets/hidden.png')), false);
+  const env = { ...process.env, NODE_OPTIONS: '', SYNK_READ_TRACE_DIR: trace };
+  delete env.NODE_TEST_CONTEXT;
+  const command = (...extra) => spawnSync(process.execPath, [path.join(ROOT, 'tools/ci읽기대조.cjs'), '--sparse-only', '--root', root, '--trace', trace, ...extra], { cwd: root, env, encoding: 'utf8', windowsHide: true });
+  assert.equal(command().status, 2, '기록 없음은 통과가 아니다');
+  const observed = spawnSync(process.execPath, ['--require', path.join(ROOT, 'tools/ci읽기기록.cjs'), '-e', "require('node:fs').existsSync('assets/hidden.png')"], { cwd: root, env, encoding: 'utf8', windowsHide: true });
+  assert.equal(observed.status, 0, observed.stderr);
+  const blocked = command();
+  assert.equal(blocked.status, 1, blocked.stderr);
+  assert.match(blocked.stdout, /assets\/hidden\.png/);
+  const record = fs.readdirSync(trace).find(x => x.endsWith('.json'));
+  const value = JSON.parse(fs.readFileSync(path.join(trace, record), 'utf8'));
+  value.reads = []; value.spawns = [];
+  fs.writeFileSync(path.join(trace, record), JSON.stringify(value));
+  assert.equal(command().status, 0, '온전한 기록이 있고 제외 파일을 안 읽었을 때만 통과');
+  fs.writeFileSync(path.join(trace, 'broken.json'), '{');
+  assert.equal(command().status, 2, '손상된 일부를 빼고 초록으로 보고하지 않는다');
+});
+
+test('추적한 execFile·exec의 promisify도 stdout/stderr·오류·Promise.child를 보존하고 실제 명령을 기록한다', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-promisify-trace-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const shell = path.join(dir, 'shell.cjs');
+  fs.writeFileSync(shell, "process.stdout.write('shell-ok');process.stderr.write('shell-err');");
+  const code = `
+    import {execFile,exec} from 'node:child_process';
+    import {promisify} from 'node:util';
+    const pending=promisify(execFile)(process.execPath,['-e',"process.stdout.write('TRACE_PROMISE_OK');process.stderr.write('ok-err')"]);
+    const child=Boolean(pending.child?.pid), success=await pending;
+    let failed;
+    try { await promisify(execFile)(process.execPath,['-e',"process.stdout.write('TRACE_PROMISE_FAIL');process.stderr.write('fail-err');process.exit(7)"]); }
+    catch(error) { failed={code:error.code,stdout:error.stdout,stderr:error.stderr}; }
+    const shell=await promisify(exec)('"'+process.execPath+'" "'+${JSON.stringify(shell)}+'"');
+    console.log(JSON.stringify({child,success,failed,shell}));
+  `;
+  const trace = path.join(dir, 'trace');
+  const env = { ...process.env, NODE_OPTIONS: '', SYNK_READ_TRACE_DIR: trace };
+  delete env.NODE_TEST_CONTEXT;
+  const r = spawnSync(process.execPath, ['--require', path.join(ROOT, 'tools/ci읽기기록.cjs'), '--input-type=module', '-e', code], { env, encoding: 'utf8', windowsHide: true });
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(JSON.parse(r.stdout), { child: true, success: { stdout: 'TRACE_PROMISE_OK', stderr: 'ok-err' }, failed: { code: 7, stdout: 'TRACE_PROMISE_FAIL', stderr: 'fail-err' }, shell: { stdout: 'shell-ok', stderr: 'shell-err' } });
+  const records = fs.readdirSync(trace).filter(f => f.endsWith('.json')).map(f => JSON.parse(fs.readFileSync(path.join(trace, f), 'utf8')));
+  const spawns = records.flatMap(r => r.spawns);
+  for (const marker of ['TRACE_PROMISE_OK', 'TRACE_PROMISE_FAIL']) assert.ok(spawns.some(s => s.command === process.execPath && s.args.some(arg => arg.includes(marker))), marker + ' 명령도 기록한다');
+  assert.ok(spawns.some(s => s.command.includes(shell)), 'promisify(exec)의 셸 명령도 기록한다');
 });

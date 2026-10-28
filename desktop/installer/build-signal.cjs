@@ -75,7 +75,7 @@ async function main() {
   const fonts=path.resolve(get('fonts')||path.join(ROOT,'fonts'));
   const {UUID}=dependencies('builder-util-runtime');
   const guid=UUID.v5(product.appId,UUID.parse('50e065bc-3134-11e6-9bab-38c9862bdaf3'));
-  const config={appId:product.appId,productName:product.productName,executableName:product.executableName,electronVersion:'44.5.1',npmRebuild:false,forceCodeSigning:false,
+  const config={appId:product.appId,productName:product.productName,executableName:product.executableName,electronVersion:'44.10.0',npmRebuild:false,forceCodeSigning:false,
     directories:{app:project,output:path.join(output,'backend')},artifactName:'signal-backend.exe',
     win:{target:[{target:'nsis',arch:['x64']}],signExecutable:false,icon},
     nsis:{guid,include:path.join(ROOT,'signal-safety.nsh'),oneClick:false,perMachine:false,allowElevation:false,packElevateHelper:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},publish:null};

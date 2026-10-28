@@ -44,3 +44,67 @@ test('a frozen desktop-only package validates its bundled receipt without depend
   fs.appendFileSync(outputFile, '// changed\n');
   assert.throws(() => verifyMemberActivity(desktopRoot), /differs from its build manifest/);
 });
+
+test('shared statement code preserves the canonical API and document validation', async t => {
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-member-build-'));
+  t.after(()=>{assert.equal(path.dirname(directory),os.tmpdir());assert.ok(path.basename(directory).startsWith('synk-member-build-'));fs.rmSync(directory,{recursive:true,force:true});});
+  const result=buildMemberActivity({outputFile:path.join(directory,'member-activity.mjs')});
+  const generated=await import(pathToFileURL(path.join(directory,'member-understanding.mjs')).href);
+  const schema=await import(pathToFileURL(path.join(directory,'member-understanding-data.mjs')).href);
+  const canonical=require('../atlas/member-understanding.js'),canonicalSchema=await import('../experiences/synk-account/src/member-understanding-data.mjs');
+  assert.deepEqual(Object.keys(generated.default).sort(),Object.keys(canonical).sort());
+  assert.deepEqual(generated.default.summarizeMemberUnderstanding({asOf:'2026-10-28T00:00:00.000Z'}),canonical.summarizeMemberUnderstanding({asOf:'2026-10-28T00:00:00.000Z'}));
+  const outcome=fn=>{try{return {ok:true,value:fn()};}catch(error){return {ok:false,code:error.code,message:error.message};}};
+  const cases=[schema.emptyMemberUnderstanding(),null,{version:1,reviews:[],overrides:[],unexpected:true},...Array.from({length:9},(_,i)=>({version:i+2,reviews:[],overrides:[],statements:[]}))];
+  for(const value of cases)assert.deepEqual(outcome(()=>schema.validateMemberUnderstanding(value)),outcome(()=>canonicalSchema.validateMemberUnderstanding(value)));
+  const bodies=Object.keys(result.files).map(file=>fs.readFileSync(path.join(directory,file),'utf8')).join('\n');
+  // Check the receipt against emitted imports, independently of esbuild's
+  // metadata: the native package must contain every module the browser asks for.
+  for(const [file,receipt]of Object.entries(result.files)){
+    const emitted=fs.readFileSync(path.join(directory,file),'utf8');
+    const imports=[...emitted.matchAll(/\bimport\s+(?:[^;]*?\s+from\s+)?["']([^"']+)["']/g)].map(match=>path.posix.normalize(path.posix.join(path.posix.dirname(file),match[1]))).sort();
+    assert.deepEqual(receipt.imports,imports,'receipt traces emitted imports in '+file);
+  }
+  for(let version=1;version<=8;version++)assert.equal(bodies.split('// experiences/synk-account/src/member-statement-v'+version+'.cjs').length-1,1,'compatibility module '+version+' is retained once');
+  assert.ok(result.totalBytes<1200000,'shared browser code stays below its former duplicate size');
+});
+
+test('frozen packages reject missing, modified, extra and redirected shared chunks', t => {
+  const {verifyMemberActivity}=require('../desktop/tools/package.cjs');
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-member-build-'));
+  t.after(()=>{assert.equal(path.dirname(directory),os.tmpdir());assert.ok(path.basename(directory).startsWith('synk-member-build-'));fs.rmSync(directory,{recursive:true,force:true});});
+  const desktopRoot=path.join(directory,'desktop'),generated=path.join(desktopRoot,'renderer/generated');
+  const outputFile=path.join(generated,'member-activity.mjs'),result=buildMemberActivity({outputFile});
+  const chunk=Object.keys(result.files).find(name=>name.startsWith('member-shared/')),file=path.join(generated,chunk),original=fs.readFileSync(file);
+  fs.unlinkSync(file);assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/);fs.writeFileSync(file,original);
+  fs.appendFileSync(file,'// tampered\n');assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/);fs.writeFileSync(file,original);
+  const extra=path.join(generated,'member-shared/chunk-AAAAAAAA.mjs');fs.writeFileSync(extra,'export const extra=true;');
+  assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/);
+  assert.throws(()=>buildMemberActivity({outputFile,check:true}),/Stale member activity/);
+  buildMemberActivity({outputFile});assert.equal(fs.existsSync(extra),false);assert.doesNotThrow(()=>verifyMemberActivity(desktopRoot));
+  const receipts=result.artifacts.map(({manifestFile})=>[manifestFile,fs.readFileSync(manifestFile,'utf8')]);
+  for(const redirected of ['../escaped.mjs','/absolute.mjs','https://example.invalid/chunk.mjs','member-shared/../escaped.mjs']){
+    for(const [manifestFile,raw]of receipts){const manifest=JSON.parse(raw);manifest.files[redirected]=manifest.files[chunk];delete manifest.files[chunk];fs.writeFileSync(manifestFile,JSON.stringify(manifest));}
+    assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/,redirected);
+    for(const [manifestFile,raw]of receipts)fs.writeFileSync(manifestFile,raw);
+  }
+  for(const [manifestFile,raw]of receipts){const manifest=JSON.parse(raw);for(const record of Object.values(manifest.files))record.imports=[];fs.writeFileSync(manifestFile,JSON.stringify(manifest));}
+  assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/,'receipts cannot leave emitted shared modules unreachable');
+  for(const [manifestFile,raw]of receipts)fs.writeFileSync(manifestFile,raw);
+  // A missing chunk must not become invisible by also removing its receipt
+  // and graph edges while leaving the real JavaScript imports unchanged.
+  fs.unlinkSync(file);
+  for(const [manifestFile,raw]of receipts){const manifest=JSON.parse(raw);delete manifest.files[chunk];for(const record of Object.values(manifest.files))record.imports=record.imports.filter(name=>name!==chunk);fs.writeFileSync(manifestFile,JSON.stringify(manifest));}
+  assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/,'actual imports cannot be erased from the receipt');
+  fs.writeFileSync(file,original);for(const [manifestFile,raw]of receipts)fs.writeFileSync(manifestFile,raw);
+  const shared=path.join(generated,'member-shared'),held=path.join(directory,'held-shared');fs.renameSync(shared,held);
+  try{
+    fs.symlinkSync(held,shared,process.platform==='win32'?'junction':'dir');
+    assert.throws(()=>verifyMemberActivity(desktopRoot),/build manifest/);
+    assert.throws(()=>buildMemberActivity({outputFile}),/Unsafe member activity directory/);
+  }finally{if(fs.existsSync(shared))fs.unlinkSync(shared);fs.renameSync(held,shared);}
+  const foreign=path.join(shared,'preserve.txt');fs.writeFileSync(foreign,'not a generated artifact');
+  assert.throws(()=>buildMemberActivity({outputFile}),/Unexpected member activity chunk/);
+  assert.equal(fs.readFileSync(foreign,'utf8'),'not a generated artifact');fs.unlinkSync(foreign);
+  assert.doesNotThrow(()=>verifyMemberActivity(desktopRoot));
+});

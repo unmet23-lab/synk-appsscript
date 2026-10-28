@@ -7,11 +7,51 @@ const root=path.resolve(__dirname,'..');
 const hashFile=p=>require('node:crypto').createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const sourceHash=()=>require('./source-hash.cjs').sourceHash(root);
 function verifyMemberActivity(desktopRoot=root){
-  for(const [name,entry]of [['member-activity','atlas/member-activity.js'],['member-activity-data','experiences/synk-account/src/member-activity-data.mjs'],['member-understanding','atlas/member-understanding.js'],['member-understanding-data','experiences/synk-account/src/member-understanding-data.mjs']]){
-  const generated=path.join(desktopRoot,'renderer/generated',name+'.mjs'),manifestPath=path.join(desktopRoot,'renderer/generated',name+'.manifest.json');
-  let manifest;try{manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));}catch{throw Error('Member activity build manifest is missing or invalid.');}
-  if(manifest.version!==1||manifest.entry!==entry||!manifest.sources||!Object.hasOwn(manifest.sources,entry)||!Object.values(manifest.sources).every(value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value))||!fs.existsSync(generated)||require('node:crypto').createHash('sha256').update(fs.readFileSync(generated,'utf8').replace(/\r\n/g,'\n')).digest('hex')!==manifest.sha256)throw Error('Member activity browser artifact differs from its build manifest.');
+  const entries=[['member-activity','atlas/member-activity.js'],['member-activity-data','experiences/synk-account/src/member-activity-data.mjs'],['member-understanding','atlas/member-understanding.js'],['member-understanding-data','experiences/synk-account/src/member-understanding-data.mjs']];
+  const directory=path.join(desktopRoot,'renderer/generated'),entryNames=new Set(entries.map(([name])=>name+'.mjs'));
+  const mismatch=()=>{throw Error('Member activity browser artifact differs from its build manifest.');};
+  const safeName=name=>entryNames.has(name)||/^member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(name);
+  const plain=value=>value&&typeof value==='object'&&!Array.isArray(value);
+  const digest=text=>require('node:crypto').createHash('sha256').update(text.replace(/\r\n/g,'\n')).digest('hex');
+  const read=relative=>{
+    const file=path.join(directory,relative);
+    try{const info=fs.lstatSync(file);if(!info.isFile()||info.isSymbolicLink()||fs.realpathSync(file)!==path.resolve(fs.realpathSync(desktopRoot),'renderer/generated',relative))mismatch();return fs.readFileSync(file,'utf8');}catch{mismatch();}
+  };
+  let closedFiles=null;
+  for(const [name,entry]of entries){
+  const manifestPath=name+'.manifest.json';
+  let manifest;try{manifest=JSON.parse(read(manifestPath));}catch{throw Error('Member activity build manifest is missing or invalid.');}
+  if(manifest.version!==2||manifest.entry!==entry||!plain(manifest.sources)||!Object.hasOwn(manifest.sources,entry)||!Object.values(manifest.sources).every(value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value))||!plain(manifest.files))mismatch();
+  const names=Object.keys(manifest.files);
+  if(!names.length||!names.every(safeName)||![...entryNames].every(file=>Object.hasOwn(manifest.files,file)))mismatch();
+  for(const [file,record]of Object.entries(manifest.files)){
+    if(!plain(record)||typeof record.sha256!=='string'||!/^[a-f0-9]{64}$/.test(record.sha256)||!Array.isArray(record.imports)||new Set(record.imports).size!==record.imports.length||!record.imports.every(dependency=>typeof dependency==='string'&&safeName(dependency)&&Object.hasOwn(manifest.files,dependency)))mismatch();
   }
+  if(manifest.sha256!==manifest.files[name+'.mjs'].sha256||digest(read(name+'.mjs'))!==manifest.sha256)mismatch();
+  const files=JSON.stringify(Object.fromEntries(Object.entries(manifest.files).sort(([a],[b])=>a.localeCompare(b,'en'))));
+  if(closedFiles&&files!==closedFiles)mismatch();closedFiles=files;
+  }
+  const files=JSON.parse(closedFiles),reachable=new Set();
+  const visit=name=>{if(reachable.has(name))return;reachable.add(name);for(const dependency of files[name].imports)visit(dependency);};
+  for(const name of entryNames)visit(name);
+  if(reachable.size!==Object.keys(files).length)mismatch();
+  const esbuild=require(require.resolve('esbuild',{paths:[path.resolve(__dirname,'../../experiences/synk-account')]}));
+  for(const [name,record]of Object.entries(files)){
+    const text=read(name);if(digest(text)!==record.sha256)mismatch();
+    // Parse the emitted modules as well: a self-consistent receipt must not
+    // conceal a missing dependency that is still imported by the JavaScript.
+    let imports;try{const parsed=esbuild.buildSync({stdin:{contents:text,sourcefile:name,resolveDir:directory},bundle:true,write:false,metafile:true,external:['*'],platform:'browser',format:'esm',logLevel:'silent'});
+      imports=[...new Set(Object.values(parsed.metafile.inputs).flatMap(input=>input.imports).map(item=>{
+        if(!['import-statement','dynamic-import'].includes(item.kind)||!/^\.\.?\//.test(item.path))mismatch();
+        const dependency=path.posix.normalize(path.posix.join(path.posix.dirname(name),item.path));if(!safeName(dependency))mismatch();return dependency;
+      }))].sort();
+    }catch{mismatch();}
+    if(JSON.stringify(imports)!==JSON.stringify([...record.imports].sort()))mismatch();
+  }
+  const shared=path.join(directory,'member-shared'),expected=Object.keys(files).filter(name=>name.startsWith('member-shared/')).map(name=>name.slice('member-shared/'.length)).sort();
+  let actual=[];
+  try{if(fs.existsSync(shared)){const info=fs.lstatSync(shared);if(!info.isDirectory()||info.isSymbolicLink())mismatch();actual=fs.readdirSync(shared).sort();}}catch{mismatch();}
+  if(JSON.stringify(actual)!==JSON.stringify(expected))mismatch();
   // A frozen desktop-only release carries the build receipt; a source checkout
   // also verifies freshness against the canonical Atlas implementation.
   const sourceRoot=path.resolve(desktopRoot,'..');

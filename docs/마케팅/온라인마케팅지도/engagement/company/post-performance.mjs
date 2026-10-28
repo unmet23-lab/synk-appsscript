@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { collectChannel, collectYoutubeWindows, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { canReadChannel, canWriteChannel } from './organization.mjs';
 import { lookupPerformancePost } from './post-performance-lookup.mjs';
+import { performanceComparisons } from './post-performance-comparison.mjs';
 
 const KIND = 'postPerformanceEntries', LOCKS = 'postPerformanceLocks';
 const HOUR = 3600000, WINDOW = 6 * HOUR, LEASE = 3 * 60000;
@@ -50,7 +51,6 @@ function windowPlan(row, checkpoint) {
 }
 const windowEligible = (plan, at) => !!plan && ['pending', 'retry', 'collecting'].includes(plan.status) && plan.dueAt <= at && (!plan.nextAttemptAt || plan.nextAttemptAt <= at) && !(plan.status === 'collecting' && plan.leaseUntil > at);
 const windowDetail = meta => meta?.kind === 'window' && meta.timeZone === WINDOW_TIME_ZONE && meta.days === WINDOW_DAYS && /^\d{4}-\d{2}-\d{2}$/.test(meta.startDate || '') && meta.endDate === addDays(meta.startDate, WINDOW_DAYS - 1);
-const sameWindowKind = (a, b) => windowDetail(a) && windowDetail(b) && a.source === b.source && a.unit === b.unit;
 // Keep window-filled values when a checkpoint observation is rebuilt (late manual entry on an unrecorded point).
 function keepWindowValues(previous, next) {
   const metrics = { ...next.metrics }, metricProvenance = { ...next.metricProvenance }, unavailableReasons = { ...next.unavailableReasons };
@@ -253,54 +253,27 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const row = store.get(KIND, id); if (!row) throw fail('게시 기록을 찾지 못했어요.', 404);
     channelFor(user, row.channelId, write); return row;
   }
-  // 같은 채널·같은 형식(쇼츠·일반 영상·릴스)의 이전 기록과만 견준다 — 학습 카드와 같은 조건이다(10-20: 쇼츠를 긴 영상 중앙값과 견줘 +9900%가 나왔다).
-  // ms는 한 조회 안에서 시각 문자열을 한 번만 해석하는 함수다(지표 × 이전 기록마다 다시 해석하면 기록이 늘수록 느려진다).
-  function comparison(row, checkpoint, all, ms = Date.parse) {
-    const format = row.publicationFormat || null;
-    const points = all.filter(other => other.id !== row.id && other.channelId === row.channelId && (other.publicationFormat || null) === format && other.publishedAt < row.publishedAt)
-      .map(other => other.checkpoints.find(item => item.hours === checkpoint.hours)).filter(Boolean);
-    const prior = points.filter(item => item.status === 'recorded' && item.observedAt && ms(item.observedAt) <= ms(item.closesAt));
-    return Object.fromEntries(metricIds.map(key => {
-      const meta = checkpoint.metricProvenance?.[key], unit = definitionOf(key).unit, windowed = meta?.kind === 'window';
-      // A window value is a platform recount of fixed dates: it is compared only with the same window kind and has no
-      // observation-delay rule, whatever happened to the snapshot at that point.
-      const currentValid = windowed ? windowDetail(meta) && meta.unit === unit : checkpoint.status === 'recorded' && meta && !meta.measurementWindowMissed;
-      const offset = currentValid && !windowed ? ms(meta.observedAt) - ms(checkpoint.dueAt) : null;
-      const values = currentValid ? (windowed ? points : prior).filter(item => {
-        const previous = item.metricProvenance?.[key];
-        if (windowed) return sameWindowKind(previous, meta);
-        return previous && previous.kind !== 'window' && !previous.measurementWindowMissed && previous.unit === unit && previous.source === meta.source
-          && Math.abs((ms(previous.observedAt) - ms(item.dueAt)) - offset) <= 15 * 60000;
-      }).map(item => item.metrics?.[key]).filter(value => typeof value === 'number' && Number.isFinite(value)).sort((a, b) => a - b) : [];
-      const middle = Math.floor(values.length / 2), median = values.length ? values.length % 2 ? values[middle] : (values[middle - 1] + values[middle]) / 2 : null;
-      const value = currentValid ? checkpoint.metrics[key] : null;
-      return [key, { sampleCount: values.length, median, delta: value !== null && value !== undefined && median !== null ? value - median : null, deltaPercent: value !== null && value !== undefined && median > 0 ? Math.round((value - median) / median * 1000) / 10 : null }];
-    }));
-  }
   // The 72-hour point of a YouTube post always shows its window plan, stored or not yet attempted.
   function publicCheckpoint(row, checkpoint) {
     const safe = withoutLease(checkpoint), plan = windowPlan(row, checkpoint);
     return plan ? { ...safe, window: withoutLease(plan) } : safe;
   }
-  function view(user, row, all = store.all(KIND), ms = Date.parse) {
+  function view(user, row, comparisons) {
     const channel = channelFor(user, row.channelId), writable = canWriteChannel(currentUser(user), channel);
+    comparisons ||= performanceComparisons([...store.all(KIND).filter(other => other.id !== row.id), row], POST_PERFORMANCE_METRICS, { windowDetail, targets: [row] });
     return { ...structuredClone(row), channelName: channel.displayName || channel.handle || channel.id, canEdit: writable,
-      checkpoints: row.checkpoints.map(checkpoint => ({ ...structuredClone(publicCheckpoint(row, checkpoint)), comparison: comparison(row, checkpoint, all, ms) })) };
+      checkpoints: row.checkpoints.map((checkpoint, index) => ({ ...structuredClone(publicCheckpoint(row, checkpoint)), comparison: comparisons.get(row)[index] })) };
   }
   function list(user) {
     user = currentUser(user); const all = store.all(KIND);
     const channels = store.all('channels').filter(channel => channel.active !== false && canReadChannel(user, channel));
     const readable = new Set(channels.map(channel => channel.id));
-    // comparison()은 같은 채널의 이전 기록만 본다. 채널별로 미리 묶어 「전체 기록 × 전체 기록」 계산을 피한다.
-    const sameChannel = new Map(), parsed = new Map();
-    for (const row of all) { if (!sameChannel.has(row.channelId)) sameChannel.set(row.channelId, []); sameChannel.get(row.channelId).push(row); }
-    const ms = value => { let time = parsed.get(value); if (time === undefined) { time = Date.parse(value); parsed.set(value, time); } return time; };
-    return { entries: all.filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => view(user, row, sameChannel.get(row.channelId), ms)),
+    const entries = all.filter(row => readable.has(row.channelId)), comparisons = performanceComparisons(entries, POST_PERFORMANCE_METRICS, { windowDetail });
+    return { entries: entries.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => view(user, row, comparisons)),
       channels: channels.map(channel => ({ id: channel.id, platform: channel.platform, displayName: channel.displayName || channel.handle || channel.id, canEdit: canWriteChannel(user, channel), connected: isConnected(channel) })),
       canWrite: channels.some(channel => canWriteChannel(user, channel)), lookupAvailable: true, metricDefinitions: POST_PERFORMANCE_METRICS, checkpointHours: [24, 72], captureWindowHours: 6 };
   }
-  // Readers that need only the observations (SNS insights, copy comparisons) skip comparison(), which compares every post with
-  // its whole channel history (posts² work per call).
+  // Readers needing only observations (SNS insights, copy comparisons) skip building comparison baselines.
   function observations(user) {
     user = currentUser(user); const readable = new Set(store.all('channels').filter(channel => channel.active !== false && canReadChannel(user, channel)).map(channel => channel.id));
     return { entries: store.all(KIND).filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => ({ ...row, checkpoints: row.checkpoints.map(checkpoint => publicCheckpoint(row, checkpoint)) })),

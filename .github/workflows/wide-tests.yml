@@ -35,11 +35,28 @@ jobs:
     defaults:
       run:
         working-directory: SYNK-appsscript
+    env:
+      SYNK_READ_TRACE_DIR: ${{ github.workspace }}/synk-wide-reads
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
+          persist-credentials: false
           path: SYNK-appsscript
+          # 시험·코드·제품 자산은 그대로 둔다. 세 제작 폴더의 큰 PNG만 빼고 공용 원본 입력은 보존한다.
+          # 시험이 뺀 파일을 exists로 확인만 해도 마지막 읽기 대조가 실패한다.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/docs/캐릭터/**/*.[pP][nN][gG]
+            !/docs/홍보물/**/*.[pP][nN][gG]
+            !/docs/라디오/**/*.[pP][nN][gG]
+            /docs/캐릭터/정본_4K/*_본체.png
+            /docs/홍보물/계정별콘텐츠_20260909/**
+            /docs/홍보물/마케팅실행_20260909/브랜드킷/**
+            /docs/홍보물/브랜드소개_20260909/**
+            /docs/라디오/DJ장면_20261019/구운판/**
+            /docs/라디오/무대/**
       # 형제 저장소 SYNK-talk에서 시험이 읽는 파일만 받는다(syntax-check.yml과 같은 읽기 열쇠, 2026-10-22). 형제를 쓰는 시험은
       # 저마다 특정 파일이 있을 때만 켜진다 — 이 목록에 없는 파일(예: lib/world-v1-server.js)을 찾는 WORLD 실제 브라우저 시험은 그대로 건너뛴다.
       - name: checkout SYNK-talk test inputs
@@ -72,6 +89,14 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          # npm의 내려받은 꾸러미만 재사용한다. node_modules는 매번 lock에 맞춰 npm ci로 만든다.
+          # 묶음별 추가 lock과 설치 명령도 키에 넣어, 의존성이 다른 묶음의 부분 캐시와 섞지 않는다.
+          cache: npm
+          cache-dependency-path: |
+            SYNK-appsscript/package-lock.json
+            SYNK-appsscript/.github/workflows/wide-tests.yml
+            SYNK-appsscript/${{ matrix.bundle == 'desktop' && 'desktop/package-lock.json' || matrix.bundle == 'experiences' && 'experiences/synk-account/package-lock.json' || matrix.bundle == '루트' && '영상/package-lock.json' || 'package-lock.json' }}
+            SYNK-talk/package-lock.json
       - name: install dependencies
         timeout-minutes: 8
         env:
@@ -142,6 +167,7 @@ jobs:
       - name: run tests (기준선보다 늘어난 실패만 빨강)
         env:
           BUNDLE: ${{ matrix.bundle }}
+          NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
           # 운영 서버를 쓰지 않는 격리 fixture에서 실제 Linux flock의 120초 대기까지 확인한다.
           SYNK_TEST_REAL_BACKUP_LOCK_TIMEOUT: ${{ matrix.bundle == '회사' && '1' || '0' }}
         run: |
@@ -150,6 +176,9 @@ jobs:
           else
             node tools/ci넓은시험.js "$BUNDLE" --기준선 "$RUNNER_TEMP/wide-baseline.json"
           fi
+      - name: verify sparse inputs were not skipped
+        if: ${{ success() || failure() }}
+        run: node tools/ci읽기대조.cjs --sparse-only --trace "$SYNK_READ_TRACE_DIR"
       - name: 기준선 후보 올리기
         if: ${{ always() }}
         continue-on-error: true

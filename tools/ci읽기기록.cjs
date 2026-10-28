@@ -12,6 +12,7 @@ if (OUT) {
   const fs = require('node:fs');
   const path = require('node:path');
   const cp = require('node:child_process');
+  const { promisify } = require('node:util');
   const Module = require('node:module');
   const { fileURLToPath } = require('node:url');
   const reads = new Map();
@@ -48,7 +49,7 @@ if (OUT) {
   for (const name of ['spawn', 'spawnSync', 'execFile', 'execFileSync', 'exec', 'execSync', 'fork']) {
     const orig = cp[name];
     if (typeof orig !== 'function') continue;
-    cp[name] = function (command, args, options) {
+    const record = (command, args, options) => {
       try {
         const list = Array.isArray(args) ? args.map(String) : [];
         const opts = Array.isArray(args) ? options : args;
@@ -58,8 +59,25 @@ if (OUT) {
           ...(env.GIT_DIR ? { gitDir: path.resolve(String(env.GIT_DIR)) } : {}),
           ...(env.GIT_WORK_TREE ? { gitWorkTree: path.resolve(String(env.GIT_WORK_TREE)) } : {}) });
       } catch { /* 위와 같다 */ }
+    };
+    const wrapped = function (command, args, options) {
+      record(command, args, options);
       return orig.apply(this, arguments);
     };
+    // execFile·exec의 custom promisify는 {stdout, stderr}와 Promise.child를 보장한다.
+    // 원본 custom을 그대로 복사하면 래퍼를 우회하므로, 그 경로도 기록한 뒤 원본의 반환·오류를 그대로 돌려준다.
+    for (const key of Reflect.ownKeys(orig)) {
+      const descriptor = Object.getOwnPropertyDescriptor(orig, key);
+      if (key === promisify.custom && typeof descriptor.value === 'function') {
+        const custom = descriptor.value;
+        descriptor.value = function (command, args, options) {
+          record(command, args, options);
+          return custom.apply(this, arguments);
+        };
+      }
+      try { Object.defineProperty(wrapped, key, descriptor); } catch { /* 함수의 고정 내장 속성은 유지한다 */ }
+    }
+    cp[name] = wrapped;
   }
   try { Module.syncBuiltinESMExports(); } catch { /* ESM 이름 가져오기에도 감싼 판이 보이게 */ }
   process.on('exit', () => {

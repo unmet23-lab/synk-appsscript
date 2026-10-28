@@ -61,7 +61,7 @@ class Fixture { [STAThread] static int Main(string[] args) {
   const { build, Platform, Arch } = dependencies('electron-builder');
   const config = {
     appId: metadata.appId, productName: name, executableName: name,
-    electronVersion: '44.5.1', npmRebuild: false, forceCodeSigning: false,
+    electronVersion: '44.10.0', npmRebuild: false, forceCodeSigning: false,
     directories: { app: project, output }, artifactName: 'signal-fixture-backend.exe',
     win: { target: [{ target: 'nsis', arch: ['x64'] }], signExecutable: false },
     nsis: { guid, include: safetyInclude, oneClick: false, perMachine: false, allowElevation: false,

@@ -87,6 +87,11 @@ export const 사용자지정원문 = Object.freeze({
 export const 단독검수원문 = Object.freeze({
   implementationReviewDeployment: '검증을 일단 니가 단독으로 진행하고 남은거 전부 마무리 및 최적화 하고 배포까지 진행해',
 });
+// 10-28의 네 최적화 작업에 한한 직접 승인. 기존 작업의 원문/범위와 기본 검수 정책은 유지한다.
+export const 최적화검수원문 = Object.freeze({
+  implementation: '1,2,3,4 전부 지금 최적화 및 보안 진행하자.',
+  independentReview: '이번 작업은 GPT 구현·독립 GPT 검수로 계속 진행',
+});
 export const Atlas작업원문 = Object.freeze({ implementationReview: '이번 작업은 GPT 구현·독립 GPT 검수로 진행' });
 export const Atlas작업ID = 'atlas-world-learning-20261028';
 export function 사용자지정판(file) {
@@ -169,6 +174,20 @@ function Atlas범위맞나(scope, p, role) {
     || /^tests\/(?:atlas-|strata-|world-|town-|study-|검수)[^/]+\.test\.(?:[cm]?js)$/.test(p)
     || /^docs\/(?:엔진8종_상향설계_v3|아틀라스_설계|코어엔진_설계|Strata_설계|미니게임_TOPIK_I_학습기준)\.md$/.test(p);
 }
+function 최적화범위맞나(scope, p, role, kind) {
+  if (scope === 'optimization-pc-publication-20261028') return role === '배포 후보' &&
+    (/^(?:(?:en\/)?(?:index\.html|knowledge\.json|llms\.txt|docs\/platform\.md|(?:lab|shift|pulse|path|atlas|founder)\/index\.html)|desktop\/releases\/(?:preview\.json|client\.js))$/.test(p) || (kind === '토큰' && /^(?:en\/)?app\.js$/.test(p)));
+  if (scope !== 'optimization-security-20261028') return false;
+  if (role === '배포 후보') return /^(?:world\/(?:world-account\.bundle\.mjs|life-content\.mjs|(?:index|desktop|mobile)\.html)|account\/(?:dist\/(?:client|platform)\.js|(?:client|platform)\.html)|desktop\/releases\/(?:preview\.json|client\.js))$/.test(p) ||
+    /^\.github\/desktop-preview\/(?:package(?:-lock)?\.json|unified\/(?:release-input\.json|source\/renderer\/generated\/(?:member-[a-z-]+\.(?:mjs|manifest\.json)|member-shared\/chunk-[A-Z0-9]{8}\.mjs)|tools\/(?:freeze-platform-release|build-child-release)\.cjs|installer\/(?:build-signal|tests\/test)\.cjs))$/.test(p);
+  return p === '.github/workflows/wide-tests.yml' ||
+    /^tools\/(?:ci(?:넓은시험\.js|읽기대조\.cjs|읽기기록\.cjs)|(?:build-member-activity|check-account-bundles)\.js|build-world-account\.mjs|검수묶음\.mjs|lib\/(?:검수증명\.mjs|member-[a-z-]+\.cjs)|company-release\/[a-z-]+\.cjs)$/.test(p) ||
+    /^docs\/마케팅\/온라인마케팅지도\/engagement\/company\/post-performance(?:[a-z-]*|[a-z-]*\.test)\.mjs$/.test(p) ||
+    /^desktop\/(?:package(?:-lock)?\.json|renderer\/generated\/(?:member-[a-z-]+\.(?:mjs|manifest\.json)|member-shared\/[A-Za-z0-9_-]+\.mjs)|tools\/(?:package|freeze-platform-release|build-platform-release|build-child-release)\.cjs|installer\/(?:build-signal|build-platform-children|tests\/(?:measure|test))\.cjs|mac-dmg\/(?:build-platform-children-mac|repackage)\.cjs|tests\/[a-z-]+\.test\.cjs)$/.test(p) ||
+    /^experiences\/synk-world-app\/world-account\.bundle\.mjs$/.test(p) ||
+    /^(?:account|experiences\/synk-account)\/dist\/[a-z-]+\.(?:js|json)$/.test(p) || p === 'experiences/synk-account/build-manifest.json' ||
+    /^tests\/(?:ci[^/]*|build-member-activity|build-world-account|account-bundle-scope|member-understanding[^/]*|world-[a-z-]+|검수[^/]*|desktop-[a-z-]+)\.test\.(?:js|mjs|cjs)$/.test(p);
+}
 function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 단독 = 판 === 4, 검수자 = 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
   if (o.종류 !== '화면' && !단독) throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
@@ -177,8 +196,9 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   const raw = fs.readFileSync(o.사용자지정), 지정 = JSON.parse(raw.toString('utf8').replace(/^\uFEFF/, ''));
   if (!지정 || typeof 지정 !== 'object' || Array.isArray(지정) || Object.keys(지정).sort().join(',') !== ['version', 'taskId', 'userStatements', 'requiredReviewers', 'finalReviewer', 'allowFallback', 'sources', 'candidate'].sort().join(',')) throw new Error('사용자지정 JSON 필드가 잘못됐다');
   const atlas = 단독 && 지정.taskId === Atlas작업ID;
-  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
-    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  const 최적화 = 단독 && 지정.taskId === 'optimization-security-20261028';
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
+    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
   if (atlas && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('Atlas 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   if (정규해시(지정.requiredReviewers) !== 정규해시(검수자) || 지정.finalReviewer !== 최종 || 지정.allowFallback !== false) throw new Error(`사용자지정은 묶음별 ${검수자.join('·')}와 최종 전체 ${최종} 판정이 필요하며 대체를 허용하지 않는다`);
   const checkRows = (rows, expected, role) => {
@@ -186,11 +206,11 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
     const seen = new Set();
     for (const row of rows) {
       안전경로(o.저장소, row.path);
+      const match = expected.find(f => f.path === row.path);
       if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author)
-        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
       if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
-      const match = expected.find(f => f.path === row.path);
       if (!match || !/^[a-f0-9]{64}$/.test(row.sha256 || '') || row.sha256 !== match.sha256) throw new Error(`사용자지정 ${role} SHA 불일치: ${row.path}`);
     }
   };
@@ -201,7 +221,7 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
     if (!candidate.항목.length) throw new Error('사용자지정의 배포 후보가 비었다');
     if (!지정.candidate || 지정.candidate.manifestSha256 !== candidate.manifestSha256 || 지정.candidate.rawManifestSha256 !== sha256(fs.readFileSync(path.join(o.배포후보, '후보.json')))) throw new Error('사용자지정 배포 후보 manifest SHA 불일치');
     if (candidate.항목.some(f => f.종류 === '지움')) throw new Error('사용자지정은 삭제 후보를 허용하지 않는다');
-    checkRows(지정.candidate.files, candidate.항목.map(f => ({ path: f.경로, sha256: f.sha256 })), '배포 후보');
+    checkRows(지정.candidate.files, candidate.항목.map(f => ({ path: f.경로, sha256: f.sha256, kind: f.종류 })), '배포 후보');
   } else if (지정.candidate !== null || !source.length) throw new Error('사용자지정의 검수 대상이 없다');
   return { 판, 작성자: '혼합', 종류: o.종류, GPT구독: '유지', 필수: [...검수자], 예외: null,
     사용자지정: { ...지정, 파일sha256: sha256(raw) } };

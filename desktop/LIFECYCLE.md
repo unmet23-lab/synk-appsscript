@@ -87,7 +87,7 @@ node desktop/tools/freeze-platform-release.cjs --source=desktop "--out=$releaseW
 node --test desktop/tests/platform-update.test.cjs desktop/tests/update-view.test.cjs desktop/tests/release-pipeline.test.cjs desktop/tests/assemble-platform-release.test.cjs desktop/tests/platform-publication.test.cjs
 ```
 
-2. **세 대상 빌드와 별도 QA.** 하나의 동결 폴더와 그에 맞는 도구·자산을 각 대상 빌드 환경에 바이트 그대로 전달한다. Git을 거치면 동결 `source/**`의 줄바꿈 변환을 막는 `-text` 속성을 둔다. 빌더는 대상과 같은 OS·Node CPU 아키텍처를 요구하고, Electron 44.5.1·electron-builder 26.15.3을 사용한다. 기준 파일과 자식 설치파일의 승인 해시, 전달할 ASAR의 구성·내용·메타데이터를 검증한다. 서명 자격증명을 Preview 빌드에 넣지 않는다.
+2. **세 대상 빌드와 별도 QA.** 하나의 동결 폴더와 그에 맞는 도구·자산을 각 대상 빌드 환경에 바이트 그대로 전달한다. Git을 거치면 동결 `source/**`의 줄바꿈 변환을 막는 `-text` 속성을 둔다. 빌더는 대상과 같은 OS·Node CPU 아키텍처를 요구하고, Electron 44.10.0·electron-builder 26.15.3을 사용한다. 기준 파일과 자식 설치파일의 승인 해시, 전달할 ASAR의 구성·내용·메타데이터를 검증한다. 서명 자격증명을 Preview 빌드에 넣지 않는다.
 
 ```powershell
 # Windows x64: desktop의 고정 의존성 설치가 끝난 환경. pwsh는 PowerShell 7 실행 경로.

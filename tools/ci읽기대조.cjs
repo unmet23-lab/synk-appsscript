@@ -8,7 +8,8 @@
  *  ③ 희소 체크아웃이 뺀 파일(skip-worktree)을 아무도 열거나 재지 않는다.
  *     — 아니면 그 시험이 깨지거나 「파일이 없으면 건너뜀」처럼 조용히 덜 본다. 폴더 나열만은 허용한다
  *       (나열하는 도구는 코드·html·md만 골라, 미디어만 든 폴더가 없어도 결과가 같다 — 10-20 실측).
- * 사용: node tools/ci읽기대조.cjs --trace <기록 폴더> [--root <저장소>]
+ * 사용: node tools/ci읽기대조.cjs --trace <기록 폴더> [--root <저장소>] [--sparse-only]
+ * wide-tests는 --sparse-only로 ③만 검사한다. 별도 시험 분모·기록 필터를 syntax-check와 섞지 않는다.
  * 종료: 0 통과 · 1 어긋남 · 2 확인 불가(기록·워크플로를 못 읽음) */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -154,33 +155,66 @@ function 대조({ root, 기록들, 무거운yaml, 기록yaml, 희소빠짐 }) {
     기록읽은시험: [...기록읽은.keys()].length, 가벼운시험: 가벼운시험.size, 희소빠짐: 희소빠짐.size } };
 }
 
+/** wide-tests의 실제 읽기와 자식 명령에서 희소로 빠진 파일 접근을 찾는다. exists 검사도 포함해 조용한 skip을 막는다. */
+function 희소대조({ root, 기록들, 희소빠짐 }) {
+  const 빠진읽기 = new Map();
+  for (const [주인, procs] of 주인별(기록들, root)) {
+    const 찾음 = new Set();
+    for (const r of procs) {
+      for (const [full, kinds] of r.reads || []) {
+        const rel = 상대(full, root);
+        if (rel && 희소빠짐.has(rel) && kinds.some(k => k !== 'dir')) 찾음.add(rel);
+      }
+      for (const s of r.spawns || []) {
+        for (const rel of 인자경로(s, root)) if (희소빠짐.has(rel)) 찾음.add(rel);
+      }
+    }
+    if (찾음.size) 빠진읽기.set(주인, 찾음);
+  }
+  return {
+    어긋남: [...빠진읽기].map(([주인, 파일들]) => `${주인.replace(/^단계:/, '')}가 희소 체크아웃이 뺀 파일을 연다(${[...파일들].slice(0, 5).join(', ')}${파일들.size > 5 ? ` 외 ${파일들.size - 5}개` : ''}) — wide-tests.yml의 sparse-checkout에 다시 넣는다`),
+    셈: { 프로세스: 기록들.length, 희소빠짐: 희소빠짐.size },
+  };
+}
+
 function main(argv = process.argv.slice(2)) {
-  let trace = process.env.SYNK_READ_TRACE_DIR, root = path.resolve(__dirname, '..');
+  let trace = process.env.SYNK_READ_TRACE_DIR, root = path.resolve(__dirname, '..'), sparseOnly = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--trace') trace = argv[++i];
     else if (argv[i] === '--root') root = path.resolve(argv[++i]);
+    else if (argv[i] === '--sparse-only') sparseOnly = true;
     else { console.error(`[ci읽기대조] 모르는 인자: ${argv[i]}`); return 2; }
   }
   const 읽기 = (f) => { try { return fs.readFileSync(path.join(root, '.github', 'workflows', f), 'utf8'); } catch { return null; } };
   const 무거운yaml = 읽기(무거운), 기록yaml = 읽기(기록);
-  if (!무거운yaml || !기록yaml) { console.error(`[ci읽기대조] 확인 불가 — ${무거운}·${기록}를 못 읽었다`); return 2; }
+  if (!sparseOnly && (!무거운yaml || !기록yaml)) { console.error(`[ci읽기대조] 확인 불가 — ${무거운}·${기록}를 못 읽었다`); return 2; }
   let 파일들 = [];
   try { 파일들 = fs.readdirSync(trace).filter((f) => f.endsWith('.json')); } catch { /* 아래에서 0개로 잡는다 */ }
   if (!trace || !파일들.length) { console.error(`[ci읽기대조] 확인 불가 — 읽기 기록이 없다(${trace || 'SYNK_READ_TRACE_DIR 없음'}). 통과가 아니다.`); return 2; }
   const 기록들 = [];
-  for (const f of 파일들) { try { 기록들.push(JSON.parse(fs.readFileSync(path.join(trace, f), 'utf8'))); } catch { /* 깨진 하나는 뺀다 */ } }
+  for (const f of 파일들) {
+    try {
+      const row = JSON.parse(fs.readFileSync(path.join(trace, f), 'utf8'));
+      if (sparseOnly && (!Array.isArray(row.argv) || typeof row.cwd !== 'string' || !Array.isArray(row.reads) || !Array.isArray(row.spawns))) throw new Error('trace_shape');
+      기록들.push(row);
+    } catch {
+      if (sparseOnly) { console.error('[ci읽기대조] 확인 불가 — 읽기 기록이 손상되었다'); return 2; }
+    }
+  }
   const ls = spawnSync('git', ['-c', 'core.quotepath=false', 'ls-files', '-t', '-z'], { cwd: root, encoding: 'utf8', maxBuffer: 256 << 20 });
   if (ls.status !== 0) { console.error('[ci읽기대조] 확인 불가 — git ls-files를 못 돌렸다'); return 2; }
   const 희소빠짐 = new Set(ls.stdout.split('\0').filter((l) => l.startsWith('S ')).map((l) => l.slice(2)));
-  const { 어긋남, 셈 } = 대조({ root, 기록들, 무거운yaml, 기록yaml, 희소빠짐 });
+  const { 어긋남, 셈 } = sparseOnly ? 희소대조({ root, 기록들, 희소빠짐 }) : 대조({ root, 기록들, 무거운yaml, 기록yaml, 희소빠짐 });
   if (어긋남.length) {
     console.log(`[ci읽기대조] ❌ 어긋남 ${어긋남.length}건`);
     for (const x of 어긋남) console.log('  - ' + x);
     return 1;
   }
-  console.log(`[ci읽기대조] ✅ 통과 — 프로세스 ${셈.프로세스}개 · 시험 ${셈.시험}개 · 기록 전용 경로를 읽은 시험 ${셈.기록읽은시험}개(모두 ${기록}이 돈다, 목록 ${셈.가벼운시험}개) · 희소로 뺀 파일 ${셈.희소빠짐}개 중 열린 것 0`);
+  console.log(sparseOnly
+    ? `[ci읽기대조] ✅ wide 희소 통과 — 프로세스 ${셈.프로세스}개 · 희소로 뺀 파일 ${셈.희소빠짐}개 중 열린 것 0`
+    : `[ci읽기대조] ✅ 통과 — 프로세스 ${셈.프로세스}개 · 시험 ${셈.시험}개 · 기록 전용 경로를 읽은 시험 ${셈.기록읽은시험}개(모두 ${기록}이 돈다, 목록 ${셈.가벼운시험}개) · 희소로 뺀 파일 ${셈.희소빠짐}개 중 열린 것 0`);
   return 0;
 }
 
 if (require.main === module) process.exitCode = main();
-module.exports = { 대조, 희소목록, 시험목록, 주인별, 인자경로, main };
+module.exports = { 대조, 희소대조, 희소목록, 시험목록, 주인별, 인자경로, main };

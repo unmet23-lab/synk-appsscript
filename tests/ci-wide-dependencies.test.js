@@ -121,3 +121,46 @@ test('an installed but unusable ffprobe still fails setup', t => {
   assert.equal(r.status, 7, r.stderr);
   assert.deepEqual(r.calls, ['ffmpeg version', 'ffprobe version']);
 });
+
+test('wide preparation retains deterministic installs, minimal checkout credentials and every test bundle', () => {
+  const checkouts = [...workflow.matchAll(/(?:      - uses:|        uses:) actions\/checkout@v5\n([\s\S]*?)(?=      - |      # 형제 저장소|$)/g)];
+  assert.equal(checkouts.length, 2);
+  for (const checkout of checkouts) assert.match(checkout[1], /persist-credentials: false/);
+  const setup = workflow.match(/      - uses: actions\/setup-node@v5\n([\s\S]*?)(?=      - name:)/)?.[1];
+  assert.match(setup, /cache: npm/);
+  for (const input of ['SYNK-appsscript/package-lock.json', 'desktop/package-lock.json', 'experiences/synk-account/package-lock.json', '영상/package-lock.json', 'SYNK-talk/package-lock.json', '.github/workflows/wide-tests.yml']) assert.ok(setup.includes(input), input);
+  assert.doesNotMatch(setup, /cache-dependency-path:.*node_modules/);
+  assert.match(workflow, /bundle: \[루트, 회사, desktop, experiences, tools\]/);
+  assert.match(workflow, /cancel-in-progress: false/);
+  assert.match(workflow, /fail-fast: false/);
+  assert.match(workflow, /NODE_OPTIONS: --require .*\/tools\/ci읽기기록\.cjs/);
+  const guard = workflow.match(/      - name: verify sparse inputs were not skipped\n([\s\S]*?)(?=      - name:)/)?.[1];
+  assert.match(guard, /success\(\) \|\| failure\(\)/);
+  assert.match(guard, /ci읽기대조\.cjs --sparse-only --trace/);
+  assert.doesNotMatch(guard, /continue-on-error/);
+});
+
+test('wide sparse checkout excludes only intended production PNGs and keeps source, tests and common inputs in the Git index', t => {
+  const { 희소목록 } = require('../tools/ci읽기대조.cjs');
+  const [patterns] = 희소목록(workflow);
+  assert.ok(patterns?.length);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-checkout-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const omitted = ['docs/캐릭터/nested/original.PNG', 'docs/홍보물/source.png', 'docs/라디오/nested/edit.png'];
+  const kept = ['tests/check.test.cjs', 'tools/tool.cjs', 'docs/캐릭터/nested/source.cjs', 'docs/홍보물/source.json', 'docs/라디오/source.md',
+    'docs/캐릭터/photo.jpg', 'docs/캐릭터/정본_4K/몽글_본체.png', 'docs/홍보물/계정별콘텐츠_20260909/input.png',
+    'docs/홍보물/마케팅실행_20260909/브랜드킷/logo.png', 'docs/홍보물/브랜드소개_20260909/input.png',
+    'docs/라디오/DJ장면_20261019/구운판/input.png', 'docs/라디오/무대/input.png', 'experiences/app/assets/image.png',
+    'docs/마케팅/온라인마케팅지도/engagement/company/public/image.png'];
+  for (const file of [...omitted, ...kept]) { fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); fs.writeFileSync(path.join(root, file), 'fixture'); }
+  const git = (args, input) => {
+    const r = spawnSync('git', args, { cwd: root, encoding: 'utf8', input, windowsHide: true });
+    assert.equal(r.status, 0, r.stderr); return r.stdout;
+  };
+  git(['init', '-q']); git(['add', '.']);
+  git(['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'fixture']);
+  git(['sparse-checkout', 'set', '--no-cone', '--stdin'], patterns.join('\n') + '\n');
+  for (const file of omitted) assert.equal(fs.existsSync(path.join(root, file)), false, file);
+  for (const file of kept) assert.equal(fs.existsSync(path.join(root, file)), true, file);
+  assert.equal(git(['ls-files', '-z']).split('\0').filter(Boolean).length, omitted.length + kept.length, 'checkout narrowing never deletes source or changes the tracked test denominator');
+});

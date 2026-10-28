@@ -8,22 +8,50 @@ const {verifyArchive}=require('./archive-verification.cjs');
 const assert=(value,message)=>{if(!value)throw Error(message);};
 const json=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');};
 const PRODUCTS={world:{name:'SYNK WORLD Preview',executable:'SYNKWorldPreview',stem:'SYNK-WORLD',category:'public.app-category.education'},messenger:{name:'SYNK Workspace Preview',executable:'SYNKMessengerPreview',stem:'SYNK-Workspace',category:'public.app-category.productivity'}};
+function readChildLocationHelperPin(asar,archive){
+  const helper='src/mac-application-location.cjs';
+  const exists=asar.listPackage(archive).some(name=>name.replaceAll('\\','/').replace(/^\/+/, '')===helper);
+  return exists?crypto.createHash('sha256').update(asar.extractFile(archive,helper)).digest('hex'):null;
+}
+// A refreshed, hash-verified baseline may already contain the location gate.
+// Accept only the exact existing transform and helper bytes pinned in that ASAR.
+function prepareChildLocation(stage,commonSource,baselineHelperSHA256=null){
+  const {applyChildLocationOverlay,overlayChildMain}=require('./apply-child-location-overlay.cjs');
+  const files=inventory(stage),mainFile=path.join(stage,'src/main.cjs'),helperFile=path.join(stage,'src/mac-application-location.cjs');
+  if(!fs.existsSync(helperFile))return applyChildLocationOverlay(stage,commonSource);
+  const original=fs.readFileSync(mainFile,'utf8');let plain=original;
+  const reverse=[
+    ["const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');\napp.enableSandbox();","app.enableSandbox();"],
+    ["let appLocationReady=process.platform!=='darwin'||!packaged||smoke,appLocationQuitting=false;\nconst appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});\napp.on('before-quit',()=>{appLocationQuitting=true;});\nconst suiteBindingKey=","const suiteBindingKey="],
+    ["app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;","app.on('second-instance',(_event,argv)=>{"],
+    ["app.on('activate',()=>{if(!appLocationReady)return;","app.on('activate',()=>{"],
+    ["app.whenReady().then(async()=>{\n    const location=await appLocation.run();\n    if(!location.continueStartup||appLocationQuitting)return;\n    appLocationReady=true;","app.whenReady().then(()=>{"],
+    ["function createWindow(){\n  if(!appLocationReady)return;","function createWindow(){"],
+  ];
+  for(const [applied,before] of reverse){assert(plain.split(applied).length===2,'Existing child location gate differs');plain=plain.replace(applied,before);}
+  assert(overlayChildMain(plain)===original,'Existing child location gate is not the canonical transform');
+  assert(/^[a-f0-9]{64}$/.test(baselineHelperSHA256||'')&&crypto.createHash('sha256').update(fs.readFileSync(helperFile)).digest('hex')===baselineHelperSHA256,'Existing child location helper differs from verified baseline');
+  return {ok:true,reused:true,baselineHelperSHA256,clientId:JSON.parse(fs.readFileSync(path.join(stage,'runtime.json'))).clientId,changed:[],unchangedFiles:files.length,userDataOperations:0};
+}
 async function buildChild({child,baseline,root,out,builder,platform,arch,version,buildId,releaseId,deps,sha,command,signal,powershell,electronDownload,backgroundDirectory}){
   assert(Object.hasOwn(PRODUCTS,child.id)&&/^\d+\.\d+\.\d+$/.test(version),'Invalid child release');
   assert(!fs.existsSync(out),'Preserve existing child build');fs.mkdirSync(out,{recursive:true});
   assert(sha(baseline)===child.installer.sha256&&fs.statSync(baseline).size===child.installer.bytes,'Child baseline differs');
   const product=PRODUCTS[child.id],asar=deps('@electron/asar'),unpack=path.join(out,'baseline'),stage=path.join(out,'stage');fs.mkdirSync(unpack);
-  let resources,mounted=false;
+  let resources,mounted=false,baselineHelperSHA256=null;
   if(platform==='win32'){
     const backend=path.join(out,'baseline-backend.exe'),script=path.join(out,'extract.ps1');
     fs.writeFileSync(script,"param([string]$Source,[string]$Output)\n$ErrorActionPreference='Stop'\n$a=[Reflection.Assembly]::LoadFile([IO.Path]::GetFullPath($Source))\n$s=$a.GetManifestResourceStream('backend.exe')\nif($null -eq $s){throw 'Missing backend'}\n$t=[IO.File]::Open($Output,[IO.FileMode]::CreateNew)\ntry{$s.CopyTo($t)}finally{$s.Dispose();$t.Dispose()}\n");
     command(powershell,['-NoProfile','-NonInteractive','-File',script,'-Source',baseline,'-Output',backend]);
     command(await deps('app-builder-lib/out/toolsets/7zip').getPath7za(),['x',backend,'-o'+unpack,'-y','resources/app.asar']);resources=path.join(unpack,'resources');
   }else{command('hdiutil',['attach','-readonly','-nobrowse','-noautoopen','-mountpoint',unpack,baseline]);mounted=true;resources=path.join(unpack,product.executable+'.app/Contents/Resources');}
-  try{const archive=path.join(resources,'app.asar');assert(sha(archive)===child.asarSHA256,'Child baseline archive differs');asar.extractAll(archive,stage);}finally{if(mounted)command('hdiutil',['detach',unpack]);}
+  try{const archive=path.join(resources,'app.asar');assert(sha(archive)===child.asarSHA256,'Child baseline archive differs');
+    baselineHelperSHA256=readChildLocationHelperPin(asar,archive);
+    asar.extractAll(archive,stage);
+  }finally{if(mounted)command('hdiutil',['detach',unpack]);}
   const before=inventory(stage),runtime=JSON.parse(fs.readFileSync(path.join(stage,'runtime.json')));
   assert(runtime.clientId===child.id&&runtime.mode==='development','Unexpected child runtime');
-  const overlay=require('./apply-child-location-overlay.cjs').applyChildLocationOverlay(stage,path.join(root,'source'));
+  const overlay=prepareChildLocation(stage,path.join(root,'source'),baselineHelperSHA256);
   for(const id of Object.keys({...PRODUCTS,platform:{}}))fs.copyFileSync(path.join(root,'source/assets',id+'.icns'),path.join(stage,'assets',id+'.icns'));
   fs.copyFileSync(path.join(root,'source/assets/sources.json'),path.join(stage,'assets/sources.json'));
   const pkg=JSON.parse(fs.readFileSync(path.join(stage,'package.json')));pkg.version=version;json(path.join(stage,'package.json'),pkg);
@@ -33,7 +61,7 @@ async function buildChild({child,baseline,root,out,builder,platform,arch,version
   for(const item of before)if(!allowed.has(item.path)){const next=after.find(row=>row.path===item.path);assert(next&&next.sha256===item.sha256,'Unrelated child source changed: '+item.path);}
   for(const item of after)assert(before.some(row=>row.path===item.path)||allowed.has(item.path),'Unexpected child source added');
   audit(stage,after);const dist=path.join(out,'dist');
-  const config={appId:metadata.appId,productName:product.name,executableName:product.executable,electronVersion:'44.5.1',asar:true,npmRebuild:false,forceCodeSigning:false,directories:{app:stage,output:dist,buildResources:path.join(stage,'assets')},files:['package.json','runtime.json','src/**','renderer/**','assets/**'],extraResources:[{from:path.join(stage,'synk-install.json'),to:'synk-install.json'}],artifactName:product.stem+'-Preview-'+version+'-Signal-'+(platform==='win32'?'win':'mac')+'-'+arch+'.${ext}',publish:null};
+  const config={appId:metadata.appId,productName:product.name,executableName:product.executable,electronVersion:'44.10.0',asar:true,npmRebuild:false,forceCodeSigning:false,directories:{app:stage,output:dist,buildResources:path.join(stage,'assets')},files:['package.json','runtime.json','src/**','renderer/**','assets/**'],extraResources:[{from:path.join(stage,'synk-install.json'),to:'synk-install.json'}],artifactName:product.stem+'-Preview-'+version+'-Signal-'+(platform==='win32'?'win':'mac')+'-'+arch+'.${ext}',publish:null};
   if(platform==='win32'){config.win={target:[{target:'dir',arch:['x64']}],signExecutable:false,icon:path.join(stage,'assets',child.id+'.ico')};if(electronDownload)config.electronDownload=electronDownload;}
   else{
     const background=path.join(backgroundDirectory,'background-'+child.id+'.png');assert(fs.existsSync(background),'Child DMG background missing');
@@ -59,4 +87,4 @@ async function buildChild({child,baseline,root,out,builder,platform,arch,version
   const report={ok:true,client:child.id,version,metadata,baseline:child,overlay,sourceFiles:after,changed:after.filter(row=>before.find(old=>old.path===row.path)?.sha256!==row.sha256).map(row=>row.path),release,artifactFile:artifact,appPath:app,executable:{sha256:release.executableSHA256},asar:{sha256:release.asarSHA256},installer:{path:path.relative(builder,artifact).split(path.sep).join('/'),bytes:release.installer.bytes,sha256:release.installer.sha256},installedStateTouched:false};
   json(path.join(out,'build-report.json'),report);return report;
 }
-module.exports={buildChild,PRODUCTS};
+module.exports={buildChild,PRODUCTS,prepareChildLocation,readChildLocationHelperPin};

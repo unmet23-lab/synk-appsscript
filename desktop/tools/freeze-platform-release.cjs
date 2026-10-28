@@ -16,7 +16,7 @@ function freeze({source,output,definition}) {
   const stage=path.join(output,'source');fs.mkdirSync(stage,{recursive:true});
   for(const dir of ['src','renderer','assets'])fs.cpSync(path.join(source,dir),path.join(stage,dir),{recursive:true});
   const files=inventory(stage);audit(stage,files);
-  const contract={...definition,electronVersion:'44.5.1',sourceHash:sourceHash(stage),sourceFiles:files};
+  const contract={...definition,electronVersion:'44.10.0',sourceHash:sourceHash(stage),sourceFiles:files};
   fs.writeFileSync(path.join(output,'release-input.json'),JSON.stringify(contract,null,2)+'\n');
   return {ok:true,releaseId:contract.releaseId,buildId:contract.buildId,sourceHash:contract.sourceHash,sourceFiles:files.length,sourceBytes:files.reduce((sum,file)=>sum+file.bytes,0)};
 }

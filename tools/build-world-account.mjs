@@ -8,8 +8,17 @@ const require=createRequire(import.meta.url);
 // synk-account의 esbuild(WORLD 앱의 도구 묶음)를 먼저, 없는 깨끗한 체크아웃(CI)에서는 저장소 루트의 esbuild로. 두 판의 결과는 같다(10-17 확인).
 const esbuild=require(require.resolve('esbuild',{paths:[path.join(root,'experiences/synk-account'),root]}));
 const target=path.join(root,'experiences/synk-world-app/world-account.bundle.mjs');
-const result=await esbuild.build({absWorkingDir:path.resolve(root),entryPoints:[path.join(root,'experiences/synk-world-app/world-account.mjs')],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',legalComments:'none',plugins:[verdictsPlugin]});
-const bytes=result.outputFiles[0].contents;
+// The shell and its learning views already import this same public module. Keep
+// one content instance instead of embedding a second copy in the account graph.
+const lifeContent=path.join(root,'experiences/synk-world-app/life-content.mjs');
+const sharedLifeContent={name:'shared-world-life-content',setup(build){
+ build.onResolve({filter:/life-content\.mjs$/},args=>path.resolve(args.resolveDir,args.path)===lifeContent?{path:'./life-content.mjs',external:true}:null);
+}};
+const result=await esbuild.build({absWorkingDir:path.resolve(root),entryPoints:[path.join(root,'experiences/synk-world-app/world-account.mjs')],bundle:true,write:false,metafile:true,format:'esm',platform:'browser',target:'es2022',legalComments:'none',minifyWhitespace:true,minifySyntax:true,minifyIdentifiers:false,plugins:[sharedLifeContent,verdictsPlugin]});
+// The pair-check gate reads esbuild's source-path comments to select dependent
+// bundles. Minification removes those comments, so retain the actual input map.
+const sourceIndex=Object.keys(result.metafile.inputs).map(p=>p.replace(/\\/g,'/')).sort().map(p=>`// ${p}\n`).join('');
+const bytes=Buffer.concat([Buffer.from(sourceIndex),result.outputFiles[0].contents]);
 // 줄끝만 다른 건 같은 판으로 본다(core.autocrlf=true 작업본은 커밋된 LF 묶음을 CRLF로 꺼낸다).
 const sameText=(a,b)=>Buffer.from(a).toString('utf8').replace(/\r\n/g,'\n')===Buffer.from(b).toString('utf8').replace(/\r\n/g,'\n');
 if(process.argv.includes('--check')){
