@@ -106,6 +106,12 @@ function 기본표(root = 뿌리) {
     });
   }
   if (atlas) {
+    for (const b of atlas.PRODUCT_BUNDLES || []) 표.push({
+      이름: b.label, 단계: ATLAS단계, 명령: [b.build, '--check'], 고침: `node ${b.build}`,
+      결과물: [b.output, 'experiences/korean-study/dist/study/index.html', 'experiences/korean-study/dist/study/items.json', 'experiences/korean-study/dist/study/study.json', 'experiences/korean-study/dist/study/study.css', 'experiences/korean-study/dist/study/assets/SUIT-Variable.woff2'],
+      원천: ['experiences/korean-study/src/**', 'experiences/korean-study/content/*.json', 'experiences/synk-world-app/world-writing-items.json', 'experiences/brand-opening/world-strings.mjs', 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2'],
+      주석원천: [b.output], 낡음: /(?:dist\/study|copy-reused\.mjs).*달라/,
+    });
     표.push({
       이름: 'learning: 9 games', 단계: ATLAS단계, 명령: ['tools/build-game-learning.js', '--check'], 고침: 'node tools/build-game-learning.js',
       결과물: ['strata/maps/topik-i.json', 'strata/maps/topik-ii.json', ...atlas.GAMES.map((g) => `experiences/${g}/atlas-learning.js`)],

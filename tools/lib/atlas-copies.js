@@ -18,6 +18,9 @@ const WORLD_BUNDLES = Object.freeze([
   { label: 'WORLD life bundle', build: 'tools/build-world-life.mjs', output: 'experiences/brand-opening/content/life-standalone.mjs' },
   { label: 'WORLD account bundle', build: 'tools/build-world-account.mjs', output: 'experiences/synk-world-app/world-account.bundle.mjs' },
 ]);
+const PRODUCT_BUNDLES = Object.freeze([
+  { label: 'Study learning bundle', build: 'experiences/korean-study/build.mjs', output: 'experiences/korean-study/dist/study/app.js' },
+]);
 // Product modules whose canonical source lives in the product, not in atlas/. They keep an Atlas-style
 // global for stored records, so the marker scan would otherwise report them as copies.
 const PRODUCT_OWNED = Object.freeze([
@@ -53,7 +56,7 @@ function rawCopies(root, websiteRoot) {
 // Every file the scan may skip: registered raw copies, generated bundles and product-owned modules.
 function ownedFiles(root, pairs) {
   const files = [...pairs.map(row => row.destination), ...GAMES.map(game => `experiences/${game}/atlas-learning.js`), 'experiences/hangul-stage/atlas-learning.js',
-    ...WORLD_BUNDLES.map(bundle => bundle.output), ...PRODUCT_OWNED];
+    ...WORLD_BUNDLES.map(bundle => bundle.output), ...PRODUCT_BUNDLES.map(bundle => bundle.output), ...PRODUCT_OWNED];
   return new Set(files.map(file => path.resolve(root, file)));
 }
 
@@ -137,6 +140,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
   run(`learning: ${GAMES.length} games`, ['tools/build-game-learning.js', ...(check ? ['--check'] : [])]);
   run('learning: Hangul', ['tools/build-hangul-stage.js', ...(check ? ['--check'] : [])]);
   for (const bundle of WORLD_BUNDLES) run(bundle.label, [bundle.build, ...(check ? ['--check'] : [])]);
+  for (const bundle of PRODUCT_BUNDLES) run(bundle.label, [bundle.build, ...(check ? ['--check'] : [])]);
   // Avoid copying stale bundles when a producer could not rebuild.
   if (!check && problems.length) return { ok: false, scope: local ? 'local' : 'local+talk+website-staging', problems, results };
   const raw = syncRaw(root, pairs, { check });
@@ -145,7 +149,7 @@ function runAll({ root, check = true, local = false, talkRoot = path.resolve(roo
     run('Talk app and server', ['tools/sync-atlas.js', '--consumer', 'talk', ...(check ? ['--check'] : [])], { SYNK_TALK_ROOT: talkRoot });
     run('Strata source map', ['tools/strata-build.js', '--check', '--talk-root', talkRoot]);
   }
-  return { ok: problems.length === 0, scope: local ? 'local' : 'local+talk+website-staging', generatedBundles: GAMES.length + 1 + WORLD_BUNDLES.length, rawCopies: raw.copies, problems, results,
+  return { ok: problems.length === 0, scope: local ? 'local' : 'local+talk+website-staging', generatedBundles: GAMES.length + 1 + WORLD_BUNDLES.length + PRODUCT_BUNDLES.length, rawCopies: raw.copies, problems, results,
     excluded: ['historical QA/release archives', 'retired website letter', ...(local ? ['Talk checkout', 'website staging', 'Strata sibling source validation'] : []), 'deployed servers and public pages'] };
 }
-module.exports = { GAMES, TOOL_OUTPUTS, WEBSITE_GAMES, WORLD_BUNDLES, PRODUCT_OWNED, rawCopies, ownedFiles, unknownCopies, syncRaw, runAll };
+module.exports = { GAMES, TOOL_OUTPUTS, WEBSITE_GAMES, WORLD_BUNDLES, PRODUCT_BUNDLES, PRODUCT_OWNED, rawCopies, ownedFiles, unknownCopies, syncRaw, runAll };

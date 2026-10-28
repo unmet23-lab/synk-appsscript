@@ -192,7 +192,7 @@ WORLD 쪽 상태(구분): WORLD 쓰기 연습 51~54와 자동 피드백은 10-21
 | P3-1 언어 키 | `brand-opening/world-lang.mjs` `LANG_KEY='synk.world.lang'` 확인 |
 | P3-2 검수 요청문 | study-form도 altAnswers를 적게 한 줄 보강 |
 | P3-3 포털 | 절대 주소 `https://synk.im/study/` · 정적 시험 `qa/portal.test.mjs` · `npm ci` 뒤 묶음 재생성 |
-| P3-4 `build.mjs --check`가 관문에 없음 | **후속** — 지금은 시험(`tutor.test.mjs` 빌드 시험)과 공개 전 루트 검증으로 본다. 관문 표는 바꾸지 않았다 |
+| P3-4 `build.mjs --check`가 관문에 없음 | 10-29 해결 — `sync-atlas --all`과 짝 검사에 Study를 등록했다. Ask·Trail 원천 변경 때 전체 Study 생성물을 다시 대조하고 누락을 막는다 |
 
 **3차 — 10-28 Atlas 개인화 보완 설계(`.tmp/atlas-edtech-20261028/implementation.md`)**: Fable 설계 검토 P0 0 · P1 4 · P2 6 · P3 4(반영 13 · 후속 1), 루트(GPT) 설계 대조 12건 반영(붙여넣기 거부 대신 근거에서만 제외 · 옛 기록 소급 재채점 금지 · seen·노출 순서 · 등간격도 같은 효과 · 잘린 원장 추론 금지 · 미확인 글을 벌하지 않음 · Strata 쓰기 노드 3개 있음 · `learning.js` 고침 범위는 최근 30일 창 안).
 

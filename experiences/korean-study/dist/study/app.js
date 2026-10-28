@@ -36,7 +36,7 @@ var require_ask = __commonJS({
       else root.SynkAsk = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION2 = "ask-1.1";
+      const VERSION2 = "ask-1.2";
       const MAX_OPTIONS = 64;
       const KINDS3 = ["setting", "confirm", "choice", "refresh", "follow_up"];
       const DAY2 = 864e5;
@@ -91,18 +91,20 @@ var require_ask = __commonJS({
         validate(questions);
         if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
         if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
+        if (!finite(quietDays) || quietDays < 0 || quietDays > 36500) throw new TypeError("Ask: invalid question cooldown");
+        const currentTime = now === null ? null : time(now);
         const valued = typeof evaluate === "function";
         if (!valued && questions.some((q) => owns(q, "cost") || owns(q, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
         const current = decide({ ...answers });
         const result = [];
         for (const q of questions) {
           const about = q.about ?? q.id;
-          if (Object.hasOwn(answers, about)) continue;
+          if (Object.hasOwn(answers, about) && (q.kind !== "refresh" || currentTime === null)) continue;
           if (denied.includes(q.id)) {
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q.id) && now !== null && time(now) - time(asked[q.id]) < quietDays * DAY2) {
+          if (Object.hasOwn(asked, q.id) && currentTime !== null && currentTime - time(asked[q.id]) < quietDays * DAY2) {
             result.push({ id: q.id, kind: q.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }

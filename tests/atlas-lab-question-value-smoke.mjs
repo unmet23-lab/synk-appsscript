@@ -42,7 +42,7 @@ try {
     page.on('response', response => { if (response.status() >= 400 && !response.url().endsWith('/favicon.ico')) report.missing.push(`${response.status()} ${new URL(response.url()).pathname}`); });
     await page.goto(`${base}/atlas-lab/`);
     await page.waitForFunction(() => !!window.synkAtlasLab);
-    assert.equal(await page.evaluate(() => globalThis.SynkLearning.Ask.VERSION), 'ask-1.1');
+    assert.equal(await page.evaluate(() => globalThis.SynkLearning.Ask.VERSION), 'ask-1.2');
     await page.locator('#uses .chip', { hasText: '내 컴퓨터에 AI 설치하기' }).click();
     const first = await page.evaluate(() => { const c = window.synkAtlasLab.consult(); return { question: c.question.id, value: c.value, basis: c.basis }; });
     const timings = await page.evaluate(() => Array.from({ length: 10 }, () => { const start = performance.now(); window.synkAtlasLab.consult(); return performance.now() - start; }).sort((a, b) => a - b));

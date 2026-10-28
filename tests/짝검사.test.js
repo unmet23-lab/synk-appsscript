@@ -187,6 +187,8 @@ test('기본표 — WORLD 묶음 전부 · 스크립트·결과물·정확한 �
   const 표 = 짝.기본표(REPO);
   const 이름들 = 표.map((x) => x.이름);
   for (const b of require('../tools/lib/atlas-copies.js').WORLD_BUNDLES) assert.ok(이름들.includes(b.label), `${b.label}이 표에 없다`);
+  assert.ok(고른(REPO,['atlas/ask.js'],표).some(x=>x.줄.이름==='Study learning bundle'));
+  assert.ok(고른(REPO,['atlas/trail.js'],표).some(x=>x.줄.이름==='Study learning bundle'));
   const 흐름 = fs.readFileSync(path.join(REPO, '.github/workflows/syntax-check.yml'), 'utf8');
   for (const 줄 of 표) {
     assert.ok(짝.있는줄(REPO, 줄), `${줄.이름}: 스크립트·시험 파일이 없다`);

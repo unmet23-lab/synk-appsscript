@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { rawCopies, ownedFiles, unknownCopies, syncRaw, runAll, GAMES, TOOL_OUTPUTS, WORLD_BUNDLES, PRODUCT_OWNED } = require('../tools/lib/atlas-copies');
+const { rawCopies, ownedFiles, unknownCopies, syncRaw, runAll, GAMES, TOOL_OUTPUTS, WORLD_BUNDLES, PRODUCT_BUNDLES, PRODUCT_OWNED } = require('../tools/lib/atlas-copies');
 const repo = path.resolve(__dirname, '..');
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-atlas-copies-'));
@@ -73,7 +73,8 @@ test('the registry names every current consumer: marketing tool outputs, travel 
   for (const name of ['trail-life', 'temper-outcomes']) assert.ok(fs.existsSync(path.join(repo, `atlas/${name}.js`)), `canonical atlas/${name}.js exists`);
   // The WORLD builders and their outputs are real files here; each builder verifies its output with --check.
   assert.equal(WORLD_BUNDLES.length, 3);
-  for (const bundle of WORLD_BUNDLES) {
+  assert.equal(PRODUCT_BUNDLES[0].output, 'experiences/korean-study/dist/study/app.js');
+  for (const bundle of [...WORLD_BUNDLES, ...PRODUCT_BUNDLES]) {
     assert.ok(fs.existsSync(path.join(repo, bundle.build)), bundle.build);
     assert.ok(fs.existsSync(path.join(repo, bundle.output)), bundle.output);
     assert.match(fs.readFileSync(path.join(repo, bundle.build), 'utf8'), /--check/);
@@ -113,6 +114,8 @@ test('one sync refreshes the profile core before rebuilding the life consumer', 
   write('tools/build-game-learning.js', '// no unrelated fixture consumers\n');
   write('tools/build-hangul-stage.js', '// no unrelated fixture consumers\n');
   write('tools/build-world-account.mjs', '// no unrelated fixture consumers\n');
+  write('atlas/ask.js', '// original Ask\n');
+  write('experiences/korean-study/build.mjs', `import fs from 'node:fs';const input=new URL('../../atlas/ask.js',import.meta.url),out=new URL('./dist/study/app.js',import.meta.url);const data=fs.readFileSync(input);if(process.argv.includes('--check')){if(!fs.existsSync(out)||!fs.readFileSync(out).equals(data))throw Error('stale Study Ask');}else{fs.mkdirSync(new URL('.',out),{recursive:true});fs.writeFileSync(out,data);}`);
   // The fixture builders use CommonJS, while the real registry invokes .mjs names.
   // createRequire keeps their filesystem behavior identical under those names.
   const moduleBuilder = (source, target) => "import {createRequire} from 'node:module';import {fileURLToPath} from 'node:url';"
@@ -130,4 +133,9 @@ test('one sync refreshes the profile core before rebuilding the life consumer', 
   const checked = runAll({ ...options, check: true });
   assert.equal(checked.ok, true, JSON.stringify(checked.problems));
   assert.equal(fs.readFileSync(path.join(root, life), 'utf8'), '// refreshed canonical engine\n');
+  write('atlas/ask.js', '// refreshed Ask\n');
+  const staleStudy=runAll({ ...options, check:true });
+  assert.equal(staleStudy.ok,false);assert.ok(staleStudy.problems.some(p=>p.startsWith('Study learning bundle:')));
+  assert.equal(runAll({ ...options, check:false }).ok,true);
+  assert.equal(fs.readFileSync(path.join(root,PRODUCT_BUNDLES[0].output),'utf8'),'// refreshed Ask\n');
 });
