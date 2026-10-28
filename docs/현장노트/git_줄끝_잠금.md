@@ -222,6 +222,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 원문 2파일은 CRLF, 증거 4파일은 LF 바이트로 승인됐는데 Git의 기본 줄끝 변환에 맡겨 두었다.
 - 고침: 승인 해시나 검수 결과를 다시 쓰지 않고 `.gitattributes`의 정확한 6경로에 기존 승인 바이트의 줄끝을 명시했다. 원문 내용은 바꾸지 않았다.
 - 다시 확인: 격리한 실제 Git 체크아웃의 `core.autocrlf=true/false` 양쪽에서 6개 SHA와 문항 validator를 대조하고, 내용에 공백을 더한 원문은 여전히 거절하는지 확인한다. 근거 `.tmp/atlas-world-learning-20261028/ci-fa79b062/eol-checkouts.json`.
+- 10-28 덧붙임(Claude, 워크트리에서 `git merge origin/master`로 받았을 때): 위 증거 4파일(`experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-*.json` — 커밋된 내용에 CRLF가 든 채 `text eol=lf`)이 이 PC(`core.autocrlf=true`) 워크트리에서 merge로 풀리자 작업본 바이트가 커밋과 달라졌다(`git status`에는 안 보임). 그 바이트 sha를 그대로 보는 `tools/town-data-build.mjs`가 「찻집 독립 검수 근거가 바뀌었어요.」로 멈추고, 바로올리기 관련 시험 `tests/town-places.test.js` 「생성물이 원천과 같다」가 깨져 push가 막혔다. 고침: 그 파일들을 지우고 `git -c core.autocrlf=false checkout HEAD -- <파일…>`으로 다시 풀면 sha가 커밋과 같아지고 시험이 지나간다(내용 변경 없음, 올릴 것 없음). 다시 확인: `git show HEAD:<파일> | sha256sum`과 `sha256sum < <파일>`이 같다.
 
 ## index.lock
 
