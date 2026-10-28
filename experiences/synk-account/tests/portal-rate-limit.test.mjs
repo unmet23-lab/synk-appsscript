@@ -11,7 +11,7 @@ class Element {
   closest() { return this; }
   before(node) { this.beforeNodes.push(node); }
   addEventListener() {}
-  focus() { this.focusCount++; }
+  focus() { if (!this.disabled) this.focusCount++; } // like a browser: a disabled control takes no focus
   scrollIntoView() { this.scrollCount++; }
   querySelector() { return null; }
   get textContent() { return this.text || ''; }
@@ -801,6 +801,8 @@ test('「로그인과 보안」 checks the current password with a separate, end
   assert.equal(requests[1].url, 'https://auth.example.test/auth/v1/logout?scope=local');assert.equal(requests[1].options.headers.Authorization, 'Bearer synthetic-check');
   assert.deepEqual(page.calls.at(-1), { method: 'updateUser', args: { password: 'synthetic-next' } });assert.match(page.get('security-status').textContent, /비밀번호를 바꿨어요/);
   for (const id of ['current-password', 'new-password', 'new-password-confirm']) assert.equal(page.get(id).value, '');
+  // The submit button folded away with the form: focus lands on the (unlocked) toggle, not on the page top.
+  assert.equal(page.get('password-change-form').hidden, true);assert.equal(page.get('password-form-toggle').disabled, false);assert.equal(page.get('password-form-toggle').focusCount, 1);
 });
 
 test('a wrong current password, another account in the check, or unmatched fields never change the password', async t => {
@@ -840,8 +842,13 @@ test('a login e-mail change sends two confirmations, shows the wait and explains
   assert.deepEqual(page.calls.at(-1), { method: 'updateUser', args: [{ email: 'next@example.test' }, { emailRedirectTo: 'https://id.example.test/?view=security' }] });
   assert.equal(page.get('security-pending-email').hidden, false);assert.match(page.get('security-pending-email').textContent, /next@example\.test/);assert.match(page.get('security-status').textContent, /두 주소로 확인 메일/);
   assert.match(page.get('security-status').textContent, /어느 기기에서 열어도 되고/);assert.doesNotMatch(page.get('security-status').textContent, /이 브라우저에서 열면/);
+  // The email form folded away with its submit button: focus moves to the unlocked toggle once.
+  assert.equal(page.get('email-change-form').hidden, true);assert.equal(page.get('email-form-toggle').focusCount, 1);
+  const focusedOnce = page.get('email-form-toggle').focusCount;
   page.get('new-email').value = 'taken@example.test';page.replies.updateUser = { data: { user: null }, error: { code: 'email_exists', status: 422 } };await submitForm(page, 'email-change-form');await settled();
   assert.match(page.get('security-status').textContent, /다른 SYNK 계정이 쓰는 이메일/);
+  // A refused change keeps the form (and the focus where the member left it).
+  assert.equal(page.get('email-form-toggle').focusCount, focusedOnce);
 });
 
 test('?view=signup opens the sign-up form, as the PC app button asks', async t => {

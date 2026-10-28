@@ -100,8 +100,10 @@ function showBrowserAccount(state) {
  let label = entry.querySelector('[data-account-label]');
  if(!label){label=document.createElement('span');label.dataset.accountLabel='';entry.replaceChildren(...[entry.querySelector('img, .avatar'),label].filter(Boolean));}
  label.textContent = state.status==='signed-in' ? (state.displayName || '내 SYNK ID') : state.status==='loading'?'확인 중':state.status==='error'?'SYNK ID 확인':'SYNK ID 로그인';
- entry.setAttribute('aria-label',state.status==='signed-in'?'SYNK ID 계정 관리':'SYNK ID로 로그인');render();continuity?.render?.();
+ entry.setAttribute('aria-label',state.status==='signed-in'?'SYNK ID 계정 관리':'SYNK ID로 로그인');render();continuity?.render?.();continuity?.authChanged?.();
 }
+// Signed out in this browser, the library card's way in is the SYNK ID sign-in itself (the same page as the header's).
+const browserGuest=()=>{const id=browserAccount?.identity();return !!id&&id.configured===true&&id.status==='signed-out';};
 function quickCard(id, recent) {
  const entryId=id==='messenger'&&recent?.entryId==='teacher'?'teacher':id,item=itemById(id), destination=shortcutDestination(entryId,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl,preferredMode:recent?.mode});
  if(!item||!destination)return '';
@@ -197,7 +199,7 @@ window.addEventListener('hashchange',()=>{detailTab='overview';query=route().que
 window.addEventListener('storage',event=>{if(event.key===LIBRARY_KEY||event.key===null){library.reload();render();}});
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');root.before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./src/platform-library.css';document.head.append(continuityStyle);
-continuity=mountPlatformLibrary(continuityRoot,{getHost:()=>browserAccount,ensureReady:()=>refreshBrowserAccount(),onChange:()=>render(),onFavoritesChanged:()=>memberActivity.syncFavorites(),getDevice:()=>deviceLibrary.read(),onLogin:()=>location.assign('./client.html?product=platform'),onManage:()=>location.assign('./client.html?product=platform'),onOpen:id=>{const destination=shortcutDestination(id,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl});if(destination?.kind==='web'){if(!accountEntryReady(id)){accountEntryUnavailable();return;}openActivityWindow(publicEntry(id,destination.href),id);}else location.hash=libraryItemRoute(id);}});
+continuity=mountPlatformLibrary(continuityRoot,{getHost:()=>browserAccount,signIn:{guest:browserGuest,open:()=>location.assign('./client.html?product=platform')},ensureReady:()=>refreshBrowserAccount(),onChange:()=>render(),onFavoritesChanged:()=>memberActivity.syncFavorites(),getDevice:()=>deviceLibrary.read(),onLogin:()=>location.assign('./client.html?product=platform'),onManage:()=>location.assign('./client.html?product=platform'),onOpen:id=>{const destination=shortcutDestination(id,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl});if(destination?.kind==='web'){if(!accountEntryReady(id)){accountEntryUnavailable();return;}openActivityWindow(publicEntry(id,destination.href),id);}else location.hash=libraryItemRoute(id);}});
 render();
 async function loadStartup(){
  const attempt=++startup, browser=typeof window.synkDesktop?.authStatus!=='function';let failed=false;

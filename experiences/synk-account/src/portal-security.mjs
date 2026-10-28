@@ -119,17 +119,19 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     if (problem) { status(problem, 'error');return; }
     if (user && !user.email) { status('이 계정에는 로그인 이메일이 없어 비밀번호를 바꿀 수 없어요. hello@synk.im으로 알려 주세요.', 'error');return; }
     const check = begin('현재 비밀번호를 확인하고 있어요…');if (!check) return;
+    let collapsed = false;
     try {
       await checkCurrent(user.email, values.current, check);
       status('새 비밀번호를 저장하고 있어요…', 'pending');
       const result = await bounded(sdk.auth.updateUser({ password: values.next }));check();
       if (result.error) throw result.error;
-      clearFields();formOpen = false;render();$('password-form-toggle').focus?.();
+      clearFields();formOpen = false;render();collapsed = true;
       status('비밀번호를 바꿨어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', 'success');
       notice('비밀번호를 바꿨어요. 이 브라우저는 로그인된 채예요.', false, false, 'success');
       onPasswordChanged();
     } catch (error) { if (!closed) status(message(error), 'error'); }
-    finally { lock(false); }
+    // The submit button left with the folded form; the toggle takes focus only once unlocked (a disabled control cannot).
+    finally { lock(false);if (collapsed && !closed) $('password-form-toggle').focus?.(); }
   }
   async function sendReset() {
     if (user && !user.email) { status('이 계정에는 로그인 이메일이 없어 메일을 보낼 수 없어요. hello@synk.im으로 알려 주세요.', 'error');return; }
@@ -148,15 +150,16 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     if (problem) { status(problem, 'error');return; }
     const check = begin('확인 메일을 보내고 있어요…');if (!check) return;
     const callback = new URL(config.portalUrl);callback.search = '';callback.hash = '';callback.searchParams.set('view', 'security');
+    let collapsed = false;
     try {
       const result = await bounded(sdk.auth.updateUser({ email: next }, { emailRedirectTo: callback.href }));check();
       if (result.error) throw result.error;
       if (result.data?.user?.id === user.id) user = result.data.user;
-      $('new-email').value = '';emailOpen = false;render();
+      $('new-email').value = '';emailOpen = false;render();collapsed = true;
       // The mails' token-hash links open on any device (10-23), each with one more tap on the page.
       status(`${user.email}, ${next} 두 주소로 확인 메일을 보냈어요. 두 메일의 「변경 확인하기」를 모두 눌러야 바뀌어요. 메일은 어느 기기에서 열어도 되고, 열린 화면에서 「이메일 변경 확인하기」를 눌러 주세요.`, 'success');
     } catch (error) { if (!closed) status(message(error), 'error'); }
-    finally { lock(false); }
+    finally { lock(false);if (collapsed && !closed) $('email-form-toggle').focus?.(); }
   }
   $('password-change-form').onsubmit = event => { void changePassword(event); };
   $('email-change-form').onsubmit = event => { void changeEmail(event); };
