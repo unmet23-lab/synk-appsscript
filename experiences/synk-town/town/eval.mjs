@@ -51,14 +51,16 @@ const tallyOf = keys => keys.reduce((out, key) => add(out, SEEN_PREFIX(key)), un
  * or band yet. What each command counts: a card done with the player (did card.<ID>), one closed before it was done
  * (stoppedScenes), a response (feedback by value), "less often" set (lessOften), "something else today" (todayOther),
  * the asks pressed in a scene by kind (help — the consent's 다시 · 천천히 · 무슨 뜻이에요; reopening a folded note is not
- * one) and the widening offer (ladderOffer — none when a new one stands unanswered, then the answer) (W9). The offer counts
- * when it is made: today's screen draws it at once from the ladder. Once the offer goes through the mascot's question
- * (asks.open kind widen), none moves to the moment it is drawn (Fable W9 design review 5). */
+ * one) and the widening offer (ladderOffer — none once the mascot's widening question is drawn, then the answer) (W9). The
+ * question is drawn when the screen reports it beside a boundary, or when it is closed unanswered (ASK_CLOSE counts it
+ * drawn first); an answer before the report goes straight to its value (Fable W9 design review 5). */
 const HELP_KINDS = Object.freeze(['repeat', 'slower', 'meaning']);
-const offeredNow = (before, after) => ['reading', 'listening'].some(channel => {
-  const now = after?.languageLadder?.[channel]?.lastOffer, then = before?.languageLadder?.[channel]?.lastOffer;
-  return !!now && now.answer === null && now.at !== then?.at;
-});
+function widenDrawn(before, after, command) {
+  const was = before?.asks?.open;
+  if (was?.kind !== 'widen' || was.delivered) return false;
+  const now = after?.asks?.open;
+  return now?.key === was.key && now.delivered === true || command?.type === 'ASK_CLOSE' && command.payload?.key === was.key;
+}
 export function visitSummary(previous, { before, after, command = null, added = [], seen = {} }) {
   const visit = after?.townVisit, policy = after?.policy;
   if (!visit || visit.lifeDay === undefined || !policy || !after.life) return null;
@@ -78,7 +80,7 @@ export function visitSummary(previous, { before, after, command = null, added = 
   if (/^TEA_(SERVE|OWNER|CLOSE)$/.test(command?.type || '') && command.payload?.asks)
     for (const kind of HELP_KINDS) help = add(help, kind, Number.isSafeInteger(command.payload.asks[kind]) ? command.payload.asks[kind] : 0);
   if (command?.type === 'LANGUAGE_ANSWER' && ['accepted', 'declined'].includes(command.payload?.choice)) ladderOffer = command.payload.choice;
-  else if (offeredNow(before, after)) ladderOffer = 'none';
+  else if (widenDrawn(before, after, command)) ladderOffer = 'none';
   const fresh = tallyOf(added), newSeenBy = Object.entries(fresh || {}).reduce((out, [key, n]) => add(out, key, n), same?.newSeenBy);
   const seenTotalBy = Object.entries(seen).reduce((out, [key, n]) => add(out, SEEN_PREFIX(key), n), undefined);
   return { ...fields, ...(did ? { did } : {}), ...(newSeenBy ? { newSeenBy } : {}), ...(seenTotalBy ? { seenTotalBy } : {}),

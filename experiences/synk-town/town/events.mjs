@@ -46,12 +46,13 @@ export const KINDS = Object.freeze({
   'gather.together': { public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
   // W9 (§12-4·§13-2): a conversation scene or a tea order closed — the habit summary the language ladder reads, never a
   // learning record: the scene, its start level, the asks by kind and how it went; no words, names or answers (다리 §10-4).
-  // answerMode is the scene's response format in Atlas's words (single-choice · cup-compose).
+  // answerMode is the scene's response format in Atlas's words (single-choice · cup-compose). The visit's version and arm
+  // (§20-6 「장면 닫힘」) came later, so a close saved before them stands without (Fable W9 design review 6).
   'dialogue.closed': { sceneId: id, level: v => ['L1', 'L2', 'L3', 'L4'].includes(v), channel: v => ['reading', 'listening'].includes(v),
     help: v => !!v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 3
       && ['meaning', 'repeat', 'slower'].every(key => Number.isSafeInteger(v[key]) && v[key] >= 0),
     outcome: v => ['smooth', 'helped-once', 'eased', 'stopped'].includes(v), answerMode: v => ['single-choice', 'cup-compose'].includes(v),
-    atMs: Number.isSafeInteger },
+    atMs: Number.isSafeInteger, paramsVer: v => v === undefined || id(v), arm: v => v === undefined || ['adapted', 'baseline'].includes(v) },
 });
 
 /** The relationship fields of an event the player took part in, checked (§20-1). */

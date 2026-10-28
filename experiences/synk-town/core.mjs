@@ -19,7 +19,7 @@ import { initialPrefs, initialAsks, giveFeedback, removeFeedback, activeFeedback
   observedFamily, mayAsk, recordAsk, firstAsk } from './town/prefs.mjs';
 import { initialConsents, changeConsent, validConsents } from './town/consent.mjs';
 import { eventProblem, FAMILIES, relation } from './town/events.mjs';
-import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks } from './town/params.mjs';
+import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks, adaptedOn } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten, ACTIVITY_MEMORY } from './town/memory.mjs';
 import { initialVillage, validVillage, GIVES_MAX, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput } from './town/village.mjs';
 import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
@@ -33,7 +33,7 @@ import { bandAt, BAND_IDS, clockAt, afterRainAt } from './town/clock.mjs';
 import { initialVisitBands, writeBand, setVisitBands, clearVisitBands, validVisitBands } from './town/visits.mjs';
 import { meanwhileLines } from './town/meanwhile.mjs';
 import { ACTIVITIES, ACTIVITY_BY_ID, activityOfCommand, initialActivities, restoreActivities, validActivities } from './town/activities/index.mjs';
-import { initialLadder, validLadder, closeScene, chooseLevel, pickSceneLevel, markOffer, answerOffer } from './town/language-ladder.mjs';
+import { initialLadder, validLadder, closeScene, chooseLevel, pickSceneLevel, markOffer, answerOffer, followPlacement, LEVELS, CHANNELS } from './town/language-ladder.mjs';
 import { weatherAt } from './town/clock.mjs';
 import { startNewTea, newTeaView, helpNewTea, chooseNewTea } from './new-tea.mjs';
 import { closeDialogue } from './dialogue.mjs';
@@ -463,16 +463,14 @@ export function askDrawn(state, key) {
 }
 /** The mascot's one question (§20-3·§20-4, W6): at a safe boundary of a screen that draws it, never inside something,
  * in a visit's first seconds or on the world's first visited life day; one a life day, the order widening > taste >
- * consent (widening comes with W9). Taste: the family the player keeps opening themself (the adapted arm only, never one
+ * consent (widening is asked as a scene ends — offerWiden, W9). Taste: the family the player keeps opening themself (the adapted arm only, never one
  * answered no). Consent: on hosts that turned the evaluation signals on, never to an academy-linked account, never again
  * once shown, and only in a visit that finished something with a resident. The question waits as asks.open until the
  * screen says it drew it (ASK_ACK — then it counts) or the visit ends. */
 function offerAsk(state, ctx) {
-  const v = state.village, visit = state.townVisit, asks = state.asks, life = state.life;
-  if (ctx.canContact !== true || !Array.isArray(ctx.caps) || !ctx.caps.includes('asks') || !asks || asks.open || !life) return;
-  if (!visit || visit.endedAt !== undefined || visit.lifeDay === undefined || !v?.band || sceneOpen(state)) return;
-  const lifeDay = v.band.lifeDay, secondsIntoVisit = Math.floor((life.uMs - life.visitStartU) / 1000);
-  if (lifeDay === visit.firstDay) return;
+  const asks = state.asks, visit = state.townVisit, doors = askDoors(state);
+  if (ctx.canContact !== true || !Array.isArray(ctx.caps) || !ctx.caps.includes('asks') || !asks || asks.open || !doors) return;
+  const { lifeDay, secondsIntoVisit } = doors;
   const found = {};
   const family = observedFamily(state.recentLifeUse || [], state.prefs, { policy: state.policy });
   if (family && mayAsk(asks, { lifeDay, key: `taste:${family}`, secondsIntoVisit })) found.taste = { key: `taste:${family}`, family };
@@ -481,6 +479,52 @@ function offerAsk(state, ctx) {
     && visit.done === true && mayAsk(asks, { lifeDay, key: 'consent', secondsIntoVisit })) found.consent = { key: 'consent' };
   const kind = firstAsk(Object.keys(found));
   if (kind) state.asks = { ...asks, open: { kind, ...found[kind], lifeDay, delivered: false } };
+}
+/** The doors every mascot question passes (§20-3): a visit going on whose band stands, past the world's first visited life
+ * day, nothing open now. Its life day (the village band's) and the seconds into the visit, or null. */
+function askDoors(state) {
+  const v = state.village, visit = state.townVisit, life = state.life;
+  if (!life || !visit || visit.endedAt !== undefined || visit.lifeDay === undefined || !v?.band || sceneOpen(state)) return null;
+  return v.band.lifeDay === visit.firstDay ? null : { lifeDay: v.band.lifeDay, secondsIntoVisit: Math.floor((life.uMs - life.visitStartU) / 1000) };
+}
+/** A conversation or the tea order going on: its L stays the one it began with (bridge §3-3). */
+const languageScene = state => !!state.activities?.['tea-order']?.open || !!state.village?.takes?.some(t => t.card === 'C4' && t.open && t.status === 'with');
+/** The widening offer (bridge §3-3, design §13-1·§20-3, W9) is the first of the mascot's questions: asked as a scene ends by
+ * the screen that drew it (its LANGUAGE_OFFER says it draws the question), in the adapted arm only, through the doors every
+ * question passes and inside the day's one question. The ended scene's response format picks the main evidence (a
+ * conversation single-choice, the tea order cup-compose — an older screen names none). The key names the seat and the
+ * level offered, so the next step up never rests behind one accepted (Fable W9 design review 2). It stands as asks.open
+ * until drawn, answered or closed, and a question not yet drawn steps aside for it (ASK_ORDER). Whether it stands. */
+function offerWiden(state, host, { channel, format = 'cup-compose', condition }) {
+  const asks = state.asks, doors = askDoors(state);
+  if (!doors || !adaptedOn(openVisit(state, host)) || asks.open?.delivered || asks.open?.kind === 'widen') return false;
+  const choice = pickSceneLevel({ channel, ladder: state.languageLadder, summary: host.learningSummary, settings: host.learningSettings,
+    today: { condition }, scene: { versions: LEVELS, responseFormat: format }, now: host.nowMs || 0, day: doors.lifeDay });
+  const key = choice.offer ? `widen:${channel}:${choice.offer.to}` : null;
+  if (!key || !mayAsk(asks, { lifeDay: doors.lifeDay, key, secondsIntoVisit: doors.secondsIntoVisit })) return false;
+  const evidence = (state.languageLadder[channel].evidence || 0) + (host.learningSummary?.evidenceRevision || 0);
+  state.languageLadder = markOffer(state.languageLadder, channel, host.nowMs || 0, evidence, doors.lifeDay);
+  state.asks = { ...asks, open: { kind: 'widen', key, lifeDay: doors.lifeDay, delivered: false } };
+  return true;
+}
+/** Whether a widening question could still stand today (W9): the screen asks the host only then, since the host reads the
+ * whole learning record for it. The level and the evidence stay the host's to judge. */
+function widenReady(state) {
+  const doors = askDoors(state), asks = state.asks;
+  return !!doors && !!asks && adaptedOn(state.policy) && !asks.open?.delivered && asks.open?.kind !== 'widen' && asks.lastLifeDay !== doors.lifeDay
+    && doors.secondsIntoVisit >= paramsFor(state.policy?.paramsVer).asks.quietAfterVisitSeconds;
+}
+/** The host's placement reaches the ladder at a command (followPlacement, W9): an open scene keeps its L — the change waits
+ * for the next command — and a widening question standing for a seat that moved goes with its offer. */
+function placeLanguage(state, host) {
+  if (!host.languagePlacement || languageScene(state)) return;
+  const before = state.languageLadder, after = followPlacement(before, host.languagePlacement, host.nowMs || 0);
+  if (after === before) return;
+  state.languageLadder = after;
+  const open = state.asks?.open;
+  if (open?.kind === 'widen' && CHANNELS.some(c => after[c].stable !== before[c].stable && open.key.startsWith(`widen:${c}:`))) {
+    const { open: _gone, ...rest } = state.asks; state.asks = rest;
+  }
 }
 /** The visit (W6, §10-2·§10-3·§20-6): a step held by a window after the last visit ended opens the next one. It began when
  * the lease's presence says (only a pulse saw it; an old lease: this settlement), and what a returning player sees changed
@@ -859,7 +903,7 @@ export function viewFor(state) {
   if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, { ...bazaarContext(state, { surface: 'day' }),
     ownerAsleep: !ownerUp, workshopAsleep: village?.awake['workshop-owner'] === false });
   if (state.support) view.support = viewSupport(state.support, supportContext(state));
-  view.language = { version: 1, ladder: copy(state.languageLadder || initialLadder({ reading: 'L2', listening: 'L2' })) };
+  view.language = { version: 1, ladder: copy(state.languageLadder || initialLadder({ reading: 'L2', listening: 'L2' })), askReady: widenReady(state) };
   // The mascot's question waiting to be drawn or answered (W6, §20-3·§20-4) — old screens ignore it.
   if (state.asks?.open) view.ask = { key: state.asks.open.key, kind: state.asks.open.kind, ...(state.asks.open.family ? { family: state.asks.open.family } : {}) };
   // The tea order the screen draws (W8): its guests, what they asked (ids and values — the words are the screen's), who sits.
@@ -902,8 +946,9 @@ const personalRoom = prefs => ensure(prefs.lessOften.length <= PERSONAL_MAX && p
 /** The §20 commands: the person's rights over what the town keeps, and the feedback and suggestion menus. */
 const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT',
   'FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'CARD_CONFIRM',
-  // W6: the mascot's question closed, the time the player usually comes turned on or off.
-  'ASK_CLOSE', 'PREF_VISIT_BANDS']);
+  // W6: the mascot's question closed, the time the player usually comes turned on or off. W9: the widening offer is one of
+  // the mascot's questions (an older world gains the question budget with it — Fable W9 design review 3).
+  'ASK_CLOSE', 'PREF_VISIT_BANDS', 'LANGUAGE_OFFER', 'LANGUAGE_ANSWER']);
 /* ── life activities (§20-7 ②, W8) ── the runtime's half: an activity's context, its commands, what it returns. */
 /** The level a scene's lines show at: the reading seat's stable level — W9's ladder plugs in here (now L2, the same as
  * the one-line texts, day-mood.mjs lineLevel). */
@@ -993,22 +1038,24 @@ function openTakeFor(state, card, key, host, contactId = null) {
     current.newTea.dialogue.stopped = false;
   }
 }
+/** C4's conversation closed by the player (CARD_CONFIRM · CARD_CLOSE — always a command in a visit): the ladder reads its
+ * habit summary, and the scene's close names the visit's version and arm (§20-6 「장면 닫힘」, Fable W9 design review 6). */
 function closeNewTea(state, take, host, stopped = false) {
   take.newTea.dialogue.stopped = stopped;
   const scene = closeDialogue(take.newTea.dialogue);
   if (state.languageLadder) state.languageLadder = closeScene({ ladder: state.languageLadder, channel: scene.channel, level: scene.level, outcome: scene.outcome, now: host.nowMs });
-  townEvent(state, 'dialogue.closed', { ...scene, atMs: host.nowMs });
+  townEvent(state, 'dialogue.closed', { ...scene, atMs: host.nowMs, ...eventMarks(openVisit(state, host), { inVisit: true }) });
 }
 /** What an activity returned, written as the world's: its events (the id, command revision and the visit's marks are the
  * runtime's), the result it reached — the card that opened it resolves, or the day's one thing done together — and the
  * take of a card's order that closed (review F5). */
 function afterActivity(state, a, out, host, { inVisit }) {
   if (out.learning?.length) host.learningFacts?.push(...out.learning);
+  const marks = eventMarks(inVisit ? openVisit(state, host) : state.policy, { inVisit }), v = state.village;
   if (out.scene && state.languageLadder) {
     state.languageLadder = closeScene({ ladder: state.languageLadder, channel: out.scene.channel, level: out.scene.level, outcome: out.scene.outcome, now: host.nowMs });
-    townEvent(state, 'dialogue.closed', { ...out.scene, atMs: host.nowMs });
+    townEvent(state, 'dialogue.closed', { ...out.scene, atMs: host.nowMs, ...marks });
   }
-  const marks = eventMarks(inVisit ? openVisit(state, host) : state.policy, { inVisit }), v = state.village;
   const ids = out.events.map(({ kind, ...fields }) => townEvent(state, kind, { ...fields, ...marks }));
   // W8b (§20-7 ①·②): what an activity asks of the world besides its own slot — the ledger, a thing worn less from now (a
   // time-ordered input of the band, like a take), a card it settles with the player, the life day's one thing done with a
@@ -1222,6 +1269,7 @@ export function reduceCommand(previous, command, host = {}) {
   const learning = [];
   host = { ...host, learningFacts: learning };
   if (!state.languageLadder) state.languageLadder = initialLadder(host.languagePlacement || { reading: 'L2', listening: 'L2' }, host.nowMs || 0);
+  else placeLanguage(state, host);
   const p = command.payload;
   if (TOWN_COMMANDS.has(command.type)) for (const [key, make] of Object.entries(TOWN_FIELDS)) if (!Object.hasOwn(state, key)) state[key] = make();
   // A command from a window that holds the town is play: it opens the visit when no settlement step has yet (W6 — the
@@ -1244,19 +1292,25 @@ export function reduceCommand(previous, command, host = {}) {
       ensure(['reading', 'listening'].includes(p.channel) && ['easier', 'broader', 'always-easy', 'auto'].includes(p.choice), 'language-choice', '말의 속도를 다시 골라 주세요.', 400);
       state.languageLadder = chooseLevel(state.languageLadder, p.channel, p.choice, host.nowMs || 0);
       break;
-    case 'LANGUAGE_OFFER': {
-      ensure(!state.activities?.['tea-order']?.open && !state.village?.takes?.some(t => t.card === 'C4' && t.open && t.status === 'with') && ['reading', 'listening'].includes(p.channel), 'language-busy', '장면을 마친 뒤 골라 주세요.');
-      const choice = pickSceneLevel({ channel: p.channel, ladder: state.languageLadder, summary: host.learningSummary,
-        settings: host.learningSettings, today: { condition: p.condition }, scene: { versions: ['L1', 'L2', 'L3', 'L4'], responseFormat: 'cup-compose' }, now: host.nowMs || 0, day: host.lifeDay });
-      ensure(!!choice.offer, 'language-no-offer', '지금 말로 이어 가요.');
-      state.languageLadder = markOffer(state.languageLadder, p.channel, host.nowMs || 0, (state.languageLadder[p.channel].evidence || 0) + (host.learningSummary?.evidenceRevision || 0), host.lifeDay);
+    case 'LANGUAGE_OFFER':
+      // At a scene's end (offerWiden): the format names the ended scene's response format (single-choice · cup-compose).
+      ensure(!languageScene(state) && CHANNELS.includes(p.channel), 'language-busy', '장면을 마친 뒤 골라 주세요.');
+      ensure(p.format === undefined || ['single-choice', 'cup-compose'].includes(p.format), 'language-choice', '말의 속도를 다시 골라 주세요.');
+      ensure(offerWiden(state, host, p), 'language-no-offer', '지금 말로 이어 가요.');
+      break;
+    case 'LANGUAGE_ANSWER': {
+      ensure(!languageScene(state) && CHANNELS.includes(p.channel) && ['accepted', 'declined'].includes(p.choice), 'language-choice', '장면을 마친 뒤 골라 주세요.');
+      // The answer closes the widening question standing for that seat (W9): an answer before the drawn report still counts it,
+      // like the taste answer. One the visit already dropped, or another window answered, is the town's to read again (409 —
+      // Fable W9 design review 4).
+      const open = state.asks.open;
+      ensure(open?.kind === 'widen' && open.key.startsWith(`widen:${p.channel}:`), 'language-no-offer', '지금 말로 이어 가요.', 409);
+      askDrawn(state, open.key);
+      try { state.languageLadder = answerOffer(state.languageLadder, p.channel, p.choice, host.nowMs || 0); }
+      catch { ensure(false, 'language-no-offer', '지금 말로 이어 가요.', 409); }
+      const { open: _answered, ...rest } = state.asks; state.asks = rest;
       break;
     }
-    case 'LANGUAGE_ANSWER':
-      ensure(!state.activities?.['tea-order']?.open && !state.village?.takes?.some(t => t.card === 'C4' && t.open && t.status === 'with') && ['reading', 'listening'].includes(p.channel) && ['accepted', 'declined'].includes(p.choice), 'language-choice', '장면을 마친 뒤 골라 주세요.');
-      try { state.languageLadder = answerOffer(state.languageLadder, p.channel, p.choice, host.nowMs || 0); }
-      catch { ensure(false, 'language-no-offer', '지금 말로 이어 가요.'); }
-      break;
     case 'CHOOSE':
       inPhase('choose'); ensure(['inside', 'outside'].includes(p.branch), 'invalid-choice', '안이나 밖을 골라요.');
       state.branch = p.branch; state.phase = `${p.branch}-preview`;

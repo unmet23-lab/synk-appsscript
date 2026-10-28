@@ -41,6 +41,9 @@ test('습관 요약은 계약의 칸뿐이고 answerMode는 장면의 응답 꼴
     { help: { meaning: 0, repeat: 0, slower: 0, reopen: 1 } }, { channel: 'speaking' }])
     assert.notEqual(ev.eventProblem({ ...ok, ...bad }), null, JSON.stringify(bad));
   assert.notEqual(ev.eventProblem({ ...ok, text: '새 차' }), null, '원문은 사건에 들지 않는다');
+  // 방문의 판과 회차(§20-6 「장면 닫힘」, Fable W9 설계 검토 6)는 선택 칸 — 앞서 저장된 닫힘은 없이도 선다.
+  assert.equal(ev.eventProblem({ ...ok, paramsVer: 'town-params-1', arm: 'adapted' }), null);
+  for (const bad of [{ arm: 'control' }, { paramsVer: '판 하나' }]) assert.notEqual(ev.eventProblem({ ...ok, ...bad }), null, JSON.stringify(bad));
 });
 
 test('C4 새 차 장면 — 네 판이 같은 차례·같은 결과 키, 판을 바꿔도 생활 결과는 같다', async () => {

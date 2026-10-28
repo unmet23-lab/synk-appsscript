@@ -81,6 +81,7 @@ test('real C4 commands survive close/reload, keep learning untouched, and persis
   assert.equal(state.events.length, originalTrail, 'preference choices never create Atlas practice evidence');
   const events = state.townEvents.filter(e => e.kind === 'dialogue.closed');
   assert.ok(events.some(e => e.outcome === 'stopped')); assert.ok(events.some(e => e.outcome !== 'stopped'));
+  assert.ok(events.every(e => e.paramsVer === state.policy.paramsVer && e.arm === state.policy.arm), '장면 닫힘은 방문의 판과 회차를 단다(§20-6, W9)');
   h.send('CARD_CLOSE'); h.set(state.village.band.endMs + MIN); h.pulse();
   h.send('DAY_MOVE', { location: 'cafe' }); if (h.store.read().state.day.home.exitTarget) h.send('DAY_EXIT');
   h.send('TEA_OPEN');
