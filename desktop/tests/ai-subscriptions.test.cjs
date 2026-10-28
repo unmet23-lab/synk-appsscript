@@ -964,6 +964,33 @@ test('Claude reset passes are typed in by the member and kept only on Claude row
   assert.deepEqual([...allowed].sort(),Object.keys(HELP_LINKS).sort());
 });
 
+test('Claude API credits are typed in by the member on Claude rows, rounded to the cent and stamped when saved',async()=>{
+  const f=fakeSystem(),D=864e5;
+  assert.equal((await f.service.useExisting('claude')).ok,true);assert.equal((await f.service.useExisting('gpt')).ok,true);
+  let snap=await f.service.snapshot();
+  const claude=snap.rows.find(r=>r.service==='claude').id,gpt=snap.rows.find(r=>r.service==='gpt').id;
+  const get=id=>snap.rows.find(r=>r.id===id),api=id=>[get(id).apiCredit,get(id).apiCreditUntil,get(id).apiCreditAt];
+  snap=await f.service.save({row:{id:claude,apiCredit:199.004,apiCreditUntil:NOW+7*D}});
+  assert.deepEqual(api(claude),[199,NOW+7*D,NOW]);
+  // 날짜만 고치면 넣은 때는 그대로, 금액을 비우면 넣은 때도 비운다. 범위를 벗어난 금액은 받지 않는다.
+  snap=await f.service.save({row:{id:claude,apiCreditUntil:NOW+8*D}});assert.deepEqual(api(claude),[199,NOW+8*D,NOW]);
+  snap=await f.service.save({row:{id:claude,apiCredit:null,apiCreditUntil:null}});assert.deepEqual(api(claude),[null,null,null]);
+  snap=await f.service.save({row:{id:claude,apiCredit:-5}});assert.deepEqual(api(claude),[null,null,null]);
+  snap=await f.service.save({row:{id:claude,apiCredit:1e6,apiCreditUntil:NOW+7*D}});assert.deepEqual(api(claude),[null,null,null]);
+  // 같은 줄에 다른 계정이 로그인되면 앞 계정을 보고 넣은 초기화권·API 크레딧을 비운다. 같은 계정(대소문자만 다름)이면 그대로 둔다.
+  snap=await f.service.save({row:{id:claude,apiCredit:150,apiCreditUntil:NOW+7*D,passCount:1,passUntil:NOW+2*D}});
+  f.state.claudeEmail='MEMBER@example.com';snap=await f.service.check([claude]);
+  assert.deepEqual([...api(claude),get(claude).passCount],[150,NOW+7*D,NOW,1]);
+  f.state.claudeEmail='other@example.com';snap=await f.service.check([claude]);
+  assert.deepEqual([get(claude).email,...api(claude),get(claude).passCount,get(claude).passUntil],['other@example.com',null,null,null,null,null]);
+  // GPT 줄은 Claude API 크레딧 칸을 받지 않는다(넣은 때도 찍지 않는다).
+  snap=await f.service.save({row:{id:gpt,apiCredit:50,apiCreditUntil:NOW+D}});
+  assert.deepEqual(api(gpt),[null,null,null]);
+  // Console 결제 화면과 공식 안내는 고정 주소로만 연다.
+  assert.deepEqual(await f.service.openHelp('claude-console-billing'),{ok:true});assert.equal(f.opened.at(-1),'https://platform.claude.com/settings/billing');
+  assert.deepEqual(await f.service.openHelp('claude-api-credits'),{ok:true});assert.equal(f.opened.at(-1),'https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers');
+});
+
 test('keeps the chosen tip goal and the tips-off switch, and refuses anything else',async()=>{
   const f=fakeSystem();
   let snap=await f.service.save({settings:{goal:'save'}});assert.equal(snap.settings.goal,'save');
@@ -987,7 +1014,9 @@ test('the price table keeps only checked, known values and the newer check wins 
   const at=new Date(2026,9,19,12,0).getTime();
   const base=validatePrices(DEFAULT_PRICES,at);
   // 앱 기본 사본: Claude는 공식 기본값(세전)과 한국 부가세율 10%(화면이 한국 결제 값으로 보인다), Higgsfield(세금 별도, 연간에서 월간으로 못 돌아옴), Typecast API(연간 없음).
-  assert.deepEqual(base.services.claude.plans,{pro:{month:20,year:200},max5x:{month:100},max20x:{month:200}});
+  // Max에는 매달 딸려 오는 API 크레딧(달러, 10-28 공식 안내)도 같은 요금제 칸에 둔다. 모양이 틀린 API 크레딧이면 그 요금제를 통째로 버린다.
+  assert.deepEqual(base.services.claude.plans,{pro:{month:20,year:200},max5x:{month:100,apiCredit:100},max20x:{month:200,apiCredit:200}});
+  assert.deepEqual(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),plans:{max5x:{month:110,apiCredit:-100},max20x:{month:220,apiCredit:200.5}}}}),at),null);
   assert.equal(base.services.claude.tax,'excluded');assert.equal(base.services.claude.krVat,0.1);assert.equal(base.services.higgsfield.annualLock,true);assert.equal(base.services.higgsfield.tax,'excluded');
   // 부가세율 모양이 틀리면 그 서비스를 받지 않는다.
   for(const krVat of [0.5,-0.1,'0.1'])assert.equal(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),krVat}}),at),null);
@@ -1025,6 +1054,10 @@ test('the price table keeps only checked, known values and the newer check wins 
   // 더 최근 판에 krVat이 빠졌으면 앞 판의 10%를 잇고, 0을 적었으면 0을 따른다(구현 검수 P3-B).
   assert.equal(later.services.claude.krVat,0.1);
   assert.equal(mergePrices(base,validatePrices(priceDoc({claude:{...claudeEntry('2026-10-20',25),krVat:0}}),at+864e5)).services.claude.krVat,0);
+  // API 크레딧도: 더 새 판에 그 칸이 빠졌으면 앞 판 값을 잇고(금액은 새 판), 0을 적었으면 0을 따른다(갱신본으로 거두는 길).
+  assert.deepEqual(later.services.claude.plans.max20x,{month:220,apiCredit:200});
+  const zero=mergePrices(base,validatePrices(priceDoc({claude:{...claudeEntry('2026-10-20',25),plans:{max5x:{month:110},max20x:{month:220,apiCredit:0}}}}),at+864e5));
+  assert.deepEqual([zero.services.claude.plans.max5x,zero.services.claude.plans.max20x],[{month:110,apiCredit:100},{month:220,apiCredit:0}]);
 });
 
 test('the price table comes from synk.im at most once a day, is checked before it is kept and asks for nothing else',async()=>{

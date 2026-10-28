@@ -1255,3 +1255,92 @@ test('the captured scene adds up: 1,727,600 a month, about 1,183,000 used, 68%, 
     assert.match(el.innerHTML,/계정마다 기록이 4주 쌓이면 보여 드려요 · <span class="ms-num">11\/16<\/span>쯤부터/);board.dispose();
   }finally{Date.now=real;}
 });
+
+/* ---------- Claude API 크레딧(10-28) ---------- */
+test('Claude API credits are counted in the bills screen with the day they were typed in, and stay out of the "which account now" row',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now(),day0=t=>new Date(t).setHours(0,0,0,0),md=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()}`;};
+  const week={readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}};
+  const a=row({id:'a',email:'a@example.com',plan:'max_20x',apiCredit:199,apiCreditUntil:day0(fresh+3*D),apiCreditAt:fresh-D,live:week});
+  const b=row({id:'b',email:'b@example.com',plan:'max_20x',apiCredit:150.5,apiCreditUntil:day0(fresh+12*D),apiCreditAt:fresh-2*D,billDay:new Date(fresh+12*D).getDate(),live:week});
+  const c=row({id:'c',email:'c@example.com',plan:'max_20x',live:week});
+  const x=row({id:'x',email:'x@example.com',plan:'max_20x',apiCredit:80,apiCreditUntil:day0(fresh-D),apiCreditAt:fresh-30*D,live:week});
+  const p=row({id:'p',email:'p@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:100,resetsAt:fresh+D/2}}});
+  const snapshot={ok:true,seq:1,tools:{},rows:[a,b,c,x,p],settings:{usdKrw:1400},check:{at:fresh,total:5,ok:5},login:null,checking:false,usage:{since:fresh,buckets:[],services:{},accounts:{}},prices:priceBook()};
+  const saves=[],toasts=[],helps=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},help:async k=>{helps.push(k);return {ok:true};},save:async patch=>{saves.push(patch);const r=snapshot.rows.find(y=>y.id===patch.row?.id);if(r)Object.assign(r,patch.row);return {...snapshot,seq:snapshot.seq+saves.length};}}};
+  const el=fakeContainer(),board=createSubscriptionsBoard({bridge,toast:m=>toasts.push(m)}),d=driver(el);
+  board.render(el,{signedIn:true,native:true});await tick();
+  // 한눈에 01(지금 어느 계정을 쓰나)에는 API 크레딧을 넣지 않는다 — Claude Code·채팅 한도와 따로다.
+  assert.doesNotMatch([...el.innerHTML.matchAll(/<span class="ms-count">(.*?)<\/span><\/span><span class="ms-dots"/g)].map(m=>m[1]).join(' '),/API/);
+  // 요금·결제일 입구 글: 7일 안에 사라지는 계정이 있으면 그것을 말한다.
+  assert.match(el.innerHTML,new RegExp(`API 크레딧 \\$199 ${md(fresh+3*D)}에 사라져요\\(a\\)`));
+  // 02 「모두 보기」: 결제가 아니라 사라지는 돈이라 「사라져요」, 시각 없이 날짜만.
+  await d.click({subs:'more'});
+  assert.match(el.innerHTML,new RegExp(`<span class="ms-next-time ms-num">${md(fresh+3*D)}</span><span class="ms-next-rel">D-3</span><span class="ms-next-who"><b>a</b> Claude · API 크레딧 \\$199 사라져요</span>`));
+  await d.click({subs:'manage',to:'ms-cost'});
+  // 요금·결제일 칸: 넣은 값의 합에는 넣은 날(처음~끝)을, 가장 먼저 사라지는 계정과 요금제로 매달 들어오는 금액을 같이. 한 달 구독료 합계에는 섞지 않는다.
+  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api"><span>Claude API 크레딧</span><strong class="ms-num">\\$349.5 남음</strong><small>${md(fresh-2*D)}~${md(fresh-D)}에 넣은 값 · 계정 2개 · <b>a</b> ${md(fresh+3*D)}에 가장 먼저 사라져요 · 매달 \\$800\\(Max 4개\\)</small></div>`));
+  // 결제 목록의 Claude 줄마다 남은 금액과 사라지는 날(넣은 값이 있고 아직 안 사라진 계정만).
+  assert.match(el.innerHTML,new RegExp(`<span class="ms-bill-name has-api"><span class="ms-bill-who">a</span><small class="ms-bill-api">API 크레딧 \\$199 · ${md(fresh+3*D)}에 사라져요</small></span>`));
+  assert.match(el.innerHTML,/<span class="ms-bill-name">c<\/span>/);assert.match(el.innerHTML,/<span class="ms-bill-name">x<\/span>/);
+  // ⋯ 패널: 넣은 값은 사라지는 날을 앞에, 넣은 날의 금액을 뒤에. 사라진 값·안 넣은 Max도 한 줄씩. Pro에는 넣는 단추가 없다.
+  await d.click({subs:'menu',id:'a'});
+  assert.match(el.innerHTML,new RegExp(`<p>API 크레딧 · ${md(fresh+3*D)}에 사라져요 · ${md(fresh-D)}에 \\$199 남아 있었어요</p>`));
+  await d.click({subs:'menu',id:'x'});
+  assert.match(el.innerHTML,new RegExp(`<p class="ms-soft">넣어 둔 API 크레딧은 ${md(fresh-D)}에 사라졌어요 · 새로 들어온 금액을 「API 크레딧」에 넣어 주세요\\.</p>`));
+  await d.click({subs:'menu',id:'b'});
+  await d.click({subs:'menu',id:'p'});
+  assert.ok(!el.innerHTML.includes('data-subs="api-edit" data-id="p"'));
+  await d.click({subs:'menu',id:'c'});
+  assert.match(el.innerHTML,/<p class="ms-soft">Max 20x 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 \$200씩 들어와요\(결제일에 남은 건 사라져요\)\. 남은 금액을 넣으면 사라지기 전에 알려 드려요\.<\/p>/);
+  // 넣는 칸: 그 계정으로 로그인한 브라우저에서 Console 결제 화면의 그 요금제 줄을 보고 넣는다(산 잔액은 빼고).
+  await d.click({subs:'api-edit',id:'c'});
+  assert.match(el.innerHTML,/<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="c">/);
+  assert.match(el.innerHTML,/<b>c<\/b> 계정으로 로그인한 브라우저에서 Claude Console\(platform\.claude\.com\) 결제 화면을 열고 Promotional credits의 「API credit \(Max 20x\)」 줄에 보이는 금액과 만료 날짜를 넣어 주세요\. 직접 산 잔액은 빼요\./);
+  await d.click({subs:'help',link:'claude-console-billing'});assert.deepEqual(helps,['claude-console-billing']);
+  const submit=async values=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'api',id:'c'},querySelector:sel=>{const m=/\[name="([^"]+)"\]/.exec(sel);return m&&Object.hasOwn(values,m[1])?{value:values[m[1]]}:null;}})}});await tick();await tick();};
+  const ymd=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+  // 받지 않는 것: 범위 밖 금액 · 날짜 없는 금액 · 오늘(사라지는 시각을 몰라 세지 않는다) · 지난 날짜.
+  await submit({apiCredit:'-1',apiDate:ymd(fresh+9*D)});assert.match(toasts.at(-1),/0에서 100,000달러 사이/);
+  await submit({apiCredit:'120',apiDate:''});assert.match(toasts.at(-1),/만료 날짜도 넣어 주세요/);
+  await submit({apiCredit:'120',apiDate:ymd(fresh)});assert.match(toasts.at(-1),/오늘 사라지는 크레딧은 세지 않아요/);
+  await submit({apiCredit:'120',apiDate:ymd(fresh-2*D)});assert.match(toasts.at(-1),/이미 지났어요/);
+  assert.equal(saves.length,0);
+  // 넣으면 그날 0시를 만료로, 결제일을 안 넣은 Max면 그 날짜의 일로 결제일도 채운다(크레딧은 결제 주기 끝에 사라진다).
+  const due=fresh+9*D;
+  await submit({apiCredit:'120.456',apiDate:ymd(due)});
+  assert.deepEqual(saves.at(-1),{row:{id:'c',apiCredit:120.46,apiCreditUntil:day0(due),billDay:new Date(due).getDate()}});
+  assert.match(toasts.at(-1),new RegExp(`API 크레딧 \\$120.46를 넣었어요\\. 크레딧이 사라지는 날이 결제일이라 결제일도 매월 ${new Date(due).getDate()}일로 넣어 뒀어요\\.`));
+  // 결제일이 이미 있으면 건드리지 않고, 금액을 비우면 넣은 값을 지운다.
+  await d.click({subs:'api-edit',id:'c'});
+  await submit({apiCredit:'90',apiDate:ymd(due)});
+  assert.deepEqual(saves.at(-1),{row:{id:'c',apiCredit:90,apiCreditUntil:day0(due)}});
+  await d.click({subs:'api-edit',id:'c'});
+  await submit({apiCredit:'',apiDate:ymd(due)});
+  assert.deepEqual(saves.at(-1),{row:{id:'c',apiCredit:null,apiCreditUntil:null}});assert.match(toasts.at(-1),/API 크레딧을 비웠어요/);
+  board.dispose();
+});
+
+test('a stale price table hides what arrives each month but keeps what the member typed in',async()=>{
+  prepare();
+  const D=864e5,fresh=Date.now();
+  const c=row({id:'c',email:'c@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}});
+  let f=phase3([c],{},{prices:priceBook(fresh-61*D)}),{el,board,d}=await manageCost(f);
+  assert.ok(!el.innerHTML.includes('ms-metric-api'));
+  await d.click({subs:'menu',id:'c'});assert.doesNotMatch(el.innerHTML,/매달 \$200씩/);board.dispose();
+  // 넣은 값만 있으면 합만 보이고 매달 들어오는 금액은 말하지 않는다. 등급 모르는 Max는 「빼고」로 말한다.
+  const typed=row({id:'t',email:'t@example.com',plan:'max_20x',apiCredit:50,apiCreditUntil:new Date(fresh+5*D).setHours(0,0,0,0),apiCreditAt:fresh,live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}});
+  f=phase3([typed],{},{prices:priceBook(fresh-61*D)});({el,board}=await manageCost(f));
+  assert.match(el.innerHTML,/<strong class="ms-num">\$50 남음<\/strong><small>[^<]*에 넣은 값 · 계정 1개 · <b>t<\/b> [^<]*에 가장 먼저 사라져요<\/small>/);board.dispose();
+  f=phase3([c,row({id:'m',email:'m@example.com',plan:'max',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}})],{});({el,board}=await manageCost(f));
+  assert.match(el.innerHTML,/<strong class="ms-num">매달 \$200<\/strong><small>Max 계정 1개\(등급 모르는 Max 1개 빼고\) · Claude Console 조직을 연결한 계정에 들어와요/);board.dispose();
+  // 등급 모르는 Max뿐이면 금액 없이 그 수와 까닭, ⋯ 패널에도 단추가 무엇인지 한 줄(Fable 최종 P3).
+  const unknown=row({id:'m',email:'m@example.com',plan:'max',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}});
+  f=phase3([unknown],{});({el,board,d}=await manageCost(f));
+  assert.match(el.innerHTML,/<strong class="ms-num">Max 1개<\/strong><small>요금제 등급\(5x·20x\)을 아직 못 읽어 매달 들어오는 금액을 몰라요/);
+  await d.click({subs:'menu',id:'m'});
+  assert.match(el.innerHTML,/<p class="ms-soft">Max 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 들어와요\(결제일에 남은 건 사라져요\)\. 요금제 등급\(5x·20x\)을 아직 못 읽어 금액은 말하지 못해요/);
+  assert.match(el.innerHTML,/data-subs="api-edit" data-id="m"/);board.dispose();
+});

@@ -22,6 +22,9 @@ const HELP_LINKS=Object.freeze({
   'codex-resets':'https://help.openai.com/en/articles/20001498-how-banked-codex-resets-work',
   'claude-resets':'https://support.claude.com/en/articles/17007452-about-limit-resets',
   'claude-usage':'https://claude.ai/settings/usage',
+  // Claude API 크레딧(10-28 확인): Max 요금제에 딸려 오는 금액·만료(공식 안내)와, 남은 금액이 보이는 유일한 곳인 Console 결제 화면.
+  'claude-api-credits':'https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers',
+  'claude-console-billing':'https://platform.claude.com/settings/billing',
   // 요금표·연간 결제(3차, 10-19 확인): 요금표의 출처와 연간 결제 팁의 근거. 받은 요금표는 이 열쇠로만 출처를 가리킨다.
   'higgsfield-pricing':'https://higgsfield.ai/pricing',
   'higgsfield-annual':'https://higgsfield.ai/creator-hub/help-center/plans/can-i-switch-between-monthly-and-annual-billing',

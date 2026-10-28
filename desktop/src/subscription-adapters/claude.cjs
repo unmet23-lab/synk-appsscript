@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
 const spec=Object.freeze({label:'Claude',kind:'weekly',bin:'claude',home:'CLAUDE_CONFIG_DIR',folders:true});
-const policy=Object.freeze({installer:"irm https://claude.ai/install.ps1 | iex",macInstaller:"curl -fsSL https://claude.ai/install.sh | bash",reachable:"https://api.anthropic.com/",login:{domains:["claude.com","claude.ai","anthropic.com"],args:email=>['auth','login',...(email?['--email',String(email)]:[])],acceptsEmail:true,needsCode:true,browserMessage:'브라우저에서 승인하면 대부분 바로 연결돼요. 브라우저에 긴 코드가 보일 때만 아래 칸에 붙여 넣어 주세요.'},editable:['passCount','passUntil'],preservePlan:(old,next)=>/^max$/i.test(next)&&/^max_\d{1,2}x$/i.test(String(old||''))});
+const policy=Object.freeze({installer:"irm https://claude.ai/install.ps1 | iex",macInstaller:"curl -fsSL https://claude.ai/install.sh | bash",reachable:"https://api.anthropic.com/",login:{domains:["claude.com","claude.ai","anthropic.com"],args:email=>['auth','login',...(email?['--email',String(email)]:[])],acceptsEmail:true,needsCode:true,browserMessage:'브라우저에서 승인하면 대부분 바로 연결돼요. 브라우저에 긴 코드가 보일 때만 아래 칸에 붙여 넣어 주세요.'},editable:['passCount','passUntil','apiCredit','apiCreditUntil'],preservePlan:(old,next)=>/^max$/i.test(next)&&/^max_\d{1,2}x$/i.test(String(old||''))});
 // 공급자 명령·출력·로그인 방식은 이 어댑터가 함께 소유한다.
 function create({runtime,accounts,system,now,helpers}){
  const {accountsDir,home,homeEnv,rows}=accounts;

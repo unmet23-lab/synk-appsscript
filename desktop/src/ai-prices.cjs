@@ -21,7 +21,9 @@ const DEFAULT_PRICES=Object.freeze({
   services:{
     // claude.com 요금표: 기본값 Pro 월 $20 · 연간 1년 치 $200(한 달 $17꼴), Max 5x $100(「$100부터」), 결제 주기는 Pro 월간·연간, Max 둘은 월간만.
     // Max 20x $200은 Anthropic 도움말 11049741(「Max 20x: $200 per month」, 같은 날 2차 Fable 확인). 한국에서 열면 페이지가 「Prices include 10% VAT」와 함께 $22 · $220 · $110부터로 덧씌워 보인다(카드 원래 값 `data-original-text` $20 · $200 · $100부터).
-    claude:{checked:'2026-10-19',source:'claude-plans',currency:'USD',tax:'excluded',krVat:0.1,plans:{pro:{month:20,year:200},max5x:{month:100},max20x:{month:200}}},
+    // apiCredit(10-28): Max 요금제에 매달 딸려 Console 조직에 들어오는 API 크레딧(달러) — 공식 안내 「API credits for Max and Team plans」(HELP_LINKS claude-api-credits)를
+    // 10-28에 확인했다(Max 5x $100 · Max 20x $200, 결제 주기마다 들어와 그 끝에 사라짐, Pro는 없음). 요금과 같은 요금제 사실이라 같은 60일 문을 따른다.
+    claude:{checked:'2026-10-19',source:'claude-plans',currency:'USD',tax:'excluded',krVat:0.1,plans:{pro:{month:20,year:200},max5x:{month:100,apiCredit:100},max20x:{month:200,apiCredit:200}}},
     // higgsfield.ai 요금표(세금 별도): 월 결제 Starter $19 · Plus $59 · Ultra $129, 연간 결제는 한 달 $19 · $47 · $99(Starter는 차이 없음), 한 달 크레딧 270 · 1,200 · 3,000(Ultra는 6,000 · 9,000 등급도 있다).
     // 도움말 「Can I switch between monthly and annual billing?」: 연간 결제에서 월 결제로는 못 돌아온다(annualLock).
     higgsfield:{checked:'2026-10-19',source:'higgsfield-pricing',currency:'USD',tax:'excluded',annualLock:true,plans:{starter:{month:19,year:228,credits:270},plus:{month:59,year:564,credits:1200},ultra:{month:129,year:1188,credits:3000}}},
@@ -54,9 +56,11 @@ function cleanService(service,raw,now,trusted=false){
   for(const key of PLAN_KEYS[service]){
     const p=raw.plans?.[key];if(!plain(p))continue;
     const month=price(p.month),year=p.year===undefined||p.year===null?null:price(p.year),credits=p.credits===undefined||p.credits===null?null:amount(p.credits);
+    // apiCredit(10-28): 요금제에 매달 딸려 오는 API 크레딧(달러, Claude Max). 0은 「없음」을 일부러 적은 것이다(갱신본으로 거두는 길 — 합치기가 빠진 칸만 앞 판에서 잇는다).
+    const apiCredit=p.apiCredit===undefined||p.apiCredit===null?null:p.apiCredit===0?0:amount(p.apiCredit);
     // 숫자 하나라도 모양이 틀리면 그 요금제는 통째로 버린다(반쯤 맞는 값으로 말하지 않게).
-    if(month===null||(p.year!==undefined&&p.year!==null&&year===null)||(p.credits!==undefined&&p.credits!==null&&credits===null))continue;
-    plans[key]={month,...(year===null?{}:{year}),...(credits===null?{}:{credits})};
+    if(month===null||(p.year!==undefined&&p.year!==null&&year===null)||(p.credits!==undefined&&p.credits!==null&&credits===null)||(p.apiCredit!==undefined&&p.apiCredit!==null&&apiCredit===null))continue;
+    plans[key]={month,...(year===null?{}:{year}),...(credits===null?{}:{credits}),...(apiCredit===null?{}:{apiCredit})};
   }
   if(!Object.keys(plans).length)return null;
   // krVat은 적혀 있으면 0도 그대로 둔다(「한국 부가세 없음」을 일부러 적은 것) — 빠진 것과 나눠야 합치기가 기본 사본 값을 이을 수 있다.
@@ -104,7 +108,13 @@ function mergePrices(base,extra){
   const services={...(base?.services||{})};
   for(const [service,entry] of Object.entries(extra?.services||{})){
     const prev=services[service];
-    if(!prev||entry.checked>prev.checked)services[service]=entry.krVat===undefined&&prev?.krVat!==undefined?{...entry,krVat:prev.krVat}:entry;
+    if(!prev||entry.checked>prev.checked){
+      let next=entry.krVat===undefined&&prev?.krVat!==undefined?{...entry,krVat:prev.krVat}:entry;
+      // 요금제에 딸린 API 크레딧(10-28)도 같다 — 더 새 판이 금액만 고치고 그 칸을 빠뜨려도 「매달 $200」이 조용히 사라지지 않게(Fable 최종 P3). 0을 적었으면 0을 따른다.
+      const carried=Object.fromEntries(Object.entries(next.plans||{}).map(([key,plan])=>[key,plan.apiCredit===undefined&&prev?.plans?.[key]?.apiCredit!==undefined?{...plan,apiCredit:prev.plans[key].apiCredit}:plan]));
+      if(Object.keys(carried).some(key=>carried[key]!==next.plans[key]))next={...next,plans:carried};
+      services[service]=next;
+    }
   }
   const seen=new Set(),deals=[];
   for(const d of [...(base?.deals||[]),...(extra?.deals||[])]){const key=`${d.service}|${d.from}|${d.until}`;if(!seen.has(key)){seen.add(key);deals.push(d);}}

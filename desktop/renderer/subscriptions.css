@@ -191,7 +191,7 @@
 .member-subs .ms-next-rel{color:var(--ms-ok);font-size:.875rem;font-weight:550;white-space:nowrap}
 .member-subs .ms-next-who{color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
 .member-subs .ms-next-who b{margin-right:4px;color:var(--ink,#FAFAF9);font-size:.9375rem}
-.member-subs .ms-next-item:is(.is-reset,.is-bill,.is-pass) :is(.ms-next-time,.ms-next-rel){color:var(--ink-3,rgba(250,250,249,.52))}
+.member-subs .ms-next-item:is(.is-reset,.is-bill,.is-pass,.is-api) :is(.ms-next-time,.ms-next-rel){color:var(--ink-3,rgba(250,250,249,.52))}
 .member-subs .ms-next-item.is-reset .ms-next-who b{color:var(--ink-2,rgba(250,250,249,.72))}
 .member-subs .ms-more{display:inline-flex;align-items:center;min-height:40px;margin-top:6px;padding:0;border:0;background:none;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:600;text-decoration:underline;text-decoration-color:var(--ink-4,rgba(250,250,249,.22));text-underline-offset:5px}
 .member-subs .ms-more:hover{color:var(--ink,#FAFAF9)}
@@ -418,7 +418,7 @@
 .member-subs .ms-pass{color:var(--ink,#FAFAF9);font-weight:600}
 .member-subs .ms-pass-mark{margin-left:7px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
 .member-subs .ms-tip-more+.ms-tip-more{margin-left:0}
-.member-subs .ms-next-item.is-pass .ms-next-who b{color:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-next-item:is(.is-pass,.is-api) .ms-next-who b{color:var(--ink-2,rgba(250,250,249,.72))}
 .member-subs .ms-pass-form{grid-template-columns:repeat(3,minmax(0,1fr))}
 @container subs (max-width:700px){.member-subs .ms-pass-form{grid-template-columns:minmax(0,1fr)}}
 /* 3차(10-19): 요금·결제일 칸 머리의 한 달 요약과 연간 결제 팁. 돈 이야기라도 경고가 아니라 노랑·빨강 없이 — 전체 막대는 중립 잉크, 계정 막대는 서비스 색 */
@@ -456,6 +456,12 @@
 .member-subs .ms-sum-tip .ms-tip{margin:0;padding:0;border:0}
 .member-subs #ms-cost>.mu-rest{margin:-4px 0 12px}
 .member-subs .ms-bill-price small{margin-left:6px;color:var(--ink-3,rgba(250,250,249,.52));font-family:var(--sans,SUIT,sans-serif);font-size:.8125rem;font-weight:450}
+/* Claude API 크레딧(10-28): 결제 목록의 계정 이름 아래 한 줄(남은 금액 · 사라지는 날). 이름과 조각 둘 다 한 줄로 말줄임한다. */
+.member-subs .ms-bill-name.has-api{display:flex;flex-direction:column;gap:1px;padding:7px 0}
+.member-subs .ms-bill-name.has-api>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-subs .ms-bill-api{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:450}
+/* 좁은 폭에서는 사라지는 날이 말줄임에 잘리지 않게 조각만 줄을 바꾼다. */
+@container subs (max-width:700px){.member-subs .ms-bill-name.has-api>.ms-bill-api{white-space:normal}}
 @container subs (max-width:700px){
   .member-subs .ms-sum{padding:16px 18px}
   .member-subs .ms-sum-big{font-size:1.125rem}

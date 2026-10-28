@@ -85,6 +85,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       usedUpAt:clampNumber(row.usedUpAt,0,9e15),note:cleanText(row.note,120),
       // Claude 주간 초기화권(회원이 넣음): Claude Code가 알려 주지 않아 claude.ai 설정 › 사용량을 보고 개수·만료 때를 넣는다.
       passCount:(n=>n===null?null:Math.round(n))(clampNumber(row.passCount,0,20)),passUntil:clampNumber(row.passUntil,0,9e15),
+      // Claude API 크레딧(회원이 넣음, 10-28): Max 요금제에 딸려 Console 조직에 들어오는 크레딧. 잔액을 읽는 공식 경로가 없어 Console 결제 화면의
+      // 남은 금액(달러, 센트까지)과 만료 날짜를 넣는다. apiCreditAt은 넣은 때(본체가 찍는다).
+      apiCredit:(n=>n===null?null:Math.round(n*100)/100)(clampNumber(row.apiCredit,0,1e5)),apiCreditUntil:clampNumber(row.apiCreditUntil,0,9e15),apiCreditAt:clampNumber(row.apiCreditAt,0,9e15),
       // 결제 주기(3차): 회원이 「이미 연간이에요」로 연간 결제라고 알려 준 줄만 'annual'. 모르면 비운다(월 결제로 단정하지 않는다).
       cycle:row.cycle==='annual'?'annual':null,
       // API 키로 연결한 줄: 같은 키를 두 번 넣었는지 가리는 지문(화면에는 안 보냄)과 끝 네 글자.
@@ -130,7 +133,12 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(!result)return;
     // 읽은 결과가 들어오면 그 줄은 더는 「지금 로그인 안 됨」이 아니다(awayReason은 elsewhere 줄에만 둔다).
     row.state=result.state;row.awayReason=null;row.stateMessage=result.state==='ok'?'':cleanText(result.message,200);row.stateAt=now();
-    if(result.email)row.email=cleanText(result.email,254);
+    if(result.email){
+      const email=cleanText(result.email,254);
+      // 같은 줄에 다른 계정이 로그인됐으면(이 PC의 기본 로그인을 바꾼 경우 등) 앞 계정을 보고 넣은 초기화권·API 크레딧은 비운다(10-28 Fable 설계 검토 P3-9).
+      if(row.email&&row.email.toLowerCase()!==email.toLowerCase())Object.assign(row,{passCount:null,passUntil:null,apiCredit:null,apiCreditUntil:null,apiCreditAt:null});
+      row.email=email;
+    }
     // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
     // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(Fable 2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
     if(result.plan){const plan=cleanText(result.plan,40);if(!(providerPolicy(row.service)?.preservePlan?.(row.plan,plan)))row.plan=plan;}
@@ -300,6 +308,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt','cycle',...(row.source==='manual'?['label','kind']:[]),...(providerPolicy(row.service)?.editable||[])];
       const next={...row};for(const key of editable)if(Object.hasOwn(patch.row,key))next[key]=patch.row[key];
       if(Object.hasOwn(patch.row,'credits'))next.creditsAt=now();
+      // 금액을 비우면 만료 날짜도 같이 비운다(넣은 값이 없는데 「사라졌어요」 흔적이 남지 않게).
+      if(editable.includes('apiCredit')&&Object.hasOwn(patch.row,'apiCredit')){const kept=clampNumber(patch.row.apiCredit,0,1e5)!==null;next.apiCreditAt=kept?now():null;if(!kept)next.apiCreditUntil=null;}
       Object.assign(row,normalizeRow({...next,id:row.id,service:row.service,source:row.source,folder:row.folder,live:row.live,email:row.email}));
     }
     if(typeof patch.remove==='string'){

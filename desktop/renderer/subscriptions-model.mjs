@@ -4,6 +4,7 @@
 //  · 요금표(3차): 확인한 지 60일 신선도·한국 부가세·연간 결제 값·공식 요금으로 셈하는 줄
 //  · 지난 7일 사용량 막대와 팁(크레딧 급증·속도·초기화권·요금제 맞추기·안 쓰는 구독), 목표·쉬는 팁·둘까지 고르기
 //  · 한 달 요약·연간 결제·할인 시기
+//  · Claude API 크레딧(10-28): 요금제로 매달 들어오는 금액과 회원이 넣은 남은 금액·만료
 // 여기서는 문장을 만들지 않는다. 숫자를 글자로 바꾸는 형식(₩·$ 표기와 자리수, 천 원 어림, % 정수 표기, 날짜 말)과 문장 조립은 화면 몫이다.
 // (옮겨 온 nameOf·serviceGroups의 이름 글자 둘 — 「이 PC 로그인」·「직접 넣은 구독」 — 만 예전 그대로 둔다.)
 export const DAY_MS = 864e5;
@@ -155,6 +156,49 @@ export function passesOf(row, now) {
   return null;
 }
 
+/* ---------- Claude API 크레딧(10-28) ---------- */
+// Max 요금제에 매달 딸려 Console 조직에 들어오는 크레딧(공식 안내 10-28 확인 — Max 5x $100 · Max 20x $200. claude.ai에서 Console 조직을 연결해야 받고,
+// 결제 주기마다 결제 뒤 들어와 그 주기 끝(다음 결제일)에 사라지며 이월이 없다. Claude Code·채팅 한도와는 따로다). 남은 금액과 만료일은 Console 결제 화면에만
+// 보이고 읽는 공식 경로가 없어(개인 조직은 Admin API도 열리지 않는다) 회원이 넣는다. 계정판이 스스로 아는 것은 요금제로 들어오는 금액뿐이다 —
+// 요금표(본체가 준 snapshot.prices)의 apiCredit에서, 금액과 같은 60일 문을 따른다. Pro는 말하지 않고, 등급을 못 읽은 Max는 「모름」(unknown)이다.
+// 공식 요금처럼(officialPrice) 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 세지 않는다(Fable 최종 P3).
+function grantOf(prices, row, now) {
+  if (row?.source !== 'auto' || row.service !== 'claude') return null;
+  if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  const table = priceTable(prices, 'claude', now), key = planKey(row.plan);
+  if (!table) return null;
+  const v = num(table.plans?.[key]?.apiCredit);
+  return v > 0 ? { grant: v } : key === 'max' ? { unknown: true } : null;
+}
+export const apiGrant = (prices, row, now) => grantOf(prices, row, now)?.grant ?? null;
+// 계정 하나: 넣은 값(left·until·at) · 넣은 값의 만료가 지남(left null, expired) · 안 넣음(left null — 등급을 못 읽은 Max면 unknown).
+// Claude 자동 연결 줄이 아니거나, 넣은 값도 들어오는 금액도 없으면 null.
+// 만료일은 그날 0시로 받아 그날부터 없는 것으로 본다(사라지는 시각을 몰라 남은 양을 부풀리지 않는 쪽). 그래서 화면은 날짜만 말한다.
+export function apiCreditOf(prices, row, now) {
+  if (row?.source !== 'auto' || row.service !== 'claude') return null;
+  const g = grantOf(prices, row, now), grant = g?.grant ?? null, left = num(row.apiCredit), until = num(row.apiCreditUntil), at = num(row.apiCreditAt);
+  if (left === null) return grant ? { grant, left: null } : g?.unknown ? { grant: null, left: null, unknown: true } : null;
+  if (until !== null && until <= now) return { grant, left: null, expired: until, at };
+  return { grant, left, until, at };
+}
+// 판 전체: left 만료 전에 넣은 남은 금액의 합 · entered 그 계정 수 · oldest·newest 그 값들을 넣은 가장 이른·늦은 때(넣은 값은 쓰는 만큼 낡는다) ·
+// monthly 요금제로 매달 들어오는 금액의 합 · granted 그 계정 수 · unknown 등급을 못 읽어 들어오는 금액을 모르는 Max 계정 수 ·
+// first 남은 금액이 있는 계정 가운데 가장 먼저 사라지는 것. 셀 계정이 없으면 null.
+export function apiCredits(prices, rows, now) {
+  let left = 0, entered = 0, monthly = 0, granted = 0, unknown = 0, oldest = null, newest = null, first = null;
+  for (const row of rows || []) {
+    const a = apiCreditOf(prices, row, now);
+    if (grantOf(prices, row, now)?.unknown) unknown++;
+    if (!a) continue;
+    if (a.grant) { monthly += a.grant; granted++; }
+    if (a.left === null) continue;
+    left += a.left; entered++;
+    if (a.at) { oldest = oldest === null ? a.at : Math.min(oldest, a.at); newest = newest === null ? a.at : Math.max(newest, a.at); }
+    if (a.until && a.left > 0 && (!first || a.until < first.until)) first = { row, until: a.until, left: a.left };
+  }
+  return entered || granted || unknown ? { left: Math.round(left * 100) / 100, entered, oldest, newest, monthly, granted, unknown, first } : null;
+}
+
 // 한눈에 화면의 서비스 묶음(직접 넣은 구독은 이름·종류마다). 월 구독만 넣은 줄은 한도가 없어 「요금·결제일」에만 보인다.
 // 묶음 안: 바로 쓸 계정(많이 남은 순, 같으면 큰 요금제) → 풀렸을 계정 → 직접 넣은 구독 → 다 쓴 계정(먼저 풀리는 순) → 못 읽음 → 다시 로그인 → 아직 안 읽음.
 export function serviceGroups(rows, now, checkAt = null) {
@@ -187,7 +231,8 @@ export function serviceGroups(rows, now, checkAt = null) {
   return groups.sort((a, b) => order(a) - order(b) || a.label.localeCompare(b.label, 'ko'));
 }
 
-// 이번 주 일정: 다 쓴 계정이 다시 열리는 때(unblock) · 쓸 수 있는 계정의 주간 초기화(reset) · 7일 안 결제(bill) · 7일 안 초기화권 만료(pass)를 시간순으로.
+// 이번 주 일정: 다 쓴 계정이 다시 열리는 때(unblock) · 쓸 수 있는 계정의 주간 초기화(reset) · 7일 안 결제(bill) · 7일 안 초기화권 만료(pass) ·
+// 7일 안 Claude API 크레딧 만료(api)를 시간순으로.
 // 한눈에 화면은 unblock의 앞 셋만 보이고, 「모두 보기」를 누르면 그 자리에서 전부 펼친다.
 export function upcoming(rows, now, checkAt = null) {
   const today = new Date(now); today.setHours(0, 0, 0, 0);
@@ -197,10 +242,16 @@ export function upcoming(rows, now, checkAt = null) {
     if (a.state === 'out' && a.unblock) items.push({ t: a.unblock, type: 'unblock', row, focus: a.focus, after: a.focus === 'session' && a.g.weekly ? a.g.weekly.left : null, pass });
     else if ((a.state === 'ok' || a.state === 'low') && a.g?.weekly?.resetsAt && a.g.weekly.resetsAt - now <= 7 * DAY_MS) items.push({ t: a.g.weekly.resetsAt, type: 'reset', row });
     // 연간으로 표시한 줄(3차)의 「매월 n일」은 달마다 오는 결제가 아니라 세지 않는다.
-    const dd = row.cycle === 'annual' ? null : nextBill(row.billDay, now);
-    if (dd !== null && dd <= 6) items.push({ t: today.getTime() + dd * DAY_MS, type: 'bill', row, days: dd });
+    const dd = row.cycle === 'annual' ? null : nextBill(row.billDay, now), bill = dd !== null && dd <= 6 ? { t: today.getTime() + dd * DAY_MS, type: 'bill', row, days: dd } : null;
+    if (bill) items.push(bill);
     // GPT는 초기화권마다 만료가 따로라 그때 사라지는 장수만, 직접 넣은 Claude는 한 만료 때에 넣은 장수 모두.
     if (pass?.until && pass.until - now <= 7 * DAY_MS) items.push({ t: pass.until, type: 'pass', row, count: pass.manual ? pass.count : (row.live?.resets?.until || []).filter(t => t === pass.until).length || 1 });
+    // 넣어 둔 Claude API 크레딧이 남은 채 7일 안에 사라지는 때(10-28). 크레딧은 결제 주기 끝에 사라지니 그 계정의 결제일과 같은 날이면 결제 줄에 붙인다(bill.api).
+    const api = apiCreditOf(null, row, now);
+    if (api?.left > 0 && api.until && api.until - now <= 7 * DAY_MS) {
+      if (bill && new Date(bill.t).toDateString() === new Date(api.until).toDateString()) bill.api = api.left;
+      else items.push({ t: api.until, type: 'api', row, amount: api.left });
+    }
   }
   return items.sort((a, b) => a.t - b.t);
 }

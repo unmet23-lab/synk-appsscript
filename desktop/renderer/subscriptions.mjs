@@ -6,7 +6,7 @@
 //  · 3차(10-19): 한 달 요약과 연간 결제·할인 시기 팁은 돈 이야기라 계정 관리 「요금·결제일」 칸 머리에, 한눈에 아래 입구 글에 한 줄로
 //  · 10-23(감사 C10): 요금·한도·목표·기간·추천 계산은 subscriptions-model.mjs(DOM 없음)가 하고, 이 파일은 그 숫자를 글과 HTML로 옮긴다.
 //    예전부터 여기서 내보내던 계산 함수는 같은 이름으로 다시 내보낸다(기존 import·시험 그대로).
-import { DAY_MS, ORDER, SHORT, GOAL_KEYS, num, hasReset, isUsedUp, nextBill, usedShown, gaugeLevel, planName, nameOf, passesOf, serviceGroups, upcoming, freshness, officialPrice, costOf, billList, nextMonthlyBill, usageBars, passPlan, pickUsageTips, restWeeks, restingCount, summaryOn, monthSummary, shownAnnual } from './subscriptions-model.mjs';
+import { DAY_MS, ORDER, SHORT, GOAL_KEYS, num, hasReset, isUsedUp, nextBill, usedShown, gaugeLevel, planKey, planName, nameOf, passesOf, apiCreditOf, apiCredits, serviceGroups, upcoming, freshness, officialPrice, costOf, billList, nextMonthlyBill, usageBars, passPlan, pickUsageTips, restWeeks, restingCount, summaryOn, monthSummary, shownAnnual } from './subscriptions-model.mjs';
 export { hasReset, nextReset, isUsedUp, nextBill, balance, isLow, leftPercent, usedShown, limitGauge, gaugeLevel, planName, nameOf, accountState, passesOf, serviceGroups, upcoming, costSummary, freshness } from './subscriptions-model.mjs';
 const DAY = ['일', '월', '화', '수', '목', '금', '토'];
 const KINDS = [['weekly', '주간 한도', '주간 %와 초기화 시각'], ['credit', '크레딧', '잔액과 충전·결제일'], ['plan', '월 구독만', '결제일과 요금']];
@@ -71,6 +71,7 @@ const HELP = [
   ['ChatGPT가 휴대폰 인증을 요구해요', 'OpenAI의 보안 절차예요. 브라우저 안내대로 휴대폰 인증을 마치면 Codex 로그인이 이어져요.'],
   ['Gemini 검은 창에서 막혔어요', '검은 창을 한 번 눌러 고른 뒤 Enter를 눌러요. 코드는 Ctrl+V 대신 검은 창 안에서 오른쪽 클릭으로 붙여 넣어요. 브라우저에서 계정을 고를 때 연결할 Google 계정을 눌러 주세요. 이미 다른 계정으로 로그인된 창이면 /logout을 치고 Enter, 이어서 /login을 치고 Enter를 누르면 로그인 화면이 나와요.'],
   ['연결을 끊고 싶어요', '계정 줄의 ⋯을 누르고 「지우기」를 두 번 누르면 이 앱이 만든 로그인 폴더까지 지워요. 기존 로그인을 가져온 계정은 목록에서만 빠져요.'],
+  ['Claude API 크레딧 남은 금액은 어디서 봐요?', 'Max 요금제의 API 크레딧은 claude.ai 설정 › 결제의 API credits에서 Claude Console 조직을 연결해야 들어와요(구독 7일 뒤부터). 남은 금액과 만료 날짜는 그 계정으로 로그인한 브라우저에서 Claude Console(platform.claude.com) 결제 화면의 Promotional credits에 보여요. 계정판은 이 잔액을 읽는 공식 방법이 없어, 계정 줄 ⋯의 「API 크레딧」에 직접 넣어요.'],
 ];
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -147,9 +148,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // view: 한눈에 보기(glance) · 계정 관리(manage). open: 펼친 서비스 줄. menu: ⋯을 연 계정 줄. help: 펼친 「막혔을 때」 질문.
   // relogin: 「다시 로그인」을 누른 줄. API 키 서비스는 새 키를 그 줄에 넣는다(옛 줄이 남지 않게).
   // tipOpen: 펼친 팁. tipDone: 이 화면에서 반응한 팁(누른 뒤 한 줄을 보여 주고, 화면을 옮기면 사라진다). why: 「왜 이 숫자?」.
-  // passEditing: 초기화권을 넣는 칸을 연 Claude 줄. goalOpen: 고른 목표를 바꾸려고 다시 연 목표 묻기.
+  // passEditing: 초기화권을 넣는 칸을 연 Claude 줄. apiEditing: API 크레딧을 넣는 칸을 연 Claude 줄(10-28). goalOpen: 고른 목표를 바꾸려고 다시 연 목표 묻기.
   // sumOpen·sumWhy: 한 달 요약의 「계정별로 보기」·「왜 이 숫자?」(3차).
-  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false, goalOpen: false, sumOpen: false, sumWhy: false };
+  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, apiEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false, goalOpen: false, sumOpen: false, sumWhy: false };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
   const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
@@ -180,7 +181,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   // 화면 바꾸기: 그 화면 맨 위(또는 to 구획)로 옮기고, 화면 제목에 초점을 둔다.
   function show(view, to = null) {
-    ui.view = view; ui.menu = null; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; ui.tipDone = {}; ui.goalOpen = false; ui.sumOpen = false; ui.sumWhy = false;
+    ui.view = view; ui.menu = null; ui.editing = null; ui.passEditing = null; ui.apiEditing = null; ui.removeArmed = null; ui.tipDone = {}; ui.goalOpen = false; ui.sumOpen = false; ui.sumWhy = false;
     paint();
     const target = (to && container?.querySelector(`#${CSS.escape(to)}`)) || container?.querySelector('.member-subs');
     target?.scrollIntoView?.({ block: 'start' });
@@ -216,9 +217,11 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'summary-off' || name === 'summary-on') { const off = name === 'summary-off'; return void act('summary', async () => { const r = await api.save({ settings: { summaryOff: off } }); if (r?.rows) toast(off ? '한 달 요약을 껐어요. 기록은 그대로 둬요.' : '한 달 요약을 다시 켰어요.'); return r; }); }
     // 결제 주기 표시(3차): 연간 결제 팁의 「이미 연간이에요」와 계정 줄 ⋯의 「월 결제로 바꾸기」. 연간으로 표시한 계정에는 연간 결제 팁·결제 전 알림을 드리지 않는다.
     if (name === 'cycle') { const cycle = data.cycle === 'annual' ? 'annual' : null; return void act('cycle', async () => { const r = await api.save({ row: { id, cycle } }); if (r?.rows) toast(cycle ? '연간 결제로 표시했어요. 이 계정에는 연간 결제 팁을 드리지 않아요.' : '월 결제로 바꿔 두었어요.'); return r; }); }
-    if (name === 'menu') { ui.menu = ui.menu === id ? null : id; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; return paint(); }
+    if (name === 'menu') { ui.menu = ui.menu === id ? null : id; ui.editing = null; ui.passEditing = null; ui.apiEditing = null; ui.removeArmed = null; return paint(); }
     // Claude 초기화권: 넣는 칸 열기 · 쓴 뒤 한 장 줄이기(다 쓰면 만료 때도 비운다).
-    if (name === 'pass-edit') { ui.menu = id; ui.passEditing = ui.passEditing === id ? null : id; ui.editing = null; return paint(); }
+    if (name === 'pass-edit') { ui.menu = id; ui.passEditing = ui.passEditing === id ? null : id; ui.editing = null; ui.apiEditing = null; return paint(); }
+    // Claude API 크레딧(10-28): 넣는 칸 열기. 요금·결제일 칸의 「넣기」로 와도 그 계정 줄로 옮겨 연다.
+    if (name === 'api-edit') { ui.menu = id; ui.apiEditing = ui.apiEditing === id ? null : id; ui.editing = null; ui.passEditing = null; ui.removeArmed = null; paint(); if (ui.apiEditing) container?.querySelector(`[data-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); return; }
     // 쓴 직후 그 계정만 다시 읽어 막힘·다음에 풀려요가 바로 바뀌게 한다(못 읽으면 저장한 판을 그대로 둔다).
     if (name === 'pass-used') { const row = rowById(id); if (!row) return; const left = Math.max(0, (num(row.passCount) || 0) - 1); return void act('pass', async () => { const r = await api.save({ row: { id, passCount: left, ...(left ? {} : { passUntil: null }) } }); if (!r?.rows) return r; toast(left ? `초기화권을 1장 줄였어요. ${left}장 남았어요.` : '초기화권을 다 썼어요.'); take(r); const c = api.check ? await api.check([id]).catch(() => null) : null; return c?.rows ? c : r; }); }
     if (name === 'cost-edit') { ui.menu = id; ui.editing = id; ui.removeArmed = null; paint(); container?.querySelector(`[data-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' }); return; }
@@ -236,7 +239,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'copy-url') { const url = snapshot?.login?.url; if (url) navigator.clipboard?.writeText(url).then(() => toast('로그인 주소를 복사했어요. 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 「로그인 페이지 다시 열기」를 써 주세요.')); return; }
     if (name === 'cancel-login') return void act('cancel', () => api.cancel(snapshot?.login?.id));
     if (name === 'relogin') { const row = rowById(id); if (row) openGuide(row.service, { email: row.email || '', relogin: row.id }); return; }
-    if (name === 'edit') { ui.menu = id; ui.editing = ui.editing === id ? null : id; ui.passEditing = null; return paint(); }
+    if (name === 'edit') { ui.menu = id; ui.editing = ui.editing === id ? null : id; ui.passEditing = null; ui.apiEditing = null; return paint(); }
     if (name === 'remove') { if (ui.removeArmed !== id) { ui.removeArmed = id; return paint(); } ui.removeArmed = null; ui.menu = null; return void act('remove', () => api.save({ remove: id })); }
     if (name === 'used') { const row = rowById(id); if (row) return void act('used', () => api.save({ row: { id, usedUpAt: isUsedUp(row, Date.now()) ? null : Date.now() } })); }
     if (name === 'manual') { ui.manualOpen = !ui.manualOpen; return paint(); }
@@ -260,6 +263,21 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       const until = count && y ? new Date(y, mo - 1, d, h, m, 0, 0).getTime() : null;
       if (until !== null && until <= Date.now()) return toast('만료 때가 이미 지났어요. 날짜를 확인해 주세요.');
       return void act('pass', async () => { const r = await api.save({ row: { id, passCount: count, passUntil: until } }); if (r?.rows) { ui.passEditing = null; toast(count ? `초기화권 ${count}장을 넣었어요.` : '초기화권을 비웠어요.'); } return r; });
+    }
+    // Claude API 크레딧(10-28): Console에 보이는 남은 금액(달러)과 만료 날짜. 날짜는 그날 0시로 넣어 그날부터 없는 것으로 본다(사라지는 시각을 몰라서) —
+    // 그래서 오늘이거나 지난 날짜는 받지 않는다. 금액을 비우면 넣은 값을 지운다.
+    // 크레딧은 결제 주기 끝(다음 결제일)에 사라지므로(공식 안내), 결제일을 아직 안 넣은 월 결제 Max 계정이면 만료 날짜의 일로 결제일도 채운다.
+    if (name === 'api') {
+      const id = form.dataset.id, row = rowById(id), get = n => form.querySelector(`[name="${n}"]`)?.value ?? '';
+      const text = String(get('apiCredit')).trim(), amount = text === '' ? null : num(text), date = get('apiDate');
+      if (text !== '' && (amount === null || amount < 0 || amount > 100000)) return toast('남은 금액은 0에서 100,000달러 사이 숫자로 넣어 주세요.');
+      const [y, mo, d] = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date.split('-').map(Number) : [];
+      const until = amount !== null && y ? new Date(y, mo - 1, d).getTime() : null;
+      if (amount !== null && until === null) return toast('Console에 보이는 만료 날짜도 넣어 주세요.');
+      if (until !== null && until <= Date.now()) return toast(new Date(until).toDateString() === new Date().toDateString() ? '오늘 사라지는 크레딧은 세지 않아요(사라지는 시각을 몰라서요). 오늘 안에 써 주세요.' : '만료 날짜가 이미 지났어요. 날짜를 확인해 주세요.');
+      const value = amount === null ? null : Math.round(amount * 100) / 100;
+      const billDay = until !== null && row && !row.billDay && row.cycle !== 'annual' && /^max/.test(planKey(row.plan)) ? d : null;
+      return void act('api', async () => { const r = await api.save({ row: { id, apiCredit: value, apiCreditUntil: until, ...(billDay ? { billDay } : {}) } }); if (r?.rows) { ui.apiEditing = null; toast(value === null ? 'API 크레딧을 비웠어요.' : `API 크레딧 ${money(value, 'USD')}를 넣었어요.${billDay ? ` 크레딧이 사라지는 날이 결제일이라 결제일도 매월 ${billDay}일로 넣어 뒀어요.` : ''}`); } return r; });
     }
     if (name === 'edit') { const id = form.dataset.id, row = rowById(id); if (!row) return; const v = formValues(form); const patch = { id, price: v.price, currency: v.currency, billDay: v.billDay, note: v.note, cycle: v.cycle }; if (row.source === 'manual') Object.assign(patch, { label: v.label || row.label, kind: v.kind, resetDay: v.resetDay, resetHour: v.resetHour, resetMinute: v.resetMinute }); if ((row.kind === 'credit' || v.kind === 'credit') && row.source === 'manual') Object.assign(patch, { credits: v.credits, lowAt: v.lowAt }); else if (row.kind === 'credit') patch.lowAt = v.lowAt; return void act('edit', async () => { const r = await api.save({ row: patch }); if (r?.rows) { ui.editing = null; toast('저장했어요.'); } return r; }); }
   }
@@ -428,10 +446,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function nextLine(item, now) {
     const label = labelOf(item.row), name = nameOf(item.row);
+    // Claude API 크레딧(10-28)은 결제가 아니라 사라지는 돈이라 「만료」 대신 「사라져요」(「청구」로 읽힌 10-28 전례). 결제일과 같은 날이면 결제 줄에 붙는다(bill.api).
+    const gone = amount => `API 크레딧 ${esc(money(amount, 'USD'))} 사라져요`;
     const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${useText('주간', 100 - item.after)}` : ''}${item.pass ? ` · ${passHtml(item.pass, now)}` : ''}`
-      : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : item.type === 'pass' ? `${esc(label)} · 초기화권 ${item.count}장 만료` : `${esc(label)} · 결제${num(item.row.price) !== null ? ` ${esc(money(item.row.price, item.row.currency))}` : '일'}`;
-    const time = item.type === 'bill' ? (item.days === 0 ? '오늘' : item.days === 1 ? '내일' : (d => `${d.getMonth() + 1}/${d.getDate()}`)(new Date(item.t))) : soon(item.t, now);
-    const relText = item.type === 'bill' ? billWord(item.days) : after(item.t - now);
+      : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : item.type === 'pass' ? `${esc(label)} · 초기화권 ${item.count}장 만료` : item.type === 'api' ? `${esc(label)} · ${gone(item.amount)}` : `${esc(label)} · 결제${num(item.row.price) !== null ? ` ${esc(money(item.row.price, item.row.currency))}` : '일'}${item.api ? ` · ${gone(item.api)}` : ''}`;
+    // 결제와 API 크레딧은 날짜만 안다(시각을 말하지 않는다).
+    const days = item.type === 'bill' ? item.days : item.type === 'api' ? Math.round((item.t - new Date(now).setHours(0, 0, 0, 0)) / DAY_MS) : null;
+    const time = days !== null ? (days === 0 ? '오늘' : days === 1 ? '내일' : (d => `${d.getMonth() + 1}/${d.getDate()}`)(new Date(item.t))) : soon(item.t, now);
+    const relText = days !== null ? billWord(days) : after(item.t - now);
     return `<div class="ms-next-item is-${item.type} ${svcClass(item.row.source === 'auto' ? item.row.service : null)}"><span class="ms-next-time ms-num">${esc(time)}</span><span class="ms-next-rel">${esc(relText)}</span><span class="ms-next-who"><b>${esc(name)}</b> ${what}</span></div>`;
   }
   function nextSection(now, rows, checkAt) {
@@ -439,7 +461,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (!unblocks.length) return '';
     const list = ui.more ? all : unblocks.slice(0, 3);
     const more = all.length > Math.min(3, unblocks.length) ? `<button type="button" class="ms-more" data-subs="more" aria-expanded="${ui.more}">${ui.more ? '접기' : `앞으로 7일 일정 ${all.length}개 모두 보기`}</button>` : '';
-    return section('02', '다음에 풀려요', ui.more ? '다 쓴 계정이 풀리는 때, 쓸 수 있는 계정의 주간 초기화, 7일 안 결제와 초기화권 만료를 날짜순으로 모았어요.' : '다 쓴 계정이 다시 열리는 때예요.', `<div class="ms-next">${list.map(item => nextLine(item, now)).join('')}</div>${more}`);
+    return section('02', '다음에 풀려요', ui.more ? '다 쓴 계정이 풀리는 때, 쓸 수 있는 계정의 주간 초기화, 7일 안 결제, 초기화권 만료, API 크레딧이 사라지는 날을 날짜순으로 모았어요.' : '다 쓴 계정이 다시 열리는 때예요.', `<div class="ms-next">${list.map(item => nextLine(item, now)).join('')}</div>${more}`);
   }
   /* 지난 7일 사용량(10-19): 본체가 읽기 기록으로 센 구간 막대 + 그 전 평균과 비교 + 서비스 줄 아래 팁 한 줄 */
   const md = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
@@ -645,7 +667,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 3차: 한 달 요약이 있으면 「지난 4주 쓴 만큼 약 n%」, 연간 결제 팁이 있으면 그 개수를 한 줄에 더한다(요약은 끌 수 있다).
     const sum = summaryOn(snapshot?.settings) ? monthSummary(snapshot, rows, now) : null, annual = shownAnnual(snapshot, rows, now, ui.tipDone).length;
     // 요금을 모르는 줄이 있으면 합계가 그만큼 빠졌다고 붙인다(공식 요금이 없는 GPT·Gemini 등).
-    const parts = [cost.count ? `한 달 약 ${money(cost.approx, 'KRW')}${cost.unknown ? `(요금 모르는 ${cost.unknown}개 빼고)` : ''}` : '', sum?.items.length ? `지난 4주 쓴 만큼 약 ${sum.pct}%` : '', annual ? `연간 결제 팁 ${annual}개` : '', bill].filter(Boolean);
+    // Claude API 크레딧(10-28)은 넣은 값이 있을 때만: 7일 안에 사라지는 계정이 있으면 그것을(이 화면의 알림 자리), 아니면 넣은 날을 붙인 남은 금액의 합.
+    const credit = apiCredits(snapshot?.prices, rows, now), first = credit?.first && credit.first.until - now <= 7 * DAY_MS ? credit.first : null;
+    const apiText = first ? `API 크레딧 ${money(first.left, 'USD')} ${md(first.until)}에 사라져요(${nameOf(first.row)})` : credit?.entered ? `API 크레딧 ${money(credit.left, 'USD')} 남음(${enteredWhen(credit)} 넣은 값)` : '';
+    const parts = [cost.count ? `한 달 약 ${money(cost.approx, 'KRW')}${cost.unknown ? `(요금 모르는 ${cost.unknown}개 빼고)` : ''}` : '', sum?.items.length ? `지난 4주 쓴 만큼 약 ${sum.pct}%` : '', apiText, annual ? `연간 결제 팁 ${annual}개` : '', bill].filter(Boolean);
     const text = parts.length ? parts.join(' · ') : '아직 넣은 구독료가 없어요';
     return `<div class="ms-foot"><button type="button" class="ms-foot-link" data-subs="manage"><b>계정 관리</b><span>연결 · 설치 · 직접 넣기 · 막혔을 때</span></button><button type="button" class="${parts.length ? 'ms-button ms-foot-button' : 'ms-foot-link'}" data-subs="manage" data-to="ms-cost"><b>요금·결제일</b><span>${esc(text)}</span></button></div>`;
   }
@@ -685,16 +710,44 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 지금 로그인되지 않은 Gemini 계정의 안내는 경고가 아니라 사실이라 흐리게, 바꾸는 길과 같이 둔다.
     const nobody = row.awayReason === 'none';
     const awayFact = row.state === 'elsewhere' ? `<p class="ms-soft">${esc(row.stateMessage || (nobody ? '지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.' : '지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.'))} ${nobody ? 'Antigravity에 이 계정으로 로그인하면 이어서 읽어요.' : 'Antigravity를 이 계정으로 바꾸면 이어서 읽어요.'}</p>` : '';
-    const facts = [awayFact || (row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : ''), `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, yearly, passFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
-    const claude = auto && row.service === 'claude', passOpen = ui.passEditing === row.id;
+    const facts = [awayFact || (row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : ''), `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, yearly, passFact(row, now), apiFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
+    const claude = auto && row.service === 'claude', passOpen = ui.passEditing === row.id, apiOpen = ui.apiEditing === row.id;
     const buttons = [
       auto ? `<button type="button" class="ms-button ms-button-small${row.state === 'needs-login' ? ' ms-button-primary' : ''}" data-subs="relogin" data-id="${esc(row.id)}">${reloginLabel(row)}</button>` : '',
       !auto && row.kind === 'weekly' ? usedButton(row, now) : '',
       `<button type="button" class="ms-button ms-button-small" data-subs="edit" data-id="${esc(row.id)}" aria-expanded="${editing}">${auto ? '요금·결제일' : '고치기'}</button>`,
       claude ? `<button type="button" class="ms-button ms-button-small" data-subs="pass-edit" data-id="${esc(row.id)}" aria-expanded="${passOpen}">초기화권</button>` : '',
       claude && passesOf(row, now) ? `<button type="button" class="ms-button ms-button-small" data-subs="pass-used" data-id="${esc(row.id)}">1장 썼어요</button>` : '',
+      // API 크레딧은 받을 수 있는 Max(등급 모름 포함)에만 — Free·Pro·Enterprise는 받지 못한다(공식). 이미 넣은 값이 있으면 고치거나 비울 수 있게 둔다.
+      claude && (/^max/.test(planKey(row.plan)) || num(row.apiCredit) !== null) ? `<button type="button" class="ms-button ms-button-small" data-subs="api-edit" data-id="${esc(row.id)}" aria-expanded="${apiOpen}">API 크레딧</button>` : '',
       `<button type="button" class="ms-button ms-button-small${armed ? ' ms-button-danger' : ''}" data-subs="remove" data-id="${esc(row.id)}">${armed ? '한 번 더 누르면 지워요' : '지우기'}</button>`].join('');
-    return `<div class="ms-mpanel">${facts}<div class="ms-inline">${buttons}</div>${editing ? editForm(row, now) : ''}${claude && passOpen ? passForm(row, now) : ''}</div>`;
+    return `<div class="ms-mpanel">${facts}<div class="ms-inline">${buttons}</div>${editing ? editForm(row, now) : ''}${claude && passOpen ? passForm(row, now) : ''}${claude && apiOpen ? apiForm(row, now) : ''}</div>`;
+  }
+  // Claude API 크레딧 한 줄(10-28): 넣은 값(사라지는 날을 앞에, 넣은 날의 금액을 뒤에 — 넣은 값은 쓰는 만큼 낡는다) · 넣은 값이 사라짐 ·
+  // 안 넣은 Max는 들어오는 금액(Console 조직을 연결해야 받으니 「연결하면」으로). 남은 금액은 Console 결제 화면에만 보여 계정판이 읽지 못한다.
+  function apiFact(row, now) {
+    const a = apiCreditOf(snapshot?.prices, row, now);
+    if (!a) return '';
+    if (a.left !== null) return `<p>API 크레딧${a.until ? ` · ${esc(md(a.until))}에 사라져요` : ''} · ${a.at ? `${esc(md(a.at))}에 ${esc(money(a.left, 'USD'))} 남아 있었어요` : `${esc(money(a.left, 'USD'))} 남음`}</p>`;
+    if (a.expired) return `<p class="ms-soft">넣어 둔 API 크레딧은 ${esc(md(a.expired))}에 사라졌어요 · 새로 들어온 금액을 「API 크레딧」에 넣어 주세요.</p>`;
+    const renew = row.billDay && row.cycle !== 'annual' ? `매월 ${row.billDay}일 결제 때 새로 들어오고 남은 건 사라져요` : '결제일에 남은 건 사라져요';
+    // 등급(5x·20x)을 못 읽은 Max: 금액은 말하지 않고 「API 크레딧」 단추가 무엇인지만(Fable 최종 P3).
+    if (a.unknown) return `<p class="ms-soft">Max 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 들어와요(${renew}). 요금제 등급(5x·20x)을 아직 못 읽어 금액은 말하지 못해요 · 남은 금액을 넣으면 사라지기 전에 알려 드려요.</p>`;
+    return `<p class="ms-soft">${esc(planName(row.plan))} 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 ${esc(money(a.grant, 'USD'))}씩 들어와요(${renew}). 남은 금액을 넣으면 사라지기 전에 알려 드려요.</p>`;
+  }
+  // Claude API 크레딧 넣기: 남은 금액(달러)과 만료 날짜. 날짜 칸은 넣어 둔 만료일, 없으면 넣어 둔 결제일(크레딧은 결제 주기 끝에 사라진다 — 공식 안내)로 채워 둔다.
+  // Console 결제 화면은 브라우저에 로그인된 계정의 조직을 열어서, 계정이 여럿이면 다른 조직 금액을 넣기 쉬워 그 계정을 적는다(초기화권 단추와 같다).
+  function apiForm(row, now) {
+    const a = apiCreditOf(snapshot?.prices, row, now), dd = row.cycle === 'annual' ? null : nextBill(row.billDay, now);
+    const at = a?.until && a.until > now ? a.until : dd ? new Date(now).setHours(0, 0, 0, 0) + dd * DAY_MS : null, t = at ? new Date(at) : null;
+    const date = t ? `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}` : '', who = nameOf(row);
+    return `<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="${esc(row.id)}">
+      <p class="ms-wide ms-soft">Max 요금제에는 개발자용 Claude API에 쓰는 크레딧이 매달 따라와요. Claude Code·채팅 한도와는 따로이고, 쓰지 않은 금액은 결제일에 사라져요. 계정판은 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 Claude Console(platform.claude.com) 결제 화면을 열고 Promotional credits의 「API credit (${esc(planName(row.plan) || 'Max')})」 줄에 보이는 금액과 만료 날짜를 넣어 주세요. 직접 산 잔액은 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요. <button type="button" class="ms-link" data-subs="help" data-link="claude-console-billing" title="${esc(who)} 계정으로 로그인한 브라우저에서 열어 주세요">Console 결제 화면 열기</button> · <button type="button" class="ms-link" data-subs="help" data-link="claude-api-credits">공식 안내</button></p>
+      <label>남은 금액(달러)<input name="apiCredit" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${a?.left ?? ''}" placeholder="${a?.grant ?? 200}"></label>
+      <label>만료 날짜<input name="apiDate" type="date" value="${date}"></label>
+      <p class="ms-wide ms-soft">만료 날짜 당일은 사라지는 시각을 몰라 그 전날까지만 세요. 금액을 비우고 저장하면 넣은 값을 지워요.</p>
+      <div class="ms-wide ms-form-actions"><button type="submit" class="ms-button ms-button-primary">저장</button><button type="button" class="ms-button" data-subs="api-edit" data-id="${esc(row.id)}">닫기</button></div>
+    </form>`;
   }
   // 초기화권 한 줄: GPT는 Codex가 알려 준 값, Claude는 넣은 값(만료가 지났으면 그렇게 말한다).
   function passFact(row, now) {
@@ -730,18 +783,37 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       return `<div class="ms-mblock ${svcClass(key)}"><div class="ms-mhead"><span class="ms-tag">${esc(info.short)}</span><span class="ms-mtool">${toolText}</span>${chip}<button type="button" class="ms-button ms-button-small${open ? ' is-on' : ''}" data-subs="${open ? 'close-guide' : 'guide'}" data-service="${key}" aria-expanded="${open}">${open ? '가이드 닫기' : label}</button></div>${list.map(r => manageRow(r, now)).join('') || `<p class="ms-mempty">아직 연결한 ${info.key ? '키가' : '계정이'} 없어요.</p>`}${open ? guide(key) : ''}</div>`;
     }).join('');
   }
+  // Claude API 크레딧 칸(10-28): 구독료가 아니라 Max 요금제에 딸려 오는 크레딧이라 「한 달 구독료」 합계에 섞지 않고 따로 센다.
+  // 넣은 값이 있으면 남은 금액의 합과 가장 먼저 사라지는 계정, 없으면 요금제로 매달 들어오는 금액.
+  // 넣은 값은 쓰는 만큼 낡아서 합에는 늘 넣은 날을 붙인다(하루만 지나도 수십 달러 다를 수 있다 — Fable 설계 검토 P1-2). 날이 여럿이면 처음~끝.
+  const enteredWhen = c => (!c.oldest ? '' : md(c.oldest) === md(c.newest) ? md(c.oldest) : `${md(c.oldest)}~${md(c.newest)}`);
+  function apiMetric(c, now) {
+    const first = c.first ? `<b>${esc(nameOf(c.first.row))}</b> ${esc(md(c.first.until))}에 가장 먼저 사라져요` : '';
+    const monthly = c.granted ? `매달 ${esc(money(c.monthly, 'USD'))}(Max ${c.granted}개${c.unknown ? ` · 등급 모르는 Max ${c.unknown}개 빼고` : ''})` : '';
+    const small = c.entered
+      ? [enteredWhen(c) ? `${esc(enteredWhen(c))}에 넣은 값 · 계정 ${c.entered}개` : `계정 ${c.entered}개`, first, monthly].filter(Boolean).join(' · ')
+      : c.granted ? `Max 계정 ${c.granted}개${c.unknown ? `(등급 모르는 Max ${c.unknown}개 빼고)` : ''} · Claude Console 조직을 연결한 계정에 들어와요 · 남은 금액은 계정 줄 ⋯의 「API 크레딧」에서 넣어요`
+        // 등급을 모르는 Max뿐이면 금액 대신 그 수와 까닭(Fable 최종 P3) — 「지금 확인」으로 다시 읽으면 대개 등급이 읽힌다.
+        : `요금제 등급(5x·20x)을 아직 못 읽어 매달 들어오는 금액을 몰라요 · 「지금 확인」으로 다시 읽어 보세요 · 남은 금액은 계정 줄 ⋯의 「API 크레딧」에서 넣어요`;
+    const big = c.entered ? `${money(c.left, 'USD')} 남음` : c.granted ? `매달 ${money(c.monthly, 'USD')}` : `Max ${c.unknown}개`;
+    return `<div class="ms-metric ms-metric-api"><span>Claude API 크레딧</span><strong class="ms-num">${big}</strong><small>${small}</small></div>`;
+  }
+  // 결제 목록의 Claude 줄에 붙는 API 크레딧 한 조각(넣은 값이 있고 아직 안 사라졌을 때만) — 어느 계정 것이 먼저 사라지는지 결제일과 나란히 보인다.
+  const apiBit = (r, now) => { const a = apiCreditOf(null, r, now); return a?.left != null ? `<small class="ms-bill-api">API 크레딧 ${esc(money(a.left, 'USD'))}${a.until ? ` · ${esc(md(a.until))}에 사라져요` : ''}</small>` : ''; };
   function costSection(now, rows) {
-    const cost = costOf(snapshot, rows, now);
+    const cost = costOf(snapshot, rows, now), credit = apiCredits(snapshot?.prices, rows, now);
     // 3차: 요금을 넣지 않은 자동 연결 계정도 공식 요금(60일 안)이 있으면 합계·목록에 넣고 「공식 요금」이라고 붙인다(고치면 넣은 값이 먼저 — 모델의 billList).
     const priced = billList(snapshot?.prices, rows, now).map(x => ({ r: x.row, o: x.official, d: x.days }));
     const counts = [`구독 ${cost.count}개`, cost.official ? `공식 요금 ${cost.official}개` : '', cost.unknown ? `요금 모름 ${cost.unknown}개` : ''].filter(Boolean).join(' · ');
-    const metrics = cost.count ? `<div class="ms-metrics">
-        <div class="ms-metric"><span>한 달 구독료</span><strong class="ms-num">약 ${money(cost.approx, 'KRW')}</strong><small>${esc(pair(cost.krw, cost.usd) || '0')} · ${esc(counts)}</small></div>
-        <div class="ms-metric"><span>7일 안 결제</span><strong class="ms-num">${cost.soon}건</strong><small>${cost.soon ? esc(pair(cost.soonKrw, cost.soonUsd)) : '다음 7일은 결제가 없어요'}</small></div>
-        <div class="ms-metric"><span>달러 환산 기준</span><label class="ms-rate">1달러 = <input id="ms-rate" type="number" min="1" step="1" value="${esc(snapshot?.settings?.usdKrw || 1400)}"> 원</label><small>합계의 '약' 금액에만 써요</small></div>
+    const metrics = cost.count || credit ? `<div class="ms-metrics">
+        ${cost.count ? `<div class="ms-metric"><span>한 달 구독료</span><strong class="ms-num">약 ${money(cost.approx, 'KRW')}</strong><small>${esc(pair(cost.krw, cost.usd) || '0')} · ${esc(counts)}</small></div>
+        <div class="ms-metric"><span>7일 안 결제</span><strong class="ms-num">${cost.soon}건</strong><small>${cost.soon ? esc(pair(cost.soonKrw, cost.soonUsd)) : '다음 7일은 결제가 없어요'}</small></div>` : ''}
+        ${credit ? apiMetric(credit, now) : ''}
+        ${cost.count ? `<div class="ms-metric"><span>달러 환산 기준</span><label class="ms-rate">1달러 = <input id="ms-rate" type="number" min="1" step="1" value="${esc(snapshot?.settings?.usdKrw || 1400)}"> 원</label><small>합계의 '약' 금액에만 써요</small></div>` : ''}
       </div>` : '';
     const priceText = (r, o) => (num(r.price) !== null ? esc(money(r.price, r.currency)) : o ? `${esc(dollarsOr(o.price, o.currency))}<small>공식 요금</small>` : '');
-    const list = priced.length ? `<div class="ms-bills">${priced.map(({ r, o, d }) => `<div class="ms-bill ${svcClass(r.source === 'auto' ? r.service : null)}"><span class="ms-tag">${esc(labelOf(r))}</span><span class="ms-bill-name">${esc(r.source === 'auto' ? nameOf(r) : KINDS.find(([k]) => k === r.kind)?.[1] || '')}</span><span class="ms-bill-price ms-num">${priceText(r, o)}</span><span class="ms-bill-day">${r.cycle === 'annual' ? '연간 결제' : r.billDay ? `매월 ${r.billDay}일 · ${billWord(d)}` : '결제일 없음'}</span><button type="button" class="ms-link" data-subs="cost-edit" data-id="${esc(r.id)}">고치기</button></div>`).join('')}</div>`
+    const billName = r => { const name = esc(r.source === 'auto' ? nameOf(r) : KINDS.find(([k]) => k === r.kind)?.[1] || ''), bit = apiBit(r, now); return bit ? `<span class="ms-bill-name has-api"><span class="ms-bill-who">${name}</span>${bit}</span>` : `<span class="ms-bill-name">${name}</span>`; };
+    const list = priced.length ? `<div class="ms-bills">${priced.map(({ r, o, d }) => `<div class="ms-bill ${svcClass(r.source === 'auto' ? r.service : null)}"><span class="ms-tag">${esc(labelOf(r))}</span>${billName(r)}<span class="ms-bill-price ms-num">${priceText(r, o)}</span><span class="ms-bill-day">${r.cycle === 'annual' ? '연간 결제' : r.billDay ? `매월 ${r.billDay}일 · ${billWord(d)}` : '결제일 없음'}</span><button type="button" class="ms-link" data-subs="cost-edit" data-id="${esc(r.id)}">고치기</button></div>`).join('')}</div>`
       : '<p class="ms-cost-empty">계정 줄의 ⋯에서 「요금·결제일」을 넣으면 한 달 합계와 다가오는 결제를 여기서 알려 드려요.</p>';
     // 3차: 칸 머리에 한 달 요약과 연간 결제 팁(돈 이야기는 요금이 있는 화면에서 — Fable 1차 8-1).
     const head = `${summaryCard(now, rows)}${annualHtml(now, rows)}`;

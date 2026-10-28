@@ -345,3 +345,49 @@ test('usage bars scale to 100% or the busiest week, keep a sliver for tiny use a
   const none=usageBars(undefined,{service:'gpt',kind:'weekly'});
   assert.deepEqual([none.u,none.bars,none.has,none.buckets],[null,[null,null,null,null,null],false,[]]);
 });
+
+test('Claude API credits: the price table says what arrives each month, the member says what is left until the expiry day',async()=>{
+  const {apiGrant,apiCreditOf,apiCredits,upcoming}=await model;
+  const prices=priceBook(),max20=extra=>row({plan:'max_20x',...extra});
+  // 들어오는 금액은 요금표의 등급을 아는 Max만(공식 Max 5x $100 · Max 20x $200). 등급을 못 읽은 Max·Pro·다른 서비스·직접 넣은 줄은 말하지 않는다.
+  assert.deepEqual([max20(),row({plan:'max_5x'}),row({plan:'max'}),row({plan:'pro'}),gpt('g',{}),row({source:'manual',plan:'max_20x'})].map(r=>apiGrant(prices,r,NOW)),[200,100,null,null,null,null]);
+  // 요금표를 확인한 지 60일이 지나면 금액처럼 들어오는 금액도 말하지 않는다.
+  assert.equal(apiGrant(priceBook(NOW-61*D),max20(),NOW),null);assert.equal(apiGrant(null,max20(),NOW),null);
+  // 안 넣은 Max는 들어오는 금액만, 안 넣은 Pro는 셀 것이 없다. 등급을 못 읽은 Max는 「모름」 표시만(설명 줄·칸이 나오게).
+  assert.deepEqual(apiCreditOf(prices,max20(),NOW),{grant:200,left:null});
+  assert.equal(apiCreditOf(prices,row({plan:'pro'}),NOW),null);
+  assert.deepEqual(apiCreditOf(prices,row({plan:'max'}),NOW),{grant:null,left:null,unknown:true});
+  assert.equal(apiCreditOf(priceBook(NOW-61*D),row({plan:'max'}),NOW),null);
+  // 공식 요금처럼, 30일 넘게 못 읽힌 줄(구독을 끊었을 수 있다)은 들어오는 금액으로 세지 않는다. 그 안이면 못 읽혀도 센다.
+  assert.equal(apiGrant(prices,max20({state:'error',live:{readAt:NOW-31*D}}),NOW),null);
+  assert.equal(apiGrant(prices,max20({state:'error',live:{readAt:NOW-29*D}}),NOW),200);
+  // 넣은 값은 만료일 0시 전까지. 그날 0시가 되면 「만료됨」으로 남은 금액을 세지 않는다. Pro에 넣은 값(다른 프로모 크레딧)도 센다.
+  const until=new Date(2026,9,27).getTime();
+  assert.deepEqual(apiCreditOf(prices,max20({apiCredit:199,apiCreditUntil:until,apiCreditAt:NOW-D}),NOW),{grant:200,left:199,until,at:NOW-D});
+  assert.deepEqual(apiCreditOf(prices,max20({apiCredit:199,apiCreditUntil:until,apiCreditAt:NOW-D}),until),{grant:200,left:null,expired:until,at:NOW-D});
+  assert.deepEqual(apiCreditOf(prices,row({plan:'pro',apiCredit:12.5,apiCreditUntil:null}),NOW),{grant:null,left:12.5,until:null,at:null});
+  // 판 합계: 만료 전 넣은 값만 더하고(센트까지) 넣은 때의 처음·끝을 같이, 매달 들어오는 금액은 등급을 아는 Max 계정마다(등급 모르는 Max는 따로 센다).
+  // 가장 먼저 사라지는 것은 남은 금액이 있는 계정 가운데서.
+  const rows=[
+    max20({id:'a',email:'a@example.com',apiCredit:199,apiCreditUntil:NOW+5*D,apiCreditAt:NOW-2*D}),
+    max20({id:'b',email:'b@example.com',apiCredit:0,apiCreditUntil:NOW+2*D,apiCreditAt:NOW-D}),
+    max20({id:'c',email:'c@example.com',apiCredit:150.25,apiCreditUntil:NOW+9*D,apiCreditAt:NOW-3*H}),
+    max20({id:'d',email:'d@example.com',apiCredit:80,apiCreditUntil:NOW-D,apiCreditAt:NOW-20*D}),
+    row({id:'e',email:'e@example.com',plan:'max_5x'}),
+    row({id:'f',email:'f@example.com',plan:'max'}),
+    gpt('g',{}),
+  ];
+  const sum=apiCredits(prices,rows,NOW);
+  assert.deepEqual({...sum,first:{id:sum.first.row.id,until:sum.first.until,left:sum.first.left}},{left:349.25,entered:3,oldest:NOW-2*D,newest:NOW-3*H,monthly:900,granted:5,unknown:1,first:{id:'a',until:NOW+5*D,left:199}});
+  assert.equal(apiCredits(prices,[gpt('g',{}),row({plan:'pro'})],NOW),null);
+  // 등급 모르는 Max뿐이어도 칸은 나온다(금액 없이 그 수만). 30일 넘게 못 읽힌 줄은 들어오는 금액에서 빠진다.
+  assert.deepEqual(apiCredits(prices,[row({plan:'max'})],NOW),{left:0,entered:0,oldest:null,newest:null,monthly:0,granted:0,unknown:1,first:null});
+  assert.deepEqual([apiCredits(prices,[max20(),max20({state:'error',live:{readAt:NOW-40*D}})],NOW)].map(s=>[s.monthly,s.granted]),[[200,1]]);
+  // 요금표가 오래되면 넣은 값만 센다(들어오는 금액은 0).
+  assert.deepEqual([apiCredits(priceBook(NOW-61*D),rows,NOW).monthly,apiCredits(priceBook(NOW-61*D),rows,NOW).left],[0,349.25]);
+  // 일정: 남은 금액이 있고 7일 안에 사라지는 것만(0달러·9일 뒤·이미 지남은 빼고).
+  assert.deepEqual(upcoming(rows,NOW).filter(i=>i.type==='api').map(i=>[i.row.id,i.t,i.amount]),[['a',NOW+5*D,199]]);
+  // 그 계정의 결제일과 같은 날이면 따로 줄을 세우지 않고 결제 줄에 붙인다.
+  const day=new Date(NOW+5*D),billed=max20({id:'h',email:'h@example.com',billDay:day.getDate(),apiCredit:40,apiCreditUntil:new Date(day.getFullYear(),day.getMonth(),day.getDate()).getTime()});
+  assert.deepEqual(upcoming([billed],NOW).map(i=>[i.type,i.days,i.api]),[['bill',5,40]]);
+});
