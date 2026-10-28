@@ -14,7 +14,7 @@ test('Core 선언 근거로 참석·준비시간·예산 조건을 적용하고 
   const result = plan({ attendance: 'attend', timeMinutes: 15, budgetWon: 20000 }, state);
   assert.equal(result.recommendation.action, 'attend');
   assert.equal(result.engines.core, 'core-domain-1');
-  assert.equal(result.engines.ask, 'ask-1.1');
+  assert.equal(result.engines.ask, 'ask-1.2');
   assert.equal(result.decision.calibrated, false);
   assert.equal(result.decision.selected.reasons.find(item => item.field === 'timeMinutes').value, 15);
   assert.equal(result.decision.selected.reasons.find(item => item.field === 'attendance').value, 'attend');
