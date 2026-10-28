@@ -1,5 +1,5 @@
 name: synk-work
-version: "1.4.0"
+version: "1.5.0"
 requires_hermes: ">=0.22.2,<0.23.0"
 description: "SYNK private Telegram status and official Claude Code/Codex CLI handoff"
 author: SYNK

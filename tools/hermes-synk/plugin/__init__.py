@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import json
 import hashlib
+import importlib.util
+import logging
 import os
 from pathlib import Path
 import re
 import shlex
 import shutil
 import subprocess
+import sys
 import threading
 from contextvars import copy_context
 from contextlib import contextmanager
@@ -37,6 +40,7 @@ ATTENTION_NOTIFICATION_POLICY = "attention_only_v1"
 APPROVAL_TTL_SECONDS = 7 * 24 * 3600
 APPROVAL_CANCEL_WORDS = {"취소", "그만", "하지마", "하지 마", "안해", "안 해", "건너뛰어", "넘어가"}
 _APPROVAL_MATCHES = {}
+_TIP_INTAKE = None
 DELIVERY_TERMINAL = {"sent", "sending", "unconfirmed", "suppressed_success"}
 HELP = """SYNK 작업
 /synk_status [검색어] — 원문과 실행 메타데이터 조회
@@ -44,6 +48,7 @@ HELP = """SYNK 작업
 /synk_codex <요청> — 공식 Codex CLI에 작업 요청
 /synk_tasks [작업 ID] — 접수한 작업의 실행 상태
 /synk_today — 상태·맡긴 작업·확인이 필요한 일
+/synk 팁 — 모델 응답 전 접수한 공유 자료·장부 반영 상태
 /synk_release <작업 ID> 종료확인 — 실행 상태 미확인 작업의 접수 잠금 정리
 /synk_recover — 미전달된 공식 작업 결과의 전달 재개
 /synk_continue <문장> — 자동 모드에 막혀 건너뛴 단계를 그 문장 그대로 이어 가기(막힘 알림에 답장해도 됨)
@@ -1608,6 +1613,83 @@ def _continue_command(ctx, raw: str) -> str:
         return "이어 가기를 처리하지 못했습니다. 실행 상태는 미확인입니다. /synk_tasks 로 확인하거나 PC 연결을 점검해 주세요."
 
 
+def _tip_module():
+    global _TIP_INTAKE
+    if _TIP_INTAKE is None:
+        spec = importlib.util.spec_from_file_location("synk_tip_intake", Path(__file__).with_name("tip_intake.py"))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _TIP_INTAKE = module
+    return _TIP_INTAKE
+
+
+def _pre_dispatch(event=None, **kwargs):
+    # Approval continuation keeps precedence and its existing byte-for-byte text.
+    decision = _approval_dispatch(event=event, **kwargs)
+    if decision is not None:
+        return decision
+    try:
+        allowed = {part for part in re.split(r"[\s,;]+", os.environ.get("TELEGRAM_ALLOWED_USERS", "")) if part}
+        _tip_module().capture(_home(), event, allowed)
+    except Exception:
+        # Never block the existing conversation or claim a failed write succeeded.
+        # No raw message, path, subprocess output or credential enters the log.
+        logging.getLogger(__name__).error("SYNK_TIP_RECEIPT_WRITE_FAILED")
+    return None
+
+
+def _read_tip_ledger(command: str, argument: str) -> dict:
+    if command not in {"find", "recent"} or not isinstance(argument, str) or len(argument) > 2048:
+        raise UserError("팁 장부 조회 인자를 확인할 수 없습니다.")
+    if command == "recent" and argument != "50":
+        raise UserError("팁 장부는 최근 50행까지만 확인합니다.")
+    script = _checked_spool_path(_home() / "skills/research/synk-tip-review/scripts/ledger.py")
+    if not script.is_file():
+        raise UserError("기존 팁 장부 조회 도구가 없습니다.")
+    result = subprocess.run([sys.executable, str(script), command, argument], stdin=subprocess.DEVNULL,
+                            capture_output=True, text=True, encoding="utf-8", timeout=15,
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    if result.returncode != 0 or len(result.stdout) > 300_000:
+        raise _tip_module().IntakeError("TIP_LEDGER_UNAVAILABLE")
+    return json.loads(result.stdout)
+
+
+def _tip_status(route, query=""):
+    helper = _tip_module()
+    owner = helper.owner_hash(route)
+    parts = query.strip().split()
+    try:
+        if parts and parts[0] in {"확인", "check"}:
+            if len(parts) != 2:
+                return "장부를 읽어 대조하려면 /synk 팁 확인 <tip-접수ID> 를 보내 주세요. 장부에 쓰거나 모델을 부르지 않습니다."
+            row = helper.reconcile(_home(), owner, parts[1], _read_tip_ledger)
+            label = {"pending": "처리 대기 또는 장부 일치 미확인", "reconciled": "장부 1건씩 일치 확인", "ambiguous": "장부 중복 후보 확인 필요"}[row["status"]]
+            return f"{row['id']} · {label}\n최근 50행과 정확히 대조한 결과입니다. 원문 분석·적용·게시 완료를 뜻하지 않습니다."
+        if parts:
+            if len(parts) != 1 or not helper.ID_RE.fullmatch(parts[0]):
+                return "사용법: /synk 팁 · /synk 팁 <tip-접수ID> · /synk 팁 확인 <tip-접수ID>"
+            rows = [helper.read_receipt(_home(), owner, parts[0])]
+            snapshot = {"complete": True}
+        else:
+            snapshot = helper.list_receipts(_home(), owner)
+            rows = snapshot["items"]
+        lines = ["공유 자료 접수 · 설치 뒤 받은 자료만 표시"]
+        for row in rows[:10]:
+            label = {"pending": "처리 대기", "reconciled": "장부 일치 확인", "ambiguous": "장부 중복 확인 필요"}[row["status"]]
+            lines.append(f"- {row['id']} · {label} · {_safe_text(row['receivedAt'], 40)}")
+            if parts:
+                for ref in row["refs"]:
+                    lines.append("  " + _safe_text(ref.get("url") or ref.get("reference"), 300))
+        if not rows:
+            lines.append("이 조회 범위에 접수 기록이 없습니다. 기존 대화 원문이 삭제됐다는 뜻은 아닙니다.")
+        if not snapshot["complete"]:
+            lines.append("읽지 못한 기록 또는 조회 상한이 있어 전체 상태는 미확인입니다.")
+        lines.append("/synk 팁 확인 <ID> 는 기존 장부를 읽어 대조합니다. 처리하지 못한 자료는 원문 메시지를 다시 공유해 기존 팁 접수를 이어 갈 수 있습니다.")
+        return "\n".join(lines)[:MAX_REPLY_CHARS]
+    except (helper.IntakeError, OSError, ValueError, TypeError, subprocess.TimeoutExpired):
+        return "팁 접수·장부 상태를 확인하지 못했습니다. 원문 메시지는 기존 대화에서 확인해 주세요. 새 모델 호출·장부 쓰기는 하지 않았습니다."
+
+
 def _handle(ctx, action: str, *, query: str = "", engine: str = "", task: str = "", repository: str = "",
             due_at: str = "", due_source: str = "", scope: list[str] | None = None) -> str:
     try:
@@ -1618,6 +1700,8 @@ def _handle(ctx, action: str, *, query: str = "", engine: str = "", task: str = 
             return _status(query)
         if action == "overview":
             return _overview()
+        if action == "tips":
+            return _tip_status(route, query)
         if action == "tasks":
             return _tasks(ctx, route, query)
         if action == "request":
@@ -1640,7 +1724,7 @@ SCHEMA = {
     "name": "synk_work",
     "description": "등록된 사용자의 SYNK 개인 텔레그램에서 상태를 AI 없이 조회하거나, 명시적으로 맡긴 작업을 공식 Claude Code/Codex CLI에 전달한다. GPT를 당분간 쓰지 않는 동안(결정 10-19)은 백엔드·헤르메스를 포함해 기본 담당이 모두 Claude이고, Codex는 사용자가 직접 지정할 때만 쓴다. 기존 팁 수집은 이 도구로 대체하지 않는다.",
     "parameters": {"type": "object", "properties": {
-        "action": {"type": "string", "enum": ["status", "overview", "tasks", "request", "release", "recover"]},
+        "action": {"type": "string", "enum": ["status", "overview", "tasks", "tips", "request", "release", "recover"]},
         "query": {"type": "string", "description": "상태 검색어 또는 정확한 synk- 작업 ID. 생략하면 전체/최근 작업."},
         "engine": {"type": "string", "enum": ["claude", "codex"], "description": "request일 때 실제 담당 공식 CLI."},
         "repository": {"type": "string", "enum": ["appsscript", "talk", "website"], "description": "이번에 수정할 저장소 하나. 명시가 없거나 모호하면 appsscript. 복수 저장소는 실행 보류한다."},
@@ -1664,6 +1748,8 @@ def register(ctx):
             return _handle(ctx, "tasks", query=args)
         if command in {"오늘", "today", "overview"}:
             return _handle(ctx, "overview")
+        if command in {"팁", "tips"}:
+            return _handle(ctx, "tips", query=args)
         return _handle(ctx, "help")
 
     ctx.register_command("synk", handler=synk, description="SYNK 작업 사용법·상태 조회", args_hint="[상태 검색어]")
@@ -1683,7 +1769,7 @@ def register(ctx):
                          description="자동 모드에 막혀 건너뛴 단계를 보낸 문장 그대로 이어 가기", args_hint="<문장>")
     # 막힘 알림에 단 답장·알림의 문장은 LLM 대화로 보내지 않고 위 명령으로 돌린다(원래 글은 그대로).
     if hasattr(ctx, "register_hook"):
-        ctx.register_hook("pre_gateway_dispatch", _approval_dispatch)
+        ctx.register_hook("pre_gateway_dispatch", _pre_dispatch)
 
     def tool(args, **kwargs):
         result = _handle(ctx, str(args.get("action") or ""), query=str(args.get("query") or ""),

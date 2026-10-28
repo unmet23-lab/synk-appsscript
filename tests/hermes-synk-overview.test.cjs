@@ -8,6 +8,8 @@ const path = require('node:path');
 const status = require('../tools/hermes-synk/status.cjs');
 const { readOverview, readTaskRecords, sanitizeSns, LEDGER_CACHE, LEDGER_TTL_MS, ARGON_CACHE, SNS_CACHE, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, MONITOR_STATE } = require('../tools/hermes-synk/overview.cjs');
 const { plan } = require('../tools/hermes-synk/monitor.cjs');
+const { tipWorkerSnapshot, TIP_WORKER_STATUS, TIP_WORKER_QUOTA, TIP_WORKER_STALE_MS } = require('../tools/hermes-synk/tip-worker-status.cjs');
+const { tipIntakeSnapshot, lookupKey, lookupHash, TIP_INTAKE_DIR, TIP_INTAKE_CAP } = require('../tools/hermes-synk/tip-intake-status.cjs');
 const NOW = new Date('2026-10-18T08:00:00Z');
 const ID = 'synk-123456abcdef';
 const UNAVAILABLE = async () => ({ connected: false, tasks: [], checkedAt: null });
@@ -100,6 +102,197 @@ function task(f, extra = {}) {
   write(f.home, `runtime/synk-tasks/${ID}/request.json`, value);
   return value;
 }
+
+function workerReceipt(f, state, extra = {}) {
+  write(f.root, TIP_WORKER_STATUS, { 이름: '팁적용안', 상태: state, 이유: 'token=private-secret https://private.example/data', 시각: NOW.toISOString(), ...extra });
+}
+function intakeReceipt(f, number, extra = {}) {
+  const id = 'tip-' + number.toString(16).padStart(24, '0');
+  const value = { schemaVersion: 1, id, ownerHash: 'private-owner', messageId: 'private-message', receivedAt: NOW.toISOString(), updatedAt: NOW.toISOString(),
+    status: 'pending', refs: [{ kind: 'url', url: 'https://www.instagram.com/reel/post123/', lookupKey: 'post123', exact: true }], ledgerMatches: [], ...extra };
+  write(f.home, TIP_INTAKE_DIR + '/' + id + '.json', value);
+  return value;
+}
+
+test('팁 워커는 종료 상태·키 미조회·오래됨을 나누고 raw 이유는 내보내지 않는다', t => {
+  const f = fixture(t);
+  const options = { root: f.root, sourceRoot: f.root, now: NOW };
+  assert.equal(tipWorkerSnapshot(options).available, false);
+  for (const [observed, expected] of [['끝', '성공'], ['성공', '성공'], ['실패', '실패'], ['키없음', '키없음'], ['할일없음', '할일없음'], ['한도쉼', '한도쉼']]) {
+    workerReceipt(f, observed);
+    const snapshot = tipWorkerSnapshot(options);
+    assert.equal(snapshot.state, expected);
+    assert.equal(snapshot.keyAvailability, observed === '키없음' ? '부재 기록' : '미확인');
+    assert.doesNotMatch(JSON.stringify(snapshot), /private-secret|private.example|token=/);
+  }
+  workerReceipt(f, '끝', { 시각: new Date(NOW.getTime() - TIP_WORKER_STALE_MS - 1).toISOString() });
+  assert.deepEqual([tipWorkerSnapshot(options).state, tipWorkerSnapshot(options).observedState], ['오래됨', '성공']);
+  workerReceipt(f, '끝', { 시각: '2027-01-01T00:00:00Z' });
+  assert.equal(tipWorkerSnapshot(options).available, false);
+  write(f.root, TIP_WORKER_STATUS, '{broken');
+  assert.equal(tipWorkerSnapshot(options).available, false);
+});
+
+test('팁 워커 한도 기록은 성공을 가리지 않고 시각 갱신은 새 경보를 만들지 않는다', async t => {
+  const f = fixture(t), options = { ...f.options, tipWorkerRoot: f.root };
+  write(f.root, TIP_WORKER_QUOTA, { 풀림: '2026-10-20T08:00:00Z', 글: 'private-quota' });
+  workerReceipt(f, '한도쉼');
+  const waiting = await readOverview(options);
+  assert.equal(waiting.snapshot.tipWorker.cooldownActive, true);
+  assert.equal(waiting.events.find(row => row.id === 'tip-worker').needs_attention, false);
+  workerReceipt(f, '끝', { 경로: '크레딧' });
+  const success = await readOverview(options);
+  assert.equal(success.snapshot.tipWorker.observedState, '성공');
+  assert.equal(success.snapshot.tipWorker.cooldownActive, false);
+  workerReceipt(f, '실패', { directNotificationAttempted: false });
+  const failure = await readOverview(options);
+  workerReceipt(f, '실패', { 시각: new Date(NOW.getTime() + 30_000).toISOString(), directNotificationAttempted: false });
+  const later = await readOverview({ ...options, now: new Date(NOW.getTime() + 30_000) });
+  assert.equal(failure.fingerprint, later.fingerprint);
+  assert.equal(failure.events.find(row => row.id === 'tip-worker').needs_attention, true);
+  workerReceipt(f, '실패', { directNotificationAttempted: true });
+  assert.equal((await readOverview(options)).events.find(row => row.id === 'tip-worker').needs_attention, false);
+  workerReceipt(f, '실패');
+  assert.equal((await readOverview(options)).events.find(row => row.id === 'tip-worker').needs_attention, false);
+});
+
+test('팁 워커는 공용 작업본 파일이 아닌 검증된 운영 사본 포인터의 기록을 읽는다', t => {
+  const f = fixture(t), ops = path.join(f.directory, 'ops');
+  fs.mkdirSync(ops);
+  write(f.root, '.git/synk-ops-path', ops);
+  write(f.root, '.git/worktrees/ops/commondir', '../..');
+  write(ops, '.git', 'gitdir: ' + path.join(f.root, '.git/worktrees/ops'));
+  workerReceipt(f, '실패');
+  write(ops, TIP_WORKER_STATUS, { 이름: '팁적용안', 상태: '끝', 시각: NOW.toISOString() });
+  assert.equal(tipWorkerSnapshot({ root: f.root, now: NOW }).observedState, '성공');
+  assert.equal(tipWorkerSnapshot({ root: ops, now: NOW }).observedState, '성공');
+  write(f.root, '.git/synk-ops-path', path.join(f.directory, 'unrelated'));
+  assert.equal(tipWorkerSnapshot({ root: f.root, now: NOW }).available, false);
+});
+
+test('팁 접수는 정확한 장부 행만 연결하며 URL·공유자·메시지는 snapshot과 캐시에 남기지 않는다', async t => {
+  const f = fixture(t);
+  intakeReceipt(f, 1);
+  const youtube = 'https://www.youtube.com/watch?v=abcDEF12345';
+  intakeReceipt(f, 2, { refs: [{ kind: 'url', url: youtube, lookupKey: youtube, exact: true }] });
+  const report = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger([
+    { row: 2, 게시물ID: 'post123' }, { row: 3, 게시물ID: 'https://youtu.be/abcDEF12345?si=tracking' },
+  ]) });
+  assert.equal(report.snapshot.tipIntake.counts.reconciled, 2);
+  assert.equal(report.snapshot.tipIntake.items[0].projection, 'ledger');
+  assert.doesNotMatch(JSON.stringify(report.snapshot.tipIntake), /private-owner|private-message|instagram|youtube/);
+  const cache = fs.readFileSync(path.join(f.home, LEDGER_CACHE), 'utf8');
+  assert.doesNotMatch(cache, /youtu|tracking/);
+  assert.equal((await readOverview(f.options)).snapshot.tipIntake.counts.reconciled, 2, 'hashed URL identity survives cache sanitization');
+});
+
+test('팁 접수의 미디어·불명 query·오래된 장부는 완료로 올리지 않고 중복 행은 구분한다', t => {
+  const f = fixture(t), fresh = { available: true, stale: false, limited: false, rows: [{ row: 2, lookupHash: lookupHash('post123') }] };
+  const receipt = intakeReceipt(f, 1);
+  const read = ledger => tipIntakeSnapshot({ hermesHome: f.home, now: NOW, ledger });
+  assert.equal(read(fresh).counts.reconciled, 1);
+  assert.equal(read({ ...fresh, stale: true }).counts.pending, 1);
+  assert.equal(read({ ...fresh, rows: [...fresh.rows, { row: 3, lookupHash: lookupHash('post123') }] }).counts.ambiguous, 1);
+  for (const ref of [{ kind: 'media', reference: 'media/private.png', exact: false, lookupKey: null },
+    { kind: 'message', reference: 'platform-message:private', exact: false, lookupKey: null },
+    { kind: 'url', url: 'https://example.com/', exact: false, lookupKey: null }]) {
+    intakeReceipt(f, 1, { refs: [...receipt.refs, ref] });
+    assert.equal(read(fresh).counts.pending, 1);
+  }
+  intakeReceipt(f, 1, { status: 'reconciled', ledgerMatches: [{ lookupKey: 'post123', row: 2 }] });
+  assert.equal(read({ available: false }).items[0].projection, 'receipt');
+  intakeReceipt(f, 1, { status: 'ambiguous' });
+  assert.equal(read(fresh).counts.ambiguous, 1, 'recent-50 cannot erase a duplicate already recorded by the producer');
+});
+
+test('팁 접수의 부분 장부와 범위 미확인은 유일성을 확정하지 않고 중복·검증된 기록은 보존한다', t => {
+  const f = fixture(t), rows = [{ row: 2, lookupHash: lookupHash('post123') }];
+  const read = extra => tipIntakeSnapshot({ hermesHome: f.home, now: NOW, ledger: { available: true, stale: false, rows, ...extra } });
+  intakeReceipt(f, 1);
+  assert.equal(read({ limited: false }).counts.reconciled, 1);
+  for (const scope of [{ limited: true }, {}]) {
+    const pending = read(scope);
+    assert.equal(pending.counts.pending, 1);
+    assert.equal(pending.items[0].projection, 'none');
+    assert.equal(read({ ...scope, rows: [...rows, { row: 3, lookupHash: lookupHash('post123') }] }).counts.ambiguous, 1);
+  }
+  intakeReceipt(f, 1, { status: 'reconciled', ledgerMatches: [{ lookupKey: 'post123', row: 2 }] });
+  for (const scope of [{ limited: true }, {}]) {
+    const recorded = read(scope);
+    assert.equal(recorded.counts.reconciled, 1);
+    assert.equal(recorded.items[0].projection, 'receipt');
+  }
+});
+
+test('팁 상태 helper는 연결 폴더를 거부하고 운영 기록과 접수 원문을 수정하지 않는다', t => {
+  const f = fixture(t);
+  workerReceipt(f, '끝');
+  const receipt = intakeReceipt(f, 1);
+  const workerFile = path.join(f.root, TIP_WORKER_STATUS), receiptFile = path.join(f.home, TIP_INTAKE_DIR, receipt.id + '.json');
+  const before = [fs.readFileSync(workerFile, 'utf8'), fs.readFileSync(receiptFile, 'utf8')];
+  tipWorkerSnapshot({ root: f.root, sourceRoot: f.root, now: NOW });
+  tipIntakeSnapshot({ hermesHome: f.home, now: NOW });
+  assert.deepEqual([fs.readFileSync(workerFile, 'utf8'), fs.readFileSync(receiptFile, 'utf8')], before);
+  const linkedHome = path.join(f.directory, 'linked-home');
+  fs.mkdirSync(path.join(linkedHome, 'runtime'), { recursive: true });
+  fs.symlinkSync(path.join(f.home, TIP_INTAKE_DIR), path.join(linkedHome, TIP_INTAKE_DIR), 'junction');
+  assert.equal(tipIntakeSnapshot({ hermesHome: linkedHome, now: NOW }).available, false);
+  const linkedRoot = path.join(f.directory, 'linked-root');
+  fs.mkdirSync(linkedRoot);
+  fs.symlinkSync(path.join(f.root, 'output'), path.join(linkedRoot, 'output'), 'junction');
+  assert.equal(tipWorkerSnapshot({ root: linkedRoot, sourceRoot: linkedRoot, now: NOW }).available, false);
+});
+
+test('팁 접수는 최신 100개만 읽고 손상·누락 범위를 완료로 보고하지 않는다', t => {
+  const f = fixture(t);
+  assert.equal(tipIntakeSnapshot({ hermesHome: f.home, now: NOW }).available, false);
+  for (let index = 0; index < 101; index++) {
+    const receipt = intakeReceipt(f, index);
+    const date = new Date(NOW.getTime() + index);
+    fs.utimesSync(path.join(f.home, TIP_INTAKE_DIR, receipt.id + '.json'), date, date);
+  }
+  const result = tipIntakeSnapshot({ hermesHome: f.home, now: NOW });
+  assert.equal(result.items.length, 100); assert.equal(result.limited, true); assert.equal(result.complete, false);
+  assert.equal(result.items.some(row => row.id.endsWith('0'.repeat(24))), false);
+  const file = TIP_INTAKE_DIR + '/tip-' + (100).toString(16).padStart(24, '0') + '.json';
+  write(f.home, file, '{broken');
+  const broken = tipIntakeSnapshot({ hermesHome: f.home, now: NOW });
+  assert.equal(broken.unreadable, 1); assert.equal(broken.complete, false);
+});
+
+test('팁 접수 저장 상한은 형식이 깨진 이름도 생산자와 같이 세고 조회 상한과 구분한다', async t => {
+  const f = fixture(t), directory = path.join(f.home, TIP_INTAKE_DIR);
+  intakeReceipt(f, 1);
+  for (let index = 0; index < TIP_INTAKE_CAP - 2; index++) write(f.home, TIP_INTAKE_DIR + '/tip-broken-' + index + '.json', '{broken');
+  fs.mkdirSync(path.join(directory, 'tip-broken-directory.json'));
+  write(f.home, TIP_INTAKE_DIR + '/unrelated.json', '{}');
+  const capped = tipIntakeSnapshot({ hermesHome: f.home, now: NOW });
+  assert.equal(capped.receiptCount, TIP_INTAKE_CAP);
+  assert.equal(capped.capReached, true);
+  assert.equal(capped.scanLimited, false, 'metadata scope and producer capacity are different');
+  assert.equal(capped.limited, true); assert.equal(capped.complete, false);
+  assert.match(capped.coverage, /새 접수 저장 한도 도달/);
+  const report = await readOverview(f.options);
+  assert.match(report.text, /새 접수 저장 한도 도달/);
+  assert.equal(report.events.filter(row => row.id === 'tip-intake-cap' && row.needs_attention).length, 1);
+  write(f.home, TIP_INTAKE_DIR + '/tip-extra.json', '{broken');
+  const oversized = tipIntakeSnapshot({ hermesHome: f.home, now: NOW });
+  assert.equal(oversized.capReached, true); assert.equal(oversized.scanLimited, true);
+  fs.unlinkSync(path.join(directory, 'tip-extra.json'));
+  fs.unlinkSync(path.join(directory, 'tip-broken-0.json'));
+  const below = tipIntakeSnapshot({ hermesHome: f.home, now: NOW });
+  assert.equal(below.receiptCount, TIP_INTAKE_CAP - 1); assert.equal(below.capReached, false);
+});
+
+test('장부 연결 키는 알려진 추적값만 무시하고 의미 불명·인증 URL은 거절한다', () => {
+  const sharedCases = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/hermes-tip-url-cases.json'), 'utf8'));
+  for (const row of sharedCases) assert.equal(lookupKey(row.input), row.reject ? null : row.key, row.name);
+  assert.equal(lookupKey('https://m.instagram.com/reels/POST_123/?igsh=test'), 'POST_123');
+  assert.equal(lookupKey('https://youtu.be/abcDEF12345?si=test'), 'https://www.youtube.com/watch?v=abcDEF12345');
+  assert.equal(lookupKey('https://example.com/A/?utm_source=test'), 'https://example.com/A/');
+  for (const value of ['https://example.com/A?item=1', 'https://example.com/A#section', 'https://user:password@example.com/',
+    'https://example.com/A?token=secret', 'https://youtube.com/watch?v=abcDEF12345&v=otherID1234']) assert.equal(lookupKey(value), null, value);
+});
 
 test('기본 조회는 원격 호출·파일 쓰기 없이 전체 변경 snapshot을 제공한다', async t => {
   const f = fixture(t);

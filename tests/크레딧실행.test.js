@@ -119,6 +119,8 @@ test('첫 턴에 크레딧 부족이면 그 키를 표시하고 다음 키로 �
     }
     assert.equal(fs.existsSync(path.join(t.방, 'out', '잠금')), false);
     assert.equal(알림.length, 0);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(t.방, 'out', '마지막확인.json'), 'utf8')),
+      { 이름: '시험작업', 상태: '끝', 이유: '처리 완료', 시각: 지금.toISOString(), directNotificationAttempted: false, 경로: '크레딧' });
   } finally { t.지우기(); }
 });
 
@@ -136,6 +138,7 @@ test('크레딧 키가 없으면 허용한 작업만 구독으로 돈다(키 없
     const 알림 = [];
     const r2 = await 실행기.작업돌리기('시험작업2', { ...t.실행옵션, 작업: 막힘.작업, 방: path.join(t.방, 'out2'), fetch: 확인소진, 알림: (s) => 알림.push(s) });
     assert.equal(r2.상태, '키없음');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(t.방, 'out2', '마지막확인.json'), 'utf8')).상태, '키없음');
     assert.equal(t.실행들().length, 1, '구독 대체를 허용하지 않으면 띄우지 않는다');
     assert.match(알림[0], /크레딧 키가 없어/);
   } finally { t.지우기(); }
@@ -176,6 +179,8 @@ test('구독이 사용 한도에 걸리면 풀릴 때까지 띄우지도 알리�
     process.env.FAKE_LIMIT = "You've hit your weekly limit · resets Oct 26, 12pm (Asia/Seoul)";
     const r = await 돌기(밤);
     assert.deepEqual([r.상태, r.경로, r.풀림], ['한도쉼', '구독', '2026-10-26T03:00:00.000Z']);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8')),
+      { 이름: '시험작업', 상태: '한도쉼', 이유: '구독 사용 한도 대기', 시각: 밤.toISOString(), directNotificationAttempted: true, 경로: '구독', 풀림: r.풀림 });
     assert.equal(알림.length, 1); assert.match(알림[0], /사용 한도에 걸려 .+까지 쉬어요/);
     for (const m of [15, 30, 60 * 24]) assert.equal((await 돌기(분뒤(m))).상태, '한도쉼');
     assert.equal(t.실행들().length, 1, '쉬는 동안은 claude를 띄우지 않는다');
@@ -196,6 +201,9 @@ test('구독이 사용 한도에 걸리면 풀릴 때까지 띄우지도 알리�
     const 끝 = await 돌기(new Date('2026-10-26T05:03:00Z'));
     assert.equal(끝.상태, '끝'); assert.equal(받은.사후.length, 1);
     assert.equal(fs.existsSync(한도파일), false, '구독이 다시 돌면 한도 표시를 지운다');
+    const 최종확인 = JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8'));
+    assert.equal(최종확인.상태, '끝', '성공 뒤 옛 한도쉼이 남지 않는다');
+    assert.equal(최종확인.풀림, undefined);
   } finally { t.지우기(); }
 });
 
@@ -220,6 +228,50 @@ test('같은 작업이 겹쳐 돌지 않는다(최근 잠금이 있으면 멈춤
     await assert.rejects(실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인200, 알림: () => {} }), { code: '크레딧실행_겹침' });
     assert.equal(t.실행들().length, 0);
   } finally { t.지우기(); }
+});
+
+test('실행 오류와 사전·사후 예외도 옛 성공을 바꾸고, 민감한 예외 원문은 상태에 넣지 않는다', async () => {
+  const t = 방만들기([['B', 25, 'sk-ant-test-bbbb']]);
+  try {
+    const out = path.join(t.방, 'out');
+    const 옵션 = { ...t.실행옵션, 방: out, fetch: 확인200, 알림: () => {}, 지금 };
+    await 실행기.작업돌리기('시험작업', { ...옵션, 작업: 가짜작업().작업 });
+    const 상태읽기 = () => JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8'));
+    assert.equal(상태읽기().상태, '끝');
+    for (const [메서드, 단계] of [['사전확인', '사전 확인'], ['사후', '사후 처리']]) {
+      const 원래오류 = new Error('private-request-with-secret');
+      const { 작업 } = 가짜작업({ async [메서드]() { throw 원래오류; } });
+      await assert.rejects(실행기.작업돌리기('시험작업', { ...옵션, 작업 }), (e) => e === 원래오류);
+      assert.deepEqual(상태읽기(), { 이름: '시험작업', 상태: '실패', 이유: `${단계} 예외`, 시각: 지금.toISOString(), directNotificationAttempted: false });
+      assert.equal(fs.existsSync(path.join(out, '잠금')), false);
+    }
+    fs.writeFileSync(path.join(t.방, 'claude.js'), "process.stdin.resume();process.stdin.on('end',()=>{console.log(JSON.stringify({type:'result',is_error:true,result:'private-model-error'}));process.exit(1);});");
+    const 실패 = await 실행기.작업돌리기('시험작업', { ...옵션, 작업: 가짜작업().작업 });
+    assert.equal(실패.상태, '실패');
+    assert.deepEqual(상태읽기(), { 이름: '시험작업', 상태: '실패', 이유: '모델 실행 오류', 시각: 지금.toISOString(), directNotificationAttempted: true, 경로: '크레딧' });
+    assert.equal(fs.readdirSync(out).some((x) => x.endsWith('.tmp')), false);
+  } finally { t.지우기(); }
+});
+
+test('상태 파일 교체 실패는 완료된 사후 처리·키 없음 알림·반환 상태를 바꾸지 않는다', async () => {
+  const t = 방만들기([['B', 25, 'sk-ant-test-bbbb']]);
+  const 원래교체 = fs.renameSync, 원래경고 = console.error, 경고 = [], 알림 = [];
+  try {
+    fs.renameSync = (from, to) => {
+      if (path.basename(to) === '마지막확인.json') throw Object.assign(new Error('private-fs-path'), { code: 'EPERM' });
+      return 원래교체(from, to);
+    };
+    console.error = (value) => 경고.push(value);
+    const { 작업, 받은 } = 가짜작업();
+    const 옵션 = { ...t.실행옵션, 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: s => 알림.push(s), 지금 };
+    assert.equal((await 실행기.작업돌리기('시험작업', 옵션)).상태, '끝');
+    assert.equal(받은.사후.length, 1);
+    const 막힘 = await 실행기.작업돌리기('시험작업', { ...옵션, 작업: { ...작업, 구독대체: false }, fetch: 확인소진 });
+    assert.equal(막힘.상태, '키없음');
+    assert.equal(알림.length, 1);
+    assert.deepEqual(경고, ['SYNK_CREDIT_STATUS_WRITE_FAILED', 'SYNK_CREDIT_STATUS_WRITE_FAILED']);
+    assert.equal(fs.readdirSync(path.join(t.방, 'out')).some(name => name.endsWith('.tmp')), false);
+  } finally { fs.renameSync = 원래교체; console.error = 원래경고; t.지우기(); }
 });
 
 test('중계: 헤르메스 인자를 그대로 넘기고, 키가 없으면 --bare를 빼고 구독으로, 종료 코드를 돌려준다', async () => {

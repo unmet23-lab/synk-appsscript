@@ -7,6 +7,72 @@ const path=require('node:path');
 const {plan,collect,kst,clean,awakeSince,POLICY}=require('../tools/hermes-synk/monitor.cjs');
 const event=(fingerprint='a',extra={})=>({id:'task:one',kind:'task',severity:'info',needs_attention:false,title:'작업 응답',detail:'검증 대기',fingerprint,...extra});
 const at=x=>new Date(x);
+const {tipStatusEvents}=require('../tools/hermes-synk/overview.cjs');
+
+test('tip worker alerts only unnotified failure; timestamps and its direct attempt stay quiet',()=>{
+  const worker=(state,extra={})=>({available:true,observedState:state,stale:false,cooldownActive:false,route:null,...extra});
+  const overview=value=>({events:tipStatusEvents(value)});
+  const clock=at('2026-10-18T07:00:00Z');
+  let cursor=plan(null,overview(worker('성공')),clock);
+  for(const state of ['한도쉼','할일없음','키없음']) {
+    cursor=plan(cursor.state,overview(worker(state,{cooldownActive:state==='한도쉼'})),clock);
+    assert.equal(cursor.notifications.length,0);
+  }
+  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:true})),clock);
+  assert.equal(cursor.notifications.length,0,'existing direct notification owns the failure');
+  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false})),clock);
+  assert.equal(cursor.notifications.length,1);
+  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false,checkedAt:'2026-10-18T08:00:00Z'})),clock);
+  assert.equal(cursor.notifications.length,0);
+  cursor=plan(cursor.state,overview({available:false,coverage:'읽기 실패'}),clock);
+  assert.ok(cursor.state.attentionIncidents['tip-worker'],'an unreadable receipt is not resolution');
+  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false})),clock);
+  assert.equal(cursor.notifications.length,0);
+  cursor=plan(cursor.state,overview(worker('성공')),clock);
+  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false})),clock);
+  assert.equal(cursor.notifications.length,1,'a confirmed recovery permits a new incident');
+});
+
+test('tip inbox partial reads cannot resolve duplicates; exact reconciliation permits recurrence',()=>{
+  const clock=at('2026-10-18T07:00:00Z');
+  const receipt=status=>({id:'tip-'+'a'.repeat(24),status,stale:false,requiresCoverage:status==='pending'});
+  const overview=(items,extra={})=>({events:tipStatusEvents(null,{available:true,complete:true,items,unreadable:0,limited:false,...extra})});
+  let cursor=plan(null,overview([]),clock);
+  cursor=plan(cursor.state,overview([receipt('ambiguous')]),clock);
+  assert.equal(cursor.notifications.length,1);
+  for(const report of [overview([receipt('pending')]),overview([],{complete:false,unreadable:1})]) {
+    cursor=plan(cursor.state,report,clock);
+    assert.equal(cursor.notifications.length,0);
+    assert.ok(cursor.state.attentionIncidents['tip-intake-tip-'+'a'.repeat(24)]);
+  }
+  cursor=plan(cursor.state,overview([receipt('ambiguous')]),clock);
+  assert.equal(cursor.notifications.length,0);
+  cursor=plan(cursor.state,overview([receipt('reconciled')]),clock);
+  assert.equal(cursor.notifications.length,0);
+  cursor=plan(cursor.state,overview([receipt('ambiguous')]),clock);
+  assert.equal(cursor.notifications.length,1);
+});
+
+test('tip receipt capacity is one stable incident and resolves only after a readable below-cap count',()=>{
+  const clock=at('2026-10-18T07:00:00Z');
+  const overview=(capReached,extra={})=>({events:tipStatusEvents(null,{available:true,complete:false,items:[],unreadable:0,limited:true,capReached,...extra})});
+  let cursor=plan(null,overview(false),clock);
+  cursor=plan(cursor.state,overview(true,{receiptCount:2000}),clock);
+  assert.equal(cursor.notifications.length,1);
+  assert.match(cursor.notifications[0].text,/새 접수 저장 한도 도달/);
+  cursor=plan(cursor.state,overview(true,{receiptCount:2001,checkedAt:'2026-10-18T09:00:00Z'}),clock);
+  assert.equal(cursor.notifications.length,0);
+  cursor=plan(cursor.state,overview(null,{available:false}),clock);
+  assert.equal(cursor.notifications.length,0);
+  assert.ok(cursor.state.attentionIncidents['tip-intake-cap']);
+  cursor=plan(cursor.state,overview(true),clock);
+  assert.equal(cursor.notifications.length,0);
+  cursor=plan(cursor.state,overview(false,{receiptCount:1999}),clock);
+  assert.equal(cursor.notifications.length,0);
+  assert.equal(cursor.state.attentionIncidents['tip-intake-cap'],undefined);
+  cursor=plan(cursor.state,overview(true),clock);
+  assert.equal(cursor.notifications.length,1);
+});
 test('first observation is a silent baseline; same content and changed clocks stay quiet',()=>{
   const a=plan(null,{events:[event()]},at('2026-10-18T07:00:00Z'));
   assert.equal(a.notifications.length,0);

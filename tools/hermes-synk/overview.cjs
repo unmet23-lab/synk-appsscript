@@ -10,6 +10,8 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const status = require('./status.cjs');
 const { awakeSince } = require('./awake-time.cjs');
+const { tipWorkerSnapshot } = require('./tip-worker-status.cjs');
+const { tipIntakeSnapshot, lookupHash } = require('./tip-intake-status.cjs');
 const { sanitizePerformance } = require('../operations-home/performance-summary.cjs');
 const runFile = promisify(execFile);
 const ROOT = path.resolve(__dirname, '../..');
@@ -93,7 +95,9 @@ function sanitizeLedger(payload) {
   if (!payload || payload.ok !== true || !Array.isArray(payload.rows) || payload.rows.length > 50) throw new Error('LEDGER_SHAPE');
   return payload.rows.map(row => {
     if (!row || !Number.isSafeInteger(row.row) || row.row < 2 || row.row > 1_000_000) throw new Error('LEDGER_SHAPE');
-    return { row: row.row, postId: shortId(row['게시물ID'] ?? row.postId), status: status.plain(row['상태'] ?? row.status ?? '미기록', 80),
+    const identity = lookupHash(row['게시물ID'] ?? row.postId)
+      || (row['게시물ID'] === undefined && row.postId == null && /^[a-f0-9]{64}$/.test(row.lookupHash || '') ? row.lookupHash : null);
+    return { row: row.row, postId: shortId(row['게시물ID'] ?? row.postId), lookupHash: identity, status: status.plain(row['상태'] ?? row.status ?? '미기록', 80),
       where: status.plain(row['어디에'] ?? row.where ?? '', 120), when: status.plain(row['언제'] ?? row.when ?? '', 50) };
   }).sort((a, b) => a.row - b.row);
 }
@@ -776,7 +780,42 @@ function snsEvents(sns, now) {
   return rows;
 }
 
-function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway, ops }) {
+function tipStatusEvents(worker, intake) {
+  const rows = [];
+  if (worker?.available) {
+    const failed = ['키없음', '실패'].includes(worker.observedState);
+    const labels = { 한도쉼: worker.cooldownActive ? '구독 한도 풀림 대기' : '구독 한도 기록 · 다음 실행 미확인',
+      키없음: '사용 가능한 크레딧 키 없음 기록', 실패: '최근 실행 실패', 할일없음: '최근 확인할 일 없음', 성공: '최근 실행 완료 기록' };
+    // The producer already attempts its own failure notification. Only a receipt
+    // explicitly saying it did not attempt one may enter this existing channel.
+    const needsAttention = worker.observedState === '실패' && worker.directNotificationAttempted === false;
+    rows.push(attention(event('tip-worker', 'tip-worker', failed ? 'warning' : 'info', '팁 적용안 처리 · ' + worker.observedState,
+      labels[worker.observedState] + (worker.stale ? ' · 마지막확인 오래됨' : '') + ' · 현재 인증 미조회',
+      { state: worker.observedState, stale: worker.stale, cooldownActive: worker.cooldownActive, route: worker.route }),
+    needsAttention, { kind: 'tip-worker', state: worker.observedState, needsAttention }));
+    if (worker.stale) rows.push(event('coverage-tip-worker-stale', 'coverage', 'info', '팁 적용안 마지막확인 오래됨',
+      '저장된 종료 상태이며 현재 실행 여부는 미확인입니다. 절전·긴 실행만으로 실패를 단정하지 않습니다.', { stale: true }));
+  } else if (worker) rows.push(event('coverage-tip-worker', 'coverage', 'info', '팁 적용안 처리 기록 미확인', worker.coverage));
+  if (intake) {
+    if (!intake.available || !intake.complete) rows.push(event('coverage-tip-intake', 'coverage', 'info', '팁 접수 조회 범위 미완전',
+      '읽지 못한 접수는 장부 연결·완료로 처리하지 않습니다.', { available: intake.available, limited: intake.limited, unreadable: intake.unreadable }));
+    if (intake.available && typeof intake.capReached === 'boolean') rows.push(attention(event('tip-intake-cap', 'tip-intake', intake.capReached ? 'warning' : 'info',
+      intake.capReached ? '팁 접수 · 새 접수 저장 한도 도달' : '팁 접수 · 저장 한도 미도달',
+      intake.capReached ? '접수 기록 2,000개 상한에 도달했습니다. 새 접수 저장 여부를 확인해야 합니다. 기존 기록은 보존합니다.' : '현재 접수 기록 수는 저장 한도보다 적습니다.',
+      { capReached: intake.capReached }), intake.capReached, { kind: 'tip-intake-cap', capReached: intake.capReached }));
+    // Pending can mean a stale/limited ledger, not a resolved earlier duplicate.
+    // Keep it in the summary, but do not erase a prior incident with that uncertainty.
+    for (const item of intake.items.filter(item => item.status !== 'pending')) rows.push(attention(event('tip-intake-' + item.id, 'tip-intake', item.status === 'ambiguous' ? 'warning' : 'info',
+      '팁 접수 · ' + ({ pending: '장부 연결 대기', reconciled: '장부 연결 기록', ambiguous: '장부 중복 확인 필요' }[item.status]),
+      item.status === 'reconciled' ? '장부 연결 확인 · 적용·배포 완료와 구분합니다.' : item.status === 'ambiguous' ? '정확히 하나의 장부 행으로 확인되지 않았습니다.'
+        : '일치하는 장부 행 또는 자료 확인이 필요합니다.' + (item.stale ? ' · 접수 기록 오래됨' : ''),
+      { status: item.status, stale: item.stale, requiresCoverage: item.requiresCoverage }),
+    item.status === 'ambiguous', { kind: 'tip-intake', id: item.id, status: item.status }));
+  }
+  return rows;
+}
+
+function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway, ops, tipWorker, tipIntake }) {
   const events = [];
   if (!track.available || !track.complete) events.push(event('coverage-track', 'coverage', 'warning', '트랙 조회 범위 미완전', '읽지 못한 기록을 삭제·완료로 판정하지 않습니다.'));
   for (const row of track.items) events.push(event(row.id, 'track', 'info', row.title, row.summary, { text: row.fingerprint }));
@@ -853,7 +892,7 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
   }
   for (const runtime of runtimes) events.push(event('runtime-' + runtime.source, 'runtime', 'info', runtime.source + ' 작업 조회', runtime.note,
     { connected: runtime.connected, stale: runtime.stale }));
-  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops));
+  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops), ...tipStatusEvents(tipWorker, tipIntake));
   return events.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -869,6 +908,12 @@ function formatOverview(report) {
   lines.push(tips.available ? `- 카드 ${tips.items.length}장 · 적용함 ${tips.counts.applied} · 대기 ${tips.counts.pending}${tips.counts.mismatch ? ' · 장부와 상태 다름 ' + tips.counts.mismatch : ''}` : '- 카드 상태 미확인');
   lines.push('- 적용 상태는 카드 원문을 우선합니다. 실제 배포 완료와는 구분합니다.');
   lines.push(`- 장부 기준 ${formatTime(snapshot.ledger.checkedAt)}${snapshot.ledger.stale ? ' · 오래됨/연결 미확인' : ' · 마지막 성공 조회 사본'}`);
+  const worker = snapshot.tipWorker;
+  if (worker) lines.push(worker.available ? `- 팁 적용안 처리 ${worker.observedState}${worker.stale ? ' · 마지막확인 오래됨' : ''}${worker.cooldownActive ? ' · 풀림 ' + formatTime(worker.cooldownUntil) : ''} · 기록 ${formatTime(worker.checkedAt)} · 현재 인증 미조회` : '- 팁 적용안 처리 기록 미확인 · 현재 인증 미조회');
+  const intake = snapshot.tipIntake;
+  if (intake) lines.push(intake.available ? `- 팁 접수 장부 연결 대기 ${intake.counts.pending} · 연결 기록 ${intake.counts.reconciled} · 중복 확인 ${intake.counts.ambiguous}${intake.counts.stale ? ' · 오래됨 ' + intake.counts.stale : ''}${!intake.complete ? ' · 일부 미확인/최대 100건 표시' : ''}` : '- 팁 접수 기록 미확인(기존 공유 대화 보존 여부와 별개)');
+  if (intake?.available && intake.capReached) lines.push('- 새 접수 저장 한도 도달 · 기존 기록 보존 · 새 접수 저장 여부 확인 필요');
+  if (intake?.scanLimited) lines.push('- 접수 목록 확인은 최대 2,000개 범위 · 전체 중 최신 100개 여부 미확인');
   lines.push(snapshot.research.remoteStatusAvailable ? `- 조사 서버 조회 ${formatTime(snapshot.research.remoteCheckedAt)}${snapshot.research.stale ? ' · 오래됨/연결 미확인' : ' · 저장된 영수증 기준'}` : '- 조사는 기존 결과를 재사용합니다(현재 원격 상태 미확인).');
   for (const row of snapshot.research.items) lines.push(`  ${row.title}${row.pausedSince ? ' · 꺼 둠' : ''}${row.current ? ' · ' + ({ running: '실행 기록', complete: '후처리 완료 기록', 'no-change': '변경 없음 기록', failed: '실패 기록', missing: '실행기록 없음', unknown: '미확인' }[row.current.status]) : ''}: ${row.url}`);
   lines.push('', '요청 → 완료');
@@ -911,7 +956,7 @@ function formatOverview(report) {
 
 async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new Date(), remoteRefresh = false,
   readStatus = status.readStatus, readLedger, readTasks = readTaskRecords, readArgon, readArgonRemote,
-  readSnsRemote, backupHealthFile, uptimeSeconds, persistState = false, opsStatusFile } = {}) {
+  readSnsRemote, backupHealthFile, uptimeSeconds, persistState = false, opsStatusFile, tipWorkerRoot } = {}) {
   const clock = new Date(now);
   if (!Number.isFinite(clock.getTime())) throw new Error('INVALID_TIME');
   const invoke = operation => Promise.resolve().then(operation);
@@ -927,21 +972,26 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const ops = opsCopySnapshot({ hermesHome, now: clock, opsStatusFile });
   const source = sourceResult.status === 'fulfilled' ? sourceResult.value : {};
   const ledger = ledgerResult.status === 'fulfilled' ? ledgerResult.value : { available: false, stale: true, checkedAt: null, rows: [] };
+  const tipWorker = tipWorkerSnapshot({ root, now: clock, sourceRoot: tipWorkerRoot });
+  const tipIntake = tipIntakeSnapshot({ hermesHome, now: clock, ledger });
   const track = source.snapshot?.track || { available: false, complete: false, items: [] };
   const cards = source.snapshot?.cards || { available: false, complete: false, items: [] };
   const tips = reconcileTips(cards, ledger);
   const tasks = taskResult.status === 'fulfilled' ? taskResult.value : { available: false, complete: false, items: [] };
   const research = researchResult.status === 'fulfilled' ? researchResult.value : { available: false, remoteVerified: false, items: [] };
-  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway, ops });
+  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway, ops, tipWorker, tipIntake });
   const report = { version: 1, checkedAt: clock.toISOString(), notification_policy: NOTIFICATION_POLICY, integration_policy: INTEGRATION_POLICY,
     fingerprint: hash(events.map(row => [row.id, row.fingerprint, row.needs_attention])), events,
-    snapshot: { track, tips, ledger, tasks, research, backup, sns, gateway, ops },
+    snapshot: { track, tips, ledger, tasks, research, backup, sns, gateway, ops, tipWorker, tipIntake },
     coverage: { trackComplete: track.available && track.complete, cardsComplete: cards.available && cards.complete,
       tasksComplete: tasks.available && tasks.complete, ledgerAvailable: ledger.available, ledgerStale: ledger.stale,
       ledgerComplete: ledger.available && !ledger.limited, researchComplete: research.available && research.complete === true,
       argonRemoteVerified: false, argonStatusAvailable: research.remoteStatusAvailable === true, argonStatusStale: research.stale !== false,
       backupStatusAvailable: backup.available, snsStatusAvailable: sns.available, snsStatusStale: sns.stale !== false,
       gatewayRecoveryStatusAvailable: gateway.available, opsCopyStatusAvailable: ops.available,
+      tipWorkerStatusAvailable: tipWorker.available, tipWorkerStatusStale: tipWorker.stale,
+      tipIntakeAvailable: tipIntake.available, tipIntakeComplete: tipIntake.complete,
+      tipIntakeCapReached: tipIntake.capReached, tipIntakeScanLimited: tipIntake.scanLimited,
       desktopFailureCoverage: '이 연결의 공식 작업 영수증만 · 다른 데스크톱 작업 미감시',
       comparison: '미완전한 원문에서 사라진 항목은 삭제·완료로 판정하지 않음', noModelCalls: true, noRemoteWrites: true },
   };
@@ -956,7 +1006,7 @@ async function main(args = process.argv.slice(2)) {
 }
 if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오늘 조회를 확인하지 못했습니다. 원문·PC 연결을 확인해 주세요.\n'); process.exitCode = 1; });
 
-module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, argonStatusSource, argonRoles, reconcileTips, buildEvents,
+module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, argonStatusSource, argonRoles, reconcileTips, buildEvents, tipStatusEvents,
   readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot, opsCopySnapshot, opsCopyEvents,
   LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS,
   MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS, OPS_STALL_MS, OPS_UNPUSHED_MS };

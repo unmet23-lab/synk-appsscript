@@ -30,10 +30,98 @@ function planConfig(config, chatKey) {
 }
 
 function digest(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
+
+// A plugin update must not rewrite model, fallback, authority or channel prompts.
+// All three files are staged before replacement; a failed replacement restores
+// only bytes this invocation installed. The backup and receipt remain available.
+function installPluginOnly({ home, source = __dirname, apply = false, replace = fs.renameSync }) {
+  home = path.resolve(home);
+  const guarded = (target) => {
+    const relative = path.relative(home, target);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error('PLUGIN_PATH_OUTSIDE_HOME');
+    let current = home;
+    for (const part of ['', ...relative.split(path.sep)]) {
+      if (part) current = path.join(current, part);
+      if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) throw new Error('PLUGIN_PATH_LINK');
+    }
+    return target;
+  };
+  const configPath = guarded(path.join(home, 'config.yaml'));
+  if (!fs.statSync(configPath).isFile()) throw new Error('PLUGIN_CONFIG_MISSING');
+  const configSha256 = digest(fs.readFileSync(configPath));
+  const destination = guarded(path.join(home, 'plugins/synk-work'));
+  const names = ['plugin.yaml', '__init__.py', 'tip_intake.py'];
+  const files = names.map(name => {
+    const from = path.join(source, 'plugin', name);
+    if (!fs.lstatSync(from).isFile()) throw new Error('PLUGIN_SOURCE_MISSING');
+    const to = guarded(path.join(destination, name));
+    if (fs.existsSync(to) && !fs.lstatSync(to).isFile()) throw new Error('PLUGIN_DESTINATION_INVALID');
+    const bytes = fs.readFileSync(from);
+    return { name, to, bytes, sha256: digest(bytes), existed: fs.existsSync(to),
+      before: fs.existsSync(to) ? fs.readFileSync(to) : null };
+  });
+  const receipt = { checkedAt: new Date().toISOString(), applied: apply, pluginOnly: true,
+    configSha256, configPreserved: true, files: files.map(file => ({ name: file.name, sha256: file.sha256,
+      previousSha256: file.before === null ? null : digest(file.before) })) };
+  if (!apply) return receipt;
+  const backup = guarded(path.join(home, 'backups', `synk-work-plugin-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`));
+  fs.mkdirSync(backup, { recursive: true });
+  fs.mkdirSync(destination, { recursive: true });
+  receipt.backup = path.relative(home, backup);
+  const staged = [], installed = [];
+  const configUnchanged = () => digest(fs.readFileSync(configPath)) === configSha256;
+  try {
+    for (const file of files) {
+      if (file.existed) fs.writeFileSync(path.join(backup, file.name), file.before, { flag: 'wx' });
+      const temporary = guarded(path.join(destination, `.${file.name}.${crypto.randomBytes(8).toString('hex')}.tmp`));
+      fs.writeFileSync(temporary, file.bytes, { flag: 'wx' });
+      if (digest(fs.readFileSync(temporary)) !== file.sha256) throw new Error('PLUGIN_STAGE_MISMATCH');
+      staged.push({ ...file, temporary });
+    }
+    if (!configUnchanged()) throw new Error('PLUGIN_CONFIG_CHANGED');
+    for (const file of staged) {
+      guarded(file.to);
+      if (file.existed ? !fs.existsSync(file.to) || digest(fs.readFileSync(file.to)) !== digest(file.before) : fs.existsSync(file.to)) {
+        throw new Error('PLUGIN_DESTINATION_CHANGED');
+      }
+      replace(file.temporary, file.to);
+      installed.push(file);
+      if (digest(fs.readFileSync(file.to)) !== file.sha256) throw new Error('PLUGIN_INSTALLED_MISMATCH');
+    }
+    if (!configUnchanged()) throw new Error('PLUGIN_CONFIG_CHANGED');
+    receipt.installed = true;
+    fs.writeFileSync(path.join(backup, 'receipt.json'), JSON.stringify(receipt, null, 2));
+    return receipt;
+  } catch (error) {
+    const blocked = [];
+    for (const file of installed.reverse()) {
+      try {
+        guarded(file.to);
+        if (!fs.existsSync(file.to) || digest(fs.readFileSync(file.to)) !== file.sha256) throw new Error('changed');
+        if (file.existed) {
+          const restore = guarded(path.join(destination, `.${file.name}.${crypto.randomBytes(8).toString('hex')}.restore`));
+          fs.writeFileSync(restore, file.before, { flag: 'wx' });
+          fs.renameSync(restore, file.to);
+        } else fs.unlinkSync(file.to);
+      } catch { blocked.push(file.name); }
+    }
+    Object.assign(receipt, { installed: false, failed: true, rollbackBlocked: blocked,
+      configPreserved: (() => { try { return configUnchanged(); } catch { return false; } })() });
+    fs.writeFileSync(path.join(backup, 'receipt.json'), JSON.stringify(receipt, null, 2));
+    throw new Error(blocked.length ? 'PLUGIN_INSTALL_ROLLBACK_BLOCKED' : error.message);
+  } finally {
+    for (const file of staged) if (fs.existsSync(file.temporary)) fs.unlinkSync(file.temporary);
+  }
+}
+
 function main() {
   const apply = process.argv.includes('--apply');
   const home = path.join(process.env.LOCALAPPDATA, 'hermes');
   const repo = path.resolve(__dirname, '../..');
+  if (process.argv.includes('--plugin-only')) {
+    console.log(JSON.stringify(installPluginOnly({ home, apply }), null, 2));
+    return;
+  }
   const YAML = require(path.join(home, 'hermes-agent/node_modules/yaml'));
   const configPath = path.join(home, 'config.yaml');
   const intakeFiles = ['SKILL.md', 'claude_review.md', 'scripts/ig_fetch.py', 'scripts/ledger.py'];
@@ -49,6 +137,7 @@ function main() {
   const files = [
     ['plugin/plugin.yaml', path.join(home, 'plugins/synk-work/plugin.yaml')],
     ['plugin/__init__.py', path.join(home, 'plugins/synk-work/__init__.py')],
+    ['plugin/tip_intake.py', path.join(home, 'plugins/synk-work/tip_intake.py')],
     ['skill/SKILL.md', path.join(home, 'skills/productivity/synk-work/SKILL.md')],
     ['delivery-hook/HOOK.yaml', path.join(home, 'hooks/synk-work-delivery/HOOK.yaml')],
     ['delivery-hook/handler.py', path.join(home, 'hooks/synk-work-delivery/handler.py')],
@@ -83,5 +172,5 @@ function main() {
   }
   console.log(JSON.stringify(receipt, null, 2));
 }
-module.exports = { planConfig, CHANNEL_PROMPT };
+module.exports = { planConfig, CHANNEL_PROMPT, installPluginOnly };
 if (require.main === module) main();

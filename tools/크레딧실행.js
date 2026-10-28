@@ -235,9 +235,22 @@ async function 작업돌리기(이름, 옵션 = {}) {
   // 구독 사용 한도는 작업끼리 같이 쓰므로 작업 방들 옆에 하나만 둔다.
   const 한도파일 = path.join(path.dirname(방), '구독한도.json');
   const 지금은 = () => (옵션.지금 ? new Date(옵션.지금) : new Date());
-  // 작업 스케줄러가 15분마다 부르는 확인이 AI 없이 끝날 때마다 파일을 쌓지 않는다 — 마지막 확인 하나만 덮어쓴다.
-  const 마지막확인 = (상태, 이유) => fs.writeFileSync(path.join(방, '마지막확인.json'),
-    JSON.stringify({ 이름, 상태, 이유, 시각: new Date().toISOString() }, null, 2) + '\n');
+  let directNotificationAttempted = false;
+  // 모든 종료 경로가 같은 상태 한 벌을 남긴다. 감시가 쓰는 도중의 JSON을 읽지 않게 교체한다.
+  const 마지막확인 = (상태, 이유, 추가 = {}) => {
+    const 파일 = path.join(방, '마지막확인.json');
+    const 임시 = `${파일}.${process.pid}.tmp`;
+    try {
+      fs.writeFileSync(임시, JSON.stringify({ 이름, 상태, 이유, 시각: 지금은().toISOString(), directNotificationAttempted, ...추가 }, null, 2) + '\n');
+      fs.renameSync(임시, 파일);
+      return true;
+    } catch {
+      // 상태 관측 실패가 이미 끝난 사후 처리나 원래 알림·반환을 실패로 바꾸면 안 된다.
+      console.error('SYNK_CREDIT_STATUS_WRITE_FAILED');
+      return false;
+    } finally { try { fs.rmSync(임시, { force: true }); } catch { /* 주 실행 결과를 보존한다. */ } }
+  };
+  let 단계 = '사전 확인';
   try {
     const 자료 = await 작업.사전확인(ctx);
     if (!자료 || 자료.할일 === false) {
@@ -246,16 +259,19 @@ async function 작업돌리기(이름, 옵션 = {}) {
     }
     const 쉼 = JSON읽기(한도파일);
     const 쉬는중 = Date.parse(쉼?.풀림) > +지금은();
+    단계 = '모델 실행';
     const 돈 = await 크레딧으로띄우기({
       이름, 입력: 작업.지시문(자료, ctx), cwd: 작업.작업폴더 || 루트, 시간제한: 작업.시간제한,
       구독대체: !!작업.구독대체 && !쉬는중, 인자만들기: (o) => 작업.인자(o), 실행파일: 옵션.실행파일, 앞인자: 옵션.앞인자, fetch: 옵션.fetch, 설정폴더: 옵션.설정폴더,
       지금: 옵션.지금,
     });
     if (돈.경로 === '없음' && 쉬는중 && 작업.구독대체) {
-      마지막확인('한도쉼', `구독 사용 한도 — ${시각글(new Date(쉼.풀림))}에 풀림`);
+      마지막확인('한도쉼', '구독 사용 한도 대기', { 풀림: 쉼.풀림 });
       return { 상태: '한도쉼', 풀림: 쉼.풀림 };
     }
     if (돈.경로 === '없음') {
+      directNotificationAttempted = true; // 전송 의도부터 남긴다. 도착 확인을 뜻하지 않는다.
+      마지막확인('키없음', '사용 가능한 크레딧 키 없음');
       실행기록(방, { 이름, 상태: '키없음', 건너뛴키: 돈.건너뛴키 });
       알림(`[크레딧 실행] ${이름}: 쓸 수 있는 크레딧 키가 없어 돌지 않았어요. node tools/lib/클로드키.js --상태 로 확인해 주세요.`);
       return { 상태: '키없음' };
@@ -270,6 +286,8 @@ async function 작업돌리기(이름, 옵션 = {}) {
       const 알릴까 = !(Date.parse(쉼?.알림) > +때 - 한도알림간격ms);
       fs.writeFileSync(한도파일, JSON.stringify({ 풀림: 풀림.toISOString(), 글: 가리기(돈.결과.글), 작업: 이름,
         알림: 알릴까 ? 때.toISOString() : 쉼.알림 }, null, 2) + '\n');
+      directNotificationAttempted = 알릴까;
+      마지막확인('한도쉼', '구독 사용 한도 대기', { 경로: 돈.경로, 풀림: 풀림.toISOString() });
       if (알릴까) {
         알림(`[크레딧 실행] ${이름}: 이 PC Claude CLI 구독이 사용 한도에 걸려 ${시각글(풀림)}까지 쉬어요. 풀린 뒤 다음 확인에서 저절로 다시 돌고, 그동안 이 알림은 다시 보내지 않아요.\n원문: ${가리기(돈.결과.글).slice(0, 200)}`);
       }
@@ -277,11 +295,19 @@ async function 작업돌리기(이름, 옵션 = {}) {
     }
     if (돈.경로 === '구독') fs.rmSync(한도파일, { force: true }); // 구독이 다시 돈다 — 다음 한도는 처음처럼 알린다
     if (!돈.결과.읽음 || 돈.결과.오류) {
+      directNotificationAttempted = true;
+      마지막확인('실패', 돈.결과.읽음 ? '모델 실행 오류' : '모델 결과를 읽지 못함', { 경로: 돈.경로 });
       알림(`[크레딧 실행] ${이름} 실패(${돈.경로}) — ${가리기(돈.결과.글 || 돈.시도.at(-1)?.stderr || '결과 없음').slice(0, 300)}\n기록: ${path.relative(루트, 기록파일)}`);
       return { 상태: '실패', 경로: 돈.경로, 기록파일 };
     }
+    단계 = '사후 처리';
     const 사후 = await 작업.사후(돈.결과, 자료, { ...ctx, 경로: 돈.경로, 키이름: 돈.키이름 });
+    마지막확인('끝', '처리 완료', { 경로: 돈.경로 });
     return { 상태: '끝', 경로: 돈.경로, 키이름: 돈.키이름, 비용: 돈.결과.비용, 사후, 기록파일 };
+  } catch (오류) {
+    // 예외 원문에는 요청·인증값이 섞일 수 있다. 상태에는 단계만, 호출자에는 원래 예외를 돌려준다.
+    try { 마지막확인('실패', `${단계} 예외`); } catch { /* 기록 오류로 원래 예외를 덮지 않는다. */ }
+    throw 오류;
   } finally {
     풀기();
   }

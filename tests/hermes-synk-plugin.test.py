@@ -149,9 +149,96 @@ class PluginTests(unittest.TestCase):
     def test_registers_native_commands_and_tool(self):
         self.assertEqual(set(self.ctx.commands), {"synk", "synk-status", "synk-tasks", "synk-claude", "synk-codex", "synk-release", "synk-recover", "synk-today", "synk-continue"})
         self.assertEqual(set(self.ctx.tools), {"synk_work"})
-        self.assertEqual(self.ctx.hooks, {"pre_gateway_dispatch": [plugin._approval_dispatch]})
+        self.assertEqual(self.ctx.hooks, {"pre_gateway_dispatch": [plugin._pre_dispatch]})
         self.assertIn("recover", plugin.SCHEMA["parameters"]["properties"]["action"]["enum"])
         self.assertIn("기존 팁 봇", self.ctx.commands["synk"](""))
+
+    def test_tip_pre_dispatch_saves_allowed_share_without_model_or_delivery(self):
+        message = self.telegram_event("https://www.instagram.com/reel/ExampleTip01/ 이런 그림은 어떻게 만드는거야?", message_id="777")
+        with patch.object(plugin, "_send_native_message", side_effect=AssertionError("no sending")):
+            self.assertIsNone(plugin._pre_dispatch(event=message))
+        self.assertEqual(self.ctx.calls, [])
+        folder = self.root / "hermes/runtime/synk-tip-intake"
+        paths = list(folder.glob("*.json"))
+        self.assertEqual(len(paths), 1)
+        before = paths[0].read_bytes(), paths[0].stat().st_mtime_ns
+        plugin._pre_dispatch(event=message)
+        self.assertEqual(before, (paths[0].read_bytes(), paths[0].stat().st_mtime_ns))
+        report = self.ctx.commands["synk"]("팁")
+        self.assertIn("처리 대기", report)
+        self.assertIn("장부", report)
+
+    def test_tip_pre_dispatch_storage_failure_keeps_existing_conversation(self):
+        message = self.telegram_event("https://example.com/tip", message_id="778")
+        with patch.object(plugin._tip_module(), "capture", side_effect=OSError("SECRET")):
+            with self.assertLogs(plugin.__name__, level="ERROR") as log:
+                self.assertIsNone(plugin._pre_dispatch(event=message))
+        self.assertNotIn("SECRET", "\n".join(log.output))
+        self.assertEqual(self.ctx.calls, [])
+
+    def test_tip_check_only_reads_ledger_and_updates_local_receipt(self):
+        plugin._pre_dispatch(event=self.telegram_event("https://www.instagram.com/reel/ExampleTip01/", message_id="779"))
+        receipt = json.loads(next((self.root / "hermes/runtime/synk-tip-intake").glob("*.json")).read_text())
+        calls = []
+        def ledger(command, argument):
+            calls.append((command, argument))
+            return {"ok": True, "rows": [{"row": 7, **({"게시물ID": "ExampleTip01"} if command == "recent" else {})}]}
+        with patch.object(plugin, "_read_tip_ledger", side_effect=ledger):
+            output = self.ctx.commands["synk"]("팁 확인 " + receipt["id"])
+        self.assertIn("장부 1건씩 일치 확인", output)
+        self.assertEqual(calls, [("recent", "50"), ("find", "ExampleTip01")])
+        self.assertEqual(self.ctx.calls, [])
+
+    def test_tip_hook_does_not_capture_code_request_or_other_sender(self):
+        for message in [self.telegram_event("https://example.com/code 이 파일 고쳐줘", message_id="780"),
+                        self.telegram_event("https://example.com/tip", message_id="781", user="999")]:
+            self.assertIsNone(plugin._pre_dispatch(event=message))
+        self.assertFalse((self.root / "hermes/runtime/synk-tip-intake").exists())
+
+    def test_tip_hook_preserves_approval_reply_before_intake(self):
+        self.approval()
+        message = self.telegram_event("https://example.com/approved-target", reply_to="tg-notice-1", message_id="782")
+        message.reply_to_is_own_message = True
+        self.assertEqual(plugin._pre_dispatch(event=message),
+                         {"action": "rewrite", "text": "/synk_continue https://example.com/approved-target"})
+        self.assertFalse((self.root / "hermes/runtime/synk-tip-intake").exists())
+
+    def test_tip_hook_accepts_normal_bot_reply_with_new_shared_link(self):
+        message = self.telegram_event("https://example.com/new-tip", reply_to="ordinary-bot-reply", message_id="783")
+        message.reply_to_is_own_message = True
+        self.assertIsNone(plugin._pre_dispatch(event=message))
+        self.assertEqual(len(list((self.root / "hermes/runtime/synk-tip-intake").glob("*.json"))), 1)
+
+    def test_tip_general_apply_share_keeps_original_routing_without_execution(self):
+        for index, caption in enumerate(["이거 적용해보자", "이렇게 만들어줘", "git push 설명하는 영상이야"]):
+            message = self.telegram_event("https://example.com/tip " + caption, message_id=str(790 + index))
+            original = message.text
+            with patch.object(plugin, "_request", side_effect=AssertionError("no task dispatch")), \
+                 patch.object(plugin, "_send_native_message", side_effect=AssertionError("no sending")):
+                self.assertIsNone(plugin._pre_dispatch(event=message))
+            self.assertEqual(message.text, original)
+        self.assertEqual(len(list((self.root / "hermes/runtime/synk-tip-intake").glob("*.json"))), 3)
+        self.assertEqual(self.ctx.calls, [])
+
+    def test_tip_explicit_id_reads_old_receipt_without_using_listing_or_leaking_other_owner(self):
+        for index in range(101):
+            plugin._pre_dispatch(event=self.telegram_event("https://example.com/tip/" + str(index), message_id=str(800 + index)))
+        helper = plugin._tip_module()
+        home = self.root / "hermes"
+        owner = helper.owner_hash({"chat_id": "12345", "user_id": "12345"})
+        rows = helper.list_receipts(home, owner, 101)["items"]
+        oldest = next(row for row in rows if row["messageId"] == "800")
+        path = home / "runtime/synk-tip-intake" / (oldest["id"] + ".json")
+        os.utime(path, (1, 1))
+        self.assertNotIn(oldest["id"], [row["id"] for row in helper.list_receipts(home, owner)["items"]])
+        with patch.object(helper, "list_receipts", side_effect=AssertionError("direct ID read must not list")):
+            output = self.ctx.commands["synk"]("팁 " + oldest["id"])
+        self.assertIn("https://example.com/tip/0", output)
+        self.assertIn(oldest["id"], output)
+        private = plugin._tip_status({"chat_id": "999", "user_id": "999"}, oldest["id"])
+        self.assertNotIn("https://example.com/tip/0", private)
+        self.assertIn("확인하지 못했습니다", private)
+        self.assertEqual(self.ctx.calls, [])
 
     def test_only_known_private_telegram_sender_is_allowed(self):
         variants = [("HERMES_SESSION_PLATFORM", "discord"), ("HERMES_SESSION_CHAT_TYPE", "group"),
