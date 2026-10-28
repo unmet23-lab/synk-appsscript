@@ -151,6 +151,8 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
     const focusKey = inside ? [active.dataset?.accountAction, active.dataset?.session, active.id] : null;
     // A town control is disabled while its command is on its way: the keyboard comes back to it (or to the card) afterwards.
     if (inside) townFocus = active.dataset?.town || null;
+    // The keyboard went elsewhere on purpose (not lost to the body by a redraw): leave it there, as the shared card does.
+    else if (active && active !== doc?.body) townFocus = null;
     root.innerHTML = renderAccountPage({ native, signedIn: current.signedIn, auth: current.auth, data, identity, loadError, identityError, loading, message, editingName, nameDraft, busy, allSessions,
       workspace: current.signedIn && getAppIds().includes('messenger'), securityHint: !current.signedIn && securityOpenedAt && now() - securityOpenedAt < SECURITY_HINT_MS,
       town: native && current.signedIn ? town.html({ classes: TOWN_CLASSES, headingLevel: 3 }) : null });

@@ -65,7 +65,8 @@ export function townRecordsHtml(state, { classes = {}, headingLevel = 4 } = {}) 
  * ({ id, type, payload, expectedRevision }) and answers with the changed card, confirm({ title, body, ok }) asks once more,
  * onChange() redraws. A reply that arrives after reset() (another account, a sign-out) is dropped. */
 export function createTownRecords({ load, send, confirm, onChange = () => {}, randomId = () => globalThis.crypto.randomUUID() }) {
-  let state = townRecordsState(), epoch = 0;
+  // epoch orders the reads; generation changes only on reset() (another account, a sign-out).
+  let state = townRecordsState(), epoch = 0, generation = 0;
   const changed = () => onChange(state);
   const quiet = error => error?.code === 'changed' || error?.code === 'ACCOUNT_CHANGED';
   async function refresh({ keepMessage = false } = {}) {
@@ -86,13 +87,15 @@ export function createTownRecords({ load, send, confirm, onChange = () => {}, ra
     const action = actionOf(state.records, key);
     if (!action || state.busy !== null || !state.records?.started) return;
     if (action.confirm && !await confirm({ title: action.confirm, body: [], ok: action.label })) return;
-    const token = epoch, command = { id: randomId(), type: action.type, payload: { ...(action.payload || {}) }, expectedRevision: state.records.revision };
+    const token = epoch, gen = generation, command = { id: randomId(), type: action.type, payload: { ...(action.payload || {}) }, expectedRevision: state.records.revision };
     state = { ...state, busy: key, message: null };changed();
+    // A read that ran while the command was on its way stands (its card is the newer one): only the buttons come back.
+    const overtaken = () => { if (token === epoch) return false;state = { ...state, busy: null };changed();return true; };
     try {
-      const reply = await send(command);if (token !== epoch) return;
+      const reply = await send(command);if (gen !== generation || overtaken()) return;
       state = { ...state, busy: null, records: reply?.records ?? state.records, message: { text: doneText(command), tone: 'ok' } };changed();
     } catch (error) {
-      if (token !== epoch || quiet(error)) return;
+      if (gen !== generation || quiet(error) || overtaken()) return;
       state = { ...state, busy: null, message: { text: errorText(error), tone: 'error' } };changed();
       if (RELOAD.has(error?.code)) await refresh({ keepMessage: true });
     }
@@ -100,7 +103,7 @@ export function createTownRecords({ load, send, confirm, onChange = () => {}, ra
   return Object.freeze({
     refresh, press, state: () => state,
     html: options => townRecordsHtml(state, options),
-    reset() { epoch++;state = townRecordsState(); },
+    reset() { epoch++;generation++;state = townRecordsState(); },
   });
 }
 

@@ -117,6 +117,8 @@ async function open(surface, state, width, status = 'active') {
   await page.waitForSelector('#account:not([hidden])', { timeout: 20000 });
   return { context, page, errors };
 }
+// The card shows a line before the read that follows it goes out: wait for the request itself.
+const until = async (test, ms = 8000) => { for (const end = Date.now() + ms; Date.now() < end; await new Promise(resolve => setTimeout(resolve, 100))) if (test()) return true;return test(); };
 const overflow = page => page.evaluate(() => Math.max(0, document.documentElement.scrollWidth - innerWidth));
 const settle = async (page, card) => { await page.waitForSelector(`${card} .town-records:not([data-phase=loading])`, { timeout: 15000 }); };
 try {
@@ -147,7 +149,7 @@ try {
         check(`${surface}: 비우기 asks once more, cancel keeps everything, ok clears`, keptAfterCancel && log.filter(row => row.method === 'POST' && row.path.endsWith('/synk-town/records')).at(-1)?.body.type === 'MEMORY_CLEAR' && !(await page.locator(card).innerText()).includes('쟁반이 기울어요'), {});
         // A revision another screen moved first: the card reads again and says so.
         town.revision += 5;await page.click(`${card} [data-town="settings.r0"]`);await page.waitForFunction(selector => /다른 곳에서 먼저 바뀌었어요/.test(document.querySelector(selector)?.textContent || ''), card);
-        check(`${surface}: a stale revision reads the card again`, log.filter(row => row.method === 'GET' && row.path.endsWith('/synk-town/records')).length >= 2, {});
+        check(`${surface}: a stale revision reads the card again`, await until(() => log.filter(row => row.method === 'GET' && row.path.endsWith('/synk-town/records')).length >= 2), {});
         const [download] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), page.locator('button', { hasText: '연습 기록 내려받기' }).first().click()]);
         const file = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
         check(`${surface}: the download carries 내 정보 and the whole town (both pages)`, file.scope === 'connected-learning-records' && file.myInfo?.profile?.display_name === '합성 회원 A' && file.town?.commands?.length === 2 && file.town.events.length === 2 && !('hasMore' in file.town)

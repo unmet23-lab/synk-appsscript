@@ -54,6 +54,12 @@ test('a stale revision reloads the card with the reason; a reply that comes afte
   await deleting.refresh();gone=true;await deleting.refresh();
   assert.equal(deleting.state().phase,'failed');assert.equal(deleting.state().records,null);assert.equal(deleting.state().failure,'계정 삭제를 요청한 동안에는 마을 기록을 볼 수 없어요. 요청을 취소하면 다시 보여요.');
   gone=false;await deleting.refresh();assert.equal(deleting.state().phase,'ready');assert.equal(deleting.state().failure,null);
+  // A read that runs while a command is on its way: its card stands and the buttons come back once the reply arrives.
+  let answer;const racing=createTownRecords({load:async()=>card(9),send:()=>new Promise(resolve=>{answer=resolve;}),confirm:async()=>true});
+  await racing.refresh();const pressed=racing.press('known.r0');assert.equal(racing.state().busy,'known.r0');
+  await racing.refresh();answer(card(10));await pressed;
+  assert.equal(racing.state().busy,null,'the buttons come back');assert.equal(racing.state().records.revision,9,'the newer read stands');
+  assert.ok(!racing.html().includes(' disabled'),'no control stays locked');
   const academy=createTownRecords({load:async()=>card(),send:async()=>{throw Object.assign(new Error('x'),{code:'eval-consent-academy'});},confirm:async()=>true});
   await academy.refresh();await academy.press('eval.a0');assert.equal(academy.state().message.text,'학원 소속 계정에는 묻지 않아요.');assert.equal(academy.state().message.tone,'error');
 });
