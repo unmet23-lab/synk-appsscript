@@ -660,6 +660,74 @@ def jobs():
         "down the corridor. No light falls on him from the camera side, so his head and face are a pure black silhouette: no eyes, no skin "
         "and no features lit; a thin warm rim of light from that far lamp outlines the back of his hair, his ear and his shoulder.",
         MAN.format(a=2, b=4), f"He wears {M_AUTUMN}.", FINISH)
+    # 얼굴 다시(10-28 확정 뒤 조율 세션 지적 — 정한 것 ①): 4 · 9 · 11 · 19 · 27 · 28은 고른 판에서 눈 · 코 · 입이 읽혔다. 실루엣을 바라는
+    # 지시문은 Gemini가 다섯 번 넘게 얼굴에 빛을 넣었으므로, 고른 판의 틀 · 크기는 그대로 두고 고개만 돌려 뒷모습으로 만드는 편집을 주로 쓴다.
+    # 하늘 앞 옆 실루엣(11)과 문간 역광(9)은 얼굴만 검게 하는 편집도 함께 굽고 나은 쪽을 고른다. 28은 카메라가 문을 마주 봐야 뒷모습이라 새로 굽는다.
+    TURN = ("Edit this photograph (Image 1). Change only one thing: {who} turns {pos} head away from the camera, toward {to}, so that the "
+            "camera now sees the back of {pos} head — {hair} — and none of {pos} face: no eye, no eyelid, no eyebrow, no nose, no lips and no "
+            "cheek can be seen. {keep} Keep the framing, the size and place of {pos} head and shoulders in the frame, the light and everything "
+            "else in Image 1 exactly. {refs}")
+    DARK = ("Edit this photograph (Image 1). Change only one thing: {who} becomes a true silhouette — {pos} face is a solid black shape with "
+            "no eye, no eyebrow, no nose, no lips and no skin tone visible inside it, like a paper cut-out; only {rim}. {keep} Keep the "
+            "framing, the pose, the size and place in the frame and everything else in Image 1 exactly.")
+    J_["C04d"] = J([ref("C04.jpg"), ref("M04_angle-back.jpg"), ref("M04_hair-3.jpg")], TURN.format(
+        who="the man", pos="his", to="the far end of the corridor on the left", hair="his dark messy hair, his ear and the back of his neck "
+        "above the grey hood", keep="He still gives the same small polite bow, his head tipped forward and down, and the thin warm rim of "
+        "light still outlines the back of his hair and his shoulder.", refs="Images 2 and 3 show his hair from behind."), FINISH)
+    J_["C09s"] = J([ref("C09.jpg")], DARK.format(
+        who="the laughing woman on the right", pos="her", rim="a thin warm rim of the doorway's light traces the outline of her forehead, "
+        "nose, lips and chin, her hair and the crimson velvet ribbon bow", keep="She is backlit by the bright doorway: her neck and the "
+        "front of her cardigan fall into deep shadow too. She keeps laughing with her head thrown back."), FINISH)
+    J_["C09b"] = J([lay("S09")] + W_REFS_BACK, STILL, LAYOUT_SIL.format(who="the woman"),
+        "The black silhouette marks only the size and place of her head and shoulders — she is NOT in profile: she is seen from behind. "
+        "CLOSE-UP, the right half of the frame: THE WOMAN seen from behind her left shoulder, three-quarters from behind — the back of her "
+        "head with the half-up hair tied by the crimson velvet ribbon bow in the middle of the frame's right half, her loose hair, her "
+        "shoulder in the cream cardigan. She faces away from the camera, INTO her bright open doorway, and throws her head back laughing "
+        "with her friends inside; a canned drink in her raised hand at the bottom edge. None of her face is visible — at most the edge of "
+        "her jaw, rimmed with warm light. In front of her, out of focus: the warm golden doorway and her friends as soft blurred shapes whose "
+        "faces are lost in the glow. The camera side is the dark outdoor corridor at night, so the back of her head is dark with a warm rim "
+        "of light around her hair and the ribbon.", WOMAN.format(a=2, b=4), f"She wears {W_HOME}.", FINISH)
+    J_["C11s"] = J([ref("C11.jpg")], DARK.format(
+        who="the man", pos="his", rim="the outline of his forehead, nose, lips and chin reads against the dull blue-grey sky", keep="His "
+        "hair, ear, neck and shoulders are just as black."), FINISH)
+    J_["C11b"] = J([ref("C11.jpg"), ref("M04_angle-back.jpg"), ref("M04_hair-3.jpg")], TURN.format(
+        who="the man", pos="his", to="the left, away from the noisy doorway behind him", hair="his dark messy hair, his ear and the back of "
+        "his neck above the grey hood, a dark shape against the dull night sky", keep="His shoulders stay hunched up.",
+        refs="Images 2 and 3 show his hair from behind."), FINISH)
+    HAT = ("Edit this photograph (Image 1). Change only the small young woman in the black witch hat far down the corridor: her face is "
+           "now hidden in the deep shadow under the wide brim of her hat — the warm stairwell light is behind her, so her face is a dark "
+           "shape with no readable eyes, nose or mouth, only the soft outline of her cheek and chin — and the small crimson velvet ribbon "
+           "bow of her half-up hair peeks out at the side of her head under the hat. She keeps waving with the same hand. Keep the man's "
+           "out-of-focus shoulder and raised hand in the foreground, her friends, the corridor, the light and everything else in Image 1 "
+           "exactly.")
+    J_["C19s"] = J([ref("C19.jpg")], HAT, FINISH)
+    J_["C19es"] = J([ref("C19e.jpg")], HAT, FINISH)
+    J_["C27b"] = J([ref("C27.jpg"), ref("M04_angle-back.jpg"), ref("M04_hair-3.jpg")], TURN.format(
+        who="the man", pos="his", to="the far end of the corridor", hair="his dark messy hair with a few snowflakes in it, his ear and the "
+        "back of his neck above the grey knitted scarf", keep="He still looks down, tired, toward the phone in his hand whose flashlight is "
+        "just coming on at the bottom edge.", refs="Images 2 and 3 show his hair from behind."), FINISH)
+    # 고개 돌리기 편집은 27에서 거의 같은 그림으로 돌아왔다(C27b) — 9에서 된 「얼굴만 검게」 편집을 27 · 4에도 굽는다
+    J_["C27s"] = J([ref("C27.jpg")], DARK.format(
+        who="the man", pos="his", rim="a faint warm rim of the fairy lights behind him traces his hair, his ear and the line of his cheek",
+        keep="The only light on him now comes from behind, from the decorated doors and the dusk, so his face and the front of his scarf "
+        "fall into deep shadow. He keeps looking down at the phone in his hand, whose flashlight is just coming on at the bottom edge."),
+        FINISH)
+    J_["C04s"] = J([ref("C04.jpg")], DARK.format(
+        who="the man", pos="his", rim="the thin warm rim of light from the far lamp outlines the back of his hair, his ear and his shoulder",
+        keep="No light at all falls on him from the camera side. He keeps the same small polite bow, his head tipped forward and down."),
+        FINISH)
+    J_["C28b"] = J([lay("S28")] + M_REFS_BACK[:2] + [ref("C06.jpg")], STILL, LAYOUT_SIL.format(who="the man"),
+        "The black silhouette marks only where and how large he is — he is seen from directly BEHIND. Blue dusk, snow, the outdoor corridor "
+        "of an old Korean apartment block. MEDIUM, the camera on the parapet side of the corridor, facing straight at his front door: THE "
+        "MAN stands in his door alcove (left of center, the size and place of the black silhouette) with his BACK to the camera, facing his "
+        "dark grey steel door — the back of his head, his shoulders dusted with snow, the end of his grey scarf. The small round sensor lamp "
+        "on the ceiling right above his door has just clicked on: a warm, soft light pours down over him and over the keyhole; the glowing "
+        f"lamp is visible at the top of the frame. With {BAG} still in his left hand and his phone lowered in it (its flashlight still on, "
+        "pointing at the floor), he slides the key into the keyhole in one go with his right hand. The lock is exactly the old round brass "
+        "keyhole of Image 4 with scratches in the paint around it — no digital door lock, no keypad. His own door is bare, with no "
+        "decoration; at the right edge of the frame the neighbor's door alcove glows with warm fairy lights. Soft snowfall in the blue dusk "
+        "behind the camera reflects on the wet floor. None of his face is visible.",
+        MAN.format(a=2, b=3), f"He wears {M_WINTER}.", FINISH)
 
     # ── ⑥ 끝 35~36 ──
     # 35(10-27 22:4x): 26은 판(PL26)에 민재를 합성해 앉혔으므로, 사람이 없는 PL26에서 바로 고친다
