@@ -87,7 +87,7 @@ test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', (
   assert.equal(new Set(items.map((item) => item.accountKey)).size, 19);
   const { profileStatus, mobileVerification, dailyLine, dailyDays, ...tistoryPublishingAccount } = accounts.accounts['shift-tistory'];
   assert.equal(dailyLine, 'yuhobuilds', '티스토리 매일 칸은 yuhobuilds 줄(10-26 매일 판)');
-  assert.equal(dailyDays, '월수금', 'yuhobuilds 줄은 월 · 수 · 금만(10-28 밤)');
+  assert.equal(dailyDays, undefined, 'yuhobuilds 줄도 매일(10-29 주 3편 되돌림)');
   assert.equal(typeof profileStatus, 'string');
   assert.ok(profileStatus.trim().length > 0);
   /* 모바일 검증 기록을 가리키는 칸 — 가리키는 파일이 저장소에 있어야 한다(09-18 판은 git 에 없던 md 를 가리켰다). */
