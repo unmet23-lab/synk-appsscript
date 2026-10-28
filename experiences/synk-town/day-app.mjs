@@ -17,7 +17,7 @@ import { createMeanwhile } from './day-meanwhile.mjs';
 import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
 import { createTeaBoard, teaGuests } from './day-tea.mjs';
-import { goodbye } from './new-tea.mjs';
+import { goodbye, startNewTea, newTeaView } from './new-tea.mjs';
 import { createGatherBoard, REFUSALS as GATHER_REFUSALS, refusalWords as gatherRefusalWords, jarFillers, itemName as gatherItemName } from './day-gather.mjs';
 import { paramsFor } from './town/params.mjs';
 
@@ -361,12 +361,14 @@ function tick() {
   // A question the screen drew is told at the next boundary the gap allows, safe point or not (it issues nothing there).
   if (now - lastBoundary >= BOUNDARY_GAP_MS && (flags().safe || askReport && asksOk && !stay?.active())) boundary();
 }
+/** The commands a window holding the town sends with its fence (the host checks the window — two-window rule). */
+const WINDOW_COMMAND = /^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|LANGUAGE_|GATHER_|GREET$)/;
 async function command(type, payload = {}) {
   if (busy || !available()) return false;
   setBusy(true);
   try {
     await queue(async () => {
-      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|LANGUAGE_|GATHER_|GREET$)/.test(type)) {
+      if (WINDOW_COMMAND.test(type)) {
         await ensureFreshPresence();
         payload = { ...payload, surfaceId, fence: presence.fence };
       }
@@ -420,13 +422,63 @@ async function freeCommand(type, payload = {}) {
  * host no longer holds or an answer it cannot take now (403·409 — another window answered, the switch went off) is no
  * connection trouble: the town is read again and the card follows it. */
 async function askCommand(type, payload) {
+  if (type === 'PLACEMENT') return answerPlacement(payload.answer);
   for (let i = 0; i < 30 && busy; i++) await new Promise(resolve => setTimeout(resolve, 100));
   if (busy || !available()) return false;
   setBusy(true);
-  try { await queue(async () => accept(await request('command', { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision }))); clearError(); return true; }
+  try {
+    // The widening answer (LANGUAGE_ANSWER, W9) is a window's command: it goes with this window's fence.
+    await queue(async () => {
+      if (WINDOW_COMMAND.test(type)) { await ensureFreshPresence(); payload = { ...payload, surfaceId, fence: presence.fence }; }
+      accept(await request('command', { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision }));
+    });
+    clearError(); return true;
+  }
   catch (error) { if ([403, 409].includes(error?.status)) read(); else showError(error.message); return false; }
   finally { setBusy(false); }
 }
+/** The placement question (bridge §4-3, W9): before the first conversation the player's own mascot asks once 「처음 이야기는
+ * 이 말로 해 볼까요?」 — while the host suggests more than L1 and nobody answered (its placement(): WORLD's entry check, or
+ * the preview's --placement), and only while the ladder has not moved itself (the reading seat still on its placement, not
+ * fixed). It is the app's own ask on the mascot's card — two answers, no close — and not the day's one question (a first
+ * guide, asked once); a question the town stands goes first. The answer goes to the host (town/placement) and the next
+ * command carries it to the ladder. The first scene (C4 · the tea order) waits for it: the card comes forward instead and
+ * the scene opens once answered. Two windows may each ask; the later answer stands. */
+let placementQuestion = null, placementSent = false, placementScene = null, placementFocus = false, noticeBoardShown = false;
+function placementHost() {
+  if (worldHostRequested) return typeof worldHost?.placement === 'function' && typeof worldHost.choosePlacement === 'function' ? worldHost : null;
+  return snapshot?.placement ? { placement: () => snapshot.placement, choosePlacement: async answer => (await request('placement', { answer })).placement } : null;
+}
+function readPlacement() {
+  const host = placementHost(), seat = snapshot?.view.language?.ladder?.reading;
+  if (placementSent || !host || !seat || seat.source !== 'placement' || seat.fixed) return null;
+  let placement = null;
+  try { placement = host.placement(); } catch { return null; }
+  const level = placement?.suggested?.reading;
+  // The example is the first conversation's first line in the suggested words (C4, §12).
+  return placement?.ask === true && ['L1', 'L2', 'L3', 'L4'].includes(level) ? { key: 'placement', kind: 'placement', example: newTeaView(startNewTea(level)).line } : null;
+}
+async function answerPlacement(answer) {
+  const host = placementHost();
+  if (!host || placementSent) return false;
+  placementSent = true;
+  try { await host.choosePlacement(answer); }
+  catch (error) { placementSent = false; showError(error?.message || '말을 고르지 못했어요. 다시 골라 주세요.'); return false; }
+  placementQuestion = null; placementFocus = false;
+  const open = placementScene; placementScene = null; open?.();
+  return true;
+}
+/** A first scene asked for before the placement answer: the place's panel steps aside so the card shows and the keyboard
+ * goes to it; the scene opens once answered. Never when the card could not show now (a dialog, the seat, a board up) — the
+ * scene then opens as it is, and the question waits. Whether it waits. */
+function holdForPlacement(open) {
+  if (!placementQuestion || !snapshot || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.() || !!gather?.active?.() || noticeBoardShown) return false;
+  placementScene = open; placementFocus = true;
+  if (walkPanel) { dismissWalkPanel(); applyWalkView(); }
+  return true;
+}
+/** The cards whose path is a scene in the town's language (C4's conversation, the tea order's C5 · R6). */
+const languageCard = card => card === 'C4' || !!CARD_BY_ID.get(card)?.paths?.player?.activity;
 function button(action) {
   const b = document.createElement('button'); b.type = 'button'; b.className = `felt${action.primary ? ' primary' : ''}`; b.textContent = action.label;
   b.dataset.command = action.type;
@@ -657,6 +709,7 @@ function cardsFrame(now) {
   if (snapshot.view.day.location === 'home') for (const li of panel.querySelectorAll('.place-note li')) if (heldInSight(`note:${li.dataset.ref}`, li, now)) noteSeen([`line:village.news.${li.dataset.card}.1`], li.dataset.ref);
 }
 async function openCard(c, source) {
+  if (languageCard(c.card) && holdForPlacement(() => openCard(c, source))) return;
   const payload = { card: c.card, key: c.key, source, ...(source === 'contact' ? { contactId: c.id } : {}) };
   if (await freeCommand('CARD_OPEN', payload)) { cardOpenedHere = c.card; renderCardDialog(); }
 }
@@ -667,7 +720,8 @@ let cardFeedbackOpen = false, cardClosing = false, cardOpenedHere = null, cardGi
 let cardLineTicket = 0;
 function paintNewTea(m) {
   let tools = $('card-dialog-help');
-  if (!tools) { tools = document.createElement('div'); tools.id = 'card-dialog-help'; $('card-choices').after(tools); }
+  // The asks keep their own row off the confirm (W9 screen check — they sat on 「이렇게 할게요」 on a phone).
+  if (!tools) { tools = document.createElement('div'); tools.id = 'card-dialog-help'; tools.className = 'card-help'; tools.setAttribute('role', 'group'); tools.setAttribute('aria-label', '다시 듣기'); $('card-choices').after(tools); }
   tools.hidden = !m.newTea || m.done;
   if (tools.hidden) { cardLineTicket++; return; }
   const scene = m.newTea, key = JSON.stringify([scene.turn, scene.line, scene.help, scene.aside, scene.picture]);
@@ -766,8 +820,11 @@ function accept(data) {
   const endedTea = !!snapshot?.view.tea?.open && !data.view.tea?.open;
   const endedDialogue = snapshot?.view.day?.scene?.village?.take?.card === 'C4' && !data.view.day?.scene?.village?.take;
   snapshot = data; connected = true;
-  languageSettings?.update(data.view.language, !!data.view.tea?.open || !!data.view.day?.scene?.village?.take);
-  if (endedTea || endedDialogue) queueMicrotask(() => languageSettings?.boundary(data.view.language, serverNow() || Date.now()).catch(() => {}));
+  placementQuestion = readPlacement();
+  if (!placementQuestion) { placementScene = null; placementFocus = false; }
+  languageSettings?.update(data.view.language);
+  // A scene that ended may bring the mascot's widening question (W9): the ended scene's response format goes with it.
+  if (endedTea || endedDialogue) queueMicrotask(() => languageSettings?.boundary(data.view.language, serverNow() || Date.now(), endedDialogue ? 'single-choice' : 'cup-compose').catch(() => {}));
   if (data.presence?.surfaceId === surfaceId) presence = data.presence;
   const day = data.view.day; if (!day) throw new Error('첫 하루의 상태를 읽지 못했어요.');
   const story = bazaarActive() ? data.view.bazaar : day;
@@ -937,8 +994,11 @@ function noticesFrame(now) {
   if (!meanwhileUi || !askUi) return;
   const blocked = !snapshot || !connected || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.() || !!gather?.active?.();
   const board = meanwhileUi.update({ meanwhile: snapshot?.view.day?.scene?.village?.meanwhile, firstPulseAt, blocked, now });
-  const ask = askUi.update({ ask: snapshot?.view.ask, blocked: blocked || board.shown, now });
-  if (ask.drawn) askReport = ask.drawn;
+  noticeBoardShown = board.shown;
+  // The town's question first; else the placement before the first conversation (W9 — the app's own, never reported drawn).
+  const ask = askUi.update({ ask: snapshot?.view.ask || placementQuestion, blocked: blocked || board.shown, now });
+  if (ask.drawn && ask.drawn !== 'placement') askReport = ask.drawn;
+  if (placementFocus && ask.shown) { placementFocus = false; askUi.focus(); }
   document.body.classList.toggle('town-notice', board.shown || ask.shown);
 }
 /** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
@@ -1088,7 +1148,10 @@ try {
     } });
   sound.onPrefs(() => stay?.paint());
   // The tea order (W8): its commands go through the window's fence once the walk is sent; a guest's head anchors its words.
-  tea = createTeaBoard({ scene: $('scene'), hud: $('walk-hud'), nearby: $('nearby-panel'), settings: $('settings-dialog'), command: (type, payload) => freeCommand(type, payload),
+  // Opening the order waits for the placement answer like the first conversation (W9).
+  tea = createTeaBoard({ scene: $('scene'), hud: $('walk-hud'), nearby: $('nearby-panel'), settings: $('settings-dialog'),
+    command: (type, payload) => type === 'TEA_OPEN' && holdForPlacement(async () => { if (walking()) await flushWalk(true); return freeCommand(type, payload); })
+      ? Promise.resolve(false) : freeCommand(type, payload),
     beforeCommand: async () => { if (walking()) await flushWalk(true); }, noteSeen, onInputMode: mode => { walkInputMode = mode; },
     labelAt: id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const c = $('day-canvas').getBoundingClientRect(), s = $('scene').getBoundingClientRect(); return { x: p.x + c.left - s.left, y: p.y + c.top - s.top }; } });
   if (snapshot) tea?.update(snapshot.view.tea, teaContext());
@@ -1103,8 +1166,8 @@ try {
   notices = Object.assign(document.createElement('div'), { className: 'town-notices' }); $('scene').append(notices);
   meanwhileUi = createMeanwhile(notices, { live: $('mood-live'), onSeen: noteSeen });
   askUi = createAsk(notices, { command: askCommand, live: $('mood-live'), tutor: () => tutor });
-  languageSettings = createLanguageSettings($('settings-dialog'), { scene: notices, command: (type, payload) => freeCommand(type, payload), readContext: () => worldHost?.languageContext?.() || {} });
-  languageSettings.update(snapshot?.view.language, !!snapshot?.view.tea?.open || !!snapshot?.view.day?.scene?.village?.take);
+  languageSettings = createLanguageSettings($('settings-dialog'), { command: (type, payload) => freeCommand(type, payload), readContext: () => worldHost?.languageContext?.() || {} });
+  languageSettings.update(snapshot?.view.language);
   paintLight(); setInterval(paintLight, 1000); // the hour's light (W7), before the first frame shows
   renderScene(); applyWalkView(); if (walking()) $('scene').focus({ preventScroll: true });
   raf = requestAnimationFrame(frame); setInterval(tick, 1000);
@@ -1121,7 +1184,8 @@ globalThis.SYNKTownDay = Object.freeze({ metrics: () => ({ ...(renderer?.stats()
     lines: [...document.querySelectorAll('#mood-lines .mood-card:not([hidden])')].map(el => ({ npc: el.dataset.npc, line: el.dataset.line, rect: el.getBoundingClientRect().toJSON() })),
     place: $('place-cards').hidden ? null : $('place-cards').textContent },
   // W6b: the returning visit's board and the mascot's question as this window draws them.
-  notices: { meanwhile: meanwhileUi?.metrics() ?? null, ask: askUi?.metrics() ?? null, asksOk, askReport, firstPulseAt },
+  notices: { meanwhile: meanwhileUi?.metrics() ?? null, ask: askUi?.metrics() ?? null, asksOk, askReport, firstPulseAt,
+    placement: { question: !!placementQuestion, sent: placementSent, waiting: !!placementScene } },
   lightClock: lightShown && { source: lightSource, seedKind: typeof snapshot?.state?.village?.seed === 'string' ? 'string' : snapshot?.state?.village?.seed == null ? 'none' : 'other',
     key: lightShown.key, band: lightShown.band, localMinute: lightShown.localMinute, rain: { raining: lightShown.rain.raining, drops: lightShown.rain.drops, overcast: lightShown.rain.overcast, wet: lightShown.rain.wet } },
   walk: { enabled: walking(), ...walk.point, heading: walk.heading, moving: walk.moving, inputActive: walk.inputActive, nearby: nearby(walk.point), interactionOpen: walkPanel, input: walkInputMode,

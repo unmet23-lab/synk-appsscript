@@ -7,7 +7,9 @@ const now = Date.parse('2026-10-28T12:00:00Z');
 const start = () => initialLadder({ reading: 'L3', listening: 'L1' }, now);
 const scene = { versions: ['L1', 'L2', 'L3', 'L4'], responseFormat: 'cup-compose' };
 
-test('later keeps the same offer hidden across renders and permits a later offer', async () => {
+// W9: the widening question became the mascot's card (day-ask.mjs, view.ask kind widen — 「나중에」 closes it unanswered,
+// tests/town-ask-screen.test.js). The notebook draws no offer of its own and asks the host only when it says one may stand.
+test('the notebook draws no widening card and asks the host only when a question may stand', async () => {
   const original = globalThis.document;
   const nodes = [];
   const element = () => {
@@ -17,16 +19,14 @@ test('later keeps the same offer hidden across renders and permits a later offer
   };
   globalThis.document = { createElement: element };
   try {
-    const commands = [], settings = createLanguageSettings(element(), { scene: element(), command: async (...args) => commands.push(args) });
+    const commands = [], settings = createLanguageSettings(element(), { command: async (...args) => commands.push(args) });
     const language = { version: 1, ladder: initialLadder({}, now) };
     language.ladder.reading.lastOffer = { at: now, answer: null };
-    const offer = nodes.find(node => node.dataset.kind === 'consent');
-    settings.update(language); assert.equal(offer.hidden, false);
-    await nodes.find(node => node.textContent === '나중에').handlers.click();
-    settings.update(language); assert.equal(offer.hidden, true); assert.deepEqual(commands, []);
-    language.ladder.reading.lastOffer = { at: now + 86400000, answer: null };
-    settings.update(language); assert.equal(offer.hidden, false);
-    settings.update(language, true); settings.update(language); assert.equal(offer.hidden, true);
+    settings.update(language);
+    assert.equal(nodes.some(node => node.dataset.kind === 'consent' || node.textContent === '나중에'), false);
+    await settings.boundary(language, now, 'cup-compose'); assert.deepEqual(commands, []);
+    await settings.boundary({ ...language, askReady: true }, now, 'cup-compose');
+    assert.deepEqual(commands, [['LANGUAGE_OFFER', { channel: 'reading', format: 'cup-compose' }]]);
   } finally { globalThis.document = original; }
 });
 test('placement separates reading/listening; missing versions only fall down', () => {

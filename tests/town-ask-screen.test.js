@@ -56,6 +56,45 @@ test('동의 물음 — 계약 생성물의 쉬운 판 다섯 줄·단추(손으
   assert.equal(askModel({ key: 'consent', kind: 'consent' }, { consent: null }), null);
 });
 
+test('W9 말 물음 — 넓히기는 view.ask의 자리 열쇠로(「나중에」가 닫기 · 답은 LANGUAGE_ANSWER), 배치는 첫 대화 한 줄과 두 답(닫기 없음 · 답은 호스트로)', async () => {
+  const { askModel, answerCommand } = await load('day-ask.mjs');
+  const widen = askModel({ key: 'widen:reading:L3', kind: 'widen' }, { tutor: 'marin' });
+  assert.deepEqual([widen.name, widen.channel, widen.picture, widen.close, widen.line], ['마린', 'reading', null, '나중에', '말을 조금 더 넓혀 볼까요?']);
+  assert.deepEqual(widen.answers.map(([answer]) => answer), ['accepted', 'declined']);
+  assert.deepEqual(answerCommand(widen, 'accepted'), ['LANGUAGE_ANSWER', { channel: 'reading', choice: 'accepted' }]);
+  assert.deepEqual(answerCommand(widen, 'declined'), ['LANGUAGE_ANSWER', { channel: 'reading', choice: 'declined' }]);
+  assert.equal(askModel({ key: 'widen:speaking:L3', kind: 'widen' }), null, '모르는 자리는 그리지 않는다');
+  assert.equal(askModel({ key: 'widen:reading:L1', kind: 'widen' }), null, 'L1로 넓히는 물음은 없다');
+  assert.ok(!/L[1-4]|[0-9]/.test([widen.line, ...widen.lines].join(' ')), '판 이름·숫자를 보이지 않는다');
+  const place = askModel({ key: 'placement', kind: 'placement', example: '요즘 새 차를 만들고 있거든요.' });
+  assert.deepEqual([place.line, place.close, place.picture], ['처음 이야기는 이 말로 해 볼까요?', null, null]);
+  assert.equal(place.lines.at(-1), '「요즘 새 차를 만들고 있거든요.」');
+  assert.deepEqual(place.answers, [['keep', '이대로'], ['easier', '더 쉬운 말로']]);
+  assert.deepEqual(answerCommand(place, 'easier'), ['PLACEMENT', { answer: 'easier' }]);
+  assert.equal(askModel({ key: 'placement', kind: 'placement' }), null, '보일 한 줄이 없으면 묻지 않는다');
+});
+
+test('W9 수첩 — 넓히기 카드는 수첩이 그리지 않고, 장면 끝에는 호스트가 오늘 물을 수 있다고 할 때만 끝난 장면의 꼴과 함께 묻는다', async () => {
+  const { createLanguageSettings } = await load('day-language.mjs');
+  const { initialLadder } = await load('town/language-ladder.mjs');
+  const original = globalThis.document, nodes = [];
+  const element = () => { const node = { children: [], dataset: {}, append(...c) { this.children.push(...c); }, setAttribute() {}, addEventListener() {} }; nodes.push(node); return node; };
+  globalThis.document = { createElement: element };
+  try {
+    const sent = [], settings = createLanguageSettings(element(), { command: async (...args) => { sent.push(args); return true; } });
+    assert.equal(nodes.some(node => node.className === 'ask-card'), false, '옛 넓히기 카드 없음');
+    const language = askReady => ({ version: 1, ladder: initialLadder({ reading: 'L2', listening: 'L1' }, 1), ...(askReady === undefined ? {} : { askReady }) });
+    await settings.boundary(language(undefined), 1, 'single-choice');
+    await settings.boundary(language(false), 1, 'single-choice');
+    assert.deepEqual(sent, [], 'W9 앞 호스트(askReady 없음)·오늘 못 묻는 날에는 묻지 않는다');
+    await settings.boundary(language(true), 1, 'single-choice');
+    assert.deepEqual(sent, [['LANGUAGE_OFFER', { channel: 'reading', format: 'single-choice' }]]);
+    const fixed = language(true); fixed.ladder.reading.fixed = true;
+    await settings.boundary(fixed, 1, 'cup-compose');
+    assert.equal(sent.length, 1, '본인이 고정한 자리는 묻지 않는다');
+  } finally { globalThis.document = original; }
+});
+
 test('마스코트 그림 — 튜터 셋 × 물음 둘의 그림이 저장소 자산으로 있다(바이트·생성 도구 표시는 공개 도구가 본다)', async () => {
   // CI의 희소 체크아웃은 그림을 빼므로 파일을 열지 않고 색인만 본다(tools/ci읽기대조.cjs ③).
   const { TUTORS } = await load('day-ask.mjs');

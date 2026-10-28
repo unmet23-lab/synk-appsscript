@@ -438,6 +438,9 @@ body[data-walk-input=touch] .walk-help{display:none}
 .card-icon svg{width:22px;height:22px}
 .card-choices{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin:4px 0 14px}
 .card-choices[hidden]{display:none}
+/* C4's asks (다시 · 천천히 · 무슨 뜻이에요): a row of their own between the choices and the confirm (W9). */
+.card-help{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.card-help[hidden]{display:none}
 .feedback{display:grid;gap:8px;margin:4px 0 12px}
 .feedback[hidden]{display:none}
 .feedback-more.felt{justify-self:start;min-width:48px;padding:0 14px;font-size:16px;letter-spacing:.06em}

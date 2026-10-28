@@ -42,7 +42,10 @@ export function defaultSaveDir(observe = null) {
 /** Observation switches for playtests (vertical slice design §15-6). Local
  * preview only; the talk runtime has no such input.
  *   --clock +1d | -3h30m | 2026-10-23T19:00+09:00   shift the town clock or start at a set instant
- *   --card C4[,R2]                                  raise these cards at once (read by the card runtime, W5) */
+ *   --card C4[,R2]                                  raise these cards at once (read by the card runtime, W5)
+ *   --placement L3[,L2]                             the entry check's placement suggestion (reading, listening — one
+ *                                                   for both): the screen asks 「처음 이야기는 이 말로…」 as the WORLD
+ *                                                   host does (bridge §4-3, W9) and commands carry the choice */
 export function parseObservation(argv, { realNow = Date.now() } = {}) {
   const value = name => {
     const at = argv.findIndex(arg => arg === name || arg.startsWith(`${name}=`));
@@ -52,7 +55,7 @@ export function parseObservation(argv, { realNow = Date.now() } = {}) {
     if (!given || given.startsWith('--')) throw new RangeError(`${name} 뒤에 값을 적어 주세요.`);
     return given;
   };
-  const clockArg = value('--clock'), cardArg = value('--card');
+  const clockArg = value('--clock'), cardArg = value('--card'), placementArg = value('--placement');
   let clock = null;
   if (clockArg !== null) {
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})$/.test(clockArg)) {
@@ -69,8 +72,30 @@ export function parseObservation(argv, { realNow = Date.now() } = {}) {
   }
   const cards = cardArg === null ? [] : [...new Set(cardArg.split(','))];
   if (cards.some(id => !/^[CWR][1-6]$/.test(id))) throw new RangeError('--card는 C1~C6·W1~W6·R1~R6 가운데에서 골라요.');
-  const label = [clock && `시계 ${clock.label}`, cards.length && `카드 ${cards.join('·')}`].filter(Boolean).join(' · ');
-  return { active: !!clock || cards.length > 0, clock, cards, label };
+  let placement = null;
+  if (placementArg !== null) {
+    const [reading, listening = reading, ...rest] = placementArg.split(',');
+    if (rest.length || ![reading, listening].every(level => /^L[1-4]$/.test(level))) throw new RangeError('--placement는 L1~L4 하나(둘 다)나 읽기,듣기 둘이에요.');
+    placement = { reading, listening };
+  }
+  const label = [clock && `시계 ${clock.label}`, cards.length && `카드 ${cards.join('·')}`, placement && `배치 제안 ${placement.reading}·${placement.listening}`].filter(Boolean).join(' · ');
+  return { active: !!clock || cards.length > 0 || !!placement, clock, cards, placement, label };
+}
+const LANGUAGE_LEVELS = Object.freeze(['L1', 'L2', 'L3', 'L4']);
+/** The placement a preview store keeps under --placement (bridge §4-3), as the WORLD host's placement() and the talk store
+ * do: the suggestion, the answer once given (this run only), whether to ask; commands carry the answer, else L1 (talk). */
+function previewPlacement(suggested) {
+  let chosen = null;
+  const lower = level => LANGUAGE_LEVELS[Math.max(0, LANGUAGE_LEVELS.indexOf(level) - 1)];
+  return {
+    read: () => ({ suggested: { ...suggested }, chosen: chosen && { ...chosen }, ask: chosen === null && (suggested.reading !== 'L1' || suggested.listening !== 'L1') }),
+    choose(answer) {
+      if (!['keep', 'easier'].includes(answer)) throw new TownError('invalid-placement', '말을 다시 골라 주세요.');
+      chosen = answer === 'keep' ? { ...suggested } : { reading: lower(suggested.reading), listening: lower(suggested.listening) };
+      return { placement: { ...chosen } };
+    },
+    host: () => ({ languagePlacement: chosen ? { ...chosen } : { reading: 'L1', listening: 'L1' } }),
+  };
 }
 /** The host clock a store runs on under the observation switches. */
 export function observationClock(observe, realNow = () => Date.now()) {
@@ -134,7 +159,8 @@ function validLease(lease) {
  *         §20 branches inline), kept for the stores its tests open.
  *   save  a function given that one-file shape at every commit (tests). */
 export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabled = true, observe = null, fold = FOLD_LIMITS,
-  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town', sleeps = false, evalSignals = true } = {}) {
+  academy = false, tz = hostOffset(), ops = DEFAULT_OPS, villageSeed = 'synk-town', sleeps = false, evalSignals = true,
+  placement = observe?.placement ?? null } = {}) {
   let state = initialState({ lifeEnabled }), log = [], townLog = [], seen = {}, evalLines = [], loadError = null, savedLease = null;
   const receipts = new Map(), walks = [];
   const paths = dir ? branchPaths(dir) : null, sizes = { events: 0, receipts: 0, receiptLines: 0 };
@@ -142,7 +168,9 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
   // tests; the account service keeps it off until the privacy notice says so (W6).
   const account = { academy: academy === true, ops: validateOps(ops), villageSeed, evalSignals: evalSignals === true };
   lifeDayAt(tz, 0); // the offset (or offset history) is checked once, here
-  const hostOf = at => ({ ...account, lifeDay: lifeDayAt(tz, at) });
+  // placement: the --placement switch (W9) — answers carry it and commands carry the answer, as an account's do.
+  const placing = placement ? previewPlacement(placement) : null;
+  const hostOf = at => ({ ...account, lifeDay: lifeDayAt(tz, at), ...(placing ? placing.host() : {}) });
   function remember(records) {
     for (const record of records) {
       if (receipts.has(record.id)) continue;
@@ -220,7 +248,8 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
   const current = (world = state) => {
     const shown = snapshot(world);
     shown.state.events = log.slice(); shown.state.commands = [...receipts.values()]; shown.state.townEvents = [...townLog, ...(world.townEvents || [])];
-    return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled, evalSignals: account.evalSignals } };
+    return { ...shown, seen: { ...seen }, capabilities: { life: !!state.life && lifeEnabled, day: !!state.day && lifeEnabled, evalSignals: account.evalSignals },
+      ...(placing ? { placement: placing.read() } : {}) };
   };
   /** The old one-file shape; it carries the seen ledger and the evaluation lines only when they hold something. */
   const oneFile = (world, change) => ({ ...world, events: [...change.kept, ...change.lines], townEvents: [...townLog, ...change.town],
@@ -364,6 +393,13 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       return evalLines.length;
     },
     peek() { if (loadError) throw loadError; return current(); },
+    /** The answer to 「처음 이야기는 이 말로 해 볼까요?」 under --placement (W9): kept for this run like the account's
+     * town/placement; the next command carries it to the ladder. */
+    placement(input) {
+      if (loadError) throw loadError;
+      if (!placing) throw new TownError('placement-unavailable', '이 미리 보기에는 배치가 없어요.', 404);
+      return { ...placing.choose(input?.answer), worldSeq: state.writeSeq };
+    },
     read() {
       if (loadError) throw loadError;
       const world = settledTo(lease, { nowMs: hostNow() });
@@ -540,7 +576,7 @@ export function createServer({ previewEnabled = false, store = createStore({ dir
       try {
         if (route === '/api/preview/state' && req.method === 'GET') return json(res, 200, store.read());
         const operation = { '/api/preview/command': 'execute', '/api/preview/presence': 'presence',
-          '/api/preview/pulse': 'pulse', '/api/preview/boundary': 'boundary' }[route];
+          '/api/preview/pulse': 'pulse', '/api/preview/boundary': 'boundary', '/api/preview/placement': 'placement' }[route];
         if (!operation) return json(res, 404, { error: 'not-found' });
         if (req.method !== 'POST') return json(res, 405, { error: 'method-not-allowed' });
         if (req.headers.origin !== `http://${req.headers.host}`) return json(res, 403, { error: 'same-origin-required' });
@@ -594,7 +630,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   try { observe = parseObservation(process.argv.slice(2)); }
   catch (error) { console.error(`관찰 스위치: ${error.message}`); process.exit(2); }
   if (observe.active && !previewEnabled) { console.error('관찰 스위치는 --preview와 함께만 써요.'); process.exit(2); }
-  const store = createStore({ dir: defaultSaveDir(observe), file: defaultSavePath(observe), now: observationClock(observe), observe, sleeps: true });
+  const store = createStore({ dir: defaultSaveDir(observe), file: defaultSavePath(observe), now: observationClock(observe), observe, sleeps: true, placement: observe.placement });
   const server = createServer({ previewEnabled, store });
   server.on('error', error => { console.error(`Town server: ${error.code || 'unavailable'}`); process.exitCode = 1; });
   server.listen(port, '127.0.0.1', () => {

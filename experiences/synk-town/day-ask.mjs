@@ -8,6 +8,9 @@
  * 「자세히」 (the generated EVAL_CONSENT — never words written here).
  * The player's mascot is its WORLD tutor as this device remembers it; unknown, Mongle. Each mascot's picture was baked
  * with its card's scene (AGENTS — never the reference figures pasted on). Screen-only module; its look is day-ask.css.
+ * W9 adds two of the mascot's questions about the town's language (bridge §3-3·§4-3): widening (view.ask kind widen — the
+ * day's one question, 「나중에」 closes it unanswered) and the placement before the first conversation (the app's own ask —
+ * the host's town/placement, two answers and no close). They have no baked picture yet: the card shows the words alone.
  */
 import * as generated from './town/data.gen.mjs';
 
@@ -18,6 +21,9 @@ const DRAWN_AFTER_MS = 1200;
 // Read through the namespace: a browser may hold the generated data from before W6b for the cache's ten minutes.
 const TASTE = new Map((generated.ASK_LINES || []).map(line => [line.family, line]));
 const DETAIL_ROWS = Object.freeze([['purpose', '무엇을 위해'], ['uses', '쓰는 것'], ['notUsed', '쓰지 않는 것'], ['keep', '보관'], ['choose', '고르기'], ['notAsked', '묻지 않는 경우'], ['contact', '문의']]);
+// The language questions' words (W9): easy Korean, no levels or numbers — the next story's L is the town's to show.
+const WIDEN = Object.freeze({ line: '말을 조금 더 넓혀 볼까요?', lines: Object.freeze(['다음 이야기부터 조금 더 긴 말로 해요.', '수첩의 「이야기 말」에서 언제든 다시 고를 수 있어요.']) });
+const PLACE = Object.freeze({ line: '처음 이야기는 이 말로 해 볼까요?', lead: '이런 말로 이야기해요.' });
 
 /** The tutor this device's WORLD remembers (brand-opening/tutor-choice.mjs — one record per account): the one the
  * accounts on this device agree on, else null. Device storage only; nothing leaves the device. */
@@ -49,11 +55,21 @@ export function askModel(ask, { tutor = null, consent = generated.EVAL_CONSENT ?
     return { ...base, ver: consent.ver, picture: picture(who, 'consent'), line: e.ask, lines: [e.uses, e.where, e.keep, e.choose],
       answers: [['no', e.buttons.no], ['yes', e.buttons.yes]], more: e.buttons.more, detail: consent.detail };
   }
+  // Widening (§13-1): the seat named in the key; 「나중에」 is the card's close — unanswered, never a no.
+  const seat = ask.kind === 'widen' ? /^widen:(reading|listening):L[2-4]$/.exec(ask.key)?.[1] : null;
+  if (seat) return { ...base, channel: seat, picture: null, line: WIDEN.line, lines: [...WIDEN.lines],
+    answers: [['accepted', '넓혀 볼래요'], ['declined', '지금이 좋아요']], close: '나중에' };
+  // The placement (§4-3): one line of the first conversation in the suggested words, then 「이대로」 or 「더 쉬운 말로」.
+  if (ask.kind === 'placement' && typeof ask.example === 'string' && ask.example)
+    return { ...base, picture: null, line: PLACE.line, lines: [PLACE.lead, `「${ask.example}」`], answers: [['keep', '이대로'], ['easier', '더 쉬운 말로']], close: null };
   return null;
 }
 
-/** The command an answer sends: the taste answer (§20-3) or the consent (§20-4, with the contract's version). */
+/** The command an answer sends: the taste answer (§20-3), the consent (§20-4, with the contract's version), the widening
+ * answer (W9) or — the placement — the app's own PLACEMENT, which goes to the host and never to the town's commands. */
 export function answerCommand(model, answer) {
+  if (model.kind === 'widen') return ['LANGUAGE_ANSWER', { channel: model.channel, choice: answer === 'accepted' ? 'accepted' : 'declined' }];
+  if (model.kind === 'placement') return ['PLACEMENT', { answer: answer === 'keep' ? 'keep' : 'easier' }];
   return model.kind === 'taste' ? ['PREF_FAMILY', { family: model.family, answer: answer === 'yes' ? 'yes' : 'no' }]
     : ['EVAL_CONSENT', { state: answer === 'yes' ? 'granted' : 'declined', ver: model.ver }];
 }
@@ -83,15 +99,20 @@ export function createAsk(host, { command = async () => false, live, tutor = () 
     const key = model?.key;
     try { if (await command(type, payload) && key) gone.add(key); } finally { sending = false; paintBusy(); }
   };
-  close.addEventListener('click', () => { if (model) send('ASK_CLOSE', { key: model.key }); });
-  card.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); close.click(); } });
+  close.addEventListener('click', () => { if (model && model.close !== null) send('ASK_CLOSE', { key: model.key }); });
+  // A question with no close (the placement) keeps Escape for whatever is under it.
+  card.addEventListener('keydown', event => { if (event.key === 'Escape' && !close.hidden) { event.stopPropagation(); close.click(); } });
   function paintBusy() { for (const b of card.querySelectorAll('button')) b.disabled = sending && !b.classList.contains('ask-more'); }
   function paint() {
-    const sig = JSON.stringify([model.key, model.tutor, model.line, detailOpen]);
+    const sig = JSON.stringify([model.key, model.tutor, model.line, model.lines, detailOpen]);
     if (sig === drawnSig) return;
     const keep = card.contains(document.activeElement) ? document.activeElement.dataset.focus || null : null;
     drawnSig = sig; card.dataset.kind = model.kind;
-    if (img.dataset.src !== model.picture) { img.dataset.src = model.picture; img.src = model.picture; img.width = model.kind === 'consent' ? 600 : 360; img.height = model.kind === 'consent' ? 400 : 360; }
+    // The language questions draw their words alone until their own pictures are baked (W9).
+    figure.hidden = !model.picture;
+    if (model.picture && img.dataset.src !== model.picture) { img.dataset.src = model.picture; img.src = model.picture; img.width = model.kind === 'consent' ? 600 : 360; img.height = model.kind === 'consent' ? 400 : 360; }
+    close.hidden = model.close === null; close.textContent = model.close ?? '닫기';
+    close.setAttribute('aria-label', model.close ? `${model.close} — 답하지 않고 닫기` : '답하지 않고 닫기');
     who.textContent = model.name; line.textContent = model.line;
     lines.hidden = !model.lines; lines.replaceChildren(...(model.lines || []).map(text => el('li', '', text)));
     actions.replaceChildren(...model.answers.map(([answer, label], i) => {
@@ -126,5 +147,8 @@ export function createAsk(host, { command = async () => false, live, tutor = () 
     reported.add(model.key);
     return { shown: true, drawn: model.key };
   }
-  return { update, metrics: () => (card.hidden ? null : { key: model?.key ?? null, kind: model?.kind ?? null, tutor: model?.tutor ?? null, detail: detailOpen, sending, drawn: reported.has(model?.key), rect: card.getBoundingClientRect().toJSON() }) };
+  /** The keyboard to the card's first answer (W9 — the first scene waits for the placement); false while it is not drawn. */
+  function focus() { if (card.hidden) return false; card.querySelector('.ask-actions button')?.focus({ preventScroll: true }); return true; }
+  return { update, focus, metrics: () => (card.hidden ? null : { key: model?.key ?? null, kind: model?.kind ?? null, tutor: model?.tutor ?? null, detail: detailOpen, sending, drawn: reported.has(model?.key),
+    picture: !figure.hidden, close: close.hidden ? null : close.textContent, line: model?.line ?? null, lines: model?.lines ?? null, rect: card.getBoundingClientRect().toJSON() }) };
 }
