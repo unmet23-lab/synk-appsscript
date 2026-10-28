@@ -56,11 +56,13 @@ accountLifecycle.register('member-activity',{onIdentity:()=>memberActivity.read(
 accountLifecycle.register('personalization',{onIdentity:()=>{if(sessionPurpose&&((library.owner&&library.owner!==sessionPurposeOwner)||['signed-out','signing-out','unconfigured'].includes(auth.status))){sessionPurpose=null;sessionPurposeOwner=null;}},render:()=>applyPersonalization()});
 accountLifecycle.register('commands',{onAccountChange:()=>{busy=new Set();}});
 accountLifecycle.register('library-view',{onAccountChange:({ownerChanged})=>{if(ownerChanged){detail='overview';filter='all';search='';$('search').value='';pulseLegacyView=false;}},render:()=>reconcileSelection()});
-accountLifecycle.register('dialogs-and-toast',{onAccountChange:()=>{
+accountLifecycle.register('dialogs-and-toast',{onAccountChange:({ownerChanged})=>{
   if($('leave-dialog').open)$('leave-dialog').close('keep');
   for(const id of ['content-dialog','personal-dialog'])if($(id).open)$(id).close();
   $('content-title').textContent='';$('content-description').textContent='';$('content-image').removeAttribute('src');$('personal-message').textContent='';
-  toastSeq++;clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';
+  // A notice belongs to the person it was said to: only a change of person clears it. The same account's library or session
+  // arriving again (right after a browser sign-in, for one) keeps 「○○ 님으로 로그인했어요」 up.
+  if(ownerChanged){toastSeq++;clearTimeout(toastTimer);$('toast').hidden=true;$('toast').textContent='';}
 }});
 accountLifecycle.register('device-preferences',{onAccountChange:({ownerChanged})=>{if(ownerChanged){prefs=parsePreferences(readPrefs());personal=createPersonal();}}});
 accountLifecycle.register('pulse-drafts',{hasUnsavedDrafts:()=>pulseClient.hasUnsavedChanges(),discardDraft:()=>pulseClient.discard()});

@@ -81,6 +81,7 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     }
     return nodes.get(id);
   }
+  element('toast').hidden=true; // index.html starts the notice hidden
   const root=element('html');root.dataset=new Proxy({}, {set(object,key,value){object[key]=value;if(key==='ready')ready.resolve(value);return true;}});
   const document={getElementById:element,documentElement:root,activeElement:null,head:element('head'),createElement:tag=>new ContinuityElement(tag),
     querySelectorAll:selector=>selector==='dialog[open]'?[...nodes.values()].filter(node=>node.open):[],
@@ -435,6 +436,18 @@ test('a sign-in finished after a retryable check still lands where it started',a
   assert.equal(await f.ready,'true');await f.click('download-shortcut');await f.click('sign-in');
   f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:++generation});f.emit('auth',{...signedOut,status:'error',sessionGeneration:++generation,error:{code:'NETWORK',message:'서버에 연결하지 못했어요.',retryable:true}});
   f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:++generation});f.emit('auth',account('student-a',['world'],{sessionGeneration:++generation}));assert.equal(f.view(),'downloads');
+});
+// The main process sends the same account again right after a sign-in (the library and the suite publish land a moment
+// later): the sign-in notice belongs to that account and stays; only a change of person clears notices.
+test('a same-account refresh after a browser sign-in keeps the sign-in notice',async()=>{
+  const f=await fixture({initialAuth:signedOut,bridgeOverrides:{authSignIn:async()=>{f.emit('auth',{...signedOut,sessionGeneration:2});const signing={...signedOut,status:'signing-in',sessionGeneration:3};f.emit('auth',signing);return signing;}}});
+  assert.equal(await f.ready,'true');await f.click('sign-in');
+  f.emit('auth',{...signedOut,status:'restoring',sessionGeneration:4});f.emit('auth',account('student-a',['world'],{sessionGeneration:5,library:{status:'unavailable',appIds:[]}}));
+  assert.equal(f.element('toast').textContent,'합성 student-a 님으로 로그인했어요.');
+  f.emit('auth',account('student-a',['world'],{sessionGeneration:5}));f.emit('auth',account('student-a',['world'],{sessionGeneration:6}));
+  assert.equal(f.element('toast').hidden,false);assert.equal(f.element('toast').textContent,'합성 student-a 님으로 로그인했어요.');
+  // Another person signing in still clears what was said to the first.
+  f.emit('auth',account('student-b',['world'],{sessionGeneration:7}));assert.notEqual(f.element('toast').textContent,'합성 student-a 님으로 로그인했어요.');
 });
 // The start-up restore is not a sign-in.
 test('restoring a saved sign-in at start-up says nothing',async()=>{
