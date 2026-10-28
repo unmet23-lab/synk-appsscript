@@ -496,16 +496,17 @@ const runner = {
   },
 };
 
-// 주문 폭주: core.mjs의 주문 글(ORDERS·REVIEW)과 cafe.mjs의 손님 동물 → wav(22050Hz 16bit mono, 게임이 바로 튼다).
+// 주문 폭주: 원고 전체(BASE_ORDERS·ADDITIONAL_ORDERS·REVIEW)와 cafe.mjs의 손님 동물 → wav(22050Hz 16bit mono).
+// 제작 목록에는 지연 확인·아직 검수 대기인 기존 음성도 든다. 실행 시 공개 여부는 core.mjs의 ready 필터가 맡는다.
 // 게임이 읽는 목록은 없다. qa/audio-assets.json은 qa/verify-assets.mjs(서버를 띄워 잼)가 쓴다.
 const orderRush = {
   id: 'order-rush', label: '주문 폭주', speakers: Object.fromEntries(ANIMALS.map(a => [a, a])),
   post: '앞 0.13초·끝 0.83초 여백, -22.5 LUFS 고정 이득 → wav 22050Hz 16bit mono (지금 Windows 음성 파일의 실측과 같게)',
   async jobs(repo = REPO) {
     const dir = gameDir(this.id, repo);
-    const { ORDERS, REVIEW } = await importFile(path.join(dir, 'core.mjs'));
+    const { BASE_ORDERS, ADDITIONAL_ORDERS, REVIEW } = await importFile(path.join(dir, 'core.mjs'));
     const { customerOf } = await importFile(path.join(dir, 'cafe.mjs'));
-    return [...ORDERS, ...REVIEW].map(o => job(this.id, o.id, customerOf(o.id), o.text, [`audio/${o.id}.wav`], { speaker: customerOf(o.id) }));
+    return [...BASE_ORDERS, ...ADDITIONAL_ORDERS, ...REVIEW].map(o => job(this.id, o.id, customerOf(o.id), o.text, [`audio/${o.id}.wav`], { speaker: customerOf(o.id) }));
   },
   current(repo = REPO) { return listFiles(path.join(gameDir(this.id, repo), 'audio'), /\.wav$/).map(f => 'audio/' + f); },
   shipped(repo = REPO) { return readJson(path.join(gameDir(this.id, repo), 'qa', 'voice-bank.json')).map(o => ({ id: o.id, text: o.text })); },

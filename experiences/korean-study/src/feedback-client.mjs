@@ -46,7 +46,7 @@ export function createFeedbackClient({storage=globalThis.sessionStorage,fetcher=
    const url=new URL(`/functions/v1/${endpoint}`,config.accountApiUrl);
    if(kind==='study'){url.searchParams.set('view','study');if(method==='GET')url.searchParams.set('revision',String(revision));}
    const r=await fetcher(url,{method,credentials:'omit',cache:'no-store',redirect:'error',signal:controller.signal,
-    headers:{'Content-Type':'application/json',authorization:`Bearer ${access}`,apikey:config.supabasePublishableKey,'X-SYNK-Contract':'1','X-SYNK-Product':'world'},...(method==='POST'?{body:JSON.stringify(payload)}:{})});
+    headers:{'Content-Type':'application/json',authorization:`Bearer ${access}`,apikey:config.supabasePublishableKey,'X-SYNK-Contract':'1','X-SYNK-Product':'world','X-SYNK-App-Version':'1.0.0'},...(method==='POST'?{body:JSON.stringify(payload)}:{})});
    check();let data;try{data=await r.json();}catch(e){check();if(r.status===401)throw Object.assign(error('AUTH_REQUIRED'),{status:401});throw e;}check();
    if(!r.ok||!data?.ok)throw Object.assign(error(data?.error?.code||data?.code||'UNAVAILABLE'),{status:r.status,...(Number.isSafeInteger(data?.revision)?{revision:data.revision}:{})});
    const accountId=kind==='account'?data.account?.synk_user_id:data.accountId;

@@ -459,14 +459,14 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const two=topik2Domains(),exams=studentExam(values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
   // TOPIK II 판: TOPIK II 문항이 아직 없는 영역은 이번 주 계획이 TOPIK I 항목으로 센다(계획의 available.topik2와 같은 판단) — 판이 그 영역에 알린다.
   const bridged=exam==='topik2'?['listening','reading'].filter(domain=>!two[domain]):[];
-  return {map,plan,gate,mock,exam,writing,exams,bridged};
+  return {map,plan,gate,mock,exam,writing,exams,bridged,summary};
  }
  function showBoard(coachNow,{keepScroll=false}={}){
   check();
   // 듣기 항목의 「이 항목 연습하기」는 지금 추천 후보에서 찾으므로 판을 그리기 전에 추천을 새로 세운다(10-21 검수).
   refresh();
   const scroller=keepScroll?panelNode('[data-position-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
-  const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged}=positionData(coachNow,id=>routes.has(id));
+  const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged,summary}=positionData(coachNow,id=>routes.has(id));
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
   home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:position.label,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
   const root=panelNode('[data-position-board]');
@@ -475,7 +475,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const rows=delayed.rows.map(row=>`<li><strong>${escape(t(`position.skill.${row.measure.skillId}`))}</strong> · ${escape(t(`followup.window.${row.window}`))}<p>${escape(t(`followup.status.${row.status}`))}${row.status==='not_due'?` · ${escape(formatDate(Date.parse(row.dueAt),{month:'short',day:'numeric'}))}`:''}${row.outcome?` · ${escape(t(`followup.outcome.${row.outcome}`))}`:''}</p>${row.status==='due'?(row.available?`<button class="quiet-button" data-followup="${escape(row.id)}">${escape(t('followup.open'))}</button>`:`<p>${escape(t('followup.noSupply'))}</p>`):''}</li>`).join('');
    root.insertAdjacentHTML('beforeend',`<section class="wpos-followups"><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${delayed.limited?`<p role="status">${escape(t('followup.incomplete'))}</p>`:''}${rows?`<ul>${rows}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`);
    root.querySelectorAll('[data-followup]').forEach(button=>button.addEventListener('click',()=>{void startPractice(null,{followupId:button.dataset.followup}).catch(failed);}));
-   const summary=coachNow.summary(),supply=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow)});
+   const supply=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow)});
    const targets=map.skills.filter(row=>['practice','supported','review'].includes(row.status)||row.incorrect>0).map(row=>row.id);
    const advisory=advisoryRows({targets,summary,lookup:position.recommendedBefore,supply});
    if(advisory.length){root.insertAdjacentHTML('beforeend',`<section class="wpos-advisory"><h3>${escape(t('followup.advisory'))}</h3><p>${escape(t('followup.optional'))}</p>${advisory.map(row=>`<p><button class="quiet-button" data-advisory="${escape(row.id)}">${escape(t(`position.skill.${row.id}`))}</button> → ${escape(t(`position.skill.${row.target}`))}</p>`).join('')}</section>`);

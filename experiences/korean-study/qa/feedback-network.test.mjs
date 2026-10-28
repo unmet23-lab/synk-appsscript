@@ -39,6 +39,7 @@ test('진도 신원은 AI 지원과 독립이고 고정된 제품 API와 revisio
  assert.equal(progress[0].url.search,'?view=study&revision=3');assert.equal(progress[0].options.method,'GET');assert.equal(progress[0].options.body,undefined);
  assert.equal(progress[1].url.search,'?view=study');assert.deepEqual(progress[1].body,{revision:3,baseVersion:0,study});
  for(const c of progress){assert.equal(c.options.headers.authorization,'Bearer fixture');assert.equal(c.options.headers['X-SYNK-Product'],'world');assert.equal(c.options.credentials,'omit');assert.equal(c.options.redirect,'error');}
+ for(const c of h.calls.filter(c=>c.url.pathname.startsWith('/functions/v1/')))assert.equal(c.options.headers['X-SYNK-App-Version'],'1.0.0','Study uses the existing WORLD web app version for AI, account and progress requests');
  const disabled=harness({enabled:false});assert.deepEqual(await disabled.client.learningSession(),{accountId:ACCOUNT,enabled:false,revision:3});
  const guest=harness({stored:false});assert.equal(await guest.client.learningSession(),null);assert.equal(guest.calls.length,0);
 });

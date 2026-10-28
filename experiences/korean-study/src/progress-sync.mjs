@@ -1,10 +1,35 @@
 // A single-account CAS snapshot over the existing learning-consent transport.
 // No automatic history merge: Study's sequential event IDs belong to the saved snapshot.
 const canonical=v=>Array.isArray(v)?'['+v.map(canonical).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}':JSON.stringify(v);
+// Match the server's minimized progress contract. Semantic prompts/choices and
+// local planning detail may grow independently; they never join the sync payload.
+const observationFields={
+ write:['itemId','support','same','plain','off','total','formal','polite','flags','axes','verdict','unknown','linked','first','mode','pasted','source'],
+ sort:['card','bin','ok','use'],form:['id','axis','use','ok'],find:['id','ok'],change:['ok'],
+ method:['method'],probe:['probe'],cycle:[],semantic:['stage','skill','source','result']
+};
+const planFields=['scene','why','method','probe','mode','source','skill','stage','hypothesis','itemId','support'];
+const eventFields={
+ 'decision.made':['plan'],
+ 'practice.presented':['decisionId','taskId','taskVersion','itemKey','conceptIds','firstExposure'],
+ 'practice.attempted':['presentationId','attemptNo','verdict','errorTags','choice'],
+ 'practice.helped':['presentationId','helpId','level','contentRef']
+};
+function pickFields(value,keys){
+ if(!value||typeof value!=='object'||Array.isArray(value))return structuredClone(value);
+ return Object.fromEntries(keys.filter(key=>Object.hasOwn(value,key)).map(key=>[key,structuredClone(value[key])]));
+}
+function progressEvent(event){
+ const row=pickFields(event,['id','type','scope','at','recordedAt',...(event.type==='decision.made'?[]:['schema']),...(eventFields[event.type]||[])]);
+ if(Object.hasOwn(row,'scope'))row.scope=pickFields(row.scope,['domain','workspace','subject']);
+ if(Object.hasOwn(row,'plan'))row.plan=pickFields(row.plan,planFields);
+ if(Object.hasOwn(row,'choice'))row.choice=pickFields(row.choice,['selectedId','correctId']);
+ return row;
+}
 export function progressSnapshot(state){
- const snapshot=Object.fromEntries(['v','seq','obs','trail','seen','recentCards'].map(key=>[key,structuredClone(state[key])]));
- // 최근 AI 질문·선택지·해설 문구는 이번 글 전송 동의로만 보내며 계정 진도 저장에는 넣지 않는다.
- snapshot.obs=snapshot.obs.map(o=>{if(o.kind!=='semantic')return o;const {detail,...progress}=o;return progress;});
+ const snapshot=pickFields(state,['v','seq','seen','recentCards']);
+ snapshot.obs=state.obs.map(o=>pickFields(o,['at','kind','n','ev',...(observationFields[o.kind]||[])]));
+ snapshot.trail=state.trail.map(progressEvent);
  return snapshot;
 }
 const hasHistory=s=>!!s&&(s.obs?.length>0||s.trail?.length>0||Object.keys(s.seen||{}).length>0);

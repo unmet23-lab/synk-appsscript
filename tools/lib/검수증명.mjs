@@ -156,6 +156,7 @@ const Atlas원천파일 = new Set([
     'town-scope.js', 'study-progress-rules.js', 'town-learning.js'].map(p => `lib/${p}`),
   'supabase/migrations/20261028180000_study_progress_c18.sql',
   'supabase/functions/_shared/synk-atlas-summary.js',
+  'supabase/functions/_shared/synk-personal-runtime.js', 'tools/synk-personal-source-manifest.json',
   'tests/lib/migration-branches.js', 'tests/backend-followup-runtime.test.js', 'tools/backend-runtime-manifest.json',
   'supabase/L0_스키마.sql', 'supabase/확인_적용후상태.sql',
   'docs/Temper_개입로그_규격_v1.md', 'docs/맞춤학습_로컬연결.md',
@@ -163,10 +164,15 @@ const Atlas원천파일 = new Set([
   'docs/_ops/배포장부.jsonl', 'docs/_ops/qa/atlas-world-learning-20261028/README.md',
   ...['결정.md', '트랙.md', '관문_자동화.md'].map(p => `docs/_ops/${p}`),
 ]);
+// 이번 학습 묶음의 참조 토큰을 공개 도구가 바꾸는 HTML만 추가한다.
+const Atlas토큰HTML = new Set([
+  'id/index.html', 'id-rehearsal/index.html', 'synk-town/linked.html',
+  ...['learning-hub', 'racing', 'story-classroom', 'word-magic'].map(p => `try/${p}/index.html`),
+]);
 function Atlas범위맞나(scope, p, role) {
   if (scope !== Atlas작업ID) return false;
   if (role === '배포 후보') return !/(?:^|\/)(?:qa|tests|_ops)(?:\/|$)/.test(p)
-    && (/^(?:world\/|try\/(?:order-rush|rhythm)\/|study\/|account\/)/.test(p) || 공개소비처경로.has(p));
+    && (/^(?:world\/|try\/(?:order-rush|rhythm)\/|study\/|account\/)/.test(p) || 공개소비처경로.has(p) || Atlas토큰HTML.has(p));
   return Atlas원천파일.has(p) || 단독원천추가.has(p) && /atlas-learning\.js$/.test(p)
     || /^(?:atlas\/|strata\/|account\/|lib\/atlas\/|experiences\/(?:synk-account|synk-world-app|synk-town|korean-study|korean-rhythm|order-rush|topik-items)\/)/.test(p)
     || /^tools\/lib\/(?:loom|vellum|trail|prism|temper|reed)(?:[-.][a-zA-Z0-9_.-]+)\.(?:[cm]?js|json)$/.test(p)

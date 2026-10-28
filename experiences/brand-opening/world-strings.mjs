@@ -543,7 +543,7 @@ export default {
  'practice.changed.cell':{ko:'이 항목의 칸이 바뀌었어요: {from} → {to}',en:'This skill moved: {from} → {to}',mn:'Энэ чадварын ангилал өөрчлөгдсөн: {from} → {to}'},
  'practice.changed.more':{ko:'이 항목에 혼자 낸 새 문항 답이 {n}개 더 쌓였어요.',en:{one:'1 more answer on a new question was added for this skill.',other:'{n} more answers on new questions were added for this skill.'},mn:'Энэ чадварт өөрөө хариулсан шинэ асуулт {n} нэмэгдлээ.'},
  'practice.changed.none':{ko:'이번에는 이 항목의 기록이 달라지지 않았어요.',en:'This skill’s record didn’t change this time.',mn:'Энэ удаа энэ чадварын бүртгэл өөрчлөгдсөнгүй.'},
- 'followup.finished':{ko:'이번 확인을 마쳤어요. 다른 연습은 내 위치에서 이어갈 수 있어요.',en:'This check is finished. You can continue other practice from My Position.',mn:'Энэ шалгалт дууслаа. Бусад дасгалыг «Миний түвшин» хэсгээс үргэлжлүүлж болно.'},
+ 'followup.finished':{ko:'이번 확인을 마쳤어요. 다른 연습은 내 위치에서 이어갈 수 있어요.',en:'This check is finished. You can continue other practice from Where I stand.',mn:'Энэ шалгалт дууслаа. Бусад дасгалыг «Миний ахиц» хэсгээс үргэлжлүүлж болно.'},
  'practice.doneTitle':{ko:'읽기 짧은 연습, 끝!',en:'Short reading practice, done!',mn:'Уншлагын богино дасгал дууслаа!'},
  'practice.doneSummary':{ko:'혼자 맞힘 {right} · 틀림 {wrong} · 건너뜀 {skipped}',en:'Right on my own {right} · wrong {wrong} · skipped {skipped}',mn:'Өөрөө зөв хариулсан {right} · буруу {wrong} · алгассан {skipped}'},
  'practice.misses':{ko:'틀린 문항 다시 보기',en:'Look again at the ones you missed',mn:'Алдсан асуултаа дахин харах'},

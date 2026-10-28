@@ -1,20 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { ORDERS, REVIEW, makeCup, editCup } from './core.mjs';
+import { BASE_ORDERS, ORDERS, DELAYED_ORDERS, REVIEW, makeCup, editCup } from './core.mjs';
 import { ANIMALS, customerOf, customerName, cupLabel, liquidOf } from './cafe.mjs';
 
 const here = new URL('./', import.meta.url);
 
 test('주문마다 손님이 정해져 있고, 본 주문 12개는 모두 다른 손님이다(줄에 같은 얼굴이 겹치지 않는다)', () => {
-  for (const o of [...ORDERS, ...REVIEW]) {
+  for (const o of [...ORDERS, ...DELAYED_ORDERS, ...REVIEW]) {
     const key = customerOf(o.id);
     assert.ok(ANIMALS[key], o.id);
     assert.ok(fs.existsSync(new URL(`assets/cast/${key}.webp`, here)), `${key} 그림`);
     assert.ok(fs.existsSync(new URL(`assets/cast/face/${key}.webp`, here)), `${key} 얼굴`);
     assert.match(customerName(o.id), / 손님$/);
   }
-  assert.equal(new Set(ORDERS.map((o) => customerOf(o.id))).size, ORDERS.length);
+  assert.equal(BASE_ORDERS.length, 12);
+  assert.equal(new Set(BASE_ORDERS.map((o) => customerOf(o.id))).size, BASE_ORDERS.length);
 });
 
 test('컵 한 줄 이름은 넣은 것만 적는다', () => {

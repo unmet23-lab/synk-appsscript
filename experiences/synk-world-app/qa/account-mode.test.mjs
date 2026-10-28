@@ -84,8 +84,8 @@ test('W3 town host sends pulse·boundary only to an account bundle that routes t
 });
 test('Town iframe host exposes methods, never credentials, and rejects a command after logout',async()=>{
  const f=fixture();await f.client.restore();const host=createTownWorldHost(f.client);
- assert.deepEqual(Object.keys(host),['appearance','subscribe','refresh','request','placement','choosePlacement','dispose']);assert.equal(JSON.stringify(host).includes('token-a'),false);
- await f.client.logout();const sent=f.calls.length;await assert.rejects(host.request('command',{id:'old'}),{code:'ACCOUNT_CHANGED'});assert.equal(f.calls.length,sent);assert.equal(host.appearance().verified,false);host.dispose();
+ assert.deepEqual(Object.keys(host),['appearance','subscribe','languageContext','refresh','request','placement','choosePlacement','dispose']);assert.equal(JSON.stringify(host).includes('token-a'),false);assert.deepEqual(host.languageContext(),{summary:null,today:{}});
+ await f.client.logout();const sent=f.calls.length;await assert.rejects(host.request('command',{id:'old'}),{code:'ACCOUNT_CHANGED'});assert.throws(()=>host.languageContext(),{code:'ACCOUNT_CHANGED'});assert.equal(f.calls.length,sent);assert.equal(host.appearance().verified,false);host.dispose();
 });
 test('enrollment only calls fixed preview/claim route and never treats a token as automatic enrollment',async()=>{
  const f=fixture({fetcher:async url=>url.includes('/enrollment/')?reply({ok:true,invite:{className:'fixture'}}):reply(snapshot())});await f.client.restore();

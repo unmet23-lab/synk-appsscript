@@ -59,3 +59,11 @@ desktop/renderer/platform-continuity.css text eol=lf
 
 # 메신저 통화의 벤더 SDK는 npm 원본 바이트·기록한 해시와 같아야 한다(원본에 CRLF 줄이 섞여 있다). 줄끝 변환을 하지 않는다.
 tools/company-messenger/public/vendor/** -text -diff
+
+# Town 고정 검수의 원문은 CRLF, 독립 검수 증거는 LF 바이트로 승인됐다. OS가 바뀌어도 그 hash를 그대로 보존한다.
+experiences/synk-town/town/data/lines/tea.json text eol=crlf
+experiences/synk-town/town/data/tea.json text eol=crlf
+experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-full.json text eol=lf
+experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-blind-all.json text eol=lf
+experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-blind-solved.json text eol=lf
+experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-result.json text eol=lf

@@ -7,7 +7,7 @@ import {worldLearning} from '../world-learning-map.mjs';
 import {createWorldLearningPlan} from '../world-learning-plan.mjs';
 worldPosition.topik.use(JSON.parse(fs.readFileSync(new URL('../world-topik-items.json',import.meta.url))));
 const memory=()=>{const values=new Map();return {getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)};};
-const node=()=>({isConnected:true,innerHTML:'',listeners:{},focus(){},closest(){return null;},querySelector(){return null;},querySelectorAll(){return [];},addEventListener(type,fn){this.listeners[type]=fn;}});
+const node=()=>({isConnected:true,innerHTML:'',listeners:{},insertAdjacentHTML(where,html){assert.equal(where,'beforeend');this.innerHTML+=html;},focus(){},closest(){return null;},querySelector(){return null;},querySelectorAll(){return [];},addEventListener(type,fn){this.listeners[type]=fn;}});
 for(const exam of ['topik1','topik2'])for(const audio of ['off','available'])test(`normal ${exam} diagnostic preserves the exam and results on completion and return, audio ${audio}`,async()=>{
  const panels=[],maps=[],errors=[],doneMaps=[],deliveries=[];let panel='',session=null,stage=null;
  const board=node(),diagnostic=node();

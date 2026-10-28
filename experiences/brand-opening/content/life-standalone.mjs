@@ -17893,13 +17893,13 @@ function createWorldEducation({
     const writing = exam === "topik2" && writingList().length > 0;
     const two2 = topik2Domains(), exams = studentExam(values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
     const bridged = exam === "topik2" ? ["listening", "reading"].filter((domain) => !two2[domain]) : [];
-    return { map, plan, gate, mock, exam, writing, exams, bridged };
+    return { map, plan, gate, mock, exam, writing, exams, bridged, summary };
   }
   function showBoard(coachNow, { keepScroll = false } = {}) {
     check3();
     refresh();
     const scroller = keepScroll ? panelNode("[data-position-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
-    const routes = practiceRoutes(coachNow), { map, plan, gate, mock, exam, writing, exams, bridged } = positionData(coachNow, (id) => routes.has(id));
+    const routes = practiceRoutes(coachNow), { map, plan, gate, mock, exam, writing, exams, bridged, summary } = positionData(coachNow, (id) => routes.has(id));
     let scope = null;
     try {
       scope = getProgress().status().scoped ? "account" : "device";
@@ -17915,7 +17915,7 @@ function createWorldEducation({
       root.querySelectorAll("[data-followup]").forEach((button) => button.addEventListener("click", () => {
         void startPractice(null, { followupId: button.dataset.followup }).catch(failed);
       }));
-      const summary = coachNow.summary(), supply = position.practice.practiceSupply({ pool: position.practice.pool, seen: seenBy(coachNow) });
+      const supply = position.practice.practiceSupply({ pool: position.practice.pool, seen: seenBy(coachNow) });
       const targets = map.skills.filter((row) => ["practice", "supported", "review"].includes(row.status) || row.incorrect > 0).map((row) => row.id);
       const advisory = advisoryRows({ targets, summary, lookup: position.recommendedBefore, supply });
       if (advisory.length) {

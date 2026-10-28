@@ -202,8 +202,8 @@ test('Atlas authorization rejects other tasks, quotes, scopes, reviewers, hashes
 test('Atlas source scopes include exact learning bundles and additive migration but exclude unrelated code',async t=>{
  const f=atlasAuthority(fixture(t,{sourceOnly:true})),o={...f.options,끝:'작업본'};
  const allowed=['atlas/temper.js','strata/topik-i.recommendations.json','account/world-learning-host.js','experiences/korean-study/src/progress-sync.mjs','experiences/synk-town/new-tea.mjs','experiences/korean-rhythm/supplemental.mjs','experiences/order-rush/audio/n01.wav','lib/study-progress-rules.js','lib/atlas/trail.js','supabase/functions/synk-learning/index.ts','supabase/migrations/20261028180000_study_progress_c18.sql','supabase/L0_스키마.sql','supabase/확인_적용후상태.sql','tools/검수묶음.mjs','tests/atlas-followups.test.js','docs/_ops/관문_자동화.md','experiences/learning-hub/atlas-learning.js'];
- allowed.push('tests/lib/migration-branches.js','tests/backend-followup-runtime.test.js','tools/backend-runtime-manifest.json');
- for(const p of [...allowed,'Code.js','payments/server.mjs','supabase/migrations/other.sql','tools/unrelated.js','tools/other-runtime-manifest.json','tests/other-backend.test.js','docs/_ops/private.md','experiences/learning-hub/unrelated.js']){
+ allowed.push('tests/lib/migration-branches.js','tests/backend-followup-runtime.test.js','tools/backend-runtime-manifest.json','supabase/functions/_shared/synk-personal-runtime.js','tools/synk-personal-source-manifest.json');
+ for(const p of [...allowed,'Code.js','payments/server.mjs','supabase/migrations/other.sql','tools/unrelated.js','tools/other-runtime-manifest.json','supabase/functions/_shared/other-runtime.js','tools/other-personal-source-manifest.json','tests/other-backend.test.js','docs/_ops/private.md','experiences/learning-hub/unrelated.js']){
   const bytes=Buffer.from('fixture\n');f.write(path.join(f.repo,p),bytes);f.record.sources=[{path:p,scope:Atlas작업ID,author:'GPT',sha256:sha256(bytes)}];f.write(f.recordFile,JSON.stringify(f.record));
   if(allowed.includes(p))assert.equal(정책만들기(o,[{경로:p,상태:'M'}],{판:4}).사용자지정.taskId,Atlas작업ID,p);
   else assert.throws(()=>정책만들기(o,[{경로:p,상태:'M'}],{판:4}),/범위·작성자/,p);
@@ -212,7 +212,8 @@ test('Atlas source scopes include exact learning bundles and additive migration 
 
 test('Atlas candidate scope permits deployed learning consumers while rejecting public tests and deletes',async t=>{
  const f=fixture(t,{candidateOnly:true}),allowed=['world/town/new-tea.mjs','try/order-rush/app.mjs','try/rhythm/supplemental.mjs','study/app.mjs','account/dist/client.js','id/vendor/atlas-learning.js','try/runner/atlas-learning.js'];
- for(const p of [...allowed,'world/qa/receipt.json','try/rhythm/tests/result.json','account/_ops/secret.json','payments/app.js','try/runner/unrelated.js']){
+ allowed.push('id/index.html','id-rehearsal/index.html','synk-town/linked.html',...['learning-hub','racing','story-classroom','word-magic'].map(p=>`try/${p}/index.html`));
+ for(const p of [...allowed,'world/qa/receipt.json','try/rhythm/tests/result.json','account/_ops/secret.json','payments/app.js','try/runner/unrelated.js','id/unrelated.html','id-rehearsal/unrelated.html','synk-town/index.html','try/travel/index.html']){
   candidateFiles(f,[[p,Buffer.from('fixture\n')]]);atlasAuthority(f);
   const run=()=>정책만들기({...f.options,끝:'작업본'},[],{판:4});
   if(allowed.includes(p))assert.equal(run().사용자지정.taskId,Atlas작업ID,p);else assert.throws(run,/범위·작성자/,p);
