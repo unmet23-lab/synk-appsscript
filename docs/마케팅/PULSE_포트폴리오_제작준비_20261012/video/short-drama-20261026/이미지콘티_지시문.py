@@ -671,7 +671,11 @@ C["2-25"].update(f="IS", fx=None)
 C["2-10"]["xref"] = ("2-10e", "Image {n} is the same hallway seen from the same camera position a moment later, after she has passed — "
                      "match the hallway, the doors, the floor and the camera height exactly; Ian stands behind her where he is in that "
                      "image, hidden by her body.")
-NOLOC2 = {"1-22", "1-23", "1-37", "2-1", "2-19", "2-34"}
+NOLOC2 = {"1-22", "1-23", "1-37", "2-1", "2-19", "2-34", "1-24"}
+C["1-24"]["t"] += " The faucet, the running water and her hand fill the frame; no kitchen room, no face or body visible."
+C["2-26"]["t"] = ("Medium shot of Ian lying face-down in bed, the lower half of his face — nose tip, mouth and chin — buried in the white "
+                  "pillow so his mouth is completely hidden; only his eyes and brows show above the pillow, looking up sideways, hurt and "
+                  "sulking.")   # 10-28 입 맞춤 점검: 첫 판은 입이 다 보였다(말 컷인데 입 맞춤 없음 — 원본처럼 베개에 묻음)   # 10-28 보드: 부엌 장소 그림이 접사를 넓게 끌었다
 # 10-28 Opus 3차(git 밖 콘티/p7/검수/opus_이미지콘티_3차/답.md) — 같은 장면의 이어짐이 끊긴 중 넷 + 1-37 하(36차). 장소 그림 대신 같은 장면의 정지컷을 참고로(xref)
 C["1-23"]["t"] = ("The camera stands inside the hallway about 2 m from the inner door, which is the same light wooden-framed hinged door with a "
                   "3 by 5 grid of frosted glass panes as in the previous shot, now swung open inward. Ian, in his suit, is just stepping in "
