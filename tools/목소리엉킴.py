@@ -111,7 +111,10 @@ def main(argv):
         v = np.array([x[1] for x in a])
         hz = top_pitch(path)
         high = f'{hz:.0f}Hz' + (' ⚠ 높아 뒤집힐 수 있음' if hz and hz > PITCH_WARN else '') if hz else '-'
-        print(f'{path}\t엉킨 프레임 {100 * (v > limit).mean():5.1f}% · 최악 3프레임 {np.sort(v)[-3:].mean():.2f} · 중앙 {np.median(v):.2f} · 프레임 {len(v)} · 최고 음높이 {high}')
+        # 중앙 기본음 — 엉킴 비율은 기본음이 낮은 남자 목소리에서 결함 없이도 높게 나온다(범수 45~65%). tools/올리기전검사.js는 이 값이
+        # 165Hz 이상인 목소리만 엉킴으로 가른다(10-28)
+        f0 = np.median([x[2] for x in a])
+        print(f'{path}\t엉킨 프레임 {100 * (v > limit).mean():5.1f}% · 최악 3프레임 {np.sort(v)[-3:].mean():.2f} · 중앙 {np.median(v):.2f} · 프레임 {len(v)} · 최고 음높이 {high} · 중앙 기본음 {f0:.0f}Hz')
     return 0
 
 

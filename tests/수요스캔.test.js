@@ -622,6 +622,9 @@ test('우리 계정 — 핸들만으로 채널을 찾아 비교 줄에만 두고
         if (종류 === '탭') return { 상태: '됨', 줄들: [탭], 오류: '', 오류글: '' };
         if (종류 === '틱톡') return { 상태: '됨', 줄들: [{ id: '7200000000000000001', view_count: 4000, upload_date: '20261024', duration: 20 },
           ...Array.from({ length: 6 }, (_, i) => ({ id: String(7300000000000000000n + BigInt(i)), view_count: 100, upload_date: '20261010' }))], 오류: '', 오류글: '' };
+        // 10-28 우리 편 댓글 — 창 안 우리 편의 댓글 본문만 읽는다(쓴 사람 칸은 버린다)
+        if (종류 === '영상' && 값.id === 'OUR1aaaaaaa' && 값.댓글수 > 0) return { 상태: '됨', 줄들: [{ id: 'OUR1aaaaaaa', title: '우리 편', upload_date: '20261025', duration: 20,
+          view_count: 3440, comments: [{ id: 'k1', parent: 'root', text: '이거 저장해요 다음 편도요', like_count: 4, author: '보는사람', author_id: 'UCviewer0000000000000000' }] }], 오류: '', 오류글: '[youtube] Downloading ~1 comments' };
         throw new Error(`우리 계정에는 ${종류}를 부르지 않는다`);
       },
       async rss(url) { 불림.push(['rss', url]); return { 상태: '됨', 글: rss글([{ id: 'OUR1aaaaaaa', 날짜: '2026-10-25', 조회: 3440 }]), 오류: '' }; } };
@@ -634,6 +637,11 @@ test('우리 계정 — 핸들만으로 채널을 찾아 비교 줄에만 두고
     assert.deepEqual(Object.keys(누적.튄편), []);
     assert.deepEqual(요약.우리.map(u => [u.곳, u.계정, u.기준.중앙값]), [['유튜브', '@ours', 172], ['틱톡', '@our_tt', 100]]);
     assert.deepEqual(요약.우리[0].편[0], { id: 'OUR1aaaaaaa', 날짜: '2026-10-25', 조회: 3440, 배수: 20 });
+    assert.deepEqual(요약.우리[0].댓글.map(d => [d.id, d.읽은수, d.파일]), [['OUR1aaaaaaa', 1, '댓글/synkbrief/우리_OUR1aaaaaaa.json']], '우리 편 댓글을 모은다');
+    const 우리댓글 = fs.readFileSync(path.join(출력, '댓글', 'synkbrief', '우리_OUR1aaaaaaa.json'), 'utf8');
+    assert.match(우리댓글, /다음 편도요/);
+    assert.doesNotMatch(우리댓글, /보는사람|UCviewer/, '쓴 사람 이름·아이디는 남기지 않는다');
+    assert.match(판정.요약글({ 날짜: '2026-10-26', 브랜드: { synkbrief: 요약 } }), /우리 편 댓글 \*\*OUR1aaaaaaa\*\*/);
     assert.equal(누적.채널[OURS].핸들, '@ours', '핸들로 찾은 채널 ID를 누적에 둔다');
     assert.ok(불림.some(([종류, 대상]) => 종류 === '탭' && 대상 === '@ours'));
     불림.length = 0;
@@ -1424,9 +1432,13 @@ test('Data API 길 — 핸들만 적은 우리 계정도 API로 찾아 비교 �
   try {
     const OURS = 'UC' + 'o'.repeat(22);
     const 편 = ['OUR1aaaaaaa', ...Array.from({ length: 12 }, (_, i) => vid('U', i))];
-    const 영상 = Object.fromEntries(편.map((v, i) => [v, { 채널: OURS, 날짜: i ? '2026-10-10' : '2026-10-25', 조회: i ? 172 : 3440, 길이: 20 }]));
+    // 댓글 수가 0인 우리 편은 댓글을 부르지 않는다(API 숫자로 거른다) — 댓글 있는 OUR1만 yt-dlp로 본문을 읽는다(10-28)
+    const 영상 = Object.fromEntries(편.map((v, i) => [v, { 채널: OURS, 날짜: i ? '2026-10-20' : '2026-10-25', 조회: i ? 172 : 3440, 길이: 20, 댓글: i ? 0 : 2 }]));
     const { api, 불림 } = 가짜api({ 채널: { [OURS]: { 이름: '우리', 핸들: '@ours', 구독: 8 } }, 목록: { [OURS]: 편 }, 영상 });
-    const 부르개 = 가짜((종류) => { throw new Error(`우리 계정에는 ${종류}를 부르지 않는다`); });
+    const 부르개 = 가짜((종류, 값) => {
+      if (종류 === '영상' && 값.id === 'OUR1aaaaaaa') return { 상태: '됨', 줄들: [{ id: 'OUR1aaaaaaa', comments: [{ id: 'k1', parent: 'root', text: '좋아요', like_count: 1 }, { id: 'k2', parent: 'root', text: '다음 편은?', like_count: 0 }] }], 오류: '', 오류글: '' };
+      throw new Error(`우리 계정에는 ${종류}(${값.id})를 부르지 않는다`);
+    });
     const { 설정 } = 판정.설정검사({ 브랜드: 'synkbrief', 이름: '시험', 유튜브: [{ 핸들: '@ours', 이름: '우리', 우리: true }], 검색: { 어: ['q'], 회차당: 0 } }, 'synkbrief');
     const 누적 = 판정.빈누적('synkbrief');
     const { 요약 } = await 스캔.브랜드스캔({ 설정, 누적, o: 스캔.인자(['synkbrief', '--틱톡', '0']), 부르개, api, 캐시: new Map(), 오늘: '2026-10-26', 출력 });
@@ -1434,6 +1446,8 @@ test('Data API 길 — 핸들만 적은 우리 계정도 API로 찾아 비교 �
     assert.deepEqual(요약.새튄편, []);
     assert.deepEqual(요약.우리.map(u => [u.곳, u.계정, u.기준.중앙값]), [['유튜브', '@ours', 172]]);
     assert.equal(누적.채널[OURS].핸들, '@ours');
+    assert.deepEqual(요약.우리[0].댓글.map(d => [d.id, d.댓글수, d.읽은수]), [['OUR1aaaaaaa', 2, 2]]);
+    assert.deepEqual(부르개.불림.filter(([종류]) => 종류 === '영상').map(([, id]) => id), ['OUR1aaaaaaa'], '댓글 0인 우리 편은 부르지 않는다');
   } finally {
     require('node:fs').rmSync(출력, { recursive: true, force: true });
   }
@@ -1460,5 +1474,49 @@ test('Data API 길 — main은 가짜 부르개만 주면 API를 만들지 않�
     assert.deepEqual(요약.브랜드['lab-en'].새튄편.map(r => [r.id, r.길이]), [['NEW1aaaaaaa', 12]]);
   } finally {
     fs.rmSync(폴더.뿌리, { recursive: true, force: true });
+  }
+});
+
+test('짝 브랜드(synkbrief · yuhobuilds)는 시드가 겹치지 않고, 짝의 시드 · 찾은 채널은 검색으로 찾아도 들이지 않는다(10-28)', async () => {
+  const 설정 = b => 스캔.설정읽기(b).설정;
+  assert.deepEqual(판정.시드겹침(설정('synkbrief'), 설정('yuhobuilds')), [], '지금 두 설정은 겹치지 않는다');
+  const 가 = 판정.설정검사({ 브랜드: 'synkbrief', 이름: '가', 유튜브: [{ id: 'UC' + 'a'.repeat(22), 이름: '같은 채널' }, { 핸들: '@ours', 우리: true }], 검색: { 어: ['q'] } }, 'synkbrief').설정;
+  const 나 = 판정.설정검사({ 브랜드: 'yuhobuilds', 이름: '나', 유튜브: [{ id: 'UC' + 'a'.repeat(22), 이름: '같은 채널' }, { 핸들: '@seed' }, { 핸들: '@ours', 우리: true }], 검색: { 어: ['q'] } }, 'yuhobuilds').설정;
+  assert.deepEqual(판정.시드겹침(가, 나), ['같은 채널'], '우리 계정은 겹침으로 세지 않는다');
+  const 짝누적 = { 채널: { ['UC' + 's'.repeat(22)]: { 핸들: '@seed' } }, 찾은채널: { ['UC' + 'f'.repeat(22)]: { 찾은날: '2026-10-20' } } };
+  assert.deepEqual([...판정.남의채널(나, 짝누적)].sort(), ['UC' + 'a'.repeat(22), 'UC' + 'f'.repeat(22), 'UC' + 's'.repeat(22)]);
+  // main은 시드가 겹치면 멈춘다(대상이 한쪽뿐이어도 짝 설정을 읽는다)
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const 폴더 = 임시폴더();
+  try {
+    for (const [b, raw] of [['synkbrief', { 브랜드: 'synkbrief', 이름: '가', 유튜브: [{ id: 'UC' + 'a'.repeat(22) }], 검색: { 어: ['q'] } }], ['yuhobuilds', { 브랜드: 'yuhobuilds', 이름: '나', 유튜브: [{ id: 'UC' + 'a'.repeat(22) }], 검색: { 어: ['q'] } }]]) {
+      fs.writeFileSync(path.join(폴더, `수요_${b}.json`), JSON.stringify(raw));
+    }
+    const 원래 = console.error;
+    const 말 = [];
+    console.error = (...a) => 말.push(a.join(' '));
+    try { assert.equal(await 스캔.main(['synkbrief', '--설정검사'], { 설정폴더: 폴더 }), 1); } finally { console.error = 원래; }
+    assert.match(말.join('\n'), /yuhobuilds와 겹친다/);
+  } finally {
+    fs.rmSync(폴더, { recursive: true, force: true });
+  }
+  // 브랜드 스캔: 짝 브랜드가 쥔 채널은 지난 회차의 찾은 채널에서 빼고, 검색에 잡혀도 새로 찾지 않는다
+  const N = 'UC' + 'n'.repeat(22);
+  const 출력 = 임시폴더();
+  try {
+    const 부르개 = 가짜((종류) => {
+      if (종류 === '검색') return { 상태: '됨', 줄들: [{ id: 'NEWNaaaaaaa', ie_key: 'Youtube', title: '찾은 편', view_count: 20000, duration: 9, channel_id: N, channel: '짝 채널' }], 오류: '', 오류글: '' };
+      throw new Error(`짝 브랜드 채널은 읽지 않는다: ${종류}`);
+    });
+    const { 설정 } = 판정.설정검사({ 브랜드: 'synkbrief', 이름: '시험', 유튜브: [{ 핸들: '@ours', 우리: true }], 검색: { 어: ['q'], 회차당: 1 } }, 'synkbrief');
+    const 누적 = 판정.빈누적('synkbrief');
+    누적.찾은채널[N] = { 찾은날: '2026-10-20', 마지막튐: null };
+    const o = 스캔.인자(['synkbrief', '--틱톡', '0', '--채널', '0']);
+    await 스캔.브랜드스캔({ 설정, 누적, o, 부르개, 캐시: new Map(), 오늘: '2026-10-26', 출력, 남의채널: new Set([N]) });
+    assert.equal(누적.찾은채널[N], undefined, '짝 브랜드 채널은 찾은 채널에서 뺀다');
+    assert.ok(!부르개.불림.some(([종류, id]) => 종류 === '탭' && id === N), '읽지도 않는다');
+  } finally {
+    require('node:fs').rmSync(출력, { recursive: true, force: true });
   }
 });

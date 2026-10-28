@@ -23,6 +23,11 @@
  *   ⑪ 슬롯이 오늘이면 확인할 것 — 4일 앞(D+4)에 만드는 것이 기본(제작 절차 0). 같은 날 같은 계정의 두 편은 tools/예약큐.js가 본다
  *   ⑫ 한 편의 틱톡 판 둘(몽골 @synk.mn · 버마어 @synklab.mm 등)이 같은 날이면 고칠 것(10-26 — 거의 같은 영상이 같은 날 두 계정에 나가지 않게).
  *      LAB 두 채널 판은 그 줄의 목표 칸에 두니 편 슬롯과 날이 달라도 「시각이 슬롯 날이 아니다」를 내지 않는다
+ *   ⑬ 한 구성(10-28, tools/한구성.js) — 끝 화면 말고 같은 구성(글 강조 · 테 · 밝기만 바뀜)이 4초를 넘으면 고칠 것. ②는 프레임 차이라
+ *      LAB E8의 10초 흑백 글 카드를 정지 0%로 넘겼다
+ *   ⑭ 목소리(10-28) — 편 폴더의 나레이션 줄 파일(나레이션굽기 vo.json 줄 · remotion/public/vo, 또는 준비.json 「목소리」에 적은 폴더)마다
+ *      최고 음높이 560Hz 넘음 · Typecast 원본 잘림 · 영상보다 새 줄 파일(다시 산 목소리가 렌더에 안 들어감)을 고칠 것으로.
+ *      ⑤에 더해 판 · 테두리 · 그림자 없이 그림 위에 바로 얹은 흰 글자(흰 기본 글자)도 고칠 것이다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -36,6 +41,8 @@ const { pathToFileURL } = require('node:url');
 const 묶음 = require('./lib/게시묶음.js');
 const 규칙 = require('./lib/게시글규칙.js');
 const 정지 = require('./정지구간.js');
+const 한구성 = require('./한구성.js');
+const 타입캐스트 = require('./lib/타입캐스트.cjs');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -94,7 +101,60 @@ function linesOf(image, { allowHan = false } = {}) {
   return out;
 }
 
-const KINDS = { right: '오른쪽 단추 자리', bottom: '아래 앱 글자 자리', top: '위 머리 자리', left: '왼쪽 가장자리', small: '작은 글자' };
+const KINDS = { right: '오른쪽 단추 자리', bottom: '아래 앱 글자 자리', top: '위 머리 자리', left: '왼쪽 가장자리', small: '작은 글자',
+  white: '흰 기본 글자(판 · 테두리 없이 그림 위)', whiteShort: '판 없이 그림 위에 얹은 짧은 밝은 글자' };
+const FIX_KINDS = new Set(['white']);
+
+// ⑤-2 흰 기본 글자(10-28) — 판(글 상자) · 테두리 · 그림자 없이 그림 위에 바로 얹은 흰 글자. LAB E8 끝 화면의 흰 글 넉 줄이 바리스타
+// 머리 위에 겹쳐 휴대폰에서 잘 안 읽혔다(10-28 점검). 글자 줄 상자(540×960 회색) 안에서 흰 칸(215 이상)이 5~42%이고, 흰 칸 둘레 2칸
+// 가운데 어두운 칸(80 미만 — 외곽선 · 그림자)이 절반이 안 되며, 나머지 바탕이 그림처럼 얼룩지면(표준편차 25~60) 걸린다.
+// 판 위 흰 글자는 바탕이 고르고(어두운 판 6~16, 색 판 0), 흰 판 · 도장 · 말풍선은 흰 칸이 43% 넘게, 밝은 판에 어두운 글자는 바탕
+// 표준편차가 70 넘게 나와 걸리지 않는다(E8 · 퀴즈 #5 실측). 노란 글자처럼 밝은 글자도 판 없이 그림 위면 같이 걸린다.
+// 고칠 것은 6자 넘는 줄이 1초 넘게 머물고 둘레 어두운 칸이 45% 아래일 때만이고, 짧은 낱말 · 잠깐 지나가는 줄(퀴즈 「NOPE!」 도장,
+// 화면 속 앱 단추) · 그림자가 반쯤 있는 줄(E8 첫 화면 제목 48%) · 잘못 읽은 줄은 확인할 것이다.
+const WHITE = 215;
+function plainWhite(gray, w, h, line) {
+  const s = w / 1080;
+  const x0 = Math.max(0, Math.floor(line.x0 * s)), x1 = Math.min(w, Math.ceil(line.x1 * s));
+  const y0 = Math.max(0, Math.floor(line.y0 * s)), y1 = Math.min(h, Math.ceil(line.y1 * s));
+  const bw = x1 - x0, bh = y1 - y0;
+  if (bw < 8 || bh < 6) return null;
+  const at = (x, y) => gray[(y0 + y) * w + x0 + x];
+  const bright = new Uint8Array(bw * bh);
+  let nb = 0;
+  for (let y = 0; y < bh; y += 1) for (let x = 0; x < bw; x += 1) if (at(x, y) >= WHITE) { bright[y * bw + x] = 1; nb += 1; }
+  const frac = nb / (bw * bh);
+  if (frac < 0.05 || frac > 0.42) return { frac, plain: false };
+  const near = new Uint8Array(bw * bh);
+  for (let y = 0; y < bh; y += 1) for (let x = 0; x < bw; x += 1) {
+    if (!bright[y * bw + x]) continue;
+    for (let dy = -2; dy <= 2; dy += 1) for (let dx = -2; dx <= 2; dx += 1) {
+      const xx = x + dx, yy = y + dy;
+      if (xx >= 0 && yy >= 0 && xx < bw && yy < bh && !bright[yy * bw + xx]) near[yy * bw + xx] = 1;
+    }
+  }
+  let ring = 0, dark = 0, n = 0, sum = 0, sq = 0;
+  for (let y = 0; y < bh; y += 1) for (let x = 0; x < bw; x += 1) {
+    const i = y * bw + x, v = at(x, y);
+    if (bright[i]) continue;
+    if (near[i]) { ring += 1; if (v < 80) dark += 1; continue; }
+    n += 1; sum += v; sq += v * v;
+  }
+  const ringDark = ring ? dark / ring : 0;
+  const bgMean = n ? sum / n : 0;
+  const bgStd = n ? Math.sqrt(Math.max(0, sq / n - bgMean * bgMean)) : 0;
+  return { frac, ringDark, bgMean, bgStd, plain: n >= 20 && ringDark < 0.5 && bgStd >= 25 && bgStd < 60 };
+}
+
+// 0.5초마다(글자 인식과 같은 장면) 540×960 회색 프레임 → { w, h, frame(i) }
+function grayFrames(file) {
+  const w = 540, h = 960;
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', `fps=${1 / FRAME_STEP},scale=${w}:${h},format=gray`, '-f', 'rawvideo', '-'],
+    { windowsHide: true, maxBuffer: 1024 * 1024 * 1024 });
+  if (r.status !== 0) throw new Error('회색 장면 뽑기 실패: ' + String(r.stderr || '').trim().slice(0, 200));
+  const buf = r.stdout;
+  return { w, h, frame: (i) => ((i + 1) * w * h <= buf.length ? buf.subarray(i * w * h, (i + 1) * w * h) : null) };
+}
 
 function problemsOf(line) {
   const out = [];
@@ -133,21 +193,44 @@ function ocrVideo(file, dir, label, { allowHan, repo, sheetFile: sheetPath }) {
   if (r.status !== 0) throw new Error('장면 뽑기 실패: ' + String(r.stderr || '').trim().slice(0, 200));
   const images = ocrFolder(dir);
   const seen = new Map();
+  const all = new Map(); // 걸리지 않은 줄까지 — 흰 기본 글자는 장면 그림을 봐야 안다
   const texts = [];
   for (const image of images) {
     const t = (Number(String(image.name).match(/(\d+)/)[1]) - 1) * FRAME_STEP;
     for (const line of linesOf(image, { allowHan })) {
       texts.push(line.text);
+      const key = `${norm(line.text).slice(0, 20)}|${Math.round(line.x0 / 24)}|${Math.round(line.y0 / 24)}`;
+      const one = all.get(key) || { text: line.text, line, times: [], frames: [], box: line.box };
+      one.times.push(t);
+      one.frames.push(image.name);
+      all.set(key, one);
       const problems = problemsOf(line);
       if (!problems.length) continue;
-      const key = `${norm(line.text).slice(0, 20)}|${Math.round(line.x0 / 24)}|${Math.round(line.y0 / 24)}`;
       const item = seen.get(key) || { text: line.text, problems, times: [], frames: [], box: line.box };
       item.times.push(t);
       item.frames.push(image.name);
       seen.set(key, item);
     }
   }
-  const steady = [...seen.values()].filter((item) => item.times.some((t, i) => i > 0 && Math.abs(t - item.times[i - 1] - FRAME_STEP) < 0.01));
+  const isSteady = (item) => item.times.some((t, i) => i > 0 && Math.abs(t - item.times[i - 1] - FRAME_STEP) < 0.01);
+  let gray = null;
+  try { gray = grayFrames(file); } catch { /* 흰 기본 글자만 못 본다 — 나머지는 그대로 */ }
+  for (const [key, one] of gray ? all : []) {
+    if (!isSteady(one)) continue;
+    // 들어오는 움직임 중간이 아니라 머무는 동안의 가운데 장면으로 잰다
+    const frame = gray.frame(Math.round(one.times[Math.floor(one.times.length / 2)] / FRAME_STEP));
+    const r = frame && plainWhite(frame, gray.w, gray.h, one.line);
+    if (!r?.plain) continue;
+    let run = 1, best = 1;
+    one.times.forEach((t, i) => { run = i > 0 && Math.abs(t - one.times[i - 1] - FRAME_STEP) < 0.01 ? run + 1 : 1; best = Math.max(best, run); });
+    const chars = [...String(one.text).replace(/\s/g, '')];
+    const clean = chars.filter((c) => /[\p{L}\p{N}'"“”‘’.,!?…:-]/u.test(c)).length / Math.max(1, chars.length) >= 0.95; // 「c:℃아않 파리만 날려요」 같은 잘못 읽은 줄은 빼고
+    const kind = norm(one.text).length > 6 && best >= 2 && clean && r.ringDark < 0.45 ? 'white' : 'whiteShort';
+    const p = { kind, text: `바탕 얼룩 ${Math.round(r.bgStd)} · 흰 글자 둘레 어두운 칸 ${Math.round(r.ringDark * 100)}%` };
+    if (seen.has(key)) seen.get(key).problems.push(p);
+    else seen.set(key, { text: one.text, problems: [p], times: one.times, frames: one.frames, box: one.box });
+  }
+  const steady = [...seen.values()].filter(isSteady);
   const frames = new Map();
   for (const item of steady) {
     const name = item.frames[0];
@@ -162,7 +245,7 @@ function ocrVideo(file, dir, label, { allowHan, repo, sheetFile: sheetPath }) {
     const hits = steady.filter((item) => item.problems.some((p) => p.kind === kind));
     if (!hits.length) continue;
     const examples = hits.slice(0, 2).map((item) => `${item.times[0].toFixed(1)}초 「${item.text.slice(0, 18)}」 ${item.problems.find((p) => p.kind === kind).text}`);
-    findings.push({ level: LOOK, code: `text-${kind}`, kind, where: label, count: hits.length, examples, sheet: sheetRel });
+    findings.push({ level: FIX_KINDS.has(kind) ? FIX : LOOK, code: `text-${kind}`, kind, where: label, count: hits.length, examples, sheet: sheetRel });
   }
   return { findings, text: texts.join('\n') };
 }
@@ -180,7 +263,7 @@ function mergeAcrossFiles(list) {
     const top = [...group].sort((a, b) => b.count - a.count)[0];
     const sheets = group.map((f) => f.sheet).filter(Boolean);
     const counts = group.length > 1 ? `(${group.map((f) => `${short(f.where)} ${f.count}`).join(' · ')})` : '';
-    return { level: LOOK, code: top.code, where: group.length > 1 ? `영상 ${group.length}개` : top.where,
+    return { level: group.some((f) => f.level === FIX) ? FIX : LOOK, code: top.code, where: group.length > 1 ? `영상 ${group.length}개` : top.where,
       message: `${KINDS[top.kind]} ${group.reduce((n, f) => n + f.count, 0)}군데${counts} — ${top.examples.join(' · ')}${sheets.length ? ` · 장면표 ${sheets.join(' · ')}` : ''}` };
   });
 }
@@ -228,6 +311,10 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
     const long = still.runs.filter((x) => !x.endCard).map((x) => `${x.start.toFixed(1)}~${x.end.toFixed(1)}초`);
     add(FIX, 'still', `거의 멈춘 시간 ${still.still.toFixed(1)}초(${Math.round(still.ratio * 100)}%)${long.length ? ` · 1.5초 넘는 정지 ${long.join(', ')}` : ''} — 기준 15% 이하·끝 화면 말고 1.5초 넘는 정지 없음(v2 §2-4)`);
   }
+  const 구성 = 한구성.analyze(file);
+  for (const s of 구성.long) {
+    add(FIX, 'one-composition', `${s.start.toFixed(1)}~${s.end.toFixed(1)}초 한 구성 ${s.length.toFixed(1)}초${s.endCard ? '(끝 화면 — 6초까지)' : ''} — 같은 장면에서 글 강조 · 테 · 밝기만 바뀌는 칸은 4초 안으로 줄이거나 장면을 바꾼다(제작 절차 3 · 10-28)`);
+  }
   if (!still.end) add(LOOK, 'end-card-unknown', '끝 화면을 재지 못했다(마지막 12초 안에 화면 전체가 바뀌는 컷이 없음) — 4초 안팎인지 눈으로 본다');
   else if (still.end.length < END_CARD[0] || still.end.length > END_CARD[1]) add(LOOK, 'end-card', `끝 화면 ${still.end.length.toFixed(1)}초(${still.end.start.toFixed(1)}초 컷부터) — v2 §2-4 「4초 안팎」`);
   let ocr = { findings: [], text: '' };
@@ -244,8 +331,142 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
     summary: { 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString(), sha256: video.sha256, 길이: Math.round(m.duration * 10) / 10,
       해상도: `${m.width}×${m.height}`, 평균Mbps: stream, 음량: loud?.integratedLufs ?? null, 봉우리: loud?.truePeakDbfs ?? null,
       정지: `${Math.round(still.ratio * 100)}%${still.pass ? ' 통과' : ' 고칠 것'}`, 끝화면: still.end ? Math.round(still.end.length * 10) / 10 : null,
+      한구성: Math.round(구성.longest * 100) / 100,
       사전검사: path.relative(repo, report.reportPath).split(path.sep).join('/') },
   };
+}
+
+// ── ⑭ 목소리(10-28) ──
+// 10-28 점검: Typecast 「하나」의 감탄사(「Nope!」)가 깨진 채 퀴즈 여섯 편에 나갔고(유호님 「전부 지지직, 특히 no」), E8에는 다시 산
+// 바리스타 목소리가 아니라 그 전 파일이 들어갔다. 지금까지 목소리 결함은 tools/나레이션굽기.mjs 경고뿐이라 렌더 뒤에는 아무도 안 봤다.
+// 기계로 가르는 것은 최고 음높이(560Hz — 깨진 줄은 594~645Hz, 깨끗한 소진 세기 1.0은 498Hz) · Typecast 원본 잘림 · 목소리 엉킴이다.
+// 엉킴(tools/목소리엉킴.py)은 줄 하나로는 못 가른다(깨진 「Nope!」 11%, 깨끗한 줄도 자음이 많으면 20~60%) — 목소리마다 줄을 모아
+// 프레임 가중 평균을 낸다. 여자 목소리는 하나 25~33% · 소진 0% · 진희 2% · 미선 4% · 혜리 5~8%로 갈리지만(현장노트 영상 「하나」),
+// 기본음이 낮은 남자 목소리는 결함 없이도 45~65%라(범수) 중앙 기본음 165Hz 이상인 목소리만 15%를 문턱으로 본다. 파이썬 · numpy가
+// 없으면 엉킴만 확인할 것으로 남긴다.
+const TANGLE_LIMIT = 15;
+const TANGLE_MIN_F0 = 165;
+
+// 목소리엉킴.py 출력 「<경로>\t엉킨 프레임  12.1% · … · 프레임 66 · 최고 음높이 525Hz · 중앙 기본음 240Hz」 → { 경로: {pct, frames, f0} }
+function parseTangle(text) {
+  const out = {};
+  for (const line of String(text).split(/\r?\n/)) {
+    const [file, rest] = line.split('\t');
+    const m = rest && rest.match(/엉킨 프레임\s+([\d.]+)%.*프레임 (\d+).*중앙 기본음 ([\d.]+)Hz/);
+    if (m) out[path.resolve(file)] = { pct: Number(m[1]), frames: Number(m[2]), f0: Number(m[3]) };
+  }
+  return out;
+}
+
+// 목소리(Typecast 목소리 id, 모르면 폴더)마다 프레임 가중 엉킴 % · 중앙 기본음 → 엉킨 목소리 [{voice, pct, f0, lines}]
+function tangledVoices(files, measured) {
+  const groups = new Map();
+  for (const v of files) {
+    const r = measured[path.resolve(v.wav)];
+    if (!r || !r.frames) continue;
+    const g = groups.get(v.voice) || { voice: v.voice, frames: 0, sum: 0, f0s: [], lines: 0 };
+    g.frames += r.frames; g.sum += r.pct * r.frames; g.f0s.push(r.f0); g.lines += 1;
+    groups.set(v.voice, g);
+  }
+  return [...groups.values()].map((g) => {
+    const f0s = g.f0s.sort((a, b) => a - b);
+    return { voice: g.voice, pct: Math.round((g.sum / g.frames) * 10) / 10, f0: f0s[Math.floor(f0s.length / 2)], lines: g.lines };
+  }).filter((g) => g.f0 >= TANGLE_MIN_F0 && g.pct > TANGLE_LIMIT);
+}
+// 줄 파일 찾기: 준비.json 「목소리」(편 폴더 기준 폴더 · 파일 목록)가 있으면 그것만, 없으면 편 폴더의 나레이션굽기 vo.json 줄과
+// remotion/public/vo 아래 wav(관용구 퀴즈처럼 vo.json 없이 굽는 편). 시험 · 후보 폴더(억양시험 등)는 영상에 안 들어가니 뺀다.
+const VOICE_SKIP = /^(node_modules|out|\.git|시안|판|게시|.*시험.*|.*후보.*|old|test)$/i;
+const VOICE_TOOL = 'tools/나레이션굽기.mjs';
+
+function voiceFiles(bundle) {
+  const found = new Map();
+  const add = (wav, json = null, made = null) => {
+    if (!found.has(wav) && fs.existsSync(wav)) found.set(wav, { wav, json: json && fs.existsSync(json) ? json : null, id: path.basename(wav, path.extname(wav)), made });
+  };
+  const listed = [].concat(bundle.prep.목소리 || []).filter((x) => typeof x === 'string' && x.trim());
+  const walk = (dir, depth, { all, skip }) => {
+    let entries = [];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    const manifest = entries.find((e) => e.isFile() && e.name === 'vo.json');
+    if (manifest) {
+      try {
+        const m = 묶음.readJson(path.join(dir, 'vo.json'));
+        const made = Date.parse(m.made || '') || null;
+        if (m.tool === VOICE_TOOL) for (const l of m.lines || []) add(path.join(dir, path.basename(l.src || `${l.id}.wav`)), path.join(dir, `${l.id}.json`), made);
+      } catch { /* 깨진 목록은 아래 wav 훑기로 */ }
+    }
+    for (const e of entries) {
+      if (e.isDirectory() && depth < 6 && !(skip && VOICE_SKIP.test(e.name))) walk(path.join(dir, e.name), depth + 1, { all: all || (e.name === 'vo' && /[\\/]public$/.test(dir)), skip });
+      else if (e.isFile() && all && /\.wav$/i.test(e.name)) add(path.join(dir, e.name), path.join(dir, e.name.replace(/\.wav$/i, '.json')));
+    }
+  };
+  if (listed.length) {
+    for (const p of listed) {
+      const f = 묶음.resolve(bundle, p);
+      if (f && fs.existsSync(f) && fs.statSync(f).isFile()) add(f, f.replace(/\.wav$/i, '.json'));
+      else if (f) walk(f, 0, { all: true, skip: false });
+    }
+  } else {
+    walk(bundle.dir, 0, { all: false, skip: true });
+  }
+  return [...found.values()];
+}
+
+// 줄 파일마다 최고 음높이 · 잘림 · 영상보다 새것인지 → 고칠 것. 「영상보다 새것」은 나레이션굽기가 vo.json에 적은 만든 때(made)와
+// 영상 파일 수정 시각(git 밖이라 체크아웃 · 따라가기가 안 건드린다)으로 본다 — wav 수정 시각은 git이 다시 쓰면 바뀌어 못 믿는다
+// (퀴즈 #5 줄 57개가 렌더 뒤 시각으로 나왔다). vo.json 없이 구운 줄은 이 셈을 하지 않는다.
+async function voiceFindings(bundle, videoFiles, { files = voiceFiles(bundle), scriptText = '' } = {}) {
+  const 굽기 = await import(pathToFileURL(path.join(__dirname, '나레이션굽기.mjs')).href);
+  const out = [];
+  const high = [], clipped = [], newer = [], unread = [];
+  let top = null;
+  const times = videoFiles.filter((f) => fs.existsSync(f)).map((f) => fs.statSync(f).mtimeMs);
+  const videoTime = times.length ? Math.min(...times) : null;
+  for (const v of files) {
+    let x;
+    try { x = 굽기.readWavMono16(v.wav); } catch { unread.push(v.id); continue; }
+    let meta = null;
+    try { meta = v.json ? 묶음.readJson(v.json) : null; } catch { /* 줄 기록 없이 wav만 본다 */ }
+    const voiceKey = meta?.source?.voice?.name || meta?.source?.voice?.id || (typeof meta?.source?.voice === 'string' ? meta.source.voice : null);
+    v.voice = voiceKey || path.relative(bundle.dir, path.dirname(v.wav)).split(path.sep).join('/') || '.';
+    const pitch = 굽기.topPitch(x);
+    if (pitch !== null) top = Math.max(top ?? 0, pitch);
+    if (pitch > 굽기.PITCH_WARN) high.push(`${v.id} ${pitch}Hz`);
+    let clip = typeof meta?.level?.clippedSource === 'number' ? meta.level.clippedSource : null;
+    const voiceId = meta?.source?.voice?.id || meta?.source?.voice;
+    if (clip === null && meta?.source?.key && typeof voiceId === 'string') {
+      const cached = 타입캐스트.findCached(voiceId, meta.source.key, { copyLegacy: false });
+      if (cached?.wav) try { clip = 굽기.clippedSamples(굽기.readWavMono16(cached.wav)); } catch { /* 아래에서 줄 파일로 */ }
+    }
+    if (clip === null) clip = 굽기.clippedSamples(x);
+    if (clip >= 굽기.CLIP_WARN) clipped.push(`${v.id} ${clip}표본`);
+    if (videoTime !== null && v.made && v.made > videoTime + 60 * 1000) newer.push(v.id);
+  }
+  const readable = files.filter((v) => !unread.includes(v.id));
+  let tangled = [];
+  if (readable.length) {
+    const r = measureTangle(readable.map((v) => v.wav));
+    if (r.error) out.push({ level: LOOK, code: 'voice-tangle-unknown', where: '목소리', message: `목소리 엉킴을 못 쟀다(${r.error}) — 귀로 듣는다` });
+    else tangled = tangledVoices(readable, r.measured);
+  }
+  const where = (list) => list.slice(0, 6).join(' · ') + (list.length > 6 ? ` 외 ${list.length - 6}` : '');
+  if (tangled.length) out.push({ level: FIX, code: 'voice-tangle', where: '목소리', message: `목소리 엉킴 — ${tangled.map((g) => `${g.voice} 줄 ${g.lines}개 평균 ${g.pct}%(기본음 ${Math.round(g.f0)}Hz)`).join(' · ')} — 깨끗한 여자 목소리는 0~8%, 지지직 깨지는 하나는 25~33%다. 목소리를 바꿔 다시 굽고(LAB 장부 「목소리」) 다시 렌더한다` });
+  if (high.length) out.push({ level: FIX, code: 'voice-pitch', where: '목소리', message: `최고 음높이 ${굽기.PITCH_WARN}Hz 넘는 줄 ${high.length}개 — ${where(high)} — 목소리가 뒤집혀 지지직 깨진다(10-28 「Nope!」 645Hz). 감정 세기 1.0 · seed를 바꿔 다시 사거나 목소리를 바꾸고(LAB 장부 「목소리」) 다시 렌더한다` });
+  if (clipped.length) out.push({ level: FIX, code: 'voice-clipped', where: '목소리', message: `원본이 잘린 줄 ${clipped.length}개 — ${where(clipped)} — node tools/나레이션굽기.mjs <계획> --굽기 --줄 <id>로 낮은 크기로 다시 산다` });
+  if (newer.length) out.push({ level: FIX, code: 'voice-newer', where: '목소리', message: `영상보다 나중에 바뀐 줄 파일 ${newer.length}개 — ${where(newer)} — 다시 산 목소리가 영상에 안 들어갔을 수 있다(10-28 E8). 다시 렌더한다` });
+  if (unread.length) out.push({ level: LOOK, code: 'voice-unread', where: '목소리', message: `16비트 wav가 아니라 못 잰 줄 ${unread.length}개 — ${where(unread)} — 귀로 듣는다` });
+  if (!files.length && String(scriptText).trim()) {
+    out.push({ level: LOOK, code: 'voice-none', where: '목소리', message: '목소리 줄 파일(나레이션굽기 vo.json · remotion/public/vo)을 못 찾아 음높이 · 잘림을 못 쟀다 — 준비.json 「목소리」에 렌더에 쓴 줄 파일 폴더를 적는다' });
+  }
+  return { findings: out, summary: { 줄: files.length, 최고음높이: top, 잘림: clipped.length, 엉킨목소리: tangled.map((g) => `${g.voice} ${g.pct}%`) } };
+}
+
+// tools/목소리엉킴.py를 한 번 불러 줄마다 엉킴 % · 프레임 · 중앙 기본음을 잰다 → { measured } | { error }
+function measureTangle(wavs) {
+  const py = process.env.SYNK_PYTHON || 'python';
+  const r = spawnSync(py, ['-X', 'utf8', path.join(__dirname, '목소리엉킴.py'), ...wavs], { encoding: 'utf8', windowsHide: true, timeout: 600000, maxBuffer: 16 * 1024 * 1024 });
+  if (r.error || r.status !== 0) return { error: (r.error?.message || String(r.stderr || '').trim().split('\n').slice(-1)[0] || `종료 ${r.status}`).slice(0, 160) };
+  return { measured: parseTangle(r.stdout) };
 }
 
 // ── 링크 ──
@@ -475,6 +696,12 @@ async function run(dir, opts = {}) {
     for (const [message, accounts] of byMessage) add(LOOK, 'cover-safe-area', `표지(${accounts.join(' · ')})`, message);
   }
   findings.push(...mergeAcrossFiles(ocrFindings));
+  const script = 묶음.scriptText(bundle);
+  let voice = { findings: [], summary: null };
+  try { voice = await voiceFindings(bundle, [...videos.keys()], { scriptText: script.text }); } catch (error) {
+    voice.findings.push({ level: LOOK, code: 'voice-failed', where: '목소리', message: `목소리 검사를 못 했다(${error.message}) — 귀로 듣는다` });
+  }
+  findings.push(...voice.findings);
   for (const html of [].concat(prep.키트원고 || [])) {
     const file = 묶음.resolve(bundle, html);
     if (!file || !fs.existsSync(file)) { add(FIX, 'kit-missing', '키트원고', `키트 원고가 없다: ${html}`); continue; }
@@ -486,7 +713,6 @@ async function run(dir, opts = {}) {
     // 판에 없는 초안(링크드인 등)은 오늘 올라가지 않으니 확인만 한다.
     for (const f of 규칙.checkText(doc.text, { where: doc.name, brand: prep.브랜드, language: 'ko', platform: 'blog', article: true })) add(doc.scheduled ? f.level : LOOK, f.code, f.where, f.message);
   }
-  const script = 묶음.scriptText(bundle);
   findings.push(...규칙.compareNumbers(docs, [...texts, ...screenTexts, script.text]));
   if (!opts.skipLinks) findings.push(...await checkLinks([...links]));
   findings.push(...await promptFindings(prep, { repo: bundle.repo, skipLinks: opts.skipLinks }));
@@ -497,7 +723,7 @@ async function run(dir, opts = {}) {
   const line = (f) => `${f.where} · ${f.message}`;
   const record = {
     도구: 'tools/올리기전검사.js', 시각: kst(), 결과: result,
-    고칠것: fixes.map(line), 확인할것: looks.map(line), 파일: fileSummaries,
+    고칠것: fixes.map(line), 확인할것: looks.map(line), 파일: fileSummaries, ...(voice.summary ? { 목소리: voice.summary } : {}),
     ...(opts.skipOcr || opts.skipLinks ? { 건너뜀: [opts.skipOcr && '글자 인식', opts.skipLinks && '링크'].filter(Boolean) } : {}),
     기록: path.relative(bundle.repo, out).split(path.sep).join('/'),
   };
@@ -527,7 +753,8 @@ async function main() {
   if (opts.json) console.log(JSON.stringify({ ...record, 항목: findings }, null, 2));
   else {
     console.log(`올리기 전 검사 · ${bundle.name} · ${record.결과}${opts.noSave ? '' : ' (준비.json 「검사」에 남김)'}`);
-    for (const f of record.파일) console.log(`  영상 ${f.경로.split('/').slice(-2).join('/')} · ${f.길이}초 · ${f.해상도} · 평균 ${f.평균Mbps}Mbps · ${f.음량} LUFS / ${f.봉우리} dBFS · 정지 ${f.정지} · 끝 화면 ${f.끝화면 ?? '모름'}초`);
+    for (const f of record.파일) console.log(`  영상 ${f.경로.split('/').slice(-2).join('/')} · ${f.길이}초 · ${f.해상도} · 평균 ${f.평균Mbps}Mbps · ${f.음량} LUFS / ${f.봉우리} dBFS · 정지 ${f.정지} · 끝 화면 ${f.끝화면 ?? '모름'}초 · 가장 긴 한 구성 ${f.한구성}초`);
+    if (record.목소리) console.log(`  목소리 줄 ${record.목소리.줄}개 · 최고 음높이 ${record.목소리.최고음높이 ?? '모름'}Hz · 잘린 줄 ${record.목소리.잘림}`);
     if (record.고칠것.length) { console.log(`고칠 것 ${record.고칠것.length}`); record.고칠것.forEach((x) => console.log(`  ✗ ${x}`)); }
     if (record.확인할것.length) { console.log(`확인할 것 ${record.확인할것.length}`); record.확인할것.forEach((x) => console.log(`  ? ${x}`)); }
     console.log(`  기록: ${record.기록}`);
@@ -537,4 +764,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, voiceFiles, voiceFindings, parseTangle, tangledVoices, SAFE };

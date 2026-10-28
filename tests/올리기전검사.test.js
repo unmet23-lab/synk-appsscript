@@ -275,3 +275,98 @@ test('가져갈 프롬프트(10-22) — yuhobuilds 편만, 칸이 없으면 확�
     assert.deepEqual(await run(ok, page(404, ''), { skipLinks: true }), [], '--링크건너뛰기면 공개 페이지는 열지 않는다');
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
+
+// ── 10-28 관문 넓히기(유호님 「반영해」) — 흰 기본 글자 · 목소리 ──
+function 회색판(w, h, 바탕) {
+  const g = new Uint8Array(w * h);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) g[y * w + x] = 바탕(x, y);
+  return g;
+}
+// 글자 줄 상자(1080 기준 x 100~1000 · y 400~520 → 540 폭 회색 칸 50~500 · 200~260) 안에 세로 획을 5칸 간격으로 긋는다(흰 칸 약 20%)
+function 획긋기(g, w, { 외곽선 = false } = {}) {
+  for (let y = 205; y < 255; y += 1) for (let x = 52; x < 498; x += 5) {
+    g[y * w + x] = 250;
+    if (외곽선) for (const dx of [-2, -1, 1, 2]) if (g[y * w + x + dx] !== 250) g[y * w + x + dx] = 20;
+  }
+  return g;
+}
+const 줄상자 = { x0: 100, x1: 1000, y0: 400, y1: 520 };
+
+test('흰 기본 글자 — 판 · 테두리 없이 얼룩진 그림 위 흰 글자만 잡는다(10-28 LAB E8 끝 화면)', () => {
+  const w = 540, h = 960;
+  const 그림 = (x, y) => 90 + ((x * 7 + y * 13) % 5) * 22; // 얼룩진 중간 밝기 그림(표준편차 30 남짓)
+  assert.equal(검사.plainWhite(획긋기(회색판(w, h, 그림), w), w, h, 줄상자).plain, true, '그림 위 흰 글자');
+  assert.equal(검사.plainWhite(획긋기(회색판(w, h, () => 30), w), w, h, 줄상자).plain, false, '어두운 판 위 흰 글자는 바탕이 고르다');
+  assert.equal(검사.plainWhite(획긋기(회색판(w, h, 그림), w, { 외곽선: true }), w, h, 줄상자).plain, false, '외곽선 · 그림자가 있으면 읽힌다');
+  assert.equal(검사.plainWhite(회색판(w, h, (x, y) => (y > 200 && y < 260 && x % 9 ? 245 : 60)), w, h, 줄상자).plain, false, '흰 칸이 42% 넘으면 흰 판 · 도장이다');
+  assert.equal(검사.plainWhite(회색판(w, h, 그림), w, h, 줄상자).plain, false, '흰 글자가 없으면 아니다');
+});
+
+// 16비트 모노 wav(48kHz)
+function wav(file, samples) {
+  const data = Buffer.alloc(samples.length * 2);
+  samples.forEach((v, i) => data.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(v * 32767))), i * 2));
+  const head = Buffer.alloc(44);
+  head.write('RIFF', 0); head.writeUInt32LE(36 + data.length, 4); head.write('WAVE', 8); head.write('fmt ', 12);
+  head.writeUInt32LE(16, 16); head.writeUInt16LE(1, 20); head.writeUInt16LE(1, 22); head.writeUInt32LE(48000, 24);
+  head.writeUInt32LE(96000, 28); head.writeUInt16LE(2, 32); head.writeUInt16LE(16, 34); head.write('data', 36); head.writeUInt32LE(data.length, 40);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, Buffer.concat([head, data]));
+}
+const 사인 = (hz, 크기 = 0.5, 초 = 0.6) => Array.from({ length: 48000 * 초 }, (_, i) => 크기 * Math.sin((2 * Math.PI * hz * i) / 48000));
+
+test('⑭ 목소리 — 렌더에 쓰는 줄 파일만 찾고, 560Hz 넘음 · 원본 잘림 · 영상보다 나중에 만든 줄은 고칠 것(10-28)', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-목소리-'));
+  try {
+    const 편 = path.join(root, 'docs', '마케팅', 'LAB_시험_20261028');
+    fs.mkdirSync(path.join(root, 'tools'), { recursive: true });
+    fs.mkdirSync(path.join(편, '게시'), { recursive: true });
+    fs.writeFileSync(path.join(편, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: '2026-11-01', 판: [] }));
+    const vo = path.join(편, 'remotion', 'public', 'vo');
+    wav(path.join(vo, 'n1.wav'), 사인(650)); // 「Nope!」처럼 뒤집히는 높이
+    wav(path.join(vo, 'b1.wav'), 사인(180)); // 범수 높이
+    wav(path.join(vo, 'b2.wav'), 사인(200, 1.4)); // 꽉 차게 잘린 원본
+    const video = path.join(편, '게시', 'video.mp4');
+    fs.writeFileSync(video, 'x');
+    const 렌더 = Date.parse('2026-10-28T01:00:00Z');
+    fs.utimesSync(video, 렌더 / 1000, 렌더 / 1000);
+    fs.writeFileSync(path.join(vo, 'vo.json'), JSON.stringify({ tool: 'tools/나레이션굽기.mjs', made: '2026-10-28T03:00:00Z',
+      lines: [{ id: 'n1', src: 'n1.wav' }, { id: 'b1', src: 'b1.wav' }, { id: 'b2', src: 'b2.wav' }] }));
+    wav(path.join(편, '음성', '억양시험', 'x1.wav'), 사인(700)); // 시험 폴더는 렌더에 안 들어간다
+    fs.writeFileSync(path.join(편, '음성', '억양시험', 'vo.json'), JSON.stringify({ tool: 'tools/나레이션굽기.mjs', made: '2026-10-28T03:00:00Z', lines: [{ id: 'x1', src: 'x1.wav' }] }));
+    const bundle = 묶음.load(편);
+    assert.deepEqual(검사.voiceFiles(bundle).map((v) => v.id).sort(), ['b1', 'b2', 'n1']);
+    const r = await 검사.voiceFindings(bundle, [video]);
+    const by = Object.fromEntries(r.findings.map((f) => [f.code, f]));
+    assert.equal(by['voice-pitch'].level, '고칠 것');
+    assert.match(by['voice-pitch'].message, /n1 65\dHz/);
+    assert.doesNotMatch(by['voice-pitch'].message, /b1/);
+    assert.match(by['voice-clipped'].message, /b2 \d+표본/);
+    assert.match(by['voice-newer'].message, /3개/, 'vo.json 만든 때가 영상보다 늦으면 다시 산 목소리가 안 들어간 것');
+    assert.equal(r.summary.줄, 3);
+    // 영상이 줄보다 나중이면 「영상보다 나중」은 없다 — wav 수정 시각이 아니라 vo.json 만든 때로 본다
+    fs.utimesSync(video, (렌더 + 6 * 3600e3) / 1000, (렌더 + 6 * 3600e3) / 1000);
+    assert.equal((await 검사.voiceFindings(bundle, [video])).findings.some((f) => f.code === 'voice-newer'), false);
+    // 준비.json 「목소리」에 적으면 그 폴더만 본다
+    bundle.prep.목소리 = ['음성/억양시험'];
+    assert.deepEqual(검사.voiceFiles(bundle).map((v) => v.id), ['x1']);
+    // 줄 파일이 없는데 대본이 있으면 확인할 것
+    const none = await 검사.voiceFindings(bundle, [video], { files: [], scriptText: '말이 있다' });
+    assert.deepEqual(none.findings.map((f) => `${f.level}:${f.code}`), ['확인할 것:voice-none']);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test('⑭ 목소리 엉킴 — 목소리마다 프레임 가중 평균, 기본음 165Hz 이상인 목소리만 15%를 넘으면 고칠 것(남자 목소리는 결함 없이도 높다)', () => {
+  const out = [
+    'C:/e/vo/n1.wav\t엉킨 프레임   5.9% · 최악 3프레임 0.39 · 중앙 0.02 · 프레임 34 · 최고 음높이 594Hz ⚠ 높아 뒤집힐 수 있음 · 중앙 기본음 470Hz',
+    'C:/e/vo/n3.wav\t엉킨 프레임  28.6% · 최악 3프레임 0.53 · 중앙 0.13 · 프레임 28 · 최고 음높이 617Hz ⚠ 높아 뒤집힐 수 있음 · 중앙 기본음 480Hz',
+    'C:/e/vo/b1.wav\t엉킨 프레임  57.4% · 최악 3프레임 0.52 · 중앙 0.38 · 프레임 54 · 최고 음높이 178Hz · 중앙 기본음 120Hz',
+    'C:/e/vo/s1.wav\t엉킨 프레임   0.0% · 최악 3프레임 0.10 · 중앙 0.01 · 프레임 40 · 최고 음높이 498Hz · 중앙 기본음 300Hz',
+    'C:/e/vo/x.wav\t모음 없음',
+  ].join('\n');
+  const m = 검사.parseTangle(out);
+  assert.deepEqual(m[path.resolve('C:/e/vo/n3.wav')], { pct: 28.6, frames: 28, f0: 480 });
+  assert.equal(m[path.resolve('C:/e/vo/x.wav')], undefined);
+  const files = [{ wav: 'C:/e/vo/n1.wav', voice: '하나' }, { wav: 'C:/e/vo/n3.wav', voice: '하나' }, { wav: 'C:/e/vo/b1.wav', voice: '범수' }, { wav: 'C:/e/vo/s1.wav', voice: '소진' }];
+  assert.deepEqual(검사.tangledVoices(files, m), [{ voice: '하나', pct: 16.2, f0: 480, lines: 2 }], '범수 57%는 남자 목소리라 넘기고, 소진 0%는 깨끗하다');
+});
