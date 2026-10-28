@@ -5,6 +5,8 @@
 모음(유성) 프레임마다 기본 주파수를 자기상관으로 잡고, 0.08~5kHz 에너지 가운데 배음(기본 주파수의 정수배 ±12%) 밖에 있는
 비율을 센다. 깨끗한 모음은 배음 줄에 모여 0.0x, Typecast 「하나」의 감탄사 결함(「Nope!」 첫머리)은 0.35~0.5까지 오른다.
 파일마다 「엉킨 프레임」(문턱 넘은 비율) · 최악 세 프레임 평균 · 중앙값을 낸다.
+최고 음높이(YIN, 48kHz)도 낸다 — 감정 세기 1.3 · toneup 1.2는 여자 목소리를 600Hz 넘게 끌어올려 목소리가 뒤집혀 깨진다
+(10-28 소진 「Three!」 세기 1.3 · 1.2 638Hz 깨짐 ↔ 세기 1.0 498Hz 괜찮음, 하나 「Nope!」 650Hz 안팎 깨짐 — 유호님 귀). 560Hz를 넘으면 ⚠.
 같은 글을 목소리 · 설정끼리 견줄 때만 쓴다 — 자음이 많은 줄이나 낮은 남자 목소리는 결함 없이도 높게 나올 수 있고, 귀로 듣기를 대신하지 않는다.
 """
 import subprocess
@@ -54,6 +56,34 @@ def analyse(x):
     return out
 
 
+PITCH_WARN = 560
+
+
+def top_pitch(path, sr=48000, fmin=120, fmax=1100, w=1920, hop=480, th=0.1):
+    """큰 소리 프레임의 YIN 음높이(포물선 보간) 가운데 가장 높은 값(Hz). 모음이 없으면 None."""
+    r = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-ac', '1', '-ar', str(sr), '-f', 'f32le', '-'], capture_output=True)
+    x = np.frombuffer(r.stdout, dtype=np.float32).astype(np.float64)
+    tmin, tmax = sr // fmax, sr // fmin
+    pk = np.abs(x).max() + 1e-9
+    best = None
+    for i in range(0, len(x) - w - tmax - 2, hop):
+        f = x[i:i + w]
+        if np.sqrt((f ** 2).mean()) < pk * 0.12:
+            continue
+        d = np.array([np.sum((f - x[i + t:i + t + w]) ** 2) for t in range(tmax + 2)])
+        dn = np.r_[1, d[1:] * np.arange(1, len(d)) / (np.cumsum(d[1:]) + 1e-12)]
+        cand = np.where(dn[tmin:tmax] < th)[0]
+        if len(cand) == 0:
+            continue
+        t = tmin + cand[0]
+        while t + 1 < tmax and dn[t + 1] < dn[t]:
+            t += 1
+        a, b, c = dn[t - 1], dn[t], dn[t + 1]
+        hz = sr / (t + 0.5 * (a - c) / (a - 2 * b + c + 1e-12))
+        best = hz if best is None else max(best, hz)
+    return best
+
+
 def main(argv):
     limit = 0.35
     if '--문턱' in argv:
@@ -69,7 +99,9 @@ def main(argv):
             print(f'{path}\t모음 없음')
             continue
         v = np.array([x[1] for x in a])
-        print(f'{path}\t엉킨 프레임 {100 * (v > limit).mean():5.1f}% · 최악 3프레임 {np.sort(v)[-3:].mean():.2f} · 중앙 {np.median(v):.2f} · 프레임 {len(v)}')
+        hz = top_pitch(path)
+        high = f'{hz:.0f}Hz' + (' ⚠ 높아 뒤집힐 수 있음' if hz and hz > PITCH_WARN else '') if hz else '-'
+        print(f'{path}\t엉킨 프레임 {100 * (v > limit).mean():5.1f}% · 최악 3프레임 {np.sort(v)[-3:].mean():.2f} · 중앙 {np.median(v):.2f} · 프레임 {len(v)} · 최고 음높이 {high}')
     return 0
 
 
