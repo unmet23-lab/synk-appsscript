@@ -8,9 +8,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-// 2026-10-28: WORLD·주문·리듬이 실제 호출하는 Temper 지연 관측과 보존, 형식별 prior 경계.
-// 새 엔진/파일 없이 7,127줄. 설계의 소비처·실행 근거와 함께 정확한 증가분만 반영한다.
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7127, capabilityDocLines: 150 });
+// 2026-10-29: Core 확인 시점·재확인 질문, Vellum 표본 검사, Temper 중복 검사와 Trail 출처 탐색.
+// 기존 다제품 공통 모듈 5개의 순증 14줄. 소비처와 근거는 Atlas 설계의 같은 절에 둔다.
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7141, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

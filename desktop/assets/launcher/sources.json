@@ -178,8 +178,8 @@
     {
       "name": "engine.js",
       "source": "atlas/engine.js",
-      "bytes": 38761,
-      "sha256": "beebb15a74403134867c8cb83852e8344bf70b6049a8a1613a3125600fbdc6c6"
+      "bytes": 39174,
+      "sha256": "36a02981679480b1dbaf3e264847bdc921767160fdabc03be06ed7cbe55f6680"
     },
     {
       "name": "personalization.js",

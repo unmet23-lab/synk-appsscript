@@ -21,7 +21,8 @@
 
   function stuckFor({ latencies = [], base = STUCK, factor = 2.5, floorMs = 8000, ceilMs = 90000, minSamples = 5 } = {}) {
     if (!Array.isArray(latencies) || !latencies.every(ms => within(ms, 0, 600000)) || !base || !within(base.afterMs, 1000, 600000)
-      || !Number.isInteger(base.misses) || base.misses < 1 || !within(factor, 1, 10) || !within(floorMs, 1000, ceilMs) || !within(ceilMs, floorMs, 600000)) {
+      || !Number.isInteger(base.misses) || base.misses < 1 || !Number.isSafeInteger(minSamples) || minSamples < 1
+      || !within(factor, 1, 10) || !within(floorMs, 1000, ceilMs) || !within(ceilMs, floorMs, 600000)) {
       throw new TypeError('Vellum: invalid stuck input');
     }
     if (latencies.length < minSamples) return { afterMs: base.afterMs, misses: base.misses, basis: 'default', n: latencies.length };

@@ -132,6 +132,14 @@ var require_strata = __commonJS({
       const nodes = new Map(data.nodes.map((node) => [node.id, node]));
       const tags = new Map(data.links.tags.map((link) => [link.tag, link]));
       const goals = new Map((data.links.goals || []).map((link) => [link.goal, link]));
+      const incoming = /* @__PURE__ */ new Map();
+      for (const edge of data.edges) {
+        const key = `${edge.type}\0${edge.to}`;
+        if (!incoming.has(key)) incoming.set(key, []);
+        incoming.get(key).push(edge);
+      }
+      for (const edges of incoming.values()) if (edges[0].type !== "part_of") edges.sort((a, b) => compare(a.from, b.from));
+      const edgesTo = (type, id) => incoming.get(`${type}\0${id}`) || [];
       function getNode(id) {
         return nodes.get(id) || null;
       }
@@ -151,7 +159,7 @@ var require_strata = __commonJS({
       function forSkill(id) {
         const skill2 = getNode(id);
         if (skill2?.kind !== "skill") return null;
-        const edges = data.edges.filter((edge) => edge.type === "part_of" && edge.to === id);
+        const edges = edgesTo("part_of", id);
         const grammar = edges.map((edge) => getNode(edge.from));
         const refs = [...skill2.source_refs, ...grammar.flatMap((node) => node.source_refs), ...edges.flatMap((edge) => edge.source_refs)];
         const sources = [...new Map(refs.map((ref) => [`${ref.source}\0${ref.selector}`, ref])).values()];
@@ -159,7 +167,7 @@ var require_strata = __commonJS({
       }
       function prerequisites(id) {
         if (!nodes.has(id)) return [];
-        return freeze(data.edges.filter((edge) => edge.type === "prerequisite" && edge.to === id).sort((a, b) => compare(a.from, b.from)).map((edge) => ({
+        return freeze(edgesTo("prerequisite", id).map((edge) => ({
           node: getNode(edge.from),
           confidence: edge.confidence,
           reviewed: edge.reviewed,
@@ -169,7 +177,7 @@ var require_strata = __commonJS({
       }
       function recommendedBefore(id) {
         if (!nodes.has(id)) return [];
-        return freeze(data.edges.filter((edge) => edge.type === "recommended_before" && edge.to === id && edge.reviewed).sort((a, b) => compare(a.from, b.from)).map((edge) => ({
+        return freeze(edgesTo("recommended_before", id).filter((edge) => edge.reviewed).map((edge) => ({
           node: getNode(edge.from),
           target: id,
           confidence: edge.confidence,
@@ -6733,8 +6741,8 @@ var require_engine2 = __commonJS({
       else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
       "use strict";
-      const VERSION = "atlas-2.4.0";
-      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
+      const VERSION = "atlas-2.4.1";
+      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", "atlas-2.4.0", VERSION];
       const trail = () => {
         const module2 = getTrail();
         if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -6929,7 +6937,7 @@ var require_engine2 = __commonJS({
       }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
-        const rows2 = [];
+        const rows2 = [], positions = /* @__PURE__ */ new Map();
         let sorted = true, last = null;
         for (const e of events) {
           const known = admitted.get(e);
@@ -6937,6 +6945,7 @@ var require_engine2 = __commonJS({
           const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
           if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
           if (last && (row.at < last.at || row.at === last.at && row.recordedAt < last.recordedAt)) sorted = false;
+          if (!positions.has(e.id)) positions.set(e.id, rows2.length);
           rows2.push({ e, at: row.at, recordedAt: row.recordedAt });
           last = row;
         }
@@ -6967,8 +6976,11 @@ var require_engine2 = __commonJS({
             expired.push(line);
             continue;
           }
-          const answer = latestAnswer[line] && !excluded.has(latestAnswer[line].id) ? latestAnswer[line] : null;
-          const denied = answer?.value === "no" && (event.kind === "trait" || ms(answer.at) >= ms(event.at));
+          const response = latestAnswer[line];
+          const answeredAt = response && ms(response.at), sourceRecordedAt = ms(event.recordedAt);
+          const covers = response && (answeredAt > sourceRecordedAt || answeredAt === sourceRecordedAt && ms(response.recordedAt) === sourceRecordedAt && positions.get(response.id) > positions.get(event.id));
+          const answer = response && !excluded.has(response.id) && (covers || event.kind === "trait" && response.value === "no") ? response : null;
+          const denied = answer?.value === "no";
           const status = denied ? "denied" : answer?.value === "yes" ? "confirmed" : "unconfirmed";
           const sufficiency = event.n >= 8 ? "solid" : event.n >= 3 ? "fair" : "thin";
           lines.push({
@@ -7597,6 +7609,11 @@ var require_temper = __commonJS({
           const key = scopeKey(row.scope);
           if (seen.has(key)) throw new TypeError("Temper: duplicate scope would double-count evidence");
           seen.add(key);
+          const attempts = /* @__PURE__ */ new Set();
+          for (const attempt of row.attempts) {
+            if (attempts.has(attempt.eventId)) throw new TypeError("Temper: duplicate attempt");
+            attempts.add(attempt.eventId);
+          }
         }
         return rows2;
       }
@@ -7626,10 +7643,7 @@ var require_temper = __commonJS({
         for (const row of rows2) {
           result.presented += row.presentations.length;
           result.excludedAttempts += row.excludedAttempts || 0;
-          const seen = /* @__PURE__ */ new Set();
           for (const a of row.attempts) {
-            if (seen.has(a.eventId)) throw new TypeError("Temper: duplicate attempt");
-            seen.add(a.eventId);
             result.attempts += 1;
             if (a.assisted === true) result.assisted += 1;
             else if (a.assisted === null) result.unknownAssistance += 1;
@@ -9653,7 +9667,7 @@ var require_vellum_flow = __commonJS({
         return n;
       };
       function stuckFor({ latencies = [], base = STUCK, factor = 2.5, floorMs = 8e3, ceilMs = 9e4, minSamples = 5 } = {}) {
-        if (!Array.isArray(latencies) || !latencies.every((ms) => within(ms, 0, 6e5)) || !base || !within(base.afterMs, 1e3, 6e5) || !Number.isInteger(base.misses) || base.misses < 1 || !within(factor, 1, 10) || !within(floorMs, 1e3, ceilMs) || !within(ceilMs, floorMs, 6e5)) {
+        if (!Array.isArray(latencies) || !latencies.every((ms) => within(ms, 0, 6e5)) || !base || !within(base.afterMs, 1e3, 6e5) || !Number.isInteger(base.misses) || base.misses < 1 || !Number.isSafeInteger(minSamples) || minSamples < 1 || !within(factor, 1, 10) || !within(floorMs, 1e3, ceilMs) || !within(ceilMs, floorMs, 6e5)) {
           throw new TypeError("Vellum: invalid stuck input");
         }
         if (latencies.length < minSamples) return { afterMs: base.afterMs, misses: base.misses, basis: "default", n: latencies.length };
@@ -11047,7 +11061,7 @@ var require_ask = __commonJS({
       else root.SynkAsk = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "ask-1.1";
+      const VERSION = "ask-1.2";
       const MAX_OPTIONS = 64;
       const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
       const DAY3 = 864e5;
@@ -11102,18 +11116,20 @@ var require_ask = __commonJS({
         validate2(questions);
         if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
         if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
+        if (!finite(quietDays) || quietDays < 0 || quietDays > 36500) throw new TypeError("Ask: invalid question cooldown");
+        const currentTime = now === null ? null : time3(now);
         const valued = typeof evaluate === "function";
         if (!valued && questions.some((q2) => owns(q2, "cost") || owns(q2, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
         const current = decide({ ...answers });
         const result = [];
         for (const q2 of questions) {
           const about = q2.about ?? q2.id;
-          if (Object.hasOwn(answers, about)) continue;
+          if (Object.hasOwn(answers, about) && (q2.kind !== "refresh" || currentTime === null)) continue;
           if (denied.includes(q2.id)) {
             result.push({ id: q2.id, kind: q2.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q2.id) && now !== null && time3(now) - time3(asked[q2.id]) < quietDays * DAY3) {
+          if (Object.hasOwn(asked, q2.id) && currentTime !== null && currentTime - time3(asked[q2.id]) < quietDays * DAY3) {
             result.push({ id: q2.id, kind: q2.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
@@ -12335,8 +12351,8 @@ var require_engine = __commonJS2({
       else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
       "use strict";
-      const VERSION = "atlas-2.4.0";
-      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
+      const VERSION = "atlas-2.4.1";
+      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", "atlas-2.4.0", VERSION];
       const trail = () => {
         const module2 = getTrail();
         if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -12531,7 +12547,7 @@ var require_engine = __commonJS2({
       }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
-        const rows2 = [];
+        const rows2 = [], positions = /* @__PURE__ */ new Map();
         let sorted = true, last = null;
         for (const e of events) {
           const known = admitted.get(e);
@@ -12539,6 +12555,7 @@ var require_engine = __commonJS2({
           const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
           if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
           if (last && (row.at < last.at || row.at === last.at && row.recordedAt < last.recordedAt)) sorted = false;
+          if (!positions.has(e.id)) positions.set(e.id, rows2.length);
           rows2.push({ e, at: row.at, recordedAt: row.recordedAt });
           last = row;
         }
@@ -12569,8 +12586,11 @@ var require_engine = __commonJS2({
             expired.push(line);
             continue;
           }
-          const answer = latestAnswer[line] && !excluded.has(latestAnswer[line].id) ? latestAnswer[line] : null;
-          const denied = answer?.value === "no" && (event.kind === "trait" || ms(answer.at) >= ms(event.at));
+          const response = latestAnswer[line];
+          const answeredAt = response && ms(response.at), sourceRecordedAt = ms(event.recordedAt);
+          const covers = response && (answeredAt > sourceRecordedAt || answeredAt === sourceRecordedAt && ms(response.recordedAt) === sourceRecordedAt && positions.get(response.id) > positions.get(event.id));
+          const answer = response && !excluded.has(response.id) && (covers || event.kind === "trait" && response.value === "no") ? response : null;
+          const denied = answer?.value === "no";
           const status = denied ? "denied" : answer?.value === "yes" ? "confirmed" : "unconfirmed";
           const sufficiency = event.n >= 8 ? "solid" : event.n >= 3 ? "fair" : "thin";
           lines.push({

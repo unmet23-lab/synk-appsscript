@@ -439,8 +439,8 @@ var require_engine = __commonJS({
       else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
       "use strict";
-      const VERSION = "atlas-2.4.0";
-      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
+      const VERSION = "atlas-2.4.1";
+      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", "atlas-2.4.0", VERSION];
       const trail = () => {
         const module2 = getTrail();
         if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -635,7 +635,7 @@ var require_engine = __commonJS({
       }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
-        const rows = [];
+        const rows = [], positions = /* @__PURE__ */ new Map();
         let sorted = true, last = null;
         for (const e of events) {
           const known = admitted.get(e);
@@ -643,6 +643,7 @@ var require_engine = __commonJS({
           const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
           if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
           if (last && (row.at < last.at || row.at === last.at && row.recordedAt < last.recordedAt)) sorted = false;
+          if (!positions.has(e.id)) positions.set(e.id, rows.length);
           rows.push({ e, at: row.at, recordedAt: row.recordedAt });
           last = row;
         }
@@ -673,8 +674,11 @@ var require_engine = __commonJS({
             expired.push(line);
             continue;
           }
-          const answer = latestAnswer[line] && !excluded.has(latestAnswer[line].id) ? latestAnswer[line] : null;
-          const denied = answer?.value === "no" && (event.kind === "trait" || ms(answer.at) >= ms(event.at));
+          const response = latestAnswer[line];
+          const answeredAt = response && ms(response.at), sourceRecordedAt = ms(event.recordedAt);
+          const covers = response && (answeredAt > sourceRecordedAt || answeredAt === sourceRecordedAt && ms(response.recordedAt) === sourceRecordedAt && positions.get(response.id) > positions.get(event.id));
+          const answer = response && !excluded.has(response.id) && (covers || event.kind === "trait" && response.value === "no") ? response : null;
+          const denied = answer?.value === "no";
           const status = denied ? "denied" : answer?.value === "yes" ? "confirmed" : "unconfirmed";
           const sufficiency = event.n >= 8 ? "solid" : event.n >= 3 ? "fair" : "thin";
           lines.push({

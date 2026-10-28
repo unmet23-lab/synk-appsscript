@@ -27,6 +27,11 @@
       const key = scopeKey(row.scope);
       if (seen.has(key)) throw new TypeError('Temper: duplicate scope would double-count evidence');
       seen.add(key);
+      const attempts = new Set();
+      for (const attempt of row.attempts) {
+        if (attempts.has(attempt.eventId)) throw new TypeError('Temper: duplicate attempt');
+        attempts.add(attempt.eventId);
+      }
     }
     return rows;
   }
@@ -44,10 +49,8 @@
     for (const row of rows) {
       result.presented += row.presentations.length;
       result.excludedAttempts += row.excludedAttempts || 0;
-      const seen = new Set();
       for (const a of row.attempts) {
-        if (seen.has(a.eventId)) throw new TypeError('Temper: duplicate attempt');
-        seen.add(a.eventId); result.attempts += 1;
+        result.attempts += 1;
         if (a.assisted === true) result.assisted += 1;
         else if (a.assisted === null) result.unknownAssistance += 1;
         if (a.exposure === 'repeat') result.repeat += 1;

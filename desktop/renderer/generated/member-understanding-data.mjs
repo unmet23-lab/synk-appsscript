@@ -2,7 +2,7 @@
 import {
   require_member_statement_contract,
   require_member_understanding_contract
-} from "./member-shared/chunk-2KR7A2ZJ.mjs";
+} from "./member-shared/chunk-CYFBKH3K.mjs";
 import {
   __toESM
 } from "./member-shared/chunk-II2PDA5P.mjs";

@@ -15,9 +15,9 @@
   else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getTrail) {
   'use strict';
-  const VERSION = 'atlas-2.4.0';
+  const VERSION = 'atlas-2.4.1';
   // Decisions recorded by an earlier policy stay readable; a new plan is always stamped with VERSION.
-  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', 'atlas-2.3.0', VERSION];
+  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', 'atlas-2.3.0', 'atlas-2.4.0', VERSION];
   const trail = () => {
     const module = getTrail();
     if (!module || typeof module.validate !== 'function' || typeof module.checkLink !== 'function' || typeof module.summarize !== 'function') throw new Error('Atlas: Trail practice module unavailable');
@@ -209,7 +209,7 @@
   function read(events, scope, asOf, recordedAsOf = asOf) {
     const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
     // A session's own entries were validated when admitted; anything else is checked in full.
-    const rows = [];
+    const rows = [], positions = new Map();
     let sorted = true, last = null;
     for (const e of events) {
       const known = admitted.get(e);
@@ -217,6 +217,7 @@
       const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
       if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
       if (last && (row.at < last.at || (row.at === last.at && row.recordedAt < last.recordedAt))) sorted = false;
+      if (!positions.has(e.id)) positions.set(e.id, rows.length);
       rows.push({ e, at: row.at, recordedAt: row.recordedAt }); last = row;
     }
     // Stable sort preserves the append order when both clocks have the same
@@ -243,10 +244,14 @@
       if (excluded.has(event.id)) continue;
       const until = event.until || new Date(ms(event.at) + RECENT).toISOString();
       if (ms(until) <= cutoff) { expired.push(line); continue; }
-      const answer = latestAnswer[line] && !excluded.has(latestAnswer[line].id) ? latestAnswer[line] : null;
-      // "No" to a guess about the person stays until they answer again. "No" to a need or a
-      // due review only covers what had been observed by then; later evidence opens a new line.
-      const denied = answer?.value === 'no' && (event.kind === 'trait' || ms(answer.at) >= ms(event.at));
+      const response = latestAnswer[line];
+      // A confirmation covers only the source available then, even when both clocks tie.
+      // A declined trait guess stays declined; newer needs/due reviews may reopen.
+      const answeredAt = response && ms(response.at), sourceRecordedAt = ms(event.recordedAt);
+      const covers = response && (answeredAt > sourceRecordedAt || answeredAt === sourceRecordedAt
+        && ms(response.recordedAt) === sourceRecordedAt && positions.get(response.id) > positions.get(event.id));
+      const answer = response && !excluded.has(response.id) && (covers || event.kind === 'trait' && response.value === 'no') ? response : null;
+      const denied = answer?.value === 'no';
       const status = denied ? 'denied' : answer?.value === 'yes' ? 'confirmed' : 'unconfirmed';
       const sufficiency = event.n >= 8 ? 'solid' : event.n >= 3 ? 'fair' : 'thin';
       lines.push({ key: line, kind: event.kind, source: 'observed', strength: event.strength, n: event.n, sufficiency, assisted: event.assisted ?? null, at: event.at, until,

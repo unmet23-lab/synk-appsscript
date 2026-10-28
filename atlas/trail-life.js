@@ -71,11 +71,14 @@
       return false;
     };
     const permitted = (npcId, factId, visited = new Set()) => {
-      const grant = knowledge.get(npcId)?.get(factId);
-      if (!active(factId) || grant?.allowed !== true || visited.has(factId)) return false;
-      if (grant.viaId === null) return true;
-      if (grant.viaId === factId) return facts.get(factId).event.knownBy.includes(npcId);
-      return permitted(npcId, grant.viaId, new Set([...visited, factId]));
+      while (!visited.has(factId)) {
+        const grant = knowledge.get(npcId)?.get(factId);
+        if (!active(factId) || grant?.allowed !== true) return false;
+        if (grant.viaId === null) return true;
+        if (grant.viaId === factId) return facts.get(factId).event.knownBy.includes(npcId);
+        visited.add(factId); factId = grant.viaId;
+      }
+      return false;
     };
     for (const event of events) {
       validate(event);

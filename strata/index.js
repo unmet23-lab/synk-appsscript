@@ -105,6 +105,16 @@ function createMap(input) {
   const nodes = new Map(data.nodes.map(node => [node.id, node]));
   const tags = new Map(data.links.tags.map(link => [link.tag, link]));
   const goals = new Map((data.links.goals || []).map(link => [link.goal, link]));
+  // A map is immutable: index incoming relationships once instead of scanning
+  // the entire curriculum for each person's candidate or prerequisite lookup.
+  const incoming = new Map();
+  for (const edge of data.edges) {
+    const key = `${edge.type}\0${edge.to}`;
+    if (!incoming.has(key)) incoming.set(key, []);
+    incoming.get(key).push(edge);
+  }
+  for (const edges of incoming.values()) if (edges[0].type !== 'part_of') edges.sort((a, b) => compare(a.from, b.from));
+  const edgesTo = (type, id) => incoming.get(`${type}\0${id}`) || [];
   function getNode(id) { return nodes.get(id) || null; }
   // The nodes on the way to a declared goal, in the order the map gives them. It does not judge the
   // goal; an unknown goal or one without links gives an empty list, never a similar goal's nodes.
@@ -120,7 +130,7 @@ function createMap(input) {
   function forSkill(id) {
     const skill = getNode(id);
     if (skill?.kind !== 'skill') return null;
-    const edges = data.edges.filter(edge => edge.type === 'part_of' && edge.to === id);
+    const edges = edgesTo('part_of', id);
     const grammar = edges.map(edge => getNode(edge.from));
     const refs = [...skill.source_refs, ...grammar.flatMap(node => node.source_refs), ...edges.flatMap(edge => edge.source_refs)];
     const sources = [...new Map(refs.map(ref => [`${ref.source}\0${ref.selector}`, ref])).values()];
@@ -128,8 +138,7 @@ function createMap(input) {
   }
   function prerequisites(id) {
     if (!nodes.has(id)) return [];
-    return freeze(data.edges.filter(edge => edge.type === 'prerequisite' && edge.to === id)
-      .sort((a, b) => compare(a.from, b.from)).map(edge => ({ node: getNode(edge.from),
+    return freeze(edgesTo('prerequisite', id).map(edge => ({ node: getNode(edge.from),
         confidence: edge.confidence, reviewed: edge.reviewed,
         blocking: edge.confidence !== 'ai_draft' || edge.reviewed, source_refs: edge.source_refs })));
   }
@@ -137,8 +146,7 @@ function createMap(input) {
   // establish a necessary prerequisite; even reviewed recommendations never block a target.
   function recommendedBefore(id) {
     if (!nodes.has(id)) return [];
-    return freeze(data.edges.filter(edge => edge.type === 'recommended_before' && edge.to === id && edge.reviewed)
-      .sort((a, b) => compare(a.from, b.from)).map(edge => ({ node: getNode(edge.from), target: id,
+    return freeze(edgesTo('recommended_before', id).filter(edge => edge.reviewed).map(edge => ({ node: getNode(edge.from), target: id,
         confidence: edge.confidence, reviewed: true, blocking: false, reason_ko: edge.reason_ko,
         basis: edge.basis, source_refs: edge.source_refs, review: edge.review })));
   }
