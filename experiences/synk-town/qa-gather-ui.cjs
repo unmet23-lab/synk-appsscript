@@ -151,6 +151,18 @@ async function pickScene(browser) {
     // The keys stay where they were (the dark leaf clicked before) — never lost to the page.
     const kept = await page.evaluate(() => document.activeElement?.closest?.('.gather-leaf')?.dataset.index ?? document.activeElement?.tagName);
     check(scene, kept === String(dark[0].index), '키로 따도 초점은 있던 잎에 남는다', kept);
+    // A refusal of the town's own (screen review A1): the leaf comes back pressable, and it never lands in the basket.
+    let refuse = true;
+    await page.route('**/api/preview/command', async route => { const body = JSON.parse(route.request().postData() || '{}');
+      if (refuse && body.type === 'GATHER_PICK') { refuse = false; return route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'gather-too-far', message: '조금 더 가까이 가서 따 주세요.' }) }); }
+      return route.continue(); });
+    before = (await gather(page)).sounds.length;
+    await page.locator(`.gather-leaf[data-index="${young[1].index}"]`).click(); await delay(900);
+    m = await gather(page);
+    const returned = await page.evaluate(i => { const b = document.querySelector(`.gather-leaf[data-index="${i}"]`); return { gone: b.classList.contains('gone'), disabled: b.disabled }; }, young[1].index);
+    check(scene, !returned.gone && !returned.disabled && !m.picked.includes(young[1].index) && !m.sounds.slice(before).includes('basket') && /가까이/.test(m.line || ''), '거절된 잎은 가지로 돌아와 다시 눌린다 · 바구니 소리 없음 · 까닭 한 줄', { returned, sounds: m.sounds.slice(before), line: m.line });
+    check(scene, !(await page.evaluate(() => document.getElementById('error') && !document.getElementById('error').hidden)), '도메인 거절은 연결 오류로 띄우지 않는다');
+    await page.unroute('**/api/preview/command');
     before = (await gather(page)).sounds.length;
     await page.locator(`.gather-leaf[data-index="${young[1].index}"]`).click(); await delay(900);
     await page.locator(`.gather-leaf[data-index="${young[2].index}"]`).focus(); await page.keyboard.press('Enter'); await delay(1200);
@@ -164,7 +176,7 @@ async function pickScene(browser) {
     check(scene, /다 땄어요/.test(m.line) && /찻집 화분에서 딸 수 있어요/.test(m.line), '빈 가지 — 「여기는 오늘 다 땄어요」 + 지금 딸 것이 있는 다른 자리', m.line);
     const words = await visibleText(page);
     check(scene, !NUMBERS.test(words), '판의 보이는 글에 숫자 없음(G2)', words);
-    check(scene, s.commands.filter(c => c.type === 'GATHER_PICK').length === 3 && s.commands.every(c => c.payload.surfaceId && Number.isSafeInteger(c.payload.fence)), '명령 셋 · 창 울타리(surfaceId · fence) 실림', s.commands.map(c => c.type));
+    check(scene, s.commands.filter(c => c.type === 'GATHER_PICK').length === 4 && s.commands.every(c => c.payload.surfaceId && Number.isSafeInteger(c.payload.fence)), '명령 넷(거절 하나 포함) · 창 울타리(surfaceId · fence) 실림', s.commands.map(c => c.type));
     await shot(page, 'gather-done-1440');
     await page.keyboard.press('Escape'); await delay(400);
     m = await gather(page);
@@ -267,7 +279,11 @@ async function simpleScene(browser) {
     check(scene, m.simple && await page.locator('.gather-quick').isVisible() && !(await page.locator('.gather-branch').isVisible()), '움직임 줄이기 — 가지 대신 「바로 따기」 하나', { simple: m.simple });
     check(scene, await inView(page, '#gather-board'), '판이 화면 안(390)');
     await shot(page, 'gather-simple-390');
-    for (let i = 0; i < 3; i++) { await page.locator('.gather-quick').tap(); await delay(900); }
+    // Keys on 「바로 따기」 (screen review A2): pressed by Enter, the keys stay on it while something is left.
+    await page.locator('.gather-quick').focus(); await page.keyboard.press('Enter'); await delay(900);
+    const kept = await page.evaluate(() => document.activeElement?.classList.contains('gather-quick'));
+    check(scene, kept, '키로 바로 따기를 눌러도 초점은 그 단추에 남는다', await page.evaluate(() => document.activeElement?.className));
+    for (let i = 0; i < 2; i++) { await page.locator('.gather-quick').tap(); await delay(900); }
     m = await gather(page); const v = await view(page);
     check(scene, v.basket.find(b => b.item === 'leaf-young')?.qty === 3 && m.sounds.filter(x => x === 'leaf').length === 3, '「바로 따기」 셋 — 소리는 남고 바구니가 찬다', { basket: v.basket, sounds: m.sounds });
     check(scene, /다 땄어요/.test(m.line || ''), '다 따면 단추 대신 한 줄', m.line);

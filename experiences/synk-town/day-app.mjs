@@ -658,7 +658,7 @@ async function openCard(c, source) {
 /** 「나와 함께」's panel (§8-3): the card, its owner's words, the choices the server allows, then the result with 「…」
  * (Atlas's four answers, §20-3). Closing before it is done leaves it 「하던 생활」 (CARD_CLOSE → paused). */
 // The card this window opened itself (final review F3): its panel opens here though another window holds the town.
-let cardFeedbackOpen = false, cardClosing = false, cardOpenedHere = null;
+let cardFeedbackOpen = false, cardClosing = false, cardOpenedHere = null, cardGiving = false;
 function renderCardDialog() {
   const dialog = $('card-dialog'), m = takeModel(snapshot.view.day?.scene?.village?.take);
   if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; cardOpenedHere = null; return; }
@@ -681,8 +681,10 @@ function renderCardDialog() {
       b.setAttribute('aria-pressed', String(c.chosen)); b.dataset.command = 'CARD_CHOOSE'; b.dataset.choice = c.id;
       b.addEventListener('click', async () => { await command('CARD_CHOOSE', { choice: c.id }); refocusCard({ choice: c.id }); }); return b; })),
       ...fillers.map(item => { const b = document.createElement('button'); b.type = 'button'; b.className = 'felt card-give'; b.textContent = fillers.length === 1 ? '내가 딴 잎 드리기' : `${gatherItemName(item)} 드리기`;
-        b.dataset.choice = `give:${item}`; b.dataset.sound = 'none';
-        b.addEventListener('click', async () => { gather?.play?.('give'); const answer = await gatherCommand('GATHER_GIVE', { item }); if (!answer.ok && answer.message) text('card-note', answer.message); refocusCard(); }); return b; }));
+        // The gift goes once (screen review A4): busy disables it like the choices, and a press while one is out does nothing.
+        b.dataset.choice = `give:${item}`; b.dataset.command = 'GATHER_GIVE'; b.dataset.sound = 'none';
+        b.addEventListener('click', async () => { if (cardGiving) return; cardGiving = true; gather?.play?.('give');
+          try { const answer = await gatherCommand('GATHER_GIVE', { item }); if (!answer.ok && answer.message) text('card-note', answer.message); } finally { cardGiving = false; } refocusCard(); }); return b; }));
   }
   // The confirm waits for a choice (setBusy keeps it off while a command is out, by its data-unavailable).
   const confirm = $('card-confirm'); confirm.dataset.command = 'CARD_CONFIRM'; confirm.dataset.unavailable = String(!m.chosen);

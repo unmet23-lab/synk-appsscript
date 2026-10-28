@@ -145,7 +145,7 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
   const sound = (name, opts) => { if (sfx.play(name, opts)) { played.push(name); if (played.length > 40) played.shift(); return true; } return false; };
   let gv = null, ctx = {}, nearId = null, hand = null, simple = false, disposed = false, opener = null, lastSig = '', lastAnnounce = '';
   let giveOpen = false, pending = [], quickBusy = false, giving = false, bubble = null, found = null, toast = null, withShown = null, lineNote = null, padPrev = {}, placedBoardH = -1;
-  const timers = new Set();
+  const timers = new Set(), flights = new Map();
   const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); if (!disposed) fn(); }, ms); timers.add(t); return t; };
 
   // The right column's gathering actions: 「E · 잎 따기」 by a spot, 「찻집 주인에게 드리기」 by the owner (W8b §2-8).
@@ -192,6 +192,12 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
   const able = () => !!gv && ctx.walking && ctx.connected && !ctx.seated && !ctx.dialog && !ctx.teaShown && !!ctx.point;
   const ownerNear = () => !!ctx.owner?.up && !ctx.owner.walking && distance(ctx.point, ctx.owner) <= GIVE_M;
   const basket = () => (gv?.basket || []).filter(b => b.qty > 0 && ITEM_BY_ID.has(b.item));
+  const held = item => basket().find(b => b.item === item)?.qty ?? 0;
+  /** A pick sent and not yet in the view: each carries the basket count it will make, so once the server's answer is in the
+   * view (accepted before the command's promise settles) it is no longer counted — never twice (screen review A3). */
+  const sendPick = item => { const entry = { item, expect: held(item) + pending.filter(p => p.item === item).length + 1 }; pending.push(entry); return entry; };
+  const settle = entry => { const at = pending.indexOf(entry); if (at >= 0) pending.splice(at, 1); };
+  const unseen = () => pending.filter(p => held(p.item) < p.expect).map(p => p.item);
   const giveShown = () => able() && !hand && ownerNear() && basket().length > 0;
   function say(words) { if (!words) return; if (words !== lastAnnounce) { live.textContent = words; lastAnnounce = words; } else { live.textContent = ''; requestAnimationFrame(() => { live.textContent = words; }); } }
 
@@ -263,25 +269,28 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
       if (cue.type === 'sway') { sound('sway'); swayLeaf(cue.index); say('짙은 잎은 그대로 둬요.'); }
       if (cue.type === 'leaf') {
         sound('leaf', { step: cue.step, last: cue.last });
-        const body = finish(hand, cue.index), firstFind = !(gv?.book || []).includes(cue.item);
-        pending.push(cue.item);
+        const body = finish(hand, cue.index), firstFind = !(gv?.book || []).includes(cue.item), entry = sendPick(cue.item);
         fly(cue.index, cue.last);
         say(`${picked(cue.item)} 바구니에 담았어요.`);
         afterPick(cue.index);
-        send(body, cue.index, firstFind);
+        send(body, cue.index, firstFind, entry);
       }
     }
     render(true);
   }
-  async function send(body, index, firstFind) {
+  async function send(body, index, firstFind, entry) {
     const answer = await command('GATHER_PICK', body);
-    const at = pending.indexOf(body.item); if (at >= 0) pending.splice(at, 1);
+    settle(entry);
     if (disposed) return;
     if (answer?.ok) { if (firstFind && (gv?.book || []).includes(body.item)) later(() => showFound(body.item), reduced.matches ? 0 : FLY_MS + 140); render(true); return; }
     // A refusal of the town's own: the leaf back on the branch, swaying, no sound — and the reason in the board's line.
     if (hand && hand.spot === body.spot) {
       if (answer?.code === 'gather-done' || answer?.code === 'gather-not-now') { hand = start(spotView(hand.spot) || { id: hand.spot, items: [], branch: hand.leaves.length }); buildBoard(spotView(hand.spot) || { id: hand.spot }); }
-      else { hand = input(hand, { type: 'refused', index }).state; const b = leafButton(index); b?.classList.remove('gone'); swayLeaf(index); }
+      else {
+        hand = input(hand, { type: 'refused', index }).state;
+        // The leaf back on its branch and pressable again; one still in the air stops short of the basket (review A1).
+        flights.get(index)?.(); const b = leafButton(index); if (b) { b.classList.remove('gone'); b.disabled = false; } swayLeaf(index);
+      }
       lineNote = answer?.message || null;
     }
     render(true);
@@ -293,14 +302,16 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
     quickBusy = true; lineNote = null; const firstFind = !(gv?.book || []).includes(body.item), step = hand.picked.length;
     hand = { ...hand, picked: [...hand.picked, -1 - step] };
     sound('leaf', { step, last: (spot.items.find(i => i.item === body.item)?.left ?? 1) <= 1 && spot.items.filter(i => i.grows && i.left > 0).length === 1 });
-    pending.push(body.item); render(true); later(() => sound('basket'), 120);
+    const entry = sendPick(body.item); render(true); later(() => sound('basket'), 120);
     say(`${picked(body.item)} 바구니에 담았어요.`);
+    const had = document.activeElement === quick;
     const answer = await command('GATHER_PICK', body);
-    const at = pending.indexOf(body.item); if (at >= 0) pending.splice(at, 1);
-    quickBusy = false;
+    settle(entry); quickBusy = false;
     if (answer?.ok && firstFind && (gv?.book || []).includes(body.item)) showFound(body.item);
     else if (!answer?.ok) lineNote = answer?.message || null;
     render(true);
+    // The keys stay on 「바로 따기」 while something is left, else go to 닫기 — never to the page (review A2).
+    if (hand && !board.hidden && ctx.inputMode !== 'gamepad' && (had || document.activeElement === document.body)) (quick.hidden || quick.disabled ? closeButton : quick).focus({ preventScroll: true });
   }
   function swayLeaf(index) { const b = leafButton(index); if (!b || reduced.matches) return; b.classList.remove('sway'); void b.offsetWidth; b.classList.add('sway'); }
   /** The leaf off the branch in a small arc to the basket (the stem gives a 40ms tug first — W8b §2-9). */
@@ -317,12 +328,15 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
     flyer.style.left = `${cx - own.left - w / 2}px`; flyer.style.top = `${cy - own.top - h / 2}px`; flyer.style.width = `${w}px`; flyer.style.height = `${h}px`;
     board.append(flyer);
     const dx = to.left + to.width / 2 - cx, dy = to.top + to.height * .35 - cy, tilt = (getComputedStyle(b).getPropertyValue('--tilt') || '0deg').trim() || '0deg';
+    // A refusal while the leaf is still in the air stops it short of the basket (review A1).
+    const stop = () => { flights.delete(index); motion.onfinish = null; motion.cancel(); flyer.remove(); };
+    flights.set(index, stop);
     const motion = flyer.animate([
       { transform: `translate(0,0) rotate(${tilt}) scale(1)`, opacity: 1 },
       { transform: `translate(${dx * .45}px, ${dy * .45 - 46}px) rotate(calc(${tilt} - 70deg)) scale(.82)`, opacity: 1, offset: .5 },
       { transform: `translate(${dx}px, ${dy}px) rotate(calc(${tilt} - 140deg)) scale(.46)`, opacity: .9 }], { duration: FLY_MS, delay: 40, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'forwards' });
-    motion.onfinish = () => { flyer.remove(); arrive(); };
-    later(() => { if (flyer.isConnected) { flyer.remove(); arrive(); } }, FLY_MS + 400);
+    motion.onfinish = () => { flights.delete(index); flyer.remove(); arrive(); };
+    later(() => { if (flyer.isConnected) { flights.delete(index); flyer.remove(); arrive(); } }, FLY_MS + 400);
   }
   function bounceBasket() { if (reduced.matches) return; basketBox.classList.remove('bounce'); void basketBox.offsetWidth; basketBox.classList.add('bounce'); }
   function rustle() { if (reduced.matches) return; branch.classList.remove('rustle'); void branch.offsetWidth; branch.classList.add('rustle'); }
@@ -382,7 +396,7 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
     if (found && now > found.until) found = null;
     if (toast && now > toast.until) toast = null;
     const near = ok ? spotView(nearId) : null, spot = hand ? spotView(hand.spot) : null;
-    const sig = JSON.stringify([gv, ok, nearId, !!hand && [hand.spot, hand.picked, hand.focus], simple, giveOpen, giving, quickBusy, pending, lineNote, bubble?.words, found?.item, toast?.words,
+    const sig = JSON.stringify([gv, ok, nearId, !!hand && [hand.spot, hand.picked, hand.focus], simple, giveOpen, giving, quickBusy, unseen(), lineNote, bubble?.words, found?.item, toast?.words,
       ctx.inputMode, ctx.busy, ownerNear(), ctx.panel]);
     if (!force && sig === lastSig) return; lastSig = sig;
     // 「E · 잎 따기」 by a spot (the board closed, the place's panel not open over it).
@@ -414,13 +428,13 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
       const name = spotLabel(hand.spot);
       board.setAttribute('aria-label', hand.spot === 'lane.wall' ? '꽃잎 줍기' : '잎 따기');
       if (place.textContent !== name) place.textContent = name;
-      const left = spot ? spot.items.some(i => i.grows && i.left > pending.filter(p => p === i.item).length) : false;
+      const waiting = unseen(), left = spot ? spot.items.some(i => i.grows && i.left > waiting.filter(p => p === i.item).length) : false;
       // The one line once nothing is left to pick here (「바로 따기」 counts what the server says is left, the branch its leaves).
-      line.textContent = lineNote || ((simple ? left : hand.leaves.some(l => l.item && !hand.picked.includes(l.index))) ? '' : boardLine(spot ? { ...spot, items: spot.items.map(i => ({ ...i, left: Math.max(0, i.left - pending.filter(p => p === i.item).length) })) } : null, spots()));
+      line.textContent = lineNote || ((simple ? left : hand.leaves.some(l => l.item && !hand.picked.includes(l.index))) ? '' : boardLine(spot ? { ...spot, items: spot.items.map(i => ({ ...i, left: Math.max(0, i.left - waiting.filter(p => p === i.item).length) })) } : null, spots()));
       line.hidden = !line.textContent;
       branch.hidden = simple; quick.hidden = !simple || !left;
-      if (simple) { const item = quickPick(spot)?.item; quick.textContent = item ? `바로 ${verb(item)} · ${itemName(item)}` : '바로 따기'; quick.disabled = quickBusy || !item; }
-      basketLeaves.replaceChildren(...basketPictures([...basket(), ...pending.map(item => ({ item, qty: 1 }))].reduce((all, b) => { const had = all.find(x => x.item === b.item); if (had) had.qty += b.qty; else all.push({ ...b }); return all; }, []))
+      if (simple) { const item = quickPick(spot)?.item; quick.textContent = item ? `바로 ${verb(item)} · ${itemName(item)}` : '바로 따기'; quick.disabled = !item; quick.setAttribute('aria-disabled', String(quickBusy)); }
+      basketLeaves.replaceChildren(...basketPictures([...basket(), ...waiting.map(item => ({ item, qty: 1 }))].reduce((all, b) => { const had = all.find(x => x.item === b.item); if (had) had.qty += b.qty; else all.push({ ...b }); return all; }, []))
         .slice(0, 7).map((p, i) => { const s = el('span', { className: 'gather-basket-leaf' }); s.innerHTML = itemPicture(p.item); s.style.setProperty('--i', String(i)); return s; }));
     }
     bubbleBox.hidden = !bubble;
@@ -516,7 +530,7 @@ export function createGatherBoard({ scene, hud, command, beforeCommand = async (
     holdsKey: () => !openButton.hidden || !!hand,
     metrics: () => ({ open: !!hand, spot: hand?.spot ?? null, near: nearId, simple, leaves: hand?.leaves ?? null, picked: hand?.picked ?? null, focus: hand?.focus ?? null,
       entry: !openButton.hidden, give: !giveButton.hidden, giveChoices: giveOpen, line: board.hidden ? null : line.textContent, bubble: bubble?.words ?? null, found: found?.item ?? null, toast: toast?.words ?? null,
-      marks: [...markFor].filter(([, m]) => !m.hidden).map(([id, m]) => ({ id, near: m.classList.contains('near') })), pending: [...pending], sounds: [...played], sound: sfx.stats() }),
+      marks: [...markFor].filter(([, m]) => !m.hidden).map(([id, m]) => ({ id, near: m.classList.contains('near') })), pending: pending.map(p => p.item), sounds: [...played], sound: sfx.stats() }),
     dispose() {
       disposed = true; removeEventListener('keydown', keydown, true); for (const t of timers) clearTimeout(t);
       if (!shared) sfx.dispose();
