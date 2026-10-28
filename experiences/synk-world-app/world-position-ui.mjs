@@ -252,7 +252,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // before·after: 연습 전후의 그 항목(buildPositionMap의 skills 한 줄). more: 같은 항목에 남은 새 문항 수.
  // count: 다음 짧은 연습의 문항 수(학습자 응답이 3·5·7로 정한다 — 「새 문항 n개 더 하기」의 n). response: 결과 아래 응답 줄.
  // 「한 칸 올라왔어요」처럼 보장되지 않는 단계 말은 쓰지 않고, 칸이 실제로 바뀐 때만 바뀐 칸을 말한다(최종 제안 §3).
- function renderPracticeDone({skill,before=null,after=null,results=[],items=null,more=0,listening=false,count=5,response=null}={}){
+ function renderPracticeDone({skill,before=null,after=null,results=[],items=null,more=0,listening=false,count=5,response=null,followup=false}={}){
   const answered=results.filter(row=>!row.skipped),right=answered.filter(row=>row.verdict==='correct'&&row.independent).length;
   const wrong=answered.filter(row=>row.verdict==='incorrect').length,skipped=results.length-answered.length;
   const changed=before&&after&&before.cell!==after.cell?t('practice.changed.cell',{from:t(`position.cell.${before.cell}`),to:t(`position.cell.${after.cell}`)})
@@ -260,7 +260,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const now=after?noteText(after.note):'';
   const itemOf=id=>items?.get?.(id)||null;
   const misses=answered.filter(row=>row.verdict==='incorrect').map(row=>{const item=itemOf(row.itemId);return item?`<li><span lang="ko">${posEscape(item.label||item.question||'')}</span>${explainBlock(item)}</li>`:'';}).join('');
-  const next=more>0?`<button class="felt-button" type="button" data-practice-again>${posEscape(t('practice.again',{n:Math.min(more,Number.isInteger(count)&&count>0?count:5)}))} <span aria-hidden="true">→</span></button>`
+  const next=followup?`<p class="wpos-note">${posEscape(t('followup.finished'))}</p>`:more>0?`<button class="felt-button" type="button" data-practice-again>${posEscape(t('practice.again',{n:Math.min(more,Number.isInteger(count)&&count>0?count:5)}))} <span aria-hidden="true">→</span></button>`
    :`<p class="wpos-note" data-practice-shortage>${posEscape(t('practice.shortage'))}</p>`;
   return `<div class="wpos life-heading" data-practice-done tabindex="-1">${poster(t(listening?'practice.doneTitle.listening':'practice.doneTitle'),t('practice.doneSummary',{right,wrong,skipped}))}<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill||{}))}</p><p class="wpos-intro">${posEscape(changed)}</p>${now?`<p class="wpos-note">${posEscape(now)}</p>`:''}</section>${misses?`<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t('practice.misses'))}</p><ul>${misses}</ul></section>`:''}${next}${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t('position.open'))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t('practice.home'))}</button></div></div>`;
  }

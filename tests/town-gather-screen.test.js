@@ -83,7 +83,7 @@ test('거절 코드는 엔진과 같은 목록 — 판은 잎을 되돌리고 �
   const codes = [...new Set([...engine.matchAll(/fail\('(gather-[a-z-]+)'/g)].map(m => m[1]))].sort();
   assert.deepEqual([...REFUSALS].sort(), [...new Set([...codes, 'gather-full'])].sort(), '엔진이 내는 거절(그리고 런타임의 gather-full)을 모두 안다');
   const app = fs.readFileSync(path.join(TOWN, 'day-app.mjs'), 'utf8');
-  assert.match(app, /\(DAY_\|LIFE_\|BAZAAR_\|SUPPORT_\|CARD_\|TEA_\|GATHER_\|GREET\$\)/, '채집 명령은 창의 울타리(surfaceId · fence)를 싣는다');
+  assert.match(app, /\(DAY_\|LIFE_\|BAZAAR_\|SUPPORT_\|CARD_\|TEA_\|LANGUAGE_\|GATHER_\|GREET\$\)/, '채집·언어 명령은 창의 울타리(surfaceId · fence)를 싣는다');
   assert.match(app, /function gatherCommand/, '채집 명령은 자기 줄로 간다(바쁘면 버리지 않음)');
 });
 

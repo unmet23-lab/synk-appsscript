@@ -6,6 +6,16 @@ import {createRequire} from 'node:module';
 import {TRACKS,LEVELS,RoundState} from './core.mjs';
 import {rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine} from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
+import {createSupplementalPanel,supplementalAudioUrl} from './supplemental-player.mjs';
+test('supplemental audio resolves local and WORLD mounts and shares WORLD audio from try',()=>{
+ const audio='topik-items/audio/detail.mp3';
+ for(const [href,expected] of [
+  ['http://localhost:4401/experiences/korean-rhythm/','http://localhost:4401/experiences/topik-items/audio/detail.mp3'],
+  ['https://synk.im/world/korean-rhythm/','https://synk.im/world/topik-items/audio/detail.mp3'],
+  ['https://synk.im/try/rhythm/','https://synk.im/world/topik-items/audio/detail.mp3'],
+ ])assert.equal(supplementalAudioUrl(audio,new URL(href)),expected);
+ assert.equal(supplementalAudioUrl(audio,null),'../'+audio);
+});
 const require=createRequire(import.meta.url);
 const {createGame}=require('../../atlas/game-learning.js');
 const {createMap}=require('../../strata');
@@ -27,7 +37,7 @@ async function mount(coach,storage,{confirm=()=>true}={}){
   const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
   const document={getElementById:get,createElement:element,querySelectorAll:()=>[],addEventListener(){},body:element()};
   const context={TRACKS,LEVELS,RoundState,rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,
-    FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,rhythmSupport,recordTrialStarted(){},document,localStorage:storage,
+    FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,rhythmSupport,createSupplementalPanel:options=>createSupplementalPanel({...options,document}),recordTrialStarted(){},document,localStorage:storage,
     MusicPlayer:class{},Stage:class{},SynkLearning:{createGame:()=>coach},SynkPlayAccount:{ready:async()=>{}},
     matchMedia:()=>({matches:false}),setTimeout:()=>1,clearTimeout(){},addEventListener(){},scrollTo(){},confirm};
   assert.deepEqual(imported.filter(name=>!(name in context)),[],'app.mjs imports a name this test does not provide');

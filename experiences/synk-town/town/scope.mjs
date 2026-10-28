@@ -20,7 +20,7 @@ export const SCOPES = Object.freeze(['rights', 'base', 'first-chapter', 'subscri
 // are the first chapter's, TEA_CLOSE is base: closing is always open). talk lib/town-scope.js lists them by name.
 const activityIn = scope => Object.entries(ACTIVITY_COMMANDS).filter(([, s]) => s === scope).map(([type]) => type);
 // W6 (design review F7): turning the time the player usually comes off empties that record — the person's own right, so rights.
-export const RIGHTS = Object.freeze(new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT', 'PREF_VISIT_BANDS']));
+export const RIGHTS = Object.freeze(new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_CORRECT', 'SEEN_CLEAR', 'MEMORY_CLEAR', 'EVAL_CONSENT', 'PREF_VISIT_BANDS', 'LANGUAGE_SET']));
 export const BASE = Object.freeze(new Set([
   'ACK', 'RESET', 'VISIT', 'LEAVE', 'SIT', 'REARRANGE', 'REMOVE', 'SIGN_REMOVE',
   'DAY_MOVE', 'DAY_WALK', 'DAY_WALK_ENABLE', 'DAY_WALK_DISABLE', 'DAY_EXIT', 'DAY_REST', 'DAY_WAKE', 'DAY_OBSERVED', 'DAY_CLOSE',
@@ -34,6 +34,7 @@ export const BASE = Object.freeze(new Set([
   'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET',
   // W6: closing the mascot's question unanswered (§20-3).
   'ASK_CLOSE',
+  'LANGUAGE_OFFER', 'LANGUAGE_ANSWER',
   ...activityIn('base'),
 ]));
 export const FIRST_CHAPTER = Object.freeze(new Set([
@@ -44,7 +45,7 @@ export const FIRST_CHAPTER = Object.freeze(new Set([
   'BAZAAR_START', 'BAZAAR_RESUME', 'BAZAAR_ASK', 'BAZAAR_CHOICE', 'BAZAAR_CONFIRM', 'BAZAAR_CONTINUE', 'BAZAAR_MATCH', 'BAZAAR_OWNER_TAKE', 'BAZAAR_ROLE', 'BAZAAR_TEA_NEXT',
   'SUPPORT_OPEN', 'SUPPORT_HINT', 'SUPPORT_ANSWER', 'SUPPORT_NEXT', 'SUPPORT_ACCEPT',
   // W5: a small need card with the player — the first chapter's (§20-7 ③ 카드 「나와 함께」, review F5).
-  'CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM',
+  'CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM', 'CARD_HELP',
   ...activityIn('first-chapter'),
 ]));
 export const commandScope = type => RIGHTS.has(type) ? 'rights' : BASE.has(type) ? 'base' : FIRST_CHAPTER.has(type) ? 'first-chapter' : 'subscription';

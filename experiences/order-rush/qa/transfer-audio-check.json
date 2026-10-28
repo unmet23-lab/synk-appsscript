@@ -1,0 +1,172 @@
+{
+  "method": "Existing local Windows Korean voice; existing local medium ASR. No paid API or download. Automatic transcript comparison does not establish human listening or naturalness.",
+  "items": [
+    {
+      "id": "n01",
+      "sourceText": "뜨거운 것은 못 마셔요. 차가운 커피 한 잔, 차가운 차 한 잔 주세요. 얼음은 넣어도 괜찮아요.",
+      "transcript": "뜨거운 것은 못 마셔요. 차가운 커피 한 잔 차가운 차 한 잔 주세요. 얼음은 넣어도 괜찮아요?",
+      "similarity": 1,
+      "seconds": 10.660907029478459,
+      "sha256": "5c0e51072f9a56305ec4b6a5dd0d4bea6b96a0d4ea8d9423f601a55d148349ac",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n02",
+      "sourceText": "따뜻한 커피 두 잔을 주문했는데요. 한 잔은 취소하고, 그 대신 따뜻한 차 한 잔을 주세요.",
+      "transcript": "따뜻한 커피 두 잔을 주문했는데요. 한 잔은 취소하고 그 대신 따뜻한 차 한 잔을 주세요.",
+      "similarity": 1,
+      "seconds": 9.943673469387756,
+      "sha256": "61309038fc2fa3e2e011544d0af6a5da67c450e1bc64a8f9c4d5e853192c6cd9",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n03",
+      "sourceText": "따뜻한 커피와 따뜻한 차를 한 잔씩 주세요. 커피에는 설탕을 넣고, 차에는 넣지 마세요.",
+      "transcript": "따뜻한 커피와 따뜻한 차를 한 잔씩 주세요. 커피에는 설탕을 넣고 차에는 넣지 마세요.",
+      "similarity": 1,
+      "seconds": 10.059591836734693,
+      "sha256": "1dea092110623a65c769d7e3ad913e273c096e17429497ed102720475e41dec4",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n04",
+      "sourceText": "커피 두 잔 주세요. 하나는 아이스로요. 다른 하나는 아이스가 아니라 따뜻한 라테로 주세요.",
+      "transcript": "커피 두 잔 주세요. 하나는 아이스로요. 다른 하나는 아이스가 아니라 따뜻한 라테로 주세요.",
+      "similarity": 1,
+      "seconds": 9.584489795918367,
+      "sha256": "66c715212f8e28b0f6019036e641bf7f3af140f70ddad8b32a7711ce933ecf38",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n05",
+      "sourceText": "친구는 커피를 안 마셔요. 저는 우유 없는 따뜻한 커피를 마실게요. 친구에게는 따뜻한 차 한 잔을 주세요.",
+      "transcript": "친구는 커피를 안 마셔 요. 저는 우유 없는 따뜻한 커피를 마실 게요. 친구에게는 따뜻한 차 한 잔을 주세요",
+      "similarity": 1,
+      "seconds": 11.1978231292517,
+      "sha256": "795dad57f6144338a68634331bae22f5bc85c5c02d68046c8012a337ad33b1c9",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n06",
+      "sourceText": "지금 따뜻한 음료가 마시고 싶어요. 커피 한 잔 주세요.",
+      "transcript": "지금 따뜻한 음료가 마시고 싶어요. 커피 한 잔 주세요.",
+      "similarity": 1,
+      "seconds": 6.196145124716553,
+      "sha256": "eec6f01aee38bd653d0c0fb65d95f8b1422b1540ee07d57762b4509a88b550e1",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n07",
+      "sourceText": "차 한 잔요. 차갑게 해 주세요. 얼음도 넣어 주세요.",
+      "transcript": "차 한 잔요. 차갑게 해주세요. 얼음도 넣어주세요.",
+      "similarity": 1,
+      "seconds": 6.580544217687075,
+      "sha256": "5740217161ad6f82ec5617f9a7013c280da6b9e039fb8dd310ef6237ddce4c71",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n08",
+      "sourceText": "따뜻한 커피를 마실게요. 우유도 설탕도 넣지 마세요.",
+      "transcript": "따뜻한 커피를 마실게요. 우유도 설탕도 넣지 마세요.",
+      "similarity": 1,
+      "seconds": 6.3736961451247165,
+      "sha256": "e276c2df75a6e5aedd27ed3cb6c3f93b3d97aaea78ccd4036f17582f324b60bc",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n09",
+      "sourceText": "차가운 라테 한 잔 주세요. 얼음은 하나도 넣으면 안 돼요.",
+      "transcript": "차가운 라테 한 잔 주세요. 얼음은 하나도 넣으면 안 돼요.",
+      "similarity": 1,
+      "seconds": 6.144489795918368,
+      "sha256": "d64ab7343a86ec90a5c499d1ab5e5184cda259178d9cf413006d2319af9c5384",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n10",
+      "sourceText": "따뜻한 라테 한 잔과 따뜻한 커피 한 잔 주세요. 우유가 든 라테에만 설탕을 넣어 주세요.",
+      "transcript": "따뜻한 라테 한 잔과 따뜻한 커피 한 잔 주세요. 우유가 든 라테에만 설탕을 넣어주세요.",
+      "similarity": 1,
+      "seconds": 9.461451247165533,
+      "sha256": "7f4682be3645bf21f2e26a460fd48fcb0c45b747dd7f59620f6c40a782983289",
+      "humanListeningVerified": false
+    },
+    {
+      "id": "n11",
+      "sourceText": "커피와 차를 한 잔씩 주세요. 두 잔 중 차만 따뜻하게 하고, 커피는 얼음을 넣어서 주세요.",
+      "transcript": "커피와 차를 한 잔씩 주세요. 두 잔 중 차만 따뜻하게 하고 커피는 얼음을 넣어서 주세요.",
+      "similarity": 1,
+      "seconds": 9.433650793650793,
+      "sha256": "6d62bedae5f69a14d8f78d9625d32f22fe3d302ccccff090e30babda4ccc4022",
+      "humanListeningVerified": false
+    }
+  ],
+  "browser": [
+    {
+      "id": "n01",
+      "state": "ready",
+      "seconds": 10.660907,
+      "played": 10.660907
+    },
+    {
+      "id": "n02",
+      "state": "ready",
+      "seconds": 9.943673,
+      "played": 9.943673
+    },
+    {
+      "id": "n03",
+      "state": "ready",
+      "seconds": 10.059592,
+      "played": 10.059592
+    },
+    {
+      "id": "n04",
+      "state": "ready",
+      "seconds": 9.58449,
+      "played": 9.58449
+    },
+    {
+      "id": "n05",
+      "state": "ready",
+      "seconds": 11.197823,
+      "played": 11.197823
+    },
+    {
+      "id": "n06",
+      "state": "ready",
+      "seconds": 6.196145,
+      "played": 6.196145
+    },
+    {
+      "id": "n09",
+      "state": "ready",
+      "seconds": 6.14449,
+      "played": 6.14449
+    },
+    {
+      "id": "n08",
+      "state": "ready",
+      "seconds": 6.373696,
+      "played": 6.373696
+    },
+    {
+      "id": "n07",
+      "state": "ready",
+      "seconds": 6.580544,
+      "played": 6.580544
+    },
+    {
+      "id": "n11",
+      "state": "ready",
+      "seconds": 9.433651,
+      "played": 9.433651
+    },
+    {
+      "id": "n10",
+      "state": "ready",
+      "seconds": 9.461451,
+      "played": 9.461451
+    }
+  ]
+}

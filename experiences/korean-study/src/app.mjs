@@ -1,5 +1,5 @@
 // 한국어 공부(synk.im/study/) 화면. 한 번에 장면 하나(README §2) — 무엇을 할지는 tutor.mjs의 next()가 정하고 학생은 답하기·계속·쉬기만 한다.
-// · WORLD 세션·캐릭터·재화·계정 모듈을 부르지 않는다. 받는 것은 같은 출처 정적 파일(items.json·study.json)뿐이고 보내는 것은 없다.
+// · SYNK ID의 기존 학습 동의 아래 최소 진도를 잇는다. 원고와 AI 응답·진행 화면은 기기에 둔다.
 // · 기록은 이 기기 localStorage `synk.study.v2:<owner>`(옛 v1 칸은 읽어 옮기기만 하고 지우지 않는다). 학생 글은 drafts에만 두고 고쳐 넣지 않는다.
 // · 장면이 정해질 때마다 Trail decision.made, 답마다 presented →(helped)→ attempted 사건을 남긴다(tutor.mjs record*).
 import {readState,migrate,addObs,markSeen,observeWrite,next,gradeForm,gradeFind,checkChange,storeKey,legacyKey,sentencesOf,endingOf,recordDecision,recordWrite,recordSort,recordForm,checkCard,trailRows} from './tutor.mjs';
@@ -7,6 +7,7 @@ import {drillPool} from '../../synk-world-app/world-writing-focus.mjs';
 import {makeT,chooseLang,LANGS,LANG_NAMES,LANG_KEY} from './copy.mjs';
 import {createFeedbackClient} from './feedback-client.mjs';
 import {readSemantic,recordSemantic,semanticNext} from './semantic.mjs';
+import {createProgressSync,progressSnapshot} from './progress-sync.mjs';
 
 /* global __ITEMS_TOKEN__ */
 const TOKEN=typeof __ITEMS_TOKEN__==='string'?__ITEMS_TOKEN__:'dev';
@@ -23,6 +24,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  if(feedback===undefined)feedback=createFeedbackClient({storage:session,fetcher,base,now});
  const getOwner=()=>{const account=feedback?.owner?.();if(!account)return owner();try{const v=storage.getItem(`${SLOT_KEY}.${account}`);return v?.startsWith(`${account}-`)&&/^[a-zA-Z0-9_-]{1,80}$/.test(v)?v:account;}catch{return account;}};
  let lang=chooseLang({storage}),t=makeT(lang),bank=null,who=getOwner(),legacy=null,state=load(),saveFailed=false,ui={},semanticSeq=0;
+ let progress=null,progressStatus={phase:'local'},progressTicket=0,progressTimer=null,progressText=null;
  const aiReady=()=>{const s=feedback?.status?.();return s?.connected&&s.enabled&&s.studyVersion===1&&s.bankHash===bank?.sourceHash;};
  // v2 칸이 있으면 그대로(읽을 수 없게 깨졌어도 「있음」으로 보고 옛 칸을 다시 옮기지 않는다 — Fable 설계 P3-11). 없을 때만 v1을 문항을 받은 뒤 옮긴다.
  function load(){
@@ -32,14 +34,47 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   try{const old=JSON.parse(storage.getItem(legacyKey(who))||'null');if(old&&old.v===1)legacy=old;}catch{}
   return readState(null);
  }
- function save(){try{storage.setItem(storeKey(who),JSON.stringify(state));saveFailed=false;}catch{saveFailed=true;}}
+ function save(){try{storage.setItem(storeKey(who),JSON.stringify(state));saveFailed=false;scheduleProgress();}catch{saveFailed=true;}}
+ function stopProgress(){progressTicket++;clearTimeout(progressTimer);progressTimer=null;progress?.stop();progress=null;progressText=null;progressStatus={phase:'local'};}
+ function scheduleProgress(){
+  if(!progress||saveFailed)return;const text=JSON.stringify(progressSnapshot(state));if(text===progressText)return;progressText=text;
+  progress.changed();clearTimeout(progressTimer);const active=progress,ticket=progressTicket;
+  progressTimer=setTimeout(()=>{if(active===progress&&ticket===progressTicket)void active.flush().then(result=>{if(active===progress&&result.phase==='pending'){progressText=null;scheduleProgress();}});},350);
+ }
+ function progressHtml(){
+  const phase=progressStatus.phase,key=phase==='blocked'?(['LEARNING_DISABLED','REVISION_CONFLICT'].includes(progressStatus.code)?'sync.consent':'sync.blocked'):`sync.${phase}`;
+  const retry=['blocked','conflict','disabled'].includes(phase),conflict=phase==='conflict';
+  return `<p class="st-note" role="status">${esc(t(key))}</p>`+(retry?`<button class="st-quiet" data-sync-retry>${esc(t('sync.retry'))}</button>`:'')
+   +(conflict?` <button class="st-quiet" data-sync-export>${esc(t('sync.export'))}</button> <button class="st-quiet" data-sync-remote>${esc(t('sync.remote'))}</button>`:'')
+   +(phase==='slot'?`<button class="st-quiet" data-sync-account>${esc(t('sync.account'))}</button>`:'');
+ }
+ const paintProgress=()=>{const panel=root.querySelector('[data-study-sync]');if(panel)panel.innerHTML=progressHtml();};
+ async function connectProgress(){
+  stopProgress();if(!feedback?.learningSession)return;
+  let ticket=progressTicket;progressStatus={phase:'loading'};paintProgress();
+  try{
+   const info=await feedback.learningSession();if(ticket!==progressTicket)return;
+   syncOwner();ticket=progressTicket; // The account endpoint can identify an account even when the AI service is unavailable.
+   if(!info){progressStatus={phase:'local'};paintProgress();return;}
+   const account=`user-${info.accountId}`,expected=who;
+   if(expected!==account){progressStatus={phase:'slot'};paintProgress();return;}
+   if(!info.enabled){progressStatus={phase:'disabled'};paintProgress();return;}
+   const activeTicket=progressTicket,guard=()=>{if(expected!==getOwner()||expected!==who||feedback.owner()!==account||activeTicket!==progressTicket)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+   progress=createProgressSync({storage,key:`synk.study.sync.v1:${account}:${info.revision}`,read:()=>state,guard,
+    transport:{get:()=>feedback.studyProgress({method:'GET',revision:info.revision}),post:value=>feedback.studyProgress({method:'POST',revision:info.revision,...value})},
+    apply:value=>{guard();const nextState=readState(value,{now:now()});storage.setItem(storeKey(who),JSON.stringify(nextState));semanticSeq++;feedback.cancel?.();state=nextState;saveFailed=false;ui={resume:!!state.obs.length};},
+    onStatus:value=>{if(activeTicket!==progressTicket)return;progressStatus=value;paintProgress();
+     if(expected!==getOwner())queueMicrotask(()=>{if(activeTicket!==progressTicket||expected===getOwner())return;syncOwner();ui={...ui,authLost:true};paint(false);});}});
+   const active=progress;await active.init();if(active===progress){progressText=JSON.stringify(progressSnapshot(state));if(active.status().phase==='pending')void active.flush();}
+  }catch(e){if(ticket===progressTicket){progressStatus={phase:'blocked',code:e.code||'UNAVAILABLE'};paintProgress();}}
+ }
  const iso=()=>new Date(now()).toISOString();
  const record=o=>{state=addObs(state,o,{now:now()});};
  const setScene=scene=>{state={...state,scene};ui={};save();paint();};
  const items=()=>[...bank.open53,...bank.open54];
  const item=id=>items().find(i=>i.id===id)||null,form=id=>bank.forms.find(f=>f.id===id),find=id=>bank.finds.find(f=>f.id===id),card=key=>bank.pool.find(c=>c.key===key);
  // 계정이 바뀌면(지금은 guest 하나뿐이지만 같은 자리) 앞 사람의 화면 상태를 버리고 그 계정 기록을 새로 읽는다.
- function syncOwner(){const n=getOwner();if(n!==who){semanticSeq++;who=n;state=load();if(legacy&&bank){state=migrate(legacy,{now:now(),pool:bank.pool});legacy=null;}ui={resume:!!(state.obs.length||Object.values(state.drafts).some(d=>d.text.trim()))};}}
+ function syncOwner(){const n=getOwner();if(n!==who){stopProgress();semanticSeq++;feedback?.cancel?.();who=n;state=load();if(legacy&&bank){state=migrate(legacy,{now:now(),pool:bank.pool});legacy=null;}ui={resume:!!(state.obs.length||Object.values(state.drafts).some(d=>d.text.trim()))};}}
  const decide=()=>next(state,bank,{now:now(),seed:Math.floor(now()/60000)});
  // 저장된 장면이 지금 재고로 그릴 수 있는가(문항이 내려갔거나 값이 깨졌으면 다시 정한다 — 빈 화면 방지, 루트 R3).
  const ids=(list,has)=>Array.isArray(list)&&list.length>0&&list.every(k=>typeof k==='string'&&has(k));
@@ -61,6 +96,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
    +`<div class="st-ai-connect"><p class="st-note">${esc(t(feedback?.status?.().connected?(aiReady()?'ai.connected':'ai.notReady'):'ai.connectNote'))}</p><button class="st-quiet" ${feedback?.status?.().connected?'data-st-disconnect':'data-st-connect'}>${esc(t(feedback?.status?.().connected?'ai.disconnect':'ai.connect'))}</button></div>`
    +(ui.loginError?`<p class="st-alert" role="alert">${esc(t('ai.loginError'))}</p>`:'')
    +(ui.authLost?`<p class="st-alert" role="alert">${esc(t('ai.expired'))}</p>`:'')
+   +`<div class="st-ai-connect" data-study-sync>${progressHtml()}</div>`
    +`<section class="st-scene" aria-live="polite" ${ui.reading?'aria-busy="true"':''}>${body}</section>`
    +`<footer class="st-foot"><p>${esc(t('study.lead'))}</p><p>${esc(t('study.device'))}</p></footer>`;
  }
@@ -237,7 +273,12 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  }
  function onClick(ev){
   const b=ev.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
+  if(getOwner()!==who){syncOwner();ui={...ui,authLost:true};paint(false);return;}
   const sc=state.scene;
+  if(b.hasAttribute('data-sync-retry')){b.disabled=true;void connectProgress().then(()=>paint(false));return;}
+  if(b.hasAttribute('data-sync-export')){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='synk-study-device.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}
+  if(b.hasAttribute('data-sync-remote')){if(!progress||!confirm(t('sync.confirm')))return;b.disabled=true;const active=progress;semanticSeq++;feedback?.cancel?.();ui={...ui,reading:false};void active.useServer().then(()=>{if(active===progress)paint(false);});return;}
+  if(b.hasAttribute('data-sync-account')){const account=feedback?.owner?.();if(!account)return;try{storage.removeItem(`${SLOT_KEY}.${account}`);}catch{saveFailed=true;paint(false);return;}syncOwner();void connectProgress().then(()=>paint(false));return;}
   if(b.hasAttribute('data-st-connect')){b.disabled=true;void feedback?.login().catch(()=>{ui.loginError=true;paint(false);});return;}
   if(b.hasAttribute('data-st-disconnect')){semanticSeq++;try{feedback?.disconnect();}catch{ui.loginError=true;}syncOwner();const keep=ui;go();ui=keep;paint();return;}
   if(b.hasAttribute('data-st-stop')){semanticSeq++;const cancelled=!!ui.reading;if(cancelled)feedback?.cancel?.();save();ui={stopped:true,cancelled};paint();return;}
@@ -254,7 +295,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
    let slot=null;try{for(let n=0;n<20&&!slot;n++){const c=`${account||'guest'}-${(now()+n).toString(36)}`;if(storage.getItem(storeKey(c))==null&&storage.getItem(legacyKey(c))==null)slot=c;}
     if(slot){storage.setItem(pointer,slot);if(storage.getItem(pointer)!==slot)slot=null;}}catch{slot=null;}
    if(!slot||getOwner()!==slot){saveFailed=true;ui={resume:true};paint();return;}
-   who=slot;legacy=null;state=readState(null);try{session?.setItem('synk.study.resumed',who);}catch{}ui={};go();return;}
+   stopProgress();progressStatus={phase:account?'slot':'local'};who=slot;legacy=null;state=readState(null);try{session?.setItem('synk.study.resumed',who);}catch{}ui={};go();return;}
   if(b.hasAttribute('data-st-done')){const d=state.drafts[draftKey(sc)];if(!observeWrite(d?.text||'',item(sc.itemId))){ui.short=true;paint(false);root.querySelector('[data-st-text]')?.focus();return;}
    if(sc.support===1&&!sc.semantic){state={...state,scene:{...sc,phase:'self'}};ui={};save();paint(false);root.querySelector('[data-st-check]')?.focus();return;}checkWrite();return;}
   if(b.hasAttribute('data-st-check')){checkWrite();return;}
@@ -268,6 +309,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   if(b.hasAttribute('data-st-findcheck')&&sc.found==null){const f=find(sc.find),picks=ui.picks||[],found=gradeFind(f,picks);if(!state.seen[f.id])record({kind:'find',id:f.id,ok:found});state={...markSeen(state,[f.id],{now:now()}),scene:{...sc,found,picks}};save();paint();return;}
  }
  function onInput(ev){
+  if(getOwner()!==who){syncOwner();ui={...ui,authLost:true};paint(false);return;}
   const el=ev.target,sc=state.scene;
   if(el.matches('[data-st-text]')){const k=draftKey(sc),{pasted,...d}=state.drafts[k]||{checkedAt:null};const text=el.value.slice(0,4000);
    // 글을 다 지우면 붙여 넣은 글자 셈도 처음부터(아르곤 A2). 남은 글보다 많이 셀 수 없다.
@@ -297,6 +339,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   document.title=`${t('study.title')} · SYNK`;
   // 옛 판(v1) 기록이 있으면 여기서 한 번 옮긴다(옛 칸은 그대로 남긴다).
   if(legacy){state=migrate(legacy,{now:now(),pool:bank.pool});legacy=null;save();}
+  await connectProgress();
   // 앞 사람 기록: 이 탭에서 아직 고르지 않았고 기록이 있으면 먼저 묻는다(남의 글을 바로 펼치지 않는다).
   let resumed=null;try{resumed=session?.getItem('synk.study.resumed');}catch{}
   const has=state.obs.length||Object.values(state.drafts).some(d=>d.text.trim());

@@ -18,6 +18,18 @@ const english=createPositionView({t:(key,vars)=>t(key,vars,'en'),has:hasString,f
 const mongolian=createPositionView({t:(key,vars)=>t(key,vars,'mn'),has:hasString,formatDate:(at,options)=>formatDate(at,options,'mn')});
 const HANGUL=/[가-힣]/;
 
+test('지연 확인 한 문항의 완료는 전체 새 문항 소진이나 일반 연습 더 하기로 표시하지 않는다',()=>{
+ const result={skill:{id:'ko.reading.detail'},results:[{itemId:'fresh',verdict:'correct',independent:true}],followup:true,count:1};
+ for(const [renderer,language]of [[view,'ko'],[english,'en'],[mongolian,'mn']])for(const more of [0,8]){
+  const html=renderer.renderPracticeDone({...result,more});
+  assert.ok(html.includes(STRINGS['followup.finished'][language]));
+  assert.doesNotMatch(html,/data-practice-shortage|data-practice-again/);
+  assert.match(html,/data-practice-position/);assert.match(html,/data-practice-home/);
+ }
+ assert.match(view.renderPracticeDone({...result,followup:false,more:0}),/data-practice-shortage/);
+ assert.match(view.renderPracticeDone({...result,followup:false,more:8}),/data-practice-again/);
+});
+
 test('화면 글은 화면 언어 표(position.*)에서 읽고 {이름}을 채운다',()=>{
  assert.equal(t('position.summary',{independent:1,practicing:2,notyet:12,total:15}),'TOPIK I 15개 항목: 혼자 해냄 1 · 연습 중 2 · 아직 12');
  assert.equal(t('position.row',{total:16}),'TOPIK I 16개 항목과 짧은 진단','항목 수는 지도에서 온다(항목이 늘면 글도 따라간다)');

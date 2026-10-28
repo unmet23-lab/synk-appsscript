@@ -271,7 +271,8 @@ test('카드 C5 — 주인이 몰린 손님을 맞을 때 연 주문은 C5에 �
 });
 
 test('카드 R6 — 한 잔 판: 연구원 곁에서 「같이 해요」, 찻집에서 만들어 들고 가 그 곁에서 내면(어떤 잔이든) 카드가 풀린다(§8-4 R6, 검토 F15)', async () => {
-  const { createStore } = await load('server.mjs'), h = harness(createStore, 'acct-together');
+  // W9 adds C4 to the same bounded card schedule; this seed meets R6 in the next day.
+  const { createStore } = await load('server.mjs'), h = harness(createStore, 'acct-together-w9');
   h.pulse();
   const rise = await toRise(h, 'R6', 48);
   assert.ok(rise, 'R6가 선다');

@@ -15,7 +15,7 @@ assert.ok(start>=0&&end>start,'actual HTTP handler boundaries');
 
 test('WORLD serves the W5b and E10 browser modules and blocks other town source paths',async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-town-static-')),town=path.join(directory,'town');fs.mkdirSync(town);
- const allowed=['day-app.mjs','day-cards.mjs','day-notebook.mjs','day-observation.mjs','walk-packets.mjs'];
+ const allowed=['day-app.mjs','day-cards.mjs','day-notebook.mjs','day-observation.mjs','walk-packets.mjs','day-language.mjs','dialogue.mjs','new-tea.mjs'];
  const denied=['day-unlisted.mjs','day-cards.mjs.extra','server.mjs','core.mjs'];
  for(const name of [...allowed,...denied])fs.writeFileSync(path.join(town,name),`export const fixture=${JSON.stringify(name)};\n`);
  const context={http,fs,path,URL,port:0,publicConfig:{basePath:'/'},home:directory,root:directory,town,brandOpening:directory,allowedGames:new Set(),mime:{'.mjs':'text/javascript; charset=utf-8'},json:(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(value));}};

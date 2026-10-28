@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CafeSession,ORDERS,REVIEW,makeCup,judgeOrder} from './core.mjs';
+import {CafeSession,ORDERS,BASE_ORDERS,ADDITIONAL_ORDERS,REVIEW,makeCup,judgeOrder} from './core.mjs';
 import {orderMetadata,chooseOrder,orderAnswer} from './learning.mjs';
 import {createRequire} from 'node:module';
 import crypto from 'node:crypto';
@@ -65,13 +65,18 @@ test('a corrected serving retains the first wrong answer without counting a new 
 // After raising it, change the version and the digest (first 12 hex of [text, cups]) here too. A new order joins at version 1.
 const CONTENT={o01:[1,'7d86afb86369'],o02:[1,'0fa444cd6eba'],o03:[1,'3036233caeda'],o04:[1,'418ac35cd6e4'],o05:[1,'8ddedeedc2bf'],o06:[1,'224a17180097'],
  o07:[1,'f624147b7079'],o08:[2,'d94520357a28'],o09:[2,'5c4e7880670f'],o10:[1,'57b46254f513'],o11:[2,'2164b75ad4e2'],o12:[1,'984db513940a'],
- r01:[1,'48b0780da4ec'],r02:[1,'26ffda732d90'],r03:[1,'14d62d551177']};
+ r01:[1,'48b0780da4ec'],r02:[1,'26ffda732d90'],r03:[1,'14d62d551177'],
+ n01:[1,'244314f0c1d1','order-rush.temperature-restriction.v1'],n02:[1,'40b924d25db6','order-rush.partial-cancellation.v1'],
+ n03:[1,'cb1f84665458','order-rush.scoped-sugar-prohibition.v1'],n04:[1,'ffcf2db0cbe4','order-rush.self-corrected-second-cup.v1'],n05:[1,'3a56d7a845ae','order-rush.person-specific-exclusion.v1'],
+ n06:[1,'78ab4d24cf02','order-rush.warm-drink-preference.v1'],n07:[1,'36bea9298aff','order-rush.incremental-iced-tea.v1'],
+ n08:[1,'771cfa82589e','order-rush.coordinated-exclusions.v1'],n09:[1,'d4af962f071d','order-rush.no-ice-prohibition.v1'],
+ n10:[1,'72b0b8a6aba7','order-rush.milk-dependent-sugar.v1'],n11:[1,'0e9cd1966620','order-rush.only-tea-warm.v1']};
 test('order versions: a changed sentence or cup raises the version while the family stays',()=>{
- const all=[...ORDERS,...REVIEW],digest=o=>crypto.createHash('sha256').update(JSON.stringify([o.text,o.cups])).digest('hex').slice(0,12);
+ const all=[...BASE_ORDERS,...REVIEW,...ADDITIONAL_ORDERS],digest=o=>crypto.createHash('sha256').update(JSON.stringify([o.text,o.cups])).digest('hex').slice(0,12);
  assert.deepEqual(Object.keys(CONTENT).sort(),all.map(o=>o.id).sort(),'a new order joins this table at version 1');
  for(const o of all){
-  const [version,hash]=CONTENT[o.id],m=orderMetadata(o);
+  const [version,hash,family]=CONTENT[o.id],m=orderMetadata(o);
   assert.equal(digest(o),hash,`${o.id}: content changed — raise ORDER_VERSION and update this table`);
-  assert.equal(m.itemKey,`order-rush.${o.id}.v${version}`,o.id);assert.equal(m.familyKey,`order-rush.${o.id}.v1`,o.id);
+  assert.equal(m.itemKey,`order-rush.${o.id}.v${version}`,o.id);assert.equal(m.familyKey,family||`order-rush.${o.id}.v1`,o.id);
  }
 });

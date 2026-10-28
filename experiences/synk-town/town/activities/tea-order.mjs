@@ -16,11 +16,18 @@ import { createRng } from '../rng.mjs';
 import { MINUTE } from '../clock.mjs';
 import { paramsFor } from '../params.mjs';
 import { SPOT_BY_ID, SPOT_GROUPS } from '../places.mjs';
+import { openDialogue, helpDialogue, dialogueLevel, closeDialogue } from '../../dialogue.mjs';
+import { authoredLevel, basicReadingDifficulty } from '../language-ladder.mjs';
 
 // Read by name space: a browser holding an older data.gen.mjs links this module and only finds the order missing.
 const TEA = DATA.TEA ?? null;
 export const TEA_LINES = Object.freeze(DATA.TEA_LINES ?? []);
 const LINE_BY_ID = new Map(TEA_LINES.map(line => [line.id, line]));
+/** Exact reviewed edition drawn by this client; older generated data has no assessment key. */
+export function presentationKey(frame, level) {
+  const row = DATA.TEA_ASSESSMENT?.[frame];
+  return row && ['L1', 'L2'].includes(level) ? `r1.${row.hash}.${level}` : null;
+}
 const P = paramsVer => paramsFor(paramsVer).tea;
 export const AXES = Object.freeze(['tea', 'temp', 'sweet']);
 export const VALUES = Object.freeze(TEA ? { tea: Object.keys(TEA.axes.tea), temp: Object.keys(TEA.axes.temp), sweet: Object.keys(TEA.axes.sweet).map(Number) }
@@ -30,7 +37,7 @@ const ASK_KINDS = Object.freeze(['repeat', 'slower', 'meaning', 'reopen']);
 export const USUAL = 'guest.tea.regular-usual.1';
 const SLOTS = Object.freeze(['a', 'b']);
 const ONE = 'r';
-const FRAMES = TEA_LINES.filter(line => line.when?.part === 'request');
+const FRAMES = TEA_LINES.filter(line => line.when?.part === 'request' && !line.when.menu);
 const line = (part, test = () => true) => TEA_LINES.find(l => l.when?.part === part && test(l.when))?.id ?? null;
 
 /* ── words ── */
@@ -44,7 +51,7 @@ export function fillLine(text, values = {}) {
 /** The words a line says at a level (null when the line is unknown). */
 export function lineWords(id, level, values = {}) {
   const l = LINE_BY_ID.get(id); if (!l) return null;
-  return fillLine(l.levels[level] ?? l.levels.L2 ?? l.levels.L1, values);
+  return fillLine(l.levels[authoredLevel(level, l.levels)], values);
 }
 /** The key words of a request — every axis value it names, in any of its forms — for 「다시 말해 주세요」's underline. */
 export function keyWords() {
@@ -77,7 +84,7 @@ const framesAt = (level, prior) => {
 const guest = (slot, who, extra) => ({ slot, who, regular: false, frame: null, note: null, request: {}, asks: zeroAsks(), tries: 0, owner: null, react: null, done: null, ...extra });
 
 /** The two guests of the band's next order and what each asks for (§11-2, §11-5). */
-export function orderGuests(slot, { villageSeed, lifeDay, band, level, paramsVer }) {
+export function orderGuests(slot, { villageSeed, lifeDay, band, level, paramsVer, newTea = null }) {
   const p = P(paramsVer), n = slot.seq && slot.seq.lifeDay === lifeDay && slot.seq.band === band ? slot.seq.n + 1 : 1;
   const rng = createRng(villageSeed, 'tea', lifeDay, band, n), walkers = TEA.guests.walkers;
   // The regular comes as guest A at the village's first order (their first meeting), then once in four (§11-5).
@@ -93,6 +100,17 @@ export function orderGuests(slot, { villageSeed, lifeDay, band, level, paramsVer
     const frames = framesAt(level, null), frame = frames[rng.below(frames.length)];
     a = guest('a', whoA, { regular: regularNow, frame: frame.id, request: requestOf(frame, rng, null) });
   }
+  // The first order after C4's menu becomes available uses the recipe the player
+  // chose. Existing words and cup controls still describe every requested axis.
+  let menuRef = null;
+  if (newTea && VALUES.sweet.includes(newTea.sweet) && (n === 1 || newTea.serveNext && slot.menuRef !== newTea.ref)) {
+    const frame = TEA_LINES.find(f => f.when?.menu);
+    if (frame) {
+      a = guest('a', whoA, { regular: regularNow, frame: frame.id,
+        request: { ...requestOf(frame, rng, null), tea: 'today', sweet: newTea.sweet } });
+      menuRef = newTea.ref || null;
+    }
+  }
   // Guest B differs from A on at least one axis (§11-2); a draw that repeats A tries again, a last one turns an axis.
   const frames = framesAt(level, a);
   let b = null;
@@ -105,7 +123,7 @@ export function orderGuests(slot, { villageSeed, lifeDay, band, level, paramsVer
     request[axis] = VALUES[axis].find(value => value !== request[axis]);
     b = guest('b', whoB, { frame: frame.id, request });
   }
-  return { n, regularNow, guests: [a, b] };
+  return { n, regularNow, guests: [a, b], ...(menuRef ? { menuRef } : {}) };
 }
 
 /* ── judging and the guest's word ── */
@@ -159,6 +177,7 @@ const okSession = s => !!s && isId(s.id) && ['order', 'one-cup'].includes(s.kind
   && (s.completed === null || Number.isSafeInteger(s.completed));
 export function valid(slot) {
   return !!slot && (slot.seq === null || nat(slot.seq.lifeDay) && typeof slot.seq.band === 'string' && nat(slot.seq.n))
+    && (slot.menuRef === undefined || isId(slot.menuRef))
     && (slot.open === null || okSession(slot.open)) && (slot.last === null || isId(slot.last.id) && nat(slot.last.served))
     && !!slot.regular && typeof slot.regular.met === 'boolean' && nat(slot.regular.since)
     && (slot.regular.pref === null || isId(slot.regular.pref.frame) && okRequest(slot.regular.pref.request))
@@ -195,15 +214,22 @@ function finishGuest(slot, s, g, ctx, { by, cup = null, mode = null, result }) {
  * 「찻집 일을 같이 했다」 when the player served someone (§11-6). */
 const completeIf = (s, ctx) => { if (s.completed === null && allDone(s)) { s.completed = ctx.nowMs; return { id: s.id, card: s.card, served: served(s) }; } return null; };
 function close(slot, ctx, why) {
-  const s = slot.open, events = [];
+  const s = slot.open, events = [], learning = [];
+  const stopped = !allDone(s);
   for (const g of s.guests) if (!g.done) {
     if (why === 'visit-end' && s.kind === 'one-cup') continue;
     events.push(...finishGuest(slot, s, g, ctx, { by: 'owner', result: 'stopped' }));
+    learning.push(...learningFact(s, g, ctx, 'closed', { reason: 'stopped' }));
   }
+  if (s.dialogue && stopped) s.dialogue.stopped = true;
   const completed = completeIf(s, ctx);
   slot.last = { id: s.id, served: served(s), card: s.card, help: s.kind === 'order' ? served(s) * P(ctx.paramsVer).helpPerGuest : 0 };
   slot.open = null;
-  return { events, completed, closed: { id: s.id, card: s.card } };
+  return { events, learning, completed, scene: sceneResult(s), closed: { id: s.id, card: s.card } };
+}
+function sceneResult(s) {
+  if (!s.dialogue || s.dialogue.reported) return null;
+  s.dialogue.reported = true; return closeDialogue(s.dialogue);
 }
 function open(slot, ctx) {
   if (ctx.card?.cup === 'one') {
@@ -211,11 +237,12 @@ function open(slot, ctx) {
       openedAt: ctx.nowMs, completed: null, guests: [guest(ONE, ctx.card.owner, {})] };
     return;
   }
-  const { n, regularNow, guests } = orderGuests(slot, ctx);
+  const { n, regularNow, guests, menuRef } = orderGuests(slot, ctx);
+  if (menuRef) slot.menuRef = menuRef;
   slot.seq = { lifeDay: ctx.lifeDay, band: ctx.band, n };
   slot.regular = regularNow ? { ...slot.regular, met: true, since: 0 } : { ...slot.regular, since: slot.regular.since + 1 };
   slot.open = { id: ctx.id, kind: 'order', card: ctx.card ? { id: ctx.card.id, key: ctx.card.key } : null, level: ctx.level, lifeDay: ctx.lifeDay, band: ctx.band,
-    openedAt: ctx.nowMs, completed: null, guests };
+    openedAt: ctx.nowMs, completed: null, guests, dialogue: openDialogue({ id: ctx.id, level: ctx.level, responseFormat: 'cup-compose' }) };
   // A guest asks for the tea of the day the player's leaves made (W8b §20-8): the cafe owner says so once a gift-day —
   // 「손님이 오늘의 차를 찾았어요.」 (she was given them, so she knows — G6). Petals alone make no tea (backend review GA2).
   const today = ctx.facts?.gather?.today, gift = today?.tea ? today.gift ?? null : null;
@@ -236,6 +263,32 @@ function addAsks(s, asks) {
   return true;
 }
 
+/** Only a displayed, server-recognised request becomes a learning task. No names, words or cups
+ * leave this activity. The host appends these facts to learning in the SAME command transaction. */
+function learningFact(s, g, ctx, kind, fields = {}) {
+  if (!g.practice || ctx.learning?.enabled !== true || g.practice.epoch !== ctx.learning.revision) return [];
+  return [{ kind, practice: { ...g.practice }, atMs: ctx.nowMs, ...fields }];
+}
+function presentRequest(s, g, ctx, display = {}) {
+  if (g.displayedAt !== undefined || g.practice || s.kind !== 'order') return [];
+  g.displayedAt = ctx.nowMs;
+  // Consent on after a display/retry never retroactively turns it into a first answer.
+  if (ctx.learning?.enabled !== true || g.tries > 0 || Object.values(g.asks).some(n => n > 0)) return [];
+  const frame = g.note || g.frame, def = LINE_BY_ID.get(frame), skill = def?.when?.fixed?.sweet === 0 ? 'ko.reading.negation' : 'ko.reading.detail';
+  const level = dialogueLevel(s.dialogue || openDialogue({ id: s.id, level: s.level }), g.slot);
+  const key = presentationKey(frame, level), approved = DATA.TEA_ASSESSMENT?.[frame]?.levels?.includes(level) === true;
+  // "The same tea" needs the preceding request actually displayed. A remembered regular's
+  // favourite, an old client/edition and L3/L4 never become assessed by a successful cup.
+  const prior = s.guests[s.guests.indexOf(g) - 1], confounded = !!g.note || !!def?.when?.same && !Number.isSafeInteger(prior?.displayedAt);
+  g.practice = { id: `town.tea.${s.id}.${g.slot}`, epoch: ctx.learning.revision, presentedAt: ctx.nowMs,
+    level, frame, ...(key ? { contentKey: key } : {}),
+    itemKey: `synk-town.tea.${frame}.${JSON.stringify(g.request).replace(/[^a-zA-Z0-9]/g, '.')}`,
+    measure: { skillId: skill, modality: 'reading', difficulty: basicReadingDifficulty(level),
+      family: `synk-town.tea.${frame}.v1`, responseFormat: 'cup-compose', audioRequired: false, confounded },
+    assessed: approved && !!key && display.contentKey === key && !confounded, attempts: 0, helpSeq: 0 };
+  return learningFact(s, g, ctx, 'presented');
+}
+
 /**
  * The confirm rule. ctx (the runtime's): { id, nowMs, villageSeed, lifeDay, band, level, paramsVer, location, raining,
  * playerSeat, busy(spot, fromMs, toMs), card? }. Returns { slot, events, completed } or { error: [code, message, status] }.
@@ -245,14 +298,29 @@ export function apply(current, command, ctx) {
   const slot = structuredClone(current), p = command.payload || {}, s = slot.open;
   switch (command.type) {
     case 'TEA_OPEN': {
-      let events = [], completed = null;
+      let events = [], completed = null, learning = [], scene = null;
       if (s) {
         // 「다음 손님」: an order whose guests are all done closes as the next opens; one still going does not.
         if (!allDone(s)) return fail('tea-open', '하던 주문을 먼저 마쳐 주세요.');
-        ({ events, completed } = close(slot, ctx, 'next'));
+        ({ events, completed, learning, scene } = close(slot, ctx, 'next'));
       }
       open(slot, ctx);
-      return { slot, events, completed };
+      return { slot, events, completed, learning, scene };
+    }
+    case 'TEA_PRESENT': {
+      if (!s || p.order !== s.id) return fail('tea-not-open', '주문을 다시 열어 주세요.');
+      const g = s.guests.find(x => x.slot === p.guest);
+      if (!g || g.done || p.visible !== true || ctx.location !== 'cafe') return fail('tea-not-visible', '손님 말을 먼저 확인해 주세요.');
+      return { slot, events: [], completed: null, learning: presentRequest(s, g, ctx, p) };
+    }
+    case 'TEA_HELP': {
+      if (!s || p.order !== s.id) return fail('tea-not-open', '주문을 다시 열어 주세요.');
+      const g = s.guests.find(x => x.slot === p.guest);
+      if (!g || g.done || !ASK_KINDS.includes(p.kind)) return fail('tea-help', '도움을 다시 골라 주세요.', 400);
+      g.asks[p.kind] = Math.min(P().asksMax, g.asks[p.kind] + 1);
+      if (s.dialogue) s.dialogue = helpDialogue(s.dialogue, g.slot, p.kind);
+      if (g.practice) g.practice.helpSeq++;
+      return { slot, events: [], completed: null, learning: learningFact(s, g, ctx, 'helped', { help: p.kind, helpNo: g.practice?.helpSeq || 1 }) };
     }
     case 'TEA_SERVE': {
       if (!s || p.order !== s.id) return fail('tea-not-open', '주문을 다시 열어 주세요.');
@@ -264,13 +332,17 @@ export function apply(current, command, ctx) {
       if (ctx.location !== where) return fail('tea-too-far', s.kind === 'one-cup' ? '잔을 들고 가까이 가서 드려 주세요.' : '찻집에서 내 주세요.');
       const missed = s.kind === 'one-cup' ? [] : judge(g.request, p.cup);
       g.react = reactFor(g, p.cup, missed, ctx.facts?.gather?.today);
+      if (g.practice) g.practice.attempts++;
+      const learning = learningFact(s, g, ctx, 'attempted', { attemptNo: g.practice?.attempts || 1, correct: !missed.length,
+        assessable: g.practice?.assessed === true && p.mode === 'make', reason: p.mode === 'preview' ? 'visual' : g.practice?.assessed === true ? null : 'demo' });
       if (missed.length) {
         g.tries += 1;
         if (g.tries >= P(ctx.paramsVer).ownerAfter && g.owner === null) g.owner = 'asked';
-        return { slot, events: [], completed: null };
+        return { slot, events: [], completed: null, learning };
       }
       const events = finishGuest(slot, s, g, ctx, { by: 'player', cup: { ...p.cup }, mode: p.mode, result: 'made' });
-      return { slot, events, completed: completeIf(s, ctx) };
+      const completed = completeIf(s, ctx);
+      return { slot, events, completed, learning, scene: completed ? sceneResult(s) : null };
     }
     case 'TEA_OWNER': {
       if (!s || p.order !== s.id) return fail('tea-not-open', '주문을 다시 열어 주세요.');
@@ -279,8 +351,10 @@ export function apply(current, command, ctx) {
       if (!addAsks(s, p.asks)) return fail('tea-asks', '주문을 다시 열어 주세요.', 400);
       if (p.choice === 'self') { g.owner = 'declined'; return { slot, events: [], completed: null }; }
       g.react = { line: line('owner', w => w.is === 'took'), values: {}, by: 'owner' };
+      if (s.dialogue) s.dialogue.stopped = true;
       const events = finishGuest(slot, s, g, ctx, { by: 'owner', result: 'owner' });
-      return { slot, events, completed: completeIf(s, ctx) };
+      const completed = completeIf(s, ctx);
+      return { slot, events, completed, scene: completed ? sceneResult(s) : null, learning: learningFact(s, g, ctx, 'closed', { reason: 'unanswered' }) };
     }
     case 'TEA_CLOSE': {
       if (!s) return { slot, events: [], completed: null };
@@ -320,8 +394,10 @@ export function results(slot) {
 export function view(slot, { nowMs, nextFirst = true } = {}) {
   const s = slot.open;
   return {
+    language: true,
     open: s ? { id: s.id, kind: s.kind, card: s.card, level: s.level, done: s.completed !== null, found: s.found === true,
       guests: s.guests.map(g => ({ slot: g.slot, who: g.who, regular: g.regular, frame: g.frame, note: g.note, request: { ...g.request },
+        lineLevel: s.dialogue ? dialogueLevel(s.dialogue, g.slot) : s.level, presented: g.displayedAt !== undefined || !!g.practice,
         tries: g.tries, owner: g.owner, react: g.react, done: g.done && { by: g.done.by, spot: g.done.spot, takeaway: g.done.by === 'player' && s.kind === 'order' && !g.done.spot } })) } : null,
     seated: slot.seated.filter(x => x.toMs > nowMs).map(x => ({ who: x.who, spot: x.spot })),
     together: slot.day?.together ?? null, nextFirst,
@@ -396,7 +472,7 @@ export function finish(state, order, guestSlot, { mode = 'make', paramsVer } = {
 export default Object.freeze({
   id: 'tea-order', canonicalActivityId: 'tea-order', storyFamily: 'cafe-life', title: '찻집 주문',
   places: Object.freeze(['cafe.counter']), reserves: Object.freeze(['cafe-owner']), reading: true, cap: 'tea',
-  commands: Object.freeze({ TEA_OPEN: 'first-chapter', TEA_SERVE: 'first-chapter', TEA_OWNER: 'first-chapter', TEA_CLOSE: 'base' }),
+  commands: Object.freeze({ TEA_OPEN: 'first-chapter', TEA_PRESENT: 'first-chapter', TEA_HELP: 'first-chapter', TEA_SERVE: 'first-chapter', TEA_OWNER: 'first-chapter', TEA_CLOSE: 'base' }),
   opens: 'TEA_OPEN', closes: 'TEA_CLOSE',
   // The day's one thing done together (§11-6): its event and the player's roles in it.
   together: Object.freeze({ kind: 'tea.together', roles: Object.freeze(['make', 'deliver']) }),

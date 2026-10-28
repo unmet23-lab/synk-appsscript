@@ -444,6 +444,10 @@ const list = (argv, flag) => { const i = argv.indexOf(flag); if (i < 0) return n
 const num = (argv, flag) => { const i = argv.indexOf(flag); return i < 0 ? null : Number(argv[i + 1]); };
 
 async function main([command, name, ...argv]) {
+  if (['예외준비', '예외반영'].includes(command)) {
+    const { exceptionCommand } = await import('./lib/topik-review-atlas-20261028.mjs');
+    console.log(JSON.stringify(await exceptionCommand(command, name, argv))); return 0;
+  }
   if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {

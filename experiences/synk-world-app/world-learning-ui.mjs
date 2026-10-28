@@ -1,4 +1,5 @@
 import {t,tMessage,hasString,formatDate,currentLang} from '../brand-opening/world-lang.mjs';
+import {followupRows,advisoryRows} from './world-learning-followups.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 화면 언어(10-19 1판): 이름·값과 순서는 그대로 두고 보이는 글만 표(goal.*)에서 읽는다.
 const REASON_IDS=['travel','life','people','exam','study','work','career','culture','hobby','other'];
@@ -51,7 +52,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let [instance,host]=held();
   if(instance&&host===source){try{instance.summary();return instance;}catch{instance.disconnect?.();instance=null;}}
   if(host!==source){instance?.disconnect?.();instance=null;host=source;}
-  if(!instance)instance=source?source.createGame({gameId},engine.engine.createGame,engine.createLearningSync):engine.engine.createGame({gameId,storage:target.localStorage});
+  if(!instance)instance=source?source.createGame({gameId,followups:true},engine.engine.createGame,engine.createLearningSync):engine.engine.createGame({gameId,storage:target.localStorage,followups:true});
   setHeld(instance,host);return instance;
  }
  const readCoach=()=>coachFor('world-home',()=>[coach,coachHost],(a,b)=>{coach=a;coachHost=b;});
@@ -120,6 +121,17 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 은행을 기다리되 오래 붙잡지 않는다(못 불러와도 판은 기존 문항으로 연다).
  const bankReady=(ms=4000)=>Promise.race([loadBank(),new Promise(resolve=>setTimeout(resolve,ms))]);
+ let followupWait=null,followupFailedAt=-Infinity;
+ function loadFollowupBank(){
+  if(!position?.followups||position.followups.bank.ready||Date.now()-followupFailedAt<60000)return Promise.resolve();
+  followupWait||=position.followups.bank.load(audioUrl('world-followup-items.json')).then(()=>{if(!stopped)repaint();},()=>{followupWait=null;followupFailedAt=Date.now();});
+  return followupWait;
+ }
+ function delayedRows(){
+  const c=readPracticeCoach(),seen=seenBy(c);let projection=null;try{projection=c?.followups?.();}catch{}
+  return followupRows({projection,pool:[...(position?.practice?.pool||[]),...(position?.followups?.pool(seen)||[])],seen,
+   taskVersion:c?.mapVersion,audioAvailable:getProgress().learningProfileValues().audio!=='off'});
+ }
  // 판이 읽는 시험: 학생이 고른 시험(TOPIK II면 TOPIK II 지도), 판에서 바꾸면 그 판.
  let boardExam=null;
  const studentExam=values=>values?.examType==='topik2'?'topik2':'topik1';
@@ -458,6 +470,17 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
   home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:position.label,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
   const root=panelNode('[data-position-board]');
+  if(root&&position.followups){
+   void loadFollowupBank();const delayed=delayedRows();
+   const rows=delayed.rows.map(row=>`<li><strong>${escape(t(`position.skill.${row.measure.skillId}`))}</strong> · ${escape(t(`followup.window.${row.window}`))}<p>${escape(t(`followup.status.${row.status}`))}${row.status==='not_due'?` · ${escape(formatDate(Date.parse(row.dueAt),{month:'short',day:'numeric'}))}`:''}${row.outcome?` · ${escape(t(`followup.outcome.${row.outcome}`))}`:''}</p>${row.status==='due'?(row.available?`<button class="quiet-button" data-followup="${escape(row.id)}">${escape(t('followup.open'))}</button>`:`<p>${escape(t('followup.noSupply'))}</p>`):''}</li>`).join('');
+   root.insertAdjacentHTML('beforeend',`<section class="wpos-followups"><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${delayed.limited?`<p role="status">${escape(t('followup.incomplete'))}</p>`:''}${rows?`<ul>${rows}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`);
+   root.querySelectorAll('[data-followup]').forEach(button=>button.addEventListener('click',()=>{void startPractice(null,{followupId:button.dataset.followup}).catch(failed);}));
+   const summary=coachNow.summary(),supply=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow)});
+   const targets=map.skills.filter(row=>['practice','supported','review'].includes(row.status)||row.incorrect>0).map(row=>row.id);
+   const advisory=advisoryRows({targets,summary,lookup:position.recommendedBefore,supply});
+   if(advisory.length){root.insertAdjacentHTML('beforeend',`<section class="wpos-advisory"><h3>${escape(t('followup.advisory'))}</h3><p>${escape(t('followup.optional'))}</p>${advisory.map(row=>`<p><button class="quiet-button" data-advisory="${escape(row.id)}">${escape(t(`position.skill.${row.id}`))}</button> → ${escape(t(`position.skill.${row.target}`))}</p>`).join('')}</section>`);
+    root.querySelectorAll('[data-advisory]').forEach(button=>button.addEventListener('click',()=>{void startPractice(button.dataset.advisory).catch(failed);}));}
+  }
   if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
   panelNode('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnostic(coachNow,plan,map);}catch(error){failed(error);}},{once:true});
   root?.querySelectorAll?.('[data-position-exam]').forEach(button=>button.addEventListener('click',()=>{try{check();boardExam=button.dataset.positionExam==='topik2'?'topik2':'topik1';showBoard(readCoach(),{keepScroll:true});}catch(error){failed(error);}}));
@@ -658,17 +681,21 @@ async function townSend(coachNow,{wait=true}={}){
   return {play,silence,get playing(){return playing;}};
  }
  let practiceOpen=0;
- async function startPractice(skillId){
+ async function startPractice(skillId,{followupId=null}={}){
   if(!position?.practice)return;
   check();const ticket=++practiceOpen;
   try{await prepare();}catch{/* device-local practice still runs */}
   check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
   check();try{await bankReady();}catch{/* reviewed game items still run */}
+  if(followupId){await Promise.race([loadFollowupBank(),new Promise(resolve=>setTimeout(resolve,4000))]);check();}
   check();if(ticket!==practiceOpen)return;
   const coachNow=readPracticeCoach();if(!coachNow){home.toast(t('practice.unavailable'));return;}
   let audioAvailable=true;try{audioAvailable=getProgress().learningProfileValues().audio!=='off';}catch{}
+  const followup=followupId?delayedRows().rows.find(row=>row.id===followupId&&row.status==='due'&&row.available):null;
+  if(followupId&&!followup){home.toast(t('followup.noSupply'));return;}
+  if(followup)skillId=followup.measure.skillId;
   const summary=coachNow.summary(),seen=seenBy(coachNow),exam=skillExam(skillId),listening=String(skillId).split('.')[1]==='listening';
-  const selection=position.practice.selectPractice({summary,pool:position.practice.pool,seen,skillId,audioAvailable,count:practiceLength()});
+  const selection=followup?{status:'ready',items:[followup.item]}:position.practice.selectPractice({summary,pool:position.practice.pool,seen,skillId,audioAvailable,count:practiceLength()});
   if(selection.status==='none'){home.toast(t(selection.reason==='history.incomplete'?'position.diagnostic.history':selection.reason==='audio'?'practice.audioOff':'practice.shortage'));void openPosition();return;}
   const session=position.practice.createPracticeSession({coach:coachNow,items:selection.items});
   const mapOf=()=>{try{return position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,exam});}catch{return null;}};
@@ -694,7 +721,7 @@ async function townSend(coachNow,{wait=true}={}){
    const after=mapOf()?.skills.find(row=>row.id===skillId)||null;
    const more=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow),audioAvailable})[skillId]||0;
    const set=finishSet(coachNow,'short');
-   box.innerHTML=view.renderPracticeDone({skill,before,after,results:session.results(),items:position.itemsById,more,listening,count:practiceLength(),response:responseView(set,'short')});
+   box.innerHTML=view.renderPracticeDone({skill,before,after,results:session.results(),items:new Map([...position.itemsById,...selection.items.map(item=>[item.id,item])]),more:followup?0:more,listening,count:followup?1:practiceLength(),response:responseView(set,'short'),followup:!!followup});
    bindResponse({box,coachNow,set,kind:'short',more});
    box.querySelector('[data-practice-done]')?.focus?.({preventScroll:true});top();
    queueMicrotask(()=>refresh());evidenced();

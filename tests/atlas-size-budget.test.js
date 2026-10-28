@@ -8,9 +8,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-// 2026-10-28: learning.js 우선도 역전 수리 뒤 실제 6,969줄(여유 1). 2026-10-26: Flow 시작 위치·동기화 ACK 수리 뒤 실제 6,952줄. 주문 폭주·말의 리듬·WORLD·Talk가
-// 공유하는 기존 API의 회귀 수리이며, 설계 절의 실제 소비처 근거와 함께 70줄만 늘린다(여유 18줄).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 6970, capabilityDocLines: 150 });
+// 2026-10-28: WORLD·주문·리듬이 실제 호출하는 Temper 지연 관측과 보존, 형식별 prior 경계.
+// 새 엔진/파일 없이 7,127줄. 설계의 소비처·실행 근거와 함께 정확한 증가분만 반영한다.
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7127, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

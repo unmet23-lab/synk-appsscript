@@ -14,6 +14,7 @@ import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTr
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
 import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
 import { habitOf, HABIT_BANDS } from './visits.mjs';
+import { validNewTea } from '../new-tea.mjs';
 // The generated data is read as a namespace: a browser still holding an older data.gen.mjs (the ten-minute cache)
 // keeps its module links and only lacks the W5 tables, as the mood lines did in W4.
 import * as DATA from './data.gen.mjs';
@@ -57,7 +58,9 @@ const validTakes = takes => takes === undefined || Array.isArray(takes) && takes
   && takes.every(t => plain(t) && Object.hasOwn(CARD_BY_ID, t.card) && id(t.key) && integer(t.at) && TAKE_STATUS.includes(t.status)
     && (t.choice === undefined || t.choice === null || id(t.choice)) && (t.status !== 'resolved' || integer(t.resolvedAt) && t.resolvedAt >= t.at && id(t.ref))
     && (t.endAt === undefined || integer(t.endAt) && t.endAt >= t.at) && (t.eventId === undefined || /^E-\d+$/.test(t.eventId))
-    && (t.open === undefined || typeof t.open === 'boolean') && (t.contactId === undefined || id(t.contactId)));
+    && (t.open === undefined || typeof t.open === 'boolean') && (t.contactId === undefined || id(t.contactId))
+    && (t.newTea === undefined || t.card === 'C4' && validNewTea(t.newTea))
+    && (t.level === undefined || ['L1', 'L2', 'L3', 'L4'].includes(t.level)));
 /** The player's gifts into the village's things (W8b §20-8): when, which thing, how much less worn, whose — kept until their
  * band has closed, read by the band as time-ordered inputs like the takes (an old world has none). */
 export const GIVES_MAX = 16;
@@ -76,6 +79,8 @@ const validMarks = m => plain(m) && ['newToolDay', 'scenesDay', 'scenes'].every(
 export function validVillage(v) {
   if (!plain(v) || !(v.agreement === null || v.agreement === undefined || id(v.agreement)) || !(v.seed === null || typeof v.seed === 'string' && v.seed.length > 0 && v.seed.length <= 120)
     || !(v.sleeps === undefined || v.sleeps === true)) return false;
+  if (v.newTea !== undefined && !(plain(v.newTea) && [0, 1, 2].includes(v.newTea.sweet)
+    && integer(v.newTea.bandStartMs) && typeof v.newTea.serveNext === 'boolean' && id(v.newTea.ref))) return false;
   if (!Array.isArray(v.tz) || v.tz.length > 4 || v.tz.some((z, i) => !plain(z) || !Number.isSafeInteger(z.fromMs) || !validOffset(z.offsetMin)
     || i > 0 && z.fromMs <= v.tz[i - 1].fromMs)) return false;
   const b = v.band;

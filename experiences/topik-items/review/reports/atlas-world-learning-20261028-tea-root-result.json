@@ -1,0 +1,138 @@
+{
+  "task": "atlas-world-learning-20261028",
+  "reviewer": "/root",
+  "author": "/root/world_integration_review",
+  "reviewedAt": "2026-10-28T06:12:39.161Z",
+  "packetSha256": "76a6ee9df5d6714d9e75c4212146417af620273784467f9602dd7e9bf31550fc",
+  "blindEvidence": "root-blind-solved.json",
+  "verdict": "pass",
+  "frames": 12,
+  "expandedCases": 152,
+  "acceptedAlternativeChecks": 2736,
+  "remainingBlocking": 0,
+  "checks": {
+    "naturalness": true,
+    "explicitAxesOnly": true,
+    "l1l2Equivalent": true,
+    "sameTeaRequiresVisiblePrior": true,
+    "familyPreserved": true,
+    "noOfficialTypeClaim": true,
+    "helpSeparated": true
+  },
+  "results": [
+    {
+      "id": "guest.tea.req-new-menu.1",
+      "hash": "549884571f05de2fc038c4cadbc9ba2a175df22371e826a00ea01c81688dd89f",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-tea.1",
+      "hash": "061458eb88c73897492a03e04cc0fd9c5f9d68df894f4b6b944d5de653c6dc7b",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-temp.1",
+      "hash": "11ee87f0ec74fbdd2b80f989acc6a0ca99ec2b05afe060544212812e2b66caf1",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-sweet.1",
+      "hash": "69fe3d202f7dea82126d99eef58d717b12f9ae8e0e407cde350f30c3698bd9e4",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1",
+      "hash": "0ef372c78ea18369db197907ec2b195ac44e1373676742c4d92ee29c8eacf54f",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1",
+      "hash": "4faa7d83666a4876657833af84a3aed91661adfa9b7e97c4ae662caff599a2fb",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1",
+      "hash": "12bbe05ca379412129f53753b7330f248a05997335880a9fcad697d15ac19ea2",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1",
+      "hash": "2cbf1d725a929bb55e1d5d3905d828575197a4881d7d1a37447ee3a273e1fe42",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-friend.1",
+      "hash": "13e199911effe11826fce30a00a096567b421917b2e94382ec987a3e682ce063",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1",
+      "hash": "888c1f63e76b98173ee1c13fe89407617c00f8661f4e059467bc46fcb8a4ed04",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-yuzu-honey.1",
+      "hash": "5666b53565438317d0f5e0ba975cba1d57fba0b470a1a38ba0185ef552eb2efb",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-daily.1",
+      "hash": "f6fe2559571fbc0eb4acdd7778c59035ac8157720058932567f193938a7d71b9",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    }
+  ],
+  "limitations": [
+    "Sweetness is the game authored 0/1/2 scale.",
+    "Same-tea L2 needs the preceding speaker available; otherwise do not assess.",
+    "L3/L4 and regular remembered orders were not approved for ability evidence.",
+    "Reading cup-compose only; no listening, calibrated proficiency or learning gain claim."
+  ]
+}

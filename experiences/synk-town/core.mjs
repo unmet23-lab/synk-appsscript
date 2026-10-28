@@ -33,7 +33,10 @@ import { bandAt, BAND_IDS, clockAt, afterRainAt } from './town/clock.mjs';
 import { initialVisitBands, writeBand, setVisitBands, clearVisitBands, validVisitBands } from './town/visits.mjs';
 import { meanwhileLines } from './town/meanwhile.mjs';
 import { ACTIVITIES, ACTIVITY_BY_ID, activityOfCommand, initialActivities, restoreActivities, validActivities } from './town/activities/index.mjs';
+import { initialLadder, validLadder, closeScene, chooseLevel, pickSceneLevel, markOffer, answerOffer } from './town/language-ladder.mjs';
 import { weatherAt } from './town/clock.mjs';
+import { startNewTea, newTeaView, helpNewTea, chooseNewTea } from './new-tea.mjs';
+import { closeDialogue } from './dialogue.mjs';
 
 export const SCOPE = Object.freeze({ domain: 'LAB', workspace: 'synk-town', subject: 'preview-local' });
 // FT10/FT51 keep their old 2D cafe-screen points; the spots live in town/data/places.json.
@@ -58,7 +61,7 @@ const ensure = (condition, code, message, status) => { if (!condition) throw new
 const TOWN_FIELDS = Object.freeze({ ledger: emptyLedger, prefs: initialPrefs, asks: initialAsks, recentLifeUse: () => [],
   consents: initialConsents, policy: () => null, forgotten: () => [], townSeq: () => 0, townEvents: () => [],
   // W6: the visit (its start, the last one's end, its band) and the time the player usually comes (§10-3) — the player's side.
-  townVisit: () => null, visitBands: () => initialVisitBands(), activities: initialActivities });
+  townVisit: () => null, visitBands: () => initialVisitBands(), activities: initialActivities, languageLadder: () => null });
 const townFields = () => Object.fromEntries(Object.entries(TOWN_FIELDS).map(([key, make]) => [key, make()]));
 /** The most entries a person's own setting lists keep (less often, not approached first, today's others, responses). */
 export const PERSONAL_MAX = 64;
@@ -237,7 +240,7 @@ export function assertState(state) {
     && (!has('consents') || validConsents(state.consents)) && (!has('policy') || validPolicy(state.policy))
     && (!has('forgotten') || validForgotten(state.forgotten)) && (!has('townSeq') && !has('townEvents') || townEventsValid(state))
     && (!has('townVisit') || validVisit(state.townVisit)) && (!has('visitBands') || validVisitBands(state.visitBands))
-    && (!has('activities') || validActivities(state.activities)),
+    && (!has('activities') || validActivities(state.activities)) && (!state.languageLadder || validLadder(state.languageLadder)),
   'invalid-save', '마을 기록을 확인할 수 없어요.', 503);
   return state;
 }
@@ -571,9 +574,10 @@ function cardsView(state, nowMs) {
   const v = state.village, out = planOf(v), now = villageAt(bandInput(v), out.segments, out.log, nowMs);
   const take = (v.takes || []).find(t => t.open) ?? null;
   return { cards: cardsAt(bandInput(v), out.segments, out.log, nowMs).map(c => ({ ...c, ready: !CARD_BY_ID[c.card].locked && CARD_BY_ID[c.card].paths.player.ready })),
-    take: take && { card: take.card, key: take.key, status: take.status, choice: take.choice ?? null,
+    take: take && { card: take.card, key: take.key, status: take.status, choice: take.choice ?? null, level: take.level || sceneLevel(state),
       choices: CARD_BY_ID[take.card].paths.player.choices.filter(choice => choiceOk(CARD_BY_ID[take.card], choice, { placement: state.placement })),
-      ...(take.ref ? { ref: take.ref } : {}), ...(take.eventId ? { eventId: take.eventId } : {}) },
+      ...(take.ref ? { ref: take.ref } : {}), ...(take.eventId ? { eventId: take.eventId } : {}),
+      ...(take.newTea ? { newTea: newTeaView(take.newTea) } : {}) },
     traces: now.traces, news: noteOf(v),
     hearsay: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, hearsayFor(v, npc)]).filter(([, line]) => line)),
     knownMe: Object.fromEntries(RESIDENT_IDS.map(npc => [npc, privateOf(v, npc, state.forgotten || []).map(({ ref, card, activity, path }) => ({ ref, ...(activity ? { activity } : { card }), path }))])),
@@ -855,6 +859,7 @@ export function viewFor(state) {
   if (state.bazaar) view.bazaar = viewBazaar(state.bazaar, { ...bazaarContext(state, { surface: 'day' }),
     ownerAsleep: !ownerUp, workshopAsleep: village?.awake['workshop-owner'] === false });
   if (state.support) view.support = viewSupport(state.support, supportContext(state));
+  view.language = { version: 1, ladder: copy(state.languageLadder || initialLadder({ reading: 'L2', listening: 'L2' })) };
   // The mascot's question waiting to be drawn or answered (W6, §20-3·§20-4) — old screens ignore it.
   if (state.asks?.open) view.ask = { key: state.asks.open.key, kind: state.asks.open.kind, ...(state.asks.open.family ? { family: state.asks.open.family } : {}) };
   // The tea order the screen draws (W8): its guests, what they asked (ids and values — the words are the screen's), who sits.
@@ -902,7 +907,7 @@ const TOWN_COMMANDS = new Set(['MEMORY_FORGET', 'FEEDBACK_REMOVE', 'OBSERVED_COR
 /* ── life activities (§20-7 ②, W8) ── the runtime's half: an activity's context, its commands, what it returns. */
 /** The level a scene's lines show at: the reading seat's stable level — W9's ladder plugs in here (now L2, the same as
  * the one-line texts, day-mood.mjs lineLevel). */
-const sceneLevel = () => 'L2';
+const sceneLevel = state => state.languageLadder?.reading?.stable || 'L2';
 /** What an activity may read of the world at a command: only values the server gives (§2-3). The functions read only when
  * called (W8b: who does what now, which card waits for the player, what the ledger holds). */
 function activityCtx(state, a, host, extra = {}) {
@@ -920,7 +925,8 @@ function activityCtx(state, a, host, extra = {}) {
     resident: npc => residentNow(v, npc, nowAt().places[npc], nowMs),
     takeable: card => nowAt().cards.some(c => c.card === card && CARD_BY_ID[card] && mayTake(CARD_BY_ID[card], c.status)),
     holding: itemId => held(ledger, itemId), room: itemId => roomFor(ledger, itemId),
-    facts: activityFacts(state, b.lifeDay), ...extra };
+    facts: activityFacts(state, b.lifeDay), learning: host.learning,
+    newTea: v.newTea && (b.startMs > v.newTea.bandStartMs || v.newTea.serveNext) ? v.newTea : null, ...extra };
 }
 /** The clock's facts a life activity reads (W8b — what grows): the band in my time, the season and the weather now and of
  * the Korean date, and whether it is the span after a rain stops (from that moment until the band after the one it stopped
@@ -980,11 +986,28 @@ function openTakeFor(state, card, key, host, contactId = null) {
   if (take) Object.assign(take, { status: 'with', open: true });
   else v.takes = [...(v.takes || []), { card: card.id, key, at: host.nowMs, status: 'with', open: true, choice: null, ...(contactId ? { contactId } : {}) }]
     .slice(-paramsFor().cards.takesKept);
+  const current = v.takes.find(t => t.card === card.id && t.key === key && t.open);
+  current.level ||= sceneLevel(state);
+  if (card.id === 'C4') {
+    current.newTea ||= startNewTea(current.level);
+    current.newTea.dialogue.stopped = false;
+  }
+}
+function closeNewTea(state, take, host, stopped = false) {
+  take.newTea.dialogue.stopped = stopped;
+  const scene = closeDialogue(take.newTea.dialogue);
+  if (state.languageLadder) state.languageLadder = closeScene({ ladder: state.languageLadder, channel: scene.channel, level: scene.level, outcome: scene.outcome, now: host.nowMs });
+  townEvent(state, 'dialogue.closed', { ...scene, atMs: host.nowMs });
 }
 /** What an activity returned, written as the world's: its events (the id, command revision and the visit's marks are the
  * runtime's), the result it reached — the card that opened it resolves, or the day's one thing done together — and the
  * take of a card's order that closed (review F5). */
 function afterActivity(state, a, out, host, { inVisit }) {
+  if (out.learning?.length) host.learningFacts?.push(...out.learning);
+  if (out.scene && state.languageLadder) {
+    state.languageLadder = closeScene({ ladder: state.languageLadder, channel: out.scene.channel, level: out.scene.level, outcome: out.scene.outcome, now: host.nowMs });
+    townEvent(state, 'dialogue.closed', { ...out.scene, atMs: host.nowMs });
+  }
   const marks = eventMarks(inVisit ? openVisit(state, host) : state.policy, { inVisit }), v = state.village;
   const ids = out.events.map(({ kind, ...fields }) => townEvent(state, kind, { ...fields, ...marks }));
   // W8b (§20-7 ①·②): what an activity asks of the world besides its own slot — the ledger, a thing worn less from now (a
@@ -1097,7 +1120,7 @@ function commandActivity(state, a, type, p, host) {
 }
 
 /** The small need cards with the player (§8-3 나와 함께, W5) and the greeting that tells the player what a resident knows (§9-4). */
-const CARD_COMMANDS = new Set(['CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM', 'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET']);
+const CARD_COMMANDS = new Set(['CARD_OPEN', 'CARD_CHOOSE', 'CARD_CONFIRM', 'CARD_HELP', 'CARD_CLOSE', 'CARD_DECLINE', 'CARD_DEFER', 'GREET']);
 function commandCard(state, type, p, host) {
   const v = state.village;
   ensure(state.day && state.life && v?.band && host.enabled === true && Number.isSafeInteger(host.nowMs), 'card-unavailable', '지금은 이 생활을 열 수 없어요.', 403);
@@ -1132,12 +1155,27 @@ function commandCard(state, type, p, host) {
     case 'CARD_CHOOSE': {
       const take = openTake(state), card = take && CARD_BY_ID[take.card];
       ensure(take?.status === 'with', 'card-not-open', '함께하던 생활을 다시 열어 주세요.', 409);
-      ensure(choiceOk(card, p.choice, { placement: state.placement }), 'invalid-card-choice', '고를 수 있는 것 가운데 골라 주세요.');
+      ensure(card.id === 'C4' ? take.newTea && newTeaView(take.newTea).choices.some(c => c.id === p.choice)
+        : choiceOk(card, p.choice, { placement: state.placement }), 'invalid-card-choice', '고를 수 있는 것 가운데 골라 주세요.');
       take.choice = p.choice; break;
+    }
+    case 'CARD_HELP': {
+      const take = openTake(state);
+      ensure(take?.card === 'C4' && take.status === 'with' && take.newTea, 'card-not-open', '함께하던 생활을 다시 열어 주세요.', 409);
+      ensure(['repeat', 'slower', 'meaning'].includes(p.kind), 'invalid-card-help', '도움을 다시 골라 주세요.');
+      take.newTea = helpNewTea(take.newTea, p.kind); break;
     }
     case 'CARD_CONFIRM': {
       const take = openTake(state), card = take && CARD_BY_ID[take.card];
       ensure(take?.status === 'with' && take.choice, 'card-choice-first', '먼저 하나 골라 주세요.', 409);
+      if (card.id === 'C4') {
+        take.newTea = chooseNewTea(take.newTea, take.choice); take.choice = null;
+        if (!take.newTea.done) break;
+        take.choice = `sweet-${take.newTea.honey}`;
+        resolveTake(state, host, take, card, take.choice);
+        v.newTea = { sweet: take.newTea.honey, bandStartMs: v.band.startMs, serveNext: take.newTea.final === 'serve', ref: take.ref };
+        closeNewTea(state, take, host); break;
+      }
       resolveTake(state, host, take, card, take.choice);
       break;
     }
@@ -1146,6 +1184,7 @@ function commandCard(state, type, p, host) {
       // card opened closes with it, the owner serving who is left (W8).
       const take = openTake(state);
       if (take && CARD_BY_ID[take.card].paths.player.activity) closeActivityFor(state, take, host);
+      if (take?.card === 'C4' && take.status === 'with' && take.newTea) closeNewTea(state, take, host, true);
       if (take) { take.open = false; if (take.status === 'with') take.status = 'paused'; }
       break;
     }
@@ -1180,6 +1219,9 @@ export function reduceCommand(previous, command, host = {}) {
   }
   ensure(command.expectedRevision === previous.revision, 'stale-command', '다른 창에서 자리가 바뀌었어요. 다시 확인해 주세요.', 409);
   let state = copy(previous);
+  const learning = [];
+  host = { ...host, learningFacts: learning };
+  if (!state.languageLadder) state.languageLadder = initialLadder(host.languagePlacement || { reading: 'L2', listening: 'L2' }, host.nowMs || 0);
   const p = command.payload;
   if (TOWN_COMMANDS.has(command.type)) for (const [key, make] of Object.entries(TOWN_FIELDS)) if (!Object.hasOwn(state, key)) state[key] = make();
   // A command from a window that holds the town is play: it opens the visit when no settlement step has yet (W6 — the
@@ -1198,6 +1240,23 @@ export function reduceCommand(previous, command, host = {}) {
     ensure(false, 'use-in-progress', '손님이 자리를 확인한 뒤 안내판을 바꿔 주세요.', 409);
   const inPhase = (...phases) => ensure(phases.includes(state.phase), 'wrong-phase', '지금 할 수 있는 일을 골라요.');
   switch (command.type) {
+    case 'LANGUAGE_SET':
+      ensure(['reading', 'listening'].includes(p.channel) && ['easier', 'broader', 'always-easy', 'auto'].includes(p.choice), 'language-choice', '말의 속도를 다시 골라 주세요.', 400);
+      state.languageLadder = chooseLevel(state.languageLadder, p.channel, p.choice, host.nowMs || 0);
+      break;
+    case 'LANGUAGE_OFFER': {
+      ensure(!state.activities?.['tea-order']?.open && !state.village?.takes?.some(t => t.card === 'C4' && t.open && t.status === 'with') && ['reading', 'listening'].includes(p.channel), 'language-busy', '장면을 마친 뒤 골라 주세요.');
+      const choice = pickSceneLevel({ channel: p.channel, ladder: state.languageLadder, summary: host.learningSummary,
+        settings: host.learningSettings, today: { condition: p.condition }, scene: { versions: ['L1', 'L2', 'L3', 'L4'], responseFormat: 'cup-compose' }, now: host.nowMs || 0, day: host.lifeDay });
+      ensure(!!choice.offer, 'language-no-offer', '지금 말로 이어 가요.');
+      state.languageLadder = markOffer(state.languageLadder, p.channel, host.nowMs || 0, (state.languageLadder[p.channel].evidence || 0) + (host.learningSummary?.evidenceRevision || 0), host.lifeDay);
+      break;
+    }
+    case 'LANGUAGE_ANSWER':
+      ensure(!state.activities?.['tea-order']?.open && !state.village?.takes?.some(t => t.card === 'C4' && t.open && t.status === 'with') && ['reading', 'listening'].includes(p.channel) && ['accepted', 'declined'].includes(p.choice), 'language-choice', '장면을 마친 뒤 골라 주세요.');
+      try { state.languageLadder = answerOffer(state.languageLadder, p.channel, p.choice, host.nowMs || 0); }
+      catch { ensure(false, 'language-no-offer', '지금 말로 이어 가요.'); }
+      break;
     case 'CHOOSE':
       inPhase('choose'); ensure(['inside', 'outside'].includes(p.branch), 'invalid-choice', '안이나 밖을 골라요.');
       state.branch = p.branch; state.phase = `${p.branch}-preview`;
@@ -1472,5 +1531,5 @@ export function reduceCommand(previous, command, host = {}) {
   state.revision++;
   state.commands.push({ id: command.id, signature, revision: state.revision });
   assertState(state);
-  return { state, duplicate: false };
+  return { state, duplicate: false, learning };
 }

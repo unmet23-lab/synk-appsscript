@@ -1,0 +1,89 @@
+'use strict';
+const test = require('node:test'), assert = require('node:assert/strict');
+const load = file => import(`../experiences/synk-town/${file}`);
+const LEVELS = ['L1', 'L2', 'L3', 'L4'], MIN = 60000, START = Date.UTC(2026, 9, 23, 2);
+
+test('C4 all authored levels preserve three turns, choices and recipe outcomes', async () => {
+  const scene = await load('new-tea.mjs');
+  for (const level of LEVELS) for (const first of ['sip', 'smell']) for (const [taste, final, honey] of [['less', 'agree', 1], ['same', 'menu', 2], ['same', 'serve', 2], ['aroma', 'more', 2], ['aroma', 'thanks', 2]]) {
+    let state = scene.startNewTea(level);
+    for (const [n, choice] of [first, taste, final].entries()) {
+      assert.equal(state.turn, n); assert.ok(scene.newTeaView(state).choices.some(c => c.id === choice));
+      state = scene.chooseNewTea(state, choice); assert.equal(scene.validNewTea(state), true);
+    }
+    assert.equal(state.done, true); assert.equal(state.honey, honey); assert.equal(scene.newTeaView(state).choices.length, 0);
+  }
+});
+
+test('C4 help follows the common dialogue ladder and personal honey choice is not judged', async () => {
+  const s = await load('new-tea.mjs'); let state = s.startNewTea('L4');
+  state = s.helpNewTea(state, 'meaning'); assert.equal(s.newTeaView(state).level, 'L3');
+  state = s.chooseNewTea(state, 'smell'); assert.equal(s.newTeaView(state).level, 'L4');
+  state = s.helpNewTea(state, 'meaning'); assert.equal(s.newTeaView(state).level, 'L3');
+  state = s.chooseNewTea(state, 'less'); assert.equal(s.newTeaView(state).level, 'L3');
+  state = s.chooseNewTea(state, 'pour'); assert.equal(state.done, false);
+  for (const honey of [0, 1, 2]) { const final = s.chooseNewTea(state, `honey-${honey}`); assert.equal(final.honey, honey); assert.equal(final.done, true); }
+  assert.throws(() => s.chooseNewTea(state, 'honey-3'));
+  assert.equal(s.validNewTea({ ...s.startNewTea('L1'), turn: 2 }), false);
+  let repeat = s.startNewTea('L3'); repeat = s.helpNewTea(repeat, 'repeat'); assert.equal(s.newTeaView(repeat).level, 'L3');
+  repeat = s.helpNewTea(repeat, 'repeat'); assert.equal(s.newTeaView(repeat).level, 'L2');
+  const low = s.helpNewTea(s.startNewTea('L1'), 'meaning'); assert.equal(s.newTeaView(low).picture, 'cup');
+});
+
+test('the next band menu uses the chosen sweetness at every language level and every cup remains ordinary', async () => {
+  const tea = await load('town/activities/tea-order.mjs');
+  for (const level of LEVELS) for (const sweet of [0, 1, 2]) {
+    const slot = tea.initial(), ctx = { villageSeed: 'new-menu', lifeDay: 20749, band: 'day', level, newTea: { sweet } };
+    const { guests } = tea.orderGuests(slot, ctx);
+    assert.equal(guests[0].request.tea, 'today'); assert.equal(guests[0].request.sweet, sweet);
+    assert.match(tea.lineWords(guests[0].frame, level, guests[0].request), /오늘의 차/);
+    assert.deepEqual(tea.judge(guests[0].request, { tea: 'today', honey: sweet, vessel: 'warm' }), []);
+  }
+});
+
+async function openCard() {
+  const [{ createStore }, village] = await Promise.all([load('server.mjs'), load('town/village.mjs')]);
+  let now = START, sequence = 0, receipt;
+  const store = createStore({ now: () => now, tz: 540, villageSeed: 'new-tea', lifeEnabled: true });
+  const pulse = () => { receipt = store.pulse({ surfaceId: 'tea-a', surface: 'day', foreground: true, safe: true }).presence; };
+  const send = (type, payload = {}) => store.execute({ id: `newtea-${++sequence}`, type, expectedRevision: store.read().state.revision,
+    payload: { surfaceId: receipt.surfaceId, fence: receipt.fence, ...payload } });
+  pulse();
+  for (let n = 0; n < 60; n++) {
+    const state = store.read().state, v = state.village, out = village.planOf(v);
+    const start = Object.fromEntries(Object.entries(v.band.residents).map(([id, r]) => [id, r.lastSpot]).filter(([, at]) => at));
+    const rise = out.log.find(e => e.card === 'C4' && e.atMs >= now);
+    if (rise) {
+      now = rise.atMs + 20000; pulse();
+      const where = village.placeAt(out.segments, rise.npc, now, start);
+      if (where && !where.walking) {
+        send('DAY_MOVE', { location: where.to }); if (store.read().state.day.home.exitTarget) send('DAY_EXIT');
+        send('CARD_OPEN', { card: 'C4', key: rise.key, source: 'direct' });
+        return { store, send, pulse, set: time => { now = time; }, get now() { return now; } };
+      }
+    }
+    now += MIN; pulse();
+  }
+  throw Error('C4 never became playable');
+}
+
+test('real C4 commands survive close/reload, keep learning untouched, and persist a menu for the next band', async () => {
+  const h = await openCard(), take = () => h.store.read().state.village.takes.find(t => t.card === 'C4');
+  const choose = value => { h.send('CARD_CHOOSE', { choice: value }); h.send('CARD_CONFIRM'); };
+  const originalTrail = h.store.read().state.events.length;
+  h.send('CARD_HELP', { kind: 'meaning' }); choose('smell');
+  h.send('CARD_CLOSE'); assert.equal(take().status, 'paused'); assert.equal(take().newTea.turn, 1);
+  h.send('CARD_OPEN', { card: 'C4', key: take().key, source: 'direct' });
+  assert.equal(take().newTea.turn, 1); assert.equal(take().newTea.dialogue.stopped, false);
+  choose('less'); choose('pour'); choose('honey-0');
+  const state = h.store.read().state;
+  assert.equal(take().status, 'resolved'); assert.equal(state.village.newTea.sweet, 0);
+  assert.equal(state.events.length, originalTrail, 'preference choices never create Atlas practice evidence');
+  const events = state.townEvents.filter(e => e.kind === 'dialogue.closed');
+  assert.ok(events.some(e => e.outcome === 'stopped')); assert.ok(events.some(e => e.outcome !== 'stopped'));
+  h.send('CARD_CLOSE'); h.set(state.village.band.endMs + MIN); h.pulse();
+  h.send('DAY_MOVE', { location: 'cafe' }); if (h.store.read().state.day.home.exitTarget) h.send('DAY_EXIT');
+  h.send('TEA_OPEN');
+  const a = h.store.read().state.activities['tea-order'].open.guests[0];
+  assert.deepEqual(a.request, { tea: 'today', sweet: 0 });
+});

@@ -58,3 +58,14 @@
 `compare`는 같은 입력으로 실행한 구현 결과를 대조한다. 문항·판본·개념 외에도 첫 노출 상태와 측정 조건(기술·듣기/읽기·난도·문항군·음성 필요 여부·시각 혼입·응답 형식)이 같아야 한다. 듣기를 읽기로 바꾸거나 이지선다를 단일선택으로 바꾼 결과를 같은 입력의 개선으로 표시하지 않는다. 학습 효과·인과 효과·자동 정책 승격 도구가 아니며 위 talk 개입 계수와 합치지 않는다.
 
 검증은 [`tests/atlas-temper.test.js`](../tests/atlas-temper.test.js)와 [`tests/atlas-provenance-review.test.js`](../tests/atlas-provenance-review.test.js)에 있다. 후자는 게임 응답 → Trail 제외 → Temper 집계 → 저장 후 복원과 비교 조건 변경을 합성 입력으로 확인한다. 실제 학습 효과는 측정하지 않았다.
+
+<a id="learning-followups-20261028"></a>
+## ⑦ 개인 학습의 지연 확인과 보존 (2026-10-28)
+
+[`coach.followups()`](../atlas/game-learning.js)는 기존 Trail 기록으로 개인의 관측 기회를 읽는다. `temper-followup-1`의 구간은 기준 첫 답으로부터 d1 `[1,3)`, d7 `[7,10)`, d30 `[30,37)`일이며 끝 시각은 포함하지 않는다. `observationOpportunities:true`는 계산된 기회라는 뜻이다. 실제 제안·배정·응답의 분모나 기본 회차와의 효과 비교를 뜻하지 않는다.
+
+- 같은 게임·지도판·기술·난도·응답 형식·읽기/듣기·음성 필요 조건에서 처음 제시된 다른 문항군의 첫 답만 후행 대상으로 고정한다. 나중에 맞힌 답으로 교체하지 않는다. 첫 답 전 도움은 assisted로 남기고, 첫 답 뒤 해설은 앞선 독립 답을 바꾸지 않는다. 실제 해설·정답 도움의 사건 ID를 별도로 제공한다.
+- 상태는 `not_due`·`due`·`missed`·`observed`·`invalidated`·`unavailable`로 나누며 무응답·기록 누락을 0점으로 채우지 않는다. 근거가 제외되면 관측된 성공도 철회하고, 제외된 기준 답을 다른 답으로 조용히 바꾸지 않는다. 다른 게임의 결과를 같은 측정으로 합치지 않는다.
+- `createGame({followups:true})`를 선택한 소비처는 원장 접힘 때 관련 사건과 같은 문항군의 연결 기록을 보존한다. 기준 답은 최대 24개·45일, 보존은 최대 2,400사건·1 MiB로 제한한다. 한도 초과·구형 소비처의 접힘으로 원본이 없으면 coverage에 한계와 제외 수/사유를 표시하고 확인 불가로 남긴다. 성공 기록만 골라 보존하지 않는다.
+
+WORLD와 리듬/주문 소비처 연결, Core의 형식 일치 사전 근거, Town C4의 점수 없는 취향 대화 및 검증 범위는 [이번 QA 기록](_ops/qa/atlas-world-learning-20261028/README.md)에 있다. [`tests/atlas-followups.test.js`](../tests/atlas-followups.test.js)는 시간 경계·도움·철회·늦은 수신·재열기·보존 한도를 합성 기록으로 확인한다. `learningEffectClaim`·`causalClaim`·`policyPromotion`은 모두 false이며 실제 학생의 지연 응답과 학습 개선은 별도 관측이 필요하다.

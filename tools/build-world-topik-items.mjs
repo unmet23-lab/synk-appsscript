@@ -12,11 +12,13 @@ import {readFileSync,writeFileSync,existsSync} from 'node:fs';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {ALL_ITEMS} from '../experiences/topik-items/bank.mjs';
+import {isHeldout,HOLDOUT} from '../experiences/topik-items/holdout.mjs';
 import {worldMap} from '../experiences/synk-world-app/world-learning-map.mjs';
 import TOPIK_TYPES from '../strata/topik-types.json' with {type:'json'};
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const TOPIK_BANK_FILE=join(root,'experiences/synk-world-app/world-topik-items.json');
+export const FOLLOWUP_BANK_FILE=join(root,'experiences/synk-world-app/world-followup-items.json');
 export const TOPIK_BANK_VERSION='world-topik-items-1';
 const sorted=value=>Array.isArray(value)?value.map(sorted):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,sorted(value[key])])):value;
 const hashOf=items=>createHash('sha256').update(JSON.stringify(sorted(items))).digest('hex').slice(0,16);
@@ -46,23 +48,37 @@ export function publicTopikBank(items=ALL_ITEMS,{types=TOPIK_TYPES}={}){
  // 소리 파일의 허용 재생 수는 공식 유형의 재생 수와 같아야 한다(화면은 이 수만큼 혼자 들은 것으로 센다).
  for(const item of items)if(item.reviewStatus==='ai-reviewed'&&item.section==='listening'&&item.audio&&item.audio.plays!==plays.get(item.officialType))
   throw new Error(`${item.id}: 소리 허용 재생 ${item.audio.plays}회가 공식 유형 ${item.officialType}의 ${plays.get(item.officialType)}회와 달라요`);
- const open=items.filter(item=>item.reviewStatus==='ai-reviewed'&&(item.section!=='listening'||item.audio?.status==='ready'&&typeof item.audio.file==='string'))
+ const open=items.filter(item=>!isHeldout(item)&&item.reviewStatus==='ai-reviewed'&&(item.section!=='listening'||item.audio?.status==='ready'&&typeof item.audio.file==='string'))
   .filter(item=>worldMap.getNode(item.skillId)?.kind==='skill')
   .map(item=>publicItem(item,{setSize:item.set?items.filter(other=>other.set?.id===item.set.id).length:null}));
  return {version:TOPIK_BANK_VERSION,basis:'experiences/topik-items의 AI 2중 검수 통과 문항(tools/build-world-topik-items.mjs가 만든다 · 손으로 고치지 않는다)',
   contentHash:hashOf(open),forms:examForms(types),items:open};
 }
+// The original four-choice task remains four-choice for its delayed check. Do not consume this
+// separate bank in diagnostics, free practice or mock exams. Shared-set exposure is preserved.
+export function publicFollowupBank(items=ALL_ITEMS){
+ const byId=new Map(items.map(item=>[item.id,item]));
+ const open=HOLDOUT.map(row=>{
+  const item=byId.get(row.sourceItemId);
+  if(!item||createHash('sha256').update(JSON.stringify(item)).digest('hex')!==row.sourceHash)throw Error(`Changed holdout source ${row.sourceItemId}`);
+  if(item.reviewStatus!=='ai-reviewed'||item.section==='listening'&&item.audio?.status!=='ready')throw Error(`Unreviewed holdout source ${row.sourceItemId}`);
+  return {...publicItem(item,{setSize:item.set?items.filter(other=>other.set?.id===item.set.id).length:null}),
+   supplyRole:'delayed',sourceHash:row.sourceHash,exposurePeers:row.exposurePeers};
+ });
+ return {version:'world-followup-items-1',basis:'지연 확인 전용 원문. 일반 연습과 시험에서 제외한 문항이며, 처음 보는 원문인지 계정 기록으로 별도 확인한다.',contentHash:hashOf(open),items:open};
+}
 // 문항 한 줄에 하나(바뀐 문항만 차이로 보이고, 들여쓰기로 파일이 커지지 않게).
 export const bankText=(bank=publicTopikBank())=>{const {items,...head}=bank;return `${JSON.stringify(head).slice(0,-1)},"items":[\n${items.map(item=>JSON.stringify(item)).join(',\n')}\n]}\n`;};
 const sameText=(a,b)=>a.replace(/\r\n/g,'\n')===b.replace(/\r\n/g,'\n');
 export function bankCurrent(file=TOPIK_BANK_FILE){return existsSync(file)&&sameText(readFileSync(file,'utf8'),bankText());}
+export function followupBankCurrent(file=FOLLOWUP_BANK_FILE){return existsSync(file)&&sameText(readFileSync(file,'utf8'),bankText(publicFollowupBank()));}
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const args=process.argv.slice(2),bank=publicTopikBank();
  const tally=bank.items.reduce((acc,item)=>{const key=`${item.exam} ${item.section}`;acc[key]=(acc[key]||0)+1;return acc;},{});
- if(args.includes('--write')){writeFileSync(TOPIK_BANK_FILE,bankText(bank));console.log(`world-topik-items.json ${bank.contentHash} · ${JSON.stringify(tally)}`);}
+ if(args.includes('--write')){writeFileSync(TOPIK_BANK_FILE,bankText(bank));writeFileSync(FOLLOWUP_BANK_FILE,bankText(publicFollowupBank()));console.log(`world-topik-items.json ${bank.contentHash} · ${JSON.stringify(tally)} · followup ${HOLDOUT.length}`);}
  else{
-  if(!bankCurrent()){console.error('world-topik-items.json이 문항 묶음과 달라요. node tools/build-world-topik-items.mjs --write로 다시 만드세요.');process.exit(1);}
+  if(!bankCurrent()||!followupBankCurrent()){console.error('world-topik-items.json 또는 world-followup-items.json이 원천과 달라요. node tools/build-world-topik-items.mjs --write로 다시 만드세요.');process.exit(1);}
   console.log(`world-topik-items.json 맞음 ${bank.contentHash} · ${JSON.stringify(tally)}`);
  }
 }

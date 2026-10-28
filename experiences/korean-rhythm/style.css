@@ -130,6 +130,9 @@ body.playing>.game>.game-bar{flex-shrink:0}
 .recall{display:grid;gap:8px;margin-top:8px;padding:14px;border-radius:16px;background:var(--cream)}
 .recall h3{margin:0;font:800 16px/1.35 var(--sans)}
 .recall .fine{margin:0}
+.supplemental:empty{display:none}
+.supplemental p{margin:0;white-space:pre-line;overflow-wrap:anywhere;line-height:1.6}
+.supplemental button{min-height:44px;white-space:normal}
 #recall-content{display:grid;gap:8px}
 #recall-content[hidden]{display:none}
 .recall-q{margin:0;font:800 15px/1.4 var(--sans)}

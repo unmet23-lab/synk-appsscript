@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import * as api from '../tools/검수묶음.mjs';
-import {sha256,후보읽기,정책만들기,단독검수원문,대체순서,다시검수자들} from '../tools/lib/검수증명.mjs';
+import {sha256,후보읽기,정책만들기,단독검수원문,대체순서,다시검수자들,Atlas작업ID,Atlas작업원문} from '../tools/lib/검수증명.mjs';
 
 const sourcePath='atlas/memory-sync.js', scope='spaghetti-followup-20261026';
 function fixture(t,{sourceOnly=false,candidateOnly=false}={}){
@@ -167,6 +167,84 @@ function candidateFiles(f,files){
  f.record.candidate={manifestSha256:후보읽기(f.candidate).manifestSha256,rawManifestSha256:sha256(fs.readFileSync(path.join(f.candidate,'후보.json'))),files:rows.map(r=>({path:r.경로,author:'GPT',scope,sha256:r.sha256}))};
  f.write(f.recordFile,JSON.stringify(f.record));
 }
+
+function atlasAuthority(f){
+ f.record.taskId=Atlas작업ID;f.record.userStatements={...Atlas작업원문};
+ for(const row of [...f.record.sources,...(f.record.candidate?.files||[])])row.scope=Atlas작업ID;
+ f.write(f.recordFile,JSON.stringify(f.record));return f;
+}
+function wavFixture(){const b=Buffer.alloc(46);b.write('RIFF');b.writeUInt32LE(38,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(16000,24);b.writeUInt32LE(32000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(2,40);return b;}
+
+test('Atlas exact task and direct instruction require complete independent GPT and final sealed approval',async t=>{
+ const f=atlasAuthority(fixture(t)),p=await api.준비하기(f.options),bundle=p.목록.묶음[0];
+ assert.equal(p.목록.정책.판,4);assert.equal(p.목록.정책.사용자지정.taskId,Atlas작업ID);assert.deepEqual(p.목록.정책.필수,['GPT']);assert.equal(대체순서(p.목록.정책),null);
+ assert.throws(()=>api.검수받기(p.폴더,'GPT',bundle.이름,JSON.stringify({...answer(bundle),seen:[]})),/응답 검증/);
+ assert.throws(()=>api.검수받기(p.폴더,'Claude',bundle.이름,JSON.stringify(answer(bundle))),/실제 GPT/);
+ assert.equal(api.검수확인(p.폴더).통과,false);review(p);assert.equal(api.검수확인(p.폴더).통과,false);
+ const input=api.배포판정준비(p.폴더);assert.equal(input.taskId,Atlas작업ID);
+ assert.equal(api.배포판정받기(p.폴더,JSON.stringify(final(input))).통과,true);
+ f.write(path.join(f.candidate,f.candidatePath),'changed after approval\n');assert.equal(api.검수확인(p.폴더).통과,false);
+});
+
+test('Atlas authorization rejects other tasks, quotes, scopes, reviewers, hashes, source deletes and renames',async t=>{
+ for(const [label,change] of [
+  ['task',r=>r.taskId='atlas-world-learning-other'],['quote',r=>r.userStatements.implementationReview+='해'],
+  ['old-quote',r=>r.userStatements={...단독검수원문}],['scope',r=>r.sources[0].scope=scope],
+  ['reviewer',r=>r.requiredReviewers=['Claude']],['final',r=>r.finalReviewer='Claude'],['fallback',r=>r.allowFallback=true],
+  ['source-sha',r=>r.sources[0].sha256='0'.repeat(64)],['candidate-sha',r=>r.candidate.files[0].sha256='0'.repeat(64)],
+  ['manifest',r=>r.candidate.manifestSha256='0'.repeat(64)],['raw-manifest',r=>r.candidate.rawManifestSha256='0'.repeat(64)],
+ ])await t.test(label,async t=>{const f=atlasAuthority(fixture(t));change(f.record);f.write(f.recordFile,JSON.stringify(f.record));await assert.rejects(api.준비하기(f.options),/사용자지정/);});
+ const f=atlasAuthority(fixture(t,{sourceOnly:true})),o={...f.options,끝:'작업본'};
+ for(const status of ['D','R100'])assert.throws(()=>정책만들기(o,[{경로:sourcePath,상태:status}],{판:4}),/삭제·이름 변경/);
+ assert.throws(()=>정책만들기(o,[{경로:sourcePath,옛경로:'atlas/old.js',상태:'M'}],{판:4}),/삭제·이름 변경/);
+});
+
+test('Atlas source scopes include exact learning bundles and additive migration but exclude unrelated code',async t=>{
+ const f=atlasAuthority(fixture(t,{sourceOnly:true})),o={...f.options,끝:'작업본'};
+ const allowed=['atlas/temper.js','strata/topik-i.recommendations.json','account/world-learning-host.js','experiences/korean-study/src/progress-sync.mjs','experiences/synk-town/new-tea.mjs','experiences/korean-rhythm/supplemental.mjs','experiences/order-rush/audio/n01.wav','lib/study-progress-rules.js','lib/atlas/trail.js','supabase/functions/synk-learning/index.ts','supabase/migrations/20261028180000_study_progress_c18.sql','supabase/L0_스키마.sql','supabase/확인_적용후상태.sql','tools/검수묶음.mjs','tests/atlas-followups.test.js','docs/_ops/관문_자동화.md','experiences/learning-hub/atlas-learning.js'];
+ allowed.push('tests/lib/migration-branches.js','tests/backend-followup-runtime.test.js','tools/backend-runtime-manifest.json');
+ for(const p of [...allowed,'Code.js','payments/server.mjs','supabase/migrations/other.sql','tools/unrelated.js','tools/other-runtime-manifest.json','tests/other-backend.test.js','docs/_ops/private.md','experiences/learning-hub/unrelated.js']){
+  const bytes=Buffer.from('fixture\n');f.write(path.join(f.repo,p),bytes);f.record.sources=[{path:p,scope:Atlas작업ID,author:'GPT',sha256:sha256(bytes)}];f.write(f.recordFile,JSON.stringify(f.record));
+  if(allowed.includes(p))assert.equal(정책만들기(o,[{경로:p,상태:'M'}],{판:4}).사용자지정.taskId,Atlas작업ID,p);
+  else assert.throws(()=>정책만들기(o,[{경로:p,상태:'M'}],{판:4}),/범위·작성자/,p);
+ }
+});
+
+test('Atlas candidate scope permits deployed learning consumers while rejecting public tests and deletes',async t=>{
+ const f=fixture(t,{candidateOnly:true}),allowed=['world/town/new-tea.mjs','try/order-rush/app.mjs','try/rhythm/supplemental.mjs','study/app.mjs','account/dist/client.js','id/vendor/atlas-learning.js','try/runner/atlas-learning.js'];
+ for(const p of [...allowed,'world/qa/receipt.json','try/rhythm/tests/result.json','account/_ops/secret.json','payments/app.js','try/runner/unrelated.js']){
+  candidateFiles(f,[[p,Buffer.from('fixture\n')]]);atlasAuthority(f);
+  const run=()=>정책만들기({...f.options,끝:'작업본'},[],{판:4});
+  if(allowed.includes(p))assert.equal(run().사용자지정.taskId,Atlas작업ID,p);else assert.throws(run,/범위·작성자/,p);
+ }
+ f.write(path.join(f.candidate,'후보.json'),JSON.stringify({판:1,종류:'synk.im',항목:[{경로:'world/town/deleted.mjs',종류:'지움',모드:null,sha256:null}]}));
+ const c=후보읽기(f.candidate);f.record.candidate={manifestSha256:c.manifestSha256,rawManifestSha256:sha256(fs.readFileSync(path.join(f.candidate,'후보.json'))),files:[]};f.write(f.recordFile,JSON.stringify(f.record));
+ assert.throws(()=>정책만들기({...f.options,끝:'작업본'},[],{판:4}),/삭제 후보/);
+});
+
+test('Atlas n01-n11 WAV bytes remain separate evidence and cannot assert human listening or open other binary scope',async t=>{
+ const f=fixture(t,{candidateOnly:true}),bytes=wavFixture(),paths=['world/order-rush/audio/n01.wav','try/order-rush/audio/n11.wav'];candidateFiles(f,paths.map(p=>[p,bytes]));atlasAuthority(f);
+ const c=후보읽기(f.candidate),opts={동일본문참조:true,단독음성검수:true,사용자지정작업:Atlas작업ID};
+ assert.throws(()=>api.후보항목들(c,[bytes,bytes],{...opts,사용자지정작업:'spaghetti-finish-20261026'}),/UTF-8/);
+ const audio=api.후보항목들(c,[bytes,bytes],opts).slice(1);assert.equal(audio.length,2);
+ for(const [i,item]of audio.entries()){assert.ok(item.몸.includes(c.항목[i].경로));assert.ok(item.몸.includes(sha256(bytes)));assert.match(item.몸,/coverage.complete/);assert.match(item.몸,/사람 청취를 했다고 기록하지 않는다/);assert.doesNotMatch(item.몸,/동일 원시 본문 참조/);}
+ for(const p of ['world/order-rush/audio/n00.wav','world/order-rush/audio/n12.wav','world/order-rush/audio/n01.mp3','world/other/audio/n01.wav','world/brand-opening/assets/cafe-voice/cafe-compose-2.mp3'])assert.throws(()=>api.후보항목들({항목:[{...c.항목[0],경로:p}]},[bytes],opts),/UTF-8/,p);
+ assert.throws(()=>api.후보항목들(c,[Buffer.alloc(44),bytes],opts),/원시 SHA/);
+ const invalid=Buffer.alloc(44);assert.throws(()=>api.후보항목들({항목:[{...c.항목[0],sha256:sha256(invalid)}]},[invalid],opts),/형식/);
+ const p=await api.준비하기(f.options);assert.equal(api.검수확인(p.폴더).통과,false);review(p);assert.equal(api.배포판정받기(p.폴더,JSON.stringify(final(api.배포판정준비(p.폴더)))).통과,true);
+});
+
+test('Atlas candidate-only audio correction preserves exact WAV scope and sealed evidence through delta',async t=>{
+ const f=fixture(t,{candidateOnly:true}),audio='world/order-rush/audio/n01.wav',bytes=wavFixture();candidateFiles(f,[[audio,bytes]]);atlasAuthority(f);
+ const first=await api.준비하기(f.options);review(first);api.배포판정받기(first.폴더,JSON.stringify(final(api.배포판정준비(first.폴더))));
+ const next={...f,candidate:path.join(f.dir,'candidate-next'),recordFile:path.join(f.dir,'user-next.json'),record:structuredClone(f.record)};
+ const changed=Buffer.from(bytes);changed.writeInt16LE(10,44);candidateFiles(next,[[audio,changed]]);atlasAuthority(next);
+ const run=()=>api.다시하기({이름:'next',앞:first.폴더,폴더:path.join(f.dir,'next'),사용자지정:next.recordFile,배포후보:next.candidate});
+ const invalid=Buffer.alloc(44);candidateFiles(next,[[audio,invalid]]);atlasAuthority(next);await assert.rejects(run(),/형식/);
+ candidateFiles(next,[[audio,changed]]);atlasAuthority(next);const packet=await run();
+ const body=fs.readFileSync(path.join(packet.폴더,'묶음-A.txt'),'utf8');assert.match(body,/원음 경로/);assert.ok(body.includes(sha256(changed)));assert.match(body,/사람 청취를 했다고 기록하지 않는다/);
+ assert.equal(api.검수확인(packet.폴더).통과,false);review(packet);assert.equal(api.배포판정받기(packet.폴더,JSON.stringify(final(api.배포판정준비(packet.폴더)))).통과,true);
+});
 
 test('only this release cafe source assets, evidence and test are included with exact raw pins',async t=>{
  const f=fixture(t,{sourceOnly:true}),voice='experiences/brand-opening/assets/cafe-voice/',qa='experiences/synk-world-app/qa/cafe-honorific-20261026/';

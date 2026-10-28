@@ -8,6 +8,7 @@
  */
 import * as generated from './town/data.gen.mjs';
 import * as mood from './day-mood.mjs';
+import { authoredLevel } from './town/language-ladder.mjs';
 
 // Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the generated
 // data from before the cards existed (then no card line shows and the town still opens — a named import would stop it).
@@ -22,6 +23,7 @@ export const CHOICE_LABELS = Object.freeze({
   C1: { inside: '찻집 안에서', outside: '바깥 자리에서', watch: '구경할게요' },
   C2: { 'eaves-left': '처마 왼쪽', 'eaves-right': '처마 오른쪽' },
   C3: { mild: '순한 향', deep: '진한 향' },
+  C4: { 'sweet-0': '꿀 없이 만든 새 차', 'sweet-1': '꿀 한 숟가락 새 차', 'sweet-2': '꿀 두 숟가락 새 차' },
   C6: { 'eaves-left': '처마 왼쪽 자리', 'eaves-right': '처마 오른쪽 자리' },
   W1: { near: '가까이 보이게', clear: '통로 넓게' },
   W2: { 'garden-right': '정원 오른쪽', 'eaves-right': '처마 오른쪽', 'my-seat': '내가 만든 자리' },
@@ -48,8 +50,8 @@ const HOW_ICONS = Object.freeze({
 const svgOf = body => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${body}</svg>`;
 export const iconSvg = name => svgOf(HOW_ICONS[name] || mood.ICONS?.[name] || mood.ICONS?.sparkle || '');
 
-/** A line's words at the level a one-line text shows (W9 plugs the level in; now L2), or null without it. */
-export function lineText(id, level = LEVEL) { const line = LINES.get(id); return line ? line.levels[level] ?? line.levels.L2 ?? null : null; }
+/** An authored line at its scene's reading level; a missing version falls to the nearest lower one. */
+export function lineText(id, level = LEVEL) { const line = LINES.get(id); return line ? line.levels[authoredLevel(level, line.levels)] ?? null : null; }
 export const hasLine = id => LINES.has(id);
 const cardLine = (npc, card, part) => `${npc}.card.${card}-${part}.1`;
 export const newsLine = card => `village.news.${card}.1`;
@@ -106,23 +108,23 @@ export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) &
 /** What the place's panel shows of the cards and the residents here (§8-3·§9-4): the resident who greets the player
  * with what it heard (one, once — the newest it may tell), the cards whose owner is here (its need, and 「같이 해요」 or
  * the paused one to go on with), and at home the news note (the newest three, never their days). */
-export function placeModel({ location, residentsHere = [], hearsay = {}, cards = [], news = [], take = null }) {
-  const greet = residentsHere.map(npc => ({ npc, line: hearsayText(npc, hearsay[npc]) })).find(g => g.line) ?? null;
+export function placeModel({ location, residentsHere = [], hearsay = {}, cards = [], news = [], take = null, level = LEVEL }) {
+  const greet = residentsHere.map(npc => ({ npc, line: hearsayText(npc, hearsay[npc], level) })).find(g => g.line) ?? null;
   const open = take && ['with', 'resolved'].includes(take.status) ? take : null;
   const needs = open ? [] : cards.filter(c => takeable(c) && residentsHere.includes(c.owner)).map(c => ({ card: c.card, key: c.key, owner: c.owner, paused: c.status === 'paused',
-    title: CARD_BY_ID.get(c.card).title, line: lineText(cardLine(c.owner, c.card, c.status === 'paused' ? 'offer' : 'trigger')) }));
-  const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card)) })).filter(n => n.text) : [];
+    title: CARD_BY_ID.get(c.card).title, line: lineText(cardLine(c.owner, c.card, c.status === 'paused' ? 'offer' : 'trigger'), level) }));
+  const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card), level) })).filter(n => n.text) : [];
   return { greet: greet && { npc: greet.npc, ref: hearsay[greet.npc].ref, ...greet.line }, needs, note, open };
 }
 
 /** The offer standing for this window (§8-3): a card's contact issued here that the screen may still show — the owner's
  * line, and which card. */
-export function offerModel(contact, { surfaceId, fence }) {
+export function offerModel(contact, { surfaceId, fence, level = LEVEL }) {
   if (!contact || !['issued', 'delivered'].includes(contact.state) || contact.issuedSurfaceId !== surfaceId || contact.issuedFence !== fence) return null;
   const card = CARD_BY_ID.get(contact.card);
   if (!card) return null;
   const id = cardLine(card.owner, card.id, 'offer');
-  return { id: contact.id, card: card.id, key: contact.key, owner: card.owner, lineId: id, text: lineText(id) || '같이 할래요?', icon: CARD_ICONS[card.id] || 'sparkle' };
+  return { id: contact.id, card: card.id, key: contact.key, owner: card.owner, lineId: id, text: lineText(id, level) || '같이 할래요?', icon: CARD_ICONS[card.id] || 'sparkle' };
 }
 
 /** The choosing panel's model (§8-3 나와 함께): the card, its owner's words, the choices (only those the server allows
@@ -132,8 +134,10 @@ export function takeModel(take) {
   if (!card) return null;
   const done = take.status === 'resolved';
   return { card: card.id, title: card.title, owner: card.owner, done,
-    line: lineText(cardLine(card.owner, card.id, done ? 'result' : 'offer')), lineId: cardLine(card.owner, card.id, done ? 'result' : 'offer'),
-    choices: (take.choices || []).map(choice => ({ id: choice, label: choiceLabel(card.id, choice), chosen: take.choice === choice })),
+    line: take.newTea?.line ?? lineText(cardLine(card.owner, card.id, done ? 'result' : 'offer'), take.level || LEVEL), lineId: cardLine(card.owner, card.id, done ? 'result' : 'offer'),
+    choices: take.newTea ? take.newTea.choices.map(c => ({ ...c, chosen: take.choice === c.id }))
+      : (take.choices || []).map(choice => ({ id: choice, label: choiceLabel(card.id, choice), chosen: take.choice === choice })),
+    ...(take.newTea ? { newTea: take.newTea } : {}),
     chosen: take.choice ?? null, eventId: take.eventId ?? null, activity: `card.${card.id}`, icon: CARD_ICONS[card.id] || 'sparkle' };
 }
 /** Atlas's four answers (§20-3 — never new words), as the 「…」 under a result shows them. */

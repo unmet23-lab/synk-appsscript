@@ -1,0 +1,1301 @@
+{
+  "phase": "before-full-answer-access",
+  "at": "2026-10-28T06:11:48.735Z",
+  "blindSha256": "bc66b122f6d132d545ddf7ffdee0a363724ca7ad4b394a217e203d0944654edd",
+  "reviewer": "/root",
+  "items": [
+    {
+      "id": "guest.tea.req-new-menu.1.L1.1",
+      "solved": {
+        "tea": "today",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-new-menu.1.L2.1",
+      "solved": {
+        "tea": "today",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-new-menu.1.L1.2",
+      "solved": {
+        "tea": "today",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-new-menu.1.L2.2",
+      "solved": {
+        "tea": "today",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-new-menu.1.L1.3",
+      "solved": {
+        "tea": "today",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-new-menu.1.L2.3",
+      "solved": {
+        "tea": "today",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-tea.1.L1.1",
+      "solved": {
+        "tea": "barley"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-tea.1.L2.1",
+      "solved": {
+        "tea": "barley"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-tea.1.L1.2",
+      "solved": {
+        "tea": "yuzu"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-tea.1.L2.2",
+      "solved": {
+        "tea": "yuzu"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-tea.1.L1.3",
+      "solved": {
+        "tea": "today"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-tea.1.L2.3",
+      "solved": {
+        "tea": "today"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-temp.1.L1.1",
+      "solved": {
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-temp.1.L2.1",
+      "solved": {
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-temp.1.L1.2",
+      "solved": {
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-temp.1.L2.2",
+      "solved": {
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-sweet.1.L1.1",
+      "solved": {
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-sweet.1.L2.1",
+      "solved": {
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-sweet.1.L1.2",
+      "solved": {
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-sweet.1.L2.2",
+      "solved": {
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-sweet.1.L1.3",
+      "solved": {
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-sweet.1.L2.3",
+      "solved": {
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1.L1.2",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1.L2.2",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1.L1.3",
+      "solved": {
+        "tea": "today",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1.L2.3",
+      "solved": {
+        "tea": "today",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1.L1.2",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1.L2.2",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1.L1.3",
+      "solved": {
+        "tea": "today",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1.L2.3",
+      "solved": {
+        "tea": "today",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L1.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L2.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L1.3",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L2.3",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L1.4",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L2.4",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L1.5",
+      "solved": {
+        "tea": "today",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L2.5",
+      "solved": {
+        "tea": "today",
+        "temp": "warm"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L1.6",
+      "solved": {
+        "tea": "today",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1.L2.6",
+      "solved": {
+        "tea": "today",
+        "temp": "cold"
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.2",
+      "solved": {
+        "tea": "barley",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.2",
+      "solved": {
+        "tea": "barley",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.3",
+      "solved": {
+        "tea": "barley",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.3",
+      "solved": {
+        "tea": "barley",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.4",
+      "solved": {
+        "tea": "yuzu",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.4",
+      "solved": {
+        "tea": "yuzu",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.5",
+      "solved": {
+        "tea": "yuzu",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.5",
+      "solved": {
+        "tea": "yuzu",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.6",
+      "solved": {
+        "tea": "yuzu",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.6",
+      "solved": {
+        "tea": "yuzu",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.7",
+      "solved": {
+        "tea": "today",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.7",
+      "solved": {
+        "tea": "today",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.8",
+      "solved": {
+        "tea": "today",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.8",
+      "solved": {
+        "tea": "today",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L1.9",
+      "solved": {
+        "tea": "today",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1.L2.9",
+      "solved": {
+        "tea": "today",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.3",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.3",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.4",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.4",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.5",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.5",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.6",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.6",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.7",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.7",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.8",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.8",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.9",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.9",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.10",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.10",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.11",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.11",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.12",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.12",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.13",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.13",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.14",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.14",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.15",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.15",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.16",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.16",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.17",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.17",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L1.18",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-friend.1.L2.18",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L1.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L2.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L1.3",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L2.3",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L1.4",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L2.4",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L1.5",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L2.5",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L1.6",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1.L2.6",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-yuzu-honey.1.L1.1",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-yuzu-honey.1.L2.1",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-yuzu-honey.1.L1.2",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-yuzu-honey.1.L2.2",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.1",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.2",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.3",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.3",
+      "solved": {
+        "tea": "barley",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.4",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.4",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.5",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.5",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.6",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.6",
+      "solved": {
+        "tea": "barley",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.7",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.7",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.8",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.8",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.9",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.9",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.10",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.10",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.11",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.11",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.12",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.12",
+      "solved": {
+        "tea": "yuzu",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.13",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.13",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.14",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.14",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.15",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.15",
+      "solved": {
+        "tea": "today",
+        "temp": "warm",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.16",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.16",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 0
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.17",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.17",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 1
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L1.18",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    },
+    {
+      "id": "guest.tea.req-daily.1.L2.18",
+      "solved": {
+        "tea": "today",
+        "temp": "cold",
+        "sweet": 2
+      },
+      "unspecified": "free"
+    }
+  ],
+  "notes": [
+    "L1/L2 requirements agree. Same-tea L2 requires the preceding speaker to remain available.",
+    "Sweetness is a three-choice game scale; one/two spoon equivalence is its authored UI convention, not a universal Korean definition.",
+    "No real learner difficulty calibration or learning gain is established."
+  ]
+}

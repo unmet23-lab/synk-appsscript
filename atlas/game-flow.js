@@ -167,7 +167,7 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
 }
 
 function createLive({ coach, port, clock }) {
-  return function live(input, { declared = {}, presentation, skillIds = [], arm = 'adapted', condition, level = 'standard', words = {} } = {}) {
+  return function live(input, { declared = {}, presentation, skillIds = [], responseFormat, arm = 'adapted', condition, level = 'standard', words = {} } = {}) {
     const spec = Flow.defineContent(input);
     // The settings the person chose (Core personalization) hold help and declared knobs;
     // a lock this content set for itself (`declared.knobs`) still wins. Without a value from the
@@ -181,7 +181,7 @@ function createLive({ coach, port, clock }) {
     const memory = port.memories().contents[spec.id] || null;
     let prior = null;
     // A first visit starts from what other practice already showed, if anything did.
-    if (!memory && skillIds.length) { try { prior = Flow.priorFromSummary(spec, coach.summary(), skillIds); } catch { prior = null; } }
+    if (!memory && skillIds.length) { try { prior = Flow.priorFromSummary(spec, coach.summary(), skillIds, { responseFormat }); } catch { prior = null; } }
     const run = Flow.start({ spec, memory, prior, declared, condition: condition === undefined ? port.today() : condition, arm, now: clock() });
     const say = event => VellumFlow.line(event, { level, words });
     const save = () => port.save(spec.id, run.memory(clock()), since);

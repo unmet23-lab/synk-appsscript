@@ -117,9 +117,10 @@
   /* Where a person starts in a content they have not played, from Core's practice summary
    * (learning.js). Each item level whose skills are all recent independent work moves the start
    * one level up. Unseen, supported or mixed evidence keeps the content's own default. */
-  function priorFromSummary(input, summary, skillIds = []) {
+  function priorFromSummary(input, summary, skillIds = [], { responseFormat } = {}) {
     const spec = defineContent(input);
-    if (!spec.items || !summary || !Array.isArray(summary.skills) || !Array.isArray(skillIds) || !skillIds.length) return null;
+    if (!spec.items || summary?.evidenceComplete !== true || !Array.isArray(summary.skills) || !Array.isArray(skillIds) || !skillIds.length
+      || typeof responseFormat !== 'string' || !responseFormat || responseFormat === 'unknown') return null;
     const skills = skillIds.map(skill => summary.skills.find(s => s.id === skill));
     if (skills.some(skill => !skill)) return null;
     let level = spec.items.start;
@@ -127,7 +128,7 @@
       const authored = spec.items.levels[index];
       const steady = skills.every(skill => {
         const formats = skill.levels?.[authored]?.formats;
-        return !!formats && Object.values(formats).some(f => f.status === 'recent-independent');
+        return !!formats && Object.hasOwn(formats, responseFormat) && formats[responseFormat].status === 'recent-independent';
       });
       if (!steady) break;
       level = index + 1;

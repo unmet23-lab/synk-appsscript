@@ -2,10 +2,10 @@
 // 손님 한 명: 손님이 와서 한국어로 주문한다(듣는 동안 영업 시간이 멈춘다) → 말풍선에 다시 듣기·글로 보기 → 재료를 눌러 컵에 담고 서빙
 // → 맞으면 말풍선에 체크 배지와 점수, 손님이 받아 가고 다음 손님 / 다르면 손님이 무엇이 다른지 말해 주고, 고쳐서 다시 서빙한다.
 // 한가한 오픈은 주문 8개(시간 제한 없음), 점심 러시는 90초(손님이 줄을 서고 기다리다 떠난다). 끝까지 마친 판만 공통 코인을 받는다.
-import { CafeSession, ORDERS, REVIEW, makeCup, editCup, describeCup, judgeOrder } from './core.mjs';
+import { CafeSession, ORDERS, REVIEW, DELAYED_ORDERS, makeCup, editCup, describeCup, judgeOrder } from './core.mjs';
 import {
   orderMetadata, chooseOrder, orderAnswer, FLOW_RUSH, FLOW_PRACTICE, FLOW_SKILLS, FLOW_WORDS, tuningFrom, chooseOrderLive,
-  pressureOf, describeChanges, easierSuggestion, closingObservation, assignmentOrders, orderTargetLabel,
+  pressureOf, describeChanges, easierSuggestion, closingObservation, assignmentOrders, orderTargetLabel, delayedOrders,
 } from './learning.mjs';
 import { CafeStage, FlatStage } from './stage.mjs';
 import { CafeAudio } from './audio.mjs';
@@ -25,7 +25,7 @@ if (!globalThis.SynkPlayCollection) for (const n of $$('.synk-collection-line'))
 
 /* ── 아틀라스: 공통 학습 기록과 다음 주문 고르기 ── */
 let coach = null, learningFailed = false, nextPlan = null, audioTicket = null;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage }) || null; } catch { learningFailed = true; }
+try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; }
 function learn(method, ...args) { try { return coach?.[method](...args); } catch { learningFailed = true; return null; } }
 const assignment = () => { try { return coach?.assignment?.() || null; } catch { return null; } };
 // SYNK WORLD 안에서는 기록이 계정의 것이다: 이 브라우저가 아니라 계정에서 보관하고 지운다.
@@ -56,7 +56,7 @@ function startLive(isReview) {
   if (!coach || learningFailed || isReview || typeof coach.live !== 'function') return;
   try {
     flowSpec = state.mode === 'rush' ? FLOW_RUSH : FLOW_PRACTICE;
-    live = coach.live(flowSpec, { skillIds: FLOW_SKILLS, declared: flowMode() === 'fixed' ? { mode: 'fixed' } : {}, words: FLOW_WORDS });
+    live = coach.live(flowSpec, { skillIds: FLOW_SKILLS, responseFormat: 'cup-compose', declared: flowMode() === 'fixed' ? { mode: 'fixed' } : {}, words: FLOW_WORDS });
     flowStart = live.settings().values;
   } catch { live = null; }
 }
@@ -89,7 +89,12 @@ function selectOrder(orders) {
   } catch { learningFailed = true; }
   return orders[0];
 }
-function refreshRecommendation() { if (coach) selectOrder(ORDERS); updateLearning(); }
+function refreshRecommendation() { if (coach) selectOrder(ORDERS); updateLearning(); refreshDelayed(); }
+function refreshDelayed(){
+ const available=!assignment()&&!learningFailed&&delayedOrders(coach,DELAYED_ORDERS).length>0;
+ for(const id of ['#followup-start','#followup-result']){const button=$(id);if(button)button.hidden=!available;}
+}
+function startDelayed(){const next=!assignment()&&!learningFailed?delayedOrders(coach,DELAYED_ORDERS)[0]:null;if(next)start(false,next);else refreshDelayed();}
 
 /* ── 상태 ── */
 const state = {
@@ -181,7 +186,7 @@ function renderLobby() {
     b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
   }
   $('.modes').classList.toggle('single', !!target);
-  const n = target ? assignmentOrders([...ORDERS, ...REVIEW], target).length : 8;
+  const n = target ? assignmentOrders([...ORDERS, ...REVIEW, ...DELAYED_ORDERS], target).length : 8;
   $('#l-title').innerHTML = target ? `목표 주문 <b>${n}개</b>` : state.mode === 'rush' ? '점심 러시 <b>90초</b>' : '주문 <b>8개</b>';
   renderFlowChoice();
   $('#sound-note').hidden = audio.isOn();
@@ -210,23 +215,26 @@ function initStage() {
   }
 }
 
-function start(isReview = false) {
-  const target = assignment(), targetDeck = target ? assignmentOrders([...ORDERS, ...REVIEW], target) : null;
+function start(isReview = false, delayed = null) {
+  if(delayed&&!delayedOrders(coach,DELAYED_ORDERS).some(order=>order.id===delayed.id)){refreshDelayed();return;}
+  const target = assignment(), targetDeck = target ? assignmentOrders([...ORDERS, ...REVIEW, ...DELAYED_ORDERS], target) : null;
+  if(delayed&&target)return;
   if (target && !targetDeck.length) { $('#learning-reason').textContent = '과제 주문을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) { state.mode = 'practice'; isReview = false; }
+  if(delayed){state.mode='practice';isReview=true;}
   audio.stop();
   clearTimeout(celebrationTimer); clearTimeout(leaveTimer);
   Object.assign(state, { celebrating: false, pendingServe: false, review: isReview, paused: false, ticket: null, served: null, cups: [makeCup()], active: 0 });
   audioTicket = null;
   startLive(isReview);
   state.session = new CafeSession(isReview ? 'practice' : state.mode, Date.now() >>> 0, {
-    deck: targetDeck || (isReview ? REVIEW : ORDERS), selectOrder: coach ? selectOrder : null,
-    orderLimit: targetDeck?.length || (isReview ? REVIEW.length : 8), tuning: live ? tuningFrom(live.settings().values) : null,
+    deck: delayed?[delayed]:targetDeck || (isReview ? REVIEW : ORDERS), selectOrder: coach ? selectOrder : null,
+    orderLimit: delayed?1:targetDeck?.length || (isReview ? REVIEW.length : 8), tuning: live ? tuningFrom(live.settings().values) : null,
   });
   // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 본 영업(8개·점심 러시)만 받는다 — 처음으로 나가거나 3개짜리 새 주문 연습은 받지 않는다.
   // 코인은 학습 기록에 쓰지 않는다.
   state.coinRound = isReview ? null : globalThis.SynkPlayCollection?.roundId('order-rush') || null;
-  state.shift = target ? '나의 목표 주문' : isReview ? '새 주문 연습' : state.mode === 'rush' ? '점심 러시' : '한가한 오픈';
+  state.shift = delayed?'며칠 뒤 주문 확인':target ? '나의 목표 주문' : isReview ? '새 주문 연습' : state.mode === 'rush' ? '점심 러시' : '한가한 오픈';
   $('#pause-kicker').textContent = `PAUSED · ${state.mode === 'rush' && !isReview ? 'LUNCH RUSH' : 'OPEN'}`;
   audio.unlock();
   switchScreen('game');
@@ -671,6 +679,8 @@ $('#flow-toggle').addEventListener('click', () => setFlowMode(flowMode() === 'au
 $('#start').addEventListener('click', () => start());
 $('#replay').addEventListener('click', () => { audio.stop(); start(); });
 $('#review-start').addEventListener('click', () => { audio.stop(); start(true); });
+$('#followup-start')?.addEventListener('click',startDelayed);
+$('#followup-result')?.addEventListener('click',startDelayed);
 $('#home').addEventListener('click', () => showLobby());
 for (const b of $$('[data-ingredient]')) b.addEventListener('click', () => ingredient(b.dataset.ingredient));
 $('#add-cup').addEventListener('click', addCup);

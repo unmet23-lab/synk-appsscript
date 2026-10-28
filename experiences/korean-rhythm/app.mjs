@@ -8,6 +8,7 @@ import { MusicPlayer } from './audio.mjs';
 import { Stage } from './stage.mjs';
 import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine } from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
+import {createSupplementalPanel} from './supplemental-player.mjs';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
@@ -37,7 +38,9 @@ if (WORLD) import('../brand-opening/world-sound.mjs').then((m) => { worldSound =
 
 /* ── 공통 학습 기록(Atlas) ── */
 let coach = null, learningAvailable = true;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-rhythm', storage: localStorage }) || null; } catch { learningAvailable = false; }
+try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-rhythm', storage: localStorage, followups:true }) || null; } catch { learningAvailable = false; }
+const supplementalPanel=createSupplementalPanel({host:$('supplemental-practice'),getCoach:()=>learningAvailable?coach:null});
+const supplementalLobby=createSupplementalPanel({host:$('supplemental-ready'),getCoach:()=>learningAvailable?coach:null});
 function learn(action, fallback = null) { try { return coach ? action(coach) : fallback; } catch { learningAvailable = false; return fallback; } }
 const assignment = () => learn((c) => c.assignment?.());
 // SYNK WORLD 안에서는 기록이 계정의 것이다: 지우기도 거기서 한다.
@@ -146,6 +149,8 @@ function nudgeOffset(ms) { state.offset = Math.max(-OFFSET_MAX, Math.min(OFFSET_
 
 /* ── 화면 ── */
 function show(name) {
+  if(name!=='results')supplementalPanel.close();
+  if(name!=='lobby')supplementalLobby.close();else if(!TRIAL)supplementalLobby.show();
   for (const s of ['lobby', 'game', 'results']) $(s).hidden = s !== name;
   state.screen = name;
   if(name==='lobby')tutorEvent('lobby');
@@ -458,6 +463,7 @@ function finish() {
   $('r-note').textContent = `들은 문장 ${correct}개를 맞혔어요.${texted ? ` 글로 본 문장 ${texted}개는 도움을 받은 답으로 남겨요.` : ''}`;
   renderLog(r);
   renderSkills(r);
+  if(!TRIAL)supplementalPanel.show();
   // 공통 코인(play-common): 곡을 끝까지 마쳤을 때만. 완주 15 + 정답 비율 × 10.
   const coins = $('r-coins');
   coins.textContent = '공통 코인을 계산하고 있어요.';
@@ -756,6 +762,7 @@ $('reset-learning').addEventListener('click', () => {
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 
 renderTracks(); renderRecommendation(true); syncSettings();
+if(!TRIAL)supplementalLobby.show();
 
 // 확인용 읽기 창(예전 확인 도구와 같은 모양). 입력은 실제 키·단추로만 한다.
 window.synkRhythm = {

@@ -102,7 +102,8 @@ export function triggerHolds(card, vs, at, params) {
       : createRng(at.seed, 'season-leaf', vs.lifeDay).below(PER_MILLE) < p.seasonLeafShare;
     case 'after': return Number.isSafeInteger(vs.marks.newToolDay) && vs.marks.newToolDay < vs.lifeDay;
     case 'rush': return at.rushAt(at.t);
-    default: return false; // first-visit: C4, locked until its scene (W9)
+    case 'first-visit': return !vs.cards[card.id]?.last || vs.cards[card.id].last.path === 'self';
+    default: return false;
   }
 }
 

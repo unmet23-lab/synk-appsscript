@@ -16,7 +16,7 @@ var SynkLearning = (() => {
       "use strict";
       var CONFIDENCE = ["authored", "measured", "ai_draft"];
       var KINDS = ["skill", "grammar_point", "expression", "situation", "letter", "syllable", "concept", "topic", "task", "word"];
-      var TYPES = ["part_of", "prerequisite", "contrasts_with"];
+      var TYPES = ["part_of", "prerequisite", "recommended_before", "contrasts_with"];
       var copy = (value) => JSON.parse(JSON.stringify(value));
       var fail = (message) => {
         throw new TypeError(`Strata: ${message}`);
@@ -61,6 +61,10 @@ var SynkLearning = (() => {
           if (uniqueEdges.has(key)) fail("duplicate edge");
           uniqueEdges.add(key);
           if (edge.type === "part_of" && (ids.get(edge.from).kind !== "grammar_point" || ids.get(edge.to).kind !== "skill")) fail("invalid grammar membership");
+          if (edge.type === "recommended_before") {
+            if (edge.blocking !== false || !text(edge.basis?.official_scope) || !text(edge.basis?.interpretation) || !text(edge.basis?.source_url) || !text(edge.reason_ko)) fail("recommendation needs nonblocking interpretation and source");
+            if (edge.reviewed && (!text(edge.review?.task) || !text(edge.review?.reviewer) || !text(edge.review?.evidence))) fail("reviewed recommendation needs review evidence");
+          }
           if (edge.type === "prerequisite") {
             const before = ids.get(edge.from).level?.intro, after = ids.get(edge.to).level?.intro;
             if (before != null && after != null && before > after) fail("prerequisite level inversion");
@@ -141,6 +145,20 @@ var SynkLearning = (() => {
             source_refs: edge.source_refs
           })));
         }
+        function recommendedBefore(id) {
+          if (!nodes.has(id)) return [];
+          return freeze(data.edges.filter((edge) => edge.type === "recommended_before" && edge.to === id && edge.reviewed).sort((a, b) => compare(a.from, b.from)).map((edge) => ({
+            node: getNode(edge.from),
+            target: id,
+            confidence: edge.confidence,
+            reviewed: true,
+            blocking: false,
+            reason_ko: edge.reason_ko,
+            basis: edge.basis,
+            source_refs: edge.source_refs,
+            review: edge.review
+          })));
+        }
         function candidates(state = { lines: [] }, { limit = 10 } = {}) {
           if (!Array.isArray(state.lines) || !Number.isInteger(limit) || limit < 0 || limit > 100) fail("invalid candidate input");
           if (state.mastered != null && (!Array.isArray(state.mastered) || state.mastered.some((id) => !text(id)))) fail("invalid mastered nodes");
@@ -161,7 +179,7 @@ var SynkLearning = (() => {
             targets: result.targets.sort(compare),
             reasons: result.reasons.sort(compare),
             blocked_by: result.prerequisites.filter((item) => item.blocking && !mastered.has(item.node.id)).map((item) => item.node.id),
-            advisory: result.prerequisites.filter((item) => !item.blocking && !mastered.has(item.node.id)).map((item) => item.node.id)
+            advisory: [...new Set([...result.prerequisites.filter((item) => !item.blocking), ...recommendedBefore(result.id)].filter((item) => !mastered.has(item.node.id)).map((item) => item.node.id))]
           })).slice(0, limit));
         }
         return Object.freeze({
@@ -171,6 +189,7 @@ var SynkLearning = (() => {
           forSkill,
           forGoal,
           prerequisites,
+          recommendedBefore,
           candidates,
           allNodes: () => Object.freeze([...nodes.values()])
         });
@@ -2197,7 +2216,7 @@ var SynkLearning = (() => {
   var require_topik_i = __commonJS({
     "strata/maps/topik-i.json"(exports, module) {
       module.exports = {
-        map_ver: "topik-i-practice-1-54d0f008ed26",
+        map_ver: "topik-i-practice-1-97dbd8601099",
         subject: "ko",
         sources: {
           "practice-taxonomy": {
@@ -2215,6 +2234,10 @@ var SynkLearning = (() => {
           "practice-situations": {
             path: "strata/topik-i.situations.json",
             sha256: "01062070e1071df130bf234cd5ff0127c0016d244d0e23494068e9cad441efc3"
+          },
+          "practice-recommendations": {
+            path: "strata/topik-i.recommendations.json",
+            sha256: "43c0e937fc4d6665f604e856293f2259fe4319c50fa14008b6c908b7516d269a"
           }
         },
         nodes: [
@@ -5881,6 +5904,230 @@ var SynkLearning = (() => {
                 selector: "S227"
               }
             ]
+          },
+          {
+            id: "listening-detail-negation",
+            from: "ko.listening.detail",
+            to: "ko.listening.negation",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "effd277db03a4493c6e413b5f5487e1e28bbcbf02e2c4ffa66baa5befc23b423",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "listening-detail-negation"
+              }
+            ]
+          },
+          {
+            id: "listening-detail-sequence",
+            from: "ko.listening.detail",
+            to: "ko.listening.sequence",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "c8824e72dce08c3015bbd47da86690fcea2be245af86e5b40664e2c615de7bc8",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "listening-detail-sequence"
+              }
+            ]
+          },
+          {
+            id: "listening-detail-reason",
+            from: "ko.listening.detail",
+            to: "ko.listening.reason",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "341dbd0116f1f0a9ec8666fc4b94974bf2b4fa312c87a88a4fd5bf09205c4b65",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "listening-detail-reason"
+              }
+            ]
+          },
+          {
+            id: "listening-detail-condition",
+            from: "ko.listening.detail",
+            to: "ko.listening.condition",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "3767681c5c33e42f4bac2eda65b4a3454e9787f782a3d077bf1ea2ad6814ae83",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "listening-detail-condition"
+              }
+            ]
+          },
+          {
+            id: "reading-detail-negation",
+            from: "ko.reading.detail",
+            to: "ko.reading.negation",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "5b8acae1cb2b436d5b11656c6c2bb9eed55597bf022ca0320cef42797534d37c",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "reading-detail-negation"
+              }
+            ]
+          },
+          {
+            id: "reading-detail-sequence",
+            from: "ko.reading.detail",
+            to: "ko.reading.sequence",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "ce12f2c3c654bec0c953c2dae44d0c88532f1875e485073d5074d987f3d95908",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "reading-detail-sequence"
+              }
+            ]
+          },
+          {
+            id: "reading-detail-reason",
+            from: "ko.reading.detail",
+            to: "ko.reading.reason",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "637ebe95e00af9f8cadeabee924b9794d2f7cf0e63e0102c601508f2d960ec87",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "reading-detail-reason"
+              }
+            ]
+          },
+          {
+            id: "reading-detail-condition",
+            from: "ko.reading.detail",
+            to: "ko.reading.condition",
+            type: "recommended_before",
+            blocking: false,
+            confidence: "authored",
+            reviewed: true,
+            basis: {
+              source_url: "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+              official_scope: "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+              interpretation: "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+            },
+            reason_ko: "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+            review: {
+              status: "passed",
+              task: "atlas-world-learning-20261028",
+              hash: "98eb2792e79352b1faaccff7a88fe5d3707ec3c1d9d24ac45ed67402767ce13b",
+              reviewer: "/root",
+              evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+            },
+            source_refs: [
+              {
+                source: "practice-recommendations",
+                selector: "reading-detail-condition"
+              }
+            ]
           }
         ],
         tag_vocabulary: [],
@@ -7496,6 +7743,123 @@ var SynkLearning = (() => {
             significanceTested: false
           };
         }
+        const FOLLOWUP = Object.freeze({
+          version: "temper-followup-1",
+          maxAnchors: 24,
+          keepDays: 45,
+          windows: Object.freeze([["d1", 1, 3], ["d7", 7, 10], ["d30", 30, 37]].map(Object.freeze))
+        });
+        function followups({ events, summary, original = summary, prior = null, complete = true, asOf = summary?.asOf } = {}) {
+          summaries(summary);
+          summaries(original);
+          const now = Date.parse(asOf), day = 864e5, own = scopeKey(summary.scope);
+          if (!Array.isArray(events) || !Number.isFinite(now) || scopeKey(original.scope) !== own) throw new TypeError("Temper: invalid follow-up evidence");
+          const visible = events.filter((e) => scopeKey(e.scope) === own && Date.parse(e.at) <= now && Date.parse(e.recordedAt) <= now);
+          const byId = new Map(visible.map((e) => [e.id, e])), position = new Map(visible.map((e, i) => [e.id, i]));
+          const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+          const completion = new Map(visible.filter((e) => e.type === "experience.completed").map((e) => [e.decisionId, e]));
+          const current = new Map(summary.attempts.map((a) => [a.eventId, a]));
+          const stamp = (a) => Date.parse(a.at), before = (a, b) => position.get(a.eventId ?? a.id) < position.get(b.eventId ?? b.id) && stamp(a) <= stamp(b) && Date.parse(a.recordedAt) <= Date.parse(b.recordedAt);
+          const game = (a) => byId.get(a.decisionId)?.experienceId;
+          const tuple = (a) => JSON.stringify([
+            game(a),
+            a.taskVersion,
+            a.measure?.skillId,
+            a.measure?.difficulty,
+            a.measure?.responseFormat,
+            a.measure?.modality,
+            a.measure?.audioRequired
+          ]);
+          const framed = (a) => {
+            const p = byId.get(a.presentationId), d = byId.get(a.decisionId), done = completion.get(a.decisionId);
+            return p?.type === "practice.presented" && d?.type === "decision.made" && done && before(d, p) && before(p, a) && before(a, done);
+          };
+          const qualified = (a) => a?.attemptNo === 1 && a.measure && a.measure.responseFormat !== "unknown" && !a.exclusionReason && [true, false].includes(a.assisted) && ["correct", "incorrect"].includes(a.verdict) && framed(a);
+          const invalidated = (a) => [a.eventId, a.presentationId, a.decisionId, completion.get(a.decisionId)?.id].some((id) => excluded.has(id)) || visible.some((e) => excluded.has(e.id) && ["practice.helped", "practice.delivery"].includes(e.type) && e.presentationId === a.presentationId && before(e, a));
+          const shown = /* @__PURE__ */ new Map(), foldedShown = /* @__PURE__ */ new Set();
+          const trace = (p) => [`item:${p.itemKey}`, `family:${p.measure?.familyKey || p.itemKey}`];
+          for (const p of visible.filter((e) => e.type === "practice.presented")) for (const key of trace(p)) {
+            if (!shown.has(key) || before(p, shown.get(key))) shown.set(key, p);
+          }
+          for (const [, item, family] of prior?.presented || []) {
+            foldedShown.add(`item:${item}`);
+            foldedShown.add(`family:${family}`);
+          }
+          const fresh = (a) => trace(byId.get(a.presentationId)).every((key) => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
+          const ordered = [...original.attempts].sort((a, b) => stamp(a) - stamp(b) || position.get(a.eventId) - position.get(b.eventId));
+          const anchors = /* @__PURE__ */ new Map();
+          for (const a of ordered) if (qualified(a) && now - stamp(a) <= FOLLOWUP.keepDays * day && !anchors.has(tuple(a))) anchors.set(tuple(a), a);
+          const all = [...anchors.values()], selected = all.slice(0, FOLLOWUP.maxAnchors), retain = /* @__PURE__ */ new Set(), items = [];
+          const adjusted = prior?.adjusted || 0, usable = complete === true && !adjusted;
+          for (const source of selected) {
+            retain.add(source.decisionId);
+            const measure2 = { ...source.measure, taskVersion: source.taskVersion };
+            delete measure2.familyKey;
+            delete measure2.confounded;
+            const targets = ordered.filter((a) => a.eventId !== source.eventId && a.attemptNo === 1 && tuple(a) === tuple(source) && framed(a) && before(source, byId.get(a.presentationId)) && a.measure.familyKey !== source.measure.familyKey && a.itemKey !== source.itemKey && fresh(a));
+            for (const [window2, start, end] of FOLLOWUP.windows) {
+              const due = stamp(source) + start * day, expires = stamp(source) + end * day;
+              const target = targets.find((a) => stamp(a) >= due && stamp(a) < expires);
+              if (target) retain.add(target.decisionId);
+              const actualSource = current.get(source.eventId), actualTarget = target && current.get(target.eventId);
+              let status = now < due ? "not_due" : now < expires ? "due" : "missed", outcome = null, reason = null;
+              if (!usable) {
+                status = "unavailable";
+                reason = adjusted ? "adjusted-history" : "incomplete-history";
+              } else if (invalidated(source) || !actualSource || !qualified(actualSource)) {
+                status = "invalidated";
+                reason = "source-withdrawn";
+              } else if (target && (invalidated(target) || !actualTarget)) {
+                status = "invalidated";
+                reason = "target-withdrawn";
+              } else if (target) {
+                if (!qualified(actualTarget) || actualTarget.exposure !== "new" || actualTarget.assisted === false && !counted(actualTarget)) {
+                  status = "unavailable";
+                  reason = actualTarget.exclusionReason || "unassessable-target";
+                } else {
+                  status = "observed";
+                  outcome = `${actualTarget.assisted ? "assisted" : "independent"}-${actualTarget.verdict}`;
+                }
+              }
+              const correctionEventIds = summary.help.filter((h) => h.presentationId === source.presentationId && ["answer", "explanation"].includes(h.level) && before(source, h) && (!target || before(h, byId.get(target.presentationId)))).map((h) => h.eventId);
+              items.push({
+                id: `${source.eventId}:${window2}`,
+                sourceAttemptId: source.eventId,
+                sourceAt: source.at,
+                gameId: game(source),
+                measure: measure2,
+                kind: counted(source) && source.verdict === "correct" ? "retention" : "recovery",
+                window: window2,
+                dueAt: new Date(due).toISOString(),
+                expiresAt: new Date(expires).toISOString(),
+                status,
+                reason,
+                targetAttemptId: target?.eventId || null,
+                targetAt: target?.at || null,
+                outcome,
+                correctionEventIds
+              });
+            }
+          }
+          return {
+            policy: FOLLOWUP.version,
+            asOf,
+            observationOpportunities: true,
+            evidenceComplete: usable,
+            coverage: {
+              folded: prior?.folded || 0,
+              adjusted,
+              limited: all.length > selected.length,
+              excludedAnchors: all.length - selected.length,
+              reason: !usable ? adjusted ? "adjusted-history" : "incomplete-history" : prior?.folded ? "older-source-unavailable" : null
+            },
+            items,
+            retainDecisionIds: [...retain],
+            learningEffectClaim: false,
+            causalClaim: false,
+            policyPromotion: false
+          };
+        }
         const FLIP_WINDOW = 2;
         const COOL_DOWN = 2;
         function check({ spec, knob, from, to, step, phase = "response", history = [], frozen = false } = {}) {
@@ -7515,7 +7879,7 @@ var SynkLearning = (() => {
           }
           return { ok: true, rail: null };
         }
-        return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FLIP_WINDOW, COOL_DOWN, check });
+        return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, FLIP_WINDOW, COOL_DOWN, check });
       });
     }
   });
@@ -7548,7 +7912,7 @@ var SynkLearning = (() => {
       }
       function validate(ledger) {
         const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
-        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
+        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.followupsLost === void 0 || plain(ledger.followupsLost) && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24 && Number.isFinite(ledger.followupsLost.at)) || !(ledger.followupsPreserved === void 0 || typeof ledger.followupsPreserved === "boolean") || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
         return ledger;
       }
       var before = (ledger, traceKey, kinds) => {
@@ -7660,6 +8024,40 @@ var SynkLearning = (() => {
       }
       var folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE.includes(event.type) && Date.parse(event.at) <= ledger.cutoff;
       var reference = (e) => e?.type === "decision.made" ? void 0 : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId;
+      function retention(events, decisions, { maxEvents = 2400, maxBytes = 1024 * 1024 } = {}) {
+        const groups = /* @__PURE__ */ new Map(), parent = /* @__PURE__ */ new Map();
+        for (const e of events) {
+          const group = e.type === "decision.made" ? e.id : parent.get(reference(e));
+          if (!group) continue;
+          parent.set(e.id, group);
+          if (!groups.has(group)) groups.set(group, []);
+          groups.get(group).push(e);
+        }
+        const selected = new Set(decisions.filter((id) => groups.has(id)));
+        const position = new Map(events.map((e, index) => [e.id, index]));
+        const first = Math.min(...[...selected].map((id) => Math.min(...groups.get(id).map((e) => position.get(e.id)))));
+        const presentations = events.filter((e) => e.type === "practice.presented"), keys = /* @__PURE__ */ new Set();
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const p of presentations) {
+            const group = parent.get(p.id), traces = Trail.traceKeys(p);
+            if (!selected.has(group) && traces.some((key) => keys.has(key)) && groups.get(group).some((e) => position.get(e.id) >= first)) {
+              selected.add(group);
+              changed = true;
+            }
+            if (selected.has(group)) {
+              for (const key of traces) if (!keys.has(key)) {
+                keys.add(key);
+                changed = true;
+              }
+            }
+          }
+        }
+        const kept = events.filter((e) => selected.has(parent.get(e.id))), bytes = new TextEncoder().encode(JSON.stringify(kept)).length;
+        const limited = kept.length > maxEvents || bytes > maxBytes;
+        return { decisions: limited ? [] : [...selected], events: kept.length, bytes, limited, maxEvents, maxBytes };
+      }
       var stray = (event, known) => {
         const ref = reference(event);
         return typeof ref === "string" && !known.has(ref);
@@ -7686,7 +8084,7 @@ var SynkLearning = (() => {
         }
         return next;
       }
-      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference };
+      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference, retention };
     }
   });
 
@@ -8873,9 +9271,9 @@ var SynkLearning = (() => {
           }
           return { estimates: copy(memory.estimates), at: memory.at, indices, latencies: [...memory.latencies] };
         }
-        function priorFromSummary(input, summary, skillIds = []) {
+        function priorFromSummary(input, summary, skillIds = [], { responseFormat } = {}) {
           const spec = defineContent(input);
-          if (!spec.items || !summary || !Array.isArray(summary.skills) || !Array.isArray(skillIds) || !skillIds.length) return null;
+          if (!spec.items || summary?.evidenceComplete !== true || !Array.isArray(summary.skills) || !Array.isArray(skillIds) || !skillIds.length || typeof responseFormat !== "string" || !responseFormat || responseFormat === "unknown") return null;
           const skills = skillIds.map((skill) => summary.skills.find((s) => s.id === skill));
           if (skills.some((skill) => !skill)) return null;
           let level = spec.items.start;
@@ -8883,7 +9281,7 @@ var SynkLearning = (() => {
             const authored = spec.items.levels[index];
             const steady = skills.every((skill) => {
               const formats = skill.levels?.[authored]?.formats;
-              return !!formats && Object.values(formats).some((f) => f.status === "recent-independent");
+              return !!formats && Object.hasOwn(formats, responseFormat) && formats[responseFormat].status === "recent-independent";
             });
             if (!steady) break;
             level = index + 1;
@@ -9521,7 +9919,7 @@ var SynkLearning = (() => {
         });
       }
       function createLive({ coach, port, clock }) {
-        return function live(input, { declared = {}, presentation, skillIds = [], arm = "adapted", condition, level = "standard", words = {} } = {}) {
+        return function live(input, { declared = {}, presentation, skillIds = [], responseFormat, arm = "adapted", condition, level = "standard", words = {} } = {}) {
           const spec = Flow.defineContent(input);
           if (presentation === void 0) presentation = typeof port.presentation === "function" ? port.presentation() : null;
           if (presentation != null) {
@@ -9533,7 +9931,7 @@ var SynkLearning = (() => {
           let prior = null;
           if (!memory && skillIds.length) {
             try {
-              prior = Flow.priorFromSummary(spec, coach.summary(), skillIds);
+              prior = Flow.priorFromSummary(spec, coach.summary(), skillIds, { responseFormat });
             } catch {
               prior = null;
             }
@@ -9666,8 +10064,61 @@ var SynkLearning = (() => {
       var RESPONSE_MS = 30 * 864e5;
       var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+      function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
+        const options = { scope, asOf, prior };
+        const report = Temper.followups({
+          events,
+          summary: Trail.summarize(events, options),
+          original: Trail.summarize(events.filter((e) => e.type !== "record.excluded"), options),
+          prior,
+          complete,
+          asOf
+        });
+        if (prior?.followupsLost) {
+          report.items = [];
+          report.retainDecisionIds = [];
+          report.evidenceComplete = false;
+          Object.assign(report.coverage, {
+            limited: true,
+            reason: "retention-capacity",
+            retentionEnabled: retain,
+            retentionLimited: true,
+            unretainedAnchors: prior.followupsLost.anchors,
+            lostAt: new Date(prior.followupsLost.at).toISOString()
+          });
+          return report;
+        }
+        if (prior?.folded && prior.followupsPreserved !== true) {
+          report.items = [];
+          report.retainDecisionIds = [];
+          report.evidenceComplete = false;
+          Object.assign(report.coverage, { limited: true, reason: "older-source-unavailable", retentionEnabled: retain });
+          return report;
+        }
+        const retention = retain ? Ledger.retention(events, report.retainDecisionIds) : null;
+        report.coverage.retentionEnabled = retain;
+        if (retention) {
+          Object.assign(report.coverage, {
+            retentionLimited: retention.limited,
+            retainedEvents: retention.limited ? 0 : retention.events,
+            retainedBytes: retention.limited ? 0 : retention.bytes
+          });
+          report.retainDecisionIds = retention.decisions;
+          if (retention.limited) {
+            report.coverage.limited = true;
+            report.coverage.reason = "retention-capacity";
+            report.coverage.unretainedAnchors = report.items.length / Temper.FOLLOWUP.windows.length;
+            for (const item of report.items) {
+              item.status = "unavailable";
+              item.reason = "retention-capacity";
+              item.outcome = null;
+            }
+          }
+        }
+        return report;
+      }
       var AHEAD_MS = 5 * 6e4;
-      function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock, held, release }) {
+      function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
         const pages = storageScope === "account" && storage ? createPages(storage, key, ["events", "settled", "dropped"]) : null;
         let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
         const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
@@ -9821,6 +10272,8 @@ var SynkLearning = (() => {
           if (events.length <= folding.max) return;
           if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
           const open = held(now);
+          const retained = followups ? readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger, retain: true }) : null;
+          if (retained) open.push(...retained.retainDecisionIds);
           if (folding.remote) {
             for (const e of events) if (!settled.has(e.id)) open.push(e.id);
           }
@@ -9837,7 +10290,12 @@ var SynkLearning = (() => {
             return;
           }
           retryFold = null;
+          const preserved = followups && (!ledger?.folded || ledger.followupsPreserved === true);
           ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
+          ledger.followupsPreserved = preserved;
+          if (retained?.coverage.retentionLimited && !ledger.followupsLost) {
+            ledger.followupsLost = { anchors: retained.coverage.unretainedAnchors, at: now };
+          }
           session = newSession(planned.kept);
           for (const e of planned.folded) settled.delete(e.id);
           settledVersion += 1;
@@ -10018,9 +10476,11 @@ var SynkLearning = (() => {
         storageScope = "device",
         accountKey = null,
         fold = null,
+        followups = false,
         memoryOwner = null
       } = {}) {
         if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== "function") throw new TypeError("Atlas: game, local scope and Strata map required");
+        if (typeof followups !== "boolean") throw new TypeError("Atlas: follow-up retention must be explicit");
         if (!["device", "account"].includes(storageScope) || storageScope === "account" && (!identifier(accountKey) || learnerKey !== "device")) throw new TypeError("Atlas: account identity and isolated host storage required");
         if (memoryOwner != null && (storageScope !== "account" || memoryOwner.scope !== "account" || !identifier(memoryOwner.accountKey) || !memoryOwner.flow || ["today", "setToday", "presentation", "setPresentation", "epoch", "memories", "save", "decline", "state", "merge", "subscribe"].some((name) => typeof memoryOwner.flow[name] !== "function"))) throw new TypeError("Atlas: a verified personal memory owner is required");
         const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
@@ -10035,6 +10495,7 @@ var SynkLearning = (() => {
           accountKey,
           historyComplete,
           fold,
+          followups,
           clock,
           held: (now) => {
             const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
@@ -10119,8 +10580,13 @@ var SynkLearning = (() => {
           return [item, saved];
         }
         const api = {
+          mapVersion: map.map_ver,
           syncPort: history.port,
           summary: () => report(current()),
+          followups() {
+            const saved = current();
+            return readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+          },
           recommend(candidates, options = {}) {
             const saved = current(), profile = report(saved);
             return { ...Learning.recommend({ profile, candidates, presentations: view(saved).presentations, prior: saved.ledger, ...options }), storage: profile.storage };
@@ -10244,8 +10710,8 @@ var SynkLearning = (() => {
           },
           help(pid, kind) {
             const [p] = requireActive(pid);
-            if (!["text", "hint", "answer", "replay"].includes(kind)) throw new TypeError("Atlas: invalid help kind");
-            const result = p.practice.delivered({ id: kind, level: kind === "answer" ? "answer" : "cue", contentRef: `${gameId}.${kind}` });
+            if (!["text", "hint", "answer", "replay", "explanation"].includes(kind)) throw new TypeError("Atlas: invalid help kind");
+            const result = p.practice.delivered({ id: kind, level: ["answer", "explanation"].includes(kind) ? kind : "cue", contentRef: `${gameId}.${kind}` });
             history.persist();
             return result;
           },

@@ -38,7 +38,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
 import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 정책만들기, 정책판, 대체순서, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로,
-  맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 대신할검수자, 사용자지정사슬검사, 사용자지정판 } from './lib/검수증명.mjs';
+  맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 대신할검수자, 사용자지정사슬검사, 사용자지정판, Atlas작업ID } from './lib/검수증명.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -535,17 +535,19 @@ async function 자료모으기(설정, 폴더, { 시험 = true, 캡처 = true, �
 }
 
 /** 정책 3에서만 같은 원시 바이트 본문을 한 번 싣는다. 경로별 검증·manifest·스냅샷은 그대로 남는다. */
-export function 후보항목들(candidate, contents, { 동일본문참조 = false, 단독음성검수 = false, 단독기준그림검수 = false } = {}) {
+export function 후보항목들(candidate, contents, { 동일본문참조 = false, 단독음성검수 = false, 단독기준그림검수 = false, 사용자지정작업 = null } = {}) {
   if (contents.length !== candidate.항목.length) throw new Error('배포 후보 내용 수 불일치');
   const items = [항목('P00', '배포 후보 manifest — 실제 올릴 내용과 삭제·모드', JSON.stringify(candidate, null, 2))], seen = new Map();
   for (const [i, f] of candidate.항목.entries()) {
     const b = contents[i], prefix = `P${String(i + 1).padStart(2, '0')}`, title = `배포 후보 ${f.경로} (${f.종류}, ${f.모드})`;
     if (동일본문참조 && (!Buffer.isBuffer(b) || sha(b) !== f.sha256)) throw new Error(`배포 후보 원시 SHA 불일치: ${f.경로}`);
-    // 이번 정책 4의 음성 두 파일은 본문 공유 대상이 아니다. 파일 자체를 열어 확인할 별도 항목으로 남긴다.
-    const 음성자산 = 단독음성검수 && /^world\/brand-opening\/assets\/cafe-voice\/(?:cafe-visit-soldout-2|cafe-compose-2)\.mp3$/.test(f.경로);
-    if (음성자산) {
+    // 승인된 음성은 본문 공유 대상이 아니다. 파일 자체를 열어 확인할 별도 항목으로 남긴다.
+    const 음성자산 = 단독음성검수 && 사용자지정작업 !== Atlas작업ID && /^world\/brand-opening\/assets\/cafe-voice\/(?:cafe-visit-soldout-2|cafe-compose-2)\.mp3$/.test(f.경로);
+    const Atlas음성 = 단독음성검수 && 사용자지정작업 === Atlas작업ID && /^(?:world|try)\/order-rush\/audio\/n(?:0[1-9]|1[01])\.wav$/.test(f.경로);
+    if (음성자산 || Atlas음성) {
       if (!Buffer.isBuffer(b) || sha(b) !== f.sha256) throw new Error(`배포 후보 원시 SHA 불일치: ${f.경로}`);
-      items.push(항목(prefix, title, `음성 자산 원시 SHA: ${f.sha256}\n바이트 수: ${b.length}\n이 항목은 본문 생략이나 검수 완료 표시가 아니다. 최종 검수자는 음성 내용(STT 등)·재생·대응 대사·해시 검증 근거를 확인하고 실제 직접 청취 여부와 한계를 응답에 적는다. 필요한 검증 근거가 빠졌으면 coverage.complete를 true로 쓰지 않는다.`, '코드', null));
+      if (Atlas음성 && (b.length < 44 || b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WAVE')) throw new Error(`음성 형식 불일치: ${f.경로}`);
+      items.push(항목(prefix, title, `음성 자산 원시 SHA: ${f.sha256}\n원음 경로: ${f.경로}\n바이트 수: ${b.length}\n이 항목은 본문 생략이나 검수 완료 표시가 아니다. 최종 검수자는 음성 내용(STT 등)·재생·대응 대사·해시 검증 근거를 확인하고 실제 직접 청취 여부와 한계를 응답에 적는다. 필요한 검증 근거가 빠졌으면 coverage.complete를 true로 쓰지 않는다.${Atlas음성 ? '\n이번 음성은 원문·무료 로컬 TTS·Whisper 중형 STT·브라우저 HTMLAudio 종료 근거를 원음과 대조한다. STT나 재생 종료만으로 사람 청취를 했다고 기록하지 않는다.' : ''}`, '코드', null));
       continue;
     }
     const 기준그림 = 단독기준그림검수 && /^\.github\/site-check\/baseline\/(?:desktop|mobile)\/(?:name(?:~family)?|nombre|rl|privacy|lab~topik4|world~hangul-stage)\.(?:jpg|png)$/.test(f.경로);
@@ -574,7 +576,7 @@ export function 후보항목들(candidate, contents, { 동일본문참조 = fals
   }
   return items;
 }
-function 항목만들기(자료, 설정, 폴더) {
+function 항목만들기(자료, 설정, 폴더, 정책) {
   const 항목들 = [];
   if (자료.시험) {
     const t = 자료.시험;
@@ -604,7 +606,7 @@ function 항목만들기(자료, 설정, 폴더) {
     });
   }
   if (자료.배포후보) {
-    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: [3, 4].includes(설정.정책판), 단독음성검수: 설정.정책판 === 4, 단독기준그림검수: 설정.정책판 === 4 }));
+    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: [3, 4].includes(설정.정책판), 단독음성검수: 설정.정책판 === 4, 단독기준그림검수: 설정.정책판 === 4, 사용자지정작업: 정책.사용자지정?.taskId }));
   }
   return 항목들;
 }
@@ -650,7 +652,7 @@ export async function 준비하기(o, { 알리기 = () => {} } = {}) {
   const 자료 = await 자료모으기(설정, 폴더, { 알리기 });
   if (!자료.파일들.length && !자료.화면 && !자료.가져온캡처 && !자료.배포후보) throw new Error('바뀐 파일이 없다 — --바탕·--끝·경로를 확인한다');
   const 정책 = 정책만들기(설정, 자료.파일들, { 판: 설정.정책판 });
-  const 항목들 = 항목만들기(자료, 설정, 폴더);
+  const 항목들 = 항목만들기(자료, 설정, 폴더, 정책);
   const 배경 = 자료.배경 || `(배경 글이 없어 커밋 메시지로 대신한다 — 무엇을 왜 바꿨는지·글자가 동작에 엮인 곳은 아래 커밋과 diff로 판단한다.)`;
   const 규칙 = 규칙글(설정.종류, 설정.작성자) + `\n\n검수 정책: ${JSON.stringify(정책)}\n소스 스냅샷: ${정규해시(자료.스냅샷)}`;
   const 임시목록 = 파일목록글(자료.파일들, new Map(자료.파일들.map(f => [f.경로, new Set(['A', 'B'])])));
@@ -1708,6 +1710,10 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
         내용.set(b.sha256, 지금b);
       }
       const d = a?.sha256 && b?.sha256 && a.sha256 === b.sha256 ? { 꼴: '모드', 글: `(내용은 같고 종류·모드만 ${a.종류}/${a.모드} → ${b.종류}/${b.모드})` } : 두판diff(앞b, 지금b, p);
+      if (정책.사용자지정?.taskId === Atlas작업ID && 지금b) {
+        const item = 후보항목들({ 항목: [b] }, [지금b], { 동일본문참조: true, 단독음성검수: true, 사용자지정작업: Atlas작업ID })[1];
+        if (item.몸.startsWith('음성 자산 원시 SHA:')) d.글 = `앞 원음 SHA: ${a?.sha256 ?? '없음'}\n${item.몸}`;
+      }
       파일목록.push(`- 배포 후보 ${!a ? '새' : !b?.sha256 ? '지움' : '바뀜'} ${p}`);
       항목들.push(항목(`P${String(i + 1).padStart(2, '0')}`, `배포 후보 ${p} (${a ? `${a.종류}·${a.모드 ?? '-'}` : '없음'} → ${b ? `${b.종류}·${b.모드 ?? '-'}` : '없음'})`, d.글 || '(내용 차이 없음)', '코드', null));
       diff글.push(`### 배포 후보 ${p}\n${d.글}`);

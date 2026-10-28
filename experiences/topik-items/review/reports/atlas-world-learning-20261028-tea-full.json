@@ -1,0 +1,4567 @@
+{
+  "schema": 1,
+  "source": {
+    "lines": "experiences/synk-town/town/data/lines/tea.json",
+    "linesHash": "f9962f643690ce4a0472047d1c962195eaed66894ebb237d5359c9092ef9efba",
+    "axes": "experiences/synk-town/town/data/tea.json",
+    "axesHash": "8464ddca25d87ec1b67affeac794d2df841e36f7f7b0888af6c478279a6ba932"
+  },
+  "judge": {
+    "id": "town-tea-judge-r1",
+    "axes": {
+      "tea": "cup.tea",
+      "temp": "cup.vessel",
+      "sweet": "cup.honey"
+    },
+    "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+    "responseFormat": "cup-compose",
+    "modality": "reading",
+    "difficulty": {
+      "L1": 1,
+      "L2": 2
+    },
+    "allowedLevels": [
+      "L1",
+      "L2"
+    ]
+  },
+  "units": [
+    {
+      "unit": {
+        "frame": "guest.tea.req-new-menu.1",
+        "when": {
+          "part": "request",
+          "home": "L1",
+          "axes": [
+            "tea",
+            "sweet"
+          ],
+          "menu": true
+        },
+        "levels": {
+          "L1": "{sweet.adn} {tea} 주세요.",
+          "L2": "새로 나온 {tea}로, {sweet.adv} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "549884571f05de2fc038c4cadbc9ba2a175df22371e826a00ea01c81688dd89f",
+      "cases": [
+        {
+          "id": "guest.tea.req-new-menu.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "안 단 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-new-menu.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "새로 나온 오늘의 차로, 안 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-new-menu.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "조금 단 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-new-menu.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "새로 나온 오늘의 차로, 조금 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-new-menu.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "단 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-new-menu.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "새로 나온 오늘의 차로, 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-tea.1",
+        "when": {
+          "part": "request",
+          "home": "L1",
+          "axes": [
+            "tea"
+          ]
+        },
+        "levels": {
+          "L1": "{tea} 주세요.",
+          "L2": "목이 마르니까 {tea} 한 잔 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "061458eb88c73897492a03e04cc0fd9c5f9d68df894f4b6b944d5de653c6dc7b",
+      "cases": [
+        {
+          "id": "guest.tea.req-tea.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "보리차 주세요.",
+          "expected": {
+            "tea": "barley"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-tea.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "목이 마르니까 보리차 한 잔 주세요.",
+          "expected": {
+            "tea": "barley"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-tea.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "유자차 주세요.",
+          "expected": {
+            "tea": "yuzu"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-tea.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "목이 마르니까 유자차 한 잔 주세요.",
+          "expected": {
+            "tea": "yuzu"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-tea.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "오늘의 차 주세요.",
+          "expected": {
+            "tea": "today"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-tea.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "목이 마르니까 오늘의 차 한 잔 주세요.",
+          "expected": {
+            "tea": "today"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-temp.1",
+        "when": {
+          "part": "request",
+          "home": "L1",
+          "axes": [
+            "temp"
+          ]
+        },
+        "levels": {
+          "L1": "{temp.adn} 거 주세요.",
+          "L2": "차는 아무거나 괜찮은데, {temp.adv} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "11ee87f0ec74fbdd2b80f989acc6a0ca99ec2b05afe060544212812e2b66caf1",
+      "cases": [
+        {
+          "id": "guest.tea.req-temp.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 거 주세요.",
+          "expected": {
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-temp.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "차는 아무거나 괜찮은데, 따뜻하게 주세요.",
+          "expected": {
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-temp.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 거 주세요.",
+          "expected": {
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-temp.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "차는 아무거나 괜찮은데, 차갑게 주세요.",
+          "expected": {
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-sweet.1",
+        "when": {
+          "part": "request",
+          "home": "L1",
+          "axes": [
+            "sweet"
+          ]
+        },
+        "levels": {
+          "L1": "{sweet.adn} 거 주세요.",
+          "L2": "차는 아무거나 좋은데, {sweet.adv} 해 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "69fe3d202f7dea82126d99eef58d717b12f9ae8e0e407cde350f30c3698bd9e4",
+      "cases": [
+        {
+          "id": "guest.tea.req-sweet.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "안 단 거 주세요.",
+          "expected": {
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-sweet.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "차는 아무거나 좋은데, 안 달게 해 주세요.",
+          "expected": {
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-sweet.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "조금 단 거 주세요.",
+          "expected": {
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-sweet.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "차는 아무거나 좋은데, 조금 달게 해 주세요.",
+          "expected": {
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-sweet.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "단 거 주세요.",
+          "expected": {
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-sweet.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "차는 아무거나 좋은데, 달게 해 주세요.",
+          "expected": {
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-warm-tea.1",
+        "when": {
+          "part": "request",
+          "home": "L2",
+          "axes": [
+            "tea",
+            "temp"
+          ],
+          "fixed": {
+            "temp": "warm"
+          }
+        },
+        "levels": {
+          "L1": "따뜻한 {tea} 주세요.",
+          "L2": "손이 차가우니까 따뜻한 {tea} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "0ef372c78ea18369db197907ec2b195ac44e1373676742c4d92ee29c8eacf54f",
+      "cases": [
+        {
+          "id": "guest.tea.req-warm-tea.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-warm-tea.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "손이 차가우니까 따뜻한 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-warm-tea.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-warm-tea.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "손이 차가우니까 따뜻한 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-warm-tea.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-warm-tea.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "손이 차가우니까 따뜻한 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-cold-tea.1",
+        "when": {
+          "part": "request",
+          "home": "L2",
+          "axes": [
+            "tea",
+            "temp"
+          ],
+          "fixed": {
+            "temp": "cold"
+          }
+        },
+        "levels": {
+          "L1": "차가운 {tea} 주세요.",
+          "L2": "목이 마르니까 차가운 {tea} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "4faa7d83666a4876657833af84a3aed91661adfa9b7e97c4ae662caff599a2fb",
+      "cases": [
+        {
+          "id": "guest.tea.req-cold-tea.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-cold-tea.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "목이 마르니까 차가운 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-cold-tea.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-cold-tea.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "목이 마르니까 차가운 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-cold-tea.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-cold-tea.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "목이 마르니까 차가운 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-same-temp.1",
+        "when": {
+          "part": "request",
+          "home": "L2",
+          "axes": [
+            "tea",
+            "temp"
+          ],
+          "same": "tea"
+        },
+        "levels": {
+          "L1": "{temp.adn} {tea} 주세요.",
+          "L2": "저도 같은 차로 하는데, {temp.adv} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "12bbe05ca379412129f53753b7330f248a05997335880a9fcad697d15ac19ea2",
+      "cases": [
+        {
+          "id": "guest.tea.req-same-temp.1.L1.1",
+          "level": "L1",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "따뜻한 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L2.1",
+          "level": "L2",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "저도 같은 차로 하는데, 따뜻하게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L1.2",
+          "level": "L1",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "차가운 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L2.2",
+          "level": "L2",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "저도 같은 차로 하는데, 차갑게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L1.3",
+          "level": "L1",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "따뜻한 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L2.3",
+          "level": "L2",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "저도 같은 차로 하는데, 따뜻하게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L1.4",
+          "level": "L1",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "차가운 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L2.4",
+          "level": "L2",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "저도 같은 차로 하는데, 차갑게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L1.5",
+          "level": "L1",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "따뜻한 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L2.5",
+          "level": "L2",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "저도 같은 차로 하는데, 따뜻하게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L1.6",
+          "level": "L1",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "차가운 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-temp.1.L2.6",
+          "level": "L2",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "저도 같은 차로 하는데, 차갑게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold"
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-same-sweet.1",
+        "when": {
+          "part": "request",
+          "home": "L2",
+          "axes": [
+            "tea",
+            "sweet"
+          ],
+          "same": "tea"
+        },
+        "levels": {
+          "L1": "{sweet.adn} {tea} 주세요.",
+          "L2": "저도 같은 차로 하는데, {sweet.adv} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "2cbf1d725a929bb55e1d5d3905d828575197a4881d7d1a37447ee3a273e1fe42",
+      "cases": [
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.1",
+          "level": "L1",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "안 단 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.1",
+          "level": "L2",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "저도 같은 차로 하는데, 안 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.2",
+          "level": "L1",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "조금 단 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.2",
+          "level": "L2",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "저도 같은 차로 하는데, 조금 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.3",
+          "level": "L1",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "단 보리차 주세요.",
+          "expected": {
+            "tea": "barley",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.3",
+          "level": "L2",
+          "prior": "앞 손님: 보리차 주세요.",
+          "text": "저도 같은 차로 하는데, 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.4",
+          "level": "L1",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "안 단 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.4",
+          "level": "L2",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "저도 같은 차로 하는데, 안 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.5",
+          "level": "L1",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "조금 단 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.5",
+          "level": "L2",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "저도 같은 차로 하는데, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.6",
+          "level": "L1",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "단 유자차 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.6",
+          "level": "L2",
+          "prior": "앞 손님: 유자차 주세요.",
+          "text": "저도 같은 차로 하는데, 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.7",
+          "level": "L1",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "안 단 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.7",
+          "level": "L2",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "저도 같은 차로 하는데, 안 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.8",
+          "level": "L1",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "조금 단 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.8",
+          "level": "L2",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "저도 같은 차로 하는데, 조금 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L1.9",
+          "level": "L1",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "단 오늘의 차 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-same-sweet.1.L2.9",
+          "level": "L2",
+          "prior": "앞 손님: 오늘의 차 주세요.",
+          "text": "저도 같은 차로 하는데, 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            },
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-friend.1",
+        "when": {
+          "part": "request",
+          "home": "L3",
+          "axes": [
+            "tea",
+            "temp",
+            "sweet"
+          ]
+        },
+        "levels": {
+          "L1": "{temp.adn} {tea}, {sweet.adv}요.",
+          "L2": "{tea}로 하는데, {temp.adv}, {sweet.adv} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "13e199911effe11826fce30a00a096567b421917b2e94382ec987a3e682ce063",
+      "cases": [
+        {
+          "id": "guest.tea.req-friend.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차로 하는데, 따뜻하게, 안 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 조금 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차로 하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차로 하는데, 따뜻하게, 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.4",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.4",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차로 하는데, 차갑게, 안 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.5",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 조금 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.5",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차로 하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.6",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.6",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차로 하는데, 차갑게, 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.7",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.7",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 따뜻하게, 안 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.8",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 조금 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.8",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.9",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.9",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 따뜻하게, 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.10",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.10",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 차갑게, 안 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.11",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 조금 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.11",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.12",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.12",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 차갑게, 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.13",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.13",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차로 하는데, 따뜻하게, 안 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.14",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 조금 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.14",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차로 하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.15",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.15",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차로 하는데, 따뜻하게, 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.16",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.16",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차로 하는데, 차갑게, 안 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.17",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 조금 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.17",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차로 하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L1.18",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-friend.1.L2.18",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차로 하는데, 차갑게, 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-no-sweet.1",
+        "when": {
+          "part": "request",
+          "home": "L3",
+          "axes": [
+            "tea",
+            "temp",
+            "sweet"
+          ],
+          "fixed": {
+            "sweet": 0
+          }
+        },
+        "levels": {
+          "L1": "{temp.adn} {tea}, 안 달게요.",
+          "L2": "단 걸 먹었으니까 {temp.adn} {tea}, 안 달게요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "888c1f63e76b98173ee1c13fe89407617c00f8661f4e059467bc46fcb8a4ed04",
+      "cases": [
+        {
+          "id": "guest.tea.req-no-sweet.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "단 걸 먹었으니까 따뜻한 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "단 걸 먹었으니까 차가운 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "단 걸 먹었으니까 따뜻한 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L1.4",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L2.4",
+          "level": "L2",
+          "prior": null,
+          "text": "단 걸 먹었으니까 차가운 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L1.5",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L2.5",
+          "level": "L2",
+          "prior": null,
+          "text": "단 걸 먹었으니까 따뜻한 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L1.6",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-no-sweet.1.L2.6",
+          "level": "L2",
+          "prior": null,
+          "text": "단 걸 먹었으니까 차가운 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-yuzu-honey.1",
+        "when": {
+          "part": "request",
+          "home": "L4",
+          "axes": [
+            "tea",
+            "temp",
+            "sweet"
+          ],
+          "fixed": {
+            "tea": "yuzu",
+            "sweet": 1
+          }
+        },
+        "levels": {
+          "L1": "{temp.adn} 유자차, 조금 달게요.",
+          "L2": "유자차로 하는데, {temp.adv}, 조금 달게 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "5666b53565438317d0f5e0ba975cba1d57fba0b470a1a38ba0185ef552eb2efb",
+      "cases": [
+        {
+          "id": "guest.tea.req-yuzu-honey.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 조금 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-yuzu-honey.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-yuzu-honey.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 조금 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-yuzu-honey.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차로 하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "unit": {
+        "frame": "guest.tea.req-daily.1",
+        "when": {
+          "part": "request",
+          "home": "L4",
+          "axes": [
+            "tea",
+            "temp",
+            "sweet"
+          ]
+        },
+        "levels": {
+          "L1": "{temp.adn} {tea}, {sweet.adv}요.",
+          "L2": "{tea}를 좋아하는데, {temp.adv}, {sweet.adv} 주세요."
+        },
+        "axes": {
+          "tea": {
+            "barley": {
+              "name": "보리차",
+              "color": "#b8763a"
+            },
+            "yuzu": {
+              "name": "유자차",
+              "color": "#e3b33c"
+            },
+            "today": {
+              "name": "오늘의 차",
+              "color": "#7f9a54"
+            }
+          },
+          "temp": {
+            "warm": {
+              "adn": "따뜻한",
+              "adv": "따뜻하게",
+              "cup": "따뜻한 잔"
+            },
+            "cold": {
+              "adn": "차가운",
+              "adv": "차갑게",
+              "cup": "찬 잔"
+            }
+          },
+          "sweet": {
+            "0": {
+              "adn": "안 단",
+              "adv": "안 달게",
+              "honey": "꿀 없이",
+              "spoons": "꿀 없음"
+            },
+            "1": {
+              "adn": "조금 단",
+              "adv": "조금 달게",
+              "honey": "꿀은 조금만",
+              "spoons": "꿀 한 숟가락"
+            },
+            "2": {
+              "adn": "단",
+              "adv": "달게",
+              "honey": "꿀을 넉넉히",
+              "spoons": "꿀 두 숟가락"
+            }
+          }
+        },
+        "judge": {
+          "id": "town-tea-judge-r1",
+          "axes": {
+            "tea": "cup.tea",
+            "temp": "cup.vessel",
+            "sweet": "cup.honey"
+          },
+          "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+          "responseFormat": "cup-compose",
+          "modality": "reading",
+          "difficulty": {
+            "L1": 1,
+            "L2": 2
+          },
+          "allowedLevels": [
+            "L1",
+            "L2"
+          ]
+        }
+      },
+      "unitHash": "f6fe2559571fbc0eb4acdd7778c59035ac8157720058932567f193938a7d71b9",
+      "cases": [
+        {
+          "id": "guest.tea.req-daily.1.L1.1",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.1",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차를 좋아하는데, 따뜻하게, 안 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.2",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 조금 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.2",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차를 좋아하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.3",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 보리차, 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.3",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차를 좋아하는데, 따뜻하게, 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.4",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 안 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.4",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차를 좋아하는데, 차갑게, 안 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.5",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 조금 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.5",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차를 좋아하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.6",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 보리차, 달게요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.6",
+          "level": "L2",
+          "prior": null,
+          "text": "보리차를 좋아하는데, 차갑게, 달게 주세요.",
+          "expected": {
+            "tea": "barley",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "barley",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.7",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.7",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차를 좋아하는데, 따뜻하게, 안 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.8",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 조금 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.8",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차를 좋아하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.9",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 유자차, 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.9",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차를 좋아하는데, 따뜻하게, 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.10",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 안 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.10",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차를 좋아하는데, 차갑게, 안 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.11",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 조금 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.11",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차를 좋아하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.12",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 유자차, 달게요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.12",
+          "level": "L2",
+          "prior": null,
+          "text": "유자차를 좋아하는데, 차갑게, 달게 주세요.",
+          "expected": {
+            "tea": "yuzu",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "yuzu",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.13",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.13",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차를 좋아하는데, 따뜻하게, 안 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.14",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 조금 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.14",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차를 좋아하는데, 따뜻하게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.15",
+          "level": "L1",
+          "prior": null,
+          "text": "따뜻한 오늘의 차, 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.15",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차를 좋아하는데, 따뜻하게, 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "warm",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "warm",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.16",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 안 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.16",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차를 좋아하는데, 차갑게, 안 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 0
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 0
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.17",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 조금 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.17",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차를 좋아하는데, 차갑게, 조금 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 1
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 1
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L1.18",
+          "level": "L1",
+          "prior": null,
+          "text": "차가운 오늘의 차, 달게요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        },
+        {
+          "id": "guest.tea.req-daily.1.L2.18",
+          "level": "L2",
+          "prior": null,
+          "text": "오늘의 차를 좋아하는데, 차갑게, 달게 주세요.",
+          "expected": {
+            "tea": "today",
+            "temp": "cold",
+            "sweet": 2
+          },
+          "accepted": [
+            {
+              "tea": "today",
+              "vessel": "cold",
+              "honey": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

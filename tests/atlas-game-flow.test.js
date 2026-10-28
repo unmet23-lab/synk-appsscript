@@ -107,7 +107,7 @@ test('memory resumes on the next visit; another content starts from independent 
     const pid = second.present({ ...item(1, 'ko.reading.detail'), responseFormat: 'single-choice' });
     second.answer(pid, { correct: true, assessable: true });
   }
-  const other = second.live({ id: 'test.reading.gate2', items: { levels: [1, 2, 3] }, knobs: [{ id: 'choices', values: [2, 3, 4], start: 1 }] }, { skillIds: ['ko.reading.detail'] });
+  const other = second.live({ id: 'test.reading.gate2', items: { levels: [1, 2, 3] }, knobs: [{ id: 'choices', values: [2, 3, 4], start: 1 }] }, { skillIds: ['ko.reading.detail'], responseFormat: 'single-choice' });
   assert.equal(other.intro().code, 'start.prior');
   assert.equal(other.settings().level, 2);
   assert.equal(other.intro().line.text, '다른 연습 기록에 맞춰 시작할게요.');

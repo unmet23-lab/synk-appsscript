@@ -1,0 +1,182 @@
+{
+  "version": "topik-i-recommendations-20261028",
+  "note": "공식 성취목표의 범위와 SYNK 권장 연습 가설을 구분한다. 검수 전에는 추천 API에서 제외한다.",
+  "edges": [
+    {
+      "id": "listening-detail-negation",
+      "from": "ko.listening.detail",
+      "to": "ko.listening.negation",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "effd277db03a4493c6e413b5f5487e1e28bbcbf02e2c4ffa66baa5befc23b423",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "listening-detail-sequence",
+      "from": "ko.listening.detail",
+      "to": "ko.listening.sequence",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "c8824e72dce08c3015bbd47da86690fcea2be245af86e5b40664e2c615de7bc8",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "listening-detail-reason",
+      "from": "ko.listening.detail",
+      "to": "ko.listening.reason",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "341dbd0116f1f0a9ec8666fc4b94974bf2b4fa312c87a88a4fd5bf09205c4b65",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "listening-detail-condition",
+      "from": "ko.listening.detail",
+      "to": "ko.listening.condition",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "3767681c5c33e42f4bac2eda65b4a3454e9787f782a3d077bf1ea2ad6814ae83",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "reading-detail-negation",
+      "from": "ko.reading.detail",
+      "to": "ko.reading.negation",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "5b8acae1cb2b436d5b11656c6c2bb9eed55597bf022ca0320cef42797534d37c",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "reading-detail-sequence",
+      "from": "ko.reading.detail",
+      "to": "ko.reading.sequence",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "ce12f2c3c654bec0c953c2dae44d0c88532f1875e485073d5074d987f3d95908",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "reading-detail-reason",
+      "from": "ko.reading.detail",
+      "to": "ko.reading.reason",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "637ebe95e00af9f8cadeabee924b9794d2f7cf0e63e0102c601508f2d960ec87",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "reading-detail-condition",
+      "from": "ko.reading.detail",
+      "to": "ko.reading.condition",
+      "type": "recommended_before",
+      "blocking": false,
+      "confidence": "authored",
+      "reviewed": true,
+      "basis": {
+        "source_url": "https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2",
+        "official_scope": "한국어 표준 교육과정(문체부 고시 제2020-54호)은 등급별·언어 기능별 성취 목표를 제시한다. 아래 두 능력의 필수 선행 관계를 규정하는 근거로 사용하지 않는다.",
+        "interpretation": "SYNK의 연습 설계 가설: 같은 듣기·읽기 영역에서 먼저 구체적인 정보를 찾는 연습이 부정·변경, 순서, 이유, 조건을 이해하는 연습의 준비에 도움이 될 수 있다. 효과가 측정된 필수 순서가 아니다."
+      },
+      "reason_ko": "목표 문장에서 구체적인 정보를 찾는 연습을 먼저 해 보도록 권장해요.",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "98eb2792e79352b1faaccff7a88fe5d3707ec3c1d9d24ac45ed67402767ce13b",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    }
+  ]
+}

@@ -633,6 +633,11 @@ h3.life-poster-sub{margin-bottom:0}
 .wpos>.felt-button{width:100%}
 /* 진단 한 문항 */
 .wpos-stage{min-width:0}
+.wpos-followups,.wpos-advisory{margin-block:24px;padding-top:20px;border-top:1px solid var(--w-line);min-width:0}
+.wpos-followups ul{list-style:none;margin:12px 0;padding:0}
+.wpos-followups li{padding:14px 0;border-bottom:1px solid var(--w-line);overflow-wrap:anywhere}
+.wpos-followups p,.wpos-advisory p{font-size:14px;line-height:1.6;color:var(--w-ink-2);margin:6px 0}
+.wpos-followups h3,.wpos-advisory h3{font-size:20px;margin:0 0 8px}
 .wpos-run{gap:16px}
 .wpos-run-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
 .wpos-run-count{margin:0;font-family:var(--w-mono);font-size:12px;letter-spacing:.06em;color:var(--w-ink-3)}

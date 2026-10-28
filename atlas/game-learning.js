@@ -20,6 +20,41 @@ const KEY = 'synk.atlas.learning.v1';
 const SET_KINDS = ['short', 'diagnostic', 'mock'], RESPONSES = ['helpful', 'not_fit', 'too_much', 'want_more'], SET_OPEN_MS = 86400000, RESPONSE_MS = 30 * 86400000;
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+// Both readings use Trail: an exclusion withdraws a result without replacing its
+// original anchor. Retain the full decision bundles until the observation window ends.
+function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
+  const options = { scope, asOf, prior };
+  const report = Temper.followups({ events, summary: Trail.summarize(events, options),
+    original: Trail.summarize(events.filter(e => e.type !== 'record.excluded'), options), prior, complete, asOf });
+  // Once selected originals were lost to the storage bound, later raw successes
+  // cannot become replacement anchors. Only a complete raw history can recover it.
+  if (prior?.followupsLost) {
+    report.items = []; report.retainDecisionIds = []; report.evidenceComplete = false;
+    Object.assign(report.coverage, { limited: true, reason: 'retention-capacity', retentionEnabled: retain,
+      retentionLimited: true, unretainedAnchors: prior.followupsLost.anchors, lostAt: new Date(prior.followupsLost.at).toISOString() });
+    return report;
+  }
+  // Older consumers may have folded the original source without a retention
+  // contract. The remaining raw log cannot establish which anchor was first.
+  if (prior?.folded && prior.followupsPreserved !== true) {
+    report.items = []; report.retainDecisionIds = []; report.evidenceComplete = false;
+    Object.assign(report.coverage, { limited: true, reason: 'older-source-unavailable', retentionEnabled: retain });
+    return report;
+  }
+  const retention = retain ? Ledger.retention(events, report.retainDecisionIds) : null;
+  report.coverage.retentionEnabled = retain;
+  if (retention) {
+    Object.assign(report.coverage, { retentionLimited: retention.limited, retainedEvents: retention.limited ? 0 : retention.events,
+      retainedBytes: retention.limited ? 0 : retention.bytes });
+    report.retainDecisionIds = retention.decisions;
+    if (retention.limited) {
+      report.coverage.limited = true; report.coverage.reason = 'retention-capacity';
+      report.coverage.unretainedAnchors = report.items.length / Temper.FOLLOWUP.windows.length;
+      for (const item of report.items) { item.status = 'unavailable'; item.reason = 'retention-capacity'; item.outcome = null; }
+    }
+  }
+  return report;
+}
 // Earlier entries keep new ones in time order, but another device's clock running ahead
 // must not pin this one: a time beyond this device's own clock (plus a margin) is not adopted.
 const AHEAD_MS = 5 * 60000;
@@ -37,7 +72,7 @@ const AHEAD_MS = 5 * 60000;
  * `held(now)` names the entries the game still holds open: they never fold. `release(gone)` tells the
  * game, as it happens, what it may no longer hold: everything (gone = null) at a new epoch, or the
  * entries `gone(id)` names that a merge or a fold took out of the kept log. */
-function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock, held, release }) {
+function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
   const pages = storageScope === 'account' && storage ? createPages(storage, key, ['events', 'settled', 'dropped']) : null;
   let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
   const folding = fold === false || (fold == null && storageScope !== 'device') ? null
@@ -167,6 +202,8 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     // What the game holds open stays. A synchronised store also keeps every item the server has
     // not sent back yet, and unanswered items for 30 days: their answer may still come from another device.
     const open = held(now);
+    const retained = followups ? readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger, retain: true }) : null;
+    if (retained) open.push(...retained.retainDecisionIds);
     if (folding.remote) for (const e of events) if (!settled.has(e.id)) open.push(e.id);
     const planned = Ledger.plan(events, { keep: folding.keep, olderThan: now - folding.ageMs, open,
       unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs, respondedBefore: now - RESPONSE_MS - SET_OPEN_MS });
@@ -174,7 +211,12 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
     if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) { retryFold = { settled: settledVersion, at: now + 60000 }; return; }
     retryFold = null;
+    const preserved = followups && (!ledger?.folded || ledger.followupsPreserved === true);
     ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
+    ledger.followupsPreserved = preserved;
+    if (retained?.coverage.retentionLimited && !ledger.followupsLost) {
+      ledger.followupsLost = { anchors: retained.coverage.unretainedAnchors, at: now };
+    }
     session = newSession(planned.kept);
     for (const e of planned.folded) settled.delete(e.id);
     settledVersion += 1; release(id => planned.folded.some(e => e.id === id));
@@ -271,8 +313,9 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
   });
 }
 function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
-  storageScope = 'device', accountKey = null, fold = null, memoryOwner = null } = {}) {
+  storageScope = 'device', accountKey = null, fold = null, followups = false, memoryOwner = null } = {}) {
   if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
+  if (typeof followups !== 'boolean') throw new TypeError('Atlas: follow-up retention must be explicit');
   if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
   // An authenticated host may keep personal memory apart from a class's evidence log. The
   // owner stays inside the host; a frame receives neither its storage nor this private port.
@@ -285,7 +328,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const active = new Map(), sets = new Map(); // sets: finished here in the last day (decision → time), still open to a response
   // Held open here, so never folded: an item not answered in this tab, a set still taking a response.
   // An epoch change (a reset here or in another tab) ends all of them, a fold or a merge what it took.
-  const history = openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock,
+  const history = openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock,
     held: now => { const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid); for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id); else sets.delete(id); return open; },
     release: gone => { if (!gone) { active.clear(); sets.clear(); } else for (const pid of active.keys()) if (gone(pid)) active.delete(pid); } });
   const monotonicClock = history.clock;
@@ -349,8 +392,13 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     const saved = current(), item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return [item, saved];
   }
   const api = {
+    mapVersion: map.map_ver,
     syncPort: history.port,
     summary: () => report(current()),
+    followups() {
+      const saved = current();
+      return readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+    },
     recommend(candidates, options = {}) {
       const saved = current(), profile = report(saved);
       return { ...Learning.recommend({ profile, candidates, presentations: view(saved).presentations, prior: saved.ledger, ...options }), storage: profile.storage };
@@ -458,8 +506,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     },
     help(pid, kind) {
       const [p] = requireActive(pid);
-      if (!['text', 'hint', 'answer', 'replay'].includes(kind)) throw new TypeError('Atlas: invalid help kind');
-      const result = p.practice.delivered({ id: kind, level: kind === 'answer' ? 'answer' : 'cue', contentRef: `${gameId}.${kind}` }); history.persist(); return result;
+      if (!['text', 'hint', 'answer', 'replay', 'explanation'].includes(kind)) throw new TypeError('Atlas: invalid help kind');
+      const result = p.practice.delivered({ id: kind, level: ['answer', 'explanation'].includes(kind) ? kind : 'cue', contentRef: `${gameId}.${kind}` }); history.persist(); return result;
     },
     delivery(pid, { audio }) {
       const [p, saved] = requireActive(pid); p.audio = audio;

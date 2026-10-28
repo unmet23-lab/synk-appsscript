@@ -1,0 +1,2605 @@
+{
+  "task": "atlas-world-learning-20261028",
+  "packetHash": "2bfba54f0c856fb253e35b17645268aee6556c6e19607d78508743fbc55398d6",
+  "reviewer": {
+    "id": "/root",
+    "model": "GPT (Codex primary agent; independent from author agent)"
+  },
+  "reviewedAt": "2026-10-28T06:03:06.047Z",
+  "evidence": {
+    "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-2bfba54f0c85-independent.md",
+    "sha256": "5e9bb50138671890bd99d6657032c1226078fbbdaa70ba75ff989c5f27b8bfe1"
+  },
+  "results": [
+    {
+      "id": "listening-detail-negation",
+      "hash": "effd277db03a4493c6e413b5f5487e1e28bbcbf02e2c4ffa66baa5befc23b423",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "listening-detail-sequence",
+      "hash": "c8824e72dce08c3015bbd47da86690fcea2be245af86e5b40664e2c615de7bc8",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "listening-detail-reason",
+      "hash": "341dbd0116f1f0a9ec8666fc4b94974bf2b4fa312c87a88a4fd5bf09205c4b65",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "listening-detail-condition",
+      "hash": "3767681c5c33e42f4bac2eda65b4a3454e9787f782a3d077bf1ea2ad6814ae83",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "reading-detail-negation",
+      "hash": "5b8acae1cb2b436d5b11656c6c2bb9eed55597bf022ca0320cef42797534d37c",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "reading-detail-sequence",
+      "hash": "ce12f2c3c654bec0c953c2dae44d0c88532f1875e485073d5074d987f3d95908",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "reading-detail-reason",
+      "hash": "637ebe95e00af9f8cadeabee924b9794d2f7cf0e63e0102c601508f2d960ec87",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "reading-detail-condition",
+      "hash": "98eb2792e79352b1faaccff7a88fe5d3707ec3c1d9d24ac45ed67402767ce13b",
+      "verdict": "pass",
+      "solved": "advisory relation acceptable",
+      "reason": "Reviewed all eight direct same-modality detail-to-target suggestions. Official achievement scope and SYNK interpretation are separate. Edges are optional, do not block target practice and do not claim an empirically proven prerequisite.",
+      "checks": {
+        "source_scope": true,
+        "interpretation_separate": true,
+        "nonblocking": true,
+        "direct_target": true,
+        "no_required_order_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-011",
+      "hash": "5c35644c9d46558ec450e73c72b5d3e8064e2409ff16fc27d24bd05faaf89c82",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-023",
+      "hash": "eeebfff15a4558f8994012a7f718622474653352e096deee6f02afb379af0866",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-027",
+      "hash": "c4975c9aa0547c75e105f7c4b202eb2bc811801b4c10348817d523736dc1c741",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-030",
+      "hash": "a3ee7f99c458f1a9249c0707d46be2ed25427d25982bd21bb8b7343829172b59",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-032",
+      "hash": "b4a61a56b931160e3337bbf91a10c414e35eb9eb5004a19907c0e424c8fd3013",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-a-009",
+      "hash": "81b6802cdf4d7f9bafe2d6a370ed799faa39a118fac6896554d88dee4f7f89d1",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-009",
+      "hash": "3ca9ee57c70b3c1164d99920a0fb633874bf11268738559a4236257ff3902af4",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-010",
+      "hash": "89b51178ad0f13c4d3b38a67e8156ca238d5afb3b208dd545882ddadbda4afb7",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-011",
+      "hash": "45cbf9378da377449e8adeab7d576a8648f3e8406dcad21cb8cd6630836d4fe5",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-012",
+      "hash": "af535e918029b0640dc2eb66e5a6f991c26614ac0e753b750b1b0f89808f84f1",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-001",
+      "hash": "adea71f979a30d6bcfdaf161a923c61d018fd298c620e48fb6d7cef2e061315a",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-002",
+      "hash": "358d4db5a821e240dc3c50dc810adcbfff301217f1e1afc27f7baf36faa5fa53",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-001",
+      "hash": "06172d2ea3d4fd98b25acddb9f6aebf9df768e78d6bb931ebafbf8d46a560740",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-005",
+      "hash": "4e5343d7d91dc42e1f58876009d87176125d62774acaff8a2d1cf653930186db",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-007",
+      "hash": "3e55ee6bdcce0d17372f52138410ad5e865ac2b8e508943d5d8af1b7a8f936f4",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-009",
+      "hash": "8e7543700e0c48bd1363e8943ef4d6a05b27913d3d5d929c72adcaf34fea1e43",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-013",
+      "hash": "a91cade3682803b7a8d2cb05442c79f9b026302ddd8717178a088999a608696c",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-017",
+      "hash": "d11f2a393d27ce41e6adb6b955d0698e44b6c2702f18fa63fd1f2cdf50d2b3f1",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-013",
+      "hash": "e75a409c56136cf7bc2f5b27af743077e8ea81cbff1a32a0abba8ece48736022",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-014",
+      "hash": "ea6fc879f60d61bdef419562e19ae69aa8588fe9cb03c1eeea11b2e532c1e1c7",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-015",
+      "hash": "95ec02dcc6b515cfc7c00cf5733d18514fb75e0a763a63fc1f9f1329b3046f0c",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-016",
+      "hash": "14318d6ba73c96e1a7737f5864c9b5eb2dfb5c0ea471300248a64457fc2c175f",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-017",
+      "hash": "8a01754ade58a7b31ad78f32550ac8e4bfb475913588e5144735e130229ce183",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-018",
+      "hash": "b52f5220c230c96b3e076f74d598fac547cac368adf2fde57c24ef9ed20fbc13",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-003",
+      "hash": "05458194a15e0102f47cbc1d05751d3ce0308db8675f3ee968be4fd922430c22",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-015",
+      "hash": "051c42d959a0d68c323381fe426c1e8aafe294970fe444c8c96c9798d01d5e97",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-019",
+      "hash": "8a5094f1853b7d674fddd5cba02bbbad3dafdf05987bbbea12f731394cf64577",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-c-017",
+      "hash": "4ad53fcf7e2fc2d59afc1ef95f64c3a52b2399ec02f74d57a14c20cf731c3292",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-c-018",
+      "hash": "62177e4da128ecb9337e4ee37cd5285e667ae1f38e9b7a6eefc21e3228b00b79",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-c-019",
+      "hash": "079dd7de40081b4751199c5c829bc22a051112db50e4ad4ce4fc955f3f32fea8",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-029",
+      "hash": "30c26690745b96715e0c0a26704b769e8b1ae47cd016af57ec3f91c31af47a7d",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-030",
+      "hash": "4b64b1a560557ee6475115e8191b2531876d6695c0da5ad8e0444ceb8d7da8b5",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-031",
+      "hash": "8a628cb6c35dd4816d75eccb3e106fad3ffb3e7e004eb563661de32d1eb747a1",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-032",
+      "hash": "92d631fd2e1b8d3949fde64a17284a93a5b3cff5a8d6f412f6f3a1518a625030",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-033",
+      "hash": "607781a0bd3acbd6d8acb8a6bf00a451365302ec2742b5c403ab5be81c3e8175",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-034",
+      "hash": "a1613a36de7069cad873cb629800e29f9d45a3ad831b9ead3dea3bb64c14edfa",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-004",
+      "hash": "c60a363627961178a799f55b793ace931d50d8e16d5cdafcdeeaa6ee745b1048",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-008",
+      "hash": "bc26db413eed902e72e117d65f2ec7999d8f51ad295a952b52bf5702081cabfe",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-012",
+      "hash": "e6bc4b7369dd353d4903c50183b59f9f642f30cbaf25a27b0829af6a430d9041",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-016",
+      "hash": "6bba48edc745e2ee9c6403d1b2d4d48df2263341b9a5e2580ad425d75e92dc37",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-020",
+      "hash": "cbc94a083bff69b053b324f4d12a0bb6ff82f6ac1d1d023953f31bffadc4971b",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-024",
+      "hash": "a5ef22e7dce056b44e521151582debae7f9c3435abeabbc3011eb99eab504b3b",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-025",
+      "hash": "4a02791acf39817442d4600fe97b1655157b764ce1e8a8f3a1e77c406a6f04e5",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-026",
+      "hash": "786b22605043a18def4cfedc2b3eacbbc8ca7c2f612304ea2cf6bf446fd9ab51",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-027",
+      "hash": "b622f82f7ed7220c715f35996fdcd641615e86fb295d97aa417f27454a68bd2c",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-028",
+      "hash": "f2e39e2cd8e4a31f6390e6283487180a6705b65176f58cb9e00f6fb0db7f3298",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-e-013",
+      "hash": "bf2791fcf07b62d3c7feeb14245eaf121d778a14488d8e6ae20a3cb5f5822de6",
+      "verdict": "pass",
+      "solved": "O",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-e-015",
+      "hash": "f5bb6c448bdd6a1e5a52c0055a16687d49c3ec644aa8f67156951fe0081d58ba",
+      "verdict": "pass",
+      "solved": "X",
+      "reason": "Read every script and proposition before answer access, independently solved, then compared all explanations. Nine initial propositions were corrected for completeness and skill fit; three explanations were corrected to cite the relevant evidence without unsupported claims. Source family and ready audio are retained. Difficulty is an authored practice label, not validated proficiency.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "explanation": true,
+        "family_preserved": true,
+        "audio_source_unchanged": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o01.v1",
+      "hash": "cdca27a65f005c1a4837a6fe2dea1af7967d0f23f5268ed36654fb5f9446fa08",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o02.v1",
+      "hash": "b6b3ba15a2f58139968d8406f03cedfacc9e5df8c1ec7c0019e774ed3044cbeb",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o03.v1",
+      "hash": "b6aefabe220ed6bbb5d507c6c79c02500d903cee5287f85cee752634c4c0a001",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o04.v1",
+      "hash": "1a57a23d383592b1be7686715853c024ae7b58785eb63c50447823f162512e61",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": true,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o05.v1",
+      "hash": "de5bb51e4c7c2ccb65e18e7abec085d66427e66a416eeac345f643071ccbc5a2",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": true
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o06.v1",
+      "hash": "7214f40b2285cb1a2139af670b900a88751f2ad54ae21711a805bf24354f0441",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        },
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o07.v1",
+      "hash": "b7b636e4050d1821f94a91dae8247ec7d4ae461f501480c48c196258af0524e4",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": true,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o08.v2",
+      "hash": "6ad48715d87dd137909aa428196b1775e67a4c414ecb39624e09bc26afbb9892",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "cold",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "tea",
+          "temp": "cold",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o09.v2",
+      "hash": "c2733cebe5e4945e3505a6ada28458cb220c14e6708e36171b3df1acac570c52",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o10.v1",
+      "hash": "b634713fe95e3eb5a876eef0a7a3e8639a07d18168225403289a14ed9d0fddae",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": true,
+          "ice": true,
+          "sugar": false
+        },
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o11.v2",
+      "hash": "ca668de5809761cd877479286191e45f15be2f047504580ba78f3bfdd7997c85",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.o12.v1",
+      "hash": "c97a3505cc6618e84282491194945f8eb5b60e1f5a67d8c4d23c610d69bd033d",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.r01.v1",
+      "hash": "0efa5dfac9d873a17b195ad9089a2fdfdfb14b8baedbe7d0028594852931c5f3",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.r02.v1",
+      "hash": "5ca21161e77aa8ff8ba140bce7a095c9c87543b9b97203f4b66efa4e126fc224",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": true
+        },
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.r03.v1",
+      "hash": "fc53816916f93dc46dff4c8f94a7f998d2870e3c3c54c18f0ed6d5fb72b6e1a5",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": true,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": true,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.n01.v1",
+      "hash": "5767d396b65cf3a8493fa440c7ce53c5dc2831f11d052b995fb7fcf01929c5da",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "tea",
+          "temp": "cold",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.n02.v1",
+      "hash": "c339177f97519dc529ecc8943dcdd1f3a4e477229356dc558dc39fc0e39eb0e3",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.n03.v1",
+      "hash": "828fa706a71686eedeb4e11b325269330cdae6a374ec49e0152a3146ee33a47a",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": true
+        },
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.n04.v1",
+      "hash": "eb64260c13088eb2c5faa6e5995191801a99f39cd5d5d3f0663f64f3b0b0e290",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        },
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": true,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.n05.v1",
+      "hash": "23974afba3c8b2f487a0a002de236fc5a8964ab4c93108c128a89fc85213f250",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled the requested cups from the Korean order before viewing authored cups. Negation, replacement, temperature, milk and sugar constraints are explicit; unspecified ice/sugar are permitted by the response contract. Free local voice generation plus transcription evidence does not claim human listening review.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z"
+    },
+    {
+      "id": "order-rush.n06.v1",
+      "hash": "1217904212432dfae6404dfb1fb6140867e4e1148c490b8e5d8e4736fa5bfaca",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled all six cup orders from blinded Korean text before answer access. Then read every authored cup and response contract. Temperature, additions, exclusions and per-cup conditions agree; unspecified sugar is optional. Each utterance is self-contained. Difficulty labels remain authored practice hypotheses, not validated proficiency or learning gain.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z"
+    },
+    {
+      "id": "order-rush.n07.v1",
+      "hash": "48f5cf0d4f2fa29171131889d670f5c347d87a48a0eef313523a650330d72d6b",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled all six cup orders from blinded Korean text before answer access. Then read every authored cup and response contract. Temperature, additions, exclusions and per-cup conditions agree; unspecified sugar is optional. Each utterance is self-contained. Difficulty labels remain authored practice hypotheses, not validated proficiency or learning gain.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z"
+    },
+    {
+      "id": "order-rush.n08.v1",
+      "hash": "ebaf3b91dcd41172db3cbc4d4f49e27d1c68ad898b938651dad5d13ba7825d32",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled all six cup orders from blinded Korean text before answer access. Then read every authored cup and response contract. Temperature, additions, exclusions and per-cup conditions agree; unspecified sugar is optional. Each utterance is self-contained. Difficulty labels remain authored practice hypotheses, not validated proficiency or learning gain.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z"
+    },
+    {
+      "id": "order-rush.n09.v1",
+      "hash": "a2343db3b330bfecfe41911b6f7dd2048eb971e08b55e8ca3110a39df416ff8c",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": true,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled all six cup orders from blinded Korean text before answer access. Then read every authored cup and response contract. Temperature, additions, exclusions and per-cup conditions agree; unspecified sugar is optional. Each utterance is self-contained. Difficulty labels remain authored practice hypotheses, not validated proficiency or learning gain.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z"
+    },
+    {
+      "id": "order-rush.n10.v1",
+      "hash": "59a53fd190dfe5091655edd28bbf92d967923ef64e037057d79071ca4b701b40",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": true,
+          "ice": false,
+          "sugar": true
+        },
+        {
+          "base": "coffee",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled all six cup orders from blinded Korean text before answer access. Then read every authored cup and response contract. Temperature, additions, exclusions and per-cup conditions agree; unspecified sugar is optional. Each utterance is self-contained. Difficulty labels remain authored practice hypotheses, not validated proficiency or learning gain.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z"
+    },
+    {
+      "id": "order-rush.n11.v1",
+      "hash": "421098adb06556f94856a3404e5fed200dbc2da9c824158fddc2038027c6312b",
+      "verdict": "pass",
+      "solved": [
+        {
+          "base": "tea",
+          "temp": "hot",
+          "milk": false,
+          "ice": false,
+          "sugar": false
+        },
+        {
+          "base": "coffee",
+          "temp": "cold",
+          "milk": false,
+          "ice": true,
+          "sugar": false
+        }
+      ],
+      "reason": "Independently assembled all six cup orders from blinded Korean text before answer access. Then read every authored cup and response contract. Temperature, additions, exclusions and per-cup conditions agree; unspecified sugar is optional. Each utterance is self-contained. Difficulty labels remain authored practice hypotheses, not validated proficiency or learning gain.",
+      "checks": {
+        "answer_unique": true,
+        "naturalness": true,
+        "skill_fit": true,
+        "difficulty_fit": true,
+        "response_contract": true,
+        "no_official_type_claim": true
+      },
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z"
+    }
+  ],
+  "authorization": "2026-10-28 사용자가 이번 Atlas·WORLD·학습 보완 작업에 GPT 구현 및 작성자와 다른 GPT의 독립 검수 예외를 명시 승인했다. 일반 Claude·Argon 문항 검수 정책은 유지한다.",
+  "author": {
+    "id": "/root/support_engines_review",
+    "model": "GPT (Codex session; exact model identifier not exposed)"
+  },
+  "allowlist": [
+    {
+      "id": "listening-detail-negation",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "effd277db03a4493c6e413b5f5487e1e28bbcbf02e2c4ffa66baa5befc23b423"
+    },
+    {
+      "id": "listening-detail-sequence",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "c8824e72dce08c3015bbd47da86690fcea2be245af86e5b40664e2c615de7bc8"
+    },
+    {
+      "id": "listening-detail-reason",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "341dbd0116f1f0a9ec8666fc4b94974bf2b4fa312c87a88a4fd5bf09205c4b65"
+    },
+    {
+      "id": "listening-detail-condition",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "3767681c5c33e42f4bac2eda65b4a3454e9787f782a3d077bf1ea2ad6814ae83"
+    },
+    {
+      "id": "reading-detail-negation",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "5b8acae1cb2b436d5b11656c6c2bb9eed55597bf022ca0320cef42797534d37c"
+    },
+    {
+      "id": "reading-detail-sequence",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "ce12f2c3c654bec0c953c2dae44d0c88532f1875e485073d5074d987f3d95908"
+    },
+    {
+      "id": "reading-detail-reason",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "637ebe95e00af9f8cadeabee924b9794d2f7cf0e63e0102c601508f2d960ec87"
+    },
+    {
+      "id": "reading-detail-condition",
+      "kind": "recommended-before",
+      "file": "strata/topik-i.recommendations.json",
+      "hash": "98eb2792e79352b1faaccff7a88fe5d3707ec3c1d9d24ac45ed67402767ce13b"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-011",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "5c35644c9d46558ec450e73c72b5d3e8064e2409ff16fc27d24bd05faaf89c82"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-023",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "eeebfff15a4558f8994012a7f718622474653352e096deee6f02afb379af0866"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-027",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "c4975c9aa0547c75e105f7c4b202eb2bc811801b4c10348817d523736dc1c741"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-030",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "a3ee7f99c458f1a9249c0707d46be2ed25427d25982bd21bb8b7343829172b59"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-032",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "b4a61a56b931160e3337bbf91a10c414e35eb9eb5004a19907c0e424c8fd3013"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-a-009",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "81b6802cdf4d7f9bafe2d6a370ed799faa39a118fac6896554d88dee4f7f89d1"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-009",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "3ca9ee57c70b3c1164d99920a0fb633874bf11268738559a4236257ff3902af4"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-010",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "89b51178ad0f13c4d3b38a67e8156ca238d5afb3b208dd545882ddadbda4afb7"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-011",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "45cbf9378da377449e8adeab7d576a8648f3e8406dcad21cb8cd6630836d4fe5"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-012",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "af535e918029b0640dc2eb66e5a6f991c26614ac0e753b750b1b0f89808f84f1"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-001",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "adea71f979a30d6bcfdaf161a923c61d018fd298c620e48fb6d7cef2e061315a"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-002",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "358d4db5a821e240dc3c50dc810adcbfff301217f1e1afc27f7baf36faa5fa53"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-001",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "06172d2ea3d4fd98b25acddb9f6aebf9df768e78d6bb931ebafbf8d46a560740"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-005",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "4e5343d7d91dc42e1f58876009d87176125d62774acaff8a2d1cf653930186db"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-007",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "3e55ee6bdcce0d17372f52138410ad5e865ac2b8e508943d5d8af1b7a8f936f4"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-009",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "8e7543700e0c48bd1363e8943ef4d6a05b27913d3d5d929c72adcaf34fea1e43"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-013",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "a91cade3682803b7a8d2cb05442c79f9b026302ddd8717178a088999a608696c"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-017",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "d11f2a393d27ce41e6adb6b955d0698e44b6c2702f18fa63fd1f2cdf50d2b3f1"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-013",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "e75a409c56136cf7bc2f5b27af743077e8ea81cbff1a32a0abba8ece48736022"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-014",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "ea6fc879f60d61bdef419562e19ae69aa8588fe9cb03c1eeea11b2e532c1e1c7"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-015",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "95ec02dcc6b515cfc7c00cf5733d18514fb75e0a763a63fc1f9f1329b3046f0c"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-016",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "14318d6ba73c96e1a7737f5864c9b5eb2dfb5c0ea471300248a64457fc2c175f"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-017",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "8a01754ade58a7b31ad78f32550ac8e4bfb475913588e5144735e130229ce183"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-018",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "b52f5220c230c96b3e076f74d598fac547cac368adf2fde57c24ef9ed20fbc13"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-003",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "05458194a15e0102f47cbc1d05751d3ce0308db8675f3ee968be4fd922430c22"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-015",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "051c42d959a0d68c323381fe426c1e8aafe294970fe444c8c96c9798d01d5e97"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-019",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "8a5094f1853b7d674fddd5cba02bbbad3dafdf05987bbbea12f731394cf64577"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-c-017",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "4ad53fcf7e2fc2d59afc1ef95f64c3a52b2399ec02f74d57a14c20cf731c3292"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-c-018",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "62177e4da128ecb9337e4ee37cd5285e667ae1f38e9b7a6eefc21e3228b00b79"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-c-019",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "079dd7de40081b4751199c5c829bc22a051112db50e4ad4ce4fc955f3f32fea8"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-029",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "30c26690745b96715e0c0a26704b769e8b1ae47cd016af57ec3f91c31af47a7d"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-030",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "4b64b1a560557ee6475115e8191b2531876d6695c0da5ad8e0444ceb8d7da8b5"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-031",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "8a628cb6c35dd4816d75eccb3e106fad3ffb3e7e004eb563661de32d1eb747a1"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-032",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "92d631fd2e1b8d3949fde64a17284a93a5b3cff5a8d6f412f6f3a1518a625030"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-033",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "607781a0bd3acbd6d8acb8a6bf00a451365302ec2742b5c403ab5be81c3e8175"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-034",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "a1613a36de7069cad873cb629800e29f9d45a3ad831b9ead3dea3bb64c14edfa"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-004",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "c60a363627961178a799f55b793ace931d50d8e16d5cdafcdeeaa6ee745b1048"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-008",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "bc26db413eed902e72e117d65f2ec7999d8f51ad295a952b52bf5702081cabfe"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-012",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "e6bc4b7369dd353d4903c50183b59f9f642f30cbaf25a27b0829af6a430d9041"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-016",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "6bba48edc745e2ee9c6403d1b2d4d48df2263341b9a5e2580ad425d75e92dc37"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-020",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "cbc94a083bff69b053b324f4d12a0bb6ff82f6ac1d1d023953f31bffadc4971b"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-b-024",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "a5ef22e7dce056b44e521151582debae7f9c3435abeabbc3011eb99eab504b3b"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-025",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "4a02791acf39817442d4600fe97b1655157b764ce1e8a8f3a1e77c406a6f04e5"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-026",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "786b22605043a18def4cfedc2b3eacbbc8ca7c2f612304ea2cf6bf446fd9ab51"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-027",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "b622f82f7ed7220c715f35996fdcd641615e86fb295d97aa417f27454a68bd2c"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-d-028",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "f2e39e2cd8e4a31f6390e6283487180a6705b65176f58cb9e00f6fb0db7f3298"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-e-013",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "bf2791fcf07b62d3c7feeb14245eaf121d778a14488d8e6ae20a3cb5f5822de6"
+    },
+    {
+      "id": "rhythm-transfer-ti-l-e-015",
+      "kind": "binary-choice",
+      "file": "experiences/korean-rhythm/supplemental.json",
+      "hash": "f5bb6c448bdd6a1e5a52c0055a16687d49c3ec644aa8f67156951fe0081d58ba"
+    },
+    {
+      "id": "order-rush.o01.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "cdca27a65f005c1a4837a6fe2dea1af7967d0f23f5268ed36654fb5f9446fa08"
+    },
+    {
+      "id": "order-rush.o02.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "b6b3ba15a2f58139968d8406f03cedfacc9e5df8c1ec7c0019e774ed3044cbeb"
+    },
+    {
+      "id": "order-rush.o03.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "b6aefabe220ed6bbb5d507c6c79c02500d903cee5287f85cee752634c4c0a001"
+    },
+    {
+      "id": "order-rush.o04.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "1a57a23d383592b1be7686715853c024ae7b58785eb63c50447823f162512e61"
+    },
+    {
+      "id": "order-rush.o05.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "de5bb51e4c7c2ccb65e18e7abec085d66427e66a416eeac345f643071ccbc5a2"
+    },
+    {
+      "id": "order-rush.o06.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "7214f40b2285cb1a2139af670b900a88751f2ad54ae21711a805bf24354f0441"
+    },
+    {
+      "id": "order-rush.o07.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "b7b636e4050d1821f94a91dae8247ec7d4ae461f501480c48c196258af0524e4"
+    },
+    {
+      "id": "order-rush.o08.v2",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "6ad48715d87dd137909aa428196b1775e67a4c414ecb39624e09bc26afbb9892"
+    },
+    {
+      "id": "order-rush.o09.v2",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "c2733cebe5e4945e3505a6ada28458cb220c14e6708e36171b3df1acac570c52"
+    },
+    {
+      "id": "order-rush.o10.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "b634713fe95e3eb5a876eef0a7a3e8639a07d18168225403289a14ed9d0fddae"
+    },
+    {
+      "id": "order-rush.o11.v2",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "ca668de5809761cd877479286191e45f15be2f047504580ba78f3bfdd7997c85"
+    },
+    {
+      "id": "order-rush.o12.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "c97a3505cc6618e84282491194945f8eb5b60e1f5a67d8c4d23c610d69bd033d"
+    },
+    {
+      "id": "order-rush.r01.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "0efa5dfac9d873a17b195ad9089a2fdfdfb14b8baedbe7d0028594852931c5f3"
+    },
+    {
+      "id": "order-rush.r02.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "5ca21161e77aa8ff8ba140bce7a095c9c87543b9b97203f4b66efa4e126fc224"
+    },
+    {
+      "id": "order-rush.r03.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/core.mjs",
+      "hash": "fc53816916f93dc46dff4c8f94a7f998d2870e3c3c54c18f0ed6d5fb72b6e1a5"
+    },
+    {
+      "id": "order-rush.n01.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "5767d396b65cf3a8493fa440c7ce53c5dc2831f11d052b995fb7fcf01929c5da"
+    },
+    {
+      "id": "order-rush.n02.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "c339177f97519dc529ecc8943dcdd1f3a4e477229356dc558dc39fc0e39eb0e3"
+    },
+    {
+      "id": "order-rush.n03.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "828fa706a71686eedeb4e11b325269330cdae6a374ec49e0152a3146ee33a47a"
+    },
+    {
+      "id": "order-rush.n04.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "eb64260c13088eb2c5faa6e5995191801a99f39cd5d5d3f0663f64f3b0b0e290"
+    },
+    {
+      "id": "order-rush.n05.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "23974afba3c8b2f487a0a002de236fc5a8964ab4c93108c128a89fc85213f250"
+    },
+    {
+      "id": "order-rush.n06.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "1217904212432dfae6404dfb1fb6140867e4e1148c490b8e5d8e4736fa5bfaca"
+    },
+    {
+      "id": "order-rush.n07.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "48f5cf0d4f2fa29171131889d670f5c347d87a48a0eef313523a650330d72d6b"
+    },
+    {
+      "id": "order-rush.n08.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "ebaf3b91dcd41172db3cbc4d4f49e27d1c68ad898b938651dad5d13ba7825d32"
+    },
+    {
+      "id": "order-rush.n09.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "a2343db3b330bfecfe41911b6f7dd2048eb971e08b55e8ca3110a39df416ff8c"
+    },
+    {
+      "id": "order-rush.n10.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "59a53fd190dfe5091655edd28bbf92d967923ef64e037057d79071ca4b701b40"
+    },
+    {
+      "id": "order-rush.n11.v1",
+      "kind": "cup-compose",
+      "file": "experiences/order-rush/additional-orders.json",
+      "hash": "421098adb06556f94856a3404e5fed200dbc2da9c824158fddc2038027c6312b"
+    }
+  ],
+  "rounds": [
+    {
+      "packetHash": "c1f0aef288f61c3f0beaeb49a7d989f07a19d4f5cd7df5829572ad51788e3dcf",
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T05:45:32.137Z",
+      "evidence": {
+        "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-independent.md",
+        "sha256": "b6c9bcc52206a9b8ccc10225b1d10f85a31e332a922af6ac74c63cef13d6f5e3"
+      },
+      "unitIds": [
+        "listening-detail-negation",
+        "listening-detail-sequence",
+        "listening-detail-reason",
+        "listening-detail-condition",
+        "reading-detail-negation",
+        "reading-detail-sequence",
+        "reading-detail-reason",
+        "reading-detail-condition",
+        "rhythm-transfer-ti-l-b-011",
+        "rhythm-transfer-ti-l-b-023",
+        "rhythm-transfer-ti-l-b-027",
+        "rhythm-transfer-ti-l-b-030",
+        "rhythm-transfer-ti-l-b-032",
+        "rhythm-transfer-ti-l-a-009",
+        "rhythm-transfer-ti-l-d-009",
+        "rhythm-transfer-ti-l-d-010",
+        "rhythm-transfer-ti-l-d-011",
+        "rhythm-transfer-ti-l-d-012",
+        "rhythm-transfer-ti-l-d-001",
+        "rhythm-transfer-ti-l-d-002",
+        "rhythm-transfer-ti-l-b-001",
+        "rhythm-transfer-ti-l-b-005",
+        "rhythm-transfer-ti-l-b-007",
+        "rhythm-transfer-ti-l-b-009",
+        "rhythm-transfer-ti-l-b-013",
+        "rhythm-transfer-ti-l-b-017",
+        "rhythm-transfer-ti-l-d-013",
+        "rhythm-transfer-ti-l-d-014",
+        "rhythm-transfer-ti-l-d-015",
+        "rhythm-transfer-ti-l-d-016",
+        "rhythm-transfer-ti-l-d-017",
+        "rhythm-transfer-ti-l-d-018",
+        "rhythm-transfer-ti-l-b-003",
+        "rhythm-transfer-ti-l-b-015",
+        "rhythm-transfer-ti-l-b-019",
+        "rhythm-transfer-ti-l-c-017",
+        "rhythm-transfer-ti-l-c-018",
+        "rhythm-transfer-ti-l-c-019",
+        "rhythm-transfer-ti-l-d-029",
+        "rhythm-transfer-ti-l-d-030",
+        "rhythm-transfer-ti-l-d-031",
+        "rhythm-transfer-ti-l-d-032",
+        "rhythm-transfer-ti-l-d-033",
+        "rhythm-transfer-ti-l-d-034",
+        "rhythm-transfer-ti-l-b-004",
+        "rhythm-transfer-ti-l-b-008",
+        "rhythm-transfer-ti-l-b-012",
+        "rhythm-transfer-ti-l-b-016",
+        "rhythm-transfer-ti-l-b-020",
+        "rhythm-transfer-ti-l-b-024",
+        "rhythm-transfer-ti-l-d-025",
+        "rhythm-transfer-ti-l-d-026",
+        "rhythm-transfer-ti-l-d-027",
+        "rhythm-transfer-ti-l-d-028",
+        "rhythm-transfer-ti-l-e-013",
+        "rhythm-transfer-ti-l-e-015",
+        "order-rush.o01.v1",
+        "order-rush.o02.v1",
+        "order-rush.o03.v1",
+        "order-rush.o04.v1",
+        "order-rush.o05.v1",
+        "order-rush.o06.v1",
+        "order-rush.o07.v1",
+        "order-rush.o08.v2",
+        "order-rush.o09.v2",
+        "order-rush.o10.v1",
+        "order-rush.o11.v2",
+        "order-rush.o12.v1",
+        "order-rush.r01.v1",
+        "order-rush.r02.v1",
+        "order-rush.r03.v1",
+        "order-rush.n01.v1",
+        "order-rush.n02.v1",
+        "order-rush.n03.v1",
+        "order-rush.n04.v1",
+        "order-rush.n05.v1"
+      ]
+    },
+    {
+      "packetHash": "2bfba54f0c856fb253e35b17645268aee6556c6e19607d78508743fbc55398d6",
+      "reviewer": {
+        "id": "/root",
+        "model": "GPT (Codex primary agent; independent from author agent)"
+      },
+      "reviewedAt": "2026-10-28T06:03:06.047Z",
+      "evidence": {
+        "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-2bfba54f0c85-independent.md",
+        "sha256": "5e9bb50138671890bd99d6657032c1226078fbbdaa70ba75ff989c5f27b8bfe1"
+      },
+      "unitIds": [
+        "order-rush.n06.v1",
+        "order-rush.n07.v1",
+        "order-rush.n08.v1",
+        "order-rush.n09.v1",
+        "order-rush.n10.v1",
+        "order-rush.n11.v1"
+      ]
+    }
+  ]
+}

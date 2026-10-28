@@ -8,6 +8,7 @@ import { placeAt, caption, doing, goalOf } from './town/village.mjs';
 import { lightAt } from './town/light.mjs';
 import { validOffset } from './town/clock.mjs';
 import { createMoodLines, moodAt } from './day-mood.mjs';
+import { createLanguageSettings } from './day-language.mjs';
 import { createOffer, offerModel, placeModel, takeModel, sceneLine, pairSteps, lineText, iconSvg, FEEDBACK, NAMES as CARD_NAMES, CARD_BY_ID } from './day-cards.mjs';
 import { createNotebook } from './day-notebook.mjs';
 import { createStay } from './day-stay.mjs';
@@ -16,6 +17,7 @@ import { createMeanwhile } from './day-meanwhile.mjs';
 import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
 import { createTeaBoard, teaGuests } from './day-tea.mjs';
+import { goodbye } from './new-tea.mjs';
 import { createGatherBoard, REFUSALS as GATHER_REFUSALS, jarFillers, itemName as gatherItemName } from './day-gather.mjs';
 import { paramsFor } from './town/params.mjs';
 
@@ -364,7 +366,7 @@ async function command(type, payload = {}) {
   setBusy(true);
   try {
     await queue(async () => {
-      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|GATHER_|GREET$)/.test(type)) {
+      if (/^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|LANGUAGE_|GATHER_|GREET$)/.test(type)) {
         await ensureFreshPresence();
         payload = { ...payload, surfaceId, fence: presence.fence };
       }
@@ -373,7 +375,7 @@ async function command(type, payload = {}) {
     });
     if (type === 'DAY_MOVE') { $('scene').focus({ preventScroll: true }); $('scene').scrollIntoView({ block: 'start', behavior: reduced.matches ? 'instant' : 'smooth' }); }
     return true;
-  } catch (e) { showError(e.message); return false; }
+  } catch (e) { if (!(type === 'LANGUAGE_OFFER' && (e.code === 'language-no-offer' || e.status === 409))) showError(e.message); return false; }
   finally { setBusy(false); }
 }
 /** The gathering board's commands (W8b, design review F3): one after another in a line of their own — a quick second pick
@@ -551,7 +553,7 @@ function renderScene() {
   text('fallback-title', names[day.location] || day.location); text('fallback-line', description);
   // The text alternative also says each resident's line now — its card's, its pair's or its mind's (W4 screen review F12, W5b).
   const sv = scene.village, lineNow = id => { if (!sv || !RESIDENT_IDS.includes(id)) return null; const t = Math.min(sv.band.endMs - 1, Math.max(sv.nowMs, serverNow() ?? sv.nowMs));
-    const lineId = residentLine(sv, id, t)?.id || moodAt(sv.segments, id, t); return lineId ? lineText(lineId) : null; };
+    const lineId = residentLine(sv, id, t)?.id || moodAt(sv.segments, id, t); return lineId ? lineText(lineId, snapshot?.view.language?.ladder?.reading?.stable || 'L2') : null; };
   const people = (scene.npcs || []).filter(n => !n.location || n.location === day.location).map(n => { const said = lineNow(n.id);
     return `${n.name || roleNames[n.id] || n.id}: ${n.line || n.activityLabel || n.actionLabel || n.goal || '자기 일을 하고 있어요.'}${said ? ` 「${said}」` : ''}`; });
   const peopleSig = JSON.stringify(people);
@@ -598,7 +600,7 @@ function placePanelOpen() { return !walking() || walkPanel; }
  * 「같이 해요」, or the paused one to go on with — and at home the news note by the door (newest three, no dates). */
 function renderCards() {
   const v = snapshot.view.day?.scene?.village, location = snapshot.view.day?.location, panel = $('place-cards');
-  const model = v && !dayActive() && !bazaarActive() ? placeModel({ location, residentsHere: residentsHere(), hearsay: v.hearsay || {}, cards: v.cards || [], news: v.news || [], take: v.take }) : null;
+  const model = v && !dayActive() && !bazaarActive() ? placeModel({ location, residentsHere: residentsHere(), hearsay: v.hearsay || {}, cards: v.cards || [], news: v.news || [], take: v.take, level: snapshot?.view.language?.ladder?.reading?.stable || 'L2' }) : null;
   const session = `${location}:${placeOpens}`;
   if (greetSession?.session !== session) greetSession = { session, greet: model?.greet ?? null };
   else if (!greetSession.greet && model?.greet && !greeted.has(model.greet.ref)) greetSession.greet = model.greet;
@@ -662,9 +664,36 @@ async function openCard(c, source) {
  * (Atlas's four answers, §20-3). Closing before it is done leaves it 「하던 생활」 (CARD_CLOSE → paused). */
 // The card this window opened itself (final review F3): its panel opens here though another window holds the town.
 let cardFeedbackOpen = false, cardClosing = false, cardOpenedHere = null, cardGiving = false;
+let cardLineTicket = 0;
+function paintNewTea(m) {
+  let tools = $('card-dialog-help');
+  if (!tools) { tools = document.createElement('div'); tools.id = 'card-dialog-help'; $('card-choices').after(tools); }
+  tools.hidden = !m.newTea || m.done;
+  if (tools.hidden) { cardLineTicket++; return; }
+  const scene = m.newTea, key = JSON.stringify([scene.turn, scene.line, scene.help, scene.aside, scene.picture]);
+  if (signatures.get('new-tea-line') !== key) {
+    signatures.set('new-tea-line', key); const ticket = ++cardLineTicket, line = $('card-line');
+    line.replaceChildren();
+    if (scene.aside) { const aside = document.createElement('span'); aside.textContent = `${scene.aside} `; line.append(aside); }
+    if (scene.picture) { const pic = document.createElement('span'); pic.textContent = scene.picture === 'honey' ? '🍯 꿀 · ' : scene.picture === 'leaf' ? '🍃 향 · ' : '☕ 잔 · '; line.append(pic); }
+    if (scene.help === 'slower') {
+      const words = scene.line.split(' '), chunks = [];
+      for (let i = 0; i < words.length; i += 3) chunks.push(words.slice(i, i + 3).join(' '));
+      chunks.forEach((chunk, i) => setTimeout(() => { if (ticket === cardLineTicket && $('card-dialog').open) line.append(document.createTextNode(`${chunk} `)); }, i * 650));
+    } else if (scene.help === 'repeat') { const emphasis = document.createElement('u'); emphasis.textContent = scene.line; line.append(emphasis); }
+    else line.append(document.createTextNode(scene.line));
+  }
+  if (!tools.children.length) {
+    for (const [kind, label] of [['repeat', '다시 말해 주세요'], ['slower', '천천히 말해 주세요'], ['meaning', '무슨 뜻이에요?']]) {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'felt subtle'; button.textContent = label;
+      button.dataset.command = 'CARD_HELP'; button.addEventListener('click', async () => { await command('CARD_HELP', { kind }); refocusCard(); }); tools.append(button);
+    }
+  }
+  text('card-close', '그만할래요');
+}
 function renderCardDialog() {
   const dialog = $('card-dialog'), m = takeModel(snapshot.view.day?.scene?.village?.take);
-  if (!m) { if (dialog.open) dialog.close(); cardFeedbackOpen = false; cardOpenedHere = null; return; }
+  if (!m) { if (dialog.open) dialog.close(); cardLineTicket++; signatures.delete('new-tea-line'); cardFeedbackOpen = false; cardOpenedHere = null; return; }
   // A card whose 「나와 함께」 is a life activity (W8: C5 the order, R6 the one-cup board) is done on that board, not here.
   if (CARD_BY_ID.get(m.card)?.paths?.player?.activity) { if (dialog.open) dialog.close(); return; }
   // A take still open (a reload, another window's answer) brings its panel back — not while this window is closing it, and
@@ -672,7 +701,9 @@ function renderCardDialog() {
   if (!dialog.open) { if (cardClosing || stay?.active() || !presence?.owner && cardOpenedHere !== m.card) return; cardFeedbackOpen = false; dialog.showModal(); }
   // What has the keyboard in the panel, so it stays there when a part is drawn again (screen review B2).
   const had = dialog.contains(document.activeElement) ? document.activeElement : null, hadChoice = had?.dataset.choice ?? null, hadAnswer = had?.dataset.feedback ?? null;
-  text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]); text('card-line', m.line || '');
+  text('card-title', m.title); text('card-owner-name', CARD_NAMES[m.owner]);
+  if (!m.newTea || m.done) { text('card-line', m.line || ''); signatures.delete('new-tea-line'); }
+  text('card-close', m.newTea && !m.done ? '그만할래요' : '닫기'); paintNewTea(m);
   if ($('card-icon').dataset.icon !== m.icon) { $('card-icon').dataset.icon = m.icon; $('card-icon').innerHTML = iconSvg(m.icon); }
   // 「잎 통이 비어 가요」 (C3, §8-4): 「내가 딴 잎 드리기」 beside the two scents while the basket holds leaves that fill the jar
   // (W8b — the gift settles the card with the player, GATHER_GIVE); several kinds give one by one by name.
@@ -724,13 +755,19 @@ function refocusCard({ choice = null, answer = null } = {}) {
     || (!feedback.hidden && feedback.querySelector('.feedback-more')) || $('card-close')).focus();
 }
 function closeCard() {
+  const tea = snapshot?.view.day?.scene?.village?.take?.newTea;
+  cardLineTicket++; signatures.delete('new-tea-line');
   $('card-dialog').close();
   if (!snapshot?.view.day?.scene?.village?.take) return;
   // A receipt or a read still out (busy) must not drop the close: it goes once the window is free again.
-  cardClosing = true; freeCommand('CARD_CLOSE').finally(() => { cardClosing = false; });
+  cardClosing = true; freeCommand('CARD_CLOSE').finally(() => { cardClosing = false; if (tea && !tea.done) text('walk-status', goodbye(tea.level)); });
 }
 function accept(data) {
+  const endedTea = !!snapshot?.view.tea?.open && !data.view.tea?.open;
+  const endedDialogue = snapshot?.view.day?.scene?.village?.take?.card === 'C4' && !data.view.day?.scene?.village?.take;
   snapshot = data; connected = true;
+  languageSettings?.update(data.view.language, !!data.view.tea?.open || !!data.view.day?.scene?.village?.take);
+  if (endedTea || endedDialogue) queueMicrotask(() => languageSettings?.boundary(data.view.language, serverNow() || Date.now()).catch(() => {}));
   if (data.presence?.surfaceId === surfaceId) presence = data.presence;
   const day = data.view.day; if (!day) throw new Error('첫 하루의 상태를 읽지 못했어요.');
   const story = bazaarActive() ? data.view.bazaar : day;
@@ -848,8 +885,9 @@ function residentLine(v, id, t) {
  * the name while the player is near (§7-3, W4) — only residents the plan draws this frame, never over a dialog, the
  * nearby panel or the text alternative, nor for the resident whose offer is up (that card carries its words). */
 let moodLines = null;
+let languageSettings = null;
 function moodFrame(v, village) {
-  moodLines ||= createMoodLines($('mood-lines'), $('mood-live'));
+  moodLines ||= createMoodLines($('mood-lines'), $('mood-live'), { getLadder: () => snapshot?.view.language?.ladder });
   const blocked = !v || !renderer || fallback || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active();
   // Where the canvas sits in the scene, read only when a card is placed (no layout reads on frames without one).
   let offset = null, scene = null;
@@ -880,7 +918,7 @@ function offerFrame(v, blocked, labelAt) {
     onToday: async o => { if (await freeCommand('PREF_TODAY_OTHER', { activity: `card.${o.card}` })) freeCommand('CARD_DEFER', { contactId: o.id }); },
     onLess: async o => { if (await freeCommand('PREF_LESS_OFTEN', { activity: `card.${o.card}`, on: true })) freeCommand('CARD_DECLINE', { contactId: o.id }); },
   });
-  const offer = v && presence ? offerModel(snapshot?.view.life?.cardContact, { surfaceId, fence: presence.fence }) : null;
+  const offer = v && presence ? offerModel(snapshot?.view.life?.cardContact, { surfaceId, fence: presence.fence, level: snapshot?.view.language?.ladder?.reading?.stable || 'L2' }) : null;
   const shown = cardOfferUi.update({ offer, labelAt, blocked: blocked || !v });
   const gesture = shown.gesture && offer ? offer.owner : null;
   if (gesture !== offerGesture) { offerGesture = gesture; renderScene(); }
@@ -1065,6 +1103,8 @@ try {
   notices = Object.assign(document.createElement('div'), { className: 'town-notices' }); $('scene').append(notices);
   meanwhileUi = createMeanwhile(notices, { live: $('mood-live'), onSeen: noteSeen });
   askUi = createAsk(notices, { command: askCommand, live: $('mood-live'), tutor: () => tutor });
+  languageSettings = createLanguageSettings($('settings-dialog'), { scene: notices, command: (type, payload) => freeCommand(type, payload), readContext: () => worldHost?.languageContext?.() || {} });
+  languageSettings.update(snapshot?.view.language, !!snapshot?.view.tea?.open || !!snapshot?.view.day?.scene?.village?.take);
   paintLight(); setInterval(paintLight, 1000); // the hour's light (W7), before the first frame shows
   renderScene(); applyWalkView(); if (walking()) $('scene').focus({ preventScroll: true });
   raf = requestAnimationFrame(frame); setInterval(tick, 1000);

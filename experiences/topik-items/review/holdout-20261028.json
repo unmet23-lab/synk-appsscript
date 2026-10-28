@@ -1,0 +1,254 @@
+{
+  "version": "atlas-holdout-20261028",
+  "purpose": "지연 확인 전용. 일반 진단·연습·게임·복습·시험에서 family 또는 set가 같은 원문도 제외한다. 과거에 노출된 계정에는 새 문항으로 공급하지 않는다.",
+  "items": [
+    {
+      "sourceItemId": "ti-l-b-032",
+      "sourceItemKey": "topik-items.ti-l-b-032.v2",
+      "familyKey": "topik-items.ti-l-b-032",
+      "setId": null,
+      "sourceHash": "b8ccb6c64ece77306a465d35e37e1735013b5fbbfa0df2ee0e5c286f63a6a313",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-b-032.v2",
+          "familyKey": "topik-items.ti-l-b-032"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-a-009",
+      "sourceItemKey": "topik-items.ti-l-a-009.v1",
+      "familyKey": "topik-items.ti-l-a-009",
+      "setId": null,
+      "sourceHash": "6df4e7d870bc626e9e3b9007b5df469e34310c4b0710cc7f2f7c4e79a0299f11",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-a-009.v1",
+          "familyKey": "topik-items.ti-l-a-009"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-d-001",
+      "sourceItemKey": "topik-items.ti-l-d-001.v1",
+      "familyKey": "topik-items.ti-l-d-001",
+      "setId": null,
+      "sourceHash": "049f8eebe5caba92df956986848682dee289bf7e9bd309834a36129e6f29a6ab",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-d-001.v1",
+          "familyKey": "topik-items.ti-l-d-001"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-d-002",
+      "sourceItemKey": "topik-items.ti-l-d-002.v1",
+      "familyKey": "topik-items.ti-l-d-002",
+      "setId": null,
+      "sourceHash": "b20bef904916da036a13d894c7da6ac8f2d8da2cc688a4cce563f218d901c4a7",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-d-002.v1",
+          "familyKey": "topik-items.ti-l-d-002"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-b-013",
+      "sourceItemKey": "topik-items.ti-l-b-013.v2",
+      "familyKey": "topik-items.ti-l-b-013",
+      "setId": null,
+      "sourceHash": "0051e7f86fc3925bb4c8472d553316da58169337c7c574f1769e9f8f64647baf",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-b-013.v2",
+          "familyKey": "topik-items.ti-l-b-013"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-b-017",
+      "sourceItemKey": "topik-items.ti-l-b-017.v2",
+      "familyKey": "topik-items.ti-l-b-017",
+      "setId": null,
+      "sourceHash": "ab9b29a96a0f43235aee66ff6e117dca53e20ae273f9c93211fa97b84739397b",
+      "skillId": "ko.listening.negation",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-b-017.v2",
+          "familyKey": "topik-items.ti-l-b-017"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-d-017",
+      "sourceItemKey": "topik-items.ti-l-d-017.v1",
+      "familyKey": "topik-items.ti-l-d-017",
+      "setId": null,
+      "sourceHash": "32d5570013c6def4cf78e60492de92b8bc9960b1db30c0de248c1bd1f52d4a0d",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-d-017.v1",
+          "familyKey": "topik-items.ti-l-d-017"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-d-018",
+      "sourceItemKey": "topik-items.ti-l-d-018.v1",
+      "familyKey": "topik-items.ti-l-d-018",
+      "setId": null,
+      "sourceHash": "1609fa60c4ac1647d73bddb018ca9de85e2304f3ed30f4a7a9e335ea52beafcb",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-d-018.v1",
+          "familyKey": "topik-items.ti-l-d-018"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-c-018",
+      "sourceItemKey": "topik-items.ti-l-c-018.v1",
+      "familyKey": "topik-items.ti-l-c-018",
+      "setId": null,
+      "sourceHash": "ed2a6761ae6fe9f757378c83b5394ff3182a53f50970ad29d809d5dfc5b8a864",
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-c-018.v1",
+          "familyKey": "topik-items.ti-l-c-018"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-c-019",
+      "sourceItemKey": "topik-items.ti-l-c-019.v1",
+      "familyKey": "topik-items.ti-l-c-019",
+      "setId": null,
+      "sourceHash": "abc827e637af22621d1f060561998e64890fd68f3d3c307f5b362bdda86e0427",
+      "skillId": "ko.listening.condition",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-c-019.v1",
+          "familyKey": "topik-items.ti-l-c-019"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-d-033",
+      "sourceItemKey": "topik-items.ti-l-d-033.v1",
+      "familyKey": "topik-items.ti-l-d-033",
+      "setId": null,
+      "sourceHash": "0d473ae625e9f1b26d0752b711788bd0783d4928a914bfbd5d6d43ab593c6e4b",
+      "skillId": "ko.listening.condition",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-d-033.v1",
+          "familyKey": "topik-items.ti-l-d-033"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-d-034",
+      "sourceItemKey": "topik-items.ti-l-d-034.v1",
+      "familyKey": "topik-items.ti-l-d-034",
+      "setId": null,
+      "sourceHash": "992be67980eeed10a6bf2e366b7e8cdc39a94a917131e092dbcff8fd4cbdffa2",
+      "skillId": "ko.listening.condition",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-d-034.v1",
+          "familyKey": "topik-items.ti-l-d-034"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-b-020",
+      "sourceItemKey": "topik-items.ti-l-b-020.v1",
+      "familyKey": "topik-items.ti-l-b-020",
+      "setId": null,
+      "sourceHash": "2a607c69c81c3d6ecce484fe2f2972740c5f38fd6a1a8ad06dd165f25a9594ed",
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-b-020.v1",
+          "familyKey": "topik-items.ti-l-b-020"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-b-024",
+      "sourceItemKey": "topik-items.ti-l-b-024.v2",
+      "familyKey": "topik-items.ti-l-b-024",
+      "setId": null,
+      "sourceHash": "d730cb2c3b9147bf3198d34146f46646ed7cb2ace19694717653f55fef226117",
+      "skillId": "ko.listening.reason",
+      "difficulty": 1,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-b-024.v2",
+          "familyKey": "topik-items.ti-l-b-024"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-e-013",
+      "sourceItemKey": "topik-items.ti-l-e-013.v1",
+      "familyKey": "topik-items.ti-l-e-013",
+      "setId": "ti-l-e-s07",
+      "sourceHash": "95ec6a6b618e5dc121956c44a7f68c7ff13f54688e140015d1e146d59b19bbc1",
+      "skillId": "ko.listening.reason",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-e-013.v1",
+          "familyKey": "topik-items.ti-l-e-013"
+        },
+        {
+          "itemKey": "topik-items.ti-l-e-014.v1",
+          "familyKey": "topik-items.ti-l-e-014"
+        }
+      ]
+    },
+    {
+      "sourceItemId": "ti-l-e-015",
+      "sourceItemKey": "topik-items.ti-l-e-015.v1",
+      "familyKey": "topik-items.ti-l-e-015",
+      "setId": "ti-l-e-s08",
+      "sourceHash": "60e0d405db67ff188dc5aeee1ec4172afa659d0cf214d97c0807bba9cf428fb0",
+      "skillId": "ko.listening.reason",
+      "difficulty": 2,
+      "exposurePeers": [
+        {
+          "itemKey": "topik-items.ti-l-e-015.v1",
+          "familyKey": "topik-items.ti-l-e-015"
+        },
+        {
+          "itemKey": "topik-items.ti-l-e-016.v1",
+          "familyKey": "topik-items.ti-l-e-016"
+        }
+      ]
+    }
+  ]
+}

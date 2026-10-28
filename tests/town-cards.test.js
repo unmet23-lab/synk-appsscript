@@ -14,7 +14,7 @@ const input = (id, extra = {}) => ({ villageSeed: 'cards-test', lifeDay: LIFE, b
 const resident = extra => ({ recent: [], placesToday: [], lastSpot: null, firstOfDay: false, energy: 80, chores: 0, social: 60, choresTick: 0, ...extra });
 const others = (segments, npc) => segments.filter(s => s.npc !== npc);
 
-test('계기 — 마모·비·비 그침·비 갠 뒤·상태·차례·밤·계절·새 도구·손님 몰림, C4는 잠겨 있다', async () => {
+test('계기 — 마모·비·비 그침·비 갠 뒤·상태·차례·밤·계절·새 도구·손님 몰림, C4 첫 새 메뉴', async () => {
   const { CARD_BY_ID: C, triggerHolds, villageStart } = await townModule('cards');
   const vs = villageStart(input('day', { wear: { 'cafe-tray': 18 } }));
   const at = extra => ({ t: DAY0 + 7 * HOUR, state: { energy: 80, chores: 0, social: 60 }, showsToday: 0, allNighter: false, raining: () => false,
@@ -38,7 +38,10 @@ test('계기 — 마모·비·비 그침·비 갠 뒤·상태·차례·밤·계�
   vs.marks.newToolDay = LIFE - 1; assert.ok(triggerHolds(C.W5, vs, at()), '새 도구 다음 날');
   vs.marks.newToolDay = LIFE; assert.ok(!triggerHolds(C.W5, vs, at()), '바꾼 날은 아니다');
   assert.ok(triggerHolds(C.W2, vs, at({ rushAt: () => true })) && !triggerHolds(C.W2, vs, at()));
-  assert.ok(!triggerHolds(C.C4, vs, at()) && C.C4.locked === 'W9', 'C4는 W9 대화 장면과 함께 선다');
+  assert.ok(triggerHolds(C.C4, vs, at()) && !C.C4.locked && C.C4.paths.player.ready, 'C4는 W9 대화 장면과 함께 선다');
+  vs.cards.C4 = { status: 'idle', last: { path: 'self', day: LIFE } };
+  assert.ok(triggerHolds(C.C4, vs, at()), '혼자 아직 못 정한 메뉴는 다시 제안할 수 있다');
+  vs.cards.C4.last.path = 'player'; assert.equal(triggerHolds(C.C4, vs, at()), false);
 });
 
 test('카드는 주인의 결정에 생기고 다음 결정에 풀린다 — 열쇠·참조·쉼·흔적·마모, 같은 입력이면 같은 결과', async () => {

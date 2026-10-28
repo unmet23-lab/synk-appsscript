@@ -23,7 +23,8 @@ export function bankItem(row){
   audio:row.section==='listening'?`topik-items/${row.audio.file}`:null,plays:row.section==='listening'?row.audio.plays:null,seconds:row.audio?.seconds??null,
   prompt:row.passage||null,script:Array.isArray(row.script)?Object.freeze(row.script.map(line=>Object.freeze({speaker:line.speaker,text:line.text}))):null,
   question:row.question,choices:Object.freeze(row.choices.map((label,index)=>Object.freeze({id:ids[index],label}))),correctId:ids[row.answer],
-  explanation:Object.freeze({...row.explanation}),choiceNotes:Object.freeze([...(row.choiceNotes||[])]),label:tiShort(opening)});
+  explanation:Object.freeze({...row.explanation}),choiceNotes:Object.freeze([...(row.choiceNotes||[])]),label:tiShort(opening),
+  ...(row.supplyRole==='delayed'?{supplyRole:'delayed',exposurePeers:Object.freeze((row.exposurePeers||[]).map(peer=>Object.freeze({itemKey:peer.itemKey,familyKey:peer.familyKey})))}:{})});
 }
 export function bankItems(bank){
  if(!tiRecord(bank)||!Array.isArray(bank.items))return Object.freeze([]);

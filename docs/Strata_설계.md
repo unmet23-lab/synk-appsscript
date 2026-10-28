@@ -5,6 +5,10 @@
 
 ## 1. 무엇이고 무엇이 아닌가
 
+**2026-10-28 권장 준비 관계:** [topik-i.recommendations.json](../strata/topik-i.recommendations.json)에 듣기·읽기 각각 `detail → negation/sequence/reason/condition` 8개를 추가했다. `recommended_before`는 항상 `blocking:false`이며 필수 선행 관계가 아니다. 공식 근거는 [한국어 표준 교육과정 고시](https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2)의 성취 목표 범위이고, 구체 정보 확인을 먼저 연습하자는 순서는 SYNK의 설계 해석이다. `basis.official_scope`와 `basis.interpretation`을 나눠 저장하며 효과가 검증된 학습 순서라고 주장하지 않는다.
+
+`map.recommendedBefore(targetId)`는 검수 통과한 직접 관계만 `{node,target,blocking:false,reason_ko,basis,source_refs,review}`로 돌려준다. 목표와 무관한 선행 능력을 가산하지 않으며, 소비자는 이미 독립 증거가 있는 준비 능력을 제외한다. `candidates()`의 `advisory`도 `mastered`를 제외하고 `blocked_by`는 늘리지 않는다. 이 원천도 TOPIK I 지도의 버전 해시에 포함한다. 실제 검수는 이번 작업에 사용자가 승인한 작성자·검수자 분리 GPT 예외로 수행했고 [문항 검수 기록](../experiences/topik-items/review/atlas-world-learning-20261028.json)에 남겼다.
+
 **2026-10-23 원천 분리:** 실행 코드를 평가해 문법을 읽던 경로를 없애고 `strata/grammar-bank.json`에 문법 91개와 급수 밴드 6개를 값 그대로 옮겼다. `tools/lib/문법뱅크.js`가 JSON을 검증하며 계약·Strata 지도의 생성기가 함께 읽는다. 옛 `엔진_콘텐츠AI.js`와 TOPIK I 문형 자료의 당시 출처 메모는 보존했다. 문형 자료는 메모까지 학습 지도 버전에 포함하므로, 이번 코드 정리로 학습 내용과 기록의 버전을 바꾸지 않는다.
 
 **2026-10-01 구현 상태:** `strata/maps/ko.json`(기존 기술 30·문법 91·오류 태그 23, 출처 해시 포함)과 `strata/index.js` 순수 조회(마디·선행·태그로·다음후보)가 있다. 정확 대응 8/미대응 15를 유지한다. 선행 관계는 0개이고, 문법 91개 중 62개(3~5급 문법 전부 포함)는 아직 어느 기술에도 묶이지 않았다. 급수로·목표로·일로/날로·길, 상황 마디, AI 초안은 아직 없다(한글 층은 10-03에 생겼다 — 아래 §3의 한글 층 줄). Core의 교육 어댑터가 문항에 적힌 마디와 정확 태그 연결을 학습 항목으로 쓰고, Trail·Temper가 그 마디 단위로 기록·집계한다. 게임 전면 재개발(10-01 사용자)로 G4 연결은 걷었다. 재생성은 `node tools/strata-build.js --check`로, 교육 앱 쪽 어긋남은 talk `tests/atlas-strata-drift.test.js`로 확인한다. [적용 결과와 보완](아틀라스_교육업그레이드_20260930.md)

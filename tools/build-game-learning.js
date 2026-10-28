@@ -12,14 +12,16 @@ const check = args.includes('--check');
 const read = rel => { const bytes = fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n'); return { rel, json: JSON.parse(bytes), sha: crypto.createHash('sha256').update(bytes).digest('hex') }; };
 const taxonomy = read('strata/topik-i.skills.json'), grammar = read('strata/topik-i.grammar.json'), words = read('strata/topik-i.words.json');
 const situations = read('strata/topik-i.situations.json');
-const version = crypto.createHash('sha256').update(taxonomy.sha + grammar.sha + words.sha + situations.sha).digest('hex');
+const recommendations = read('strata/topik-i.recommendations.json');
+const version = crypto.createHash('sha256').update(taxonomy.sha + grammar.sha + words.sha + situations.sha + recommendations.sha).digest('hex');
 const ref = { source: 'practice-taxonomy', selector: 'skills' };
 // Each reason's situations in the contract's order (topik-i.situations.json). The grouping is the
 // learning-reasons contract the user approved (r1), so the link is authored and reviewed.
 const reasons = [...new Set(situations.json.situations.map(([, reason]) => reason))];
 const map = { map_ver: `${taxonomy.json.version}-${version.slice(0, 12)}`, subject: 'ko',
   sources: { 'practice-taxonomy': { path: taxonomy.rel, sha256: taxonomy.sha }, 'practice-grammar': { path: grammar.rel, sha256: grammar.sha },
-    'practice-words': { path: words.rel, sha256: words.sha }, 'practice-situations': { path: situations.rel, sha256: situations.sha } },
+    'practice-words': { path: words.rel, sha256: words.sha }, 'practice-situations': { path: situations.rel, sha256: situations.sha },
+    'practice-recommendations': { path: recommendations.rel, sha256: recommendations.sha } },
   nodes: [
     ...taxonomy.json.skills.map(([id, domain, label_ko]) => ({ id, kind: 'skill', label_ko, domain, level: null,
       difficulty: { authored: null, measured: null, n: 0 }, source_refs: [ref] })),
@@ -32,8 +34,9 @@ const map = { map_ver: `${taxonomy.json.version}-${version.slice(0, 12)}`, subje
       source_refs: [{ source: 'practice-situations', selector: id }] })),
   ],
   // Which abilities a grammar point serves: a draft awaiting teacher review.
-  edges: grammar.json.points.flatMap(([id, , , , skills]) => skills.map(to => ({ from: id, to, type: 'part_of', confidence: 'ai_draft', reviewed: false,
+  edges: [...grammar.json.points.flatMap(([id, , , , skills]) => skills.map(to => ({ from: id, to, type: 'part_of', confidence: 'ai_draft', reviewed: false,
     source_refs: [{ source: 'practice-grammar', selector: id }] }))),
+    ...recommendations.json.edges.map(edge => ({ ...edge, source_refs: [{ source: 'practice-recommendations', selector: edge.id }] }))],
   tag_vocabulary: [], links: { tags: [], goals: reasons.map(goal => ({ goal,
     nodes: situations.json.situations.filter(([, reason]) => reason === goal).map(([id]) => id),
     confidence: 'authored', reviewed: true, source_refs: [{ source: 'practice-situations', selector: goal }] })) } };

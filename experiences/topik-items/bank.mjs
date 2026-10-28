@@ -2,10 +2,12 @@
 // 그 목록은 tools/topik-items.mjs --묶기가 만드는 bank-files.mjs다. 화면은 PUBLISHED(검수 통과)만 낸다.
 import { ITEM_FILES } from './bank-files.mjs';
 import existing from './review/existing-verdicts.json' with { type: 'json' };
+import {isHeldout} from './holdout.mjs';
 
 export const ALL_ITEMS = Object.freeze(ITEM_FILES.flatMap(file => file.items.map(item => Object.freeze({ ...item, batch: file.batch }))));
 // AI 2중 검수(1차 Claude Opus · 2차 아르곤)를 지금 내용으로 통과한 문항만. 판정 근거는 각 문항의 review 줄이다.
-export const PUBLISHED = Object.freeze(ALL_ITEMS.filter(item => item.reviewStatus === 'ai-reviewed'));
+export const REVIEWED_ITEMS = Object.freeze(ALL_ITEMS.filter(item => item.reviewStatus === 'ai-reviewed'));
+export const PUBLISHED = Object.freeze(REVIEWED_ITEMS.filter(item => !isHeldout(item)));
 // 기존 게임·진단 문항의 판정(허용 목록). verdict "pass"만 연습에 낸다.
 export const EXISTING_VERDICTS = existing;
 export const EXISTING_PASS = Object.freeze(new Map((existing.items || []).filter(row => row.verdict === 'pass').map(row => [row.itemKey, row])));

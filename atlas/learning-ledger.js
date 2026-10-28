@@ -60,6 +60,10 @@ function validate(ledger) {
     || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk)
     || !(ledger.counts === null || plain(ledger.counts))
     || !(ledger.adjusted === undefined || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)
+    || !(ledger.followupsLost === undefined || plain(ledger.followupsLost)
+      && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24
+      && Number.isFinite(ledger.followupsLost.at))
+    || !(ledger.followupsPreserved === undefined || typeof ledger.followupsPreserved === 'boolean')
     || !(ledger.local === undefined || ledger.local === true)) throw new TypeError('Ledger: unreadable');
   return ledger;
 }
@@ -185,6 +189,37 @@ const folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE
 // The decision, presentation, entry or completion an entry belongs to (none for a decision). A
 // response names its set's decision as well; an older one without it belongs to its completion.
 const reference = e => (e?.type === 'decision.made' ? undefined : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId);
+// A retained old answer must not read a later folded encounter as earlier exposure.
+// Keep the item/family closure with it, including every help/delivery/exclusion in
+// those decisions. If it no longer fits, refuse the whole retention request; never
+// pick favourable answers to meet a storage limit.
+function retention(events, decisions, { maxEvents = 2400, maxBytes = 1024 * 1024 } = {}) {
+  const groups = new Map(), parent = new Map();
+  for (const e of events) {
+    const group = e.type === 'decision.made' ? e.id : parent.get(reference(e));
+    if (!group) continue;
+    parent.set(e.id, group);
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(e);
+  }
+  const selected = new Set(decisions.filter(id => groups.has(id)));
+  const position = new Map(events.map((e, index) => [e.id, index]));
+  const first = Math.min(...[...selected].map(id => Math.min(...groups.get(id).map(e => position.get(e.id)))));
+  const presentations = events.filter(e => e.type === 'practice.presented'), keys = new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const p of presentations) {
+      const group = parent.get(p.id), traces = Trail.traceKeys(p);
+      if (!selected.has(group) && traces.some(key => keys.has(key))
+        && groups.get(group).some(e => position.get(e.id) >= first)) { selected.add(group); changed = true; }
+      if (selected.has(group)) for (const key of traces) if (!keys.has(key)) { keys.add(key); changed = true; }
+    }
+  }
+  const kept = events.filter(e => selected.has(parent.get(e.id))), bytes = new TextEncoder().encode(JSON.stringify(kept)).length;
+  const limited = kept.length > maxEvents || bytes > maxBytes;
+  return { decisions: limited ? [] : [...selected], events: kept.length, bytes, limited, maxEvents, maxBytes };
+}
 // A synchronised entry whose decision, presentation or target was folded here.
 const stray = (event, known) => { const ref = reference(event); return typeof ref === 'string' && !known.has(ref); };
 // Which of two ledgers folded later: 1 (a), -1 (b) or 0 (the same fold).
@@ -216,4 +251,4 @@ function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
   return next;
 }
 
-module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference };
+module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference, retention };

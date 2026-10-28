@@ -24,7 +24,10 @@ test('the map holds abilities, grammar and words, and none of them claims a TOPI
   const links = raw.edges.filter(e => e.from === 'G209').map(e => e.to).sort();
   assert.deepEqual(links, ['ko.listening.negation', 'ko.reading.grammar', 'ko.reading.negation']);
   assert.deepEqual(raw.edges.filter(e => e.from === 'S226').map(e => e.to).sort(), ['ko.listening.negation', 'ko.reading.grammar', 'ko.reading.negation']);
-  assert.ok(raw.edges.every(e => e.confidence === 'ai_draft' && e.reviewed === false), 'links are drafts awaiting review');
+  const recommendations=raw.edges.filter(e=>e.type==='recommended_before'),drafts=raw.edges.filter(e=>e.type!=='recommended_before');
+  assert.ok(drafts.every(e=>e.confidence==='ai_draft'&&e.reviewed===false),'unreviewed grammar and vocabulary links remain drafts');
+  assert.equal(recommendations.length,8);
+  assert.ok(recommendations.every(e=>e.blocking===false&&e.confidence==='authored'&&e.reviewed===true&&e.review?.status==='passed'&&e.review.task==='atlas-world-learning-20261028'));
 });
 
 function play() {

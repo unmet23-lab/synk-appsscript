@@ -4,7 +4,7 @@
 const CONFIDENCE = ['authored', 'measured', 'ai_draft'];
 // Language kinds plus subject-neutral ones, so a map can describe any content (work, money, health...).
 const KINDS = ['skill', 'grammar_point', 'expression', 'situation', 'letter', 'syllable', 'concept', 'topic', 'task', 'word'];
-const TYPES = ['part_of', 'prerequisite', 'contrasts_with'];
+const TYPES = ['part_of', 'prerequisite', 'recommended_before', 'contrasts_with'];
 const copy = value => JSON.parse(JSON.stringify(value));
 const fail = message => { throw new TypeError(`Strata: ${message}`); };
 const text = value => typeof value === 'string' && value.length > 0;
@@ -51,6 +51,11 @@ function validateMap(data) {
     if (uniqueEdges.has(key)) fail('duplicate edge');
     uniqueEdges.add(key);
     if (edge.type === 'part_of' && (ids.get(edge.from).kind !== 'grammar_point' || ids.get(edge.to).kind !== 'skill')) fail('invalid grammar membership');
+    if (edge.type === 'recommended_before') {
+      if (edge.blocking !== false || !text(edge.basis?.official_scope) || !text(edge.basis?.interpretation)
+        || !text(edge.basis?.source_url) || !text(edge.reason_ko)) fail('recommendation needs nonblocking interpretation and source');
+      if (edge.reviewed && (!text(edge.review?.task) || !text(edge.review?.reviewer) || !text(edge.review?.evidence))) fail('reviewed recommendation needs review evidence');
+    }
     if (edge.type === 'prerequisite') {
       const before = ids.get(edge.from).level?.intro, after = ids.get(edge.to).level?.intro;
       if (before != null && after != null && before > after) fail('prerequisite level inversion');
@@ -128,6 +133,15 @@ function createMap(input) {
         confidence: edge.confidence, reviewed: edge.reviewed,
         blocking: edge.confidence !== 'ai_draft' || edge.reviewed, source_refs: edge.source_refs })));
   }
+  // Direct, reviewed practice suggestions only. A curriculum achievement statement does not
+  // establish a necessary prerequisite; even reviewed recommendations never block a target.
+  function recommendedBefore(id) {
+    if (!nodes.has(id)) return [];
+    return freeze(data.edges.filter(edge => edge.type === 'recommended_before' && edge.to === id && edge.reviewed)
+      .sort((a, b) => compare(a.from, b.from)).map(edge => ({ node: getNode(edge.from), target: id,
+        confidence: edge.confidence, reviewed: true, blocking: false, reason_ko: edge.reason_ko,
+        basis: edge.basis, source_refs: edge.source_refs, review: edge.review })));
+  }
   // Accept only already-qualified Atlas summary lines. Unknown, denied, estimated,
   // or unqualified observations cannot silently become curriculum recommendations.
   function candidates(state = { lines: [] }, { limit = 10 } = {}) {
@@ -148,10 +162,11 @@ function createMap(input) {
     return freeze([...selected.values()].sort((a, b) => compare(a.id, b.id)).map(result => ({ ...result,
       targets: result.targets.sort(compare), reasons: result.reasons.sort(compare),
       blocked_by: result.prerequisites.filter(item => item.blocking && !mastered.has(item.node.id)).map(item => item.node.id),
-      advisory: result.prerequisites.filter(item => !item.blocking && !mastered.has(item.node.id)).map(item => item.node.id),
+      advisory: [...new Set([...result.prerequisites.filter(item => !item.blocking), ...recommendedBefore(result.id)]
+        .filter(item => !mastered.has(item.node.id)).map(item => item.node.id))],
     })).slice(0, limit));
   }
-  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, forGoal, prerequisites, candidates,
+  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, forGoal, prerequisites, recommendedBefore, candidates,
     allNodes: () => Object.freeze([...nodes.values()]) });
 }
 

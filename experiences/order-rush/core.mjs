@@ -1,4 +1,7 @@
-export const ORDERS=[
+import additional from './additional-orders.json' with {type:'json'};
+import additionalAudio from './additional-audio.json' with {type:'json'};
+export const ADDITIONAL_ORDERS=Object.freeze(additional.items);
+export const BASE_ORDERS=[
  {id:'o01',text:'따뜻한 커피 한 잔 주세요.',skill:'온도 · 수량',cups:[{base:'coffee',milk:false,temp:'hot',ice:false}]},
  {id:'o02',text:'아이스커피 한 잔 주세요.',skill:'음료 · 온도',cups:[{base:'coffee',milk:false,temp:'cold',ice:true}]},
  {id:'o03',text:'따뜻한 차 한 잔 주세요. 설탕은 빼 주세요.',skill:'부정 · 제외',cups:[{base:'tea',milk:false,temp:'hot',ice:false,sugar:false}]},
@@ -12,6 +15,9 @@ export const ORDERS=[
  {id:'o11',text:'차 한 잔 주세요. 얼음은 넣어 주세요. 설탕은 넣지 마세요.',skill:'추가 · 금지',cups:[{base:'tea',milk:false,temp:'cold',ice:true,sugar:false}]},
  {id:'o12',text:'커피 두 잔 주세요. 하나는 따뜻하게, 다른 하나는 차갑게요.',skill:'하나 · 다른 하나',cups:[{base:'coffee',milk:false,temp:'hot',ice:false},{base:'coffee',milk:false,temp:'cold'}]}
 ];
+const ready=order=>order.review?.status==='passed'&&additionalAudio.clips[order.id]?.status==='ready';
+export const ORDERS=[...BASE_ORDERS,...ADDITIONAL_ORDERS.filter(order=>order.role==='practice'&&ready(order))];
+export const DELAYED_ORDERS=ADDITIONAL_ORDERS.filter(order=>order.role==='delayed'&&ready(order));
 export const REVIEW=[
  {id:'r01',text:'아이스라테 대신 아이스커피 한 잔 주세요.',skill:'새 문장 · 대신',cups:[{base:'coffee',milk:false,temp:'cold',ice:true}]},
  {id:'r02',text:'따뜻한 차 두 잔 주세요. 한 잔만 설탕을 넣어 주세요.',skill:'새 문장 · 한 잔만',cups:[{base:'tea',milk:false,temp:'hot',ice:false,sugar:true},{base:'tea',milk:false,temp:'hot',ice:false,sugar:false}]},

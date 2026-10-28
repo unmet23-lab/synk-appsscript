@@ -34,6 +34,7 @@ export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},clien
       // 첫 장면 배치(학습·개인화 다리 §4-3): 타운이 첫 대화 전에 묻는다 — placement().ask면 내 마스코트가 「처음 이야기는 이 말로 해 볼까요?」.
       placement(){if(disposed)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});return host.placement?.()||{suggested:{reading:'L1',listening:'L1'},chosen:null,ask:false};},
       async choosePlacement(answer){if(disposed||typeof host.choosePlacement!=='function')throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});return host.choosePlacement(answer);},
+      languageContext(){if(disposed)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});return host.languageContext?.()||{summary:null,today:{}};},
       dispose(){disposed=true;unsubscribe();}};
   }
   let disposed=false,ended=false,refreshing=null,refreshAgain=false,channel=null,authGeneration=0;
@@ -96,6 +97,7 @@ export async function connectTownWorld({onAppearance=()=>{},onError=()=>{},clien
 // suggest(): 자리별 제안 {reading, listening}, ask({suggested,chosen}), choose(suggested,answer)}. 없으면(미리 보기) 묻지 않는다.
 export function createTownWorldHost(client,{placement=null}={}) {
   const owner=client.snapshot?.accountId,generation=client.generation;
+  const learningHost=globalThis.SYNKLearningHost||null;
   let chosen=placement?.chosen??null;
   if(!owner)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});
   const listeners=new Set();let ended=false;
@@ -105,8 +107,19 @@ export function createTownWorldHost(client,{placement=null}={}) {
   const notify=()=>{if(client.generation!==generation){ended=true;publish();}else publish();};
   globalThis.addEventListener?.('synk-world-session',notify);
   return Object.freeze({appearance,subscribe(fn){listeners.add(fn);fn(appearance());return()=>listeners.delete(fn);},
+    languageContext(){guard();if(!learningHost||globalThis.SYNKLearningHost!==learningHost)return {summary:null,today:{}};
+      try{const today=learningHost.preferences?.()?.today?.()||{};guard();return {summary:null,today};
+      }catch(error){guard();return {summary:null,today:{}};}},
     async refresh(){guard();const result=await client.refresh();guard();publish();return result;},
-    async request(operation,body){guard();if(!TOWN_OPERATIONS.includes(operation)||TOWN_PULSE_OPERATIONS.includes(operation)&&client.account&&client.account.supportsTownPulse!==true)throw new TypeError('Unknown town operation');const result=await client.request(`town/${operation}`,body?{method:'POST',body}:{method:'GET'});guard();return result;},
+    async request(operation,body){guard();if(!TOWN_OPERATIONS.includes(operation)||TOWN_PULSE_OPERATIONS.includes(operation)&&client.account&&client.account.supportsTownPulse!==true)throw new TypeError('Unknown town operation');const result=await client.request(`town/${operation}`,body?{method:'POST',body}:{method:'GET'});guard();
+      // Town already committed these canonical events in its transaction. Pull through the existing
+      // account synchronizer so WORLD's next recommendation sees them; never replay browser verdicts.
+      // A replayed command receipt may follow a lost response that already committed learning.
+      // Pull then as well; a read never backfills withdrawn consent or invents a new practice.
+      if((result.learning?.recorded>0||result.duplicate===true&&operation==='command'&&/^TEA_/.test(body?.type||body?.command?.type||''))&&learningHost&&globalThis.SYNKLearningHost===learningHost){
+        try{await learningHost.retry?.();guard();}catch(error){guard();result.learning={...result.learning,pending:true};}
+      }
+      return result;},
     placement(){guard();if(!placement)return {suggested:{reading:'L1',listening:'L1'},chosen,ask:false};const {reading,listening}=placement.suggest();const suggested={reading,listening};return {suggested,chosen,ask:placement.ask({suggested,chosen})};},
     // answer: 'keep'(이대로) · 'easier'(더 쉬운 말로 — 두 자리 모두 한 단계 아래). 고른 값은 서버(town/placement)에 남고 입장 조회가 돌려준다.
     async choosePlacement(answer){guard();if(!placement)throw new TypeError('Town placement unavailable');const {reading,listening}=placement.suggest(),suggested={reading,listening};

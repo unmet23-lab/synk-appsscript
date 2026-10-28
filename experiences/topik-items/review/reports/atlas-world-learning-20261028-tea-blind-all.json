@@ -1,0 +1,1070 @@
+{
+  "schema": 1,
+  "options": "잔: 따뜻한 잔 / 찬 잔. 차: 보리차 / 유자차 / 오늘의 차. 꿀: 0 / 1 / 2숟가락. 손님이 정하지 않은 축은 자유입니다.",
+  "items": [
+    {
+      "frame": 1,
+      "id": "guest.tea.req-new-menu.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "안 단 오늘의 차 주세요."
+    },
+    {
+      "frame": 1,
+      "id": "guest.tea.req-new-menu.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "새로 나온 오늘의 차로, 안 달게 주세요."
+    },
+    {
+      "frame": 1,
+      "id": "guest.tea.req-new-menu.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "조금 단 오늘의 차 주세요."
+    },
+    {
+      "frame": 1,
+      "id": "guest.tea.req-new-menu.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "새로 나온 오늘의 차로, 조금 달게 주세요."
+    },
+    {
+      "frame": 1,
+      "id": "guest.tea.req-new-menu.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "단 오늘의 차 주세요."
+    },
+    {
+      "frame": 1,
+      "id": "guest.tea.req-new-menu.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "새로 나온 오늘의 차로, 달게 주세요."
+    },
+    {
+      "frame": 2,
+      "id": "guest.tea.req-tea.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "보리차 주세요."
+    },
+    {
+      "frame": 2,
+      "id": "guest.tea.req-tea.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "목이 마르니까 보리차 한 잔 주세요."
+    },
+    {
+      "frame": 2,
+      "id": "guest.tea.req-tea.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "유자차 주세요."
+    },
+    {
+      "frame": 2,
+      "id": "guest.tea.req-tea.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "목이 마르니까 유자차 한 잔 주세요."
+    },
+    {
+      "frame": 2,
+      "id": "guest.tea.req-tea.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "오늘의 차 주세요."
+    },
+    {
+      "frame": 2,
+      "id": "guest.tea.req-tea.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "목이 마르니까 오늘의 차 한 잔 주세요."
+    },
+    {
+      "frame": 3,
+      "id": "guest.tea.req-temp.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 거 주세요."
+    },
+    {
+      "frame": 3,
+      "id": "guest.tea.req-temp.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "차는 아무거나 괜찮은데, 따뜻하게 주세요."
+    },
+    {
+      "frame": 3,
+      "id": "guest.tea.req-temp.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 거 주세요."
+    },
+    {
+      "frame": 3,
+      "id": "guest.tea.req-temp.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "차는 아무거나 괜찮은데, 차갑게 주세요."
+    },
+    {
+      "frame": 4,
+      "id": "guest.tea.req-sweet.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "안 단 거 주세요."
+    },
+    {
+      "frame": 4,
+      "id": "guest.tea.req-sweet.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "차는 아무거나 좋은데, 안 달게 해 주세요."
+    },
+    {
+      "frame": 4,
+      "id": "guest.tea.req-sweet.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "조금 단 거 주세요."
+    },
+    {
+      "frame": 4,
+      "id": "guest.tea.req-sweet.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "차는 아무거나 좋은데, 조금 달게 해 주세요."
+    },
+    {
+      "frame": 4,
+      "id": "guest.tea.req-sweet.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "단 거 주세요."
+    },
+    {
+      "frame": 4,
+      "id": "guest.tea.req-sweet.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "차는 아무거나 좋은데, 달게 해 주세요."
+    },
+    {
+      "frame": 5,
+      "id": "guest.tea.req-warm-tea.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차 주세요."
+    },
+    {
+      "frame": 5,
+      "id": "guest.tea.req-warm-tea.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "손이 차가우니까 따뜻한 보리차 주세요."
+    },
+    {
+      "frame": 5,
+      "id": "guest.tea.req-warm-tea.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차 주세요."
+    },
+    {
+      "frame": 5,
+      "id": "guest.tea.req-warm-tea.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "손이 차가우니까 따뜻한 유자차 주세요."
+    },
+    {
+      "frame": 5,
+      "id": "guest.tea.req-warm-tea.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차 주세요."
+    },
+    {
+      "frame": 5,
+      "id": "guest.tea.req-warm-tea.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "손이 차가우니까 따뜻한 오늘의 차 주세요."
+    },
+    {
+      "frame": 6,
+      "id": "guest.tea.req-cold-tea.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차 주세요."
+    },
+    {
+      "frame": 6,
+      "id": "guest.tea.req-cold-tea.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "목이 마르니까 차가운 보리차 주세요."
+    },
+    {
+      "frame": 6,
+      "id": "guest.tea.req-cold-tea.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차 주세요."
+    },
+    {
+      "frame": 6,
+      "id": "guest.tea.req-cold-tea.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "목이 마르니까 차가운 유자차 주세요."
+    },
+    {
+      "frame": 6,
+      "id": "guest.tea.req-cold-tea.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차 주세요."
+    },
+    {
+      "frame": 6,
+      "id": "guest.tea.req-cold-tea.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "목이 마르니까 차가운 오늘의 차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L1.1",
+      "level": "L1",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "따뜻한 보리차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L2.1",
+      "level": "L2",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "저도 같은 차로 하는데, 따뜻하게 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L1.2",
+      "level": "L1",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "차가운 보리차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L2.2",
+      "level": "L2",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "저도 같은 차로 하는데, 차갑게 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L1.3",
+      "level": "L1",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "따뜻한 유자차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L2.3",
+      "level": "L2",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "저도 같은 차로 하는데, 따뜻하게 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L1.4",
+      "level": "L1",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "차가운 유자차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L2.4",
+      "level": "L2",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "저도 같은 차로 하는데, 차갑게 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L1.5",
+      "level": "L1",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "따뜻한 오늘의 차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L2.5",
+      "level": "L2",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "저도 같은 차로 하는데, 따뜻하게 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L1.6",
+      "level": "L1",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "차가운 오늘의 차 주세요."
+    },
+    {
+      "frame": 7,
+      "id": "guest.tea.req-same-temp.1.L2.6",
+      "level": "L2",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "저도 같은 차로 하는데, 차갑게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.1",
+      "level": "L1",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "안 단 보리차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.1",
+      "level": "L2",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "저도 같은 차로 하는데, 안 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.2",
+      "level": "L1",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "조금 단 보리차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.2",
+      "level": "L2",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "저도 같은 차로 하는데, 조금 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.3",
+      "level": "L1",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "단 보리차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.3",
+      "level": "L2",
+      "prior": "앞 손님: 보리차 주세요.",
+      "text": "저도 같은 차로 하는데, 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.4",
+      "level": "L1",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "안 단 유자차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.4",
+      "level": "L2",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "저도 같은 차로 하는데, 안 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.5",
+      "level": "L1",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "조금 단 유자차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.5",
+      "level": "L2",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "저도 같은 차로 하는데, 조금 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.6",
+      "level": "L1",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "단 유자차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.6",
+      "level": "L2",
+      "prior": "앞 손님: 유자차 주세요.",
+      "text": "저도 같은 차로 하는데, 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.7",
+      "level": "L1",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "안 단 오늘의 차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.7",
+      "level": "L2",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "저도 같은 차로 하는데, 안 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.8",
+      "level": "L1",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "조금 단 오늘의 차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.8",
+      "level": "L2",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "저도 같은 차로 하는데, 조금 달게 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L1.9",
+      "level": "L1",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "단 오늘의 차 주세요."
+    },
+    {
+      "frame": 8,
+      "id": "guest.tea.req-same-sweet.1.L2.9",
+      "level": "L2",
+      "prior": "앞 손님: 오늘의 차 주세요.",
+      "text": "저도 같은 차로 하는데, 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 안 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차로 하는데, 따뜻하게, 안 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 조금 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차로 하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차로 하는데, 따뜻하게, 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.4",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 안 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.4",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차로 하는데, 차갑게, 안 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.5",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 조금 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.5",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차로 하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.6",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.6",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차로 하는데, 차갑게, 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.7",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 안 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.7",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 따뜻하게, 안 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.8",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 조금 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.8",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.9",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.9",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 따뜻하게, 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.10",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 안 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.10",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 차갑게, 안 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.11",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 조금 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.11",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.12",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.12",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 차갑게, 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.13",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.13",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차로 하는데, 따뜻하게, 안 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.14",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 조금 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.14",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차로 하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.15",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.15",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차로 하는데, 따뜻하게, 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.16",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.16",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차로 하는데, 차갑게, 안 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.17",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 조금 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.17",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차로 하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L1.18",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 달게요."
+    },
+    {
+      "frame": 9,
+      "id": "guest.tea.req-friend.1.L2.18",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차로 하는데, 차갑게, 달게 주세요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "단 걸 먹었으니까 따뜻한 보리차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "단 걸 먹었으니까 차가운 보리차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "단 걸 먹었으니까 따뜻한 유자차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L1.4",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L2.4",
+      "level": "L2",
+      "prior": null,
+      "text": "단 걸 먹었으니까 차가운 유자차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L1.5",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L2.5",
+      "level": "L2",
+      "prior": null,
+      "text": "단 걸 먹었으니까 따뜻한 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L1.6",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 10,
+      "id": "guest.tea.req-no-sweet.1.L2.6",
+      "level": "L2",
+      "prior": null,
+      "text": "단 걸 먹었으니까 차가운 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 11,
+      "id": "guest.tea.req-yuzu-honey.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 조금 달게요."
+    },
+    {
+      "frame": 11,
+      "id": "guest.tea.req-yuzu-honey.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 11,
+      "id": "guest.tea.req-yuzu-honey.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 조금 달게요."
+    },
+    {
+      "frame": 11,
+      "id": "guest.tea.req-yuzu-honey.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차로 하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.1",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 안 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.1",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차를 좋아하는데, 따뜻하게, 안 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.2",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 조금 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.2",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차를 좋아하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.3",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 보리차, 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.3",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차를 좋아하는데, 따뜻하게, 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.4",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 안 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.4",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차를 좋아하는데, 차갑게, 안 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.5",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 조금 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.5",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차를 좋아하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.6",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 보리차, 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.6",
+      "level": "L2",
+      "prior": null,
+      "text": "보리차를 좋아하는데, 차갑게, 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.7",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 안 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.7",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차를 좋아하는데, 따뜻하게, 안 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.8",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 조금 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.8",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차를 좋아하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.9",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 유자차, 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.9",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차를 좋아하는데, 따뜻하게, 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.10",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 안 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.10",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차를 좋아하는데, 차갑게, 안 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.11",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 조금 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.11",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차를 좋아하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.12",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 유자차, 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.12",
+      "level": "L2",
+      "prior": null,
+      "text": "유자차를 좋아하는데, 차갑게, 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.13",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.13",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차를 좋아하는데, 따뜻하게, 안 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.14",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 조금 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.14",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차를 좋아하는데, 따뜻하게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.15",
+      "level": "L1",
+      "prior": null,
+      "text": "따뜻한 오늘의 차, 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.15",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차를 좋아하는데, 따뜻하게, 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.16",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 안 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.16",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차를 좋아하는데, 차갑게, 안 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.17",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 조금 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.17",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차를 좋아하는데, 차갑게, 조금 달게 주세요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L1.18",
+      "level": "L1",
+      "prior": null,
+      "text": "차가운 오늘의 차, 달게요."
+    },
+    {
+      "frame": 12,
+      "id": "guest.tea.req-daily.1.L2.18",
+      "level": "L2",
+      "prior": null,
+      "text": "오늘의 차를 좋아하는데, 차갑게, 달게 주세요."
+    }
+  ]
+}

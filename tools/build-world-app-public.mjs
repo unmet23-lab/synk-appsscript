@@ -38,6 +38,10 @@ function rewrite(text,relative=''){
 }
 // Keep production records in the source tree; public copies contain runtime data only.
 function publicAsset(relative,bytes){
+ if(relative==='topik-items/holdout.mjs')bytes=Buffer.from(bytes.toString('utf8').replace('./review/holdout-20261028.json','./holdout.json'));
+ if(relative==='korean-rhythm/supplemental.json'){
+  const data=JSON.parse(bytes.toString('utf8'));data.items=data.items.filter(row=>row.review?.status==='passed').map(({review,...row})=>({...row,review:{status:'passed'}}));bytes=Buffer.from(JSON.stringify(data)+'\n');
+ }
  if(relative==='hangul-stage/assets/provenance.json')return null;
  if(/\.mp3$/i.test(relative)&&bytes.subarray(0,3).toString('ascii')==='ID3'){
   if(bytes.length<10||![3,4].includes(bytes[3])||bytes[5]!==0||[...bytes.subarray(6,10)].some(n=>n>127))throw Error('Unsupported public MP3 tag: '+relative);
@@ -96,6 +100,7 @@ copyTree(home,'',(source,relative)=>!relative.endsWith('.html'));
 const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
+for(const name of ['world-learning-followups.mjs','world-followup-items.json'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 for(const name of ['world-bootstrap.js','app-shell.mjs','world-session.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','display-language-sync.mjs','life-ui.mjs','life-story.mjs','life-content-lang.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs','classroom-lessons.mjs','classroom-homework.mjs','topik4-homework.json','world-writing-practice.mjs','world-writing-check.mjs','world-writing-focus.mjs','world-writing-items.json','world-writing.css','world-reminders.mjs','world-reminder-device.mjs','world-push.mjs','world-push-sw.js','world-icon-192.png','world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 // 말하기 연습(10-21 공개 판부터 app-shell이 기본으로 부른다): 3번 문항 그림 네 칸. 출처 기록(sources.json)은 내보내지 않는다.
 for(const name of fs.readdirSync(path.join(root,'experiences/synk-world-app/speaking-assets')).filter(name=>/^[a-z0-9-]+\.webp$/.test(name)).sort())copyFile(path.join(root,'experiences/synk-world-app/speaking-assets',name),'speaking-assets/'+name);
@@ -104,7 +109,7 @@ copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollme
 copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','day-district.mjs','day-light.mjs','day-mood.mjs','day-cards.mjs','day-notebook.mjs','day-stay.mjs','day-stay.css','day-ask.mjs','day-ask.css','day-meanwhile.mjs','day-meanwhile.css','day-sound.mjs','day-tea.mjs','day-tea.css','day-gather.mjs','day-gather.css','day-sfx.mjs','day-observation.mjs','walk.mjs','walk-controls.mjs','walk-packets.mjs','town-layout.mjs'];
-for(const name of dayFiles)copyFile(path.join(town,name),'town/'+name);
+for(const name of [...dayFiles,'day-language.mjs','dialogue.mjs','new-tea.mjs'])copyFile(path.join(town,name),'town/'+name);
 // The town runtime layer (experiences/synk-town/town, vertical slice design §2-5): plain modules only — data sources, tests and tools stay out.
 // W8: and its life activities (town/activities — the tea order), one folder down.
 for(const folder of ['','activities'])for(const name of fs.readdirSync(path.join(town,'town',folder)).filter(name=>/^[a-z0-9-]+(?:\.gen)?\.mjs$/.test(name)).sort())copyFile(path.join(town,'town',folder,name),['town/town',folder,name].filter(Boolean).join('/'));
@@ -147,8 +152,10 @@ for(const [id] of DIAG_RACING_WORDS)copyFile(path.join(root,'experiences',racing
 // 공개 TOPIK 은행(검수 통과 문항만 — tools/build-world-topik-items.mjs가 만든 파일 그대로)과 그 듣기 문항의 소리만 싣는다(10-21 ④).
 // 화면은 이 은행을 필요할 때 불러온다(world-topik-items.mjs). 초안·보류 문항의 소리는 싣지 않는다. 세트 문항은 대본(소리 파일) 하나를 함께 쓰므로 파일마다 한 번만.
 copyFile(path.join(root,'experiences/synk-world-app','world-topik-items.json'),'world-topik-items.json');
+copyFile(path.join(root,'experiences/topik-items','holdout.mjs'),'topik-items/holdout.mjs');
+copyFile(path.join(root,'experiences/topik-items/review','holdout-20261028.json'),'topik-items/holdout.json');
 {const topikAudio=new Set();
-for(const row of JSON.parse(fs.readFileSync(path.join(root,'experiences/synk-world-app/world-topik-items.json'),'utf8')).items)
+for(const row of ['world-topik-items.json','world-followup-items.json'].flatMap(file=>JSON.parse(fs.readFileSync(path.join(root,'experiences/synk-world-app',file),'utf8')).items))
  if(row?.audio?.file&&/^audio\/[a-z0-9-]+\.mp3$/.test(row.audio.file)&&!topikAudio.has(row.audio.file)){topikAudio.add(row.audio.file);copyFile(path.join(root,'experiences/topik-items',row.audio.file),`topik-items/${row.audio.file}`);}}
  // Publish only explicitly approved voice clips, and runtime-only empty fallback metadata otherwise.
  const voiceRoot=path.join(root,'experiences/hangul-stage/assets/voice');

@@ -20,7 +20,7 @@ const LINE_BY_ID = new Map([...(generated.MOOD_LINES || []), ...(generated.TOWN_
 export const SEEN_MS = 1200;
 const LEVELS = ['L1', 'L2', 'L3', 'L4'];
 /** The level a one-line text shows at (§13-1 「장면이 아닌 한 줄」): the reading seat's stable level. W4 has no ladder yet → L2. */
-export function lineLevel(/* { kind: 'mood', npc, id } */) { return 'L2'; }
+export function lineLevel({ ladder } = {}) { return LEVELS.includes(ladder?.reading?.stable) ? ladder.reading.stable : 'L2'; }
 /** One level down for 「무슨 뜻이에요?」 — L1 stays L1. */
 export const easier = level => LEVELS[Math.max(0, LEVELS.indexOf(level) - 1)];
 
@@ -87,13 +87,13 @@ const LABEL_GAP = 14;
  * residents whose card another layer draws (an offer), day is the life day (a new one reads lines out again), avoid
  * lists rects the cards keep off ({ x, y, w, h } in the layer's px — the walking HUD), onSeen(keys) hears each line's
  * seen keys once it has been in sight SEEN_MS. */
-export function createMoodLines(container, live) {
+export function createMoodLines(container, live, { getLadder = () => null } = {}) {
   // An entry page from before the mood lines (a cached day.html) has no layer: nothing to draw, and the frame loop
   // that calls update() must keep running.
   if (!container) return { update: () => [] };
   const cards = new Map(), eased = new Set(), announced = new Set(), reported = new WeakSet();
   let announcedDay = null;
-  const textOf = id => { const line = LINE_BY_ID.get(id), level = lineLevel({ kind: line.kind || 'mood', npc: line.npc, id }); return line.levels[eased.has(id) ? easier(level) : level]; };
+  const textOf = id => { const line = LINE_BY_ID.get(id), level = lineLevel({ ladder: getLadder() }); return line.levels[eased.has(id) ? easier(level) : level] ?? line.levels.L1; };
   const say = (npc, id, names) => { if (live) live.textContent = `${names[npc] || npc}: ${textOf(id)}`; };
   function card(npc, id, names, icon) {
     const line = LINE_BY_ID.get(id), el = document.createElement('div');

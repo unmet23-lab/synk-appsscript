@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { ORDERS, REVIEW } from './core.mjs';
+import { BASE_ORDERS, ADDITIONAL_ORDERS, REVIEW } from './core.mjs';
 import { ORDER_GRAMMAR, orderMetadata, orderCandidates } from './learning.mjs';
 
 // 주문은 그 문장에서 Strata가 읽은 문형에 이어진다(strata/topik-i-forms.js grammarIn).
@@ -10,7 +10,7 @@ const { grammarIn } = require('../../strata/topik-i-forms.js');
 const { createGame } = require('../../atlas/game-learning.js');
 const { createMap } = require('../../strata/index.js');
 const map = createMap(require('../../strata/maps/topik-i.json'));
-const ALL = [...ORDERS, ...REVIEW];
+const ALL = [...BASE_ORDERS, ...REVIEW, ...ADDITIONAL_ORDERS];
 
 test('문형 연결: 주문 문장은 Strata가 읽은 문형, 후보도 같은 문형', () => {
   assert.deepEqual(Object.keys(ORDER_GRAMMAR).sort(), ALL.map((o) => o.id).sort());

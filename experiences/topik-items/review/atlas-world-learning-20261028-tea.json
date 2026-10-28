@@ -1,0 +1,173 @@
+{
+  "task": "atlas-world-learning-20261028",
+  "authorization": "2026-10-28 사용자가 이번 Atlas·WORLD·학습 보완 작업에 GPT 구현 및 작성자와 다른 GPT의 독립 검수 예외를 명시 승인했다. 일반 Claude·Argon 문항 검수 정책은 유지한다.",
+  "author": {
+    "id": "/root/world_integration_review",
+    "model": "GPT (Codex session; exact model identifier not exposed)"
+  },
+  "reviewer": {
+    "id": "/root",
+    "model": "GPT (Codex session; exact model identifier not exposed)"
+  },
+  "packetSha256": "76a6ee9df5d6714d9e75c4212146417af620273784467f9602dd7e9bf31550fc",
+  "reviewedAt": "2026-10-28T06:12:39.161Z",
+  "source": {
+    "lines": "experiences/synk-town/town/data/lines/tea.json",
+    "linesHash": "f9962f643690ce4a0472047d1c962195eaed66894ebb237d5359c9092ef9efba",
+    "axes": "experiences/synk-town/town/data/tea.json",
+    "axesHash": "8464ddca25d87ec1b67affeac794d2df841e36f7f7b0888af6c478279a6ba932"
+  },
+  "judge": {
+    "id": "town-tea-judge-r1",
+    "axes": {
+      "tea": "cup.tea",
+      "temp": "cup.vessel",
+      "sweet": "cup.honey"
+    },
+    "rule": "Only explicitly requested axes must match; any value on an unrequested axis is accepted. No time penalty. A wrong cup returns for retry. Meaning is explanation; repeat/slower/reopen are cue. Unreviewed and regular-memory requests remain unassessed.",
+    "responseFormat": "cup-compose",
+    "modality": "reading",
+    "difficulty": {
+      "L1": 1,
+      "L2": 2
+    },
+    "allowedLevels": [
+      "L1",
+      "L2"
+    ]
+  },
+  "evidence": [
+    {
+      "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-full.json",
+      "sha256": "76a6ee9df5d6714d9e75c4212146417af620273784467f9602dd7e9bf31550fc"
+    },
+    {
+      "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-blind-all.json",
+      "sha256": "bc66b122f6d132d545ddf7ffdee0a363724ca7ad4b394a217e203d0944654edd"
+    },
+    {
+      "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-blind-solved.json",
+      "sha256": "54bbd5f6acbacaf9478cdb4f65fce68584094a1c559a7ffb03c504627a4429dc"
+    },
+    {
+      "path": "experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-result.json",
+      "sha256": "fde6fe1b66ed2a049ce399b8256c43703c6b615b0c288c3ccf3701b4bd16eabe"
+    }
+  ],
+  "results": [
+    {
+      "id": "guest.tea.req-new-menu.1",
+      "hash": "549884571f05de2fc038c4cadbc9ba2a175df22371e826a00ea01c81688dd89f",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-tea.1",
+      "hash": "061458eb88c73897492a03e04cc0fd9c5f9d68df894f4b6b944d5de653c6dc7b",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-temp.1",
+      "hash": "11ee87f0ec74fbdd2b80f989acc6a0ca99ec2b05afe060544212812e2b66caf1",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-sweet.1",
+      "hash": "69fe3d202f7dea82126d99eef58d717b12f9ae8e0e407cde350f30c3698bd9e4",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-warm-tea.1",
+      "hash": "0ef372c78ea18369db197907ec2b195ac44e1373676742c4d92ee29c8eacf54f",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-cold-tea.1",
+      "hash": "4faa7d83666a4876657833af84a3aed91661adfa9b7e97c4ae662caff599a2fb",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-same-temp.1",
+      "hash": "12bbe05ca379412129f53753b7330f248a05997335880a9fcad697d15ac19ea2",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-same-sweet.1",
+      "hash": "2cbf1d725a929bb55e1d5d3905d828575197a4881d7d1a37447ee3a273e1fe42",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-friend.1",
+      "hash": "13e199911effe11826fce30a00a096567b421917b2e94382ec987a3e682ce063",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-no-sweet.1",
+      "hash": "888c1f63e76b98173ee1c13fe89407617c00f8661f4e059467bc46fcb8a4ed04",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-yuzu-honey.1",
+      "hash": "5666b53565438317d0f5e0ba975cba1d57fba0b470a1a38ba0185ef552eb2efb",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "id": "guest.tea.req-daily.1",
+      "hash": "f6fe2559571fbc0eb4acdd7778c59035ac8157720058932567f193938a7d71b9",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "verdict": "pass"
+    }
+  ],
+  "limitations": [
+    "Sweetness is the game authored 0/1/2 scale.",
+    "Same-tea L2 needs the preceding speaker available; otherwise do not assess.",
+    "L3/L4 and regular remembered orders were not approved for ability evidence.",
+    "Reading cup-compose only; no listening, calibrated proficiency or learning gain claim."
+  ]
+}

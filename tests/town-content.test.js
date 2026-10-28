@@ -141,5 +141,9 @@ test('실제 W5 원고 — 카드마다 여섯 줄(둘이는 주인·짝), 쌍 �
   assert.doesNotThrow(() => build(), '생성기가 빠진 줄을 막는다');
   const { TOWN_LINES } = await import(require('node:url').pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'town', 'data.gen.mjs')).href);
   const count = kind => TOWN_LINES.filter(l => l.kind === kind).length;
-  assert.deepEqual([count('card'), count('pair'), count('news'), count('hearsay')], [102, 18, 8, 9]);
+  assert.deepEqual([count('card'), count('pair'), count('news'), count('hearsay')], [108, 18, 9, 9]);
+  assert.deepEqual(TOWN_LINES.filter(row => row.when?.card === 'C4').map(row => row.id).sort(), [
+    ...['trigger', 'self', 'pair', 'offer', 'result'].map(part => `cafe-owner.card.C4-${part}.1`),
+    'workshop-owner.card.C4-pair.1', 'village.news.C4.1',
+  ].sort(), 'C4 카드 여섯 줄과 소식 한 줄이 실제로 추가됐다');
 });

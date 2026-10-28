@@ -1,0 +1,309 @@
+{
+  "version": "order-rush-transfer-20261028",
+  "items": [
+    {
+      "id": "n01",
+      "role": "practice",
+      "text": "뜨거운 것은 못 마셔요. 차가운 커피 한 잔, 차가운 차 한 잔 주세요. 얼음은 넣어도 괜찮아요.",
+      "skill": "못 · 허용",
+      "skillCode": "negation",
+      "family": "order-rush.temperature-restriction.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "cold"
+        },
+        {
+          "base": "tea",
+          "milk": false,
+          "temp": "cold"
+        }
+      ],
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "5767d396b65cf3a8493fa440c7ce53c5dc2831f11d052b995fb7fcf01929c5da",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n02",
+      "role": "practice",
+      "text": "따뜻한 커피 두 잔을 주문했는데요. 한 잔은 취소하고, 그 대신 따뜻한 차 한 잔을 주세요.",
+      "skill": "취소 · 대체",
+      "skillCode": "negation",
+      "family": "order-rush.partial-cancellation.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "hot",
+          "ice": false
+        },
+        {
+          "base": "tea",
+          "milk": false,
+          "temp": "hot",
+          "ice": false
+        }
+      ],
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "c339177f97519dc529ecc8943dcdd1f3a4e477229356dc558dc39fc0e39eb0e3",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n03",
+      "role": "practice",
+      "text": "따뜻한 커피와 따뜻한 차를 한 잔씩 주세요. 커피에는 설탕을 넣고, 차에는 넣지 마세요.",
+      "skill": "대상에 따라 다른 금지",
+      "skillCode": "negation",
+      "family": "order-rush.scoped-sugar-prohibition.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "hot",
+          "ice": false,
+          "sugar": true
+        },
+        {
+          "base": "tea",
+          "milk": false,
+          "temp": "hot",
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "828fa706a71686eedeb4e11b325269330cdae6a374ec49e0152a3146ee33a47a",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n04",
+      "role": "delayed",
+      "text": "커피 두 잔 주세요. 하나는 아이스로요. 다른 하나는 아이스가 아니라 따뜻한 라테로 주세요.",
+      "skill": "아니라 · 정정",
+      "skillCode": "negation",
+      "family": "order-rush.self-corrected-second-cup.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "cold",
+          "ice": true
+        },
+        {
+          "base": "coffee",
+          "milk": true,
+          "temp": "hot",
+          "ice": false
+        }
+      ],
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "eb64260c13088eb2c5faa6e5995191801a99f39cd5d5d3f0663f64f3b0b0e290",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n05",
+      "role": "delayed",
+      "text": "친구는 커피를 안 마셔요. 저는 우유 없는 따뜻한 커피를 마실게요. 친구에게는 따뜻한 차 한 잔을 주세요.",
+      "skill": "사람에 따라 다른 제외",
+      "skillCode": "negation",
+      "family": "order-rush.person-specific-exclusion.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "hot",
+          "ice": false
+        },
+        {
+          "base": "tea",
+          "milk": false,
+          "temp": "hot",
+          "ice": false
+        }
+      ],
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "23974afba3c8b2f487a0a002de236fc5a8964ab4c93108c128a89fc85213f250",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n06",
+      "text": "지금 따뜻한 음료가 마시고 싶어요. 커피 한 잔 주세요.",
+      "skill": "원하는 음료 찾기",
+      "skillCode": "detail",
+      "difficulty": 1,
+      "family": "order-rush.warm-drink-preference.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "hot",
+          "ice": false
+        }
+      ],
+      "role": "delayed",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "1217904212432dfae6404dfb1fb6140867e4e1148c490b8e5d8e4736fa5bfaca",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n07",
+      "text": "차 한 잔요. 차갑게 해 주세요. 얼음도 넣어 주세요.",
+      "skill": "나누어 말한 세부 요청",
+      "skillCode": "detail",
+      "difficulty": 1,
+      "family": "order-rush.incremental-iced-tea.v1",
+      "cups": [
+        {
+          "base": "tea",
+          "milk": false,
+          "temp": "cold",
+          "ice": true
+        }
+      ],
+      "role": "delayed",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "48f5cf0d4f2fa29171131889d670f5c347d87a48a0eef313523a650330d72d6b",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n08",
+      "text": "따뜻한 커피를 마실게요. 우유도 설탕도 넣지 마세요.",
+      "skill": "두 재료 함께 금지",
+      "skillCode": "negation",
+      "difficulty": 2,
+      "family": "order-rush.coordinated-exclusions.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "hot",
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "role": "delayed",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "ebaf3b91dcd41172db3cbc4d4f49e27d1c68ad898b938651dad5d13ba7825d32",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n09",
+      "text": "차가운 라테 한 잔 주세요. 얼음은 하나도 넣으면 안 돼요.",
+      "skill": "금지 조건",
+      "skillCode": "negation",
+      "difficulty": 2,
+      "family": "order-rush.no-ice-prohibition.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": true,
+          "temp": "cold",
+          "ice": false
+        }
+      ],
+      "role": "delayed",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "a2343db3b330bfecfe41911b6f7dd2048eb971e08b55e8ca3110a39df416ff8c",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n10",
+      "text": "따뜻한 라테 한 잔과 따뜻한 커피 한 잔 주세요. 우유가 든 라테에만 설탕을 넣어 주세요.",
+      "skill": "재료에 따라 적용",
+      "skillCode": "condition",
+      "difficulty": 3,
+      "family": "order-rush.milk-dependent-sugar.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": true,
+          "temp": "hot",
+          "ice": false,
+          "sugar": true
+        },
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "hot",
+          "ice": false,
+          "sugar": false
+        }
+      ],
+      "role": "delayed",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "59a53fd190dfe5091655edd28bbf92d967923ef64e037057d79071ca4b701b40",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      "id": "n11",
+      "text": "커피와 차를 한 잔씩 주세요. 두 잔 중 차만 따뜻하게 하고, 커피는 얼음을 넣어서 주세요.",
+      "skill": "두 잔 중 하나에만 적용",
+      "skillCode": "condition",
+      "difficulty": 3,
+      "family": "order-rush.only-tea-warm.v1",
+      "cups": [
+        {
+          "base": "coffee",
+          "milk": false,
+          "temp": "cold",
+          "ice": true
+        },
+        {
+          "base": "tea",
+          "milk": false,
+          "temp": "hot",
+          "ice": false
+        }
+      ],
+      "role": "delayed",
+      "review": {
+        "status": "passed",
+        "task": "atlas-world-learning-20261028",
+        "hash": "421098adb06556f94856a3404e5fed200dbc2da9c824158fddc2038027c6312b",
+        "reviewer": "/root",
+        "evidence": "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    }
+  ]
+}

@@ -87,6 +87,8 @@ export const 사용자지정원문 = Object.freeze({
 export const 단독검수원문 = Object.freeze({
   implementationReviewDeployment: '검증을 일단 니가 단독으로 진행하고 남은거 전부 마무리 및 최적화 하고 배포까지 진행해',
 });
+export const Atlas작업원문 = Object.freeze({ implementationReview: '이번 작업은 GPT 구현·독립 GPT 검수로 진행' });
+export const Atlas작업ID = 'atlas-world-learning-20261028';
 export function 사용자지정판(file) {
   const record = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
   return record.version === 2 ? 4 : 3;
@@ -138,6 +140,35 @@ function 단독범위맞나(scope, p, role) {
     (단독경고공개.has(p) || 단독경고기준.test(p) || ['account/dist/client.js', 'account/dist/platform.js', 'account/client.html', 'account/platform.html'].includes(p) || /^(?:id(?:-rehearsal)?\/|try\/|world\/|care\/|synk-town\/|teacher-world\/)/.test(p));
   return 단독원천추가.has(p) || /^(?:atlas\/|account\/|experiences\/(?:synk-account|synk-world-app|synk-town|synk-teacher-world|relationship-care|play-common|path-travel)\/|tests\/|tools\/(?:lib\/|company-messenger\/|(?:build-|check-|sync-atlas|검수|짝검사)[^/]*$)|package(?:-lock)?\.json$)/.test(p);
 }
+const Atlas원천파일 = new Set([
+  '엔진_콘텐츠AI.js', 'experiences/brand-opening/world-strings.mjs', 'experiences/brand-opening/content/life-standalone.mjs', 'experiences/brand-opening/content/life-ui.css',
+  'tools/lib/검수증명.mjs', 'tools/검수묶음.mjs', 'tools/lib/topik-review-atlas-20261028.mjs', 'tools/lib/topik-review-atlas-tea-20261028.mjs',
+  'tools/lib/town-tea-review-unit.mjs',
+  ...['build-game-learning.js', 'build-world-app-public.mjs', 'build-world-topik-items.mjs', 'topik-review.mjs',
+    'check-atlas-content-supply.mjs', 'town-data-build.mjs', 'build-study-public.mjs', 'check-account-bundles.js',
+    'sync-atlas-copies.js', 'synk-town-build.js', 'town-source-loader.mjs', 'town-source-path.js', '마이그레이션_합본.js'].map(p => `tools/${p}`),
+  ...['modern-town-domain.mjs', 'modern-town-server.js', 'modern-town-store.js', 'synk-server.js', 'synk-store.js',
+    'town-scope.js', 'study-progress-rules.js', 'town-learning.js'].map(p => `lib/${p}`),
+  'supabase/migrations/20261028180000_study_progress_c18.sql',
+  'supabase/functions/_shared/synk-atlas-summary.js',
+  'tests/lib/migration-branches.js', 'tests/backend-followup-runtime.test.js', 'tools/backend-runtime-manifest.json',
+  'supabase/L0_스키마.sql', 'supabase/확인_적용후상태.sql',
+  'docs/Temper_개입로그_규격_v1.md', 'docs/맞춤학습_로컬연결.md',
+  'docs/디자인/싱크타운_학습개인화다리_설계_20261022.md',
+  'docs/_ops/배포장부.jsonl', 'docs/_ops/qa/atlas-world-learning-20261028/README.md',
+  ...['결정.md', '트랙.md', '관문_자동화.md'].map(p => `docs/_ops/${p}`),
+]);
+function Atlas범위맞나(scope, p, role) {
+  if (scope !== Atlas작업ID) return false;
+  if (role === '배포 후보') return !/(?:^|\/)(?:qa|tests|_ops)(?:\/|$)/.test(p)
+    && (/^(?:world\/|try\/(?:order-rush|rhythm)\/|study\/|account\/)/.test(p) || 공개소비처경로.has(p));
+  return Atlas원천파일.has(p) || 단독원천추가.has(p) && /atlas-learning\.js$/.test(p)
+    || /^(?:atlas\/|strata\/|account\/|lib\/atlas\/|experiences\/(?:synk-account|synk-world-app|synk-town|korean-study|korean-rhythm|order-rush|topik-items)\/)/.test(p)
+    || /^tools\/lib\/(?:loom|vellum|trail|prism|temper|reed)(?:[-.][a-zA-Z0-9_.-]+)\.(?:[cm]?js|json)$/.test(p)
+    || /^supabase\/functions\/(?:synk-account|synk-learning|synk-town)\//.test(p)
+    || /^tests\/(?:atlas-|strata-|world-|town-|study-|검수)[^/]+\.test\.(?:[cm]?js)$/.test(p)
+    || /^docs\/(?:엔진8종_상향설계_v3|아틀라스_설계|코어엔진_설계|Strata_설계|미니게임_TOPIK_I_학습기준)\.md$/.test(p);
+}
 function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 단독 = 판 === 4, 검수자 = 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
   if (o.종류 !== '화면' && !단독) throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
@@ -145,14 +176,18 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   if (o.예외 || o.페이블생략 != null || (o.GPT구독 && o.GPT구독 !== '유지') || o.끝 !== '작업본') throw new Error('사용자지정은 현재 작업본의 독립 새 묶음으로만 준비하며 기존 예외와 섞지 않는다');
   const raw = fs.readFileSync(o.사용자지정), 지정 = JSON.parse(raw.toString('utf8').replace(/^\uFEFF/, ''));
   if (!지정 || typeof 지정 !== 'object' || Array.isArray(지정) || Object.keys(지정).sort().join(',') !== ['version', 'taskId', 'userStatements', 'requiredReviewers', 'finalReviewer', 'allowFallback', 'sources', 'candidate'].sort().join(',')) throw new Error('사용자지정 JSON 필드가 잘못됐다');
-  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (단독 ? 'spaghetti-finish-20261026' : 지정작업) || 정규해시(지정.userStatements) !== 정규해시(단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  const atlas = 단독 && 지정.taskId === Atlas작업ID;
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
+    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  if (atlas && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('Atlas 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   if (정규해시(지정.requiredReviewers) !== 정규해시(검수자) || 지정.finalReviewer !== 최종 || 지정.allowFallback !== false) throw new Error(`사용자지정은 묶음별 ${검수자.join('·')}와 최종 전체 ${최종} 판정이 필요하며 대체를 허용하지 않는다`);
   const checkRows = (rows, expected, role) => {
     if (!Array.isArray(rows) || rows.length !== expected.length) throw new Error(`사용자지정 ${role} 경로 전체가 맞지 않는다`);
     const seen = new Set();
     for (const row of rows) {
       안전경로(o.저장소, row.path);
-      if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author) || !(단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+      if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author)
+        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
       if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
       const match = expected.find(f => f.path === row.path);

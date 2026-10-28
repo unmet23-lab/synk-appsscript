@@ -41,7 +41,7 @@ var require_ask = __commonJS({
       const KINDS3 = ["setting", "confirm", "choice", "refresh", "follow_up"];
       const DAY2 = 864e5;
       const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
-      const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
+      const canonical2 = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       const time = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
@@ -76,9 +76,9 @@ var require_ask = __commonJS({
       }
       function difference(a, b) {
         if (a && b && typeof a === "object" && typeof b === "object" && ("content" in a || "shape" in a)) {
-          return (canonical(a.content) !== canonical(b.content) ? 2 : 0) + (canonical(a.shape) !== canonical(b.shape) ? 1 : 0);
+          return (canonical2(a.content) !== canonical2(b.content) ? 2 : 0) + (canonical2(a.shape) !== canonical2(b.shape) ? 1 : 0);
         }
-        return canonical(a) === canonical(b) ? 0 : 1;
+        return canonical2(a) === canonical2(b) ? 0 : 1;
       }
       function decisionValue(evaluate, context) {
         const value = evaluate(context);
@@ -121,7 +121,7 @@ var require_ask = __commonJS({
               expectedGain += chances[index] * gain;
             }
           });
-          const distinct = new Set(Object.values(outcomes).map(canonical)).size;
+          const distinct = new Set(Object.values(outcomes).map(canonical2)).size;
           const cost = q.cost ?? 0, responseProbability = q.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
           if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
           const skippable = impact === 0 || valued && value <= 0;
@@ -204,7 +204,7 @@ var require_trail = __commonJS({
       const OPTIONAL = { "practice.presented": ["measure"], "practice.attempted": ["reason", "choice"] };
       const VERDICTS2 = ["correct", "incorrect", "unassessed", "skipped"];
       const copy = (value) => JSON.parse(JSON.stringify(value));
-      const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key2) => [key2, entry[key2]])) : entry);
+      const canonical2 = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key2) => [key2, entry[key2]])) : entry);
       const id2 = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       function choiceRecord(value) {
         const optionId = (entry) => typeof entry === "string" && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(entry) && !["constructor", "prototype", "__proto__"].includes(entry);
@@ -256,7 +256,7 @@ var require_trail = __commonJS({
       function linked(event2, prior, parent, attempts) {
         if (!vouched.has(event2)) validate(event2);
         if (prior) {
-          if (canonical(prior) !== canonical(event2)) throw new Error("Trail: conflicting event id");
+          if (canonical2(prior) !== canonical2(event2)) throw new Error("Trail: conflicting event id");
           return event2;
         }
         const presented = event2.type === TYPES[0];
@@ -332,7 +332,7 @@ var require_trail = __commonJS({
         for (const event2 of events) {
           if (!event2 || !event2.scope || (vouched.get(event2)?.scope ?? `${event2.scope.domain}/${event2.scope.workspace}/${event2.scope.subject}`) !== scopeId) continue;
           if (seen.has(event2.id)) {
-            if (canonical(seen.get(event2.id)) !== canonical(event2)) throw new Error("Trail: conflicting event id");
+            if (canonical2(seen.get(event2.id)) !== canonical2(event2)) throw new Error("Trail: conflicting event id");
             continue;
           }
           if (TYPES.includes(event2.type)) linked(
@@ -1406,7 +1406,22 @@ var LANG_KEY = "synk.world.lang";
 var COPY = {
   "study.title": { ko: "한국어 공부", en: "Korean study", mn: "Солонгос хэлний хичээл" },
   "study.lead": { ko: "TOPIK II 쓰기를 한 가지씩 같이 고쳐 가요. 점수나 급수는 매기지 않아요.", en: "We work on TOPIK II writing one point at a time. There are no scores or levels.", mn: "TOPIK II бичих даалгаврын алдааг нэг нэгээр нь хамт засна. Оноо, түвшин тогтоохгүй." },
-  "study.device": { ko: "공부 기록은 이 기기에 저장돼요. 다른 기기로는 아직 이어지지 않아요.", en: "Study records stay on this device. They do not sync to other devices yet.", mn: "Хичээлийн явц энэ төхөөрөмжид хадгалагдана. Бусад төхөөрөмжтэй хараахан холбогдохгүй." },
+  "study.device": { ko: "쓴 글은 이 기기에 남아요. SYNK ID 연결과 학습 기록 동의가 있으면 연습 진도를 다른 기기에서도 이어 가요.", en: "Drafts stay on this device. With SYNK ID and learning-record consent, practice progress can continue on other devices.", mn: "Бичвэр энэ төхөөрөмжид хадгалагдана. SYNK ID-гаар холбогдож, сургалтын явц хадгалахыг зөвшөөрвөл өөр төхөөрөмжөөс үргэлжлүүлж болно." },
+  "sync.local": { ko: "지금은 이 기기에 진도를 저장해요.", en: "Progress is saved on this device.", mn: "Одоогоор явцыг энэ төхөөрөмжид хадгална." },
+  "sync.slot": { ko: "처음부터 시작한 별도 기록은 이 기기에만 남아요. 계정의 원래 진도는 보존돼 있어요.", en: "This separate fresh start stays on this device. Your original account progress is preserved.", mn: "Шинээр эхэлсэн тусдаа явц зөвхөн энэ төхөөрөмжид үлдэнэ. Бүртгэлийн өмнөх явц хэвээр хадгалагдана." },
+  "sync.loading": { ko: "계정의 진도를 확인하고 있어요.", en: "Checking account progress.", mn: "Бүртгэлийн явцыг шалгаж байна." },
+  "sync.saving": { ko: "연습 진도를 계정에 저장하고 있어요.", en: "Saving practice progress to your account.", mn: "Дасгалын явцыг бүртгэлд хадгалж байна." },
+  "sync.pending": { ko: "이 기기에 저장했어요. 계정에도 이어서 저장해요.", en: "Saved on this device. Account sync is next.", mn: "Энэ төхөөрөмжид хадгаллаа. Дараа нь бүртгэлтэй холбоно." },
+  "sync.synced": { ko: "계정에 진도를 저장했어요. 쓴 글은 이 기기에만 남아요.", en: "Account progress is up to date. Drafts stay on this device.", mn: "Бүртгэлийн явц шинэчлэгдлээ. Бичвэр зөвхөн энэ төхөөрөмжид үлдэнэ." },
+  "sync.disabled": { ko: "계정 설정에서 학습 기록 보관에 동의하면 다른 기기로 진도를 이어 갈 수 있어요.", en: "Enable learning-record storage in account settings to continue progress on another device.", mn: "Бүртгэлийн тохиргоонд сургалтын явц хадгалахыг зөвшөөрвөл өөр төхөөрөмжөөс үргэлжлүүлж болно." },
+  "sync.consent": { ko: "학습 기록 동의가 바뀌어 계정 저장을 멈췄어요. 다시 확인해 주세요.", en: "Learning consent changed, so account sync stopped. Check it again.", mn: "Сургалтын зөвшөөрөл өөрчлөгдсөн тул бүртгэлд хадгалахыг зогсоолоо. Дахин шалгана уу." },
+  "sync.blocked": { ko: "계정에 진도를 저장하지 못했어요. 이 기기의 기록은 유지해요.", en: "Could not sync account progress. The record on this device is kept.", mn: "Явцыг бүртгэлтэй холбож чадсангүй. Энэ төхөөрөмжийн явц хэвээр үлдэнэ." },
+  "sync.conflict": { ko: "다른 기기에서도 진도가 바뀌었어요. 두 기록을 자동으로 합치지 않고 이 기기의 기록을 유지해요.", en: "Progress changed on another device too. The records are not merged automatically; this device’s record is kept.", mn: "Өөр төхөөрөмж дээр ч явц өөрчлөгджээ. Хоёр явцыг автоматаар нэгтгэхгүй, энэ төхөөрөмжийн явцыг хадгална." },
+  "sync.retry": { ko: "다시 확인", en: "Check again", mn: "Дахин шалгах" },
+  "sync.export": { ko: "이 기기 기록 파일로 받기", en: "Download this device’s record", mn: "Энэ төхөөрөмжийн явцыг файлаар авах" },
+  "sync.remote": { ko: "계정 진도로 이어 하기", en: "Continue account progress", mn: "Бүртгэлийн явцаас үргэлжлүүлэх" },
+  "sync.account": { ko: "원래 계정 진도로 돌아가기", en: "Return to original account progress", mn: "Бүртгэлийн өмнөх явц руу буцах" },
+  "sync.confirm": { ko: "이 기기 기록을 별도 백업한 뒤 계정 진도로 이어 갈까요? 쓴 글은 이 기기에 그대로 남아요.", en: "Back up this device’s record and continue account progress? Your drafts will stay on this device.", mn: "Энэ төхөөрөмжийн явцыг тусад нь нөөцлөөд бүртгэлийн явцаас үргэлжлүүлэх үү? Бичвэр энэ төхөөрөмжид хэвээр үлдэнэ." },
   "ai.connect": { ko: "AI 튜터와 공부하기", en: "Study with the AI tutor", mn: "AI багштай хичээллэх" },
   "ai.connectNote": { ko: "SYNK ID로 연결하면 글의 내용까지 함께 읽고 연습을 이어 가요.", en: "Connect with SYNK ID to get feedback on meaning and a short practice.", mn: "SYNK ID-гаар холбогдож, бичвэрийн утгын зөвлөгөө авч, богино дасгал хийгээрэй." },
   "ai.connected": { ko: "AI 튜터와 연결됐어요.", en: "Your AI tutor is connected.", mn: "AI багштай холбогдлоо." },
@@ -1601,8 +1616,8 @@ async function tokenRequest(config, fields, fetcher = fetch) {
     let data;
     try {
       data = await response.json();
-    } catch (error2) {
-      if (response.ok && error2?.name !== "SyntaxError") throw Object.assign(new Error("로그인 응답을 끝까지 받지 못했어요. 연결되면 다시 시도해 주세요."), { code: "NETWORK", retryable: true });
+    } catch (error3) {
+      if (response.ok && error3?.name !== "SyntaxError") throw Object.assign(new Error("로그인 응답을 끝까지 받지 못했어요. 연결되면 다시 시도해 주세요."), { code: "NETWORK", retryable: true });
       data = null;
     }
     if (!response.ok) {
@@ -1640,6 +1655,7 @@ function createFeedbackClient({
   cryptoAPI = globalThis.crypto
 } = {}) {
   let config = null, credentials = null, identity = null, capability = null, epoch = 0, refreshing = null, active = null, requestPending = null;
+  const progressActive = /* @__PURE__ */ new Set();
   const current = (rev) => {
     if (rev !== epoch) throw error("ACCOUNT_CHANGED");
   };
@@ -1651,11 +1667,22 @@ function createFeedbackClient({
       return null;
     }
   };
-  async function configuration() {
+  function sessionCheck(rev, owner) {
+    current(rev);
+    const live = load();
+    if (!live && !credentials) throw error("AUTH_REQUIRED");
+    if (!live || live.access_token !== credentials?.access_token || owner && identity !== owner) throw error("ACCOUNT_CHANGED");
+  }
+  async function configuration(check = () => {
+  }) {
+    check();
     if (config) return config;
     const response = await fetcher(new URL("/account/config.json", base), { cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(1e4) });
+    check();
     if (!response.ok) throw error("CONFIG_UNAVAILABLE");
-    const candidate = readConfig(await response.json(), base);
+    const raw = await response.json();
+    check();
+    const candidate = readConfig(raw, base);
     const callback = new URL(candidate.clients.world.redirectUri), site = new URL(base);
     if (callback.origin !== site.origin || callback.pathname !== "/account/client.html" || callback.search !== "?product=world") throw error("STUDY_LOGIN_NOT_CONFIGURED");
     config = candidate;
@@ -1665,6 +1692,10 @@ function createFeedbackClient({
     epoch++;
     active?.abort();
     active = null;
+    if (requestPending) requestPending.cancelled = true;
+    requestPending = null;
+    for (const controller of progressActive) controller.abort();
+    progressActive.clear();
     identity = null;
     capability = null;
     credentials = null;
@@ -1676,6 +1707,14 @@ function createFeedbackClient({
       throw error("STORAGE");
     }
   }
+  function settled(rev, owner) {
+    try {
+      sessionCheck(rev, owner);
+    } catch (e) {
+      if (rev === epoch) forgetConnection(e.code !== "ACCOUNT_CHANGED");
+      throw e;
+    }
+  }
   const disconnect = () => forgetConnection(true);
   function cancel() {
     if (!requestPending) return;
@@ -1685,16 +1724,16 @@ function createFeedbackClient({
     active = null;
   }
   async function token(rev) {
-    current(rev);
+    const owner = identity;
+    sessionCheck(rev, owner);
     const live = load();
-    if (!live || credentials && live.access_token !== credentials.access_token) throw error("ACCOUNT_CHANGED");
     credentials = live;
     if (Number.isFinite(credentials.expires_at) && credentials.expires_at > now() + 3e4) return credentials.access_token;
     if (!credentials.refresh_token) throw error("AUTH_REQUIRED");
     refreshing ||= (async () => {
       const old = credentials;
       const next2 = await tokenRequest(config, { grant_type: "refresh_token", client_id: config.clients.world.clientId, refresh_token: old.refresh_token }, fetcher);
-      current(rev);
+      sessionCheck(rev, owner);
       if (load()?.access_token !== old.access_token) throw error("ACCOUNT_CHANGED");
       credentials = { ...next2, refresh_token: next2.refresh_token || old.refresh_token };
       storage.setItem(STUDY_SESSION, JSON.stringify(credentials));
@@ -1704,60 +1743,82 @@ function createFeedbackClient({
     });
     return refreshing;
   }
-  async function post(payload, { timeout = 9e4, cancelled = () => false } = {}) {
-    const rev = epoch;
+  async function send(kind, { method = "POST", payload, revision, timeout = 15e3, cancelled = () => false } = {}) {
+    const endpoint = { ai: "world-writing", account: "synk-account", study: "synk-learning" }[kind];
+    if (!endpoint) throw error("INVALID_REQUEST");
+    const rev = epoch, owner = identity;
     let controller, timer;
+    credentials ||= load();
     const check = () => {
-      current(rev);
+      sessionCheck(rev, owner);
       if (cancelled()) throw error("CANCELLED");
     };
     try {
-      await configuration();
+      check();
+      await configuration(check);
       check();
       const access = await token(rev);
       check();
       controller = new AbortController();
-      active = controller;
+      if (kind === "ai") active = controller;
+      else progressActive.add(controller);
       timer = setTimeout(() => controller.abort(), timeout);
-      const r = await fetcher(new URL("/functions/v1/world-writing", config.accountApiUrl), {
-        method: "POST",
+      const url = new URL(`/functions/v1/${endpoint}`, config.accountApiUrl);
+      if (kind === "study") {
+        url.searchParams.set("view", "study");
+        if (method === "GET") url.searchParams.set("revision", String(revision));
+      }
+      const r = await fetcher(url, {
+        method,
         credentials: "omit",
         cache: "no-store",
         redirect: "error",
         signal: controller.signal,
         headers: { "Content-Type": "application/json", authorization: `Bearer ${access}`, apikey: config.supabasePublishableKey, "X-SYNK-Contract": "1", "X-SYNK-Product": "world" },
-        body: JSON.stringify(payload)
+        ...method === "POST" ? { body: JSON.stringify(payload) } : {}
       });
       check();
-      if (load()?.access_token !== credentials?.access_token) throw error("ACCOUNT_CHANGED");
-      const data = await r.json();
-      check();
-      if (load()?.access_token !== credentials?.access_token) throw error("ACCOUNT_CHANGED");
-      if (!r.ok || !data?.ok) {
-        if (r.status === 401 || r.status === 403) disconnect();
-        throw error(data?.code || "UNAVAILABLE");
+      let data;
+      try {
+        data = await r.json();
+      } catch (e) {
+        check();
+        if (r.status === 401) throw Object.assign(error("AUTH_REQUIRED"), { status: 401 });
+        throw e;
       }
-      if (!UUID.test(data.accountId || "")) throw error("INVALID_RESPONSE");
-      if (identity && data.accountId !== identity) throw error("ACCOUNT_CHANGED");
+      check();
+      if (!r.ok || !data?.ok) throw Object.assign(error(data?.error?.code || data?.code || "UNAVAILABLE"), { status: r.status, ...Number.isSafeInteger(data?.revision) ? { revision: data.revision } : {} });
+      const accountId = kind === "account" ? data.account?.synk_user_id : data.accountId;
+      if (!UUID.test(accountId || "")) throw error("INVALID_RESPONSE");
+      if (identity && accountId !== identity) throw error("ACCOUNT_CHANGED");
       return data;
     } catch (e) {
-      if (rev === epoch && ["ACCOUNT_CHANGED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED"].includes(e.code)) forgetConnection(e.code !== "ACCOUNT_CHANGED");
+      try {
+        check();
+      } catch (stale) {
+        e = stale;
+      }
+      if (rev === epoch && (e.status === 401 || ["ACCOUNT_CHANGED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED"].includes(e.code))) forgetConnection(e.code !== "ACCOUNT_CHANGED");
       throw e;
     } finally {
       clearTimeout(timer);
       if (active === controller) active = null;
+      progressActive.delete(controller);
     }
   }
+  const post = (payload, options = {}) => send("ai", { payload, timeout: 9e4, ...options });
   return {
     owner: () => identity ? `user-${identity}` : null,
     status: () => ({ ...capability, connected: !!identity }),
     async init() {
-      const rev = epoch;
-      credentials = load();
-      if (!credentials) return null;
+      const rev = epoch, owner = identity;
+      if (!load()) {
+        if (credentials || identity) forgetConnection();
+        return null;
+      }
       try {
         const data = await post({ action: "status" }, { timeout: 15e3 });
-        current(rev);
+        settled(rev, owner);
         identity = data.accountId;
         capability = data;
         return data;
@@ -1766,16 +1827,39 @@ function createFeedbackClient({
         return null;
       }
     },
+    async learningSession() {
+      const rev = epoch, owner = identity;
+      if (!load()) {
+        if (credentials || identity) forgetConnection();
+        return null;
+      }
+      const data = await send("account", { method: "GET" });
+      settled(rev, owner);
+      if (typeof data.learning?.enabled !== "boolean" || !Number.isSafeInteger(data.learning?.revision) || data.learning.revision < 1) throw error("INVALID_RESPONSE");
+      if (identity && identity !== data.account.synk_user_id) throw error("ACCOUNT_CHANGED");
+      identity = data.account.synk_user_id;
+      return { accountId: identity, enabled: data.learning.enabled, revision: data.learning.revision };
+    },
+    async studyProgress({ method = "GET", revision, baseVersion, study } = {}) {
+      if (!["GET", "POST"].includes(method) || !Number.isSafeInteger(revision) || revision < 1) throw error("INVALID_REQUEST");
+      if (method === "POST" && (!Number.isSafeInteger(baseVersion) || baseVersion < 0 || study?.v !== 2 || Object.keys(study).some((key) => !["v", "seq", "obs", "trail", "seen", "recentCards"].includes(key)))) throw error("INVALID_REQUEST");
+      if (!identity) throw error("AUTH_REQUIRED");
+      const rev = epoch, owner = identity;
+      const data = await send("study", { method, revision, payload: { revision, baseVersion, study } });
+      settled(rev, owner);
+      if (data.revision !== revision || !Number.isSafeInteger(data.version) || data.version < 0 || !(data.study === null || data.study?.v === 2)) throw error("INVALID_RESPONSE");
+      return data;
+    },
     async login() {
-      epoch++;
-      active?.abort();
-      identity = null;
-      capability = null;
-      const rev = epoch;
-      await configuration();
-      current(rev);
+      forgetConnection();
+      const rev = epoch, stored = load()?.access_token, check = () => {
+        current(rev);
+        if (load()?.access_token !== stored || identity) throw error("ACCOUNT_CHANGED");
+      };
+      await configuration(check);
+      check();
       const url = await beginOAuth({ config, product: "world", storage, now: now(), cryptoAPI });
-      current(rev);
+      check();
       rememberStudyLogin(storage, { now: now() });
       navigate(url);
     },
@@ -1867,6 +1951,164 @@ function semanticNext(state, bank, { itemId, revise = false, focusSkill = null, 
   return { id: "write", itemId: fresh.id, mode: "new", support: 0, phase: "edit", why: "semantic-transfer", semantic: true, focusSkill };
 }
 
+// experiences/korean-study/src/progress-sync.mjs
+var canonical = (v) => Array.isArray(v) ? "[" + v.map(canonical).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map((k) => JSON.stringify(k) + ":" + canonical(v[k])).join(",") + "}" : JSON.stringify(v);
+var progressSnapshot = (state) => Object.fromEntries(["v", "seq", "obs", "trail", "seen", "recentCards"].map((key) => [key, structuredClone(state[key])]));
+var hasHistory = (s) => !!s && (s.obs?.length > 0 || s.trail?.length > 0 || Object.keys(s.seen || {}).length > 0);
+var error2 = (code) => Object.assign(Error(code), { code });
+function createProgressSync({ transport, storage, key, read, apply, guard = () => {
+}, onStatus = () => {
+} }) {
+  let stopped = false, epoch = 0, state = { phase: "idle", version: null }, base = null, remote = null, pending = null, started = false;
+  const emit = (phase, extra = {}) => {
+    state = { ...state, phase, ...extra };
+    onStatus({ ...state });
+    return { ...state };
+  };
+  const check = (ticket) => {
+    if (stopped || ticket !== epoch) throw error2("ACCOUNT_CHANGED");
+    guard();
+  };
+  const snapshot = () => progressSnapshot(read());
+  const writeMeta = () => storage.setItem(key, JSON.stringify({ version: state.version, text: base }));
+  function restore(value) {
+    const local = read();
+    apply({ ...value, drafts: local.drafts, scene: null });
+  }
+  async function init() {
+    if (stopped) return state;
+    if (pending) return pending;
+    const ticket = epoch;
+    emit("loading");
+    pending = (async () => {
+      try {
+        const saved = await transport.get();
+        check(ticket);
+        if (!Number.isSafeInteger(saved.version) || saved.version < 0 || !(saved.study === null || saved.study?.v === 2)) throw error2("INVALID_RESPONSE");
+        const local = snapshot(), localText = canonical(local), serverText = saved.study ? canonical(saved.study) : null;
+        let meta = null;
+        try {
+          meta = JSON.parse(storage.getItem(key) || "null");
+        } catch {
+          throw error2("STORAGE");
+        }
+        state.version = saved.version;
+        remote = saved.study;
+        started = true;
+        if (serverText === localText) {
+          base = serverText;
+          writeMeta();
+          return emit("synced");
+        }
+        if (!hasHistory(local) && saved.study || meta?.text === localText && saved.study) {
+          restore(saved.study);
+          base = serverText;
+          writeMeta();
+          return emit("synced");
+        }
+        if (!saved.study || meta?.version === saved.version && meta.text === serverText) {
+          base = serverText;
+          writeMeta();
+          return emit(hasHistory(local) ? "pending" : "synced");
+        }
+        return emit("conflict", { code: "STUDY_PROGRESS_CONFLICT" });
+      } catch (e) {
+        if (!stopped && ticket === epoch) emit("blocked", { code: e.code || "UNAVAILABLE" });
+        return { ...state };
+      } finally {
+        pending = null;
+      }
+    })();
+    return pending;
+  }
+  async function flush() {
+    if (stopped) return state;
+    if (pending) {
+      await pending;
+      if (stopped) return state;
+    }
+    if (!started) {
+      await init();
+      if (state.phase !== "pending" && state.phase !== "synced") return state;
+    }
+    if (["conflict", "blocked", "loading"].includes(state.phase)) return state;
+    const ticket = epoch, value = snapshot(), text2 = canonical(value);
+    if (text2 === base) return emit("synced");
+    const version = state.version;
+    emit("saving");
+    pending = (async () => {
+      try {
+        check(ticket);
+        const saved = await transport.post({ baseVersion: version, study: value });
+        check(ticket);
+        if (!Number.isSafeInteger(saved.version) || saved.version < version || saved.version > version + 1 || canonical(saved.study) !== text2) throw error2("INVALID_RESPONSE");
+        base = text2;
+        remote = saved.study;
+        state.version = saved.version;
+        writeMeta();
+        return emit(canonical(snapshot()) === base ? "synced" : "pending");
+      } catch (e) {
+        if (!stopped && ticket === epoch) emit(["STUDY_PROGRESS_CONFLICT", "STUDY_HISTORY_CONFLICT"].includes(e.code) ? "conflict" : "blocked", { code: e.code || "UNAVAILABLE" });
+        return { ...state };
+      } finally {
+        pending = null;
+      }
+    })();
+    return pending;
+  }
+  return Object.freeze({
+    init,
+    flush,
+    status: () => ({ ...state }),
+    changed() {
+      if (stopped || ["conflict", "blocked", "loading"].includes(state.phase)) return state;
+      return emit("pending");
+    },
+    async retry() {
+      if (stopped) return state;
+      started = false;
+      const result = await init();
+      return result.phase === "pending" ? flush() : result;
+    },
+    // The learner explicitly chooses to continue the server history. Preserve the whole local
+    // state before replacing its active progress; a quota failure prevents the replacement.
+    async useServer() {
+      if (stopped || pending) return state;
+      const ticket = epoch;
+      emit("loading");
+      pending = (async () => {
+        try {
+          const saved = await transport.get();
+          check(ticket);
+          if (!saved.study || saved.study.v !== 2 || !Number.isSafeInteger(saved.version) || saved.version < 0) throw error2("NO_REMOTE_PROGRESS");
+          const backupKey = key + ".backup." + Date.now();
+          storage.setItem(backupKey, JSON.stringify(read()));
+          check(ticket);
+          restore(saved.study);
+          base = canonical(saved.study);
+          remote = saved.study;
+          state.version = saved.version;
+          started = true;
+          writeMeta();
+          return emit("synced", { backupKey, code: null });
+        } catch (e) {
+          if (!stopped && ticket === epoch) emit("blocked", { code: e.code || "UNAVAILABLE" });
+          return { ...state };
+        } finally {
+          pending = null;
+        }
+      })();
+      return pending;
+    },
+    exportLocal: () => JSON.stringify(snapshot(), null, 2),
+    stop() {
+      stopped = true;
+      epoch++;
+      emit("stopped");
+    }
+  });
+}
+
 // experiences/korean-study/src/app.mjs
 var TOKEN = true ? "7512daf78440" : "dev";
 var esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -1895,6 +2137,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     }
   };
   let lang = chooseLang({ storage }), t = makeT(lang), bank = null, who = getOwner(), legacy = null, state = load(), saveFailed = false, ui = {}, semanticSeq = 0;
+  let progress = null, progressStatus = { phase: "local" }, progressTicket = 0, progressTimer = null, progressText = null;
   const aiReady = () => {
     const s = feedback?.status?.();
     return s?.connected && s.enabled && s.studyVersion === 1 && s.bankHash === bank?.sourceHash;
@@ -1924,8 +2167,115 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     try {
       storage.setItem(storeKey(who), JSON.stringify(state));
       saveFailed = false;
+      scheduleProgress();
     } catch {
       saveFailed = true;
+    }
+  }
+  function stopProgress() {
+    progressTicket++;
+    clearTimeout(progressTimer);
+    progressTimer = null;
+    progress?.stop();
+    progress = null;
+    progressText = null;
+    progressStatus = { phase: "local" };
+  }
+  function scheduleProgress() {
+    if (!progress || saveFailed) return;
+    const text2 = JSON.stringify(progressSnapshot(state));
+    if (text2 === progressText) return;
+    progressText = text2;
+    progress.changed();
+    clearTimeout(progressTimer);
+    const active = progress, ticket = progressTicket;
+    progressTimer = setTimeout(() => {
+      if (active === progress && ticket === progressTicket) void active.flush().then((result) => {
+        if (active === progress && result.phase === "pending") {
+          progressText = null;
+          scheduleProgress();
+        }
+      });
+    }, 350);
+  }
+  function progressHtml() {
+    const phase = progressStatus.phase, key = phase === "blocked" ? ["LEARNING_DISABLED", "REVISION_CONFLICT"].includes(progressStatus.code) ? "sync.consent" : "sync.blocked" : `sync.${phase}`;
+    const retry = ["blocked", "conflict", "disabled"].includes(phase), conflict = phase === "conflict";
+    return `<p class="st-note" role="status">${esc(t(key))}</p>` + (retry ? `<button class="st-quiet" data-sync-retry>${esc(t("sync.retry"))}</button>` : "") + (conflict ? ` <button class="st-quiet" data-sync-export>${esc(t("sync.export"))}</button> <button class="st-quiet" data-sync-remote>${esc(t("sync.remote"))}</button>` : "") + (phase === "slot" ? `<button class="st-quiet" data-sync-account>${esc(t("sync.account"))}</button>` : "");
+  }
+  const paintProgress = () => {
+    const panel = root.querySelector("[data-study-sync]");
+    if (panel) panel.innerHTML = progressHtml();
+  };
+  async function connectProgress() {
+    stopProgress();
+    if (!feedback?.learningSession) return;
+    let ticket = progressTicket;
+    progressStatus = { phase: "loading" };
+    paintProgress();
+    try {
+      const info = await feedback.learningSession();
+      if (ticket !== progressTicket) return;
+      syncOwner();
+      ticket = progressTicket;
+      if (!info) {
+        progressStatus = { phase: "local" };
+        paintProgress();
+        return;
+      }
+      const account = `user-${info.accountId}`, expected = who;
+      if (expected !== account) {
+        progressStatus = { phase: "slot" };
+        paintProgress();
+        return;
+      }
+      if (!info.enabled) {
+        progressStatus = { phase: "disabled" };
+        paintProgress();
+        return;
+      }
+      const activeTicket = progressTicket, guard = () => {
+        if (expected !== getOwner() || expected !== who || feedback.owner() !== account || activeTicket !== progressTicket) throw Object.assign(Error("ACCOUNT_CHANGED"), { code: "ACCOUNT_CHANGED" });
+      };
+      progress = createProgressSync({
+        storage,
+        key: `synk.study.sync.v1:${account}:${info.revision}`,
+        read: () => state,
+        guard,
+        transport: { get: () => feedback.studyProgress({ method: "GET", revision: info.revision }), post: (value) => feedback.studyProgress({ method: "POST", revision: info.revision, ...value }) },
+        apply: (value) => {
+          guard();
+          const nextState = readState(value, { now: now() });
+          storage.setItem(storeKey(who), JSON.stringify(nextState));
+          semanticSeq++;
+          feedback.cancel?.();
+          state = nextState;
+          saveFailed = false;
+          ui = { resume: !!state.obs.length };
+        },
+        onStatus: (value) => {
+          if (activeTicket !== progressTicket) return;
+          progressStatus = value;
+          paintProgress();
+          if (expected !== getOwner()) queueMicrotask(() => {
+            if (activeTicket !== progressTicket || expected === getOwner()) return;
+            syncOwner();
+            ui = { ...ui, authLost: true };
+            paint(false);
+          });
+        }
+      });
+      const active = progress;
+      await active.init();
+      if (active === progress) {
+        progressText = JSON.stringify(progressSnapshot(state));
+        if (active.status().phase === "pending") void active.flush();
+      }
+    } catch (e) {
+      if (ticket === progressTicket) {
+        progressStatus = { phase: "blocked", code: e.code || "UNAVAILABLE" };
+        paintProgress();
+      }
     }
   }
   const iso2 = () => new Date(now()).toISOString();
@@ -1943,7 +2293,9 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
   function syncOwner() {
     const n = getOwner();
     if (n !== who) {
+      stopProgress();
       semanticSeq++;
+      feedback?.cancel?.();
       who = n;
       state = load();
       if (legacy && bank) {
@@ -1982,7 +2334,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
   const toScene = (n) => n.scene === "write" ? { id: "write", itemId: n.itemId, support: n.support, mode: n.mode || "new", why: n.why, phase: "edit" } : n.scene === "probe" ? { id: "probe", probe: n.probe, cards: n.cards || [], forms: n.forms || [], i: 0 } : n.scene === "method" ? { id: "method", method: n.method, cards: n.cards || [], forms: n.forms || [], find: n.find || null, mineFrom: n.mineFrom || null, step: 0, i: 0 } : { id: "rest", why: n.why };
   const examples = (sc) => ["formal", "polite", "plain"].map((b) => bank.pool.find((c) => c.bin === b && !checkCard(c) && !sc.cards.includes(c.key))).filter(Boolean);
   function shell(body) {
-    return `<header class="st-top"><p class="st-brand">SYNK</p><h1>${esc(t("study.title"))}</h1><label class="st-lang"><span>${esc(t("study.lang"))}</span><select data-st-lang>${LANGS.map((l) => `<option value="${l}" ${l === lang ? "selected" : ""}>${esc(LANG_NAMES[l])}</option>`).join("")}</select></label></header>` + (saveFailed ? `<p class="st-alert" role="alert">${esc(t("study.saveFail"))}</p>` : "") + `<div class="st-ai-connect"><p class="st-note">${esc(t(feedback?.status?.().connected ? aiReady() ? "ai.connected" : "ai.notReady" : "ai.connectNote"))}</p><button class="st-quiet" ${feedback?.status?.().connected ? "data-st-disconnect" : "data-st-connect"}>${esc(t(feedback?.status?.().connected ? "ai.disconnect" : "ai.connect"))}</button></div>` + (ui.loginError ? `<p class="st-alert" role="alert">${esc(t("ai.loginError"))}</p>` : "") + (ui.authLost ? `<p class="st-alert" role="alert">${esc(t("ai.expired"))}</p>` : "") + `<section class="st-scene" aria-live="polite" ${ui.reading ? 'aria-busy="true"' : ""}>${body}</section><footer class="st-foot"><p>${esc(t("study.lead"))}</p><p>${esc(t("study.device"))}</p></footer>`;
+    return `<header class="st-top"><p class="st-brand">SYNK</p><h1>${esc(t("study.title"))}</h1><label class="st-lang"><span>${esc(t("study.lang"))}</span><select data-st-lang>${LANGS.map((l) => `<option value="${l}" ${l === lang ? "selected" : ""}>${esc(LANG_NAMES[l])}</option>`).join("")}</select></label></header>` + (saveFailed ? `<p class="st-alert" role="alert">${esc(t("study.saveFail"))}</p>` : "") + `<div class="st-ai-connect"><p class="st-note">${esc(t(feedback?.status?.().connected ? aiReady() ? "ai.connected" : "ai.notReady" : "ai.connectNote"))}</p><button class="st-quiet" ${feedback?.status?.().connected ? "data-st-disconnect" : "data-st-connect"}>${esc(t(feedback?.status?.().connected ? "ai.disconnect" : "ai.connect"))}</button></div>` + (ui.loginError ? `<p class="st-alert" role="alert">${esc(t("ai.loginError"))}</p>` : "") + (ui.authLost ? `<p class="st-alert" role="alert">${esc(t("ai.expired"))}</p>` : "") + `<div class="st-ai-connect" data-study-sync>${progressHtml()}</div><section class="st-scene" aria-live="polite" ${ui.reading ? 'aria-busy="true"' : ""}>${body}</section><footer class="st-foot"><p>${esc(t("study.lead"))}</p><p>${esc(t("study.device"))}</p></footer>`;
   }
   const actions = (main, { stop = true } = {}) => `<div class="st-actions">${main}${stop ? `<button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>` : ""}</div>`;
   const dataHtml = (data) => `<div class="st-data" lang="ko">${data.source ? `<p class="st-source">${esc(data.source)}</p>` : ""}${(data.tables || []).map((tb) => `<table><caption>${esc(tb.caption)}</caption><thead><tr>${tb.columns.map((c) => `<th scope="col">${esc(c)}</th>`).join("")}</tr></thead><tbody>${tb.rows.map((r) => `<tr>${r.map((c, i) => i ? `<td>${esc(c)}</td>` : `<th scope="row">${esc(c)}</th>`).join("")}</tr>`).join("")}</tbody></table>`).join("")}${(data.lists || []).map((l) => `<div class="st-list"><strong>${esc(l.caption)}</strong><ul>${l.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>`;
@@ -2185,7 +2537,52 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
   function onClick(ev) {
     const b = ev.target.closest("button");
     if (!b || !root.contains(b) || b.disabled) return;
+    if (getOwner() !== who) {
+      syncOwner();
+      ui = { ...ui, authLost: true };
+      paint(false);
+      return;
+    }
     const sc = state.scene;
+    if (b.hasAttribute("data-sync-retry")) {
+      b.disabled = true;
+      void connectProgress().then(() => paint(false));
+      return;
+    }
+    if (b.hasAttribute("data-sync-export")) {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }), url = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = url;
+      link.download = "synk-study-device.json";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1e3);
+      return;
+    }
+    if (b.hasAttribute("data-sync-remote")) {
+      if (!progress || !confirm(t("sync.confirm"))) return;
+      b.disabled = true;
+      const active = progress;
+      semanticSeq++;
+      feedback?.cancel?.();
+      ui = { ...ui, reading: false };
+      void active.useServer().then(() => {
+        if (active === progress) paint(false);
+      });
+      return;
+    }
+    if (b.hasAttribute("data-sync-account")) {
+      const account = feedback?.owner?.();
+      if (!account) return;
+      try {
+        storage.removeItem(`${SLOT_KEY}.${account}`);
+      } catch {
+        saveFailed = true;
+        paint(false);
+        return;
+      }
+      syncOwner();
+      void connectProgress().then(() => paint(false));
+      return;
+    }
     if (b.hasAttribute("data-st-connect")) {
       b.disabled = true;
       void feedback?.login().catch(() => {
@@ -2270,6 +2667,8 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
         paint();
         return;
       }
+      stopProgress();
+      progressStatus = { phase: account ? "slot" : "local" };
       who = slot2;
       legacy = null;
       state = readState(null);
@@ -2352,6 +2751,12 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     }
   }
   function onInput(ev) {
+    if (getOwner() !== who) {
+      syncOwner();
+      ui = { ...ui, authLost: true };
+      paint(false);
+      return;
+    }
     const el = ev.target, sc = state.scene;
     if (el.matches("[data-st-text]")) {
       const k = draftKey(sc), { pasted, ...d } = state.drafts[k] || { checkedAt: null };
@@ -2434,6 +2839,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       legacy = null;
       save();
     }
+    await connectProgress();
     let resumed = null;
     try {
       resumed = session?.getItem("synk.study.resumed");

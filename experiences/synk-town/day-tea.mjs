@@ -12,6 +12,7 @@
  */
 import * as generated from './town/data.gen.mjs';
 import { start, input, finish, previewCups, lineWords, keyWords, easier, VALUES } from './town/activities/tea-order.mjs';
+import * as teaSource from './town/activities/tea-order.mjs';
 import { createTeaSfx } from './day-sfx.mjs';
 import { SPOT_BY_ID } from './town/places.mjs';
 import { todayTeaWords, todayTeaColor, lineWords as gatherLine } from './day-gather.mjs';
@@ -227,6 +228,7 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
   /* ── listening ── */
   function bubbleFor(g) {
     const state = listen[g.slot] ||= { level: order.level, repeat: 0, slow: null, open: !hand?.heard?.[g.slot] };
+    if (tea?.language && g.lineLevel) state.level = g.lineLevel;
     // The regular's 「늘 마시던 걸로요」: her note, opened again, shows the first request she made (§11-5).
     const frame = hand?.heard?.[g.slot] && g.note ? g.note : g.frame, words = lineWords(frame, state.level, g.request) || '';
     const card = el('div', { className: 'tea-bubble' }); card.dataset.slot = g.slot; card.setAttribute('role', 'group'); card.setAttribute('aria-label', `${guestName(order, g)}의 말`);
@@ -256,14 +258,17 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     if (Object.hasOwn(request, 'sweet')) out.push(el('span', { className: 'tea-spoon-row' }, ...Array.from({ length: Math.max(1, request.sweet) }, (_, i) => el('i', { className: request.sweet ? '' : 'none' }))));
     return out;
   }
-  function ask(g, kind) {
+  async function ask(g, kind) {
     const state = listen[g.slot];
     const frame = hand?.heard?.[g.slot] && g.note ? g.note : g.frame;
     if (kind === 'slower' && state.slow && state.slow < chunks(lineWords(frame, state.level, g.request)).length) { state.slow += 1; render(true); return; }
-    hand = input(hand, { type: 'ask', slot: g.slot, kind }).state;
-    if (kind === 'repeat') { state.repeat += 1; state.slow = null; if (state.repeat > 1) state.level = easier(state.level); }
+    if (tea?.language) {
+      if (!(await ensurePresented(g))) return;
+      if (!(await act('TEA_HELP', { order: order.id, guest: g.slot, kind }))) return;
+    } else hand = input(hand, { type: 'ask', slot: g.slot, kind }).state;
+    if (kind === 'repeat') { state.repeat += 1; state.slow = null; if (!tea?.language && state.repeat > 1) state.level = easier(state.level); }
     if (kind === 'slower') state.slow = 1;
-    if (kind === 'meaning') { state.level = easier(state.level); state.meaning = true; state.slow = null; }
+    if (kind === 'meaning') { if (!tea?.language) state.level = easier(state.level); state.meaning = true; state.slow = null; }
     render(true);
   }
   function fold(slot) {
@@ -276,14 +281,36 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     render(true);
     if (hand.phase === 'make' && !Object.values(listen).some(s => s.open)) focusBoard();
   }
-  function reopen(slot) {
+  async function reopen(slot) {
     const g = order?.guests.find(x => x.slot === slot); if (!g || g.done || !hand) return;
+    if (tea?.language) { if (!(await act('TEA_HELP', { order: order.id, guest: slot, kind: 'reopen' }))) return; }
     hand = input(hand, { type: 'reopen', slot }).state;
+    if (tea?.language) hand = input(hand, { type: 'sent' }).state;
     listen[slot] = { ...(listen[slot] || { level: order.level, repeat: 0, slow: null }), open: true };
     render(true);
     bubbles.querySelector(`[data-slot="${slot}"] .tea-heard`)?.focus({ preventScroll: true });
   }
   const focusBoard = () => { if (!board.hidden && !folded) (board.querySelector('.tea-pick:not(:disabled)') || board).focus({ preventScroll: true }); };
+  // A server open is not display evidence. A visible request acknowledges its own task once;
+  // a lost response can be retried, and the server retains the first acknowledged presentation.
+  const presentationSent = new Set();
+  function requestVisible(g) {
+    if (document.hidden || document.querySelector('dialog[open]') || bubbles.hidden) return false;
+    const words = bubbles.querySelector(`[data-slot="${g.slot}"] .tea-words`);
+    if (!words || words.closest('[hidden]') || !words.getClientRects().length) return false;
+    const rect = words.getBoundingClientRect(), style = getComputedStyle(words);
+    // A request partly above the phone viewport is not yet a delivered task. Controls may
+    // extend below it; the complete request itself must be visible before acknowledgement.
+    return style.visibility !== 'hidden' && Number(style.opacity) > 0 && rect.width > 0 && rect.height > 0
+      && rect.left >= 0 && rect.top >= 0 && rect.right <= innerWidth && rect.bottom <= innerHeight;
+  }
+  async function ensurePresented(g) {
+    if (!tea?.language || order?.kind !== 'order' || g.presented || presentationSent.has(`${order.id}:${g.slot}`)) return true;
+    if (!ctx.connected || ctx.busy || inflight || !requestVisible(g)) return false;
+    const contentKey = teaSource.presentationKey?.(g.frame, g.lineLevel || order.level);
+    const key = `${order.id}:${g.slot}`, ok = await act('TEA_PRESENT', { order: order.id, guest: g.slot, visible: true, ...(contentKey ? { contentKey } : {}) });
+    if (ok) presentationSent.add(key); return ok;
+  }
 
   /* ── drawing ── */
   const waiting = () => order ? order.guests.filter(g => !g.done) : [];
@@ -570,6 +597,10 @@ export function createTeaBoard({ scene, hud, nearby, settings, command, beforeCo
     frame() {
       if (disposed) return false;
       place();
+      if (tea?.language && !document.hidden && !document.querySelector('dialog[open]') && !inflight && order?.kind === 'order') {
+        const g = waiting().find(guest => !guest.presented && !presentationSent.has(`${order.id}:${guest.slot}`) && requestVisible(guest));
+        if (g && !bubbles.hidden && bubbles.getBoundingClientRect().width > 0) ensurePresented(g).catch(() => {});
+      }
       const pad = [...(navigator.getGamepads?.() || [])].find(p => p?.connected && p.mapping === 'standard'); if (!pad) return false;
       const pressed = i => !!pad.buttons[i]?.pressed, edge = i => pressed(i) && !padPrev[i];
       // A board button pressed on the pad makes the pad the input (its labels and where the keys go — the walking controls

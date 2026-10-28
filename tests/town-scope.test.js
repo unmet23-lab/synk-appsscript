@@ -26,11 +26,11 @@ test('이 조각의 모든 명령에 범위가 있다 — 정액 범위로 닫�
   assert.deepEqual(commands.filter(type => commandScope(type) === 'subscription'), []);
 });
 
-test('본인 권리 명령 일곱은 rights, 수첩·피드백·제안 메뉴는 base, 장면은 first-chapter', async () => {
+test('본인 권리와 언어 선택 명령은 rights, 수첩·피드백·제안 메뉴는 base, 장면은 first-chapter', async () => {
   const { commandScope, SCOPES, RIGHTS, BASE, FIRST_CHAPTER } = await townModule('scope');
   assert.deepEqual(SCOPES, ['rights', 'base', 'first-chapter', 'subscription']);
   // W6: 자주 오는 때에 맞춰 자리 채우기의 끄기는 그 기록을 비우는 본인 권리라 rights(Fable F7).
-  assert.deepEqual([...RIGHTS].sort(), ['EVAL_CONSENT', 'FEEDBACK_REMOVE', 'MEMORY_CLEAR', 'MEMORY_FORGET', 'OBSERVED_CORRECT', 'PREF_VISIT_BANDS', 'SEEN_CLEAR']);
+  assert.deepEqual([...RIGHTS].sort(), ['EVAL_CONSENT', 'FEEDBACK_REMOVE', 'LANGUAGE_SET', 'MEMORY_CLEAR', 'MEMORY_FORGET', 'OBSERVED_CORRECT', 'PREF_VISIT_BANDS', 'SEEN_CLEAR']);
   for (const type of ['FEEDBACK_GIVE', 'PREF_LESS_OFTEN', 'PREF_TODAY_OTHER', 'PREF_APPROACH', 'PREF_FAMILY', 'DAY_MOVE', 'ACK']) assert.equal(commandScope(type), 'base', type);
   for (const type of ['PLACE', 'DAY_START', 'LIFE_OPEN', 'BAZAAR_START', 'SUPPORT_ANSWER']) assert.equal(commandScope(type), 'first-chapter', type);
   assert.equal(commandScope('SOME_PAID_SCENE'), 'subscription', '표에 없는 명령은 정액');

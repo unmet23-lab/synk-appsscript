@@ -135,14 +135,21 @@ test('memory resumes where the person left off; a long gap starts lighter withou
 
 test('a prior from other practice starts higher only when that practice was independent', () => {
   const spec = rush();
-  const summary = status => ({ skills: [{ id: 'ko.reading.detail', levels: { 1: { formats: { 'single-choice': { status } } }, 2: { formats: { 'single-choice': { status: 'checking' } } } } }] });
-  const prior = Flow.priorFromSummary(spec, summary('recent-independent'), ['ko.reading.detail']);
+  const summary = status => ({ evidenceComplete: true, skills: [{ id: 'ko.reading.detail', levels: { 1: { formats: { 'single-choice': { status } } }, 2: { formats: { 'single-choice': { status: 'checking' } } } } }] });
+  const target = { responseFormat: 'single-choice' };
+  const prior = Flow.priorFromSummary(spec, summary('recent-independent'), ['ko.reading.detail'], target);
   assert.equal(prior.level, 2);
   const run = Flow.start({ spec, prior, now: NOW });
   assert.equal(run.intro().code, 'start.prior');
   assert.equal(run.settings().level, 2);
-  assert.equal(Flow.priorFromSummary(spec, summary('supported'), ['ko.reading.detail']), null);
-  assert.equal(Flow.priorFromSummary(spec, summary('recent-independent'), ['ko.reading.unknown']), null);
+  assert.equal(Flow.priorFromSummary(spec, summary('supported'), ['ko.reading.detail'], target), null);
+  assert.equal(Flow.priorFromSummary(spec, summary('recent-independent'), ['ko.reading.unknown'], target), null);
+  for (const responseFormat of [undefined, 'unknown', 'cup-compose']) {
+    assert.equal(Flow.priorFromSummary(spec, summary('recent-independent'), ['ko.reading.detail'], { responseFormat }), null);
+  }
+  for (const evidenceComplete of [false, undefined]) {
+    assert.equal(Flow.priorFromSummary(spec, { ...summary('recent-independent'), evidenceComplete }, ['ko.reading.detail'], target), null);
+  }
 });
 
 test('a tired day never makes anything harder, offers no less help, and its start line says only that', () => {

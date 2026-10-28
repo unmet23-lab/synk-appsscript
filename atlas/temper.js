@@ -145,6 +145,80 @@
     return { version: VERSION, arms: { baseline, candidate }, minimum, tolerance, cells: report, worse: named('worse'), waiting: named('waiting'),
       unit: 'person-mean-of-new-item-independent-accuracy', learningEffectClaim: false, causalClaim: false, significanceTested: false };
   }
+  // Personal observation opportunities, not assigned experiments or proof of effect. The
+  // original reading chooses anchors before exclusions; the current reading can withdraw
+  // them, never silently replace an excluded error with a more favourable later answer.
+  const FOLLOWUP = Object.freeze({ version: 'temper-followup-1', maxAnchors: 24, keepDays: 45,
+    windows: Object.freeze([['d1', 1, 3], ['d7', 7, 10], ['d30', 30, 37]].map(Object.freeze)) });
+  function followups({ events, summary, original = summary, prior = null, complete = true, asOf = summary?.asOf } = {}) {
+    summaries(summary); summaries(original);
+    const now = Date.parse(asOf), day = 86400000, own = scopeKey(summary.scope);
+    if (!Array.isArray(events) || !Number.isFinite(now) || scopeKey(original.scope) !== own) throw new TypeError('Temper: invalid follow-up evidence');
+    const visible = events.filter(e => scopeKey(e.scope) === own && Date.parse(e.at) <= now && Date.parse(e.recordedAt) <= now);
+    const byId = new Map(visible.map(e => [e.id, e])), position = new Map(visible.map((e, i) => [e.id, i]));
+    const excluded = new Set(visible.filter(e => e.type === 'record.excluded').map(e => e.targetId));
+    const completion = new Map(visible.filter(e => e.type === 'experience.completed').map(e => [e.decisionId, e]));
+    const current = new Map(summary.attempts.map(a => [a.eventId, a]));
+    const stamp = a => Date.parse(a.at), before = (a, b) => position.get(a.eventId ?? a.id) < position.get(b.eventId ?? b.id)
+      && stamp(a) <= stamp(b) && Date.parse(a.recordedAt) <= Date.parse(b.recordedAt);
+    const game = a => byId.get(a.decisionId)?.experienceId;
+    const tuple = a => JSON.stringify([game(a), a.taskVersion, a.measure?.skillId, a.measure?.difficulty,
+      a.measure?.responseFormat, a.measure?.modality, a.measure?.audioRequired]);
+    const framed = a => {
+      const p = byId.get(a.presentationId), d = byId.get(a.decisionId), done = completion.get(a.decisionId);
+      return p?.type === 'practice.presented' && d?.type === 'decision.made' && done && before(d, p) && before(p, a) && before(a, done);
+    };
+    const qualified = a => a?.attemptNo === 1 && a.measure && a.measure.responseFormat !== 'unknown'
+      && !a.exclusionReason && [true, false].includes(a.assisted) && ['correct', 'incorrect'].includes(a.verdict) && framed(a);
+    const invalidated = a => [a.eventId, a.presentationId, a.decisionId, completion.get(a.decisionId)?.id].some(id => excluded.has(id))
+      || visible.some(e => excluded.has(e.id) && ['practice.helped', 'practice.delivery'].includes(e.type)
+        && e.presentationId === a.presentationId && before(e, a));
+    const shown = new Map(), foldedShown = new Set();
+    const trace = p => [`item:${p.itemKey}`, `family:${p.measure?.familyKey || p.itemKey}`];
+    for (const p of visible.filter(e => e.type === 'practice.presented')) for (const key of trace(p)) {
+      if (!shown.has(key) || before(p, shown.get(key))) shown.set(key, p);
+    }
+    for (const [, item, family] of prior?.presented || []) { foldedShown.add(`item:${item}`); foldedShown.add(`family:${family}`); }
+    const fresh = a => trace(byId.get(a.presentationId)).every(key => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
+    const ordered = [...original.attempts].sort((a, b) => stamp(a) - stamp(b) || position.get(a.eventId) - position.get(b.eventId));
+    const anchors = new Map();
+    for (const a of ordered) if (qualified(a) && now - stamp(a) <= FOLLOWUP.keepDays * day && !anchors.has(tuple(a))) anchors.set(tuple(a), a);
+    const all = [...anchors.values()], selected = all.slice(0, FOLLOWUP.maxAnchors), retain = new Set(), items = [];
+    const adjusted = prior?.adjusted || 0, usable = complete === true && !adjusted;
+    for (const source of selected) {
+      retain.add(source.decisionId);
+      const measure = { ...source.measure, taskVersion: source.taskVersion };
+      delete measure.familyKey; delete measure.confounded;
+      const targets = ordered.filter(a => a.eventId !== source.eventId && a.attemptNo === 1 && tuple(a) === tuple(source)
+        && framed(a) && before(source, byId.get(a.presentationId)) && a.measure.familyKey !== source.measure.familyKey
+        && a.itemKey !== source.itemKey && fresh(a));
+      for (const [window, start, end] of FOLLOWUP.windows) {
+        const due = stamp(source) + start * day, expires = stamp(source) + end * day;
+        const target = targets.find(a => stamp(a) >= due && stamp(a) < expires);
+        if (target) retain.add(target.decisionId);
+        const actualSource = current.get(source.eventId), actualTarget = target && current.get(target.eventId);
+        let status = now < due ? 'not_due' : now < expires ? 'due' : 'missed', outcome = null, reason = null;
+        if (!usable) { status = 'unavailable'; reason = adjusted ? 'adjusted-history' : 'incomplete-history'; }
+        else if (invalidated(source) || !actualSource || !qualified(actualSource)) { status = 'invalidated'; reason = 'source-withdrawn'; }
+        else if (target && (invalidated(target) || !actualTarget)) { status = 'invalidated'; reason = 'target-withdrawn'; }
+        else if (target) {
+          if (!qualified(actualTarget) || actualTarget.exposure !== 'new' || actualTarget.assisted === false && !counted(actualTarget)) {
+            status = 'unavailable'; reason = actualTarget.exclusionReason || 'unassessable-target';
+          } else { status = 'observed'; outcome = `${actualTarget.assisted ? 'assisted' : 'independent'}-${actualTarget.verdict}`; }
+        }
+        const correctionEventIds = summary.help.filter(h => h.presentationId === source.presentationId && ['answer', 'explanation'].includes(h.level)
+          && before(source, h) && (!target || before(h, byId.get(target.presentationId)))).map(h => h.eventId);
+        items.push({ id: `${source.eventId}:${window}`, sourceAttemptId: source.eventId, sourceAt: source.at, gameId: game(source), measure,
+          kind: counted(source) && source.verdict === 'correct' ? 'retention' : 'recovery', window,
+          dueAt: new Date(due).toISOString(), expiresAt: new Date(expires).toISOString(), status, reason,
+          targetAttemptId: target?.eventId || null, targetAt: target?.at || null, outcome, correctionEventIds });
+      }
+    }
+    return { policy: FOLLOWUP.version, asOf, observationOpportunities: true, evidenceComplete: usable,
+      coverage: { folded: prior?.folded || 0, adjusted, limited: all.length > selected.length,
+        excludedAnchors: all.length - selected.length, reason: !usable ? adjusted ? 'adjusted-history' : 'incomplete-history' : prior?.folded ? 'older-source-unavailable' : null },
+      items, retainDecisionIds: [...retain], learningEffectClaim: false, causalClaim: false, policyPromotion: false };
+  }
   /* The last word on every knob change (Atlas design §7-2, implementation spec §6-3): one knob, one
    * step, inside bounds, never a declared-only knob, at most one change per response, and a knob just
    * eased is not raised again for two responses (easing right after a raise is always allowed:
@@ -170,5 +244,5 @@
     }
     return { ok: true, rail: null };
   }
-  return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FLIP_WINDOW, COOL_DOWN, check });
+  return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, FLIP_WINDOW, COOL_DOWN, check });
 });

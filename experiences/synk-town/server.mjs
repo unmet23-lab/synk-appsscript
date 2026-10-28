@@ -438,7 +438,7 @@ export function createStore({ dir, file, save, now = () => Date.now(), lifeEnabl
       // one older than the world's window is compared with its receipt.
       const receipt = receipts.get(command?.id), recorded = !!receipt;
       const base = recorded && !state.commands.some(item => item.id === command.id) ? { ...state, commands: [receipt] } : state;
-      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|TEA_|GATHER_|GREET$)/.test(command.type)) {
+      if (!recorded && typeof command?.type === 'string' && /^(LIFE_|DAY_|BAZAAR_|SUPPORT_|CARD_|TEA_|GATHER_|LANGUAGE_|GREET$)/.test(command.type)) {
         host = commandPresence(presence, command.payload, at);
         if (!host) throw new TownError('stale-surface', '이 창의 연결 상태를 다시 확인해 주세요.', 409);
         host.ownerSurfaceId = presence.owner;
@@ -480,8 +480,12 @@ function fileFor(route, previewEnabled) {
   if (route === '/' || route === '/index.html') return path.join(root, 'index.html');
   if (route === '/style.css') return path.join(root, 'style.css');
   if (previewEnabled && route === '/assets/felt-coral.webp') return path.join(repo, 'experiences/synk-world-home/assets/felt-coral.webp');
+  // The preview loads the shared avatar module; its nine base maps belong to the same home source.
+  if (/^\/assets\/avatar-textiles-v1\/(?:cotton|knit|wool)-(?:colour|normal|properties)\.png$/.test(route))
+    return previewEnabled ? path.join(repo, 'experiences/synk-world-home', route.slice(1)) : null;
   if (/^\/assets\/(?:[a-zA-Z0-9_-]+\/)?[a-zA-Z0-9_-]+\.(webp|png|jpg|svg|woff2|ttf)$/.test(route)) return path.join(root, route.slice(1));
   if (!previewEnabled) return null;
+  if (['/day-language.mjs', '/dialogue.mjs', '/new-tea.mjs'].includes(route)) return path.join(root, route.slice(1));
   // Baked district comparison only (?district=); v20 never requests these.
   if (/^\/assets\/district\/[a-z0-9-]+\.(?:glb|json)$/.test(route)) return path.join(root, route.slice(1));
   // SYNK music for staying (W7b): the app files tools/town-music-build.mjs makes, outside git like the baked district.

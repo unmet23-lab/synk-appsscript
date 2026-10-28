@@ -17,6 +17,9 @@ import * as exam from './world-exam-plan.mjs';
 import * as examForm from './world-exam-form.mjs';
 import {createTopikBank} from './world-topik-items.mjs';
 import {positionCheckCandidate} from './world-learning-plan.mjs';
+import {supplementalItems} from '../korean-rhythm/supplemental.mjs';
+import {worldMap} from './world-learning-map.mjs';
+const followupBank=createTopikBank();
 
 const topik=createTopikBank();
 // 검수를 통과한 기존 문항(판정 목록의 pass, 메타가 같은 것). 바람길 듣기 확인(행동 지시문)과 말의 리듬(물음 없는 O/X)은
@@ -32,9 +35,9 @@ function pools(){
  const bank=topik.items,ids=new Set(passed.map(item=>item.id));
  cached={bank,
   diagnostic:Object.freeze([...passed,...bank.filter(item=>!ids.has(item.id))]),
-  practice:reading.practicePool({items:DIAGNOSTIC_ITEMS,verdicts,bank}),
+  practice:reading.practicePool({items:DIAGNOSTIC_ITEMS,verdicts,bank:[...bank,...supplementalItems()]}),
   mock:Object.freeze([...bank,...passed.filter(item=>item.source==='blank-slice'&&item.choices.length===4).map(asTopik34)]),
-  byId:new Map([...DIAGNOSTIC_ITEMS,...bank].map(item=>[item.id,item]))};
+  byId:new Map([...DIAGNOSTIC_ITEMS,...bank,...supplementalItems()].map(item=>[item.id,item]))};
  return cached;
 }
 export const worldPosition=Object.freeze({...core,
@@ -45,6 +48,8 @@ export const worldPosition=Object.freeze({...core,
  createView:createPositionView,
  hangulLayer:Object.freeze({letters:hangulLayer.letters,units:hangulLayer.units}),hangulProgressKey:progressKey,
  topik,
+ followups:Object.freeze({bank:followupBank,pool:seen=>[...followupBank.items,...supplementalItems({purpose:'delayed',seen})]}),
+ recommendedBefore:id=>worldMap.recommendedBefore(id),
  practice:Object.freeze({...reading,get pool(){return pools().practice;}}),
  exam:Object.freeze({...exam}),
  mock:Object.freeze({...examForm,get pool(){return pools().mock;},get forms(){return topik.forms;}}),
