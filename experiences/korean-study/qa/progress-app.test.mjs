@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {createStudy} from '../src/app.mjs';
 import {readState,recordDecision,storeKey} from '../src/tutor.mjs';
 import {progressSnapshot} from '../src/progress-sync.mjs';
+import {LANG_KEY} from '../src/copy.mjs';
 import {memoryStore,ACCOUNT} from './semantic-fixture.mjs';
 const now=1793113200000,owner='user-'+ACCOUNT;
 const items=JSON.parse(fs.readFileSync(new URL('../../synk-world-app/world-writing-items.json',import.meta.url),'utf8'));
@@ -11,6 +12,7 @@ const content=JSON.parse(fs.readFileSync(new URL('../content/ending-53.json',imp
 const settle=()=>new Promise(resolve=>setTimeout(resolve,500));
 const oldDocument=globalThis.document;
 function harness({remote=null,enabled=true,get,post,storage=memoryStore()}={}){
+ storage.setItem(LANG_KEY,'ko'); // 이 시험의 문구 단언은 실행기 언어와 무관하게 한국어로 고정한다.
  const listeners={},panel={innerHTML:''},calls=[];let identity=owner,version=remote?1:0,saved=remote;
  const root={innerHTML:'',addEventListener:(type,fn)=>{listeners[type]=fn;},contains:()=>true,querySelector:selector=>selector==='[data-study-sync]'?panel:{focus(){},innerHTML:''}};
  const feedback={init:async()=>{},owner:()=>identity,status:()=>({connected:!!identity,enabled:false}),cancel(){},disconnect(){identity=null;},

@@ -27,7 +27,7 @@ export const COPY={
  'ai.notReady':{ko:'지금은 내용 피드백을 받을 수 없어요. 문장 끝 연습은 계속할 수 있어요.',en:'Feedback on meaning is unavailable now. You can still practise sentence endings.',mn:'Одоогоор утгын зөвлөгөө авах боломжгүй. Өгүүлбэрийн төгсгөлийг үргэлжлүүлэн давтаж болно.'},
  'ai.disconnect':{ko:'이 탭에서 연결 닫기',en:'Disconnect in this tab',mn:'Энэ цонхны холболтыг хаах'},
  'ai.read':{ko:'함께 읽어 주세요',en:'Read it with me',mn:'Хамт уншаарай'},
- 'ai.consent':{ko:'아래 버튼을 누르면 이 글을 AI에 보내 내용과 표현을 함께 살펴봐요. 서버에 글을 저장하지 않아요.',en:'Pressing the button sends this draft to the AI to review meaning and expression. Your draft is not saved on the server.',mn:'Доорх товчийг дарахад утга, хэллэгийг нь шалгуулахаар энэ бичвэрийг AI-д илгээнэ. Серверт бичвэрийг хадгалахгүй.'},
+ 'ai.consent':{ko:'이 글과 최근 연습에서 고른 답을 AI에 보내 함께 살펴봐요. 서버에 글과 선택지 문구를 저장하지 않아요.',en:'The button sends this draft and your recent practice choices to the AI. Draft and choice text are not saved on our server.',mn:'Товчийг дарахад энэ бичвэр болон сүүлийн дасгалуудад сонгосон хариултуудыг AI-д илгээнэ. Бичвэр болон хариултын сонголтын текстийг манай серверт хадгалахгүй.'},
  'ai.reading':{ko:'글을 읽고 있어요. 지금 도움이 될 한 가지를 찾아볼게요.',en:'Reading your draft and looking for one useful next step.',mn:'Бичвэрийг уншиж байна. Одоо хэрэг болох нэг алхмыг олъё.'},
  'ai.reference':{ko:'피드백은 AI의 해석이에요. 시험 점수나 실력 판정은 아니에요.',en:'This feedback is an AI interpretation, not an exam result or a measure of mastery.',mn:'Энэ зөвлөгөө нь AI-ийн тайлбар юм. Шалгалтын дүн, чадварын үнэлгээ биш.'},
  'ai.check':{ko:'이 부분만 같이 볼까요?',en:'Let’s look at this part.',mn:'Энэ хэсгийг хамт харъя.'},

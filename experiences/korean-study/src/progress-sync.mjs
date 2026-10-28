@@ -1,7 +1,12 @@
 // A single-account CAS snapshot over the existing learning-consent transport.
 // No automatic history merge: Study's sequential event IDs belong to the saved snapshot.
 const canonical=v=>Array.isArray(v)?'['+v.map(canonical).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}':JSON.stringify(v);
-export const progressSnapshot=state=>Object.fromEntries(['v','seq','obs','trail','seen','recentCards'].map(key=>[key,structuredClone(state[key])]));
+export function progressSnapshot(state){
+ const snapshot=Object.fromEntries(['v','seq','obs','trail','seen','recentCards'].map(key=>[key,structuredClone(state[key])]));
+ // 최근 AI 질문·선택지·해설 문구는 이번 글 전송 동의로만 보내며 계정 진도 저장에는 넣지 않는다.
+ snapshot.obs=snapshot.obs.map(o=>{if(o.kind!=='semantic')return o;const {detail,...progress}=o;return progress;});
+ return snapshot;
+}
 const hasHistory=s=>!!s&&(s.obs?.length>0||s.trail?.length>0||Object.keys(s.seen||{}).length>0);
 const error=code=>Object.assign(Error(code),{code});
 export function createProgressSync({transport,storage,key,read,apply,guard=()=>{},onStatus=()=>{}}){

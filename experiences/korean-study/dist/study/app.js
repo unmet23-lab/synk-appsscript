@@ -612,6 +612,33 @@ var require_trail = __commonJS({
 var import_ask = __toESM(require_ask(), 1);
 var import_trail = __toESM(require_trail(), 1);
 
+// experiences/korean-study/src/semantic-history.mjs
+var DATA_TARGETS = ["trend", "unit", "comparison"];
+var semanticTarget = (target, skill) => skill === "data.accuracy" && DATA_TARGETS.includes(target) ? target : "other";
+var short = (v, n) => typeof v === "string" && v.trim() && [...v].length <= n;
+function cleanSemanticDetail(v) {
+  if (!v || typeof v !== "object" || !/^w5[34]-[a-z0-9-]{1,70}$/.test(v.itemId) || !Number.isFinite(Date.parse(v.attempt))) return null;
+  if (![...DATA_TARGETS, "other"].includes(v.target) || !short(v.prompt, 220) || !short(v.selected, 110) || !short(v.expected, 110) || !short(v.explanation, 280)) return null;
+  return { itemId: v.itemId, attempt: v.attempt, target: v.target, prompt: v.prompt, selected: v.selected, expected: v.expected, explanation: v.explanation };
+}
+function semanticHistory(state, { now = Date.now() } = {}) {
+  return state.obs.filter((o) => o.kind === "semantic" && ["check", "practice"].includes(o.stage) && Date.parse(o.at) <= now && Date.parse(o.at) >= now - 14 * 864e5).flatMap((o) => {
+    const d = cleanSemanticDetail(o.detail);
+    if (!d) return [];
+    return [{
+      itemId: d.itemId,
+      skill: o.skill,
+      target: semanticTarget(d.target, o.skill),
+      stage: o.stage,
+      result: d.selected === d.expected ? "selected-right" : "selected-other",
+      prompt: d.prompt,
+      selected: d.selected,
+      expected: d.expected,
+      explanation: d.explanation
+    }];
+  }).slice(-4);
+}
+
 // experiences/synk-world-app/world-writing-check.mjs
 var plain = (text2) => String(text2 ?? "").replace(/\r\n?/g, "\n").normalize("NFC");
 var CLOSERS = /[\s.?!…~"'”’)\]」』〉》>]+$/u;
@@ -833,7 +860,7 @@ function cleanObs(o) {
   if (o.kind === "method") return METHODS.includes(o.method) ? { ...base, method: o.method } : null;
   if (o.kind === "probe") return ["distinguish", "form"].includes(o.probe) ? { ...base, probe: o.probe } : null;
   if (o.kind === "cycle") return base;
-  if (o.kind === "semantic") return ["analysis", "check", "practice"].includes(o.stage) && typeof o.skill === "string" && o.skill.length < 50 ? { ...base, stage: o.stage, skill: o.skill, source: "ai-reference", result: ["focus", "clear", "insufficient", "selected-right", "selected-other"].includes(o.result) ? o.result : "insufficient" } : null;
+  if (o.kind === "semantic") return ["analysis", "check", "practice"].includes(o.stage) && typeof o.skill === "string" && o.skill.length < 50 ? { ...base, stage: o.stage, skill: o.skill, source: "ai-reference", result: ["focus", "clear", "insufficient", "selected-right", "selected-other"].includes(o.result) ? o.result : "insufficient", ...cleanSemanticDetail(o.detail) ? { detail: cleanSemanticDetail(o.detail) } : {} } : null;
   return null;
 }
 var cleanDrafts = (v) => Object.fromEntries(Object.entries(v && typeof v === "object" ? v : {}).filter(([k, d]) => id(k) && d && typeof d.text === "string" && d.text.length <= 4e3).map(([k, d]) => [k, { text: d.text, updatedAt: okAt(d.updatedAt) ? d.updatedAt : null, checkedAt: okAt(d.checkedAt) ? d.checkedAt : null, ...Number.isInteger(d.pasted) && d.pasted > 0 && d.pasted <= 1e5 ? { pasted: d.pasted } : {} }]));
@@ -1428,7 +1455,7 @@ var COPY = {
   "ai.notReady": { ko: "지금은 내용 피드백을 받을 수 없어요. 문장 끝 연습은 계속할 수 있어요.", en: "Feedback on meaning is unavailable now. You can still practise sentence endings.", mn: "Одоогоор утгын зөвлөгөө авах боломжгүй. Өгүүлбэрийн төгсгөлийг үргэлжлүүлэн давтаж болно." },
   "ai.disconnect": { ko: "이 탭에서 연결 닫기", en: "Disconnect in this tab", mn: "Энэ цонхны холболтыг хаах" },
   "ai.read": { ko: "함께 읽어 주세요", en: "Read it with me", mn: "Хамт уншаарай" },
-  "ai.consent": { ko: "아래 버튼을 누르면 이 글을 AI에 보내 내용과 표현을 함께 살펴봐요. 서버에 글을 저장하지 않아요.", en: "Pressing the button sends this draft to the AI to review meaning and expression. Your draft is not saved on the server.", mn: "Доорх товчийг дарахад утга, хэллэгийг нь шалгуулахаар энэ бичвэрийг AI-д илгээнэ. Серверт бичвэрийг хадгалахгүй." },
+  "ai.consent": { ko: "이 글과 최근 연습에서 고른 답을 AI에 보내 함께 살펴봐요. 서버에 글과 선택지 문구를 저장하지 않아요.", en: "The button sends this draft and your recent practice choices to the AI. Draft and choice text are not saved on our server.", mn: "Товчийг дарахад энэ бичвэр болон сүүлийн дасгалуудад сонгосон хариултуудыг AI-д илгээнэ. Бичвэр болон хариултын сонголтын текстийг манай серверт хадгалахгүй." },
   "ai.reading": { ko: "글을 읽고 있어요. 지금 도움이 될 한 가지를 찾아볼게요.", en: "Reading your draft and looking for one useful next step.", mn: "Бичвэрийг уншиж байна. Одоо хэрэг болох нэг алхмыг олъё." },
   "ai.reference": { ko: "피드백은 AI의 해석이에요. 시험 점수나 실력 판정은 아니에요.", en: "This feedback is an AI interpretation, not an exam result or a measure of mastery.", mn: "Энэ зөвлөгөө нь AI-ийн тайлбар юм. Шалгалтын дүн, чадварын үнэлгээ биш." },
   "ai.check": { ko: "이 부분만 같이 볼까요?", en: "Let’s look at this part.", mn: "Энэ хэсгийг хамт харъя." },
@@ -1865,15 +1892,16 @@ function createFeedbackClient({
     },
     disconnect,
     cancel,
-    async request({ itemId, bankHash, answer, lang, stage = "initial", focusSkill = null, consent }) {
+    async request({ itemId, bankHash, answer, lang, stage = "initial", focusSkill = null, focusTarget = "other", history = [], consent }) {
       if (consent !== "send-once") throw error("CONSENT_REQUIRED");
       if (!identity || !capability?.enabled || capability.studyVersion !== 1) throw error("STUDY_UNAVAILABLE");
       if (bankHash !== capability.bankHash) throw error("ITEM_CHANGED");
       if (active || requestPending) throw error("BUSY");
       const pending = {};
       requestPending = pending;
+      const study = { stage, focusSkill, ...capability.studyContextVersion === 1 ? { focusTarget, history } : {} };
       try {
-        return await post({ action: "feedback", mode: "study", request_id: cryptoAPI.randomUUID(), consent, item_id: itemId, bank_hash: bankHash, answer, lang, study: { stage, focusSkill } }, { cancelled: () => pending.cancelled === true });
+        return await post({ action: "feedback", mode: "study", request_id: cryptoAPI.randomUUID(), consent, item_id: itemId, bank_hash: bankHash, answer, lang, study }, { cancelled: () => pending.cancelled === true });
       } finally {
         if (requestPending === pending) requestPending = null;
       }
@@ -1910,15 +1938,15 @@ function readSemantic(raw, answer) {
   if (quote && !String(answer).normalize("NFC").includes(quote)) fail();
   return {
     ...f,
-    focus: { skill: r.skill, quote, taskQuote: text(r.taskQuote, 180), observation: text(r.observation, 280), cause: r.cause, certainty: "hypothesis" },
+    focus: { skill: r.skill, target: semanticTarget(r.target, r.skill), quote, taskQuote: text(r.taskQuote, 180), observation: text(r.observation, 280), cause: r.cause, certainty: "hypothesis" },
     check: question(raw.check),
     practice: question(raw.practice),
     help: { explanation: text(raw.help?.explanation, 280), example: text(raw.help?.example, 160) }
   };
 }
-function recordSemantic(state, { feedback, stage = "analysis", pick = null, itemId }, { now = Date.now() } = {}) {
+function recordSemantic(state, { feedback, stage = "analysis", pick = null, itemId, attempt = null }, { now = Date.now() } = {}) {
   const skill = feedback.focus?.skill || "none", d = recordDecision(state, { scene: "semantic", source: "ai-reference", skill, stage, hypothesis: feedback.focus?.cause || "uncertain" }, { now });
-  let s = d.state, ev = null, result = feedback.status;
+  let s = d.state, ev = null, result = feedback.status, detail = null;
   if (stage !== "analysis") {
     const q = stage === "check" ? feedback.check : feedback.practice;
     if (!q || !["a", "b"].includes(pick)) return state;
@@ -1935,25 +1963,44 @@ function recordSemantic(state, { feedback, stage = "analysis", pick = null, item
     s = r.state;
     ev = r.ev;
     result = pick === q.correct ? "selected-right" : "selected-other";
+    detail = { itemId, attempt: attempt || new Date(now).toISOString(), target: semanticTarget(feedback.focus?.target, skill), prompt: q.prompt, selected: q.options.find((o) => o.id === pick).text, expected: q.options.find((o) => o.id === q.correct).text, explanation: q.why };
   }
-  return addObs(s, { kind: "semantic", stage, skill, result, ...ev ? { ev } : {} }, { now });
+  return addObs(s, { kind: "semantic", stage, skill, result, ...ev ? { ev } : {}, ...detail ? { detail } : {} }, { now });
 }
-function semanticNext(state, bank, { itemId, revise = false, focusSkill = null, now = Date.now() } = {}) {
+var TASK_TARGETS = {
+  "w53-resale": ["trend", "unit"],
+  "w53-exchange": ["trend", "unit"],
+  "w53-study-ways": ["comparison", "unit"],
+  "w53-living-cost": ["trend", "unit", "comparison"],
+  "w53-clinic": ["comparison", "unit"]
+};
+function semanticNext(state, bank, { itemId, revise = false, focusSkill = null, focusTarget = "other", now = Date.now() } = {}) {
   const past = state.obs.filter((o) => Date.parse(o.at) <= now);
   let start = past.length;
   while (start > 0 && (start === past.length ? now : Date.parse(past[start].at)) - Date.parse(past[start - 1].at) <= SITTING_GAP) start--;
   const writes = past.slice(start).filter((o) => o.kind === "write");
   if (writes.length >= SITTING_WRITES) return { id: "rest", why: "enough" };
-  if (revise) return { id: "write", itemId, mode: "revise", support: 1, phase: "edit", why: "semantic", semantic: true, focusSkill };
-  const fresh = [...bank.open53, ...bank.open54].find((i) => !state.seen[i.id]);
+  const target = semanticTarget(focusTarget, focusSkill);
+  if (revise) return { id: "write", itemId, mode: "revise", support: 1, phase: "edit", why: "semantic", semantic: true, focusSkill, focusTarget: target };
+  const available = [...bank.open53, ...bank.open54].filter((i) => i.id !== itemId && !state.seen[i.id]);
+  const current = [...bank.open53, ...bank.open54].find((i) => i.id === itemId);
+  const fresh = available.find((i) => target !== "other" && TASK_TARGETS[i.id]?.includes(target)) || available.find((i) => i.type === current?.type) || available[0];
   if (!fresh) return { id: "rest", why: "no-items" };
   if (writes.filter((o) => o.mode === "new").length >= SITTING_FRESH) return { id: "rest", why: "later" };
-  return { id: "write", itemId: fresh.id, mode: "new", support: 0, phase: "edit", why: "semantic-transfer", semantic: true, focusSkill };
+  return { id: "write", itemId: fresh.id, mode: "new", support: 0, phase: "edit", why: "semantic-transfer", semantic: true, focusSkill, focusTarget: target };
 }
 
 // experiences/korean-study/src/progress-sync.mjs
 var canonical = (v) => Array.isArray(v) ? "[" + v.map(canonical).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map((k) => JSON.stringify(k) + ":" + canonical(v[k])).join(",") + "}" : JSON.stringify(v);
-var progressSnapshot = (state) => Object.fromEntries(["v", "seq", "obs", "trail", "seen", "recentCards"].map((key) => [key, structuredClone(state[key])]));
+function progressSnapshot(state) {
+  const snapshot = Object.fromEntries(["v", "seq", "obs", "trail", "seen", "recentCards"].map((key) => [key, structuredClone(state[key])]));
+  snapshot.obs = snapshot.obs.map((o) => {
+    if (o.kind !== "semantic") return o;
+    const { detail, ...progress } = o;
+    return progress;
+  });
+  return snapshot;
+}
 var hasHistory = (s) => !!s && (s.obs?.length > 0 || s.trail?.length > 0 || Object.keys(s.seen || {}).length > 0);
 var error2 = (code) => Object.assign(Error(code), { code });
 function createProgressSync({ transport, storage, key, read, apply, guard = () => {
@@ -2352,7 +2399,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     const it = item(sc.itemId);
     if (!it) return restHtml({ why: "no-items" });
     const key = draftKey(sc), text2 = state.drafts[key]?.text || "", marks = sc.semantic ? sc.quote && text2.includes(sc.quote) ? [sc.quote] : [] : sc.mode === "revise" ? marksOf(text2, it).slice(0, 6) : [];
-    return `<h2 class="st-h">${esc(sc.semantic && sc.rewrite ? sc.rewrite : t(sc.mode === "revise" && marks.length && !sc.semantic ? "write.revise" : it.type === 54 ? "write.task54" : "write.task"))}</h2>` + (sc.support === 2 ? `<div class="st-help"><p class="st-help-title">${esc(t("write.forms"))}</p>${formsTable()}</div>` : "") + (marks.length ? `<ul class="st-marks" lang="ko">${marks.map((s) => `<li><mark>${esc(s)}</mark></li>`).join("")}</ul>` : "") + `<div class="st-question" lang="ko"><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type === 54 ? it.label : it.instruction)}</p>${it.type === 54 ? promptHtml(it) : dataHtml(it.data)}</div><label class="st-label" for="st-text">${esc(t("write.label"))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady() ? it.type === 53 ? 600 : 1400 : 4e3}" spellcheck="false" data-st-text>${esc(text2)}</textarea><p class="st-note">${esc(t("writing.countNote"))}</p>` + (aiReady() ? `<p class="st-note" data-ai-consent>${esc(t("ai.consent"))}</p>` : "") + (ui.short ? `<p class="st-alert" role="status">${esc(t("write.short"))}</p>` : "") + (sc.phase === "self" ? `<div class="st-help" data-st-self><p>${esc(t("self.q"))}</p></div>` + actions(`<button class="st-main" data-st-check>${esc(t("self.go"))}</button>`) : actions(`<button class="st-main" data-st-done>${esc(t(aiReady() ? "ai.read" : "write.done"))}</button>`));
+    return `<h2 class="st-h">${esc(sc.semantic && sc.rewrite ? sc.rewrite : t(sc.mode === "revise" && marks.length && !sc.semantic ? "write.revise" : it.type === 54 ? "write.task54" : "write.task"))}</h2>` + (sc.support === 2 ? `<div class="st-help"><p class="st-help-title">${esc(t("write.forms"))}</p>${formsTable()}</div>` : "") + (sc.semantic && sc.guidance ? `<div class="st-help" data-ai-guidance><p>${esc(sc.guidance.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(sc.guidance.example)}</blockquote></div>` : "") + (marks.length ? `<ul class="st-marks" lang="ko">${marks.map((s) => `<li><mark>${esc(s)}</mark></li>`).join("")}</ul>` : "") + `<div class="st-question" lang="ko"><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type === 54 ? it.label : it.instruction)}</p>${it.type === 54 ? promptHtml(it) : dataHtml(it.data)}</div><label class="st-label" for="st-text">${esc(t("write.label"))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady() ? it.type === 53 ? 600 : 1400 : 4e3}" spellcheck="false" data-st-text>${esc(text2)}</textarea><p class="st-note">${esc(t("writing.countNote"))}</p>` + (aiReady() ? `<p class="st-note" data-ai-consent>${esc(t("ai.consent"))}</p>` : "") + (ui.short ? `<p class="st-alert" role="status">${esc(t("write.short"))}</p>` : "") + (sc.phase === "self" ? `<div class="st-help" data-st-self><p>${esc(t("self.q"))}</p></div>` + actions(`<button class="st-main" data-st-check>${esc(t("self.go"))}</button>`) : actions(`<button class="st-main" data-st-done>${esc(t(aiReady() ? "ai.read" : "write.done"))}</button>`));
   }
   function seenHtml(sc) {
     if (ui.reading) return `<p class="st-fact" role="status">${esc(t("ai.reading"))}</p><button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>`;
@@ -2369,7 +2416,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     if (sc.phase === "result") return `<h2 class="st-h">${esc(f.summary)}</h2>${f.good ? `<p>${esc(f.good)}</p>` : ""}<p>${esc(f.rewrite)}</p>${note}` + actions(`<button class="st-main" data-ai-finish>${esc(t(f.status === "insufficient" ? "ai.revise" : "ai.next"))}</button>`);
     if (sc.phase === "help") return `<h2 class="st-h">${esc(t("ai.help"))}</h2><p class="st-explain">${esc(f.help.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(f.help.example)}</blockquote>${note}` + actions(`<button class="st-main" data-ai-advance>${esc(t("ai.try"))}</button>`);
     const picked = sc.pick, ok = picked === question2.correct;
-    return `<h2 class="st-h">${esc(t(sc.phase === "check" ? "ai.check" : "ai.practice"))}</h2>` + (sc.phase === "check" ? `<p>${esc(f.focus.observation)}</p>${f.focus.quote ? `<blockquote class="st-sentence" lang="ko"><mark>${esc(f.focus.quote)}</mark></blockquote>` : ""}<details class="st-note"><summary>${esc(t("ai.source"))}</summary><p lang="ko">${esc(f.focus.taskQuote)}</p></details>` : "") + `<p class="st-fact">${esc(question2.prompt)}</p><div class="st-ai-choices">${question2.options.map((o) => `<button class="st-bin" lang="ko" data-ai-choice="${o.id}" ${picked ? "disabled" : ""} ${picked && o.id === question2.correct ? 'data-answer="true"' : ""}>${esc(o.text)}</button>`).join("")}</div>` + (picked ? `<p class="st-explain" data-ai-result data-ok="${ok}">${esc(question2.why)}</p>` + actions(`<button class="st-main" data-ai-advance>${esc(t(sc.phase === "practice" ? "ai.revise" : ok ? "ai.try" : "next.continue"))}</button>`) : `<button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>`) + note;
+    return `<h2 class="st-h">${esc(t(sc.phase === "check" ? "ai.check" : "ai.practice"))}</h2>` + (sc.phase === "check" ? `<details class="st-note"><summary>${esc(t("ai.source"))}</summary>${item(sc.itemId).type === 53 ? dataHtml(item(sc.itemId).data) : promptHtml(item(sc.itemId))}</details>` : "") + `<p class="st-fact">${esc(question2.prompt)}</p><div class="st-ai-choices">${question2.options.map((o) => `<button class="st-bin" lang="ko" data-ai-choice="${o.id}" ${picked ? "disabled" : ""} ${picked && o.id === question2.correct ? 'data-answer="true"' : ""}>${esc(o.text)}</button>`).join("")}</div>` + (picked ? `<p class="st-explain" data-ai-result data-ok="${ok}">${esc(question2.why)}</p>` + (sc.phase === "check" && !ok ? `<div class="st-help" data-ai-hint><p>${esc(f.help.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(f.help.example)}</blockquote></div>` : "") + actions(`<button class="st-main" data-ai-advance>${esc(t(sc.phase === "practice" || ok ? "ai.revise" : "ai.try"))}</button>`) : `<button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>`) + note;
   }
   function sortHtml(sc, list, { lead }) {
     const key = list[sc.i], c = card(key);
@@ -2504,12 +2551,14 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     ui = { reading: true };
     paint();
     try {
-      const result = await feedback.request({ itemId: sc.itemId, bankHash: bank.sourceHash, answer, lang, stage: sc.mode === "revise" ? "revision" : sc.why === "semantic-transfer" ? "transfer" : "initial", focusSkill: sc.focusSkill || null, consent: "send-once" });
+      const history = semanticHistory(state, { now: now() });
+      const result = await feedback.request({ itemId: sc.itemId, bankHash: bank.sourceHash, answer, lang, stage: sc.mode === "revise" ? "revision" : sc.why === "semantic-transfer" ? "transfer" : "initial", focusSkill: sc.focusSkill || null, focusTarget: sc.focusTarget || "other", history, consent: "send-once" });
       if (sequence !== semanticSeq || expected !== getOwner() || state.drafts[key]?.checkedAt !== checkedAt) return;
       if (result.status !== "ok") throw Object.assign(Error("AI_UNAVAILABLE"), { code: result.status });
       const f = readSemantic(result.feedback, answer);
       state = recordSemantic(state, { feedback: f, itemId: sc.itemId }, { now: now() });
-      setScene({ id: "semantic", phase: f.status === "focus" ? "check" : "result", itemId: sc.itemId, draft: key, checkedAt, bankHash: bank.sourceHash, feedback: f });
+      const repeated = sc.mode === "revise" && f.status === "focus" && history.some((h) => h.itemId === sc.itemId && h.skill === f.focus.skill && h.target === f.focus.target);
+      setScene({ id: "semantic", phase: f.status === "focus" ? repeated ? "help" : "check" : "result", itemId: sc.itemId, draft: key, checkedAt, bankHash: bank.sourceHash, feedback: f, focusSkill: f.focus?.skill || sc.focusSkill || null, focusTarget: f.focus?.target || sc.focusTarget || "other" });
     } catch (e) {
       if (sequence !== semanticSeq) return;
       if (expected !== getOwner()) {
@@ -2524,7 +2573,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     }
   }
   function semanticWrite(sc, revise) {
-    const f = sc.feedback, n = semanticNext(state, bank, { itemId: sc.itemId, revise, focusSkill: f.focus?.skill || null, now: now() }), d = recordDecision(state, { scene: n.id, why: n.why, source: "ai-reference", skill: f.focus?.skill || "none" }, { now: now() });
+    const f = sc.feedback, n = semanticNext(state, bank, { itemId: sc.itemId, revise, focusSkill: f.focus?.skill || sc.focusSkill || null, focusTarget: f.focus?.target || sc.focusTarget || "other", now: now() }), d = recordDecision(state, { scene: n.id, why: n.why, source: "ai-reference", skill: n.focusSkill || "none", target: n.focusTarget || "other" }, { now: now() });
     state = d.state;
     if (n.id === "write" && revise) {
       const k = draftKey(n);
@@ -2532,6 +2581,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       n.rewrite = f.rewrite;
       n.quote = f.focus?.quote || "";
     }
+    if (n.id === "write" && revise && sc.phase === "practice" && sc.pick !== f.practice?.correct) n.guidance = f.help;
     setScene({ ...n, did: d.did });
   }
   function onClick(ev) {
@@ -2615,17 +2665,18 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       return;
     }
     if (b.dataset.aiChoice && sc.id === "semantic" && !sc.pick && ["check", "practice"].includes(sc.phase)) {
-      state = recordSemantic(state, { feedback: sc.feedback, itemId: sc.itemId, stage: sc.phase, pick: b.dataset.aiChoice }, { now: now() });
+      state = recordSemantic(state, { feedback: sc.feedback, itemId: sc.itemId, attempt: sc.checkedAt, stage: sc.phase, pick: b.dataset.aiChoice }, { now: now() });
       setScene({ ...sc, pick: b.dataset.aiChoice });
       return;
     }
     if (b.hasAttribute("data-ai-advance") && sc.id === "semantic") {
-      if (sc.phase === "practice") {
+      if (sc.phase === "practice" || sc.phase === "check" && sc.pick === sc.feedback.check.correct) {
         semanticWrite(sc, true);
         return;
       }
-      const phase = sc.phase === "help" || sc.pick === sc.feedback.check.correct ? "practice" : "help";
-      setScene({ ...sc, phase, pick: null });
+      if (sc.phase === "help" || sc.phase === "check" && sc.pick) {
+        setScene({ ...sc, phase: "practice", pick: null });
+      }
       return;
     }
     if (b.hasAttribute("data-ai-finish") && sc.id === "semantic") {

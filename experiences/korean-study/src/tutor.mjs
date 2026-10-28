@@ -7,6 +7,7 @@
 // · 근거가 모자라면 Atlas Core ask.choose()가 「방법 결정을 바꾸는 확인 하나」를 고른다(새 엔진·선택기 없음). AI 호출 없음(규칙).
 import Ask from '../../../atlas/ask.js';
 import Trail from '../../../atlas/trail.js';
+import {cleanSemanticDetail} from './semantic-history.mjs';
 import {sentencesOf,endingOf} from '../../synk-world-app/world-writing-check.mjs';
 import {drillDeck,endsPlain} from '../../synk-world-app/world-writing-focus.mjs';
 
@@ -40,7 +41,7 @@ function cleanObs(o){
  if(o.kind==='probe')return ['distinguish','form'].includes(o.probe)?{...base,probe:o.probe}:null;
  if(o.kind==='cycle')return base;
  if(o.kind==='semantic')return ['analysis','check','practice'].includes(o.stage)&&typeof o.skill==='string'&&o.skill.length<50
-  ?{...base,stage:o.stage,skill:o.skill,source:'ai-reference',result:['focus','clear','insufficient','selected-right','selected-other'].includes(o.result)?o.result:'insufficient'}:null;
+  ?{...base,stage:o.stage,skill:o.skill,source:'ai-reference',result:['focus','clear','insufficient','selected-right','selected-other'].includes(o.result)?o.result:'insufficient',...(cleanSemanticDetail(o.detail)?{detail:cleanSemanticDetail(o.detail)}:{})}:null;
  return null;
 }
 const cleanDrafts=v=>Object.fromEntries(Object.entries(v&&typeof v==='object'?v:{}).filter(([k,d])=>id(k)&&d&&typeof d.text==='string'&&d.text.length<=4000).map(([k,d])=>[k,{text:d.text,updatedAt:okAt(d.updatedAt)?d.updatedAt:null,checkedAt:okAt(d.checkedAt)?d.checkedAt:null,...(Number.isInteger(d.pasted)&&d.pasted>0&&d.pasted<=100000?{pasted:d.pasted}:{})}]));

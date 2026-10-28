@@ -1,12 +1,13 @@
 // 한국어 공부(synk.im/study/) 화면. 한 번에 장면 하나(README §2) — 무엇을 할지는 tutor.mjs의 next()가 정하고 학생은 답하기·계속·쉬기만 한다.
 // · SYNK ID의 기존 학습 동의 아래 최소 진도를 잇는다. 원고와 AI 응답·진행 화면은 기기에 둔다.
+// · WORLD 입장 없이 공부한다. 별도 공부 로그인·이번 글 전송 동의가 있을 때만 기존 world-writing에 글과 최근 선택 반응을 보낸다.
 // · 기록은 이 기기 localStorage `synk.study.v2:<owner>`(옛 v1 칸은 읽어 옮기기만 하고 지우지 않는다). 학생 글은 drafts에만 두고 고쳐 넣지 않는다.
 // · 장면이 정해질 때마다 Trail decision.made, 답마다 presented →(helped)→ attempted 사건을 남긴다(tutor.mjs record*).
 import {readState,migrate,addObs,markSeen,observeWrite,next,gradeForm,gradeFind,checkChange,storeKey,legacyKey,sentencesOf,endingOf,recordDecision,recordWrite,recordSort,recordForm,checkCard,trailRows} from './tutor.mjs';
 import {drillPool} from '../../synk-world-app/world-writing-focus.mjs';
 import {makeT,chooseLang,LANGS,LANG_NAMES,LANG_KEY} from './copy.mjs';
 import {createFeedbackClient} from './feedback-client.mjs';
-import {readSemantic,recordSemantic,semanticNext} from './semantic.mjs';
+import {readSemantic,recordSemantic,semanticNext,semanticHistory} from './semantic.mjs';
 import {createProgressSync,progressSnapshot} from './progress-sync.mjs';
 
 /* global __ITEMS_TOKEN__ */
@@ -115,6 +116,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   // 표시할 문장이 없는 고쳐 쓰기(자료 미연결·붙여넣기)는 「표시한 문장」이라 말하지 않고 원래 과제 안내를 보인다.
   return `<h2 class="st-h">${esc(sc.semantic&&sc.rewrite?sc.rewrite:t(sc.mode==='revise'&&marks.length&&!sc.semantic?'write.revise':it.type===54?'write.task54':'write.task'))}</h2>`
    +(sc.support===2?`<div class="st-help"><p class="st-help-title">${esc(t('write.forms'))}</p>${formsTable()}</div>`:'')
+   +(sc.semantic&&sc.guidance?`<div class="st-help" data-ai-guidance><p>${esc(sc.guidance.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(sc.guidance.example)}</blockquote></div>`:'')
    +(marks.length?`<ul class="st-marks" lang="ko">${marks.map(s=>`<li><mark>${esc(s)}</mark></li>`).join('')}</ul>`:'')
    +`<div class="st-question" lang="ko"><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type===54?it.label:it.instruction)}</p>${it.type===54?promptHtml(it):dataHtml(it.data)}</div>`
    +`<label class="st-label" for="st-text">${esc(t('write.label'))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady()?(it.type===53?600:1400):4000}" spellcheck="false" data-st-text>${esc(text)}</textarea><p class="st-note">${esc(t('writing.countNote'))}</p>`
@@ -145,9 +147,11 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
    +actions(`<button class="st-main" data-ai-advance>${esc(t('ai.try'))}</button>`);
   const picked=sc.pick,ok=picked===question.correct;
   return `<h2 class="st-h">${esc(t(sc.phase==='check'?'ai.check':'ai.practice'))}</h2>`
-   +(sc.phase==='check'?`<p>${esc(f.focus.observation)}</p>${f.focus.quote?`<blockquote class="st-sentence" lang="ko"><mark>${esc(f.focus.quote)}</mark></blockquote>`:''}<details class="st-note"><summary>${esc(t('ai.source'))}</summary><p lang="ko">${esc(f.focus.taskQuote)}</p></details>`:'')
+   +(sc.phase==='check'?`<details class="st-note"><summary>${esc(t('ai.source'))}</summary>${item(sc.itemId).type===53?dataHtml(item(sc.itemId).data):promptHtml(item(sc.itemId))}</details>`:'')
    +`<p class="st-fact">${esc(question.prompt)}</p><div class="st-ai-choices">${question.options.map(o=>`<button class="st-bin" lang="ko" data-ai-choice="${o.id}" ${picked?'disabled':''} ${picked&&o.id===question.correct?'data-answer="true"':''}>${esc(o.text)}</button>`).join('')}</div>`
-   +(picked?`<p class="st-explain" data-ai-result data-ok="${ok}">${esc(question.why)}</p>`+actions(`<button class="st-main" data-ai-advance>${esc(t(sc.phase==='practice'?'ai.revise':ok?'ai.try':'next.continue'))}</button>`):`<button class="st-quiet" data-st-stop>${esc(t('study.stop'))}</button>`)+note;
+   +(picked?`<p class="st-explain" data-ai-result data-ok="${ok}">${esc(question.why)}</p>`
+    +(sc.phase==='check'&&!ok?`<div class="st-help" data-ai-hint><p>${esc(f.help.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(f.help.example)}</blockquote></div>`:'')
+    +actions(`<button class="st-main" data-ai-advance>${esc(t(sc.phase==='practice'||ok?'ai.revise':'ai.try'))}</button>`):`<button class="st-quiet" data-st-stop>${esc(t('study.stop'))}</button>`)+note;
  }
  function sortHtml(sc,list,{lead}){
   const key=list[sc.i],c=card(key);if(!c)return '';
@@ -259,16 +263,19 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  async function askMeaning(sc,key,answer){
   const sequence=++semanticSeq,expected=who,checkedAt=state.drafts[key]?.checkedAt;ui={reading:true};paint();
   try{
-   const result=await feedback.request({itemId:sc.itemId,bankHash:bank.sourceHash,answer,lang,stage:sc.mode==='revise'?'revision':sc.why==='semantic-transfer'?'transfer':'initial',focusSkill:sc.focusSkill||null,consent:'send-once'});
+   const history=semanticHistory(state,{now:now()});
+   const result=await feedback.request({itemId:sc.itemId,bankHash:bank.sourceHash,answer,lang,stage:sc.mode==='revise'?'revision':sc.why==='semantic-transfer'?'transfer':'initial',focusSkill:sc.focusSkill||null,focusTarget:sc.focusTarget||'other',history,consent:'send-once'});
    if(sequence!==semanticSeq||expected!==getOwner()||state.drafts[key]?.checkedAt!==checkedAt)return;
    if(result.status!=='ok')throw Object.assign(Error('AI_UNAVAILABLE'),{code:result.status});
    const f=readSemantic(result.feedback,answer);state=recordSemantic(state,{feedback:f,itemId:sc.itemId},{now:now()});
-   setScene({id:'semantic',phase:f.status==='focus'?'check':'result',itemId:sc.itemId,draft:key,checkedAt,bankHash:bank.sourceHash,feedback:f});
+   const repeated=sc.mode==='revise'&&f.status==='focus'&&history.some(h=>h.itemId===sc.itemId&&h.skill===f.focus.skill&&h.target===f.focus.target);
+   setScene({id:'semantic',phase:f.status==='focus'?(repeated?'help':'check'):'result',itemId:sc.itemId,draft:key,checkedAt,bankHash:bank.sourceHash,feedback:f,focusSkill:f.focus?.skill||sc.focusSkill||null,focusTarget:f.focus?.target||sc.focusTarget||'other'});
   }catch(e){if(sequence!==semanticSeq)return;if(expected!==getOwner()){syncOwner();go();ui={...ui,authLost:true};paint();return;}ui={aiError:e.code||'unavailable'};paint();}
  }
  function semanticWrite(sc,revise){
-  const f=sc.feedback,n=semanticNext(state,bank,{itemId:sc.itemId,revise,focusSkill:f.focus?.skill||null,now:now()}),d=recordDecision(state,{scene:n.id,why:n.why,source:'ai-reference',skill:f.focus?.skill||'none'},{now:now()});
+  const f=sc.feedback,n=semanticNext(state,bank,{itemId:sc.itemId,revise,focusSkill:f.focus?.skill||sc.focusSkill||null,focusTarget:f.focus?.target||sc.focusTarget||'other',now:now()}),d=recordDecision(state,{scene:n.id,why:n.why,source:'ai-reference',skill:n.focusSkill||'none',target:n.focusTarget||'other'},{now:now()});
   state=d.state;if(n.id==='write'&&revise){const k=draftKey(n);state={...state,drafts:{...state.drafts,[k]:{text:state.drafts[sc.draft]?.text||'',updatedAt:iso(),checkedAt:null}}};n.rewrite=f.rewrite;n.quote=f.focus?.quote||'';}
+  if(n.id==='write'&&revise&&sc.phase==='practice'&&sc.pick!==f.practice?.correct)n.guidance=f.help;
   setScene({...n,did:d.did});
  }
  function onClick(ev){
@@ -283,9 +290,10 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   if(b.hasAttribute('data-st-disconnect')){semanticSeq++;try{feedback?.disconnect();}catch{ui.loginError=true;}syncOwner();const keep=ui;go();ui=keep;paint();return;}
   if(b.hasAttribute('data-st-stop')){semanticSeq++;const cancelled=!!ui.reading;if(cancelled)feedback?.cancel?.();save();ui={stopped:true,cancelled};paint();return;}
   if(b.dataset.aiChoice&&sc.id==='semantic'&&!sc.pick&&['check','practice'].includes(sc.phase)){
-   state=recordSemantic(state,{feedback:sc.feedback,itemId:sc.itemId,stage:sc.phase,pick:b.dataset.aiChoice},{now:now()});setScene({...sc,pick:b.dataset.aiChoice});return;}
+   state=recordSemantic(state,{feedback:sc.feedback,itemId:sc.itemId,attempt:sc.checkedAt,stage:sc.phase,pick:b.dataset.aiChoice},{now:now()});setScene({...sc,pick:b.dataset.aiChoice});return;}
   if(b.hasAttribute('data-ai-advance')&&sc.id==='semantic'){
-   if(sc.phase==='practice'){semanticWrite(sc,true);return;}const phase=sc.phase==='help'||sc.pick===sc.feedback.check.correct?'practice':'help';setScene({...sc,phase,pick:null});return;}
+   if(sc.phase==='practice'||sc.phase==='check'&&sc.pick===sc.feedback.check.correct){semanticWrite(sc,true);return;}
+   if(sc.phase==='help'||sc.phase==='check'&&sc.pick){setScene({...sc,phase:'practice',pick:null});}return;}
   if(b.hasAttribute('data-ai-finish')&&sc.id==='semantic'){semanticWrite(sc,sc.feedback.status==='insufficient');return;}
   if(b.hasAttribute('data-st-unstop')){ui=ui.cancelled?{aiError:'cancelled'}:{};paint();return;}
   if(b.hasAttribute('data-st-resume')){try{session?.setItem('synk.study.resumed',who);}catch{}ui={};paint();return;}

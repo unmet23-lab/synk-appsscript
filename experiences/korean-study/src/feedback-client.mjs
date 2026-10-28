@@ -80,13 +80,14 @@ export function createFeedbackClient({storage=globalThis.sessionStorage,fetcher=
   async login(){forgetConnection();const rev=epoch,stored=load()?.access_token,check=()=>{current(rev);if(load()?.access_token!==stored||identity)throw error('ACCOUNT_CHANGED');};await configuration(check);check();
    const url=await beginOAuth({config,product:'world',storage,now:now(),cryptoAPI});check();rememberStudyLogin(storage,{now:now()});navigate(url);},
   disconnect,cancel,
-  async request({itemId,bankHash,answer,lang,stage='initial',focusSkill=null,consent}){
+  async request({itemId,bankHash,answer,lang,stage='initial',focusSkill=null,focusTarget='other',history=[],consent}){
    if(consent!=='send-once')throw error('CONSENT_REQUIRED');
    if(!identity||!capability?.enabled||capability.studyVersion!==1)throw error('STUDY_UNAVAILABLE');
    if(bankHash!==capability.bankHash)throw error('ITEM_CHANGED');
    if(active||requestPending)throw error('BUSY');
    const pending={};requestPending=pending;
-   try{return await post({action:'feedback',mode:'study',request_id:cryptoAPI.randomUUID(),consent,item_id:itemId,bank_hash:bankHash,answer,lang,study:{stage,focusSkill}},{cancelled:()=>pending.cancelled===true});}
+   const study={stage,focusSkill,...(capability.studyContextVersion===1?{focusTarget,history}:{})};
+   try{return await post({action:'feedback',mode:'study',request_id:cryptoAPI.randomUUID(),consent,item_id:itemId,bank_hash:bankHash,answer,lang,study},{cancelled:()=>pending.cancelled===true});}
    finally{if(requestPending===pending)requestPending=null;}
   }
  };
