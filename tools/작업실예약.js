@@ -270,7 +270,10 @@ function mergeResults(bundle, rows) {
     const hit = candidates[0];
     if (hit) {
       if (keyOf(hit.p) && keyOf(row) && keyOf(hit.p) !== keyOf(row)) throw new Error('같은 작업ID의 게시 주소가 달라 건드리지 않았다');
-      hit.rows[hit.i] = require('./lib/게시성과연결.js').identity(bundle.name, { ...hit.p, ...row });
+      // 예약큐와 같은 보호(10-28 상태 --캐시가 B8 두 판을 「승인 대기」로 내림): 검토 링크를 승인해도 서버는 내보내는 순간까지 reviewWaiting을
+      // 남기니 「승인」을 적은 「예약됨」은 내리지 않고, 게시물 ID까지 적힌 「게시됨」(공개를 직접 확인한 판)은 서버가 무엇으로 내려도 그대로 둔다.
+      const keep = (hit.p.상태 === '예약됨' && hit.p.승인 && row.상태 === '승인 대기') || (hit.p.상태 === '게시됨' && hit.p.게시물ID && row.상태 !== '게시됨');
+      hit.rows[hit.i] = require('./lib/게시성과연결.js').identity(bundle.name, { ...hit.p, ...row, ...(keep ? { 상태: hit.p.상태 } : {}) });
     } else list.push(row);
   }
   const next = JSON.stringify({ ...result, 판: list }, null, 2) + '\n';

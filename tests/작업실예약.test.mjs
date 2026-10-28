@@ -142,6 +142,25 @@ test('작업실 등록 → 예약은 모두 검토 대기, 유호님 링크 승�
   assert.deepEqual(cached.rows.map((r) => r.상태), ['게시됨', '게시됨']);
 });
 
+test('상태 맞추기는 「승인」을 적은 예약됨을 승인 대기로, 게시물 ID까지 적은 게시됨을 확인 필요로 내리지 않는다(10-28 B8)', async (t) => {
+  const f = await fixture(t);
+  const bundle = 묶음.load(f.dir);
+  await f.예약.register(bundle, f.ws, f.예약.planBundle(bundle, await f.ws.get('/api/social/workspace'), {}), {});
+  const file = path.join(f.dir, '게시', '게시결과.json');
+  const result = JSON.parse(fs.readFileSync(file, 'utf8'));
+  result.판[0] = { ...result.판[0], 상태: '예약됨', 승인: '검토 링크 승인' };
+  result.판[1] = { ...result.판[1], 상태: '게시됨', 게시물ID: 'abc123', 주소: 'https://www.youtube.com/watch?v=abc123' };
+  fs.writeFileSync(file, JSON.stringify(result, null, 2) + '\n');
+  // 서버는 승인 뒤에도 내보내기 전까지 reviewWaiting을 남기고, 공개를 본 판은 AI 표시 비교로 unknown을 낼 수 있다
+  const jobs = f.app.store.all('socialPublishJobs').map((j) => (j.channelId === 'yt' ? { ...j, status: 'unknown', reviewWaiting: false, publicationUrl: 'https://www.youtube.com/watch?v=abc123' } : { ...j }));
+  await f.예약.status(묶음.load(f.dir), null, { jobs });
+  const after = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.deepEqual(after.판.map((p) => [p.계정, p.상태]), [['yuhobuilds-instagram', '예약됨'], ['yuhobuilds-youtube', '게시됨']]);
+  // 거두기(취소됨)는 그대로 덮는다
+  await f.예약.status(묶음.load(f.dir), null, { jobs: jobs.map((j) => ({ ...j, status: j.channelId === 'yt' ? 'unknown' : 'cancelled' })) });
+  assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).판[0].상태, '취소됨');
+});
+
 test('등록을 거두면 예약 작업이 취소되고 링크가 폐기돼, 그 링크를 눌러도 보내지 않는다', async (t) => {
   const f = await fixture(t);
   const bundle = 묶음.load(f.dir);
