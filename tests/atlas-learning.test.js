@@ -140,3 +140,14 @@ test('a few earlier mistakes do not keep recent diverse success in a permanent p
   assert.equal(skill(f.coach, R).status, 'recent-independent');
   assert.equal(f.coach.recommend(candidates).selected.id, 'listen');
 });
+const Learning = require('../atlas/learning'), DAY = 86400000;
+test('age makes held evidence due again but never lowers an item that is still missed (10-28 audit P2-1)', () => {
+  const now = Date.parse('2026-10-28T09:00:00Z');
+  const row = (daysAgo, verdict, k) => ({ eventId: `e${k}`, at: new Date(now - daysAgo * DAY).toISOString(), independent: true, verdict, measure: { familyKey: `f${k}` } });
+  const status = rows => { const r = Learning.formatEvidence(rows, { now, complete: true, difficulty: 1, responseFormat: 'single-choice' }); return [r.status, r.priority]; };
+  assert.deepEqual(status([1, 2, 3].map(i => row(11 - i, 'incorrect', i))), ['practice', 1]);
+  assert.deepEqual(status([1, 2, 3, 4].map(i => row(12 - i, 'correct', i))), ['review', .8]);
+  assert.deepEqual(status([row(9, 'incorrect', 1)]), ['checking', .85]);
+  assert.deepEqual(status([row(9, 'correct', 1)]), ['review', .8]);
+  assert.deepEqual(status([row(40, 'incorrect', 1)]), ['review', .8], 'outside the 30-day window the old miss is only a recheck');
+});

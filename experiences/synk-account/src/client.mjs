@@ -6,12 +6,14 @@ import { createClassroomTransport } from './classroom-client.mjs';
 import { createAccountWorkspace } from './account-classroom.mjs';
 import { rememberWorldPlayEntry } from './world-play-entry.mjs';
 import { createPlatformEntry } from './platform-entry.mjs';
+import { studyCallbackIntent, finishStudyLogin, rememberStudyLogin, STUDY_INTENT } from './study-login.mjs';
 rememberWorldPlayEntry();
 const $ = id => document.getElementById(id);
 const notice = (text, error = false) => { $('notice').textContent = text;$('notice').className = `notice${error ? ' error' : ''}`; };
 let generation = 0, session, view, closed = false, entry = 0;
 let browserConfig = null, browserProduct = null, retryButton = null, recoveryNeeded = false, checking = false;
 let callbackHandled = false, pendingExchange = null, verification = null;
+let studyReturn = null;
 let platformEntry = null;
 const AUTH_ERRORS = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 const accountChanged = () => Object.assign(new Error('계정 연결이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' });
@@ -144,13 +146,15 @@ async function start(attempt) {
   checkEntry();generation++;view?.stop();view = null;session = null;verification = null;browserConfig = null;
   $('setup').hidden = true;$('connect').hidden = true;notice('로그인 상태를 확인하고 있어요…');
   const product = new URL(location.href).searchParams.get('product') || 'platform';if (!PRODUCTS[product]) throw new Error('등록된 SYNK 제품 주소를 확인해 주세요.');
+  const studyEntry=product==='world'&&!!(pendingExchange&&studyReturn||studyCallbackIntent({storage:sessionStorage,url:location.href,product}));
   $('product-label').textContent = PRODUCTS[product];$('product-copy').textContent = product === 'world' ? '로그인하면 게임 진도와 코인을 다른 기기에서도 이어 써요.' : '로그인하면 내 소속과 이용 권한, 로그인한 기기를 볼 수 있어요.';
   document.getElementById('app-manifest').href = product === 'world' ? './world.webmanifest' : './platform.webmanifest';
   document.querySelector('link[rel="apple-touch-icon"]').href = product === 'world' ? './assets/app-world.png' : './assets/app-platform.png';
+  if(studyEntry){$('product-label').textContent='SYNK 한국어 공부';$('product-copy').textContent='로그인을 마치면 쓰던 한국어 공부 화면으로 돌아가요.';}
   if (product === 'messenger') throw new Error('SYNK Workspace는 Workspace 로그인 화면에서 들어가 주세요.');
   if (typeof window.synkDesktop?.authStatus === 'function') { await startDesktop(product, window.synkDesktop);return; }
   browserProduct = product;recoveryControl().hidden = true;
-  if (product === 'world') {
+  if (product === 'world'&&!studyEntry) {
     platformEntry ||= createPlatformEntry({ clientKey: 'world', getUrl: () => location.href, replaceUrl: url => history.replaceState(null, '', url) });
     platformEntry.capture(() => sessionStorage);platformEntry.restore(sessionStorage);
   }
@@ -171,7 +175,7 @@ async function start(attempt) {
     const intent = ++generation;view?.stop();view = null;session = null;verification = null;
     $('connect').disabled = true;recoveryControl().hidden = true;pendingExchange = null;
     notice('SYNK ID 로그인 화면으로 이동하고 있어요…');
-    try { if (explicit) { platformEntry?.resume();platformEntry?.stop(); }const destination = await beginOAuth({ config, product, storage: sessionStorage });if (closed || attempt !== entry || intent !== generation) throw accountChanged();location.assign(destination); }
+    try { if (explicit) { platformEntry?.resume();platformEntry?.stop(); }const destination = await beginOAuth({ config, product, storage: sessionStorage });if (closed || attempt !== entry || intent !== generation) throw accountChanged();if(studyEntry)rememberStudyLogin(sessionStorage);location.assign(destination); }
     catch (error) { if (!closed && attempt === entry && intent === generation) { notice(error.message, true);$('connect').hidden = false;$('connect').disabled = false; } }
   };
   $('connect').onclick = () => connect(true);
@@ -179,11 +183,14 @@ async function start(attempt) {
   const params = new URL(location.href).searchParams;
   if (!callbackHandled && (params.has('code') || params.has('error'))) {
     callbackHandled = true;
-    try { pendingExchange = consumeCallback({ config, product, url: location.href, storage: sessionStorage }); }
+    try { studyReturn=studyCallbackIntent({storage:sessionStorage,url:location.href,product});pendingExchange = consumeCallback({ config, product, url: location.href, storage: sessionStorage }); }
     finally { const clean = new URL(location.href);for (const name of ['code', 'state', 'error', 'error_description']) clean.searchParams.delete(name);history.replaceState(null, '', clean); }
   }
-  if (pendingExchange) { session = await tokenRequest(config, pendingExchange);checkEntry();sessionStorage.setItem(key, JSON.stringify(session));pendingExchange = null; }
-  else { try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { throw Object.assign(new Error('브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'STORAGE' }); } }
+  if (pendingExchange) { session = await tokenRequest(config, pendingExchange);checkEntry();
+    if(studyReturn){const destination=finishStudyLogin(sessionStorage,session,studyReturn);pendingExchange=null;studyReturn=null;location.replace(destination);return;}
+    sessionStorage.setItem(key, JSON.stringify(session));pendingExchange = null; }
+  else { if(studyEntry){$('connect').hidden=false;$('connect').disabled=false;notice('한국어 공부로 돌아가려면 SYNK ID를 다시 연결해 주세요.');return;}
+    try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { throw Object.assign(new Error('브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'STORAGE' }); } }
   if (!session?.access_token) { if (platformEntry?.beginAttempt()) { await connect(false);return; }$('connect').hidden = false;notice('SYNK ID로 로그인하면 이 화면으로 돌아와요.');return; }
   const token = ++generation, guard = () => { if (closed || attempt !== entry || token !== generation || !session) throw accountChanged(); };
   async function logout(note, request = {}) {

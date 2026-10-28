@@ -177,6 +177,24 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   const 기준이미지만 = candidate?.종류 === 'synk.im' && candidate.항목.every(f => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(f.경로));
   if (candidate && o.종류 !== (candidate.종류 === 'synk.im' && !기준이미지만 ? '화면' : '백엔드')) throw new Error(`배포 후보 ${candidate.종류}에 맞는 검수 종류가 아니다`);
   if ([3, 4].includes(판)) return 사용자지정정책(o, files, candidate, 판);
+  // 2026-10-28 직접 사용자 승인: 이 학습 흐름에 한해 담당과 Fable을 대체한다.
+  // 일반 정책·검수 원문·SHA 사슬·P0/P1 처리·배포 바이트 검사는 그대로다.
+  if (o.담당예외 != null) {
+    const source = p => /^experiences\/korean-study\//.test(p)
+      || /^experiences\/synk-account\/(?:src\/(?:client|study-login)\.mjs|dist\/client\.js|build-manifest\.json)$/.test(p)
+      || /^(?:atlas\/learning\.js|experiences\/[^/]+\/atlas-learning\.js|experiences\/synk-world-app\/world-account\.bundle\.mjs|experiences\/brand-opening\/content\/life-standalone\.mjs)$/.test(p)
+      || /^(?:docs\/(?:_ops\/(?:결정\.md|트랙\.md|몽골어검문\.jsonl|관문_자동화\.md)|아틀라스_설계\.md|아틀라스_구현명세\.md|미니게임_TOPIK_I_학습기준\.md)|tests\/(?:atlas-learning\.test\.js|atlas-size-budget\.test\.js|검수담당예외\.test\.mjs)|tools\/(?:검수묶음\.mjs|lib\/검수증명\.mjs))$/.test(p)
+      || /^(?:lib\/(?:study-writing-feedback|world-writing-runtime)\.js|tests\/(?:study-writing|world-writing)\.test\.js|supabase\/functions\/world-writing\/동봉\.json|docs\/study-semantic\.md)$/.test(p);
+    const validPath=p=>typeof p==='string'&&!p.includes('\\')&&!p.includes(':')&&!p.split('/').some(x=>!x||x==='.'||x==='..');
+    const publish = p => /^study\//.test(p) || ['account/client.js','account/dist/client.js','account/client.html'].includes(p);
+    if (o.담당예외 !== 'topik-writing-semantic-20261028' || o.작성자 !== 'GPT' || !['화면','백엔드'].includes(o.종류)
+      || o.사용자지정 || o.예외 || o.페이블생략 || o.GPT구독 && o.GPT구독 !== '유지'
+      || !files.length || files.some(f => f.상태 === 'D' || !validPath(f.경로) || !source(f.경로))
+      || candidate && (candidate.종류 !== 'synk.im' || candidate.항목.some(f => f.종류 === '지움' || !validPath(f.경로) || !publish(f.경로)))) throw new Error('TOPIK 의미 튜터의 직접 승인 범위를 벗어난 담당 예외');
+    return {판,작성자:'GPT',종류:o.종류,GPT구독:'유지',필수:['아르곤'],예외:null,
+      담당예외:{taskId:o.담당예외,userStatement:'이번 작업만 GPT 구현·아르곤 검수로 진행',scope:'의미 분석·엔진·화면 구현과 자동·화면 시험. 추가 결제·보안 설정 변경 제외.'},
+      ...(o.종류==='화면'?{페이블생략:'2026-10-28 이번 작업에 한한 직접 사용자 승인; 아르곤 재검수도 필수'}:{})};
+  }
   const 작성자 = o.작성자 || 'Claude', 구독 = o.GPT구독 || '유지';
   if (!['Claude', 'GPT'].includes(작성자)) throw new Error('--작성자는 Claude|GPT');
   if (작성자 === 'GPT' && o.종류 === '화면') throw new Error('화면 구현은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
@@ -212,6 +230,7 @@ export function 대체순서(정책) {
 /** 지금 규칙으로 꼭 받아야 하는 검수자(대체는 빼고). 옛 판 1의 [아르곤, GPT]도 [GPT]로 본다. */
 export const 실제필수 = 정책 => (대체순서(정책) ? [대체순서(정책)[0]] : 정책.필수);
 export const 필수글 = 정책 => {
+  if (정책.담당예외) return '아르곤(이번 TOPIK 의미 튜터 작업의 직접 사용자 승인; 대체 없음)';
   if (정책.사용자지정) return `묶음별 ${정책.필수.join(' · ')} + 전체 후보에 대한 최종 ${정책.사용자지정.finalReviewer} 배포 판정(대체 없음)`;
   const 순서 = 대체순서(정책);
   if (정책.페이블생략) return `아르곤(Fable 생략 — ${정책.페이블생략} · 아르곤이 한도·로그인으로 막히거나 아르곤 P0·P1을 고치면 Fable)`;

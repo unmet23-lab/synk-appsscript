@@ -1,7 +1,7 @@
 'use strict';
 // Core: operational practice priorities, NOT calibrated proficiency or TOPIK grades.
 // Receives Trail provenance and Strata nodes; owns neither identity nor storage.
-const POLICY = Object.freeze({ version: 'learning-priority-3', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
+const POLICY = Object.freeze({ version: 'learning-priority-4', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
 const RESPONSE_FORMATS = Object.freeze(['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown']);
 const { learningReason, activityReason, SUPPORTS } = require('./vellum');
 const Ledger = require('./learning-ledger');
@@ -17,11 +17,12 @@ function formatEvidence(rows, { now, complete, difficulty, responseFormat, base 
   const lastAt = valid.at(-1)?.at || null;
   const helped = rows.filter(a => !a.exclusionReason && a.assisted === true && a.verdict === 'correct' && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY);
   let status = 'unseen', priority = .65;
-  if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY) { status = 'review'; priority = .8; }
-  else if (n >= POLICY.sample && correct / n >= POLICY.stableRatio) { status = 'recent-independent'; priority = .15; }
+  if (n >= POLICY.sample && correct / n >= POLICY.stableRatio) { status = 'recent-independent'; priority = .15; }
   else if (n >= 3 && incorrect >= 2) { status = 'practice'; priority = 1; }
   else if (n) { status = 'checking'; priority = incorrect ? .85 : .55; }
   else if (helped.length) { status = 'supported'; priority = .9; }
+  // Age makes a held or unchecked item due again; it never lowers one still missed or needing help.
+  if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY && priority < .8) { status = 'review'; priority = .8; }
   // Keep the actual source even when an old item is due outside the recent window, or
   // a supported success has no independent attempt. A reason must not lose its provenance.
   const reasonEvidence = status === 'supported' ? helped.slice(-12) : status === 'review' && !recent.length ? valid.slice(-1) : recent;

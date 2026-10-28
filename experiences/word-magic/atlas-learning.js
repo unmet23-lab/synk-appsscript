@@ -7694,7 +7694,7 @@ var SynkLearning = (() => {
   var require_learning = __commonJS({
     "atlas/learning.js"(exports, module) {
       "use strict";
-      var POLICY = Object.freeze({ version: "learning-priority-3", recentDays: 30, reviewDays: 7, sample: 4, stableRatio: 0.8 });
+      var POLICY = Object.freeze({ version: "learning-priority-4", recentDays: 30, reviewDays: 7, sample: 4, stableRatio: 0.8 });
       var RESPONSE_FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "unknown"]);
       var { learningReason, activityReason, SUPPORTS } = require_vellum();
       var Ledger = require_learning_ledger();
@@ -7709,10 +7709,7 @@ var SynkLearning = (() => {
         const lastAt = valid.at(-1)?.at || null;
         const helped = rows.filter((a) => !a.exclusionReason && a.assisted === true && a.verdict === "correct" && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY);
         let status = "unseen", priority = 0.65;
-        if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY) {
-          status = "review";
-          priority = 0.8;
-        } else if (n >= POLICY.sample && correct / n >= POLICY.stableRatio) {
+        if (n >= POLICY.sample && correct / n >= POLICY.stableRatio) {
           status = "recent-independent";
           priority = 0.15;
         } else if (n >= 3 && incorrect >= 2) {
@@ -7724,6 +7721,10 @@ var SynkLearning = (() => {
         } else if (helped.length) {
           status = "supported";
           priority = 0.9;
+        }
+        if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY && priority < 0.8) {
+          status = "review";
+          priority = 0.8;
         }
         const reasonEvidence = status === "supported" ? helped.slice(-12) : status === "review" && !recent.length ? valid.slice(-1) : recent;
         return {

@@ -27,6 +27,8 @@ const KEEP = {
   51: ['id', 'type', 'style', 'passage'],
   52: ['id', 'type', 'style', 'passage'],
   53: ['id', 'type', 'style', 'label', 'instruction', 'points', 'min', 'max', 'data'],
+  // 54는 주제와 질문만(「끝맺음」 확인의 새 장면 — 예시답·채점 메모는 빼고). 2026-10-28 Atlas 개인화 보완.
+  54: ['id', 'type', 'style', 'label', 'instruction', 'prompt', 'questions'],
 };
 export function studyBank(bank) {
   const items = bank.items.filter(item => item?.review?.status === 'passed' && KEEP[item.type])
