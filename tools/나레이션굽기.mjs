@@ -225,17 +225,18 @@ export function clippedSamples({ x }) {
   for (let i = 0; i < x.length; i++) if (Math.abs(x[i]) >= 32766 / 32768) n++;
   return n;
 }
-// 큰 소리 프레임의 YIN 음높이(포물선 보간) 가운데 가장 높은 값(Hz), 모음이 없으면 null. 24kHz 안팎으로 줄여 40ms 창 · 10ms 간격
-// (tools/목소리엉킴.py와 같은 셈 — 10-28 소진 「Three!」 세기 1.3 638Hz 깨짐 ↔ 세기 1.0 498Hz 괜찮음).
+// 큰 소리 프레임의 YIN 음높이(포물선 보간)로 이어진 세 프레임(30ms)이 2반음 안에서 고른 자리의 가장 높은 값(Hz), 없으면 null.
+// 프레임 하나만 튄 값(자음 · 주기 잘못 잡음, 평서문에서 800~1000Hz로 나옴)은 세지 않는다. 24kHz 안팎으로 줄여 40ms 창 · 10ms 간격
+// (tools/목소리엉킴.py와 같은 셈 — 10-28 소진 「Three!」 세기 1.3 633Hz 깨짐 ↔ 세기 1.0 498Hz 괜찮음).
 export function topPitch({ rate, x }) {
   const step = rate >= 44100 ? 2 : 1, sr = rate / step, n = Math.floor(x.length / step), y = new Float64Array(n);
   for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < step; k++) s += x[i * step + k]; y[i] = s / step; }
-  const w = Math.round(sr * 0.04), hop = Math.round(sr * 0.01), tmin = Math.floor(sr / 1100), tmax = Math.floor(sr / 120);
+  const w = Math.round(sr * 0.04), hop = Math.round(sr * 0.01), tmin = Math.floor(sr / 850), tmax = Math.floor(sr / 120); // 850Hz 위는 실제 음의 두 배로 잘못 읽은 것이 많아 아래 옥타브로 읽게 한다
   let pk = 0; for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(y[i]));
   if (pk < 1e-4) return null; // 무음
-  const d = new Float64Array(tmax + 2), dn = new Float64Array(tmax + 2);
-  let best = null;
+  const d = new Float64Array(tmax + 2), dn = new Float64Array(tmax + 2), track = [];
   for (let i = 0; i + w + tmax + 2 < n; i += hop) {
+    track.push(null);
     let e = 0; for (let j = 0; j < w; j++) e += y[i + j] * y[i + j];
     if (Math.sqrt(e / w) < pk * 0.12) continue;
     for (let t = 0; t < tmax + 2; t++) { let s = 0; for (let j = 0; j < w; j++) { const q = y[i + j] - y[i + j + t]; s += q * q; } d[t] = s; }
@@ -245,8 +246,17 @@ export function topPitch({ rate, x }) {
     for (let k = tmin; k < tmax; k++) if (dn[k] < 0.1) { t = k; break; }
     if (t < 0) continue;
     while (t + 1 < tmax && dn[t + 1] < dn[t]) t++;
-    const a = dn[t - 1], b = dn[t], c = dn[t + 1], hz = sr / (t + 0.5 * (a - c) / (a - 2 * b + c + 1e-12));
-    if (best === null || hz > best) best = hz;
+    const a = dn[t - 1], b = dn[t], c = dn[t + 1];
+    track[track.length - 1] = sr / (t + 0.5 * (a - c) / (a - 2 * b + c + 1e-12));
+  }
+  let best = null;
+  for (let k = 1; k + 1 < track.length; k++) {
+    const trio = [track[k - 1], track[k], track[k + 1]];
+    if (trio.some((v) => v === null)) continue;
+    const lo = Math.min(...trio), hi = Math.max(...trio);
+    if (hi / lo > 2 ** (2 / 12)) continue;
+    const mid = trio.sort((p, q) => p - q)[1];
+    if (best === null || mid > best) best = mid;
   }
   return best === null ? null : Math.round(best);
 }

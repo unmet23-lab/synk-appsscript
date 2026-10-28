@@ -59,14 +59,18 @@ def analyse(x):
 PITCH_WARN = 560
 
 
-def top_pitch(path, sr=48000, fmin=120, fmax=1100, w=1920, hop=480, th=0.1):
-    """큰 소리 프레임의 YIN 음높이(포물선 보간) 가운데 가장 높은 값(Hz). 모음이 없으면 None."""
+def top_pitch(path, sr=48000, fmin=120, fmax=850, w=1920, hop=480, th=0.1):
+    """YIN 음높이(포물선 보간)로 이어진 세 프레임(30ms)이 2반음 안에서 고른 자리의 가장 높은 값(Hz). 없으면 None.
+    프레임 하나만 튄 값과 850Hz 위(실제 음의 두 배로 잘못 읽은 것)는 세지 않는다 — tools/나레이션굽기.mjs topPitch와 같은 셈."""
     r = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-ac', '1', '-ar', str(sr), '-f', 'f32le', '-'], capture_output=True)
     x = np.frombuffer(r.stdout, dtype=np.float32).astype(np.float64)
     tmin, tmax = sr // fmax, sr // fmin
     pk = np.abs(x).max() + 1e-9
-    best = None
+    if pk < 1e-4:
+        return None
+    track = []
     for i in range(0, len(x) - w - tmax - 2, hop):
+        track.append(None)
         f = x[i:i + w]
         if np.sqrt((f ** 2).mean()) < pk * 0.12:
             continue
@@ -79,8 +83,14 @@ def top_pitch(path, sr=48000, fmin=120, fmax=1100, w=1920, hop=480, th=0.1):
         while t + 1 < tmax and dn[t + 1] < dn[t]:
             t += 1
         a, b, c = dn[t - 1], dn[t], dn[t + 1]
-        hz = sr / (t + 0.5 * (a - c) / (a - 2 * b + c + 1e-12))
-        best = hz if best is None else max(best, hz)
+        track[-1] = sr / (t + 0.5 * (a - c) / (a - 2 * b + c + 1e-12))
+    best = None
+    for k in range(1, len(track) - 1):
+        trio = track[k - 1:k + 2]
+        if None in trio or max(trio) / min(trio) > 2 ** (2 / 12):
+            continue
+        mid = sorted(trio)[1]
+        best = mid if best is None else max(best, mid)
     return best
 
 
