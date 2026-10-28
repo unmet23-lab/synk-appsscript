@@ -263,6 +263,9 @@ function addAsks(s, asks) {
   return true;
 }
 
+/** The learning record's item key: the frame and the request's values in axis order (tea · temp · sweet). The operating
+ * ledger already holds this form (W9 판단, 결정 10-28), so a change to the request's field order needs a new key edition. */
+export const itemKeyOf = (frame, request) => `synk-town.tea.${frame}.${JSON.stringify(request).replace(/[^a-zA-Z0-9]/g, '.')}`;
 /** Only a displayed, server-recognised request becomes a learning task. No names, words or cups
  * leave this activity. The host appends these facts to learning in the SAME command transaction. */
 function learningFact(s, g, ctx, kind, fields = {}) {
@@ -282,7 +285,7 @@ function presentRequest(s, g, ctx, display = {}) {
   const prior = s.guests[s.guests.indexOf(g) - 1], confounded = !!g.note || !!def?.when?.same && !Number.isSafeInteger(prior?.displayedAt);
   g.practice = { id: `town.tea.${s.id}.${g.slot}`, epoch: ctx.learning.revision, presentedAt: ctx.nowMs,
     level, frame, ...(key ? { contentKey: key } : {}),
-    itemKey: `synk-town.tea.${frame}.${JSON.stringify(g.request).replace(/[^a-zA-Z0-9]/g, '.')}`,
+    itemKey: itemKeyOf(frame, g.request),
     measure: { skillId: skill, modality: 'reading', difficulty: basicReadingDifficulty(level),
       family: `synk-town.tea.${frame}.v1`, responseFormat: 'cup-compose', audioRequired: false, confounded },
     assessed: approved && !!key && display.contentKey === key && !confounded, attempts: 0, helpSeq: 0 };

@@ -35,7 +35,8 @@ export const KINDS = Object.freeze({
   'card.resolved': { ref: id, card: v => /^[CWR][1-6]$/.test(v), path: v => ['self', 'pair', 'player'].includes(v), public: v => typeof v === 'boolean' },
   // W8 (§11-6): the day's one tea order done with the player — only those in it know, never news (G6) …
   'tea.together': { order: id, public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
-  // … and one guest's request finished: the result place the learning adapter (W9) reads — ids and values, no words (G7).
+  // … and one guest's request finished: the town's result — ids and values, no words (G7). Learning does not read it: the
+  // record goes from the request actually shown (TEA_PRESENT) and the asks, cups and close after it (W9, §13-2).
   'tea.request': { order: id, guest: id, who: id, level: v => ['L1', 'L2', 'L3', 'L4'].includes(v), by: v => ['player', 'owner'].includes(v),
     result: v => ['made', 'owner', 'stopped'].includes(v), tries: v => Number.isSafeInteger(v) && v >= 0, lifeDay: Number.isSafeInteger },
   // W8b (§20-8): a leaf picked (the cause of its grant — not social, no actors), and the life day's one gift to the cafe
@@ -43,6 +44,14 @@ export const KINDS = Object.freeze({
   'gather.picked': { spot: id, item: id, lifeDay: Number.isSafeInteger, band: id, alongside: v => typeof v === 'boolean' },
   'gather.given': { public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
   'gather.together': { public: v => v === false, lifeDay: Number.isSafeInteger, band: id },
+  // W9 (§12-4·§13-2): a conversation scene or a tea order closed — the habit summary the language ladder reads, never a
+  // learning record: the scene, its start level, the asks by kind and how it went; no words, names or answers (다리 §10-4).
+  // answerMode is the scene's response format in Atlas's words (single-choice · cup-compose).
+  'dialogue.closed': { sceneId: id, level: v => ['L1', 'L2', 'L3', 'L4'].includes(v), channel: v => ['reading', 'listening'].includes(v),
+    help: v => !!v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 3
+      && ['meaning', 'repeat', 'slower'].every(key => Number.isSafeInteger(v[key]) && v[key] >= 0),
+    outcome: v => ['smooth', 'helped-once', 'eased', 'stopped'].includes(v), answerMode: v => ['single-choice', 'cup-compose'].includes(v),
+    atMs: Number.isSafeInteger },
 });
 
 /** The relationship fields of an event the player took part in, checked (§20-1). */
