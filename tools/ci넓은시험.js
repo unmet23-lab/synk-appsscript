@@ -41,7 +41,7 @@ const 파일모름 = '(파일 모름)'; // TAP에 위치가 없는 실패(파일
 const 묶음들 = {
   루트: (p) => /^tests\/[^/]+\.test\.(?:mjs|cjs)$/.test(p),
   회사: (p) => p.startsWith(`${회사}/`) && 시험꼴.test(p),
-  desktop: (p) => /^desktop\/tests\/[^/]+\.test\.cjs$/.test(p),
+  desktop: (p) => /^desktop\/tests\/[^/]+\.test\.(?:cjs|mjs)$/.test(p),
   experiences: (p) => p.startsWith('experiences/') && 시험꼴.test(p),
   tools: (p) => p.startsWith('tools/') && 시험꼴.test(p),
 };

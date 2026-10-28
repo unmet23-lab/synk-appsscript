@@ -6,7 +6,7 @@
   "author": "SYNK",
   "main": "src/main.cjs",
   "scripts": {
-    "test": "node --test tests/*.test.cjs",
+    "test": "node --test tests/*.test.cjs tests/*.test.mjs",
     "dev:platform": "electron . --synk-dev --client=platform",
     "dev:world": "electron . --synk-dev --client=world",
     "dev:messenger": "electron . --synk-dev --client=messenger",

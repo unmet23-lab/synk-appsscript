@@ -13,11 +13,12 @@ test('목록 — 묶음마다 제 자리의 추적 시험만, node_modules·루�
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci넓은시험-'));
   try {
     const 추적 = ['tests/a.test.js', 'tests/b.test.mjs', 'tests/c.test.cjs', 'tests/lib/d.test.mjs', 'desktop/tests/e.test.cjs', 'desktop/tests/f.test.js',
+      'desktop/tests/esm.test.mjs', 'desktop/tests/helper.mjs', 'desktop/tests/nested/ignored.test.mjs', 'desktop/tests/node_modules/ignored.test.mjs',
       'docs/마케팅/온라인마케팅지도/engagement/company/g.test.mjs', 'experiences/x/node_modules/y.test.js', 'experiences/x/h.test.js', 'tools/lib/i.test.cjs', 'tools/없음.test.js'];
     for (const p of 추적.filter((p) => p !== 'tools/없음.test.js')) { fs.mkdirSync(path.dirname(path.join(root, p)), { recursive: true }); fs.writeFileSync(path.join(root, p), ''); }
     const 목록 = (묶음) => 넓은.목록(묶음, root, 추적);
     assert.deepEqual(목록('루트'), ['tests/b.test.mjs', 'tests/c.test.cjs'], '루트 .js 는 syntax-check 가 엄격하게 돈다');
-    assert.deepEqual(목록('desktop'), ['desktop/tests/e.test.cjs'], 'desktop/package.json 의 test 와 같은 꼴만');
+    assert.deepEqual(목록('desktop'), ['desktop/tests/e.test.cjs', 'desktop/tests/esm.test.mjs'], 'desktop/package.json 처럼 CJS·ESM 시험만, helper·하위 폴더는 제외');
     assert.deepEqual(목록('회사'), ['docs/마케팅/온라인마케팅지도/engagement/company/g.test.mjs']);
     assert.deepEqual(목록('experiences'), ['experiences/x/h.test.js']);
     assert.deepEqual(목록('tools'), ['tools/lib/i.test.cjs']);

@@ -273,19 +273,20 @@ for(const succeeds of [true,false])test('pending library action blocks close and
   await f.action({window:'close'});await settleLibrary();assert.equal(closes,1);
 });
 
-for(const id of ['path'])test(id+' native preview invokes only its dedicated bridge with a library grant',async()=>{
+for(const id of ['fortune'])test(id+' native preview invokes only its dedicated bridge with a library grant',async()=>{
   const calls=[];
   const f=await fixture({initialAuth:account(id+'-member',[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async value=>{calls.push(value);return {ok:true};},launch:async()=>assert.fail('preview must not use installer launch')}});
-  assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[id]);assert.equal(f.element('primary-action').dataset.action,'product-preview');assert.equal(f.element('primary-action').disabled,false);
-  assert.match(f.element('detail-content').innerHTML,/웹에서 연습/);assert.doesNotMatch(f.element('detail-content').innerHTML,/사내 대화/);
+  assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('primary-action').dataset.action,'product-preview');assert.equal(f.element('primary-action').disabled,false);
+  await f.action({benefit:id});assert.match(f.element('benefit-detail').innerHTML,/data-benefit-preview="fortune"/);assert.doesNotMatch(f.element('benefit-detail').innerHTML,/사내 대화/);
   await f.click('primary-action');assert.deepEqual(calls,[id]);assert.match(f.element('toast').textContent,/창을 열었어요/);
   f.emit('auth',account('unrelated',['world']));await f.action({command:'product-preview',client:id});assert.deepEqual(calls,[id]);
 });
 test('product preview stays unavailable without source capability and ignores late completion for another account',async()=>{
-  const pending=deferred();let calls=0;
-  const noCapability=await fixture({initialAuth:account('member',['path']),bridgeOverrides:{openProductPreview:async()=>{calls++;return {ok:true};}}});await noCapability.ready;await noCapability.action({command:'product-preview',client:'path'});assert.equal(calls,0);assert.equal(noCapability.element('primary-action').disabled,true);
-  const f=await fixture({initialAuth:account('member',['path']),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['path']}),openProductPreview:()=>pending.promise}});await f.ready;
-  const opening=f.click('primary-action');f.emit('auth',account('new-member',['world']));pending.resolve({ok:true});await opening;
+  const pending=deferred(),calls=[];
+  const noCapability=await fixture({initialAuth:account('member',['fortune']),bridgeOverrides:{openProductPreview:async id=>{calls.push(id);return {ok:true};}}});await noCapability.ready;await noCapability.action({command:'product-preview',client:'fortune'});assert.deepEqual(calls,[]);assert.equal(noCapability.element('primary-action').disabled,true);
+  const f=await fixture({initialAuth:account('member',['fortune']),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['fortune']}),openProductPreview:id=>{calls.push(id);return pending.promise;}}});await f.ready;
+  const opening=f.click('primary-action');assert.deepEqual(calls,['fortune'],'the request must start before the account changes');f.emit('auth',account('new-member',['world']));pending.resolve({ok:true});await opening;
+  assert.deepEqual(calls,['fortune']);
   assert.equal(f.element('toast').hidden,true);assert.equal(f.element('breadcrumb-app').textContent,'SYNK WORLD');
 });
 
@@ -589,13 +590,37 @@ test('member benefit clients launch only their own local preview after exact ent
 });
 
 test('successful preview launches preserve per-account history and other view preferences after reopening',async()=>{
-  for(const id of ['teacher','path','care','fortune']){
-    const owner='preview-history-'+id;
-    const options={initialAuth:account(owner,[id]),initialPreferences:JSON.stringify({selected:id,favorites:[id],density:'compact',lastLaunch:{world:123}}),bridgeOverrides:{getEnvironment:async()=>({...environment,teacherPreviewAvailable:true,productPreviewsAvailable:[id]}),openTeacherPreview:async()=>({ok:true}),openProductPreview:async()=>({ok:true})}};
+  for(const id of ['teacher','care','fortune']){
+    const owner='preview-history-'+id,calls=[];
+    const options={initialAuth:account(owner,[id]),initialPreferences:JSON.stringify({selected:id,favorites:[id],density:'compact',lastLaunch:{world:123}}),bridgeOverrides:{getEnvironment:async()=>({...environment,teacherPreviewAvailable:true,productPreviewsAvailable:[id]}),openTeacherPreview:async()=>{calls.push('teacher');return {ok:true};},openProductPreview:async actual=>{calls.push(actual);return {ok:true};}}};
     const f=await fixture(options);assert.equal(await f.ready,'true');await f.click('primary-action');await settleLibrary();
+    assert.deepEqual(calls,[id],'successful history requires exactly one real preview request');
     const saved=JSON.parse(f.storage.get(viewKey(owner)));assert.ok(saved.lastLaunch[id]>0,id);assert.equal(saved.lastLaunch.world,123);assert.deepEqual(saved.favorites,[id]);assert.equal(saved.density,'compact');
     const reopened=await fixture({...options,initialPreferences:JSON.stringify(saved)});assert.equal(await reopened.ready,'true');assert.notEqual(reopened.element('last-launch').textContent,'기록 없음',id);assert.equal(reopened.storage.get(viewKey()),undefined);
   }
+});
+
+test('hidden PATH discovery retains its grant and saved preferences without launching or adding history',async()=>{
+  const owner='hidden-path-history',auth=account(owner,['path']),beforeAuth=structuredClone(auth),calls=[];
+  const initialPreferences=JSON.stringify({selected:'path',favorites:['path'],density:'compact',lastLaunch:{path:456,world:123}});
+  const options={initialAuth:auth,initialPreferences,bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['path']}),openProductPreview:async id=>{calls.push(id);return {ok:true};},launch:async()=>assert.fail('hidden PATH must not launch an installer')}};
+  const f=await fixture(options);assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('primary-action').disabled,true);
+  assert.equal(f.storage.get(viewKey(owner)),initialPreferences,'mounting alone must not rewrite saved data');
+  // Discovery is hidden; existing grants and direct preview access are unchanged.
+  await f.click('primary-action');await f.action({app:'path'});f.input('search','PATH');assert.deepEqual(f.ids(),[]);await settleLibrary();
+  assert.deepEqual(calls,[]);assert.deepEqual(auth,beforeAuth);assert.equal(f.storage.get(viewKey()),undefined);
+  const savedRaw=f.storage.get(viewKey(owner)),saved=JSON.parse(savedRaw);
+  assert.deepEqual(saved.favorites,['path']);assert.equal(saved.lastLaunch.path,456);assert.equal(saved.lastLaunch.world,123);assert.equal(saved.density,'compact');assert.equal(saved.selected,null,'a hidden selection is not restored after searching');
+  const reopened=await fixture({...options,initialPreferences:savedRaw});assert.equal(await reopened.ready,'true');assert.deepEqual(reopened.ids(),[]);assert.equal(reopened.element('primary-action').disabled,true);assert.equal(reopened.storage.get(viewKey(owner)),savedRaw);assert.deepEqual(calls,[]);
+});
+
+test('hidden PATH keeps explicit preview access gated by its grant and source capability',async()=>{
+  const calls=[],owner='direct-path-preview',initialPreferences=JSON.stringify({selected:'path',favorites:['path'],lastLaunch:{path:456,world:123}});
+  const options={initialAuth:account(owner,['path']),initialPreferences,bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['path']}),openProductPreview:async id=>{calls.push(id);return {ok:true};},launch:async()=>assert.fail('PATH preview must not use installer launch')}};
+  const f=await fixture(options);assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.storage.get(viewKey(owner)),initialPreferences);
+  await f.action({command:'product-preview',client:'path'});await settleLibrary();assert.deepEqual(calls,['path']);assert.ok(JSON.parse(f.storage.get(viewKey(owner))).lastLaunch.path>456);
+  f.emit('auth',account(owner,[],{sessionGeneration:2}));await f.action({command:'product-preview',client:'path'});assert.deepEqual(calls,['path']);
+  const noCapability=await fixture({...options,bridgeOverrides:{...options.bridgeOverrides,getEnvironment:async()=>environment}});assert.equal(await noCapability.ready,'true');await noCapability.action({command:'product-preview',client:'path'});assert.deepEqual(calls,['path']);assert.equal(noCapability.storage.get(viewKey(owner)),initialPreferences);
 });
 
 test('failed, revoked and previous-account preview responses cannot add launch history',async()=>{
@@ -656,7 +681,7 @@ test('native benefit controls never fall back to anchors when capability or enti
 test('native benefit clicks retain the development guest catalogue without inventing an account',async()=>{
   const {createPublicApps}=require('../src/public-apps.cjs'),opened=[],publicApps=createPublicApps({clientId:'platform',mode:'development',accountStatus:()=>signedOut,openExternal:async url=>opened.push(url)});
   const f=await fixture({initialAuth:signedOut,bridgeOverrides:{getEnvironment:async()=>({...environment,clientId:'platform',nativeShell:true,publicAppsAvailable:publicApps.available()}),openPublicApp:publicApps.open}});
-  assert.equal(await f.ready,'true');await f.action({benefit:'care'});await f.clickPublicBenefit();assert.deepEqual(opened,['https://synk.im/care/']);assert.deepEqual(f.ids().sort(),['world','messenger','path','pulse'].sort());
+  assert.equal(await f.ready,'true');await f.action({benefit:'care'});await f.clickPublicBenefit();assert.deepEqual(opened,['https://synk.im/care/']);assert.deepEqual(f.ids().sort(),['world','messenger','pulse'].sort());assert.equal(f.element('account-label').textContent,'로그인');
 });
 
 test('Messenger and teacher rights share one card while teaching action keeps its own permission',async()=>{
