@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v06",
+ "text": "여러분은 어느 공지가 더 좋아요? 댓글로 알려 주세요.",
+ "show": "여러분은 어느 공지가 더 좋아요? 댓글로 알려 주세요.",
+ "dur": 3.09,
+ "words": [
+  {
+   "text": "여러분은",
+   "start": 0,
+   "end": 0.348
+  },
+  {
+   "text": "어느",
+   "start": 0.396,
+   "end": 0.554
+  },
+  {
+   "text": "공지가",
+   "start": 0.602,
+   "end": 0.887
+  },
+  {
+   "text": "더",
+   "start": 0.935,
+   "end": 0.998
+  },
+  {
+   "text": "좋아요?",
+   "start": 1.046,
+   "end": 1.347
+  },
+  {
+   "text": "댓글로",
+   "start": 2.076,
+   "end": 2.377
+  },
+  {
+   "text": "알려",
+   "start": 2.425,
+   "end": 2.567
+  },
+  {
+   "text": "주세요.",
+   "start": 2.615,
+   "end": 3.09
+  }
+ ],
+ "source": {
+  "key": "5a00dffe5167d366f54686ada62e26e8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

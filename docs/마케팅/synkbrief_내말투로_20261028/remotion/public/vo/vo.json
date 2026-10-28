@@ -1,0 +1,98 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018,
+  "lufs": -17
+ },
+ "made": "2026-10-28T06:48:17.184Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "에이아이 티 나는 이 공지가, 이렇게 내 말투로 바뀌었어요.",
+   "show": "AI 티 나는 이 공지가, 이렇게 내 말투로 바뀌었어요.",
+   "scene": "1 훅",
+   "dur": 3.08,
+   "syllablesPerSec": 7.47,
+   "src": "v01.wav",
+   "key": "4117f384bd8ee45863c7267c9b79f076",
+   "words": 9
+  },
+  {
+   "id": "v02",
+   "text": "같은 대화에 내가 전에 쓴 글 세 줄을 붙이고, 이 말투로 다시 써 줘.",
+   "show": "같은 대화에 내가 전에 쓴 글 세 줄을 붙이고, 이 말투로 다시 써 줘.",
+   "scene": "2 한 줄",
+   "dur": 3.907,
+   "syllablesPerSec": 6.4,
+   "src": "v02.wav",
+   "key": "8f4168d3202a06eadcf9344ce6112878",
+   "words": 14
+  },
+  {
+   "id": "v03",
+   "text": "이모지랑 해시태그는 다 빠지고, 내가 쓴 글처럼 됐어요.",
+   "show": "이모지랑 해시태그는 다 빠지고, 내가 쓴 글처럼 됐어요.",
+   "scene": "3 견줌",
+   "dur": 3.148,
+   "syllablesPerSec": 6.99,
+   "src": "v03.wav",
+   "key": "29c66a9d92300b196bbe346ec35d4435",
+   "words": 8
+  },
+  {
+   "id": "v04",
+   "text": "에이아이 글 티 나면, 내 글 세 줄 붙이고, 이 말투로 다시 써 줘.",
+   "show": "AI 글 티 나면, 내 글 세 줄 붙이고, 이 말투로 다시 써 줘.",
+   "scene": "4 정리",
+   "dur": 3.519,
+   "syllablesPerSec": 6.54,
+   "src": "v04.wav",
+   "key": "362c6f23b6ba7f92ff61123147df38eb",
+   "words": 14
+  },
+  {
+   "id": "v05",
+   "text": "여러분은 어느 공지가 더 좋아요?",
+   "show": "여러분은 어느 공지가 더 좋아요?",
+   "scene": "5 끝(v1 — v2부터 쓰지 않음)",
+   "dur": 1.495,
+   "syllablesPerSec": 8.7,
+   "src": "v05.wav",
+   "key": "e468c03cc5141b2db7f4fa97c5050cc3",
+   "words": 5
+  },
+  {
+   "id": "v06",
+   "text": "여러분은 어느 공지가 더 좋아요? 댓글로 알려 주세요.",
+   "show": "여러분은 어느 공지가 더 좋아요? 댓글로 알려 주세요.",
+   "scene": "5 끝(v2 초안 — 끝맺음 박을 넘겨 쓰지 않음)",
+   "dur": 3.09,
+   "syllablesPerSec": 6.8,
+   "src": "v06.wav",
+   "key": "5a00dffe5167d366f54686ada62e26e8",
+   "words": 8
+  },
+  {
+   "id": "v07",
+   "text": "어느 공지가 더 좋아요? 댓글로 알려 주세요.",
+   "show": "어느 공지가 더 좋아요? 댓글로 알려 주세요.",
+   "scene": "5 끝(v2 — 이해 시험 v1 「뭘 해야 하는지(댓글?)」로 할 일을 보탬, 「여러분은」은 빼서 끝맺음 박 안에)",
+   "dur": 2.439,
+   "syllablesPerSec": 6.97,
+   "src": "v07.wav",
+   "key": "3b238c3115cbdfab4ff5692c1b48496c",
+   "words": 7
+  }
+ ]
+}

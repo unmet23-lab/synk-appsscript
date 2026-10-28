@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "이모지랑 해시태그는 다 빠지고, 내가 쓴 글처럼 됐어요.",
+ "show": "이모지랑 해시태그는 다 빠지고, 내가 쓴 글처럼 됐어요.",
+ "dur": 3.148,
+ "words": [
+  {
+   "text": "이모지랑",
+   "start": 0.02,
+   "end": 0.379
+  },
+  {
+   "text": "해시태그는",
+   "start": 0.422,
+   "end": 0.852
+  },
+  {
+   "text": "다",
+   "start": 0.896,
+   "end": 0.953
+  },
+  {
+   "text": "빠지고,",
+   "start": 0.996,
+   "end": 1.341
+  },
+  {
+   "text": "내가",
+   "start": 1.886,
+   "end": 2.058
+  },
+  {
+   "text": "쓴",
+   "start": 2.101,
+   "end": 2.216
+  },
+  {
+   "text": "글처럼",
+   "start": 2.274,
+   "end": 2.575
+  },
+  {
+   "text": "됐어요.",
+   "start": 2.618,
+   "end": 3.148
+  }
+ ],
+ "source": {
+  "key": "29c66a9d92300b196bbe346ec35d4435",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

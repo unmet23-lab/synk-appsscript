@@ -1,0 +1,66 @@
+{
+ "A": [
+  {
+   "id": "v01",
+   "at": 4,
+   "speechEnd": 97,
+   "end": 97
+  },
+  {
+   "id": "v02",
+   "at": 123,
+   "speechEnd": 241,
+   "end": 241
+  },
+  {
+   "id": "v03",
+   "at": 267,
+   "speechEnd": 362,
+   "end": 362
+  },
+  {
+   "id": "v04",
+   "at": 372,
+   "speechEnd": 478,
+   "end": 478
+  },
+  {
+   "id": "v07",
+   "at": 489,
+   "speechEnd": 563,
+   "end": 563
+  }
+ ],
+ "B": [
+  {
+   "id": "v01",
+   "at": 4,
+   "speechEnd": 97,
+   "end": 97
+  },
+  {
+   "id": "v02",
+   "at": 123,
+   "speechEnd": 241,
+   "end": 241
+  },
+  {
+   "id": "v03",
+   "at": 267,
+   "speechEnd": 362,
+   "end": 362
+  },
+  {
+   "id": "v04",
+   "at": 372,
+   "speechEnd": 478,
+   "end": 478
+  },
+  {
+   "id": "v07",
+   "at": 489,
+   "speechEnd": 563,
+   "end": 563
+  }
+ ]
+}

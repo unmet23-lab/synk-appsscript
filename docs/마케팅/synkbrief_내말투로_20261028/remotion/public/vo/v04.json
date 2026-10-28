@@ -1,0 +1,106 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "에이아이 글 티 나면, 내 글 세 줄 붙이고, 이 말투로 다시 써 줘.",
+ "show": "AI 글 티 나면, 내 글 세 줄 붙이고, 이 말투로 다시 써 줘.",
+ "dur": 3.519,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.284
+  },
+  {
+   "text": "글",
+   "start": 0.33,
+   "end": 0.454
+  },
+  {
+   "text": "티",
+   "start": 0.532,
+   "end": 0.61
+  },
+  {
+   "text": "나면,",
+   "start": 0.656,
+   "end": 0.998
+  },
+  {
+   "text": "내",
+   "start": 1.107,
+   "end": 1.169
+  },
+  {
+   "text": "글",
+   "start": 1.231,
+   "end": 1.339
+  },
+  {
+   "text": "세",
+   "start": 1.386,
+   "end": 1.464
+  },
+  {
+   "text": "줄",
+   "start": 1.51,
+   "end": 1.619
+  },
+  {
+   "text": "붙이고,",
+   "start": 1.666,
+   "end": 1.976
+  },
+  {
+   "text": "이",
+   "start": 2.489,
+   "end": 2.504
+  },
+  {
+   "text": "말투로",
+   "start": 2.551,
+   "end": 2.846
+  },
+  {
+   "text": "다시",
+   "start": 2.892,
+   "end": 3.079
+  },
+  {
+   "text": "써",
+   "start": 3.125,
+   "end": 3.218
+  },
+  {
+   "text": "줘.",
+   "start": 3.265,
+   "end": 3.519
+  }
+ ],
+ "source": {
+  "key": "362c6f23b6ba7f92ff61123147df38eb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

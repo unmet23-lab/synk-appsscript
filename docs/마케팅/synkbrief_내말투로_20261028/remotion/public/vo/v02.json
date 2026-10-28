@@ -1,0 +1,106 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "같은 대화에 내가 전에 쓴 글 세 줄을 붙이고, 이 말투로 다시 써 줘.",
+ "show": "같은 대화에 내가 전에 쓴 글 세 줄을 붙이고, 이 말투로 다시 써 줘.",
+ "dur": 3.907,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.249
+  },
+  {
+   "text": "대화에",
+   "start": 0.294,
+   "end": 0.599
+  },
+  {
+   "text": "내가",
+   "start": 0.781,
+   "end": 0.949
+  },
+  {
+   "text": "전에",
+   "start": 0.995,
+   "end": 1.208
+  },
+  {
+   "text": "쓴",
+   "start": 1.253,
+   "end": 1.406
+  },
+  {
+   "text": "글",
+   "start": 1.466,
+   "end": 1.588
+  },
+  {
+   "text": "세",
+   "start": 1.634,
+   "end": 1.71
+  },
+  {
+   "text": "줄을",
+   "start": 1.771,
+   "end": 1.954
+  },
+  {
+   "text": "붙이고,",
+   "start": 1.999,
+   "end": 2.319
+  },
+  {
+   "text": "이",
+   "start": 2.821,
+   "end": 2.837
+  },
+  {
+   "text": "말투로",
+   "start": 2.897,
+   "end": 3.248
+  },
+  {
+   "text": "다시",
+   "start": 3.293,
+   "end": 3.506
+  },
+  {
+   "text": "써",
+   "start": 3.552,
+   "end": 3.628
+  },
+  {
+   "text": "줘.",
+   "start": 3.674,
+   "end": 3.907
+  }
+ ],
+ "source": {
+  "key": "8f4168d3202a06eadcf9344ce6112878",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}
