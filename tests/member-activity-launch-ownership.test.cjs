@@ -24,14 +24,14 @@ test('a failed native launch cannot create an observation',async()=>{
 const popupBody=source.slice(source.indexOf('function openActivityWindow('),source.indexOf('function route()'));
 const createPopupOpener=new Function('window','notice','dispatch',popupBody+'\nreturn openActivityWindow;');
 const mountLine=source.split('\n').find(line=>line.startsWith('continuity=mountPlatformLibrary('));
-const createLibraryOpen=new Function('mountPlatformLibrary','continuityRoot','shortcutDestination','location','clients','config','messengerUrl','accountEntryReady','accountEntryUnavailable','publicEntry','openActivityWindow','libraryItemRoute',`let continuity;${mountLine}\nreturn continuity.onOpen;`);
+const createLibraryOpen=new Function('mountPlatformLibrary','continuityRoot','shortcutDestination','location','clients','config','messengerUrl','accountEntryReady','accountEntryUnavailable','publicEntry','openActivityWindow','libraryItemRoute','browserGuest',`let continuity;${mountLine}\nreturn continuity.onOpen;`);
 test('the actual library open callback preserves the page and records only a successfully opened window',()=>{
   for(const mode of ['unverified','blocked','navigation-failed','opened']){
     const actions=[],notices=[],opened=[],navigated=[];let unavailable=0,closed=0;
     const popup={opener:{},location:{replace(href){if(mode==='navigation-failed')throw Error('synthetic navigation failure');navigated.push(href);}},close(){closed++;}};
     const openActivityWindow=createPopupOpener({open:(...args)=>{opened.push(args);return mode==='blocked'?null:popup;}},text=>notices.push(text),action=>actions.push(action));
     const location={href:'https://platform.example/',hash:'',assign(){throw Error('must preserve the current page until activity save finishes');}};
-    const onOpen=createLibraryOpen((_,options)=>options,{},()=>({kind:'web',href:'https://world.example/'}),location,[],{},null,()=>mode!=='unverified',()=>unavailable++,(id,href)=>href+'#handoff='+id,openActivityWindow,id=>'#app/'+id);
+    const onOpen=createLibraryOpen((_,options)=>options,{},()=>({kind:'web',href:'https://world.example/'}),location,[],{},null,()=>mode!=='unverified',()=>unavailable++,(id,href)=>href+'#handoff='+id,openActivityWindow,id=>'#app/'+id,()=>false);
     onOpen('world');
     assert.equal(unavailable,mode==='unverified'?1:0);assert.equal(opened.length,mode==='unverified'?0:1);
     assert.deepEqual(actions,mode==='opened'?[{type:'launch',id:'world',mode:'web'}]:[]);
