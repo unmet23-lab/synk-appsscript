@@ -672,6 +672,38 @@ C["2-10"]["xref"] = ("2-10e", "Image {n} is the same hallway seen from the same 
                      "match the hallway, the doors, the floor and the camera height exactly; Ian stands behind her where he is in that "
                      "image, hidden by her body.")
 NOLOC2 = {"1-22", "1-23", "1-37", "2-1", "2-19", "2-34"}
+# 10-28 Opus 3차(git 밖 콘티/p7/검수/opus_이미지콘티_3차/답.md) — 같은 장면의 이어짐이 끊긴 중 넷 + 1-37 하(36차). 장소 그림 대신 같은 장면의 정지컷을 참고로(xref)
+C["1-23"]["t"] = ("The camera stands inside the hallway about 2 m from the inner door, which is the same light wooden-framed hinged door with a "
+                  "3 by 5 grid of frosted glass panes as in the previous shot, now swung open inward. Ian, in his suit, is just stepping in "
+                  "through that doorway, in the left-middle of the frame (his head about 15% of the frame width). The lower part of his face is "
+                  "hidden by Seojin passing right in front of the camera — she covers the left half of the frame, very large and very blurred "
+                  "(sage-green apron, white long sleeves). The focus is on Ian. No white sliding door, no wired glass, no deep hallway.")
+C["1-23"]["xref"] = ("1-22", "Image {n} is the inner door from the previous shot — the door in this shot is exactly this door (same wood, same "
+                             "frosted grid), now open.")
+C["1-39"]["t"] = ("Close-up near desk height: like the shots before and after, Minjae lies slumped over the desk; Ian's arm in a navy suit sleeve "
+                  "lies across the desk and wraps around Minjae's neck and shoulder from the upper left, and Minjae rests his head sideways on "
+                  "that arm so his mouth is hidden against it — the arm does not press on his mouth and no hand grabs his face. Minjae's eyes "
+                  "look toward the lower right of the frame, not into the lens. In the upper left corner Ian's chin and mouth just peek in.")
+C["2-10"]["t"] = ("The camera is about 40 cm above the floor, tilted slightly up. Seojin in her burgundy knit dress, holding a small handbag, "
+                  "walks toward the camera; her torso and the arm holding the bag block the frame from about 25% to 68% of its width, so the "
+                  "spot in front of the entrance door at the far end — where Ian stands a moment later — is completely hidden "
+                  "behind her. To her right only the shoe-cabinet wall and the wooden grid glass door show. Her face is cut off above the top "
+                  "edge of the frame.")
+C["2-34"]["t"] += (" Only one dining table in the room — no second table or set of chairs.")
+C["2-34"]["xref"] = ("2-33", "Image {n} shows Ian in this scene: the blurred man in the foreground is him — the same oatmeal long-sleeve top "
+                             "and wavy brown hair (not navy, not black).")
+C["2-38"]["t"] += (" Only one dining table in the room — no second table or set of chairs.")
+C["1-37"]["t"] += (" Ian is taking a step in from the left edge toward Minjae, his body and face turned into the frame.")
+# 2차 「하」 다섯(35차, 2-38과 한 차례에): 원본 첫 프레임의 시작 자세 · 표정에 맞춘다
+C["1-1"]["t"] += " Minjae's eyes are wide open and his mouth hangs open in surprise."
+C["1-3"]["t"] = (f"Insert from above at about 50 degrees, 85mm lens: the whole empty square side-dish compartment of {LUNCH} sits in the upper "
+                 "middle of the frame — completely empty and clean, a pair of light wooden chopsticks lying inside the empty compartment. "
+                 "Around it only the out-of-focus edge of the box and a pale blur; no desk or office visible.")
+C["1-7"]["t"] = ("Close-up of Ian in clean side profile facing the right edge, 85mm lens: he drinks water from a clear glass held to his lips "
+                 "with his right hand, eyes open, calm — the moment just before he chokes. The kitchen behind is soft and warm.")
+C["1-8"]["t"] += (" He is still bent forward from the cough, eyes squeezed shut, just starting to straighten up.")
+C["2-40"]["t"] += (" Her reaching hand does not hold any door frame or wall; behind her is the kitchen, and the dining table where he sits is "
+                   "off frame to the right.")
 
 # 장소 참조를 넣지 않는 인서트 · 접사(10-27): 현장 노트 「물건 인서트에 방 사진만 참고로 주면 사람이 앉은 방 전경을 그린다」 · 넓은 방 사진이 가까운 컷을 넓게 끈다
 NOLOC = {"1-2", "1-3", "1-24", "1-26", "1-27", "1-28", "1-41", "1-43", "2-3", "2-4", "2-12", "2-25", "2-10", "2-36", "2-37", "2-43", "2-44", "2-48"}   # 2-36: 10-28 부엌 사진이 컷을 넓게 끌었다
