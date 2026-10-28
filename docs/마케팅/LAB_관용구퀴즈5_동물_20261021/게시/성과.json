@@ -204,6 +204,11 @@
               "views": 857,
               "likes": 2,
               "comments": 0,
+              "shares": 0,
+              "averageWatchSeconds": 12,
+              "averageViewPct": 35.68,
+              "subscribersGained": 1,
+              "subscribersLost": 0,
               "stayedToWatchPct": 23.3
             },
             "평소대비": {
@@ -214,7 +219,7 @@
             "위치": {},
             "판정": "자료 부족",
             "다음": null,
-            "까닭": "견줄 이전 편이 모자란다(본 비율 3편 — 4편부터)"
+            "까닭": "견줄 이전 편이 모자란다(공유 3편 · 평균 시청 3편 · 평균 조회율 3편 · 본 비율 3편 — 4편부터)"
           }
         },
         "화면필요": [],
