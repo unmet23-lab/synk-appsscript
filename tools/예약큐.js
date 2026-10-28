@@ -26,6 +26,9 @@
  * 10-26 매일 판 · 비축 목표 4일(유호님 「하루에 모든 계정에 하나씩 … 며칠 전에 이미 예약으로 준비해 둬야 해」, 결정 10-26):
  * sns-계정.json 계정의 dailyLine(07시가 하루 한 편을 만드는 「줄」)·dailyBlocked(막혀 셈에서 뺌)·dailyOff(매일 판 밖)를 읽어
  * 줄 표를 낸다. 줄의 비축 = 내일부터 그 줄의 (막힘 아닌) 모든 계정이 예약·게시인 날 수, 맨 위 비축은 줄 비축의 최솟값이다.
+ * dailyDays(예: "월수금")가 있는 계정은 그 요일에만 올린다 — 다른 요일의 빈 칸은 「쉼」(–)으로 비축에 들고 빈 칸이 아니다
+ * (10-28 yuhobuilds 주 3편 — 유호님 「그렇게 바꿔」). 쉬는 날에 편이 있으면 그 편대로 세고, 보류 판뿐이면 쉼이다.
+ * 요일 글자가 아닌 dailyDays는 줄을 조용히 멈추게 하니 exit 2로 막는다.
  * 블로그 판(naver-blog·tistory)은 쇼츠 주소가 공개 뒤에야 생겨 영상 뒤에 거니, 같은 편의 영상 판이 예약·게시면 채움으로 센다.
  * --알림은 21시 뒤 하루 한 번 비축이 4일보다 모자라면 빈 칸을 한 통으로 보내고(10-23 「비축 모자람 알리지 않음」을 되돌림),
  * 같은 날 같은 계정에 두 편 · 작업실 검토 링크가 승인 전에 만료되거나 24시간 안에 만료되면 경고에 넣는다(링크 자체는 읽지도 적지도 않는다).
@@ -73,6 +76,10 @@ function isDay(s) {
   const d = new Date(s + 'T00:00:00Z');
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
 }
+
+// 그 계정이 그날 쉬는지(dailyDays에 그 요일이 없으면 쉼). 쉬는 날의 보류 판은 나가지도 채울 것도 없으니 쉼으로 본다.
+const offDay = (a, day) => Boolean(a?.dailyDays) && !String(a.dailyDays).includes('일월화수목금토'[new Date(day + 'T00:00:00Z').getUTCDay()]);
+const resting = (list, a, day) => offDay(a, day) && list.every((p) => p.state === '보류');
 
 function readJson(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); } catch { return null; }
@@ -217,8 +224,11 @@ function accountRows(items, range, accounts = {}) {
   }
   for (const [key, a] of Object.entries(accounts)) if (a.dailyLine && !a.dailyBlocked) rowOf(key, a.dailyLine.startsWith('LAB') ? 'LAB' : a.dailyLine);
   for (const row of rows.values()) {
+    row.off = range.filter((d) => resting(row.byDay[d], accounts[row.account], d));
     row.reserve = 0;
-    for (const d of range.slice(1)) { if (row.byDay[d].some((p) => p.done)) row.reserve += 1; else break; }
+    for (const d of range.slice(1)) {
+      if (row.byDay[d].some((p) => p.done) || row.off.includes(d)) row.reserve += 1; else break;
+    }
   }
   const order = (r) => (r.line ? LINE_ORDER.indexOf(r.line) + 1 || LINE_ORDER.length + 1 : LINE_ORDER.length + 2);
   return [...rows.values()].sort((a, b) => order(a) - order(b) || BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand) || a.account.localeCompare(b.account));
@@ -240,15 +250,19 @@ function lineRows(accountList, range, accounts) {
   return dailyLines(accounts).filter((l) => l.accounts.length).map((l) => {
     const byDay = {};
     for (const d of range) {
-      const cells = Object.fromEntries(l.accounts.map((a) => [a, cellState(byAccount.get(a)?.byDay[d] || [])]));
-      const states = Object.values(cells);
-      const mark = !states.length ? '·' : states.every((s) => s === '채움') ? '●' : states.some((s) => s === '고칠 것') ? '✗'
+      const cells = Object.fromEntries(l.accounts.map((a) => {
+        const list = byAccount.get(a)?.byDay[d] || [];
+        return [a, resting(list, accounts[a], d) ? '쉼' : cellState(list)];
+      }));
+      const all = Object.values(cells);
+      const states = all.filter((s) => s !== '쉼');
+      const mark = !all.length ? '·' : !states.length ? '–' : states.every((s) => s === '채움') ? '●' : states.some((s) => s === '고칠 것') ? '✗'
         : states.every((s) => s === '빔') ? '·' : states.every((s) => s === '보류') ? '×' : states.every((s) => s !== '빔') ? '○' : '◐';
       byDay[d] = { mark, cells };
     }
     const run = (ok) => { let n = 0; for (const d of range.slice(1)) { if (ok(byDay[d])) n += 1; else break; } return n; };
     return { line: l.line, accounts: l.accounts, byDay,
-      reserve: run((x) => x.mark === '●'), made: run((x) => Object.values(x.cells).every((s) => s === '채움' || s === '만듦')) };
+      reserve: run((x) => x.mark === '●' || x.mark === '–'), made: run((x) => Object.values(x.cells).every((s) => s === '채움' || s === '만듦' || s === '쉼')) };
   });
 }
 
@@ -304,12 +318,15 @@ function build(today, days, server, accounts, now) {
   for (const brand of BRANDS) {
     const mine = items.filter((x) => x.brand === brand && x.slot);
     const byDay = Object.fromEntries(range.map((d) => [d, mine.filter((x) => x.slot === d)]));
+    // 그 브랜드의 매일 판 계정이 모두 쉬는 요일이면 빈 날도 비축에 든다(dailyDays).
+    const daily = Object.values(accounts).filter((a) => a.dailyLine && !a.dailyBlocked && (a.dailyLine.startsWith('LAB') ? 'LAB' : a.dailyLine) === brand);
+    const off = range.filter((d) => daily.length && daily.every((a) => resting(byDay[d], a, d)));
     let reserve = 0;
     for (const d of range.slice(1)) {
-      if (byDay[d].some((x) => x.state === '채움')) reserve += 1; else break;
+      if (byDay[d].some((x) => x.state === '채움') || off.includes(d)) reserve += 1; else break;
     }
     const late = mine.filter((x) => x.deadline && x.state !== '채움' && x.deadline < (x.slot || today));
-    report.brands[brand] = { reserve, byDay, late };
+    report.brands[brand] = { reserve, byDay, late, off };
   }
   report.accounts = accountRows(items, range, accounts);
   report.lead = LEAD;
@@ -346,11 +363,11 @@ const WHY = { 빔: '만든 편 없음', 만듦: '승인·예약 전', '고칠 �
 function gapsOf(line, range) {
   const out = [];
   for (const d of range.slice(1, LEAD + 1)) {
-    const cells = line.byDay[d]?.cells || {};
-    const notDone = Object.entries(cells).filter(([, s]) => s !== '채움');
+    const live = Object.entries(line.byDay[d]?.cells || {}).filter(([, s]) => s !== '쉼');
+    const notDone = live.filter(([, s]) => s !== '채움');
     if (!notDone.length) continue;
     const kinds = [...new Set(notDone.map(([, s]) => s))];
-    const whole = notDone.length === Object.keys(cells).length && kinds.length === 1;
+    const whole = notDone.length === live.length && kinds.length === 1;
     out.push(`${d.slice(5)} ${whole ? WHY[kinds[0]] : notDone.map(([a, s]) => `${a} ${WHY[s]}`).join(', ')}`);
   }
   return out;
@@ -359,7 +376,7 @@ function gapsOf(line, range) {
 function print(report) {
   const { range } = report;
   if (report.lines.length) {
-    console.log(`비축 ${report.reserve}일 / 목표 ${report.lead}일 · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔`);
+    console.log(`비축 ${report.reserve}일 / 목표 ${report.lead}일 · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔  – 쉬는 요일`);
     console.log('줄'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축  만듦');
     for (const l of report.lines) console.log(l.line.padEnd(12) + range.map((d) => l.byDay[d].mark.padEnd(5)).join('  ') + `  ${l.reserve}일   ${l.made}일`);
     for (const l of report.lines) { const gaps = gapsOf(l, range); if (gaps.length) console.log(`  ${l.line} 빈 칸: ${gaps.join(' · ')}`); }
@@ -369,11 +386,11 @@ function print(report) {
   console.log('브랜드'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축');
   for (const brand of BRANDS) {
     const b = report.brands[brand];
-    console.log(brand.padEnd(12) + range.map((d) => mark(b.byDay[d]).padEnd(5)).join('  ') + `  ${b.reserve}일`);
+    console.log(brand.padEnd(12) + range.map((d) => (b.off.includes(d) ? '–' : mark(b.byDay[d])).padEnd(5)).join('  ') + `  ${b.reserve}일`);
   }
   if (report.accounts.length) {
-    console.log(`계정별 · ● 예약·게시  ○ 승인 대기·준비  ✗ 고칠 것  · 빔`);
-    for (const row of report.accounts) console.log(row.account.slice(0, 22).padEnd(23) + range.map((d) => accountMark(row.byDay[d]).padEnd(5)).join('  ') + `  ${row.reserve}일`);
+    console.log(`계정별 · ● 예약·게시  ○ 승인 대기·준비  ✗ 고칠 것  · 빔  – 쉬는 요일`);
+    for (const row of report.accounts) console.log(row.account.slice(0, 22).padEnd(23) + range.map((d) => (row.off.includes(d) ? '–' : accountMark(row.byDay[d])).padEnd(5)).join('  ') + `  ${row.reserve}일`);
   }
   for (const brand of BRANDS) {
     for (const d of range) for (const x of report.brands[brand].byDay[d]) {
@@ -464,7 +481,7 @@ const LINE_WHAT = { 'LAB 영어': 'LAB 영어 편', 'LAB 몽골': 'LAB 몽골 �
 function accountTable(accounts) {
   const what = (key, a) => {
     if (a.dailyLine === 'LAB 두 채널') return a.platform === 'xiaohongshu' ? 'LAB 두 채널 판(간체)' : 'LAB 두 채널 판(버마어)';
-    const base = LINE_WHAT[a.dailyLine] || a.dailyLine;
+    const base = (LINE_WHAT[a.dailyLine] || a.dailyLine) + (a.dailyDays ? `(${[...String(a.dailyDays)].join(' · ')})` : '');
     return BLOG.has(a.platform) ? `${base}의 블로그 글` : base;
   };
   const rows = Object.entries(accounts).map(([key, a]) => {
@@ -484,6 +501,9 @@ function accountTable(accounts) {
 async function main() {
   const days = Math.max(1, Number(argValue('--일수') || 5) || 5);
   const accounts = (readJson(path.join(ROOT, 'sns-계정.json')) || {}).accounts || {};
+  // 요일 글자가 아닌 dailyDays(「MWF」 등)는 모든 날을 쉼으로 만들어 그 줄이 조용히 멈추니 막는다.
+  const badDays = Object.entries(accounts).filter(([, a]) => a.dailyDays !== undefined && !/^[일월화수목금토]+$/.test(String(a.dailyDays)));
+  if (badDays.length) { console.error(`dailyDays는 요일 글자로만 적는다(예: "월수금"): ${badDays.map(([k, a]) => `${k}=${JSON.stringify(a.dailyDays)}`).join(', ')}`); process.exit(2); }
   if (process.argv.includes('--계정표')) { console.log(accountTable(accounts)); return; }
   // 시험용 --지금은 시각까지, --오늘은 그날 정오(한국 시각)를 지금으로 본다.
   const given = argValue('--지금') ? Date.parse(argValue('--지금')) : NaN;

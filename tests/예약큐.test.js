@@ -313,6 +313,39 @@ test('비축 알림은 21시 뒤 하루 한 번, 목표 4일보다 모자랄 때
   assert.deepEqual(r.reserveAlert, { sent: false, reason: 'enough' });
 });
 
+test('dailyDays 계정은 그 요일에만 — 다른 요일 빈 칸은 쉼(–)으로 비축에 들고 빈 칸이 아니며, 쉬는 날에 편이 있으면 그 편대로 센다', () => {
+  const base = path.join(매일, '요일');
+  fs.mkdirSync(base, { recursive: true });
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'yuhobuilds-youtube': { brand: 'yuhobuilds', platform: 'youtube', dailyLine: 'yuhobuilds', dailyDays: '월수금' },
+    'yuhobuilds-instagram': { brand: 'yuhobuilds', platform: 'instagram', dailyLine: 'yuhobuilds', dailyDays: '월수금' } } }));
+  // 오늘 10-28(수) · 10-29 목 쉼 · 10-30 금 두 계정 예약됨 · 10-31 토 유튜브만 승인 대기 · 11-01 일 쉼
+  편('y-30', 한편('yuhobuilds', '2026-10-30', ['yuhobuilds-youtube', 'yuhobuilds-instagram']), 결과([['yuhobuilds-youtube', '예약됨'], ['yuhobuilds-instagram', '예약됨']]), base);
+  편('y-31', 한편('yuhobuilds', '2026-10-31', ['yuhobuilds-youtube']), 결과([['yuhobuilds-youtube', '승인 대기']]), base);
+  // 쉬는 날(일)의 보류 판은 나가지도 채울 것도 없으니 쉼 — 「새 편 칸」으로 올라가지 않는다
+  편('y-01', 한편('yuhobuilds', '2026-11-01', ['yuhobuilds-youtube']), 결과([['yuhobuilds-youtube', '보류']]), base);
+  const r = 매일큐(base, ['--오늘', '2026-10-28']);
+  const y = r.lines.find((l) => l.line === 'yuhobuilds');
+  assert.deepEqual(['2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01'].map((d) => y.byDay[d].mark), ['–', '●', '○', '–']);
+  assert.deepEqual(y.byDay['2026-10-31'].cells, { 'yuhobuilds-youtube': '만듦', 'yuhobuilds-instagram': '쉼' });
+  assert.deepEqual([y.reserve, y.made], [2, 4]);
+  assert.equal(r.brands.yuhobuilds.reserve, 2);
+  const row = (a) => r.accounts.find((x) => x.account === a);
+  assert.deepEqual([row('yuhobuilds-youtube').reserve, row('yuhobuilds-instagram').reserve], [2, 4]);
+  const out = spawnSync(process.execPath, [tool, '--폴더', base, '--오늘', '2026-10-28'], { encoding: 'utf8' }).stdout;
+  assert.match(out, /^ {2}yuhobuilds 빈 칸: 10-31 승인·예약 전$/m, '쉬는 요일은 빈 칸에 나오지 않는다');
+  assert.match(out, /^yuhobuilds-instagram +· +– +● +– +– +4일$/m);
+  assert.match(out, /^yuhobuilds +· +– +● +○ +– +2일$/m, '브랜드 표도 쉬는 날은 –');
+  assert.match(spawnSync(process.execPath, [tool, '--폴더', base, '--계정표'], { encoding: 'utf8' }).stdout, /\| yuhobuilds-youtube \|[^|]*\| yuhobuilds 편\(월 · 수 · 금\) \|/);
+  // 요일 글자가 아닌 값은 모든 날을 쉼으로 만들어 줄이 조용히 멈추니 막는다
+  const bad = path.join(매일, '요일-틀림');
+  fs.mkdirSync(bad, { recursive: true });
+  fs.writeFileSync(path.join(bad, 'sns-계정.json'), JSON.stringify({ accounts: { 'yuhobuilds-youtube': { brand: 'yuhobuilds', platform: 'youtube', dailyLine: 'yuhobuilds', dailyDays: 'MWF' } } }));
+  const refused = spawnSync(process.execPath, [tool, '--폴더', bad, '--오늘', '2026-10-28'], { encoding: 'utf8' });
+  assert.equal(refused.status, 2);
+  assert.match(refused.stderr, /dailyDays는 요일 글자로만/);
+});
+
 test('같은 날 같은 계정에 두 편이면 경고(블로그는 빼고), 작업실 검토 링크가 승인 전에 만료되거나 24시간 안이면 경고 — 링크 글자는 읽지도 적지도 않는다', () => {
   const base = 매일판('겹침', [
     ['en-a', 한편('LAB', '2026-10-23', ['lab-youtube']), null],
@@ -356,6 +389,7 @@ test('실제 sns-계정.json — 모든 계정이 매일 판 줄 · 매일 판 �
   for (const [key, a] of Object.entries(real)) {
     assert.equal(Boolean(a.dailyLine) !== Boolean(a.dailyOff), true, `${key}: dailyLine과 dailyOff 가운데 하나만`);
     if (a.dailyLine) assert.ok(lines.has(a.dailyLine), `${key}: 줄 이름 ${a.dailyLine}`);
+    if (a.dailyDays !== undefined) assert.match(String(a.dailyDays), /^[일월화수목금토]+$/, `${key}: dailyDays는 요일 글자로만`);
   }
 });
 
