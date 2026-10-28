@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "It's three!",
+ "dur": 0.902,
+ "words": [
+  {
+   "text": "It's",
+   "start": 0.02,
+   "end": 0.224
+  },
+  {
+   "text": "three!",
+   "start": 0.305,
+   "end": 0.902
+  }
+ ],
+ "source": {
+  "key": "35bfe54a79a9fa4bcc01c8ef56fcc241",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1028,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 472
+ }
+}

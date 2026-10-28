@@ -1,0 +1,16 @@
+{
+ "id": "01-ig-fb-mn",
+ "brand": "LAB",
+ "platform": "instagram+facebook",
+ "account": "@synk.mn · SYNK(synkworld)",
+ "format": "reels",
+ "language": "mn",
+ "audioLanguage": "zxx",
+ "caption": "Багшдаа анх удаа мессеж бичихдээ ингэж эхэлнэ ✍️\n«안녕하세요, 교수님. ○○입니다.» (аннёнхасэё, гёсуним. ○○имнида) — «Сайн байна уу, багш аа. Би ○○ байна.»\nСолонгост их сургуулийн багшийг «교수님» (гёсуним) гэж дууддаг.\n\nЭхлээд мэндчилээд, дараа нь нэрээ хэлнэ.\n❌ «교수님 안녕~ 내일 수업 몇 시?» — найзтайгаа ярьдаг энгийн хэллэг (반말). Багшдаа ингэж бичвэл эелдэг бус сонсогдоно.\n✅ «안녕하세요, 교수님. 바트입니다. 내일 수업은 몇 시예요?»\n\nБагш хариу бичсэний дараа «감사합니다» (гамсахамнида — Баярлалаа) гэж бичихээ бүү мартаарай.\n\nБагшдаа анх юу гэж бичсэн бэ? Сэтгэгдэлд бичээрэй 👇\n\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+ "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+ "alt": [
+  "A felt mascot and a phone chat with a professor (교수님): first two casual messages, 교수님 안녕~ and 내일 수업 몇 시?, get red ✕ stamps while a sweating mascot card says in Mongolian you can't write to your professor like this, only to friends. The messages are erased and rewritten politely: 안녕하세요, 교수님. (hello, professor) and 바트입니다. (I'm Bat), then 내일 수업은 몇 시예요? A card under each line shows the Korean, the Cyrillic reading and the Mongolian meaning. The professor replies 10시예요 (at 10), a green card says in Mongolian the professor replied, and the student answers 감사합니다! (thank you). The last card asks in Mongolian what you first wrote to your professor."
+ ],
+ "_비고": "video.mp4 = prof-mn v4(19.4초, 화면 글 몽골어 · 목소리 없음 · 배경음과 알림 소리, 렌더 → 음량마감 −14.6 LUFS → CBR 10M 다시 담기). Business Suite 릴스 하나로 인스타 @synk.mn · 페북 SYNK 교차 게시(M2 · M15와 같은 길). 틱톡 @synk.mn · 텔레그램 SYNK LAB(t.me/synkmn)은 같은 영상 · 같은 캡션(준비.json 판). Meta AI 번역(더빙 · 입 맞추기)은 끈다. 해시태그 4개. 첫 댓글(학습 허브)은 선택. 표지 cover.png = 0초(반말 문자 둘 + 땀 흘리는 몽글 «Багшдаа ингэж бичиж болохгүй!»).",
+ "version": "prof-mn-v4"
+}

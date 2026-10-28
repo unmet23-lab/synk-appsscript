@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "One, two, or three?",
+ "dur": 1.976,
+ "words": [
+  {
+   "text": "One,",
+   "start": 0.02,
+   "end": 0.323
+  },
+  {
+   "text": "two,",
+   "start": 0.646,
+   "end": 0.928
+  },
+  {
+   "text": "or",
+   "start": 1.21,
+   "end": 1.311
+  },
+  {
+   "text": "three?",
+   "start": 1.372,
+   "end": 1.976
+  }
+ ],
+ "source": {
+  "key": "ac60efe9369ad5e1fe1999a5ad0d2a14",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1028,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "You heard three Korean sounds.",
+   "next": "It's three!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 507
+ }
+}

@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "kp",
+ "text": "팔.",
+ "dur": 0.468,
+ "words": [
+  {
+   "text": "팔.",
+   "start": 0.06,
+   "end": 0.468
+  }
+ ],
+ "source": {
+  "key": "614c5a23d6862b2c4519f0d9a375cdfd",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -17,
+  "gainDb": null,
+  "limit": null,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 365
+ }
+}

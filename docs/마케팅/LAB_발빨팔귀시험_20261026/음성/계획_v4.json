@@ -1,0 +1,91 @@
+{
+  "note": "LAB E6 다시 살림(v4, 10-28 15시 회차) — 종이 시험을 0초에(팔 → 종이가 날림 · 빨 → 그대로), 귀 시험은 끝 댓글 놀이로. 해설은 머리말대로 소진 · 감정 세기 1.0(하나는 감탄사에서 배음이 엉킨다). 한국어 소리(팔 · 빨 · 발)는 몽글 몫으로 하나 목소리(seed 1026 · 옛 판과 같은 설정, −26 요청으로 새로 삼) — 소진은 「빨」이 다섯 판 모두 「바이」로 받아 적혀(팔 · 발은 됨) 셋을 같은 목소리로 맞출 수 없었다(유라 · 예나 · 가희 · 현지 · 혜진도 「빨」을 힌트 없이는 「발 · 바이」로). 하나 팔 · 빨은 seed 1026이 힌트 없이 그대로 받아 적히고, 발은 1026이 엉킴 92% · 「8(팔)」이라 seed 넷을 견줘 1029(엉킴 0% · 「발」)를 골랐다. 해설이 소리를 부르지 않게 h1은 「Which one has no air?」. b1 · n1은 seed 넷씩 견줘 엉킴(tools/목소리엉킴.py)과 최고 음높이가 낮은 것(b1 happy 1029 — 0% · 450Hz, n1 normal 1031 — 8% · 438Hz)을 골랐다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_발빨팔귀시험_20261026/음성/계획_v4.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1028,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo4",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "kp",
+      "text": "팔.",
+      "lang": "ko",
+      "voice": { "id": "tc_61659cc118732016a95fe7c6", "name": "하나" },
+      "seed": 1026,
+      "tempo": 0.9
+    },
+    {
+      "id": "kpp",
+      "text": "빨.",
+      "lang": "ko",
+      "voice": { "id": "tc_61659cc118732016a95fe7c6", "name": "하나" },
+      "seed": 1026,
+      "tempo": 0.9
+    },
+    {
+      "id": "kb",
+      "text": "발.",
+      "lang": "ko",
+      "voice": { "id": "tc_61659cc118732016a95fe7c6", "name": "하나" },
+      "seed": 1029,
+      "tempo": 0.9
+    },
+    {
+      "id": "b1",
+      "text": "Big puff!",
+      "emotion": "happy",
+      "seed": 1029
+    },
+    {
+      "id": "n1",
+      "text": "No air!",
+      "seed": 1031
+    },
+    {
+      "id": "e1",
+      "text": "Grab a paper and try it!",
+      "emotion": "happy"
+    },
+    {
+      "id": "h1",
+      "text": "Now you. Which one has no air?",
+      "emotion": "smart",
+      "prev": "That was the paper test. Now a quick ear test with three Korean sounds.",
+      "next": "One, two, or three?"
+    },
+    {
+      "id": "c1",
+      "text": "One, two, or three?",
+      "emotion": "smart",
+      "prev": "You heard three Korean sounds.",
+      "next": "It's three!"
+    },
+    {
+      "id": "r1",
+      "text": "It's three!",
+      "emotion": "happy"
+    },
+    {
+      "id": "c2",
+      "text": "One, or two?",
+      "emotion": "smart",
+      "prev": "You heard two Korean sounds. Which one has no air?",
+      "next": "It's two!"
+    },
+    {
+      "id": "r2",
+      "text": "It's two!",
+      "emotion": "happy"
+    }
+  ]
+}

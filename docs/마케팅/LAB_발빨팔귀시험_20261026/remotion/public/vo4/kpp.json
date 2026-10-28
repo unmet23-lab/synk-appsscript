@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "kpp",
+ "text": "빨.",
+ "dur": 0.561,
+ "words": [
+  {
+   "text": "빨.",
+   "start": 0.06,
+   "end": 0.561
+  }
+ ],
+ "source": {
+  "key": "fa3a1b351888500392a900198ecb8bc7",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 1026,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -17,
+  "gainDb": null,
+  "limit": null,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 245
+ }
+}

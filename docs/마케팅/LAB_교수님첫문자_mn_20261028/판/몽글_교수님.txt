@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — four scenes of "Mongle" for a short video about how a student writes a polite first text message to a university professor, needle-felted wool photography, one sheet.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). Make Mongle's wool a slightly lighter, warmer peach-coral than the background so it stands out clearly. No arms, no legs, no hands, ever. Mongle stands upright in all four cells, the same size in all cells. Props stand or lean beside the hem; Mongle never holds anything.
+
+Layout: one SQUARE image, 2 columns × 2 rows, four cells of equal size. One scene per cell, centered, the whole group filling about 62% of the cell height, with wide empty margins so the cells never touch. Seamless flat coral background (#F96859) across the whole image, flat even studio light, no floor line, only a very soft contact shadow, no reflections, no border lines. Absolutely no text, letters, numbers, logos or symbols anywhere — not on the phone screen, not on the name tag, not on bubbles.
+
+Cell 1 (top left) — "OH NO, I TEXTED MY PROFESSOR LIKE A FRIEND": Mongle NERVOUS and embarrassed (big glossy bead eyes wide open, a tiny wobbly worried mouth, pink cheeks, one light-blue felt sweat drop on the side of its head). Leaning against the right side of the hem stands a felt smartphone (charcoal felt frame, cream felt screen); on the screen two small butter-yellow felt speech bubbles. Above the phone floats a small red felt X shape made of two crossed thick felt strands.
+
+Cell 2 (top right) — "HELLO, PROFESSOR": Mongle POLITE and respectful, bowing — the whole body tilted forward about 30 degrees like a polite Korean bow, eyes closed as calm curved lines, a small neat closed smile, pink cheeks. Nothing else in the cell except two tiny cream felt sparkle shapes near its head.
+
+Cell 3 (bottom left) — "I'M BAT": Mongle PROUD and confident (bright open bead eyes, a small confident smile, pink cheeks, standing tall). Leaning against the left side of the hem stands a small blank cream felt name tag card with a mint-green felt border (completely blank, no writing).
+
+Cell 4 (bottom right) — "THE PROFESSOR REPLIED, THANK YOU!": Mongle HAPPY and relieved (eyes closed as happy upward arcs, wide open smiling mouth, extra-pink cheeks, body bouncing up a little). Leaning against the right side of the hem stands the same felt smartphone; on its screen one small mint-green felt speech bubble with a tiny pink felt heart. Three tiny butter-yellow felt sparkle shapes around Mongle's head.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft and warm, cute but not babyish (for teenagers and university students), consistent lighting in all four cells.

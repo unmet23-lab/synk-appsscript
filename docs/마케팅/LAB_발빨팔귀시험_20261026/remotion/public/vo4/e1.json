@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "Grab a paper and try it!",
+ "dur": 1.771,
+ "words": [
+  {
+   "text": "Grab",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "a",
+   "start": 0.343,
+   "end": 0.363
+  },
+  {
+   "text": "paper",
+   "start": 0.444,
+   "end": 0.848
+  },
+  {
+   "text": "and",
+   "start": 0.929,
+   "end": 1.05
+  },
+  {
+   "text": "try",
+   "start": 1.111,
+   "end": 1.393
+  },
+  {
+   "text": "it!",
+   "start": 1.474,
+   "end": 1.771
+  }
+ ],
+ "source": {
+  "key": "8b8c52d49459b204f86491cc6d1dd590",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1028,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 459
+ }
+}

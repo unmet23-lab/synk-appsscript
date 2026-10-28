@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "Now you. Which one has no air?",
+ "dur": 2.062,
+ "words": [
+  {
+   "text": "Now",
+   "start": 0.02,
+   "end": 0.221
+  },
+  {
+   "text": "you.",
+   "start": 0.322,
+   "end": 0.464
+  },
+  {
+   "text": "Which",
+   "start": 0.867,
+   "end": 1.069
+  },
+  {
+   "text": "one",
+   "start": 1.13,
+   "end": 1.231
+  },
+  {
+   "text": "has",
+   "start": 1.291,
+   "end": 1.392
+  },
+  {
+   "text": "no",
+   "start": 1.453,
+   "end": 1.513
+  },
+  {
+   "text": "air?",
+   "start": 1.634,
+   "end": 2.038
+  }
+ ],
+ "source": {
+  "key": "398e6e51ba4f82f1458e09e571c9d028",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1028,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "That was the paper test. Now a quick ear test with three Korean sounds.",
+   "next": "One, two, or three?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 452
+ }
+}

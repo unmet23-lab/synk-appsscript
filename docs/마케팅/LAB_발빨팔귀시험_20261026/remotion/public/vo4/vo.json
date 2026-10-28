@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획_v4.json",
+ "version": null,
+ "voice": {
+  "id": "tc_61659cc118732016a95fe7c6",
+  "name": "하나"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1026,
+  "lufs": -17
+ },
+ "made": "2026-10-28T06:58:56.801Z",
+ "lines": [
+  {
+   "id": "kp",
+   "text": "팔.",
+   "dur": 0.468,
+   "syllablesPerSec": 2.14,
+   "src": "kp.wav",
+   "key": "614c5a23d6862b2c4519f0d9a375cdfd",
+   "words": 1
+  },
+  {
+   "id": "kpp",
+   "text": "빨.",
+   "dur": 0.561,
+   "syllablesPerSec": 1.78,
+   "src": "kpp.wav",
+   "key": "fa3a1b351888500392a900198ecb8bc7",
+   "words": 1
+  },
+  {
+   "id": "kb",
+   "text": "발.",
+   "dur": 0.55,
+   "syllablesPerSec": 1.82,
+   "src": "kb.wav",
+   "key": "e517640f9986ad0bdde9e3eebda1311f",
+   "words": 1
+  },
+  {
+   "id": "b1",
+   "text": "Big puff!",
+   "dur": 0.738,
+   "syllablesPerSec": null,
+   "src": "b1.wav",
+   "key": "ba9880386d3535c31c6a01f0c5a734ab",
+   "words": 2
+  },
+  {
+   "id": "n1",
+   "text": "No air!",
+   "dur": 0.699,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "7bcfbdc9c88dc408f729a8a81af6847b",
+   "words": 2
+  },
+  {
+   "id": "e1",
+   "text": "Grab a paper and try it!",
+   "dur": 1.771,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "8b8c52d49459b204f86491cc6d1dd590",
+   "words": 6
+  },
+  {
+   "id": "h1",
+   "text": "Now you. Which one has no air?",
+   "dur": 2.062,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "398e6e51ba4f82f1458e09e571c9d028",
+   "words": 7
+  },
+  {
+   "id": "c1",
+   "text": "One, two, or three?",
+   "dur": 1.976,
+   "syllablesPerSec": null,
+   "src": "c1.wav",
+   "key": "ac60efe9369ad5e1fe1999a5ad0d2a14",
+   "words": 4
+  },
+  {
+   "id": "r1",
+   "text": "It's three!",
+   "dur": 0.902,
+   "syllablesPerSec": null,
+   "src": "r1.wav",
+   "key": "35bfe54a79a9fa4bcc01c8ef56fcc241",
+   "words": 2
+  },
+  {
+   "id": "c2",
+   "text": "One, or two?",
+   "dur": 1.549,
+   "syllablesPerSec": null,
+   "src": "c2.wav",
+   "key": "fe416d2f8cca7ab19ed2650c9bd96a5b",
+   "words": 3
+  },
+  {
+   "id": "r2",
+   "text": "It's two!",
+   "dur": 0.914,
+   "syllablesPerSec": null,
+   "src": "r2.wav",
+   "key": "c3c7092494d9041c96b814fffa7c471a",
+   "words": 2
+  }
+ ]
+}
