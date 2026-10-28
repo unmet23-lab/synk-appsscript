@@ -8,6 +8,9 @@ const fixture = () => {
   const inp = structuredClone(base), L = inp.lab;
   L.lightShare = 0.2;
   L.weekendShare = 0.5;
+  // 토요일 반 규칙을 재는 고정 값이라 08-01 편제(실마다 토요일 두 시간대 · 위성 강사 셋)를 직접 둔다 — 기본 가정은 10-28부터 토요일 정규가 없다
+  L.stages.v23.satSlotsPerRoom = 2;
+  L.staff.v23.satelliteHeads = 3;
   L.premiumUptake = 0.5;
   L.premiumSeats = { v23: 5 };
   L.prices = { m1: 100, m3: 100, m6: 100, m12: 100, light: 50, premiumAddon: 40 };
@@ -124,7 +127,11 @@ test('break-even opens weekday and Saturday classes separately, with their actua
       - weekday * 100 - sat * 20 - Math.ceil(weekday / 2) * 10 - headcount * 10 - fixed;
   };
   assert.ok(margin(result.students) >= 0 && margin(result.students - 0.1) < 0);
-  const actual = labClasses(base, 'v23', 117.4);
+  // 평일·토요일 반을 따로 올림하는지는 토요일반이 있던 08-01 입력(주말 1/3 · 실마다 토요일 두 시간대)으로 잰다
+  const with0801Saturday = structuredClone(base);
+  with0801Saturday.lab.weekendShare = 1 / 3;
+  with0801Saturday.lab.stages.v23.satSlotsPerRoom = 2;
+  const actual = labClasses(with0801Saturday, 'v23', 117.4);
   assert.equal(actual.classes, 10, 'the old combined rounding counted only nine classes');
   close(result.students * result.contrib, result.fixedAdj + margin(result.students));
 });

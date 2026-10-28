@@ -242,7 +242,7 @@ function run(inp, scName, opts = {}) {
   const lastPreOpen = addMonths(L.openMonth, -1);
   const partnerOpt = !!opts.partnerMode; // C안: 현지 파트너가 교실을 운영하고 SYNK는 사용료를 받음(처음부터)
   const forceStage2 = !!opts.forceStage2; // B안: 처음부터 교실 4개
-  const full4 = opts.labMode === 'full4'; // [10-19 기본] 08-01 4실 24반 직영: 77평을 처음부터 빌려 2실로 열고, 차면 한 실씩 연다
+  const full4 = opts.labMode === 'full4'; // [10-19 기본] 4실 직영(10-28부터 평일 16반 · 토요일 정규 없음 · 16명 댄스 스튜디오): 공간을 처음부터 빌려 2실로 열고, 차면 한 실씩 연다
   const hosted = opts.labMode === 'hosted'; // D안: 첫해는 기존 기관 안 SYNK반, 현금 기준을 채우면 직영 교실 2개
   const directFrom = hosted ? (opts.directFrom || L.hosted.directFrom) : null;
   let directStage = opts.directStage || 's1'; // D안에서 직영으로 옮길 때 처음 여는 단계 — SYNK반 교실이 3개가 되면 교실 4개로 간다(정원이 줄지 않게)
@@ -946,7 +946,7 @@ function unitEconomics(inp, scName, res, y = 2029) {
 export { labBep, labPremium, labSaturdaySeats, labClasses, labCapacityV23, setPremiumClasses, run, summarize };
 // import로 계산 규칙을 시험할 때 저장된 사업 문서를 덮어쓰지 않는다.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-// [10-19 유호님 「4실 기준」] 본 결과는 08-01 확정 4실 24반 직영이다. 모자라는 돈은 투자·차입으로 채운다고 보고(2절 「필요 자금」) 멈춤 규칙은 쓰지 않는다.
+// [10-19 유호님 「4실 기준」 · 10-28 「16명으로 바꿔」] 본 결과는 4실 직영(10-28 시간표)이다. 모자라는 돈은 투자·차입으로 채운다고 보고(2절 「필요 자금」) 멈춤 규칙은 쓰지 않는다.
 // D안(첫해 기존 기관 안 SYNK반 → 현금 기준을 채우면 직영)과 A안(직영 교실 2개)은 비교로 둔다
 const MAIN = { labMode: 'full4', stopRule: false };
 const DPLAN = { labMode: 'hosted', stopRule: true }; // D안은 멈춤 규칙까지 계획의 일부로 돌린다
@@ -1208,7 +1208,7 @@ const opPlans = base.opPlan ? Object.fromEntries(planNames.map((p) => [p, runPla
 // 유학 몫 견주기(inputs.pathShareChecks): 세 지표마다 해마다(2027~2030) 영업이익과 유학 계약
 const planChecks = (base.pathShareChecks || []).map((ck) => ({ label: ck.label, byPlan: Object.fromEntries(planNames.map((p) => { const r = runPlan(p, { newOnly: ck.newOnly, all: ck.all }); return [p, { ebitda: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].ebitda])), contracts: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].path.contracts])), revenue2029: r.years[2029].revenue, contracts2029: r.years[2029].path.contracts, pathProfit2029: r.years[2029].path.profit, byC2029: Object.fromEntries(Object.entries(r.years[2029].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit }])), byCLast: Object.fromEntries(Object.entries(r.years[lastY].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit, ebitda: v.ebitda }])), need: r.need }]; })) }));
 // 운영 계획용 개원 전 관문 [제안 · 10-19, inputs.lab.opGate]: 몽골(보수적 지표) 운영 계획의 개원 달 등록에서 거꾸로 센 문의·체험·사전 등록 문턱과,
-// 못 미칠 때 몽골만 다시 센 값(24반을 다 열었는데 학원만 덜 참 · 학원과 유학이 함께 반쯤), 유학 첫 석 달 계약 문턱
+// 못 미칠 때 몽골만 다시 센 값(4실 반을 다 열었는데 학원만 덜 참 · 학원과 유학이 함께 반쯤), 유학 첫 석 달 계약 문턱
 const opGate = base.lab.opGate && opPlans ? (() => {
   const OG = base.lab.opGate; const L = base.lab; const A = L.acquisition; const P = base.path;
   const conv = A.leadToStudent['기본'];
@@ -1269,7 +1269,7 @@ const countryFacts = Object.fromEntries(Object.keys(base.countries).map((c) => {
   const bepC = labBep(inpC, inpC.scenarios['기본'], 'v23', { extraFixedMNT: LL.countryOverheadMNT || 0 });
   const demand = (y) => inpC.market.mongolia.newStudents * Math.pow(1 + inpC.market.growth, Math.max(0, y - inpC.market.baseYear));
   return [c, { name: base.countries[c].name, open: base.countries[c].open, scale: base.countries[c].scale || {}, cap4, students80: s80, seatEq, classes, avgClass80: s80 * seatEq / classes,
-    wkdFill80: s80 * wkdPer / (V.rooms * V.weekdaySlotsPerRoom * V.seatsPerClass), satFill80: s80 * satPer / (V.rooms * V.satSlotsPerRoom * V.seatsPerClass), seatFill80: s80 * seatEq / (classes * V.seatsPerClass), bepStudents: bepC.students,
+    wkdFill80: s80 * wkdPer / (V.rooms * V.weekdaySlotsPerRoom * V.seatsPerClass), satFill80: V.satSlotsPerRoom ? s80 * satPer / (V.rooms * V.satSlotsPerRoom * V.seatsPerClass) : 0 /* [10-28] 토요일 칸이 없으면 0 */, seatFill80: s80 * seatEq / (classes * V.seatsPerClass), bepStudents: bepC.students,
     demand2027: demand(2027), demand2028: demand(2028), demand2029: demand(2029), demand2030: demand(2030), demandBy: Object.fromEntries(planHz.years.map((y) => [y, demand(y)])), growth: inpC.market.growth, newStudents2025: inpC.market.mongolia.newStudents, inKorea: inpC.market.mongolia.studentsInKorea,
     m1KRW: inpC.lab.prices.m1 / fxC, m6KRW: inpC.lab.prices.m6 / fxC, admLabKRW: inpC.path.prices.admissionLab / fxC, admExtKRW: inpC.path.prices.admissionExternal / fxC,
     capexKRW: V.capexMNT / fxC, rentKRW: V.rentFixedMNT / fxC, teacherClassKRW: inpC.lab.staff.hoursPerClass * inpC.lab.staff.teacherHourly / fxC, counselorKRW: inpC.path.counselor.full / fxC,
@@ -1313,7 +1313,7 @@ const mnt = (x) => `${Math.round(x / 10000).toLocaleString('ko-KR')}만₮`;
 const n1 = (x) => (Number.isFinite(x) ? (Math.round(x * 10) / 10).toLocaleString('ko-KR') : '없음');
 const pct = (x) => `${Math.round(x * 100)}%`;
 let md = `# 계산 결과 (model.mjs가 만든 파일 — 손으로 고치지 않는다)\n\n기준일 ${base.asOf} · 환율 1원 = ${base.fx.mntPerKrw}₮, 1달러 = ${base.fx.krwPerUsd}원 · 금액은 원(₩) 기준, 「만」은 만 원\n\n`;
-md += `**본 결과는 08-01 확정 4실 24반 직영**(77평을 처음부터 빌려 2실 12반으로 열고 정원 85%를 두 달 넘기면 한 실씩 더 열어 4실 24반 · 평일 코어 11·14·15:30·18시 + 토요일 11·14시)이다. 모자라는 돈은 투자·차입으로 채운다고 보고 계산을 이어 갔다(2절 「필요 자금」). D안(첫해 기존 기관 안 SYNK반)과 A안(직영 교실 2개)은 2-2절에 비교로 둔다. 표의 「현금」은 정부 지원금 전용 통장을 뺀 **가용 현금**이다.\n\n`;
+md += `**본 결과는 4실 16반 직영(10-28 시간표)**(공간 ${n1(base.lab.stages.v23.areaM2 / 3.3058)}평을 처음부터 빌려 2실 8반으로 열고 정원 85%를 두 달 넘기면 한 실씩 더 열어 4실 16반 · 평일 코어 11:00·13:45·15:30·18:15 · 토요일 정규 없음 · 댄스는 16명 전용 스튜디오)이다. 08-01 4실 24반(토요일반 포함)과의 비교는 시간표안_비교.md에 있다. 모자라는 돈은 투자·차입으로 채운다고 보고 계산을 이어 갔다(2절 「필요 자금」). D안(첫해 기존 기관 안 SYNK반)과 A안(직영 교실 2개)은 2-2절에 비교로 둔다. 표의 「현금」은 정부 지원금 전용 통장을 뺀 **가용 현금**이다.\n\n`;
 md += `검산: ${checks.length ? checks.join(' / ') : '이상 없음(매출 합·정원·반 수·이익 나눔·지원금 통장·연 합계 대조, 4실·D·A안 세 가정 모두)'}\n\n`;
 const K = base.market; const fmt = (x) => Math.round(x).toLocaleString('ko-KR');
 const cname = (c) => base.countries[c].name;
@@ -1334,7 +1334,7 @@ if (opGate) {
   md += `\n### 운영 계획용 개원 전 관문(제안, 몽골)\n\n개원 달 등록 ${n1(og.target)}명 ÷ 문의→등록 ${pct(og.conv)} = 문의 ${og4(og.leads)}건(${og.months[0]}~${og.months[og.months.length - 1]}, 계절 가중 합 ${n1(og.wSum)}). 실 수별 정원 × ${pct(OGi.planFill)}: ${og.rooms.map((r) => `${r.rooms}실 ${r.classes}반 ${og4(r.students)}명(목표의 ${pct(r.share)})`).join(' · ')}. 구간 아래 끝에서 열 때 반 평균(좌석 환산): ${og.rooms.map((r) => `${r.rooms}실 ${n1(r.lowAvg)}명`).join(' · ')}. 개원 뒤 줄이는 선(한 실 적은 정원 × ${pct(OGi.closeFill)}): ${og.rooms.filter((r) => r.closeBelow).map((r) => `${r.rooms}실 ${og4(r.closeBelow)}명 아래(반 평균 ${n1(r.closeAvg)}명)`).join(' · ')}. 체험 수업 ${og.trialMonths.join('·')}. 문의 1건 값 문턱 ${og4(og.leadCostCap)}₮(경보 ${og4(og.leadCostAlarm)}₮), 광고 시험으로 모이는 문의 ${og4(og.adTestLeads.total)}건(${og.adTestLeads.months}달). 광고비를 개원 전에 앞당겨 쓰면(${mnt(og.adBeforeOpenMNT)}) 공사 전 현금 ${won(og.base80.cashBeforeBuild)} → ${won(og.early.cashBeforeBuild)}, 필요 자금 ${won(og.base80.need)} → ${won(og.early.need)}, 가장 낮은 현금 ${won(og.base80.minCash)} → ${won(og.early.minCash)}.\n\n| 점검 | 누적 몫 | 문의 목표 | 4실(${pct(og.bandMin[4])} 이상) | 3실(${pct(og.bandMin[3])} 이상) | 2실(${pct(og.bandMin[2])} 이상) | 체험 신청 | 등록 약속 상한 | 예상 약속(약속률 ${pct(OGi.promiseRate)}) | 4실 · 3실 · 2실 약속 선 |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|---|\n`;
   for (const c of og.checks) { const o = c.month === openM; md += `| ${c.month} | ${pct(c.share)} | ${og4(c.leads)} | ${o ? '—' : og4(c.leads4)} | ${o ? '—' : og4(c.leads3)} | ${o ? '—' : og4(c.leads2)} | ${og4(c.trialApps)} | ${og4(c.promise)} | ${og4(c.promiseExp)} | ${o ? '—' : `${og4(c.promise4)} · ${og4(c.promise3)} · ${og4(c.promise2)}`} |\n`; }
   md += `\n| 경우(몽골만) | 2027 | 2028 | 2029 | 가장 낮은 현금(달) | 필요 자금 |\n|---|---:|---:|---:|---:|---:|\n`;
-  for (const [lb, v] of [['운영 계획 · 학원 80%·유학 10%', og.base80], ['운영 계획 · 광고비를 개원 전에 앞당김', og.early], ...og.fill.map((f) => [`24반 · 학원 ${pct(f.labFill)}·유학 10%`, f]), [`24반 · 학원 ${pct(og.both.labFill)}·유학 ${pct(og.both.pathShare)}`, og.both]]) md += `| ${lb} | ${won(v.ebitda[2027])} | ${won(v.ebitda[2028])} | ${won(v.ebitda[2029])} | ${won(v.minCash)} (${v.minCashMonth}) | ${won(v.need)} |\n`;
+  for (const [lb, v] of [['운영 계획 · 학원 80%·유학 10%', og.base80], ['운영 계획 · 광고비를 개원 전에 앞당김', og.early], ...og.fill.map((f) => [`${base.lab.stages.v23.rooms * base.lab.stages.v23.weekdaySlotsPerRoom + base.lab.stages.v23.rooms * base.lab.stages.v23.satSlotsPerRoom}반 · 학원 ${pct(f.labFill)}·유학 10%`, f]), [`${base.lab.stages.v23.rooms * base.lab.stages.v23.weekdaySlotsPerRoom + base.lab.stages.v23.rooms * base.lab.stages.v23.satSlotsPerRoom}반 · 학원 ${pct(og.both.labFill)}·유학 ${pct(og.both.pathShare)}`, og.both]]) md += `| ${lb} | ${won(v.ebitda[2027])} | ${won(v.ebitda[2028])} | ${won(v.ebitda[2029])} | ${won(v.minCash)} (${v.minCashMonth}) | ${won(v.need)} |\n`;
   const g = og.pathGate;
   md += `\n유학 관문: ${g.first.from}~${g.first.to} 계약 ${n1(g.first.contracts)}건(상담 ${g.first.fte}명, 그중 팀장 ${g.first.lead}명) · ${g.second.from}~${g.second.to} 재원생 계약 ${n1(g.second.labContracts)}건(전체 ${n1(g.second.contracts)}건)\n\n`;
 }
@@ -1400,7 +1400,7 @@ for (const s of scenarioNames) {
   const sm = summaries[s]; const r = results[s];
   md += `| ${s} | ${won(sm.minCash)} | ${sm.minCashMonth} | ${won(needFunding(sm))} | ${sm.firstPositive || '기간 안에 없음'} | ${sm.labFirstProfit || '기간 안에 없음'} | ${r.v23AddMonths[0] || '기간 안에 없음'} | ${r.v23AddMonths[1] || '기간 안에 없음'} | ${r.leadFrom || '기간 안에 없음'} |\n`;
 }
-md += `\n필요 자금은 가장 낮은 가용 현금이 0 아래로 내려간 만큼에 여유 ${won(base.funding.expansionBuffer.safetyKRW)}을 더한 값이다. 공사·비품 ${mnt(base.lab.stages.v23.capexMNT)}(옛 81평 4실안 조사 기준 계획) · 77평 보증금 ${base.lab.stages.v23.depositMonths}달 · 임대 월 ${mnt(base.lab.stages.v23.rentFixedMNT)}(08-01 기록) · 몽골 법인 출자 ${won(base.funding.mongoliaFdiUSD * base.fx.krwPerUsd)}(10만 100달러) 기준.\n`;
+md += `\n필요 자금은 가장 낮은 가용 현금이 0 아래로 내려간 만큼에 여유 ${won(base.funding.expansionBuffer.safetyKRW)}을 더한 값이다. 공사·비품 ${mnt(base.lab.stages.v23.capexMNT)}(옛 81평 4실안 조사 기준 계획 + 16명 스튜디오 어림) · 보증금 ${base.lab.stages.v23.depositMonths}달 · 임대 월 ${mnt(base.lab.stages.v23.rentFixedMNT)}(08-01 기록 77평 1,500만₮의 ㎡당 값 × ${n1(base.lab.stages.v23.areaM2)}㎡) · 몽골 법인 출자 ${won(base.funding.mongoliaFdiUSD * base.fx.krwPerUsd)}(10만 100달러) 기준.\n`;
 md += `\nLAB 손익분기(기본 가정, 학생 수): 4실 직영 ${n1(bepDetail.v23.students)}명(반 평균 ${n1(bepDetail.v23.classSize)}명에서, 학생 1명 월 매출 ${mnt(bepDetail.v23.revPer)}, 학생당 변동비 ${mnt(bepDetail.v23.varPer)}). 정원(실용): 2실 ${n1(capDetail.v23r2)}명 · 3실 ${n1(capDetail.v23r3)}명 · 4실 ${n1(capDetail.v23r4)}명(설계 384석, 학생이 적을 때 반이 덜 차는 것을 반영).\n`;
 md += `\n### 2-2. 비교: D안(첫해 기존 기관 안 SYNK반)\n\n| 가정 | 2027 영업이익 | 2028 | 2029 | 가장 낮은 현금(달) | SYNK반 교실 3개 | 직영 이전 | 교실 4개 |\n|---|---:|---:|---:|---:|---|---|---|\n`;
 for (const s of scenarioNames) { const d = dPlan[s]; md += `| ${s} | ${won(d.sum.years[2027].ebitda)} | ${won(d.sum.years[2028].ebitda)} | ${won(d.sum.years[2029].ebitda)} | ${won(d.sum.minCash)} (${d.sum.minCashMonth}) | ${d.res.hostAddFrom || '없음'} | ${moveText(d.res.fdi)} | ${d.res.s2Start || '기간 안에 없음'} |\n`; }
@@ -1432,7 +1432,7 @@ for (const r of results['기본'].rows) {
   if (!['01', '04', '07', '09', '12'].includes(r.m.slice(5)) && r.m !== '2026-10') continue;
   md += `| ${r.m} | ${r.lab.stage || '-'} | ${r.lab.rooms || '-'} | ${Math.round(r.lab.students)} | ${r.lab.classes}${r.lab.classes ? ` (${n1(r.lab.classSize)})` : ''} | ${won(r.labKRW.revenue)} | ${won(r.labKRW.profit)} | ${won(r.pathKRW.revenue)} | ${won(r.online.revenue)} | ${won(r.pulse.revenue)} | ${won(r.shift.revenue)} | ${won(r.ebitdaKRW)} | ${won(r.cash.free)} | ${Math.round(r.hours.total)}h |\n`;
 }
-md += `\n단계: pre 준비(77평 공사·채용) · v23 4실 24반 직영(교실 칸은 연 실 수). 반(평균)은 평일 + 토요일 반 수와 반 평균 인원.\n`;
+md += `\n단계: pre 준비(공사·채용) · v23 4실 16반 직영(교실 칸은 연 실 수). 반(평균)은 평일 반 수와 반 평균 인원.\n`;
 md += `\n### 사람을 데려오는 마케팅(4실 직영 기본)\n\n그달 LAB에 오려는 사람 = 울란바토르 준비 인원 ÷ 12 × LAB이 잡는 몫 × 계절. 그 가운데 ${pct(base.market.paidShare)}가 광고로 온다고 보고 광고비 = 그 수 × 광고로 학생 1명을 데려오는 값(기본 ${base.lab.acquisition.cacMNT['기본'].toLocaleString('ko-KR')}₮)으로 붙였다. 문의 가운데 ${n1(base.lab.acquisition.leadToStudent['기본'] * 100)}%(체험 40% × 등록 25%)가 등록한다고 보고 필요한 문의 수를 같이 적었다. 정원이 차면 그 달에 받지 못한 사람은 놓친 것으로 세고(다음 달로 넘기지 않음) 광고를 그만큼 쓰지 않는다.\n\n| 달 | 오려는 사람 | 받은 등록 | 놓친 사람 | 그중 광고 | 광고비 | 필요한 문의(전체) |\n|---|---:|---:|---:|---:|---:|---:|\n`;
 for (const r of results['기본'].rows) {
   if (!['2027-09', '2027-12', '2028-03', '2028-07', '2028-09', '2029-03', '2029-09'].includes(r.m)) continue;

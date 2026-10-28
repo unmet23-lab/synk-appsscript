@@ -9,6 +9,20 @@
 //   [가정]  아직 잴 수 없어 세운 값 — 첫 실측으로 바꾼다
 // 고칠 때는 이 파일만 바꾸고 `node model.mjs`를 다시 돌린다.
 
+// [10-28 유호님 「16명으로 바꿔」] 4실 공간: 08-01 배치(77평 254.5㎡ = A실 25평 큰 방 + B·C·D 13평 + 사무실 11평 + 상담 2평)에서
+//   A실을 B·C·D와 같은 13평(43.0㎡) 교실로 줄이고 댄스 전용 스튜디오를 더한다. 비교는 시간표안_비교.md(비교_시간표안.mjs가 같은 식을 쓴다).
+//   스튜디오 크기는 공간 설계 문서 기준(학생 1명당 4㎡ · 앞 강사 자리 2m · 뒤 1.2m · 양옆 0.5m): 16명 11.2m × 9m = 100.8㎡, 거울은 앞벽 폭 × 2.4m.
+//   월세는 08-01 기록(77평 월 1,500만₮)과 같은 ㎡당 값. 공사·비품은 08-01 기준 계획(434.6백만₮)에, 늘어난 넓이 × 개원 예산(10-01, 옛 6안 267.9㎡)의
+//   실내공사 ㎡당 값과 넓어진 댄스 바닥(㎡당 15만₮)·거울(㎡당 18만₮)을 더하고 VAT·운송·예비비 배율(산정액 ÷ 품목 소계)을 곱했다 — 견적 아님 [가정]
+export const space0801 = { areaM2: 254.5, rentFixedMNT: 15_000_000, capexMNT: 434_600_000, aRoomM2: 82.6, classM2: 43.0,
+  fitPerM2: 176_672_825 / 267.9, floorPerM2: 150_000, mirrorPerM2: 180_000, oldFloorM2: 66, oldMirrorM2: 22.56, factor: 434_584_724.5 / 339_704_762 };
+export function studioSpace(studioM2, mirrorM2) {
+  const S = space0801; const addM2 = studioM2 - (S.aRoomM2 - S.classM2); const areaM2 = Math.round((S.areaM2 + addM2) * 10) / 10;
+  const capexAdd = (addM2 * S.fitPerM2 + (studioM2 - S.oldFloorM2) * S.floorPerM2 + (mirrorM2 - S.oldMirrorM2) * S.mirrorPerM2) * S.factor;
+  return { studioM2, addM2, areaM2, rentFixedMNT: Math.round(S.rentFixedMNT * areaM2 / S.areaM2 / 1000) * 1000, capexMNT: Math.round((S.capexMNT + capexAdd) / 1000) * 1000 };
+}
+const STUDIO16 = studioSpace(100.8, 9 * 2.4);
+
 export default {
   asOf: '2026-10-18',
   timeline: { start: '2026-10', end: '2029-12' },
@@ -193,16 +207,18 @@ export default {
       // targetClassSize는 반이 가장 많이 찼을 때의 평균(1단계 12명, 2단계 13명). 학생이 적을 때는 classFill로 더 낮다
       s2: { label: '2단계 · 교실 4개(A+B 가변)', rooms: 4, areaM2: 300, slotsPerRoom: 4, seatsPerClass: 16, targetClassSize: 13, capexMNT: 160_000_000, depositMonths: 2,
         earliest: '2028-09', triggerFill: 0.85, triggerMonths: 2, setupMonths: 3 },
-      // [10-19 유호님 「4실 기준이고 … 주말반도 빠져있는것같아」] LAB 기본 = 08-01 확정 4실 24반 직영(반편성 정본 v2.3 · 급여 인센티브 정본 v3).
-      //   평일 코어 11:00·14:00·15:30·18:00 × 4실 = 16반, 토요일 11:00·14:00 × 4실 = 8반, 반마다 16석 → 384석(평일 256 + 토 128).
-      //   처음에는 2실(12반)로 열고 정원 85%를 두 달 넘기면 한 실씩 더 연다(setupSchedule(2) → (3) → ()). 공간은 처음부터 77평 전체를 빌린다.
-      //   rentFixedMNT [08-01 기록] 77평 임대 월 1,500만₮(10-02 기준으로는 공간 미선정 — 실제 매물로 바꿀 것)
-      //   capexMNT [10-01 조사 이력] 옛 81평 4실안 공사·비품 기준 계획 약 434.6백만₮(하한 291.1 · 상한 688.3), 공간 확보 뒤 준비 14주 → prepMonths 4
+      // [10-19 유호님 「4실 기준이고 … 주말반도 빠져있는것같아」] LAB 기본 = 4실 직영(반편성 정본 v2.3 · 급여 인센티브 정본 v3).
+      // [10-28 유호님 「16명으로 바꿔」] 10-28 시간표로 바꿨다: 평일 코어 11:00·13:45·15:30·18:15(90분, 사이 15분) × 4실 = 16반, 반마다 16석 → 256석.
+      //   토요일 정규(토 90분 + 녹화)는 없다(평일과 같은 값에 많이 팔리지 않을 가능성이 크다 — 유호님 10-28, 10-02 운영기준도 개원 판매에서 뺌).
+      //   위성은 10:00·12:45·17:15(50분)에 댄스(16명 전용 스튜디오)·한국어 회화(C실)·글로벌 영어(D실, 계산 밖)를 함께 연다. 라이트는 저녁 C·D실을 월수금반·화목토반이 나눠 쓴다.
+      //   처음에는 2실로 열고 정원 85%를 두 달 넘기면 한 실씩 더 연다. 공간은 처음부터 전체를 빌린다.
+      //   areaM2 · rentFixedMNT · capexMNT [가정 10-28]: 맨 위 space0801 · studioSpace(16명 스튜디오) — 08-01 77평 월 1,500만₮ · 공사 434.6백만₮(옛 81평 4실안 기준 계획, 하한 291.1 · 상한 688.3)에서 넓이만큼. 실제 매물로 바꿀 것
+      //   공간 확보 뒤 준비 14주 → prepMonths 4
       //   targetClassSize [검수 10-19 16 → 13] 시장 몫 방식의 실용 반 평균 상한(좌석의 81%, 1·2단계 12~13명과 같은 기준). 세 지표의 「4실 정원의 80%」는 설계 16석 기준이라 반 평균 약 12.8명으로 같은 수준
-      v23: { label: '4실 24반 직영(08-01 설계)', rooms: 4, startRooms: 2, areaM2: 254.5, rentFixedMNT: 15_000_000, slotsPerRoom: 6, weekdaySlotsPerRoom: 4, satSlotsPerRoom: 2,
-        seatsPerClass: 16, targetClassSize: 13, capexMNT: 434_600_000, depositMonths: 2, prepMonths: 4, addRoom: { triggerFill: 0.85, months: 2 } },
+      v23: { label: '4실 16반 직영(10-28 시간표)', rooms: 4, startRooms: 2, areaM2: STUDIO16.areaM2, rentFixedMNT: STUDIO16.rentFixedMNT, studioM2: STUDIO16.studioM2, slotsPerRoom: 4, weekdaySlotsPerRoom: 4, satSlotsPerRoom: 0,
+        seatsPerClass: 16, targetClassSize: 13, capexMNT: STUDIO16.capexMNT, depositMonths: 2, prepMonths: 4, addRoom: { triggerFill: 0.85, months: 2 } },
     },
-    weekendShare: 1 / 3, // [08-01 반편성 v2.3] 평일:주말 = 2:1(좌석 256:128). 주말반 = 토 90분 + 녹화 강의, 값은 평일 정규 과정과 같다(주말생에게 올액세스는 안 판다)
+    weekendShare: 0, // [10-28 유호님] 토요일 정규 없음. 08-01 반편성 v2.3은 평일:주말 = 2:1(좌석 256:128, 주말반 = 토 90분 + 녹화 강의, 평일과 같은 값)이었다 — 시간표안_비교.md
     // [아르곤 10-18] 학생이 적으면 레벨·시간대가 흩어져 반이 덜 찬다. 반 평균 = base + 좌석 수 ÷ perSeats(최소 min, 최대 그 단계 targetClassSize)
     // 좌석 40개면 9명, 60개면 10명, 100개면 12명. 첫 반년은 1~2레벨 위주로 받아 쪼개짐을 줄인다(운영 규칙)
     classFill: { base: 7, perSeats: 20, min: 8 },
@@ -228,7 +244,7 @@ export default {
     // [아르곤 10-18] 새 학원(특히 남의 기관 안 SYNK반)에서 6·12개월권을 일시불로 사는 사람은 적다 → 첫해는 1·3개월권 위주, 1년 뒤 후기가 쌓이면 늘어난다
     // 유호님 회화 반은 정규 시간대 사이의 60분 「위성 시간」에 연다(옛 급여 정본 2장). SYNK반은 이 시간을 기관 계약에 넣는다. 못 받으면 정규 시간대를 두 개 쓴다(민감도)
     premiumUsesRegularSlots: false,
-    premiumSeats: { v23: 24 }, // [08-01 반편성 v2.3] 원어민 회화 위성 10:00·13:00·17:00 세 묶음 × 16석(유호님 월 약 65시간)이었고, [10-22 유호님] 회화를 한 반으로 줄여 절반(24석, 월 약 32.5시간). 다른 단계는 회화 반 1개(16석)
+    premiumSeats: { v23: 24 }, // [08-01 반편성 v2.3] 원어민 회화 위성 10:00·13:00·17:00 세 묶음 × 16석(유호님 월 약 65시간)이었고, [10-22 유호님] 회화를 한 반으로 줄여 절반(24석, 월 약 32.5시간). 10-28 시간표에서는 한국어 회화를 10:00·12:45·17:15에 연다. 다른 단계는 회화 반 1개(16석)
     passMix: [ { from: '2027-09', v: { m1: 0.35, m3: 0.40, m6: 0.20, m12: 0.05 } }, { from: '2028-09', v: { m1: 0.25, m3: 0.35, m6: 0.30, m12: 0.10 } } ], // [가정]
     prepaidMonthsRemaining: { m1: 0, m3: 1, m6: 2.5, m12: 5.5 }, // 기간권 평균 남은 선수 개월
     // 몽골 물가(연 6~10%)를 따라 9월 새 학기마다 인건비·임대료 8%, 수강료 5%를 올린다 [아르곤 10-18 · 제안]
@@ -256,7 +272,7 @@ export default {
       topik: { months: [3, 4, 6, 9, 10], from: '2028-03', internalShare: 0.15, internalPrice: 150_000, external: 8, externalPrice: 250_000, teacherHours: 16, materialRate: 0.1 }, // [제안] 시험 전 4주 특강
       eps: { from: '2028-03', stages: ['s1', 's2', 'v23'], classes: 1, size: 14, price: 250_000 }, // [제안] EPS-TOPIK(고용허가제) 대비반. 4실은 코어 뒤 저녁 19:45 반(코어 정원을 줄이지 않음 · 페이블 4차), 옛 단계는 저녁 시간대 하나를 쓴다
       camp: { months: [1, 7, 8], from: '2028-01', stages: ['s1', 's2', 'v23'], participants: 20, price: 300_000, costRate: 0.35 }, // [제안] 방학 2주 집중 캠프 — 여름 비수기 메우기
-      danceExternal: { from: '2028-03', stages: ['s1', 's2', 'v23'], participants: 20, price: 100_000, costMNT: 400_000 }, // [제안] 외부 수강생 K-팝 댄스(주말, 가변 교실)
+      danceExternal: { from: '2028-03', stages: ['s1', 's2', 'v23'], participants: 20, price: 100_000, costMNT: 400_000 }, // [제안] 외부 수강생 K-팝 댄스(주말, 댄스 스튜디오 — 10-28 전에는 가변 교실)
       corporate: { from: '2028-06', contracts: 1, price: 3_000_000, costMNT: 1_100_000 }, // [제안] 현지 기업·기관 단체반 — 그 기업에 가서 가르쳐 교실이 필요 없다
       // [아르곤 10-18 · 새 돈 구멍] TOPIK IBT 실전 모의고사 + 약점 진단(외부 수험생, WORLD에서 온라인으로) — 강사 없이 높은 마진, 학원 문의도 된다
       mockTest: { months: [3, 5, 8, 10, 11], from: '2027-10', takers: { 보수: 15, 기본: 30, 상방: 50 }, price: 40_000, costRate: 0.1 },
@@ -270,8 +286,9 @@ export default {
       dance: 325_000, // [제안] 무료 댄스 주 2회 × 2.5시간(준비·복구 포함)
       cleaning: { host: 0, s1: 450_000, s2: 800_000, v23: 800_000 }, // [가정] 외부 용역
       // [08-01 급여 인센티브 정본 v3] 4실 편제의 위성 강사: 댄스 평일 10~18시 + 토(315만₮), 뷰티 10~14시·보컬 14~18시(각 126만₮).
-      //   토요일 코어 반은 코어 강사 토 5시간(휴일 2배) 630,000₮을 두 반이 나눈다 → 반당 315,000₮. 원장은 4실 편제에서 코어 반을 맡지 않는다
-      v23: { dance: 3_150_000, beauty: 1_260_000, vocal: 1_260_000, satClassCost: 315_000, directorTeachesClasses: 0 },
+      // [10-28 유호님] 뷰티·보컬은 뺐다 — 위성 강사는 댄스 한 명(스튜디오 하루 3회 + 코어 첫 5분 워밍업 동작 짜기). satelliteHeads = 기본 성과급을 받는 위성 강사 수
+      //   satClassCost: 토요일 코어 반(코어 강사 토 5시간 휴일 2배 630,000₮을 두 반이 나눔)의 반당 값 — 토요일 정규가 없어 지금은 쓰지 않는다. 원장은 4실 편제에서 코어 반을 맡지 않는다
+      v23: { dance: 3_150_000, beauty: 0, vocal: 0, satelliteHeads: 1, satClassCost: 315_000, directorTeachesClasses: 0 },
       teacherHourly: 15_000, // [확정 이력] 07-29 시급 15,000₮ — 준비·피드백 시간까지 쳐서 주는 값
       hoursPerClass: 43.3, // 90분×주5회×4.33주(수업 32.5시간) + 준비·피드백 10.8시간
       // [조사] 시장 한국어 시간강사 구인가는 수업 시간당 20,000₮(unegui 2026-10-01) → 수업 32.5시간 × 20,000₮ = 650,000₮로 반당 금액이 같다
