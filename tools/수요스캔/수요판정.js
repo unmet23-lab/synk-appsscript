@@ -167,13 +167,26 @@ function 설정검사(raw, 파일브랜드) {
     제외: 정규식(rs.제외, '검색.제외', 오류),
   };
 
+  // 인스타 릴스 계정(10-28, tools/수요스캔/릴스.js가 ego에서 읽는다) — 핸들만. 판정은 「릴스판정」, 없으면 틱톡판정과 같다
+  const 인스타 = [];
+  const 본인스타 = new Set();
+  if (raw.인스타 !== undefined && !Array.isArray(raw.인스타)) 오류.push('인스타는 목록이어야 한다');
+  for (const [i, t] of (Array.isArray(raw.인스타) ? raw.인스타 : []).entries()) {
+    const 핸들 = typeof t?.핸들 === 'string' ? t.핸들.replace(/^@/, '') : '';
+    if (!/^[A-Za-z0-9._]{1,30}$/.test(핸들)) { 오류.push(`인스타[${i}].핸들 「${t?.핸들}」가 인스타 핸들 꼴이 아니다`); continue; }
+    if (본인스타.has(핸들.toLowerCase())) 오류.push(`인스타 「${핸들}」가 두 번 나온다`);
+    본인스타.add(핸들.toLowerCase());
+    인스타.push({ 핸들 });
+  }
+  const 릴스판정 = raw.릴스판정 === undefined ? null : 판정값(raw.릴스판정, 기본.틱톡판정, '릴스판정', 오류);
+
   const 못잼 = [];
   for (const [i, m] of (Array.isArray(raw.못잼) ? raw.못잼 : []).entries()) {
     if (!m || typeof m.곳 !== 'string' || typeof m.계정 !== 'string' || typeof m.까닭 !== 'string') { 오류.push(`못잼[${i}]에 곳·계정·까닭이 다 있어야 한다`); continue; }
     못잼.push({ 곳: m.곳, 계정: m.계정, 까닭: m.까닭 });
   }
 
-  const 설정 = { 브랜드, 이름: raw.이름, 근거: raw.근거 || '', 판정, 틱톡판정, 유튜브, 틱톡, 검색, 못잼 };
+  const 설정 = { 브랜드, 이름: raw.이름, 근거: raw.근거 || '', 판정, 틱톡판정, 유튜브, 틱톡, 인스타, ...(릴스판정 ? { 릴스판정 } : {}), 검색, 못잼 };
   return { 설정: 오류.length ? null : 설정, 오류 };
 }
 

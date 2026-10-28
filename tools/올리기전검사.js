@@ -28,6 +28,12 @@
  *   ⑭ 목소리(10-28) — 편 폴더의 나레이션 줄 파일(나레이션굽기 vo.json 줄 · remotion/public/vo, 또는 준비.json 「목소리」에 적은 폴더)마다
  *      최고 음높이 560Hz 넘음 · Typecast 원본 잘림 · 영상보다 새 줄 파일(다시 산 목소리가 렌더에 안 들어감)을 고칠 것으로.
  *      ⑤에 더해 판 · 테두리 · 그림자 없이 그림 위에 바로 얹은 흰 글자(흰 기본 글자)도 고칠 것이다
+ *   ⑮ 원본과 나란히(10-28, tools/오마주.js — 제작 절차 「오마주」) — 편 폴더 오마주.json의 원본 박자 · 뼈대와 우리 영상을 같은 셈으로 견줘
+ *      뼈대(길이 · 칸 수 · 첫 2초 · 박자 · 반전 · 끝 자리)가 어긋나면 고칠 것 — 완전 일치는 보지 않는다(유호님 10-28 「완전 똑같이 할 필요는
+ *      없어」, 오마주.json 「다르게」에 무엇 · 까닭을 적은 항목은 확인할 것). 원본 컷을 눈으로
+ *      「확정」하지 않았으면 확인할 것. 10-29부터 만든 편 폴더(이름 끝 날짜)에 오마주.json도 준비.json 「원본없음」 까닭도 없으면 고칠 것.
+ *      나란히가 「다르게」 없이 다 맞고 원본 컷을 확정했으면, 원본도 같은 자리에서 멈췄거나 한 구성이 긴 ② · ⑬은 확인할 것으로 내린다 — 10-28 첫 예시(283만 회 원본)는
+ *      67%가 멈춘 정지 장면 아홉 칸이었다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -43,6 +49,7 @@ const 규칙 = require('./lib/게시글규칙.js');
 const 정지 = require('./정지구간.js');
 const 한구성 = require('./한구성.js');
 const 타입캐스트 = require('./lib/타입캐스트.cjs');
+const 오마주 = require('./오마주.js');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -286,7 +293,7 @@ function ocrCover(file, dir, label, { allowHan }) {
 }
 
 // ── 영상 하나 ──
-async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file) }) {
+async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null }) {
   const 사전 = await import(pathToFileURL(path.join(__dirname, '영상사전검사.mjs')).href);
   const 음량 = await import(pathToFileURL(path.join(__dirname, '음량마감.mjs')).href);
   const findings = [];
@@ -309,11 +316,15 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   const still = 정지.analyze(file);
   if (!still.pass) {
     const long = still.runs.filter((x) => !x.endCard).map((x) => `${x.start.toFixed(1)}~${x.end.toFixed(1)}초`);
-    add(FIX, 'still', `거의 멈춘 시간 ${still.still.toFixed(1)}초(${Math.round(still.ratio * 100)}%)${long.length ? ` · 1.5초 넘는 정지 ${long.join(', ')}` : ''} — 기준 15% 이하·끝 화면 말고 1.5초 넘는 정지 없음(v2 §2-4)`);
+    const 원본도 = homage && stillLikeOriginal(still, homage.orig);
+    add(원본도 ? LOOK : FIX, 'still', `거의 멈춘 시간 ${still.still.toFixed(1)}초(${Math.round(still.ratio * 100)}%)${long.length ? ` · 1.5초 넘는 정지 ${long.join(', ')}` : ''} — 기준 15% 이하·끝 화면 말고 1.5초 넘는 정지 없음(v2 §2-4)`
+      + (원본도 ? ` · 원본도 ${Math.round(homage.orig.멈춤.비율 * 100)}%가 멈췄고 나란히가 맞아 확인할 것으로 둔다(원본처럼 멈춘 칸마다 새 것이 나오는지 본다)` : ''));
   }
   const 구성 = 한구성.analyze(file);
   for (const s of 구성.long) {
-    add(FIX, 'one-composition', `${s.start.toFixed(1)}~${s.end.toFixed(1)}초 한 구성 ${s.length.toFixed(1)}초${s.endCard ? '(끝 화면 — 6초까지)' : ''} — 같은 장면에서 글 강조 · 테 · 밝기만 바뀌는 칸은 4초 안으로 줄이거나 장면을 바꾼다(제작 절차 3 · 10-28)`);
+    const 원본도 = homage && compositionLikeOriginal(s, homage.orig, 구성.segments.length ? 구성.segments[구성.segments.length - 1].end : s.end);
+    add(원본도 ? LOOK : FIX, 'one-composition', `${s.start.toFixed(1)}~${s.end.toFixed(1)}초 한 구성 ${s.length.toFixed(1)}초${s.endCard ? '(끝 화면 — 6초까지)' : ''} — 같은 장면에서 글 강조 · 테 · 밝기만 바뀌는 칸은 4초 안으로 줄이거나 장면을 바꾼다(제작 절차 3 · 10-28)`
+      + (원본도 ? ' · 원본도 같은 자리가 한 구성이고 나란히가 맞아 확인할 것으로 둔다' : ''));
   }
   if (!still.end) add(LOOK, 'end-card-unknown', '끝 화면을 재지 못했다(마지막 12초 안에 화면 전체가 바뀌는 컷이 없음) — 4초 안팎인지 눈으로 본다');
   else if (still.end.length < END_CARD[0] || still.end.length > END_CARD[1]) add(LOOK, 'end-card', `끝 화면 ${still.end.length.toFixed(1)}초(${still.end.start.toFixed(1)}초 컷부터) — v2 §2-4 「4초 안팎」`);
@@ -334,6 +345,70 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
       한구성: Math.round(구성.longest * 100) / 100,
       사전검사: path.relative(repo, report.reportPath).split(path.sep).join('/') },
   };
+}
+
+// ── ⑮ 원본과 나란히(10-28) ──
+// 오마주(제작 절차 「오마주」)는 원본 컷 · 박자 1:1이 기본이다. 10-29부터 만든 편 폴더는 원본이 있어야 하고(없으면 준비.json 「원본없음」에 까닭),
+// 원본이 정지 장면 칸으로 짜였으면 그만큼 멈춘 우리 편을 ② · ⑬이 막지 않게 한다 — 나란히가 맞을 때만.
+const HOMAGE_FROM = '20261029';
+
+// 원본에서도 우리 한 구성 자리(원본 길이에 맞춘 초)의 절반 넘게가 긴 한 구성이었나
+function compositionLikeOriginal(seg, orig, ourLength) {
+  const k = orig.길이 / (ourLength || orig.길이);
+  const a = seg.start * k, b = seg.end * k;
+  return (orig.긴구성 || []).some(([s, e]) => Math.min(b, e) - Math.max(a, s) >= 0.5 * (b - a));
+}
+
+function stillLikeOriginal(still, orig) {
+  return Boolean(orig.멈춤) && still.ratio <= orig.멈춤.비율 + 0.1;
+}
+
+function homageOf(bundle) {
+  const file = path.join(bundle.dir, '오마주.json');
+  return fs.existsSync(file) ? 묶음.readJson(file) : null;
+}
+
+// → { findings, per: Map(영상 → { orig, 맞음 }) }
+function homageFindings(bundle, videoFiles, { homage = homageOf(bundle), measure = 오마주.measure, probe = 오마주.probe } = {}) {
+  const findings = [];
+  const per = new Map();
+  const add = (level, code, where, message) => findings.push({ level, code, where, message });
+  if (!homage) {
+    const day = (String(bundle.name).match(/_(\d{8})$/) || [])[1];
+    const 까닭 = typeof bundle.prep.원본없음 === 'string' ? bundle.prep.원본없음.trim() : '';
+    if (!까닭 && day && day >= HOMAGE_FROM && videoFiles.length) { // 그림 여러 장 편처럼 영상 판이 없으면 묻지 않는다
+      add(FIX, 'homage-missing', '오마주', '원본 1:1이 기본이다(10-29부터, 제작 절차 「오마주」) — node tools/오마주.js 분해 <원본 주소> --편 <편 폴더>로 오마주.json을 만들거나, 원본 없이 만든 까닭을 준비.json 「원본없음」에 적는다');
+    }
+    return { findings, per };
+  }
+  const 원본 = homage.원본 || {};
+  if (!원본.주소 || !(Number(원본.길이) > 0) || !Array.isArray(homage.컷) || !homage.컷.length) {
+    add(FIX, 'homage-bad', '오마주.json', '원본 주소 · 길이 · 컷(시작 초)이 없다 — node tools/오마주.js 분해로 다시 만든다');
+    return { findings, per };
+  }
+  if (!오마주.갈래들.includes(homage.갈래)) add(FIX, 'homage-kind', '오마주.json', `「갈래」가 ${오마주.갈래들.join(' · ')} 가운데 하나가 아니다: ${homage.갈래 ?? '없음'}`);
+  if (!homage.확정) add(LOOK, 'homage-unconfirmed', '오마주.json', '원본 컷 · 박자를 눈으로 확정하지 않았다(칸.jpg · 첫3초.jpg로 보고 「확정」: true)');
+  const 뼈 = homage.뼈대 || {};
+  const 반전정함 = Number.isFinite(뼈.반전) || (뼈.반전 === null && homage.확정); // 반전이 없는 원본은 확정 뒤 null
+  if (!Number.isFinite(뼈.끝) || !반전정함) {
+    add(LOOK, 'homage-skeleton', '오마주.json', '「뼈대」(훅 · 반전 · 끝이 시작하는 원본 초 — 반전이 없는 원본이면 확정 뒤 null)를 칸을 보고 채우지 않았다');
+  }
+  const orig = { 길이: Number(원본.길이), 컷: homage.컷, 박자: homage.박자 || homage.컷, 뼈대: homage.뼈대 || null, 긴구성: homage.긴구성 || [], 멈춤: homage.멈춤 || null };
+  for (const file of videoFiles) {
+    let r;
+    try { r = 오마주.compare(orig, { 길이: probe(file).길이, ...measure(file) }, { 다르게: homage.다르게 }); } catch (error) {
+      add(LOOK, 'homage-failed', path.basename(file), `원본과 나란히 재지 못했다(${error.message}) — node tools/오마주.js 나란히 <편 폴더>`);
+      continue;
+    }
+    for (const x of r.항목) {
+      if (x.맞음) continue;
+      add(x.다르게 ? LOOK : FIX, 'homage-' + x.이름.replace(/\s+/g, ''), path.basename(file),
+        `원본과 ${x.이름}이 다르다 — ${x.글}${x.다르게 ? ` · 다르게: ${x.다르게}` : ' — 원본 1:1로 고치거나, 바꿀 까닭을 오마주.json 「다르게」에 적는다(제작 절차 「오마주」)'}`);
+    }
+    // ② · ⑬ 내림은 「다르게」 없이 모든 항목이 실제로 맞고 원본 컷을 눈으로 확정했을 때만(10-28 Fable P1 — 까닭 글만 적어 E8 꼴이 빠져나갔다)
+    per.set(file, { orig, 맞음: r.맞음, 그대로: Boolean(homage.확정) && r.항목.every((x) => x.맞음) });
+  }
+  return { findings, per };
 }
 
 // ── ⑭ 목소리(10-28) ──
@@ -661,6 +736,8 @@ async function run(dir, opts = {}) {
     add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — 4일 앞(D+4)에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
   }
 
+  const homage = homageFindings(bundle, [...videos.keys()]);
+  findings.push(...homage.findings);
   const fileSummaries = [];
   const ocrFindings = [];
   const screenTexts = [];
@@ -668,7 +745,8 @@ async function run(dir, opts = {}) {
   for (const [file, users] of videos) {
     try {
       const label = labelOf(bundle, file);
-      const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label });
+      const h = homage.per.get(file);
+      const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label, homage: h && h.그대로 ? h : null });
       findings.push(...r.findings);
       ocrFindings.push(...r.ocrFindings);
       screenTexts.push(r.ocrText);
@@ -764,4 +842,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, voiceFiles, voiceFindings, parseTangle, tangledVoices, SAFE };
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+  homageFindings, compositionLikeOriginal, stillLikeOriginal, SAFE };

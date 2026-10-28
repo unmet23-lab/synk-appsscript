@@ -674,7 +674,7 @@ async function main(argv, 주입 = {}) {
   }
   if (틀림) return 1;
   if (o.설정검사) {
-    for (const [b, s] of Object.entries(설정들)) console.log(`✓ ${b} — 유튜브 ${s.유튜브.length}곳(우리 ${s.유튜브.filter(c => c.우리).length}) · 검색어 ${s.검색.어.length}개(회차당 ${s.검색.회차당}) · 틱톡 ${s.틱톡.length}곳 · 못 잼 ${s.못잼.length}곳`);
+    for (const [b, s] of Object.entries(설정들)) console.log(`✓ ${b} — 유튜브 ${s.유튜브.length}곳(우리 ${s.유튜브.filter(c => c.우리).length}) · 검색어 ${s.검색.어.length}개(회차당 ${s.검색.회차당}) · 틱톡 ${s.틱톡.length}곳 · 인스타 ${s.인스타.length}곳(릴스.js) · 못 잼 ${s.못잼.length}곳`);
     return 0;
   }
 

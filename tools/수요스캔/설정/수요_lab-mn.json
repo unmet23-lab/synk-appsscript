@@ -102,13 +102,15 @@
     { "핸들": "bilgunss" },
     { "핸들": "synk.mn", "우리": true }
   ],
+  "인스타": [
+    { "핸들": "dailystudykorean" },
+    { "핸들": "topikcenter" },
+    { "핸들": "enkhsaikhan_bagsh" },
+    { "핸들": "shza.ya" }
+  ],
   "못잼": [
     { "곳": "인스타그램", "계정": "@synk.mn(우리)", "까닭": "로그인 벽 — 우리 숫자는 tools/게시성과.js가 회사 서버 기록으로 잰다" },
     { "곳": "인스타그램", "계정": "@hangugo__study", "까닭": "로그인 벽(10-22에 휴면 계정)" },
-    { "곳": "인스타그램", "계정": "@dailystudykorean", "까닭": "로그인 벽" },
-    { "곳": "인스타그램", "계정": "@topikcenter", "까닭": "로그인 벽" },
-    { "곳": "인스타그램", "계정": "@enkhsaikhan_bagsh", "까닭": "로그인 벽" },
-    { "곳": "인스타그램", "계정": "@shza.ya", "까닭": "로그인 벽" },
     { "곳": "페이스북", "계정": "synkworld(우리)", "까닭": "로그인 벽 — 로그인 없이 첫 글만 보인다" },
     { "곳": "페이스북", "계정": "solongos.heliig.hamtdaa.suraltsatsgaaya", "까닭": "로그인 벽" },
     { "곳": "페이스북", "계정": "solongosheliigsocialaar", "까닭": "로그인 벽" },
