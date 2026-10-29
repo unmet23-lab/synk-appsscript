@@ -6,14 +6,18 @@
  *   node 녹음.mjs 학습자                        학습자 줄을 한 번 굽는다(대본의 학습자목소리) — 모든 엔진에 같은 소리
  *   node 녹음.mjs live <장면|전부> <목소리>      gpt-live-1(듣기와 말하기를 함께 하는 전이중) · 예: live 전부 noeul
  *   node 녹음.mjs realtime <장면|전부> <목소리>  gpt-realtime-2.1 · 예: realtime 전부 marin
+ *   node 녹음.mjs gemini <장면|전부> <목소리>    gemini-3.8-live(무료 등급 키) · 예: gemini 전부 Kore
  *   node 녹음.mjs 엮기                          줄마다 크기를 맞추고 장면 × 목소리마다 대화 한 판(mp3)과 결과.json을 만든다
  *
  * - 소리는 마이크처럼 100ms씩 실제 속도로 보낸다(학습자 줄 → 침묵). 차례 감지는 엔진 것을 그대로 쓴다 —
- *   GPT-Live는 모델이 스스로, Realtime은 semantic_vad(eagerness low: 학습자가 머뭇거려도 기다리게, 제품에 쓸 설정).
+ *   GPT-Live는 모델이 스스로, Realtime은 semantic_vad(eagerness low: 학습자가 머뭇거려도 기다리게, 제품에 쓸 설정),
+ *   Gemini는 자동 활동 감지(END_SENSITIVITY_LOW · 침묵 1초 — 같은 뜻으로 맞춤). Gemini 입력은 16kHz라 학습자 줄을 ffmpeg로 한 번 바꿔 둔다.
  * - 상대역 1번 줄은 엔진이 먼저 말한다. 받아쓰기를 대본과 견줘(일치) 0.85 아래이거나 빠진 줄이 있으면 그 장면을
  *   한 번 더 받고 나은 쪽을 고른다(--시도 N). 두 시도 기록은 모두 남긴다.
  * - 키는 tools/GPT콘티굽기.mjs와 같은 차례(OPENAI_KEY_FILE → ~/SYNK_보안/openai_키목록.json, 「까지」 지난 키는 건너뜀)로
  *   고르고 값은 찍지 않는다. 연결 · 시작이 키 문제로 막히면 다음 키로 넘긴다. 결제 수단 없는 무료 크레딧 조직의 키뿐이다.
+ *   Gemini는 tools/모델정책.js의 「글」 무료 키(~/SYNK_보안/제미나이_무료.txt, 결제 없는 프로젝트)만 쓴다 — 무료 등급은 보낸 내용이
+ *   학습에 쓰이므로 지어낸 내부 대본만 넣는다. 유료 키로 넘어가지 않는다.
  * - 원본 WAV와 시도 기록은 .tmp/realtime-roleplay-20261029/(git 무시)에, 엮은 mp3는 이 폴더 소리/에 둔다. 결과.json과
  *   판만들기.mjs의 듣기판.html은 qa 결과라 커밋하지 않는다(.gitignore 10-20) — 숫자는 조사.md 「듣기 시험 1판」 표.
  */
@@ -23,6 +27,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
+import { createRequire } from 'node:module';
 import 대본 from './대본.mjs';
 
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
@@ -35,11 +40,14 @@ const 목록파일 = process.env.SYNK_OPENAI_KEYLIST || path.join(보안, 'opena
 
 const 표본율 = 24000;
 const 조각ms = 100;
-const 조각바이트 = (표본율 * 2 * 조각ms) / 1000;
 const 엔진 = {
   live: { 모델: 'gpt-live-1', 이름: 'GPT-Live' },
   realtime: { 모델: 'gpt-realtime-2.1', 이름: 'Realtime 2.1' },
+  gemini: { 모델: 'gemini-3.8-live', 이름: 'Gemini 3.8 Live' },
 };
+const 제미나이소켓 = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
+// Gemini 3.8 Live 유료 값(무료 등급은 0원) — 글 입력 $0.75 · 음성 입력 $3 · 글 출력 $4.50 · 음성 출력 $12 /100만 토큰(Gemini API 값 10-29). 「유료였다면」 어림에만 쓴다.
+const 제미나이값 = { 글입력: 0.75e-6, 음성입력: 3e-6, 글출력: 4.5e-6, 음성출력: 12e-6 };
 // USD — GPT-Live 분당 $0.05, 2.1 음성 입력 $32 · 출력 $64 · 캐시 $0.40 /100만 토큰(조사.md 10-29). 글 토큰 값과 학습자 TTS는 어림.
 const 값 = { live분: 0.05, 음성입력: 32e-6, 음성출력: 64e-6, 캐시: 0.4e-6, 글입력: 4e-6, 글출력: 16e-6, tts분: 0.015 };
 
@@ -186,6 +194,7 @@ class 소켓 {
     this.듣기 = null;
     ws.addEventListener('message', (ev) => {
       const e = JSON.parse(typeof ev.data === 'string' ? ev.data : Buffer.from(ev.data).toString('utf8'));
+      if (e.error) e.type ??= 'error';
       e.받은 = performance.now();
       this.듣기?.(e);
       for (const w of [...this.기다림]) {
@@ -217,10 +226,12 @@ class 소켓 {
     });
   }
 }
-function 열기(주소, 키) {
+// Gemini는 JSON을 이진 틀로 보낸다 — 기본(blob)이면 풀기가 비동기라 뒤 틀이 먼저 처리돼 소리가 빠졌다(10-29). ArrayBuffer로 받아 차례를 지킨다.
+function 열기(주소, 머리, 이름) {
   return new Promise((res, rej) => {
-    const ws = new WebSocket(주소, { headers: { Authorization: `Bearer ${키읽기(키)}` } });
-    const 실패 = (e) => rej(Object.assign(new Error(`연결 실패(${키.이름}) ${e?.message || ''}`), { 다음키: true }));
+    const ws = new WebSocket(주소, { headers: 머리 });
+    ws.binaryType = 'arraybuffer';
+    const 실패 = (e) => rej(Object.assign(new Error(`연결 실패(${이름}) ${e?.message || ''}`), { 다음키: true }));
     ws.addEventListener('error', 실패, { once: true });
     ws.addEventListener('open', () => {
       ws.removeEventListener('error', 실패);
@@ -230,12 +241,14 @@ function 열기(주소, 키) {
 }
 /** 마이크처럼 100ms마다 실제 속도로 보낸다. 넣은 줄이 없으면 침묵. 넣기()는 그 줄의 소리가 끝나는 시각으로 풀린다. */
 class 소리펌프 {
-  constructor(보내기) {
+  constructor(보내기, 율 = 표본율) {
     this.보내기 = 보내기;
+    this.율 = 율;
+    this.조각바이트 = (율 * 2 * 조각ms) / 1000;
     this.대기 = [];
     this.지금 = null;
     this.보낸조각 = 0;
-    this.침묵 = Buffer.alloc(조각바이트);
+    this.침묵 = Buffer.alloc(this.조각바이트);
   }
   시작하기() {
     this.시작 = performance.now();
@@ -252,14 +265,14 @@ class 소리펌프 {
       let 조각 = this.침묵;
       if (this.지금) {
         const 줄 = this.지금;
-        조각 = 줄.pcm.subarray(줄.자리, 줄.자리 + 조각바이트);
+        조각 = 줄.pcm.subarray(줄.자리, 줄.자리 + this.조각바이트);
         const 실제 = 조각.length;
         줄.자리 += 실제;
-        if (실제 < 조각바이트) 조각 = Buffer.concat([조각, Buffer.alloc(조각바이트 - 실제)]);
+        if (실제 < this.조각바이트) 조각 = Buffer.concat([조각, Buffer.alloc(this.조각바이트 - 실제)]);
         if (줄.자리 >= 줄.pcm.length) {
           this.지금 = null;
           // 이 조각은 시작 + 보낸조각 × 100ms부터 흐르는 소리다 — 말끝은 그 안의 실제 바이트 끝
-          줄.res(this.시작 + this.보낸조각 * 조각ms + (실제 / 2 / 표본율) * 1000);
+          줄.res(this.시작 + this.보낸조각 * 조각ms + (실제 / 2 / this.율) * 1000);
         }
       }
       this.보내기(조각);
@@ -349,7 +362,7 @@ async function live답끝(답, 출력, 기한) {
 }
 
 async function live돌리기({ 키, 목소리, 지시, 학습자줄, 상대줄 }) {
-  const ws = new 소켓(await 열기(`${소켓바탕}/live/sessions`, 키));
+  const ws = new 소켓(await 열기(`${소켓바탕}/live/sessions`, { Authorization: `Bearer ${키읽기(키)}` }, 키.이름));
   const 첫줄 = `지금 바로 상대역 1번 줄을 글자 그대로 말한다: 「${상대줄[0]}」 그다음 학습자가 말할 때까지 기다린다.`;
   const 답들 = [];
   const 입력글 = [];
@@ -418,7 +431,7 @@ async function live돌리기({ 키, 목소리, 지시, 학습자줄, 상대줄 }
 }
 
 async function realtime돌리기({ 키, 목소리, 지시, 학습자줄 }) {
-  const ws = new 소켓(await 열기(`${소켓바탕}/realtime?model=${엔진.realtime.모델}`, 키));
+  const ws = new 소켓(await 열기(`${소켓바탕}/realtime?model=${엔진.realtime.모델}`, { Authorization: `Bearer ${키읽기(키)}` }, 키.이름));
   const 답들 = [];
   const 입력글 = [];
   const 오류 = [];
@@ -498,17 +511,109 @@ async function realtime돌리기({ 키, 목소리, 지시, 학습자줄 }) {
   return { 세션: 생성.session?.id, 답들, 입력글, 사용, 오류, 값USD };
 }
 
+async function gemini돌리기({ 키값, 목소리, 지시, 학습자줄, 상대줄 }) {
+  const ws = new 소켓(await 열기(제미나이소켓, { 'x-goog-api-key': 키값 }, 'Gemini 무료 키'));
+  const 답들 = [];
+  const 입력글 = [];
+  const 오류 = [];
+  const 쓰임 = [];
+  let 지금답 = null;
+  let 학습자칸 = -1;
+  let 마지막쓰임 = null;
+  ws.듣기 = (e) => {
+    if (e.usageMetadata) 마지막쓰임 = e.usageMetadata;
+    const sc = e.serverContent;
+    if (!sc) return;
+    for (const p of sc.modelTurn?.parts || []) {
+      if (!p.inlineData?.data || !지금답) continue;
+      지금답.소리.push(Buffer.from(p.inlineData.data, 'base64'));
+      지금답.첫소리 ??= e.받은;
+      지금답.마지막소리 = e.받은;
+      지금답.끝남 = false;
+    }
+    if (sc.outputTranscription?.text && 지금답) 지금답.글 += sc.outputTranscription.text;
+    if (sc.inputTranscription?.text && 학습자칸 >= 0) 입력글[학습자칸] = (입력글[학습자칸] || '') + sc.inputTranscription.text;
+    if (sc.interrupted) {
+      // 학습자 말 사이 쉼에서 시작한 답이 이어진 말에 끊겼다 — 그 소리는 버리고 진짜 답을 기다린다(Realtime의 취소와 같은 셈)
+      오류.push({ 상태: 'cancelled', 까닭: 'interrupted' });
+      if (지금답) Object.assign(지금답, { 소리: [], 글: '', 첫소리: null, 마지막소리: null, 끝남: false });
+    }
+    if (sc.turnComplete) {
+      if (지금답 && 지금답.소리.length) 지금답.끝남 = true;
+      if (마지막쓰임) 쓰임.push(마지막쓰임);
+      마지막쓰임 = null;
+    }
+  };
+  ws.보내기({
+    setup: {
+      model: `models/${엔진.gemini.모델}`,
+      generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 목소리 } } } },
+      systemInstruction: { parts: [{ text: 지시 }] },
+      realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', silenceDurationMs: 1000 } },
+      inputAudioTranscription: {},
+      outputAudioTranscription: {},
+    },
+  });
+  const 시작 = await ws.기다리기((e) => e.setupComplete || e.type === 'error', 20000, 'setupComplete');
+  if (시작.type === 'error') throw new Error(`시작 거절: ${JSON.stringify(시작.error).slice(0, 300)}`);
+  const 펌프 = new 소리펌프((조각) => ws.보내기({ realtimeInput: { audio: { data: 조각.toString('base64'), mimeType: 'audio/pcm;rate=16000' } } }), 16000);
+  지금답 = 새답(1);
+  답들.push(지금답);
+  펌프.시작하기();
+  ws.보내기({ clientContent: { turns: [{ role: 'user', parts: [{ text: `(상황극 시작) 지금 상대역 1번 줄을 글자 그대로 말한다: 「${상대줄[0]}」 그다음 학습자가 말할 때까지 기다린다.` }] }], turnComplete: true } });
+  await 답끝(지금답, { 첫소리기한: 12000, 끝표시: true });
+  알림(지금답);
+  for (const [i, pcm] of 학습자줄.entries()) {
+    지금답 = 새답(i + 2);
+    답들.push(지금답);
+    학습자칸 = i;
+    지금답.학습자끝 = await 펌프.넣기(pcm);
+    await 답끝(지금답, { 첫소리기한: 15000, 끝표시: true });
+    알림(지금답);
+  }
+  지금답 = null;
+  await 쉼(1500);
+  펌프.끄기();
+  ws.ws.close();
+  // 쓰임: 차례마다 마지막 usageMetadata를 더한다(무료 등급이라 실제 값은 0원, 「유료였다면」만 셈)
+  const 합 = { 글입력: 0, 음성입력: 0, 글출력: 0, 음성출력: 0, 생각: 0 };
+  for (const u of 쓰임) {
+    for (const d of u.promptTokensDetails || []) 합[d.modality === 'AUDIO' ? '음성입력' : '글입력'] += d.tokenCount || 0;
+    for (const d of u.responseTokensDetails || []) 합[d.modality === 'AUDIO' ? '음성출력' : '글출력'] += d.tokenCount || 0;
+    합.생각 += u.thoughtsTokenCount || 0;
+  }
+  const 유료였다면USD = 합.글입력 * 제미나이값.글입력 + 합.음성입력 * 제미나이값.음성입력 + (합.글출력 + 합.생각) * 제미나이값.글출력 + 합.음성출력 * 제미나이값.음성출력;
+  return { 세션: null, 답들, 입력글, 사용: { ...합, 차례: 쓰임.length }, 오류, 값USD: 0, 유료였다면USD };
+}
+
+/** Gemini 입력용 16kHz 학습자 줄 — 24kHz WAV를 ffmpeg로 한 번 바꿔 .tmp에 둔다. */
+function 학습자16k(파일24k) {
+  const 나갈 = path.join(작업, '학습자16k', path.basename(파일24k).replace(/\.wav$/i, '.pcm'));
+  if (!fs.existsSync(나갈)) {
+    fs.mkdirSync(path.dirname(나갈), { recursive: true });
+    ff(['-i', 파일24k, '-ar', '16000', '-ac', '1', '-f', 's16le', 나갈]);
+  }
+  return fs.readFileSync(나갈);
+}
+
 async function 장면받기(엔진키, 장면, 목소리, 시도번호) {
   const 학습자줄 = 장면.줄.filter((l) => l.누가 === '학습자').map((_, i) => {
     const 파일 = path.join(작업, '학습자', `${장면.id}_${i + 1}.wav`);
     if (!fs.existsSync(파일)) 멈춤(`학습자 줄이 없다 — 먼저 \`node 녹음.mjs 학습자\`: ${파일}`);
-    return wav읽기(파일);
+    return 엔진키 === 'gemini' ? 학습자16k(파일) : wav읽기(파일);
   });
   const 상대줄 = 장면.줄.filter((l) => l.누가 === '상대역').map((l) => l.말);
-  const 돌리기 = 엔진키 === 'live' ? live돌리기 : realtime돌리기;
-  const 키들 = 키차례();
   let 결과;
   let 쓴키;
+  if (엔진키 === 'gemini') {
+    const 정책 = createRequire(import.meta.url)(path.join(저장소, 'tools', '모델정책.js'));
+    const 키값 = 정책.제미나이키('글');
+    if (!키값) 멈춤(정책.제미나이키안내('글'));
+    결과 = await gemini돌리기({ 키값, 목소리, 지시: 지시문(장면), 학습자줄, 상대줄 });
+    쓴키 = 'Gemini 무료 키(결제 없는 프로젝트)';
+  }
+  const 돌리기 = 엔진키 === 'live' ? live돌리기 : realtime돌리기;
+  const 키들 = 엔진키 === 'gemini' ? [] : 키차례();
   for (const [i, 키] of 키들.entries()) {
     try {
       결과 = await 돌리기({ 키, 목소리, 지시: 지시문(장면), 학습자줄, 상대줄 });
@@ -536,6 +641,7 @@ async function 장면받기(엔진키, 장면, 목소리, 시도번호) {
     때: new Date().toISOString(), 엔진: 엔진키, 모델: 엔진[엔진키].모델, 목소리, 장면: 장면.id, 시도: 시도번호, 키: 쓴키, 세션: 결과.세션,
     줄, 학습자받아쓰기: 결과.입력글, 사용: 결과.사용, 어림값USD: Number(결과.값USD.toFixed(4)), 오류: 결과.오류,
     ...(결과.종류 ? { 이벤트: 결과.종류, 출력초: 결과.출력초 } : {}),
+    ...(결과.유료였다면USD != null ? { 무료등급: true, 유료였다면USD: Number(결과.유료였다면USD.toFixed(4)) } : {}),
   };
 }
 
@@ -624,6 +730,7 @@ function 엮기() {
         학습자받아쓰기: 고른.학습자받아쓰기, 어림값USD: Number(기록.시도들.reduce((n, r) => n + r.어림값USD, 0).toFixed(4)), 오류: 고른.오류,
         // 학습자 말 도중 끼어듦: Realtime은 말 사이 쉼에서 시작했다 취소된 응답, GPT-Live는 말끝보다 먼저 나온 첫 소리
         끼어듦: (고른.오류 || []).filter((o) => o.상태 === 'cancelled').length + 고른.줄.filter((l) => typeof l.지연ms === 'number' && l.지연ms < 0).length,
+        ...(고른.무료등급 ? { 무료등급: true, 유료였다면USD: Number(기록.시도들.reduce((n, r) => n + (r.유료였다면USD || 0), 0).toFixed(4)) } : {}),
       });
       console.log(`[엮기] ${이름}.mp3`);
     }
@@ -646,8 +753,8 @@ const 시도수 = 시도i >= 0 ? Math.max(1, Number(인자[시도i + 1]) || 2) :
 const [명령, 장면고르기, 목소리] = 인자.filter((a, i) => !a.startsWith('--') && (시도i < 0 || i !== 시도i + 1));
 fs.mkdirSync(작업, { recursive: true });
 if (명령 === '학습자') await 학습자굽기(덮어쓰기);
-else if (명령 === 'live' || 명령 === 'realtime') {
+else if (명령 === 'live' || 명령 === 'realtime' || 명령 === 'gemini') {
   if (!장면고르기 || !목소리) 멈춤(`사용: node 녹음.mjs ${명령} <장면|전부> <목소리>`);
   await 녹음하기(명령, 장면고르기, 목소리, 시도수);
 } else if (명령 === '엮기') 엮기();
-else 멈춤('사용: node 녹음.mjs 학습자 | live <장면|전부> <목소리> | realtime <장면|전부> <목소리> | 엮기');
+else 멈춤('사용: node 녹음.mjs 학습자 | live <장면|전부> <목소리> | realtime <장면|전부> <목소리> | gemini <장면|전부> <목소리> | 엮기');

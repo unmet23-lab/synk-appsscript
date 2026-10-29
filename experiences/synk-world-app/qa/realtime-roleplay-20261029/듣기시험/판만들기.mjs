@@ -21,6 +21,9 @@ const 목소리설명 = {
   'live_cedar': { 엔진: 'GPT-Live', 목소리: 'cedar', 결: '남성 · 다국어 목소리(추가 후보)' },
   'realtime_marin': { 엔진: 'Realtime 2.1', 목소리: 'marin', 결: '여성 · 다국어 목소리' },
   'realtime_cedar': { 엔진: 'Realtime 2.1', 목소리: 'cedar', 결: '남성 · 다국어 목소리' },
+  'gemini_Kore': { 엔진: 'Gemini 3.8 Live', 목소리: 'Kore', 결: '여성 · 단단한 목소리 · 비교용(학생에게는 못 씀)' },
+  'gemini_Aoede': { 엔진: 'Gemini 3.8 Live', 목소리: 'Aoede', 결: '여성 · 산뜻한 목소리 · 비교용(학생에게는 못 씀)' },
+  'gemini_Puck': { 엔진: 'Gemini 3.8 Live', 목소리: 'Puck', 결: '남성 · 밝은 목소리 · 비교용(학생에게는 못 씀)' },
 };
 const 아이디 = (p) => `${p.엔진}_${p.목소리}`;
 // 장면마다 다른 순서(고정 씨앗) — 같은 글자가 같은 엔진이라고 외우지 않게
@@ -61,6 +64,8 @@ const 표 = Object.keys(목소리설명).filter((k) => 결과.판들.some((p) =>
     일치평균: 일치들.length ? Number((일치들.reduce((x, y) => x + y, 0) / 일치들.length).toFixed(3)) : null,
     값USD: Number(내것.reduce((n, p) => n + p.어림값USD, 0).toFixed(3)),
     끼어듦: 내것.reduce((n, p) => n + (p.끼어듦 || 0), 0),
+    무료등급: 내것.some((p) => p.무료등급),
+    유료였다면USD: Number(내것.reduce((n, p) => n + (p.유료였다면USD || 0), 0).toFixed(3)),
   };
 });
 const 자료 = { 판: 대본.판, 때: 결과.때, 목표LUFS: 결과.목표LUFS, 줄사이초: 결과.줄사이초, 목소리설명, 판들, 표, 합계USD: 결과.합계어림USD };
@@ -122,7 +127,6 @@ button[aria-pressed="true"] { background: var(--accent-face); border-color: var(
 audio { width: 100%; height: 40px }
 .stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums }
 .diff { font-size: 12.5px; color: var(--warn); display: grid; gap: 2px }
-.placeholder { border: 1px dashed var(--rule); border-radius: 14px; padding: 14px; color: var(--muted); font-size: 13.5px; display: grid; gap: 4px }
 .picks { background: var(--panel); border-radius: 16px; padding: 18px; display: grid; gap: 14px }
 .picks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px 16px }
 .picks label { font-size: 13px; color: var(--muted); display: grid; gap: 4px }
@@ -162,7 +166,7 @@ ul.facts { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 7
   <section class="how" aria-labelledby="how-title">
     <h2 id="how-title">어떻게 받았나</h2>
     <ul class="facts" id="facts"></ul>
-    <div class="table-wrap"><table id="table"><thead><tr><th>엔진 · 목소리</th><th>결</th><th>말 끝 → 첫 소리(평균 · 최대)</th><th>대본 일치(평균)</th><th>말 도중 끼어들 뻔함</th><th>쓴 값(세 장면)</th></tr></thead><tbody></tbody></table></div>
+    <div class="table-wrap"><table id="table"><thead><tr><th>엔진 · 목소리</th><th>결</th><th>학습자 말이 끝나고 첫 소리까지(평균 · 최대)</th><th>대본 일치(평균)</th><th>말 도중 끼어들 뻔함</th><th>쓴 값(세 장면)</th></tr></thead><tbody></tbody></table></div>
   </section>
 </div>
 
@@ -193,7 +197,7 @@ function renderScenes() {
       const audio = el('audio', { controls: '', preload: 'none', src: t.소리, 'aria-label': s.이름 + ' ' + t.글자 + ' 판' });
       audio.addEventListener('play', () => { for (const a of document.querySelectorAll('audio')) if (a !== audio) a.pause(); });
       card.append(audio);
-      card.append(el('div', { class: 'stats' }, el('span', { text: '대본 일치 ' + pct(t.최저일치) + (t.최저일치 < 1 ? '(가장 낮은 줄)' : '') }), el('span', { text: '말 끝 → 첫 소리 ' + sec(t.지연평균) }), el('span', { text: t.초.toFixed(1) + '초' })));
+      card.append(el('div', { class: 'stats' }, el('span', { text: '대본 일치 ' + pct(t.최저일치) + (t.최저일치 < 1 ? '(가장 낮은 줄)' : '') }), el('span', { text: '첫 소리까지 ' + sec(t.지연평균) }), el('span', { text: t.초.toFixed(1) + '초' })));
       if (t.다른줄.length) {
         const d = el('div', { class: 'diff' });
         for (const l of t.다른줄) d.append(el('span', { text: l.번호 + '번 줄이 대본과 달라요: 「' + l.받아쓰기 + '」' }));
@@ -204,7 +208,6 @@ function renderScenes() {
       card.append(b);
       takes.append(card);
     }
-    takes.append(el('div', { class: 'placeholder' }, el('strong', { text: 'Gemini 3.8 Live — 아직 못 받음' }), el('span', { text: '이 노트북에 Gemini 키가 없어요. 키를 정하시면 같은 대본으로 받아 여기에 더해요.' })));
     art.append(left, takes);
     root.append(art);
   }
@@ -233,16 +236,17 @@ function renderHow() {
   f.textContent = '';
   const facts = [
     '학습자 줄은 한 번 구운 같은 소리를 엔진마다 마이크처럼 실제 속도(0.1초씩)로 넣었어요. 상대역 1번 줄은 엔진이 먼저 말했어요.',
-    '차례 넘기기는 엔진 것을 그대로 썼어요 — GPT-Live는 모델이 스스로 듣고 끼어들 때를 정하고, Realtime 2.1은 학습자가 머뭇거려도 기다리는 설정(semantic VAD · low)이에요.',
-    '판 안의 줄 사이는 ' + DATA.줄사이초 + '초로 똑같이 이었어요. 실제로 얼마나 빨리 받아쳤는지는 아래 「말 끝 → 첫 소리」 숫자예요(이 노트북에서 잰 값, 학생 기기 · 회선에 따라 달라져요).',
+    '차례 넘기기는 엔진 것을 그대로 썼어요 — GPT-Live는 모델이 스스로 듣고 끼어들 때를 정하고, Realtime 2.1과 Gemini는 학습자가 머뭇거려도 기다리는 설정(2.1은 semantic VAD · low, Gemini는 말끝 감도 낮음 · 침묵 1초)이에요.',
+    'Gemini 3.8 Live는 결제를 붙이지 않은 무료 등급 키로 받아 돈이 들지 않았어요. 무료 등급은 보낸 내용이 구글 학습에 쓰일 수 있어 지어낸 내부 대본만 넣었어요. 학생용으로는 Gemini 약관이 18세 미만이 쓰는 서비스와 미얀마를 막아서 쓸 수 없어요 — 목소리 비교용이에요.',
+    '판 안의 줄 사이는 ' + DATA.줄사이초 + '초로 똑같이 이었어요. 실제로 얼마나 빨리 받아쳤는지는 카드의 「첫 소리까지」와 아래 표 숫자예요(이 노트북에서 잰 값, 학생 기기 · 회선에 따라 달라져요).',
     '「말 도중 끼어들 뻔함」은 학습자가 한 줄 안에서 잠깐 쉰 자리(예: 「저는 뚜자라고 합니다. / 잘 부탁드립니다.」)를 말끝으로 알고 답을 시작했다가, 학습자가 이어 말해 취소된 횟수예요. 판에는 취소된 소리가 들어가지 않았지만 실제 수업에서는 상대역이 말허리를 자르는 것처럼 들릴 수 있어요.',
     '줄마다 소리 크기를 ' + DATA.목표LUFS + ' LUFS로 맞춰 큰 소리가 더 좋게 들리는 쏠림을 줄였어요.',
-    '쓴 값은 결제 수단 없는 synk.yuh 조직의 월 API 크레딧이에요(돈이 나가지 않아요). 이번 시험 전체 어림 $' + DATA.합계USD + '.',
+    'OpenAI 쪽 쓴 값은 결제 수단 없는 synk.yuh 조직의 월 API 크레딧이에요(돈이 나가지 않아요). 이번 시험 전체 어림 $' + DATA.합계USD + ', Gemini는 0원.',
   ];
   for (const t of facts) f.append(el('li', { text: t }));
   const tb = $('#table tbody');
   tb.textContent = '';
-  for (const r of DATA.표) tb.append(el('tr', {}, el('td', { text: r.엔진 + ' · ' + r.목소리 }), el('td', { text: r.결 }), el('td', { class: 'num', text: sec(r.지연평균) + ' · ' + sec(r.지연최대) }), el('td', { class: 'num', text: pct(r.일치평균) }), el('td', { class: 'num', text: r.끼어듦 + '번' }), el('td', { class: 'num', text: '$' + r.값USD.toFixed(3) })));
+  for (const r of DATA.표) tb.append(el('tr', {}, el('td', { text: r.엔진 + ' · ' + r.목소리 }), el('td', { text: r.결 }), el('td', { class: 'num', text: sec(r.지연평균) + ' · ' + sec(r.지연최대) }), el('td', { class: 'num', text: pct(r.일치평균) }), el('td', { class: 'num', text: r.끼어듦 + '번' }), el('td', { class: 'num', text: r.무료등급 ? '$0 (무료 등급 · 유료면 $' + r.유료였다면USD.toFixed(3) + ')' : '$' + r.값USD.toFixed(3) })));
 }
 function render() { renderScenes(); renderPicks(); }
 let dirty = false;
