@@ -103,8 +103,12 @@ def build(src):
             chain(files, os.path.join(out, name))
             chains[name] = label
     shutil.rmtree(tmp)
+    ref = None   # 기준 — 지유 목소리 판(견본 없이 시댄스가 처음 낸 목소리, 10-29 결정)
+    if os.path.exists(os.path.join(src, "hs-목소리-지유.mp4")):
+        shutil.copy2(os.path.join(src, "hs-목소리-지유.mp4"), os.path.join(out, "hs-목소리-지유.mp4"))
+        ref = "hs-목소리-지유.mp4"
     json.dump(cuts, open(os.path.join(out, "_결과.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(page(cuts, chains))
+    open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(page(cuts, chains, ref))
     print(f"듣기 판 → {out}")
     for r in cuts:
         for p in r["판"]:
@@ -121,7 +125,7 @@ NOTES = {"A": "대사 녹음을 소리 참고로 넣어 뽑은 판에서 나온 
          "B": "배역 목소리 견본을 넣고 대사는 영상 모델이 연기한 소리 그대로"}
 
 
-def page(cuts, chains):
+def page(cuts, chains, ref=None):
     e = html.escape
     out = ["""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>대사 목소리 시험</title><style>
@@ -139,7 +143,10 @@ h1{font-size:22px;margin:8px 0}h2{font-size:18px;margin:28px 0 8px}.note{color:v
 button{font:inherit;padding:2px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;margin-top:6px}
 </style></head><body><main>
 <h1>대사 목소리 시험 — 시댄스가 연기한 목소리</h1>
-<p class="note">지유 대사 두 컷을 지유 목소리 견본만 넣고 시댄스가 직접 연기하게 뽑았습니다(10-29 정하신 방식). 연기 말투가 자연스러운지, 입과 소리가 맞는지(0.5배로), 두 컷이 같은 사람 목소리로 들리는지 봐 주세요. 괜찮으면 매진 임박 대사 13컷과 7번 숏드라마 대사 컷을 이 방식으로 냅니다.</p>"""]
+<p class="note">맨 위는 지유 목소리 판 — 견본 없이 시댄스가 처음 낸 지유 목소리입니다(10-29 정하신 기본). 그 소리를 떼어 견본으로 넣고 지유 대사 두 컷을 시댄스가 직접 연기하게 뽑았습니다. 연기 말투가 자연스러운지, 입과 소리가 맞는지(0.5배로), 두 컷이 목소리 판과 같은 사람 목소리로 들리는지 봐 주세요. 괜찮으면 매진 임박 대사 13컷과 7번 숏드라마 대사 컷을 이대로 내고, 어색하면 대안 일레븐 v4로 갑니다.</p>"""]
+    if ref:
+        out.append(f'<h2>기준 — 지유 목소리 판</h2><div class="grid"><div class="card"><b>시댄스가 처음 낸 지유 목소리</b>'
+                   f'<video controls playsinline preload="metadata" src="{e(ref)}"></video><p class="note">이 소리가 견본이 됐습니다.</p></div></div>')
     for r in cuts:
         out.append(f"<h2>#{r['컷']} 「{e(r['대본'])}」</h2><div class=\"grid\">")
         for p in r["판"]:
