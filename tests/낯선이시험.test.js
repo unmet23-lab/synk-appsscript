@@ -16,7 +16,10 @@ test('볼 이유 질문 — 무엇으로 이기나 · 볼 이유 점수 · 슬�
   assert.match(sns, /^3\. AI 슬롭처럼 보이나/m);
   assert.match(sns, /^4\. 가장 약한 자리/m);
   assert.match(sns, /^5\. \(광고가 아님/m);
+  // 10-29 시범: 유호님이 만족하신 「아니」 최종본을 펠트 질감 때문에 「슬롭 같음」으로 셌다 — 그 계정 고정 그림체는 그것만으로 세지 않는다
+  assert.match(sns, /펠트 인형 마스코트.*그것만으로 슬롭으로 치지 않는다/);
   const ad = buildWorthPrompt({ brand: 'pulse', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt', cuts: true });
+  assert.doesNotMatch(ad, /그것만으로 슬롭으로 치지 않는다/);
   assert.match(ad, /회사 담당자의 눈/);
   assert.match(ad, /컷이 바뀔 때마다 한 장/);
   assert.match(ad, /^5\. 이 영상을 만든 팀에 돈 내고 광고를 맡기겠나/m);
