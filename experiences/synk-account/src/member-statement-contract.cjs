@@ -911,7 +911,7 @@ const COMPOSE_FRAMES=[
 // for agency, scope, negation and order. It emits the original clause span.
 // The noun owns its subject particle even after a possessive prefix, plural
 // or honorific ending. "우리 팀원들은" is not the writer's own preference.
-const OTHER_PERSON_SUBJECT=/(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u;
+const OTHER_PERSON_SUBJECT=/(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지|남들|상대방)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u;
 const CORE_ACTION_ROLES={
   independent:'self nohelp before-help first task try do process finish',together:'person together task try do process finish',
   example:'example first one look show check start before-start inquiry task',step:'help step receive explain do',choose:'help help-time needhelp choose decide on receive use',
@@ -1024,7 +1024,14 @@ function compositional(quote) {
   // Removing an outer self/adverb prefix cannot transfer a subordinate
   // actor's behaviour to the member. Structured inset rules can still read
   // an independently owned main clause after rejecting this loose path.
-  const otherActor=OTHER_PERSON_SUBJECT.test(body);
+  const otherActor=OTHER_PERSON_SUBJECT.exec(body);
+  // A third person can be inside the object of the member's interest
+  // ("팀원들이 함께 일하는 협업 방식에 관심"). A bare assertion about
+  // that person's liking never establishes the member's topic interest.
+  const actorBody=otherActor?body.slice(otherActor.index+otherActor[0].length):'';
+  const topicObject=otherActor?.index===0&&/(?:이|가|께서)$/u.test(otherActor[0])
+    &&!OTHER_PERSON_SUBJECT.test(actorBody)&&!/(?:제가|내가|우리가|저희가|그들이|이들이|너희가)/u.test(actorBody)
+    &&/(?:하는|되는|하던|했던).*?(?:방식|방법|주제|과정)(?:에|을|를)/u.test(actorBody);
   let fields=null,head='';
   const ownedExplanation=/^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(body);
   if(ownedExplanation){body=ownedExplanation[1]+'좋아요';fields=['explanation'];head='설명';}
@@ -1097,7 +1104,7 @@ function compositional(quote) {
     // decision. Do not rewrite syllables inside verbs such as 참고하는.
     const roles=fields?.length===1&&fields[0]==='decision'&&units.at(-1)==='do'&&units.includes('data')?[...units.slice(0,-1),'decide']:units;
     const m=composeMeaning(roles,normalized.nominalHead);
-    if(m){if(otherActor&&m.field!=='topic')return null;recognized.push(m);}}
+    if(m){if(otherActor&&!(m.field==='topic'&&topicObject))return null;recognized.push(m);}}
   if(!recognized.length){
     const core=declaredCore(head+action,normalized,condition,fields,quote);if(core)return core;
     // Coordinated clauses may share their final preference predicate. Each

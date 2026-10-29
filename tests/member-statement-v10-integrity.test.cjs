@@ -12,6 +12,13 @@ test('an outer self prefix never claims another actor\'s subordinate behaviour',
  for(const text of ['저는 동료의 의견을 듣고 정리하는 걸 좋아해요.','저는 요즘 동료와 의견을 듣고 정리하는 걸 좋아해요.'])
   assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.field==='communication'&&m.value==='listen-organize'),text);
 });
+test('another person liking a topic never proposes that topic as the member interest',()=>{
+ for(const text of ['요즘 동료는 협업을 좋아해요.','사람들은 협업을 좋아해요.','남들은 협업을 좋아해요.','상대방은 협업을 좋아해요.','요즘 동료가 협업에 관심이 있어요.','저는 요즘 동료가 협업을 좋아해요.','동료는 협업하는 방식에 관심이 있어요.','요즘 동료도 협업을 좋아해요.','사람들도 협업을 좋아해요.','동료가 우리가 함께 일하는 협업 방식에 관심을 두고 있어요.','요즘 동료가 우리가 함께 일하는 협업 방식에 관심을 두고 있어요.','요즘 팀원들이 동료가 함께 일하는 협업 방식에 관심을 두고 있어요.'])
+  assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
+ for(const text of ['팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.','저는 팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.','저는 팀원들이 협업하는 방식에 관심을 두고 있어요.','저는 동료와 협업하는 방식에 관심을 두고 있어요.'])
+  assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.field==='topic'&&m.value==='work-collaboration'),text);
+});
+
 test('legacy parsing changed only an equivalent nonempty suffix regex; original bytes remain provable',()=>{
  for(const row of pins.rows){const source=fs.readFileSync(path.join(root,row.path),'utf8');assert.equal(sha(source),row.sha256);assert.equal(sha(source.replace(row.newRegex,row.oldRegex)),row.beforeSha256);}
  const pin9=pins.rows.at(-1),source=fs.readFileSync(path.join(root,pin9.path),'utf8').replace(pin9.newRegex,pin9.oldRegex);assert.equal(sha(source),pin9.beforeSha256);

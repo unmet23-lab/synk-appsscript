@@ -100,6 +100,24 @@ test('joining an unrelated withdrawal preserves legacy helped timestamps',()=>{
  assert.doesNotThrow(()=>Ledger.validate(a));assert.doesNotThrow(()=>Ledger.validate(b));
  for(const joined of [Ledger.reconcile(a,b),Ledger.reconcile(b,a)])assert.deepEqual(joined.cells[cellKey].helped,a.cells[cellKey].helped);
 });
+test('a known folded answer withdrawal preserves numeric legacy help during an actual server import',()=>{
+ const f=fixture();
+ // The storage key includes the account scope; find the same immutable payload
+ // by its ledger rather than relying on the game's private key encoding.
+ const [key,raw]=[...f.storage.data].find(([,v])=>{try{return !!JSON.parse(v).ledger;}catch{return false;}});
+ const data=JSON.parse(raw);for(const table of [data.ledger.cells,data.ledger.content])for(const cell of Object.values(table))cell.helped=[T0-500];
+ assert.doesNotThrow(()=>Ledger.validate(data.ledger));
+ f.storage.setItem(key,JSON.stringify(data));
+ const game=createGame(f.options);assert.equal(game.summary().storage.available,true);
+ game.syncPort.importEvents([f.exclude(f.answers[0])]);
+ assert.equal(evidence(game).length,3);
+ const stored=JSON.parse(f.storage.getItem(key));
+ for(const table of [stored.ledger.cells,stored.ledger.content])for(const cell of Object.values(table))assert.deepEqual(cell.helped,[T0-500]);
+ assert.equal(Ledger.cellOf(stored.ledger,cellKey).ind.length,3);
+ assert.ok(stored.ledger.withdrawn.includes(f.answers[0]));
+ assert.doesNotThrow(()=>Ledger.validate(stored.ledger));
+});
+
 test('a playback observed after the answer in either timestamp is not positive delivery evidence',()=>{
  const scope={domain:'LAB',workspace:'audio-time',subject:'synthetic'};let ms=T0,n=0;
  const session=A.createSession({scope,clock:()=>new Date(ms).toISOString(),id:()=>`audio.${++n}`});
