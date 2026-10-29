@@ -313,6 +313,34 @@ test('비축 알림은 21시 뒤 하루 한 번, 목표 4일보다 모자랄 때
   assert.deepEqual(r.reserveAlert, { sent: false, reason: 'enough' });
 });
 
+test('오늘 빈 계정 — 오늘 칸이 예약·게시 전인 계정을 줄로 보이고, 알림은 17시 · 21시 뒤 한 번씩, 다 차면 보내지 않는다', () => {
+  // 10-23: LAB 영어 예약됨(채움) · LAB 몽골 인스타만 예약됨(틱톡 빔) · synkbrief 영상 승인 대기(블로그도 영상을 따라 승인·예약 전)
+  const base = 매일판('오늘빈계정', 기본편);
+  const r = 매일큐(base, ['--오늘', '2026-10-23']);
+  assert.deepEqual(r.todayGaps.map((g) => [g.line, g.account, g.why]), [
+    ['LAB 몽골', 'lab-tiktok', '만든 편 없음'],
+    ['synkbrief', 'synkbrief-youtube', '승인·예약 전'],
+    ['synkbrief', 'shift-naverblog', '승인·예약 전']]);
+  const out = spawnSync(process.execPath, [tool, '--폴더', base, '--오늘', '2026-10-23'], { encoding: 'utf8' }).stdout;
+  assert.match(out, /^ {2}오늘\(10-23\) 빈 계정: LAB 몽골 — lab-tiktok 만든 편 없음 · synkbrief — synkbrief-youtube 승인·예약 전, shift-naverblog 승인·예약 전$/m);
+  assert.deepEqual(매일큐(base, ['--지금', '2026-10-23T16:59+09:00', '--알림']).todayAlert, { sent: false, reason: 'before-hour' });
+  const first = 매일큐(base, ['--지금', '2026-10-23T17:30+09:00', '--알림']).todayAlert;
+  assert.equal(first.sent, true);
+  assert.equal(first.text, [
+    '[오늘 빈 계정] 2026-10-23 · 3곳이 아직 예약·게시 전',
+    'LAB 몽골 — lab-tiktok 만든 편 없음',
+    'synkbrief — synkbrief-youtube 승인·예약 전, shift-naverblog 승인·예약 전',
+    '막혀 못 올리는 계정: yuhobuilds-x(ego 로그아웃 — 유호님 로그인)',
+    '오늘 안에 채워요 — 관문을 못 넘은 칸은 가장 나은 판으로(제작 절차 「매일 한 편」), 「승인·예약 전」은 검토 링크 승인이나 「올려」로'].join('\n'));
+  assert.deepEqual(매일큐(base, ['--지금', '2026-10-23T18:00+09:00', '--알림']).todayAlert, { sent: false, reason: 'same-window' });
+  assert.equal(매일큐(base, ['--지금', '2026-10-23T21:05+09:00', '--알림']).todayAlert.sent, true, '21시 뒤 한 번 더');
+  assert.deepEqual(매일큐(base, ['--지금', '2026-10-23T23:30+09:00', '--알림']).todayAlert, { sent: false, reason: 'same-window' });
+  // 10-22는 모든 줄이 예약 · 게시라 보내지 않고 줄도 없다
+  const full = 매일큐(base, ['--지금', '2026-10-22T21:30+09:00', '--알림']);
+  assert.deepEqual(full.todayGaps, []);
+  assert.deepEqual(full.todayAlert, { sent: false, reason: 'filled' });
+});
+
 test('dailyDays 계정은 그 요일에만 — 다른 요일 빈 칸은 쉼(–)으로 비축에 들고 빈 칸이 아니며, 쉬는 날에 편이 있으면 그 편대로 센다', () => {
   const base = path.join(매일, '요일');
   fs.mkdirSync(base, { recursive: true });

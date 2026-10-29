@@ -30,6 +30,9 @@
  * (10-28 yuhobuilds 주 3편 — 유호님 「그렇게 바꿔」). 쉬는 날에 편이 있으면 그 편대로 세고, 보류 판뿐이면 쉼이다.
  * 요일 글자가 아닌 dailyDays는 줄을 조용히 멈추게 하니 exit 2로 막는다.
  * 블로그 판(naver-blog·tistory)은 쇼츠 주소가 공개 뒤에야 생겨 영상 뒤에 거니, 같은 편의 영상 판이 예약·게시면 채움으로 센다.
+ * 10-29 오늘 빈 계정(유호님 「오늘 올라간것처럼 전부 1일 1 업로드 지켜줘야해」): 빈 칸 · 비축 알림은 내일부터만 봐서 두 채널 줄이
+ * 며칠째 오늘 칸을 비운 채 지나가도 아무 데도 안 떴다. 오늘 칸이 채움(예약·게시)이 아닌 계정을 「오늘 빈 계정」 줄로 보이고,
+ * --알림은 17시 · 21시 뒤 한 번씩 남은 계정을 「[오늘 빈 계정]」 한 통으로 보낸다(막혀 셈에서 뺀 계정도 같이 적는다).
  * --알림은 21시 뒤 하루 한 번 비축이 4일보다 모자라면 빈 칸을 한 통으로 보내고(10-23 「비축 모자람 알리지 않음」을 되돌림),
  * 같은 날 같은 계정에 두 편 · 작업실 검토 링크가 승인 전에 만료되거나 24시간 안에 만료되면 경고에 넣는다(링크 자체는 읽지도 적지도 않는다).
  *   node tools/예약큐.js --계정표   계정 전수 표(계정 · 매일 무엇이 · 올리는 길 · 며칠 앞서 · 막힌 것)를 마크다운으로
@@ -333,6 +336,7 @@ function build(today, days, server, accounts, now) {
   report.lines = lineRows(report.accounts, range, accounts);
   report.blocked = blockedAccounts(accounts);
   report.reserve = report.lines.length ? Math.min(...report.lines.map((l) => l.reserve)) : null;
+  report.todayGaps = todayGaps(report);
   // 보류 편은 나가지 않으니 검사가 「고칠 것」이어도 세지 않는다(10-23 — 알림이 고칠 것 하나만으로도 나가게 되면서).
   report.fix = items.filter((x) => fixNeeded(x) && x.state !== '보류' && x.slot && x.slot >= today);
   report.warnings = [...new Set([...items.flatMap((x) => x.warnings), ...doubleBookings(report.accounts), ...linkWarnings(items, now)])];
@@ -373,12 +377,26 @@ function gapsOf(line, range) {
   return out;
 }
 
+// 오늘 칸이 채움(예약·게시)도 쉼도 아닌 계정 — 줄 순서대로 [{line, account, state, why}]. 막힌 계정은 줄에 없으니 여기도 없다.
+function todayGaps(report) {
+  const d = report.range[0];
+  return report.lines.flatMap((l) => Object.entries(l.byDay[d]?.cells || {})
+    .filter(([, s]) => s !== '채움' && s !== '쉼')
+    .map(([account, state]) => ({ line: l.line, account, state, why: WHY[state] })));
+}
+// 「LAB 두 채널 — lab-cn-xiaohongshu 만든 편 없음, lab-mm-tiktok 만든 편 없음 · yuhobuilds — …」
+function todayGapText(gaps) {
+  const lines = [...new Set(gaps.map((g) => g.line))];
+  return lines.map((line) => `${line} — ${gaps.filter((g) => g.line === line).map((g) => `${g.account} ${g.why}`).join(', ')}`);
+}
+
 function print(report) {
   const { range } = report;
   if (report.lines.length) {
     console.log(`비축 ${report.reserve}일 / 목표 ${report.lead}일 · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔  – 쉬는 요일`);
     console.log('줄'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축  만듦');
     for (const l of report.lines) console.log(l.line.padEnd(12) + range.map((d) => l.byDay[d].mark.padEnd(5)).join('  ') + `  ${l.reserve}일   ${l.made}일`);
+    if (report.todayGaps.length) console.log(`  오늘(${report.today.slice(5)}) 빈 계정: ${todayGapText(report.todayGaps).join(' · ')}`);
     for (const l of report.lines) { const gaps = gapsOf(l, range); if (gaps.length) console.log(`  ${l.line} 빈 칸: ${gaps.join(' · ')}`); }
   }
   if (report.blocked.length) console.log(`  막혀 셈에서 뺀 계정: ${report.blocked.map((b) => `${b.account}(${b.reason})`).join(' · ')}`);
@@ -426,6 +444,26 @@ function reserveAlert(report, now) {
   send(text);
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(stateFile, JSON.stringify({ day: report.today, sentAt: new Date(now).toISOString() }));
+  return { sent: true, text };
+}
+
+// 오늘 빈 계정이 남으면 17시(채울 시간이 남을 때) · 21시(슬롯 시각) 뒤 한 번씩 한 통으로(10-29).
+const TODAY_ALERT_HOURS = [17, 21];
+function todayAlert(report, now) {
+  if (!report.todayGaps.length) return { sent: false, reason: 'filled' };
+  const hour = Number(new Date(now + 9 * 3600000).toISOString().slice(11, 13));
+  const window = [...TODAY_ALERT_HOURS].reverse().find((h) => hour >= h);
+  if (window === undefined) return { sent: false, reason: 'before-hour' };
+  const stateFile = path.join(STATE_DIR, '오늘빈계정알림.json');
+  const last = readJson(stateFile) || {};
+  if (last.day === report.today && last.window === window) return { sent: false, reason: 'same-window' };
+  const text = [`[오늘 빈 계정] ${report.today} · ${report.todayGaps.length}곳이 아직 예약·게시 전`,
+    ...todayGapText(report.todayGaps),
+    ...(report.blocked.length ? [`막혀 못 올리는 계정: ${report.blocked.map((b) => `${b.account}(${b.reason})`).join(' · ')}`] : []),
+    '오늘 안에 채워요 — 관문을 못 넘은 칸은 가장 나은 판으로(제작 절차 「매일 한 편」), 「승인·예약 전」은 검토 링크 승인이나 「올려」로'].join('\n');
+  send(text);
+  fs.mkdirSync(STATE_DIR, { recursive: true });
+  fs.writeFileSync(stateFile, JSON.stringify({ day: report.today, window, sentAt: new Date(now).toISOString() }));
   return { sent: true, text };
 }
 
@@ -516,10 +554,10 @@ async function main() {
     if (process.argv.includes('--서버읽기')) { console.error(`서버 읽기 실패: ${error.message}`); process.exitCode = 1; }
   }
   const report = build(today, days, server, accounts, now);
-  if (process.argv.includes('--알림')) { report.alert = alert(report); report.reserveAlert = reserveAlert(report, now); }
+  if (process.argv.includes('--알림')) { report.alert = alert(report); report.reserveAlert = reserveAlert(report, now); report.todayAlert = todayAlert(report, now); }
   if (process.argv.includes('--json')) { console.log(JSON.stringify(report, null, 2)); return; }
   print(report);
-  if (report.alert?.sent || report.reserveAlert?.sent) console.log('텔레그램으로 알렸다');
+  if (report.alert?.sent || report.reserveAlert?.sent || report.todayAlert?.sent) console.log('텔레그램으로 알렸다');
 }
 
 main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; });
