@@ -16,7 +16,10 @@ const 기록 = JSON.parse(fs.readFileSync(path.join(작업, '기록.json'), 'utf
 const 받아 = JSON.parse(fs.readFileSync(path.join(작업, '받아쓰기.json'), 'utf8'));
 
 // 역마다 엔진이 섞이게 고정한 듣는 순서(귀로만 고르게).
+// 페이지에는 이 순서로 놓인다 — 10-30에 더한 감독 · 모범 읽기가 위, 이미 고른 교수 · 선배가 아래.
 const 순서 = {
+ 감독: ['감독_eleven_Harrison', '감독_inworld_Yoona', '감독_openai_ash', '감독_eleven_Nora', '감독_inworld_Hyunwoo', '감독_eleven_Mark'],
+ 모범: ['모범_inworld_Minji', '모범_eleven_Kevin', '모범_openai_coral', '모범_eleven_Hana', '모범_inworld_Seojun', '모범_eleven_Zoe'],
  교수: ['교수_inworld_Yoona', '교수_eleven_Nora', '교수_openai_marin', '교수_eleven_Elena', '교수_inworld_Minji', '교수_eleven_Vesper'],
  선배: ['선배_eleven_Julian', '선배_inworld_Hyunwoo', '선배_openai_cedar', '선배_eleven_Kevin', '선배_inworld_Seojun', '선배_eleven_Cillian'],
 };
@@ -28,6 +31,11 @@ const 덧말 = {
  '교수_eleven_Vesper': '미리듣기 음높이가 여자 후보 가운데 가장 낮았다.',
  '교수_openai_marin': 'OpenAI 목소리는 앱에 「합성 목소리」 표시가 필요하다(OpenAI 정책).',
  '선배_openai_cedar': '받아쓰기에서 「정문」·「선배라고」가 「적은」·「손대라고」로 나왔다 — 발음이 흐린 곳이 있다. OpenAI 정책상 「합성 목소리」 표시가 필요하다.',
+ '감독_eleven_Nora': '여자 목소리 — 감독의 성별은 아직 정하지 않았다. 교수 후보였던 목소리다.',
+ '감독_inworld_Yoona': '여자 목소리 — 감독의 성별은 아직 정하지 않았다.',
+ '감독_openai_ash': 'OpenAI 목소리는 앱에 「합성 목소리」 표시가 필요하다(OpenAI 정책).',
+ '모범_eleven_Kevin': '선배 후보였던 목소리다.',
+ '모범_openai_coral': 'OpenAI 목소리는 앱에 「합성 목소리」 표시가 필요하다(OpenAI 정책).',
 };
 const 파일 = {};
 const 후보 = {};
@@ -35,7 +43,7 @@ for (const [역, 열쇠들] of Object.entries(순서)) {
  후보[역] = 열쇠들.map((열쇠, i) => {
   const 판 = 기록.판[열쇠];
   if (!판?.판) throw new Error(`${열쇠}의 맞춘 소리가 없다 — 굽기.mjs 맞추기부터`);
-  const 이름 = `audio/${역 === '교수' ? 'professor' : 'senior'}-${i + 1}.mp3`;
+  const 이름 = `audio/${{ 교수: 'professor', 선배: 'senior', 감독: 'director', 모범: 'model' }[역]}-${i + 1}.mp3`;
   파일[이름] = path.join(작업, 판.판).replace(/\\/g, '/');
   return { 번호: i + 1, 소리: 이름, 초: 판.초, 엔진: 엔진말[판.엔진], 목소리: 판.이름, 값: 값말[판.엔진], 일치: 받아[열쇠]?.일치 ?? null, 덧말: 덧말[열쇠] || '' };
  });
@@ -43,8 +51,10 @@ for (const [역, 열쇠들] of Object.entries(순서)) {
 const 줄 = (역) => JSON.parse(fs.readFileSync(path.join(작업, `${역}_줄.json`), 'utf8')).map((l) => ({ 말: l.말, 지문: l.지문, 되묻기: l.되묻기 }));
 const 쓸것 = {
  역: [
-  { id: 'professor', 역: '교수', 이름: `문지영 교수`, 소개: ep01.인물.교수.소개, 줄: 줄('교수'), 후보: 후보.교수 },
-  { id: 'senior', 역: '선배', 이름: `권태오 선배`, 소개: ep01.인물.선배.소개, 줄: 줄('선배'), 후보: 후보.선배 },
+  { id: 'director', 역: '감독', 제목: '감독', 장면: '촬영장 · 테이크마다', 소개: '배우 출신의 가상 감독. 테이크가 끝날 때마다 짧게 말하고, 사람이 아니라 테이크에 대해서만 말한다. 마지막 두 줄(노트 · 칭찬)은 시안이다 — 유호님 연출 원칙 인터뷰 뒤 다시 쓴다.', 줄: 줄('감독'), 후보: 후보.감독 },
+  { id: 'model', 역: '모범', 제목: '학생 모범 읽기', 장면: '따라 말하기 · 내 대사 아홉 줄', 소개: '학습자가 듣고 따라 말할 모범 읽기. 교수님께는 공손하게, 선배에게는 밝게 — 또박또박 자연스러운 속도로.', 줄: 줄('모범'), 후보: 후보.모범 },
+  { id: 'professor', 역: '교수', 제목: '문지영 교수 역', 장면: '장면 1 · 연구실 · 10-30 고름', 소개: ep01.인물.교수.소개, 줄: 줄('교수'), 후보: 후보.교수 },
+  { id: 'senior', 역: '선배', 제목: '권태오 선배 역', 장면: '장면 2 · 학생 식당 · 10-30 고름', 소개: ep01.인물.선배.소개, 줄: 줄('선배'), 후보: 후보.선배 },
  ],
  대본: { 제목: ep01.제목, 시즌: ep01.시즌, 줄거리: ep01.줄거리, 배운것: ep01.배운것, 촬영일: ep01.촬영일, 처음보는대사: ep01.처음보는대사.map(({ 상황, 말, 뜻 }) => ({ 상황, 말, 뜻 })), 카드: ep01.카드, 예고: ep01.예고, 칸수: ep01.칸.length },
 };
@@ -133,9 +143,9 @@ ol.lines{margin:10px 0 0;padding-left:22px;display:grid;gap:6px;font-size:15px}
  <header>
   <p class="slate">드라마 말하기 · S1 EP01 · 목소리 오디션</p>
   <h1>1화 목소리 오디션</h1>
-  <p class="lead">교수님 역과 선배 역마다 여섯 목소리가 같은 대사를 읽습니다. 귀로만 들어 보고 역마다 하나를 골라 주세요. 엔진 이름은 고른 다음에 보입니다.</p>
+  <p class="lead">역마다 여섯 목소리가 같은 대사를 읽습니다. 귀로만 들어 보고 역마다 하나를 골라 주세요. 엔진 이름은 고른 다음에 보입니다. 교수님 · 선배 역은 10-30에 고르셨고, 이번에 감독과 학생 모범 읽기를 더했습니다.</p>
   <div class="how">
-   <p>모든 판은 같은 크기(−18 LUFS)로 맞췄고, 대사 아홉 줄(선배는 일곱 줄) 끝에 테이크가 안 들렸을 때의 되묻기 셋이 들어 있습니다.</p>
+   <p>모든 판은 같은 크기(−18 LUFS)로 맞췄고, 역마다 그 역이 말하는 줄을 모두 읽습니다(상대 인물은 끝에 되묻기 셋).</p>
    <p>고른 것은 이 페이지에 저장되고, Claude가 읽어 다음 굽기에 씁니다.</p>
   </div>
  </header>
@@ -161,8 +171,8 @@ const roleState = {};
 function renderRole(r) {
  const sec = make('section', 'role'); sec.id = 'role-' + r.id; sec.setAttribute('aria-labelledby', 'h-' + r.id);
  const head = make('div', 'role-head');
- head.append(make('p', 'slate', r.역 === '교수' ? '장면 1 · 연구실' : '장면 2 · 학생 식당'));
- const h = make('h2', null, r.이름 + ' 역'); h.id = 'h-' + r.id; head.append(h);
+ head.append(make('p', 'slate', r.장면));
+ const h = make('h2', null, r.제목); h.id = 'h-' + r.id; head.append(h);
  head.append(make('p', 'lead', r.소개));
  sec.append(head);
  const grid = make('div', 'cards');

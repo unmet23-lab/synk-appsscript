@@ -17,10 +17,12 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { 키차례 } from '../../../../tools/lib/오픈AI키.mjs';
-import { 후보 } from './후보.mjs';
+import { 후보, 인물말 } from './후보.mjs';
 
-const [명령, 작업] = process.argv.slice(2);
-if (!명령 || !작업) { console.error('쓰는 법: node 굽기.mjs 힉스필드|openai|맞추기 <작업 폴더>'); process.exit(2); }
+const [명령, 작업, 역인자] = process.argv.slice(2);
+if (!명령 || !작업) { console.error('쓰는 법: node 굽기.mjs 힉스필드|openai|맞추기 <작업 폴더> [역,역…(기본 모두)]'); process.exit(2); }
+const 역들 = 역인자 ? 역인자.split(',') : Object.keys(후보);
+for (const 역 of 역들) if (!후보[역]) { console.error(`모르는 역: ${역}`); process.exit(2); }
 const 기록파일 = path.join(작업, '기록.json');
 const 기록 = fs.existsSync(기록파일) ? JSON.parse(fs.readFileSync(기록파일, 'utf8')) : { 판: {} };
 const 저장 = () => fs.writeFileSync(기록파일, JSON.stringify(기록, null, 1));
@@ -65,7 +67,7 @@ async function 힉스필드() {
  기록.잔액전 ??= 잔액();
  console.log(`[굽기] 시작 잔액: ${기록.잔액전}`);
  const 할일 = [];
- for (const 역 of ['교수', '선배']) {
+ for (const 역 of 역들) {
   for (const 이름 of Object.keys(후보[역].eleven)) 할일.push({ 역, 엔진: 'eleven', 이름, 인자: ['generate', 'create', 'elevenlabs_v4', '--dialogue', fs.readFileSync(path.join(작업, `${역}_eleven_${이름}.json`), 'utf8'), '--stability', '0.5'] });
   for (const 목소리 of 후보[역].inworld) 할일.push({ 역, 엔진: 'inworld', 이름: 목소리.replace(/ \(ko\)$/, ''), 인자: ['generate', 'create', 'inworld_text_to_speech', '--prompt', fs.readFileSync(path.join(작업, `${역}_inworld.txt`), 'utf8'), '--voice', 목소리] });
  }
@@ -149,10 +151,9 @@ function wav(pcm) {
 }
 async function openai() {
  const 키들 = 키차례();
- for (const 역 of ['교수', '선배']) {
+ for (const 역 of 역들) {
   const 줄 = JSON.parse(fs.readFileSync(path.join(작업, `${역}_줄.json`), 'utf8'));
-  const 인물 = 역 === '교수' ? '국제학부 50대 여성 교수. 처음 온 유학생에게 따뜻하지만 마감 앞에서는 단호하다. 학생에게 해요체.' : '같은 과 3학년 20대 남학생. 길 잃은 신입생을 챙기는 친근한 선배, 장난기가 조금 있다. 처음 만난 후배에게 해요체.';
-  const 지시 = `너는 한국 드라마의 성우다. 배역: ${인물} 매번 받은 「대사」를 지문대로 연기해 글자 그대로 한 번만 말하고 멈춘다. 대사에 없는 말·인사·설명을 붙이지 않는다. 자연스러운 서울말 입말로.`;
+  const 지시 = `너는 한국 드라마의 성우다. 배역: ${인물말[역]} 매번 받은 「대사」를 지문대로 연기해 글자 그대로 한 번만 말하고 멈춘다. 대사에 없는 말·인사·설명을 붙이지 않는다. 자연스러운 서울말 입말로.`;
   for (const 목소리 of 후보[역].openai) {
    const 열쇠 = `${역}_openai_${목소리}`;
    if (기록.판[열쇠]?.파일 && fs.existsSync(path.join(작업, 기록.판[열쇠].파일))) continue;

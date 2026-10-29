@@ -22,9 +22,11 @@ def 일치(a, b):
         앞 = 지금
     return round(1 - 앞[len(b)]/max(len(a), len(b)), 3)
 
-결과 = {}
+결과파일 = 작업/'받아쓰기.json'
+결과 = json.loads(결과파일.read_text(encoding='utf-8')) if 결과파일.exists() else {}
 for 열쇠, 판 in 기록['판'].items():
-    if not 판.get('판'): continue
+    # 이미 받아 적은 판은 다시 하지 않는다(새로 구운 역만).
+    if not 판.get('판') or 열쇠 in 결과: continue
     줄 = json.loads((작업/f"{판['역']}_줄.json").read_text(encoding='utf-8'))
     대본 = ' '.join(l['말'] for l in 줄)
     segs, _ = model.transcribe(str(작업/판['판']), language='ko', vad_filter=True, beam_size=5)
