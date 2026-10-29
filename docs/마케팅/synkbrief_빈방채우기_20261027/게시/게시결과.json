@@ -22,7 +22,8 @@
       "작업": "66527f6fcc1b109ee0331d0c9cb3c980f5f98e1655b3589089932042d081f120",
       "후속": [
         "고정 댓글은 게시 뒤 손으로(API에 고정 기능 없음)",
-        "유튜브 표지 그림은 서버가 못 올린다 — 첫 화면이 표지"
+        "유튜브 표지 그림은 서버가 못 올린다 — 첫 화면이 표지",
+        "10-30 공개 확인: 고정 댓글이 달리지 않음(댓글 0) — 원고 pinnedComment를 달 승인을 유호님께 여쭘"
       ],
       "편ID": "synkbrief_빈방채우기_20261027",
       "승인": "10-27 20:35 유호님 「synkshift는 좋아 올려」(이 앱 세션에서 직접) → 20:35 Claude가 ego에서 작업실 검토 링크 「승인하기」 — 화면 「승인됐어요. 남은 확인이 없으면 예약한 때에 그대로 올라가요」(인스타그램 · 유튜브 10월 28일 오후 9:00). 서버는 내보내는 순간까지 reviewWaiting을 남긴다",
@@ -40,7 +41,9 @@
       "편ID": "synkbrief_빈방채우기_20261027",
       "방법": "유호님 10-27 22:0x 앱 세션에서 「승인 — 10-28 예약: synkbrief_빈방채우기_20261027 틱톡 ＠synkbrief 21:00 · 네이버 블로그 synkshift 21:10, E4 「아니」 ＠synkkorean 유튜브 21:00, 「그래 = за」 ＠synk.mn 인스타 · 페북 · 틱톡 · 텔레그램 21:00, 채팅 줄임말 간체 판 샤오훙수 22:00」 → 10-27 21:58 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) TikTok Studio 업로드 · 원본 room-c_master.mp4(32.4MB) · 캡션 03-synkbrief-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬(빈 방 예시 그림 · ChatGPT 결과) · 위치 없음 · Schedule Oct 28, 2026 21:00 (GMT+9) · Everyone · 저장 허용 창 Allow. 콘텐츠 목록 「Oct 28, 9:00 PM · Everyone」 한 줄(스크립트 C:/Users/q1212/ego/b8-post-20261027/tt-*.mjs). 첫 「Schedule」은 10-27 20:3x 「synkshift는 좋아 올려」만으로는 판정기가 막아 이름 댄 승인 뒤 눌렀다",
       "플랫폼": "tiktok",
-      "게시확인": "10-28 21:2x 이 세션 — ego 프로필 「TikTok synkbrief」(계정 synkbrief) TikTok Studio 콘텐츠 목록 맨 위 줄 「Oct 28, 9:00 PM · Everyone · 조회 1」(캡션 첫 줄 「빈 방 사진 한 장에 한 줄을 붙여 보냈더니…」, 00:22)"
+      "게시확인": "10-28 21:2x 이 세션 — ego 프로필 「TikTok synkbrief」(계정 synkbrief) TikTok Studio 콘텐츠 목록 맨 위 줄 「Oct 28, 9:00 PM · Everyone · 조회 1」(캡션 첫 줄 「빈 방 사진 한 장에 한 줄을 붙여 보냈더니…」, 00:22)",
+      "주소": "https://www.tiktok.com/@synkbrief/video/7701315807938153749",
+      "게시물ID": "7701315807938153749"
     },
     {
       "계정": "shift-naverblog",
