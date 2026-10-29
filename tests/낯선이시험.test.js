@@ -32,6 +32,11 @@ test('지난 편 묶음이 있으면 9번에만 열게 하고, 같아 보이면 
   const prompt = buildPrompt({ brand: 'lab-en', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'C:/a/지난1_E4.jpg' }, { file: 'C:/a/지난2_E1.jpg' }] });
   assert.match(prompt, /비교용\(9번에만\).*2편.*C:\/a\/지난1_E4\.jpg · C:\/a\/지난2_E1\.jpg.*1~8번은 이 영상만 보고/);
   assert.match(prompt, /^9\. 비교용 묶음과 견주어 .*「같아 보임」 또는 「달라 보임」.*끝 카드/m);
+  // 10-29 조정 — 그 계정에 늘 나오는 캐릭터 · 장소는 같은 틀로 치지 않는다(LAB 몽글 · 펠트 카페), 고정이 없는 계정은 그 말이 없다
+  assert.match(prompt, /^9\. .*몽글.*같은 틀로 치지 않는다.*무엇으로 끝나는지로만 판단한다/m);
+  const pulse = buildPrompt({ brand: 'pulse', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] });
+  assert.doesNotMatch(pulse, /같은 틀로 치지 않는다/);
+  assert.match(buildPrompt({ brand: 'synkbrief', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /「SYNK 브리핑」 이름표/);
 });
 
 test('브랜드마다 시청자가 있고, 모르는 브랜드는 멈춘다 · 본 계정으로 지난 편을 찾는다', () => {
