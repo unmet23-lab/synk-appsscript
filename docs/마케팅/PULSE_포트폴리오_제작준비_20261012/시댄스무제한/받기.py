@@ -1,13 +1,13 @@
 # 시댄스 2.5 무제한 날 — 유호님이 웹에서 낸 판을 founder 계정 기록에서 찾아 판 이름으로 받는다(2026-10-29).
 #   python -X utf8 받기.py [--크기 100] [--부터 2026-10-29T11:00Z]   → synk-vendor/pulse-seedance-day-20261028/받음/<판>.mp4 · _받음.json
 # 받기만 한다 — 생성 단추는 누르지 않는다(무제한은 사람만, 결정 10-26). 계정 기록은 CLI를 founder 홈으로 불러 읽는다(현장노트 higgsfield).
-# 판 찾기: 기록의 지시문을 웹올리기/<폴더>/지시문.txt와 견준다(꼬리표 @이미지 · @오디오 · 띄어쓰기를 빼고). 비율 · 길이 · 소리도 함께 본다.
+# 판 찾기: 기록의 지시문을 웹올리기 · 웹올리기_둘째날(7번)/<폴더>/지시문.txt와 견준다(꼬리표 @이미지 · @오디오 · 띄어쓰기를 빼고). 비율 · 길이 · 소리도 함께 본다.
 # 같은 판을 다시 냈으면 먼저 낸 것이 <판>.mp4, 뒤의 것이 <판>__2.mp4 … 이다(고르는 것은 검수에서).
 # 크레딧: 거래 내역에서 시댄스 2.5 줄을 세어 0크레딧이 아닌 것이 있으면 크게 알린다(무제한으로 안 나간 것 — 웹의 Unlimited 스위치).
 import difflib, json, os, re, shutil, subprocess, sys
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-WEB = os.path.join(DAY, "웹올리기")
+WEBS = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날")]   # 첫날 · 둘째 날 꾸러미 — 판 id는 서로 겹치지 않는다
 OUT = os.path.join(DAY, "받음")
 HOME = os.path.join(os.path.expanduser("~"), ".ai-accounts", "higgsfield-founder")
 MATCH = 0.85   # 이보다 낮으면 판을 정하지 않고 「못 찾음」으로 둔다
@@ -30,10 +30,12 @@ def norm(s):
 
 def boards():
     out = []
-    for b in json.load(open(os.path.join(WEB, "_순서.json"), encoding="utf-8")):
-        f = os.path.join(WEB, b["폴더"], "지시문.txt")
-        t = norm(open(f, encoding="utf-8").read())
-        out.append({**b, "글": t, "낱말": set(t.split())})
+    for web in WEBS:
+        if not os.path.exists(os.path.join(web, "_순서.json")):
+            continue
+        for b in json.load(open(os.path.join(web, "_순서.json"), encoding="utf-8")):
+            t = norm(open(os.path.join(web, b["폴더"], "지시문.txt"), encoding="utf-8").read())
+            out.append({**b, "꾸러미": web, "글": t, "낱말": set(t.split())})
     return out
 
 

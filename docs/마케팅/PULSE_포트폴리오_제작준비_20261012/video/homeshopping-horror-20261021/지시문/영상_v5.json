@@ -89,7 +89,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "강도 「가진 거 다 내놔!」(얼굴이 안 보여 소리 참고 없음 — 편집에서 얹는다)",
-   "prompt": "Wide shot at standing eye level. Camera, copying the original cut exactly: the camera is locked off and almost perfectly still, exactly like the original cut, with only a faint drift; after 0.7 s it stays just as still. At the left edge the masked man in the black balaclava, seen from the side and back, holds a kitchen knife (a harmless film prop) low at his waist, pointed toward the three women. Immediately the woman in the white lace veil on the right spins away toward the sofa armrest in panic, her veil swinging; the curly-haired woman with the rose crown and the woman with round glasses flinch back, shoulders hunched, hands clutched to their chests, frozen in terror. All of this happens within the first second.",
+   "prompt": "Wide shot at standing eye level. Camera, copying the original cut exactly: the frame stays exactly where it is from the first frame to the last — no push-in, no zoom, no pan, no tilt, no shake — with only the faintest drift of a camera resting on a fixed mount; after 0.7 s it is still exactly the same framing. At the left edge the masked man in the black balaclava, seen from the side and back, holds a kitchen knife (a harmless film prop) low at his waist, pointed toward the three women. Immediately the woman in the white lace veil on the right spins away toward the sofa armrest in panic, her veil swinging; the curly-haired woman with the rose crown and the woman with round glasses flinch back, shoulders hunched, hands clutched to their chests, frozen in terror. All of this happens within the first second.",
    "공통_말없음": true,
    "요약": "넓게 · 강한 손떨림. 왼쪽 끝 강도가 칼(소품)을 허리 높이로 셋 쪽에 · 첫 1초 안에 A가 팔걸이 쪽으로 홱 돌아서고 C · B는 어깨를 웅크리고 굳는다.",
    "카메라_원본": {
@@ -164,7 +164,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "C 「여기요!」(1.38–1.88 — 얼굴이 작아 소리 참고 없음)",
-   "prompt": "Wide shot. Camera, copying the original cut exactly: the camera is locked off and almost perfectly still, exactly like the original cut, with only a faint drift; after 2.0 s it stays just as still. The curly-haired woman on the left, trembling, snatches the small fluffy red heart pouch from the coffee table and, leaning her whole body back as far from him as she can, thrusts it out at arm's length toward the masked man; he steps in and takes it with his free hand, keeping the kitchen knife (a harmless film prop) low at his side. Behind her the woman with round glasses and the woman in the white lace veil huddle together, clutching each other's arms, shoulders hunched, frozen in terror. It starts right away.",
+   "prompt": "Wide shot. Camera, copying the original cut exactly: the frame stays exactly where it is from the first frame to the last — no push-in, no zoom, no pan, no tilt, no shake — with only the faintest drift of a camera resting on a fixed mount; after 2.0 s it is still exactly the same framing. The curly-haired woman on the left, trembling, snatches the small fluffy red heart pouch from the coffee table and, leaning her whole body back as far from him as she can, thrusts it out at arm's length toward the masked man; he steps in and takes it with his free hand, keeping the kitchen knife (a harmless film prop) low at his side. Behind her the woman with round glasses and the woman in the white lace veil huddle together, clutching each other's arms, shoulders hunched, frozen in terror. It starts right away.",
    "공통_말없음": true,
    "요약": "넓게. C가 떨며 주머니를 집어 몸을 뒤로 뺀 채 팔만 뻗어 건네고 강도가 받는다 · B · A는 서로 붙잡고 웅크려 굳는다.",
    "카메라_원본": {
@@ -1455,7 +1455,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "말 없음",
-   "prompt": "Low-angle medium shot from the eye level of someone sitting on the sofa, looking up at him. Camera, copying the original cut exactly: the camera is locked off and almost perfectly still, exactly like the original cut, with only a faint drift; after 2.1 s it stays just as still. The masked man stands still facing the camera and stares straight into the lens, deadpan; the small ribbon-tied lunchbox dangles and sways slightly from the long ribbon ends wound around the fingers of his right hand, which stays at chest height. He does not move his arms.",
+   "prompt": "Low-angle medium shot from the eye level of someone sitting on the sofa, looking up at him. Camera, copying the original cut exactly: the frame stays exactly where it is from the first frame to the last — no push-in, no zoom, no pan, no tilt, no shake — with only the faintest drift of a camera resting on a fixed mount; after 2.1 s it is still exactly the same framing. The masked man stands still facing the camera and stares straight into the lens, deadpan; the small ribbon-tied lunchbox dangles and sways slightly from the long ribbon ends wound around the fingers of his right hand, which stays at chest height. He does not move his arms.",
    "요약": "아래에서. 렌즈를 똑바로 보며 무표정 · 리본 끈에 매달린 도시락이 살짝 흔들린다 · 팔은 움직이지 않는다.",
    "공통_말없음_강도": true,
    "카메라_원본": {

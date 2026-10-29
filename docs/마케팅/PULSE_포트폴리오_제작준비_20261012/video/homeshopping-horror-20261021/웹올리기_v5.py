@@ -20,12 +20,22 @@ OUT = os.path.join(V, "영상", "웹올리기_v5")
 FIRST = ["S07", "S03", "S26", "S05"]
 
 
+HAND = ("The camera is a real handheld camera held by an operator right next to the actors; it moves exactly as described above, "
+        "never with a smooth gimbal, dolly or drone glide.")
+FIXED = ("The camera rests on a fixed mount for this whole shot and does not travel, push in or drift — nothing about the framing changes; "
+         "never a smooth gimbal, dolly or drone glide.")
+
+
 def text_of(spec, c):
     parts = [c["prompt"]]
     for key in ("공통_말없음", "공통_말없음_강도"):
         if c.get(key):
             parts.append(spec[key])
-    parts.append(spec["공통"])
+    common = spec["공통"]
+    if "a camera resting on a fixed mount" in c["prompt"]:   # 정말 고정인 컷(#1 · #3 · #31) — 공통의 손 카메라 문장과 부딪히지 않게(10-30 Fable)
+        common = common.replace(HAND, FIXED)
+        assert FIXED in common, "공통에 손 카메라 문장이 없다"
+    parts.append(common)
     return " ".join(parts)
 
 

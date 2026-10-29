@@ -26,7 +26,7 @@ SEED_SAMPLES = "C:/Users/q1212/Documents/synk-vendor/homeshopping-horror-2026102
 SAMPLE_FILE = {"지유": "jiyu.mp3", "리4": "ri4.mp3", "통2": "tong2.mp3", "강도": "gangdo.mp3"}
 HS_CASTING = [   # (배역, 시작 그림을 빌릴 컷, 화면 속 사람, 대명사, 말할 글 — 5~6초, 대사가 아닌 일상 말)
     ("지유", 7, "The young woman in the white lace veil", "her", "내일이 결혼식이라, 오늘은 친구들이랑 조촐하게 모였어요. 다들 와 줘서 고마워요."),
-    ("리4", 8, "The young woman with round glasses and red hair bows", "her", "이번에 나온 핑크 에디션, 제가 제일 먼저 샀어요. 색이 너무 예뻐서 매일 들고 다녀요."),
+    ("리4", 8, "The young woman with round glasses, a black bob and red ribbon bows in her hair", "her", "이번에 나온 핑크 에디션, 제가 제일 먼저 샀어요. 색이 너무 예뻐서 매일 들고 다녀요."),
     ("통2", 16, "The curly-haired woman with the rose crown", "her", "오늘 저녁 메뉴는 제가 골랐어요. 치즈랑 계란은 꼭 넣어 달라고 했어요."),
     ("강도", 23, "The man in the black balaclava", "his", "택배는 문 앞에 두고 갈게요. 상자가 좀 무거우니까, 들 때 조심하세요."),
 ]
@@ -56,6 +56,7 @@ DAY2 = ("p7", "short-drama-20261026")
 OUT2 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_둘째날"
 P7_SOUND = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고"   # A/<판 id>.mp3(입 맞춤 대사) · B/<배역>.mp3(목소리 견본)
 P7_ROLE = {"IAN": "ian", "SEOJIN": "seojin", "MINJAE": "minjae", "SOYEON": "soyeon"}
+DAY2_BUFFER = ["p7-1-1", "p7-1-7", "p7-1-12", "p7-1-22", "p7-1-24", "p7-1-26-27"]   # 소리 끔 판 — 목소리 판 뒤 견본이 들어올 때까지(10-30)
 DAY2_TESTS = ["p7-1-16", "p7-2-28"]   # 두 방식을 같은 컷으로(02_콘티 8-4) — 고른 방식 판이 그 컷의 주판을 겸한다
 CAMERA_ALT = {   # 카메라 줄을 「기법 이름 + 끝 모습만」 꼴로 나란히(02_콘티 8-4 · 시댄스 도움말이 바로 알아듣는 낱말 「truck」)
     "p7-1-35": "slow truck right with a handheld feel, easing to a stop — it ends with Soyeon a little left of center.",
@@ -134,13 +135,16 @@ def hs_casting_prompt(who, pos, text):
         first_line(False),
         "ONE SINGLE CONTINUOUS SHOT of a live-action Korean horror-comedy short film, horizontal 16:9 — no cuts, no camera switch, no slow motion, "
         "no speed ramp, no end card.",
-        f"ACTION: {who} calms down, looks just past the camera and says in Korean, in {pos} own natural everyday speaking voice — relaxed and "
+        # 시작 그림이 겁먹거나 우는 얼굴이라 울음 · 훌쩍임이 견본에 섞이지 않게 먼저 조용히 가라앉힌다(10-30 Fable — 견본떼기는 무음만 자른다)
+        f"ACTION: {who} closes {pos} mouth, swallows and calms down in silence — no crying sound, no sob, no sniff — then looks just past the "
+        f"camera and says in Korean, in {pos} own natural everyday speaking voice — relaxed and "
         f"conversational, as if chatting with a friend; not shouting, not crying, not whispering, not announcing: \"{text}\" {lips[0].upper() + lips[1:]} "
         "clearly form the Korean words. Everyone else in the frame keeps still with lips closed.",
         "CAMERA: the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
         "LOOK: keep the first frame's faces, hair, outfits, the room and its dim, warm tungsten lamp light and colors to the very end; no new light, "
         "no color shift; no added on-screen text, captions or logos.",
-        f"SOUND: only {pos} natural speaking voice saying this one Korean line, over quiet room tone — no music, no other voices, no sound effects.",
+        f"SOUND: only {pos} natural speaking voice saying this one Korean line, over quiet room tone — no music, no other voices, no sound effects, "
+        "no crying or sobbing sounds at any point.",
     ])
 
 
@@ -204,7 +208,7 @@ def p7_casting(spec, role, cut, name, pos, text):
     shot = next(s for p in spec["판"] for s in p["샷"] if s["컷"] == cut)
     c = spec["공통"]
     L = [first_line(False), f"ONE SINGLE CONTINUOUS SHOT of {c['장르']}, vertical 9:16 — no cuts, no camera switch, no slow motion, no speed ramp, no end card."]
-    L += who_lines(spec, shot["누구"])
+    L += who_lines(spec, [shot["말"]["누가"]])   # 말하는 사람만 — 화면 밖 사람 줄(「첫 프레임의 그 사람」)이 사람을 더하지 않게(10-30 Fable)
     L.append(f"ACTION: {name} looks just past the camera and says in Korean, in {pos} own natural everyday speaking voice — relaxed and conversational, "
              f"as if talking to a friend; not shouting, not whispering, not announcing: \"{text}\" {pos.capitalize()} lips clearly form the Korean words. "
              "No one else speaks; anyone else in the frame keeps still with lips closed.")
@@ -235,7 +239,10 @@ def build_day2(mode):
         alt.update({"id": f"{tid}-기법꼴", "설명": alt["설명"] + " · 카메라 줄 「기법 이름 + 끝 모습만」", "시험": True})
         tests += [now, alt]
     done = set(DAY2_TESTS) | set(CAMERA_ALT)
-    order = tests + [p7_item(spec, p, mode) for p in spec["판"] if p["id"] not in done and not p.get("대안")]
+    n = len(P7_CASTING) if mode == "B" else 0
+    buf = [p7_item(spec, by[k], mode) for k in DAY2_BUFFER] if n else []   # 목소리 판을 받아 견본을 떼는 동안 낼 소리 끔 판(10-30 Fable)
+    done |= {it["id"] for it in buf}
+    order = tests[:n] + buf + tests[n:] + [p7_item(spec, p, mode) for p in spec["판"] if p["id"] not in done and not p.get("대안")]
     order += [p7_item(spec, p, mode) for p in spec["판"] if p.get("대안")]
     by_item = {it["id"]: it for it in order}
     if "--보기" in sys.argv:
@@ -322,11 +329,15 @@ def build():
             items.append({"id": p["id"], "편": key, "편이름": spec["이름"], "컷": p["컷"], "길이": p["길이"], "비율": spec["비율"],
                           "소리": "끔", "설명": p["설명"], "파일": files, "지시문": prompt(spec, p),
                           "묶음": len(shots) > 1, "대안": bool(p.get("대안")), "낱판": p.get("낱판", []), "쓰는초": [s.get("쓰는초") for s in shots]})
-    # 차례: 배역 목소리 판 → 시험 여섯(그동안 목소리 판에서 견본을 뗌) → 목소리 시험 → 편 차례(대안 판은 맨 뒤 — 묶음이 안 될 때만)
+    # 차례: 배역 목소리 판 → 시험 여섯(그동안 목소리 판에서 견본을 뗌) → 목소리 시험 → 매진 말 없는 판 → 매진 대사 판 → 다른 편 차례
+    # (대안 판은 맨 뒤 — 묶음이 안 될 때만)
     by_id = {it["id"]: it for it in items}
     first = [it["id"] for it in items if it.get("방식") == "목소리 판"] + TESTS + VOICE_TESTS
     order = [by_id[i] for i in first if i in by_id]
-    order += [it for it in items if it["id"] not in first and not it["대안"]]
+    rest = [it for it in items if it["id"] not in first and not it["대안"]]
+    # 목소리 시험 둘을 받아 판정할 틈 — 매진은 말 없는 판을 먼저, 대사(B) 판을 뒤에(10-30 Fable: 바로 뒤에 오면 시험이 틀릴 때 열한 판이 헛돈다)
+    talk = [it for it in rest if it["편"] == "hs" and it.get("방식") == "B"]
+    order += [it for it in rest if it["편"] == "hs" and it not in talk] + talk + [it for it in rest if it["편"] != "hs"]
     order += [it for it in items if it["대안"]]
     if "--보기" in sys.argv:
         k = sys.argv[sys.argv.index("--보기") + 1]
@@ -390,6 +401,7 @@ h2{font-size:18px;margin:24px 0 6px}
 <li>판마다 미디어 칸을 비우고 폴더의 파일을 <b>이름 차례대로</b> 올립니다 — 그림(1_ · 2_) 다음에 소리(<b>3_소리.mp3</b> 지금 방식 · <b>3_목소리견본.mp3</b> 새 방식). 「@이미지 1」 · 「@오디오 1」 글자가 꼬리표로 안 바뀌면 지우고 @로 올린 파일을 고릅니다.</li>
 <li>「두 샷」 판은 옴니 레퍼런스 모드에서 그림 둘을 참조로 올립니다 — 안 되면 맨 아래 「대안」의 낱판 둘로 냅니다.</li>
 <li>맨 앞 <b>목소리 판 넷</b>(이안 · 서진 · 민재 · 소연 — 견본 없이 일상 문장 한 줄, 시댄스가 처음 낸 목소리를 그 배역 목소리로)을 내고 「목소리 판 냈어」라고 해 주세요. Claude가 목소리를 떼어 대사 판마다 <b>3_목소리견본.mp3</b>로 넣어 드립니다.</li>
+<li>견본을 떼는 동안(20분쯤) 바로 뒤 <b>소리 끔 판 여섯</b>(1-1 · 1-7 · 1-12 · 1-22 · 1-24 · 1-26+27 — 견본이 필요 없는 판)을 이어서 내 주세요.</li>
 <li>이어서 <b>7번 시험 넷</b>(1-16 민재 · 2-28 이안 — 견본이 들어온 뒤, 1-35를 카메라 줄 두 꼴로)을 내고 「7번 시험 냈어」 — 시험 판은 그 컷의 주판을 겸합니다. 「파일 아직」 표시가 있는 판은 순서표를 새로 고쳐 견본이 들어온 것을 보고 내 주세요.</li>
 </ol></div>
 """
@@ -415,7 +427,7 @@ h2{font-size:18px;margin:24px 0 6px}
 </style></head><body><main>
 <h1>PULSE 포트폴리오 · 시댄스 2.5 무제한 순서표</h1>
 <div class="card"><b>시작 전에</b><ol>
-<li>사기 전에 상품 카드에서 모델(Seedance 2.5) · 화질(720p) · 한 판 길이 상한 · 동시에 돌릴 수 있는 수를 봐 주세요. Claude가 받을 수 있게 MCP가 붙은 계정에서 삽니다.</li>
+<li>사기 전에 상품 카드에서 모델(Seedance 2.5) · 화질(720p) · 한 판 길이 상한 · 동시에 돌릴 수 있는 수를 봐 주세요. Claude가 받을 수 있게 MCP가 붙은 계정에서 삽니다. 그리고 만들기 칸에 가장 긴 지시문(110번 판 옆집 07+08, 3,685자)을 미디어 없이 붙여 넣어 끝 줄 「SOUND: silent clip …」까지 들어가는지 봐 주세요(생성은 누르지 않음) — 잘리면 사지 말고 Claude에게 알려 주세요.</li>
 <li>higgsfield.ai → 비디오 만들기 → 모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b>(생성 단추에 「Unlimited」가 보여야 크레딧이 안 나갑니다) · 화질 720p · 소리는 판마다 적힌 대로 · 비율은 판마다 적힌 대로.</li>
 <li>판마다 앞 판에서 올린 그림을 지우고 미디어 칸을 비운 뒤, 판 폴더의 그림을 <b>파일 이름 차례대로</b> 올립니다.
  <br>· 그림 칸이 「시작 프레임 / 끝 프레임」으로 나뉘면: 1_시작 → 시작, 2_끝 → 끝.
@@ -424,7 +436,7 @@ h2{font-size:18px;margin:24px 0 6px}
 <li><b>「두 샷」 판</b>(파란 표시)은 <b>옴니 레퍼런스(참조) 모드</b>에서 그림 둘을 참조로 올려 한 판에 두 컷을 냅니다 — 시댄스 2.5에는 이 모드가 있습니다(10-28 MCP 모델 정보: 문장만 · 옴니 레퍼런스 · 시작/끝 프레임 · 한 판 4~30초). 화면이 두 그림을 시작 · 끝 프레임으로만 받으면 이 판은 내지 말고 아래 「대안」의 낱판 둘로 냅니다.</li>
 <li>「지시문 복사」로 글을 붙여 넣고 생성합니다. 프리셋을 권하면 거절합니다. 앞 판이 다 만들어진 뒤 다음 판을 냅니다. 처음 보는 동의 창은 직접 읽고 눌러 주세요.</li>
 <li>대사는 시댄스가 직접 연기한 목소리를 쓰고, 목소리는 처음 시댄스가 내 준 것으로 정합니다(10-29). 그래서 맨 앞 <b>목소리 판 넷</b>(매진 임박 지유 · 리4 · 통2 · 강도 — 소리 켬, 견본 없이 일상 문장 한 줄)을 먼저 내고 Claude에게 「목소리 판 냈어」라고 해 주세요. Claude가 그 목소리를 떼어 배역마다 대사 판에 <b>3_목소리견본.mp3</b>로 넣어 드립니다.</li>
-<li>기다리지 말고 이어서 <b>시험 여섯</b>을 내시고 「시험 냈어」 — 묶음 · 끝 그림 · 카메라 길이 되는지 알려 드립니다. 그다음 <b>목소리 시험 둘</b>(지유 #7 · #12)은 순서표를 새로 고쳐 견본이 들어온 것(「파일 아직」 표시가 사라짐)을 보고 내 주세요 — 두 컷이 같은 사람 목소리로 들리는지 · 입과 소리가 맞는지 들어 보는 판을 만들어 드립니다.</li>
+<li>기다리지 말고 이어서 <b>시험 여섯</b>을 내시고 「시험 냈어」 — 묶음 · 끝 그림 · 카메라 길이 되는지 알려 드립니다. 그다음 <b>목소리 시험 둘</b>(지유 #7 · #12)은 순서표를 새로 고쳐 견본이 들어온 것(「파일 아직」 표시가 사라짐)을 보고 내 주세요 — 두 컷이 같은 사람 목소리로 들리는지 · 입과 소리가 맞는지 들어 보는 판을 만들어 드립니다. 목소리 시험 뒤에는 매진 <b>말 없는 판</b>부터 이어서 내 주시고, 매진 <b>대사 판</b>(새 방식 열한 판)은 목소리 시험 판정을 들은 뒤에 내 주세요 — 그 사이에 말 없는 판이 한 시간쯤 있습니다.</li>
 </ol></div>
 """
     out = [head]
