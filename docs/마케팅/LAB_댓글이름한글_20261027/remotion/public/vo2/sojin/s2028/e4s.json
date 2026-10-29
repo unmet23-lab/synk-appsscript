@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e4s",
+ "text": "One sound in English. Four in Korean!",
+ "dur": 2.473,
+ "words": [
+  {
+   "text": "One",
+   "start": 0.02,
+   "end": 0.181
+  },
+  {
+   "text": "sound",
+   "start": 0.241,
+   "end": 0.522
+  },
+  {
+   "text": "in",
+   "start": 0.582,
+   "end": 0.642
+  },
+  {
+   "text": "English.",
+   "start": 0.702,
+   "end": 1.084
+  },
+  {
+   "text": "Four",
+   "start": 1.425,
+   "end": 1.646
+  },
+  {
+   "text": "in",
+   "start": 1.706,
+   "end": 1.766
+  },
+  {
+   "text": "Korean!",
+   "start": 1.827,
+   "end": 2.473
+  }
+ ],
+ "source": {
+  "key": "ad7c92ab31ee4463037307ffbee05ef4",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2028,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 553
+ }
+}

@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e4s",
+ "text": "One sound in English. Four in Korean!",
+ "dur": 2.755,
+ "words": [
+  {
+   "text": "One",
+   "start": 0.06,
+   "end": 0.246
+  },
+  {
+   "text": "sound",
+   "start": 0.377,
+   "end": 0.693
+  },
+  {
+   "text": "in",
+   "start": 0.75,
+   "end": 0.824
+  },
+  {
+   "text": "English.",
+   "start": 0.899,
+   "end": 1.253
+  },
+  {
+   "text": "Four",
+   "start": 1.588,
+   "end": 1.83
+  },
+  {
+   "text": "in",
+   "start": 1.905,
+   "end": 1.979
+  },
+  {
+   "text": "Korean!",
+   "start": 2.036,
+   "end": 2.669
+  }
+ ],
+ "source": {
+  "key": "5596fb778cfd1dd090a3eeb02c4257dc",
+  "voice": {
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 3029,
+   "lufs": -17,
+   "voiceId": "tc_61659cc118732016a95fe7c6",
+   "prev": "그, 레, 이, 스. 그레이스!",
+   "next": "Your turn!"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0
+ }
+}

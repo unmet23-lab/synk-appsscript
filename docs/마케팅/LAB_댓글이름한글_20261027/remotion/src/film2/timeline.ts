@@ -1,18 +1,28 @@
 // 다시 살림(10-28) 시간표(초) — Grace는 한 칸을 다 쓸 때마다 그 소리(그 · 레 · 이 · 스)가 들리고 칸 위 숫자가 1 → 4로
 // 오른다(쓰는 박자 = 세는 박자). 첫 렌더는 예시 둘(Mark → Grace)이었고 고침 2에서 Grace 하나로 줄였다(아래).
 // 목소리 길이는 public/vo2/pick/*.json의 dur. 획 · 음절 꼴은 film/hangul.ts 그대로.
+// 영어 해설 둘(e4s · e6)은 10-29에 하나 → 소진으로 다시 구웠다 — 길이 · 낱말 시각을 그 줄 파일에서 바로 읽어
+// 줄을 바꿔도 시간표가 따라간다(옛 하나 판은 public/vo2/pick_하나/).
 import { nameStrokes, questionStrokes } from '../film/hangul';
 import { at, fr, FPS, len, STICKER, Timed, WRITE } from '../film/timeline';
+import e4sVo from '../../public/vo2/pick/e4s.json';
+import e6Vo from '../../public/vo2/pick/e6.json';
 
 export { at, fr, FPS, len, STICKER, WRITE };
 export type { Timed };
 
+const wordAt = (vo: { words: { text: string; start: number }[] }, text: string) => {
+  const w = vo.words.find((x) => x.text.replace(/[^A-Za-z']/g, '') === text);
+  if (!w) throw Error(`목소리 줄에 낱말 ${text}이 없다`);
+  return w.start;
+};
+
 // 고침 1(첫 렌더 이해 시험 3점 — 4~6초 빈 이름표에 「One syllable」만 들려 넘김): 「Grace?」 뒤 곧바로 쓰고,
 // 다 쓴 뒤 첫 판 v3(시험 통과)의 한 줄 「One syllable in English. Four in Korean!」으로 받친다.
-export const VO = { h0: 0.62, k3: 1.052, e4: 2.755, e6: 3.569, g: [0.407, 0.479, 0.457, 0.579] };
-const E4_ONE = 0.06; // 「One sound」
-const E4_FOUR = 1.588;
-const E6 = { comment: 0.875, write: 2.363 };
+export const VO = { h0: 0.62, k3: 1.052, e4: e4sVo.dur, e6: e6Vo.dur, g: [0.407, 0.479, 0.457, 0.579] };
+const E4_ONE = wordAt(e4sVo, 'One'); // 「One sound」
+const E4_FOUR = wordAt(e4sVo, 'Four');
+const E6 = { comment: wordAt(e6Vo, 'Comment'), write: wordAt(e6Vo, 'write') };
 
 // 마커 속도는 첫 판과 같다: 획은 1초에 1150px 안팎, 획 사이 옮김은 거리에 따라
 const strokeDur = (d: string) => Math.min(0.24, Math.max(0.09, len(d) / 1150));

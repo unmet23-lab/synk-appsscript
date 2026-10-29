@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../../../음성/계획_v3_소진.json",
+ "version": "s2028",
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 2028,
+  "lufs": -17
+ },
+ "made": "2026-10-29T10:15:16.428Z",
+ "lines": [
+  {
+   "id": "e3",
+   "text": "Grace? One syllable.",
+   "dur": 1.653,
+   "syllablesPerSec": null,
+   "src": "s2028/e3.wav",
+   "key": "2df7fed213cc7036d6ae2683aaf166d5",
+   "words": 3
+  },
+  {
+   "id": "e3g",
+   "text": "Grace? One syllable.",
+   "dur": 0.62,
+   "syllablesPerSec": null,
+   "src": "s2028/e3g.wav",
+   "key": "2df7fed213cc7036d6ae2683aaf166d5",
+   "words": 3
+  },
+  {
+   "id": "e4s",
+   "text": "One sound in English. Four in Korean!",
+   "dur": 2.473,
+   "syllablesPerSec": null,
+   "src": "s2028/e4s.wav",
+   "key": "ad7c92ab31ee4463037307ffbee05ef4",
+   "words": 7
+  },
+  {
+   "id": "e6",
+   "text": "Your turn! Comment your name, and I'll write it in Korean.",
+   "dur": 3.24,
+   "syllablesPerSec": null,
+   "src": "s2028/e6.wav",
+   "key": "7d2b76bf4b4124d385d4d6f90474e5d2",
+   "words": 11
+  }
+ ]
+}

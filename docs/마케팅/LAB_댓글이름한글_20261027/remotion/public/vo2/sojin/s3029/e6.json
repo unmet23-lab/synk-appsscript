@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e6",
+ "text": "Your turn! Comment your name, and I'll write it in Korean.",
+ "dur": 2.942,
+ "words": [
+  {
+   "text": "Your",
+   "start": 0.02,
+   "end": 0.166
+  },
+  {
+   "text": "turn!",
+   "start": 0.219,
+   "end": 0.471
+  },
+  {
+   "text": "Comment",
+   "start": 0.79,
+   "end": 1.082
+  },
+  {
+   "text": "your",
+   "start": 1.122,
+   "end": 1.228
+  },
+  {
+   "text": "name,",
+   "start": 1.268,
+   "end": 1.494
+  },
+  {
+   "text": "and",
+   "start": 1.627,
+   "end": 1.706
+  },
+  {
+   "text": "I'll",
+   "start": 1.746,
+   "end": 1.852
+  },
+  {
+   "text": "write",
+   "start": 1.892,
+   "end": 2.078
+  },
+  {
+   "text": "it",
+   "start": 2.118,
+   "end": 2.158
+  },
+  {
+   "text": "in",
+   "start": 2.211,
+   "end": 2.277
+  },
+  {
+   "text": "Korean.",
+   "start": 2.33,
+   "end": 2.942
+  }
+ ],
+ "source": {
+  "key": "3d8f9ea669177d19bc6b3f088cc4f580",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 3029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 497
+ }
+}

@@ -2,43 +2,41 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "e3",
  "text": "Grace? One syllable.",
- "dur": 2.049,
+ "dur": 1.544,
  "words": [
   {
    "text": "Grace?",
-   "start": 0.02,
-   "end": 0.476
+   "start": 0.06,
+   "end": 0.484
   },
   {
    "text": "One",
-   "start": 1.006,
-   "end": 1.189
+   "start": 0.828,
+   "end": 0.949
   },
   {
    "text": "syllable.",
-   "start": 1.39,
-   "end": 2.049
+   "start": 1.01,
+   "end": 1.544
   }
  ],
  "source": {
-  "key": "67c0720e526f82418b73511468ac511b",
+  "key": "9ffab7b39da3867d28f623c1bc6efa12",
   "voice": {
-   "id": "tc_61659cc118732016a95fe7c6",
-   "name": "하나"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
   },
   "settings": {
    "model": "ssfm-v30",
    "lang": "en",
-   "emotion": "smart",
+   "emotion": "normal",
    "intensity": 1,
    "tempo": 1,
    "seed": 1027,
    "lufs": -17,
-   "voiceId": "tc_61659cc118732016a95fe7c6",
-   "prev": "Mark? 마크.",
-   "next": "그, 레, 이, 스."
+   "voiceId": "tc_666a9871abcf27a5169850d0"
   },
-  "speed": 1.1,
+  "speed": 1,
   "cut": null
  },
  "level": {
@@ -46,6 +44,7 @@
   "gainDb": 9,
   "limit": 0.89,
   "clippedSource": 0,
-  "clippedOut": 0
+  "clippedOut": 0,
+  "topPitchHz": 387
  }
 }

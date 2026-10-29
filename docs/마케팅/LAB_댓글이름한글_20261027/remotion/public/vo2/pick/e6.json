@@ -2,88 +2,89 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "e6",
  "text": "Your turn! Comment your name, and I'll write it in Korean.",
- "dur": 3.569,
+ "dur": 3.415,
  "words": [
   {
    "text": "Your",
-   "start": 0.02,
-   "end": 0.273
+   "start": 0.04,
+   "end": 0.206
   },
   {
    "text": "turn!",
-   "start": 0.368,
-   "end": 0.717
+   "start": 0.281,
+   "end": 0.628
   },
   {
    "text": "Comment",
-   "start": 0.875,
-   "end": 1.239
+   "start": 0.99,
+   "end": 1.352
   },
   {
    "text": "your",
-   "start": 1.302,
-   "end": 1.413
+   "start": 1.413,
+   "end": 1.518
   },
   {
    "text": "name,",
-   "start": 1.493,
-   "end": 1.825
+   "start": 1.579,
+   "end": 1.865
   },
   {
    "text": "and",
-   "start": 2.062,
-   "end": 2.158
+   "start": 2.061,
+   "end": 2.137
   },
   {
    "text": "I'll",
-   "start": 2.205,
-   "end": 2.316
+   "start": 2.182,
+   "end": 2.287
   },
   {
    "text": "write",
-   "start": 2.363,
-   "end": 2.601
+   "start": 2.333,
+   "end": 2.499
   },
   {
    "text": "it",
-   "start": 2.648,
-   "end": 2.712
+   "start": 2.544,
+   "end": 2.619
   },
   {
    "text": "in",
-   "start": 2.759,
-   "end": 2.823
+   "start": 2.664,
+   "end": 2.74
   },
   {
    "text": "Korean.",
-   "start": 2.886,
-   "end": 3.569
+   "start": 2.8,
+   "end": 3.415
   }
  ],
  "source": {
-  "key": "1f263400c84d1656b2435dfa04251b14",
+  "key": "0364cce611503344ccaf9661193a36ad",
   "voice": {
-   "id": "tc_61659cc118732016a95fe7c6",
-   "name": "하나"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
   },
   "settings": {
    "model": "ssfm-v30",
    "lang": "en",
-   "emotion": "happy",
-   "intensity": 1.1,
+   "emotion": "normal",
+   "intensity": 1,
    "tempo": 1,
    "seed": 1027,
    "lufs": -17,
-   "voiceId": "tc_61659cc118732016a95fe7c6"
+   "voiceId": "tc_666a9871abcf27a5169850d0"
   },
   "speed": 1,
   "cut": null
  },
  "level": {
-  "requestLufs": -17,
-  "gainDb": null,
-  "limit": null,
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
   "clippedSource": 0,
-  "clippedOut": 0
+  "clippedOut": 0,
+  "topPitchHz": 402
  }
 }

@@ -2,63 +2,61 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "e4s",
  "text": "One sound in English. Four in Korean!",
- "dur": 2.755,
+ "dur": 2.576,
  "words": [
   {
    "text": "One",
-   "start": 0.06,
-   "end": 0.246
+   "start": 0.02,
+   "end": 0.14
   },
   {
    "text": "sound",
-   "start": 0.377,
-   "end": 0.693
+   "start": 0.201,
+   "end": 0.421
   },
   {
    "text": "in",
-   "start": 0.75,
-   "end": 0.824
+   "start": 0.482,
+   "end": 0.542
   },
   {
    "text": "English.",
-   "start": 0.899,
-   "end": 1.253
+   "start": 0.602,
+   "end": 0.963
   },
   {
    "text": "Four",
-   "start": 1.588,
-   "end": 1.83
+   "start": 1.405,
+   "end": 1.626
   },
   {
    "text": "in",
-   "start": 1.905,
-   "end": 1.979
+   "start": 1.686,
+   "end": 1.746
   },
   {
    "text": "Korean!",
-   "start": 2.036,
-   "end": 2.669
+   "start": 1.806,
+   "end": 2.569
   }
  ],
  "source": {
-  "key": "5596fb778cfd1dd090a3eeb02c4257dc",
+  "key": "2bcf1e70b734d68fa36f1e3c2baedfd5",
   "voice": {
-   "id": "tc_61659cc118732016a95fe7c6",
-   "name": "하나"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
   },
   "settings": {
    "model": "ssfm-v30",
    "lang": "en",
-   "emotion": "smart",
+   "emotion": "normal",
    "intensity": 1,
    "tempo": 1,
-   "seed": 3029,
+   "seed": 1027,
    "lufs": -17,
-   "voiceId": "tc_61659cc118732016a95fe7c6",
-   "prev": "그, 레, 이, 스. 그레이스!",
-   "next": "Your turn!"
+   "voiceId": "tc_666a9871abcf27a5169850d0"
   },
-  "speed": 1.08,
+  "speed": 1,
   "cut": null
  },
  "level": {
@@ -66,6 +64,7 @@
   "gainDb": 9,
   "limit": 0.89,
   "clippedSource": 0,
-  "clippedOut": 0
+  "clippedOut": 0,
+  "topPitchHz": 493
  }
 }

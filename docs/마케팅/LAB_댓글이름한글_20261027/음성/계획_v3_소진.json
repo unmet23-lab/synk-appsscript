@@ -1,0 +1,92 @@
+{
+  "note": "LAB E1 다시 살림 — 영어 해설 세 줄(e3 · e4s · e6)을 하나 대신 소진으로 다시 굽는다(10-29). 하나 판이 감탄사에서 깨짐: e6 엉킨 프레임 20.8% · 최고 음높이 666Hz, e4s 833Hz(tools/목소리엉킴.py). 결정 표 10-28 「LAB 해설 목소리」대로 소진 · 보통 감정 · 세기 1.0(toneup · happy 1.3 안 씀). 한국어 낱말 줄(g1~g4 · k3)은 하나 그대로. −26 LUFS로 사서 리미터로 키우고(도구 기본), seed 셋 가운데 엉킴 5% 아래 · ⚠ 없음인 판을 고른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_댓글이름한글_20261027/음성/계획_v3_소진.json --굽기 고른 판: s1027(셋 다 통과 — e3 0.0% · 387Hz, e4s 1.6% · 493Hz, e6 0.0% · 403Hz). 소진은 하나보다 말이 빨라 speed(하나 판 e3 1.1 · e4s 1.08)는 빼고 자연 빠르기로 둔다. 영상은 「Grace?」만 쓰므로 e3g는 e3을 0.62초에서 자른 판(옛 e3g와 같은 자리 — 「One」 시작 0.83초 앞).",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1027,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo2/sojin",
+  "trim": "both",
+  "versions": {
+    "s1027": {
+      "defaults": {
+        "seed": 1027
+      },
+      "lines": [
+        {
+          "id": "e3",
+          "text": "Grace? One syllable."
+        },
+        {
+          "id": "e3g",
+          "text": "Grace? One syllable.",
+          "cut": 0.62
+        },
+        {
+          "id": "e4s",
+          "text": "One sound in English. Four in Korean!"
+        },
+        {
+          "id": "e6",
+          "text": "Your turn! Comment your name, and I'll write it in Korean."
+        }
+      ]
+    },
+    "s2028": {
+      "defaults": {
+        "seed": 2028
+      },
+      "lines": [
+        {
+          "id": "e3",
+          "text": "Grace? One syllable."
+        },
+        {
+          "id": "e3g",
+          "text": "Grace? One syllable.",
+          "cut": 0.62
+        },
+        {
+          "id": "e4s",
+          "text": "One sound in English. Four in Korean!"
+        },
+        {
+          "id": "e6",
+          "text": "Your turn! Comment your name, and I'll write it in Korean."
+        }
+      ]
+    },
+    "s3029": {
+      "defaults": {
+        "seed": 3029
+      },
+      "lines": [
+        {
+          "id": "e3",
+          "text": "Grace? One syllable."
+        },
+        {
+          "id": "e3g",
+          "text": "Grace? One syllable.",
+          "cut": 0.62
+        },
+        {
+          "id": "e4s",
+          "text": "One sound in English. Four in Korean!"
+        },
+        {
+          "id": "e6",
+          "text": "Your turn! Comment your name, and I'll write it in Korean."
+        }
+      ]
+    }
+  }
+}

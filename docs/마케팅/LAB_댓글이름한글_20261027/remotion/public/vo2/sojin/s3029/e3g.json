@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3g",
+ "text": "Grace? One syllable.",
+ "dur": 0.62,
+ "words": [
+  {
+   "text": "Grace?",
+   "start": 0.02,
+   "end": 0.445
+  },
+  {
+   "text": "One",
+   "start": 0.849,
+   "end": 0.62
+  },
+  {
+   "text": "syllable.",
+   "start": 1.072,
+   "end": 0.62
+  }
+ ],
+ "source": {
+  "key": "ca327e27bf8439b4f7d0f0014c6d917a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 3029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": 0.62
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 203
+ }
+}
