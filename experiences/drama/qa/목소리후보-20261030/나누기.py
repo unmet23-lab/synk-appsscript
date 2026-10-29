@@ -8,6 +8,9 @@ from pathlib import Path
 from faster_whisper import WhisperModel
 
 작업, 역, 열쇠, 내보낼, 머리 = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]), sys.argv[5]
+# 줄 앞 여유(초). 받아쓰기 낱말 시각은 첫소리보다 늦게 잡힐 때가 있어(10-30 감독 8번 「지난번엔」·모범 3번 「과제에」의 첫 닿소리가 잘림)
+# 0.25로 둔다 — 앞 줄과의 쉼 가운데를 넘지 않는다. 교수 · 선배 줄은 0.12로 잘랐고 다시 받아 적어 모두 맞았다.
+앞여유 = float(sys.argv[6]) if len(sys.argv) > 6 else 0.25
 기록 = json.loads((작업 / '기록.json').read_text(encoding='utf-8'))
 줄 = json.loads((작업 / f'{역}_줄.json').read_text(encoding='utf-8'))
 원본 = 작업 / 기록['판'][열쇠]['판']
@@ -43,7 +46,7 @@ for i, (a, b) in enumerate(spans):
     s, e = words[a].start, words[b].end
     lo = 0.0 if i == 0 else (words[spans[i - 1][1]].end + s) / 2
     hi = dur if i == len(spans) - 1 else (e + words[spans[i + 1][0]].start) / 2
-    t0, t1 = max(lo, s - 0.12), min(hi, e + 0.35)
+    t0, t1 = max(lo, s - 앞여유), min(hi, e + 0.35)
     파일 = 내보낼 / f'{머리}-{i + 1:02d}.mp3'
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', f'{t0:.3f}', '-to', f'{t1:.3f}', '-i', str(원본),
                     '-af', 'afade=t=in:d=0.01,areverse,afade=t=in:d=0.04,areverse', '-ar', '24000', '-ac', '1', '-b:a', '96k', str(파일)], check=True)
