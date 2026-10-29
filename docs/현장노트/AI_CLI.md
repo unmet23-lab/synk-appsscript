@@ -968,3 +968,15 @@
 - 원인: 키 권한이 모델 호출(Model capabilities)만이라 목록 읽기 권한이 없다.
 - 고침: 목록으로 접근을 판단하지 않고 실제 호출로 본다 — 실시간 WebSocket의 `session.created`/`session.started`, TTS 한 줄. 둘 다 됐다.
 - 다시 확인: 위 녹음 도구의 `학습자` 명령이 `[녹음] 학습자 … · 키 synk.yuh`를 찍는지.
+
+### GPT-Live WebRTC에 완전한 무음 트랙을 넣으면 첫 인사가 안 나오고 「The session closed before the estimated context injection completed」로 끝난다 (2026-10-30 Claude)
+- 증상: 시제품 시험 모드(마이크 대신 Web Audio `MediaStreamDestination` 트랙, 견본 소리 사이는 아무것도 안 흘림)에서 `session.started` 뒤 `session.instructions.append`의 `appended` 확인도, 하온 소리 · 자막도 없었다. 20~30초 뒤 위 오류.
+- 원인: 덧붙인 지시는 세션 시간선이 그 자리에 닿아야 들어가는데, 시간선은 들어오는 소리로 흐른다. 디지털 0만 보내는 트랙은 그 시간이 흐르지 않은 것으로 보인다(실제 마이크는 바탕 소리가 있어 괜찮다).
+- 고침: 시험 트랙에 −54 dBFS쯤(진폭 0.002)의 흰 소리를 늘 흘린다(`experiences/realtime-roleplay/public/앱.mjs` 견본준비). 바꾼 뒤 0.8초 만에 `appended`, 하온이 먼저 인사했다.
+- 다시 확인: `?시험=1&길=gpt-live`로 견본을 돌려 `__상황극기록`에 `session.instructions.appended`가 2초 안에 찍히는지.
+
+### 앱 안 브라우저 창이 가려져 있으면 클릭이 「not on screen」으로 막힌다 — WebRTC · 자동 재생 시험은 ego로 (2026-10-30 Claude)
+- 증상: 시제품을 앱 안 브라우저로 열고 단추를 누르자 「Could not get the tab ready for input (it is not on screen…)」. `tabs_context`는 「Browser pane is currently hidden」.
+- 원인: 앱 안 브라우저는 창이 보이지 않으면 그리지 않아 입력을 못 받는다. 스크립트 `click()`은 사용자 활성화가 없어 AudioContext · 자동 재생이 막힌다.
+- 고침: ego(`ego-browser nodejs`)로 `http://127.0.0.1:<포트>/`를 열고 `page.click()`(진짜 입력이라 활성화가 생긴다), 폭 캡처는 `page.cdp('Emulation.setDeviceMetricsOverride', …)`.
+- 다시 확인: ego에서 시험 단추를 누른 뒤 `__상황극기록`에 `pc:connected` · `session.started`가 찍히는지.

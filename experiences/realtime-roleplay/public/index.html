@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>팬사인회 상황극</title>
+<link rel="stylesheet" href="모양.css">
+</head>
+<body>
+<div class="틀">
+  <header class="머리">
+    <p class="작은글">SYNK 말하기 · 실시간 상황극 시제품</p>
+    <p class="예산" id="예산" aria-live="polite">예산을 읽는 중…</p>
+  </header>
+
+  <section class="장면" id="장면" aria-labelledby="장면이름">
+    <div class="상대">
+      <div class="얼굴" aria-hidden="true">하</div>
+      <div>
+        <h1 id="장면이름">팬사인회</h1>
+        <p class="누구" id="상대누구">하온 · 가상 아이돌</p>
+      </div>
+    </div>
+    <p class="상황" id="상황"></p>
+    <p class="뜻" id="상황뜻" lang="en"></p>
+    <h2 class="칸제목">오늘 할 일</h2>
+    <ol class="미션" id="미션"></ol>
+    <p class="도움말">헤드폰을 쓰면 하온 목소리가 마이크로 다시 들어가지 않아 더 자연스럽게 이어져요. 생각할 때는 천천히 말해도 하온이 기다려요.</p>
+    <div class="단추줄">
+      <button class="큰단추" id="시작" type="button" disabled>하온에게 말 걸기</button>
+      <button class="단추" id="견본" type="button" hidden>견본 학습자 소리로 돌리기</button>
+    </div>
+  </section>
+
+  <section class="대화" id="대화" hidden aria-labelledby="대화제목">
+    <div class="대화머리">
+      <h2 id="대화제목">하온과 이야기하는 중</h2>
+      <p class="시계" id="시계" aria-live="off">4:00</p>
+    </div>
+    <p class="상태" id="상태" aria-live="polite">연결하는 중…</p>
+    <div class="마이크" id="마이크" hidden><span>내 소리</span><span class="막대"><span id="마이크막대"></span></span></div>
+    <ol class="자막" id="자막" aria-live="polite"></ol>
+    <form class="글입력" id="글입력" hidden>
+      <label class="숨김" for="글칸">하온에게 보낼 말</label>
+      <input id="글칸" autocomplete="off" maxlength="200" placeholder="한국어로 써 보세요">
+      <button class="단추" type="submit">보내기</button>
+    </form>
+    <div class="힌트" id="힌트" hidden></div>
+    <div class="단추줄">
+      <button class="단추" id="힌트단추" type="button">힌트</button>
+      <button class="큰단추 끝" id="끝내기" type="button">끝내기</button>
+    </div>
+    <p class="시험글" id="시험글" hidden></p>
+  </section>
+
+  <section class="피드백" id="피드백" hidden aria-labelledby="피드백제목">
+    <h2 id="피드백제목">오늘 대화 돌아보기</h2>
+    <p class="뜻">내 말은 자동으로 받아 적은 글이라 실제로 한 말과 다를 수 있어요. 다른 줄은 넘어가 주세요.</p>
+    <p class="상태" id="피드백상태" aria-live="polite">피드백을 만드는 중…</p>
+    <div id="피드백몸" hidden>
+      <p class="한마디" id="한마디"></p>
+      <h3>오늘 할 일</h3>
+      <ol class="미션 판정" id="판정"></ol>
+      <h3>잘한 말</h3>
+      <ul class="목록" id="잘한말"></ul>
+      <h3>이렇게 말하면 더 자연스러워요</h3>
+      <ul class="목록 고칠" id="고칠말"></ul>
+      <h3>다음에 써 볼 말</h3>
+      <ul class="목록" id="써볼말"></ul>
+    </div>
+    <details class="전사">
+      <summary>대화 전체 보기</summary>
+      <ol class="자막" id="전사"></ol>
+    </details>
+    <div class="단추줄"><button class="큰단추" id="다시" type="button">다시 하기</button></div>
+  </section>
+
+  <audio id="소리" autoplay playsinline></audio>
+</div>
+<script type="module" src="앱.mjs"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+/* 한 줄 기둥(폰 폭 우선) — 장면 카드 → 대화 → 돌아보기. 바탕 Paper · 글 Ink, 고르는 색은 청금석 실 하나. */
+@font-face { font-family: 'SUIT Variable'; font-weight: 100 900; font-display: swap; src: url('/글꼴/SUIT-Variable.woff2') format('woff2'); }
+:root {
+  --바탕: #FFFFFF; --글: #0B0B0C; --옅은글: #5A6170; --줄: #E3E6EC; --면: #F4F6FA;
+  --청금석: #3D6BC9; --청금석깊음: #24448C; --청금석옅음: #DCE6FA; --위에글: #FFFFFF; --됨: #1F7A4D; --아직: #8A6A1F;
+  --서체: 'SUIT Variable', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --바탕: #000000; --글: #F2F3F5; --옅은글: #A3AAB7; --줄: #262A31; --면: #0F1218; --청금석: #4F7BD6; --청금석깊음: #A9C1F2; --청금석옅음: #18284A; --됨: #6FD3A0; --아직: #E3C27A; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; } /* 칸마다 display를 주므로 hidden 속성이 이기게 */
+body { margin: 0; background: var(--바탕); color: var(--글); font-family: var(--서체); font-size: 16px; line-height: 1.6; }
+.틀 { max-width: 640px; margin: 0 auto; padding: 20px max(16px, env(safe-area-inset-left, 0px)) 48px max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 24px; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 19px; font-weight: 750; }
+h3 { font-size: 15px; font-weight: 700; margin-top: 8px; }
+.머리 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.작은글 { font-size: 13px; color: var(--옅은글); }
+.예산 { font-size: 13px; color: var(--옅은글); font-variant-numeric: tabular-nums; }
+.장면, .대화, .피드백 { display: grid; gap: 14px; }
+.상대 { display: flex; gap: 14px; align-items: center; }
+.얼굴 { width: 56px; height: 56px; border-radius: 50%; background: var(--청금석); color: var(--위에글); display: grid; place-items: center; font-size: 24px; font-weight: 800; flex: none; }
+.누구 { color: var(--옅은글); font-size: 14px; }
+.상황 { font-size: 16px; }
+.뜻 { font-size: 13px; color: var(--옅은글); }
+.미션 .뜻 { display: block; }
+.마이크 { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--옅은글); }
+.마이크 .막대 { flex: 1 1 auto; height: 6px; border-radius: 3px; background: var(--면); overflow: hidden; }
+.마이크 .막대 span { display: block; height: 100%; width: 0; background: var(--청금석); transition: width 80ms linear; }
+.칸제목 { font-size: 15px; }
+.미션 { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.미션 li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr); gap: 6px; align-items: start; }
+.미션 li::before { content: ''; width: 14px; height: 14px; border: 2px solid var(--줄); border-radius: 50%; margin-top: 5px; }
+.미션.판정 li.됨::before { background: var(--됨); border-color: var(--됨); }
+.미션 .근거 { display: block; font-size: 13px; color: var(--옅은글); }
+.미션 .표 { font-size: 12px; font-weight: 700; margin-left: 6px; }
+.미션 .표.됨 { color: var(--됨); }
+.미션 .표.아직 { color: var(--아직); }
+.도움말 { font-size: 14px; color: var(--옅은글); background: var(--면); border-radius: 12px; padding: 10px 12px; }
+.단추줄 { display: flex; flex-wrap: wrap; gap: 10px; }
+button { font: inherit; cursor: pointer; }
+.단추 { border: 1px solid var(--줄); background: var(--바탕); color: var(--글); border-radius: 999px; padding: 10px 16px; font-size: 15px; }
+.큰단추 { border: 0; background: var(--청금석); color: var(--위에글); border-radius: 999px; padding: 14px 22px; font-size: 17px; font-weight: 700; flex: 1 1 auto; }
+.큰단추.끝 { background: var(--청금석깊음); color: var(--바탕); }
+button:disabled { opacity: 0.5; cursor: default; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--청금석); outline-offset: 2px; }
+.대화머리 { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.시계 { font-variant-numeric: tabular-nums; color: var(--옅은글); }
+.상태 { font-size: 14px; color: var(--옅은글); min-height: 1.6em; }
+.자막 { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; max-height: 52vh; overflow-y: auto; }
+.자막 li { max-width: 86%; padding: 10px 14px; border-radius: 16px; background: var(--면); overflow-wrap: anywhere; }
+.자막 li.나 { justify-self: end; background: var(--청금석옅음); }
+.자막 li .누가 { display: block; font-size: 12px; color: var(--옅은글); }
+.글입력 { display: flex; gap: 8px; }
+.글입력 input { flex: 1 1 auto; min-width: 0; font: inherit; color: var(--글); background: var(--바탕); border: 1px solid var(--줄); border-radius: 999px; padding: 10px 14px; }
+.힌트 { background: var(--면); border-radius: 12px; padding: 10px 12px; font-size: 15px; }
+.힌트 b { display: block; font-size: 12px; color: var(--옅은글); font-weight: 600; }
+.시험글 { font-size: 12px; color: var(--옅은글); font-variant-numeric: tabular-nums; }
+.한마디 { font-size: 17px; font-weight: 650; }
+.목록 { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+.목록 .왜 { display: block; font-size: 13px; color: var(--옅은글); }
+.고칠 .내말 { text-decoration: line-through; color: var(--옅은글); }
+.전사 summary { cursor: pointer; color: var(--청금석깊음); }
+.숨김 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
