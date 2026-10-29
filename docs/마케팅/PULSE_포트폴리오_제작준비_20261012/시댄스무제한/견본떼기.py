@@ -3,7 +3,7 @@
 #     매진 임박 hs-목소리-<배역> → synk-vendor/homeshopping-horror-20261021/목소리/시댄스견본/<jiyu · ri4 · tong2 · gangdo>.mp3
 #     7번      p7-목소리-<배역> → synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/<ian · seojin · minjae · soyeon>.mp3
 # 받기.py가 받은 받음/<판>.mp4(다시 낸 판이 있으면 가장 나중 것)에서 소리를 꺼내 앞뒤 무음을 자르고 −17 LUFS로 둔다. --demucs면 먼저 Demucs로
-# 목소리만 뗀다(C:/SYNK-LoRA/tools/demucs — 현장노트 영상 「대사 클립의 목소리만 떼기」). 받아쓰기(faster-whisper medium, VAD 끔)로 그 판에 적은
+# 목소리만 뗀다(C:/SYNK-LoRA/tools/demucs — 현장노트 영상 「대사 클립의 목소리만 떼기」, CPU로 11초 클립에 41초). 받아쓰기(faster-whisper medium, VAD 끔)로 그 판에 적은
 # 글을 말했는지 보고 다르면 알린다 — 다른 사람 말 · 음악이 섞인 견본은 쓰지 않는다. 다 떼면 웹꾸러미.py(둘째 날은 --둘째날 B)를 다시 돌려 대사 판 폴더를 채운다.
 # 견본 목소리가 어색하면(유호님 귀) 그 배역 목소리 판을 다시 내거나 대안 일레븐 v4로 간다(결정 10-29 — 7번은 고른 넷을 구워 둠,
 # 소리참고.py B <대안 폴더> <배역>). 견본이 받은 판보다 새것이면(이미 뗐거나 대안으로 바꾼 배역) 판 id를 적지 않는 한 덮지 않는다.
@@ -52,7 +52,8 @@ def extract(clip, dst, text, model, demucs=False):
         wav = os.path.join(tmp, "소리.wav")
         subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", clip, "-vn", "-ac", "2", "-ar", "44100", wav], check=True)
         if demucs:
-            subprocess.run([os.path.join(DEMUCS, "venv", "Scripts", "python.exe"), "-X", "utf8", os.path.join(DEMUCS, "목소리떼기.py"), tmp, wav, "--gpu"], check=True)
+            # CPU로 — 노트북 GPU는 공용 차례(synk-vendor/_공용차례, 10-29 밤)로만 쓰고, 몇 초짜리 견본은 CPU로도 수십 초다
+            subprocess.run([os.path.join(DEMUCS, "venv", "Scripts", "python.exe"), "-X", "utf8", os.path.join(DEMUCS, "목소리떼기.py"), tmp, wav], check=True)
             wav = os.path.join(tmp, "소리_목소리.wav")
         segs, _ = model.transcribe(wav, language="ko", vad_filter=False, beam_size=5)
         heard = " ".join(s.text.strip() for s in segs).strip()
