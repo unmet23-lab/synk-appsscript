@@ -4,7 +4,24 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { srtToLines, buildPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자 } = require('../tools/낯선이시험.js');
+const { srtToLines, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자 } = require('../tools/낯선이시험.js');
+
+test('볼 이유 질문 — 무엇으로 이기나 · 볼 이유 점수 · 슬롭 · 약한 자리를 묻고, 광고(pulse)만 맡기겠나를 묻는다(10-29)', () => {
+  const sns = buildWorthPrompt({ brand: 'lab-en', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt' });
+  assert.match(sns, /까다로운 시청자/);
+  assert.match(sns, /C:\/a\/정지컷_01\.jpg/);
+  assert.match(sns, /C:\/a\/말\.txt/);
+  assert.match(sns, /^1\. 이 영상이 무엇으로 이기려 하나/m);
+  assert.match(sns, /^2\. 볼 이유 점수 1~5/m);
+  assert.match(sns, /^3\. AI 슬롭처럼 보이나/m);
+  assert.match(sns, /^4\. 가장 약한 자리/m);
+  assert.match(sns, /^5\. \(광고가 아님/m);
+  const ad = buildWorthPrompt({ brand: 'pulse', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt', cuts: true });
+  assert.match(ad, /회사 담당자의 눈/);
+  assert.match(ad, /컷이 바뀔 때마다 한 장/);
+  assert.match(ad, /^5\. 이 영상을 만든 팀에 돈 내고 광고를 맡기겠나/m);
+  assert.throws(() => buildWorthPrompt({ brand: '없는곳', sheets: [], speech: 'x' }), /브랜드는/);
+});
 
 test('srt를 「초s  말」 줄로 바꾸고 빈 블록은 건너뛴다', () => {
   const srt = '1\r\n00:00:00,100 --> 00:00:04,000\r\n제가 나눠 드린 도구가,\r\n디스크를 썼어요.\r\n\r\n2\r\n00:01:04,500 --> 00:01:06,000\r\n둘째 줄\r\n\r\n3\r\n00:01:07,000 --> 00:01:08,000\r\n';

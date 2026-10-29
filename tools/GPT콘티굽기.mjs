@@ -3,62 +3,33 @@
  * GPT 콘티 굽기 — AI 광고 · 홍보영상의 이미지 콘티(영상 시작 · 끝 그림으로 이어 쓰는 판 포함)를
  * GPT Image 2.5 Sunburst · max로 API에서 한 장 굽는다(2026-10-29 유호님 결정, 결정 표 같은 날).
  *
- * 광고 콘티의 다른 선택지는 Gemini 나노바나나(지금 경로)다. 펠트 캐릭터 · 마스코트 · 소품 그림은 이 도구로 굽지 않는다 —
- * 지금처럼 Codex 구독 경로(`tools/codex계정.js`)다. 모델 · 품질은 Sunburst · max로 고정이고 바꾸는 인자를 두지 않는다.
+ * 광고 콘티의 다른 선택지는 Gemini 나노바나나(지금 경로)다 — 임팩트로 이기는 편은 Sunburst, 이야기로 이기는 편은 나노바나나.
+ * 펠트 캐릭터 · 마스코트 · 소품 그림은 이 도구로 굽지 않는다 — 지금처럼 Codex 구독 경로(`tools/codex계정.js`)다.
+ * 모델 · 품질은 Sunburst · max로 고정이고 바꾸는 인자를 두지 않는다.
  *
  *   node tools/GPT콘티굽기.mjs <지시문.txt> <나갈.png> [참고 그림…] [--크기 1152x2048] [--덮어쓰기]
  *
  * - 참고 그림이 있으면 /v1/images/edits(넘긴 순서 그대로), 없으면 /v1/images/generations.
  * - 크기는 가로 · 세로 둘 다 16의 배수(1080x1920은 API가 거절한다). 기본은 세로 9:16 1152x2048, 가로 영상은 2048x1152.
- * - 키는 찍지 않는다. 고르는 차례: OPENAI_KEY_FILE 하나(시험 · 손으로 고를 때) → 키 목록 ~/SYNK_보안/openai_키목록.json
- *   (`[{이름, 파일, 까지?}]`, 파일은 목록 옆 상대 경로, 「까지」 날 한국 시각 0시부터 그 키는 건너뛴다) → ~/SYNK_보안/openai.txt 하나.
+ * - 키 차례와 넘기기(크레딧 바닥 · 401 · 403이면 다음 무료 크레딧 키, 마지막 키까지 바닥이면 종료 3)는 `tools/lib/오픈AI키.mjs`.
  *   크레딧은 GPT Pro 구독의 월 API 크레딧이다(docs/AI_계정과_크레딧.md 「GPT」).
- * - 한 키가 크레딧 바닥(429 credit_balance_exhausted) · 키 거절(401) · 권한 없음(403)이면 다음 키로 다시 부른다 — 모두 결제 수단
- *   없는 무료 크레딧 조직이라 돈 드는 길이 아니다. 속도 제한 · 서버 오류 · 그 밖의 오류는 넘기지 않고 멈춘다. 마지막 키까지
- *   크레딧이 바닥나면 종료 3 — 돈 드는 길로 돌리지 않는다.
  * - 그림 옆에 <이름>_기록.json(쓴 키 이름, 받은 크기 · 품질, 초, 요청 번호, 사용 토큰, 어림 값, 지시문 · 참고 sha256)을 남긴다.
  * - 값 · 시간 실측과 2K에서 구슬 눈에 흰자가 생기는 함정은 현장 노트 그림_굽기_오리기 「API로 GPT Image 2.5 Sunburst」.
  * - 시험은 SYNK_OPENAI_BASE로 가짜 서버를, SYNK_OPENAI_KEYLIST로 임시 키 목록을 준다(tests/GPT콘티굽기.test.js).
  */
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { 바탕주소, 차례로부르기, 부르기오류 } from './lib/오픈AI키.mjs';
 
 const 모델 = 'gpt-image-2.5-sunburst';
 const 품질 = 'max';
 const 값표 = { 글입력: 5e-6, 그림입력: 8e-6, 출력: 30e-6 };  // 토큰당 USD — OpenAI 모델 문서(2026-10-29)
-const 바탕 = (process.env.SYNK_OPENAI_BASE || 'https://api.openai.com/v1').replace(/\/$/, '');
-const 보안 = path.join(os.homedir(), 'SYNK_보안');
-const 목록파일 = process.env.SYNK_OPENAI_KEYLIST || path.join(보안, 'openai_키목록.json');
 const 사용법 = '사용: node tools/GPT콘티굽기.mjs <지시문.txt> <나갈.png> [참고 그림…] [--크기 1152x2048] [--덮어쓰기]';
 
 function 멈춤(말, 코드 = 2) {
   console.error(`[GPT콘티굽기] ${말}`);
   process.exit(코드);
-}
-
-/** 쓸 키 차례 — 이름과 파일만. 값은 부르기 직전에 읽는다. */
-function 키차례() {
-  if (process.env.OPENAI_KEY_FILE) return [{ 이름: path.basename(process.env.OPENAI_KEY_FILE), 파일: process.env.OPENAI_KEY_FILE }];
-  if (!fs.existsSync(목록파일)) return [{ 이름: 'openai.txt', 파일: path.join(보안, 'openai.txt') }];
-  let 목록;
-  try {
-    목록 = JSON.parse(fs.readFileSync(목록파일, 'utf8').replace(/^﻿/, ''));
-  } catch (e) {
-    멈춤(`키 목록을 읽지 못했다: ${목록파일} (${e.message})`);
-  }
-  if (!Array.isArray(목록)) 멈춤(`키 목록은 [{이름, 파일, 까지?}] 배열이어야 한다: ${목록파일}`);
-  return 목록
-    .filter((k) => !k.까지 || Date.now() < Date.parse(`${k.까지}T00:00:00+09:00`))
-    .map((k) => ({ 이름: k.이름 || k.파일, 파일: path.isAbsolute(k.파일) ? k.파일 : path.join(path.dirname(목록파일), k.파일) }));
-}
-
-function 키읽기({ 이름, 파일 }) {
-  if (!fs.existsSync(파일)) 멈춤(`키 파일이 없다(${이름}): ${파일}`);
-  const 값 = fs.readFileSync(파일, 'utf8').replace(/^﻿/, '').trim();
-  if (!/^sk-\S+$/.test(값)) 멈춤(`키 파일에 sk- 로 시작하는 값이 없다(${이름}): ${파일}`);
-  return 값;
 }
 
 const 위치 = [];
@@ -87,57 +58,24 @@ for (const p of 참고) {
     console.error(`[GPT콘티굽기] 알림: 투명 칸이 있는 PNG 참고 ${path.basename(p)} — 흰 바탕 JPEG가 더 잘 먹는다`);
   }
 }
-const 키들 = 키차례();
-if (!키들.length) 멈춤(`쓸 수 있는 키가 없다 — 키 목록의 「까지」가 모두 지났다: ${목록파일}`, 3);
 
 const 그림형 = (p) => (/\.png$/i.test(p) ? 'image/png' : /\.webp$/i.test(p) ? 'image/webp' : 'image/jpeg');
 function 요청몸() {
-  if (!참고.length) return { 주소: `${바탕}/images/generations`, 몸: JSON.stringify({ model: 모델, prompt: 지시문, quality: 품질, size: 크기, n: 1 }), json: true };
+  if (!참고.length) return { 주소: `${바탕주소()}/images/generations`, 몸: JSON.stringify({ model: 모델, prompt: 지시문, quality: 품질, size: 크기, n: 1 }), json: true };
   const 몸 = new FormData();
   for (const [이름, 값] of Object.entries({ model: 모델, prompt: 지시문, quality: 품질, size: 크기, n: '1' })) 몸.append(이름, 값);
   for (const p of 참고) 몸.append('image[]', new Blob([fs.readFileSync(p)], { type: 그림형(p) }), path.basename(p));
-  return { 주소: `${바탕}/images/edits`, 몸, json: false };
+  return { 주소: `${바탕주소()}/images/edits`, 몸, json: false };
 }
 
-let 답;
-let 글;
-let 요청;
-let 초;
-let 쓴키;
-for (const [i, k] of 키들.entries()) {
-  const { 주소, 몸, json } = 요청몸();
-  const 머리 = { Authorization: `Bearer ${키읽기(k)}` };
-  if (json) 머리['Content-Type'] = 'application/json';
-  const 시작 = Date.now();
-  let res;
-  try {
-    res = await fetch(주소, { method: 'POST', headers: 머리, body: 몸, signal: AbortSignal.timeout(15 * 60 * 1000) });
-  } catch (e) {
-    멈춤(`요청이 끝나지 않았다(${k.이름}): ${e.message}`, 1);
-  }
-  초 = Math.round((Date.now() - 시작) / 1000);
-  글 = await res.text();
-  try {
-    답 = JSON.parse(글);
-  } catch {
-    멈춤(`JSON이 아닌 답(${k.이름} · ${res.status}): ${글.slice(0, 300)}`, 1);
-  }
-  요청 = res.headers.get('x-request-id');
-  if (res.ok && !답.error) {
-    쓴키 = k.이름;
-    break;
-  }
-  const 오류 = 답.error || {};
-  const 바닥 = 오류.code === 'credit_balance_exhausted';
-  if ((바닥 || res.status === 401 || res.status === 403) && i < 키들.length - 1) {
-    console.error(`[GPT콘티굽기] ${k.이름} 키: ${res.status} ${오류.code || ''} — 다음 키(${키들[i + 1].이름})로 다시 부른다`);
-    continue;
-  }
-  if (바닥) {
-    멈춤(`API 크레딧이 바닥났다(마지막 키 ${k.이름} · ${res.status}) — 돈 드는 길로 돌리지 않는다. Gemini 나노바나나로 굽거나, 크레딧이 든 조직의 키인지 docs/AI_계정과_크레딧.md 「GPT」를 본다(요청 ${요청})`, 3);
-  }
-  멈춤(`오류(${k.이름}) ${res.status} ${오류.code || ''}: ${오류.message || 글.slice(0, 300)} (요청 ${요청})`, 1);
+let 결과;
+try {
+  결과 = await 차례로부르기(요청몸, { 알림: (말) => console.error(`[GPT콘티굽기] ${말}`) });
+} catch (e) {
+  if (e instanceof 부르기오류) 멈춤(e.message, e.코드);
+  throw e;
 }
+const { 답, 글, 요청, 초, 쓴키 } = 결과;
 const b64 = 답.data?.[0]?.b64_json;
 if (!b64) 멈춤(`그림이 없는 답: ${글.slice(0, 300)}`, 1);
 if (답.quality && 답.quality !== 품질) console.error(`[GPT콘티굽기] 알림: 받은 품질이 ${답.quality}다(${품질}가 아님) — 보고에 그대로 적는다`);

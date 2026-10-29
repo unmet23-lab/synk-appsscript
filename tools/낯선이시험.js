@@ -14,7 +14,8 @@
  *       [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더 또는 영상>,<…>]
  *
  * 만드는 것: <밖>/정지컷_01.jpg …(한 장에 휴대폰 크기 칸 넷) · <밖>/지난1_<편>.jpg · 지난2_<편>.jpg(같은 계정의 지난 두 편, 작게) ·
- * <밖>/말.txt · <밖>/질문.md(시험관 둘에게 그대로 줄 글).
+ * <밖>/말.txt · <밖>/질문.md(이해 시험관 셋 — sonnet · haiku · GPT(`node tools/GPT시험관.mjs <밖>`) — 에게 그대로 줄 글) ·
+ * <밖>/볼이유_질문.md(「볼 이유」 심사관 opus에게 줄 글, 10-29).
  * 장면은 0~3초를 0.5초마다, 그 뒤는 2초마다, 그리고 끝 장면 하나. 2초보다 짧은 컷이 많은 영상은 --컷에 컷이 시작하는 초를 주면
  * 컷마다 한 장(그 컷 가운데 장면)으로 찍는다. --지난 자동(기본)은 그 브랜드의 본 계정 판이 있는 편 가운데 이 편 말고 슬롯이 가장
  * 늦은 두 편을 고른다(공용 작업본의 docs/마케팅/*\/게시/준비.json). 말.txt는 줄마다 「12.3s  들리는 말」 꼴이 좋다. .srt를 주면 그 꼴로 바꾼다.
@@ -69,15 +70,19 @@ function readSpeech(file) {
   return text.replace(/\r\n/g, '\n').trimEnd() + '\n';
 }
 
+function 장면안내(cuts) {
+  return cuts
+    ? '컷이 바뀔 때마다 한 장(그 컷의 가운데 장면), 각 칸 왼쪽 위 숫자는 그 컷이 화면에 나오는 초(시작-끝)다 — 짧은 컷은 그만큼 잠깐 지나간다.'
+    : '0~3초는 0.5초마다, 그 뒤는 2초마다, 마지막 칸은 끝 장면이다. 각 칸 왼쪽 위 숫자가 영상의 초다.';
+}
+
 // 질문. 1~5는 10-23부터의 이해 질문 그대로, 6~9는 10-28에 더했다 — 이해 시험은 무의미한 슬롭은 막았지만(LAB 10-26~28 버림 12건)
 // 재미 · 첫 3초 · 저장/공유 · 같은 틀 찍어 내기를 거르는 단계가 없어 유호님이 먼저 듣고 지적했다.
 function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = [] }) {
   const who = 시청자[brand];
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${brand}`);
   const list = [].concat(sheets || sheet || []);
-  const every = cuts
-    ? '컷이 바뀔 때마다 한 장(그 컷의 가운데 장면), 각 칸 왼쪽 위 숫자는 그 컷이 화면에 나오는 초(시작-끝)다 — 짧은 컷은 그만큼 잠깐 지나간다.'
-    : '0~3초는 0.5초마다, 그 뒤는 2초마다, 마지막 칸은 끝 장면이다. 각 칸 왼쪽 위 숫자가 영상의 초다.';
+  const every = 장면안내(cuts);
   const prev = previous.length
     ? ['', `- 비교용(9번에만): 같은 계정이 이 영상 전에 올린 ${previous.length}편의 장면 묶음 — ${previous.map((p) => p.file).join(' · ')}. 1~8번은 이 영상만 보고 답한 뒤, 9번을 답할 때만 연다.`]
     : [];
@@ -100,6 +105,29 @@ function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = []
     previous.length
       ? `9. 비교용 묶음과 견주어 같은 틀을 또 찍어 낸 것처럼 보이나 — 「같아 보임」 또는 「달라 보임」과, 같아 보이면 어디가 같은지(무대 구성 · 말 순서 · 머리 글 · 끝 카드 가운데). ${who.고정 ? `이 계정에 늘 나오는 것(${who.고정})은 같아도 같은 틀로 치지 않는다 — ` : ''}화면에 무엇이 어떻게 놓이고 어떤 순서로 말하고 무엇으로 끝나는지로만 판단한다.`
       : '9. (비교용 묶음 없음 — 「비교 못 함」이라고만 쓴다)',
+    '',
+  ].join('\n');
+}
+
+// 「볼 이유」 심사(10-29 유호님 「제안대로 바꿔」) — 이해 시험과 원본 1:1을 넘고도 「AI 슬롭」으로 버려진 편(PULSE 기프트 세트 · synkbrief B2)을
+// 거르려고, 알아듣는지가 아니라 볼 이유 · 무엇으로 이기나 · 슬롭으로 보이나를 묻는다. 맥락 없는 새 심사관(Agent model opus)에게 준다.
+function buildWorthPrompt({ brand, sheets, sheet, speech, cuts = false }) {
+  const who = 시청자[brand];
+  if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${brand}`);
+  const list = [].concat(sheets || sheet || []);
+  const 광고 = brand === 'pulse';
+  return [
+    `너는 ${who.곳}에서 하루에 영상을 수백 개 넘기는 까다로운 시청자다. ${who.사람}이고, 이 계정도 만든 사람도 이 영상의 배경도 모른다.${광고 ? ' 그리고 광고 영상을 맡길 곳을 찾는 회사 담당자의 눈으로도 본다.' : ''} 아래 파일만 Read 도구로 열어 보고 답해라. 다른 파일·폴더·인터넷은 보지 마라.`,
+    '',
+    `- 장면 묶음(그림 ${list.length}장, 이 순서로 다 연다): ${list.join(' · ')} — 휴대폰에서 보는 크기 그대로다. ${장면안내(cuts)} 한 장 안은 왼쪽에서 오른쪽, 위에서 아래 순서.`,
+    `- 들리는 말: ${speech} — 줄 앞 숫자는 그 말이 시작하는 초. 배경음악은 따로 깔려 있다.`,
+    '',
+    '알아듣는지가 아니라 「볼 이유가 있는지」를 묻는다. 한국어로, 아래 양식 그대로 답해라(전체 600자 안팎). 겉치레 칭찬은 하지 말고, 하루에 보는 흔한 AI 영상들과 견주어 냉정하게 답해라.',
+    '1. 이 영상이 무엇으로 이기려 하나 — 「이야기」(기승전결이 있고 끝에 여운이 남는다) · 「임팩트」(눈에 박히는 한 장면 · 비싼 효과나 장치) · 「둘 다 아님」 가운데 하나와, 그렇게 본 초 · 장면.',
+    '2. 볼 이유 점수 1~5(5 = 끝나고도 여운이 남거나 한 장면이 눈에 박혀 다시 보고 싶다, 3 = 볼 만은 하지만 금방 잊는다, 1 = 볼 이유가 없다)와 한 줄 까닭.',
+    '3. AI 슬롭처럼 보이나 — 「슬롭 같음」 또는 「아님」과, 그렇게 보인 초 · 장면(매끈하기만 하고 비어 보이는 화면, 뜻 없는 화려함, 이야기 없이 늘어놓은 장면, 어디서 본 듯한 짜임 같은 것).',
+    '4. 가장 약한 자리 한 곳(초)과, 무엇을 바꾸면 볼 이유가 생길지 한 줄.',
+    광고 ? '5. 이 영상을 만든 팀에 돈 내고 광고를 맡기겠나 — 「맡김」 · 「고민」 · 「안 맡김」과 한 줄 까닭.' : '5. (광고가 아님 — 「해당 없음」이라고만 쓴다)',
     '',
   ].join('\n');
 }
@@ -248,9 +276,10 @@ function main(argv) {
   const speech = path.join(out, '말.txt');
   fs.writeFileSync(speech, readSpeech(path.resolve(args['말'])));
   fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous }));
+  fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));
   console.log(`재료: ${out} · 장면 ${shots.length}칸 / 그림 ${sheets.length}장 · 지난 편 ${previous.length ? previous.map((p) => p.name).join(' · ') : '없음'}`);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
-  console.log('다음: 질문.md를 이 대화 맥락이 없는 새 시험관 둘(Agent model sonnet · model haiku, 서로 따로)에게 그대로 주고, 둘의 답을 한 장 기획의 「한 문장」과 견준다(제작절차 「시험」).');
+  console.log('다음: 질문.md를 이 대화 맥락이 없는 새 시험관 셋(Agent model sonnet · model haiku, 그리고 `node tools/GPT시험관.mjs <이 폴더>`, 서로 따로)에게 그대로 주고, 볼이유_질문.md는 새 심사관(Agent model opus)에게 준다 — 답을 한 장 기획의 「한 문장」 · 「무엇으로 이기나」와 견준다(제작절차 「시험」).');
   return 0;
 }
 
@@ -258,4 +287,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { srtToLines, readSpeech, buildPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자 };
+module.exports = { srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자 };
