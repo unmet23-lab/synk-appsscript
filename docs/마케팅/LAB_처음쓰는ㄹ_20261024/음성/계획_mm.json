@@ -1,0 +1,28 @@
+{
+  "note": "LAB E5 「처음 쓰는 ㄹ」 버마어판(@synklab.mm) 「리을.」 한 줄 — 10-29 올리기 전 검사가 하나 목소리 엉킴(평균 30.5%)을 고칠 것으로 잡아 LAB 장부 「목소리」대로 해설 소진(감정 세기 1.0)으로 다시 굽는다. 영어 · 간체판(이미 게시)은 그대로. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_처음쓰는ㄹ_20261024/음성/계획_mm.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 0.9,
+    "seed": 1024,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo_mm",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "k1b",
+      "text": "리을.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1,
+      "tempo": 0.9
+    }
+  ]
+}

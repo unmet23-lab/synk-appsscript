@@ -6,6 +6,7 @@ export type Loc = 'en' | 'zhs' | 'my';
 export type LocText = {
   font: string | null; // --kids-font(EN 글꼴 줄) 자리에 깔 글꼴 줄 — null이면 영어판 그대로
   voice: boolean; // 영어 진행 목소리를 얹는가
+  voDir?: string; // 「리을.」 줄 파일 폴더(public 기준) — 없으면 vo(하나). 버마어판은 10-29 소진으로 다시 구운 vo_mm(음성/계획_mm.json)
   bgm: number; // 배경음 세기(목소리가 없는 판은 조금 올린다)
   kicker: string; // 빈 글이면 상자를 두지 않는다
   title: string[]; // 첫 화면 큰 글 줄(첫 줄 앞에 kicker). 「ㄹ」은 한글 서체로 바뀐다
@@ -50,6 +51,7 @@ export const LOCALES: Record<Loc, LocText> = {
   my: {
     font: "'Inter Tight', 'Myanmar Text', sans-serif",
     voice: false,
+    voDir: 'vo_mm', // 10-29 올리기 전 검사: 하나 목소리 엉킴(평균 30.5%) → LAB 장부 「목소리」대로 소진
     bgm: 0.18,
     // 첫 렌더 이해 시험 3점 · 8초 이탈(간체와 같은 까닭) → POV 상자를 빼고 약속 줄
     kicker: '',

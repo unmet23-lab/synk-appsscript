@@ -508,9 +508,9 @@ const FlipSheet: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 // ── 소리 ─────────────────────────────────────────────────────────
-const Vo: React.FC<{ id: string; at: number; vol?: number }> = ({ id, at: t, vol = 1 }) => (
+const Vo: React.FC<{ id: string; at: number; vol?: number; dir?: string }> = ({ id, at: t, vol = 1, dir = 'vo' }) => (
   <Sequence from={fr(t)} layout="none">
-    <Audio src={staticFile(`vo/${id}.wav`)} volume={vol * MASTER} />
+    <Audio src={staticFile(`${dir}/${id}.wav`)} volume={vol * MASTER} />
   </Sequence>
 );
 const Sfx: React.FC<{ file: string; at: number; vol: number; from?: number; dur?: number }> = ({ file, at: t, vol, from = 0, dur }) => (
@@ -541,7 +541,7 @@ const Sound: React.FC = () => {
         <Vo id="n3" at={T.st3[0]} />
       </>
     ) : null}
-    <Vo id="k1b" at={T.k1} />
+    <Vo id="k1b" at={T.k1} dir={L.voDir} />
     {L.voice ? <Vo id="e1" at={T.e1} /> : null}
     {/* 연필 — 실제 녹음(Fairlight) 조각, 획마다 다른 자리 */}
     <Sfx file="pencil_a.wav" at={T.att1[0]} from={0.6} dur={T.att1[1] - T.att1[0]} vol={0.5} />
