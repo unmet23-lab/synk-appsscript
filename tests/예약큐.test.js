@@ -313,6 +313,23 @@ test('비축 알림은 21시 뒤 하루 한 번, 목표 4일보다 모자랄 때
   assert.deepEqual(r.reserveAlert, { sent: false, reason: 'enough' });
 });
 
+test('보류 판(버린 편)의 옛 검사 「고칠 것」은 같은 날 다른 편 칸을 막지 않는다 — 10-30 B2 보류 + B15', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-보류칸-'));
+  try {
+    편('held', { ...판('synkbrief', '2026-10-30'), 검사: { 결과: '고칠 것', 파일: [] } }, { 판: [{ 계정: 'synkbrief-youtube', 상태: '보류' }] }, base);
+    편('next', 판('synkbrief', '2026-10-30'), null, base);
+    const r = 돌리기(base, '--오늘', '2026-10-30');
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /^synkbrief +○/m, '브랜드 줄은 승인 대기(○)');
+    assert.match(r.stdout, /^synkbrief-youtube +○/m, '계정 줄도 ○');
+    assert.doesNotMatch(r.stdout, /^synkbrief +✗/m);
+    // 보류 판만 남으면 그날은 ×(새 편 칸)
+    fs.rmSync(path.join(base, 'next'), { recursive: true, force: true });
+    assert.match(돌리기(base, '--오늘', '2026-10-30').stdout, /^synkbrief +×/m);
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
 test('오늘 빈 계정 — 오늘 칸이 예약·게시 전인 계정을 줄로 보이고, 알림은 17시 · 21시 뒤 한 번씩, 다 차면 보내지 않는다', () => {
   // 10-23: LAB 영어 예약됨(채움) · LAB 몽골 인스타만 예약됨(틱톡 빔) · synkbrief 영상 승인 대기(블로그도 영상을 따라 승인·예약 전)
   const base = 매일판('오늘빈계정', 기본편);

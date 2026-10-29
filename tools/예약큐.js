@@ -222,7 +222,8 @@ function accountRows(items, range, accounts = {}) {
       const day = dayOf(plate, item);
       if (!day || !range.includes(day)) continue;
       const done = DONE.has(plate.state) || (BLOG.has(plate.platform) && videoDone.has(item.folder));
-      rowOf(plate.account, item.brand).byDay[day].push({ state: plate.state, done, folder: item.folder, fix: fixNeeded(item) });
+      // 보류 판(버린 편)은 나가지 않으니 그 편의 옛 「고칠 것」 검사로 그날 칸을 막지 않는다(10-30 B2 보류 + 같은 날 B15).
+      rowOf(plate.account, item.brand).byDay[day].push({ state: plate.state, done, folder: item.folder, fix: plate.state !== '보류' && fixNeeded(item) });
     }
   }
   for (const [key, a] of Object.entries(accounts)) if (a.dailyLine && !a.dailyBlocked) rowOf(key, a.dailyLine.startsWith('LAB') ? 'LAB' : a.dailyLine);
@@ -349,7 +350,7 @@ function mark(list) {
   if (list.some((x) => x.state === '채움')) return '●';
   if (list.some((x) => x.state === '일부')) return '◐';
   if (list.every((x) => x.state === '보류')) return '×';
-  if (list.some(fixNeeded)) return '✗';
+  if (list.some((x) => x.state !== '보류' && fixNeeded(x))) return '✗';
   return '○';
 }
 
