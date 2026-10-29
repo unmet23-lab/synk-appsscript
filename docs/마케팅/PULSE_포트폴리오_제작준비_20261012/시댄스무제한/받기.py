@@ -39,9 +39,25 @@ def boards():
     return out
 
 
+def gray(path, w=72, h=128):   # 영상은 첫 장, 그림은 그대로 — 작은 회색 판
+    import numpy as np
+    r = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-frames:v", "1", "-vf", f"scale={w}:{h},format=gray", "-f", "rawvideo", "-"],
+                       capture_output=True, check=True)
+    return np.frombuffer(r.stdout, np.uint8)[: w * h].astype(np.float32)
+
+
+def first_match(clip, board):   # 받은 영상 첫 장과 그 판 첫 그림의 상관(1에 가까울수록 같음)
+    pic = next(f for f in board["파일"] if f.lower().endswith((".jpg", ".png")))
+    a, b = gray(clip), gray(os.path.join(board["꾸러미"], board["폴더"], pic))
+    a, b = a - a.mean(), b - b.mean()
+    return float((a * b).sum() / ((a * a).sum() * (b * b).sum()) ** 0.5)
+
+
 def best(job_text, cands):
     # 글이 같으면 바로, 아니면 낱말이 많이 겹치는 다섯 판만 글자 단위로 견준다(185판을 다 견주면 판마다 18초)
     same = [b for b in cands if b["글"] == job_text]
+    if len(same) > 1:   # 글이 똑같은 판(7번 비교의 두 길 — 그림만 다름)은 모두 돌려주고 main이 첫 장으로 가린다
+        return [(1.0, b) for b in same]
     if same:
         rest = sorted(cands, key=lambda b: -len(b["낱말"] & same[0]["낱말"]) / max(1, len(b["낱말"] | same[0]["낱말"])))
         nxt = next((b for b in rest if b is not same[0]), None)
@@ -75,11 +91,24 @@ def main():
             lost.append(f"{j['created_at'][11:19]} {jid[:8]} 비슷함 {top[0][0]:.2f} {top[0][1]['id'] if top else '-'}")
             continue
         r, b = top[0]
+        twins = [c for s, c in top if s >= 0.999]
+        tmp, pick = None, None
+        if len(twins) > 1:   # 글이 똑같은 판은 받은 영상의 첫 장을 판마다 시작 그림과 견줘 가장 닮은 판으로
+            tmp = os.path.join(OUT, f"_가림_{jid[:8]}.mp4")
+            subprocess.run(["curl", "-sS", "-L", "--fail", "-o", tmp, j["result_url"]], check=True)
+            pick = {c["id"]: round(first_match(tmp, c), 3) for c in twins}
+            b = next(c for c in twins if c["id"] == max(pick, key=pick.get))
+            top = [(1.0, b)] + [(1.0, c) for c in twins if c is not b]
         same = sorted(v["파일"] for v in ledger.values() if v["판"] == b["id"])
         name = f"{b['id']}.mp4" if not same else f"{b['id']}__{len(same) + 1}.mp4"
         dst = os.path.join(OUT, name)
-        subprocess.run(["curl", "-sS", "-L", "--fail", "-o", dst, j["result_url"]], check=True)
+        if tmp:
+            os.replace(tmp, dst)
+        else:
+            subprocess.run(["curl", "-sS", "-L", "--fail", "-o", dst, j["result_url"]], check=True)
         warn = []
+        if pick and sorted(pick.values())[-1] - sorted(pick.values())[-2] < 0.05:
+            warn.append(f"첫 장으로 가림이 애매함 {pick}")
         if p.get("aspect_ratio") and p["aspect_ratio"] != b["비율"]:
             warn.append(f"비율 {p['aspect_ratio']}(판 {b['비율']})")
         if p.get("duration") and int(p["duration"]) != int(b["길이"]):
@@ -93,7 +122,7 @@ def main():
         ledger[jid] = {"판": b["id"], "순서": b["순서"], "파일": name, "비슷함": round(r, 3), "다음": round(top[1][0], 3) if len(top) > 1 else None,
                        "만든때": j["created_at"], "길이": p.get("duration"), "비율": p.get("aspect_ratio"), "화질": p.get("resolution"),
                        "소리": p.get("generate_audio"), "모델": j.get("job_type"), "어긋남": warn, "지시문": p.get("prompt"),
-                       "참고": [m.get("role") for m in p.get("medias") or []]}
+                       "참고": [m.get("role") for m in p.get("medias") or []], **({"첫장가림": pick} if pick else {})}
         new += 1
         print(f"받음 {b['순서']:03d} {b['id']:<14} ← {jid[:8]} 비슷함 {r:.3f}" + (f" · 다음 {top[1][0]:.2f} {top[1][1]['id']}" if len(top) > 1 else "")
               + (f" · ⚠ {' · '.join(warn)}" if warn else ""))

@@ -89,9 +89,12 @@ def check(name):
                 no(f"B 판인데 VOICE 줄 {v}개")
         elif v:
             no("B 판이 아닌데 VOICE 줄")
-        if x["소리"] == "끔" and re.search(r'["“][^"”]*[가-힣]', t):
+        # 목소리 규칙(소리 켬 = 견본 판 · 소리 끔 판엔 대사 없음)은 목소리 판 → 견본 길을 쓰는 매진 · 7번 주판에만 건다 — 다른 편의 한 줄 대사는
+        # 시댄스가 그 판에서 지어내도 되고(오미톡 om2-2 · 대안 om2-2b), 7번 비교 꾸러미(10-30)는 그림만 견주려고 대사 판도 소리 끔으로 낸다
+        strict = x["편"] in ("hs", "p7") and not x.get("대안") and name != "웹올리기_7번비교"
+        if strict and x["소리"] == "끔" and re.search(r'["“][^"”]*[가-힣]', t):
             no("소리 끔 판인데 따옴표 안 한국어(대사?)")
-        if x["소리"] == "켬" and x.get("방식") not in ("B", "목소리 판"):
+        if strict and x["소리"] == "켬" and x.get("방식") not in ("B", "목소리 판"):
             no("소리 켬인데 B · 목소리 판이 아님")
         if not re.search(r"CAMERA|Camera", t):
             no("카메라 줄 없음")
