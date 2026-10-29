@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v08",
+ "text": "내 번호, 댓글에 숫자 하나만 남겨 주세요.",
+ "show": "내 번호, 댓글에 숫자 하나만 남겨 주세요.",
+ "dur": 2.208,
+ "words": [
+  {
+   "text": "내",
+   "start": 0.02,
+   "end": 0.095
+  },
+  {
+   "text": "번호,",
+   "start": 0.155,
+   "end": 0.334
+  },
+  {
+   "text": "댓글에",
+   "start": 0.769,
+   "end": 1.053
+  },
+  {
+   "text": "숫자",
+   "start": 1.098,
+   "end": 1.263
+  },
+  {
+   "text": "하나만",
+   "start": 1.308,
+   "end": 1.548
+  },
+  {
+   "text": "남겨",
+   "start": 1.592,
+   "end": 1.787
+  },
+  {
+   "text": "주세요.",
+   "start": 1.832,
+   "end": 2.208
+  }
+ ],
+ "source": {
+  "key": "68097f5186b0d7d8d15f4fc1e0d78d59",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 156
+ }
+}

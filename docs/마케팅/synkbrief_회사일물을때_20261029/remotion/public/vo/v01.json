@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "회사 일, 챗지피티에 그냥 물어도 될까요? 고르는 질문 셋.",
+ "show": "회사 일, ChatGPT에 그냥 물어도 될까요? 고르는 질문 셋.",
+ "dur": 3.681,
+ "words": [
+  {
+   "text": "회사",
+   "start": 0.03,
+   "end": 0.271
+  },
+  {
+   "text": "일,",
+   "start": 0.372,
+   "end": 0.472
+  },
+  {
+   "text": "챗지피티에",
+   "start": 0.835,
+   "end": 1.378
+  },
+  {
+   "text": "그냥",
+   "start": 1.459,
+   "end": 1.7
+  },
+  {
+   "text": "물어도",
+   "start": 1.76,
+   "end": 1.962
+  },
+  {
+   "text": "될까요?",
+   "start": 2.022,
+   "end": 2.364
+  },
+  {
+   "text": "고르는",
+   "start": 2.706,
+   "end": 3.048
+  },
+  {
+   "text": "질문",
+   "start": 3.129,
+   "end": 3.37
+  },
+  {
+   "text": "셋.",
+   "start": 3.431,
+   "end": 3.681
+  }
+ ],
+ "source": {
+  "key": "8db416d66cecb795880db95773b54ad8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

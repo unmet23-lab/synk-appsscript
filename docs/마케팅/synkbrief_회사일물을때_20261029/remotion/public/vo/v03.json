@@ -1,0 +1,106 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "첫째, 한 번만 묻고 끝인가요? 그럼 임시 채팅. 기록에 안 보이고, 학습에도 안 써요.",
+ "show": "첫째, 한 번만 묻고 끝인가요? 그럼 임시 채팅. 기록에 안 보이고, 학습에도 안 써요.",
+ "dur": 4.932,
+ "words": [
+  {
+   "text": "첫째,",
+   "start": 0.04,
+   "end": 0.28
+  },
+  {
+   "text": "한",
+   "start": 0.519,
+   "end": 0.615
+  },
+  {
+   "text": "번만",
+   "start": 0.663,
+   "end": 0.887
+  },
+  {
+   "text": "묻고",
+   "start": 0.935,
+   "end": 1.078
+  },
+  {
+   "text": "끝인가요?",
+   "start": 1.126,
+   "end": 1.573
+  },
+  {
+   "text": "그럼",
+   "start": 1.941,
+   "end": 2.133
+  },
+  {
+   "text": "임시",
+   "start": 2.181,
+   "end": 2.372
+  },
+  {
+   "text": "채팅.",
+   "start": 2.42,
+   "end": 2.82
+  },
+  {
+   "text": "기록에",
+   "start": 3.123,
+   "end": 3.379
+  },
+  {
+   "text": "안",
+   "start": 3.458,
+   "end": 3.522
+  },
+  {
+   "text": "보이고,",
+   "start": 3.57,
+   "end": 3.858
+  },
+  {
+   "text": "학습에도",
+   "start": 4.018,
+   "end": 4.385
+  },
+  {
+   "text": "안",
+   "start": 4.449,
+   "end": 4.513
+  },
+  {
+   "text": "써요.",
+   "start": 4.561,
+   "end": 4.932
+  }
+ ],
+ "source": {
+  "key": "6370ff47dcf638c609bd4ebb0a74ea69",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 174
+ }
+}

@@ -1,0 +1,106 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v06",
+ "text": "하나 더. 꺼 둬도, 좋아요 싫어요를 누르면, 그 대화는 통째로 학습에 쓰일 수 있어요.",
+ "show": "하나 더. 꺼 둬도, 좋아요·싫어요를 누르면, 그 대화는 통째로 학습에 쓰일 수 있어요.",
+ "dur": 5.227,
+ "words": [
+  {
+   "text": "하나",
+   "start": 0.02,
+   "end": 0.163
+  },
+  {
+   "text": "더.",
+   "start": 0.21,
+   "end": 0.29
+  },
+  {
+   "text": "꺼",
+   "start": 1.005,
+   "end": 1.132
+  },
+  {
+   "text": "둬도,",
+   "start": 1.212,
+   "end": 1.403
+  },
+  {
+   "text": "좋아요",
+   "start": 1.641,
+   "end": 1.991
+  },
+  {
+   "text": "싫어요를",
+   "start": 2.038,
+   "end": 2.388
+  },
+  {
+   "text": "누르면,",
+   "start": 2.436,
+   "end": 2.786
+  },
+  {
+   "text": "그",
+   "start": 3.263,
+   "end": 3.342
+  },
+  {
+   "text": "대화는",
+   "start": 3.406,
+   "end": 3.724
+  },
+  {
+   "text": "통째로",
+   "start": 3.771,
+   "end": 4.089
+  },
+  {
+   "text": "학습에",
+   "start": 4.137,
+   "end": 4.407
+  },
+  {
+   "text": "쓰일",
+   "start": 4.455,
+   "end": 4.598
+  },
+  {
+   "text": "수",
+   "start": 4.661,
+   "end": 4.693
+  },
+  {
+   "text": "있어요.",
+   "start": 4.741,
+   "end": 5.227
+  }
+ ],
+ "source": {
+  "key": "6ed5d017d8219771159205ec22c0d4b1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 184
+ }
+}

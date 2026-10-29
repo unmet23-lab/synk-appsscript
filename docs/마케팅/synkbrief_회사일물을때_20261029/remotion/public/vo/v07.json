@@ -1,0 +1,86 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v07",
+ "text": "한 번이면 임시 채팅, 매일이면 끄기, 회사 계정이 있으면 그걸로.",
+ "show": "한 번이면 임시 채팅, 매일이면 끄기, 회사 계정이 있으면 그걸로.",
+ "dur": 3.569,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.03,
+   "end": 0.088
+  },
+  {
+   "text": "번이면",
+   "start": 0.145,
+   "end": 0.461
+  },
+  {
+   "text": "임시",
+   "start": 0.533,
+   "end": 0.691
+  },
+  {
+   "text": "채팅,",
+   "start": 0.734,
+   "end": 1.093
+  },
+  {
+   "text": "매일이면",
+   "start": 1.323,
+   "end": 1.683
+  },
+  {
+   "text": "끄기,",
+   "start": 1.726,
+   "end": 1.955
+  },
+  {
+   "text": "회사",
+   "start": 2.343,
+   "end": 2.545
+  },
+  {
+   "text": "계정이",
+   "start": 2.588,
+   "end": 2.818
+  },
+  {
+   "text": "있으면",
+   "start": 2.861,
+   "end": 3.076
+  },
+  {
+   "text": "그걸로.",
+   "start": 3.119,
+   "end": 3.569
+  }
+ ],
+ "source": {
+  "key": "c2fe8dffbdaa563ecb02b5dd20c07e23",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}

@@ -1,0 +1,86 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "둘째, 매일 쓰나요? 설정, 데이터 관리에서 이 칸 하나만 끄세요.",
+ "show": "둘째, 매일 쓰나요? 설정, 데이터 관리에서 이 칸 하나만 끄세요.",
+ "dur": 3.866,
+ "words": [
+  {
+   "text": "둘째,",
+   "start": 0.02,
+   "end": 0.322
+  },
+  {
+   "text": "매일",
+   "start": 0.543,
+   "end": 0.745
+  },
+  {
+   "text": "쓰나요?",
+   "start": 0.805,
+   "end": 1.087
+  },
+  {
+   "text": "설정,",
+   "start": 1.409,
+   "end": 1.771
+  },
+  {
+   "text": "데이터",
+   "start": 1.992,
+   "end": 2.214
+  },
+  {
+   "text": "관리에서",
+   "start": 2.274,
+   "end": 2.676
+  },
+  {
+   "text": "이",
+   "start": 2.898,
+   "end": 2.918
+  },
+  {
+   "text": "칸",
+   "start": 2.998,
+   "end": 3.059
+  },
+  {
+   "text": "하나만",
+   "start": 3.119,
+   "end": 3.341
+  },
+  {
+   "text": "끄세요.",
+   "start": 3.401,
+   "end": 3.866
+  }
+ ],
+ "source": {
+  "key": "92971e58d3a6c9bbd3b5c2bb6bdbd259",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

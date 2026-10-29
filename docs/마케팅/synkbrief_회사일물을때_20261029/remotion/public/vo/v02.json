@@ -1,0 +1,116 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "돈 내면 괜찮을까요? 아니에요. 유료 계정도 이 칸이 켜져 있으면, 내 대화가 학습에 쓰일 수 있어요.",
+ "show": "돈 내면 괜찮을까요? 아니에요. 유료 계정도 이 칸이 켜져 있으면, 내 대화가 학습에 쓰일 수 있어요.",
+ "dur": 5.196,
+ "words": [
+  {
+   "text": "돈",
+   "start": 0.09,
+   "end": 0.211
+  },
+  {
+   "text": "내면",
+   "start": 0.252,
+   "end": 0.413
+  },
+  {
+   "text": "괜찮을까요?",
+   "start": 0.454,
+   "end": 0.966
+  },
+  {
+   "text": "아니에요.",
+   "start": 1.383,
+   "end": 1.747
+  },
+  {
+   "text": "유료",
+   "start": 2.111,
+   "end": 2.286
+  },
+  {
+   "text": "계정도",
+   "start": 2.326,
+   "end": 2.65
+  },
+  {
+   "text": "이",
+   "start": 2.731,
+   "end": 2.744
+  },
+  {
+   "text": "칸이",
+   "start": 2.811,
+   "end": 2.987
+  },
+  {
+   "text": "켜져",
+   "start": 3.027,
+   "end": 3.189
+  },
+  {
+   "text": "있으면,",
+   "start": 3.256,
+   "end": 3.633
+  },
+  {
+   "text": "내",
+   "start": 3.768,
+   "end": 3.822
+  },
+  {
+   "text": "대화가",
+   "start": 3.903,
+   "end": 4.172
+  },
+  {
+   "text": "학습에",
+   "start": 4.213,
+   "end": 4.509
+  },
+  {
+   "text": "쓰일",
+   "start": 4.549,
+   "end": 4.711
+  },
+  {
+   "text": "수",
+   "start": 4.751,
+   "end": 4.805
+  },
+  {
+   "text": "있어요.",
+   "start": 4.846,
+   "end": 5.196
+  }
+ ],
+ "source": {
+  "key": "2e7009efe4e90e6dc4b7f2f1f82c01c9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}
