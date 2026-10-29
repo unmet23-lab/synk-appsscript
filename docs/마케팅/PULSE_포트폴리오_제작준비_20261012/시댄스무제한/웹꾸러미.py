@@ -15,13 +15,14 @@ HS_PLAN = os.path.join(VIDEO, "homeshopping-horror-20261021", "목소리", "계�
 TOKEN1, TOKEN2 = "@이미지 1", "@이미지 2"   # 한국어 화면의 업로드 이름(영어 화면은 @Image 1) — LAB 굽기 시트와 같다
 AUDIO1 = "@오디오 1"   # 소리 꼬리표 — 화면에서 글자가 꼬리표로 안 바뀌면 지우고 @로 올린 소리를 고른다
 
-# 대사 목소리 시험(10-29 유호님 「견줘 보고 정할게」) — 매진 임박 대사 컷마다 두 방식을 나란히 둔다.
-#   지금 방식(A): 타입캐스트 대사 줄을 소리 참고로 넣어 입을 맞추고 최종은 후시녹음.
-#   새 방식(B): 그 배역의 목소리 견본(다른 문장 10초 안팎, 목소리시험/견본_계획.json)을 소리 참고로 — 목소리 결만 따르고
-#   대사는 지시문의 한국어를 연기하며, 생성 목소리를 최종으로 쓴다. 맨 앞 지유 #7 · #12 넷을 들어 보고 고른 방식만 낸다.
+# 대사 목소리(10-29 유호님 「목소리는 일단 기본적으로 시댄스가 직접 연기한 목소리를 그대로 쓰자」 — 결정 표 10-29) — 매진 임박 대사 컷은
+#   새 방식(B)을 본줄로: 그 배역의 목소리 견본(다른 문장 10초 안팎, 목소리시험/견본_계획.json)을 소리 참고로 넣어 목소리 결만 따르고
+#   대사는 지시문의 한국어를 시댄스가 연기하며, 생성 목소리를 최종으로 쓴다.
+#   지금 방식(A — 타입캐스트 대사 줄을 소리 참고로 넣어 입을 맞추고 최종은 후시녹음)은 대안으로 맨 뒤에 둔다(B의 일관성 · 음질이 안 될 때만).
+#   맨 앞 목소리 시험은 지유 #7 · #12의 B 둘 — 같은 견본으로 낸 두 컷이 같은 사람으로 들리는지 · 입과 소리가 맞는지 먼저 본다.
 VOICE_SAMPLES = "C:/Users/q1212/Documents/synk-vendor/homeshopping-horror-20261021/목소리/견본"
 SAMPLE_FILE = {"지유": "jiyu.mp3", "리4": "ri4.mp3", "통2": "tong2.mp3", "강도": "gangdo.mp3"}
-VOICE_TESTS = ["hs-S07", "hs-S07-B", "hs-S12", "hs-S12-B"]
+VOICE_TESTS = ["hs-S07-B", "hs-S12-B"]
 
 # 굽는 차례 — 짧은 편부터 끝까지 마쳐 하루가 모자라도 완성 편이 남게 한다. 「시험」은 맨 앞에서 길을 확인하는 판.
 PIECES = [  # (편, 원천 폴더) — 매진 임박(hs)은 따로
@@ -171,11 +172,10 @@ def build_day2(mode):
     spec = json.load(open(os.path.join(VIDEO, DAY2[1], "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
     by = {p["id"]: p for p in spec["판"]}   # 「후보판」은 넣지 않는다
     tests = []
-    for tid in DAY2_TESTS:
-        for m in ("A", "B"):
-            it = p7_item(spec, by[tid], m)
-            it.update({"id": f"{tid}-{m}", "설명": it["설명"] + (" · 지금 방식" if m == "A" else " · 새 방식"), "시험": True})
-            tests.append(it)
+    for tid in DAY2_TESTS:   # 10-29 방식 B로 정함 — 고른 방식 한 판씩(두 방식 견주기는 매진 목소리 시험 몫)
+        it = p7_item(spec, by[tid], mode)
+        it.update({"id": f"{tid}-{mode}", "설명": it["설명"] + (" · 지금 방식" if mode == "A" else " · 새 방식(시댄스가 연기)"), "시험": True})
+        tests.append(it)
     for tid, cam in CAMERA_ALT.items():
         now = p7_item(spec, by[tid], mode)
         now.update({"id": f"{tid}-지금꼴", "설명": now["설명"] + " · 카메라 줄 지금 꼴(원본 실측 숫자)", "시험": True})
@@ -241,11 +241,10 @@ def build():
              + ([("3_소리.mp3", os.path.join(d, "3_소리.mp3"), "소리")] if r["소리 참고"] else []),
              "지시문": first_line(r["끝 그림"]) + "\n" + body, "묶음": False, "대안": False}
         items.append(a)
-        if r["소리 참고"]:   # 대사 컷 — 지금 방식(A) 바로 뒤에 새 방식(B)
+        if r["소리 참고"]:   # 대사 컷 — 새 방식(B)이 본줄, 지금 방식(A)은 대안
             role = roles[r["컷"]]
-            a["방식"] = "A"
-            a["설명"] += " · 지금 방식(대사 녹음을 소리 참고로)"
-            items.append({**a, "id": f"{a['id']}-B", "방식": "B", "설명": f"매진 임박 #{r['컷']} · 새 방식({role} 목소리 견본)",
+            a.update({"방식": "A", "대안": True, "설명": a["설명"] + " · 지금 방식(대사 녹음을 소리 참고로) — 새 방식이 안 될 때만"})
+            items.append({**a, "id": f"{a['id']}-B", "방식": "B", "대안": False, "설명": f"매진 임박 #{r['컷']} · 새 방식({role} 목소리 견본 — 시댄스가 연기)",
                           "파일": a["파일"][:-1] + [("3_목소리견본.mp3", os.path.join(VOICE_SAMPLES, SAMPLE_FILE[role]), "목소리 견본")],
                           "지시문": first_line(r["끝 그림"]) + "\n" + voice_b(body)})
     for key, folder in PIECES:
@@ -295,11 +294,11 @@ def build():
                      "지시문 글자 수": len(it["지시문"])})
     json.dump(rows, open(os.path.join(OUT, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     open(os.path.join(OUT, "순서표.html"), "w", encoding="utf-8").write(page(order))
-    n_b = sum(1 for it in order if it.get("방식") == "B")
-    n_main = sum(1 for it in order if not it["대안"]) - n_b
-    print(f"판 {len(order)}개(주판 {n_main} · 새 방식 {n_b} · 대안 {len(order) - n_main - n_b}) → {OUT}")
+    n_main = sum(1 for it in order if not it["대안"])
+    n_a = sum(1 for it in order if it.get("방식") == "A")
+    print(f"판 {len(order)}개(주판 {n_main} — 매진 대사 13컷은 새 방식 · 대안 {len(order) - n_main} — 매진 지금 방식 {n_a} 포함) → {OUT}")
     for key in ["hs"] + [k for k, _ in PIECES]:
-        sel = [it for it in order if it["편"] == key and not it["대안"] and it.get("방식") != "B"]
+        sel = [it for it in order if it["편"] == key and not it["대안"]]
         if sel:
             print(f"  {key}: 판 {len(sel)} · 컷 {sum(len(it['컷']) for it in sel)} · 묶음 {sum(it['묶음'] for it in sel)}")
     too_long = [it["id"] for it in order if len(it["지시문"]) > 3800]
@@ -327,7 +326,7 @@ h2{font-size:18px;margin:24px 0 6px}
 <li>첫날과 같습니다 — 모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b> · 화질 720p · 비율 9:16 · 소리는 판마다 적힌 대로(「소리 켬」 판만 켭니다).</li>
 <li>판마다 미디어 칸을 비우고 폴더의 파일을 <b>이름 차례대로</b> 올립니다 — 그림(1_ · 2_) 다음에 소리(<b>3_소리.mp3</b> 지금 방식 · <b>3_목소리견본.mp3</b> 새 방식). 「@이미지 1」 · 「@오디오 1」 글자가 꼬리표로 안 바뀌면 지우고 @로 올린 파일을 고릅니다.</li>
 <li>「두 샷」 판은 옴니 레퍼런스 모드에서 그림 둘을 참조로 올립니다 — 안 되면 맨 아래 「대안」의 낱판 둘로 냅니다.</li>
-<li>맨 앞 <b>7번 시험 여섯</b>(1-16 · 2-28을 두 방식으로, 1-35를 카메라 줄 두 꼴로)을 내고 「7번 시험 냈어」라고 해 주세요. 기다리지 말고 이어서 내셔도 됩니다 — 고른 방식의 시험 판은 그 컷의 주판을 겸합니다.</li>
+<li>맨 앞 <b>7번 시험 넷</b>(1-16 민재 · 2-28 이안 — 배역 목소리 견본을 넣고 대사는 시댄스가 연기, 1-35를 카메라 줄 두 꼴로)을 내고 「7번 시험 냈어」라고 해 주세요. 기다리지 말고 이어서 내셔도 됩니다 — 시험 판은 그 컷의 주판을 겸합니다.</li>
 </ol></div>
 """
 
@@ -360,15 +359,15 @@ h2{font-size:18px;margin:24px 0 6px}
  <br>· 소리 파일은 그림 다음에 올립니다 — <b>3_소리.mp3</b>(지금 방식) · <b>3_목소리견본.mp3</b>(새 방식). 새 방식 지시문의 글자 「@오디오 1」이 꼬리표로 안 바뀌면 지우고 @를 쳐서 올린 소리를 고릅니다.</li>
 <li><b>「두 샷」 판</b>(파란 표시)은 <b>옴니 레퍼런스(참조) 모드</b>에서 그림 둘을 참조로 올려 한 판에 두 컷을 냅니다 — 시댄스 2.5에는 이 모드가 있습니다(10-28 MCP 모델 정보: 문장만 · 옴니 레퍼런스 · 시작/끝 프레임 · 한 판 4~30초). 화면이 두 그림을 시작 · 끝 프레임으로만 받으면 이 판은 내지 말고 아래 「대안」의 낱판 둘로 냅니다.</li>
 <li>「지시문 복사」로 글을 붙여 넣고 생성합니다. 프리셋을 권하면 거절합니다. 앞 판이 다 만들어진 뒤 다음 판을 냅니다. 처음 보는 동의 창은 직접 읽고 눌러 주세요.</li>
-<li>맨 앞 <b>목소리 시험 넷</b>(매진 임박 지유 #7 · #12를 지금 방식 · 새 방식으로)을 내면 Claude에게 「목소리 시험 냈어」라고 해 주세요. Claude가 받아 나란히 듣는 판을 만들어 드리고, 고르신 방식이 매진 임박 대사 컷(과 7번 숏드라마)의 방식이 됩니다. 기다리지 말고 다음 시험 넷을 이어서 내시고, 그 넷을 내면 「시험 냈어」 — 묶음 · 끝 그림 · 카메라 길이 되는지 알려 드립니다.</li>
-<li>매진 임박의 대사 컷은 <b>지금 방식</b> · <b>새 방식</b> 두 판이 붙어 있습니다. 목소리 시험에서 고른 방식 한 판만 내고, 다른 판은 체크만 해서 넘깁니다.</li>
+<li>맨 앞 <b>목소리 시험 둘</b>(매진 임박 지유 #7 · #12 — 소리 켬, 지유 목소리 견본을 넣고 대사는 시댄스가 연기)을 내면 Claude에게 「목소리 시험 냈어」라고 해 주세요. 두 컷이 같은 사람 목소리로 들리는지 · 입과 소리가 맞는지 들어 보는 판을 만들어 드립니다. 기다리지 말고 다음 시험 여섯을 이어서 내시고, 그 여섯을 내면 「시험 냈어」 — 묶음 · 끝 그림 · 카메라 길이 되는지 알려 드립니다.</li>
+<li>대사는 시댄스가 직접 연기한 목소리를 그대로 씁니다(10-29). 매진 임박 대사 컷은 <b>새 방식</b> 판이 본줄에 있고, 타입캐스트 녹음을 넣는 <b>지금 방식</b> 판은 맨 아래 「대안」에 있습니다 — 새 방식의 목소리가 컷마다 달라지는 것으로 확인되면 Claude가 말씀드립니다.</li>
 </ol></div>
 """
     out = [head]
     cur = None
     for n, it in enumerate(order, 1):
-        sec = ("목소리 시험 — 같은 컷을 두 방식으로" if it["id"] in VOICE_TESTS else "시험" if it["id"] in TESTS or it.get("시험")
-               else "대안 — 묶음 판이 안 될 때만" if it["대안"] else it["편이름"])
+        sec = ("목소리 시험 — 시댄스가 연기한 목소리가 컷마다 같은가" if it["id"] in VOICE_TESTS else "시험" if it["id"] in TESTS or it.get("시험")
+               else "대안 — 묶음 판 · 새 방식이 안 될 때만" if it["대안"] else it["편이름"])
         if sec != cur:
             out.append(f"<h2>{esc(sec)}</h2>")
             cur = sec

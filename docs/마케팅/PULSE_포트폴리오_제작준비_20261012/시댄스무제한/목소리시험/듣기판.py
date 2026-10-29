@@ -4,6 +4,7 @@
 # 판마다 ① 생성 소리 그대로 ② 지금 방식만: 타입캐스트 대사 줄을 생성 말소리 시작에 맞춰 덮은 판(지금 계획의 최종 꼴)
 # ③ 받아쓰기(faster-whisper medium · VAD 끔 — 10-26 시험에서 VAD가 짧은 외침을 놓쳤다)를 대본과 견준다.
 # 같은 사람으로 들리는지는 방식마다 #7 → #12를 이어 붙인 소리로 귀로 고른다 — 숫자로 대신하지 않는다.
+# 10-29 유호님이 새 방식(B — 시댄스가 연기한 목소리)으로 정한 뒤로는 B 둘만 받는다 — 받지 않은 방식은 판에 그리지 않는다.
 import html, json, os, re, shutil, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -82,7 +83,6 @@ def build(src):
         for way, pid in (("A", f"hs-S{cut:02d}"), ("B", f"hs-S{cut:02d}-B")):
             clip = os.path.join(src, pid + ".mp4")
             if not os.path.exists(clip):
-                row["판"].append({"방식": way, "id": pid, "없음": True})
                 continue
             shutil.copy2(clip, os.path.join(out, pid + ".mp4"))
             text, start = transcribe(model, clip, tmp)
@@ -138,8 +138,8 @@ h1{font-size:22px;margin:8px 0}h2{font-size:18px;margin:28px 0 8px}.note{color:v
 .ok{color:var(--ok)}.bad{color:var(--bad)}
 button{font:inherit;padding:2px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;margin-top:6px}
 </style></head><body><main>
-<h1>대사 목소리 시험 — 같은 컷, 두 방식</h1>
-<p class="note">지유 대사 두 컷을 두 방식으로 뽑았습니다. 연기 말투가 자연스러운지, 입과 소리가 맞는지(0.5배로), 두 컷이 같은 사람 목소리로 들리는지 보고 한 방식을 골라 주세요. 고르신 방식이 매진 임박 대사 13컷과 7번 숏드라마 입 맞춤 48컷의 방식이 됩니다.</p>"""]
+<h1>대사 목소리 시험 — 시댄스가 연기한 목소리</h1>
+<p class="note">지유 대사 두 컷을 지유 목소리 견본만 넣고 시댄스가 직접 연기하게 뽑았습니다(10-29 정하신 방식). 연기 말투가 자연스러운지, 입과 소리가 맞는지(0.5배로), 두 컷이 같은 사람 목소리로 들리는지 봐 주세요. 괜찮으면 매진 임박 대사 13컷과 7번 숏드라마 대사 컷을 이 방식으로 냅니다.</p>"""]
     for r in cuts:
         out.append(f"<h2>#{r['컷']} 「{e(r['대본'])}」</h2><div class=\"grid\">")
         for p in r["판"]:
@@ -152,7 +152,7 @@ button{font:inherit;padding:2px 10px;border-radius:8px;border:1px solid var(--li
                        f'<button type="button" data-rate>0.5배로</button><p class="note">{e(NOTES[p["방식"]])}<br>{said}{heard}</p></div>')
         out.append("</div>")
     if chains:
-        out.append("<h2>같은 사람으로 들리나 — #7 → #12 이어 듣기</h2><div class=\"grid\">")
+        out.append("<h2>같은 사람으로 들리나 — #7 → #12 이어 듣기</h2><div class=\"grid\">")   # 받은 방식만
         for name, label in chains.items():
             out.append(f'<div class="card"><b>{e(label)}</b><audio controls preload="metadata" src="{e(name)}"></audio></div>')
         out.append("</div>")
