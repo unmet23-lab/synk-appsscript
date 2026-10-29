@@ -40,6 +40,36 @@
         "화면필요": []
       },
       {
+        "계정": "synkbrief-tiktok",
+        "채널": "틱톡 @synkbrief",
+        "주소": "https://www.tiktok.com/@synkbrief/video/7701315807938153749?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-10-28T12:00:00.000Z",
+        "훅": "C — 끝 줄 「그대로 붙여 쓸 요청문은 아래 글에 있어요」(틱톡엔 고정 댓글 · 키워드 DM이 없어서, 나머지는 A와 같음)",
+        "역할": "유입",
+        "시점": {
+          "24시간": {
+            "관측": "2026-10-29T12:02:07.428Z",
+            "지표": {
+              "views": 114,
+              "likes": 0,
+              "comments": 0,
+              "shares": 1
+            },
+            "평소대비": {
+              "배수": 1.01,
+              "중앙값": 112.5,
+              "편수": 2
+            },
+            "위치": {},
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "견줄 이전 편이 모자란다(공유 1편 — 4편부터)"
+          }
+        },
+        "화면필요": []
+      },
+      {
         "계정": "synkbrief-youtube",
         "채널": "유튜브 @synkbrief",
         "주소": "https://www.youtube.com/watch?v=JBbJXMqVo1g",
