@@ -619,6 +619,12 @@
 - 고침: 소리 대비 낱말은 같은 목소리로 낱말마다 seed 여럿 · 목소리 여럿을 굽고, `initial_prompt` 없이 · 「팔, 빨, 발」을 넣고 두 번 받아써서 셋 다 맞는 목소리를 고른 뒤 `tools/목소리엉킴.py`로 거른다(이번엔 하나 — 팔 · 빨 1026, 발은 1026이 엉킴 92% · 「8」이라 1029 · 0%). 해설 목소리와 갈리면 한국어 소리는 마스코트 몫으로 두고, 해설이 그 소리를 부르지 않게 쓴다(「Which one has no air?」). 쓴 판은 `docs/마케팅/LAB_발빨팔귀시험_20261026/음성/계획_v4.json`.
 - 다시 확인: faster-whisper large-v3-turbo `language="ko"`로 힌트 없이 셋이 팔(8) · 빨 · 발로 나오는지.
 
+### Typecast 공용 셈(`tools/lib/타입캐스트.cjs`)은 `mn`을 받지만 ssfm-v30은 몽골어를 422 「LANGUAGE_NOT_SUPPORTED」로 거절한다 (2026-10-28 Claude)
+- 증상: CTS 단편 어머니 몽골어 한 줄(「Цай уу, миний хүү.」)을 `나레이션굽기.mjs` 계획에 `"lang": "mn"`로 넣자 미리 보기는 54자로 통과했는데, 굽기 첫 줄에서 `Typecast HTTP 422 · LANGUAGE_NOT_SUPPORTED`로 멈췄다(산 글자 0).
+- 원인: 셈 파일의 LANG 표가 `mn: 'mon'`을 갖고 있어 미리 보기는 막지 않지만, 지금 모델(ssfm-v30)의 목소리는 몽골어를 받지 않는다.
+- 고침: 몽골어 대사는 위 「몽골어·베트남어 같은 짧은 외국어 대사」 항목대로 Gemini TTS(`gemini-3.8-flash-tts`, `languageCode: mn-MN`)로 굽는다. 이 PC에 무료 글 문 키(`SYNK_보안/제미나이_무료.txt`)가 없어 유료 Vertex(`--유료-api`)로 구웠고(1.4초 세 줄), 사용은 유호님 견적 승인에 넣었다(`.tmp/contests-20261019/cts/소리/제미나이_굽기.cjs`).
+- 다시 확인: 굽기 전에 그 목소리 · 언어로 한 줄만 `--최대 20`으로 사 본다.
+
 ## 렌더 장비
 
 ### 새 노트북(RTX 5090 24GB)은 블렌더 한 장이 ZeroGPU보다 빠르다
@@ -729,6 +735,8 @@
 - 고침: `C:/SYNK-LoRA/tools/mmaudio/`에 `python -m venv --system-site-packages venv`(시스템 torch 공유) → `torchvision==0.29.1+cu130`(pytorch cu130 색인, `--no-deps`)·einops·colorlog·librosa·omegaconf·open_clip_torch·timm·torchdiffeq·pyloudnorm. 가중치는 `받기.sh`(`par_dl.py` 16연결, 10-18부터 전체 주소도 받음)로 large_44k_v2 4.1GB·synchformer·v1-44·DFN5B 3.9GB, BigVGAN 44k는 `HF_HUB_DISABLE_XET=1` 캐시. 실행 `소리만들기.py <작업.json> <출력>`이 torchaudio를 빈 모듈로 채우고 CLIP을 `local-dir:clip_dfn5b`로 읽는다. 구간 2~4.5초 한 개 13~65초(LoRA 학습과 GPU를 나눠 쓸 때), VRAM 최대 5.8GB. 검사는 `소리_살피기.py`(어택 시각·스펙트럼 중심)로 장면 사건과 맞는 시드를 고른다(매미는 중심 4~6kHz, 9kHz대는 쉬쉬거리는 잡음). 믹스 `synk-vendor/…/효과음/믹스.py` — 직접 짠 봉우리 제한기는 +1.6dBFS로 샜으니 ffmpeg `alimiter=limit=0.79`로 누르고 크기를 다시 재서 맞춘다(−14.1 LUFS · −1.6 dBTP).
 - 다시 확인: 최종 mp4를 `ebur128=peak=true`로 재고, 사건 소리(얼음 「탁」·잔 「톡」)의 어택이 컷 시각 ±0.1초 안인지 본다.
 - 10-19 텐센트 HunyuanVideo-Foley XL(`C:/SYNK-LoRA/tools/hunyuan-foley/`)도 같은 작업 JSON으로 돈다(`소리만들기.py`, 구간당 25~43초, VRAM 최대 11.4GB, 48kHz 모노, 글만 넣는 작업은 못 함). 깔 때 막힌 것: transformers 5판에는 코드가 쓰는 `find_pruneable_heads_and_indices`가 없어 **`transformers>=4.50,<5`**(4.57), 그러면 huggingface_hub가 0.36으로 내려가 diffusers 0.41이 `resolve_revision`을 못 찾으니 **`diffusers<0.36`**, 실행 파일이 pandas를 부른다. 보조 모델 SigLIP2·CLAP은 실행 중에 허브에서 받으려 해서 `enc/`에 직접 받고 `model_utils.py`의 경로를 로컬로 바꿨다. CLAP 저장소의 config.json은 전체 모델(`clap`)이라 `ClapTextModelWithProjection`이 `vocab_size` 없음으로 죽는다 → `config=ClapTextConfig.from_pretrained(경로)`를 넘긴다. GPU를 남이 쓰고 있으면 `GPU비면_돌리기.sh`(1분마다 보고 6GB 아래면 시작)로 걸어 둔다.
+
+- 10-28 더한 것(CTS 공모, Claude): **MMAudio 체크포인트는 CC-BY-NC 4.0(비상업)**이다(`src/README.md` 「License」 — 코드만 MIT, 학습 자료 권리도 「상업 이용 보장 안 함」). 저작권을 넘기거나 상업 이용 등급을 보증해야 하는 공모 · 광고(예: CTS 동의서 제5조 ②)에는 쓰지 않고, 상업 이용이 되는 녹음 모음(Fairlight · Sonniss GDC) 소리를 화면 사건 프레임에 맞춰 놓는다. HunyuanVideo-Foley도 쓰기 전에 그 판의 라이선스를 먼저 본다.
 
 ### H3 구간 살펴보기의 「화면 밀림」은 사람이 옮겨 가도 커진다 — 사람 밖 띠와 얼굴 판을 따로 잰다 (2026-10-21)
 - 증상: 10-21 지유 미소 판 컷 1(`컷1_세트2미소_s42.mp4`, 정면 얼굴이 화면 가운데를 크게 차지)을 `synk-vendor/…/영상_H3/구간_살펴보기.py`로 보니 1.75초 밀림 −23px, 2.25초부터 −52px로 나와 「카메라가 밀린다」로 읽고 구간을 1.7초 앞에서 끊으려 했다.
