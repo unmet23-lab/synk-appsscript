@@ -17,7 +17,9 @@ test('fixed independent review authorizes only matching units; a changed word, a
   for(const row of review.results)assert.equal(teaReviewUnitHash(source.find(f=>f.id===row.id),axes),row.hash);
 });
 test('actual displayed edition is necessary: matching L2 is assessed; missing/old key and L3 remain unassessed',()=>{
-  const slot=open(),g=slot.open.guests[0],key=tea.presentationKey(g.frame,'L2');assert.ok(key,'root must build current reviewed data');
+  // A reviewed frame held on purpose: the seeded draw may land on a frame added later and not yet reviewed (W10).
+  const slot=open(),g=slot.open.guests[0];g.frame='guest.tea.req-warm-tea.1';g.request={tea:'barley',temp:'warm'};
+  const key=tea.presentationKey(g.frame,'L2');assert.ok(key,'root must build current reviewed data');
   assert.equal(show(slot,'a',key).learning[0].practice.assessed,true);
   assert.equal(show(slot).learning[0].practice.assessed,false);
   assert.equal(show(slot,'a','old-edition').learning[0].practice.assessed,false);

@@ -294,6 +294,18 @@ export function validateTea(data) {
   const keys = axis => Object.keys(data.axes[axis]).sort().join();
   if (keys('tea') !== 'barley,today,yuzu' || keys('temp') !== 'cold,warm' || keys('sweet') !== '0,1,2') fail('tea.json의 축 값(차 셋 · 온도 둘 · 단맛 셋)');
   if (!Object.values(data.axes.tea).every(v => /^#[0-9a-f]{6}$/.test(v.color ?? ''))) fail('tea.json 차 색');
+  // 축 문구 수준별(W10): L3 · L4만, 온도 · 단맛의 있는 값에 그 축의 말 꼴만. L1 · L2는 검수한 요청 틀 단위가 axes를 품어 두지 않는다.
+  for (const [level, byAxis] of Object.entries(data.phrases || {})) {
+    if (level === '$comment') continue;
+    if (!['L3', 'L4'].includes(level) || !byAxis || typeof byAxis !== 'object') fail(`tea.json phrases.${level}(L3 · L4만)`);
+    for (const [axis, values] of Object.entries(byAxis)) {
+      const forms = { temp: ['adn', 'adv'], sweet: ['adn', 'adv', 'honey'] }[axis];
+      if (!forms || !values || typeof values !== 'object') fail(`tea.json phrases.${level}.${axis}(온도 · 단맛만)`);
+      for (const [value, words] of Object.entries(values)) {
+        if (!Object.hasOwn(data.axes[axis], value) || !words || !Object.entries(words).length || !Object.entries(words).every(([form, w]) => forms.includes(form) && text(w))) fail(`tea.json phrases.${level}.${axis}.${value}`);
+      }
+    }
+  }
   const g = data.guests || {}, looks = [g.regular, ...(g.walkers || [])];
   if (!word(g.regular) || !Array.isArray(g.walkers) || g.walkers.length !== 2 || new Set(looks).size !== 3 || !looks.every(id => word(id) && text(g.labels?.[id]))) fail('tea.json guests');
   if (!['a', 'b', 'out'].every(k => point(data.stand?.[k]))) fail('tea.json stand');
@@ -323,7 +335,8 @@ export function validateTeaLines(docs, tea) {
       const open = w.axes.filter(a => !Object.hasOwn(w.fixed || {}, a)).sort().join();
       if (named.join() !== open) fail(`요청 틀 ${e.id}의 빈칸(${named.join()})이 정할 축(${open})과 달라요.`);
     } else if (w.part === 'react') {
-      const ok = npc === 'guest' && (w.is === 'match' && (w.free === undefined || w.free === 'sweet' && valueOk('sweet', w.value) || w.free === 'temp' && valueOk('temp', w.value))
+      // W10: a cup made again after a miss is thanked as such (again — no free axis).
+      const ok = npc === 'guest' && (w.is === 'match' && (w.free === undefined && (w.again === undefined || w.again === true) || w.again === undefined && (w.free === 'sweet' && valueOk('sweet', w.value) || w.free === 'temp' && valueOk('temp', w.value)))
         || w.is === 'differ' && (w.axis === 'tea' || w.axis === 'temp' && valueOk('temp', w.want) || w.axis === 'sweet' && ['less', 'more'].includes(w.dir)) || w.is === 'takeaway'
         // W8b: a guest pleased with the tea of the day the player's gift made — one line per tea a gift makes.
         || w.is === 'today' && ['green', 'mint', 'chrysanthemum'].includes(w.tea));

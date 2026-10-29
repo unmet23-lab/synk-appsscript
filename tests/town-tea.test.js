@@ -62,7 +62,7 @@ test('같은 시드면 같은 주문 — B는 A와 한 축 이상 다르고, 단
     assert.ok(t.AXES.some(axis => a.request[axis] !== b.request[axis]), `주문 ${i}: 두 손님의 요청이 같다`);
     regulars.push(a.regular);
     if (i === 4) {
-      assert.equal(a.frame, t.USUAL, 'L2 이상은 「늘 마시던 걸로요」');
+      assert.ok(t.USUALS.length >= 2 && t.USUALS.includes(a.frame), 'L2 이상은 「늘 마시던 걸로요」(변형 가운데 하나 — W10)');
       assert.deepEqual(a.request, slot.regular.pref.request, '처음 받은 요청 그대로');
       assert.equal(a.note, slot.regular.pref.frame, '쪽지를 열면 처음 요청');
       const l1 = t.orderGuests(slot, { ...CTX, level: 'L1' }).guests[0];

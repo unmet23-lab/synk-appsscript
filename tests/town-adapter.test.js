@@ -83,9 +83,11 @@ test('다리 §10-2 — 두 기기는 자리마다 나중 시각, 같은 시각�
 test('세로 §13-2 — 찻집 itemKey 꼴은 운영 원장 그대로이고 요청 칸은 늘 tea · temp · sweet 차례다', async () => {
   const tea = await load('town/activities/tea-order.mjs');
   assert.equal(tea.itemKeyOf('guest.tea.req-warm-tea.1', { tea: 'today', temp: 'warm' }), 'synk-town.tea.guest.tea.req-warm-tea.1...tea...today...temp...warm..');
-  // 키의 칸 차례는 틀의 when.axes 선언(requestOf)을 따른다 — 열두 틀 모두 tea · temp · sweet 차례로 선언됐는지(Fable 설계 검토 14).
+  // 키의 칸 차례는 틀의 when.axes 선언(requestOf)을 따른다 — 모든 틀이 tea · temp · sweet 차례로 선언됐는지(Fable 설계 검토 14).
+  // W10: 요청 틀은 수준마다 여덟(세로 §16-1) + 새 차림표 틀 하나.
   const frames = tea.TEA_LINES.filter(line => line.when?.part === 'request');
-  assert.equal(frames.length, 12);
+  for (const level of ['L1', 'L2', 'L3', 'L4']) assert.equal(frames.filter(f => f.when.home === level && !f.when.menu).length, 8, `${level} 요청 틀`);
+  assert.equal(frames.filter(f => f.when.menu).length, 1);
   for (const f of frames) assert.deepEqual(f.when.axes, ['tea', 'temp', 'sweet'].filter(k => f.when.axes.includes(k)), f.id);
   for (const level of ['L1', 'L2', 'L3', 'L4']) for (let d = 0; d < 40; d++) for (const newTea of [null, { sweet: 1 }]) {
     for (const g of tea.orderGuests(tea.initial(), { villageSeed: `k${d}`, lifeDay: 20749 + d, band: 'day', level, newTea }).guests) {

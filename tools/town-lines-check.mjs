@@ -156,8 +156,17 @@ function townProblems(entry, file) {
 }
 
 /** 찻집 주문 줄(W8, §11 · §22): 손님(guest)과 찻집 주인의 말. 빈칸은 낱말 표(town/data/tea.json)의 꼴뿐이고, 길이는
- * 빈칸마다 가장 긴 값(「오늘의 차」·「조금 달게」·「꿀은 조금만」…)으로 채워 판 상한으로 잰다. */
-export const TEA_FILL = Object.freeze({ tea: '오늘의 차', 'temp.adn': '따뜻한', 'temp.adv': '따뜻하게', 'sweet.adn': '조금 단', 'sweet.adv': '조금 달게', 'sweet.honey': '꿀은 조금만' });
+ * 빈칸마다 가장 긴 값(「오늘의 차」·「조금 달게」·「꿀은 조금만」…)으로 채워 판 상한으로 잰다. L3 · L4는 그 판의 말
+ * (phrases — 축 문구 수준별, W10)로 채운다(「꿀은 한 숟가락만」). */
+export const TEA_FILE = path.join(ROOT, 'experiences/synk-town/town/data/tea.json');
+const TEA_TABLE = fs.existsSync(TEA_FILE) ? JSON.parse(fs.readFileSync(TEA_FILE, 'utf8')) : null;
+export function teaFillFor(level, tea = TEA_TABLE) {
+  const longest = list => list.filter(Boolean).reduce((a, b) => (wordsOf(b) > wordsOf(a) || wordsOf(b) === wordsOf(a) && b.length > a.length ? b : a), '');
+  const words = (axis, form) => Object.entries(tea?.axes?.[axis] || {}).map(([value, entry]) => tea.phrases?.[level]?.[axis]?.[value]?.[form] ?? entry[form]);
+  return { tea: longest(words('tea', 'name')), 'temp.adn': longest(words('temp', 'adn')), 'temp.adv': longest(words('temp', 'adv')),
+    'sweet.adn': longest(words('sweet', 'adn')), 'sweet.adv': longest(words('sweet', 'adv')), 'sweet.honey': longest(words('sweet', 'honey')) };
+}
+export const TEA_FILL = Object.freeze(teaFillFor('L1'));
 function teaProblems(entry, file) {
   const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
   const [npc] = entry.id.split('.');
@@ -167,9 +176,9 @@ function teaProblems(entry, file) {
   for (const level of LEVELS) {
     const text = entry.levels?.[level];
     if (typeof text !== 'string' || !text.trim()) { bad('tea', `${level} 판이 없어요 — 네 판이 다 있어요.`, level); continue; }
-    const unknown = [...text.matchAll(/\{([^}]*)\}/g)].map(m => m[1]).filter(slot => !Object.hasOwn(TEA_FILL, slot));
+    const fill = teaFillFor(level), unknown = [...text.matchAll(/\{([^}]*)\}/g)].map(m => m[1]).filter(slot => !Object.hasOwn(fill, slot));
     if (unknown.length) bad('tea', `${level}: 모르는 빈칸 ${unknown.map(s => `{${s}}`).join(' ')}`, level);
-    lengthProblems(text.replace(/\{([^}]*)\}/g, (_, slot) => TEA_FILL[slot] ?? slot), level, LEVEL_LENGTH[level], bad);
+    lengthProblems(text.replace(/\{([^}]*)\}/g, (_, slot) => fill[slot] ?? slot), level, LEVEL_LENGTH[level], bad);
   }
   return out;
 }

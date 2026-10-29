@@ -34,30 +34,40 @@ export const VALUES = Object.freeze(TEA ? { tea: Object.keys(TEA.axes.tea), temp
   : { tea: [], temp: [], sweet: [] });
 export const LEVELS = Object.freeze(['L1', 'L2', 'L3', 'L4']);
 const ASK_KINDS = Object.freeze(['repeat', 'slower', 'meaning', 'reopen']);
-export const USUAL = 'guest.tea.regular-usual.1';
 const SLOTS = Object.freeze(['a', 'b']);
 const ONE = 'r';
 const FRAMES = TEA_LINES.filter(line => line.when?.part === 'request' && !line.when.menu);
 const line = (part, test = () => true) => TEA_LINES.find(l => l.when?.part === part && test(l.when))?.id ?? null;
+/** A line's equal variants (….1, ….2 — the same when) are picked by a key — the order, the guest and the try — so both
+ * devices and the host say the same; no key says the first (W10). The pick draws its own numbers: the order's stay as they were. */
+const lines = (part, test) => TEA_LINES.filter(l => l.when?.part === part && test(l.when)).map(l => l.id);
+const pick = (ids, key) => ids.length ? ids[key == null ? 0 : createRng('tea-line', key).below(ids.length)] : null;
+/** The regular's 「늘 마시던 걸로요」 (§11-5) and its variant; USUAL stays the first for older callers. */
+export const USUALS = Object.freeze(lines('regular', w => w.is === 'usual'));
+export const USUAL = USUALS[0] ?? 'guest.tea.regular-usual.1';
 
 /* ── words ── */
-/** A line's words at a level with its blanks filled from the table (G5): {tea} {temp.adn} {temp.adv} {sweet.adn} … */
-export function fillLine(text, values = {}) {
+/** A line's words at a level with its blanks filled from the table (G5): {tea} {temp.adn} {temp.adv} {sweet.adn} …
+ * L3·L4 read the table's words for their level where it has them (축 문구 수준별, W10 — 「시원하게」·「살짝 달게」);
+ * L1·L2 always say the table's first words, the ones the reviewed request units hold. */
+export function fillLine(text, values = {}, level = null) {
   return String(text || '').replace(/\{(tea|temp|sweet)(?:\.(adn|adv|honey))?\}/g, (_, axis, form) => {
-    const entry = TEA?.axes?.[axis]?.[String(values[axis])];
-    return entry ? entry[axis === 'tea' ? 'name' : form] ?? '' : '';
+    const value = String(values[axis]), entry = TEA?.axes?.[axis]?.[value], name = axis === 'tea' ? 'name' : form;
+    return entry ? TEA.phrases?.[level]?.[axis]?.[value]?.[name] ?? entry[name] ?? '' : '';
   });
 }
 /** The words a line says at a level (null when the line is unknown). */
 export function lineWords(id, level, values = {}) {
   const l = LINE_BY_ID.get(id); if (!l) return null;
-  return fillLine(l.levels[authoredLevel(level, l.levels)], values);
+  const at = authoredLevel(level, l.levels);
+  return fillLine(l.levels[at], values, at);
 }
-/** The key words of a request — every axis value it names, in any of its forms — for 「다시 말해 주세요」's underline. */
+/** The key words of a request — every axis value it names, in any of its forms and levels — for 「다시 말해 주세요」's underline. */
 export function keyWords() {
   if (!TEA) return [];
-  return [...new Set(AXES.flatMap(axis => Object.values(TEA.axes[axis]).flatMap(entry => [entry.name, entry.adn, entry.adv, entry.honey].filter(Boolean))))]
-    .sort((a, b) => b.length - a.length);
+  const forms = entry => [entry?.name, entry?.adn, entry?.adv, entry?.honey].filter(Boolean);
+  const byLevel = Object.values(TEA.phrases || {}).flatMap(level => AXES.flatMap(axis => Object.values(level?.[axis] || {}).flatMap(forms)));
+  return [...new Set([...AXES.flatMap(axis => Object.values(TEA.axes[axis]).flatMap(forms)), ...byLevel])].sort((a, b) => b.length - a.length);
 }
 export const easier = level => LEVELS[Math.max(0, LEVELS.indexOf(level) - 1)];
 
@@ -95,7 +105,7 @@ export function orderGuests(slot, { villageSeed, lifeDay, band, level, paramsVer
   if (regularNow && slot.regular.pref) {
     // 「늘 마시던 걸로요」 above L1; at L1 the first request again. The folded note shows the first request (§11-5).
     const pref = slot.regular.pref;
-    a = guest('a', whoA, { regular: true, frame: level === 'L1' ? pref.frame : USUAL, note: pref.frame, request: { ...pref.request } });
+    a = guest('a', whoA, { regular: true, frame: level === 'L1' ? pref.frame : pick(USUALS, `${villageSeed}:${lifeDay}:${band}:${n}`) ?? USUAL, note: pref.frame, request: { ...pref.request } });
   } else {
     const frames = framesAt(level, null), frame = frames[rng.below(frames.length)];
     a = guest('a', whoA, { regular: regularNow, frame: frame.id, request: requestOf(frame, rng, null) });
@@ -133,15 +143,18 @@ export function judge(request, cup) {
   return AXES.filter(axis => Object.hasOwn(request, axis) && request[axis] !== got[axis]);
 }
 /** The line a guest answers a served cup with, and what fills it (§11-3 reacting). today: the tea of the day the player gave
- * (W8b §20-8) — a guest pleased with a cup of it says something of that tea. */
-export function reactFor(g, cup, missed, today = null) {
+ * (W8b §20-8) — a guest pleased with a cup of it says something of that tea. A cup made again after a miss is thanked as
+ * such (W10). key: what picks among a line's variants (the order · guest · try); none says the first. */
+export function reactFor(g, cup, missed, today = null, key = null) {
   if (!missed.length) {
     const special = cup.tea === 'today' && today?.tea ? line('react', w => w.is === 'today' && w.tea === today.tea) : null;
     if (special) return { line: special, values: {} };
-    if (g.regular && g.note) return { line: line('regular', w => w.is === 'match'), values: {} };
-    if (!Object.hasOwn(g.request, 'sweet')) return { line: line('react', w => w.is === 'match' && w.free === 'sweet' && w.value === cup.honey), values: {} };
-    if (!Object.hasOwn(g.request, 'temp')) return { line: line('react', w => w.is === 'match' && w.free === 'temp' && w.value === cup.vessel), values: {} };
-    return { line: line('react', w => w.is === 'match' && !w.free), values: {} };
+    const again = g.tries > 0 ? pick(lines('react', w => w.is === 'match' && w.again === true), key) : null;
+    if (again) return { line: again, values: {} };
+    if (g.regular && g.note) return { line: pick(lines('regular', w => w.is === 'match'), key), values: {} };
+    if (!Object.hasOwn(g.request, 'sweet')) return { line: pick(lines('react', w => w.is === 'match' && w.free === 'sweet' && w.value === cup.honey), key), values: {} };
+    if (!Object.hasOwn(g.request, 'temp')) return { line: pick(lines('react', w => w.is === 'match' && w.free === 'temp' && w.value === cup.vessel), key), values: {} };
+    return { line: pick(lines('react', w => w.is === 'match' && !w.free && !w.again), key), values: {} };
   }
   const axis = missed[0];
   if (axis === 'tea') return { line: line('react', w => w.is === 'differ' && w.axis === 'tea'), values: { tea: g.request.tea }, axis };
@@ -334,7 +347,7 @@ export function apply(current, command, ctx) {
       const where = s.kind === 'one-cup' ? ctx.ownerPlace : 'cafe';
       if (ctx.location !== where) return fail('tea-too-far', s.kind === 'one-cup' ? '잔을 들고 가까이 가서 드려 주세요.' : '찻집에서 내 주세요.');
       const missed = s.kind === 'one-cup' ? [] : judge(g.request, p.cup);
-      g.react = reactFor(g, p.cup, missed, ctx.facts?.gather?.today);
+      g.react = reactFor(g, p.cup, missed, ctx.facts?.gather?.today, `${s.id}:${g.slot}:${g.tries}`);
       if (g.practice) g.practice.attempts++;
       const learning = learningFact(s, g, ctx, 'attempted', { attemptNo: g.practice?.attempts || 1, correct: !missed.length,
         assessable: g.practice?.assessed === true && p.mode === 'make', reason: p.mode === 'preview' ? 'visual' : g.practice?.assessed === true ? null : 'demo' });
