@@ -1,9 +1,10 @@
 # PULSE 포트폴리오 시댄스 2.5 1일 무제한 — 여러 편을 한 순서표로 묶는 웹 꾸러미(2026-10-28).
 #   python -X utf8 웹꾸러미.py          → synk-vendor/pulse-seedance-day-20261028/웹올리기/<순번>_<판>/ · 순서표.html · _순서.json
 #   python -X utf8 웹꾸러미.py --보기 p11-07-08   → 그 판의 지시문만 찍는다
+#   python -X utf8 웹꾸러미.py --둘째날 <A|B> [--보기 <판>]   → 7번 숏드라마만 웹올리기_둘째날/에(첫날 폴더는 건드리지 않음, 방식은 목소리 시험에서 고른 것)
 # 편마다 지시문 원천은 video/<편>/지시문/영상_시댄스웹.json(아래 「편」 표). 매진 임박은 이미 만든 웹올리기_v5 폴더를 그대로 옮긴다.
 # 무제한은 웹에서 사람이 한 판씩 누르는 것만 허용된다(자동화 금지 — 결정 10-26) — 이 도구는 폴더와 순서표만 만들고 누르지 않는다.
-import html, json, os, re, shutil, sys
+import copy, html, json, os, re, shutil, sys
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -36,6 +37,19 @@ TESTS = ["p11-07-08", "p11-09", "p12-02", "p5-09", "s1-30", "s1-19"]   # 옆집 
 
 RATIO_EN = {"9:16": "vertical 9:16", "16:9": "horizontal 16:9"}
 
+# 둘째 날 — 7번 숏드라마(다 붙이면 하루를 넘어 따로 낸다 — 굽기 시트 「둘째 날 전」 3번, 7번 콘티 8절, 곁 세션 인계 메모 p7_시댄스지시문_인계.md).
+#   7번만의 칸: 판 「소리」 켬 · 「B만 켬」(방식 B일 때만 켬) · 끔, 「소리줄」 {A, B, 없음}은 prompt()의 마지막 SOUND 줄로, 「소리참고」(비었으면 아래
+#   P7_SOUND 자리), 「B길이」(방식 B에서 말이 끝날 때까지 받는 길이). 7번에는 voice_b()를 걸지 않는다 — B 줄에 같은 VOICE 줄이 이미 있다.
+#   「후보판」(첫 걸이 2-1p · 1-1p)은 쓰지 않기로 해서(10-29) 넣지 않는다.
+DAY2 = ("p7", "short-drama-20261026")
+OUT2 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_둘째날"
+P7_SOUND = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고"   # A/<판 id>.mp3(입 맞춤 대사) · B/<배역>.mp3(목소리 견본)
+P7_ROLE = {"IAN": "ian", "SEOJIN": "seojin", "MINJAE": "minjae", "SOYEON": "soyeon"}
+DAY2_TESTS = ["p7-1-16", "p7-2-28"]   # 두 방식을 같은 컷으로(02_콘티 8-4) — 고른 방식 판이 그 컷의 주판을 겸한다
+CAMERA_ALT = {   # 카메라 줄을 「기법 이름 + 끝 모습만」 꼴로 나란히(02_콘티 8-4 · 시댄스 도움말이 바로 알아듣는 낱말 「truck」)
+    "p7-1-35": "slow truck right with a handheld feel, easing to a stop — it ends with Soyeon a little left of center.",
+}
+
 
 def first_line(has_end):
     s = (f"{TOKEN1} is the exact first frame of this video: start from it unchanged — same framing, same place, same light, colors and "
@@ -49,7 +63,8 @@ def who_lines(spec, keys):
     return [f"{k}: {spec['공통']['누구'][k]}" for k in keys]
 
 
-def prompt(spec, p):
+def prompt(spec, p, mode=None):
+    # mode: 7번의 목소리 방식(A · B · 없음) — 판에 「소리줄」이 있을 때만 끝 SOUND 줄을 바꾼다(다른 편은 그대로 공통 「소리」)
     c = spec["공통"]
     ratio = RATIO_EN[spec["비율"]]
     shots = p["샷"]
@@ -82,7 +97,7 @@ def prompt(spec, p):
             span = f"{a:g}–{b:g} s" if b else f"{a:g} s to the end"
             L.append(f"SHOT {i + 1} ({span}) begins exactly on {tok} — same framing, light and colors. ACTION: {s['동작']} CAMERA: {s['카메라']}")
     L.append(c["보기"])
-    L.append(c["소리"])
+    L.append((p.get("소리줄") or {}).get(mode) or c["소리"])
     return "\n".join(L)
 
 
@@ -119,7 +134,98 @@ def save_jpg(src, dst):
     return im.size
 
 
+def p7_sound(p, mode):
+    # 판의 소리 켬 · 끔과 올릴 소리 참고(방식 A = 그 판의 입 맞춤 대사 mp3, 방식 B = 말하는 배역의 목소리 견본)
+    if not (p["소리"] == "켬" or (p["소리"] == "B만 켬" and mode == "B")):
+        return "끔", None
+    ref = (p.get("소리참고") or {}).get(mode)
+    if not ref:
+        if mode == "A":
+            ref = os.path.join(P7_SOUND, "A", p["id"] + ".mp3")
+        else:
+            who = next(s["말"]["누가"] for s in p["샷"] if s.get("말"))
+            ref = os.path.join(P7_SOUND, "B", P7_ROLE[who.split(" ")[0]] + ".mp3")
+    return "켬", ref
+
+
+def p7_item(spec, p, mode):
+    shots = p["샷"]
+    files = []
+    if len(shots) == 1:
+        files.append(("1_시작.jpg", os.path.join(spec["그림"], shots[0]["그림"]), "시작"))
+        if shots[0].get("끝그림"):
+            files.append(("2_끝.jpg", os.path.join(spec["그림"], shots[0]["끝그림"]), "끝"))
+    else:
+        for i, s in enumerate(shots):
+            files.append((f"{i + 1}_샷{i + 1}.jpg", os.path.join(spec["그림"], s["그림"]), f"샷{i + 1}"))
+    snd, ref = p7_sound(p, mode)
+    if ref:
+        files.append(("3_소리.mp3", ref, "소리") if mode == "A" else ("3_목소리견본.mp3", ref, "목소리 견본"))
+    return {"id": p["id"], "편": DAY2[0], "편이름": spec["이름"], "컷": p["컷"], "길이": (p.get("B길이") if mode == "B" else None) or p["길이"],
+            "비율": spec["비율"], "소리": snd, "설명": p["설명"], "파일": files, "지시문": prompt(spec, p, mode), "묶음": len(shots) > 1,
+            "대안": bool(p.get("대안")), "낱판": p.get("낱판", []), "쓰는초": [s.get("쓰는초") for s in shots], "방식": mode if snd == "켬" else None}
+
+
+def build_day2(mode):
+    assert mode in ("A", "B"), "--둘째날 다음에 목소리 방식 A 또는 B"
+    spec = json.load(open(os.path.join(VIDEO, DAY2[1], "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
+    by = {p["id"]: p for p in spec["판"]}   # 「후보판」은 넣지 않는다
+    tests = []
+    for tid in DAY2_TESTS:
+        for m in ("A", "B"):
+            it = p7_item(spec, by[tid], m)
+            it.update({"id": f"{tid}-{m}", "설명": it["설명"] + (" · 지금 방식" if m == "A" else " · 새 방식"), "시험": True})
+            tests.append(it)
+    for tid, cam in CAMERA_ALT.items():
+        now = p7_item(spec, by[tid], mode)
+        now.update({"id": f"{tid}-지금꼴", "설명": now["설명"] + " · 카메라 줄 지금 꼴(원본 실측 숫자)", "시험": True})
+        q = copy.deepcopy(by[tid])
+        q["샷"][0]["카메라"] = cam
+        alt = p7_item(spec, q, mode)
+        alt.update({"id": f"{tid}-기법꼴", "설명": alt["설명"] + " · 카메라 줄 「기법 이름 + 끝 모습만」", "시험": True})
+        tests += [now, alt]
+    done = set(DAY2_TESTS) | set(CAMERA_ALT)
+    order = tests + [p7_item(spec, p, mode) for p in spec["판"] if p["id"] not in done and not p.get("대안")]
+    order += [p7_item(spec, p, mode) for p in spec["판"] if p.get("대안")]
+    by_item = {it["id"]: it for it in order}
+    if "--보기" in sys.argv:
+        k = sys.argv[sys.argv.index("--보기") + 1]
+        print(by_item[k]["지시문"])
+        print(f"\n({len(by_item[k]['지시문'])}자 · {by_item[k]['길이']}초 · 소리 {by_item[k]['소리']} · 올릴 것 {[f[0] for f in by_item[k]['파일']]})")
+        return
+    missing = sorted({src for it in order for _, src, _ in it["파일"] if not os.path.exists(src)})
+    if os.path.isdir(OUT2):
+        shutil.rmtree(OUT2)
+    os.makedirs(OUT2)
+    rows = []
+    for n, it in enumerate(order, 1):
+        d = os.path.join(OUT2, f"{n:03d}_{it['id']}")
+        os.makedirs(d)
+        for name, src, _ in it["파일"]:
+            if not os.path.exists(src):
+                continue
+            if name.endswith(".mp3"):
+                shutil.copy2(src, os.path.join(d, name))
+            else:
+                save_jpg(src, os.path.join(d, name))
+        open(os.path.join(d, "지시문.txt"), "w", encoding="utf-8").write(it["지시문"])
+        rows.append({"순서": n, "id": it["id"], "편": it["편"], "컷": it["컷"], "폴더": os.path.basename(d), "길이": it["길이"], "비율": it["비율"],
+                     "소리": it["소리"], "묶음": it["묶음"], "대안": it["대안"], "방식": it.get("방식"), "시험": bool(it.get("시험")),
+                     "낱판": it.get("낱판", []), "쓰는초": it.get("쓰는초"), "파일": [f[0] for f in it["파일"]],
+                     "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])], "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"])})
+    json.dump(rows, open(os.path.join(OUT2, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    open(os.path.join(OUT2, "순서표.html"), "w", encoding="utf-8").write(page(order, day2=mode))
+    n_test = sum(1 for it in order if it.get("시험"))
+    n_alt = sum(1 for it in order if it["대안"])
+    print(f"둘째 날 · 7번 · 방식 {mode}: 판 {len(order)}개(시험 {n_test} · 주판 {len(order) - n_test - n_alt} · 대안 {n_alt}) → {OUT2}")
+    print(f"  길이 합 — 시험 · 주판 {sum(it['길이'] for it in order if not it['대안'])}초 · 소리 켬 {sum(1 for it in order if it['소리'] == '켬')}판")
+    if missing:
+        print(f"  ⚠ 아직 없는 파일 {len(missing)}개(그 판 폴더엔 빠짐 — 목소리를 고르고 굽은 뒤 다시 돌린다): {missing[:4]}{' …' if len(missing) > 4 else ''}")
+
+
 def build():
+    if "--둘째날" in sys.argv:
+        return build_day2(sys.argv[sys.argv.index("--둘째날") + 1])
     specs = load_specs()
     items = []   # 순서표 한 줄 = 한 판
     # 매진 임박 — 이미 만든 웹올리기_v5를 그대로(첫 줄만 웹 꼬리표로)
@@ -201,10 +307,35 @@ def build():
         print("지시문이 3,800자를 넘는 판:", too_long)
 
 
-def page(order):
+DAY2_HEAD = """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 시댄스 둘째 날 순서표</title><style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d1c1a;--mute:#6b6760;--line:#e2ddd3;--acc:#2f5bd3;--warn:#b4532a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#212125;--ink:#ecebe8;--mute:#a19d95;--line:#33333a;--acc:#8aa6ff;--warn:#f0a07a}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,'Malgun Gothic',sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0}.note{color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+.card.done{opacity:.45}.row{display:flex;gap:10px;align-items:flex-start}
+.n{font-weight:700;min-width:44px}.tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-right:4px}
+.tag.b{border-color:var(--acc);color:var(--acc)}.tag.w{border-color:var(--warn);color:var(--warn)}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border-radius:8px;padding:8px;font-size:12.5px;max-height:220px;overflow:auto}
+button{font:inherit;padding:4px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+h2{font-size:18px;margin:24px 0 6px}
+</style></head><body><main>
+<h1>PULSE 포트폴리오 · 시댄스 2.5 무제한 둘째 날 — 7번 숏드라마 「사랑 한 칸」</h1>
+<div class="card"><b>시작 전에</b><ol>
+<li>첫날과 같습니다 — 모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b> · 화질 720p · 비율 9:16 · 소리는 판마다 적힌 대로(「소리 켬」 판만 켭니다).</li>
+<li>판마다 미디어 칸을 비우고 폴더의 파일을 <b>이름 차례대로</b> 올립니다 — 그림(1_ · 2_) 다음에 소리(<b>3_소리.mp3</b> 지금 방식 · <b>3_목소리견본.mp3</b> 새 방식). 「@이미지 1」 · 「@오디오 1」 글자가 꼬리표로 안 바뀌면 지우고 @로 올린 파일을 고릅니다.</li>
+<li>「두 샷」 판은 옴니 레퍼런스 모드에서 그림 둘을 참조로 올립니다 — 안 되면 맨 아래 「대안」의 낱판 둘로 냅니다.</li>
+<li>맨 앞 <b>7번 시험 여섯</b>(1-16 · 2-28을 두 방식으로, 1-35를 카메라 줄 두 꼴로)을 내고 「7번 시험 냈어」라고 해 주세요. 기다리지 말고 이어서 내셔도 됩니다 — 고른 방식의 시험 판은 그 컷의 주판을 겸합니다.</li>
+</ol></div>
+"""
+
+
+def page(order, day2=None):
     def esc(s):
         return html.escape(s)
-    head = """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    head = DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PULSE 시댄스 순서표</title><style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1d1c1a;--mute:#6b6760;--line:#e2ddd3;--acc:#2f5bd3;--warn:#b4532a}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#212125;--ink:#ecebe8;--mute:#a19d95;--line:#33333a;--acc:#8aa6ff;--warn:#f0a07a}}
@@ -236,7 +367,7 @@ h2{font-size:18px;margin:24px 0 6px}
     out = [head]
     cur = None
     for n, it in enumerate(order, 1):
-        sec = ("목소리 시험 — 같은 컷을 두 방식으로" if it["id"] in VOICE_TESTS else "시험" if it["id"] in TESTS
+        sec = ("목소리 시험 — 같은 컷을 두 방식으로" if it["id"] in VOICE_TESTS else "시험" if it["id"] in TESTS or it.get("시험")
                else "대안 — 묶음 판이 안 될 때만" if it["대안"] else it["편이름"])
         if sec != cur:
             out.append(f"<h2>{esc(sec)}</h2>")
@@ -250,6 +381,8 @@ h2{font-size:18px;margin:24px 0 6px}
             tags += '<span class="tag b">두 샷</span>'
         if it["대안"]:
             tags += '<span class="tag w">대안</span>'
+        if any(not os.path.exists(f[1]) for f in it["파일"]):
+            tags += '<span class="tag w">파일 아직 — 목소리를 고른 뒤 다시 만듦</span>'
         files = " · ".join(f"{esc(f[0])}" for f in it["파일"])
         out.append(f'<div class="card" id="c{n}"><div class="row"><input type="checkbox" data-k="{esc(it["id"])}"><div class="n">{n}</div><div>'
                    f'<b>{esc(it["편이름"])}</b> 컷 {esc(", ".join(it["컷"]))} — {esc(it["설명"])}<br>{tags}<br>'
