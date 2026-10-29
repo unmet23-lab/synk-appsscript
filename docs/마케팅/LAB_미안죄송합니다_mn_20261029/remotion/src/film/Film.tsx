@@ -46,9 +46,10 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
   const moreText = P ? P.lines[i].more : c.more?.mn;
   // 칸이 바뀔 때 말풍선만 4프레임 살짝 튀어나온다(그림은 바로 바뀜)
   const p = interpolate(frame, [fr(c.at), fr(c.at) + 4], [0.9, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  // v5: 둘째 걸음 뜻 줄도 처음부터 보이고 그 말이 나올 때 산호색으로 밝아진다(v4 두 시험관 다 「'주말에도'가 화면 글에 없음」)
   const moreOn = c.more ? frame >= fr(c.more.at) : false;
   const enFont = P ? P.font : EN;
-  // 목소리 박자대로 낱말이 붙는 줄 — 아직 안 나온 낱말은 자리만 차지한다(말풍선 크기가 흔들리지 않게)
+  // 목소리 박자대로 밝아지는 줄 — v5부터 줄 전체가 처음부터 흐리게 보이고, 말한 낱말만 진해진다(3.2초 동안 끝 낱말까지 읽히게)
   const koLine = c.words ? (
     <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.16 }}>
       {c.words.map(([w, t, hot], k) => {
@@ -56,7 +57,7 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
         const at = fr(c.voAt + t);
         const q = interpolate(frame, [at, at + 3], [0, 1], clamp);
         return (
-          <span key={k} style={{ display: 'inline-block', opacity: q, transform: `translateY(${(1 - q) * 14}px)`, color: hot ? CORAL : INK, marginRight: 18 }}>
+          <span key={k} style={{ display: 'inline-block', opacity: 0.32 + 0.68 * q, transform: `scale(${1 + 0.06 * q * (1 - q) * 4})`, color: hot && q > 0.5 ? CORAL : INK, marginRight: 18 }}>
             {w}
           </span>
         );
@@ -93,7 +94,7 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
           ) : null}
           <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: meanSize, color: MEAN, lineHeight: 1.16, marginBottom: 8, whiteSpace: 'pre-line' }}>
             {mean}
-            {moreText && moreOn ? <span style={{ color: CORAL }}>{` ${moreText}`}</span> : null}
+            {moreText ? <span style={{ color: moreOn ? CORAL : MEAN, opacity: moreOn ? 1 : 0.45 }}>{` ${moreText}`}</span> : null}
           </div>
           {koLine}
           {read ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 40, color: '#8A7563', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
@@ -125,15 +126,21 @@ const Sound: React.FC = () => (
   </>
 );
 
-const Pop: React.FC<{ at: number; x: number; y: number; n: number }> = ({ at, x, y, n }) => {
+// v5: 새로 생긴 몽글 자리에 그 칸 말풍선과 같은 단계 알약(Түвшин 2~5) — 「새 몽글 = 한 단계 더 깊은 사과」. 1.1초(짧은 칸은 칸 끝 0.2초 전까지)
+// 두고 0.2초에 사라진다. 반전 뒤(단계 없는 칸)는 띄우지 않는다. 배지가 화면 밖으로 안 나가게 가운데를 안쪽으로 당긴다.
+const Pop: React.FC<{ at: number; end: number; x: number; y: number; level: number; loc: Loc }> = ({ at, end, x, y, level, loc }) => {
   const frame = useCurrentFrame();
   const t = frame - fr(at);
-  if (t < 0 || t > 21) return null;
+  const hold = Math.min(fr(1.1), fr(end - at) - 6);
+  if (t < 0 || t > hold + 6) return null;
   const s = interpolate(t, [0, 5], [0.5, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
-  const o = interpolate(t, [15, 21], [1, 0], clamp);
+  const o = interpolate(t, [hold, hold + 6], [1, 0], clamp);
+  const cx = Math.min(Math.max(x, 200), 880);
   return (
-    <div style={{ position: 'absolute', left: x - 90, top: y - 50, width: 180, textAlign: 'center', opacity: o, transform: `scale(${s})` }}>
-      <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 20px 12px', borderRadius: 999, boxShadow: '0 6px 18px rgba(0,0,0,0.3)' }}>+{n} 🙇</span>
+    <div style={{ position: 'absolute', left: cx - 180, top: y - 50, width: 360, textAlign: 'center', opacity: o, transform: `scale(${s})` }}>
+      <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999, boxShadow: '0 6px 18px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+        {LEVEL[loc](level)} 🙇
+      </span>
     </div>
   );
 };
@@ -144,14 +151,14 @@ export const Film: React.FC<{ loc: Loc }> = ({ loc }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
       <Plate src={CELLS[i].img} />
-      {/* v3: 0~2.3초 사장님 옆 상황 한 줄 — 무엇을 사과하는지 */}
-      {frame < fr(CELLS[2].at) ? (
+      {/* v3: 사장님 옆 상황 한 줄 — 무엇을 사과하는지(v4: 0~2.3초 → 0~4.4초) */}
+      {frame < fr(CELLS[3].at) ? (
         <div style={{ position: 'absolute', left: 30, top: 760, maxWidth: 420 }}>
           <span style={{ display: 'inline-block', background: 'rgba(24,18,14,0.84)', color: '#FFE7A1', fontFamily: loc === 'mn' ? EN : PORTS[loc].font, fontWeight: 800, fontSize: 36, lineHeight: 1.2, padding: '10px 20px 12px', borderRadius: 22 }}>{SCENE[loc]}</span>
         </div>
       ) : null}
       {/* v3: 칸마다 새로 생긴 몽글 자리에 「+1 🙇」 0.7초 — 같은 몽글이 한 번 더 숙였다는 것 */}
-      {i >= 1 ? <Pop at={CELLS[i].at} x={POPS[i - 1][0]} y={POPS[i - 1][1]} n={POPS[i - 1][2]} /> : null}
+      {i >= 1 && CELLS[i].level ? <Pop at={CELLS[i].at} end={CELLS[i + 1].at} x={POPS[i - 1][0]} y={POPS[i - 1][1]} level={CELLS[i].level} loc={loc} /> : null}
       <Bubble i={i} loc={loc} />
       <Sound />
     </AbsoluteFill>
