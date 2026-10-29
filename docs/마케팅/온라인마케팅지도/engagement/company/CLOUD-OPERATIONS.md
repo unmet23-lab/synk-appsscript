@@ -1,5 +1,17 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="yt-ai-label-38-20261029"></a>
+## 작업실 유튜브 AI 표시 오판 고침 · 사슬 38 (2026-10-29 로컬 준비 끝 · 원격 대기)
+
+작업실이 YouTube로 직접 올린 영상이 공개로 잘 나가도 작업이 `unknown` · `PUBLICATION_OPTIONS_MISMATCH`(「공개 범위·아동용·AI 표시가 승인한 설정과 달라요」)로 남던 서버 오판을 고친다. `social-direct-youtube.mjs` `verifyVideo`가 `videos.list`로 읽은 `status.containsSyntheticMedia`를 승인값과 `===`로 견줬는데, YouTube는 이 칸을 읽기 응답에 넣지 않는다(10-13 실측 — [현장 노트](../../../../현장노트/브라우저_게시.md#합성-표시containssyntheticmedia가-api-읽기에-나오지-않는다)). 10-26~29 여덟 판을 사람이 `manual_complete`로 닫았다.
+
+- **바뀌는 것(회사 2파일 — 바뀜 2, 새 0):** 서버 `social-direct-youtube.mjs` — 승인한 AI 표시가 읽기에 없으면 「확인할 수 없음」으로 두고 공개 범위 · 아동용 · 제목 · 설명 · 시각만으로 `published`, 메시지에 「AI 표시는 YouTube API가 알려 주지 않아 확인하지 못했어요. 실제 시청 화면에서 함께 확인해 주세요.」. 읽기에 값이 나오면(null 포함) 지금처럼 견준다. 업로드 요청에는 승인값을 그대로 싣는다. 시험 `social-direct-youtube.test.mjs`에 하나(고치기 전 코드에서 실패 확인). 스키마 · 의존 · 환경 변수 · 공개 자산 바뀜 0. 운영 판 줄끝 그대로(서버 CRLF · 시험 LF).
+- **부모와 얹기:** 부모는 사슬 37(`54576b80…`, 봉인 완료판 `.tmp/company-completed-54576b80-20261029`, 봉인 `a107071c…`). `tools/company-release/compose.cjs` → 후보 `baaeb75e8508b264006392433f8f7e650d162f83ab46691bdda550b77e5a0843`(원문 1,222 · 이미지 884 · 바뀜 2 · 런타임 1 · 선택 219). 넘김 `.tmp/yt-ai-label-38-carry-20261029/`.
+- **시험(로컬):** 격리 로컬 `tools/company-release/local-qa.cjs` 3,336/3,336(원본 불변) · 관련 3파일 58/58. 릴리스 도구는 37 생성기를 한 세대 민 `p38-operators` · `p38-rearm` · `p38-root`(사본 `.tmp/yt-ai-label-38-carry-20261029/generators/`)로 옮겼고 도구 로컬 시험 재무장 Node 123 · Python 27+3+5 · 배포 23 · 호환 2 · 루트 71 · 전송 15 모두 통과.
+- **검수:** 제품 `.tmp/검수/w38-yt-ai-product/` GPT 0건. 릴리스 도구 `.tmp/검수/w38-tools/` GPT 0건(37 → 38 차이 61파일, 두 묶음 끝까지 읽음) — 둘 다 「배포 조건 충족」.
+- **원격 순서:** `.tmp/yt-ai-label-38-carry-20261029/RUNBOOK-38.md`(37과 같은 열두 단계). 전제는 예비 노드 복원 연습이 다시 통과해 있는 것 — 10-29 `STANDBY_DRILL_SPACE_LOW`로 실패했고 10-22 증명은 10-29 23:26 KST에 끝났다. 재무장 `prepare-arm`이 새 연습 증명을 스스로 읽는다(`drProofSource:'weekly-standby-drill'`).
+- **10-29 공간 정리와 릴리스 계보:** 21:20 공간 정리가 사흘 넘게 안 건드린 `.tmp` 폴더를 정리 대기(`C:\Users\q1212\SYNK_정리대기\20261029`)로 옮기면서 사슬 도구가 옛 판을 거쳐 부르는 폴더(`company-sns-health-20261016` · `yt-upload-redirect-32-release-20261025` 등)까지 옮겨, 37 도구를 부르는 것만으로 `MODULE_NOT_FOUND`가 났다. 릴리스 도구 · 완료판에서 옮겨진 이름을 끝까지 따라간 224곳(37.1GiB)을 원래 자리로 되돌렸다(기록 `.tmp/yt-ai-label-38-carry-20261029/restored-from-cleanup.jsonl`).
+
 <a id="sns-simple-fix-37-production-20261029"></a>
 ## 작업실 SNS·마케팅 간편판 운영 확인 뒤 고침 넷 · 2026-10-29 운영 반영 (순서 문서 「이력 35」 · 실제 사슬 37)
 

@@ -194,6 +194,27 @@ test('public privacy and required declarations cannot be confirmed by repeated m
     assert.equal(resolved.status,'published');assert.equal(resolved.errorCode,null);assert.equal(f.mediaWrites().length,1);
   }
 });
+// YouTube는 videos.list 읽기에 status.containsSyntheticMedia를 넣지 않는다(현장노트 10-13). 작업실은 판마다 madeWithAi를 싣기 때문에
+// 없는 칸을 「다름」으로 세면 공개로 올라간 영상이 모두 PUBLICATION_OPTIONS_MISMATCH로 남았다(10-26~29).
+test('AI 표시가 읽기에 없으면 확인할 수 없음으로 두고 게시로 닫되, 읽기에 나온 다른 AI 표시·공개 범위는 여전히 막는다(2026-10-29)',async()=>{
+  const videosRead=(f,mutate)=>f.setHook(r=>{if(r.method==='GET'&&r.url.includes('/youtube/v3/videos?')){const video=f.video();mutate(video);return f.json({items:[video]});}});
+  for(const madeWithAi of [true,false]){
+    const f=fixture();f.input.variant.options.madeWithAi=madeWithAi;
+    const done=await f.adapter.publish(f.input);
+    assert.equal(JSON.parse(f.requests.find(r=>r.method==='POST').body).status.containsSyntheticMedia,madeWithAi);
+    assert.equal(done.status,'published');assert.equal(done.errorCode,null);assert.match(done.message,/AI 표시는 .*시청 화면/);
+  }
+  const plain=fixture(),bare=await plain.adapter.publish(plain.input);
+  assert.equal(bare.status,'published');assert.doesNotMatch(bare.message,/AI 표시/);
+  const same=fixture();same.input.variant.options.madeWithAi=false;videosRead(same,v=>{v.status.containsSyntheticMedia=false;});
+  const shown=await same.adapter.publish(same.input);assert.equal(shown.status,'published');assert.doesNotMatch(shown.message,/AI 표시/);
+  for(const mutate of [v=>{v.status.containsSyntheticMedia=false;},v=>{v.status.containsSyntheticMedia=null;},v=>{v.status.privacyStatus='private';},v=>{v.status.selfDeclaredMadeForKids=true;}]){
+    const f=fixture();f.input.variant.options.madeWithAi=true;videosRead(f,mutate);
+    assert.equal((await f.adapter.publish(f.input)).status,'uncertain');
+    for(let check=0;check<3;check++){const result=await f.build().status({channel:f.input.channel,job:f.input.job});assert.equal(result.status,'uncertain');assert.equal(result.errorCode,'PUBLICATION_OPTIONS_MISMATCH');}
+    assert.equal(f.mediaWrites().length,1);
+  }
+});
 
 test('a video on another channel never finalizes as published however often it is checked',async()=>{
   const f=fixture();f.setHook(r=>r.method==='GET'&&r.url.includes('/youtube/v3/videos?')?f.json({items:[{...f.video(),snippet:{...f.video().snippet,channelId:'UCabcdefghijklmnopqrstuv'}}]}):null);assert.equal((await f.adapter.publish(f.input)).status,'uncertain');
