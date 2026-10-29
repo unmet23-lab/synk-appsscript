@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // WORLD 말하기 피드백 시범 측정(2026-10-21): 합성 학생 음성으로 경로별 비용·지연·결과를 잰다.
 //   node tools/말하기피드백_측정.mjs --유료-api [--소리만] [--경로 listen,split,listen-lite,turn,turn-flash] [--듣기모델 gemini-3.6-flash,…] [--사례 c1,c2] [--결과 <파일>] [--다시굽기]
+//   OpenAI 받아 적기(2026-10-30): --경로 transcribe-claude,turn-transcribe [--받아적기언어 ko] [--나눔 auto] [--듣기만] [--반복 3] — Vertex 경로가 없으면 --유료-api가 필요 없다
+//   (GPT Pro 월 API 크레딧). --듣기만은 받아 적기와 소리 관문까지만 재고 쓰기를 부르지 않는다. 보고: --보고 <JSON…> [--보고파일 <md>]
 // · 학생 음성은 합성이다(Vertex 음성 합성 → 브라우저 녹음과 같은 webm/opus 32kbps 한 채널). 실제 학생 소리를 쓰지 않는다.
 // · 소리 파일은 .tmp/speaking-pilot-20261021/audio/(git 밖)에만 두고, 결과 JSON에는 소리를 넣지 않는다.
 // · Claude 키는 SYNK_CLAUDE_KEYS(시험은 synk.yuh 검수 목록)를 쓴다. Vertex는 tools/모델정책.js의 「돈」 문이라 --유료-api가 필요하다.
@@ -10,7 +12,7 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
-import {speakingFeedback,speakingTurn} from './lib/말하기호출.mjs';
+import {speakingFeedback,speakingTurn,ROUTES} from './lib/말하기호출.mjs';
 import {priceVertex,syllables,normalizeFeedback,normalizeTurn,mergeSplit} from './lib/말하기피드백.mjs';
 const require=createRequire(import.meta.url);
 const 정책=require('./모델정책.js');
@@ -32,7 +34,8 @@ const CASES=[
  {id:'c3',item:'s1-weekend',voice:'Leda',notes:LEARNER,lang:'en',script:'저는 주말에 보통 운동을 했어요. 지난 주말에는 친구를 만나요. 우리는 같이 영화를 봐요. 영화가 정말 재미있어요.',expect:{status:'ok',languageTry:true}},
  {id:'c4',item:'s2-cafe',voice:'Charon',notes:LEARNER,script:'어… 안녕하세요. 차가운 커피 두 개 주세요. 음… 여기서 먹을 거예요.',expect:{status:'ok',covered:[0,1]}},
  {id:'c5',item:'s3-birthday',voice:'Kore',notes:LEARNER,lang:'mn',script:'수아 씨는 친구 생일에 케이크를 샀어요. 그리고 편지를 썼어요. 음… 저녁에 친구한테 꽃을 줬어요. 친구가 아주 좋아했어요.',expect:{status:'ok',covered:[0,1,3],notCovered:[2]}},
- {id:'c6',item:'s4-festival',voice:'Fenrir',notes:LEARNER,script:'그 말도 맞아요. 하지만 시험 전에 축제를 하면 학생들이 공부 때문에 즐길 수 없어요. 그리고 시험이 끝난 다음 날에 하면 고향에 가기 전이니까 사람들이 많이 올 거예요.',expect:{status:'ok',covered:[0,1,2]}},
+ // c6: 10-21 문항 2중 검수 뒤 s4-festival의 다뤄야 할 것이 셋 → 둘(걱정에 대한 대답 · 시험 뒤가 좋은 이유)이라 기대도 둘로(10-30).
+ {id:'c6',item:'s4-festival',voice:'Fenrir',notes:LEARNER,script:'그 말도 맞아요. 하지만 시험 전에 축제를 하면 학생들이 공부 때문에 즐길 수 없어요. 그리고 시험이 끝난 다음 날에 하면 고향에 가기 전이니까 사람들이 많이 올 거예요.',expect:{status:'ok',covered:[0,1]}},
  {id:'c7',item:'s5-bike',voice:'Leda',notes:FLUENT,script:'자료를 보면 한강 공원의 자전거 대여 건수가 2021년에 120만 건이었는데 2025년에는 340만 건으로 많이 늘었습니다. 이유는 자전거 길이 늘었고 휴대폰으로 쉽게 빌릴 수 있기 때문입니다.',expect:{status:'ok',covered:[0,1],notCovered:[2]}},
  {id:'c8',item:'s6-phone',voice:'Charon',notes:FLUENT,script:'저는 학교에서 휴대폰 사용을 제한하는 것에 찬성합니다. 첫째, 수업 시간에 휴대폰 알림이 오면 학생들이 집중하기 어렵습니다. 둘째, 쉬는 시간에도 휴대폰만 보면 친구들과 이야기할 시간이 줄어듭니다. 물론 급한 연락이 필요할 때도 있으니까 정해진 곳에서만 쓰게 하면 좋겠습니다.',expect:{status:'ok',covered:[0,1,2],noInventedDelivery:true}},
  {id:'c9',item:'s6-phone',voice:'Puck',notes:LEARNER,script:'저는 휴대폰으로 음악을 자주 들어요. 요즘 한국 노래를 좋아해요. 특히 아이돌 노래를 많이 들어요.',expect:{status:'ok',coveredMax:0}},
@@ -41,7 +44,8 @@ const CASES=[
  // 역할극 차례
  {id:'r1',roleplay:'rp-cafe-tea',step:'order',voice:'Kore',notes:LEARNER,script:'따뜻한 차 두 잔 주세요.',expect:{next:'confirm',polite:'yes'}},
  {id:'r2',roleplay:'rp-cafe-tea',step:'order',voice:'Puck',notes:LEARNER,script:'음… 따뜻한 차 주세요.',expect:{next:'count'}},
- {id:'r3',roleplay:'rp-cafe-tea',step:'order',voice:'Leda',notes:LEARNER,script:'차가운 주스 두 잔 주세요.',expect:{next:'soldout'}},
+ // audioScript: 10-21에 구운 r3 소리는 합성이 문장을 두 번 읽었다(Gemini · OpenAI 받아 적기 모두 두 번 들음) — 글자 오류율은 실제 소리로 센다.
+ {id:'r3',roleplay:'rp-cafe-tea',step:'order',voice:'Leda',notes:LEARNER,script:'차가운 주스 두 잔 주세요.',audioScript:'차가운 주스 두 잔 주세요. 차가운 주스 두 잔 주세요.',expect:{next:'soldout'}},
  {id:'r4',roleplay:'rp-cafe-tea',step:'place',voice:'Charon',notes:LEARNER,script:'가져갈게요.',expect:{next:'place',hint:'place'}},
  {id:'r5',roleplay:'rp-cafe-tea',step:'confirm',voice:'Kore',notes:LEARNER,script:'네, 맞아요.',expect:{next:'place'}},
  {id:'r6',roleplay:'rp-cafe-tea',step:'order',voice:'Fenrir',notes:LEARNER,script:'따뜻한 차 두 잔 줘.',expect:{next:'confirm',polite:'no'}},
@@ -80,12 +84,23 @@ async function synth(c){
 
 // 받아 적은 말이 대본과 얼마나 같은가(한글 음절 기준, 순서 무시한 겹침 비율 — 합성 음성의 어긋남·받아쓰기 확인용 어림).
 function overlap(a,b){const A=(a.match(/[가-힣]/g)||[]),B=(b.match(/[가-힣]/g)||[]);if(!A.length||!B.length)return null;const bag=new Map();for(const ch of B)bag.set(ch,(bag.get(ch)||0)+1);let hit=0;for(const ch of A){const n=bag.get(ch)||0;if(n){hit++;bag.set(ch,n-1);}}return +(2*hit/(A.length+B.length)).toFixed(3);}
+// 받아 적기 글자 오류율(CER, 2026-10-30): 한글 음절만 순서대로 견준 편집 거리 ÷ 대본 음절 수. 띄어쓰기·문장 부호·숫자 표기(「120만」)는 세지 않는다 — 숫자는 따로 본다.
+// content: 채움말(음·어·으음·흠·하 — 홀로 선 것만)을 양쪽에서 뺀 뒤 센다. 받아 적기가 채움말을 덜 적는 버릇과 내용 오류를 가른다.
+const FILLER=/(^|[\s,.…!?])(?:으음|음|어|흠|하)(?=[\s,.…!?]|$)/g;
+function cer(heard,script,{content=false}={}){
+ const strip=v=>content?String(v??'').replace(FILLER,'$1'):String(v??'');
+ const A=strip(heard).match(/[가-힣]/g)||[],B=strip(script).match(/[가-힣]/g)||[];if(!B.length)return null;
+ let prev=Array.from({length:B.length+1},(_,j)=>j);
+ for(let i=1;i<=A.length;i++){const row=[i];for(let j=1;j<=B.length;j++)row[j]=Math.min(prev[j]+1,row[j-1]+1,prev[j-1]+(A[i-1]===B[j-1]?0:1));prev=row;}
+ return +(prev[B.length]/B.length).toFixed(3);
+}
 
-function checkExam(c,result){
+function checkExam(c,result,{hearOnly=false}={}){
  const e=c.expect,fails=[];
  // 잡음만 든 녹음은 「말 없음」이든 「잘 안 들림」이든 다시 녹음을 권하고 세지 않으면 맞다.
  if(result.status!==e.status&&!(e.status==='no_speech'&&result.status==='unclear'))fails.push(`status ${result.status}≠${e.status}`);
- if(result.status==='ok'){
+ // 받아 적기만 잰 판은 소리 관문(말 없음·한국어 아님·통과)만 본다 — 다뤄야 할 것·보류는 쓰기 단계 몫이다.
+ if(result.status==='ok'&&!hearOnly){
   for(const i of e.covered||[])if(!result.covered.includes(i))fails.push(`covered에 ${i+1} 없음`);
   for(const i of e.notCovered||[])if(result.covered.includes(i))fails.push(`covered에 ${i+1}이 있으면 안 됨`);
   if(Number.isInteger(e.coveredMax)&&result.covered.length>e.coveredMax)fails.push(`covered ${result.covered.length}개(최대 ${e.coveredMax})`);
@@ -114,7 +129,12 @@ export function summarize(runs){
   summary[route]={runs:all.length,errors:all.length-rows.length,pass:rows.filter(r=>r.pass).length,retries:rows.reduce((n,r)=>n+r.calls.reduce((m,c)=>m+(c.retries||0),0),0),msMedian:pick(.5),msP90:pick(.9),
    costAvgList:+(rows.reduce((n,r)=>n+r.cost.list,0)/rows.length).toFixed(6),costAvgPromo:+(rows.reduce((n,r)=>n+r.cost.promo,0)/rows.length).toFixed(6),
    costPerAudioMinuteList:+(rows.reduce((n,r)=>n+r.cost.list,0)/Math.max(1,rows.reduce((n,r)=>n+(r.audioSeconds||0),0))*60).toFixed(6),
-   matchAvg:+(per.reduce((n,r)=>n+(r.match||0),0)/Math.max(1,per.length)).toFixed(3)};
+   matchAvg:+(per.reduce((n,r)=>n+(r.match||0),0)/Math.max(1,per.length)).toFixed(3),
+   // 받아 적기 글자 오류율: 대본이 있는 사례(잡음·영어 대답 빼고)의 평균과 가장 나쁜 값. 받아 적기 단계만의 지연도 따로 둔다.
+   ...(()=>{const xs=rows.map(r=>r.cer).filter(v=>Number.isFinite(v)),ys=rows.map(r=>r.cerContent).filter(v=>Number.isFinite(v));const hs=rows.map(r=>r.calls?.find(c=>c.step==='hear'||c.step==='listen'||c.step==='turn')?.ms).filter(Number.isFinite).sort((a,b)=>a-b);
+    const q=p=>hs.length?hs[Math.min(hs.length-1,Math.floor(p*(hs.length-1)+.5))]:null;
+    return {cerAvg:xs.length?+(xs.reduce((n,v)=>n+v,0)/xs.length).toFixed(3):null,cerMax:xs.length?Math.max(...xs):null,
+     cerContentAvg:ys.length?+(ys.reduce((n,v)=>n+v,0)/ys.length).toFixed(3):null,cerContentMax:ys.length?Math.max(...ys):null,hearMsMedian:q(.5),hearMsP90:q(.9)};})()};
  }
  return summary;
 }
@@ -125,36 +145,59 @@ const USE=Object.freeze([{name:'가볍게',exam:12,turns:16,note:'주 3번 · �
 function report(files){
  const sets=files.map(f=>JSON.parse(fs.readFileSync(f,'utf8')));
  // 지금의 서버 정리 규칙(녹음 길이 대비 음절 수 등)과 사례 기대로 저장된 모델 출력을 다시 판정한다(모델을 다시 부르지 않는다).
+ // --듣기만으로 잰 판(hearOnly)은 소리 관문만 본다. 받아 적기 글자 오류율은 저장된 받아 적은 글로 다시 셈한다(10-21 판에도 같은 잣대).
  const runs=sets.flatMap(s=>s.runs).map(r=>{if(r.error||!r.raw)return r;const c=CASES.find(x=>x.id===r.case);if(!c)return r;
   const item=c.item&&bank.items.find(i=>i.id===c.item),roleplay=c.roleplay&&bank.roleplays.find(x=>x.id===c.roleplay),seconds=r.audioSeconds;
   const result=roleplay?normalizeTurn(r.raw,{roleplay,stepId:c.step,seconds}):r.raw.hear?(r.raw.write?normalizeFeedback(mergeSplit(r.raw.hear,r.raw.write),{item,seconds}):normalizeFeedback({...mergeSplit(r.raw.hear,null),covered:[],task:{good:'-',try:''}},{item,seconds})):normalizeFeedback(r.raw,{item,seconds});
-  const fails=roleplay?checkTurn(c,result):checkExam(c,result);return {...r,result,fails,pass:fails.length===0};});
+  const hearOnly=!roleplay&&!!r.raw.hear&&!r.raw.write&&result.status==='ok';
+  const fails=roleplay?checkTurn(c,result):checkExam(c,result,{hearOnly});
+  const heard=roleplay?r.raw.heard:r.raw.hear?.transcript??r.raw.transcript;
+  const scored=c.script&&c.expect?.status!=='not_korean';
+  return {...r,result,fails,pass:fails.length===0,cer:scored?cer(heard,c.audioScript||c.script):null,cerContent:scored?cer(heard,c.audioScript||c.script,{content:true}):null,heard};});
  const summary=summarize(runs);
- const usd=v=>v==null?'—':v<.01?`$${v.toFixed(4)}`:`$${v.toFixed(3)}`,sec=ms=>ms==null?'—':`${(ms/1000).toFixed(1)}초`;
+ const usd=v=>v==null?'—':v<.01?`$${v.toFixed(4)}`:`$${v.toFixed(3)}`,sec=ms=>ms==null?'—':`${(ms/1000).toFixed(1)}초`,pct=v=>v==null?'—':`${(v*100).toFixed(1)}%`;
  const lines=['# 말하기 피드백 측정 보고(합성 음성)','',`> ${sets.map(s=>s.measuredAt.slice(0,16).replace('T',' ')+' UTC').join(' · ')} 측정. ${sets[0].note}`,'',
-  '## 경로별','','| 경로@듣기 모델 | 시도 | 오류 | 기대와 맞음 | 지연 중앙 · 90% | 1회 평균 정가 · 할인가 | 소리 1분당(정가) | 다시 보냄 |','|---|---:|---:|---:|---|---|---:|---:|'];
- for(const [route,s]of Object.entries(summary))lines.push(s.msMedian==null?`| ${route} | ${s.runs} | ${s.errors} | — | — | — | — | — |`
-  :`| ${route} | ${s.runs} | ${s.errors} | ${s.pass}/${s.runs-s.errors} | ${sec(s.msMedian)} · ${sec(s.msP90)} | ${usd(s.costAvgList)} · ${usd(s.costAvgPromo)} | ${usd(s.costPerAudioMinuteList)} | ${s.retries} |`);
+  '## 경로별','','| 경로@듣기 모델 | 시도 | 오류 | 기대와 맞음 | 받아 적기 글자 오류 평균 · 최대 | 채움말 뺀 글자 오류 평균 · 최대 | 받아 적기 지연 중앙 · 90% | 전체 지연 중앙 · 90% | 1회 평균 정가 · 할인가 | 소리 1분당(정가) | 다시 보냄 |','|---|---:|---:|---:|---|---|---|---|---|---:|---:|'];
+ for(const [route,s]of Object.entries(summary))lines.push(s.msMedian==null?`| ${route} | ${s.runs} | ${s.errors} | — | — | — | — | — | — | — | — |`
+  :`| ${route} | ${s.runs} | ${s.errors} | ${s.pass}/${s.runs-s.errors} | ${pct(s.cerAvg)} · ${pct(s.cerMax)} | ${pct(s.cerContentAvg)} · ${pct(s.cerContentMax)} | ${sec(s.hearMsMedian)} · ${sec(s.hearMsP90)} | ${sec(s.msMedian)} · ${sec(s.msP90)} | ${usd(s.costAvgList)} · ${usd(s.costAvgPromo)} | ${usd(s.costPerAudioMinuteList)} | ${s.retries} |`);
  const errs=runs.filter(r=>r.error).reduce((m,r)=>{const k=/429/.test(r.error)?'429 몫 다툼':/timeout|aborted/i.test(r.error)?'시간 초과(45초)':/fetch failed/.test(r.error)?'연결 끊김':r.error.slice(0,40);m[k]=(m[k]||0)+1;return m;},{});
  lines.push('',`오류 종류: ${Object.entries(errs).map(([k,n])=>`${k} ${n}건`).join(' · ')||'없음'}`,'','## 사례별(✓ 기대와 맞음 · ✗ 어긋남 · ! 오류)','');
  const routes=Object.keys(summary),cases=[...new Set(runs.map(r=>r.case))];
  lines.push(`| 사례 | ${routes.join(' | ')} |`,`|---|${routes.map(()=>'---').join('|')}|`);
- for(const c of cases)lines.push(`| ${c} | ${routes.map(route=>{const r=runs.find(x=>x.case===c&&x.route===route);return !r?'':r.error?'!':r.pass?'✓':`✗ ${r.fails.join('; ').replace(/\|/g,'/')}`;}).join(' | ')} |`);
- const turnRoute=summary['turn-blind']?'turn-blind':'turn',turn=summary[turnRoute]?.costAvgList??null;
- lines.push('','## 한 달 비용 어림(정가 기준 · 할인가는 2026-12-31까지 절반)','',`시험 형식 피드백은 경로별 1회 평균, 역할극 차례는 \`${turnRoute}\` 1회 평균으로 셈한다.`,'');
- lines.push(`| 시험 형식 경로 | ${USE.map(u=>`${u.name}(${u.note})`).join(' | ')} | 학생 100명 · 1,000명 · 10,000명(보통) |`,`|---|${USE.map(()=>'---:').join('|')}|---|`);
- for(const [route,s]of Object.entries(summary)){if(route.startsWith('turn')||s.costAvgList==null)continue;
+ // 같은 사례를 여러 번 잰 경로는 맞은 횟수/잰 횟수로 적는다.
+ for(const c of cases)lines.push(`| ${c} | ${routes.map(route=>{const rs=runs.filter(x=>x.case===c&&x.route===route);if(!rs.length)return '';
+  if(rs.length>1){const ok=rs.filter(r=>r.pass).length,bad=[...new Set(rs.filter(r=>!r.pass).flatMap(r=>r.error?['오류']:r.fails))];return `${ok===rs.length?'✓':'✗'} ${ok}/${rs.length}${bad.length?' '+bad.join('; ').replace(/\|/g,'/'):''}`;}
+  const r=rs[0];return r.error?'!':r.pass?'✓':`✗ ${r.fails.join('; ').replace(/\|/g,'/')}`;}).join(' | ')} |`);
+ // 받아 적은 글(경로마다 첫 판) — 잡음·영어 대답에서 무엇을 적었는지, 대본과 어디가 다른지를 눈으로 본다.
+ lines.push('','## 받아 적은 글(경로마다 첫 판, 글자 오류율)','');
+ for(const c of cases){const cs=CASES.find(x=>x.id===c);lines.push(`- **${c}** 대본: ${cs?.script?`「${cs.script}」`:'(잡음 4초)'}`);
+  for(const route of routes){const r=runs.find(x=>x.case===c&&x.route===route&&!x.error);if(!r)continue;
+   const langs=r.calls?.find(x=>x.vendor)?.vendor?.languages;lines.push(`  - ${route}: 「${String(r.heard??'').replace(/\|/g,'/')}」${r.cer!=null?` · ${pct(r.cer)}`:''}${Array.isArray(langs)?` · 언어 ${langs.map(l=>l.code).join(',')||'없음'}`:''} → ${r.result?.status}`);}}
+ // 역할극 차례 값은 같은 공급사의 역할극 경로로 셈한다(OpenAI 받아 적기 경로 → turn-transcribe, 나머지 → turn-blind). 받아 적기만 잰 판은 쓰기 값이 없어 뺀다.
+ const turnRoute=summary['turn-blind']?'turn-blind':'turn',baseOf=label=>label.split(/[@[ ]/)[0];
+ const turnFor=route=>ROUTES[baseOf(route)]?.hear?.provider==='openai'&&summary['turn-transcribe']?'turn-transcribe':turnRoute;
+ lines.push('','## 한 달 비용 어림(정가 기준 · 할인가는 2026-12-31까지 절반)','',`시험 형식 피드백은 경로별 1회 평균, 역할극 차례는 같은 공급사의 역할극 경로(\`${turnRoute}\` · \`turn-transcribe\`) 1회 평균으로 셈한다.`,'');
+ lines.push(`| 시험 형식 경로 | 역할극 경로 | ${USE.map(u=>`${u.name}(${u.note})`).join(' | ')} | 학생 100명 · 1,000명 · 10,000명(보통) |`,`|---|---|${USE.map(()=>'---:').join('|')}|---|`);
+ for(const [route,s]of Object.entries(summary)){if(route.startsWith('turn')||route.includes('듣기만')||s.costAvgList==null)continue;
+  const tr=turnFor(route),turn=summary[tr]?.costAvgList??null;
   const per=u=>u.exam*s.costAvgList+u.turns*(turn??0),mid=per(USE[1]);
-  lines.push(`| ${route} | ${USE.map(u=>usd(per(u))).join(' | ')} | ${[100,1000,10000].map(n=>`$${(mid*n).toFixed(n>=1000?0:2)}`).join(' · ')} |`);}
+  lines.push(`| ${route} | ${tr} | ${USE.map(u=>usd(per(u))).join(' | ')} | ${[100,1000,10000].map(n=>`$${(mid*n).toFixed(n>=1000?0:2)}`).join(' · ')} |`);}
  lines.push('','학생 한 명의 AI 금액 통(쓰기·전사·교정과 같이 씀): 하루 $0.05 · 한 달 $0.30(10-05 운영 시험값). 위 「보통」이 이 통에 들어가는지를 경로 고르기의 기준으로 본다.');
  return lines.join('\n')+'\n';
 }
 
 async function main(){
- if(process.argv.includes('--보고')){const files=process.argv.slice(process.argv.indexOf('--보고')+1).filter(a=>!a.startsWith('--'));const md=report(files);
-  const file=path.join(root,'experiences/synk-world-app/qa/speaking-pilot-20261021/측정.md');fs.writeFileSync(file,md);console.log(md);return;}
- 정책.유료API요구('WORLD 말하기 시범 측정(Vertex)');
+ if(process.argv.includes('--보고')){const files=process.argv.slice(process.argv.indexOf('--보고')+1).filter(a=>!a.startsWith('--'));
+  const target=arg('--보고파일');const md=report(target?files.filter(f=>path.resolve(f)!==path.resolve(target)):files);
+  const file=target?path.resolve(target):path.join(root,'experiences/synk-world-app/qa/speaking-pilot-20261021/측정.md');fs.writeFileSync(file,md);console.log(md);return;}
  const only=arg('--사례')?.split(','),routes=(arg('--경로')||'listen,split,listen-lite,turn,turn-flash').split(',');
+ for(const route of routes)if(!ROUTES[route])throw Error(`모르는 경로: ${route}`);
+ // Vertex(듣기·쓰기)를 부르는 경로가 하나라도 있을 때만 「돈」 문을 요구한다 — OpenAI 받아 적기 + Claude 쓰기는 월 API 크레딧이다.
+ if(routes.some(route=>ROUTES[route].hear.provider!=='openai'||ROUTES[route].write?.provider==='vertex'))정책.유료API요구('WORLD 말하기 시범 측정(Vertex)');
+ // OpenAI 받아 적기 선택: --받아적기언어 ko(,en,…) · --나눔 auto. 이름은 경로[선택]으로 갈라 적는다.
+ const hear={...(arg('--받아적기언어')?{languages:arg('--받아적기언어').split(',')}:{}),...(arg('--나눔')?{chunking:arg('--나눔')}:{})};
+ const hearTag=[hear.languages&&`언어 ${hear.languages.join('+')}`,hear.chunking&&`나눔 ${hear.chunking}`].filter(Boolean).join(' · ');
+ const hearOnly=process.argv.includes('--듣기만'),repeat=Math.max(1,Number(arg('--반복'))||1);
  // --듣기모델 gemini-3.6-flash,gemini-3.7-flash: 플래시 층 경로(listen·split·turn-flash)의 듣기 모델을 바꿔 가며 잰다(이름은 경로@모델).
  const hearModels=arg('--듣기모델')?.split(',')||[null];
  const cases=CASES.filter(c=>!only||only.includes(c.id));
@@ -174,16 +217,18 @@ async function main(){
  for(const c of cases){
   const data=fs.readFileSync(path.join(audioDir,`${c.id}.webm`)),audio={mime:'audio/webm',data},seconds=probeSeconds(path.join(audioDir,`${c.id}.webm`));
   const item=c.item&&bank.items.find(i=>i.id===c.item),roleplay=c.roleplay&&bank.roleplays.find(r=>r.id===c.roleplay);
-  for(const route of routes)for(const hearModel of ['listen','split','turn-flash'].includes(route)?hearModels:[null]){
+  for(const route of routes)for(const hearModel of ['listen','split','turn-flash'].includes(route)?hearModels:[null])for(let k=0;k<repeat;k++){
    if(!!roleplay!==route.startsWith('turn'))continue;
-   const at=new Date().toISOString(),label=hearModel?`${route}@${hearModel}`:route;
+   const openai=ROUTES[route].hear.provider==='openai';
+   const at=new Date().toISOString(),label=`${hearModel?`${route}@${hearModel}`:route}${openai&&hearTag?`[${hearTag}]`:''}${hearOnly&&!roleplay?' 듣기만':''}`;
    try{
-    const run=roleplay?await speakingTurn({route,roleplay,stepId:c.step,audio,lang:c.lang||'ko',hearModel,seconds}):await speakingFeedback({route,item,types:bank.types,audio,lang:c.lang||'ko',hearModel,seconds});
-    const result=run.result,fails=roleplay?checkTurn(c,result):checkExam(c,result);
+    const run=roleplay?await speakingTurn({route,roleplay,stepId:c.step,audio,lang:c.lang||'ko',hearModel,seconds,hear}):await speakingFeedback({route,item,types:bank.types,audio,lang:c.lang||'ko',hearModel,seconds,hear,hearOnly});
+    const result=run.result,fails=roleplay?checkTurn(c,result):checkExam(c,result,{hearOnly:!!run.hearOnly});
     const transcript=roleplay?result.heard:result.heard?.transcript;
     const cost={list:run.calls.reduce((n,x)=>n+(x.cost?.list||0),0),promo:run.calls.reduce((n,x)=>n+(x.cost?.promo??x.cost?.list??0),0)};
-    runs.push({case:c.id,route:label,lang:c.lang||'ko',at,audioSeconds:seconds,ms:run.ms,cost,calls:run.calls,match:c.script?overlap(transcript||'',c.script):null,pass:fails.length===0,fails,result,raw:run.raw});
-    console.log(`  ${c.id} ${label.padEnd(30)} ${String(run.ms).padStart(6)}ms  $${cost.list.toFixed(5)} (할인 $${cost.promo.toFixed(5)})  ${fails.length?'✗ '+fails.join('; '):'✓'}`);
+    const errRate=c.script&&c.expect?.status!=='not_korean'?cer(transcript||'',c.audioScript||c.script):null;
+    runs.push({case:c.id,route:label,lang:c.lang||'ko',at,audioSeconds:seconds,ms:run.ms,cost,calls:run.calls,match:c.script?overlap(transcript||'',c.script):null,cer:errRate,pass:fails.length===0,fails,result,raw:run.raw});
+    console.log(`  ${c.id} ${label.padEnd(30)} ${String(run.ms).padStart(6)}ms  $${cost.list.toFixed(5)} (할인 $${cost.promo.toFixed(5)})  ${errRate!=null?`CER ${(errRate*100).toFixed(1)}% `:''}${fails.length?'✗ '+fails.join('; '):'✓'}  「${String(transcript||'').slice(0,60)}」`);
    }catch(error){runs.push({case:c.id,route:label,at,error:String(error.message).slice(0,300),pass:false});console.log(`  ${c.id} ${label} 오류 ${error.message}`);}
   }
   save();

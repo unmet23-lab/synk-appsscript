@@ -1,7 +1,8 @@
 // WORLD 말하기 연습 피드백의 핵심(2026-10-21 시범). 프롬프트·출력 꼴·답 정리·값 셈만 있고 네트워크·파일은 쓰지 않는다.
-// 부르는 쪽: tools/lib/말하기호출.mjs(로컬 측정·시범), 나중에 SYNK-talk world-speaking 함수(같은 파일을 동봉해 옮긴다).
+// 부르는 쪽: tools/lib/말하기호출.mjs(로컬 측정·시범), SYNK-talk world-speaking 함수(같은 파일을 동봉해 옮긴다).
 // 설계: experiences/synk-world-app/qa/speaking-pilot-20261021/설계.md
-// · 소리는 Vertex Gemini만 듣는다(학습에 쓰지 않는 유료 경로). Claude에는 받아 적은 글만 간다. 무료 Gemini API는 쓰지 않는다.
+// · 운영의 소리는 OpenAI 받아 적기만 듣는다(2026-10-30 — Google Cloud 약관 §20(d) 때문에 학생 소리를 Google 생성형 AI에 보내지 않는다). Claude에는
+//   받아 적은 글만 간다. Vertex 꼴(vertexSchema·priceVertex·hearPrompt)은 로컬 측정에 비교용으로만 남는다. 무료 Gemini API는 쓰지 않는다.
 // · 피드백은 공식 세 요소(내용 및 과제 수행 · 언어 사용 · 발화 전달력)의 「참고」다. 점수·등급·급수·합격을 만들지 않는다.
 // · 소리를 못 알아들은 것은 학생의 약점이 아니다. 말이 없거나 잘 안 들리면 그 요소를 보지 않고(보류) 다시 녹음을 권한다.
 // · 답이 짧으면 언어 사용을 보류한다(문항의 minSyllables, 시범값). 보류는 서버가 정한다 — 모델이 낸 말을 그대로 믿지 않는다.
@@ -17,6 +18,8 @@ export const PRICES=Object.freeze({
  'gemini-3.5-flash-lite':Object.freeze({input:.3,output:2.5,cached:.03}),
  'gemini-3.1-flash-lite':Object.freeze({input:.25,audioInput:.5,output:1.5,cached:.025}),
  'gemini-3.5-transcribe':Object.freeze({input:2,output:12}),
+ // OpenAI 파일 받아 적기는 소리 길이(분)로 매긴다(가격 페이지 2026-10-30).
+ 'gpt-transcribe':Object.freeze({perMinute:.0045}),
  'claude-sonnet-5-5':Object.freeze({input:2,output:10,cacheRead:.2,cacheWrite5m:2.5}),
  'claude-haiku-5-5':Object.freeze({input:.1,output:.5,cacheRead:.01,cacheWrite5m:.125}),
  'claude-opus-5-5':Object.freeze({input:4,output:20,cacheRead:.2,cacheWrite5m:5})
@@ -210,6 +213,19 @@ export function audioGate(raw){
  const status=!spoken?'no_speech':language==='other'||foreign?'not_korean':n<3?'no_speech':speech==='unclear'?'unclear':'ok';
  return {status,heard:{transcript,speech,language,syllables:n}};
 }
+/**
+ * OpenAI 파일 받아 적기(gpt-transcribe) 답 {text, languages:[{code}] 또는 ['ko',…]} → 듣기 단계(HEAR_SCHEMA) 꼴(2026-10-30, Google Cloud 약관 §20(d) 대응).
+ * 이 모델은 글과 들은 언어만 준다 — 소리 상태(일부 안 들림·거의 안 들림)와 전달 관찰은 지어내지 않는다: 글이 비면 말 없음, 있으면 clear,
+ * 전달 관찰은 빈 목록이라 쓰기 단계가 전달력을 보류한다. 언어는 코드 목록으로 — 한국어가 없으면 other, 다른 말과 함께면 mixed,
+ * 목록이 비면(믿을 만한 예측이 없다는 뜻) ko로 두고 audioGate의 글자 검사에 맡긴다.
+ */
+export function heardFromTranscription(body){
+ const transcript=text(body?.text,1200);
+ const codes=(Array.isArray(body?.languages)?body.languages:[]).map(l=>typeof l==='string'?l:l?.code).filter(c=>typeof c==='string').map(c=>c.trim().toLowerCase()).filter(Boolean);
+ const korean=codes.some(c=>c==='ko'||c==='kor'||c.startsWith('ko-'));
+ const language=!codes.length?'ko':!korean?'other':codes.length>1?'mixed':'ko';
+ return {transcript,audio:{speech:transcript.replace(/[\s(?)]/g,'')?'clear':'none',language},delivery_notes:[],speech_seconds:null};
+}
 // 사람은 한국어를 1초에 9음절보다 빨리 말하지 못한다. 녹음 길이에 비해 받아 적은 음절이 너무 많으면 지어낸 받아쓰기로 보고 피드백하지 않는다.
 const MAX_SYLLABLES_PER_SECOND=9;
 export function normalizeFeedback(raw,{item,seconds=null}){
@@ -370,6 +386,11 @@ export function priceClaude(model,usage){
  const p=PRICES[model];if(!p||!isRecord(usage))return null;
  const read=Number(usage.cache_read_input_tokens)||0,write=Number(usage.cache_creation_input_tokens)||0,input=Number(usage.input_tokens)||0,out=Number(usage.output_tokens)||0;
  return {list:(input*p.input+write*p.cacheWrite5m+read*p.cacheRead+out*p.output)/1e6,tokens:{input,cacheWrite:write,cacheRead:read,output:out}};
+}
+/** OpenAI 받아 적기 값: 청구된 소리 길이(초) × 분당 단가. */
+export function priceTranscription(model,seconds){
+ const p=PRICES[model],s=Number(seconds);if(!p?.perMinute||!Number.isFinite(s)||s<0)return null;
+ const list=s/60*p.perMinute;return {list,promo:list,seconds:s};
 }
 /** 소리 길이로 미리 잡는 예약액(서버의 금액 예약용 어림): 초당 32토큰으로 넉넉히 + 글 입력 + 최대 출력. */
 export function reserveEstimate({model,seconds,promptTokens=1500,maxOutput=2048}){

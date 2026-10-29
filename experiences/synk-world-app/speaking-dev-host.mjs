@@ -1,8 +1,9 @@
 // 말하기 연습 시범의 로컬 서버 몫(2026-10-21): WORLD 개발 서버(server.mjs)의 리허설 모드 /api/world/speaking만 이것을 부른다.
 // 운영 통로가 아니다 — 운영은 SYNK-talk world-speaking 함수(설계.md §5)이고, 이 파일은 공개 빌드에 들어가지 않는다.
 // · 기본은 꺼짐: {enabled:false}와 status 'off'만 답한다. SYNK_WORLD_SPEAKING_DEV=1과 SYNK_ALLOW_PAID_API=1을 같이 주고 띄웠을 때만
-//   실제 모델(소리는 Vertex, 글은 Claude 또는 Vertex)을 부른다. 경로는 SYNK_WORLD_SPEAKING_ROUTE(기본 blind-claude — 측정 보고 참고),
-//   역할극은 SYNK_WORLD_SPEAKING_TURN_ROUTE(기본 turn-blind: 문제를 가린 받아 적기 + 규칙으로 주문 칸).
+//   실제 모델을 부른다 — 운영 함수와 같게 소리는 OpenAI 받아 적기, 글은 Claude(10-30부터 — 약관 §20(d)로 학생 소리에 Google 생성형 AI를 쓰지 않는다).
+//   경로는 SYNK_WORLD_SPEAKING_ROUTE(기본 transcribe-claude — 측정 보고 참고), 역할극은 SYNK_WORLD_SPEAKING_TURN_ROUTE(기본 turn-transcribe:
+//   문제를 가린 받아 적기 + 규칙으로 주문 칸). 옛 Vertex 경로(blind-claude 등)는 합성 소리 비교 측정용으로만 남는다.
 // · 받은 소리·받아 적은 말은 파일·로그에 남기지 않는다. 콘솔에는 경로·모델·시간·추정 금액만 찍는다.
 // · 서버 계약(운영 함수 SYNK-talk world-speaking과 같은 꼴·같은 검사 순서): {action:'status'} → {ok,enabled,dailyLimit,remaining,itemsVersion} ·
 //   {action:'feedback'|'turn', request_id, consent:'send-once', item_id|roleplay_id+step_id, items_version(은행 contentHash), lang, audio:{mime,data}, seconds} →
@@ -14,7 +15,7 @@ import {fileURLToPath} from 'node:url';
 const MIMES=new Set(['audio/webm','audio/ogg','audio/mp4','audio/wav','audio/x-wav','audio/mpeg']);
 const MAX_BASE64=1900000;
 
-export function createSpeakingDevHost({enabled=process.env.SYNK_WORLD_SPEAKING_DEV==='1',route=process.env.SYNK_WORLD_SPEAKING_ROUTE||'blind-claude',turnRoute=process.env.SYNK_WORLD_SPEAKING_TURN_ROUTE||'turn-blind',dailyLimit=Number(process.env.SYNK_WORLD_SPEAKING_DAILY||10),log=console.log,caller=null}={}){
+export function createSpeakingDevHost({enabled=process.env.SYNK_WORLD_SPEAKING_DEV==='1',route=process.env.SYNK_WORLD_SPEAKING_ROUTE||'transcribe-claude',turnRoute=process.env.SYNK_WORLD_SPEAKING_TURN_ROUTE||'turn-transcribe',dailyLimit=Number(process.env.SYNK_WORLD_SPEAKING_DAILY||10),log=console.log,caller=null}={}){
  const bank=JSON.parse(fs.readFileSync(fileURLToPath(new URL('./world-speaking-items.json',import.meta.url)),'utf8'));
  const used=new Map(),seen=new Set();
  const day=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);

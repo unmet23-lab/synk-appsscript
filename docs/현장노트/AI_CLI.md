@@ -992,3 +992,9 @@
 - 원인: 키 권한이 Model capabilities(`api.model.request`)뿐이다. 목소리 읽기 권한이 없으면 같은 프로젝트의 목소리도 「없음」으로 보인다(키 상세 화면에서 권한 확인).
 - 고침: 만들기는 플랫폼 화면으로 한다(무료). 부르려면 그 키에 목소리 읽기 권한을 더하거나 그 권한이 있는 키가 필요하다 — 키 권한 바꾸기 · 새 키는 유호님 허락 뒤(접근을 바꾸는 보안 설정).
 - 다시 확인: 권한을 고친 뒤 `node experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs live cafe 만든-또렷함 --시도 1`이 첫 줄을 받는지.
+
+### OpenAI 플랫폼 「Create new secret key」 창의 만들기 단추가 잠겨 있다 — 「만료」를 골라야 열린다 (2026-10-30 Claude)
+- 증상: platform.openai.com/api-keys에서 이름 · Restricted · Model capabilities=Request를 넣어도 「Create secret key」가 disabled였다(처음 연 창도 같다). 만료 칸은 「만료일 선택」 그대로였다. Escape로 선택 목록을 닫으려다 창째 닫혀 넣은 값이 사라졌다.
+- 원인: 이 조직의 새 키 창은 만료가 필수다(선택지 1일 · 7일 · 30일 · 만료 안 함 · 사용자 지정). 권한 줄의 값 단추는 라벨 단추 옆 `span[role=button]`이고, Model capabilities 하나를 Request로 고르면 「13 selected permissions」로 보인다(그 안의 모델 호출 13가지).
+- 고침: 만료(「만료 안 함」 — 운영 키) → 이름 → Restricted → Model capabilities 값 단추(라벨의 `nextElementSibling`) → Request → 만들기를 ego 실행 한 번 안에서 잇는다. 만든 뒤 창의 `sk-…` 값은 찍지 않고 그 자리에서 `~/SYNK_보안/<이름>.txt`로 쓴다(`flag: 'wx'` — 다시 볼 수 없는 값이다).
+- 다시 확인: 키 목록에 새 이름이 생기고, `OPENAI_KEY_FILE=<파일>`로 `gpt-transcribe` 받아 적기 한 번이 글을 돌려준다(10-30 `synk-world-speaking-20261030`).
