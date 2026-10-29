@@ -15,7 +15,7 @@ const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService,publicError}=require('./auth-service.cjs');
 const {createSignInReturn,bringToFront}=require('./sign-in-return.cjs');
 const {WORLD_ROUTE_NAMES}=require('./world-requests.cjs');
-const {suiteKey,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('./suite-session.cjs');
+const {suiteKey,suiteDevice,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('./suite-session.cjs');
 const {createCompanyRequests}=require('./company-requests.cjs');
 const {createTeacherPreview}=require('./teacher-preview.cjs');
 const {createMessengerTeacherService,bindMessengerTeacherIPC,sendMessengerTeacherAuth,messengerViewEntry}=require('./messenger-teacher.cjs');
@@ -66,7 +66,7 @@ app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.s
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,platformTray,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
-let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
+let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,suiteDeviceId=null,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
@@ -205,7 +205,8 @@ function beginPlatformStartup(recoveryCode=null,recoveryReleaseId=null){
 }
 function initializeMain(){
   if(mainInitialized||!startupAllowed||!appLocationReady)return;mainInitialized=true;
-  suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),suiteBindingKey),key:suiteBindingKey}):null;
+  const suiteDirectory=!smoke&&authConfig?path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),suiteBindingKey):null;
+  suiteStore=suiteDirectory?createSuiteStore({directory:suiteDirectory,key:suiteBindingKey}):null;suiteDeviceId=suiteDirectory?suiteDevice({directory:suiteDirectory}):null;
   suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
     desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,name:current.appId});
@@ -225,7 +226,7 @@ function createWindow(){
   const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
     const signInReturn=createSignInReturn();
-    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);if(signInReturn(state))bringToFront(window,{app});}});
+    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);if(signInReturn(state))bringToFront(window,{app});}});
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
   if(runtime.clientId==='platform'&&!careNotifications){
@@ -239,8 +240,9 @@ function createWindow(){
   if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
-    const teacherSuite=!smoke&&teacherAuthConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),teacherKey),key:teacherKey}):null;
-    teacherService=createMessengerTeacherService({config:teacherAuthConfig,directory:path.join(app.getPath('userData'),'Teacher'),scope:current.sessionScope+'.teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>sendMessengerTeacherAuth(window,state,entry,runtime.clientId),suiteStore:teacherSuite,createTokenStore,createAuthService,createSuiteFollower});
+    const teacherDirectory=!smoke&&teacherAuthConfig?path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),teacherKey):null;
+    const teacherSuite=teacherDirectory?createSuiteStore({directory:teacherDirectory,key:teacherKey}):null;
+    teacherService=createMessengerTeacherService({config:teacherAuthConfig,directory:path.join(app.getPath('userData'),'Teacher'),scope:current.sessionScope+'.teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:teacherDirectory?suiteDevice({directory:teacherDirectory}):null,onChange:state=>sendMessengerTeacherAuth(window,state,entry,runtime.clientId),suiteStore:teacherSuite,createTokenStore,createAuthService,createSuiteFollower});
     void teacherService.initialize();
   }
   // Same page permissions are not implicit desktop permissions. Media remains unavailable until a deliberate consent flow is implemented.

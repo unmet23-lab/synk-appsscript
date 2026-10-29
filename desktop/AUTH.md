@@ -47,6 +47,8 @@ node tools/package.cjs --mode=development --platform=win32 --arch=x64 --auth-con
 
 패키지 설정이 없으면 로그인은 `unconfigured`로 닫힌다. 현재 0.2.0의 `X-SYNK-App-Version`은 실제 앱 버전을 보내며, 중앙 서버가 등록된 OAuth client ID와 `X-SYNK-Product`의 일치를 검증해야 한다.
 
+SYNK 함수 요청에는 `X-SYNK-Device`도 붙는다(2026-10-29). suite 폴더(`appData/SYNK Desktop/Suite/<원천>/<suite 키>/device.json`)의 무작위 UUID 하나를 플랫폼·Workspace·Workspace 안 내 수업·WORLD가 함께 쓰고, 계정 서버는 이 값으로 PC 한 대의 로그인을 「로그인한 곳」 한 줄로 묶는다. 계정을 증명하지 않으며 인증 서버(`/auth/v1/*`)에는 보내지 않는다. 파일을 읽거나 만들지 못하면 머리 없이 그대로 로그인한다.
+
 ## renderer 브리지
 
 `authStatus()`, `authSignIn()`, `authCancelSignIn()`은 아래 snapshot을 반환한다. 로그인은 브라우저를 연 상태에서 먼저 반환하고 결과는 `onAuthChanged(callback)`으로 받는다. 구독 함수는 해제 함수를 반환한다. `authSignOut()`은 `{ok,status,serverRevoked,serverSessionRevoked,refreshRevoked}`를 반환한다.

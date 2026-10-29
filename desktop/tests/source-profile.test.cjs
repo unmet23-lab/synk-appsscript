@@ -40,7 +40,7 @@ function recordingStubs(seen,electron){
     './auth-config-path.cjs':{resolveAuthConfigPath:()=>authFile},
     './auth-store.cjs':{createTokenStore:options=>{seen.tokenStores.push({directory:options.directory,scope:options.scope});return {available:()=>false};}},
     './auth-service.cjs':{createAuthService:()=>({initialize:async()=>{},status:()=>({configured:true,signedIn:false,status:'signed-out'}),signIn:async()=>{},signOut:async()=>{},cancel:async()=>{},accountRequest:async()=>{throw Error('No account request allowed');},dispose(){}}),publicError:()=>({code:'SYNTHETIC'})},
-    './suite-session.cjs':{suiteKey,createSuiteStore:options=>{seen.suites.push(options.directory);return {};},createSuitePublisher:()=>({initialize:async()=>{},project:state=>state,refresh:()=>true,publish(){},signOut:()=>true,dispose(){}}),createSuiteFollower:()=>({start:async()=>{},dispose(){}})},
+    './suite-session.cjs':{suiteKey,suiteDevice:()=>null,createSuiteStore:options=>{seen.suites.push(options.directory);return {};},createSuitePublisher:()=>({initialize:async()=>{},project:state=>state,refresh:()=>true,publish(){},signOut:()=>true,dispose(){}}),createSuiteFollower:()=>({start:async()=>{},dispose(){}})},
   };
 }
 function run(file,{stubs,process}){

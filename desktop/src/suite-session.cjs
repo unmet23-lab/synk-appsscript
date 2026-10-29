@@ -5,6 +5,30 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 // A file can request an account, never prove one: auth-service verifies that ID
 // with the identity server before publishing a signed-in snapshot or API token.
 function suiteKey(config,mode){return crypto.createHash('sha256').update(JSON.stringify([mode,config?.supabaseUrl,config?.accountApiUrl])).digest('hex');}
+// One random ID per suite folder (one PC user and environment), shared by every app that follows the
+// platform sign-in there. The account server only uses it to list those apps as one place; it proves
+// nothing and names no account. A file is only ever made whole (a complete temporary file linked in
+// where none exists) and never replaced, so apps starting together keep the first ID. A damaged file is
+// left as it is and the next slot is made the same way. Any failure means no ID, never a sign-in error.
+const DEVICE_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,DEVICE_SLOTS=4;
+function suiteDevice({directory,io=fs,uuid=()=>crypto.randomUUID()}){
+  function read(file){let info;try{info=io.lstatSync(file);}catch(error){if(error.code==='ENOENT')return null;throw error;}
+    if(!info.isFile()||info.isSymbolicLink()||info.size>256)return {damaged:true};let value;try{value=JSON.parse(io.readFileSync(file,'utf8'));}catch{return {damaged:true};}
+    return value?.version===1&&DEVICE_ID.test(value.id)&&Object.keys(value).length===2?{id:value.id}:{damaged:true};}
+  try{
+    for(let slot=0;slot<DEVICE_SLOTS;slot++){
+      const file=path.join(directory,slot?`device-${slot}.json`:'device.json');let found=read(file);
+      if(!found){io.mkdirSync(directory,{recursive:true,mode:0o700});
+        const temporary=path.join(directory,'device-'+crypto.randomBytes(12).toString('hex')+'.tmp');
+        try{const fd=io.openSync(temporary,'wx',0o600);try{io.writeFileSync(fd,JSON.stringify({version:1,id:uuid()})+'\n');io.fsyncSync(fd);}finally{io.closeSync(fd);}
+          try{io.linkSync(temporary,file);}catch(error){if(error.code!=='EEXIST')throw error;}
+        }finally{try{io.unlinkSync(temporary);}catch{}}
+        found=read(file);}
+      if(found?.id)return found.id;
+    }
+    return null;
+  }catch{return null;}
+}
 function validRecord(value,key){return !!value&&value.version===2&&value.key===key&&['signed-in','signed-out','checking'].includes(value.status)&&typeof value.generation==='string'&&value.generation.length>0&&value.generation.length<=160&&(value.status!=='signed-in'||typeof value.accountId==='string'&&value.accountId.length>0&&value.accountId.length<=128)&&Number.isSafeInteger(value.updatedAt)&&Object.keys(value).every(k=>['version','key','status','generation','accountId','updatedAt'].includes(k));}
 function createSuiteStore({directory,key,io=fs}){
   const file=path.join(directory,'platform-session.json');
@@ -116,4 +140,4 @@ function createSuiteFollower({store,auth,schedule=setInterval,unschedule=clearIn
   }
   return {start(){void observe();if(timer===null){timer=schedule(()=>void observe(),500);timer?.unref?.();}return queue;},refresh:observe,dispose(){closed=true;sequence++;if(timer!==null)unschedule(timer);timer=null;}};
 }
-module.exports={suiteKey,validRecord,createSuiteStore,createSuitePublisher,createSuiteFollower};
+module.exports={suiteKey,suiteDevice,validRecord,createSuiteStore,createSuitePublisher,createSuiteFollower};

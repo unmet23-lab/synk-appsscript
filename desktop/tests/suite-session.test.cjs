@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {suiteKey,validRecord,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('../src/suite-session.cjs');
+const {suiteKey,suiteDevice,validRecord,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('../src/suite-session.cjs');
 const key=suiteKey({supabaseUrl:'https://identity.example.test',accountApiUrl:'https://api.example.test'},'development');
 const record=(status='signed-in',accountId='account-a',generation='login:1')=>({version:2,key,status,accountId:status==='signed-in'?accountId:null,generation,updatedAt:1000});
 test('suite metadata contains no credentials, binds the authority and preserves other app vaults',t=>{
@@ -9,6 +9,32 @@ test('suite metadata contains no credentials, binds the authority and preserves 
  store.write(record());assert.deepEqual(store.read(),record());store.write(record('signed-out'));assert.equal(store.read().status,'signed-out');assert.equal(fs.readFileSync(vault,'utf8'),'retained-fixture');
  assert.equal(validRecord({...record(),accessToken:'forbidden'},key),false);assert.equal(validRecord(record(),'different-issuer'),false);assert.throws(()=>store.write({...record(),status:'trusted'}));
  assert.equal(fs.readdirSync(directory).filter(name=>name.endsWith('.tmp')).length,0);
+});
+test('one device ID per suite folder: kept, shared by apps starting together, never overwritten',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-suite-device-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+ let n=0;const fresh=()=>{const directory=path.join(root,String(++n));return {directory,file:path.join(directory,'device.json'),slot:k=>path.join(directory,`device-${k}.json`)};};
+ const ids=['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'];
+ const json=id=>JSON.stringify({version:1,id})+'\n';
+ let d=fresh();assert.equal(suiteDevice({directory:d.directory,uuid:()=>ids[0]}),ids[0]);
+ assert.deepEqual(JSON.parse(fs.readFileSync(d.file,'utf8')),{version:1,id:ids[0]});
+ assert.equal(suiteDevice({directory:d.directory,uuid:()=>ids[1]}),ids[0]);
+ // Another app links its complete file first: this one keeps that ID instead of its own.
+ d=fresh();const raced={...fs,linkSync:(from,to)=>{fs.mkdirSync(path.dirname(to),{recursive:true});fs.writeFileSync(to,json(ids[2]));fs.linkSync(from,to);}};
+ assert.equal(suiteDevice({directory:d.directory,io:raced,uuid:()=>ids[1]}),ids[2]);
+ // A damaged file stays as it is; the next slot is made the same way, so two apps repairing at once agree.
+ for(const broken of ['','{"version":1,"id":"not-a-uuid"}',JSON.stringify({version:1,id:ids[0],account:'forbidden'})]){
+  d=fresh();fs.mkdirSync(d.directory);fs.writeFileSync(d.file,broken);
+  const repairedFirst={...fs,linkSync:(from,to)=>{if(to===d.slot(1)&&!fs.existsSync(to))fs.writeFileSync(to,json(ids[2]));fs.linkSync(from,to);}};
+  assert.equal(suiteDevice({directory:d.directory,io:repairedFirst,uuid:()=>ids[1]}),ids[2]);
+  assert.equal(suiteDevice({directory:d.directory,uuid:()=>ids[0]}),ids[2]);
+  assert.equal(fs.readFileSync(d.file,'utf8'),broken);
+  assert.equal(fs.readdirSync(d.directory).filter(name=>name.endsWith('.tmp')).length,0);
+ }
+ // Something that is not a small regular file is passed over the same way; when every slot is damaged there is no ID.
+ d=fresh();fs.mkdirSync(d.file,{recursive:true});assert.equal(suiteDevice({directory:d.directory,uuid:()=>ids[0]}),ids[0]);assert.equal(fs.statSync(d.file).isDirectory(),true);
+ d=fresh();fs.mkdirSync(d.directory);for(const file of [d.file,d.slot(1),d.slot(2),d.slot(3)])fs.writeFileSync(file,'{');
+ assert.equal(suiteDevice({directory:d.directory,uuid:()=>ids[0]}),null);
+ assert.equal(suiteDevice({directory:path.join(root,'denied'),io:{...fs,mkdirSync:()=>{throw Object.assign(Error('denied'),{code:'EACCES'});}},uuid:()=>ids[0]}),null);
 });
 function publisher(initial=null){let stored=initial,fail=false;const writes=[];
  const service=createSuitePublisher({store:{read:()=>stored,write:value=>{if(fail)throw Error('disk unavailable');stored=value;writes.push(value);}},key,now:()=>2000});

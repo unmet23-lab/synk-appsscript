@@ -5,7 +5,7 @@ async function waitFor(fn){for(let i=0;i<150;i++){if(fn())return;await new Promi
 async function listen(server){await new Promise(r=>server.listen(0,'127.0.0.1',r));return server.address().port;}
 const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r);});
 const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
-async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
+async function fixture(t,{product='platform',secureStorage=secure,openFail=false,device=null}={}){
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);
   let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),userResponses=[],accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[],playResponses=[],worldResponses=[],lessonResponses=[];
   const server=http.createServer(async(req,res)=>{
@@ -38,11 +38,18 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
   // 탐지 서버는 가짜 서버가 자리를 잡은 뒤에 닫는다 — 먼저 닫으면 OS가 방금 비운 그 번호를 가짜 서버에 다시 줄 수 있다(10-22 Linux CI의 CALLBACK_UNAVAILABLE).
   await close(portProbe);
   const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
-  const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
+  const create=()=>{const service=createAuthService({config,store:store(),device,now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
   const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
   return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueUser:value=>userResponses.push(value),queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),queueFortune:value=>fortuneResponses.push(value),queueCare:value=>careResponses.push(value),queuePersonal:value=>personalResponses.push(value),queuePlay:value=>playResponses.push(value),queueWorld:value=>worldResponses.push(value),queueLessons:value=>lessonResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
 }
 
+test('the suite device ID reaches SYNK functions only, never the identity server',async t=>{
+  const device='5b1f0c2e-8a4d-4c3b-9e2f-1a2b3c4d5e6f',f=await fixture(t,{device});await f.login();await f.service.signOut();
+  const functions=f.requests.filter(r=>r.path.startsWith('/functions/v1/')),identity=f.requests.filter(r=>r.path.startsWith('/auth/v1/'));
+  assert.deepEqual(functions.map(r=>[r.method,r.headers['x-synk-device']]),[['GET',device],['POST',device]]);
+  assert.ok(identity.length>=3);assert.ok(identity.every(r=>r.headers['x-synk-device']===undefined));
+  const plain=await fixture(t);await plain.login();assert.ok(plain.requests.every(r=>r.headers['x-synk-device']===undefined));
+});
 test('platform account expectation reuses verified matching identity and blocks another account before API access',async t=>{
   const f=await fixture(t,{product:'messenger'});f.service.bindPlatform({status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'});await f.login();
   assert.equal(f.service.status().account.synk_user_id,'stable-synthetic-id');

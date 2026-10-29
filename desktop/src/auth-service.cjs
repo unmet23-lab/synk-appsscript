@@ -13,7 +13,7 @@ const escapeHtml=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt
 function callbackPage(code,text){return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SYNK ID</title><style>${CALLBACK_STYLE}</style></head><body><main><p class="mark">SYNK ID</p><h1>${code===200?'SYNK 앱으로 돌아가요':'로그인을 마치지 못했어요'}</h1><p>${escapeHtml(text)}</p></main></body></html>`;}
 function fault(code,status,retryable=false){return Object.assign(new Error(MESSAGES[code]||'요청을 완료하지 못했어요.'),{code,status,retryable});}
 function publicError(error){return {code:error.code||'AUTH_FAILED',message:MESSAGES[error.code]||'요청을 완료하지 못했어요.',retryable:!!error.retryable,...(error.status?{status:error.status}:{}),...missingAsset(error)};}
-function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,appVersion='0.1.0',now=Date.now,timeoutMs=12000,loginTimeoutMs=300000,onChange=()=>{}}){
+function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,appVersion='0.1.0',device=null,now=Date.now,timeoutMs=12000,loginTimeoutMs=300000,onChange=()=>{}}){
   let status=config?'signed-out':'unconfigured',lastError=null,session=null,account=null,librarySource=null,pending=null,starting=null,epoch=0,accountLoadSequence=0,refreshing=null,initialized=false;
   const controllers=new Set();let platformBinding=null,confirmedBinding=null;
   const bindingAllows=()=>!platformBinding||platformBinding.status==='signed-in'&&account?.synk_user_id===platformBinding.accountId;
@@ -49,12 +49,14 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
     return {accessToken:data.access_token,refreshToken:data.refresh_token,expiresAt:now()+data.expires_in*1000};
   }
   const headers=token=>({apikey:config.publishableKey,Authorization:'Bearer '+token,'X-SYNK-Product':config.product,'X-SYNK-Contract':'1','X-SYNK-App-Version':appVersion});
+  // The suite's device ID (suite-session `suiteDevice`) goes to SYNK functions only, never to the identity server.
+  const functionHeaders=token=>({...headers(token),...(typeof device==='string'&&device?{'X-SYNK-Device':device}:{})});
   async function verify(next,expectedSubject){
     const verified=await json(config.supabaseUrl+'/auth/v1/user',{headers:headers(next.accessToken)},65536);
     if(!verified.response.ok){if([401,403].includes(verified.response.status))throw fault('AUTH_REQUIRED',verified.response.status);throw fault('AUTH_SERVER_UNAVAILABLE',verified.response.status,true);}
     if(typeof verified.data?.id!=='string'||!verified.data.id)throw fault('AUTH_SERVER_UNAVAILABLE',verified.response.status,true);
     if(expectedSubject&&expectedSubject!==verified.data.id)throw fault('AUTH_REQUIRED',verified.response.status);
-    const result=await json(config.accountApiUrl+'/functions/v1/synk-account',{headers:headers(next.accessToken)});
+    const result=await json(config.accountApiUrl+'/functions/v1/synk-account',{headers:functionHeaders(next.accessToken)});
     if(!result.response.ok||result.data?.ok!==true||typeof result.data.account?.synk_user_id!=='string'){
       if([401,403].includes(result.response.status)||['SESSION_REVOKED','AUTH_REQUIRED','AUTH_SESSION_MISSING'].includes(result.data?.error?.code))throw fault('AUTH_REQUIRED',result.response.status);
       throw fault('AUTH_SERVER_UNAVAILABLE',result.response.status,true);
@@ -121,7 +123,7 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
   async function signOut(){const old=session;let localError;try{await discard();}catch(error){localError=error;}
     let refreshRevoked=!old,serverSessionRevoked=!old;
     if(old?.refreshToken){let token=old.accessToken;try{if(old.expiresAt<=now()+5000)token=(await tokens({grant_type:'refresh_token',client_id:config.clientId,refresh_token:old.refreshToken})).accessToken;}catch{token=null;}
-      if(token){if(old.currentSessionId){try{const result=await json(config.accountApiUrl+'/functions/v1/synk-account',{method:'POST',headers:{...headers(token),'Content-Type':'application/json'},body:JSON.stringify({action:'revoke-session',session_id:old.currentSessionId})});serverSessionRevoked=result.response.ok&&result.data.ok===true||result.response.status===404;
+      if(token){if(old.currentSessionId){try{const result=await json(config.accountApiUrl+'/functions/v1/synk-account',{method:'POST',headers:{...functionHeaders(token),'Content-Type':'application/json'},body:JSON.stringify({action:'revoke-session',session_id:old.currentSessionId})});serverSessionRevoked=result.response.ok&&result.data.ok===true||result.response.status===404;
           // The central server already logs out this exact current provider session
           // after committing the SYNK fence. Preserve its confirmation instead of
           // retrying with a token whose Auth session has just been removed.
@@ -133,7 +135,7 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
     return {ok:!localError,status:snapshot(),serverRevoked:serverSessionRevoked&&refreshRevoked,serverSessionRevoked,refreshRevoked,...(localError?{error:publicError(fault('AUTH_FAILED'))}:{})};
   }
   async function accountRequest(operation,params){let spec,loadSequence,requestEpoch,requestToken;try{const contract=accountResponseContract(operation,params,config,fault);spec=requestSpec(operation,params,appVersion,config?.product,config?.clientKey);const expected=epoch;requestEpoch=expected;if(operation==='load'){loadSequence=++accountLoadSequence;librarySource=null;emit();}let token=await getAccessToken();check(expected);const ownerId=account?.synk_user_id;
-      const send=t=>{requestToken=t;return json(config.accountApiUrl+'/functions/v1/'+spec.path,{method:spec.method||(spec.body===undefined?'GET':'POST'),headers:{...headers(t),...(spec.contractVer?{'X-Contract-Ver':spec.contractVer}:{}),...(spec.body===undefined?{}:{'Content-Type':'application/json'})},...(spec.body===undefined?{}:{body:JSON.stringify(spec.body)})},contract.maxBytes);};
+      const send=t=>{requestToken=t;return json(config.accountApiUrl+'/functions/v1/'+spec.path,{method:spec.method||(spec.body===undefined?'GET':'POST'),headers:{...functionHeaders(t),...(spec.contractVer?{'X-Contract-Ver':spec.contractVer}:{}),...(spec.body===undefined?{}:{'Content-Type':'application/json'})},...(spec.body===undefined?{}:{body:JSON.stringify(spec.body)})},contract.maxBytes);};
       let result=await send(token);check(expected);requireBindingAccess();if(contract.shouldRefresh(result)){if(session.accessToken===token)token=await refresh();else token=session.accessToken;check(expected);requireBindingAccess();result=await send(token);check(expected);requireBindingAccess();}
       const decoded=contract.decode(result,ownerId);
       if(decoded.kind==='classroom')return decoded.data;

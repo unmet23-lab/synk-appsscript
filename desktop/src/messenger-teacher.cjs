@@ -5,9 +5,9 @@ const {publicError}=require('./auth-service.cjs');
 
 // Messenger owns the window, while the teacher OAuth client owns this vault and
 // API broker. Company cookies and Messenger bearer tokens never enter it.
-function createMessengerTeacherService({config,directory,scope,safeStorage,openExternal,appVersion,onChange=()=>{},suiteStore,createTokenStore,createAuthService,createSuiteFollower}){
+function createMessengerTeacherService({config,directory,scope,safeStorage,openExternal,appVersion,device=null,onChange=()=>{},suiteStore,createTokenStore,createAuthService,createSuiteFollower}){
   const store=createTokenStore({directory,safeStorage,scope,configFingerprint:config?.fingerprint||'unconfigured'});
-  const auth=createAuthService({config,store,openExternal,appVersion,onChange});
+  const auth=createAuthService({config,store,openExternal,appVersion,device,onChange});
   const follower=suiteStore?createSuiteFollower({store:suiteStore,auth}):null;
   return Object.freeze({
     initialize:()=>follower?follower.start():auth.initialize(),
