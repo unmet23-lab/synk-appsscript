@@ -7,8 +7,9 @@
  * 원고는 experiences/synk-town/town/data/lines/*.json 이다. 파일 하나는 줄 묶음(배열, §16-2 꼴) 또는
  * 대화 장면 하나(sceneId·versions, §12-2 꼴)다.
  * 지금 보는 것: 원고 ID 꼴·중복, L1 판, 금지 말(G3·G4·G10·주민:26), 마음 한 줄(kind mood, W4)의 꼴·네 판·판 길이 상한,
- * W5의 카드·쌍·소식 줄 꼴과 판 길이(소식 줄은 금지 말 예외 없음), 전해 듣기 틀을 소식 줄로 채운 판 길이.
- * 낱말·문형 층 대조와 설정 일관성은 W10에서 더한다.
+ * W5의 카드·쌍·소식 줄 꼴과 판 길이(소식 줄은 금지 말 예외 없음), 전해 듣기 틀을 소식 줄로 채운 판 길이,
+ * W10의 인사(kind greet)·일과 한 줄(kind routine) 꼴, 마음 줄의 카드(함께 마친 일), 카드·소식 줄의 계절 변형.
+ * 낱말·문형 층 대조와 설정 일관성은 아직 없다(검수가 본다).
  * 금지 말 목록은 이 파일 한 곳에 두고, 원칙 시험(§15-2)도 여기서 가져다 쓴다.
  */
 import fs from 'node:fs';
@@ -54,12 +55,24 @@ export const LEVEL_LENGTH = Object.freeze({ L1: { sentences: [1, 1], words: 5 },
 export const sentencesOf = text => text.trim().split(/(?<=[.?!])\s+/).filter(Boolean);
 export const wordsOf = sentence => sentence.trim().split(/\s+/).filter(Boolean).length;
 
-/** 마음 한 줄 하나의 꼴(§7-3 json·§16-2): ID = <주민>.mood.<이유>.<번호>, 네 판·그림·근거·하루 한 번, 판 길이. */
+/** 인사 줄(kind greet, W10 · §16-1)의 열쇠: 생활 구간 × 날씨, 또는 주민 상태(바쁠 때 · 쉬는 중 · 늦은 밤). */
+export const GREET_BANDS = Object.freeze(['morning', 'day', 'evening', 'night']);
+export const GREET_WEATHERS = Object.freeze(['clear', 'rain']);
+export const GREET_STATES = Object.freeze(['busy', 'resting', 'late']);
+/** 계절 카드 줄의 변형(W10 — R5 「오늘의 잎」): .1은 가을, 다른 계절은 둘째 번호부터 when.season. */
+export const SEASONS = Object.freeze(['spring', 'summer', 'winter']);
+/** 카드 ID의 첫 글자가 그 카드의 주인이다(§8-2 — C 찻집 · W 공방 · R 연구원). */
+const CARD_OWNER = Object.freeze({ C: 'cafe-owner', W: 'workshop-owner', R: 'researcher' });
+
+/** 마음 한 줄 하나의 꼴(§7-3 json·§16-2): ID = <주민>.mood.<이유>.<번호>, 네 판·그림·근거·하루 한 번, 판 길이.
+ * 함께 마친 일(with-player-glad)은 그 주민의 카드마다 한 줄이라 when에 카드를 더한다(W10). */
 function moodProblems(entry, file) {
   const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
   const [npc, , key] = entry.id.split('.');
   if (!RESIDENTS.includes(entry.npc) || entry.npc !== npc) bad('mood', '마음 한 줄은 ID 앞의 주민이 npc예요.');
-  if (entry.when?.reason !== key || Object.keys(entry.when || {}).length !== 1) bad('mood', 'when은 ID의 이유 하나({ reason })예요.');
+  const { reason, card, ...other } = entry.when || {};
+  const cardOk = card === undefined || (key === 'with-player-glad' && /^[CWR]\d$/.test(card) && CARD_OWNER[card[0]] === npc);
+  if (reason !== key || Object.keys(other).length || !cardOk) bad('mood', 'when은 ID의 이유 하나({ reason })예요 — 함께 마친 일만 그 주민의 카드({ reason, card })를 더해요.');
   if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad('mood', '뜻(meaning)이 없어요.');
   if (!MOOD_ICONS.includes(entry.icon)) bad('mood', `그림(icon)은 ${MOOD_ICONS.join('·')} 가운데 하나예요.`);
   if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(f => typeof f === 'string' && f.trim())) bad('mood', '근거 설정(from)이 없어요.');
@@ -133,14 +146,24 @@ function asksProblems(entry, file) {
 }
 
 /** W5 줄의 꼴(§16-2·§2-9): 카드 줄(card — 계기·혼자·둘이·제안·결과), 쌍 줄(pair — 단계마다 두 사람), 소식 줄(news — 마을의 말),
- * 전해 듣기 틀(hearsay — 빈칸 {news}·{from}). 네 판이 다 있고, 빈칸은 전해 듣기 틀에만, 근거 설정(from)이 있다. */
+ * 전해 듣기 틀(hearsay — 빈칸 {news}·{from}). 네 판이 다 있고, 빈칸은 전해 듣기 틀에만, 근거 설정(from)이 있다.
+ * W10: 인사(greet — <구간>-<날씨> 또는 상태)와 일과 한 줄(routine — 원형 · pair-<쌍> · 공방 휴무 아침), 카드·소식 줄의 계절 변형. */
 function townProblems(entry, file) {
   const out = [], bad = (rule, message, level) => out.push({ file, id: entry.id, rule, message, ...(level ? { level } : {}) });
-  const [npc, kind] = entry.id.split('.');
+  const [npc, kind, key, n] = entry.id.split('.'), w = entry.when || {};
   if (entry.kind !== kind) bad(kind, `kind는 ID의 둘째 칸(${kind})이에요.`);
   if (entry.npc !== npc || !(kind === 'news' ? npc === 'village' : RESIDENTS.includes(npc))) bad(kind, kind === 'news' ? '소식 줄의 npc는 village예요.' : '줄의 npc는 ID 앞의 주민이에요.');
   if (typeof entry.meaning !== 'string' || !entry.meaning.trim()) bad(kind, '뜻(meaning)이 없어요.');
   if (!Array.isArray(entry.from) || !entry.from.length || !entry.from.every(f => typeof f === 'string' && f.trim())) bad(kind, '근거 설정(from)이 없어요.');
+  const size = Object.keys(w).length, [band, weather] = key.split('-');
+  if (kind === 'greet' && !(GREET_STATES.includes(key) ? w.state === key && size === 1
+    : GREET_BANDS.includes(band) && GREET_WEATHERS.includes(weather) && w.band === band && w.weather === weather && size === 2))
+    bad('greet', '인사 줄의 열쇠는 <구간>-<날씨>({ band, weather }) 또는 상태({ state } — busy·resting·late)예요.');
+  if (kind === 'routine' && !(key === 'holiday-wake' ? w.dayKind === 'off' && w.band === 'morning' && size === 2
+    : key.startsWith('pair-') ? w.pair === key.slice(5) && size === 1 : w.archetype === key && size === 1))
+    bad('routine', '일과 줄의 열쇠는 원형({ archetype }) · pair-<쌍>({ pair }) · holiday-wake({ dayKind: off, band: morning })예요.');
+  if (w.season !== undefined && !(['card', 'news'].includes(kind) && SEASONS.includes(w.season) && n !== '1'))
+    bad(kind, '계절 변형(when.season)은 카드·소식 줄의 둘째 번호부터 spring·summer·winter예요 — .1은 가을이에요.');
   for (const level of LEVELS) {
     const text = entry.levels?.[level];
     if (typeof text !== 'string' || !text.trim()) { bad(kind, `${level} 판이 없어요 — 네 판이 다 있어요.`, level); continue; }
@@ -256,7 +279,7 @@ export function collectTexts(doc, file) {
       if (extra.length) bad(id, `모르는 판: ${extra.join(', ')}`);
       if (typeof entry.levels.L1 !== 'string') bad(id, 'L1 판은 모든 줄에 있어야 해요(다리 §3-4).');
       if (entry.kind === 'mood') problems.push(...moodProblems(entry, file));
-      if (['card', 'hearsay', 'pair', 'news'].includes(entry.kind)) problems.push(...townProblems(entry, file));
+      if (['card', 'hearsay', 'pair', 'news', 'greet', 'routine'].includes(entry.kind)) problems.push(...townProblems(entry, file));
       if (entry.kind === 'changes') problems.push(...changesProblems(entry, file));
       if (entry.kind === 'tea') problems.push(...teaProblems(entry, file));
       if (entry.kind === 'asks') problems.push(...asksProblems(entry, file));
@@ -283,7 +306,13 @@ export function collectTexts(doc, file) {
       };
       if (!Array.isArray(version?.turns)) { bad(id, `${level} 판에 차례(turns)가 없어요.`); continue; }
       version.turns.forEach(turn);
-      for (const key of ['stop', 'aroma']) add(version[key], 'resident');
+      // W10 새 차 장면(lines/new-tea.json): 향 먼저 맡을 때 · 꿀 직접 넣기 · 끝 줄 둘 · 작별, L1 그림 카드의 나눈 줄.
+      for (const key of ['stop', 'aroma', 'manual', 'result', 'resultAroma']) add(version[key], 'resident');
+      for (const card of Object.values(version.pictures || {})) add(card?.line, 'resident');
+    }
+    // 꿀 보기(꿀 없이 · 한 숟가락 · 두 숟가락)는 판이 없는 고르는 말이다.
+    for (const label of Array.isArray(doc.honey) ? doc.honey : []) {
+      if (typeof label === 'string' && label.trim()) texts.push({ file, id, level: 'L1', kind: 'scene', speaker: 'player', strict: false, text: label });
     }
   } else bad(path.basename(file), '줄 묶음(배열)이나 장면(sceneId)이어야 해요.');
   return { texts, problems };

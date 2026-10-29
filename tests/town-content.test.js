@@ -133,6 +133,22 @@ test('W5 줄의 꼴 — 카드·쌍 줄은 네 판과 판 길이, 소식 줄은 
   assert.ok((await check([[w5('cafe-owner.card.C1-trigger.1', { card: 'C1', part: 'trigger' }, { ...W5, L2: '{x} 받침을 넣어요.' })]])).problems.some(p => p.rule === 'card'), '카드 줄에는 빈칸이 없다');
 });
 
+test('W10 줄 꼴 — 인사(구간-날씨 · 상태), 일과(원형 · 쌍 · 휴무 아침), 함께 마친 일의 카드, 카드 · 소식의 계절 변형', async () => {
+  const ok = async entries => (await check([entries])).problems;
+  assert.deepEqual(await ok([w5('cafe-owner.greet.morning-clear.1', { band: 'morning', weather: 'clear' }), w5('cafe-owner.greet.busy.1', { state: 'busy' })]), []);
+  assert.ok((await ok([w5('cafe-owner.greet.morning-snow.1', { band: 'morning', weather: 'snow' })])).some(p => p.rule === 'greet'), '날씨는 맑음 · 비뿐');
+  assert.ok((await ok([w5('cafe-owner.greet.busy.1', { band: 'day', weather: 'clear' })])).some(p => p.rule === 'greet'), '상태 열쇠는 when.state');
+  assert.deepEqual(await ok([w5('cafe-owner.routine.brew.1', { archetype: 'brew' }), w5('cafe-owner.routine.pair-PAIR01.1', { pair: 'PAIR01' }),
+    w5('workshop-owner.routine.holiday-wake.1', { dayKind: 'off', band: 'morning' })]), []);
+  assert.ok((await ok([w5('cafe-owner.routine.brew.1', { archetype: 'serve' })])).some(p => p.rule === 'routine'), '열쇠와 원형이 같다');
+  assert.deepEqual(await ok([mood('cafe-owner.mood.with-player-glad.2', FULL, { when: { reason: 'with-player-glad', card: 'C2' } })]), []);
+  assert.ok((await ok([mood('cafe-owner.mood.with-player-glad.2', FULL, { when: { reason: 'with-player-glad', card: 'W2' } })])).some(p => p.rule === 'mood'), '자기 카드만');
+  assert.ok((await ok([mood('cafe-owner.mood.busy.2', FULL, { when: { reason: 'busy', card: 'C5' } })])).some(p => p.rule === 'mood'), '카드는 함께 마친 일에만');
+  assert.deepEqual(await ok([w5('researcher.card.R5-trigger.2', { card: 'R5', part: 'trigger', season: 'spring' })]), []);
+  assert.ok((await ok([w5('researcher.card.R5-trigger.1', { card: 'R5', part: 'trigger', season: 'spring' })])).some(p => p.rule === 'card'), '.1은 가을');
+  assert.ok((await ok([w5('researcher.card.R5-trigger.2', { card: 'R5', part: 'trigger', season: 'autumn' })])).some(p => p.rule === 'card'), '다른 계절은 봄 · 여름 · 겨울');
+});
+
 test('실제 W5 원고 — 카드마다 여섯 줄(둘이는 주인·짝), 쌍 단계마다 두 사람, 소식 카드마다 한 줄, 전해 듣기 아홉이 다 있다', async () => {
   const fs = require('node:fs'), path = require('node:path'), { ROOT } = require('./lib/town.js');
   const dir = path.join(ROOT, 'experiences', 'synk-town', 'town', 'data', 'lines');
@@ -140,8 +156,12 @@ test('실제 W5 원고 — 카드마다 여섯 줄(둘이는 주인·짝), 쌍 �
   const { build } = await toolModule('town-data-build');
   assert.doesNotThrow(() => build(), '생성기가 빠진 줄을 막는다');
   const { TOWN_LINES } = await import(require('node:url').pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'town', 'data.gen.mjs')).href);
-  const count = kind => TOWN_LINES.filter(l => l.kind === kind).length;
+  const count = kind => TOWN_LINES.filter(l => l.kind === kind && !l.when?.season).length;
   assert.deepEqual([count('card'), count('pair'), count('news'), count('hearsay')], [108, 18, 9, 9]);
+  // W10: R5의 계절 변형(계기 · 혼자 · 소식 × 봄 · 여름 · 겨울)과 인사 33(주민 셋 × 구간 넷 × 날씨 둘 + 상태 셋).
+  assert.deepEqual(TOWN_LINES.filter(l => l.when?.season).map(l => `${l.id.replace(/\.\d+$/, '')}:${l.when.season}`).sort(),
+    ['researcher.card.R5-self', 'researcher.card.R5-trigger', 'village.news.R5'].flatMap(id => ['spring', 'summer', 'winter'].map(s => `${id}:${s}`)).sort());
+  assert.equal(count('greet'), 33);
   assert.deepEqual(TOWN_LINES.filter(row => row.when?.card === 'C4').map(row => row.id).sort(), [
     ...['trigger', 'self', 'pair', 'offer', 'result'].map(part => `cafe-owner.card.C4-${part}.1`),
     'workshop-owner.card.C4-pair.1', 'village.news.C4.1',

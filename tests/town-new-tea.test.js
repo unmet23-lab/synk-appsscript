@@ -28,6 +28,9 @@ test('C4 help follows the common dialogue ladder and personal honey choice is no
   let repeat = s.startNewTea('L3'); repeat = s.helpNewTea(repeat, 'repeat'); assert.equal(s.newTeaView(repeat).level, 'L3');
   repeat = s.helpNewTea(repeat, 'repeat'); assert.equal(s.newTeaView(repeat).level, 'L2');
   const low = s.helpNewTea(s.startNewTea('L1'), 'meaning'); assert.equal(s.newTeaView(low).picture, 'cup');
+  // W10: the L1 picture card carries the scene's short line (lines/new-tea.json), not the turn's own line.
+  assert.equal(s.newTeaView(low).line, '새 차예요. 마셔 봐요.');
+  assert.equal(s.newTeaView(s.startNewTea('L1')).line, '새 차 마셔 볼래요?');
 });
 
 test('the next band menu uses the chosen sweetness at every language level and every cup remains ordinary', async () => {

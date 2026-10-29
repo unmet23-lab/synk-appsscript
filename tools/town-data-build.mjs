@@ -6,7 +6,7 @@
  *
  * 브라우저·talk 묶음은 JSON 대신 이 생성물을 읽는다(브라우저 모듈은 JSON을 바로 못 부르고, talk는 esbuild로 묶는다).
  * 원천을 고치면 생성물을 같은 커밋에 올린다 — 바로올리기의 짝검사와 tests/town-places.test.js가 낡은 생성물을 막는다.
- * 원고(data/lines)는 마음 한 줄(kind mood, W4)과 W5의 카드·전해 듣기·쌍·소식 줄을 싣는다 — 화면이 그 판을 그리고 서버가 「본 것」 키로 받는다. 금지 말·판 길이는
+ * 원고(data/lines)는 마음 한 줄(kind mood, W4)과 W5의 카드·전해 듣기·쌍·소식 줄, W10의 인사·일과 한 줄을 싣는다 — 화면이 그 판을 그리고 서버가 「본 것」 키로 받는다. 금지 말·판 길이는
  * 원고 검사기(tools/town-lines-check.mjs)가 보고, 허용 목록(lines-allow.json)도 검사기만 읽는다.
  */
 import fs from 'node:fs';
@@ -355,16 +355,20 @@ export function validateTeaLines(docs, tea) {
   }
   return lines.map(e => ({ id: e.id, npc: e.npc, kind: e.kind, when: e.when, levels: e.levels }));
 }
-export function validateMoodLines(docs, residents) {
+/** Mood lines (kind mood, W4): a line per resident and reason, and from W10 a second variant; with-player-glad names the
+ * owner's card it was glad of (when.card — the engine's basis.card), one line per card. */
+export function validateMoodLines(docs, residents, cards) {
   const lines = docs.flat().filter(entry => entry?.kind === 'mood'), ids = new Set();
+  const ownerOf = new Map(cards.cards.map(c => [c.id, c.owner]));
   for (const entry of lines) {
-    const [npc, kind, reason, n] = String(entry.id).split('.');
+    const [npc, kind, reason, n] = String(entry.id).split('.'), card = entry.when?.card;
     if (kind !== 'mood' || entry.npc !== npc || entry.when?.reason !== reason || !/^\d+$/.test(n ?? '') || ids.has(entry.id)) fail(`마음 줄 ${entry.id}`);
+    if (card !== undefined && (reason !== 'with-player-glad' || ownerOf.get(card) !== npc)) fail(`마음 줄 ${entry.id}의 카드 ${card}`);
     if (!['L1', 'L2', 'L3', 'L4'].every(level => typeof entry.levels?.[level] === 'string') || typeof entry.icon !== 'string') fail(`마음 줄 ${entry.id}의 판·그림`);
     ids.add(entry.id);
   }
   for (const r of residents.residents) for (const m of r.moods) if (!ids.has(`${r.id}.mood.${m.tag}.1`)) fail(`${r.id}의 마음 ${m.tag}에 줄(${r.id}.mood.${m.tag}.1)이 없어요.`);
-  return lines.map(entry => ({ id: entry.id, npc: entry.npc, reason: entry.when.reason, icon: entry.icon, levels: entry.levels }));
+  return lines.map(entry => ({ id: entry.id, npc: entry.npc, reason: entry.when.reason, ...(entry.when.card ? { card: entry.when.card } : {}), icon: entry.icon, levels: entry.levels }));
 }
 
 /** The ledger's items (§20-7 ①): one definition each; a gathered material names a gather spot. */
@@ -511,15 +515,32 @@ export const CARD_PARTS = Object.freeze(['trigger', 'self', 'pair', 'offer', 're
 export const HEARSAY = Object.freeze(['seen', 'heard', 'news']);
 /** 「그동안 달라진 것」 틀(§10-2·§16-1, W6): 흔적 넷(쟁반 받침·관찰판·오늘의 차·새 차)·습관·쌍 — town/meanwhile.mjs FRAMES와 같다(시험이 견줌). */
 export const CHANGE_FRAMES = Object.freeze(['tray', 'board', 'today-tea', 'new-tea', 'habit', 'pair']);
-export function validateTownLines(docs, cards, pairs) {
-  const lines = docs.flat().filter(entry => ['card', 'hearsay', 'pair', 'news', 'changes'].includes(entry?.kind)), ids = new Set();
+/** W10: a resident's greeting on the place board when there is no news to pass on — the band × the weather, or their state
+ * (busy · resting · late, §16-1) — and their one line for what they are doing now (an archetype they do, a pair scene, the
+ * workshop owner's day-off waking). A card's line may vary by season (when.season — R5's leaves; .1 is autumn). */
+export const GREET_KEYS = Object.freeze([...['morning', 'day', 'evening', 'night'].flatMap(band => ['clear', 'rain'].map(weather => `${band}-${weather}`)),
+  'busy', 'resting', 'late']);
+export const SEASON_VARIANTS = Object.freeze(['spring', 'summer', 'winter']);
+export function validateTownLines(docs, cards, pairs, { archetypes = [], routines = [] } = {}) {
+  const lines = docs.flat().filter(entry => ['card', 'hearsay', 'pair', 'news', 'changes', 'greet', 'routine'].includes(entry?.kind)), ids = new Set();
   const cardById = new Map(cards.cards.map(c => [c.id, c])), sceneOf = new Map(pairs.pairs.map(p => [p.scene, p]));
+  const kinds = new Set(archetypes.map(a => a.id));
   for (const e of lines) {
     const [npc, kind, key, n] = String(e.id).split('.');
     if (kind !== e.kind || !/^\d+$/.test(n ?? '') || ids.has(e.id) || !['L1', 'L2', 'L3', 'L4'].every(l => typeof e.levels?.[l] === 'string')) fail(`원고 ${e.id}`);
     ids.add(e.id);
     const w = e.when || {};
-    if (e.kind === 'card') {
+    if (w.season !== undefined && (!['card', 'news'].includes(e.kind) || !SEASON_VARIANTS.includes(w.season) || n === '1')) fail(`계절 변형 ${e.id}`);
+    if (e.kind === 'greet') {
+      const shape = ['busy', 'resting', 'late'].includes(key) ? w.state === key && Object.keys(w).length === 1
+        : `${w.band}-${w.weather}` === key && Object.keys(w).length === 2;
+      if (!GREET_KEYS.includes(key) || !shape || n !== '1' || !RESIDENT_IDS.includes(npc) || e.npc !== npc) fail(`인사 줄 ${e.id}`);
+    } else if (e.kind === 'routine') {
+      const shape = key === 'holiday-wake' ? w.dayKind === 'off' && w.band === 'morning' && Object.keys(w).length === 2
+        : key.startsWith('pair-') ? sceneOf.get(w.pair)?.members.includes(npc) && key === `pair-${w.pair}` && Object.keys(w).length === 1
+          : kinds.has(w.archetype) && key === w.archetype && Object.keys(w).length === 1;
+      if (!shape || n !== '1' || !RESIDENT_IDS.includes(npc) || e.npc !== npc) fail(`일과 줄 ${e.id}`);
+    } else if (e.kind === 'card') {
       const card = cardById.get(w.card);
       const speaker = w.part === 'pair' ? [card?.owner, card?.paths.pair.partner] : [card?.owner];
       if (!card || !CARD_PARTS.includes(w.part) || key !== `${w.card}-${w.part}` || !speaker.includes(npc) || e.npc !== npc) fail(`카드 줄 ${e.id}`);
@@ -543,10 +564,45 @@ export function validateTownLines(docs, cards, pairs) {
     for (const how of HEARSAY) for (const npc of RESIDENT_IDS) need.push(`${npc}.hearsay.${how}.1`);
     // W6: every frame of 「그동안 달라진 것」, once its lines exist.
     if (lines.some(e => e.kind === 'changes')) for (const frame of CHANGE_FRAMES) need.push(`village.changes.${frame}.1`);
+    // W10: every greeting of every resident, and a routine line for each archetype a resident's day, card or pair part
+    // gives them and each pair scene they are in — once those lines exist.
+    if (lines.some(e => e.kind === 'greet')) for (const npc of RESIDENT_IDS) for (const key of GREET_KEYS) need.push(`${npc}.greet.${key}.1`);
+    if (lines.some(e => e.kind === 'routine')) {
+      const does = new Set();
+      for (const r of routines) for (const item of r.pool || []) does.add(`${r.npc}.routine.${item.archetype}.1`);
+      for (const c of cards.cards) { does.add(`${c.owner}.routine.${c.archetype}.1`); does.add(`${c.paths.pair.partner}.routine.${c.paths.pair.partnerArchetype}.1`); }
+      for (const p of pairs.pairs) for (const npc of p.members) does.add(`${npc}.routine.pair-${p.scene}.1`);
+      need.push(...does);
+    }
     const missing = need.filter(id => !ids.has(id));
     if (missing.length) fail(`없는 줄 ${missing.length}개: ${missing.slice(0, 6).join(', ')}${missing.length > 6 ? ' …' : ''}`);
   }
   return lines.map(e => ({ id: e.id, npc: e.npc, kind: e.kind, when: e.when, ...(e.icon ? { icon: e.icon } : {}), levels: e.levels }));
+}
+
+/** The authored scene (W10 — C4's new tea, §12-2): lines/new-tea.json, four versions of the five turns (offer · taste · less ·
+ * same · aroma) with their choices, the aroma aside, the honey prompt, the two endings and the goodbye, and at L1 the picture
+ * cards' short lines. new-tea.mjs plays it from SCENES (it was a constant in that file until W10). */
+export const NEW_TEA_SCENE = 'cafe-alley.day.new-tea';
+export const NEW_TEA_TURNS = Object.freeze({ offer: ['sip', 'smell'], taste: ['less', 'same', 'aroma'], less: ['agree', 'pour'], same: ['menu', 'serve'], aroma: ['more', 'thanks'] });
+export function validateScenes(docs) {
+  const text = v => typeof v === 'string' && v.trim().length > 0, scenes = {};
+  for (const s of docs.filter(doc => doc && !Array.isArray(doc) && typeof doc.sceneId === 'string')) {
+    if (s.sceneId !== NEW_TEA_SCENE || scenes[s.sceneId]) fail(`장면 ${s.sceneId}`);
+    if (!Array.isArray(s.honey) || s.honey.length !== 3 || !s.honey.every(text)) fail(`장면 ${s.sceneId}의 꿀 보기`);
+    for (const level of ['L1', 'L2', 'L3', 'L4']) {
+      const v = s.versions?.[level], turns = new Map((v?.turns || []).map(t => [t.key, t]));
+      const shaped = v?.turns?.length === 5 && Object.entries(NEW_TEA_TURNS).every(([key, ids]) => text(turns.get(key)?.line)
+        && turns.get(key).choices?.length === ids.length && turns.get(key).choices.every((c, i) => c.id === ids[i] && text(c.text)))
+        && ['aroma', 'manual', 'result', 'resultAroma', 'stop'].every(k => text(v[k]));
+      const pictures = level === 'L1' ? Object.keys(NEW_TEA_TURNS).every(key => ['cup', 'leaf', 'honey'].includes(v.pictures?.[key]?.picture) && text(v.pictures[key].line))
+        : v?.pictures === undefined;
+      if (!shaped || !pictures) fail(`장면 ${s.sceneId}의 ${level} 판`);
+    }
+    scenes[s.sceneId] = { honey: s.honey, versions: s.versions };
+  }
+  if (!scenes[NEW_TEA_SCENE]) fail('새 차 장면(lines/new-tea.json)이 없어요.');
+  return scenes;
 }
 
 /** The mascot's taste question (§20-3, W6b): one line per life family, asked once when the player keeps opening that family.
@@ -603,13 +659,14 @@ export function build() {
   // music.json (this repo): the public files carry no maker's name (the public build's tool-name check).
   const musicShown = { musicVer: music.musicVer, tracks: music.tracks.map(({ id, title, file, durationMs }) => ({ id, title, file, durationMs })) };
   const linesDir = path.join(DATA, 'lines');
-  const lineDocs = fs.existsSync(linesDir) ? fs.readdirSync(linesDir).filter(name => name.endsWith('.json')).sort()
-    .map(name => JSON.parse(fs.readFileSync(path.join(linesDir, name), 'utf8'))).filter(Array.isArray) : [];
-  const moodLines = validateMoodLines(lineDocs, residentsData);
+  const allLineDocs = fs.existsSync(linesDir) ? fs.readdirSync(linesDir).filter(name => name.endsWith('.json')).sort()
+    .map(name => JSON.parse(fs.readFileSync(path.join(linesDir, name), 'utf8'))) : [];
+  const lineDocs = allLineDocs.filter(Array.isArray), scenes = validateScenes(allLineDocs);
   const pairsData = validatePairs(read('pairs.json'), placesData);
   const cardsData = validateCards(read('cards.json'), placesData, { archetypes }, pairsData);
+  const moodLines = validateMoodLines(lineDocs, residentsData, cardsData);
   for (const r of residentsData.residents) for (const m of r.moods) if (CARD_ID.test(m.factor) && !cardsData.cards.some(c => c.id === m.factor)) fail(`${r.id}의 마음 ${m.factor}는 카드가 아니에요.`);
-  const townLines = validateTownLines(lineDocs, cardsData, pairsData);
+  const townLines = validateTownLines(lineDocs, cardsData, pairsData, { archetypes, routines });
   const tea = validateTea(read('tea.json')), { $comment: teaNote, ...teaTable } = tea, teaLines = validateTeaLines(lineDocs, tea);
   const reviewFile = path.join(ROOT, 'experiences/topik-items/review/atlas-world-learning-20261028-tea.json');
   const teaReview = fs.existsSync(reviewFile) ? JSON.parse(fs.readFileSync(reviewFile, 'utf8')) : null;
@@ -632,7 +689,7 @@ export function build() {
     + `  params: ${rows(params)},\n  items: ${rows(items)},\n  light: ${JSON.stringify(light)},\n  stay: ${JSON.stringify(stay)},\n  music: ${JSON.stringify(musicShown)},\n  moodLines: ${rows(moodLines)},\n`
     + `  cards: ${rows(cardsData.cards)},\n  pairs: ${rows(pairsData.pairs)},\n  chatSpots: ${JSON.stringify(pairsData.chatSpots)},\n  townLines: ${rows(townLines)},\n`
     + `  tea: ${JSON.stringify(teaTable)},\n  teaLines: ${rows(teaLines)},\n  teaAssessment: ${JSON.stringify(teaAssessment)},\n  evalConsent: ${JSON.stringify(evalConsent)},\n  askLines: ${rows(askLines)},\n`
-    + `  gather: ${JSON.stringify(gather)},\n  gatherLines: ${rows(gatherLines)},\n}`;
+    + `  gather: ${JSON.stringify(gather)},\n  gatherLines: ${rows(gatherLines)},\n  scenes: ${JSON.stringify(scenes)},\n}`;
   return [
     '// Generated by tools/town-data-build.mjs from experiences/synk-town/town/data. Do not edit; run the tool.',
     'const freeze = value => { if (value && typeof value === \'object\') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };',
@@ -661,6 +718,7 @@ export function build() {
     'export const ASK_LINES = data.askLines;',
     'export const GATHER = data.gather;',
     'export const GATHER_LINES = data.gatherLines;',
+    'export const SCENES = data.scenes;',
     '',
   ].join('\n');
 }
