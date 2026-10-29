@@ -432,6 +432,20 @@ function 토큰값(내용, 옛, 정한값) {
   return h.slice(0, 12);
 }
 
+/** 이 사이트의 호스트: synk.im·www.synk.im·--주소 */
+function 사이트호스트들(옵션) {
+  const 호스트들 = new Set(['synk.im', 'www.synk.im']);
+  try { 호스트들.add(new URL(옵션.주소 || 기본주소).host.toLowerCase()); } catch (_) { /* 그대로 */ }
+  return 호스트들;
+}
+
+/** 다른 사이트 주소·data: 같은 참조인가 — 그 ?v=는 그 사이트의 값(유튜브 watch?v=<영상 id>)이지 캐시 토큰이 아니다 */
+function 바깥참조(주소, 호스트들) {
+  const m = /^(?:https?:)?\/\/([^/]+)/i.exec(주소);
+  if (m) return !호스트들.has(m[1].toLowerCase());
+  return /^[a-z][a-z0-9+.-]*:/i.test(주소);
+}
+
 /**
  * 참조 글(url) → 공개 경로. 다른 사이트·data: 주소는 null. 상대 → 뿌리 → 꼬리 맞춤 차례로 찾는다. 꼬리 맞춤은 데이터 모듈처럼
  * 다른 기준 폴더로 적힌 참조(`"onb/mongle-기본.webp?v="`, `"marin-기본.webp?v="`)를 위한 것이다 — 같은 꼬리 경로가 하나뿐이면
@@ -470,12 +484,14 @@ function 토큰모음(글) {
 /**
  * 토큰 맞춤: 올릴 파일(또는 기준 판)의 ?v= 값을 같은 파일 공개본의 같은 참조 값으로 되돌린다. 깨끗한 빌드의 토큰은 공개본과 달라
  * 안 바꾼 파일까지 바뀐 것처럼 보이고 3방향이 겹친다(현장 노트 「?v=를 다시 계산하면」). 바뀐 파일의 토큰은 다음 단계가 새로 붙인다.
- * 공개본에 같은 참조가 없거나 값이 여럿이면 그대로 둔다.
+ * 공개본에 같은 참조가 없거나 값이 여럿이면 그대로 둔다. 다른 사이트 주소는 보지 않는다 — 유튜브 링크는 참조 글이 모두
+ * https://www.youtube.com/watch 하나라 새 영상 id를 공개본에 있던 id로 되돌렸다(10-30 prompts).
  */
-function 토큰맞춤(버퍼, 공개버퍼) {
+function 토큰맞춤(버퍼, 공개버퍼, 호스트들) {
   const 공토큰 = 토큰모음(공개버퍼.toString('latin1'));
   let 맞춤 = 0;
   const 새 = 버퍼.toString('latin1').replace(토큰찾기, (전체, 주소, 토큰) => {
+    if (바깥참조(주소, 호스트들)) return 전체;
     const s = 공토큰.get(주소);
     if (!s || s.size !== 1) return 전체;
     const t0 = s.values().next().value;
@@ -872,6 +888,7 @@ function 후보차이계획(원천) {
   const { git, 옵션, 입력, 위, 저장, 공개트리, 기준, 토큰다룸, 내것, 만, 폴더멈춤 } = 원천;
   const 항목 = new Map(), 건너뜀 = [...원천.건너뜀], 걸림 = [...원천.걸림], 알림 = [...원천.알림];
   const 더하기 = x => 항목.set(x.경로, x);
+  const 호스트들 = 사이트호스트들(옵션);
   // 3) 경로마다 고른다
   for (const [p, m] of 내것) {
     if (만 && !만.has(p)) continue;
@@ -883,7 +900,7 @@ function 후보차이계획(원천) {
     const 공버퍼 = 공 && 글인가 && 공oid !== m.oid ? 블롭(git, 저장, 공oid) : null;
     const 맞출수 = 토큰다룸 && 토큰파일.test(p) && 공버퍼 && !이진인가(공버퍼);
     let 내버퍼 = m.버퍼, 맞춤 = 0;
-    if (맞출수) ({ 버퍼: 내버퍼, 맞춤 } = 토큰맞춤(m.버퍼, 공버퍼));
+    if (맞출수) ({ 버퍼: 내버퍼, 맞춤 } = 토큰맞춤(m.버퍼, 공버퍼, 호스트들));
     const 나oid = 맞춤 ? 블롭id(내버퍼) : m.oid;
     const 덧 = 맞춤 ? ` · ?v= ${맞춤}개 공개본 값으로` : '';
     if (맞춤) 저장.set(나oid, 내버퍼);
@@ -897,7 +914,7 @@ function 후보차이계획(원천) {
     if (기oid && 맞출수 && 글인가) {
       const 기버퍼 = 블롭(git, 저장, 기oid);
       if (!이진인가(기버퍼)) {
-        const r = 토큰맞춤(기버퍼, 공버퍼);
+        const r = 토큰맞춤(기버퍼, 공버퍼, 호스트들);
         if (r.맞춤) { 기oid = 블롭id(r.버퍼); 저장.set(기oid, r.버퍼); }
       }
     }
@@ -944,7 +961,7 @@ function 후보차이계획(원천) {
         // 기준 빌드(LF)와 공개본(CRLF·다른 ?v=)이 줄끝·토큰만 다르면 남이 바꾼 것이 아니다 — 3방향과 같은 눈으로 본다
         const 공버퍼 = 블롭(git, 저장, 공.oid), 기버퍼 = 블롭(git, 저장, 기oid);
         const 같은판 = !이진인가(공버퍼) && !이진인가(기버퍼)
-          && LF로(토큰파일.test(p) && 토큰다룸 ? 토큰맞춤(기버퍼, 공버퍼).버퍼 : 기버퍼).equals(LF로(공버퍼));
+          && LF로(토큰파일.test(p) && 토큰다룸 ? 토큰맞춤(기버퍼, 공버퍼, 호스트들).버퍼 : 기버퍼).equals(LF로(공버퍼));
         if (!같은판) { 걸림.push({ 경로: p, 검사: '3방향', 이유: '지우려는 파일을 기준 뒤 공개본에서 남이 바꿨다' }); continue; }
         덧 = ' · 기준과 줄끝·?v=만 다름';
       }
@@ -971,8 +988,7 @@ function 후보토큰계획(차이) {
   // 6) ?v= 토큰 갱신
   const 있는경로 = new Set(공개트리.keys());
   for (const x of 항목.values()) { if (x.후) 있는경로.add(x.경로); else 있는경로.delete(x.경로); }
-  const 호스트들 = new Set(['synk.im', 'www.synk.im']);
-  try { 호스트들.add(new URL(옵션.주소 || 기본주소).host.toLowerCase()); } catch (_) { /* 그대로 */ }
+  const 호스트들 = 사이트호스트들(옵션);
   let 꼬리목록 = null;
   const 꼬리들 = (꼬리) => {
     if (!꼬리목록) 꼬리목록 = [...있는경로].filter((p) => !p.startsWith('.github/'));

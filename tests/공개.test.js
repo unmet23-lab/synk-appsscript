@@ -333,6 +333,38 @@ test('?v= 토큰 맞춤: 빌드 HTML의 토큰은 공개본 값으로 되돌리�
   assert.deepEqual(종류들(그대로), { 'page.html': '바꿈' });
 });
 
+test('?v= 토큰 맞춤: 다른 사이트 주소(유튜브 watch?v=)는 그대로 두고 이 사이트 자산 ?v=만 공개본 값으로(10-30 prompts)', async (t) => {
+  // 10-30 공개본 꼴: 앞 공개에서 두 영상이 이미 같은 id로 틀려 있었다 — 참조 글이 모두 https://www.youtube.com/watch 하나라 맞춤이 새 id를 그 값으로 되돌렸다
+  const 영상 = (id, 앞 = 'https:') => `<a href="${앞}//www.youtube.com/watch?v=${id}">영상</a>`;
+  const 공 = 새공개본(t, {
+    'prompts/index.html': '<link href="style.css?v=111111111111"><script src="https://synk.im/prompts/app.js?v=222222222222"></script>\n'
+      + `${영상('5xb_pMP0QRo')}${영상('5xb_pMP0QRo')}\n<p>x</p>\n`,
+    'prompts/style.css': 'p{}\n', 'prompts/app.js': '1\n',
+  });
+  const 빌드 = 공.로컬('빌드', {
+    'prompts/index.html': '<link href="style.css?v=aaaaaaaaaaaa"><script src="https://synk.im/prompts/app.js?v=bbbbbbbbbbbb"></script>\n'
+      + `${영상('5xb_pMP0QRo')}${영상('Ab-cd_EF012')}${영상('Zz9_yy8-XX7', '')}\n<p>y</p>\n`,
+  });
+  const 후보 = 공.후보폴더();
+  const r = await 도구.올리기(공.옵션({ 원본: 빌드, 항목: ['prompts/index.html'], 후보폴더: 후보 }));
+  assert.equal(r.결과, '미리 보기', JSON.stringify(r.걸림));
+  assert.equal(후보읽기(후보, 'prompts/index.html').toString('utf8'),
+    '<link href="style.css?v=111111111111"><script src="https://synk.im/prompts/app.js?v=222222222222"></script>\n'
+      + `${영상('5xb_pMP0QRo')}${영상('Ab-cd_EF012')}${영상('Zz9_yy8-XX7', '')}\n<p>y</p>\n`,
+    '상대 경로·synk.im 주소 토큰은 공개본 값, 영상 id는 빌드 그대로');
+  assert.match(r.항목.find((x) => x.경로 === 'prompts/index.html').방법, /\?v= 2개 공개본 값으로/);
+
+  // 영상 id만 바뀐 빌드는 토큰만 다른 것이 아니다 — 고친 링크를 올린다
+  const 빌드2 = 공.로컬('빌드2', {
+    'prompts/index.html': '<link href="style.css?v=111111111111"><script src="https://synk.im/prompts/app.js?v=222222222222"></script>\n'
+      + `${영상('5xb_pMP0QRo')}${영상('Ab-cd_EF012')}\n<p>x</p>\n`,
+  });
+  const 후보2 = 공.후보폴더();
+  const r2 = await 도구.올리기(공.옵션({ 원본: 빌드2, 항목: ['prompts/index.html'], 후보폴더: 후보2 }));
+  assert.deepEqual(종류들(r2), { 'prompts/index.html': '바꿈' });
+  assert.match(후보읽기(후보2, 'prompts/index.html').toString('utf8'), /watch\?v=Ab-cd_EF012/);
+});
+
 // ── 검사 ────────────────────────────────────────────────────────────────────
 
 test('도구 이름: 후보의 check.mjs 규칙·MP3 태그·그림 제작 표시·더한 줄의 AI 이름을 막는다(--허용은 AI 이름만)', async (t) => {
