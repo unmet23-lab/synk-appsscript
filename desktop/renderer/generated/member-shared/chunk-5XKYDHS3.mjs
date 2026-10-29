@@ -5,7 +5,7 @@ import {
 } from "./chunk-YOJMHZM4.mjs";
 
 // atlas/member-understanding-contract.js
-var cu = pe((Ud, pr) => {
+var pu = pe((Fd, dr) => {
   "use strict";
   var an = /* @__PURE__ */ g((n) => Object.freeze(n.map(([e, i]) => Object.freeze({ id: e, label: i }))), "choices"), zn = Object.freeze({
     topics: Object.freeze({ title: "직접 고른 관심 주제", multiple: !0, max: 5, choices: an([
@@ -55,45 +55,45 @@ var cu = pe((Ud, pr) => {
       ["standard", "보통 길이"],
       ["detailed", "자세히"]
     ]) })
-  }), ru = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), cr = /* @__PURE__ */ g((n, e) => {
+  }), su = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), lr = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "dataField"), au = /* @__PURE__ */ g((n, e) => ru(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => cr(n, i)), "exact"), lr = /* @__PURE__ */ g((n) => typeof n == "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(n) && !["constructor", "prototype", "__proto__"].includes(n), "token"), Ne = /* @__PURE__ */ g(() => {
+  }, "dataField"), uu = /* @__PURE__ */ g((n, e) => su(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => lr(n, i)), "exact"), pr = /* @__PURE__ */ g((n) => typeof n == "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(n) && !["constructor", "prototype", "__proto__"].includes(n), "token"), Ne = /* @__PURE__ */ g(() => {
     throw new TypeError("Member understanding: invalid structured contract");
-  }, "fail"), ur = Object.freeze(["version", "kind", "source", "generation", "reference", "value", "from", "to", "count", "total", "activeDays", "lastAt"]);
+  }, "fail"), cr = Object.freeze(["version", "kind", "source", "generation", "reference", "value", "from", "to", "count", "total", "activeDays", "lastAt"]);
   function jn(n) {
     return (typeof n != "string" || !Number.isFinite(Date.parse(n)) || new Date(n).toISOString() !== n) && Ne(), Date.parse(n);
   }
   g(jn, "instant");
   function Fi(n) {
-    return typeof n != "string" && Ne(), n.startsWith("learning-topic:") && lr(n.slice(15)) ? zn["learning-topic"] : n !== "learning-topic" && Object.hasOwn(zn, n) ? zn[n] : Ne();
+    return typeof n != "string" && Ne(), n.startsWith("learning-topic:") && pr(n.slice(15)) ? zn["learning-topic"] : n !== "learning-topic" && Object.hasOwn(zn, n) ? zn[n] : Ne();
   }
   g(Fi, "understandingFacet");
-  function su(n, e) {
+  function cu(n, e) {
     let i = Fi(n);
-    return (!Array.isArray(e) || !e.length || e.length > i.max || Reflect.ownKeys(e).length !== e.length + 1 || !Array.from({ length: e.length }, (t, o) => o).every((t) => cr(e, String(t))) || new Set(e).size !== e.length || e.some((t) => !i.choices.some((o) => o.id === t))) && Ne(), i.choices.filter((t) => e.includes(t.id)).map((t) => t.id);
+    return (!Array.isArray(e) || !e.length || e.length > i.max || Reflect.ownKeys(e).length !== e.length + 1 || !Array.from({ length: e.length }, (t, o) => o).every((t) => lr(e, String(t))) || new Set(e).size !== e.length || e.some((t) => !i.choices.some((o) => o.id === t))) && Ne(), i.choices.filter((t) => e.includes(t.id)).map((t) => t.id);
   }
-  g(su, "validateUnderstandingValues");
-  function uu(n, { facetId: e } = {}) {
-    Fi(e), (!au(n, ur) || n.version !== 1 || !["learning-topic", "usage-repeat", "practice-mode", "practice-response"].includes(n.kind)) && Ne();
+  g(cu, "validateUnderstandingValues");
+  function lu(n, { facetId: e } = {}) {
+    Fi(e), (!uu(n, cr) || n.version !== 1 || !["learning-topic", "usage-repeat", "practice-mode", "practice-response"].includes(n.kind)) && Ne();
     let i = n.kind === "learning-topic" ? `learning-topic:${n.reference}` : n.kind;
-    (e !== i || n.source !== (n.kind === "usage-repeat" ? "usage" : "learning") || n.value !== (n.kind === "learning-topic" ? "interested" : "fits") || !lr(n.reference)) && Ne(), n.source === "usage" ? jn(n.generation) > jn(n.lastAt) && Ne() : (!Number.isSafeInteger(n.generation) || n.generation < 0) && Ne(), n.kind !== "learning-topic" && (zn[n.kind].choices.map((u) => u.id).filter((u) => !["mixed", "no-fixed-app", "no-fixed-mode", "no-fixed-format"].includes(u)).includes(n.reference) || Ne());
+    (e !== i || n.source !== (n.kind === "usage-repeat" ? "usage" : "learning") || n.value !== (n.kind === "learning-topic" ? "interested" : "fits") || !pr(n.reference)) && Ne(), n.source === "usage" ? jn(n.generation) > jn(n.lastAt) && Ne() : (!Number.isSafeInteger(n.generation) || n.generation < 0) && Ne(), n.kind !== "learning-topic" && (zn[n.kind].choices.map((u) => u.id).filter((u) => !["mixed", "no-fixed-app", "no-fixed-mode", "no-fixed-format"].includes(u)).includes(n.reference) || Ne());
     let t = jn(n.from), o = jn(n.to), s = jn(n.lastAt);
-    return (o - t !== 30 * 864e5 || s <= t || s > o || !["count", "total", "activeDays"].every((a) => Number.isSafeInteger(n[a]) && n[a] >= 1 && n[a] <= 1e6) || n.count > n.total || n.activeDays > n.count || n.activeDays > 31) && Ne(), Object.fromEntries(ur.map((a) => [a, n[a]]));
+    return (o - t !== 30 * 864e5 || s <= t || s > o || !["count", "total", "activeDays"].every((a) => Number.isSafeInteger(n[a]) && n[a] >= 1 && n[a] <= 1e6) || n.count > n.total || n.activeDays > n.count || n.activeDays > 31) && Ne(), Object.fromEntries(cr.map((a) => [a, n[a]]));
   }
-  g(uu, "validateUnderstandingClaim");
-  pr.exports = { VERSION: 1, MEMBER_UNDERSTANDING_FACETS: zn, understandingFacet: Fi, validateUnderstandingClaim: uu, validateUnderstandingValues: su };
+  g(lu, "validateUnderstandingClaim");
+  dr.exports = { VERSION: 1, MEMBER_UNDERSTANDING_FACETS: zn, understandingFacet: Fi, validateUnderstandingClaim: lu, validateUnderstandingValues: cu };
 });
 
 // experiences/synk-account/src/member-statement-v1.cjs
-var _e = pe((Wd, vr) => {
+var _e = pe((Jd, br) => {
   "use strict";
-  var et = "member-statement-ko-1", Ln = Object.freeze({ text: 500, statements: 20, meanings: 8, unresolved: 12 }), lu = Object.freeze({
+  var et = "member-statement-ko-1", Ln = Object.freeze({ text: 500, statements: 20, meanings: 8, unresolved: 12 }), du = Object.freeze({
     support: Object.freeze(["independent", "example", "step", "choose", "together"]),
     explanation: Object.freeze(["brief", "standard", "detailed"]),
     "practice-mode": Object.freeze(["listening", "reading", "mixed"]),
     topic: Object.freeze(["travel-planning", "travel-food", "travel-stay", "career-interview", "career-planning", "content-video", "content-design", "ai-tools", "work-collaboration"])
-  }), fr = Object.freeze({
+  }), mr = Object.freeze({
     independent: "혼자 시도하기",
     example: "예시를 먼저 보기",
     step: "단계별 도움",
@@ -114,7 +114,7 @@ var _e = pe((Wd, vr) => {
     "content-design": "디자인 제작",
     "ai-tools": "AI 도구 활용",
     "work-collaboration": "업무 협업"
-  }), mr = Object.freeze({ "first-try": "처음 시도할 때", familiar: "익숙한 내용일 때", busy: "바쁠 때" }), dr = Object.freeze({
+  }), gr = Object.freeze({ "first-try": "처음 시도할 때", familiar: "익숙한 내용일 때", busy: "바쁠 때" }), fr = Object.freeze({
     other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
     past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
     hypothetical: "가정한 내용을 현재 선호로 사용하지 않아요.",
@@ -124,13 +124,13 @@ var _e = pe((Wd, vr) => {
     unsupported: "이 문장의 뜻을 현재 지원하는 항목으로 정확히 옮기지 못했어요.",
     limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요.",
     duplicate: "같은 뜻이 앞의 제안에 이미 포함되어 있어요."
-  }), pu = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), gr = /* @__PURE__ */ g((n, e) => {
+  }), fu = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), $r = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), Ki = /* @__PURE__ */ g((n, e) => pu(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => gr(n, i)), "exact"), du = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => gr(n, String(t))).every(Boolean), "list"), Te = /* @__PURE__ */ g(() => {
+  }, "data"), Ki = /* @__PURE__ */ g((n, e) => fu(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => $r(n, i)), "exact"), mu = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => $r(n, String(t))).every(Boolean), "list"), Te = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), $r = /* @__PURE__ */ g((n) => typeof n == "string" && n.trim() && [...n].length <= Ln.text && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(n), "literal"), Ji = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : Te(), "instant"), fu = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey");
-  function mu(n) {
+  }, "fail"), hr = /* @__PURE__ */ g((n) => typeof n == "string" && n.trim() && [...n].length <= Ln.text && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(n), "literal"), Ji = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : Te(), "instant"), gu = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey");
+  function $u(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에)\s+|(?:지만|는데)(?=\s)|[.!?;\n]+/g, t = 0, o;
     function s(a) {
       for (; t < a && /\s/u.test(n[t]); ) t++;
@@ -141,8 +141,8 @@ var _e = pe((Wd, vr) => {
       s(o.index + (/^(?:지만|는데)$/.test(o[0]) ? o[0].length : 0)), t = o.index + o[0].length;
     return s(n.length), e;
   }
-  g(mu, "clauses");
-  var gu = [
+  g($u, "clauses");
+  var hu = [
     ["support", "independent", /^(?:혼자(?:서)?(?:하는|해보는|시도하는|시도해보는)?(?:게|것(?:이|은|을)?|걸|건|하기|하길)?)/],
     ["support", "together", /^(?:같이|함께)(?:하는|해보는|시도하는)?(?:게|것(?:이|은|을)?|걸|건|하기|하길)?/],
     ["support", "example", /^(?:예시|예제)(?:를|가|는|부터|먼저)?(?:보는(?:게|것)?|보여주는(?:게|것)?)?/],
@@ -163,8 +163,8 @@ var _e = pe((Wd, vr) => {
     ["topic", "content-design", /^(?:디자인제작|디자인)/],
     ["topic", "ai-tools", /^(?:AI도구(?:활용)?|인공지능도구(?:활용)?)/i],
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/]
-  ], $u = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|(?:하고|받고|보고)싶(?:어(?:요)?|다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?|보고싶(?:어(?:요)?|다))$/, hu = /^(?:싫(?:어(?:요)?|다|습니다)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/;
-  function xu(n) {
+  ], xu = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|(?:하고|받고|보고)싶(?:어(?:요)?|다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?|보고싶(?:어(?:요)?|다))$/, vu = /^(?:싫(?:어(?:요)?|다|습니다)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/;
+  function bu(n) {
     let e = n.quote.replace(/\s/gu, "").replace(/(?:지만|는데)$/, "");
     if (/["“”‘’]/u.test(e) || /(?:라고|다고)(?:했|말|들)/u.test(e)) return { reason: "quotation" };
     if (/^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(e)) return { reason: "other" };
@@ -177,28 +177,28 @@ var _e = pe((Wd, vr) => {
       break;
     }
     if (/(?:만약|라면|다면|으면|한다면|때|땐|바쁠|경우|상황|동안|오늘만|내일만|이번만|퇴근후|출근전)/u.test(e) && !/^필요할때/u.test(e)) return { reason: /(?:만약|라면|다면|으면)/u.test(e) ? "hypothetical" : "condition" };
-    for (let [o, s, a] of gu) {
+    for (let [o, s, a] of hu) {
       let u = a.exec(e);
       if (!u) continue;
       let c = e.slice(u[0].length).replace(/^(?:을|를|이|가|은|는|에|엔)/u, "");
       /(?:지만|는데)$/u.test(n.quote) && (c = c.replace(/^(필요|선호|원)하$/u, "$1해"));
-      let l = hu.test(c) ? "avoid" : $u.test(c) ? "prefer" : null;
+      let l = vu.test(c) ? "avoid" : xu.test(c) ? "prefer" : null;
       if (l) return { field: o, value: s, polarity: l, condition: i };
     }
     return { reason: i ? "condition" : "unsupported" };
   }
-  g(xu, "recognize");
-  function hr(n) {
-    $r(n) || Te();
-    let e = [], i = [], t = /* @__PURE__ */ new Set(), o = mu(n), s = null, a = !1, u = !1;
+  g(bu, "recognize");
+  function xr(n) {
+    hr(n) || Te();
+    let e = [], i = [], t = /* @__PURE__ */ new Set(), o = $u(n), s = null, a = !1, u = !1;
     function c(l, p) {
-      i.length === Ln.unresolved - 1 && l !== o.at(-1) ? (i.push({ start: l.start, end: n.length, quote: n.slice(l.start), reason: "limit", reasonLabel: dr.limit }), u = !0) : i.push({ ...l, reason: p, reasonLabel: dr[p] });
+      i.length === Ln.unresolved - 1 && l !== o.at(-1) ? (i.push({ start: l.start, end: n.length, quote: n.slice(l.start), reason: "limit", reasonLabel: fr.limit }), u = !0) : i.push({ ...l, reason: p, reasonLabel: fr[p] });
     }
     g(c, "unresolvedPiece");
     for (let l = 0; l < o.length && !u; l++) {
       let p = o[l], d = p.quote.replace(/\s/gu, "");
       s === "other" && /^(?:나는|난|저는|제가|내가)/u.test(d) && (s = null), s === "past" && /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재)/u.test(d) && (s = null), s === "condition" && /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(d) && (s = null);
-      let r = s ? { reason: s } : xu(p);
+      let r = s ? { reason: s } : bu(p);
       if (a && !r.reason && !r.condition && !/^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(d)) {
         c(p, "condition"), a = /(?:지만|는데)$/u.test(d);
         continue;
@@ -211,7 +211,7 @@ var _e = pe((Wd, vr) => {
         c(p, "limit");
         continue;
       }
-      let $ = fu(r);
+      let $ = gu(r);
       if (t.has($)) {
         c(p, "duplicate");
         continue;
@@ -220,20 +220,20 @@ var _e = pe((Wd, vr) => {
     }
     return { parserVersion: et, meanings: e, unresolved: i };
   }
-  g(hr, "parseMemberStatement");
-  function xr(n, e) {
+  g(xr, "parseMemberStatement");
+  function vr(n, e) {
     return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && n.polarity === "prefer" && e.polarity === "prefer";
   }
-  g(xr, "meaningsConflict");
-  function vu(n) {
-    return `${n.condition ? mr[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${fr[n.value]}`;
+  g(vr, "meaningsConflict");
+  function yu(n) {
+    return `${n.condition ? gr[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${mr[n.value]}`;
   }
-  g(vu, "meaningLabel");
-  function bu(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    (!Ki(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings"]) || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || n.parserVersion !== et || !$r(n.text) || !du(n.meanings, Ln.meanings) || !n.meanings.length) && Te();
+  g(yu, "meaningLabel");
+  function ku(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    (!Ki(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings"]) || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || n.parserVersion !== et || !hr(n.text) || !mu(n.meanings, Ln.meanings) || !n.meanings.length) && Te();
     let t = Ji(n.at), o = Ji(n.confirmedAt), s = i ? typeof e == "string" ? Ji(e) : Number.isSafeInteger(e) ? e : Te() : null;
     (o < t || i && o > s) && Te();
-    let a = hr(n.text), u = /* @__PURE__ */ new Set(), c = n.meanings.map((l) => {
+    let a = xr(n.text), u = /* @__PURE__ */ new Set(), c = n.meanings.map((l) => {
       (!Ki(l, ["id", "field", "value", "polarity", "condition", "evidence"]) || !Ki(l.evidence, ["start", "end", "quote"]) || u.has(l.id)) && Te(), u.add(l.id);
       let p = a.meanings.find((d) => d.id === l.id);
       p || Te();
@@ -241,27 +241,27 @@ var _e = pe((Wd, vr) => {
       for (let d of ["start", "end", "quote"]) l.evidence[d] !== p.evidence[d] && Te();
       return { id: p.id, field: p.field, value: p.value, polarity: p.polarity, condition: p.condition, evidence: { ...p.evidence } };
     }).sort((l, p) => Number(l.id.slice(1)) - Number(p.id.slice(1)));
-    return c.some((l, p) => c.slice(p + 1).some((d) => xr(l, d))) && Te(), { id: n.id.toLowerCase(), parserVersion: et, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: c };
+    return c.some((l, p) => c.slice(p + 1).some((d) => vr(l, d))) && Te(), { id: n.id.toLowerCase(), parserVersion: et, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: c };
   }
-  g(bu, "validateMemberStatement");
-  vr.exports = {
+  g(ku, "validateMemberStatement");
+  br.exports = {
     PARSER_VERSION: et,
     MEMBER_STATEMENT_LIMITS: Ln,
-    MEMBER_STATEMENT_VALUES: lu,
-    MEMBER_STATEMENT_LABELS: fr,
-    MEMBER_STATEMENT_CONDITIONS: mr,
-    parseMemberStatement: hr,
-    validateMemberStatement: bu,
-    meaningsConflict: xr,
-    meaningLabel: vu
+    MEMBER_STATEMENT_VALUES: du,
+    MEMBER_STATEMENT_LABELS: mr,
+    MEMBER_STATEMENT_CONDITIONS: gr,
+    parseMemberStatement: xr,
+    validateMemberStatement: ku,
+    meaningsConflict: vr,
+    meaningLabel: yu
   };
 });
 
 // atlas/ask.js
-var qe = pe((br, nt) => {
+var qe = pe((yr, nt) => {
   (function(n, e) {
     typeof nt == "object" && nt.exports ? nt.exports = e() : n.SynkAsk = e();
-  })(typeof globalThis < "u" ? globalThis : br, function() {
+  })(typeof globalThis < "u" ? globalThis : yr, function() {
     "use strict";
     let n = "ask-1.2", i = ["setting", "confirm", "choice", "refresh", "follow_up"], o = /* @__PURE__ */ g((m) => typeof m == "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(m), "id"), s = /* @__PURE__ */ g((m) => JSON.stringify(m, (x, v) => v && typeof v == "object" && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map((y) => [y, v[y]])) : v), "canonical"), a = /* @__PURE__ */ g((m) => {
       let x = Date.parse(m);
@@ -310,50 +310,50 @@ var qe = pe((br, nt) => {
       if (p(m), typeof x != "function" || !v || typeof v != "object" || !Array.isArray(y) || !O || typeof O != "object") throw new TypeError("Ask: invalid input");
       if (E !== void 0 && typeof E != "function") throw new TypeError("Ask: evaluate must be a function");
       if (!u(A) || A < 0 || A > 36500) throw new TypeError("Ask: invalid question cooldown");
-      let S = T === null ? null : a(T), I = typeof E == "function";
-      if (!I && m.some((w) => c(w, "cost") || c(w, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
+      let S = T === null ? null : a(T), R = typeof E == "function";
+      if (!R && m.some((w) => c(w, "cost") || c(w, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
       let N = x({ ...v }), M = [], _ = /* @__PURE__ */ new Map();
       for (let w of m) {
-        let L = w.about ?? w.id;
-        if (Object.hasOwn(v, L) && (w.kind !== "refresh" || S === null)) continue;
+        let z = w.about ?? w.id;
+        if (Object.hasOwn(v, z) && (w.kind !== "refresh" || S === null)) continue;
         if (y.includes(w.id)) {
-          M.push({ id: w.id, kind: w.kind ?? "setting", about: L, impact: 0, skippable: !0, reason: "denied" });
+          M.push({ id: w.id, kind: w.kind ?? "setting", about: z, impact: 0, skippable: !0, reason: "denied" });
           continue;
         }
         if (Object.hasOwn(O, w.id) && S !== null && S - a(O[w.id]) < A * 864e5) {
-          M.push({ id: w.id, kind: w.kind ?? "setting", about: L, impact: 0, skippable: !0, reason: "asked-recently" });
+          M.push({ id: w.id, kind: w.kind ?? "setting", about: z, impact: 0, skippable: !0, reason: "asked-recently" });
           continue;
         }
-        let P = l(w), q = /* @__PURE__ */ Object.create(null), j = 0, G = 0;
+        let P = l(w), q = /* @__PURE__ */ Object.create(null), j = 0, X = 0;
         w.options.forEach((he, Vi) => {
-          let rr = { ...v, [L]: c(he, "value") ? he.value : he.id }, Wi = x({ ...rr });
-          if (q[he.id] = Wi, j += P[Vi] * d(N, Wi), I && P[Vi] > 0) {
-            let ar = { answers: rr, question: w, option: he }, sr = r(E, { ...ar, decision: Wi }) - r(E, { ...ar, decision: N });
-            if (!u(sr)) throw new TypeError("Ask: nonfinite decision gain");
-            G += P[Vi] * sr;
+          let ar = { ...v, [z]: c(he, "value") ? he.value : he.id }, Wi = x({ ...ar });
+          if (q[he.id] = Wi, j += P[Vi] * d(N, Wi), R && P[Vi] > 0) {
+            let sr = { answers: ar, question: w, option: he }, ur = r(E, { ...sr, decision: Wi }) - r(E, { ...sr, decision: N });
+            if (!u(ur)) throw new TypeError("Ask: nonfinite decision gain");
+            X += P[Vi] * ur;
           }
         });
-        let X = new Set(Object.values(q).map(s)).size, z = w.cost ?? 0, le = w.responseProbability ?? 1, rn = le * G - z;
-        if (I && (!u(G) || !u(rn))) throw new TypeError("Ask: nonfinite expected decision value");
-        let Qn = j === 0 || I && rn <= 0;
+        let Z = new Set(Object.values(q).map(s)).size, L = w.cost ?? 0, Y = w.responseProbability ?? 1, rn = Y * X - L;
+        if (R && (!u(X) || !u(rn))) throw new TypeError("Ask: nonfinite expected decision value");
+        let Qn = j === 0 || R && rn <= 0;
         _.set(w.id, j), M.push({
           id: w.id,
           kind: w.kind ?? "setting",
-          about: L,
+          about: z,
           impact: Math.round(j * 1e3) / 1e3,
-          distinct: X,
+          distinct: Z,
           skippable: Qn,
-          reason: j === 0 ? "no-change" : I ? rn > 0 ? "positive-decision-value" : "no-positive-decision-value" : "changes-decision",
+          reason: j === 0 ? "no-change" : R ? rn > 0 ? "positive-decision-value" : "no-positive-decision-value" : "changes-decision",
           outcomes: q,
-          ...I ? { basis: "declared-decision-value", expectedGain: G, responseProbability: le, cost: z, value: rn } : {}
+          ...R ? { basis: "declared-decision-value", expectedGain: X, responseProbability: Y, cost: L, value: rn } : {}
         });
       }
-      let b = /* @__PURE__ */ g((w) => I ? w.value ?? 0 : _.get(w.id) ?? 0, "score"), k = M.map((w, L) => ({ ...w, order: L })).sort((w, L) => b(L) - b(w) || w.order - L.order), R = [];
+      let b = /* @__PURE__ */ g((w) => R ? w.value ?? 0 : _.get(w.id) ?? 0, "score"), k = M.map((w, z) => ({ ...w, order: z })).sort((w, z) => b(z) - b(w) || w.order - z.order), I = [];
       for (let w of k) {
-        let L = R.at(-1), P = L && b(L[0]), q = b(w);
-        !L || Math.abs(P - q) > Number.EPSILON * 64 * Math.max(Math.abs(P), Math.abs(q)) ? R.push([w]) : L.push(w);
+        let z = I.at(-1), P = z && b(z[0]), q = b(w);
+        !z || Math.abs(P - q) > Number.EPSILON * 64 * Math.max(Math.abs(P), Math.abs(q)) ? I.push([w]) : z.push(w);
       }
-      return R.flatMap((w) => w.sort((L, P) => L.order - P.order)).map(({ order: w, ...L }) => L);
+      return I.flatMap((w) => w.sort((z, P) => z.order - P.order)).map(({ order: w, ...z }) => z);
     }
     g($, "rank");
     function h({ budget: m = 1, usedToday: x = 0, ...v } = {}) {
@@ -375,20 +375,20 @@ var qe = pe((br, nt) => {
     function f({ engine: m, events: x = [], scope: v, at: y, experienceId: O, candidates: T, levers: A = [], questions: E, ...S } = {}) {
       if (!m || typeof m.decide != "function") throw new TypeError("Ask: Core engine required");
       p(E);
-      let I = new Map(E.map((M) => [M.about ?? M.id, M]));
+      let R = new Map(E.map((M) => [M.about ?? M.id, M]));
       return h({ ...S, questions: E, decide: /* @__PURE__ */ g((M) => {
         let _ = [];
-        for (let [L, P] of Object.entries(M)) {
-          let q = I.get(L);
+        for (let [z, P] of Object.entries(M)) {
+          let q = R.get(z);
           if (!q) continue;
           let j = { schema: 1, id: `ask-virtual-${q.id}`, scope: v, at: y, recordedAt: y };
-          q.kind === "confirm" ? _.push({ ...j, type: "estimate.responded", line: q.line, value: P }) : _.push({ ...j, type: "context.set", field: q.field ?? L, value: P, until: null });
+          q.kind === "confirm" ? _.push({ ...j, type: "estimate.responded", line: q.line, value: P }) : _.push({ ...j, type: "context.set", field: q.field ?? z, value: P, until: null });
         }
         let b = m.decide({ events: [...x, ..._], scope: v, at: y, experienceId: O, candidates: T, levers: A });
         if (b.status !== "ready") return { content: "unavailable", shape: null };
-        let k = Object.fromEntries(A.map((L) => [L.id, L.class])), R = [b.selected.id], w = [];
-        for (let [L, P] of Object.entries(b.bundle)) L !== "mode" && (k[L] === "content" ? R : w).push(`${L}=${P.option}`);
-        return { content: R, shape: w };
+        let k = Object.fromEntries(A.map((z) => [z.id, z.class])), I = [b.selected.id], w = [];
+        for (let [z, P] of Object.entries(b.bundle)) z !== "mode" && (k[z] === "content" ? I : w).push(`${z}=${P.option}`);
+        return { content: I, shape: w };
       }, "decide") });
     }
     return g(f, "fromAtlas"), Object.freeze({ VERSION: n, MAX_OPTIONS: 64, KINDS: i, rank: $, choose: h, fromAtlas: f });
@@ -396,21 +396,21 @@ var qe = pe((br, nt) => {
 });
 
 // experiences/synk-account/src/member-statement-v2.cjs
-var Be = pe((Jd, Rr) => {
+var Be = pe((Xd, Nr) => {
   "use strict";
-  var W = _e(), yu = qe(), hn = "member-statement-ko-2", sn = Object.freeze({ ...W.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), it = W.MEMBER_STATEMENT_VALUES, rt = W.MEMBER_STATEMENT_LABELS, Er = Object.freeze({
-    ...W.MEMBER_STATEMENT_CONDITIONS,
+  var F = _e(), wu = qe(), hn = "member-statement-ko-2", sn = Object.freeze({ ...F.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), it = F.MEMBER_STATEMENT_VALUES, rt = F.MEMBER_STATEMENT_LABELS, Sr = Object.freeze({
+    ...F.MEMBER_STATEMENT_CONDITIONS,
     "after-example": "예시를 본 다음",
     "first-try-after-example": "처음 시도하며 예시를 본 다음",
     "familiar-after-example": "익숙한 내용에서 예시를 본 다음",
     "busy-after-example": "바쁠 때 예시를 본 다음"
-  }), Sr = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Or = /* @__PURE__ */ g((n, e) => {
+  }), Or = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Ar = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), ot = /* @__PURE__ */ g((n, e) => Sr(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Or(n, i)), "exact"), Ar = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Or(n, String(t))).every(Boolean), "list"), ee = /* @__PURE__ */ g(() => {
+  }, "data"), ot = /* @__PURE__ */ g((n, e) => Or(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Ar(n, i)), "exact"), Mr = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Ar(n, String(t))).every(Boolean), "list"), te = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), Hi = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ee(), "instant"), Gi = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), Yi = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), ku = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function Mr(n) {
+  }, "fail"), Hi = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : te(), "instant"), Gi = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), Yi = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Eu = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Rr(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -423,7 +423,7 @@ var Be = pe((Jd, Rr) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + ku[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Eu[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -432,8 +432,8 @@ var Be = pe((Jd, Rr) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(Mr, "sourceKey");
-  var wu = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Eu = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Su = [
+  g(Rr, "sourceKey");
+  var Su = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Ou = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Au = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -456,16 +456,16 @@ var Be = pe((Jd, Rr) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function tt(n, e) {
-    for (let [i, t, o] of Su) {
+    for (let [i, t, o] of Au) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Eu.test(a) ? "avoid" : wu.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Ou.test(a) ? "avoid" : Su.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
   }
   g(tt, "phrase");
-  function Ou(n) {
+  function Mu(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
     if (/["“”‘’]/u.test(e) || /(?:라고|다고)(?:했|말|들)/u.test(e) || /^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(e) || /(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(e)) return null;
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
@@ -494,10 +494,10 @@ var Be = pe((Jd, Rr) => {
     }
     return null;
   }
-  g(Ou, "expanded");
-  var yr = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], kr = { support: "도움받는 방식", explanation: "설명 길이", "practice-mode": "연습 방식", topic: "관심 분야" };
-  function Au(n) {
-    let e = W.parseMemberStatement(n), i = [...e.meanings.map((o) => ({ evidence: o.evidence, meanings: [o] })), ...e.unresolved.map((o) => ({ evidence: { start: o.start, end: o.end, quote: o.quote }, unresolved: o }))].sort((o, s) => o.evidence.start - s.evidence.start), t = !1;
+  g(Mu, "expanded");
+  var kr = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], wr = { support: "도움받는 방식", explanation: "설명 길이", "practice-mode": "연습 방식", topic: "관심 분야" };
+  function Ru(n) {
+    let e = F.parseMemberStatement(n), i = [...e.meanings.map((o) => ({ evidence: o.evidence, meanings: [o] })), ...e.unresolved.map((o) => ({ evidence: { start: o.start, end: o.end, quote: o.quote }, unresolved: o }))].sort((o, s) => o.evidence.start - s.evidence.start), t = !1;
     for (let o of i) {
       if (o.unresolved && ["other", "past", "hypothetical", "quotation", "duplicate"].includes(o.unresolved.reason)) continue;
       if (/^[\s.!?]*/u.exec(n.slice(o.evidence.end))[0].includes("?")) {
@@ -511,12 +511,12 @@ var Be = pe((Jd, Rr) => {
         continue;
       }
       if (t || ["other", "past", "hypothetical", "quotation", "duplicate"].includes(a.reason)) continue;
-      let u = Ou(a.quote);
+      let u = Mu(a.quote);
       u && !(a.reason === "condition" && u.meanings.some((c) => !c.condition)) ? u.uncertain || u.typo || a.reason === "uncertain" ? o.candidate = { ...u, uncertain: u.uncertain || a.reason === "uncertain" } : o.meanings = u.meanings : o.generic = !0;
     }
     return i;
   }
-  g(Au, "analyze");
+  g(Ru, "analyze");
   function Xi(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -524,7 +524,7 @@ var Be = pe((Jd, Rr) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...yr].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...kr].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: Yi(r.evidence) })), "add");
@@ -541,11 +541,11 @@ var Be = pe((Jd, Rr) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(kr).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(it, f) && u(d, "value", `${kr[f]}에서 어떤 내용을 확인할까요?`, it[f].map((m) => ({ id: m, label: rt[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(wr).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(it, f) && u(d, "value", `${wr[f]}에서 어떤 내용을 확인할까요?`, it[f].map((m) => ({ id: m, label: rt[m] })), (m) => {
           it[f].includes(m) && u(d, "polarity", `‘${rt[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
-            ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(W.MEMBER_STATEMENT_CONDITIONS).map(([v, y]) => ({ id: v, label: y }))], (v) => {
-              (v === "general" || Object.hasOwn(W.MEMBER_STATEMENT_CONDITIONS, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
+            ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(F.MEMBER_STATEMENT_CONDITIONS).map(([v, y]) => ({ id: v, label: y }))], (v) => {
+              (v === "general" || Object.hasOwn(F.MEMBER_STATEMENT_CONDITIONS, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
             });
           });
         });
@@ -565,68 +565,68 @@ var Be = pe((Jd, Rr) => {
     let p = /* @__PURE__ */ new Set();
     for (let d of c) {
       if (p.has(d.id)) continue;
-      let r = c.filter((f) => f.id === d.id || W.meaningsConflict(d, f));
+      let r = c.filter((f) => f.id === d.id || F.meaningsConflict(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${Mr(r.map((f) => f.id + Gi(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: Zi(f), value: f.id })), ...yr.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${Rr(r.map((f) => f.id + Gi(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: Zi(f), value: f.id })), ...kr.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, sn.unresolved), questions: a };
   }
   g(Xi, "stateFor");
-  function wr(n, e, i, t, o) {
-    let s = yu.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function Er(n, e, i, t, o) {
+    let s = wu.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = Xi(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => Gi(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(wr, "choose");
+  g(Er, "choose");
   function Ir(n, { clarifications: e = [], parserVersion: i = hn } = {}) {
-    if (i === W.PARSER_VERSION)
-      return e.length && ee(), W.parseMemberStatement(n);
-    i !== hn && ee(), (!Ar(e, sn.clarifications) || e.some((l) => !ot(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ee();
-    let t = Au(n), o = Mr(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Xi(n, t, s, o), c = wr(u, n, t, s, o);
+    if (i === F.PARSER_VERSION)
+      return e.length && te(), F.parseMemberStatement(n);
+    i !== hn && te(), (!Mr(e, sn.clarifications) || e.some((l) => !ot(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && te();
+    let t = Ru(n), o = Rr(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Xi(n, t, s, o), c = Er(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ee();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && te();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || ee(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Xi(n, t, s, o), c = wr(u, n, t, s, o);
+      p || te(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Xi(n, t, s, o), c = Er(u, n, t, s, o);
     }
     if (e.length === sn.clarifications && c) {
-      let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && W.meaningsConflict(p, d)));
+      let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && F.meaningsConflict(p, d)));
       u.meanings = u.meanings.filter((p) => !l.includes(p)), u.unresolved = [...u.unresolved, ...l.map((p) => ({ ...p.evidence }))].slice(0, sn.unresolved).map((p) => ({ ...p, reason: "limit", reasonLabel: "추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요." })), c = null;
     }
     return { parserVersion: hn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: Yi(e), clarificationAnswers: a };
   }
   g(Ir, "parseMemberStatement");
   function Zi(n) {
-    return `${n.condition ? Er[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${rt[n.value]}`;
+    return `${n.condition ? Sr[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${rt[n.value]}`;
   }
   g(Zi, "meaningLabel");
-  function Mu(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = Sr(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
-    if (t === W.PARSER_VERSION) return W.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!ot(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== hn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Ar(n.meanings, sn.meanings) || !n.meanings.length) && ee();
-    let o = Hi(n.at), s = Hi(n.confirmedAt), a = i ? typeof e == "string" ? Hi(e) : Number.isSafeInteger(e) ? e : ee() : null;
-    (s < o || i && s > a) && ee();
+  function Iu(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = Or(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+    if (t === F.PARSER_VERSION) return F.validateMemberStatement(n, { now: e, enforceTime: i });
+    (!ot(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== hn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Mr(n.meanings, sn.meanings) || !n.meanings.length) && te();
+    let o = Hi(n.at), s = Hi(n.confirmedAt), a = i ? typeof e == "string" ? Hi(e) : Number.isSafeInteger(e) ? e : te() : null;
+    (s < o || i && s > a) && te();
     let u = Ir(n.text, { clarifications: n.clarifications });
-    u.question && ee();
+    u.question && te();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!ot(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !ot(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ee(), c.add(p.id);
+      (!ot(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !ot(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && te(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ee(), Yi(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && te(), Yi(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => W.meaningsConflict(p, r))) && ee(), { id: n.id.toLowerCase(), parserVersion: hn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => F.meaningsConflict(p, r))) && te(), { id: n.id.toLowerCase(), parserVersion: hn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(Mu, "validateMemberStatement");
-  Rr.exports = { PARSER_VERSION: hn, MEMBER_STATEMENT_LIMITS: sn, MEMBER_STATEMENT_VALUES: it, MEMBER_STATEMENT_LABELS: rt, MEMBER_STATEMENT_CONDITIONS: Er, parseMemberStatement: Ir, validateMemberStatement: Mu, meaningsConflict: W.meaningsConflict, meaningLabel: Zi };
+  g(Iu, "validateMemberStatement");
+  Nr.exports = { PARSER_VERSION: hn, MEMBER_STATEMENT_LIMITS: sn, MEMBER_STATEMENT_VALUES: it, MEMBER_STATEMENT_LABELS: rt, MEMBER_STATEMENT_CONDITIONS: Sr, parseMemberStatement: Ir, validateMemberStatement: Iu, meaningsConflict: F.meaningsConflict, meaningLabel: Zi };
 });
 
 // experiences/synk-account/src/member-statement-v3.cjs
-var Ge = pe((Gd, Ur) => {
+var Ge = pe((Yd, Vr) => {
   "use strict";
-  var xe = _e(), ct = Be(), Iu = qe(), xn = "member-statement-ko-3", He = Object.freeze({ ...xe.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), st = Object.freeze({
+  var xe = _e(), ct = Be(), Nu = qe(), xn = "member-statement-ko-3", He = Object.freeze({ ...xe.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), st = Object.freeze({
     ...xe.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -657,7 +657,7 @@ var Ge = pe((Gd, Ur) => {
     photography: "사진 촬영",
     games: "게임",
     nature: "자연·산책"
-  }), qr = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), pt = Object.freeze({
+  }), jr = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), pt = Object.freeze({
     ...xe.MEMBER_STATEMENT_CONDITIONS,
     "after-example": "예시를 본 다음",
     "first-try-after-example": "처음 시도하며 예시를 본 다음",
@@ -667,13 +667,13 @@ var Ge = pe((Gd, Ur) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), jr = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), zr = /* @__PURE__ */ g((n, e) => {
+  }), zr = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Lr = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), ut = /* @__PURE__ */ g((n, e) => jr(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => zr(n, i)), "exact"), Lr = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => zr(n, String(t))).every(Boolean), "list"), ne = /* @__PURE__ */ g(() => {
+  }, "data"), ut = /* @__PURE__ */ g((n, e) => zr(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Lr(n, i)), "exact"), Pr = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Lr(n, String(t))).every(Boolean), "list"), ie = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), Qi = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ne(), "instant"), no = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), ro = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Ru = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function Pr(n) {
+  }, "fail"), Qi = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ie(), "instant"), no = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), ro = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Tu = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Cr(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -686,7 +686,7 @@ var Ge = pe((Gd, Ur) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Ru[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Tu[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -695,8 +695,8 @@ var Ge = pe((Gd, Ur) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(Pr, "sourceKey");
-  var Cr = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Dr = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Nu = [
+  g(Cr, "sourceKey");
+  var Dr = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Br = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, _u = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -719,16 +719,16 @@ var Ge = pe((Gd, Ur) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function at(n, e) {
-    for (let [i, t, o] of Nu) {
+    for (let [i, t, o] of _u) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Dr.test(a) ? "avoid" : Cr.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Br.test(a) ? "avoid" : Dr.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
   }
   g(at, "phrase");
-  function Tu(n) {
+  function qu(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
     if (/["“”‘’]/u.test(e) || /(?:라고|다고)(?:했|말|들)/u.test(e) || /^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(e) || /(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(e)) return null;
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
@@ -757,8 +757,8 @@ var Ge = pe((Gd, Ur) => {
     }
     return null;
   }
-  g(Tu, "expanded");
-  var _u = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, qu = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, ju = [
+  g(qu, "expanded");
+  var ju = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, zu = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, Lu = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -786,7 +786,7 @@ var Ge = pe((Gd, Ur) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], zu = [
+  ], Pu = [
     ["first-try", /^(?:처음(?:에는|엔|은)|처음(?:시도)?할때(?:에는|는)?|처음배울때(?:에는|는)?|처음(?:배우는|해보는|하는)(?:일|내용)(?:은|을할때(?:는)?)|낯선(?:일|내용)(?:은|을할때(?:는)?))/u],
     ["familiar", /^(?:익숙할때(?:는)?|익숙한(?:내용|일)(?:일때(?:는)?|은))/u],
     ["busy", /^(?:바쁠때(?:는)?|시간이없을때(?:는)?|바쁜날(?:에는|엔|은)|시간이부족할때(?:는)?)/u],
@@ -794,13 +794,13 @@ var Ge = pe((Gd, Ur) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], Lu = [
+  ], Cu = [
     ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
     ["avoid", /(?:싫(?:어요|습니다|다|어)|부담스러(?:워요|워)|피하고싶(?:어요|습니다|다|어))$/u],
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음이편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], Pu = [
+  ], Du = [
     ["세우기", /(?:세워(?:두|놓)는|세워(?:두|놓)기|세우는|세우고|세우기)$/u],
     ["짜기", /(?:짜(?:두|놓)는|짜(?:두|놓)기|짜는|짜고|짜기)$/u],
     ["정하기", /(?:정해(?:두|놓)는|정해(?:두|놓)기|정하는|정하고|정하기)$/u],
@@ -839,7 +839,7 @@ var Ge = pe((Gd, Ur) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], Cu = [
+  ], Bu = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -863,10 +863,10 @@ var Ge = pe((Gd, Ur) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function Du(n) {
+  function Uu(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [a, u] of Lu) {
+    for (let [a, u] of Cu) {
       let c = u.exec(n);
       if (c) {
         e = a, i = n.slice(0, c.index);
@@ -875,18 +875,18 @@ var Ge = pe((Gd, Ur) => {
     }
     let t = !1;
     if (!e) {
-      let a = Cu.find(([, u]) => u.test(n));
+      let a = Bu.find(([, u]) => u.test(n));
       if (!a) return null;
       i = n.replace(a[1], a[0]), e = "prefer", t = !0;
     }
     i = i.replace(/(?:좀더|더욱|훨씬|더)$/u, "").replace(/(?:것|방식|쪽)(?:이|은|을|도)?$|(?:게|걸|건)$/u, "");
-    let o = Pu.find(([, a]) => a.test(i));
+    let o = Du.find(([, a]) => a.test(i));
     o ? i = i.replace(o[1], o[0]) : i = i.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let s = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return i = i.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (a, u) => s[u]).replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: i, polarity: e, habitual: t };
   }
-  g(Du, "actionAndStance");
-  var Bu = [
+  g(Uu, "actionAndStance");
+  var Vu = [
     ["communication", "listen-organize", /^(?:(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|상대(?:방)?|동료(?:들)?|팀원(?:들)?)(?:의)?|다른)(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들으며)(?:(?:내|제)(?:생각|의견)(?:을)?)?정리하기$/u],
     ["communication", "share-first", /^(?:(?:내|제)?(?:생각|의견)(?:을)?(?:먼저|앞서)|먼저(?:내|제)?(?:생각|의견)(?:을)?)(?:말하기|내기|꺼내기|이야기하기)$/u],
     ["communication", "written", /^(?:(?:메신저|메일|이메일|문자|메시지)(?:로)?(?:글(?:을)?|의견(?:을)?)?|글(?:로|을)?)(?:(?:정리해서|정리해)(?:전달하기|남기기)|소통하기|정리하기|전달하기|남기기|이야기하기|대화하기|주고받기)$/u],
@@ -914,26 +914,26 @@ var Ge = pe((Gd, Ur) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|(?:을)?보기)?|산책(?:하기)?|공원산책)$/u]
   ];
-  function Uu(n, e) {
-    let i = Du(n);
+  function Wu(n, e) {
+    let i = Uu(n);
     if (!i) return null;
-    let t = Bu.find(([, , o]) => o.test(i.action));
+    let t = Vu.find(([, , o]) => o.test(i.action));
     return t && !(i.habitual && t[0] === "topic") ? { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] } : null;
   }
-  g(Uu, "recognizeAction");
-  function Vu(n) {
+  g(Wu, "recognizeAction");
+  function Fu(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
     let i = null;
-    for (let [t, o] of zu) if (o.test(e)) {
+    for (let [t, o] of Pu) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
     return { body: e, condition: i };
   }
-  g(Vu, "normalizePrefix");
+  g(Fu, "normalizePrefix");
   function to(n) {
-    let { body: e, condition: i } = Vu(n);
+    let { body: e, condition: i } = Fu(n);
     e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, "");
     let t = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (t) {
@@ -942,12 +942,12 @@ var Ge = pe((Gd, Ur) => {
         return { meanings: [...a.meanings, ...u.meanings].map((c) => ({ ...c, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let s = Uu(e, i);
+    let s = Wu(e, i);
     if (s) return s;
-    for (let [a, u, c] of ju) {
+    for (let [a, u, c] of Lu) {
       let l = c.exec(e);
       if (!l) continue;
-      let p = e.slice(l[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (r) => r.slice(0, -1) + "해"), d = qu.test(p) || Dr.test(p) ? "avoid" : a !== "topic" && _u.test(p) || Cr.test(p) && !(a === "topic" && /^해줘/u.test(p)) ? "prefer" : null;
+      let p = e.slice(l[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (r) => r.slice(0, -1) + "해"), d = zu.test(p) || Br.test(p) ? "avoid" : a !== "topic" && ju.test(p) || Dr.test(p) && !(a === "topic" && /^해줘/u.test(p)) ? "prefer" : null;
       if (d) return { meanings: [{ field: a, value: u, polarity: d, condition: i }] };
     }
     return null;
@@ -964,11 +964,11 @@ var Ge = pe((Gd, Ur) => {
     uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
     limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
   });
-  function Wu(n) {
+  function Ku(n) {
     return /["“”‘’「」『』]/u.test(n) || /(?:라고|다고)(?:했|하셨|말|들)|(?:라는|다는)(?:말|이야기)/u.test(n) ? "quotation" : /^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(n) ? "other" : /(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|했어요|했습니다)/u.test(n) ? "past" : /(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(n) ? "sensitive" : /(?:만약|라면|다면|가정하|상상하)/u.test(n) ? "hypothetical" : null;
   }
-  g(Wu, "excludedOrigin");
-  function Fu(n) {
+  g(Ku, "excludedOrigin");
+  function Ju(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데)(?=\s)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -978,8 +978,8 @@ var Ge = pe((Gd, Ur) => {
       s(o.index + (/^(?:지만|는데)$/u.test(o[0]) ? o[0].length : 0)), t = o.index + o[0].length;
     return s(n.length), e;
   }
-  g(Fu, "pieces");
-  var Nr = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], Tr = {
+  g(Ju, "pieces");
+  var Tr = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], _r = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -989,18 +989,18 @@ var Ge = pe((Gd, Ur) => {
     decision: "판단 방식",
     "explanation-detail": "설명에서 원하는 구성"
   };
-  function Ku(n) {
+  function Hu(n) {
     xe.parseMemberStatement(n);
     let e = [], i = null, t = !1;
-    for (let o of Fu(n)) {
+    for (let o of Ju(n)) {
       let s = o.quote.replace(/\s/gu, ""), a = /^(?:나는|난|저는|제가|내가)/u.test(s), u = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재)/u.test(s), c = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(s);
       (i === "other" && a || i === "past" && u || i === "condition" && c || i === "uncertain" && u || ["quotation", "hypothetical", "sensitive"].includes(i) && a && u) && (i = null);
-      let l = { evidence: o }, p = Wu(s) || i;
+      let l = { evidence: o }, p = Ku(s) || i;
       if (p) {
         i = p, l.unresolved = { ...o, reason: p, reasonLabel: eo[p] }, ["uncertain", "condition"].includes(p) && (l.generic = !0), e.push(l);
         continue;
       }
-      let d = to(o.quote) || Tu(o.quote);
+      let d = to(o.quote) || qu(o.quote);
       if (!d) {
         let f = xe.parseMemberStatement(o.quote);
         f.meanings.length === 1 && !f.unresolved.length && (d = { meanings: f.meanings });
@@ -1020,7 +1020,7 @@ var Ge = pe((Gd, Ur) => {
     }
     return e;
   }
-  g(Ku, "analyze");
+  g(Hu, "analyze");
   function io(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -1028,7 +1028,7 @@ var Ge = pe((Gd, Ur) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...Nr].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...Tr].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: ro(r.evidence) })), "add");
@@ -1045,8 +1045,8 @@ var Ge = pe((Gd, Ur) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(Tr).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(st, f) && u(d, "value", `${Tr[f]}에서 어떤 내용을 확인할까요?`, st[f].map((m) => ({ id: m, label: lt[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(_r).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(st, f) && u(d, "value", `${_r[f]}에서 어떤 내용을 확인할까요?`, st[f].map((m) => ({ id: m, label: lt[m] })), (m) => {
           st[f].includes(m) && u(d, "polarity", `‘${lt[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(pt).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(pt, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
@@ -1072,31 +1072,31 @@ var Ge = pe((Gd, Ur) => {
       let r = c.filter((f) => f.id === d.id || dt(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${Pr(r.map((f) => f.id + no(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: oo(f), value: f.id })), ...Nr.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${Cr(r.map((f) => f.id + no(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: oo(f), value: f.id })), ...Tr.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, He.unresolved), questions: a };
   }
   g(io, "stateFor");
-  function _r(n, e, i, t, o) {
-    let s = Iu.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function qr(n, e, i, t, o) {
+    let s = Nu.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = io(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => no(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(_r, "choose");
-  function Br(n, { clarifications: e = [], parserVersion: i = xn } = {}) {
+  g(qr, "choose");
+  function Ur(n, { clarifications: e = [], parserVersion: i = xn } = {}) {
     if (i === xe.PARSER_VERSION)
-      return e.length && ne(), xe.parseMemberStatement(n);
+      return e.length && ie(), xe.parseMemberStatement(n);
     if (i === ct.PARSER_VERSION) return ct.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== xn && ne(), (!Lr(e, He.clarifications) || e.some((l) => !ut(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ne();
-    let t = Ku(n), o = Pr(n), s = /* @__PURE__ */ Object.create(null), a = [], u = io(n, t, s, o), c = _r(u, n, t, s, o);
+    i !== xn && ie(), (!Pr(e, He.clarifications) || e.some((l) => !ut(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ie();
+    let t = Hu(n), o = Cr(n), s = /* @__PURE__ */ Object.create(null), a = [], u = io(n, t, s, o), c = qr(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ne();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ie();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || ne(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = io(n, t, s, o), c = _r(u, n, t, s, o);
+      p || ie(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = io(n, t, s, o), c = qr(u, n, t, s, o);
     }
     if (e.length === He.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && dt(p, d)));
@@ -1104,39 +1104,39 @@ var Ge = pe((Gd, Ur) => {
     }
     return { parserVersion: xn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: ro(e), clarificationAnswers: a };
   }
-  g(Br, "parseMemberStatement");
+  g(Ur, "parseMemberStatement");
   function oo(n) {
     return `${n.condition ? pt[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${lt[n.value]}`;
   }
   g(oo, "meaningLabel");
   function dt(n, e) {
-    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !qr.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
+    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !jr.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(dt, "meaningsConflict");
-  function Ju(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = jr(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function Gu(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = zr(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === xe.PARSER_VERSION) return xe.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === ct.PARSER_VERSION) return ct.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!ut(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== xn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Lr(n.meanings, He.meanings) || !n.meanings.length) && ne();
-    let o = Qi(n.at), s = Qi(n.confirmedAt), a = i ? typeof e == "string" ? Qi(e) : Number.isSafeInteger(e) ? e : ne() : null;
-    (s < o || i && s > a) && ne();
-    let u = Br(n.text, { clarifications: n.clarifications });
-    u.question && ne();
+    (!ut(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== xn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Pr(n.meanings, He.meanings) || !n.meanings.length) && ie();
+    let o = Qi(n.at), s = Qi(n.confirmedAt), a = i ? typeof e == "string" ? Qi(e) : Number.isSafeInteger(e) ? e : ie() : null;
+    (s < o || i && s > a) && ie();
+    let u = Ur(n.text, { clarifications: n.clarifications });
+    u.question && ie();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!ut(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !ut(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ne(), c.add(p.id);
+      (!ut(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !ut(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ie(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ne(), ro(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ie(), ro(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => dt(p, r))) && ne(), { id: n.id.toLowerCase(), parserVersion: xn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => dt(p, r))) && ie(), { id: n.id.toLowerCase(), parserVersion: xn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(Ju, "validateMemberStatement");
-  Ur.exports = { PARSER_VERSION: xn, MEMBER_STATEMENT_LIMITS: He, MEMBER_STATEMENT_VALUES: st, MEMBER_STATEMENT_LABELS: lt, MEMBER_STATEMENT_CONDITIONS: pt, MEMBER_STATEMENT_MULTI_FIELDS: qr, parseMemberStatement: Br, validateMemberStatement: Ju, meaningsConflict: dt, meaningLabel: oo };
+  g(Gu, "validateMemberStatement");
+  Vr.exports = { PARSER_VERSION: xn, MEMBER_STATEMENT_LIMITS: He, MEMBER_STATEMENT_VALUES: st, MEMBER_STATEMENT_LABELS: lt, MEMBER_STATEMENT_CONDITIONS: pt, MEMBER_STATEMENT_MULTI_FIELDS: jr, parseMemberStatement: Ur, validateMemberStatement: Gu, meaningsConflict: dt, meaningLabel: oo };
 });
 
 // experiences/synk-account/src/member-statement-v4.cjs
-var un = pe((Zd, ia) => {
+var un = pe((ef, oa) => {
   "use strict";
-  var ve = _e(), gt = Be(), $t = Ge(), Hu = qe(), vn = "member-statement-ko-4", Xe = Object.freeze({ ...ve.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), ft = Object.freeze({
+  var ve = _e(), gt = Be(), $t = Ge(), Xu = qe(), vn = "member-statement-ko-4", Xe = Object.freeze({ ...ve.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), ft = Object.freeze({
     ...ve.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -1167,7 +1167,7 @@ var un = pe((Zd, ia) => {
     photography: "사진 촬영",
     games: "게임",
     nature: "자연·산책"
-  }), Kr = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), xt = Object.freeze({
+  }), Jr = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), xt = Object.freeze({
     ...ve.MEMBER_STATEMENT_CONDITIONS,
     "after-example": "예시를 본 다음",
     "first-try-after-example": "처음 시도하며 예시를 본 다음",
@@ -1177,13 +1177,13 @@ var un = pe((Zd, ia) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), Jr = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Hr = /* @__PURE__ */ g((n, e) => {
+  }), Hr = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Gr = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), mt = /* @__PURE__ */ g((n, e) => Jr(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Hr(n, i)), "exact"), Gr = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Hr(n, String(t))).every(Boolean), "list"), te = /* @__PURE__ */ g(() => {
+  }, "data"), mt = /* @__PURE__ */ g((n, e) => Hr(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Gr(n, i)), "exact"), Xr = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Gr(n, String(t))).every(Boolean), "list"), oe = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), ao = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : te(), "instant"), uo = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), po = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Gu = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function Xr(n) {
+  }, "fail"), ao = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : oe(), "instant"), uo = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), po = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Zu = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Zr(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -1196,7 +1196,7 @@ var un = pe((Zd, ia) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Gu[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Zu[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -1205,8 +1205,8 @@ var un = pe((Zd, ia) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(Xr, "sourceKey");
-  var Zr = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Yr = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Xu = [
+  g(Zr, "sourceKey");
+  var Yr = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Qr = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Yu = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -1229,16 +1229,16 @@ var un = pe((Zd, ia) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Pn(n, e) {
-    for (let [i, t, o] of Xu) {
+    for (let [i, t, o] of Yu) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Yr.test(a) ? "avoid" : Zr.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Qr.test(a) ? "avoid" : Yr.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
   }
   g(Pn, "phrase");
-  function Qr(n) {
+  function ea(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
     if (/["“”‘’]/u.test(e) || /(?:라고|다고)(?:했|말|들)/u.test(e) || /^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(e) || /(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(e)) return null;
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
@@ -1267,8 +1267,8 @@ var un = pe((Zd, ia) => {
     }
     return null;
   }
-  g(Qr, "expanded");
-  var Zu = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, Yu = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, Qu = [
+  g(ea, "expanded");
+  var Qu = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, ec = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, nc = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -1296,7 +1296,7 @@ var un = pe((Zd, ia) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], ec = [
+  ], tc = [
     ["first-try", /^(?:새로운|낯선)(?:걸|것|일|내용)(?:을)?(?:처음)?(?:배울|할|시도할)때(?:에는|는)?/u],
     ["familiar", /^(?:잘아는|익숙한)(?:내용|일)(?:일때|을할때)(?:에는|는)?/u],
     ["first-try", /^(?:익숙하지않은(?:걸|것|내용|일)(?:을)?(?:처음)?할(?:때|땐)(?:에는|는)?|처음(?:배우거나|시도하거나)?(?:하는|해보는|배우는)(?:걸|것|일|내용)(?:을)?할(?:때|땐)(?:는)?|처음할땐)/u],
@@ -1312,7 +1312,7 @@ var un = pe((Zd, ia) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], nc = [
+  ], ic = [
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
     ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
@@ -1323,7 +1323,7 @@ var un = pe((Zd, ia) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], tc = [
+  ], oc = [
     ["적기", /적(?:는|기)$/u],
     ["쓰기", /쓰(?:는|기)$/u],
     ["해결하기", /해결하(?:는|기)$/u],
@@ -1394,7 +1394,7 @@ var un = pe((Zd, ia) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], ic = [
+  ], rc = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -1418,10 +1418,10 @@ var un = pe((Zd, ia) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function oc(n) {
+  function ac(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of nc) {
+    for (let [o, s] of ic) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -1430,25 +1430,25 @@ var un = pe((Zd, ia) => {
     }
     let t = !1;
     if (!e) {
-      let o = ic.find(([, s]) => s.test(n));
+      let o = rc.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
-    return { ...rc(i), polarity: e, habitual: t };
+    return { ...sc(i), polarity: e, habitual: t };
   }
-  g(oc, "actionAndStance");
-  function rc(n) {
+  g(ac, "actionAndStance");
+  function sc(n) {
     let e = n;
     e = e.replace(/(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, "").replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u, "");
     let i = /(?:는|기)설명(?:이|은|을|도)?$/u.test(e) ? "explanation" : null;
     i && (e = e.replace(/((?:는|기))설명(?:이|은|을|도)?$/u, "$1"));
-    let t = tc.find(([, s]) => s.test(e));
+    let t = oc.find(([, s]) => s.test(e));
     t ? e = e.replace(t[1], t[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let o = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (s, a) => o[a]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (s, a) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[a]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (s) => s.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (s) => s.startsWith("들어") ? "듣고" : s.startsWith("비교") ? "비교하고" : s.startsWith("실행") ? "실행하고" : "시도하고").replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (s) => s.startsWith("만들어") ? "만들고" : s.startsWith("세워") ? "세우고" : s.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: i };
   }
-  g(rc, "normalizeActionPhrase");
-  var ac = [
+  g(sc, "normalizeActionPhrase");
+  var uc = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -1521,32 +1521,32 @@ var un = pe((Zd, ia) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function ea(n, e) {
-    let i = oc(n);
+  function na(n, e) {
+    let i = ac(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = ea(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = na(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = ac.find(([, , s]) => s.test(i.action));
+    let t = uc.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Pn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(ea, "recognizeAction");
-  function na(n) {
+  g(na, "recognizeAction");
+  function ta(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
     e = e.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
     let i = null;
-    for (let [t, o] of ec) if (o.test(e)) {
+    for (let [t, o] of tc) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
     return { body: e, condition: i };
   }
-  g(na, "normalizePrefix");
-  function sc(n) {
+  g(ta, "normalizePrefix");
+  function cc(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
       return !!de(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
@@ -1555,9 +1555,9 @@ var un = pe((Zd, ia) => {
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(sc, "comparative");
+  g(cc, "comparative");
   function de(n) {
-    let { body: e, condition: i } = na(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
+    let { body: e, condition: i } = ta(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
       let l = de(t[1] + t[3]), p = de(t[2] + t[3]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && !l.uncertain && !p.uncertain) {
@@ -1575,7 +1575,7 @@ var un = pe((Zd, ia) => {
       let l = de(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = sc(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = cc(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
       let l = de(a[1] + "보는게좋아요"), p = de(a[2]);
@@ -1583,18 +1583,18 @@ var un = pe((Zd, ia) => {
         return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = ea(e, i);
+    let c = na(e, i);
     if (c) return c;
-    for (let [l, p, d] of Qu) {
+    for (let [l, p, d] of nc) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = Yu.test($) || Yr.test($) ? "avoid" : l !== "topic" && Zu.test($) || Zr.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = ec.test($) || Qr.test($) ? "avoid" : l !== "topic" && Qu.test($) || Yr.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
   g(de, "natural");
-  function uc(n) {
+  function lc(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -1603,19 +1603,19 @@ var un = pe((Zd, ia) => {
     ].find(([s]) => s.test(e));
     if (!t) return null;
     e = e.replace(t[0], t[1]).replace(/^(아마|어쩌면)/u, "").replace(/(?:아마|어쩌면)(?=(?:좀더|더)?(?:좋아요|편해요|싫어요)$)/u, "");
-    let o = de(e) || Qr(e);
+    let o = de(e) || ea(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(uc, "tentative");
-  function cc(n) {
-    let { body: e, condition: i } = na(n);
+  g(lc, "tentative");
+  function pc(n) {
+    let { body: e, condition: i } = ta(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
     let t = de(e.replace(/^(.+?)로만/u, "$1로"));
     if (t?.meanings.length !== 1 || t.meanings[0].field !== "communication") return null;
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(cc, "restrictedMethod");
+  g(pc, "restrictedMethod");
   var so = Object.freeze({
     other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
     past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
@@ -1627,11 +1627,11 @@ var un = pe((Zd, ia) => {
     uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
     limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
   });
-  function lc(n) {
+  function dc(n) {
     return /["“”‘’「」『』]/u.test(n) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(n) ? "quotation" : /^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이(?!랑)|가)/u.test(n) ? "other" : /(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|했어요|했습니다)/u.test(n) ? "past" : /(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(n) ? "sensitive" : /(?:만약|라면|다면|가정하|상상하)/u.test(n) ? "hypothetical" : null;
   }
-  g(lc, "excludedOrigin");
-  function pc(n) {
+  g(dc, "excludedOrigin");
+  function fc(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고)(?=\s)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -1641,8 +1641,8 @@ var un = pe((Zd, ia) => {
       o[0] === "," && /(?:것|거)도\s*$/u.test(n.slice(t, o.index)) && /^\s*.+?(?:것|거)도/u.test(n.slice(o.index + 1)) || /^(?:좋고|좋아하고|편하고)$/u.test(o[0]) && /^\s*(?:싶|말고|싫고|아니고)/u.test(n.slice(o.index + o[0].length)) || o[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(n.slice(t, o.index).replace(/\s/gu, "")) || (s(o.index + (/^(?:지만|는데|좋고|좋아하고|편하고)$/u.test(o[0]) ? o[0].length : 0)), t = o.index + o[0].length);
     return s(n.length), e;
   }
-  g(pc, "pieces");
-  var Vr = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], Wr = {
+  g(fc, "pieces");
+  var Wr = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], Fr = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -1652,18 +1652,18 @@ var un = pe((Zd, ia) => {
     decision: "판단 방식",
     "explanation-detail": "설명에서 원하는 구성"
   };
-  function dc(n) {
+  function mc(n) {
     ve.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null;
-    for (let s of pc(n)) {
+    for (let s of fc(n)) {
       let a = s.quote.replace(/\s/gu, ""), u = /^(?:나는|난|저는|제가|내가)/u.test(a), c = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(a), l = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(a);
       (i === "other" && u || i === "past" && c || i === "condition" && l || i === "uncertain" && c || ["quotation", "hypothetical", "sensitive"].includes(i) && u && c) && (i = null);
-      let p = { evidence: s }, d = lc(a) || i;
+      let p = { evidence: s }, d = dc(a) || i;
       if (d) {
         i = d, o = null, p.unresolved = { ...s, reason: d, reasonLabel: so[d] }, ["uncertain", "condition"].includes(d) && (p.generic = !0), e.push(p);
         continue;
       }
-      let r = de(s.quote) || Qr(s.quote) || uc(s.quote) || cc(s.quote);
+      let r = de(s.quote) || ea(s.quote) || lc(s.quote) || pc(s.quote);
       if (!r && e.at(-1)?.meanings?.length && /^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(a)) {
         p.meanings = [], e.push(p);
         continue;
@@ -1688,7 +1688,7 @@ var un = pe((Zd, ia) => {
     }
     return e;
   }
-  g(dc, "analyze");
+  g(mc, "analyze");
   function co(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -1696,7 +1696,7 @@ var un = pe((Zd, ia) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...Vr].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...Wr].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: po(r.evidence) })), "add");
@@ -1713,8 +1713,8 @@ var un = pe((Zd, ia) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(Wr).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(ft, f) && u(d, "value", `${Wr[f]}에서 어떤 내용을 확인할까요?`, ft[f].map((m) => ({ id: m, label: ht[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(Fr).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(ft, f) && u(d, "value", `${Fr[f]}에서 어떤 내용을 확인할까요?`, ft[f].map((m) => ({ id: m, label: ht[m] })), (m) => {
           ft[f].includes(m) && u(d, "polarity", `‘${ht[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(xt).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(xt, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
@@ -1740,32 +1740,32 @@ var un = pe((Zd, ia) => {
       let r = c.filter((f) => f.id === d.id || vt(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${Xr(r.map((f) => f.id + uo(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: lo(f), value: f.id })), ...Vr.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${Zr(r.map((f) => f.id + uo(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: lo(f), value: f.id })), ...Wr.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, Xe.unresolved), questions: a };
   }
   g(co, "stateFor");
-  function Fr(n, e, i, t, o) {
-    let s = Hu.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function Kr(n, e, i, t, o) {
+    let s = Xu.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = co(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => uo(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(Fr, "choose");
-  function ta(n, { clarifications: e = [], parserVersion: i = vn } = {}) {
+  g(Kr, "choose");
+  function ia(n, { clarifications: e = [], parserVersion: i = vn } = {}) {
     if (i === ve.PARSER_VERSION)
-      return e.length && te(), ve.parseMemberStatement(n);
+      return e.length && oe(), ve.parseMemberStatement(n);
     if (i === gt.PARSER_VERSION) return gt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === $t.PARSER_VERSION) return $t.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== vn && te(), (!Gr(e, Xe.clarifications) || e.some((l) => !mt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && te();
-    let t = dc(n), o = Xr(n), s = /* @__PURE__ */ Object.create(null), a = [], u = co(n, t, s, o), c = Fr(u, n, t, s, o);
+    i !== vn && oe(), (!Xr(e, Xe.clarifications) || e.some((l) => !mt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && oe();
+    let t = mc(n), o = Zr(n), s = /* @__PURE__ */ Object.create(null), a = [], u = co(n, t, s, o), c = Kr(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && te();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && oe();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || te(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = co(n, t, s, o), c = Fr(u, n, t, s, o);
+      p || oe(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = co(n, t, s, o), c = Kr(u, n, t, s, o);
     }
     if (e.length === Xe.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && vt(p, d)));
@@ -1773,40 +1773,40 @@ var un = pe((Zd, ia) => {
     }
     return { parserVersion: vn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: po(e), clarificationAnswers: a };
   }
-  g(ta, "parseMemberStatement");
+  g(ia, "parseMemberStatement");
   function lo(n) {
     return `${n.condition ? xt[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${ht[n.value]}`;
   }
   g(lo, "meaningLabel");
   function vt(n, e) {
-    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Kr.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
+    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Jr.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(vt, "meaningsConflict");
-  function fc(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = Jr(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function gc(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = Hr(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === ve.PARSER_VERSION) return ve.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === gt.PARSER_VERSION) return gt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === $t.PARSER_VERSION) return $t.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!mt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== vn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Gr(n.meanings, Xe.meanings) || !n.meanings.length) && te();
-    let o = ao(n.at), s = ao(n.confirmedAt), a = i ? typeof e == "string" ? ao(e) : Number.isSafeInteger(e) ? e : te() : null;
-    (s < o || i && s > a) && te();
-    let u = ta(n.text, { clarifications: n.clarifications });
-    u.question && te();
+    (!mt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== vn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Xr(n.meanings, Xe.meanings) || !n.meanings.length) && oe();
+    let o = ao(n.at), s = ao(n.confirmedAt), a = i ? typeof e == "string" ? ao(e) : Number.isSafeInteger(e) ? e : oe() : null;
+    (s < o || i && s > a) && oe();
+    let u = ia(n.text, { clarifications: n.clarifications });
+    u.question && oe();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!mt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !mt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && te(), c.add(p.id);
+      (!mt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !mt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && oe(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && te(), po(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && oe(), po(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => vt(p, r))) && te(), { id: n.id.toLowerCase(), parserVersion: vn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => vt(p, r))) && oe(), { id: n.id.toLowerCase(), parserVersion: vn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(fc, "validateMemberStatement");
-  ia.exports = { PARSER_VERSION: vn, MEMBER_STATEMENT_LIMITS: Xe, MEMBER_STATEMENT_VALUES: ft, MEMBER_STATEMENT_LABELS: ht, MEMBER_STATEMENT_CONDITIONS: xt, MEMBER_STATEMENT_MULTI_FIELDS: Kr, parseMemberStatement: ta, validateMemberStatement: fc, meaningsConflict: vt, meaningLabel: lo };
+  g(gc, "validateMemberStatement");
+  oa.exports = { PARSER_VERSION: vn, MEMBER_STATEMENT_LIMITS: Xe, MEMBER_STATEMENT_VALUES: ft, MEMBER_STATEMENT_LABELS: ht, MEMBER_STATEMENT_CONDITIONS: xt, MEMBER_STATEMENT_MULTI_FIELDS: Jr, parseMemberStatement: ia, validateMemberStatement: gc, meaningsConflict: vt, meaningLabel: lo };
 });
 
 // experiences/synk-account/src/member-statement-v5.cjs
-var yn = pe((Qd, va) => {
+var yn = pe((tf, ba) => {
   "use strict";
-  var be = _e(), kt = Be(), wt = Ge(), Et = un(), mc = qe(), bn = "member-statement-ko-5", Ze = Object.freeze({ ...be.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), bt = Object.freeze({
+  var be = _e(), kt = Be(), wt = Ge(), Et = un(), $c = qe(), bn = "member-statement-ko-5", Ze = Object.freeze({ ...be.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), bt = Object.freeze({
     ...be.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -1837,7 +1837,7 @@ var yn = pe((Qd, va) => {
     photography: "사진 촬영",
     games: "게임",
     nature: "자연·산책"
-  }), ua = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), Ot = Object.freeze({
+  }), ca = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), Ot = Object.freeze({
     ...be.MEMBER_STATEMENT_CONDITIONS,
     "after-example": "예시를 본 다음",
     "first-try-after-example": "처음 시도하며 예시를 본 다음",
@@ -1847,13 +1847,13 @@ var yn = pe((Qd, va) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), ca = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), la = /* @__PURE__ */ g((n, e) => {
+  }), la = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), pa = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), yt = /* @__PURE__ */ g((n, e) => ca(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => la(n, i)), "exact"), pa = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => la(n, String(t))).every(Boolean), "list"), ie = /* @__PURE__ */ g(() => {
+  }, "data"), yt = /* @__PURE__ */ g((n, e) => la(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => pa(n, i)), "exact"), da = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => pa(n, String(t))).every(Boolean), "list"), re = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), fo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ie(), "instant"), go = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), xo = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), gc = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function da(n) {
+  }, "fail"), fo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : re(), "instant"), go = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), xo = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), hc = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function fa(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -1866,7 +1866,7 @@ var yn = pe((Qd, va) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + gc[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + hc[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -1875,8 +1875,8 @@ var yn = pe((Qd, va) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(da, "sourceKey");
-  var fa = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, ma = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, $c = [
+  g(fa, "sourceKey");
+  var ma = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, ga = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, xc = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -1899,16 +1899,16 @@ var yn = pe((Qd, va) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Cn(n, e) {
-    for (let [i, t, o] of $c) {
+    for (let [i, t, o] of xc) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = ma.test(a) ? "avoid" : fa.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = ga.test(a) ? "avoid" : ma.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
   }
   g(Cn, "phrase");
-  function ga(n) {
+  function $a(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "");
     if (/["“”‘’]/u.test(e) || /(?:라고|다고)(?:했|말|들)/u.test(e) || /^(?:(?:내|제)?(?:친구|동료|엄마|아빠|어머니|아버지)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이|가)/u.test(e) || /(?:예전|과거|전에는|좋아했|선호했|필요했|원했|했었|만약|라면|다면|으면|싫지않|없지않|않지는않)/u.test(e)) return null;
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|현재(?:는)?|평소(?:에는|엔|는)|보통은|일반적으로는)/u, "");
@@ -1937,8 +1937,8 @@ var yn = pe((Qd, va) => {
     }
     return null;
   }
-  g(ga, "expanded");
-  var hc = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, xc = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, vc = [
+  g($a, "expanded");
+  var vc = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, bc = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, yc = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -1966,7 +1966,7 @@ var yn = pe((Qd, va) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], bc = [
+  ], kc = [
     ["first-try", /^(?:완전히|아주)?처음(?:해보는|시도하는|하는|배우는)(?:일|내용)(?:일때(?:에는|는)?|에대해서(?:는)?)/u],
     ["after-example", /^(?:예시|예제|샘플)(?:를)?보고난(?:뒤|후|다음)(?:라면|에는|엔|에)/u],
     ["busy", /^(?:일이몰려)?바쁠(?:때(?:에는|는)?|수록)/u],
@@ -1993,7 +1993,7 @@ var yn = pe((Qd, va) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], yc = [
+  ], wc = [
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
     ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
@@ -2004,7 +2004,7 @@ var yn = pe((Qd, va) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], kc = [
+  ], Ec = [
     ["적기", /적(?:는|기)$/u],
     ["쓰기", /쓰(?:는|기)$/u],
     ["해결하기", /해결하(?:는|기)$/u],
@@ -2075,7 +2075,7 @@ var yn = pe((Qd, va) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], wc = [
+  ], Sc = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -2099,10 +2099,10 @@ var yn = pe((Qd, va) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function $a(n) {
+  function ha(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of yc) {
+    for (let [o, s] of wc) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -2111,25 +2111,25 @@ var yn = pe((Qd, va) => {
     }
     let t = !1;
     if (!e) {
-      let o = wc.find(([, s]) => s.test(n));
+      let o = Sc.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
     return { ...Dn(i), polarity: e, habitual: t };
   }
-  g($a, "actionAndStance");
+  g(ha, "actionAndStance");
   function Dn(n) {
     let e = n;
     e = e.replace(/(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, "").replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u, "");
     let i = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(e) ? "explanation" : null;
     i && (e = e.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1"));
-    let t = e, o = kc.find(([, a]) => a.test(e));
+    let t = e, o = Ec.find(([, a]) => a.test(e));
     o ? e = e.replace(o[1], o[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let s = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (a, u) => s[u]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (a, u) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[u]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (a) => a.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (a) => a.startsWith("들어") ? "듣고" : a.startsWith("비교") ? "비교하고" : a.startsWith("실행") ? "실행하고" : "시도하고").replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (a) => a.startsWith("만들어") ? "만들고" : a.startsWith("세워") ? "세우고" : a.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: i, surfaceAction: t };
   }
   g(Dn, "normalizeActionPhrase");
-  var Ec = [
+  var Oc = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -2202,32 +2202,32 @@ var yn = pe((Qd, va) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function ha(n, e) {
-    let i = $a(n);
+  function xa(n, e) {
+    let i = ha(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = ha(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = xa(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = Ec.find(([, , s]) => s.test(i.action));
+    let t = Oc.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Cn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(ha, "recognizeAction");
+  g(xa, "recognizeAction");
   function At(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
     e = e.replace(/좋(?:아하)?고요$/u, (t) => t.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
     let i = null;
-    for (let [t, o] of bc) if (o.test(e)) {
+    for (let [t, o] of kc) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
     return { body: e, condition: i };
   }
   g(At, "normalizePrefix");
-  function Sc(n) {
+  function Ac(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
       return !!fe(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
@@ -2236,7 +2236,7 @@ var yn = pe((Qd, va) => {
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(Sc, "comparative");
+  g(Ac, "comparative");
   function fe(n) {
     let { body: e, condition: i } = At(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
@@ -2256,7 +2256,7 @@ var yn = pe((Qd, va) => {
       let l = fe(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Sc(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Ac(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
       let l = fe(a[1] + "보는게좋아요"), p = fe(a[2]);
@@ -2264,18 +2264,18 @@ var yn = pe((Qd, va) => {
         return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = ha(e, i);
+    let c = xa(e, i);
     if (c) return c;
-    for (let [l, p, d] of vc) {
+    for (let [l, p, d] of yc) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = xc.test($) || ma.test($) ? "avoid" : l !== "topic" && hc.test($) || fa.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = bc.test($) || ga.test($) ? "avoid" : l !== "topic" && vc.test($) || ma.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
   g(fe, "natural");
-  function Oc(n) {
+  function Mc(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -2284,11 +2284,11 @@ var yn = pe((Qd, va) => {
     ].find(([s]) => s.test(e));
     if (!t) return null;
     e = e.replace(t[0], t[1]).replace(/^(아마|어쩌면)/u, "").replace(/(?:아마|어쩌면)(?=(?:좀더|더)?(?:좋아요|편해요|싫어요)$)/u, "");
-    let o = fe(e) || ga(e);
+    let o = fe(e) || $a(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(Oc, "tentative");
-  function Ac(n) {
+  g(Mc, "tentative");
+  function Rc(n) {
     let { body: e, condition: i } = At(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
     let t = fe(e.replace(/^(.+?)로만/u, "$1로"));
@@ -2296,8 +2296,8 @@ var yn = pe((Qd, va) => {
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(Ac, "restrictedMethod");
-  var Mc = [
+  g(Rc, "restrictedMethod");
+  var Ic = [
     ["self", /^(?:내자신|제자신|스스로|혼자서|혼자|독립적으로|내힘으로|제힘으로|자력으로)/u],
     ["person", /^(?:다른사람들?|다른분들?|다른이들|여러사람들?|사람들|상대방|상대|동료들?|팀원들?|주변사람들?|주위사람들?|남들|누군가|누구|모두)/u],
     ["mine", /^(?:나의|저의|제|내)/u],
@@ -2416,7 +2416,7 @@ var yn = pe((Qd, va) => {
     ["first", /^부터/u],
     ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
     ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
-  ], Ic = [
+  ], Nc = [
     ["communicate", "소통"],
     ["communicate", "대화"],
     ["speak", "말"],
@@ -2463,12 +2463,12 @@ var yn = pe((Qd, va) => {
     ["make", "제작"],
     ["explore", "탐색"],
     ["summary", "요약"]
-  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), Rc = [...Ic, ...Mc];
-  function oa(n) {
+  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), Tc = [...Nc, ...Ic];
+  function ra(n) {
     let e = [], i = 0;
     for (; i < n.length && e.length < 120; ) {
       let t = null;
-      for (let [o, s] of Rc) {
+      for (let [o, s] of Tc) {
         let a = s.exec(n.slice(i));
         a && (!t || a[0].length > t.text.length) && (t = { tag: o, text: a[0] });
       }
@@ -2477,8 +2477,8 @@ var yn = pe((Qd, va) => {
     }
     return i === n.length ? e.filter((t) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(t)) : null;
   }
-  g(oa, "phraseUnits");
-  function Nc(n, e) {
+  g(ra, "phraseUnits");
+  function _c(n, e) {
     let i = n.filter((u) => !["nominal", "means"].includes(u)).join(" "), t = /* @__PURE__ */ g((u) => u.test(i), "match"), o = /* @__PURE__ */ g((u, c) => ({ field: u, value: c }), "out");
     if (t(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u)) return o("communication", "listen-organize");
     if (t(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return o("communication", "share-first");
@@ -2524,10 +2524,10 @@ var yn = pe((Qd, va) => {
       ["ai-tools", /^ai(?: use)?$/u],
       ["work-collaboration", /^(?:person together task do )?collaboration$/u]
     ].find(([, u]) => u.test(i));
-    return a ? o("topic", a[0]) : Tc(n, e);
+    return a ? o("topic", a[0]) : qc(n, e);
   }
-  g(Nc, "composeMeaning");
-  function Tc(n, e) {
+  g(_c, "composeMeaning");
+  function qc(n, e) {
     let i = n.filter((x) => !["nominal", "means"].includes(x));
     e === "explanation" && !i.includes("explanation") && i.push("explanation");
     let t = /* @__PURE__ */ g((x) => i.includes(x), "has"), o = /* @__PURE__ */ g((...x) => x.some(t), "any"), s = /* @__PURE__ */ g((...x) => x.every(t), "all"), a = /* @__PURE__ */ g((x, v) => i.indexOf(x) < i.indexOf(v), "before"), u = /* @__PURE__ */ g((...x) => !t("start") || x.some((v) => t(v) && a(v, "start")), "beforeStart"), c = t("overview") ? i.slice(0, i.indexOf("overview")) : [], l = c.every((x) => ["explanation", "detail", "content", "first", "enter", "before"].includes(x)) && (!c.includes("enter") || c.indexOf("enter") < c.indexOf("before")), p = t("explain") || s("explanation", "receive"), d = [], r = /* @__PURE__ */ g((x, v, y, O) => {
@@ -2560,8 +2560,8 @@ var yn = pe((Qd, va) => {
     }
     return d.length === 1 ? d[0] : null;
   }
-  g(Tc, "composeRoles");
-  var _c = [
+  g(qc, "composeRoles");
+  var jc = [
     ["avoid", /(?:좋아하는편이|맞지는?|맞지)않(?:아요|습니다|아|는다)$/u],
     ["avoid", /좋아하는편이아니(?:에요|야|다)$/u],
     ["avoid", /(?:제|내)(?:취향|스타일)(?:이)?아니(?:에요|예요|야|다)$/u],
@@ -2574,55 +2574,55 @@ var yn = pe((Qd, va) => {
     ["prefer", /(?:제가|내가)?좋아하는(?:분야|취미)(?:예요|이에요|입니다)$/u],
     ["prefer", /(?:관심(?:이)?가(?:요)?|관심(?:을)?두고있(?:어요|습니다|다))$/u]
   ];
-  function qc(n) {
+  function zc(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(n)) return null;
-    for (let [e, i] of _c) {
+    for (let [e, i] of jc) {
       let t = i.exec(n);
       if (t) return { ...Dn(n.slice(0, t.index)), polarity: e, habitual: !1 };
     }
-    return $a(n);
+    return ha(n);
   }
-  g(qc, "composeStance");
-  var jc = [
+  g(zc, "composeStance");
+  var Lc = [
     [/^(?:도와줄거면|도움을받을때(?:는)?|도움을받을땐|시도할때(?:는)?)/u, ["support"], ""],
     [/^(?:연습할때|연습은|연습을)/u, ["practice-mode"], "연습"],
     [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
     [/^판단(?:은|을)/u, ["decision"], ""],
     [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
   ];
-  function zc(n) {
+  function Pc(n) {
     let { body: e, condition: i } = At(n);
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통)/u, "");
     let t = null, o = "", s = /^(?:(?:제|내)취향(?:은|이)|(?:(?:내가|제가))?원하는(설명길이|연습방식|도움방식|소통방식)(?:는|은))(.+?)(?:이에요|예요|입니다)$/u.exec(e);
     s && (e = s[2] + "좋아요", s[1] === "설명길이" && (o = "설명", t = ["explanation"]));
-    for (let [m, x, v] of jc) {
+    for (let [m, x, v] of Lc) {
       let y = m.exec(e);
       if (y) {
         t = x, o = v, e = e.slice(y[0].length);
         break;
       }
     }
-    let a = /^(?:즐기는|좋아하는)(?:취미|관심분야)(?:를|중)(?:하나)?(?:꼽으면|고르면)(.+?)(?:예요|이에요|입니다)$/u.exec(e), u = a ? { ...Dn(a[1]), polarity: "prefer", habitual: !1 } : qc(e);
+    let a = /^(?:즐기는|좋아하는)(?:취미|관심분야)(?:를|중)(?:하나)?(?:꼽으면|고르면)(.+?)(?:예요|이에요|입니다)$/u.exec(e), u = a ? { ...Dn(a[1]), polarity: "prefer", habitual: !1 } : zc(e);
     if (!u) return null;
     let l = (/* @__PURE__ */ g((m) => m.replace(/(?:(?:저|나)(?:는|에게|한테)|제게|제겐|저에겐|내게|내겐)(?:한결|더|잘|딱|그다지)?$/u, "").replace(/(?:자꾸|더|한결|딱|취미로)$/u, ""), "stripSelf"))(u.surfaceAction || u.action);
     l = Dn(l).surfaceAction, l = l.replace(/(?:하는|받는)편$/u, (m) => m.slice(0, -1)), l = Dn(l).surfaceAction;
-    let p = /* @__PURE__ */ g((m) => !!oa(m.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), d = /(?:보다는|보단|보다|대신|느니|아닌)/u.exec(l), r = [l];
+    let p = /* @__PURE__ */ g((m) => !!ra(m.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), d = /(?:보다는|보단|보다|대신|느니|아닌)/u.exec(l), r = [l];
     if (d) {
       let m = l.slice(0, d.index), x = l.slice(d.index + d[0].length), v = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(m);
       if (r = [], p(m) && r.push(x), v && p(v[2]) && r.push(v[1] + x), !r.length) return null;
     }
     let $ = [...r.map((m) => o + m.replace(/^한꺼번에말고/u, "")), o + u.action], h = [];
     for (let m of new Set($)) {
-      let x = oa(m);
+      let x = ra(m);
       if (!x) continue;
-      let v = Nc(x, u.nominalHead);
+      let v = _c(x, u.nominalHead);
       v && h.push(v);
     }
     if (!h.length || new Set(h.map((m) => m.field + ":" + m.value)).size !== 1) return null;
     let f = h[0];
     return t && !t.includes(f.field) || f.field === "topic" && u.habitual ? null : { meanings: [{ ...f, polarity: u.polarity, condition: i }] };
   }
-  g(zc, "compositional");
+  g(Pc, "compositional");
   var mo = Object.freeze({
     other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
     past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
@@ -2634,7 +2634,7 @@ var yn = pe((Qd, va) => {
     uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
     limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
   });
-  function Lc(n) {
+  function Cc(n) {
     if (/["“”‘’「」『』]/u.test(n) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(n)) return "quotation";
     if (/^(?:(?:내|제|우리)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:은|는|이(?!랑)|가)/u.test(n)) return "other";
     if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(n)) return "past";
@@ -2642,8 +2642,8 @@ var yn = pe((Qd, va) => {
     let e = At(n);
     return /(?:만약|라면|다면|가정하|상상하)/u.test(e.condition ? e.body : n.replace(/^(?:저라면|나라면)/u, "")) ? "hypothetical" : null;
   }
-  g(Lc, "excludedOrigin");
-  function Pc(n) {
+  g(Cc, "excludedOrigin");
+  function Dc(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고)(?=\s)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -2653,8 +2653,8 @@ var yn = pe((Qd, va) => {
       o[0] === "," && /(?:것|거)도\s*$/u.test(n.slice(t, o.index)) && /^\s*.+?(?:것|거)도/u.test(n.slice(o.index + 1)) || /^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(o[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(n.slice(o.index + o[0].length)) || o[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|되|편이)$/u.test(n.slice(t, o.index).replace(/\s/gu, "")) || (s(o.index + (/^(?:지만|는데|좋고|좋아하고|편하고|즐겁고)$/u.test(o[0]) ? o[0].length : 0)), t = o.index + o[0].length);
     return s(n.length), e;
   }
-  g(Pc, "pieces");
-  var ra = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], aa = {
+  g(Dc, "pieces");
+  var aa = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], sa = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -2664,18 +2664,18 @@ var yn = pe((Qd, va) => {
     decision: "판단 방식",
     "explanation-detail": "설명에서 원하는 구성"
   };
-  function Cc(n) {
+  function Bc(n) {
     be.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null;
-    for (let s of Pc(n)) {
+    for (let s of Dc(n)) {
       let a = s.quote.replace(/\s/gu, ""), u = /^(?:나는|난|저는|제가|내가)/u.test(a), c = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(a), l = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(a);
       (i === "other" && u || i === "past" && c || i === "condition" && l || i === "uncertain" && c || ["quotation", "hypothetical", "sensitive"].includes(i) && u && c) && (i = null);
-      let p = { evidence: s }, d = Lc(a) || i;
+      let p = { evidence: s }, d = Cc(a) || i;
       if (d) {
         i = d, o = null, p.unresolved = { ...s, reason: d, reasonLabel: mo[d] }, ["uncertain", "condition"].includes(d) && (p.generic = !0), e.push(p);
         continue;
       }
-      let r = fe(s.quote) || ga(s.quote) || zc(s.quote) || Oc(s.quote) || Ac(s.quote);
+      let r = fe(s.quote) || $a(s.quote) || Pc(s.quote) || Mc(s.quote) || Rc(s.quote);
       if (!r && e.at(-1)?.meanings?.length && /^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(a)) {
         p.meanings = [], e.push(p);
         continue;
@@ -2700,7 +2700,7 @@ var yn = pe((Qd, va) => {
     }
     return e;
   }
-  g(Cc, "analyze");
+  g(Bc, "analyze");
   function $o(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -2708,7 +2708,7 @@ var yn = pe((Qd, va) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...ra].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...aa].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: xo(r.evidence) })), "add");
@@ -2725,8 +2725,8 @@ var yn = pe((Qd, va) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(aa).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(bt, f) && u(d, "value", `${aa[f]}에서 어떤 내용을 확인할까요?`, bt[f].map((m) => ({ id: m, label: St[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(sa).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(bt, f) && u(d, "value", `${sa[f]}에서 어떤 내용을 확인할까요?`, bt[f].map((m) => ({ id: m, label: St[m] })), (m) => {
           bt[f].includes(m) && u(d, "polarity", `‘${St[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(Ot).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(Ot, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
@@ -2752,33 +2752,33 @@ var yn = pe((Qd, va) => {
       let r = c.filter((f) => f.id === d.id || Mt(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${da(r.map((f) => f.id + go(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: ho(f), value: f.id })), ...ra.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${fa(r.map((f) => f.id + go(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: ho(f), value: f.id })), ...aa.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, Ze.unresolved), questions: a };
   }
   g($o, "stateFor");
-  function sa(n, e, i, t, o) {
-    let s = mc.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function ua(n, e, i, t, o) {
+    let s = $c.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = $o(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => go(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(sa, "choose");
-  function xa(n, { clarifications: e = [], parserVersion: i = bn } = {}) {
+  g(ua, "choose");
+  function va(n, { clarifications: e = [], parserVersion: i = bn } = {}) {
     if (i === be.PARSER_VERSION)
-      return e.length && ie(), be.parseMemberStatement(n);
+      return e.length && re(), be.parseMemberStatement(n);
     if (i === kt.PARSER_VERSION) return kt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === wt.PARSER_VERSION) return wt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Et.PARSER_VERSION) return Et.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== bn && ie(), (!pa(e, Ze.clarifications) || e.some((l) => !yt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ie();
-    let t = Cc(n), o = da(n), s = /* @__PURE__ */ Object.create(null), a = [], u = $o(n, t, s, o), c = sa(u, n, t, s, o);
+    i !== bn && re(), (!da(e, Ze.clarifications) || e.some((l) => !yt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && re();
+    let t = Bc(n), o = fa(n), s = /* @__PURE__ */ Object.create(null), a = [], u = $o(n, t, s, o), c = ua(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ie();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && re();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || ie(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = $o(n, t, s, o), c = sa(u, n, t, s, o);
+      p || re(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = $o(n, t, s, o), c = ua(u, n, t, s, o);
     }
     if (e.length === Ze.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && Mt(p, d)));
@@ -2786,41 +2786,41 @@ var yn = pe((Qd, va) => {
     }
     return { parserVersion: bn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: xo(e), clarificationAnswers: a };
   }
-  g(xa, "parseMemberStatement");
+  g(va, "parseMemberStatement");
   function ho(n) {
     return `${n.condition ? Ot[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${St[n.value]}`;
   }
   g(ho, "meaningLabel");
   function Mt(n, e) {
-    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !ua.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
+    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !ca.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(Mt, "meaningsConflict");
-  function Dc(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = ca(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function Uc(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = la(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === be.PARSER_VERSION) return be.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === kt.PARSER_VERSION) return kt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === wt.PARSER_VERSION) return wt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Et.PARSER_VERSION) return Et.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!yt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== bn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !pa(n.meanings, Ze.meanings) || !n.meanings.length) && ie();
-    let o = fo(n.at), s = fo(n.confirmedAt), a = i ? typeof e == "string" ? fo(e) : Number.isSafeInteger(e) ? e : ie() : null;
-    (s < o || i && s > a) && ie();
-    let u = xa(n.text, { clarifications: n.clarifications });
-    u.question && ie();
+    (!yt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== bn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !da(n.meanings, Ze.meanings) || !n.meanings.length) && re();
+    let o = fo(n.at), s = fo(n.confirmedAt), a = i ? typeof e == "string" ? fo(e) : Number.isSafeInteger(e) ? e : re() : null;
+    (s < o || i && s > a) && re();
+    let u = va(n.text, { clarifications: n.clarifications });
+    u.question && re();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!yt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !yt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ie(), c.add(p.id);
+      (!yt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !yt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && re(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ie(), xo(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && re(), xo(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => Mt(p, r))) && ie(), { id: n.id.toLowerCase(), parserVersion: bn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => Mt(p, r))) && re(), { id: n.id.toLowerCase(), parserVersion: bn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(Dc, "validateMemberStatement");
-  va.exports = { PARSER_VERSION: bn, MEMBER_STATEMENT_LIMITS: Ze, MEMBER_STATEMENT_VALUES: bt, MEMBER_STATEMENT_LABELS: St, MEMBER_STATEMENT_CONDITIONS: Ot, MEMBER_STATEMENT_MULTI_FIELDS: ua, parseMemberStatement: xa, validateMemberStatement: Dc, meaningsConflict: Mt, meaningLabel: ho };
+  g(Uc, "validateMemberStatement");
+  ba.exports = { PARSER_VERSION: bn, MEMBER_STATEMENT_LIMITS: Ze, MEMBER_STATEMENT_VALUES: bt, MEMBER_STATEMENT_LABELS: St, MEMBER_STATEMENT_CONDITIONS: Ot, MEMBER_STATEMENT_MULTI_FIELDS: ca, parseMemberStatement: va, validateMemberStatement: Uc, meaningsConflict: Mt, meaningLabel: ho };
 });
 
 // experiences/synk-account/src/member-statement-v6.cjs
-var Vn = pe((nf, _a) => {
+var Vn = pe((rf, qa) => {
   "use strict";
-  var ye = _e(), Nt = Be(), Tt = Ge(), _t = un(), qt = yn(), Bc = qe(), kn = "member-statement-ko-6", Qe = Object.freeze({ ...ye.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), It = Object.freeze({
+  var ye = _e(), Nt = Be(), Tt = Ge(), _t = un(), qt = yn(), Vc = qe(), kn = "member-statement-ko-6", Qe = Object.freeze({ ...ye.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), Rt = Object.freeze({
     ...ye.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -2861,13 +2861,13 @@ var Vn = pe((nf, _a) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), wa = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Ea = /* @__PURE__ */ g((n, e) => {
+  }), Ea = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Sa = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), Rt = /* @__PURE__ */ g((n, e) => wa(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Ea(n, i)), "exact"), Sa = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Ea(n, String(t))).every(Boolean), "list"), oe = /* @__PURE__ */ g(() => {
+  }, "data"), It = /* @__PURE__ */ g((n, e) => Ea(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Sa(n, i)), "exact"), Oa = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Sa(n, String(t))).every(Boolean), "list"), ae = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), vo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : oe(), "instant"), Ye = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), So = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Uc = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function Oa(n) {
+  }, "fail"), vo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ae(), "instant"), Ye = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), So = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Wc = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Aa(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -2880,7 +2880,7 @@ var Vn = pe((nf, _a) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Uc[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Wc[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -2889,8 +2889,8 @@ var Vn = pe((nf, _a) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(Oa, "sourceKey");
-  var Aa = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Ma = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Vc = [
+  g(Aa, "sourceKey");
+  var Ma = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Ra = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Fc = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -2913,10 +2913,10 @@ var Vn = pe((nf, _a) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Bn(n, e) {
-    for (let [i, t, o] of Vc) {
+    for (let [i, t, o] of Fc) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Ma.test(a) ? "avoid" : Aa.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Ra.test(a) ? "avoid" : Ma.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
@@ -2952,7 +2952,7 @@ var Vn = pe((nf, _a) => {
     return null;
   }
   g(Ia, "expanded");
-  var Wc = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, Fc = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, Kc = [
+  var Kc = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, Jc = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, Hc = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -2980,7 +2980,7 @@ var Vn = pe((nf, _a) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], Jc = [
+  ], Gc = [
     ["first-try", /^처음(?:손대는|해보는|접하는|배우는|시도하는)(?:일|작업|과제|내용)(?:에는|이라도|에서는|에서|은|을배울때는)/u],
     ["familiar", /^(?:이미)?(?:손에익은|익숙한)(?:일|작업|과제|내용)(?:이면|이라면|에는|에서는|에서|은)/u],
     ["familiar", /^(?:내용|일|작업)(?:이|은)익숙하고/u],
@@ -3022,7 +3022,7 @@ var Vn = pe((nf, _a) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], Hc = [
+  ], Xc = [
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
     ["avoid", /(?:선호하지|좋아하지|원하지)(?:는)?않(?:아요|습니다|는다|아|아해요)$/u],
@@ -3033,7 +3033,7 @@ var Vn = pe((nf, _a) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], Gc = [
+  ], Zc = [
     ["적기", /적(?:는|기)$/u],
     ["쓰기", /쓰(?:는|기)$/u],
     ["해결하기", /해결하(?:는|기)$/u],
@@ -3104,7 +3104,7 @@ var Vn = pe((nf, _a) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], Xc = [
+  ], Yc = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -3128,10 +3128,10 @@ var Vn = pe((nf, _a) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function Ra(n) {
+  function Na(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of Hc) {
+    for (let [o, s] of Xc) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -3140,25 +3140,25 @@ var Vn = pe((nf, _a) => {
     }
     let t = !1;
     if (!e) {
-      let o = Xc.find(([, s]) => s.test(n));
+      let o = Yc.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
     return { ...wn(i), polarity: e, habitual: t };
   }
-  g(Ra, "actionAndStance");
+  g(Na, "actionAndStance");
   function wn(n) {
     let e = n;
     e = e.replace(/(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, ""), /(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(e) || (e = e.replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u, ""));
     let i = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(e) ? "explanation" : null;
     i && (e = e.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1"));
-    let t = e, o = Gc.find(([, a]) => a.test(e));
+    let t = e, o = Zc.find(([, a]) => a.test(e));
     o ? e = e.replace(o[1], o[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let s = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (a, u) => s[u]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (a, u) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[u]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (a) => a.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (a) => a.startsWith("들어") ? "듣고" : a.startsWith("비교") ? "비교하고" : a.startsWith("실행") ? "실행하고" : "시도하고").replace(/참고해(?=결정|판단)/gu, "참고하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (a) => a.startsWith("만들어") ? "만들고" : a.startsWith("세워") ? "세우고" : a.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: i, surfaceAction: t };
   }
   g(wn, "normalizeActionPhrase");
-  var Zc = [
+  var Qc = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -3231,25 +3231,25 @@ var Vn = pe((nf, _a) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function Na(n, e) {
-    let i = Ra(n);
+  function Ta(n, e) {
+    let i = Na(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Na(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Ta(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = Zc.find(([, , s]) => s.test(i.action));
+    let t = Qc.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Bn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(Na, "recognizeAction");
+  g(Ta, "recognizeAction");
   function Un(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
     e = e.replace(/좋(?:아하)?고요$/u, (t) => t.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, "");
     let i = null;
-    for (let [t, o] of Jc) if (o.test(e)) {
+    for (let [t, o] of Gc) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
@@ -3270,7 +3270,7 @@ var Vn = pe((nf, _a) => {
     return t && (e = t[1].replace(/해보$/u, "해보는").replace(/하$/u, "하는") + "걸원하지않아요"), e;
   }
   g(Lt, "surfaceDeclaration");
-  function Yc(n) {
+  function el(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
       return !!me(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
@@ -3279,7 +3279,7 @@ var Vn = pe((nf, _a) => {
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(Yc, "comparative");
+  g(el, "comparative");
   function me(n) {
     let { body: e, condition: i } = Un(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
@@ -3299,7 +3299,7 @@ var Vn = pe((nf, _a) => {
       let l = me(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Yc(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = el(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
       let l = me(a[1] + "보는게좋아요"), p = me(a[2]);
@@ -3307,18 +3307,18 @@ var Vn = pe((nf, _a) => {
         return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = Na(e, i);
+    let c = Ta(e, i);
     if (c) return c;
-    for (let [l, p, d] of Kc) {
+    for (let [l, p, d] of Hc) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = Fc.test($) || Ma.test($) ? "avoid" : l !== "topic" && Wc.test($) || Aa.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = Jc.test($) || Ra.test($) ? "avoid" : l !== "topic" && Kc.test($) || Ma.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
   g(me, "natural");
-  function Qc(n) {
+  function nl(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -3330,8 +3330,8 @@ var Vn = pe((nf, _a) => {
     let o = me(e) || Ia(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(Qc, "tentative");
-  function el(n) {
+  g(nl, "tentative");
+  function tl(n) {
     let { body: e, condition: i } = Un(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
     let t = me(e.replace(/^(.+?)로만/u, "$1로"));
@@ -3339,8 +3339,8 @@ var Vn = pe((nf, _a) => {
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(el, "restrictedMethod");
-  var nl = [
+  g(tl, "restrictedMethod");
+  var il = [
     ["task", /^(?:이과제|나머지|할일이생기면)/u],
     ["person", /^(?:여럿)/u],
     ["process", /^(?:풀어가(?:는|기|고)|풀(?:기|고)|푸(?:는)?)/u],
@@ -3571,7 +3571,7 @@ var Vn = pe((nf, _a) => {
     ["first", /^부터/u],
     ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
     ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
-  ], tl = [
+  ], ol = [
     ["communicate", "소통"],
     ["communicate", "대화"],
     ["speak", "말"],
@@ -3618,12 +3618,12 @@ var Vn = pe((nf, _a) => {
     ["make", "제작"],
     ["explore", "탐색"],
     ["summary", "요약"]
-  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), il = [...tl, ...nl];
+  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), rl = [...ol, ...il];
   function yo(n) {
     let e = [], i = 0;
     for (; i < n.length && e.length < 120; ) {
       let t = null;
-      for (let [o, s] of il) {
+      for (let [o, s] of rl) {
         let a = s.exec(n.slice(i));
         a && (!t || a[0].length > t.text.length) && (t = { tag: o, text: a[0] });
       }
@@ -3633,7 +3633,7 @@ var Vn = pe((nf, _a) => {
     return i === n.length ? e.filter((t) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(t)) : null;
   }
   g(yo, "phraseUnits");
-  function ol(n, e) {
+  function al(n, e) {
     let i = n.filter((u) => !["nominal", "means", "method"].includes(u)).join(" "), t = /* @__PURE__ */ g((u) => u.test(i), "match"), o = /* @__PURE__ */ g((u, c) => ({ field: u, value: c }), "out");
     if (t(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u)) return o("communication", "listen-organize");
     if (t(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return o("communication", "share-first");
@@ -3679,10 +3679,10 @@ var Vn = pe((nf, _a) => {
       ["ai-tools", /^ai(?: use)?$/u],
       ["work-collaboration", /^(?:person together task do )?collaboration$/u]
     ].find(([, u]) => u.test(i));
-    return a ? o("topic", a[0]) : rl(n, e);
+    return a ? o("topic", a[0]) : sl(n, e);
   }
-  g(ol, "composeMeaning");
-  function rl(n, e) {
+  g(al, "composeMeaning");
+  function sl(n, e) {
     let i = n.filter((x) => !["nominal", "means", "method"].includes(x));
     e === "explanation" && !i.includes("explanation") && i.push("explanation");
     let t = /* @__PURE__ */ g((x) => i.includes(x), "has"), o = /* @__PURE__ */ g((...x) => x.some(t), "any"), s = /* @__PURE__ */ g((...x) => x.every(t), "all"), a = /* @__PURE__ */ g((x, v) => i.indexOf(x) < i.indexOf(v), "before"), u = /* @__PURE__ */ g((...x) => !t("start") || x.some((v) => t(v) && a(v, "start")), "beforeStart"), c = t("overview") ? i.slice(0, i.indexOf("overview")) : [], l = c.every((x) => ["explanation", "detail", "content", "first", "enter", "before"].includes(x)) && (!c.includes("enter") || c.indexOf("enter") < c.indexOf("before")), p = t("explain") || s("explanation", "receive"), d = [], r = /* @__PURE__ */ g((x, v, y, O) => {
@@ -3716,8 +3716,8 @@ var Vn = pe((nf, _a) => {
     }
     return d.length === 1 ? d[0] : null;
   }
-  g(rl, "composeRoles");
-  var al = [
+  g(sl, "composeRoles");
+  var ul = [
     ["avoid", /(?:하고)?싶지않(?:아요|습니다|아|다)$/u],
     ["avoid", /(?:빼고|제외하고)싶(?:어요|습니다|어|다)$/u],
     ["prefer", /배워보고싶은마음이커요$/u],
@@ -3737,16 +3737,16 @@ var Vn = pe((nf, _a) => {
     ["prefer", /(?:제가|내가)?좋아하는(?:분야|취미)(?:예요|이에요|입니다)$/u],
     ["prefer", /(?:관심(?:이)?가(?:요)?|관심(?:을)?두고있(?:어요|습니다|다))$/u]
   ];
-  function sl(n) {
+  function cl(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(n)) return null;
-    for (let [e, i] of al) {
+    for (let [e, i] of ul) {
       let t = i.exec(n);
       if (t) return { ...wn(n.slice(0, t.index)), polarity: e, habitual: !1 };
     }
-    return Ra(n);
+    return Na(n);
   }
-  g(sl, "composeStance");
-  var ul = [
+  g(cl, "composeStance");
+  var ll = [
     [/^설명(?:을)?받을때(?:는)?(?:저는|나는)?/u, ["explanation", "explanation-detail"], "설명"],
     [/^(?:배울때|연습할때)(?:는)?(?=단계|한단계|도움|혼자|같이|함께|예시)/u, ["support"], ""],
     [/^(?:나한테|저한테|제게|내게)?설명할때(?:는)?/u, ["explanation", "explanation-detail"], "설명"],
@@ -3763,7 +3763,7 @@ var Vn = pe((nf, _a) => {
     [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
     [/^판단(?:은|을)/u, ["decision"], ""],
     [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
-  ], cl = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, ll = {
+  ], pl = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, dl = {
     independent: "self nohelp before-help first task try do process finish",
     together: "person together task try do process finish",
     example: "example first one look show check start before-start inquiry task",
@@ -3791,20 +3791,20 @@ var Vn = pe((nf, _a) => {
     listening: "practice audio visual text listen read both mix answer know do",
     mixed: "practice audio visual text listen read both mix answer know do"
   };
-  function pl(n, { polarity: e, habitual: i }, t, o, s) {
+  function fl(n, { polarity: e, habitual: i }, t, o, s) {
     if (i || /(?:안|못).{0,8}(?:지는?\s*않|지\s*않)|(?:싫|불편|거부).{0,6}(?:않|아니)/u.test(s)) return null;
     let a = n.replace(/,/gu, "");
     if (e === "avoid" && /(?:글|말|문자|메시지|메일|이메일)로만/u.test(a)) return null;
     let u = a.replace(/(?:누구|다른사람의)?도움(?:을)?(?:받지않고|없이)/gu, "혼자").replace(/생략하지않고/gu, "상세하게").replace(/(?:중간중간)?끊(?:기)?지않고/gu, "이어지는").replace(/짧지도길지도않은(?=보통|중간)/u, "");
-    if (/(?:않|못|아니|싫|없지|말고|없는|없이|안하|안해|안되|비선호|불편|거부(?:하|감|되))/u.test(u) || /(?:보다는|보단|보다(?!가)|대신|느니|않|말했|라고|다고|다는|라는|것같|듯|모르|수도|아마)/u.test(u) || /(?:강요|억지|시키|시켜|명령|할수밖에|해야한다|해야만|잘하고|잘하|능력|실력|시험점수)/u.test(a) || /(?:화면|페이지|앱|프로필)(?:의)?(?:배경|색|버튼|글자|배치)|(?:연습|수업|학습|공부)(?:의)?(?:시간표|날짜|요일|알림)/u.test(a) || cl.test(a) || /(?:하는|하던|보는|보던)(?:사람|친구|동료|분)/u.test(a)) return null;
+    if (/(?:않|못|아니|싫|없지|말고|없는|없이|안하|안해|안되|비선호|불편|거부(?:하|감|되))/u.test(u) || /(?:보다는|보단|보다(?!가)|대신|느니|않|말했|라고|다고|다는|라는|것같|듯|모르|수도|아마)/u.test(u) || /(?:강요|억지|시키|시켜|명령|할수밖에|해야한다|해야만|잘하고|잘하|능력|실력|시험점수)/u.test(a) || /(?:화면|페이지|앱|프로필)(?:의)?(?:배경|색|버튼|글자|배치)|(?:연습|수업|학습|공부)(?:의)?(?:시간표|날짜|요일|알림)/u.test(a) || pl.test(a) || /(?:하는|하던|보는|보던)(?:사람|친구|동료|분)/u.test(a)) return null;
     let c = /^\s*(?:(우리|저희|제|내|그|그들의)\s+)?([^\s]+?)(?:들)?(?:께서는|께서|은|는|이(?!랑)|가)\s+/u.exec(s);
     if (c && (/^(?:우리|저희|그|그들의)$/u.test(c[1] || "") || !/^(?:저|나|제|내|난|설명|도움|연습|한국어|글|말|의견|생각|읽기|듣기|자료|근거|계획|일|작업|업무|판단|결정|요리|음악|독서|게임|운동|사진|영상|디자인|여럿|풀|이번에|그다음에)$/u.test(c[2]) && !/(?:받|하|되|없|있)$/u.test(c[2])) || /(?:받고|듣고|보고|읽고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)) return null;
     let l = a.replace(/(?:도움이)?(?:필요한|필요해졌을|필요할)(?:순간|시점|때)(?:에)?(?:만)?/gu, "필요도움");
     if (/(?:때|땐|라면|다면|경우|상황|기간|동안|날에|오늘만|내일만|이번만|이후의|이전의|에서는|에서만|에는|에만)/u.test(l) || /에서/u.test(l.replace(/옆에서/gu, "")) && !/(?:주제|소재|이야기|얘기)/u.test(a)) return null;
     let p = yo(wn(u).action);
     if (!p) return null;
-    let d = [], r = /* @__PURE__ */ g((b, k, R) => {
-      R && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
+    let d = [], r = /* @__PURE__ */ g((b, k, I) => {
+      I && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
     }, "add"), $ = /* @__PURE__ */ g((b) => b.test(a), "has"), h = /* @__PURE__ */ g((b, k) => $(b) && $(k), "both"), f = /* @__PURE__ */ g((b) => a.search(b), "pos"), m = /* @__PURE__ */ g((b, k) => f(b) >= 0 && f(k) > f(b), "ordered"), x = $(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u), v = $(/(?:연습|문제|학습)/u) && !$(/(?:주제|소재|관한)/u);
     if (v) {
       let b = $(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), k = $(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
@@ -3816,8 +3816,8 @@ var Vn = pe((nf, _a) => {
     r("explanation", "standard", O && T && !A), r("explanation", "brief", O && E && !T && !A && !$(/길게|긴설명/u));
     let S = $(/근거|이유|왜그런/u) && A;
     r("explanation", "detailed", O && A && !S && !E && !T), r("explanation-detail", "reasons-detail", S && $(/알|듣|설명|받|보/u)), r("explanation-detail", "long-flow", O && $(/길게이어|길게계속|긴설명을끊|길게설명/u));
-    let I = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-    if (r("explanation-detail", "overview-first", I && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
+    let R = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+    if (r("explanation-detail", "overview-first", R && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
       let b = [
         ["travel-planning", /여행/u, /일정|동선/u],
         ["travel-food", /여행지|여행|다른나라/u, /음식|식당|주문/u],
@@ -3836,21 +3836,21 @@ var Vn = pe((nf, _a) => {
         ["games", /게임/u, /게임/u],
         ["nature", /자연|공원/u, /산책|자연/u]
       ];
-      for (let [k, R, w] of b) r("topic", k, x && h(R, w));
+      for (let [k, I, w] of b) r("topic", k, x && h(I, w));
     }
     let N = [...new Map(d.map((b) => [Ye(b), b])).values()];
     if (N.length !== 1) return null;
     let M = N[0], _ = /* @__PURE__ */ g((b, k) => {
-      let R = p.indexOf(b);
-      return R >= 0 && p.slice(0, R).some((w) => k.includes(w));
+      let I = p.indexOf(b);
+      return I >= 0 && p.slice(0, I).some((w) => k.includes(w));
     }, "beforeRole");
     if (M.field !== "topic") {
-      let b = new Set((ll[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
+      let b = new Set((dl[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
       if (p.some((k) => !b.has(k))) return null;
     }
     return M.value === "plan-first" && _("plan", ["start", "try", "process", "finish", "do"]) || M.value === "example" && _("example", ["start", "try", "process", "finish", "do"]) || M.value === "overview-first" && _("overview", ["listen", "read", "receive", "explain", "look"]) ? null : { meanings: N };
   }
-  g(pl, "declaredCore");
+  g(fl, "declaredCore");
   function cn(n) {
     let { body: e, condition: i } = Un(Lt(n));
     e = e.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통)/u, "");
@@ -3872,14 +3872,14 @@ var Vn = pe((nf, _a) => {
     l && (e = l[1] + "좋아요");
     let p = /^(?:(?:제|내)취향(?:은|이)|(?:(?:내가|제가))?원하는(설명길이|연습방식|도움방식|소통방식)(?:는|은))(.+?)(?:이에요|예요|입니다)$/u.exec(e);
     p && (e = p[2] + "좋아요", p[1] === "설명길이" && (o = "설명", t = ["explanation"]));
-    for (let [A, E, S] of ul) {
-      let I = A.exec(e);
-      if (I) {
-        t = E, o = S, e = e.slice(I[0].length);
+    for (let [A, E, S] of ll) {
+      let R = A.exec(e);
+      if (R) {
+        t = E, o = S, e = e.slice(R[0].length);
         break;
       }
     }
-    let d = /^(?:즐기는|좋아하는)(?:취미|관심분야)(?:를|중)(?:하나)?(?:꼽으면|고르면)(.+?)(?:예요|이에요|입니다)$/u.exec(e), r = d ? { ...wn(d[1]), polarity: "prefer", habitual: !1 } : sl(e);
+    let d = /^(?:즐기는|좋아하는)(?:취미|관심분야)(?:를|중)(?:하나)?(?:꼽으면|고르면)(.+?)(?:예요|이에요|입니다)$/u.exec(e), r = d ? { ...wn(d[1]), polarity: "prefer", habitual: !1 } : cl(e);
     if (!r) return null;
     let h = (/* @__PURE__ */ g((A) => A.replace(/(?:(?:저|나)(?:는|에게|한테)(?:는)?|제게(?:는)?|제겐|저에겐|내게(?:는)?|내겐)(?:한결|더|잘|딱|그다지)?$/u, "").replace(/(?:자꾸|더|한결|딱|취미로)$/u, ""), "stripSelf"))(r.surfaceAction || r.action);
     h = h.replace(/^(설명(?:은|이)?)?(?:너무)?짧거나길게말고(?=중간길이|보통길이)/u, "$1"), h = wn(h).surfaceAction, h = h.replace(/(?:하는|받는)편$/u, (A) => A.slice(0, -1)), h = wn(h).surfaceAction;
@@ -3894,19 +3894,19 @@ var Vn = pe((nf, _a) => {
     for (let A of new Set(y)) {
       let E = yo(A);
       if (!E) continue;
-      let S = ol(E, r.nominalHead);
+      let S = al(E, r.nominalHead);
       S && O.push(S);
     }
     if (!O.length) {
-      let A = pl(o + h, r, i, t, n);
+      let A = fl(o + h, r, i, t, n);
       if (A) return A;
       if (r.polarity !== "prefer") return null;
       let E = [...h.matchAll(/고(?:,)?/gu)];
       if (E.length > 6) return null;
       for (let S of E) {
-        let I = h.slice(0, S.index + 1), N = h.slice(S.index + S[0].length);
-        if (!N || /[?!]/u.test(I + N)) continue;
-        let M = cn(o + I + "좋아요"), _ = cn(o + N + "좋아요");
+        let R = h.slice(0, S.index + 1), N = h.slice(S.index + S[0].length);
+        if (!N || /[?!]/u.test(R + N)) continue;
+        let M = cn(o + R + "좋아요"), _ = cn(o + N + "좋아요");
         if (!M?.meanings.length || !_?.meanings.length || M.meanings.some((k) => k.condition) || _.meanings.some((k) => k.condition)) continue;
         let b = [...M.meanings, ..._.meanings];
         if (!(b.some((k) => !Eo.includes(k.field)) || new Set(b.map((k) => k.field + ":" + k.value)).size < 2) && !(t && b.some((k) => !t.includes(k.field))))
@@ -3930,7 +3930,7 @@ var Vn = pe((nf, _a) => {
     uncertain: "확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.",
     limit: "이번에 확인할 수 있는 범위를 넘어 남겨 두었어요."
   });
-  function dl(n) {
+  function ml(n) {
     if (/["“”‘’「」『』]/u.test(n) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(n)) return "quotation";
     if (/^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서)|께서는|께서|은|는|이(?!랑)|가)/u.test(n)) return "other";
     if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(n)) return "past";
@@ -3938,8 +3938,8 @@ var Vn = pe((nf, _a) => {
     let e = Un(Lt(n));
     return /(?:만약|라면|다면|가정하|상상하)/u.test(e.condition ? e.body : Lt(n).replace(/^(?:저라면|나라면)/u, "")) ? "hypothetical" : null;
   }
-  g(dl, "excludedOrigin");
-  function fl(n) {
+  g(ml, "excludedOrigin");
+  function gl(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:지만|는데|좋고|좋아하고|편하고|즐겁고|싶고)(?=\s|,)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -3954,8 +3954,8 @@ var Vn = pe((nf, _a) => {
     }
     return s(n.length), e;
   }
-  g(fl, "pieces");
-  var ba = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], ya = {
+  g(gl, "pieces");
+  var ya = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], ka = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -3965,18 +3965,18 @@ var Vn = pe((nf, _a) => {
     decision: "판단 방식",
     "explanation-detail": "설명에서 원하는 구성"
   };
-  function ml(n) {
+  function $l(n) {
     ye.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null;
-    for (let s of fl(n)) {
+    for (let s of gl(n)) {
       let a = s.quote.replace(/\s/gu, ""), u = /^(?:나는|난|저는|제가|내가)/u.test(a), c = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(a), l = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(a);
       (i === "other" && u || i === "past" && c || i === "condition" && l || i === "uncertain" && c || ["quotation", "hypothetical", "sensitive"].includes(i) && u && c) && (i = null);
-      let p = { evidence: s }, d = dl(a) || i;
+      let p = { evidence: s }, d = ml(a) || i;
       if (d) {
         i = d, o = null, p.unresolved = { ...s, reason: d, reasonLabel: bo[d] }, ["uncertain", "condition"].includes(d) && (p.generic = !0), e.push(p);
         continue;
       }
-      let r = me(s.quote) || Ia(s.quote) || cn(s.quote) || Qc(s.quote) || el(s.quote);
+      let r = me(s.quote) || Ia(s.quote) || cn(s.quote) || nl(s.quote) || tl(s.quote);
       if (!r && !/^[\s.!?]*\?/u.test(n.slice(s.end)) && e.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(a) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(a) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(a) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(a) || e.at(-1).meanings.some((m) => m.field === "communication" && m.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(a))) {
         p.meanings = [], e.push(p);
         continue;
@@ -4001,7 +4001,7 @@ var Vn = pe((nf, _a) => {
     }
     return e;
   }
-  g(ml, "analyze");
+  g($l, "analyze");
   function ko(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -4009,7 +4009,7 @@ var Vn = pe((nf, _a) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...ba].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...ya].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: So(r.evidence) })), "add");
@@ -4026,9 +4026,9 @@ var Vn = pe((nf, _a) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(ya).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(It, f) && u(d, "value", `${ya[f]}에서 어떤 내용을 확인할까요?`, It[f].map((m) => ({ id: m, label: jt[m] })), (m) => {
-          It[f].includes(m) && u(d, "polarity", `‘${jt[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(ka).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(Rt, f) && u(d, "value", `${ka[f]}에서 어떤 내용을 확인할까요?`, Rt[f].map((m) => ({ id: m, label: jt[m] })), (m) => {
+          Rt[f].includes(m) && u(d, "polarity", `‘${jt[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(zt).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(zt, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
             });
@@ -4053,34 +4053,34 @@ var Vn = pe((nf, _a) => {
       let r = c.filter((f) => f.id === d.id || Pt(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${Oa(r.map((f) => f.id + Ye(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: wo(f), value: f.id })), ...ba.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${Aa(r.map((f) => f.id + Ye(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: wo(f), value: f.id })), ...ya.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, Qe.unresolved), questions: a };
   }
   g(ko, "stateFor");
-  function ka(n, e, i, t, o) {
-    let s = Bc.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function wa(n, e, i, t, o) {
+    let s = Vc.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = ko(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => Ye(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(ka, "choose");
-  function Ta(n, { clarifications: e = [], parserVersion: i = kn } = {}) {
+  g(wa, "choose");
+  function _a(n, { clarifications: e = [], parserVersion: i = kn } = {}) {
     if (i === ye.PARSER_VERSION)
-      return e.length && oe(), ye.parseMemberStatement(n);
+      return e.length && ae(), ye.parseMemberStatement(n);
     if (i === Nt.PARSER_VERSION) return Nt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Tt.PARSER_VERSION) return Tt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === _t.PARSER_VERSION) return _t.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === qt.PARSER_VERSION) return qt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== kn && oe(), (!Sa(e, Qe.clarifications) || e.some((l) => !Rt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && oe();
-    let t = ml(n), o = Oa(n), s = /* @__PURE__ */ Object.create(null), a = [], u = ko(n, t, s, o), c = ka(u, n, t, s, o);
+    i !== kn && ae(), (!Oa(e, Qe.clarifications) || e.some((l) => !It(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ae();
+    let t = $l(n), o = Aa(n), s = /* @__PURE__ */ Object.create(null), a = [], u = ko(n, t, s, o), c = wa(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && oe();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ae();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || oe(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = ko(n, t, s, o), c = ka(u, n, t, s, o);
+      p || ae(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = ko(n, t, s, o), c = wa(u, n, t, s, o);
     }
     if (e.length === Qe.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && Pt(p, d)));
@@ -4088,7 +4088,7 @@ var Vn = pe((nf, _a) => {
     }
     return { parserVersion: kn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: So(e), clarificationAnswers: a };
   }
-  g(Ta, "parseMemberStatement");
+  g(_a, "parseMemberStatement");
   function wo(n) {
     return `${n.condition ? zt[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${jt[n.value]}`;
   }
@@ -4097,33 +4097,33 @@ var Vn = pe((nf, _a) => {
     return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Eo.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(Pt, "meaningsConflict");
-  function gl(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = wa(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function hl(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = Ea(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === ye.PARSER_VERSION) return ye.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Nt.PARSER_VERSION) return Nt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Tt.PARSER_VERSION) return Tt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === _t.PARSER_VERSION) return _t.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === qt.PARSER_VERSION) return qt.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!Rt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== kn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Sa(n.meanings, Qe.meanings) || !n.meanings.length) && oe();
-    let o = vo(n.at), s = vo(n.confirmedAt), a = i ? typeof e == "string" ? vo(e) : Number.isSafeInteger(e) ? e : oe() : null;
-    (s < o || i && s > a) && oe();
-    let u = Ta(n.text, { clarifications: n.clarifications });
-    u.question && oe();
+    (!It(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== kn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Oa(n.meanings, Qe.meanings) || !n.meanings.length) && ae();
+    let o = vo(n.at), s = vo(n.confirmedAt), a = i ? typeof e == "string" ? vo(e) : Number.isSafeInteger(e) ? e : ae() : null;
+    (s < o || i && s > a) && ae();
+    let u = _a(n.text, { clarifications: n.clarifications });
+    u.question && ae();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!Rt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !Rt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && oe(), c.add(p.id);
+      (!It(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !It(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ae(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && oe(), So(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ae(), So(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => Pt(p, r))) && oe(), { id: n.id.toLowerCase(), parserVersion: kn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => Pt(p, r))) && ae(), { id: n.id.toLowerCase(), parserVersion: kn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(gl, "validateMemberStatement");
-  _a.exports = { PARSER_VERSION: kn, MEMBER_STATEMENT_LIMITS: Qe, MEMBER_STATEMENT_VALUES: It, MEMBER_STATEMENT_LABELS: jt, MEMBER_STATEMENT_CONDITIONS: zt, MEMBER_STATEMENT_MULTI_FIELDS: Eo, parseMemberStatement: Ta, validateMemberStatement: gl, meaningsConflict: Pt, meaningLabel: wo };
+  g(hl, "validateMemberStatement");
+  qa.exports = { PARSER_VERSION: kn, MEMBER_STATEMENT_LIMITS: Qe, MEMBER_STATEMENT_VALUES: Rt, MEMBER_STATEMENT_LABELS: jt, MEMBER_STATEMENT_CONDITIONS: zt, MEMBER_STATEMENT_MULTI_FIELDS: Eo, parseMemberStatement: _a, validateMemberStatement: hl, meaningsConflict: Pt, meaningLabel: wo };
 });
 
 // experiences/synk-account/src/member-statement-v7.cjs
-var Qt = pe((of, Xa) => {
+var Qt = pe((sf, Za) => {
   "use strict";
-  var ke = _e(), Bt = Be(), Ut = Ge(), Vt = un(), Wt = yn(), Ft = Vn(), $l = qe(), En = "member-statement-ko-7", Ue = Object.freeze({ ...ke.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), Ct = Object.freeze({
+  var ke = _e(), Bt = Be(), Ut = Ge(), Vt = un(), Wt = yn(), Ft = Vn(), xl = qe(), En = "member-statement-ko-7", Ue = Object.freeze({ ...ke.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), Ct = Object.freeze({
     ...ke.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -4154,7 +4154,7 @@ var Qt = pe((of, Xa) => {
     photography: "사진 촬영",
     games: "게임",
     nature: "자연·산책"
-  }), Ro = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), Jt = Object.freeze({
+  }), Io = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), Jt = Object.freeze({
     ...ke.MEMBER_STATEMENT_CONDITIONS,
     "after-example": "예시를 본 다음",
     "first-try-after-example": "처음 시도하며 예시를 본 다음",
@@ -4164,13 +4164,13 @@ var Qt = pe((of, Xa) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), Pa = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Ca = /* @__PURE__ */ g((n, e) => {
+  }), Ca = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Da = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), Dt = /* @__PURE__ */ g((n, e) => Pa(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Ca(n, i)), "exact"), Da = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Ca(n, String(t))).every(Boolean), "list"), re = /* @__PURE__ */ g(() => {
+  }, "data"), Dt = /* @__PURE__ */ g((n, e) => Ca(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Da(n, i)), "exact"), Ba = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Da(n, String(t))).every(Boolean), "list"), se = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), Oo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : re(), "instant"), nn = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), No = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), hl = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function Ba(n) {
+  }, "fail"), Oo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : se(), "instant"), nn = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), No = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), vl = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Ua(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -4183,7 +4183,7 @@ var Qt = pe((of, Xa) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + hl[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + vl[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -4192,8 +4192,8 @@ var Qt = pe((of, Xa) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(Ba, "sourceKey");
-  var Ua = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Va = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, xl = [
+  g(Ua, "sourceKey");
+  var Va = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Wa = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, bl = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -4216,10 +4216,10 @@ var Qt = pe((of, Xa) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Wn(n, e) {
-    for (let [i, t, o] of xl) {
+    for (let [i, t, o] of bl) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Va.test(a) ? "avoid" : Ua.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Wa.test(a) ? "avoid" : Va.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
@@ -4255,7 +4255,7 @@ var Qt = pe((of, Xa) => {
     return null;
   }
   g(Kn, "expanded");
-  var vl = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, bl = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, yl = [
+  var yl = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, kl = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, wl = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -4283,7 +4283,7 @@ var Qt = pe((of, Xa) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], kl = [
+  ], El = [
     ["meeting", /^같은회의(?:상황|자리|시간)(?:에서는|에는|엔)/u],
     ["after-example", /^(?:그|이)?(?:예시|예제|샘플)(?:를|을)?(?:보고나서는|보고나서|보고나면|(?:본|보고난|확인한)(?:뒤|후|다음|이후)(?:에는|엔|에))/u],
     ["first-try", /^(?:(?:처음(?:해보는|접하는|배우는|공부하는|시도하는)|새로운|낯선)(?:일|작업|과제|문제|내용))(?:일때(?:에는|는)?|이라면|이면|에는|은)/u],
@@ -4330,7 +4330,7 @@ var Qt = pe((of, Xa) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], wl = [
+  ], Sl = [
     ["avoid", /관심(?:이)?없(?:어요|습니다|다|어)$/u],
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
@@ -4342,7 +4342,7 @@ var Qt = pe((of, Xa) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], El = [
+  ], Ol = [
     ["적기", /적(?:는|기)$/u],
     ["쓰기", /쓰(?:는|기)$/u],
     ["해결하기", /해결하(?:는|기)$/u],
@@ -4413,7 +4413,7 @@ var Qt = pe((of, Xa) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], Sl = [
+  ], Al = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -4437,10 +4437,10 @@ var Qt = pe((of, Xa) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function Wa(n) {
+  function Fa(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of wl) {
+    for (let [o, s] of Sl) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -4449,25 +4449,25 @@ var Qt = pe((of, Xa) => {
     }
     let t = !1;
     if (!e) {
-      let o = Sl.find(([, s]) => s.test(n));
+      let o = Al.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
     return { ...Ve(i), polarity: e, habitual: t };
   }
-  g(Wa, "actionAndStance");
+  g(Fa, "actionAndStance");
   function Ve(n) {
     let e = n;
     e = e.replace(/(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, ""), e = e.replace(/기(?:를|는|도|가)$/u, "기"), /(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(e) || (e = e.replace(/(?:것|거|방식|쪽|편|시간|일|방법|구성)(?:이|은|을|를|도|에|에는|에도)?$|(?:게|걸|건|데|데에도)$/u, ""));
     let i = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(e) ? "explanation" : null;
     i && (e = e.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1"));
-    let t = e, o = El.find(([, a]) => a.test(e));
+    let t = e, o = Ol.find(([, a]) => a.test(e));
     o ? e = e.replace(o[1], o[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let s = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (a, u) => s[u]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (a, u) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[u]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (a) => a.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (a) => a.startsWith("들어") ? "듣고" : a.startsWith("비교") ? "비교하고" : a.startsWith("실행") ? "실행하고" : "시도하고").replace(/(참고|상의|확인|비교)해(?=결정|판단)/gu, "$1하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (a) => a.startsWith("만들어") ? "만들고" : a.startsWith("세워") ? "세우고" : a.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: i, surfaceAction: t };
   }
   g(Ve, "normalizeActionPhrase");
-  var Ol = [
+  var Ml = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -4540,25 +4540,25 @@ var Qt = pe((of, Xa) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function Fa(n, e) {
-    let i = Wa(n);
+  function Ka(n, e) {
+    let i = Fa(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Fa(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Ka(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = Ol.find(([, , s]) => s.test(i.action));
+    let t = Ml.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Wn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(Fa, "recognizeAction");
+  g(Ka, "recognizeAction");
   function je(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
     /좋지만\s*$/u.test(n) && (e = e.replace(/좋$/u, "좋아요")), /일이지만\s*$/u.test(n) && (e = e.replace(/일이$/u, "일이에요")), e = e.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u, (t) => ({ 좋아하며: "좋아해요", 선호하고: "선호해요", 선호하며: "선호해요", 원하고: "원해요", 원하며: "원해요", 편하며: "편해요", 싫고: "싫어요", 관심이있고: "관심있어요", 관심이많고: "관심많아요", 원하지않고: "원하지않아요", 선호하지않고: "선호하지않아요", 좋아하지않고: "좋아하지않아요" })[t]).replace(/(?:쪽이고|것이고|편이고)$/u, (t) => t.slice(0, -2) + "이에요").replace(/관심이많$/u, "관심이많아요").replace(/관심이없$/u, "관심이없어요").replace(/좋아하$/u, "좋아해요").replace(/((?:원|좋아|선호)하지)않$/u, "$1않아요").replace(/좋아하$/u, "좋아해요").replace(/좋아하는$/u, "좋아해요"), e = e.replace(/좋(?:아하)?고요$/u, (t) => t.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, ""), e = e.replace(/^(?:저는|나는|난|제가|내가)/u, "");
     let i = null;
-    for (let [t, o] of kl) if (o.test(e)) {
+    for (let [t, o] of El) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
@@ -4583,20 +4583,20 @@ var Qt = pe((of, Xa) => {
     return s && (e = s[1].replace(/해보$/u, "해보는").replace(/하$/u, "하는") + "걸원하지않아요"), e;
   }
   g(ze, "surfaceDeclaration");
-  function Al(n) {
+  function Rl(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
-      return !!F(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
+      return !!K(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
     }, "known"), i = /^(.+?(?:게|것이|쪽이|방식이|방법이|편이))(.+?)(?:보다는|보다)(.+)$/u.exec(n);
-    if (i && e(i[2]) && F(i[1] + i[3])?.meanings.length) return i[1] + i[3];
+    if (i && e(i[2]) && K(i[1] + i[3])?.meanings.length) return i[1] + i[3];
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(Al, "comparative");
-  function F(n) {
+  g(Rl, "comparative");
+  function K(n) {
     let { body: e, condition: i } = je(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
-      let l = F(t[1] + t[3]), p = F(t[2] + t[3]);
+      let l = K(t[1] + t[3]), p = K(t[2] + t[3]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && !l.uncertain && !p.uncertain) {
         let d = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(t[2]);
         return { meanings: [...l.meanings.map((r) => ({ ...r, condition: r.condition || i })), ...p.meanings.map((r) => ({ ...r, condition: r.condition || (d ? null : i) }))] };
@@ -4604,34 +4604,34 @@ var Qt = pe((of, Xa) => {
     }
     let o = /^(?:(?:제|내)?(?:취미|관심분야)(?:는|은))?(.+?)(?:이랑|랑|와|과)(.+?)(?:이고|고|을|를)(?:둘다|모두)(.+)$/u.exec(e);
     if (o) {
-      let l = F(o[1] + o[3]), p = F(o[2] + o[3]);
+      let l = K(o[1] + o[3]), p = K(o[2] + o[3]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && [...l.meanings, ...p.meanings].every((d) => d.field === "topic")) return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     let s = /^(?:시간날때|시간이날때|여유시간에)(.+)$/u.exec(e);
     if (s) {
-      let l = F(s[1]);
+      let l = K(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Al(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Rl(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
-      let l = F(a[1] + "보는게좋아요"), p = F(a[2]);
+      let l = K(a[1] + "보는게좋아요"), p = K(a[2]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && l.meanings[0].value === "overview-first" && p.meanings[0].value === "reasons-detail" && p.meanings[0].polarity === "prefer")
         return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = Fa(e, i);
+    let c = Ka(e, i);
     if (c) return c;
-    for (let [l, p, d] of yl) {
+    for (let [l, p, d] of wl) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = bl.test($) || Va.test($) ? "avoid" : l !== "topic" && vl.test($) || Ua.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = kl.test($) || Wa.test($) ? "avoid" : l !== "topic" && yl.test($) || Va.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
-  g(F, "natural");
-  function Ml(n) {
+  g(K, "natural");
+  function Il(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -4640,20 +4640,20 @@ var Qt = pe((of, Xa) => {
     ].find(([s]) => s.test(e));
     if (!t) return null;
     e = e.replace(t[0], t[1]).replace(/^(아마|어쩌면)/u, "").replace(/(?:아마|어쩌면)(?=(?:좀더|더)?(?:좋아요|편해요|싫어요)$)/u, "");
-    let o = F(e) || Kn(e);
+    let o = K(e) || Kn(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(Ml, "tentative");
-  function Il(n) {
+  g(Il, "tentative");
+  function Nl(n) {
     let { body: e, condition: i } = je(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
-    let t = F(e.replace(/^(.+?)로만/u, "$1로"));
+    let t = K(e.replace(/^(.+?)로만/u, "$1로"));
     if (t?.meanings.length !== 1 || t.meanings[0].field !== "communication") return null;
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(Il, "restrictedMethod");
-  var Rl = [
+  g(Nl, "restrictedMethod");
+  var Tl = [
     ["experience", /^(?:직접)?경험한(?:내용|경험|일|것)/u],
     ["explain", /^안내받(?:는|기|고)/u],
     ["decide", /^정해(?:서)?/u],
@@ -4902,7 +4902,7 @@ var Qt = pe((of, Xa) => {
     ["first", /^부터/u],
     ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
     ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
-  ], Nl = [
+  ], _l = [
     ["communicate", "소통"],
     ["communicate", "대화"],
     ["speak", "말"],
@@ -4949,12 +4949,12 @@ var Qt = pe((of, Xa) => {
     ["make", "제작"],
     ["explore", "탐색"],
     ["summary", "요약"]
-  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), Tl = [...Nl, ...Rl];
+  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), ql = [..._l, ...Tl];
   function Fn(n) {
     let e = [], i = 0;
     for (; i < n.length && e.length < 120; ) {
       let t = null;
-      for (let [o, s] of Tl) {
+      for (let [o, s] of ql) {
         let a = s.exec(n.slice(i));
         a && (!t || a[0].length > t.text.length) && (t = { tag: o, text: a[0] });
       }
@@ -4964,7 +4964,7 @@ var Qt = pe((of, Xa) => {
     return i === n.length ? e.filter((t) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(t)) : null;
   }
   g(Fn, "phraseUnits");
-  function _l(n, e) {
+  function jl(n, e) {
     let i = n.filter((u) => !["nominal", "means", "method"].includes(u)).join(" "), t = /* @__PURE__ */ g((u) => u.test(i), "match"), o = /* @__PURE__ */ g((u, c) => ({ field: u, value: c }), "out");
     if (t(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u)) return o("communication", "listen-organize");
     if (t(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return o("communication", "share-first");
@@ -5010,10 +5010,10 @@ var Qt = pe((of, Xa) => {
       ["ai-tools", /^ai(?: use)?$/u],
       ["work-collaboration", /^(?:person together task do )?collaboration$/u]
     ].find(([, u]) => u.test(i));
-    return a ? o("topic", a[0]) : ql(n, e);
+    return a ? o("topic", a[0]) : zl(n, e);
   }
-  g(_l, "composeMeaning");
-  function ql(n, e) {
+  g(jl, "composeMeaning");
+  function zl(n, e) {
     let i = n.filter((x) => !["nominal", "means", "method"].includes(x));
     e === "explanation" && !i.includes("explanation") && i.push("explanation");
     let t = /* @__PURE__ */ g((x) => i.includes(x), "has"), o = /* @__PURE__ */ g((...x) => x.some(t), "any"), s = /* @__PURE__ */ g((...x) => x.every(t), "all"), a = /* @__PURE__ */ g((x, v) => i.indexOf(x) < i.indexOf(v), "before"), u = /* @__PURE__ */ g((...x) => !t("start") || x.some((v) => t(v) && a(v, "start")), "beforeStart"), c = t("overview") ? i.slice(0, i.indexOf("overview")) : [], l = c.every((x) => ["explanation", "detail", "content", "first", "enter", "before"].includes(x)) && (!c.includes("enter") || c.indexOf("enter") < c.indexOf("before")), p = t("explain") || s("explanation", "receive"), d = [], r = /* @__PURE__ */ g((x, v, y, O) => {
@@ -5047,8 +5047,8 @@ var Qt = pe((of, Xa) => {
     }
     return d.length === 1 ? d[0] : null;
   }
-  g(ql, "composeRoles");
-  var jl = [
+  g(zl, "composeRoles");
+  var Ll = [
     ["prefer", /(?:(?:제가|내가)?(?:좋아하는|관심을두는)(?:분야|일|활동))(?:예요|이에요|입니다)$/u],
     ["avoid", /(?:하고)?싶지않(?:아요|습니다|아|다)$/u],
     ["avoid", /(?:빼고|제외하고)싶(?:어요|습니다|어|다)$/u],
@@ -5071,14 +5071,14 @@ var Qt = pe((of, Xa) => {
   ];
   function Gt(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(n)) return null;
-    for (let [e, i] of jl) {
+    for (let [e, i] of Ll) {
       let t = i.exec(n);
       if (t) return { ...Ve(n.slice(0, t.index)), polarity: e, habitual: !1 };
     }
-    return Wa(n);
+    return Fa(n);
   }
   g(Gt, "composeStance");
-  var zl = [
+  var Pl = [
     [/^(?:시도하는방식|도움방식)(?:으로는|은|는)/u, ["support"], ""],
     [/^도움받을때(?:는)?/u, ["support"], ""],
     [/^설명(?:을)?받는방식(?:은|는)/u, ["explanation"], "설명"],
@@ -5098,7 +5098,7 @@ var Qt = pe((of, Xa) => {
     [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
     [/^판단(?:은|을)/u, ["decision"], ""],
     [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
-  ], Jn = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, Ll = {
+  ], Jn = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, Cl = {
     independent: "self nohelp before-help first task try do process finish",
     together: "person together task try do process finish",
     example: "example first one look show check start before-start inquiry task",
@@ -5126,7 +5126,7 @@ var Qt = pe((of, Xa) => {
     listening: "practice audio visual text listen read both mix answer know do",
     mixed: "practice audio visual text listen read both mix answer know do"
   };
-  function Pl(n, { polarity: e, habitual: i }, t, o, s) {
+  function Dl(n, { polarity: e, habitual: i }, t, o, s) {
     if (i || /(?:안|못).{0,8}(?:지는?\s*않|지\s*않)|(?:싫|불편|거부).{0,6}(?:않|아니)/u.test(s)) return null;
     let a = n.replace(/,/gu, "");
     if (e === "avoid" && /(?:글|말|문자|메시지|메일|이메일)로만/u.test(a)) return null;
@@ -5138,8 +5138,8 @@ var Qt = pe((of, Xa) => {
     if (/(?:때|땐|라면|다면|경우|상황|기간|동안|날에|오늘만|내일만|이번만|이후의|이전의|에서는|에서만|에는|에만)/u.test(l) || /에서/u.test(l.replace(/옆에서/gu, "")) && !/(?:주제|소재|이야기|얘기)/u.test(a)) return null;
     let p = Fn(Ve(u).action);
     if (!p) return null;
-    let d = [], r = /* @__PURE__ */ g((b, k, R) => {
-      R && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
+    let d = [], r = /* @__PURE__ */ g((b, k, I) => {
+      I && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
     }, "add"), $ = /* @__PURE__ */ g((b) => b.test(a), "has"), h = /* @__PURE__ */ g((b, k) => $(b) && $(k), "both"), f = /* @__PURE__ */ g((b) => a.search(b), "pos"), m = /* @__PURE__ */ g((b, k) => f(b) >= 0 && f(k) > f(b), "ordered"), x = $(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u), v = $(/(?:연습|문제|학습)/u) && !$(/(?:주제|소재|관한)/u);
     if (v) {
       let b = $(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), k = $(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
@@ -5151,8 +5151,8 @@ var Qt = pe((of, Xa) => {
     r("explanation", "standard", O && T && !A), r("explanation", "brief", O && E && !T && !A && !$(/길게|긴설명/u));
     let S = $(/근거|이유|왜그런/u) && A;
     r("explanation", "detailed", O && A && !S && !E && !T), r("explanation-detail", "reasons-detail", S && $(/알|듣|설명|받|보/u)), r("explanation-detail", "long-flow", O && $(/길게이어|길게계속|긴설명을끊|길게설명/u));
-    let I = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-    if (r("explanation-detail", "overview-first", I && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
+    let R = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+    if (r("explanation-detail", "overview-first", R && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
       let b = [
         ["travel-planning", /여행/u, /일정|동선/u],
         ["travel-food", /여행지|여행|다른나라/u, /음식|식당|주문/u],
@@ -5171,21 +5171,21 @@ var Qt = pe((of, Xa) => {
         ["games", /게임/u, /게임/u],
         ["nature", /자연|공원/u, /산책|자연/u]
       ];
-      for (let [k, R, w] of b) r("topic", k, x && h(R, w));
+      for (let [k, I, w] of b) r("topic", k, x && h(I, w));
     }
     let N = [...new Map(d.map((b) => [nn(b), b])).values()];
     if (N.length !== 1) return null;
     let M = N[0], _ = /* @__PURE__ */ g((b, k) => {
-      let R = p.indexOf(b);
-      return R >= 0 && p.slice(0, R).some((w) => k.includes(w));
+      let I = p.indexOf(b);
+      return I >= 0 && p.slice(0, I).some((w) => k.includes(w));
     }, "beforeRole");
     if (M.field !== "topic") {
-      let b = new Set((Ll[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
+      let b = new Set((Cl[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
       if (p.some((k) => !b.has(k))) return null;
     }
     return M.value === "plan-first" && _("plan", ["start", "try", "process", "finish", "do"]) || M.value === "example" && _("example", ["start", "try", "process", "finish", "do"]) || M.value === "overview-first" && _("overview", ["listen", "read", "receive", "explain", "look"]) ? null : { meanings: N };
   }
-  g(Pl, "declaredCore");
+  g(Dl, "declaredCore");
   function en(n) {
     let { body: e, condition: i } = je(ze(n));
     e = ze(e), e = e.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통)/u, "");
@@ -5194,14 +5194,14 @@ var Qt = pe((of, Xa) => {
     let a = /^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(e);
     if (a) {
       let E = en(a[1].replace(/^(?:쉴때도|여유시간에도)/u, "") + "관심있어요"), S = en(a[2]);
-      return E?.meanings.length === 1 && S?.meanings.length === 1 && E.meanings[0].field === "topic" && nn(E.meanings[0]) === nn(S.meanings[0]) ? { meanings: S.meanings.map((I) => ({ ...I, condition: I.condition || i })) } : null;
+      return E?.meanings.length === 1 && S?.meanings.length === 1 && E.meanings[0].field === "topic" && nn(E.meanings[0]) === nn(S.meanings[0]) ? { meanings: S.meanings.map((R) => ({ ...R, condition: R.condition || i })) } : null;
     }
     let u = /^(?:(?:제가|내가)?(?:배우고싶은|알고싶은|다루고싶은|좋아하는|관심있는)(?:주제|소재))(?:은|는)(.+?)(?:이에요|예요|입니다|이야|야)$/u.exec(e);
     u && (e = u[1] + "관심있어요", t = ["topic"]);
     let c = /^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(e);
     if (c) {
       let E = en(c[1] + (c[2] === "편해서" ? "편해요" : c[2] === "선호해서" ? "선호해요" : "좋아해요")), S = en(c[3]);
-      return E?.meanings.length === 1 && S?.meanings.length === 1 && nn(E.meanings[0]) === nn(S.meanings[0]) ? { meanings: E.meanings.map((I) => ({ ...I, condition: I.condition || i })) } : null;
+      return E?.meanings.length === 1 && S?.meanings.length === 1 && nn(E.meanings[0]) === nn(S.meanings[0]) ? { meanings: E.meanings.map((R) => ({ ...R, condition: R.condition || i })) } : null;
     }
     let l = /^(?:(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)|(?:(?:제가|내가))?(?:좋아하는|선호하는)(?:방식|방법|활동|취미))(?:은|는)(.+?)(?:거예요|것입니다|예요|이에요|입니다)$/u.exec(e);
     l && (e = l[1] + "좋아요");
@@ -5213,10 +5213,10 @@ var Qt = pe((of, Xa) => {
       o = E === "연습" ? "연습" : E === "설명" ? "설명" : "", t = [{ 연습: "practice-mode", 소통: "communication", 도움: "support", 설명: "explanation" }[E]], e = d[3] + "좋아요", E === "소통" && (e = e.replace(/하는/u, "소통하는"));
     }
     e = e.replace(/^소통(?:은|는)(.+?)하는/u, "$1소통하는");
-    for (let [E, S, I] of zl) {
+    for (let [E, S, R] of Pl) {
       let N = E.exec(e);
       if (N) {
-        t = S, o = I, e = e.slice(N[0].length);
+        t = S, o = R, e = e.slice(N[0].length);
         break;
       }
     }
@@ -5228,30 +5228,30 @@ var Qt = pe((of, Xa) => {
     m && (t = [f.endsWith("소통하고") ? "communication" : f.endsWith("연습하고") ? "practice-mode" : "work-style"], f = m[1]);
     let x = /* @__PURE__ */ g((E) => !!Fn(E.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), v = /(?:보다는|보단|보다(?!가)|대신|느니|아닌)/u.exec(f), y = [f];
     if (v) {
-      let E = f.slice(0, v.index), S = f.slice(v.index + v[0].length), I = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(E);
-      if (y = [], x(E) && y.push(S), I && x(I[2]) && y.push(I[1] + S), !y.length) return null;
+      let E = f.slice(0, v.index), S = f.slice(v.index + v[0].length), R = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(E);
+      if (y = [], x(E) && y.push(S), R && x(R[2]) && y.push(R[1] + S), !y.length) return null;
     }
     let O = [...y.map((E) => o + E.replace(/^한꺼번에말고/u, "")), o + $.action], T = [];
     for (let E of new Set(O)) {
       let S = Fn(E);
       if (!S) continue;
-      let I = _l(S, $.nominalHead);
-      I && T.push(I);
+      let R = jl(S, $.nominalHead);
+      R && T.push(R);
     }
     if (!T.length) {
-      let E = Pl(o + f, $, i, t, n);
+      let E = Dl(o + f, $, i, t, n);
       if (E) return E;
       if ($.polarity !== "prefer") return null;
       let S = [...f.matchAll(/하되(?:,)?|하며(?:,)?|고(?:,)?/gu)];
       if (S.length > 6) return null;
-      for (let I of S) {
-        let N = I[0].startsWith("하") ? f.slice(0, I.index) + "하는" : f.slice(0, I.index + 1), M = f.slice(I.index + I[0].length);
+      for (let R of S) {
+        let N = R[0].startsWith("하") ? f.slice(0, R.index) + "하는" : f.slice(0, R.index + 1), M = f.slice(R.index + R[0].length);
         if (!M || /[?!]/u.test(N + M)) continue;
-        let _ = /* @__PURE__ */ g((w) => F(w) || Kn(w) || en(w), "arm"), b = _(o + N + "좋아요"), k = _(o + M + "좋아요");
+        let _ = /* @__PURE__ */ g((w) => K(w) || Kn(w) || en(w), "arm"), b = _(o + N + "좋아요"), k = _(o + M + "좋아요");
         if (!b?.meanings.length || !k?.meanings.length || b.meanings.some((w) => w.condition) || k.meanings.some((w) => w.condition)) continue;
-        let R = [...b.meanings, ...k.meanings];
-        if (!(R.some((w) => !Ro.includes(w.field)) || new Set(R.map((w) => w.field + ":" + w.value)).size < 2) && !(t && R.some((w) => !t.includes(w.field))))
-          return { meanings: R.map((w) => ({ ...w, polarity: $.polarity, condition: i })) };
+        let I = [...b.meanings, ...k.meanings];
+        if (!(I.some((w) => !Io.includes(w.field)) || new Set(I.map((w) => w.field + ":" + w.value)).size < 2) && !(t && I.some((w) => !t.includes(w.field))))
+          return { meanings: I.map((w) => ({ ...w, polarity: $.polarity, condition: i })) };
       }
       return null;
     }
@@ -5260,7 +5260,7 @@ var Qt = pe((of, Xa) => {
     return t && !t.includes(A.field) || A.field === "topic" && $.habitual ? null : { meanings: [{ ...A, polarity: $.polarity, condition: i }] };
   }
   g(en, "compositional");
-  function Ka(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
+  function Ja(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
     if (e > 4 || i.remaining <= 0) return null;
     let { body: t, condition: o } = je(ze(n));
     if (t = ze(t), Ht(t) || Zt(t) || Xt.test(t)) return null;
@@ -5272,7 +5272,7 @@ var Qt = pe((of, Xa) => {
       if (i.remaining-- <= 0) return null;
       let $ = r.replace(/^,+|,+$/gu, "") + u;
       if (Ht($)) return null;
-      let h = e + ":" + $, f = i.cache.has(h) ? i.cache.get(h) : F($) || Kn($) || en($) || Ka($, e + 1, i);
+      let h = e + ":" + $, f = i.cache.has(h) ? i.cache.get(h) : K($) || Kn($) || en($) || Ja($, e + 1, i);
       return i.cache.set(h, f), !f?.meanings?.length || f.uncertain || f.typo || o && f.meanings.some((m) => m.condition && m.condition !== o) ? null : f.meanings.map((m) => ({ ...m, condition: m.condition || o }));
     }, "read"), l = /* @__PURE__ */ g((r) => {
       if (r.length < 2 || r.length > 6 || r.some((f) => !f)) return null;
@@ -5301,41 +5301,41 @@ var Qt = pe((of, Xa) => {
     }
     return null;
   }
-  g(Ka, "coordinatedDeclaration");
-  var Cl = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", Dl = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", Bl = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + Cl + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + Dl + "$", "u"), Ul = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, Xt = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
-  function qa(n) {
-    return !n || Xt.test(n) || Jn.test(n) ? !1 : Bl.test(n) || Ul.test(n);
+  g(Ja, "coordinatedDeclaration");
+  var Bl = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", Ul = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", Vl = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + Bl + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + Ul + "$", "u"), Wl = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, Xt = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
+  function ja(n) {
+    return !n || Xt.test(n) || Jn.test(n) ? !1 : Vl.test(n) || Wl.test(n);
   }
-  g(qa, "safeExplanation");
-  function Ja(n) {
+  g(ja, "safeExplanation");
+  function Ha(n) {
     return !!n && !Xt.test(n) && !Jn.test(n) && !Zt(n) && !/(?:좋|싫|선호|원하|원해|싶|편하|편해|취향|관심|부담|맞아|맞는|않|아니|못|없|안해|안하|[?!])/u.test(n) && /(?:어요|아요|해요|습니다|해두죠|챙겨요|다녀요|봐요|들어요|하죠)$/u.test(n);
   }
-  g(Ja, "narrativeBackground");
+  g(Ha, "narrativeBackground");
   function Zt(n) {
     return /(?:는|던|은|한)(?:(?:친한|새로운|한|몇몇|그|어떤|여러|가까운))?(?:친구|동료|사람|분|인물|학생|직원|선생님|가족|아이|회원)(?:들)?(?:을|를|은|는|이(?!야기|랑)|가|에게|한테)/u.test(n);
   }
   g(Zt, "relativePersonClause");
-  function Ha(n, e = 0) {
+  function Ga(n, e = 0) {
     if (e > 3) return null;
     let { body: i, condition: t } = je(ze(n));
     if (Xt.test(i) || Jn.test(i) || Zt(i)) return null;
     let o = /* @__PURE__ */ g((c) => {
       if (Ht(c)) return null;
-      let l = F(c) || Kn(c) || en(c) || Ha(c, e + 1);
+      let l = K(c) || Kn(c) || en(c) || Ga(c, e + 1);
       return !l?.meanings?.length || l.uncertain || l.typo || t && l.meanings.some((p) => p.condition && p.condition !== t) ? null : { meanings: l.meanings.map((p) => ({ ...p, condition: p.condition || t })) };
     }, "read"), s = /^(.+?)(좋아해서|선호해서|좋아서|편해서)(.+)$/u.exec(i);
-    if (s && Ja(s[3])) {
+    if (s && Ha(s[3])) {
       let c = s[2] === "좋아해서" ? "좋아해요" : s[2] === "선호해서" ? "선호해요" : s[2] === "편해서" ? "편해요" : "좋아요", l = o(s[1] + c);
       if (l) return l;
     }
     for (let c of i.matchAll(/(?:수있도록|수있게|않도록|않게|기위해|려고|고싶어서|기전에|돼서|해서|니까)/gu)) {
       let l = c.index + c[0].length, p = i.slice(0, l), d = i.slice(l).replace(/^,+/u, "");
-      if (!qa(p)) continue;
+      if (!ja(p)) continue;
       let r = o(d);
       if (r) return r;
     }
     let a = /^(?:(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)?|그렇게|이렇게)(?:더|저는|나는)?(.+)$/u, u = /^(.+?)(하면|해보면|받으면|들으면|보면|읽으면|두면|놓으면)(.+?)(?:그래서)?((?:(?:그|이|그런|이런)(?:방식|방법|쪽)|그렇게|이렇게).+)$/u.exec(i);
-    if (u && qa(u[3])) {
+    if (u && ja(u[3])) {
       let c = a.exec(u[4]), l = c && Gt("하는" + c[1].replace(/^하고(?=싶)/u, ""));
       if (l && !l.habitual && l.action === "하기") {
         let p = { 하면: "하는", 해보면: "해보는", 받으면: "받는", 들으면: "듣는", 보면: "보는", 읽으면: "읽는", 두면: "두는", 놓으면: "놓는" }[u[2]], d = o(u[1] + p + (l.polarity === "avoid" ? "걸선호하지않아요" : "게좋아요"));
@@ -5344,7 +5344,7 @@ var Qt = pe((of, Xa) => {
     }
     return null;
   }
-  g(Ha, "structuredDeclaration");
+  g(Ga, "structuredDeclaration");
   var Ao = Object.freeze({
     other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
     past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
@@ -5365,7 +5365,7 @@ var Qt = pe((of, Xa) => {
     return /(?:만약|라면|다면|가정하|상상하)/u.test(e.condition ? e.body : ze(n).replace(/^(?:저라면|나라면)/u, "")) ? "hypothetical" : null;
   }
   g(Ht, "excludedOrigin");
-  function Vl(n) {
+  function Fl(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심이\s*있고|관심이\s*많고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고)(?=\s|,)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -5380,8 +5380,8 @@ var Qt = pe((of, Xa) => {
     }
     return s(n.length), e;
   }
-  g(Vl, "pieces");
-  function Wl(n) {
+  g(Fl, "pieces");
+  function Kl(n) {
     let e = n.replace(/\s/gu, "");
     if (Jn.test(e)) return !0;
     let i = je(ze(n)).body;
@@ -5396,8 +5396,8 @@ var Qt = pe((of, Xa) => {
     }
     return !1;
   }
-  g(Wl, "unresolvedSubject");
-  var ja = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], za = {
+  g(Kl, "unresolvedSubject");
+  var za = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], La = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -5407,10 +5407,10 @@ var Qt = pe((of, Xa) => {
     decision: "판단 방식",
     "explanation-detail": "설명에서 원하는 구성"
   };
-  function Fl(n) {
+  function Jl(n) {
     ke.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null, s = !1;
-    for (let a of Vl(n)) {
+    for (let a of Fl(n)) {
       let u = a.quote.replace(/\s/gu, ""), c = /^(?:나는|난|저는|제가|내가)/u.test(u), l = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(u), p = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(u);
       c && (s = !1), (i === "other" && c || i === "past" && l || i === "condition" && p || i === "uncertain" && l || ["quotation", "hypothetical", "sensitive"].includes(i) && c && l) && (i = null);
       let d = Math.max(n.lastIndexOf(".", a.start - 1), n.lastIndexOf("!", a.start - 1), n.lastIndexOf("?", a.start - 1), n.lastIndexOf(`
@@ -5419,56 +5419,56 @@ var Qt = pe((of, Xa) => {
         i = m, o = null, f.unresolved = { ...a, reason: m || "unsupported", reasonLabel: m ? Ao[m] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." }, ["uncertain", "condition"].includes(m) && (f.generic = !0), e.push(f);
         continue;
       }
-      let x = e.findLast((R) => R.meanings?.length), v = a.quote, y = e.at(-1), O = y?.meanings?.find((R) => R.field === "support" && R.value === "example" && R.polarity === "prefer"), T = O && /^(?:그|이)\s*(?:예시|예제|샘플|걸|것을)/u.test(v);
+      let x = e.findLast((I) => I.meanings?.length), v = a.quote, y = e.at(-1), O = y?.meanings?.find((I) => I.field === "support" && I.value === "example" && I.polarity === "prefer"), T = O && /^(?:그|이)\s*(?:예시|예제|샘플|걸|것을)/u.test(v);
       O && (v = v.replace(/^(?:그걸|그것을)\s*(보고\s*나서(?:는)?|본\s*(?:다음|뒤|후)(?:에는)?)/u, "예시를 본 다음에는"));
       let A = t && /^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u.test(v);
       A && (v = v.replace(/^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u, ""));
-      let E = je(ze(v)).condition, S = T && ["first-try", "familiar", "busy"].includes(O.condition) ? O.condition : null, I = o || (A ? t : null) || S;
+      let E = je(ze(v)).condition, S = T && ["first-try", "familiar", "busy"].includes(O.condition) ? O.condition : null, R = o || (A ? t : null) || S;
       x?.meanings.length && /^그다음\s+/u.test(v) && (v = v.replace(/^그다음\s+/u, ""));
-      let N = F(v) || Kn(v) || en(v) || Ka(v) || Ha(v) || Ml(v) || Il(v);
+      let N = K(v) || Kn(v) || en(v) || Ja(v) || Ga(v) || Il(v) || Nl(v);
       if (!N && x?.meanings.length && !/^[\s.!?]*\?/u.test(n.slice(a.end))) {
-        let R = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(je(u).body), w = R && Gt("하는" + R[1]);
+        let I = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(je(u).body), w = I && Gt("하는" + I[1]);
         if (w?.action === "하기" && !w.habitual && x.meanings.every((q) => q.polarity === w.polarity)) {
           f.meanings = [], e.push(f);
           continue;
         }
-        let L = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(u), P = e.slice(-2).flatMap((q) => q.meanings || []);
-        if (L && P.length >= 2 && (L[1] !== "연습" || P.every((q) => q.field === "practice-mode"))) {
+        let z = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(u), P = e.slice(-2).flatMap((q) => q.meanings || []);
+        if (z && P.length >= 2 && (z[1] !== "연습" || P.every((q) => q.field === "practice-mode"))) {
           f.meanings = [], e.push(f);
           continue;
         }
       }
-      if (!N && !/^[\s.!?]*\?/u.test(n.slice(a.end)) && e.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(u) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(u) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(u) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(u) || e.at(-1).meanings.some((R) => R.field === "communication" && R.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(u))) {
+      if (!N && !/^[\s.!?]*\?/u.test(n.slice(a.end)) && e.at(-1)?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(u) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(u) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(u) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(u) || e.at(-1).meanings.some((I) => I.field === "communication" && I.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(u))) {
         f.meanings = [], e.push(f);
         continue;
       }
-      if (!N && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && Ja(u)) {
+      if (!N && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && Ha(u)) {
         f.meanings = [], e.push(f);
         continue;
       }
       if (!N) {
-        let R = ke.parseMemberStatement(a.quote);
-        R.meanings.length === 1 && !R.unresolved.length && (N = { meanings: R.meanings });
+        let I = ke.parseMemberStatement(a.quote);
+        I.meanings.length === 1 && !I.unresolved.length && (N = { meanings: I.meanings });
       }
-      N && I && !p && (N = { ...N, meanings: N.meanings.map((R) => ({ ...R, condition: R.condition === "after-example" && ["first-try", "familiar", "busy"].includes(I) ? I + "-after-example" : R.condition || I })) });
-      let M = N?.meanings.at(-1)?.condition || (E === "after-example" && S ? S + "-after-example" : E) || (p ? null : I);
+      N && R && !p && (N = { ...N, meanings: N.meanings.map((I) => ({ ...I, condition: I.condition === "after-example" && ["first-try", "familiar", "busy"].includes(R) ? R + "-after-example" : I.condition || R })) });
+      let M = N?.meanings.at(-1)?.condition || (E === "after-example" && S ? S + "-after-example" : E) || (p ? null : R);
       o = M && /(?:고|며)$/u.test(u) ? M : null;
-      let _ = t && N?.meanings.some((R) => !R.condition) && !p;
+      let _ = t && N?.meanings.some((I) => !I.condition) && !p;
       _ && (N = null, i = "condition"), t = M && /(?:지만|는데)$/u.test(u) ? M : !1;
       let b = /^[\s.!?]*/u.exec(n.slice(a.end))[0].includes("?"), k = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(u);
-      if (!N && !k && !E && /(?:때|땐|경우|상황|동안|날에는|날에만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔))/u.test(u) && (_ = !0, i = "condition"), !N && !c && !E && !_ && !k && Wl(a.quote) && (s = !0), k && /(?:지만|는데)$/u.test(u) && (i = "uncertain"), b ? (N ? f.candidate = { ...N, uncertain: !0 } : f.generic = !0, f.unresolved = { ...a, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : N ? N.uncertain || N.typo || k ? f.candidate = { ...N, uncertain: N.uncertain || k } : f.meanings = N.meanings : f.generic = !0, !f.meanings && !f.unresolved) {
-        let R = k ? "uncertain" : _ ? "condition" : "unsupported";
-        f.unresolved = { ...a, reason: R, reasonLabel: Ao[R] };
+      if (!N && !k && !E && /(?:때|땐|경우|상황|동안|날에는|날에만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔))/u.test(u) && (_ = !0, i = "condition"), !N && !c && !E && !_ && !k && Kl(a.quote) && (s = !0), k && /(?:지만|는데)$/u.test(u) && (i = "uncertain"), b ? (N ? f.candidate = { ...N, uncertain: !0 } : f.generic = !0, f.unresolved = { ...a, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : N ? N.uncertain || N.typo || k ? f.candidate = { ...N, uncertain: N.uncertain || k } : f.meanings = N.meanings : f.generic = !0, !f.meanings && !f.unresolved) {
+        let I = k ? "uncertain" : _ ? "condition" : "unsupported";
+        f.unresolved = { ...a, reason: I, reasonLabel: Ao[I] };
       }
       if (e.push(f), e.length === Ue.unresolved && a.end < n.length) {
-        let R = e.at(-1);
-        delete R.meanings, delete R.candidate, delete R.generic, R.evidence = { ...a, end: n.length, quote: n.slice(a.start) }, R.unresolved = { ...R.evidence, reason: "limit", reasonLabel: Ao.limit };
+        let I = e.at(-1);
+        delete I.meanings, delete I.candidate, delete I.generic, I.evidence = { ...a, end: n.length, quote: n.slice(a.start) }, I.unresolved = { ...I.evidence, reason: "limit", reasonLabel: Ao.limit };
         break;
       }
     }
     return e;
   }
-  g(Fl, "analyze");
+  g(Jl, "analyze");
   function Mo(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -5476,7 +5476,7 @@ var Qt = pe((of, Xa) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...ja].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...za].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: No(r.evidence) })), "add");
@@ -5489,12 +5489,12 @@ var Qt = pe((of, Xa) => {
         d,
         "confirm",
         `「${r.evidence.quote}」${r.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : r.candidate.restricted ? "에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
-        [{ id: "confirm", label: r.candidate.meanings.map(Io).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
+        [{ id: "confirm", label: r.candidate.meanings.map(Ro).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(za).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(Ct, f) && u(d, "value", `${za[f]}에서 어떤 내용을 확인할까요?`, Ct[f].map((m) => ({ id: m, label: Kt[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(La).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(Ct, f) && u(d, "value", `${La[f]}에서 어떤 내용을 확인할까요?`, Ct[f].map((m) => ({ id: m, label: Kt[m] })), (m) => {
           Ct[f].includes(m) && u(d, "polarity", `‘${Kt[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(Jt).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(Jt, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
@@ -5520,35 +5520,35 @@ var Qt = pe((of, Xa) => {
       let r = c.filter((f) => f.id === d.id || Yt(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${Ba(r.map((f) => f.id + nn(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: Io(f), value: f.id })), ...ja.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${Ua(r.map((f) => f.id + nn(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: Ro(f), value: f.id })), ...za.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, Ue.unresolved), questions: a };
   }
   g(Mo, "stateFor");
-  function La(n, e, i, t, o) {
-    let s = $l.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function Pa(n, e, i, t, o) {
+    let s = xl.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = Mo(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => nn(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(La, "choose");
-  function Ga(n, { clarifications: e = [], parserVersion: i = En } = {}) {
+  g(Pa, "choose");
+  function Xa(n, { clarifications: e = [], parserVersion: i = En } = {}) {
     if (i === ke.PARSER_VERSION)
-      return e.length && re(), ke.parseMemberStatement(n);
+      return e.length && se(), ke.parseMemberStatement(n);
     if (i === Bt.PARSER_VERSION) return Bt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Ut.PARSER_VERSION) return Ut.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Vt.PARSER_VERSION) return Vt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Wt.PARSER_VERSION) return Wt.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Ft.PARSER_VERSION) return Ft.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== En && re(), (!Da(e, Ue.clarifications) || e.some((l) => !Dt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && re();
-    let t = Fl(n), o = Ba(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Mo(n, t, s, o), c = La(u, n, t, s, o);
+    i !== En && se(), (!Ba(e, Ue.clarifications) || e.some((l) => !Dt(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && se();
+    let t = Jl(n), o = Ua(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Mo(n, t, s, o), c = Pa(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && re();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && se();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || re(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Mo(n, t, s, o), c = La(u, n, t, s, o);
+      p || se(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Mo(n, t, s, o), c = Pa(u, n, t, s, o);
     }
     if (e.length === Ue.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && Yt(p, d)));
@@ -5556,43 +5556,43 @@ var Qt = pe((of, Xa) => {
     }
     return { parserVersion: En, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: No(e), clarificationAnswers: a };
   }
-  g(Ga, "parseMemberStatement");
-  function Io(n) {
+  g(Xa, "parseMemberStatement");
+  function Ro(n) {
     return `${n.condition ? Jt[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${Kt[n.value]}`;
   }
-  g(Io, "meaningLabel");
+  g(Ro, "meaningLabel");
   function Yt(n, e) {
-    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Ro.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
+    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Io.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(Yt, "meaningsConflict");
-  function Kl(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = Pa(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function Hl(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = Ca(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === ke.PARSER_VERSION) return ke.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Bt.PARSER_VERSION) return Bt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Ut.PARSER_VERSION) return Ut.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Vt.PARSER_VERSION) return Vt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Wt.PARSER_VERSION) return Wt.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Ft.PARSER_VERSION) return Ft.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!Dt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== En || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Da(n.meanings, Ue.meanings) || !n.meanings.length) && re();
-    let o = Oo(n.at), s = Oo(n.confirmedAt), a = i ? typeof e == "string" ? Oo(e) : Number.isSafeInteger(e) ? e : re() : null;
-    (s < o || i && s > a) && re();
-    let u = Ga(n.text, { clarifications: n.clarifications });
-    u.question && re();
+    (!Dt(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== En || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Ba(n.meanings, Ue.meanings) || !n.meanings.length) && se();
+    let o = Oo(n.at), s = Oo(n.confirmedAt), a = i ? typeof e == "string" ? Oo(e) : Number.isSafeInteger(e) ? e : se() : null;
+    (s < o || i && s > a) && se();
+    let u = Xa(n.text, { clarifications: n.clarifications });
+    u.question && se();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!Dt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !Dt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && re(), c.add(p.id);
+      (!Dt(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !Dt(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && se(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && re(), No(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && se(), No(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => Yt(p, r))) && re(), { id: n.id.toLowerCase(), parserVersion: En, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => Yt(p, r))) && se(), { id: n.id.toLowerCase(), parserVersion: En, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(Kl, "validateMemberStatement");
-  Xa.exports = { PARSER_VERSION: En, MEMBER_STATEMENT_LIMITS: Ue, MEMBER_STATEMENT_VALUES: Ct, MEMBER_STATEMENT_LABELS: Kt, MEMBER_STATEMENT_CONDITIONS: Jt, MEMBER_STATEMENT_MULTI_FIELDS: Ro, parseMemberStatement: Ga, validateMemberStatement: Kl, meaningsConflict: Yt, meaningLabel: Io };
+  g(Hl, "validateMemberStatement");
+  Za.exports = { PARSER_VERSION: En, MEMBER_STATEMENT_LIMITS: Ue, MEMBER_STATEMENT_VALUES: Ct, MEMBER_STATEMENT_LABELS: Kt, MEMBER_STATEMENT_CONDITIONS: Jt, MEMBER_STATEMENT_MULTI_FIELDS: Io, parseMemberStatement: Xa, validateMemberStatement: Hl, meaningsConflict: Yt, meaningLabel: Ro };
 });
 
 // experiences/synk-account/src/member-statement-v8.cjs
-var Bo = pe((af, gs) => {
+var Bo = pe((cf, $s) => {
   "use strict";
-  var we = _e(), ti = Be(), ii = Ge(), oi = un(), ri = yn(), ai = Vn(), si = Qt(), Jl = qe(), Sn = "member-statement-ko-8", We = Object.freeze({ ...we.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), ei = Object.freeze({
+  var we = _e(), ti = Be(), ii = Ge(), oi = un(), ri = yn(), ai = Vn(), si = Qt(), Gl = qe(), Sn = "member-statement-ko-8", We = Object.freeze({ ...we.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), ei = Object.freeze({
     ...we.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -5633,13 +5633,13 @@ var Bo = pe((af, gs) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), ns = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), ts = /* @__PURE__ */ g((n, e) => {
+  }), ts = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), is = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), ni = /* @__PURE__ */ g((n, e) => ns(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => ts(n, i)), "exact"), is = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => ts(n, String(t))).every(Boolean), "list"), ae = /* @__PURE__ */ g(() => {
+  }, "data"), ni = /* @__PURE__ */ g((n, e) => ts(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => is(n, i)), "exact"), os = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => is(n, String(t))).every(Boolean), "list"), ue = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), To = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ae(), "instant"), tn = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), Po = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Hl = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function os(n) {
+  }, "fail"), To = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ue(), "instant"), tn = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), Po = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Xl = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function rs(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -5652,7 +5652,7 @@ var Bo = pe((af, gs) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Hl[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Xl[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -5661,8 +5661,8 @@ var Bo = pe((af, gs) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(os, "sourceKey");
-  var rs = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, as = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Gl = [
+  g(rs, "sourceKey");
+  var as = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, ss = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Zl = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -5685,10 +5685,10 @@ var Bo = pe((af, gs) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Hn(n, e) {
-    for (let [i, t, o] of Gl) {
+    for (let [i, t, o] of Zl) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = as.test(a) ? "avoid" : rs.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = ss.test(a) ? "avoid" : as.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
@@ -5724,7 +5724,7 @@ var Bo = pe((af, gs) => {
     return null;
   }
   g(ln, "expanded");
-  var Xl = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, Zl = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, Yl = [
+  var Yl = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, Ql = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, ep = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -5752,7 +5752,7 @@ var Bo = pe((af, gs) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], Ql = [
+  ], np = [
     ["first-try-after-example", /^처음(?:시도|시작)하며(?:예시|예제|샘플)(?:를|을)?본(?:뒤|후|다음)(?:에는|엔|에)/u],
     // The semantic scopes are unchanged; only their noun/verb surface forms vary.
     ["first-try", /^(?:처음(?:시도|시작|연습|학습|공부|도전|경험)하는|처음해보는)(?:때|상황)(?:에는|에서는|라면|는)/u],
@@ -5809,7 +5809,7 @@ var Bo = pe((af, gs) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], ep = [
+  ], tp = [
     ["avoid", /관심(?:이)?없(?:어요|습니다|다|어)$/u],
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
@@ -5821,7 +5821,7 @@ var Bo = pe((af, gs) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], np = [
+  ], ip = [
     ["매기기", /매기(?:는|기)$/u],
     ["즐기기", /즐기(?:는|기)$/u],
     ["적기", /적(?:는|기)$/u],
@@ -5894,7 +5894,7 @@ var Bo = pe((af, gs) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], tp = [
+  ], op = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -5918,10 +5918,10 @@ var Bo = pe((af, gs) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function ss(n) {
+  function us(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of ep) {
+    for (let [o, s] of tp) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -5930,25 +5930,25 @@ var Bo = pe((af, gs) => {
     }
     let t = !1;
     if (!e) {
-      let o = tp.find(([, s]) => s.test(n));
+      let o = op.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
     return { ...Pe(i), polarity: e, habitual: t };
   }
-  g(ss, "actionAndStance");
+  g(us, "actionAndStance");
   function Pe(n) {
     let e = n, i = pn(e, !0)?.at(-1);
     i?.tag === "particle" && i.text === "가" && /(?:내가|제가)$/u.test(e) || (e = e.replace(/(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, "")), e = e.replace(/기(?:를|는|도|가)$/u, "기").replace(/(?:께서는|으로는|로는)$/u, ""), /(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(e) || (e = e.replace(/(?:것|거|방식|쪽|편|시간|일|방법|구성|활동)(?:이|은|을|를|도|에|에는|에도)?$|(?:게|걸|건|데|데에도)$/u, ""));
     let t = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(e) ? "explanation" : null;
     t && (e = e.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1"));
-    let o = e, s = np.find(([, u]) => u.test(e));
+    let o = e, s = ip.find(([, u]) => u.test(e));
     s ? e = e.replace(s[1], s[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let a = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (u, c) => a[c]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (u, c) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[c]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (u) => u.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (u) => u.startsWith("들어") ? "듣고" : u.startsWith("비교") ? "비교하고" : u.startsWith("실행") ? "실행하고" : "시도하고").replace(/(참고|상의|확인|비교)해(?=결정|판단)/gu, "$1하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (u) => u.startsWith("만들어") ? "만들고" : u.startsWith("세워") ? "세우고" : u.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: t, surfaceAction: o };
   }
   g(Pe, "normalizeActionPhrase");
-  var ip = [
+  var rp = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -6021,25 +6021,25 @@ var Bo = pe((af, gs) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function us(n, e) {
-    let i = ss(n);
+  function cs(n, e) {
+    let i = us(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = us(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = cs(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = ip.find(([, , s]) => s.test(i.action));
+    let t = rp.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Hn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(us, "recognizeAction");
-  function Z(n) {
+  g(cs, "recognizeAction");
+  function Q(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
     /좋지만\s*$/u.test(n) && (e = e.replace(/좋$/u, "좋아요")), /일이지만\s*$/u.test(n) && (e = e.replace(/일이$/u, "일이에요")), e = e.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u, (t) => ({ 좋아하며: "좋아해요", 선호하고: "선호해요", 선호하며: "선호해요", 원하고: "원해요", 원하며: "원해요", 편하며: "편해요", 싫고: "싫어요", 관심이있고: "관심있어요", 관심이많고: "관심많아요", 원하지않고: "원하지않아요", 선호하지않고: "선호하지않아요", 좋아하지않고: "좋아하지않아요" })[t]).replace(/(?:쪽이고|것이고|편이고|활동이고)$/u, (t) => t.slice(0, -2) + "이에요").replace(/관심이많$/u, "관심이많아요").replace(/관심이없$/u, "관심이없어요").replace(/좋아하$/u, "좋아해요").replace(/((?:원|좋아|선호)하지)않$/u, "$1않아요").replace(/좋아하$/u, "좋아해요").replace(/좋아하는$/u, "좋아해요"), e = e.replace(/좋(?:아하)?고요$/u, (t) => t.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|난|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, ""), e = e.replace(/^(?:저는|나는|난|제가|내가)/u, "");
     let i = null;
-    for (let [t, o] of Ql) if (o.test(e)) {
+    for (let [t, o] of np) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
@@ -6049,8 +6049,8 @@ var Bo = pe((af, gs) => {
     }
     return e = e.replace(/^,+/u, ""), /편하지만$/u.test(n.replace(/\s/gu, "")) && (e = e.replace(/편하$/u, "편해요")), { body: e, condition: i };
   }
-  g(Z, "normalizePrefix");
-  function K(n) {
+  g(Q, "normalizePrefix");
+  function J(n) {
     let e = n.replace(/\s/gu, "");
     e = e.replace(/^(?:그와별개로|그것과별개로|그렇지만|반대로)(?!는|도)/u, "").replace(/(?:원치않고|원치않으며)$/u, "원하지않고").replace(/원치않(?:아요|습니다|아|는다)$/u, "원하지않아요").replace(/(?:좋으며|좋아하며)$/u, "좋아하고").replace(/마음에들고$/u, "마음에들어요").replace(/관심(?:을)?두고있고$/u, "관심있어요").replace(/관심(?:이)?없고요$/u, "관심없어요").replace(/(?:잘)?맞지만$/u, "맞아요").replace(/원하지만$/u, "원해요").replace(/(?:편하고요|편하며)$/u, "편해요"), e = e.replace(/^(?:[가-힣]{1,16})(?:와|과)(?:는)?달리(?=저는|나는|제가|내가)/u, "").replace(/관심이있으며$/u, "관심있어요").replace(/관심이없고$/u, "관심없어요").replace(/싶으며$/u, "싶어요").replace(/설명이고$/u, "설명이에요"), e = e.replace(/(?:선호하고요|원하고요)$/u, (c) => c.startsWith("선호") ? "선호해요" : "원해요").replace(/싶은편(?:이고|이에요|입니다)$/u, "싶어요");
     let i = /^(?:제가|내가)(?:고르고싶은|택하고싶은|선호하는)(연습|도움|소통|판단)(?:방식|방법)(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(e);
@@ -6067,8 +6067,8 @@ var Bo = pe((af, gs) => {
     let u = /^(.+?)(?:라고두지않았으면|라고하지않았으면)(?:해요|합니다|해)$/u.exec(e);
     return u && (e = u[1].replace(/해보$/u, "해보는").replace(/하$/u, "하는") + "걸원하지않아요"), e;
   }
-  g(K, "surfaceDeclaration");
-  function op(n) {
+  g(J, "surfaceDeclaration");
+  function ap(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
       return !!B(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
@@ -6077,9 +6077,9 @@ var Bo = pe((af, gs) => {
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(op, "comparative");
+  g(ap, "comparative");
   function B(n) {
-    let { body: e, condition: i } = Z(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
+    let { body: e, condition: i } = Q(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
       let l = B(t[1] + t[3]), p = B(t[2] + t[3]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && !l.uncertain && !p.uncertain) {
@@ -6097,7 +6097,7 @@ var Bo = pe((af, gs) => {
       let l = B(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = op(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = ap(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
       let l = B(a[1] + "보는게좋아요"), p = B(a[2]);
@@ -6105,18 +6105,18 @@ var Bo = pe((af, gs) => {
         return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = us(e, i);
+    let c = cs(e, i);
     if (c) return c;
-    for (let [l, p, d] of Yl) {
+    for (let [l, p, d] of ep) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = Zl.test($) || as.test($) ? "avoid" : l !== "topic" && Xl.test($) || rs.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = Ql.test($) || ss.test($) ? "avoid" : l !== "topic" && Yl.test($) || as.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
   g(B, "natural");
-  function rp(n) {
+  function sp(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -6128,17 +6128,17 @@ var Bo = pe((af, gs) => {
     let o = B(e) || ln(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(rp, "tentative");
-  function ap(n) {
-    let { body: e, condition: i } = Z(n);
+  g(sp, "tentative");
+  function up(n) {
+    let { body: e, condition: i } = Q(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
     let t = B(e.replace(/^(.+?)로만/u, "$1로"));
     if (t?.meanings.length !== 1 || t.meanings[0].field !== "communication") return null;
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(ap, "restrictedMethod");
-  var sp = [
+  g(up, "restrictedMethod");
+  var cp = [
     ["use", /^(?:활용|사용)(?=$|도|을|이|법)/u],
     ["communicate", /^소통/u],
     ["mix", /^한데묶(?:은|는|기)/u],
@@ -6407,7 +6407,7 @@ var Bo = pe((af, gs) => {
     ["first", /^부터/u],
     ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
     ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
-  ], up = [
+  ], lp = [
     ["communicate", "소통"],
     ["communicate", "대화"],
     ["speak", "말"],
@@ -6454,12 +6454,12 @@ var Bo = pe((af, gs) => {
     ["make", "제작"],
     ["explore", "탐색"],
     ["summary", "요약"]
-  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), cp = [...up, ...sp];
+  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), pp = [...lp, ...cp];
   function pn(n, e = !1) {
     let i = [], t = 0;
     for (; t < n.length && i.length < 120; ) {
       let o = null;
-      for (let [s, a] of cp) {
+      for (let [s, a] of pp) {
         let u = a.exec(n.slice(t));
         u && (!o || u[0].length > o.text.length) && (o = { tag: s, text: u[0] });
       }
@@ -6469,7 +6469,7 @@ var Bo = pe((af, gs) => {
     return t === n.length ? e ? i : i.filter((o) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(o)) : null;
   }
   g(pn, "phraseUnits");
-  function lp(n, e) {
+  function dp(n, e) {
     let i = n.filter((u) => !["nominal", "means", "method"].includes(u)).join(" "), t = /* @__PURE__ */ g((u) => u.test(i), "match"), o = /* @__PURE__ */ g((u, c) => ({ field: u, value: c }), "out");
     if (t(/^(?:person )?(?:opinion|speech) listen (?:(?:opinion|speech) )?organize$/u)) return o("communication", "listen-organize");
     if (t(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return o("communication", "share-first");
@@ -6515,10 +6515,10 @@ var Bo = pe((af, gs) => {
       ["ai-tools", /^ai(?: use)?$/u],
       ["work-collaboration", /^(?:person together task do )?collaboration$/u]
     ].find(([, u]) => u.test(i));
-    return a ? o("topic", a[0]) : pp(n, e);
+    return a ? o("topic", a[0]) : fp(n, e);
   }
-  g(lp, "composeMeaning");
-  function pp(n, e) {
+  g(dp, "composeMeaning");
+  function fp(n, e) {
     let i = n.filter((x) => !["nominal", "means", "method"].includes(x));
     e === "explanation" && !i.includes("explanation") && i.push("explanation");
     let t = /* @__PURE__ */ g((x) => i.includes(x), "has"), o = /* @__PURE__ */ g((...x) => x.some(t), "any"), s = /* @__PURE__ */ g((...x) => x.every(t), "all"), a = /* @__PURE__ */ g((x, v) => i.indexOf(x) < i.indexOf(v), "before"), u = /* @__PURE__ */ g((...x) => !t("start") || x.some((v) => t(v) && a(v, "start")), "beforeStart"), c = t("overview") ? i.slice(0, i.indexOf("overview")) : [], l = c.every((x) => ["explanation", "detail", "content", "first", "enter", "before"].includes(x)) && (!c.includes("enter") || c.indexOf("enter") < c.indexOf("before")), p = t("explain") || s("explanation", "receive"), d = [], r = /* @__PURE__ */ g((x, v, y, O) => {
@@ -6552,8 +6552,8 @@ var Bo = pe((af, gs) => {
     }
     return d.length === 1 ? d[0] : null;
   }
-  g(pp, "composeRoles");
-  var dp = [
+  g(fp, "composeRoles");
+  var mp = [
     ["prefer", /(?:(?:둘다|모두)(?:제가|내가)?)(?:좋아하는|선호하는)(?:거|것)(?:예요|이에요|입니다)$/u],
     ["prefer", /(?:제게는|내게는|저에게는|나에게는)?즐거운(?:일|활동)(?:이에요|입니다)$/u],
     ["prefer", /(?:(?:제가|내가)?(?:좋아하는|관심을두는)(?:분야|일|활동))(?:예요|이에요|입니다)$/u],
@@ -6578,14 +6578,14 @@ var Bo = pe((af, gs) => {
   ];
   function Gn(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(n)) return null;
-    for (let [e, i] of dp) {
+    for (let [e, i] of mp) {
       let t = i.exec(n);
       if (t) return { ...Pe(n.slice(0, t.index)), polarity: e, habitual: !1 };
     }
-    return ss(n);
+    return us(n);
   }
   g(Gn, "composeStance");
-  var fp = [
+  var gp = [
     [/^일(?:을)?처리할때(?:에는|는)?/u, ["work-style"], ""],
     [/^도움받는방식(?:으로는|은|는)/u, ["support"], ""],
     [/^판단(?:방법으로|방식은|에서는|에는|에쓸|할)/u, ["decision"], ""],
@@ -6610,7 +6610,7 @@ var Bo = pe((af, gs) => {
     [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
     [/^판단(?:은|을)/u, ["decision"], ""],
     [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
-  ], Ce = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, mp = {
+  ], Ce = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, $p = {
     independent: "self nohelp before-help first task try do process finish",
     together: "person together task try do process finish",
     example: "example first one look show check start before-start inquiry task",
@@ -6638,7 +6638,7 @@ var Bo = pe((af, gs) => {
     listening: "practice audio visual text listen read both mix answer know do",
     mixed: "practice audio visual text listen read both mix answer know do"
   };
-  function gp(n, { polarity: e, habitual: i }, t, o, s) {
+  function hp(n, { polarity: e, habitual: i }, t, o, s) {
     if (i || /(?:안|못).{0,8}(?:지는?\s*않|지\s*않)|(?:싫|불편|거부).{0,6}(?:않|아니)/u.test(s)) return null;
     let a = n.replace(/,/gu, "");
     if (e === "avoid" && /(?:글|말|문자|메시지|메일|이메일)로만/u.test(a)) return null;
@@ -6650,8 +6650,8 @@ var Bo = pe((af, gs) => {
     if (/(?:때|땐|라면|다면|경우|상황|기간|동안|날에|오늘만|내일만|이번만|이후의|이전의|에서는|에서만|에는|에만)/u.test(l) || /에서/u.test(l.replace(/옆에서/gu, "")) && !/(?:주제|소재|이야기|얘기)/u.test(a)) return null;
     let p = pn(Pe(u).action);
     if (!p) return null;
-    let d = [], r = /* @__PURE__ */ g((b, k, R) => {
-      R && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
+    let d = [], r = /* @__PURE__ */ g((b, k, I) => {
+      I && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
     }, "add"), $ = /* @__PURE__ */ g((b) => b.test(a), "has"), h = /* @__PURE__ */ g((b, k) => $(b) && $(k), "both"), f = /* @__PURE__ */ g((b) => a.search(b), "pos"), m = /* @__PURE__ */ g((b, k) => f(b) >= 0 && f(k) > f(b), "ordered"), x = $(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u), v = $(/(?:연습|문제|학습)/u) && !$(/(?:주제|소재|관한)/u);
     if (v) {
       let b = $(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), k = $(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
@@ -6663,8 +6663,8 @@ var Bo = pe((af, gs) => {
     r("explanation", "standard", O && T && !A), r("explanation", "brief", O && E && !T && !A && !$(/길게|긴설명/u));
     let S = $(/근거|이유|왜그런/u) && A;
     r("explanation", "detailed", O && A && !S && !E && !T), r("explanation-detail", "reasons-detail", S && $(/알|듣|설명|받|보/u)), r("explanation-detail", "long-flow", O && $(/길게이어|길게계속|긴설명을끊|길게설명/u));
-    let I = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-    if (r("explanation-detail", "overview-first", I && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
+    let R = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+    if (r("explanation-detail", "overview-first", R && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
       let b = [
         ["travel-planning", /여행/u, /일정|동선/u],
         ["travel-food", /여행지|여행|다른나라/u, /음식|식당|주문/u],
@@ -6683,37 +6683,37 @@ var Bo = pe((af, gs) => {
         ["games", /게임/u, /게임/u],
         ["nature", /자연|공원/u, /산책|자연/u]
       ];
-      for (let [k, R, w] of b) r("topic", k, x && h(R, w));
+      for (let [k, I, w] of b) r("topic", k, x && h(I, w));
     }
     let N = [...new Map(d.map((b) => [tn(b), b])).values()];
     if (N.length !== 1) return null;
     let M = N[0], _ = /* @__PURE__ */ g((b, k) => {
-      let R = p.indexOf(b);
-      return R >= 0 && p.slice(0, R).some((w) => k.includes(w));
+      let I = p.indexOf(b);
+      return I >= 0 && p.slice(0, I).some((w) => k.includes(w));
     }, "beforeRole");
     if (M.field !== "topic") {
-      let b = new Set((mp[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
+      let b = new Set(($p[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
       if (p.some((k) => !b.has(k))) return null;
     }
     return M.value === "plan-first" && _("plan", ["start", "try", "process", "finish", "do"]) || M.value === "example" && _("example", ["start", "try", "process", "finish", "do"]) || M.value === "overview-first" && _("overview", ["listen", "read", "receive", "explain", "look"]) ? null : { meanings: N };
   }
-  g(gp, "declaredCore");
+  g(hp, "declaredCore");
   function Le(n) {
-    let { body: e, condition: i } = Z(K(n));
-    e = K(e), e = e.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u, "");
+    let { body: e, condition: i } = Q(J(n));
+    e = J(e), e = e.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u, "");
     let t = null, o = "", s = /^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(e);
     s && (e = s[1] + "좋아요", t = ["explanation"], o = "설명");
     let a = /^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(e);
     if (a) {
       let E = Le(a[1].replace(/^(?:쉴때도|여유시간에도)/u, "") + "관심있어요"), S = Le(a[2]);
-      return E?.meanings.length === 1 && S?.meanings.length === 1 && E.meanings[0].field === "topic" && tn(E.meanings[0]) === tn(S.meanings[0]) ? { meanings: S.meanings.map((I) => ({ ...I, condition: I.condition || i })) } : null;
+      return E?.meanings.length === 1 && S?.meanings.length === 1 && E.meanings[0].field === "topic" && tn(E.meanings[0]) === tn(S.meanings[0]) ? { meanings: S.meanings.map((R) => ({ ...R, condition: R.condition || i })) } : null;
     }
     let u = /^(?:(?:제가|내가)?(?:배우고싶은|알고싶은|다루고싶은|좋아하는|관심있는)(?:주제|소재))(?:은|는)(.+?)(?:이에요|예요|입니다|이야|야)$/u.exec(e);
     u && (e = u[1] + "관심있어요", t = ["topic"]);
     let c = /^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(e);
     if (c) {
       let E = Le(c[1] + (c[2] === "편해서" ? "편해요" : c[2] === "선호해서" ? "선호해요" : "좋아해요")), S = Le(c[3]);
-      return E?.meanings.length === 1 && S?.meanings.length === 1 && tn(E.meanings[0]) === tn(S.meanings[0]) ? { meanings: E.meanings.map((I) => ({ ...I, condition: I.condition || i })) } : null;
+      return E?.meanings.length === 1 && S?.meanings.length === 1 && tn(E.meanings[0]) === tn(S.meanings[0]) ? { meanings: E.meanings.map((R) => ({ ...R, condition: R.condition || i })) } : null;
     }
     let l = /^(?:(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)|(?:(?:제가|내가))?(?:좋아하는|선호하는)(?:방식|방법|활동|취미))(?:은|는)(.+?)(?:거예요|것입니다|예요|이에요|입니다)$/u.exec(e);
     l && (e = l[1] + "좋아요");
@@ -6725,10 +6725,10 @@ var Bo = pe((af, gs) => {
       o = E === "연습" ? "연습" : E === "설명" ? "설명" : "", t = [{ 연습: "practice-mode", 소통: "communication", 도움: "support", 설명: "explanation" }[E]], e = d[3] + "좋아요", E === "소통" && (e = e.replace(/하는/u, "소통하는"));
     }
     e = e.replace(/^소통(?:은|는)(.+?)하는/u, "$1소통하는");
-    for (let [E, S, I] of fp) {
+    for (let [E, S, R] of gp) {
       let N = E.exec(e);
       if (N) {
-        t = S, o = I, e = e.slice(N[0].length);
+        t = S, o = R, e = e.slice(N[0].length);
         break;
       }
     }
@@ -6740,30 +6740,30 @@ var Bo = pe((af, gs) => {
     m && (t = [f.endsWith("소통하고") ? "communication" : f.endsWith("연습하고") ? "practice-mode" : "work-style"], f = m[1]);
     let x = /* @__PURE__ */ g((E) => !!pn(E.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), v = /(?:보다는|보단|보다(?!가)|대신|느니|아닌)/u.exec(f), y = [f];
     if (v) {
-      let E = f.slice(0, v.index), S = f.slice(v.index + v[0].length), I = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(E);
-      if (y = [], x(E) && y.push(S), I && x(I[2]) && y.push(I[1] + S), !y.length) return null;
+      let E = f.slice(0, v.index), S = f.slice(v.index + v[0].length), R = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(E);
+      if (y = [], x(E) && y.push(S), R && x(R[2]) && y.push(R[1] + S), !y.length) return null;
     }
     let O = [...y.map((E) => o + E.replace(/^한꺼번에말고/u, "")), o + $.action], T = [];
     for (let E of new Set(O)) {
       let S = pn(E);
       if (!S) continue;
-      let I = lp(S, $.nominalHead);
-      I && T.push(I);
+      let R = dp(S, $.nominalHead);
+      R && T.push(R);
     }
     if (!T.length) {
-      let E = gp(o + f, $, i, t, n);
+      let E = hp(o + f, $, i, t, n);
       if (E) return E;
       if ($.polarity !== "prefer") return null;
       let S = [...f.matchAll(/하되(?:,)?|하며(?:,)?|고(?:,)?/gu)];
       if (S.length > 6) return null;
-      for (let I of S) {
-        let N = I[0].startsWith("하") ? f.slice(0, I.index) + "하는" : f.slice(0, I.index + 1), M = f.slice(I.index + I[0].length);
+      for (let R of S) {
+        let N = R[0].startsWith("하") ? f.slice(0, R.index) + "하는" : f.slice(0, R.index + 1), M = f.slice(R.index + R[0].length);
         if (!M || /[?!]/u.test(N + M)) continue;
         let _ = /* @__PURE__ */ g((w) => B(w) || ln(w) || Le(w), "arm"), b = _(o + N + "좋아요"), k = _(o + M + "좋아요");
         if (!b?.meanings.length || !k?.meanings.length || b.meanings.some((w) => w.condition) || k.meanings.some((w) => w.condition)) continue;
-        let R = [...b.meanings, ...k.meanings];
-        if (!(R.some((w) => !Lo.includes(w.field)) || new Set(R.map((w) => w.field + ":" + w.value)).size < 2) && !(t && R.some((w) => !t.includes(w.field))))
-          return { meanings: R.map((w) => ({ ...w, polarity: $.polarity, condition: i })) };
+        let I = [...b.meanings, ...k.meanings];
+        if (!(I.some((w) => !Lo.includes(w.field)) || new Set(I.map((w) => w.field + ":" + w.value)).size < 2) && !(t && I.some((w) => !t.includes(w.field))))
+          return { meanings: I.map((w) => ({ ...w, polarity: $.polarity, condition: i })) };
       }
       return null;
     }
@@ -6772,10 +6772,10 @@ var Bo = pe((af, gs) => {
     return t && !t.includes(A.field) || A.field === "topic" && $.habitual ? null : { meanings: [{ ...A, polarity: $.polarity, condition: i }] };
   }
   g(Le, "compositional");
-  function cs(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
+  function ls(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
     if (e > 4 || i.remaining <= 0) return null;
-    let { body: t, condition: o } = Z(K(n));
-    if (t = K(t), dn(t) || On(t) || Xn.test(t)) return null;
+    let { body: t, condition: o } = Q(J(n));
+    if (t = J(t), dn(t) || On(t) || Xn.test(t)) return null;
     let s = Gn(t);
     if (!s || s.habitual) return null;
     let a = s.surfaceAction.replace(/(?:(?:저는|나는|제가|내가)?(?:둘다|모두)|(?:둘다|모두)(?:저는|나는|제가|내가)?)$/u, "").replace(/,+$/u, "");
@@ -6784,7 +6784,7 @@ var Bo = pe((af, gs) => {
       if (i.remaining-- <= 0) return null;
       let $ = r.replace(/^,+|,+$/gu, "") + u;
       if (dn($)) return null;
-      let h = e + ":" + $, f = i.cache.has(h) ? i.cache.get(h) : B($) || ln($) || Le($) || cs($, e + 1, i);
+      let h = e + ":" + $, f = i.cache.has(h) ? i.cache.get(h) : B($) || ln($) || Le($) || ls($, e + 1, i);
       return i.cache.set(h, f), !f?.meanings?.length || f.uncertain || f.typo || o && f.meanings.some((m) => m.condition && m.condition !== o) ? null : f.meanings.map((m) => ({ ...m, condition: m.condition || o }));
     }, "read"), l = /* @__PURE__ */ g((r) => {
       if (r.length < 2 || r.length > 6 || r.some((f) => !f)) return null;
@@ -6813,50 +6813,50 @@ var Bo = pe((af, gs) => {
     }
     return null;
   }
-  g(cs, "coordinatedDeclaration");
-  var $p = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", hp = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", xp = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + $p + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + hp + "$", "u"), vp = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, Xn = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
-  function Za(n) {
-    return !n || Xn.test(n) || Ce.test(n) ? !1 : xp.test(n) || vp.test(n);
+  g(ls, "coordinatedDeclaration");
+  var xp = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", vp = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", bp = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + xp + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + vp + "$", "u"), yp = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, Xn = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
+  function Ya(n) {
+    return !n || Xn.test(n) || Ce.test(n) ? !1 : bp.test(n) || yp.test(n);
   }
-  g(Za, "safeExplanation");
-  function ls(n) {
+  g(Ya, "safeExplanation");
+  function ps(n) {
     return !!n && !Xn.test(n) && !Ce.test(n) && !On(n) && !/(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)[가-힣]+(?:요|습니다|다)$/u.test(n) && !/(?:좋|싫|선호|원하|원해|싶|편하|편해|취향|관심|부담|맞아|맞는|않|아니|못|없|안해|안하|[?!])/u.test(n) && /(?:어요|아요|해요|습니다|해두죠|챙겨요|다녀요|봐요|들어요|하죠)$/u.test(n);
   }
-  g(ls, "narrativeBackground");
+  g(ps, "narrativeBackground");
   function On(n) {
     return /(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)(?:저는|나는|제가|내가|우리는|저희는)?(?:알아요|알고있어요|알고지내요|만나요|만납니다|만났어요|보았어요|봤어요|찾았어요|소개받았어요|기억해요|본적이있어요)$/u.test(n) || /(?:좋아해서|선호해서|좋아서|편해서)/u.test(n) && /(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)(?:저는|나는|제가|내가)/u.test(n) ? !0 : /(?:는|던|은|한)(?:(?:친한|새로운|한|몇몇|그|어떤|여러|가까운))?(?:친구|동료|사람|분|인물|학생|직원|선생님|가족|아이|회원)(?:들)?(?:을|를|은|는|이(?!야기|랑)|가|에게|한테)/u.test(n);
   }
   g(On, "relativePersonClause");
-  function bp(n) {
-    let { body: e, condition: i } = Z(K(n));
+  function kp(n) {
+    let { body: e, condition: i } = Q(J(n));
     if (dn(e) || Ce.test(e) || On(e)) return null;
     let t = /^(.+?)(좋아하는|선호하는|원하는|싫어하는)(?:것|거|편)이지(.+?)(?:좋은|싫은|편한|좋아하는|선호하는)(?:건|것은)(?:아니에요|아닙니다)$/u.exec(e);
     if (!t || !pn(Pe(t[3]).action)) return null;
     let o = t[1] + { 좋아하는: "좋아해요", 선호하는: "선호해요", 원하는: "원해요", 싫어하는: "싫어요" }[t[2]], s = B(o) || ln(o) || Le(o);
     return s?.meanings?.length && !s.uncertain ? { meanings: s.meanings.map((a) => ({ ...a, condition: a.condition || i })) } : null;
   }
-  g(bp, "focusedContrast");
+  g(kp, "focusedContrast");
   function Co(n) {
     return /^(?:[가-힣]{1,20}(?:이|가|은|는))?(?:무엇이든|뭐든|어떤것이든|어느것이든)(?:지)?$/u.test(n);
   }
   g(Co, "universalAside");
-  function yp(n) {
-    return n = n.replace(/^,+|,+$/gu, ""), !n || Co(n) || fs(n, { meanings: [{}] }) ? !0 : dn(n) || Ce.test(n) || On(n) || /(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(n) || Do(n.replace(/려는(?:게|것이)아니라$/u, "려고")) ? !1 : /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(n);
+  function wp(n) {
+    return n = n.replace(/^,+|,+$/gu, ""), !n || Co(n) || ms(n, { meanings: [{}] }) ? !0 : dn(n) || Ce.test(n) || On(n) || /(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(n) || Do(n.replace(/려는(?:게|것이)아니라$/u, "려고")) ? !1 : /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(n);
   }
-  g(yp, "pendingScopeAside");
-  function ps(n, e) {
+  g(wp, "pendingScopeAside");
+  function ds(n, e) {
     if (!n || n.length > 300 || /(?:강요|억지|시켜|시키|명령|라고|다고|라는말|다는말|예전|과거|옛날|내일|어제|작년|만약|가정|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록|수밖에|뿐이라|만가능)/u.test(n) || /(?:때만|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만|경우라면|상황이라면)/u.test(n) || Ce.test(n)) return !1;
     let i = /(?:려고|기위해|기위해서|지않도록|수있도록|수있게)$/u.test(n), t = /(?:니까|어서|아서|해서|여서|워서|러서|라서|이라서)$/u.test(n), o = /(?:더라도|어도|아도|여도|워도|러도)$/u.test(n);
     return !i && !t && !o ? !1 : e ? !0 : !(!/^(?:제가|내가|제|내)/u.test(n) && Do(n) && !i && !/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(n) || /^[가-힣]{1,20}(?:는|은|가|이)[가-힣]*(?:하려고|하기위해)$/u.test(n) && !/^시간|^내용|^설명|^생각|^기억|^의견/u.test(n));
   }
-  g(ps, "clauseAdjunct");
-  function ds(n, e = 0) {
+  g(ds, "clauseAdjunct");
+  function fs(n, e = 0) {
     if (e > 3) return null;
-    let { body: i, condition: t } = Z(K(n));
+    let { body: i, condition: t } = Q(J(n));
     if (Xn.test(i) || Ce.test(i) || On(i)) return null;
     let o = /* @__PURE__ */ g((p) => {
       if (dn(p)) return null;
-      let d = B(p) || ln(p) || Le(p) || ds(p, e + 1);
+      let d = B(p) || ln(p) || Le(p) || fs(p, e + 1);
       return !d?.meanings?.length || d.uncertain || d.typo || t && d.meanings.some((r) => r.condition && r.condition !== t) ? null : { meanings: d.meanings.map((r) => ({ ...r, condition: r.condition || t })) };
     }, "read"), s = /^([^,]+),(.+)$/u.exec(i);
     if (s && Co(s[1])) {
@@ -6866,7 +6866,7 @@ var Bo = pe((af, gs) => {
     let a = [...i.matchAll(/(?:기위해서|기위해|지않도록|수있도록|수있게|더라도|려고|니까|어서|아서|해서|여서|워서|러서|라서|어도|아도|여도|워도|러도)/gu)];
     if (a.length <= 12) for (let p of a.reverse()) {
       let d = p.index + p[0].length, r = i.slice(0, d), $ = i.slice(d).replace(/^,+/u, "");
-      if (!$ || !ps(r, /^(?:저는|나는|제가|내가)/u.test($))) continue;
+      if (!$ || !ds(r, /^(?:저는|나는|제가|내가)/u.test($))) continue;
       let h = /^(.*?)(좋아해서|선호해서|좋아서|편해서)$/u.exec(r);
       if (h) {
         let m = h[1] + { 좋아해서: "좋아해요", 선호해서: "선호해요", 좋아서: "좋아요", 편해서: "편해요" }[h[2]];
@@ -6876,18 +6876,18 @@ var Bo = pe((af, gs) => {
       if (f) return f;
     }
     let u = /^(.+?)(좋아해서|선호해서|좋아서|편해서)(.+)$/u.exec(i);
-    if (u && ls(u[3])) {
+    if (u && ps(u[3])) {
       let p = u[2] === "좋아해서" ? "좋아해요" : u[2] === "선호해서" ? "선호해요" : u[2] === "편해서" ? "편해요" : "좋아요", d = o(u[1] + p);
       if (d) return d;
     }
     for (let p of i.matchAll(/(?:수있도록|수있게|않도록|않게|기위해|려고|고싶어서|기전에|돼서|해서|니까)/gu)) {
       let d = p.index + p[0].length, r = i.slice(0, d), $ = i.slice(d).replace(/^,+/u, "");
-      if (!Za(r)) continue;
+      if (!Ya(r)) continue;
       let h = o($);
       if (h) return h;
     }
     let c = /^(?:(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)?|그렇게|이렇게)(?:더|저는|나는)?(.+)$/u, l = /^(.+?)(하면|해보면|받으면|들으면|보면|읽으면|두면|놓으면)(.+?)(?:그래서)?((?:(?:그|이|그런|이런)(?:방식|방법|쪽)|그렇게|이렇게).+)$/u.exec(i);
-    if (l && Za(l[3])) {
+    if (l && Ya(l[3])) {
       let p = c.exec(l[4]), d = p && Gn("하는" + p[1].replace(/^하고(?=싶)/u, ""));
       if (d && !d.habitual && d.action === "하기") {
         let r = { 하면: "하는", 해보면: "해보는", 받으면: "받는", 들으면: "듣는", 보면: "보는", 읽으면: "읽는", 두면: "두는", 놓으면: "놓는" }[l[2]], $ = o(l[1] + r + (d.polarity === "avoid" ? "걸선호하지않아요" : "게좋아요"));
@@ -6896,7 +6896,7 @@ var Bo = pe((af, gs) => {
     }
     return null;
   }
-  g(ds, "structuredDeclaration");
+  g(fs, "structuredDeclaration");
   var _o = Object.freeze({
     other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
     past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
@@ -6913,11 +6913,11 @@ var Bo = pe((af, gs) => {
     if (/^(?:우리|저희).{1,20}?(?:은|는|이(?!랑)|가)/u.test(n) || /^(?:담당|옆자리|새로온|같은팀의)?(?:조장|팀장|부장|대표|리더|담당자|선생님|고객|참가자)(?:님)?(?:은|는|이|가)/u.test(n) || /^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑)|가)/u.test(n)) return "other";
     if (/(?:예전|과거|전에는|옛날|어렸을때|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(n)) return "past";
     if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(n)) return "sensitive";
-    let e = Z(K(n));
-    return /(?:만약|라면|다면|가정하|상상하)/u.test(e.condition ? e.body : K(n).replace(/^(?:저라면|나라면)/u, "")) ? "hypothetical" : null;
+    let e = Q(J(n));
+    return /(?:만약|라면|다면|가정하|상상하)/u.test(e.condition ? e.body : J(n).replace(/^(?:저라면|나라면)/u, "")) ? "hypothetical" : null;
   }
   g(dn, "excludedOrigin");
-  function kp(n) {
+  function Ep(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -6926,7 +6926,7 @@ var Bo = pe((af, gs) => {
     for (; o = i.exec(n); )
       if (!(o[0] === "," && /^(?:(?![.!?;\n]).)*(?:모두|둘\s*다)(?:(?![.!?;\n]).)*(?:선호|좋아|관심|싫|원)/u.test(n.slice(o.index + 1)))) {
         if (o[0] === ",") {
-          let a = Z(K(n.slice(t, o.index)));
+          let a = Q(J(n.slice(t, o.index)));
           if (a.condition && (!a.body || Co(a.body.replace(/^,+/u, "")))) continue;
         }
         if (o[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(n.slice(o.index + 1))) {
@@ -6938,18 +6938,18 @@ var Bo = pe((af, gs) => {
           continue;
         }
         if (o[0] === ",") {
-          let a = n.slice(t, o.index), u = Z(K(a));
+          let a = n.slice(t, o.index), u = Q(J(a));
           if (u.condition && !u.body || /^어느쪽을고를지$/u.test(u.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(a) || /(?:고|하되|하며)\s*$/u.test(a) && !/해\s*주시고\s*$/u.test(a)) continue;
         }
         o[0] === "," && /(?:기도)\s*$/u.test(n.slice(t, o.index)) || o[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(n.slice(t, o.index)) || /^\s*(?:둘\s*다|모두)/u.test(n.slice(o.index + 1))) || /^(?:좋고|좋아하고|편하고|즐겁고)$/u.test(o[0]) && /^\s*(?:싶|말고|싫고|아니고|그랬)/u.test(n.slice(o.index + o[0].length)) || o[0] === "지만" && !/(?:좋|싫|하|되|있|없|않|했|았|었|겠|리|지|많|되|편이|일이|맞)$/u.test(n.slice(t, o.index).replace(/\s/gu, "")) || (s(o.index + (/^[.!?;\n,\s]/u.test(o[0]) ? 0 : o[0].length)), t = o.index + o[0].length);
       }
     return s(n.length), e;
   }
-  g(kp, "pieces");
+  g(Ep, "pieces");
   function Do(n) {
     let e = n.replace(/\s/gu, "");
     if (Ce.test(e)) return !0;
-    let i = Z(K(n)).body;
+    let i = Q(J(n)).body;
     for (let t of i.matchAll(/께서는|께서|은|는|이|가/gu)) {
       if (t.index > 40) break;
       let o = i.slice(0, t.index), s = i.slice(0, t.index + t[0].length);
@@ -6962,15 +6962,15 @@ var Bo = pe((af, gs) => {
     return !1;
   }
   g(Do, "unresolvedSubject");
-  function fs(n, e) {
+  function ms(n, e) {
     if (!e?.meanings?.length) return !1;
     let i = n.replace(/\s/gu, "");
-    return /["“”‘’]/u.test(i) || Ce.test(i) || /(?:좋아|좋다는|싫어|싫다는|선호|원하|원해|원치|관심|취향|편하다는|강요|시켜|취소|철회|저장|없던일)/u.test(i) ? !1 : /(?:뜻|의미|이야기)(?:은|는)?아니(?:고|지만)$/u.test(i) || /(?:과는|와는)(?:별개로|관계없이)$/u.test(i) || /(?:이유인데|때문인데)$/u.test(i) && !/(?:경우|상황|때만|만약|라면|다면|예전|과거)/u.test(i) ? !0 : /(?:더라도|어도|아도|여도|긴하지만)$/u.test(i) && ps(i.replace(/긴하지만$/u, "더라도"), !1);
+    return /["“”‘’]/u.test(i) || Ce.test(i) || /(?:좋아|좋다는|싫어|싫다는|선호|원하|원해|원치|관심|취향|편하다는|강요|시켜|취소|철회|저장|없던일)/u.test(i) ? !1 : /(?:뜻|의미|이야기)(?:은|는)?아니(?:고|지만)$/u.test(i) || /(?:과는|와는)(?:별개로|관계없이)$/u.test(i) || /(?:이유인데|때문인데)$/u.test(i) && !/(?:경우|상황|때만|만약|라면|다면|예전|과거)/u.test(i) ? !0 : /(?:더라도|어도|아도|여도|긴하지만)$/u.test(i) && ds(i.replace(/긴하지만$/u, "더라도"), !1);
   }
-  g(fs, "explanatoryAside");
-  function wp(n, e) {
+  g(ms, "explanatoryAside");
+  function Sp(n, e) {
     if (!e?.meanings?.length) return !1;
-    let { body: i, condition: t } = Z(K(n));
+    let { body: i, condition: t } = Q(J(n));
     if (t || dn(i) || Xn.test(i) || Ce.test(i)) return !1;
     let o = /^(?:(그|이|그런|이런)(?:(업무|일하는|소통|연습|도움|판단)(?:방식|방법)|(?:분야|활동|주제|방식|방법|쪽))|((?:두|둘)(?:분야|활동|주제))|((?:그렇게|이렇게)도움받는))(?:이|가|은|는|을|를)?(.+)$/u.exec(i);
     if (!o) return !1;
@@ -6979,8 +6979,8 @@ var Bo = pe((af, gs) => {
     let p = o[5].replace(/^(?:알아보는|살펴보는)(?:게|것이|것은|걸)?/u, ""), d = Gn("하는" + p);
     return !!d && !d.habitual && d.action === "하기" && l.every((r) => r.polarity === d.polarity);
   }
-  g(wp, "redundantReference");
-  var Ya = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], Qa = {
+  g(Sp, "redundantReference");
+  var Qa = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], es = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -6999,17 +6999,17 @@ var Bo = pe((af, gs) => {
     return i !== null;
   }
   g(qo, "quotedAt");
-  function Ep(n, e, i) {
+  function Op(n, e, i) {
     for (let t = e; t < i; t++) if (/[.!?;\n]/u.test(n[t]) && !qo(n, t)) return !0;
     return !1;
   }
-  g(Ep, "scopeBoundaryBetween");
-  function Sp(n) {
+  g(Op, "scopeBoundaryBetween");
+  function Ap(n) {
     we.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null, s = !1, a = null;
-    for (let u of kp(n)) {
-      let c = qo(n, u.start), l = u.quote.replace(/\s/gu, ""), p = !c && (/^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(l) || /^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(K(l))), d = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(l), r = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(l);
-      if (a && (Ep(n, a.end, u.start) || r && !c) && (a = null), a && c && (a = { ...a, uncertain: !0 }), p && !c && (s = !1), i === "quotation" && p && !c && (i = null), fs(u.quote, e.at(-1))) {
+    for (let u of Ep(n)) {
+      let c = qo(n, u.start), l = u.quote.replace(/\s/gu, ""), p = !c && (/^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(l) || /^(?:나는|난|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(J(l))), d = /^(?:(?:나는|난|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(l), r = /^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(l);
+      if (a && (Op(n, a.end, u.start) || r && !c) && (a = null), a && c && (a = { ...a, uncertain: !0 }), p && !c && (s = !1), i === "quotation" && p && !c && (i = null), ms(u.quote, e.at(-1))) {
         e.push({ evidence: u, meanings: [] });
         continue;
       }
@@ -7018,7 +7018,7 @@ var Bo = pe((af, gs) => {
 `, u.start - 1)) + 1, h = /[.!?\n]/u.exec(n.slice(u.end)), f = h ? u.end + h.index : n.length, m = On(n.slice($, f).replace(/\s/gu, "")), x = { evidence: u }, v = (m ? "other" : dn(l)) || i;
       if (v || s) {
         i = v, o = null;
-        let q = Z(K(l)).condition;
+        let q = Q(J(l)).condition;
         a ? a = { ...a, end: u.end, uncertain: !0 } : q && !c && (/^\s*,/u.test(n.slice(u.end)) || qo(n, u.end)) && (a = { condition: q, start: u.start, end: u.end, uncertain: !0 }), x.unresolved = { ...u, reason: v || "unsupported", reasonLabel: v ? _o[v] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." }, ["uncertain", "condition"].includes(v) && (x.generic = !0), e.push(x);
         continue;
       }
@@ -7026,33 +7026,33 @@ var Bo = pe((af, gs) => {
       A && (O = O.replace(/^(?:그걸|그것을)\s*(보고\s*나서(?:는)?|본\s*(?:다음|뒤|후)(?:에는)?)/u, "예시를 본 다음에는"));
       let S = t && /^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u.test(O);
       S && (O = O.replace(/^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u, ""));
-      let I = Z(K(O)), N = I.condition;
+      let R = Q(J(O)), N = R.condition;
       if (N && a) {
         let q = N === a.condition ? N : N === "after-example" && ["first-try", "familiar", "busy"].includes(a.condition) ? a.condition + "-after-example" : null;
         a = { ...a, condition: q || a.condition, uncertain: a.uncertain || !q };
       }
       let M = E && ["first-try", "familiar", "busy"].includes(A.condition) ? A.condition : null, _ = a?.condition || o || (S ? t : null) || M;
       y?.meanings.length && /^그다음\s+/u.test(O) && (O = O.replace(/^그다음\s+/u, ""));
-      let b = B(O) || ln(O) || Le(O) || cs(O) || bp(O) || ds(O) || rp(O) || ap(O), k = /^\s*,/u.test(n.slice(u.end));
+      let b = B(O) || ln(O) || Le(O) || ls(O) || kp(O) || fs(O) || sp(O) || up(O), k = /^\s*,/u.test(n.slice(u.end));
       if (!b && (N || a) && k) {
-        let q = yp(I.body);
+        let q = wp(R.body);
         if (a = { condition: a?.condition || N, start: a?.start ?? u.start, end: u.end, uncertain: !q || !!a?.uncertain }, q) {
           x.meanings = [], e.push(x);
           continue;
         }
       }
-      if (!b && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && wp(u.quote, T)) {
+      if (!b && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && Sp(u.quote, T)) {
         x.meanings = [], e.push(x);
         continue;
       }
       if (!b && y?.meanings.length && !/^[\s.!?]*\?/u.test(n.slice(u.end))) {
-        let q = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(Z(l).body), j = q && Gn("하는" + q[1]);
-        if (j?.action === "하기" && !j.habitual && y.meanings.every((z) => z.polarity === j.polarity)) {
+        let q = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(Q(l).body), j = q && Gn("하는" + q[1]);
+        if (j?.action === "하기" && !j.habitual && y.meanings.every((L) => L.polarity === j.polarity)) {
           x.meanings = [], e.push(x);
           continue;
         }
-        let G = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(l), X = e.slice(-2).flatMap((z) => z.meanings || []);
-        if (G && X.length >= 2 && (G[1] !== "연습" || X.every((z) => z.field === "practice-mode"))) {
+        let X = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(l), Z = e.slice(-2).flatMap((L) => L.meanings || []);
+        if (X && Z.length >= 2 && (X[1] !== "연습" || Z.every((L) => L.field === "practice-mode"))) {
           x.meanings = [], e.push(x);
           continue;
         }
@@ -7061,7 +7061,7 @@ var Bo = pe((af, gs) => {
         x.meanings = [], e.push(x);
         continue;
       }
-      if (!b && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && ls(l)) {
+      if (!b && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && ps(l)) {
         x.meanings = [], e.push(x);
         continue;
       }
@@ -7070,12 +7070,12 @@ var Bo = pe((af, gs) => {
         q.meanings.length === 1 && !q.unresolved.length && (b = { meanings: q.meanings });
       }
       b && p && !a && !N && !t && y?.meanings?.some((q) => q.field !== "topic") && b.meanings.every((q) => q.field === "topic") && (_ = null, o = null), b && _ && !r && (b = { ...b, meanings: b.meanings.map((q) => ({ ...q, condition: q.condition === "after-example" && ["first-try", "familiar", "busy"].includes(_) ? _ + "-after-example" : q.condition === "after-example" && /^(?:first-try|familiar|busy)-after-example$/u.test(_) ? _ : q.condition || _ })) });
-      let R = b?.meanings.at(-1)?.condition || (N === "after-example" && M ? M + "-after-example" : N) || (r ? null : _);
-      o = R && /(?:고|며)$/u.test(l) ? R : null;
+      let I = b?.meanings.at(-1)?.condition || (N === "after-example" && M ? M + "-after-example" : N) || (r ? null : _);
+      o = I && /(?:고|며)$/u.test(l) ? I : null;
       let w = t && b?.meanings.some((q) => !q.condition) && !r;
-      a && b && (x.evidence = { start: a.start, end: u.end, quote: n.slice(a.start, u.end) }, a.uncertain && (w = !0), a = null), w && (b = null, i = "condition"), t = R && /(?:지만|는데)$/u.test(l) ? R : !1;
-      let L = /^[\s.!?]*/u.exec(n.slice(u.end))[0].includes("?"), P = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(l);
-      if (!b && !P && !N && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(l) && (w = !0, i = "condition"), !b && !p && !N && !w && !P && Do(u.quote) && (s = !0), P && /(?:지만|는데)$/u.test(l) && (i = "uncertain"), L ? (b ? x.candidate = { ...b, uncertain: !0 } : x.generic = !0, x.unresolved = { ...u, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : b ? b.uncertain || b.typo || P ? x.candidate = { ...b, uncertain: b.uncertain || P } : x.meanings = b.meanings : x.generic = !0, !x.meanings && !x.unresolved) {
+      a && b && (x.evidence = { start: a.start, end: u.end, quote: n.slice(a.start, u.end) }, a.uncertain && (w = !0), a = null), w && (b = null, i = "condition"), t = I && /(?:지만|는데)$/u.test(l) ? I : !1;
+      let z = /^[\s.!?]*/u.exec(n.slice(u.end))[0].includes("?"), P = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(l);
+      if (!b && !P && !N && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(l) && (w = !0, i = "condition"), !b && !p && !N && !w && !P && Do(u.quote) && (s = !0), P && /(?:지만|는데)$/u.test(l) && (i = "uncertain"), z ? (b ? x.candidate = { ...b, uncertain: !0 } : x.generic = !0, x.unresolved = { ...u, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : b ? b.uncertain || b.typo || P ? x.candidate = { ...b, uncertain: b.uncertain || P } : x.meanings = b.meanings : x.generic = !0, !x.meanings && !x.unresolved) {
         let q = P ? "uncertain" : w ? "condition" : "unsupported";
         x.unresolved = { ...u, reason: q, reasonLabel: _o[q] };
       }
@@ -7087,7 +7087,7 @@ var Bo = pe((af, gs) => {
     }
     return e;
   }
-  g(Sp, "analyze");
+  g(Ap, "analyze");
   function jo(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -7095,7 +7095,7 @@ var Bo = pe((af, gs) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...Ya].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...Qa].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: Po(r.evidence) })), "add");
@@ -7112,8 +7112,8 @@ var Bo = pe((af, gs) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(Qa).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(ei, f) && u(d, "value", `${Qa[f]}에서 어떤 내용을 확인할까요?`, ei[f].map((m) => ({ id: m, label: ui[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(es).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(ei, f) && u(d, "value", `${es[f]}에서 어떤 내용을 확인할까요?`, ei[f].map((m) => ({ id: m, label: ui[m] })), (m) => {
           ei[f].includes(m) && u(d, "polarity", `‘${ui[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(ci).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(ci, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
@@ -7139,36 +7139,36 @@ var Bo = pe((af, gs) => {
       let r = c.filter((f) => f.id === d.id || li(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${os(r.map((f) => f.id + tn(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: zo(f), value: f.id })), ...Ya.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${rs(r.map((f) => f.id + tn(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: zo(f), value: f.id })), ...Qa.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, We.unresolved), questions: a };
   }
   g(jo, "stateFor");
-  function es(n, e, i, t, o) {
-    let s = Jl.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function ns(n, e, i, t, o) {
+    let s = Gl.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = jo(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => tn(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(es, "choose");
-  function ms(n, { clarifications: e = [], parserVersion: i = Sn } = {}) {
+  g(ns, "choose");
+  function gs(n, { clarifications: e = [], parserVersion: i = Sn } = {}) {
     if (i === we.PARSER_VERSION)
-      return e.length && ae(), we.parseMemberStatement(n);
+      return e.length && ue(), we.parseMemberStatement(n);
     if (i === ti.PARSER_VERSION) return ti.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === ii.PARSER_VERSION) return ii.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === oi.PARSER_VERSION) return oi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === ri.PARSER_VERSION) return ri.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === ai.PARSER_VERSION) return ai.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === si.PARSER_VERSION) return si.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== Sn && ae(), (!is(e, We.clarifications) || e.some((l) => !ni(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ae();
-    let t = Sp(n), o = os(n), s = /* @__PURE__ */ Object.create(null), a = [], u = jo(n, t, s, o), c = es(u, n, t, s, o);
+    i !== Sn && ue(), (!os(e, We.clarifications) || e.some((l) => !ni(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ue();
+    let t = Ap(n), o = rs(n), s = /* @__PURE__ */ Object.create(null), a = [], u = jo(n, t, s, o), c = ns(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ae();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ue();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || ae(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = jo(n, t, s, o), c = es(u, n, t, s, o);
+      p || ue(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = jo(n, t, s, o), c = ns(u, n, t, s, o);
     }
     if (e.length === We.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && li(p, d)));
@@ -7176,7 +7176,7 @@ var Bo = pe((af, gs) => {
     }
     return { parserVersion: Sn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: Po(e), clarificationAnswers: a };
   }
-  g(ms, "parseMemberStatement");
+  g(gs, "parseMemberStatement");
   function zo(n) {
     return `${n.condition ? ci[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${ui[n.value]}`;
   }
@@ -7185,8 +7185,8 @@ var Bo = pe((af, gs) => {
     return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Lo.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(li, "meaningsConflict");
-  function Op(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = ns(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function Mp(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = ts(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === we.PARSER_VERSION) return we.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === ti.PARSER_VERSION) return ti.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === ii.PARSER_VERSION) return ii.validateMemberStatement(n, { now: e, enforceTime: i });
@@ -7194,26 +7194,26 @@ var Bo = pe((af, gs) => {
     if (t === ri.PARSER_VERSION) return ri.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === ai.PARSER_VERSION) return ai.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === si.PARSER_VERSION) return si.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!ni(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== Sn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !is(n.meanings, We.meanings) || !n.meanings.length) && ae();
-    let o = To(n.at), s = To(n.confirmedAt), a = i ? typeof e == "string" ? To(e) : Number.isSafeInteger(e) ? e : ae() : null;
-    (s < o || i && s > a) && ae();
-    let u = ms(n.text, { clarifications: n.clarifications });
-    u.question && ae();
+    (!ni(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== Sn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !os(n.meanings, We.meanings) || !n.meanings.length) && ue();
+    let o = To(n.at), s = To(n.confirmedAt), a = i ? typeof e == "string" ? To(e) : Number.isSafeInteger(e) ? e : ue() : null;
+    (s < o || i && s > a) && ue();
+    let u = gs(n.text, { clarifications: n.clarifications });
+    u.question && ue();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!ni(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !ni(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ae(), c.add(p.id);
+      (!ni(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !ni(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ue(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ae(), Po(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ue(), Po(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => li(p, r))) && ae(), { id: n.id.toLowerCase(), parserVersion: Sn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => li(p, r))) && ue(), { id: n.id.toLowerCase(), parserVersion: Sn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(Op, "validateMemberStatement");
-  gs.exports = { PARSER_VERSION: Sn, MEMBER_STATEMENT_LIMITS: We, MEMBER_STATEMENT_VALUES: ei, MEMBER_STATEMENT_LABELS: ui, MEMBER_STATEMENT_CONDITIONS: ci, MEMBER_STATEMENT_MULTI_FIELDS: Lo, parseMemberStatement: ms, validateMemberStatement: Op, meaningsConflict: li, meaningLabel: zo };
+  g(Mp, "validateMemberStatement");
+  $s.exports = { PARSER_VERSION: Sn, MEMBER_STATEMENT_LIMITS: We, MEMBER_STATEMENT_VALUES: ei, MEMBER_STATEMENT_LABELS: ui, MEMBER_STATEMENT_CONDITIONS: ci, MEMBER_STATEMENT_MULTI_FIELDS: Lo, parseMemberStatement: gs, validateMemberStatement: Mp, meaningsConflict: li, meaningLabel: zo };
 });
 
 // experiences/synk-account/src/member-statement-v9.cjs
-var Ls = pe((uf, zs) => {
+var Ps = pe((pf, Ls) => {
   "use strict";
-  var Oe = _e(), gi = Be(), $i = Ge(), hi = un(), xi = yn(), vi = Vn(), bi = Qt(), yi = Bo(), Ap = qe(), An = "member-statement-ko-9", Fe = Object.freeze({ ...Oe.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), di = Object.freeze({
+  var Oe = _e(), gi = Be(), $i = Ge(), hi = un(), xi = yn(), vi = Vn(), bi = Qt(), yi = Bo(), Rp = qe(), An = "member-statement-ko-9", Fe = Object.freeze({ ...Oe.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), di = Object.freeze({
     ...Oe.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
@@ -7254,13 +7254,13 @@ var Ls = pe((uf, zs) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), bs = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), ys = /* @__PURE__ */ g((n, e) => {
+  }), ys = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), ks = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), fi = /* @__PURE__ */ g((n, e) => bs(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => ys(n, i)), "exact"), ks = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => ys(n, String(t))).every(Boolean), "list"), se = /* @__PURE__ */ g(() => {
+  }, "data"), fi = /* @__PURE__ */ g((n, e) => ys(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => ks(n, i)), "exact"), ws = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => ks(n, String(t))).every(Boolean), "list"), ce = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), Uo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : se(), "instant"), on = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), Jo = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Mp = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function ws(n) {
+  }, "fail"), Uo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ce(), "instant"), on = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), Jo = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), Ip = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Es(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -7273,7 +7273,7 @@ var Ls = pe((uf, zs) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Mp[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + Ip[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -7282,8 +7282,8 @@ var Ls = pe((uf, zs) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(ws, "sourceKey");
-  var Es = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Ss = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Ip = [
+  g(Es, "sourceKey");
+  var Ss = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Os = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, Np = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -7306,10 +7306,10 @@ var Ls = pe((uf, zs) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Zn(n, e) {
-    for (let [i, t, o] of Ip) {
+    for (let [i, t, o] of Np) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Ss.test(a) ? "avoid" : Es.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Os.test(a) ? "avoid" : Ss.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
@@ -7345,7 +7345,7 @@ var Ls = pe((uf, zs) => {
     return null;
   }
   g(Ee, "expanded");
-  var Rp = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, Np = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, Tp = [
+  var Tp = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, _p = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, qp = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -7373,7 +7373,7 @@ var Ls = pe((uf, zs) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], _p = [
+  ], jp = [
     ["first-try-after-example", /^처음(?:시도|시작)하며(?:예시|예제|샘플)(?:를|을)?본(?:뒤|후|다음)(?:에는|엔|에)/u],
     // The semantic scopes are unchanged; only their noun/verb surface forms vary.
     ["first-try", /^(?:처음(?:시도|시작|연습|학습|공부|도전|경험)하는|처음해보는)(?:때|상황)(?:에는|에서는|라면|는)/u],
@@ -7430,7 +7430,7 @@ var Ls = pe((uf, zs) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], qp = [
+  ], zp = [
     ["avoid", /관심(?:이)?없(?:어요|습니다|다|어)$/u],
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
@@ -7442,7 +7442,7 @@ var Ls = pe((uf, zs) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], jp = [
+  ], Lp = [
     ["매기기", /매기(?:는|기)$/u],
     ["즐기기", /즐기(?:는|기)$/u],
     ["적기", /적(?:는|기)$/u],
@@ -7515,7 +7515,7 @@ var Ls = pe((uf, zs) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], zp = [
+  ], Pp = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -7539,10 +7539,10 @@ var Ls = pe((uf, zs) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function Os(n) {
+  function As(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of qp) {
+    for (let [o, s] of zp) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -7551,25 +7551,25 @@ var Ls = pe((uf, zs) => {
     }
     let t = !1;
     if (!e) {
-      let o = zp.find(([, s]) => s.test(n));
+      let o = Pp.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
     return { ...Se(i), polarity: e, habitual: t };
   }
-  g(Os, "actionAndStance");
+  g(As, "actionAndStance");
   function Se(n) {
     let e = n, i = ge(e, !0)?.at(-1);
     i?.tag === "particle" && i.text === "가" && /(?:내가|제가)$/u.test(e) || (e = e.replace(/(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, "")), e = e.replace(/기(?:를|는|도|가)$/u, "기").replace(/(?:께서는|으로는|로는)$/u, ""), /(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(e) || (e = e.replace(/(?:것|거|방식|쪽|편|시간|일|방법|구성|활동)(?:이|은|을|를|도|에|에는|에도)?$|(?:게|걸|건|데|데에도)$/u, ""));
     let t = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(e) ? "explanation" : null;
     t && (e = e.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1"));
-    let o = e, s = jp.find(([, u]) => u.test(e));
+    let o = e, s = Lp.find(([, u]) => u.test(e));
     s ? e = e.replace(s[1], s[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let a = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (u, c) => a[c]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (u, c) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[c]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (u) => u.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (u) => u.startsWith("들어") ? "듣고" : u.startsWith("비교") ? "비교하고" : u.startsWith("실행") ? "실행하고" : "시도하고").replace(/(참고|상의|확인|비교)해(?=결정|판단)/gu, "$1하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (u) => u.startsWith("만들어") ? "만들고" : u.startsWith("세워") ? "세우고" : u.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: t, surfaceAction: o };
   }
   g(Se, "normalizeActionPhrase");
-  var Lp = [
+  var Cp = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -7642,34 +7642,34 @@ var Ls = pe((uf, zs) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function As(n, e) {
-    let i = Os(n);
+  function Ms(n, e) {
+    let i = As(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = As(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Ms(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = Lp.find(([, , s]) => s.test(i.action));
+    let t = Cp.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Zn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(As, "recognizeAction");
+  g(Ms, "recognizeAction");
   function Ho(n) {
     let e = n.replace(/^전\s+/u, "저는 ").replace(/^난\s+/u, "나는 ").replace(/(때(?:는)?|에서는|에는|다음에는)\s+전\s+/gu, "$1 저는 ");
     if (/^난\S/u.test(e)) {
       let i = Mn(e.slice(1).replace(/\s/gu, "")), t = i && ge(i.action, !0);
-      t?.length && t[0].tag !== "particle" && Ms(ge(i.action), i.nominalHead) && (e = "나는" + e.slice(1));
+      t?.length && t[0].tag !== "particle" && Rs(ge(i.action), i.nominalHead) && (e = "나는" + e.slice(1));
     }
     return e;
   }
   g(Ho, "selfSurface");
-  function J(n) {
+  function H(n) {
     let e = Ho(n).replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
     /좋지만\s*$/u.test(n) && (e = e.replace(/좋$/u, "좋아요")), /일이지만\s*$/u.test(n) && (e = e.replace(/일이$/u, "일이에요")), e = e.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u, (t) => ({ 좋아하며: "좋아해요", 선호하고: "선호해요", 선호하며: "선호해요", 원하고: "원해요", 원하며: "원해요", 편하며: "편해요", 싫고: "싫어요", 관심이있고: "관심있어요", 관심이많고: "관심많아요", 원하지않고: "원하지않아요", 선호하지않고: "선호하지않아요", 좋아하지않고: "좋아하지않아요" })[t]).replace(/(?:쪽이고|것이고|편이고|활동이고)$/u, (t) => t.slice(0, -2) + "이에요").replace(/관심이많$/u, "관심이많아요").replace(/관심이없$/u, "관심이없어요").replace(/좋아하$/u, "좋아해요").replace(/((?:원|좋아|선호)하지)않$/u, "$1않아요").replace(/좋아하$/u, "좋아해요").replace(/좋아하는$/u, "좋아해요"), e = e.replace(/좋(?:아하)?고요$/u, (t) => t.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, ""), e = e.replace(/^(?:저는|나는|제가|내가)/u, "");
     let i = null;
-    for (let [t, o] of _p) if (o.test(e)) {
+    for (let [t, o] of jp) if (o.test(e)) {
       i = t, e = e.replace(o, "");
       break;
     }
@@ -7679,7 +7679,7 @@ var Ls = pe((uf, zs) => {
     }
     return e = e.replace(/^,+/u, ""), /편하지만$/u.test(n.replace(/\s/gu, "")) && (e = e.replace(/편하$/u, "편해요")), { body: e, condition: i };
   }
-  g(J, "normalizePrefix");
+  g(H, "normalizePrefix");
   function U(n) {
     let e = Ho(n).replace(/\s/gu, "");
     e = e.replace(/^(?:그와별개로|그것과별개로|그렇지만|반대로)(?!는|도)/u, "").replace(/^(?:상황과관계없이|일과별개로|별개로|정확히말하면)/u, "").replace(/(?:즐기고|즐기며|즐기는편이에요)$/u, "즐겨요").replace(/싫어하고$/u, "싫어요").replace(/흥미가있고$/u, "흥미가있어요").replace(/(?:원치않고|원치않으며)$/u, "원하지않고").replace(/원치않(?:아요|습니다|아|는다)$/u, "원하지않아요").replace(/(?:좋으며|좋아하며)$/u, "좋아하고").replace(/마음에들고$/u, "마음에들어요").replace(/관심(?:을)?두고있고$/u, "관심있어요").replace(/관심(?:이)?없고요$/u, "관심없어요").replace(/(?:잘)?맞지만$/u, "맞아요").replace(/원하지만$/u, "원해요").replace(/(?:편하고요|편하며)$/u, "편해요"), e = e.replace(/^(?:[가-힣]{1,16})(?:와|과)(?:는)?달리(?=저는|나는|제가|내가)/u, "").replace(/관심이있으며$/u, "관심있어요").replace(/관심이없고$/u, "관심없어요").replace(/싶으며$/u, "싶어요").replace(/설명이고$/u, "설명이에요"), e = e.replace(/(?:선호하고요|원하고요)$/u, (c) => c.startsWith("선호") ? "선호해요" : "원해요").replace(/싶은편(?:이고|이에요|입니다)$/u, "싶어요");
@@ -7698,7 +7698,7 @@ var Ls = pe((uf, zs) => {
     return u && (e = u[1].replace(/해보$/u, "해보는").replace(/하$/u, "하는") + "걸원하지않아요"), e;
   }
   g(U, "surfaceDeclaration");
-  function Pp(n) {
+  function Dp(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
       return !!C(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
@@ -7707,9 +7707,9 @@ var Ls = pe((uf, zs) => {
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(Pp, "comparative");
+  g(Dp, "comparative");
   function C(n) {
-    let { body: e, condition: i } = J(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
+    let { body: e, condition: i } = H(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
       let l = C(t[1] + t[3]), p = C(t[2] + t[3]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && !l.uncertain && !p.uncertain) {
@@ -7727,7 +7727,7 @@ var Ls = pe((uf, zs) => {
       let l = C(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Pp(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = Dp(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
       let l = C(a[1] + "보는게좋아요"), p = C(a[2]);
@@ -7735,18 +7735,18 @@ var Ls = pe((uf, zs) => {
         return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = As(e, i);
+    let c = Ms(e, i);
     if (c) return c;
-    for (let [l, p, d] of Tp) {
+    for (let [l, p, d] of qp) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = Np.test($) || Ss.test($) ? "avoid" : l !== "topic" && Rp.test($) || Es.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = _p.test($) || Os.test($) ? "avoid" : l !== "topic" && Tp.test($) || Ss.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
   g(C, "natural");
-  function Cp(n) {
+  function Bp(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -7758,17 +7758,17 @@ var Ls = pe((uf, zs) => {
     let o = C(e) || Ee(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(Cp, "tentative");
-  function Dp(n) {
-    let { body: e, condition: i } = J(n);
+  g(Bp, "tentative");
+  function Up(n) {
+    let { body: e, condition: i } = H(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
     let t = C(e.replace(/^(.+?)로만/u, "$1로"));
     if (t?.meanings.length !== 1 || t.meanings[0].field !== "communication") return null;
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(Dp, "restrictedMethod");
-  var Bp = [
+  g(Up, "restrictedMethod");
+  var Vp = [
     ["use", /^(?:활용|사용)(?=$|도|을|이|법)/u],
     ["communicate", /^소통/u],
     ["mix", /^한데묶(?:은|는|기)/u],
@@ -8037,7 +8037,7 @@ var Ls = pe((uf, zs) => {
     ["first", /^부터/u],
     ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
     ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
-  ], Up = [
+  ], Wp = [
     ["communicate", "소통"],
     ["communicate", "대화"],
     ["speak", "말"],
@@ -8084,12 +8084,12 @@ var Ls = pe((uf, zs) => {
     ["make", "제작"],
     ["explore", "탐색"],
     ["summary", "요약"]
-  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), Vp = [...Up, ...Bp];
+  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), Fp = [...Wp, ...Vp];
   function ge(n, e = !1) {
     let i = [], t = 0;
     for (; t < n.length && i.length < 120; ) {
       let o = null;
-      for (let [s, a] of Vp) {
+      for (let [s, a] of Fp) {
         let u = a.exec(n.slice(t));
         u && (!o || u[0].length > o.text.length) && (o = { tag: s, text: u[0] });
       }
@@ -8099,7 +8099,7 @@ var Ls = pe((uf, zs) => {
     return t === n.length ? e ? i : i.filter((o) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(o)) : null;
   }
   g(ge, "phraseUnits");
-  function Ms(n, e) {
+  function Rs(n, e) {
     let i = n.filter((u) => !["nominal", "means", "method"].includes(u)).join(" "), t = /* @__PURE__ */ g((u) => u.test(i), "match"), o = /* @__PURE__ */ g((u, c) => ({ field: u, value: c }), "out");
     if (t(/^(?:person )?(?:(?:opinion|speech) )?(?:first )?listen (?:(?:opinion|speech) )?organize$/u)) return o("communication", "listen-organize");
     if (t(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return o("communication", "share-first");
@@ -8145,10 +8145,10 @@ var Ls = pe((uf, zs) => {
       ["ai-tools", /^ai(?: use)?$/u],
       ["work-collaboration", /^(?:person together task do )?collaboration$/u]
     ].find(([, u]) => u.test(i));
-    return a ? o("topic", a[0]) : Wp(n, e);
+    return a ? o("topic", a[0]) : Kp(n, e);
   }
-  g(Ms, "composeMeaning");
-  function Wp(n, e) {
+  g(Rs, "composeMeaning");
+  function Kp(n, e) {
     let i = n.filter((x) => !["nominal", "means", "method"].includes(x));
     e === "explanation" && !i.includes("explanation") && i.push("explanation");
     let t = /* @__PURE__ */ g((x) => i.includes(x), "has"), o = /* @__PURE__ */ g((...x) => x.some(t), "any"), s = /* @__PURE__ */ g((...x) => x.every(t), "all"), a = /* @__PURE__ */ g((x, v) => i.indexOf(x) < i.indexOf(v), "before"), u = /* @__PURE__ */ g((...x) => !t("start") || x.some((v) => t(v) && a(v, "start")), "beforeStart"), c = t("overview") ? i.slice(0, i.indexOf("overview")) : [], l = c.every((x) => ["explanation", "detail", "content", "first", "enter", "before"].includes(x)) && (!c.includes("enter") || c.indexOf("enter") < c.indexOf("before")), p = t("explain") || s("explanation", "receive"), d = [], r = /* @__PURE__ */ g((x, v, y, O) => {
@@ -8182,8 +8182,8 @@ var Ls = pe((uf, zs) => {
     }
     return d.length === 1 ? d[0] : null;
   }
-  g(Wp, "composeRoles");
-  var Fp = [
+  g(Kp, "composeRoles");
+  var Jp = [
     ["prefer", /(?:(?:둘다|모두)(?:제가|내가)?)(?:좋아하는|선호하는)(?:거|것)(?:예요|이에요|입니다)$/u],
     ["prefer", /(?:제게는|내게는|저에게는|나에게는)?즐거운(?:일|활동)(?:이에요|입니다)$/u],
     ["prefer", /(?:(?:제가|내가)?(?:좋아하는|관심을두는)(?:분야|일|활동))(?:예요|이에요|입니다)$/u],
@@ -8208,14 +8208,14 @@ var Ls = pe((uf, zs) => {
   ];
   function Mn(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(n)) return null;
-    for (let [e, i] of Fp) {
+    for (let [e, i] of Jp) {
       let t = i.exec(n);
       if (t) return { ...Se(n.slice(0, t.index)), polarity: e, habitual: !1 };
     }
-    return Os(n);
+    return As(n);
   }
   g(Mn, "composeStance");
-  var Kp = [
+  var Hp = [
     [/^일(?:을)?처리할때(?:에는|는)?/u, ["work-style"], ""],
     [/^도움받는방식(?:으로는|은|는)/u, ["support"], ""],
     [/^판단(?:방법으로|방식은|에서는|에는|에쓸|할)/u, ["decision"], ""],
@@ -8240,7 +8240,7 @@ var Ls = pe((uf, zs) => {
     [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
     [/^(?:판단|선택)(?:은|을)/u, ["decision"], ""],
     [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
-  ], Ae = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, Jp = {
+  ], Ae = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u, Gp = {
     independent: "self nohelp before-help first task try do process finish",
     together: "person together task try do process finish",
     example: "example first one look show check start before-start inquiry task",
@@ -8268,7 +8268,7 @@ var Ls = pe((uf, zs) => {
     listening: "practice audio visual text listen read both mix answer know do",
     mixed: "practice audio visual text listen read both mix answer know do"
   };
-  function Hp(n, { polarity: e, habitual: i }, t, o, s) {
+  function Xp(n, { polarity: e, habitual: i }, t, o, s) {
     if (i || /(?:안|못).{0,8}(?:지는?\s*않|지\s*않)|(?:싫|불편|거부).{0,6}(?:않|아니)/u.test(s)) return null;
     let a = n.replace(/,/gu, "");
     if (e === "avoid" && /(?:글|말|문자|메시지|메일|이메일)로만/u.test(a)) return null;
@@ -8280,8 +8280,8 @@ var Ls = pe((uf, zs) => {
     if (/(?:때|땐|라면|다면|경우|상황|기간|동안|날에|오늘만|내일만|이번만|이후의|이전의|에서는|에서만|에는|에만)/u.test(l) || /에서/u.test(l.replace(/옆에서/gu, "")) && !/(?:주제|소재|이야기|얘기)/u.test(a)) return null;
     let p = ge(Se(u).action);
     if (!p) return null;
-    let d = [], r = /* @__PURE__ */ g((b, k, R) => {
-      R && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
+    let d = [], r = /* @__PURE__ */ g((b, k, I) => {
+      I && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
     }, "add"), $ = /* @__PURE__ */ g((b) => b.test(a), "has"), h = /* @__PURE__ */ g((b, k) => $(b) && $(k), "both"), f = /* @__PURE__ */ g((b) => a.search(b), "pos"), m = /* @__PURE__ */ g((b, k) => f(b) >= 0 && f(k) > f(b), "ordered"), x = $(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u), v = $(/(?:연습|문제|학습)/u) && !$(/(?:주제|소재|관한)/u);
     if (v) {
       let b = $(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), k = $(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
@@ -8293,8 +8293,8 @@ var Ls = pe((uf, zs) => {
     r("explanation", "standard", O && T && !A), r("explanation", "brief", O && E && !T && !A && !$(/길게|긴설명/u));
     let S = $(/근거|이유|왜그런/u) && A;
     r("explanation", "detailed", O && A && !S && !E && !T), r("explanation-detail", "reasons-detail", S && $(/알|듣|설명|받|보/u)), r("explanation-detail", "long-flow", O && $(/길게이어|길게계속|긴설명을끊|길게설명/u));
-    let I = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-    if (r("explanation-detail", "overview-first", I && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
+    let R = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+    if (r("explanation-detail", "overview-first", R && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
       let b = [
         ["travel-planning", /여행/u, /일정|동선/u],
         ["travel-food", /여행지|여행|다른나라/u, /음식|식당|주문/u],
@@ -8313,42 +8313,42 @@ var Ls = pe((uf, zs) => {
         ["games", /게임/u, /게임/u],
         ["nature", /자연|공원/u, /산책|자연/u]
       ];
-      for (let [k, R, w] of b) r("topic", k, x && h(R, w));
+      for (let [k, I, w] of b) r("topic", k, x && h(I, w));
     }
     let N = [...new Map(d.map((b) => [on(b), b])).values()];
     if (N.length !== 1) return null;
     let M = N[0], _ = /* @__PURE__ */ g((b, k) => {
-      let R = p.indexOf(b);
-      return R >= 0 && p.slice(0, R).some((w) => k.includes(w));
+      let I = p.indexOf(b);
+      return I >= 0 && p.slice(0, I).some((w) => k.includes(w));
     }, "beforeRole");
     if (M.field !== "topic") {
-      let b = new Set((Jp[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
+      let b = new Set((Gp[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
       if (p.some((k) => !b.has(k))) return null;
     }
     return M.value === "plan-first" && _("plan", ["start", "try", "process", "finish", "do"]) || M.value === "example" && _("example", ["start", "try", "process", "finish", "do"]) || M.value === "overview-first" && _("overview", ["listen", "read", "receive", "explain", "look"]) ? null : { meanings: N };
   }
-  g(Hp, "declaredCore");
-  function Y(n) {
+  g(Xp, "declaredCore");
+  function ee(n) {
     let e = /^([^\s]+?)(?:은|는|이|가|도)\s/u.exec(n.trim());
-    if (e && J(U(e[0])).body && !/^(?:저|나|제|내)$/u.test(e[1])) {
+    if (e && H(U(e[0])).body && !/^(?:저|나|제|내)$/u.test(e[1])) {
       let S = ge(e[1], !0);
-      if (S?.length && S.every((I) => ["particle", "mine", "selfcase"].includes(I.tag))) return null;
+      if (S?.length && S.every((R) => ["particle", "mine", "selfcase"].includes(R.tag))) return null;
     }
-    let { body: i, condition: t } = J(U(n));
+    let { body: i, condition: t } = H(U(n));
     i = U(i), i = i.replace(/^(?:저는|나는|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u, "");
     let o = null, s = "", a = /^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(i);
     a && (i = a[1] + "좋아요", o = ["explanation"], s = "설명");
     let u = /^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(i);
     if (u) {
-      let S = Y(u[1].replace(/^(?:쉴때도|여유시간에도)/u, "") + "관심있어요"), I = Y(u[2]);
-      return S?.meanings.length === 1 && I?.meanings.length === 1 && S.meanings[0].field === "topic" && on(S.meanings[0]) === on(I.meanings[0]) ? { meanings: I.meanings.map((N) => ({ ...N, condition: N.condition || t })) } : null;
+      let S = ee(u[1].replace(/^(?:쉴때도|여유시간에도)/u, "") + "관심있어요"), R = ee(u[2]);
+      return S?.meanings.length === 1 && R?.meanings.length === 1 && S.meanings[0].field === "topic" && on(S.meanings[0]) === on(R.meanings[0]) ? { meanings: R.meanings.map((N) => ({ ...N, condition: N.condition || t })) } : null;
     }
     let c = /^(?:(?:제가|내가)?(?:배우고싶은|알고싶은|다루고싶은|좋아하는|관심있는)(?:주제|소재))(?:은|는)(.+?)(?:이에요|예요|입니다|이야|야)$/u.exec(i);
     c && (i = c[1] + "관심있어요", o = ["topic"]);
     let l = /^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(i);
     if (l) {
-      let S = Y(l[1] + (l[2] === "편해서" ? "편해요" : l[2] === "선호해서" ? "선호해요" : "좋아해요")), I = Y(l[3]);
-      return S?.meanings.length === 1 && I?.meanings.length === 1 && on(S.meanings[0]) === on(I.meanings[0]) ? { meanings: S.meanings.map((N) => ({ ...N, condition: N.condition || t })) } : null;
+      let S = ee(l[1] + (l[2] === "편해서" ? "편해요" : l[2] === "선호해서" ? "선호해요" : "좋아해요")), R = ee(l[3]);
+      return S?.meanings.length === 1 && R?.meanings.length === 1 && on(S.meanings[0]) === on(R.meanings[0]) ? { meanings: S.meanings.map((N) => ({ ...N, condition: N.condition || t })) } : null;
     }
     let p = /^(?:(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)|(?:(?:제가|내가))?(?:좋아하는|선호하는)(?:방식|방법|활동|취미))(?:은|는)(.+?)(?:거예요|것입니다|예요|이에요|입니다)$/u.exec(i);
     p && (i = p[1] + "좋아요");
@@ -8360,10 +8360,10 @@ var Ls = pe((uf, zs) => {
       s = S === "연습" ? "연습" : S === "설명" ? "설명" : "", o = [{ 연습: "practice-mode", 소통: "communication", 도움: "support", 설명: "explanation" }[S]], i = r[3] + "좋아요", S === "소통" && (i = i.replace(/하는/u, "소통하는"));
     }
     i = i.replace(/^소통(?:은|는)(.+?)하는/u, "$1소통하는");
-    for (let [S, I, N] of Kp) {
+    for (let [S, R, N] of Hp) {
       let M = S.exec(i);
       if (M) {
-        o = I, s = N, i = i.slice(M[0].length);
+        o = R, s = N, i = i.slice(M[0].length);
         break;
       }
     }
@@ -8375,30 +8375,30 @@ var Ls = pe((uf, zs) => {
     x && (o = [m.endsWith("소통하고") ? "communication" : m.endsWith("연습하고") ? "practice-mode" : "work-style"], m = x[1]);
     let v = /* @__PURE__ */ g((S) => !!ge(S.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), y = /(?:보다는|보단|보다(?!가)|대신|느니|아닌)/u.exec(m), O = [m];
     if (y) {
-      let S = m.slice(0, y.index), I = m.slice(y.index + y[0].length), N = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(S);
-      if (O = [], v(S) && O.push(I), N && v(N[2]) && O.push(N[1] + I), !O.length) return null;
+      let S = m.slice(0, y.index), R = m.slice(y.index + y[0].length), N = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(S);
+      if (O = [], v(S) && O.push(R), N && v(N[2]) && O.push(N[1] + R), !O.length) return null;
     }
     let T = [...O.map((S) => s + S.replace(/^한꺼번에말고/u, "")), s + h.action], A = [];
     for (let S of new Set(T)) {
-      let I = ge(S);
-      if (!I) continue;
-      let N = o?.length === 1 && o[0] === "decision" && I.at(-1) === "do" && I.includes("data") ? [...I.slice(0, -1), "decide"] : I, M = Ms(N, h.nominalHead);
+      let R = ge(S);
+      if (!R) continue;
+      let N = o?.length === 1 && o[0] === "decision" && R.at(-1) === "do" && R.includes("data") ? [...R.slice(0, -1), "decide"] : R, M = Rs(N, h.nominalHead);
       M && A.push(M);
     }
     if (!A.length) {
-      let S = Hp(s + m, h, t, o, n);
+      let S = Xp(s + m, h, t, o, n);
       if (S) return S;
       if (h.polarity !== "prefer") return null;
-      let I = [...m.matchAll(/하되(?:,)?|하며(?:,)?|고(?:,)?/gu)];
-      if (I.length > 6) return null;
-      for (let N of I) {
+      let R = [...m.matchAll(/하되(?:,)?|하며(?:,)?|고(?:,)?/gu)];
+      if (R.length > 6) return null;
+      for (let N of R) {
         let M = N[0].startsWith("하") ? m.slice(0, N.index) + "하는" : m.slice(0, N.index + 1), _ = m.slice(N.index + N[0].length);
         if (!_ || /[?!]/u.test(M + _)) continue;
-        let b = /* @__PURE__ */ g((L) => C(L) || Ee(L) || Y(L), "arm"), k = b(s + M + "좋아요"), R = b(s + _ + "좋아요");
-        if (!k?.meanings.length || !R?.meanings.length || k.meanings.some((L) => L.condition) || R.meanings.some((L) => L.condition)) continue;
-        let w = [...k.meanings, ...R.meanings];
-        if (!(w.some((L) => !Ko.includes(L.field)) || new Set(w.map((L) => L.field + ":" + L.value)).size < 2) && !(o && w.some((L) => !o.includes(L.field))))
-          return { meanings: w.map((L) => ({ ...L, polarity: h.polarity, condition: t })) };
+        let b = /* @__PURE__ */ g((z) => C(z) || Ee(z) || ee(z), "arm"), k = b(s + M + "좋아요"), I = b(s + _ + "좋아요");
+        if (!k?.meanings.length || !I?.meanings.length || k.meanings.some((z) => z.condition) || I.meanings.some((z) => z.condition)) continue;
+        let w = [...k.meanings, ...I.meanings];
+        if (!(w.some((z) => !Ko.includes(z.field)) || new Set(w.map((z) => z.field + ":" + z.value)).size < 2) && !(o && w.some((z) => !o.includes(z.field))))
+          return { meanings: w.map((z) => ({ ...z, polarity: h.polarity, condition: t })) };
       }
       return null;
     }
@@ -8406,11 +8406,11 @@ var Ls = pe((uf, zs) => {
     let E = A[0];
     return o && !o.includes(E.field) || E.field === "topic" && h.habitual ? null : { meanings: [{ ...E, polarity: h.polarity, condition: t }] };
   }
-  g(Y, "compositional");
+  g(ee, "compositional");
   function Is(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
     if (e > 4 || i.remaining <= 0) return null;
-    let { body: t, condition: o } = J(U(n));
-    if (t = U(t), mn(t) || Rn(t) || In.test(t)) return null;
+    let { body: t, condition: o } = H(U(n));
+    if (t = U(t), mn(t) || In(t) || Rn.test(t)) return null;
     let s = Mn(t);
     if (!s || s.habitual) return null;
     let a = s.surfaceAction.replace(/(?:(?:저는|나는|제가|내가)?(?:둘다|모두)|(?:둘다|모두)(?:저는|나는|제가|내가)?)$/u, "").replace(/,+$/u, "");
@@ -8419,7 +8419,7 @@ var Ls = pe((uf, zs) => {
       if (i.remaining-- <= 0) return null;
       let h = $.replace(/^,+|,+$/gu, "") + u;
       if (mn(h)) return null;
-      let f = e + ":" + h, m = i.cache.has(f) ? i.cache.get(f) : C(h) || Ee(h) || Y(h) || Is(h, e + 1, i);
+      let f = e + ":" + h, m = i.cache.has(f) ? i.cache.get(f) : C(h) || Ee(h) || ee(h) || Is(h, e + 1, i);
       return i.cache.set(f, m), !m?.meanings?.length || m.uncertain || m.typo || o && m.meanings.some((x) => x.condition && x.condition !== o) ? null : m.meanings.map((x) => ({ ...x, condition: x.condition || o }));
     }, "read"), l = /* @__PURE__ */ g(($) => {
       if ($.length < 2 || $.length > 6 || $.some((m) => !m)) return null;
@@ -8454,28 +8454,28 @@ var Ls = pe((uf, zs) => {
     return null;
   }
   g(Is, "coordinatedDeclaration");
-  var Rs = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", Gp = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", Xp = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + Rs + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + Gp + "$", "u"), Zp = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, In = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
-  function $s(n) {
-    return !n || In.test(n) || Ae.test(n) ? !1 : Xp.test(n) || Zp.test(n);
+  var Ns = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", Zp = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", Yp = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + Ns + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + Zp + "$", "u"), Qp = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, Rn = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
+  function hs(n) {
+    return !n || Rn.test(n) || Ae.test(n) ? !1 : Yp.test(n) || Qp.test(n);
   }
-  g($s, "safeExplanation");
-  function Ns(n) {
-    return !!n && !In.test(n) && !Ae.test(n) && !Rn(n) && !/(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)[가-힣]+(?:요|습니다|다)$/u.test(n) && !/(?:좋|싫|선호|원하|원해|싶|편하|편해|취향|관심|부담|맞아|맞는|않|아니|못|없|안해|안하|[?!])/u.test(n) && /(?:어요|아요|해요|습니다|해두죠|챙겨요|다녀요|봐요|들어요|하죠)$/u.test(n);
+  g(hs, "safeExplanation");
+  function Ts(n) {
+    return !!n && !Rn.test(n) && !Ae.test(n) && !In(n) && !/(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)[가-힣]+(?:요|습니다|다)$/u.test(n) && !/(?:좋|싫|선호|원하|원해|싶|편하|편해|취향|관심|부담|맞아|맞는|않|아니|못|없|안해|안하|[?!])/u.test(n) && /(?:어요|아요|해요|습니다|해두죠|챙겨요|다녀요|봐요|들어요|하죠)$/u.test(n);
   }
-  g(Ns, "narrativeBackground");
-  function Rn(n) {
+  g(Ts, "narrativeBackground");
+  function In(n) {
     return /(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)(?:저는|나는|제가|내가|우리는|저희는)?(?:알아요|알고있어요|알고지내요|만나요|만납니다|만났어요|보았어요|봤어요|찾았어요|소개받았어요|기억해요|본적이있어요)$/u.test(n) || /(?:좋아해서|선호해서|좋아서|편해서)/u.test(n) && /(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)(?:저는|나는|제가|내가)/u.test(n) ? !0 : /(?:는|던|은|한)(?:(?:친한|새로운|한|몇몇|그|어떤|여러|가까운))?(?:친구|동료|사람|분|인물|학생|직원|선생님|가족|아이|회원)(?:들)?(?:을|를|은|는|이(?!야기|랑)|가|에게|한테)/u.test(n);
   }
-  g(Rn, "relativePersonClause");
-  function Yp(n) {
-    let { body: e, condition: i } = J(U(n));
-    if (mn(e) || Ae.test(e) || Rn(e)) return null;
+  g(In, "relativePersonClause");
+  function ed(n) {
+    let { body: e, condition: i } = H(U(n));
+    if (mn(e) || Ae.test(e) || In(e)) return null;
     let t = /^(.+?)(좋아하는|선호하는|원하는|싫어하는)(?:것|거|편)이지(.+?)(?:좋은|싫은|편한|좋아하는|선호하는)(?:건|것은)(?:아니에요|아닙니다)$/u.exec(e);
     if (!t || !ge(Se(t[3]).action)) return null;
-    let o = t[1] + { 좋아하는: "좋아해요", 선호하는: "선호해요", 원하는: "원해요", 싫어하는: "싫어요" }[t[2]], s = C(o) || Ee(o) || Y(o);
+    let o = t[1] + { 좋아하는: "좋아해요", 선호하는: "선호해요", 원하는: "원해요", 싫어하는: "싫어요" }[t[2]], s = C(o) || Ee(o) || ee(o);
     return s?.meanings?.length && !s.uncertain ? { meanings: s.meanings.map((a) => ({ ...a, condition: a.condition || i })) } : null;
   }
-  g(Yp, "focusedContrast");
+  g(ed, "focusedContrast");
   function Go(n) {
     return /^(?:[가-힣]{1,20}(?:이|가|은|는))?(?:무엇이든|뭐든|어떤것이든|어느것이든)(?:지)?$/u.test(n);
   }
@@ -8487,8 +8487,8 @@ var Ls = pe((uf, zs) => {
     return s < 0 ? e : n.slice(t[s], i ? n.length : t[s + e.length - 1] + 1);
   }
   g(Ei, "sourceSurface");
-  function Ts(n, e = n) {
-    if (!/\s/u.test(e)) return _s(n);
+  function _s(n, e = n) {
+    if (!/\s/u.test(e)) return qs(n);
     let i = e.trim().split(/\s+/u);
     for (let t = 0; t < i.length; t++) {
       let o = i[t].replace(/[,()]/gu, "");
@@ -8498,7 +8498,7 @@ var Ls = pe((uf, zs) => {
       let s = /^(.+?)(?:은|는|이|가)$/u.exec(o);
       if (!s) continue;
       let a = s[1];
-      if (!(ge(Se(a).action) || new RegExp("^" + Rs + "$", "u").test(a)) && !/^(?:과정|활동|시간|답|결과|사실|차이|막막함|납득|속도)$/u.test(a) && !(/^(?:상상|생각|확인|이해|설명|비교|판단|정리|연결|기억|집중)하는$/u.test(o) && /^(?:과정|활동|시간|답|결과|사실)(?:이|가|은|는)$/u.test(i[t + 1] || ""))) {
+      if (!(ge(Se(a).action) || new RegExp("^" + Ns + "$", "u").test(a)) && !/^(?:과정|활동|시간|답|결과|사실|차이|막막함|납득|속도)$/u.test(a) && !(/^(?:상상|생각|확인|이해|설명|비교|판단|정리|연결|기억|집중)하는$/u.test(o) && /^(?:과정|활동|시간|답|결과|사실)(?:이|가|은|는)$/u.test(i[t + 1] || ""))) {
         if (/^(?:과정|활동|시간|답|결과|사실|상태|점)(?:이|가|은|는|니까|때문|$)/u.test(i[t + 1] || "")) {
           let u = o.replace(/(?:은|는)$/u, "기").replace(/(?:한|할)$/u, "하기");
           if (ge(u) || o === "있다는" && i[t - 1] === "수") continue;
@@ -8508,12 +8508,12 @@ var Ls = pe((uf, zs) => {
     }
     return !1;
   }
-  g(Ts, "adjunctHasActor");
+  g(_s, "adjunctHasActor");
   function Xo(n) {
     return /["“”‘’「」『』]/u.test(n) || /(?:좋아|싫어|선호|원하|원해|원치|관심|취향|취소|철회|없던일)/u.test(n) ? !1 : /(?:려는|고자하는)(?:뜻|의미|의도|목적)(?:은|는)?아니(?:고|지만|에요|예요|다|라고요)$/u.test(n) || /해달라는(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요|예요)$/u.test(n) || /(?:야한다는|야된다는)(?:부담|의무)(?:은|는)?없(?:어요|습니다)$/u.test(n) || /(?:해야만).+수있다고생각하지(?:는)?않(?:아요|습니다)$/u.test(n) || /(?:가치|의미)(?:를|을)(?:낮게|작게)(?:보는|평가하는)(?:건|것은)아니(?:지만|고|에요)$/u.test(n);
   }
   g(Xo, "neutralAside");
-  function Qp(n, e) {
+  function nd(n, e) {
     let i = e.flatMap((a) => a.meanings || []);
     if (!i.length) return !1;
     let t = n.replace(/\s/gu, "");
@@ -8523,8 +8523,8 @@ var Ls = pe((uf, zs) => {
       if (a !== t && fn(a, !1, Ei(n, t))) return !0;
     }
     let o = /^(.+?)(?:(?:방식|방법|쪽)(?:을|를)말하는(?:거예요|것이에요)|(?:좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:이에요|입니다))$/u.exec(t);
-    if (o && !In.test(o[1])) {
-      let a = o[1] + "좋아요", u = C(a) || Ee(a) || Y(a);
+    if (o && !Rn.test(o[1])) {
+      let a = o[1] + "좋아요", u = C(a) || Ee(a) || ee(a);
       if (u?.meanings?.length && u.meanings.every((c) => i.some((l) => l.field === c.field && l.value === c.value && l.polarity === c.polarity && l.condition === c.condition))) return !0;
     }
     if (/^한쪽으로만하지않고(?:두가지|둘)(?:를|을)?(?:함께|같이)연습하고싶어요$/u.test(t) && i.at(-1)?.field === "practice-mode" && i.at(-1)?.value === "mixed" && i.at(-1)?.polarity === "prefer") return !0;
@@ -8532,20 +8532,20 @@ var Ls = pe((uf, zs) => {
     if (/^어느한쪽만(?:편하|좋|싫)다고말하는(?:건|것은)아니에요$/u.test(t)) return i.length >= 2 && i.every((a) => a.polarity === i[0].polarity);
     let s = /^(?:그렇다고)?(.+?)(싫어한다는|좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요)$/u.exec(t);
     if (s) {
-      let a = s[1].replace(/핵심개요/gu, "전체개요"), u = { 싫어한다는: "싫어요", 좋아한다는: "좋아해요", 선호한다는: "선호해요", 원한다는: "원해요" }[s[2]], c = C(a + u) || Ee(a + u) || Y(a + u);
+      let a = s[1].replace(/핵심개요/gu, "전체개요"), u = { 싫어한다는: "싫어요", 좋아한다는: "좋아해요", 선호한다는: "선호해요", 원한다는: "원해요" }[s[2]], c = C(a + u) || Ee(a + u) || ee(a + u);
       return !!c?.meanings?.length && !c.uncertain && c.meanings.every((l) => !i.some((p) => p.field === l.field && p.value === l.value && p.polarity === l.polarity));
     }
     return !1;
   }
-  g(Qp, "discourseAside");
-  function ed(n, e = n) {
-    return n = n.replace(/^,+|,+$/gu, ""), /아니$/u.test(n) && /아니지만\s*$/u.test(e) && (n += "지만"), !n || Go(n) || Xo(n) || qs(n, { meanings: [{}] }) || fn(n, !1, e) || !/["“”‘’「」『』]/u.test(n) && !/(?:좋아|싫어|선호|원하|원해|취소|철회|만약|라면|다면)/u.test(n) && /(?:있다는|없다는)사실(?:과|과는)(?:별개로|관계없이)$/u.test(n) ? !0 : mn(n) || Ae.test(n) || Rn(n) || /(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(n) || Ts(n.replace(/려는(?:게|것이)아니라$/u, "려고"), e) ? !1 : /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(n);
+  g(nd, "discourseAside");
+  function td(n, e = n) {
+    return n = n.replace(/^,+|,+$/gu, ""), /아니$/u.test(n) && /아니지만\s*$/u.test(e) && (n += "지만"), !n || Go(n) || Xo(n) || js(n, { meanings: [{}] }) || fn(n, !1, e) || !/["“”‘’「」『』]/u.test(n) && !/(?:좋아|싫어|선호|원하|원해|취소|철회|만약|라면|다면)/u.test(n) && /(?:있다는|없다는)사실(?:과|과는)(?:별개로|관계없이)$/u.test(n) ? !0 : mn(n) || Ae.test(n) || In(n) || /(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(n) || _s(n.replace(/려는(?:게|것이)아니라$/u, "려고"), e) ? !1 : /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(n);
   }
-  g(ed, "pendingScopeAside");
+  g(td, "pendingScopeAside");
   function fn(n, e, i = n) {
     if (!n || n.length > 300 || /(?:강요|억지|시켜|시키|명령|라고|다고|라는말|다는말|예전|과거|옛날|내일|어제|작년|만약|가정|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록|수밖에|뿐이라|만가능)/u.test(n) || /(?:때|경우라면|상황이라면|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만)/u.test(n) || Ae.test(n)) return !1;
     let t = /(?:려고|기위해|기위해서|지않도록|지않게|수있도록|수있게|(?:놓치|빠뜨리|잊|헷갈리)지않으려면)$/u.test(n), o = /(?:니까|어서|아서|해서|여서|워서|러서|라서|이라서|돼서)$/u.test(n), s = /(?:더라도|어도|아도|여도|워도|러도)$/u.test(n);
-    return !t && !o && !s ? !1 : e ? !0 : !(!/^(?:제가|내가)/u.test(n) && Ts(n, i) && !/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(n) || /^[가-힣]{1,20}(?:는|은|가|이)[가-힣]*(?:하려고|하기위해)$/u.test(n) && !/^시간|^내용|^설명|^생각|^기억|^의견/u.test(n));
+    return !t && !o && !s ? !1 : e ? !0 : !(!/^(?:제가|내가)/u.test(n) && _s(n, i) && !/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(n) || /^[가-힣]{1,20}(?:는|은|가|이)[가-힣]*(?:하려고|하기위해)$/u.test(n) && !/^시간|^내용|^설명|^생각|^기억|^의견/u.test(n));
   }
   g(fn, "clauseAdjunct");
   function mi(n, e = 0) {
@@ -8553,18 +8553,18 @@ var Ls = pe((uf, zs) => {
     let i = [...n.matchAll(/\(([^()]*)\)/gu)];
     if (i.length && i.length <= 3 && i.every((r) => Xo(r[1].replace(/\s/gu, "")) || fn(r[1].replace(/\s/gu, ""), !1, r[1]))) {
       let r = n.replace(/\([^()]*\)/gu, "");
-      return C(r) || Ee(r) || Y(r) || mi(r, e + 1);
+      return C(r) || Ee(r) || ee(r) || mi(r, e + 1);
     }
     let t = n.split(",");
     if (t.length === 3 && /(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(t[0]) && fn(t[1].replace(/\s/gu, ""), !1, t[1])) {
-      let r = t[0] + t[2], $ = C(r) || Ee(r) || Y(r) || mi(r, e + 1);
+      let r = t[0] + t[2], $ = C(r) || Ee(r) || ee(r) || mi(r, e + 1);
       if ($) return $;
     }
-    let { body: o, condition: s } = J(U(n));
-    if (In.test(o) || Ae.test(o) || Rn(o)) return null;
+    let { body: o, condition: s } = H(U(n));
+    if (Rn.test(o) || Ae.test(o) || In(o)) return null;
     let a = /* @__PURE__ */ g((r) => {
       if (mn(r)) return null;
-      let $ = C(r) || Ee(r) || Y(r) || mi(r, e + 1);
+      let $ = C(r) || Ee(r) || ee(r) || mi(r, e + 1);
       return !$?.meanings?.length || $.uncertain || $.typo || s && $.meanings.some((h) => h.condition && h.condition !== s) ? null : { meanings: $.meanings.map((h) => ({ ...h, condition: h.condition || s })) };
     }, "read"), u = /^([^,]+),(.+)$/u.exec(o);
     if (u && Go(u[1])) {
@@ -8578,24 +8578,24 @@ var Ls = pe((uf, zs) => {
       let m = /^(.*?)(좋아해서|선호해서|좋아서|편해서)$/u.exec(h);
       if (m) {
         let v = m[1] + { 좋아해서: "좋아해요", 선호해서: "선호해요", 좋아서: "좋아요", 편해서: "편해요" }[m[2]];
-        if ((C(v) || Ee(v) || Y(v))?.meanings?.length) continue;
+        if ((C(v) || Ee(v) || ee(v))?.meanings?.length) continue;
       }
       let x = a(f);
       if (x) return x;
     }
     let l = /^(.+?)(좋아해서|선호해서|좋아서|편해서)(.+)$/u.exec(o);
-    if (l && Ns(l[3])) {
+    if (l && Ts(l[3])) {
       let r = l[2] === "좋아해서" ? "좋아해요" : l[2] === "선호해서" ? "선호해요" : l[2] === "편해서" ? "편해요" : "좋아요", $ = a(l[1] + r);
       if ($) return $;
     }
     for (let r of o.matchAll(/(?:수있도록|수있게|않도록|않게|기위해|려고|고싶어서|기전에|돼서|해서|니까)/gu)) {
       let $ = r.index + r[0].length, h = o.slice(0, $), f = o.slice($).replace(/^,+/u, "");
-      if (!$s(h)) continue;
+      if (!hs(h)) continue;
       let m = a(f);
       if (m) return m;
     }
     let p = /^(?:(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)?|그렇게|이렇게)(?:더|저는|나는)?(.+)$/u, d = /^(.+?)(하면|해보면|받으면|들으면|보면|읽으면|두면|놓으면)(.+?)(?:그래서)?((?:(?:그|이|그런|이런)(?:방식|방법|쪽)|그렇게|이렇게).+)$/u.exec(o);
-    if (d && $s(d[3])) {
+    if (d && hs(d[3])) {
       let r = p.exec(d[4]), $ = r && Mn("하는" + r[1].replace(/^하고(?=싶)/u, ""));
       if ($ && !$.habitual && $.action === "하기") {
         let h = { 하면: "하는", 해보면: "해보는", 받으면: "받는", 들으면: "듣는", 보면: "보는", 읽으면: "읽는", 두면: "두는", 놓으면: "놓는" }[d[2]], f = a(d[1] + h + ($.polarity === "avoid" ? "걸선호하지않아요" : "게좋아요"));
@@ -8621,11 +8621,11 @@ var Ls = pe((uf, zs) => {
     if (/^(?:우리|저희).{1,20}?(?:은|는|이(?!랑)|가)/u.test(n) || /^(?:담당|옆자리|새로온|같은팀의)?(?:조장|팀장|부장|대표|리더|담당자|선생님|고객|참가자)(?:님)?(?:은|는|이|가)/u.test(n) || /^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|다른분|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑)|가)/u.test(n)) return "other";
     if (/(?:예전|과거|전에는|옛날|어렸을때|어릴때|즐겼|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(n)) return "past";
     if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(n)) return "sensitive";
-    let e = J(U(n)), i = (e.condition ? e.body : U(n).replace(/^(?:저라면|나라면)/u, "")).replace(/상상하는(?=과정|활동|시간)/gu, "");
+    let e = H(U(n)), i = (e.condition ? e.body : U(n).replace(/^(?:저라면|나라면)/u, "")).replace(/상상하는(?=과정|활동|시간)/gu, "");
     return /(?:만약|라면|다면|가정하|상상하)/u.test(i) ? "hypothetical" : null;
   }
   g(mn, "excludedOrigin");
-  function nd(n) {
+  function id(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:즐기고|즐기며|싫어하고|흥미가\s*있고|선호하더라도|마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -8638,7 +8638,7 @@ var Ls = pe((uf, zs) => {
           if (/(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(a)) continue;
           let u = a.split(",");
           if (u.length === 2 && /(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(u[0]) && fn(u[1].replace(/\s/gu, ""), !1, u[1]) || /기\s*$/u.test(a) && /^[^.!?;\n]*(?:좋아|선호|관심|싫)/u.test(n.slice(o.index + 1))) continue;
-          let c = J(U(n.slice(t, o.index)));
+          let c = H(U(n.slice(t, o.index)));
           if (c.condition && (!c.body || Go(c.body.replace(/^,+/u, "")))) continue;
         }
         if (o[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(n.slice(o.index + 1))) {
@@ -8650,7 +8650,7 @@ var Ls = pe((uf, zs) => {
           continue;
         }
         if (o[0] === ",") {
-          let a = n.slice(t, o.index), u = J(U(a));
+          let a = n.slice(t, o.index), u = H(U(a));
           if (u.condition && !u.body || /^어느쪽을고를지$/u.test(u.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(a) || /(?:고|하되|하며)\s*$/u.test(a) && !/해\s*주시고\s*$/u.test(a)) continue;
         }
         if (!(o[0] === "," && /(?:기도)\s*$/u.test(n.slice(t, o.index))) && !(o[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(n.slice(t, o.index)) || /^\s*(?:둘\s*다|모두)/u.test(n.slice(o.index + 1)))) && !(/^(?:흥미가\s*있고|관심이\s*있고)$/u.test(o[0]) && /^\s*(?:배워|알아|살펴)\s*보고\s*싶/u.test(n.slice(o.index + o[0].length)))) {
@@ -8663,11 +8663,11 @@ var Ls = pe((uf, zs) => {
       }
     return s(n.length), e;
   }
-  g(nd, "pieces");
-  function _s(n) {
+  g(id, "pieces");
+  function qs(n) {
     let e = n.replace(/\s/gu, "");
     if (Ae.test(e)) return !0;
-    let i = J(U(n)).body;
+    let i = H(U(n)).body;
     for (let t of i.matchAll(/께서는|께서|은|는|이|가/gu)) {
       if (t.index > 40) break;
       let o = i.slice(0, t.index), s = i.slice(0, t.index + t[0].length);
@@ -8679,17 +8679,17 @@ var Ls = pe((uf, zs) => {
     }
     return !1;
   }
-  g(_s, "unresolvedSubject");
-  function qs(n, e) {
+  g(qs, "unresolvedSubject");
+  function js(n, e) {
     if (!e?.meanings?.length) return !1;
     let i = n.replace(/\s/gu, "");
     return /["“”‘’]/u.test(i) || Ae.test(i) || /(?:좋아|좋다는|싫어|싫다는|선호|원하|원해|원치|관심|취향|편하다는|강요|시켜|취소|철회|저장|없던일)/u.test(i) ? !1 : /(?:뜻|의미|이야기)(?:은|는)?아니(?:고|지만)$/u.test(i) || /(?:과는|와는)(?:별개로|관계없이)$/u.test(i) || /(?:이유인데|때문인데)$/u.test(i) && !/(?:경우|상황|때만|만약|라면|다면|예전|과거)/u.test(i) ? !0 : /(?:더라도|어도|아도|여도|긴하지만)$/u.test(i) && fn(i.replace(/긴하지만$/u, "더라도"), !1);
   }
-  g(qs, "explanatoryAside");
-  function td(n, e) {
+  g(js, "explanatoryAside");
+  function od(n, e) {
     if (!e?.meanings?.length) return !1;
-    let { body: i, condition: t } = J(U(n));
-    if (t || mn(i) || In.test(i) || Ae.test(i)) return !1;
+    let { body: i, condition: t } = H(U(n));
+    if (t || mn(i) || Rn.test(i) || Ae.test(i)) return !1;
     let o = /^(?:(그|이|그런|이런)(?:(업무|일하는|소통|연습|도움|판단)(?:방식|방법)|(?:분야|활동|주제|방식|방법|쪽))|((?:두|둘)(?:분야|활동|주제))|((?:그렇게|이렇게)도움받는))(?:이|가|은|는|을|를)?(.+)$/u.exec(i);
     if (!o) return !1;
     let s = o[2], a = !!o[3], u = !!o[4], c = s ? { 업무: "work-style", 일하는: "work-style", 소통: "communication", 연습: "practice-mode", 도움: "support", 판단: "decision" }[s] : u ? "support" : /(?:분야|활동|주제)/u.test(o[0]) ? "topic" : null, l = e.meanings;
@@ -8697,8 +8697,8 @@ var Ls = pe((uf, zs) => {
     let p = o[5].replace(/^(?:알아보는|살펴보는)(?:게|것이|것은|걸)?/u, ""), d = Mn("하는" + p);
     return !!d && !d.habitual && d.action === "하기" && l.every((r) => r.polarity === d.polarity);
   }
-  g(td, "redundantReference");
-  var hs = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], xs = {
+  g(od, "redundantReference");
+  var xs = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], vs = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -8717,24 +8717,24 @@ var Ls = pe((uf, zs) => {
     return i !== null;
   }
   g(Vo, "quotedAt");
-  function id(n, e, i) {
+  function rd(n, e, i) {
     for (let t = e; t < i; t++) if (/[.!?;\n]/u.test(n[t]) && !Vo(n, t)) return !0;
     return !1;
   }
-  g(id, "scopeBoundaryBetween");
-  function od(n, e) {
+  g(rd, "scopeBoundaryBetween");
+  function ad(n, e) {
     let i = /^(.+?(?:은|는|이|가))(?:좋아한다는|싫어한다는|선호한다는|원한다는|편하다는)(?:뜻|의미)(?:이에요|입니다)$/u.exec(n);
     if (!i || !Ae.test(i[1])) return !1;
     let t = e.at(-1);
     return t?.meanings?.length ? (delete t.meanings, delete t.candidate, t.generic = !0, t.unresolved = { ...t.evidence, reason: "other", reasonLabel: "뒤 문장에서 선호의 주체를 다른 사람으로 설명해 본인의 선호인지 다시 확인해요." }, !0) : !1;
   }
-  g(od, "reattributedPreference");
-  function rd(n) {
+  g(ad, "reattributedPreference");
+  function sd(n) {
     Oe.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null, s = !1, a = null;
-    for (let u of nd(n)) {
+    for (let u of id(n)) {
       let c = Vo(n, u.start), l = Ho(u.quote).replace(/\s/gu, ""), p = !c && (/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(l) || /^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(U(u.quote))), d = /^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(l), r = /^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(l);
-      if (a && (id(n, a.end, u.start) || r && !c) && (a = null), a && c && (a = { ...a, uncertain: !0 }), p && !c && (s = !1), i === "quotation" && p && !c && (i = null), !c && od(l, e)) {
+      if (a && (rd(n, a.end, u.start) || r && !c) && (a = null), a && c && (a = { ...a, uncertain: !0 }), p && !c && (s = !1), i === "quotation" && p && !c && (i = null), !c && ad(l, e)) {
         e.push({ evidence: u, unresolved: { ...u, reason: "other", reasonLabel: pi.other } });
         continue;
       }
@@ -8742,50 +8742,50 @@ var Ls = pe((uf, zs) => {
         e.push({ evidence: u, meanings: [] });
         continue;
       }
-      if (Qp(u.quote, e) || qs(u.quote, e.at(-1))) {
+      if (nd(u.quote, e) || js(u.quote, e.at(-1))) {
         e.push({ evidence: u, meanings: [] });
         continue;
       }
       (i === "other" && p || i === "past" && d || i === "condition" && r || i === "uncertain" && d || ["quotation", "hypothetical", "sensitive"].includes(i) && p && d) && (i = null);
       let $ = Math.max(n.lastIndexOf(".", u.start - 1), n.lastIndexOf("!", u.start - 1), n.lastIndexOf("?", u.start - 1), n.lastIndexOf(`
-`, u.start - 1)) + 1, h = /[.!?\n]/u.exec(n.slice(u.end)), f = h ? u.end + h.index : n.length, m = Rn(n.slice($, f).replace(/\s/gu, "")), x = /(?:좋아하는|싫어하는|선호하는|편한|좋은)[가-힣A-Za-z]{1,24}(?:이|가)(?:제게|저에게|내게|나에게|우리에게)/u.test(l), v = { evidence: u }, y = (m || x ? "other" : mn(l)) || i;
+`, u.start - 1)) + 1, h = /[.!?\n]/u.exec(n.slice(u.end)), f = h ? u.end + h.index : n.length, m = In(n.slice($, f).replace(/\s/gu, "")), x = /(?:좋아하는|싫어하는|선호하는|편한|좋은)[가-힣A-Za-z]{1,24}(?:이|가)(?:제게|저에게|내게|나에게|우리에게)/u.test(l), v = { evidence: u }, y = (m || x ? "other" : mn(l)) || i;
       if (y || s) {
         i = y, o = null;
-        let j = J(U(l)).condition;
+        let j = H(U(l)).condition;
         a ? a = { ...a, end: u.end, uncertain: !0 } : j && !c && (/^\s*,/u.test(n.slice(u.end)) || Vo(n, u.end)) && (a = { condition: j, start: u.start, end: u.end, uncertain: !0 }), v.unresolved = { ...u, reason: y || "unsupported", reasonLabel: y ? pi[y] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." }, ["uncertain", "condition"].includes(y) && (v.generic = !0), e.push(v);
         continue;
       }
       let O = e.findLast((j) => j.meanings?.length), T = u.quote, A = e.at(-1), E = A?.meanings?.find((j) => j.field === "support" && j.value === "example" && j.polarity === "prefer"), S = E && /^(?:(?:그|이)\s*(?:예시|예제|샘플|걸|것을)|(?:예시|예제|샘플)(?:를|을)?\s*(?:본|확인한)\s*(?:다음|뒤|후)\s*(?:시도|시작|연습)할\s*때)/u.test(T);
       E && (T = T.replace(/^(?:그걸|그것을)\s*(보고\s*나서(?:는)?|본\s*(?:다음|뒤|후)(?:에는)?)/u, "예시를 본 다음에는"));
-      let I = t && /^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u.test(T);
-      I && (T = T.replace(/^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u, ""));
-      let N = J(U(T)), M = N.condition;
+      let R = t && /^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u.test(T);
+      R && (T = T.replace(/^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u, ""));
+      let N = H(U(T)), M = N.condition;
       if (M && a) {
         let j = M === a.condition ? M : M === "after-example" && ["first-try", "familiar", "busy"].includes(a.condition) ? a.condition + "-after-example" : null;
         a = { ...a, condition: j || a.condition, uncertain: a.uncertain || !j };
       }
-      let _ = S && ["first-try", "familiar", "busy"].includes(E.condition) ? E.condition : null, b = a?.condition || o || (I ? t : null) || _;
+      let _ = S && ["first-try", "familiar", "busy"].includes(E.condition) ? E.condition : null, b = a?.condition || o || (R ? t : null) || _;
       O?.meanings.length && /^그다음\s+/u.test(T) && (T = T.replace(/^그다음\s+/u, ""));
-      let k = C(T) || Ee(T) || Y(T) || Is(T) || Yp(T) || mi(T) || Cp(T) || Dp(T), R = /^\s*,/u.test(n.slice(u.end));
-      if (!k && (M || a) && R) {
-        let j = ed(N.body, Ei(u.quote, N.body, !0));
+      let k = C(T) || Ee(T) || ee(T) || Is(T) || ed(T) || mi(T) || Bp(T) || Up(T), I = /^\s*,/u.test(n.slice(u.end));
+      if (!k && (M || a) && I) {
+        let j = td(N.body, Ei(u.quote, N.body, !0));
         if (a = { condition: a?.condition || M, start: a?.start ?? u.start, end: u.end, uncertain: !j || !!a?.uncertain }, j) {
           v.meanings = [], e.push(v);
           continue;
         }
       }
-      if (!k && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && td(u.quote, A)) {
+      if (!k && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && od(u.quote, A)) {
         v.meanings = [], e.push(v);
         continue;
       }
       if (!k && O?.meanings.length && !/^[\s.!?]*\?/u.test(n.slice(u.end))) {
-        let j = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(J(l).body), G = j && Mn("하는" + j[1]);
-        if (G?.action === "하기" && !G.habitual && O.meanings.every((le) => le.polarity === G.polarity)) {
+        let j = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(H(l).body), X = j && Mn("하는" + j[1]);
+        if (X?.action === "하기" && !X.habitual && O.meanings.every((Y) => Y.polarity === X.polarity)) {
           v.meanings = [], e.push(v);
           continue;
         }
-        let X = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(l), z = e.slice(-2).flatMap((le) => le.meanings || []);
-        if (X && z.length >= 2 && (X[1] !== "연습" || z.every((le) => le.field === "practice-mode"))) {
+        let Z = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(l), L = e.slice(-2).flatMap((Y) => Y.meanings || []);
+        if (Z && L.length >= 2 && (Z[1] !== "연습" || L.every((Y) => Y.field === "practice-mode"))) {
           v.meanings = [], e.push(v);
           continue;
         }
@@ -8794,7 +8794,7 @@ var Ls = pe((uf, zs) => {
         v.meanings = [], e.push(v);
         continue;
       }
-      if (!k && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && Ns(l)) {
+      if (!k && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && Ts(l)) {
         v.meanings = [], e.push(v);
         continue;
       }
@@ -8805,11 +8805,11 @@ var Ls = pe((uf, zs) => {
       k && p && !a && !M && !t && O?.meanings?.some((j) => j.field !== "topic") && k.meanings.every((j) => j.field === "topic") && (b = null, o = null), k && b && !r && (k = { ...k, meanings: k.meanings.map((j) => ({ ...j, condition: j.condition === "after-example" && ["first-try", "familiar", "busy"].includes(b) ? b + "-after-example" : j.condition === "after-example" && /^(?:first-try|familiar|busy)-after-example$/u.test(b) ? b : j.condition || b })) });
       let w = k?.meanings.at(-1)?.condition || (M === "after-example" && _ ? _ + "-after-example" : M) || (r ? null : b);
       o = w && /(?:고|며)$/u.test(l) ? w : null;
-      let L = t && k?.meanings.some((j) => !j.condition) && !r;
-      a && k && (v.evidence = { start: a.start, end: u.end, quote: n.slice(a.start, u.end) }, a.uncertain && (L = !0), a = null), L && (k = null, i = "condition"), t = w && (!k || /(?:지만|는데)$/u.test(l)) ? w : !1;
+      let z = t && k?.meanings.some((j) => !j.condition) && !r;
+      a && k && (v.evidence = { start: a.start, end: u.end, quote: n.slice(a.start, u.end) }, a.uncertain && (z = !0), a = null), z && (k = null, i = "condition"), t = w && (!k || /(?:지만|는데)$/u.test(l)) ? w : !1;
       let P = /^[\s.!?]*/u.exec(n.slice(u.end))[0].includes("?"), q = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(l);
-      if (!k && !q && !M && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(l) && (L = !0, i = "condition"), !k && !p && !M && !L && !q && _s(u.quote) && (s = !0), q && /(?:지만|는데)$/u.test(l) && (i = "uncertain"), P ? (k ? v.candidate = { ...k, uncertain: !0 } : v.generic = !0, v.unresolved = { ...u, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : k ? k.uncertain || k.typo || q ? v.candidate = { ...k, uncertain: k.uncertain || q } : v.meanings = k.meanings : v.generic = !0, !v.meanings && !v.unresolved) {
-        let j = q ? "uncertain" : L ? "condition" : "unsupported";
+      if (!k && !q && !M && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(l) && (z = !0, i = "condition"), !k && !p && !M && !z && !q && qs(u.quote) && (s = !0), q && /(?:지만|는데)$/u.test(l) && (i = "uncertain"), P ? (k ? v.candidate = { ...k, uncertain: !0 } : v.generic = !0, v.unresolved = { ...u, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : k ? k.uncertain || k.typo || q ? v.candidate = { ...k, uncertain: k.uncertain || q } : v.meanings = k.meanings : v.generic = !0, !v.meanings && !v.unresolved) {
+        let j = q ? "uncertain" : z ? "condition" : "unsupported";
         v.unresolved = { ...u, reason: j, reasonLabel: pi[j] };
       }
       if (e.push(v), e.length === Fe.unresolved && u.end < n.length) {
@@ -8820,7 +8820,7 @@ var Ls = pe((uf, zs) => {
     }
     return e;
   }
-  g(rd, "analyze");
+  g(sd, "analyze");
   function Wo(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((d, r, $, h, f) => {
       let m = `q.${t}.${d}.${r}`, x = i[m];
@@ -8828,7 +8828,7 @@ var Ls = pe((uf, zs) => {
         f(x);
         return;
       }
-      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...hs].map((v) => ({ ...v, value: v.id })) });
+      a.push({ id: m, about: m, kind: "follow_up", label: $, options: [...h, ...xs].map((v) => ({ ...v, value: v.id })) });
     }, "question");
     for (let d = 0; d < e.length; d++) {
       let r = e[d], $ = /* @__PURE__ */ g((f) => f.forEach((m) => o.push({ ...m, evidence: Jo(r.evidence) })), "add");
@@ -8845,8 +8845,8 @@ var Ls = pe((uf, zs) => {
         (f) => {
           h = !0, f === "confirm" && $(r.candidate.meanings);
         }
-      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(xs).map(([f, m]) => ({ id: f, label: m })), (f) => {
-        h = !0, Object.hasOwn(di, f) && u(d, "value", `${xs[f]}에서 어떤 내용을 확인할까요?`, di[f].map((m) => ({ id: m, label: ki[m] })), (m) => {
+      ) : r.generic && u(d, "field", `「${r.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(vs).map(([f, m]) => ({ id: f, label: m })), (f) => {
+        h = !0, Object.hasOwn(di, f) && u(d, "value", `${vs[f]}에서 어떤 내용을 확인할까요?`, di[f].map((m) => ({ id: m, label: ki[m] })), (m) => {
           di[f].includes(m) && u(d, "polarity", `‘${ki[m]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (x) => {
             ["prefer", "avoid"].includes(x) && u(d, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(wi).map(([v, y]) => ({ id: v, label: y }))], (v) => {
               (v === "general" || Object.hasOwn(wi, v)) && $([{ field: f, value: m, polarity: x, condition: v === "general" ? null : v }]);
@@ -8872,24 +8872,24 @@ var Ls = pe((uf, zs) => {
       let r = c.filter((f) => f.id === d.id || Si(d, f));
       if (r.length < 2) continue;
       r.forEach((f) => p.add(f.id));
-      let $ = `q.${t}.conflict.${ws(r.map((f) => f.id + on(f)).join("|")).slice(0, 16)}`, h = i[$];
-      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: Fo(f), value: f.id })), ...hs.map((f) => ({ ...f, value: f.id }))] });
+      let $ = `q.${t}.conflict.${Es(r.map((f) => f.id + on(f)).join("|")).slice(0, 16)}`, h = i[$];
+      if (h === void 0) a.push({ id: $, about: $, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...r.map((f) => ({ id: f.id, label: Fo(f), value: f.id })), ...xs.map((f) => ({ ...f, value: f.id }))] });
       else for (let f of r) f.id !== h && (f.withheld = !0);
     }
     return { meanings: c.filter((d) => !d.withheld), unresolved: s.slice(0, Fe.unresolved), questions: a };
   }
   g(Wo, "stateFor");
-  function vs(n, e, i, t, o) {
-    let s = Ap.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+  function bs(n, e, i, t, o) {
+    let s = Rp.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
       let u = Wo(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => on(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(vs, "choose");
-  function js(n, { clarifications: e = [], parserVersion: i = An } = {}) {
+  g(bs, "choose");
+  function zs(n, { clarifications: e = [], parserVersion: i = An } = {}) {
     if (i === Oe.PARSER_VERSION)
-      return e.length && se(), Oe.parseMemberStatement(n);
+      return e.length && ce(), Oe.parseMemberStatement(n);
     if (i === gi.PARSER_VERSION) return gi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === $i.PARSER_VERSION) return $i.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === hi.PARSER_VERSION) return hi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
@@ -8897,12 +8897,12 @@ var Ls = pe((uf, zs) => {
     if (i === vi.PARSER_VERSION) return vi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === bi.PARSER_VERSION) return bi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === yi.PARSER_VERSION) return yi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== An && se(), (!ks(e, Fe.clarifications) || e.some((l) => !fi(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && se();
-    let t = rd(n), o = ws(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Wo(n, t, s, o), c = vs(u, n, t, s, o);
+    i !== An && ce(), (!ws(e, Fe.clarifications) || e.some((l) => !fi(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ce();
+    let t = sd(n), o = Es(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Wo(n, t, s, o), c = bs(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && se();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ce();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || se(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Wo(n, t, s, o), c = vs(u, n, t, s, o);
+      p || ce(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Wo(n, t, s, o), c = bs(u, n, t, s, o);
     }
     if (e.length === Fe.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && Si(p, d)));
@@ -8910,7 +8910,7 @@ var Ls = pe((uf, zs) => {
     }
     return { parserVersion: An, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: Jo(e), clarificationAnswers: a };
   }
-  g(js, "parseMemberStatement");
+  g(zs, "parseMemberStatement");
   function Fo(n) {
     return `${n.condition ? wi[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${ki[n.value]}`;
   }
@@ -8919,8 +8919,8 @@ var Ls = pe((uf, zs) => {
     return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !Ko.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(Si, "meaningsConflict");
-  function ad(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = bs(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+  function ud(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = ys(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
     if (t === Oe.PARSER_VERSION) return Oe.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === gi.PARSER_VERSION) return gi.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === $i.PARSER_VERSION) return $i.validateMemberStatement(n, { now: e, enforceTime: i });
@@ -8929,34 +8929,34 @@ var Ls = pe((uf, zs) => {
     if (t === vi.PARSER_VERSION) return vi.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === bi.PARSER_VERSION) return bi.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === yi.PARSER_VERSION) return yi.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!fi(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== An || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !ks(n.meanings, Fe.meanings) || !n.meanings.length) && se();
-    let o = Uo(n.at), s = Uo(n.confirmedAt), a = i ? typeof e == "string" ? Uo(e) : Number.isSafeInteger(e) ? e : se() : null;
-    (s < o || i && s > a) && se();
-    let u = js(n.text, { clarifications: n.clarifications });
-    u.question && se();
+    (!fi(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== An || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !ws(n.meanings, Fe.meanings) || !n.meanings.length) && ce();
+    let o = Uo(n.at), s = Uo(n.confirmedAt), a = i ? typeof e == "string" ? Uo(e) : Number.isSafeInteger(e) ? e : ce() : null;
+    (s < o || i && s > a) && ce();
+    let u = zs(n.text, { clarifications: n.clarifications });
+    u.question && ce();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!fi(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !fi(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && se(), c.add(p.id);
+      (!fi(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !fi(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ce(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && se(), Jo(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ce(), Jo(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => Si(p, r))) && se(), { id: n.id.toLowerCase(), parserVersion: An, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => Si(p, r))) && ce(), { id: n.id.toLowerCase(), parserVersion: An, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(ad, "validateMemberStatement");
-  zs.exports = { PARSER_VERSION: An, MEMBER_STATEMENT_LIMITS: Fe, MEMBER_STATEMENT_VALUES: di, MEMBER_STATEMENT_LABELS: ki, MEMBER_STATEMENT_CONDITIONS: wi, MEMBER_STATEMENT_MULTI_FIELDS: Ko, parseMemberStatement: js, validateMemberStatement: ad, meaningsConflict: Si, meaningLabel: Fo };
+  g(ud, "validateMemberStatement");
+  Ls.exports = { PARSER_VERSION: An, MEMBER_STATEMENT_LIMITS: Fe, MEMBER_STATEMENT_VALUES: di, MEMBER_STATEMENT_LABELS: ki, MEMBER_STATEMENT_CONDITIONS: wi, MEMBER_STATEMENT_MULTI_FIELDS: Ko, parseMemberStatement: zs, validateMemberStatement: ud, meaningsConflict: Si, meaningLabel: Fo };
 });
 
 // experiences/synk-account/src/member-statement-contract.cjs
-var Bd = pe((lf, ou) => {
+var Wd = pe((ff, au) => {
   "use strict";
-  var Re = _e(), Ni = Be(), Ti = Ge(), _i = un(), qi = yn(), ji = Vn(), zi = Qt(), Li = Bo(), Pi = Ls(), sd = qe(), Nn = "member-statement-ko-10", Ke = Object.freeze({ ...Re.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), Ai = Object.freeze({
-    ...Re.MEMBER_STATEMENT_VALUES,
+  var Ie = _e(), Ni = Be(), Ti = Ge(), _i = un(), qi = yn(), ji = Vn(), zi = Qt(), Li = Bo(), Pi = Ps(), cd = qe(), Nn = "member-statement-ko-10", Ke = Object.freeze({ ...Ie.MEMBER_STATEMENT_LIMITS, clarifications: 12 }), Ai = Object.freeze({
+    ...Ie.MEMBER_STATEMENT_VALUES,
     communication: Object.freeze(["listen-organize", "share-first", "written", "spoken"]),
     "work-style": Object.freeze(["plan-first", "try-adjust", "single-task", "prioritize"]),
     decision: Object.freeze(["evidence", "compare-options", "experience", "consult"]),
     "explanation-detail": Object.freeze(["overview-first", "reasons-detail", "long-flow"]),
-    topic: Object.freeze([...Re.MEMBER_STATEMENT_VALUES.topic, "reading-books", "music", "exercise", "cooking", "photography", "games", "nature"])
+    topic: Object.freeze([...Ie.MEMBER_STATEMENT_VALUES.topic, "reading-books", "music", "exercise", "cooking", "photography", "games", "nature"])
   }), Ci = Object.freeze({
-    ...Re.MEMBER_STATEMENT_LABELS,
+    ...Ie.MEMBER_STATEMENT_LABELS,
     "listen-organize": "다른 사람의 생각을 듣고 정리하기",
     "share-first": "내 의견을 먼저 말하기",
     written: "글로 소통하기",
@@ -8979,8 +8979,8 @@ var Bd = pe((lf, ou) => {
     photography: "사진 촬영",
     games: "게임",
     nature: "자연·산책"
-  }), er = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), Di = Object.freeze({
-    ...Re.MEMBER_STATEMENT_CONDITIONS,
+  }), nr = Object.freeze(["communication", "work-style", "decision", "explanation-detail"]), Di = Object.freeze({
+    ...Ie.MEMBER_STATEMENT_CONDITIONS,
     "after-example": "예시를 본 다음",
     "first-try-after-example": "처음 시도하며 예시를 본 다음",
     "familiar-after-example": "익숙한 내용에서 예시를 본 다음",
@@ -8989,13 +8989,13 @@ var Bd = pe((lf, ou) => {
     teamwork: "함께 일할 때",
     planning: "일을 계획할 때",
     decision: "결정할 때"
-  }), Us = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Vs = /* @__PURE__ */ g((n, e) => {
+  }), Vs = /* @__PURE__ */ g((n) => n !== null && typeof n == "object" && !Array.isArray(n) && [Object.prototype, null].includes(Object.getPrototypeOf(n)), "plain"), Ws = /* @__PURE__ */ g((n, e) => {
     let i = Object.getOwnPropertyDescriptor(n, e);
     return i?.enumerable === !0 && Object.hasOwn(i, "value");
-  }, "data"), Mi = /* @__PURE__ */ g((n, e) => Us(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Vs(n, i)), "exact"), Ws = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Vs(n, String(t))).every(Boolean), "list"), ue = /* @__PURE__ */ g(() => {
+  }, "data"), Mi = /* @__PURE__ */ g((n, e) => Vs(n) && Reflect.ownKeys(n).length === e.length && e.every((i) => Ws(n, i)), "exact"), Fs = /* @__PURE__ */ g((n, e) => Array.isArray(n) && n.length <= e && Reflect.ownKeys(n).length === n.length + 1 && Array.from({ length: n.length }, (i, t) => Ws(n, String(t))).every(Boolean), "list"), le = /* @__PURE__ */ g(() => {
     throw new TypeError("Member statement: invalid confirmed statement");
-  }, "fail"), Zo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : ue(), "instant"), De = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), nr = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), ud = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
-  function Fs(n) {
+  }, "fail"), Zo = /* @__PURE__ */ g((n) => typeof n == "string" && Number.isFinite(Date.parse(n)) && new Date(n).toISOString() === n ? Date.parse(n) : le(), "instant"), De = /* @__PURE__ */ g((n) => [n.field, n.value, n.polarity, n.condition || "general"].join(":"), "semanticKey"), tr = /* @__PURE__ */ g((n) => JSON.parse(JSON.stringify(n)), "copy"), ld = [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298];
+  function Ks(n) {
     let e = new TextEncoder().encode(n), i = new Uint8Array(Math.ceil((e.length + 9) / 64) * 64);
     i.set(e), i[e.length] = 128, new DataView(i.buffer).setUint32(i.length - 4, e.length * 8);
     let t = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225], o = new Uint32Array(64), s = /* @__PURE__ */ g((a, u) => a >>> u | a << 32 - u, "ro");
@@ -9008,7 +9008,7 @@ var Bd = pe((lf, ou) => {
       }
       let [c, l, p, d, r, $, h, f] = t;
       for (let m = 0; m < 64; m++) {
-        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + ud[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
+        let x = f + (s(r, 6) ^ s(r, 11) ^ s(r, 25)) + (r & $ ^ ~r & h) + ld[m] + o[m] >>> 0, v = (s(c, 2) ^ s(c, 13) ^ s(c, 22)) + (c & l ^ c & p ^ l & p) >>> 0;
         f = h, h = $, $ = r, r = d + x >>> 0, d = p, p = l, l = c, c = x + v >>> 0;
       }
       [c, l, p, d, r, $, h, f].forEach((m, x) => {
@@ -9017,8 +9017,8 @@ var Bd = pe((lf, ou) => {
     }
     return t.map((a) => a.toString(16).padStart(8, "0")).join("");
   }
-  g(Fs, "sourceKey");
-  var Ks = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Js = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, cd = [
+  g(Ks, "sourceKey");
+  var Js = /^(?:좋(?:아(?:해(?:요)?|요)?|다|습니다)?|선호(?:해(?:요)?|한다|합니다)|원(?:해(?:요)?|한다|합니다)|필요(?:해(?:요)?|하다|합니다)|편(?:해(?:요)?|하다|합니다)|편안(?:해(?:요)?|하다|합니다)|마음에들(?:어(?:요)?|어요)|(?:하고|받고|보고)?싶(?:어(?:요)?|다|습니다)|관심(?:이)?있(?:어(?:요)?|다|습니다)|해줘(?:요)?)$/u, Hs = /^(?:싫(?:어(?:요)?|다|습니다)|부담스러(?:워(?:요)?|워요)|좋(?:아하지|지는?|아하진)않(?:아(?:요)?|다|습니다)|선호하지않(?:아(?:요)?|는다|습니다)|원하지않(?:아(?:요)?|는다|습니다)|필요(?:가)?없(?:어(?:요)?|다|습니다)|필요하지않(?:아(?:요)?|다|습니다)|관심(?:이)?없(?:어(?:요)?|다|습니다))$/u, pd = [
     ["support", "independent", /^(?:혼자(?:서)?|스스로|독립적으로)(?:먼저)?(?:시도해보는|시도하는|해보는|해결하는|진행하는|하는|시도해보고|시도하고|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "together", /^(?:(?:다른사람과|누군가와|사람들과)?(?:같이|함께))(?:해보는|하는|해보고|하고)?(?:방식|것|편|게|걸|건|하기)?/u],
     ["support", "example", /^(?:예시|예제|샘플)(?:를|가|는|부터)?(?:먼저)?(?:보는|살펴보는|보여주는|보고|보기)?(?:방식|것|편|게|걸|건)?/u],
@@ -9041,10 +9041,10 @@ var Bd = pe((lf, ou) => {
     ["topic", "work-collaboration", /^(?:업무협업|업무에서협업)/u]
   ];
   function Yn(n, e) {
-    for (let [i, t, o] of cd) {
+    for (let [i, t, o] of pd) {
       let s = o.exec(n);
       if (!s) continue;
-      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Js.test(a) ? "avoid" : Ks.test(a) ? "prefer" : null;
+      let a = n.slice(s[0].length).replace(/^(?:을|를|이|가|은|는|에|엔|도)/u, ""), u = Hs.test(a) ? "avoid" : Js.test(a) ? "prefer" : null;
       if (u) return { field: i, value: t, polarity: u, condition: e };
     }
     return null;
@@ -9080,7 +9080,7 @@ var Bd = pe((lf, ou) => {
     return null;
   }
   g(Me, "expanded");
-  var ld = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, pd = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, dd = [
+  var dd = /^(?:편(?:이에요|이야|입니다|이다)|걸?(?:좋아해요|선호해요)|곤(?:해요|합니다)|하곤해요|합니다|해요|한다|한다는편이에요|좋(?:아해요|아요|습니다|아)|선호(?:해요|합니다|해|한다)|원(?:해요|합니다|해|한다)|편(?:해요|합니다|해|하다)|중요(?:해요|합니다|해)|(?:하고|받고|보고|알고)?싶(?:어요|습니다|어|다))$/u, fd = /^(?:싫(?:어요|습니다|어|다)|부담(?:스러워요|스러워|돼요)|선호하지않(?:아요|습니다|아|는다)|좋아하지않(?:아요|습니다|아|는다)|원하지않(?:아요|습니다|아|는다)|피하(?:는편이에요|고싶어요)|하지않(?:아요|습니다|는편이에요))$/u, md = [
     ["communication", "listen-organize", /^(?:(?:다른|여러)(?:사람(?:들)?|분(?:들)?)|남|동료(?:들)?|팀원(?:들)?|상대(?:방)?)(?:의)?(?:생각|의견|이야기|말)(?:을|를)?(?:먼저)?(?:듣고|들어보고|들어본뒤|들으며)(?:생각을)?(?:정리하(?:는|기)?|정리해보는|정리해)/u],
     ["communication", "share-first", /^(?:(?:내|제)(?:생각|의견)(?:을|는)?|의견(?:을|는)?)(?:먼저|앞서)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?|꺼내(?:는|기)?)/u],
     ["communication", "share-first", /^먼저(?:(?:내|제)?(?:생각|의견)(?:을)?)(?:말하(?:는|기)?|내(?:는|기)?|이야기하(?:는|기)?)/u],
@@ -9108,7 +9108,7 @@ var Bd = pe((lf, ou) => {
     ["topic", "photography", /^(?:사진(?:촬영|찍기|찍는것)|사진)/u],
     ["topic", "games", /^(?:게임(?:하기|하는것)?|보드게임|비디오게임)/u],
     ["topic", "nature", /^(?:자연(?:속)?(?:풍경)?(?:산책|을보는)?|산책(?:하기|하는것|하는)?|공원산책)/u]
-  ], fd = [
+  ], gd = [
     ["first-try-after-example", /^처음(?:시도|시작)하며(?:예시|예제|샘플)(?:를|을)?본(?:뒤|후|다음)(?:에는|엔|에)/u],
     // The semantic scopes are unchanged; only their noun/verb surface forms vary.
     ["first-try", /^(?:처음(?:시도|시작|연습|학습|공부|도전|경험)하는|처음해보는)(?:때|상황)(?:에는|에서는|라면|는)/u],
@@ -9165,7 +9165,7 @@ var Bd = pe((lf, ou) => {
     ["teamwork", /^(?:팀으로일할때(?:에는|는)?|함께일할때(?:에는|는)?|협업할때(?:에는|는)?|협업에서는)/u],
     ["planning", /^(?:일을계획할때(?:에는|는)?|계획을세울때(?:에는|는)?)/u],
     ["decision", /^(?:결정(?:을)?할때(?:에는|는)?|결정을내릴때(?:에는|는)?|판단(?:을)?할때(?:에는|는)?|선택(?:을)?할때(?:에는|는)?)/u]
-  ], md = [
+  ], $d = [
     ["avoid", /관심(?:이)?없(?:어요|습니다|다|어)$/u],
     ["avoid", /(?:즐기지(?:는)?않(?:아요|습니다|아)|부담스러워서싫(?:어요|습니다|어))$/u],
     ["avoid", /(?:(?:별로|딱히|그다지)?(?:좋아하지|선호하지|원하지|즐기지)(?:는)?않는편(?:입니다|이에요|이다)|(?:(?:저|나)(?:랑|와)|제게|저한테)?(?:잘)?안맞(?:아요|습니다|아|는다))$/u],
@@ -9177,7 +9177,7 @@ var Bd = pe((lf, ou) => {
     ["prefer", /(?:좋아(?:합니다|해요|한다|해)|좋(?:습니다|아요|다|아)|선호(?:합니다|해요|한다|해)|원(?:합니다|해요|한다|해)|마음(?:이)?편(?:합니다|해요|하다|해)|편(?:합니다|해요|하다|해))$/u],
     ["prefer", /(?:관심(?:이)?있(?:습니다|어요|다|어)|관심(?:을)?갖고있(?:습니다|어요|다|어)|흥미(?:가)?있(?:습니다|어요|다|어))$/u],
     ["prefer", /(?:싶(?:습니다|어요|다|어)|편(?:입니다|이에요|이다|이야))$/u]
-  ], gd = [
+  ], hd = [
     ["매기기", /매기(?:는|기)$/u],
     ["즐기기", /즐기(?:는|기)$/u],
     ["적기", /적(?:는|기)$/u],
@@ -9250,7 +9250,7 @@ var Bd = pe((lf, ou) => {
     ["보기", /(?:보는|보고|보기)$/u],
     ["찍기", /(?:찍는|찍고|찍기)$/u],
     ["하기", /(?:하는|하고|하기)$/u]
-  ], $d = [
+  ], xd = [
     ["세우기", /(?:세워요|세웁니다|세운다)$/u],
     ["짜기", /(?:짜요|짭니다|짠다)$/u],
     ["정하기", /(?:정해요|정합니다|정한다)$/u],
@@ -9274,10 +9274,10 @@ var Bd = pe((lf, ou) => {
     ["비교하기", /(?:비교해요|비교합니다|비교한다)$/u],
     ["살펴보기", /(?:살펴봐요|살펴봅니다|살펴본다)$/u]
   ];
-  function Hs(n) {
+  function Gs(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|싫지는않|없지않|않지는않)/u.test(n)) return null;
     let e = null, i = n;
-    for (let [o, s] of md) {
+    for (let [o, s] of $d) {
       let a = s.exec(n);
       if (a) {
         e = o, i = n.slice(0, a.index);
@@ -9286,25 +9286,25 @@ var Bd = pe((lf, ou) => {
     }
     let t = !1;
     if (!e) {
-      let o = $d.find(([, s]) => s.test(n));
+      let o = xd.find(([, s]) => s.test(n));
       if (!o) return null;
       i = n.replace(o[1], o[0]), e = "prefer", t = !0;
     }
     return { ...Je(i), polarity: e, habitual: t };
   }
-  g(Hs, "actionAndStance");
+  g(Gs, "actionAndStance");
   function Je(n) {
-    let e = n, i = Ie(e, !0)?.at(-1);
+    let e = n, i = Re(e, !0)?.at(-1);
     i?.tag === "particle" && i.text === "가" && /(?:내가|제가)$/u.test(e) || (e = e.replace(/(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u, "")), e = e.replace(/기(?:를|는|도|가)$/u, "기").replace(/(?:께서는|으로는|로는)$/u, ""), /(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(e) || (e = e.replace(/(?:것|거|방식|쪽|편|시간|일|방법|구성|활동)(?:이|은|을|를|도|에|에는|에도)?$|(?:게|걸|건|데|데에도)$/u, ""));
     let t = /(?:는|기)설명(?:이면|이|은|을|도)?$/u.test(e) ? "explanation" : null;
     t && (e = e.replace(/((?:는|기))설명(?:이면|이|은|을|도)?$/u, "$1"));
-    let o = e, s = gd.find(([, u]) => u.test(e));
+    let o = e, s = hd.find(([, u]) => u.test(e));
     s ? e = e.replace(s[1], s[0]) : e = e.replace(/(?:에는|에도|에|을|를|은|는|이|가|도)$/u, "");
     let a = { 상의한: "상의하고", 경험한: "경험하고", 체험한: "체험하고", 겪어본: "경험하고", 세운: "세우고", 짠: "짜고", 정한: "정하고", 비교한: "비교하고" };
     return e = e.replace(/(상의한|경험한|체험한|겪어본|세운|짠|정한|비교한)(?:다음|뒤|후)(?:에)?/gu, (u, c) => a[c]).replace(/(확인한|살펴본|찾아본|들은)(?:다음|뒤|후)(?:에)?/gu, (u, c) => ({ 확인한: "확인하고", 살펴본: "살펴보고", 찾아본: "찾아보고", 들은: "듣고" })[c]).replace(/(?:듣고|보고|짜고|정하고|세우고|확인하고)(?:나서|난뒤|난다음)/gu, (u) => u.replace(/(?:나서|난뒤|난다음)$/u, "")).replace(/(?:들어본|비교해본|실행한|시도한)(?:다음|뒤|후)(?:에)?/gu, (u) => u.startsWith("들어") ? "듣고" : u.startsWith("비교") ? "비교하고" : u.startsWith("실행") ? "실행하고" : "시도하고").replace(/(참고|상의|확인|비교)해(?=결정|판단)/gu, "$1하고").replace(/자세하게/gu, "자세히").replace(/상세하게/gu, "상세히").replace(/비교해보고(?=고르|정하|판단하|결정하)/gu, "비교하고").replace(/(?:만들어|세워|짜|정해)(?:두고|놓고)/gu, (u) => u.startsWith("만들어") ? "만들고" : u.startsWith("세워") ? "세우고" : u.startsWith("짜") ? "짜고" : "정하고").replace(/(생각|의견|계획|근거|자료|데이터|사실|선택지|대안)부터(?:미리|먼저)?/gu, "$1을먼저"), { action: e, nominalHead: t, surfaceAction: o };
   }
   g(Je, "normalizeActionPhrase");
-  var hd = [
+  var vd = [
     ["communication", "written", /^(?:(?:내|제)?(?:의견|생각)(?:을)?글(?:로|을)?|글(?:로|을)?)(?:적기|쓰기|전하기|(?:의견|생각)(?:을)?나누기)$/u],
     ["communication", "spoken", /^말(?:로)?(?:의견(?:을)?)?전하기$/u],
     ["decision", "compare-options", /^(?:여러)?(?:선택지|대안|후보)(?:들)?(?:의)?(?:장단점)?(?:을|를)?(?:따져보기|따져보고(?:결정하기|판단하기|고르기))$/u],
@@ -9377,46 +9377,47 @@ var Bd = pe((lf, ou) => {
     ["topic", "games", /^(?:게임(?:을)?(?:하기)?|보드게임(?:을)?(?:하기)?|비디오게임(?:을)?(?:하기)?)$/u],
     ["topic", "nature", /^(?:자연(?:속(?:에서)?)?(?:풍경)?(?:산책(?:하기)?|(?:을)?보기)?|산책(?:하기)?|공원산책|산책(?:하면서|하며)자연(?:을)?보기)$/u]
   ];
-  function Gs(n, e) {
-    let i = Hs(n);
+  function Xs(n, e) {
+    let i = Gs(n);
     if (!i) return null;
     if (i.nominalHead === "explanation" && /^(?:너무|지나치게)?길게이어지기$/u.test(i.action)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: i.polarity, condition: e }] };
     if (/배우기$/u.test(i.action)) {
-      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Gs(s + "좋아요", e);
+      let s = i.action.replace(/(?:것(?:을|이)|걸|것|기(?:를)?)?배우기$/u, ""), a = Xs(s + "좋아요", e);
       if (a?.meanings.length === 1 && a.meanings[0].field === "topic") return { meanings: a.meanings.map((u) => ({ ...u, polarity: i.polarity })) };
     }
-    let t = hd.find(([, , s]) => s.test(i.action));
+    let t = vd.find(([, , s]) => s.test(i.action));
     if (t) return i.habitual && t[0] === "topic" ? null : { meanings: [{ field: t[0], value: t[1], polarity: i.polarity, condition: e }] };
     let o = Yn(i.action + "좋아", e);
     return o && !i.habitual ? { meanings: [{ ...o, polarity: i.polarity }] } : null;
   }
-  g(Gs, "recognizeAction");
-  function tr(n) {
+  g(Xs, "recognizeAction");
+  function ir(n) {
     let e = n.replace(/^전\s+/u, "저는 ").replace(/^난\s+/u, "나는 ").replace(/(때(?:는)?|에서는|에는|다음에는)\s+전\s+/gu, "$1 저는 ");
     if (/^난\S/u.test(e)) {
-      let i = Tn(e.slice(1).replace(/\s/gu, "")), t = i && Ie(i.action, !0);
-      t?.length && t[0].tag !== "particle" && Xs(Ie(i.action), i.nominalHead) && (e = "나는" + e.slice(1));
+      let i = Tn(e.slice(1).replace(/\s/gu, "")), t = i && Re(i.action, !0);
+      t?.length && t[0].tag !== "particle" && Ys(Re(i.action), i.nominalHead) && (e = "나는" + e.slice(1));
     }
     return e;
   }
-  g(tr, "selfSurface");
-  function H(n) {
-    let e = tr(n).replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (t) => t.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는");
-    /좋지만\s*$/u.test(n) && (e = e.replace(/좋$/u, "좋아요")), /일이지만\s*$/u.test(n) && (e = e.replace(/일이$/u, "일이에요")), e = e.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u, (t) => ({ 좋아하며: "좋아해요", 선호하고: "선호해요", 선호하며: "선호해요", 원하고: "원해요", 원하며: "원해요", 편하며: "편해요", 싫고: "싫어요", 관심이있고: "관심있어요", 관심이많고: "관심많아요", 원하지않고: "원하지않아요", 선호하지않고: "선호하지않아요", 좋아하지않고: "좋아하지않아요" })[t]).replace(/(?:쪽이고|것이고|편이고|활동이고)$/u, (t) => t.slice(0, -2) + "이에요").replace(/관심이많$/u, "관심이많아요").replace(/관심이없$/u, "관심이없어요").replace(/좋아하$/u, "좋아해요").replace(/((?:원|좋아|선호)하지)않$/u, "$1않아요").replace(/좋아하$/u, "좋아해요").replace(/좋아하는$/u, "좋아해요"), e = e.replace(/좋(?:아하)?고요$/u, (t) => t.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, ""), e = e.replace(/^(?:저는|나는|제가|내가)/u, "");
-    let i = null;
-    for (let [t, o] of fd) if (o.test(e)) {
-      i = t, e = e.replace(o, "");
+  g(ir, "selfSurface");
+  var Yo = /^(?:나는|저는|제가|내가|저한테는|제게는|나한테는|(?:제|내)경우(?:에는|엔)|(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)(?:은|는|이|가)|(?:제|내)(?:연습|소통|도움|설명)취향(?:은|는)|(?:제게|저에게|내게)(?:는)?(?:편한|필요한))/u;
+  function V(n) {
+    let e = ir(n).replace(/\s/gu, "").replace(/(?:지만|는데)$/u, "").replace(/좋고$/u, "좋아요").replace(/좋아하고$/u, "좋아해요").replace(/편하고$/u, "편해요").replace(/즐겁고$/u, "즐거워요").replace(/싫$/u, "싫어요").replace(/(?:좋아하|선호하)$/u, (o) => o.slice(0, -1) + "해").replace(/할땐/gu, "할때는").replace(/배울땐/gu, "배울때는"), i = Yo.test(e);
+    /좋지만\s*$/u.test(n) && (e = e.replace(/좋$/u, "좋아요")), /일이지만\s*$/u.test(n) && (e = e.replace(/일이$/u, "일이에요")), e = e.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u, (o) => ({ 좋아하며: "좋아해요", 선호하고: "선호해요", 선호하며: "선호해요", 원하고: "원해요", 원하며: "원해요", 편하며: "편해요", 싫고: "싫어요", 관심이있고: "관심있어요", 관심이많고: "관심많아요", 원하지않고: "원하지않아요", 선호하지않고: "선호하지않아요", 좋아하지않고: "좋아하지않아요" })[o]).replace(/(?:쪽이고|것이고|편이고|활동이고)$/u, (o) => o.slice(0, -2) + "이에요").replace(/관심이많$/u, "관심이많아요").replace(/관심이없$/u, "관심이없어요").replace(/좋아하$/u, "좋아해요").replace(/((?:원|좋아|선호)하지)않$/u, "$1않아요").replace(/좋아하$/u, "좋아해요").replace(/좋아하는$/u, "좋아해요"), e = e.replace(/좋(?:아하)?고요$/u, (o) => o.startsWith("좋아") ? "좋아해요" : "좋아요").replace(/싶고$/u, "싶어요").replace(/을땐/gu, "을때는").replace(/^(?:저라면|나라면)/u, ""), e = e.replace(/^(?:저는|나는|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, "").replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, ""), i ||= Yo.test(e), e = e.replace(/^(?:저는|나는|제가|내가)/u, "");
+    let t = null;
+    for (let [o, s] of gd) if (s.test(e)) {
+      t = o, e = e.replace(s, "");
       break;
     }
-    if (e = e.replace(/^,+/u, ""), i && (e = e.replace(/^(?:저는|나는|제가|내가)(?=,|$)/u, "")), ["first-try", "familiar", "busy"].includes(i)) {
-      let t = /^(?:예시|예제|샘플)(?:를|을|도|까지|부터)?(?:먼저|이미|한번)?(?:본|보고난|확인한|확인하고난)(?:뒤|후|다음|상태|이후)(?:라면|에는|에도|엔|에서는|의작업은)/u.exec(e);
-      t && (i += "-after-example", e = e.slice(t[0].length));
+    if (i ||= Yo.test(e.replace(/^,+/u, "")), e = e.replace(/^,+/u, ""), t && (e = e.replace(/^(?:저는|나는|제가|내가)(?=,|$)/u, "")), ["first-try", "familiar", "busy"].includes(t)) {
+      let o = /^(?:예시|예제|샘플)(?:를|을|도|까지|부터)?(?:먼저|이미|한번)?(?:본|보고난|확인한|확인하고난)(?:뒤|후|다음|상태|이후)(?:라면|에는|에도|엔|에서는|의작업은)/u.exec(e);
+      o && (t += "-after-example", e = e.slice(o[0].length));
     }
-    return e = e.replace(/^,+/u, ""), /편하지만$/u.test(n.replace(/\s/gu, "")) && (e = e.replace(/편하$/u, "편해요")), { body: e, condition: i };
+    return e = e.replace(/^,+/u, ""), /편하지만$/u.test(n.replace(/\s/gu, "")) && (e = e.replace(/편하$/u, "편해요")), { body: e, condition: t, own: i };
   }
-  g(H, "normalizePrefix");
-  function V(n) {
-    let e = tr(n).replace(/\s/gu, "");
+  g(V, "normalizePrefix");
+  function W(n) {
+    let e = ir(n).replace(/\s/gu, "");
     e = e.replace(/^(?:그와별개로|그것과별개로|그렇지만|반대로)(?!는|도)/u, "").replace(/^(?:상황과관계없이|일과별개로|별개로|정확히말하면)/u, "").replace(/(?:즐기고|즐기며|즐기는편이에요)$/u, "즐겨요").replace(/싫어하고$/u, "싫어요").replace(/흥미가있고$/u, "흥미가있어요").replace(/(?:원치않고|원치않으며)$/u, "원하지않고").replace(/원치않(?:아요|습니다|아|는다)$/u, "원하지않아요").replace(/(?:좋으며|좋아하며)$/u, "좋아하고").replace(/마음에들고$/u, "마음에들어요").replace(/관심(?:을)?두고있고$/u, "관심있어요").replace(/관심(?:이)?없고요$/u, "관심없어요").replace(/(?:잘)?맞지만$/u, "맞아요").replace(/원하지만$/u, "원해요").replace(/(?:편하고요|편하며)$/u, "편해요"), e = e.replace(/^(?:[가-힣]{1,16})(?:와|과)(?:는)?달리(?=저는|나는|제가|내가)/u, "").replace(/관심이있으며$/u, "관심있어요").replace(/관심이없고$/u, "관심없어요").replace(/싶으며$/u, "싶어요").replace(/설명이고$/u, "설명이에요"), e = e.replace(/(?:선호하고요|원하고요)$/u, (c) => c.startsWith("선호") ? "선호해요" : "원해요").replace(/싶은편(?:이고|이에요|입니다)$/u, "싶어요");
     let i = /^(?:제가|내가)(?:고르고싶은|택하고싶은|선호하는)(연습|도움|소통|판단)(?:방식|방법)(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(e);
     i && (e = i[1] + "방식은" + i[2] + "좋아요");
@@ -9432,8 +9433,8 @@ var Bd = pe((lf, ou) => {
     let u = /^(.+?)(?:라고두지않았으면|라고하지않았으면)(?:해요|합니다|해)$/u.exec(e);
     return u && (e = u[1].replace(/해보$/u, "해보는").replace(/하$/u, "하는") + "걸원하지않아요"), e;
   }
-  g(V, "surfaceDeclaration");
-  function xd(n) {
+  g(W, "surfaceDeclaration");
+  function bd(n) {
     let e = /* @__PURE__ */ g((o) => {
       let s = o.replace(/^(?:계속|오래)/u, "").replace(/(?:계획)만/u, "계획을");
       return !!D(s + "좋아요") || /^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(s);
@@ -9442,9 +9443,9 @@ var Bd = pe((lf, ou) => {
     let t = /^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(n);
     return t && e(t[1]) ? t[2] : n;
   }
-  g(xd, "comparative");
+  g(bd, "comparative");
   function D(n) {
-    let { body: e, condition: i } = H(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
+    let { body: e, condition: i } = V(n), t = /^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(e);
     if (t) {
       let l = D(t[1] + t[3]), p = D(t[2] + t[3]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && !l.uncertain && !p.uncertain) {
@@ -9462,26 +9463,26 @@ var Bd = pe((lf, ou) => {
       let l = D(s[1]);
       if (l?.meanings.length === 1 && l.meanings[0].field === "topic") return { meanings: l.meanings.map((p) => ({ ...p, condition: i })) };
     }
-    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = xd(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
+    e = e.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, ""), e = bd(e).replace(/^결론뿐아니라(?=왜그런지)/u, "");
     let a = /^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(e);
     if (a) {
       let l = D(a[1] + "보는게좋아요"), p = D(a[2]);
       if (l?.meanings.length === 1 && p?.meanings.length === 1 && l.meanings[0].value === "overview-first" && p.meanings[0].value === "reasons-detail" && p.meanings[0].polarity === "prefer")
-        return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: i })) };
+        return { meanings: [...l.meanings, ...p.meanings].map((d) => ({ ...d, condition: d.condition || i })) };
     }
     if (/^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u.test(e)) return { meanings: [{ field: "explanation-detail", value: "long-flow", polarity: "avoid", condition: i }] };
-    let c = Gs(e, i);
+    let c = Xs(e, i);
     if (c) return c;
-    for (let [l, p, d] of dd) {
+    for (let [l, p, d] of md) {
       let r = d.exec(e);
       if (!r) continue;
-      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = pd.test($) || Js.test($) ? "avoid" : l !== "topic" && ld.test($) || Ks.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
+      let $ = e.slice(r[0].length).replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u, "").replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u, "").replace(/^마음이(?=편)/u, "").replace(/(?:좋아하|선호하)$/u, (f) => f.slice(0, -1) + "해"), h = fd.test($) || Hs.test($) ? "avoid" : l !== "topic" && dd.test($) || Js.test($) && !(l === "topic" && /^해줘/u.test($)) ? "prefer" : null;
       if (h) return { meanings: [{ field: l, value: p, polarity: h, condition: i }] };
     }
     return null;
   }
   g(D, "natural");
-  function vd(n) {
+  function yd(n) {
     let e = n.replace(/\s/gu, "").replace(/(?:지만|는데)$/u, ""), t = [
       [/(?:좋을수도있(?:어요|겠네요|습니다)|좋은것같(?:아요|습니다)|좋아할수도있(?:어요|겠네요)|좋아하는것같(?:아요|습니다))$/u, "좋아요"],
       [/(?:편한것같(?:아요|습니다)|편할수도있(?:어요|겠네요|습니다))$/u, "편해요"],
@@ -9493,17 +9494,17 @@ var Bd = pe((lf, ou) => {
     let o = D(e) || Me(e);
     return o && !o.typo ? { ...o, uncertain: !0 } : null;
   }
-  g(vd, "tentative");
-  function bd(n) {
-    let { body: e, condition: i } = H(n);
+  g(yd, "tentative");
+  function kd(n) {
+    let { body: e, condition: i } = V(n);
     if (!/^(?:글|말|문자|메시지|메일|이메일)로만/u.test(e)) return null;
     let t = D(e.replace(/^(.+?)로만/u, "$1로"));
     if (t?.meanings.length !== 1 || t.meanings[0].field !== "communication") return null;
     let o = t.meanings.map((s) => ({ ...s, condition: i }));
     return { meanings: o, uncertain: o[0].polarity === "avoid", restricted: !0 };
   }
-  g(bd, "restrictedMethod");
-  var yd = [
+  g(kd, "restrictedMethod");
+  var wd = [
     ["use", /^(?:활용|사용)(?=$|도|을|이|법)/u],
     ["communicate", /^소통/u],
     ["mix", /^한데묶(?:은|는|기)/u],
@@ -9772,7 +9773,7 @@ var Bd = pe((lf, ou) => {
     ["first", /^부터/u],
     ["sequence", /^(?:한뒤|한후|한다음|뒤에|후에|다음에|뒤|후|다음|나서|다음에는)/u],
     ["neutral", /^(?:충분히|꼼꼼히|차분히|천천히|한번에|한번|하나하나|서로|직접|몸소|일단|조금씩|차차|자꾸|보통|대체로|주로|여러|가능한|가능한것|먼저부터|각|반복해서|옆에서|쭉|한참|아주|실제|항상|대강|그때그때|앞으로|취미로|지나치게|개인적으로|기본적으로|전반적으로|정말|굉장히|조금더|좀더|훨씬|오히려|꽤|참|다(?=듣))/u]
-  ], kd = [
+  ], Ed = [
     ["communicate", "소통"],
     ["communicate", "대화"],
     ["speak", "말"],
@@ -9819,12 +9820,12 @@ var Bd = pe((lf, ou) => {
     ["make", "제작"],
     ["explore", "탐색"],
     ["summary", "요약"]
-  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), wd = [...kd, ...yd];
-  function Ie(n, e = !1) {
+  ].map(([n, e]) => [n, new RegExp("^" + e + "(?:해(?:봐야|보(?:는|기|고|며)|주(?:는|기|면))|해(?:두|놓)(?:는|기|고)|하(?:는|기|고|며|면서|게|여야|여|려)|해야|할|해(?:서|가며|가기|가는)|한)", "u")]), Zs = [...Ed, ...wd];
+  function Re(n, e = !1) {
     let i = [], t = 0;
     for (; t < n.length && i.length < 120; ) {
       let o = null;
-      for (let [s, a] of wd) {
+      for (let [s, a] of Zs) {
         let u = a.exec(n.slice(t));
         u && (!o || u[0].length > o.text.length) && (o = { tag: s, text: u[0] });
       }
@@ -9833,8 +9834,8 @@ var Bd = pe((lf, ou) => {
     }
     return t === n.length ? e ? i : i.filter((o) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(o)) : null;
   }
-  g(Ie, "phraseUnits");
-  function Xs(n, e) {
+  g(Re, "phraseUnits");
+  function Ys(n, e) {
     let i = n.filter((u) => !["nominal", "means", "method"].includes(u)).join(" "), t = /* @__PURE__ */ g((u) => u.test(i), "match"), o = /* @__PURE__ */ g((u, c) => ({ field: u, value: c }), "out");
     if (t(/^(?:person )?(?:(?:opinion|speech) )?(?:first )?listen (?:(?:opinion|speech) )?organize$/u)) return o("communication", "listen-organize");
     if (t(/^(?:(?:opinion|speech) first |first (?:opinion |speech )?)(?:speak|send)(?: speech start)?$/u)) return o("communication", "share-first");
@@ -9880,10 +9881,10 @@ var Bd = pe((lf, ou) => {
       ["ai-tools", /^ai(?: use)?$/u],
       ["work-collaboration", /^(?:person together task do )?collaboration$/u]
     ].find(([, u]) => u.test(i));
-    return a ? o("topic", a[0]) : Ed(n, e);
+    return a ? o("topic", a[0]) : Sd(n, e);
   }
-  g(Xs, "composeMeaning");
-  function Ed(n, e) {
+  g(Ys, "composeMeaning");
+  function Sd(n, e) {
     let i = n.filter((x) => !["nominal", "means", "method"].includes(x));
     e === "explanation" && !i.includes("explanation") && i.push("explanation");
     let t = /* @__PURE__ */ g((x) => i.includes(x), "has"), o = /* @__PURE__ */ g((...x) => x.some(t), "any"), s = /* @__PURE__ */ g((...x) => x.every(t), "all"), a = /* @__PURE__ */ g((x, v) => i.indexOf(x) < i.indexOf(v), "before"), u = /* @__PURE__ */ g((...x) => !t("start") || x.some((v) => t(v) && a(v, "start")), "beforeStart"), c = t("overview") ? i.slice(0, i.indexOf("overview")) : [], l = c.every((x) => ["explanation", "detail", "content", "first", "enter", "before"].includes(x)) && (!c.includes("enter") || c.indexOf("enter") < c.indexOf("before")), p = t("explain") || s("explanation", "receive"), d = [], r = /* @__PURE__ */ g((x, v, y, O) => {
@@ -9917,8 +9918,8 @@ var Bd = pe((lf, ou) => {
     }
     return d.length === 1 ? d[0] : null;
   }
-  g(Ed, "composeRoles");
-  var Sd = [
+  g(Sd, "composeRoles");
+  var Od = [
     ["prefer", /(?:(?:둘다|모두)(?:제가|내가)?)(?:좋아하는|선호하는)(?:거|것)(?:예요|이에요|입니다)$/u],
     ["prefer", /(?:제게는|내게는|저에게는|나에게는)?즐거운(?:일|활동)(?:이에요|입니다)$/u],
     ["prefer", /(?:(?:제가|내가)?(?:좋아하는|관심을두는)(?:분야|일|활동))(?:예요|이에요|입니다)$/u],
@@ -9943,14 +9944,14 @@ var Bd = pe((lf, ou) => {
   ];
   function Tn(n) {
     if (/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(n)) return null;
-    for (let [e, i] of Sd) {
+    for (let [e, i] of Od) {
       let t = i.exec(n);
       if (t) return { ...Je(n.slice(0, t.index)), polarity: e, habitual: !1 };
     }
-    return Hs(n);
+    return Gs(n);
   }
   g(Tn, "composeStance");
-  var Od = [
+  var Ad = [
     [/^일(?:을)?처리할때(?:에는|는)?/u, ["work-style"], ""],
     [/^도움받는방식(?:으로는|은|는)/u, ["support"], ""],
     [/^판단(?:방법으로|방식은|에서는|에는|에쓸|할)/u, ["decision"], ""],
@@ -9975,7 +9976,24 @@ var Bd = pe((lf, ou) => {
     [/^설명(?:분량)?(?:은|에서|을)/u, ["explanation", "explanation-detail"], "설명"],
     [/^(?:판단|선택)(?:은|을)/u, ["decision"], ""],
     [/^(?:평소)?소통에서는|^생각을전달할때/u, ["communication"], ""]
-  ], ce = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지|남들|상대방)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u, Ad = {
+  ], Md = /(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지|남들|상대방)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u, Rd = Zs.filter(([n]) => n === "person").map(([, n]) => n), G = {
+    exec(n) {
+      let e = Md.exec(n);
+      for (let i = 0; i < (e?.index ?? n.length); i++) for (let t of Rd) {
+        let o = t.exec(n.slice(i));
+        if (!o) continue;
+        let s = /^(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u.exec(n.slice(i + o[0].length));
+        if (s) {
+          e = { 0: o[0] + s[0], index: i };
+          break;
+        }
+      }
+      return e;
+    },
+    test(n) {
+      return !!this.exec(n);
+    }
+  }, Id = {
     independent: "self nohelp before-help first task try do process finish",
     together: "person together task try do process finish",
     example: "example first one look show check start before-start inquiry task",
@@ -10003,20 +10021,20 @@ var Bd = pe((lf, ou) => {
     listening: "practice audio visual text listen read both mix answer know do",
     mixed: "practice audio visual text listen read both mix answer know do"
   };
-  function Md(n, { polarity: e, habitual: i }, t, o, s) {
+  function Nd(n, { polarity: e, habitual: i }, t, o, s) {
     if (i || /(?:안|못).{0,8}(?:지는?\s*않|지\s*않)|(?:싫|불편|거부).{0,6}(?:않|아니)/u.test(s)) return null;
     let a = n.replace(/,/gu, "");
     if (e === "avoid" && /(?:글|말|문자|메시지|메일|이메일)로만/u.test(a)) return null;
     let u = a.replace(/(?:누구|다른사람의)?도움(?:을)?(?:받지않고|없이)/gu, "혼자").replace(/생략하지않고/gu, "상세하게").replace(/(?:중간중간)?끊(?:기)?지않고/gu, "이어지는").replace(/짧지도길지도않은(?=보통|중간)/u, "");
-    if (/(?:않|못|아니|싫|없지|말고|없는|없이|안하|안해|안되|비선호|불편|거부(?:하|감|되))/u.test(u) || /(?:보다는|보단|보다(?!가)|대신|느니|않|말했|라고|다고|다는|라는|것같|듯|모르|수도|아마)/u.test(u) || /(?:강요|억지|시키|시켜|명령|할수밖에|해야한다|해야만|잘하고|잘하|능력|실력|시험점수)/u.test(a) || /(?:화면|페이지|앱|프로필)(?:의)?(?:배경|색|버튼|글자|배치)|(?:연습|수업|학습|공부)(?:의)?(?:시간표|날짜|요일|알림)/u.test(a) || ce.test(a) || /(?:하는|하던|보는|보던)(?:사람|친구|동료|분)/u.test(a)) return null;
+    if (/(?:않|못|아니|싫|없지|말고|없는|없이|안하|안해|안되|비선호|불편|거부(?:하|감|되))/u.test(u) || /(?:보다는|보단|보다(?!가)|대신|느니|않|말했|라고|다고|다는|라는|것같|듯|모르|수도|아마)/u.test(u) || /(?:강요|억지|시키|시켜|명령|할수밖에|해야한다|해야만|잘하고|잘하|능력|실력|시험점수)/u.test(a) || /(?:화면|페이지|앱|프로필)(?:의)?(?:배경|색|버튼|글자|배치)|(?:연습|수업|학습|공부)(?:의)?(?:시간표|날짜|요일|알림)/u.test(a) || G.test(a) || /(?:하는|하던|보는|보던)(?:사람|친구|동료|분)/u.test(a)) return null;
     let c = /^\s*(?:(우리|저희|제|내|그|그들의)\s+)?([^\s]+?)(?:들)?(?:께서는|께서|은|는|이(?!랑)|가)\s+/u.exec(s);
     if (c && (/^(?:우리|저희|그|그들의)$/u.test(c[1] || "") || !/^(?:저|나|제|내|난|설명|도움|연습|한국어|글|말|의견|생각|읽기|듣기|자료|근거|계획|일|작업|업무|판단|결정|요리|음악|독서|게임|운동|사진|영상|디자인|여럿|풀|이번에|그다음에)$/u.test(c[2]) && !/(?:받|하|되|없|있)$/u.test(c[2])) || /(?:받고|듣고|보고|읽고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)) return null;
     let l = a.replace(/(?:도움이)?(?:필요한|필요해졌을|필요할)(?:순간|시점|때)(?:에)?(?:만)?/gu, "필요도움");
     if (/(?:때|땐|라면|다면|경우|상황|기간|동안|날에|오늘만|내일만|이번만|이후의|이전의|에서는|에서만|에는|에만)/u.test(l) || /에서/u.test(l.replace(/옆에서/gu, "")) && !/(?:주제|소재|이야기|얘기)/u.test(a)) return null;
-    let p = Ie(Je(u).action);
+    let p = Re(Je(u).action);
     if (!p) return null;
-    let d = [], r = /* @__PURE__ */ g((b, k, R) => {
-      R && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
+    let d = [], r = /* @__PURE__ */ g((b, k, I) => {
+      I && (!o || o.includes(b)) && d.push({ field: b, value: k, polarity: e, condition: t });
     }, "add"), $ = /* @__PURE__ */ g((b) => b.test(a), "has"), h = /* @__PURE__ */ g((b, k) => $(b) && $(k), "both"), f = /* @__PURE__ */ g((b) => a.search(b), "pos"), m = /* @__PURE__ */ g((b, k) => f(b) >= 0 && f(k) > f(b), "ordered"), x = $(/(?:주제|소재|관심|분야|취미|배우|배워|공부|다루|익히)/u), v = $(/(?:연습|문제|학습)/u) && !$(/(?:주제|소재|관한)/u);
     if (v) {
       let b = $(/(?:듣기|듣는|듣고|들으며|들으면서|들어)/u), k = $(/(?:읽기|읽는|읽고|읽으며|읽으면서)/u);
@@ -10028,8 +10046,8 @@ var Bd = pe((lf, ou) => {
     r("explanation", "standard", O && T && !A), r("explanation", "brief", O && E && !T && !A && !$(/길게|긴설명/u));
     let S = $(/근거|이유|왜그런/u) && A;
     r("explanation", "detailed", O && A && !S && !E && !T), r("explanation-detail", "reasons-detail", S && $(/알|듣|설명|받|보/u)), r("explanation-detail", "long-flow", O && $(/길게이어|길게계속|긴설명을끊|길게설명/u));
-    let I = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
-    if (r("explanation-detail", "overview-first", I && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
+    let R = $(/개요|큰그림|전체흐름|전체구조|큰틀/u);
+    if (r("explanation-detail", "overview-first", R && $(/먼저|부터|우선/u) && $(/보|듣|파악|알/u) && !/(?:듣고|받고|보고|설명하고).*(?:개요|큰그림|전체흐름|큰틀)/u.test(a)), !x && !v && (r("communication", "written", h(/글로|문자로|메시지로|메신저로|텍스트로|글을/u, /소통|전달|주고받|쓰|적|남기|정리/u) && !$(/말로|목소리/u)), r("communication", "spoken", h(/말로|말을|목소리|대화로/u, /소통|주고받|이야기|대화|전달/u) && !$(/글로|문자로/u)), r("communication", "listen-organize", $(/다른.*(?:생각|말|의견)|상대.*(?:생각|말|의견)|동료.*(?:생각|말|의견)/u) && m(/듣|들어/u, /정리|정돈|취합/u)), r("communication", "share-first", $(/(?:제|내)(?:의견|생각)/u) && $(/먼저|부터/u) && $(/말하|꺼내|내는|전하/u)), r("work-style", "plan-first", h(/계획|일정|할일목록/u, /세우|세워|짜|정해|만들/u) && y(/세우|세워|짜|정해|만들/u)), r("work-style", "try-adjust", m(/해보|시도|실행/u, /고치|고쳐|조정|수정|보완/u)), r("work-style", "single-task", $(/한번에(?:한가지|하나)|하나씩|한가지만/u) && $(/처리|하는|하기|끝내|마무리/u)), r("work-style", "prioritize", h(/우선순위|중요한순서|중요도/u, /정하|정한|정해|매겨|매기|처리/u)), r("decision", "evidence", h(/자료|데이터|근거|사실/u, /확인|검토|살펴|바탕|기준|참고/u) && !S), r("decision", "compare-options", h(/선택지|대안|후보|장단점/u, /비교|따져/u)), r("decision", "experience", h(/겪|경험|체험/u, /참고|바탕|기준/u)), r("decision", "consult", h(/다른사람|동료|팀원|주변사람/u, /상의|의논|의견을구/u))), !v) {
       let b = [
         ["travel-planning", /여행/u, /일정|동선/u],
         ["travel-food", /여행지|여행|다른나라/u, /음식|식당|주문/u],
@@ -10048,41 +10066,41 @@ var Bd = pe((lf, ou) => {
         ["games", /게임/u, /게임/u],
         ["nature", /자연|공원/u, /산책|자연/u]
       ];
-      for (let [k, R, w] of b) r("topic", k, x && h(R, w));
+      for (let [k, I, w] of b) r("topic", k, x && h(I, w));
     }
     let N = [...new Map(d.map((b) => [De(b), b])).values()];
     if (N.length !== 1) return null;
     let M = N[0], _ = /* @__PURE__ */ g((b, k) => {
-      let R = p.indexOf(b);
-      return R >= 0 && p.slice(0, R).some((w) => k.includes(w));
+      let I = p.indexOf(b);
+      return I >= 0 && p.slice(0, I).some((w) => k.includes(w));
     }, "beforeRole");
     if (M.field !== "topic") {
-      let b = new Set((Ad[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
+      let b = new Set((Id[M.value] || "").split(" ").concat(["nominal", "means", "method"]));
       if (p.some((k) => !b.has(k))) return null;
     }
     return M.value === "plan-first" && _("plan", ["start", "try", "process", "finish", "do"]) || M.value === "example" && _("example", ["start", "try", "process", "finish", "do"]) || M.value === "overview-first" && _("overview", ["listen", "read", "receive", "explain", "look"]) ? null : { meanings: N };
   }
-  g(Md, "declaredCore");
-  function Q(n) {
+  g(Nd, "declaredCore");
+  function ne(n) {
     let e = /^([^\s]+?)(?:은|는|이|가|도)\s/u.exec(n.trim());
-    if (e && H(V(e[0])).body && !/^(?:저|나|제|내)$/u.test(e[1])) {
-      let M = Ie(e[1], !0);
+    if (e && V(W(e[0])).body && !/^(?:저|나|제|내)$/u.test(e[1])) {
+      let M = Re(e[1], !0);
       if (M?.length && M.every((_) => ["particle", "mine", "selfcase"].includes(_.tag))) return null;
     }
-    let { body: i, condition: t } = H(V(n));
-    i = V(i), i = i.replace(/^(?:저는|나는|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u, "");
-    let o = ce.exec(i), s = o ? i.slice(o.index + o[0].length) : "", a = o?.index === 0 && /(?:이|가|께서)$/u.test(o[0]) && !ce.test(s) && !/(?:제가|내가|우리가|저희가|그들이|이들이|너희가)/u.test(s) && /(?:하는|되는|하던|했던).*?(?:방식|방법|주제|과정)(?:에|을|를)/u.test(s), u = null, c = "", l = /^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(i);
+    let { body: i, condition: t } = V(W(n));
+    i = W(i), i = i.replace(/^(?:저는|나는|제가|내가|제경우엔|내경우엔)(?:요)?/u, "").replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u, "");
+    let o = G.exec(i), s = o ? i.slice(o.index + o[0].length) : "", a = o?.index === 0 && /(?:이|가|께서)$/u.test(o[0]) && !G.test(s) && !/(?:제가|내가|우리가|저희가|그들이|이들이|너희가)/u.test(s) && /(?:하는|되는|하던|했던).*?(?:방식|방법|주제|과정)(?:에|을|를)/u.test(s), u = null, c = "", l = /^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(i);
     l && (i = l[1] + "좋아요", u = ["explanation"], c = "설명");
     let p = /^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(i);
     if (p) {
-      let M = Q(p[1].replace(/^(?:쉴때도|여유시간에도)/u, "") + "관심있어요"), _ = Q(p[2]);
+      let M = ne(p[1].replace(/^(?:쉴때도|여유시간에도)/u, "") + "관심있어요"), _ = ne(p[2]);
       return M?.meanings.length === 1 && _?.meanings.length === 1 && M.meanings[0].field === "topic" && De(M.meanings[0]) === De(_.meanings[0]) ? { meanings: _.meanings.map((b) => ({ ...b, condition: b.condition || t })) } : null;
     }
     let d = /^(?:(?:제가|내가)?(?:배우고싶은|알고싶은|다루고싶은|좋아하는|관심있는)(?:주제|소재))(?:은|는)(.+?)(?:이에요|예요|입니다|이야|야)$/u.exec(i);
     d && (i = d[1] + "관심있어요", u = ["topic"]);
     let r = /^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(i);
     if (r) {
-      let M = Q(r[1] + (r[2] === "편해서" ? "편해요" : r[2] === "선호해서" ? "선호해요" : "좋아해요")), _ = Q(r[3]);
+      let M = ne(r[1] + (r[2] === "편해서" ? "편해요" : r[2] === "선호해서" ? "선호해요" : "좋아해요")), _ = ne(r[3]);
       return M?.meanings.length === 1 && _?.meanings.length === 1 && De(M.meanings[0]) === De(_.meanings[0]) ? { meanings: M.meanings.map((b) => ({ ...b, condition: b.condition || t })) } : null;
     }
     let $ = /^(?:(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)|(?:(?:제가|내가))?(?:좋아하는|선호하는)(?:방식|방법|활동|취미))(?:은|는)(.+?)(?:거예요|것입니다|예요|이에요|입니다)$/u.exec(i);
@@ -10095,7 +10113,7 @@ var Bd = pe((lf, ou) => {
       c = M === "연습" ? "연습" : M === "설명" ? "설명" : "", u = [{ 연습: "practice-mode", 소통: "communication", 도움: "support", 설명: "explanation" }[M]], i = f[3] + "좋아요", M === "소통" && (i = i.replace(/하는/u, "소통하는"));
     }
     i = i.replace(/^소통(?:은|는)(.+?)하는/u, "$1소통하는");
-    for (let [M, _, b] of Od) {
+    for (let [M, _, b] of Ad) {
       let k = M.exec(i);
       if (k) {
         u = _, c = b, i = i.slice(k[0].length);
@@ -10108,47 +10126,47 @@ var Bd = pe((lf, ou) => {
     y = y.replace(/^(설명(?:은|이)?)?(?:너무)?짧거나길게말고(?=중간길이|보통길이)/u, "$1"), y = y.replace(/^(설명(?:은|이)?)?(?:너무)?짧지도길지도않은(?=보통|중간)/u, "$1"), y = Je(y).surfaceAction, y = y.replace(/(?:하는|받는)편$/u, (M) => M.slice(0, -1)), y = Je(y).surfaceAction;
     let O = /^(.+?)(?:쪽|방식|식)(?:으로)(?:소통하고|일하고|일하는|연습하고|진행하고)$/u.exec(y);
     O && (u = [y.endsWith("소통하고") ? "communication" : y.endsWith("연습하고") ? "practice-mode" : "work-style"], y = O[1]);
-    let T = /* @__PURE__ */ g((M) => !!Ie(M.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), A = /(?:보다는|보단|보다(?!가)|대신|느니|아닌)/u.exec(y), E = [y];
+    let T = /* @__PURE__ */ g((M) => !!Re(M.replace(/(?:것|거|게)$/u, "").replace(/(?:할때|할땐)$/u, "하기")), "recognizedAlternative"), A = /(?:보다는|보단|보다(?!가)|대신|느니|아닌)/u.exec(y), E = [y];
     if (A) {
       let M = y.slice(0, A.index), _ = y.slice(A.index + A[0].length), b = /^(.+?(?:면|것이|게|쪽이|방식이|방법이|편이))(.+)$/u.exec(M);
       if (E = [], T(M) && E.push(_), b && T(b[2]) && E.push(b[1] + _), !E.length) return null;
     }
-    let S = [...E.map((M) => c + M.replace(/^한꺼번에말고/u, "")), c + x.action], I = [];
+    let S = [...E.map((M) => c + M.replace(/^한꺼번에말고/u, "")), c + x.action], R = [];
     for (let M of new Set(S)) {
-      let _ = Ie(M);
+      let _ = Re(M, !0);
       if (!_) continue;
-      let b = u?.length === 1 && u[0] === "decision" && _.at(-1) === "do" && _.includes("data") ? [..._.slice(0, -1), "decide"] : _, k = Xs(b, x.nominalHead);
-      if (k) {
-        if (o && !(k.field === "topic" && a)) return null;
-        I.push(k);
+      let b = _.filter((z) => !["particle", "neutral", "selfcase", "mine", "sequence"].includes(z.tag)).map((z) => z.tag), k = u?.length === 1 && u[0] === "decision" && b.at(-1) === "do" && b.includes("data") ? [...b.slice(0, -1), "decide"] : b, I = Ys(k, x.nominalHead), w = G.test(_.filter((z) => z.tag !== "before-help").map((z) => z.text).join(""));
+      if (I) {
+        if (w && !(I.field === "topic" && a)) return null;
+        R.push(I);
       }
     }
-    if (!I.length) {
-      let M = Md(c + y, x, t, u, n);
+    if (!R.length) {
+      let M = Nd(c + y, x, t, u, n);
       if (M) return M;
       if (x.polarity !== "prefer") return null;
       let _ = [...y.matchAll(/하되(?:,)?|하며(?:,)?|고(?:,)?/gu)];
       if (_.length > 6) return null;
       for (let b of _) {
-        let k = b[0].startsWith("하") ? y.slice(0, b.index) + "하는" : y.slice(0, b.index + 1), R = y.slice(b.index + b[0].length);
-        if (!R || /[?!]/u.test(k + R)) continue;
-        let w = /* @__PURE__ */ g((j) => D(j) || Me(j) || Q(j), "arm"), L = w(c + k + "좋아요"), P = w(c + R + "좋아요");
-        if (!L?.meanings.length || !P?.meanings.length || L.meanings.some((j) => j.condition) || P.meanings.some((j) => j.condition)) continue;
-        let q = [...L.meanings, ...P.meanings];
-        if (!(q.some((j) => !er.includes(j.field)) || new Set(q.map((j) => j.field + ":" + j.value)).size < 2) && !(u && q.some((j) => !u.includes(j.field))))
+        let k = b[0].startsWith("하") ? y.slice(0, b.index) + "하는" : y.slice(0, b.index + 1), I = y.slice(b.index + b[0].length);
+        if (!I || /[?!]/u.test(k + I)) continue;
+        let w = /* @__PURE__ */ g((j) => D(j) || Me(j) || ne(j), "arm"), z = w(c + k + "좋아요"), P = w(c + I + "좋아요");
+        if (!z?.meanings.length || !P?.meanings.length || z.meanings.some((j) => j.condition) || P.meanings.some((j) => j.condition)) continue;
+        let q = [...z.meanings, ...P.meanings];
+        if (!(q.some((j) => !nr.includes(j.field)) || new Set(q.map((j) => j.field + ":" + j.value)).size < 2) && !(u && q.some((j) => !u.includes(j.field))))
           return { meanings: q.map((j) => ({ ...j, polarity: x.polarity, condition: t })) };
       }
       return null;
     }
-    if (new Set(I.map((M) => M.field + ":" + M.value)).size !== 1) return null;
-    let N = I[0];
+    if (new Set(R.map((M) => M.field + ":" + M.value)).size !== 1) return null;
+    let N = R[0];
     return u && !u.includes(N.field) || N.field === "topic" && x.habitual ? null : { meanings: [{ ...N, polarity: x.polarity, condition: t }] };
   }
-  g(Q, "compositional");
-  function Zs(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
+  g(ne, "compositional");
+  function Qs(n, e = 0, i = { remaining: 128, cache: /* @__PURE__ */ new Map() }) {
     if (e > 4 || i.remaining <= 0) return null;
-    let { body: t, condition: o } = H(V(n));
-    if (t = V(t), $n(t) || qn(t) || _n.test(t)) return null;
+    let { body: t, condition: o } = V(W(n));
+    if (t = W(t), $n(t) || qn(t) || _n.test(t)) return null;
     let s = Tn(t);
     if (!s || s.habitual) return null;
     let a = s.surfaceAction.replace(/(?:(?:저는|나는|제가|내가)?(?:둘다|모두)|(?:둘다|모두)(?:저는|나는|제가|내가)?)$/u, "").replace(/,+$/u, "");
@@ -10157,7 +10175,7 @@ var Bd = pe((lf, ou) => {
       if (i.remaining-- <= 0) return null;
       let h = $.replace(/^,+|,+$/gu, "") + u;
       if ($n(h)) return null;
-      let f = e + ":" + h, m = i.cache.has(f) ? i.cache.get(f) : D(h) || Me(h) || Q(h) || Zs(h, e + 1, i);
+      let f = e + ":" + h, m = i.cache.has(f) ? i.cache.get(f) : D(h) || Me(h) || ne(h) || Qs(h, e + 1, i);
       return i.cache.set(f, m), !m?.meanings?.length || m.uncertain || m.typo || o && m.meanings.some((x) => x.condition && x.condition !== o) ? null : m.meanings.map((x) => ({ ...x, condition: x.condition || o }));
     }, "read"), l = /* @__PURE__ */ g(($) => {
       if ($.length < 2 || $.length > 6 || $.some((m) => !m)) return null;
@@ -10191,33 +10209,33 @@ var Bd = pe((lf, ou) => {
     }
     return null;
   }
-  g(Zs, "coordinatedDeclaration");
-  var Ys = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", Id = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", Rd = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + Ys + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + Id + "$", "u"), Nd = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, _n = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
-  function Ps(n) {
-    return !n || _n.test(n) || ce.test(n) ? !1 : Rd.test(n) || Nd.test(n);
+  g(Qs, "coordinatedDeclaration");
+  var eu = "(?:(?:제|내)?(?:생각|의견|기억|집중|이해|내용|핵심|전체|흐름|요점|기록|소리|글자|문장|후회|실수|혼란|부담|시간|일|작업|놓친점|빠뜨린부분|차이점|문제점)(?:이|가|을|를|은|는|부터|와|과)?)*", Td = "(?:(?:이해|파악|기억|확인|집중|정리|연결|구분)(?:할수있도록|할수있게|하기위해|하려고)|(?:알|익힐|남길|줄일|아낄)(?:수있도록|수있게)|(?:줄이|아끼)(?:기위해|려고|고싶어서)|(?:놓치지않|섞이지않|잊지않|흐려지지않)(?:도록|게))", _d = new RegExp("^(?:(?:왜그런지|어디로가는지|무엇을하는지)|눈으로|귀로)?" + eu + "(?:더|잘|쉽게|제대로|오래|빠르게|분명하게)?" + Td + "$", "u"), qd = /^(?:(?:이해|정리|집중|기억)(?:가|이)?(?:더|잘|쉽게)?(?:되니까|돼서)|마음(?:이)?(?:더)?편(?:해서|하니까)|(?:더)?(?:편해서|수월해서)|기분(?:이)?(?:더)?나아져서|(?:제|내)?(?:생각|의견)(?:이)?흐려지기전에)$/u, _n = /(?:강요|억지|시켜|시키|명령|라고|다고|라는|다는|아니에요|아닙니다|아니었|사실이아|잘못|거짓|예전|과거|옛날|내일|어제|작년|가정|만약|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록)/u;
+  function Cs(n) {
+    return !n || _n.test(n) || G.test(n) ? !1 : _d.test(n) || qd.test(n);
   }
-  g(Ps, "safeExplanation");
-  function Qs(n) {
-    return !!n && !_n.test(n) && !ce.test(n) && !qn(n) && !/(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)[가-힣]+(?:요|습니다|다)$/u.test(n) && !/(?:좋|싫|선호|원하|원해|싶|편하|편해|취향|관심|부담|맞아|맞는|않|아니|못|없|안해|안하|[?!])/u.test(n) && /(?:어요|아요|해요|습니다|해두죠|챙겨요|다녀요|봐요|들어요|하죠)$/u.test(n);
+  g(Cs, "safeExplanation");
+  function nu(n) {
+    return !!n && !_n.test(n) && !G.test(n) && !qn(n) && !/(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)[가-힣]+(?:요|습니다|다)$/u.test(n) && !/(?:좋|싫|선호|원하|원해|싶|편하|편해|취향|관심|부담|맞아|맞는|않|아니|못|없|안해|안하|[?!])/u.test(n) && /(?:어요|아요|해요|습니다|해두죠|챙겨요|다녀요|봐요|들어요|하죠)$/u.test(n);
   }
-  g(Qs, "narrativeBackground");
+  g(nu, "narrativeBackground");
   function qn(n) {
     return /(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)(?:저는|나는|제가|내가|우리는|저희는)?(?:알아요|알고있어요|알고지내요|만나요|만납니다|만났어요|보았어요|봤어요|찾았어요|소개받았어요|기억해요|본적이있어요)$/u.test(n) || /(?:좋아해서|선호해서|좋아서|편해서)/u.test(n) && /(?:는|던|은|한)[가-힣A-Za-z]{1,24}(?:을|를)(?:저는|나는|제가|내가)/u.test(n) ? !0 : /(?:는|던|은|한)(?:(?:친한|새로운|한|몇몇|그|어떤|여러|가까운))?(?:친구|동료|사람|분|인물|학생|직원|선생님|가족|아이|회원)(?:들)?(?:을|를|은|는|이(?!야기|랑)|가|에게|한테)/u.test(n);
   }
   g(qn, "relativePersonClause");
-  function Td(n) {
-    let { body: e, condition: i } = H(V(n));
-    if ($n(e) || ce.test(e) || qn(e)) return null;
+  function jd(n) {
+    let { body: e, condition: i } = V(W(n));
+    if ($n(e) || G.test(e) || qn(e)) return null;
     let t = /^(.+?)(좋아하는|선호하는|원하는|싫어하는)(?:것|거|편)이지(.+?)(?:좋은|싫은|편한|좋아하는|선호하는)(?:건|것은)(?:아니에요|아닙니다)$/u.exec(e);
-    if (!t || !Ie(Je(t[3]).action)) return null;
-    let o = t[1] + { 좋아하는: "좋아해요", 선호하는: "선호해요", 원하는: "원해요", 싫어하는: "싫어요" }[t[2]], s = D(o) || Me(o) || Q(o);
+    if (!t || !Re(Je(t[3]).action)) return null;
+    let o = t[1] + { 좋아하는: "좋아해요", 선호하는: "선호해요", 원하는: "원해요", 싫어하는: "싫어요" }[t[2]], s = D(o) || Me(o) || ne(o);
     return s?.meanings?.length && !s.uncertain ? { meanings: s.meanings.map((a) => ({ ...a, condition: a.condition || i })) } : null;
   }
-  g(Td, "focusedContrast");
-  function ir(n) {
+  g(jd, "focusedContrast");
+  function or(n) {
     return /^(?:[가-힣]{1,20}(?:이|가|은|는))?(?:무엇이든|뭐든|어떤것이든|어느것이든)(?:지)?$/u.test(n);
   }
-  g(ir, "universalAside");
+  g(or, "universalAside");
   function Bi(n, e, i = !1) {
     let t = [], o = "";
     for (let a = 0; a < n.length; a++) /\s/u.test(n[a]) || (o += n[a], t.push(a));
@@ -10225,8 +10243,8 @@ var Bd = pe((lf, ou) => {
     return s < 0 ? e : n.slice(t[s], i ? n.length : t[s + e.length - 1] + 1);
   }
   g(Bi, "sourceSurface");
-  function eu(n, e = n) {
-    if (!/\s/u.test(e)) return nu(n);
+  function tu(n, e = n) {
+    if (!/\s/u.test(e)) return iu(n);
     let i = e.trim().split(/\s+/u);
     for (let t = 0; t < i.length; t++) {
       let o = i[t].replace(/[,()]/gu, "");
@@ -10235,34 +10253,34 @@ var Bd = pe((lf, ou) => {
       if (o === "수는" && /^(?:알|할|될|볼|읽을|들을|느낄|지킬|찾을|받을|줄일)$/u.test(i[t - 1] || "") && /^(?:있|없)/u.test(i[t + 1] || "") || /려는$/u.test(o) && /^(?:게|것이)$/u.test(i[t + 1] || "") && /^아니라[,)]?$/u.test(i[t + 2] || "")) continue;
       let s = /^(.+?)(?:은|는|이|가)$/u.exec(o);
       if (!s) continue;
-      let a = s[1], u = Ie(a, !0);
-      if (!(u && u.at(-1)?.tag !== "particle" || new RegExp("^" + Ys + "$", "u").test(a)) && !/^(?:과정|활동|시간|답|결과|사실|차이|막막함|납득|속도)$/u.test(a) && !(/^(?:상상|생각|확인|이해|설명|비교|판단|정리|연결|기억|집중)하는$/u.test(o) && /^(?:과정|활동|시간|답|결과|사실)(?:이|가|은|는)$/u.test(i[t + 1] || ""))) {
+      let a = s[1], u = Re(a, !0);
+      if (!(u && u.at(-1)?.tag !== "particle" || new RegExp("^" + eu + "$", "u").test(a)) && !/^(?:과정|활동|시간|답|결과|사실|차이|막막함|납득|속도)$/u.test(a) && !(/^(?:상상|생각|확인|이해|설명|비교|판단|정리|연결|기억|집중)하는$/u.test(o) && /^(?:과정|활동|시간|답|결과|사실)(?:이|가|은|는)$/u.test(i[t + 1] || ""))) {
         if (/^(?:과정|활동|시간|답|결과|사실|상태|점)(?:이|가|은|는|니까|때문|$)/u.test(i[t + 1] || "")) {
           let c = o.replace(/(?:은|는)$/u, "기").replace(/(?:한|할)$/u, "하기");
-          if (Ie(c) || o === "있다는" && i[t - 1] === "수") continue;
+          if (Re(c) || o === "있다는" && i[t - 1] === "수") continue;
         }
         return !0;
       }
     }
     return !1;
   }
-  g(eu, "adjunctHasActor");
-  function or(n) {
+  g(tu, "adjunctHasActor");
+  function rr(n) {
     return /["“”‘’「」『』]/u.test(n) || /(?:좋아|싫어|선호|원하|원해|원치|관심|취향|취소|철회|없던일)/u.test(n) ? !1 : /(?:려는|고자하는)(?:뜻|의미|의도|목적)(?:은|는)?아니(?:고|지만|에요|예요|다|라고요)$/u.test(n) || /해달라는(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요|예요)$/u.test(n) || /(?:야한다는|야된다는)(?:부담|의무)(?:은|는)?없(?:어요|습니다)$/u.test(n) || /(?:해야만).+수있다고생각하지(?:는)?않(?:아요|습니다)$/u.test(n) || /(?:가치|의미)(?:를|을)(?:낮게|작게)(?:보는|평가하는)(?:건|것은)아니(?:지만|고|에요)$/u.test(n);
   }
-  g(or, "neutralAside");
-  function _d(n, e) {
+  g(rr, "neutralAside");
+  function zd(n, e) {
     let i = e.flatMap((u) => u.meanings || []);
     if (!i.length) return !1;
     let t = n.replace(/\s/gu, ""), o = /* @__PURE__ */ g(() => $e(e), "recent");
-    if (or(t)) return o();
+    if (rr(t)) return o();
     if (!/(?:좋아|싫|선호|원하|원해|원치|싶|관심|취향|취소|철회|[“”"‘’])/u.test(t)) {
       let u = t.replace(/^그래야/u, "").replace(/(?:라는|다는)점때문(?:이에요|입니다)$/u, "어서").replace(/되거든요$/u, "돼서").replace(/(?:어서|아서|해서|워서|니까)요$/u, (c) => c.slice(0, -1));
       if (u !== t && gn(u, !1, Bi(n, t))) return o();
     }
     let s = /^(.+?)(?:(?:방식|방법|쪽)(?:을|를)말하는(?:거예요|것이에요)|(?:좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:이에요|입니다))$/u.exec(t);
     if (s && !_n.test(s[1])) {
-      let u = s[1] + "좋아요", c = D(u) || Me(u) || Q(u);
+      let u = s[1] + "좋아요", c = D(u) || Me(u) || ne(u);
       if (c?.meanings?.length) {
         let l = c.meanings.map((p) => {
           for (let d = e.length - 1; d >= 0; d--) {
@@ -10279,42 +10297,42 @@ var Bd = pe((lf, ou) => {
     if (/^어느한쪽만(?:편하|좋|싫)다고말하는(?:건|것은)아니에요$/u.test(t)) return i.length >= 2 && i.every((u) => u.polarity === i[0].polarity) ? $e(e, !0) : !1;
     let a = /^(?:그렇다고)?(.+?)(싫어한다는|좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요)$/u.exec(t);
     if (a) {
-      let u = a[1].replace(/핵심개요/gu, "전체개요"), c = { 싫어한다는: "싫어요", 좋아한다는: "좋아해요", 선호한다는: "선호해요", 원한다는: "원해요" }[a[2]], l = D(u + c) || Me(u + c) || Q(u + c);
+      let u = a[1].replace(/핵심개요/gu, "전체개요"), c = { 싫어한다는: "싫어요", 좋아한다는: "좋아해요", 선호한다는: "선호해요", 원한다는: "원해요" }[a[2]], l = D(u + c) || Me(u + c) || ne(u + c);
       return l?.meanings?.length && !l.uncertain && l.meanings.every((p) => !i.some((d) => d.field === p.field && d.value === p.value && d.polarity === p.polarity)) ? o() : !1;
     }
     return !1;
   }
-  g(_d, "discourseAside");
-  function qd(n, e = n) {
-    return n = n.replace(/^,+|,+$/gu, ""), /아니$/u.test(n) && /아니지만\s*$/u.test(e) && (n += "지만"), !n || ir(n) || or(n) || tu(n, { meanings: [{}] }) || gn(n, !1, e) || !/["“”‘’「」『』]/u.test(n) && !/(?:좋아|싫어|선호|원하|원해|취소|철회|만약|라면|다면)/u.test(n) && /(?:있다는|없다는)사실(?:과|과는)(?:별개로|관계없이)$/u.test(n) ? !0 : $n(n) || ce.test(n) || qn(n) || /(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(n) || eu(n.replace(/려는(?:게|것이)아니라$/u, "려고"), e) ? !1 : /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(n);
+  g(zd, "discourseAside");
+  function Ld(n, e = n) {
+    return n = n.replace(/^,+|,+$/gu, ""), /아니$/u.test(n) && /아니지만\s*$/u.test(e) && (n += "지만"), !n || or(n) || rr(n) || ou(n, { meanings: [{}] }) || gn(n, !1, e) || !/["“”‘’「」『』]/u.test(n) && !/(?:좋아|싫어|선호|원하|원해|취소|철회|만약|라면|다면)/u.test(n) && /(?:있다는|없다는)사실(?:과|과는)(?:별개로|관계없이)$/u.test(n) ? !0 : $n(n) || G.test(n) || qn(n) || /(?:좋아|선호|원하|원해|원치|싫|관심|취향|편하|편해|강요|억지|시켜|시키|명령|취소|철회|저장|분류|등록|때|경우|상황|동안|에만|에서만|에따라|뿐|수밖에|것같|모르|아마|어쩌면|일지도)/u.test(n) || tu(n.replace(/려는(?:게|것이)아니라$/u, "려고"), e) ? !1 : /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(n);
   }
-  g(qd, "pendingScopeAside");
+  g(Ld, "pendingScopeAside");
   function gn(n, e, i = n) {
-    if (!n || n.length > 300 || /(?:강요|억지|시켜|시키|명령|라고|다고|라는말|다는말|예전|과거|옛날|내일|어제|작년|만약|가정|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록|수밖에|뿐이라|만가능)/u.test(n) || /(?:때|경우라면|상황이라면|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만)/u.test(n) || ce.test(n)) return !1;
+    if (!n || n.length > 300 || /(?:강요|억지|시켜|시키|명령|라고|다고|라는말|다는말|예전|과거|옛날|내일|어제|작년|만약|가정|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록|수밖에|뿐이라|만가능)/u.test(n) || /(?:때|경우라면|상황이라면|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만)/u.test(n) || G.test(n)) return !1;
     let t = /(?:려고|기위해|기위해서|지않도록|지않게|수있도록|수있게|(?:놓치|빠뜨리|잊|헷갈리)지않으려면)$/u.test(n), o = /(?:니까|어서|아서|해서|여서|워서|러서|라서|이라서|돼서)$/u.test(n), s = /(?:더라도|어도|아도|여도|워도|러도)$/u.test(n);
-    return !t && !o && !s ? !1 : e ? !0 : !(!/^(?:제가|내가)/u.test(n) && eu(n, i) && !/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(n) || /^[가-힣]{1,20}(?:는|은|가|이)[가-힣]*(?:하려고|하기위해)$/u.test(n) && !/^시간|^내용|^설명|^생각|^기억|^의견/u.test(n));
+    return !t && !o && !s ? !1 : e ? !0 : !(!/^(?:제가|내가)/u.test(n) && tu(n, i) && !/^(?:시간|준비|시작|결과|완성|운동|읽는속도)(?:이|가|은|는|까지)/u.test(n) || /^[가-힣]{1,20}(?:는|은|가|이)[가-힣]*(?:하려고|하기위해)$/u.test(n) && !/^시간|^내용|^설명|^생각|^기억|^의견/u.test(n));
   }
   g(gn, "clauseAdjunct");
-  function Ii(n, e = 0) {
+  function Ri(n, e = 0) {
     if (e > 3) return null;
     let i = [...n.matchAll(/\(([^()]*)\)/gu)];
-    if (i.length && i.length <= 3 && i.every((r) => or(r[1].replace(/\s/gu, "")) || gn(r[1].replace(/\s/gu, ""), !1, r[1]))) {
+    if (i.length && i.length <= 3 && i.every((r) => rr(r[1].replace(/\s/gu, "")) || gn(r[1].replace(/\s/gu, ""), !1, r[1]))) {
       let r = n.replace(/\([^()]*\)/gu, "");
-      return D(r) || Me(r) || Q(r) || Ii(r, e + 1);
+      return D(r) || Me(r) || ne(r) || Ri(r, e + 1);
     }
     let t = n.split(",");
     if (t.length === 3 && /(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(t[0]) && gn(t[1].replace(/\s/gu, ""), !1, t[1])) {
-      let r = t[0] + t[2], $ = D(r) || Me(r) || Q(r) || Ii(r, e + 1);
+      let r = t[0] + t[2], $ = D(r) || Me(r) || ne(r) || Ri(r, e + 1);
       if ($) return $;
     }
-    let { body: o, condition: s } = H(V(n));
-    if (_n.test(o) || ce.test(o) || qn(o)) return null;
+    let { body: o, condition: s } = V(W(n));
+    if (_n.test(o) || G.test(o) || qn(o)) return null;
     let a = /* @__PURE__ */ g((r) => {
       if ($n(r)) return null;
-      let $ = D(r) || Me(r) || Q(r) || Ii(r, e + 1);
+      let $ = D(r) || Me(r) || ne(r) || Ri(r, e + 1);
       return !$?.meanings?.length || $.uncertain || $.typo || s && $.meanings.some((h) => h.condition && h.condition !== s) ? null : { meanings: $.meanings.map((h) => ({ ...h, condition: h.condition || s })) };
     }, "read"), u = /^([^,]+),(.+)$/u.exec(o);
-    if (u && ir(u[1])) {
+    if (u && or(u[1])) {
       let r = a(u[2]);
       if (r) return r;
     }
@@ -10322,27 +10340,27 @@ var Bd = pe((lf, ou) => {
     if (c.length <= 12) for (let r of c.reverse()) {
       let $ = r.index + r[0].length, h = o.slice(0, $), f = o.slice($).replace(/^,+/u, "");
       if (!f || !gn(h, /^(?:저는|나는|제가|내가)/u.test(f), Bi(n, h))) continue;
-      let m = /^(.*?)(좋아해서|선호해서|좋아서|편해서)$/u.exec(h);
+      let m = /^(.*?)(좋아하지않아서|선호하지않아서|원하지않아서|좋아해서|선호해서|좋아서|편해서|싫어서)$/u.exec(h);
       if (m) {
-        let v = m[1] + { 좋아해서: "좋아해요", 선호해서: "선호해요", 좋아서: "좋아요", 편해서: "편해요" }[m[2]];
-        if ((D(v) || Me(v) || Q(v))?.meanings?.length) continue;
+        let v = m[1] + { 좋아해서: "좋아해요", 선호해서: "선호해요", 좋아서: "좋아요", 편해서: "편해요", 싫어서: "싫어요", 좋아하지않아서: "좋아하지않아요", 선호하지않아서: "선호하지않아요", 원하지않아서: "원하지않아요" }[m[2]];
+        if ((D(v) || Me(v) || ne(v))?.meanings?.length) continue;
       }
       let x = a(f);
       if (x) return x;
     }
     let l = /^(.+?)(좋아해서|선호해서|좋아서|편해서)(.+)$/u.exec(o);
-    if (l && Qs(l[3])) {
+    if (l && nu(l[3])) {
       let r = l[2] === "좋아해서" ? "좋아해요" : l[2] === "선호해서" ? "선호해요" : l[2] === "편해서" ? "편해요" : "좋아요", $ = a(l[1] + r);
       if ($) return $;
     }
     for (let r of o.matchAll(/(?:수있도록|수있게|않도록|않게|기위해|려고|고싶어서|기전에|돼서|해서|니까)/gu)) {
       let $ = r.index + r[0].length, h = o.slice(0, $), f = o.slice($).replace(/^,+/u, "");
-      if (!Ps(h)) continue;
+      if (!Cs(h)) continue;
       let m = a(f);
       if (m) return m;
     }
     let p = /^(?:(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)?|그렇게|이렇게)(?:더|저는|나는)?(.+)$/u, d = /^(.+?)(하면|해보면|받으면|들으면|보면|읽으면|두면|놓으면)(.+?)(?:그래서)?((?:(?:그|이|그런|이런)(?:방식|방법|쪽)|그렇게|이렇게).+)$/u.exec(o);
-    if (d && Ps(d[3])) {
+    if (d && Cs(d[3])) {
       let r = p.exec(d[4]), $ = r && Tn("하는" + r[1].replace(/^하고(?=싶)/u, ""));
       if ($ && !$.habitual && $.action === "하기") {
         let h = { 하면: "하는", 해보면: "해보는", 받으면: "받는", 들으면: "듣는", 보면: "보는", 읽으면: "읽는", 두면: "두는", 놓으면: "놓는" }[d[2]], f = a(d[1] + h + ($.polarity === "avoid" ? "걸선호하지않아요" : "게좋아요"));
@@ -10351,7 +10369,7 @@ var Bd = pe((lf, ou) => {
     }
     return null;
   }
-  g(Ii, "structuredDeclaration");
+  g(Ri, "structuredDeclaration");
   var Oi = Object.freeze({
     other: "다른 사람의 이야기여서 본인의 선호로 사용하지 않아요.",
     past: "과거의 설명을 현재 선호로 바꾸지 않았어요.",
@@ -10368,11 +10386,11 @@ var Bd = pe((lf, ou) => {
     if (/^(?:우리|저희).{1,20}?(?:은|는|이(?!랑)|가)/u.test(n) || /^(?:담당|옆자리|새로온|같은팀의)?(?:조장|팀장|부장|대표|리더|담당자|선생님|고객|참가자)(?:님)?(?:은|는|이|가)/u.test(n) || /^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|다른분|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑)|가)/u.test(n)) return "other";
     if (/(?:예전|과거|전에는|옛날|어렸을때|어릴때|즐겼|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(n)) return "past";
     if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(n)) return "sensitive";
-    let e = H(V(n)), i = (e.condition ? e.body : V(n).replace(/^(?:저라면|나라면)/u, "")).replace(/상상하는(?=과정|활동|시간)/gu, "");
+    let e = V(W(n)), i = (e.condition ? e.body : W(n).replace(/^(?:저라면|나라면)/u, "")).replace(/상상하는(?=과정|활동|시간)/gu, "");
     return /(?:만약|라면|다면|가정하|상상하)/u.test(i) ? "hypothetical" : null;
   }
   g($n, "excludedOrigin");
-  function jd(n) {
+  function Pd(n) {
     let e = [], i = /\s+(?:하지만|그런데|그리고|반면에?|다만)\s+|(?:즐기고|즐기며|싫어하고|흥미가\s*있고|선호하더라도|마음에\s*들고|원치\s*않고|원치\s*않으며|좋으며|좋아하고|좋아하며|선호하고|선호하며|원하고|원하며|편하고|편하며|좋고|싫고|즐겁고|싶고|관심을\s*두고\s*있고|관심이\s*있고|관심이\s*많고|관심이\s*없고|관심이\s*있으며|싶으며|설명이고|(?:원|선호|좋아)하지\s*않고|지만|는데|쪽이고|것이고|편이고|방식이고|활동이고)(?=\s|,)|[.!?;\n,]+/gu, t = 0, o, s = /* @__PURE__ */ g((a) => {
       for (; t < a && /\s/u.test(n[t]); ) t++;
       for (; a > t && /\s/u.test(n[a - 1]); ) a--;
@@ -10385,8 +10403,8 @@ var Bd = pe((lf, ou) => {
           if (/(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(a)) continue;
           let u = a.split(",");
           if (u.length === 2 && /(?:게|것이|쪽이|방식이|편이|저는|나는|제가|내가)\s*$/u.test(u[0]) && gn(u[1].replace(/\s/gu, ""), !1, u[1]) || /기\s*$/u.test(a) && /^[^.!?;\n]*(?:좋아|선호|관심|싫)/u.test(n.slice(o.index + 1))) continue;
-          let c = H(V(n.slice(t, o.index)));
-          if (c.condition && (!c.body || ir(c.body.replace(/^,+/u, "")))) continue;
+          let c = V(W(n.slice(t, o.index)));
+          if (c.condition && (!c.body || or(c.body.replace(/^,+/u, "")))) continue;
         }
         if (o[0] === "," && /^\s*(?:(?:저는|나는|제가|내가|제\s*경우에는|내\s*경우에는|제\s*취향은)|(?:처음|익숙한|바쁠|회의할|함께\s*일할))/u.test(n.slice(o.index + 1))) {
           s(o.index), t = o.index + 1;
@@ -10397,7 +10415,7 @@ var Bd = pe((lf, ou) => {
           continue;
         }
         if (o[0] === ",") {
-          let a = n.slice(t, o.index), u = H(V(a));
+          let a = n.slice(t, o.index), u = V(W(a));
           if (u.condition && !u.body || /^어느쪽을고를지$/u.test(u.body) || /(?:인지|할지|갈지|는지|식으로|방식으로)\s*$/u.test(a) || /(?:고|하되|하며)\s*$/u.test(a) && !/해\s*주시고\s*$/u.test(a)) continue;
         }
         if (!(o[0] === "," && /(?:기도)\s*$/u.test(n.slice(t, o.index))) && !(o[0] === "," && (/(?:것|거|방식|시간|활동|쪽)(?:도)?\s*$/u.test(n.slice(t, o.index)) || /^\s*(?:둘\s*다|모두)/u.test(n.slice(o.index + 1)))) && !(/^(?:흥미가\s*있고|관심이\s*있고)$/u.test(o[0]) && /^\s*(?:배워|알아|살펴)\s*보고\s*싶/u.test(n.slice(o.index + o[0].length)))) {
@@ -10410,12 +10428,12 @@ var Bd = pe((lf, ou) => {
       }
     return s(n.length), e;
   }
-  g(jd, "pieces");
-  function nu(n) {
+  g(Pd, "pieces");
+  function iu(n) {
     let e = n.replace(/\s/gu, "");
-    if (ce.test(e)) return !0;
-    let i = H(V(n)).body, t = /* @__PURE__ */ g((o) => {
-      let s = Ie(o, !0);
+    if (G.test(e)) return !0;
+    let i = V(W(n)).body, t = /* @__PURE__ */ g((o) => {
+      let s = Re(o, !0);
       return s?.length && s.at(-1).tag !== "particle";
     }, "known");
     for (let o of i.matchAll(/께서는|께서|은|는|이|가/gu)) {
@@ -10433,16 +10451,16 @@ var Bd = pe((lf, ou) => {
     }
     return !1;
   }
-  g(nu, "unresolvedSubject");
-  function tu(n, e) {
+  g(iu, "unresolvedSubject");
+  function ou(n, e) {
     if (!e?.meanings?.length) return !1;
     let i = n.replace(/\s/gu, "");
-    return /["“”‘’]/u.test(i) || ce.test(i) || /(?:좋아|좋다는|싫어|싫다는|선호|원하|원해|원치|관심|취향|편하다는|강요|시켜|취소|철회|저장|없던일)/u.test(i) ? !1 : /(?:뜻|의미|이야기)(?:은|는)?아니(?:고|지만)$/u.test(i) || /(?:과는|와는)(?:별개로|관계없이)$/u.test(i) || /(?:이유인데|때문인데)$/u.test(i) && !/(?:경우|상황|때만|만약|라면|다면|예전|과거)/u.test(i) ? !0 : /(?:더라도|어도|아도|여도|긴하지만)$/u.test(i) && gn(i.replace(/긴하지만$/u, "더라도"), !1);
+    return /["“”‘’]/u.test(i) || G.test(i) || /(?:좋아|좋다는|싫어|싫다는|선호|원하|원해|원치|관심|취향|편하다는|강요|시켜|취소|철회|저장|없던일)/u.test(i) ? !1 : /(?:뜻|의미|이야기)(?:은|는)?아니(?:고|지만)$/u.test(i) || /(?:과는|와는)(?:별개로|관계없이)$/u.test(i) || /(?:이유인데|때문인데)$/u.test(i) && !/(?:경우|상황|때만|만약|라면|다면|예전|과거)/u.test(i) ? !0 : /(?:더라도|어도|아도|여도|긴하지만)$/u.test(i) && gn(i.replace(/긴하지만$/u, "더라도"), !1);
   }
-  g(tu, "explanatoryAside");
-  function zd(n, e) {
-    let { body: i, condition: t } = H(V(n));
-    if (t || $n(i) || _n.test(i) || ce.test(i)) return !1;
+  g(ou, "explanatoryAside");
+  function Cd(n, e) {
+    let { body: i, condition: t } = V(W(n));
+    if (t || $n(i) || _n.test(i) || G.test(i)) return !1;
     let o = /^(?:(그|이|그런|이런)(?:(업무|일하는|소통|연습|도움|판단)(?:방식|방법)|(?:분야|활동|주제|방식|방법|쪽))|((?:두|둘)(?:분야|활동|주제))|((?:그렇게|이렇게)도움받는))(?:이|가|은|는|을|를)?(.+)$/u.exec(i);
     if (!o) return !1;
     let s = o[2], a = !!o[3], u = !!o[4], c = s ? { 업무: "work-style", 일하는: "work-style", 소통: "communication", 연습: "practice-mode", 도움: "support", 판단: "decision" }[s] : u ? "support" : /(?:분야|활동|주제)/u.test(o[0]) ? "topic" : null, l = $e(e, a), p = l.map(($) => $.meaning);
@@ -10450,8 +10468,8 @@ var Bd = pe((lf, ou) => {
     let d = o[5].replace(/^(?:알아보는|살펴보는)(?:게|것이|것은|걸)?/u, ""), r = Tn("하는" + d);
     return r && !r.habitual && r.action === "하기" && p.every(($) => $.polarity === r.polarity) ? l : !1;
   }
-  g(zd, "redundantReference");
-  var Cs = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], Ds = {
+  g(Cd, "redundantReference");
+  var Ds = [{ id: "unsure", label: "아직 잘 모르겠어요" }, { id: "skip", label: "이 부분은 건너뛸게요" }], Bs = {
     support: "도움받는 방식",
     explanation: "설명 길이",
     "practice-mode": "연습 방식",
@@ -10461,7 +10479,7 @@ var Bd = pe((lf, ou) => {
     decision: "판단 방식",
     "explanation-detail": "설명에서 원하는 구성"
   };
-  function Ri(n, e) {
+  function Ii(n, e) {
     let i = null, t = { "“": "”", "‘": "’", "「": "」", "『": "』", '"': '"' };
     for (let o = 0; o < e; o++) {
       let s = n[o];
@@ -10469,12 +10487,12 @@ var Bd = pe((lf, ou) => {
     }
     return i !== null;
   }
-  g(Ri, "quotedAt");
-  function Ld(n, e, i) {
-    for (let t = e; t < i; t++) if (/[.!?;\n]/u.test(n[t]) && !Ri(n, t)) return !0;
+  g(Ii, "quotedAt");
+  function Dd(n, e, i) {
+    for (let t = e; t < i; t++) if (/[.!?;\n]/u.test(n[t]) && !Ii(n, t)) return !0;
     return !1;
   }
-  g(Ld, "scopeBoundaryBetween");
+  g(Dd, "scopeBoundaryBetween");
   function $e(n, e = !1) {
     let i = [], t = /* @__PURE__ */ new Set(), o = /* @__PURE__ */ g((s) => {
       n[s.segment]?.meanings?.includes(s.meaning) && !t.has(s.meaning) && (t.add(s.meaning), i.push(s));
@@ -10493,9 +10511,9 @@ var Bd = pe((lf, ou) => {
     return i;
   }
   g($e, "priorReferences");
-  function Pd(n, e) {
+  function Bd(n, e) {
     let i = /^(.+?(?:은|는|이|가))(?:좋아한다는|싫어한다는|선호한다는|원한다는|편하다는)(?:뜻|의미)(?:이에요|입니다)$/u.exec(n);
-    if (!i || !ce.test(i[1])) return !1;
+    if (!i || !G.test(i[1])) return !1;
     let t = $e(e), o = [...new Set(t.map((s) => e[s.segment]))];
     if (!o.length) return !1;
     for (let s of o) {
@@ -10504,13 +10522,13 @@ var Bd = pe((lf, ou) => {
     }
     return !0;
   }
-  g(Pd, "reattributedPreference");
-  function Cd(n) {
-    Re.parseMemberStatement(n);
+  g(Bd, "reattributedPreference");
+  function Ud(n) {
+    Ie.parseMemberStatement(n);
     let e = [], i = null, t = !1, o = null, s = !1, a = null;
-    for (let u of jd(n)) {
-      let c = Ri(n, u.start), l = tr(u.quote).replace(/\s/gu, ""), p = !c && (/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(l) || /^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(V(u.quote))), d = /^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(l), r = /^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(l);
-      if (a && (Ld(n, a.end, u.start) || r && !c) && (a = null), a && c && (a = { ...a, uncertain: !0 }), p && !c && (s = !1), i === "quotation" && p && !c && (i = null), !c && Pd(l, e)) {
+    for (let u of Pd(n)) {
+      let c = Ii(n, u.start), l = ir(u.quote).replace(/\s/gu, ""), p = !c && V(W(u.quote)).own, d = /^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(l), r = /^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(l);
+      if (a && (Dd(n, a.end, u.start) || r && !c) && (a = null), a && c && (a = { ...a, uncertain: !0 }), p && !c && (s = !1), i === "quotation" && p && !c && (i = null), !c && Bd(l, e)) {
         e.push({ evidence: u, unresolved: { ...u, reason: "other", reasonLabel: Oi.other } });
         continue;
       }
@@ -10518,8 +10536,8 @@ var Bd = pe((lf, ou) => {
         e.push({ evidence: u, meanings: [] });
         continue;
       }
-      let $ = _d(u.quote, e);
-      if ($ || tu(u.quote, e.at(-1))) {
+      let $ = zd(u.quote, e);
+      if ($ || ou(u.quote, e.at(-1))) {
         e.push({ evidence: u, meanings: [], referenceOnly: !0, referenceTargets: $ || $e(e) });
         continue;
       }
@@ -10528,38 +10546,38 @@ var Bd = pe((lf, ou) => {
 `, u.start - 1)) + 1, f = /[.!?\n]/u.exec(n.slice(u.end)), m = f ? u.end + f.index : n.length, x = qn(n.slice(h, m).replace(/\s/gu, "")), v = /(?:좋아하는|싫어하는|선호하는|편한|좋은)[가-힣A-Za-z]{1,24}(?:이|가)(?:제게|저에게|내게|나에게|우리에게)/u.test(l), y = { evidence: u }, O = (x || v ? "other" : $n(l)) || i;
       if (O || s) {
         i = O, o = null;
-        let z = H(V(l)).condition;
-        a ? a = { ...a, end: u.end, uncertain: !0 } : z && !c && (/^\s*,/u.test(n.slice(u.end)) || Ri(n, u.end)) && (a = { condition: z, start: u.start, end: u.end, uncertain: !0 }), y.unresolved = { ...u, reason: O || "unsupported", reasonLabel: O ? Oi[O] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." }, ["uncertain", "condition"].includes(O) && (y.generic = !0), e.push(y);
+        let L = V(W(l)).condition;
+        a ? a = { ...a, end: u.end, uncertain: !0 } : L && !c && (/^\s*,/u.test(n.slice(u.end)) || Ii(n, u.end)) && (a = { condition: L, start: u.start, end: u.end, uncertain: !0 }), y.unresolved = { ...u, reason: O || "unsupported", reasonLabel: O ? Oi[O] : "앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요." }, ["uncertain", "condition"].includes(O) && (y.generic = !0), e.push(y);
         continue;
       }
-      let T = e.findLast((z) => z.meanings?.length), A = u.quote, E = e.at(-1), S = E?.referenceOnly ? { ...E, meanings: $e(e).map((z) => z.meaning) } : E, I = S?.meanings?.find((z) => z.field === "support" && z.value === "example" && z.polarity === "prefer"), N = I && /^(?:(?:그|이)\s*(?:예시|예제|샘플|걸|것을)|(?:예시|예제|샘플)(?:를|을)?\s*(?:본|확인한)\s*(?:다음|뒤|후)\s*(?:시도|시작|연습)할\s*때)/u.test(A);
-      I && (A = A.replace(/^(?:그걸|그것을)\s*(보고\s*나서(?:는)?|본\s*(?:다음|뒤|후)(?:에는)?)/u, "예시를 본 다음에는"));
+      let T = e.findLast((L) => L.meanings?.length), A = u.quote, E = e.at(-1), S = E?.referenceOnly ? { ...E, meanings: $e(e).map((L) => L.meaning) } : E, R = S?.meanings?.find((L) => L.field === "support" && L.value === "example" && L.polarity === "prefer"), N = R && /^(?:(?:그|이)\s*(?:예시|예제|샘플|걸|것을)|(?:예시|예제|샘플)(?:를|을)?\s*(?:본|확인한)\s*(?:다음|뒤|후)\s*(?:시도|시작|연습)할\s*때)/u.test(A);
+      R && (A = A.replace(/^(?:그걸|그것을)\s*(보고\s*나서(?:는)?|본\s*(?:다음|뒤|후)(?:에는)?)/u, "예시를 본 다음에는"));
       let M = t && /^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u.test(A);
       M && (A = A.replace(/^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u, ""));
-      let _ = H(V(A)), b = _.condition;
+      let _ = V(W(A)), b = _.condition;
       if (b && a) {
-        let z = b === a.condition ? b : b === "after-example" && ["first-try", "familiar", "busy"].includes(a.condition) ? a.condition + "-after-example" : null;
-        a = { ...a, condition: z || a.condition, uncertain: a.uncertain || !z };
+        let L = b === a.condition ? b : b === "after-example" && ["first-try", "familiar", "busy"].includes(a.condition) ? a.condition + "-after-example" : null;
+        a = { ...a, condition: L || a.condition, uncertain: a.uncertain || !L };
       }
-      let k = N && ["first-try", "familiar", "busy"].includes(I.condition) ? I.condition : null, R = a?.condition || o || (M ? t : null) || k;
+      let k = N && ["first-try", "familiar", "busy"].includes(R.condition) ? R.condition : null, I = a?.condition || o || (M ? t : null) || k;
       T?.meanings.length && /^그다음\s+/u.test(A) && (A = A.replace(/^그다음\s+/u, ""));
-      let w = D(A) || Me(A) || Q(A) || Zs(A) || Td(A) || Ii(A) || vd(A) || bd(A), L = /^\s*,/u.test(n.slice(u.end));
-      if (!w && (b || a) && L) {
-        let z = qd(_.body, Bi(u.quote, _.body, !0));
-        if (a = { condition: a?.condition || b, start: a?.start ?? u.start, end: u.end, uncertain: !z || !!a?.uncertain }, z) {
+      let w = D(A) || Me(A) || ne(A) || Qs(A) || jd(A) || Ri(A) || yd(A) || kd(A), z = /^\s*,/u.test(n.slice(u.end));
+      if (!w && (b || a) && z) {
+        let L = Ld(_.body, Bi(u.quote, _.body, !0));
+        if (a = { condition: a?.condition || b, start: a?.start ?? u.start, end: u.end, uncertain: !L || !!a?.uncertain }, L) {
           y.meanings = [], e.push(y);
           continue;
         }
       }
-      let P = !w && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && zd(u.quote, e);
+      let P = !w && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && Cd(u.quote, e);
       if (P) {
         y.meanings = [], y.referenceOnly = !0, y.referenceTargets = P, e.push(y);
         continue;
       }
       if (!w && S?.meanings?.length && !/^[\s.!?]*\?/u.test(n.slice(u.end))) {
-        let z = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(H(l).body), le = z && Tn("하는" + z[1]);
-        if (le?.action === "하기" && !le.habitual && S.meanings.every((he) => he.polarity === le.polarity)) {
-          y.meanings = [], y.referenceOnly = !0, y.referenceTargets = $e(e, z[0].startsWith("둘다")), e.push(y);
+        let L = /^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(V(l).body), Y = L && Tn("하는" + L[1]);
+        if (Y?.action === "하기" && !Y.habitual && S.meanings.every((he) => he.polarity === Y.polarity)) {
+          y.meanings = [], y.referenceOnly = !0, y.referenceTargets = $e(e, L[0].startsWith("둘다")), e.push(y);
           continue;
         }
         let rn = /^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(l), Qn = $e(e, !0).map((he) => he.meaning);
@@ -10568,53 +10586,59 @@ var Bd = pe((lf, ou) => {
           continue;
         }
       }
-      if (!w && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && S?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(l) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(l) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(l) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(l) || S.meanings.some((z) => z.field === "communication" && z.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(l))) {
+      if (!w && !/^[\s.!?]*\?/u.test(n.slice(u.end)) && S?.meanings?.length && (/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(l) || /^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(l) || /^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(l) || /^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(l) || S.meanings.some((L) => L.field === "communication" && L.value === "share-first") && /^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(l))) {
         y.meanings = [], y.referenceOnly = !0, y.referenceTargets = $e(e), e.push(y);
         continue;
       }
-      if (!w && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && Qs(l)) {
+      if (!w && e.at(-1)?.meanings?.length && /(?:좋아하고|좋고|편하고|즐겁고)$/u.test(e.at(-1).evidence.quote.replace(/\s/gu, "")) && nu(l)) {
         y.meanings = [], y.referenceOnly = !0, y.referenceTargets = $e(e), e.push(y);
         continue;
       }
       if (!w) {
-        let z = Re.parseMemberStatement(u.quote);
-        z.meanings.length === 1 && !z.unresolved.length && (w = { meanings: z.meanings });
+        let L = Ie.parseMemberStatement(u.quote);
+        L.meanings.length === 1 && !L.unresolved.length && (w = { meanings: L.meanings });
       }
-      w && p && !a && !b && !t && T?.meanings?.some((z) => z.field !== "topic") && w.meanings.every((z) => z.field === "topic") && (R = null, o = null), w && R && !r && (w = { ...w, meanings: w.meanings.map((z) => ({ ...z, condition: z.condition === "after-example" && ["first-try", "familiar", "busy"].includes(R) ? R + "-after-example" : z.condition === "after-example" && /^(?:first-try|familiar|busy)-after-example$/u.test(R) ? R : z.condition || R })) });
-      let q = w?.meanings.at(-1)?.condition || (b === "after-example" && k ? k + "-after-example" : b) || (r ? null : R);
+      w && p && !a && !b && !t && T?.meanings?.some((L) => L.field !== "topic") && w.meanings.every((L) => L.field === "topic") && (I = null, o = null), w && I && !r && (w = { ...w, meanings: w.meanings.map((L) => ({ ...L, condition: L.condition === "after-example" && ["first-try", "familiar", "busy"].includes(I) ? I + "-after-example" : L.condition === "after-example" && /^(?:first-try|familiar|busy)-after-example$/u.test(I) ? I : L.condition || I })) });
+      let q = w?.meanings.at(-1)?.condition || (b === "after-example" && k ? k + "-after-example" : b) || (r ? null : I);
       o = q && /(?:고|며)$/u.test(l) ? q : null;
-      let j = t && w?.meanings.some((z) => !z.condition) && !r;
+      let j = t && w?.meanings.some((L) => !L.condition) && !r;
       a && w && (y.evidence = { start: a.start, end: u.end, quote: n.slice(a.start, u.end) }, a.uncertain && (j = !0), a = null), j && (w = null, i = "condition"), t = q && (!w || /(?:지만|는데)$/u.test(l)) ? q : !1;
-      let G = !1;
-      for (let z = u.end; z < n.length; z++) if (/[.!?;\n]/u.test(n[z]) && !Ri(n, z)) {
-        G = /^[\s.!?]*/u.exec(n.slice(z))[0].includes("?");
+      let X = !1;
+      for (let L = u.end; L < n.length; L++) if (/[.!?;\n]/u.test(n[L]) && !Ii(n, L)) {
+        X = /^[\s.!?]*/u.exec(n.slice(L))[0].includes("?");
         break;
       }
-      let X = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(l);
-      if (!w && !X && !b && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(l) && (j = !0, i = "condition"), !w && !p && !b && !j && !X && nu(u.quote) && (s = !0), X && /(?:지만|는데)$/u.test(l) && (i = "uncertain"), G ? (w ? y.candidate = { ...w, uncertain: !0 } : y.generic = !0, y.unresolved = { ...u, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." }) : w ? w.uncertain || w.typo || X ? y.candidate = { ...w, uncertain: w.uncertain || X } : y.meanings = w.meanings : y.generic = !0, !y.meanings && !y.unresolved) {
-        let z = X ? "uncertain" : j ? "condition" : "unsupported";
-        y.unresolved = { ...u, reason: z, reasonLabel: Oi[z] };
+      let Z = /(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(l);
+      if (!w && !Z && !b && /(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(l) && (j = !0, i = "condition"), !w && !p && !b && !j && !Z && iu(u.quote) && (s = !0), Z && /(?:지만|는데)$/u.test(l) && (i = "uncertain"), X)
+        w ? y.candidate = { ...w, uncertain: !0 } : y.generic = !0, y.unresolved = { ...u, reason: "uncertain", reasonLabel: "질문으로 적은 내용을 현재 선호로 정하지 않았어요." };
+      else if (w) {
+        let L = !p && w.meanings.some((Y) => Y.field === "topic") && G.test(_.body);
+        w.uncertain || w.typo || Z || L ? y.candidate = { ...w, uncertain: w.uncertain || Z || L, ...L ? { ownership: !0 } : {} } : y.meanings = w.meanings;
+      } else y.generic = !0;
+      if (!y.meanings && !y.unresolved) {
+        let L = Z ? "uncertain" : j ? "condition" : "unsupported";
+        y.unresolved = { ...u, reason: L, reasonLabel: Oi[L] };
       }
       if (e.push(y), e.length === Ke.unresolved && u.end < n.length) {
-        let z = e.at(-1);
-        delete z.meanings, delete z.candidate, delete z.generic, z.evidence = { ...u, end: n.length, quote: n.slice(u.start) }, z.unresolved = { ...z.evidence, reason: "limit", reasonLabel: Oi.limit };
+        let L = e.at(-1);
+        delete L.meanings, delete L.candidate, delete L.generic, L.evidence = { ...u, end: n.length, quote: n.slice(u.start) }, L.unresolved = { ...L.evidence, reason: "limit", reasonLabel: Oi.limit };
         break;
       }
     }
     return e;
   }
-  g(Cd, "analyze");
-  function Yo(n, e, i, t) {
+  g(Ud, "analyze");
+  function Qo(n, e, i, t) {
     let o = [], s = [], a = [], u = /* @__PURE__ */ g((h, f, m, x, v) => {
       let y = `q.${t}.${h}.${f}`, O = i[y];
       if (O !== void 0) {
         v(O);
         return;
       }
-      a.push({ id: y, about: y, kind: "follow_up", label: m, options: [...x, ...Cs].map((T) => ({ ...T, value: T.id })) });
+      a.push({ id: y, about: y, kind: "follow_up", label: m, options: [...x, ...Ds].map((T) => ({ ...T, value: T.id })) });
     }, "question");
     for (let h = 0; h < e.length; h++) {
-      let f = e[h], m = /* @__PURE__ */ g((v) => v.forEach((y) => o.push({ ...y, evidence: nr(f.evidence) })), "add");
+      let f = e[h], m = /* @__PURE__ */ g((v) => v.forEach((y) => o.push({ ...y, evidence: tr(f.evidence) })), "add");
       if (f.meanings) {
         m(f.meanings);
         continue;
@@ -10623,13 +10647,13 @@ var Bd = pe((lf, ou) => {
       f.candidate ? u(
         h,
         "confirm",
-        `「${f.evidence.quote}」${f.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : f.candidate.restricted ? "에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
-        [{ id: "confirm", label: f.candidate.meanings.map(Qo).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
+        `「${f.evidence.quote}」${f.candidate.ownership ? "에서 말한 관심은 본인에 대한 이야기인가요?" : f.candidate.typo ? "의 표기를 이렇게 이해해도 될까요?" : f.candidate.restricted ? "에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?" : "에서 말한 뜻을 현재 선호로 확인할까요?"}`,
+        [{ id: "confirm", label: f.candidate.meanings.map(er).join(" / ") + " — 지금 원하는 내용이 맞아요" }, { id: "not-current", label: "현재 선호로 확정하지 않을게요" }],
         (v) => {
           x = !0, v === "confirm" && m(f.candidate.meanings);
         }
-      ) : f.generic && u(h, "field", `「${f.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(Ds).map(([v, y]) => ({ id: v, label: y })), (v) => {
-        x = !0, Object.hasOwn(Ai, v) && u(h, "value", `${Ds[v]}에서 어떤 내용을 확인할까요?`, Ai[v].map((y) => ({ id: y, label: Ci[y] })), (y) => {
+      ) : f.generic && u(h, "field", `「${f.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`, Object.entries(Bs).map(([v, y]) => ({ id: v, label: y })), (v) => {
+        x = !0, Object.hasOwn(Ai, v) && u(h, "value", `${Bs[v]}에서 어떤 내용을 확인할까요?`, Ai[v].map((y) => ({ id: y, label: Ci[y] })), (y) => {
           Ai[v].includes(y) && u(h, "polarity", `‘${Ci[y]}’을 지금 어떻게 생각하나요?`, [{ id: "prefer", label: "원하거나 선호해요" }, { id: "avoid", label: "원하거나 선호하지 않아요" }], (O) => {
             ["prefer", "avoid"].includes(O) && u(h, "condition", "이 내용은 어느 상황에 해당하나요?", [{ id: "general", label: "특정 상황에 한정하지 않은 현재 선호예요" }, ...Object.entries(Di).map(([T, A]) => ({ id: T, label: A }))], (T) => {
               (T === "general" || Object.hasOwn(Di, T)) && m([{ field: v, value: y, polarity: O, condition: T === "general" ? null : T }]);
@@ -10649,7 +10673,7 @@ var Bd = pe((lf, ou) => {
         l.add(f), c.push({ id: "p" + c.length, field: h.field, value: h.value, polarity: h.polarity, condition: h.condition, evidence: h.evidence });
       }
     }
-    let p = c, d = /* @__PURE__ */ g((h) => p.filter((f) => f.id === h.id || Ui(h, f)), "groupFor"), r = /* @__PURE__ */ g((h) => `q.${t}.conflict.${Fs(h.map((f) => f.id + De(f)).join("|")).slice(0, 16)}`, "conflictId");
+    let p = c, d = /* @__PURE__ */ g((h) => p.filter((f) => f.id === h.id || Ui(h, f)), "groupFor"), r = /* @__PURE__ */ g((h) => `q.${t}.conflict.${Ks(h.map((f) => f.id + De(f)).join("|")).slice(0, 16)}`, "conflictId");
     for (; ; ) {
       let h = p.map(d).find((m) => m.length > 1 && i[r(m)] !== void 0);
       if (!h) break;
@@ -10663,22 +10687,22 @@ var Bd = pe((lf, ou) => {
       if (f.length < 2) continue;
       f.forEach((x) => $.add(x.id));
       let m = r(f);
-      a.push({ id: m, about: m, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...f.map((x) => ({ id: x.id, label: Qo(x), value: x.id })), ...Cs.map((x) => ({ ...x, value: x.id }))] });
+      a.push({ id: m, about: m, kind: "choice", label: "같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.", options: [...f.map((x) => ({ id: x.id, label: er(x), value: x.id })), ...Ds.map((x) => ({ ...x, value: x.id }))] });
     }
     return { meanings: p, unresolved: s.slice(0, Ke.unresolved), questions: a };
   }
-  g(Yo, "stateFor");
-  function Bs(n, e, i, t, o) {
-    let s = sd.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
-      let u = Yo(e, i, { ...t, ...a }, o);
+  g(Qo, "stateFor");
+  function Us(n, e, i, t, o) {
+    let s = cd.choose({ questions: n.questions, decide: /* @__PURE__ */ g((a) => {
+      let u = Qo(e, i, { ...t, ...a }, o);
       return { meanings: u.meanings.map((c) => De(c)), questions: u.questions.map((c) => c.id) };
     }, "decide") });
     return s.status === "ask" ? { id: s.question.id, label: s.question.label, options: s.question.options.map(({ id: a, label: u }) => ({ id: a, label: u })) } : null;
   }
-  g(Bs, "choose");
-  function iu(n, { clarifications: e = [], parserVersion: i = Nn } = {}) {
-    if (i === Re.PARSER_VERSION)
-      return e.length && ue(), Re.parseMemberStatement(n);
+  g(Us, "choose");
+  function ru(n, { clarifications: e = [], parserVersion: i = Nn } = {}) {
+    if (i === Ie.PARSER_VERSION)
+      return e.length && le(), Ie.parseMemberStatement(n);
     if (i === Ni.PARSER_VERSION) return Ni.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Ti.PARSER_VERSION) return Ti.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === _i.PARSER_VERSION) return _i.parseMemberStatement(n, { clarifications: e, parserVersion: i });
@@ -10687,31 +10711,31 @@ var Bd = pe((lf, ou) => {
     if (i === zi.PARSER_VERSION) return zi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Li.PARSER_VERSION) return Li.parseMemberStatement(n, { clarifications: e, parserVersion: i });
     if (i === Pi.PARSER_VERSION) return Pi.parseMemberStatement(n, { clarifications: e, parserVersion: i });
-    i !== Nn && ue(), (!Ws(e, Ke.clarifications) || e.some((l) => !Mi(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && ue();
-    let t = Cd(n), o = Fs(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Yo(n, t, s, o), c = Bs(u, n, t, s, o);
+    i !== Nn && le(), (!Fs(e, Ke.clarifications) || e.some((l) => !Mi(l, ["questionId", "optionId"]) || typeof l.questionId != "string" || typeof l.optionId != "string")) && le();
+    let t = Ud(n), o = Ks(n), s = /* @__PURE__ */ Object.create(null), a = [], u = Qo(n, t, s, o), c = Us(u, n, t, s, o);
     for (let l of e) {
-      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && ue();
+      (!c || c.id !== l.questionId || Object.hasOwn(s, l.questionId)) && le();
       let p = c.options.find((d) => d.id === l.optionId);
-      p || ue(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Yo(n, t, s, o), c = Bs(u, n, t, s, o);
+      p || le(), s[l.questionId] = l.optionId, a.push({ ...l, questionLabel: c.label, optionLabel: p.label }), u = Qo(n, t, s, o), c = Us(u, n, t, s, o);
     }
     if (e.length === Ke.clarifications && c) {
       let l = u.meanings.filter((p) => u.meanings.some((d) => p !== d && Ui(p, d)));
       u.meanings = u.meanings.filter((p) => !l.includes(p)), u.unresolved = [...u.unresolved, ...l.map((p) => ({ ...p.evidence }))].slice(0, Ke.unresolved).map((p) => ({ ...p, reason: "limit", reasonLabel: "추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요." })), c = null;
     }
-    return { parserVersion: Nn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: nr(e), clarificationAnswers: a };
+    return { parserVersion: Nn, meanings: u.meanings, unresolved: u.unresolved, question: c, clarifications: tr(e), clarificationAnswers: a };
   }
-  g(iu, "parseMemberStatement");
-  function Qo(n) {
+  g(ru, "parseMemberStatement");
+  function er(n) {
     return `${n.condition ? Di[n.condition] + " · " : ""}${n.polarity === "avoid" ? "선호하지 않는 내용" : "원하는 내용"}: ${Ci[n.value]}`;
   }
-  g(Qo, "meaningLabel");
+  g(er, "meaningLabel");
   function Ui(n, e) {
-    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !er.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
+    return n.field !== e.field || n.condition !== e.condition ? !1 : n.value === e.value ? n.polarity !== e.polarity : n.field !== "topic" && !nr.includes(n.field) && n.polarity === "prefer" && e.polarity === "prefer";
   }
   g(Ui, "meaningsConflict");
-  function Dd(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
-    let t = Us(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
-    if (t === Re.PARSER_VERSION) return Re.validateMemberStatement(n, { now: e, enforceTime: i });
+  function Vd(n, { now: e = Date.now(), enforceTime: i = !1 } = {}) {
+    let t = Vs(n) ? Object.getOwnPropertyDescriptor(n, "parserVersion")?.value : null;
+    if (t === Ie.PARSER_VERSION) return Ie.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Ni.PARSER_VERSION) return Ni.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Ti.PARSER_VERSION) return Ti.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === _i.PARSER_VERSION) return _i.validateMemberStatement(n, { now: e, enforceTime: i });
@@ -10720,23 +10744,23 @@ var Bd = pe((lf, ou) => {
     if (t === zi.PARSER_VERSION) return zi.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Li.PARSER_VERSION) return Li.validateMemberStatement(n, { now: e, enforceTime: i });
     if (t === Pi.PARSER_VERSION) return Pi.validateMemberStatement(n, { now: e, enforceTime: i });
-    (!Mi(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== Nn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Ws(n.meanings, Ke.meanings) || !n.meanings.length) && ue();
-    let o = Zo(n.at), s = Zo(n.confirmedAt), a = i ? typeof e == "string" ? Zo(e) : Number.isSafeInteger(e) ? e : ue() : null;
-    (s < o || i && s > a) && ue();
-    let u = iu(n.text, { clarifications: n.clarifications });
-    u.question && ue();
+    (!Mi(n, ["id", "parserVersion", "text", "at", "confirmedAt", "meanings", "clarifications"]) || t !== Nn || typeof n.id != "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(n.id) || !Fs(n.meanings, Ke.meanings) || !n.meanings.length) && le();
+    let o = Zo(n.at), s = Zo(n.confirmedAt), a = i ? typeof e == "string" ? Zo(e) : Number.isSafeInteger(e) ? e : le() : null;
+    (s < o || i && s > a) && le();
+    let u = ru(n.text, { clarifications: n.clarifications });
+    u.question && le();
     let c = /* @__PURE__ */ new Set(), l = n.meanings.map((p) => {
-      (!Mi(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !Mi(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && ue(), c.add(p.id);
+      (!Mi(p, ["id", "field", "value", "polarity", "condition", "evidence"]) || !Mi(p.evidence, ["start", "end", "quote"]) || c.has(p.id)) && le(), c.add(p.id);
       let d = u.meanings.find((r) => r.id === p.id);
-      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && ue(), nr(d);
+      return (!d || ["field", "value", "polarity", "condition"].some((r) => p[r] !== d[r]) || ["start", "end", "quote"].some((r) => p.evidence[r] !== d.evidence[r])) && le(), tr(d);
     }).sort((p, d) => Number(p.id.slice(1)) - Number(d.id.slice(1)));
-    return l.some((p, d) => l.slice(d + 1).some((r) => Ui(p, r))) && ue(), { id: n.id.toLowerCase(), parserVersion: Nn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
+    return l.some((p, d) => l.slice(d + 1).some((r) => Ui(p, r))) && le(), { id: n.id.toLowerCase(), parserVersion: Nn, text: n.text, at: n.at, confirmedAt: n.confirmedAt, meanings: l, clarifications: u.clarifications };
   }
-  g(Dd, "validateMemberStatement");
-  ou.exports = { PARSER_VERSION: Nn, MEMBER_STATEMENT_LIMITS: Ke, MEMBER_STATEMENT_VALUES: Ai, MEMBER_STATEMENT_LABELS: Ci, MEMBER_STATEMENT_CONDITIONS: Di, MEMBER_STATEMENT_MULTI_FIELDS: er, parseMemberStatement: iu, validateMemberStatement: Dd, meaningsConflict: Ui, meaningLabel: Qo };
+  g(Vd, "validateMemberStatement");
+  au.exports = { PARSER_VERSION: Nn, MEMBER_STATEMENT_LIMITS: Ke, MEMBER_STATEMENT_VALUES: Ai, MEMBER_STATEMENT_LABELS: Ci, MEMBER_STATEMENT_CONDITIONS: Di, MEMBER_STATEMENT_MULTI_FIELDS: nr, parseMemberStatement: ru, validateMemberStatement: Vd, meaningsConflict: Ui, meaningLabel: er };
 });
 
 export {
-  cu as a,
-  Bd as b
+  pu as a,
+  Wd as b
 };

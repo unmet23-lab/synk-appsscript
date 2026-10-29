@@ -8,7 +8,7 @@ const { createMap } = require('../strata');
 const map = createMap(require('../strata/maps/topik-i.json'));
 const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' }, at = '2026-08-01T00:00:00.000Z';
 const row = (id, type, fields = {}) => ({ schema: 1, id, type, scope, at, recordedAt: at, ...fields });
-const disk = (limit = Infinity) => { const data = new Map(), writes = []; let chars = 0; return { data, writes, getItem: k => data.get(k) ?? null, setItem(k, v) {
+const disk = (limit = Infinity) => { const data = new Map(), writes = []; let chars = 0; return { data, writes, get length(){return data.size;}, key:index=>[...data.keys()][index]??null, getItem: k => data.get(k) ?? null, setItem(k, v) {
   const next = chars - (data.has(k) ? k.length + data.get(k).length : 0) + k.length + v.length;
   if (next > limit) throw Object.assign(Error('synthetic browser quota'), { name: 'QuotaExceededError' });
   writes.push({ key: k, bytes: v.length }); data.set(k, v); chars = next;

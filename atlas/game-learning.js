@@ -308,7 +308,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     persist: () => persist(),
     // Before a tab closes or hides: another tab may have written an older history over this
     // one's entries in the meantime (tabs see each other's writes late), so join and write again.
-    flush() { refresh(); return !!storage && readable && writable && (snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true })); },
+    flush() { refresh(); return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true })); },
     reset() { epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); release(null); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist(); },
   });
 }
@@ -380,7 +380,12 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   }
   function report(saved) {
     const observed = view(saved), { ledger } = saved;
-    const measured = () => Temper.combine(ledger?.counts || null, Temper.measure(observed));
+    const measured = () => {
+      const counts=Temper.combine(ledger?.counts || null, Temper.measure(observed));
+      // Withdrawn folded evidence is removed from policy cells. Its historical
+      // local totals require the server's whole log for exact measurement.
+      return ledger?.adjusted?{...counts,status:'approximate',approximate:true}:counts;
+    };
     if (cached?.summary === observed && !cached.counts) cached.counts = measured();
     // `folded`/`adjusted`: entries kept only as a summary, and other devices' late entries that
     // summary took in approximately (learning-ledger.js).

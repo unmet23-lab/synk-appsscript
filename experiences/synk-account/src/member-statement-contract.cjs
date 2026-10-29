@@ -392,8 +392,10 @@ function selfSurface(quote) {
   }
   return surface;
 }
+const SELF_DECLARATION=/^(?:나는|저는|제가|내가|저한테는|제게는|나한테는|(?:제|내)경우(?:에는|엔)|(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)(?:은|는|이|가)|(?:제|내)(?:연습|소통|도움|설명)취향(?:은|는)|(?:제게|저에게|내게)(?:는)?(?:편한|필요한))/u;
 function normalizePrefix(quote) {
   let body = selfSurface(quote).replace(/\s/gu, '').replace(/(?:지만|는데)$/u, '').replace(/좋고$/u,'좋아요').replace(/좋아하고$/u,'좋아해요').replace(/편하고$/u,'편해요').replace(/즐겁고$/u,'즐거워요').replace(/싫$/u,'싫어요').replace(/(?:좋아하|선호하)$/u,s=>s.slice(0,-1)+'해').replace(/할땐/gu,'할때는').replace(/배울땐/gu,'배울때는');
+  let own=SELF_DECLARATION.test(body);
   if(/좋지만\s*$/u.test(quote))body=body.replace(/좋$/u,'좋아요');
   if(/일이지만\s*$/u.test(quote))body=body.replace(/일이$/u,'일이에요');
   body=body.replace(/(?:좋아하며|선호하고|선호하며|원하고|원하며|편하며|싫고|관심이있고|관심이많고|원하지않고|선호하지않고|좋아하지않고)$/u,m=>({좋아하며:'좋아해요',선호하고:'선호해요',선호하며:'선호해요',원하고:'원해요',원하며:'원해요',편하며:'편해요',싫고:'싫어요',관심이있고:'관심있어요',관심이많고:'관심많아요',원하지않고:'원하지않아요',선호하지않고:'선호하지않아요',좋아하지않고:'좋아하지않아요'}[m]))
@@ -402,9 +404,11 @@ function normalizePrefix(quote) {
     .replace(/((?:원|좋아|선호)하지)않$/u,'$1않아요').replace(/좋아하$/u,'좋아해요').replace(/좋아하는$/u,'좋아해요');
   body=body.replace(/좋(?:아하)?고요$/u,s=>s.startsWith('좋아')?'좋아해요':'좋아요').replace(/싶고$/u,'싶어요').replace(/을땐/gu,'을때는').replace(/^(?:저라면|나라면)/u,'');
   body = body.replace(/^(?:저는|나는|제가|내가|저한테는|제게는|나한테는|제경우에는|내경우에는)/u, '').replace(/^(?:요즘(?:은|엔)?|지금(?:은|엔)?|이제(?:는|부터는)?|현재(?:는)?|평소(?:에는|엔|는)?|보통은|일반적으로는)/u, '');
+  own||=SELF_DECLARATION.test(body);
   body=body.replace(/^(?:저는|나는|제가|내가)/u,'');
   let condition = null;
   for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) { condition = id;body = body.replace(prefix, '');break; }
+  own||=SELF_DECLARATION.test(body.replace(/^,+/u,''));
   body=body.replace(/^,+/u,'');
   if(condition)body=body.replace(/^(?:저는|나는|제가|내가)(?=,|$)/u,'');
   if(['first-try','familiar','busy'].includes(condition)){
@@ -413,7 +417,7 @@ function normalizePrefix(quote) {
   }
   body=body.replace(/^,+/u,'');
   if(/편하지만$/u.test(quote.replace(/\s/gu,'')))body=body.replace(/편하$/u,'편해요');
-  return { body, condition };
+  return { body, condition, own };
 }
 // Wishes are current declarations, unlike a hypothetical premise. Only the
 // final action governed by an explicit wish receives this morphology rewrite;
@@ -528,7 +532,7 @@ function natural(quote) {
   if(explanationSequence){
     const first=natural(explanationSequence[1]+'보는게좋아요'),second=natural(explanationSequence[2]);
     if(first?.meanings.length===1&&second?.meanings.length===1&&first.meanings[0].value==='overview-first'&&second.meanings[0].value==='reasons-detail'&&second.meanings[0].polarity==='prefer')
-      return {meanings:[...first.meanings,...second.meanings].map(m=>({...m,condition}))};
+      return {meanings:[...first.meanings,...second.meanings].map(m=>({...m,condition:m.condition||condition}))};
   }
   const longEffect = /^(?:설명이|설명은)(?:너무|지나치게)길(?:면|어서)(?:집중이(?:흐트러져요|흐트러지|안돼요|안돼|흐트러집니다)|집중하기(?:어려워요|어려워|힘들어요|힘들어))$/u;
   if (longEffect.test(body)) return { meanings: [{ field:'explanation-detail', value:'long-flow', polarity:'avoid', condition }] };
@@ -911,7 +915,23 @@ const COMPOSE_FRAMES=[
 // for agency, scope, negation and order. It emits the original clause span.
 // The noun owns its subject particle even after a possessive prefix, plural
 // or honorific ending. "우리 팀원들은" is not the writer's own preference.
-const OTHER_PERSON_SUBJECT=/(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지|남들|상대방)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u;
+const OTHER_NAMED_SUBJECT=/(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지|남들|상대방)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u;
+const PERSON_ROLE_NOUNS=COMPOSE_UNITS.filter(([tag])=>tag==='person').map(([,pattern])=>pattern);
+// Ownership and composition share their supported person nouns. A role noun
+// becomes a subject only with its subject/topic case; a companion (와/과),
+// possessor (의), or object is not silently promoted to a preference owner.
+const OTHER_PERSON_SUBJECT={
+  exec(text){
+    let found=OTHER_NAMED_SUBJECT.exec(text);
+    for(let index=0;index<(found?.index??text.length);index++)for(const pattern of PERSON_ROLE_NOUNS){
+      const noun=pattern.exec(text.slice(index));if(!noun)continue;
+      const suffix=/^(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u.exec(text.slice(index+noun[0].length));
+      if(suffix){found={0:noun[0]+suffix[0],index};break;}
+    }
+    return found;
+  },
+  test(text){return !!this.exec(text);}
+};
 const CORE_ACTION_ROLES={
   independent:'self nohelp before-help first task try do process finish',together:'person together task try do process finish',
   example:'example first one look show check start before-start inquiry task',step:'help step receive explain do',choose:'help help-time needhelp choose decide on receive use',
@@ -1099,12 +1119,16 @@ function compositional(quote) {
   }
   const variants=[...actions.map(a=>head+a.replace(/^한꺼번에말고/u,'')),head+normalized.action];
   const recognized=[];
-  for(const variant of new Set(variants)){const units=phraseUnits(variant);if(!units)continue;
+  for(const variant of new Set(variants)){const tokens=phraseUnits(variant,true);if(!tokens)continue;
+    const units=tokens.filter(t=>!['particle','neutral','selfcase','mine','sequence'].includes(t.tag)).map(t=>t.tag);
     // A named decision frame binds an otherwise generic final 'do' to that
     // decision. Do not rewrite syllables inside verbs such as 참고하는.
     const roles=fields?.length===1&&fields[0]==='decision'&&units.at(-1)==='do'&&units.includes('data')?[...units.slice(0,-1),'decide']:units;
     const m=composeMeaning(roles,normalized.nominalHead);
-    if(m){if(otherActor&&!(m.field==='topic'&&topicObject))return null;recognized.push(m);}}
+    // A fully consumed before-help role describes when the member acts; the
+    // helper inside it is not the subject of the member's preference.
+    const preferenceActor=OTHER_PERSON_SUBJECT.test(tokens.filter(t=>t.tag!=='before-help').map(t=>t.text).join(''));
+    if(m){if(preferenceActor&&!(m.field==='topic'&&topicObject))return null;recognized.push(m);}}
   if(!recognized.length){
     const core=declaredCore(head+action,normalized,condition,fields,quote);if(core)return core;
     // Coordinated clauses may share their final preference predicate. Each
@@ -1343,8 +1367,8 @@ function structuredDeclaration(quote,depth=0) {
     if(!rest||!clauseAdjunct(prefix,/^(?:저는|나는|제가|내가)/u.test(rest),sourceSurface(quote,prefix)))continue;
     // A fully asserted preference inside the causal arm is not disposable
     // background. The existing same-meaning causal path resolves it first.
-    const stated=/^(.*?)(좋아해서|선호해서|좋아서|편해서)$/u.exec(prefix);
-    if(stated){const assertion=stated[1]+({좋아해서:'좋아해요',선호해서:'선호해요',좋아서:'좋아요',편해서:'편해요'}[stated[2]]);if((natural(assertion)||expanded(assertion)||compositional(assertion))?.meanings?.length)continue;}
+    const stated=/^(.*?)(좋아하지않아서|선호하지않아서|원하지않아서|좋아해서|선호해서|좋아서|편해서|싫어서)$/u.exec(prefix);
+    if(stated){const assertion=stated[1]+({좋아해서:'좋아해요',선호해서:'선호해요',좋아서:'좋아요',편해서:'편해요',싫어서:'싫어요',좋아하지않아서:'좋아하지않아요',선호하지않아서:'선호하지않아요',원하지않아서:'원하지않아요'}[stated[2]]);if((natural(assertion)||expanded(assertion)||compositional(assertion))?.meanings?.length)continue;}
     const found=read(rest);if(found)return found;
   }
   // Explicit liking followed by a factual reason/consequence asserts only
@@ -1528,7 +1552,7 @@ function analyze(text) {
   const segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null;
   for(const evidence of pieces(text)) {
     const insideLiteral=quotedAt(text,evidence.start);
-    const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&(/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(body)||/^(?:나는|저는|제가|내가|제경우에는|내경우에는|제취향은|내취향은)/u.test(surfaceDeclaration(evidence.quote))), current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
+    const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&normalizePrefix(surfaceDeclaration(evidence.quote)).own, current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
     const generalReset=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(body);
     // A prefix before comma-separated insets owns the following main clause.
     // It lives independently of parsed meanings and coordinating endings.
@@ -1633,7 +1657,10 @@ function analyze(text) {
     if(!found&&!self&&!declaredCondition&&!unresolvedCondition&&!uncertain&&unresolvedSubject(evidence.quote))unknownSubject=true;
     if(uncertain&&/(?:지만|는데)$/u.test(body))inherited='uncertain';
     if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
-    else if(found){if(found.uncertain||found.typo||uncertain)segment.candidate={...found,uncertain:found.uncertain||uncertain};else segment.meanings=found.meanings;}
+    else if(found){
+      const ownership=!self&&found.meanings.some(m=>m.field==='topic')&&OTHER_PERSON_SUBJECT.test(normalizedClause.body);
+      if(found.uncertain||found.typo||uncertain||ownership)segment.candidate={...found,uncertain:found.uncertain||uncertain||ownership,...(ownership?{ownership:true}:{})};else segment.meanings=found.meanings;
+    }
     else segment.generic=true;
     if(!segment.meanings&&!segment.unresolved){const why=uncertain?'uncertain':unresolvedCondition?'condition':'unsupported';segment.unresolved={...evidence,reason:why,reasonLabel:EXCLUDED[why]};}
     segments.push(segment);
@@ -1648,7 +1675,7 @@ function stateFor(text,segments,answers,key) {
     const s=segments[index],add=meanings=>meanings.forEach(m=>raw.push({...m,evidence:copy(s.evidence)}));
     if(s.meanings){add(s.meanings);continue;}
     let handled=false;
-    if(s.candidate){question(index,'confirm',`「${s.evidence.quote}」${s.candidate.typo?'의 표기를 이렇게 이해해도 될까요?':s.candidate.restricted?'에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?':'에서 말한 뜻을 현재 선호로 확인할까요?'}`,
+    if(s.candidate){question(index,'confirm',`「${s.evidence.quote}」${s.candidate.ownership?'에서 말한 관심은 본인에 대한 이야기인가요?':s.candidate.typo?'의 표기를 이렇게 이해해도 될까요?':s.candidate.restricted?'에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?':'에서 말한 뜻을 현재 선호로 확인할까요?'}`,
       [{id:'confirm',label:s.candidate.meanings.map(meaningLabel).join(' / ')+' — 지금 원하는 내용이 맞아요'},{id:'not-current',label:'현재 선호로 확정하지 않을게요'}],answer=>{handled=true;if(answer==='confirm')add(s.candidate.meanings);});}
     else if(s.generic){question(index,'field',`「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`,Object.entries(FIELDS).map(([id,label])=>({id,label})),field=>{
       handled=true;if(!Object.hasOwn(VALUES,field))return;

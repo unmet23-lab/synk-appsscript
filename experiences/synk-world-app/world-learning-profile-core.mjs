@@ -695,7 +695,7 @@ var require_engine = __commonJS({
             until,
             evidence: [event.id, ...answer ? [answer.id] : []],
             status,
-            usable: !denied && (sufficiency !== "thin" || status === "confirmed")
+            usable: !denied && (status === "confirmed" || event.kind !== "trait" && sufficiency !== "thin")
           });
         }
         const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));

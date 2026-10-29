@@ -6,6 +6,34 @@ const at = '2026-10-29T00:00:00.000Z';
 const candidates = [{ id: 'goal', minutes: 5, pace: 'standard', goals: ['study'] }, { id: 'other', minutes: 4, pace: 'short' }];
 const levers = [{ id: 'shape', class: 'shape', default: 'a', learn: true, options: [{ id: 'a' }, { id: 'b' }] }];
 function session(events = [], prefix = 'a', explore = 0) { let n = 0; return A.createSession({ scope, events, clock: () => at, id: () => `${prefix}.${++n}`, explore }); }
+test('sample size never substitutes for the member confirming a guessed trait', () => {
+  const choices = [{ id: 'baseline', minutes: 5, pace: 'standard' }, { id: 'trait', minutes: 5, pace: 'standard', targets: ['trait:pace'] }];
+  for (const n of [1, 3, 8]) {
+    const s = session([], `trait${n}`), pick = () => s.plan('entry', choices).selected.id;
+    s.observe({ kind: 'trait', key: 'pace', strength: 1, n });
+    assert.equal(s.state().lines[0].usable, false);
+    assert.equal(pick(), 'baseline');
+    s.respond('trait:pace', 'unsure');
+    assert.equal(pick(), 'baseline');
+    const yes = s.respond('trait:pace', 'yes');
+    assert.equal(s.state().lines[0].status, 'confirmed');
+    assert.equal(pick(), 'trait', 'an explicit confirmation can qualify even a thin observation');
+    s.exclude(yes.id);
+    assert.equal(s.state().lines[0].usable, false);
+    assert.equal(pick(), 'baseline', 'withdrawing confirmation restores the unconfirmed boundary');
+    const restored = session(JSON.parse(JSON.stringify(s.events())), `restored${n}`);
+    assert.equal(restored.plan('entry', choices).selected.id, 'baseline');
+    s.respond('trait:pace', 'no');
+    assert.equal(s.state().lines[0].status, 'denied');
+    assert.equal(pick(), 'baseline');
+  }
+  for (const kind of ['need', 'due']) {
+    const s = session([], kind);
+    s.observe({ kind, key: 'pace', strength: 1, n: 3 });
+    assert.equal(s.state().lines[0].usable, true, `${kind} retains its existing sample policy`);
+  }
+});
+
 test('a refused way stays refused after helpful feedback on another feasible way', () => {
   const s = session(); s.set('goal', 'study');
   const first = s.plan('entry', candidates); assert.equal(first.selected.id, 'goal');

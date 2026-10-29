@@ -80,9 +80,12 @@ export function townCheckAnswers({events=[],items,now=Date.now()}={}){
  const out=[],ids=new Set();
  const add=event=>{if(!ids.has(event.id)&&out.length<TOWN_CHECK_POLICY.maxEvents){ids.add(event.id);out.push(event);}};
  for(const {presented,rows} of picked.sort((a,b)=>Date.parse(a.presented.at)-Date.parse(b.presented.at))){
-  add(presented);for(const row of rows)add(row);
   const targets=new Set([presented.id,presented.decisionId,...rows.map(row=>row.id)]);
-  for(const exclusion of exclusions)if(targets.has(exclusion.targetId))add(exclusion);
+  const evidence=[presented,...rows,...exclusions.filter(exclusion=>targets.has(exclusion.targetId))];
+  // An answer and its withdrawals form one evidence group. A size limit must
+  // never keep the answer while dropping only the record that excludes it.
+  if(out.length+new Set(evidence.filter(event=>!ids.has(event.id)).map(event=>event.id)).size>TOWN_CHECK_POLICY.maxEvents)continue;
+  for(const event of evidence)add(event);
  }
  return out;
 }

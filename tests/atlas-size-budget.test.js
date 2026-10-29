@@ -10,7 +10,8 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..');
 // 2026-10-29: Core 확인 시점·재확인 질문, Vellum 표본 검사, Temper 중복 검사와 Trail 출처 탐색.
 // 최초 순증 15줄 + LAB·WORLD 제외 전파·오디오 자격·대기 이력 49줄 + 완료·ID·명시적 철회·질문 계산과 판 검사 정리 10줄.
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7201, capabilityDocLines: 150 });
+// 2026-10-30: LAB 게임·WORLD 공용 저장 복구·자동 전송·동시 쓰기 페이지 보호 +29줄.
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7230, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

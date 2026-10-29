@@ -40,6 +40,11 @@ function decodePage(text) {
 }
 function createPages(storage, key, arrays) {
   const prefix = `${key}.page.`, cache = new Map();
+  const writers = `${key}.writer.`;
+  const keys = () => {
+    if(typeof storage.key !== 'function' || !Number.isSafeInteger(storage.length) || storage.length < 0)return null;
+    return Array.from({length:storage.length},(_,index)=>storage.key(index)).filter(name=>typeof name==='string').sort();
+  };
   let root = null, decodedRaw = null;
   const validKey = name => typeof name === 'string' && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
   const manifest = value => value && value.paged === 1 && value.version === 1 && value.data && typeof value.data === 'object' && !Array.isArray(value.data)
@@ -76,15 +81,19 @@ function createPages(storage, key, arrays) {
   const remove = names => { if (typeof storage.removeItem === 'function') for (const name of names) { try { storage.removeItem(name); } catch { /* Unreferenced pages may be reclaimed later. */ } } };
   function write(data, expectedRaw) {
     const next = { paged: 1, version: 1, data: { ...data }, arrays: {} }, created = [];
+    const writer=typeof storage.key==='function'?`${writers}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`:null;
     let publishedRaw = null;
     try {
+      // Register before checking the expected root. Cleanup cannot reclaim a
+      // page held by another in-progress writer, including an unchanged page.
+      if(writer)storage.setItem(writer,'1');
       for (const name of arrays) {
         if (!Object.hasOwn(data, name)) continue;
         if (!Array.isArray(data[name])) throw failure();
         delete next.data[name]; next.arrays[name] = [];
         for (let at = 0; at < data[name].length; at += PAGE_ITEMS) {
           const rows = data[name].slice(at, at + PAGE_ITEMS), text = encodePage(rows), prior = root?.arrays?.[name]?.[at / PAGE_ITEMS];
-          if (prior && (cache.get(prior.key) ?? storage.getItem(prior.key)) === text) next.arrays[name].push(prior);
+          if(prior&&(cache.get(prior.key)??storage.getItem(prior.key))===text)next.arrays[name].push(prior);
           else {
             const pageKey = `${prefix}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${at}-${name}`;
             created.push(pageKey); storage.setItem(pageKey, text); cache.set(pageKey, text);
@@ -96,15 +105,29 @@ function createPages(storage, key, arrays) {
       if (storage.getItem(key) !== expectedRaw) throw Object.assign(failure(), { message: 'Atlas: history changed during persistence' });
       const raw = JSON.stringify(next); publishedRaw = raw; storage.setItem(key, raw);
       const retained = new Set(Object.values(next.arrays).flat().map(page => page.key));
-      const obsolete = Object.values(root?.arrays || {}).flat().map(page => page.key).filter(name => !retained.has(name));
-      root = next; remove(obsolete); for (const name of obsolete) cache.delete(name);
+      root = next;
+      try {
+        const snapshot=keys(),checked=keys();
+        // Snapshot candidates before checking other writers. A later writer
+        // starts from this root, and its staged pages are outside that snapshot.
+        // Adapters without Storage enumeration retain pages conservatively.
+        // An abandoned writer marker also retains pages; never guess it expired.
+        if(snapshot&&checked&&snapshot.length===checked.length&&snapshot.every((name,i)=>name===checked[i])
+          &&!checked.some(name=>name.startsWith(writers)&&name!==writer)&&storage.getItem(key)===raw){
+          const obsolete=snapshot.filter(name=>validKey(name)&&!retained.has(name));
+          remove(obsolete);for(const name of obsolete)cache.delete(name);
+        }
+      } catch { /* Cleanup is optional; a committed root remains readable. */ }
       return raw;
     } catch (error) {
       // A Storage wrapper may throw after its root write succeeded. Never erase
       // pages a committed root already owns, even when its acknowledgement failed.
-      if (publishedRaw && storage.getItem(key) === publishedRaw) { root = next; return publishedRaw; }
+      if(publishedRaw){const current=storage.getItem(key);if(current===publishedRaw){root=next;return publishedRaw;}
+        // A newer root may already reuse this publication's pages.
+        if(current!==expectedRaw)throw error;
+      }
       remove(created); for (const name of created) cache.delete(name); throw error;
-    }
+    } finally { if(writer)remove([writer]); }
   }
   return { decode, write, active: () => !!root, decodedRaw: () => decodedRaw };
 }

@@ -90,6 +90,8 @@ test('an exclusion from another device also removes a folded helped answer', asy
   const summary = a.game.summary();
   assert.equal(summary.skills.find(x => x.id === 'ko.reading.detail').levels[1].formats['single-choice'].assisted, 0);
   assert.ok(summary.storage.folded > 0 && summary.storage.adjusted >= 1, `storage reports the approximation: ${JSON.stringify(summary.storage)}`);
+  assert.equal(summary.counts.status,'approximate');
+  assert.equal(summary.counts.approximate,true,'late withdrawals never leave local folded totals labelled as exact measurements');
 });
 
 test('the outbox keeps ids only, and an outbox written before is read and sent', async () => {

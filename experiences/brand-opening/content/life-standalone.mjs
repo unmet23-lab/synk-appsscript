@@ -6997,7 +6997,7 @@ var require_engine2 = __commonJS({
             until,
             evidence: [event.id, ...answer ? [answer.id] : []],
             status,
-            usable: !denied && (sufficiency !== "thin" || status === "confirmed")
+            usable: !denied && (status === "confirmed" || event.kind !== "trait" && sufficiency !== "thin")
           });
         }
         const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
@@ -8523,6 +8523,11 @@ var require_learning_pages = __commonJS({
     }
     function createPages(storage, key, arrays) {
       const prefix = `${key}.page.`, cache = /* @__PURE__ */ new Map();
+      const writers = `${key}.writer.`;
+      const keys = () => {
+        if (typeof storage.key !== "function" || !Number.isSafeInteger(storage.length) || storage.length < 0) return null;
+        return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter((name) => typeof name === "string").sort();
+      };
       let root = null, decodedRaw = null;
       const validKey = (name) => typeof name === "string" && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
       const manifest = (value) => value && value.paged === 1 && value.version === 1 && value.data && typeof value.data === "object" && !Array.isArray(value.data) && value.arrays && typeof value.arrays === "object" && !Array.isArray(value.arrays);
@@ -8574,8 +8579,10 @@ var require_learning_pages = __commonJS({
       };
       function write(data, expectedRaw) {
         const next = { paged: 1, version: 1, data: { ...data }, arrays: {} }, created = [];
+        const writer = typeof storage.key === "function" ? `${writers}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}` : null;
         let publishedRaw = null;
         try {
+          if (writer) storage.setItem(writer, "1");
           for (const name of arrays) {
             if (!Object.hasOwn(data, name)) continue;
             if (!Array.isArray(data[name])) throw failure();
@@ -8598,19 +8605,31 @@ var require_learning_pages = __commonJS({
           publishedRaw = raw;
           storage.setItem(key, raw);
           const retained = new Set(Object.values(next.arrays).flat().map((page) => page.key));
-          const obsolete = Object.values(root?.arrays || {}).flat().map((page) => page.key).filter((name) => !retained.has(name));
           root = next;
-          remove(obsolete);
-          for (const name of obsolete) cache.delete(name);
+          try {
+            const snapshot = keys(), checked = keys();
+            if (snapshot && checked && snapshot.length === checked.length && snapshot.every((name, i) => name === checked[i]) && !checked.some((name) => name.startsWith(writers) && name !== writer) && storage.getItem(key) === raw) {
+              const obsolete = snapshot.filter((name) => validKey(name) && !retained.has(name));
+              remove(obsolete);
+              for (const name of obsolete) cache.delete(name);
+            }
+          } catch {
+          }
           return raw;
         } catch (error2) {
-          if (publishedRaw && storage.getItem(key) === publishedRaw) {
-            root = next;
-            return publishedRaw;
+          if (publishedRaw) {
+            const current = storage.getItem(key);
+            if (current === publishedRaw) {
+              root = next;
+              return publishedRaw;
+            }
+            if (current !== expectedRaw) throw error2;
           }
           remove(created);
           for (const name of created) cache.delete(name);
           throw error2;
+        } finally {
+          if (writer) remove([writer]);
         }
       }
       return { decode, write, active: () => !!root, decodedRaw: () => decodedRaw };
@@ -8773,7 +8792,9 @@ var require_learning_sync = __commonJS({
         if (folded.size && typeof port.forget === "function") port.forget([...folded]);
       };
       const schedule = () => {
-        if (!auto || !started || stopped || phase === "blocked" || phase === "offline" || timer) return;
+        if (!auto || !started || stopped || phase === "blocked" || phase === "offline") return;
+        flushRequested = true;
+        if (timer) return;
         timer = setTimeout(() => {
           timer = null;
           void run();
@@ -8961,10 +8982,9 @@ var require_learning_sync = __commonJS({
           } finally {
             running = null;
             if (continuation && active(token) && auto && started && !timer) {
-              const pullOnly2 = !flushRequested;
               timer = setTimeout(() => {
                 timer = null;
-                void run(pullOnly2);
+                void run(!flushRequested);
               }, 0);
             }
           }
@@ -10555,7 +10575,7 @@ var require_game_learning = __commonJS({
         // one's entries in the meantime (tabs see each other's writes late), so join and write again.
         flush() {
           refresh();
-          return !!storage && readable && writable && (snapshot(log()) === lastStoredRaw || persist("flush", { quiet: true }));
+          return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist("flush", { quiet: true }));
         },
         reset() {
           epoch = uid();
@@ -10668,7 +10688,10 @@ var require_game_learning = __commonJS({
       }
       function report(saved) {
         const observed = view(saved), { ledger } = saved;
-        const measured = () => Temper.combine(ledger?.counts || null, Temper.measure(observed));
+        const measured = () => {
+          const counts = Temper.combine(ledger?.counts || null, Temper.measure(observed));
+          return ledger?.adjusted ? { ...counts, status: "approximate", approximate: true } : counts;
+        };
         if (cached2?.summary === observed && !cached2.counts) cached2.counts = measured();
         return {
           ...profileOf(observed, saved),
@@ -12685,7 +12708,7 @@ var require_engine = __commonJS2({
             until,
             evidence: [event.id, ...answer ? [answer.id] : []],
             status,
-            usable: !denied && (sufficiency !== "thin" || status === "confirmed")
+            usable: !denied && (status === "confirmed" || event.kind !== "trait" && sufficiency !== "thin")
           });
         }
         const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));

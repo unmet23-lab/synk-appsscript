@@ -105,7 +105,9 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     if (folded.size && typeof port.forget === 'function') port.forget([...folded]);
   };
   const schedule = () => {
-    if (!auto || !started || stopped || phase === 'blocked' || phase === 'offline' || timer) return;
+    if (!auto || !started || stopped || phase === 'blocked' || phase === 'offline') return;
+    flushRequested = true;
+    if (timer) return;
     timer = setTimeout(() => { timer = null; void run(); }, 0);
   };
   const unsubscribe = port.subscribe(change => {
@@ -237,8 +239,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       } finally {
         running = null;
         if (continuation && active(token) && auto && started && !timer) {
-          const pullOnly = !flushRequested;
-          timer = setTimeout(() => { timer = null; void run(pullOnly); }, 0);
+          timer = setTimeout(() => { timer = null; void run(!flushRequested); }, 0);
         }
       }
       return status();

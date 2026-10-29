@@ -22,6 +22,19 @@ function solve(c,items,answers){
 }
 const pick=(exam,modality,count,offset=0)=>bank.filter(item=>item.exam===exam&&item.modality===modality).slice(offset,offset+count);
 
+test('전송 한도는 답과 철회를 한 묶음으로 다뤄 제외된 답으로 수준을 올리지 않는다',()=>{
+ const c=coach(),items=bank.filter(i=>i.exam==='topik-i'&&i.modality==='reading'&&i.difficulty>=2).slice(0,3);
+ assert.equal(items.length,3);solve(c,items,[true,true,true]);
+ const events=c.events(),presented=events.filter(e=>e.type==='practice.presented'),first=events.find(e=>e.type==='practice.attempted'&&e.presentationId===presented[2].id);
+ for(let attemptNo=2;attemptNo<=195;attemptNo++)events.push({...first,id:`synthetic-repeat-${attemptNo}`,attemptNo});
+ events.push({schema:first.schema,id:'synthetic-withdrawal',type:'record.excluded',scope:first.scope,at:first.at,recordedAt:first.recordedAt,targetId:first.id});
+ assert.equal(town.placeTownLevels({events,evidenceComplete:true,now:tick+1000}).reading,'L1','the complete withdrawn history is the reference');
+ const sent=town.townCheckAnswers({events,items:byKey,now:tick+1000});
+ assert.ok(sent.length<=town.TOWN_CHECK_POLICY.maxEvents);
+ assert.ok(!sent.some(e=>e.id===first.id)||sent.some(e=>e.type==='record.excluded'&&e.targetId===first.id));
+ assert.equal(town.placeTownLevels({events:sent,evidenceComplete:true,now:tick+1000}).reading,'L1');
+});
+
 test('준비 확인 문항: 모자란 영역만, 보기 넷 TOPIK I 은행 문항에서, 능력마다 처음 보는 계열 하나씩(읽기 6·듣기 4)',()=>{
  const c=coach(),summary=c.summary(),seen=seenBy(c);
  const both=town.selectTownCheck({summary,items:bank,seen,audioAvailable:true,missing:['reading','listening']});

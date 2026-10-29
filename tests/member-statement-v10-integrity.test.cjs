@@ -15,8 +15,53 @@ test('an outer self prefix never claims another actor\'s subordinate behaviour',
 test('another person liking a topic never proposes that topic as the member interest',()=>{
  for(const text of ['요즘 동료는 협업을 좋아해요.','사람들은 협업을 좋아해요.','남들은 협업을 좋아해요.','상대방은 협업을 좋아해요.','요즘 동료가 협업에 관심이 있어요.','저는 요즘 동료가 협업을 좋아해요.','동료는 협업하는 방식에 관심이 있어요.','요즘 동료도 협업을 좋아해요.','사람들도 협업을 좋아해요.','동료가 우리가 함께 일하는 협업 방식에 관심을 두고 있어요.','요즘 동료가 우리가 함께 일하는 협업 방식에 관심을 두고 있어요.','요즘 팀원들이 동료가 함께 일하는 협업 방식에 관심을 두고 있어요.'])
   assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
- for(const text of ['팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.','저는 팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.','저는 팀원들이 협업하는 방식에 관심을 두고 있어요.','저는 동료와 협업하는 방식에 관심을 두고 있어요.'])
+ for(const text of ['저는 팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.','저는 팀원들이 협업하는 방식에 관심을 두고 있어요.','저는 동료와 협업하는 방식에 관심을 두고 있어요.'])
   assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.field==='topic'&&m.value==='work-collaboration'),text);
+});
+
+test('a helper inside a consumed before-help context is distinct from the preference owner',()=>{
+ for(const text of ['저는 다른 사람이 알려주기 전에 혼자 시도해보는 게 좋아요.','저는 누군가 도와주기 전에 혼자 시도해보는 게 좋아요.']){
+  const p=C.parseMemberStatement(text);assert.equal(p.question,null,text);assert.ok(p.meanings.some(m=>m.field==='support'&&m.value==='independent'),text);
+ }
+ for(const text of ['저는 다른 사람이 알려주기 전에 동료가 혼자 시도해보는 게 좋아요.','다른 사람이 알려주기 전에 동료가 혼자 시도해보는 게 좋아요.'])assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
+});
+
+test('a relative topic with no explicit owner asks whose interest it is before proposing it',()=>{
+ for(const text of ['팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.','요즘 팀원들이 함께 일하는 협업 방식에 관심을 두고 있어요.']){
+  const p=C.parseMemberStatement(text);assert.deepEqual(p.meanings,[]);assert.match(p.question.label,/본인/);
+  for(const optionId of ['not-current','skip'])assert.deepEqual(C.parseMemberStatement(text,{clarifications:[{questionId:p.question.id,optionId}]}).meanings,[]);
+  const clarifications=[{questionId:p.question.id,optionId:'confirm'}],resolved=C.parseMemberStatement(text,{clarifications});
+  assert.equal(resolved.question,null);assert.equal(resolved.meanings[0].value,'work-collaboration');
+  assert.doesNotThrow(()=>C.validateMemberStatement({id:'00000000-0000-4000-8000-000000000003',parserVersion:C.PARSER_VERSION,text,at:'2026-10-29T00:00:00.000Z',confirmedAt:'2026-10-29T00:00:00.000Z',meanings:resolved.meanings,clarifications}));
+ }
+});
+
+test('supported own nominal declarations reset an earlier other-person subject',()=>{
+ for(const text of ['제 친구는 음악을 좋아해요. 제 취미는 요리예요.','친구는 운동을 좋아해요. 요즘 제 취미는 요리예요.','친구는 음악을 좋아해요. 내 관심사는 요리예요.'])
+  assert.deepEqual(C.parseMemberStatement(text).meanings.map(m=>m.value),['cooking'],text);
+ for(const text of ['친구는 음악을 좋아해요. 제도는 요리예요.','친구는 음악을 좋아해요. 내일은 요리를 좋아해요.'])assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
+});
+
+test('person roles and ownership use the same noun vocabulary without claiming companions',()=>{
+ for(const text of ['요즘 누군가는 협업에 관심이 있어요.','요즘 다른 이들은 협업에 관심이 있어요.','요즘 여러 사람들은 협업에 관심이 있어요.'])assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
+ for(const text of ['저는 누군가와 협업하는 방식에 관심을 두고 있어요.','저는 다른 이들과 협업하는 방식에 관심을 두고 있어요.'])assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.value==='work-collaboration'),text);
+});
+
+test('each explanation in a sequence retains its explicitly stated condition',()=>{
+ const text='처음에는 전체 개요를 먼저 보고 익숙할 때는 핵심 근거를 자세히 듣고 싶어요',p=C.parseMemberStatement(text);
+ assert.equal(p.question,null);
+ assert.deepEqual(p.meanings.map(m=>[m.value,m.condition]),[['overview-first','first-try'],['reasons-detail','familiar']]);
+ const inherited=C.parseMemberStatement('처음에는 전체 개요를 먼저 보고 핵심 근거를 자세히 듣고 싶어요');
+ assert.deepEqual(inherited.meanings.map(m=>m.condition),['first-try','first-try']);
+});
+
+test('a negative preference in a reason is never silently discarded as background',()=>{
+ for(const text of ['요리가 싫어서 저는 음악을 좋아해요','요리를 좋아하지 않아서 저는 음악을 좋아해요']){
+  const p=C.parseMemberStatement(text);
+  assert.ok(p.meanings.some(m=>m.value==='cooking'&&m.polarity==='avoid')||p.unresolved.some(e=>e.quote===text));
+  assert.ok(p.question,'an unsupported reason remains visible for clarification');
+  assert.deepEqual(C.parseMemberStatement(text,{clarifications:[{questionId:p.question.id,optionId:'skip'}]}).meanings,[]);
+ }
 });
 
 test('legacy parsing changed only an equivalent nonempty suffix regex; original bytes remain provable',()=>{

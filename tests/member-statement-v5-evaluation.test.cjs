@@ -23,7 +23,15 @@ test('ko5 development regression retains the pre-labelled fixture bytes', () => 
 
 for (const row of corpus.cases) {
   test(`ko5 disclosed development regression ${row.id}: ${row.category}`, () => {
-    const parsed = parseMemberStatement(row.text);
+    let parsed = parseMemberStatement(row.text);
+    if(row.id==='D040'){
+      // Current parsing confirms relative-topic ownership. The unchanged ko5
+      // corpus and historical ko5 replay retain their original direct label.
+      const legacy=require('../experiences/synk-account/src/member-statement-v5.cjs').parseMemberStatement(row.text);
+      assert.equal(scoreCase(row,legacy).pass,true);
+      assert.deepEqual(parsed.meanings,[]);assert.match(parsed.question.label,/본인/);
+      parsed=parseMemberStatement(row.text,{clarifications:[{questionId:parsed.question.id,optionId:'confirm'}]});
+    }
     const skipResult = parsed.question
       ? parseMemberStatement(row.text, { clarifications: [{ questionId: parsed.question.id, optionId: 'skip' }] })
       : null;

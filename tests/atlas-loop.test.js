@@ -58,6 +58,7 @@ test('the person can say "no": a guess about them stays denied, a need reopens o
   const f = fixture();
   const first = f.observe('need', 'honorific', 0.9, 8);
   f.observe('trait', 'prefers.step', 0.8, 8);
+  f.tick(); f.session.respond('trait:prefers.step', 'yes');
   assert.equal(pick(f.plan(), 'core.focus'), 'tone'); assert.equal(pick(f.plan(), 'vellum.checks'), 'step');
   f.tick(); f.session.respond('need:honorific', 'no'); f.tick(); f.session.respond('trait:prefers.step', 'no');
   const denied = f.plan();
@@ -76,6 +77,7 @@ test('the person can say "no": a guess about them stays denied, a need reopens o
 test('what the person set themselves beats observation, learning and the baseline share', () => {
   const f = fixture();
   f.observe('trait', 'prefers.step', 1, 8);
+  f.tick(); f.session.respond('trait:prefers.step', 'yes');
   f.tick(); f.session.set('support', 'independent');
   const decision = f.plan();
   assert.equal(pick(decision, 'vellum.checks'), 'independent'); assert.equal(decision.bundle['vellum.checks'].basis, 'declared');
@@ -261,7 +263,7 @@ test('the baseline share: a seeded part of the rounds ignores what was learned, 
   const amounts = {};
   for (let i = 0; i < 60 && !(amounts.baseline && amounts.adapted); i += 1) {
     const f = fixture({ explore: 0.5, experienceId: `amount-${i}` });
-    f.observe('trait', 'prefers.brief', 1, 8); f.tick(); f.session.set('goal', 'clarity'); f.tick();
+    f.observe('trait', 'prefers.brief', 1, 8); f.tick(); f.session.respond('trait:prefers.brief', 'yes'); f.tick(); f.session.set('goal', 'clarity'); f.tick();
     const decision = f.session.plan(`amount-${i}`, aimed);
     amounts[decision.arm] = amounts[decision.arm] || decision;
   }
@@ -363,7 +365,9 @@ test('the letter adapter: the reason shown is true to the decision, and the pers
     assert.equal(X.notice(b.session, 'prefers.one_check').n, i, 'a habit is counted from what is on record');
     assert.equal(X.aboutYou(b.session.lines()).find(item => item.key === 'trait:prefers.one_check').text, i < 3 ? '점검 항목을 하나씩 본 적이 있습니다.' : '점검 항목을 하나씩 보는 일이 많았습니다.', 'seen once or twice is not called often');
   }
-  assert.equal(b.session.plan('letter', X.modesFor('LAB'), { levers: X.leversFor('LAB') }).support, 'step', 'three times is enough to act on, and it can still be denied');
+  assert.equal(b.session.plan('letter', X.modesFor('LAB'), { levers: X.leversFor('LAB') }).support, 'choose', 'three observations do not replace the member confirming a trait');
+  b.session.respond('trait:prefers.one_check', 'yes');
+  assert.equal(b.session.plan('letter', X.modesFor('LAB'), { levers: X.leversFor('LAB') }).support, 'step', 'a confirmed trait may guide support and can still be denied');
   b.session.respond('trait:prefers.one_check', 'no');
   assert.equal(b.session.plan('letter', X.modesFor('LAB'), { levers: X.leversFor('LAB') }).support, 'choose');
   assert.throws(() => X.notice(b.session, 'is.lazy'), /Unknown letter habit/, 'only reviewed habits can be reported');

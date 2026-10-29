@@ -256,7 +256,7 @@
       const status = denied ? 'denied' : answer?.value === 'yes' ? 'confirmed' : 'unconfirmed';
       const sufficiency = event.n >= 8 ? 'solid' : event.n >= 3 ? 'fair' : 'thin';
       lines.push({ key: line, kind: event.kind, source: 'observed', strength: event.strength, n: event.n, sufficiency, assisted: event.assisted ?? null, at: event.at, until,
-        evidence: [event.id, ...(answer ? [answer.id] : [])], status, usable: !denied && (sufficiency !== 'thin' || status === 'confirmed') });
+        evidence: [event.id, ...(answer ? [answer.id] : [])], status, usable: !denied && (status === 'confirmed' || event.kind !== 'trait' && sufficiency !== 'thin') });
     }
     const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
     // An excluded decision invalidates its analytical descendants as well.

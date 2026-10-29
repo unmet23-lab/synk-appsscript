@@ -36,6 +36,20 @@ async function waitFor(check) {
   assert.fail('expected upload did not arrive');
 }
 
+test('a local answer arriving before a pull continuation still requests automatic upload', async () => {
+  const storage=disk(),local=account(storage),cloud=server(),sync=syncOf(local,storage,cloud,{auto:true,maxPages:1,batchSize:200});
+  try {
+    await sync.start();
+    const remote=account(disk());practise(remote);cloud.log=copy(remote.events());
+    cloud.get=async({after})=>{const events=copy(cloud.log.slice(after,after+2));return{revision:1,events,cursor:after+events.length,hasMore:after+events.length<cloud.log.length};};
+    await sync.pull();
+    practise(local);
+    const expected=[...new Set([...ids(remote.events()),...ids(local.events())])].sort();
+    await waitFor(()=>cloud.posts.length>0&&sync.status().queued===0);
+    assert.deepEqual(ids(cloud.log),expected);assert.equal(sync.status().complete,true);
+  } finally { sync.stop(); }
+});
+
 test('an empty queue and a queue the only allowed upload empties are both synced', async () => {
   const empty = server(), storage = disk(), idle = account(storage), quiet = syncOf(idle, storage, empty, { maxPages: 1, batchSize: 2 });
   assert.deepEqual(outcome(await quiet.start()), ['synced', null, 0]); assert.equal(empty.posts.length, 0); quiet.stop();
