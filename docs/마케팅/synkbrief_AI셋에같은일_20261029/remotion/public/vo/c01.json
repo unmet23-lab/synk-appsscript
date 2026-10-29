@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c01",
+ "text": "안녕하세요, 고객님. 먼저 배달이 늦어져 따뜻하게 드셔야 할 국밥을 식은 상태로 받아보시게 해 정말 죄송합니다.",
+ "show": "안녕하세요, 고객님. 먼저 배달이 늦어져 따뜻하게 드셔야 할 국밥을 식은 상태로 받아보시게 해 정말 죄송합니다.",
+ "dur": 6.738,
+ "words": [
+  {
+   "text": "안녕하세요,",
+   "start": 0.03,
+   "end": 0.499
+  },
+  {
+   "text": "고객님.",
+   "start": 0.562,
+   "end": 1.125
+  },
+  {
+   "text": "먼저",
+   "start": 1.407,
+   "end": 1.689
+  },
+  {
+   "text": "배달이",
+   "start": 2.017,
+   "end": 2.362
+  },
+  {
+   "text": "늦어져",
+   "start": 2.409,
+   "end": 2.706
+  },
+  {
+   "text": "따뜻하게",
+   "start": 2.753,
+   "end": 3.207
+  },
+  {
+   "text": "드셔야",
+   "start": 3.254,
+   "end": 3.567
+  },
+  {
+   "text": "할",
+   "start": 3.614,
+   "end": 3.755
+  },
+  {
+   "text": "국밥을",
+   "start": 3.802,
+   "end": 4.162
+  },
+  {
+   "text": "식은",
+   "start": 4.209,
+   "end": 4.428
+  },
+  {
+   "text": "상태로",
+   "start": 4.475,
+   "end": 4.756
+  },
+  {
+   "text": "받아보시게",
+   "start": 4.803,
+   "end": 5.367
+  },
+  {
+   "text": "해",
+   "start": 5.414,
+   "end": 5.461
+  },
+  {
+   "text": "정말",
+   "start": 5.508,
+   "end": 5.743
+  },
+  {
+   "text": "죄송합니다.",
+   "start": 5.79,
+   "end": 6.738
+  }
+ ],
+ "source": {
+  "key": "6b70030445c926cfd542fa564aefe7e5",
+  "voice": {
+   "id": "tc_65cd94c242e2d9d9c9c905e7",
+   "name": "은하"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_65cd94c242e2d9d9c9c905e7"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 430
+ }
+}

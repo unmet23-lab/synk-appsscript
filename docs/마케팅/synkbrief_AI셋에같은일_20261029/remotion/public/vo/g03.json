@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "g03",
+ "text": "주방에서는 조리를 제때 마쳤으나, 배달 라이더 배차가 지연되면서",
+ "show": "주방에서는 조리를 제때 마쳤으나, 배달 라이더 배차가 지연되면서",
+ "dur": 4.655,
+ "words": [
+  {
+   "text": "주방에서는",
+   "start": 0.38,
+   "end": 1.042
+  },
+  {
+   "text": "조리를",
+   "start": 1.102,
+   "end": 1.443
+  },
+  {
+   "text": "제때",
+   "start": 1.503,
+   "end": 1.744
+  },
+  {
+   "text": "마쳤으나,",
+   "start": 1.804,
+   "end": 2.345
+  },
+  {
+   "text": "배달",
+   "start": 2.746,
+   "end": 3.007
+  },
+  {
+   "text": "라이더",
+   "start": 3.067,
+   "end": 3.368
+  },
+  {
+   "text": "배차가",
+   "start": 3.428,
+   "end": 3.769
+  },
+  {
+   "text": "지연되면서",
+   "start": 3.829,
+   "end": 4.655
+  }
+ ],
+ "source": {
+  "key": "d3e2e2e2206028810719593a9b4d7e5d",
+  "voice": {
+   "id": "tc_68f9c6a72f0f04a417bb136f",
+   "name": "문정"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.1,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_68f9c6a72f0f04a417bb136f"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 333
+ }
+}

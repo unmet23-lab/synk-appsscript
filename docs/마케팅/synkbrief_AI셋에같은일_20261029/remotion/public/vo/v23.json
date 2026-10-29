@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v23",
+ "text": "답글 하나 부탁했는데, 세 개요.",
+ "show": "답글 하나 부탁했는데, 세 개요.",
+ "dur": 1.487,
+ "words": [
+  {
+   "text": "답글",
+   "start": 0.01,
+   "end": 0.21
+  },
+  {
+   "text": "하나",
+   "start": 0.249,
+   "end": 0.369
+  },
+  {
+   "text": "부탁했는데,",
+   "start": 0.409,
+   "end": 0.887
+  },
+  {
+   "text": "세",
+   "start": 0.98,
+   "end": 1.06
+  },
+  {
+   "text": "개요.",
+   "start": 1.113,
+   "end": 1.487
+  }
+ ],
+ "source": {
+  "key": "02c53b9ad11976e51abf1adba53d3891",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 164
+ }
+}

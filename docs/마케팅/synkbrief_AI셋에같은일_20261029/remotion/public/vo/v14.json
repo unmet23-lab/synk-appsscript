@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v14",
+ "text": "그런데 두 번째 답글엔, 리뷰에 없던 사정이 있어요.",
+ "show": "그런데 두 번째 답글엔, 리뷰에 없던 사정이 있어요.",
+ "dur": 2.758,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.03,
+   "end": 0.311
+  },
+  {
+   "text": "두",
+   "start": 0.368,
+   "end": 0.424
+  },
+  {
+   "text": "번째",
+   "start": 0.48,
+   "end": 0.677
+  },
+  {
+   "text": "답글엔,",
+   "start": 0.719,
+   "end": 1.113
+  },
+  {
+   "text": "리뷰에",
+   "start": 1.436,
+   "end": 1.704
+  },
+  {
+   "text": "없던",
+   "start": 1.774,
+   "end": 1.999
+  },
+  {
+   "text": "사정이",
+   "start": 2.041,
+   "end": 2.294
+  },
+  {
+   "text": "있어요.",
+   "start": 2.336,
+   "end": 2.758
+  }
+ ],
+ "source": {
+  "key": "28876f6f8b838bf60211523d37945e81",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

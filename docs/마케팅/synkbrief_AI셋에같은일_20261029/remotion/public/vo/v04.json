@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "딱 하나. 그대로 쓰면 돼요.",
+ "show": "딱 하나. 그대로 쓰면 돼요.",
+ "dur": 1.734,
+ "words": [
+  {
+   "text": "딱",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "하나.",
+   "start": 0.165,
+   "end": 0.342
+  },
+  {
+   "text": "그대로",
+   "start": 0.76,
+   "end": 1.018
+  },
+  {
+   "text": "쓰면",
+   "start": 1.066,
+   "end": 1.291
+  },
+  {
+   "text": "돼요.",
+   "start": 1.339,
+   "end": 1.734
+  }
+ ],
+ "source": {
+  "key": "18a5d6b586c882aa381398cc8e49021f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 134
+ }
+}

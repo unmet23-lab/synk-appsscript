@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v12",
+ "text": "제가 안 한 말, 어느 답글에 있는지 보이세요?",
+ "show": "제가 안 한 말, 어느 답글에 있는지 보이세요?",
+ "dur": 2.397,
+ "words": [
+  {
+   "text": "제가",
+   "start": 0.02,
+   "end": 0.241
+  },
+  {
+   "text": "안",
+   "start": 0.303,
+   "end": 0.366
+  },
+  {
+   "text": "한",
+   "start": 0.414,
+   "end": 0.492
+  },
+  {
+   "text": "말,",
+   "start": 0.539,
+   "end": 0.712
+  },
+  {
+   "text": "어느",
+   "start": 1.105,
+   "end": 1.263
+  },
+  {
+   "text": "답글에",
+   "start": 1.31,
+   "end": 1.561
+  },
+  {
+   "text": "있는지",
+   "start": 1.608,
+   "end": 1.844
+  },
+  {
+   "text": "보이세요?",
+   "start": 1.892,
+   "end": 2.397
+  }
+ ],
+ "source": {
+  "key": "4b1265e71d4f411408f9ed832bb6b1ae",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 129
+ }
+}

@@ -1,0 +1,230 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1018,
+  "lufs": -17
+ },
+ "made": "2026-10-29T07:58:32.710Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "별 두 개 리뷰 답글, 에이아이 둘한테 시켜 봤어요.",
+   "show": "별 두 개 리뷰 답글, AI 둘한테 시켜 봤어요.",
+   "scene": "1 훅 · 0초",
+   "dur": 2.963,
+   "syllablesPerSec": 6.41,
+   "src": "v01.wav",
+   "key": "ea458d583a4edea0638aa4e09b7b30be",
+   "words": 9
+  },
+  {
+   "id": "g01",
+   "text": "세 가지 버전으로 작성했습니다.",
+   "show": "세 가지 버전으로 작성했습니다.",
+   "scene": "1 Gemini 첫 답 · 3초",
+   "dur": 2.312,
+   "syllablesPerSec": 5.62,
+   "src": "g01.wav",
+   "key": "f576e1fba01025648f7373f9f5aa8de3",
+   "words": 4
+  },
+  {
+   "id": "v02",
+   "text": "제미나이는 답글을 세 개나 써 줬어요.",
+   "show": "제미나이는 답글을 세 개나 써 줬어요.",
+   "scene": "2 Gemini · 5초",
+   "dur": 1.875,
+   "syllablesPerSec": 8,
+   "src": "v02.wav",
+   "key": "021963b1901d24c19126f4f9a73545a1",
+   "words": 6
+  },
+  {
+   "id": "g02",
+   "text": "안녕하세요, 상호명입니다. 소중한 식사 시간에 저희 음식을 믿고 주문해 주셨을 텐데, 한 시간이 넘는 배달 지연으로 식은 국밥을 받으시게 해 진심으로 죄송합니다.",
+   "show": "안녕하세요, [상호명]입니다. 소중한 식사 시간에 저희 음식을 믿고 주문해 주셨을 텐데, 1시간이 넘는 배달 지연으로 식은 국밥을 받으시게 해 진심으로 죄송합니다.",
+   "scene": "2 Gemini 첫 답글 첫머리(실제 답 그대로) · 7.3초",
+   "dur": 9.986,
+   "syllablesPerSec": 6.51,
+   "src": "g02.wav",
+   "key": "3accec204cfef67138f252b2aa404c6c",
+   "words": 22
+  },
+  {
+   "id": "v07",
+   "text": "골라 쓰래요.",
+   "show": "골라 쓰래요.",
+   "scene": "2 Gemini 정리 · 16초",
+   "dur": 0.914,
+   "syllablesPerSec": 5.47,
+   "src": "v07.wav",
+   "key": "01a9e769c6182cf5de59fd0b14f29533",
+   "words": 2
+  },
+  {
+   "id": "v03",
+   "text": "챗지피티는요?",
+   "show": "챗GPT는요?",
+   "scene": "3 넘김 · 18.6초",
+   "dur": 0.885,
+   "syllablesPerSec": 6.78,
+   "src": "v03.wav",
+   "key": "06b0f01b744d69e81048e7189ce3c8c8",
+   "words": 1
+  },
+  {
+   "id": "c01",
+   "text": "안녕하세요, 고객님. 먼저 배달이 늦어져 따뜻하게 드셔야 할 국밥을 식은 상태로 받아보시게 해 정말 죄송합니다.",
+   "show": "안녕하세요, 고객님. 먼저 배달이 늦어져 따뜻하게 드셔야 할 국밥을 식은 상태로 받아보시게 해 정말 죄송합니다.",
+   "scene": "3 ChatGPT 답 · 20.4초",
+   "dur": 6.738,
+   "syllablesPerSec": 6.68,
+   "src": "c01.wav",
+   "key": "6b70030445c926cfd542fa564aefe7e5",
+   "words": 15
+  },
+  {
+   "id": "v04",
+   "text": "딱 하나. 그대로 쓰면 돼요.",
+   "show": "딱 하나. 그대로 쓰면 돼요.",
+   "scene": "3 ChatGPT 정리 · 26초",
+   "dur": 1.734,
+   "syllablesPerSec": 5.77,
+   "src": "v04.wav",
+   "key": "18a5d6b586c882aa381398cc8e49021f",
+   "words": 5
+  },
+  {
+   "id": "v05",
+   "text": "그런데 두 번째 답글엔, 제가 안 한 말이 있어요.",
+   "show": "그런데 두 번째 답글엔, 제가 안 한 말이 있어요.",
+   "scene": "4 다시 Gemini · 29.9초",
+   "dur": 2.378,
+   "syllablesPerSec": 7.57,
+   "src": "v05.wav",
+   "key": "053afcc8384ec536940f01763c19b3f3",
+   "words": 9
+  },
+  {
+   "id": "g03",
+   "text": "주방에서는 조리를 제때 마쳤으나, 배달 라이더 배차가 지연되면서",
+   "show": "주방에서는 조리를 제때 마쳤으나, 배달 라이더 배차가 지연되면서",
+   "scene": "4 반전 — 영상은 「배달」부터 자른다(33.9초 반전 자리에 「라이더 배차가」)",
+   "dur": 4.655,
+   "syllablesPerSec": 5.8,
+   "src": "g03.wav",
+   "key": "d3e2e2e2206028810719593a9b4d7e5d",
+   "words": 8
+  },
+  {
+   "id": "v06",
+   "text": "에이아이 고를 땐, 평소 하는 일 하나를 똑같이 시켜 보세요.",
+   "show": "AI 고를 땐, 평소 하는 일 하나를 똑같이 시켜 보세요.",
+   "scene": "4 끝 · 35초(「똑같이」가 37.4초)",
+   "dur": 3.023,
+   "syllablesPerSec": 7.61,
+   "src": "v06.wav",
+   "key": "86284c2c2cb2454cb95408293c9434f7",
+   "words": 10
+  },
+  {
+   "id": "v11",
+   "text": "리뷰 답글, 에이아이 둘한테 똑같이 시켰더니, 하나엔 제가 안 한 말이 들어 있었어요.",
+   "show": "리뷰 답글, AI 둘한테 똑같이 시켰더니, 하나엔 제가 안 한 말이 들어 있었어요.",
+   "scene": "v2 1 훅 · 0초(Fable P1 — 「지어냈다」 대신)",
+   "dur": 5.086,
+   "syllablesPerSec": 6.49,
+   "src": "v11.wav",
+   "key": "03f9f4e1e3e0167ae653a374e2ca79c6",
+   "words": 13
+  },
+  {
+   "id": "v12",
+   "text": "제가 안 한 말, 어느 답글에 있는지 보이세요?",
+   "show": "제가 안 한 말, 어느 답글에 있는지 보이세요?",
+   "scene": "v2 2 답글 셋 제목 · 13초",
+   "dur": 2.397,
+   "syllablesPerSec": 7.09,
+   "src": "v12.wav",
+   "key": "4b1265e71d4f411408f9ed832bb6b1ae",
+   "words": 8
+  },
+  {
+   "id": "v13",
+   "text": "없던 사정은 안 넣었어요.",
+   "show": "없던 사정은 안 넣었어요.",
+   "scene": "v2 3 ChatGPT · 25초",
+   "dur": 1.284,
+   "syllablesPerSec": 7.79,
+   "src": "v13.wav",
+   "key": "019fa83e0e1ed3806f6d34e646f43333",
+   "words": 4
+  },
+  {
+   "id": "v14",
+   "text": "그런데 두 번째 답글엔, 리뷰에 없던 사정이 있어요.",
+   "show": "그런데 두 번째 답글엔, 리뷰에 없던 사정이 있어요.",
+   "scene": "v2 4 다시 Gemini · 31초",
+   "dur": 2.758,
+   "syllablesPerSec": 7.25,
+   "src": "v14.wav",
+   "key": "28876f6f8b838bf60211523d37945e81",
+   "words": 8
+  },
+  {
+   "id": "v15",
+   "text": "그래서 에이아이 고를 땐, 평소 하는 일 하나를 에이아이마다 똑같이 시켜 보세요.",
+   "show": "그래서 AI 고를 땐, 평소 하는 일 하나를 AI마다 똑같이 시켜 보세요.",
+   "scene": "v2 끝 · 반전 뒤(「똑같이」가 끝 자리)",
+   "dur": 3.968,
+   "syllablesPerSec": 8.06,
+   "src": "v15.wav",
+   "key": "93ab5134b98dc704f02d9dd4e801e3d9",
+   "words": 12
+  },
+  {
+   "id": "v21",
+   "text": "에이아이가 써 준 리뷰 답글, 그대로 올렸으면 큰일 날 뻔했어요.",
+   "show": "AI가 써 준 리뷰 답글, 그대로 올렸으면 큰일 날 뻔했어요.",
+   "scene": "v3 1 훅 · 0초(「~했더니」 훅이 지난 편과 같아 보인다는 v2 시험 — 걸린 것을 먼저)",
+   "dur": 3.191,
+   "syllablesPerSec": 7.83,
+   "src": "v21.wav",
+   "key": "5f1aabbe5faec83fd4416132cd35b3df",
+   "words": 10
+  },
+  {
+   "id": "v22",
+   "text": "우리 가게 이름이 상호명이 됐네요.",
+   "show": "우리 가게 이름이 상호명이 됐네요.",
+   "scene": "v3 2 「[상호명]입니다」 뒤 · 8초",
+   "dur": 1.745,
+   "syllablesPerSec": 8.02,
+   "src": "v22.wav",
+   "key": "699ead5bcc97122c1e58bbbc4efaca4c",
+   "words": 5
+  },
+  {
+   "id": "v23",
+   "text": "답글 하나 부탁했는데, 세 개요.",
+   "show": "답글 하나 부탁했는데, 세 개요.",
+   "scene": "v3 2 답글 셋 · 11초",
+   "dur": 1.487,
+   "syllablesPerSec": 8.07,
+   "src": "v23.wav",
+   "key": "02c53b9ad11976e51abf1adba53d3891",
+   "words": 5
+  }
+ ]
+}

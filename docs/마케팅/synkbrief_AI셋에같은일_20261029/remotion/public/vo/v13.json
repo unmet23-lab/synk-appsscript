@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v13",
+ "text": "없던 사정은 안 넣었어요.",
+ "show": "없던 사정은 안 넣었어요.",
+ "dur": 1.284,
+ "words": [
+  {
+   "text": "없던",
+   "start": 0.02,
+   "end": 0.245
+  },
+  {
+   "text": "사정은",
+   "start": 0.301,
+   "end": 0.568
+  },
+  {
+   "text": "안",
+   "start": 0.61,
+   "end": 0.68
+  },
+  {
+   "text": "넣었어요.",
+   "start": 0.722,
+   "end": 1.284
+  }
+ ],
+ "source": {
+  "key": "019fa83e0e1ed3806f6d34e646f43333",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

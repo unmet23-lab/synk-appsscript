@@ -1,0 +1,46 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v07",
+ "text": "골라 쓰래요.",
+ "show": "골라 쓰래요.",
+ "dur": 0.914,
+ "words": [
+  {
+   "text": "골라",
+   "start": 0.02,
+   "end": 0.162
+  },
+  {
+   "text": "쓰래요.",
+   "start": 0.264,
+   "end": 0.914
+  }
+ ],
+ "source": {
+  "key": "01a9e769c6182cf5de59fd0b14f29533",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

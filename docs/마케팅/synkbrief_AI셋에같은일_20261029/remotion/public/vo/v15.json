@@ -1,0 +1,96 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v15",
+ "text": "그래서 에이아이 고를 땐, 평소 하는 일 하나를 에이아이마다 똑같이 시켜 보세요.",
+ "show": "그래서 AI 고를 땐, 평소 하는 일 하나를 AI마다 똑같이 시켜 보세요.",
+ "dur": 3.968,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.276
+  },
+  {
+   "text": "에이아이",
+   "start": 0.433,
+   "end": 0.66
+  },
+  {
+   "text": "고를",
+   "start": 0.703,
+   "end": 0.887
+  },
+  {
+   "text": "땐,",
+   "start": 0.944,
+   "end": 1.101
+  },
+  {
+   "text": "평소",
+   "start": 1.513,
+   "end": 1.754
+  },
+  {
+   "text": "하는",
+   "start": 1.797,
+   "end": 1.967
+  },
+  {
+   "text": "일",
+   "start": 2.01,
+   "end": 2.081
+  },
+  {
+   "text": "하나를",
+   "start": 2.124,
+   "end": 2.422
+  },
+  {
+   "text": "에이아이마다",
+   "start": 2.607,
+   "end": 3.019
+  },
+  {
+   "text": "똑같이",
+   "start": 3.062,
+   "end": 3.36
+  },
+  {
+   "text": "시켜",
+   "start": 3.403,
+   "end": 3.573
+  },
+  {
+   "text": "보세요.",
+   "start": 3.616,
+   "end": 3.968
+  }
+ ],
+ "source": {
+  "key": "93ab5134b98dc704f02d9dd4e801e3d9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

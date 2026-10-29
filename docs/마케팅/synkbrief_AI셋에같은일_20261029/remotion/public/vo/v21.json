@@ -1,0 +1,86 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v21",
+ "text": "에이아이가 써 준 리뷰 답글, 그대로 올렸으면 큰일 날 뻔했어요.",
+ "show": "AI가 써 준 리뷰 답글, 그대로 올렸으면 큰일 날 뻔했어요.",
+ "dur": 3.191,
+ "words": [
+  {
+   "text": "에이아이가",
+   "start": 0,
+   "end": 0.338
+  },
+  {
+   "text": "써",
+   "start": 0.388,
+   "end": 0.463
+  },
+  {
+   "text": "준",
+   "start": 0.501,
+   "end": 0.614
+  },
+  {
+   "text": "리뷰",
+   "start": 0.664,
+   "end": 0.802
+  },
+  {
+   "text": "답글,",
+   "start": 0.839,
+   "end": 1.178
+  },
+  {
+   "text": "그대로",
+   "start": 1.554,
+   "end": 1.779
+  },
+  {
+   "text": "올렸으면",
+   "start": 1.817,
+   "end": 2.181
+  },
+  {
+   "text": "큰일",
+   "start": 2.231,
+   "end": 2.419
+  },
+  {
+   "text": "날",
+   "start": 2.469,
+   "end": 2.519
+  },
+  {
+   "text": "뻔했어요.",
+   "start": 2.557,
+   "end": 3.191
+  }
+ ],
+ "source": {
+  "key": "5f1aabbe5faec83fd4416132cd35b3df",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 176
+ }
+}

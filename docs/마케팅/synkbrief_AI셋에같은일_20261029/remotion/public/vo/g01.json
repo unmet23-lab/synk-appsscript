@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "g01",
+ "text": "세 가지 버전으로 작성했습니다.",
+ "show": "세 가지 버전으로 작성했습니다.",
+ "dur": 2.312,
+ "words": [
+  {
+   "text": "세",
+   "start": 0.3,
+   "end": 0.401
+  },
+  {
+   "text": "가지",
+   "start": 0.481,
+   "end": 0.742
+  },
+  {
+   "text": "버전으로",
+   "start": 0.822,
+   "end": 1.345
+  },
+  {
+   "text": "작성했습니다.",
+   "start": 1.425,
+   "end": 2.312
+  }
+ ],
+ "source": {
+  "key": "f576e1fba01025648f7373f9f5aa8de3",
+  "voice": {
+   "id": "tc_68f9c6a72f0f04a417bb136f",
+   "name": "문정"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.1,
+   "seed": 1018,
+   "lufs": -17,
+   "voiceId": "tc_68f9c6a72f0f04a417bb136f"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 363
+ }
+}
