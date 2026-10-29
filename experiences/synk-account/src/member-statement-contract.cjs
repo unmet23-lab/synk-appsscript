@@ -600,7 +600,7 @@ const COMPOSE_LEXICON = [
   ['person', /^남(?=과|에게|이랑)/u],
   ['neutral', /^다시/u], ['adjust-context', /^상황에맞춰/u],
   ['reference', /^(?:참고해서)/u],
-  ['task', /^(?:이과제|나머지|할일이생기면)/u], ['person', /^(?:여럿)/u],
+  ['task', /^(?:이과제|나머지|할일이생기면)/u], ['person', /^(?:여럿)/u, 'participant-count'],
   ['process', /^(?:풀어가(?:는|기|고)|풀(?:기|고)|푸(?:는)?)/u],
   ['help-time', /^시점/u], ['on', /^(?:켜(?:는|기|고))/u],
   ['short', /^(?:두세문장(?:정도)?로|간추린)/u], ['before-start', /^시작전(?:에)?/u],
@@ -671,7 +671,7 @@ const COMPOSE_LEXICON = [
   ['flow', /^(?:끊지않고|중간에끊지않고|끝까지이어)/u],
   ['neutral', /^(?:처음부터끝까지|무엇을할지|끝까지|제일|살짝|푹빠져|늘|실제로|편안하게)/u],
   ['self', /^(?:내자신|제자신|스스로|혼자서|혼자|독립적으로|내힘으로|제힘으로|자력으로)/u],
-  ['person', /^(?:다른사람들?|다른분들?|다른이들|여러사람들?|사람들|상대방|상대|동료들?|팀원들?|주변사람들?|주위사람들?|남들|누군가|누구|모두)/u],
+  ['person', /^(?:다른사람들?|다른분들?|다른이들|여러사람들?|사람들|상대방|상대|동료들?|팀원들?|주변사람들?|주위사람들?|남들|누군가|누구)/u], ['person', /^모두/u, 'participant-count'],
   ['mine', /^(?:나의|저의|제|내)/u],
   ['text', /^(?:이메일|메신저|메시지|메세지|문자|채팅|텍스트|메일|글)/u],
   ['speech', /^(?:목소리|말|대화|입)/u], ['opinion', /^(?:의견|생각|이야기|얘기)/u],
@@ -751,7 +751,7 @@ function phraseUnits(action,keepSurface=false) {
   const units=[];let offset=0;
   while(offset<action.length&&units.length<120){
     let best=null;
-    for(const [tag,pattern] of COMPOSE_UNITS){const m=pattern.exec(action.slice(offset));if(m&&(!best||m[0].length>best.text.length))best={tag,text:m[0]};}
+    for(const [tag,pattern,role] of COMPOSE_UNITS){const m=pattern.exec(action.slice(offset));if(m&&(!best||m[0].length>best.text.length))best={tag,text:m[0],...(role?{role}:{})};}
     if(!best)return null;
     units.push(keepSurface?best:best.tag);offset+=best.text.length;
   }
@@ -916,17 +916,29 @@ const COMPOSE_FRAMES=[
 // The noun owns its subject particle even after a possessive prefix, plural
 // or honorific ending. "우리 팀원들은" is not the writer's own preference.
 const OTHER_NAMED_SUBJECT=/(?:친구|동료|팀원|팀장|상사|선생님?|교수님?|구성원|직원|사람|학생|고객|회원|가족|그녀|그사람|그분|다른분|당신|너|언니|동생|형|누나|오빠|남편|아내|엄마|아빠|어머니|아버지|남들|상대방)(?:분)?(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u;
-const PERSON_ROLE_NOUNS=COMPOSE_UNITS.filter(([tag])=>tag==='person').map(([,pattern])=>pattern);
+const PERSON_ROLE_NOUNS=COMPOSE_UNITS.filter(([tag])=>tag==='person').map(([,pattern,role])=>({pattern,role}));
+function subjectCaseBoundary(text,at,particle){
+  let best=null;for(const [tag,pattern]of COMPOSE_UNITS){const m=pattern.exec(text.slice(at));if(m&&(!best||m[0].length>best.text.length))best={tag,text:m[0]};}
+  // A legal unit after the case keeps 이 + 과제 from becoming 이과제.
+  // 도움 has no such split (움 is not a unit), so 도 remains part of its word.
+  return !best||best.tag==='particle'&&particle.startsWith(best.text)
+    ||COMPOSE_UNITS.some(([,pattern])=>pattern.test(text.slice(at+particle.length)));
+}
 // Ownership and composition share their supported person nouns. A role noun
 // becomes a subject only with its subject/topic case; a companion (와/과),
 // possessor (의), or object is not silently promoted to a preference owner.
 const OTHER_PERSON_SUBJECT={
   exec(text){
-    let found=OTHER_NAMED_SUBJECT.exec(text);
-    for(let index=0;index<(found?.index??text.length);index++)for(const pattern of PERSON_ROLE_NOUNS){
+    let found=null,offset=0;
+    while(offset<text.length){const match=OTHER_NAMED_SUBJECT.exec(text.slice(offset));if(!match)break;match.index+=offset;
+      const particle=/(?:께서는|께서|에게는|한테는|은|는|이|가|도)$/u.exec(match[0]);
+      if(particle&&subjectCaseBoundary(text,match.index+match[0].length-particle[0].length,particle[0])){found=match;break;}
+      offset=match.index+1;
+    }
+    for(let index=0;index<(found?.index??text.length);index++)for(const {pattern,role} of PERSON_ROLE_NOUNS){
       const noun=pattern.exec(text.slice(index));if(!noun)continue;
       const suffix=/^(?:들)?(?:께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가|도)/u.exec(text.slice(index+noun[0].length));
-      if(suffix){found={0:noun[0]+suffix[0],index};break;}
+      if(suffix&&subjectCaseBoundary(text,index+noun[0].length,suffix[0])){found={0:noun[0]+suffix[0],index,role};break;}
     }
     return found;
   },
@@ -1049,8 +1061,8 @@ function compositional(quote) {
   // ("팀원들이 함께 일하는 협업 방식에 관심"). A bare assertion about
   // that person's liking never establishes the member's topic interest.
   const actorBody=otherActor?body.slice(otherActor.index+otherActor[0].length):'';
-  const topicObject=otherActor?.index===0&&/(?:이|가|께서)$/u.test(otherActor[0])
-    &&!OTHER_PERSON_SUBJECT.test(actorBody)&&!/(?:제가|내가|우리가|저희가|그들이|이들이|너희가)/u.test(actorBody)
+  const singleActor=otherActor&&!OTHER_PERSON_SUBJECT.test(actorBody)&&!/(?:제가|내가|우리가|저희가|그들이|이들이|너희가)/u.test(actorBody);
+  const topicObject=otherActor?.index===0&&/(?:이|가|께서)$/u.test(otherActor[0])&&singleActor
     &&/(?:하는|되는|하던|했던).*?(?:방식|방법|주제|과정)(?:에|을|를)/u.test(actorBody);
   let fields=null,head='';
   const ownedExplanation=/^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(body);
@@ -1128,7 +1140,9 @@ function compositional(quote) {
     // A fully consumed before-help role describes when the member acts; the
     // helper inside it is not the subject of the member's preference.
     const preferenceActor=OTHER_PERSON_SUBJECT.test(tokens.filter(t=>t.tag!=='before-help').map(t=>t.text).join(''));
-    if(m){if(preferenceActor&&!(m.field==='topic'&&topicObject))return null;recognized.push(m);}}
+    const participantMethod=otherActor?.role==='participant-count'&&otherActor.index===0&&/(?:이|가)$/u.test(otherActor[0])&&singleActor
+      &&m?.field==='support'&&m.value==='together'&&/(?:방식|방법|쪽|것|게)(?:은|는|이|가)/u.test(body);
+    if(m){if(preferenceActor&&!(m.field==='topic'&&topicObject||participantMethod))return null;recognized.push(m);}}
   if(!recognized.length){
     const core=declaredCore(head+action,normalized,condition,fields,quote);if(core)return core;
     // Coordinated clauses may share their final preference predicate. Each
@@ -1322,9 +1336,16 @@ function pendingScopeAside(body,surface=body) {
   // not independent assertions. Keep the condition until a main clause wins.
   return /(?:니까|어서|아서|해서|여서|워서|러서|라서|더라도|어도|아도|여도|워도|러도|와도|려는(?:게|것이)아니라)$/u.test(body);
 }
+function recipientWaitingContext(prefix){
+  const actor=OTHER_PERSON_SUBJECT.exec(prefix);if(!actor)return false;
+  return /^(?:결과|완성본|답변|설명)(?:을|를)$/u.test(prefix.slice(0,actor.index))
+    &&/^(?:기다리니까|기다리고있어서|기다리고있으니까|기다리셔서)$/u.test(prefix.slice(actor.index+actor[0].length));
+}
 function clauseAdjunct(prefix, explicitSelf, surface=prefix) {
   if(!prefix||prefix.length>300||/(?:강요|억지|시켜|시키|명령|라고|다고|라는말|다는말|예전|과거|옛날|내일|어제|작년|만약|가정|것같|모르|아마|어쩌면|일지도|수도|취소|철회|저장|분류|등록|수밖에|뿐이라|만가능)/u.test(prefix))return false;
-  if(/(?:때|경우라면|상황이라면|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만)/u.test(prefix)||OTHER_PERSON_SUBJECT.test(prefix))return false;
+  if(/(?:때|경우라면|상황이라면|날만|에서만|에만|오늘만|이번만|동안|경우에만|에따라|따라서만)/u.test(prefix))return false;
+  if(recipientWaitingContext(prefix))return true;
+  if(OTHER_PERSON_SUBJECT.test(prefix))return false;
   const purpose=/(?:려고|기위해|기위해서|지않도록|지않게|수있도록|수있게|(?:놓치|빠뜨리|잊|헷갈리)지않으려면)$/u.test(prefix);
   const reason=/(?:니까|어서|아서|해서|여서|워서|러서|라서|이라서|돼서)$/u.test(prefix);
   const concession=/(?:더라도|어도|아도|여도|워도|러도)$/u.test(prefix);
@@ -1348,7 +1369,7 @@ function structuredDeclaration(quote,depth=0) {
     const main=commas[0]+commas[2],found=natural(main)||expanded(main)||compositional(main)||structuredDeclaration(main,depth+1);if(found)return found;
   }
   const {body,condition}=normalizePrefix(surfaceDeclaration(quote));
-  if(CLAUSE_UNSAFE.test(body)||OTHER_PERSON_SUBJECT.test(body)||relativePersonClause(body))return null;
+  if(CLAUSE_UNSAFE.test(body)||relativePersonClause(body))return null;
   const read=part=>{
     if(excludedOrigin(part))return null;
     const found=natural(part)||expanded(part)||compositional(part)||structuredDeclaration(part,depth+1);
@@ -1371,6 +1392,9 @@ function structuredDeclaration(quote,depth=0) {
     if(stated){const assertion=stated[1]+({좋아해서:'좋아해요',선호해서:'선호해요',좋아서:'좋아요',편해서:'편해요',싫어서:'싫어요',좋아하지않아서:'좋아하지않아요',선호하지않아서:'선호하지않아요',원하지않아서:'원하지않아요'}[stated[2]]);if((natural(assertion)||expanded(assertion)||compositional(assertion))?.meanings?.length)continue;}
     const found=read(rest);if(found)return found;
   }
+  // Only a fully consumed factual adjunct may close another person's role.
+  // All remaining loose declarations retain the ordinary ownership guard.
+  if(OTHER_PERSON_SUBJECT.test(body))return null;
   // Explicit liking followed by a factual reason/consequence asserts only
   // the stated liking. An unsupported second liking is not a background fact.
   const causal=/^(.+?)(좋아해서|선호해서|좋아서|편해서)(.+)$/u.exec(body);

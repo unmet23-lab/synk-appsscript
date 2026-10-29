@@ -47,6 +47,14 @@ test('person roles and ownership use the same noun vocabulary without claiming c
  for(const text of ['저는 누군가와 협업하는 방식에 관심을 두고 있어요.','저는 다른 이들과 협업하는 방식에 관심을 두고 있어요.'])assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.value==='work-collaboration'),text);
 });
 
+test('word boundaries, collective participants and a factual recipient stay distinct from preference owners',()=>{
+ for(const text of ['시간에 쫓길 때, 예시를 본 이후의 작업은 누구 도움 없이 혼자 하고 싶어요.','누구 도움 없이 혼자 하고 싶어요.'])assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.field==='support'&&m.value==='independent'),text);
+ for(const text of ['여럿이 함께 푸는 방식은 피하고 싶어요.','모두가 함께 푸는 방식은 피하고 싶어요.'])assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.field==='support'&&m.value==='together'&&m.polarity==='avoid'),text);
+ for(const text of ['여럿은 협업에 관심이 있어요.','모두가 협업에 관심이 있어요.','여럿이 동료가 함께 푸는 방식은 피하고 싶어요.','팀원이 과제를 혼자 하는 걸 좋아해요.','모두는 함께 푸는 방식을 좋아해요.','여럿은 함께 푸는 방식을 선호해요.','모두도 함께 푸는 방식을 좋아해요.','여럿이 함께 푸는 방식을 좋아해요.'])for(const input of [text,text.replace(/\s/gu,'')])assert.deepEqual(C.parseMemberStatement(input).meanings,[],input);
+ const recipient=C.parseMemberStatement('결과를 상대가 기다리니까 짧은 설명이 좋아요.');assert.equal(recipient.question,null);assert.equal(recipient.meanings[0].value,'brief');
+ for(const text of ['결과를 상대가 기다리니까 동료가 짧은 설명을 좋아해요.','동료가 피곤해서 혼자 시도하는 걸 좋아해요.'])assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
+});
+
 test('each explanation in a sequence retains its explicitly stated condition',()=>{
  const text='처음에는 전체 개요를 먼저 보고 익숙할 때는 핵심 근거를 자세히 듣고 싶어요',p=C.parseMemberStatement(text);
  assert.equal(p.question,null);

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "entry": "atlas/member-understanding.js",
-  "sha256": "5696e7bff41c4108d24e841500d3f9c927fe7ef20f82d0411c14adb9f898f8d9",
+  "sha256": "66dc70feeecd7c4dc5d744e123357962e2b4cdf4040eb27a1eda1a808c5a18ca",
   "sources": {
     "atlas/ask.js": "a2b9f22cbb03a2fa932036c95b5f13b460c7820ce72738fb53ad80a867d298c1",
     "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
@@ -13,7 +13,7 @@
     "atlas/trail-periods.js": "4ec4419d3abe982bcc300993d4bba5dd2dd27b1174aca5c6d9bf3621171df637",
     "atlas/vellum.js": "4bb31f9ed6549f886164ba2203c87b464430f284c10088c9b5a54bef470965e6",
     "experiences/synk-account/src/member-activity-data.mjs": "03aba1b188c5860fdb14488bf21ff658705aedb6a26290c37338233ecf3b39dd",
-    "experiences/synk-account/src/member-statement-contract.cjs": "6051cf9afbc528009f3f2e83f25077cbd84860460360f76a6fcff243c00b2ac8",
+    "experiences/synk-account/src/member-statement-contract.cjs": "4519aca79459b4742aca5e009d1b571d0c3698b9db6eb87076b691c1ce7e315f",
     "experiences/synk-account/src/member-statement-v1.cjs": "80af2773ef8f5870c8342dc8c6658d81dd0519fadbff5b80f3ad95295b9ea823",
     "experiences/synk-account/src/member-statement-v2.cjs": "7e26a5dd658f02951ea7ff3fe302e8992f1d547f07e76fda30e693a3cb37c220",
     "experiences/synk-account/src/member-statement-v3.cjs": "8eadd4133d3474150d577c6b4e86286ed6370030956bccbdbfb248883d15f271",
@@ -41,14 +41,14 @@
         "member-shared/chunk-YOJMHZM4.mjs"
       ]
     },
-    "member-shared/chunk-5XKYDHS3.mjs": {
-      "sha256": "6f84c34473c1ff1fa6cf23597e186eff587fc5f54c3982780aebf3516dbdff2a",
+    "member-shared/chunk-7IGMMDKT.mjs": {
+      "sha256": "4830161a9003f482ece488f82685fc7216c376db4c93336415c9384b89c1d0fd",
       "imports": [
         "member-shared/chunk-YOJMHZM4.mjs"
       ]
     },
-    "member-shared/chunk-7IGMMDKT.mjs": {
-      "sha256": "4830161a9003f482ece488f82685fc7216c376db4c93336415c9384b89c1d0fd",
+    "member-shared/chunk-KCWLJZ4U.mjs": {
+      "sha256": "b7d339960df7c9efa2ae9374c7b5afa06aab779c6d645adcfa5696576af3ebef",
       "imports": [
         "member-shared/chunk-YOJMHZM4.mjs"
       ]
@@ -58,17 +58,17 @@
       "imports": []
     },
     "member-understanding-data.mjs": {
-      "sha256": "2d328026da248fd4e38f99dd7fad9723e1f9dc7476d437aa4040de82714f42bd",
+      "sha256": "56a5b4a0b74322c1360ede42fa312630bb49122a5b9b5cf2d00694967bf609ec",
       "imports": [
-        "member-shared/chunk-5XKYDHS3.mjs",
+        "member-shared/chunk-KCWLJZ4U.mjs",
         "member-shared/chunk-YOJMHZM4.mjs"
       ]
     },
     "member-understanding.mjs": {
-      "sha256": "5696e7bff41c4108d24e841500d3f9c927fe7ef20f82d0411c14adb9f898f8d9",
+      "sha256": "66dc70feeecd7c4dc5d744e123357962e2b4cdf4040eb27a1eda1a808c5a18ca",
       "imports": [
-        "member-shared/chunk-5XKYDHS3.mjs",
         "member-shared/chunk-7IGMMDKT.mjs",
+        "member-shared/chunk-KCWLJZ4U.mjs",
         "member-shared/chunk-YOJMHZM4.mjs"
       ]
     }
