@@ -35,7 +35,10 @@ async function readClaude(row){
       const account=r.code===-2?{known:false}:await claudeAccount(row.folder);
       if(account.known&&!account.loggedIn)return {state:'needs-login',message:'Claude 로그인이 풀렸어요. 다시 연결해 주세요.'};
       const first=stripAnsi(text).split(/\r?\n/).map(l=>l.trim()).find(Boolean)||'';
-      return {state:'error',message:r.code===-2?'Claude Code가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':account.known&&!account.plan||/subscription|plan/i.test(first)?'이 계정은 Claude Pro·Max 구독 한도가 없어요.':'Claude Code의 사용량 화면을 읽지 못했어요.',detail:cleanText(first,160)};
+      // 「구독 한도가 없어요」는 auth status가 요금제 없음이라고 할 때만 — 구독 계정의 사용량 첫 줄 「You are currently using your subscription …」의
+      // 낱말에 걸려, 숫자만 못 읽은 구독 계정(연결이 잠깐 끊긴 때 등)을 구독이 없다고 잘못 말했다(10-29 이 PC의 Max 계정 셋). 첫 줄 낱말은 auth status를 못 읽었을 때만 본다.
+      const noPlan=account.known?!account.plan:/subscription|plan/i.test(first)&&!/using your subscription/i.test(first);
+      return {state:'error',message:r.code===-2?'Claude Code가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':noPlan?'이 계정은 Claude Pro·Max 구독 한도가 없어요.':'Claude Code의 사용량 화면을 읽지 못했어요.',detail:cleanText(first,160)};
     }
     const account=await claudeAccount(row.folder);
     const email=account.loggedIn?account.email:null,lower=email?email.toLowerCase():null;

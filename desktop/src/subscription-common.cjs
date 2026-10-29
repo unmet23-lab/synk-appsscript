@@ -56,7 +56,14 @@ const randomId=()=>Array.from({length:8},()=>'abcdefghijklmnopqrstuvwxyz01234567
 function parseResetText(text,now=new Date()){
   // "Oct 22, 10:59am (Asia/Seoul)" — Claude Code는 PC의 지역 시간대로 보여 준다.
   const m=/([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i.exec(String(text||''));
-  if(!m||!Object.hasOwn(MONTHS,m[1].toLowerCase()))return null;
+  if(!m||!Object.hasOwn(MONTHS,m[1].toLowerCase())){
+    // 날짜 없이 시각만(「resets 8:20pm」 — 오늘 풀리는 한도 한 줄)은 다가오는 그 시각이다(tools/크레딧실행.js 한도읽기와 같은 규칙, 10-29 Fable P2).
+    const t=/(?:^|\s)(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i.exec(String(text||''));
+    if(!t)return null;
+    const date=new Date(now.getFullYear(),now.getMonth(),now.getDate(),Number(t[1])%12+(t[3].toLowerCase()==='pm'?12:0),Number(t[2]||0),0,0);
+    if(date.getTime()<=now.getTime())date.setDate(date.getDate()+1);
+    return date.getTime();
+  }
   let hour=Number(m[3]);if(m[5]){hour%=12;if(m[5].toLowerCase()==='pm')hour+=12;}
   const date=new Date(now.getFullYear(),MONTHS[m[1].toLowerCase()],Number(m[2]),hour,Number(m[4]||0),0,0);
   if(date.getTime()<now.getTime()-2*864e5)date.setFullYear(date.getFullYear()+1);
@@ -67,6 +74,16 @@ function parseClaudeUsage(output,now=new Date()){
   const lines=stripAnsi(output).split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
   const result={session:null,weekly:null,models:[]};
   for(const line of lines){
+    // 한도를 다 쓴 계정은 가끔 표 대신 한 줄만 낸다 — 「You've hit your weekly limit · resets Nov 2, 12pm (Asia/Seoul)」(10-28 이 PC 실측).
+    // 그 창을 100% 쓴 것으로 읽는다(표가 같이 오면 앞뒤 어느 쪽이든 표 값을 쓴다). session·5-hour는 5시간 창이다.
+    // 창 이름 없이 「You've hit your limit · resets 3pm」만 오면 풀리는 때로 고른다 — 5시간(+10분) 안이면 5시간 창, 그보다 멀면 주간, 모르면 5시간 창(아르곤 A1).
+    const hit=/^You['’]ve (?:hit|reached) your (?:(weekly|session|5-hour) )?limit(?:\s*[·•|-]\s*resets?\s+(.+))?$/i.exec(line);
+    if(hit){
+      const window={usedPercent:100,resetsAt:parseResetText(hit[2],now)};
+      const weekly=hit[1]?hit[1].toLowerCase()==='weekly':window.resetsAt!==null&&window.resetsAt-now.getTime()>5*3600e3+10*60e3;
+      if(weekly)result.weekly=result.weekly||window;else result.session=result.session||window;
+      continue;
+    }
     const m=/^Current (session|week)(?:\s*\(([^)]+)\))?\s*:\s*(\d+(?:\.\d+)?)\s*%\s*used(?:\s*[·•|-]\s*resets?\s+(.+))?$/i.exec(line);
     if(!m)continue;
     const window={usedPercent:Number(m[3]),resetsAt:parseResetText(m[4],now)};

@@ -31,6 +31,20 @@ test('reads the official Claude Code usage text without touching credentials',()
   assert.equal(parseClaudeUsage('Not logged in · Please run /login').weekly,null);
   assert.equal(claudeNeedsLogin('Not logged in · Please run /login'),true);
   assert.equal(claudeNeedsLogin(USAGE),false);
+  // 한도를 다 쓴 계정이 가끔 내는 한 줄(10-28 이 PC 실측)은 그 창을 100% 쓴 것으로 읽는다. 표가 같이 오면 표 값을 쓴다.
+  const hit=parseClaudeUsage("You've hit your weekly limit · resets Nov 2, 12pm (Asia/Seoul)",new Date(NOW));
+  assert.deepEqual([hit.weekly.usedPercent,new Date(hit.weekly.resetsAt).getMonth(),new Date(hit.weekly.resetsAt).getDate(),new Date(hit.weekly.resetsAt).getHours(),hit.session],[100,10,2,12,null]);
+  assert.equal(parseClaudeUsage("You’ve hit your session limit · resets 3pm (Asia/Seoul)",new Date(NOW)).session.usedPercent,100);
+  // 날짜 없이 시각만 오면 다가오는 그 시각(오늘 그 시각이 지났으면 내일) — 5시간 한 줄은 늘 이 꼴이다(Fable P2). NOW는 10/17 10:00.
+  const at=(s,now=NOW)=>{const t=parseClaudeUsage(s,new Date(now)),w=t.session||t.weekly;return w&&w.resetsAt?new Date(w.resetsAt).toString().slice(4,21):null;};
+  assert.equal(at("You've hit your session limit · resets 8:20pm (Asia/Seoul)"),'Oct 17 2026 20:20');
+  assert.equal(at("You've hit your weekly limit · resets 9am (Asia/Seoul)"),'Oct 18 2026 09:00');
+  assert.equal(at("You've hit your weekly limit · resets 12pm (Asia/Seoul)"),'Oct 17 2026 12:00');
+  assert.equal(parseResetText('soon'),null);
+  assert.equal(parseClaudeUsage(`You've hit your weekly limit · resets Nov 2, 12pm (Asia/Seoul)\n${USAGE}`,new Date(NOW)).weekly.usedPercent,31);
+  // 창 이름이 없으면 풀리는 때로: 5시간 안이면 5시간 창, 멀면 주간(아르곤 A1). NOW는 10/17 10:00.
+  const soon=parseClaudeUsage("You've hit your limit · resets Oct 17, 1pm (Asia/Seoul)",new Date(NOW)),far=parseClaudeUsage("You've hit your limit · resets Oct 20, 9am (Asia/Seoul)",new Date(NOW));
+  assert.deepEqual([soon.session?.usedPercent,soon.weekly,far.session,far.weekly?.usedPercent],[100,null,null,100]);
 });
 
 test('sorts Codex windows by length, not by primary or secondary order',()=>{
@@ -812,6 +826,23 @@ test('a Claude login that is really gone is told apart from a usage screen that 
   f.state.claudeAuthOverride=JSON.stringify({loggedIn:true,authMethod:'apiKey',subscriptionType:null});
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
   assert.equal(row.state,'error');assert.match(row.stateMessage,/구독 한도가 없어요/);
+  // 구독 계정이 숫자만 못 읽혔으면(첫 줄 「You are currently using your subscription …」만 옴) 구독이 없다고 하지 않는다(10-29 Max 계정 셋).
+  f.state.claudeUsageOverride='You are currently using your subscription to power your Claude Code usage\n\nCould not load usage data.\n';
+  f.state.claudeAuthOverride=JSON.stringify({loggedIn:true,email:f.state.claudeEmail,subscriptionType:'max'});
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용량 화면을 읽지 못했어요/);
+  // auth status를 못 읽었어도 그 첫 줄이면 구독이 있는 것이다. 다른 글이 구독·요금제를 말하면 예전처럼 구독 없음으로 본다.
+  f.state.claudeAuthOverride='garbled';
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.match(row.stateMessage,/사용량 화면을 읽지 못했어요/);
+  f.state.claudeUsageOverride='/usage is only available for subscription plans\n';
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.match(row.stateMessage,/구독 한도가 없어요/);
+  // 못 읽었을 때 인터넷이 닿지 않으면 까닭을 짐작하지 않고 연결을 말한다.
+  f.state.online=false;f.state.reachCalls.length=0;
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/인터넷에 연결되지 않아/);assert.deepEqual(f.state.reachCalls,['https://api.anthropic.com/']);
+  f.state.online=true;
   // 공식 프로그램의 표준입력은 바로 닫는다(열어 두면 Claude Code가 입력을 3초 기다린다).
   assert.ok(usageCalls().every(c=>c.child.stdinEnded));
 });
