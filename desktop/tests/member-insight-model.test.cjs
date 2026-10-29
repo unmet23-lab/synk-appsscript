@@ -283,14 +283,15 @@ test('literal explanations accept 200 Unicode characters and preserve markup as 
 
 async function confirmedStatement(text, acceptedIds = ['p0', 'p1']) {
   const core = (await import('../renderer/generated/member-understanding.mjs')).default;
+  const schema = await import('../renderer/generated/member-understanding-data.mjs');
   const document = { version: 10, reviews: [], overrides: [], statements: [] };
   let preview = core.previewMemberStatement({ text, document, asOf });
   while (preview.question) {
     assert.ok(preview.question.options.some(option => option.id === 'skip'));
     preview = core.previewMemberStatement({ text, document, asOf, clarifications: [...preview.clarifications, { questionId: preview.question.id, optionId: 'skip' }] });
   }
-  document.statements.push(core.confirmMemberStatement({ preview, acceptedIds, id: '00000000-0000-4000-8000-000000000001', at: asOf }));
-  return document;
+  const row = core.confirmMemberStatement({ preview, acceptedIds, id: '00000000-0000-4000-8000-000000000001', at: asOf });
+  return schema.updateMemberUnderstanding(document, { type: 'statement', value: row, replaceId: null }, Date.parse(asOf));
 }
 
 test('confirmed natural wording reaches conditional analysis and reversible history without changing raw settings', async () => {
@@ -356,7 +357,9 @@ test('clarification answer history is retained on the next analysis as an explic
   let preview = core.previewMemberStatement({ text, asOf });
   preview = core.previewMemberStatement({ text, asOf, clarifications: [{ questionId: preview.question.id, optionId: 'confirm' }] });
   const row = core.confirmMemberStatement({ preview, acceptedIds: preview.proposals.map(p => p.id), id: '00000000-0000-4000-8000-000000000001', at: asOf });
-  const result = buildMemberInsightReport(understandingInput(), { understanding: { version: 10, reviews: [], overrides: [], statements: [row] }, understandingStatus: 'ready' });
+  const schema = await import('../renderer/generated/member-understanding-data.mjs');
+  const document = schema.updateMemberUnderstanding({ version: 10, reviews: [], overrides: [], statements: [] }, { type: 'statement', value: row, replaceId: null }, Date.parse(asOf));
+  const result = buildMemberInsightReport(understandingInput(), { understanding: document, understandingStatus: 'ready' });
   assert.equal(result.understanding.status, 'ready');
   assert.equal(result.understanding.statementHistory[0].clarificationAnswers.length, 1);
   assert.ok(result.understanding.statementHistory[0].clarificationAnswers[0].questionLabel);
