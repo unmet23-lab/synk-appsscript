@@ -261,11 +261,15 @@ def mat_glass(name="glass", rough=0.0, ior=1.5, tint=(1, 1, 1), absorb=None):
 
 
 def mat_serum():
+    """호박빛 금 세럼 — 한 재질을 모든 컷에(Fable 10-29 P1 ⑥: 컷마다 호박 · 검은 갈색 · 빈 병 · 복숭아로 달랐다).
+    맑은 액체는 뒤에 비친 것의 색을 따라가 어두운 바탕에선 검게 죽는다 → 컷마다 serum_card()로 뒤에 흰 판을 둔다."""
+    if "serum" in bpy.data.materials:
+        return bpy.data.materials["serum"]
     m, n, l, out = new_mat("serum")
     b = principled(n, base=(1.0, 0.92, 0.74), rough=0.0, ior=1.40, trans=1.0)
     vol = n.new("ShaderNodeVolumeAbsorption")
-    vol.inputs["Color"].default_value = (1.0, 0.62, 0.18, 1)
-    vol.inputs["Density"].default_value = 38.0
+    vol.inputs["Color"].default_value = (1.0, 0.58, 0.14, 1)
+    vol.inputs["Density"].default_value = 48.0
     l.new(shadow_pass(n, l, b.outputs[0], tint=(1.0, 0.86, 0.6)).outputs[0], out.inputs["Surface"])
     l.new(vol.outputs[0], out.inputs["Volume"])
     return m
@@ -280,16 +284,35 @@ def mat_gold(name="gold", rough=0.14):
     return mat_simple(name, base=GOLD, metal=1.0, rough=rough)
 
 
-def height_image(name, arr):
-    """numpy 높이 지도(0~1, 행 = 위→아래)를 블렌더 그림으로."""
+def png16(path, arr):
+    """0~1 회색 지도를 16비트 PNG로(블렌더 파이썬엔 PIL이 없어 zlib으로 직접)."""
+    import struct
+    import zlib
     h, w = arr.shape
-    im = bpy.data.images.new(name, w, h, alpha=False, float_buffer=True)
-    px = np.repeat(np.flipud(arr).astype(np.float32)[..., None], 4, axis=2)
-    px[..., 3] = 1.0
-    im.pixels.foreach_set(px.ravel())
+    data = (np.clip(arr, 0, 1) * 65535).round().astype(">u2")
+    raw = b"".join(b"\x00" + data[i].tobytes() for i in range(h))
+
+    def chunk(t, d):
+        return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d) & 0xFFFFFFFF)
+    with open(path, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 16, 0, 0, 0, 0)) +
+                chunk(b"IDAT", zlib.compress(raw, 6)) + chunk(b"IEND", b""))
+
+
+def load_map(path):
+    im = bpy.data.images.load(path, check_existing=True)
     im.colorspace_settings.name = "Non-Color"
-    im.pack()
     return im
+
+
+def height_image(name, arr):
+    """numpy 높이 지도(0~1, 행 = 위→아래)를 블렌더 그림으로 — 16비트 PNG를 거친다. 블렌더 5.2는 image.pixels.foreach_set으로
+    쓴 값을 렌더에 넘기지 않아(되읽으면 값이 있는데 그림은 0) 첫 판의 서리꽃 새김 · 금박 · 봉인 무늬가 어느 컷에도 안 찍혔다."""
+    d = os.path.join(결정, "_지도")
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, f"{name}.png")
+    png16(p, arr)
+    return load_map(p)
 
 
 def mat_crystal_relief(name, relief, half, axis="Z", center=(0.0, 0.0), field=0.40, pattern=0.02, other=0.0,
@@ -385,9 +408,11 @@ def mat_frost(name="frost", glow=(1.0, 0.86, 0.62), body=0.85, sparkle=1.0, core
     return m
 
 
-def add_label(m, img_file, half_w, half_h, zc, ink, both=True):
+def add_label(m, img_file, half_w, half_h, zc, ink, both=True, face_y=None):
     """±Y 면에 라벨(라벨.py 원고의 알파 = 잉크 · 금박 자리). 뒤에서 봐도 글씨가 바로 읽히게 뒷면은 가로를 뒤집는다.
-    both=False면 앞(−Y) 면 하나만 — 맑은 유리 병은 뒷면 라벨이 앞에서 거꾸로 비쳐 이름이 두 번 보였다."""
+    both=False면 앞(−Y) 면 하나만 — 맑은 유리 병은 뒷면 라벨이 앞에서 거꾸로 비쳐 이름이 두 번 보였다.
+    face_y를 주면 물체 좌표 y가 그보다 작은(바깥 앞면) 자리에만 — 두꺼운 병 속 빈 칸의 뒷벽 안쪽 면도 노멀이 −Y라
+    거기 라벨이 찍혀 앞에서 이름이 한 번 더 비쳤다(Fable 10-29 P1 ⑤)."""
     nt = m.node_tree
     n, l = nt.nodes, nt.links
     out = next(x for x in n if x.type == "OUTPUT_MATERIAL")
@@ -417,6 +442,8 @@ def add_label(m, img_file, half_w, half_h, zc, ink, both=True):
     l.new(comb.outputs[0], t.inputs["Vector"])
     # 유리 안쪽에서 닿은 광선(뒷면)엔 잉크를 안 보인다 — 두꺼운 앰플 속에서 라벨 뒷면이 한 번 더 비쳐 이름이 두 번 보였다
     front = math_node(n, l, "SUBTRACT", 1.0, geo.outputs["Backfacing"])
+    if face_y is not None:
+        front = math_node(n, l, "MULTIPLY", front, math_node(n, l, "LESS_THAN", sep.outputs["Y"], face_y))
     fac = math_node(n, l, "MULTIPLY", math_node(n, l, "MULTIPLY", t.outputs["Alpha"], face), front)
     mix = n.new("ShaderNodeMixShader")
     l.new(fac, mix.inputs["Fac"])
@@ -637,23 +664,24 @@ def ampoule(loc=(0, 0, 0), rot=(0, 0, 0)):
                                pattern=0.35, other=0.0, bump_dist=0.00025)
     # 시청자 시험 「라벨이 없어 3D 견본 같다」 — 앞뒤 면 아래쪽에 흰 잉크 라벨(라벨.py)
     add_label(glass, "라벨_앰플.png", 0.0080, 0.0069, 0.026, principled(glass.node_tree.nodes, base=(0.97, 0.97, 0.96), rough=0.45),
-              both=False)
+              both=False, face_y=-(rf - 0.0012))
     body = hex_solid("앰플병", rf, 0.0, H, glass, bevel=0.0012, segs=4, cavity=(rf - 0.0035, 0.012, H - 0.004, 0.0015))
-    liq_top = 0.012 + (H - 0.016) * 0.76
+    liq_top = 0.012 + (H - 0.016) * 0.85  # 채움 85 %로 고정(Fable P1 ⑥ — a4에선 빈 병처럼 보였다)
     serum = hex_solid("앰플액", rf - 0.0033, 0.0118, liq_top, mat_serum(), bevel=0.0014, segs=3)
-    gold = mat_gold("금목")
+    gold = mat_gold("금목", rough=0.24)
     neck = revolve("앰플목", [(0.0, 0.0), (0.0098, 0.0), (0.0101, 0.0010), (0.0101, 0.0118), (0.0094, 0.0128),
                               (0.0, 0.0128)], mat=gold)
     neck.location = (0, 0, H)
+    # 캡은 몸통의 약 1/4(Fable P2 ④: 몸통의 절반 가까운 캡이 수정 장식 · 향수 마개로 읽혔다)
     capm = mat_glass("캡크리스털", rough=0.22, tint=(0.96, 0.98, 1.0))
-    cap = hex_solid("앰플캡", 0.0092, 0.0, 0.020, capm, bevel=0.0009, segs=3, rot=math.pi / 6)
+    cap = hex_solid("앰플캡", 0.0092, 0.0, 0.011, capm, bevel=0.0009, segs=3, rot=math.pi / 6)
     cap.location = (0, 0, H + 0.0128)
     # 캡 위 낮은 육각뿔(얼음 결정 끝)
     bm = bmesh.new()
     R = 0.0092 / math.cos(math.pi / 6)
     ring = [bm.verts.new((R * math.cos(math.pi / 6 + k * math.pi / 3), R * math.sin(math.pi / 6 + k * math.pi / 3), 0.0))
             for k in range(6)]
-    tip = bm.verts.new((0, 0, 0.0085))
+    tip = bm.verts.new((0, 0, 0.0055))
     for k in range(6):
         bm.faces.new((ring[k], ring[(k + 1) % 6], tip))
     bm.faces.new(ring[::-1])
@@ -662,41 +690,170 @@ def ampoule(loc=(0, 0, 0), rot=(0, 0, 0)):
     bm.free()
     me.materials.append(capm)
     tipo = link(bpy.data.objects.new("앰플캡끝", me))
-    tipo.location = (0, 0, H + 0.0128 + 0.020)
+    tipo.location = (0, 0, H + 0.0128 + 0.011)
     parts = [body, serum, neck, cap, tipo]
     parent_to(parts, e)
     return e, parts
 
 
-def cream_jar(loc=(0, 0, 0), rot=(0, 0, 0)):
-    """육각 두꺼운 유리 크림 단지 50 ml — 맞변 6.6 cm · 높이 4.4 cm(벽 6 mm · 바닥 14 mm) · 진주빛 크림 · 금 띠 ·
-    젖빛 크리스털 뚜껑(1.8 cm) 윗면에 서리꽃 돋을새김(맑게 깎인 결)."""
+def serum_card(amp_e, cam_loc, strength=2.2, rgb=(1.0, 0.93, 0.80)):
+    """앰플 뒤(카메라 반대쪽) 흰 판 — 투과 광선에만 보여 세럼이 늘 같은 호박빛으로 빛난다(제품 사진의 뒤 흰 카드).
+    카메라 · 반사 · 확산엔 보이지 않는다."""
+    c = amp_e.location.copy()
+    d = c - Vector(cam_loc)
+    d.z = 0.0
+    d.normalize()
+    p = c + d * 0.045 + Vector((0, 0, 0.040))
+    card = box("세럼판", 0.034, 0.002, 0.060, p, mat_emit("세럼판", rgb, strength))
+    card.rotation_euler = (0.0, 0.0, math.atan2(d.y, d.x) - math.pi / 2)
+    for attr in ("visible_camera", "visible_diffuse", "visible_glossy", "visible_volume_scatter", "visible_shadow"):
+        try:
+            setattr(card, attr, False)
+        except Exception:
+            pass
+    return card
+
+
+BRAND_NAVY = (0.013, 0.020, 0.052)  # 상자 판지 밤 남색(Fable P1 ⑦: 단지 파랑이 컷마다 셋이었다)
+JAR_NAVY = (0.008, 0.012, 0.036)  # 광택 유리는 확산이 덜 보여야 판지와 같은 남색으로 읽힌다(같은 값이면 단지가 로열 블루로 떴다)
+
+
+def relief_sheet(name, h, S, z0, hmax, mat, step=1):
+    """수평(XY) 서리꽃 높이 판 — h(0~1, 행 = 위→아래 = +y→−y)를 S × S로 z0 위에 세운다(단지 뚜껑 윗면의 젖빛 결정)."""
+    if step > 1:
+        h = h[::step, ::step]
+    N0, N1 = h.shape
+    f = (h[:-1, :-1] > 0.002) | (h[1:, :-1] > 0.002) | (h[:-1, 1:] > 0.002) | (h[1:, 1:] > 0.002)
+    r, c = np.nonzero(f)
+    a = r * N1 + c
+    quads = np.stack([a, a + N1, a + N1 + 1, a + 1], 1)  # 위(+z)를 보게 감기
+    used = np.zeros(N0 * N1, bool)
+    used[quads.ravel()] = True
+    remap = -np.ones(N0 * N1, np.int64)
+    remap[used] = np.arange(used.sum())
+    rr, cc = np.divmod(np.nonzero(used)[0], N1)
+    hv = h.ravel()[used]
+    verts = np.stack([(cc / (N1 - 1) - 0.5) * S, (0.5 - rr / (N0 - 1)) * S, z0 + 0.00002 + hv * hmax], 1)
+    me = mesh_from_arrays(name, verts, remap[quads])
+    at = me.attributes.new("frost", "FLOAT", "POINT")
+    at.data.foreach_set("value", hv.astype(np.float32))
+    me.materials.append(mat)
+    return link(bpy.data.objects.new(name, me))
+
+
+def macro_height():
+    for nm in (MACRO_SIM, "시험300"):
+        p = os.path.join(결정, nm, "macro_height.npy")
+        if os.path.exists(p):
+            return np.load(p)
+    yy, xx = np.mgrid[-1:1:256j, -1:1:256j]
+    return np.clip(1 - np.hypot(xx, yy), 0, 1).astype(np.float32)
+
+
+def cream_jar(loc=(0, 0, 0), rot=(0, 0, 0), relief_step=2):
+    """육각 크림 단지 50 ml — 맞변 6.6 cm · 높이 4.4 cm · 깊은 밤 남색 불투명 유리(겉칠 광택) · 금 띠 · 앞면 금박 라벨.
+    뚜껑 2판(10-29): 맑은 크리스털(1.6 cm) 속에 남색 속판, 윗면에 젖빛 서리꽃 결정(첫 판의 젖빛 뚜껑은 「젖빛 아크릴 덩어리」로
+    읽히고 맑게 깎은 무늬가 어느 컷에도 안 보였다 — Fable P2 ⑤). 첫 컷 결정 접사와 같은 결정이라 끝 접사가 첫 그림이 된다."""
     e = empty("단지축", loc, rot)
     rf, H = 0.033, 0.044
-    # 맑은 유리 속 크림이 두 시험 모두 「유리 속 흰 상자」로 읽혀 — 몸통을 깊은 밤 남색 불투명 유리(겉칠 광택)로,
-    # 흰 크리스털 뚜껑 · 금 띠와 대비. 크림은 뚜껑을 열 때만 보인다
-    glass = mat_simple("단지유리", base=(0.020, 0.034, 0.110), rough=0.06, coat=1.0, coat_rough=0.02, sss=0.15,
-                       sss_r=(0.004, 0.006, 0.02), spec=0.6)
-    add_label(glass, "라벨_단지.png", 0.0165, 0.0095, 0.022, principled(glass.node_tree.nodes, base=GOLD, metal=1.0, rough=0.22))
-    jar = hex_solid("단지", rf, 0.0, H, glass, bevel=0.0018, segs=4, cavity=(rf - 0.006, 0.014, H - 0.003, 0.002))
-    cream = hex_solid("크림", rf - 0.0058, 0.0138, H - 0.0045, mat_cream(), bevel=0.002, segs=3)
+    # 맑은 유리 속 크림이 두 시험 모두 「유리 속 흰 상자」로 읽혀 — 몸통을 깊은 밤 남색 불투명 유리(겉칠 광택)로
+    glass = mat_simple("단지유리", base=JAR_NAVY, rough=0.08, coat=1.0, coat_rough=0.03, spec=0.6)
+    add_label(glass, "라벨_단지.png", 0.0165, 0.0095, 0.022, principled(glass.node_tree.nodes, base=GOLD, metal=1.0, rough=0.22),
+              both=False, face_y=-(rf - 0.001))
+    jar = hex_solid("단지", rf, 0.0, H, glass, bevel=0.0018, segs=4)
     band = hex_solid("금띠", rf + 0.0002, H, H + 0.0026, mat_gold("금띠"), bevel=0.0004, segs=2)
-    lidm = mat_crystal_relief("단지뚜껑", relief_image(), half=0.030, axis="Z", field=0.42, pattern=0.02, other=0.10,
-                              bump_dist=0.0005)
-    lid = hex_solid("단지뚜껑", rf + 0.0006, H + 0.0026, H + 0.0026 + 0.018, lidm, bevel=0.0022, segs=4)
-    parts = [jar, cream, band, lid]
+    z0 = H + 0.0026
+    # 뚜껑: 남색 광택 몸(1.2 cm) 위에 얇은 맑은 크리스털 판(4 mm) — 두꺼운 맑은 뚜껑은 윗면 결정이 속에서 한 번 더 비쳤다
+    inner = hex_solid("뚜껑몸", rf + 0.0006, z0, z0 + 0.012, mat_simple("뚜껑몸", base=JAR_NAVY, rough=0.08, coat=1.0, coat_rough=0.03),
+                      bevel=0.0018, segs=4)
+    lid = hex_solid("단지뚜껑", rf - 0.0006, z0 + 0.012, z0 + 0.016, mat_glass("뚜껑크리스털", rough=0.0, tint=(0.97, 0.985, 1.0)),
+                    bevel=0.0012, segs=3)
+    flake = relief_sheet("뚜껑결정", macro_height(), 0.056, z0 + 0.016, 0.00030,
+                         mat_frost("뚜껑결정", glow=(1.0, 0.95, 0.88), body=0.9, sparkle=0.4), step=relief_step)
+    parts = [jar, band, inner, lid, flake]
     parent_to(parts, e)
     return e, parts
 
 
-def gift_case(loc=(0, 0, 0), rot=(0, 0, 0), closed=True):
-    """육각 선물 상자(맞변 20 cm · 높이 9 cm) — 밤 남색 무광 판지, 뚜껑 윗면에 금박 서리꽃, 흰 실크 띠 하나 · 금 육각 봉인."""
+def mat_gold_relief(name="봉인"):
+    """금 봉인 — 같은 서리꽃을 돋을새김(Fable P2 ③: 무늬 없는 봉인이 회색 스티커로 읽혔다)."""
+    m, n, l, out = new_mat(name)
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Object"], sep.inputs["Vector"])
+    comb = n.new("ShaderNodeCombineXYZ")
+    l.new(madd(n, l, sep.outputs["X"], 0.5 / 0.011, 0.5), comb.inputs["X"])
+    l.new(madd(n, l, sep.outputs["Y"], 0.5 / 0.011, 0.5), comb.inputs["Y"])
+    t = n.new("ShaderNodeTexImage")
+    t.image = relief_image()
+    t.extension = "CLIP"
+    l.new(comb.outputs[0], t.inputs["Vector"])
+    g = principled(n, base=GOLD, metal=1.0, rough=0.18)
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 1.0
+    bump.inputs["Distance"].default_value = 0.0004
+    l.new(t.outputs["Color"], bump.inputs["Height"])
+    l.new(bump.outputs["Normal"], g.inputs["Normal"])
+    l.new(g.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def ribbon(name, pts, width, mat, thick=0.0006):
+    """점 줄을 따라 놓인 납작한 실크 띠 — 폭 방향은 진행 방향과 (0, 0.3, 1)의 외적(풀린 띠가 상자 턱을 넘어 창턱에 눕는다).
+    넓은 면 둘과 옆면이 꼭짓점을 나눠 쓰면 관처럼 둥글게 보여(현장노트 10-26) 앞뒤 면만 둔다."""
+    ref = Vector((0, 0.3, 1)).normalized()
+    pts = [Vector(p) for p in pts]
+    # 점 사이를 잘게(부드러운 띠)
+    fine = []
+    for i in range(len(pts) - 1):
+        p0, p1 = pts[i], pts[i + 1]
+        pm = pts[i - 1] if i > 0 else p0 - (p1 - p0)
+        p2 = pts[i + 2] if i + 2 < len(pts) else p1 + (p1 - p0)
+        for k in range(8):
+            t = k / 8
+            t2, t3 = t * t, t * t * t
+            fine.append(0.5 * ((2 * p0) + (-pm + p1) * t + (2 * pm - 5 * p0 + 4 * p1 - p2) * t2 + (-pm + 3 * p0 - 3 * p1 + p2) * t3))
+    fine.append(pts[-1])
+    bm = bmesh.new()
+    rows = []
+    for i, p in enumerate(fine):
+        tng = (fine[min(i + 1, len(fine) - 1)] - fine[max(i - 1, 0)]).normalized()
+        w = tng.cross(ref)
+        if w.length < 1e-4:
+            w = Vector((1, 0, 0))
+        w.normalize()
+        nrm = w.cross(tng).normalized()
+        rows.append([bm.verts.new(p + w * width / 2 + nrm * thick / 2), bm.verts.new(p - w * width / 2 + nrm * thick / 2)])
+    for i in range(len(rows) - 1):
+        a0, a1 = rows[i]
+        b0, b1 = rows[i + 1]
+        bm.faces.new((a0, a1, b1, b0))
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    for poly in me.polygons:
+        poly.use_smooth = True
+    ob = link(bpy.data.objects.new(name, me))
+    sol = ob.modifiers.new("두께", "SOLIDIFY")
+    sol.thickness = thick
+    me.materials.append(mat)
+    return ob
+
+
+def gift_case(loc=(0, 0, 0), rot=(0, 0, 0), closed=True, lid_loc=None, lid_rot=None):
+    """육각 선물 상자(맞변 20 cm · 높이 9 cm) — 밤 남색 무광 판지, 뚜껑 윗면에 금박 서리꽃, 흰 실크 띠 하나 · 금 육각 봉인.
+    closed=False(연 상자, Fable P1 ⑧ — 잘린 남색 덩어리라 열린 선물로 안 읽혔다): 몸통은 속이 빈 상자(속은 상아 공단),
+    뚜껑은 lid_loc · lid_rot(세계 좌표)에 따로 세워 금박 서리꽃이 카메라를 보게, 띠는 풀려 상자 턱을 넘어 창턱에 눕는다."""
     e = empty("상자축", loc, rot)
     rf, H = 0.10, 0.09
     m, n, l, out = new_mat("상자남색")
-    b = principled(n, base=(0.018, 0.026, 0.060), rough=0.62, sheen=0.25, sheen_tint=(0.4, 0.5, 0.8))
+    b = principled(n, base=BRAND_NAVY, rough=0.62, sheen=0.25, sheen_tint=(0.4, 0.5, 0.8))
     l.new(b.outputs[0], out.inputs["Surface"])
-    body = hex_solid("상자", rf, 0.0, H, m, bevel=0.0015, segs=3)
+    if closed:
+        body = hex_solid("상자", rf, 0.0, H, m, bevel=0.0015, segs=3)
+    else:
+        body = hex_cup("상자", rf, rf - 0.004, 0.0, 0.010, H - 0.004, m,
+                       mat_simple("상자속", base=(0.86, 0.82, 0.74), rough=0.38, sheen=0.7, sheen_rough=0.25))
     # 뚜껑 윗면 금박: 같은 서리꽃 그림을 금속 마스크로
     m2, n2, l2, out2 = new_mat("상자뚜껑")
     tc = n2.new("ShaderNodeTexCoord")
@@ -711,29 +868,69 @@ def gift_case(loc=(0, 0, 0), rot=(0, 0, 0), closed=True):
     t.image = relief_image()
     t.extension = "CLIP"
     l2.new(comb.outputs[0], t.inputs["Vector"])
-    foil = math_node(n2, l2, "GREATER_THAN", t.outputs["Color"], 0.05)
-    paper = principled(n2, base=(0.018, 0.026, 0.060), rough=0.62)
+    geo = n2.new("ShaderNodeNewGeometry")
+    vt = n2.new("ShaderNodeVectorTransform")
+    vt.vector_type = "NORMAL"
+    vt.convert_from = "WORLD"
+    vt.convert_to = "OBJECT"
+    l2.new(geo.outputs["Normal"], vt.inputs["Vector"])
+    sz = n2.new("ShaderNodeSeparateXYZ")
+    l2.new(vt.outputs[0], sz.inputs["Vector"])
+    top = math_node(n2, l2, "GREATER_THAN", sz.outputs["Z"], 0.9)  # 금박은 윗면에만
+    foil = math_node(n2, l2, "MULTIPLY", math_node(n2, l2, "GREATER_THAN", t.outputs["Color"], 0.05), top)
+    paper = principled(n2, base=BRAND_NAVY, rough=0.62, sheen=0.25, sheen_tint=(0.4, 0.5, 0.8))
     gold = principled(n2, base=GOLD, metal=1.0, rough=0.22)
     mx = n2.new("ShaderNodeMixShader")
     l2.new(foil, mx.inputs["Fac"])
     l2.new(paper.outputs[0], mx.inputs[1])
     l2.new(gold.outputs[0], mx.inputs[2])
     l2.new(mx.outputs[0], out2.inputs["Surface"])
-    lid = hex_solid("상자뚜껑", rf + 0.0015, H - 0.03, H + 0.002, m2, bevel=0.0015, segs=3)
     silk = mat_simple("실크띠", base=(0.93, 0.92, 0.90), rough=0.32, sheen=0.6, sheen_rough=0.3)
-    band = box("실크띠", 0.026, 2 * (rf + 0.0025) / math.cos(math.pi / 6) * 0.9, 0.0008, (0, 0, H + 0.0026), silk)
-    band2 = box("실크띠옆", 0.026, 0.0008, 0.034, (0, -(rf + 0.0024), H - 0.014), silk)
-    seal = hex_solid("봉인", 0.012, H + 0.003, H + 0.0042, mat_gold("봉인", 0.25), bevel=0.0004, segs=2)
-    parts = [body, lid, band, band2, seal]
-    if not closed:
-        # 연 상자: 띠 · 봉인은 풀어 치우고 뚜껑은 뒤로 기대 세운다
-        for ob in (band, band2, seal):
-            bpy.data.objects.remove(ob, do_unlink=True)
-        parts = [body, lid]
-        lid.rotation_euler = (math.radians(72), 0.0, 0.0)
-        lid.location = (0.0, -rf * 1.05, -H * 0.62)  # 상자 뒤(−y, 창 쪽)로 — 앞으로 기대면 방 안 카메라에서 제품을 가렸다
-    parent_to(parts, e)
-    return e, parts
+    if closed:
+        lid = hex_solid("상자뚜껑", rf + 0.0015, H - 0.03, H + 0.002, m2, bevel=0.0015, segs=3)
+        band = box("실크띠", 0.026, 2 * (rf + 0.0025) / math.cos(math.pi / 6) * 0.9, 0.0008, (0, 0, H + 0.0026), silk)
+        band2 = box("실크띠옆", 0.026, 0.0008, 0.034, (0, -(rf + 0.0024), H - 0.014), silk)
+        seal = hex_solid("봉인", 0.012, H + 0.003, H + 0.0042, mat_gold_relief(), bevel=0.0004, segs=2)
+        parts = [body, lid, band, band2, seal]
+        parent_to(parts, e)
+        return e, parts
+    # 연 상자: 뚜껑은 따로(가운데가 원점, 윗면 = +z) 세계 자리에 세우고, 봉인은 뚜껑 윗면 가장자리에 붙은 채로
+    le = empty("상자뚜껑축", lid_loc or (0, 0, 0), lid_rot or (0, 0, 0))
+    lid = hex_solid("상자뚜껑", rf + 0.0015, -0.016, 0.016, m2, bevel=0.0015, segs=3)
+    seal = hex_solid("봉인", 0.012, 0.0165, 0.0177, mat_gold_relief(), bevel=0.0004, segs=2)
+    seal.location = (0.0, -(rf * 0.80), 0.0)
+    parent_to([lid, seal], le)
+    parent_to([body], e)
+    return e, [body, lid, seal]
+
+
+def hex_cup(name, rf_out, rf_in, z0, z_floor, z_top, mat_out, mat_in):
+    """뚜껑 없는 육각 상자 몸통 — 바깥 옆 · 바닥(mat_out), 안쪽 옆 · 속바닥(mat_in), 윗테(mat_out)."""
+    bm = bmesh.new()
+    o0, o1 = hex_ring(bm, rf_out, z0), hex_ring(bm, rf_out, z_top)
+    i1, i0 = hex_ring(bm, rf_in, z_top), hex_ring(bm, rf_in, z_floor)
+    faces_in = []
+    bm.faces.new(o0[::-1])
+    for k in range(6):
+        bm.faces.new((o0[k], o0[(k + 1) % 6], o1[(k + 1) % 6], o1[k]))
+        bm.faces.new((o1[k], o1[(k + 1) % 6], i1[(k + 1) % 6], i1[k]))
+        faces_in.append(bm.faces.new((i1[k], i1[(k + 1) % 6], i0[(k + 1) % 6], i0[k])))
+    faces_in.append(bm.faces.new(i0))
+    bm.faces.ensure_lookup_table()
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    ins = {f.index for f in faces_in}
+    bm.free()
+    me.materials.append(mat_out)
+    me.materials.append(mat_in)
+    for poly in me.polygons:
+        poly.material_index = 1 if poly.index in ins else 0
+    ob = link(bpy.data.objects.new(name, me))
+    bev = ob.modifiers.new("모서리", "BEVEL")
+    bev.width = 0.0012
+    bev.segments = 2
+    bev.limit_method = "ANGLE"
+    return ob
 
 
 # ── 장면 거리 ────────────────────────────────────────────────────────────────
@@ -932,6 +1129,16 @@ def outside_night(strength=0.06):
     return moon
 
 
+def glint_only(ob):
+    """반짝임 빛 — 반사(glossy)로만 닿게. 확산 · 투과까지 비추면 서리 전체가 그 빛으로 밝아져 밤이 낮처럼 떴다."""
+    for attr in ("visible_diffuse", "visible_transmission", "visible_volume_scatter", "visible_camera"):
+        try:
+            setattr(ob, attr, False)
+        except Exception:
+            pass
+    return ob
+
+
 def hide_from_camera(ob, glossy=True):
     try:
         ob.visible_camera = False
@@ -1008,37 +1215,33 @@ def scene_a3():
 
 
 def scene_a4():
-    """끝 그림 — 방 안에서 본 창턱의 두 제품. 뒤 창의 서리꽃은 밖의 찬 달빛과 방의 금빛을 받아 레이스처럼 빛나고
-    (틈으로는 짙은 남색 밤), 방의 따뜻한 빛이 제품을 감싼다. 위쪽 서리 자리에 끝 줄 · 이름이 앉는다(시안글.py)."""
-    window_frame(paint=(0.06, 0.05, 0.05))
+    """끝 그림(안 1) — 방 안에서 본 창턱의 두 제품. 2판(Fable 10-29 P1 ⑪ · ⑫): 첫 판은 방 안이 차가운 청회색이었고
+    단지 뒷면 라벨이 창 유리에 비쳐 회청색 얼룩이 떴다. 뒤 창은 C 컷과 같은 서리(방 등을 받아 따뜻하게, 얇은 가운데로 밤이
+    비침), 라벨은 앞면 하나 · 카메라 쪽, 방 안 빛은 모두 금빛."""
+    inside = room_shell(wall=(0.30, 0.22, 0.16), frame=(0.40, 0.33, 0.27), sill=(0.20, 0.15, 0.11))
     glass_pane()
-    frost, _ = window_frost(t=1.0, glow=(0.70, 0.82, 1.0), base_level=0.03, hmax=0.0009, seed=8)
-    frost.data.materials[0] = mat_frost("서리끝", glow=(0.74, 0.84, 1.0), body=0.5, sparkle=2.0)
-    world_color((0.006, 0.012, 0.035), 0.03)
-    sky = box("밖하늘", 3.0, 0.02, 2.4, (0, -1.6, SILL_Z + 0.6), mat_emit("밤하늘", (0.10, 0.16, 0.40), 0.22))
-    bokeh(14, ((-1.5, 1.5), (-5.5, -2.5), (SILL_Z - 0.2, SILL_Z + 1.2)), [(1.0, 0.78, 0.45), (0.85, 0.9, 1.0)], 2.0,
-          0.012, 0.03, seed=31)
-    moon = hide_from_camera(area_light("서리달빛", (-0.3, -0.6, SILL_Z + 0.9), (0.0, 0.0, SILL_Z + 0.45), 9.0, 0.8,
-                                       rgb=(0.62, 0.76, 1.0)))
-    warmf = hide_from_camera(area_light("서리금", (0.25, 0.45, SILL_Z + 0.55), (0.0, 0.0, SILL_Z + 0.35), 2.2, 0.6,
-                                        rgb=(1.0, 0.78, 0.48)))
-    light_only(moon, [frost])
-    light_only(warmf, [frost])
-    jar_e, jp = cream_jar((0.024, 0.11, SILL_Z), (0, 0, math.radians(-8)))
+    frost = frost_plane(frost_cov("plain"), dict(glow=(1.0, 0.80, 0.52), diffuse=(0.95, 0.88, 0.80), share=0.45,
+                                                 sparkle=1.6, see=0.10))
+    sky_world((0.004, 0.007, 0.020), (0.018, 0.028, 0.065), (0.008, 0.010, 0.020), 1.0)
+    far_lights(12, (0.0, SILL_Z + 0.35), 3.0, (9.0, 26.0), [(1.0, 0.66, 0.30), (1.0, 0.78, 0.48)], 5.0, 0.012, 0.03, seed=31)
+    lampf = hide_from_camera(area_light("서리금", (-0.45, 0.70, SILL_Z + 0.80), (0.0, 0.0, SILL_Z + 0.35), 16.0, 0.4,
+                                        rgb=(1.0, 0.72, 0.42)), glossy=False)
+    light_only(lampf, [frost] + inside)
+    jar_e, jp = cream_jar((0.024, 0.11, SILL_Z), (0, 0, math.radians(172)), relief_step=1)
     amp_e, ap = ampoule((-0.040, 0.090, SILL_Z), (0, 0, math.radians(22 + 180)))  # 방 안 카메라 쪽으로 라벨
+    cam_loc, cam_t = (0.030, 0.56, SILL_Z + 0.110), (0.018, 0.06, SILL_Z + 0.150)
+    serum_card(amp_e, cam_loc)
     card = hide_from_camera(area_light("반사판", (0.20, 0.42, SILL_Z + 0.10), (0.02, 0.10, SILL_Z + 0.03), 3.0, 0.06,
                                        rgb=(1.0, 0.90, 0.78), size_y=0.40))
     key = hide_from_camera(area_light("제품키", (0.30, 0.52, SILL_Z + 0.32), (0.0, 0.09, SILL_Z + 0.05), 16.0, 0.35,
                                       rgb=(1.0, 0.80, 0.55)))
     fill = hide_from_camera(area_light("보조", (-0.35, 0.48, SILL_Z + 0.14), (0.0, 0.09, SILL_Z + 0.05), 4.0, 0.40,
-                                       rgb=(1.0, 0.88, 0.70)))
-    rim = hide_from_camera(area_light("금테", (-0.02, -0.02, SILL_Z + 0.30), (0.0, 0.09, SILL_Z + 0.06), 7.0, 0.25,
-                                      rgb=(1.0, 0.86, 0.6)))
+                                       rgb=(1.0, 0.86, 0.66)))
+    rim = hide_from_camera(area_light("금테", (-0.02, 0.02, SILL_Z + 0.30), (0.0, 0.09, SILL_Z + 0.06), 7.0, 0.25,
+                                      rgb=(1.0, 0.82, 0.55)))
     for lt in (key, fill, rim, card):
         light_only(lt, jp + ap)
-    sill = mat_simple("창턱면", base=(0.05, 0.04, 0.035), rough=0.25, coat=0.6, coat_rough=0.08)
-    box("창턱면", 0.9, 0.30, 0.004, (0, 0.17, SILL_Z - 0.002), sill)
-    camera((0.030, 0.56, SILL_Z + 0.110), (0.018, 0.06, SILL_Z + 0.150), lens=46, fstop=2.8, focus=0.47)
+    camera(cam_loc, cam_t, lens=46, fstop=2.8, focus=0.47)
 
 
 def ice_material(name="얼음", rough=0.01):
@@ -1164,85 +1367,394 @@ def scene_b2():
     camera((0.24, -0.62, 0.22), (0.0, 0.0, 0.13), lens=55, fstop=5.0)
 
 
-def street_outside(dawn=True):
-    """닦인 글씨 너머로 보이는 바깥 — 건너편 집들의 그림자와 불 켠 창. 방 안 카메라에서 글씨를 지나는 시선이 건너편
-    4~5 m에서 약 1 m 높이에 닿아, 창불 · 지붕도 그 높이에 둔다(첫 판은 글씨 아래쪽에 검은 건물만 비쳐 「그림자 진 글자」로 읽혔다)."""
-    rng = random.Random(51)
-    dark = mat_simple("건너집", base=(0.12, 0.14, 0.20) if dawn else (0.010, 0.012, 0.022), rough=0.9)
-    for i in range(7):
-        w, h = rng.uniform(0.8, 1.6), rng.uniform(1.0, 2.0)
-        x = -2.6 + i * 0.85 + rng.uniform(-0.2, 0.2)
-        box(f"건너집{i}", w, 0.4, h, (x, -4.2 - rng.uniform(0, 1.2), SILL_Z - 0.4 + h / 2), dark)
-    lit = mat_emit("건너창", (1.0, 0.72, 0.40), 2.0 if dawn else 6.0)
-    for i in range(10 if dawn else 34):
-        box(f"건너창{i}", 0.06, 0.02, 0.08, (rng.uniform(-2.4, 2.4), -3.9 - rng.uniform(0, 1.0),
-                                           SILL_Z + rng.uniform(0.5, 1.5)), lit)
+# ── 창 2판(Fable 10-29 「안 3의 이야기를 안 1의 세계에서」) ─────────────────────────────────────────────
+# 첫 판 C 컷은 정면에서 본 같은 크기 고사리라 벽지로, 창 밖을 판 하나로 세워 새벽 · 아침 서리에 가로 띠가 지고 획이 검었다.
+# 2판: 서리는 서리창.py가 지은 덮임 지도(가장자리 · 아래 두껍게, 가운데 얇은 막, 닦인 말)를 창 안쪽 판 하나에 얹고,
+# 창 밖은 판 대신 하늘 전체(시선 방향의 높이로 색이 바뀌는 세계 빛)라 띠가 없다. 카메라는 창을 비스듬히 보고(깊이),
+# 창틀 · 창턱 · 벽이 들어온다.
+def frost_cov(kind):
+    """서리창.py가 쓴 덮임 지도 — 그림(16비트 PNG)과 크기."""
+    return load_map(os.path.join(결정, f"창_{kind}.png"))
+
+
+def mat_frost_tex(name, img, glow=(1.0, 0.86, 0.62), diffuse=(0.86, 0.90, 0.96), share=0.35, lo=0.04, hi=0.80,
+                  sparkle=1.0, see=0.0):
+    """창 서리(덮임 지도) — 덮임 0은 닦인 맑은 유리(투명), 1로 갈수록 빛을 흩는 서리(뒤에서 오는 빛 = 반투명 glow,
+    앞에서 오는 빛 = 확산), 결 사이 잔 결정면은 반짝임. see는 서리 막 사이로 바깥이 비쳐 보이는 몫."""
+    m, n, l, out = new_mat(name)
+    uv = n.new("ShaderNodeTexCoord")
+    t = n.new("ShaderNodeTexImage")
+    t.image = img
+    t.interpolation = "Cubic"
+    t.extension = "EXTEND"
+    l.new(uv.outputs["UV"], t.inputs["Vector"])
+    cov = t.outputs["Color"]
+    mr = n.new("ShaderNodeMapRange")
+    mr.interpolation_type = "SMOOTHSTEP"
+    mr.inputs["From Min"].default_value = lo
+    mr.inputs["From Max"].default_value = hi
+    mr.inputs["To Max"].default_value = 1.0 - see
+    l.new(cov, mr.inputs["Value"])
+    bump = n.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.6
+    bump.inputs["Distance"].default_value = 0.0006
+    l.new(cov, bump.inputs["Height"])
+    trl = n.new("ShaderNodeBsdfTranslucent")
+    trl.inputs["Color"].default_value = (*glow, 1)
+    l.new(bump.outputs["Normal"], trl.inputs["Normal"])
+    dif = n.new("ShaderNodeBsdfDiffuse")
+    dif.inputs["Color"].default_value = (*diffuse, 1)
+    l.new(bump.outputs["Normal"], dif.inputs["Normal"])
+    body = n.new("ShaderNodeMixShader")
+    body.inputs["Fac"].default_value = share
+    l.new(trl.outputs[0], body.inputs[1])
+    l.new(dif.outputs[0], body.inputs[2])
+    # 반짝임 — 0.5 mm 결정면마다 다른 방향(보로노이 칸의 무작위 색 = 기울기). 앞(방) 빛은 반사로, 뒤(해)는 굴절로 몇 칸만 번쩍인다
+    tco = n.new("ShaderNodeTexCoord")
+    vor = n.new("ShaderNodeTexVoronoi")
+    vor.inputs["Scale"].default_value = 1000.0  # 1 mm 칸 — 0.5 mm 칸은 반짝임이 화면 전체에 고르게 깔려 「반짝이 가루」로 읽혔다
+    l.new(tco.outputs["Object"], vor.inputs["Vector"])
+    geo = n.new("ShaderNodeNewGeometry")
+    vsub = n.new("ShaderNodeVectorMath")
+    vsub.operation = "SUBTRACT"
+    l.new(vor.outputs["Color"], vsub.inputs[0])
+    vsub.inputs[1].default_value = (0.5, 0.5, 0.5)
+    vsc = n.new("ShaderNodeVectorMath")
+    vsc.operation = "SCALE"
+    l.new(vsub.outputs[0], vsc.inputs[0])
+    vsc.inputs["Scale"].default_value = 2.2
+    vad = n.new("ShaderNodeVectorMath")
+    vad.operation = "ADD"
+    l.new(geo.outputs["Normal"], vad.inputs[0])
+    l.new(vsc.outputs[0], vad.inputs[1])
+    vn = n.new("ShaderNodeVectorMath")
+    vn.operation = "NORMALIZE"
+    l.new(vad.outputs[0], vn.inputs[0])
+    try:
+        gl = n.new("ShaderNodeBsdfGlossy")
+    except Exception:
+        gl = n.new("ShaderNodeBsdfAnisotropic")
+    setin(gl, "Roughness", 0.03)
+    l.new(vn.outputs[0], gl.inputs["Normal"])
+    rf = n.new("ShaderNodeBsdfRefraction")
+    rf.inputs["IOR"].default_value = 1.31
+    rf.inputs["Roughness"].default_value = 0.04
+    l.new(vn.outputs[0], rf.inputs["Normal"])
+    glint = n.new("ShaderNodeMixShader")
+    glint.inputs["Fac"].default_value = 0.5
+    l.new(gl.outputs[0], glint.inputs[1])
+    l.new(rf.outputs[0], glint.inputs[2])
+    gmix = n.new("ShaderNodeMixShader")
+    l.new(math_node(n, l, "MULTIPLY", cov, sparkle * 0.30, clamp=True), gmix.inputs["Fac"])
+    l.new(body.outputs[0], gmix.inputs[1])
+    l.new(glint.outputs[0], gmix.inputs[2])
+    tr = n.new("ShaderNodeBsdfTransparent")
+    fm = n.new("ShaderNodeMixShader")
+    l.new(mr.outputs["Result"], fm.inputs["Fac"])
+    l.new(tr.outputs[0], fm.inputs[1])
+    l.new(gmix.outputs[0], fm.inputs[2])
+    # 그림자 광선은 서리를 지나간다(옅게) — 방 안이 창 서리 그림자로 죽지 않게
+    l.new(shadow_pass(n, l, fm.outputs[0], tint=(0.80, 0.82, 0.85)).outputs[0], out.inputs["Surface"])
+    return m
+
+
+def frost_plane(img, mat_kw, mirror=True, name="창서리"):
+    """덮임 지도(그림)를 창 안쪽(유리 바로 앞) 판 하나에 — mirror면 방 안에서 바로 읽힌다(지도 왼쪽 = 방 안에서 본 왼쪽 = +x)."""
+    me = bpy.data.meshes.new(name)
+    y = GL / 2 + 0.0003
+    x0, x1 = -PANE_W / 2, PANE_W / 2
+    z0, z1 = SILL_Z, SILL_Z + PANE_H
+    me.from_pydata([(x0, y, z0), (x1, y, z0), (x1, y, z1), (x0, y, z1)], [], [(0, 1, 2, 3)])
+    uvl = me.uv_layers.new(name="UVMap")
+    us = (1.0, 0.0, 0.0, 1.0) if mirror else (0.0, 1.0, 1.0, 0.0)
+    for i, (u, v) in enumerate(zip(us, (0.0, 0.0, 1.0, 1.0))):
+        uvl.data[i].uv = (u, v)
+    me.materials.append(mat_frost_tex(name + "재질", img, **mat_kw))
+    return link(bpy.data.objects.new(name, me))
+
+
+def stroke_drops(kind, mirror=True, cap=260):
+    """닦인 획 속 물방울(서리창.py가 고른 자리) — 젖은 유리라는 단서, 방 등을 잘게 받아 반짝인다."""
+    import json
+    p = os.path.join(결정, f"창_{kind}_물방울.json")
+    if not os.path.exists(p):
+        return []
+    wm = mat_water()
+    obs = []
+    for i, (u, v, r) in enumerate(json.load(open(p))[:cap]):
+        x = (0.5 - u) * PANE_W if mirror else (u - 0.5) * PANE_W
+        z = SILL_Z + (1.0 - v) * PANE_H
+        s = sphere(f"획물{i}", r, (x, GL / 2 + 0.0004 + r * 0.3, z), wm, segs=10)
+        s.scale = (1.0, 0.45, 1.0 + 0.25 * ((i * 37) % 7) / 7)
+        obs.append(s)
+    return obs
+
+
+def sky_world(zenith, horizon, ground, strength=1.0, sun_dir=None, sun_rgb=(1.0, 0.9, 0.75), core=900.0, core_gain=0.0,
+              halo=40.0, halo_gain=0.0, light=None):
+    """창 밖 하늘 전체 — 시선 높이(방향 z)로 땅 → 지평 → 하늘, sun_dir 쪽엔 해 둘레 빛(core · halo).
+    light를 주면 확산 · 반사로 방을 비추는 몫만 그 세기로(카메라 · 투과로 보이는 하늘은 그대로)."""
+    w = bpy.context.scene.world
+    n, l = w.node_tree.nodes, w.node_tree.links
+    bg = n["Background"]
+    tc = n.new("ShaderNodeTexCoord")
+    sep = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    mr = n.new("ShaderNodeMapRange")
+    mr.inputs["From Min"].default_value = -0.30
+    mr.inputs["From Max"].default_value = 0.60
+    l.new(sep.outputs["Z"], mr.inputs["Value"])
+    ramp = n.new("ShaderNodeValToRGB")
+    els = ramp.color_ramp.elements
+    els[0].position, els[0].color = 0.0, (*ground, 1)
+    els[1].position, els[1].color = 1.0, (*zenith, 1)
+    e = els.new(0.36)
+    e.color = (*horizon, 1)
+    l.new(mr.outputs["Result"], ramp.inputs["Fac"])
+    col = ramp.outputs["Color"]
+    if sun_dir is not None:
+        sd = Vector(sun_dir).normalized()
+        dot = n.new("ShaderNodeVectorMath")
+        dot.operation = "DOT_PRODUCT"
+        l.new(tc.outputs["Generated"], dot.inputs[0])
+        dot.inputs[1].default_value = tuple(sd)
+        mx = math_node(n, l, "MAXIMUM", dot.outputs["Value"], 0.0)
+        amt = madd(n, l, math_node(n, l, "POWER", mx, core), core_gain,
+                   math_node(n, l, "MULTIPLY", math_node(n, l, "POWER", mx, halo), halo_gain))
+        sc = n.new("ShaderNodeVectorMath")
+        sc.operation = "SCALE"
+        sc.inputs[0].default_value = sun_rgb
+        l.new(amt, sc.inputs["Scale"])
+        add = n.new("ShaderNodeVectorMath")
+        add.operation = "ADD"
+        l.new(col, add.inputs[0])
+        l.new(sc.outputs[0], add.inputs[1])
+        col = add.outputs[0]
+    l.new(col, bg.inputs["Color"])
+    bg.inputs["Strength"].default_value = strength
+    if light is not None:  # 방을 비추는 몫만 따로(빛 경로: 카메라 · 투과 광선이면 strength, 아니면 light)
+        lp = n.new("ShaderNodeLightPath")
+        see = math_node(n, l, "MAXIMUM", lp.outputs["Is Camera Ray"], lp.outputs["Is Transmission Ray"])
+        l.new(madd(n, l, see, strength - light, light), bg.inputs["Strength"])
+
+
+def far_lights(n, center, spread, dist, rgb_list, strength, rmin, rmax, seed=3, zr=(-0.4, 0.6)):
+    """창 밖 먼 불빛(건너편 창 · 가로등) — 닦인 획 속으로만 흐린 점으로 보인다."""
+    rng = random.Random(seed)
+    mats = [mat_emit(f"먼불{i}", c, strength) for i, c in enumerate(rgb_list)]
+    obs = []
+    for i in range(n):
+        d = rng.uniform(*dist)
+        p = (center[0] + rng.uniform(-spread, spread) * d / 6, -d, center[1] + rng.uniform(*zr) * d / 6)
+        obs.append(sphere(f"먼불{i}", rng.uniform(rmin, rmax) * d / 6, p, mats[i % len(mats)], segs=10))
+    return obs
+
+
+def room_shell(wall=(0.70, 0.64, 0.56), frame=(0.86, 0.84, 0.80), sill=(0.80, 0.77, 0.72)):
+    """창이 박힌 방 벽 · 창틀 · 깊은 창턱(상자가 놓이는 「창틀」) — 창이 창으로 읽히는 단서(Fable P1 ① · ⑬)."""
+    pm = mat_simple("창틀2", base=frame, rough=0.35, coat=0.25, coat_rough=0.2)
+    fw, fd = 0.055, 0.075
+    z0, z1 = SILL_Z, SILL_Z + PANE_H
+    obs = [box("틀왼", fw, fd, PANE_H + 2 * fw, (PANE_W / 2 + fw / 2, 0.02, (z0 + z1) / 2), pm, bevel=0.003),
+           box("틀오른", fw, fd, PANE_H + 2 * fw, (-PANE_W / 2 - fw / 2, 0.02, (z0 + z1) / 2), pm, bevel=0.003),
+           box("틀위", PANE_W + 2 * fw, fd, fw, (0, 0.02, z1 + fw / 2), pm, bevel=0.003),
+           box("틀아래", PANE_W + 2 * fw, fd, 0.018, (0, 0.02, z0 - 0.009), pm, bevel=0.003)]
+    # 유리를 잡는 얇은 안쪽 띠 — 유리 가장자리가 틀에 물린 깊이
+    for nm, sx, sz, loc in (("띠왼", 0.010, PANE_H, (PANE_W / 2 - 0.004, 0.004, (z0 + z1) / 2)),
+                            ("띠오른", 0.010, PANE_H, (-PANE_W / 2 + 0.004, 0.004, (z0 + z1) / 2)),
+                            ("띠위", PANE_W, 0.010, (0, 0.004, z1 - 0.004)),
+                            ("띠아래", PANE_W, 0.010, (0, 0.004, z0 + 0.004))):
+        obs.append(box(nm, sx, 0.006, sz, loc, pm, bevel=0.001))
+    sm = mat_simple("창턱2", base=sill, rough=0.30, coat=0.35, coat_rough=0.12)
+    obs.append(box("안창턱", PANE_W + 2 * fw + 0.16, 0.44, 0.028, (0, 0.058 + 0.22, z0 - 0.014), sm, bevel=0.004))
+    wm = mat_simple("방벽2", base=wall, rough=0.85)
+    ww = PANE_W / 2 + fw
+    obs += [box("벽왼", 1.6, 0.04, 3.0, (ww + 0.8, 0.077, z0 + 0.5), wm),
+            box("벽오른", 1.6, 0.04, 3.0, (-ww - 0.8, 0.077, z0 + 0.5), wm),
+            box("벽위", 2 * ww, 0.04, 1.0, (0, 0.077, z1 + fw + 0.5), wm),
+            box("벽아래", 2 * ww + 0.2, 0.04, 1.0, (0, 0.077, z0 - 0.028 - 0.5), wm)]
+    return obs
+
+
+def skyline(body, lit_strength, n_lit, seed=23):
+    """건너편 지붕선 — 닦인 획 속으로 비치는 바깥(15~30 m 건물 실루엣 · 불 켠 창). 획 속이 한 색이면 「색 입힌 글씨 · 인쇄」로
+    읽혀(10-29 재시험 시험관 셋) 획이 뚫린 유리라는 단서로 바깥 모양을 둔다. 방 빛은 빛 연결로 여기 닿지 않는다."""
+    rng = random.Random(seed)
+    m = mat_simple("건너편", base=body, rough=0.9)
+    lit = mat_emit("건너편창", (1.0, 0.70, 0.38), lit_strength)
+    x = -9.0
+    while x < 9.0:
+        w = rng.uniform(2.0, 4.8)
+        h = rng.uniform(3.8, 5.6)  # 지붕선이 글씨 아랫부분에만 걸리게(높으면 획이 검은 덩어리 · 파란 덩어리로 갈라져 두 색 글씨로 보였다)
+        d = rng.uniform(15.0, 28.0)
+        box(f"건너편{int(x * 10)}", w, 1.0, h, (x + w / 2, -d, -4.0 + h / 2), m)
+        for _ in range(n_lit):
+            if rng.random() < 0.55:
+                box(f"건너창{int(x * 10)}_{_}", 0.22, 0.05, 0.30,
+                    (x + rng.uniform(0.4, w - 0.4), -d + 0.52, -4.0 + rng.uniform(1.2, h - 0.6)), lit)
+        x += w + rng.uniform(0.3, 1.5)
+
+
+def room_reflection(strength, rgb=(1.0, 0.72, 0.45)):
+    """카메라 뒤 방 — 닦인 획(맑은 유리)에만 비치는 따뜻한 방 빛(반사 광선에만 보이고 방을 비추지 않는다).
+    밤 획 속이 고른 남색이면 잉크 · 펜으로 읽혀(시험 세 번) 유리라는 단서로 방이 은은히 비치게 한다."""
+    pl = box("방반사", 3.0, 0.02, 2.4, (0.0, 1.6, SILL_Z + 0.5), mat_emit("방반사", rgb, strength))
+    for attr in ("visible_camera", "visible_diffuse", "visible_transmission", "visible_volume_scatter", "visible_shadow"):
+        try:
+            setattr(pl, attr, False)
+        except Exception:
+            pass
+    return pl
+
+
+def window_c(kind, frost_kw, outside, shell=None):
+    """창 한 벌(벽 · 틀 · 유리 · 서리 · 획 물방울) — outside()가 하늘 · 먼 불빛을 짓는다."""
+    inside = room_shell(**(shell or {}))
+    glass_pane()
+    frost = frost_plane(frost_cov(kind), frost_kw)
+    drops = stroke_drops(kind)
+    outside()
+    return inside, frost, drops
+
+
+LETTER_C = {"night": (0.595, 0.385), "dawn": (0.55, 0.46), "morning": (0.55, 0.40), "end": (0.59, 0.215)}  # 말 가운데(방 안에서 본 창 비율 u, 창턱 위 높이 m)
+
+
+def letter_point(kind):
+    u, z = LETTER_C[kind]
+    return Vector(((0.5 - u) * PANE_W, GL / 2, SILL_Z + z))
 
 
 def scene_c(kind="night"):
-    """창에 쓴 말 — 부엌 창 서리에 손가락으로 쓴 말을 방 안에서. night: 새벽에 쓴 「다녀올게」(다시 서리가 반쯤 덮음) 아래
-    밤에 쓴 「꼭 바르고 나가」 · dawn: 크리스마스이브 새벽 「창틀 봐」와 창턱의 상자 · morning: 「고마워」와 두 제품.
-    2판(Fable 10-29): 창틀이 보이게 물러서고, 서리는 결정이 비치는 재질(젖빛 벽지 아님) · 손끝이 밀어낸 둔덕, 닦인 획은
-    물리대로 — 밤엔 어두운 밖, 새벽 · 아침엔 밝은 밖이 보인다(첫 판은 밝은 아침 창에 검은 획이라 마커 글씨로 읽혔다)."""
-    dawn = kind == "dawn"
-    window_frame(paint=(0.80, 0.78, 0.74) if kind != "night" else (0.50, 0.46, 0.42), outer_snow=True)
-    glass_pane()
-    # 방 안에서 보면 창의 +x가 화면 왼쪽 — 안에서 쓴 글이 바로 읽히게 좌우를 뒤집는다(첫 시험은 거울 글씨였다)
+    """창에 쓴 말 2판 — 부엌 창 서리에 손가락으로 쓴 말을 방 안에서 비스듬히(창틀 · 창턱 · 벽이 들어온다).
+    night: 새벽 사람(작고 가지런히)의 「다녀올게」 위로 서리가 다시 끼고, 밤 사람(크고 눌러 쓴)의 「꼭 바르고 나가」 —
+           방 등 하나(금빛, 오른쪽 위), 획 속은 짙은 밤과 먼 불빛.
+    dawn:  크리스마스이브 새벽 — 밤 사람이 밤에 쓴 「창틀 봐」와 창턱의 상자. 방 등은 아직 켜져 있고 획 속은 푸른 새벽(서리보다 어둡게).
+    morning: 아침 — 새벽 사람이 쓰고 간 「고마워」 뒤로 해가 들어 획이 가장 밝다. 열린 상자 · 두 제품."""
     if kind == "night":
-        lm = np.maximum(letters_mask("다녀올게") * 0.55, letters_mask("바르고"))
-        rim = letters_rim("바르고")
-    elif dawn:
-        lm, rim = letters_mask("창틀봐"), letters_rim("창틀봐")
-    else:
-        lm, rim = letters_mask("고마워"), letters_rim("고마워")
-    lm = lm[:, ::-1]
-    rim = rim[:, ::-1] if rim is not None else None
-    glow = {"night": (1.0, 0.82, 0.56), "dawn": (0.84, 0.90, 1.0), "morning": (1.0, 0.92, 0.78)}[kind]
-    frost, _ = window_frost(t=1.0, letters=lm, rim=rim, base_level=0.22, hmax=0.0008, glow=glow, seed=6)
-    frost.data.materials[0] = mat_frost("서리2판", glow=glow, body=0.55, sparkle=2.2, core_lo=0.20)
-    cam_loc, cam_t, lens = (0.06, 1.05, SILL_Z + 0.42), (0.0, 0.0, SILL_Z + 0.40), 30
-    inside = [ob for ob in bpy.context.scene.objects if ob.name.startswith(("안창턱", "틀"))]
-    if kind == "night":
-        world_color((0.010, 0.020, 0.055), 0.03)
-        box("밖하늘", 8.0, 0.02, 5.0, (0, -7.0, SILL_Z + 1.0), mat_emit("밤하늘", (0.04, 0.07, 0.18), 0.30))
-        street_outside(False)
-        snow_flakes(40, ((-0.6, 0.6), (-1.4, -0.4), (SILL_Z - 0.2, SILL_Z + 1.2)), 0.002, 0.005, seed=19)
-        lamp = hide_from_camera(area_light("방등", (0.55, 0.70, SILL_Z + 0.75), (0.0, 0.05, SILL_Z + 0.40), 30.0, 0.35,
-                                           rgb=(1.0, 0.72, 0.42)), glossy=False)
-        light_only(lamp, inside + [frost])
-    elif dawn:
-        world_color((0.30, 0.38, 0.55), 0.20)
-        box("밖하늘", 8.0, 0.02, 5.0, (0, -7.0, SILL_Z + 1.0), mat_emit("새벽하늘", (0.72, 0.80, 0.96), 3.2))
-        street_outside(True)
-        case_e, cp = gift_case((0.00, 0.17, SILL_Z), (0, 0, math.radians(30)))
-        key = hide_from_camera(area_light("새벽방", (0.45, 0.90, SILL_Z + 0.70), (0.0, 0.15, SILL_Z + 0.08), 8.0, 0.9,
-                                          rgb=(0.84, 0.90, 1.0)), glossy=False)
-        dawnf = hide_from_camera(area_light("새벽창", (0.0, -0.9, SILL_Z + 0.8), (0.0, 0.0, SILL_Z + 0.5), 70.0, 1.4,
-                                            rgb=(0.74, 0.84, 1.0)))
-        rim_l = hide_from_camera(area_light("상자금", (-0.30, 0.05, SILL_Z + 0.30), (0.0, 0.17, SILL_Z + 0.08), 6.0, 0.2,
+        def outside():
+            sky_world((0.006, 0.010, 0.028), (0.030, 0.045, 0.100), (0.008, 0.010, 0.020), 1.0)
+            far_lights(12, (0.0, SILL_Z + 0.45), 3.0, (9.0, 26.0), [(1.0, 0.66, 0.30), (1.0, 0.78, 0.48)], 2.2, 0.012, 0.03, seed=7)
+        bpy.context.scene.view_settings.exposure = -0.15
+        room_reflection(0.9)
+        inside, frost, drops = window_c("night", dict(glow=(0.80, 0.86, 1.0), diffuse=(0.90, 0.93, 0.98), share=0.45,
+                                                      sparkle=1.6, see=0.04, hi=0.70), outside,
+                                        shell=dict(wall=(0.36, 0.29, 0.23), frame=(0.58, 0.54, 0.48), sill=(0.50, 0.45, 0.39)))
+        cam_loc, cam_t, lens, fstop = (0.24, 0.95, SILL_Z + 0.30), (-0.03, 0.0, SILL_Z + 0.42), 30, 2.8
+        lamp = hide_from_camera(area_light("방등", (-0.38, 0.55, SILL_Z + 0.88), (0.0, 0.0, SILL_Z + 0.45), 7.5, 0.22,
+                                           rgb=(1.0, 0.68, 0.38)), glossy=False)
+        light_only(lamp, inside + [frost] + drops)
+        fill = hide_from_camera(area_light("방보조", (0.50, 1.10, SILL_Z + 0.10), (0.0, 0.0, SILL_Z + 0.40), 1.0, 0.8,
+                                           rgb=(1.0, 0.78, 0.55)), glossy=False)
+        light_only(fill, inside + [frost])
+        glint = hide_from_camera(area_light("반짝", (-0.42, 0.62, SILL_Z + 0.80), (0.0, 0.0, SILL_Z + 0.45), 9.0, 0.03,
+                                            rgb=(1.0, 0.84, 0.62)))
+        light_only(glint_only(glint), [frost] + drops)
+    elif kind == "dawn":
+        def outside():
+            sky_world((0.05, 0.08, 0.20), (0.11, 0.16, 0.36), (0.06, 0.08, 0.14), 1.0, light=1.4)  # 분홍 띠는 보라 물감 한 색으로 보여 되돌림
+            far_lights(8, (0.0, SILL_Z + 0.35), 3.0, (9.0, 24.0), [(1.0, 0.70, 0.36)], 4.0, 0.012, 0.028, seed=11)
+            room_reflection(0.6)
+        inside, frost, drops = window_c("dawn", dict(glow=(0.74, 0.82, 1.0), diffuse=(0.97, 0.93, 0.88), share=0.55,
+                                                     sparkle=1.3, see=0.04, hi=0.70), outside)
+        case_e, cp = gift_case((0.035, 0.150, SILL_Z), (0, 0, math.radians(30)))
+        cam_loc, cam_t, lens, fstop = (0.12, 0.92, SILL_Z + 0.33), (0.02, 0.04, SILL_Z + 0.27), 30, 4.0  # 양옆 틀이 걸리게
+        lamp = hide_from_camera(area_light("방등", (-0.55, 0.95, SILL_Z + 0.95), (0.0, 0.10, SILL_Z + 0.25), 15.0, 0.35,
+                                           rgb=(1.0, 0.72, 0.44)), glossy=False)
+        light_only(lamp, inside + [frost] + drops + cp)
+        rim_l = hide_from_camera(area_light("상자금", (-0.35, 0.05, SILL_Z + 0.30), (0.03, 0.15, SILL_Z + 0.08), 5.0, 0.2,
                                             rgb=(1.0, 0.85, 0.6)), glossy=False)
-        light_only(key, cp + inside)
-        light_only(dawnf, [frost])
         light_only(rim_l, cp)
-        cam_loc, cam_t = (0.06, 0.95, SILL_Z + 0.36), (0.0, 0.0, SILL_Z + 0.34)
+        glint = hide_from_camera(area_light("반짝", (-0.42, 0.66, SILL_Z + 0.85), (0.0, 0.0, SILL_Z + 0.42), 12.0, 0.03,
+                                            rgb=(1.0, 0.84, 0.62)))
+        light_only(glint_only(glint), [frost] + drops)
     else:
-        # 아침: 해가 창 뒤에서 — 서리는 역광으로 빛나고 닦인 「고마워」 너머로 밝은 하늘 · 눈 지붕, 제품은 창 쪽에서 테두리 빛
-        world_color((0.34, 0.40, 0.55), 0.22)
-        box("밖하늘", 8.0, 0.02, 5.0, (0, -7.0, SILL_Z + 1.0), mat_emit("아침하늘", (0.80, 0.86, 0.98), 3.4))
-        street_outside(True)
-        jar_e, jp = cream_jar((0.030, 0.16, SILL_Z), (0, 0, math.radians(-12)))
-        amp_e, ap = ampoule((-0.045, 0.14, SILL_Z), (0, 0, math.radians(16 + 180)))  # 방 안 카메라 쪽으로 라벨
-        sun = hide_from_camera(area_light("아침해", (-0.6, -0.9, SILL_Z + 0.9), (0.0, 0.0, SILL_Z + 0.5), 110.0, 1.2,
-                                          rgb=(1.0, 0.88, 0.70)))
-        light_only(sun, [frost])
-        back = hide_from_camera(area_light("창쪽해", (-0.15, 0.02, SILL_Z + 0.22), (-0.01, 0.15, SILL_Z + 0.05), 14.0, 0.25,
+        cam_loc, cam_t, lens, fstop = (0.02, 0.84, SILL_Z + 0.30), (0.0, 0.0, SILL_Z + 0.190), 40, 4.0
+        sun_dir = (letter_point("morning") - Vector(cam_loc)).normalized()
+
+        def outside():
+            sky_world((0.50, 0.66, 0.95), (1.0, 0.84, 0.64), (0.90, 0.86, 0.80), 1.0, sun_dir=sun_dir, sun_rgb=(1.0, 0.78, 0.50),
+                      core=1400.0, core_gain=16.0, halo=24.0, halo_gain=0.10, light=0.5)  # 번짐이 크면 가는 획도 굵은 손으로 보였다(Fable 2차)
+        inside, frost, drops = window_c("morning", dict(glow=(1.0, 0.93, 0.82), diffuse=(0.95, 0.94, 0.92), share=0.30,
+                                                        sparkle=1.0, see=0.06), outside)
+        case_e, cp = gift_case((0.085, 0.125, SILL_Z), (0, 0, math.radians(-24)), closed=False,
+                               lid_loc=(-0.140, 0.047, SILL_Z + 0.104), lid_rot=(math.radians(-74), 0, math.radians(-8)))
+        silk = mat_simple("풀린띠", base=(0.93, 0.92, 0.90), rough=0.32, sheen=0.6, sheen_rough=0.3)
+        rb = ribbon("풀린띠", [(0.13, 0.225, SILL_Z + 0.0015), (0.08, 0.262, SILL_Z + 0.0015), (0.03, 0.250, SILL_Z + 0.0015),
+                              (-0.02, 0.276, SILL_Z + 0.0015), (-0.08, 0.268, SILL_Z + 0.0015), (-0.14, 0.290, SILL_Z + 0.0015)],
+                    0.024, silk)
+        jar_e, jp = cream_jar((0.010, 0.300, SILL_Z), (0, 0, math.radians(184)), relief_step=1)
+        amp_e, ap = ampoule((-0.068, 0.322, SILL_Z), (0, 0, math.radians(196)))
+        serum_card(amp_e, cam_loc)
+        key = hide_from_camera(area_light("아침방", (0.30, 1.00, SILL_Z + 0.55), (0.0, 0.22, SILL_Z + 0.05), 14.0, 0.7,
+                                          rgb=(1.0, 0.94, 0.86)), glossy=False)
+        light_only(key, jp + ap + cp + [rb] + inside)
+        back = hide_from_camera(area_light("창쪽해", (-0.05, 0.03, SILL_Z + 0.25), (-0.03, 0.26, SILL_Z + 0.05), 10.0, 0.25,
                                            rgb=(1.0, 0.86, 0.62)), glossy=False)
-        key = hide_from_camera(area_light("아침방", (0.40, 0.70, SILL_Z + 0.45), (0.0, 0.15, SILL_Z + 0.06), 9.0, 0.6,
-                                          rgb=(1.0, 0.92, 0.80)), glossy=False)
         light_only(back, jp + ap)
-        light_only(key, jp + ap + inside)
-        cam_loc, cam_t, lens = (-0.005, 0.60, SILL_Z + 0.12), (-0.005, 0.0, SILL_Z + 0.30), 30
-    camera(cam_loc, cam_t, lens=lens, fstop=5.6)
+        # 초점은 제품 쪽(선물이 주인공) — 창의 「고마워」는 큰 글씨라 조금 흐려도 읽힌다
+        camera(cam_loc, cam_t, lens=lens, fstop=5.6, focus=0.62)
+        return
+    camera(cam_loc, cam_t, lens=lens, fstop=fstop)
+
+
+def scene_c0():
+    """안 3 첫 2초 — 그 창(c1과 같은 밤 · 같은 틀)의 아래 모서리, 가장 찬 틀 가장자리에서 서리 결정이 막 돋는 접사.
+    안 1의 a1(깜깜한 바탕의 결정)과 같은 그림을 돌려쓰면 「시안 셋이 아니라 한 벌을 돌려쓴 것」으로 읽혀(10-29 볼 이유 심사),
+    틀 · 맑은 유리 · 창 밖 불빛 보케가 함께 드는 이 창의 컷으로 연다(Fable 1차 「접사 = 이야기의 첫 장면」)."""
+    inside = room_shell(wall=(0.36, 0.29, 0.23), frame=(0.58, 0.54, 0.48), sill=(0.50, 0.45, 0.39))
+    glass_pane()
+    sky_world((0.006, 0.010, 0.028), (0.030, 0.045, 0.100), (0.008, 0.010, 0.020), 1.0)
+    arr, h = load_sim(MACRO_SIM, "macro")
+    g = grown(arr, h, TGROW, soft=0.05)
+    cx, cz = PANE_W / 2 - 0.004 - 0.005 - 0.013, SILL_Z + 0.004 + 0.005 + 0.016  # 틀 안쪽 띠에 결정 끝이 닿게
+    crystal = frost_sheet("결정", g, 0.032, 0.032, GL / 2, 0.00022, mat_frost(glow=(1.0, 0.90, 0.74), body=0.6, sparkle=1.6),
+                          x0=cx, z0=cz)
+    # 결정 하나만 맑은 유리에 떠 있으면 「장식 스티커」로 읽혀(10-29 재시험 2회차) — 틀 가장자리에서 서리 고사리가 막 돋는
+    # 창 덮임 지도(서리창.py start)를 같이 깐다. 김 서린 물방울은 검은 먼지로 찍혀 뺐다
+    start = frost_plane(frost_cov("start"), dict(glow=(1.0, 0.90, 0.74), diffuse=(0.92, 0.93, 0.96), share=0.45, sparkle=1.4))
+    small, drops = [start], []
+    tgt = Vector((cx - 0.006, GL / 2, cz + 0.008))
+    loc = tgt + Vector((-0.040, 0.150, 0.045))
+    bokeh_in_view(loc, tgt, 16, 1.5, 9.0, 0.5, [(1.0, 0.62, 0.26), (1.0, 0.76, 0.42), (0.80, 0.86, 1.0)], 6.0, 0.02, 0.08, seed=41)
+    lamp = hide_from_camera(area_light("방등", (-0.30, 0.45, SILL_Z + 0.40), (cx, 0.0, cz), 3.0, 0.20,
+                                       rgb=(1.0, 0.70, 0.40)), glossy=False)
+    light_only(lamp, inside + [crystal] + small + drops)
+    glint = hide_from_camera(area_light("결빛", (cx - 0.12, 0.10, cz + 0.10), (cx, 0.0, cz), 1.2, 0.02, rgb=(1.0, 0.90, 0.75)))
+    light_only(glint, [crystal] + small + drops)
+    rim = hide_from_camera(area_light("찬빛", (cx + 0.05, -0.20, cz + 0.20), (cx, 0.0, cz), 2.0, 0.05, rgb=(0.60, 0.74, 1.0)))
+    light_only(rim, [crystal] + small)
+    bpy.context.scene.view_settings.exposure = -0.15
+    camera(loc, tgt, lens=85, fstop=11, focus=(tgt - loc).length)
+
+
+def scene_c4():
+    """끝 그림 3판 — 아침 해가 든 그 창 앞, 창턱의 크림 단지 뚜껑 서리꽃 결정(첫 컷에서 돋던 그 결정)에 초점이 있고,
+    뒤로 새벽 사람이 쓰고 간 「고마워」가 햇빛으로 번진다. 2판(검은 바탕 접사)은 「고마워의 온기가 검은 스튜디오에서 식는다 ·
+    따뜻한 창이라는 끝 줄과 그림이 어긋난다」(10-29 볼 이유 심사 2회차)라 이야기의 아침 안에서 닫는다. 이름은 시안글.py가 위에."""
+    cam_loc = Vector((0.020, 0.42, SILL_Z + 0.140))
+    cam_t = Vector((0.020, 0.0, SILL_Z + 0.072))  # 금 띠까지 화면 안에(Fable 4차 P2 — 아래에서 잘려 보였다)
+    sun_dir = (letter_point("end") - cam_loc).normalized()
+
+    def outside():
+        sky_world((0.50, 0.66, 0.95), (1.0, 0.84, 0.64), (0.90, 0.86, 0.80), 1.0, sun_dir=sun_dir, sun_rgb=(1.0, 0.78, 0.50),
+                  core=1400.0, core_gain=16.0, halo=24.0, halo_gain=0.10, light=0.5)
+    inside, frost, drops = window_c("end", dict(glow=(1.0, 0.93, 0.82), diffuse=(0.95, 0.94, 0.92), share=0.30,
+                                                sparkle=1.0, see=0.06), outside)
+    jar_e, jp = cream_jar((0.020, 0.26, SILL_Z), (0, 0, math.radians(180)), relief_step=1)
+    ap = []  # 앰플은 화면 가장자리에 잘린 조각으로만 걸려 뺐다
+    key = hide_from_camera(area_light("아침방", (0.30, 0.80, SILL_Z + 0.45), (0.02, 0.26, SILL_Z + 0.06), 6.0, 0.6,
+                                      rgb=(1.0, 0.94, 0.86)), glossy=False)
+    light_only(key, jp + ap + inside)
+    back = hide_from_camera(area_light("창쪽해", (-0.06, 0.05, SILL_Z + 0.22), (0.02, 0.26, SILL_Z + 0.07), 9.0, 0.25,
+                                       rgb=(1.0, 0.86, 0.62)), glossy=False)
+    light_only(back, jp + ap)
+    glint = hide_from_camera(area_light("결빛", (-0.10, 0.20, SILL_Z + 0.30), (0.02, 0.26, SILL_Z + 0.075), 4.0, 0.03,
+                                        rgb=(1.0, 0.92, 0.78)))
+    light_only(glint, jp)
+    focus = (Vector((0.020, 0.26, SILL_Z + 0.0746)) - cam_loc).length
+    # f/6.3 — 2.8은 뒤 「고마워」가 뭉개져 거울 글씨처럼도 보였다, 22는 뒤가 너무 또렷해 뚜껑이 안 뜬다
+    camera(cam_loc, cam_t, lens=30, fstop=float(arg("--fstop", "6.3")), focus=focus)
 
 
 def scene_p0():
@@ -1262,7 +1774,8 @@ def scene_p0():
 def main():
     reset()
     {"p0": scene_p0, "a1": scene_a1, "a2": scene_a2, "a3": scene_a3, "a4": scene_a4, "b1": scene_b1, "b2": scene_b2,
-     "c1": lambda: scene_c("night"), "c2": lambda: scene_c("dawn"), "c3": lambda: scene_c("morning")}[FRAME]()
+     "c1": lambda: scene_c("night"), "c2": lambda: scene_c("dawn"), "c3": lambda: scene_c("morning"),
+     "c0": scene_c0, "c4": scene_c4}[FRAME]()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     bpy.context.scene.render.filepath = OUT
     bpy.ops.render.render(write_still=True)

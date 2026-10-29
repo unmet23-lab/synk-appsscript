@@ -39,6 +39,9 @@ ap.add_argument("--noise", type=float, default=0.012)
 ap.add_argument("--every", type=int, default=10)
 ap.add_argument("--edge", type=float, default=0.5, help="window 씨앗 가운데 가장자리에서 돋는 몫")
 ap.add_argument("--grad", type=float, default=0.0, help="창 아래가 더 차다(아래로 갈수록 Teq를 이만큼 키움 — 서리가 아래에서 위로 뻗음)")
+ap.add_argument("--inner", type=float, default=0.15, help="안쪽 씨앗을 둘 범위(가장자리에서 이 비율만큼 비움)")
+ap.add_argument("--fill", type=float, default=0.62, help="window 채움이 이만큼이면 멈춤(잔 결정 막은 0.9)")
+ap.add_argument("--gap", type=float, default=0.9, help="씨앗 사이 최소 거리 = gap · N / √씨앗 수")
 ap.add_argument("--gpu", action="store_true")
 ap.add_argument("--post", action="store_true")
 ap.add_argument("--out", required=True)
@@ -99,8 +102,8 @@ else:
             t = rng.uniform(0.06, 0.94) * N
             sx, sy = [(t, N - 12), (12, t), (N - 12, t)][side]
         else:
-            sx, sy = rng.uniform(0.15, 0.85, 2) * N
-        if all((sx - qx) ** 2 + (sy - qy) ** 2 > (N * 0.9 / math.sqrt(a.nuclei)) ** 2 for qx, qy, _ in seeds):
+            sx, sy = rng.uniform(a.inner, 1 - a.inner, 2) * N
+        if all((sx - qx) ** 2 + (sy - qy) ** 2 > (N * a.gap / math.sqrt(a.nuclei)) ** 2 for qx, qy, _ in seeds):
             seeds.append((sx, sy, rng.uniform(0, math.pi / 3)))
 # 둘레 띠는 늘 비운다 — 주기 경계로 반대편에 넘어가 자라지 않게(띠를 녹는점으로 두면 그 열이 가장자리 씨앗을 녹였다)
 band0 = np.zeros((N, N), bool)
@@ -191,7 +194,7 @@ for step in range(1, a.steps + 1):
         if step % (a.every * 100) == 0:
             fill = float((p > 0.5).float().mean()) if a.gpu else float((p > 0.5).mean())
             print(f"{step}/{a.steps}  채움 {fill:.3f}  {time.time() - t0:.0f}초", flush=True)
-            if fill > 0.62 and a.mode == "window":
+            if fill > a.fill and a.mode == "window":
                 break
             # 결정끼리 만나 열이 차면 더 자라지 않는다 — 1000단계 사이 채움이 0.2 %p도 안 늘면 멈춘다
             if a.mode == "window" and fill - last_fill < 0.002 and step > 4000:
