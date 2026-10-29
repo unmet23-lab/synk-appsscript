@@ -433,6 +433,12 @@
 - 고침: 원본 박자를 `S = 우리 길이 ÷ 원본 길이`(Y21은 1.08)로 늘려 붙이고(`time.ts`의 `K = 원본 박자.map(x => x * S)`, 칸 안 팝업도 같은 S), 마지막 칸부터 끝까지 길이를 원본 마지막 칸의 S배 안팎(Y21 3.6초 — 4.0초면 끝 자리가 0.66초 어긋남)으로 맞춘다. 말 사이 숨도 덩달아 넉넉해진다.
 - 다시 확인: `node tools/오마주.js 나란히 <편 폴더> --영상 <최종본>` — Y21 r3부터 박자 71% · 중앙 어긋남 0.24초 · 반전 · 끝 자리 맞음.
 
+### HTML 글자 카드를 크롬으로 찍을 때 — 흐림 움직임이 걸린 틀이 글자를 화면 밖으로 밀고, 한글 웹폰트 · 로컬 가림 그림은 안 뜬다 (2026-10-29 Claude)
+- 증상: 진주 숏폼 글자(HTML 조판 → Playwright로 프레임마다 `currentTime`을 옮겨 투명 PNG)에서 ① 나가는 움직임(`filter: blur`)을 건 카드만 처음부터 끝까지 빈 그림 ② Google Fonts의 Noto Serif KR · Gowun Batang이 기본 고딕으로 찍힘 ③ `mask-image: url(로컬.png)`가 아무것도 안 그림.
+- 원인: ① `filter`가 걸린 요소는 `position:absolute` 자식의 기준 상자가 된다 — 크기 없는 틀이 기준이 돼 `bottom:600px` 글자가 화면 위로 나갔다. ② 한글 웹폰트는 글자 범위마다 조각으로 늦게 받혀 `document.fonts.ready` 뒤에도 덜 뜬 채 찍혔다. ③ `file://` 페이지에서 다른 로컬 파일을 마스크로 쓰는 것을 크롬이 막는다.
+- 고침: 틀에 `position:absolute; inset:0`. 글꼴은 이 PC 파일을 `@font-face { src: url("file:///C:/Windows/Fonts/NotoSerifKR-VF.ttf") }`(SUIT도 저장소 파일)로 물리고 찍기 전 4초 기다림. 가림 그림은 data URI로 넣거나, 장면 안 글자는 파이썬에서 클립 프레임에 알파를 곱해 얹는다(`.tmp/contests-20261019/jinju/영상/편집.py`). 크롬은 `chromium.launch({ channel: "chrome" })`(번들 헤드리스 없음). 찍기 틀 `.tmp/contests-20261019/jinju/영상/글자/`(글자카드.py · 찍기.cjs).
+- 다시 확인: 찍은 PNG의 알파 최댓값이 0이 아니고, 명조 글자의 삐침이 보이는지 확대해 본다.
+
 ## 목소리·받아쓰기
 
 ### Gemini TTS가 영어 지시문을 소리로 읽거나 없는 말을 지어낸다
@@ -630,6 +636,18 @@
 - 원인: 셈 파일의 LANG 표가 `mn: 'mon'`을 갖고 있어 미리 보기는 막지 않지만, 지금 모델(ssfm-v30)의 목소리는 몽골어를 받지 않는다.
 - 고침: 몽골어 대사는 위 「몽골어·베트남어 같은 짧은 외국어 대사」 항목대로 Gemini TTS(`gemini-3.8-flash-tts`, `languageCode: mn-MN`)로 굽는다. 이 PC에 무료 글 문 키(`SYNK_보안/제미나이_무료.txt`)가 없어 유료 Vertex(`--유료-api`)로 구웠고(1.4초 세 줄), 사용은 유호님 견적 승인에 넣었다(`.tmp/contests-20261019/cts/소리/제미나이_굽기.cjs`).
 - 다시 확인: 굽기 전에 그 목소리 · 언어로 한 줄만 `--최대 20`으로 사 본다.
+
+### 타입캐스트 내레이션이 「AI티 심함」 — 줄마다 굽기 · 늦춘 빠르기 · 글말 원고가 겹친 탓이고, 차분한 판은 힉스필드 CLI의 ElevenLabs v4로 굽는다 (2026-10-29 Claude)
+- 증상: 10-29 진주 숏폼 서현(빠르기 0.72~0.85, 8줄을 줄마다 굽기)에 유호님 「너무 쓰레기같아 … ai티가 심하게」. 원고를 입말로 고치고 한 번에 이어 읽힌 서현 · 혜리 · 세나 · 소진 넷도 「다 ai같아」.
+- 원인: 줄마다 따로 구우면 줄마다 억양이 처음부터 시작하고(위 「대사를 줄마다 따로 구워 이으면 뚝뚝 끊긴다」와 같은 결), 요청 빠르기를 0.75 밑으로 내리면 말이 늘어진다. 타입캐스트 목소리 자체도 차분한 밤 장면에는 맞지 않았다(유호님 귀).
+- 고침: 원고 전체를 한 번에 읽혀 받아쓰기 낱말 시각으로 줄을 나눈다(`.tmp/contests-20261019/jinju/소리/힉스필드/나누기.py`). 엔진은 힉스필드 CLI — `elevenlabs_v4`(`--dialogue '[{"text":"[softly] …","voice_id":"<UUID>","voice_type":"preset"}]' --stability 0.6`, 원고 전체 약 2.3크레딧)와 `inworld_text_to_speech`(`--voice "Yoona (ko)"`, 한국어 원어민 넷, 2크레딧). 유호님이 고른 것은 Eleven 「Luna」(375a3398-e3b4-4f91-845d-42181e352899). 크레딧이 있는 founder 계정은 `HOME`·`USERPROFILE`을 `~/.ai-accounts/higgsfield-founder`로 바꿔 부른다(힉스필드 노트). `generate create … --wait`가 출력 없이 300초를 넘기면 접수 자체가 안 된 것(목록에 없음, 크레딧 그대로) — `--wait` 없이 접수해 id를 받고 `generate wait <id>`로 따로 기다린다. 부드러운 목소리는 음악 위에서 +2~3dB.
+- 다시 확인: `higgsfield generate list --json` 첫 줄이 방금 낸 job이고, 받은 mp3를 나눈 뒤 받아쓰기 일치가 0.93 넘는지.
+
+### faster-whisper가 GPU에서 「cublas64_12.dll is not found」로 멈춘다 — CPU int8로 돌린다 (2026-10-29 Claude)
+- 증상: `WhisperModel("medium", device="cuda")`의 `transcribe` 첫 조각에서 `RuntimeError: Library cublas64_12.dll is not found or cannot be loaded`.
+- 원인: 이 PC에 CUDA 12 런타임 dll이 PATH에 없다(faster-whisper 1.2.1 · ctranslate2가 찾는 판).
+- 고침: `device="cpu", compute_type="int8"` — 30초 소리 한 개에 1분 안팎이라 내레이션 확인에는 충분하다.
+- 다시 확인: `python -c "import ctypes; ctypes.WinDLL('cublas64_12.dll')"`가 실패하면 아직 그대로다.
 
 ## 렌더 장비
 
