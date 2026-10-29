@@ -4,7 +4,7 @@
 //  · 요금표(3차): 확인한 지 60일 신선도·한국 부가세·연간 결제 값·공식 요금으로 셈하는 줄
 //  · 지난 7일 사용량 막대와 팁(크레딧 급증·속도·초기화권·요금제 맞추기·안 쓰는 구독), 목표·쉬는 팁·둘까지 고르기
 //  · 한 달 요약·연간 결제·할인 시기
-//  · Claude API 크레딧(10-28): 요금제로 매달 들어오는 금액과 회원이 넣은 남은 금액·만료
+//  · API 크레딧(Claude 10-28 · GPT 10-29): 요금제로 매달 들어오는 금액과 회원이 넣은 남은 금액·만료(서비스마다 따로 센다)
 // 여기서는 문장을 만들지 않는다. 숫자를 글자로 바꾸는 형식(₩·$ 표기와 자리수, 천 원 어림, % 정수 표기, 날짜 말)과 문장 조립은 화면 몫이다.
 // (옮겨 온 nameOf·serviceGroups의 이름 글자 둘 — 「이 PC 로그인」·「직접 넣은 구독」 — 만 예전 그대로 둔다.)
 export const DAY_MS = 864e5;
@@ -107,10 +107,13 @@ export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ?
 
 // 공식 출력의 요금제 이름(prolite 등)을 사람이 읽는 이름으로. 남은 %가 같을 때는 큰 요금제를 먼저 추천한다.
 // Claude Max는 본체가 등급을 붙여 max_5x·max_20x로 준다(등급을 못 읽으면 max).
+// GPT Pro 세 등급(10-29)은 OpenAI 공식 이름 Pro 100 · 200 · 500으로 — Codex 이름 prolite · pro · promax(ai-prices.cjs GPT 줄의 근거). Claude의 pro와 열쇠가 같아 서비스로 가른다.
 const PLAN = { max20x: 'Max 20x', max5x: 'Max 5x', max: 'Max', ultra: 'Ultra', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
-const TIER = { max20x: 8, max5x: 7, max: 6, ultra: 5, pro: 4, plus: 3, prolite: 2, lite: 1 };
+const GPT_PLAN = { prolite: 'Pro 100', pro: 'Pro 200', promax: 'Pro 500' };
+// 같은 서비스 안에서만 견준다: Claude max20x > max5x > max > pro, GPT promax > pro > prolite > plus, Gemini ultra > pro, Higgsfield ultra > plus, Typecast plus > lite.
+const TIER = { max20x: 10, max5x: 9, max: 8, promax: 7, ultra: 6, pro: 5, prolite: 4, plus: 3, lite: 1 };
 export const planKey = plan => String(plan || '').toLowerCase().replace(/[\s_-]/g, '');
-export const planName = plan => (plan ? PLAN[planKey(plan)] || String(plan) : '');
+export const planName = (plan, service = null) => (plan ? (service === 'gpt' && GPT_PLAN[planKey(plan)]) || PLAN[planKey(plan)] || String(plan) : '');
 // 계정 이름: 메일 앞부분(Gemini도 — 본체가 agy 기록에서 지금 로그인된 계정 메일을 읽는다, 10-22) → API 키 끝 네 글자(서비스가 이미 Typecast라
 // 「키」는 붙이지 않는다) → 아직 메일을 못 읽은 Gemini 줄(새 판으로 처음 읽기 전)은 이 PC 로그인 → 직접 넣은 구독 이름.
 export const nameOf = row => (row?.email ? row.email.split('@')[0] : row?.keyHint ? row.keyHint : row?.source === 'auto' && row.service === 'gemini' ? '이 PC 로그인' : row?.label || '');
@@ -156,26 +159,33 @@ export function passesOf(row, now) {
   return null;
 }
 
-/* ---------- Claude API 크레딧(10-28) ---------- */
-// Max 요금제에 매달 딸려 Console 조직에 들어오는 크레딧(공식 안내 10-28 확인 — Max 5x $100 · Max 20x $200. claude.ai에서 Console 조직을 연결해야 받고,
-// 결제 주기마다 결제 뒤 들어와 그 주기 끝(다음 결제일)에 사라지며 이월이 없다. Claude Code·채팅 한도와는 따로다). 남은 금액과 만료일은 Console 결제 화면에만
-// 보이고 읽는 공식 경로가 없어(개인 조직은 Admin API도 열리지 않는다) 회원이 넣는다. 계정판이 스스로 아는 것은 요금제로 들어오는 금액뿐이다 —
-// 요금표(본체가 준 snapshot.prices)의 apiCredit에서, 금액과 같은 60일 문을 따른다. Pro는 말하지 않고, 등급을 못 읽은 Max는 「모름」(unknown)이다.
+/* ---------- API 크레딧(Claude 10-28 · GPT 10-29) ---------- */
+// 구독 요금제에 매달 딸려 개발자용 API 조직에 들어오는 크레딧. 결제 주기마다 결제 뒤 들어와 그 주기 끝(다음 결제일)에 사라지며 이월이 없고,
+// 구독의 채팅·Claude Code·Codex 한도와는 따로다. 남은 금액과 만료일은 그 결제 화면에만 보이고 읽는 공식 경로가 없어 회원이 넣는다.
+//  · Claude(공식 안내 10-28): Max 5x $100 · Max 20x $200, claude.ai에서 Console 조직을 연결해야 받는다. 남은 금액은 Console 결제 화면(개인 조직은 Admin API도 열리지 않는다).
+//  · GPT(공식 안내 10-29): Pro 100 · 200 · 500이 $100 · $200 · $500, ChatGPT 설정 › 결제에서 같은 메일의 API 조직 하나를 연결해야 받는다(Plus 없음, 구독 7일 뒤).
+//    남은 금액은 OpenAI 플랫폼 결제 › Credit grants. Codex에는 API 키로도 쓰이지 않는다.
+// 서비스마다 다른 조직의 돈이라 판 합계(apiCredits)도 서비스마다 따로 센다(서로 바꿔 쓸 수 없다).
+// 계정판이 스스로 아는 것은 요금제로 들어오는 금액뿐이다 — 요금표(본체가 준 snapshot.prices)의 apiCredit에서, 금액과 같은 60일 문을 따른다.
+// 받지 못하는 요금제(Claude Pro · GPT Plus 등)는 말하지 않고, 등급을 못 읽은 Claude Max는 「모름」(unknown)이다(GPT는 Codex가 등급까지 준다).
 // 공식 요금처럼(officialPrice) 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 세지 않는다(Fable 최종 P3).
+export const API_CREDIT_SERVICES = ['claude', 'gpt'];
+// 크레딧을 받는 요금제(공식): Claude는 Max(등급 모름 포함), GPT는 Pro 세 등급. 화면의 「API 크레딧」 단추와 결제일 채우기가 이 기준이다.
+export const apiCreditPlan = row => (row?.service === 'claude' ? /^max/.test(planKey(row.plan)) : row?.service === 'gpt' ? ['prolite', 'pro', 'promax'].includes(planKey(row.plan)) : false);
 function grantOf(prices, row, now) {
-  if (row?.source !== 'auto' || row.service !== 'claude') return null;
+  if (row?.source !== 'auto' || !API_CREDIT_SERVICES.includes(row.service)) return null;
   if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
-  const table = priceTable(prices, 'claude', now), key = planKey(row.plan);
+  const table = priceTable(prices, row.service, now), key = planKey(row.plan);
   if (!table) return null;
   const v = num(table.plans?.[key]?.apiCredit);
-  return v > 0 ? { grant: v } : key === 'max' ? { unknown: true } : null;
+  return v > 0 ? { grant: v } : row.service === 'claude' && key === 'max' ? { unknown: true } : null;
 }
 export const apiGrant = (prices, row, now) => grantOf(prices, row, now)?.grant ?? null;
 // 계정 하나: 넣은 값(left·until·at) · 넣은 값의 만료가 지남(left null, expired) · 안 넣음(left null — 등급을 못 읽은 Max면 unknown).
-// Claude 자동 연결 줄이 아니거나, 넣은 값도 들어오는 금액도 없으면 null.
+// API 크레딧을 받는 서비스의 자동 연결 줄이 아니거나, 넣은 값도 들어오는 금액도 없으면 null.
 // 만료일은 그날 0시로 받아 그날부터 없는 것으로 본다(사라지는 시각을 몰라 남은 양을 부풀리지 않는 쪽). 그래서 화면은 날짜만 말한다.
 export function apiCreditOf(prices, row, now) {
-  if (row?.source !== 'auto' || row.service !== 'claude') return null;
+  if (row?.source !== 'auto' || !API_CREDIT_SERVICES.includes(row.service)) return null;
   const g = grantOf(prices, row, now), grant = g?.grant ?? null, left = num(row.apiCredit), until = num(row.apiCreditUntil), at = num(row.apiCreditAt);
   if (left === null) return grant ? { grant, left: null } : g?.unknown ? { grant: null, left: null, unknown: true } : null;
   if (until !== null && until <= now) return { grant, left: null, expired: until, at };
@@ -183,10 +193,11 @@ export function apiCreditOf(prices, row, now) {
 }
 // 판 전체: left 만료 전에 넣은 남은 금액의 합 · entered 그 계정 수 · oldest·newest 그 값들을 넣은 가장 이른·늦은 때(넣은 값은 쓰는 만큼 낡는다) ·
 // monthly 요금제로 매달 들어오는 금액의 합 · granted 그 계정 수 · unknown 등급을 못 읽어 들어오는 금액을 모르는 Max 계정 수 ·
-// first 남은 금액이 있는 계정 가운데 가장 먼저 사라지는 것. 셀 계정이 없으면 null.
-export function apiCredits(prices, rows, now) {
+// first 남은 금액이 있는 계정 가운데 가장 먼저 사라지는 것. 셀 계정이 없으면 null. service 한 서비스만 센다(10-29부터 GPT도 — 처음 뜻대로 기본은 Claude).
+export function apiCredits(prices, rows, now, service = 'claude') {
   let left = 0, entered = 0, monthly = 0, granted = 0, unknown = 0, oldest = null, newest = null, first = null;
   for (const row of rows || []) {
+    if (row?.service !== service) continue;
     const a = apiCreditOf(prices, row, now);
     if (grantOf(prices, row, now)?.unknown) unknown++;
     if (!a) continue;
@@ -232,7 +243,7 @@ export function serviceGroups(rows, now, checkAt = null) {
 }
 
 // 이번 주 일정: 다 쓴 계정이 다시 열리는 때(unblock) · 쓸 수 있는 계정의 주간 초기화(reset) · 7일 안 결제(bill) · 7일 안 초기화권 만료(pass) ·
-// 7일 안 Claude API 크레딧 만료(api)를 시간순으로.
+// 7일 안 API 크레딧 만료(api, Claude · GPT)를 시간순으로.
 // 한눈에 화면은 unblock의 앞 셋만 보이고, 「모두 보기」를 누르면 그 자리에서 전부 펼친다.
 export function upcoming(rows, now, checkAt = null) {
   const today = new Date(now); today.setHours(0, 0, 0, 0);
@@ -246,7 +257,7 @@ export function upcoming(rows, now, checkAt = null) {
     if (bill) items.push(bill);
     // GPT는 초기화권마다 만료가 따로라 그때 사라지는 장수만, 직접 넣은 Claude는 한 만료 때에 넣은 장수 모두.
     if (pass?.until && pass.until - now <= 7 * DAY_MS) items.push({ t: pass.until, type: 'pass', row, count: pass.manual ? pass.count : (row.live?.resets?.until || []).filter(t => t === pass.until).length || 1 });
-    // 넣어 둔 Claude API 크레딧이 남은 채 7일 안에 사라지는 때(10-28). 크레딧은 결제 주기 끝에 사라지니 그 계정의 결제일과 같은 날이면 결제 줄에 붙인다(bill.api).
+    // 넣어 둔 API 크레딧이 남은 채 7일 안에 사라지는 때(Claude 10-28 · GPT 10-29). 크레딧은 결제 주기 끝에 사라지니 그 계정의 결제일과 같은 날이면 결제 줄에 붙인다(bill.api).
     const api = apiCreditOf(null, row, now);
     if (api?.left > 0 && api.until && api.until - now <= 7 * DAY_MS) {
       if (bill && new Date(bill.t).toDateString() === new Date(api.until).toDateString()) bill.api = api.left;
@@ -259,19 +270,21 @@ export function upcoming(rows, now, checkAt = null) {
 // official(row): 요금을 넣지 않은 줄의 공식 요금 { price, currency }(3차 요금표, 확인한 지 60일 안) — 없으면 null. 넣은 값이 늘 먼저다.
 // count는 넣은 요금과 공식 요금으로 센 구독 수(official은 그 가운데 공식 요금 수), unknown은 요금을 모르는 줄 수.
 // 공식 요금이 $0인 무료 요금제는 구독으로 세지 않고, 연간으로 표시한 줄의 「매월 n일」은 7일 안 결제로 세지 않는다(Fable 3차 시안 P3-4·P3-12).
+// soon은 7일 안 결제 수 — 요금을 모르는 줄도 결제일이 7일 안이면 센다(soonUnknown, 금액 합에는 넣지 않는다). GPT 줄은 공식 요금이 없는데 API 크레딧을
+// 넣으면 결제일이 저절로 채워져, 세지 않으면 칸의 「0건 · 다음 7일은 결제가 없어요」와 목록 · 02의 「D-5」가 어긋난다(10-29 Fable P2).
 export function costSummary(rows, now, rate = 1400, official = null) {
-  let krw = 0, usd = 0, count = 0, fromTable = 0, unknown = 0, soon = 0, soonKrw = 0, soonUsd = 0;
+  let krw = 0, usd = 0, count = 0, fromTable = 0, unknown = 0, soon = 0, soonKrw = 0, soonUsd = 0, soonUnknown = 0;
   for (const row of rows) {
     const own = num(row.price) !== null, table = own ? null : official?.(row) || null;
-    if (!own && !table) { unknown++; continue; }
+    const dd = row.cycle === 'annual' ? null : nextBill(row.billDay, now), due = dd !== null && dd <= 6;
+    if (!own && !table) { unknown++; if (due) { soon++; soonUnknown++; } continue; }
     const price = own ? Number(row.price) : table.price, usdRow = (own ? row.currency : table.currency) === 'USD';
     if (!own && price === 0) continue;
     count++; if (table) fromTable++;
     if (usdRow) usd += price; else krw += price;
-    const dd = row.cycle === 'annual' ? null : nextBill(row.billDay, now);
-    if (dd !== null && dd <= 6) { soon++; if (usdRow) soonUsd += price; else soonKrw += price; }
+    if (due) { soon++; if (usdRow) soonUsd += price; else soonKrw += price; }
   }
-  return { krw, usd, count, official: fromTable, unknown, soon, soonKrw, soonUsd, approx: krw + usd * (Number(rate) || 1400) };
+  return { krw, usd, count, official: fromTable, unknown, soon, soonKrw, soonUsd, soonUnknown, approx: krw + usd * (Number(rate) || 1400) };
 }
 // 마지막 확인이 얼마나 지났나: fresh · aging(20분 넘음, 몇 분 전인지 붙임) · stale(1시간 넘음, 지금과 다를 수 있음).
 export const freshness = (at, now) => (!at ? null : now - at > STALE_MS ? 'stale' : now - at > AGING_MS ? 'aging' : 'fresh');
@@ -284,7 +297,8 @@ export function priceTable(prices, service, now) { const p = prices?.services?.[
 // 한국 결제 값: 요금표의 기본값(세전)에 한국 부가세(krVat)를 더한다 — claude.com이 한국에서 $20 → $22로 덧씌워 보이는 것과 같은 규칙(Fable 3차 시안 P2-4).
 const shown = (t, v) => Math.round(v * (1 + (t.krVat || 0)) * 100) / 100;
 // 요금제 하나의 한국 결제 값: month 월 결제 한 달, year 연간 결제 1년 치(없으면 연간 결제 없음).
-export function planPrice(t, key) { const p = t?.plans?.[key]; return p ? { month: shown(t, p.month), year: p.year ? shown(t, p.year) : null } : null; }
+// 월 요금 없이 API 크레딧만 적은 요금제(GPT, 10-29 — 한국은 원화 현지 가격이라 달러 요금을 두지 않는다)는 금액이 없다(null).
+export function planPrice(t, key) { const p = t?.plans?.[key]; return p && Number.isFinite(p.month) ? { month: shown(t, p.month), year: p.year ? shown(t, p.year) : null } : null; }
 // 요금을 넣지 않은 자동 연결 계정의 공식 한 달 요금(한국 결제 값, 확인한 지 60일 안, 연간으로 표시한 계정은 1년 치의 12분의 1). 모르면 null.
 // 한 달 요약·요금 합계·결제 목록·입구 글이 모두 이 한 기준을 쓴다(넣은 값이 늘 먼저, 값마다 「공식 요금」·「넣은 요금」을 붙인다).
 // 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 채우지 않는다(Fable 3차 시안 P3-1).

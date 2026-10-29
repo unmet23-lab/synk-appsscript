@@ -995,7 +995,7 @@ test('Claude reset passes are typed in by the member and kept only on Claude row
   assert.deepEqual([...allowed].sort(),Object.keys(HELP_LINKS).sort());
 });
 
-test('Claude API credits are typed in by the member on Claude rows, rounded to the cent and stamped when saved',async()=>{
+test('API credits are typed in by the member on Claude and GPT rows, rounded to the cent and stamped when saved',async()=>{
   const f=fakeSystem(),D=864e5;
   assert.equal((await f.service.useExisting('claude')).ok,true);assert.equal((await f.service.useExisting('gpt')).ok,true);
   let snap=await f.service.snapshot();
@@ -1014,12 +1014,20 @@ test('Claude API credits are typed in by the member on Claude rows, rounded to t
   assert.deepEqual([...api(claude),get(claude).passCount],[150,NOW+7*D,NOW,1]);
   f.state.claudeEmail='other@example.com';snap=await f.service.check([claude]);
   assert.deepEqual([get(claude).email,...api(claude),get(claude).passCount,get(claude).passUntil],['other@example.com',null,null,null,null,null]);
-  // GPT 줄은 Claude API 크레딧 칸을 받지 않는다(넣은 때도 찍지 않는다).
-  snap=await f.service.save({row:{id:gpt,apiCredit:50,apiCreditUntil:NOW+D}});
-  assert.deepEqual(api(gpt),[null,null,null]);
-  // Console 결제 화면과 공식 안내는 고정 주소로만 연다.
+  // GPT 줄도 같은 칸을 받는다(10-29 — Pro 요금제의 OpenAI API 조직 크레딧). 금액을 비우면 같이 비운다.
+  snap=await f.service.save({row:{id:gpt,apiCredit:59.404,apiCreditUntil:NOW+10*D}});
+  assert.deepEqual(api(gpt),[59.4,NOW+10*D,NOW]);
+  snap=await f.service.save({row:{id:gpt,apiCredit:null}});assert.deepEqual(api(gpt),[null,null,null]);
+  // 받지 않는 서비스(Higgsfield 크레딧형)는 칸을 받지 않는다(넣은 때도 찍지 않는다).
+  assert.equal((await f.service.useExisting('higgsfield')).ok,true);snap=await f.service.snapshot();
+  const higgs=snap.rows.find(r=>r.service==='higgsfield').id;
+  snap=await f.service.save({row:{id:higgs,apiCredit:50,apiCreditUntil:NOW+D}});
+  assert.deepEqual(api(higgs),[null,null,null]);
+  // 결제 화면과 공식 안내는 고정 주소로만 연다.
   assert.deepEqual(await f.service.openHelp('claude-console-billing'),{ok:true});assert.equal(f.opened.at(-1),'https://platform.claude.com/settings/billing');
   assert.deepEqual(await f.service.openHelp('claude-api-credits'),{ok:true});assert.equal(f.opened.at(-1),'https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers');
+  assert.deepEqual(await f.service.openHelp('gpt-credit-grants'),{ok:true});assert.equal(f.opened.at(-1),'https://platform.openai.com/settings/organization/billing/credit-grants');
+  assert.deepEqual(await f.service.openHelp('gpt-api-credits'),{ok:true});assert.equal(f.opened.at(-1),'https://help.openai.com/en/articles/20001626-api-credits-benefit-for-eligible-chatgpt-subscriptions');
 });
 
 test('keeps the chosen tip goal and the tips-off switch, and refuses anything else',async()=>{
@@ -1048,6 +1056,14 @@ test('the price table keeps only checked, known values and the newer check wins 
   // Max에는 매달 딸려 오는 API 크레딧(달러, 10-28 공식 안내)도 같은 요금제 칸에 둔다. 모양이 틀린 API 크레딧이면 그 요금제를 통째로 버린다.
   assert.deepEqual(base.services.claude.plans,{pro:{month:20,year:200},max5x:{month:100,apiCredit:100},max20x:{month:200,apiCredit:200}});
   assert.deepEqual(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),plans:{max5x:{month:110,apiCredit:-100},max20x:{month:220,apiCredit:200.5}}}}),at),null);
+  // GPT(10-29): 한국은 원화 현지 가격이라 월 요금 없이 Pro 세 등급의 API 크레딧만(공식 Pro 100 · 200 · 500). 월 요금도 API 크레딧도 없는 요금제, 모양이 틀린 크레딧, 틀린 월 요금은 버린다.
+  const gptAt=new Date(2026,9,29,12,0).getTime(),gptBase=validatePrices(DEFAULT_PRICES,gptAt);
+  assert.deepEqual(gptBase.services.gpt,{checked:'2026-10-29',source:'gpt-api-credits',currency:'USD',tax:null,plans:{prolite:{apiCredit:100},pro:{apiCredit:200},promax:{apiCredit:500}}});
+  const gptEntry=plans=>({checked:'2026-10-29',source:'gpt-api-credits',currency:'USD',tax:null,plans});
+  assert.deepEqual(validatePrices(priceDoc({gpt:gptEntry({prolite:{},pro:{apiCredit:'200'},promax:{month:-1,apiCredit:500},plus:{apiCredit:20}})}),gptAt),null);
+  assert.deepEqual(validatePrices(priceDoc({gpt:gptEntry({pro:{apiCredit:0},promax:{month:500,apiCredit:500}})}),gptAt).services.gpt.plans,{pro:{apiCredit:0},promax:{month:500,apiCredit:500}});
+  // GPT 출처는 그 공식 안내 열쇠만(요금표 출처 열쇠를 빌려 쓰지 못한다).
+  assert.equal(validatePrices(priceDoc({gpt:{...gptEntry({pro:{apiCredit:200}}),source:'claude-plans'}}),gptAt),null);
   assert.equal(base.services.claude.tax,'excluded');assert.equal(base.services.claude.krVat,0.1);assert.equal(base.services.higgsfield.annualLock,true);assert.equal(base.services.higgsfield.tax,'excluded');
   // 부가세율 모양이 틀리면 그 서비스를 받지 않는다.
   for(const krVat of [0.5,-0.1,'0.1'])assert.equal(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),krVat}}),at),null);
@@ -1070,8 +1086,11 @@ test('the price table keeps only checked, known values and the newer check wins 
   assert.deepEqual(deals,[deal]);
   // synk.im 공개본은 서비스·출처를 부호로 적는다(배포 점검이 공개 파일의 도구 이름을 막는다). 풀면 앱 기본 사본과 같고, 모르는 부호는 버린다.
   const wireText=JSON.stringify(toWire(DEFAULT_PRICES));
-  assert.doesNotMatch(wireText,/claude|higgsfield|typecast/i);
+  assert.doesNotMatch(wireText,/claude|higgsfield|typecast|gpt|openai|chatgpt/i);
   assert.deepEqual(validatePrices(JSON.parse(wireText),at),base);
+  // GPT 줄은 s4 · s4-credits로 오고 풀면 같은 값이다(10-29 확인한 줄이라 그날 뒤에 받는다).
+  assert.deepEqual(Object.keys(JSON.parse(wireText).services).sort(),['s1','s2','s3','s4']);
+  assert.deepEqual(validatePrices(JSON.parse(wireText),gptAt).services.gpt,gptBase.services.gpt);
   const wireDeal={...deal,service:'s2',source:'s2-pricing'};
   assert.deepEqual(toWire(priceDoc({},[deal])).deals,[wireDeal]);
   assert.deepEqual(validatePrices(priceDoc({s9:claudeEntry('2026-10-19')},[wireDeal,{...wireDeal,service:'s9'},{...wireDeal,source:'s1-plans'}]),at),{services:{},deals:[deal]});

@@ -349,8 +349,9 @@ test('usage bars scale to 100% or the busiest week, keep a sliver for tiny use a
 test('Claude API credits: the price table says what arrives each month, the member says what is left until the expiry day',async()=>{
   const {apiGrant,apiCreditOf,apiCredits,upcoming}=await model;
   const prices=priceBook(),max20=extra=>row({plan:'max_20x',...extra});
-  // 들어오는 금액은 요금표의 등급을 아는 Max만(공식 Max 5x $100 · Max 20x $200). 등급을 못 읽은 Max·Pro·다른 서비스·직접 넣은 줄은 말하지 않는다.
-  assert.deepEqual([max20(),row({plan:'max_5x'}),row({plan:'max'}),row({plan:'pro'}),gpt('g',{}),row({source:'manual',plan:'max_20x'})].map(r=>apiGrant(prices,r,NOW)),[200,100,null,null,null,null]);
+  // 들어오는 금액은 요금표의 등급을 아는 Max만(공식 Max 5x $100 · Max 20x $200). 등급을 못 읽은 Max·Pro·받지 않는 서비스·직접 넣은 줄은 말하지 않는다.
+  // GPT Pro(10-29)도 받는다 — 아래 GPT 시험. 여기 판 합계(apiCredits)는 처음 뜻대로 Claude만 센다.
+  assert.deepEqual([max20(),row({plan:'max_5x'}),row({plan:'max'}),row({plan:'pro'}),gpt('g',{}),row({source:'manual',plan:'max_20x'}),row({service:'higgsfield',kind:'credit',plan:'ultra'})].map(r=>apiGrant(prices,r,NOW)),[200,100,null,null,200,null,null]);
   // 요금표를 확인한 지 60일이 지나면 금액처럼 들어오는 금액도 말하지 않는다.
   assert.equal(apiGrant(priceBook(NOW-61*D),max20(),NOW),null);assert.equal(apiGrant(null,max20(),NOW),null);
   // 안 넣은 Max는 들어오는 금액만, 안 넣은 Pro는 셀 것이 없다. 등급을 못 읽은 Max는 「모름」 표시만(설명 줄·칸이 나오게).
@@ -390,4 +391,40 @@ test('Claude API credits: the price table says what arrives each month, the memb
   // 그 계정의 결제일과 같은 날이면 따로 줄을 세우지 않고 결제 줄에 붙인다.
   const day=new Date(NOW+5*D),billed=max20({id:'h',email:'h@example.com',billDay:day.getDate(),apiCredit:40,apiCreditUntil:new Date(day.getFullYear(),day.getMonth(),day.getDate()).getTime()});
   assert.deepEqual(upcoming([billed],NOW).map(i=>[i.type,i.days,i.api]),[['bill',5,40]]);
+});
+
+test('GPT API credits: Pro 100 · 200 · 500 bring $100 · $200 · $500, Plus none, no monthly price, and each service keeps its own total',async()=>{
+  const {apiGrant,apiCreditOf,apiCredits,apiCreditPlan,upcoming,officialPrice,planName,serviceGroups,costSummary}=await model;
+  const prices=priceBook();
+  // Codex 이름 prolite · pro · promax = 공식 Pro 100 · 200 · 500(공식 안내 10-29). Plus · Business는 받지 않거나 금액을 모른다.
+  assert.deepEqual(['prolite','pro','promax','plus','business'].map(plan=>apiGrant(prices,gpt('g-'+plan,{},{plan}),NOW)),[100,200,500,null,null]);
+  assert.deepEqual(['prolite','pro','promax','plus'].map(plan=>planName(plan,'gpt')),['Pro 100','Pro 200','Pro 500','Plus']);
+  // Claude의 pro는 그대로 Pro(같은 열쇠라 서비스로 가른다).
+  assert.deepEqual([planName('pro','claude'),planName('pro'),planName('prolite')],['Pro','Pro','Pro Lite']);
+  assert.deepEqual([gpt('a',{},{plan:'promax'}),gpt('b',{},{plan:'plus'}),row({plan:'max'}),row({plan:'pro'}),row({service:'gemini',plan:'ultra'})].map(apiCreditPlan),[true,false,true,false,false]);
+  // 등급 「모름」은 Claude Max에만 있다 — GPT는 Codex가 등급까지 주고, 모르는 이름이면 말하지 않는다.
+  assert.equal(apiCreditOf(prices,gpt('x',{},{plan:'pro_new'}),NOW),null);
+  assert.deepEqual(apiCreditOf(prices,gpt('y',{}),NOW),{grant:200,left:null});
+  // 월 요금은 두지 않는다(한국은 원화 현지 가격) — GPT 줄은 지금처럼 공식 요금으로 셈하지 않는다. 60일 신선도는 Claude와 같다.
+  assert.equal(officialPrice(prices,gpt('g',{}),NOW),null);
+  assert.equal(apiGrant(priceBook(NOW-61*D),gpt('g',{}),NOW),null);
+  // 판 합계는 서비스마다 — GPT 줄은 Claude 합계에, Claude 줄은 GPT 합계에 섞이지 않는다(서로 다른 조직의 돈).
+  const soon=new Date(NOW+5*D).setHours(0,0,0,0),later=new Date(2026,10,8).getTime();
+  const rows=[gpt('s',{},{apiCredit:59.4,apiCreditUntil:soon,apiCreditAt:NOW-H}),gpt('u',{},{apiCredit:93.17,apiCreditUntil:later,apiCreditAt:NOW-2*H}),gpt('p',{},{plan:'plus'}),row({id:'m',plan:'max_20x',apiCredit:150,apiCreditUntil:NOW+9*D,apiCreditAt:NOW-D})];
+  const g=apiCredits(prices,rows,NOW,'gpt'),c=apiCredits(prices,rows,NOW,'claude');
+  assert.deepEqual({...g,first:g.first.row.id},{left:152.57,entered:2,oldest:NOW-2*H,newest:NOW-H,monthly:400,granted:2,unknown:0,first:'s'});
+  assert.deepEqual([c.left,c.entered,c.monthly,c.granted,c.first.row.id],[150,1,200,1,'m']);
+  assert.equal(apiCredits(prices,[gpt('p',{},{plan:'plus'})],NOW,'gpt'),null);
+  // 일정: GPT 크레딧도 7일 안에 사라지면 같은 줄(api)로, 그 줄은 GPT 계정이다.
+  assert.deepEqual(upcoming(rows,NOW).filter(i=>i.type==='api').map(i=>[i.row.id,i.row.service,i.amount]),[['s','gpt',59.4]]);
+  // 7일 안 결제: 요금을 모르는 GPT 줄도 결제일(크레딧을 넣으면 저절로 채워진다)이 7일 안이면 세되 금액 합에는 넣지 않는다(10-29 Fable P2) —
+  // 같은 날 02 일정의 결제 줄과 수가 맞는다. 연간으로 표시한 줄 · 결제일 없는 줄은 그대로 빼고, 금액을 아는 줄은 예전처럼 더한다.
+  const billIn=d=>new Date(NOW+d*D).getDate();
+  const bills=[gpt('b1',{},{billDay:billIn(5)}),gpt('b2',{},{billDay:billIn(5),cycle:'annual'}),gpt('b3',{}),row({id:'b4',plan:'max_20x',price:220,currency:'USD',billDay:billIn(2)})];
+  const due=costSummary(bills,NOW,1400,r=>officialPrice(prices,r,NOW));
+  assert.deepEqual([due.soon,due.soonUnknown,due.soonUsd,due.soonKrw,due.count,due.unknown],[2,1,220,0,1,3]);
+  assert.equal(upcoming(bills,NOW).filter(i=>i.type==='bill').length,due.soon);
+  // 남은 %가 같으면 큰 등급부터: Pro 500 > Pro 200 > Pro 100 > Plus(예전엔 Pro 500이 맨 뒤 · Plus가 Pro 100 앞이었다).
+  const tie=plan=>gpt('t-'+plan,{weekly:{usedPercent:30,resetsAt:NOW+D}},{plan});
+  assert.deepEqual(serviceGroups([tie('plus'),tie('prolite'),tie('promax'),tie('pro')],NOW)[0].usable.map(a=>a.row.plan),['promax','pro','prolite','plus']);
 });

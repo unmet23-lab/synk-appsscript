@@ -6,12 +6,12 @@
 const PRICES_URL='https://synk.im/desktop/ai-prices.json';
 const MAX_BYTES=32*1024,DAY=864e5,FLOOR=new Date(2026,0,1).getTime(),DEAL_DAYS=62;
 // 서비스마다 받을 요금제 열쇠(계정판이 읽는 요금제 이름을 소문자·기호 없이)와 출처로 쓸 수 있는 공식 안내 열쇠.
-const PLAN_KEYS=Object.freeze({claude:['pro','max5x','max20x'],higgsfield:['starter','plus','ultra'],typecast:['free','lite','plus']});
-const SOURCES=Object.freeze({claude:['claude-plans'],higgsfield:['higgsfield-pricing','higgsfield-annual'],typecast:['typecast-api-pricing']});
+const PLAN_KEYS=Object.freeze({claude:['pro','max5x','max20x'],gpt:['prolite','pro','promax'],higgsfield:['starter','plus','ultra'],typecast:['free','lite','plus']});
+const SOURCES=Object.freeze({claude:['claude-plans'],gpt:['gpt-api-credits'],higgsfield:['higgsfield-pricing','higgsfield-annual'],typecast:['typecast-api-pricing']});
 // synk.im 공개본은 서비스·출처를 짧은 부호로 적는다. synk.im 배포 점검(.github/site-check/check.mjs)이 공개 파일의 제작 도구 이름을,
 // 공개 도구(tools/공개.js)가 더한 줄의 AI 이름을 막기 때문이다(10-19 첫 게시 미리 보기에서 걸림). 부호는 이 표로만 풀고, 앱 안 기본 사본은 이름 그대로다.
-const WIRE_SERVICES=Object.freeze({s1:'claude',s2:'higgsfield',s3:'typecast'});
-const WIRE_SOURCES=Object.freeze({'s1-plans':'claude-plans','s2-pricing':'higgsfield-pricing','s2-annual':'higgsfield-annual','s3-api':'typecast-api-pricing'});
+const WIRE_SERVICES=Object.freeze({s1:'claude',s2:'higgsfield',s3:'typecast',s4:'gpt'});
+const WIRE_SOURCES=Object.freeze({'s1-plans':'claude-plans','s2-pricing':'higgsfield-pricing','s2-annual':'higgsfield-annual','s3-api':'typecast-api-pricing','s4-credits':'gpt-api-credits'});
 const swap=o=>Object.freeze(Object.fromEntries(Object.entries(o).map(([k,v])=>[v,k])));
 const SERVICE_WIRE=swap(WIRE_SERVICES),SOURCE_WIRE=swap(WIRE_SOURCES);
 // 앱 안 기본 사본(10-19 공식 요금표를 앱 안 브라우저로 직접 확인). month: 월 결제 한 달, year: 연간 결제 1년 치(없으면 연간 결제가 없다), credits: 한 달 크레딧.
@@ -24,6 +24,11 @@ const DEFAULT_PRICES=Object.freeze({
     // apiCredit(10-28): Max 요금제에 매달 딸려 Console 조직에 들어오는 API 크레딧(달러) — 공식 안내 「API credits for Max and Team plans」(HELP_LINKS claude-api-credits)를
     // 10-28에 확인했다(Max 5x $100 · Max 20x $200, 결제 주기마다 들어와 그 끝에 사라짐, Pro는 없음). 요금과 같은 요금제 사실이라 같은 60일 문을 따른다.
     claude:{checked:'2026-10-19',source:'claude-plans',currency:'USD',tax:'excluded',krVat:0.1,plans:{pro:{month:20,year:200},max5x:{month:100,apiCredit:100},max20x:{month:200,apiCredit:200}}},
+    // GPT(10-29): Pro 요금제에 결제 주기마다 딸려 API 조직에 들어오는 API 크레딧(달러)만 둔다 — 공식 안내 「API credits benefit for eligible ChatGPT subscriptions」
+    // (HELP_LINKS gpt-api-credits, 10-29 확인: Pro 100 · 200 · 500이 $100 · $200 · $500, 결제 주기 끝에 사라짐, Plus는 없음). ChatGPT 구독은 한국에서 원화 현지 가격으로
+    // 결제돼(공식 「다중 통화 요금 청구」) 달러 월 요금(month)은 두지 않는다 — 그래서 GPT 줄은 지금처럼 공식 요금으로 셈하지 않는다.
+    // 요금제 열쇠는 Codex가 주는 이름이다: pro = Pro 200(이 PC의 Pro 200 두 계정이 pro로 읽힘), prolite · promax = 그 아래 · 위 등급(Codex 0.165 요금제 목록, Codex 화면 이름 Pro Standard · Pro Max).
+    gpt:{checked:'2026-10-29',source:'gpt-api-credits',currency:'USD',tax:null,plans:{prolite:{apiCredit:100},pro:{apiCredit:200},promax:{apiCredit:500}}},
     // higgsfield.ai 요금표(세금 별도): 월 결제 Starter $19 · Plus $59 · Ultra $129, 연간 결제는 한 달 $19 · $47 · $99(Starter는 차이 없음), 한 달 크레딧 270 · 1,200 · 3,000(Ultra는 6,000 · 9,000 등급도 있다).
     // 도움말 「Can I switch between monthly and annual billing?」: 연간 결제에서 월 결제로는 못 돌아온다(annualLock).
     higgsfield:{checked:'2026-10-19',source:'higgsfield-pricing',currency:'USD',tax:'excluded',annualLock:true,plans:{starter:{month:19,year:228,credits:270},plus:{month:59,year:564,credits:1200},ultra:{month:129,year:1188,credits:3000}}},
@@ -56,11 +61,13 @@ function cleanService(service,raw,now,trusted=false){
   for(const key of PLAN_KEYS[service]){
     const p=raw.plans?.[key];if(!plain(p))continue;
     const month=price(p.month),year=p.year===undefined||p.year===null?null:price(p.year),credits=p.credits===undefined||p.credits===null?null:amount(p.credits);
-    // apiCredit(10-28): 요금제에 매달 딸려 오는 API 크레딧(달러, Claude Max). 0은 「없음」을 일부러 적은 것이다(갱신본으로 거두는 길 — 합치기가 빠진 칸만 앞 판에서 잇는다).
+    // apiCredit(10-28): 요금제에 매달 딸려 오는 API 크레딧(달러, Claude Max · GPT Pro). 0은 「없음」을 일부러 적은 것이다(갱신본으로 거두는 길 — 합치기가 빠진 칸만 앞 판에서 잇는다).
     const apiCredit=p.apiCredit===undefined||p.apiCredit===null?null:p.apiCredit===0?0:amount(p.apiCredit);
+    // 월 요금 없이 API 크레딧만 적은 요금제(GPT, 10-29)도 받는다 — 그 요금제는 금액을 말하지 않고 크레딧만 센다.
+    const creditOnly=(p.month===undefined||p.month===null)&&apiCredit!==null;
     // 숫자 하나라도 모양이 틀리면 그 요금제는 통째로 버린다(반쯤 맞는 값으로 말하지 않게).
-    if(month===null||(p.year!==undefined&&p.year!==null&&year===null)||(p.credits!==undefined&&p.credits!==null&&credits===null)||(p.apiCredit!==undefined&&p.apiCredit!==null&&apiCredit===null))continue;
-    plans[key]={month,...(year===null?{}:{year}),...(credits===null?{}:{credits}),...(apiCredit===null?{}:{apiCredit})};
+    if((month===null&&!creditOnly)||(p.year!==undefined&&p.year!==null&&year===null)||(p.credits!==undefined&&p.credits!==null&&credits===null)||(p.apiCredit!==undefined&&p.apiCredit!==null&&apiCredit===null))continue;
+    plans[key]={...(month===null?{}:{month}),...(year===null?{}:{year}),...(credits===null?{}:{credits}),...(apiCredit===null?{}:{apiCredit})};
   }
   if(!Object.keys(plans).length)return null;
   // krVat은 적혀 있으면 0도 그대로 둔다(「한국 부가세 없음」을 일부러 적은 것) — 빠진 것과 나눠야 합치기가 기본 사본 값을 이을 수 있다.

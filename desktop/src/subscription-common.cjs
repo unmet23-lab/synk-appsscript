@@ -25,6 +25,9 @@ const HELP_LINKS=Object.freeze({
   // Claude API 크레딧(10-28 확인): Max 요금제에 딸려 오는 금액·만료(공식 안내)와, 남은 금액이 보이는 유일한 곳인 Console 결제 화면.
   'claude-api-credits':'https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers',
   'claude-console-billing':'https://platform.claude.com/settings/billing',
+  // GPT API 크레딧(10-29 확인): Pro 요금제에 딸려 오는 금액·만료(공식 안내)와, 남은 금액이 보이는 OpenAI 플랫폼 결제 › Credit grants. 공식 안내는 요금표의 출처로도 쓴다.
+  'gpt-api-credits':'https://help.openai.com/en/articles/20001626-api-credits-benefit-for-eligible-chatgpt-subscriptions',
+  'gpt-credit-grants':'https://platform.openai.com/settings/organization/billing/credit-grants',
   // 요금표·연간 결제(3차, 10-19 확인): 요금표의 출처와 연간 결제 팁의 근거. 받은 요금표는 이 열쇠로만 출처를 가리킨다.
   'higgsfield-pricing':'https://higgsfield.ai/pricing',
   'higgsfield-annual':'https://higgsfield.ai/creator-hub/help-center/plans/can-i-switch-between-monthly-and-annual-billing',

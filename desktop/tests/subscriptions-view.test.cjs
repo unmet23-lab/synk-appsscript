@@ -1274,8 +1274,8 @@ test('Claude API credits are counted in the bills screen with the day they were 
   board.render(el,{signedIn:true,native:true});await tick();
   // 한눈에 01(지금 어느 계정을 쓰나)에는 API 크레딧을 넣지 않는다 — Claude Code·채팅 한도와 따로다.
   assert.doesNotMatch([...el.innerHTML.matchAll(/<span class="ms-count">(.*?)<\/span><\/span><span class="ms-dots"/g)].map(m=>m[1]).join(' '),/API/);
-  // 요금·결제일 입구 글: 7일 안에 사라지는 계정이 있으면 그것을 말한다.
-  assert.match(el.innerHTML,new RegExp(`API 크레딧 \\$199 ${md(fresh+3*D)}에 사라져요\\(a\\)`));
+  // 요금·결제일 입구 글: 7일 안에 사라지는 계정이 있으면 그것을 말한다(10-29부터 GPT도 있어 서비스 이름을 붙인다).
+  assert.match(el.innerHTML,new RegExp(` Claude API 크레딧 \\$199 ${md(fresh+3*D)}에 사라져요\\(a\\)`));
   // 02 「모두 보기」: 결제가 아니라 사라지는 돈이라 「사라져요」, 시각 없이 날짜만.
   await d.click({subs:'more'});
   assert.match(el.innerHTML,new RegExp(`<span class="ms-next-time ms-num">${md(fresh+3*D)}</span><span class="ms-next-rel">D-3</span><span class="ms-next-who"><b>a</b> Claude · API 크레딧 \\$199 사라져요</span>`));
@@ -1321,6 +1321,72 @@ test('Claude API credits are counted in the bills screen with the day they were 
   await submit({apiCredit:'',apiDate:ymd(due)});
   assert.deepEqual(saves.at(-1),{row:{id:'c',apiCredit:null,apiCreditUntil:null}});assert.match(toasts.at(-1),/API 크레딧을 비웠어요/);
   board.dispose();
+});
+
+/* ---------- GPT API 크레딧(10-29) ---------- */
+test('GPT API credits get their own box next to Claude, say Pro 200 and Credit grants, and fill the bill day like Max',async()=>{
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const D=864e5,fresh=Date.now(),day0=t=>new Date(t).setHours(0,0,0,0),md=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()}`;};
+  const week={readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}};
+  const g=(id,plan,extra={})=>row({id,service:'gpt',label:'GPT',email:`${id}@example.com`,plan,live:week,...extra});
+  // s는 칸으로 넣은 뒤의 모습(결제일이 만료 날짜의 일로 채워져 있다).
+  const s=g('s','pro',{apiCredit:59.4,apiCreditUntil:day0(fresh+3*D),apiCreditAt:fresh-3600e3,billDay:new Date(fresh+3*D).getDate()});
+  // p(Plus)는 주간을 다 써서 02 「다음에 풀려요」가 열린다.
+  const u=g('u','pro'),l=g('l','prolite'),p=g('p','plus',{live:{readAt:fresh,weekly:{usedPercent:100,resetsAt:fresh+D/2}}});
+  const m=row({id:'m',email:'m@example.com',plan:'max_20x',apiCredit:150,apiCreditUntil:day0(fresh+12*D),apiCreditAt:fresh-D,live:week});
+  const snapshot={ok:true,seq:1,tools:{},rows:[m,s,u,l,p],settings:{usdKrw:1400},check:{at:fresh,total:5,ok:5},login:null,checking:false,usage:{since:fresh,buckets:[],services:{},accounts:{}},prices:priceBook()};
+  const saves=[],toasts=[],helps=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},help:async k=>{helps.push(k);return {ok:true};},save:async patch=>{saves.push(patch);const r=snapshot.rows.find(y=>y.id===patch.row?.id);if(r)Object.assign(r,patch.row);return {...snapshot,seq:snapshot.seq+saves.length};}}};
+  const el=fakeContainer(),board=createSubscriptionsBoard({bridge,toast:x=>toasts.push(x)}),d=driver(el);
+  board.render(el,{signedIn:true,native:true});await tick();
+  // 한눈에 01의 GPT 줄도 API 크레딧을 말하지 않고(Codex 한도의 답), 요금제는 공식 이름으로.
+  assert.doesNotMatch([...el.innerHTML.matchAll(/<span class="ms-count">(.*?)<\/span><\/span><span class="ms-dots"/g)].map(x=>x[1]).join(' '),/API/);
+  // 입구 글: 7일 안에 사라지는 크레딧은 서비스를 가리지 않고 가장 이른 하나를, 서비스 이름과 함께.
+  assert.match(el.innerHTML,new RegExp(`GPT API 크레딧 \\$59.4 ${md(fresh+3*D)}에 사라져요\\(s\\)`));
+  // 02 「모두 보기」: 결제일과 같은 날 사라지니 결제 줄에 붙는다.
+  await d.click({subs:'more'});
+  assert.match(el.innerHTML,new RegExp(`<b>s</b> GPT · 결제일 · API 크레딧 \\$59.4 사라져요</span>`));
+  await d.click({subs:'manage',to:'ms-cost'});
+  // 요금·결제일 칸: Claude · GPT가 따로(서로 다른 조직의 돈이라 더하지 않는다). GPT는 Pro만 매달 들어오는 금액으로 센다(Plus는 받지 않는다).
+  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api"><span>Claude API 크레딧</span><strong class="ms-num">\\$150 남음</strong>`));
+  // 7일 안 결제 칸도 02 · 목록과 같은 말: 요금을 모르는 GPT 결제일(D-3)을 세고, 금액은 「모름」으로(10-29 Fable P2).
+  assert.match(el.innerHTML,/<span>7일 안 결제<\/span><strong class="ms-num">1건<\/strong><small>금액 모름 1건<\/small>/);
+  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api"><span>GPT API 크레딧</span><strong class="ms-num">\\$59.4 남음</strong><small>${md(fresh-3600e3)}에 넣은 값 · 계정 1개 · <b>s</b> ${md(fresh+3*D)}에 가장 먼저 사라져요 · 매달 \\$500\\(Pro 3개\\)</small></div>`));
+  // GPT 줄은 공식 요금으로 셈하지 않는다(한국은 원화 현지 가격) — 결제일이 있는 s만 결제 목록에(금액 칸은 비우고) API 크레딧 한 조각과 함께.
+  assert.match(el.innerHTML,new RegExp(`<span class="ms-bill-name has-api"><span class="ms-bill-who">s</span><small class="ms-bill-api">API 크레딧 \\$59.4 · ${md(fresh+3*D)}에 사라져요</small></span><span class="ms-bill-price ms-num"></span>`));
+  assert.doesNotMatch(el.innerHTML,/<span class="ms-bill-who">u<\/span>|<span class="ms-bill-name">u<\/span>/);
+  // ⋯ 패널: 요금제는 Pro 200 · Pro 100, 안 넣은 Pro는 들어오는 금액 한 줄, Plus에는 넣는 단추가 없다.
+  await d.click({subs:'menu',id:'u'});
+  assert.match(el.innerHTML,/<span class="ms-mplan">Pro 200<\/span>/);
+  assert.match(el.innerHTML,/<p class="ms-soft">Pro 200 요금제는 OpenAI API 조직을 연결하면 API 크레딧이 매달 \$200씩 들어와요\(결제일에 남은 건 사라져요\)\. 남은 금액을 넣으면 사라지기 전에 알려 드려요\.<\/p>/);
+  await d.click({subs:'menu',id:'l'});
+  assert.match(el.innerHTML,/<span class="ms-mplan">Pro 100<\/span>/);assert.match(el.innerHTML,/매달 \$100씩 들어와요/);
+  await d.click({subs:'menu',id:'p'});
+  assert.ok(!el.innerHTML.includes('data-subs="api-edit" data-id="p"'));assert.doesNotMatch(el.innerHTML,/<p class="ms-soft">Plus 요금제는/);
+  // 넣는 칸: 그 계정으로 로그인한 브라우저에서 Credit grants의 BALANCE 앞 숫자와 EXPIRES 날짜(표 위 숫자 · 산 크레딧은 빼고).
+  await d.click({subs:'menu',id:'u'});await d.click({subs:'api-edit',id:'u'});
+  assert.match(el.innerHTML,/<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="u">/);
+  assert.match(el.innerHTML,/<b>u<\/b> 계정으로 로그인한 브라우저에서 OpenAI 플랫폼\(platform\.openai\.com\) 결제 › Credit grants를 열고, 표의 BALANCE 앞 숫자\(남은 금액\)와 EXPIRES 날짜를 넣어 주세요\./);
+  assert.match(el.innerHTML,/Codex에는 쓰이지 않아요/);assert.match(el.innerHTML,/placeholder="200"/);
+  await d.click({subs:'help',link:'gpt-credit-grants'});await d.click({subs:'help',link:'gpt-api-credits'});assert.deepEqual(helps,['gpt-credit-grants','gpt-api-credits']);
+  const submit=async values=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'api',id:'u'},querySelector:sel=>{const x=/\[name="([^"]+)"\]/.exec(sel);return x&&Object.hasOwn(values,x[1])?{value:values[x[1]]}:null;}})}});await tick();await tick();};
+  const ymd=t=>{const x=new Date(t);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;};
+  await submit({apiCredit:'120',apiDate:''});assert.equal(toasts.at(-1),'Credit grants에 보이는 만료 날짜도 넣어 주세요.');
+  assert.equal(saves.length,0);
+  // 결제일을 안 넣은 월 결제 Pro면 만료 날짜의 일로 결제일도 채운다(GPT 크레딧도 결제 주기 끝에 사라진다 — 공식 안내).
+  const due=fresh+10*D;
+  await submit({apiCredit:'199.995',apiDate:ymd(due)});
+  assert.deepEqual(saves.at(-1),{row:{id:'u',apiCredit:200,apiCreditUntil:day0(due),billDay:new Date(due).getDate()}});
+  assert.match(toasts.at(-1),new RegExp(`API 크레딧 \\$200를 넣었어요\\. 크레딧이 사라지는 날이 결제일이라 결제일도 매월 ${new Date(due).getDate()}일로 넣어 뒀어요\\.`));
+  board.dispose();
+  // 7일 안에 사라지는 것이 없으면 입구 글은 서비스마다 남은 금액을 한 조각으로(더하지 않는다), 넣은 날은 둘을 합쳐 처음~끝. 한 서비스뿐이면 그 이름으로.
+  const far=g('f','pro',{apiCredit:93.17,apiCreditUntil:day0(fresh+14*D),apiCreditAt:fresh,billDay:new Date(fresh+14*D).getDate()});
+  const mf=row({id:'mf',email:'mf@example.com',plan:'max_20x',apiCredit:150,apiCreditUntil:day0(fresh+12*D),apiCreditAt:fresh-2*D,live:week});
+  let r=await draw2(phase3([mf,far],{}));
+  assert.match(r.el.innerHTML,new RegExp(` API 크레딧 Claude \\$150, GPT \\$93.17 남음\\(${md(fresh-2*D)}~${md(fresh)} 넣은 값\\)`));r.board.dispose();
+  r=await draw2(phase3([far],{}));
+  assert.match(r.el.innerHTML,new RegExp(`<span>GPT API 크레딧 \\$93.17 남음\\(${md(fresh)} 넣은 값\\)`));r.board.dispose();
 });
 
 test('a stale price table hides what arrives each month but keeps what the member typed in',async()=>{

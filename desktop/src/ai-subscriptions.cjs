@@ -85,8 +85,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       usedUpAt:clampNumber(row.usedUpAt,0,9e15),note:cleanText(row.note,120),
       // Claude 주간 초기화권(회원이 넣음): Claude Code가 알려 주지 않아 claude.ai 설정 › 사용량을 보고 개수·만료 때를 넣는다.
       passCount:(n=>n===null?null:Math.round(n))(clampNumber(row.passCount,0,20)),passUntil:clampNumber(row.passUntil,0,9e15),
-      // Claude API 크레딧(회원이 넣음, 10-28): Max 요금제에 딸려 Console 조직에 들어오는 크레딧. 잔액을 읽는 공식 경로가 없어 Console 결제 화면의
-      // 남은 금액(달러, 센트까지)과 만료 날짜를 넣는다. apiCreditAt은 넣은 때(본체가 찍는다).
+      // API 크레딧(회원이 넣음, Claude 10-28 · GPT 10-29): Claude Max는 Console 조직, GPT Pro는 OpenAI API 조직에 들어오는 크레딧. 잔액을 읽는 공식 경로가 없어
+      // 그 결제 화면(Console 결제 · OpenAI Credit grants)의 남은 금액(달러, 센트까지)과 만료 날짜를 넣는다. apiCreditAt은 넣은 때(본체가 찍는다). 받는 줄은 어댑터 editable이 정한다.
       apiCredit:(n=>n===null?null:Math.round(n*100)/100)(clampNumber(row.apiCredit,0,1e5)),apiCreditUntil:clampNumber(row.apiCreditUntil,0,9e15),apiCreditAt:clampNumber(row.apiCreditAt,0,9e15),
       // 결제 주기(3차): 회원이 「이미 연간이에요」로 연간 결제라고 알려 준 줄만 'annual'. 모르면 비운다(월 결제로 단정하지 않는다).
       cycle:row.cycle==='annual'?'annual':null,

@@ -1,6 +1,7 @@
 'use strict';
 const spec=Object.freeze({label:'GPT',kind:'weekly',bin:'codex',home:'CODEX_HOME',folders:true});
-const policy=Object.freeze({installer:"irm https://chatgpt.com/codex/install.ps1 | iex",macInstaller:"curl -fsSL https://chatgpt.com/codex/install.sh | sh",reachable:"https://auth.openai.com/",login:{domains:["openai.com","chatgpt.com"],args:()=>['login']}});
+// API 크레딧(10-29): Pro 요금제의 API 조직 크레딧은 Codex가 알려 주지 않아 회원이 OpenAI 플랫폼 Credit grants를 보고 넣는다(Claude 줄과 같은 칸).
+const policy=Object.freeze({installer:"irm https://chatgpt.com/codex/install.ps1 | iex",macInstaller:"curl -fsSL https://chatgpt.com/codex/install.sh | sh",reachable:"https://auth.openai.com/",login:{domains:["openai.com","chatgpt.com"],args:()=>['login']},editable:['apiCredit','apiCreditUntil']});
 // 공급자 명령·출력·로그인 방식은 이 어댑터가 함께 소유한다.
 function create({runtime,accounts,system,now,helpers}){
  const {homeEnv}=accounts;
