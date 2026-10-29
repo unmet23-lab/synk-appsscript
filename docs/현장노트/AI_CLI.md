@@ -33,10 +33,11 @@
 - agy 허용 `command(접두어)`는 낱말 단위 앞부분 일치라 `date …SZ` 허용에 `-f <파일>`을 덧붙여 파일을 읽을 수 있다 → 끝을 고정한 `command(regex:^…SZ$)` 정확 허용으로 좁힌다 ([자세히](#agy-허용-command접두어는-낱말-단위-앞부분-일치라-date--usz-허용이--f-파일-덧붙임까지-허용한다-2026-10-22-claude))
 - 서류를 아르곤에 글자로만 넘기면 PDF 글자 층 착시·그림 서명·학습 시점 뒤 모델 이름을 문제로 짚고 등급도 부풀린다(10-22 18건 중 7건 헛지적) → 지적마다 원본·쪽 그림·기록에 대조해 고르고, 반영한 곳만 Fable이 다시 본다 ([자세히](#서류-검수를-아르곤에-글자로만-넘기면-그림pdf-글자-층새-모델-이름을-문제로-짚는다--18건-중-7건이-헛지적-2026-10-22-claude))
 - 카드가 붙은 조직의 키는 크레딧을 다 써도 거절 없이 산 잔액·카드로 넘어간다 → 키 목록의 「한도키」 배열에 넣고 `한도USD`·`한도시작`·`만료일`을 둔다(옛 판은 그 배열을 못 본다, 한도 키는 예약 줄을 먼저 덧붙이고 내 줄 앞만 본다) ([자세히](#카드가-붙은-조직에-한-번-들어온-크레딧은-다-써도-credit-balance-is-too-low로-멈추지-않는다--키-목록의-한도만료로-막는다-2026-10-22-claude))
+- GPT-Live는 말하지 않을 때도 무음 출력 소리를 실제 속도로 계속 보낸다 → 답 끝을 「조각이 안 온다」로 재면 영영 안 끝난다, 소리 안의 목소리(RMS)로 잰다 ([자세히](#gpt-live는-말하지-않을-때도-무음-출력-소리를-이어-보내-도착이-멎으면-답-끝으로-재면-끝나지-않는다-2026-10-29-claude))
 
 ## 목차
 
-[Gemini·agy](#geminiagy) · [Claude API](#claude-api) · [Claude Code 자동 모드](#claude-code-자동-모드) · [Claude 앱 세션](#claude-앱-세션) · [Claude 서브에이전트](#claude-서브에이전트) · [Hermes(텔레그램 팁 봇)](#hermes텔레그램-팁-봇) · [Codex 예약](#codex-예약) · [Codex 세션 기록](#codex-세션-기록) · [Codex 데스크톱 앱](#codex-데스크톱-앱) · [Claude Code·공식 CLI 읽기(계정판)](#claude-code공식-cli-읽기계정판) · [지난 기록](지난기록/AI_CLI.md)
+[Gemini·agy](#geminiagy) · [Claude API](#claude-api) · [Claude Code 자동 모드](#claude-code-자동-모드) · [Claude 앱 세션](#claude-앱-세션) · [Claude 서브에이전트](#claude-서브에이전트) · [Hermes(텔레그램 팁 봇)](#hermes텔레그램-팁-봇) · [Codex 예약](#codex-예약) · [Codex 세션 기록](#codex-세션-기록) · [Codex 데스크톱 앱](#codex-데스크톱-앱) · [Claude Code·공식 CLI 읽기(계정판)](#claude-code공식-cli-읽기계정판) · [OpenAI 실시간 음성(GPT-Live · Realtime)](#openai-실시간-음성gpt-live--realtime) · [지난 기록](지난기록/AI_CLI.md)
 
 ## Gemini·agy
 
@@ -926,3 +927,25 @@
 - 원인: 확인 못 함 — 승인 말에 계정 · 시각이 없어 틱톡 판까지 넓히는 것으로 본 것으로 보인다(메모 approve-on-laptop-for-now: 편 · 계정을 이름 댄 승인이어야 통과).
 - 고침: 우회하지 않고 멈춘다. 판을 다 채운 작업 공간은 그대로 두고, 유호님께 「<편> 틱톡 @<계정> 10-28 21:00 · 네이버 블로그 21:10 예약해」처럼 편 · 계정 · 시각을 이름 댄 한 줄을 받는다. 처음 승인을 받을 때 남은 판(틱톡 · 블로그 · X · 링크드인)까지 계정과 시각을 한 줄에 함께 보여 드린다.
 - 다시 확인: 이름 댄 승인 뒤 같은 7단계 스크립트(`C:/Users/q1212/ego/b8-post-20261027/tt-07.mjs`)가 통과하는지. 셸 큰따옴표 안 node -e에 백틱을 넣으면 Bash가 명령 대입으로 그 경로를 실행하려 든다 — 글에 백틱이 들면 작은따옴표로 감싼다.
+
+## OpenAI 실시간 음성(GPT-Live · Realtime)
+
+판: `gpt-live-1`(`wss://api.openai.com/v1/live/sessions`) · `gpt-realtime-2.1`(`wss://api.openai.com/v1/realtime?model=…`) · Node 24 내장 WebSocket(`new WebSocket(주소, { headers })`로 Authorization을 실을 수 있어 `ws` 패키지가 필요 없다). 쓰는 곳: [듣기 시험 녹음 도구](../../experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs).
+
+### GPT-Live `session.start`에 `delegation: null`을 주면 400 `invalid_type`으로 거절된다 (2026-10-29 Claude)
+- 증상: `session.start`를 `delegation: null`로 보내자 「Invalid type for 'session.delegation': expected an unknown value, but got null instead」 오류 뒤 연결이 1006으로 끊겼다.
+- 원인: 공식 문서(세션 관리)는 「Omitted or `null` delegation selects client mode」라 쓰지만 실제 API는 null을 받지 않는다.
+- 고침: 백엔드 없이 대화만 할 때는 `delegation: { type: 'client' }`로 준다(`session.started`의 delegation도 그 값으로 돌아온다).
+- 다시 확인: `node experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs live cafe noeul --시도 1`이 첫 줄까지 받는지.
+
+### GPT-Live는 말하지 않을 때도 무음 출력 소리를 이어 보내 「도착이 멎으면 답 끝」으로 재면 끝나지 않는다 (2026-10-29 Claude)
+- 증상: 녹음 도구가 답 끝을 「출력 소리 조각이 1.5초 안 오면」으로 잡았더니 줄마다 60초 상한까지 기다려 240초 시간 초과로 끝났다(출력 0줄).
+- 원인: 전이중이라 세션 내내 `session.output_audio.delta`(무음 포함)를 실제 속도로 보낸다 — 32초 세션에 311개, 받은 출력 31초. 출력 소리에는 시각 필드도 끝 이벤트도 없다.
+- 고침: 소리 안의 목소리(20ms 틀 RMS > 0.015)로 답의 처음 · 끝을 잡고 목소리 뒤 무음 1.3초를 답 끝으로 본다. 줄 소리도 그 구간만 잘라 낸다(`녹음.mjs`의 `출력분석` · `live답끝`). Realtime 2.1은 응답 동안만 소리를 보내고 `response.done`이 있어 그대로 된다.
+- 다시 확인: 시도 기록 json의 `이벤트."session.output_audio.delta"`가 세션 초 × 10 안팎이고 `출력초`가 세션 길이와 비슷한지.
+
+### 「모델 호출만」 제한 키는 `GET /v1/models`가 빈 메시지 403인데 실시간 · TTS 호출은 된다 (2026-10-29 Claude)
+- 증상: OpenAI 키 목록의 synk.yuh · unmet23 키 둘 다 모델 목록 읽기가 403(오류 메시지 없음)이라 「이 키로 GPT-Live를 못 쓰나」로 잘못 읽을 뻔했다.
+- 원인: 키 권한이 모델 호출(Model capabilities)만이라 목록 읽기 권한이 없다.
+- 고침: 목록으로 접근을 판단하지 않고 실제 호출로 본다 — 실시간 WebSocket의 `session.created`/`session.started`, TTS 한 줄. 둘 다 됐다.
+- 다시 확인: 위 녹음 도구의 `학습자` 명령이 `[녹음] 학습자 … · 키 synk.yuh`를 찍는지.
