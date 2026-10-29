@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l4b",
+ "text": "끝 인사는 글자까지 똑같았어요.",
+ "dur": 1.891,
+ "words": [
+  {
+   "text": "끝",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "인사는",
+   "start": 0.342,
+   "end": 0.684
+  },
+  {
+   "text": "글자까지",
+   "start": 0.926,
+   "end": 1.349
+  },
+  {
+   "text": "똑같았어요.",
+   "start": 1.409,
+   "end": 1.891
+  }
+ ],
+ "source": {
+  "key": "3faef7120204f25df62c311814f17d8c",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 193
+ }
+}

@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.15,
+  "seed": 1029,
+  "lufs": -17
+ },
+ "made": "2026-10-29T07:54:28.926Z",
+ "lines": [
+  {
+   "id": "l1",
+   "text": "왜 다 좋아요가 영 개일까요?",
+   "dur": 1.746,
+   "syllablesPerSec": 6.3,
+   "src": "l1.wav",
+   "key": "654c87f8b6e2627147520f3b673f1fed",
+   "words": 5
+  },
+  {
+   "id": "l2",
+   "text": "에이아이가 만들어서 거의 매일 올렸거든요.",
+   "dur": 2.418,
+   "syllablesPerSec": 7.44,
+   "src": "l2.wav",
+   "key": "ec9927d2fe589e6d9fd95d871084674e",
+   "words": 5
+  },
+  {
+   "id": "l3",
+   "text": "근데 다른 에이아이가 채점해 보니, 같은 틀이래요.",
+   "dur": 2.833,
+   "syllablesPerSec": 7.06,
+   "src": "l3.wav",
+   "key": "064bbb28dc93ff3ef82e00959e8dffcc",
+   "words": 7
+  },
+  {
+   "id": "l4a",
+   "text": "화면 생김새도 똑같고,",
+   "dur": 1.987,
+   "syllablesPerSec": 4.53,
+   "src": "l4a.wav",
+   "key": "9fc7bc997fbe15792db93eb9ed62cca6",
+   "words": 3
+  },
+  {
+   "id": "l4b",
+   "text": "끝 인사는 글자까지 똑같았어요.",
+   "dur": 1.891,
+   "syllablesPerSec": 6.87,
+   "src": "l4b.wav",
+   "key": "3faef7120204f25df62c311814f17d8c",
+   "words": 4
+  },
+  {
+   "id": "l5n",
+   "text": "나간 여섯 편도 다 이 생김새였고요.",
+   "dur": 2.645,
+   "syllablesPerSec": 5.29,
+   "src": "l5n.wav",
+   "key": "2c1edbed9e9e2f63de953c40c50599e9",
+   "words": 6
+  },
+  {
+   "id": "l5",
+   "text": "실제로 여섯 편이 다 이렇게 나갔고요. 무슨 말인지는 알겠는데, 재미가 없대요.",
+   "dur": 4.214,
+   "syllablesPerSec": 7.36,
+   "src": "l5.wav",
+   "key": "091cde62412667799cc40ca36c37a10a",
+   "words": 11
+  },
+  {
+   "id": "l6",
+   "text": "그래서 터진 영상을 에이아이한테 주고 이렇게 물었어요.",
+   "dur": 3.564,
+   "syllablesPerSec": 6.45,
+   "src": "l6.wav",
+   "key": "70c4bd4950a678e85e481cafcf322562",
+   "words": 7
+  },
+  {
+   "id": "l7",
+   "text": "장면 순서는 두고, 이야기만 제 걸로.",
+   "dur": 2.237,
+   "syllablesPerSec": 6.26,
+   "src": "l7.wav",
+   "key": "991847942efa86bf85ea5f5a5ddb28f9",
+   "words": 6
+  },
+  {
+   "id": "l8",
+   "text": "이 영상처럼요. 댓글에 뼈대, 이 요청문 드려요.",
+   "dur": 3.078,
+   "syllablesPerSec": 5.85,
+   "src": "l8.wav",
+   "key": "62792b45c22f3dca86d7d726d4e0c730",
+   "words": 7
+  },
+  {
+   "id": "l8y",
+   "text": "이 영상처럼요. 이 요청문은 고정 댓글에.",
+   "dur": 3.74,
+   "syllablesPerSec": 4.28,
+   "src": "l8y.wav",
+   "key": "a36391cb9036c8a2224b288d18f1cf30",
+   "words": 6
+  },
+  {
+   "id": "l8t",
+   "text": "이 영상처럼요. 이 요청문은 설명에.",
+   "dur": 3.044,
+   "syllablesPerSec": 4.6,
+   "src": "l8t.wav",
+   "key": "ae82d15f4351e96d0eaa7ad8df60e20a",
+   "words": 5
+  }
+ ]
+}

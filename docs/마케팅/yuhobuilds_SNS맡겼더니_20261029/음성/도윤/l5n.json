@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l5n",
+ "text": "나간 여섯 편도 다 이 생김새였고요.",
+ "dur": 2.645,
+ "words": [
+  {
+   "text": "나간",
+   "start": 0.03,
+   "end": 0.271
+  },
+  {
+   "text": "여섯",
+   "start": 0.331,
+   "end": 0.512
+  },
+  {
+   "text": "편도",
+   "start": 0.572,
+   "end": 0.813
+  },
+  {
+   "text": "다",
+   "start": 1.395,
+   "end": 1.495
+  },
+  {
+   "text": "이",
+   "start": 1.656,
+   "end": 1.676
+  },
+  {
+   "text": "생김새였고요.",
+   "start": 1.756,
+   "end": 2.645
+  }
+ ],
+ "source": {
+  "key": "2c1edbed9e9e2f63de953c40c50599e9",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

@@ -1,0 +1,13 @@
+{
+  "note": "목소리시험 귀 비교 — 같은 두 줄을 후보마다(도윤 · 주원 · 이준 · 범수). 고르기는 2주 번갈아 72시간 숫자로(yuhobuilds 장부 「얼굴 · 목소리」), 이 판은 유호님이 들어 보실 견본.",
+  "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1.15, "seed": 1029, "lufs": -17 },
+  "out": "비교",
+  "trim": "both",
+  "versions": {
+    "doyoon": { "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "lines": [ { "id": "l1", "text": "왜 다 좋아요가 영 개일까요?" }, { "id": "l5", "text": "실제로 여섯 편이 다 이렇게 나갔고요. 무슨 말인지는 알겠는데, 재미가 없대요." } ] },
+    "juwon": { "voice": { "id": "tc_5c547545fcfee90007fed459", "name": "주원" }, "lines": [ { "id": "l1", "text": "왜 다 좋아요가 영 개일까요?" }, { "id": "l5", "text": "실제로 여섯 편이 다 이렇게 나갔고요. 무슨 말인지는 알겠는데, 재미가 없대요." } ] },
+    "ijun": { "voice": { "id": "tc_662a05b17419f60500ac5630", "name": "이준" }, "lines": [ { "id": "l1", "text": "왜 다 좋아요가 영 개일까요?" }, { "id": "l5", "text": "실제로 여섯 편이 다 이렇게 나갔고요. 무슨 말인지는 알겠는데, 재미가 없대요." } ] },
+    "bumsoo": { "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1.12, "seed": 1017, "lufs": -17 }, "lines": [ { "id": "l1", "text": "왜 다 좋아요가 영 개일까요?" }, { "id": "l5", "text": "실제로 여섯 편이 다 이렇게 나갔고요. 무슨 말인지는 알겠는데, 재미가 없대요." } ] }
+  }
+}

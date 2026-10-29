@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l8t",
+ "text": "이 영상처럼요. 이 요청문은 설명에.",
+ "dur": 3.044,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.02,
+   "end": 0.04
+  },
+  {
+   "text": "영상처럼요.",
+   "start": 0.121,
+   "end": 0.785
+  },
+  {
+   "text": "이",
+   "start": 1.268,
+   "end": 1.288
+  },
+  {
+   "text": "요청문은",
+   "start": 1.409,
+   "end": 2.053
+  },
+  {
+   "text": "설명에.",
+   "start": 2.275,
+   "end": 3.044
+  }
+ ],
+ "source": {
+  "key": "ae82d15f4351e96d0eaa7ad8df60e20a",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 205
+ }
+}

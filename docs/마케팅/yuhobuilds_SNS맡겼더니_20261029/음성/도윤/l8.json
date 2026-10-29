@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l8",
+ "text": "이 영상처럼요. 댓글에 뼈대, 이 요청문 드려요.",
+ "dur": 3.078,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.02,
+   "end": 0.04
+  },
+  {
+   "text": "영상처럼요.",
+   "start": 0.12,
+   "end": 0.802
+  },
+  {
+   "text": "댓글에",
+   "start": 1.204,
+   "end": 1.545
+  },
+  {
+   "text": "뼈대,",
+   "start": 1.625,
+   "end": 1.926
+  },
+  {
+   "text": "이",
+   "start": 2.107,
+   "end": 2.127
+  },
+  {
+   "text": "요청문",
+   "start": 2.187,
+   "end": 2.568
+  },
+  {
+   "text": "드려요.",
+   "start": 2.628,
+   "end": 3.078
+  }
+ ],
+ "source": {
+  "key": "62792b45c22f3dca86d7d726d4e0c730",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 194
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l4a",
+ "text": "화면 생김새도 똑같고,",
+ "dur": 1.987,
+ "words": [
+  {
+   "text": "화면",
+   "start": 0.02,
+   "end": 0.262
+  },
+  {
+   "text": "생김새도",
+   "start": 0.403,
+   "end": 0.907
+  },
+  {
+   "text": "똑같고,",
+   "start": 1.371,
+   "end": 1.987
+  }
+ ],
+ "source": {
+  "key": "9fc7bc997fbe15792db93eb9ed62cca6",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 212
+ }
+}

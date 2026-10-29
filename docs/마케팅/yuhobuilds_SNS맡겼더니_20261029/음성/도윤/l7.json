@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l7",
+ "text": "장면 순서는 두고, 이야기만 제 걸로.",
+ "dur": 2.237,
+ "words": [
+  {
+   "text": "장면",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "순서는",
+   "start": 0.363,
+   "end": 0.705
+  },
+  {
+   "text": "두고,",
+   "start": 0.766,
+   "end": 0.927
+  },
+  {
+   "text": "이야기만",
+   "start": 1.331,
+   "end": 1.714
+  },
+  {
+   "text": "제",
+   "start": 1.795,
+   "end": 1.835
+  },
+  {
+   "text": "걸로.",
+   "start": 1.916,
+   "end": 2.237
+  }
+ ],
+ "source": {
+  "key": "991847942efa86bf85ea5f5a5ddb28f9",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

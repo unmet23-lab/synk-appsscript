@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l5",
+ "text": "실제로 여섯 편이 다 이렇게 나갔고요. 무슨 말인지는 알겠는데, 재미가 없대요.",
+ "dur": 4.214,
+ "words": [
+  {
+   "text": "실제로",
+   "start": 0.03,
+   "end": 0.374
+  },
+  {
+   "text": "여섯",
+   "start": 0.451,
+   "end": 0.622
+  },
+  {
+   "text": "편이",
+   "start": 0.68,
+   "end": 0.833
+  },
+  {
+   "text": "다",
+   "start": 0.89,
+   "end": 0.947
+  },
+  {
+   "text": "이렇게",
+   "start": 1.005,
+   "end": 1.196
+  },
+  {
+   "text": "나갔고요.",
+   "start": 1.254,
+   "end": 1.636
+  },
+  {
+   "text": "무슨",
+   "start": 2.209,
+   "end": 2.4
+  },
+  {
+   "text": "말인지는",
+   "start": 2.458,
+   "end": 2.763
+  },
+  {
+   "text": "알겠는데,",
+   "start": 2.82,
+   "end": 3.202
+  },
+  {
+   "text": "재미가",
+   "start": 3.528,
+   "end": 3.757
+  },
+  {
+   "text": "없대요.",
+   "start": 3.815,
+   "end": 4.214
+  }
+ ],
+ "source": {
+  "key": "091cde62412667799cc40ca36c37a10a",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 179
+ }
+}

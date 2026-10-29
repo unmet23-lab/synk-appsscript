@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l1",
+ "text": "왜 다 좋아요가 영 개일까요?",
+ "dur": 1.746,
+ "words": [
+  {
+   "text": "왜",
+   "start": 0.02,
+   "end": 0.094
+  },
+  {
+   "text": "다",
+   "start": 0.225,
+   "end": 0.318
+  },
+  {
+   "text": "좋아요가",
+   "start": 0.467,
+   "end": 0.915
+  },
+  {
+   "text": "영",
+   "start": 0.99,
+   "end": 1.139
+  },
+  {
+   "text": "개일까요?",
+   "start": 1.196,
+   "end": 1.746
+  }
+ ],
+ "source": {
+  "key": "654c87f8b6e2627147520f3b673f1fed",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l6",
+ "text": "그래서 터진 영상을 에이아이한테 주고 이렇게 물었어요.",
+ "dur": 3.564,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.304
+  },
+  {
+   "text": "터진",
+   "start": 0.587,
+   "end": 0.833
+  },
+  {
+   "text": "영상을",
+   "start": 0.89,
+   "end": 1.287
+  },
+  {
+   "text": "에이아이한테",
+   "start": 1.778,
+   "end": 2.212
+  },
+  {
+   "text": "주고",
+   "start": 2.269,
+   "end": 2.478
+  },
+  {
+   "text": "이렇게",
+   "start": 2.779,
+   "end": 3.007
+  },
+  {
+   "text": "물었어요.",
+   "start": 3.063,
+   "end": 3.564
+  }
+ ],
+ "source": {
+  "key": "70c4bd4950a678e85e481cafcf322562",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 209
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "l3",
+ "text": "근데 다른 에이아이가 채점해 보니, 같은 틀이래요.",
+ "dur": 2.833,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.02,
+   "end": 0.22
+  },
+  {
+   "text": "다른",
+   "start": 0.548,
+   "end": 0.785
+  },
+  {
+   "text": "에이아이가",
+   "start": 0.841,
+   "end": 1.151
+  },
+  {
+   "text": "채점해",
+   "start": 1.224,
+   "end": 1.552
+  },
+  {
+   "text": "보니,",
+   "start": 1.606,
+   "end": 1.771
+  },
+  {
+   "text": "같은",
+   "start": 2.045,
+   "end": 2.318
+  },
+  {
+   "text": "틀이래요.",
+   "start": 2.373,
+   "end": 2.833
+  }
+ ],
+ "source": {
+  "key": "064bbb28dc93ff3ef82e00959e8dffcc",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.15,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}
