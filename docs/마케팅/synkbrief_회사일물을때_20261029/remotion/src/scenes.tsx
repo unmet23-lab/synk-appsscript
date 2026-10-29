@@ -4,19 +4,17 @@
 import React from 'react';
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion';
 import { clamp, EASE_OUT } from './lib/anim';
-import { Band, BigNum, camAt, Check, fadeUp, Head, Mark, Pill, QChip, settle, Shot, Source, Spot, Stamp, Title, YesNo } from './parts';
+import { BigNum, camAt, Check, fadeUp, Head, Mark, Pill, QChip, settle, Shot, Source, Spot, Stamp, Title, YesNo } from './parts';
 import { at, E, land } from './time';
 import { C, F, L } from './theme';
 
 // 그림 크기(원본 픽셀)
 const DC = { src: 'img/dc.png', w: 1080, h: 2341 }; // 휴대폰 폭 설정 > 데이터 관리
-const HOME = { src: 'img/home.png', w: 1080, h: 2341 };
+// 최종본은 v8 짜임(이해 시험 sonnet 4 · 3, haiku 4 · 3 — 열 판 가운데 가장 높음) + 글씨만 키움(v8b). v9 · v10의 견적 예문은 시험에서 나빠져 되돌렸다(기획.md).
 const TYPED = { src: 'img/temp-typed.png', w: 1080, h: 2341 }; // 임시 채팅에 회사 공지 부탁을 넣은 화면(보내기 전)
 const ANS = { src: 'img/answer.png', w: 1080, h: 2341 };
 const PRO = { src: 'img/pro.png', w: 1016, h: 151 }; // 계정 화면의 「계정 상태 Pro」 줄만
 const PC = { src: 'img/pc.png', w: 2256, h: 1520 }; // PC 폭 설정(왼쪽 메뉴 포함, 계정 사진 칸은 잘라 냄)
-const BIZ = { src: 'img/help-biz.png', w: 1050, h: 372 };
-const FB = { src: 'img/help-feedback.png', w: 1050, h: 372 };
 
 const TITLE_Y = 470;
 const W = 836; // 판 폭(오른쪽 160 안쪽)
@@ -26,31 +24,36 @@ const ROW = { x: 72, y: 352, w: 946, h: 206 }; // 그 줄 전체(이름 + 토글
 /** 장면 안에서 두 판을 바꿔 끼울 때: t 앞은 a, 뒤는 b */
 const swap = (f: number, t: number) => interpolate(f, [t - 2, t + 4], [0, 1], { ...clamp, easing: EASE_OUT });
 
-/** 도움말 문단 판(그 줄 언저리만 잘라서): 흰 종이 카드 + 위 꼬리표 */
-const HelpCrop: React.FC<{ img: typeof BIZ; y: number; cy: number; h: number; children?: React.ReactNode; style?: React.CSSProperties }> = ({ img, y, cy, h, children, style }) => {
-  const z = W / img.w;
+/** 원문 인용 판(v8): 도움말 문장을 그림 대신 큰 글씨로 — 낱말은 원문 그대로, 줄인 자리만 「…」. hi 부분은 at에 형광펜. */
+const Quote: React.FC<{ y: number; before: string; hi: string; after: string; at: number; style?: React.CSSProperties }> = ({ y, before, hi, after, at: a, style }) => {
+  const f = useCurrentFrame();
+  const p = interpolate(f, [a, a + 9], [0, 1], { ...clamp, easing: EASE_OUT });
   return (
     <div style={{ position: 'absolute', left: L.X, top: y, width: W, ...style }}>
-      <div style={{ font: `700 26px/1 ${F.ko}`, color: C.lapisDeep, letterSpacing: '-.02em', margin: '0 0 12px 4px' }}>OpenAI 도움말 원문 · 2026.10.29 확인</div>
-      <Shot src={img.src} w={img.w} h={img.h} box={{ x: 0, y: 0, w: W, h }} cam={{ cx: img.w / 2, cy, z }} bg="#fff" radius={22} style={{ position: 'relative' }}>
-        {children}
-      </Shot>
+      <div style={{ font: `750 32px/1 ${F.ko}`, color: C.lapisDeep, letterSpacing: '-.025em', margin: '0 0 12px 4px' }}>OpenAI 도움말 원문 · 2026.10.29 확인</div>
+      <div style={{ padding: '26px 30px', borderRadius: 22, background: '#fff', boxShadow: `inset 0 0 0 2px ${C.hair},0 22px 44px -28px rgba(40,30,10,.45)`, font: `700 40px/1.4 ${F.ko}`, letterSpacing: '-.035em', color: C.ink }}>
+        「{before}
+        <span style={{ backgroundImage: `linear-gradient(${C.mark},${C.mark})`, backgroundRepeat: 'no-repeat', backgroundSize: `${p * 100}% 100%`, fontWeight: 850, padding: '0 .06em' }}>{hi}</span>
+        {after}」
+      </div>
     </div>
   );
 };
 
-// ── 01 훅(0~4.3초): 질문 제목 + 데이터 관리 실제 화면(토글 켜짐에 스포트라이트) + 칩 셋(원본처럼 1.8 · 2.5 · 3.0초)
+// ── 01 훅(0~4.3초): 질문 제목 + 「계정 상태 Pro」 + 켜진 학습 허용 줄(크게, 읽히게) + 칩 셋(원본처럼 1.8 · 2.5 · 3.0초)
 export const Hook01: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill>
       <Head />
       <Title visibleAtZero top={TITLE_Y} size={90} lines={['회사 일, ChatGPT에', <>그냥 <Mark p={1}>물어도 될까요?</Mark></>]} />
-      <Shot {...DC} box={{ x: L.X, y: 730, w: W, h: 440 }} cam={{ cx: 545, cy: 440, z: 0.83 }} stamp="유료(Pro) 계정 실제 화면">
-        <Spot {...ROW} at={-10} dim={0.5} />
+      <Shot {...PRO} box={{ x: L.X, y: 730, w: W, h: 150 }} cam={{ cx: 508, cy: 75, z: 0.82 }} radius={26} stamp="유료(Pro) 계정 실제 화면" />
+      <Shot {...DC} box={{ x: L.X, y: 896, w: W, h: 250 }} cam={{ cx: 540 + f * 0.05, cy: 457, z: 0.87 + f * 0.0006 }} radius={26}>
+        <Spot {...TOGGLE} at={-10} dim={0} />
       </Shot>
-      <div style={{ position: 'absolute', left: L.X, top: 1216, font: `800 34px/1 ${F.ko}`, color: C.muted, letterSpacing: '-.03em', ...fadeUp(f, 54, 12) }}>그래서, 고르는 질문 셋</div>
-      <div style={{ position: 'absolute', left: L.X, top: 1270, display: 'flex', gap: 14 }}>
+      <div style={{ position: 'absolute', left: 700, top: 1162, padding: '10px 22px', borderRadius: 999, background: C.mark, font: `850 38px/1 ${F.ko}`, letterSpacing: '-.04em', color: C.ink }}>켜짐</div>
+      <div style={{ position: 'absolute', left: L.X, top: 1236, font: `800 34px/1 ${F.ko}`, color: C.muted, letterSpacing: '-.03em', ...fadeUp(f, 54, 12) }}>그래서, 고르는 질문 셋</div>
+      <div style={{ position: 'absolute', left: L.X, top: 1290, display: 'flex', gap: 14 }}>
         <QChip n="1" label="한 번만?" at={54} />
         <QChip n="2" label="매일?" at={75} />
         <QChip n="3" label="회사 계정?" at={90} />
@@ -116,29 +119,26 @@ export const Myth02: React.FC = () => {
         <Shot {...DC} box={{ x: L.X, y: 910, w: W, h: 380 }} cam={{ cx: 545, cy: 420, z: 0.83 }} stamp="설정 > 데이터 관리 · 실제 화면" />
       </div>
       <Title at={zoom} top={TITLE_Y + 112} size={90} lines={[<>유료도 <Mark p={interpolate(f, [zoom + 6, zoom + 16], [0, 1], clamp)}>켜져 있어요</Mark></>]} />
-      {/* 크게 다시 짜기: 계정 상태 줄 + 학습 허용 줄 */}
+      {/* X 뒤: 데이터 관리 실제 화면을 크게 — 그 줄에 스포트라이트 + 「켜짐」 */}
       <div style={{ opacity: s, translate: `0 ${(1 - t) * 40}px` }}>
-        <Shot {...PRO} box={{ x: L.X, y: 780, w: W, h: 150 }} cam={{ cx: 508, cy: 75, z: 0.82 }} radius={26} stamp="실제 화면" />
-        <Shot {...DC} box={{ x: L.X, y: 950, w: W, h: 250 }} cam={{ cx: 540, cy: 457, z: 0.87 }} radius={26}>
-          <Spot {...TOGGLE} at={zoom + 8} dim={0.45} />
+        <Shot {...DC} box={{ x: L.X, y: 760, w: W, h: 440 }} cam={{ cx: 545, cy: 455, z: 0.87 }} radius={26} stamp="설정 > 데이터 관리 · 실제 화면">
+          <Spot {...ROW} at={zoom + 6} dim={0.5} />
         </Shot>
-        <div style={{ position: 'absolute', left: 700, top: 1216, padding: '12px 24px', borderRadius: 999, background: C.mark, font: `850 42px/1 ${F.ko}`, letterSpacing: '-.04em', color: C.ink, ...fadeUp(f, zoom + 12, 20) }}>켜짐</div>
+        <div style={{ position: 'absolute', left: 700, top: 1214, padding: '12px 24px', borderRadius: 999, background: C.mark, font: `850 42px/1 ${F.ko}`, letterSpacing: '-.04em', color: C.ink, ...fadeUp(f, zoom + 12, 20) }}>켜짐</div>
       </div>
-      <Source y={1300} at={zoom + 14}>
-        학습 = 내 대화로 AI를 더 낫게 만드는 것 · 무료 · 플러스 · 프로 모두(OpenAI 도움말)
-      </Source>
+      <div style={{ position: 'absolute', left: L.X, top: 1300, font: `750 36px/1.3 ${F.ko}`, letterSpacing: '-.03em', color: C.ink, ...fadeUp(f, zoom + 14, 14) }}>학습 = 내 대화로 AI를 더 낫게 만드는 것</div>
     </AbsoluteFill>
   );
 };
 
-// ── 03 질문 ①(11.2~18.2초): 한 번만? [예] → 첫 화면 오른쪽 위 임시 채팅 단추 → 회사 공지를 넣은 실제 임시 채팅(제목 줄 + 넣은 글) → 알약
+// ── 03 질문 ①(11.2~18.2초): 한 번만? [예] → 회사 공지를 넣은 실제 임시 채팅(제목 줄 + 넣은 글) → 「기록에는 표시되지 않습니다」 줄을 밝힘 → 알약 → 「기록에는 표시되지 않습니다」 줄을 밝힘 → 알약
+// v7: 첫 화면 오른쪽 위 단추만 2배로 자른 화면은 「스피너만 도는 빈 화면」으로 읽혀(v6 haiku) 뺐다 — 단추 자리는 캡션에.
 export const Q1: React.FC = () => {
   const f = useCurrentFrame();
   const L0 = land('q1');
   const yes = at('q1', E.q1Yes);
   const tmp = at('q1', E.q1Temp);
   const pill = at('q1', E.q1Pill);
-  const s = swap(f, tmp);
   return (
     <AbsoluteFill>
       <BigNum n="1" at={L0} />
@@ -148,16 +148,14 @@ export const Q1: React.FC = () => {
       </div>
       <Title at={L0 + 3} top={TITLE_Y + 92} size={88} lines={['한 번만 묻고', '끝인가요?']} />
       <YesNo x={L.X} y={TITLE_Y + 312} at={L0 + 6} tap={yes} />
-      <div style={{ opacity: 1 - s }}>
-        <Shot {...HOME} box={{ x: L.X, y: 900, w: W, h: 290 }} cam={{ cx: 945, cy: 66, z: 2.0 }} stamp="첫 화면 오른쪽 위">
-          <Spot x={968} y={20} w={90} h={90} at={yes + 2} r={45} dim={0.5} />
-        </Shot>
+      <Shot {...TYPED} box={{ x: L.X, y: 900, w: W, h: 210 }} cam={{ cx: 540, cy: 900, z: 0.82 }} radius={26} stamp="임시 채팅 · 실제 화면">
+        <Spot x={176} y={936} w={728} h={96} at={tmp} dim={0.5} r={14} />
+      </Shot>
+      <div style={{ opacity: interpolate(f, [tmp - 1, tmp + 4], [1, 0.45], clamp) }}>
+        <Shot {...TYPED} box={{ x: L.X, y: 1122, w: W, h: 130 }} cam={{ cx: 540, cy: 1946, z: 0.82 }} radius={26} />
       </div>
-      <div style={{ opacity: s }}>
-        <Shot {...TYPED} box={{ x: L.X, y: 900, w: W, h: 190 }} cam={{ cx: 540, cy: 905, z: 0.82 }} radius={26} stamp="임시 채팅 · 실제 화면" />
-        <Shot {...TYPED} box={{ x: L.X, y: 1104, w: W, h: 150 }} cam={{ cx: 540, cy: 1946, z: 0.82 }} radius={26} />
-      </div>
-      <Pill x={L.X} y={1276} w={W} lead="한 번만" result="임시 채팅" at={pill} />
+      <div style={{ position: 'absolute', left: L.X, top: 1262, font: `800 38px/1.3 ${F.ko}`, letterSpacing: '-.035em', color: C.ink, ...fadeUp(f, tmp + 4, 14) }}>기록에 안 남는 대화 · 첫 화면 오른쪽 위 점선 동그라미</div>
+      <Pill x={L.X} y={1316} w={W} lead="한 번만" result="임시 채팅" at={pill} />
     </AbsoluteFill>
   );
 };
@@ -179,15 +177,14 @@ export const Q2: React.FC = () => {
       </div>
       <Title at={L0 + 3} top={TITLE_Y + 92} size={88} lines={['매일 쓰나요?']} />
       <YesNo x={L.X} y={TITLE_Y + 206} at={L0 + 6} tap={yes} />
-      <div style={{ position: 'absolute', left: L.X, top: TITLE_Y + 316, display: 'flex', alignItems: 'center', gap: 14, font: `800 44px/1 ${F.ko}`, letterSpacing: '-.04em', color: C.ink, ...fadeUp(f, path, 18) }}>
-        <span style={{ padding: '12px 20px', borderRadius: 14, background: '#fff', boxShadow: `inset 0 0 0 2px ${C.hair}` }}>설정</span>
-        <span style={{ color: C.lapisDeep }}>→</span>
-        <span style={{ padding: '12px 20px', borderRadius: 14, background: C.mark }}>데이터 관리</span>
-      </div>
       <div style={{ opacity: 1 - s }}>
-        <Shot {...PC} box={{ x: L.X, y: 900, w: W, h: 400 }} cam={{ cx: 330, cy: 1300, z: 1.05 }} stamp="PC 설정 · 실제 화면">
+        <Shot {...PC} box={{ x: L.X, y: 900, w: W, h: 400 }} cam={camAt(f, [[path - 1, { cx: 330, cy: 1300, z: 1.05 }], [path + 5, { cx: 300, cy: 1500, z: 1.5 }]])} stamp="PC 설정 · 실제 화면">
           <Spot x={14} y={1414} w={530} h={72} at={path + 2} dim={0.5} />
         </Shot>
+      </div>
+      {/* 길 표시: 「데이터 관리」 박에 큰 노란 판이 아래에 올라온다(한 구성 4초 — 10-30 검사 ⑬, 18.0~23.3초가 5.3초였다) */}
+      <div style={{ position: 'absolute', left: L.X, top: 1160, width: W, boxSizing: 'border-box', padding: '26px 34px', borderRadius: 30, background: C.mark, display: 'flex', alignItems: 'center', gap: 20, font: `900 64px/1 ${F.ko}`, letterSpacing: '-.05em', color: C.ink, boxShadow: '0 30px 60px -30px rgba(60,40,0,.55)', opacity: interpolate(f, [path - 1, path + 3, zoom - 3, zoom + 2], [0, 1, 1, 0], clamp), translate: `0 ${(1 - settle(f, path, 16)) * 80}px` }}>
+        설정 <span style={{ color: C.lapisDeep }}>→</span> 데이터 관리
       </div>
       <div style={{ opacity: s }}>
         <Shot {...DC} box={{ x: L.X, y: 900, w: W, h: 250 }} cam={{ cx: 540, cy: 457, z: 0.87 }} radius={26}>
@@ -257,9 +254,7 @@ export const Q3: React.FC = () => {
       <div style={{ position: 'absolute', left: L.X, top: TITLE_Y + 312, font: `750 32px/1.2 ${F.ko}`, letterSpacing: '-.03em', color: C.muted, ...fadeUp(f, L0 + 8, 14) }}>회사 관리자가 따로 있는 업무용 ChatGPT</div>
       <VsCard x={L.X} y={840} name="개인 계정" plans="무료 · 플러스 · 프로" rule="켜져 있으면 학습" good={false} at={L0 + 8} />
       <VsCard x={L.X + 436} y={840} name="회사 계정" plans="비즈니스 · 엔터프라이즈" rule="기본으로 학습 X" good at={L0 + 11} hi={hi} />
-      <HelpCrop img={BIZ} y={1170} cy={122} h={164} style={fadeUp(f, hi, 24)}>
-        <Band x={28} y={158} w={560} h={54} at={hi + 4} />
-      </HelpCrop>
+      <Quote y={1166} before="기본적으로 ChatGPT Business, ChatGPT Enterprise … 의 입력값이나 결과물은 " hi="모델 개선에 사용하지 않습니다." after="" at={hi + 4} style={fadeUp(f, hi, 24)} />
     </AbsoluteFill>
   );
 };
@@ -287,12 +282,9 @@ export const Extra06: React.FC = () => {
         </Shot>
       </div>
       <div style={{ position: 'absolute', left: L.X + 8, top: 1008, font: `850 40px/1 ${F.ko}`, letterSpacing: '-.04em', color: C.ink, ...fadeUp(f, ring + 8, 14) }}>좋아요 · 싫어요</div>
-      <HelpCrop img={FB} y={1070} cy={250} h={176} style={{ opacity: interpolate(up, [0, 0.4], [0, 1], clamp), translate: `0 ${(1 - up) * 200}px` }}>
-        <Band x={498} y={224} w={494} h={56} at={hi} />
-        <Band x={30} y={283} w={318} h={56} at={hi + 6} />
-      </HelpCrop>
+      <Quote y={1066} before="피드백을 제공하는 경우에는 해당 피드백과 연결된 " hi="전체 대화가 모델 학습에 사용될 수 있습니다." after="" at={hi} style={{ opacity: interpolate(up, [0, 0.4], [0, 1], clamp), translate: `0 ${(1 - up) * 200}px` }} />
       <Stamp x={500} y={968} at={st} rotate={-5} size={46}>
-        누르면 대화째
+        누르면 대화 통째로
       </Stamp>
     </AbsoluteFill>
   );
@@ -322,7 +314,7 @@ export const Sum07: React.FC = () => {
       <Title at={L0} top={TITLE_Y} size={92} lines={['고르는 질문,', '딱 셋']} />
       <SumRow n="1" lead="한 번만" result="임시 채팅" y={760} on={L0 + 2} />
       <SumRow n="2" lead="매일" result="이 칸 끄기" y={920} on={at('sum', E.sum2)} />
-      <SumRow n="3" lead="회사 계정" result="그 계정으로" y={1080} on={at('sum', E.sum3)} />
+      <SumRow n="3" lead="회사 계정 있음" result="거기서 묻기" y={1080} on={at('sum', E.sum3)} />
     </AbsoluteFill>
   );
 };
@@ -372,7 +364,7 @@ export const End08: React.FC = () => {
         );
       })}
       <div style={{ position: 'absolute', left: L.X, right: L.X, top: 1080, textAlign: 'center', font: `850 60px/1.1 ${F.ko}`, letterSpacing: '-.045em', color: C.ink, ...fadeUp(f, line, 22) }}>
-        댓글에 <Mark p={interpolate(f, [line + 4, line + 14], [0, 1], clamp)}>숫자 하나</Mark>
+        저장해 두고 <Mark p={interpolate(f, [line, line + 3], [0, 1], clamp)}>오늘 확인</Mark>
       </div>
     </AbsoluteFill>
   );
