@@ -4,6 +4,7 @@
 // 새 LLM 실행기가 아니다 — 부르는 통로는 tools/lib/클로드키.js(일괄·한 건)와 tools/lib/제미나이구독호출.js 그대로다.
 //
 //   node tools/topik-review.mjs 준비 <이름> [--새 [<묶음…>]] [--새표본 N] [--기존 [<출처…>]] [--출처마다 N] [--표본 N] [--미판정]   검수 묶음(output/topik-review/<이름>/)
+//   node tools/topik-review.mjs 준비 <이름> --찻집 [<줄 id…>]   싱크타운 찻집 주문 틀(rubric-compose-r1 — 목록이 없으면 증거 없는 요청 틀 전부), 반영은 review/town-tea-w10.json
 //   node tools/topik-review.mjs 클로드 <이름> [--보내기|--받기]   1차: 블라인드 풀이 + 기준 검수 일괄(반값)
 //   node tools/topik-review.mjs 아르곤 <이름> [--묶음 4]           2차: 독립 검수 + 해설 역번역(하나씩 차례로)
 //   node tools/topik-review.mjs 판정 <이름> [--보내기]             두 검수 합치기 · 엇갈린 문항은 Opus 판정
@@ -29,7 +30,13 @@ const writeJson = (file, value) => { fs.mkdirSync(path.dirname(file), { recursiv
   fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + '\n'); fs.renameSync(tmp, file); };
 
 export const WRITING_RUBRIC_ID = 'topik-review-writing-r3';
+/** 찻집 주문 틀의 검수 꼴(다리 설계 §2-2 · 세로 조각 §16-3): 요청을 읽고 축마다 값을 적는 블라인드 풀이 + 기준 여섯. */
+export const COMPOSE_RUBRIC_ID = 'rubric-compose-r1';
 export function rubricText(kind = 'choice') {
+  if (kind === 'compose') {
+    const text = fs.readFileSync(path.join(bankDir, 'review/rubric-compose-r1.md'), 'utf8').replace(/\r\n/g, '\n');
+    return { text, sha: sha(text).slice(0, 16), id: COMPOSE_RUBRIC_ID };
+  }
   if (kind === 'writing') {
     const text = fs.readFileSync(path.join(bankDir, 'review/rubric-writing-r3.md'), 'utf8').replace(/\r\n/g, '\n');
     return { text, sha: sha(text).slice(0, 16), id: WRITING_RUBRIC_ID };
@@ -146,6 +153,52 @@ export function writingUnits(rel) {
     return { key: item.id, kind: 'writing', file: rel, id: item.id, hash: sha(JSON.stringify(view)).slice(0, 16), view: { ...view, existing: false, section: 'writing' } }; });
 }
 
+// ── 찻집 주문 틀(compose) ─────────────────────────────────────────────
+// 요청 틀 하나(네 판)가 한 단위다. 판마다 값을 바꿔 채운 예 셋까지(빈칸마다 모든 값이 한 번은 나오게)를 보이고, 「같은 걸로」 틀은
+// 앞 손님 말(req-tea 틀을 같은 판으로)을 함께 준다. 정답(축마다 값, 요청하지 않은 축은 null)은 view 밖 answers에 두어
+// 블라인드 풀이와 아르곤에는 보이지 않는다. 반응·단골 줄(요청 아님)은 풀이 없이 기준만 본다.
+const TOWN_DATA = path.join(root, 'experiences/synk-town/town/data');
+const TEA_VALUES = Object.freeze({ tea: ['barley', 'yuzu', 'today'], temp: ['warm', 'cold'], sweet: [0, 1, 2] });
+const TEA_LEVELS = ['L1', 'L2', 'L3', 'L4'];
+export async function teaUnits(ids = null) {
+  const order = await import(pathToFileURL(path.join(root, 'experiences/synk-town/town/activities/tea-order.mjs')).href);
+  const { TEA_ASSESSMENT = {} } = await import(pathToFileURL(path.join(root, 'experiences/synk-town/town/data.gen.mjs')).href);
+  const { teaReviewUnitHash } = await import('./lib/town-tea-review-unit.mjs');
+  const lines = readJson(path.join(TOWN_DATA, 'lines/tea.json')), axes = readJson(path.join(TOWN_DATA, 'tea.json')).axes;
+  const chosen = ids?.length ? lines.filter(l => ids.includes(l.id)) : lines.filter(l => l.when?.part === 'request' && !TEA_ASSESSMENT[l.id]?.levels?.length);
+  if (ids?.length && chosen.length !== ids.length) throw new Error(`찻집 줄을 못 찾았다: ${ids.filter(id => !chosen.some(l => l.id === id)).join(', ')}`);
+  return chosen.map(l => {
+    const w = l.when || {}, fixed = w.fixed || {};
+    if (w.part !== 'request') {
+      const levels = Object.fromEntries(TEA_LEVELS.map(L => [L, order.lineWords(l.id, L, { tea: 'yuzu' })]));
+      return { key: `town-tea:${l.id}`, kind: 'compose', role: 'line', id: l.id, hash: sha(JSON.stringify({ when: w, levels: l.levels })).slice(0, 16),
+        view: { 줄: '손님 반응 · 단골 말(요청 아님)', 뜻: l.meaning, 판: levels } };
+    }
+    const combos = [];
+    for (let k = 0; k < 3; k++) {
+      const req = Object.fromEntries(w.axes.map(a => [a, Object.hasOwn(fixed, a) ? fixed[a] : TEA_VALUES[a][k % TEA_VALUES[a].length]]));
+      if (!combos.some(c => JSON.stringify(c) === JSON.stringify(req))) combos.push(req);
+    }
+    const levels = {}, answers = {};
+    for (const L of TEA_LEVELS) {
+      levels[L] = combos.map((req, i) => ({ n: i + 1, 손님: order.lineWords(l.id, L, req), ...(w.same ? { 앞손님: order.lineWords('guest.tea.req-tea.1', L, { tea: req.tea }) } : {}) }));
+      answers[L] = combos.map((req, i) => ({ n: i + 1, tea: req.tea ?? null, temp: req.temp ?? null, sweet: req.sweet ?? null }));
+    }
+    return { key: `town-tea:${l.id}`, kind: 'compose', role: 'request', id: l.id, hash: teaReviewUnitHash(l, axes),
+      view: { 줄: '손님 주문', 뜻: l.meaning, 이_판이_쓰이는_수준: w.home, 판: levels }, answers };
+  });
+}
+/** 블라인드 풀이가 정답과 어긋난 자리: [{ level, n, axis }] — 풀이가 빠진 예도 어긋남이다. */
+export function composeMisses(unit, solved = []) {
+  const out = [];
+  for (const [level, rows] of Object.entries(unit.answers || {})) for (const want of rows) {
+    const got = (solved || []).find(r => r.level === level && r.n === want.n);
+    if (!got) { out.push({ level, n: want.n, axis: 'all' }); continue; }
+    for (const axis of ['tea', 'temp', 'sweet']) if ((got[axis] ?? null) !== want[axis]) out.push({ level, n: want.n, axis });
+  }
+  return out;
+}
+
 // --미판정: 지금 내용(지문)으로 이미 판정을 받은 문항은 다시 보내지 않는다. 고친 문항은 rev·지문이 달라 다시 들어간다.
 export function alreadyJudged(unit, { review = [], verdictHash = new Map() } = {}) {
   if (unit.kind === 'new') return review.some(entry => entry.stage !== 'author-fix' && entry.rev === unit.rev && entry.hash === unit.hash);
@@ -153,7 +206,7 @@ export function alreadyJudged(unit, { review = [], verdictHash = new Map() } = {
   return false;
 }
 
-export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false } = {}) {
+export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false, teaIds = null } = {}) {
   const dir = path.join(root, 'output/topik-review', name);
   if (fs.existsSync(path.join(dir, 'packet.json'))) throw new Error(`이미 있는 묶음: ${dir}`);
   const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels(), rubric = rubricText();
@@ -185,13 +238,17 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
     }
   }
   if (writingFile) units.push(...writingUnits(writingFile));
+  // 찻집 주문 틀(--찻집 [<줄 id…>]): 목록이 없으면 검수 증거가 없는 요청 틀 전부.
+  if (teaIds) units.push(...await teaUnits(teaIds.length ? teaIds : null));
   // 고친 문항만 다시 볼 때(--문항 <id…>): 나머지는 지난 판정을 그대로 둔다.
   if (onlyIds?.length) for (let i = units.length - 1; i >= 0; i--) if (!onlyIds.includes(units[i].id) && !onlyIds.includes(units[i].key)) units.splice(i, 1);
   let chosen = units;
   if (sample && units.length > sample) chosen = seededPick(units, sample, name);
   chosen.forEach((unit, index) => { unit.ref = `u${String(index + 1).padStart(3, '0')}`; });
   const writing = chosen.some(unit => unit.kind === 'writing') ? rubricText('writing') : null;
-  const packet = { name, createdAt: new Date().toISOString(), rubric: writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
+  if (chosen.some(unit => unit.kind === 'compose') && !chosen.every(unit => unit.kind === 'compose')) throw new Error('찻집 주문 틀은 다른 문항과 한 묶음에 섞지 않는다(기준이 다르다).');
+  const compose = chosen.length && chosen.every(unit => unit.kind === 'compose') ? rubricText('compose') : null;
+  const packet = { name, createdAt: new Date().toISOString(), rubric: compose ? { id: compose.id, sha: compose.sha } : writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
     : { id: RUBRIC_ID, sha: rubric.sha, ...(writing ? { writing: { id: writing.id, sha: writing.sha } } : {}) }, units: chosen };
   writeJson(path.join(dir, 'packet.json'), packet);
   return packet;
@@ -214,8 +271,28 @@ export const WRITING_SCHEMA = { type: 'object', additionalProperties: false, req
     criteria: { type: 'object', additionalProperties: false, required: WRITING_CRITERIA, properties: Object.fromEntries(WRITING_CRITERIA.map(c => [c, { type: 'object', additionalProperties: false, required: ['ok', 'note'], properties: { ok: { type: 'boolean' }, note: { type: 'string' } } }])) },
     fixes: { type: 'array', items: { type: 'string' } }, altAnswers: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } };
 
-export function claudeRequests(packet, rubric = rubricText(), writingRubric = packet.units.some(u => u.kind === 'writing') ? rubricText('writing') : null) {
+// 찻집 주문 틀: 풀이 한 줄 = 판 · 채운 예 번호 · 축 셋(요청하지 않은 축은 null).
+const COMPOSE_CRITERIA = ['answer_unique', 'type_fit', 'level_fit', 'naturalness', 'culture_bias', 'skill_fit'];
+const composeSolved = { type: 'array', items: { type: 'object', additionalProperties: false, required: ['level', 'n', 'tea', 'temp', 'sweet'],
+  properties: { level: { type: 'string', enum: TEA_LEVELS }, n: { type: 'integer' }, tea: { type: ['string', 'null'] }, temp: { type: ['string', 'null'] }, sweet: { type: ['integer', 'null'] } } } };
+export const COMPOSE_BLIND_SCHEMA = { type: 'object', additionalProperties: false, required: ['solved', 'reason'], properties: { solved: composeSolved, reason: { type: 'string' } } };
+export const COMPOSE_REVIEW_SCHEMA = { type: 'object', additionalProperties: false, required: ['verdict', 'criteria', 'levelsOk', 'fixes', 'summary'],
+  properties: { verdict: { type: 'string', enum: ['pass', 'fix', 'drop'] },
+    criteria: { type: 'object', additionalProperties: false, required: COMPOSE_CRITERIA, properties: Object.fromEntries(COMPOSE_CRITERIA.map(c => [c, criterionSchema])) },
+    levelsOk: { type: 'array', items: { type: 'string', enum: TEA_LEVELS } }, fixes: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } };
+const COMPOSE_ASK = '풀이: 채운 예마다(판 · n) 손님이 요청한 값을 적는다 — tea는 barley · yuzu · today, temp는 warm · cold, sweet는 0 · 1 · 2, 요청하지 않은 축은 null. 앞손님 말이 있으면 「같은 걸로」를 그 말로 푼다.';
+const COMPOSE_LEVELS = 'levelsOk에는 지금 글 그대로 학생에게 보여도 되는 판(L1~L4)만 적는다 — 고칠 곳이 있는 판은 빼고 fixes에 「L3: 고친 글」처럼 적는다.';
+function composeClaude(unit, system) {
+  const review = { custom_id: `${unit.ref}-review`, params: { model: CLAUDE_MODEL, max_tokens: 12000, system, output_config: { effort: 'high', format: { type: 'json_schema', schema: COMPOSE_REVIEW_SCHEMA } },
+    messages: [{ role: 'user', content: `아래 찻집 ${unit.role === 'request' ? '주문 틀을 위 기준대로 검수하라. 정답(만든 이가 뜻한 값)도 함께 준다 — 정답이 틀렸거나 둘로 읽히면 answer_unique에 적는다' : '손님 줄(요청 아님)을 위 기준대로 검수하라. answer_unique · skill_fit은 ok true와 「요청 아님」'}. ${COMPOSE_LEVELS}\n\n${JSON.stringify(unit.view, null, 1)}${unit.answers ? `\n\n# 정답\n${JSON.stringify(unit.answers, null, 1)}` : ''}` }] } };
+  if (unit.role !== 'request') return [review];
+  return [{ custom_id: `${unit.ref}-blind`, params: { model: CLAUDE_MODEL, max_tokens: 6000, system, output_config: { effort: 'medium', format: { type: 'json_schema', schema: COMPOSE_BLIND_SCHEMA } },
+    messages: [{ role: 'user', content: `아래 찻집 주문을 정답을 모르는 상태에서 직접 풀어라. ${COMPOSE_ASK}\n\n${JSON.stringify(unit.view, null, 1)}` }] } }, review];
+}
+
+export function claudeRequests(packet, rubric = packet.rubric?.id === COMPOSE_RUBRIC_ID ? rubricText('compose') : rubricText(), writingRubric = packet.units.some(u => u.kind === 'writing') ? rubricText('writing') : null) {
   const system = [{ type: 'text', text: rubric.text, cache_control: { type: 'ephemeral', ttl: '1h' } }];
+  if (packet.units.every(unit => unit.kind === 'compose')) return packet.units.flatMap(unit => composeClaude(unit, system));
   const writingSystem = writingRubric ? [{ type: 'text', text: writingRubric.text, cache_control: { type: 'ephemeral', ttl: '1h' } }] : null;
   return packet.units.flatMap(unit => unit.kind === 'writing' ? [
     { custom_id: `${unit.ref}-review`, params: { model: CLAUDE_MODEL, max_tokens: 16000, system: writingSystem,
@@ -272,21 +349,32 @@ export function argonWritingPrompt(units, rubric = rubricText('writing')) {
     + units.map(unit => `## ref ${unit.ref}\n${JSON.stringify(unit.view, null, 1)}`).join('\n\n') + `\n\n${marker}\n` };
 }
 
+// 찻집 주문 틀: 아르곤은 정답을 보지 않는다(answers는 묶음에 없다) — 풀이와 정답 대조는 이 도구가 한다.
+export const ARGON_COMPOSE_SCHEMA = { type: 'object', additionalProperties: false, required: ['items', 'seen'],
+  properties: { seen: { type: 'array', items: { type: 'string' } }, items: { type: 'array', items: { type: 'object', additionalProperties: false,
+    required: ['ref', 'solved', ...COMPOSE_REVIEW_SCHEMA.required], properties: { ref: { type: 'string' }, solved: composeSolved, ...COMPOSE_REVIEW_SCHEMA.properties } } } } };
+export function argonComposePrompt(units, rubric = rubricText('compose')) {
+  const marker = `END-OF-ITEMS-${sha(units.map(u => u.ref).join(',')).slice(0, 8)}`;
+  return { marker, prompt: `${rubric.text}\n\n---\n\n# 이번에 검수할 찻집 줄 ${units.length}개\n\n줄마다 따로 검수하라. 손님 주문(요청)이면 먼저 직접 풀어 solved에 적는다. ${COMPOSE_ASK} 손님 반응·단골 말(요청 아님)은 solved를 빈 목록으로 두고, answer_unique · skill_fit은 ok true와 「요청 아님」.\n`
+    + `${COMPOSE_LEVELS}\nseen에는 읽은 줄의 ref를 모두 적는다. 목록은 「${marker}」 줄에서 끝난다 — 그 줄을 보지 못했으면 seen에 「truncated」를 넣는다.\n\n`
+    + units.map(unit => `## ref ${unit.ref}\n${JSON.stringify(unit.view, null, 1)}`).join('\n\n') + `\n\n${marker}\n` };
+}
+
 export async function runArgon(packet, dir, { groupSize = 4, call, log = console.log } = {}) {
   const outFile = path.join(dir, 'argon.json');
   const state = fs.existsSync(outFile) ? readJson(outFile) : { model: ARGON.label, rubric: packet.rubric, calls: [], results: {} };
   const pending = packet.units.filter(unit => !state.results[unit.ref]);
-  // 쓰기와 고르기 문항은 기준이 달라 한 번에 섞어 보내지 않는다(쓰기는 길어 두 개씩).
-  const groups = [];
-  for (const kind of ['choice', 'writing']) {
-    const same = pending.filter(unit => (unit.kind === 'writing' ? 'writing' : 'choice') === kind), size = kind === 'writing' ? Math.min(groupSize, 2) : groupSize;
+  // 쓰기 · 고르기 · 찻집 줄은 기준이 달라 한 번에 섞어 보내지 않는다(쓰기는 길어 두 개씩).
+  const groups = [], kindOf = unit => (unit.kind === 'writing' || unit.kind === 'compose' ? unit.kind : 'choice');
+  for (const kind of ['choice', 'writing', 'compose']) {
+    const same = pending.filter(unit => kindOf(unit) === kind), size = kind === 'writing' ? Math.min(groupSize, 2) : groupSize;
     for (let i = 0; i < same.length; i += size) groups.push({ kind, units: same.slice(i, i + size) });
   }
   for (const { kind, units: group } of groups) {
-    const { marker, prompt } = kind === 'writing' ? argonWritingPrompt(group) : argonPrompt(group);
+    const { marker, prompt } = kind === 'writing' ? argonWritingPrompt(group) : kind === 'compose' ? argonComposePrompt(group) : argonPrompt(group);
     const started = Date.now();
     let record, error = null;
-    try { record = await call({ model: ARGON.model, thinking: ARGON.thinking, prompt, schema: kind === 'writing' ? ARGON_WRITING_SCHEMA : ARGON_SCHEMA, timeoutMs: 1_200_000 }); }
+    try { record = await call({ model: ARGON.model, thinking: ARGON.thinking, prompt, schema: kind === 'writing' ? ARGON_WRITING_SCHEMA : kind === 'compose' ? ARGON_COMPOSE_SCHEMA : ARGON_SCHEMA, timeoutMs: 1_200_000 }); }
     catch (e) { error = e.message; }
     const seconds = Math.round((Date.now() - started) / 1000);
     let parsed = null;
@@ -302,8 +390,24 @@ export async function runArgon(packet, dir, { groupSize = 4, call, log = console
 }
 
 // ── 합치기와 판정 ───────────────────────────────────────────────────
+/** 찻집 줄 한 검수자의 판정: 풀이가 어긋난 판은 levelsOk에서 빼고 pass면 fix로 내린다. */
+function composeVerdict(unit, review, solved) {
+  if (!review || unit.role === 'request' && !solved) return null;
+  let verdict = review.verdict;
+  const notes = [review.summary], levels = new Set(review.levelsOk || []);
+  if (unit.role === 'request') {
+    const miss = composeMisses(unit, solved);
+    for (const m of miss) levels.delete(m.level);
+    if (miss.length) { if (verdict === 'pass') verdict = 'fix'; notes.push(`풀이 어긋남 ${miss.map(m => `${m.level}#${m.n} ${m.axis}`).join(', ')}`); }
+  }
+  return { verdict, notes: notes.join(' / '), fixes: review.fixes, levelsOk: TEA_LEVELS.filter(L => levels.has(L)) };
+}
 export function effectiveClaude(unit, claude) {
   const c = claude?.[unit.ref];
+  if (unit.kind === 'compose') {
+    const got = composeVerdict(unit, c?.review, c?.blind?.solved);
+    return got ? { ...got, notes: c?.blind?.reason && got.notes.includes('풀이 어긋남') ? `${got.notes}: ${c.blind.reason}` : got.notes } : { verdict: null, notes: c?.errors?.length ? c.errors.join('; ') : '결과 없음' };
+  }
   if (unit.kind === 'writing') {
     if (!c?.review) return { verdict: null, notes: c?.errors?.length ? c.errors.join('; ') : '결과 없음' };
     return { verdict: c.review.verdict, notes: c.review.summary, fixes: c.review.fixes, altAnswers: c.review.altAnswers };
@@ -321,6 +425,7 @@ export function effectiveClaude(unit, claude) {
 export function effectiveArgon(unit, argon) {
   const a = argon?.results?.[unit.ref];
   if (!a) return { verdict: null, notes: '결과 없음' };
+  if (unit.kind === 'compose') return composeVerdict(unit, a, a.solved) ?? { verdict: null, notes: '결과 없음' };
   if (unit.kind === 'writing') return { verdict: a.verdict, notes: a.summary, fixes: a.fixes, altAnswers: a.altAnswers };
   let verdict = a.verdict;
   const notes = [a.summary];
@@ -342,10 +447,37 @@ export function merge(packet, claude, argon, judge = {}) {
 }
 
 export function judgeRequest(unit, merged) {
-  return { model: CLAUDE_MODEL, max_tokens: 12000, system: [{ type: 'text', text: rubricText(unit.kind === 'writing' ? 'writing' : 'choice').text, cache_control: { type: 'ephemeral', ttl: '1h' } }],
-    output_config: { effort: 'high', format: { type: 'json_schema', schema: { type: 'object', additionalProperties: false, required: ['verdict', 'reason', 'fixes'],
-      properties: { verdict: { type: 'string', enum: ['pass', 'fix', 'drop'] }, reason: { type: 'string' }, fixes: { type: 'array', items: { type: 'string' } } } } } },
-    messages: [{ role: 'user', content: `두 검수자가 같은 문항에 다른 판정을 냈다. 문항과 두 의견을 놓고 직접 다시 따져 최종 판정을 내려라. 어느 쪽 지적이든 맞으면 받아들이고, 학생 화면에 나가도 되는지만 본다(확신이 없으면 fix).\n\n# 문항\n${JSON.stringify(unit.view, null, 1)}\n\n# 검수자 A(Claude)\n${JSON.stringify(merged.claude, null, 1)}\n\n# 검수자 B(아르곤)\n${JSON.stringify(merged.argon, null, 1)}` }] };
+  const compose = unit.kind === 'compose';
+  return { model: CLAUDE_MODEL, max_tokens: 12000, system: [{ type: 'text', text: rubricText(unit.kind === 'writing' ? 'writing' : compose ? 'compose' : 'choice').text, cache_control: { type: 'ephemeral', ttl: '1h' } }],
+    output_config: { effort: 'high', format: { type: 'json_schema', schema: { type: 'object', additionalProperties: false, required: ['verdict', 'reason', 'fixes', ...(compose ? ['levelsOk'] : [])],
+      properties: { verdict: { type: 'string', enum: ['pass', 'fix', 'drop'] }, reason: { type: 'string' }, fixes: { type: 'array', items: { type: 'string' } },
+        ...(compose ? { levelsOk: { type: 'array', items: { type: 'string', enum: TEA_LEVELS } } } : {}) } } } },
+    messages: [{ role: 'user', content: `두 검수자가 같은 문항에 다른 판정을 냈다. 문항과 두 의견을 놓고 직접 다시 따져 최종 판정을 내려라. 어느 쪽 지적이든 맞으면 받아들이고, 학생 화면에 나가도 되는지만 본다(확신이 없으면 fix).${compose ? ` ${COMPOSE_LEVELS}` : ''}\n\n# 문항\n${JSON.stringify(unit.view, null, 1)}${unit.answers ? `\n\n# 정답\n${JSON.stringify(unit.answers, null, 1)}` : ''}\n\n# 검수자 A(Claude)\n${JSON.stringify(merged.claude, null, 1)}\n\n# 검수자 B(아르곤)\n${JSON.stringify(merged.argon, null, 1)}` }] };
+}
+
+/** 찻집 주문 틀의 검수 증거(experiences/topik-items/review/town-tea-w10.json): 학습 기록이 평가하는 판(L1 · L2)마다 두 검수자가 다
+ * 그 판을 그대로 내도 된다고 했고(판정이 그 판을 본 경우 판정의 판), 아무도 뺌을 내지 않은 틀만 그 판을 적는다. 같은 줄의 앞 판정은 갈아 끼운다. */
+export const TEA_EVIDENCE_FILE = path.join(bankDir, 'review/town-tea-w10.json');
+export function teaEvidenceRows(packet, merged) {
+  return packet.units.filter(unit => unit.kind === 'compose' && unit.role === 'request').flatMap(unit => {
+    const m = merged[unit.ref];
+    if (!m || m.outcome === 'incomplete' || m.outcome === 'split') return [];
+    const ok = m.judge?.levelsOk ? new Set(m.judge.levelsOk) : new Set((m.claude.levelsOk || []).filter(L => (m.argon.levelsOk || []).includes(L)));
+    const levels = m.outcome === 'drop' || [m.claude.verdict, m.argon.verdict, m.judge?.verdict].includes('drop') ? [] : ['L1', 'L2'].filter(L => ok.has(L));
+    return [{ id: unit.id, hash: unit.hash, verdict: m.outcome, levels, packet: packet.name }];
+  });
+}
+export async function applyToTea(packet, merged, { at = new Date().toISOString(), file = TEA_EVIDENCE_FILE } = {}) {
+  if (!packet.units.some(unit => unit.kind === 'compose')) return null;
+  const { TEA_JUDGE } = await import('./lib/town-tea-review-unit.mjs');
+  const doc = fs.existsSync(file) ? readJson(file) : { task: 'town-w10-tea', rubric: COMPOSE_RUBRIC_ID, judge: TEA_JUDGE,
+    reviewers: [{ stage: 'claude', model: CLAUDE_MODEL }, { stage: 'argon', model: ARGON.label }], results: [] };
+  const rows = new Map(doc.results.map(row => [row.id, row]));
+  for (const row of teaEvidenceRows(packet, merged)) rows.set(row.id, { ...row, reviewedAt: at });
+  doc.results = [...rows.values()].sort((a, b) => a.id.localeCompare(b.id));
+  doc.updatedAt = at;
+  writeJson(file, doc);
+  return doc.results.filter(row => row.levels.length).length;
 }
 
 // ── 반영 ───────────────────────────────────────────────────────────
@@ -451,8 +583,8 @@ async function main([command, name, ...argv]) {
   if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {
-    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정') });
-    console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
+    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정'), teaIds: list(argv, '--찻집') });
+    console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length} · 찻집 ${packet.units.filter(u => u.kind === 'compose').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
     return 0;
   }
   const { dir, packet } = load(name);
@@ -505,8 +637,8 @@ async function main([command, name, ...argv]) {
   }
   if (command === '반영') {
     const merged = readJson(path.join(dir, 'merged.json'));
-    const changed = applyToItems(packet, merged), existing = applyToExisting(packet, merged), writing = applyToWriting(packet, merged);
-    console.log(`새 문항 반영 ${changed.length} · 기존 판정 목록 ${existing ?? '그대로'}줄 · 쓰기 ${writing.length}`);
+    const changed = applyToItems(packet, merged), existing = applyToExisting(packet, merged), writing = applyToWriting(packet, merged), tea = await applyToTea(packet, merged);
+    console.log(`새 문항 반영 ${changed.length} · 기존 판정 목록 ${existing ?? '그대로'}줄 · 쓰기 ${writing.length}${tea === null ? '' : ` · 찻집 틀 평가 판 있음 ${tea}`}`);
     return 0;
   }
   if (command === '보고') {

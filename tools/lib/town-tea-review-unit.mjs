@@ -14,14 +14,25 @@ export const TEA_REVIEW_EVIDENCE = Object.freeze({
   'root-blind-solved.json': '54bbd5f6acbacaf9478cdb4f65fce68584094a1c559a7ffb03c504627a4429dc',
   'root-result.json': 'fde6fe1b66ed2a049ce399b8256c43703c6b615b0c288c3ccf3701b4bd16eabe',
 });
+/** W10 frames (town-tea-w10.json): the general learning-item rule — Claude Opus first, Argon second, Opus on a split —
+ * through tools/topik-review.mjs with rubric-compose-r1 (결정 10-21, 세로 조각 §16-3). A row names only the levels both
+ * reviewers let through as written; a dropped frame names none. */
+export const TEA_W10_TASK = 'town-w10-tea';
+export const TEA_COMPOSE_RUBRIC = 'rubric-compose-r1';
+function w10Rows(doc) {
+  const ok = doc?.task === TEA_W10_TASK && doc.rubric === TEA_COMPOSE_RUBRIC && stableTeaReview(doc.judge) === stableTeaReview(TEA_JUDGE)
+    && ['claude', 'argon'].every(stage => doc.reviewers?.some(r => r.stage === stage && typeof r.model === 'string' && r.model));
+  return ok ? (doc.results || []).filter(row => row.verdict !== 'drop' && Array.isArray(row.levels)) : [];
+}
 /** Reviewed content is emitted only when the current authoring unit still equals the reviewed unit.
  * The digest is also the browser's display acknowledgement, so old data cannot claim a new review. */
-export function teaAssessmentMetadata(frames, axes, review = null) {
+export function teaAssessmentMetadata(frames, axes, review = null, w10 = null) {
   const results = review?.task === 'atlas-world-learning-20261028' && review.author?.id === '/root/world_integration_review' && review.reviewer?.id === '/root'
     && review.authorization === TEA_REVIEW_AUTHORIZATION && review.packetSha256 === TEA_REVIEW_PACKET
     && stableTeaReview(review.judge) === stableTeaReview(TEA_JUDGE) ? review.results || [] : [];
+  const rows = [...results.filter(row => row.verdict === 'pass'), ...w10Rows(w10)];
   return Object.fromEntries(frames.filter(frame=>frame.when?.part==='request').map(frame=>{
-    const hash=teaReviewUnitHash(frame,axes),row=results.find(row=>row.id===frame.id&&row.hash===hash&&row.verdict==='pass');
+    const hash=teaReviewUnitHash(frame,axes),row=rows.find(row=>row.id===frame.id&&row.hash===hash);
     return [frame.id,{hash,levels:row?.levels?.filter(level=>TEA_JUDGE.allowedLevels.includes(level))||[]}];
   }));
 }

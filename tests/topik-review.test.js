@@ -187,3 +187,48 @@ test('--미판정: 지금 지문으로 판정을 받은 문항만 빠지고, 고
   assert.equal(alreadyJudged({ kind: 'existing', key: 'blank-slice.v01.v1', hash: 'dddddddddddddddd' }, { verdictHash }), false);
   assert.equal(alreadyJudged({ kind: 'existing', key: 'blank-slice.v02.v1', hash: 'cccccccccccccccc' }, { verdictHash }), false);
 });
+
+// ── 찻집 주문 틀(rubric-compose-r1, W10) ──
+test('찻집 주문 틀 — 채운 예마다 정답은 묶음 밖에 두고, 블라인드 풀이가 어긋난 판은 평가 판에서 빠지며, 두 검수자가 다 낸 L1 · L2만 증거에 적는다', async () => {
+  const t = await tool();
+  const units = await t.teaUnits(['guest.tea.req-same-all.1', 'guest.tea.react-again.1']);
+  const [req, line] = units;
+  assert.equal(req.role, 'request'); assert.equal(line.role, 'line');
+  assert.ok(!JSON.stringify(req.view).includes('"answers"') && !JSON.stringify(req.view).includes('barley'), '풀이에 보이는 글에는 정답 값이 없다');
+  assert.ok(req.view.판.L2.every(s => s.앞손님), '「같은 걸로」 틀은 앞 손님 말을 함께 준다');
+  assert.equal(new Set(req.answers.L1.map(a => a.tea)).size, 3, '차 셋이 한 번씩');
+  const right = Object.entries(req.answers).flatMap(([level, rows]) => rows.map(r => ({ level, ...r })));
+  assert.deepEqual(t.composeMisses(req, right), []);
+  const wrongL2 = right.map(r => (r.level === 'L2' && r.n === 1 ? { ...r, sweet: 2 } : r));
+  assert.deepEqual(t.composeMisses(req, wrongL2), [{ level: 'L2', n: 1, axis: 'sweet' }]);
+  req.ref = 'u001'; line.ref = 'u002';
+  const p = { name: 'tea', rubric: { id: t.COMPOSE_RUBRIC_ID, sha: '0'.repeat(16) }, units: [req, line] };
+  const reqs = t.claudeRequests(p);
+  assert.deepEqual(reqs.map(r => r.custom_id), ['u001-blind', 'u001-review', 'u002-review'], '요청 틀은 풀이 + 검수, 손님 줄은 검수만');
+  assert.ok(!reqs[0].params.messages[0].content.includes('# 정답'), '블라인드 풀이에는 정답을 주지 않는다');
+  assert.ok(!t.argonComposePrompt([req]).prompt.includes('"tea": "barley"'), '아르곤에도 정답을 주지 않는다');
+  const ok = levels => ({ verdict: 'pass', criteria: {}, levelsOk: levels, fixes: [], summary: '좋음' });
+  const claude = { u001: { blind: { solved: wrongL2, reason: '단맛을 달게로 읽음' }, review: ok(['L1', 'L2', 'L3', 'L4']), errors: [] }, u002: { review: ok(['L1', 'L2', 'L3', 'L4']), errors: [] } };
+  const argon = { results: { u001: { ...ok(['L1', 'L2', 'L3']), solved: right }, u002: ok(['L1', 'L2', 'L3', 'L4']) } };
+  const merged = t.merge(p, claude, argon);
+  assert.equal(merged.u001.outcome, 'split', 'Claude 풀이가 어긋나면 fix — 아르곤 pass와 엇갈림');
+  assert.deepEqual(merged.u001.claude.levelsOk, ['L1', 'L3', 'L4']);
+  const judged = t.merge(p, claude, argon, { u001: { verdict: 'pass', reason: '「달게요」는 꿀 두 숟가락', fixes: [], levelsOk: ['L1', 'L2', 'L3'] } });
+  assert.deepEqual(t.teaEvidenceRows(p, judged), [{ id: req.id, hash: req.hash, verdict: 'pass', levels: ['L1', 'L2'], packet: 'tea' }]);
+  assert.deepEqual(t.teaEvidenceRows(p, merged), [], '엇갈린 채로는 증거에 적지 않는다');
+});
+
+test('찻집 평가 판 — W10 증거는 기준 · 판정 계약 · 두 검수자가 맞을 때만, 틀 지문이 같은 줄만 받는다', async () => {
+  const { teaAssessmentMetadata, teaReviewUnitHash, TEA_JUDGE } = await import(pathToFileURL(path.join(root, 'tools/lib/town-tea-review-unit.mjs')));
+  const lines = JSON.parse(fs.readFileSync(path.join(root, 'experiences/synk-town/town/data/lines/tea.json'), 'utf8'));
+  const axes = JSON.parse(fs.readFileSync(path.join(root, 'experiences/synk-town/town/data/tea.json'), 'utf8')).axes;
+  const frame = lines.find(l => l.id === 'guest.tea.req-mine.1');
+  const doc = { task: 'town-w10-tea', rubric: 'rubric-compose-r1', judge: TEA_JUDGE, reviewers: [{ stage: 'claude', model: 'claude-opus-5-5' }, { stage: 'argon', model: 'gemini-4-argon-high' }],
+    results: [{ id: frame.id, hash: teaReviewUnitHash(frame, axes), verdict: 'pass', levels: ['L1', 'L2'] }] };
+  assert.deepEqual(teaAssessmentMetadata([frame], axes, null, doc)[frame.id].levels, ['L1', 'L2']);
+  assert.deepEqual(teaAssessmentMetadata([frame], axes, null, { ...doc, reviewers: [{ stage: 'claude', model: 'x' }] })[frame.id].levels, [], '2차 검수자가 없으면 받지 않는다');
+  assert.deepEqual(teaAssessmentMetadata([frame], axes, null, { ...doc, rubric: 'topik-review-r1' })[frame.id].levels, []);
+  const changed = { ...frame, levels: { ...frame.levels, L2: frame.levels.L2 + ' ' } };
+  assert.deepEqual(teaAssessmentMetadata([changed], axes, null, doc)[frame.id].levels, [], '검수 뒤 바뀐 글은 받지 않는다');
+  assert.deepEqual(teaAssessmentMetadata([frame], axes, null, { ...doc, results: [{ ...doc.results[0], verdict: 'drop' }] })[frame.id].levels, []);
+});

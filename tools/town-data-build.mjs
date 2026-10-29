@@ -618,7 +618,9 @@ export function build() {
     const entry = teaReview.evidence?.find(row => row.path === rel);
     if (entry?.sha256 !== digest || createHash('sha256').update(fs.readFileSync(path.join(ROOT, rel))).digest('hex') !== digest) fail('찻집 독립 검수 근거가 바뀌었어요.');
   }
-  const teaAssessment = teaAssessmentMetadata(teaLines, tea.axes, teaReview);
+  // W10: the frames reviewed by the general rule (Opus → Argon, rubric-compose-r1 — tools/topik-review.mjs 반영).
+  const w10File = path.join(ROOT, 'experiences/topik-items/review/town-tea-w10.json');
+  const teaAssessment = teaAssessmentMetadata(teaLines, tea.axes, teaReview, fs.existsSync(w10File) ? JSON.parse(fs.readFileSync(w10File, 'utf8')) : null);
   const evalConsent = validateEvalConsent(JSON.parse(fs.readFileSync(EVAL_CONSENT_FILE, 'utf8')));
   const askLines = validateAskLines(lineDocs);
   const { $comment: gatherNote, ...gather } = validateGather(read('gather.json'), { items }, placesData, cardsData, archetypes);
