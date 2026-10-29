@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "Then a face!",
+ "dur": 1.209,
+ "words": [
+  {
+   "text": "Then",
+   "start": 0.06,
+   "end": 0.282
+  },
+  {
+   "text": "a",
+   "start": 0.402,
+   "end": 0.423
+  },
+  {
+   "text": "face!",
+   "start": 0.503,
+   "end": 1.209
+  }
+ ],
+ "source": {
+  "key": "818d92529eb37fef2853f6c6decd54d6",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "First, a hat.",
+   "next": "And 'a'."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 493
+ }
+}

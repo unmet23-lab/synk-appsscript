@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "g1",
+ "text": "How do you write 'haha' in Korean?",
+ "dur": 1.845,
+ "words": [
+  {
+   "text": "How",
+   "start": 0.02,
+   "end": 0.17
+  },
+  {
+   "text": "do",
+   "start": 0.215,
+   "end": 0.275
+  },
+  {
+   "text": "you",
+   "start": 0.32,
+   "end": 0.395
+  },
+  {
+   "text": "write",
+   "start": 0.44,
+   "end": 0.62
+  },
+  {
+   "text": "'haha'",
+   "start": 0.65,
+   "end": 0.995
+  },
+  {
+   "text": "in",
+   "start": 1.1,
+   "end": 1.145
+  },
+  {
+   "text": "Korean?",
+   "start": 1.205,
+   "end": 1.845
+  }
+ ],
+ "source": {
+  "key": "4b5347fa28bb902780a996346a40af66",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "A pencil writes the word haha in a notebook.",
+   "next": "Short line. Long line. Circle."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 480
+ }
+}

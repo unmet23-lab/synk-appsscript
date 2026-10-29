@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w1",
+ "text": "친구가 와요.",
+ "dur": 0.949,
+ "words": [
+  {
+   "text": "친구가",
+   "start": 0.02,
+   "end": 0.443
+  },
+  {
+   "text": "와요.",
+   "start": 0.504,
+   "end": 0.949
+  }
+ ],
+ "source": {
+  "key": "0adc2784a748d0f3552edd7e41d0b7b7",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 449
+ }
+}

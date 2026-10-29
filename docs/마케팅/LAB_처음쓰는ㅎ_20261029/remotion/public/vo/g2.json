@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "g2",
+ "text": "Wait... two little guys in top hats!",
+ "dur": 2.462,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.02,
+   "end": 0.262
+  },
+  {
+   "text": "two",
+   "start": 0.625,
+   "end": 0.786
+  },
+  {
+   "text": "little",
+   "start": 0.846,
+   "end": 1.068
+  },
+  {
+   "text": "guys",
+   "start": 1.129,
+   "end": 1.37
+  },
+  {
+   "text": "in",
+   "start": 1.431,
+   "end": 1.491
+  },
+  {
+   "text": "top",
+   "start": 1.552,
+   "end": 1.753
+  },
+  {
+   "text": "hats!",
+   "start": 1.834,
+   "end": 2.462
+  }
+ ],
+ "source": {
+  "key": "53f58b85b1f7bc252a14cc5d57d3f131",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Ha ha. That is haha written in Korean. Then you notice each letter looks like a tiny man wearing a top hat, and they are laughing.",
+   "next": "Now you can laugh in Korean."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 491
+ }
+}

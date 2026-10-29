@@ -1,0 +1,18 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the background stage for a short vertical video about one Korean word, needle-felted wool photography.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Scene: a cozy felt café wall in warm soft daylight. On the wall hangs ONE big vertical felt pinboard (light oatmeal-beige felt with a cream wool rim), filling the LEFT 70% of the image width and running from about 13% to 84% of the image height. The board is a plain flat surface facing the camera straight on, evenly lit, no perspective tilt.
+
+On the board: FIVE small felt pictures pinned in ONE vertical column along the LEFT edge of the board, evenly spaced from top to bottom, each about the size of a small coaster, each with lots of EMPTY plain board to its right (the right three quarters of every row must stay completely empty — text will be added there later). Top to bottom:
+1. a small felt friend figure waving one hand at the board's edge as if arriving (a simple round-headed felt person in a mustard sweater),
+2. a small grey felt rain cloud with three blue felt raindrops hanging under it,
+3. one white felt snowflake,
+4. a soft white felt pillow with a small butter-yellow felt crescent moon resting on it (sleep),
+5. a small red felt rotary telephone.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). No arms, no legs, no hands, ever. Mongle stands at the BOTTOM RIGHT of the image, in front of the wall on a small wooden café table edge, about 22% of the image height, body turned a little toward the board, eyes looking up at the board, a small round surprised "o" mouth, pink felt cheeks. Mongle must not overlap the board.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field (board in focus), cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos or symbols anywhere — not on the board, not on the wall, not on the phone dial (dial holes only).

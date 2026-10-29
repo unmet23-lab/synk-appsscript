@@ -1,6 +1,6 @@
 {
  "tool": "tools/나레이션굽기.mjs",
- "plan": "../../../음성/계획.json",
+ "plan": "../../../음성/계획_v4.json",
  "version": null,
  "voice": {
   "id": "tc_666a9871abcf27a5169850d0",
@@ -15,52 +15,16 @@
   "seed": 1029,
   "lufs": -17
  },
- "made": "2026-10-29T08:13:06.080Z",
+ "made": "2026-10-29T22:42:06.944Z",
  "lines": [
   {
-   "id": "h1",
-   "text": "My first try at this letter...",
-   "dur": 1.467,
+   "id": "g1",
+   "text": "How do you write 'haha' in Korean?",
+   "dur": 1.845,
    "syllablesPerSec": null,
-   "src": "h1.wav",
-   "key": "7314f7218b9f4ff22d93cf58b93964c3",
-   "words": 6
-  },
-  {
-   "id": "a1",
-   "text": "That's a snowman.",
-   "dur": 1.149,
-   "syllablesPerSec": null,
-   "src": "a1.wav",
-   "key": "3a7d2e2ed8c32585a1aee1c83d7421ee",
-   "words": 3
-  },
-  {
-   "id": "a2",
-   "text": "Now it's a heart.",
-   "dur": 1.238,
-   "syllablesPerSec": null,
-   "src": "a2.wav",
-   "key": "76c620656eddc0263dbb5a7da82ee4c6",
-   "words": 4
-  },
-  {
-   "id": "a3",
-   "text": "A guy in a top hat?",
-   "dur": 1.329,
-   "syllablesPerSec": null,
-   "src": "a3.wav",
-   "key": "0f2883451d4ac8a79300fcf745485b05",
-   "words": 6
-  },
-  {
-   "id": "f1",
-   "text": "The real way: three strokes.",
-   "dur": 1.959,
-   "syllablesPerSec": null,
-   "src": "f1.wav",
-   "key": "53e8494919fb5b95213e71a5665a5dcb",
-   "words": 5
+   "src": "g1.wav",
+   "key": "4b5347fa28bb902780a996346a40af66",
+   "words": 7
   },
   {
    "id": "n1",
@@ -90,40 +54,94 @@
    "words": 1
   },
   {
-   "id": "k1",
-   "text": "히읗.",
-   "dur": 0.42,
-   "syllablesPerSec": 4.76,
-   "src": "k1.wav",
-   "key": "022a3e26a21e6edb0d67264470659600",
+   "id": "k2",
+   "text": "하하.",
+   "dur": 0.506,
+   "syllablesPerSec": 3.95,
+   "src": "k2.wav",
+   "key": "c203d1451984282f75916eccf64374ff",
    "words": 1
   },
   {
-   "id": "e1",
-   "text": "Give mine a score, one to ten!",
-   "dur": 1.789,
+   "id": "g2",
+   "text": "Wait... two little guys in top hats!",
+   "dur": 2.462,
    "syllablesPerSec": null,
-   "src": "e1.wav",
-   "key": "fb74b25ec1f45581207a5e05f2c0bba7",
+   "src": "g2.wav",
+   "key": "53f58b85b1f7bc252a14cc5d57d3f131",
    "words": 7
   },
   {
-   "id": "e2",
-   "text": "So... which one was yours?",
-   "dur": 2.042,
+   "id": "g3",
+   "text": "Now you can laugh in Korean.",
+   "dur": 1.586,
    "syllablesPerSec": null,
-   "src": "e2.wav",
-   "key": "39a7e27ccecd2bcc021d8f35853459f3",
-   "words": 5
+   "src": "g3.wav",
+   "key": "4f63b243ea5547857a7ea5c0f0a45eca",
+   "words": 6
   },
   {
-   "id": "e3",
-   "text": "Wait... it IS a guy in a hat.",
-   "dur": 2.17,
+   "id": "n1b",
+   "text": "One: short line.",
+   "dur": 1.725,
    "syllablesPerSec": null,
-   "src": "e3.wav",
-   "key": "75a9e85ec3846e973f9d6d18ff5d9e24",
-   "words": 8
+   "src": "n1b.wav",
+   "key": "5a05c0d4c0862625edabeccf0273fec0",
+   "words": 3
+  },
+  {
+   "id": "n2b",
+   "text": "Two: long line.",
+   "dur": 1.402,
+   "syllablesPerSec": null,
+   "src": "n2b.wav",
+   "key": "ba5e356b35393779ccf009430d290613",
+   "words": 3
+  },
+  {
+   "id": "n3b",
+   "text": "Three: circle.",
+   "dur": 1.287,
+   "syllablesPerSec": null,
+   "src": "n3b.wav",
+   "key": "344a389a35097a8a82fb20d0d6700306",
+   "words": 2
+  },
+  {
+   "id": "g2b",
+   "text": "Wait... two little guys in hats!",
+   "dur": 2.151,
+   "syllablesPerSec": null,
+   "src": "g2b.wav",
+   "key": "6f27679e1d54665552ebb162a1b63215",
+   "words": 6
+  },
+  {
+   "id": "m1",
+   "text": "First, a hat.",
+   "dur": 1.298,
+   "syllablesPerSec": null,
+   "src": "m1.wav",
+   "key": "ee8b1d1e72dc3a53a4f7e0bbecd76680",
+   "words": 3
+  },
+  {
+   "id": "m2",
+   "text": "Then a face!",
+   "dur": 1.209,
+   "syllablesPerSec": null,
+   "src": "m2.wav",
+   "key": "818d92529eb37fef2853f6c6decd54d6",
+   "words": 3
+  },
+  {
+   "id": "m3",
+   "text": "And 'a'.",
+   "dur": 0.586,
+   "syllablesPerSec": null,
+   "src": "m3.wav",
+   "key": "16c7e76db2adb4dab5a424158d9c46d4",
+   "words": 2
   }
  ]
 }

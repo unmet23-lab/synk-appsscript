@@ -1,0 +1,26 @@
+{
+  "note": "LAB 몽골 M18 「와요 한 낱말」 — 화면 글 편(몽골어 목소리 없음)에 한국어 다섯 문장 + 「와요!」만 소리로. 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_와요한낱말_mn_20261030/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1030,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "w1", "text": "친구가 와요." },
+    { "id": "w2", "text": "비가 와요." },
+    { "id": "w3", "text": "눈이 와요." },
+    { "id": "w4", "text": "잠이 와요." },
+    { "id": "w5", "text": "전화가 와요." },
+    { "id": "w6", "text": "와요!", "emotion": "happy" }
+  ]
+}

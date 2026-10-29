@@ -1,0 +1,104 @@
+{
+  "note": "LAB E11 다시 살림 v4(10-30) 「haha → 하하」 나레이션 — 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」). 원본 sJgXggLWheU 「Print vs. Cursive」의 「한 낱말을 두 꼴로」를 영어 haha → 한글 하하로. 획 줄 n1~n3은 v1~v3에서 산 줄 그대로(캐시). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_처음쓰는ㅎ_20261029/음성/계획_v4.json --굽기 v5(10-30): 번호와 획을 잇는 n1b~n3b, 쉬운 낱말 hats로 g2b. v6(10-30): 볼 이유 심사 제안대로 획을 모자 · 얼굴로 부르는 m1~m3.",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1029,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "g1",
+      "text": "How do you write 'haha' in Korean?",
+      "emotion": "smart",
+      "prev": "A pencil writes the word haha in a notebook.",
+      "next": "Short line. Long line. Circle."
+    },
+    {
+      "id": "n1",
+      "text": "Short line.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n2",
+      "text": "Long line.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n3",
+      "text": "Circle.",
+      "emotion": "normal"
+    },
+    {
+      "id": "k2",
+      "text": "하하.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "g2",
+      "text": "Wait... two little guys in top hats!",
+      "emotion": "smart",
+      "prev": "Ha ha. That is haha written in Korean. Then you notice each letter looks like a tiny man wearing a top hat, and they are laughing.",
+      "next": "Now you can laugh in Korean."
+    },
+    {
+      "id": "g3",
+      "text": "Now you can laugh in Korean.",
+      "emotion": "smart",
+      "prev": "Wait... two little guys in top hats! They are laughing ha ha.",
+      "next": ""
+    },
+    {
+      "id": "n1b",
+      "text": "One: short line.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n2b",
+      "text": "Two: long line.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n3b",
+      "text": "Three: circle.",
+      "emotion": "normal"
+    },
+    {
+      "id": "g2b",
+      "text": "Wait... two little guys in hats!",
+      "emotion": "smart",
+      "prev": "Ha ha. That is haha written in Korean. Then you notice each letter looks like a tiny man wearing a hat, and they are laughing.",
+      "next": "Now you can laugh in Korean."
+    },
+    {
+      "id": "m1",
+      "text": "First, a hat.",
+      "emotion": "smart",
+      "prev": "How do you write 'haha' in Korean?",
+      "next": "Then a face!"
+    },
+    {
+      "id": "m2",
+      "text": "Then a face!",
+      "emotion": "smart",
+      "prev": "First, a hat.",
+      "next": "And 'a'."
+    },
+    {
+      "id": "m3",
+      "text": "And 'a'.",
+      "emotion": "normal"
+    }
+  ]
+}

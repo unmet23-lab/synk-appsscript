@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "g3",
+ "text": "Now you can laugh in Korean.",
+ "dur": 1.586,
+ "words": [
+  {
+   "text": "Now",
+   "start": 0.04,
+   "end": 0.225
+  },
+  {
+   "text": "you",
+   "start": 0.286,
+   "end": 0.363
+  },
+  {
+   "text": "can",
+   "start": 0.409,
+   "end": 0.532
+  },
+  {
+   "text": "laugh",
+   "start": 0.594,
+   "end": 0.794
+  },
+  {
+   "text": "in",
+   "start": 0.84,
+   "end": 0.886
+  },
+  {
+   "text": "Korean.",
+   "start": 0.932,
+   "end": 1.586
+  }
+ ],
+ "source": {
+  "key": "4f63b243ea5547857a7ea5c0f0a45eca",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Wait... two little guys in top hats! They are laughing ha ha.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 463
+ }
+}
