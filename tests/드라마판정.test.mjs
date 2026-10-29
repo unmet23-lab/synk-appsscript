@@ -75,6 +75,13 @@ test('노트 1순위 — 끝맺음·높임: 반말 덩어리, 「요」만 뺀 �
  assert.notEqual(say(L3,'과제를 잘 몰라서 질문이 있어서 왔어요').note?.kind,'ending');
  assert.equal(say(L1,'교수님 안녕 하세요').note,null);
  assert.equal(say(L1,'어 교수님 안녕하세요').note,null);
+ assert.equal(say(L1,'교수님 반가워').note?.kind,'ending');
+});
+
+test('통째로 닮아도 끝맺음이 애매하면 혼자 해냄으로 세지 않는다(10-30 Fable)',()=>{
+ // 「바야르예요」 대신 이름으로 끝냄 — 통째 닮음은 0.9를 넘지만 끝맺음을 알 수 없다.
+ const r=say(L2,'저는 몽골에서 온 바야르');
+ assert.equal(r.verdict,'pass');assert.equal(r.note,null);assert.equal(r.sure,false);
 });
 
 test('노트 2순위 — 길이, 3순위 — 빠진 말(2음절 이하는 단정하지 않음)',()=>{

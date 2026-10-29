@@ -66,7 +66,7 @@ const chunks=phrase=>String(phrase).split(/\s+/).filter(Boolean);
 const FORMAL=/(니다|니까|십시오|시오)$/,POLITE=/(요|죠)$/,PLAIN=/(다|어|아|여|해|야|지|니|냐|자|래|줘|봐|라|게|걸|까|구나|군|네)$/;
 // 받아 적기에 문장 부호가 없어도, 어른에게 쓰면 틀리는 반말 덩어리는 어디서든 본다 — 홀로 선 낱말일 때만(「잘 몰라서」·「안녕하세요」·띄어 쓴 「안녕 하세요」는 아니다).
 // 「어·응」은 머뭇거리는 소리와 헷갈려 넣지 않는다.
-const PLAIN_CHUNK=/(^|[\s,.!?~…])(안녕|고마워|미안해|괜찮아|알았어|몰라|뭐야)(?=$|[\s,.!?~…])(?!\s*(요|하|히))/;
+const PLAIN_CHUNK=/(^|[\s,.!?~…])(안녕|고마워|감사해|미안해|미안|죄송해|반가워|괜찮아|알았어|몰라|뭐야)(?=$|[\s,.!?~…])(?!\s*(요|하|히))/;
 // 문장 끝에 부르는 말이 오면(「안녕하세요, 교수님」) 그 앞 낱말의 끝을 본다. 이름은 이름만이거나 「씨·님」이 붙었을 때만 부르는 말이다
 // — 「바야르야」·「바야르예요」의 「야·예요」는 끝맺음이라 남긴다.
 const CALLS=/^(교수님|선생님|선배님|선배|사장님|팀장님|과장님|부장님|대표님|매니저님|씨|님)$/;
@@ -103,8 +103,9 @@ function endingCheck(spec,heard){
   const word=lastWord(s,names),own=endingOf(word),w=word.replace(/[^가-힣]/g,'');
   // 모범 대사의 끝말을 끝 음절까지 그대로 말했으면 그 대사의 끝맺음으로 확신한다(반말 대사 「내일 봐」의 「봐」).
   if(!own.sure&&lineEnd&&w.slice(-1)===lineEnd.slice(-1)&&near(jamo(w),jamo(lineEnd))>=HIT)return {form:lineForm,sure:lineForm!=='unclear',at:word};
-  // 대사의 끝말에서 「요」만 뺀 꼴(「있어요」 → 「있어」)이면 반말로 확신한다 — 가장 흔한 실수다.
-  if(own.form==='plain'&&dropped!==lineEnd&&dropped.length&&near(jamo(w),jamo(dropped))>=HIT)return {form:'plain',sure:true,at:word};
+  // 대사의 끝말에서 「요」만 뺀 꼴(「있어요」 → 「있어」, 「궁금해서요」 → 「궁금해서」)이면 반말로 확신한다 — 가장 흔한 실수다.
+  // 반말 꼴 목록에 없는 끝(「-서」·「-이에」)도 잡도록 꼴은 묻지 않고, 이미 높임으로 확실한 말만 뺀다.
+  if(!own.sure&&dropped!==lineEnd&&dropped.length&&near(jamo(w),jamo(dropped))>=HIT)return {form:'plain',sure:true,at:word};
   return {...own,at:word};
  });
  const chunk=heard.match(PLAIN_CHUNK);
@@ -160,8 +161,9 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  if(n<min&&speech>0&&n/speech<MIN_SYLLABLES_PER_SPEECH_SECOND)return {status:'unclear',verdict:null,note:null,sure:false,checks:null};
  const ending=endingCheck(spec,transcript);
  // 통째로 닮아도 끝맺음은 먼저 본다 — 긴 대사에서 「요」 하나 빠진 것은 자모 한두 개 차이라 통째 닮음에 묻힌다.
+ // 끝맺음이 애매하면(「…아세요」 대신 「…알아?」) 노트 없이 통과하되 혼자 해냄으로 세지 않는다(10-30 Fable 실측).
  if(whole&&ending.state!=='off'&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
-  return {status,verdict:'pass',note:null,sure:true,checks:{whole:true,ending}};
+  return {status,verdict:'pass',note:null,sure:ending.state==='ok',checks:{whole:true,ending}};
  const length={state:n>=min?'ok':'short',min,got:n};
  const keys=keyCheck(spec,transcript);
  let note=null;
@@ -202,6 +204,7 @@ export function checkSpec(spec){
  if(Number.isInteger(spec.minSyllables)&&spec.minSyllables>syllables(spec.line))problems.push('최소 길이가 대사보다 김');
  const self=judgeLine(spec,{transcript:spec.line},{whole:false});
  if(self.verdict!=='pass'||!self.sure)problems.push('모범 대사가 자기 명세를 확실히 통과하지 못함');
- for(const v of spec.variants||[]){const r=judgeLine(spec,{transcript:v},{whole:false});if(r.verdict!=='pass')problems.push(`허용 변형이 통과하지 못함: ${v}`);}
+ // 허용 변형은 핵심 말 일부를 다르게 말하는 통째 대사라 통째 닮음으로 본다 — 그래도 끝맺음이 틀린 변형은 걸린다.
+ for(const v of spec.variants||[]){const r=judgeLine(spec,{transcript:v});if(r.verdict!=='pass')problems.push(`허용 변형이 통과하지 못함: ${v}`);}
  return problems;
 }
