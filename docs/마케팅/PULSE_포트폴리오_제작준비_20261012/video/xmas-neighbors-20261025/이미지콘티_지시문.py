@@ -729,6 +729,39 @@ def jobs():
         "behind the camera reflects on the wet floor. None of his face is visible.",
         MAN.format(a=2, b=3), f"He wears {M_WINTER}.", FINISH)
 
+    # ── 시댄스 앞 일관성 고침(10-29 — 확정 뒤라 유호님 확인 대기, 02_콘티 「시댄스 지시문(10-29)」) ──
+    # 18: 난간 너머가 높은 아파트 단지라 1 · 20의 낮은 주택가와 다르다 — 확정 때 남긴 「18 뒤 벽의 작은 파란 글자 다시 굽기」도 이 한 장으로
+    J_["C18v"] = J([ref("C18.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: the view beyond the concrete parapet on the right. It becomes the same old "
+        "low-rise neighborhood that lies across the street from this apartment block — two- to four-storey old houses and small brick "
+        "apartment buildings with flat rooftops and rooftop water tanks, power poles and tangled overhead wires, a few warm lit windows — "
+        "under the same blue Halloween dusk sky. No tall apartment towers, no high-rise blocks, and no letters, signs or words on any "
+        "building. Keep the corridor, the parapet and its handrail, the man in the camel coat, the girls in costume, the light on the floor "
+        "and everything else in Image 1 exactly.", FINISH)
+    # 5 · 19: 열린 쪽 난간이 바닥까지 세로 창살 울타리다 — 1 · 3 · 18 · 20 · 26 같은 복도 컷은 허리 높이 콘크리트 난간 + 손잡이
+    RAIL = ("Edit this photograph (Image 1). Change only one thing: the railing on the open side of the outdoor corridor. The tall metal "
+            "bar fence becomes a waist-high solid grey concrete parapet wall with a round steel handrail on short posts along its top — the "
+            "same parapet as along the rest of this old apartment corridor; above it, open air and {beyond}. {keep} Keep the framing and "
+            "everything else in Image 1 exactly.")
+    J_["C05v"] = J([ref("C05.jpg")], RAIL.format(beyond="the dark night", keep="Keep the man, his hands, the white bag on the floor, "
+        "the fallen leaves, the door frame and the light exactly."), FINISH, ratio="4:3")
+    KEEP19 = ("Keep the man's out-of-focus shoulder and raised hand in the foreground, and the small girls in costume at the far bright "
+              "landing exactly as they are — the witch-hat girl's face stays hidden in the deep shadow of her hat brim.")
+    J_["C19v"] = J([ref("C19.jpg")], RAIL.format(beyond="the blue dusk", keep=KEEP19), FINISH)
+    # 11: 같은 밤(4 · 10 · 12 사이)인데 하늘이 흐린 낮처럼 밝은 청회색 · 동네 불빛 없음(아르곤 P2 · Opus P3) — 하늘과 동네만 밤으로
+    J_["C11v"] = J([ref("C11.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: the sky and the town behind him become late at night — a deep navy-blue "
+        "night sky, darker toward the top, with a faint orange city glow low over the rooftops and small warm lit windows scattered "
+        "across the houses below; nothing is lit by daylight any more. The man stays exactly the same pure black silhouette, his face a "
+        "solid black shape with no features, its outline reading against the dark sky. Keep the framing, the parapet, the corridor ceiling "
+        "edge and everything else in Image 1 exactly.", FINISH)
+    # 28: 문 위 등이 납작한 흰 천장등 — 바로 뒤 29(같은 등의 극접사)와 2는 투명 유리 둥근 갓(아르곤 P1 중 맞는 부분 — 켜져 있는 것은 콘티대로)
+    J_["C28v"] = J([ref("C28.jpg"), ref("C29.jpg")],
+        "Edit this photograph (Image 1). Change only one thing: the lamp on the ceiling above his door becomes the same small round "
+        "clear-glass globe lamp as in Image 2 — a clear glass sphere fixed just below the ceiling with a new bulb glowing warm inside — "
+        "and its warm light still pours down over him and over the door. Keep the man, the door, the parapet, the snow and everything else "
+        "in Image 1 exactly.", FINISH)
+
     # ── ⑥ 끝 35~36 ──
     # 35(10-27 22:4x): 26은 판(PL26)에 민재를 합성해 앉혔으므로, 사람이 없는 PL26에서 바로 고친다
     J_["C35"] = J([ref("PL26.jpg")],

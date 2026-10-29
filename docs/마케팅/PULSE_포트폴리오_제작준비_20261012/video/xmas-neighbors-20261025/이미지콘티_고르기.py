@@ -14,7 +14,7 @@ import sys
 from PIL import Image
 
 V = "C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/콘티/xmas-neighbors/"
-PORTRAIT = {"H3", "C05"}   # H3 세로 기준 · C05 세로 4:3 판(카메라무브가 위 · 아래 창을 자름) — 16:9로 자르지 않는다
+PORTRAIT = {"H3", "C05", "C05v"}   # H3 세로 기준 · C05 세로 4:3 판(카메라무브가 위 · 아래 창을 자름, C05v는 10-29 난간 고친 판) — 16:9로 자르지 않는다
 
 
 def pick(name, src, box=None):

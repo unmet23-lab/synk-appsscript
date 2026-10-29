@@ -651,6 +651,38 @@
   ],
   "prompt": "Create one still photograph. A cinematic film still from a quiet, tender Korean Christmas short film, 16:9 frame. Image 1 is a heavily blurred grey layout guide made from another film's shot: copy only its camera position, height and angle, its lens and its framing, and the black silhouette's position and size in the frame — the silhouette marks exactly where and how large the man is. Ignore its grey tones and its background; the place, the light and the pose are described below. The black silhouette marks only where and how large he is — he is seen from directly BEHIND. Blue dusk, snow, the outdoor corridor of an old Korean apartment block. MEDIUM, the camera on the parapet side of the corridor, facing straight at his front door: THE MAN stands in his door alcove (left of center, the size and place of the black silhouette) with his BACK to the camera, facing his dark grey steel door — the back of his head, his shoulders dusted with snow, the end of his grey scarf. The small round sensor lamp on the ceiling right above his door has just clicked on: a warm, soft light pours down over him and over the keyhole; the glowing lamp is visible at the top of the frame. With a white plastic convenience-store bag with one plain round amber-orange circle printed on its side (no letters) still in his left hand and his phone lowered in it (its flashlight still on, pointing at the floor), he slides the key into the keyhole in one go with his right hand. The lock is exactly the old round brass keyhole of Image 4 with scratches in the paint around it — no digital door lock, no keypad. His own door is bare, with no decoration; at the right edge of the frame the neighbor's door alcove glows with warm fairy lights. Soft snowfall in the blue dusk behind the camera reflects on the wet floor. None of his face is visible. THE MAN: the Korean man of Images 2 to 3, which are identity references only — ignore their backgrounds, clothes and lighting. He is twenty-eight, about 175 cm, average build, short black hair with messy straight bangs. He wears a navy hooded padded jacket, a soft grey knitted scarf wrapped around his neck, dark chinos, worn white sneakers. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
+ "C18v": {
+  "refs": [
+   "C18.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the view beyond the concrete parapet on the right. It becomes the same old low-rise neighborhood that lies across the street from this apartment block — two- to four-storey old houses and small brick apartment buildings with flat rooftops and rooftop water tanks, power poles and tangled overhead wires, a few warm lit windows — under the same blue Halloween dusk sky. No tall apartment towers, no high-rise blocks, and no letters, signs or words on any building. Keep the corridor, the parapet and its handrail, the man in the camel coat, the girls in costume, the light on the floor and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C05v": {
+  "refs": [
+   "C05.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the railing on the open side of the outdoor corridor. The tall metal bar fence becomes a waist-high solid grey concrete parapet wall with a round steel handrail on short posts along its top — the same parapet as along the rest of this old apartment corridor; above it, open air and the dark night. Keep the man, his hands, the white bag on the floor, the fallen leaves, the door frame and the light exactly. Keep the framing and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere.",
+  "ratio": "4:3"
+ },
+ "C19v": {
+  "refs": [
+   "C19.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the railing on the open side of the outdoor corridor. The tall metal bar fence becomes a waist-high solid grey concrete parapet wall with a round steel handrail on short posts along its top — the same parapet as along the rest of this old apartment corridor; above it, open air and the blue dusk. Keep the man's out-of-focus shoulder and raised hand in the foreground, and the small girls in costume at the far bright landing exactly as they are — the witch-hat girl's face stays hidden in the deep shadow of her hat brim. Keep the framing and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C11v": {
+  "refs": [
+   "C11.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the sky and the town behind him become late at night — a deep navy-blue night sky, darker toward the top, with a faint orange city glow low over the rooftops and small warm lit windows scattered across the houses below; nothing is lit by daylight any more. The man stays exactly the same pure black silhouette, his face a solid black shape with no features, its outline reading against the dark sky. Keep the framing, the parapet, the corridor ceiling edge and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C28v": {
+  "refs": [
+   "C28.jpg",
+   "C29.jpg"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the lamp on the ceiling above his door becomes the same small round clear-glass globe lamp as in Image 2 — a clear glass sphere fixed just below the ceiling with a new bulb glowing warm inside — and its warm light still pours down over him and over the door. Keep the man, the door, the parapet, the snow and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
  "C35": {
   "refs": [
    "PL26.jpg"
