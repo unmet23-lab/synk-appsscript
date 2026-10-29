@@ -114,7 +114,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
     // same mood line twice a life day; wear the player's segments raised (§15-1 마모 주인); the life days each rest signal stood
     // (§15-1 기운); the night-habit nights and their minutes with no one up before 02:00; the first C4 rise and solving; how
     // often a card set to less often is still offered (§20-10); the visits a learner walks into (tools/town-sim-ladder.mjs).
-    visible: {}, seen: {}, moodTwice: 0, wearByPlayer: 0, restDays: {}, habitNights: 0, habitNightShort: 0,
+    visible: {}, seen: {}, moodTwice: 0, wearByPlayer: 0, wearByPlayerPieces: 0, restDays: {}, habitNights: 0, habitNightShort: 0,
     c4: { rose: null, solved: null }, less: { rises: 0, offered: 0 }, sceneVisits: [],
     // The first life day each invariant broke — the seed to replay (§15-1 「실패면 재현 씨앗·생활일」).
     first: {} };
@@ -122,7 +122,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
   const P = paramsFor(), v = village.initialVillage();
   // W11: each watched profile keeps its last visit (news since then is new to it) and its own seen ledger.
   const sets = Object.entries(watchSets || {}).map(([profile, list]) => ({ profile, list, last: null, seen: {},
-    standing: null, tally: (result.visible[profile] = { visits: 0, one: 0, changes: 0, strictOne: 0, strictChanges: 0, kinds: {}, bands: {} }),
+    lastEnd: null, tally: (result.visible[profile] = { visits: 0, one: 0, changes: 0, strictOne: 0, strictChanges: 0, kinds: {}, bands: {} }),
     gained: (result.seen[profile] = { visits: 0, added: 0, left: 0 }) }));
   const newsAt = [], newsRefs = new Set(), pickedAt = new Map();
   let rev = 1, ring = initialVisitBands(), lastEnd = null;
@@ -180,13 +180,16 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       // A visit that takes every card it meets (the accept profile): open, choose, confirm, close — at the village's own fields.
       for (const visit of takers.filter(x => x.fromMs < b.endMs && x.toMs > b.startMs)) {
         let t = Math.max(visit.fromMs, b.startMs), tookC4 = false;
-        const until = Math.min(visit.toMs, b.endMs);
+        const until = Math.min(visit.toMs, b.endMs), passed = new Set();
         for (;;) {
           const out = village.planOf(v);
-          const rise = out.log.find(e => e.atMs >= t && e.atMs + 4 * MINUTE < until && cardsById[e.card].paths.player.ready && !(v.takes || []).some(k => k.card === e.card && k.key === e.key));
+          // W11 (조율 10-30): every card the visit finds waiting — one that rose before it came too, as core.mjs cardOfferFor
+          // offers whatever is triggered at the player's place — opened a minute after the later of its rise and now.
+          const rise = out.log.find(e => Math.max(e.atMs, t) + 4 * MINUTE < until && cardsById[e.card].paths.player.ready
+            && !passed.has(`${e.card}|${e.key}`) && !(v.takes || []).some(k => k.card === e.card && k.key === e.key));
           if (!rise) break;
-          const open = rise.atMs + MINUTE, card = cardsById[rise.card], by = `card:${card.id}:${rise.key}`;
-          if (cards.cardsAt(village.bandInput(v), out.segments, out.log, open).find(c => c.card === card.id)?.status !== 'triggered') { t = rise.atMs + 1; continue; }
+          const open = Math.max(rise.atMs, t) + MINUTE, card = cardsById[rise.card], by = `card:${card.id}:${rise.key}`;
+          if (cards.cardsAt(village.bandInput(v), out.segments, out.log, open).find(c => c.card === card.id)?.status !== 'triggered') { passed.add(`${rise.card}|${rise.key}`); continue; }
           // §20-10 「덜 추천」: had the player set this card to less often, its offer stands on a seeded share of its rises — the
           // same draw as core.mjs cardOfferFor (createRng(v.seed, 'offer', card, key) below lessOftenMultiplier ‰).
           result.less.rises++;
@@ -270,6 +273,17 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
         const over = (v.band.wear?.[object] ?? 0) - (wearFrom[object] ?? 0) - (own[object] || 0);
         if (over > 0) { result.wearByPlayer += over; flag('wearByPlayer', day); }
       }
+      // A band's own falls (a card's reset, the new tool, a gift's relief) can hide a rise in that net count (review GA1), so
+      // each wearing piece the player made also goes through cards.mjs applySegment alone, from nothing: it must wear nothing.
+      for (const s of out.segments) {
+        const object = plan.ARCHETYPE_BY_ID[s.archetype]?.wear;
+        if (!object || s.cardRole || !(s.habit || s.visitHabit || s.cause === 'promise')) continue;
+        for (let n = 0; n < (s.pieceStarts?.length ?? 1); n++) {
+          const probe = { wear: { [object]: 0 }, objects: {}, marks: {}, lifeDay: b.lifeDay };
+          cards.applySegment(probe, s, { segments: out.segments, first: n === 0 });
+          if (probe.wear[object] !== 0) { result.wearByPlayerPieces++; flag('wearByPlayer', day); }
+        }
+      }
       // Nothing the player took part in spreads (G6), and no one hears more than a few things a day (§9-3).
       const spreadBefore = result.playerSpread;
       for (const list of Object.values(v.knowledge?.known || {})) result.playerSpread += list.filter(e => e.path === 'player' && e.how !== 'private').length;
@@ -325,14 +339,17 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
   for (const set of sets) set.gained.left = SEEN_CATALOG.size - Object.keys(set.seen).length;
   return result;
 
-  /** W11 (§15-1 30분 방문당 눈에 띄는 변화): what each watched visit in this band saw change — a card rising or solved (its
-   * trace, the day's tea, a new tea), a pair scene, a mood line (a change of what a resident does), a habit spot in use,
-   * an object moved, a cup given to the cafe owner; and, as the village's news new to it since its last visit (at most the
-   * note's lines), the objects standing elsewhere and the traces changed since its last visit (§15-1 물건·흔적 변화) — and
-   * what of it the seen ledger keeps (§20-10: card paths, mood lines, gathered items). The alley is one small place: a visit
-   * sees the village. strict counts only what happened inside the visit and the news (the report shows both). */
+  /** W11 (§15-1 30분 방문당 눈에 띄는 변화): what each watched visit in this band saw change on the screen — a card rising or
+   * solved (its trace, the day's tea, a new tea), a pair scene, a mood line (a change of what a resident does), a habit spot
+   * in use, a resident moving a thing (the screen shows the resident at it; the scene's props stand where they always do), a
+   * cup given to the cafe owner; and, new to it since its last visit, the village's news (at most the note's lines) and the
+   * lines of the 「그동안 달라진 것」 board (§10-2 — at most three, the traces, habits and pairs core's view gives a returning
+   * visit: the scene draws no object's spot or trace, so what changed while it was away shows only there — 조율 판단 10-30)
+   * — and what of it the seen ledger keeps (§20-10: card paths, mood lines, gathered items). The alley is one place on the
+   * screen (the wide camera keeps the four destinations in sight). strict counts only what happened inside the visit and
+   * the news (the report shows both). */
   function watchBand(b, out, day) {
-    const events = [], moves = [];
+    const events = [];
     for (const e of out.log) events.push({ at: e.atMs, kind: 'rise' });
     for (const line of out.resolved) events.push({ at: line.atMs, kind: 'solve', key: `card:${line.card}:${line.path}` });
     for (const s of out.scenes) events.push({ at: s.atMs, kind: 'scene' });
@@ -345,38 +362,25 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       if (!move) continue;
       const current = spots[move.object], to = move.to === 'spot' ? s.spot : move.to;
       if (to !== current && (!move.onlyFromOutside || current && !SPOT_BY_ID[current].sheltered)) {
-        spots[move.object] = to; events.push({ at: s.arriveMs ?? s.startMs, kind: 'object' }); moves.push({ at: s.arriveMs ?? s.startMs, object: move.object, to });
+        spots[move.object] = to; events.push({ at: s.arriveMs ?? s.startMs, kind: 'object' });
       }
     }
     for (const g of v.gives || []) if (g.atMs >= b.startMs && g.atMs < b.endMs) events.push({ at: g.atMs, kind: 'tea' });
-    // What stands at ms: the band's objects and traces with this band's moves and results before it (cards.mjs resolve's trace).
-    const solves = out.resolved.filter(line => cardsById[line.card].trace).map(line => {
-      const card = cardsById[line.card], value = line.path === 'player' ? card.paths.player.choices[0] ?? card.paths.player.result : card.paths[line.path].result;
-      return { at: line.atMs, key: `${card.trace.object}.${card.trace.field}`, value: `${line.path}:${value}` };
-    });
-    const standing = ms => {
-      const objects = Object.fromEntries(Object.entries(b.objects || {}).map(([object, o]) => [object, o?.spot ?? null]));
-      for (const m of moves) if (m.at < ms) objects[m.object] = m.to;
-      const traces = Object.fromEntries(Object.entries(b.traces || {}).flatMap(([object, fields]) => Object.entries(fields || {}).map(([field, x]) => [`${object}.${field}`, `${x?.path}:${x?.value}`])));
-      for (const s of solves) if (s.at < ms) traces[s.key] = s.value;
-      return { objects, traces };
-    };
     for (const set of sets) for (const visit of set.list) {
       if (visit.fromMs < b.startMs || visit.fromMs >= b.endMs) continue;
       const seen = events.filter(e => e.end !== undefined ? e.at < visit.toMs && e.end > visit.fromMs : e.at >= visit.fromMs && e.at < visit.toMs);
       const news = Math.min(P.knowledge.noteShows ?? Infinity, newsAt.filter(at => at <= visit.fromMs && (set.last === null || at > set.last)).length);
-      const now = standing(visit.fromMs), before = set.standing;
-      const since = before ? Object.entries(now.objects).filter(([object, spot]) => before.objects[object] !== undefined && before.objects[object] !== spot).length
-        + Object.entries(now.traces).filter(([key, value]) => before.traces[key] !== value).length : 0;
-      set.standing = standing(visit.toMs);
+      // What changed while it was away, as the board shows a returning visit (core.mjs view: meanwhileLines at the visit's start).
+      const since = set.lastEnd === null ? 0 : meanwhileLines(v.changes, { startAt: visit.fromMs, since: set.lastEnd },
+        cards.villageAt(village.bandInput(v), out.segments, out.log, visit.fromMs).traces).length;
       const strict = seen.length + news, count = strict + since, t = set.tally, band = (t.bands[visit.band] ||= { visits: 0, one: 0, changes: 0, strictOne: 0 });
       t.visits++; t.changes += count; t.strictChanges += strict; band.visits++; band.changes += count;
       if (count) { t.one++; band.one++; } else flag(`visible:${set.profile}`, day);
       if (strict) { t.strictOne++; band.strictOne++; }
       for (const e of seen) t.kinds[e.kind] = (t.kinds[e.kind] || 0) + 1;
       if (news) t.kinds.news = (t.kinds.news || 0) + news;
-      if (since) t.kinds.since = (t.kinds.since || 0) + since;
-      set.last = visit.fromMs;
+      if (since) t.kinds.meanwhile = (t.kinds.meanwhile || 0) + since;
+      set.last = visit.fromMs; set.lastEnd = visit.toMs;
       const keys = [...seen.filter(e => e.key).map(e => e.key), ...(pickedAt.get(visit.fromMs) || []).map(item => `gather:${item}`)];
       const { seen: next, added } = recordSeen(set.seen, keys, { known: key => SEEN_CATALOG.has(key) });
       set.seen = next; set.gained.visits++; set.gained.added += added.length;
@@ -505,8 +509,9 @@ export const TOWN_RUNTIME = Object.freeze({
     }
     // W11 (§15-1 카드 「플레이어 행동으로 오른 마모 0」): in every life a thing wears by its resident's own routine and nothing else.
     if (id === 'wear-owner') {
-      const by = list => list.reduce((n, life) => n + life.wearByPlayer, 0);
-      return { status: by(lives) === 0 ? 'pass' : 'fail', value: `플레이어 몫 마모 ${by(lives)}(밤 습관 마을 ${by(habitLives)} · 다 받는 마을 ${by(accept)})`, repro: repro('wearByPlayer') };
+      const by = list => list.reduce((n, life) => n + life.wearByPlayer, 0), pieces = list => list.reduce((n, life) => n + life.wearByPlayerPieces, 0);
+      return { status: by(lives) === 0 && pieces(lives) === 0 ? 'pass' : 'fail',
+        value: `플레이어 몫 마모 ${by(lives)}(밤 습관 마을 ${by(habitLives)} · 다 받는 마을 ${by(accept)}) · 플레이어가 만든 조각을 하나씩 엔진에 넣어 오른 마모 ${pieces(lives)}`, repro: repro('wearByPlayer') };
     }
     if (id === 'hearsay') return { status: sum('playerSpread') === 0 && sum('heardOver') === 0 ? 'pass' : 'fail', value: `퍼진 플레이어 사건 ${sum('playerSpread')} · 하루 들은 것 넘김 ${sum('heardOver')}`, repro: repro('playerSpread', 'heardOver') };
     if (id === 'pairs') {
@@ -555,12 +560,17 @@ export const TOWN_RUNTIME = Object.freeze({
         const tallies = run.villages.filter(x => x.profile === profile).map(x => x.result.visible?.[profile]).filter(Boolean);
         const n = key => tallies.reduce((total, t) => total + t[key], 0), kinds = {};
         for (const t of tallies) for (const [kind, k] of Object.entries(t.kinds)) kinds[kind] = (kinds[kind] || 0) + k;
-        return { profile, visits: n('visits'), one: n('one'), changes: n('changes'), strictOne: n('strictOne'), strictChanges: n('strictChanges'), kinds };
+        const bands = {};
+        for (const t of tallies) for (const [band, x] of Object.entries(t.bands)) for (const [key, k] of Object.entries(x)) (bands[band] ||= {})[key] = (bands[band][key] || 0) + k;
+        return { profile, visits: n('visits'), one: n('one'), changes: n('changes'), strictOne: n('strictOne'), strictChanges: n('strictChanges'), kinds, bands };
       }).filter(r => r.visits);
       const total = key => rows.reduce((n, r) => n + r[key], 0), visits = total('visits'), one = total('one'), changes = total('changes');
+      // By the visit's band (조율 10-30: the report shows the strict count and the bands beside the reading that passes).
+      const bandRow = band => { const x = key => rows.reduce((n, r) => n + (r.bands[band]?.[key] || 0), 0); return x('visits') ? `${BAND_WORD[band]} ${percent(x('one'), x('visits'))}%·엄격 ${percent(x('strictOne'), x('visits'))}%` : null; };
       const ok = visits > 0 && one / visits >= 0.95 && changes / visits >= 2;
       return { status: ok ? 'pass' : 'fail', value: `하나 이상인 방문 ${percent(one, visits)}% · 평균 ${(changes / Math.max(1, visits)).toFixed(1)}`
-        + `(방문 안에서 생긴 것과 새 소식만 세면 ${percent(total('strictOne'), visits)}% · ${(total('strictChanges') / Math.max(1, visits)).toFixed(1)}) · ${rows.map(r => `${r.profile} ${percent(r.one, r.visits)}%·${(r.changes / r.visits).toFixed(1)}`).join(' · ')}`,
+        + `(방문 안에서 생긴 것과 새 소식만 세면 ${percent(total('strictOne'), visits)}% · ${(total('strictChanges') / Math.max(1, visits)).toFixed(1)}) · 구간별 ${clock.BAND_IDS.map(bandRow).filter(Boolean).join(' · ')}`
+        + ` · ${rows.map(r => `${r.profile} ${percent(r.one, r.visits)}%·${(r.changes / r.visits).toFixed(1)}`).join(' · ')}`,
         detail: rows.map(r => `${r.profile}: ${Object.entries(r.kinds).sort((a, b) => b[1] - a[1]).map(([kind, k]) => `${kind} ${(k / r.visits).toFixed(2)}`).join(' ')}`).join(' / '),
         repro: ok ? null : repro(...rows.map(r => `visible:${r.profile}`)) };
     }
@@ -638,6 +648,7 @@ export const METRICS = Object.freeze([
   ['less-often', '「덜 추천」(§20-10)', '잴 것만 — 덜 추천한 카드의 제안 비율'],
   ['learners', '가상 학습자 셋(다리 §9)', '잴 것만 — r±0.5에 닿기까지 장면 수 · r+1 넘는 판 비율 · 제안 거절 비율 · 판 없어 내림'],
 ].map(([id, label, bar]) => Object.freeze({ id, label, bar })));
+const BAND_WORD = Object.freeze({ morning: '아침', day: '낮', evening: '저녁', night: '밤' });
 const zoneName = offset => `UTC${offset >= 0 ? '+' : '−'}${Math.abs(offset) / 60}`;
 /** 알려진 실패(W11) — 잰 지표가 기준을 못 넘었고 고칠 길이 트랙에 있는 것. 보고서에는 실패로 쓰고, --check는 이것만 실패면 통과로
  * 끝낸다(기준은 그대로). 고쳐져 통과하면 --check가 「목록이 낡았다」로 실패하니 그때 이 줄을 지운다. */

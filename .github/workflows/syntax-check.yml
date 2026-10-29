@@ -182,7 +182,7 @@ jobs:
         env:
           NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
         run: node tools/prism래칫.js
-      - name: 싱크타운 30생활일 × 마을 씨앗 100 시뮬레이션 (세로 조각 설계 §15-1, 60초 안)
+      - name: 싱크타운 30생활일 × 마을 씨앗 100 시뮬레이션 (세로 조각 설계 §15-1, 2분 안팎 · 알려진 실패만이면 통과)
         # 읽기 기록(NODE_OPTIONS)을 붙이지 않는다 — 시험 읽기 지도는 tests/*.test.js의 읽기만 모은다.
         timeout-minutes: 3
         run: npm run check:town-sim
