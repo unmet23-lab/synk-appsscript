@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w8",
+ "text": "검사기 부탁 글은 영상 아래 글에. 이어폰 끼고 다시 들어 보세요.",
+ "dur": 3.263,
+ "words": [
+  {
+   "text": "검사기",
+   "start": 0.02,
+   "end": 0.341
+  },
+  {
+   "text": "부탁",
+   "start": 0.396,
+   "end": 0.606
+  },
+  {
+   "text": "글은",
+   "start": 0.648,
+   "end": 0.843
+  },
+  {
+   "text": "영상",
+   "start": 0.912,
+   "end": 1.177
+  },
+  {
+   "text": "아래",
+   "start": 1.219,
+   "end": 1.33
+  },
+  {
+   "text": "글에.",
+   "start": 1.372,
+   "end": 1.526
+  },
+  {
+   "text": "이어폰",
+   "start": 1.971,
+   "end": 2.25
+  },
+  {
+   "text": "끼고",
+   "start": 2.292,
+   "end": 2.473
+  },
+  {
+   "text": "다시",
+   "start": 2.53,
+   "end": 2.725
+  },
+  {
+   "text": "들어",
+   "start": 2.767,
+   "end": 2.892
+  },
+  {
+   "text": "보세요.",
+   "start": 2.933,
+   "end": 3.263
+  }
+ ],
+ "source": {
+  "key": "71a9894892449be49098454dbf7f4129",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w7",
+ "text": "듣고 고르기 전에, 숫자로 먼저 거르세요. 남은 것만 귀로.",
+ "dur": 2.835,
+ "words": [
+  {
+   "text": "듣고",
+   "start": 0.02,
+   "end": 0.197
+  },
+  {
+   "text": "고르기",
+   "start": 0.238,
+   "end": 0.47
+  },
+  {
+   "text": "전에,",
+   "start": 0.51,
+   "end": 0.715
+  },
+  {
+   "text": "숫자로",
+   "start": 0.866,
+   "end": 1.138
+  },
+  {
+   "text": "먼저",
+   "start": 1.179,
+   "end": 1.357
+  },
+  {
+   "text": "거르세요.",
+   "start": 1.398,
+   "end": 1.739
+  },
+  {
+   "text": "남은",
+   "start": 2.052,
+   "end": 2.257
+  },
+  {
+   "text": "것만",
+   "start": 2.298,
+   "end": 2.49
+  },
+  {
+   "text": "귀로.",
+   "start": 2.53,
+   "end": 2.835
+  }
+ ],
+ "source": {
+  "key": "c3588705cfc8efa5743910cec05dc91f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

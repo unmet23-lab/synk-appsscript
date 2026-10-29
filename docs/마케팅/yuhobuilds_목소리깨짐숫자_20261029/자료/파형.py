@@ -2,7 +2,7 @@
 
     python -X utf8 자료/파형.py   (편 폴더에서)
 
-- remotion/public/clip/{broken,clean}.wav — 「Your turn!」 한마디(줄 맨 앞, 낱말 시각 끝 + 0.06초, 끝 20ms 줄임)
+- remotion/public/clip/{broken,clean}.wav — 「Your turn!」 한마디(줄 맨 앞, 낱말 시각 끝 + 0.06초, 끝 20ms 줄임), {broken,clean}_long.wav — 「Your turn! Comment your name,」(v2)
 - remotion/src/y22/data.generated.ts — 한마디 파형(봉우리) · 확대 물결(30ms 실제 표본) · 줄 전체의 모음 프레임별 배음 밖 비율(검사기 tools/목소리엉킴.py 그대로)
 """
 import importlib.util
@@ -51,6 +51,13 @@ for key, path in FILES.items():
     zs = x[z0:z0 + int(0.03 * SR)]
     zs = zs / (np.abs(zs).max() + 1e-9)
     zoom = [round(float(v), 3) for v in np.interp(np.linspace(0, len(zs) - 1, 300), np.arange(len(zs)), zs)]
+    # v2(10-30): 「Your turn! Comment your name,」 긴 판(줄 맨 앞부터 「name,」 끝 + 0.06초)과 그 봉우리 160칸, 줄 전체 길이
+    lend = next(w['end'] for w in words if w['text'].startswith('name')) + 0.06
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(path), '-t', f'{lend:.3f}', '-af', f'afade=t=out:st={lend - 0.03:.3f}:d=0.03', '-ar', '48000', '-ac', '2', str(OUT_PUB / 'clip' / f'{key}_long.wav')], check=True)
+    lseg = x[: int(lend * SR)]
+    lenv = [float(np.abs(c).max()) for c in np.array_split(lseg, 160)]
+    lpk = max(lenv) or 1
+    data[key + '_long'] = {'clipDur': round(lend, 3), 'wave': [round(e / lpk, 3) for e in lenv], 'lineDur': round(len(x) / SR, 3)}
     data[key] = {
         'zoom': zoom,
         'clipDur': round(end, 3),

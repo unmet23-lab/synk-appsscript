@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w6",
+ "text": "그래서 예약을 거두고, 다른 목소리로 다시 뽑아 숫자로 걸렀어요.",
+ "dur": 3.15,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.246
+  },
+  {
+   "text": "예약을",
+   "start": 0.299,
+   "end": 0.552
+  },
+  {
+   "text": "거두고,",
+   "start": 0.592,
+   "end": 0.871
+  },
+  {
+   "text": "다른",
+   "start": 1.218,
+   "end": 1.417
+  },
+  {
+   "text": "목소리로",
+   "start": 1.457,
+   "end": 1.776
+  },
+  {
+   "text": "다시",
+   "start": 1.816,
+   "end": 2.016
+  },
+  {
+   "text": "뽑아",
+   "start": 2.056,
+   "end": 2.255
+  },
+  {
+   "text": "숫자로",
+   "start": 2.309,
+   "end": 2.562
+  },
+  {
+   "text": "걸렀어요.",
+   "start": 2.602,
+   "end": 3.15
+  }
+ ],
+ "source": {
+  "key": "62dde4e335caf3a2afffca9a47a66755",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

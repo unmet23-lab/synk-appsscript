@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w4",
+ "text": "여기, 「턴」 첫머리에서 소리가 갈라졌어요.",
+ "dur": 2.803,
+ "words": [
+  {
+   "text": "여기,",
+   "start": 0.02,
+   "end": 0.23
+  },
+  {
+   "text": "「턴」",
+   "start": 0.67,
+   "end": 0.957
+  },
+  {
+   "text": "첫머리에서",
+   "start": 1.014,
+   "end": 1.588
+  },
+  {
+   "text": "소리가",
+   "start": 1.741,
+   "end": 1.99
+  },
+  {
+   "text": "갈라졌어요.",
+   "start": 2.047,
+   "end": 2.803
+  }
+ ],
+ "source": {
+  "key": "a0fe2fc85a639efcd18f908bd73b462e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

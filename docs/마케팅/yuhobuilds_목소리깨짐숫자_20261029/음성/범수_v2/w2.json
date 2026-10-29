@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w2",
+ "text": "검사기가 이 한 줄을 잡았어요. 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+ "dur": 3.787,
+ "words": [
+  {
+   "text": "검사기가",
+   "start": 0.06,
+   "end": 0.494
+  },
+  {
+   "text": "이",
+   "start": 0.581,
+   "end": 0.596
+  },
+  {
+   "text": "한",
+   "start": 0.639,
+   "end": 0.741
+  },
+  {
+   "text": "줄을",
+   "start": 0.799,
+   "end": 0.93
+  },
+  {
+   "text": "잡았어요.",
+   "start": 0.987,
+   "end": 1.35
+  },
+  {
+   "text": "소리가",
+   "start": 1.77,
+   "end": 2.016
+  },
+  {
+   "text": "갈라진",
+   "start": 2.074,
+   "end": 2.392
+  },
+  {
+   "text": "순간이",
+   "start": 2.436,
+   "end": 2.74
+  },
+  {
+   "text": "이십",
+   "start": 2.842,
+   "end": 2.972
+  },
+  {
+   "text": "점",
+   "start": 3.016,
+   "end": 3.131
+  },
+  {
+   "text": "팔",
+   "start": 3.175,
+   "end": 3.262
+  },
+  {
+   "text": "퍼센트.",
+   "start": 3.306,
+   "end": 3.787
+  }
+ ],
+ "source": {
+  "key": "353b9b6d75e9be4a1c3cc6874440e513",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

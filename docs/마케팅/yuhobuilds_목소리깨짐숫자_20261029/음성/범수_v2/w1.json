@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w1",
+ "text": "저녁에 나갈 영상, 마지막 소리 검수에서",
+ "dur": 2.325,
+ "words": [
+  {
+   "text": "저녁에",
+   "start": 0.02,
+   "end": 0.286
+  },
+  {
+   "text": "나갈",
+   "start": 0.333,
+   "end": 0.506
+  },
+  {
+   "text": "영상,",
+   "start": 0.569,
+   "end": 0.881
+  },
+  {
+   "text": "마지막",
+   "start": 1.242,
+   "end": 1.539
+  },
+  {
+   "text": "소리",
+   "start": 1.602,
+   "end": 1.711
+  },
+  {
+   "text": "검수에서",
+   "start": 1.759,
+   "end": 2.325
+  }
+ ],
+ "source": {
+  "key": "5b4648953ef65445af7cde94eceb1cbe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 138
+ }
+}

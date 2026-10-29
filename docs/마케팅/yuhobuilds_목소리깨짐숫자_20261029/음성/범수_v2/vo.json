@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획_v2.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-29T15:43:37.932Z",
+ "lines": [
+  {
+   "id": "w1",
+   "text": "저녁에 나갈 영상, 마지막 소리 검수에서",
+   "dur": 2.325,
+   "syllablesPerSec": 6.88,
+   "src": "w1.wav",
+   "key": "5b4648953ef65445af7cde94eceb1cbe",
+   "words": 6
+  },
+  {
+   "id": "w2",
+   "text": "검사기가 이 한 줄을 잡았어요. 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+   "dur": 3.787,
+   "syllablesPerSec": 7.39,
+   "src": "w2.wav",
+   "key": "353b9b6d75e9be4a1c3cc6874440e513",
+   "words": 12
+  },
+  {
+   "id": "w3",
+   "text": "전날엔 제 귀로, 「다 깨진다」까지만 알았거든요.",
+   "dur": 2.596,
+   "syllablesPerSec": 6.93,
+   "src": "w3.wav",
+   "key": "b1d0ed6257e71b99cdf988f3da997238",
+   "words": 6
+  },
+  {
+   "id": "w4",
+   "text": "여기, 「턴」 첫머리에서 소리가 갈라졌어요.",
+   "dur": 2.803,
+   "syllablesPerSec": 5.71,
+   "src": "w4.wav",
+   "key": "a0fe2fc85a639efcd18f908bd73b462e",
+   "words": 5
+  },
+  {
+   "id": "w5",
+   "text": "검사기는 소리를 잘게 잘라서, 갈라진 조각을 세요.",
+   "dur": 2.683,
+   "syllablesPerSec": 7.45,
+   "src": "w5.wav",
+   "key": "718084181ea8ca392578579277e440c1",
+   "words": 7
+  },
+  {
+   "id": "w6",
+   "text": "그래서 예약을 거두고, 다른 목소리로 다시 뽑아 숫자로 걸렀어요.",
+   "dur": 3.15,
+   "syllablesPerSec": 8.25,
+   "src": "w6.wav",
+   "key": "62dde4e335caf3a2afffca9a47a66755",
+   "words": 9
+  },
+  {
+   "id": "w7",
+   "text": "듣고 고르기 전에, 숫자로 먼저 거르세요. 남은 것만 귀로.",
+   "dur": 2.835,
+   "syllablesPerSec": 7.76,
+   "src": "w7.wav",
+   "key": "c3588705cfc8efa5743910cec05dc91f",
+   "words": 9
+  },
+  {
+   "id": "w8",
+   "text": "검사기 부탁 글은 영상 아래 글에. 이어폰 끼고 다시 들어 보세요.",
+   "dur": 3.263,
+   "syllablesPerSec": 7.66,
+   "src": "w8.wav",
+   "key": "71a9894892449be49098454dbf7f4129",
+   "words": 11
+  }
+ ]
+}
