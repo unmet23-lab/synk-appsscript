@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7",
+ "text": "검사기 부탁 글은 영상 아래 글에 통째로. 목소리 고를 때 쓰게 저장해 두세요.",
+ "dur": 4.089,
+ "words": [
+  {
+   "text": "검사기",
+   "start": 0.02,
+   "end": 0.36
+  },
+  {
+   "text": "부탁",
+   "start": 0.4,
+   "end": 0.631
+  },
+  {
+   "text": "글은",
+   "start": 0.672,
+   "end": 0.89
+  },
+  {
+   "text": "영상",
+   "start": 0.985,
+   "end": 1.27
+  },
+  {
+   "text": "아래",
+   "start": 1.31,
+   "end": 1.42
+  },
+  {
+   "text": "글에",
+   "start": 1.46,
+   "end": 1.596
+  },
+  {
+   "text": "통째로.",
+   "start": 1.65,
+   "end": 1.977
+  },
+  {
+   "text": "목소리",
+   "start": 2.534,
+   "end": 2.806
+  },
+  {
+   "text": "고를",
+   "start": 2.847,
+   "end": 2.983
+  },
+  {
+   "text": "때",
+   "start": 3.023,
+   "end": 3.105
+  },
+  {
+   "text": "쓰게",
+   "start": 3.159,
+   "end": 3.35
+  },
+  {
+   "text": "저장해",
+   "start": 3.39,
+   "end": 3.675
+  },
+  {
+   "text": "두세요.",
+   "start": 3.73,
+   "end": 4.089
+  }
+ ],
+ "source": {
+  "key": "ebd135671ec35897ad1371bfe0c68550",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

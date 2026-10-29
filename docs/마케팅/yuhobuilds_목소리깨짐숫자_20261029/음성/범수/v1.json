@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "이 한 줄, 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+ "dur": 2.761,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.02,
+   "end": 0.035
+  },
+  {
+   "text": "한",
+   "start": 0.096,
+   "end": 0.188
+  },
+  {
+   "text": "줄,",
+   "start": 0.233,
+   "end": 0.37
+  },
+  {
+   "text": "소리가",
+   "start": 0.706,
+   "end": 0.934
+  },
+  {
+   "text": "갈라진",
+   "start": 0.995,
+   "end": 1.3
+  },
+  {
+   "text": "순간이",
+   "start": 1.346,
+   "end": 1.65
+  },
+  {
+   "text": "이십",
+   "start": 1.756,
+   "end": 1.893
+  },
+  {
+   "text": "점",
+   "start": 1.939,
+   "end": 2.046
+  },
+  {
+   "text": "팔",
+   "start": 2.091,
+   "end": 2.168
+  },
+  {
+   "text": "퍼센트.",
+   "start": 2.213,
+   "end": 2.761
+  }
+ ],
+ "source": {
+  "key": "fb13533319bdfcf21c314354e17653f1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

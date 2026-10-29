@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v5",
+ "text": "다섯 조각에 한 조각꼴로 갈라져 있었던 거예요. 다른 목소리는 하나도 없었고요.",
+ "dur": 3.468,
+ "words": [
+  {
+   "text": "다섯",
+   "start": 0.02,
+   "end": 0.202
+  },
+  {
+   "text": "조각에",
+   "start": 0.236,
+   "end": 0.51
+  },
+  {
+   "text": "한",
+   "start": 0.556,
+   "end": 0.658
+  },
+  {
+   "text": "조각꼴로",
+   "start": 0.692,
+   "end": 1.034
+  },
+  {
+   "text": "갈라져",
+   "start": 1.069,
+   "end": 1.32
+  },
+  {
+   "text": "있었던",
+   "start": 1.353,
+   "end": 1.593
+  },
+  {
+   "text": "거예요.",
+   "start": 1.639,
+   "end": 1.844
+  },
+  {
+   "text": "다른",
+   "start": 2.118,
+   "end": 2.323
+  },
+  {
+   "text": "목소리는",
+   "start": 2.357,
+   "end": 2.699
+  },
+  {
+   "text": "하나도",
+   "start": 2.733,
+   "end": 2.927
+  },
+  {
+   "text": "없었고요.",
+   "start": 2.961,
+   "end": 3.468
+  }
+ ],
+ "source": {
+  "key": "6da09eecdf48df374dc05860cd8e2d05",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

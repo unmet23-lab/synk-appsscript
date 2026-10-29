@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "소리를 확대해 보면, 깨끗한 소리는 같은 무늬가 고르게 반복되는데, 깨진 소리는 들쭉날쭉해요.",
+ "dur": 4.989,
+ "words": [
+  {
+   "text": "소리를",
+   "start": 0.03,
+   "end": 0.303
+  },
+  {
+   "text": "확대해",
+   "start": 0.342,
+   "end": 0.603
+  },
+  {
+   "text": "보면,",
+   "start": 0.642,
+   "end": 0.955
+  },
+  {
+   "text": "깨끗한",
+   "start": 1.228,
+   "end": 1.58
+  },
+  {
+   "text": "소리는",
+   "start": 1.619,
+   "end": 1.893
+  },
+  {
+   "text": "같은",
+   "start": 1.932,
+   "end": 2.18
+  },
+  {
+   "text": "무늬가",
+   "start": 2.219,
+   "end": 2.414
+  },
+  {
+   "text": "고르게",
+   "start": 2.479,
+   "end": 2.713
+  },
+  {
+   "text": "반복되는데,",
+   "start": 2.752,
+   "end": 3.312
+  },
+  {
+   "text": "깨진",
+   "start": 3.638,
+   "end": 3.885
+  },
+  {
+   "text": "소리는",
+   "start": 3.924,
+   "end": 4.185
+  },
+  {
+   "text": "들쭉날쭉해요.",
+   "start": 4.224,
+   "end": 4.989
+  }
+ ],
+ "source": {
+  "key": "8c078b8fd89c5734aee15bfc24e42ab8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

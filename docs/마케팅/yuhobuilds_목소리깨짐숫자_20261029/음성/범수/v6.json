@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v6",
+ "text": "그래서 이제는 이 순서로 골라요. 목소리마다 뽑고, 숫자로 거르고, 남은 것만 귀로.",
+ "dur": 4.277,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.252
+  },
+  {
+   "text": "이제는",
+   "start": 0.296,
+   "end": 0.544
+  },
+  {
+   "text": "이",
+   "start": 0.602,
+   "end": 0.616
+  },
+  {
+   "text": "순서로",
+   "start": 0.674,
+   "end": 0.922
+  },
+  {
+   "text": "골라요.",
+   "start": 0.966,
+   "end": 1.256
+  },
+  {
+   "text": "목소리마다",
+   "start": 1.562,
+   "end": 1.984
+  },
+  {
+   "text": "뽑고,",
+   "start": 2.028,
+   "end": 2.29
+  },
+  {
+   "text": "숫자로",
+   "start": 2.624,
+   "end": 2.901
+  },
+  {
+   "text": "거르고,",
+   "start": 2.959,
+   "end": 3.25
+  },
+  {
+   "text": "남은",
+   "start": 3.497,
+   "end": 3.701
+  },
+  {
+   "text": "것만",
+   "start": 3.745,
+   "end": 3.919
+  },
+  {
+   "text": "귀로.",
+   "start": 3.963,
+   "end": 4.277
+  }
+ ],
+ "source": {
+  "key": "a1d63b9e9a4dd4a53e24164995beb505",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

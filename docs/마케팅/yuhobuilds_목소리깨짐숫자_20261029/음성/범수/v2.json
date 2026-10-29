@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "다른 목소리로 다시 뽑으니까 영 퍼센트. 숫자로 걸러서 고른 거예요.",
+ "dur": 3.655,
+ "words": [
+  {
+   "text": "다른",
+   "start": 0.02,
+   "end": 0.23
+  },
+  {
+   "text": "목소리로",
+   "start": 0.272,
+   "end": 0.625
+  },
+  {
+   "text": "다시",
+   "start": 0.681,
+   "end": 0.877
+  },
+  {
+   "text": "뽑으니까",
+   "start": 0.934,
+   "end": 1.328
+  },
+  {
+   "text": "영",
+   "start": 1.469,
+   "end": 1.581
+  },
+  {
+   "text": "퍼센트.",
+   "start": 1.623,
+   "end": 1.961
+  },
+  {
+   "text": "숫자로",
+   "start": 2.41,
+   "end": 2.678
+  },
+  {
+   "text": "걸러서",
+   "start": 2.72,
+   "end": 3.015
+  },
+  {
+   "text": "고른",
+   "start": 3.058,
+   "end": 3.241
+  },
+  {
+   "text": "거예요.",
+   "start": 3.283,
+   "end": 3.655
+  }
+ ],
+ "source": {
+  "key": "1f843c2a49de422a0dcf3aca427052a1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-29T14:11:53.419Z",
+ "lines": [
+  {
+   "id": "v1",
+   "text": "이 한 줄, 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+   "dur": 2.761,
+   "syllablesPerSec": 6.88,
+   "src": "v1.wav",
+   "key": "fb13533319bdfcf21c314354e17653f1",
+   "words": 10
+  },
+  {
+   "id": "v2",
+   "text": "다른 목소리로 다시 뽑으니까 영 퍼센트. 숫자로 걸러서 고른 거예요.",
+   "dur": 3.655,
+   "syllablesPerSec": 7.39,
+   "src": "v2.wav",
+   "key": "1f843c2a49de422a0dcf3aca427052a1",
+   "words": 10
+  },
+  {
+   "id": "v3",
+   "text": "소리를 확대해 보면, 깨끗한 소리는 같은 무늬가 고르게 반복되는데, 깨진 소리는 들쭉날쭉해요.",
+   "dur": 4.989,
+   "syllablesPerSec": 7.62,
+   "src": "v3.wav",
+   "key": "8c078b8fd89c5734aee15bfc24e42ab8",
+   "words": 12
+  },
+  {
+   "id": "v4",
+   "text": "귀로는 얼마나 깨졌는지 몰라서, 들쭉날쭉한 조각을 세는 검사기를 직접 만들었어요.",
+   "dur": 4.518,
+   "syllablesPerSec": 7.53,
+   "src": "v4.wav",
+   "key": "b91817e8e957a085715a50df3324d3c6",
+   "words": 10
+  },
+  {
+   "id": "v5",
+   "text": "다섯 조각에 한 조각꼴로 갈라져 있었던 거예요. 다른 목소리는 하나도 없었고요.",
+   "dur": 3.468,
+   "syllablesPerSec": 9.23,
+   "src": "v5.wav",
+   "key": "6da09eecdf48df374dc05860cd8e2d05",
+   "words": 11
+  },
+  {
+   "id": "v6",
+   "text": "그래서 이제는 이 순서로 골라요. 목소리마다 뽑고, 숫자로 거르고, 남은 것만 귀로.",
+   "dur": 4.277,
+   "syllablesPerSec": 7.48,
+   "src": "v6.wav",
+   "key": "a1d63b9e9a4dd4a53e24164995beb505",
+   "words": 12
+  },
+  {
+   "id": "v7",
+   "text": "검사기 부탁 글은 영상 아래 글에 통째로. 목소리 고를 때 쓰게 저장해 두세요.",
+   "dur": 4.089,
+   "syllablesPerSec": 7.34,
+   "src": "v7.wav",
+   "key": "ebd135671ec35897ad1371bfe0c68550",
+   "words": 13
+  }
+ ]
+}
