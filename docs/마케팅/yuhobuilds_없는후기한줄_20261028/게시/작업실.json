@@ -1,30 +1,30 @@
 {
   "도구": "tools/작업실예약.js",
   "작업실": "https://workspace.synk.im",
-  "시작": "2026-10-29T13:42:02.938Z",
+  "시작": "2026-10-29T15:29:18.100Z",
   "자산": {
-    "docs/마케팅/yuhobuilds_없는후기한줄_20261028/remotion/out/y19v2_final.mp4": "40f1e2b4-0657-41a3-8394-57f6c439d2ba"
+    "docs/마케팅/yuhobuilds_없는후기한줄_20261028/remotion/out/y19v2_final.mp4": "646d8789-e939-4790-aec8-49ccbb75b922"
   },
   "판": [
     {
       "계정": "yuhobuilds-instagram",
       "채널": "8d6d4d37-5a44-47ce-a757-9411ed15523c",
-      "작업": "e93bd18c6a90bfbda5fc994736decc703fcc63eeda42f3e8ae9541511c84e04d",
-      "시각": "2026-10-30T21:00+09:00",
+      "작업": "8540cb7e3ebee4a1612075e17762f414bf237b9b00d8c33fd5dd3d28c5c13ff4",
+      "시각": "2026-10-31T21:00+09:00",
       "영상": "docs/마케팅/yuhobuilds_없는후기한줄_20261028/remotion/out/y19v2_final.mp4"
     },
     {
       "계정": "yuhobuilds-youtube",
       "채널": "452a3e17-7ec1-4f1e-8dbb-fe5d34380a9f",
-      "작업": "b508d27cebb6360e64a9bdc0f3ec71d39e2ee15611f2157d233da91c520da54a",
-      "시각": "2026-10-30T21:00+09:00",
+      "작업": "7aafa1c39b8777e160ab79d9a77d91ba699688e98dcf963b77ce53bf6bcd9c42",
+      "시각": "2026-10-31T21:00+09:00",
       "영상": "docs/마케팅/yuhobuilds_없는후기한줄_20261028/remotion/out/y19v2_final.mp4"
     }
   ],
-  "postId": "5ba327ea-47bc-443b-82b2-a2967a4aa9fa",
+  "postId": "a4b1aa32-4795-4787-b2b7-34acee22a2ea",
   "링크": {
-    "id": "e052fe4b-8e4d-48e2-b395-18bf0504b495",
-    "만료": "2026-10-31T12:42:10.671Z"
+    "id": "691908e9-3f7c-4e7f-a610-9d9cfc5e3763",
+    "만료": "2026-11-01T12:29:24.964Z"
   },
-  "끝": "2026-10-29T13:42:10.473Z"
+  "끝": "2026-10-29T15:29:24.760Z"
 }
