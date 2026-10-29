@@ -28,6 +28,9 @@ const 목소리설명 = {
   'live_coral': { 엔진: 'GPT-Live', 목소리: 'coral', 결: '여성 · 다국어 목소리(2차 후보)' },
   'live_shimmer': { 엔진: 'GPT-Live', 목소리: 'shimmer', 결: '낮은 목소리 · 다국어(2차 후보, 재 보니 cedar와 비슷한 높이)' },
   'live_sage': { 엔진: 'GPT-Live', 목소리: 'sage', 결: '여성 · 다국어 목소리(2차 후보)' },
+  'live_만든-또렷함': { 엔진: 'GPT-Live', 목소리: '만든 목소리 · 또렷함', 결: '여성 · 설명으로 만든 목소리(20대 중반 · 밝고 또렷함)' },
+  'live_만든-단단함': { 엔진: 'GPT-Live', 목소리: '만든 목소리 · 단단함', 결: '여성 · 설명으로 만든 목소리(20대 후반 · 차분하고 단단함)' },
+  'live_만든-따뜻함': { 엔진: 'GPT-Live', 목소리: '만든 목소리 · 따뜻함', 결: '여성 · 설명으로 만든 목소리(30대 초반 · 따뜻하고 생기 있음)' },
 };
 // 1차(10-29) 일곱 판은 글자 A~G를 그대로 둔다 — 유호님이 그 글자로 평가했다(결정 10-30). 2차(10-30 여성 배역 후보)는 가 · 나 · 다 · 라.
 const 일차 = new Set(['gemini_Aoede', 'gemini_Kore', 'gemini_Puck', 'live_cedar', 'live_noeul', 'realtime_cedar', 'realtime_marin']);
@@ -58,7 +61,9 @@ const 판들 = 대본.장면.map((장면, n) => {
   return {
     id: 장면.id, 이름: 장면.이름, 상대역: 장면.상대역, 연기: 장면.연기, 줄: 장면.줄,
     테이크: 섞기(받은.filter((p) => 일차.has(아이디(p))), 7 + n * 13).map(테이크로('ABCDEFG')),
-    둘째: 섞기(받은.filter((p) => !일차.has(아이디(p))), 101 + n * 17).map(테이크로(['가', '나', '다', '라', '마', '바'])),
+    둘째: 섞기(받은.filter((p) => !일차.has(아이디(p)) && !아이디(p).startsWith('live_만든-')), 101 + n * 17).map(테이크로(['가', '나', '다', '라', '마', '바'])),
+    // 3차(10-30): GPT-Live 「설명으로 목소리 만들기」로 만든 한국 여성 목소리 — ㄱ ㄴ ㄷ
+    셋째: 섞기(받은.filter((p) => 아이디(p).startsWith('live_만든-')), 211 + n * 19).map(테이크로(['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'])),
   };
 });
 const 표 = Object.keys(목소리설명).filter((k) => 결과.판들.some((p) => 아이디(p) === k)).map((k) => {
@@ -228,6 +233,13 @@ function renderScenes() {
       for (const t of s.둘째) grid2.append(카드(t));
       art.append(el('div', { class: 'round2' }, el('h3', { text: '여성 배역 2차 후보 · 가 나 다 라' }), el('p', { class: 'note', text: '1차에서 「좋네」라고 하신 A(학생에게는 못 쓰는 엔진)를 기준으로 맨 앞에 두었어요. 가~라는 학생에게 쓸 수 있는 엔진의 여성 목소리예요.' }), grid2));
     }
+    if (s.셋째.length) {
+      const 기준 = s.테이크.find((t) => t.아이디 === 'gemini_Kore');
+      const grid3 = el('div', { class: 'takes' });
+      if (기준) grid3.append(카드(기준, true));
+      for (const t of s.셋째) grid3.append(카드(t));
+      art.append(el('div', { class: 'round2' }, el('h3', { text: '여성 배역 3차 · 설명으로 새로 만든 목소리 · ㄱ ㄴ ㄷ' }), el('p', { class: 'note', text: '2차에서도 A가 제일 낫다고 하셔서, 학생에게 쓸 수 있는 엔진에 「또렷한 · 단단한 · 따뜻한 한국 여성」 목소리를 글로 설명해 새로 만들었어요. 맨 앞은 같은 기준 A예요.' }), grid3));
+    }
     root.append(art);
   }
 }
@@ -236,7 +248,7 @@ function renderPicks() {
   g.textContent = '';
   for (const s of DATA.판들) {
     const id = state.picks[s.id];
-    const t = [...s.테이크, ...s.둘째].find((x) => x.아이디 === id);
+    const t = [...s.테이크, ...s.둘째, ...s.셋째].find((x) => x.아이디 === id);
     g.append(el('label', {}, el('span', { text: s.이름 }), el('strong', { text: t ? t.글자 + (state.reveal ? ' · ' + nameOf(id) : '') : '아직' })));
   }
   const sel = $('#overall');
