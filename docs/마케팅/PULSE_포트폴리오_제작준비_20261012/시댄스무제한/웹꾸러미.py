@@ -56,6 +56,9 @@ DAY2 = ("p7", "short-drama-20261026")
 OUT2 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_둘째날"
 P7_SOUND = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고"   # A/<판 id>.mp3(입 맞춤 대사) · B/<배역>.mp3(목소리 견본)
 P7_ROLE = {"IAN": "ian", "SEOJIN": "seojin", "MINJAE": "minjae", "SOYEON": "soyeon"}
+OUT3 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_7번비교"
+CMP = ["p7-1-5", "p7-2-45", "p7-2-40", "p7-1-38", "p7-1-16", "p7-1-32", "p7-1-26-27", "p7-2-10"]   # 얼굴 가까이 · 두 사람 · 우는 얼굴 · 사무실 · 카페 · 소품 두 샷 · 끝 그림
+CMP_ROUTES = [("얼굴흐림", "선버스트_얼굴흐림"), ("새로", "선버스트_새로")]   # video/short-drama-20261026/이미지콘티_선버스트.py --길
 DAY2_BUFFER = ["p7-1-1", "p7-1-7", "p7-1-12", "p7-1-22", "p7-1-24", "p7-1-26-27"]   # 소리 끔 판 — 목소리 판 뒤 견본이 들어올 때까지(10-30)
 DAY2_TESTS = ["p7-1-16", "p7-2-28"]   # 두 방식을 같은 컷으로(02_콘티 8-4) — 고른 방식 판이 그 컷의 주판을 겸한다
 CAMERA_ALT = {   # 카메라 줄을 「기법 이름 + 끝 모습만」 꼴로 나란히(02_콘티 8-4 · 시댄스 도움말이 바로 알아듣는 낱말 「truck」)
@@ -250,13 +253,39 @@ def build_day2(mode):
         print(by_item[k]["지시문"])
         print(f"\n({len(by_item[k]['지시문'])}자 · {by_item[k]['길이']}초 · 소리 {by_item[k]['소리']} · 올릴 것 {[f[0] for f in by_item[k]['파일']]})")
         return
+    missing = write_pack(order, OUT2, mode)
+    n_test = sum(1 for it in order if it.get("시험"))
+    n_alt = sum(1 for it in order if it["대안"])
+    print(f"둘째 날 · 7번 · 방식 {mode}: 판 {len(order)}개(시험 {n_test} · 주판 {len(order) - n_test - n_alt} · 대안 {n_alt}) → {OUT2}")
+    print(f"  길이 합 — 시험 · 주판 {sum(it['길이'] for it in order if not it['대안'])}초 · 소리 켬 {sum(1 for it in order if it['소리'] == '켬')}판")
+    if missing:
+        print(f"  ⚠ 아직 없는 파일 {len(missing)}개(그 판 폴더엔 빠짐 — 목소리를 고르고 굽은 뒤 다시 돌린다): {missing[:4]}{' …' if len(missing) > 4 else ''}")
+
+
+def build_compare():
+    # 7번 그림 두 길 견주기(10-30 유호님 「이번만 둘 다 구워서 내일 시댄스로 뽑아서 비교해보자」) — 같은 판을 얼굴흐림 · 새로 그림으로 하나씩,
+    # 소리 끔(그림만 견줌 — 목소리는 둘째 날 목소리 판 뒤). 지시문은 소리줄 「없음」 꼴(소리 참고 없이 입은 지시문의 한국어대로).
+    spec = json.load(open(os.path.join(VIDEO, DAY2[1], "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
+    by = {p["id"]: p for p in spec["판"]}
+    order = []
+    for pid in CMP:
+        for tag, folder in CMP_ROUTES:
+            it = p7_item(dict(spec, 그림=os.path.join(os.path.dirname(spec["그림"]), folder, "정지컷")), by[pid], "없음")
+            it.update({"id": f"{pid}-{tag}", "소리": "끔", "파일": [f for f in it["파일"] if not f[0].endswith(".mp3")], "방식": None, "시험": True,
+                       "설명": it["설명"] + f" · 그림 {tag}"})
+            order.append(it)
+    missing = write_pack(order, OUT3, "비교")
+    print(f"7번 비교: 판 {len(order)}개({len(CMP)}판 × {[t for t, _ in CMP_ROUTES]}) → {OUT3}" + (f" · ⚠ 없는 그림 {missing}" if missing else ""))
+
+
+def write_pack(order, out, day2):
     missing = sorted({src for it in order for _, src, _ in it["파일"] if not os.path.exists(src)})
-    if os.path.isdir(OUT2):
-        shutil.rmtree(OUT2)
-    os.makedirs(OUT2)
+    if os.path.isdir(out):
+        shutil.rmtree(out)
+    os.makedirs(out)
     rows = []
     for n, it in enumerate(order, 1):
-        d = os.path.join(OUT2, f"{n:03d}_{it['id']}")
+        d = os.path.join(out, f"{n:03d}_{it['id']}")
         os.makedirs(d)
         for name, src, _ in it["파일"]:
             if not os.path.exists(src):
@@ -270,19 +299,16 @@ def build_day2(mode):
                      "소리": it["소리"], "묶음": it["묶음"], "대안": it["대안"], "방식": it.get("방식"), "시험": bool(it.get("시험")),
                      "낱판": it.get("낱판", []), "쓰는초": it.get("쓰는초"), "파일": [f[0] for f in it["파일"]],
                      "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])], "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"])})
-    json.dump(rows, open(os.path.join(OUT2, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    open(os.path.join(OUT2, "순서표.html"), "w", encoding="utf-8").write(page(order, day2=mode))
-    n_test = sum(1 for it in order if it.get("시험"))
-    n_alt = sum(1 for it in order if it["대안"])
-    print(f"둘째 날 · 7번 · 방식 {mode}: 판 {len(order)}개(시험 {n_test} · 주판 {len(order) - n_test - n_alt} · 대안 {n_alt}) → {OUT2}")
-    print(f"  길이 합 — 시험 · 주판 {sum(it['길이'] for it in order if not it['대안'])}초 · 소리 켬 {sum(1 for it in order if it['소리'] == '켬')}판")
-    if missing:
-        print(f"  ⚠ 아직 없는 파일 {len(missing)}개(그 판 폴더엔 빠짐 — 목소리를 고르고 굽은 뒤 다시 돌린다): {missing[:4]}{' …' if len(missing) > 4 else ''}")
+    json.dump(rows, open(os.path.join(out, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    open(os.path.join(out, "순서표.html"), "w", encoding="utf-8").write(page(order, day2=day2))
+    return missing
 
 
 def build():
     if "--둘째날" in sys.argv:
         return build_day2(sys.argv[sys.argv.index("--둘째날") + 1])
+    if "--7번비교" in sys.argv:
+        return build_compare()
     specs = load_specs()
     items = []   # 순서표 한 줄 = 한 판
     # 매진 임박 — 이미 만든 웹올리기_v5를 그대로(첫 줄만 웹 꼬리표로)
@@ -407,10 +433,20 @@ h2{font-size:18px;margin:24px 0 6px}
 """
 
 
+CMP_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")] + """<h1>PULSE 포트폴리오 · 7번 그림 두 길 견주기(10-30)</h1>
+<div class="card"><b>시작 전에</b><ol>
+<li>7번 「사랑 한 칸」 여덟 판을 그림 두 길로 하나씩 냅니다 — <b>얼굴흐림</b>(확정 판의 구도 · 소품 그대로, 얼굴만 선버스트가 새로 그림)과 <b>새로</b>(선버스트로 처음부터 — 더 화려하지만 구도가 원본보다 가까움). 같은 판의 두 길을 이어서 내 주세요.</li>
+<li>모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b> · 화질 720p · 비율 9:16 · <b>소리는 모두 끔</b>(그림만 견줍니다 — 대사 목소리는 둘째 날 목소리 판 뒤).</li>
+<li>판마다 미디어 칸을 비우고 폴더의 그림을 <b>이름 차례대로</b> 올립니다. 「두 샷」 판은 옴니 레퍼런스 모드에서 그림 둘을 참조로 올립니다.</li>
+<li>다 내시면 Claude에게 「7번 비교 냈어」라고 해 주세요 — 판마다 두 길을 나란히 놓은 비교판(얼굴 닮음 · 움직임)을 드리고, 고르신 길로 둘째 날 꾸러미를 다시 만듭니다.</li>
+</ol></div>
+"""
+
+
 def page(order, day2=None):
     def esc(s):
         return html.escape(s)
-    head = DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    head = CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PULSE 시댄스 순서표</title><style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1d1c1a;--mute:#6b6760;--line:#e2ddd3;--acc:#2f5bd3;--warn:#b4532a}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#212125;--ink:#ecebe8;--mute:#a19d95;--line:#33333a;--acc:#8aa6ff;--warn:#f0a07a}}

@@ -111,6 +111,7 @@ def check(name):
 
 
 if __name__ == "__main__":
-    names = [a for a in sys.argv[1:] if not a.startswith("--")] or ["웹올리기", "웹올리기_둘째날"]
+    names = [a for a in sys.argv[1:] if not a.startswith("--")] or [n for n in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교")
+                                                                   if os.path.exists(os.path.join(BASE, n, "_순서.json"))]
     ok = [check(n) for n in names]
     sys.exit(0 if all(ok) else 1)
