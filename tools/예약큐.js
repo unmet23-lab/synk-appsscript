@@ -151,6 +151,7 @@ function collect(server, accounts, now) {
         const at = Date.parse(p.시각 || local.시각 || '');
         let state = local.상태;
         let url = local.주소 || null;
+        let unseen = false; // 서버 수집기가 그 채널을 보는데 슬롯 뒤 공개 게시물이 없다(업로드표 「!」)
         if (server && local.방법 === '작업실') {
           const job = server.jobs.find((j) => j.id === local.작업);
           // 게시물 ID까지 적힌 「게시됨」은 공개를 직접 확인한 판 — 서버가 「확인 필요」로 내려도 그대로 둔다(10-27 관용구 퀴즈 #6 유튜브: AI 표시 비교 오판으로 unknown).
@@ -165,14 +166,14 @@ function collect(server, accounts, now) {
         } else if (server && state === '예약됨' && Number.isFinite(at) && at + GRACE_MS < now) {
           const ids = channelsFor(p.계정, accounts, server);
           const seen = ids.length ? server.posts.find((post) => ids.includes(post.channelId) && Math.abs(Date.parse(post.publishedAt) - at) <= WINDOW_MS) : null;
-          if (seen) { state = '게시됨'; url = url || seen.url; } else if (ids.length) warnings.push(`슬롯이 지났는데 나가지 않음: ${p.계정} · ${kstDate(at)} · ${dir.name}`);
+          if (seen) { state = '게시됨'; url = url || seen.url; } else if (ids.length) { unseen = true; warnings.push(`슬롯이 지났는데 나가지 않음: ${p.계정} · ${kstDate(at)} · ${dir.name}`); }
         }
         if (Number.isFinite(at) && at + GRACE_MS < now && at > now - LOOKBACK_DAYS * 86400000 && !DONE.has(state) && state !== '보류') {
           warnings.push(`슬롯이 지났는데 예약도 게시도 안 됨: ${p.계정} · ${kstDate(at)} · ${dir.name}`);
         }
         // 슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제 시각으로 센다(10-27 — 10-26 22:00 간체 판이 10-27 01:14에 나갔는데 10-26 칸에 잡혀 10-27 칸이 비어 보였다).
         const posted = DONE.has(state) && !local.방법?.startsWith?.('작업실') && Number.isFinite(Date.parse(local.시각 || '')) ? local.시각 : null;
-        return { account: p.계정, platform: accounts[p.계정]?.platform || null, time: posted || p.시각 || null, state: state || null, method: local.방법 || null, url };
+        return { account: p.계정, platform: accounts[p.계정]?.platform || null, time: posted || p.시각 || null, state: state || null, method: local.방법 || null, url, unseen };
       });
       const filled = states.filter((s) => DONE.has(s.state)).length;
       const held = states.filter((s) => s.state === '보류').length;
@@ -223,7 +224,8 @@ function accountRows(items, range, accounts = {}) {
       if (!day || !range.includes(day)) continue;
       const done = DONE.has(plate.state) || (BLOG.has(plate.platform) && videoDone.has(item.folder));
       // 보류 판(버린 편)은 나가지 않으니 그 편의 옛 「고칠 것」 검사로 그날 칸을 막지 않는다(10-30 B2 보류 + 같은 날 B15).
-      rowOf(plate.account, item.brand).byDay[day].push({ state: plate.state, done, folder: item.folder, fix: plate.state !== '보류' && fixNeeded(item) });
+      rowOf(plate.account, item.brand).byDay[day].push({ state: plate.state, done, folder: item.folder, fix: plate.state !== '보류' && fixNeeded(item),
+        title: item.title, time: plate.time, url: plate.url, unseen: plate.unseen, platform: plate.platform });
     }
   }
   for (const [key, a] of Object.entries(accounts)) if (a.dailyLine && !a.dailyBlocked) rowOf(key, a.dailyLine.startsWith('LAB') ? 'LAB' : a.dailyLine);
@@ -558,9 +560,18 @@ async function main() {
   }
   const report = build(today, days, server, accounts, now);
   if (process.argv.includes('--알림')) { report.alert = alert(report); report.reserveAlert = reserveAlert(report, now); report.todayAlert = todayAlert(report, now); }
+  // 30분 정기 작업(--서버읽기)마다 앞뒤 1주 업로드표를 새로 쓴다(10-30 유호님 「1주일 앞뒤로 … o x 표시로 가시성 좋게 업로드 스케줄표」).
+  // 표가 깨져도 대조 · 알림은 그대로 간다.
+  if (process.argv.includes('--서버읽기') && !argValue('--폴더')) {
+    const say = process.argv.includes('--json') ? console.error : console.log; // --json의 표준 출력은 JSON만
+    try { say(`업로드표: ${require('./lib/업로드표.js').쓰기(build(addDays(today, -7), 15, server, accounts, now), { accounts, now, today })}`); }
+    catch (error) { console.error(`업로드표 못 씀: ${error.message}`); }
+  }
   if (process.argv.includes('--json')) { console.log(JSON.stringify(report, null, 2)); return; }
   print(report);
   if (report.alert?.sent || report.reserveAlert?.sent || report.todayAlert?.sent) console.log('텔레그램으로 알렸다');
 }
 
-main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; });
+// tools/업로드표.js가 같은 셈을 앞뒤 1주로 다시 쓴다.
+module.exports = { build, loadServer, readJson, kstDate, addDays, ROOT, REPO, STATE_DIR };
+if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; });
