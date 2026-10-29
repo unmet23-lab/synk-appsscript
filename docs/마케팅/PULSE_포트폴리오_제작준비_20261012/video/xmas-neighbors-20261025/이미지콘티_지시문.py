@@ -762,6 +762,19 @@ def jobs():
         "and its warm light still pours down over him and over the door. Keep the man, the door, the parapet, the snow and everything else "
         "in Image 1 exactly.", FINISH)
 
+    # 14 · 36 큰 간판에 늘켬 로고 D(10-29 유호님 「D로 가자」 — 호박빛 바탕 · 흰 글자, 라벨/로고_늘켬.py) — 승인 로고를 참고로 넣어 정지컷에
+    # 함께 굽는다(제작 규칙 원칙 — 장면 속 간판). 작은 아래 줄 「24시 동네 편의점」은 간판에서 뭉개지기 쉬워 큰 글자 「늘켬」만.
+    # → 받은 판(C14L · C36L)은 글자는 맞았으나 간판이 납작한 노란 상자가 되어 「AI티」(유호님 10-29) — 쓰지 않고 옛 판 + 후반 글자로(02_콘티 11-3).
+    SIGN = ("Edit this photograph (Image 1). Change only one thing: the plain amber sign band of the convenience store {where} now carries "
+            "the store's logo from Image 2 — the white Korean word 「늘켬」 in exactly Image 2's heavy, rounded sans-serif lettering, centered "
+            "on the amber band and sized to fill most of its height, glowing softly like a lit shop sign at night. Write exactly these two "
+            "Korean letters, 늘켬, and nothing else on the band — no other words, no English, no numbers. Keep the band's size, shape and "
+            "amber color, {keep} and everything else in Image 1 exactly.")
+    J_["C14L"] = J([ref("C14.jpg"), ref("logo_D.png")], SIGN.format(where="across the street, seen through the window",
+        keep="the man eating at the window, the room, the light"), FINISH)
+    J_["C36L"] = J([ref("C36.jpg"), ref("logo_D.png")], SIGN.format(where="on the right side of the snowy street",
+        keep="the old apartment block, the parked cars, the falling snow, the light"), FINISH)
+
     # ── ⑥ 끝 35~36 ──
     # 35(10-27 22:4x): 26은 판(PL26)에 민재를 합성해 앉혔으므로, 사람이 없는 PL26에서 바로 고친다
     J_["C35"] = J([ref("PL26.jpg")],

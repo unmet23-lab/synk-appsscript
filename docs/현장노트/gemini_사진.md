@@ -35,6 +35,7 @@
 - 흰 옷이 화면 절반인 컷은 빛 문장으로 안 어두워진다 → 구도가 좋은 판을 Image 1로 「빛만 두 스톱 어둡게」 편집 꼴로 굽는다 ([자세히](#흰-옷이-화면-절반인-컷은-빛-문장으로-안-어두워진다--고른-판을-image-1로-빛만-바꿔라-편집-꼴로-굽는다-2026-10-26-claude))
 - 원본 클로즈업의 앞가림(친구 어깨 · 머리카락)이 안 나온다 → 「No other face or body」를 빼고 렌즈 가까이 흐린 앞 물건을 쓰고, 자르기 창이 그걸 안 자르게 본다 ([자세히](#원본-클로즈업의-앞가림친구-어깨--머리카락이-사라진다--no-other-face-or-body-is-in-the-frame을-빼고-렌즈-가까이-흐린-앞-물건을-쓴다-2026-10-26-claude))
 - 얼굴을 숨길 컷(뒷모습 · 실루엣)을 실루엣 지시문으로 새로 굽거나 「고개 돌려」 편집하면 얼굴이 남는다 → 고른 판을 Image 1로 「얼굴만 검게」 편집, 고를 때는 받은 판 크기로 얼굴을 잘라 본다 ([자세히](#얼굴을-숨길-컷은-실루엣-지시문--고개-돌리기-편집으로는-얼굴이-남는다--고른-판을-image-1로-얼굴만-검게-편집한다-2026-10-28-claude))
+- 밤 장면의 빛나는 간판에 승인 로고를 편집으로 넣으면 간판이 납작한 상자가 되고 글자만 또렷해 AI 티가 난다 → 멀고 흐린 간판은 옛 판으로 두고 글자는 후반에 ([자세히](#밤-장면의-빛나는-간판에-승인-로고를-편집으로-넣으면-납작하게-고르게-밝은-상자--또렷한-글자가-되어-ai-티가-난다--멀고-흐린-간판은-옛-판-그대로-두고-글자는-후반에-2026-10-29-claude))
 
 ## 목차
 
@@ -661,6 +662,12 @@
 - 원인: 사람 얼굴을 알아보게 그리려는 모델 버릇으로 보인다. 원본 첫 프레임에서 딴 배치 실루엣이 옆얼굴 꼴이라 옆얼굴을 부르기도 했다. 한눈 보드(한 칸 400 폭)로는 먼 작은 얼굴(19)이 안 보여 고를 때 놓쳤다.
 - 고침: 고른 판을 Image 1로 「Edit this photograph (Image 1). Change only one thing: the man becomes a true silhouette — his face is a solid black shape with no eye, no eyebrow, no nose, no lips and no skin tone visible inside it, like a paper cut-out; only a thin rim of light traces …」(4 · 9 · 11 · 27)나 「her face is now hidden in the deep shadow under the wide brim of her hat」(19)로 고친다 — 틀 · 크기 · 자세 · 배경은 그대로 남고 한 번에 됐다. 「고개를 돌려 뒤통수만 보이게」 편집은 두 번 모두 거의 같은 그림을 돌려줬다(27 · 4). 카메라 자리가 바뀌어야 하는 뒷모습(28 — 문을 마주 봄)은 「The black silhouette marks only where and how large he is — he is seen from directly BEHIND」로 새로 구워 한 번에 됐다. 지시문은 `docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/xmas-neighbors-20261025/이미지콘티_지시문.py`의 DARK · HAT.
 - 다시 확인: 고른 판을 받은 판 크기로 얼굴만 잘라 눈 · 코 · 입이 보이는지 본다 — 다시 고른 4 · 9 · 11은 검은 윤곽뿐, 27은 깊은 그늘, 19는 챙 그늘(시작 그림에 눈매가 아주 흐리게).
+
+### 밤 장면의 빛나는 간판에 승인 로고를 「편집」으로 넣으면 납작하게 고르게 밝은 상자 + 또렷한 글자가 되어 AI 티가 난다 — 멀고 흐린 간판은 옛 판 그대로 두고 글자는 후반에 (2026-10-29 Claude)
+- 증상: PULSE 시즌 1 옆집 14(창 너머 길 건너 편의점) · 36(눈 오는 밤 거리)의 글 없는 호박빛 간판에 늘켬 로고 D(호박빛 바탕 · 흰 글자, `라벨/늘켬_D.png`)를 Image 2로 넣고 「Change only one thing: the plain amber sign band … now carries the store's logo from Image 2 … Write exactly these two Korean letters」로 편집했다. 글자 획은 둘 다 정확했지만, 간판이 은은한 빛 번짐 · 렌즈 흐림을 잃고 납작하게 고르게 밝은 노란 상자가 되어(36은 색까지 로고 바탕색으로) 글자만 또렷했다 — 유호님 「옛 판이 배경이랑 조금 더 잘 어울리는데? 늘켬은 너무 ai티가 심한데?」.
+- 원인: 참고 로고 그림의 평평한 색 면 · 선명한 글자를 장면 빛보다 따라 그린 것으로 보인다(추정).
+- 고침: 멀고 흐린 간판(14)은 글 없는 옛 판으로 영상을 굽고 「늘켬」은 후반에 간판 빛 · 흐림에 맞춰 얹는다(제작 규칙의 「멀리 작게 보이는 간판은 추적 합성」 예외), 끝 거리(36)는 끝 로고 판이 브랜드를 맡는다(결정 10-29). 정지컷에 꼭 구워야 하는 가까운 간판이면 다시 시험할 길: 「keep the sign band exactly as it is — same color, the same soft glow bleeding at its edges and the same lens softness; the letters are part of the same lit sign, no brighter and no sharper than the band」.
+- 다시 확인: 받은 판을 옛 판과 나란히 원래 크기로 놓고 간판의 빛 번짐 · 흐림 · 색이 그대로인지, 글자가 간판보다 또렷하지 않은지 본다 — 글자가 맞아도 장면과 따로 놀면 쓰지 않는다.
 
 ## 영상 올려 분석시키기
 

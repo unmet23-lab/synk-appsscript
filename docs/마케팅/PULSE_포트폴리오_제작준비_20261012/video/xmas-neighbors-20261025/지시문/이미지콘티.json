@@ -683,6 +683,20 @@
   ],
   "prompt": "Edit this photograph (Image 1). Change only one thing: the lamp on the ceiling above his door becomes the same small round clear-glass globe lamp as in Image 2 — a clear glass sphere fixed just below the ceiling with a new bulb glowing warm inside — and its warm light still pours down over him and over the door. Keep the man, the door, the parapet, the snow and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
  },
+ "C14L": {
+  "refs": [
+   "C14.jpg",
+   "logo_D.png"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the plain amber sign band of the convenience store across the street, seen through the window now carries the store's logo from Image 2 — the white Korean word 「늘켬」 in exactly Image 2's heavy, rounded sans-serif lettering, centered on the amber band and sized to fill most of its height, glowing softly like a lit shop sign at night. Write exactly these two Korean letters, 늘켬, and nothing else on the band — no other words, no English, no numbers. Keep the band's size, shape and amber color, the man eating at the window, the room, the light and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
+ "C36L": {
+  "refs": [
+   "C36.jpg",
+   "logo_D.png"
+  ],
+  "prompt": "Edit this photograph (Image 1). Change only one thing: the plain amber sign band of the convenience store on the right side of the snowy street now carries the store's logo from Image 2 — the white Korean word 「늘켬」 in exactly Image 2's heavy, rounded sans-serif lettering, centered on the amber band and sized to fill most of its height, glowing softly like a lit shop sign at night. Write exactly these two Korean letters, 늘켬, and nothing else on the band — no other words, no English, no numbers. Keep the band's size, shape and amber color, the old apartment block, the parked cars, the falling snow, the light and everything else in Image 1 exactly. Photorealistic film still with natural textures, slight film grain and natural lens falloff, shot on a cinema camera. True-to-life colors. No text, no letters, no numbers, no logos, no watermarks anywhere."
+ },
  "C35": {
   "refs": [
    "PL26.jpg"
