@@ -7,11 +7,11 @@ const SCRIPT = {
   offer: turn(['새 차 마셔 볼래요?', '새 차를 만들었는데 맛 좀 봐 줄래요?', '요즘 새 차를 만들고 있거든요. 손님한테 내기 전에 맛 좀 봐 줄래요?', '손님들한테 내놓기 전에 누가 먼저 맛을 봐 주면 좋겠다 싶었어요. 제 입에는 괜찮은데, 남이 마시면 또 다를 테니까요. 한 잔 드셔 볼래요?'], [
     ['sip', ['네, 좋아요', '네, 마셔 볼게요', '네, 한번 마셔 볼게요', '좋아요, 한 잔 마셔 볼게요']],
     ['smell', ['향 먼저요', '향부터 맡아 볼게요', '먼저 향부터 맡아 볼게요', '마시기 전에 향부터 맡아 봐도 돼요?']]]),
-  taste: turn(['너무 달아요?', '꿀을 많이 넣었는데 너무 달아요?', '맛이 어때요? 꿀을 좀 많이 넣은 것 같기도 해서요.', '솔직하게 말해 줘요. 단맛이 강하면 향이 묻힐 텐데, 그렇지는 않아요?'], [
+  taste: turn(['맛이 어때요?', '꿀을 많이 넣었는데, 맛이 어때요?', '맛이 어때요? 꿀을 좀 많이 넣은 것 같기도 해서요.', '솔직하게 말해 줘요. 단맛이 강하면 향이 묻힐 텐데, 그렇지는 않아요?'], [
     ['less', ['달아요', '조금 달아요', '조금 단 것 같아요', '단맛이 조금 센 것 같아요']],
     ['same', ['좋아요', '딱 좋아요', '이대로 딱 좋아요', '저는 이대로가 딱 좋아요']],
     ['aroma', ['향이 좋아요', '향이 좋아요', '향이 정말 좋아요', '향이 먼저 느껴져서 좋아요']]]),
-  less: turn(['꿀을 조금만 넣을게요.', '달면 꿀을 반만 넣어 볼게요.', '역시 그렇죠? 다들 단 걸 좋아한다고 해서 많이 넣었거든요. 꿀을 반만 넣어 볼게요.', '역시 제 입에만 괜찮았던 거네요. 꿀을 반으로 줄이면 향이 먼저 올라올 텐데, 그렇게 해 볼게요.'], [
+  less: turn(['꿀을 조금만 넣을게요.', '그럼 꿀을 반만 넣어 볼게요.', '역시 그렇죠? 다들 단 걸 좋아한다고 해서 많이 넣었거든요. 꿀을 반만 넣어 볼게요.', '역시 제 입에만 괜찮았던 거네요. 꿀을 반으로 줄이면 향이 먼저 올라올 텐데, 그렇게 해 볼게요.'], [
     ['agree', ['좋아요', '좋아요', '네, 그게 좋겠어요', '네, 그렇게 하면 좋겠어요']],
     ['pour', ['제가 넣을게요', '제가 넣어 봐도 돼요?', '제가 한번 넣어 볼게요', '꿀은 제가 직접 넣어 봐도 될까요?']]]),
   same: turn(['차림표에 쓸게요.', '괜찮으면 차림표에 올릴게요.', '아, 다행이에요. 맛있다고 하니까 바로 차림표에 올려야겠어요.', '다행이에요. 사실 손님들이 좋아할지 걱정이었거든요. 이 맛 그대로 올려도 괜찮을 텐데, 어때요?'], [
@@ -23,6 +23,9 @@ const SCRIPT = {
 };
 const SMELL = rows(['향 먼저, 좋아요.', '향부터 맡으면 더 좋아요.', '향부터 맡는 손님은 처음이에요. 좋네요.', '향부터 맡아 주는 손님은 드문데, 그렇게 마셔 주면 고맙죠.']);
 const RESULT = rows(['차림표에 썼어요.', '함께 고른 맛으로 차림표에 올렸어요.', '맛을 봐 줘서 고마워요. 함께 고른 맛으로 차림표에 올렸어요.', '혼자서는 정하기 어려웠는데 함께 맛을 봐 줘서 고마워요. 고른 맛 그대로 차림표에 올렸어요.']);
+// W10 말맛 표본(유호님 「좋아」): 향 이야기로 마치면 단맛을 함께 고르지 않았으니 끝 줄도 향 쪽으로, 꿀을 직접 넣을 때는 주인이 권하는 말.
+const RESULT_AROMA = rows(['향 그대로 썼어요.', '처음 향 그대로 차림표에 올렸어요.', '향이 좋다고 해 줘서 고마워요. 처음 향 그대로 차림표에 올렸어요.', '향을 알아봐 줘서 힘이 났어요. 처음 따를 때의 향이 살도록, 그대로 차림표에 올렸어요.']);
+const MANUAL = rows(['꿀을 넣어 봐요.', '그럼 꿀은 직접 넣어 봐요.', '좋아요, 꿀은 직접 넣어 봐요. 숟가락으로 넣으면 돼요.', '그럼 꿀은 직접 넣어 봐요. 몇 숟가락이 좋을지는 마셔 본 사람이 제일 잘 알 테니까요.']);
 export const goodbye = level => rows(['네, 또 와요.', '그래요, 또 와요.', '괜찮아요. 생각나면 또 와요.', '괜찮아요. 언제든 생각나면 들러요.'])[level] || '그래요, 또 와요.';
 const keyOf = state => state.turn === 0 ? 'offer' : state.turn === 1 ? 'taste' : state.taste;
 export function startNewTea(level) {
@@ -48,7 +51,7 @@ export function newTeaView(state) {
   const key = keyOf(state), level = dialogueLevel(state.dialogue, key), page = SCRIPT[key];
   const choices = state.manual ? [0, 1, 2].map(n => ({ id: `honey-${n}`, label: ['꿀 없이', '꿀 한 숟가락', '꿀 두 숟가락'][n] }))
     : page.choices.map(c => ({ id: c.id, label: c.labels[level] }));
-  return { turn: key, level, line: state.done ? RESULT[level] : state.manual ? '꿀을 얼마나 넣을까요?' : page.lines[level],
+  return { turn: key, level, line: state.done ? (state.taste === 'aroma' ? RESULT_AROMA : RESULT)[level] : state.manual ? MANUAL[level] : page.lines[level],
     aside: state.turn === 1 && state.first === 'smell' ? SMELL[level] : null,
     choices: state.done ? [] : choices, help: state.lastHelp, manual: state.manual, done: state.done,
     picture: level === 'L1' && state.lastHelp === 'meaning' ? (key === 'offer' ? 'cup' : key === 'aroma' ? 'leaf' : 'honey') : null };

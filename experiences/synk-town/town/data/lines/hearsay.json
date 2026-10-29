@@ -53,7 +53,7 @@
   { "id": "researcher.hearsay.heard.1", "npc": "researcher", "kind": "hearsay", "when": { "how": "heard" },
     "meaning": "들은 마을 일을 전하며 직접 본 것이 아니라고 출처를 밝힌다",
     "levels": { "L1": "{news}",
-                "L2": "{from}한테 들었는데요, {news}",
+                "L2": "{from} 말로는, {news}",
                 "L3": "{news} {from}한테 들은 이야기예요.",
                 "L4": "{news} 그러니까… 직접 본 건 아니고, {from}한테 들은 거예요." },
     "from": ["연구원 · 본 것과 들은 것을 가르는 말"] },
