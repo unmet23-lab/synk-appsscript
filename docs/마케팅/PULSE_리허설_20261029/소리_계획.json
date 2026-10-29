@@ -1,0 +1,132 @@
+{
+ "_메모": "리허설(10-29) 소리 자리 — 경로는 작업 폴더 기준(절대 경로는 그대로). 목소리는 한 번에 이어 구운 v2_t1_happy를 받아쓰기 낱말 시각으로 넷으로 자름. 효과음은 상업 이용이 되는 녹음 모음(Fairlight · Sonniss GDC)만 — MMAudio는 CC-BY-NC라 손님 광고에 안 씀(현장노트 영상 「MMAudio」 10-28). v2(Fable 완성본 v1): 끝 울림 13.2~15.0 · 로고 「톡」을 가장 큰 순간으로(+12) · 바탕 소리 15.0까지 · 「쏴」 0.6초 · 「오미톡.」 13.30 · 더킹 앞 0.05초. v3(Fable 완성본 v2 P2-2): 끝 울림 재료를 12.6~13.2 음악으로 · 꼬리 3초(지수 4.5) · 바탕 소리 +22 · L3 3.38부터 11.46.",
+ "음악": {
+  "src": "소리/음악/음악_15초_B.wav",
+  "db": -3
+ },
+ "더킹": -7,
+ "말": [
+  {
+   "id": "L1 아… 목 타 죽겠다.",
+   "src": "소리/목소리/판/v2_t1_happy/full.wav",
+   "t0": 0.0,
+   "dur": 1.45,
+   "at": 0.45,
+   "db": 0
+  },
+  {
+   "id": "L2 맛이… 자꾸 바뀌네?",
+   "src": "소리/목소리/판/v2_t1_happy/full.wav",
+   "t0": 1.7,
+   "dur": 1.4,
+   "at": 8.4,
+   "db": 0
+  },
+  {
+   "id": "L3 다섯 가지 맛, 톡.",
+   "src": "소리/목소리/판/v2_t1_happy/full.wav",
+   "t0": 3.38,
+   "dur": 1.26,
+   "at": 11.46,
+   "db": 1
+  },
+  {
+   "id": "L4 오미톡.",
+   "src": "소리/목소리/판/v2_t1_happy/full.wav",
+   "t0": 4.64,
+   "dur": 0.8,
+   "at": 13.3,
+   "db": 3
+  }
+ ],
+ "효과음": [
+  {
+   "id": "바탕 · 도시 저녁",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Ext City Ambience, Car Drive-Bys, Pedestrian, Air.wav",
+   "t0": 20.0,
+   "dur": 15.0,
+   "at": 0.0,
+   "db": 22,
+   "fade": 0.3
+  },
+  {
+   "id": "멀리 공 튀는 소리",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Ball Catch.M.wav",
+   "t0": 0.0,
+   "dur": 0.28,
+   "at": 0.55,
+   "db": -20,
+   "fade": 0.15
+  },
+  {
+   "id": "멀리 공 튀는 소리 2",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Ball Catch.M.wav",
+   "t0": 0.5,
+   "dur": 0.28,
+   "at": 1.45,
+   "db": -23,
+   "fade": 0.15
+  },
+  {
+   "id": "캔 따는 「치익」(컷 1 끝에서 먼저)",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Soda Can Open Pour.M.wav",
+   "t0": 0.95,
+   "dur": 0.7,
+   "at": 2.12,
+   "db": 1,
+   "fade": 0.25
+  },
+  {
+   "id": "탄산 「쏴」(컷 2)",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Soda Can Open Pour.M.wav",
+   "t0": 1.3,
+   "dur": 0.6,
+   "at": 2.45,
+   "db": 20,
+   "fade": 0.3
+  },
+  {
+   "id": "마시는 컷 액체 출렁임 1",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Liquid Sloshing In Bottle.M.wav",
+   "t0": 0.0,
+   "dur": 0.55,
+   "at": 5.3,
+   "db": -12,
+   "fade": 0.2
+  },
+  {
+   "id": "마시는 컷 액체 출렁임 2",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Liquid Sloshing In Bottle.M.wav",
+   "t0": 0.0,
+   "dur": 0.55,
+   "at": 6.55,
+   "db": -14,
+   "fade": 0.2
+  },
+  {
+   "id": "로고 「톡」(13.2 마지막 타)",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Can Soda Pop Touches.M.wav",
+   "t0": 0.85,
+   "dur": 0.25,
+   "at": 13.17,
+   "db": 16,
+   "fade": 0.1
+  },
+  {
+   "id": "거품 「톡」(컷 2 거품 0.17~0.5초 → 2.57~2.9)",
+   "src": "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/Can Soda Pop Touches.M.wav",
+   "t0": 1.65,
+   "dur": 0.2,
+   "at": 2.6,
+   "db": -2,
+   "fade": 0.08
+  }
+ ],
+ "끝_울림": {
+  "at": 12.6,
+  "len": 0.6,
+  "tail": 3.0,
+  "decay": 4.5,
+  "db": -8
+ }
+}

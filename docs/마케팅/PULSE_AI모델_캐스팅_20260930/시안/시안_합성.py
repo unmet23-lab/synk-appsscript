@@ -114,7 +114,7 @@ def renders(folder):
 
 
 def load_render(path):
-    im = cv2.imread(path, cv2.IMREAD_UNCHANGED)  # 16비트 BGRA
+    im = cv2.imdecode(np.fromfile(path, np.uint8), cv2.IMREAD_UNCHANGED)  # 16비트 BGRA — imread는 한글 경로를 못 읽어 None(10-29 리허설)
     im = im.astype(np.float32) / (65535.0 if im.dtype == np.uint16 else 255.0)
     rgb = im[..., [2, 1, 0]] * 255.0
     a = im[..., 3]
@@ -192,11 +192,18 @@ def main():
     ap.add_argument("--밀기", dest="shift", default="0,0", help="렌더를 세운 축 기준 x,y 화소만큼 옮김")
     # 정렬(10-21): AI가 그린 캔은 높이/폭 2.1~2.6, MORU 슬림 캔은 2.62라 폭을 맞추면 조금 길다. 가운데를 맞추면 늘어난 길이가
     # 아래로도 가서 캔 바닥을 받친 손바닥과 겹치고 아래 모서리가 손 마스크에 깎였다(은정 S1·S2) → 손이 쥔 바닥을 맞추고 위로 늘인다
-    ap.add_argument("--정렬", dest="align", choices=["bottom", "center"], default="bottom")
+    # top(10-29 리허설): 캔 아래가 화면 밖이거나 손에 가린 접사(캔 윗부분만 보임)는 뚜껑 끝을 맞추고 아래로 늘인다
+    ap.add_argument("--정렬", dest="align", choices=["bottom", "center", "top"], default="bottom")
     # 팽창(10-21 Fable 게이트): SAM 캔 마스크는 가장자리의 반쯤 섞인 화소를 빼먹어, 렌더 옆에 원래 캔 테두리가 옅은 띠로 남았다(민재 S2·채원 S1)
     ap.add_argument("--팽창", dest="grow", type=int, default=3, help="메울 자리를 잴 때 캔 마스크를 넓히는 화소")
     ap.add_argument("--맞춤없이", dest="fit", action="store_false", help="기울기·가로 맞춤 찾기를 끈다(10-21 게이트 전 방식)")
     ap.add_argument("--나중메움", dest="clean", action="store_false", help="깨끗한 판 없이 얹은 뒤 남은 띠만 메운다(10-21 게이트 전 방식)")
+    # 기울기(10-29 리허설): 손가락이 캔 아래를 덮어 PCA 축이 15° 기운 사진(한결 S4) — 잰 축 대신 이 각도(도, + = 위가 오른쪽)로 세운다
+    ap.add_argument("--기울기", dest="tilt", type=float, default=None)
+    # 밝기하한 · 색그대로(10-29 리허설 Fable P1-4): 해 질 녘 무지 캔이 거의 검어 배율이 0.35~0.5로 잡히자 라벨의 코랄 · 루비가 와인색이 됐다 —
+    #   배율을 이 값 아래로 내리지 않고, --색그대로면 색마다 다른 배율 · 빛 색 입히기 없이 밝기 배율 하나만 쓴다(손님 라벨 색상 그대로)
+    ap.add_argument("--밝기하한", dest="gain_min", type=float, default=0.0)
+    ap.add_argument("--색그대로", dest="keep_hue", action="store_true")
     ap.add_argument("--다듬기", dest="harm", type=float, default=0.0)
     ap.add_argument("--lora", default="")
     ap.add_argument("--prompt", default="")
@@ -212,6 +219,8 @@ def main():
     can = pick_can(ms["can"], hand)
     can_core = can & ~hand
     c, tilt = axis_of(can)
+    if a.tilt is not None:
+        tilt = a.tilt
     up_can, M = upright(can, c, tilt)
     up_hand, _ = upright(hand, c, tilt)
     top, bot, wid, cx = profile(up_can, up_hand)
@@ -230,6 +239,8 @@ def main():
     dx, dy = (float(v) for v in a.shift.split(","))
     if a.align == "bottom":
         tx, ty, rmid = cx + dx, bot + dy, rbot
+    elif a.align == "top":
+        tx, ty, rmid = cx + dx, top + dy, rtop
     else:
         tx, ty, rmid = cx + dx, (top + bot) / 2 + dy, (rtop + rbot) / 2
     A_up = np.array([[s, 0, tx - s * rcx], [0, s, ty - s * rmid], [0, 0, 1]], np.float64)
@@ -285,6 +296,11 @@ def main():
             g = np.median(img[..., k][body].astype(np.float32)) / max(np.median(wr[..., k][dark]), 1.0)
             ch_gain.append(0.5 * g + 0.5 * gain_l)
         ch_gain = np.clip(np.array(ch_gain), 0.35, 2.2)
+        gain_l = max(gain_l, a.gain_min)
+        if a.keep_hue:
+            ch_gain = np.full(3, gain_l)
+        else:
+            ch_gain = np.maximum(ch_gain, a.gain_min)
     else:
         gain_l, ch_gain = 1.0, np.ones(3)
     # 어두운 곳에만 배율을 주고 밝은 곳(은색 테 · 크림 글자 · 반사 띠)은 그대로 둔다(무릎 곡선). 통째로 곱하면 은색이 회색으로 죽었다.
@@ -295,7 +311,7 @@ def main():
     # 빛 색: 렌더는 중립 흰빛이라 밤 조명·노을에서 캔만 회색으로 뜬다. 원래 캔의 밝은 반사(위 3%)는 그 장면 빛 색이므로,
     # 렌더의 밝은 반사 색과의 비(밝기는 그대로)를 렌더 전체에 곱한다(무릎 곡선이 남긴 은색 테도 장면 빛을 받는다).
     light = np.ones(3, np.float32)
-    if body.sum() > 200:
+    if body.sum() > 200 and not a.keep_hue:
         def hi(arr, m):
             l = arr.mean(2)
             sel = m & (l >= np.percentile(l[m], 97))
