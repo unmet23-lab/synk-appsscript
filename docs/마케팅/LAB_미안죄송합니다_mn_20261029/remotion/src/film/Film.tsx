@@ -5,7 +5,7 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { CELLS, FPS, HEAD, LEVEL, Loc, PORTS, ROMAN, TOTAL } from './data';
+import { CELLS, FPS, LEVEL, Loc, POPS, PORTS, ROMAN, SCENE, TOTAL } from './data';
 
 const fr = (sec: number) => Math.round(sec * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -97,11 +97,7 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
           </div>
           {koLine}
           {read ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 40, color: '#8A7563', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
-          {tag ? (
-            <div style={{ marginTop: 10 }}>
-              <span style={{ display: 'inline-block', background: '#FFE7A1', color: INK, fontFamily: enFont, fontWeight: 800, fontSize: 42, lineHeight: 1.1, padding: '8px 22px 10px', borderRadius: 999 }}>{tag}</span>
-            </div>
-          ) : null}
+          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 700, fontSize: 38, color: '#6B5A4C', lineHeight: 1.15 }}>→ {tag}</div> : null}
         </div>
       </div>
       {/* 꼬리 — 말풍선 아래 끝에서 처음 몽글 머리로 */}
@@ -129,16 +125,33 @@ const Sound: React.FC = () => (
   </>
 );
 
+const Pop: React.FC<{ at: number; x: number; y: number; n: number }> = ({ at, x, y, n }) => {
+  const frame = useCurrentFrame();
+  const t = frame - fr(at);
+  if (t < 0 || t > 21) return null;
+  const s = interpolate(t, [0, 5], [0.5, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
+  const o = interpolate(t, [15, 21], [1, 0], clamp);
+  return (
+    <div style={{ position: 'absolute', left: x - 90, top: y - 50, width: 180, textAlign: 'center', opacity: o, transform: `scale(${s})` }}>
+      <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 20px 12px', borderRadius: 999, boxShadow: '0 6px 18px rgba(0,0,0,0.3)' }}>+{n} 🙇</span>
+    </div>
+  );
+};
+
 export const Film: React.FC<{ loc: Loc }> = ({ loc }) => {
   const frame = useCurrentFrame();
   const i = cellAt(frame / FPS);
   return (
     <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
       <Plate src={CELLS[i].img} />
-      {/* v2: 맨 위 한 줄 — 늘어나는 몽글이 「더 깊이 숙인 같은 몽글」이라는 것 */}
-      <div style={{ position: 'absolute', top: 92, left: 0, width: 1080, textAlign: 'center' }}>
-        <span style={{ display: 'inline-block', background: 'rgba(24,18,14,0.82)', color: '#FFE7A1', fontFamily: loc === 'mn' ? EN : PORTS[loc].font, fontWeight: 800, fontSize: 42, padding: '10px 28px 12px', borderRadius: 999 }}>{HEAD[loc]}</span>
-      </div>
+      {/* v3: 0~2.3초 사장님 옆 상황 한 줄 — 무엇을 사과하는지 */}
+      {frame < fr(CELLS[2].at) ? (
+        <div style={{ position: 'absolute', left: 30, top: 760, maxWidth: 420 }}>
+          <span style={{ display: 'inline-block', background: 'rgba(24,18,14,0.84)', color: '#FFE7A1', fontFamily: loc === 'mn' ? EN : PORTS[loc].font, fontWeight: 800, fontSize: 36, lineHeight: 1.2, padding: '10px 20px 12px', borderRadius: 22 }}>{SCENE[loc]}</span>
+        </div>
+      ) : null}
+      {/* v3: 칸마다 새로 생긴 몽글 자리에 「+1 🙇」 0.7초 — 같은 몽글이 한 번 더 숙였다는 것 */}
+      {i >= 1 ? <Pop at={CELLS[i].at} x={POPS[i - 1][0]} y={POPS[i - 1][1]} n={POPS[i - 1][2]} /> : null}
       <Bubble i={i} loc={loc} />
       <Sound />
     </AbsoluteFill>

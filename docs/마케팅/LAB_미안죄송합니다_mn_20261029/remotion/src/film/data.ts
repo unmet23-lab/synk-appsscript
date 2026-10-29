@@ -44,7 +44,12 @@ export const CELLS: Cell[] = [
 export type Loc = 'mn' | 'zh' | 'my';
 // v2(이해 시험 v1 — 두 시험관 다 「늘어나는 인형이 무엇인지 모르겠다」, haiku 「LV가 레벨인지 단계인지」 · 「한국어 → 키릴 → 몽골어 3단이 지난 편과 같은 짜임」):
 // 맨 위에 「숙일수록 공손」 한 줄, 단계 표는 그 나라 말로, 말풍선은 그 나라 뜻 → 한국어 → 읽는 법 순서(몽골어 먼저).
-export const HEAD: Record<Loc, string> = { mn: 'Бөхийх тусам эелдэг 🙇', zh: '鞠躬越深，越有礼貌 🙇', my: 'ခေါင်းငုံ့လေ ယဉ်ကျေးလေ 🙇' };
+export const HEAD: Record<Loc, string> = { mn: 'Гүнээ мэхийх нь хүндэтгэлийн илэрхийлэл юм 🙇', zh: '鞠躬越深，越有礼貌 🙇', my: 'ခေါင်းငုံ့လေ ယဉ်ကျေးလေ 🙇' };
+// v3(이해 시험 v2 — 두 시험관 다 「누가 · 왜 쏟았는지 11초 전엔 모름」 · 「늘어나는 몽글이 숙임으로 안 읽힘」, haiku 「맨 위 몽골어 줄 · 칩 모양이 지난 편과 같은 틀」):
+// 맨 위 줄은 빼고 0~2.3초에만 사장님 옆 상황 한 줄, 칸마다 새로 생긴 몽글 자리에 「+1 🙇」(8칸 +2), 꼬리는 칩이 아닌 글줄.
+export const SCENE: Record<Loc, string> = { mn: '☕ Даргын хувцас руу кофе асгачихлаа…', zh: '☕ 把咖啡洒到老板身上了…', my: '☕ သူဌေးအင်္ကျီပေါ် ကော်ဖီ ဖိတ်ကျသွားပြီ…' };
+// 새로 생긴 몽글 자리(1080×1920 화면 좌표) — 앞 칸과 그림 차이(위 30% 뺌)의 무게중심, 2~9칸
+export const POPS: [number, number, number][] = [[494, 922, 1], [431, 1014, 1], [647, 1282, 1], [348, 1440, 1], [914, 888, 1], [918, 1035, 1], [512, 1373, 2], [716, 1440, 1]];
 export const LEVEL: Record<Loc, (n: number) => string> = { mn: (n) => `Түвшин ${n}`, zh: (n) => `第${n}级`, my: (n) => `အဆင့် ${n}` };
 export const ROMAN = ['mi-an', 'mi-an-hae-yo', 'joe-song-ham-ni-da'];
 export type PortLine = { text: string; size: number; tag?: string; more?: string };
