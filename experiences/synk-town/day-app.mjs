@@ -459,8 +459,11 @@ function readPlacement() {
   let placement = null;
   try { placement = host.placement(); } catch { return null; }
   const level = placement?.suggested?.reading;
-  // The example is the first conversation's first line in the suggested words (C4, §12).
-  return placement?.ask === true && ['L1', 'L2', 'L3', 'L4'].includes(level) ? { key: 'placement', kind: 'placement', example: newTeaView(startNewTea(level)).line } : null;
+  // The example is the first conversation's first line in the suggested words (C4, §12). A browser still holding the
+  // generated data from before the scene for the cache's ten minutes has no such line: then there is no question to
+  // hold the first scene for (its card could never draw — W10 screen review).
+  const example = ['L1', 'L2', 'L3', 'L4'].includes(level) ? newTeaView(startNewTea(level)).line : null;
+  return placement?.ask === true && example ? { key: 'placement', kind: 'placement', example } : null;
 }
 async function answerPlacement(answer) {
   const host = placementHost();
@@ -681,10 +684,12 @@ function renderCards() {
   else if (!greetSession.greet && model?.greet && !greeted.has(model.greet.ref)) greetSession.greet = model.greet;
   else if (!greetSession.greet && !greetSession.own && model?.own) greetSession.own = model.own;
   // The new tea's goodbye where the cards by the names cannot show it now — the place's panel over the scene, or the
-  // text alternative (W10).
-  const bye = farewell && (walkPanel || fallback || !renderer) ? goodbye(farewell.level) : null;
-  // The goodbye stands for the owner's own words while it shows (two lines of one resident one under the other read oddly).
-  const greet = greetSession.greet, mine = greet || bye ? null : greetSession.own, shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || model.note.length > 0);
+  // text alternative (W10) — and only in the place the talk was left in. While it shows, the cafe owner's other words in
+  // the panel wait (two lines of one resident one under the other read oddly); another resident's stay.
+  const bye = farewell && farewell.location === location && (walkPanel || fallback || !renderer) ? goodbye(farewell.level) : null;
+  const waits = npc => !!bye && npc === 'cafe-owner';
+  const greet = waits(greetSession.greet?.npc) ? null : greetSession.greet, mine = greetSession.greet || waits(greetSession.own?.npc) ? null : greetSession.own;
+  const shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || model.note.length > 0);
   panel.hidden = !shown;
   if (!shown) { placeSeenSince.clear(); return; }
   const sig = JSON.stringify([bye, greet?.ref, greet?.text, mine?.id, mine?.text, model.needs.map(n => [n.card, n.key, n.paused]), model.note.map(n => n.ref)]);
@@ -712,7 +717,7 @@ function renderCards() {
     const note = document.createElement('div'); note.className = 'place-note'; note.setAttribute('role', 'group'); note.setAttribute('aria-label', '문 앞 쪽지');
     const head = document.createElement('p'); head.className = 'eyebrow'; head.textContent = '문 앞 쪽지'; note.append(head);
     const list = document.createElement('ul');
-    for (const item of model.note) { const li = document.createElement('li'); li.dataset.ref = item.ref; li.dataset.card = item.card; li.dataset.line = item.lineId; li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
+    for (const item of model.note) { const li = document.createElement('li'); li.dataset.ref = item.ref; li.dataset.card = item.card; if (item.lineId) li.dataset.line = item.lineId; li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
     const more = document.createElement('button'); more.type = 'button'; more.className = 'text-button'; more.textContent = '수첩에서 더 보기';
     more.addEventListener('click', () => notebook?.open('news', snapshot));
     note.append(list, more); parts.push(note);
@@ -866,10 +871,12 @@ function closeCard() {
   cardClosing = true; freeCommand('CARD_CLOSE').finally(() => { cardClosing = false; if (tea && !tea.done) sayGoodbye(tea.level); });
 }
 function sayGoodbye(level) {
-  const line = newTeaModule.GOODBYE_LINE;
-  farewell = line && { ...line, level: ['L1', 'L2', 'L3', 'L4'].includes(level) ? level : 'L2', until: performance.now() + FAREWELL_MS };
-  text('walk-status', goodbye(level));
-  if (!renderer || fallback || walkPanel) text('mood-live', `${roleNames['cafe-owner'] || '찻집 주인'}: ${goodbye(level)}`);
+  // An older cached generated data has no goodbye words (new-tea.mjs, W10 screen review): nothing to say then.
+  const line = newTeaModule.GOODBYE_LINE, words = goodbye(level);
+  if (!line || !words) return;
+  farewell = { ...line, level: ['L1', 'L2', 'L3', 'L4'].includes(level) ? level : 'L2', until: performance.now() + FAREWELL_MS, location: snapshot?.view.day?.location ?? null };
+  text('walk-status', words);
+  if (!renderer || fallback || walkPanel) text('mood-live', `${roleNames['cafe-owner'] || '찻집 주인'}: ${words}`);
   if (snapshot?.view.day) renderCards();
 }
 function accept(data) {

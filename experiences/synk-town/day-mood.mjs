@@ -153,7 +153,8 @@ export function createMoodLines(container, live, { getLadder = () => null } = {}
     now = globalThis.performance?.now?.() ?? Date.now() }) {
     // A line read out on one life day is read out again on the next (the W4 screen review's follow-up).
     if (day !== announcedDay) { announcedDay = day; announced.clear(); }
-    if (spoken?.id && !LINE_BY_ID.has(spoken.id)) said.set(spoken.id, { kind: 'say', icon: spoken.icon, level: spoken.level, levels: spoken.levels });
+    // Only a line with words (an older cached generated data gives the goodbye none — W10 screen review).
+    if (spoken?.id && !LINE_BY_ID.has(spoken.id) && Object.values(spoken.levels || {}).some(text => typeof text === 'string' && text)) said.set(spoken.id, { kind: 'say', icon: spoken.icon, level: spoken.level, levels: spoken.levels });
     const want = new Map();
     if (!blocked && t !== null && player) {
       // The screen's own line goes by its resident's name wherever it stands — even while a scene still holds it (it has

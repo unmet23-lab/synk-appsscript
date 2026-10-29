@@ -152,7 +152,10 @@ test('W10 계절 — R5의 필요 줄과 그 소식은 그 생활일의 계절 �
 test('W10 인사 — 늦은 밤(23:30~05:30, 공방 주인은 새벽 03:00부터) · 바쁜 일 · 쉬는 일 · 그 밖은 구간×날씨, 조는 중엔 인사가 없다', async () => {
   const { greetLine } = await load('day-cards.mjs');
   const at = (h, m = 0) => h * 60 + m;
-  assert.equal(greetLine('cafe-owner', { band: 'night', weather: 'clear', minute: at(23, 45), archetype: 'night-tea' }), 'cafe-owner.greet.late.1', '늦은 밤이 바쁨보다 앞');
+  assert.equal(greetLine('cafe-owner', { band: 'night', weather: 'clear', minute: at(23, 45), archetype: 'night-tea' }), 'cafe-owner.greet.late.1', '늦은 밤');
+  assert.equal(greetLine('researcher', { band: 'night', weather: 'rain', minute: at(0, 30) }), 'researcher.greet.night-rain.1', '연구원의 늦은 밤은 밤꽃 세기 — 비 오는 밤엔 밤비 인사');
+  assert.equal(greetLine('cafe-owner', { band: 'day', weather: 'clear', minute: at(13), archetype: 'deliver-tea' }), 'cafe-owner.greet.day-clear.1', '차 배달은 바쁨 인사(차를 우리는 중)가 아니다');
+  assert.equal(greetLine('workshop-owner', { band: 'night', weather: 'clear', minute: at(22), archetype: 'night-carve' }), 'workshop-owner.greet.night-clear.1', '밤 조각은 밤 인사');
   assert.equal(greetLine('researcher', { band: 'night', weather: 'clear', minute: at(5, 10) }), 'researcher.greet.late.1');
   assert.equal(greetLine('researcher', { band: 'night', weather: 'clear', minute: at(23, 0) }), 'researcher.greet.night-clear.1');
   assert.equal(greetLine('workshop-owner', { band: 'night', weather: 'rain', minute: at(1, 0) }), 'workshop-owner.greet.night-rain.1', '공방의 늦은 밤 인사는 새벽 일찍 깸이라 03시 전엔 밤 인사');

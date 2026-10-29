@@ -101,3 +101,13 @@ test('W10 공개 직후 캐시 — new-tea는 생성물의 SCENES를 이름 공�
   for (const level of LEVELS) assert.equal(scene.GOODBYE_LINE.levels[level], scene.goodbye(level));
   assert.equal(scene.GOODBYE_LINE.npc, 'cafe-owner');
 });
+
+test('W10 그림 카드는 L1에서 누른 「무슨 뜻이에요?」에만 — 위 판에서는 먼저 한 단계 아래 줄, 그 차례 동안 다시 듣기에도 남고 다음 차례에 사라진다(화면 검수)', async () => {
+  const s = await load('new-tea.mjs');
+  const fromL2 = s.helpNewTea(s.chooseNewTea(s.startNewTea('L2'), 'sip'), 'meaning');
+  assert.equal(s.newTeaView(fromL2).level, 'L1'); assert.equal(s.newTeaView(fromL2).picture, null, 'L2에서 누르면 L1 줄이 먼저');
+  const again = s.helpNewTea(fromL2, 'meaning'); assert.ok(s.newTeaView(again).picture, 'L1에서 다시 누르면 그림 카드');
+  const repeated = s.helpNewTea(again, 'repeat'); assert.ok(s.newTeaView(repeated).picture, '다시 말해 주세요에도 그림은 남는다'); assert.equal(s.validNewTea(repeated), true);
+  const next = s.chooseNewTea(repeated, s.newTeaView(repeated).choices[0].id); assert.equal(s.newTeaView(next).picture, null, '다음 차례엔 없다');
+  const saved = s.startNewTea('L2'); delete saved.picture; assert.equal(s.validNewTea(saved), true, '그림 칸이 없는 옛 저장도 유효');
+});

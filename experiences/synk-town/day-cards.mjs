@@ -101,17 +101,20 @@ export function sceneLine(segments, npc, t, { steps = {}, waiting = [], season =
   return null;
 }
 
-// What a resident's own greeting reads from what it is doing (W10, §16 인사): its work at a push — the cafe's guests and
-// night cups, the workshop's orders, the researcher's notes — is busy; a rest archetype is resting (a doze greets no one).
-const BUSY = Object.freeze({ 'cafe-owner': ['serve', 'deliver-tea', 'night-tea'], 'workshop-owner': ['craft', 'night-carve'], researcher: ['notes'] });
+// What a resident's own greeting reads from what it is doing (W10, §16 인사): its work at a push — the cafe's guests, the
+// workshop's orders, the researcher's notes — is busy (a delivery, the quiet night cups and night carving greet by the band
+// and the weather, whose night lines are theirs — W10 screen review); a rest archetype is resting (a doze greets no one).
+const BUSY = Object.freeze({ 'cafe-owner': ['serve'], 'workshop-owner': ['craft'], researcher: ['notes'] });
 const REST = new Set((generated.ARCHETYPES || []).filter(a => a.kind === 'rest').map(a => a.id));
 const LATE_FROM = 23 * 60 + 30, LATE_TO = 5 * 60 + 30, WORKSHOP_LATE_FROM = 3 * 60;
 /** A resident's own greeting when it has nothing to tell (W10): late at night (23:30–05:30 in my time — the workshop
- * owner's is its early waking, so only from 03:00, before that its night one), busy at its work, resting, else the band
- * and the weather. now: { band, weather, minute (my time, or null), archetype }. Returns the line's ID or null. */
+ * owner's is its early waking, so only from 03:00, before that its night one; the researcher's counts night flowers,
+ * which close in the rain, so a rainy night is its night-rain one), busy at its work, resting, else the band and the
+ * weather. now: { band, weather, minute (my time, or null), archetype }. Returns the line's ID or null. */
 export function greetLine(npc, { band = null, weather = null, minute = null, archetype = null } = {}) {
   if (archetype === 'doze') return null;
-  const late = Number.isSafeInteger(minute) && (npc === 'workshop-owner' ? minute >= WORKSHOP_LATE_FROM && minute < LATE_TO : minute >= LATE_FROM || minute < LATE_TO);
+  const late = Number.isSafeInteger(minute) && !(npc === 'researcher' && weather === 'rain')
+    && (npc === 'workshop-owner' ? minute >= WORKSHOP_LATE_FROM && minute < LATE_TO : minute >= LATE_FROM || minute < LATE_TO);
   const key = late ? 'late' : BUSY[npc]?.includes(archetype) ? 'busy' : REST.has(archetype) ? 'resting' : `${band}-${weather === 'rain' ? 'rain' : 'clear'}`;
   const id = `${npc}.greet.${key}.1`;
   return LINES.has(id) ? id : null;
