@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a186d6-b600-7793-a412-f473e04dea9d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 첨부한 로봇의 모습과 화풍을 살려 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":141115,"cached_input_tokens":124800,"cache_write_input_tokens":0,"output_tokens":1284,"reasoning_output_tokens":118}}

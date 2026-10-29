@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w12",
+ "text": "이모지랑 해시태그, 다 빠졌어요.",
+ "show": "이모지랑 해시태그, 다 빠졌어요",
+ "dur": 1.595,
+ "words": [
+  {
+   "text": "이모지랑",
+   "start": 0.02,
+   "end": 0.338
+  },
+  {
+   "text": "해시태그,",
+   "start": 0.378,
+   "end": 0.696
+  },
+  {
+   "text": "다",
+   "start": 0.961,
+   "end": 1.014
+  },
+  {
+   "text": "빠졌어요.",
+   "start": 1.054,
+   "end": 1.595
+  }
+ ],
+ "source": {
+  "key": "c9b119c1ffca5f9f1448b2dff1861be4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 123
+ }
+}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a186bd-f029-7f41-a364-347870762320"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 첨부 로봇의 모습을 유지해 요청하신 장면을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":123072,"cached_input_tokens":100224,"cache_write_input_tokens":0,"output_tokens":1046,"reasoning_output_tokens":173}}

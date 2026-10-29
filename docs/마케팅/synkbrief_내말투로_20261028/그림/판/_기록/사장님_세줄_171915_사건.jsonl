@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a186bd-f205-79a3-a438-1c6d56b84b93"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 첨부 인물과 화풍을 맞춰 한 컷을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":129084,"cached_input_tokens":105984,"cache_write_input_tokens":0,"output_tokens":902,"reasoning_output_tokens":89}}

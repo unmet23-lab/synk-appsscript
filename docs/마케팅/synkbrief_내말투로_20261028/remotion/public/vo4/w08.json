@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w08",
+ "text": "이 말투로 다시 써 줘.",
+ "show": "“이 말투로 다시 써 줘”",
+ "dur": 0.975,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.04,
+   "end": 0.053
+  },
+  {
+   "text": "말투로",
+   "start": 0.117,
+   "end": 0.351
+  },
+  {
+   "text": "다시",
+   "start": 0.39,
+   "end": 0.545
+  },
+  {
+   "text": "써",
+   "start": 0.584,
+   "end": 0.663
+  },
+  {
+   "text": "줘.",
+   "start": 0.701,
+   "end": 0.975
+  }
+ ],
+ "source": {
+  "key": "c5b99d79d71a730ac51c594aaf064b4e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

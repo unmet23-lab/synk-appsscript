@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a186bb-bdea-7802-83df-6434fe0a6fd7"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 요청하신 그림 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":87998,"cached_input_tokens":72064,"cache_write_input_tokens":0,"output_tokens":589,"reasoning_output_tokens":27}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a186d6-b600-75a3-9ac9-b8eb18501f5b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 첨부 인물과 화풍을 유지해 요청하신 한 컷을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":122127,"cached_input_tokens":92032,"cache_write_input_tokens":0,"output_tokens":818,"reasoning_output_tokens":55}}

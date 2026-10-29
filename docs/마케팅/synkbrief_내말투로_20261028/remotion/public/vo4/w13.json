@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w13",
+ "text": "에이아이 글 티 나면, 내 글 세 줄.",
+ "show": "AI 글 티 나면, 내 글 세 줄",
+ "dur": 1.578,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.254
+  },
+  {
+   "text": "글",
+   "start": 0.31,
+   "end": 0.392
+  },
+  {
+   "text": "티",
+   "start": 0.447,
+   "end": 0.516
+  },
+  {
+   "text": "나면,",
+   "start": 0.557,
+   "end": 0.805
+  },
+  {
+   "text": "내",
+   "start": 0.957,
+   "end": 1.025
+  },
+  {
+   "text": "글",
+   "start": 1.081,
+   "end": 1.163
+  },
+  {
+   "text": "세",
+   "start": 1.204,
+   "end": 1.274
+  },
+  {
+   "text": "줄.",
+   "start": 1.315,
+   "end": 1.578
+  }
+ ],
+ "source": {
+  "key": "411433551b467b5013b009d9c1ecd7e7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

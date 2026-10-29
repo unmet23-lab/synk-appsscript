@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w10",
+ "text": "다음 주 화요일은 하루 쉬어갑니다.",
+ "show": "다음 주 화요일은 / 하루 쉬어갑니다.",
+ "dur": 1.459,
+ "words": [
+  {
+   "text": "다음",
+   "start": 0.02,
+   "end": 0.199
+  },
+  {
+   "text": "주",
+   "start": 0.254,
+   "end": 0.323
+  },
+  {
+   "text": "화요일은",
+   "start": 0.378,
+   "end": 0.681
+  },
+  {
+   "text": "하루",
+   "start": 0.791,
+   "end": 0.929
+  },
+  {
+   "text": "쉬어갑니다.",
+   "start": 0.97,
+   "end": 1.459
+  }
+ ],
+ "source": {
+  "key": "3b3226935857d7d2a6dd35cb9818796d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "tonedown",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 126
+ }
+}

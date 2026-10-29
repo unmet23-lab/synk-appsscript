@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w05",
+ "text": "달콤한 디저트로 찾아뵐게요!",
+ "show": "…달콤한 디저트로 찾아뵐게요. ☕🍰",
+ "dur": 1.282,
+ "words": [
+  {
+   "text": "달콤한",
+   "start": 0.02,
+   "end": 0.295
+  },
+  {
+   "text": "디저트로",
+   "start": 0.35,
+   "end": 0.637
+  },
+  {
+   "text": "찾아뵐게요!",
+   "start": 0.679,
+   "end": 1.282
+  }
+ ],
+ "source": {
+  "key": "d0784dd67222cc5ed4bb9dc77a8b8e21",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

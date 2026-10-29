@@ -1,0 +1,46 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w11",
+ "text": "그때 뵐게요.",
+ "show": "그때 뵐게요.",
+ "dur": 0.65,
+ "words": [
+  {
+   "text": "그때",
+   "start": 0.02,
+   "end": 0.18
+  },
+  {
+   "text": "뵐게요.",
+   "start": 0.233,
+   "end": 0.65
+  }
+ ],
+ "source": {
+  "key": "01defc056dd6152a0027abceb093ca92",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "tonedown",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

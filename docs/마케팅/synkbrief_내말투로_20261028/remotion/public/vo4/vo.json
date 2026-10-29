@@ -1,0 +1,164 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션_v4.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.2,
+  "seed": 1029,
+  "lufs": -17
+ },
+ "made": "2026-10-29T08:56:39.646Z",
+ "lines": [
+  {
+   "id": "w01",
+   "text": "공지에서 에이아이 티 빼기.",
+   "show": "공지에서 AI 티 빼기",
+   "scene": "1 훅",
+   "dur": 1.127,
+   "syllablesPerSec": 9.76,
+   "src": "w01.wav",
+   "key": "013a102a8d7b9c8c3d6a65fb31022065",
+   "words": 4
+  },
+  {
+   "id": "w02",
+   "text": "카페 공지 써 줘, 화요일 하루 쉬어.",
+   "show": "“카페 공지 써 줘, 화요일 하루 쉬어”",
+   "scene": "2 예시",
+   "dur": 1.76,
+   "syllablesPerSec": 7.39,
+   "src": "w02.wav",
+   "key": "ef3abaed1c90b5cc9b9e750541061dda",
+   "words": 7
+  },
+  {
+   "id": "w03",
+   "text": "챗지피티 답.",
+   "show": "ChatGPT 답 :",
+   "scene": "3 ChatGPT",
+   "dur": 0.535,
+   "syllablesPerSec": 9.35,
+   "src": "w03.wav",
+   "key": "92c8e4a74848386e083b74ffcbcc5a38",
+   "words": 2
+  },
+  {
+   "id": "w04",
+   "text": "카페 임시 휴무 안내! 안녕하세요!",
+   "show": "☕ 카페 임시 휴무 안내 / 안녕하세요! 🤎",
+   "scene": "4 처음 답 1",
+   "dur": 1.763,
+   "syllablesPerSec": 7.37,
+   "src": "w04.wav",
+   "key": "ecde0c4c10735714a543991d284e691e",
+   "words": 5
+  },
+  {
+   "id": "w05",
+   "text": "달콤한 디저트로 찾아뵐게요!",
+   "show": "…달콤한 디저트로 찾아뵐게요. ☕🍰",
+   "scene": "5 처음 답 2",
+   "dur": 1.282,
+   "syllablesPerSec": 9.36,
+   "src": "w05.wav",
+   "key": "d0784dd67222cc5ed4bb9dc77a8b8e21",
+   "words": 3
+  },
+  {
+   "id": "w06",
+   "text": "해시태그, 카페공지, 임시휴무!",
+   "show": "#카페공지 #임시휴무 #휴무안내 #카페일상",
+   "scene": "6 처음 답 3",
+   "dur": 1.698,
+   "syllablesPerSec": 7.07,
+   "src": "w06.wav",
+   "key": "d8e86fe5bf0cea10a4db7bf922a1b1cc",
+   "words": 3
+  },
+  {
+   "id": "w07",
+   "text": "됐고, 내 글 세 줄!",
+   "show": "됐고, 내 글 세 줄!",
+   "scene": "7 반전",
+   "dur": 0.905,
+   "syllablesPerSec": 6.63,
+   "src": "w07.wav",
+   "key": "a2a1c4ad56c12080acb67f3faab361a2",
+   "words": 5
+  },
+  {
+   "id": "w08",
+   "text": "이 말투로 다시 써 줘.",
+   "show": "“이 말투로 다시 써 줘”",
+   "scene": "8 반전 한 줄",
+   "dur": 0.975,
+   "syllablesPerSec": 8.21,
+   "src": "w08.wav",
+   "key": "c5b99d79d71a730ac51c594aaf064b4e",
+   "words": 5
+  },
+  {
+   "id": "w09",
+   "text": "챗지피티 답.",
+   "show": "ChatGPT 답 :",
+   "scene": "9 ChatGPT",
+   "dur": 0.535,
+   "syllablesPerSec": 9.35,
+   "src": "w09.wav",
+   "key": "92c8e4a74848386e083b74ffcbcc5a38",
+   "words": 2
+  },
+  {
+   "id": "w10",
+   "text": "다음 주 화요일은 하루 쉬어갑니다.",
+   "show": "다음 주 화요일은 / 하루 쉬어갑니다.",
+   "scene": "10 다시 답 1",
+   "dur": 1.459,
+   "syllablesPerSec": 9.6,
+   "src": "w10.wav",
+   "key": "3b3226935857d7d2a6dd35cb9818796d",
+   "words": 5
+  },
+  {
+   "id": "w11",
+   "text": "그때 뵐게요.",
+   "show": "그때 뵐게요.",
+   "scene": "11 다시 답 2",
+   "dur": 0.65,
+   "syllablesPerSec": 7.69,
+   "src": "w11.wav",
+   "key": "01defc056dd6152a0027abceb093ca92",
+   "words": 2
+  },
+  {
+   "id": "w12",
+   "text": "이모지랑 해시태그, 다 빠졌어요.",
+   "show": "이모지랑 해시태그, 다 빠졌어요",
+   "scene": "12 끝 장치",
+   "dur": 1.595,
+   "syllablesPerSec": 8.15,
+   "src": "w12.wav",
+   "key": "c9b119c1ffca5f9f1448b2dff1861be4",
+   "words": 4
+  },
+  {
+   "id": "w13",
+   "text": "에이아이 글 티 나면, 내 글 세 줄.",
+   "show": "AI 글 티 나면, 내 글 세 줄",
+   "scene": "13 끝 한마디",
+   "dur": 1.578,
+   "syllablesPerSec": 7.6,
+   "src": "w13.wav",
+   "key": "411433551b467b5013b009d9c1ecd7e7",
+   "words": 8
+  }
+ ]
+}

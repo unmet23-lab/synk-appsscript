@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w04",
+ "text": "카페 임시 휴무 안내! 안녕하세요!",
+ "show": "☕ 카페 임시 휴무 안내 / 안녕하세요! 🤎",
+ "dur": 1.763,
+ "words": [
+  {
+   "text": "카페",
+   "start": 0.02,
+   "end": 0.231
+  },
+  {
+   "text": "임시",
+   "start": 0.302,
+   "end": 0.46
+  },
+  {
+   "text": "휴무",
+   "start": 0.512,
+   "end": 0.67
+  },
+  {
+   "text": "안내!",
+   "start": 0.723,
+   "end": 0.917
+  },
+  {
+   "text": "안녕하세요!",
+   "start": 1.18,
+   "end": 1.763
+  }
+ ],
+ "source": {
+  "key": "ecde0c4c10735714a543991d284e691e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

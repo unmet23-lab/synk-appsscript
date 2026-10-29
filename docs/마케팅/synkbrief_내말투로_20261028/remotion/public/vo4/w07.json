@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w07",
+ "text": "됐고, 내 글 세 줄!",
+ "show": "됐고, 내 글 세 줄!",
+ "dur": 0.905,
+ "words": [
+  {
+   "text": "됐고,",
+   "start": 0.02,
+   "end": 0.205
+  },
+  {
+   "text": "내",
+   "start": 0.367,
+   "end": 0.429
+  },
+  {
+   "text": "글",
+   "start": 0.478,
+   "end": 0.54
+  },
+  {
+   "text": "세",
+   "start": 0.577,
+   "end": 0.652
+  },
+  {
+   "text": "줄!",
+   "start": 0.689,
+   "end": 0.905
+  }
+ ],
+ "source": {
+  "key": "a2a1c4ad56c12080acb67f3faab361a2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

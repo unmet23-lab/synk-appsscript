@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w01",
+ "text": "공지에서 에이아이 티 빼기.",
+ "show": "공지에서 AI 티 빼기",
+ "dur": 1.127,
+ "words": [
+  {
+   "text": "공지에서",
+   "start": 0.02,
+   "end": 0.407
+  },
+  {
+   "text": "에이아이",
+   "start": 0.477,
+   "end": 0.689
+  },
+  {
+   "text": "티",
+   "start": 0.742,
+   "end": 0.812
+  },
+  {
+   "text": "빼기.",
+   "start": 0.865,
+   "end": 1.127
+  }
+ ],
+ "source": {
+  "key": "013a102a8d7b9c8c3d6a65fb31022065",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 129
+ }
+}

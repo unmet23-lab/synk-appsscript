@@ -1,6 +1,7 @@
 import { Composition } from 'remotion';
 import './lib/fonts';
 import { FullFilm, TOTAL } from './full/Film';
+import { Film4, TOTAL4 } from './v4/Film4';
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -8,5 +9,7 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="malt-a" component={FullFilm} defaultProps={{ variant: 'A' as const }} durationInFrames={TOTAL} fps={30} width={1080} height={1920} />
     <Composition id="malt-b" component={FullFilm} defaultProps={{ variant: 'B' as const }} durationInFrames={TOTAL} fps={30} width={1080} height={1920} />
     <Composition id="malt-c" component={FullFilm} defaultProps={{ variant: 'C' as const }} durationInFrames={TOTAL} fps={30} width={1080} height={1920} />
+    {/* v4(10-29 다시 살림 · 오마주 ← YwREufry_yQ): 세 판 같은 영상 — 끝 줄이 캡션 · 고정 댓글을 가리키지 않는다. */}
+    <Composition id="malt4" component={Film4} durationInFrames={TOTAL4} fps={30} width={1080} height={1920} />
   </>
 );

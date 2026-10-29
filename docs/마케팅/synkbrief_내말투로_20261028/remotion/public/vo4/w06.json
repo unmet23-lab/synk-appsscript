@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w06",
+ "text": "해시태그, 카페공지, 임시휴무!",
+ "show": "#카페공지 #임시휴무 #휴무안내 #카페일상",
+ "dur": 1.698,
+ "words": [
+  {
+   "text": "해시태그,",
+   "start": 0.02,
+   "end": 0.389
+  },
+  {
+   "text": "카페공지,",
+   "start": 0.6,
+   "end": 1.004
+  },
+  {
+   "text": "임시휴무!",
+   "start": 1.233,
+   "end": 1.698
+  }
+ ],
+ "source": {
+  "key": "d8e86fe5bf0cea10a4db7bf922a1b1cc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 176
+ }
+}
