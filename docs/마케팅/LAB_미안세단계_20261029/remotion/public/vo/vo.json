@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1029,
+  "lufs": -16
+ },
+ "made": "2026-10-28T18:23:32.642Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "미안.",
+   "dur": 0.545,
+   "syllablesPerSec": 3.67,
+   "src": "s1.wav",
+   "key": "64d052dcb7bf1b1d2f06d16dc1ca960f",
+   "words": 1
+  },
+  {
+   "id": "s2",
+   "text": "미안해요.",
+   "dur": 1.196,
+   "syllablesPerSec": 3.34,
+   "src": "s2.wav",
+   "key": "a106dfcf6beb7267b1f3312233f13290",
+   "words": 1
+  },
+  {
+   "id": "s3",
+   "text": "죄송합니다.",
+   "dur": 1.074,
+   "syllablesPerSec": 4.66,
+   "src": "s3.wav",
+   "key": "9eb37592a352dcdc75c0621b243463ed",
+   "words": 1
+  },
+  {
+   "id": "s4",
+   "text": "죽을죄를 지었사옵니다.",
+   "dur": 1.585,
+   "syllablesPerSec": 6.31,
+   "src": "s4.wav",
+   "key": "909fdb7dded393b500f1bc918d3658c9",
+   "words": 2
+  },
+  {
+   "id": "s5",
+   "text": "앞으로 평생 커피는 제가 사겠습니다.",
+   "dur": 2.425,
+   "syllablesPerSec": 6.19,
+   "src": "s5.wav",
+   "key": "3005c0a0b128723d0604759e8bdfb30b",
+   "words": 5
+  },
+  {
+   "id": "s6",
+   "text": "근데...",
+   "dur": 0.751,
+   "syllablesPerSec": 2.66,
+   "src": "s6.wav",
+   "key": "c6bdf45ee9c136111bbff41b106728e2",
+   "words": 1
+  },
+  {
+   "id": "s7",
+   "text": "내가 왜?",
+   "dur": 0.641,
+   "syllablesPerSec": 4.68,
+   "src": "s7.wav",
+   "key": "a14d4dcfa19b0ffdfc1d7e64c2a41d3e",
+   "words": 2
+  },
+  {
+   "id": "s8",
+   "text": "네가 먼저 사과해.",
+   "dur": 1.215,
+   "syllablesPerSec": 5.76,
+   "src": "s8.wav",
+   "key": "bb8de1bda3674d267880dd538ceac30a",
+   "words": 3
+  },
+  {
+   "id": "s9",
+   "text": "커피값도 당연히 네가 내야지.",
+   "dur": 2,
+   "syllablesPerSec": 6,
+   "src": "s9.wav",
+   "key": "026b3df0ca453a6a661e5641afe573fe",
+   "words": 4
+  },
+  {
+   "id": "s7b",
+   "text": "내가 왜 사과해?",
+   "dur": 1.007,
+   "syllablesPerSec": 5.96,
+   "src": "s7b.wav",
+   "key": "2c5ec50fe8c3b924b05351b277365798",
+   "words": 3
+  },
+  {
+   "id": "s8b",
+   "text": "네가 부딪쳤잖아!",
+   "dur": 1.169,
+   "syllablesPerSec": 5.99,
+   "src": "s8b.wav",
+   "key": "ac3a69749757deca9a0da3264d76355e",
+   "words": 2
+  },
+  {
+   "id": "s5b",
+   "text": "앞으로 평생 커피는 제가 사겠습니다, 매일 두 잔씩!",
+   "dur": 2.932,
+   "syllablesPerSec": 6.82,
+   "src": "s5b.wav",
+   "key": "8077b57d7ecf7246b3afcf0ed565d048",
+   "words": 8
+  }
+ ]
+}

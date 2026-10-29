@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s5",
+ "text": "앞으로 평생 커피는 제가 사겠습니다.",
+ "dur": 2.425,
+ "words": [
+  {
+   "text": "앞으로",
+   "start": 0.05,
+   "end": 0.371
+  },
+  {
+   "text": "평생",
+   "start": 0.431,
+   "end": 0.773
+  },
+  {
+   "text": "커피는",
+   "start": 0.833,
+   "end": 1.234
+  },
+  {
+   "text": "제가",
+   "start": 1.295,
+   "end": 1.515
+  },
+  {
+   "text": "사겠습니다.",
+   "start": 1.576,
+   "end": 2.425
+  }
+ ],
+ "source": {
+  "key": "3005c0a0b128723d0604759e8bdfb30b",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "죽을죄를 지었사옵니다. 숨도 안 쉬고 빠르게 맹세한다.",
+   "next": "근데..."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 501
+ }
+}

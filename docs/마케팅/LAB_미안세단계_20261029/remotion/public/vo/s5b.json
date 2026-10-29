@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s5b",
+ "text": "앞으로 평생 커피는 제가 사겠습니다, 매일 두 잔씩!",
+ "dur": 2.932,
+ "words": [
+  {
+   "text": "앞으로",
+   "start": 0.02,
+   "end": 0.294
+  },
+  {
+   "text": "평생",
+   "start": 0.342,
+   "end": 0.647
+  },
+  {
+   "text": "커피는",
+   "start": 0.696,
+   "end": 1.018
+  },
+  {
+   "text": "제가",
+   "start": 1.066,
+   "end": 1.242
+  },
+  {
+   "text": "사겠습니다,",
+   "start": 1.29,
+   "end": 1.789
+  },
+  {
+   "text": "매일",
+   "start": 2.078,
+   "end": 2.271
+  },
+  {
+   "text": "두",
+   "start": 2.352,
+   "end": 2.432
+  },
+  {
+   "text": "잔씩!",
+   "start": 2.481,
+   "end": 2.932
+  }
+ ],
+ "source": {
+  "key": "8077b57d7ecf7246b3afcf0ed565d048",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "죽을죄를 지었사옵니다. 숨도 안 쉬고 빠르게 맹세하고, 끝에 한술 더 뜬다.",
+   "next": "근데..."
+  },
+  "speed": 1.25,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 498
+ }
+}

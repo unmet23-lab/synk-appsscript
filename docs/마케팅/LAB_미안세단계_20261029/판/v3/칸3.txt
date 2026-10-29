@@ -1,0 +1,18 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — panel 3 of 9 of a vertical comedy short made with a fixed camera and an "afterimage stacking" photo trick: in every panel ONE more copy of the same mascot is added, bowing deeper, while everything already in the photo stays exactly as it was.
+
+The FIRST attached image is panel 2. Reproduce it EXACTLY: same portrait 2:3 format, same camera position, framing and focus, same school hallway background (lockers, notice board, window), same oak bench and its front edge at the same height, same coffee puddle on the bench, same lighting, the same shocked teacher doll with the coffee-stained blouse standing behind the bench on the left (unchanged — same pose, face, glasses and size), and EVERY Mongle already there unchanged — same position, same angle, same size, same expression. Do not move, resize, redraw differently or remove anything.
+
+COUNT CAREFULLY. The photo now contains exactly 2 Mongle(s):
+- A — upright at 12 o'clock, side profile facing left, worried look, light-blue sweat drop
+- B — tilted 30 degrees forward (to the left) at 11 o'clock, calm bow, eye closed
+After your edit the photo must contain exactly 3 Mongles — ALL 2 existing ones kept exactly as they are (do not replace, merge, re-pose, re-angle or restyle any of them) PLUS one new copy of Mongle.
+
+The new one(s): All copies of Mongle share ONE hinge point: the middle of the bottom of the hem of the upright Mongle, at the bench's front edge. Each copy is the whole Mongle (same size as the upright one) rotated around that hinge like a clock hand — its hem stays at the hinge and its round head points in the given clock direction (12 o'clock = straight up, 9 o'clock = straight left, 6 o'clock = straight down, 3 o'clock = straight right). Copies overlap the earlier ones like layered photos; each copy is solid, opaque felt, fully in focus, never transparent. Where a copy points below the bench seat it simply hangs in front of the bench's oak front apron board (photo trick — no support needed).
+NEW COPY (panel 3): pointing to 10 o'clock — tilted 60 degrees forward (to the LEFT), a deep bow, side profile, eye squeezed shut, pink cheek, one small light-blue felt tear.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever.
+
+Mongle copies may overlap the teacher's body like layered photos, but never cover the teacher's face. Keep the lockers and notice board unchanged. Keep every Mongle inside the central 84% of the width.
+Absolutely no text, letters, numbers, logos, symbols, motion lines or watermarks anywhere in the image.

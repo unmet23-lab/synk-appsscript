@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s9",
+ "text": "커피값도 당연히 네가 내야지.",
+ "dur": 2,
+ "words": [
+  {
+   "text": "커피값도",
+   "start": 0.02,
+   "end": 0.562
+  },
+  {
+   "text": "당연히",
+   "start": 0.622,
+   "end": 0.984
+  },
+  {
+   "text": "네가",
+   "start": 1.044,
+   "end": 1.265
+  },
+  {
+   "text": "내야지.",
+   "start": 1.325,
+   "end": 2
+  }
+ ],
+ "source": {
+  "key": "026b3df0ca453a6a661e5641afe573fe",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "네가 먼저 사과해. 가장 뻔뻔하게, 빠르게 몰아친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 547
+ }
+}

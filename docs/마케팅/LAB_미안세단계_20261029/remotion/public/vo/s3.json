@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s3",
+ "text": "죄송합니다.",
+ "dur": 1.074,
+ "words": [
+  {
+   "text": "죄송합니다.",
+   "start": 0.02,
+   "end": 1.074
+  }
+ ],
+ "source": {
+  "key": "9eb37592a352dcdc75c0621b243463ed",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "미안해요.",
+   "next": "죽을죄를 지었사옵니다."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 456
+ }
+}

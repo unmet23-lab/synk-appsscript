@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — panel 1 of 9 of a vertical comedy short. The camera never moves: all nine panels will be this exact same photo, and in each later panel one more copy of the mascot is added, bowing deeper (an "afterimage stacking" photo trick).
+
+The FIRST attached image is the base photo. Reproduce it EXACTLY — same portrait 2:3 format, same camera, framing and focus, same café, same oak counter and its front edge at the same height, same tipped cream cup and coffee puddle with its two drips, same lighting, and the same coral Mongle standing upright on the counter in side profile facing left, same size and spot.
+
+ADD ONE PERSON: the café boss — the felt barista doll from the SECOND attached photo (big round felt head, glossy black bead eyes, short curly dark-brown felt hair, cream felt shirt, sage-green felt apron with a blank felt name tag). He stands BEHIND the counter on the LEFT side of the image, seen from the waist up, his body between about 12% and 34% of the image width, his head between about 30% and 44% of the image height (below the menu board, never in the top 28%). He is a little farther from the camera than Mongle and slightly softer in focus. He faces right toward Mongle, both felt arms crossed over his chest, eyebrows down, mouth a small flat stern line — an unhappy boss. A big dark-brown coffee splash stain is on the front of his sage apron (Mongle spilled the coffee on him).
+Mongle stays exactly as in the first photo; leave clear empty space all around Mongle (left, right and below it on the counter's front panel) for the copies that later panels will add.
+
+The THIRD attached photo is the mascot reference — use it ONLY for Mongle's body shape, coral wool, fuzzy texture, scalloped hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands on Mongle, ever.
+
+Keep the top 28% of the image (menu board and lamps) unchanged. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — the name tag is blank.

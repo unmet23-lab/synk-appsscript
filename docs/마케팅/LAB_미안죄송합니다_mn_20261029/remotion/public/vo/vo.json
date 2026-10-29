@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1029,
+  "lufs": -16
+ },
+ "made": "2026-10-28T18:29:33.518Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "미안.",
+   "dur": 0.545,
+   "syllablesPerSec": 3.67,
+   "src": "s1.wav",
+   "key": "64d052dcb7bf1b1d2f06d16dc1ca960f",
+   "words": 1
+  },
+  {
+   "id": "s2",
+   "text": "미안해요.",
+   "dur": 1.196,
+   "syllablesPerSec": 3.34,
+   "src": "s2.wav",
+   "key": "a106dfcf6beb7267b1f3312233f13290",
+   "words": 1
+  },
+  {
+   "id": "s3",
+   "text": "죄송합니다.",
+   "dur": 1.074,
+   "syllablesPerSec": 4.66,
+   "src": "s3.wav",
+   "key": "9eb37592a352dcdc75c0621b243463ed",
+   "words": 1
+  },
+  {
+   "id": "s4",
+   "text": "죽을죄를 지었사옵니다.",
+   "dur": 1.585,
+   "syllablesPerSec": 6.31,
+   "src": "s4.wav",
+   "key": "909fdb7dded393b500f1bc918d3658c9",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "앞으로 평생 공짜로 일하겠습니다.",
+   "dur": 2.059,
+   "syllablesPerSec": 6.8,
+   "src": "m5.wav",
+   "key": "95d0eabb4737a149459cc6f848c2ee78",
+   "words": 4
+  },
+  {
+   "id": "s6",
+   "text": "근데...",
+   "dur": 0.751,
+   "syllablesPerSec": 2.66,
+   "src": "s6.wav",
+   "key": "c6bdf45ee9c136111bbff41b106728e2",
+   "words": 1
+  },
+  {
+   "id": "s7",
+   "text": "내가 왜?",
+   "dur": 0.641,
+   "syllablesPerSec": 4.68,
+   "src": "s7.wav",
+   "key": "a14d4dcfa19b0ffdfc1d7e64c2a41d3e",
+   "words": 2
+  },
+  {
+   "id": "m8",
+   "text": "사장님이 먼저 사과해.",
+   "dur": 1.467,
+   "syllablesPerSec": 6.13,
+   "src": "m8.wav",
+   "key": "c5f0f2bbf662619c100fe0c89507fc3f",
+   "words": 3
+  },
+  {
+   "id": "m9",
+   "text": "시급도 당연히 올려 줘야지.",
+   "dur": 1.936,
+   "syllablesPerSec": 5.68,
+   "src": "m9.wav",
+   "key": "0d543f92f415a485334585a1d541626d",
+   "words": 4
+  },
+  {
+   "id": "m5b",
+   "text": "앞으로 평생 공짜로 일하겠습니다, 주말에도!",
+   "dur": 2.873,
+   "syllablesPerSec": 6.27,
+   "src": "m5b.wav",
+   "key": "1d6abae8ae536b70b6ab87606fc929ec",
+   "words": 5
+  },
+  {
+   "id": "s7b",
+   "text": "내가 왜 사과해?",
+   "dur": 1.007,
+   "syllablesPerSec": 5.96,
+   "src": "s7b.wav",
+   "key": "2c5ec50fe8c3b924b05351b277365798",
+   "words": 3
+  },
+  {
+   "id": "m8b",
+   "text": "사장님이 부딪쳤잖아!",
+   "dur": 1.264,
+   "syllablesPerSec": 7.12,
+   "src": "m8b.wav",
+   "key": "60c7fc87e3a80862bdd46cdad67a7545",
+   "words": 2
+  }
+ ]
+}

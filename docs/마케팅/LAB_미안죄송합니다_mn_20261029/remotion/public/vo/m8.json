@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m8",
+ "text": "사장님이 먼저 사과해.",
+ "dur": 1.467,
+ "words": [
+  {
+   "text": "사장님이",
+   "start": 0.02,
+   "end": 0.543
+  },
+  {
+   "text": "먼저",
+   "start": 0.603,
+   "end": 0.844
+  },
+  {
+   "text": "사과해.",
+   "start": 0.925,
+   "end": 1.467
+  }
+ ],
+ "source": {
+  "key": "c5f0f2bbf662619c100fe0c89507fc3f",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "내가 왜? 아르바이트생이 오히려 사장님을 탓하며 반말로 뻔뻔하게.",
+   "next": "시급도 당연히 올려 줘야지."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 457
+ }
+}

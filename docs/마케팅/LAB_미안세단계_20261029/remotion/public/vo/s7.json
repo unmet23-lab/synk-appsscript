@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s7",
+ "text": "내가 왜?",
+ "dur": 0.641,
+ "words": [
+  {
+   "text": "내가",
+   "start": 0.02,
+   "end": 0.264
+  },
+  {
+   "text": "왜?",
+   "start": 0.346,
+   "end": 0.641
+  }
+ ],
+ "source": {
+  "key": "a14d4dcfa19b0ffdfc1d7e64c2a41d3e",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "근데... 갑자기 뻔뻔해진다.",
+   "next": "네가 먼저 사과해."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 293
+ }
+}

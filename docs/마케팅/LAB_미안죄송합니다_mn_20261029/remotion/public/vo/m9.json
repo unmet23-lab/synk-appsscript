@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m9",
+ "text": "시급도 당연히 올려 줘야지.",
+ "dur": 1.936,
+ "words": [
+  {
+   "text": "시급도",
+   "start": 0.02,
+   "end": 0.402
+  },
+  {
+   "text": "당연히",
+   "start": 0.462,
+   "end": 0.844
+  },
+  {
+   "text": "올려",
+   "start": 0.904,
+   "end": 1.085
+  },
+  {
+   "text": "줘야지.",
+   "start": 1.145,
+   "end": 1.936
+  }
+ ],
+ "source": {
+  "key": "0d543f92f415a485334585a1d541626d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1030,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "사장님이 먼저 사과해. 가장 뻔뻔하게, 빠르게 몰아친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 464
+ }
+}

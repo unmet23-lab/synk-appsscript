@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "앞으로 평생 공짜로 일하겠습니다.",
+ "dur": 2.059,
+ "words": [
+  {
+   "text": "앞으로",
+   "start": 0.02,
+   "end": 0.323
+  },
+  {
+   "text": "평생",
+   "start": 0.383,
+   "end": 0.726
+  },
+  {
+   "text": "공짜로",
+   "start": 0.787,
+   "end": 1.17
+  },
+  {
+   "text": "일하겠습니다.",
+   "start": 1.23,
+   "end": 2.059
+  }
+ ],
+ "source": {
+  "key": "95d0eabb4737a149459cc6f848c2ee78",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "죽을죄를 지었사옵니다. 아르바이트생이 사장님께 숨도 안 쉬고 빠르게 맹세한다.",
+   "next": "근데..."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 545
+ }
+}
