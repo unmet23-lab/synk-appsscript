@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE EDIT — the FIRST attached image is the exact frame to edit. Reproduce it EXACTLY: same portrait 2:3 format, same camera, same composition, same dark teal-navy café wall, same string lights, same oak stage box, same microphone and stand in the same place, same stool, same light — and Mongle at exactly the same size and position.
+
+Change ONLY Mongle's face: AMAZED and delighted — sparkly star-shaped eyes like the second attached reference photo, mouth open in a round 'wow', pink felt cheeks, looking up toward the upper right as if it just saw something wonderful there. Mongle's body shape, coral wool, fuzzy texture and scalloped hem stay exactly the same. No arms, no legs, no hands.
+
+Absolutely no text, letters, numbers, logos or watermarks anywhere.

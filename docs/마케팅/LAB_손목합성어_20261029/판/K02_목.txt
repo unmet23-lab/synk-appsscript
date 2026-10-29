@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a single word card for a Korean vocabulary video. The word is NECK.
+
+The felt doll is the barista doll from the attached reference photo: peach felt skin, glossy black bead eyes, curly dark-brown felt hair, cream felt shirt with a sage-green felt apron. Show the doll from the middle of the chest up, front view, centered, head and shoulders fully inside the frame, a calm friendly closed smile. Its NECK is the hero of the picture: the doll's neck is clearly visible and slightly long, and a thin soft glowing ring of warm golden light wraps around the neck, so the neck is obviously the highlighted part.
+
+FORMAT: one LANDSCAPE image, 3:2 (wider than tall).
+
+BACKDROP: a plain seamless warm tan-beige felt sweep, like a tiny photo studio (one soft even color, slightly lighter in the middle), soft studio light from the upper left, a soft contact shadow under the object. Nothing else in the frame.
+
+The object is centered and fills about 55% of the image height, with generous empty beige space around it. It must read instantly as what it is, even when the image is shown small on a phone.
+
+STYLE: real handmade needle-felt craft photographed with a macro lens — visible wool fibers, soft fuzzy edges, warm and cute but not babyish (for teenagers and university students). The same series look as the attached reference photo (felt miniatures, warm light), but NOT its café set — only the plain beige backdrop.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.

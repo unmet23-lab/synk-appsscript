@@ -1,0 +1,126 @@
+[
+ {
+  "id": "w_hand",
+  "at": 0.05
+ },
+ {
+  "id": "k_son",
+  "at": 0.7
+ },
+ {
+  "id": "w_neck",
+  "at": 1.22
+ },
+ {
+  "id": "k_mok",
+  "at": 1.75
+ },
+ {
+  "id": "e_snap",
+  "at": 2.2
+ },
+ {
+  "id": "w_wrist",
+  "at": 2.82
+ },
+ {
+  "id": "k_sonmok",
+  "at": 3.6
+ },
+ {
+  "id": "w_seaweed",
+  "at": 4.72
+ },
+ {
+  "id": "k_gim",
+  "at": 5.39
+ },
+ {
+  "id": "w_rice",
+  "at": 5.84
+ },
+ {
+  "id": "k_bap",
+  "at": 6.5
+ },
+ {
+  "id": "e_snap",
+  "at": 7.0
+ },
+ {
+  "id": "e_gimbap",
+  "at": 7.62
+ },
+ {
+  "id": "k_gimbap",
+  "at": 8.4
+ },
+ {
+  "id": "w_mouth",
+  "at": 9.16
+ },
+ {
+  "id": "k_ip",
+  "at": 9.78
+ },
+ {
+  "id": "e_also",
+  "at": 10.3
+ },
+ {
+  "id": "k_gim",
+  "at": 11.28
+ },
+ {
+  "id": "e_snap",
+  "at": 11.73
+ },
+ {
+  "id": "e_breath",
+  "at": 12.35
+ },
+ {
+  "id": "k_ipgim",
+  "at": 13.42
+ },
+ {
+  "id": "w_fire",
+  "at": 14.05
+ },
+ {
+  "id": "k_bul",
+  "at": 14.66
+ },
+ {
+  "id": "w_flower",
+  "at": 15.14
+ },
+ {
+  "id": "k_kkot",
+  "at": 15.78
+ },
+ {
+  "id": "e_snap",
+  "at": 16.13
+ },
+ {
+  "id": "e_flame",
+  "at": 16.74
+ },
+ {
+  "id": "k_bulkkot",
+  "at": 17.46
+ },
+ {
+  "id": "e_guess",
+  "at": 18.45
+ },
+ {
+  "id": "e_palm",
+  "at": 19.85
+ },
+ {
+  "id": "k_sonbadak",
+  "at": 20.5
+ }
+]

@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a single word card for a Korean vocabulary video. The word is "breath you can see on a cold day".
+
+Mongle — the coral needle-felted wool ghost-shaped mascot in the attached reference photos — stands in the middle of the frame, body about 50% of the image height, slightly turned to the right. Use those photos ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. It wears a tiny knitted cream-and-lapis striped scarf, has rosy pink cheeks from the cold, and a few small white felt snowflakes float in the air. From its small round open mouth it breathes out a BIG puff of white fluffy wool breath cloud drifting to the right — the breath cloud is clearly visible against the beige and is the hero next to Mongle. A slightly cool winter light.
+
+FORMAT: one LANDSCAPE image, 3:2 (wider than tall).
+
+BACKDROP: a plain seamless warm tan-beige felt sweep, like a tiny photo studio (one soft even color, slightly lighter in the middle), soft studio light from the upper left, a soft contact shadow under the object. Nothing else in the frame.
+
+The object is centered and fills about 55% of the image height, with generous empty beige space around it. It must read instantly as what it is, even when the image is shown small on a phone.
+
+STYLE: real handmade needle-felt craft photographed with a macro lens — visible wool fibers, soft fuzzy edges, warm and cute but not babyish (for teenagers and university students). The same series look as the attached reference photo (felt miniatures, warm light), but NOT its café set — only the plain beige backdrop.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.

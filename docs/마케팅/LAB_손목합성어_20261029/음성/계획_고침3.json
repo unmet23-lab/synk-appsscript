@@ -1,0 +1,12 @@
+{
+ "note": "LAB E7 고침 3(10-29) — 두 시험관이 모두 끝이 약하다고 짚어 끝 한마디로 다음 문제(손 + 바닥 = ?)를 붙이고 그 말 한 줄을 산다. 지난 두 편의 「Your turn」과 다른 말.",
+ "voice": {"id":"tc_666a9871abcf27a5169850d0","name":"소진"},
+ "defaults": {"model":"ssfm-v30","lang":"en","emotion":"smart","intensity":1,"tempo":1,"seed":1029,"lufs":-17},
+ "out": "../remotion/public/vo4",
+ "trim": "both",
+ "versions": {
+  "g1029": {"defaults":{"seed":1029},"lines":[{"id":"e_guess","text":"Now guess this one!","prev":"Fire, flower. Flame! 불꽃!"}]},
+  "g2029": {"defaults":{"seed":2029},"lines":[{"id":"e_guess","text":"Now guess this one!","prev":"Fire, flower. Flame! 불꽃!"}]},
+  "g3029": {"defaults":{"seed":3029},"lines":[{"id":"e_guess","text":"Now guess this one!","prev":"Fire, flower. Flame! 불꽃!"}]}
+ }
+}

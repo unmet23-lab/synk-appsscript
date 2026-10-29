@@ -1,0 +1,12 @@
+{
+ "note": "LAB E7 고침 4(10-29) — v2 이해 시험 두 시험관이 다시 짚은 것: 김 두 뜻을 영상이 말해 주지 않음 → 「Steam is also…」로 말에서 바로 말하고, 끝 문제에 답이 없음 → 「Palm! 손바닥!」으로 답까지.",
+ "voice": {"id":"tc_666a9871abcf27a5169850d0","name":"소진"},
+ "defaults": {"model":"ssfm-v30","lang":"en","emotion":"smart","intensity":1,"tempo":1,"seed":1029,"lufs":-17},
+ "out": "../remotion/public/vo5",
+ "trim": "both",
+ "versions": {
+  "a1029": {"defaults":{"seed":1029},"lines":[{"id":"e_also","text":"Steam is also…","prev":"Seaweed is gim. Mouth is ip.","next":"gim!"},{"id":"e_palm","text":"Palm!","prev":"Hand plus floor?"},{"id":"k_sonbadak","text":"손바닥!","lang":"ko","emotion":"normal","tempo":0.95}]},
+  "a2029": {"defaults":{"seed":2029},"lines":[{"id":"e_also","text":"Steam is also…","prev":"Seaweed is gim. Mouth is ip.","next":"gim!"},{"id":"e_palm","text":"Palm!","prev":"Hand plus floor?"},{"id":"k_sonbadak","text":"손바닥!","lang":"ko","emotion":"normal","tempo":0.95}]},
+  "a3029": {"defaults":{"seed":3029},"lines":[{"id":"e_also","text":"Steam is also…","prev":"Seaweed is gim. Mouth is ip.","next":"gim!"},{"id":"e_palm","text":"Palm!","prev":"Hand plus floor?"},{"id":"k_sonbadak","text":"손바닥!","lang":"ko","emotion":"normal","tempo":0.95}]}
+ }
+}

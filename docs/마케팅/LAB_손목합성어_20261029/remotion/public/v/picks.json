@@ -1,0 +1,121 @@
+{
+ "w_hand": {
+  "from": "vo2/w3029/w_hand",
+  "dur": 0.626
+ },
+ "w_neck": {
+  "from": "vo2/w2029/w_neck",
+  "dur": 0.515
+ },
+ "k_son": {
+  "from": "vo/s3029/k_son",
+  "dur": 0.503
+ },
+ "k_mok": {
+  "from": "vo2/k4029/k_mok",
+  "dur": 0.339
+ },
+ "e_snap": {
+  "from": "vo/s3029/e_snap",
+  "dur": 0.596,
+  "speed": 1.1
+ },
+ "w_wrist": {
+  "from": "vo2/w1029/w_wrist",
+  "dur": 0.628
+ },
+ "k_sonmok": {
+  "from": "vo/s1029/k_sonmok",
+  "dur": 0.578
+ },
+ "w_seaweed": {
+  "from": "vo2/w1029/w_seaweed",
+  "dur": 0.648,
+  "speed": 1.15
+ },
+ "k_gim": {
+  "from": "vo/s1029/k_gim",
+  "dur": 0.434
+ },
+ "w_rice": {
+  "from": "vo2/w2029/w_rice",
+  "dur": 0.641
+ },
+ "k_bap": {
+  "from": "vo2/k5029/k_bap",
+  "dur": 0.385
+ },
+ "e_gimbap": {
+  "from": "vo/s3029/e_gimbap",
+  "dur": 0.767
+ },
+ "k_gimbap": {
+  "from": "vo/s1029/k_gimbap",
+  "dur": 0.488
+ },
+ "w_mouth": {
+  "from": "vo2/w2029/w_mouth",
+  "dur": 0.6,
+  "speed": 1.1
+ },
+ "k_ip": {
+  "from": "vo2/k7029/k_ip",
+  "dur": 0.333
+ },
+ "w_steam": {
+  "from": "vo2/w1029/w_steam",
+  "dur": 0.623,
+  "speed": 1.15
+ },
+ "e_breath": {
+  "from": "vo/s1029/e_breath",
+  "dur": 1.05,
+  "speed": 1.15
+ },
+ "k_ipgim": {
+  "from": "vo/s1029/k_ipgim",
+  "dur": 0.615
+ },
+ "w_fire": {
+  "from": "vo2/w1029/w_fire",
+  "dur": 0.588
+ },
+ "k_bul": {
+  "from": "vo/s1029/k_bul",
+  "dur": 0.461
+ },
+ "w_flower": {
+  "from": "vo2/w2029/w_flower",
+  "dur": 0.623,
+  "speed": 1.15
+ },
+ "k_kkot": {
+  "from": "vo2/k8029/k_kkot",
+  "dur": 0.322
+ },
+ "e_flame": {
+  "from": "vo/s3029/e_flame",
+  "dur": 0.699
+ },
+ "k_bulkkot": {
+  "from": "vo/s1029/k_bulkkot",
+  "dur": 0.557
+ },
+ "e_guess": {
+  "from": "vo4/g1029/e_guess",
+  "dur": 1.27
+ },
+ "e_also": {
+  "from": "vo5/a3029/e_also",
+  "dur": 0.957,
+  "speed": 1.2
+ },
+ "e_palm": {
+  "from": "vo5/a1029/e_palm",
+  "dur": 0.588
+ },
+ "k_sonbadak": {
+  "from": "vo5/a2029/k_sonbadak",
+  "dur": 0.606
+ }
+}

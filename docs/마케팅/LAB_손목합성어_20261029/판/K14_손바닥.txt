@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a single word card for a Korean vocabulary video. The word is PALM (of the hand).
+
+The same cute peach felt doll hand as in the earlier cards (five short rounded fingers, a cream felt shirt cuff), held open with the PALM facing up toward the camera, fingers relaxed. The whole flat inside of the hand — the PALM — glows softly with warm golden light, like a little spotlight on the palm, so the palm is obviously the highlighted part. Nothing in the hand.
+
+FORMAT: one LANDSCAPE image, 3:2 (wider than tall).
+
+BACKDROP: a plain seamless warm tan-beige felt sweep, like a tiny photo studio (one soft even color, slightly lighter in the middle), soft studio light from the upper left, a soft contact shadow under the object. Nothing else in the frame.
+
+The object is centered and fills about 55% of the image height, with generous empty beige space around it. It must read instantly as what it is, even when the image is shown small on a phone.
+
+STYLE: real handmade needle-felt craft photographed with a macro lens — visible wool fibers, soft fuzzy edges, warm and cute but not babyish (for teenagers and university students). The same series look as the attached reference photo (felt miniatures, warm light), but NOT its café set — only the plain beige backdrop.
+
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere in the image.

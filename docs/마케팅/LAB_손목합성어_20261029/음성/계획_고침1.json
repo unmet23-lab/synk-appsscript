@@ -1,0 +1,388 @@
+{
+ "note": "LAB E7 고침 1(10-29) — 첫 굽기의 「Neck is」가 받아쓰기에서 셋 다 「Next is」, 「Rice is」가 「Rices」로 붙어 영어는 낱말 하나씩(Hand. · Neck. …)으로 다시 사고, 「Wrist!」 · 「Gimbap!」은 seed를 더 산다. 한국어 「목 → 뭐」 · 「꽃 → 끝 · 고 · 코」 · 「입 → 잇」 · 「밥 → 팝」은 tempo 0.9로 seed 다섯씩.",
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1029,
+  "lufs": -17
+ },
+ "out": "../remotion/public/vo2",
+ "trim": "both",
+ "versions": {
+  "w1029": {
+   "defaults": {
+    "seed": 1029
+   },
+   "lines": [
+    {
+     "id": "w_hand",
+     "text": "Hand.",
+     "emotion": "smart",
+     "next": "Neck."
+    },
+    {
+     "id": "w_neck",
+     "text": "Neck.",
+     "emotion": "smart",
+     "prev": "Hand.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_seaweed",
+     "text": "Seaweed.",
+     "emotion": "smart",
+     "next": "Rice."
+    },
+    {
+     "id": "w_rice",
+     "text": "Rice.",
+     "emotion": "smart",
+     "prev": "Seaweed.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_mouth",
+     "text": "Mouth.",
+     "emotion": "smart",
+     "next": "Steam."
+    },
+    {
+     "id": "w_steam",
+     "text": "Steam.",
+     "emotion": "smart",
+     "prev": "Mouth.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_fire",
+     "text": "Fire.",
+     "emotion": "smart",
+     "next": "Flower."
+    },
+    {
+     "id": "w_flower",
+     "text": "Flower.",
+     "emotion": "smart",
+     "prev": "Fire.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_wrist",
+     "text": "Wrist!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    },
+    {
+     "id": "w_gimbap",
+     "text": "Gimbap!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    }
+   ]
+  },
+  "w2029": {
+   "defaults": {
+    "seed": 2029
+   },
+   "lines": [
+    {
+     "id": "w_hand",
+     "text": "Hand.",
+     "emotion": "smart",
+     "next": "Neck."
+    },
+    {
+     "id": "w_neck",
+     "text": "Neck.",
+     "emotion": "smart",
+     "prev": "Hand.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_seaweed",
+     "text": "Seaweed.",
+     "emotion": "smart",
+     "next": "Rice."
+    },
+    {
+     "id": "w_rice",
+     "text": "Rice.",
+     "emotion": "smart",
+     "prev": "Seaweed.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_mouth",
+     "text": "Mouth.",
+     "emotion": "smart",
+     "next": "Steam."
+    },
+    {
+     "id": "w_steam",
+     "text": "Steam.",
+     "emotion": "smart",
+     "prev": "Mouth.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_fire",
+     "text": "Fire.",
+     "emotion": "smart",
+     "next": "Flower."
+    },
+    {
+     "id": "w_flower",
+     "text": "Flower.",
+     "emotion": "smart",
+     "prev": "Fire.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_wrist",
+     "text": "Wrist!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    },
+    {
+     "id": "w_gimbap",
+     "text": "Gimbap!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    }
+   ]
+  },
+  "w3029": {
+   "defaults": {
+    "seed": 3029
+   },
+   "lines": [
+    {
+     "id": "w_hand",
+     "text": "Hand.",
+     "emotion": "smart",
+     "next": "Neck."
+    },
+    {
+     "id": "w_neck",
+     "text": "Neck.",
+     "emotion": "smart",
+     "prev": "Hand.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_seaweed",
+     "text": "Seaweed.",
+     "emotion": "smart",
+     "next": "Rice."
+    },
+    {
+     "id": "w_rice",
+     "text": "Rice.",
+     "emotion": "smart",
+     "prev": "Seaweed.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_mouth",
+     "text": "Mouth.",
+     "emotion": "smart",
+     "next": "Steam."
+    },
+    {
+     "id": "w_steam",
+     "text": "Steam.",
+     "emotion": "smart",
+     "prev": "Mouth.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_fire",
+     "text": "Fire.",
+     "emotion": "smart",
+     "next": "Flower."
+    },
+    {
+     "id": "w_flower",
+     "text": "Flower.",
+     "emotion": "smart",
+     "prev": "Fire.",
+     "next": "Snap!"
+    },
+    {
+     "id": "w_wrist",
+     "text": "Wrist!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    },
+    {
+     "id": "w_gimbap",
+     "text": "Gimbap!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    }
+   ]
+  },
+  "k4029": {
+   "defaults": {
+    "seed": 4029
+   },
+   "lines": [
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.9
+    }
+   ]
+  },
+  "k5029": {
+   "defaults": {
+    "seed": 5029
+   },
+   "lines": [
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.9
+    }
+   ]
+  },
+  "k6029": {
+   "defaults": {
+    "seed": 6029
+   },
+   "lines": [
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.9
+    }
+   ]
+  },
+  "k7029": {
+   "defaults": {
+    "seed": 7029
+   },
+   "lines": [
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.9
+    }
+   ]
+  },
+  "k8029": {
+   "defaults": {
+    "seed": 8029
+   },
+   "lines": [
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.9
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.9
+    }
+   ]
+  }
+ }
+}

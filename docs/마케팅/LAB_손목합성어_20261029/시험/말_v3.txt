@@ -1,0 +1,19 @@
+[0.0] Hand. 손.
+[1.2] Neck. 목.
+[2.2] Snap!
+[2.8] Wrist. 손목!
+[4.7] Seaweed. 김.
+[5.8] Rice. 밥.
+[7.0] Snap!
+[7.6] Gimbap! 김밥!
+[9.2] Mouth. 입.
+[10.3] Steam is also… 김.
+[11.7] Snap!
+[12.4] Frosty breath! 입김!
+[14.1] Fire. 불.
+[15.1] Flower. 꽃.
+[16.1] Snap!
+[16.7] Flame! 불꽃!
+[18.5] Now guess this one!
+[19.9] Palm! 손바닥!
+(배경: 박자 있는 음악, 조각이 합쳐질 때 딸깍 · 반짝 소리)

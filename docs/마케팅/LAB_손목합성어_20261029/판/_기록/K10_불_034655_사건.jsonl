@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a183d6-3a7d-7121-8c70-c9021b290731"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one landscape image of a layered felt flame on a plain warm beige backdrop.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A glowing red, orange, and golden-yellow felt flame floats against a warm beige backdrop."}}
+{"type":"turn.completed","usage":{"input_tokens":63476,"cached_input_tokens":52736,"cache_write_input_tokens":0,"output_tokens":578,"reasoning_output_tokens":66}}

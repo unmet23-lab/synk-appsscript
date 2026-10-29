@@ -1,0 +1,21 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the full background frame of a vertical short video: open-mic night at a cozy little needle-felted wool café. The coral mascot Mongle stands on a tiny stage in the bottom-left corner and sings into a microphone on a stand.
+
+The FIRST attached image is an earlier episode of this series: keep the same handmade felt café world (oak wood, cream felt walls, warm pendant lamps, plants, felt cups), but now it is EVENING — the room is dim and cozy. The other attached photos show the mascot.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video will crop about 8% off the left and right edges, so keep Mongle and the microphone inside the central 84% of the width.
+
+COMPOSITION (very important):
+- The TOP 66% of the image is calm and dark: a softly out-of-focus café wall at night in deep teal-navy shadow, a few small warm amber bokeh dots from string lights near the upper right, and a faint teal glow in the top-right corner. Nothing detailed or bright there — a picture card and big white text will be placed over this area.
+- BOTTOM-LEFT: a small low oak stage box at the very bottom edge. Mongle stands on it, body about 22% of the image height, centered at about 28% of the image width (its left edge at least 12% of the width from the left edge of the image). Right in front of Mongle, slightly to the right, a tiny vintage microphone (charcoal felt head, brass felt body) on a thin black felt stand, at the height of Mongle's mouth, angled toward it.
+- Mongle is seen in three-quarter view turned to the right (toward the center of the frame), SINGING: eyes happily closed (two curved closed-eye lines), small round open mouth as if singing a note, pink felt cheeks.
+- BOTTOM-RIGHT: a dim, empty, softly blurred café floor and one oak stool — nothing important.
+
+CHARACTER: Mongle = the coral needle-felted wool ghost-shaped mascot in the attached reference photos. Use those photos ONLY for its exact body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. Mongle never holds anything.
+
+LIGHT: a warm amber spotlight from the upper left falls on Mongle and the microphone; the rest of the room is dim (teal-navy shadows, a warm orange glow low on the right). Colors: deep teal-navy, warm amber, oak, cream. Coral only on Mongle, so Mongle pops.
+
+PHOTOGRAPHY: real handmade needle-felt miniature shot with a macro lens, visible wool fibers, shallow depth of field. Cute but not babyish — for teenagers and university students.
+
+Absolutely no text, letters, numbers, logos, signs, posters or watermarks anywhere in the image.

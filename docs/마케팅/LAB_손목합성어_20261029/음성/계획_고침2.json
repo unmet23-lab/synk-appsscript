@@ -1,0 +1,113 @@
+{
+ "note": "LAB E7 고침 2(10-29) — 「꽃」이 여덟 판 가운데 다섯이 「끝」, 「입」이 「잇」으로 받아 적혀 소리가 같은 다른 글(꼳 · 잎)과 느낌표 판을 tempo 0.85로 seed 셋씩 산다.",
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 9029,
+  "lufs": -17
+ },
+ "out": "../remotion/public/vo3",
+ "trim": "both",
+ "versions": {
+  "k9029": {
+   "defaults": {
+    "seed": 9029
+   },
+   "lines": [
+    {
+     "id": "k_kkot_a",
+     "text": "꼳.",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_kkot_b",
+     "text": "꽃!",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_ip_a",
+     "text": "잎.",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_ip_b",
+     "text": "입!",
+     "lang": "ko",
+     "tempo": 0.85
+    }
+   ]
+  },
+  "k10029": {
+   "defaults": {
+    "seed": 10029
+   },
+   "lines": [
+    {
+     "id": "k_kkot_a",
+     "text": "꼳.",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_kkot_b",
+     "text": "꽃!",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_ip_a",
+     "text": "잎.",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_ip_b",
+     "text": "입!",
+     "lang": "ko",
+     "tempo": 0.85
+    }
+   ]
+  },
+  "k11029": {
+   "defaults": {
+    "seed": 11029
+   },
+   "lines": [
+    {
+     "id": "k_kkot_a",
+     "text": "꼳.",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_kkot_b",
+     "text": "꽃!",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_ip_a",
+     "text": "잎.",
+     "lang": "ko",
+     "tempo": 0.85
+    },
+    {
+     "id": "k_ip_b",
+     "text": "입!",
+     "lang": "ko",
+     "tempo": 0.85
+    }
+   ]
+  }
+ }
+}

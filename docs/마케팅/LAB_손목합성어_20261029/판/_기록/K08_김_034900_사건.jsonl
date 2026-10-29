@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a183d8-1d05-77d1-9b77-2b787a266458"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해, 파란 펠트 머그 위로 흰 김 두 줄기가 크게 피어오르는 가로형 이미지 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"파란 펠트 머그 위로 두 줄기의 하얀 김이 피어오르는 따뜻한 베이지 배경의 이미지입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":74873,"cached_input_tokens":52352,"cache_write_input_tokens":0,"output_tokens":708,"reasoning_output_tokens":160}}

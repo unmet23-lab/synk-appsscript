@@ -1,0 +1,497 @@
+{
+ "note": "LAB E7 「손 + 목 = 손목」(10-29 07시 회차) — 오마주 원본 Korean Hamin wOXCfmVQz78의 랩 박자(105BPM · 한 낱말 8박)에 맞춰 영어 조각과 한국어 낱말을 따로 사서 박자 자리에 놓는다. 해설 소진 · 감정 세기 1.0(장부 머리말). 줄마다 seed 셋을 사서 tools/목소리엉킴.py · 받아쓰기로 고른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_손목합성어_20261029/음성/계획.json --굽기",
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1029,
+  "lufs": -17
+ },
+ "out": "../remotion/public/vo",
+ "trim": "both",
+ "versions": {
+  "s1029": {
+   "defaults": {
+    "seed": 1029
+   },
+   "lines": [
+    {
+     "id": "e_hand",
+     "text": "Hand is…",
+     "emotion": "smart",
+     "next": "Neck is…"
+    },
+    {
+     "id": "e_neck",
+     "text": "Neck is…",
+     "emotion": "smart",
+     "prev": "Hand is son.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_snap",
+     "text": "Snap!",
+     "emotion": "smart",
+     "prev": "Hand is son, neck is mok.",
+     "next": "Wrist!"
+    },
+    {
+     "id": "e_wrist",
+     "text": "Wrist!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Seaweed is…"
+    },
+    {
+     "id": "e_seaweed",
+     "text": "Seaweed is…",
+     "emotion": "smart",
+     "next": "Rice is…"
+    },
+    {
+     "id": "e_rice",
+     "text": "Rice is…",
+     "emotion": "smart",
+     "prev": "Seaweed is gim.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_gimbap",
+     "text": "Gimbap!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Mouth is…"
+    },
+    {
+     "id": "e_mouth",
+     "text": "Mouth is…",
+     "emotion": "smart",
+     "next": "Steam is…"
+    },
+    {
+     "id": "e_steam",
+     "text": "Steam is…",
+     "emotion": "smart",
+     "prev": "Mouth is ip.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_breath",
+     "text": "Frosty breath!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Fire is…"
+    },
+    {
+     "id": "e_fire",
+     "text": "Fire is…",
+     "emotion": "smart",
+     "next": "Flower is…"
+    },
+    {
+     "id": "e_flower",
+     "text": "Flower is…",
+     "emotion": "smart",
+     "prev": "Fire is bul.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_flame",
+     "text": "Flame!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    },
+    {
+     "id": "k_son",
+     "text": "손.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_sonmok",
+     "text": "손목!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_gim",
+     "text": "김.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_gimbap",
+     "text": "김밥!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_ipgim",
+     "text": "입김!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bul",
+     "text": "불.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bulkkot",
+     "text": "불꽃!",
+     "lang": "ko",
+     "tempo": 0.95
+    }
+   ]
+  },
+  "s2029": {
+   "defaults": {
+    "seed": 2029
+   },
+   "lines": [
+    {
+     "id": "e_hand",
+     "text": "Hand is…",
+     "emotion": "smart",
+     "next": "Neck is…"
+    },
+    {
+     "id": "e_neck",
+     "text": "Neck is…",
+     "emotion": "smart",
+     "prev": "Hand is son.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_snap",
+     "text": "Snap!",
+     "emotion": "smart",
+     "prev": "Hand is son, neck is mok.",
+     "next": "Wrist!"
+    },
+    {
+     "id": "e_wrist",
+     "text": "Wrist!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Seaweed is…"
+    },
+    {
+     "id": "e_seaweed",
+     "text": "Seaweed is…",
+     "emotion": "smart",
+     "next": "Rice is…"
+    },
+    {
+     "id": "e_rice",
+     "text": "Rice is…",
+     "emotion": "smart",
+     "prev": "Seaweed is gim.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_gimbap",
+     "text": "Gimbap!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Mouth is…"
+    },
+    {
+     "id": "e_mouth",
+     "text": "Mouth is…",
+     "emotion": "smart",
+     "next": "Steam is…"
+    },
+    {
+     "id": "e_steam",
+     "text": "Steam is…",
+     "emotion": "smart",
+     "prev": "Mouth is ip.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_breath",
+     "text": "Frosty breath!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Fire is…"
+    },
+    {
+     "id": "e_fire",
+     "text": "Fire is…",
+     "emotion": "smart",
+     "next": "Flower is…"
+    },
+    {
+     "id": "e_flower",
+     "text": "Flower is…",
+     "emotion": "smart",
+     "prev": "Fire is bul.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_flame",
+     "text": "Flame!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    },
+    {
+     "id": "k_son",
+     "text": "손.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_sonmok",
+     "text": "손목!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_gim",
+     "text": "김.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_gimbap",
+     "text": "김밥!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_ipgim",
+     "text": "입김!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bul",
+     "text": "불.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bulkkot",
+     "text": "불꽃!",
+     "lang": "ko",
+     "tempo": 0.95
+    }
+   ]
+  },
+  "s3029": {
+   "defaults": {
+    "seed": 3029
+   },
+   "lines": [
+    {
+     "id": "e_hand",
+     "text": "Hand is…",
+     "emotion": "smart",
+     "next": "Neck is…"
+    },
+    {
+     "id": "e_neck",
+     "text": "Neck is…",
+     "emotion": "smart",
+     "prev": "Hand is son.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_snap",
+     "text": "Snap!",
+     "emotion": "smart",
+     "prev": "Hand is son, neck is mok.",
+     "next": "Wrist!"
+    },
+    {
+     "id": "e_wrist",
+     "text": "Wrist!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Seaweed is…"
+    },
+    {
+     "id": "e_seaweed",
+     "text": "Seaweed is…",
+     "emotion": "smart",
+     "next": "Rice is…"
+    },
+    {
+     "id": "e_rice",
+     "text": "Rice is…",
+     "emotion": "smart",
+     "prev": "Seaweed is gim.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_gimbap",
+     "text": "Gimbap!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Mouth is…"
+    },
+    {
+     "id": "e_mouth",
+     "text": "Mouth is…",
+     "emotion": "smart",
+     "next": "Steam is…"
+    },
+    {
+     "id": "e_steam",
+     "text": "Steam is…",
+     "emotion": "smart",
+     "prev": "Mouth is ip.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_breath",
+     "text": "Frosty breath!",
+     "emotion": "smart",
+     "prev": "Snap!",
+     "next": "Fire is…"
+    },
+    {
+     "id": "e_fire",
+     "text": "Fire is…",
+     "emotion": "smart",
+     "next": "Flower is…"
+    },
+    {
+     "id": "e_flower",
+     "text": "Flower is…",
+     "emotion": "smart",
+     "prev": "Fire is bul.",
+     "next": "Snap!"
+    },
+    {
+     "id": "e_flame",
+     "text": "Flame!",
+     "emotion": "smart",
+     "prev": "Snap!"
+    },
+    {
+     "id": "k_son",
+     "text": "손.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_mok",
+     "text": "목.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_sonmok",
+     "text": "손목!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_gim",
+     "text": "김.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bap",
+     "text": "밥.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_gimbap",
+     "text": "김밥!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_ip",
+     "text": "입.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_ipgim",
+     "text": "입김!",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bul",
+     "text": "불.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_kkot",
+     "text": "꽃.",
+     "lang": "ko",
+     "tempo": 0.95
+    },
+    {
+     "id": "k_bulkkot",
+     "text": "불꽃!",
+     "lang": "ko",
+     "tempo": 0.95
+    }
+   ]
+  }
+ }
+}
