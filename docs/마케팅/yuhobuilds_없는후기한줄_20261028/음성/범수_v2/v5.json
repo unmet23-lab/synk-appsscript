@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v5",
+ "text": "후기도, 작성자도 전부 빈칸으로 남겼어요. 가게 이름이랑 가격까지요.",
+ "dur": 4.01,
+ "words": [
+  {
+   "text": "후기도,",
+   "start": 0.03,
+   "end": 0.343
+  },
+  {
+   "text": "작성자도",
+   "start": 0.594,
+   "end": 1.109
+  },
+  {
+   "text": "전부",
+   "start": 1.406,
+   "end": 1.625
+  },
+  {
+   "text": "빈칸으로",
+   "start": 1.673,
+   "end": 2.048
+  },
+  {
+   "text": "남겼어요.",
+   "start": 2.095,
+   "end": 2.533
+  },
+  {
+   "text": "가게",
+   "start": 2.845,
+   "end": 3.049
+  },
+  {
+   "text": "이름이랑",
+   "start": 3.111,
+   "end": 3.424
+  },
+  {
+   "text": "가격까지요.",
+   "start": 3.471,
+   "end": 4.01
+  }
+ ],
+ "source": {
+  "key": "93e1f478af09fc5a3090119eb892a1ea",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

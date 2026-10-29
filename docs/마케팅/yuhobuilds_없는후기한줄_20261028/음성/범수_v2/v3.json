@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "그래서 이번엔 이 말을 덧붙였어요. 모르는 숫자, 후기, 이름은 지어내지 말고 빈칸으로 남겨 줘.",
+ "dur": 5.024,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.22
+  },
+  {
+   "text": "이번엔",
+   "start": 0.277,
+   "end": 0.534
+  },
+  {
+   "text": "이",
+   "start": 0.577,
+   "end": 0.591
+  },
+  {
+   "text": "말을",
+   "start": 0.663,
+   "end": 0.834
+  },
+  {
+   "text": "덧붙였어요.",
+   "start": 0.877,
+   "end": 1.391
+  },
+  {
+   "text": "모르는",
+   "start": 2.035,
+   "end": 2.321
+  },
+  {
+   "text": "숫자,",
+   "start": 2.364,
+   "end": 2.564
+  },
+  {
+   "text": "후기,",
+   "start": 2.75,
+   "end": 2.964
+  },
+  {
+   "text": "이름은",
+   "start": 3.164,
+   "end": 3.392
+  },
+  {
+   "text": "지어내지",
+   "start": 3.45,
+   "end": 3.721
+  },
+  {
+   "text": "말고",
+   "start": 3.764,
+   "end": 3.992
+  },
+  {
+   "text": "빈칸으로",
+   "start": 4.15,
+   "end": 4.522
+  },
+  {
+   "text": "남겨",
+   "start": 4.565,
+   "end": 4.765
+  },
+  {
+   "text": "줘.",
+   "start": 4.808,
+   "end": 5.024
+  }
+ ],
+ "source": {
+  "key": "03d9f3c5dfd63dd37a3c4c3aac74a3e9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

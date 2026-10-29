@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7",
+ "text": "그 한마디가 통했어요. 대신 빈칸은 진짜 손님 말로 채우셔야죠. 여러분도 에이아이가 지어낸 거, 발견한 적 있어요?",
+ "dur": 6.259,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.02,
+   "end": 0.079
+  },
+  {
+   "text": "한마디가",
+   "start": 0.21,
+   "end": 0.533
+  },
+  {
+   "text": "통했어요.",
+   "start": 0.592,
+   "end": 0.988
+  },
+  {
+   "text": "대신",
+   "start": 1.384,
+   "end": 1.604
+  },
+  {
+   "text": "빈칸은",
+   "start": 1.648,
+   "end": 2.029
+  },
+  {
+   "text": "진짜",
+   "start": 2.088,
+   "end": 2.308
+  },
+  {
+   "text": "손님",
+   "start": 2.351,
+   "end": 2.556
+  },
+  {
+   "text": "말로",
+   "start": 2.601,
+   "end": 2.762
+  },
+  {
+   "text": "채우셔야죠.",
+   "start": 2.806,
+   "end": 3.246
+  },
+  {
+   "text": "여러분도",
+   "start": 4.081,
+   "end": 4.433
+  },
+  {
+   "text": "에이아이가",
+   "start": 4.58,
+   "end": 4.888
+  },
+  {
+   "text": "지어낸",
+   "start": 4.931,
+   "end": 5.254
+  },
+  {
+   "text": "거,",
+   "start": 5.298,
+   "end": 5.342
+  },
+  {
+   "text": "발견한",
+   "start": 5.415,
+   "end": 5.723
+  },
+  {
+   "text": "적",
+   "start": 5.768,
+   "end": 5.841
+  },
+  {
+   "text": "있어요?",
+   "start": 5.885,
+   "end": 6.259
+  }
+ ],
+ "source": {
+  "key": "5dc63f5065affb78863268d67dc0dff3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

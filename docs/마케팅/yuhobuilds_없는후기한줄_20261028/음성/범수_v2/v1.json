@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "빵집 홈페이지 글을 에이아이한테 맡겼더니, 아무도 안 쓴 손님 후기를 세 개나 지어 넣었어요.",
+ "dur": 4.418,
+ "words": [
+  {
+   "text": "빵집",
+   "start": 0.05,
+   "end": 0.301
+  },
+  {
+   "text": "홈페이지",
+   "start": 0.339,
+   "end": 0.702
+  },
+  {
+   "text": "글을",
+   "start": 0.765,
+   "end": 0.953
+  },
+  {
+   "text": "에이아이한테",
+   "start": 1.016,
+   "end": 1.43
+  },
+  {
+   "text": "맡겼더니,",
+   "start": 1.48,
+   "end": 1.906
+  },
+  {
+   "text": "아무도",
+   "start": 2.433,
+   "end": 2.646
+  },
+  {
+   "text": "안",
+   "start": 2.697,
+   "end": 2.759
+  },
+  {
+   "text": "쓴",
+   "start": 2.809,
+   "end": 2.909
+  },
+  {
+   "text": "손님",
+   "start": 2.947,
+   "end": 3.16
+  },
+  {
+   "text": "후기를",
+   "start": 3.198,
+   "end": 3.423
+  },
+  {
+   "text": "세",
+   "start": 3.461,
+   "end": 3.549
+  },
+  {
+   "text": "개나",
+   "start": 3.586,
+   "end": 3.737
+  },
+  {
+   "text": "지어",
+   "start": 3.775,
+   "end": 3.913
+  },
+  {
+   "text": "넣었어요.",
+   "start": 3.95,
+   "end": 4.418
+  }
+ ],
+ "source": {
+  "key": "28382a4105d5ee233bbd286d7f5932db",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 176
+ }
+}

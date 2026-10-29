@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "그런데 양심은 있었는지, 후기 바로 위에 이렇게 써 놨더라고요. 예시니까, 진짜 후기로 바꿔 달라고.",
+ "dur": 5.749,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.29
+  },
+  {
+   "text": "양심은",
+   "start": 0.456,
+   "end": 0.818
+  },
+  {
+   "text": "있었는지,",
+   "start": 0.863,
+   "end": 1.27
+  },
+  {
+   "text": "후기",
+   "start": 1.721,
+   "end": 1.902
+  },
+  {
+   "text": "바로",
+   "start": 1.962,
+   "end": 2.158
+  },
+  {
+   "text": "위에",
+   "start": 2.218,
+   "end": 2.339
+  },
+  {
+   "text": "이렇게",
+   "start": 2.399,
+   "end": 2.61
+  },
+  {
+   "text": "써",
+   "start": 2.655,
+   "end": 2.73
+  },
+  {
+   "text": "놨더라고요.",
+   "start": 2.775,
+   "end": 3.212
+  },
+  {
+   "text": "예시니까,",
+   "start": 3.604,
+   "end": 3.995
+  },
+  {
+   "text": "진짜",
+   "start": 4.371,
+   "end": 4.628
+  },
+  {
+   "text": "후기로",
+   "start": 4.672,
+   "end": 4.869
+  },
+  {
+   "text": "바꿔",
+   "start": 4.913,
+   "end": 5.11
+  },
+  {
+   "text": "달라고.",
+   "start": 5.154,
+   "end": 5.749
+  }
+ ],
+ "source": {
+  "key": "59bd5b29ad3b094b6670de118cc661dc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 190
+ }
+}

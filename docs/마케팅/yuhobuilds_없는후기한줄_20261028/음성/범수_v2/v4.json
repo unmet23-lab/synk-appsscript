@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v4",
+ "text": "새 채팅에 보냈더니, 이번엔 답에 빈칸이 줄줄이 나와요.",
+ "dur": 3.076,
+ "words": [
+  {
+   "text": "새",
+   "start": 0.03,
+   "end": 0.093
+  },
+  {
+   "text": "채팅에",
+   "start": 0.157,
+   "end": 0.425
+  },
+  {
+   "text": "보냈더니,",
+   "start": 0.473,
+   "end": 0.852
+  },
+  {
+   "text": "이번엔",
+   "start": 1.295,
+   "end": 1.532
+  },
+  {
+   "text": "답에",
+   "start": 1.58,
+   "end": 1.769
+  },
+  {
+   "text": "빈칸이",
+   "start": 1.832,
+   "end": 2.18
+  },
+  {
+   "text": "줄줄이",
+   "start": 2.227,
+   "end": 2.512
+  },
+  {
+   "text": "나와요.",
+   "start": 2.56,
+   "end": 3.076
+  }
+ ],
+ "source": {
+  "key": "434185d3bbaa46425ddbbf80f95ef708",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}
