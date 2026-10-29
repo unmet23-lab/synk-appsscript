@@ -126,7 +126,7 @@ const Sound: React.FC = () => (
   </>
 );
 
-// v5: 새로 생긴 몽글 자리에 그 칸 말풍선과 같은 단계 알약(Түвшин 2~5) — 「새 몽글 = 한 단계 더 깊은 사과」. 1.1초(짧은 칸은 칸 끝 0.2초 전까지)
+// v5: 새로 생긴 몽글 자리에 그 칸 말풍선과 같은 단계 알약(Түвшин 2~5) — 「새 몽글 = 한 단계 더 깊은 사과」(v6: 작아 안 읽히던 🙇는 뺌). 1.1초(짧은 칸은 칸 끝 0.2초 전까지)
 // 두고 0.2초에 사라진다. 반전 뒤(단계 없는 칸)는 띄우지 않는다. 배지가 화면 밖으로 안 나가게 가운데를 안쪽으로 당긴다.
 const Pop: React.FC<{ at: number; end: number; x: number; y: number; level: number; loc: Loc }> = ({ at, end, x, y, level, loc }) => {
   const frame = useCurrentFrame();
@@ -139,7 +139,7 @@ const Pop: React.FC<{ at: number; end: number; x: number; y: number; level: numb
   return (
     <div style={{ position: 'absolute', left: cx - 180, top: y - 50, width: 360, textAlign: 'center', opacity: o, transform: `scale(${s})` }}>
       <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999, boxShadow: '0 6px 18px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
-        {LEVEL[loc](level)} 🙇
+        {LEVEL[loc](level)}
       </span>
     </div>
   );
