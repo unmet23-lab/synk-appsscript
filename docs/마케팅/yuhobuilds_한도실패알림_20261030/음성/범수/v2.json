@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "사용 한도에 걸렸는데도 십오 분마다 다시 돌고, 그때마다 알림을 보냈거든요.",
+ "dur": 4.149,
+ "words": [
+  {
+   "text": "사용",
+   "start": 0.02,
+   "end": 0.246
+  },
+  {
+   "text": "한도에",
+   "start": 0.289,
+   "end": 0.5
+  },
+  {
+   "text": "걸렸는데도",
+   "start": 0.557,
+   "end": 1.079
+  },
+  {
+   "text": "십오",
+   "start": 1.432,
+   "end": 1.602
+  },
+  {
+   "text": "분마다",
+   "start": 1.645,
+   "end": 1.927
+  },
+  {
+   "text": "다시",
+   "start": 1.97,
+   "end": 2.153
+  },
+  {
+   "text": "돌고,",
+   "start": 2.195,
+   "end": 2.421
+  },
+  {
+   "text": "그때마다",
+   "start": 2.789,
+   "end": 3.128
+  },
+  {
+   "text": "알림을",
+   "start": 3.184,
+   "end": 3.452
+  },
+  {
+   "text": "보냈거든요.",
+   "start": 3.495,
+   "end": 4.149
+  }
+ ],
+ "source": {
+  "key": "147e41e62fe8376ceb822d33208caec1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

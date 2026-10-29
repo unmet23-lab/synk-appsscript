@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v5",
+ "text": "그래서 이렇게 고쳤어요. 그 시각까지 쉬고, 알림은 처음 한 번만.",
+ "dur": 3.276,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.249
+  },
+  {
+   "text": "이렇게",
+   "start": 0.316,
+   "end": 0.519
+  },
+  {
+   "text": "고쳤어요.",
+   "start": 0.559,
+   "end": 1.005
+  },
+  {
+   "text": "그",
+   "start": 1.41,
+   "end": 1.464
+  },
+  {
+   "text": "시각까지",
+   "start": 1.504,
+   "end": 1.869
+  },
+  {
+   "text": "쉬고,",
+   "start": 1.936,
+   "end": 2.111
+  },
+  {
+   "text": "알림은",
+   "start": 2.341,
+   "end": 2.597
+  },
+  {
+   "text": "처음",
+   "start": 2.638,
+   "end": 2.8
+  },
+  {
+   "text": "한",
+   "start": 2.841,
+   "end": 2.881
+  },
+  {
+   "text": "번만.",
+   "start": 2.922,
+   "end": 3.276
+  }
+ ],
+ "source": {
+  "key": "5ccbc68eb1563f11e38c2b25d7acfe3d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 138
+ }
+}

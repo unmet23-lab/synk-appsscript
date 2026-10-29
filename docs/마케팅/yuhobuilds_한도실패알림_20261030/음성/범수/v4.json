@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v4",
+ "text": "그런데 언제 풀리는지는, 그 알림 안에 이미 적혀 있었어요.",
+ "dur": 2.94,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.03,
+   "end": 0.284
+  },
+  {
+   "text": "언제",
+   "start": 0.364,
+   "end": 0.551
+  },
+  {
+   "text": "풀리는지는,",
+   "start": 0.618,
+   "end": 1.165
+  },
+  {
+   "text": "그",
+   "start": 1.353,
+   "end": 1.42
+  },
+  {
+   "text": "알림",
+   "start": 1.513,
+   "end": 1.726
+  },
+  {
+   "text": "안에",
+   "start": 1.766,
+   "end": 1.9
+  },
+  {
+   "text": "이미",
+   "start": 2.02,
+   "end": 2.127
+  },
+  {
+   "text": "적혀",
+   "start": 2.167,
+   "end": 2.38
+  },
+  {
+   "text": "있었어요.",
+   "start": 2.421,
+   "end": 2.94
+  }
+ ],
+ "source": {
+  "key": "766e88bf54f5716e6983ff0a837b950b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

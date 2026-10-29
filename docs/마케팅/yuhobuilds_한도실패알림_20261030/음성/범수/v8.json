@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v8",
+ "text": "일흔한 번이, 한 번으로.",
+ "dur": 1.143,
+ "words": [
+  {
+   "text": "일흔한",
+   "start": 0.03,
+   "end": 0.305
+  },
+  {
+   "text": "번이,",
+   "start": 0.349,
+   "end": 0.508
+  },
+  {
+   "text": "한",
+   "start": 0.552,
+   "end": 0.653
+  },
+  {
+   "text": "번으로.",
+   "start": 0.697,
+   "end": 1.143
+  }
+ ],
+ "source": {
+  "key": "f3480f7e0b33352b0dd812fc4283b4bb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}

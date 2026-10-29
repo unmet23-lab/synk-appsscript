@@ -1,0 +1,110 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v6",
+ "text": "풀리자 저절로 다시 돌았고, 이틀 뒤 또 한도에 걸렸을 땐 알림이 딱 한 번 왔어요.",
+ "dur": 4.456,
+ "words": [
+  {
+   "text": "풀리자",
+   "start": 0.04,
+   "end": 0.337
+  },
+  {
+   "text": "저절로",
+   "start": 0.378,
+   "end": 0.648
+  },
+  {
+   "text": "다시",
+   "start": 0.689,
+   "end": 0.837
+  },
+  {
+   "text": "돌았고,",
+   "start": 0.877,
+   "end": 1.174
+  },
+  {
+   "text": "이틀",
+   "start": 1.458,
+   "end": 1.673
+  },
+  {
+   "text": "뒤",
+   "start": 1.714,
+   "end": 1.795
+  },
+  {
+   "text": "또",
+   "start": 2.011,
+   "end": 2.119
+  },
+  {
+   "text": "한도에",
+   "start": 2.187,
+   "end": 2.43
+  },
+  {
+   "text": "걸렸을",
+   "start": 2.47,
+   "end": 2.794
+  },
+  {
+   "text": "땐",
+   "start": 2.834,
+   "end": 3.024
+  },
+  {
+   "text": "알림이",
+   "start": 3.374,
+   "end": 3.618
+  },
+  {
+   "text": "딱",
+   "start": 3.671,
+   "end": 3.752
+  },
+  {
+   "text": "한",
+   "start": 3.807,
+   "end": 3.874
+  },
+  {
+   "text": "번",
+   "start": 3.914,
+   "end": 3.982
+  },
+  {
+   "text": "왔어요.",
+   "start": 4.023,
+   "end": 4.456
+  }
+ ],
+ "source": {
+  "key": "eb3285a43b5ad7ef161aa5ad859e020a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

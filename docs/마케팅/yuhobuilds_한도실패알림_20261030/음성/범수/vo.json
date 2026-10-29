@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-29T22:48:47.811Z",
+ "lines": [
+  {
+   "id": "v1",
+   "text": "AI 자동화가 실패 알림을 일흔한 번 보냈어요.",
+   "dur": 2.425,
+   "syllablesPerSec": 7.01,
+   "src": "v1.wav",
+   "key": "25eda2dc0d91fef193d58372f1897b36",
+   "words": 7
+  },
+  {
+   "id": "v2",
+   "text": "사용 한도에 걸렸는데도 십오 분마다 다시 돌고, 그때마다 알림을 보냈거든요.",
+   "dur": 4.149,
+   "syllablesPerSec": 7.47,
+   "src": "v2.wav",
+   "key": "147e41e62fe8376ceb822d33208caec1",
+   "words": 10
+  },
+  {
+   "id": "v3",
+   "text": "밤새, 다음 날 오후까지. 똑같은 실패, 똑같은 알림.",
+   "dur": 3.193,
+   "syllablesPerSec": 5.95,
+   "src": "v3.wav",
+   "key": "251e993e6207ef79b22e1dd0f7f77708",
+   "words": 8
+  },
+  {
+   "id": "v4",
+   "text": "그런데 언제 풀리는지는, 그 알림 안에 이미 적혀 있었어요.",
+   "dur": 2.94,
+   "syllablesPerSec": 7.82,
+   "src": "v4.wav",
+   "key": "766e88bf54f5716e6983ff0a837b950b",
+   "words": 9
+  },
+  {
+   "id": "v5",
+   "text": "그래서 이렇게 고쳤어요. 그 시각까지 쉬고, 알림은 처음 한 번만.",
+   "dur": 3.276,
+   "syllablesPerSec": 7.63,
+   "src": "v5.wav",
+   "key": "5ccbc68eb1563f11e38c2b25d7acfe3d",
+   "words": 10
+  },
+  {
+   "id": "v6",
+   "text": "풀리자 저절로 다시 돌았고, 이틀 뒤 또 한도에 걸렸을 땐 알림이 딱 한 번 왔어요.",
+   "dur": 4.456,
+   "syllablesPerSec": 6.96,
+   "src": "v6.wav",
+   "key": "eb3285a43b5ad7ef161aa5ad859e020a",
+   "words": 15
+  },
+  {
+   "id": "v7",
+   "text": "고친 규칙은 한 단락으로, 영상 아래 글에 그대로 뒀어요.",
+   "dur": 3.018,
+   "syllablesPerSec": 7.29,
+   "src": "v7.wav",
+   "key": "290be6f60c7f326f1d40ffbda60f58c6",
+   "words": 9
+  },
+  {
+   "id": "v8",
+   "text": "일흔한 번이, 한 번으로.",
+   "dur": 1.143,
+   "syllablesPerSec": 7.87,
+   "src": "v8.wav",
+   "key": "f3480f7e0b33352b0dd812fc4283b4bb",
+   "words": 4
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "밤새, 다음 날 오후까지. 똑같은 실패, 똑같은 알림.",
+ "dur": 3.193,
+ "words": [
+  {
+   "text": "밤새,",
+   "start": 0.06,
+   "end": 0.366
+  },
+  {
+   "text": "다음",
+   "start": 0.557,
+   "end": 0.749
+  },
+  {
+   "text": "날",
+   "start": 0.806,
+   "end": 0.863
+  },
+  {
+   "text": "오후까지.",
+   "start": 0.921,
+   "end": 1.303
+  },
+  {
+   "text": "똑같은",
+   "start": 1.667,
+   "end": 2.01
+  },
+  {
+   "text": "실패,",
+   "start": 2.068,
+   "end": 2.259
+  },
+  {
+   "text": "똑같은",
+   "start": 2.392,
+   "end": 2.756
+  },
+  {
+   "text": "알림.",
+   "start": 2.813,
+   "end": 3.193
+  }
+ ],
+ "source": {
+  "key": "251e993e6207ef79b22e1dd0f7f77708",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "AI 자동화가 실패 알림을 일흔한 번 보냈어요.",
+ "dur": 2.425,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.02,
+   "end": 0.243
+  },
+  {
+   "text": "자동화가",
+   "start": 0.282,
+   "end": 0.65
+  },
+  {
+   "text": "실패",
+   "start": 0.703,
+   "end": 0.939
+  },
+  {
+   "text": "알림을",
+   "start": 1.005,
+   "end": 1.307
+  },
+  {
+   "text": "일흔한",
+   "start": 1.399,
+   "end": 1.595
+  },
+  {
+   "text": "번",
+   "start": 1.674,
+   "end": 1.767
+  },
+  {
+   "text": "보냈어요.",
+   "start": 1.806,
+   "end": 2.425
+  }
+ ],
+ "source": {
+  "key": "25eda2dc0d91fef193d58372f1897b36",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}
