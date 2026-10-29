@@ -1,0 +1,115 @@
+{
+ "메모": "오미톡 15초 세로 — PULSE 첫 리허설(10-29, 가상 손님 · 모델 한결 M06)의 포트폴리오판을 시댄스 2.5 1일 무제한 웹 판으로(2026-10-29). 10-29 유호님 「이거 포트폴리오용은 왠만하면 시댄스로해야겠다. 너무 부자연스러워 지금은」 — 1차본(Omni 1.1 Flash 720p)을 같은 콘티 · 같은 편집으로 다시 낸다. 콘티는 ../../../../PULSE_리허설_20261029/01_글콘티.md(v2), 기록은 같은 폴더 README.md. 시작 그림은 git 밖 synk-vendor/pulse-rehearsal-20261029/시댄스시작/(C1 · C4는 「이마에 땀방울」 문구가 한결 원본의 옅은 잡티를 붉게 키워 문구만 고쳐 다시 구운 S1b · S4b — 닮음 0.581 → 0.595 · 0.599 → 0.609, C4는 로고가 화면 밖이 되게 9:16 그대로 위 0~2515px로 자름. C3은 1차본 S3d 그대로 — 고친 S3e 둘째 판은 손가락이 코끝을 덮고 이마도 그대로라 안 씀. C2 · C5는 블렌더 캔 렌더를 얹은 1차본 합성판 그대로). 라벨 원칙(Fable 콘티 검수 P0-1): 글자가 읽히는 캔은 카메라와 캔이 멈춘 컷 2 · 5에만 두고, 두 컷은 받은 뒤 캔 몸통을 렌더 화소로 다시 얹는다(편집.py). 말 · 소리는 후반이라 영상은 소리 끔 · 입 다묾. 길이는 쓰는 구간 + 시댄스가 0.7초쯤 늦게 오는 몫, 최소 4초. 꾸러미는 ../../../시댄스무제한/웹꾸러미.py. 10-29 밤 Fable 결제 전 검수 「고쳐서 낸다」(P0 0 · P1 4 · P2 8 · P3 10)를 반영: 컷 4 캔은 CAN_TOP(테 · 남색 띠 · 빨간 선, 인쇄 없음) · 다가감은 끝 모습(캔 테가 끝까지 화면 안) · 「놀란 듯」을 빼고 입은 0.8초부터 다묾, 컷 2 거품은 한 번 톡, LOOK은 「첫 프레임에 없는 글자 없음」, 다가감은 「끝 프레임까지 몇 %」, 컷 3 롤은 후반으로, 컷 5 하늘 어두워짐 · 반짝임 · 물방울 뺌, 길이 컷 4 → 5 · 컷 5 → 6초. 검수 기록은 git 밖 synk-vendor/pulse-rehearsal-20261029/검수/fable_시댄스지시문_v1.md.",
+ "편": "om",
+ "이름": "오미톡 15초(리허설 포트폴리오판)",
+ "비율": "9:16",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-rehearsal-20261029/시댄스시작",
+ "공통": {
+  "장르": "a live-action Korean sparkling-drink commercial shot at dusk on an outdoor basketball court",
+  "누구": {
+   "HANGYEOL": "the same Korean man of 22 as in the first frame in every frame — short black hair in a textured crop with a tousled fringe, ears sticking out slightly, clean monolid eyes, lean cheeks; the small marks on his forehead stay exactly as in the first frame — none added, none removed, none darker; a plain white crew-neck t-shirt with no print and navy basketball shorts. He does not speak; his lips stay closed unless the action says otherwise.",
+   "CAN": "the soda can exactly as in the first frame — dark navy with its printed label; the printing, logo and letters never change, move, melt or multiply, and no new text appears on it.",
+   "CAN_TOP": "only the top of the soda can shows at the bottom edge of the picture — a silver rim, a plain dark navy band and one thin red line, exactly as in the first frame; it stays exactly like that, the same three colours and nothing printed, to the last frame."
+  },
+  "보기": "LOOK: keep the first frame's dusk light to the very end — the warm low-sun rim from behind, the soft cool skylight on the face, the blurred floodlight bokeh, the same colors, brightness and white balance; natural motion blur and real skin texture, no beauty filter, no skin smoothing; no new text, letters or logos appear anywhere — nothing beyond what the first frame already shows; no extra people.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "om-1",
+   "컷": [
+    "1"
+   ],
+   "길이": 4,
+   "설명": "컷 1 — 경기 끝 숨 몰아쉬는 한결(가슴 위, 왼쪽으로 20°), 턱 끝 땀 한 방울",
+   "샷": [
+    {
+     "그림": "C1.png",
+     "쓰는초": 2.4,
+     "누구": [
+      "HANGYEOL"
+     ],
+     "동작": "Right after a game he stands still under the hoop, out of breath with his lips closed: he breathes hard through his nose, his shoulders and chest rising and falling twice; at about 1.5 s the clear drop of sweat at the tip of his chin falls. His eyes stay exactly where they are — off to the side of the camera, level, blinking at most once; both hands stay down at his sides, below the picture.",
+     "카메라": "handheld with a light natural shake, standing in place; it moves in slowly at a steady speed from the first frame — about 10% closer by the last frame — keeping focus on his face."
+    }
+   ]
+  },
+  {
+   "id": "om-2",
+   "컷": [
+    "2"
+   ],
+   "길이": 4,
+   "설명": "컷 2 — 벤치 위 딴 캔(위에서 30°), 입구에서 탄산 거품이 톡 튀어 오름 · 라벨이 읽히는 컷이라 캔은 그대로(다가감은 후반)",
+   "샷": [
+    {
+     "그림": "C2.png",
+     "쓰는초": 2.4,
+     "누구": [
+      "CAN"
+     ],
+     "동작": "The opened can and its raised pull tab stay exactly as they are on the weathered wooden bench. At about 0.5 s one small pop of fine fizz jumps out of the opening — a few tiny bubbles and droplets rise a finger's height and settle back inside within half a second; after that only a faint fizz is visible inside the opening. The condensation droplets on the can just glisten; nothing else moves except the soft bokeh behind.",
+     "카메라": "locked off — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    }
+   ]
+  },
+  {
+   "id": "om-3",
+   "컷": [
+    "3"
+   ],
+   "길이": 4,
+   "설명": "컷 3 — 고개를 젖혀 캔을 마시는 얼굴 접사, 두 모금(캔 바닥이 화면 쪽이라 글자 없음)",
+   "샷": [
+    {
+     "그림": "C3.png",
+     "쓰는초": 3.0,
+     "누구": [
+      "HANGYEOL"
+     ],
+     "동작": "His head tilted back a little and his eyes closed, he drinks from the can held up to his lips, its round silver base toward the camera: he takes two gulps — at about 1.2 s and 2.6 s the can tips up a little further, and his throat moves with each swallow. His eyes stay closed and his face stays relaxed; the can stays below his nose the whole time, his closed eyes and nose fully in view; the can shows only its plain silver base and the dark band at its rim, the same as the first frame, from start to end.",
+     "카메라": "slow steady push-in from the first frame — about 5% closer by the last frame — focus on his closed eyes; no roll, no shake."
+    }
+   ]
+  },
+  {
+   "id": "om-4",
+   "컷": [
+    "4"
+   ],
+   "길이": 5,
+   "설명": "컷 4 — 막 마신 뒤 정면, 눈썹이 살짝 올라갔다가 입 다문 미소(캔은 아래 끝에 윗부분만)",
+   "샷": [
+    {
+     "그림": "C4.png",
+     "쓰는초": 3.0,
+     "누구": [
+      "HANGYEOL",
+      "CAN_TOP"
+     ],
+     "동작": "A moment after drinking he faces the camera, lips just parted at the end of a breath; over the first 0.8 s his lips come together and stay together. Then, very slightly, his brows lift and settle, and over the next two seconds a small closed-mouth smile grows — eyes stay the same size, half-lidded and calm, narrowing into soft crescents. His face moves as little as a real person's would; lips together from 0.8 s to the end.",
+     "카메라": "the camera moves in slowly and steadily toward his eyes — about 5% closer by the last frame — while the bottom edge of the frame holds on the can, so the can's silver rim is still inside the picture at the very end; no shake."
+    }
+   ]
+  },
+  {
+   "id": "om-5",
+   "컷": [
+    "5"
+   ],
+   "길이": 6,
+   "설명": "컷 5 — 엔드카드 바탕: 벤치 위 캔 정면 팩샷(캔은 그대로, 뒤 빛망울만 · 글자와 위로 올림은 후반)",
+   "샷": [
+    {
+     "그림": "C5.png",
+     "쓰는초": 4.2,
+     "누구": [
+      "CAN"
+     ],
+     "동작": "The can stands perfectly still at the center of the weathered wooden bench. Behind it the blurred court floodlights glow steadily; the light, colours and brightness stay exactly as in the first frame. Nothing moves except a faint shimmer in the bokeh; no person appears.",
+     "카메라": "locked off — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    }
+   ]
+  }
+ ]
+}
