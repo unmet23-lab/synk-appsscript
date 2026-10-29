@@ -5,7 +5,8 @@
 # 받기.py가 받은 받음/<판>.mp4(다시 낸 판이 있으면 가장 나중 것)에서 소리를 꺼내 앞뒤 무음을 자르고 −17 LUFS로 둔다. --demucs면 먼저 Demucs로
 # 목소리만 뗀다(C:/SYNK-LoRA/tools/demucs — 현장노트 영상 「대사 클립의 목소리만 떼기」). 받아쓰기(faster-whisper medium, VAD 끔)로 그 판에 적은
 # 글을 말했는지 보고 다르면 알린다 — 다른 사람 말 · 음악이 섞인 견본은 쓰지 않는다. 다 떼면 웹꾸러미.py(둘째 날은 --둘째날 B)를 다시 돌려 대사 판 폴더를 채운다.
-# 견본 목소리가 어색하면(유호님 귀) 그 배역 목소리 판을 다시 내거나 대안 일레븐 v4로 간다(결정 10-29).
+# 견본 목소리가 어색하면(유호님 귀) 그 배역 목소리 판을 다시 내거나 대안 일레븐 v4로 간다(결정 10-29 — 7번은 고른 넷을 구워 둠,
+# 소리참고.py B <대안 폴더> <배역>). 견본이 받은 판보다 새것이면(이미 뗐거나 대안으로 바꾼 배역) 판 id를 적지 않는 한 덮지 않는다.
 import importlib.util, json, os, re, shutil, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -77,6 +78,9 @@ def main():
         clip = latest(pid)
         if not clip:
             print(f"{pid}: 받은 판 없음")
+            continue
+        if not want and os.path.exists(dst) and os.path.getmtime(dst) > os.path.getmtime(clip):
+            print(f"{pid}: 견본이 받은 판보다 새것이라 그대로 둠(다시 떼려면 판 id를 적는다)")
             continue
         heard, err, dur = extract(clip, dst, text, model, "--demucs" in sys.argv)
         flag = "" if err <= 0.15 else "  ⚠ 적은 글과 다르게 들림 — 다른 말 · 소리가 섞였는지 들어 보고, 섞였으면 그 목소리 판을 다시 낸다"

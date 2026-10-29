@@ -2,7 +2,9 @@
 #   python -X utf8 소리참고.py A <대사 폴더>   → 소리참고/A/<판 id>.mp3 — 판마다 그 판의 입 맞춤 대사만, 앞 0.3초 무음 뒤 샷 「말」의 시작 초
 #                                                (묶음 둘째 샷은 자르는 초를 더함)에 첫 소리가 오게 놓은 판 길이 mp3(02_콘티 8-4 · 현장노트 higgsfield
 #                                                「시간표와 대사가 지시문보다 늦게 온다」)
-#   python -X utf8 소리참고.py B <견본 폴더>   → 소리참고/B/<ian · seojin · minjae · soyeon>.mp3 — 고른 목소리로 구운 배역 견본(견본_계획.json 글)
+#   python -X utf8 소리참고.py B <견본 폴더> [<배역…>] → 소리참고/B/<ian · seojin · minjae · soyeon>.mp3 — 배역 견본(견본_계획.json 글). 배역을 적으면
+#                                                그 배역만 바꾼다 — 목소리 판에서 뗀 시댄스 목소리가 어색한 배역만 대안 일레븐 v4로(견본떼기.py가
+#                                                쓴 자리를 덮는다). 10-29 밤 대안 판에서 고른 넷은 git 밖 소리/p7/대안_일레븐v4/견본/(견본_계획.json 「대안」)
 # <대사 폴더>/<컷>.wav(예: 1-16.wav) = 고른 목소리로 그 컷의 대사만 구운 것. 앞뒤 무음은 있어도 된다 — 첫 소리를 −40 dBFS로 찾는다.
 # 화면 밖 덧말 · 입이 가려진 말은 A에 넣지 않는다 — 입이 남의 목소리를 따라 움직이지 않게(02_콘티 8-4). 대사가 판 끝을 넘으면 알린다.
 import json, os, subprocess, sys
@@ -71,10 +73,12 @@ def build_a(lines):
         print("  ⚠", w)
 
 
-def build_b(samples):
+def build_b(samples, only=()):
     made = 0
     for role in ROLE.values():
-        src = next((os.path.join(samples, f) for f in os.listdir(samples) if os.path.splitext(f)[0] == role), None)
+        if only and role not in only:
+            continue
+        src =next((os.path.join(samples, f) for f in os.listdir(samples) if os.path.splitext(f)[0] == role), None)
         if not src:
             print(f"  ⚠ {role} 견본 없음")
             continue
@@ -87,4 +91,7 @@ def build_b(samples):
 
 
 if __name__ == "__main__":
-    {"A": build_a, "B": build_b}[sys.argv[1]](sys.argv[2])
+    if sys.argv[1] == "A":
+        build_a(sys.argv[2])
+    else:
+        build_b(sys.argv[2], sys.argv[3:])
