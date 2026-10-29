@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1029,
+  "lufs": -17
+ },
+ "made": "2026-10-29T08:13:06.080Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "My first try at this letter...",
+   "dur": 1.467,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "7314f7218b9f4ff22d93cf58b93964c3",
+   "words": 6
+  },
+  {
+   "id": "a1",
+   "text": "That's a snowman.",
+   "dur": 1.149,
+   "syllablesPerSec": null,
+   "src": "a1.wav",
+   "key": "3a7d2e2ed8c32585a1aee1c83d7421ee",
+   "words": 3
+  },
+  {
+   "id": "a2",
+   "text": "Now it's a heart.",
+   "dur": 1.238,
+   "syllablesPerSec": null,
+   "src": "a2.wav",
+   "key": "76c620656eddc0263dbb5a7da82ee4c6",
+   "words": 4
+  },
+  {
+   "id": "a3",
+   "text": "A guy in a top hat?",
+   "dur": 1.329,
+   "syllablesPerSec": null,
+   "src": "a3.wav",
+   "key": "0f2883451d4ac8a79300fcf745485b05",
+   "words": 6
+  },
+  {
+   "id": "f1",
+   "text": "The real way: three strokes.",
+   "dur": 1.959,
+   "syllablesPerSec": null,
+   "src": "f1.wav",
+   "key": "53e8494919fb5b95213e71a5665a5dcb",
+   "words": 5
+  },
+  {
+   "id": "n1",
+   "text": "Short line.",
+   "dur": 0.92,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "7c6b5e83f76a9d4f8907710ef34c43df",
+   "words": 2
+  },
+  {
+   "id": "n2",
+   "text": "Long line.",
+   "dur": 0.826,
+   "syllablesPerSec": null,
+   "src": "n2.wav",
+   "key": "35f8ffd1356db7554a576f2d9a82d520",
+   "words": 2
+  },
+  {
+   "id": "n3",
+   "text": "Circle.",
+   "dur": 0.591,
+   "syllablesPerSec": null,
+   "src": "n3.wav",
+   "key": "89d9ce9df10a897ee699988a83554148",
+   "words": 1
+  },
+  {
+   "id": "k1",
+   "text": "히읗.",
+   "dur": 0.42,
+   "syllablesPerSec": 4.76,
+   "src": "k1.wav",
+   "key": "022a3e26a21e6edb0d67264470659600",
+   "words": 1
+  },
+  {
+   "id": "e1",
+   "text": "Give mine a score, one to ten!",
+   "dur": 1.789,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "fb74b25ec1f45581207a5e05f2c0bba7",
+   "words": 7
+  },
+  {
+   "id": "e2",
+   "text": "So... which one was yours?",
+   "dur": 2.042,
+   "syllablesPerSec": null,
+   "src": "e2.wav",
+   "key": "39a7e27ccecd2bcc021d8f35853459f3",
+   "words": 5
+  },
+  {
+   "id": "e3",
+   "text": "Wait... it IS a guy in a hat.",
+   "dur": 2.17,
+   "syllablesPerSec": null,
+   "src": "e3.wav",
+   "key": "75a9e85ec3846e973f9d6d18ff5d9e24",
+   "words": 8
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "Short line.",
+ "dur": 0.92,
+ "words": [
+  {
+   "text": "Short",
+   "start": 0.02,
+   "end": 0.264
+  },
+  {
+   "text": "line.",
+   "start": 0.325,
+   "end": 0.92
+  }
+ ],
+ "source": {
+  "key": "7c6b5e83f76a9d4f8907710ef34c43df",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 441
+ }
+}

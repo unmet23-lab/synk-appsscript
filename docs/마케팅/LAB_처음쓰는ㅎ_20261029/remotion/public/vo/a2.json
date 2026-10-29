@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a2",
+ "text": "Now it's a heart.",
+ "dur": 1.238,
+ "words": [
+  {
+   "text": "Now",
+   "start": 0.02,
+   "end": 0.284
+  },
+  {
+   "text": "it's",
+   "start": 0.426,
+   "end": 0.567
+  },
+  {
+   "text": "a",
+   "start": 0.649,
+   "end": 0.669
+  },
+  {
+   "text": "heart.",
+   "start": 0.73,
+   "end": 1.238
+  }
+ ],
+ "source": {
+  "key": "76c620656eddc0263dbb5a7da82ee4c6",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "That's a snowman.",
+   "next": "A guy in a top hat?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 521
+ }
+}

@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3",
+ "text": "Wait... it IS a guy in a hat.",
+ "dur": 2.17,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "it",
+   "start": 0.806,
+   "end": 0.907
+  },
+  {
+   "text": "IS",
+   "start": 1.028,
+   "end": 1.169
+  },
+  {
+   "text": "a",
+   "start": 1.23,
+   "end": 1.25
+  },
+  {
+   "text": "guy",
+   "start": 1.311,
+   "end": 1.472
+  },
+  {
+   "text": "in",
+   "start": 1.532,
+   "end": 1.593
+  },
+  {
+   "text": "a",
+   "start": 1.653,
+   "end": 1.674
+  },
+  {
+   "text": "hat.",
+   "start": 1.734,
+   "end": 2.17
+  }
+ ],
+ "source": {
+  "key": "75a9e85ec3846e973f9d6d18ff5d9e24",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Short line. Long line. Circle. That is the letter ㅎ, written the right way. Then you notice the short line looks like a hat and the circle like a face.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 510
+ }
+}

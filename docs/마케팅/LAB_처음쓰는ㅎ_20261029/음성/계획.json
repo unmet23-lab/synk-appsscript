@@ -1,0 +1,98 @@
+{
+  "note": "LAB E11 「처음 쓰는 ㅎ」 나레이션 — 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」 10-28), 영어 줄 + 한국어 낱말 한 줄(히읗). 원본(우리편) E5 「처음 쓰는 ㄹ」의 줄 자리를 그대로 따르되 획 줄은 One · Two · Three 대신 획 이름(Short line · Long line · Circle). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_처음쓰는ㅎ_20261029/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1029,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "My first try at this letter...",
+      "emotion": "smart",
+      "prev": "A beginner opens a Korean handwriting notebook and picks up a pencil.",
+      "next": "That's a snowman."
+    },
+    {
+      "id": "a1",
+      "text": "That's a snowman.",
+      "emotion": "smart",
+      "prev": "My first try at this letter... It came out looking like a snowman.",
+      "next": "Now it's a heart."
+    },
+    {
+      "id": "a2",
+      "text": "Now it's a heart.",
+      "emotion": "smart",
+      "prev": "That's a snowman.",
+      "next": "A guy in a top hat?"
+    },
+    {
+      "id": "a3",
+      "text": "A guy in a top hat?",
+      "emotion": "smart",
+      "prev": "Now it's a heart. Wait, it even has a face now.",
+      "next": "The real way: three strokes."
+    },
+    {
+      "id": "f1",
+      "text": "The real way: three strokes.",
+      "emotion": "smart",
+      "prev": "A guy in a top hat? Okay, here is how Koreans actually write it.",
+      "next": "Short line. Long line. Circle."
+    },
+    {
+      "id": "n1",
+      "text": "Short line.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n2",
+      "text": "Long line.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n3",
+      "text": "Circle.",
+      "emotion": "normal"
+    },
+    {
+      "id": "k1",
+      "text": "히읗.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "e1",
+      "text": "Give mine a score, one to ten!",
+      "emotion": "smart",
+      "prev": "That is the letter ㅎ, written the right way in three strokes.",
+      "next": ""
+    },
+    {
+      "id": "e2",
+      "text": "So... which one was yours?",
+      "emotion": "smart",
+      "prev": "That is the letter ㅎ, written the right way in three strokes. Remember the snowman, the heart and the guy in a hat?",
+      "next": ""
+    },
+    {
+      "id": "e3",
+      "text": "Wait... it IS a guy in a hat.",
+      "emotion": "smart",
+      "prev": "Short line. Long line. Circle. That is the letter ㅎ, written the right way. Then you notice the short line looks like a hat and the circle like a face.",
+      "next": ""
+    }
+  ]
+}

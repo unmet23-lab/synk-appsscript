@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "Long line.",
+ "dur": 0.826,
+ "words": [
+  {
+   "text": "Long",
+   "start": 0.03,
+   "end": 0.294
+  },
+  {
+   "text": "line.",
+   "start": 0.355,
+   "end": 0.826
+  }
+ ],
+ "source": {
+  "key": "35f8ffd1356db7554a576f2d9a82d520",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1029,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 326
+ }
+}
