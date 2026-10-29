@@ -109,6 +109,51 @@ def mat_ice_crystal():
     return m
 
 
+def add_sweep(m, direction, width=0.0025, color=(1.0, 0.93, 0.82)):
+    """결정 재질에 지나가는 반짝임 띠 — 얇은 가장자리(frost 속성이 낮은 곳)의 잔 반짝임 자리만 빛을 내고, 그 띠가 물체 좌표
+    direction 쪽으로 한 번 지나간다(SWEEP_POS · SWEEP_GAIN 값 노드를 장마다 바꾼다). 빛으로 반사를 만들면 유리판 · 뚜껑
+    겉에도 그 빛 면이 비쳐 흰 막대가 됐다(15초 2차 시험 m1 70장) — 결정 안에서 빛나게 해 다른 면엔 안 비친다."""
+    n, l = m.node_tree.nodes, m.node_tree.links
+    out = next(x for x in n if x.type == "OUTPUT_MATERIAL")
+    base = out.inputs["Surface"].links[0].from_socket
+    tc = n.new("ShaderNodeTexCoord")
+    dt = n.new("ShaderNodeVectorMath")
+    dt.operation = "DOT_PRODUCT"
+    l.new(tc.outputs["Object"], dt.inputs[0])
+    dt.inputs[1].default_value = tuple(Vector(direction).normalized())
+    pos = n.new("ShaderNodeValue")
+    pos.name = "SWEEP_POS"
+    pos.outputs[0].default_value = -1.0
+    gain = n.new("ShaderNodeValue")
+    gain.name = "SWEEP_GAIN"
+    gain.outputs[0].default_value = 0.0
+    d = S.math_node(n, l, "DIVIDE", S.math_node(n, l, "SUBTRACT", dt.outputs["Value"], pos.outputs[0]), width)
+    band = S.math_node(n, l, "EXPONENT", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", d, d), -1.0))
+    at = n.new("ShaderNodeAttribute")
+    at.attribute_name = "frost"
+    thin = n.new("ShaderNodeMapRange")
+    thin.inputs["From Min"].default_value = 0.04
+    thin.inputs["From Max"].default_value = 0.40
+    thin.inputs["To Min"].default_value = 1.0
+    thin.inputs["To Max"].default_value = 0.15
+    l.new(at.outputs["Fac"], thin.inputs["Value"])
+    nz = n.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 1400.0
+    l.new(tc.outputs["Object"], nz.inputs["Vector"])
+    glit = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MULTIPLY",
+                                                                                     S.math_node(n, l, "SUBTRACT", nz.outputs["Fac"], 0.5), 5.0), 0.0), 1.0)
+    mask = S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", thin.outputs["Result"], S.madd(n, l, glit, 0.7, 0.3)),
+                       S.math_node(n, l, "GREATER_THAN", at.outputs["Fac"], 0.002))
+    em = n.new("ShaderNodeEmission")
+    em.inputs["Color"].default_value = (*color, 1)
+    l.new(S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", band, mask), gain.outputs[0]), em.inputs["Strength"])
+    add = n.new("ShaderNodeAddShader")
+    l.new(base, add.inputs[0])
+    l.new(em.outputs[0], add.inputs[1])
+    l.new(add.outputs[0], out.inputs["Surface"])
+    return pos, gain
+
+
 GOLD_BOKEH = [(1.0, 0.60, 0.22), (1.0, 0.72, 0.34), (1.0, 0.50, 0.16)]
 
 
@@ -135,8 +180,10 @@ def shot_m1():
         dist = 0.085 + 0.065 * c
         return tgt + Vector((math.sin(az) * dist, -math.cos(az) * dist, 0.012 + 0.006 * c))
 
-    # 보케는 밝고 짙은 금빛(Fable P1-2: 올리브빛으로 탁한 원판이 꺼진 전구로 읽혔다)
-    S.bokeh_in_view(cam_at(0.5), tgt, 16, 0.8, 1.8, 0.7, GOLD_BOKEH, 4.5, 0.006, 0.018, seed=5)  # 0.5 m 앞 보케가 왼쪽 과노출 흰 반원(Fable 2차 P2-1)
+    # 보케는 밝고 짙은 금빛(Fable P1-2: 올리브빛으로 탁한 원판이 꺼진 전구로 읽혔다). 15초 판(10-30): 작은 공은 흐려지면 어둡고
+    # 짙은 주황이 올리브로 떠(Fable 3차 「올리브 보케 하나」) — 가장 작은 공을 키우고 색을 조금 밝게(자리는 같은 난수 그대로)
+    S.bokeh_in_view(cam_at(0.5), tgt, 16, 0.8, 1.8, 0.7, [(1.0, 0.66, 0.30), (1.0, 0.74, 0.40), (1.0, 0.58, 0.24)], 4.5,
+                    0.010, 0.018, seed=5)  # 0.5 m 앞 보케가 왼쪽 과노출 흰 반원(Fable 2차 P2-1)
     # 어둠 속 결정 촬영처럼 뒤에서 비스듬히 비추는 빛(투과로 보여야 가장자리가 빛난다) — 금빛 하나 · 은빛 하나
     # 화각 밖 45° 넘게 — 0.18 m 뒤 20°에 둔 은빛 역광이 유리 너머로(투과 광선) 보여 첫 장들 왼쪽 흰 반원이 됐다.
     # 비낀 만큼 덜 비춰 결정이 어두워져(밝은 화소 10.7 % → 4.2 %) 세기를 2.5배로
@@ -146,7 +193,9 @@ def shot_m1():
     # 카메라 쪽 두 빛은 화면에 안 보이게 — 첫 장들 왼쪽 과노출 흰 반원은 보케가 아니라 이 「찬빛」 원판이었다(3판 시험 장)
     for nm, loc, e, sz, rgb in (("찬빛", (-0.14, -0.05, 0.10), 3.2, 0.03, (0.60, 0.74, 1.0)), ("결빛", (0.10, -0.03, -0.09), 1.0, 0.015, (1.0, 0.90, 0.75))):
         S.area_light(nm, loc, (0, 0, 0), e, sz, rgb=rgb).visible_camera = False
-    sweep = S.glint_only(S.point_light("지나는반짝", (-0.08, -0.06, 0.05), 0.0, (1.0, 0.94, 0.84), radius=0.003))
+    # 끝 반짝임 — 점광 9 W는 영상에서도 안 보였고(Fable 3차, 밝은 화소 0.05 → 0.08 %), 띠 빛은 유리판에 비쳐 흰 막대가 됐다.
+    # 결정의 얇은 가장자리만 빛나는 띠가 왼쪽 아래 → 오른쪽 위로 한 번 지나간다(add_sweep)
+    sw_pos, sw_gain = add_sweep(ice_mat, (1.0, 0.0, 0.6))
     cam = S.camera(cam_at(0), tgt, lens=100, fstop=16)
     round_bokeh(cam)
     for f in FRAMES:
@@ -157,8 +206,8 @@ def shot_m1():
             bpy.data.meshes.remove(me)
         S.frost_sheet("결정", S.grown(arr, h, growth_t(f), soft=0.05), size, size, S.GL / 2, 0.00022, ice_mat, z0=0.0)
         u = max(0.0, (f - 50) / 39.0)  # 끝 1.3초 — 반짝임이 결정을 가로질러 한 번 지나간다(1.8은 어느 장에도 안 잡혔다)
-        sweep.location = Vector((-0.08 + 0.16 * smooth(u), -0.06, 0.05 - 0.03 * u))
-        sweep.data.energy = 0.0 if u <= 0 else 9.0 * math.sin(math.pi * min(1.0, u))
+        sw_pos.outputs[0].default_value = -0.022 + 0.044 * smooth(u)
+        sw_gain.outputs[0].default_value = 0.0 if u <= 0 else 9.0 * math.sin(math.pi * min(1.0, u)) ** 0.7
         look(cam, cam_at(f / (N - 1)), tgt)
         render_to(f)
 
