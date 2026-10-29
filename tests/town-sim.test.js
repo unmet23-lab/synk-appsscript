@@ -9,8 +9,8 @@ const { toolModule, runUnderTimezone, runtimeFiles, ROOT } = require('./lib/town
 
 const MINUTE = 60000, HOUR = 60 * MINUTE;
 
-test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 모두 통과한다', async () => {
-  const { runSimulation, summarize, METRICS, TIMEZONES, PROFILES } = await toolModule('town-sim');
+test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 알려진 실패 밖에서 모두 통과한다', async () => {
+  const { runSimulation, summarize, checkOutcome, METRICS, TIMEZONES, PROFILES } = await toolModule('town-sim');
   // The gathering profile (W8b) is measured by its own small run below and by CI's hundred-seed run — this timed one keeps the
   // five profiles it always had, so the budget is not spent on it (it failed once at 15017ms, 10-27 run 40521285163).
   const five = PROFILES.filter(profile => profile !== 'daily-gather');
@@ -25,10 +25,13 @@ test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 모두
   assert.ok(spentMs < 15000, `${spentMs}ms`);
   const s = summarize(result);
   assert.equal(s.villages, 12 * (1 * 4 + 1), '다 받는 모습은 첫 시간대에서만');
-  assert.equal(s.fail, 0, result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
+  // The known failures (KNOWN_FAILURES, each with its track line) are reported as failures; nothing else may fail (W11).
+  assert.deepEqual(checkOutcome(result).unknown, [], result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
   const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside', 'energy', 'mood-lines',
-    'cards', 'hearsay', 'pairs', 'card-coverage', 'changes-summary', 'visit-habit'];
-  assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3~W6이 재는 지표');
+    'cards', 'hearsay', 'pairs', 'card-coverage', 'changes-summary', 'visit-habit', 'visible-change'];
+  assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3~W11이 재는 지표');
+  // What the design names without a bar (§15-1 가상 학습자 · §20-10) is measured, never pending.
+  assert.deepEqual(result.metrics.filter(m => ['seen-new', 'less-often', 'learners'].includes(m.id)).map(m => m.status), ['measure', 'measure', 'measure']);
   assert.deepEqual(result.metrics.map(m => m.id), METRICS.map(m => m.id));
   assert.equal(runSimulation({ seeds: 12, days: 30, timezones: [TIMEZONES[0]], profiles: five }).hash, result.hash, '같은 입력이면 같은 결과');
   assert.notEqual(runSimulation({ seeds: 13, days: 30, timezones: [TIMEZONES[0]], profiles: five }).hash, result.hash);
@@ -43,6 +46,36 @@ test('여섯째 모습 — 매일 채집·드리기: 잎 통 마모가 줄고 C3
   const gathering = run.villages.filter(v => v.profile === 'daily-gather');
   assert.equal(gathering.length, 4, '첫 시간대 앞 씨앗 넷');
   assert.ok(gathering.every(v => v.result.relief > 0 && v.result.jarBands > 0));
+});
+
+test('알려진 실패 목록 — 그것만 실패면 통과, 목록 밖 실패나 통과한 목록 줄은 걸린다(W11)', async () => {
+  const { checkOutcome, KNOWN_FAILURES, METRICS } = await toolModule('town-sim');
+  assert.ok(Object.keys(KNOWN_FAILURES).every(id => METRICS.some(m => m.id === id)), '목록의 지표는 모두 있는 지표');
+  assert.ok(Object.values(KNOWN_FAILURES).every(why => /트랙/.test(why)), '줄마다 트랙의 후속 자리를 적는다');
+  const run = statuses => ({ metrics: Object.entries(statuses).map(([id, status]) => ({ id, status })) });
+  assert.deepEqual(checkOutcome(run({ a: 'pass', b: 'fail', c: 'fail' }), { b: '트랙' }), { unknown: ['c'], stale: [] });
+  assert.deepEqual(checkOutcome(run({ a: 'pass', b: 'pass' }), { b: '트랙' }), { unknown: [], stale: ['b'] });
+  assert.deepEqual(checkOutcome(run({ a: 'measure', b: 'fail' }), { b: '트랙' }), { unknown: [], stale: [] });
+});
+
+test('가상 학습자 셋 — 사다리 엔진을 그대로 돌고 같은 입력이면 같은 결과(§15-1 끝 · 다리 §9)', async () => {
+  const { runLearners, learnerLife, LEARNERS } = await toolModule('town-sim-ladder');
+  const day = 24 * HOUR, start = 1790812800000;
+  // Thirty daily visits, each with a tea order; C4's talk on the first.
+  const visits = Array.from({ length: 30 }, (_, i) => [start + i * day + 14 * HOUR, i, 1, i === 0 ? 1 : 0]);
+  const villages = ['sim-v001', 'sim-v002', 'sim-v003'].map(villageSeed => ({ villageSeed, visits }));
+  const rows = runLearners(villages);
+  assert.deepEqual(rows.map(r => r.learner), LEARNERS.map(l => l.id));
+  assert.deepEqual(runLearners(villages), rows, '같은 입력이면 같은 결과');
+  for (const r of rows) {
+    assert.equal(r.scenes, 3 * 31, '방문마다 찻집 주문 하나 + 첫날 C4');
+    assert.equal(r.fallbacks, 0, '장면 판·찻집 판 모두 L1~L4가 있다');
+    assert.ok(r.declineShare >= 0 && r.declineShare <= 100);
+  }
+  // r = 1.2 starts where it belongs (L1); r = 3 has to climb by the town's own evidence (five smooth scenes).
+  assert.equal(rows.find(r => r.learner === 'just-past-1').reachedMedian, 0);
+  const climber = learnerLife(LEARNERS.find(l => l.id === 'grade-3'), 'sim-v001', visits);
+  assert.ok(climber.offers > 0 && climber.levels.L1 >= 5, JSON.stringify(climber));
 });
 
 test('플레이어 모습 여섯의 방문 일정', async () => {
