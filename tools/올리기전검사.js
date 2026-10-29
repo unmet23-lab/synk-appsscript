@@ -34,6 +34,9 @@
  *      「확정」하지 않았으면 확인할 것. 10-29부터 만든 편 폴더(이름 끝 날짜)에 오마주.json도 준비.json 「원본없음」 까닭도 없으면 고칠 것.
  *      나란히가 「다르게」 없이 다 맞고 원본 컷을 확정했으면, 원본도 같은 자리에서 멈췄거나 한 구성이 긴 ② · ⑬은 확인할 것으로 내린다 — 10-28 첫 예시(283만 회 원본)는
  *      67%가 멈춘 정지 장면 아홉 칸이었다
+ *   ⑯ 지난 편 되풀이(10-30, tools/무대반복.js — 제작 절차 「한 장면 먼저」) — 판 계정마다 그 계정의 지난 두 편과 무대(첫 · 끝 장면 축소판이
+ *      둘 다 닮음)나 끝 줄(끝 장면 화면 글 · 나레이션 마지막 줄 · 준비.json 「끝줄」)이 같으면 고칠 것, 한쪽 장면만 닮거나 끝 줄이 비슷하면
+ *      확인할 것 — 10-28 · 29 B8 · B14가 같은 청금석 틀에 같은 끝 줄로 이틀 잇달아 나갔다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -50,6 +53,7 @@ const 정지 = require('./정지구간.js');
 const 한구성 = require('./한구성.js');
 const 타입캐스트 = require('./lib/타입캐스트.cjs');
 const 오마주 = require('./오마주.js');
+const 반복 = require('./무대반복.js');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -738,6 +742,11 @@ async function run(dir, opts = {}) {
 
   const homage = homageFindings(bundle, [...videos.keys()]);
   findings.push(...homage.findings);
+  let repeat = { findings: [], summary: null };
+  try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {
+    add(LOOK, 'repeat-failed', '지난 편', `지난 편 되풀이를 못 봤다(${error.message}) — 첫 · 끝 장면과 끝 줄을 지난 두 편과 눈으로 견준다`);
+  }
+  findings.push(...repeat.findings);
   const fileSummaries = [];
   const ocrFindings = [];
   const screenTexts = [];
@@ -802,6 +811,7 @@ async function run(dir, opts = {}) {
   const record = {
     도구: 'tools/올리기전검사.js', 시각: kst(), 결과: result,
     고칠것: fixes.map(line), 확인할것: looks.map(line), 파일: fileSummaries, ...(voice.summary ? { 목소리: voice.summary } : {}),
+    ...(repeat.summary?.지난편?.length ? { 지난편: repeat.summary.지난편 } : {}),
     ...(opts.skipOcr || opts.skipLinks ? { 건너뜀: [opts.skipOcr && '글자 인식', opts.skipLinks && '링크'].filter(Boolean) } : {}),
     기록: path.relative(bundle.repo, out).split(path.sep).join('/'),
   };
