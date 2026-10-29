@@ -81,6 +81,30 @@ test('최근 작업이 경로로 끌어 쓰는 옛 폴더와 그 폴더가 다�
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
+test('json의 겹 역슬래시 경로 · path.join(…, \'..\', 이름) · 1MiB 안의 큰 기록 · _정리제외.txt도 남길 이유다(10-29 회사 사슬 38)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-chain-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    쓰기('chain-38-20261029/release-prep/parent-pins.json', JSON.stringify({ path: 'C:\\Users\\me\\SYNK\\.tmp\\pins-20261016\\release.json' }));
+    쓰기('chain-38-20261029/make.cjs', "const parent = path.join(task, '..', 'signal-v4-20261010'); require(parent);");
+    쓰기('chain-38-20261029/big-record.json', JSON.stringify({ pad: 'x'.repeat(100 * 1024), evidence: '.tmp/evidence-20261012/run.json' }));
+    쓰기('pins-20261016/release.json', '{}');
+    쓰기('signal-v4-20261010/a.cjs', '//');
+    쓰기('evidence-20261012/run.json', '{}');
+    쓰기('kept-lineage-20261016/rearm.cjs', "require('../older-20261015/approval.cjs')");
+    쓰기('older-20261015/approval.cjs', '//');
+    쓰기('plain-old-20261001/a.txt', 'x');
+    for (const 이름 of ['pins-20261016', 'signal-v4-20261010', 'evidence-20261012', 'kept-lineage-20261016', 'older-20261015', 'plain-old-20261001']) 옛날로(path.join(임시, 이름), 30);
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), '# 회사 릴리스 계보 — 10-29 되돌림\nkept-lineage-20261016  # 사슬 37 rearm\n');
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.deepEqual(목록.후보.map((c) => c.이름), ['plain-old-20261001']);
+    assert.deepEqual(목록.참조로남김.map((x) => x.이름).sort(), ['evidence-20261012', 'older-20261015', 'pins-20261016', 'signal-v4-20261010']);
+    assert.deepEqual(정리.옮기기(['kept-lineage-20261016', 'pins-20261016'], { 임시, 대기 }).옮김, [], '제외 목록과 그 계보는 승인 목록에 있어도 옮기지 않는다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
 test('릴리스·후보 사본은 갈래마다 새 판 둘만 남기고 옛 판은 날짜와 상관없이 후보 — 남는 판이 끌어 쓰는 옛 판·_보존은 뺀다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-release-'));
   try {

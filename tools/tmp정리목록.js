@@ -14,7 +14,8 @@
  *   node tools/tmp정리목록.js --옮기기 --묶음 릴리스옛판|이사복사|14일|전부   승인한 묶음을 통째로 옮긴다
  *
  * 후보: ① 14일 넘게 손대지 않은 폴더 ② 릴리스·후보 사본(이름에 -release·-candidate)은 갈래마다 새 판 둘만 남기고 옛 판은
- * 날짜와 상관없이(10-21 유호님 확정). 둘 다 최근·남는 폴더가 경로로 끌어 쓰면 빼고, _보존.txt가 있으면 뺀다.
+ * 날짜와 상관없이(10-21 유호님 확정). 둘 다 최근·남는 폴더가 경로로 끌어 쓰면 빼고, _보존.txt가 있거나 .tmp 맨 위
+ * _정리제외.txt에 이름이 있으면 뺀다(그 폴더가 가리키는 옛 폴더도 남는다 — 10-29 회사 릴리스 계보).
  * 마지막 수정이 노트북 이사 복사 날(10-15~17)인 폴더는 따로 묶어 이름 속 날짜와 같이 보인다.
  */
 const fs = require('fs');
@@ -70,12 +71,23 @@ function git정보(폴더) {
   };
 }
 
-// 코드와 작은 설정 파일만 본다. 문서·로그·소스 사본은 경로를 적어도 도구를 깨뜨리지 않고, 읽기만 오래 걸린다.
-const 참조확장자 = new Map([['.cjs', 512 * 1024], ['.mjs', 512 * 1024], ['.js', 512 * 1024], ['.py', 512 * 1024], ['.ps1', 512 * 1024], ['.sh', 512 * 1024], ['.json', 64 * 1024]]);
+// 코드와 설정·기록 json만 본다. 문서·로그·소스 사본은 경로를 적어도 도구를 깨뜨리지 않고, 읽기만 오래 걸린다.
+// 회사 릴리스 기록 json은 수십~수백 KB라 1MiB까지 본다(10-29 — 64KB로 자르다 76KB 기록의 경로를 놓쳤다).
+const 참조확장자 = new Map([['.cjs', 512 * 1024], ['.mjs', 512 * 1024], ['.js', 512 * 1024], ['.py', 512 * 1024], ['.ps1', 512 * 1024], ['.sh', 512 * 1024], ['.json', 1024 * 1024]]);
 const 건너뛸폴더 = new Set(['node_modules', '.git', 'isolated-source', 'candidate', 'candidates', 'source', 'sources', 'snapshot', 'snapshots',
   'dist', 'build', 'out', 'payload', 'images', 'frames', 'media', 'renders', '__pycache__']);
 // `../../옛폴더/…`·`.tmp/옛폴더/…`처럼 다른 .tmp 폴더를 가리키는 경로. 점으로 시작하는 이름(`..`)은 폴더 이름이 아니다.
-const 참조식 = /(?:(?:\.\.[\\/])+|\.tmp[\\/])([^.\\/'"`\s)\]][^\\/'"`\s)\]]*)/g;
+// json 안의 Windows 경로는 역슬래시가 겹으로 적혀(`.tmp\\옛폴더\\…`) 구분자를 하나 이상으로 본다(10-29 회사 사슬 38이 놓친 꼴).
+const 참조식 = /(?:(?:\.\.[\\/]+)+|\.tmp[\\/]+)([^.\\/'"`\s)\]][^\\/'"`\s)\]]*)/g;
+// path.join(작업, '..', '옛폴더')처럼 따옴표 낱말로 잇는 앞 판(10-29).
+const 이어붙인참조식 = /(['"`])\.\.\1\s*,\s*(['"`])([^.\\/'"`\s][^\\/'"`\s]*)\2/g;
+// .tmp 맨 위의 이 파일에 적은 폴더(줄마다 이름 하나, # 뒤는 설명)는 _보존.txt처럼 남기고, 그 폴더가 가리키는 옛 폴더도 남긴다.
+// 10-29 공간 정리가 회사 릴리스 계보를 옮겨 사슬 38 생성기가 MODULE_NOT_FOUND로 멈춘 뒤, 그 세션이 되돌린 폴더를 적었다.
+const 제외파일 = '_정리제외.txt';
+function 제외읽기(임시) {
+  try { return new Set(fs.readFileSync(path.join(임시, 제외파일), 'utf8').split(/\r?\n/).map((l) => l.replace(/#.*/, '').trim()).filter(Boolean)); }
+  catch { return new Set(); }
+}
 
 /**
  * 주어진 폴더들의 코드·설정 파일에서 다른 .tmp 폴더를 가리키는 경로를 모은다(이름 → 가리킨 폴더들).
@@ -101,8 +113,7 @@ function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: 200
         let 글;
         try { if (fs.statSync(p).size > 최대) continue; 글 = fs.readFileSync(p, 'utf8'); } catch { continue; }
         본파일++; 전체++;
-        for (const m of 글.matchAll(참조식)) {
-          const 이름 = m[1];
+        for (const 이름 of [...[...글.matchAll(참조식)].map((m) => m[1]), ...[...글.matchAll(이어붙인참조식)].map((m) => m[3])]) {
           if (이름 === 폴더 || !이름들.has(이름)) continue;
           if (!찾은.has(이름)) 찾은.set(이름, new Set());
           찾은.get(이름).add(폴더);
@@ -143,6 +154,7 @@ function 목록만들기(옵션 = {}) {
   const 최근 = [];
   let 오래된파일 = 0, 오래된파일크기 = 0;
   const 폴더들 = [];
+  const 제외 = 제외읽기(임시);
   for (const e of fs.existsSync(임시) ? fs.readdirSync(임시, { withFileTypes: true }) : []) {
     const p = path.join(임시, e.name);
     const st = fs.lstatSync(p);
@@ -151,7 +163,7 @@ function 목록만들기(옵션 = {}) {
       if (st.mtimeMs < 기준) { 오래된파일++; 오래된파일크기 += st.size; }
       continue;
     }
-    if (fs.existsSync(path.join(p, '_보존.txt'))) { 최근.push(e.name); continue; }
+    if (fs.existsSync(path.join(p, '_보존.txt')) || 제외.has(e.name)) { 최근.push(e.name); continue; }
     폴더들.push({ 이름: e.name, p, 잰것: 훑기(p) });
   }
   // 릴리스·후보 사본은 갈래마다 새 판 둘만 남기고, 그보다 옛 판은 14일이 안 됐어도 후보로 보인다(10-21 유호님 확정).
