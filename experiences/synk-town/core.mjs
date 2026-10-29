@@ -605,12 +605,15 @@ function villageScene(state) {
     // Whether a scene may begin with each resident now (the night rule; always true without sleeps).
     awake: Object.fromEntries(Object.keys(RESIDENT_BY_ID).map(npc => [npc, upFor(v, npc, nowMs)])),
     band: { band: v.band.band, startMs: v.band.startMs, endMs: v.band.endMs },
-    // A segment whose mind changed carries its mood line's ID (§7-3) — the screen shows it near that resident; never the state (G2).
-    // W5: a card's solving names its card and part, a pair scene the neighbour it is with (old screens ignore both).
-    segments: segments.filter(seg => seg.endMs > nowMs).map(({ npc, startMs, arriveMs, endMs, archetype, spot, mood, card, cardRole, with: other }) => ({ npc, startMs, arriveMs, endMs, archetype, spot,
-      ...(mood ? { mood } : {}), ...(card ? { card, cardRole } : {}), ...(other ? { with: other } : {}) })),
+    segments: segments.filter(seg => seg.endMs > nowMs).map(segmentView),
     ...cardsView(state, nowMs) };
 }
+/** A plan segment as the screens get it. A segment whose mind changed carries its mood line's ID (§7-3) — the screen
+ * shows it near that resident; never the state (G2) nor why (reason, basis). W5: a card's solving names its card and
+ * part, a pair scene the neighbour it is with (old screens ignore both). W10: a mind glad of a card done with the player
+ * names that card (gladCard) — its mood line is the card's own. */
+export const segmentView = ({ npc, startMs, arriveMs, endMs, archetype, spot, mood, card, cardRole, with: other, basis }) => ({ npc, startMs, arriveMs, endMs, archetype, spot,
+  ...(mood ? { mood } : {}), ...(mood && basis?.kind === 'take' ? { gladCard: basis.card } : {}), ...(card ? { card, cardRole } : {}), ...(other ? { with: other } : {}) });
 /** The cards, traces, news and hearsay at nowMs for the screens that draw them (W5b): which cards wait and how the player
  * may join them, the take in hand, what the village shows, the news note (no dates, G3), what each resident would tell
  * the player and what it knows of things done with the player (without what it was asked to forget). */

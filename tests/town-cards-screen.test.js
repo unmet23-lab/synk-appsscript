@@ -125,3 +125,81 @@ test('공개 직후 캐시 — 새 화면 모듈은 생성물을 이름 공간�
   // day-cards는 day-mood에서 이미 공개된 이름(ICONS)만 이름 공간으로 쓴다 — 캐시에 옛 day-mood가 있어도 이어진다.
   assert.match(fs.readFileSync(path.join(ROOT, 'experiences', 'synk-town', 'day-cards.mjs'), 'utf8'), /import \* as mood from '\.\/day-mood\.mjs'/);
 });
+
+// W10: 생활일 번호(1970-01-01부터 날 수)와 그날의 계절·요일. 공방 주인의 쉬는 날은 수요일(offWeekday 2).
+const dayOf = (y, m, d) => Date.UTC(y, m - 1, d) / 86400000;
+
+test('W10 계절 — R5의 필요 줄과 그 소식은 그 생활일의 계절 판(.1은 가을), 소식은 ref 머리의 생활일로 · ref가 없으면 .1', async () => {
+  const { sceneLine, newsLine, seasonOf, hearsayText, lineText } = await load('day-cards.mjs');
+  const spring = dayOf(2026, 4, 15), summer = dayOf(2026, 7, 1), autumn = dayOf(2026, 10, 30), winter = dayOf(2027, 1, 5);
+  assert.deepEqual([spring, summer, autumn, winter, null].map(seasonOf), ['spring', 'summer', 'autumn', 'winter', null]);
+  const waiting = [{ card: 'R5', owner: 'researcher', status: 'triggered', key: 'k' }];
+  assert.equal(sceneLine([], 'researcher', T, { waiting, season: 'spring' }).id, 'researcher.card.R5-trigger.2');
+  assert.equal(sceneLine([], 'researcher', T, { waiting, season: 'autumn' }).id, 'researcher.card.R5-trigger.1');
+  assert.equal(sceneLine([], 'researcher', T, { waiting }).id, 'researcher.card.R5-trigger.1', '계절을 모르면 .1');
+  const solving = sceneLine([seg('researcher', { archetype: 'observe', spot: 'greenhouse.bed', card: 'R5', cardRole: 'owner' })], 'researcher', T + 1, { season: 'winter' });
+  assert.equal(solving.id, 'researcher.card.R5-self.4');
+  assert.deepEqual(solving.seen.slice(0, 1), ['line:researcher.card.R5-self.4'], '본 것 키는 보인 판');
+  assert.equal(newsLine('R5', `${summer}.day.R5`), 'village.news.R5.3');
+  assert.equal(newsLine('R5', `${autumn}.day.R5`), 'village.news.R5.1');
+  assert.equal(newsLine('R5'), 'village.news.R5.1');
+  assert.equal(newsLine('C1', `${spring}.day.C1`), 'village.news.C1.1', '계절 판이 없는 소식은 그대로');
+  const told = hearsayText('cafe-owner', { ref: `${winter}.morning.R5`, card: 'R5', path: 'self', actors: ['researcher'], place: 'greenhouse', how: 'news' });
+  assert.ok(told.text.includes(lineText('village.news.R5.4')));
+  assert.deepEqual(told.seen, ['line:cafe-owner.hearsay.news.1', 'line:village.news.R5.4']);
+});
+
+test('W10 인사 — 늦은 밤(23:30~05:30, 공방 주인은 새벽 03:00부터) · 바쁜 일 · 쉬는 일 · 그 밖은 구간×날씨, 조는 중엔 인사가 없다', async () => {
+  const { greetLine } = await load('day-cards.mjs');
+  const at = (h, m = 0) => h * 60 + m;
+  assert.equal(greetLine('cafe-owner', { band: 'night', weather: 'clear', minute: at(23, 45), archetype: 'night-tea' }), 'cafe-owner.greet.late.1', '늦은 밤이 바쁨보다 앞');
+  assert.equal(greetLine('researcher', { band: 'night', weather: 'clear', minute: at(5, 10) }), 'researcher.greet.late.1');
+  assert.equal(greetLine('researcher', { band: 'night', weather: 'clear', minute: at(23, 0) }), 'researcher.greet.night-clear.1');
+  assert.equal(greetLine('workshop-owner', { band: 'night', weather: 'rain', minute: at(1, 0) }), 'workshop-owner.greet.night-rain.1', '공방의 늦은 밤 인사는 새벽 일찍 깸이라 03시 전엔 밤 인사');
+  assert.equal(greetLine('workshop-owner', { band: 'night', weather: 'rain', minute: at(3, 30) }), 'workshop-owner.greet.late.1');
+  assert.equal(greetLine('cafe-owner', { band: 'day', weather: 'clear', minute: at(13), archetype: 'serve' }), 'cafe-owner.greet.busy.1');
+  assert.equal(greetLine('workshop-owner', { band: 'day', weather: 'clear', minute: at(13), archetype: 'craft' }), 'workshop-owner.greet.busy.1');
+  assert.equal(greetLine('researcher', { band: 'day', weather: 'clear', minute: at(13), archetype: 'notes' }), 'researcher.greet.busy.1');
+  assert.equal(greetLine('workshop-owner', { band: 'day', weather: 'clear', minute: at(13), archetype: 'breeze-lunch' }), 'workshop-owner.greet.resting.1');
+  assert.equal(greetLine('researcher', { band: 'evening', weather: 'rain', minute: at(18), archetype: 'water' }), 'researcher.greet.evening-rain.1');
+  assert.equal(greetLine('cafe-owner', { band: 'night', weather: 'clear', minute: null }), 'cafe-owner.greet.night-clear.1', '시계가 없으면 늦은 밤을 모른다');
+  assert.equal(greetLine('cafe-owner', { band: 'day', weather: 'clear', minute: at(13), archetype: 'doze' }), null);
+});
+
+test('W10 일과 — 지금 원형의 한 줄, 쌍 장면은 둘 다 있을 때 그 쌍의 줄, 공방 주인 쉬는 날 아침은 휴무 기상, 원고가 없는 원형은 없음', async () => {
+  const { routineLine } = await load('day-cards.mjs');
+  const wednesday = dayOf(2026, 10, 28), thursday = dayOf(2026, 10, 29);
+  assert.equal(routineLine('cafe-owner', { segments: [seg('cafe-owner', { archetype: 'brew' })], t: T + 1 }), 'cafe-owner.routine.brew.1');
+  const pair = [seg('cafe-owner', { with: 'workshop-owner' }), seg('workshop-owner', { with: 'cafe-owner' })];
+  assert.equal(routineLine('cafe-owner', { segments: pair, t: T + 1 }), 'cafe-owner.routine.pair-PAIR01.1');
+  assert.equal(routineLine('cafe-owner', { segments: pair.slice(0, 1), t: T + 1 }), 'cafe-owner.routine.chat.1', '짝이 아직 없으면 그냥 이야기');
+  const walk = [seg('workshop-owner', { archetype: 'stroll', spot: 'lane.mid' })];
+  assert.equal(routineLine('workshop-owner', { segments: walk, t: T + 1, band: 'morning', lifeDay: wednesday }), 'workshop-owner.routine.holiday-wake.1');
+  assert.equal(routineLine('workshop-owner', { segments: walk, t: T + 1, band: 'day', lifeDay: wednesday }), 'workshop-owner.routine.stroll.1');
+  assert.equal(routineLine('workshop-owner', { segments: walk, t: T + 1, band: 'morning', lifeDay: thursday }), 'workshop-owner.routine.stroll.1');
+  assert.equal(routineLine('workshop-owner', { segments: [seg('workshop-owner', { archetype: 'night-carve' })], t: T + 1 }), null);
+  assert.equal(routineLine('researcher', { segments: [], t: T + 1 }), null, '자는 중');
+});
+
+test('W10 장소 판 — 들은 것이 없으면 여기 있는 주민 자기 말(인사 또는 지금 하는 일), 들은 것이 있으면 그 인사만', async () => {
+  const { placeModel, lineText } = await load('day-cards.mjs');
+  const own = npc => npc === 'cafe-owner' ? 'cafe-owner.greet.day-clear.1' : null;
+  const quiet = placeModel({ location: 'cafe', residentsHere: ['workshop-owner', 'cafe-owner'], hearsay: {}, own });
+  assert.deepEqual(quiet.own, { npc: 'cafe-owner', id: 'cafe-owner.greet.day-clear.1', kind: 'greet', text: lineText('cafe-owner.greet.day-clear.1'), icon: 'quiet', seen: ['line:cafe-owner.greet.day-clear.1'] });
+  assert.equal(quiet.greet, null);
+  assert.equal(placeModel({ location: 'cafe', residentsHere: ['cafe-owner'], hearsay: {}, own, level: 'L4' }).own.text, lineText('cafe-owner.greet.day-clear.1', 'L4'));
+  const hearsay = { 'cafe-owner': { ref: 'r2', card: 'W1', path: 'self', actors: ['workshop-owner'], place: 'workshop', how: 'news' } };
+  const told = placeModel({ location: 'cafe', residentsHere: ['cafe-owner'], hearsay, own });
+  assert.equal(told.greet.npc, 'cafe-owner');
+  assert.equal(told.own, null);
+  assert.equal(placeModel({ location: 'cafe', residentsHere: ['cafe-owner'], hearsay: {} }).own, null, '옛 부르기(own 없음)');
+  const home = placeModel({ location: 'home', residentsHere: [], hearsay: {}, news: [{ ref: `${dayOf(2026, 4, 2)}.day.R5`, card: 'R5' }] });
+  assert.deepEqual(home.note.map(n => n.lineId), ['village.news.R5.2'], '쪽지는 보인 판의 줄 ID를 가진다');
+});
+
+test('W10 공개 직후 캐시 — day-app은 W10에 새로 생긴 이름(인사·일과·계절·작별 줄)을 이름 공간으로만 읽는다', () => {
+  const code = fs.readFileSync(path.join(ROOT, 'experiences', 'synk-town', 'day-app.mjs'), 'utf8');
+  for (const name of ['greetLine', 'routineLine', 'seasonOf', 'GOODBYE_LINE']) assert.doesNotMatch(code, new RegExp(`import \\{[^}]*\\b${name}\\b[^}]*\\} from`), name);
+  assert.match(code, /import \* as dayCards from '\.\/day-cards\.mjs'/);
+  assert.match(code, /import \* as newTeaModule from '\.\/new-tea\.mjs'/);
+});

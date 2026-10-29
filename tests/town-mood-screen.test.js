@@ -111,7 +111,9 @@ test('「무슨 뜻이에요?」로 바뀐 판은 화면 읽기에도 다시 읽
 });
 
 test('「무슨 뜻이에요?」는 그 카드에만: 곁에 선 채 다음 조각의 다른 줄로 바뀌어도 앞 줄의 쉬운 판이 남지 않는다(검수 A1)', async () => {
-  const { createMoodLines, lineLevel } = await screen(), [a, b] = await researcherLines();
+  // 다른 이유의 줄 둘(W10부터 같은 이유의 .2가 .1 바로 뒤에 있다 — 그 둘은 한 줄의 변형이다).
+  const { createMoodLines, lineLevel } = await screen(), all = await researcherLines(), family = id => id.replace(/\.\d+$/, '');
+  const a = all[0], b = all.find(line => family(line.id) !== family(a.id));
   const { container, live } = fakeScene(), lines = createMoodLines(container, live);
   const view = (mood, t) => near(lines, mood, t);
   view(a.id, 100);
@@ -126,4 +128,50 @@ test('「무슨 뜻이에요?」는 그 카드에만: 곁에 선 채 다음 조�
   assert.equal(card.querySelector('.mood-text').textContent, a.levels[lineLevel()]);
   assert.equal(card.querySelector('.mood-help').attrs['aria-expanded'], 'false');
   delete globalThis.document;
+});
+
+test('W10 변형: 같은 이유의 줄은 이 기기 사본에서 덜 본 쪽 · 한 번 보이는 동안은 그대로 · 함께 마친 일은 그 카드 줄(옛 서버면 주민이 아는 가장 새 카드, 모르면 줄 없음)', async () => {
+  const { moodVariant, moodAt } = await screen();
+  const seg = (mood, startMs, extra = {}) => ({ npc: 'researcher', startMs, endMs: startMs + 100, mood, ...extra });
+  const one = 'researcher.mood.sleepy-night.1', two = 'researcher.mood.sleepy-night.2';
+  assert.equal(moodVariant(seg(one, 1000), { seen: {} }), one, '같으면 앞의 것');
+  assert.equal(moodVariant(seg(one, 2000), { seen: { [`line:${one}`]: 2, [`line:${two}`]: 1 } }), two, '덜 본 쪽');
+  assert.equal(moodVariant(seg(one, 2000), { seen: { [`line:${two}`]: 5 } }), two, '한 번 고른 조각은 보인 뒤 사본이 늘어도 그대로');
+  assert.equal(moodAt([seg(one, 3000)], 'researcher', 3050, { seen: { [`line:${one}`]: 1 } }), two);
+  const glad = 'researcher.mood.with-player-glad.1';
+  assert.equal(moodVariant(seg(glad, 4000, { gladCard: 'R2' })), 'researcher.mood.with-player-glad.3', '서버가 이름 댄 카드의 줄');
+  assert.equal(moodVariant(seg(glad, 4000), { knownMe: [{ ref: 'a', card: 'R4', path: 'player' }, { ref: 'b', card: 'R1', path: 'player' }, { ref: 'c', card: 'C1', path: 'player' }] }),
+    'researcher.mood.with-player-glad.2', '옛 서버: 이 주민 카드 가운데 가장 새 것(R1 — C1은 연구원 줄이 없다)');
+  assert.equal(moodVariant(seg(glad, 4000)), null, '카드를 모르면 다른 카드의 줄을 대지 않는다');
+  assert.equal(moodAt([seg(glad, 5000)], 'researcher', 5050, { knownMe: { researcher: [{ ref: 'd', card: 'R6', path: 'player' }] } }), 'researcher.mood.with-player-glad.6');
+});
+
+test('W10 화면이 가진 한 줄(새 차 작별): 거리와 상관없이 그 주민 이름 곁, 자기 판 · 「무슨 뜻이에요?」는 한 단계 아래 · 본 것으로 보낼 키 없음 · 끝나면 사라진다', async () => {
+  const { createMoodLines } = await screen();
+  const { container, live } = fakeScene(), lines = createMoodLines(container, live), seen = [];
+  const say = { id: 'cafe-alley.day.new-tea.stop', npc: 'cafe-owner', icon: 'cup', level: 'L3', levels: { L1: 'a1', L2: 'a2', L3: 'a3', L4: 'a4' } };
+  const frame = (now, extra = {}) => lines.update({ segments: [], t: 100, rows: [{ id: 'cafe-owner', live: true, x: 30, z: 0 }], player: { x: 0, z: 0 }, labelAt: () => ({ x: 400, y: 200 }),
+    names: { 'cafe-owner': '찻집 주인' }, onSeen: keys => seen.push(...keys), now, say, ...extra });
+  assert.deepEqual(frame(0), [{ npc: 'cafe-owner', id: say.id, eased: false }], '30m 떨어져도 뜬다');
+  const card = container.children[0];
+  assert.equal(card.text.textContent, 'a3');
+  assert.equal(card.attrs['aria-label'], '찻집 주인의 말');
+  assert.equal(live.textContent, '찻집 주인: a3');
+  card.help.listeners.click();
+  assert.equal(card.text.textContent, 'a2');
+  frame(5000);
+  assert.deepEqual(seen, [], '본 것 장부에 보낼 키가 없다');
+  assert.deepEqual(frame(6000, { say: null }), [], '끝나면 사라진다');
+  assert.equal(container.children.length, 0);
+  delete globalThis.document;
+});
+
+test('W10 서버 투영 — 함께 마친 일에 기쁜 조각만 그 카드를 gladCard로 이름 대고(화면은 그 카드 줄), 까닭(reason·basis·cause)은 보내지 않는다', async () => {
+  const { segmentView } = await import(pathToFileURL(path.join(ROOT, 'experiences/synk-town/core.mjs')).href), { moodVariant } = await screen();
+  const base = { npc: 'cafe-owner', startMs: 7000, arriveMs: 7100, endMs: 9000, archetype: 'pick-leaves', spot: 'greenhouse.bed', cause: 'card', reason: 'with-player-glad' };
+  const glad = segmentView({ ...base, mood: 'cafe-owner.mood.with-player-glad.1', basis: { kind: 'take', card: 'C3' } });
+  assert.deepEqual(glad, { npc: 'cafe-owner', startMs: 7000, arriveMs: 7100, endMs: 9000, archetype: 'pick-leaves', spot: 'greenhouse.bed', mood: 'cafe-owner.mood.with-player-glad.1', gladCard: 'C3' });
+  assert.equal(moodVariant(glad), 'cafe-owner.mood.with-player-glad.3', 'C3를 함께 했으면 C3 줄(전에는 모든 찻집 카드에 C1 줄이 나갔다)');
+  assert.equal(segmentView({ ...base, basis: { kind: 'take', card: 'C3' } }).gladCard, undefined, '줄이 없는 조각(그날 이미 말함)은 카드도 없다');
+  assert.equal(segmentView({ ...base, mood: 'cafe-owner.mood.pair-glad.1', basis: { kind: 'card', card: 'C1', key: 'k' } }).gladCard, undefined, '이웃끼리 푼 카드(pair-glad)는 아니다');
 });

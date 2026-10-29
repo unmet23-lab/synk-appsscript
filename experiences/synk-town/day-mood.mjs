@@ -8,14 +8,21 @@
  * W5b: the same cards carry what a resident says while it solves a small need card or talks with its pair (the caller's
  * lineAt resolves it — town/data/lines cards·pairs), two cards never cover each other or the walking HUD, a line read out
  * once is read again on a new life day, and a card shown long enough is reported as seen (§20-2 line: keys).
+ * W10: the plan names a mood's first line; the screen shows the less seen of its equal variants (the device's copy of the
+ * seen ledger) or — glad of a card done with the player — that card's own line, and the app may hand it one line the
+ * screen itself owns for a while (say: the new tea's goodbye by the cafe owner's name).
  */
 import * as generated from './town/data.gen.mjs';
+import { leastSeen } from './town/seen.mjs';
 import { WALK_NEAR_RADIUS } from './walk.mjs';
 
 // Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the
 // generated data from before the mood lines existed. Then no line shows and the town still opens — a named import
 // would instead stop the whole town from loading.
 const LINE_BY_ID = new Map([...(generated.MOOD_LINES || []), ...(generated.TOWN_LINES || [])].map(line => [line.id, line]));
+// A mood's variants (`<npc>.mood.<reason>.<N>`, W10), in their authored order.
+const FAMILY = new Map();
+for (const line of generated.MOOD_LINES || []) { const key = line.id.replace(/\.\d+$/, ''); if (!FAMILY.has(key)) FAMILY.set(key, []); FAMILY.get(key).push(line); }
 /** How long a card stays in sight before its line counts as seen (§20-2 「끝까지 보였을 때」). */
 export const SEEN_MS = 1200;
 const LEVELS = ['L1', 'L2', 'L3', 'L4'];
@@ -69,10 +76,31 @@ export function separate(rects, { gutter = 16, height = Infinity, gap = 6, avoid
   return out;
 }
 
-/** The mood line the plan gives a resident at server time t: its current segment's line, or null. */
-export function moodAt(segments, npc, t) {
+// The variant one showing took: the seen copy grows once the line is reported, and the card must not change under the
+// player's eyes (nor the text alternative say another line).
+const PICKED = new Map();
+/** Which variant of the plan's mood line shows (W10). Glad of a card done with the player, the line of that card
+ * (segment.gladCard; from an older host without it, the newest card this resident knows the player did with it —
+ * knownMe — else none); every other mood, the less seen of its equal variants on this device (seen: the device's copy). */
+export function moodVariant(seg, { seen = {}, knownMe = [] } = {}) {
+  const family = FAMILY.get(seg.mood.replace(/\.\d+$/, '')) || [];
+  if (family.some(line => line.card)) {
+    const known = [...(knownMe || [])].reverse().find(k => k.path === 'player' && family.some(line => line.card === k.card))?.card;
+    return family.find(line => line.card === (seg.gladCard ?? known))?.id ?? null;
+  }
+  if (family.length < 2) return seg.mood;
+  const occurrence = `${seg.npc}:${seg.startMs}:${seg.mood}`;
+  if (!PICKED.has(occurrence)) {
+    if (PICKED.size >= 256) PICKED.clear();
+    PICKED.set(occurrence, leastSeen(family.map(line => `line:${line.id}`), seen || {}).slice('line:'.length));
+  }
+  return PICKED.get(occurrence);
+}
+/** The mood line the plan gives a resident at server time t: its current segment's line (the variant that shows), or null.
+ * knownMe is the view's { npc: [what it knows the player did with it] }. */
+export function moodAt(segments, npc, t, { seen = {}, knownMe = {} } = {}) {
   const seg = segments.find(s => s.npc === npc && s.startMs <= t && t < s.endMs);
-  return seg?.mood && LINE_BY_ID.has(seg.mood) ? seg.mood : null;
+  return seg?.mood && LINE_BY_ID.has(seg.mood) ? moodVariant(seg, { seen, knownMe: knownMe?.[npc] || [] }) : null;
 }
 
 /** Metres past the near radius before a shown card goes, so walking along the edge does not make it blink. */
@@ -86,17 +114,21 @@ const LABEL_GAP = 14;
  * W5b (all optional): lineAt(npc) → { id, icon, seen } picks the resident's line (else its mood line), skip names
  * residents whose card another layer draws (an offer), day is the life day (a new one reads lines out again), avoid
  * lists rects the cards keep off ({ x, y, w, h } in the layer's px — the walking HUD), onSeen(keys) hears each line's
- * seen keys once it has been in sight SEEN_MS. */
+ * seen keys once it has been in sight SEEN_MS.
+ * W10 (optional): seen is the device's copy of the seen ledger and knownMe the view's { npc: [done with the player] } —
+ * moodVariant reads them; say ({ npc, id, levels, level, icon }) is a line the screen owns, shown by that resident's
+ * name wherever the player stands (its own level, and 「무슨 뜻이에요?」 a level down) and reported as nothing. */
 export function createMoodLines(container, live, { getLadder = () => null } = {}) {
   // An entry page from before the mood lines (a cached day.html) has no layer: nothing to draw, and the frame loop
   // that calls update() must keep running.
   if (!container) return { update: () => [] };
-  const cards = new Map(), eased = new Set(), announced = new Set(), reported = new WeakSet();
+  const cards = new Map(), eased = new Set(), announced = new Set(), reported = new WeakSet(), said = new Map();
   let announcedDay = null;
-  const textOf = id => { const line = LINE_BY_ID.get(id), level = lineLevel({ ladder: getLadder() }); return line.levels[eased.has(id) ? easier(level) : level] ?? line.levels.L1; };
+  const lineOf = id => LINE_BY_ID.get(id) ?? said.get(id);
+  const textOf = id => { const line = lineOf(id), level = line.level ?? lineLevel({ ladder: getLadder() }); return line.levels[eased.has(id) ? easier(level) : level] ?? line.levels.L1; };
   const say = (npc, id, names) => { if (live) live.textContent = `${names[npc] || npc}: ${textOf(id)}`; };
   function card(npc, id, names, icon) {
-    const line = LINE_BY_ID.get(id), el = document.createElement('div');
+    const line = lineOf(id), el = document.createElement('div');
     el.className = 'mood-card'; el.dataset.npc = npc; el.dataset.line = id; el.setAttribute('role', 'group'); el.setAttribute('aria-label', `${names[npc] || npc}${line.kind && line.kind !== 'mood' ? '의 말' : '의 마음'}`);
     el.innerHTML = `<span class="mood-icon">${svg(icon || line.icon)}</span><p class="mood-text"></p><button type="button" class="mood-help" aria-expanded="false">무슨 뜻이에요?</button>`;
     // The line changes in place, so a screen reader hears the version now shown.
@@ -117,14 +149,19 @@ export function createMoodLines(container, live, { getLadder = () => null } = {}
     el.remove(); cards.delete(npc); eased.delete(el.dataset.line);
   }
   function update({ segments = [], t = null, rows = [], player = null, labelAt = () => null, names = {}, blocked = false,
-    lineAt = null, skip = [], day = null, avoid = [], onSeen = null, now = globalThis.performance?.now?.() ?? Date.now() }) {
+    lineAt = null, skip = [], day = null, avoid = [], onSeen = null, seen = {}, knownMe = {}, say: spoken = null,
+    now = globalThis.performance?.now?.() ?? Date.now() }) {
     // A line read out on one life day is read out again on the next (the W4 screen review's follow-up).
     if (day !== announcedDay) { announcedDay = day; announced.clear(); }
+    if (spoken?.id && !LINE_BY_ID.has(spoken.id)) said.set(spoken.id, { kind: 'say', icon: spoken.icon, level: spoken.level, levels: spoken.levels });
     const want = new Map();
     if (!blocked && t !== null && player) {
+      // The screen's own line goes by its resident's name wherever it stands — even while a scene still holds it (it has
+      // just spoken with the player and let go); only its name on screen is needed.
+      if (spoken?.npc && said.has(spoken.id) && !skip.includes(spoken.npc)) want.set(spoken.npc, { id: spoken.id, icon: spoken.icon ?? null, seen: [], occurrence: spoken.id });
       for (const row of rows) {
-        if (!row.live || row.asleep || row.held || skip.includes(row.id)) continue;
-        const picked = lineAt ? lineAt(row.id) : null, id = picked?.id && LINE_BY_ID.has(picked.id) ? picked.id : moodAt(segments, row.id, t);
+        if (!row.live || row.asleep || row.held || skip.includes(row.id) || want.has(row.id)) continue;
+        const picked = lineAt ? lineAt(row.id) : null, id = picked?.id && LINE_BY_ID.has(picked.id) ? picked.id : moodAt(segments, row.id, t, { seen, knownMe });
         const reach = WALK_NEAR_RADIUS + (cards.get(row.id)?.dataset.line === id ? LEAVE_MARGIN : 0);
         if (!id || Math.hypot(row.x - player.x, row.z - player.z) > reach) continue;
         // One showing of one happening counts once, however often the player walks in and out of reach (§20-2).

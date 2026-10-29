@@ -5,14 +5,24 @@
  * often), the choosing panel of 「나와 함께」 and the result with its 「…」 feedback, the cards and the greeting in the
  * place's panel, and the news note by the door. No numbers, dates or counts show (G2·G3).
  * Screen-only module; every line comes from the reviewed lines (town/data/lines) through the generated data.
+ * W10: a line with seasons (R5's need, its news) speaks in the season of its life day, and a resident with nothing to
+ * tell greets the player in its own words, then says what it is doing (greetLine · routineLine).
  */
 import * as generated from './town/data.gen.mjs';
 import * as mood from './day-mood.mjs';
 import { authoredLevel } from './town/language-ladder.mjs';
+import { civilFromDays, dayKindOf, seasonOfMonth } from './town/clock.mjs';
 
 // Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the generated
 // data from before the cards existed (then no card line shows and the town still opens — a named import would stop it).
 const LINES = new Map([...(generated.MOOD_LINES || []), ...(generated.TOWN_LINES || [])].map(line => [line.id, line]));
+// A line's seasonal variants (W10): `.1` is autumn's, the others carry when.season.
+const SEASONAL = new Map((generated.TOWN_LINES || []).filter(line => line.when?.season).map(line => [`${line.id.replace(/\.\d+$/, '')}:${line.when.season}`, line.id]));
+const inSeason = (id, season) => SEASONAL.get(`${id.replace(/\.\d+$/, '')}:${season}`) ?? id;
+/** The season of a life day (the clock's, by its month), or null. */
+export const seasonOf = lifeDay => Number.isSafeInteger(lifeDay) ? seasonOfMonth(civilFromDays(lifeDay).month) : null;
+// A card's news and hearsay carry the life day it happened as the head of their ref (`<lifeDay>.<band>.<card>`).
+const dayOfRef = ref => /^-?\d+\./.test(ref ?? '') ? Number(ref.split('.')[0]) : null;
 export const CARD_BY_ID = new Map((generated.CARDS || []).map(card => [card.id, card]));
 const PAIR_LIST = generated.PAIRS || [];
 export const NAMES = Object.freeze({ 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' });
@@ -53,8 +63,9 @@ export const iconSvg = name => svgOf(HOW_ICONS[name] || mood.ICONS?.[name] || mo
 /** An authored line at its scene's reading level; a missing version falls to the nearest lower one. */
 export function lineText(id, level = LEVEL) { const line = LINES.get(id); return line ? line.levels[authoredLevel(level, line.levels)] ?? null : null; }
 export const hasLine = id => LINES.has(id);
-const cardLine = (npc, card, part) => `${npc}.card.${card}-${part}.1`;
-export const newsLine = card => `village.news.${card}.1`;
+const cardLine = (npc, card, part, season = null) => inSeason(`${npc}.card.${card}-${part}.1`, season);
+/** A card's news line, in the season of the life day its ref names. */
+export const newsLine = (card, ref = null) => inSeason(`village.news.${card}.1`, seasonOf(dayOfRef(ref)));
 const pairOf = (a, b) => PAIR_LIST.find(p => p.members.includes(a) && p.members.includes(b) && a !== b) ?? null;
 /** The pairs' small differences as the band started (state.village.band.pairs): { PAIR01: step, … }. */
 export function pairSteps(bandPairs) {
@@ -67,13 +78,13 @@ const arrived = (s, t) => t >= (s.arriveMs ?? s.startMs);
  * asking its pair / come to help), talking with its pair (the pair's line for their small difference's step), or — when
  * its card waits for it — that card's need. Only once it is where it does it; a pair line only when both are there (a
  * resident alone never talks to the air — review F14). Returns { id, icon, seen: [keys] } or null. waiting: the view's
- * cards still waiting ({ card, owner, status }). */
-export function sceneLine(segments, npc, t, { steps = {}, waiting = [] } = {}) {
+ * cards still waiting ({ card, owner, status }); season: today's (a card line with seasons speaks in it, W10). */
+export function sceneLine(segments, npc, t, { steps = {}, waiting = [], season = null } = {}) {
   const seg = segments.find(s => s.npc === npc && here(s, t));
   if (seg && arrived(seg, t) && seg.card && CARD_BY_ID.has(seg.card)) {
     const card = CARD_BY_ID.get(seg.card), together = seg.cardRole === 'partner'
       || segments.some(s => s.cardRole === 'partner' && s.card === seg.card && s.key === seg.key);
-    const id = cardLine(npc, seg.card, together ? 'pair' : 'self');
+    const id = cardLine(npc, seg.card, together ? 'pair' : 'self', season);
     if (!LINES.has(id)) return null;
     const scene = together && card.paths?.pair?.scene, seen = [`line:${id}`, `card:${seg.card}:${together ? 'pair' : 'self'}`];
     if (scene && Object.hasOwn(steps, scene)) seen.push(`pair:${scene}:${steps[scene]}`);
@@ -86,8 +97,35 @@ export function sceneLine(segments, npc, t, { steps = {}, waiting = [] } = {}) {
     return LINES.has(id) ? { id, icon: 'together', seen: [`line:${id}`, `pair:${pair.scene}:${step}`], occurrence: `${pair.scene}:${Math.min(seg.startMs, mate.startMs)}` } : null;
   }
   const need = waiting.find(c => c.owner === npc && c.status === 'triggered');
-  if (need) { const id = cardLine(npc, need.card, 'trigger'); if (LINES.has(id)) return { id, icon: CARD_ICONS[need.card] || 'sparkle', seen: [`line:${id}`], occurrence: `${need.card}:${need.key}:trigger` }; }
+  if (need) { const id = cardLine(npc, need.card, 'trigger', season); if (LINES.has(id)) return { id, icon: CARD_ICONS[need.card] || 'sparkle', seen: [`line:${id}`], occurrence: `${need.card}:${need.key}:trigger` }; }
   return null;
+}
+
+// What a resident's own greeting reads from what it is doing (W10, §16 인사): its work at a push — the cafe's guests and
+// night cups, the workshop's orders, the researcher's notes — is busy; a rest archetype is resting (a doze greets no one).
+const BUSY = Object.freeze({ 'cafe-owner': ['serve', 'deliver-tea', 'night-tea'], 'workshop-owner': ['craft', 'night-carve'], researcher: ['notes'] });
+const REST = new Set((generated.ARCHETYPES || []).filter(a => a.kind === 'rest').map(a => a.id));
+const LATE_FROM = 23 * 60 + 30, LATE_TO = 5 * 60 + 30, WORKSHOP_LATE_FROM = 3 * 60;
+/** A resident's own greeting when it has nothing to tell (W10): late at night (23:30–05:30 in my time — the workshop
+ * owner's is its early waking, so only from 03:00, before that its night one), busy at its work, resting, else the band
+ * and the weather. now: { band, weather, minute (my time, or null), archetype }. Returns the line's ID or null. */
+export function greetLine(npc, { band = null, weather = null, minute = null, archetype = null } = {}) {
+  if (archetype === 'doze') return null;
+  const late = Number.isSafeInteger(minute) && (npc === 'workshop-owner' ? minute >= WORKSHOP_LATE_FROM && minute < LATE_TO : minute >= LATE_FROM || minute < LATE_TO);
+  const key = late ? 'late' : BUSY[npc]?.includes(archetype) ? 'busy' : REST.has(archetype) ? 'resting' : `${band}-${weather === 'rain' ? 'rain' : 'clear'}`;
+  const id = `${npc}.greet.${key}.1`;
+  return LINES.has(id) ? id : null;
+}
+const OFF_WEEKDAY = Object.fromEntries((generated.RESIDENTS || []).map(r => [r.id, r.offWeekday ?? null]));
+/** What a resident is doing, in one line of its own (W10, §16 일과): its pair scene's while both are at it, the workshop
+ * owner's waking on its day off in the morning, else its archetype's. now: { segments, t, band, lifeDay }. */
+export function routineLine(npc, { segments = [], t = null, band = null, lifeDay = null } = {}) {
+  const seg = segments.find(s => s.npc === npc && here(s, t));
+  if (!seg) return null;
+  const pair = seg.with && arrived(seg, t) && segments.some(s => s.npc === seg.with && s.with === npc && here(s, t) && arrived(s, t)) ? pairOf(npc, seg.with) : null;
+  const off = band === 'morning' && Number.isSafeInteger(lifeDay) && dayKindOf(lifeDay, OFF_WEEKDAY[npc]) === 'off';
+  const id = `${npc}.routine.${pair ? `pair-${pair.scene}` : off && LINES.has(`${npc}.routine.holiday-wake.1`) ? 'holiday-wake' : seg.archetype}.1`;
+  return LINES.has(id) ? id : null;
 }
 
 /** The greeting's words (§9-4): the resident's hearsay frame for how it knows, filled with the card's news line and who
@@ -95,10 +133,10 @@ export function sceneLine(segments, npc, t, { steps = {}, waiting = [] } = {}) {
 export function hearsayText(npc, entry, level = LEVEL) {
   if (!entry) return null;
   const how = entry.how === 'direct' ? 'seen' : entry.how === 'heard' ? 'heard' : 'news', frame = `${npc}.hearsay.${how}.1`;
-  const words = lineText(frame, level), news = lineText(newsLine(entry.card), level);
+  const words = lineText(frame, level), news = lineText(newsLine(entry.card, entry.ref), level);
   if (!words || !news || how === 'heard' && !NAMES[entry.from]) return null;
   return { id: frame, text: words.replace('{news}', news).replace('{from}', NAMES[entry.from] || ''), icon: entry.how === 'direct' ? 'direct' : entry.how === 'heard' ? 'heard' : 'news',
-    seen: [`line:${frame}`, `line:${newsLine(entry.card)}`] };
+    seen: [`line:${frame}`, `line:${newsLine(entry.card, entry.ref)}`] };
 }
 
 /** Whether a card waiting for its owner may be taken now by the player (W5: every card but the locked one and the two
@@ -107,14 +145,18 @@ export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) &
 
 /** What the place's panel shows of the cards and the residents here (§8-3·§9-4): the resident who greets the player
  * with what it heard (one, once — the newest it may tell), the cards whose owner is here (its need, and 「같이 해요」 or
- * the paused one to go on with), and at home the news note (the newest three, never their days). */
-export function placeModel({ location, residentsHere = [], hearsay = {}, cards = [], news = [], take = null, level = LEVEL }) {
+ * the paused one to go on with), and at home the news note (the newest three, never their days).
+ * W10: season is today's (a need with seasons speaks in it); with nothing heard to tell, own(npc) names the line a resident
+ * here says of itself (its greeting, or what it is doing — the app's choice) and the first one with words is own. */
+export function placeModel({ location, residentsHere = [], hearsay = {}, cards = [], news = [], take = null, level = LEVEL, season = null, own = null }) {
   const greet = residentsHere.map(npc => ({ npc, line: hearsayText(npc, hearsay[npc], level) })).find(g => g.line) ?? null;
   const open = take && ['with', 'resolved'].includes(take.status) ? take : null;
   const needs = open ? [] : cards.filter(c => takeable(c) && residentsHere.includes(c.owner)).map(c => ({ card: c.card, key: c.key, owner: c.owner, paused: c.status === 'paused',
-    title: CARD_BY_ID.get(c.card).title, line: lineText(cardLine(c.owner, c.card, c.status === 'paused' ? 'offer' : 'trigger'), level) }));
-  const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card), level) })).filter(n => n.text) : [];
-  return { greet: greet && { npc: greet.npc, ref: hearsay[greet.npc].ref, ...greet.line }, needs, note, open };
+    title: CARD_BY_ID.get(c.card).title, line: lineText(cardLine(c.owner, c.card, c.status === 'paused' ? 'offer' : 'trigger', season), level) }));
+  const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, lineId: newsLine(n.card, n.ref), text: lineText(newsLine(n.card, n.ref), level) })).filter(n => n.text) : [];
+  const mine = !greet && typeof own === 'function' ? residentsHere.map(npc => ({ npc, id: own(npc) })).find(o => o.id && lineText(o.id, level)) ?? null : null;
+  return { greet: greet && { npc: greet.npc, ref: hearsay[greet.npc].ref, ...greet.line },
+    own: mine && { npc: mine.npc, id: mine.id, kind: LINES.get(mine.id).kind, text: lineText(mine.id, level), icon: 'quiet', seen: [`line:${mine.id}`] }, needs, note, open };
 }
 
 /** The offer standing for this window (§8-3): a card's contact issued here that the screen may still show — the owner's

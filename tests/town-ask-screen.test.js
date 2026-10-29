@@ -158,3 +158,12 @@ test('서빙 목록 셋 — 미리 보기 서버·WORLD 미리 보기 서버·�
     assert.ok(fs.existsSync(path.join(ROOT, 'experiences/synk-town', file)), file);
   }
 });
+
+test('W10 취향 묻기 — 읽기 자리의 안정 판으로 묻는다(판을 모르면 L2)', async () => {
+  const { askModel } = await load('day-ask.mjs'), { ASK_LINES } = await load('town/data.gen.mjs');
+  const levels = ASK_LINES.find(line => line.family === 'cafe-life').levels, ask = { key: 'taste:cafe-life', kind: 'taste', family: 'cafe-life' };
+  assert.equal(askModel(ask, { level: 'L4' }).line, levels.L4);
+  assert.equal(askModel(ask, { level: 'L1' }).line, levels.L1);
+  assert.equal(askModel(ask).line, levels.L2);
+  assert.equal(askModel(ask, { level: 'L9' }).line, levels.L2);
+});

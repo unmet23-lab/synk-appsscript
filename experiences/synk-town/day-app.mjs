@@ -10,6 +10,9 @@ import { validOffset } from './town/clock.mjs';
 import { createMoodLines, moodAt } from './day-mood.mjs';
 import { createLanguageSettings } from './day-language.mjs';
 import { createOffer, offerModel, placeModel, takeModel, sceneLine, pairSteps, lineText, iconSvg, FEEDBACK, NAMES as CARD_NAMES, CARD_BY_ID } from './day-cards.mjs';
+// W10 names (the residents' own lines, the seasons, the goodbye line) through the namespace: for the cache's ten minutes after
+// a publish a browser may still hold the modules from before them — then those lines just do not show.
+import * as dayCards from './day-cards.mjs';
 import { createNotebook } from './day-notebook.mjs';
 import { createStay } from './day-stay.mjs';
 import { createAsk, tutorOnDevice } from './day-ask.mjs';
@@ -18,6 +21,7 @@ import { createTownSound } from './day-sound.mjs';
 import { QUIET } from './town/stay.mjs';
 import { createTeaBoard, teaGuests } from './day-tea.mjs';
 import { goodbye, startNewTea, newTeaView } from './new-tea.mjs';
+import * as newTeaModule from './new-tea.mjs';
 import { createGatherBoard, REFUSALS as GATHER_REFUSALS, refusalWords as gatherRefusalWords, jarFillers, itemName as gatherItemName } from './day-gather.mjs';
 import { paramsFor } from './town/params.mjs';
 
@@ -605,10 +609,14 @@ function renderScene() {
   $('scene').setAttribute('aria-label', `${names[day.location] || day.location}. ${description}`); text('scene-caption', description); if (!walking()) text('scene-badge', names[day.location] || day.location);
   text('fallback-title', names[day.location] || day.location); text('fallback-line', description);
   // The text alternative also says each resident's line now — its card's, its pair's or its mind's (W4 screen review F12, W5b).
-  const sv = scene.village, lineNow = id => { if (!sv || !RESIDENT_IDS.includes(id)) return null; const t = Math.min(sv.band.endMs - 1, Math.max(sv.nowMs, serverNow() ?? sv.nowMs));
-    const lineId = residentLine(sv, id, t)?.id || moodAt(sv.segments, id, t); return lineId ? lineText(lineId, snapshot?.view.language?.ladder?.reading?.stable || 'L2') : null; };
+  // W10: what a resident is doing reads in its own words (its routine line) where the plan has one.
+  const sv = scene.village, level = snapshot?.view.language?.ladder?.reading?.stable || 'L2', tNow = () => Math.min(sv.band.endMs - 1, Math.max(sv.nowMs, serverNow() ?? sv.nowMs));
+  const lineNow = id => { if (!sv || !RESIDENT_IDS.includes(id)) return null; const t = tNow();
+    const lineId = residentLine(sv, id, t)?.id || moodAt(sv.segments, id, t, moodPick(sv)); return lineId ? lineText(lineId, level) : null; };
+  const doingNow = id => { if (!sv || !RESIDENT_IDS.includes(id)) return null;
+    const lineId = dayCards.routineLine?.(id, { segments: sv.segments, t: tNow(), band: sv.band.band, lifeDay: snapshot?.state?.village?.band?.lifeDay ?? null }); return lineId ? lineText(lineId, level) : null; };
   const people = (scene.npcs || []).filter(n => !n.location || n.location === day.location).map(n => { const said = lineNow(n.id);
-    return `${n.name || roleNames[n.id] || n.id}: ${n.line || n.activityLabel || n.actionLabel || n.goal || '자기 일을 하고 있어요.'}${said ? ` 「${said}」` : ''}`; });
+    return `${n.name || roleNames[n.id] || n.id}: ${n.line || doingNow(n.id) || n.activityLabel || n.actionLabel || n.goal || '자기 일을 하고 있어요.'}${said ? ` 「${said}」` : ''}`; });
   const peopleSig = JSON.stringify(people);
   if (signatures.get('people') !== peopleSig) { signatures.set('people', peopleSig); $('fallback-people').replaceChildren(...people.map(p => { const li = document.createElement('li'); li.textContent = p; return li; })); }
   if (renderer) {
@@ -645,6 +653,16 @@ function residentsHere() {
 // One greeting a talk (§9-4): the one shown stays until the player leaves the place or closes the panel, though the
 // server already has the next thing that resident could tell.
 let greetSession = null, placeOpens = 0;
+const seasonOfDay = lifeDay => dayCards.seasonOf?.(lifeDay) ?? null;
+// A resident's own words in the panel (W10): with nothing heard to tell, it greets the player once a life day in each
+// place (the greeting seen), and when the panel opens again it says what it is doing instead.
+const ownGreeted = new Set();
+/** What the residents' own lines read now (W10): the band the plan runs, the weather and my minute from the light's
+ * clock (none before it stands — then no late greeting), the life day and its season. */
+function ownNow(v) {
+  const lifeDay = snapshot?.state?.village?.band?.lifeDay ?? null;
+  return { band: v?.band?.band ?? lightShown?.band ?? null, weather: lightShown?.rain?.raining ? 'rain' : 'clear', minute: lightShown?.localMinute ?? null, lifeDay, season: seasonOfDay(lifeDay) };
+}
 // What of the place's panel has been in sight since when (§20-2 — only what really showed counts): the panel scrolls, on
 // a phone at most 300px tall, so the greeting and each note line count by themselves inside it (final review F2).
 const placeSeenSince = new Map();
@@ -653,21 +671,35 @@ function placePanelOpen() { return !walking() || walkPanel; }
  * 「같이 해요」, or the paused one to go on with — and at home the news note by the door (newest three, no dates). */
 function renderCards() {
   const v = snapshot.view.day?.scene?.village, location = snapshot.view.day?.location, panel = $('place-cards');
-  const model = v && !dayActive() && !bazaarActive() ? placeModel({ location, residentsHere: residentsHere(), hearsay: v.hearsay || {}, cards: v.cards || [], news: v.news || [], take: v.take, level: snapshot?.view.language?.ladder?.reading?.stable || 'L2' }) : null;
+  const now = ownNow(v), rows = v ? villageRows(v) : null;
+  const own = npc => ownGreeted.has(`${location}:${npc}:${now.lifeDay}`) ? dayCards.routineLine?.(npc, { segments: v.segments, t: rows.t, band: now.band, lifeDay: now.lifeDay })
+    : dayCards.greetLine?.(npc, { band: now.band, weather: now.weather, minute: now.minute, archetype: rows.places[npc]?.archetype ?? null });
+  const model = v && !dayActive() && !bazaarActive() ? placeModel({ location, residentsHere: residentsHere(), hearsay: v.hearsay || {}, cards: v.cards || [], news: v.news || [], take: v.take,
+    level: snapshot?.view.language?.ladder?.reading?.stable || 'L2', season: now.season, own }) : null;
   const session = `${location}:${placeOpens}`;
-  if (greetSession?.session !== session) greetSession = { session, greet: model?.greet ?? null };
+  if (greetSession?.session !== session) greetSession = { session, greet: model?.greet ?? null, own: model?.own ?? null };
   else if (!greetSession.greet && model?.greet && !greeted.has(model.greet.ref)) greetSession.greet = model.greet;
-  const greet = greetSession.greet, shown = !!model && (!!greet || model.needs.length > 0 || model.note.length > 0);
+  else if (!greetSession.greet && !greetSession.own && model?.own) greetSession.own = model.own;
+  // The new tea's goodbye where the cards by the names cannot show it now — the place's panel over the scene, or the
+  // text alternative (W10).
+  const bye = farewell && (walkPanel || fallback || !renderer) ? goodbye(farewell.level) : null;
+  // The goodbye stands for the owner's own words while it shows (two lines of one resident one under the other read oddly).
+  const greet = greetSession.greet, mine = greet || bye ? null : greetSession.own, shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || model.note.length > 0);
   panel.hidden = !shown;
   if (!shown) { placeSeenSince.clear(); return; }
-  const sig = JSON.stringify([greet?.ref, greet?.text, model.needs.map(n => [n.card, n.key, n.paused]), model.note.map(n => n.ref)]);
+  const sig = JSON.stringify([bye, greet?.ref, greet?.text, mine?.id, mine?.text, model.needs.map(n => [n.card, n.key, n.paused]), model.note.map(n => n.ref)]);
   if (signatures.get('place-cards') === sig) return;
   signatures.set('place-cards', sig); placeSeenSince.clear();
   const parts = [];
-  if (greet) {
-    const p = document.createElement('p'); p.className = 'place-greet';
-    p.innerHTML = `<span class="place-icon">${iconSvg(greet.icon)}</span>`;
-    const words = document.createElement('span'); words.textContent = `${CARD_NAMES[greet.npc]}: ${greet.text}`; p.append(words); parts.push(p);
+  if (bye) {
+    const p = document.createElement('p'); p.className = 'place-greet place-bye';
+    p.innerHTML = `<span class="place-icon">${iconSvg('quiet')}</span>`;
+    const words = document.createElement('span'); words.textContent = `${CARD_NAMES['cafe-owner']}: ${bye}`; p.append(words); parts.push(p);
+  }
+  if (greet || mine) {
+    const said = greet || mine, p = document.createElement('p'); p.className = 'place-greet';
+    p.innerHTML = `<span class="place-icon">${iconSvg(said.icon)}</span>`;
+    const words = document.createElement('span'); words.textContent = `${CARD_NAMES[said.npc]}: ${said.text}`; p.append(words); parts.push(p);
   }
   for (const need of model.needs) {
     const row = document.createElement('div'); row.className = 'place-need';
@@ -680,7 +712,7 @@ function renderCards() {
     const note = document.createElement('div'); note.className = 'place-note'; note.setAttribute('role', 'group'); note.setAttribute('aria-label', '문 앞 쪽지');
     const head = document.createElement('p'); head.className = 'eyebrow'; head.textContent = '문 앞 쪽지'; note.append(head);
     const list = document.createElement('ul');
-    for (const item of model.note) { const li = document.createElement('li'); li.dataset.ref = item.ref; li.dataset.card = item.card; li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
+    for (const item of model.note) { const li = document.createElement('li'); li.dataset.ref = item.ref; li.dataset.card = item.card; li.dataset.line = item.lineId; li.innerHTML = `<span class="place-icon">${iconSvg('news')}</span>`; const t = document.createElement('span'); t.textContent = item.text; li.append(t); list.append(li); }
     const more = document.createElement('button'); more.type = 'button'; more.className = 'text-button'; more.textContent = '수첩에서 더 보기';
     more.addEventListener('click', () => notebook?.open('news', snapshot));
     note.append(list, more); parts.push(note);
@@ -703,11 +735,18 @@ function cardsFrame(now) {
   const good = !panel.hidden && placePanelOpen() && !busy && connected && !stay?.active() && !gather?.active() && !document.querySelector('dialog[open]') && visible(panel, false);
   if (!good) { placeSeenSince.clear(); return; }
   const greet = greetSession?.greet, model = snapshot.view.day?.scene?.village;
-  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref && heldInSight(`greet:${greet.ref}`, panel.querySelector('.place-greet'), now)) {
+  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref && heldInSight(`greet:${greet.ref}`, panel.querySelector('.place-greet:not(.place-bye)'), now)) {
     greeted.add(greet.ref); noteSeen(greet.seen, greet.ref);
     command('GREET', { npc: greet.npc, ref: greet.ref }).then(ok => { if (!ok) greeted.delete(greet.ref); });
   }
-  if (snapshot.view.day.location === 'home') for (const li of panel.querySelectorAll('.place-note li')) if (heldInSight(`note:${li.dataset.ref}`, li, now)) noteSeen([`line:village.news.${li.dataset.card}.1`], li.dataset.ref);
+  // A resident's own words (W10) tell the server nothing but that they showed; its greeting seen, the panel opened again
+  // in this place on this life day says what it is doing.
+  const mine = !greet && greetSession?.own;
+  if (mine && heldInSight(`own:${mine.id}`, panel.querySelector('.place-greet:not(.place-bye)'), now)) {
+    noteSeen(mine.seen, greetSession.session);
+    if (mine.kind === 'greet') ownGreeted.add(`${snapshot.view.day.location}:${mine.npc}:${snapshot?.state?.village?.band?.lifeDay ?? null}`);
+  }
+  if (snapshot.view.day.location === 'home') for (const li of panel.querySelectorAll('.place-note li')) if (heldInSight(`note:${li.dataset.ref}`, li, now)) noteSeen([`line:${li.dataset.line || `village.news.${li.dataset.card}.1`}`], li.dataset.ref);
 }
 async function openCard(c, source) {
   if (languageCard(c.card) && holdForPlacement(() => openCard(c, source))) return;
@@ -822,7 +861,16 @@ function closeCard() {
   $('card-dialog').close();
   if (!snapshot?.view.day?.scene?.village?.take) return;
   // A receipt or a read still out (busy) must not drop the close: it goes once the window is free again.
-  cardClosing = true; freeCommand('CARD_CLOSE').finally(() => { cardClosing = false; if (tea && !tea.done) text('walk-status', goodbye(tea.level)); });
+  // The goodbye of a new tea left before its end hangs by the cafe owner's name (W10 — the walking HUD's status line
+  // was never in sight, W9 review F2); the text alternative and a screen reader hear it in the mood lines' live line.
+  cardClosing = true; freeCommand('CARD_CLOSE').finally(() => { cardClosing = false; if (tea && !tea.done) sayGoodbye(tea.level); });
+}
+function sayGoodbye(level) {
+  const line = newTeaModule.GOODBYE_LINE;
+  farewell = line && { ...line, level: ['L1', 'L2', 'L3', 'L4'].includes(level) ? level : 'L2', until: performance.now() + FAREWELL_MS };
+  text('walk-status', goodbye(level));
+  if (!renderer || fallback || walkPanel) text('mood-live', `${roleNames['cafe-owner'] || '찻집 주인'}: ${goodbye(level)}`);
+  if (snapshot?.view.day) renderCards();
 }
 function accept(data) {
   const endedTea = !!snapshot?.view.tea?.open && !data.view.tea?.open;
@@ -944,8 +992,13 @@ function villageFrame() {
 /** The line a resident says at server time t (W5b): its card's or its pair's (day-cards sceneLine), else null — the
  * mood layer then shows its mood line (§7-3). */
 function residentLine(v, id, t) {
-  return sceneLine(v.segments, id, t, { steps: pairSteps(snapshot?.state?.village?.band?.pairs), waiting: v.cards || [] });
+  return sceneLine(v.segments, id, t, { steps: pairSteps(snapshot?.state?.village?.band?.pairs), waiting: v.cards || [], season: seasonOfDay(snapshot?.state?.village?.band?.lifeDay ?? null) });
 }
+/** What picks a mood's variant (W10): the device's copy of the seen ledger and what each resident knows the player did with it. */
+const moodPick = v => ({ seen: snapshot?.seen || {}, knownMe: v?.knownMe || {} });
+// The new tea's goodbye after 「그만할래요」 (W10 — W9 screen review F2): by the cafe owner's name for a while.
+const FAREWELL_MS = 8000;
+let farewell = null;
 /** A resident whose mind the plan changed — or who is solving a card or talking with its pair (W5b) — shows its line by
  * the name while the player is near (§7-3, W4) — only residents the plan draws this frame, never over a dialog, the
  * nearby panel or the text alternative, nor for the resident whose offer is up (that card carries its words). */
@@ -963,10 +1016,11 @@ function moodFrame(v, village) {
     const boxes = [...(walking() ? ['town-map', 'camera-toggle'].map(id => $(id)) : []), document.querySelector('#card-offers .offer-card:not([hidden])'), ...(notices?.children || [])];
     return boxes.filter(node => node && !node.hidden).map(node => node.getBoundingClientRect()).filter(r => r.width).map(r => ({ x: r.left - scene.left, y: r.top - scene.top, w: r.width, h: r.height })); };
   const labelAt = id => { const p = renderer?.labelScreen?.(id); if (!p) return null; const o = canvasOffset(); return { x: p.x + o.x, y: p.y + o.y }; };
+  if (farewell && performance.now() >= farewell.until) { farewell = null; if (snapshot?.view.day) renderCards(); }
   moodLines.update({ segments: v?.segments, t: village?.t ?? null, rows: blocked ? [] : village.rows.filter(r => villageLive.ids.has(r.id)),
     player: blocked ? null : renderer.playerPoint?.(), names: roleNames, blocked, labelAt,
     lineAt: id => residentLine(v, id, village.t), skip: offerGesture ? [offerGesture] : [], day: v?.band ? snapshot?.state?.village?.band?.lifeDay ?? null : null,
-    avoid, onSeen: noteSeen });
+    avoid, onSeen: noteSeen, ...moodPick(v), say: farewell });
   // The offer also reaches the text alternative (docked at the scene's foot — there is no name to hang it by).
   // The gathering board up (W8b review F9): the offer waits — it is never lost, only drawn once the board is closed.
   offerFrame(v, !v || !sceneVisible() || walkPanel || !!document.querySelector('dialog[open]') || !!stay?.active() || !!gather?.active(), renderer && !fallback ? labelAt : () => null);
@@ -1173,7 +1227,7 @@ try {
   // The returning visit's board and the mascot's question (W6b), stacked over the scene in that order.
   notices = Object.assign(document.createElement('div'), { className: 'town-notices' }); $('scene').append(notices);
   meanwhileUi = createMeanwhile(notices, { live: $('mood-live'), onSeen: noteSeen });
-  askUi = createAsk(notices, { command: askCommand, live: $('mood-live'), tutor: () => tutor });
+  askUi = createAsk(notices, { command: askCommand, live: $('mood-live'), tutor: () => tutor, level: () => snapshot?.view.language?.ladder?.reading?.stable || 'L2' });
   languageSettings = createLanguageSettings($('settings-dialog'), { command: (type, payload) => freeCommand(type, payload), readContext: () => worldHost?.languageContext?.() || {} });
   languageSettings.update(snapshot?.view.language);
   paintLight(); setInterval(paintLight, 1000); // the hour's light (W7), before the first frame shows

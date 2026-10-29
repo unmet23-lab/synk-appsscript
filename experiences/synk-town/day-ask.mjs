@@ -43,12 +43,13 @@ export function tutorOnDevice(storage = globalThis.localStorage) {
 
 const picture = (tutor, kind) => new URL(`./assets/ask/${tutor}-${kind}.webp`, import.meta.url).href;
 
-/** What the card shows for view.ask ({ key, kind, family? }), or null when this browser has no words for it. */
-export function askModel(ask, { tutor = null, consent = generated.EVAL_CONSENT ?? null } = {}) {
+/** What the card shows for view.ask ({ key, kind, family? }), or null when this browser has no words for it. A taste
+ * question reads at the reading seat's stable level (W10 — level; L2 when the ladder has none). */
+export function askModel(ask, { tutor = null, consent = generated.EVAL_CONSENT ?? null, level = LEVEL } = {}) {
   if (!ask || typeof ask.key !== 'string') return null;
   const who = Object.hasOwn(TUTORS, tutor) ? tutor : 'mongle', base = { key: ask.key, kind: ask.kind, tutor: who, name: TUTORS[who] };
   if (ask.kind === 'taste') {
-    const line = TASTE.get(ask.family)?.levels?.[LEVEL];
+    const levels = TASTE.get(ask.family)?.levels, line = levels?.[level] ?? levels?.[LEVEL];
     return line ? { ...base, family: ask.family, picture: picture(who, 'taste'), line, answers: [['no', '아니요'], ['yes', '네']] } : null;
   }
   if (ask.kind === 'consent' && consent?.easy && consent.detail) {
@@ -79,8 +80,8 @@ const el = (tag, className, text) => { const node = document.createElement(tag);
 
 /** The card in host (the notices over the scene). update({ ask, blocked }) each frame returns { shown, drawn } — drawn is
  * the key the first frame it has stood in sight a moment (the app reports it once). command(type, payload) is the town's
- * command and resolves true when the host took it. */
-export function createAsk(host, { command = async () => false, live, tutor = () => null } = {}) {
+ * command and resolves true when the host took it; level() is the reading seat's stable level (W10). */
+export function createAsk(host, { command = async () => false, live, tutor = () => null, level = () => LEVEL } = {}) {
   if (!host) return { update: () => ({ shown: false, drawn: null }), metrics: () => null };
   if (!document.querySelector('link[data-ask-style]')) {
     const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: new URL('./day-ask.css', import.meta.url).href });
@@ -130,7 +131,7 @@ export function createAsk(host, { command = async () => false, live, tutor = () 
     if (keep) card.querySelector(`[data-focus="${keep}"]`)?.focus();
   }
   function update({ ask, blocked = false, now = performance.now() } = {}) {
-    model = askModel(ask, { tutor: tutor() });
+    model = askModel(ask, { tutor: tutor(), level: level() });
     // No question open: the keys answered or reported here are forgotten, so the same question asked again on a later
     // life day draws and reports afresh (final review F2 — a window may stay open for days).
     if (!ask) { gone.clear(); reported.clear(); }

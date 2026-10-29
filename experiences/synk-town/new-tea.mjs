@@ -12,6 +12,8 @@ const SMELL = per(v => v.aroma), RESULT = per(v => v.result), RESULT_AROMA = per
 // At L1 「무슨 뜻이에요?」 shows a picture card with the line cut short (§12-2 · §16-1).
 const PICTURES = SCENE.versions.L1.pictures;
 export const goodbye = level => GOODBYE[level] || GOODBYE.L2;
+/** The goodbye as a line the screen hangs by the cafe owner's name after 「그만할래요」 (W10 — W9 screen review F2). */
+export const GOODBYE_LINE = Object.freeze({ id: 'cafe-alley.day.new-tea.stop', npc: 'cafe-owner', icon: 'cup', levels: Object.freeze({ ...GOODBYE }) });
 const keyOf = state => state.turn === 0 ? 'offer' : state.turn === 1 ? 'taste' : state.taste;
 export function startNewTea(level) {
   return { turn: 0, first: null, taste: null, final: null, honey: null, manual: false, done: false, lastHelp: null,

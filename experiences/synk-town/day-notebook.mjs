@@ -23,7 +23,7 @@ export { activityLabel };
 export function notebookModel(snapshot) {
   const state = snapshot?.state || {}, v = state.village || null, scene = snapshot?.view?.day?.scene?.village || null, prefs = state.prefs || null, seen = snapshot?.seen || {};
   const lifeDay = v?.band?.lifeDay ?? null;
-  const news = [...(v?.news || [])].reverse().map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card)) })).filter(n => n.text);
+  const news = [...(v?.news || [])].reverse().map(n => ({ ref: n.ref, card: n.card, text: lineText(newsLine(n.card, n.ref)) })).filter(n => n.text);
   const can = (scene?.cards || []).filter(takeable).map(c => ({ card: c.card, title: CARD_BY_ID.get(c.card).title, owner: c.owner, paused: c.status === 'paused' }));
   const familiar = familiarOf(seen);
   const given = new Map((prefs?.feedback || []).map(f => [f.completionId, f.value]));
