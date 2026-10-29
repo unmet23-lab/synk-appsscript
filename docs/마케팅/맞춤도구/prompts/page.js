@@ -7,7 +7,7 @@ const path = require('node:path');
 const 규칙 = require('../../../../tools/lib/게시글규칙.js');
 
 const KINDS = ['프롬프트', '명령', '체크리스트'];
-const ITEM_KEYS = ['id', '편', '제목', '설명', '왜', '블록', '빈칸', '확인', '영상제목'];
+const ITEM_KEYS = ['id', '편', '제목', '설명', '왜', '블록', '빈칸', '확인', '영상제목', '도구'];
 const BLOCK_KEYS = ['종류', '넣는 곳', '본문', '메모'];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // 빈칸: 【이름】 또는 기본값이 있는 【이름=기본값】. 기본값이 있으면 화면에 기본값이 보이고, 안 채우고 복사해도 그대로 쓸 수 있다.
@@ -71,6 +71,14 @@ function checkPrompts(data, { repo } = {}) {
       else out.push(...textProblems(it[key], `${at} ${key}`));
     }
     if (it.왜) out.push(...textProblems(it.왜, `${at} 왜`));
+    // 도구(선택): 같은 문제를 코딩 없이 푸는 synk.im 맞춤 프로그램 — {주소: '/builds/…/', 글: '한 줄'}
+    if (it.도구 !== undefined) {
+      const t = it.도구 || {};
+      for (const key of Object.keys(t)) if (!['주소', '글'].includes(key)) out.push(`${at} 도구: 모르는 칸 「${key}」`);
+      if (!/^\/builds\/[a-z0-9-]+\/$/.test(t.주소 || '')) out.push(`${at} 도구: 주소는 /builds/<이름>/ 꼴`);
+      if (!String(t.글 || '').trim()) out.push(`${at} 도구: 「글」이 없다`);
+      else out.push(...textProblems(t.글, `${at} 도구`));
+    }
     if (!String(it.확인 || '').trim()) out.push(`${at}: 「확인」(직접 붙여 넣어 돌려 본 결과)이 없다 — 돌려 본 것만 올린다`);
     else out.push(...textProblems(it.확인, `${at} 확인`));
     const blocks = Array.isArray(it.블록) ? it.블록 : [];
@@ -162,7 +170,8 @@ function renderItem(it, links, soon) {
   return `<article class="item" id="${it.id}" data-date="${it.날짜}" aria-labelledby="${it.id}-t">`
     + `<header class="item-head"><p class="meta"><span>${dotDate(it.날짜)}</span><span class="tag">${esc(kindLabel(it))}</span><span class="tag soon"${soon ? '' : ' hidden'}>곧 나올 영상</span></p>`
     + `<h2 id="${it.id}-t"><a href="#${it.id}">${esc(it.제목)}</a></h2><p class="video">영상 「${esc(it.영상제목)}」</p>`
-    + `<p class="desc">${esc(it.설명)}</p>${it.왜 ? `<p class="why"><b>왜 되나</b> ${esc(it.왜)}</p>` : ''}</header>`
+    + `<p class="desc">${esc(it.설명)}</p>${it.왜 ? `<p class="why"><b>왜 되나</b> ${esc(it.왜)}</p>` : ''}`
+    + (it.도구 ? `<a class="tool" href="${esc(it.도구.주소)}"><b>코딩 없이 쓰려면</b><span>${esc(it.도구.글)}</span><i aria-hidden="true">→</i></a>` : '') + '</header>'
     + fill + it.블록.map((b, j) => renderBlock(it, b, j)).join('')
     + `<p class="tried"><b>직접 돌려 봤어요</b> ${esc(it.확인)}</p><p class="src">${src}</p></article>`;
 }
@@ -240,6 +249,10 @@ h1 span{color:var(--ink-3)}
 .desc{margin:0;max-width:46em;font-size:16px;line-height:1.65;color:var(--ink-2)}
 .why{margin:10px 0 0;max-width:46em;font-size:15px;line-height:1.6;color:var(--ink-2)}
 .why b,.tried b{margin-right:6px;font-weight:650;color:var(--ink)}
+.tool{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;max-width:46em;margin:14px 0 0;padding:13px 16px;border-radius:16px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);text-decoration:none;color:var(--ink)}
+.tool b{font-size:15px;font-weight:650}
+.tool span{flex:1 1 16em;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.tool i{font-style:normal;font-weight:600}
 .fill{display:grid;gap:10px;margin:20px 0 0;padding:16px;border-radius:18px;background:var(--surface-2)}
 .fill-title{margin:0;font-size:15px;font-weight:650}
 .fill-title span{display:block;margin-top:2px;font-size:13px;font-weight:450;color:var(--ink-3)}
@@ -272,7 +285,7 @@ h1 span{color:var(--ink-3)}
 .next .p{font-size:15px;line-height:1.55;color:var(--ink-2)}
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 22px;margin:18px 6px 0;font-size:13px;color:var(--ink-3)}
 .foot a{color:var(--ink-2)}
-@media(hover:hover){.toc a:hover,.next a:hover{box-shadow:inset 0 0 0 1px var(--ink-4)}.copy:hover{opacity:.9}}
+@media(hover:hover){.toc a:hover,.next a:hover,.tool:hover{box-shadow:inset 0 0 0 1px var(--ink-4)}.copy:hover{opacity:.9}}
 @media(max-width:860px){.top{grid-template-columns:minmax(0,1fr)}.poster{display:none}}
 @media(max-width:700px){.toc ol,.next{grid-template-columns:minmax(0,1fr)}.how{flex-direction:column}}
 @media(max-width:560px){.wrap{padding:0 8px 28px}main{padding:22px 16px 26px;border-radius:22px}.bar{height:52px;top:8px;margin:8px 0 10px}.bar .to{padding:0 14px;font-size:14px}.crumb{display:none}h1{margin-top:12px}.lead{font-size:16px}.item{padding:18px 14px;border-radius:20px}.block{padding:14px 12px}.text{padding:12px}.fill{padding:14px 12px}}

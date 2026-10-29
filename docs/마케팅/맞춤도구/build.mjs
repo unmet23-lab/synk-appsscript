@@ -55,6 +55,31 @@ const PAGES = {
   prompts: { out: 'prompts', assets: ['favicon-32.png', 'logo-synk.webp'] },
 };
 
+// 질문 흐름도 Atlas도 없는 한 쪽 도구. 원고 폴더의 files를 그대로 싣고, 화면 양식은 시그널 app.css 하나, keep은 <도구>/의 파일을 바이트 그대로.
+// voice = synk.im/builds/voice-check(10-30, yuhobuilds Y22 「AI 목소리가 지지직 깨질 때」) — 파일을 넣으면 브라우저 안에서 깨짐 %·최고 음높이를 잰다.
+// 그림은 펠트 마이크(GPT 이미지 2.5로 청금석 판에 구워 오림, 판·지시문 .tmp/voice-check-felt-20261030/). samples = 영상 속 그 한 줄의 목소리 A · B.
+const STATIC = {
+  voice: { out: 'builds/voice-check', files: ['index.html', 'crackle.js', 'view.js'], assets: ['favicon-32.png', 'brand-shift.webp', 'voice-art-intro.webp'], keep: ['samples/voice-a.wav', 'samples/voice-b.wav'] },
+};
+
+async function buildStatic(name) {
+  const tool = STATIC[name];
+  const src = path.join(HERE, name);
+  const out = path.join(HERE, 'dist', tool.out);
+  fs.rmSync(out, { recursive: true, force: true });
+  fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
+  for (const f of tool.files) fs.copyFileSync(path.join(src, f), path.join(out, f));
+  fs.writeFileSync(path.join(out, 'app.css'), THEMES.signal());
+  for (const f of tool.assets) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
+  for (const f of tool.keep || []) { fs.mkdirSync(path.dirname(path.join(out, f)), { recursive: true }); fs.copyFileSync(path.join(src, f), path.join(out, f)); }
+  const og = path.join(src, 'og.html');
+  const font = subsetFont([...tool.files.map(f => path.join(src, f)), ...(fs.existsSync(og) ? [og] : [])], path.join(out, 'assets/SUIT-subset.woff2'));
+  console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
+  subsetLatin(path.join(out, 'assets'));
+  if (fs.existsSync(og) && chrome(['--window-size=1200,630', `--screenshot=${path.join(out, 'og.png')}`, pathToFileURL(og).href])) console.log(`${name}: 링크 미리보기 이미지 생성`);
+  console.log(`${name}: ${writeManifest(name, out)}개 파일 → dist/${tool.out}/`);
+}
+
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, ...opts });
@@ -161,9 +186,10 @@ async function buildPage(name) {
 }
 
 const pick = process.argv.slice(2).filter(a => !a.startsWith('-'));
-const names = pick.length ? pick : [...Object.keys(TOOLS), ...Object.keys(PAGES)];
+const names = pick.length ? pick : [...Object.keys(TOOLS), ...Object.keys(PAGES), ...Object.keys(STATIC)];
 for (const name of names) {
   if (PAGES[name]) { await buildPage(name); continue; }
+  if (STATIC[name]) { await buildStatic(name); continue; }
   const tool = TOOLS[name];
   if (!tool) throw new Error(`모르는 도구: ${name}`);
   const src = path.join(HERE, name);

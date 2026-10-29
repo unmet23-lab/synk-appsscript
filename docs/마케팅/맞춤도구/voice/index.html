@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI 목소리 깨짐 검사 · yuhobuilds</title>
+<meta name="description" content="같은 글을 목소리 후보마다 만든 파일을 넣으면, 소리가 갈라진 순간이 몇 %인지와 가장 높이 올라간 음을 재서 표로 보여 드려요. 깨짐 5% 아래 · 최고 음높이 560Hz 아래만 통과. 파일은 서버로 보내지 않아요.">
+<meta name="theme-color" content="#060709">
+<script>
+/* 화면 테마: SYNK 플랫폼(웹, 같은 synk.im)에서 고른 밤·낮·기기 설정을 따른다. 고른 적이 없으면 밤(core/signal.css). */
+(function(){var v='night';try{v=localStorage.getItem('synk.platform.theme')||'night'}catch(e){}if(['night','day','system'].indexOf(v)<0)v='night';document.documentElement.setAttribute('data-theme',v);var day=v==='day'||(v==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);document.querySelector('meta[name="theme-color"]').setAttribute('content',day?'#ECECEA':'#060709')})();
+</script>
+<link rel="canonical" href="https://synk.im/builds/voice-check/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="yuhobuilds">
+<meta property="og:title" content="AI 목소리 깨짐 검사 · 파일만 넣으면 돼요">
+<meta property="og:description" content="같은 글을 목소리 후보마다 만든 파일을 넣으면 깨짐 %와 최고 음높이를 표로. 코딩 없이, 파일은 서버로 보내지 않아요.">
+<meta property="og:url" content="https://synk.im/builds/voice-check/">
+<meta property="og:image" content="https://synk.im/builds/voice-check/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon-32.png">
+<link rel="preload" href="assets/SUIT-subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<style>
+/* 이 도구에만 있는 부품(싱ㅋ 시그널 토큰만 쓴다). 공통 양식은 app.css(core/signal.css). */
+/* 기준을 넘은 숫자: 코랄 LED와 같은 계열의 글자 색(밤 옅은 코랄 · 낮 짙은 코랄) */
+body{--alert-text:#FFB4A9}
+:root[data-theme=day] body{--alert-text:#AE322A}
+@media (prefers-color-scheme:light){:root[data-theme=system] body{--alert-text:#AE322A}}
+/* 구역 번호는 보이는 구역만 센다(결과가 열리기 전엔 「이렇게 재요」가 01) */
+#app{counter-reset:blk}
+section.block:not([hidden]){counter-increment:blk}
+section.block>h2 .no::before{content:counter(blk,decimal-leading-zero)}
+.intro h1{font-size:clamp(38px,4.2vw,60px)}
+/* 넣는 칸: 면 1 + 1px 선. 끌어다 대면 선이 사업 색으로 빛난다 */
+.drop{width:100%;margin:0 0 4px;padding:22px 22px 20px;border-radius:22px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line-2);transition:box-shadow .18s var(--ease),background .18s var(--ease)}
+.drop.over{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--tint),0 0 0 6px color-mix(in srgb,var(--glow) 22%,transparent)}
+.drop-title{margin:0 0 4px;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.drop-sub{margin:0 0 16px;font-size:14px;color:var(--ink-3)}
+.drop-btns{display:flex;flex-wrap:wrap;gap:10px}
+.intro .privacy{display:flex;align-items:flex-start;gap:9px;margin:14px 0 0}
+.intro .privacy::before{content:"";flex:none;width:7px;height:7px;margin-top:8px;border-radius:50%;background:var(--led-ok);box-shadow:0 0 0 3px rgba(125,180,90,.22)}
+/* 결과 표: 데스크톱은 칸, 휴대폰은 파일마다 카드 */
+.results{scroll-margin-top:96px}
+.rt{width:100%;margin:6px 0 0;border-collapse:collapse;font-size:15.5px}
+.rt th{padding:0 12px 10px;border-bottom:1px solid var(--line-2);font-size:13px;font-weight:550;color:var(--ink-3);text-align:left;white-space:nowrap}
+.rt th.num{text-align:right}
+.rt th:first-child{width:36%}
+.rt td{padding:16px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.rt th:first-child,.rt td:first-child{padding-left:0}
+.rt th:last-child,.rt td:last-child{padding-right:0}
+.rt td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:17px;white-space:nowrap}
+.rt td.num small{margin-left:2px;font-size:13px;font-weight:500;color:var(--ink-3)}
+.rt td.num .over{color:var(--alert-text)}
+.rt .fname{display:block;max-width:34ch;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.rt .fmeta{display:block;margin-top:2px;font-size:13px;color:var(--ink-3)}
+.rt tr.busy td{color:var(--ink-3)}
+.rt tr.flash td{animation:vcFlash 1.2s var(--ease)}
+@keyframes vcFlash{0%{background:color-mix(in srgb,var(--glow) 22%,transparent)}100%{background:transparent}}
+/* 시간 띠: 모음 창을 점으로, 깨진 창은 코랄. 누르면 그 자리부터 듣는다 */
+.strip{display:block;width:100%;max-width:340px;height:30px;margin:10px 0 4px;border-radius:8px;background:var(--surface-2);cursor:pointer;touch-action:manipulation}
+.strip canvas{display:block;width:100%;height:100%}
+/* 판정 칩: 어두운 알약 + LED 점 */
+.verdict{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 13px 0 11px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);font-size:14px;font-weight:650;white-space:nowrap}
+.verdict::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--ink-3)}
+.verdict.pass::before{background:var(--led-ok);box-shadow:0 0 0 3px rgba(125,180,90,.25)}
+.verdict.fail::before{background:var(--led-alert);box-shadow:0 0 0 3px rgba(249,104,89,.25)}
+.verdict.ear::before{background:var(--led-check);box-shadow:0 0 0 3px rgba(245,196,69,.25)}
+.why{display:block;margin-top:8px;max-width:30ch;font-size:13px;line-height:1.5;color:var(--ink-3)}
+.rt td.act{white-space:nowrap;text-align:right}
+.listen{min-width:146px;min-height:44px;padding:0 16px;font-size:14px;white-space:nowrap;vertical-align:middle}
+.rm{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:4px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--ink-3);vertical-align:middle}
+.rm svg{width:16px;height:16px}
+.rt td.num .muted{color:var(--ink-3)}
+.best{margin:16px 0 0;font-size:15.5px;line-height:1.6;color:var(--ink-2)}
+.best b{color:var(--ink);font-weight:650}
+.listen[data-playing]{background:var(--ink);color:var(--on-ink);box-shadow:none}
+.listen svg{width:14px;height:14px}
+.err{color:var(--ink-2);font-size:14px}
+.progress{display:inline-block;min-width:3.5em;font-variant-numeric:tabular-nums}
+.note{display:flex;gap:9px;margin:18px 0 0;padding:14px 16px;border-radius:16px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);font-size:15px;line-height:1.6;color:var(--ink-2)}
+.note::before{content:"";flex:none;width:7px;height:7px;margin-top:9px;border-radius:50%;background:var(--led-check);box-shadow:0 0 0 3px rgba(245,196,69,.22)}
+.rtools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 0 0}
+.rtools .count{margin-left:auto;font-size:14px;color:var(--ink-3)}
+dl.facts{display:grid;gap:0;margin:6px 0 0}
+dl.facts>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:14px 0;border-top:1px solid var(--line)}
+dl.facts>div:first-child{border-top:0}
+dl.facts dt{font-size:15px;font-weight:600;color:var(--ink)}
+dl.facts dd{margin:0;max-width:66ch;font-size:15.5px;line-height:1.66;color:var(--ink-2)}
+.links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 0;padding:0;list-style:none}
+.links a{display:flex;flex-direction:column;gap:4px;height:100%;padding:16px 18px;border-radius:18px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);text-decoration:none}
+.links b{font-size:15.5px;font-weight:650}
+.links span{font-size:14px;color:var(--ink-3)}
+@media(hover:hover){.links a:hover{box-shadow:inset 0 0 0 1px var(--line-2);background:var(--surface-2)}.strip:hover{box-shadow:inset 0 0 0 1px var(--line-2)}.rm:hover{background:var(--surface-2);color:var(--ink)}}
+@media(prefers-reduced-motion:reduce){.rt tr.flash td{animation:none}}
+/* 휴대폰: 포스터는 첫 화면 위의 낮은 띠로 — 「파일 고르기」가 첫 화면 가까이 오게 */
+@media(max-width:760px){
+  .intro .poster.tall{min-height:196px;--word-scale:44cqw}
+  .intro .poster.tall .cut{top:9%;right:5%;width:min(50%,210px)}
+  .intro .poster .led-chip{display:none}
+  .intro h1{margin:12px 0 16px}
+}
+@media(max-width:880px){
+  .rt thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .rt,.rt tbody{display:block}
+  .rt tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px;margin:0 0 12px;padding:16px;border-radius:20px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line)}
+  .rt td{display:block;padding:0;border:0}
+  .rt td:first-child{grid-column:1 / -1;padding:0 0 12px}
+  .rt td.vd{grid-column:1 / -1;padding:14px 0 0}
+  .rt td.num{text-align:left;padding:12px 0 0;border-top:1px solid var(--line)}
+  .rt td.num::before{content:attr(data-label);display:block;margin-bottom:2px;font-size:13px;font-weight:550;color:var(--ink-3);white-space:normal}
+  .rt td.act{grid-column:1 / -1;display:flex;gap:6px;padding:14px 0 0;text-align:left}
+  .rt td.act .listen{flex:1}
+  .rt tr.busy td.act{grid-column:auto;justify-content:flex-end;padding:0;order:-1;position:absolute;top:8px;right:8px}
+  .rt tr{position:relative}
+  .rt tr.busy td:first-child .fname{padding-right:44px}
+  .rt td.wide{grid-column:1 / -1}
+  .rt .fname{max-width:none}
+  .strip{max-width:none}
+  .why{max-width:none}
+}
+@media(max-width:560px){
+  .drop{padding:18px 16px 16px}
+  .drop-btns .btn{flex:1 1 100%}
+  dl.facts>div{grid-template-columns:minmax(0,1fr);gap:4px}
+  .links{grid-template-columns:minmax(0,1fr)}
+  .rtools .btn{flex:1}
+  .rtools .count{flex-basis:100%;margin:0}
+}
+</style>
+</head>
+<body>
+<div class="tool">
+  <header class="bar">
+    <a class="brand" href="https://synk.im/builds/" aria-label="yuhobuilds 맞춤 프로그램 모음">
+      <span class="bead"><img src="assets/brand-shift.webp" alt="synk SHIFT" width="88" height="24"></span>
+      <span class="crumb" aria-hidden="true">yuhobuilds <i>/</i> voice-check</span>
+    </a>
+  </header>
+  <main id="app">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">Voice check</p>
+        <h1 tabindex="-1">AI 목소리 깨짐 검사<br><span class="hl">후보끼리 숫자로 거르기</span></h1>
+        <p class="lead">같은 글을 목소리 후보마다 만든 파일을 넣으면, 소리가 갈라진 순간이 몇 %인지와 가장 높이 올라간 음을 재서 표로 보여 드려요. 깨짐 5% 아래, 최고 음높이 560Hz 아래만 「통과」예요.</p>
+        <ul class="meta" aria-label="검사 기준">
+          <li>같은 글, 후보 여럿</li>
+          <li>깨짐 5% 아래</li>
+          <li>음높이 560Hz 아래</li>
+          <li>서버로 안 보냄</li>
+        </ul>
+        <div class="drop" data-drop>
+          <p class="drop-title">목소리 파일을 여기에 끌어다 놓으세요</p>
+          <p class="drop-sub">wav · mp3 · m4a, 여러 개를 한 번에 넣어도 돼요.</p>
+          <div class="drop-btns">
+            <button type="button" class="btn primary" data-pick>파일 고르기</button>
+            <button type="button" class="btn soft" data-sample>예시 두 개로 해 보기</button>
+          </div>
+          <input type="file" data-file accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.opus,.flac,.webm" multiple hidden>
+        </div>
+        <p class="privacy">파일은 이 기기 밖으로 나가지 않아요. 브라우저 안에서만 재고, 원본은 바꾸지 않아요.</p>
+      </div>
+      <div class="art">
+        <div class="poster tall" data-word="깨짐" style="--len:2">
+          <span class="label">Voice check</span>
+          <span class="led-chip">브라우저 안에서만</span>
+          <img class="cut" src="assets/voice-art-intro.webp" alt="" width="900" height="833">
+        </div>
+      </div>
+    </section>
+
+    <section class="block results" data-results hidden aria-labelledby="results-h">
+      <h2 id="results-h" tabindex="-1"><span class="no"></span>결과</h2>
+      <p class="sub">시간 띠의 <b>빨간 줄</b>이 소리가 갈라진 순간이에요. 띠를 누르거나 「깨진 곳 듣기」를 누르면 그 조금 앞부터 들려 드려요.</p>
+      <table class="rt" role="table">
+        <caption class="sr">파일마다 깨짐 %, 최고 음높이, 가운데 기본음, 판정</caption>
+        <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">파일</th><th role="columnheader" scope="col" class="num">깨짐</th><th role="columnheader" scope="col" class="num">최고 음높이</th><th role="columnheader" scope="col" class="num">가운데 기본음</th><th role="columnheader" scope="col">판정</th><th role="columnheader" scope="col"><span class="sr">듣기 · 지우기</span></th></tr></thead>
+        <tbody role="rowgroup" data-rows></tbody>
+      </table>
+      <p class="best" data-best hidden></p>
+      <p class="note">같은 글을 목소리끼리 견줄 때만 쓰는 숫자예요. 귀로 듣기를 대신하지 않아요.</p>
+      <div class="rtools">
+        <button type="button" class="btn soft" data-copy>표 복사</button>
+        <button type="button" class="btn ghost" data-clear>모두 지우기</button>
+        <span class="count" data-count></span>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2><span class="no"></span>이렇게 재요</h2>
+      <dl class="facts">
+        <div><dt>깨짐 %</dt><dd>깨끗한 모음은 소리 에너지가 기본 주파수의 정수배(배음) 줄에 가지런히 모이고, 지지직 깨진 소리는 그 줄 사이로 흩어져요. 모음 구간을 10ms씩 옮겨 가며 흩어진 몫이 35%를 넘는 순간이 모음 가운데 몇 %인지 세어요.</dd></div>
+        <div><dt>최고 음높이</dt><dd>목소리가 가장 높이 올라간 음이에요. 한 순간만 튄 값은 빼고, 30ms 넘게 고르게 이어진 자리만 봐요. 우리가 들어 본 판들은 600Hz 안팎까지 올라가면 목소리가 뒤집혀 깨졌어요.</dd></div>
+        <div><dt>가운데 기본음</dt><dd>모음 구간의 기본 주파수 가운데 값이에요. 165Hz 아래인 낮은 목소리는 멀쩡해도 깨짐 %가 높게 나와서, 판정하지 않고 「귀로 확인」으로 둬요.</dd></div>
+        <div><dt>통과</dt><dd>깨짐 5% 아래이면서 최고 음높이 560Hz 아래일 때만이에요. 같은 글을 목소리·설정만 바꿔 뽑은 후보끼리 견줄 때 쓰세요. 자음이 많은 줄은 결함 없이도 숫자가 오를 수 있어요.</dd></div>
+        <div><dt>파일 형식</dt><dd>wav가 가장 정확해요. mp3·m4a는 브라우저마다 소리를 푸는 방식이 조금 달라 소수 첫째 자리가 흔들릴 수 있어요. 3분·50MB가 넘는 파일은 재지 않아요.</dd></div>
+      </dl>
+    </section>
+
+    <section class="block">
+      <h2><span class="no"></span>더 보기</h2>
+      <ul class="links">
+        <li><a href="https://www.youtube.com/watch?v=CuDCrPaWd4U" target="_blank" rel="noopener"><b>영상 보기</b><span>「AI 목소리가 지지직 깨질 때, 귀로만 말고 숫자로 거르기」</span></a></li>
+        <li><a href="https://synk.im/prompts/#voice-crackle-check"><b>직접 만들어 쓰려면</b><span>코딩 AI에 붙여 넣으면 같은 검사기를 만들어 주는 요청문</span></a></li>
+      </ul>
+    </section>
+  </main>
+  <footer class="foot">
+    <span>yuhobuilds · 유호 · AI와 회사 만들기</span>
+    <span><a href="https://www.instagram.com/yuhobuilds/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.youtube.com/@yuhobuilds" target="_blank" rel="noopener">YouTube</a></span>
+  </footer>
+  <div class="toast" data-toast role="status" hidden></div>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<noscript><p style="max-width:680px;margin:40px auto;padding:0 20px;font-size:17px">검사는 브라우저 안에서 해요. 자바스크립트를 켜 주세요.</p></noscript>
+<script src="crackle.js"></script>
+<script src="view.js"></script>
+</body>
+</html>

@@ -6,12 +6,13 @@
 <!-- synk.im/builds/ 첫 화면 = yuhobuilds 맞춤 프로그램 모음(허브).
      원본: SYNK-appsscript/docs/마케팅/맞춤도구/manual/builds-index.html → 빌드가 dist/builds/index.html로 복사한다.
      2026-10-17: 두 번째 도구(내 PC 이사 목록, /builds/move/)가 생겨서, 매뉴얼로 바로 넘기던 페이지를 목록으로 바꿨다(새 편이 위).
+     2026-10-30: 세 번째 도구(AI 목소리 깨짐 검사, /builds/voice-check/ — 질문 없이 파일을 넣는 도구)를 맨 위에. 이 도구는 build.mjs의 STATIC이라 manual을 다시 빌드하지 않고 dist/builds/index.html로 이 파일만 복사해 올린다.
      옛 넘김 페이지가 받던 공유 링크(#r=…)는 그대로 매뉴얼로 보낸다.
      글꼴: 이 파일의 글자는 manual 도구의 줄인 SUIT에 함께 실린다(build.mjs가 outside 원고도 글자 목록에 넣는다).
      2026-10-22: 머리줄 오른쪽에 프롬프트 모음(/prompts/)으로 가는 알약을 더했다(그 글자는 이미 공개된 줄인 SUIT에 있어 이 파일만 올린다).
      그림: 각 도구의 assets를 그대로 가리킨다. 양식은 싱ㅋ 시그널 토큰(core/signal.css)을 이 페이지에 필요한 만큼만 옮겼다. -->
 <title>yuhobuilds 맞춤 프로그램</title>
-<meta name="description" content="yuhobuilds 영상 끝에 나온 맞춤 프로그램 모음. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요. 로그인 없음.">
+<meta name="description" content="yuhobuilds 영상 끝에 나온 맞춤 프로그램 모음. 질문에 답하거나 파일을 넣으면 내 경우에 맞춘 결과가 나와요. 로그인 없음.">
 <meta name="theme-color" content="#060709">
 <script>
 /* 옛 넘김 페이지로 만든 공유 링크(#r=…)는 매뉴얼 도구로 보낸다. */
@@ -23,7 +24,7 @@ if (/^#r=/.test(location.hash)) location.replace('/builds/manual/' + location.se
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="yuhobuilds">
 <meta property="og:title" content="yuhobuilds 맞춤 프로그램 · 영상에서 본 그 프로그램, 내 경우에 맞게">
-<meta property="og:description" content="내 PC 이사 목록 · AI 직원 매뉴얼 만들기. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요.">
+<meta property="og:description" content="AI 목소리 깨짐 검사 · 내 PC 이사 목록 · AI 직원 매뉴얼 만들기. 질문에 답하거나 파일을 넣으면 내 경우에 맞춘 결과가 나와요.">
 <meta property="og:url" content="https://synk.im/builds/">
 <meta property="og:image" content="https://synk.im/builds/move/og.png">
 <meta property="og:image:width" content="1200">
@@ -32,6 +33,8 @@ if (/^#r=/.test(location.hash)) location.replace('/builds/manual/' + location.se
 <link rel="icon" type="image/png" href="/builds/move/assets/favicon-32.png">
 <style>
 @font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(/builds/manual/assets/SUIT-subset.woff2) format('woff2')}
+/* 목소리 깨짐 검사 카드에만 있는 세 글자(깨·냄·높)는 그 도구의 줄인 SUIT에서 빌린다 — 매뉴얼 글꼴을 다시 굽지 않으려고(10-30) */
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(/builds/voice-check/assets/SUIT-subset.woff2) format('woff2');unicode-range:U+AE68,U+B0C4,U+B192}
 @font-face{font-family:'SYNK Latin';font-weight:100 450;font-display:swap;src:url(/builds/manual/assets/InterTight-400.woff2) format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026}
 @font-face{font-family:'SYNK Latin';font-weight:451 620;font-display:swap;src:url(/builds/manual/assets/InterTight-500.woff2) format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026}
 @font-face{font-family:'SYNK Latin';font-weight:621 900;font-display:swap;src:url(/builds/manual/assets/InterTight-700.woff2) format('woff2');unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF,U+2013-2014,U+2018-201D,U+2026}
@@ -93,9 +96,10 @@ h1 span{color:var(--ink-3)}
   <main>
     <p class="eyebrow">YUHOBUILDS · TOOLS</p>
     <h1>영상에서 본 그 프로그램,<br><span>내 경우에 맞게</span></h1>
-    <p class="lead">yuhobuilds 영상 끝에 나온 맞춤 프로그램이에요. 질문 몇 개에 답하면 내 조건에 맞춘 결과가 나와요. 로그인 없이 쓰고, 고른 답은 이 기기에만 저장돼요.</p>
+    <p class="lead">yuhobuilds 영상 끝에 나온 맞춤 프로그램이에요. 질문에 답하거나 파일을 넣으면 내 경우에 맞춘 결과가 나와요. 로그인 없이 쓰고, 답과 파일은 이 기기 밖으로 나가지 않아요.</p>
     <ul class="list">
-      <li><a class="card" href="/builds/move/"><div class="face lapis" style="--len:2" aria-hidden="true"><span class="label">NEW / 2026.10</span><span class="chip">질문 3개</span><img src="/builds/move/assets/move-art-intro.webp" alt=""><span class="word">이사</span></div><div class="body"><h2>내 PC 이사 목록</h2><p>「노트북 이사, AI한테 통째로 맡겨 봤어요」 편. 절대 두고 가면 안 되는 것부터 끝났는지 확인하는 법까지, 내 PC에 맞춰 만들어 드려요.</p><p class="meta">약 1분 · Windows → Windows · 로그인 없음</p><span class="go">이사 목록 만들기 →</span></div></a></li>
+      <li><a class="card" href="/builds/voice-check/"><div class="face lapis" style="--len:2" aria-hidden="true"><span class="label">NEW / 2026.10</span><span class="chip">파일만 넣기</span><img src="/builds/voice-check/assets/voice-art-intro.webp" alt=""><span class="word">깨짐</span></div><div class="body"><h2>AI 목소리 깨짐 검사</h2><p>「AI 목소리가 지지직 깨질 때」 편. 같은 글을 목소리 후보마다 만든 파일을 넣으면, 소리가 갈라진 순간이 몇 %인지와 가장 높이 올라간 음을 표로 보여 드려요.</p><p class="meta">코딩 없이 · 파일은 서버로 안 보냄 · 로그인 없음</p><span class="go">파일 넣어 보기 →</span></div></a></li>
+      <li><a class="card old" href="/builds/move/"><div class="face lapis" style="--len:2" aria-hidden="true"><span class="label">2026.10</span><span class="chip">질문 3개</span><img src="/builds/move/assets/move-art-intro.webp" alt=""><span class="word">이사</span></div><div class="body"><h2>내 PC 이사 목록</h2><p>「노트북 이사, AI한테 통째로 맡겨 봤어요」 편. 절대 두고 가면 안 되는 것부터 끝났는지 확인하는 법까지, 내 PC에 맞춰 만들어 드려요.</p><p class="meta">약 1분 · Windows → Windows · 로그인 없음</p><span class="go">이사 목록 만들기 →</span></div></a></li>
       <li><a class="card old" href="/builds/manual/"><div class="face ink" style="--len:3" aria-hidden="true"><span class="label">2026.10</span><span class="chip">질문 5개</span><img src="/builds/manual/assets/hero-manual.webp" alt=""><span class="word">매뉴얼</span></div><div class="body"><h2>AI 직원 매뉴얼 만들기</h2><p>「AI한테 한 줄 시켰더니」 편. 한 번 넣어 두면 다음부터 한 줄로 맡기는 내 AI 직원 매뉴얼을 만들어 드려요.</p><p class="meta">약 1분 · 로그인 없음</p><span class="go">매뉴얼 만들기 →</span></div></a></li>
     </ul>
   </main>

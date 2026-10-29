@@ -93,6 +93,18 @@ test('그린 페이지 — 항목 id 앵커, 빈칸 표시, 복사 단추, 체�
   assert.match(html, /<link rel="canonical" href="https:\/\/synk\.im\/prompts\/">/);
 });
 
+test('도구(선택) — 같은 문제를 코딩 없이 푸는 맞춤 프로그램을 설명 아래 「코딩 없이 쓰려면」으로 잇는다(10-30)', () => {
+  const tool = { 주소: '/builds/voice-check/', 글: '파일만 넣으면 바로 재 줘요.' };
+  assert.deepEqual(page.checkPrompts({ 항목: [item({ 도구: tool })] }), []);
+  const bad = page.checkPrompts({ 항목: [item({ 도구: { 주소: 'https://example.com/', 글: '', 색: '파랑' } })] });
+  assert.ok(bad.some((p) => /도구: 주소는/.test(p)), '맞춤 프로그램 주소만');
+  assert.ok(bad.some((p) => /도구: 「글」이 없다/.test(p)));
+  assert.ok(bad.some((p) => /도구: 모르는 칸 「색」/.test(p)));
+  const html = page.renderPage({ 항목: [item({ 도구: tool }), item({ id: 'no-tool' })] }, { links: {}, now: Date.parse('2026-10-24T09:00+09:00') });
+  assert.match(html, /id="still-time"[^]*?<a class="tool" href="\/builds\/voice-check\/"><b>코딩 없이 쓰려면<\/b><span>파일만 넣으면 바로 재 줘요\.<\/span>/);
+  assert.equal((html.match(/class="tool"/g) || []).length, 1, '도구가 없는 항목에는 그리지 않는다');
+});
+
 test('게시결과.json — 게시됨은 그대로, 예약됨이면서 시각이 지난 것은 열어 볼 후보, 인스타 예약은 빼고, 날짜·영상 제목은 준비.json에서', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), '프롬프트모음-'));
   try {
