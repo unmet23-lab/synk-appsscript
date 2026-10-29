@@ -77,7 +77,7 @@ test('§15-2 ③ 대사 고르기 여섯(장면 · 인사 · 일과 · 마음 �
 });
 
 test('§15-2 ③ 8일째 — 7일 비운 사람과 매일 온 사람: 주민 쪽이 같고, 비운 사람이 받는 줄에 금지 말이 없으며, 플레이어가 놓은 방석은 그대로다', async () => {
-  const [{ createStore }, { FORBIDDEN }, { TOWN_LINES }] = await Promise.all([screen('server'), toolModule('town-lines-check'), townModule('data.gen')]);
+  const [{ createStore }, { FORBIDDEN }, { TOWN_LINES }, cardsUi] = await Promise.all([screen('server'), toolModule('town-lines-check'), townModule('data.gen'), screen('day-cards')]);
   const away = harness(createStore, 'acct-accept-day8'), daily = harness(createStore, 'acct-accept-day8');
   // The first day both place the cushion at the window (the player's own thing — 마을:117 「한번 쌓인 것은 줄어들지 않는다」).
   for (const h of [away, daily]) { h.pulse(); h.store.read(); h.send('DAY_HOME_PREVIEW', { slot: 'window' }); h.send('DAY_HOME_CONFIRM'); }
@@ -89,19 +89,21 @@ test('§15-2 ③ 8일째 — 7일 비운 사람과 매일 온 사람: 주민 쪽
   const [a, b] = [away, daily].map(h => h.store.read());
   assert.deepEqual(residentsSide(b.state.village), residentsSide(a.state.village), '주민 상태·카드·쌍·지식·소식이 같다');
   for (const { state } of [a, b]) assert.equal(state.day.home.slot, 'window', '플레이어가 놓은 방석은 그대로');
-  // Every line the returning player gets on the eighth day — what changed meanwhile, the news, the hearsay greetings — is
-  // free of the forbidden words (period · reproach · comparison, G3) at every level.
-  const lines = [...(a.view.day.scene.village.meanwhile?.lines || []).map(l => ({ id: l.id, npc: l.npc, npc2: l.npc2 })),
-    ...(a.view.day.scene.village.news || []).map(n => ({ id: n.id ?? n.line, npc: n.npc })),
-    ...Object.entries(a.view.day.scene.village.hearsay || {}).map(([npc, e]) => ({ id: e?.line ?? e?.id, npc }))].filter(l => typeof l.id === 'string');
-  assert.ok(lines.length > 0, '돌아온 사람이 받는 줄이 있다');
-  for (const line of lines) {
+  // Every line the returning player gets on the eighth day — what changed meanwhile and the greetings that tell the news it
+  // heard — is free of the forbidden words (period · reproach · comparison, G3) at every level.
+  const clean = (label, text) => assert.ok(FORBIDDEN.every(group => group.patterns.every(re => !re.test(text))), `${label}: ${text}`);
+  const meanwhile = a.view.day.scene.village.meanwhile?.lines || [];
+  assert.ok(meanwhile.length > 0, '돌아온 사람에게 「그동안 달라진 것」 판이 선다');
+  for (const line of meanwhile) {
     const entry = TOWN_LINES.find(e => e.id === line.id);
-    if (!entry) continue;
-    for (const text of Object.values(entry.levels)) {
-      const filled = text.replaceAll('{npc2}', LABELS[line.npc2] || '').replaceAll('{npc}', LABELS[line.npc] || '');
-      assert.ok(FORBIDDEN.every(group => group.patterns.every(re => !re.test(filled))), `${line.id}: ${filled}`);
-    }
+    assert.ok(entry, `원고에 있는 줄: ${line.id}`);
+    for (const text of Object.values(entry.levels)) clean(line.id, text.replaceAll('{npc2}', LABELS[line.npc2] || '').replaceAll('{npc}', LABELS[line.npc] || ''));
+  }
+  const heard = Object.entries(a.view.day.scene.village.hearsay || {}).filter(([, entry]) => entry);
+  assert.ok(heard.length > 0, '인사로 전해 들을 소식이 있다');
+  for (const [npc, entry] of heard) for (const level of ['L1', 'L2', 'L3', 'L4']) {
+    const said = cardsUi.hearsayText(npc, entry, level);
+    assert.ok(typeof said?.text === 'string' && said.text.length > 0, `${npc} ${level} 전해 듣기 말`); clean(`${npc} ${level}`, said.text);
   }
 });
 
