@@ -1,0 +1,4089 @@
+{
+ "메모": "7번 브랜디드 숏드라마 「사랑 한 칸」 60초 × 2화 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-29). 시작 그림은 10-28 확정 이미지 콘티(git 밖 콘티/p7/정지컷, 1080×1920) — 10-29 시댄스 앞 일관성 검수(Opus + 아르곤 대조)로 고친 컷은 유호님 확인 대기: 1-1(도시락 속) · 1-10(1-9 판을 같은 자리 펀치인으로 잘라 서진 시선을 이안 쪽으로) · 1-12(1-14 판을 같이 씀) · 2-10e(지나가는 다른 옷 다리 지움) · 2-16(잘린 오른팔) · 2-20(허공의 찻잔 지움) · 2-31(방문을 흰 문으로), Fable 지시문 검수로 2-42(식탁 물건을 2-43과 같게)까지 여덟 — 옛 판 정지컷/_옛_20261029(02_콘티 8-1 · 8-5). 「후보판」 2-1p · 1-1p는 첫 걸이 후보(유호님이 고르기 전에는 굽지 않음). 카메라는 02_콘티 2절(원본 프레임 실측 · 눈 확인) 그대로이고, 흔들림 크기는 원본 가장자리 띠 실측(콘티/p7/카메라_우리_배경.json); 요즘 기법으로 바꾼 컷만 「원본카메라」 · 「바꾼까닭」이 붙는다(02_콘티 「요즘 기법으로 바꾼 컷」). 동작은 2절 「우리 화면」 · 이야기 한 장대로 한 가지씩, 리액션은 부드럽게. 길이 = max(4, ⌈쓰는 초 + 0.8⌉), 두 샷 묶음은 ⌈자르는 초 + 둘째 쓰는 초 + 0.8⌉(자르는 초 = 첫 쓰는 초 + 0.7). 【7번만의 칸 — 조율 세션이 웹꾸러미에 붙일 때】 판의 「소리」: 켬(입 맞춤 48컷 — 웹에서 소리 켬) · 끔 · 「B만 켬」(입이 가려진 · 화면 밖 말 — 방식 B일 때만 켜고 목소리를 그 판에서 만든다). 판의 「소리참고」: 방식 A(타입캐스트로 구운 그 판의 입 맞춤 대사만, 앞 0.3초 무음 뒤 샷 「말」의 시작초에 놓은 mp3 — 최종은 후시녹음) · 방식 B(배역마다 목소리 견본 하나 — 생성 목소리를 최종으로) 파일 자리 — 목소리 방식이 정해지면 채운다(지금 비움). 판의 「소리줄」 {A, B, 없음}: 지시문 끝 SOUND 줄을 방식에 따라 바꿔 쓴다(B는 끝에 굽기 시트 목소리 시험과 같은 VOICE 줄, 「없음」은 소리 참고를 그림과 함께 못 넣거나 첫 화면을 다시 짤 때 — 매진 임박 「소리 참고 없이」와 같은 길). 「B길이」: 방식 B에서 대사가 컷보다 길면 말이 끝날 때까지 받는 길이(원본처럼 말이 다음 컷 밑으로 넘어감). 샷의 「덧말」: 그 컷에 겹치는 다른 사람의 화면 밖 말(1-9 이안 · 1-14 민재 J컷) — A · 없음은 편집에서 얹고 B는 「어디서」대로. 샷의 「B이어말」(1-8): 방식 B에서 이 판이 다음 컷 첫머리 말까지 이어 만든다. 대사가 없는 판의 소리는 공통 「소리」(무음).",
+ "편": "p7",
+ "이름": "7번 숏드라마 「사랑 한 칸」",
+ "비율": "9:16",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷",
+ "공통": {
+  "장르": "a Korean romantic-comedy vertical short drama (a branded web drama)",
+  "누구": {
+   "IAN (office)": "Ian — the same young Korean man as in the first frame (late twenties, medium-brown wavy hair with a center part) in his navy two-button suit, white dress shirt and plain dark-navy tie.",
+   "IAN (home from work)": "Ian — the same young Korean man as in the first frame (medium-brown wavy hair with a center part) in his navy suit, just home from work, the dark-navy tie loosened and the top shirt button open.",
+   "IAN (sweatshirt)": "Ian — the same young Korean man as in the first frame (medium-brown wavy hair with a center part) in a plain charcoal-grey crew-neck sweatshirt and light-grey sweatpants.",
+   "IAN (pajamas)": "Ian — the same young Korean man as in the first frame (medium-brown wavy hair with a center part) in a plain oatmeal-beige long-sleeve cotton t-shirt and navy pajama pants.",
+   "IAN (white backdrop)": "Ian — the same young Korean man as in the first frame (medium-brown wavy hair with a center part) in a plain grey t-shirt, alone in front of a seamless pure-white backdrop.",
+   "SEOJIN (cardigan)": "Seojin — the same Korean woman as in the first frame (late twenties, black hair in a low ponytail, small gold hoop earrings) in a cream chunky-knit cardigan over a pale-blue striped button-up shirt.",
+   "SEOJIN (apron)": "Seojin — the same Korean woman as in the first frame (black hair in a low ponytail, small gold hoop earrings) in a white long-sleeve t-shirt under a sage-green apron.",
+   "SEOJIN (white shirt)": "Seojin — the same Korean woman as in the first frame (black hair in a low ponytail, small gold hoop earrings) in a crisp white button-up shirt.",
+   "SEOJIN (wine dress)": "Seojin — the same Korean woman as in the first frame (black hair in a low ponytail, small gold hoop earrings) in a fitted wine-red long-sleeve knit dress, black ankle boots and a thin gold necklace.",
+   "SEOJIN (cable knit)": "Seojin — the same Korean woman as in the first frame (black hair in a low ponytail, small gold hoop earrings) in a cream cable-knit sweater, a canvas tote bag on her shoulder.",
+   "SEOJIN (navy sweater)": "Seojin — the same Korean woman as in the first frame (black hair in a low ponytail, small gold hoop earrings) in a navy crew-neck sweater.",
+   "SEOJIN (pajamas)": "Seojin — the same Korean woman as in the first frame (black hair in a low ponytail, small gold hoop earrings) in rose-mauve satin pajamas.",
+   "MINJAE": "Minjae — the same Korean man as in the first frame (Ian's co-worker, late twenties, short black hair with messy bangs) in a dark-grey knit cardigan over a light-blue button-down shirt.",
+   "SOYEON": "Soyeon — the same Korean woman as in the first frame (Seojin's friend, mid-thirties, shoulder-length dark-brown hair) in a mustard-yellow cardigan over a cream t-shirt.",
+   "LUNCHBOX": "Ian's lunchbox — a rectangular two-compartment box in matte cream-white plastic with a light-oak lid: plain white rice with one red pickled plum in the long compartment, and the small side-dish compartment completely empty.",
+   "LUNCHBOXES": "the two lunchboxes packed for tomorrow — cream-white boxes full of side dishes (rolled omelet, seasoned greens, braised beef, cherry tomatoes) and white rice with black sesame, exactly as in the first frame.",
+   "DELIVERY BOX": "the plain kraft-paper delivery box; any flat bright-green label on it stays one solid chroma green with nothing written on it.",
+   "GREEN SHEET": "the sheet of paper on the table is a flat, solid bright-green rectangle (chroma key) with nothing written on it — it stays exactly that green, flat and blank; no writing, no lines, no shadows of text ever appear on it.",
+   "NEW DRESS": "the new emerald-green satin slip dress with a white paper price tag on a string."
+  },
+  "보기": "LOOK: a modern Korean web-drama look — real cinema camera, natural skin texture, true-to-life colors. Keep the first frame's light, colors and white balance to the very end — the soft warm lamp light of the flat at night, the bright soft daylight of the office and the café — with no new light, no brightening and no color shift. The acting is subtle and natural, as in a calm Korean romance drama: small, believable expressions, never exaggerated or cartoonish, no big toothy grins. The camera is operated by hand close to the actors and moves only as written in CAMERA — where CAMERA says still or smooth, it is still or smooth. No new text, letters, logos or labels; any flat bright-green rectangle stays one even chroma green with nothing on it. Never add a person who is not in the first frame.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p7-1-1",
+   "컷": [
+    "1-1"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 회사 점심 — 이안이 도시락을 열고 민재가 뒤에서 어깨 잡고 들여다봄",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-1",
+     "그림": "1-1.jpg",
+     "쓰는초": 0.53,
+     "누구": [
+      "IAN (office)",
+      "MINJAE",
+      "LUNCHBOX"
+     ],
+     "동작": "At his office desk, Ian holds the open lunchbox in front of him, its wooden lid lifted in his other hand, and stares down into it, stunned; Minjae, leaning over him from behind with both hands on his shoulders, peers into the box with wide eyes. Quick, small reactions only; both keep their lips closed.",
+     "카메라": "quick push-in: right after the first frame the camera physically darts forward toward Ian and the open lunchbox, about 13% closer, done by about 0.4 s, at an even speed; then the camera stays in place with small handheld jitters (about 0.15% of the frame width), ending a little tighter on the two men and the box."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-2-3",
+   "컷": [
+    "1-2",
+    "1-3"
+   ],
+   "길이": 4,
+   "자르는초": 1.4,
+   "낱판": [
+    "p7-1-2",
+    "p7-1-3"
+   ],
+   "설명": "두 샷 묶음 — 인서트 · 이안 손의 도시락 → 인서트 · 텅 빈 반찬 칸",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-2",
+     "그림": "1-2.jpg",
+     "쓰는초": 0.7,
+     "누구": [
+      "LUNCHBOX"
+     ],
+     "동작": "Over Ian's shoulder: his two hands hold the open lunchbox low above the white desk — white rice with a single red pickled plum in one compartment, the other compartment completely empty; the wooden lid is tucked under the box. The hands hold it still. No face is seen. Off screen, Minjae's voice asks in Korean: \"야, 반찬 칸이 왜 비었어?\"",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "야, 반찬 칸이 왜 비었어?",
+      "시작초": 0.0,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 9,
+      "어림초": 1.75
+     }
+    },
+    {
+     "컷": "1-3",
+     "그림": "1-3.jpg",
+     "쓰는초": 0.84,
+     "누구": [
+      "LUNCHBOX"
+     ],
+     "동작": "A close-up of the lunchbox's empty compartment with a pair of light wooden chopsticks lying in it; the light-oak lid rests beside the box. Nothing moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Minjae's voice saying this one Korean line, with the timing written in ACTION; Minjae's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-4",
+   "컷": [
+    "1-4"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안, 두 손을 들고 해명 → 흰 번쩍",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-4",
+     "그림": "1-4.jpg",
+     "쓰는초": 1.3,
+     "누구": [
+      "IAN (office)",
+      "LUNCHBOX"
+     ],
+     "동작": "With Minjae's hands resting on his shoulders from behind (Minjae's face is out of frame), Ian holds the lunchbox low, looks up from it with a sheepish wince and explains with his right hand raised palm up. Right away he says in Korean, at a brisk natural pace: \"결혼 얘기 피했더니… 반찬이 끊겼어.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "결혼 얘기 피했더니… 반찬이 끊겼어.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 14,
+      "어림초": 2.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-5",
+   "컷": [
+    "1-5"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 어젯밤 집 식탁 — 이안 어깨 너머(오른쪽 끝 흐린 머리 · 녹차 잔) 서진(니트 카디건)이 계획표 노트를 들고",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-5",
+     "그림": "1-5.jpg",
+     "쓰는초": 1.06,
+     "누구": [
+      "SEOJIN (cardigan)",
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Night, at the kitchen table: Seojin leans forward over the table, holding her open planner notebook toward him, and right away says in Korean, firm but calm: \"우리 내년이면 칠 년이야. 이제 날 잡자.\" The soft, blurred head at the right edge is Ian seen from behind; he stays still and silent.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "우리 내년이면 칠 년이야. 이제 날 잡자.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 15,
+      "어림초": 2.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-6",
+   "컷": [
+    "1-6"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 서진 어깨 너머 이안이 물을 마심",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-6",
+     "그림": "1-6.jpg",
+     "쓰는초": 1.3,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Over Seojin's blurred shoulder (her back to the camera): across the table Ian drinks from a glass of water, his eyes darting to her as she keeps talking. His lips stay on the glass; Seojin's face is never seen. Under the shot, Seojin's voice (off-camera) says in Korean: \"식장, 집, 아이 계획까지 다 정리해 놨어.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.35% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "식장, 집, 아이 계획까지 다 정리해 놨어.",
+      "시작초": 0.1,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 15,
+      "어림초": 2.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-7",
+   "컷": [
+    "1-7"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 이안 사레들려 기침(물 뿜기 대신)",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-7",
+     "그림": "1-7.jpg",
+     "쓰는초": 1.44,
+     "누구": [
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Close-up: Ian, mid-sip, chokes on the water at her words — he jerks the glass away from his lips and coughs hard once or twice, eyes squeezing shut. A real, small cough; no water sprays out.",
+     "카메라": "handheld jolt on the choke: as he chokes (about 0.2–1.1 s) the camera jerks upward about 10% of the frame height and rolls around the lens axis so the frame leans about 12° counter-clockwise, slowing to a stop, with motion blur on the jolt; strong constant handheld shake (about 3.2% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts throughout."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-8",
+   "컷": [
+    "1-8"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 서진 어깨 너머 이안, 냅킨으로 입을 가리고",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-8",
+     "그림": "1-8.jpg",
+     "쓰는초": 1.46,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Over Seojin's blurred shoulder: Ian straightens up in his chair, pressing a white paper napkin over his mouth, and holds up his other hand, palm out — \"wait, slow down\". The napkin covers his mouth the whole time. Under the shot his muffled voice says in Korean: \"잠깐만, 천천히…\" and, right after it, \"알았어, 알았어…\"",
+     "카메라": "sideways follow: as he straightens up (about 0.3–1.2 s) the camera travels to its left about 12% of the frame width, following him, and ends with him upright in his chair, the napkin still at his mouth; small handheld jitters of about 0.25% of the frame width.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "잠깐만, 천천히…",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 6,
+      "어림초": 1.25
+     },
+     "B이어말": {
+      "대사": "알았어, 알았어…",
+      "어림초": 1.25,
+      "까닭": "다음 컷(1-9) 첫머리 화면 밖 말 — 방식 B에서만 이 판이 이어 만든다"
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Ian's voice saying the two Korean phrases written in ACTION, one right after the other, with the timing written in ACTION; Ian's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean lines written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-9-10",
+   "컷": [
+    "1-9",
+    "1-10"
+   ],
+   "길이": 4,
+   "자르는초": 1.8,
+   "낱판": [
+    "p7-1-9",
+    "p7-1-10"
+   ],
+   "설명": "두 샷 묶음 — 미디엄 · 이안 어깨 너머 서진 → 클로즈업 · 서진(펀치인), 이안을 바라보며",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-9",
+     "그림": "1-9.jpg",
+     "쓰는초": 1.14,
+     "누구": [
+      "SEOJIN (cardigan)",
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Over Ian's blurred shoulder (his back to the camera at the right): Seojin, at the table, listens for a beat, then from about 0.7 s answers in Korean, low and firm: \"나 내년이면…\" Ian does not turn; his face is not seen.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "나 내년이면…",
+      "시작초": 0.7,
+      "꼴": "입 맞춤",
+      "음절": 5,
+      "어림초": 1.08
+     },
+     "덧말": [
+      {
+       "누가": "IAN (sweatshirt)",
+       "대사": "알았어, 알았어…",
+       "시작초": 0.0,
+       "꼴": "화면 밖",
+       "어디서": "방식 B: p7-1-8 판이 앞 말에 이어 만든 것을 이 컷 첫머리에 깐다 · 방식 A · 없음: 편집에서 얹음",
+       "어림초": 1.25
+      }
+     ]
+    },
+    {
+     "컷": "1-10",
+     "그림": "1-10.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Close-up: Seojin looks straight at Ian, just off camera to the right, and right away finishes in Korean, calm and deadly serious, eyebrows slightly raised: \"…앞자리 3이야.\"",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "…앞자리 3이야.",
+      "시작초": 0.0,
+      "꼴": "입 맞춤",
+      "음절": 6,
+      "어림초": 1.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded lines for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean lines written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-11",
+   "컷": [
+    "1-11"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 서진 어깨 너머 이안, 머뭇",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-11",
+     "그림": "1-11.jpg",
+     "쓰는초": 1.63,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Over Seojin's blurred shoulder: Ian hesitates, glances aside with an awkward half-smile and says in Korean, a little sheepish: \"난 아직… 2인데.\" Seojin's face is not seen.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "난 아직… 2인데.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 6,
+      "어림초": 1.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-12",
+   "컷": [
+    "1-12"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안 — 서진의 두 손이 들어와 볼을 꾹",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-12",
+     "그림": "1-12.jpg",
+     "쓰는초": 0.8,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Bust: Seojin's hand, in its cream knit sleeve reaching in from the lower left, is already pinching Ian's cheek from the first frame; on the beat her fingers squeeze a little harder and his cheek puffs up — he winces slightly and blinks, lips closed. Small and comic, never rough.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-13",
+   "컷": [
+    "1-13"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 서진, 어이없는 숨",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-13",
+     "그림": "1-13.jpg",
+     "쓰는초": 0.57,
+     "누구": [
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Bust: Seojin stares at him in disbelief, one hand lifted mid-gesture, and lets out one short scoffing breath — \"하.\" — her lips parting just for it; then she holds the look.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.35% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "하.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 1,
+      "어림초": 0.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-14",
+   "컷": [
+    "1-14"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 볼 눌린 이안 → 흰 번쩍",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-14",
+     "그림": "1-14.jpg",
+     "쓰는초": 1.23,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Bust, the same as before: with his cheek still pinched by Seojin's fingers, Ian right away mumbles in Korean, squished and sheepish: \"…미안.\" — then he keeps his lips closed to the end.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "…미안.",
+      "시작초": 0.15,
+      "꼴": "입 맞춤",
+      "음절": 2,
+      "어림초": 0.58
+     },
+     "덧말": [
+      {
+       "누가": "MINJAE",
+       "대사": "야~",
+       "시작초": 0.43,
+       "꼴": "J컷",
+       "어디서": "1-15 판의 「야~」를 편집에서 앞당겨 이 컷 끝 0.8초에 깐다(이안 입은 다묾)",
+       "어림초": 0.42
+      }
+     ]
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-15",
+   "컷": [
+    "1-15"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 회사 민재(흰 번쩍에서)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-15",
+     "그림": "1-15.jpg",
+     "쓰는초": 0.43,
+     "누구": [
+      "MINJAE",
+      "IAN (office)"
+     ],
+     "동작": "Office, bust: across the desk Minjae looks at Ian and right away calls out in Korean with a teasing grin: \"야~\" In the foreground Ian's hand with chopsticks hovers over Minjae's lunch; Ian's face is not seen.",
+     "카메라": "handheld, the camera stays in place with light constant jitters of about 0.5% of the frame width, holding the framing.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "야~",
+      "시작초": 0.0,
+      "꼴": "입 맞춤",
+      "음절": 1,
+      "어림초": 0.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Minjae's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-16",
+   "컷": [
+    "1-16"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 민재가 빈 칸을 가리키며",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-16",
+     "그림": "1-16.jpg",
+     "쓰는초": 2.07,
+     "누구": [
+      "MINJAE",
+      "IAN (office)"
+     ],
+     "동작": "Bust: Minjae points his finger down and to the right — toward Ian's lunchbox, off frame — and asks in Korean with a smug, teasing face: \"그 도시락, 사랑 한 칸은 있냐?\" His own black lunchbox, full of side dishes, stays where it is at the lower right, and the navy suit sleeve at the bottom edge (Ian's arm) stays still.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "그 도시락, 사랑 한 칸은 있냐?",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Minjae's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-17-18",
+   "컷": [
+    "1-17",
+    "1-18"
+   ],
+   "길이": 6,
+   "자르는초": 2.5,
+   "낱판": [
+    "p7-1-17",
+    "p7-1-18"
+   ],
+   "설명": "두 샷 묶음 — 미디엄 · 이안 옆얼굴 → 클로즈업 · 매실을 씹는 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-17",
+     "그림": "1-17.jpg",
+     "쓰는초": 1.77,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Side profile, medium: Ian, chopsticks in hand at his desk, looks toward Minjae (off frame to the left) and grumbles in Korean, half to himself: \"이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 20,
+      "어림초": 3.58
+     }
+    },
+    {
+     "컷": "1-18",
+     "그림": "1-18.jpg",
+     "쓰는초": 2.66,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Close-up: Ian chews the sour pickled plum with a pinched face, the chopsticks still at his lips, and from about 0.3 s mutters through the chewing in Korean: \"…반찬도 안 싸 주고.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "…반찬도 안 싸 주고.",
+      "시작초": 0.3,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded lines for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean lines written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-19",
+   "컷": [
+    "1-19"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 종이컵 커피를 마시며 묻는 민재(컵이 입을 가림)",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-19",
+     "그림": "1-19.jpg",
+     "쓰는초": 1.17,
+     "누구": [
+      "MINJAE"
+     ],
+     "동작": "Bust: Minjae sips coffee from a white paper cup held at his lips and eyes Ian over the rim; the cup covers his mouth the whole time. Under the shot his voice says in Korean: \"여자친구 내년에 몇이야?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.1% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "여자친구 내년에 몇이야?",
+      "시작초": 0.1,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 10,
+      "어림초": 1.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Minjae's voice saying this one Korean line, with the timing written in ACTION; Minjae's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-20",
+   "컷": [
+    "1-20"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 고개를 숙여 도시락을 보는 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-20",
+     "그림": "1-20.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "IAN (office)",
+      "LUNCHBOX"
+     ],
+     "동작": "Bust: Ian, head bowed over his lunchbox, answers quietly in Korean without looking up: \"…서른.\" — his lips still visible.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "…서른.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 2,
+      "어림초": 0.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-21",
+   "컷": [
+    "1-21"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안 어깨 너머 민재",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-21",
+     "그림": "1-21.jpg",
+     "쓰는초": 2.03,
+     "누구": [
+      "MINJAE",
+      "IAN (office)"
+     ],
+     "동작": "Over Ian's blurred shoulder: Minjae leans back a little, nods knowingly and says in Korean: \"그럼 너 같아도 급하겠다.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "그럼 너 같아도 급하겠다.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 10,
+      "어림초": 1.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Minjae's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-22",
+   "컷": [
+    "1-22"
+   ],
+   "길이": 4,
+   "설명": "인서트 · 집 현관문이 열림",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-22",
+     "그림": "1-22.jpg",
+     "쓰는초": 0.7,
+     "누구": [
+      "IAN (home from work)"
+     ],
+     "동작": "Evening, the flat's entrance: the wooden door with frosted-glass panes swings open toward the camera as Ian, a blurred silhouette behind the glass, pushes the handle. Only the door moves.",
+     "카메라": "static frame — the camera stays in place, almost perfectly still; only the door moves."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-23",
+   "컷": [
+    "1-23"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 앞 흐린 서진 너머 이안이 들어옴",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-23",
+     "그림": "1-23.jpg",
+     "쓰는초": 1.34,
+     "누구": [
+      "IAN (home from work)",
+      "SEOJIN (apron)"
+     ],
+     "동작": "Wide, from inside the flat: Ian steps in through the hallway door, tired, and from about 0.3 s says in Korean toward the kitchen: \"나 오늘 점심에 매실만 먹었어.\" In the soft, out-of-focus foreground at the left, Seojin in her apron crosses and briefly covers the left of the frame; her face is not seen speaking.",
+     "카메라": "small follow: handheld with light constant shake (about 0.5% of the frame width); as Ian comes in the camera turns slightly to its right with him, ending on him inside the doorway.",
+     "말": {
+      "누가": "IAN (home from work)",
+      "대사": "나 오늘 점심에 매실만 먹었어.",
+      "시작초": 0.3,
+      "꼴": "입 맞춤",
+      "음절": 12,
+      "어림초": 2.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-24",
+   "컷": [
+    "1-24"
+   ],
+   "길이": 4,
+   "설명": "인서트 · 개수대 물을 잠그는 서진의 손",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-24",
+     "그림": "1-24.jpg",
+     "쓰는초": 1.13,
+     "누구": [
+      "SEOJIN (apron)"
+     ],
+     "동작": "Close-up at the kitchen sink: water runs from the chrome faucet; Seojin's hand pushes the lever down and the water stops. Nothing else moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-25",
+   "컷": [
+    "1-25"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 앞치마의 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-25",
+     "그림": "1-25.jpg",
+     "쓰는초": 1.43,
+     "누구": [
+      "SEOJIN (apron)"
+     ],
+     "동작": "Bust in the kitchen: Seojin, without smiling, flicks her eyes toward the dining table (off to the side) and says in Korean, cool and even: \"반찬 먹고 싶으면, 저기 이름 써.\" — then looks back at him.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.1% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (apron)",
+      "대사": "반찬 먹고 싶으면, 저기 이름 써.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 12,
+      "어림초": 2.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-26-27",
+   "컷": [
+    "1-26",
+    "1-27"
+   ],
+   "길이": 4,
+   "자르는초": 1.4,
+   "낱판": [
+    "p7-1-26",
+    "p7-1-27"
+   ],
+   "설명": "두 샷 묶음 — 인서트 · 식탁 위 종이 · 펜 → 인서트 · 빈 혼인신고서 접사",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-26",
+     "그림": "1-26.jpg",
+     "쓰는초": 0.67,
+     "누구": [
+      "IAN (home from work)",
+      "GREEN SHEET"
+     ],
+     "동작": "Looking down past Ian's chin and loosened tie (at the bottom of the frame) onto the wooden dining table: the flat bright-green sheet of paper with a black pen lying on it. He looks down at it; nothing else moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    },
+    {
+     "컷": "1-27",
+     "그림": "1-27.jpg",
+     "쓰는초": 0.83,
+     "누구": [
+      "GREEN SHEET"
+     ],
+     "동작": "A close-up of the flat bright-green sheet of paper on the wooden table; it lies still. Nothing moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-28",
+   "컷": [
+    "1-28"
+   ],
+   "길이": 4,
+   "설명": "인서트 · 이안 손을 끄는 서진의 손",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-28",
+     "그림": "1-28.jpg",
+     "쓰는초": 0.77,
+     "누구": [
+      "SEOJIN (apron)",
+      "IAN (home from work)"
+     ],
+     "동작": "Close on their hands: Seojin's hand in its white sleeve grabs Ian's wrist and tugs him along toward the table, to the left.",
+     "카메라": "whip follow: as she tugs (about 0.2–0.7 s) the camera whips to its left about 35% of the frame width with the pulled hands, with strong constant handheld shake (about 4.4% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts; it ends on their hands moving toward the table — the same room, still one continuous shot."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-29",
+   "컷": [
+    "1-29"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 이안 어깨 너머, 그의 팔에 볼을 대고 매달리는 서진",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-29",
+     "그림": "1-29.jpg",
+     "쓰는초": 2.3,
+     "누구": [
+      "SEOJIN (apron)",
+      "IAN (home from work)"
+     ],
+     "동작": "Over Ian's shoulder: Seojin hugs his arm with both hands and presses her cheek to his sleeve, looking up at him coaxingly and swaying a little; her mouth stays hidden against his arm. Under the shot her muffled voice says in Korean: \"구청은 내가 갈게. 너는 펜만 들어.\"",
+     "카메라": "slow pull-back: handheld with a constant small shake of about 0.45% of the frame width; as she clings to his arm (about 0.3–1.9 s) the camera eases back about 10% at an even pace, ending a little wider on the two of them.",
+     "말": {
+      "누가": "SEOJIN (apron)",
+      "대사": "구청은 내가 갈게. 너는 펜만 들어.",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 13,
+      "어림초": 2.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-30",
+   "컷": [
+    "1-30"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 서진 뒤통수 너머 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-30",
+     "그림": "1-30.jpg",
+     "쓰는초": 1.47,
+     "누구": [
+      "IAN (home from work)",
+      "SEOJIN (apron)"
+     ],
+     "동작": "Over the back of Seojin's head: Ian, troubled, looks down at her and says in Korean, gently but firmly: \"이렇게 떠밀려서 쓰긴 싫어.\" Seojin's face is not seen.",
+     "카메라": "handheld, the camera stays in place with strong constant shake (about 0.6% of the frame width); over the shot it rolls around the lens axis so the frame leans a few degrees clockwise.",
+     "말": {
+      "누가": "IAN (home from work)",
+      "대사": "이렇게 떠밀려서 쓰긴 싫어.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-31",
+   "컷": [
+    "1-31"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안(다른 각도) 곤란한 얼굴",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-31",
+     "그림": "1-31.jpg",
+     "쓰는초": 1.76,
+     "누구": [
+      "IAN (home from work)"
+     ],
+     "동작": "Bust from another angle in the hallway: Ian stands with a troubled, conflicted face and lets out a quiet breath through his nose; his lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-32",
+   "컷": [
+    "1-32"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 카페 소연(아기 엄마)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-32",
+     "그림": "1-32.jpg",
+     "쓰는초": 1.17,
+     "누구": [
+      "SOYEON",
+      "SEOJIN (white shirt)"
+     ],
+     "동작": "Daytime café: Soyeon, across the table from Seojin, cradles her coffee cup and asks in Korean with a knowing little smile: \"너 아직도 계획표 들고 다녀?\" Seojin's blurred shoulder at the right edge stays still.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "SOYEON",
+      "대사": "너 아직도 계획표 들고 다녀?",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Soyeon's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-33-34",
+   "컷": [
+    "1-33",
+    "1-34"
+   ],
+   "길이": 5,
+   "자르는초": 2.0,
+   "낱판": [
+    "p7-1-33",
+    "p7-1-34"
+   ],
+   "설명": "두 샷 묶음 — 바스트 · 서진 → 클로즈업 · 서진이 휴대폰 달력을 내려다보며 한숨",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-33",
+     "그림": "1-33.jpg",
+     "쓰는초": 1.3,
+     "누구": [
+      "SEOJIN (white shirt)",
+      "SOYEON"
+     ],
+     "동작": "Over Soyeon's blurred shoulder: Seojin, holding her coffee cup on the table, answers in Korean with a tired sigh: \"응. 걔만 안 움직여.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "응. 걔만 안 움직여.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    },
+    {
+     "컷": "1-34",
+     "그림": "1-34.jpg",
+     "쓰는초": 1.43,
+     "누구": [
+      "SEOJIN (white shirt)"
+     ],
+     "동작": "Close-up: Seojin looks down at the calendar on her phone (at the bottom edge) and mutters to herself in Korean with a sigh: \"달력에 동그라미까지 쳐 놨는데.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "달력에 동그라미까지 쳐 놨는데.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 13,
+      "어림초": 2.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded lines for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean lines written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time."
+   },
+   "B길이": 6
+  },
+  {
+   "id": "p7-1-35",
+   "컷": [
+    "1-35"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 소연",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-35",
+     "그림": "1-35.jpg",
+     "쓰는초": 2.74,
+     "누구": [
+      "SOYEON",
+      "SEOJIN (white shirt)"
+     ],
+     "동작": "Soyeon, her cup in hand, tilts her head and says in Korean, warm and knowing: \"원래 남자는 등 떠밀면 더 버텨.\" Seojin's sleeve in the foreground stays still.",
+     "카메라": "slow sideways drift: from about 0.4 s to 2.1 s the camera travels to its right about 12% of the frame width, slowing to a stop, ending with Soyeon a little left of center; small handheld jitters of about 0.2% of the frame width.",
+     "말": {
+      "누가": "SOYEON",
+      "대사": "원래 남자는 등 떠밀면 더 버텨.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 12,
+      "어림초": 2.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Soyeon's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-36",
+   "컷": [
+    "1-36"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-36",
+     "그림": "1-36.jpg",
+     "쓰는초": 1.63,
+     "누구": [
+      "SEOJIN (white shirt)",
+      "SOYEON"
+     ],
+     "동작": "Over Soyeon's shoulder: Seojin opens both hands palm up above the table in frustration and says in Korean: \"그럼 어떡해. 손 놓고 기다려?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.1% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "그럼 어떡해. 손 놓고 기다려?",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-37",
+   "컷": [
+    "1-37"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 회사 — 책상에 엎드린 민재에게 이안이 다가와 업힘(원본 짜임 그대로)",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-37",
+     "그림": "1-37.jpg",
+     "쓰는초": 1.5,
+     "누구": [
+      "IAN (office)",
+      "MINJAE"
+     ],
+     "동작": "Wide, office: Ian, standing at the left of the frame, takes a couple of steps over to Minjae's desk and starts to lean down over Minjae's back as Minjae slumps forward onto the desk with a sigh. Both keep their lips closed.",
+     "카메라": "sideways follow: as Ian walks to Minjae's desk (about 0.3–1.5 s) the camera travels to its right about 11% of the frame width at an even speed, following him; small handheld jitters."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-38",
+   "컷": [
+    "1-38"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 책상에 볼을 댄 민재, 그 등에 업힌 이안(위)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-38",
+     "그림": "1-38.jpg",
+     "쓰는초": 1.73,
+     "누구": [
+      "IAN (office)",
+      "MINJAE"
+     ],
+     "동작": "Close: Minjae lies with his cheek on the desk; Ian, draped over his back, rests his chin near Minjae's head and whines in Korean: \"이러다 계획표에 나도 한 줄로 들어가겠어.\" Minjae keeps his lips closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.35% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "이러다 계획표에 나도 한 줄로 들어가겠어.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 17,
+      "어림초": 3.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Minjae keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Minjae keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Minjae keeps his lips closed and silent the whole time."
+   },
+   "B길이": 5
+  },
+  {
+   "id": "p7-1-39",
+   "컷": [
+    "1-39"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 책상에 머리를 댄 민재(입은 이안 팔에 가림), 위 가장자리에 이안",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-39",
+     "그림": "1-39.jpg",
+     "쓰는초": 1.8,
+     "누구": [
+      "MINJAE",
+      "IAN (office)"
+     ],
+     "동작": "Close: Minjae's head rests on the desk under Ian's arm, which covers his mouth; Minjae's eyes look up toward Ian at the top edge. Under the shot Minjae's muffled voice says in Korean: \"너 그러다 진짜 놓친다?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "너 그러다 진짜 놓친다?",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 9,
+      "어림초": 1.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Minjae's voice saying this one Korean line, with the timing written in ACTION; Minjae's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-40",
+   "컷": [
+    "1-40"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 업힌 이안(위, 크게) + 아래 민재",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-40",
+     "그림": "1-40.jpg",
+     "쓰는초": 2.2,
+     "누구": [
+      "IAN (office)",
+      "MINJAE"
+     ],
+     "동작": "Close: Ian, chin propped on his hands on top of Minjae's head, scoffs and says in Korean, a bit too confident: \"놓치긴. 육 년인데.\" Minjae, face down, keeps his lips closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "놓치긴. 육 년인데.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Minjae keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Minjae keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Minjae keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-41",
+   "컷": [
+    "1-41"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 아래 민재(얼굴을 들어 이안 쪽) + 위 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-41",
+     "그림": "1-41.jpg",
+     "쓰는초": 2.03,
+     "누구": [
+      "MINJAE",
+      "IAN (office)"
+     ],
+     "동작": "Close: Minjae lifts his face from the desk, glances up sideways at Ian and says in Korean, dry: \"육 년 된 사이가 제일 잘 놓쳐.\" Ian, above him, keeps his lips closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "육 년 된 사이가 제일 잘 놓쳐.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Minjae's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-42-43",
+   "컷": [
+    "1-42",
+    "1-43"
+   ],
+   "길이": 4,
+   "자르는초": 1.3,
+   "낱판": [
+    "p7-1-42",
+    "p7-1-43"
+   ],
+   "설명": "두 샷 묶음 — 바스트 · 카페 소연, 몸을 기울임 → 익스트림 클로즈업 · 소연 입술",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-42",
+     "그림": "1-42.jpg",
+     "쓰는초": 0.56,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Café, bust: Soyeon leans forward across the table toward Seojin with a sly look, about to whisper; her lips stay closed.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    },
+    {
+     "컷": "1-43",
+     "그림": "1-43.jpg",
+     "쓰는초": 1.57,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Extreme close-up of Soyeon's lips and lower face: she whispers in Korean, slow and secretive: \"등 떠밀지 말고… 한 발 빼 봐.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SOYEON",
+      "대사": "등 떠밀지 말고… 한 발 빼 봐.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 10,
+      "어림초": 1.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Soyeon's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   },
+   "B길이": 5
+  },
+  {
+   "id": "p7-1-44-45",
+   "컷": [
+    "1-44",
+    "1-45"
+   ],
+   "길이": 4,
+   "자르는초": 1.6,
+   "낱판": [
+    "p7-1-44",
+    "p7-1-45"
+   ],
+   "설명": "두 샷 묶음 — 미디엄 · 소연 어깨 너머 서진, 놀람 → 클로즈업 · 서진(펀치인)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-44",
+     "그림": "1-44.jpg",
+     "쓰는초": 0.93,
+     "누구": [
+      "SEOJIN (white shirt)",
+      "SOYEON"
+     ],
+     "동작": "Over Soyeon's blurred shoulder: Seojin's eyes widen in surprise at the whisper; she freezes, lips slightly parted, not speaking.",
+     "카메라": "slight push-in: from about 0.3 s to 0.8 s the camera physically moves a little toward Seojin, about 4% closer, speeding up, ending slightly tighter on her surprised face; small handheld jitters of about 0.2% of the frame width."
+    },
+    {
+     "컷": "1-45",
+     "그림": "1-45.jpg",
+     "쓰는초": 1.1,
+     "누구": [
+      "SEOJIN (white shirt)"
+     ],
+     "동작": "Close-up (punch-in): Seojin leans in toward Soyeon, eyes wide, and right away asks in a hushed, eager voice in Korean: \"…어떻게?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "…어떻게?",
+      "시작초": 0.15,
+      "꼴": "입 맞춤",
+      "음절": 3,
+      "어림초": 0.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-1",
+   "컷": [
+    "2-1"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 밤 세탁기 앞 이안 뒷모습 — 빨래를 개다 처음 보는 원피스를 집음",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-1",
+     "그림": "2-1.jpg",
+     "쓰는초": 0.43,
+     "누구": [
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Night, by the washing machine: seen from behind, Ian, folding laundry out of the top-loader, pulls out an unfamiliar garment and pauses.",
+     "카메라": "quick push-in: right after the first frame the camera physically darts forward toward Ian at the washing machine, about 13% closer, done by about 0.3 s, at an even speed; then the camera stays in place, almost still."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-2-3",
+   "컷": [
+    "2-2",
+    "2-3"
+   ],
+   "길이": 4,
+   "자르는초": 1.3,
+   "낱판": [
+    "p7-2-2",
+    "p7-2-3"
+   ],
+   "설명": "두 샷 묶음 — 바스트 · 원피스를 든 이안, 갸웃 → 인서트 · 가격표 달린 새 원피스",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-2",
+     "그림": "2-2.jpg",
+     "쓰는초": 0.64,
+     "누구": [
+      "IAN (sweatshirt)",
+      "NEW DRESS"
+     ],
+     "동작": "Bust: Ian holds up the emerald-green satin dress by its strap and tilts his head, puzzled; his lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    },
+    {
+     "컷": "2-3",
+     "그림": "2-3.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "NEW DRESS"
+     ],
+     "동작": "Close on the dress: Ian's hands hold up the emerald-green satin slip dress; the white price tag on its string swings a little.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-4",
+   "컷": [
+    "2-4"
+   ],
+   "길이": 4,
+   "설명": "인서트 · 현관 바닥 — 들어오는 서진 구두, 옆에 칸찬 배송 상자",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-4",
+     "그림": "2-4.jpg",
+     "쓰는초": 0.63,
+     "누구": [
+      "SEOJIN (wine dress)",
+      "DELIVERY BOX"
+     ],
+     "동작": "Low at the entrance: Seojin's legs in black ankle boots and the hem of her wine-red dress step in onto the stone floor beside the plain kraft delivery box, and she stops. Her face is not seen. Her voice (off-camera) says in Korean: \"다녀왔어.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (wine dress)",
+      "대사": "다녀왔어.",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 4,
+      "어림초": 0.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-5",
+   "컷": [
+    "2-5"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 원피스를 바구니에 도로 넣는 이안",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-5",
+     "그림": "2-5.jpg",
+     "쓰는초": 1.07,
+     "누구": [
+      "IAN (sweatshirt)",
+      "NEW DRESS"
+     ],
+     "동작": "Bust: hearing her come in, Ian quickly stuffs the green satin dress back into the laundry basket, glancing toward the hallway; his lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-6",
+   "컷": [
+    "2-6"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-6",
+     "그림": "2-6.jpg",
+     "쓰는초": 0.87,
+     "누구": [
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Bust in the hallway: Ian looks at her (off camera) and right away says in Korean, flat and quiet: \"열한 시 넘었네.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "열한 시 넘었네.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 6,
+      "어림초": 1.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-7",
+   "컷": [
+    "2-7"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 이안 어깨 너머 서진, 머리를 넘기며 고개를 돌림",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-7",
+     "그림": "2-7.jpg",
+     "쓰는초": 1.06,
+     "누구": [
+      "SEOJIN (wine dress)",
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Over Ian's blurred shoulder: Seojin tucks her hair behind her ear as she turns her head away and says lightly in Korean: \"응, 좀 늦었지.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.35% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (wine dress)",
+      "대사": "응, 좀 늦었지.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 5,
+      "어림초": 1.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-8",
+   "컷": [
+    "2-8"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 스쳐 가는 서진 뒤로 냄새를 맡는 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-8",
+     "그림": "2-8.jpg",
+     "쓰는초": 1.27,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (wine dress)"
+     ],
+     "동작": "As Seojin brushes past in the blurred foreground, Ian leans after her, sniffs the air and from about 0.4 s asks in Korean, suspicious: \"향수… 바꿨어?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "향수… 바꿨어?",
+      "시작초": 0.4,
+      "꼴": "입 맞춤",
+      "음절": 5,
+      "어림초": 1.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-9",
+   "컷": [
+    "2-9"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 서진, 미소",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-9",
+     "그림": "2-9.jpg",
+     "쓰는초": 1.27,
+     "누구": [
+      "SEOJIN (wine dress)"
+     ],
+     "동작": "Close-up: Seojin glances back over her shoulder with a small, teasing closed-mouth smile and from about 0.3 s says in Korean: \"비밀.\" — then smiles again, lips closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (wine dress)",
+      "대사": "비밀.",
+      "시작초": 0.3,
+      "꼴": "입 맞춤",
+      "음절": 2,
+      "어림초": 0.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-10",
+   "컷": [
+    "2-10"
+   ],
+   "길이": 4,
+   "설명": "로우 앵글 · 새 차림의 서진이 카메라 옆을 스쳐 지나가면 복도 끝에 혼자 선 이안이 드러남",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-10",
+     "그림": "2-10.jpg",
+     "쓰는초": 1.2,
+     "누구": [
+      "SEOJIN (wine dress)",
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Night, the hallway at home: Seojin, in profile, walks forward out of the frame to the right, passing close by the camera; as she goes, her body sweeps across the frame and she is gone, revealing the hallway seen straight down its length and Ian standing alone at its far end, staring after her, lips closed.",
+     "카메라": "static frame at about chest height — the camera stays in place, almost still; while her passing body covers much of the frame (about 0.2–0.7 s) the view settles to the hallway seen head-on, and Ian is revealed exactly as in the last frame — the same hallway, still one continuous shot.",
+     "끝그림": "2-10e.jpg"
+    }
+   ]
+  },
+  {
+   "id": "p7-2-11",
+   "컷": [
+    "2-11"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 회사, 이안 어깨 너머 다가오는 민재",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-11",
+     "그림": "2-11.jpg",
+     "쓰는초": 0.74,
+     "누구": [
+      "MINJAE",
+      "IAN (office)"
+     ],
+     "동작": "Office, over Ian's blurred head: Minjae walks up and leans over the desk toward Ian, asking in Korean with a teasing look: \"오늘은 매실도 없냐?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "오늘은 매실도 없냐?",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 8,
+      "어림초": 1.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Minjae's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-12-13",
+   "컷": [
+    "2-12",
+    "2-13"
+   ],
+   "길이": 4,
+   "자르는초": 1.7,
+   "낱판": [
+    "p7-2-12",
+    "p7-2-13"
+   ],
+   "설명": "두 샷 묶음 — 인서트 · 편의점 샌드위치를 든 이안 손 → 바스트 · 이안 → 흰 번쩍(18의 전환을 옮김)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-12",
+     "그림": "2-12.jpg",
+     "쓰는초": 1.0,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Close on Ian's hand holding up a half-eaten egg sandwich in its plastic wrap over the desk, as if showing it. Nothing else moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    },
+    {
+     "컷": "2-13",
+     "그림": "2-13.jpg",
+     "쓰는초": 1.5,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Bust: Ian, deadpan and a little sorry for himself, says in Korean: \"도시락 대신 만 원 놓고 갔더라.\"",
+     "카메라": "handheld, the camera stays in place with light constant jitters of about 0.35% of the frame width, holding the framing.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "도시락 대신 만 원 놓고 갔더라.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 12,
+      "어림초": 2.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   },
+   "B길이": 5
+  },
+  {
+   "id": "p7-2-14",
+   "컷": [
+    "2-14"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 주말 아침 현관, 장바구니를 든 서진",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-14",
+     "그림": "2-14.jpg",
+     "쓰는초": 0.67,
+     "누구": [
+      "SEOJIN (cable knit)"
+     ],
+     "동작": "Weekend morning at the entrance: Seojin, a canvas tote bag on her shoulder, stops and looks at Ian (off camera); her lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-15",
+   "컷": [
+    "2-15"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-15",
+     "그림": "2-15.jpg",
+     "쓰는초": 1.0,
+     "누구": [
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Bust: Ian brightly suggests in Korean, with a small hopeful smile: \"주말 장 같이 보러 가자.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.45% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "주말 장 같이 보러 가자.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 9,
+      "어림초": 1.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-16",
+   "컷": [
+    "2-16"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-16",
+     "그림": "2-16.jpg",
+     "쓰는초": 1.83,
+     "누구": [
+      "SEOJIN (cable knit)",
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Seojin, the tote bag on her shoulder, says in Korean, light but final: \"아니. 오늘은 혼자 갈게.\" — and turns away toward the door.",
+     "카메라": "small follow: as she turns away the camera turns slightly with her, a few percent of the frame, and ends on her turning toward the door; small handheld jitters.",
+     "말": {
+      "누가": "SEOJIN (cable knit)",
+      "대사": "아니. 오늘은 혼자 갈게.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 9,
+      "어림초": 1.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-17-18",
+   "컷": [
+    "2-17",
+    "2-18"
+   ],
+   "길이": 5,
+   "자르는초": 2.4,
+   "낱판": [
+    "p7-2-17",
+    "p7-2-18"
+   ],
+   "설명": "두 샷 묶음 — 바스트 · 서진 어깨 너머 이안, 놀람 → 바스트 · 이안(다른 각도)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-17",
+     "그림": "2-17.jpg",
+     "쓰는초": 1.7,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cable knit)"
+     ],
+     "동작": "Over Seojin's shoulder: Ian, startled and hurt, stares at her, lips closed; near the end Seojin passes in front of the lens as a soft blur.",
+     "카메라": "handheld, the camera stays in place with light constant shake (about 0.5% of the frame width); near the end her blurred body passes across the foreground."
+    },
+    {
+     "컷": "2-18",
+     "그림": "2-18.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Bust from another angle: Ian, left behind, murmurs in Korean, hurt: \"…맨날 같이 갔잖아.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "…맨날 같이 갔잖아.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-19",
+   "컷": [
+    "2-19"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 회사, 의자에 드러눕는 이안과 옆에서 팔을 붙잡는 민재",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-19",
+     "그림": "2-19.jpg",
+     "쓰는초": 2.04,
+     "누구": [
+      "IAN (office)",
+      "MINJAE"
+     ],
+     "동작": "Wide, office, from a high position: Ian slumps back in his office chair, sandwich in hand, staring at the ceiling, and from about 0.3 s says to himself in Korean: \"설마… 아니겠지.\" Minjae, beside him, grabs his arm; his laugh settles into a closed-mouth grin within the first 0.3 s and his lips never move like speech.",
+     "카메라": "static high wide — the camera stays in place, almost still, with only a slight sideways drift of about 4% of the frame width over the shot; almost no shake.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "설마… 아니겠지.",
+      "시작초": 0.3,
+      "꼴": "입 맞춤",
+      "음절": 6,
+      "어림초": 1.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Minjae makes no sound; after his first-moment laugh his lips stay closed and never move like speech.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Minjae makes no sound; after his first-moment laugh his lips stay closed and never move like speech.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Minjae makes no sound; after his first-moment laugh his lips stay closed and never move like speech."
+   }
+  },
+  {
+   "id": "p7-2-20",
+   "컷": [
+    "2-20"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 카페, 같은 몸짓으로 소연 어깨에 얼굴을 묻고 버둥대는 서진",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-20",
+     "그림": "2-20.jpg",
+     "쓰는초": 2.37,
+     "누구": [
+      "SEOJIN (navy sweater)",
+      "SOYEON"
+     ],
+     "동작": "Café: Seojin, already slumped against Soyeon's shoulder with her face buried, squirms and rubs her face into the shoulder in frustration (the same flop as Ian's in the office); Soyeon, holding her takeout cup, laughs silently — her laugh softens into a closed-lip smile and her lips never move like speech. Under the shot Seojin's muffled voice says in Korean: \"아, 이거 내가 더 괴로워.\"",
+     "카메라": "handheld follow-down: strong constant handheld shake (about 2.2% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts; as she slides lower onto Soyeon's shoulder (about 0.3–2.1 s) the camera tilts down with her and rolls around the lens axis so the frame leans, ending lower on the two of them.",
+     "말": {
+      "누가": "SEOJIN (navy sweater)",
+      "대사": "아, 이거 내가 더 괴로워.",
+      "시작초": 0.3,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 9,
+      "어림초": 1.75
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-21",
+   "컷": [
+    "2-21"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-21",
+     "그림": "2-21.jpg",
+     "쓰는초": 2.28,
+     "누구": [
+      "SEOJIN (navy sweater)",
+      "SOYEON"
+     ],
+     "동작": "Over Soyeon's blurred shoulder: Seojin, holding her takeout cup, winces guiltily and says in Korean: \"현관에서 날 보는 그 눈을 봤어야 돼.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.45% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (navy sweater)",
+      "대사": "현관에서 날 보는 그 눈을 봤어야 돼.",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 14,
+      "어림초": 2.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-22",
+   "컷": [
+    "2-22"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 흰 바탕의 이안 — 버려진 강아지 같은 눈(상상) — 요즘 기법: 렌즈를 보는 눈에 느린 다가감 약 10%",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-22",
+     "그림": "2-22.jpg",
+     "쓰는초": 1.64,
+     "누구": [
+      "IAN (white backdrop)"
+     ],
+     "동작": "Against the seamless pure-white backdrop, Ian looks straight into the lens with big, sad, abandoned-puppy eyes, his lower lip trembling slightly — a silent, heart-melting stare (her imagination). Lips closed.",
+     "카메라": "slow push-in toward his eyes: right after the first frame the camera physically moves straight toward Ian's face in one slow, steady move, about 10% closer, no lens zoom, while he keeps looking right into the lens; it ends on a closer frame of his sad puppy eyes and holds. The pure-white backdrop stays plain white.",
+     "원본카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "바꾼까닭": "서진의 상상 속 「버려진 강아지 눈」 웃음 박(원본 고정). 렌즈를 보는 눈에 천천히 다가가 마음이 녹는 박을 키움 — 한국 숏드라마는 배우가 관객과 눈을 맞추듯 연기하는 1인칭 앵글을 적극 씀(엘르 코리아 2025-08-20), 눈 맞춤은 호감 얼굴의 매력을 키움(Kampe 외 2001, Nature), 다가가는 숏의 몰입(Heimann 외 2019). 시작 그림이 이미 렌즈를 봐 새 그림이 필요 없음. 시댄스 다가가기 「확인됨」."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-23",
+   "컷": [
+    "2-23"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 불 끈 침실, 누운 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-23",
+     "그림": "2-23.jpg",
+     "쓰는초": 0.93,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Night, the bedroom in warm lamp light: Ian, lying on his side on the bed, looks up at Seojin (out of frame) and asks quietly in Korean: \"…혹시, 좋아하는 사람 생겼어?\"",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "…혹시, 좋아하는 사람 생겼어?",
+      "시작초": 0.2,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-24",
+   "컷": [
+    "2-24"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 앞 이안 흐림, 침대의 서진(태연히 머리를 빗음)",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-24",
+     "그림": "2-24.jpg",
+     "쓰는초": 0.67,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Over Ian's blurred shoulder: Seojin, sitting up in bed, glances at him calmly, unbothered, and smooths her ponytail with one hand; her lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-25-26",
+   "컷": [
+    "2-25",
+    "2-26"
+   ],
+   "길이": 4,
+   "자르는초": 2.4,
+   "낱판": [
+    "p7-2-25",
+    "p7-2-26"
+   ],
+   "설명": "두 샷 묶음 — 어깨 너머 · 핸드크림을 바르는 서진 머리 · 손(앞 흐림) 너머 누운 이안 → 미디엄 · 베개에 볼을 대고 누운 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-25",
+     "그림": "2-25.jpg",
+     "쓰는초": 1.7,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Over Seojin's shoulder (her head and hands soft in the foreground): she rubs hand cream into her hands; beyond her Ian lies on his side facing away, his mouth hidden. Under the shot Ian's voice says in Korean: \"새 옷에, 늦게 오고,\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "새 옷에, 늦게 오고,",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    },
+    {
+     "컷": "2-26",
+     "그림": "2-26.jpg",
+     "쓰는초": 0.5,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Medium close: Ian, his cheek on the pillow, eyes up at her, right away says quietly in Korean: \"향수도 바뀌었고.\" — his lips visible above the pillow.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "향수도 바뀌었고.",
+      "시작초": 0.0,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded lines for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. In SHOT 1 Ian's mouth stays hidden exactly as written there. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. In SHOT 1 Ian's mouth stays hidden exactly as written there. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean lines written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. In SHOT 1 Ian's mouth stays hidden exactly as written there. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   },
+   "B길이": 5
+  },
+  {
+   "id": "p7-2-27",
+   "컷": [
+    "2-27"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 앞 이안 머리 흐림, 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-27",
+     "그림": "2-27.jpg",
+     "쓰는초": 1.44,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Over Ian's blurred shoulder: Seojin, sitting on the bed, shakes her head with a too-casual little laugh and says in Korean: \"그런 거 아니라니까.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "그런 거 아니라니까.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 8,
+      "어림초": 1.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-28",
+   "컷": [
+    "2-28"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 일어나 앉는 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-28",
+     "그림": "2-28.jpg",
+     "쓰는초": 1.27,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Medium: Ian, already sitting up in bed, straightens and leans a little toward her, and from about 0.3 s says in Korean, quiet and hurt: \"너 거짓말할 때 귀 빨개지는 거 알아?\"",
+     "카메라": "handheld rise: as he straightens and leans in (about 0.2–0.9 s) the camera rises a little with him, about 10% of the frame height, slowing to a stop, ending on him sitting upright; strong constant handheld shake (about 1.2% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "너 거짓말할 때 귀 빨개지는 거 알아?",
+      "시작초": 0.3,
+      "꼴": "입 맞춤",
+      "음절": 14,
+      "어림초": 2.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-29",
+   "컷": [
+    "2-29"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 서진, 앞에서 이안이 일어나 나감(흐림)",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-29",
+     "그림": "2-29.jpg",
+     "쓰는초": 1.3,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Seojin sits on the bed holding the hand-cream tube, frozen; Ian gets up and walks past in the soft foreground, his body sweeping across the frame between 0.5 s and 1.0 s. Seojin's lips stay closed. Under the shot Ian's voice says in Korean: \"…나 잠깐 나가 있을게.\"",
+     "카메라": "static frame — the camera stays in place, almost perfectly still; only Ian's passing body moves across the foreground.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "…나 잠깐 나가 있을게.",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 8,
+      "어림초": 1.58
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Ian's voice saying this one Korean line, with the timing written in ACTION; Ian's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-30",
+   "컷": [
+    "2-30"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 서진 등(앞 흐림) 너머 침실 문, 이안이 나가 문이 닫힘",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-30",
+     "그림": "2-30.jpg",
+     "쓰는초": 1.4,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Over Seojin's back: Ian walks out through the bedroom door and pulls it shut behind him; the door closes. Nobody speaks.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-31",
+   "컷": [
+    "2-31"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 혼자 남은 서진 → 디졸브",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-31",
+     "그림": "2-31.jpg",
+     "쓰는초": 1.03,
+     "누구": [
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Seojin, alone on the bed, hugs the pillow, stunned, staring at the closed door; she does not move.",
+     "카메라": "short sideways drift: right after the first frame (about 0.1–0.4 s) the camera travels to its left about 10% of the frame width, slowing to a stop, then stays in place, almost still, on Seojin hugging the pillow."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-32",
+   "컷": [
+    "2-32"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 식탁을 짚고 종이 · 펜을 내려다보며 앉는 이안(쓰는 손은 안 보임)",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-32",
+     "그림": "2-32.jpg",
+     "쓰는초": 0.8,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Late at night in the dim kitchen: Ian, alone, stands bent over the wooden dining table with both hands on it, looking down at a sheet of paper and a pen, and begins to sit down; his writing hand is never seen.",
+     "카메라": "static frame — the camera stays in place, almost still, with only a faint drift; almost no shake."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-33",
+   "컷": [
+    "2-33"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 식탁의 이안, 고개 숙임",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-33",
+     "그림": "2-33.jpg",
+     "쓰는초": 1.0,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Bust: Ian sits at the table with his head bowed, looking down at the paper (out of frame below), breathing slowly; his lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-34",
+   "컷": [
+    "2-34"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 뛰어나와 바닥에 미끄러지는 서진",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-34",
+     "그림": "2-34.jpg",
+     "쓰는초": 0.93,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "From a high position looking down the kitchen: Seojin rushes out of the hallway toward the table in her satin pajamas, her feet slip on the wooden floor and she skids and drops to the floor.",
+     "카메라": "handheld follow from a high position: strong constant handheld shake (about 0.6% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts; the camera follows her as she rushes in and slides, tilting down with her, ending on her on the floor."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-35",
+   "컷": [
+    "2-35"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 식탁 이안, 앞 바닥의 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-35",
+     "그림": "2-35.jpg",
+     "쓰는초": 0.87,
+     "누구": [
+      "IAN (pajamas)",
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Wide: Ian, turning on his chair at the table, stares at Seojin sprawled on the floor in front of him and right away says in Korean, alarmed: \"왜, 왜 그래.\" Seojin, face down, does not speak.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "왜, 왜 그래.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 4,
+      "어림초": 0.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-36-37",
+   "컷": [
+    "2-36",
+    "2-37"
+   ],
+   "길이": 5,
+   "자르는초": 2.1,
+   "낱판": [
+    "p7-2-36",
+    "p7-2-37"
+   ],
+   "설명": "두 샷 묶음 — 미디엄 · 엎드린 서진 → 클로즈업 · 고개를 드는 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-36",
+     "그림": "2-36.jpg",
+     "쓰는초": 1.4,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "From a high angle over Ian's blurred head: Seojin kneels in a deep bow with her forehead to the floor, her ponytail fallen forward, her shoulders shaking; her face is never seen. Under the shot her voice says in Korean: \"다 연기였어.\"",
+     "카메라": "looking down from a high position, handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "다 연기였어.",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 5,
+      "어림초": 1.08
+     }
+    },
+    {
+     "컷": "2-37",
+     "그림": "2-37.jpg",
+     "쓰는초": 1.54,
+     "누구": [
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Close-up: Seojin slowly lifts her head from the bow, eyes wet, and from about 0.4 s confesses in Korean, her voice breaking: \"늦은 것도, 원피스도, 향수도.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.35% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "늦은 것도, 원피스도, 향수도.",
+      "시작초": 0.4,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded lines for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. In SHOT 1 Seojin's mouth stays hidden exactly as written there. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. In SHOT 1 Seojin's mouth stays hidden exactly as written there. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean lines written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only the Korean words written in ACTION with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. In SHOT 1 Seojin's mouth stays hidden exactly as written there. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   },
+   "B길이": 6
+  },
+  {
+   "id": "p7-2-38",
+   "컷": [
+    "2-38"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 앞 서진 뒷모습 너머 이안",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-38",
+     "그림": "2-38.jpg",
+     "쓰는초": 1.5,
+     "누구": [
+      "IAN (pajamas)",
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Over Seojin's back as she kneels on the floor: Ian sits at the table facing her, his eyes filling with tears; his lips stay closed. Under the shot Seojin's voice says in Korean: \"나가지 마…\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "나가지 마…",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 4,
+      "어림초": 0.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-39",
+   "컷": [
+    "2-39"
+   ],
+   "길이": 5,
+   "설명": "바스트 · 눈물이 고인 이안 — 요즘 기법: 눈높이 느린 다가감 약 8%",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-39",
+     "그림": "2-39.jpg",
+     "쓰는초": 3.44,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Bust: Ian, at the table, tears welling up and his chin trembling, holds it in for a beat, then from about 0.8 s says in Korean in a shaky voice: \"…나 진짜 무서웠어.\" A small, real cry — no sobbing, no big face.",
+     "카메라": "slow push-in at eye level: from about 0.5 s the camera physically travels forward toward Ian's face in one slow, steady, smooth move — only a faint handheld breath, no jolts — about 8% closer, no lens zoom; it ends on a slightly tighter close-up with his tear-filled eyes in the upper third, and holds.",
+     "원본카메라": "handheld, the camera stays in place: light constant jitters of about 0.6% of the frame width, holding the same framing to the end.",
+     "바꾼까닭": "자백 · 눈물의 정점(3.44초, 편에서 가장 긴 컷). 감정 박에 한 번의 느린 다가감 — 2025 훙궈 연간 1위 로맨스 《盛夏芬德拉》(44.4억 재생) 감독이 감정 박에 느린 이동 · 롱테이크 · 손 초점을 썼다고 직접 씀, Heimann 외 2019(PLoS ONE, EEG 16명): 몸으로 다가가는 숏이 고정 · 줌보다 감각운동 반응과 실감이 큼, 눈높이가 신뢰를 가장 높임(Baranowski & Hecht 2018). 시댄스 2.5 천천히 다가가기 「확인됨」(공식 기본어 + 우리 10-12 실측) — 얼굴 컷이라 10% 안쪽.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "…나 진짜 무서웠어.",
+      "시작초": 0.8,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-40",
+   "컷": [
+    "2-40"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 울며 다가가는 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-40",
+     "그림": "2-40.jpg",
+     "쓰는초": 1.9,
+     "누구": [
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Crying, Seojin moves toward him, one arm reaching out, and from about 0.4 s says in Korean through tears: \"계획표, 다 버릴게.\"",
+     "카메라": "handheld follow: strong constant handheld shake (about 1.2% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts; as she moves toward him (about 0.2–1.4 s) the camera follows her up and to the side, slowing, ending on her tearful face.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "계획표, 다 버릴게.",
+      "시작초": 0.4,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-41",
+   "컷": [
+    "2-41"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 서진 어깨 너머 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-41",
+     "그림": "2-41.jpg",
+     "쓰는초": 0.64,
+     "누구": [
+      "IAN (pajamas)",
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Over Seojin's blurred shoulder: Ian shakes his head slightly and right away says softly in Korean: \"버리지 마.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "버리지 마.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 4,
+      "어림초": 0.92
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-42",
+   "컷": [
+    "2-42"
+   ],
+   "길이": 4,
+   "설명": "와이드 · 식탁의 둘 — 이안이 식탁 위를 가리킴",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-42",
+     "그림": "2-42.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "IAN (pajamas)",
+      "SEOJIN (pajamas)",
+      "DELIVERY BOX",
+      "LUNCHBOXES"
+     ],
+     "동작": "Wide, at the dining table: Ian, seated, points to the things on the table (the white form with a pen, the opened kraft box of side-dish jars and the two open lunchboxes with their wooden lids beside them) and right away says in Korean, shy: \"이거… 일주일 전부터 쓰던 거야.\" Seojin, standing beside him, looks down at the table; her lips stay closed.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "이거… 일주일 전부터 쓰던 거야.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 12,
+      "어림초": 2.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-43-44",
+   "컷": [
+    "2-43",
+    "2-44"
+   ],
+   "길이": 4,
+   "자르는초": 1.2,
+   "낱판": [
+    "p7-2-43",
+    "p7-2-44"
+   ],
+   "설명": "두 샷 묶음 — 인서트 · 식탁 위 혼인신고서 · 펜 · 칸찬 상자 · 꽉 찬 도시락 두 개 → 인서트 · 이름이 다 적힌 혼인신고서",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-43",
+     "그림": "2-43.jpg",
+     "쓰는초": 0.5,
+     "누구": [
+      "GREEN SHEET",
+      "DELIVERY BOX",
+      "LUNCHBOXES"
+     ],
+     "동작": "Top-down insert of the dining table: the flat bright-green sheet with a black pen, the kraft delivery box and two lunchboxes packed full of side dishes; at the lower edge Ian's and Seojin's hands hold each other. Nothing moves.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    },
+    {
+     "컷": "2-44",
+     "그림": "2-44.jpg",
+     "쓰는초": 0.87,
+     "누구": [
+      "GREEN SHEET"
+     ],
+     "동작": "Close on the flat bright-green sheet of paper on the wooden table; it lies still. Nothing moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ]
+  },
+  {
+   "id": "p7-2-45",
+   "컷": [
+    "2-45"
+   ],
+   "길이": 4,
+   "설명": "미디엄 · 일어나 서진을 껴안는 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-45",
+     "그림": "2-45.jpg",
+     "쓰는초": 1.3,
+     "누구": [
+      "IAN (pajamas)",
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Medium: standing, Ian holds Seojin close in a hug, his cheek near her hair, and from about 0.4 s says in Korean, warm and certain: \"우리 결혼하자.\" Her face stays against his shoulder.",
+     "카메라": "handheld: strong constant handheld shake (about 1% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts; the camera drifts up a little with Ian as he straightens into the hug.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "우리 결혼하자.",
+      "시작초": 0.4,
+      "꼴": "입 맞춤",
+      "음절": 6,
+      "어림초": 1.25
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-2-46",
+   "컷": [
+    "2-46"
+   ],
+   "길이": 4,
+   "설명": "바스트 · 이안 어깨에 얼굴을 묻고 우는 서진",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-46",
+     "그림": "2-46.jpg",
+     "쓰는초": 2.13,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Bust: Seojin cries with her face pressed into Ian's shoulder, eyes shut, her mouth hidden against his shoulder; Ian's hand rubs her back. Under the shot her muffled voice says in Korean, crying: \"진짜 미안해…\"",
+     "카메라": "handheld, the camera stays in place with strong constant handheld shake (about 0.8% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts, swaying gently with the hug.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "진짜 미안해…",
+      "시작초": 0.3,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 5,
+      "어림초": 1.08
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-47",
+   "컷": [
+    "2-47"
+   ],
+   "길이": 4,
+   "설명": "클로즈업 · 포옹(서진 얼굴, 이안 뒤통수)",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-47",
+     "그림": "2-47.jpg",
+     "쓰는초": 1.61,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Close, in the hug: Seojin's tearful face rests on Ian's shoulder (we see the back of his head); her eyes close and a small relieved smile appears. Ian's mouth is hidden behind his head. Under the shot his voice says softly in Korean: \"내일부턴 내가 채울게. 사랑 한 칸.\"",
+     "카메라": "handheld arc around the hug: from about 0.4 s to 1.3 s the camera travels to its right around the two of them, about 35% of the frame width, while it rolls around the lens axis so the frame leans about 27° counter-clockwise, at an even speed, ending on Seojin's face over his shoulder; light handheld shake.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "내일부턴 내가 채울게. 사랑 한 칸.",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 13,
+      "어림초": 2.42
+     }
+    }
+   ],
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Ian's voice saying this one Korean line, with the timing written in ACTION; Ian's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-48",
+   "컷": [
+    "2-48"
+   ],
+   "길이": 4,
+   "설명": "디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸 — 반찬 정기배송 칸찬」 — 요즘 기법: 위에서 느린 다가감 약 5% · 밥에서 오르는 김",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-48",
+     "그림": "2-48.jpg",
+     "쓰는초": 1.36,
+     "누구": [
+      "LUNCHBOXES"
+     ],
+     "동작": "Top-down still life: two lunchboxes packed full of side dishes on the light-oak table, wooden lids and chopsticks beside them; a few thin wisps of steam rise slowly from the white rice in both boxes and drift up out of the frame. Everything else is still. (The logo and words are added later in editing — draw none.)",
+     "카메라": "very slow top-down push-in: the camera physically lowers straight toward the two lunchboxes in one slow, steady move, about 5% closer, no lens zoom, no shake; it ends with the two boxes a little larger, still centered, and holds.",
+     "원본카메라": "static top-down frame — the camera stays in place, perfectly still.",
+     "바꾼까닭": "끝 장(브랜드). 움직이는 김이 먹음직함을 올리고 정지된 김은 효과가 없음(Zhang · Spence 외 2024, 실험 3개), 제품만 천천히 보이면 고급스러움 · 지불 의사 · 클릭이 오름(Jung & Dubois 2023, JMR, 실험 12개 · 2만 7천 명). 끝 그림을 가장 세게. 시댄스 느린 다가가기 「확인됨」은 눈높이 얼굴 근거이고 위에서 내려다보며 다가가기는 공식 시연뿐, 김은 시험 근거 없음 — 원본 카메라 판 p7-2-48o와 나란히 보고 고른다. 로고 · 글자는 편집에서 고정으로 얹음(밑판만 천천히 움직임).",
+     "원본동작": "Top-down still life: two lunchboxes packed full of side dishes on the light-oak table, wooden lids and chopsticks beside them. Nothing moves. (The logo and words are added later in editing — draw none.)"
+    }
+   ]
+  },
+  {
+   "id": "p7-1-2",
+   "컷": [
+    "1-2"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 이안 손의 도시락 — 흰밥에 매실 하나",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "1-2",
+     "그림": "1-2.jpg",
+     "쓰는초": 0.7,
+     "누구": [
+      "LUNCHBOX"
+     ],
+     "동작": "Over Ian's shoulder: his two hands hold the open lunchbox low above the white desk — white rice with a single red pickled plum in one compartment, the other compartment completely empty; the wooden lid is tucked under the box. The hands hold it still. No face is seen. Off screen, Minjae's voice asks in Korean: \"야, 반찬 칸이 왜 비었어?\"",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "MINJAE",
+      "대사": "야, 반찬 칸이 왜 비었어?",
+      "시작초": 0.0,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 9,
+      "어림초": 1.75
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Minjae's voice saying this one Korean line, with the timing written in ACTION; Minjae's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-1-3",
+   "컷": [
+    "1-3"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 텅 빈 반찬 칸",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-3",
+     "그림": "1-3.jpg",
+     "쓰는초": 0.84,
+     "누구": [
+      "LUNCHBOX"
+     ],
+     "동작": "A close-up of the lunchbox's empty compartment with a pair of light wooden chopsticks lying in it; the light-oak lid rests beside the box. Nothing moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-1-9",
+   "컷": [
+    "1-9"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 미디엄 · 이안 어깨 너머 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-9",
+     "그림": "1-9.jpg",
+     "쓰는초": 1.14,
+     "누구": [
+      "SEOJIN (cardigan)",
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Over Ian's blurred shoulder (his back to the camera at the right): Seojin, at the table, listens for a beat, then from about 0.7 s answers in Korean, low and firm: \"나 내년이면…\" Ian does not turn; his face is not seen.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "나 내년이면…",
+      "시작초": 0.7,
+      "꼴": "입 맞춤",
+      "음절": 5,
+      "어림초": 1.08
+     },
+     "덧말": [
+      {
+       "누가": "IAN (sweatshirt)",
+       "대사": "알았어, 알았어…",
+       "시작초": 0.0,
+       "꼴": "화면 밖",
+       "어디서": "방식 B: p7-1-8 판이 앞 말에 이어 만든 것을 이 컷 첫머리에 깐다 · 방식 A · 없음: 편집에서 얹음",
+       "어림초": 1.25
+      }
+     ]
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-10",
+   "컷": [
+    "1-10"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 클로즈업 · 서진(펀치인), 이안을 바라보며",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-10",
+     "그림": "1-10.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "SEOJIN (cardigan)"
+     ],
+     "동작": "Close-up: Seojin looks straight at Ian, just off camera to the right, and right away finishes in Korean, calm and deadly serious, eyebrows slightly raised: \"…앞자리 3이야.\"",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "말": {
+      "누가": "SEOJIN (cardigan)",
+      "대사": "…앞자리 3이야.",
+      "시작초": 0.0,
+      "꼴": "입 맞춤",
+      "음절": 6,
+      "어림초": 1.25
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-17",
+   "컷": [
+    "1-17"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 미디엄 · 이안 옆얼굴",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-17",
+     "그림": "1-17.jpg",
+     "쓰는초": 1.77,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Side profile, medium: Ian, chopsticks in hand at his desk, looks toward Minjae (off frame to the left) and grumbles in Korean, half to himself: \"이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 20,
+      "어림초": 3.58
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   },
+   "B길이": 5
+  },
+  {
+   "id": "p7-1-18",
+   "컷": [
+    "1-18"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 클로즈업 · 매실을 씹는 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-18",
+     "그림": "1-18.jpg",
+     "쓰는초": 2.66,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Close-up: Ian chews the sour pickled plum with a pinched face, the chopsticks still at his lips, and from about 0.3 s mutters through the chewing in Korean: \"…반찬도 안 싸 주고.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "…반찬도 안 싸 주고.",
+      "시작초": 0.3,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-26",
+   "컷": [
+    "1-26"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 식탁 위 종이 · 펜",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-26",
+     "그림": "1-26.jpg",
+     "쓰는초": 0.67,
+     "누구": [
+      "IAN (home from work)",
+      "GREEN SHEET"
+     ],
+     "동작": "Looking down past Ian's chin and loosened tie (at the bottom of the frame) onto the wooden dining table: the flat bright-green sheet of paper with a black pen lying on it. He looks down at it; nothing else moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-1-27",
+   "컷": [
+    "1-27"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 빈 혼인신고서 접사",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-27",
+     "그림": "1-27.jpg",
+     "쓰는초": 0.83,
+     "누구": [
+      "GREEN SHEET"
+     ],
+     "동작": "A close-up of the flat bright-green sheet of paper on the wooden table; it lies still. Nothing moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-1-33",
+   "컷": [
+    "1-33"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 바스트 · 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-33",
+     "그림": "1-33.jpg",
+     "쓰는초": 1.3,
+     "누구": [
+      "SEOJIN (white shirt)",
+      "SOYEON"
+     ],
+     "동작": "Over Soyeon's blurred shoulder: Seojin, holding her coffee cup on the table, answers in Korean with a tired sigh: \"응. 걔만 안 움직여.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "응. 걔만 안 움직여.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Soyeon keeps her lips closed and silent the whole time."
+   }
+  },
+  {
+   "id": "p7-1-34",
+   "컷": [
+    "1-34"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 클로즈업 · 서진이 휴대폰 달력을 내려다보며 한숨",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-34",
+     "그림": "1-34.jpg",
+     "쓰는초": 1.43,
+     "누구": [
+      "SEOJIN (white shirt)"
+     ],
+     "동작": "Close-up: Seojin looks down at the calendar on her phone (at the bottom edge) and mutters to herself in Korean with a sigh: \"달력에 동그라미까지 쳐 놨는데.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "달력에 동그라미까지 쳐 놨는데.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 13,
+      "어림초": 2.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-42",
+   "컷": [
+    "1-42"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 바스트 · 카페 소연, 몸을 기울임",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-42",
+     "그림": "1-42.jpg",
+     "쓰는초": 0.56,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Café, bust: Soyeon leans forward across the table toward Seojin with a sly look, about to whisper; her lips stay closed.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-1-43",
+   "컷": [
+    "1-43"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 익스트림 클로즈업 · 소연 입술",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-43",
+     "그림": "1-43.jpg",
+     "쓰는초": 1.57,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Extreme close-up of Soyeon's lips and lower face: she whispers in Korean, slow and secretive: \"등 떠밀지 말고… 한 발 빼 봐.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SOYEON",
+      "대사": "등 떠밀지 말고… 한 발 빼 봐.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 10,
+      "어림초": 1.92
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Soyeon's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Soyeon speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-1-44",
+   "컷": [
+    "1-44"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 미디엄 · 소연 어깨 너머 서진, 놀람",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-44",
+     "그림": "1-44.jpg",
+     "쓰는초": 0.93,
+     "누구": [
+      "SEOJIN (white shirt)",
+      "SOYEON"
+     ],
+     "동작": "Over Soyeon's blurred shoulder: Seojin's eyes widen in surprise at the whisper; she freezes, lips slightly parted, not speaking.",
+     "카메라": "slight push-in: from about 0.3 s to 0.8 s the camera physically moves a little toward Seojin, about 4% closer, speeding up, ending slightly tighter on her surprised face; small handheld jitters of about 0.2% of the frame width."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-1-45",
+   "컷": [
+    "1-45"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 클로즈업 · 서진(펀치인) — 「다음 화에」",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "1-45",
+     "그림": "1-45.jpg",
+     "쓰는초": 1.1,
+     "누구": [
+      "SEOJIN (white shirt)"
+     ],
+     "동작": "Close-up (punch-in): Seojin leans in toward Soyeon, eyes wide, and right away asks in a hushed, eager voice in Korean: \"…어떻게?\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.3% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (white shirt)",
+      "대사": "…어떻게?",
+      "시작초": 0.15,
+      "꼴": "입 맞춤",
+      "음절": 3,
+      "어림초": 0.75
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-2",
+   "컷": [
+    "2-2"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 바스트 · 원피스를 든 이안, 갸웃",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-2",
+     "그림": "2-2.jpg",
+     "쓰는초": 0.64,
+     "누구": [
+      "IAN (sweatshirt)",
+      "NEW DRESS"
+     ],
+     "동작": "Bust: Ian holds up the emerald-green satin dress by its strap and tilts his head, puzzled; his lips stay closed.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-3",
+   "컷": [
+    "2-3"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 가격표 달린 새 원피스",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-3",
+     "그림": "2-3.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "NEW DRESS"
+     ],
+     "동작": "Close on the dress: Ian's hands hold up the emerald-green satin slip dress; the white price tag on its string swings a little.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.4% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-12",
+   "컷": [
+    "2-12"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 편의점 샌드위치를 든 이안 손",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-12",
+     "그림": "2-12.jpg",
+     "쓰는초": 1.0,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Close on Ian's hand holding up a half-eaten egg sandwich in its plastic wrap over the desk, as if showing it. Nothing else moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-13",
+   "컷": [
+    "2-13"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 바스트 · 이안 → 흰 번쩍(18의 전환을 옮김)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-13",
+     "그림": "2-13.jpg",
+     "쓰는초": 1.5,
+     "누구": [
+      "IAN (office)"
+     ],
+     "동작": "Bust: Ian, deadpan and a little sorry for himself, says in Korean: \"도시락 대신 만 원 놓고 갔더라.\"",
+     "카메라": "handheld, the camera stays in place with light constant jitters of about 0.35% of the frame width, holding the framing.",
+     "말": {
+      "누가": "IAN (office)",
+      "대사": "도시락 대신 만 원 놓고 갔더라.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 12,
+      "어림초": 2.25
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-17",
+   "컷": [
+    "2-17"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 바스트 · 서진 어깨 너머 이안, 놀람",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-17",
+     "그림": "2-17.jpg",
+     "쓰는초": 1.7,
+     "누구": [
+      "IAN (sweatshirt)",
+      "SEOJIN (cable knit)"
+     ],
+     "동작": "Over Seojin's shoulder: Ian, startled and hurt, stares at her, lips closed; near the end Seojin passes in front of the lens as a soft blur.",
+     "카메라": "handheld, the camera stays in place with light constant shake (about 0.5% of the frame width); near the end her blurred body passes across the foreground."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-18",
+   "컷": [
+    "2-18"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 바스트 · 이안(다른 각도)",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-18",
+     "그림": "2-18.jpg",
+     "쓰는초": 0.9,
+     "누구": [
+      "IAN (sweatshirt)"
+     ],
+     "동작": "Bust from another angle: Ian, left behind, murmurs in Korean, hurt: \"…맨날 같이 갔잖아.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (sweatshirt)",
+      "대사": "…맨날 같이 갔잖아.",
+      "시작초": 0.1,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-25",
+   "컷": [
+    "2-25"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 어깨 너머 · 핸드크림을 바르는 서진 머리 · 손(앞 흐림) 너머 누운 이안",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-25",
+     "그림": "2-25.jpg",
+     "쓰는초": 1.7,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "Over Seojin's shoulder (her head and hands soft in the foreground): she rubs hand cream into her hands; beyond her Ian lies on his side facing away, his mouth hidden. Under the shot Ian's voice says in Korean: \"새 옷에, 늦게 오고,\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "새 옷에, 늦게 오고,",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Ian's voice saying this one Korean line, with the timing written in ACTION; Ian's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Seojin keeps her lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-26",
+   "컷": [
+    "2-26"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 미디엄 · 베개에 볼을 대고 누운 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-26",
+     "그림": "2-26.jpg",
+     "쓰는초": 0.5,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Medium close: Ian, his cheek on the pillow, eyes up at her, right away says quietly in Korean: \"향수도 바뀌었고.\" — his lips visible above the pillow.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "향수도 바뀌었고.",
+      "시작초": 0.0,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-36",
+   "컷": [
+    "2-36"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 미디엄 · 엎드린 서진",
+   "소리": "B만 켬",
+   "샷": [
+    {
+     "컷": "2-36",
+     "그림": "2-36.jpg",
+     "쓰는초": 1.4,
+     "누구": [
+      "SEOJIN (pajamas)",
+      "IAN (pajamas)"
+     ],
+     "동작": "From a high angle over Ian's blurred head: Seojin kneels in a deep bow with her forehead to the floor, her ponytail fallen forward, her shoulders shaking; her face is never seen. Under the shot her voice says in Korean: \"다 연기였어.\"",
+     "카메라": "looking down from a high position, handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "다 연기였어.",
+      "시작초": 0.2,
+      "꼴": "입 가림 · 화면 밖",
+      "음절": 5,
+      "어림초": 1.08
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
+    "B": "SOUND: only Seojin's voice saying this one Korean line, with the timing written in ACTION; Seojin's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+   }
+  },
+  {
+   "id": "p7-2-37",
+   "컷": [
+    "2-37"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 클로즈업 · 고개를 드는 서진",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-37",
+     "그림": "2-37.jpg",
+     "쓰는초": 1.54,
+     "누구": [
+      "SEOJIN (pajamas)"
+     ],
+     "동작": "Close-up: Seojin slowly lifts her head from the bow, eyes wet, and from about 0.4 s confesses in Korean, her voice breaking: \"늦은 것도, 원피스도, 향수도.\"",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.35% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "말": {
+      "누가": "SEOJIN (pajamas)",
+      "대사": "늦은 것도, 원피스도, 향수도.",
+      "시작초": 0.4,
+      "꼴": "입 맞춤",
+      "음절": 11,
+      "어림초": 2.08
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Seojin's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Seojin speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-43",
+   "컷": [
+    "2-43"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 식탁 위 혼인신고서 · 펜 · 칸찬 상자 · 꽉 찬 도시락 두 개",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-43",
+     "그림": "2-43.jpg",
+     "쓰는초": 0.5,
+     "누구": [
+      "GREEN SHEET",
+      "DELIVERY BOX",
+      "LUNCHBOXES"
+     ],
+     "동작": "Top-down insert of the dining table: the flat bright-green sheet with a black pen, the kraft delivery box and two lunchboxes packed full of side dishes; at the lower edge Ian's and Seojin's hands hold each other. Nothing moves.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-44",
+   "컷": [
+    "2-44"
+   ],
+   "길이": 4,
+   "설명": "묶음 대신 — 인서트 · 이름이 다 적힌 혼인신고서",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-44",
+     "그림": "2-44.jpg",
+     "쓰는초": 0.87,
+     "누구": [
+      "GREEN SHEET"
+     ],
+     "동작": "Close on the flat bright-green sheet of paper on the wooden table; it lies still. Nothing moves.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-39o",
+   "컷": [
+    "2-39"
+   ],
+   "길이": 5,
+   "설명": "원본 카메라 — 요즘 기법 판(p7-2-39)과 나란히 보고 고름 · 바스트 · 눈물이 고인 이안",
+   "소리": "켬",
+   "샷": [
+    {
+     "컷": "2-39",
+     "그림": "2-39.jpg",
+     "쓰는초": 3.44,
+     "누구": [
+      "IAN (pajamas)"
+     ],
+     "동작": "Bust: Ian, at the table, tears welling up and his chin trembling, holds it in for a beat, then from about 0.8 s says in Korean in a shaky voice: \"…나 진짜 무서웠어.\" A small, real cry — no sobbing, no big face.",
+     "카메라": "handheld, the camera stays in place: light constant jitters of about 0.6% of the frame width, holding the same framing to the end.",
+     "말": {
+      "누가": "IAN (pajamas)",
+      "대사": "…나 진짜 무서웠어.",
+      "시작초": 0.8,
+      "꼴": "입 맞춤",
+      "음절": 7,
+      "어림초": 1.42
+     }
+    }
+   ],
+   "대안": true,
+   "소리참고": {
+    "A": "",
+    "B": "",
+    "없음": null
+   },
+   "소리줄": {
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Ian's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; no one else speaks.",
+    "B": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Ian speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; no one else speaks."
+   }
+  },
+  {
+   "id": "p7-2-22o",
+   "컷": [
+    "2-22"
+   ],
+   "길이": 4,
+   "설명": "원본 카메라 — 요즘 기법 판(p7-2-22)과 나란히 보고 고름 · 바스트 · 흰 바탕의 이안 — 버려진 강아지 같은 눈(상상)",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-22",
+     "그림": "2-22.jpg",
+     "쓰는초": 1.64,
+     "누구": [
+      "IAN (white backdrop)"
+     ],
+     "동작": "Against the seamless pure-white backdrop, Ian looks straight into the lens with big, sad, abandoned-puppy eyes, his lower lip trembling slightly — a silent, heart-melting stare (her imagination). Lips closed.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "p7-2-48o",
+   "컷": [
+    "2-48"
+   ],
+   "길이": 4,
+   "설명": "원본 카메라 — 요즘 기법 판(p7-2-48)과 나란히 보고 고름 · 디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸 — 반찬 정기배송 칸찬」",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-48",
+     "그림": "2-48.jpg",
+     "쓰는초": 1.36,
+     "누구": [
+      "LUNCHBOXES"
+     ],
+     "동작": "Top-down still life: two lunchboxes packed full of side dishes on the light-oak table, wooden lids and chopsticks beside them. Nothing moves. (The logo and words are added later in editing — draw none.)",
+     "카메라": "static top-down frame — the camera stays in place, perfectly still."
+    }
+   ],
+   "대안": true
+  }
+ ],
+ "후보판": [
+  {
+   "id": "p7-2-1p",
+   "컷": [
+    "2-1"
+   ],
+   "길이": 4,
+   "후보": true,
+   "대신할판": "p7-2-1",
+   "설명": "후보(유호님 확인 전엔 내지 않음) — 2-1 「있을 수 없는 각도」 첫 걸이",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "2-1",
+     "그림": "_후보_20261029/2-1p.jpg",
+     "쓰는초": 0.43,
+     "누구": [
+      "IAN (sweatshirt)",
+      "NEW DRESS"
+     ],
+     "동작": "An impossible point of view from inside the drum of a washing machine at night: through the round opening, Ian, puzzled, holds up the unfamiliar emerald-green satin dress with its price tag and peers into the drum; the steel drum wall rings the frame and a few clothes lie at the bottom. His lips stay closed.",
+     "카메라": "quick push-in: right after the first frame the camera physically darts forward toward Ian through the round opening, about 13% closer, done by about 0.3 s, at an even speed; then the camera stays in place, almost still.",
+     "원본카메라": "quick push-in: right after the first frame the camera physically darts forward toward Ian at the washing machine, about 13% closer, done by about 0.3 s, at an even speed; then the camera stays in place, almost still.",
+     "바꾼까닭": "2화 첫 0.43초 걸이. 원본 제작사 고코 클럽 자사 글이 권하는 「세탁기 안에서 보는 시점」(첫 2초 사건 · 5초 유지율 50% 기준, 2026-02-03 · 04-12). 이안 얼굴 닮음 0.303이라 고르시면 얼굴만 다시 굽는다."
+    }
+   ]
+  },
+  {
+   "id": "p7-1-1p",
+   "컷": [
+    "1-1"
+   ],
+   "길이": 4,
+   "후보": true,
+   "대신할판": "p7-1-1",
+   "설명": "후보(유호님 확인 전엔 내지 않음) — 1-1 「있을 수 없는 각도」 첫 걸이",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "1-1",
+     "그림": "_후보_20261029/1-1p.jpg",
+     "쓰는초": 0.53,
+     "누구": [
+      "IAN (office)",
+      "MINJAE",
+      "LUNCHBOX"
+     ],
+     "동작": "A low angle from the desk, right behind the open lunchbox: the box's empty side-dish compartment and its rice compartment fill the bottom of the frame; above it Ian, stunned, stares down into the box while Minjae peers over his shoulder with wide eyes; Ian holds the light-oak lid up at the left. Both keep their lips closed.",
+     "카메라": "quick push-in: right after the first frame the camera physically darts forward toward the two men, about 13% closer, done by about 0.4 s, at an even speed; then the camera stays in place with small handheld jitters (about 0.15% of the frame width).",
+     "원본카메라": "quick push-in: right after the first frame the camera physically darts forward toward Ian and the open lunchbox, about 13% closer, done by about 0.4 s, at an even speed; then the camera stays in place with small handheld jitters (about 0.15% of the frame width), ending a little tighter on the two men and the box.",
+     "바꾼까닭": "1화 첫 0.53초 걸이 — 같은 고코 클럽 「있을 수 없는 각도」. 「도시락 칸 안」 시점까지는 안 나왔고 뚜껑이 세워져 떠 보여 지금 판으로는 권하지 않음."
+    }
+   ]
+  }
+ ]
+}
