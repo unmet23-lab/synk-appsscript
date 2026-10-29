@@ -22,7 +22,10 @@ test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 알려
   const started = clock();
   const result = runSimulation({ seeds: 12, days: 30, timezones: [TIMEZONES[0]], profiles: five });
   const spentMs = Math.round(clock() - started);
-  assert.ok(spentMs < 15000, `${spentMs}ms`);
+  // The bound is the CI runner's, not the design goal's: W6~W11 grew this run from this PC's 4.3s (10-26, when 15s was set) to
+  // about 7s, and the hosted runners differ by half (10-30: the same tests 9.6s on one, 19.3s on another — run 40955292461 measured
+  // 16.7s of this thread's CPU on a slow one). Seeds and bars stay; the bound keeps the same margin over the slow runner (W11).
+  assert.ok(spentMs < 25000, `${spentMs}ms`);
   const s = summarize(result);
   assert.equal(s.villages, 12 * (1 * 4 + 1), '다 받는 모습은 첫 시간대에서만');
   // The known failures (KNOWN_FAILURES, each with its track line) are reported as failures; nothing else may fail (W11).
