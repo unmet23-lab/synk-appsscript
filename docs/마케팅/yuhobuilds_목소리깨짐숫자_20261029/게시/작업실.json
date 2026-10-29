@@ -1,0 +1,30 @@
+{
+  "도구": "tools/작업실예약.js",
+  "작업실": "https://workspace.synk.im",
+  "시작": "2026-10-29T14:53:26.298Z",
+  "자산": {
+    "docs/마케팅/yuhobuilds_목소리깨짐숫자_20261029/remotion/out/y22_final.mp4": "90064964-35e2-448c-857d-8c173e7c043b"
+  },
+  "판": [
+    {
+      "계정": "yuhobuilds-instagram",
+      "채널": "8d6d4d37-5a44-47ce-a757-9411ed15523c",
+      "작업": "9601c389bcdc895220ca3cc441f0691a2f81f74b874d2cc18e4514e9c7bfb6f0",
+      "시각": "2026-10-30T00:08+09:00",
+      "영상": "docs/마케팅/yuhobuilds_목소리깨짐숫자_20261029/remotion/out/y22_final.mp4"
+    },
+    {
+      "계정": "yuhobuilds-youtube",
+      "채널": "452a3e17-7ec1-4f1e-8dbb-fe5d34380a9f",
+      "작업": "eca58fa9d020ce7a473e71df49597542b19ed4face4e3e187f4f327086efd481",
+      "시각": "2026-10-30T00:08+09:00",
+      "영상": "docs/마케팅/yuhobuilds_목소리깨짐숫자_20261029/remotion/out/y22_final.mp4"
+    }
+  ],
+  "postId": "4fe63252-1230-4dd0-8ef1-1e700f5127b9",
+  "링크": {
+    "id": "74e5739e-67e3-4851-afcd-7dfdb61f02cc",
+    "만료": "2026-10-30T15:53:33.512Z"
+  },
+  "끝": "2026-10-29T14:53:33.359Z"
+}
