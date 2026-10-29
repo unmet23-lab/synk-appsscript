@@ -18,7 +18,7 @@ function fixture(){
 const evidence=game=>game.summary().skills.flatMap(s=>[1,2,3].flatMap(level=>Object.values(s.levels[level].formats).flatMap(f=>f.evidence)));
 test('the actual older ledger reader accepts the optional provenance without a wire change',()=>{
  const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
- const folder=path.join(__dirname,'fixtures/atlas-ledger-personalization-20261029'),source=fs.readFileSync(path.join(folder,'before.cjs')),pin=require(path.join(folder,'source.json'));
+ const folder=path.join(__dirname,'fixtures/atlas-ledger-personalization-20261029'),source=Buffer.from(fs.readFileSync(path.join(folder,'before.cjs'),'utf8').replace(/\r\n/g,'\n')),pin=require(path.join(folder,'source.json'));
  assert.equal(crypto.createHash('sha256').update(source).digest('hex'),pin.sha256);
  const module={exports:{}};new Function('require','module','exports',source.toString())(name=>require('../atlas/'+name.slice(2)),module,module.exports);
  const f=fixture(),next=Ledger.demote(f.ledger,{excluded:[f.presentations[0]],strays:1},()=>null);
@@ -83,6 +83,15 @@ test('a legacy ledger with no parent provenance cannot keep unverified ability a
  const next=Ledger.demote(legacy,{excluded:[f.presentations[0]],strays:1},()=>null);
  assert.equal(Ledger.rows(Ledger.cellOf(next,cellKey)).rows.length,0);
  assert.equal(Ledger.before(next,'item:item.0',['attempt']),true);assert.doesNotThrow(()=>Ledger.validate(next));
+});
+
+test('replaying a known withdrawal never removes unrelated legacy answers',()=>{
+ const f=fixture(),legacy=structuredClone(f.ledger);delete legacy.parents;
+ const first=Ledger.demote(legacy,{excluded:[f.answers[0]],strays:1},()=>null);
+ const second=Ledger.demote(first,{excluded:[f.answers[0]],strays:1},()=>null);
+ const remaining=ledger=>Ledger.rows(Ledger.cellOf(ledger,cellKey)).rows;
+ assert.equal(remaining(first).length,3);assert.deepEqual(remaining(second),remaining(first));
+ assert.deepEqual(second.withdrawn,first.withdrawn);assert.doesNotThrow(()=>Ledger.validate(second));
 });
 test('a playback observed after the answer in either timestamp is not positive delivery evidence',()=>{
  const scope={domain:'LAB',workspace:'audio-time',subject:'synthetic'};let ms=T0,n=0;
