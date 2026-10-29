@@ -5,6 +5,7 @@
  *
  *   node 녹음.mjs 학습자                        학습자 줄을 한 번 굽는다(대본의 학습자목소리) — 모든 엔진에 같은 소리
  *   node 녹음.mjs live <장면|전부> <목소리>      gpt-live-1(듣기와 말하기를 함께 하는 전이중) · 예: live 전부 noeul
+ *                                              「만든-…」은 목소리만들기.mjs · 플랫폼 화면으로 만든 목소리(.tmp 만든목소리.json의 id)
  *   node 녹음.mjs realtime <장면|전부> <목소리>  gpt-realtime-2.1 · 예: realtime 전부 marin
  *   node 녹음.mjs gemini <장면|전부> <목소리>    gemini-3.8-live(무료 등급 키) · 예: gemini 전부 Kore
  *   node 녹음.mjs 엮기                          줄마다 크기를 맞추고 장면 × 목소리마다 대화 한 판(mp3)과 결과.json을 만든다
@@ -361,7 +362,21 @@ async function live답끝(답, 출력, 기한) {
   }
 }
 
-async function live돌리기({ 키, 목소리, 지시, 학습자줄, 상대줄 }) {
+// 「만든-…」 목소리는 목소리만들기(prompt-to-voice)로 만든 GPT-Live 전용 목소리다 — id로 부르고, 문서 권고대로 목소리 설명을 지시문에 붙인다
+function 만든목소리(목소리) {
+  if (!목소리.startsWith('만든-')) return null;
+  const 파일 = path.join(작업, '만든목소리.json');
+  const 표 = fs.existsSync(파일) ? JSON.parse(fs.readFileSync(파일, 'utf8')) : {};
+  if (!표[목소리]?.id) 멈춤(`만든 목소리가 없다: ${목소리} (${파일})`);
+  return 표[목소리];
+}
+
+async function live돌리기({ 키, 목소리, 지시: 원지시, 학습자줄, 상대줄 }) {
+  const 만든 = 만든목소리(목소리);
+  const 지시 = 만든 ? `${원지시}
+
+목소리: ${만든.설명}` : 원지시;
+  const 목소리값 = 만든 ? { id: 만든.id } : 목소리;
   const ws = new 소켓(await 열기(`${소켓바탕}/live/sessions`, { Authorization: `Bearer ${키읽기(키)}` }, 키.이름));
   const 첫줄 = `지금 바로 상대역 1번 줄을 글자 그대로 말한다: 「${상대줄[0]}」 그다음 학습자가 말할 때까지 기다린다.`;
   const 답들 = [];
@@ -394,7 +409,7 @@ async function live돌리기({ 키, 목소리, 지시, 학습자줄, 상대줄 }
       model: 엔진.live.모델,
       instructions: 지시,
       input: [{ type: 'message', role: 'developer', content: [{ type: 'input_text', text: 첫줄 }] }],
-      audio: { format: { type: 'audio/pcm', rate: 표본율 }, output: { voice: 목소리 } },
+      audio: { format: { type: 'audio/pcm', rate: 표본율 }, output: { voice: 목소리값 } },
       delegation: { type: 'client' },
     },
   });

@@ -986,3 +986,9 @@
 - 원인: 앱 안 브라우저는 창이 보이지 않으면 그리지 않아 입력을 못 받는다. 스크립트 `click()`은 사용자 활성화가 없어 AudioContext · 자동 재생이 막힌다.
 - 고침: ego(`ego-browser nodejs`)로 `http://127.0.0.1:<포트>/`를 열고 `page.click()`(진짜 입력이라 활성화가 생긴다), 폭 캡처는 `page.cdp('Emulation.setDeviceMetricsOverride', …)`.
 - 다시 확인: ego에서 시험 단추를 누른 뒤 `__상황극기록`에 `pc:connected` · `session.started`가 찍히는지.
+
+### 「모델 호출만」 키로는 만든 목소리(prompt-to-voice)를 만들지도 부르지도 못한다 — 부를 때는 권한 오류가 아니라 「No voice found」로 보인다 (2026-10-30 Claude)
+- 증상: `POST /v1/audio/voices`(type prompt)가 401 「Missing scopes: api.voices.write」. 플랫폼 화면(Audio → Voices → Create voice → Save voice)으로 같은 조직 · 같은 Default project에 만든 목소리를 GPT-Live `session.start`의 `audio.output.voice: {id}`로 부르자 「No voice found with id 'voice_…'」.
+- 원인: 키 권한이 Model capabilities(`api.model.request`)뿐이다. 목소리 읽기 권한이 없으면 같은 프로젝트의 목소리도 「없음」으로 보인다(키 상세 화면에서 권한 확인).
+- 고침: 만들기는 플랫폼 화면으로 한다(무료). 부르려면 그 키에 목소리 읽기 권한을 더하거나 그 권한이 있는 키가 필요하다 — 키 권한 바꾸기 · 새 키는 유호님 허락 뒤(접근을 바꾸는 보안 설정).
+- 다시 확인: 권한을 고친 뒤 `node experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs live cafe 만든-또렷함 --시도 1`이 첫 줄을 받는지.
