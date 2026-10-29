@@ -1,0 +1,50 @@
+{
+  "메모": "7번 숏드라마 배역 넷(이안 · 서진 · 민재 · 소연) 목소리 후보(10-29) — 판마다 한 배역 · 한 목소리가 그 배역의 실제 대사를 읽는다(배역 안에서는 모든 후보가 같은 줄 · 같은 감정). 타입캐스트는 캐스팅북 목소리(voices.json — 이안 호선 · 서진 진희 · 민재 태섭 · 소연 미경)와 10-18 · 10-20 고르기의 다음 순위 하나(강일은 유호님이 뺀 목소리, 유라는 매진 지유 목소리라 뺌). 힉스필드 엔진 후보는 같은 줄로 따로 굽는다(힉스필드후보.json). 굽기: node tools/나레이션굽기.mjs <이 파일> --굽기 --출력 ~/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/목소리후보_20261029/tc",
+  "defaults": {"model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1029, "lufs": -17},
+  "versions": {
+    "이안_호선": {"voice": {"id": "tc_65a0e1eb23a607b9906c0154", "name": "호선"}, "lines": [
+      {"id": "i1", "text": "결혼 얘기 피했더니… 반찬이 끊겼어."},
+      {"id": "i2", "text": "이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해."},
+      {"id": "i3", "text": "너 거짓말할 때 귀 빨개지는 거 알아?"},
+      {"id": "i4", "text": "…나 진짜 무서웠어.", "emotion": "sad"},
+      {"id": "i5", "text": "우리 결혼하자.", "emotion": "tonedown"}]},
+    "이안_우성": {"voice": {"id": "tc_668f4f533ea5c6ce5e43fd48", "name": "우성"}, "lines": [
+      {"id": "i1", "text": "결혼 얘기 피했더니… 반찬이 끊겼어."},
+      {"id": "i2", "text": "이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해."},
+      {"id": "i3", "text": "너 거짓말할 때 귀 빨개지는 거 알아?"},
+      {"id": "i4", "text": "…나 진짜 무서웠어.", "emotion": "sad"},
+      {"id": "i5", "text": "우리 결혼하자.", "emotion": "tonedown"}]},
+    "서진_진희": {"voice": {"id": "tc_6731b2b2478a48710ecc9158", "name": "진희"}, "lines": [
+      {"id": "s1", "text": "우리 내년이면 칠 년이야. 이제 날 잡자."},
+      {"id": "s2", "text": "반찬 먹고 싶으면, 저기 이름 써."},
+      {"id": "s3", "text": "비밀.", "emotion": "happy"},
+      {"id": "s4", "text": "다 연기였어. 늦은 것도, 원피스도, 향수도.", "emotion": "sad"},
+      {"id": "s5", "text": "계획표, 다 버릴게.", "emotion": "sad"}]},
+    "서진_민채": {"voice": {"id": "tc_66b4523f259dc43de649c1d1", "name": "민채"}, "lines": [
+      {"id": "s1", "text": "우리 내년이면 칠 년이야. 이제 날 잡자."},
+      {"id": "s2", "text": "반찬 먹고 싶으면, 저기 이름 써."},
+      {"id": "s3", "text": "비밀.", "emotion": "happy"},
+      {"id": "s4", "text": "다 연기였어. 늦은 것도, 원피스도, 향수도.", "emotion": "sad"},
+      {"id": "s5", "text": "계획표, 다 버릴게.", "emotion": "sad"}]},
+    "민재_태섭": {"voice": {"id": "tc_62f223abb9d09c5b3131c7f2", "name": "태섭"}, "lines": [
+      {"id": "m1", "text": "야~", "emotion": "happy"},
+      {"id": "m2", "text": "그 도시락, 사랑 한 칸은 있냐?", "emotion": "happy"},
+      {"id": "m3", "text": "여자친구 내년에 몇이야?"},
+      {"id": "m4", "text": "그럼 너 같아도 급하겠다."},
+      {"id": "m5", "text": "육 년 된 사이가 제일 잘 놓쳐.", "emotion": "tonedown"}]},
+    "민재_한준": {"voice": {"id": "tc_618b1849ef7827cfea34ea1e", "name": "한준"}, "lines": [
+      {"id": "m1", "text": "야~", "emotion": "happy"},
+      {"id": "m2", "text": "그 도시락, 사랑 한 칸은 있냐?", "emotion": "happy"},
+      {"id": "m3", "text": "여자친구 내년에 몇이야?"},
+      {"id": "m4", "text": "그럼 너 같아도 급하겠다."},
+      {"id": "m5", "text": "육 년 된 사이가 제일 잘 놓쳐.", "emotion": "tonedown"}]},
+    "소연_미경": {"voice": {"id": "tc_633d52c5febcba27f45eced7", "name": "미경"}, "lines": [
+      {"id": "y1", "text": "너 아직도 계획표 들고 다녀?", "emotion": "happy"},
+      {"id": "y2", "text": "원래 남자는 등 떠밀면 더 버텨."},
+      {"id": "y3", "text": "등 떠밀지 말고… 한 발 빼 봐.", "emotion": "whisper"}]},
+    "소연_미자": {"voice": {"id": "tc_6059db64e2d12a32cce1b0c7", "name": "미자"}, "lines": [
+      {"id": "y1", "text": "너 아직도 계획표 들고 다녀?", "emotion": "happy"},
+      {"id": "y2", "text": "원래 남자는 등 떠밀면 더 버텨."},
+      {"id": "y3", "text": "등 떠밀지 말고… 한 발 빼 봐.", "emotion": "whisper"}]}
+  }
+}
