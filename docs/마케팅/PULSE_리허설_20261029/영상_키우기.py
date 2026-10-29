@@ -4,6 +4,8 @@
 # 「1080p 업스케일링됨」도 720p가 떨어진 적이 있어(현장노트 10-19) 지유 v7처럼 로컬로 키운다.
 # 10-29: 61장 배치 하나는 24GB를 다 채워 DiT 단계에서 죽었다(rc 0xC0000409). 지유가 쓴 37장 배치로 조각을 내고,
 #        조각끼리 OV장을 겹쳐 그 구간을 선형으로 섞는다(배치 이음새 한 장 흐림을 피하려 한 실행 안에서 배치를 나누지 않는다).
+# 10-29 밤: 남의 ComfyUI H3와 겹쳐 36분 멈춘 뒤, 맨 앞에서 공용 GPU 차례(synk-vendor/_공용차례 README 「GPU」)를 선다 —
+#        차례가 올 때까지 기다렸다가 돌고, 상한(조각 수 × 8분 + 10분)을 넘기면 꺼진다.
 #   python -X utf8 영상_키우기.py <id> <시작 초> <장 수>   → 작업 폴더 영상/받음/<id>_up.mp4(24fps, CRF 10, 그 구간만)
 import glob
 import os
@@ -16,6 +18,9 @@ import numpy as np
 from PIL import Image
 
 sys.stdout.reconfigure(encoding="utf-8")
+sys.path.insert(0, os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "_공용차례"))
+import 차례  # noqa: E402
+
 작업 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-rehearsal-20261029", "영상", "받음")
 COMFY = r"C:\SYNK-LoRA\tools\ComfyUI"
 WORK = r"C:\SYNK-LoRA\work\pulse_rehearsal_up"  # SeedVR2(cv2.imwrite)는 한글 경로에 못 쓴다(현장 노트)
@@ -48,13 +53,14 @@ def run(cid, k, src, start, n):
 def main():
     cid, t0, n = sys.argv[1], float(sys.argv[2]), int(sys.argv[3])
     start = round(t0 * FPS)
-    os.makedirs(WORK, exist_ok=True)
-    src = os.path.join(작업, f"{cid}_a.mp4")
     # 조각: [0, CH) · 그다음은 앞 조각과 OV장 겹치게, 마지막 조각은 끝에 맞춘다
     starts, s = [0], 0
     while s + CH < n:
         s = min(s + CH - OV, n - CH)
         starts.append(s)
+    차례.gpu_줄서기(f"up-{cid}", f"영상_키우기 {cid} {n}장", 상한=10 + 8 * len(starts))
+    os.makedirs(WORK, exist_ok=True)
+    src = os.path.join(작업, f"{cid}_a.mp4")
     t = time.time()
     parts = [(a, run(cid, k, src, start + a, min(CH, n - a))) for k, a in enumerate(starts)]
     acc = np.zeros((n, 1920, 1080, 3), np.float32)

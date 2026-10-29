@@ -23,7 +23,7 @@
 - 멈춘 렌더의 자식 프로세스가 살아남아 새 렌더와 겹친다 → 멈춘 뒤 `taskkill /PID <pid> /T /F`로 끝낸다 ([자세히](#멈춘-렌더-스크립트의-자식-프로세스가-살아남아-새-렌더와-겹친다))
 - 원본 카메라를 컷 처음 · 끝 두 장으로 재면 천천히 다가감 · 초점 들어옴을 「고정」으로 적는다 → 이웃 프레임마다 쌓아 시작 · 멈춤 · 빠르기 · 흔들림 · 초점까지 재고 여섯 프레임을 눈으로 본다 ([자세히](#원본-광고의-카메라-움직임을-위상-상관으로-재면-다가가는-컷을-고정으로-적는다--특징점-맞춤으로-배율까지-잰다-2026-10-25-claude))
 - 로컬 MiniMax H3 공개판은 대한민국이 이용 제외 지역이다(10-07 신청은 심사 대기) → 공모 · 공개 결과물에 쓰기 전에 허가 상태부터 본다. 가중치는 10-29 공간 정리로 지웠으니 쓰려면 `h3_받기.sh`(37GiB)부터 ([결정](../_ops/결정.md) 10-29) ([자세히](#로컬-minimax-h3-공개판은-대한민국이-이용-제외-지역이다--공모--공개-결과물에-쓰기-전에-허가-상태부터-본다-2026-10-29-claude))
-- GPU 작업 전에 `nvidia-smi`를 안 보면 남의 작업과 부딪친다 → 먼저 보고, 오래 잡혀 있으면 ZeroGPU로 돌린다 ([자세히](#노트북-gpu가-다른-작업에-오래-잡혀-있으면-기다리지-말고-zerogpu로-돌린다))
+- GPU 작업을 줄 없이 띄우면 남의 작업과 VRAM을 나눠 둘 다 멈춘다(10-29 36분) → `synk-vendor/_공용차례/차례.py gpu 돌리기`로 줄을 서고, 줄 밖 작업이 오래 잡고 있으면 ZeroGPU로 ([자세히](#gpu-작업을-줄-없이-띄우면-남의-작업과-vram을-나눠-둘-다-멈춘다--공용-gpu-차례로-하나씩-돌린다-2026-10-29-claude))
 - 남이 쓰는 ComfyUI 환경에 노드를 깔면 패키지 수십 개가 바뀐다 → `--no-deps --target`으로 따로 깔아 돌린다 ([자세히](#comfyui-노드-패키지를-남이-쓰는-comfyui-환경에-깔지-않고-따로-돌린다))
 
 ## 목차
@@ -671,10 +671,16 @@
 - 다시 확인: ComfyUI를 남의 8188과 겹치지 않게 `--port 8190`으로 띄워 `local_flux_comfy.py captions_flux.json <폴더>`를 돌리고, 끝나면 그 프로세스를 끄고 GPU를 쓰는 세션에 알린다.
 - 덧붙임(10-24 메모에서 옮김): Qwen-Image 2.1은 이 노트북 GPU 24GB(10-24 `nvidia-smi` 24,463MiB)에 안 들어가 늘 ZeroGPU로 돌린다.
 
+### GPU 작업을 줄 없이 띄우면 남의 작업과 VRAM을 나눠 둘 다 멈춘다 — 공용 GPU 차례로 하나씩 돌린다 (2026-10-29 Claude)
+- 증상: 10-29 PULSE 리허설 업스케일(SeedVR2-3B, 37장 조각 하나 3~6분 · VRAM 최대 24GB)이 도는 동안 다른 세션이 ComfyUI(8188)로 MiniMax H3를 띄우자 업스케일이 GPU 4% · 17W로 36분 멈췄다([리허설 기록](../마케팅/PULSE_리허설_20261029/README.md) 「노트북 GPU」). Gemini 웹 · 유튜브에는 번호표 줄이 있었지만 GPU에는 없었다.
+- 원인: 24GB 한 장을 두 작업이 나눠 쓰면 둘 다 메모리가 모자란다. 아래 「노트북 GPU가 다른 작업에 오래…」의 「넣기 전에 `nvidia-smi`를 본다」는 본 순간과 띄우는 순간 사이에 남이 들어오는 것을 못 막는다.
+- 고침: GPU 작업은 `python ~/Documents/synk-vendor/_공용차례/차례.py gpu 돌리기 <이름> "<할 일>" --상한 <분> -- <명령…>`으로만 띄운다(파이썬 실행기는 맨 앞에서 `차례.gpu_줄서기(…)` — `PULSE_리허설_20261029/영상_키우기.py`는 스스로 선다). 한 번에 한 작업이고, 잡기 직전 빈 GPU(2,000MiB · 30% · 60W 아래)를 세 번 보며, 쉬는 ComfyUI는 `/free`로 비우고, 줄 밖 작업이나 LoRA 학습 사슬이 살아 있으면 빌 때까지 기다린다. 상한을 넘기면 손자까지 끈다. 실행기마다 감싸는 법은 그 폴더 README 「GPU」.
+- 다시 확인: 그 폴더에서 `python -X utf8 시험_gpu.py`(약 12분, 사본 줄로 돌아 지금 줄은 안 건드린다) — 동시에 낸 두 작업이 하나씩 · 멈춤 없이 끝나는지와 줄 밖 작업 · 학습 사슬 · 상한 · 죽은 「돌리기」 · ComfyUI `/free` · 핸들이 깨진 「돌리기」(윈도우 셸 「띄운 셸이 사라진 뒤…」) · 절전 흉내까지 아홉 가지.
+
 ### 노트북 GPU가 다른 작업에 오래 잡혀 있으면 기다리지 말고 ZeroGPU로 돌린다
 - 증상: 10-18 MiniMax H3 로컬 6컷(2시간)과 LoRA 학습(4시간, 15GB)이 GPU를 차례로 잡는 동안, 다른 세션들은 「GPU 비었어요」 메시지만 기다렸다. 노트북이 바쁘면 ZeroGPU로 넘기는 장치는 없다.
 - 원인: GPU 하나(24GB)를 여러 세션이 나눠 쓴다. 유호님 10-18: 넘기는 도구는 만들지 않고 규칙으로 한다(「가벼운게 낫겠다」).
-- 고침: GPU 작업을 넣기 전에 `nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader`와 `nvidia-smi --query-compute-apps=pid,used_memory --format=csv`, 세션 메시지로 다른 작업이 잡고 있는지 본다. 남은 메모리가 이번 작업에 모자라고(FLUX 약 12GB, SeedVR2 영상 23GB) 그 작업이 30분 넘게 이어지면 기다리지 말고 되는 것은 ZeroGPU로 돌린다: 블렌더 `cpuai/blender-render-studio`(`render_zerogpu.py`), FLUX 3 Klein `black-forest-labs/flux-3-image-klein`, Qwen-Image `hugging-apps/qwen-qwen-image-2-1-turbo`(`zerogpu_image_bench.py`), SeedVR2 그림 `Upsampler/seedvr2-3b`(`zerogpu_seedvr2_alt.py`), MiniMax H3 복제본 `<허깅페이스 계정>/h3-conditioner`·`h3-generator`(5초 한 편 할당량 233초, 부르는 법은 아래 「둘로 나뉜 ZeroGPU Space」 항목). SeedVR2 영상과 LoRA 학습은 ZeroGPU로 안 되니 기다린다. 유호님 얼굴·고객 자료는 남의 Space에 올리지 않는다. 하루 2,400초를 넘기면 선불 잔액에서 빠지니 넘기 전에 멈추고, 결과 보고에 ZeroGPU로 돌렸다고 적는다.
+- 고침: GPU 작업을 넣기 전에 `nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader`와 `nvidia-smi --query-compute-apps=pid,used_memory --format=csv`, 세션 메시지로 다른 작업이 잡고 있는지 본다. 남은 메모리가 이번 작업에 모자라고(FLUX 약 12GB, SeedVR2 영상 23GB) 그 작업이 30분 넘게 이어지면 기다리지 말고 되는 것은 ZeroGPU로 돌린다: 블렌더 `cpuai/blender-render-studio`(`render_zerogpu.py`), FLUX 3 Klein `black-forest-labs/flux-3-image-klein`, Qwen-Image `hugging-apps/qwen-qwen-image-2-1-turbo`(`zerogpu_image_bench.py`), SeedVR2 그림 `Upsampler/seedvr2-3b`(`zerogpu_seedvr2_alt.py`), MiniMax H3 복제본 `<허깅페이스 계정>/h3-conditioner`·`h3-generator`(5초 한 편 할당량 233초, 부르는 법은 아래 「둘로 나뉜 ZeroGPU Space」 항목). SeedVR2 영상과 LoRA 학습은 ZeroGPU로 안 되니 기다린다. 유호님 얼굴·고객 자료는 남의 Space에 올리지 않는다. 하루 2,400초를 넘기면 선불 잔액에서 빠지니 넘기 전에 멈추고, 결과 보고에 ZeroGPU로 돌렸다고 적는다. 10-29부터 비었는지 보고 기다리는 일은 위 「공용 GPU 차례」가 한다 — 여기서는 줄 밖 작업이 30분 넘게 쥘 때 ZeroGPU로 넘길지만 정한다.
 - 다시 확인: 남은 할당량을 [결제 페이지 데이터](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다)로 읽고, 돌린 뒤 줄어든 초가 GPU 초 × 크기 배수와 맞는지 본다.
 
 ### 「GPU가 비면」 기다리는 사슬이 밤샘 학습 사슬 전체를 기다리고, nvidia-smi 일시 오류 한 번에 죽는다
