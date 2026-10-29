@@ -376,7 +376,7 @@ var require_ask = __commonJS({
         const valued = typeof evaluate === "function";
         if (!valued && questions.some((q) => owns(q, "cost") || owns(q, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
         const current = decide({ ...answers });
-        const result = [];
+        const result = [], rawImpact = /* @__PURE__ */ new Map();
         for (const q of questions) {
           const about = q.about ?? q.id;
           if (Object.hasOwn(answers, about) && (q.kind !== "refresh" || currentTime === null)) continue;
@@ -407,6 +407,7 @@ var require_ask = __commonJS({
           const cost = q.cost ?? 0, responseProbability = q.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
           if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
           const skippable = impact === 0 || valued && value <= 0;
+          rawImpact.set(q.id, impact);
           result.push({
             id: q.id,
             kind: q.kind ?? "setting",
@@ -419,7 +420,7 @@ var require_ask = __commonJS({
             ...valued ? { basis: "declared-decision-value", expectedGain, responseProbability, cost, value } : {}
           });
         }
-        const score = (entry) => valued ? entry.value ?? 0 : entry.impact;
+        const score = (entry) => valued ? entry.value ?? 0 : rawImpact.get(entry.id) ?? 0;
         return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order).map(({ order, ...entry }) => entry);
       }
       function choose({ budget = 1, usedToday = 0, ...input } = {}) {
@@ -427,7 +428,7 @@ var require_ask = __commonJS({
         const ranked = rank(input);
         if (usedToday >= budget) return { version: VERSION, status: "none", reason: "budget", ranked };
         const valued = typeof input.evaluate === "function";
-        const best = ranked.find((entry) => !entry.skippable && (valued ? entry.value > 0 : entry.impact > 0));
+        const best = ranked.find((entry) => !entry.skippable);
         if (!best) return { version: VERSION, status: "none", reason: valued ? "no-question-has-positive-decision-value" : "no-question-changes-the-decision", ranked };
         return {
           version: VERSION,

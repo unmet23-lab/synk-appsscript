@@ -13,6 +13,24 @@ const questions = [
 ];
 const recommend = answers => answers.use === 'local-ai' ? (answers.budget === 'low' ? 'desktop-used-gpu' : 'desktop-new-gpu') : 'laptop-basic';
 
+test('a small positive refresh impact is eligible even when its display rounds to zero', () => {
+  const q = { id: 'refresh-mode', about: 'mode', kind: 'refresh', options: [{ id: 'reading', p: 0.9999 }, { id: 'listening', p: 0.0001 }] };
+  const result = Ask.choose({ questions: [q], answers: { mode: 'reading' }, now: '2026-10-29T00:00:00Z', decide: a => a.mode });
+  assert.equal(result.status, 'ask'); assert.equal(result.question.id, q.id);
+  assert.equal(result.impact, 0, 'the existing rounded display field remains compatible');
+  assert.equal(result.ranked[0].skippable, false);
+});
+
+test('small positive impacts rank by their original precision, not by display ties', () => {
+  const q = (id, p) => ({ id, about: 'mode', kind: 'refresh', options: [{ id: 'reading', p: 1 - p }, { id: 'listening', p }] });
+  const input = { questions: [q('weaker', 0.0001), q('stronger', 0.0002)], answers: { mode: 'reading' }, now: '2026-10-29T00:00:00Z', decide: a => a.mode };
+  const result = Ask.choose(input);
+  assert.equal(result.question.id, 'stronger');
+  assert.deepEqual(result.ranked.map(e => e.impact), [0, 0]);
+  assert.equal(Ask.choose({ ...input, usedToday: 1 }).reason, 'budget');
+  assert.equal(Ask.choose({ ...input, denied: ['weaker', 'stronger'] }).status, 'none');
+});
+
 test('a question whose answers change nothing for this person is skipped', () => {
   const ranked = Ask.rank({ questions, decide: recommend });
   assert.equal(ranked[0].id, 'use', 'the most decisive question comes first');

@@ -205,6 +205,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 다시 만든 생성물이 origin 판과 내용이 같은지(CR을 뗀 sha) 확인한 뒤 `--짝검사건너뜀 "<까닭>"`으로 올린다. 까닭에 「원천이 그 묶음에 들어가지 않고, 다시 만든 결과가 origin과 내용이 같다(줄끝만 다름)」를 적는다. 내용이 다르면 건너뛰지 말고 생성물을 경로에 더해 같이 올린다.
 - 다시 확인: `node tools/build-messenger-teaching.cjs` 뒤 `git diff --ignore-cr-at-eol --stat -- docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js`가 비고, CI의 `npm run check:account-bundles`(Linux, LF 체크아웃)는 그대로 통과한다.
 - 10-23 덧붙임(공용 작업본, Claude): `desktop/renderer/member-insight.css` 주석 한 줄을 고치고 `--build`로 다시 만든 뒤, 줄끝만 바뀐 `teaching-host.js`를 `git checkout`으로 되돌리자 같은 「낡음」으로 멈췄다. 다시 `--build`하고 도구가 보인 결과물 경로(`preview.html`·`build-manifest.json`·`member-insight.css`·`teaching-host.js`)를 그대로 올릴 경로에 넣으니 짝 검사가 막지 않고 「주의 — 결과물이 작업본에서 바뀐 채 이번 push에 없다」만 남기고 통과했다(내용이 같아 커밋에는 안 실린다). 지금 판에서는 건너뛰기 없이 이 길로 올린다 — 되돌리지 않는다.
+- 10-29 덧붙임(GPT): 이번에는 모든 경로를 명시해도 같은 상태로 막혔다. 다시 만든 `teaching-host.js`와 `git show HEAD:<경로>`의 원시 Buffer가 완전히 같고 기존 staged diff가 없음을 확인한 뒤 그 한 경로만 `git add -- <경로>`로 상태를 새로 읽었다. index blob이 HEAD와 같고 해당 status도 빈 것을 확인하니 여섯 짝 검사가 모두 통과했다. 실제 바이트가 다르면 이 방법으로 같은 파일이라고 취급하지 않는다.
 
 ### 짝 검사가 줄끝만 다른 생성물을 「작업본에서만 통과」로 막는다 — 내용이 같으면 그 파일을 되돌리고 다시 올린다 (2026-10-22 Claude)
 - 증상: 바로올리기가 「✗ WORLD life bundle — 통과(작업본에서만) … 이 검사가 보는 파일이 작업본에서 바뀌었는데 이번 push에 없다: experiences/synk-world-app/world-learning-profile-core.mjs」로 두 번 멈췄다. 그 파일을 경로에 넣어도 올라갈 커밋 목록에 안 나왔다.

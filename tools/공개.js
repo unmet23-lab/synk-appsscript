@@ -491,6 +491,36 @@ function 토큰맞춤(버퍼, 공개버퍼) {
  * HTML이 아닌 파일은 어느 파일도 부르지 않으면(부르는가(p)가 거짓, 예: 지금 쓰지 않는 루트 app.js) 고치지 않고 알린다.
  * 반환: Map(경로 → {버퍼, 바꿈: [{참조, 대상, 전, 후, 꼬리}]}), .지운참조 · .안부름 · .모호
  */
+function importmap해시맞춤(이전, 이후) {
+  const maps = text => [...text.matchAll(/<script\b[^>]*\btype\s*=\s*(["'])importmap\1[^>]*>([\s\S]*?)<\/script\s*>/gi)].map(m => m[2]);
+  const before = maps(이전), after = maps(이후);
+  if (before.length !== after.length) throw new 멈춤('토큰 변경 중 import map 구조가 바뀌었다');
+  const hash = text => `'sha256-${crypto.createHash('sha256').update(Buffer.from(text, 'latin1')).digest('base64')}'`;
+  const changes = before.map((body, i) => [hash(body), hash(after[i])]).filter(([a, b]) => a !== b);
+  const hashes = new Map(changes);
+  const result = 이후.replace(/<meta\b[^>]*>/gi, meta => {
+    if (!/\bhttp-equiv\s*=\s*(["'])Content-Security-Policy\1/i.test(meta)) return meta;
+    return meta.replace(/\bcontent\s*=\s*(["'])([\s\S]*?)\1/i, (attr, quote, value) => {
+      const next = value.replace(/(?:^|;)\s*script-src(?:-elem)?\s+[^;]*/gi, directive => {
+        return directive.replace(/'sha256-[A-Za-z0-9+/]+=*'/g, token => hashes.get(token) || token);
+      });
+      return attr.slice(0, attr.indexOf(quote) + 1) + next + quote;
+    });
+  });
+  const inline = text => [...text.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].map(m => m[1]);
+  const policies = text => [...text.matchAll(/<meta\b[^>]*>/gi)].filter(m => /\bhttp-equiv\s*=\s*(["'])Content-Security-Policy\1/i.test(m[0])).map(m => {
+    const value = /\bcontent\s*=\s*(["'])([\s\S]*?)\1/i.exec(m[0])?.[2] || '';
+    const directives = new Map(value.split(';').map(x => x.trim().split(/\s+/)).map(([name,...values]) => [name.toLowerCase(),values]));
+    return directives.get('script-src-elem') || directives.get('script-src') || directives.get('default-src') || [];
+  });
+  const oldScripts = inline(이전), newScripts = inline(result), oldPolicies = policies(이전), newPolicies = policies(result);
+  if (oldScripts.length !== newScripts.length) throw new 멈춤('토큰 변경 중 script 구조가 바뀌었다');
+  for (const [i, body] of oldScripts.entries()) if (body !== newScripts[i]) {
+    const oldHash=hash(body),newHash=hash(newScripts[i]);
+    for (const [j, policy] of oldPolicies.entries()) if (policy.includes(oldHash) && !newPolicies[j]?.includes(newHash)) throw new 멈춤('토큰 변경 뒤 인라인 script CSP 해시가 맞지 않는다 — 해당 HTML의 해시를 함께 고친다');
+  }
+  return result;
+}
 function 토큰고치기({ 훑을, 원래, 공개, 처음바뀜, 지움, 있나, 꼬리들, 호스트들, 정한값, 부르는가 = () => true, 받아두기 = () => {} }) {
   let 바뀐 = new Map(처음바뀜); // 경로 → 새 버퍼(내용이 바뀐 대상)
   const 공개토큰 = new Map();
@@ -548,6 +578,7 @@ function 토큰고치기({ 훑을, 원래, 공개, 처음바뀜, 지움, 있나,
       let 새글 = '', p = 0;
       for (const g of 고침) { 새글 += 글.slice(p, g.시작) + g.후; p = g.끝; }
       새글 += 글.slice(p);
+      if (/\.html?$/i.test(F)) 새글 = importmap해시맞춤(글, 새글);
       이번.set(F, { 버퍼: Buffer.from(새글, 'latin1'), 바꿈: 고침.map((g) => g.기록), 지운참조: [] });
     }
     // 대상 = 처음 바뀐 파일 + 이번에 토큰이 바뀐 파일. 이전 판과 같아지면 끝.
@@ -1162,7 +1193,8 @@ async function 후보검수확인(후보, 옵션) {
   // 공개 경로가 운영자 전용인지 보증하는 매핑이 없다. 호출자가 붙인 이름으로 공개 화면을 제외하지 않는다.
   if (r.증명?.정책?.예외?.종류 === '내부') return { 통과: false, 사유: ['synk.im 공개 후보에는 내부 예외를 적용할 수 없다 — 해당 후보의 필수 검수를 받는다'] };
   const 기준전용 = 후보.항목.length && 후보.항목.every(x => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(x.경로));
-  if (r.증명?.정책?.종류 !== (기준전용 ? '백엔드' : '화면')) return { 통과: false, 사유: ['공개 대상과 검수 정책 종류가 맞지 않는다'] };
+  const 개인화생성물 = r.증명?.정책?.담당예외?.taskId === 'atlas-personalization-20261029';
+  if (r.증명?.정책?.종류 !== (기준전용 || 개인화생성물 ? '백엔드' : '화면')) return { 통과: false, 사유: ['공개 대상과 검수 정책 종류가 맞지 않는다'] };
   const 증거 = r.증명 && r.증명.배포후보;
   if (!증거 || 증거.판 !== 1 || 증거.종류 !== 'synk.im' || !Array.isArray(증거.항목)) return { 통과: false, 사유: ['synk.im 최종 후보를 묶은 검수 증거가 없다'] };
   const 정렬 = xs => xs.map(x => ({ 경로: x.경로, 종류: x.종류, sha256: x.sha256, 모드: x.모드 })).sort((a, b) => a.경로.localeCompare(b.경로));

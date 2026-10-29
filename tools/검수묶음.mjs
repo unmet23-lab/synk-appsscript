@@ -563,7 +563,7 @@ export function 후보항목들(candidate, contents, { 동일본문참조 = fals
     const previous = 동일본문참조 && seen.get(f.sha256);
     if (previous) {
       if (!b.equals(previous.bytes)) throw new Error(`같은 SHA의 다른 후보 바이트: ${f.경로}`);
-      items.push(항목(prefix, title, `동일 원시 본문 참조: [${previous.item.id}] (${previous.path})\nsha256: ${f.sha256}\n이 경로의 ${b.length}바이트를 직접 대조했다. 공통 본문 전체(쪼개졌으면 위 원본 ID가 제목에 있는 모든 조각)를 이 경로에도 적용해 검수한다. 생략·해당 없음이 아니다.`, '코드', null));
+      items.push(항목(prefix, title, `동일 원시 본문 참조: [${previous.item.id}] (${previous.path})\nsha256: ${f.sha256}\n직접 대조한 ${b.length}바이트다. 제공 범위는 참조 표기뿐이다. 코드 전체는 원본 ID의 모든 조각 담당 묶음에서 검수하며 전부 완료돼야 한다.`, '코드', null));
       continue;
     }
     const body = !b ? '(삭제)' : b.subarray(0, 8000).includes(0) ? `(이진 파일: sha256 ${f.sha256}, ${b.length}바이트 — 화면·자산 검토는 최종 검수자가 파일을 열어 확인)` : b.toString('utf8');
@@ -607,7 +607,7 @@ function 항목만들기(자료, 설정, 폴더, 정책) {
     });
   }
   if (자료.배포후보) {
-    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: [3, 4].includes(설정.정책판), 단독음성검수: 설정.정책판 === 4, 단독기준그림검수: 설정.정책판 === 4, 사용자지정작업: 정책.사용자지정?.taskId }));
+    항목들.push(...후보항목들(자료.배포후보, 자료.후보내용, { 동일본문참조: [3, 4].includes(설정.정책판) || 정책.담당예외?.taskId === 'atlas-personalization-20261029' && 자료.배포후보.항목.every(f => f.종류 !== '지움'), 단독음성검수: 설정.정책판 === 4, 단독기준그림검수: 설정.정책판 === 4, 사용자지정작업: 정책.사용자지정?.taskId }));
   }
   return 항목들;
 }
@@ -1899,7 +1899,7 @@ async function main(argv) {
     if (!목록.정책.사용자지정) console.log(`  Fable 요약: ${path.join(폴더, 'fable.md')}`);
     if (목록.정책.사용자지정) {
       console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
-    } else if (목록.정책.담당예외) {
+    } else if (목록.정책.담당예외 && 목록.정책.담당예외.taskId !== 'atlas-personalization-20261029') {
       console.log(`다음: node tools/검수묶음.mjs 아르곤 ${목록.이름} (${필수글(목록.정책)})`);
     } else if (목록.정책.작성자 === 'GPT') {
       console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개)`);

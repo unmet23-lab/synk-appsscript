@@ -255,10 +255,92 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   return { 판, 작성자: '혼합', 종류: o.종류, GPT구독: '유지', 필수: [...검수자], 예외: null,
     사용자지정: { ...지정, 파일sha256: sha256(raw) } };
 }
+
+// 2026-10-29 이번 Atlas 엔진 생성물의 GPT·Claude 공동 검수만 승인했다.
+export const 개인화생성물작업ID = 'atlas-personalization-20261029';
+const 개인화웹경로 = new Set([
+  "account/client.html",
+  "account/dist/platform.js",
+  "account/platform.html",
+  "brief/computer/atlas-engine.js",
+  "brief/katana/atlas-engine.js",
+  "brief/meeting/atlas-engine.js",
+  "brief/skills/atlas-engine.js",
+  "builds/manual/atlas-engine.js",
+  "builds/move/atlas-engine.js",
+  "care/index.html",
+  "care/vendor/atlas/ask.js",
+  "id-rehearsal/index.html",
+  "id-rehearsal/vendor/atlas-learning.js",
+  "id/index.html",
+  "id/vendor/atlas-learning.js",
+  "study/app.js",
+  "study/index.html",
+  "synk-town/atlas-learning.js",
+  "synk-town/linked.html",
+  "try/blank-slice/atlas-learning.js",
+  "try/blank-slice/index.html",
+  "try/entry-check/atlas-learning.js",
+  "try/entry-check/index.html",
+  "try/learning-hub/atlas-learning.js",
+  "try/learning-hub/index.html",
+  "try/order-rush/atlas-learning.js",
+  "try/order-rush/beginner-atlas-learning.js",
+  "try/order-rush/beginner.html",
+  "try/order-rush/index.html",
+  "try/racing/atlas-learning.js",
+  "try/racing/index.html",
+  "try/rhythm/atlas-learning.js",
+  "try/rhythm/index.html",
+  "try/runner/atlas-learning.js",
+  "try/runner/index.html",
+  "try/story-classroom/atlas-learning.js",
+  "try/story-classroom/index.html",
+  "try/talk-rally/atlas-learning.js",
+  "try/talk-rally/index.html",
+  "try/travel/atlas/ask.js",
+  "try/travel/atlas/engine.js",
+  "try/travel/atlas/trail-life.js",
+  "try/word-magic/atlas-learning.js",
+  "try/word-magic/index.html",
+  "world/brand-opening/content/life-standalone.mjs",
+  "world/hangul-stage/atlas-learning.js",
+  "world/hangul-stage/index.html",
+  "world/korean-rhythm/atlas-learning.js",
+  "world/korean-rhythm/index.html",
+  "world/korean-runner/atlas-learning.js",
+  "world/korean-runner/index.html",
+  "world/world-account.bundle.mjs",
+  "world/world-learning-profile-core.mjs"
+]);
+function 개인화생성물정책(o, files, candidate, 판) {
+  const safe = p => typeof p === 'string' && !p.includes('\\') && !p.includes(':') && !p.split('/').some(x => !x || x === '.' || x === '..');
+  const pc = p => /^(?:desktop\/|\.github\/desktop-preview\/unified\/source\/)(?:assets\/launcher\/(?:engine\.js|sources\.json)|renderer\/generated\/(?:member-(?:activity|understanding)(?:-data)?\.(?:mjs|manifest\.json)|member-shared\/chunk-[A-Z0-9]{8}\.mjs))$/.test(p);
+  // 표준 게시의 버전 메타데이터 18개 + PC 빌드 메타데이터 3개. 읽기만 하는 client.js는 제외한다.
+  const metadata = new Set(['desktop/releases/preview.json','knowledge.json','en/knowledge.json','index.html','en/index.html',
+    ...['lab','shift','pulse','path','atlas','founder'].flatMap(p => [p+'/index.html','en/'+p+'/index.html']),'llms.txt',
+    '.github/desktop-preview/package.json','.github/desktop-preview/package-lock.json','.github/desktop-preview/unified/release-input.json']);
+  const meta = p => metadata.has(p);
+  const records = p => /^(?:tools\/(?:검수묶음\.mjs|lib\/검수증명\.mjs)|tests\/검수Atlas개인화예외\.test\.mjs|docs\/_ops\/(?:결정\.md|트랙\.md|관문_자동화\.md))$/.test(p);
+  if (판 !== 2 || o.작성자 !== 'GPT' || o.종류 !== '백엔드' || o.사용자지정 || o.예외 || o.페이블생략 || o.GPT구독 && o.GPT구독 !== '유지'
+    || !candidate && !files.length
+    || files.some(f => !safe(f.경로) || !(pc(f.경로) || records(f.경로))
+      || f.옛경로 && (!safe(f.옛경로) || !pc(f.옛경로) || !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.옛경로))
+      || /^[DR]/.test(f.상태 || '') && !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.경로))
+    || candidate && (candidate.종류 !== 'synk.im' || candidate.항목.some(f => !safe(f.경로) || !(개인화웹경로.has(f.경로) || pc(f.경로) || meta(f.경로))
+      || 개인화웹경로.has(f.경로) && /\.html?$/.test(f.경로) && f.종류 !== '토큰'
+      || meta(f.경로) && f.종류 !== '바꿈'
+      || f.종류 === '지움' && !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.경로))))
+    throw new Error('이번 Atlas 개인화 생성물의 직접 승인 범위를 벗어난 담당 예외');
+  return {판,작성자:'GPT',종류:'백엔드',GPT구독:'유지',필수:['GPT','Claude'],예외:null,
+    담당예외:{taskId:개인화생성물작업ID,userStatement:'웅 이번에는 예외 적용해서 진행해',scope:'이번 Atlas 엔진 생성물·캐시 토큰의 웹·PC 반영. GPT·Claude 공동 검수, 기존 바이트·해시·P0/P1 관문 유지.'}};
+}
+
 export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   if (![1, 2, 3, 4].includes(판) || ([3, 4].includes(판)) !== Boolean(o.사용자지정)) throw new Error(`모르는 검수 정책 판 또는 사용자지정 누락: ${판}`);
   const candidate = 후보읽기(o.배포후보);
   const 기준이미지만 = candidate?.종류 === 'synk.im' && candidate.항목.every(f => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(f.경로));
+  if (o.담당예외 === 개인화생성물작업ID) return 개인화생성물정책(o, files, candidate, 판);
   if (candidate && o.종류 !== (candidate.종류 === 'synk.im' && !기준이미지만 ? '화면' : '백엔드')) throw new Error(`배포 후보 ${candidate.종류}에 맞는 검수 종류가 아니다`);
   if ([3, 4].includes(판)) return 사용자지정정책(o, files, candidate, 판);
   // 2026-10-28 직접 사용자 승인: 이 학습 흐름에 한해 담당과 Fable을 대체한다.
@@ -315,6 +397,7 @@ export function 대체순서(정책) {
 /** 지금 규칙으로 꼭 받아야 하는 검수자(대체는 빼고). 옛 판 1의 [아르곤, GPT]도 [GPT]로 본다. */
 export const 실제필수 = 정책 => (대체순서(정책) ? [대체순서(정책)[0]] : 정책.필수);
 export const 필수글 = 정책 => {
+  if (정책.담당예외?.taskId === 개인화생성물작업ID) return 'GPT · Claude(이번 Atlas 엔진 생성물의 직접 사용자 승인; 대체 없음)';
   if (정책.담당예외) return '아르곤(이번 TOPIK 의미 튜터 작업의 직접 사용자 승인; 대체 없음)';
   if (정책.사용자지정) return `묶음별 ${정책.필수.join(' · ')} + 전체 후보에 대한 최종 ${정책.사용자지정.finalReviewer} 배포 판정(대체 없음)`;
   const 순서 = 대체순서(정책);
