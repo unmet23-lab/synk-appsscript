@@ -105,8 +105,9 @@ test('세로 §20-4 — 평가 줄은 되묻기 셋을 종류별로 세고(다�
   step({ type: 'CARD_HELP', payload: { kind: 'meaning' } });
   step({ type: 'TEA_HELP', payload: { kind: 'reopen' } });
   step({ type: 'TEA_HELP', payload: { kind: 'repeat' } });
-  step({ type: 'TEA_CLOSE', payload: { asks: { repeat: 0, slower: 2, meaning: 0, reopen: 3 } } });
-  assert.deepEqual(line.help, { meaning: 1, repeat: 1, slower: 2 });
+  // The increments a tea command carries are by guest slot (tea-order addAsks · talk D01 teaAsks — talk review GA1).
+  step({ type: 'TEA_CLOSE', payload: { asks: { a: { repeat: 0, slower: 2, meaning: 0, reopen: 3 }, b: { repeat: 1, slower: 0, meaning: 0, reopen: 0 } } } });
+  assert.deepEqual(line.help, { meaning: 1, repeat: 2, slower: 2 });
   assert.equal(line.ladderOffer, undefined, '제안이 없던 방문에는 칸이 없다');
   // W9 (Fable 설계 검토 5): 넓히기는 마스코트 물음이라 그린 때 none — 세운 때가 아니다.
   const offered = { at: 5, answer: null, evidence: 5 }, open = { kind: 'widen', key: 'widen:reading:L3', lifeDay: 20749, delivered: false };

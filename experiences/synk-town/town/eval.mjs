@@ -53,7 +53,7 @@ const tallyOf = keys => keys.reduce((out, key) => add(out, SEEN_PREFIX(key)), un
  * the asks pressed in a scene by kind (help — the consent's 다시 · 천천히 · 무슨 뜻이에요; reopening a folded note is not
  * one) and the widening offer (ladderOffer — none once the mascot's widening question is drawn, then the answer) (W9). The
  * question is drawn when the screen reports it beside a boundary, or when it is closed unanswered (ASK_CLOSE counts it
- * drawn first); an answer before the report goes straight to its value (Fable W9 design review 5). */
+ * drawn first); an answer before the report goes straight to its value (W9 design review 5). */
 const HELP_KINDS = Object.freeze(['repeat', 'slower', 'meaning']);
 function widenDrawn(before, after, command) {
   const was = before?.asks?.open;
@@ -74,11 +74,12 @@ export function visitSummary(previous, { before, after, command = null, added = 
   if (command?.type === 'FEEDBACK_GIVE') feedback = add(feedback, command.payload.value);
   if (command?.type === 'PREF_LESS_OFTEN' && command.payload.on === true) lessOften += 1;
   if (command?.type === 'PREF_TODAY_OTHER') todayOther += 1;
-  // A scene's asks: one a press (C4 · the tea order), or — from a tea screen before W9 — the increments its next command carries.
+  // A scene's asks: one a press (C4 · the tea order), or — from a tea screen before W9 or a tea without the town's language —
+  // the increments its next command carries, by guest slot as the order adds them (tea-order addAsks; talk review GA1).
   let help = same?.help, ladderOffer = same?.ladderOffer;
   if (['CARD_HELP', 'TEA_HELP'].includes(command?.type) && HELP_KINDS.includes(command.payload?.kind)) help = add(help, command.payload.kind);
   if (/^TEA_(SERVE|OWNER|CLOSE)$/.test(command?.type || '') && command.payload?.asks)
-    for (const kind of HELP_KINDS) help = add(help, kind, Number.isSafeInteger(command.payload.asks[kind]) ? command.payload.asks[kind] : 0);
+    for (const counts of Object.values(command.payload.asks)) for (const kind of HELP_KINDS) help = add(help, kind, Number.isSafeInteger(counts?.[kind]) ? counts[kind] : 0);
   if (command?.type === 'LANGUAGE_ANSWER' && ['accepted', 'declined'].includes(command.payload?.choice)) ladderOffer = command.payload.choice;
   else if (widenDrawn(before, after, command)) ladderOffer = 'none';
   const fresh = tallyOf(added), newSeenBy = Object.entries(fresh || {}).reduce((out, [key, n]) => add(out, key, n), same?.newSeenBy);

@@ -157,7 +157,11 @@ fieldset+fieldset>legend+*{clear:both}
 .options .felt:hover:not(:disabled){background:transparent;color:var(--w-ink)}
 .options .felt[aria-pressed=true],.options .felt.selected{background:var(--w-ink);color:var(--w-on-ink)}
 #language-options{grid-template-columns:repeat(2,minmax(0,1fr));margin:12px 0}
-#settings-dialog fieldset:last-child .options{grid-template-columns:repeat(2,minmax(0,1fr))}
+#settings-dialog .language-settings .options{grid-template-columns:repeat(2,minmax(0,1fr))}
+#settings-dialog .options:has(> #quality-balanced){grid-template-columns:repeat(2,minmax(0,1fr))}
+#settings-dialog .language-settings > div + div{margin-top:12px}
+@media(prefers-reduced-motion:no-preference){#card-line.card-line-again{animation:card-line-again .45s ease-out}}
+@keyframes card-line-again{from{opacity:.3}to{opacity:1}}
 #reading-open{margin-top:14px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2)}
 #reading-open:hover:not(:disabled){background:var(--w-s2)}
 #language-proposal{margin-top:12px}

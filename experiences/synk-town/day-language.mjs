@@ -1,7 +1,7 @@
 /** The notebook's language preference. The server owns each choice; an open scene keeps its L. The widening question is
  * the mascot's (day-ask.mjs draws view.ask kind widen, W9): this module only asks the host for it as a scene ends. */
 export function createLanguageSettings(settings, { command, readContext = () => ({}) }) {
-  const field = document.createElement('fieldset'); field.className = 'sound-settings'; field.hidden = true;
+  const field = document.createElement('fieldset'); field.className = 'sound-settings language-settings'; field.hidden = true;
   const legend = document.createElement('legend'); legend.textContent = '이야기 말'; field.append(legend);
   const rows = new Map();
   for (const [channel, label] of [['reading', '읽는 말'], ['listening', '듣는 말']]) {

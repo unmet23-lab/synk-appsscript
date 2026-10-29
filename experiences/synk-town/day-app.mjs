@@ -469,10 +469,11 @@ async function answerPlacement(answer) {
   return true;
 }
 /** A first scene asked for before the placement answer: the place's panel steps aside so the card shows and the keyboard
- * goes to it; the scene opens once answered. Never when the card could not show now (a dialog, the seat, a board up) — the
- * scene then opens as it is, and the question waits. Whether it waits. */
+ * goes to it; the scene opens once answered. Never when the card could not show now (a dialog, the seat, a board up, the
+ * town's own question standing first — W9 screen review B2) — the scene then opens as it is, and the question waits.
+ * Whether it waits. */
 function holdForPlacement(open) {
-  if (!placementQuestion || !snapshot || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.() || !!gather?.active?.() || noticeBoardShown) return false;
+  if (!placementQuestion || !snapshot || !!snapshot.view?.ask || !!document.querySelector('dialog[open]') || !!stay?.active() || !!tea?.active?.() || !!gather?.active?.() || noticeBoardShown) return false;
   placementScene = open; placementFocus = true;
   if (walkPanel) { dismissWalkPanel(); applyWalkView(); }
   return true;
@@ -718,6 +719,8 @@ async function openCard(c, source) {
 // The card this window opened itself (final review F3): its panel opens here though another window holds the town.
 let cardFeedbackOpen = false, cardClosing = false, cardOpenedHere = null, cardGiving = false;
 let cardLineTicket = 0;
+/** The line drawn again for a help pressed once more (W9 screen review F3): a short fade, so the press shows. */
+function replayLine(node) { node.classList.remove('card-line-again'); void node.offsetWidth; node.classList.add('card-line-again'); }
 function paintNewTea(m) {
   let tools = $('card-dialog-help');
   // The asks keep their own row off the confirm (W9 screen check — they sat on 「이렇게 할게요」 on a phone).
@@ -740,7 +743,9 @@ function paintNewTea(m) {
   if (!tools.children.length) {
     for (const [kind, label] of [['repeat', '다시 말해 주세요'], ['slower', '천천히 말해 주세요'], ['meaning', '무슨 뜻이에요?']]) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'felt subtle'; button.textContent = label;
-      button.dataset.command = 'CARD_HELP'; button.addEventListener('click', async () => { await command('CARD_HELP', { kind }); refocusCard(); }); tools.append(button);
+      button.dataset.command = 'CARD_HELP'; button.dataset.help = kind;
+      // Each press shows its help again — the host counts every one (W9 screen review F3) — and the keyboard stays on it (A1 · B1).
+      button.addEventListener('click', async () => { if (await command('CARD_HELP', { kind })) { signatures.delete('new-tea-line'); renderCardDialog(); replayLine($('card-line')); } refocusCard({ help: kind }); }); tools.append(button);
     }
   }
   text('card-close', '그만할래요');
@@ -798,13 +803,16 @@ function renderCardDialog() {
   if (had && (!had.isConnected || had.closest('[hidden]'))) refocusCard({ choice: hadChoice, answer: hadAnswer });
 }
 /** The keyboard back in the card panel (screen review B2): a command's buttons are disabled while it is out, which drops
- * the focus, and an answer draws them again — so after it the same choice or answer, else 「…」, else 닫기. Never when
- * the focus already sits elsewhere in the panel. */
-function refocusCard({ choice = null, answer = null } = {}) {
+ * the focus, and an answer draws them again — so after it the same choice, ask (W9 A1 · B1) or answer, else after
+ * 「이렇게 할게요」 the next turn's first choice (W9 F4), else 「…」, else 닫기. Never when the focus already sits elsewhere
+ * in the panel. */
+function refocusCard({ choice = null, answer = null, help = null, next = false } = {}) {
   const dialog = $('card-dialog');
   if (!dialog.open || dialog.contains(document.activeElement) && document.activeElement !== dialog && !document.activeElement.closest('[hidden]') && document.activeElement.isConnected) return;
-  const choices = $('card-choices'), feedback = $('card-feedback'), options = feedback.querySelector('.feedback-options');
+  const choices = $('card-choices'), feedback = $('card-feedback'), options = feedback.querySelector('.feedback-options'), tools = $('card-dialog-help');
   ((choice && !choices.hidden && [...choices.children].find(b => b.dataset.choice === choice))
+    || (help && tools && !tools.hidden && [...tools.children].find(b => b.dataset.help === help))
+    || (next && !choices.hidden && [...choices.children].find(b => !b.disabled))
     || (answer && options && !options.hidden && [...options.children].find(b => b.dataset.feedback === answer))
     || (!feedback.hidden && feedback.querySelector('.feedback-more')) || $('card-close')).focus();
 }
@@ -998,7 +1006,7 @@ function noticesFrame(now) {
   // The town's question first; else the placement before the first conversation (W9 — the app's own, never reported drawn).
   const ask = askUi.update({ ask: snapshot?.view.ask || placementQuestion, blocked: blocked || board.shown, now });
   if (ask.drawn && ask.drawn !== 'placement') askReport = ask.drawn;
-  if (placementFocus && ask.shown) { placementFocus = false; askUi.focus(); }
+  if (placementFocus && ask.shown) { placementFocus = false; askUi.focus?.(); }
   document.body.classList.toggle('town-notice', board.shown || ask.shown);
 }
 /** The hour's light and the rain (W7): lightAt with the server's clock and the village's seed and time zone, so the
@@ -1071,7 +1079,7 @@ notebook = createNotebook($('notebook-dialog'), { command: async (type, payload)
   return ok;
 } });
 $('journal-open').addEventListener('click', () => { notebook.render(snapshot); notebook.open(); }); $('notebook-close').addEventListener('click', () => $('notebook-dialog').close());
-$('card-confirm').addEventListener('click', async () => { await command('CARD_CONFIRM'); refocusCard(); });
+$('card-confirm').addEventListener('click', async () => { await command('CARD_CONFIRM'); refocusCard({ next: true }); });
 $('card-close').addEventListener('click', closeCard);
 $('card-dialog').addEventListener('cancel', event => { event.preventDefault(); closeCard(); });
 $('retry').addEventListener('click', load);

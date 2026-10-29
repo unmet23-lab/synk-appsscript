@@ -21,8 +21,9 @@ const DRAWN_AFTER_MS = 1200;
 // Read through the namespace: a browser may hold the generated data from before W6b for the cache's ten minutes.
 const TASTE = new Map((generated.ASK_LINES || []).map(line => [line.family, line]));
 const DETAIL_ROWS = Object.freeze([['purpose', '무엇을 위해'], ['uses', '쓰는 것'], ['notUsed', '쓰지 않는 것'], ['keep', '보관'], ['choose', '고르기'], ['notAsked', '묻지 않는 경우'], ['contact', '문의']]);
-// The language questions' words (W9): easy Korean, no levels or numbers — the next story's L is the town's to show.
-const WIDEN = Object.freeze({ line: '말을 조금 더 넓혀 볼까요?', lines: Object.freeze(['다음 이야기부터 조금 더 긴 말로 해요.', '수첩의 「이야기 말」에서 언제든 다시 고를 수 있어요.']) });
+// The language questions' words (W9): easy Korean, no levels or numbers — the next story's L is the town's to show. The
+// field is in 「내 속도」, the top bar's settings (W9 screen review F1 — not the notebook).
+const WIDEN = Object.freeze({ line: '말을 조금 더 넓혀 볼까요?', lines: Object.freeze(['다음 이야기부터 조금 더 긴 말로 해요.', '「내 속도」의 「이야기 말」에서 언제든 다시 고를 수 있어요.']) });
 const PLACE = Object.freeze({ line: '처음 이야기는 이 말로 해 볼까요?', lead: '이런 말로 이야기해요.' });
 
 /** The tutor this device's WORLD remembers (brand-opening/tutor-choice.mjs — one record per account): the one the
@@ -93,7 +94,7 @@ export function createAsk(host, { command = async () => false, live, tutor = () 
   const head = el('div', 'ask-head'); head.append(who, close);
   const body = el('div', 'ask-body'); body.append(head, line, lines, actions, detail);
   card.append(figure, body); host.append(card);
-  let model = null, drawnSig = '', detailOpen = false, sending = false, seenSince = null, reported = new Set(), gone = new Set();
+  let model = null, drawnSig = '', detailOpen = false, sending = false, seenSince = null, cardKey = null, reported = new Set(), gone = new Set();
   const send = async (type, payload) => {
     if (sending) return; sending = true; paintBusy();
     const key = model?.key;
@@ -134,8 +135,12 @@ export function createAsk(host, { command = async () => false, live, tutor = () 
     // life day draws and reports afresh (final review F2 — a window may stay open for days).
     if (!ask) { gone.clear(); reported.clear(); }
     const shown = !!model && !gone.has(model.key) && !blocked && !document.hidden;
-    if (!shown) { if (!card.hidden) card.hidden = true; seenSince = null; if (!model) detailOpen = false; return { shown: false, drawn: null }; }
-    if (card.hidden) { card.hidden = false; if (live) live.textContent = `${model.name}의 물음: ${model.line}`; }
+    if (!shown) { if (!card.hidden) card.hidden = true; seenSince = null; if (!model) { detailOpen = false; cardKey = null; } return { shown: false, drawn: null }; }
+    // Another question in the card without a hide between (the placement and the town's own, W9 screen review C2): its
+    // moment in sight, 「자세히」 and the announcement start over.
+    const fresh = model.key !== cardKey;
+    if (fresh) { cardKey = model.key; seenSince = null; detailOpen = false; }
+    if (card.hidden || fresh) { card.hidden = false; if (live) live.textContent = `${model.name}의 물음: ${model.line}`; }
     paint();
     // Drawn = the question's line has stood wholly in the window and in the card's own box a moment (the card scrolls
     // within the notices on a short window — final review F1).

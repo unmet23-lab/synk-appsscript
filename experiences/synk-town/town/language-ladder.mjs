@@ -31,7 +31,7 @@ export function validLadder(value) {
 /** An older snapshot gains the ladder once. Later placement changes cannot overwrite a choice. */
 export const restoreLadder = (value, placement, at = 0) => validLadder(value) ? structuredClone(value) : initialLadder(placement, at);
 /** The host's placement (bridge §4-3) reaches a seat the ladder has not moved itself — still on its placement, never fixed:
- * the player may answer 「처음 이야기는 이 말로 해 볼까요?」 after the ladder stood (any first command makes it, W9 Fable
+ * the player may answer 「처음 이야기는 이 말로 해 볼까요?」 after the ladder stood (any first command makes it, W9
  * design review P1). Scenes counted on the old placement do not carry over; an offer, an easing or the player's choice
  * ends the following. Returns the same ladder when nothing moved. */
 export function followPlacement(ladder, placement, now = 0) {

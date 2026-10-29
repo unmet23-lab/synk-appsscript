@@ -159,7 +159,7 @@ async function widen(browser) {
       const s = await open(browser, f, { device });
       try {
         const ask = await waitAsk(s, 'widen'), words = await s.page.$eval('#ask-card', el => el.innerText);
-        check('widen', ask.line === '말을 조금 더 넓혀 볼까요?' && /다음 이야기부터 조금 더 긴 말로 해요/.test(words) && /수첩의 「이야기 말」/.test(words), `${device}: 내 마스코트 카드에 넓히기 물음과 쉬운 설명 두 줄`, words);
+        check('widen', ask.line === '말을 조금 더 넓혀 볼까요?' && /다음 이야기부터 조금 더 긴 말로 해요/.test(words) && /「내 속도」의 「이야기 말」/.test(words), `${device}: 내 마스코트 카드에 넓히기 물음과 쉬운 설명 두 줄`, words);
         check('widen', ask.close === '나중에' && ask.picture === false && /몽글/.test(words), `${device}: 「나중에」가 닫기 · 마스코트 이름 · 그림 없음`, ask);
         const first = await s.page.$eval('#ask-card .ask-actions .felt', el => ({ answer: el.dataset.answer, primary: el.classList.contains('primary') }));
         check('widen', first.answer === 'accepted' && first.primary, `${device}: 「넓혀 볼래요」가 먼저`, first);
@@ -246,11 +246,19 @@ async function c4(browser) {
         await s.page.click('#card-dialog-help button:nth-child(3)'); await delay(700);
         check('c4', (await s.page.$eval('#card-line', el => el.textContent)) !== line || await s.page.$('#card-line span') !== null, `${device}: 「무슨 뜻이에요?」 → 그 줄이 쉬워진다`, await s.page.$eval('#card-line', el => el.textContent));
         await shot(s.page, `c4-${device}-2-meaning`);
+        // The keyboard stays on an ask (W9 screen review A1 · B1): Enter twice asks twice and never closes the talk.
+        await s.page.focus('#card-dialog-help button:nth-child(1)'); await s.page.keyboard.press('Enter'); await delay(800); await s.page.keyboard.press('Enter'); await delay(800);
+        const asked = await s.page.evaluate(() => ({ open: !!document.querySelector('#card-dialog[open]'), help: document.activeElement?.dataset?.help ?? null, text: document.activeElement?.textContent ?? null }));
+        check('c4', asked.open && asked.help === 'repeat', `${device}: 되묻기를 키보드로 두 번 → 초점이 그 단추 · 대화 그대로`, asked);
         for (let turn = 0; turn < 4; turn++) {
           const choice = s.page.locator('#card-choices button').first();
           if (!(await choice.count()) || !(await choice.isVisible())) break;
           await choice.click(); await s.page.waitForFunction(() => !document.querySelector('#card-confirm').disabled, null, { timeout: 8000 }).catch(() => {});
-          await s.page.click('#card-confirm'); await delay(900);
+          if (turn > 0) { await s.page.click('#card-confirm'); await delay(900); continue; }
+          // 「이렇게 할게요」 by the keyboard: the next turn's first choice has it (W9 F4), not 「그만할래요」.
+          await s.page.focus('#card-confirm'); await s.page.keyboard.press('Enter'); await delay(900);
+          const next = await s.page.evaluate(() => ({ open: !!document.querySelector('#card-dialog[open]'), choice: document.activeElement?.dataset?.choice ?? null, text: document.activeElement?.textContent ?? null }));
+          check('c4', next.open && !!next.choice, `${device}: 「이렇게 할게요」를 키보드로 → 초점이 다음 차례 고르기`, next);
         }
         await shot(s.page, `c4-${device}-3-end`);
         const closed = (f.store.peek().state.townEvents || []).find(e => e.kind === 'dialogue.closed');
