@@ -105,7 +105,7 @@
         }
         // Seeing it directly is the strongest source; a relayed grant cannot replace it.
         const own = knowledge.get(event.npcId)?.get(event.factId);
-        if (!(event.allowed && own?.allowed === true && own.viaId === null)) know(event.npcId, event.factId, { allowed: event.allowed, viaId: event.viaId });
+        if (!(event.allowed && own?.allowed === true && (own.viaId === null || event.viaId === event.factId && !facts.get(event.factId).event.knownBy.includes(event.npcId)))) know(event.npcId, event.factId, { allowed: event.allowed, viaId: event.viaId });
       } else {
         if (event.sourceIds.some(source => !permitted(event.npcId, source))) throw new Error('Trail Life: delivery requires permitted facts');
         if (deliveries.has(event.deliveryId)) throw new Error('Trail Life: duplicate delivery id');

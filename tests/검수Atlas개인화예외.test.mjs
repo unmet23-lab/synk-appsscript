@@ -4,9 +4,15 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {정책만들기, 대체순서, 다시검수자들, sha256} from '../tools/lib/검수증명.mjs';
-import {후보항목들} from '../tools/검수묶음.mjs';
+import {후보항목들, 두판diff} from '../tools/검수묶음.mjs';
 const opts={종류:'백엔드',작성자:'GPT',담당예외:'atlas-personalization-20261029',끝:'작업본'};
 const source={경로:'desktop/assets/launcher/engine.js',상태:'M'};
+test('긴 한국어 줄의 낱말 차이가 UTF-8을 쪼개면 원래 unified diff로 보존한다',()=>{
+ const before='최종 소스와 검증한 기록을 보존했다. '+ '원래 문장을 함께 읽는다. '.repeat(70);
+ const after=before.replace('최종','초기').replace('보존했다','그대로 보존했다');
+ const result=두판diff(Buffer.from(before+'\n'),Buffer.from(after+'\n'),'README.md');
+ assert.equal(result.글.includes('\uFFFD'),false);assert.ok(result.글.includes('초기'));assert.ok(result.글.includes('최종'));
+});
 function candidate(t,name='study/app.js',kind='바꿈'){
  const root=fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()),'atlas-personal-review-'));
  t.after(()=>{assert.equal(path.dirname(fs.realpathSync.native(root)),fs.realpathSync.native(os.tmpdir()));assert.ok(path.basename(root).startsWith('atlas-personal-review-'));fs.rmSync(root,{recursive:true});});

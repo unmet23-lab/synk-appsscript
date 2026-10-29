@@ -23,10 +23,10 @@ const fail = () => { throw new TypeError('Member understanding: invalid authoriz
 const canonical = x => JSON.stringify(x, (_k, v) => plain(v) ? Object.fromEntries(Object.keys(v).sort().map(k => [k, v[k]])) : v);
 const integer = n => Number.isSafeInteger(n) && n >= 0 && n <= 1000000;
 const safeText = (s, max = 160) => typeof s === 'string' && s.trim() && [...s].length <= max && !/[\u0000-\u001f\u007f]/.test(s);
-const semantic = c => canonical(Object.fromEntries(['version', 'kind', 'source', 'generation', 'reference', 'value'].map(key => [key, c[key]])));
+const semantic = (c, snapshot = false) => canonical(Object.fromEntries(['version', 'kind', 'source', 'generation', 'reference', 'value', ...(snapshot ? ['count', 'total', 'activeDays', 'lastAt'] : [])].map(key => [key, c[key]])));
 function documentOf(document, asOf) {
   if (document == null) return { version: 1, reviews: [], overrides: [] };
-  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(document.version) || !exact(document, document.version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])) fail();
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(document.version) || !exact(document, document.version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])) fail();
   const ids = new Set();
   for (const [key, fields] of [['reviews', ['id', 'facetId', 'verdict', 'claim', 'note', 'at']], ['overrides', ['id', 'facetId', 'values', 'note', 'at']]]) {
     if (!Array.isArray(document[key]) || document[key].length > 50) fail();
@@ -48,14 +48,7 @@ function documentOf(document, asOf) {
     if (!Array.isArray(document.statements) || document.statements.length > 20) fail();
     for (const row of document.statements) {
       const checked = Statements.validateMemberStatement(row, { now: asOf, enforceTime: true });
-      if (ids.has(checked.id) || document.version === 2 && checked.parserVersion !== 'member-statement-ko-1'
-        || document.version === 3 && !['member-statement-ko-1', 'member-statement-ko-2'].includes(checked.parserVersion)
-        || document.version === 4 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3'].includes(checked.parserVersion)
-        || document.version === 5 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4'].includes(checked.parserVersion)
-        || document.version === 6 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5'].includes(checked.parserVersion)
-        || document.version === 7 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5', 'member-statement-ko-6'].includes(checked.parserVersion)
-        || document.version === 8 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5', 'member-statement-ko-6', 'member-statement-ko-7'].includes(checked.parserVersion)
-        || document.version === 9 && !['member-statement-ko-1', 'member-statement-ko-2', 'member-statement-ko-3', 'member-statement-ko-4', 'member-statement-ko-5', 'member-statement-ko-6', 'member-statement-ko-7', 'member-statement-ko-8'].includes(checked.parserVersion)) fail();
+      if (ids.has(checked.id) || Number(checked.parserVersion.split('-').at(-1)) + 1 > document.version) fail();
       ids.add(checked.id);
     }
   }
@@ -69,7 +62,7 @@ function coreContract(values) {
 // not a quote from an app, note or customer message. Core still validates exact
 // provenance, review chronology and basis, rather than a second review algorithm.
 function reviewedMeaning(review, current, asOf) {
-  if (!review || !current || semantic(review.claim) !== semantic(current)) return null;
+  if (!review || !current || semantic(review.claim) !== semantic(current) || review.verdict !== 'disagree' && semantic(review.claim, true) !== semantic(current, true)) return null;
   if (Date.parse(review.at) - Date.parse(review.claim.to) >= 30 * 86400000) return null;
   const sourceText = canonical(review.claim);
   const packet = { contract: coreContract(['interested', 'fits', 'contextual']), scope: SCOPE,

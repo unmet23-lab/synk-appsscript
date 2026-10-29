@@ -160,7 +160,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
       } }
       else { known.set(e.id, e); combined.push(e); kept.add(e.id); }
     }
-    if (order < 0) ledger = theirs;
+    ledger = Ledger.reconcile(ledger, theirs) || (order < 0 ? theirs : ledger);
     // A response whose set the other side folded leaves here with any exclusion of it (it stays there and on the server).
     const types = new Map([...mine, ...stored.events].map(e => [e.id, e.type]));
     for (const e of combined) if (e.type === 'feedback.given' && !known.has(e.completionId) || e.type === 'record.excluded' && !known.has(e.targetId) && types.get(e.targetId) === 'feedback.given') known.delete(e.id);

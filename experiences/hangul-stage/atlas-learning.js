@@ -392,7 +392,7 @@ var SynkLearning = (() => {
           let excludedAttempts = 0;
           visible.forEach((event, index) => {
             if (event.type === TYPES[3]) {
-              audioByPresentation.set(event.presentationId, excluded.has(event.id) ? "pending" : event.audio);
+              audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
               return;
             }
             if (event.type === TYPES[0]) {
@@ -433,7 +433,8 @@ var SynkLearning = (() => {
               const first = traces.get(traceKey)?.get(kind);
               return first && (first.index < index || first.at < at);
             }));
-            const audio = audioByPresentation.get(p.id) || "pending", j = judge(event, p, earlier, audio);
+            const proof = audioByPresentation.get(p.id);
+            const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
             meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
             if (!reported(p.decisionId)) return;
             if (omitted) {
@@ -506,7 +507,7 @@ var SynkLearning = (() => {
             }
             if (event.type === TYPES[3]) {
               deliveries.set(event.id, event.presentationId);
-              audio.set(event.presentationId, { id: event.id, value: excluded.has(event.id) ? "pending" : event.audio });
+              audio.set(event.presentationId, { id: event.id, event, value: excluded.has(event.id) ? "pending" : event.audio });
               return null;
             }
             if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
@@ -524,7 +525,7 @@ var SynkLearning = (() => {
               return null;
             }
             const prior2 = (kinds) => keys.some((k) => kinds.some((kind) => kind === "attempt" ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-            const proof = audio.get(p.id), delivered = proof?.value || "pending";
+            const proof = audio.get(p.id), delivered = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending";
             const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior2, delivered));
             if (proof && row.measure) {
               if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);
@@ -661,6 +662,7 @@ var SynkLearning = (() => {
         const ARMS = ["adapted", "baseline"];
         const DAY = 864e5, RECENT = 30 * DAY;
         const copy = (value) => JSON.parse(JSON.stringify(value));
+        const setOwn = (table, key, value) => Object.defineProperty(table, key, { value, enumerable: true, writable: true, configurable: true });
         const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
         const freeze = (value) => {
           if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -896,23 +898,29 @@ var SynkLearning = (() => {
             });
           }
           const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
-          const completed = new Map(ordered.filter((e) => e.type === "experience.completed" && !excluded.has(e.id) && decisions.has(e.decisionId)).map((e) => [e.id, e]));
+          const completedRaw = new Map(ordered.filter((e) => e.type === "experience.completed" && decisions.has(e.decisionId)).map((e) => [e.id, e]));
+          const byDecision = /* @__PURE__ */ new Map();
+          for (const done of completedRaw.values()) if (!excluded.has(done.id) && !byDecision.has(done.decisionId)) byDecision.set(done.decisionId, done);
           const responses = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
-            if (event.type !== "feedback.given" || !completed.has(event.completionId)) continue;
+            if (event.type !== "feedback.given" || !completedRaw.has(event.completionId)) continue;
             if (cutoff - ms(event.at) > RECENT) continue;
-            const completion = completed.get(event.completionId);
+            const completion = completedRaw.get(event.completionId);
             if (ms(completion.at) <= ms(event.at)) {
-              responses.delete(event.completionId);
-              responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+              responses.delete(completion.decisionId);
+              responses.set(completion.decisionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+              if (!excluded.has(completion.id)) byDecision.set(completion.decisionId, completion);
             }
           }
           const latestOutcome = /* @__PURE__ */ new Map();
           if (personal) for (const event of ordered) {
             if (event.type === "outcome.observed" && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
           }
-          const rounds = {};
-          for (const event of ordered) if (event.type === "experience.completed") rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
+          const rounds = {}, finished = /* @__PURE__ */ new Set(), completed = new Map([...byDecision.values()].map((e) => [e.id, e]));
+          for (const event of ordered) if (event.type === "experience.completed" && !finished.has(event.decisionId)) {
+            finished.add(event.decisionId);
+            setOwn(rounds, event.experienceId, (Object.hasOwn(rounds, event.experienceId) ? rounds[event.experienceId] : 0) + 1);
+          }
           const state = {
             version: VERSION,
             scope: copy(scope),
@@ -921,7 +929,7 @@ var SynkLearning = (() => {
             context,
             evidence,
             expired,
-            feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
+            feedback: [...responses.values()].filter((e) => !excluded.has(e.id) && !excluded.has(e.completionId)),
             excluded: [...excluded],
             lines,
             outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy),
@@ -951,7 +959,7 @@ var SynkLearning = (() => {
           const seen = /* @__PURE__ */ new Set();
           for (const lever of levers) checkLever(lever, seen);
           const view = read(events, scope, at, recordedAt), state = view.state, c = state.context;
-          const round = state.rounds[experienceId] || 0, seed = `${scopeKey(scope)}|${experienceId}|${round}`;
+          const round = Object.hasOwn(state.rounds, experienceId) ? state.rounds[experienceId] : 0, seed = `${scopeKey(scope)}|${experienceId}|${round}`;
           const share = view.personal ? explore : 0, arm = random(seed)() < share ? "baseline" : "adapted", adapted = arm === "adapted";
           const ids = /* @__PURE__ */ new Set();
           const feasible = (item) => !(c.audio === "off" && item.requiresAudio) && !(c.time === "short" && item.minutes > 5) && !(c.support && item.supports && !item.supports.includes(c.support));
@@ -1005,10 +1013,10 @@ var SynkLearning = (() => {
           const recent = feedback.at(-1);
           const targetPace = c.time === "short" ? "short" : recent?.value === "too_much" ? "short" : recent?.value === "want_more" && c.time !== "short" ? "deep" : "standard";
           const latest = new Map(feedback.map((f) => [f.variant, f.value]));
-          const another = recent?.value === "not_fit" ? eligible.filter((item) => latest.get(item.id) !== "not_fit") : [];
+          const another = eligible.filter((item) => latest.get(item.id) !== "not_fit");
           const fallback = recent?.value === "not_fit" && !another.length ? eligible.filter((item) => item.id !== recent.variant) : [];
           const selectable = another.length ? another : fallback.length ? fallback : eligible;
-          if (recent?.value === "not_fit") reasons.push(another.length || fallback.length ? "feedback.alternative" : "feedback.no_alternative");
+          if (another.length < eligible.length) reasons.push(another.length || fallback.length ? "feedback.alternative" : "feedback.no_alternative");
           const scored = selectable.map((item) => {
             const notes = [], proof = [];
             let score = item.pace === targetPace ? 4 : 0;
@@ -1045,18 +1053,18 @@ var SynkLearning = (() => {
           for (const lever of [...levers].sort((a, b) => a.id.localeCompare(b.id))) {
             const options = lever.options.filter(feasible), content = lever.class === "content";
             if (!options.length) {
-              bundle[lever.id] = { option: null, basis: "unavailable", reasons: ["no.feasible.option"], evidence: [] };
+              setOwn(bundle, lever.id, { option: null, basis: "unavailable", reasons: ["no.feasible.option"], evidence: [] });
               continue;
             }
             const declared = lever.follows && c[lever.follows] != null ? options.find((option) => option.id === c[lever.follows]) : null;
             if (declared) {
-              bundle[lever.id] = { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] };
+              setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
               continue;
             }
             const turn = (index) => (index - round % options.length + options.length) % options.length;
             if (!adapted) {
               const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
-              bundle[lever.id] = { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] };
+              setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
               continue;
             }
             const before = last ? picked(last, lever.id) : void 0;
@@ -1096,7 +1104,7 @@ var SynkLearning = (() => {
               best.notes.push("learned", tallies.get(best.option.id).helped ? "learned.works" : away ? "learned.switch" : "learned.keep");
               for (const t of answered) best.proof.push(...t.proof);
             }
-            bundle[lever.id] = { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] };
+            setOwn(bundle, lever.id, { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] });
             evidence.push(...best.proof);
           }
           const following = levers.find((lever) => lever.follows === "support");
@@ -1242,7 +1250,7 @@ var SynkLearning = (() => {
     "atlas/education.js"(exports, module) {
       "use strict";
       var VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
-      var { choiceRecord } = require_trail();
+      var { choiceRecord, summarize } = require_trail();
       function conceptsFor(map, task) {
         const ids = [];
         for (const id of task.concepts || []) {
@@ -1286,7 +1294,7 @@ var SynkLearning = (() => {
           firstExposure,
           ...task.measure ? { measure: task.measure } : {}
         });
-        let attempts = 0, broken = false, met = null;
+        let attempts = 0, broken = false, met = null, metCount = -1, qualifiedMet = null;
         const shown = /* @__PURE__ */ new Set();
         const guarded = (work) => {
           try {
@@ -1329,7 +1337,16 @@ var SynkLearning = (() => {
           // The record to append to the game's pending history once this item was answered
           // or its answer shown (see Trail.openHistory). Null until then.
           met() {
-            return met && { ...met, conceptIds: [...met.conceptIds] };
+            if (!met) return null;
+            const events = session.events();
+            if (events.length !== metCount) {
+              const ids = /* @__PURE__ */ new Set([decision.id, presentation.id, ...events.filter((e) => e.presentationId === presentation.id).map((e) => e.id)]);
+              const owned = events.filter((e) => ids.has(e.id) || e.type === "record.excluded" && ids.has(e.targetId));
+              const latest = owned.reduce((at, e) => Math.max(at, Date.parse(e.at), Date.parse(e.recordedAt)), -Infinity);
+              qualifiedMet = summarize(owned, { scope: presentation.scope, asOf: new Date(latest).toISOString() }).met.find((r) => r.itemKey === task.itemKey) || null;
+              metCount = events.length;
+            }
+            return qualifiedMet && { ...qualifiedMet, conceptIds: [...qualifiedMet.conceptIds] };
           }
         };
       }
@@ -1845,7 +1862,7 @@ var SynkLearning = (() => {
       }
       function validate(ledger) {
         const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
-        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.followupsLost === void 0 || plain(ledger.followupsLost) && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24 && Number.isFinite(ledger.followupsLost.at)) || !(ledger.followupsPreserved === void 0 || typeof ledger.followupsPreserved === "boolean") || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
+        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.parents === void 0 || plain(ledger.parents) && Object.keys(ledger.parents).length <= MAX_ENTRIES && Object.values(ledger.parents).every((p) => Array.isArray(p) && (p.length === 2 || p.length === 3) && p.every((id, i) => i === 2 && id === null || typeof id === "string" && id.length > 0))) || !(ledger.withdrawn === void 0 || Array.isArray(ledger.withdrawn) && ledger.withdrawn.length <= MAX_ENTRIES && ledger.withdrawn.every((id) => typeof id === "string" && id.length > 0)) || !(ledger.followupsLost === void 0 || plain(ledger.followupsLost) && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24 && Number.isFinite(ledger.followupsLost.at)) || !(ledger.followupsPreserved === void 0 || typeof ledger.followupsPreserved === "boolean") || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
         return ledger;
       }
       var before = (ledger, traceKey, kinds) => {
@@ -1863,14 +1880,31 @@ var SynkLearning = (() => {
       }
       var cellOf = (ledger, key) => ledger && own(ledger.cells, key) ? ledger.cells[key] : null;
       var contentOf = (ledger, key) => ledger && own(ledger.content, key) ? ledger.content[key] : null;
+      function trimParents(ledger) {
+        if (!ledger.parents) return ledger;
+        const ids = /* @__PURE__ */ new Set();
+        for (const table of [ledger.cells, ledger.content]) for (const cell of Object.values(table)) {
+          for (const row of cell.ind) ids.add(row[0]);
+          for (const row of cell.helped) if (Array.isArray(row)) ids.add(row[0]);
+        }
+        ledger.parents = Object.fromEntries(Object.entries(ledger.parents).filter(([id]) => ids.has(id)));
+        return ledger;
+      }
       function fold(previous, events, { scope, log = events, local = false }) {
         const base = previous || empty();
-        const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content } };
+        const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content }, parents: Object.assign(/* @__PURE__ */ Object.create(null), base.parents) };
         if (!events.length) return ledger;
         const time = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
         const latest = log.reduce((max, e) => Math.max(max, time(e)), -Infinity);
         const decisions = events.filter((e) => e.type === "decision.made").map((e) => e.id);
         const summary = Trail.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
+        const deliveries = /* @__PURE__ */ new Map(), proof = /* @__PURE__ */ new Map(), seen = /* @__PURE__ */ new Set();
+        for (const e of log) {
+          if (seen.has(e.id) || e.scope.domain !== scope.domain || e.scope.workspace !== scope.workspace || e.scope.subject !== scope.subject) continue;
+          seen.add(e.id);
+          if (e.type === "practice.delivery") deliveries.set(e.presentationId, e.id);
+          if (e.type === "practice.attempted") proof.set(e.id, deliveries.get(e.presentationId));
+        }
         const presented = new Map(events.filter((e) => e.type === "practice.presented").map((e) => [e.id, e]));
         for (const e of events) {
           if (e.type !== "practice.helped" && e.type !== "practice.attempted") continue;
@@ -1893,6 +1927,7 @@ var SynkLearning = (() => {
           const at = Date.parse(a.at);
           if (a.independent) cell.ind.push([a.eventId, at, a.verdict, a.measure.familyKey, ...a.itemKey !== a.measure.familyKey ? [a.itemKey] : []]);
           if (!a.exclusionReason && a.assisted === true && a.verdict === "correct") cell.helped.push([a.eventId, at]);
+          if (a.independent || !a.exclusionReason && a.assisted === true && a.verdict === "correct") ledger.parents[a.eventId] = [a.presentationId, a.decisionId, a.measure.audioRequired ? proof.get(a.eventId) : null];
           if (a.verdict === "unassessed" || a.verdict === "skipped") cell.unassessed += 1;
         };
         for (const a of summary.attempts) {
@@ -1910,7 +1945,7 @@ var SynkLearning = (() => {
         ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
         ledger.folded += events.length;
         if (local) ledger.local = true;
-        return ledger;
+        return trimParents(ledger);
       }
       function plan(events, { keep, olderThan, unfinishedBefore = olderThan, respondedBefore = -Infinity, open = [] }) {
         if (events.length <= keep) return null;
@@ -2001,7 +2036,24 @@ var SynkLearning = (() => {
         const ca = a?.cutoff ?? -Infinity, cb = b?.cutoff ?? -Infinity;
         return ca === cb ? 0 : ca > cb ? 1 : -1;
       }
-      function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
+      function reconcile(a, b) {
+        if (!a || !b || !Math.max(a.adjusted || 0, b.adjusted || 0, a.withdrawn?.length || 0, b.withdrawn?.length || 0)) return null;
+        if (a === b || JSON.stringify(a) === JSON.stringify(b)) return a;
+        const order = (x, y) => {
+          const delta = helpedAt(x) - helpedAt(y), u = JSON.stringify(x), v = JSON.stringify(y);
+          return delta || (u === v ? 0 : u < v ? -1 : 1);
+        };
+        const withdrawn = [.../* @__PURE__ */ new Set([...a.withdrawn || [], ...b.withdrawn || []])].sort();
+        const next = { ...demote(compare(a, b) < 0 ? b : a, { excluded: withdrawn, linkedOnly: true }, () => null) };
+        for (const name of ["cells", "content"]) next[name] = Object.fromEntries(Object.entries(next[name]).sort(([x], [y]) => x.localeCompare(y)).map(([key, cell]) => [key, { ...cell, ind: [...cell.ind].sort(order), helped: [...cell.helped].sort(order) }]));
+        next.adjusted = Math.max(a.adjusted || 0, b.adjusted || 0, next.withdrawn?.length || 0);
+        if (a.local || b.local) next.local = true;
+        if (a.followupsPreserved !== void 0 || b.followupsPreserved !== void 0) next.followupsPreserved = a.followupsPreserved === true && b.followupsPreserved === true;
+        if (a.followupsLost || b.followupsLost) next.followupsLost = { anchors: Math.max(a.followupsLost?.anchors || 0, b.followupsLost?.anchors || 0), at: Math.min(a.followupsLost?.at ?? Infinity, b.followupsLost?.at ?? Infinity) };
+        trimParents(next);
+        return JSON.stringify(next) === JSON.stringify(a) ? a : next;
+      }
+      function demote(ledger, { late = [], excluded = [], strays = 0, linkedOnly = false }, find) {
         const marks = [], gone = new Set(excluded);
         for (const e of late) {
           if (e.type !== "practice.attempted" && e.type !== "practice.helped") continue;
@@ -2009,15 +2061,34 @@ var SynkLearning = (() => {
           if (p) marks.push({ keys: new Set(Trail.traceKeys(p)), at: Date.parse(e.at) });
         }
         if (!ledger || !late.length && !gone.size && !strays) return ledger;
-        const after = ([eventId, at, , familyKey, itemKey = familyKey]) => gone.has(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
-        const excludedHelp = (h) => Array.isArray(h) && gone.has(h[0]);
-        const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + strays };
-        for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
-          if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter((row) => !after(row)), helped: cell.helped.filter((h) => !excludedHelp(h)) };
+        const parents = ledger.parents || {}, direct = /* @__PURE__ */ new Set(), retired = new Set(ledger.withdrawn || []);
+        for (const table of [ledger.cells, ledger.content]) for (const cell of Object.values(table)) {
+          for (const row of cell.ind) direct.add(row[0]);
+          for (const row of cell.helped) if (Array.isArray(row)) direct.add(row[0]);
         }
-        return next;
+        for (const p of Object.values(parents)) for (const id of p) if (id !== null) direct.add(id);
+        const parentGone = [...gone].some((id) => !direct.has(id));
+        const withdrawn = (id) => gone.has(id) || own(parents, id) && parents[id].some((p) => p !== null && gone.has(p)) || !linkedOnly && parentGone && (!own(parents, id) || parents[id].length === 2);
+        const after = ([eventId, at, , familyKey, itemKey = familyKey]) => withdrawn(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
+        const excludedHelp = (h) => Array.isArray(h) ? withdrawn(h[0]) : gone.size > 0;
+        const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + Math.max(strays, gone.size) };
+        for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
+          if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter((row) => {
+            if (!after(row)) return true;
+            retired.add(row[0]);
+            return false;
+          }), helped: cell.helped.filter((h) => {
+            if (!excludedHelp(h)) return true;
+            if (Array.isArray(h)) retired.add(h[0]);
+            return false;
+          }) };
+        }
+        for (const id of gone) if (typeof id === "string" && id.length) retired.add(id);
+        if (retired.size > MAX_ENTRIES) throw new Error("Ledger: withdrawal capacity");
+        if (retired.size) next.withdrawn = [...retired].sort();
+        return trimParents(next);
       }
-      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference, retention };
+      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference, retention };
     }
   });
 
@@ -4167,7 +4238,7 @@ var SynkLearning = (() => {
               kept.add(e.id);
             }
           }
-          if (order < 0) ledger = theirs;
+          ledger = Ledger.reconcile(ledger, theirs) || (order < 0 ? theirs : ledger);
           const types = new Map([...mine, ...stored.events].map((e) => [e.id, e.type]));
           for (const e of combined) if (e.type === "feedback.given" && !known.has(e.completionId) || e.type === "record.excluded" && !known.has(e.targetId) && types.get(e.targetId) === "feedback.given") known.delete(e.id);
           settle([...settled, ...stored.settled || []], known);

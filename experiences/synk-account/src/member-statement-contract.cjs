@@ -1,7 +1,7 @@
 'use strict';
 // Product vocabulary and clarification replay. Core Ask chooses the next useful
 // question; Core Interpretation/Domain own evidence and confirmed declarations.
-// Frozen ko-1 through ko-8 modules keep saved rows and answer replay unchanged.
+// Frozen ko-1 through ko-9 modules keep saved rows and answer replay unchanged.
 const Legacy = require('./member-statement-v1.cjs');
 const Previous = require('./member-statement-v2.cjs');
 const Previous3 = require('./member-statement-v3.cjs');
@@ -10,8 +10,9 @@ const Previous5 = require('./member-statement-v5.cjs');
 const Previous6 = require('./member-statement-v6.cjs');
 const Previous7 = require('./member-statement-v7.cjs');
 const Previous8 = require('./member-statement-v8.cjs');
+const Previous9 = require('./member-statement-v9.cjs');
 const Ask = require('../../../atlas/ask');
-const PARSER_VERSION = 'member-statement-ko-9';
+const PARSER_VERSION = 'member-statement-ko-10';
 const MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
 const VALUES = Object.freeze({ ...Legacy.MEMBER_STATEMENT_VALUES,
   communication: Object.freeze(['listen-organize', 'share-first', 'written', 'spoken']),
@@ -264,7 +265,7 @@ function normalizeActionPhrase(source) {
   let action=source;
   // Degree words do not create a stronger score or an opposite preference.
   const finalUnit=phraseUnits(action,true)?.at(-1);
-  if(!(finalUnit?.tag==='particle'&&finalUnit.text==='가'&&/(?:내가|제가)$/u.test(action)))action=action.replace(/(?:(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u,'');
+  if(!(finalUnit?.tag==='particle'&&finalUnit.text==='가'&&/(?:내가|제가)$/u.test(action)))action=action.replace(/(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u,'');
   action=action.replace(/기(?:를|는|도|가)$/u,'기').replace(/(?:께서는|으로는|로는)$/u,'');
   // A nominalizer is not the last syllable of a lexical noun (근거, 이메일).
   if(!/(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(action))
@@ -1218,7 +1219,8 @@ function adjunctHasActor(body,surface=body) {
     if(/려는$/u.test(word)&&/^(?:게|것이)$/u.test(tokens[i+1]||'')&&/^아니라[,)]?$/u.test(tokens[i+2]||''))continue;
     const subject=/^(.+?)(?:은|는|이|가)$/u.exec(word);if(!subject)continue;
     const head=subject[1];
-    if(phraseUnits(normalizeActionPhrase(head).action)||new RegExp('^'+PURPOSE_OBJECT+'$','u').test(head))continue;
+    const units=phraseUnits(head,true);
+    if(units&&units.at(-1)?.tag!=='particle'||new RegExp('^'+PURPOSE_OBJECT+'$','u').test(head))continue;
     // Scan the entire adjunct: a recognized object or non-agent topic does
     // not license ignoring a later subject ("책을 민수는 읽으니까"). A
     // nominalized process licenses its own verb, not an arbitrary -는 name.
@@ -1242,26 +1244,26 @@ function neutralAside(body) {
 }
 function discourseAside(quote,segments) {
   const meanings=segments.flatMap(s=>s.meanings||[]);if(!meanings.length)return false;
-  const body=quote.replace(/\s/gu,'');if(neutralAside(body))return true;
+  const body=quote.replace(/\s/gu,''),recent=()=>priorReferences(segments);if(neutralAside(body))return recent();
   // A completed declaration may be followed by its reason rather than a new
   // preference. Preserve correction, quotation, agency and scope blockers.
   if(!/(?:좋아|싫|선호|원하|원해|원치|싶|관심|취향|취소|철회|[“”"‘’])/u.test(body)){
     const reason=body.replace(/^그래야/u,'').replace(/(?:라는|다는)점때문(?:이에요|입니다)$/u,'어서')
       .replace(/되거든요$/u,'돼서').replace(/(?:어서|아서|해서|워서|니까)요$/u,m=>m.slice(0,-1));
-    if(reason!==body&&clauseAdjunct(reason,false,sourceSurface(quote,body)))return true;
+    if(reason!==body&&clauseAdjunct(reason,false,sourceSurface(quote,body)))return recent();
   }
   // A restatement is redundant only when the independently parsed action,
   // polarity and supported scope agree with a previously understood claim.
   const restatement=/^(.+?)(?:(?:방식|방법|쪽)(?:을|를)말하는(?:거예요|것이에요)|(?:좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:이에요|입니다))$/u.exec(body);
   if(restatement&&!CLAUSE_UNSAFE.test(restatement[1])){
     const declaration=restatement[1]+'좋아요',found=natural(declaration)||expanded(declaration)||compositional(declaration);
-    if(found?.meanings?.length&&found.meanings.every(m=>meanings.some(p=>p.field===m.field&&p.value===m.value&&p.polarity===m.polarity&&p.condition===m.condition)))return true;
+    if(found?.meanings?.length){const refs=found.meanings.map(m=>{for(let i=segments.length-1;i>=0;i--){const meaning=segments[i].meanings?.find(p=>semanticKey(p)===semanticKey(m));if(meaning)return {segment:i,meaning};}return null;});if(refs.every(Boolean))return refs;}
   }
-  if(/^한쪽으로만하지않고(?:두가지|둘)(?:를|을)?(?:함께|같이)연습하고싶어요$/u.test(body)&&meanings.at(-1)?.field==='practice-mode'&&meanings.at(-1)?.value==='mixed'&&meanings.at(-1)?.polarity==='prefer')return true;
-  if(/^(?:두|둘|세|여러)(?:방식|취향|사람|의취향|가지)(?:을|를)?(?:같은(?:선호|것)(?:으?로)?|같게)(?:묶|적)(?:고싶지|고싶지는)않아요$/u.test(body))return meanings.length>=2||segments.some(s=>['other','quotation'].includes(s.unresolved?.reason));
-  if(/^어느한쪽만(?:편하|좋|싫)다고말하는(?:건|것은)아니에요$/u.test(body))return meanings.length>=2&&meanings.every(m=>m.polarity===meanings[0].polarity);
+  if(/^한쪽으로만하지않고(?:두가지|둘)(?:를|을)?(?:함께|같이)연습하고싶어요$/u.test(body)&&meanings.at(-1)?.field==='practice-mode'&&meanings.at(-1)?.value==='mixed'&&meanings.at(-1)?.polarity==='prefer')return recent();
+  if(/^(?:두|둘|세|여러)(?:방식|취향|사람|의취향|가지)(?:을|를)?(?:같은(?:선호|것)(?:으?로)?|같게)(?:묶|적)(?:고싶지|고싶지는)않아요$/u.test(body))return meanings.length>=2||segments.some(s=>['other','quotation'].includes(s.unresolved?.reason))?priorReferences(segments,true):false;
+  if(/^어느한쪽만(?:편하|좋|싫)다고말하는(?:건|것은)아니에요$/u.test(body))return meanings.length>=2&&meanings.every(m=>m.polarity===meanings[0].polarity)?priorReferences(segments,true):false;
   const denial=/^(?:그렇다고)?(.+?)(싫어한다는|좋아한다는|선호한다는|원한다는)(?:뜻|의미)(?:은|는)?아니(?:고|지만|에요)$/u.exec(body);
-  if(denial){const action=denial[1].replace(/핵심개요/gu,'전체개요'),ending={싫어한다는:'싫어요',좋아한다는:'좋아해요',선호한다는:'선호해요',원한다는:'원해요'}[denial[2]],found=natural(action+ending)||expanded(action+ending)||compositional(action+ending);return !!found?.meanings?.length&&!found.uncertain&&found.meanings.every(m=>!meanings.some(prior=>prior.field===m.field&&prior.value===m.value&&prior.polarity===m.polarity));}
+  if(denial){const action=denial[1].replace(/핵심개요/gu,'전체개요'),ending={싫어한다는:'싫어요',좋아한다는:'좋아해요',선호한다는:'선호해요',원한다는:'원해요'}[denial[2]],found=natural(action+ending)||expanded(action+ending)||compositional(action+ending);return found?.meanings?.length&&!found.uncertain&&found.meanings.every(m=>!meanings.some(prior=>prior.field===m.field&&prior.value===m.value&&prior.polarity===m.polarity))?recent():false;}
   return false;
 }
 function pendingScopeAside(body,surface=body) {
@@ -1437,14 +1439,16 @@ function unresolvedSubject(quote) {
   const compact=quote.replace(/\s/gu,'');
   if(OTHER_PERSON_SUBJECT.test(compact))return true;
   const prefix=normalizePrefix(surfaceDeclaration(quote)).body;
+  const known=value=>{const units=phraseUnits(value,true);return units?.length&&units.at(-1).tag!=='particle';};
   for(const boundary of prefix.matchAll(/께서는|께서|은|는|이|가/gu)){
     if(boundary.index>40)break;
     const head=prefix.slice(0,boundary.index),whole=prefix.slice(0,boundary.index+boundary[0].length);
     if(!head)continue;
-    if(phraseUnits(normalizeActionPhrase(head).action))return false;
+    if(known(head)){const code=head.codePointAt(head.length-1),coda=code>=0xAC00&&code<=0xD7A3?(code-0xAC00)%28:null;
+      if(coda===null||!['은','는','이','가'].includes(boundary[0])||(coda?['은','이']:['는','가']).includes(boundary[0]))return false;continue;}
     // Inflected adjectives may contain the same surface ending as a topic
     // particle; consume the known modifier before looking for its noun head.
-    if(phraseUnits(normalizeActionPhrase(whole).action))continue;
+    if(known(normalizeActionPhrase(whole).action))continue;
     return true;
   }
   return false;
@@ -1458,19 +1462,18 @@ function explanatoryAside(quote,adjacent) {
   if(/(?:이유인데|때문인데)$/u.test(body)&&!/(?:경우|상황|때만|만약|라면|다면|예전|과거)/u.test(body))return true;
   return /(?:더라도|어도|아도|여도|긴하지만)$/u.test(body)&&clauseAdjunct(body.replace(/긴하지만$/u,'더라도'),false);
 }
-function redundantReference(quote,adjacent) {
-  if(!adjacent?.meanings?.length)return false;
+function redundantReference(quote,segments) {
   const {body,condition}=normalizePrefix(surfaceDeclaration(quote));
   if(condition||excludedOrigin(body)||CLAUSE_UNSAFE.test(body)||OTHER_PERSON_SUBJECT.test(body))return false;
   const reference=/^(?:(그|이|그런|이런)(?:(업무|일하는|소통|연습|도움|판단)(?:방식|방법)|(?:분야|활동|주제|방식|방법|쪽))|((?:두|둘)(?:분야|활동|주제))|((?:그렇게|이렇게)도움받는))(?:이|가|은|는|을|를)?(.+)$/u.exec(body);
   if(!reference)return false;
   const typed=reference[2],plural=!!reference[3],support=!!reference[4];
   const fields=typed?{업무:'work-style',일하는:'work-style',소통:'communication',연습:'practice-mode',도움:'support',판단:'decision'}[typed]:support?'support':/(?:분야|활동|주제)/u.test(reference[0])?'topic':null;
-  const antecedents=adjacent.meanings;
+  const refs=priorReferences(segments,plural),antecedents=refs.map(ref=>ref.meaning);if(!antecedents.length)return false;
   if(fields&&antecedents.some(m=>m.field!==fields)||plural&&antecedents.length!==2||!plural&&antecedents.length!==1)return false;
   let predicate=reference[5].replace(/^(?:알아보는|살펴보는)(?:게|것이|것은|걸)?/u,'');
   const stance=composeStance('하는'+predicate);
-  return !!stance&&!stance.habitual&&stance.action==='하기'&&antecedents.every(m=>m.polarity===stance.polarity);
+  return stance&&!stance.habitual&&stance.action==='하기'&&antecedents.every(m=>m.polarity===stance.polarity)?refs:false;
 }
 const OPTIONS_END = [{id:'unsure',label:'아직 잘 모르겠어요'},{id:'skip',label:'이 부분은 건너뛸게요'}];
 const FIELDS = { support:'도움받는 방식', explanation:'설명 길이', 'practice-mode':'연습 방식', topic:'관심 분야',
@@ -1485,15 +1488,26 @@ function scopeBoundaryBetween(text,start,end) {
   for(let i=start;i<end;i++)if(/[.!?;\n]/u.test(text[i])&&!quotedAt(text,i))return true;
   return false;
 }
+function priorReferences(segments,many=false) {
+  const result=[],seen=new Set();
+  const add=ref=>{if(segments[ref.segment]?.meanings?.includes(ref.meaning)&&!seen.has(ref.meaning)){seen.add(ref.meaning);result.push(ref);}};
+  for(let i=segments.length-1;i>=0;i--){
+    const s=segments[i];
+    if(s.referenceOnly){for(const ref of s.referenceTargets||[])add(ref);if(!many||result.length>=2)break;continue;}
+    if(!s.meanings?.length)break;
+    for(const meaning of s.meanings)add({segment:i,meaning});if(!many||result.length>=2)break;
+  }
+  return result;
+}
 function reattributedPreference(body,segments) {
   const restatement=/^(.+?(?:은|는|이|가))(?:좋아한다는|싫어한다는|선호한다는|원한다는|편하다는)(?:뜻|의미)(?:이에요|입니다)$/u.exec(body);
   if(!restatement||!OTHER_PERSON_SUBJECT.test(restatement[1]))return false;
-  const prior=segments.at(-1);if(!prior?.meanings?.length)return false;
+  const refs=priorReferences(segments),targets=[...new Set(refs.map(ref=>segments[ref.segment]))];if(!targets.length)return false;
   // The following nominal restatement corrects the owner of the immediately
   // preceding preference. Asking about the correction alone must not leave
   // that superseded self attribution saved when the question is skipped.
-  delete prior.meanings;delete prior.candidate;prior.generic=true;
-  prior.unresolved={...prior.evidence,reason:'other',reasonLabel:'뒤 문장에서 선호의 주체를 다른 사람으로 설명해 본인의 선호인지 다시 확인해요.'};
+  for(const prior of targets){const remaining=prior.meanings.filter(m=>!refs.some(ref=>ref.meaning===m)),withheld={evidence:prior.evidence,generic:true,unresolved:{...prior.evidence,reason:'other',reasonLabel:'뒤 문장에서 선호의 주체를 다른 사람으로 설명해 본인의 선호인지 다시 확인해요.'}};
+    delete prior.candidate;if(remaining.length){prior.meanings=remaining;segments.push(withheld);}else{delete prior.meanings;Object.assign(prior,withheld);}}
   return true;
 }
 function analyze(text) {
@@ -1512,7 +1526,8 @@ function analyze(text) {
     if(inherited==='quotation'&&self&&!insideLiteral)inherited=null;
     if(!insideLiteral&&reattributedPreference(body,segments)){segments.push({evidence,unresolved:{...evidence,reason:'other',reasonLabel:EXCLUDED.other}});continue;}
     if(/^(?:제|내)(?:방식|선호|취향)(?:은|는)(?:이래요|다음과같아요)$/u.test(body)){segments.push({evidence,meanings:[]});continue;}
-    if(discourseAside(evidence.quote,segments)||explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[]});continue;}
+    const aside=discourseAside(evidence.quote,segments);
+    if(aside||explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[],referenceOnly:true,referenceTargets:aside||priorReferences(segments)});continue;}
     if(inherited==='other'&&self || inherited==='past'&&current || inherited==='condition'&&generalReset || inherited==='uncertain'&&current || ['quotation','hypothetical','sensitive'].includes(inherited)&&self&&current)inherited=null;
     const sentenceStart=Math.max(text.lastIndexOf('.',evidence.start-1),text.lastIndexOf('!',evidence.start-1),text.lastIndexOf('?',evidence.start-1),text.lastIndexOf('\n',evidence.start-1))+1;
     const stop=/[.!?\n]/u.exec(text.slice(evidence.end)),sentenceEnd=stop?evidence.end+stop.index:text.length;
@@ -1530,7 +1545,7 @@ function analyze(text) {
     }
     const prior=segments.findLast(s=>s.meanings?.length);
     let clause=evidence.quote;
-    const adjacent=segments.at(-1),exampleAntecedent=adjacent?.meanings?.find(m=>m.field==='support'&&m.value==='example'&&m.polarity==='prefer');
+    const last=segments.at(-1),adjacent=last?.referenceOnly?{...last,meanings:priorReferences(segments).map(ref=>ref.meaning)}:last,exampleAntecedent=adjacent?.meanings?.find(m=>m.field==='support'&&m.value==='example'&&m.polarity==='prefer');
     const exampleReference=exampleAntecedent&&/^(?:(?:그|이)\s*(?:예시|예제|샘플|걸|것을)|(?:예시|예제|샘플)(?:를|을)?\s*(?:본|확인한)\s*(?:다음|뒤|후)\s*(?:시도|시작|연습)할\s*때)/u.test(clause);
     if(exampleAntecedent)clause=clause.replace(/^(?:그걸|그것을)\s*(보고\s*나서(?:는)?|본\s*(?:다음|뒤|후)(?:에는)?)/u,'예시를 본 다음에는');
     const sameScope=previousCondition&&/^(?:그때(?:도|는)|같은\s*상황에서도|그\s*조건에서는)\s*/u.test(clause);
@@ -1555,26 +1570,27 @@ function analyze(text) {
       pendingScope={condition:pendingScope?.condition||declaredCondition,start:pendingScope?.start??evidence.start,end:evidence.end,uncertain:!safe||!!pendingScope?.uncertain};
       if(safe){segment.meanings=[];segments.push(segment);continue;}
     }
-    if(!found&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))&&redundantReference(evidence.quote,adjacent)){segment.meanings=[];segments.push(segment);continue;}
-    if(!found&&prior?.meanings.length&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))){
+    const redundant=!found&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))&&redundantReference(evidence.quote,segments);
+    if(redundant){segment.meanings=[];segment.referenceOnly=true;segment.referenceTargets=redundant;segments.push(segment);continue;}
+    if(!found&&adjacent?.meanings?.length&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))){
       const reference=/^(?:(?:저는|나는)?(?:그|이|그런|이런)(?:방식|방법|쪽)(?:이|은|을)|둘다)(.+)$/u.exec(normalizePrefix(body).body);
       const declared=reference&&composeStance('하는'+reference[1]);
-      if(declared?.action==='하기'&&!declared.habitual&&prior.meanings.every(m=>m.polarity===declared.polarity)){
-        segment.meanings=[];segments.push(segment);continue;
+      if(declared?.action==='하기'&&!declared.habitual&&adjacent.meanings.every(m=>m.polarity===declared.polarity)){
+        segment.meanings=[];segment.referenceOnly=true;segment.referenceTargets=priorReferences(segments,reference[0].startsWith('둘다'));segments.push(segment);continue;
       }
       const compared=/^(?:두|둘)(연습|방식)(?:에대한)?(?:제|내)취향(?:은|이)(?:이렇게|서로)달라요$/u.exec(body);
-      const recent=segments.slice(-2).flatMap(s=>s.meanings||[]);
-      if(compared&&recent.length>=2&&(compared[1]!=='연습'||recent.every(m=>m.field==='practice-mode'))){segment.meanings=[];segments.push(segment);continue;}
+      const recent=priorReferences(segments,true).map(ref=>ref.meaning);
+      if(compared&&recent.length===2&&(compared[1]!=='연습'||recent.every(m=>m.field==='practice-mode'))){segment.meanings=[];segment.referenceOnly=true;segment.referenceTargets=priorReferences(segments,true);segments.push(segment);continue;}
     }
     // An anaphoric explanation adds no new field, condition or preference.
     // It does not make the member answer the same understood claim again.
-    if(!found&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))&&segments.at(-1)?.meanings?.length&&(/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body)
+    if(!found&&!/^[\s.!?]*\?/u.test(text.slice(evidence.end))&&adjacent?.meanings?.length&&(/^(?:그게|그건|이게|이건|제|내)?(?:취미|관심분야)(?:예요|입니다|거든요|라서요)$/u.test(body)
       ||/^(?:(?:저는|나는)?(?:그쪽|그방식|그방법)(?:이|은)|그래야)(?:더)?(?:편해요|편하더라|좋아요)$/u.test(body)
       ||/^(?:제가|내가)원하는방식(?:이에요|입니다)$/u.test(body)
       ||/^그정도(?:분량|길이)(?:를|을)선호해요$/u.test(body)
-      ||segments.at(-1).meanings.some(m=>m.field==='communication'&&m.value==='share-first')&&/^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))){segment.meanings=[];segments.push(segment);continue;}
+      ||adjacent.meanings.some(m=>m.field==='communication'&&m.value==='share-first')&&/^다른얘기(?:는)?그뒤에들을래(?:요)?$/u.test(body))){segment.meanings=[];segment.referenceOnly=true;segment.referenceTargets=priorReferences(segments);segments.push(segment);continue;}
     if(!found&&segments.at(-1)?.meanings?.length&&/(?:좋아하고|좋고|편하고|즐겁고)$/u.test(segments.at(-1).evidence.quote.replace(/\s/gu,''))&&narrativeBackground(body)){
-      segment.meanings=[];segments.push(segment);continue;
+      segment.meanings=[];segment.referenceOnly=true;segment.referenceTargets=priorReferences(segments);segments.push(segment);continue;
     }
     if(!found) { const old=Legacy.parseMemberStatement(evidence.quote);if(old.meanings.length===1&&!old.unresolved.length)found={meanings:old.meanings}; }
     // An explicit new self-owned interest after a completed method clause is
@@ -1598,7 +1614,8 @@ function analyze(text) {
     // unscoped continuation into a general preference. Keep that question
     // open until a new explicit scope or general reset resolves the boundary.
     previousCondition=scopedCondition&&(!found||/(?:지만|는데)$/u.test(body))?scopedCondition:false;
-    const asking=/^[\s.!?]*/u.exec(text.slice(evidence.end))[0].includes('?');
+    let asking=false;
+    for(let i=evidence.end;i<text.length;i++)if(/[.!?;\n]/u.test(text[i])&&!quotedAt(text,i)){asking=/^[\s.!?]*/u.exec(text.slice(i))[0].includes('?');break;}
     const uncertain=/(?:것같|듯|모르|아마|어쩌면|일지도|글쎄|수도|싫지않|없지않|않지는않)/u.test(body);
     if(!found&&!uncertain&&!declaredCondition&&/(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(body)){unresolvedCondition=true;inherited='condition';}
     if(!found&&!self&&!declaredCondition&&!unresolvedCondition&&!uncertain&&unresolvedSubject(evidence.quote))unknownSubject=true;
@@ -1637,13 +1654,22 @@ function stateFor(text,segments,answers,key) {
   }
   const meanings=[],seen=new Set();
   for(const m of raw){const identity=semanticKey(m);if(seen.has(identity))continue;if(meanings.length===MEMBER_STATEMENT_LIMITS.meanings){unresolved.push({...m.evidence,reason:'limit',reasonLabel:'이번에 확인할 수 있는 범위를 넘어 남겨 두었어요.'});continue;}seen.add(identity);meanings.push({id:'p'+meanings.length,field:m.field,value:m.value,polarity:m.polarity,condition:m.condition,evidence:m.evidence});}
-  const grouped=new Set();
-  for(const m of meanings){if(grouped.has(m.id))continue;const group=meanings.filter(other=>other.id===m.id||meaningsConflict(m,other));if(group.length<2)continue;group.forEach(p=>grouped.add(p.id));
-    const id=`q.${key}.conflict.${sourceKey(group.map(p=>p.id+semanticKey(p)).join('|')).slice(0,16)}`,answer=answers[id];
-    if(answer===undefined)questions.push({id,about:id,kind:'choice',label:'같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.',options:[...group.map(p=>({id:p.id,label:meaningLabel(p),value:p.id})),...OPTIONS_END.map(o=>({...o,value:o.id}))]});
-    else for(const p of group)if(p.id!==answer)p.withheld=true;
+  let active=meanings;
+  const groupFor=m=>active.filter(other=>other.id===m.id||meaningsConflict(m,other));
+  const conflictId=group=>`q.${key}.conflict.${sourceKey(group.map(p=>p.id+semanticKey(p)).join('|')).slice(0,16)}`;
+  // Apply confirmed choices before rebuilding the remaining graph. Conflict is not
+  // transitive: two independently resolved groups may leave a new conflicting pair.
+  for(;;){
+    const resolved=active.map(groupFor).find(group=>group.length>1&&answers[conflictId(group)]!==undefined);
+    if(!resolved)break;
+    const answer=answers[conflictId(resolved)];active=active.filter(p=>!resolved.includes(p)||p.id===answer);
   }
-  return {meanings:meanings.filter(m=>!m.withheld),unresolved:unresolved.slice(0,MEMBER_STATEMENT_LIMITS.unresolved),questions};
+  const grouped=new Set();
+  for(const m of active){if(grouped.has(m.id))continue;const group=groupFor(m);if(group.length<2)continue;group.forEach(p=>grouped.add(p.id));
+    const id=conflictId(group);
+    questions.push({id,about:id,kind:'choice',label:'같은 상황의 뜻이 서로 달라요. 현재 원하는 뜻을 골라 주세요.',options:[...group.map(p=>({id:p.id,label:meaningLabel(p),value:p.id})),...OPTIONS_END.map(o=>({...o,value:o.id}))]});
+  }
+  return {meanings:active,unresolved:unresolved.slice(0,MEMBER_STATEMENT_LIMITS.unresolved),questions};
 }
 function choose(state,text,segments,answers,key) {
   const result=Ask.choose({questions:state.questions,decide:scenario=>{
@@ -1661,6 +1687,7 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(parserVersion===Previous6.PARSER_VERSION)return Previous6.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous7.PARSER_VERSION)return Previous7.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous8.PARSER_VERSION)return Previous8.parseMemberStatement(text,{clarifications,parserVersion});
+  if(parserVersion===Previous9.PARSER_VERSION)return Previous9.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion!==PARSER_VERSION)fail();
   if(!list(clarifications,MEMBER_STATEMENT_LIMITS.clarifications)||clarifications.some(row=>!exact(row,['questionId','optionId'])||typeof row.questionId!=='string'||typeof row.optionId!=='string'))fail();
   const segments=analyze(text),key=sourceKey(text),answers=Object.create(null),clarificationAnswers=[];let state=stateFor(text,segments,answers,key),question=choose(state,text,segments,answers,key);
@@ -1689,6 +1716,7 @@ function validateMemberStatement(row,{now=Date.now(),enforceTime=false}={}) {
   if(parserVersion===Previous6.PARSER_VERSION)return Previous6.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous7.PARSER_VERSION)return Previous7.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous8.PARSER_VERSION)return Previous8.validateMemberStatement(row,{now,enforceTime});
+  if(parserVersion===Previous9.PARSER_VERSION)return Previous9.validateMemberStatement(row,{now,enforceTime});
   if(!exact(row,['id','parserVersion','text','at','confirmedAt','meanings','clarifications'])||parserVersion!==PARSER_VERSION||typeof row.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||!list(row.meanings,MEMBER_STATEMENT_LIMITS.meanings)||!row.meanings.length)fail();
   const at=instant(row.at),confirmed=instant(row.confirmedAt),cutoff=enforceTime?typeof now==='string'?instant(now):Number.isSafeInteger(now)?now:fail():null;
   if(confirmed<at||enforceTime&&confirmed>cutoff)fail();const parsed=parseMemberStatement(row.text,{clarifications:row.clarifications});if(parsed.question)fail();

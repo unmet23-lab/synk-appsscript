@@ -98,6 +98,25 @@ test('Core confirmation changes the next explanation without rewriting observati
   assert.equal(next.review.verdict, 'agree');
   assert.equal(document.reviews[0].claim.count, 1);
 });
+test('a confirmation covers its observation snapshot while direct choices and rejection stay explicit', () => {
+  const source = log(); source.answer(ago(3)); source.answer(ago(2)); source.answer(ago(1));
+  const accountSummary = account(source.events), f = facet(report({ accountSummary }), 'practice-mode');
+  const changed = structuredClone(accountSummary), observations = changed.summary.practice.observations;
+  observations.total = 6; Object.assign(observations.modes[0], { count: 6, activeDays: 6, lastAt: at });
+  for (const verdict of ['agree', 'contextual']) {
+    const document = { ...empty(), reviews: [feedback(190, f, verdict)] };
+    const next = facet(report({ accountSummary: changed, document, asOf: after(2) }), f.id);
+    assert.equal(next.review, null); assert.equal(next.basis, 'observed'); assert.equal(next.claim.count, 6);
+    document.overrides.push(correction(191, f.id, ['reading']));
+    assert.deepEqual(facet(report({ accountSummary: changed, document, asOf: after(2) }), f.id).selected, ['reading']);
+    assert.equal(document.reviews[0].claim.count, 3);
+  }
+  const document = { ...empty(), reviews: [feedback(192, f, 'disagree')] };
+  assert.equal(facet(report({ accountSummary: changed, document, asOf: after(2) }), f.id).review.verdict, 'disagree');
+  const same = { ...accountSummary, summary: summarizeAccount({ events: source.events, map, asOf: after(2) }) };
+  const agreed = { ...empty(), reviews: [feedback(193, f)] };
+  assert.equal(facet(report({ accountSummary: same, document: agreed, asOf: after(2) }), f.id).review.verdict, 'agree', 'moving the unchanged observation window alone is not a new observation');
+});
 
 test('disagreement/contextual feedback is preserved while the observed fact remains visible', () => {
   const activity = usage(), first = report({ activity }), f = facet(first, 'usage-repeat');

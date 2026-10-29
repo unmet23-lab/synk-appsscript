@@ -250,7 +250,7 @@ function actionAndStance(body) {
 function normalizeActionPhrase(source) {
   let action=source;
   // Degree words do not create a stronger score or an opposite preference.
-  action=action.replace(/(?:(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u,'');
+  action=action.replace(/(?:저는|나는|제가|내가|저에게는|나에게는|제게는|내게는|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u,'');
   action=action.replace(/기(?:를|는|도|가)$/u,'기');
   // A nominalizer is not the last syllable of a lexical noun (근거, 이메일).
   if(!/(?:근거|이메일|메일)(?:이|은|을|를|도|에|에는)?$/u.test(action))

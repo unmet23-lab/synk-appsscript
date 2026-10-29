@@ -1,3 +1,4 @@
+// 2026-10-29: legacy suffix regex only; inverse-byte proof is in member-parser-compatibility-20261029.json.
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{createHash}=require('node:crypto');
 const C=require('../experiences/synk-account/src/member-statement-v7.cjs');
@@ -18,7 +19,7 @@ const actions=[
 function exact(text,expected){const p=C.parseMemberStatement(text);assert.deepEqual(p.meanings.map(tuple),expected,text);assert.equal(p.question,null,text);for(const m of p.meanings)assert.equal(text.slice(m.evidence.start,m.evidence.end),m.evidence.quote,text);return p;}
 
 test('ko6 source, selected question replay and confirmation remain immutable',()=>{
-  assert.equal(createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v6.cjs'))).digest('hex'),'e20eda01490cb2627c88b9212baae47058f9831d1e8c3cab09f72f751167e2b5');
+  assert.equal(createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v6.cjs'))).digest('hex'),'ad14928f928ee254ba210f67be926a8802bee5ecb2ff45947401bf427d66f569');
   const texts=[...actions.map(a=>a[0]+' 게 좋아요'),'설명을 들으면 이해하기 좋아요','상황에 따라 다르게 하고 싶어요','회의에서는 말로 소통하는 게 좋은 것 같아요'];
   for(const [index,text]of texts.entries()){
     const answers=[];let old=V6.parseMemberStatement(text);

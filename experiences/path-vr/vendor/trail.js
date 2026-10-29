@@ -210,7 +210,7 @@
     visible.forEach((event, index) => {
       // A withdrawn delivery is no longer proof that the required audio arrived.
       // Keep it as unknown instead of reviving an earlier completion report.
-      if (event.type === TYPES[3]) { audioByPresentation.set(event.presentationId, excluded.has(event.id) ? 'pending' : event.audio); return; }
+      if (event.type === TYPES[3]) { audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? 'pending' : event.audio }); return; }
       if (event.type === TYPES[0]) {
         if (reported(event.decisionId) && !excluded.has(event.id) && !excluded.has(event.decisionId)) presentations.push({
           eventId: event.id, at: event.at, recordedAt: event.recordedAt,
@@ -236,7 +236,8 @@
         const first = traces.get(traceKey)?.get(kind);
         return first && (first.index < index || first.at < at);
       }));
-      const audio = audioByPresentation.get(p.id) || 'pending', j = judge(event, p, earlier, audio);
+      const proof = audioByPresentation.get(p.id);
+      const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : 'pending', j = judge(event, p, earlier, audio);
       // A first attempt made after the answer was shown was met at the reveal, not here.
       meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
       if (!reported(p.decisionId)) return;
@@ -287,7 +288,7 @@
       if (event.type === TYPES[0]) { presentations.set(event.id, event); return null; }
       if (event.type === TYPES[3]) {
         deliveries.set(event.id, event.presentationId);
-        audio.set(event.presentationId, { id: event.id, value: excluded.has(event.id) ? 'pending' : event.audio });
+        audio.set(event.presentationId, { id: event.id, event, value: excluded.has(event.id) ? 'pending' : event.audio });
         return null;
       }
       if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
@@ -300,7 +301,7 @@
         return null;
       }
       const prior = kinds => keys.some(k => kinds.some(kind => kind === 'attempt' ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-      const proof = audio.get(p.id), delivered = proof?.value || 'pending';
+      const proof = audio.get(p.id), delivered = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : 'pending';
       const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior, delivered));
       if (proof && row.measure) {
         if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);

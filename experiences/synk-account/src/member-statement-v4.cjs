@@ -215,7 +215,7 @@ function actionAndStance(body) {
 function normalizeActionPhrase(source) {
   let action=source;
   // Degree words do not create a stronger score or an opposite preference.
-  action=action.replace(/(?:(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑)?(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)?)+$/u,'')
+  action=action.replace(/(?:저는|나는|제가|내가|저에게|나에게|제게|제겐|내겐|저한테|저랑|나랑|좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더)+$/u,'')
     .replace(/(?:것|거|방식|쪽|편|시간|일|방법)(?:이|은|을|를|도|에|에는)?$|(?:게|걸|건|데)$/u,'');
   const nominalHead=/(?:는|기)설명(?:이|은|을|도)?$/u.test(action)?'explanation':null;
   if(nominalHead)action=action.replace(/((?:는|기))설명(?:이|은|을|도)?$/u,'$1');

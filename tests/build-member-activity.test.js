@@ -54,10 +54,10 @@ test('shared statement code preserves the canonical API and document validation'
   const canonical=require('../atlas/member-understanding.js'),canonicalSchema=await import('../experiences/synk-account/src/member-understanding-data.mjs');
   assert.deepEqual(Object.keys(generated.default).sort(),Object.keys(canonical).sort());
   assert.deepEqual(generated.default.summarizeMemberUnderstanding({asOf:'2026-10-28T00:00:00.000Z'}),canonical.summarizeMemberUnderstanding({asOf:'2026-10-28T00:00:00.000Z'}));
-  const outcome=fn=>{try{return {ok:true,value:fn()};}catch(error){return {ok:false,code:error.code,message:error.message};}};
-  const cases=[schema.emptyMemberUnderstanding(),null,{version:1,reviews:[],overrides:[],unexpected:true},...Array.from({length:9},(_,i)=>({version:i+2,reviews:[],overrides:[],statements:[]}))];
+  assert.deepEqual(Object.keys(schema).sort(),Object.keys(canonicalSchema).sort());
+  const outcome=fn=>{try{return {ok:true,value:fn()};}catch(error){return {ok:false,name:error.name,code:error.code,message:error.message};}};
+  const cases=[schema.emptyMemberUnderstanding(),null,{version:1,reviews:[],overrides:[],unexpected:true},...Array.from({length:10},(_,i)=>({version:i+2,reviews:[],overrides:[],statements:[]}))];
   for(const value of cases)assert.deepEqual(outcome(()=>schema.validateMemberUnderstanding(value)),outcome(()=>canonicalSchema.validateMemberUnderstanding(value)));
-  const bodies=Object.keys(result.files).map(file=>fs.readFileSync(path.join(directory,file),'utf8')).join('\n');
   // Check the receipt against emitted imports, independently of esbuild's
   // metadata: the native package must contain every module the browser asks for.
   for(const [file,receipt]of Object.entries(result.files)){
@@ -65,7 +65,14 @@ test('shared statement code preserves the canonical API and document validation'
     const imports=[...emitted.matchAll(/\bimport\s+(?:[^;]*?\s+from\s+)?["']([^"']+)["']/g)].map(match=>path.posix.normalize(path.posix.join(path.posix.dirname(file),match[1]))).sort();
     assert.deepEqual(receipt.imports,imports,'receipt traces emitted imports in '+file);
   }
-  for(let version=1;version<=8;version++)assert.equal(bodies.split('// experiences/synk-account/src/member-statement-v'+version+'.cjs').length-1,1,'compatibility module '+version+' is retained once');
+  const receipt=JSON.parse(fs.readFileSync(path.join(directory,'member-understanding.manifest.json'),'utf8'));
+  for(let version=1;version<=9;version++){
+    const file='experiences/synk-account/src/member-statement-v'+version+'.cjs';assert.ok(receipt.sources[file],'compatibility source '+version+' is retained');
+    const legacy=require('../'+file),text='예시가 좋아요',parsed=legacy.parseMemberStatement(text);assert.ok(parsed.meanings.length);
+    const row={id:'00000000-0000-4000-8000-000000000001',parserVersion:legacy.PARSER_VERSION,text,at:'2026-10-29T00:00:00.000Z',confirmedAt:'2026-10-29T00:00:00.000Z',meanings:parsed.meanings,...(version>=2?{clarifications:[]}: {})};
+    const value={version:version+1,reviews:[],overrides:[],statements:[row]},actual=outcome(()=>schema.validateMemberUnderstanding(value));
+    assert.equal(actual.ok,true,'legacy parser '+version+' remains readable');assert.deepEqual(actual,outcome(()=>canonicalSchema.validateMemberUnderstanding(value)));
+  }
   assert.ok(result.totalBytes<1200000,'shared browser code stays below its former duplicate size');
 });
 

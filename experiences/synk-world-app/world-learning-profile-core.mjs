@@ -193,7 +193,7 @@ var require_trail = __commonJS({
         let excludedAttempts = 0;
         visible.forEach((event, index) => {
           if (event.type === TYPES[3]) {
-            audioByPresentation.set(event.presentationId, excluded.has(event.id) ? "pending" : event.audio);
+            audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
             return;
           }
           if (event.type === TYPES[0]) {
@@ -234,7 +234,8 @@ var require_trail = __commonJS({
             const first = traces.get(traceKey)?.get(kind);
             return first && (first.index < index || first.at < at);
           }));
-          const audio = audioByPresentation.get(p.id) || "pending", j = judge(event, p, earlier, audio);
+          const proof = audioByPresentation.get(p.id);
+          const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
           meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
           if (!reported(p.decisionId)) return;
           if (omitted) {
@@ -307,7 +308,7 @@ var require_trail = __commonJS({
           }
           if (event.type === TYPES[3]) {
             deliveries.set(event.id, event.presentationId);
-            audio.set(event.presentationId, { id: event.id, value: excluded.has(event.id) ? "pending" : event.audio });
+            audio.set(event.presentationId, { id: event.id, event, value: excluded.has(event.id) ? "pending" : event.audio });
             return null;
           }
           if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
@@ -325,7 +326,7 @@ var require_trail = __commonJS({
             return null;
           }
           const prior2 = (kinds) => keys.some((k) => kinds.some((kind) => kind === "attempt" ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-          const proof = audio.get(p.id), delivered = proof?.value || "pending";
+          const proof = audio.get(p.id), delivered = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending";
           const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior2, delivered));
           if (proof && row.measure) {
             if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);
@@ -462,6 +463,7 @@ var require_engine = __commonJS({
       const ARMS = ["adapted", "baseline"];
       const DAY = 864e5, RECENT = 30 * DAY;
       const copy = (value) => JSON.parse(JSON.stringify(value));
+      const setOwn = (table, key, value) => Object.defineProperty(table, key, { value, enumerable: true, writable: true, configurable: true });
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
       const freeze = (value) => {
         if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -697,23 +699,29 @@ var require_engine = __commonJS({
           });
         }
         const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
-        const completed = new Map(ordered.filter((e) => e.type === "experience.completed" && !excluded.has(e.id) && decisions.has(e.decisionId)).map((e) => [e.id, e]));
+        const completedRaw = new Map(ordered.filter((e) => e.type === "experience.completed" && decisions.has(e.decisionId)).map((e) => [e.id, e]));
+        const byDecision = /* @__PURE__ */ new Map();
+        for (const done of completedRaw.values()) if (!excluded.has(done.id) && !byDecision.has(done.decisionId)) byDecision.set(done.decisionId, done);
         const responses = /* @__PURE__ */ new Map();
         if (personal) for (const event of ordered) {
-          if (event.type !== "feedback.given" || !completed.has(event.completionId)) continue;
+          if (event.type !== "feedback.given" || !completedRaw.has(event.completionId)) continue;
           if (cutoff - ms(event.at) > RECENT) continue;
-          const completion = completed.get(event.completionId);
+          const completion = completedRaw.get(event.completionId);
           if (ms(completion.at) <= ms(event.at)) {
-            responses.delete(event.completionId);
-            responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+            responses.delete(completion.decisionId);
+            responses.set(completion.decisionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+            if (!excluded.has(completion.id)) byDecision.set(completion.decisionId, completion);
           }
         }
         const latestOutcome = /* @__PURE__ */ new Map();
         if (personal) for (const event of ordered) {
           if (event.type === "outcome.observed" && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
         }
-        const rounds = {};
-        for (const event of ordered) if (event.type === "experience.completed") rounds[event.experienceId] = (rounds[event.experienceId] || 0) + 1;
+        const rounds = {}, finished = /* @__PURE__ */ new Set(), completed = new Map([...byDecision.values()].map((e) => [e.id, e]));
+        for (const event of ordered) if (event.type === "experience.completed" && !finished.has(event.decisionId)) {
+          finished.add(event.decisionId);
+          setOwn(rounds, event.experienceId, (Object.hasOwn(rounds, event.experienceId) ? rounds[event.experienceId] : 0) + 1);
+        }
         const state = {
           version: VERSION,
           scope: copy(scope),
@@ -722,7 +730,7 @@ var require_engine = __commonJS({
           context,
           evidence,
           expired,
-          feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
+          feedback: [...responses.values()].filter((e) => !excluded.has(e.id) && !excluded.has(e.completionId)),
           excluded: [...excluded],
           lines,
           outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy),
@@ -752,7 +760,7 @@ var require_engine = __commonJS({
         const seen = /* @__PURE__ */ new Set();
         for (const lever of levers) checkLever(lever, seen);
         const view = read(events, scope, at, recordedAt), state = view.state, c = state.context;
-        const round = state.rounds[experienceId] || 0, seed = `${scopeKey(scope)}|${experienceId}|${round}`;
+        const round = Object.hasOwn(state.rounds, experienceId) ? state.rounds[experienceId] : 0, seed = `${scopeKey(scope)}|${experienceId}|${round}`;
         const share = view.personal ? explore : 0, arm = random(seed)() < share ? "baseline" : "adapted", adapted = arm === "adapted";
         const ids = /* @__PURE__ */ new Set();
         const feasible = (item) => !(c.audio === "off" && item.requiresAudio) && !(c.time === "short" && item.minutes > 5) && !(c.support && item.supports && !item.supports.includes(c.support));
@@ -806,10 +814,10 @@ var require_engine = __commonJS({
         const recent = feedback.at(-1);
         const targetPace = c.time === "short" ? "short" : recent?.value === "too_much" ? "short" : recent?.value === "want_more" && c.time !== "short" ? "deep" : "standard";
         const latest = new Map(feedback.map((f) => [f.variant, f.value]));
-        const another = recent?.value === "not_fit" ? eligible.filter((item) => latest.get(item.id) !== "not_fit") : [];
+        const another = eligible.filter((item) => latest.get(item.id) !== "not_fit");
         const fallback = recent?.value === "not_fit" && !another.length ? eligible.filter((item) => item.id !== recent.variant) : [];
         const selectable = another.length ? another : fallback.length ? fallback : eligible;
-        if (recent?.value === "not_fit") reasons.push(another.length || fallback.length ? "feedback.alternative" : "feedback.no_alternative");
+        if (another.length < eligible.length) reasons.push(another.length || fallback.length ? "feedback.alternative" : "feedback.no_alternative");
         const scored = selectable.map((item) => {
           const notes = [], proof = [];
           let score = item.pace === targetPace ? 4 : 0;
@@ -846,18 +854,18 @@ var require_engine = __commonJS({
         for (const lever of [...levers].sort((a, b) => a.id.localeCompare(b.id))) {
           const options = lever.options.filter(feasible), content = lever.class === "content";
           if (!options.length) {
-            bundle[lever.id] = { option: null, basis: "unavailable", reasons: ["no.feasible.option"], evidence: [] };
+            setOwn(bundle, lever.id, { option: null, basis: "unavailable", reasons: ["no.feasible.option"], evidence: [] });
             continue;
           }
           const declared = lever.follows && c[lever.follows] != null ? options.find((option) => option.id === c[lever.follows]) : null;
           if (declared) {
-            bundle[lever.id] = { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] };
+            setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
             continue;
           }
           const turn = (index) => (index - round % options.length + options.length) % options.length;
           if (!adapted) {
             const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
-            bundle[lever.id] = { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] };
+            setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
             continue;
           }
           const before = last ? picked(last, lever.id) : void 0;
@@ -897,7 +905,7 @@ var require_engine = __commonJS({
             best.notes.push("learned", tallies.get(best.option.id).helped ? "learned.works" : away ? "learned.switch" : "learned.keep");
             for (const t of answered) best.proof.push(...t.proof);
           }
-          bundle[lever.id] = { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] };
+          setOwn(bundle, lever.id, { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] });
           evidence.push(...best.proof);
         }
         const following = levers.find((lever) => lever.follows === "support");

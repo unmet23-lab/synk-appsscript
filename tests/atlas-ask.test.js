@@ -13,6 +13,18 @@ const questions = [
 ];
 const recommend = answers => answers.use === 'local-ai' ? (answers.budget === 'low' ? 'desktop-used-gpu' : 'desktop-new-gpu') : 'laptop-basic';
 
+test('equal decision changes keep authored order despite probability summation noise', () => {
+  const q = (id, count) => ({ id, options: Array.from({ length: count }, (_, i) => ({ id: 'option.' + i })) });
+  const result = Ask.choose({ questions: [q('first', 6), q('second', 5)], decide: answers => Object.keys(answers).length ? 'changed' : 'current' });
+  assert.equal(result.question.id, 'first');
+});
+test('chained near ties cannot place a lower score ahead of a higher score outside its tolerance', () => {
+  const questions = [0.5, 0.500000000000005, 0.50000000000001].map((p, i) => ({ id: 'question.' + i, options: [{ id: 'yes', p }, { id: 'no', p: 1 - p }] }));
+  const result = Ask.choose({ questions, decide: answers => Object.values(answers).includes('yes') ? 'changed' : 'current' });
+  const order = result.ranked.map(row => row.id);
+  assert.notEqual(result.question.id, 'question.0'); assert.ok(order.indexOf('question.2') < order.indexOf('question.0'));
+});
+
 test('a small positive refresh impact is eligible even when its display rounds to zero', () => {
   const q = { id: 'refresh-mode', about: 'mode', kind: 'refresh', options: [{ id: 'reading', p: 0.9999 }, { id: 'listening', p: 0.0001 }] };
   const result = Ask.choose({ questions: [q], answers: { mode: 'reading' }, now: '2026-10-29T00:00:00Z', decide: a => a.mode });

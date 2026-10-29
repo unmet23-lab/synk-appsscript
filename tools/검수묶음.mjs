@@ -195,7 +195,7 @@ export function 파일diff(f, 설정) {
   if (f.상태 === 'M' && 몸.split('\n').some(l => /^[+-]/.test(l) && l.length > 긴줄)) {
     // 낱말 = 글자 덩이 또는 문장 부호 하나. 띄어쓰기로만 자르면 띄어쓰기 없는 템플릿 한 줄이 통째로 한 낱말이 된다.
     const 낱말 = 낱말줄이기(git(['diff', '--word-diff=porcelain', '--word-diff-regex=[^[:space:][:punct:]]+|[[:punct:]]', '-U0', '--no-color', ...범위(설정), '--', ...경로들], { cwd }), { 파일이름: path.posix.basename(f.경로) });
-    return { 꼴: '낱말', 글: 낱말.join('\n') };
+    if (!낱말.some(l => l.includes('\uFFFD'))) return { 꼴: '낱말', 글: 낱말.join('\n') };
   }
   return { 꼴: 'diff', 글: 몸.split('\n').map(긴줄줄임).join('\n') };
 }
@@ -1571,7 +1571,7 @@ export function 두판diff(앞, 지금, 경로) {
     const 몸 = 견주기(['-U5']).split('\n').filter(l => !머리줄.test(l)).join('\n').trim();
     if (몸.split('\n').some(l => /^[+-]/.test(l) && l.length > 긴줄)) {
       const 낱말 = 낱말줄이기(견주기(['--word-diff=porcelain', '--word-diff-regex=[^[:space:][:punct:]]+|[[:punct:]]', '-U0']), { 파일이름: path.posix.basename(경로) });
-      return { 꼴: '낱말', 글: 낱말.join('\n') };
+      if (!낱말.some(l => l.includes('\uFFFD'))) return { 꼴: '낱말', 글: 낱말.join('\n') };
     }
     return { 꼴: 'diff', 글: 몸 };
   } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }

@@ -141,7 +141,13 @@ var require_ask = __commonJS({
           });
         }
         const score = (entry) => valued ? entry.value ?? 0 : rawImpact.get(entry.id) ?? 0;
-        return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order).map(({ order, ...entry }) => entry);
+        const sorted = result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order), groups = [];
+        for (const entry of sorted) {
+          const group = groups.at(-1), high = group && score(group[0]), low = score(entry);
+          if (!group || Math.abs(high - low) > Number.EPSILON * MAX_OPTIONS * Math.max(Math.abs(high), Math.abs(low))) groups.push([entry]);
+          else group.push(entry);
+        }
+        return groups.flatMap((group) => group.sort((a, b) => a.order - b.order)).map(({ order, ...entry }) => entry);
       }
       function choose({ budget = 1, usedToday = 0, ...input } = {}) {
         if (!Number.isInteger(budget) || budget < 0 || !Number.isInteger(usedToday) || usedToday < 0) throw new TypeError("Ask: invalid budget");
@@ -373,7 +379,7 @@ var require_trail = __commonJS({
         let excludedAttempts = 0;
         visible.forEach((event2, index) => {
           if (event2.type === TYPES[3]) {
-            audioByPresentation.set(event2.presentationId, excluded.has(event2.id) ? "pending" : event2.audio);
+            audioByPresentation.set(event2.presentationId, { event: event2, value: excluded.has(event2.id) ? "pending" : event2.audio });
             return;
           }
           if (event2.type === TYPES[0]) {
@@ -414,7 +420,8 @@ var require_trail = __commonJS({
             const first = traces.get(traceKey)?.get(kind);
             return first && (first.index < index || first.at < at);
           }));
-          const audio = audioByPresentation.get(p.id) || "pending", j = judge(event2, p, earlier, audio);
+          const proof = audioByPresentation.get(p.id);
+          const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event2) ? proof.value : "pending", j = judge(event2, p, earlier, audio);
           meet(p, event2.at, omitted || j.exclusionReason ? null : event2.verdict);
           if (!reported(p.decisionId)) return;
           if (omitted) {
@@ -487,7 +494,7 @@ var require_trail = __commonJS({
           }
           if (event2.type === TYPES[3]) {
             deliveries.set(event2.id, event2.presentationId);
-            audio.set(event2.presentationId, { id: event2.id, value: excluded.has(event2.id) ? "pending" : event2.audio });
+            audio.set(event2.presentationId, { id: event2.id, event: event2, value: excluded.has(event2.id) ? "pending" : event2.audio });
             return null;
           }
           if (event2.type !== TYPES[1] && event2.type !== TYPES[2]) return null;
@@ -505,7 +512,7 @@ var require_trail = __commonJS({
             return null;
           }
           const prior2 = (kinds) => keys.some((k) => kinds.some((kind) => kind === "attempt" ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
-          const proof = audio.get(p.id), delivered = proof?.value || "pending";
+          const proof = audio.get(p.id), delivered = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event2) ? proof.value : "pending";
           const row = attemptRow(event2, p, arms.get(p.decisionId) ?? null, delivered, judge(event2, p, prior2, delivered));
           if (proof && row.measure) {
             if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);

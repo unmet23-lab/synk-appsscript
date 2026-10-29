@@ -3,7 +3,7 @@
 // Strata supplies the curriculum nodes. One answer is evidence about this item
 // only: never a misconception, a mastery estimate or a learner trait.
 const VERDICTS = ['correct', 'incorrect', 'unassessed', 'skipped'];
-const { choiceRecord } = require('./trail');
+const { choiceRecord, summarize } = require('./trail');
 
 // Item-level nodes authored with the material come first (the first one is the
 // item's primary concept); exact error-tag links follow. Nothing is guessed.
@@ -43,7 +43,7 @@ function createPractice({ session, decision, map, task, assess, firstExposure = 
   const presentation = session.practice('presented', { decisionId: decision.id, taskId: task.id,
     taskVersion: task.version, itemKey: task.itemKey, conceptIds, firstExposure,
     ...(task.measure ? { measure: task.measure } : {}) });
-  let attempts = 0, broken = false, met = null;
+  let attempts = 0, broken = false, met = null, metCount = -1, qualifiedMet = null;
   const shown = new Set();
   // Any failure while recording (an attempt, or help that is already on screen) leaves
   // this presentation's record incomplete for good: a later answer is never relabelled
@@ -76,7 +76,18 @@ function createPractice({ session, decision, map, task, assess, firstExposure = 
     },
     // The record to append to the game's pending history once this item was answered
     // or its answer shown (see Trail.openHistory). Null until then.
-    met() { return met && { ...met, conceptIds: [...met.conceptIds] }; },
+    met() {
+      if (!met) return null;
+      const events = session.events();
+      if (events.length !== metCount) {
+        const ids = new Set([decision.id, presentation.id, ...events.filter(e => e.presentationId === presentation.id).map(e => e.id)]);
+        const owned = events.filter(e => ids.has(e.id) || e.type === 'record.excluded' && ids.has(e.targetId));
+        const latest = owned.reduce((at, e) => Math.max(at, Date.parse(e.at), Date.parse(e.recordedAt)), -Infinity);
+        qualifiedMet = summarize(owned, { scope: presentation.scope, asOf: new Date(latest).toISOString() }).met.find(r => r.itemKey === task.itemKey) || null;
+        metCount = events.length;
+      }
+      return qualifiedMet && { ...qualifiedMet, conceptIds: [...qualifiedMet.conceptIds] };
+    },
   };
 }
 module.exports = { conceptsFor, diagnose, createPractice };

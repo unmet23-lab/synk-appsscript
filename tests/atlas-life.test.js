@@ -28,6 +28,21 @@ const receipt = (source, fields = {}) => ({ reactionId: 'first', deliveryId: 'de
   semanticKey: 'first-use', sourceIds: [source.id], revisions: { object: 1 }, contentVersion: 'content.1', mode: 'static', ...fields });
 const select = (f, candidates, options = {}) => Vellum.select({ scope, trail: f.summary(), npcId: 'resident.one',
   currentRevisions: { object: 1 }, conditions: { usable: true }, candidates, ...options });
+test('a redundant self-source grant preserves an existing relay and still follows its withdrawal',()=>{
+ const f=fixture(),source=f.fact(),relay=f.fact({causes:[source.id],knownBy:['resident.two']});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.two',allowed:true,viaId:relay.id});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.two',allowed:true,viaId:source.id});
+ assert.doesNotThrow(()=>f.add('life.delivered',receipt(source,{npcId:'resident.two'}),{currentRevisions:{object:1}}));
+ f.add('life.knowledge',{factId:relay.id,npcId:'resident.two',allowed:false,viaId:null});
+ assert.throws(()=>f.add('life.delivered',receipt(source,{npcId:'resident.two',deliveryId:'delivery.2',reactionId:'second',semanticKey:'second'}),{currentRevisions:{object:1}}),/permitted facts/);
+});
+test('a witnessed origin can replace a relay and survives that relay being withdrawn',()=>{
+ const f=fixture(),source=f.fact({knownBy:['resident.one','resident.two']}),relay=f.fact({causes:[source.id],knownBy:['resident.two']});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.two',allowed:true,viaId:relay.id});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.two',allowed:true,viaId:source.id});
+ f.add('life.knowledge',{factId:relay.id,npcId:'resident.two',allowed:false,viaId:null});
+ assert.doesNotThrow(()=>f.add('life.delivered',receipt(source,{npcId:'resident.two'}),{currentRevisions:{object:1}}));
+});
 
 test('confirmed action remains pending after interruption; only a real host ack suppresses first thanks', () => {
   const f = fixture(), placed = f.fact(), used = f.fact({ factType: 'object.used', causes: [placed.id] });

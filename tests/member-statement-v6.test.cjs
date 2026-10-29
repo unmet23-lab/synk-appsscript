@@ -1,3 +1,4 @@
+// 2026-10-29: legacy suffix regex only; inverse-byte proof is in member-parser-compatibility-20261029.json.
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{createHash}=require('node:crypto');
 const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
@@ -5,8 +6,8 @@ const V5=require('../experiences/synk-account/src/member-statement-v5.cjs');
 const tuple=m=>[m.field,m.value,m.polarity,m.condition];
 const at='2026-10-16T06:00:00.000Z';
 
-test('ko5 immutable bytes, questions, answers and confirmed replay remain unchanged',()=>{
-  assert.equal(createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v5.cjs'))).digest('hex'),'d4da785c129f7533422c4ec17cfa6c6a124eb911d4ac7fe9442af3c7a6a98111');
+test('ko5 bounded suffix, questions, answers and confirmed replay remain unchanged',()=>{
+  assert.equal(createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v5.cjs'))).digest('hex'),'7e01d14b9905752fc3cd5a51ccbe50cfb8baa0d900bf9ca13b52d892b91dae13');
   const rows=[...['evaluation','followup-evaluation','generalization-evaluation'].flatMap(n=>require(`./fixtures/member-statement-v3-${n}.json`).cases),
     ...['diagnostic-evaluation','disclosed-evaluation','final-disclosed-evaluation'].flatMap(n=>require(`./fixtures/member-statement-v4-${n}.json`).cases),
     ...['development-evaluation','disclosed-evaluation'].flatMap(n=>require(`./fixtures/member-statement-v5-${n}.json`).cases)];

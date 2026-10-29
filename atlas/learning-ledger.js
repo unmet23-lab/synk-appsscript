@@ -10,7 +10,7 @@
  *   - Temper's counts.
  * It is built from Trail's own reading of the folded entries, so a reading with the
  * ledger gives what a reading of the whole log would. It holds no response text and no
- * identity. A folded entry can no longer be excluded.
+ * identity. Parent IDs retain only the provenance needed to withdraw folded evidence.
  *
  * `local` marks a ledger holding entries no server has received (folded on a store that was
  * not synchronised); such a history can never be sent to a server, even if sharing is turned
@@ -60,6 +60,9 @@ function validate(ledger) {
     || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk)
     || !(ledger.counts === null || plain(ledger.counts))
     || !(ledger.adjusted === undefined || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)
+    || !(ledger.parents === undefined || plain(ledger.parents) && Object.keys(ledger.parents).length <= MAX_ENTRIES
+      && Object.values(ledger.parents).every(p => Array.isArray(p) && (p.length === 2 || p.length === 3) && p.every((id, i) => i === 2 && id === null || typeof id === 'string' && id.length > 0)))
+    || !(ledger.withdrawn === undefined || Array.isArray(ledger.withdrawn) && ledger.withdrawn.length <= MAX_ENTRIES && ledger.withdrawn.every(id => typeof id === 'string' && id.length > 0))
     || !(ledger.followupsLost === undefined || plain(ledger.followupsLost)
       && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24
       && Number.isFinite(ledger.followupsLost.at))
@@ -86,6 +89,15 @@ function rows(cell) {
 }
 const cellOf = (ledger, key) => (ledger && own(ledger.cells, key) ? ledger.cells[key] : null);
 const contentOf = (ledger, key) => (ledger && own(ledger.content, key) ? ledger.content[key] : null);
+function trimParents(ledger) {
+  if (!ledger.parents) return ledger;
+  const ids = new Set();
+  for (const table of [ledger.cells, ledger.content]) for (const cell of Object.values(table)) {
+    for (const row of cell.ind) ids.add(row[0]); for (const row of cell.helped) if (Array.isArray(row)) ids.add(row[0]);
+  }
+  ledger.parents = Object.fromEntries(Object.entries(ledger.parents).filter(([id]) => ids.has(id)));
+  return ledger;
+}
 
 /* Fold finished entries into the ledger. `events` are whole items (decision, presentation,
  * help, delivery, answers, completion, exclusions of them) in log order; `log` is the whole
@@ -95,12 +107,20 @@ function fold(previous, events, { scope, log = events, local = false }) {
   // A new object each time (callers compare identity); tables are copied, not deep-cloned,
   // and a cell is copied only when this fold changes it.
   const base = previous || empty();
-  const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content } };
+  const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content }, parents: Object.assign(Object.create(null), base.parents) };
   if (!events.length) return ledger;
   const time = e => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
   const latest = log.reduce((max, e) => Math.max(max, time(e)), -Infinity);
   const decisions = events.filter(e => e.type === 'decision.made').map(e => e.id);
   const summary = Trail.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
+  // Retain the actual audio dependency, not a later playback on the same presentation.
+  const deliveries = new Map(), proof = new Map(), seen = new Set();
+  for (const e of log) {
+    if (seen.has(e.id) || e.scope.domain !== scope.domain || e.scope.workspace !== scope.workspace || e.scope.subject !== scope.subject) continue;
+    seen.add(e.id);
+    if (e.type === 'practice.delivery') deliveries.set(e.presentationId, e.id);
+    if (e.type === 'practice.attempted') proof.set(e.id, deliveries.get(e.presentationId));
+  }
   const presented = new Map(events.filter(e => e.type === 'practice.presented').map(e => [e.id, e]));
   for (const e of events) {
     if (e.type !== 'practice.helped' && e.type !== 'practice.attempted') continue;
@@ -123,6 +143,7 @@ function fold(previous, events, { scope, log = events, local = false }) {
     const at = Date.parse(a.at);
     if (a.independent) cell.ind.push([a.eventId, at, a.verdict, a.measure.familyKey, ...(a.itemKey !== a.measure.familyKey ? [a.itemKey] : [])]);
     if (!a.exclusionReason && a.assisted === true && a.verdict === 'correct') cell.helped.push([a.eventId, at]);
+    if (a.independent || !a.exclusionReason && a.assisted === true && a.verdict === 'correct') ledger.parents[a.eventId] = [a.presentationId, a.decisionId, a.measure.audioRequired ? proof.get(a.eventId) : null];
     if (a.verdict === 'unassessed' || a.verdict === 'skipped') cell.unassessed += 1;
   };
   for (const a of summary.attempts) {
@@ -142,7 +163,7 @@ function fold(previous, events, { scope, log = events, local = false }) {
   ledger.folded += events.length;
   // Once it holds an entry no server received, it always does (the copy above keeps a mark).
   if (local) ledger.local = true;
-  return ledger;
+  return trimParents(ledger);
 }
 
 /* Choose whole, finished items to fold, oldest first, so that at most `keep` entries stay.
@@ -229,11 +250,27 @@ function compare(a, b) {
   const ca = a?.cutoff ?? -Infinity, cb = b?.cutoff ?? -Infinity;
   return ca === cb ? 0 : ca > cb ? 1 : -1;
 }
+// Transfer explicit withdrawals, never infer them from missing rows: equal fold counts
+// and cutoffs do not identify a shared base. Unrelated valid evidence must survive.
+function reconcile(a, b) {
+  if (!a || !b || !Math.max(a.adjusted || 0, b.adjusted || 0, a.withdrawn?.length || 0, b.withdrawn?.length || 0)) return null;
+  if (a === b || JSON.stringify(a) === JSON.stringify(b)) return a;
+  const order = (x, y) => { const delta = helpedAt(x) - helpedAt(y), u = JSON.stringify(x), v = JSON.stringify(y); return delta || (u === v ? 0 : u < v ? -1 : 1); };
+  const withdrawn = [...new Set([...(a.withdrawn || []), ...(b.withdrawn || [])])].sort();
+  const next = { ...demote(compare(a, b) < 0 ? b : a, { excluded: withdrawn, linkedOnly: true }, () => null) };
+  for (const name of ['cells', 'content']) next[name] = Object.fromEntries(Object.entries(next[name]).sort(([x], [y]) => x.localeCompare(y)).map(([key, cell]) => [key, { ...cell, ind: [...cell.ind].sort(order), helped: [...cell.helped].sort(order) }]));
+  next.adjusted = Math.max(a.adjusted || 0, b.adjusted || 0, next.withdrawn?.length || 0);
+  if (a.local || b.local) next.local = true;
+  if (a.followupsPreserved !== undefined || b.followupsPreserved !== undefined) next.followupsPreserved = a.followupsPreserved === true && b.followupsPreserved === true;
+  if (a.followupsLost || b.followupsLost) next.followupsLost = { anchors: Math.max(a.followupsLost?.anchors || 0, b.followupsLost?.anchors || 0), at: Math.min(a.followupsLost?.at ?? Infinity, b.followupsLost?.at ?? Infinity) };
+  trimParents(next);
+  return JSON.stringify(next) === JSON.stringify(a) ? a : next;
+}
 /* Late entries (from before the cutoff) that met an item or family: folded first answers on
  * that family after them are first answers no longer. `excluded` lists folded answers another
  * device has excluded since; `strays` counts entries of folded items kept on the server only.
  * `find` returns a log entry by id. */
-function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
+function demote(ledger, { late = [], excluded = [], strays = 0, linkedOnly = false }, find) {
   const marks = [], gone = new Set(excluded);
   for (const e of late) {
     if (e.type !== 'practice.attempted' && e.type !== 'practice.helped') continue;
@@ -241,14 +278,24 @@ function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
     if (p) marks.push({ keys: new Set(Trail.traceKeys(p)), at: Date.parse(e.at) });
   }
   if (!ledger || !late.length && !gone.size && !strays) return ledger;
-  const after = ([eventId, at, , familyKey, itemKey = familyKey]) => gone.has(eventId)
-    || marks.some(m => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
-  const excludedHelp = h => Array.isArray(h) && gone.has(h[0]);
-  const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + strays };
-  for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
-    if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter(row => !after(row)), helped: cell.helped.filter(h => !excludedHelp(h)) };
+  const parents = ledger.parents || {}, direct = new Set(), retired = new Set(ledger.withdrawn || []);
+  for (const table of [ledger.cells, ledger.content]) for (const cell of Object.values(table)) {
+    for (const row of cell.ind) direct.add(row[0]); for (const row of cell.helped) if (Array.isArray(row)) direct.add(row[0]);
   }
-  return next;
+  for (const p of Object.values(parents)) for (const id of p) if (id !== null) direct.add(id);
+  const parentGone = [...gone].some(id => !direct.has(id));
+  const withdrawn = id => gone.has(id) || own(parents, id) && parents[id].some(p => p !== null && gone.has(p)) || !linkedOnly && parentGone && (!own(parents, id) || parents[id].length === 2);
+  const after = ([eventId, at, , familyKey, itemKey = familyKey]) => withdrawn(eventId)
+    || marks.some(m => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
+  const excludedHelp = h => Array.isArray(h) ? withdrawn(h[0]) : gone.size > 0;
+  const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + Math.max(strays, gone.size) };
+  for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
+    if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter(row => { if (!after(row)) return true; retired.add(row[0]); return false; }), helped: cell.helped.filter(h => { if (!excludedHelp(h)) return true; if (Array.isArray(h)) retired.add(h[0]); return false; }) };
+  }
+  for (const id of gone) if (typeof id === 'string' && id.length) retired.add(id);
+  if (retired.size > MAX_ENTRIES) throw new Error('Ledger: withdrawal capacity');
+  if (retired.size) next.withdrawn = [...retired].sort();
+  return trimParents(next);
 }
 
-module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote, reference, retention };
+module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference, retention };

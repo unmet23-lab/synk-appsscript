@@ -9,6 +9,9 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
+// keepNames preserves minified function names as runtime name labels.
+const namedCount = (text,name) => (text.match(new RegExp(`function ${name}\\d*\\(`,'g'))||[]).length
+  + (text.match(new RegExp(`["']${name}["']`,'g'))||[]).length;
 // 다섯 자원을 고르는 서버용 검사와 PC 라이브러리가 부르지 않는 자원 검사들.
 const SERVER_ONLY = ['validatePersonalState', 'PERSONAL_RESOURCES', 'validateMemberUnderstanding', 'validateMemberActivity', 'validateTravelAccountDocument'];
 
@@ -24,10 +27,13 @@ test('PC 계정 라이브러리 묶음은 계정 원천 모듈과 라이브러�
 
 test('계정 포털 platform 묶음에도 자원 고르기 검사와 PATH 여행 검사가 없다(회원 화면은 생성 사본으로 검사)', () => {
   const text = read('experiences/synk-account/dist/platform.js');
-  for (const name of ['validatePersonalState', 'validateTravelAccountDocument']) assert.ok(!text.includes(`function ${name}(`), name);
+  for (const name of ['validatePersonalState', 'validateTravelAccountDocument']) assert.equal(namedCount(text,name),0,name);
   assert.ok(text.includes('function validatePlatformLibraryState('));
   // 회원 검사는 생성 사본 하나뿐이다 — 원천 사본이 같이 끌려오면 이름 번호가 붙은 정의가 하나 더 생긴다.
-  for (const name of ['validateMemberUnderstanding', 'validateMemberActivity']) assert.equal((text.match(new RegExp(`function ${name}\\d*\\(`, 'g')) || []).length, 1, name);
+  for (const name of ['validateMemberUnderstanding', 'validateMemberActivity']) {
+    assert.ok(!new RegExp(`function ${name}\\d*\\(`).test(text),'원천 사본을 직접 싣지 않는다: '+name);
+    assert.equal(namedCount(text,name),1,'생성 사본 이름표 하나: '+name);
+  }
 });
 
 test('여행 notebook의 import graph는 서버의 전체 자원 검사로 돌아가지 않는다', () => {

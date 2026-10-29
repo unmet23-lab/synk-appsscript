@@ -35,6 +35,21 @@ const contentLevers = [{ id: 'core.focus', class: 'content', options: [
   { id: 'place', targets: [`need:skill.${CONCEPT}`] },
   { id: 'other', targets: ['need:skill.other'] },
 ] }];
+test('pending encounters cannot turn an excluded or visually confounded wrong answer into growth',()=>{
+ for(const fields of [{}, {measure:{skillId:CONCEPT,modality:'reading',difficulty:1,responseFormat:'single-choice',familyKey:'pending.family',audioRequired:false,confounded:true}}]){
+  const f=fixture(),p=f.practice(fields);p.submit('에',fields.measure?{}:{reason:'audio'});
+  assert.equal(p.met().verdict,null);
+  const history=Trail.openHistory({records:[p.met()],partial:false}),next=f.practice({itemKey:'place.item.next'});next.submit('에서');
+  assert.equal(Trail.growth(f.summary(),history).length,0);
+ }
+ const f=fixture(),p=f.practice();const answer=p.submit('에');assert.equal(p.met().verdict,'incorrect');
+ f.session.exclude(answer.eventId);assert.equal(p.met().verdict,null,'a later exclusion invalidates the cached pending encounter');
+});
+test('pending encounter uses actual audio proof and withdrawing it removes the wrong-answer claim',()=>{
+ const f=fixture(),p=f.practice({measure:{skillId:CONCEPT,modality:'listening',difficulty:1,responseFormat:'single-choice',familyKey:'pending.audio',audioRequired:true,confounded:false}});
+ const delivered=f.session.practice('delivery',{presentationId:p.presentation.id,audio:'completed'});
+ p.submit('에');assert.equal(p.met().verdict,'incorrect');f.session.exclude(delivered.id);assert.equal(p.met().verdict,null);
+});
 function learningFixture() {
   const f = fixture({ levers: contentLevers });
   f.session.observe({ kind: 'need', key: `skill.${CONCEPT}`, strength: 0.9, n: 8, assisted: false });

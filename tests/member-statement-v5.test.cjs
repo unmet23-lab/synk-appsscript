@@ -1,3 +1,4 @@
+// 2026-10-29: legacy suffix regex only; inverse-byte proof is in member-parser-compatibility-20261029.json.
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),{createHash}=require('node:crypto');
 const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
@@ -7,8 +8,8 @@ const at='2026-10-16T02:00:00.000Z',later='2026-10-16T02:01:00.000Z';
 const tuple=m=>[m.field,m.value,m.polarity,m.condition];
 const uuid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 
-test('ko4 bytes, every 304 parse, follow-up answer, and accepted row replay unchanged',()=>{
-  assert.equal(createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v4.cjs'))).digest('hex'),'973796df567dc4fc8dd7c38dd0034406c7c82cb40c86cd33f5a5a3dd185b9b0c');
+test('ko4 bounded suffix, every 304 parse, follow-up answer, and accepted row replay unchanged',()=>{
+  assert.equal(createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v4.cjs'))).digest('hex'),'4facef0aac9a2e6c659032185785f8da2f0982c234589bd4675f02f15003aec4');
   const rows=[...['evaluation','followup-evaluation','generalization-evaluation'].flatMap(n=>require(`./fixtures/member-statement-v3-${n}.json`).cases),
     ...['diagnostic-evaluation','disclosed-evaluation','final-disclosed-evaluation'].flatMap(n=>require(`./fixtures/member-statement-v4-${n}.json`).cases)];
   assert.equal(rows.length,304);

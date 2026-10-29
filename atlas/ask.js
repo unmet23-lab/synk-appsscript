@@ -1,11 +1,8 @@
 /* SYNK Core: "오늘 물어볼 한 가지" (Atlas design §5-1, implementation spec §4-4).
  * Canonical source: SYNK-appsscript/atlas/ask.js. Owned by Core; not a ninth engine.
- * Works for any decision a content makes: a practice plan, a game's settings, the
- * recommendation of a consultation or a personalised tool. A question is worth asking only
- * if one of its answers changes what is decided. By default the most change is asked;
- * a host may instead declare decision utility/loss and the cost of asking.
- * Questions whose answers change nothing for this person are skipped, so a consultation
- * gets shorter and sharper the more it already knows.
+ * Content supplies its decision rule: a practice plan, settings or a recommendation.
+ * Ask skips questions that change nothing and ranks actual decision changes;
+ * a host may instead declare utility/loss and the cost of asking.
  * Pure: the decision function belongs to the content (Core.decide, a recommendation rule...).
  * No clock, storage, model call or identity. Answers never become a test or a score.
  */
@@ -126,7 +123,13 @@
     }
     // Most valuable (or most decisive) first; ties keep the content's own order.
     const score = entry => valued ? entry.value ?? 0 : rawImpact.get(entry.id) ?? 0;
-    return result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order).map(({ order, ...entry }) => entry);
+    // Anchor each tie group at its highest score; pairwise tolerances are not transitive.
+    const sorted = result.map((entry, order) => ({ ...entry, order })).sort((a, b) => score(b) - score(a) || a.order - b.order), groups = [];
+    for (const entry of sorted) {
+      const group = groups.at(-1), high = group && score(group[0]), low = score(entry);
+      if (!group || Math.abs(high - low) > Number.EPSILON * MAX_OPTIONS * Math.max(Math.abs(high), Math.abs(low))) groups.push([entry]); else group.push(entry);
+    }
+    return groups.flatMap(group => group.sort((a, b) => a.order - b.order)).map(({ order, ...entry }) => entry);
   }
   // The one question to ask now, or none. A daily budget of one is the default (design §5-1).
   function choose({ budget = 1, usedToday = 0, ...input } = {}) {
