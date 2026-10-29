@@ -16,7 +16,7 @@ import * as DATA from './data.gen.mjs';
 import { SPOT_BY_ID, SPOT_GROUPS } from './places.mjs';
 import { paramsFor } from './params.mjs';
 import { createRng, pickByWeight } from './rng.mjs';
-import { PER_MILLE, perMille } from './state.mjs';
+import { PER_MILLE, perMille, playerMade } from './state.mjs';
 import { MINUTE } from './clock.mjs';
 
 const CARDS = DATA.CARDS ?? [], PAIRS = DATA.PAIRS ?? [];
@@ -186,9 +186,10 @@ export const frictionStep = (vs, a, b) => vs.pairs[pairOf(a, b)?.key]?.friction?
 
 const ARCH = new Map();
 /** What a placed segment does to the village (§8-2 마모 · §6-1 moves), once a piece: a resident's own routine wears its
- * object — never a scene's hold, a promise or a habit the player made (G4), never a card's own solving — and the worn
- * tool is replaced at its threshold (W5 rises the next morning). An owner's solving segment solves its card with the
- * outcome the segments give; a neighbour's with no owner segment solved it alone if the card still waited for it. */
+ * object — never a scene's hold, a promise or a habit the player made (G4: the same playerMade the state takes, the
+ * visits' habit too — W11), never a card's own solving — and the worn tool is replaced at its threshold (W5 rises the
+ * next morning). An owner's solving segment solves its card with the outcome the segments give; a neighbour's with no
+ * owner segment solved it alone if the card still waited for it. */
 export function applySegment(vs, seg, { archetypes = ARCHETYPE_BY_ID, segments, takes = [], first = true }) {
   if (seg.archetype === 'reserved') return;
   const archetype = archetypes[seg.archetype] ?? null;
@@ -196,7 +197,7 @@ export function applySegment(vs, seg, { archetypes = ARCHETYPE_BY_ID, segments, 
   if (seg.cardRole === 'partner') { solveByPartner(vs, seg, segments, takes); return; }
   if (first && seg.with && !seg.joined && seg.archetype === 'chat') chatScene(vs, seg, segments);
   if (!archetype) return;
-  if (archetype.wear && !seg.habit && seg.cause !== 'promise') {
+  if (archetype.wear && !playerMade(seg)) {
     vs.wear[archetype.wear] += 1;
     const tool = WEAR_CARD[archetype.wear];
     if (tool?.trigger.kind === 'after' && vs.wear[archetype.wear] >= tool.trigger.threshold) { vs.wear[archetype.wear] = 0; vs.marks.newToolDay = vs.lifeDay; }

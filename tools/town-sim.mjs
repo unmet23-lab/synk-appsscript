@@ -642,8 +642,7 @@ const zoneName = offset => `UTC${offset >= 0 ? '+' : '−'}${Math.abs(offset) / 
 /** 알려진 실패(W11) — 잰 지표가 기준을 못 넘었고 고칠 길이 트랙에 있는 것. 보고서에는 실패로 쓰고, --check는 이것만 실패면 통과로
  * 끝낸다(기준은 그대로). 고쳐져 통과하면 --check가 「목록이 낡았다」로 실패하니 그때 이 줄을 지운다. */
 export const KNOWN_FAILURES = Object.freeze({
-  'wear-owner': '방문 습관 조각(visitHabit)이 마모를 올림 — cards.mjs applySegment가 seg.habit만 봄. 엔진 고침 묶음(트랙 ① 싱크타운 W11)',
-  'c4-first': '첫 C4 규칙(§8-4)이 엔진에 없음 — 계기 first-visit이 플레이어 머묾을 모르고 혼자·둘이로 풀림. 트랙 ① 싱크타운 W11 후속',
+  'c4-first': '첫 C4 규칙(§8-4)이 엔진에 없음 — 계획기가 구간을 시작부터 짜서 C4가 구간 첫 결정에 서고 플레이어 없이 풀림(실제 흐름: 새 세계 첫 방문 240회 중 구간 시작에 맞춰 온 60회만 열림, 둘이로 풀린 마을은 다시 안 섬). 트랙 ① 싱크타운 W11 후속(우선 — P1급 기능 구멍)',
 });
 /** What a run's check says: the failures outside the known list, and the known ones that now pass (the list is stale). */
 export function checkOutcome(result, known = KNOWN_FAILURES) {

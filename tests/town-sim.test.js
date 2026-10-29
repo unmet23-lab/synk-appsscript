@@ -28,7 +28,7 @@ test('줄인 시뮬레이션은 제한 시간 안에 돌고 잰 지표가 알려
   // The known failures (KNOWN_FAILURES, each with its track line) are reported as failures; nothing else may fail (W11).
   assert.deepEqual(checkOutcome(result).unknown, [], result.metrics.filter(m => m.status === 'fail').map(m => `${m.label}: ${m.value}`).join(', '));
   const measured = ['meetable-residents', 'places-per-day', 'routine-variety', 'repetition', 'rain-outside', 'energy', 'mood-lines',
-    'cards', 'hearsay', 'pairs', 'card-coverage', 'changes-summary', 'visit-habit', 'visible-change'];
+    'cards', 'wear-owner', 'hearsay', 'pairs', 'card-coverage', 'changes-summary', 'visit-habit', 'visible-change'];
   assert.deepEqual(result.metrics.filter(m => measured.includes(m.id)).map(m => m.status), measured.map(() => 'pass'), 'W3~W11이 재는 지표');
   // What the design names without a bar (§15-1 가상 학습자 · §20-10) is measured, never pending.
   assert.deepEqual(result.metrics.filter(m => ['seen-new', 'less-often', 'learners'].includes(m.id)).map(m => m.status), ['measure', 'measure', 'measure']);
