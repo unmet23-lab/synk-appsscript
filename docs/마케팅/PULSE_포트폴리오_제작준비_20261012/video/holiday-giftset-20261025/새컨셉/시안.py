@@ -1782,4 +1782,5 @@ def main():
     print("저장", OUT)
 
 
-main()
+if __name__ == "__main__":  # 움직임.py가 장면 거리 · 재질을 가져다 쓴다(블렌더 --python도 __main__)
+    main()
