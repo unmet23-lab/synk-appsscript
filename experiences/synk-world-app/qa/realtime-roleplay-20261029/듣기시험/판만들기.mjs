@@ -220,7 +220,7 @@ function renderScenes() {
         card.append(d);
       }
       const b = el('button', { type: 'button', 'aria-pressed': String(state.picks[s.id] === t.아이디), text: state.picks[s.id] === t.아이디 ? '고름' : '이 판으로' });
-      b.addEventListener('click', () => { state.picks[s.id] = state.picks[s.id] === t.아이디 ? '' : t.아이디; markDirty(); render(); });
+      b.addEventListener('click', () => { state.picks[s.id] = state.picks[s.id] === t.아이디 ? '' : t.아이디; markDirty(); render(); 곧저장(); });
       card.append(b);
       return card;
     };
@@ -256,7 +256,7 @@ function renderPicks() {
     sel.append(el('option', { value: '', text: '아직 안 정함' }));
     for (const r of DATA.표) sel.append(el('option', { value: r.아이디, text: r.엔진 + ' · ' + r.목소리 + '(' + r.결 + ')' }));
     sel.append(el('option', { value: 'mixed', text: '장면(배역)마다 다르게' }));
-    sel.addEventListener('change', () => { state.overall = sel.value; markDirty(); });
+    sel.addEventListener('change', () => { state.overall = sel.value; markDirty(); 곧저장(); });
   }
   sel.value = state.overall;
   const memo = $('#memo');
@@ -281,8 +281,8 @@ function renderHow() {
 }
 function render() { renderScenes(); renderPicks(); }
 let dirty = false;
-function markDirty() { dirty = true; $('#saved').textContent = '바꾼 것이 있어요 — 「고른 것 남기기」를 눌러 주세요'; }
-$('#memo').addEventListener('input', (e) => { state.memo = e.target.value; markDirty(); });
+function markDirty() { dirty = true; $('#saved').textContent = '남기는 중…'; }
+$('#memo').addEventListener('input', (e) => { state.memo = e.target.value; markDirty(); 곧저장(1500); });
 $('#reveal').addEventListener('click', (e) => { state.reveal = !state.reveal; e.currentTarget.setAttribute('aria-pressed', String(state.reveal)); e.currentTarget.textContent = state.reveal ? '이름 가리기' : '이름 보기'; render(); });
 render();
 renderHow();
@@ -302,8 +302,13 @@ let ref = null;
     render();
   }, () => { $('#saved').textContent = '남긴 것을 불러오지 못했어요 — 새로 고침해 주세요'; });
 })();
-$('#save').addEventListener('click', async () => {
+// 고르면 바로 남긴다(10-30 — 단추를 안 눌러 두 번 비었다). 한 문서에 한 번씩만 쓰고, 쓰는 동안 바뀐 것은 끝난 뒤 한 번 더
+let 쓰는중 = false, 또 = false, 타이머 = null;
+function 곧저장(ms = 300) { clearTimeout(타이머); 타이머 = setTimeout(저장, ms); }
+async function 저장() {
   if (!ref) return;
+  if (쓰는중) { 또 = true; return; }
+  쓰는중 = true;
   const btn = $('#save');
   btn.disabled = true;
   try {
@@ -312,9 +317,14 @@ $('#save').addEventListener('click', async () => {
     dirty = false;
     $('#saved').textContent = '남겼어요 · ' + new Date(때).toLocaleString('ko-KR');
   } catch (e) {
-    $('#saved').textContent = '남기지 못했어요(' + (e && e.code ? e.code : '오류') + ') — 잠시 뒤 다시 눌러 주세요';
-  } finally { btn.disabled = false; }
-});
+    $('#saved').textContent = '남기지 못했어요(' + (e && e.code ? e.code : '오류') + ') — 고른 글자를 말로 알려 주세요';
+  } finally {
+    btn.disabled = false;
+    쓰는중 = false;
+    if (또) { 또 = false; 저장(); }
+  }
+}
+$('#save').addEventListener('click', 저장);
 </script>
 `;
 fs.writeFileSync(path.join(여기, '듣기판.html'), 본문);
