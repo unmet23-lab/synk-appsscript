@@ -91,3 +91,13 @@ test('real C4 commands survive close/reload, keep learning untouched, and persis
   const a = h.store.read().state.activities['tea-order'].open.guests[0];
   assert.deepEqual(a.request, { tea: 'today', sweet: 0 });
 });
+
+test('W10 공개 직후 캐시 — new-tea는 생성물의 SCENES를 이름 공간으로 읽고, 작별 줄을 네 판으로 낸다', async () => {
+  const code = require('node:fs').readFileSync(require('node:path').join(__dirname, '../experiences/synk-town/new-tea.mjs'), 'utf8');
+  assert.match(code, /import \* as generated from '\.\/town\/data\.gen\.mjs'/, '옛 생성물이 10분 캐시에 남아도 모듈 연결이 깨지지 않게');
+  assert.doesNotMatch(code, /import \{[^}]*\} from '\.\/town\/data\.gen\.mjs'/);
+  const scene = await load('new-tea.mjs');
+  assert.deepEqual(Object.keys(scene.GOODBYE_LINE.levels), LEVELS);
+  for (const level of LEVELS) assert.equal(scene.GOODBYE_LINE.levels[level], scene.goodbye(level));
+  assert.equal(scene.GOODBYE_LINE.npc, 'cafe-owner');
+});

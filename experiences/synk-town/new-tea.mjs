@@ -1,16 +1,18 @@
 // C4's authored preference scene (§12). Every choice is valid; none is a learning answer.
 import { openDialogue, helpDialogue, dialogueLevel } from './dialogue.mjs';
-import { SCENES } from './town/data.gen.mjs';
+import * as generated from './town/data.gen.mjs';
 const LEVELS = ['L1', 'L2', 'L3', 'L4'];
-// W10: the words live in the authored scene (town/data/lines/new-tea.json → SCENES), checked like every other line.
-const SCENE = SCENES['cafe-alley.day.new-tea'];
-const per = pick => Object.fromEntries(LEVELS.map(level => [level, pick(SCENE.versions[level])]));
+// W10: the words live in the authored scene (town/data/lines/new-tea.json → SCENES), checked like every other line. Read
+// through the namespace: for the cache's ten minutes after a publish a browser may still hold the generated data from
+// before the scene — then this module still loads (the town opens) and only this talk has no words to show.
+const SCENE = generated.SCENES?.['cafe-alley.day.new-tea'] ?? null;
+const per = pick => Object.fromEntries(LEVELS.map(level => [level, SCENE ? pick(SCENE.versions[level]) : null]));
 const turnOf = (version, key) => version.turns.find(t => t.key === key);
-const SCRIPT = Object.fromEntries(SCENE.versions.L1.turns.map(({ key, choices }) => [key, { lines: per(v => turnOf(v, key).line),
-  choices: choices.map(({ id }) => ({ id, labels: per(v => turnOf(v, key).choices.find(c => c.id === id).text) })) }]));
+const SCRIPT = SCENE ? Object.fromEntries(SCENE.versions.L1.turns.map(({ key, choices }) => [key, { lines: per(v => turnOf(v, key).line),
+  choices: choices.map(({ id }) => ({ id, labels: per(v => turnOf(v, key).choices.find(c => c.id === id).text) })) }])) : {};
 const SMELL = per(v => v.aroma), RESULT = per(v => v.result), RESULT_AROMA = per(v => v.resultAroma), MANUAL = per(v => v.manual), GOODBYE = per(v => v.stop);
 // At L1 「무슨 뜻이에요?」 shows a picture card with the line cut short (§12-2 · §16-1).
-const PICTURES = SCENE.versions.L1.pictures;
+const PICTURES = SCENE?.versions.L1.pictures ?? {};
 export const goodbye = level => GOODBYE[level] || GOODBYE.L2;
 /** The goodbye as a line the screen hangs by the cafe owner's name after 「그만할래요」 (W10 — W9 screen review F2). */
 export const GOODBYE_LINE = Object.freeze({ id: 'cafe-alley.day.new-tea.stop', npc: 'cafe-owner', icon: 'cup', levels: Object.freeze({ ...GOODBYE }) });
@@ -36,6 +38,8 @@ export function validNewTea(state) {
 }
 export function newTeaView(state) {
   const key = keyOf(state), level = dialogueLevel(state.dialogue, key), page = SCRIPT[key];
+  // An older cached generated data without the scene (see above): no words, no choices — nothing breaks.
+  if (!page) return { turn: key, level, line: null, aside: null, choices: [], help: state.lastHelp, manual: state.manual, done: state.done, picture: null };
   const choices = state.manual ? [0, 1, 2].map(n => ({ id: `honey-${n}`, label: SCENE.honey[n] }))
     : page.choices.map(c => ({ id: c.id, label: c.labels[level] }));
   // The picture card's short line stands for the turn's own line; the honey prompt keeps its words under the honey picture.
