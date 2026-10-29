@@ -24,7 +24,7 @@ const 굽개 = path.resolve(여기, '../../../../tools/GPT콘티굽기.mjs');
 // 칸을 구울 때 인물 참고로 넣는 시트(시트를 보고 정한다 — 페이지에는 「칸은 교수 안 N · 선배 안 M으로 구웠다」로 보인다).
 export const 기준안 = { 교수: 1, 선배: 1 };
 
-const 공통 = `This is an original illustration for a Korean-language learning webtoon. All characters are original — they must not resemble any real actor, idol or public figure.
+export const 공통 = `This is an original illustration for a Korean-language learning webtoon. All characters are original — they must not resemble any real actor, idol or public figure.
 Avoid an AI-generated look: no glossy plastic skin, no airbrushed gradients on faces, no over-detailed noise, no lens flare or bloom; hands have five fingers, drawn simply and clearly.
 No text, letters, words, numbers, logos, watermarks, signatures, speech bubbles or sound-effect lettering anywhere unless this prompt asks for it. No mascots, no cartoon animals.
 No comic emphasis marks either — no sweat drops, surprise lines, sparkle marks or motion squiggles — unless this prompt asks for one.`;
@@ -78,7 +78,7 @@ const 학생 = `THE STUDENT (the viewer's own role) — NEVER show the student's
 
 // 계절 — 1판(10-30)은 같은 날 아침인데 창밖이 칸 4 초록 잎 · 칸 8 벚꽃 · 칸 12 초록 잎으로 칸마다 달랐다. 개강 첫날(3월 첫 주)로 못 박는다.
 // 검수 반영(10-30 Fable): 노란 꽃이 덤불처럼 빽빽해 4월 개나리로 읽힘 → 「드문드문 작은 송이」.
-const 계절 = `SEASON: the first week of March in Seoul, the first day of the spring semester — trees are still bare with thin dark branches, with only a few small, sparse clusters of tiny yellow cornus (sansuyu) blossoms on otherwise bare branches — most branches have none; no dense yellow bushes, no forsythia in full bloom; NO green leaves and NO cherry blossoms anywhere, including through windows. People wear light spring jackets.`;
+export const 계절 = `SEASON: the first week of March in Seoul, the first day of the spring semester — trees are still bare with thin dark branches, with only a few small, sparse clusters of tiny yellow cornus (sansuyu) blossoms on otherwise bare branches — most branches have none; no dense yellow bushes, no forsythia in full bloom; NO green leaves and NO cherry blossoms anywhere, including through windows. People wear light spring jackets.`;
 
 const 시트글 = (역, 안) => {
  const p = 인물[역];
@@ -104,7 +104,7 @@ const 시트참고_생김만 = (역) => `Image 1 is the character model sheet of
 // 검수 반영(10-30 Fable): 연구실 두 칸(4 · 8)은 머리 없는 진짜 1인칭(교수 연구실에서 비니 쓴 학생은 높임말 장면에서 걸림, 「화면 밖의 나」와도 맞춤),
 // 달력: 검수 반영판에 「작은 날짜 숫자」를 넣었더니 넷 모두 순서가 뒤섞이거나 빠져 GPT 시험관이 AI 단서로 짚었다(10-30) → 숫자 없이 칸마다 작은 점.
 // 칸 4 ↔ 8 방이 좌우로 뒤집혀 칸 8 A에 칸 4를 Image 2로(창은 왼쪽 · 책장은 오른쪽), 칸 12 엄지는 가슴, 칸 14는 진짜 낮은 앵글, 책등 · 종이에 글자 같은 낙서 없음.
-const 방 = `ROOM LAYOUT (the same in every office panel): seen from the door side, the window with a bare tree outside is on the LEFT behind her, the tall bookshelves are on the RIGHT. Book spines are plain colored with no markings; open books and papers are mostly blank with only a few faint grey lines, never letter-like marks.`;
+export const 방 = `ROOM LAYOUT (the same in every office panel): seen from the door side, the window with a bare tree outside is on the LEFT behind her, the tall bookshelves are on the RIGHT. Book spines are plain colored with no markings; open books and papers are mostly blank with only a few faint grey lines, never letter-like marks.`;
 const 칸 = {
  '01': { 역: ['선배'], 글: `SCENE (episode 1, panel 1): an early-spring morning by the main gate of a Korean university campus. A large outdoor campus-map signboard stands beside a stone-paved plaza; the map shows only colored building shapes and paths — no readable words.
 CAMERA: a high angle from behind — the camera is well above head height, looking down at about 30 degrees, about four meters back — the student looks small and a little lost.
@@ -158,7 +158,7 @@ export function 판목록(기준 = 기준안) {
  return 판;
 }
 
-function 굽기하나(작업, id, 판, 덮어쓰기) {
+export function 굽기하나(작업, id, 판, 덮어쓰기) {
  const 나갈 = path.join(작업, '받음', `${id}.png`);
  if (fs.existsSync(나갈) && !덮어쓰기) { console.log(`[시안] 건너뜀(있음): ${id}`); return Promise.resolve(0); }
  const 지시문 = path.join(작업, '지시문', `${id}.txt`);
