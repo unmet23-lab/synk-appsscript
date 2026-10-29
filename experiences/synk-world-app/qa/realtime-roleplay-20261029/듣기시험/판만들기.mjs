@@ -24,7 +24,13 @@ const 목소리설명 = {
   'gemini_Kore': { 엔진: 'Gemini 3.8 Live', 목소리: 'Kore', 결: '여성 · 단단한 목소리 · 비교용(학생에게는 못 씀)' },
   'gemini_Aoede': { 엔진: 'Gemini 3.8 Live', 목소리: 'Aoede', 결: '여성 · 산뜻한 목소리 · 비교용(학생에게는 못 씀)' },
   'gemini_Puck': { 엔진: 'Gemini 3.8 Live', 목소리: 'Puck', 결: '남성 · 밝은 목소리 · 비교용(학생에게는 못 씀)' },
+  'live_marin': { 엔진: 'GPT-Live', 목소리: 'marin', 결: '여성 · 다국어 목소리(2차 후보)' },
+  'live_coral': { 엔진: 'GPT-Live', 목소리: 'coral', 결: '여성 · 다국어 목소리(2차 후보)' },
+  'live_shimmer': { 엔진: 'GPT-Live', 목소리: 'shimmer', 결: '낮은 목소리 · 다국어(2차 후보, 재 보니 cedar와 비슷한 높이)' },
+  'live_sage': { 엔진: 'GPT-Live', 목소리: 'sage', 결: '여성 · 다국어 목소리(2차 후보)' },
 };
+// 1차(10-29) 일곱 판은 글자 A~G를 그대로 둔다 — 유호님이 그 글자로 평가했다(결정 10-30). 2차(10-30 여성 배역 후보)는 가 · 나 · 다 · 라.
+const 일차 = new Set(['gemini_Aoede', 'gemini_Kore', 'gemini_Puck', 'live_cedar', 'live_noeul', 'realtime_cedar', 'realtime_marin']);
 const 아이디 = (p) => `${p.엔진}_${p.목소리}`;
 // 장면마다 다른 순서(고정 씨앗) — 같은 글자가 같은 엔진이라고 외우지 않게
 function 섞기(목록, 씨앗) {
@@ -37,20 +43,22 @@ function 섞기(목록, 씨앗) {
   }
   return a;
 }
-const 판들 = 대본.장면.map((장면, n) => {
-  const 받은 = 결과.판들.filter((p) => p.장면 === 장면.id);
-  return {
-    id: 장면.id, 이름: 장면.이름, 상대역: 장면.상대역, 연기: 장면.연기, 줄: 장면.줄,
-    테이크: 섞기(받은, 7 + n * 13).map((p, i) => {
+const 테이크로 = (글자들) => (p, i) => {
       const 지연 = p.줄.map((l) => l.지연ms).filter((v) => typeof v === 'number');
       return {
-        글자: String.fromCharCode(65 + i), 아이디: 아이디(p), 소리: `audio/${path.basename(p.파일)}`, 초: p.초,
+        글자: 글자들[i], 아이디: 아이디(p), 소리: `audio/${path.basename(p.파일)}`, 초: p.초,
         최저일치: Math.min(...p.줄.map((l) => (l.빠짐 ? 0 : l.일치))),
         지연평균: 지연.length ? Math.round(지연.reduce((x, y) => x + y, 0) / 지연.length) : null,
         다른줄: p.줄.filter((l) => l.빠짐 || l.일치 < 0.98).map((l) => ({ 번호: l.번호, 대본: l.대본, 받아쓰기: l.빠짐 ? '(빠짐)' : l.받아쓰기, 일치: l.일치 })),
         어림값USD: p.어림값USD, 시도: p.시도,
       };
-    }),
+    };
+const 판들 = 대본.장면.map((장면, n) => {
+  const 받은 = 결과.판들.filter((p) => p.장면 === 장면.id);
+  return {
+    id: 장면.id, 이름: 장면.이름, 상대역: 장면.상대역, 연기: 장면.연기, 줄: 장면.줄,
+    테이크: 섞기(받은.filter((p) => 일차.has(아이디(p))), 7 + n * 13).map(테이크로('ABCDEFG')),
+    둘째: 섞기(받은.filter((p) => !일차.has(아이디(p))), 101 + n * 17).map(테이크로(['가', '나', '다', '라', '마', '바'])),
   };
 });
 const 표 = Object.keys(목소리설명).filter((k) => 결과.판들.some((p) => 아이디(p) === k)).map((k) => {
@@ -109,6 +117,9 @@ button:hover { border-color: var(--accent-text) }
 button:focus-visible, select:focus-visible, textarea:focus-visible, audio:focus-visible { outline: 2px solid var(--accent-face); outline-offset: 2px }
 button[aria-pressed="true"] { background: var(--accent-face); border-color: var(--accent-face); color: var(--on-accent) }
 .scene { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; padding-top: 28px; border-top: 1px solid var(--rule) }
+.round2 { grid-column: 1 / -1; display: grid; gap: 10px; padding-top: 18px; border-top: 1px dashed var(--rule) }
+.round2 h3 { font-size: 17px; margin: 0 }
+.round2 .takes { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) }
 .scene-head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline }
 .role { color: var(--muted); font-size: 14px }
 .script { display: grid; gap: 10px; align-content: start; margin: 0; padding: 0; list-style: none }
@@ -189,11 +200,11 @@ function renderScenes() {
     for (const l of s.줄) ol.append(el('li', { class: l.누가 === '상대역' ? 'ai' : 'learner' }, el('span', { class: 'who', text: l.누가 === '상대역' ? '상대역' : '학습자' }), el('span', { class: 'line', text: l.말 })));
     const left = el('div', {}, ol, el('p', { class: 'direction', text: '연기 지시: ' + s.연기 }));
     const takes = el('div', { class: 'takes' });
-    for (const t of s.테이크) {
+    const 카드 = (t, 기준) => {
       const card = el('article', { class: 'take' + (state.picks[s.id] === t.아이디 ? ' picked' : ''), 'data-scene': s.id, 'data-id': t.아이디 });
       const who = el('span', { class: 'who-is', text: nameOf(t.아이디) + ' — ' + (DATA.목소리설명[t.아이디]?.결 || '') });
       who.hidden = !state.reveal;
-      card.append(el('div', { class: 'take-top' }, el('span', { class: 'letter', text: t.글자 }), who));
+      card.append(el('div', { class: 'take-top' }, el('span', { class: 'letter', text: 기준 ? '기준 ' + t.글자 : t.글자 }), who));
       const audio = el('audio', { controls: '', preload: 'none', src: t.소리, 'aria-label': s.이름 + ' ' + t.글자 + ' 판' });
       audio.addEventListener('play', () => { for (const a of document.querySelectorAll('audio')) if (a !== audio) a.pause(); });
       card.append(audio);
@@ -206,9 +217,17 @@ function renderScenes() {
       const b = el('button', { type: 'button', 'aria-pressed': String(state.picks[s.id] === t.아이디), text: state.picks[s.id] === t.아이디 ? '고름' : '이 판으로' });
       b.addEventListener('click', () => { state.picks[s.id] = state.picks[s.id] === t.아이디 ? '' : t.아이디; markDirty(); render(); });
       card.append(b);
-      takes.append(card);
-    }
+      return card;
+    };
+    for (const t of s.테이크) takes.append(카드(t));
     art.append(left, takes);
+    if (s.둘째.length) {
+      const 기준 = s.테이크.find((t) => t.아이디 === 'gemini_Kore');
+      const grid2 = el('div', { class: 'takes' });
+      if (기준) grid2.append(카드(기준, true));
+      for (const t of s.둘째) grid2.append(카드(t));
+      art.append(el('div', { class: 'round2' }, el('h3', { text: '여성 배역 2차 후보 · 가 나 다 라' }), el('p', { class: 'note', text: '1차에서 「좋네」라고 하신 A(학생에게는 못 쓰는 엔진)를 기준으로 맨 앞에 두었어요. 가~라는 학생에게 쓸 수 있는 엔진의 여성 목소리예요.' }), grid2));
+    }
     root.append(art);
   }
 }
@@ -217,7 +236,7 @@ function renderPicks() {
   g.textContent = '';
   for (const s of DATA.판들) {
     const id = state.picks[s.id];
-    const t = s.테이크.find((x) => x.아이디 === id);
+    const t = [...s.테이크, ...s.둘째].find((x) => x.아이디 === id);
     g.append(el('label', {}, el('span', { text: s.이름 }), el('strong', { text: t ? t.글자 + (state.reveal ? ' · ' + nameOf(id) : '') : '아직' })));
   }
   const sel = $('#overall');
