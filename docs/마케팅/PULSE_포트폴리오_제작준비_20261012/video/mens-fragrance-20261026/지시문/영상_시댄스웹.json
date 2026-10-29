@@ -1,5 +1,5 @@
 {
- "메모": "2번 남성 향수 필름 「솔서리」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). AI 영상 11컷은 02_콘티 6절 그대로(1 · 4 · 5 · 7 · 8 · 11 · 12 · 13 · 14 · 15 · 16 — 블렌더 2 · 3 · 6 · 9 · 10 · 17 · 18은 이 꾸러미 밖). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p2 — 받음 GPT 판 · 정지컷 Gemini 판, 받은 판 그대로). 카메라 문장은 01_샷표 2절 · 02_콘티 2절의 원본 실측(원본카메라_재기.py · 카메라_요약.txt) 숫자 그대로 — 고정(locked off)은 1 · 4 · 8 · 13번만. 동작은 02_콘티 2절 「우리 화면」대로. 화면 속 태준은 말하지 않아 영상은 소리 끔 · 입 다묾. 이어지는 같은 곳 · 같은 사람/물건 짧은 컷(4-5 · 7-8 · 14-15)은 두 샷 한 판으로 묶고, 묶음이 안 될 때 쓸 낱판을 「대안」으로 둔다. 12 · 16번은 시작 그림 얼굴이 원본 첫 프레임의 1.4배(원본 끝 크기 — 02_콘티 4절 · Fable 3차 P1-1)라, 원본 숫자 판을 주판으로 두고 덜 다가가는 둘째 길(12b · 16b)을 대안으로 둔다. 13번 안개만 슬로(아르곤 첫 분석 「슬로모션으로 퍼짐」). 길이는 쓰는 구간 + 시댄스가 0.7초쯤 늦게 오는 몫(최소 4초). 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "메모": "2번 남성 향수 필름 「솔서리」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-28). AI 영상 11컷은 02_콘티 6절 그대로(1 · 4 · 5 · 7 · 8 · 11 · 12 · 13 · 14 · 15 · 16 — 블렌더 2 · 3 · 6 · 9 · 10 · 17 · 18은 이 꾸러미 밖). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p2 — 받음 GPT 판 · 정지컷 Gemini 판, 받은 판 그대로). 카메라 문장은 01_샷표 2절 · 02_콘티 2절의 원본 실측(원본카메라_재기.py · 카메라_요약.txt) 숫자 그대로 — 고정(locked off)은 1 · 4 · 8 · 13번만. 동작은 02_콘티 2절 「우리 화면」대로. 화면 속 태준은 말하지 않아 영상은 소리 끔 · 입 다묾. 이어지는 같은 곳 · 같은 사람/물건 짧은 컷(4-5 · 14-15)은 두 샷 한 판으로 묶고, 묶음이 안 될 때 쓸 낱판을 「대안」으로 둔다. 12 · 16번은 시작 그림 얼굴이 원본 첫 프레임의 1.4배(원본 끝 크기 — 02_콘티 4절 · Fable 3차 P1-1)라, 원본 숫자 판을 주판으로 두고 덜 다가가는 둘째 길(12b · 16b)을 대안으로 둔다. 슬로는 13번 안개(아르곤 첫 분석 「슬로모션으로 퍼짐」)와 7 · 8번 물(10-29 — 원본이 고속 촬영 슬로: 25fps 한 장마다 물 모양이 조금씩만 바뀌고 흐림 없이 또렷, 아르곤도 「슬로모션으로 솟구쳐」. 두 샷 머리가 「no slow motion」이라 10-28 묶음 판은 원본과 어긋나 있었다 — 7 · 8을 슬로 낱판 주판으로 올리고 실제 속도 묶음 p2-07-08과 실제 속도 낱판 p2-07r · p2-08r은 대안으로, 슬로 배율은 원본에 맞춰 약 10배(250fps). 11번도 원본이 슬로로 보여 슬로 대안 p2-11s를 둔다 — 주판 11은 1.13배 점점 빨라지는 밀기가 슬로에 묻히지 않게 실제 속도 그대로. 판 19 = 주판 9 · 대안 10). 10-29 카메라 다시 봄(결정 10-29 「원본 최대한 + 원본보다 나은 요즘 기법이면 교체」)의 판마다 판단 · 근거는 02_콘티 7절. 길이는 쓰는 구간 + 시댄스가 0.7초쯤 늦게 오는 몫(최소 4초). 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
  "편": "p2",
  "이름": "2번 남성 향수 「솔서리」",
  "비율": "16:9",
@@ -39,15 +39,21 @@
    ]
   },
   {
-   "id": "p2-07-08", "컷": ["7", "8"], "길이": 4, "자르는초": 1.2, "낱판": ["p2-07", "p2-08"],
-   "설명": "세운 「ㅅ」 얼음 — 등마루에서 갈라져 두 다리 앞면으로 흐르는 물막 → 얼음벽 사이 물보라가 솟아 렌즈를 덮음(두 샷 묶음)",
+   "id": "p2-07", "컷": ["7"], "길이": 4,
+   "설명": "세운 「ㅅ」 얼음 — 등마루에서 갈라져 두 다리 앞면으로 흐르는 물막, 원본처럼 고속 촬영 슬로(10-29)",
    "샷": [
-    {"그림": "받음/S07_g6.png", "쓰는초": 0.48, "누구": ["ICE SCULPTURE"],
-     "동작": "Low and very close in front of the ice sculpture — its ridge at the very top of the frame, its two thick legs sloping down to the lower left and lower right: clear water is already pouring onto the ridge from the first frame, splitting there and running down the front faces of both legs as wide, glassy sheets, with droplets splashing up in the middle of the frame. The ice itself does not move.",
-     "카메라": "a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height; fast at first and easing to almost still within about 0.5 s; only a very slight tremor."},
-    {"그림": "받음/S08_g5.png", "쓰는초": 0.96,
-     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; about 0.6 s after the cut it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s after the cut the whole frame is filled with rushing water.",
-     "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}
+    {"그림": "받음/S07_g6.png", "쓰는초": 0.48, "슬로": true, "누구": ["ICE SCULPTURE"],
+     "동작": "Low and very close in front of the ice sculpture — its ridge at the very top of the frame, its two thick legs sloping down to the lower left and lower right: clear water is already pouring onto the ridge from the first frame, splitting there and gliding down the front faces of both legs as wide, glassy sheets, heavy and unhurried, while droplets lift from the middle of the frame and hang in the air, every bead crisp and round. The ice itself does not move.",
+     "카메라": "shot on a high-speed camera at about 250 frames per second and played back at normal speed, so the water moves about ten times slower than life — heavy, deep slow motion with every drop crisp and sharp; a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height, fast at first and easing to almost still within about 0.5 s; only a very slight tremor."}
+   ]
+  },
+  {
+   "id": "p2-08", "컷": ["8"], "길이": 4,
+   "설명": "얼음벽 사이 물보라가 솟아 렌즈를 덮음, 원본처럼 고속 촬영 슬로(10-29)",
+   "샷": [
+    {"그림": "받음/S08_g5.png", "쓰는초": 0.96, "슬로": true,
+     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water, every drop crisp and separate; at about 0.6 s it surges forward straight at the lens, heavy and glassy, the water hits and covers the lens, and by about 0.75 s the whole frame is filled with water — the surge and the lens-covering both happen inside the first second.",
+     "카메라": "shot on a high-speed camera at about 250 frames per second and played back at normal speed, so the splash moves about ten times slower than life — heavy, deep slow motion with every drop crisp and sharp; locked off — no movement, no zoom, no shake; only the water moves, surging at the lens."}
    ]
   },
   {
@@ -124,14 +130,28 @@
    "샷": [{"그림": "정지컷/S05.png", "쓰는초": 0.96, "누구": ["TAEJUN"],
      "동작": "Low angle from the front: Taejun already stands with both arms spread wide to the sides, hands half open, head tilted back, eyes closed, face up into the hazy light pouring down from above, and holds it for about 0.6 s; then, at about 0.65 s, he swings both arms up fast and surges toward the camera, the arms blurring with motion by about 1 s. Lips closed.",
      "카메라": "low angle in front of him, pushing in slowly and steadily from the first frame while he moves toward it, so his body grows to about 1.5x its first-frame size by about 1 s; the last 0.3 s carries motion blur from his fast arm swing; no camera shake."}]},
-  {"id": "p2-07", "컷": ["7"], "길이": 4, "대안": true, "설명": "묶음 대신 — 세운 「ㅅ」 얼음 두 다리 앞면으로 흐르는 물막",
+  {"id": "p2-07-08", "컷": ["7", "8"], "길이": 4, "자르는초": 1.2, "낱판": ["p2-07r", "p2-08r"], "대안": true,
+   "설명": "7-8 둘째 길 — 실제 속도 두 샷 묶음(10-28 주판). 고속 슬로 낱판에서 물이 굳거나 CG처럼 나올 때만, 묶음이 안 되는 화면이면 p2-07r · p2-08r",
+   "샷": [
+    {"그림": "받음/S07_g6.png", "쓰는초": 0.48, "누구": ["ICE SCULPTURE"],
+     "동작": "Low and very close in front of the ice sculpture — its ridge at the very top of the frame, its two thick legs sloping down to the lower left and lower right: clear water is already pouring onto the ridge from the first frame, splitting there and running down the front faces of both legs as wide, glassy sheets, with droplets splashing up in the middle of the frame. The ice itself does not move.",
+     "카메라": "a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height; fast at first and easing to almost still within about 0.5 s; only a very slight tremor."},
+    {"그림": "받음/S08_g5.png", "쓰는초": 0.96,
+     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; about 0.6 s after the cut it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s after the cut the whole frame is filled with rushing water.",
+     "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}
+   ]},
+  {"id": "p2-07r", "컷": ["7"], "길이": 4, "대안": true, "설명": "7 셋째 길 — 실제 속도 낱판(10-28 대안 문장). 슬로 낱판이 깨졌는데 묶음 p2-07-08도 못 낼 때",
    "샷": [{"그림": "받음/S07_g6.png", "쓰는초": 0.48, "누구": ["ICE SCULPTURE"],
      "동작": "Low and very close in front of the ice sculpture — its ridge at the very top of the frame, its two thick legs sloping down to the lower left and lower right: clear water is already pouring onto the ridge from the first frame, splitting there and running down the front faces of both legs as wide, glassy sheets, with droplets splashing up in the middle of the frame. The ice itself does not move.",
      "카메라": "a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height; fast at first and easing to almost still within about 0.5 s; only a very slight tremor."}]},
-  {"id": "p2-08", "컷": ["8"], "길이": 4, "대안": true, "설명": "묶음 대신 — 얼음벽 사이 물보라가 솟아 렌즈를 덮음",
+  {"id": "p2-08r", "컷": ["8"], "길이": 4, "대안": true, "설명": "8 셋째 길 — 실제 속도 낱판(10-28 대안 문장). 슬로 낱판이 깨졌는데 묶음 p2-07-08도 못 낼 때",
    "샷": [{"그림": "받음/S08_g5.png", "쓰는초": 0.96,
      "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; at about 0.6 s it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s the whole frame is filled with rushing water.",
      "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}]},
+  {"id": "p2-11s", "컷": ["11"], "길이": 4, "대안": true, "설명": "11 둘째 길 — 고속 촬영 슬로 낱판. 받은 주판(실제 속도)의 물이 7 · 8 슬로 옆에서 튀면",
+   "샷": [{"그림": "받음/S11_g5.png", "쓰는초": 0.84, "슬로": true, "누구": ["PINE"],
+     "동작": "Inside the tall block of clear ice, the frozen pine needles and tiny bubbles stay fixed in the ice; water already seeps along the horizontal crack across the middle from the first frame and keeps glistening there, a few bright drops creeping along it, every drop crisp and sharp. The block stays whole — no new cracks, no flying pieces.",
+     "카메라": "shot on a high-speed camera at about 250 frames per second and played back at normal speed, so the water along the crack moves about ten times slower than life; a steady push-in to about 1.13x over about 0.85 s while the ice block slides toward the lower right of the frame — about 9% right and 7% down by 0.85 s — slow at first and faster and faster (the camera drifts up and to the left); no easing at the end, no shake."}]},
   {"id": "p2-14", "컷": ["14"], "길이": 4, "대안": true, "설명": "묶음 대신 — 서리 앉은 솔가지, 살짝 다가가며 위로 오르고 초점이 풀림",
    "샷": [{"그림": "받음/S14_g5.png", "쓰는초": 0.84, "누구": ["PINE", "FROST"],
      "동작": "Close-up of a frosted Korean red pine branch fanning out from the lower right toward the upper left, every needle coated in fine rime that glitters in the cold cobalt light. The branch itself stays still — no wind, no falling frost.",
