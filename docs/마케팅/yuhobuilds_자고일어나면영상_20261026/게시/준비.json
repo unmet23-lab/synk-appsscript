@@ -1,7 +1,7 @@
 {
   "브랜드": "yuhobuilds",
   "날짜": "2026-10-27",
-  "슬롯": "2026-10-28",
+  "슬롯": "2026-11-01",
   "성격": "상시",
   "역할": "유입",
   "시한": null,
@@ -19,7 +19,7 @@
       "계정": "yuhobuilds-instagram",
       "파일": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_final.mp4",
       "올리기판": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_upload.mp4",
-      "시각": "2026-10-28T21:00+09:00",
+      "시각": "2026-11-01T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/게시글.md",
       "훅": "A",
       "원고": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/01-yuhobuilds-instagram/원고.json",
@@ -30,7 +30,7 @@
       "계정": "yuhobuilds-youtube",
       "파일": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3yt_final.mp4",
       "올리기판": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3yt_upload.mp4",
-      "시각": "2026-10-28T21:00+09:00",
+      "시각": "2026-11-01T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/게시글.md",
       "훅": "A",
       "원고": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/02-yuhobuilds-youtube/원고.json",
@@ -41,7 +41,7 @@
       "계정": "yuhobuilds-tiktok",
       "파일": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_final.mp4",
       "올리기판": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_upload.mp4",
-      "시각": "2026-10-28T21:00+09:00",
+      "시각": "2026-11-01T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/게시글.md",
       "훅": "A",
       "원고": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/03-yuhobuilds-tiktok/원고.json",
@@ -52,7 +52,7 @@
       "계정": "yuhobuilds-x",
       "파일": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_final.mp4",
       "올리기판": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_upload.mp4",
-      "시각": "2026-10-28T21:00+09:00",
+      "시각": "2026-11-01T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/게시글.md",
       "훅": "A",
       "원고": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/04-yuhobuilds-x/원고.json",
@@ -63,7 +63,7 @@
       "계정": "yuho-linkedin-primary",
       "파일": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_final.mp4",
       "올리기판": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3_upload.mp4",
-      "시각": "2026-10-28T21:00+09:00",
+      "시각": "2026-11-01T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/게시글.md",
       "훅": "A",
       "원고": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/05-yuho-linkedin/원고.json",
@@ -73,7 +73,7 @@
     {
       "계정": "shift-tistory",
       "파일": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/티스토리.md",
-      "시각": "2026-10-28T21:30+09:00",
+      "시각": "2026-11-01T21:30+09:00",
       "게시글": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/게시/티스토리.md"
     }
   ],
@@ -102,12 +102,15 @@
   },
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-10-27T20:03:09+09:00",
-    "결과": "확인할 것",
-    "고칠것": [],
+    "시각": "2026-10-29T16:43:46+09:00",
+    "결과": "고칠 것",
+    "고칠것": [
+      "목소리 · 원본이 잘린 줄 15개 — fo 9표본 · h1 3표본 · h2 7표본 · p1 3표본 · b1 27표본 · fo 20표본 외 9 — node tools/나레이션굽기.mjs <계획> --굽기 --줄 <id>로 낮은 크기로 다시 산다"
+    ],
     "확인할것": [
       "remotion/out/y9v3_final.mp4 · 끝 화면을 재지 못했다(마지막 12초 안에 화면 전체가 바뀌는 컷이 없음) — 4초 안팎인지 눈으로 본다",
-      "remotion/out/y9v3yt_final.mp4 · 끝 화면을 재지 못했다(마지막 12초 안에 화면 전체가 바뀌는 컷이 없음) — 4초 안팎인지 눈으로 본다"
+      "remotion/out/y9v3yt_final.mp4 · 끝 화면을 재지 못했다(마지막 12초 안에 화면 전체가 바뀌는 컷이 없음) — 4초 안팎인지 눈으로 본다",
+      "영상 2개 · 판 없이 그림 위에 얹은 짧은 밝은 글자 2군데(out/y9v3_final.mp4 1 · out/y9v3yt_final.mp4 1) — 21.0초 「synk」 바탕 얼룩 41 · 흰 글자 둘레 어두운 칸 35% · 장면표 .tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026/글자표_remotion_out_y9v3_final.jpg · .tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026/글자표_remotion_out_y9v3yt_final.jpg"
     ],
     "파일": [
       {
@@ -128,7 +131,8 @@
         "봉우리": -1.5,
         "정지": "6% 통과",
         "끝화면": null,
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026/영상사전검사_remotion_out_y9v3_final/inspection-8578e143-5ab4-4128-b382-ab7517683e83/검사.json"
+        "한구성": 3.25,
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026/영상사전검사_remotion_out_y9v3_final/inspection-29df4b77-ce5c-4796-84f5-d689bdd88953/검사.json"
       },
       {
         "경로": "docs/마케팅/yuhobuilds_자고일어나면영상_20261026/remotion/out/y9v3yt_final.mp4",
@@ -145,9 +149,16 @@
         "봉우리": -1.4,
         "정지": "6% 통과",
         "끝화면": null,
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026/영상사전검사_remotion_out_y9v3yt_final/inspection-6c4dbcf0-93f4-4852-9946-64f4e3c94d5c/검사.json"
+        "한구성": 3.25,
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026/영상사전검사_remotion_out_y9v3yt_final/inspection-32ad9c46-2c08-4372-83af-7e63855f6383/검사.json"
       }
     ],
+    "목소리": {
+      "줄": 33,
+      "최고음높이": 181,
+      "잘림": 15,
+      "엉킨목소리": []
+    },
     "기록": ".tmp/올리기전검사/yuhobuilds_자고일어나면영상_20261026"
   },
   "작업실등록": true
