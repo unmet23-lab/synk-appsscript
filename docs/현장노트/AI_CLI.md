@@ -349,6 +349,12 @@
 - 고침: 앞 검수 끝 커밋 위에 「앞에 없던 자리의 부모 짝」(그 파일의 앞 판 바이트)을 먼저 커밋한 바탕 보강 저장소를 만들고, 그 바탕 → 최종으로 같은 검수자(GPT)에게 `준비`한다(`.tmp/sns-simple-33-release-20261025/make-review-repo-33-delta.cjs` 꼴). 통째 파일 없이 바뀐 줄만 남는다.
 - 다시 확인: 596KB → 311,800B(3묶음) · GPT 세 묶음 모두 읽음 · 0건 · `검수묶음.mjs 확인 w33-tools-final` 통과.
 
+### 문항 검수 아르곤을 `--묶음 4`로 보내면 1,000초쯤에서 「The stream was interrupted」로 끊긴다 — 둘씩 보낸다 (2026-10-29 Claude)
+- 증상: 싱크타운 찻집 주문 틀 검수 `node tools/topik-review.mjs 아르곤 town-w10-tea-r1 --묶음 4`(요청 틀 · 손님 줄 26단위)에서 넷 묶음 두 번이 1,003초 · 1,209초 만에 agy 「The stream was interrupted」로 실패했다. 받은 단위는 16뿐이었다.
+- 원인: 단위마다 네 판 × 채운 예 셋까지라 넷이면 답이 길어져 스트림이 오래 열린 채 끊긴 것으로 본다(정확한 한도는 모른다).
+- 고침: 같은 명령을 `--묶음 2`로 다시 돌리면 빠진 단위만 보낸다 — 둘씩 다섯 번 335~517초, 26/26(한 번 평균 약 7분, 26단위 전체 12회 152분). 처음부터 둘씩 보낸다.
+- 다시 확인: `node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('output/topik-review/<이름>/argon.json','utf8')).results).length)"`가 묶음 단위 수와 같다.
+
 ## Claude API
 
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
