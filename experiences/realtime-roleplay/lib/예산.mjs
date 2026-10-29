@@ -1,18 +1,24 @@
 // 월 예산 계량기(2026-10-30 시제품) — 이 서버로 돈 세션만 장부에 적고, 이번 달(한국 시각) 쓴 값으로 길을 고른다.
+// Gemini 무료 키가 있고 무료 몫이 막히지 않았으면 Gemini 3.8 Live(MVP 기본 · 0원), 아니면
 // 쓴 값 < 70% → GPT-Live, 70~95% → Realtime 2.1 mini, ≥ 95% → 글 상황극. 조직 전체 사용량은 제한 키로 읽을 수 없어 세지 못한다.
 import fs from 'node:fs';
 import path from 'node:path';
 
 // USD — GPT-Live 분당 $0.05(WebRTC는 시작 때 15초를 먼저 매기고 진행 초에서 뺀다 → 한 세션 최소 15초),
 // Realtime 2.1 mini 음성 입력 $10 · 출력 $20 /100만(조사.md), 글 토큰은 mini 글 값을 어림으로. 글 모델은 OpenAI 값표(10-30).
+// Gemini 3.8 Live는 무료 등급이라 0원으로 적고, 유료였다면 값(글 입력 $0.75 · 음성 입력 $3 · 글 출력 $4.50 · 음성 출력 $12 /100만,
+// 생각 토큰은 글 출력 값 — 듣기 시험 녹음.mjs와 같은 표)만 함께 남긴다.
 export const 값표 = {
   'gpt-live': { 분: 0.05, 최소초: 15 },
   'realtime-mini': { 음성입력: 10e-6, 음성출력: 20e-6, 글입력: 0.6e-6, 글출력: 2.4e-6, 캐시: 0.06e-6 },
+  'gemini-live': { 글입력: 0.75e-6, 음성입력: 3e-6, 글출력: 4.5e-6, 음성출력: 12e-6 },
   'gpt-6.1-terra': { 입력: 1e-6, 출력: 5e-6, 캐시: 0.05e-6 },
   'gpt-6-luna': { 입력: 0.1e-6, 출력: 0.5e-6, 캐시: 0.01e-6 },
 };
 export const 문턱 = { mini: 0.7, 글: 0.95, 끝: 1 };
 export const 글하루한도 = 10;
+// Gemini 무료 몫(429)에 막히면 이만큼은 OpenAI 길로 가고, 지나면 다시 Gemini를 먼저 해 본다(하루 몫인지 분당 몫인지 가리지 않는다 — 실패 한 번이 1~2초)
+export const 몫쉼 = { ms: 10 * 60e3 };
 
 const 한국 = (ms) => new Date(ms + 9 * 3600e3);
 const 한국날 = (ms) => 한국(ms).toISOString().slice(0, 10);
@@ -36,6 +42,12 @@ export function gptLive값(초) {
 export function realtime값(사용 = {}) {
   const v = 값표['realtime-mini'];
   return (사용.음성입력 || 0) * v.음성입력 + (사용.음성출력 || 0) * v.음성출력 + (사용.글입력 || 0) * v.글입력 + (사용.글출력 || 0) * v.글출력 + (사용.캐시 || 0) * v.캐시;
+}
+
+/** Gemini Live 유료였다면 값 — 차례마다 마지막 usageMetadata를 더한 것({글입력, 음성입력, 글출력, 음성출력, 생각}) */
+export function gemini값(사용 = {}) {
+  const v = 값표['gemini-live'];
+  return (사용.글입력 || 0) * v.글입력 + (사용.음성입력 || 0) * v.음성입력 + ((사용.글출력 || 0) + (사용.생각 || 0)) * v.글출력 + (사용.음성출력 || 0) * v.음성출력;
 }
 
 /** Responses usage({input_tokens, output_tokens, input_tokens_details.cached_tokens}) */
@@ -65,8 +77,9 @@ export function 장부적기(파일, 줄) {
 }
 
 /** 이번 주기 쓴 값 · 비율 · 고를 길. 예산이 0이거나 이상하면 글로 내린다(돈을 못 세면 비싼 길을 열지 않는다).
- *  크레딧 바닥(429 credit_balance_exhausted)을 한 번 받은 주기는 장부 값과 상관없이 글로 간다. */
-export function 계량({ 줄들, 예산USD, 지금 = Date.now(), 리셋날 = 1, 상한초 = 240 }) {
+ *  크레딧 바닥(429 credit_balance_exhausted)을 한 번 받은 주기는 장부 값과 상관없이 글로 간다.
+ *  제미나이(무료 키 있음)면 Gemini 「몫바닥」 줄 뒤 몫쉼 동안만 빼고 늘 gemini-live — 0원이라 예산 비율과 상관없다. */
+export function 계량({ 줄들, 예산USD, 지금 = Date.now(), 리셋날 = 1, 상한초 = 240, 제미나이 = false }) {
   const 이번 = 주기(지금, 리셋날);
   const 이번줄 = 줄들.filter((r) => 주기(Date.parse(r.때), 리셋날) === 이번);
   const 끝난 = new Set(이번줄.filter((r) => r.무엇 === '세션' && r.세션).map((r) => r.세션));
@@ -79,9 +92,13 @@ export function 계량({ 줄들, 예산USD, 지금 = Date.now(), 리셋날 = 1, 
   let 길 = 'gpt-live';
   if (!(비율 < 문턱.mini)) 길 = 'realtime-mini';
   if (!(비율 < 문턱.글) || 바닥) 길 = '글';
+  const 몫막힘까지 = Math.max(0, ...줄들.filter((r) => r.무엇 === '몫바닥' && r.길 === 'gemini-live').map((r) => Date.parse(r.때) + 몫쉼.ms));
+  const 몫막힘 = 몫막힘까지 > 지금;
+  if (제미나이 && !몫막힘) 길 = 'gemini-live';
   const 막힘 = 비율 >= 문턱.끝 && 오늘글 >= 글하루한도;
   return {
     주기: 이번, 쓴값: Number(쓴값.toFixed(4)), 예산USD, 비율: Number.isFinite(비율) ? Number(비율.toFixed(4)) : null, 길, 바닥, 오늘글, 막힘,
     세션수: 이번줄.filter((r) => r.무엇 === '세션시작').length, 끝없는세션: 끝없음.length,
+    제미나이: { 있음: !!제미나이, 몫막힘까지: 몫막힘 ? new Date(몫막힘까지).toISOString() : null },
   };
 }

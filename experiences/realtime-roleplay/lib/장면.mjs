@@ -10,7 +10,8 @@ export const 팬사인회 = {
   상대: {
     이름: '하온',
     누구: '가상 아이돌 그룹의 멤버(실존 인물이 아니다)',
-    목소리: 'cedar',
+    // 길마다 목소리 — MVP 기본은 귀 평가 1위 Gemini Kore(결정 10-30 「MVP 모델」), OpenAI 길은 남성 cedar(「좋다」)
+    목소리: { 'gemini-live': 'Kore', 'gpt-live': 'cedar', 'realtime-mini': 'cedar' },
     연기: '팬을 만나 반갑고 들뜬 20대 아이돌. 다정하고 밝게, 팬이 멀리서 왔다는 말에는 진심으로 감동한다.',
   },
   // 미션: 화면 카드 · 힌트 · 끝난 뒤 판정의 키. 예문은 막힐 때 보여 주는 한 줄(AI 호출 없음)
@@ -43,7 +44,7 @@ export function 지시문(장면) {
   ].join('\n');
 }
 
-/** 첫 인사 명령(GPT-Live는 instructions.append, Realtime은 response.create 지시로 같은 글을 쓴다) */
+/** 첫 인사 명령(GPT-Live는 instructions.append, Realtime은 response.create 지시, Gemini는 clientContent 글 차례로 같은 글을 쓴다) */
 export function 첫인사지시(장면) {
   return `지금 바로 「${장면.첫인사}」라고 먼저 인사하고, 상대가 말할 때까지 기다린다.`;
 }
@@ -51,4 +52,14 @@ export function 첫인사지시(장면) {
 /** 시간 상한 직전에 보내는 마무리 지시 */
 export function 마무리지시(장면) {
   return `이제 시간이 다 됐다. 상대 말이 끝나면 「${장면.마무리}」라고 따뜻하게 마무리하고 더 묻지 않는다.`;
+}
+
+// Gemini Live는 학습자 말 없이는 먼저 말하지 않는다(VAD 차례) — 침묵이 길면 연결 층이 아래 글 차례로 한 번 깨운다(Fable 설계 검토 10-30)
+/** 마무리 지시 뒤 학습자가 4초 말이 없을 때 먼저 작별하게 */
+export function 작별지시(장면) {
+  return `(상대가 말이 없다. 지금 바로 「${장면.마무리}」라고 따뜻하게 작별 인사를 하고 끝낸다.)`;
+}
+/** 학습자가 8초쯤 말이 없을 때 쉬운 질문으로 한 번 돕게(지시문의 「8초쯤 말이 없으면」과 같은 일) */
+export function 침묵도움지시() {
+  return '(상대가 8초째 말이 없다. 더 쉬운 질문으로 한 번 도와준다.)';
 }

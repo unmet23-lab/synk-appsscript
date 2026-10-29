@@ -1,11 +1,15 @@
-// 실시간 음성 상황극 시제품(experiences/realtime-roleplay) — 예산 계량기 · 자막 모음 · 피드백 검사 · 서버 길(가짜 OpenAI).
+// 실시간 음성 상황극 시제품(experiences/realtime-roleplay) — 예산 계량기 · 자막 모음 · 피드백 검사 · 서버 길(가짜 OpenAI · 가짜 Gemini).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { 계량, gptLive값, 주기, 장부읽기 } from '../experiences/realtime-roleplay/lib/예산.mjs';
+
+// 이 노트북의 진짜 Gemini 무료 키 · 진짜 주소에 닿지 않게 — 키 경로는 없는 파일, 바탕은 닫힌 포트(Gemini 시험만 가짜로 바꾼다)
+process.env.GEMINI_KEY_PATH_FREE = path.join(os.tmpdir(), '실시간상황극-시험-없는-제미나이키.txt');
+process.env.SYNK_GEMINI_BASE = 'http://127.0.0.1:9/v1beta';
+import { 계량, gptLive값, gemini값, 주기, 장부읽기 } from '../experiences/realtime-roleplay/lib/예산.mjs';
 import { 자막모음, 공급사표 } from '../experiences/realtime-roleplay/public/연결층.mjs';
 import { 검사 } from '../experiences/realtime-roleplay/lib/피드백.mjs';
 import { 팬사인회 } from '../experiences/realtime-roleplay/lib/장면.mjs';
@@ -42,6 +46,25 @@ test('예산: 끝 보고 없는 GPT-Live 세션은 5분 뒤 상한+15초로 세�
   assert.equal(계량({ 줄들: [줄(0, '크레딧바닥')], 예산USD: 100, 지금 }).길, '글');
 });
 
+test('예산: Gemini 무료 키가 있으면 예산 비율과 상관없이 gemini-live, 몫바닥 뒤 10분만 OpenAI 길', () => {
+  const 몫 = (분전) => ({ 때: new Date(지금 - 분전 * 60e3).toISOString(), 무엇: '몫바닥', 길: 'gemini-live', USD: 0 });
+  assert.equal(계량({ 줄들: [], 예산USD: 100, 지금, 제미나이: true }).길, 'gemini-live');
+  assert.equal(계량({ 줄들: [], 예산USD: 100, 지금 }).길, 'gpt-live'); // 키 없음 → 지금 규칙
+  assert.equal(계량({ 줄들: [줄(99)], 예산USD: 100, 지금, 제미나이: true }).길, 'gemini-live'); // 0원 길이라 예산을 넘겨도
+  const 막힘 = 계량({ 줄들: [몫(3)], 예산USD: 100, 지금, 제미나이: true });
+  assert.equal(막힘.길, 'gpt-live');
+  assert.equal(Date.parse(막힘.제미나이.몫막힘까지), 지금 + 7 * 60e3);
+  assert.equal(계량({ 줄들: [몫(3), 줄(96)], 예산USD: 100, 지금, 제미나이: true }).길, '글'); // 막힌 동안은 지금 규칙 그대로
+  assert.equal(계량({ 줄들: [몫(11)], 예산USD: 100, 지금, 제미나이: true }).길, 'gemini-live'); // 10분 지나면 다시 먼저
+  assert.equal(계량({ 줄들: [{ ...몫(3), 길: 'gpt-live' }], 예산USD: 100, 지금, 제미나이: true }).길, 'gemini-live'); // 다른 길의 줄은 상관없음
+});
+
+test('예산: Gemini 유료였다면 값은 생각 토큰을 글 출력 값으로 센다', () => {
+  const 백만 = 1e6;
+  assert.ok(Math.abs(gemini값({ 글입력: 백만, 음성입력: 백만, 글출력: 백만, 음성출력: 백만, 생각: 백만 }) - (0.75 + 3 + 4.5 + 12 + 4.5)) < 1e-9);
+  assert.equal(gemini값({}), 0);
+});
+
 test('예산: 깨진 장부 줄은 건너뛴다', () => {
   const 파일 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), '장부-')), '예산장부.jsonl');
   fs.writeFileSync(파일, `${JSON.stringify(줄(1))}\n{깨짐\n${JSON.stringify({ 때: 'x' })}\n${JSON.stringify(줄(2))}\n`);
@@ -69,6 +92,51 @@ test('자막: Realtime은 취소된 응답 자막을 지우고 학습자 자리�
   넣기({ type: 'conversation.item.input_audio_transcription.completed', item_id: 'i1', transcript: '저는 뚜자라고 합니다. 잘 부탁드립니다.' });
   넣기({ type: 'response.output_audio_transcript.delta', delta: '반가워요!', response_id: 'r3' });
   assert.deepEqual(z.보낼것().map((l) => `${l.누가}:${l.글}`), ['상대:안녕하세요!', '나:저는 뚜자라고 합니다. 잘 부탁드립니다.', '상대:반가워요!']);
+});
+
+test('자막: Gemini는 말 시작 자리에 늦게 온 받아쓰기를 채우고, 끊긴 답(interrupted)은 지운다', () => {
+  const z = 자막모음();
+  const 표 = 공급사표['gemini-live'];
+  const 넣기 = (e, 응답 = null, 활동 = 0) => { for (const s of 표.자막({ ...e, 응답, 활동 })) z.넣기(s); };
+  넣기({ serverContent: { outputTranscription: { text: '안녕하세요! 이름이' } } }, 1);
+  넣기({ serverContent: { outputTranscription: { text: ' 뭐예요?' } } }, 1);
+  넣기({ voiceActivity: { type: 'ACTIVITY_START' } }, null, 1);
+  넣기({ serverContent: { outputTranscription: { text: '아, 네' } } }, 2, 1); // 학습자 쉼에 시작한 답 → 끊김
+  넣기({ serverContent: { interrupted: true } }, 2, 1);
+  // 받아쓰기는 말이 끝날 때 다음 답 자막과 같은 메시지로 온다 — 받아쓰기가 먼저(답보다 앞 자리)
+  넣기({ serverContent: { inputTranscription: { text: '저는 볼로르예요.' }, outputTranscription: { text: '볼로르 씨, 반가워요!' } } }, 3, 1);
+  넣기({ voiceActivity: { type: 'ACTIVITY_START' } }, null, 2); // 받아쓰기가 끝내 안 온 자리(바탕 소리)는 보낼 것에서 빠진다
+  assert.deepEqual(z.보낼것().map((l) => `${l.누가}:${l.글}`), ['상대:안녕하세요! 이름이 뭐예요?', '나:저는 볼로르예요.', '상대:볼로르 씨, 반가워요!']);
+});
+
+test('자막: Gemini 답 조각은 사이에 학습자 자리가 끼어도 그 답 줄에 붙고, 말 시작 신호가 없으면 받아쓰기를 그 답 앞에 둔다', () => {
+  const z = 자막모음();
+  const 표 = 공급사표['gemini-live'];
+  const 넣기 = (e, 응답 = null, 활동 = 0) => { for (const s of 표.자막({ ...e, 응답, 활동 })) z.넣기(s); };
+  넣기({ serverContent: { outputTranscription: { text: '이름이' } } }, 1);
+  넣기({ voiceActivity: { type: 'ACTIVITY_START' } }, 1, 1); // 메아리 · 소음으로 생긴 가짜 말 시작
+  넣기({ serverContent: { outputTranscription: { text: ' 뭐예요?' } } }, 1, 1);
+  z.빈자리지우기();
+  // voiceActivity 없이 받아쓰기가 다음 답과 같이 온 판 — 답 2가 먼저 줄을 만든 뒤 받아쓰기가 와도 답 앞에
+  넣기({ serverContent: { outputTranscription: { text: '반가워요!' } } }, 2, 1);
+  넣기({ serverContent: { inputTranscription: { text: '볼로르' } } }, 2, 0);
+  넣기({ serverContent: { inputTranscription: { text: '예요.' } } }, 2, 0);
+  assert.deepEqual(z.보낼것().map((l) => `${l.누가}:${l.글}`), ['상대:이름이 뭐예요?', '나:볼로르예요.', '상대:반가워요!']);
+  assert.equal(z.줄들.length, 3);
+});
+
+test('Gemini 표: 몫 닫힘만 몫으로 보고(토큰 재사용은 아님), 사용은 차례마다 모달리티별로 더한다', () => {
+  const 표 = 공급사표['gemini-live'];
+  assert.equal(표.몫인가('You exceeded your current quota, please check your plan'), true);
+  assert.equal(표.몫인가('RESOURCE_EXHAUSTED'), true);
+  assert.equal(표.몫인가('Token has been used too many times'), false);
+  assert.equal(표.몫인가(''), false);
+  const 합 = { 글입력: 0, 음성입력: 0, 글출력: 0, 음성출력: 0, 생각: 0, 차례: 0 };
+  표.사용더하기(합, { promptTokensDetails: [{ modality: 'TEXT', tokenCount: 327 }, { modality: 'AUDIO', tokenCount: 168 }], responseTokensDetails: [{ modality: 'AUDIO', tokenCount: 42 }], thoughtsTokenCount: 42 });
+  표.사용더하기(합, { promptTokensDetails: [{ modality: 'TEXT', tokenCount: 10 }], responseTokensDetails: [{ modality: 'TEXT', tokenCount: 5 }] });
+  assert.deepEqual(합, { 글입력: 337, 음성입력: 168, 글출력: 5, 음성출력: 42, 생각: 42, 차례: 2 });
+  assert.deepEqual(표.마무리('마무리 지시').clientContent.turnComplete, false); // 대화를 멈추지 않는 꼴(10-30 실측)
+  assert.deepEqual(표.첫인사('인사 지시').clientContent.turnComplete, true);
 });
 
 test('피드백 검사: 전사에 없는 내 말 · 설명의 발음/감정 추론 · 개수 초과를 버리고, 인용 속 「기분」은 둔다', () => {
@@ -132,7 +200,11 @@ test('서버: GPT-Live 세션 몸통 · 15초 선과금 · 끝 장부 · 피드�
   t.after(() => { s.close(); 가짜.s.close(); process.env.SYNK_OPENAI_BASE = 원래.base; process.env.OPENAI_KEY_FILE = 원래.key; });
 
   assert.equal((await 보내기('/api/연결', { sdp: 'v=0\r\noffer' }, 'http://evil.example')).status, 403);
-  const 연 = await 보내기('/api/연결', { sdp: 'v=0\r\noffer' });
+  const 물음 = await 보내기('/api/연결', {}); // 화면은 SDP 없이 먼저 길을 묻는다 → WebRTC 길이면 428
+  assert.equal(물음.status, 428);
+  assert.deepEqual((({ 길, 필요 }) => ({ 길, 필요 }))(await 물음.json()), { 길: 'gpt-live', 필요: 'sdp' });
+  assert.equal(가짜.받은.length, 0);
+  const 연 = await 보내기('/api/연결', { sdp: 'v=0\r\noffer', 길: 'gpt-live' });
   assert.equal(연.status, 201);
   const 연몸 = await 연.json();
   assert.equal(연몸.길, 'gpt-live');
@@ -178,4 +250,145 @@ test('서버: 예산 95% 넘으면 연결은 글 길(409), 크레딧 바닥이�
   assert.equal(r2.status, 409);
   assert.equal((await r2.json()).까닭, '크레딧 바닥');
   assert.ok(장부읽기(path.join(폴더, '빈장부.jsonl')).some((r) => r.무엇 === '크레딧바닥'));
+});
+
+// ── Gemini 길: 가짜 Gemini(SYNK_GEMINI_BASE)로 임시 토큰 · 장부 · 몫 넘김 ──
+async function 제미나이준비(t, 처리) {
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), '상황극-'));
+  const 키파일 = path.join(폴더, 'g.txt');
+  fs.writeFileSync(키파일, 'AIzaFakeGeminiKeyMustNotLeak');
+  const 가짜 = await 가짜OpenAI(처리);
+  const 원래 = { key: process.env.GEMINI_KEY_PATH_FREE, base: process.env.SYNK_GEMINI_BASE };
+  process.env.GEMINI_KEY_PATH_FREE = 키파일;
+  process.env.SYNK_GEMINI_BASE = 가짜.주소.replace(/\/v1$/, '/v1beta');
+  t.after(() => { 가짜.s.close(); process.env.GEMINI_KEY_PATH_FREE = 원래.key; process.env.SYNK_GEMINI_BASE = 원래.base; });
+  return { 폴더, 가짜 };
+}
+const 토큰답 = (이름) => (req, res) => {
+  if (req.url === '/v1beta/auth_tokens') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ name: 이름 })); return; }
+  res.writeHead(404).end('{}');
+};
+
+test('서버: Gemini 기본 길 — 1회용 토큰(만료 둘 · 설정 잠금 · Kore) · 키는 머리로만 · 응답 · 장부에 키 없음 · 0원 장부 + 유료였다면', async (t) => {
+  const { 폴더, 가짜 } = await 제미나이준비(t, 토큰답('auth_tokens/fake-token-1'));
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 바탕, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => s.close());
+
+  const 상태 = await (await fetch(`${바탕}/api/상태`)).json();
+  assert.equal(상태.계량.길, 'gemini-live');
+  const 연 = await 보내기('/api/연결', {});
+  assert.equal(연.status, 201);
+  const 연몸 = await 연.json();
+  assert.equal(연몸.길, 'gemini-live');
+  assert.equal(연몸.운반, 'websocket');
+  assert.equal(연몸.토큰, 'auth_tokens/fake-token-1');
+  assert.match(연몸.소켓, /^wss:\/\/generativelanguage\.googleapis\.com\/ws\/google\.ai\.generativelanguage\.v1beta\.GenerativeService\.BidiGenerateContentConstrained$/);
+  assert.match(연몸.세션, /^gem_[0-9a-f]{18}$/);
+  assert.equal(연몸.설정.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Kore');
+  assert.match(연몸.첫인사, /안녕하세요/);
+  const 토큰요청 = 가짜.받은[0];
+  assert.equal(토큰요청.주소, '/v1beta/auth_tokens');
+  assert.equal(토큰요청.머리['x-goog-api-key'], 'AIzaFakeGeminiKeyMustNotLeak');
+  const 몸 = JSON.parse(토큰요청.몸);
+  assert.equal(몸.uses, 1);
+  const 새세션 = Date.parse(몸.newSessionExpireTime) - Date.now();
+  assert.ok(새세션 > 30e3 && 새세션 <= 61e3, `newSessionExpireTime ${새세션}`);
+  const 만료 = Date.parse(몸.expireTime) - Date.now();
+  assert.ok(만료 > (팬사인회.상한초 + 60) * 1000 && 만료 <= (팬사인회.상한초 + 181) * 1000, `expireTime ${만료}`);
+  assert.deepEqual(몸.bidiGenerateContentSetup, 연몸.설정); // 토큰에 잠근 setup = 브라우저가 보낼 setup
+  assert.equal(몸.bidiGenerateContentSetup.model, 'models/gemini-3.8-live');
+  assert.match(몸.bidiGenerateContentSetup.systemInstruction.parts[0].text, /너는 하온이다/);
+  assert.deepEqual(몸.bidiGenerateContentSetup.realtimeInputConfig.automaticActivityDetection, { endOfSpeechSensitivity: 'END_SENSITIVITY_LOW', silenceDurationMs: 1000 });
+  assert.deepEqual(몸.bidiGenerateContentSetup.inputAudioTranscription, {});
+
+  const 사용 = { 글입력: 1000, 음성입력: 2000, 글출력: 100, 음성출력: 3000, 생각: 200, 차례: 4, 이상한칸: 'x' };
+  const 끝 = await 보내기('/api/끝', { 길: 'gemini-live', 세션: 연몸.세션, 초: 50, 사용, 끝확인: true, 피드백없이: true, 전사: [] });
+  assert.equal(끝.status, 200);
+  const 끝몸 = await 끝.json();
+  assert.equal((await 보내기('/api/끝', { 길: 'gemini-live', 세션: 연몸.세션, 초: 50 })).status, 409); // 두 번 끝내기
+  const 줄들 = 장부읽기(장부).filter((r) => r.세션 === 연몸.세션);
+  assert.deepEqual(줄들.map((r) => [r.무엇, r.USD]), [['세션시작', 0], ['세션', 0]]);
+  assert.ok(Math.abs(줄들[1].유료였다면USD - gemini값(사용)) < 1e-6);
+  assert.equal(줄들[1].등급, '무료');
+  assert.equal(줄들[1].사용.이상한칸, undefined);
+  assert.equal(끝몸.계량.쓴값, 0);
+  for (const 글 of [JSON.stringify(상태), JSON.stringify(연몸), JSON.stringify(끝몸), fs.readFileSync(장부, 'utf8')]) assert.ok(!글.includes('AIzaFake'));
+});
+
+test('서버: Gemini 토큰 429면 몫바닥을 적고 GPT-Live로(428 SDP 요청) · 길 고정이면 넘기지 않음 · 몫쉼 동안은 토큰을 다시 안 만듦', async (t) => {
+  const { 폴더, 가짜 } = await 제미나이준비(t, (req, res) => {
+    res.writeHead(429, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Quota exceeded' } }));
+  });
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => s.close());
+  const r1 = await 보내기('/api/연결', {});
+  assert.equal(r1.status, 428);
+  assert.deepEqual((({ 길, 필요, 까닭 }) => ({ 길, 필요, 까닭 }))(await r1.json()), { 길: 'gpt-live', 필요: 'sdp', 까닭: 'Gemini 무료 몫' });
+  assert.ok(장부읽기(장부).some((r) => r.무엇 === '몫바닥' && r.길 === 'gemini-live'));
+  const r2 = await 보내기('/api/연결', {});
+  assert.equal(r2.status, 428);
+  assert.equal((await r2.json()).길, 'gpt-live');
+  assert.equal(가짜.받은.length, 1); // 몫쉼 동안은 Gemini에 다시 묻지 않는다
+  const r3 = await 보내기('/api/연결', { 길: 'gemini-live' }); // 시험용 길 고정은 넘기지 않고 알린다
+  assert.equal(r3.status, 429);
+  assert.equal((await 보내기('/api/연결', { 길: 'gpt-live' })).status, 428); // WebRTC 길은 SDP가 있어야 연다
+});
+
+test('서버: 화면이 소켓 몫 닫힘을 알리면(/api/넘김 몫) 그 세션을 닫고 다음 연결은 GPT-Live', async (t) => {
+  const { 폴더 } = await 제미나이준비(t, 토큰답('auth_tokens/fake-token-2'));
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => s.close());
+  const 연몸 = await (await 보내기('/api/연결', {})).json();
+  assert.equal(연몸.길, 'gemini-live');
+  assert.equal((await 보내기('/api/넘김', { 세션: 연몸.세션, 까닭: 'You exceeded your current quota', 몫: true })).status, 200);
+  assert.equal((await 보내기('/api/넘김', {}, 'http://evil.example')).status, 403);
+  const 줄들 = 장부읽기(장부);
+  assert.ok(줄들.some((r) => r.무엇 === '몫바닥' && /quota/.test(r.까닭)));
+  assert.ok(줄들.some((r) => r.무엇 === '세션' && r.세션 === 연몸.세션 && r.USD === 0));
+  assert.equal((await 보내기('/api/끝', { 길: 'gemini-live', 세션: 연몸.세션, 초: 3 })).status, 409);
+  const 다음 = await 보내기('/api/연결', {});
+  assert.equal(다음.status, 428);
+  assert.equal((await 다음.json()).길, 'gpt-live');
+});
+
+test('서버: Gemini 토큰이 몫 말고 다른 까닭으로 실패하면 연결실패 줄만 적고(몫쉼 없음) 이번 연결은 GPT-Live로, 길 고정이면 502', async (t) => {
+  const { 폴더 } = await 제미나이준비(t, (req, res) => { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end('{"error":{"code":403,"status":"PERMISSION_DENIED"}}'); });
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => s.close());
+  const r1 = await 보내기('/api/연결', {});
+  assert.equal(r1.status, 428);
+  const r1몸 = await r1.json();
+  assert.deepEqual([r1몸.길, r1몸.까닭], ['gpt-live', 'Gemini 연결 실패']);
+  const 줄들 = 장부읽기(장부);
+  assert.ok(줄들.some((r) => r.무엇 === '연결실패' && r.길 === 'gemini-live'));
+  assert.ok(!줄들.some((r) => r.무엇 === '몫바닥'));
+  assert.equal(r1몸.계량.제미나이.몫막힘까지, null);
+  assert.equal((await 보내기('/api/연결', { 길: 'gemini-live' })).status, 502);
+});
+
+test('서버: 화면이 준비 전 실패를 알리고 Gemini를 빼고 다시 열면(제외) GPT-Live, 그다음 연결은 다시 Gemini · 버려진 Gemini 세션은 0원으로 닫힌다', async (t) => {
+  const { 폴더 } = await 제미나이준비(t, 토큰답('auth_tokens/fake-token-3'));
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => s.close());
+  const 첫 = await (await 보내기('/api/연결', {})).json();
+  assert.equal(첫.길, 'gemini-live');
+  assert.match(첫.작별, /다음에 또 만나요/);
+  assert.match(첫.도움, /8초/);
+  assert.equal((await 보내기('/api/넘김', { 세션: 첫.세션, 까닭: 'Gemini 연결이 열리지 않았어요: 연결이 닫혔어요(1006)', 몫: false })).status, 200);
+  const 빼고 = await 보내기('/api/연결', { 제외: 'gemini-live' });
+  assert.equal(빼고.status, 428);
+  assert.equal((await 빼고.json()).길, 'gpt-live');
+  const 다시 = await (await 보내기('/api/연결', {})).json(); // 연결실패는 몫쉼이 없다 — 다음은 다시 Gemini
+  assert.equal(다시.길, 'gemini-live');
+  const 셋째 = await (await 보내기('/api/연결', {})).json(); // 끝 보고 없이 새 연결 → 앞 Gemini 세션은 0원으로 닫힘
+  assert.equal(셋째.길, 'gemini-live');
+  const 닫힌 = 장부읽기(장부).filter((r) => r.무엇 === '세션' && r.세션 === 다시.세션);
+  assert.deepEqual(닫힌.map((r) => [r.USD, r.끝확인, r.등급]), [[0, false, '무료']]);
+  assert.ok(장부읽기(장부).some((r) => r.무엇 === '연결실패' && /1006/.test(r.까닭)));
 });

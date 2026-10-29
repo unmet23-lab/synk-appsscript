@@ -1,12 +1,16 @@
 // 팬사인회 상황극 화면(2026-10-30 시제품) — 준비 → 대화(자막 · 힌트 · 시계) → 돌아보기. 공급사 차이는 연결층.mjs가 맡는다.
-// ?길=gpt-live|realtime-mini|글 은 예산 계량기 대신 길을 고정하고(시험용), ?시험=1 은 마이크 대신 견본 학습자 소리 3줄을 넣는다(재생은 음소거).
+// ?길=gemini-live|gpt-live|realtime-mini|글 은 예산 계량기 대신 길을 고정하고(시험용), ?시험=1 은 마이크 대신 견본 학습자 소리 3줄을 넣는다(재생은 음소거).
+// ?반이중=1 은 Gemini 길에서 하온이 말하는 동안 마이크를 쉰다(헤드폰 없이 스피커로 할 때), ?시험=1&상한=40 은 시계를 줄여 마무리 · 자동 끝까지 본다.
 import { 열기, 글열기 } from './연결층.mjs';
 
 const $ = (id) => document.getElementById(id);
 const 쿼리 = new URLSearchParams(location.search);
 const 시험 = 쿼리.get('시험') === '1';
-const 강제길 = ['gpt-live', 'realtime-mini', '글'].includes(쿼리.get('길')) ? 쿼리.get('길') : undefined;
-const 길이름 = { 'gpt-live': '음성(GPT-Live)', 'realtime-mini': '가벼운 음성(mini)', 글: '글 상황극' };
+const 강제길 = ['gemini-live', 'gpt-live', 'realtime-mini', '글'].includes(쿼리.get('길')) ? 쿼리.get('길') : undefined;
+const 반이중 = 쿼리.get('반이중') === '1';
+const 상한덮기 = 시험 ? Math.max(0, Math.round(Number(쿼리.get('상한')) || 0)) : 0;
+const 길이름 = { 'gemini-live': '음성(Gemini Kore · 무료)', 'gpt-live': '음성(GPT-Live · 유료)', 'realtime-mini': '가벼운 음성(mini · 유료)', 글: '글 상황극' };
+const 넘김까닭 = { 'Gemini 무료 몫': 'Gemini 무료 몫이 차서', 'Gemini 연결 실패': 'Gemini 연결이 안 돼서' };
 let 장면 = null;
 let 연결 = null;
 let 시계타이머 = null;
@@ -14,9 +18,12 @@ let 남은초 = 0;
 let 힌트번호 = 0;
 let 끝내는중 = false;
 let 마무리보냄 = false;
+let 마무리전줄 = new Set(); // 마무리 지시 때 있던 줄 — 그 뒤 새로 시작한 상대 답이 끝나야 자동으로 끝낸다
+let 마무리뒤말함 = false;
 let 마지막상대 = 0;
 let 상대말함 = false;
 let 마이크타이머 = null;
+let 마이크문맥 = null;
 
 const 받침 = (글) => { const c = String(글).charCodeAt(String(글).length - 1) - 0xac00; return c >= 0 && c <= 11171 && c % 28 !== 0; };
 const 이가 = (이름) => `${이름}${받침(이름) ? '이' : '가'}`;
@@ -27,7 +34,8 @@ async function 기다리기(조건, 시한) { const 시작 = performance.now(); 
 function 예산표시(계) {
   if (!계) return;
   const 퍼 = 계.비율 == null ? '–' : `${Math.round(계.비율 * 100)}%`;
-  $('예산').textContent = `이번 달 $${계.쓴값.toFixed(2)} / $${계.예산USD} (${퍼}) · 지금 길: ${길이름[강제길 || 계.길]}`;
+  const 몫쉼 = 계.제미나이?.몫막힘까지 ? ` · Gemini 무료 몫 쉼(${new Date(계.제미나이.몫막힘까지).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}까지)` : '';
+  $('예산').textContent = `이번 달 $${계.쓴값.toFixed(2)} / $${계.예산USD} (${퍼}) · 지금 길: ${길이름[강제길 || 계.길]}${몫쉼}`;
 }
 
 function 미션그리기(곳, 판정) {
@@ -53,8 +61,9 @@ function 미션그리기(곳, 판정) {
 
 function 자막그리기(줄들, 곳) {
   곳.textContent = '';
-  for (const l of 줄들) {
-    const 글 = l.글.trim() || (l.자리 ? '…' : '');
+  for (const [i, l] of 줄들.entries()) {
+    // 말 시작에 놓은 빈 자리는 맨 끝 줄일 때만 「…」(지금 듣는 중) — 받아쓰기가 끝내 안 온 자리(바탕 소리 등)는 감춘다
+    const 글 = l.글.trim() || (l.자리 && i === 줄들.length - 1 ? '…' : '');
     if (!글) continue;
     const li = document.createElement('li');
     li.className = l.누가 === '나' ? '나' : '상대';
@@ -68,15 +77,18 @@ function 자막그리기(줄들, 곳) {
 }
 
 function 시계시작() {
-  남은초 = 장면.상한초;
+  남은초 = 상한덮기 || 장면.상한초;
   const 그리기 = () => { const s = Math.max(0, 남은초); $('시계').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
   그리기();
   시계타이머 = setInterval(() => {
     남은초 -= 1;
     그리기();
-    if (남은초 === 20 && !마무리보냄 && 연결?.마무리) { 마무리보냄 = true; 연결.마무리(); }
-    // 마무리를 시킨 뒤(또는 하온이 스스로 마무리 인사를 한 뒤) 하온 말이 1.3초 멎으면 저절로 끝낸다. 4:15에는 무조건 끝낸다
-    if (마무리보냄 && 상대말함 && performance.now() - 마지막상대 > 1300) 끝내기();
+    if (남은초 <= 20 && !마무리보냄 && 연결?.마무리) { 마무리보냄 = true; 마무리전줄 = new Set(연결.자막.줄들); 연결.마무리(); }
+    // 마무리를 시킨 뒤 새로 시작한 하온 답(작별)이 끝나고 1.3초면 저절로 끝낸다(하온이 스스로 작별 인사를 한 답도 같다). 4:15에는 무조건 끝낸다.
+    // 마무리 지시를 보낸 그 초에 끝내지 않게 「마무리 뒤 새 답」을 기다린다(Fable 설계 검토 10-30). Gemini는 자막 글이 소리보다
+    // 몇 초 먼저 오므로 소리가 다 들리는 시각(상대소리끝)까지 본다
+    const 상대끝 = Math.max(마지막상대, 연결?.상대소리끝?.() || 0);
+    if (마무리보냄 && 마무리뒤말함 && performance.now() - 상대끝 > 1300) 끝내기();
     if (남은초 <= -15) 끝내기();
   }, 1000);
 }
@@ -156,6 +168,8 @@ async function 시작(견본모드) {
   $('대화').hidden = false;
   끝내는중 = false;
   마무리보냄 = false;
+  마무리전줄 = new Set();
+  마무리뒤말함 = false;
   상대말함 = false;
   힌트번호 = 0;
   $('자막').textContent = '';
@@ -182,7 +196,7 @@ async function 시작(견본모드) {
   }
   마이크재기(트랙);
   try {
-    연결 = await 열기({ 길: 강제길, 입력트랙: 트랙, 출력: $('소리') });
+    연결 = await 열기({ 길: 강제길, 입력트랙: 트랙, 출력: $('소리'), 반이중 });
   } catch (e) {
     트랙.stop();
     상태(`연결하지 못했어요: ${e.message}`);
@@ -191,13 +205,18 @@ async function 시작(견본모드) {
   }
   if (연결.길 === '글') { 트랙.stop(); return 글시작(연결.계량); }
   예산표시(연결.계량);
-  연결.on('준비', () => { 상태(`${이가(장면.상대.이름)} 먼저 인사해요 — 편하게 대답해 보세요`); 시계시작(); });
+  // Gemini가 막혀 다른 길로 넘어왔으면 목소리가 바뀌는 까닭을 먼저 알린다
+  const 넘김글 = 연결.넘김 ? `지금은 ${넘김까닭[연결.넘김] || 'Gemini를 쓸 수 없어서'} ${길이름[연결.길] || '다른 길'}로 이어가요(목소리가 달라요). ` : '';
+  연결.on('준비', () => { 상태(`${넘김글}${이가(장면.상대.이름)} 먼저 인사해요 — 편하게 대답해 보세요`); 시계시작(); });
+  // 대화 중 연결이 끊기면(Gemini 소켓) 그때까지의 대화로 돌아보기를 만든다
+  연결.on('끊김', () => 끝내기());
   연결.on('자막', (z) => {
     자막그리기(연결.자막.줄들, $('자막'));
     if (z.누가 === '상대') {
       마지막상대 = performance.now();
       상대말함 = true;
-      if (!마무리보냄 && 연결.자막.줄들.some((l) => l.누가 === '상대' && l.글.includes('다음에 또 만나요'))) 마무리보냄 = true;
+      if (마무리보냄 && !마무리전줄.has(연결.자막.줄들[z.번호])) 마무리뒤말함 = true;
+      if (!마무리보냄 && 연결.자막.줄들.some((l) => l.누가 === '상대' && l.글.includes('다음에 또 만나요'))) { 마무리보냄 = true; 마무리뒤말함 = true; }
     }
   });
   연결.on('상태', 상태);
@@ -245,6 +264,7 @@ $('힌트단추').addEventListener('click', () => {
 function 마이크재기(트랙) {
   try {
     const ctx = new AudioContext();
+    마이크문맥 = ctx; // 판마다 새로 만드니 끝내기에서 닫는다(Fable 설계 검토 10-30 — 다시 하기를 거듭하면 쌓인다)
     const 재기 = ctx.createAnalyser();
     재기.fftSize = 512;
     ctx.createMediaStreamSource(new MediaStream([트랙])).connect(재기);
@@ -269,6 +289,8 @@ async function 끝내기() {
   끝내는중 = true;
   clearInterval(시계타이머);
   clearInterval(마이크타이머);
+  마이크문맥?.close().catch(() => {});
+  마이크문맥 = null;
   $('마이크').hidden = true;
   $('끝내기').disabled = true;
   상태('마무리하는 중…');

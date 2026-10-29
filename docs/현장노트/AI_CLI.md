@@ -95,6 +95,12 @@
 - 고침: 연 직후 `ws.binaryType = 'arraybuffer'`로 두고 `Buffer.from(ev.data)`로 동기로 푼다(`듣기시험/녹음.mjs`의 `열기`). 키는 쿼리 대신 `x-goog-api-key` 머리로 실었다(주소에 키가 남지 않게).
 - 다시 확인: `node experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs gemini cafe Kore --시도 1`이 줄마다 2~5초 소리를 받는지.
 
+### Gemini Live 자막 글은 소리보다 몇 초 먼저 다 와서, 자막 시각으로 답 끝을 재면 하온이 말하는 중에 끝낸다 (2026-10-30 Claude)
+- 증상: 시제품 Gemini 길 실측에서 한 답의 `outputTranscription`은 첫 소리 뒤 0.5초 안에 다 왔고(`generationComplete` 3.3초) 소리는 거의 실제 속도로 7.9초(`turnComplete`)까지 흘렀다. GPT-Live처럼 「마지막 자막 뒤 1.3초 조용하면 끝」으로 재면 소리가 나는 중에 세션을 닫고, 화면 자막은 소리보다 몇 초 먼저 다 떠서 말하기가 읽기가 된다.
+- 원인: Live API는 글(받아쓰기)을 소리 생성보다 앞서 내보내고 소리 조각만 재생 속도에 맞춰 보낸다. 자막에는 소리 시각이 없다.
+- 고침: 자동 끝은 예약한 소리가 다 들리는 시각(`연결.상대소리끝()`) + 1.3초로, 상대 자막은 첫 소리 시각부터 한 글자 140ms 꼴로 늦춰 낸다(`experiences/realtime-roleplay/public/연결층.mjs` 소켓열기). 끊긴 답(`interrupted`)은 들린 데까지만 남긴다. 임시 토큰 연결 · 설정 잠금 실측은 [조사](../../experiences/synk-world-app/qa/realtime-roleplay-20261029/조사.md#gemini-live-시제품-실측-10-30-오후-claude).
+- 다시 확인: 헤드리스 `?시험=1&길=gemini-live&상한=40`에서 작별 인사 소리가 끝난 뒤 1~2초에 `ws:close 1000`이 찍히는지.
+
 ### 몽골어 검문에서 `--구독`을 `--파일` 앞에 두면 쓰는 법만 찍고 끝난다 (2026-10-19)
 - 증상: 10-19 `node tools/몽골어대조.js --구독 --파일 <경로>`가 검문 없이 「쓰는 법」만 찍었다. `--구독` 없이 돌리면 무료 키 파일(`~/SYNK_보안/제미나이_무료.txt`)이 없다며 멈춘다(새 노트북).
 - 원인: 도구가 `--파일 <경로>`를 맨 앞 인자로 본다. 붙임 옵션은 그 뒤에 와야 한다.
@@ -990,7 +996,7 @@
 ### 앱 안 브라우저 창이 가려져 있으면 클릭이 「not on screen」으로 막힌다 — WebRTC · 자동 재생 시험은 ego로 (2026-10-30 Claude)
 - 증상: 시제품을 앱 안 브라우저로 열고 단추를 누르자 「Could not get the tab ready for input (it is not on screen…)」. `tabs_context`는 「Browser pane is currently hidden」.
 - 원인: 앱 안 브라우저는 창이 보이지 않으면 그리지 않아 입력을 못 받는다. 스크립트 `click()`은 사용자 활성화가 없어 AudioContext · 자동 재생이 막힌다.
-- 고침: ego(`ego-browser nodejs`)로 `http://127.0.0.1:<포트>/`를 열고 `page.click()`(진짜 입력이라 활성화가 생긴다), 폭 캡처는 `page.cdp('Emulation.setDeviceMetricsOverride', …)`.
+- 고침: ego(`ego-browser nodejs`)로 `http://127.0.0.1:<포트>/`를 열고 `page.click()`(진짜 입력이라 활성화가 생긴다), 폭 캡처는 `page.cdp('Emulation.setDeviceMetricsOverride', …)`. ego 창이 최소화돼 있으면 그것도 막힌다(10-30) — 창이 필요 없는 끝까지 시험은 헤드리스 크롬으로([시험 · 화면 현장 노트](시험_화면확인.md#ego-창이-최소화돼-있으면-캡처가-실패하고-그-뒤-ego-스크립트가-끝나지-않아-다음-스크립트도-붙지-못한다--실시간-음성-끝까지-시험은-헤드리스-크롬으로-2026-10-30-claude)).
 - 다시 확인: ego에서 시험 단추를 누른 뒤 `__상황극기록`에 `pc:connected` · `session.started`가 찍히는지.
 
 ### 「모델 호출만」 키로는 만든 목소리(prompt-to-voice)를 만들지도 부르지도 못한다 — 부를 때는 권한 오류가 아니라 「No voice found」로 보인다 (2026-10-30 Claude)
