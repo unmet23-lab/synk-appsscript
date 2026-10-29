@@ -3,6 +3,15 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
 const root=path.resolve(__dirname,'..'),pins=require('./fixtures/member-parser-compatibility-20261029.json');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+
+test('an outer self prefix never claims another actor\'s subordinate behaviour',()=>{
+ for(const prefix of ['저는 요즘','저는 주로','저는 대체로','평소 저는']){
+  const text=prefix+' 동료가 의견을 듣고 정리하는 걸 좋아해요.';
+  assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
+ }
+ for(const text of ['저는 동료의 의견을 듣고 정리하는 걸 좋아해요.','저는 요즘 동료와 의견을 듣고 정리하는 걸 좋아해요.'])
+  assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.field==='communication'&&m.value==='listen-organize'),text);
+});
 test('legacy parsing changed only an equivalent nonempty suffix regex; original bytes remain provable',()=>{
  for(const row of pins.rows){const source=fs.readFileSync(path.join(root,row.path),'utf8');assert.equal(sha(source),row.sha256);assert.equal(sha(source.replace(row.newRegex,row.oldRegex)),row.beforeSha256);}
  const pin9=pins.rows.at(-1),source=fs.readFileSync(path.join(root,pin9.path),'utf8').replace(pin9.newRegex,pin9.oldRegex);assert.equal(sha(source),pin9.beforeSha256);

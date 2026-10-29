@@ -93,6 +93,13 @@ test('replaying a known withdrawal never removes unrelated legacy answers',()=>{
  assert.equal(remaining(first).length,3);assert.deepEqual(remaining(second),remaining(first));
  assert.deepEqual(second.withdrawn,first.withdrawn);assert.doesNotThrow(()=>Ledger.validate(second));
 });
+
+test('joining an unrelated withdrawal preserves legacy helped timestamps',()=>{
+ const a={...Ledger.empty(),folded:10,cutoff:T0,cells:{[cellKey]:{ind:[],helped:[T0-500],unassessed:0}}};
+ const b={...Ledger.empty(),folded:9,cutoff:T0-1000,adjusted:1,withdrawn:['unrelated']};
+ assert.doesNotThrow(()=>Ledger.validate(a));assert.doesNotThrow(()=>Ledger.validate(b));
+ for(const joined of [Ledger.reconcile(a,b),Ledger.reconcile(b,a)])assert.deepEqual(joined.cells[cellKey].helped,a.cells[cellKey].helped);
+});
 test('a playback observed after the answer in either timestamp is not positive delivery evidence',()=>{
  const scope={domain:'LAB',workspace:'audio-time',subject:'synthetic'};let ms=T0,n=0;
  const session=A.createSession({scope,clock:()=>new Date(ms).toISOString(),id:()=>`audio.${++n}`});

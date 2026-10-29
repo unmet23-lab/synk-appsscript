@@ -1021,6 +1021,10 @@ function compositional(quote) {
   let {body,condition}=normalizePrefix(surfaceDeclaration(quote));
   body=surfaceDeclaration(body);
   body=body.replace(/^(?:저는|나는|제가|내가|제경우엔|내경우엔)(?:요)?/u,'').replace(/^(?:대체로|주로|보통은|보통(?!길이|분량|정도|수준))/u,'');
+  // Removing an outer self/adverb prefix cannot transfer a subordinate
+  // actor's behaviour to the member. Structured inset rules can still read
+  // an independently owned main clause after rejecting this loose path.
+  const otherActor=OTHER_PERSON_SUBJECT.test(body);
   let fields=null,head='';
   const ownedExplanation=/^(?:제가|내가)?원하는설명(?:은|는)(.+?)(?:이에요|예요|입니다)$/u.exec(body);
   if(ownedExplanation){body=ownedExplanation[1]+'좋아요';fields=['explanation'];head='설명';}
@@ -1092,7 +1096,8 @@ function compositional(quote) {
     // A named decision frame binds an otherwise generic final 'do' to that
     // decision. Do not rewrite syllables inside verbs such as 참고하는.
     const roles=fields?.length===1&&fields[0]==='decision'&&units.at(-1)==='do'&&units.includes('data')?[...units.slice(0,-1),'decide']:units;
-    const m=composeMeaning(roles,normalized.nominalHead);if(m)recognized.push(m);}
+    const m=composeMeaning(roles,normalized.nominalHead);
+    if(m){if(otherActor&&m.field!=='topic')return null;recognized.push(m);}}
   if(!recognized.length){
     const core=declaredCore(head+action,normalized,condition,fields,quote);if(core)return core;
     // Coordinated clauses may share their final preference predicate. Each

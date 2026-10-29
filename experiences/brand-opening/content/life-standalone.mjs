@@ -8173,7 +8173,7 @@ var require_learning_ledger = __commonJS({
       const parentGone = [...gone].some((id) => !retired.has(id) && !direct.has(id));
       const withdrawn = (id) => gone.has(id) || own2(parents, id) && parents[id].some((p) => p !== null && gone.has(p)) || !linkedOnly && parentGone && (!own2(parents, id) || parents[id].length === 2);
       const after = ([eventId, at, , familyKey, itemKey = familyKey]) => withdrawn(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
-      const excludedHelp = (h) => Array.isArray(h) ? withdrawn(h[0]) : gone.size > 0;
+      const excludedHelp = (h) => Array.isArray(h) ? withdrawn(h[0]) : !linkedOnly && gone.size > 0;
       const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + Math.max(strays, gone.size) };
       for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
         if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter((row) => {
