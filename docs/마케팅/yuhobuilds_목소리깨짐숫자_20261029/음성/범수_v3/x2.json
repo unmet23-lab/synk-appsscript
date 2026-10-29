@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "x2",
+ "text": "귀로는 잘 안 들리죠. 검사기는 바로 잡았어요. 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+ "dur": 4.781,
+ "words": [
+  {
+   "text": "귀로는",
+   "start": 0.02,
+   "end": 0.298
+  },
+  {
+   "text": "잘",
+   "start": 0.342,
+   "end": 0.458
+  },
+  {
+   "text": "안",
+   "start": 0.517,
+   "end": 0.561
+  },
+  {
+   "text": "들리죠.",
+   "start": 0.604,
+   "end": 0.882
+  },
+  {
+   "text": "검사기는",
+   "start": 1.364,
+   "end": 1.772
+  },
+  {
+   "text": "바로",
+   "start": 1.816,
+   "end": 1.962
+  },
+  {
+   "text": "잡았어요.",
+   "start": 2.006,
+   "end": 2.386
+  },
+  {
+   "text": "소리가",
+   "start": 2.852,
+   "end": 3.101
+  },
+  {
+   "text": "갈라진",
+   "start": 3.145,
+   "end": 3.422
+  },
+  {
+   "text": "순간이",
+   "start": 3.466,
+   "end": 3.787
+  },
+  {
+   "text": "이십",
+   "start": 3.918,
+   "end": 4.05
+  },
+  {
+   "text": "점",
+   "start": 4.093,
+   "end": 4.181
+  },
+  {
+   "text": "팔",
+   "start": 4.225,
+   "end": 4.298
+  },
+  {
+   "text": "퍼센트.",
+   "start": 4.342,
+   "end": 4.781
+  }
+ ],
+ "source": {
+  "key": "bd9fe791255506f1b1886b3f7bb51f2a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

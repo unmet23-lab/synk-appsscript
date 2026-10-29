@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "x5",
+ "text": "그대로 나갈 뻔한 이 줄, 다른 목소리로 다시 뽑아 숫자로 걸렀어요.",
+ "dur": 3.36,
+ "words": [
+  {
+   "text": "그대로",
+   "start": 0.02,
+   "end": 0.256
+  },
+  {
+   "text": "나갈",
+   "start": 0.295,
+   "end": 0.466
+  },
+  {
+   "text": "뻔한",
+   "start": 0.519,
+   "end": 0.729
+  },
+  {
+   "text": "이",
+   "start": 0.769,
+   "end": 0.781
+  },
+  {
+   "text": "줄,",
+   "start": 0.821,
+   "end": 1.018
+  },
+  {
+   "text": "다른",
+   "start": 1.438,
+   "end": 1.648
+  },
+  {
+   "text": "목소리로",
+   "start": 1.688,
+   "end": 1.99
+  },
+  {
+   "text": "다시",
+   "start": 2.029,
+   "end": 2.212
+  },
+  {
+   "text": "뽑아",
+   "start": 2.252,
+   "end": 2.423
+  },
+  {
+   "text": "숫자로",
+   "start": 2.475,
+   "end": 2.711
+  },
+  {
+   "text": "걸렀어요.",
+   "start": 2.751,
+   "end": 3.36
+  }
+ ],
+ "source": {
+  "key": "df2ae27910327a04427c62f7b3979852",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

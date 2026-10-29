@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "x7",
+ "text": "검사기 부탁 글은 영상 아래 글에. 이제 「턴」에서 들어 보세요.",
+ "dur": 3.108,
+ "words": [
+  {
+   "text": "검사기",
+   "start": 0.06,
+   "end": 0.373
+  },
+  {
+   "text": "부탁",
+   "start": 0.416,
+   "end": 0.63
+  },
+  {
+   "text": "글은",
+   "start": 0.672,
+   "end": 0.886
+  },
+  {
+   "text": "영상",
+   "start": 0.985,
+   "end": 1.27
+  },
+  {
+   "text": "아래",
+   "start": 1.327,
+   "end": 1.441
+  },
+  {
+   "text": "글에.",
+   "start": 1.484,
+   "end": 1.64
+  },
+  {
+   "text": "이제",
+   "start": 2.11,
+   "end": 2.224
+  },
+  {
+   "text": "「턴」에서",
+   "start": 2.267,
+   "end": 2.551
+  },
+  {
+   "text": "들어",
+   "start": 2.594,
+   "end": 2.722
+  },
+  {
+   "text": "보세요.",
+   "start": 2.765,
+   "end": 3.108
+  }
+ ],
+ "source": {
+  "key": "90b736f33643731d42323d6cc9b3be9d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

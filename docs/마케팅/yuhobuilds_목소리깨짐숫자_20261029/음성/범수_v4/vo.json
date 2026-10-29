@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획_v4.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-29T16:06:45.505Z",
+ "lines": [
+  {
+   "id": "x1",
+   "text": "둘 중 하나는 깨졌어요. 들리세요?",
+   "dur": 1.83,
+   "syllablesPerSec": 7.1,
+   "src": "x1.wav",
+   "key": "4de0b35c7b77e5c62309445de6f8b44c",
+   "words": 5
+  },
+  {
+   "id": "x2",
+   "text": "검사기는 바로 잡았어요. A는 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+   "dur": 3.621,
+   "syllablesPerSec": 7.46,
+   "src": "x2.wav",
+   "key": "c3f75ecadc5137c5a0c2b0e78700e03d",
+   "words": 11
+  },
+  {
+   "id": "x3",
+   "text": "여기, 「턴」 첫머리에서 소리가 갈라졌어요.",
+   "dur": 2.803,
+   "syllablesPerSec": 5.71,
+   "src": "x3.wav",
+   "key": "a0fe2fc85a639efcd18f908bd73b462e",
+   "words": 5
+  },
+  {
+   "id": "x4",
+   "text": "검사기는 소리를 잘게 잘라서, 갈라진 조각을 세요.",
+   "dur": 2.683,
+   "syllablesPerSec": 7.45,
+   "src": "x4.wav",
+   "key": "718084181ea8ca392578579277e440c1",
+   "words": 7
+  },
+  {
+   "id": "x5",
+   "text": "그대로 나갈 뻔한 이 줄, 다른 목소리로 다시 뽑아 숫자로 걸렀어요.",
+   "dur": 3.36,
+   "syllablesPerSec": 7.74,
+   "src": "x5.wav",
+   "key": "df2ae27910327a04427c62f7b3979852",
+   "words": 11
+  },
+  {
+   "id": "x6",
+   "text": "듣고 고르기 전에, 숫자로 먼저 거르세요. 남은 것만 귀로.",
+   "dur": 2.835,
+   "syllablesPerSec": 7.76,
+   "src": "x6.wav",
+   "key": "c3588705cfc8efa5743910cec05dc91f",
+   "words": 9
+  },
+  {
+   "id": "x7",
+   "text": "검사기 부탁 글은 영상 아래 글에. 이제 「턴」에서 들어 보세요.",
+   "dur": 3.108,
+   "syllablesPerSec": 7.4,
+   "src": "x7.wav",
+   "key": "90b736f33643731d42323d6cc9b3be9d",
+   "words": 10
+  }
+ ]
+}

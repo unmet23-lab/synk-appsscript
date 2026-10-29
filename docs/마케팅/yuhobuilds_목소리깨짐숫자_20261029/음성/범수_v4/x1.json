@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "x1",
+ "text": "둘 중 하나는 깨졌어요. 들리세요?",
+ "dur": 1.83,
+ "words": [
+  {
+   "text": "둘",
+   "start": 0.02,
+   "end": 0.15
+  },
+  {
+   "text": "중",
+   "start": 0.192,
+   "end": 0.308
+  },
+  {
+   "text": "하나는",
+   "start": 0.35,
+   "end": 0.552
+  },
+  {
+   "text": "깨졌어요.",
+   "start": 0.595,
+   "end": 1.027
+  },
+  {
+   "text": "들리세요?",
+   "start": 1.387,
+   "end": 1.83
+  }
+ ],
+ "source": {
+  "key": "4de0b35c7b77e5c62309445de6f8b44c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

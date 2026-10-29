@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "x2",
+ "text": "검사기는 바로 잡았어요. A는 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+ "dur": 3.621,
+ "words": [
+  {
+   "text": "검사기는",
+   "start": 0.06,
+   "end": 0.512
+  },
+  {
+   "text": "바로",
+   "start": 0.553,
+   "end": 0.69
+  },
+  {
+   "text": "잡았어요.",
+   "start": 0.745,
+   "end": 1.101
+  },
+  {
+   "text": "A는",
+   "start": 1.499,
+   "end": 1.746
+  },
+  {
+   "text": "소리가",
+   "start": 1.787,
+   "end": 2.019
+  },
+  {
+   "text": "갈라진",
+   "start": 2.074,
+   "end": 2.39
+  },
+  {
+   "text": "순간이",
+   "start": 2.43,
+   "end": 2.718
+  },
+  {
+   "text": "이십",
+   "start": 2.8,
+   "end": 2.896
+  },
+  {
+   "text": "점",
+   "start": 2.937,
+   "end": 3.033
+  },
+  {
+   "text": "팔",
+   "start": 3.074,
+   "end": 3.156
+  },
+  {
+   "text": "퍼센트.",
+   "start": 3.197,
+   "end": 3.621
+  }
+ ],
+ "source": {
+  "key": "c3f75ecadc5137c5a0c2b0e78700e03d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

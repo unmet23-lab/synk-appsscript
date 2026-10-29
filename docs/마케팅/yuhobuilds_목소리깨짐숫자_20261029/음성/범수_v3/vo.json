@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획_v3.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-29T15:58:02.510Z",
+ "lines": [
+  {
+   "id": "x1",
+   "text": "둘 중 하나는 깨졌어요. 들리세요?",
+   "dur": 1.83,
+   "syllablesPerSec": 7.1,
+   "src": "x1.wav",
+   "key": "4de0b35c7b77e5c62309445de6f8b44c",
+   "words": 5
+  },
+  {
+   "id": "x2",
+   "text": "귀로는 잘 안 들리죠. 검사기는 바로 잡았어요. 소리가 갈라진 순간이 이십 점 팔 퍼센트.",
+   "dur": 4.781,
+   "syllablesPerSec": 7.11,
+   "src": "x2.wav",
+   "key": "bd9fe791255506f1b1886b3f7bb51f2a",
+   "words": 14
+  },
+  {
+   "id": "x5",
+   "text": "그대로 나갈 뻔한 이 줄, 다른 목소리로 다시 뽑아 숫자로 걸렀어요.",
+   "dur": 3.36,
+   "syllablesPerSec": 7.74,
+   "src": "x5.wav",
+   "key": "df2ae27910327a04427c62f7b3979852",
+   "words": 11
+  },
+  {
+   "id": "x7",
+   "text": "검사기 부탁 글은 영상 아래 글에. 이제 「턴」에서 들어 보세요.",
+   "dur": 3.108,
+   "syllablesPerSec": 7.4,
+   "src": "x7.wav",
+   "key": "90b736f33643731d42323d6cc9b3be9d",
+   "words": 10
+  }
+ ]
+}
