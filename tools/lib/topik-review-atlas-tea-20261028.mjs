@@ -19,9 +19,9 @@ export function validateTeaException({packetRaw=read(`${dir}/full.json`),result=
  if(result.task!==TASK||result.author!==AUTHOR||result.reviewer!==REVIEWER||result.author===result.reviewer||result.verdict!=='pass'||result.remainingBlocking!==0||checks.some(k=>result.checks?.[k]!==true))throw Error('Independent Town review required');
  if(solved.reviewer!==REVIEWER||solved.phase!=='before-full-answer-access'||solved.blindSha256!==digest(blindRaw)||!Number.isFinite(Date.parse(solved.at))||!(Date.parse(result.reviewedAt)>Date.parse(solved.at)))throw Error('Missing blind Town evidence');
  if(packet.source.lines!=='experiences/synk-town/town/data/lines/tea.json'||packet.source.axes!=='experiences/synk-town/town/data/tea.json')throw Error('Town sources outside fixed scope');
- const linesRaw=readSource(packet.source.lines),axesRaw=readSource(packet.source.axes);
- if(digest(linesRaw)!==packet.source.linesHash||digest(axesRaw)!==packet.source.axesHash||teaReviewHash(packet.judge)!==teaReviewHash(TEA_JUDGE))throw Error('Changed Town source or judge contract');
- const lines=JSON.parse(linesRaw),axes=JSON.parse(axesRaw).axes;
+ // The approval covers the twelve reviewed units, not whole files: later frames beside them (W10, town-tea-w10.json) carry their own review.
+ const lines=JSON.parse(readSource(packet.source.lines)),axes=JSON.parse(readSource(packet.source.axes)).axes;
+ if(packet.units.some(entry=>teaReviewHash(entry.unit.axes)!==teaReviewHash(axes))||teaReviewHash(packet.judge)!==teaReviewHash(TEA_JUDGE))throw Error('Changed Town source or judge contract');
  if(packet.units.length!==12||result.results?.length!==12||result.frames!==12||result.expandedCases!==152||result.acceptedAlternativeChecks!==2736)throw Error('Incomplete Town review');
  const answers=new Map(solved.items.map(row=>[row.id,row]));let count=0;
  if(answers.size!==152||solved.items.length!==152||new Set(result.results.map(r=>r.id)).size!==12)throw Error('Incomplete or duplicated Town evidence');

@@ -110,5 +110,10 @@ test('the fixed Town extension requires independent blind evidence and rejects c
  const same=structuredClone(input);same.result.reviewer=same.result.author;assert.throws(()=>validateTeaException(same),/Independent/);
  const wrong=structuredClone(input);wrong.solved.items[0].solved.tea='yuzu';assert.throws(()=>validateTeaException(wrong),/Blind Town answer/);
  const level=structuredClone(input);level.result.results[0].levels.push('L3');assert.throws(()=>validateTeaException(level),/unapproved/);
- assert.throws(()=>validateTeaException({...input,readSource:rel=>raw(rel)+' '}),/Changed Town source/);
+ const LINES='experiences/synk-town/town/data/lines/tea.json',AXES='experiences/synk-town/town/data/tea.json';
+ const edit=(file,change)=>rel=>rel===file?JSON.stringify(change(JSON.parse(raw(rel)))):raw(rel);
+ const later={id:'guest.tea.req-later.1',when:{part:'request'},levels:{L1:'따뜻한 차 주세요.',L2:'따뜻한 차 주세요.',L3:'따뜻한 차 주세요.',L4:'따뜻한 차 주세요.'}};
+ assert.equal(validateTeaException({...input,readSource:edit(LINES,lines=>[...lines,later])}).result.results.length,12,'frames added beside the reviewed twelve keep their own review');
+ assert.throws(()=>validateTeaException({...input,readSource:edit(AXES,tea=>({...tea,axes:{...tea.axes,temp:{...tea.axes.temp,warm:{...tea.axes.temp.warm,adv:'차갑게'}}}}))}),/Changed Town source/);
+ assert.throws(()=>validateTeaException({...input,readSource:edit(LINES,lines=>lines.map(l=>l.id==='guest.tea.req-tea.1'?{...l,levels:{...l.levels,L1:l.levels.L1+'!'}}:l))}),/Stale or unapproved Town frame/);
 });
