@@ -12,10 +12,16 @@
  *   node tools/tmp정리목록.js --json             목록을 JSON으로(예약 작업이 읽는다)
  *   node tools/tmp정리목록.js --옮기기 a,b,c     유호님이 승인한 폴더만 C:\Users\q1212\SYNK_정리대기\<오늘>\ 로 옮긴다
  *   node tools/tmp정리목록.js --옮기기 --묶음 릴리스옛판|이사복사|14일|전부   승인한 묶음을 통째로 옮긴다
+ *   --일수 N                                      위 셋에 붙여 「N일 넘게 손대지 않은」 기준으로 본다(기본 14 — 공간 정리 때 3)
  *
  * 후보: ① 14일 넘게 손대지 않은 폴더 ② 릴리스·후보 사본(이름에 -release·-candidate)은 갈래마다 새 판 둘만 남기고 옛 판은
  * 날짜와 상관없이(10-21 유호님 확정). 둘 다 최근·남는 폴더가 경로로 끌어 쓰면 빼고, _보존.txt가 있거나 .tmp 맨 위
- * _정리제외.txt에 이름이 있으면 뺀다(그 폴더가 가리키는 옛 폴더도 남는다 — 10-29 회사 릴리스 계보).
+ * _정리제외.txt에 이름이 있으면 뺀다(그 폴더가 가리키는 옛 폴더도 남는다 — 10-29 회사 릴리스 계보). 그 파일의
+ * 「#! 실측 계보 시작」~「#! 실측 계보 끝」 사이 이름은 남기되 그 폴더 안의 경로 언급은 따라가지 않는다 — 회사 릴리스 재무장이
+ * 실제로 읽는 폴더를 tools/company-release/lineage.cjs로 잰 닫힌 목록이라, 기록 json의 출처 언급까지 따라가면 쓰지 않는
+ * 후보 작업 폴더 수십 GB가 끝없이 남는다(10-30).
+ * 참조는 상한 없이 끝까지 훑는다 — 상한을 주어 잘리면 목록을 비운다(10-30: 기본 상한 6만 파일이 .tmp 29만 파일의 2할만 봐서
+ * 쓰는 계보가 후보로 샜다).
  * 마지막 수정이 노트북 이사 복사 날(10-15~17)인 폴더는 따로 묶어 이름 속 날짜와 같이 보인다.
  */
 const fs = require('fs');
@@ -72,8 +78,10 @@ function git정보(폴더) {
 }
 
 // 코드와 설정·기록 json만 본다. 문서·로그·소스 사본은 경로를 적어도 도구를 깨뜨리지 않고, 읽기만 오래 걸린다.
-// 회사 릴리스 기록 json은 수십~수백 KB라 1MiB까지 본다(10-29 — 64KB로 자르다 76KB 기록의 경로를 놓쳤다).
-const 참조확장자 = new Map([['.cjs', 512 * 1024], ['.mjs', 512 * 1024], ['.js', 512 * 1024], ['.py', 512 * 1024], ['.ps1', 512 * 1024], ['.sh', 512 * 1024], ['.json', 1024 * 1024]]);
+// 회사 릴리스 기록 json은 수십~수백 KB라 1MiB까지 보다가(10-29 — 64KB로 자르다 76KB 기록의 경로를 놓쳤다), 10-30 실측에서
+// 512KB·1MiB 제한이 1,655개를 건너뛰어 32MiB로 올렸다. 그보다 큰 것(내장 꾸러미 .py 등 5개)은 건너뛰고 큰파일로 센다.
+const 최대크기 = 32 * 1024 * 1024;
+const 참조확장자 = new Set(['.cjs', '.mjs', '.js', '.py', '.ps1', '.sh', '.json']);
 const 건너뛸폴더 = new Set(['node_modules', '.git', 'isolated-source', 'candidate', 'candidates', 'source', 'sources', 'snapshot', 'snapshots',
   'dist', 'build', 'out', 'payload', 'images', 'frames', 'media', 'renders', '__pycache__']);
 // `../../옛폴더/…`·`.tmp/옛폴더/…`처럼 다른 .tmp 폴더를 가리키는 경로. 점으로 시작하는 이름(`..`)은 폴더 이름이 아니다.
@@ -83,20 +91,36 @@ const 참조식 = /(?:(?:\.\.[\\/]+)+|\.tmp[\\/]+)([^.\\/'"`\s)\]][^\\/'"`\s)\]]
 const 이어붙인참조식 = /(['"`])\.\.\1\s*,\s*(['"`])([^.\\/'"`\s][^\\/'"`\s]*)\2/g;
 // .tmp 맨 위의 이 파일에 적은 폴더(줄마다 이름 하나, # 뒤는 설명)는 _보존.txt처럼 남기고, 그 폴더가 가리키는 옛 폴더도 남긴다.
 // 10-29 공간 정리가 회사 릴리스 계보를 옮겨 사슬 38 생성기가 MODULE_NOT_FOUND로 멈춘 뒤, 그 세션이 되돌린 폴더를 적었다.
+// 「#! 실측 계보 시작」~「#! 실측 계보 끝」 사이 이름(닫힘)은 남기되 참조 따라가기의 뿌리로 쓰지 않는다. 같은 이름이 그 밖에도
+// 적혀 있으면 따라가는 쪽이 이긴다. 옛 판 도구는 「#!」 줄을 설명으로 읽어 그 이름을 그냥 남기므로(따라가기 포함) 안전한 쪽이다.
 const 제외파일 = '_정리제외.txt';
 function 제외읽기(임시) {
-  try { return new Set(fs.readFileSync(path.join(임시, 제외파일), 'utf8').split(/\r?\n/).map((l) => l.replace(/#.*/, '').trim()).filter(Boolean)); }
-  catch { return new Set(); }
+  const 이름들 = new Set(), 닫힘 = new Set(), 따라감 = new Set();
+  let 글;
+  try { 글 = fs.readFileSync(path.join(임시, 제외파일), 'utf8'); } catch { return { 이름들, 닫힘 }; }
+  let 닫힌절 = false;
+  for (const 줄 of 글.split(/\r?\n/)) {
+    if (/^#!\s*실측 계보 시작/.test(줄)) { 닫힌절 = true; continue; }
+    if (/^#!\s*실측 계보 끝/.test(줄)) { 닫힌절 = false; continue; }
+    const 이름 = 줄.replace(/#.*/, '').trim();
+    if (!이름) continue;
+    이름들.add(이름);
+    (닫힌절 ? 닫힘 : 따라감).add(이름);
+  }
+  for (const 이름 of 따라감) 닫힘.delete(이름);
+  return { 이름들, 닫힘 };
 }
 
 /**
  * 주어진 폴더들의 코드·설정 파일에서 다른 .tmp 폴더를 가리키는 경로를 모은다(이름 → 가리킨 폴더들).
  * 10-19: 회사 서버 릴리스 도구가 10-11~14 폴더(서버 접속 고정 정보·도우미)를 경로로 끌어 써서,
- * 날짜만 보고 옮기면 최근 작업이 깨진다. 읽기만 하며 폴더마다·전체 파일 수에 상한을 둔다.
+ * 날짜만 보고 옮기면 최근 작업이 깨진다. 읽기만 한다. 기본은 상한 없이 끝까지 훑고(10-30 실측 .tmp 29만 파일 82초),
+ * 상한을 주어 덜 훑었으면 결과에 잘림=true를 단다 — 놓친 참조로 쓰는 폴더가 후보가 되지 않게 부르는 쪽이 목록을 비운다.
  */
-function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: 2000, 전체: 60000 }) {
+function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: Infinity, 전체: Infinity }) {
   const 찾은 = new Map();
-  let 전체 = 0;
+  let 전체 = 0, 잘림 = false;
+  const 큰파일 = [];
   for (const 폴더 of 폴더들) {
     const 쌓기 = [path.join(임시, 폴더)];
     let 본파일 = 0;
@@ -108,10 +132,9 @@ function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: 200
         if (e.isSymbolicLink()) continue;
         const p = path.join(지금, e.name);
         if (e.isDirectory()) { if (!건너뛸폴더.has(e.name)) 쌓기.push(p); continue; }
-        const 최대 = 참조확장자.get(path.extname(e.name).toLowerCase());
-        if (!최대) continue;
+        if (!참조확장자.has(path.extname(e.name).toLowerCase())) continue;
         let 글;
-        try { if (fs.statSync(p).size > 최대) continue; 글 = fs.readFileSync(p, 'utf8'); } catch { continue; }
+        try { if (fs.statSync(p).size > 최대크기) { 큰파일.push(p); continue; } 글 = fs.readFileSync(p, 'utf8'); } catch { continue; }
         본파일++; 전체++;
         for (const 이름 of [...[...글.matchAll(참조식)].map((m) => m[1]), ...[...글.matchAll(이어붙인참조식)].map((m) => m[3])]) {
           if (이름 === 폴더 || !이름들.has(이름)) continue;
@@ -120,7 +143,10 @@ function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: 200
         }
       }
     }
+    if (쌓기.length) 잘림 = true;
   }
+  찾은.잘림 = 잘림;
+  찾은.큰파일 = 큰파일;
   return 찾은;
 }
 
@@ -163,7 +189,7 @@ function 목록만들기(옵션 = {}) {
       if (st.mtimeMs < 기준) { 오래된파일++; 오래된파일크기 += st.size; }
       continue;
     }
-    if (fs.existsSync(path.join(p, '_보존.txt')) || 제외.has(e.name)) { 최근.push(e.name); continue; }
+    if (fs.existsSync(path.join(p, '_보존.txt')) || 제외.이름들.has(e.name)) { 최근.push(e.name); continue; }
     폴더들.push({ 이름: e.name, p, 잰것: 훑기(p) });
   }
   // 릴리스·후보 사본은 갈래마다 새 판 둘만 남기고, 그보다 옛 판은 14일이 안 됐어도 후보로 보인다(10-21 유호님 확정).
@@ -182,15 +208,21 @@ function 목록만들기(옵션 = {}) {
     });
   }
   // 최근·보존 폴더가 끌어 쓰는 옛 폴더는 남긴다. 남긴 폴더가 다시 가리키는 폴더도 따라가며 남긴다.
+  // 실측 계보(닫힘)는 남기기만 하고 뿌리로 쓰지 않는다 — 그 폴더가 실제로 읽는 곳은 이미 같은 목록에 있다.
   const 참조로남김 = [];
-  let 볼곳 = 최근;
+  let 볼곳 = 최근.filter((이름) => !제외.닫힘.has(이름)), 참조잘림 = false;
+  const 큰파일 = [];
   while (볼곳.length && 후보.length) {
-    const 찾은 = 참조모으기(임시, 볼곳, new Set(후보.map((c) => c.이름)));
+    const 찾은 = 참조모으기(임시, 볼곳, new Set(후보.map((c) => c.이름)), 옵션.상한);
+    참조잘림 = 참조잘림 || 찾은.잘림;
+    큰파일.push(...찾은.큰파일);
     if (!찾은.size) break;
     for (const [이름, 가리킨] of 찾은) 참조로남김.push({ 이름, 가리킨: [...가리킨].sort() });
     후보 = 후보.filter((c) => !찾은.has(c.이름));
     볼곳 = [...찾은.keys()];
   }
+  // 참조를 끝까지 못 훑었으면 남은 후보 가운데 쓰는 폴더가 섞였을 수 있다 — 아무것도 내놓지 않는다(옮기기도 이 목록을 쓴다).
+  if (참조잘림) 후보 = [];
   후보.sort((a, b) => b.MB - a.MB);
   참조로남김.sort((a, b) => a.이름.localeCompare(b.이름));
   let 대기폴더 = 0, 대기MB = 0;
@@ -204,7 +236,8 @@ function 목록만들기(옵션 = {}) {
   // 릴리스 갈래마다 남긴 새 판(보이기용) — 옛 판을 고를 때 무엇이 남는지 같이 보인다.
   const 남긴판 = {};
   for (const [g, 판들] of 갈래별) if (판들.some((f) => 옛판.has(f.이름) && 후보.some((c) => c.이름 === f.이름))) 남긴판[g] = 판들.slice(0, 남길판).map((f) => f.이름);
-  return { 후보, 참조로남김, 남긴판, 오래된파일, 오래된파일MB: +(오래된파일크기 / 1048576).toFixed(1), 대기폴더, 대기MB: +대기MB.toFixed(1), 일수, 남길판, 이사날 };
+  return { 후보, 참조로남김, 남긴판, 오래된파일, 오래된파일MB: +(오래된파일크기 / 1048576).toFixed(1), 대기폴더, 대기MB: +대기MB.toFixed(1), 일수, 남길판, 이사날,
+    참조잘림, 큰파일: [...new Set(큰파일)].map((p) => path.relative(임시, p).split(path.sep).join('/')).sort() };
 }
 
 /** 고르기 묶음 셋 — 릴리스 옛 판 · 이사 복사 시각 · 14일. 이름 목록을 돌려준다. */
@@ -221,7 +254,8 @@ function 글로(목록, 옵션 = {}) {
   const 열넷 = 목록.후보.filter((c) => (c.까닭 || ['14일']).includes('14일'));
   const 옛판들 = 목록.후보.filter((c) => (c.까닭 || []).includes('릴리스옛판'));
   const 줄 = [`[.tmp 한 달 정리] ${목록.일수}일 넘게 손대지 않은 폴더 ${열넷.length}개` + (옛판들.length ? ` · 릴리스·후보 사본의 옛 판 ${옛판들.length}개` : '') + (목록.후보.length ? ` — 합계 ${크기글(MB합(목록.후보))}` : '')];
-  if (!목록.후보.length) 줄.push('이번 달 정리할 폴더 없음');
+  if (목록.참조잘림) 줄.push('참조를 끝까지 훑지 못해(상한에 걸림) 쓰는 폴더가 섞였을 수 있어 이번 목록은 비웠어요.');
+  else if (!목록.후보.length) 줄.push('이번 달 정리할 폴더 없음');
   const 한줄 = (c) => {
     const g = c.git ? ` · git(미커밋 ${c.git.미커밋 ?? '?'} · 안 올린 커밋 ${c.git.안올린커밋 ?? '?'})` : '';
     const 이사 = c.이사복사 ? ` · 이사 복사 시각${c.이름날짜 ? `(이름 날짜 ${c.이름날짜})` : ''}` : '';
@@ -300,23 +334,29 @@ module.exports = { 목록만들기, 글로, 옮기기, 묶음, 훑기, 참조모
 if (require.main === module) {
   const argv = process.argv.slice(2);
   const 모델 = 기기모델();
+  const 일수자리 = argv.indexOf('--일수');
+  const 옵션 = 일수자리 >= 0 ? { 일수: Number(argv[일수자리 + 1]) } : {};
+  if (일수자리 >= 0) argv.splice(일수자리, 2);
   if (모델 !== 기본.기기) {
     console.error(`이 PC(${모델 || '모름'})는 새 노트북(${기본.기기})이 아니라서 아무것도 하지 않았다.`);
     process.exitCode = 2;
+  } else if ('일수' in 옵션 && !(Number.isInteger(옵션.일수) && 옵션.일수 >= 1)) {
+    console.error('--일수 뒤에는 1 이상의 정수를 적는다 — 아무것도 하지 않았다.');
+    process.exitCode = 1;
   } else if (argv[0] === '--옮기기') {
     const 묶음자리 = argv.indexOf('--묶음');
     let 이름들;
     try {
       이름들 = 묶음자리 >= 0
-        ? String(argv[묶음자리 + 1] || '').split(',').flatMap((m) => 묶음(목록만들기(), m.trim()))
+        ? String(argv[묶음자리 + 1] || '').split(',').flatMap((m) => 묶음(목록만들기(옵션), m.trim()))
         : String(argv[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
     } catch (e) { console.error(`${e.message} — 아무것도 옮기지 않았다.`); process.exit(1); }
-    const r = 옮기기([...new Set(이름들)]);
+    const r = 옮기기([...new Set(이름들)], 옵션);
     console.log(`옮긴 폴더 ${r.옮김.length}개 → ${r.위치}${r.남김.length ? `\n남긴 것: ${r.남김.map((x) => `${x.이름}(${x.이유})`).join(', ')}` : ''}`);
   } else if (argv.includes('--json')) {
-    console.log(JSON.stringify(목록만들기(), null, 1));
+    console.log(JSON.stringify(목록만들기(옵션), null, 1));
   } else {
-    const 글 = 글로(목록만들기(), { 자세히: argv.includes('--자세히') });
+    const 글 = 글로(목록만들기(옵션), { 자세히: argv.includes('--자세히') });
     console.log(글);
     const 방 = path.join(저장소, 'output', '크레딧작업', 'tmp정리목록');
     fs.mkdirSync(방, { recursive: true });

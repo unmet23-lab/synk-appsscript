@@ -105,6 +105,58 @@ test('json의 겹 역슬래시 경로 · path.join(…, \'..\', 이름) · 1MiB 
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
+test('참조는 상한 없이 끝까지 훑는다 — 2천 파일 넘는 폴더 뒤쪽·1MiB 넘는 기록도 보고, 상한을 주어 잘리면 목록을 비운다(10-30)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-cap-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    // 훑기는 쌓기(LIFO)라 b/가 먼저 — 옛 상한(폴더당 2000)이면 b/의 2,100개를 본 뒤 a/를 보지 않았다.
+    for (let i = 0; i < 2100; i++) 쓰기(`release-20261029/b/r${String(i).padStart(4, '0')}.json`, '{}');
+    쓰기('release-20261029/a/approval-input.json', JSON.stringify({ previous: 'C:\\Users\\me\\SYNK\\.tmp\\deep-chain-20261013\\evidence.json' }));
+    쓰기('release-20261029/big.json', JSON.stringify({ pad: 'x'.repeat(2 * 1024 * 1024), evidence: '.tmp/big-ref-20261012/run.json' }));
+    쓰기('release-20261029/huge.json', JSON.stringify({ pad: 'x'.repeat(33 * 1024 * 1024), evidence: '.tmp/huge-ref-20261011/run.json' }));
+    for (const 이름 of ['deep-chain-20261013', 'big-ref-20261012', 'huge-ref-20261011', 'plain-old-20261001']) { 쓰기(`${이름}/a.json`, '{}'); 옛날로(path.join(임시, 이름), 30); }
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.equal(목록.참조잘림, false);
+    assert.deepEqual(목록.참조로남김.map((x) => x.이름), ['big-ref-20261012', 'deep-chain-20261013']);
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['huge-ref-20261011', 'plain-old-20261001'], '32MiB 넘는 파일은 건너뛰고 센다');
+    assert.deepEqual(목록.큰파일, ['release-20261029/huge.json']);
+
+    const 잘린 = 정리.목록만들기({ 임시, 대기, 상한: { 폴더당: 2000, 전체: 60000 } });
+    assert.equal(잘린.참조잘림, true);
+    assert.deepEqual(잘린.후보, [], '덜 훑었으면 쓰는 폴더가 섞였을 수 있어 아무것도 내놓지 않는다');
+    assert.match(정리.글로(잘린), /끝까지 훑지 못해/);
+    assert.deepEqual(정리.옮기기(['deep-chain-20261013', 'plain-old-20261001'], { 임시, 대기, 상한: { 폴더당: 1, 전체: 1 } }).옮김, []);
+    assert.ok(fs.existsSync(path.join(임시, 'deep-chain-20261013')));
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('_정리제외.txt의 「#! 실측 계보」 절은 남기기만 하고 그 폴더 안의 언급은 따라가지 않는다 — 같은 이름이 절 밖에도 있으면 따라간다(10-30)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-closed-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    쓰기('closed-release-20261020/deployment/validation.json', JSON.stringify({ source: 'C:\\Users\\me\\SYNK\\.tmp\\provenance-candidate-20261019\\candidate' }));
+    쓰기('recent-closed-20261029/rearm/approval.cjs', "require('../../recent-mention-20261001/x.cjs')");
+    쓰기('both-20261018/a.json', '{"x":".tmp/both-ref-20261017/a.cjs"}');
+    쓰기('plain-lineage-20261016/a.cjs', "require('../../plain-ref-20261015/a.cjs')");
+    for (const 이름 of ['provenance-candidate-20261019', 'recent-mention-20261001', 'both-ref-20261017', 'plain-ref-20261015']) 쓰기(`${이름}/a.cjs`, '//');
+    for (const 이름 of ['closed-release-20261020', 'both-20261018', 'plain-lineage-20261016', 'provenance-candidate-20261019', 'recent-mention-20261001', 'both-ref-20261017', 'plain-ref-20261015']) 옛날로(path.join(임시, 이름), 30);
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), [
+      '# 회사 릴리스 계보', 'plain-lineage-20261016  # 따라감',
+      '#! 실측 계보 시작 — tools/company-release/lineage.cjs 10-30', 'closed-release-20261020', 'recent-closed-20261029', 'both-20261018', '#! 실측 계보 끝',
+      'both-20261018  # 절 밖에도 있다 — 따라가는 쪽이 이긴다', '',
+    ].join('\r\n'));
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['provenance-candidate-20261019', 'recent-mention-20261001'],
+      '닫힌 폴더(최근이어도)의 언급은 남길 이유가 아니다');
+    assert.deepEqual(목록.참조로남김.map((x) => x.이름), ['both-ref-20261017', 'plain-ref-20261015']);
+    assert.deepEqual(정리.옮기기(['closed-release-20261020', 'recent-closed-20261029'], { 임시, 대기 }).옮김, [], '닫힌 폴더 자신은 그대로 남는다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
 test('릴리스·후보 사본은 갈래마다 새 판 둘만 남기고 옛 판은 날짜와 상관없이 후보 — 남는 판이 끌어 쓰는 옛 판·_보존은 뺀다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-release-'));
   try {
