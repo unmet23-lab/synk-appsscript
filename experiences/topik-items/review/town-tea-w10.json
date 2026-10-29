@@ -33,13 +33,14 @@
   "results": [
     {
       "id": "guest.tea.req-after-meal.1",
-      "hash": "a095eee8eaec4f5abaac1a010dad32b3345ca03e7a69ae22b673e79e0dd6a3f6",
-      "verdict": "fix",
+      "hash": "0c7844694734a022d4815c857706abcaf110456cece47ba8681ae98598f257cd",
+      "verdict": "pass",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-aroma-first.1",
@@ -62,43 +63,42 @@
     },
     {
       "id": "guest.tea.req-barley-night.1",
-      "hash": "5b3b8efe2016d75cf5842c12e9517dd547eb1f67b656484bacd219179e435ab0",
+      "hash": "665e3b0fe26a7d5d62f50cd46e92caab141f5048299b90438b1d0202359effad",
       "verdict": "fix",
       "levels": [
         "L1"
       ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-barley.1",
-      "hash": "733f3ce6073aabbb9d3db4d9581630507100cc24ef63117840a1a5a534b623b4",
+      "hash": "6b95a8ac4287ad472b223dc02955d02ec7245c98322575215eee48f047018214",
       "verdict": "fix",
-      "levels": [
-        "L1"
-      ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "levels": [],
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-belly.1",
-      "hash": "d3450428b44a807b2845df7de4bcc407fd53499f2e40b3bd7a6e6711d0f03223",
-      "verdict": "fix",
+      "hash": "c020a87f85efad60c1f0ad35d87f621bb9686bd24a119be6d5bf68301c9baa6b",
+      "verdict": "pass",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-coffee.1",
-      "hash": "b3a004c15469cfbb42687cb6fa679466b65cecb6c5de6fd0de7e91748a3cc0e8",
+      "hash": "a1f512a0d187656d5c6e965118c77662b53ba2672326fa014bf985ff066f6622",
       "verdict": "fix",
       "levels": [
         "L1"
       ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-cold-advice.1",
@@ -178,13 +178,13 @@
     },
     {
       "id": "guest.tea.req-sweat.1",
-      "hash": "cfd70ef1ebcddfe1dea42d3930aa4883e891ddcec3e8100058f490a5a1d4aacc",
+      "hash": "c628c6105dce2aeb8279b76e8542f056b13958003b9ae0c71f19d4cfc58440f6",
       "verdict": "fix",
       "levels": [
         "L2"
       ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-sweet-tea.1",
@@ -232,13 +232,13 @@
     },
     {
       "id": "guest.tea.req-window.1",
-      "hash": "bdedf7bbe6c921aa03b8ee8c240b50001fd0b6728375ce96643b3695d357a7cd",
+      "hash": "1ff723ae980c154759cb7e1413f86d3e8b77b13c27afa4697925d7326c28c4d2",
       "verdict": "fix",
       "levels": [
         "L1"
       ],
-      "packet": "town-w10-tea-r2",
-      "reviewedAt": "2026-10-29T16:27:45.444Z"
+      "packet": "town-w10-tea-r3",
+      "reviewedAt": "2026-10-29T17:05:37.636Z"
     },
     {
       "id": "guest.tea.req-yuzu-cold.1",
@@ -249,5 +249,5 @@
       "reviewedAt": "2026-10-29T14:23:43.844Z"
     }
   ],
-  "updatedAt": "2026-10-29T16:27:45.444Z"
+  "updatedAt": "2026-10-29T17:05:37.636Z"
 }
