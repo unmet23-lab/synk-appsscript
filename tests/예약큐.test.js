@@ -151,7 +151,7 @@ test('계정별 줄·검사 「고칠 것」 표시', () => {
   assert.match(out, /! 예약됨인데 서버에 없음/);
 });
 
-test('--알림은 대조 경고·작업실 승인 대기·검사 「고칠 것」을 비축 목표 없이 한 통으로, 같은 날 같은 내용은 다시 보내지 않는다', () => {
+test('--알림은 대조 경고·검사 「고칠 것」을 비축 목표 없이 한 통으로(승인 대기 줄은 10-30부터 넣지 않음), 같은 날 같은 내용은 다시 보내지 않는다', () => {
   const sentFile = path.join(대조, '보낸글.txt');
   fs.rmSync(sentFile, { force: true });
   fs.rmSync(path.join(대조, '상태'), { recursive: true, force: true });
@@ -160,7 +160,7 @@ test('--알림은 대조 경고·작업실 승인 대기·검사 「고칠 것�
   const text = fs.readFileSync(sentFile, 'utf8');
   assert.match(text, /^\[게시 큐\] 2026-10-21\n/);
   assert.doesNotMatch(text, /비축|목표/);
-  assert.match(text, /^작업실 승인 대기 계정: yuhobuilds-instagram — /m);
+  assert.doesNotMatch(text, /승인 대기|검토 링크/);
   assert.match(text, /^! 예약됨인데 서버에 없음: yuhobuilds-youtube · yuho-gone$/m);
   assert.match(text, /^! 슬롯이 지났는데 나가지 않음: lab-youtube · 2026-10-20 · lab-missing$/m);
   assert.match(text, /^검사 「고칠 것」 편: lab-fix$/m);
@@ -196,11 +196,11 @@ test('--알림은 비축이 0일이어도 경고·승인 대기·고칠 것이 �
   assert.equal(late.sent, '[게시 큐] 2026-10-21\n! 슬롯이 지났는데 예약도 게시도 안 됨: lab-youtube · 2026-10-20 · quiet-lab\n---\n');
 });
 
-test('--알림은 작업실 승인 대기나 검사 「고칠 것」 하나만 있어도 보낸다', () => {
+test('--알림은 작업실 승인 대기만 있으면 보내지 않고(10-30 「텔레그램으로 검수승인 안해도 돼」), 검사 「고칠 것」 하나만 있어도 보낸다', () => {
   const wait = path.join(조용, '승인대기');
   편('wait', 판('yuhobuilds', '2026-10-22'), { 판: [{ 계정: 'yuhobuilds-youtube', 상태: '승인 대기', 방법: '작업실', 작업: 'job-1' }] }, wait);
-  assert.equal(알림만(wait, '2026-10-21').sent,
-    '[게시 큐] 2026-10-21\n작업실 승인 대기 계정: yuhobuilds-youtube — 텔레그램으로 받은 검토 링크를 누르면 예약이 걸려요\n---\n');
+  const w = 알림만(wait, '2026-10-21');
+  assert.deepEqual([w.report.alert, w.sent], [{ sent: false, reason: 'nothing' }, null]);
   // 고칠 것 편이 SHIFT 블로그 판을 품으면 synkbrief 줄과 SHIFT 줄 둘로 잡히지만 알림에는 한 번만 적는다
   const fix = path.join(조용, '고칠것');
   편('fix', { ...판('synkbrief', '2026-10-22'), 판: [{ 계정: 'synkbrief-instagram' }, { 계정: 'shift-naverblog' }], 검사: { 결과: '고칠 것', 파일: [] } }, null, fix);

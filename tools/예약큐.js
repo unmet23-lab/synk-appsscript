@@ -7,7 +7,7 @@
  *
  *   node tools/예약큐.js [--일수 5] [--json] [--폴더 <편 폴더들이 있는 곳, 기본 docs/마케팅>] [--오늘 YYYY-MM-DD(시험용)]
  *   node tools/예약큐.js --서버읽기 [--알림]   회사 서버를 읽기 전용으로 읽어 캐시에 두고 대조한다(AI 없는 정기 작업이 부른다).
- *                                           --알림이면 대조 경고·작업실 승인 대기 계정·검사 「고칠 것」 편이 있을 때만 텔레그램 한 통
+ *                                           --알림이면 대조 경고·검사 「고칠 것」 편이 있을 때만 텔레그램 한 통(10-30부터 승인 대기는 빼고 앱에서)
  *                                           (같은 날 같은 내용은 한 번)
  *   공통: --서버캐시 <파일>(기본 %LOCALAPPDATA%\synk\예약큐\서버.json)
  *
@@ -468,17 +468,19 @@ function todayAlert(report, now) {
   return { sent: true, text };
 }
 
-// 대조 경고·작업실 승인 대기 계정·검사 「고칠 것」 편이 있을 때만 텔레그램으로. 같은 날 같은 내용은 다시 보내지 않는다(AI 없음).
+// 대조 경고·검사 「고칠 것」 편이 있을 때만 텔레그램으로. 같은 날 같은 내용은 다시 보내지 않는다(AI 없음).
 // 비축 모자람은 reserveAlert가 따로 하루 한 번 보낸다.
+// 10-30 유호님 「당분간은 텔레그램으로 검수승인(게시물관련)안해도 돼」 — 승인 대기 계정 · 검토 링크 만료 줄은 텔레그램에 넣지 않는다
+// (승인은 노트북 앱 세션에서 받는다). 두 줄은 예약 큐 출력 · report.warnings에는 그대로 남아 세션이 본다.
+const APPROVAL_WARNING = /^검토 링크가 /;
 function alert(report) {
-  const waiting = report.accounts.filter((row) => Object.values(row.byDay).flat().some((p) => p.state === '승인 대기')).map((row) => row.account);
+  const warnings = report.warnings.filter((w) => !APPROVAL_WARNING.test(w));
   // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다.
   const fix = [...new Set(report.fix.map((x) => x.folder))];
-  if (!report.warnings.length && !waiting.length && !fix.length) return { sent: false, reason: 'nothing' };
+  if (!warnings.length && !fix.length) return { sent: false, reason: 'nothing' };
   const lines = [
     `[게시 큐] ${report.today}`,
-    ...(waiting.length ? [`작업실 승인 대기 계정: ${waiting.join(' · ')} — 텔레그램으로 받은 검토 링크를 누르면 예약이 걸려요`] : []),
-    ...report.warnings.slice(0, 8).map((w) => `! ${w}`),
+    ...warnings.slice(0, 8).map((w) => `! ${w}`),
     ...(fix.length ? [`검사 「고칠 것」 편: ${fix.join(' · ')}`] : []),
   ];
   const text = lines.join('\n');
