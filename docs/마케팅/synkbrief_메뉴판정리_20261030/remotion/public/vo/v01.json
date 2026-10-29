@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "이런 메뉴판, 손님이 꼭 물어봐요.",
+ "show": "이런 메뉴판, 손님이 꼭 물어봐요.",
+ "dur": 1.969,
+ "words": [
+  {
+   "text": "이런",
+   "start": 0.02,
+   "end": 0.181
+  },
+  {
+   "text": "메뉴판,",
+   "start": 0.241,
+   "end": 0.644
+  },
+  {
+   "text": "손님이",
+   "start": 0.926,
+   "end": 1.187
+  },
+  {
+   "text": "꼭",
+   "start": 1.248,
+   "end": 1.368
+  },
+  {
+   "text": "물어봐요.",
+   "start": 1.429,
+   "end": 1.969
+  }
+ ],
+ "source": {
+  "key": "5864e572c495d429b0e06e1607d46b08",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

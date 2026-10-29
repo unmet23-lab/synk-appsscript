@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c01",
+ "text": "사장님, 이거 사천 원이에요? 삼천오백 원이에요?",
+ "show": "사장님, 이거 4,000원이에요? 3,500원이에요?",
+ "dur": 3.245,
+ "words": [
+  {
+   "text": "사장님,",
+   "start": 0.02,
+   "end": 0.542
+  },
+  {
+   "text": "이거",
+   "start": 0.743,
+   "end": 0.883
+  },
+  {
+   "text": "사천",
+   "start": 0.943,
+   "end": 1.224
+  },
+  {
+   "text": "원이에요?",
+   "start": 1.284,
+   "end": 1.706
+  },
+  {
+   "text": "삼천오백",
+   "start": 2.127,
+   "end": 2.689
+  },
+  {
+   "text": "원이에요?",
+   "start": 2.749,
+   "end": 3.245
+  }
+ ],
+ "source": {
+  "key": "ddceb7c72ee4e075ce8d0560acf1191a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.1,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 457
+ }
+}

@@ -1,0 +1,106 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "챗지피티에 사진 주고, 이름이랑 가격은 한 글자도 바꾸지 말라 했더니, 품절된 치즈김밥까지 살려 놨어요.",
+ "show": "ChatGPT에 사진 주고, 이름이랑 가격은 한 글자도 바꾸지 말라 했더니, 품절된 치즈김밥까지 살려 놨어요.",
+ "dur": 6.347,
+ "words": [
+  {
+   "text": "챗지피티에",
+   "start": 0.05,
+   "end": 0.583
+  },
+  {
+   "text": "사진",
+   "start": 0.63,
+   "end": 0.834
+  },
+  {
+   "text": "주고,",
+   "start": 0.881,
+   "end": 1.069
+  },
+  {
+   "text": "이름이랑",
+   "start": 1.947,
+   "end": 2.307
+  },
+  {
+   "text": "가격은",
+   "start": 2.354,
+   "end": 2.684
+  },
+  {
+   "text": "한",
+   "start": 2.731,
+   "end": 2.809
+  },
+  {
+   "text": "글자도",
+   "start": 2.856,
+   "end": 3.091
+  },
+  {
+   "text": "바꾸지",
+   "start": 3.138,
+   "end": 3.405
+  },
+  {
+   "text": "말라",
+   "start": 3.452,
+   "end": 3.64
+  },
+  {
+   "text": "했더니,",
+   "start": 3.687,
+   "end": 3.969
+  },
+  {
+   "text": "품절된",
+   "start": 4.58,
+   "end": 5.003
+  },
+  {
+   "text": "치즈김밥까지",
+   "start": 5.05,
+   "end": 5.599
+  },
+  {
+   "text": "살려",
+   "start": 5.646,
+   "end": 5.834
+  },
+  {
+   "text": "놨어요.",
+   "start": 5.881,
+   "end": 6.347
+  }
+ ],
+ "source": {
+  "key": "6c424299d531fbff66ca1dccdb702b2e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

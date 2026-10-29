@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c02",
+ "text": "사장님, 원조김밥 하나요!",
+ "show": "사장님, 원조김밥 하나요!",
+ "dur": 1.756,
+ "words": [
+  {
+   "text": "사장님,",
+   "start": 0.02,
+   "end": 0.502
+  },
+  {
+   "text": "원조김밥",
+   "start": 0.722,
+   "end": 1.224
+  },
+  {
+   "text": "하나요!",
+   "start": 1.304,
+   "end": 1.756
+  }
+ ],
+ "source": {
+  "key": "c045727a8598021a7cbac8c6bcdf5d2f",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.1,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 464
+ }
+}

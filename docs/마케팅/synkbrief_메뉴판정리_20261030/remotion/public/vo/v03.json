@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "카드 된다는 쪽지는 빼 버리고요.",
+ "show": "카드 된다는 쪽지는 빼 버리고요.",
+ "dur": 1.749,
+ "words": [
+  {
+   "text": "카드",
+   "start": 0.02,
+   "end": 0.23
+  },
+  {
+   "text": "된다는",
+   "start": 0.272,
+   "end": 0.594
+  },
+  {
+   "text": "쪽지는",
+   "start": 0.636,
+   "end": 0.985
+  },
+  {
+   "text": "빼",
+   "start": 1.027,
+   "end": 1.125
+  },
+  {
+   "text": "버리고요.",
+   "start": 1.209,
+   "end": 1.749
+  }
+ ],
+ "source": {
+  "key": "a939a04e74a41f0f1beff6e7cad96834",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

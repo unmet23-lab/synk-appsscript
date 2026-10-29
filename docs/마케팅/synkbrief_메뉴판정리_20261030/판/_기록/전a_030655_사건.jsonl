@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a188d7-f415-7a02-96e5-84370a4084f0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 메뉴판 사진을 생성합니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":115410,"cached_input_tokens":101248,"cache_write_input_tokens":0,"output_tokens":1239,"reasoning_output_tokens":90}}

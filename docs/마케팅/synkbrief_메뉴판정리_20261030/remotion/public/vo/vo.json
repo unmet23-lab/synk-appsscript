@@ -1,0 +1,131 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1030,
+  "lufs": -17
+ },
+ "made": "2026-10-29T19:05:12.254Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "이런 메뉴판, 손님이 꼭 물어봐요.",
+   "show": "이런 메뉴판, 손님이 꼭 물어봐요.",
+   "scene": "1 훅",
+   "dur": 1.969,
+   "syllablesPerSec": 6.6,
+   "src": "v01.wav",
+   "key": "5864e572c495d429b0e06e1607d46b08",
+   "words": 5
+  },
+  {
+   "id": "c01",
+   "text": "사장님, 이거 사천 원이에요? 삼천오백 원이에요?",
+   "show": "사장님, 이거 4,000원이에요? 3,500원이에요?",
+   "scene": "2 손님",
+   "dur": 3.245,
+   "syllablesPerSec": 5.86,
+   "src": "c01.wav",
+   "key": "ddceb7c72ee4e075ce8d0560acf1191a",
+   "words": 6
+  },
+  {
+   "id": "v02",
+   "text": "챗지피티에 사진 주고, 이름이랑 가격은 한 글자도 바꾸지 말라 했더니, 품절된 치즈김밥까지 살려 놨어요.",
+   "show": "ChatGPT에 사진 주고, 이름이랑 가격은 한 글자도 바꾸지 말라 했더니, 품절된 치즈김밥까지 살려 놨어요.",
+   "scene": "4 한 줄만",
+   "dur": 6.347,
+   "syllablesPerSec": 6.62,
+   "src": "v02.wav",
+   "key": "6c424299d531fbff66ca1dccdb702b2e",
+   "words": 14
+  },
+  {
+   "id": "v03",
+   "text": "카드 된다는 쪽지는 빼 버리고요.",
+   "show": "카드 된다는 쪽지는 빼 버리고요.",
+   "scene": "6 쪽지",
+   "dur": 1.749,
+   "syllablesPerSec": 7.43,
+   "src": "v03.wav",
+   "key": "a939a04e74a41f0f1beff6e7cad96834",
+   "words": 5
+  },
+  {
+   "id": "v04",
+   "text": "그래서 세 마디를 더했어요. 고친 가격은 그대로,",
+   "show": "그래서 세 마디를 더했어요. 고친 가격은 그대로,",
+   "scene": "7 마디 하나",
+   "dur": 2.512,
+   "syllablesPerSec": 7.56,
+   "src": "v04.wav",
+   "key": "6a765844baf6253898a027c0dff0856d",
+   "words": 7
+  },
+  {
+   "id": "v05",
+   "text": "지운 메뉴는 빼고,",
+   "show": "지운 메뉴는 빼고,",
+   "scene": "8 마디 둘",
+   "dur": 1.091,
+   "syllablesPerSec": 6.42,
+   "src": "v05.wav",
+   "key": "c9324dd973ea0f6652b54debde10dbf9",
+   "words": 3
+  },
+  {
+   "id": "v06",
+   "text": "쪽지까지 빠짐없이.",
+   "show": "쪽지까지 빠짐없이.",
+   "scene": "9 마디 셋",
+   "dur": 1.167,
+   "syllablesPerSec": 6.86,
+   "src": "v06.wav",
+   "key": "10c8216aa47386a90d56049d8fe58390",
+   "words": 2
+  },
+  {
+   "id": "v07",
+   "text": "그래도 빠진 건, 그것만 넣어 달라고 했어요.",
+   "show": "그래도 빠진 건, 그것만 넣어 달라고 했어요.",
+   "scene": "10 이어서",
+   "dur": 2.308,
+   "syllablesPerSec": 7.37,
+   "src": "v07.wav",
+   "key": "c405f793ab5e169aad946103295704ce",
+   "words": 7
+  },
+  {
+   "id": "c02",
+   "text": "사장님, 원조김밥 하나요!",
+   "show": "사장님, 원조김밥 하나요!",
+   "scene": "12 손님 다시",
+   "dur": 1.756,
+   "syllablesPerSec": 5.69,
+   "src": "c02.wav",
+   "key": "c045727a8598021a7cbac8c6bcdf5d2f",
+   "words": 3
+  },
+  {
+   "id": "v08",
+   "text": "붙이기 전엔, 원래 사진이랑 한 줄씩 맞춰 보세요.",
+   "show": "붙이기 전엔, 원래 사진이랑 한 줄씩 맞춰 보세요.",
+   "scene": "13 끝",
+   "dur": 2.651,
+   "syllablesPerSec": 7.17,
+   "src": "v08.wav",
+   "key": "07bf8e9f120a172ce658bfdac9efc14d",
+   "words": 8
+  }
+ ]
+}

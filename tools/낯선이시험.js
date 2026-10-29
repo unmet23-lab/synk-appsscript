@@ -218,9 +218,9 @@ function pickPrevious(account, { exclude = null, roots = [공용작업본(ROOT)]
     try { names = fs.readdirSync(base); } catch { continue; }
     for (const name of names) {
       if (name === exclude || found.has(name) || !fs.existsSync(path.join(base, name, '게시', '준비.json'))) continue;
-      let bundle;
-      try { bundle = 묶음.load(path.join(base, name)); } catch { continue; }
-      const plate = 묶음.plates(bundle).find((p) => p.account === account && p.video?.exists && Date.parse(p.time || ''));
+      let plates;
+      try { plates = 묶음.plates(묶음.load(path.join(base, name))); } catch { continue; } // 원고가 깨진 편(JSON 아닌 원고.json 등)은 건너뛴다
+      const plate = plates.find((p) => p.account === account && p.video?.exists && Date.parse(p.time || ''));
       if (plate) found.set(name, { name, video: plate.video.path, time: Date.parse(plate.time) });
     }
   }

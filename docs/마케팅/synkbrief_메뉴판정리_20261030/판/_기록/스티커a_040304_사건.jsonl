@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1890b-58e7-7511-8e17-bec3413080b8"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 원본 사진을 수정합니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":93402,"cached_input_tokens":64000,"cache_write_input_tokens":0,"output_tokens":963,"reasoning_output_tokens":251}}
