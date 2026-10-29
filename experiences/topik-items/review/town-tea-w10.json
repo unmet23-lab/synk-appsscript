@@ -33,99 +33,105 @@
   "results": [
     {
       "id": "guest.tea.req-after-meal.1",
-      "hash": "7601c3c2b26881e61c6ee72c4ef275b50f1f6a2937e90c769977be2cb8ab9b8d",
+      "hash": "a095eee8eaec4f5abaac1a010dad32b3345ca03e7a69ae22b673e79e0dd6a3f6",
       "verdict": "fix",
       "levels": [
         "L1"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-aroma-first.1",
-      "hash": "ae843b3ae0887c0baa0d0b30d9eaabeef2e60b7840c1d0dd35c3719652233289",
+      "hash": "83cc84762913af472b5844ae5a399378768b2daaa62043528120033aa100abbd",
       "verdict": "fix",
       "levels": [],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-ask.1",
-      "hash": "dbc495885aca83820777ba37297a5bafdae595537a335413017e5d2adbcf161a",
-      "verdict": "fix",
+      "hash": "a544fb824ff3016bdf87b872d56533919726438c1907c454839433372646574e",
+      "verdict": "pass",
       "levels": [
+        "L1",
         "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-barley-night.1",
-      "hash": "091d58cddbc29f577515bd33f913b8a46a93ba073cd037ab7976e4f18585f1bf",
-      "verdict": "fix",
-      "levels": [],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
-    },
-    {
-      "id": "guest.tea.req-barley.1",
-      "hash": "fe165e67b12b688a14004df51014742332a6d4477f4469abb2220fff547c2193",
+      "hash": "5b3b8efe2016d75cf5842c12e9517dd547eb1f67b656484bacd219179e435ab0",
       "verdict": "fix",
       "levels": [
         "L1"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
+    },
+    {
+      "id": "guest.tea.req-barley.1",
+      "hash": "733f3ce6073aabbb9d3db4d9581630507100cc24ef63117840a1a5a534b623b4",
+      "verdict": "fix",
+      "levels": [
+        "L1"
+      ],
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-belly.1",
       "hash": "d3450428b44a807b2845df7de4bcc407fd53499f2e40b3bd7a6e6711d0f03223",
       "verdict": "fix",
       "levels": [
-        "L1",
-        "L2"
+        "L1"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-coffee.1",
-      "hash": "26430d4e0ac119575268f12a2f2654c788463d571cae6b09b060cb789fe9f67c",
+      "hash": "b3a004c15469cfbb42687cb6fa679466b65cecb6c5de6fd0de7e91748a3cc0e8",
       "verdict": "fix",
-      "levels": [],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "levels": [
+        "L1"
+      ],
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-cold-advice.1",
-      "hash": "13771c1066d6e220c20bdcb81825eb5bef50b1efd33510fa5593ae9cf481570a",
+      "hash": "f421f8a08ffa786bda5f132a85f351538d5e751566e55a2b9a26bb1a75bbb29a",
       "verdict": "fix",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-good-day.1",
-      "hash": "fbaa15b3f26866e6db588320644371ef1ded6f4dd00e94cc54072600cb88eb18",
+      "hash": "0a300ec8dfd0ed87476329a1def4a3d99e533984e42a6e3dd5adf5eba7795069",
       "verdict": "fix",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-if-tea.1",
       "hash": "302493f267075b804149540f855d8dcd9fa0e29e948b4e6300a8c02e52e01d6c",
-      "verdict": "fix",
+      "verdict": "pass",
       "levels": [
         "L1",
         "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-mine.1",
@@ -135,18 +141,19 @@
         "L1",
         "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-no-honey.1",
-      "hash": "25a5fc4448f3492fa04c0cd2b171deeb6fa08c5115c8b6a0799037d4e54e64fe",
-      "verdict": "fix",
+      "hash": "775ac69d1bfcef37178a01fded374f24c9b56ecc19cf7b2bdb41ebd6b8985ce9",
+      "verdict": "pass",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-same-all.1",
@@ -160,23 +167,24 @@
     },
     {
       "id": "guest.tea.req-same-l4.1",
-      "hash": "822ac88c97ee77d051e9f4cb2164976e14cee36621885e79b5dacf30f09ca71d",
+      "hash": "2d3b2d7064190231712bd7beb98f9453ac2cc1285cabf135d3cc8df59d2e7f4e",
       "verdict": "fix",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-sweat.1",
-      "hash": "272734e8930894d4ed0d1406f58b2b549be169104bbf716760b87ced6e9c8093",
+      "hash": "cfd70ef1ebcddfe1dea42d3930aa4883e891ddcec3e8100058f490a5a1d4aacc",
       "verdict": "fix",
       "levels": [
-        "L1"
+        "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-sweet-tea.1",
@@ -191,39 +199,46 @@
     },
     {
       "id": "guest.tea.req-temp-tea.1",
-      "hash": "14b0a9d38fa7763447c932543238ead6bda785306d1ee92970d964dd979e4ed2",
-      "verdict": "fix",
-      "levels": [],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "hash": "6ef29edc4612f44cd241b8efea38eea36c4efa684896e31eaf73492870ec0309",
+      "verdict": "pass",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-tired.1",
-      "hash": "b39c17faf1cce4420d82a6b6ecf28e7150b01d1c9411a821c2934febc78a1e24",
+      "hash": "c79ca1648def7b1d4cd61b171233656f6ff1ad592ba3a514e08a32f85da25b61",
       "verdict": "fix",
       "levels": [
-        "L1"
+        "L1",
+        "L2"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-walked.1",
-      "hash": "1fa8d3755a82f5194dd705ca8f3832b517fbe8d2175519327c12e6381ddd6474",
-      "verdict": "fix",
-      "levels": [],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "hash": "93f4b24699a2652ab0efcf07a881d43169d3f4c5adefcb9fba671659193c95fa",
+      "verdict": "pass",
+      "levels": [
+        "L1",
+        "L2"
+      ],
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-window.1",
-      "hash": "3168979e78beeae3a22aad9e9a7226b6617f664401d6e105ac65bdb9f8ae05e2",
+      "hash": "bdedf7bbe6c921aa03b8ee8c240b50001fd0b6728375ce96643b3695d357a7cd",
       "verdict": "fix",
       "levels": [
         "L1"
       ],
-      "packet": "town-w10-tea-r1",
-      "reviewedAt": "2026-10-29T14:23:43.844Z"
+      "packet": "town-w10-tea-r2",
+      "reviewedAt": "2026-10-29T16:27:45.444Z"
     },
     {
       "id": "guest.tea.req-yuzu-cold.1",
@@ -234,5 +249,5 @@
       "reviewedAt": "2026-10-29T14:23:43.844Z"
     }
   ],
-  "updatedAt": "2026-10-29T14:23:43.844Z"
+  "updatedAt": "2026-10-29T16:27:45.444Z"
 }
