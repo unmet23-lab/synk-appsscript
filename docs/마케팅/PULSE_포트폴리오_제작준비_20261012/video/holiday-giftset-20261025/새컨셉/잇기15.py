@@ -38,8 +38,9 @@ SFX = {  # 녹음 모음에서 이름 조각으로 찾는다
 }
 _SRC = {}
 
-# 덩이: (이름, 프레임 폴더, 원천 첫 장, 장 수) — 15초는 기 끝 5장과 승 첫 5장을 겹쳐 디졸브(둘 다 카메라가 멎은 자리)
-XF = 5
+# 덩이: (이름, 프레임 폴더, 원천 첫 장, 장 수) — 15초는 기 끝 8장과 승 첫 8장을 겹쳐 디졸브(둘 다 카메라가 멎은 자리).
+# m1 결정은 뒤 금빛 보케가 비쳐 금빛, 승 첫 장은 그 보케가 없어 은빛이라 5장(0.17초)은 결 색이 툭 바뀌었다
+XF = 8
 CUTS = {
     "15": [("기", "m1", 0, 90), ("승", "승", 0, 90), ("전", "전", 0, 150), ("결", "결", 0, 120)],
     # 6초: 기 가운데 1.2초 → 승 끝 1.07초(돔이 서리로 덮임) → 전 머리 1초(금 · 깨짐 · 멈춤) → 결 2.73초(내려앉는 순간부터 끝까지)
@@ -67,14 +68,14 @@ def timeline(film):
     for i, (beat, d, s0, n) in enumerate(cuts):
         for k in range(n):
             out.append([beat, d, s0 + k, 0.0, None])
-    if film == "15":  # 기 끝 5장 ↔ 승 첫 5장
+    if film == "15":  # 기 끝 XF장 ↔ 승 첫 XF장
         i0 = 90 - XF
         for k in range(XF):
             out[i0 + k][3] = (k + 1) / (XF + 1)
             out[i0 + k][4] = ("승", k)
         del out[90:90 + XF]
         last = out[-1]
-        out += [[last[0], last[1], last[2], 0.0, None] for _ in range(XF)]  # 결 마지막 장을 5장 더(카메라 · 제품 모두 멈춘 1초 안)
+        out += [[last[0], last[1], last[2], 0.0, None] for _ in range(XF)]  # 결 마지막 장을 XF장 더(카메라 · 제품 모두 멈춘 1초 안)
     assert len(out) == LEN[film], (film, len(out))
     return out
 
@@ -217,15 +218,16 @@ def mix(film):
     L = crack - 0.04 - a
     if L > 0.2:
         place(a, bed, -36, at="start", length=L, fade_in=0.4, fade_out=0.05)
-        # 서리 울림 — G6 · D7 · G7 순음 셋이 천천히 일렁인다(유리 하모니카 결), 금에서 끊긴다
+        # 서리 울림 — G5 · D6 · G6 순음 셋이 천천히 일렁인다(유리 하모니카 결), 금에서 끊긴다. 한 옥타브 위(G6~)는
+        # 귀를 찌르는 순음이라 내렸다
         m = int(L * SR)
         x = np.arange(m) / SR
         pad = sum(np.sin(2 * math.pi * f * x) * (0.6 + 0.4 * np.sin(2 * math.pi * r * x + k))
-                  for k, (f, r) in enumerate(((1567.98, 0.31), (2349.32, 0.47), (3135.96, 0.63))))
+                  for k, (f, r) in enumerate(((783.99, 0.31), (1174.66, 0.47), (1567.98, 0.63))))
         env = np.minimum(1.0, x / 1.5).astype(np.float32)
         env[-int(0.02 * SR):] *= np.linspace(1, 0, int(0.02 * SR))
         pad = (pad * env).astype(np.float32)
-        place(a, np.stack([pad, pad * 0.9], 1), -38, at="start")
+        place(a, np.stack([pad, pad * 0.9], 1), -40, at="start")
     # 승 — 낮은 부풂(A1 + E2), 서리가 덮일수록 커져 금 직전에 멎는다
     if crack - s0 > 0.3:
         m = int((crack - s0) * SR)
@@ -293,7 +295,7 @@ def sound(args):
 
 # ── 이름 ────────────────────────────────────────────────────────────────────
 NAME_AT = 2.35  # 결 원천 시각 — 단지가 멈춘 뒤(1.9) · 유리 종(2.0) 뒤
-NAME_POS = 0.875  # 화면 높이 비율 — 바닥 반사 아래 어두운 자리
+NAME_POS = 0.215  # 화면 높이 비율 — 제품 위 어두운 밤(아래는 앰플 반사의 뚜껑이 0.87에 오고, 세로 SNS 자막 · 단추에 가린다)
 
 
 def name_layer(W, H):
@@ -322,8 +324,7 @@ def assemble(args):
     films = [a for a in args if a in ("15", "6")] or ["15", "6"]
     for film in films:
         wav = os.path.join(ROOT, f"소리_{film}초.wav")
-        if not os.path.exists(wav):
-            J.write_wav(wav, mix(film))
+        J.write_wav(wav, mix(film))  # 늘 새로 — 디졸브 길이가 바뀌면 사건 자리가 옮는다
         W, H = 1080, 1920
         nm = name_layer(W, H)
         rgb, al = nm[..., :3] * 255.0, nm[..., 3:4]

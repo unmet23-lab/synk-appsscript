@@ -452,12 +452,12 @@ def build_products():
     S.parent_to([lid], jar_e)
     jp.append(lid)
     # 뚜껑 결정 한 면만 금빛 키(Fable 3차: 푸른 흰 결정이 금빛 장면에 붙여 넣은 듯) — 단지에 매달아 같이 움직인다
-    gk = S.area_light("뚜껑금키", (-0.09, 0.05, 0.075), (0, 0, 0.062), 2.2, 0.02, rgb=(1.0, 0.72, 0.38))
+    gk = S.area_light("뚜껑금키", (-0.09, 0.05, 0.072), (0, 0, 0.062), 18.0, 0.02, rgb=(1.0, 0.72, 0.38))  # 낮게 스치게(2.2 · 8 W는 안 보였다)
     gk.visible_camera = False
     gk.parent = jar_e
     S.light_only(gk, [lid])
     # 뚜껑 결정 반짝임 — 점광(20 W)은 결 시험에서 안 보였다. m1 끝과 같은 「얇은 가장자리만 빛나는 띠」가 대각으로 한 번
-    glint = M.add_sweep(lid.data.materials[0], (1.0, 1.0, 0.0), width=0.0035)
+    glint = M.add_sweep(lid.data.materials[0], (1.0, 1.0, 0.0), width=0.0035, color=(1.0, 0.80, 0.48))  # 흰 결정 위라 금빛 띠로
     card = S.serum_card(amp_e, M.m2_cam(1.0), strength=1.3, rgb=(1.0, 0.80, 0.50))
     return jar_e, amp_e, lid, glint, card
 
@@ -525,6 +525,11 @@ def key3(items, render):
             ob.keyframe_insert("rotation_euler", frame=k)
     bpy.context.scene.frame_set(1)
     render()
+
+
+def done(f):
+    """--이어를 주면 이미 구운 장은 건너뛴다(끊긴 본 굽기를 다시 부를 때)."""
+    return "--이어" in S.argv and os.path.exists(os.path.join(DIR, f"{SHOT}_{f:03d}.png"))
 
 
 def render_to(f):
@@ -608,6 +613,8 @@ def shot_seung():
     M.round_bokeh(cam)
     blur_on()
     for f in FRAMES:
+        if done(f):
+            continue
         t = f / FPS
         phi.outputs[0].default_value = seung_phi(t)
         k = seung_light(t)
@@ -784,6 +791,20 @@ def build_shatter():
     return movers, crystal_piece, (phi, crack, glow, frost_mat.node_tree.nodes["EDGE"])
 
 
+def attach_crystal_lights(crystal, origin):
+    """전 · 결의 첫 결정 — 승과 같은 m1의 네 빛(결정 틀 기준 같은 자리 · 같은 세기)을 결정 물체에 매달아 조각과 같이 움직이게.
+    승은 결정이 이 빛만 받고 전에서 장면 빛을 받으면 컷 자리에서 결정 밝기가 튄다."""
+    for nm, (x, y, z), e, sz, rgb in (("결정뒤금", (0.20, 0.10, 0.08), 10.0, 0.06, (1.0, 0.76, 0.46)),
+                                      ("결정뒤은", (-0.20, 0.10, -0.08), 6.5, 0.06, (0.75, 0.85, 1.0)),
+                                      ("결정찬빛", (-0.14, -0.05, 0.10), 3.2, 0.03, (0.60, 0.74, 1.0)),
+                                      ("결정결빛", (0.10, -0.03, -0.09), 1.0, 0.015, (1.0, 0.90, 0.75))):
+        lt = S.area_light(nm, P0R + E1 * x - N0 * y + E2 * z, P0R, e, sz, rgb=rgb)
+        lt.visible_camera = False
+        S.light_only(lt, [crystal])
+        lt.location = lt.location - origin  # 결정 물체(원점 = 조각 무게중심, 회전 0)에 매단다
+        lt.parent = crystal
+
+
 def mover_pose(mv, f_local, t_after=None):
     """조각 하나의 자세 — 금(0–4장): 깨지는 자리에서 가까운 것부터 0.4~1.6 mm 바깥으로, 깨짐(4–14장): 멈춘 자리로
     빨랐다가 멎음, 그 뒤: 3초에 몇 mm만 흐름. 장은 소수(움직임 블러의 앞뒤 시각)."""
@@ -829,17 +850,20 @@ def shot_jeon():
     me.vertices.foreach_set("co", co.ravel())
     me.update()
     crystal.location = c0
+    attach_crystal_lights(crystal, c0)
     movers.append([crystal] + crystal_piece[1:7] + ["결정", crystal_piece[8]])
-    shards = [m[0] for m in movers if m[0].type == "MESH"]
+    shards = [m[0] for m in movers if m[0].type == "MESH" and m[0] is not crystal]
     for g in L["반짝"]:
         S.light_only(g, shards)
-    link_scene_lights(L, floor)
+    link_scene_lights(L, floor, skip=[crystal])
     aim_serum_card(card, amp_e, M.m2_cam(1.0))
     cam = S.camera(M.m2_cam(0), M.m2_target(0), lens=40, fstop=8.0)
     M.round_bokeh(cam)
     blur_on()
     front = C + (M.m2_cam(0) - C).normalized() * R
     for f in FRAMES:
+        if done(f):
+            continue
         t = f / FPS
         # 금 — 깨지는 자리에서 0–4장에 돔 전체로 번지며 머리만 번쩍이고(5장에 꺼짐), 지나간 금은 맑은 틈으로 남는다
         crack.outputs[0].default_value = (math.pi + 0.3) * min(1.0, f / 4.0)
@@ -932,11 +956,12 @@ def shot_gyeol():
     me.vertices.foreach_set("co", (co.reshape(-1, 3) - np.array(c0, np.float32)).ravel())
     me.update()
     crystal.location = c0
+    attach_crystal_lights(crystal, c0)
     movers.append([crystal] + crystal_piece[1:7] + ["결정", crystal_piece[8]])
-    shards = [m[0] for m in movers if m[0].type == "MESH"]
+    shards = [m[0] for m in movers if m[0].type == "MESH" and m[0] is not crystal]
     for g in L["반짝"]:
         S.light_only(g, shards)
-    link_scene_lights(L, floor)
+    link_scene_lights(L, floor, skip=[crystal])
     crack.outputs[0].default_value = math.pi + 0.3
     glow.outputs[0].default_value = 0.0
     f_end = int(JEON_T * FPS) - 1  # 전 마지막 장의 멈춘 자리에서 이어 간다
@@ -971,7 +996,7 @@ def shot_gyeol():
     M.round_bokeh(cam)
     blur_on()
     gk = next(o for o in bpy.context.scene.objects if o.name.startswith("뚜껑금키"))
-    gk.data.energy = 8.0  # 금빛 키가 결정 한 면에 보이게(2.2 W는 안 보였다)
+    gk_e0 = gk.data.energy  # 전 끝과 같은 세기에서 시작해 1초에 걸쳐 25 W로(컷 자리에서 튀지 않게)
 
     def shard_pose(mv, t):
         p, r, out = starts[mv[0].name]
@@ -983,14 +1008,17 @@ def shot_gyeol():
         return p + out * disp, Euler(r + mv[6] * (tau * 6.0 + 25.0 * tau ** 3))
 
     for f in FRAMES:
+        if done(f):
+            continue
         t = f / FPS
         loc, tgt, lens, fstop = gyeol_cam(t)
         lid_top = jar_e.location + jar_e.rotation_euler.to_matrix() @ Vector((0, 0, 0.0628))
         cam.data.lens, cam.data.dof.aperture_fstop = lens, fstop
         u = min(1.0, max(0.0, (t - GLINT_AT) / 0.5))
         glint[0].outputs[0].default_value = -0.035 + 0.07 * smooth(u)
-        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 10.0 * math.sin(math.pi * u) ** 0.7
+        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 24.0 * math.sin(math.pi * u) ** 0.7  # 10은 흰 결정에 묻혔다
         edge_n.outputs[0].default_value = lerp(EDGE_WHITE, 0.05, smooth(min(1.0, max(0.0, (t - 0.3) / 1.7))))
+        gk.data.energy = lerp(gk_e0, 25.0, smooth(min(1.0, t / 1.0)))  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
         w = smooth(min(1.0, max(0.0, (t - 0.4) / 2.6)))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
         pw.inputs[1].default_value = lerp(40.0, 90.0, w)
         gain.inputs[1].default_value = lerp(0.30, 0.22, w)
