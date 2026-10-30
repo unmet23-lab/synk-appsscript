@@ -325,6 +325,8 @@ function 개인화생성물정책(o, files, candidate, 판) {
     ...['lab','shift','pulse','path','atlas','founder'].flatMap(p => [p+'/index.html','en/'+p+'/index.html']),'llms.txt',
     '.github/desktop-preview/package.json','.github/desktop-preview/package-lock.json','.github/desktop-preview/unified/release-input.json']);
   const meta = p => metadata.has(p);
+  // 공개 도구가 knowledge.json의 참조를 갱신하는 두 파일: 캐시 토큰만 허용한다.
+  const metadataToken = p => p === 'app.js' || p === 'en/app.js';
   const records = p => /^(?:tools\/(?:검수묶음\.mjs|lib\/검수증명\.mjs)|tests\/검수Atlas개인화예외\.test\.mjs|docs\/_ops\/(?:결정\.md|트랙\.md|관문_자동화\.md))$/.test(p);
   if (판 !== 2 || o.작성자 !== 'GPT' || o.종류 !== '백엔드' || o.사용자지정 || o.예외 || o.페이블생략 || o.GPT구독 && o.GPT구독 !== '유지'
     || !candidate && !files.length
@@ -332,10 +334,11 @@ function 개인화생성물정책(o, files, candidate, 판) {
       || fixedCopy(f.경로) && f.상태 !== 'M'
       || f.옛경로 && (!safe(f.옛경로) || !pc(f.옛경로) || !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.옛경로))
       || /^[DR]/.test(f.상태 || '') && !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.경로))
-    || candidate && (candidate.종류 !== 'synk.im' || candidate.항목.some(f => !safe(f.경로) || !(개인화웹경로.has(f.경로) || pc(f.경로) || meta(f.경로))
+    || candidate && (candidate.종류 !== 'synk.im' || candidate.항목.some(f => !safe(f.경로) || !(개인화웹경로.has(f.경로) || pc(f.경로) || meta(f.경로) || metadataToken(f.경로))
       || (fixedCopy(f.경로) || 개인화웹저장소호스트.has(f.경로)) && f.종류 !== '바꿈'
       || 개인화웹경로.has(f.경로) && /\.html?$/.test(f.경로) && f.종류 !== '토큰'
-      || meta(f.경로) && f.종류 !== '바꿈'
+      || meta(f.경로) && !['바꿈','토큰'].includes(f.종류)
+      || metadataToken(f.경로) && f.종류 !== '토큰'
       || f.종류 === '지움' && !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.경로))))
     throw new Error('이번 Atlas 개인화 생성물의 직접 승인 범위를 벗어난 담당 예외');
   return {판,작성자:'GPT',종류:'백엔드',GPT구독:'유지',필수:['GPT','Claude'],예외:null,

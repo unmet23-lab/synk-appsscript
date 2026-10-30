@@ -70,6 +70,22 @@ test('정확한 웹 저장소 호스트 다섯 개와 PC 동결 화면 사본만
  for(const p of ['desktop/renderer/member-insight-view.mjs','account/dist/auth.js','care/vendor/account/auth.mjs','desktop/releases/client.js'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p)},[]),/직접 승인 범위를 벗어난 담당 예외/);
  assert.throws(()=>정책만들기(opts,[{경로:'desktop/renderer/member-insight-view.mjs',상태:'M'}]),/직접 승인 범위를 벗어난 담당 예외/);
 });
+test('PC 메타데이터를 부르는 홈 app 두 파일은 캐시 토큰만 허용한다',t=>{
+ for(const p of ['app.js','en/app.js']){
+  assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p,'토큰')},[]).필수,['GPT','Claude']);
+  for(const kind of ['바꿈','새','지움'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]),/직접 승인 범위를 벗어난 담당 예외/);
+  assert.throws(()=>정책만들기(opts,[{경로:p,상태:'M'}]),/직접 승인 범위를 벗어난 담당 예외/);
+ }
+ for(const p of ['care/app.js','en/other.js','desktop/releases/client.js'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,'토큰')},[]),/직접 승인 범위를 벗어난 담당 예외/);
+});
+
+test('기존 PC 게시 메타데이터의 캐시 토큰 분류도 허용하되 생성과 삭제는 막는다',t=>{
+ for(const p of ['lab/index.html','en/pulse/index.html','index.html','knowledge.json','desktop/releases/preview.json']){
+  for(const kind of ['바꿈','토큰'])assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p,kind)},[]).필수,['GPT','Claude']);
+  for(const kind of ['새','지움'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]),/직접 승인 범위를 벗어난 담당 예외/);
+ }
+});
+
 test('동일 원시 본문은 한 번 읽되 모든 경로를 참조하고 변조는 거절한다',()=>{
  const body=Buffer.from('const unchanged = 1;\n'),hash=sha256(body);
  const rows=['try/racing/atlas-learning.js','try/runner/atlas-learning.js'].map(경로=>({경로,종류:'바꿈',모드:'100644',sha256:hash}));

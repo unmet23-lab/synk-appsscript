@@ -1,7 +1,7 @@
 'use strict';
 // Product vocabulary and clarification replay. Core Ask chooses the next useful
 // question; Core Interpretation/Domain own evidence and confirmed declarations.
-// Frozen ko-1 through ko-9 modules keep saved rows and answer replay unchanged.
+// Frozen ko-1 through ko-10 modules keep saved rows and answer replay unchanged.
 const Legacy = require('./member-statement-v1.cjs');
 const Previous = require('./member-statement-v2.cjs');
 const Previous3 = require('./member-statement-v3.cjs');
@@ -11,8 +11,9 @@ const Previous6 = require('./member-statement-v6.cjs');
 const Previous7 = require('./member-statement-v7.cjs');
 const Previous8 = require('./member-statement-v8.cjs');
 const Previous9 = require('./member-statement-v9.cjs');
+const Previous10 = require('./member-statement-v10.cjs');
 const Ask = require('../../../atlas/ask');
-const PARSER_VERSION = 'member-statement-ko-10';
+const PARSER_VERSION = 'member-statement-ko-11';
 const MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
 const VALUES = Object.freeze({ ...Legacy.MEMBER_STATEMENT_VALUES,
   communication: Object.freeze(['listen-organize', 'share-first', 'written', 'spoken']),
@@ -1573,8 +1574,8 @@ function reattributedPreference(body,segments) {
 function analyze(text) {
   // Legacy's literal validator enforces the same 500-code-point/Unicode bounds.
   Legacy.parseMemberStatement(text);
-  const segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null;
-  for(const evidence of pieces(text)) {
+  const clauses=pieces(text),segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null;
+  for(const [clauseIndex,evidence] of clauses.entries()) {
     const insideLiteral=quotedAt(text,evidence.start);
     const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&normalizePrefix(surfaceDeclaration(evidence.quote)).own, current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
     const generalReset=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(body);
@@ -1688,7 +1689,7 @@ function analyze(text) {
     else segment.generic=true;
     if(!segment.meanings&&!segment.unresolved){const why=uncertain?'uncertain':unresolvedCondition?'condition':'unsupported';segment.unresolved={...evidence,reason:why,reasonLabel:EXCLUDED[why]};}
     segments.push(segment);
-    if(segments.length===MEMBER_STATEMENT_LIMITS.unresolved && evidence.end<text.length){const last=segments.at(-1);delete last.meanings;delete last.candidate;delete last.generic;last.evidence={...evidence,end:text.length,quote:text.slice(evidence.start)};last.unresolved={...last.evidence,reason:'limit',reasonLabel:EXCLUDED.limit};break;}
+    if(segments.length===MEMBER_STATEMENT_LIMITS.unresolved && clauseIndex+1<clauses.length){const last=segments.at(-1);delete last.meanings;delete last.candidate;delete last.generic;last.evidence={...evidence,end:text.length,quote:text.slice(evidence.start)};last.unresolved={...last.evidence,reason:'limit',reasonLabel:EXCLUDED.limit};break;}
   }
   return segments;
 }
@@ -1751,6 +1752,7 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(parserVersion===Previous7.PARSER_VERSION)return Previous7.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous8.PARSER_VERSION)return Previous8.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous9.PARSER_VERSION)return Previous9.parseMemberStatement(text,{clarifications,parserVersion});
+  if(parserVersion===Previous10.PARSER_VERSION)return Previous10.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion!==PARSER_VERSION)fail();
   if(!list(clarifications,MEMBER_STATEMENT_LIMITS.clarifications)||clarifications.some(row=>!exact(row,['questionId','optionId'])||typeof row.questionId!=='string'||typeof row.optionId!=='string'))fail();
   const segments=analyze(text),key=sourceKey(text),answers=Object.create(null),clarificationAnswers=[];let state=stateFor(text,segments,answers,key),question=choose(state,text,segments,answers,key);
@@ -1759,7 +1761,9 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(clarifications.length===MEMBER_STATEMENT_LIMITS.clarifications&&question){
     const conflicted=state.meanings.filter(a=>state.meanings.some(b=>a!==b&&meaningsConflict(a,b)));
     state.meanings=state.meanings.filter(m=>!conflicted.includes(m));
-    state.unresolved=[...state.unresolved,...conflicted.map(m=>({...m.evidence}))].slice(0,MEMBER_STATEMENT_LIMITS.unresolved).map(u=>({...u,reason:'limit',reasonLabel:'추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요.'}));question=null;
+    const pending=segments.filter((_,index)=>state.questions.some(q=>q.id.startsWith(`q.${key}.${index}.`)));
+    const limited=evidence=>({...evidence,reason:'limit',reasonLabel:'추가 질문은 이번에 12개까지만 확인해요. 이 부분은 반영하지 않았어요.'});
+    state.unresolved=[...state.unresolved.map(u=>pending.some(s=>s.evidence.start===u.start&&s.evidence.end===u.end)?limited(u):u),...conflicted.map(m=>limited(m.evidence))].slice(0,MEMBER_STATEMENT_LIMITS.unresolved);question=null;
   }
   return {parserVersion:PARSER_VERSION,meanings:state.meanings,unresolved:state.unresolved,question,clarifications:copy(clarifications),clarificationAnswers};
 }
@@ -1780,6 +1784,7 @@ function validateMemberStatement(row,{now=Date.now(),enforceTime=false}={}) {
   if(parserVersion===Previous7.PARSER_VERSION)return Previous7.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous8.PARSER_VERSION)return Previous8.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous9.PARSER_VERSION)return Previous9.validateMemberStatement(row,{now,enforceTime});
+  if(parserVersion===Previous10.PARSER_VERSION)return Previous10.validateMemberStatement(row,{now,enforceTime});
   if(!exact(row,['id','parserVersion','text','at','confirmedAt','meanings','clarifications'])||parserVersion!==PARSER_VERSION||typeof row.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||!list(row.meanings,MEMBER_STATEMENT_LIMITS.meanings)||!row.meanings.length)fail();
   const at=instant(row.at),confirmed=instant(row.confirmedAt),cutoff=enforceTime?typeof now==='string'?instant(now):Number.isSafeInteger(now)?now:fail():null;
   if(confirmed<at||enforceTime&&confirmed>cutoff)fail();const parsed=parseMemberStatement(row.text,{clarifications:row.clarifications});if(parsed.question)fail();

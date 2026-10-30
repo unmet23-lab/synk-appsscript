@@ -56,17 +56,19 @@ test('shared statement code preserves the canonical API and document validation'
   assert.deepEqual(generated.default.summarizeMemberUnderstanding({asOf:'2026-10-28T00:00:00.000Z'}),canonical.summarizeMemberUnderstanding({asOf:'2026-10-28T00:00:00.000Z'}));
   assert.deepEqual(Object.keys(schema).sort(),Object.keys(canonicalSchema).sort());
   const outcome=fn=>{try{return {ok:true,value:fn()};}catch(error){return {ok:false,name:error.name,code:error.code,message:error.message};}};
-  const cases=[schema.emptyMemberUnderstanding(),null,{version:1,reviews:[],overrides:[],unexpected:true},...Array.from({length:10},(_,i)=>({version:i+2,reviews:[],overrides:[],statements:[]}))];
+  const cases=[schema.emptyMemberUnderstanding(),null,{version:1,reviews:[],overrides:[],unexpected:true},...Array.from({length:11},(_,i)=>({version:i+2,reviews:[],overrides:[],statements:[]}))];
   for(const value of cases)assert.deepEqual(outcome(()=>schema.validateMemberUnderstanding(value)),outcome(()=>canonicalSchema.validateMemberUnderstanding(value)));
   // Check the receipt against emitted imports, independently of esbuild's
   // metadata: the native package must contain every module the browser asks for.
   for(const [file,receipt]of Object.entries(result.files)){
     const emitted=fs.readFileSync(path.join(directory,file),'utf8');
-    const imports=[...emitted.matchAll(/\bimport\s+(?:[^;]*?\s+from\s+)?["']([^"']+)["']/g)].map(match=>path.posix.normalize(path.posix.join(path.posix.dirname(file),match[1]))).sort();
+    const imports=require('acorn').parse(emitted,{ecmaVersion:'latest',sourceType:'module'}).body
+      .filter(node=>['ImportDeclaration','ExportNamedDeclaration','ExportAllDeclaration'].includes(node.type)&&node.source)
+      .map(node=>path.posix.normalize(path.posix.join(path.posix.dirname(file),node.source.value))).sort();
     assert.deepEqual(receipt.imports,imports,'receipt traces emitted imports in '+file);
   }
   const receipt=JSON.parse(fs.readFileSync(path.join(directory,'member-understanding.manifest.json'),'utf8'));
-  for(let version=1;version<=9;version++){
+  for(let version=1;version<=10;version++){
     const file='experiences/synk-account/src/member-statement-v'+version+'.cjs';assert.ok(receipt.sources[file],'compatibility source '+version+' is retained');
     const legacy=require('../'+file),text='예시가 좋아요',parsed=legacy.parseMemberStatement(text);assert.ok(parsed.meanings.length);
     const row={id:'00000000-0000-4000-8000-000000000001',parserVersion:legacy.PARSER_VERSION,text,at:'2026-10-29T00:00:00.000Z',confirmedAt:'2026-10-29T00:00:00.000Z',meanings:parsed.meanings,...(version>=2?{clarifications:[]}: {})};

@@ -235,7 +235,7 @@ function 블롭받기(git, oids) {
     .split('\n').filter((l) => / missing$/.test(l)).map((l) => l.split(' ')[0]);
   for (let i = 0; i < 없음.length; i += 400) {
     const 묶음 = 없음.slice(i, i + 400);
-    const r = git.돌리기(['fetch', '-q', '--no-tags', '--filter=blob:none', '--stdin', 'origin'], { input: `${묶음.join('\n')}\n`, 허용: null });
+    const r = git.돌리기(['-c', 'fetch.negotiationAlgorithm=noop', 'fetch', '-q', '--no-tags', '--filter=blob:none', '--stdin', 'origin'], { input: `${묶음.join('\n')}\n`, 허용: null });
     if (r.status !== 0) throw new 멈춤(`blob ${묶음.length}개를 받지 못했다 — ${String(r.stderr).trim().slice(0, 300)}`);
   }
 }

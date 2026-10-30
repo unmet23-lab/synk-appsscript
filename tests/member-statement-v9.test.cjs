@@ -7,7 +7,7 @@ function exact(text,expected){const p=C.parseMemberStatement(text);assert.deepEq
 const actions=[['글로 소통하는 걸','communication','written'],['짧은 설명을','explanation','brief'],['계획을 먼저 세우는 걸','work-style','plan-first'],['음악을','topic','music']];
 
 test('ko8 has a bounded suffix and every old parser, selected answer and saved row replays unchanged',()=>{
- assert.equal(C.PARSER_VERSION,'member-statement-ko-10');assert.equal(crypto.createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v8.cjs'))).digest('hex'),'f4fec0da4af0a88d195d5c046ca16ff639a555ef8b9e62a14a415232fc864261');
+ assert.equal(C.PARSER_VERSION,'member-statement-ko-11');assert.equal(crypto.createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v8.cjs'))).digest('hex'),'f4fec0da4af0a88d195d5c046ca16ff639a555ef8b9e62a14a415232fc864261');
  for(let v=1;v<=8;v++)for(const [i,text]of ['혼자 시도하는 게 좋아요','설명을 들으면 이해하기 좋아요','상황에 따라 다르게 하고 싶어요','회의에서는 말로 소통하는 게 좋은 것 같아요','처음에는 예시를 먼저 보고 싶고 그 예시를 본 다음에는 혼자 시도하고 싶어요'].entries()){
   const old=require(`../experiences/synk-account/src/member-statement-v${v}.cjs`),clarifications=[];let p=old.parseMemberStatement(text);assert.deepEqual(C.parseMemberStatement(text,{parserVersion:old.PARSER_VERSION}),p);
   while(p.question){const option=p.question.options.find(o=>!['unsure','skip'].includes(o.id))||p.question.options.at(-1);clarifications.push({questionId:p.question.id,optionId:option.id});p=old.parseMemberStatement(text,{clarifications});assert.deepEqual(C.parseMemberStatement(text,{parserVersion:old.PARSER_VERSION,clarifications}),p);}
