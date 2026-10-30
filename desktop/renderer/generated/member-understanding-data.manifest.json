@@ -1,7 +1,7 @@
 {
   "version": 2,
   "entry": "experiences/synk-account/src/member-understanding-data.mjs",
-  "sha256": "bfcf730c013d20fd71c2ff8447944213ca257cbd4e794ff3a5ee53ba0f409499",
+  "sha256": "eca88d545a007e5f0602f5e4828d275d9116a79962962a2674b5cae62a29cb07",
   "sources": {
     "atlas/ask.js": "a2b9f22cbb03a2fa932036c95b5f13b460c7820ce72738fb53ad80a867d298c1",
     "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
@@ -13,7 +13,7 @@
     "atlas/trail-periods.js": "4ec4419d3abe982bcc300993d4bba5dd2dd27b1174aca5c6d9bf3621171df637",
     "atlas/vellum.js": "4bb31f9ed6549f886164ba2203c87b464430f284c10088c9b5a54bef470965e6",
     "experiences/synk-account/src/member-activity-data.mjs": "03aba1b188c5860fdb14488bf21ff658705aedb6a26290c37338233ecf3b39dd",
-    "experiences/synk-account/src/member-statement-contract.cjs": "daf288bb57a91ca93715a1fa087b2efabca9e90064309ca9c559423c6942c665",
+    "experiences/synk-account/src/member-statement-contract.cjs": "0d47b3c10178fee3d2c267751b688821f6fd34df61a92d88a6ebb5501688883b",
     "experiences/synk-account/src/member-statement-v1.cjs": "80af2773ef8f5870c8342dc8c6658d81dd0519fadbff5b80f3ad95295b9ea823",
     "experiences/synk-account/src/member-statement-v10.cjs": "4519aca79459b4742aca5e009d1b571d0c3698b9db6eb87076b691c1ce7e315f",
     "experiences/synk-account/src/member-statement-v2.cjs": "7e26a5dd658f02951ea7ff3fe302e8992f1d547f07e76fda30e693a3cb37c220",
@@ -52,25 +52,25 @@
         "member-shared/chunk-2PM2464V.mjs"
       ]
     },
-    "member-shared/chunk-X7N3METM.mjs": {
-      "sha256": "fa8c121108ef674043c003aa1fe6bc57278d6dba0fc8d68a1ac550e8d276a73f",
+    "member-shared/chunk-WXSHZY2M.mjs": {
+      "sha256": "9274b3e72cd16579caa3bc6b12b41eb995fa13dda4d0b94c6dbfbbf9ff7deb39",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs"
       ]
     },
     "member-understanding-data.mjs": {
-      "sha256": "bfcf730c013d20fd71c2ff8447944213ca257cbd4e794ff3a5ee53ba0f409499",
+      "sha256": "eca88d545a007e5f0602f5e4828d275d9116a79962962a2674b5cae62a29cb07",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs",
-        "member-shared/chunk-X7N3METM.mjs"
+        "member-shared/chunk-WXSHZY2M.mjs"
       ]
     },
     "member-understanding.mjs": {
-      "sha256": "451854c6ffaa69aa415cb26297e20fb7c671079c17275ed13844d7079a4680b1",
+      "sha256": "d1a24404c6dcc0bbaafab8eb7937bdf56ba47b93135ad8196645df7d2b3bc00a",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs",
         "member-shared/chunk-LTC7WTSF.mjs",
-        "member-shared/chunk-X7N3METM.mjs"
+        "member-shared/chunk-WXSHZY2M.mjs"
       ]
     }
   }

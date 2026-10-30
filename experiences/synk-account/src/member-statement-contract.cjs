@@ -1571,12 +1571,23 @@ function reattributedPreference(body,segments) {
     delete prior.candidate;if(remaining.length){prior.meanings=remaining;segments.push(withheld);}else{delete prior.meanings;Object.assign(prior,withheld);}}
   return true;
 }
-function independentOwnPreference(quote) {
-  const current=/^(?:지금|요즘|현재|이제)(?:은|는|엔|부터는)?/u;
-  let body=quote.replace(/\s/gu,'').replace(current,'');
-  const owner=SELF_DECLARATION.exec(body);if(!owner)return false;
-  const nominal=/^(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)(?:은|는|이|가)$/u.test(owner[0]);
-  body=body.slice(owner[0].length).replace(current,'');
+function independentOwnClause(quote,requireOwn) {
+  // Prefix and ending morphology is shared with the main reader. This does
+  // not invoke surfaceDeclaration's discourse/adjunct rewrites.
+  const normalized=normalizePrefix(quote);if(requireOwn&&!normalized.own)return false;
+  let body=normalized.body;
+  const owner=SELF_DECLARATION.exec(body),nominal=!!owner&&/^(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)(?:은|는|이|가)$/u.test(owner[0]);
+  if(owner)body=body.slice(owner[0].length);
+  if(excludedOrigin(body)||relativePersonClause(body))return false;
+  // Reuse the fully anchored action vocabulary and shared stance morphology.
+  // A second, shorter list of endings must not reject ordinary supported forms.
+  if(recognizeAction(body,null)?.meanings.length)return true;
+  const stance=composeStance(body),units=stance&&!stance.habitual&&phraseUnits(stance.surfaceAction,true);
+  // Neutral tokens also contain context references. Only closed degree
+  // modifiers, rather than the entire neutral class, license this reset.
+  const degree=/^(?:좀더|더욱|훨씬|정말|참|가장|별로|딱히|그다지|더|제일|살짝|아주|굉장히|조금더|꽤)$/u;
+  if(units?.length&&!units.some(unit=>unit.tag==='sequence'||unit.tag==='neutral'&&!degree.test(unit.text))
+    &&(compositional(body)||coordinatedDeclaration(body))?.meanings.length)return true;
   // This gate consumes a closed head and the entire predicate. Do not run
   // broad discourse normalizers or discard unknown causal/reference words.
   for(const subjects of [NATURAL_SUBJECTS,SUBJECTS])for(const [field,,pattern]of subjects){
@@ -1588,13 +1599,24 @@ function independentOwnPreference(quote) {
   }
   return false;
 }
+function independentOwnPreference(quote) {
+  // Every clause of the complete sentence remainder needs a certificate.
+  // An unknown comma tail must never vanish when pieces() separates it.
+  const clauses=pieces(quote);if(!clauses.length)return false;let end=0;
+  for(const [index,clause]of clauses.entries()){
+    const separator=index===0?/^[\s,]*$/u:/^(?:[\s,]|그리고|하지만|그런데|반면에?|다만)*$/u;
+    if(!separator.test(quote.slice(end,clause.start))||!independentOwnClause(clause.quote,index===0))return false;
+    end=clause.end;
+  }
+  return !/[^\s,]/u.test(quote.slice(end));
+}
 function analyze(text) {
   // Legacy's literal validator enforces the same 500-code-point/Unicode bounds.
   Legacy.parseMemberStatement(text);
   const clauses=pieces(text),segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null;
   for(const [clauseIndex,evidence] of clauses.entries()) {
     const insideLiteral=quotedAt(text,evidence.start);
-    const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&normalizePrefix(surfaceDeclaration(evidence.quote)).own, current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
+    const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&(normalizePrefix(evidence.quote).own||normalizePrefix(surfaceDeclaration(evidence.quote)).own), current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
     const generalReset=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(body);
     // A prefix before comma-separated insets owns the following main clause.
     // It lives independently of parsed meanings and coordinating endings.
@@ -1607,9 +1629,11 @@ function analyze(text) {
     const aside=discourseAside(evidence.quote,segments);
     if(aside||explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[],referenceOnly:true,referenceTargets:aside||priorReferences(segments)});continue;}
     if(inherited==='other'&&self || inherited==='past'&&current || inherited==='condition'&&generalReset || inherited==='uncertain'&&current || ['quotation','hypothetical'].includes(inherited)&&self&&current)inherited=null;
+    const preferenceStop=/[.!?;\n]/u.exec(text.slice(evidence.end));
+    const preferenceEnd=preferenceStop?evidence.end+preferenceStop.index:text.length;
     if(inherited==='sensitive'&&self&&!insideLiteral
       &&scopeBoundaryBetween(text,segments.at(-1)?.evidence.end??evidence.start,evidence.start)
-      &&independentOwnPreference(evidence.quote))inherited=null;
+      &&independentOwnPreference(text.slice(evidence.start,preferenceEnd).trim()))inherited=null;
     const sentenceStart=Math.max(text.lastIndexOf('.',evidence.start-1),text.lastIndexOf('!',evidence.start-1),text.lastIndexOf('?',evidence.start-1),text.lastIndexOf('\n',evidence.start-1))+1;
     const stop=/[.!?\n]/u.exec(text.slice(evidence.end)),sentenceEnd=stop?evidence.end+stop.index:text.length;
     const nounModifier=relativePersonClause(text.slice(sentenceStart,sentenceEnd).replace(/\s/gu,''));
