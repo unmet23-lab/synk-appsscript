@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a18b97-b2a2-7243-bd6a-64e4449c21c3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"같은 가족과 집의 질감을 유지해, 소파에 모인 따뜻한 장면을 imagegen 스킬로 한 장 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"따뜻한 거실 소파에 모인 네 남매와 몽글의 포근한 양모 인형 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":183748,"cached_input_tokens":161792,"cache_write_input_tokens":0,"output_tokens":1695,"reasoning_output_tokens":255}}

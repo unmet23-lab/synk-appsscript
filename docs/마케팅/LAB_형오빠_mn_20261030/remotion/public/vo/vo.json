@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1030,
+  "lufs": -17
+ },
+ "made": "2026-10-30T07:47:15.401Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "형!",
+   "dur": 0.417,
+   "syllablesPerSec": 2.4,
+   "src": "h1.wav",
+   "key": "038fbe0fbe1de5b837c2ad9c8f1d0d2d",
+   "words": 1
+  },
+  {
+   "id": "o1",
+   "text": "오빠!",
+   "dur": 0.568,
+   "syllablesPerSec": 3.52,
+   "src": "o1.wav",
+   "key": "0a77b417d045e98e016ac17196f0f0fd",
+   "words": 1
+  },
+  {
+   "id": "n1",
+   "text": "누나!",
+   "dur": 0.596,
+   "syllablesPerSec": 3.36,
+   "src": "n1.wav",
+   "key": "ab9a61cadb97e4d1b79733566f7572b4",
+   "words": 1
+  },
+  {
+   "id": "e1",
+   "text": "언니!",
+   "dur": 0.609,
+   "syllablesPerSec": 3.28,
+   "src": "e1.wav",
+   "key": "3e2084241b95d0472d9d19b118f3e14d",
+   "words": 1
+  },
+  {
+   "id": "g1",
+   "text": "형!",
+   "dur": 0.448,
+   "syllablesPerSec": 2.23,
+   "src": "g1.wav",
+   "key": "5881d6fcfe996fa6a72fdace70edb0e1",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "언니!",
+   "dur": 0.571,
+   "syllablesPerSec": 3.5,
+   "src": "b2.wav",
+   "key": "82181ed55c2060ad51c9e7da4c1745c4",
+   "words": 1
+  }
+ ]
+}

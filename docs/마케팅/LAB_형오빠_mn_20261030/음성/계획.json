@@ -1,0 +1,61 @@
+{
+  "note": "LAB 몽골 M19 「ах = 형 · 오빠」 — 화면 글 편(몽골어 목소리 없음)에 동생이 부르는 한국어 네 마디만 소리로. 남동생 = 도윤 감정 보통(happy는 음이 올라 올리기 전 검사 엉킴 26.5% · 주원은 37.5%), 여동생 = 소진(LAB 해설 목소리, 세기 1.0). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_형오빠_mn_20261030/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "happy",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1030,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "형!",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "emotion": "normal"
+    },
+    {
+      "id": "o1",
+      "text": "오빠!"
+    },
+    {
+      "id": "n1",
+      "text": "누나!",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "emotion": "normal"
+    },
+    {
+      "id": "e1",
+      "text": "언니!"
+    },
+    {
+      "id": "g1",
+      "text": "형!",
+      "note": "여동생이 오빠를 따라 잘못 부르는 「형!」(v1 볼 이유 심사 제안 — 실수 한 컷)"
+    },
+    {
+      "id": "b2",
+      "text": "언니!",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "note": "남동생이 누나를 잘못 부르는 「언니!」(v2 볼 이유 심사 제안 — 둘째 실수)",
+      "emotion": "normal"
+    }
+  ]
+}

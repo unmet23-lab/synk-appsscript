@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "언니!",
+ "dur": 0.609,
+ "words": [
+  {
+   "text": "언니!",
+   "start": 0.02,
+   "end": 0.609
+  }
+ ],
+ "source": {
+  "key": "3e2084241b95d0472d9d19b118f3e14d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 266
+ }
+}

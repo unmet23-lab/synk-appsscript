@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "언니!",
+ "dur": 0.571,
+ "words": [
+  {
+   "text": "언니!",
+   "start": 0.02,
+   "end": 0.571
+  }
+ ],
+ "source": {
+  "key": "82181ed55c2060ad51c9e7da4c1745c4",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 174
+ }
+}
