@@ -1,0 +1,606 @@
+<meta name="dash-one-writer">
+<style>
+  .br { max-width: 70rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .br h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.2; margin: 0; text-wrap: balance; }
+  .br h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+  .br h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+  .br p { margin: 0; line-height: 1.65; max-width: 68ch; }
+  .br a { color: inherit; }
+  .br-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+  .br-kicker { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: .02em; }
+  .br-lede { font-size: var(--cds-font-size-heading); line-height: 1.6; max-width: 60ch; }
+  .br-section { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+  .br-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+  .br-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--cds-gap-md); }
+  .br-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+  .br-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.55; }
+  .br-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .br-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
+  .br-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .br-itch h3, .br-pitch h3 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-heading); }
+  .br-gists { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+  .br-gists li { font-size: var(--cds-font-size-caption); line-height: 1.5; padding-left: var(--cds-pad-sm); border-left: 2px solid var(--color-border-line); }
+  .br-gists a { color: var(--color-fg-muted); white-space: nowrap; }
+  .br-chart { position: relative; min-height: 300px; }
+  .br-bars { position: relative; min-height: 160px; }
+  .br-tip { position: absolute; top: 0; left: 0; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); line-height: 1.5; white-space: nowrap; }
+  .br-tip .br-tip-day { color: var(--cds-text-secondary); }
+  .br-table-wrap { overflow-x: auto; }
+  .br table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .br th, .br td { text-align: left; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .br th { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+  .br td.num, .br th.num { text-align: right; white-space: nowrap; }
+  .br-kwcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-md); }
+  .br-kw { margin: var(--cds-gap-xs) 0 0; padding-left: 1.6rem; display: grid; gap: 2px; font-size: var(--cds-font-size-caption); }
+  .br-tag { align-self: flex-start; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 0 var(--cds-pad-sm); }
+  .br-method { display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+  .br-method p { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 90ch; }
+  .br b { font-weight: 600; }
+  [data-dash-source-state=empty] { color: transparent; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="br">
+  <header class="br-head" id="top">
+    <span class="br-kicker">PULSE 업종 반응 브리핑 · 견본 · 2026년 10월 30일 기준</span>
+    <h1>여성 아우터 반응 브리핑</h1>
+    <p class="br-lede">패딩 검색은 해마다 <b data-draw="v" data-source="peak_range" data-field="range" data-where="series=패딩">—</b> 사이에 가장 높고, 네이버 쇼핑에서 여성 아우터를 누르는 사람의 <b><span data-draw="v" data-source="age_share" data-field="share" data-where="period=2026년 10월&amp;age=40·50대">—</span>%</b>가 40·50대예요. 그런데 지금 도는 경쟁 광고 가운데 나이를 말하는 광고는 <b><span data-draw="v" data-source="ad_summary" data-field="age_share">—</span>%</b>예요. 할인보다 나 같은 사람이 입으면 어떤지를 먼저 보여 주는 광고가 이길 자리예요.</p>
+    <p class="br-note">받는 사람: 여성 겨울 아우터를 파는 온라인 브랜드. 공개된 검색·쇼핑·영상·광고 자료만으로 만들었어요.</p>
+  </header>
+
+  <section class="br-tiles" id="tiles" aria-label="핵심 숫자">
+    <div class="br-card">
+      <span class="br-label">패딩 검색이 가장 높았던 주</span>
+      <span class="br-big" data-draw="v" data-source="peak_range" data-field="range" data-where="series=패딩">—</span>
+      <span class="br-note">세 해 모두 이 사이 · 네이버 검색, 여성</span>
+    </div>
+    <div class="br-card">
+      <span class="br-label">40·50대 비중</span>
+      <span class="br-big"><span data-draw="v" data-source="age_share" data-field="share" data-where="period=2026년 10월&amp;age=40·50대">—</span>%</span>
+      <span class="br-note">네이버 쇼핑 여성 아우터 클릭 · 이번 달</span>
+    </div>
+    <div class="br-card">
+      <span class="br-label">옷 정보를 묻는 댓글</span>
+      <span class="br-big"><span data-draw="v" data-source="theme_share" data-field="share" data-where="theme=제품 정보 요청">—</span>%</span>
+      <span class="br-note">댓글 <span data-draw="v" data-source="comment_scope" data-field="comments">—</span>개 중 <span data-draw="v" data-source="comment_themes" data-field="comments" data-where="theme=제품 정보 요청">—</span>개 · 쇼츠 <span data-draw="v" data-source="comment_scope" data-field="videos">—</span>편</span>
+    </div>
+    <div class="br-card">
+      <span class="br-label">나이를 말하는 경쟁 광고</span>
+      <span class="br-big"><span data-draw="v" data-source="ad_summary" data-field="age_share">—</span>%</span>
+      <span class="br-note">지금 도는 광고 <span data-draw="v" data-source="ad_summary" data-field="total">—</span>개 중 <span data-draw="v" data-source="ad_summary" data-field="age_ads">—</span>개 · 메타 광고 라이브러리</span>
+    </div>
+  </section>
+
+  <section class="br-section" id="itches">
+    <h2>고객이 가려워하는 곳 셋</h2>
+    <div class="br-grid3">
+      <article class="br-card br-itch" id="itch-fit">
+        <h3>나 같은 사람이 입으면?</h3>
+        <p>키·사이즈·핏을 묻는 댓글이 <b><span data-draw="v" data-source="comment_themes" data-field="comments" data-where="theme=키·사이즈·핏">—</span>개</b>, 쇼츠 <span data-draw="v" data-source="comment_themes" data-field="videos" data-where="theme=키·사이즈·핏">—</span>편에 걸쳐 달렸어요. 좋아요가 가장 많이 몰린 댓글은 옷이 아니라 입은 사람 이야기였어요. 나이대를 제목에 건 쇼츠는 <b><span data-draw="v" data-source="angles" data-field="rate" data-where="angle=나이대">—</span>%</b>가 평소보다 크게 튀었어요.</p>
+        <ul class="br-gists" data-draw="gists" data-theme="나 같은 사람이 입으면?" data-source="comment_examples"></ul>
+      </article>
+      <article class="br-card br-itch" id="itch-where">
+        <h3>그래서 얼마고, 어디서 사요?</h3>
+        <p>가장 많은 댓글은 어디 것인지, 정보를 달라는 말이었어요(<b><span data-draw="v" data-source="comment_themes" data-field="comments" data-where="theme=제품 정보 요청">—</span>개</b>). 가격이 안 나온 영상에는 직접 찾아봤다는 댓글에 좋아요 <b><span data-draw="v" data-source="comment_examples" data-field="likes" data-where="id=c5">—</span>개</b>가 붙었어요.</p>
+        <ul class="br-gists" data-draw="gists" data-theme="얼마고 어디서 사요?" data-source="comment_examples"></ul>
+      </article>
+      <article class="br-card br-itch" id="itch-cheap">
+        <h3>싸 보이면 어쩌지?</h3>
+        <p>품질을 걱정하는 댓글은 <b><span data-draw="v" data-source="comment_themes" data-field="comments" data-where="theme=소재·품질 걱정">—</span>개</b>뿐인데 좋아요는 <b><span data-draw="v" data-source="comment_themes" data-field="likes" data-where="theme=소재·품질 걱정">—</span>개</b>가 붙었어요. 네이버 쇼핑의 패딩 인기 검색어도 <span data-draw="kwInline" data-source="shop_keywords" data-group="패딩" data-n="2">—</span>처럼 비싼 브랜드 이름이 맨 앞이에요.</p>
+        <ul class="br-gists" data-draw="gists" data-theme="싸 보이면 어쩌지?" data-source="comment_examples"></ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="br-section" id="who">
+    <h2>누가 사고, 무엇을 찾나</h2>
+    <div class="br-grid">
+      <div class="br-card" id="age-card">
+        <h3>여성 아우터를 누르는 나이</h3>
+        <p class="br-note">네이버 쇼핑 여성의류 › 아우터 클릭의 연령별 비중, 이번 달. 누르는 사람의 <span data-draw="v" data-source="device_share" data-field="share" data-where="device=모바일">—</span>%는 휴대폰이에요. 20대는 다른 쇼핑 앱을 더 써서 적게 잡혔을 수 있어요.</p>
+        <div class="br-bars" data-draw="ageBars" data-source="age_share"></div>
+      </div>
+      <div class="br-card" id="kw-card">
+        <h3>지금 찾는 말, 다음에 찾을 말</h3>
+        <p class="br-note">네이버 쇼핑 여성 아우터 인기 검색어. 이번 주에는 경량패딩과 패딩 조끼가 올라왔고, 작년 12월에는 무스탕과 퍼 재킷이 맨 앞이었어요.</p>
+        <div class="br-kwcols">
+          <div><span class="br-label">10월 22~29일</span><ol class="br-kw" data-draw="kw" data-source="shop_keywords" data-group="10/22~29" data-n="10"></ol></div>
+          <div><span class="br-label">작년 12월</span><ol class="br-kw" data-draw="kw" data-source="shop_keywords" data-group="2025-12 전체" data-n="10"></ol></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="br-section" id="when">
+    <h2>언제 올릴까</h2>
+    <div class="br-card" id="search-card">
+      <h3>여성 패딩·경량패딩·코트 검색, 주마다</h3>
+      <p class="br-note">네이버 검색어 트렌드, 여성. 하루 값을 주 평균으로 묶었고, 기간 안 가장 높은 날을 100으로 둔 상대값이에요. 점은 해마다 가장 높았던 주예요.</p>
+      <div class="br-chart" data-draw="searchChart" data-source="search_weekly"></div>
+    </div>
+    <div class="br-grid">
+      <div class="br-card" id="peaks-card">
+        <h3>해마다 가장 높았던 주</h3>
+        <p class="br-note">끝 칸은 올해 마지막 주 검색이 작년 같은 주의 몇 %인지예요.</p>
+        <div class="br-table-wrap">
+          <table data-source="peaks" data-row-key="series">
+            <thead><tr><th data-field="series">검색어</th><th data-field="p2023">2023~24</th><th data-field="p2024">2024~25</th><th data-field="p2025">2025~26</th><th data-field="vs_last" class="num">작년 대비(%)</th></tr></thead>
+            <tbody data-draw="peaksBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="br-card" id="when-read">
+        <h3>그래서</h3>
+        <p>세 해 모두 경량패딩이 먼저 올라 <b data-draw="v" data-source="peak_range" data-field="range" data-where="series=경량패딩">—</b> 사이에 가장 높았고, 패딩과 코트는 그 뒤 <b data-draw="v" data-source="peak_range" data-field="range" data-where="series=코트">—</b> 사이에 가장 높았어요.</p>
+        <p>올해 지금 패딩 검색은 작년 같은 주의 <b><span data-draw="v" data-source="peaks" data-field="vs_last" data-where="series=패딩">—</span>%</b>예요. 아직 덜 올라왔으니 영상은 정점 주보다 먼저 올려 두고, 정점 주의 숫자를 한 번 더 보고 광고비를 몰아요. 경량패딩은 정점을 지나는 중이라 패딩 조끼나 겹쳐 입기로 이어 가요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="br-section" id="react">
+    <h2>무엇에 반응했나</h2>
+    <p class="br-note">9월 15일 이후 올라온 여성 아우터 쇼츠 가운데 조회 1만 이상인 <span data-draw="v" data-source="angles" data-field="videos" data-where="angle=전체">—</span>편을 봤어요. 튀었다는 건 그 채널 최근 쇼츠의 보통 조회보다 3배 넘게 봤다는 뜻이에요.</p>
+    <div class="br-grid">
+      <div class="br-card" id="angle-card">
+        <h3>영상 각도별로 튄 비율</h3>
+        <p class="br-note">제목·태그의 낱말로 나눴어요. 점선은 전체 평균 <span data-draw="v" data-source="angles" data-field="rate" data-where="angle=전체">—</span>%예요. 연예인 이름은 빌릴 수 없어서 제안에서는 뺐어요.</p>
+        <div class="br-bars" data-draw="angleBars" data-source="angles"></div>
+      </div>
+      <div class="br-card" id="len-card">
+        <h3>길이별로 튄 비율</h3>
+        <p class="br-note">짧을수록 더 자주 튀었어요. 점선은 전체 평균이에요.</p>
+        <div class="br-bars" data-draw="lenBars" data-source="lengths angles"></div>
+      </div>
+    </div>
+    <div class="br-card" id="top-card">
+      <h3>가장 크게 튄 영상</h3>
+      <p class="br-note">평소의 몇 배를 봤는지 순서예요. 구독자 <span data-draw="v" data-source="yt_videos" data-field="subs" data-where="id=7JATf8SBbV4">—</span>명인 쇼핑몰 채널의 <span data-draw="v" data-source="yt_videos" data-field="seconds" data-where="id=7JATf8SBbV4">—</span>초짜리 상품 영상도 <span data-draw="v" data-source="yt_videos" data-field="views" data-where="id=7JATf8SBbV4" data-fmt="int">—</span>회를 넘겼어요.</p>
+      <div class="br-table-wrap">
+        <table data-source="top_videos" data-row-key="id">
+          <thead><tr><th data-field="title">영상</th><th data-field="channel">채널</th><th data-field="subs" class="num">구독</th><th data-field="views" class="num">조회</th><th data-field="multiple" class="num">평소의 몇 배</th><th data-field="seconds" class="num">길이(초)</th></tr></thead>
+          <tbody data-draw="topBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="br-section" id="ads">
+    <h2>경쟁 광고는 무엇을 말하나</h2>
+    <div class="br-grid">
+      <div class="br-card" id="adtopic-card">
+        <h3>광고 문구에 나온 말</h3>
+        <p class="br-note">메타 광고 라이브러리, 대한민국, 지금 게재 중, 노출 많은 순. 여성 패딩·여성 코트·여성 아우터로 찾은 광고 <span data-draw="v" data-source="ad_summary" data-field="total">—</span>개를 문구 낱말로 나눴어요.</p>
+        <div class="br-bars" data-draw="adBars" data-source="ad_topics"></div>
+      </div>
+      <div class="br-card" id="ad-read">
+        <h3>읽은 것</h3>
+        <p>같은 검색어로 노출이 많은 광고 가운데 <b><span data-draw="v" data-source="ad_summary" data-field="temu">—</span>개</b>(<span data-draw="v" data-source="ad_summary" data-field="temu_share">—</span>%)가 테무 계열이에요. 값싼 해외 직구와 가격으로 붙으면 지기 쉬워요.</p>
+        <p>할인·쿠폰을 말하는 광고가 <b><span data-draw="v" data-source="ad_topics" data-field="share" data-where="topic=할인·쿠폰">—</span>%</b>로 가장 많고, 나이를 말하는 광고는 <b><span data-draw="v" data-source="ad_topics" data-field="share" data-where="topic=나이대">—</span>%</b>예요.</p>
+        <p>브랜드 광고 가운데 가장 오래 돈 것은 <span data-draw="v" data-source="ad_summary" data-field="longest_adv">—</span>의 코트 광고로 <b><span data-draw="v" data-source="ad_summary" data-field="longest_days">—</span>일</b>째예요. 고르기 어려운 고민을 먼저 짚고, 이 코트 하나를 권한 뒤, 만든 방식과 원단으로 근거를 대요. 오래 돈다는 건 광고비를 쓴 만큼 팔린다는 신호로 읽혀요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="br-section" id="pulse">
+    <h2>PULSE가 만들 광고 셋</h2>
+    <div class="br-grid3">
+      <article class="br-card br-pitch" id="pitch-fit">
+        <span class="br-tag">나 같은 사람이 입으면?</span>
+        <h3>나 같은 사람 착용 비교</h3>
+        <p>같은 코트를 나이와 키가 다른 모델 셋이 차례로 입어요. 화면 아래에 키와 입은 사이즈를 적고, 30초 안에 끝내요. 40·50대 모델을 꼭 넣어요.</p>
+        <p class="br-note">근거: 나이대를 건 쇼츠의 튄 비율, 짧은 영상의 튄 비율, 키·사이즈를 묻는 댓글.</p>
+      </article>
+      <article class="br-card br-pitch" id="pitch-one">
+        <span class="br-tag">싸 보이면 어쩌지?</span>
+        <h3>이것 하나만 고르는 광고</h3>
+        <p>고르기 어려운 고민을 먼저 짚고, 한 벌만 권하고, 원단·충전재·마감을 가까이 보여 준 뒤 가격을 화면에 적어요. 비싼 브랜드와 견주는 대신 만든 방식으로 값을 설명해요.</p>
+        <p class="br-note">근거: 이것만 사라는 꼴의 쇼츠는 튀면 평소의 <span data-draw="v" data-source="angles" data-field="median_multiple" data-where="angle=이것만 사세요">—</span>배(중앙값), 가장 오래 도는 브랜드 광고의 순서.</p>
+      </article>
+      <article class="br-card br-pitch" id="pitch-buy">
+        <span class="br-tag">얼마고 어디서 사요?</span>
+        <h3>본 그대로 사게 잇기</h3>
+        <p>영상 하나에 상품 하나만 걸고, 고정 댓글에 상품명·가격·사이즈 표를 둬요. 정보를 묻는 댓글에는 브랜드가 정해 둔 답이 바로 달리게 해요.</p>
+        <p class="br-note">근거: 옷 정보를 묻는 댓글 비율, 가격이 없는 영상에 달린 불만.</p>
+      </article>
+    </div>
+    <p class="br-note">세 편 모두 PULSE 캐스팅북의 AI 모델로 나이·체형별 착용 장면을 만들 수 있어요. AI 모델이라는 사실은 영상에 밝혀요.</p>
+  </section>
+
+  <section class="br-method" id="method">
+    <h2>만든 방법과 한계</h2>
+    <p>검색: 네이버 데이터랩 검색어 트렌드, 여성, 2023년 1월 1일부터 2026년 10월 29일까지 하루 값. 검색어 묶음마다 여성·여자를 붙인 말을 함께 셌어요. 쇼핑: 네이버 쇼핑인사이트 여성의류 › 아우터 분야. 이 분야 자료는 2025년 12월부터 있어요.</p>
+    <p>영상: 유튜브에서 겨울 코트 코디, 숏패딩 코디 같은 검색어 12개로 찾은 쇼츠 가운데 3분 이하, 조회 1만 이상만 남기고 남성 패션 영상을 뺐어요. 평소 조회는 그 채널 최근 쇼츠 30편의 중앙값이에요. 구독 3만 이하 채널은 조회가 구독자 수를 넘어도 튄 영상으로 셌어요. 조회가 높은 순서로 모은 표본이라 튄 비율은 실제보다 높게 나와요. 각도끼리 견줄 때만 쓰세요.</p>
+    <p>댓글: 위 쇼츠 가운데 일부의 상위 댓글을 모아 채널 주인 댓글을 빼고 낱말로 주제를 나눴어요. 한 댓글이 두 주제에 들 수 있어요. 예시는 원문 대신 뜻만 옮겼어요.</p>
+    <p>광고: 메타 광고 라이브러리에서 찾은 광고의 문구를 낱말로 나눴어요. 노출 순서 위쪽만 읽었고, 문구 원문은 싣지 않았어요. 네이버 쇼핑과 메타 광고 모두 고객사 자체 판매 자료가 아니라서, 계약 뒤에는 고객사 랜딩 페이지 반응과 광고 성과를 더해 다시 써요.</p>
+  </section>
+</div>
+
+<script>
+  dash.calc('peaks', {
+    inputs: ['search_weekly'],
+    title: '해마다 가장 높았던 주',
+    description: '검색어마다 8월부터 이듬해 3월 사이 주 평균이 가장 높은 주, 그리고 올해 마지막 주가 작년 같은 주(364일 전)의 몇 %인지.',
+    fn: (search_weekly) => {
+      const md = (s) => Number(s.slice(5, 7)) + '월 ' + Number(s.slice(8, 10)) + '일';
+      const back = (s) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 364); return d.toISOString().slice(0, 10); };
+      const last = search_weekly.reduce((m, r) => (r.week > m ? r.week : m), '');
+      const names = [...new Set(search_weekly.map((r) => r.series))];
+      return names.map((series) => {
+        const rows = search_weekly.filter((r) => r.series === series);
+        const out = { series };
+        for (const y of [2023, 2024, 2025]) {
+          const span = rows.filter((r) => r.week >= y + '-08-01' && r.week <= (y + 1) + '-03-31');
+          const top = span.reduce((m, r) => (Number(r.index) > Number(m.index) ? r : m));
+          out['w' + y] = top.week;
+          out['p' + y] = md(top.week);
+        }
+        const now = rows.find((r) => r.week === last);
+        const before = rows.find((r) => r.week === back(last));
+        out.vs_last = Math.round((Number(now.index) / Number(before.index)) * 100);
+        return out;
+      });
+    },
+  });
+
+  dash.calc('peak_range', {
+    inputs: ['peaks'],
+    title: '세 해의 정점이 든 기간',
+    description: '검색어마다 세 해의 정점 주 가운데 달·날이 가장 이른 날부터 가장 늦은 날까지.',
+    fn: (peaks) => peaks.map((p) => {
+      const ds = [p.w2023, p.w2024, p.w2025].map((s) => s.slice(5)).sort();
+      const mon = (s) => Number(s.slice(0, 2));
+      const day = (s) => Number(s.slice(3, 5));
+      const a = ds[0];
+      const b = ds[ds.length - 1];
+      const range = mon(a) === mon(b) ? mon(a) + '월 ' + day(a) + '~' + day(b) + '일' : mon(a) + '월 ' + day(a) + '일~' + mon(b) + '월 ' + day(b) + '일';
+      return { series: p.series, range };
+    }),
+  });
+
+  dash.calc('age_share', {
+    inputs: ['shop_age'],
+    title: '연령별 클릭 비중',
+    description: '네이버 쇼핑 여성 아우터 클릭의 연령별 상대값을 합이 100이 되게 바꾼 비중(%). 40·50대는 두 연령을 더한 값.',
+    fn: (shop_age) => {
+      const out = [];
+      for (const period of [...new Set(shop_age.map((r) => r.period))]) {
+        const rows = shop_age.filter((r) => r.period === period);
+        const sum = rows.reduce((s, r) => s + Number(r.ratio), 0);
+        for (const r of rows) out.push({ period, age: r.age, share: Math.round((Number(r.ratio) / sum) * 100) });
+        const mid = rows.filter((r) => r.age === '40대' || r.age === '50대').reduce((s, r) => s + Number(r.ratio), 0);
+        out.push({ period, age: '40·50대', share: Math.round((mid / sum) * 100) });
+      }
+      return out;
+    },
+  });
+
+  dash.calc('device_share', {
+    inputs: ['shop_device'],
+    title: '기기별 클릭 비중',
+    description: '네이버 쇼핑 여성 아우터 클릭의 기기별 상대값을 합이 100이 되게 바꾼 비중(%), 2026년 10월.',
+    fn: (shop_device) => {
+      const rows = shop_device.filter((r) => r.period === '2026년 10월');
+      const sum = rows.reduce((s, r) => s + Number(r.ratio), 0);
+      return rows.map((r) => ({ device: r.device, share: Math.round((Number(r.ratio) / sum) * 100) }));
+    },
+  });
+
+  dash.calc('theme_share', {
+    inputs: ['comment_themes', 'comment_scope'],
+    title: '주제별 댓글 비율',
+    description: '주제마다 그 주제에 든 댓글 수를 읽은 댓글 전체로 나눈 비율(%). 한 댓글이 두 주제에 들 수 있어요.',
+    fn: (comment_themes, comment_scope) => comment_themes.map((r) => ({ theme: r.theme, share: Math.round((Number(r.comments) / Number(comment_scope[0].comments)) * 100) })),
+  });
+
+  dash.calc('angles', {
+    inputs: ['yt_videos'],
+    title: '영상 각도별 튄 비율',
+    description: '제목·태그 낱말로 붙인 각도마다 영상 수, 튄 영상 수, 튄 비율(%), 평소 대비 배수의 중앙값. 전체는 모든 영상.',
+    fn: (yt_videos) => {
+      const med = (a) => { const s = a.filter((x) => x !== null && x !== undefined).map(Number).sort((x, y) => x - y); const h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+      const isSpike = (v) => v.spike === true || v.spike === 'true';
+      const tags = (v) => (v.angles ? String(v.angles).split('|') : []);
+      const row = (angle, vs) => {
+        const spikes = vs.filter(isSpike).length;
+        return { angle, videos: vs.length, spikes, rate: Math.round((spikes / vs.length) * 100), median_multiple: Math.round(med(vs.map((v) => v.multiple)) * 10) / 10 };
+      };
+      const names = [...new Set(yt_videos.flatMap(tags))];
+      return [row('전체', yt_videos), ...names.map((a) => row(a, yt_videos.filter((v) => tags(v).includes(a))))];
+    },
+  });
+
+  dash.calc('lengths', {
+    inputs: ['yt_videos'],
+    title: '길이별 튄 비율',
+    description: '영상 길이 구간마다 영상 수, 튄 영상 수, 튄 비율(%).',
+    fn: (yt_videos) => {
+      const isSpike = (v) => v.spike === true || v.spike === 'true';
+      const buckets = [['15초 이하', 0, 15], ['16~30초', 16, 30], ['31~60초', 31, 60], ['61초 이상', 61, 100000]];
+      return buckets.map(([bucket, lo, hi]) => {
+        const vs = yt_videos.filter((v) => Number(v.seconds) >= lo && Number(v.seconds) <= hi);
+        const spikes = vs.filter(isSpike).length;
+        return { bucket, videos: vs.length, spikes, rate: Math.round((spikes / vs.length) * 100) };
+      });
+    },
+  });
+
+  dash.calc('top_videos', {
+    inputs: ['yt_videos'],
+    title: '가장 크게 튄 영상',
+    description: '튄 영상 가운데 평소 대비 배수가 큰 순서로 여덟 편.',
+    fn: (yt_videos) => yt_videos
+      .filter((v) => v.spike === true || v.spike === 'true')
+      .sort((a, b) => Number(b.multiple) - Number(a.multiple))
+      .slice(0, 8)
+      .map((v) => ({ id: v.id, title: v.title, channel: v.channel, subs: v.subs, views: v.views, multiple: Math.round(Number(v.multiple) * 10) / 10, seconds: v.seconds, url: v.url })),
+  });
+
+  dash.calc('ad_topics', {
+    inputs: ['meta_ads'],
+    title: '광고 문구 주제 비율',
+    description: '광고마다 문구 낱말로 붙인 주제(여러 개 가능)를 세어 전체 광고 수로 나눈 비율(%).',
+    fn: (meta_ads) => {
+      const order = ['할인·쿠폰', '소재·보온', '체형·사이즈·핏', '인기·후기', '모델·착용', '배송·출고', '나이대'];
+      return order.map((topic) => {
+        const ads = meta_ads.filter((a) => String(a.topics || '').split('|').includes(topic)).length;
+        return { topic, ads, share: Math.round((ads / meta_ads.length) * 100) };
+      });
+    },
+  });
+
+  dash.calc('ad_summary', {
+    inputs: ['meta_ads'],
+    title: '경쟁 광고 요약',
+    description: '광고 수, 테무 계열 광고 수와 비율(%), 나이를 말한 광고 수와 비율(%), 브랜드·쇼핑몰 광고 가운데 가장 오래 돈 광고의 일수와 광고주.',
+    fn: (meta_ads) => {
+      const n = meta_ads.length;
+      const temu = meta_ads.filter((a) => a.group === '테무').length;
+      const age = meta_ads.filter((a) => String(a.topics || '').split('|').includes('나이대')).length;
+      const brands = meta_ads.filter((a) => a.group === '브랜드·쇼핑몰' && a.days !== null && a.days !== undefined);
+      const longest = brands.reduce((m, a) => (Number(a.days) > Number(m.days) ? a : m), brands[0]);
+      return [{ total: n, temu, temu_share: Math.round((temu / n) * 100), age_ads: age, age_share: Math.round((age / n) * 100), longest_days: Number(longest.days), longest_adv: longest.advertiser }];
+    },
+  });
+
+  const BR = {
+    rows(id) {
+      const d = dash.data(id);
+      return d.status === 'ok' && Array.isArray(d.data) ? d.data : null;
+    },
+    pick(rows, where) {
+      if (!where) return rows[0];
+      const conds = where.split('&').map((p) => p.split('=').map(decodeURIComponent));
+      return rows.find((r) => conds.every(([k, v]) => String(r[k]) === v));
+    },
+    text(svg, x, y, s, opt = {}) {
+      return svg.append('text').attr('x', x).attr('y', y).attr('text-anchor', opt.anchor || 'start')
+        .style('font-family', 'var(--font-anthropic-sans)').style('font-size', 'var(--cds-font-size-caption)')
+        .style('fill', opt.fill || 'var(--color-fg-muted)').text(s);
+    },
+    hbars(el, items, opt) {
+      el.replaceChildren();
+      const W = Math.max(260, el.clientWidth);
+      const rowH = 28;
+      const H = items.length * rowH + 8;
+      const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', opt.label || '');
+      const probe = BR.text(svg, 0, 0, '');
+      const widest = (arr) => arr.reduce((m, s) => { probe.text(s); return Math.max(m, probe.node().getComputedTextLength()); }, 0);
+      const lw = widest(items.map((d) => d.label));
+      const nw = widest(items.map((d) => d.note));
+      probe.remove();
+      const left = Math.ceil(lw) + 10;
+      const right = Math.ceil(nw) + 10;
+      const x = d3.scaleLinear([0, opt.max], [left, Math.max(left + 40, W - right)]);
+      items.forEach((d, i) => {
+        const y0 = 4 + i * rowH;
+        BR.text(svg, left - 8, y0 + rowH / 2 + 4, d.label, { anchor: 'end', fill: 'var(--color-fg)' });
+        svg.append('rect').attr('x', left).attr('y', y0 + 6).attr('width', Math.max(1, x(d.value) - left)).attr('height', rowH - 12).attr('rx', 3)
+          .style('fill', d.accent ? dash.colors[0] : 'var(--cds-chart-muted)');
+        BR.text(svg, x(d.value) + 6, y0 + rowH / 2 + 4, d.note, { fill: d.accent ? 'var(--color-fg)' : 'var(--color-fg-muted)' });
+      });
+      if (opt.ref !== undefined && opt.ref !== null) {
+        svg.append('line').attr('x1', x(opt.ref)).attr('x2', x(opt.ref)).attr('y1', 2).attr('y2', H - 2)
+          .style('stroke', 'var(--cds-chart-reference)').style('stroke-width', 1).style('stroke-dasharray', '4 3');
+      }
+      el.style.minHeight = H + 'px';
+    },
+  };
+
+  dash.draw('v', (el) => {
+    const rows = BR.rows(el.dataset.source);
+    const row = rows ? BR.pick(rows, el.dataset.where) : null;
+    const v = row ? row[el.dataset.field] : null;
+    if (v === null || v === undefined) { el.textContent = '—'; return; }
+    el.textContent = el.dataset.fmt === 'int' ? d3.format(',')(v) : String(v);
+  });
+
+  dash.draw('gists', (el) => {
+    const rows = BR.rows('comment_examples');
+    el.replaceChildren();
+    if (!rows) return;
+    for (const r of rows.filter((x) => x.theme === el.dataset.theme)) {
+      const li = document.createElement('li');
+      li.append(r.gist + ' ');
+      const a = document.createElement('a');
+      a.href = r.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = '좋아요 ' + d3.format(',')(r.likes);
+      li.append(a);
+      el.append(li);
+    }
+  });
+
+  dash.draw('kw', (el) => {
+    const rows = BR.rows('shop_keywords');
+    el.replaceChildren();
+    if (!rows) return;
+    rows.filter((r) => r.group === el.dataset.group).sort((a, b) => a.rank - b.rank).slice(0, Number(el.dataset.n) || 10)
+      .forEach((r) => { const li = document.createElement('li'); li.textContent = r.keyword; el.append(li); });
+  });
+
+  dash.draw('kwInline', (el) => {
+    const rows = BR.rows('shop_keywords');
+    if (!rows) { el.textContent = '—'; return; }
+    el.textContent = rows.filter((r) => r.group === el.dataset.group).sort((a, b) => a.rank - b.rank)
+      .slice(0, Number(el.dataset.n) || 2).map((r) => '「' + r.keyword + '」').join('·');
+  });
+
+  dash.draw('peaksBody', (el) => {
+    const rows = BR.rows('peaks');
+    el.replaceChildren();
+    if (!rows) return;
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      for (const [k, cls] of [['series'], ['p2023'], ['p2024'], ['p2025'], ['vs_last', 'num']]) {
+        const td = document.createElement('td');
+        if (cls) td.className = cls;
+        td.textContent = String(r[k]);
+        tr.append(td);
+      }
+      el.append(tr);
+    }
+  });
+
+  dash.draw('topBody', (el) => {
+    const rows = BR.rows('top_videos');
+    el.replaceChildren();
+    if (!rows) return;
+    const f = d3.format(',');
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.id;
+      const t = document.createElement('td');
+      const a = document.createElement('a');
+      a.href = r.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = r.title;
+      t.append(a);
+      tr.append(t);
+      const cells = [[r.channel], [r.subs === null || r.subs === undefined ? '—' : f(r.subs), 'num'], [f(r.views), 'num'], [String(r.multiple), 'num'], [String(r.seconds), 'num']];
+      for (const [v, cls] of cells) {
+        const td = document.createElement('td');
+        if (cls) td.className = cls;
+        td.textContent = v;
+        tr.append(td);
+      }
+      el.append(tr);
+    }
+  });
+
+  dash.draw('ageBars', (el) => {
+    const rows = BR.rows('age_share');
+    if (!rows) { el.replaceChildren(); return; }
+    const items = rows.filter((r) => r.period === '2026년 10월' && r.age !== '40·50대' && r.share > 0)
+      .map((r) => ({ label: r.age, value: r.share, note: r.share + '%', accent: r.age === '40대' || r.age === '50대' }));
+    BR.hbars(el, items, { max: d3.max(items, (d) => d.value), label: '연령별 클릭 비중' });
+  });
+
+  dash.draw('angleBars', (el) => {
+    const rows = BR.rows('angles');
+    if (!rows) { el.replaceChildren(); return; }
+    const all = rows.find((r) => r.angle === '전체');
+    const pick = ['나이대', '비교', '이것만 사세요'];
+    const items = rows.filter((r) => r.angle !== '전체').sort((a, b) => b.rate - a.rate)
+      .map((r) => ({ label: r.angle, value: r.rate, note: r.rate + '% · ' + r.videos + '편', accent: pick.includes(r.angle) }));
+    BR.hbars(el, items, { max: 100, ref: all ? all.rate : null, label: '영상 각도별 튄 비율' });
+  });
+
+  dash.draw('lenBars', (el) => {
+    const rows = BR.rows('lengths');
+    const ang = BR.rows('angles');
+    if (!rows) { el.replaceChildren(); return; }
+    const all = ang ? ang.find((r) => r.angle === '전체') : null;
+    const items = rows.map((r, i) => ({ label: r.bucket, value: r.rate, note: r.rate + '% · ' + r.videos + '편', accent: i < 2 }));
+    BR.hbars(el, items, { max: 100, ref: all ? all.rate : null, label: '길이별 튄 비율' });
+  });
+
+  dash.draw('adBars', (el) => {
+    const rows = BR.rows('ad_topics');
+    if (!rows) { el.replaceChildren(); return; }
+    const items = rows.map((r) => ({ label: r.topic, value: r.share, note: r.share + '% · ' + r.ads + '개', accent: r.topic === '나이대' }));
+    BR.hbars(el, items, { max: d3.max(items, (d) => d.value), label: '광고 문구 주제 비율' });
+  });
+
+  dash.draw('searchChart', (el) => {
+    const rows = BR.rows('search_weekly');
+    el.replaceChildren();
+    if (!rows) return;
+    const parse = (s) => new Date(s + 'T00:00:00Z');
+    const from = '2023-08-07';
+    const show = [['패딩', dash.colors[0]], ['경량패딩', dash.colors[1]], ['코트', 'var(--cds-chart-muted)']];
+    const ser = show.map(([name, color]) => ({
+      name, color,
+      pts: rows.filter((r) => r.series === name && r.week >= from).sort((a, b) => (a.week < b.week ? -1 : 1))
+        .map((r) => ({ d: parse(r.week), v: Number(r.index), w: r.week })),
+    }));
+    if (!ser[0].pts.length) return;
+    const W = Math.max(300, el.clientWidth);
+    const H = 300;
+    const m = { t: 34, r: 14, b: 26, l: 30 };
+    const x = d3.scaleUtc(d3.extent(ser[0].pts, (p) => p.d), [m.l, W - m.r]);
+    const ymax = d3.max(ser, (s) => d3.max(s.pts, (p) => p.v));
+    const y = d3.scaleLinear([0, Math.ceil(ymax / 10) * 10], [H - m.b, m.t]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', '주별 검색 흐름');
+    const yt = y.ticks(4);
+    svg.append('g').selectAll('line').data(yt).join('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', (d) => y(d)).attr('y2', (d) => y(d)).style('stroke', 'var(--cds-chart-grid)').style('stroke-width', 1);
+    yt.forEach((d) => BR.text(svg, m.l - 6, y(d) + 4, String(d), { anchor: 'end' }));
+    const xt = x.ticks(W < 560 ? d3.utcMonth.every(6) : d3.utcMonth.every(3));
+    xt.forEach((d) => BR.text(svg, x(d), H - 6, d3.utcFormat('%y.%-m')(d), { anchor: 'middle' }));
+    const line = d3.line().x((p) => x(p.d)).y((p) => y(p.v));
+    for (const s of ser.slice().reverse()) {
+      svg.append('path').attr('d', line(s.pts)).style('fill', 'none').style('stroke', s.color).style('stroke-width', 2).style('stroke-linejoin', 'round').style('stroke-linecap', 'round');
+    }
+    for (const s of ser.slice(0, 2)) {
+      for (const yr of [2023, 2024, 2025]) {
+        const span = s.pts.filter((p) => p.w >= yr + '-08-01' && p.w <= (yr + 1) + '-03-31');
+        if (!span.length) continue;
+        const top = span.reduce((a, b) => (b.v > a.v ? b : a));
+        svg.append('circle').attr('cx', x(top.d)).attr('cy', y(top.v)).attr('r', 3.5).style('fill', s.color);
+        if (s.name === '패딩') BR.text(svg, x(top.d), y(top.v) - 9, d3.utcFormat('%-m/%-d')(top.d), { anchor: 'middle', fill: 'var(--color-fg)' });
+      }
+    }
+    let lx = m.l;
+    for (const s of ser) {
+      svg.append('rect').attr('x', lx).attr('y', 6).attr('width', 12).attr('height', 4).attr('rx', 2).style('fill', s.color);
+      const t = BR.text(svg, lx + 16, 12, s.name, { fill: 'var(--color-fg)' });
+      lx += 16 + t.node().getComputedTextLength() + 14;
+    }
+    const rule = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).style('stroke', 'var(--cds-chart-axis)').style('stroke-width', 1).style('opacity', 0);
+    const tip = document.createElement('div');
+    tip.className = 'br-tip';
+    tip.hidden = true;
+    el.append(tip);
+    const bis = d3.bisector((p) => p.d).center;
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).style('fill', 'transparent')
+      .on('pointermove', (event) => {
+        const [px] = d3.pointer(event);
+        const i = bis(ser[0].pts, x.invert(px));
+        const p0 = ser[0].pts[i];
+        if (!p0) return;
+        rule.attr('x1', x(p0.d)).attr('x2', x(p0.d)).style('opacity', 1);
+        tip.replaceChildren();
+        const day = document.createElement('div');
+        day.className = 'br-tip-day';
+        day.textContent = d3.utcFormat('%Y년 %-m월 %-d일 주')(p0.d);
+        tip.append(day);
+        for (const s of ser) {
+          const p = s.pts.find((q) => q.w === p0.w);
+          const r = document.createElement('div');
+          const sw = document.createElement('span');
+          sw.style.cssText = 'display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:' + s.color;
+          r.append(sw, s.name + ' ' + (p ? p.v.toFixed(1) : '—'));
+          tip.append(r);
+        }
+        tip.hidden = false;
+        const scale = el.clientWidth / W;
+        const tw = tip.offsetWidth;
+        let left = x(p0.d) * scale + 12;
+        if (left + tw > el.clientWidth) left = x(p0.d) * scale - tw - 12;
+        tip.style.left = Math.max(0, left) + 'px';
+        tip.style.top = (m.t * scale) + 'px';
+      })
+      .on('pointerleave', () => { tip.hidden = true; rule.style('opacity', 0); });
+  });
+</script>
