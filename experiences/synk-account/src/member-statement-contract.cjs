@@ -423,6 +423,11 @@ function normalizePrefix(quote) {
 // Wishes are current declarations, unlike a hypothetical premise. Only the
 // final action governed by an explicit wish receives this morphology rewrite;
 // embedded negation, subject and context words remain for full consumption.
+// Inspect request/choice morphology before converting it into preference
+// vocabulary. Both that conversion and temporal scope use this same tag.
+function requestEnding(body) {
+  return /(?:줘(?:요)?|주(?:세요|십시오|시고)|주(?:시)?면(?:좋겠|편하겠|감사하겠)[가-힣]*|부탁(?:드|하|해|할)[가-힣]*|(?:줬|주셨|았|었|였)으면(?:해|좋겠|편하겠)[가-힣]*|(?:할래|해볼래)(?:요)?)$/u.test(body);
+}
 function surfaceDeclaration(quote) {
   let body=selfSurface(quote).replace(/\s/gu,'');
   // Explicit discourse connectives and inflected stance endings carry no new
@@ -455,6 +460,8 @@ function surfaceDeclaration(quote) {
   // A request to save or display a description does not assert the embedded
   // preference. Likewise, asking someone to do an activity is not liking it.
   if(/(?:저장|기록|입력|등록|설정|표시|분류)(?:해|하|해주|해줘)/u.test(body))return body;
+  // Normalize the value here; final classification retains the original time scope.
+  body=body.replace(/^(?:이번에는|이번엔|지금은|지금)(?=(?:저는|나는|제가|내가)?(?:채용|한국어|설명|연습|도움|음악|요리|영상))/u,'');
   body=body.replace(/^(?:제|내)경우(?:에는|엔|는)?/u,'')
     .replace(/^(?:저에게는|나에게는|제게는|내게는|저로서는|나로서는)/u,'저는');
   body=body.replace(/주시면(?=좋겠|편하겠)/u,'주면')
@@ -470,15 +477,15 @@ function surfaceDeclaration(quote) {
     .replace(/(?:좋아하고요)$/u,'좋아해요');
   // Polite requests and first-person choices explicitly express what the
   // member wants here. The action, not the ending, determines the field.
-  body=body.replace(/(?:보여주세요|보여줘요|보여줘)$/u,'보여주는게좋아요')
+  if(requestEnding(body))body=body.replace(/(?:보여주세요|보여줘요|보여줘)$/u,'보여주는게좋아요')
     .replace(/(?:알려주세요|알려줘요|알려줘)$/u,'알려주는게좋아요')
-    .replace(/(?:해볼래요|해볼래)$/u,'해보는게좋아요')
-    .replace(/(?:할래요|할래)$/u,'하는게좋아요')
     .replace(/(짧게|간단히|자세히)(?:부탁할게요|부탁해요|부탁해)$/u,'$1해주는게좋아요')
     .replace(/(?:쪽으로)?(?:부탁할게요|부탁해요|부탁해)$/u,'좋아요')
     .replace(/(?:풀어줬으면해요|풀어줬으면해)$/u,'풀어주는게좋아요')
     .replace(/(?:해줬으면해요|해줬으면해)$/u,'해주는게좋아요')
-    .replace(/(?:해주셨으면해요|해주셨으면해)$/u,'해주는게좋아요')
+    .replace(/(?:해주셨으면해요|해주셨으면해)$/u,'해주는게좋아요');
+  body=body.replace(/(?:해볼래요|해볼래)$/u,'해보는게좋아요')
+    .replace(/(?:할래요|할래)$/u,'하는게좋아요')
     .replace(/(?:고마워요|고맙습니다)$/u,'좋아요')
     .replace(/(?:잘)?맞는편(?:이야|이에요|입니다)$/u,'맞아요');
   const wish=/(?:좋겠(?:어요|습니다|어)|편하겠(?:어요|습니다|어))$/u.exec(body);
@@ -1725,7 +1732,8 @@ function analyze(text) {
     if(!found&&!self&&!declaredCondition&&!unresolvedCondition&&!uncertain&&unresolvedSubject(evidence.quote))unknownSubject=true;
     if(uncertain&&/(?:지만|는데)$/u.test(body))inherited='uncertain';
     const scopeSurface=evidence.quote.replace(/\s/gu,'');
-    const limitedRequest=[...scopeSurface.matchAll(/이번(?:에는|엔|에만|만)|지금(?:은|엔)?|오늘만|내일만/gu)].some(match=>!quotedAt(scopeSurface,match.index));
+    const outside=pattern=>[...scopeSurface.matchAll(pattern)].some(match=>!quotedAt(scopeSurface,match.index));
+    const limitedRequest=outside(/이번(?:에는|엔|에만|만)|오늘만|내일만|지금(?:만(?!큼|으로)|한번만|한차례만)/gu)||outside(/지금(?:은|엔)?/gu)&&requestEnding(scopeSurface);
     if(limitedRequest){if(found)segment.candidate={...found,temporal:true};else segment.generic=true;unresolvedCondition=true;previousCondition=true;inherited='condition';segment.unresolved={...evidence,reason:'condition',reasonLabel:'이번 요청의 범위를 이후에도 반영할 선호로 정하지 않았어요.'};}
     else if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
     else if(found){

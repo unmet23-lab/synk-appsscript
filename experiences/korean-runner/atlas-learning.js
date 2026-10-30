@@ -8987,11 +8987,11 @@ var SynkLearning = (() => {
                 continuation = true;
                 return status();
               }
+              if (active(token) && flushRequested) await flushQueue(token);
               if (active(token) && state.missing.length && !await recover(token)) {
                 continuation = true;
                 return status();
               }
-              if (active(token) && flushRequested) await flushQueue(token);
               if (active(token)) {
                 phase = "synced";
                 code = null;
@@ -10695,6 +10695,7 @@ var SynkLearning = (() => {
             return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist("flush", { quiet: true }));
           },
           reset() {
+            if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
             epoch = uid();
             ledger = null;
             settled.clear();
@@ -10706,7 +10707,7 @@ var SynkLearning = (() => {
             writable = !!storage;
             complete = historyComplete;
             warning = null;
-            persist();
+            if (!persist() && storage) throw Object.assign(new Error("Atlas: reset could not be saved"), { code: "STORAGE_ERROR" });
           }
         });
       }

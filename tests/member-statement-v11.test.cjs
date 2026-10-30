@@ -4,6 +4,18 @@ const C=require('../experiences/synk-account/src/member-statement-contract.cjs')
 const Old=require('../experiences/synk-account/src/member-statement-v10.cjs');
 const text='음악 좋아요. '.repeat(11)+'저는 취미가 있어요.';
 const at='2026-10-29T00:00:00.000Z';
+test('a declared current preference stays distinct from a one-time directive',()=>{
+ for(const text of ['전에는 함께 하는 걸 좋아했는데 지금은 혼자 해 보는 쪽이 좋아요.','여러 일을 벌이느니 지금 하는 것 하나를 끝내고 넘어가는 편이 낫겠어요.']){const result=C.parseMemberStatement(text);assert.equal(result.question,null,text);assert.equal(result.meanings.length,1,text);}
+});
+test('bounded now and polite request families require duration consent',()=>{
+ for(const text of ['저는 지금만 짧은 설명이 좋아요','저는 지금 한 번만 짧은 설명이 좋아요','지금은 설명은 짧게 해주시면 좋겠어요','지금은 짧은 설명 부탁드려요','지금은 짧은 설명 부탁드립니다','지금은 설명을 짧게 알려주세요','지금은 설명을 짧게 보여주세요','지금은 설명을 짧게 해주십시오']){const result=C.parseMemberStatement(text);assert.deepEqual(result.meanings,[],text);assert.ok(result.question,text);}
+});
+test('request morphology stays bounded before preference normalization',()=>{
+ for(const text of ['지금은 짧은 설명 부탁합니다','지금은 짧게 알려줘요','지금은 짧게 보여줘','지금은 설명은 짧게 해 주면 좋겠어','지금은 설명은 짧게 해 주면 좋겠네요','지금은 설명은 짧게 해 주시면 감사하겠습니다','지금은 설명은 짧게 해주셨으면 해요']){const result=C.parseMemberStatement(text);assert.deepEqual(result.meanings,[],text);assert.ok(result.question,text);}
+ // A comparative bound is not the limiting particle "only". This unsupported
+ // comparison stays a value clarification, rather than a duration question.
+ const compared=C.parseMemberStatement('저는 지금만큼 짧은 설명이 좋아요');assert.ok(compared.question);assert.doesNotMatch(compared.question.label,/이후에도/);
+});
 test('one-time instructions do not become automatic persistent preferences',()=>{
  for(const text of ['이번에는 설명은 짧게 해주세요','이번엔 예시를 좋아해요','저는 이번에만 짧은 설명이 좋아요','지금은 설명은 짧게 해주세요','지금 설명은 짧게 해주세요','지금은 설명을 짧게 해주세요. 예시가 좋아요.','그와 별개로 지금은 설명은 짧게 해주세요','설명은 지금은 짧게 해주세요','지 금은 설명은 짧게 해주세요']){
   const result=C.parseMemberStatement(text);assert.deepEqual(result.meanings,[]);assert.ok(result.unresolved.length);

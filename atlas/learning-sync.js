@@ -241,8 +241,8 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       try {
         const pulled = await pullPages(token);
         if (active(token) && !pulled) { continuation = true; return status(); }
-        if (active(token) && state.missing.length && !await recover(token)) { continuation = true; return status(); }
         if (active(token) && flushRequested) await flushQueue(token);
+        if (active(token) && state.missing.length && !await recover(token)) { continuation = true; return status(); }
         if (active(token)) { phase = 'synced';code = null;message = null;publish(); }
       } catch (error) {
         if (active(token)) {

@@ -19,6 +19,14 @@ test('an exhausted recovery scan preserves an acknowledged gap and refuses compl
  assert.deepEqual(JSON.parse(storage.getItem(key)).missing,['lost.event']);assert.equal(JSON.parse(storage.getItem(key)).recoveryCursor,0);sync.stop();
 });
 const error = (code, revision = 1) => Object.assign(new Error(code), { code, revision });
+test('new queued evidence uploads even while an older acknowledged gap cannot be recovered',async()=>{
+ const storage=disk(),key=SYNC_KEY+'.account.recover-upload',fresh={id:'fresh.event'},sent=[];
+ storage.setItem(key,JSON.stringify({version:2,accountKey:'account.recover-upload',revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey:'account.recover-upload',events:()=>[fresh],partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:()=>({added:0,skipped:['lost.event']})};
+ const transport={get:async({after})=>({events:after===0?[{id:'lost.event'}]:[],cursor:2,hasMore:false,revision:1}),post:async body=>{sent.push(...body.events.map(event=>event.id));return{accepted:body.events.map(event=>event.id),revision:1};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey:'account.recover-upload',revision:1,storage,transport,auto:false,maxAttempts:1});
+ const result=await sync.start();assert.deepEqual(sent,['fresh.event']);assert.equal(result.code,'INCOMPLETE_HISTORY');assert.equal(result.phase,'offline');assert.equal(result.queued,0);assert.deepEqual(JSON.parse(storage.getItem(key)).missing,['lost.event']);sync.stop();
+});
 test('a recovered response cannot clear a gap when the local importer skips it',async()=>{
  const storage=disk(),complete=[],key=SYNC_KEY+'.account.skipped',event={id:'lost.event'};
  storage.setItem(key,JSON.stringify({version:2,accountKey:'account.skipped',revision:1,cursor:2,complete:true,acknowledged:[event.id],pending:[],missing:[],recoveryCursor:0}));

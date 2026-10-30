@@ -102,7 +102,13 @@ test('the second disclosed80 fixture retains the originally frozen labels and by
 });
 for(const row of second)test(`ko6 second disclosed development regression ${row.id}`,()=>{
   const p=C.parseMemberStatement(row.text);
-  if(pendingSecond.has(row.id)){
+  if(row.id==='N2-28'){
+    // The disclosed label stays frozen. Current11 now asks about the duration
+    // of an explicit "this time" goal rather than silently persisting it.
+    assert.deepEqual(p.meanings,[]);assert.match(p.question.label,/이후에도/);
+    const answer=optionId=>C.parseMemberStatement(row.text,{clarifications:[{questionId:p.question.id,optionId}]});
+    assert.deepEqual(answer('not-current').meanings,[]);assert.deepEqual(sort(answer('confirm').meanings.map(tuple)),sort(row.expected.map(tuple)));
+  }else if(pendingSecond.has(row.id)){
     assert.ok(p.question,row.text);
     for(const actual of p.meanings)assert.ok(sort(row.expected.map(tuple)).includes(JSON.stringify(tuple(actual))),row.text);
     assert.ok(p.meanings.length<row.expected.length,row.text);

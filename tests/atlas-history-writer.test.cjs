@@ -5,10 +5,10 @@ const {createLearningSync}=require('../atlas/learning-sync');
 const file=require.resolve('../atlas/game-learning'),source=fs.readFileSync(file,'utf8'),map=createMap(require('../strata/maps/topik-i.json'));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const disk=()=>{const values=new Map();return{getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k),key:i=>[...values.keys()][i]??null,get length(){return values.size;}};};
-function browser(storage,accountKey,{manager=locks,protocol='https:'}={}){
+function browser(storage,accountKey,{manager=locks,protocol='https:',storageScope='account',learnerKey='device'}={}){
  const listeners=new Map(),context={module:{exports:{}},require:createRequire(file),document:{},location:{protocol},navigator:{locks:manager},AbortController,console,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn);}};
  vm.runInNewContext(source,context,{filename:file});
- return{game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope:'account',accountKey,historyComplete:true,fold:false}),hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();}};
+ return{game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false}),hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();}};
 }
 for(const paged of [false,true])test((paged?'paged':'small')+' browser histories have one writer and preserve both tabs after handover',async t=>{
  assert.ok(locks,'These integration tests require the repository Node24 test runtime');
@@ -24,6 +24,12 @@ for(const paged of [false,true])test((paged?'paged':'small')+' browser histories
 });
 test('a browser without Web Locks cannot claim a durable write',()=>{
  const storage=disk(),page=browser(storage,'writer.unsupported',{manager:null}),game=page.game('unsupported');game.finishSet({kind:'short'});assert.equal(storage.length,0);assert.equal(game.syncPort.canPersist(),false);assert.equal(game.summary().storage.available,false);page.hide();
+});
+test('a waiting tab cannot claim that a reset succeeded or replace its epoch',async t=>{
+ const storage=disk(),options={storageScope:'device',learnerKey:'writer.reset'},a=browser(storage,null,options),b=browser(storage,null,options),one=a.game('one'),two=b.game('two');t.after(async()=>{a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<20&&!one.syncPort.canPersist();i++)await tick();one.finishSet({kind:'short'});const epoch=two.memoryPort.epoch(),events=two.events().map(event=>event.id);
+ assert.throws(()=>two.reset(),error=>error.code==='STORAGE_BUSY');assert.equal(two.memoryPort.epoch(),epoch);assert.deepEqual(two.events().map(event=>event.id),events);
+ a.hide();for(let i=0;i<30&&!two.syncPort.canPersist();i++)await tick();assert.ok(two.events().length);two.reset();assert.equal(two.events().length,0);assert.notEqual(two.memoryPort.epoch(),epoch);
 });
 test('flow memories and pending intents follow the history writer across tabs',async t=>{
  const storage=disk(),a=browser(storage,'writer.flow'),b=browser(storage,'writer.flow'),one=a.game('one'),two=b.game('two'),at='2026-10-31T00:00:00.000Z';

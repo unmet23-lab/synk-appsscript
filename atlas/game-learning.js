@@ -357,7 +357,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     // Before a tab closes or hides: another tab may have written an older history over this
     // one's entries in the meantime (tabs see each other's writes late), so join and write again.
     flush() { refresh(); return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true })); },
-    reset() { epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); release(null); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist(); },
+    reset() { if (!leased) throw Object.assign(new Error('Atlas: another browser context owns this history'), { code: 'STORAGE_BUSY' }); epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); release(null); readable = true; writable = !!storage; complete = historyComplete; warning = null; if (!persist() && storage) throw Object.assign(new Error('Atlas: reset could not be saved'), { code: 'STORAGE_ERROR' }); },
   });
 }
 function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
