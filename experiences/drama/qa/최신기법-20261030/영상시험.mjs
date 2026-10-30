@@ -10,6 +10,9 @@
  * - Seedance 2.0 std 480p를 쓴다. 2.5 omni_reference는 얼굴 정지컷 + 소리 참고에서 첫 화면을 다시 짰고, 2.0은 시작 · 끝 그림 + 소리 참고를
  *   그대로 지켰다(현장노트 higgsfield 「얼굴 정지컷에 소리 참고를 같이 주면 첫 화면을 다시 짠다」).
  *
+ * - 둘째 판(10-30): 유호님 「왜 이 교수님으로 해준거야? 캠퍼스분위기로 상큼하고 잘생기고 예쁜그림으로 해줬어야지」 → 태오 선배 · 봄 캠퍼스(vid-senior-*).
+ *   「힉스필드 크레딧 쓰는거면 지금 당장 진행하지는 마」라 시작 그림만 먼저 굽고(결은 실사 · 3D 게임 시네마틱 · 2D 게임 쪽), 영상은 고르신 결 하나만 나중에.
+ *
  *   node 영상시험.mjs 목록 | 굽기 <작업> <id…> [--동시 3] [--덮어쓰기]     시작 그림(GPT Image 2.5 Sunburst, 월 API 크레딧)
  *   node 영상시험.mjs 영상글 <결> <클립>                                  힉스필드에 낼 영상 지시문(정본)
  */
@@ -34,8 +37,38 @@ FACE: she looks straight into the camera with a calm, attentive, gently warm exp
 ROOM: her office in the International Studies building, morning. ${방} Soft morning window light from the LEFT.
 ${계절}`;
 
+// 둘째 판 — 태오 선배 · 봄 캠퍼스. 교수 판의 3D(가족 애니메이션 결)는 잘생긴 인물과 안 맞아 고급 3D 연애 게임 컷신 결로 바꾼다.
+// 생김새 글의 「drawn in webtoon style」은 실사 · 3D에서 결을 끌어당기니 뺀다. 실사는 지난 비교의 실사 태오(real-senior, 식당)를 얼굴 참고로만 넣고 배경은 버리게 한다.
+const 선배생김 = `${인물.선배.바탕.replace(' drawn in webtoon style', '')}\n${인물.선배.안[기준안.선배].글}
+He is strikingly handsome in a fresh, boyish way — bright clear eyes, clean skin, a defined jawline, the warm charm of a Korean campus-drama lead — an ORIGINAL face that must not resemble any real actor or idol.`;
+// 1판(10-30)은 「stylized-realistic」을 사진처럼 읽어 실사 판과 거의 같았다 → 게임 엔진 렌더임이 한눈에 보이게(모공 없는 매끈한 피부 · 조각한 머리 덩어리 · 살짝 큰 눈).
+export const 게임3D결 = `STYLE — a frame from the real-time story cutscene of a premium mobile 3D romance game, rendered in a game engine: an obviously CG 3D character model, NOT photorealistic — slightly stylized idealized proportions with slightly larger, luminous eyes and a smaller refined nose, flawless smooth skin shaded with soft subsurface scattering and no pores or photo texture, hair modelled as clearly sculpted glossy clumps with clean specular highlights (no flyaway photo strands), clean physically based fabrics with tidy simplified detail, slightly saturated colors, a crisp rim light and a soft game-engine depth of field. It must read at first glance as a beautiful 3D game character — never a photograph, never a 2D illustration, never a cartoonish family-film character. An original design — not imitating any specific game, studio or character.`;
+const 선배공통 = `This is an original character for a Korean-language learning drama. He is an ORIGINAL person who must not resemble any real actor, idol or public figure.
+Avoid an AI-generated look: no glossy plastic skin, no over-smoothed airbrushed face, no over-detailed noise, no lens flare or bloom; hands have five fingers, natural and relaxed.
+No text, letters, words, numbers, logos, watermarks or signatures anywhere — the small school crest on his jacket has no lettering. No mascots, no cartoon animals.`;
+// 세 결이 같은 구도 — 첫 화면이자 끝 화면이라 입은 다문 반가운 얼굴. 선배 2번(「…편하게 선배라고 불러요」)에서 엄지로 가슴을 가리킬 손이 화면 안에 있게.
+const 선배틀 = `VERTICAL 9:16 FIRST FRAME of a short dialogue video. CAMERA: the freshman's first-person point of view, standing on the campus plaza facing him at eye level — a MEDIUM CLOSE-UP. Kwon Tae-o stands facing the camera, framed from mid-chest up; his face is in the upper-middle of the frame (eyes about 33% from the top) and large enough to read every small expression; one hand loosely holds the strap of the backpack on his shoulder, inside the frame. No part of the student is in the frame.
+FACE: he looks straight into the camera with a friendly, easy, confident expression — a warm closed-mouth smile with bright eyes and a hint of his dimple, lips CLOSED — the face of someone who just spotted a lost freshman and is about to say hello.
+PLACE: a bright, fresh Korean university campus on the first morning of the spring semester — a wide stone-paved plaza in front of clean modern campus buildings of red brick and glass, a few students in light spring jackets far behind him, a clear blue sky with a few soft white clouds, crisp morning sunlight from the LEFT giving a fresh golden rim light on his hair and shoulder. The color feel is fresh and bright: clear sky blue, cream, navy and soft yellow accents.
+${계절}`;
+
 export function 판목록() {
  return {
+  'vid-senior-real': { 크기: '1152x2048', 참고: ['real-senior'], 글: `PHOTOREAL KOREAN DRAMA STILL.
+${실사화풍}
+Image 1 shows this exact young man — keep his face, hair and clothes identical; he is the same person. Use it only for who he is: ignore its cafeteria background entirely — the pose, framing and the outdoor campus follow this prompt.
+${선배생김}
+${선배틀}
+${선배공통}` },
+  'vid-senior-3d': { 크기: '1152x2048', 참고: [], 글: `${게임3D결}
+${선배생김}
+${선배틀}
+${선배공통}` },
+  'vid-senior-game': { 크기: '1152x2048', 참고: ['live-senior-g'], 글: `${게임결}
+Image 1 is this exact character in this exact art style — keep his face, hair, clothes and the painted game-art rendering identical. Use it only for who he is and how he is drawn; the pose, framing and the outdoor campus scene follow this prompt and are painted in the same style.
+${선배생김}
+${선배틀}
+${선배공통}` },
   'vid-real': { 크기: '1152x2048', 참고: ['real-prof'], 글: `PHOTOREAL KOREAN DRAMA STILL.
 ${실사화풍}
 Image 1 shows this exact woman — keep her face, hair, glasses, earrings, wristwatch and clothes identical; she is the same person. Use it only for who she is; the pose and framing follow this prompt.
