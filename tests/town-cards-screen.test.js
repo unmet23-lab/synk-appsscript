@@ -231,3 +231,36 @@ test('W10 공개 직후 캐시 — day-app은 W10에 새로 생긴 이름(인사
   assert.match(code, /import \* as dayCards from '\.\/day-cards\.mjs'/);
   assert.match(code, /import \* as newTeaModule from '\.\/new-tea\.mjs'/);
 });
+
+test('카드 거절 글 — WORLD 계정 경로는 코드만 남아도(마을 답이 글을 error 안에 둔다) 엔진과 같은 마을 말, 이름은 서버가 대는 주민', async () => {
+  const { refusalWords } = await load('day-cards.mjs');
+  const read = file => fs.readFileSync(path.join(ROOT, 'experiences', 'synk-town', file), 'utf8');
+  const core = read('core.mjs'), app = read('day-app.mjs');
+  const source = [core.slice(core.indexOf('function commandCard('), core.indexOf('export function reduceCommand(')),
+    read('life.mjs').match(/export function cardContactFor[\s\S]*?\n}/)[0], core.match(/'conflicting-command', '[^']*', 409\)/)[0]].join('\n');
+  // Every 409 of the cards' commands as the engine writes it; `${label(…)}` is the resident it names.
+  const said = {};
+  for (const m of source.matchAll(/'([a-z-]+)', (?:'([^']*)'|`([^`]*)`), 409\)/g)) (said[m[1]] ||= new Set()).add(m[2] ?? m[3]);
+  const named = (code, name) => [...said[code]].map(words => words.replace(/\$\{label\([^)]*\)\}/, name));
+  assert.deepEqual(Object.keys(said).sort(), ['card-busy', 'card-choice-first', 'card-not-open', 'card-not-waiting', 'card-owner-busy',
+    'card-too-far', 'conflicting-command', 'resident-asleep', 'stale-greet', 'stale-life-contact'], '엔진의 카드 거절을 다 읽었다');
+  const cafe = { 'cafe-owner': { to: 'cafe' }, 'workshop-owner': { to: 'workshop' } };
+  for (const code of Object.keys(said).filter(c => c !== 'stale-greet')) {
+    const words = refusalWords(code, code, { card: 'C4', places: cafe, location: 'cafe' });
+    assert.ok(named(code, '찻집 주인').includes(words), `${code}: ${words}`);
+  }
+  // Whom it names: C1's neighbour asleep or held, as the server checks them after the owner.
+  assert.ok(named('resident-asleep', '공방 주인').includes(refusalWords('resident-asleep', 'resident-asleep', { card: 'C1', places: { 'cafe-owner': { to: 'cafe' } } })));
+  assert.ok(named('card-owner-busy', '공방 주인').includes(refusalWords('card-owner-busy', 'card-owner-busy', { card: 'C1', places: cafe, holds: { 'workshop-owner': { by: 'pair' } } })));
+  // C4 beside her away from the cafe is turned down for the cafe; gone from the player, for being far.
+  const away = { 'cafe-owner': { to: 'workshop' } };
+  assert.equal(refusalWords('card-too-far', 'card-too-far', { card: 'C4', places: away, location: 'workshop' }), '찻집 주인에게는 찻집에서 말을 걸어 주세요.');
+  assert.equal(refusalWords('card-too-far', 'card-too-far', { card: 'C4', places: away, location: 'cafe' }), '찻집 주인 가까이 가서 말을 걸어 주세요.');
+  assert.equal(refusalWords('card-too-far', 'card-too-far', { card: 'C5', places: away, location: 'workshop' }), '찻집 주인 가까이 가서 말을 걸어 주세요.');
+  assert.equal(refusalWords('card-too-far', '이미 온 마을 말'), '이미 온 마을 말', '글이 왔으면 그 글');
+  assert.equal(refusalWords('card-new-code', 'card-new-code'), null, '모르는 코드는 글 없이(다시 읽기만)');
+  // The app reads it by the namespace (an older cached day-cards has none), and says its words, not the bare code.
+  assert.match(app, /dayCards\.refusalWords\?\.\(/);
+  assert.doesNotMatch(app, /import \{[^}]*\brefusalWords\b[^}]*\} from '\.\/day-cards\.mjs'/);
+  assert.doesNotMatch(app.slice(app.indexOf('function refused('), app.indexOf('function calmRefusal(')), /error\.message\)/);
+});

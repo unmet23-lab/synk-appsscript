@@ -63,8 +63,15 @@ async function walkTo(page, steps) {
 }
 const ROUTES = { cafe: [['z', 3.9], ['x', 0], ['z', 2.6]], workshop: [['z', 3.9], ['x', 6], ['z', 1.9]], greenhouse: [['z', 3.9], ['x', 0], ['z', -3.6]] };
 async function talkAt(page, place = 'cafe') {
-  await walkTo(page, ROUTES[place]);
-  await page.waitForFunction(p => SYNKTownDay.metrics().walk.nearby === p, place, { timeout: 8000 });
+  // A walk held up on the way (a slow frame, a resident in the lane) goes once more from where it stopped; still short of
+  // the place, it says where it stood (first C4 follow-up — the walk to the owner away from the cafe timed out now and then).
+  for (let tries = 0; ; tries++) {
+    await walkTo(page, ROUTES[place]);
+    if (await page.waitForFunction(p => SYNKTownDay.metrics().walk.nearby === p, place, { timeout: 8000 }).then(() => true, () => false)) break;
+    if (tries) throw new Error(`talkAt ${place}: ${JSON.stringify(await page.evaluate(() => { const m = SYNKTownDay.metrics(), w = m.walk; return { x: w.x, z: w.z, nearby: w.nearby, enabled: w.enabled, open: w.interactionOpen,
+      inputActive: w.inputActive, sending: w.sending, backpressured: w.backpressured, connected: m.connected, busy: document.getElementById('day-app')?.getAttribute('aria-busy'),
+      dialogs: [...document.querySelectorAll('dialog[open]')].map(d => d.id || d.className), focus: document.activeElement?.id || document.activeElement?.tagName, hasFocus: document.hasFocus() }; }))}`);
+  }
   await page.keyboard.press('e');
   await page.waitForFunction(() => SYNKTownDay.metrics().walk.interactionOpen, null, { timeout: 10000 }); await delay(900);
 }
@@ -449,7 +456,11 @@ async function linger(browser) {
         check('linger', !!away, `${device}: 주인이 찻집 밖에 머무는 때를 찾았다`, away && { at: new Date(away.arriveMs).toISOString(), spot: away.spot });
         if (away) {
           // A stale 「이어서 하기」: the panel shows it at the cafe, then she has gone — the town turns it down (409). (E in an open
-          // panel presses the place's own first button, so it is pressed only to open it.)
+          // panel presses the place's own first button, so it is pressed only to open it.) Shown while she is settled there —
+          // walking between her spots she is not here and the panel has no card row (the clock goes to her next arrival).
+          const settled = village.planOf(f.store.read().state.village).segments.find(x => x.npc === 'cafe-owner' && x.endMs > f.now() + MIN && x.endMs <= away.startMs
+            && village.placeAt([x], 'cafe-owner', Math.max(x.arriveMs, f.now()) + 30 * 1000, start)?.to === 'cafe') ?? null;
+          if (settled && settled.arriveMs > f.now()) f.set(settled.arriveMs + 15 * 1000);
           await delay(1500); await openPanel(s.page);
           const stale = s.page.locator('#place-cards .place-need .felt').first();
           const standing = await stale.waitFor({ timeout: 10000 }).then(() => true, () => false);
@@ -461,18 +472,19 @@ async function linger(browser) {
             await shot(s.page, `linger-${device}-3-no-resume`);
             continue;
           }
-          // The town's refusal as the server gives it when she has just gone (409 card-too-far — core.mjs CARD_OPEN, tested there):
-          // answered for this one command, so the press is the screen's own and the race with its redraw does not come in.
+          // The town's refusal when she has just gone (409 card-too-far — core.mjs CARD_OPEN, tested there) as a WORLD account
+          // hands it on: the code alone (its client reads the answer's top message; the town nests the words under error).
+          // Answered for this one command, so the press is the screen's own and the race with its redraw does not come in.
           const refuse = route => {
             const body = JSON.parse(route.request().postData() || '{}');
-            return body.type === 'CARD_OPEN' ? route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'card-too-far', message: '찻집 주인 가까이 가서 말을 걸어 주세요.' }) }) : route.continue();
+            return body.type === 'CARD_OPEN' ? route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'card-too-far', message: 'card-too-far' }) }) : route.continue();
           };
           await s.page.route('**/api/preview/command', refuse);
           await stale.click(); await delay(1500);
           const after = await s.page.evaluate(() => ({ connected: SYNKTownDay.metrics().connected, soft: document.getElementById('error').classList.contains('is-soft'),
             shown: !document.getElementById('error').hidden, text: document.getElementById('error').textContent, retry: !document.getElementById('retry').hidden,
             walkError: document.body.classList.contains('walk-error') }));
-          check('linger', after.connected && after.soft && after.shown && /찻집/.test(after.text) && !after.retry && !after.walkError, `${device}: 거절(409)은 연결 끊김이 아니라 그 자리의 부드러운 글`, after);
+          check('linger', after.connected && after.soft && after.shown && after.text === '찻집 주인 가까이 가서 말을 걸어 주세요.' && !after.retry && !after.walkError, `${device}: 거절(409)은 연결 끊김이 아니라 그 자리의 부드러운 마을 말(코드만 온 WORLD 꼴도)`, after);
           await shot(s.page, `linger-${device}-3-refused`);
           await s.page.unroute('**/api/preview/command', refuse);
           await delay(6500);

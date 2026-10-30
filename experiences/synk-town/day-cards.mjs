@@ -159,6 +159,25 @@ export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) &
 export const TALK_AT = Object.freeze({ C4: 'cafe' });
 /** Where such a card is taken up, as the notebook and the card's note say it (「찻집에서 」), or ''. */
 export const talkWhere = card => (TALK_AT[card] === 'cafe' ? '찻집에서 ' : '');
+/** The town's refusals of a card's answer (409) in its own words (core.mjs commandCard · life.mjs cardContactFor). Through
+ * a WORLD account the error keeps only its code — the town's answer nests the words under error, as the gathering board
+ * found — so the screen says these then; a code with no words here says nothing (the town is read again). */
+const REFUSAL_WORDS = Object.freeze({ 'card-not-waiting': '그 일은 지금 함께할 수 없어요. 주인이 하는 일을 지켜봐 주세요.',
+  'card-busy': '하던 생활을 먼저 닫아 주세요.', 'card-not-open': '함께하던 생활을 다시 열어 주세요.', 'card-choice-first': '먼저 하나 골라 주세요.',
+  'stale-life-contact': '이 제안은 현재 화면에서 다시 확인해 주세요. 주인에게 직접 말을 걸면 언제든 열 수 있어요.',
+  'conflicting-command': '같은 요청의 내용이 달라요.' });
+/** A refusal's words: the town's own when they came, else these — naming whom the server names, as the screen has the
+ * residents (places: where each is now, none asleep; holds: who a scene holds) and the player (location). */
+export function refusalWords(code, message, { card = null, places = {}, holds = {}, location = null } = {}) {
+  if (message && message !== code) return message;
+  const c = CARD_BY_ID.get(card), owner = c?.owner, all = owner ? [owner, ...(c.paths?.player?.with || [])] : [];
+  if (owner && code === 'resident-asleep') return `${NAMES[all.find(npc => !places[npc]) || owner]}은 지금 자고 있어요. 아침에 다시 만나요.`;
+  if (owner && code === 'card-owner-busy') return `${NAMES[all.find(npc => holds[npc]) || owner]}이 하던 장면을 마친 뒤 함께할 수 있어요.`;
+  // Beside her somewhere else, a card talked about at its own place is turned down for that place; else for being far.
+  if (owner && code === 'card-too-far') return places[owner]?.to === location && TALK_AT[card] && TALK_AT[card] !== location
+    ? `${NAMES[owner]}에게는 찻집에서 말을 걸어 주세요.` : `${NAMES[owner]} 가까이 가서 말을 걸어 주세요.`;
+  return REFUSAL_WORDS[code] ?? null;
+}
 
 /** What the place's panel shows of the cards and the residents here (§8-3·§9-4): the resident who greets the player
  * with what it heard (one, once — the newest it may tell), the cards whose owner is here (its need, and 「같이 해요」 or

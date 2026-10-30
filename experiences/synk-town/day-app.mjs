@@ -217,18 +217,23 @@ function clearError() { calmRefusal(); document.body.classList.remove('walk-erro
  * the screen sends by itself is read again with no words. */
 const REFUSAL_MS = 6000;
 let refusalTimer = 0, cardNoteTimer = 0;
-function refused(type, error) {
+function refused(type, error, payload = {}) {
   if (error?.code === 'stale-surface') lastPulse = 0;
+  // Through a WORLD account only the code comes (its client reads the answer's top message): the cards' module says the
+  // town's words for it, from the town as this screen has it (an older cached module has none — the words that came, if any).
+  const v = snapshot?.view.day?.scene?.village, message = error?.message && error.message !== error.code ? error.message : null;
+  const words = type === 'GREET' || ['stale-command', 'stale-surface'].includes(error?.code) ? null
+    : dayCards.refusalWords?.(error?.code, error?.message, { card: payload.card, places: v ? villageRows(v).places : {}, holds: v?.holds || {}, location: snapshot?.view.day?.location }) ?? message;
   read();
-  if (type === 'GREET' || !error?.message || ['stale-command', 'stale-surface'].includes(error?.code)) return;
+  if (!words) return;
   if ($('card-dialog')?.open) {
     // The panel's own note comes back after the moment (or sooner, once the take it shows changes).
-    text('card-note', error.message); clearTimeout(cardNoteTimer);
+    text('card-note', words); clearTimeout(cardNoteTimer);
     cardNoteTimer = setTimeout(() => { signatures.delete('card-note'); if ($('card-dialog')?.open) renderCardDialog(); }, REFUSAL_MS);
     return;
   }
   calmRefusal();
-  const note = $('error'); note.classList.add('is-soft'); text('error', error.message); note.hidden = false; $('retry').hidden = true;
+  const note = $('error'); note.classList.add('is-soft'); text('error', words); note.hidden = false; $('retry').hidden = true;
   document.body.classList.add('walk-note');
   note.scrollIntoView?.({ block: 'nearest' });
   refusalTimer = setTimeout(() => { if (note.classList.contains('is-soft')) { calmRefusal(); note.hidden = true; } }, REFUSAL_MS);
@@ -410,7 +415,7 @@ async function command(type, payload = {}) {
     return true;
   } catch (e) {
     if (type === 'LANGUAGE_OFFER' && (e.code === 'language-no-offer' || e.status === 409)) return false;
-    if (CARD_REFUSABLE.test(type) && e?.status === 409) refused(type, e); else showError(e.message);
+    if (CARD_REFUSABLE.test(type) && e?.status === 409) refused(type, e, payload); else showError(e.message);
     return false;
   }
   finally { setBusy(false); }
