@@ -46,6 +46,17 @@
         "화면필요": []
       },
       {
+        "계정": "lab-mm-tiktok",
+        "채널": "틱톡 @synklab.mm",
+        "주소": "https://www.tiktok.com/@synklab.mm/video/7702093805079612690?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-10-30T13:30:00.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tiktok",
         "채널": "틱톡 @synk.mn",
         "주소": "https://www.tiktok.com/@synk.mn/video/7702035781673635093?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
