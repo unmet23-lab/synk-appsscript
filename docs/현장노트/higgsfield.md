@@ -22,6 +22,7 @@
 - Seedance에 구도가 다른 시작·끝 그림을 주면 하드컷이 된다 → 카메라 이동은 시작 그림만 주고 움직임을 글로 쓴다 ([자세히](#구도가-다른-시작끝-그림을-주면-카메라-이동-대신-하드컷이-된다))
 - Seedance 2.0에 한국어 대사 녹음을 소리 참고로 주면 목소리만 따르고 말을 지어낸다 → 대사 컷은 2.5 `omni_reference`, 2.0은 말 없는 컷에 ([자세히](#seedance-20에-4초-넘는-한국어-대사를-소리-참고로-주면-목소리만-따르고-말은-지어낸다-2026-10-30-claude))
 - 옷 색만 따오려던 참고 그림이 배경까지 끌고 온다 → 이어 그리는 컷은 참고를 빼고 옷·배경을 글로 쓴다 ([자세히](#옷-색만-가져오려고-넣은-참고-그림의-배경이-첫-화면을-바꾼다))
+- 앱 계정을 바꾼 세션에서 MCP가 도구 0개로 붙으면 → 같은 founder 계정 CLI(`HOME=~/.ai-accounts/higgsfield-founder`)로 낸다 ([자세히](#앱-계정이-바뀐-세션에서-힉스필드-mcp가-연결됨인데-도구가-0개다--같은-founder-계정-cli로-낸다-2026-10-30-claude))
 
 ## 목차
 
@@ -114,6 +115,12 @@
 - 원인: 두 도구에는 견적 단계가 없다. MCP 도구 설명에 `upscale_video`(bytedance·topaz)는 「does not support cost preflight」, 목소리 복제는 「charges the voice-clone credit cost on successful creation」이라고만 있고 값은 적혀 있지 않다. CLI `generate cost`는 견적을 내지만 `topaz_video`는 `video_references`가 필수라 견적에도 영상을 올려야 한다(로컬 파일은 저절로 올라간다).
 - 고침: 처음 쓰는 이런 작업은 값을 모르면 먼저 유호님께 묻고, 끝나면 `transactions`로 실제 청구를 읽어 알린다. 목소리 복제는 비동기라 `list_voices`에서 `status`가 completed이고 `is_audio_eligible`이 true가 된 뒤에 쓴다(도구 설명).
 - 다시 확인: 10-24 돌림 — MCP `upscale_video`·`create_voice_from_confirmed_audio` 도구 설명과 `higgsfield model get topaz_video`(`video_references` 필수)가 위와 같다. CLI `generate cost topaz_video`가 값을 내는지는 영상을 올려야 해 아직 안 봤다. 40크레딧은 (10-24 메모에서 옮김, 다시 확인 전).
+
+### 앱 계정이 바뀐 세션에서 힉스필드 MCP가 「연결됨」인데 도구가 0개다 — 같은 founder 계정 CLI로 낸다 (2026-10-30 Claude)
+- 증상: 10-30 밤 Claude 앱 계정이 바뀐 뒤 같은 세션에서 `session_connectors_status`의 higgsfield가 `connected` · `tool_count 0`이고, ToolSearch로 `mcp__higgsfield__*`를 찾지 못했다. kind가 user라 `reconnect_session_connector`로도 다시 붙이지 못한다.
+- 원인: (추정) 앱 계정 전환 뒤 MCP 서버 연결은 살았지만 도구 목록을 받아 오지 못했다.
+- 고침: 같은 founder 계정의 CLI로 낸다 — `HOME=/c/Users/q1212/.ai-accounts/higgsfield-founder USERPROFILE='C:\Users\q1212\.ai-accounts\higgsfield-founder' higgsfield account status --json`으로 메일 · 잔액이 MCP에서 보던 것과 같은지 보고(10-30 578.61 = MCP 707.61 − 쓴 129), `higgsfield generate cost|create <모델> --mode … --start-image <파일> --end-image <파일> --audio-references <mp3> --prompt "$(cat 지시문.txt)" --json`으로 낸다(파일은 저절로 올라간다). 기다리기는 `generate wait <id> --timeout 70m --quiet --json`을 백그라운드로 돌린다. CLI에서는 프리셋 가로채기가 나오지 않았다.
+- 다시 확인: `account status`의 메일이 founder@synk.im이고, 생성 뒤 잔액이 견적만큼 줄었는지.
 
 ## Nano Banana Pro 정지컷
 
@@ -225,6 +232,7 @@
 - 원인: 2.0은 소리 참고를 목소리 · 운율의 본보기로 쓰고 말을 다시 만든다(추정). 같은 꼴의 보고가 7월 Seedance 2.0 리뷰에도 있다(입은 맞는데 엉뚱한 소리에 맞춤).
 - 고침: 대사 컷은 장부 S15 방법(2.5 `omni_reference` + 같은 소리 참고)으로 굽는다 — 같은 날 실사 5번을 2.5로 다시 굽자 받아쓰기가 「다음 주 금요일 오후 6시까지예요. 늦게 내면 안 돼요.」로 정확했고, 시작 · 끝 그림 잠금도 지켜 위치만 맞추면 끝 화면이 듣는 컷 첫 화면과 평균 차 4.9였다(21크레딧, 2.5는 480×854 · 2.0은 496×864로 나와 크기부터 맞춘다). 다만 2.5도 말을 자기 억양 · 박자로 다시 연기한다 — 문장마다 맞대도 크기 곡선 상관 0.48 · 0.69였고, 지시문에 「slowly」를 쓴 둘째 문장은 원본 1.10초가 1.73초로 늘었다. 그래서 빠르기 지시는 쓰지 않고, 우리 녹음은 문장마다 맞춰 얹되(`입맞춤.py`) 입이 정확해야 하면 클립이 낸 목소리를 그대로 쓰는 판과 견준다. 2.0은 말이 없는 컷(듣는 반응)에 쓴다 — 듣는 반응 5초 셋은 끝 화면이 첫 화면과 평균 차 2.7~3.7로 돌아와 반복 이음이 된다.
 - 다시 확인: 받은 대사 컷을 바로 받아쓰고(faster-whisper `language='ko'`, VAD 끔) 원본과 낱말이 같은지, 문장마다 길이 차가 0.2초 안인지 본다(`experiences/drama/qa/최신기법-20261030/입맞춤.py`의 「길이차」).
+- 10-30 밤 태오 2번(2.5 omni_reference · 480p · 9초, 시작 · 끝 같은 그림 + 소리 참고 7.87초)도 받아쓰기가 대사 그대로였다(첫 웃음 「하하하」까지). 끝 화면은 얼굴만 재도 첫 화면과 13.9 차이(첫 화면끼리 7.4)라 페이지에서 0.22초 겹쳐 바꿨다.
 
 ### 「same woman」이라고 써도 시작 그림의 사람이 나온다
 - 증상: 앞 컷 직원에 이어 같은 사람의 다음 대사를 그리면서 다른 컷의 첫 프레임을 시작 그림으로 넣었더니 다른 사람이 나왔다(10-12, 12크레딧 버림).

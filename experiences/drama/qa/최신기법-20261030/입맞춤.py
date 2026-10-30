@@ -70,11 +70,14 @@ toks = speech_spans(l)
 placed, prev_end = [], 0
 for s, t in toks:
     seg = l[max(0, s - 5): t + 5]
-    lo = max(prev_end, 0)
     hi = len(c) - len(seg)
+    lo = min(max(prev_end, 0), max(hi, 0))  # 앞 토막이 클립 끝 가까이 놓였으면 뒤 토막이 들어갈 자리부터 찾는다
     best = (-2.0, lo)
     for lag in range(lo, max(lo + 1, hi + 1)):
-        r = ncc(c[lag: lag + len(seg)], seg)
+        win = c[lag: lag + len(seg)]
+        if len(win) < len(seg):
+            break
+        r = ncc(win, seg)
         if r > best[0]:
             best = (r, lag)
     r, lag = best
@@ -98,7 +101,8 @@ for i, p in enumerate(placed):
     ms = int(round(max(0.0, p["클립자리"] - 0.04) * 1000))
     parts.append(f"[1]atrim={a:.3f}:{b:.3f},asetpts=PTS-STARTPTS,aresample=48000,adelay={ms}|{ms}[s{i}]")
     labels.append(f"[s{i}]")
-fc = ";".join(parts) + ";" + "".join(labels) + f"amix=inputs={len(labels)}:normalize=0,apad,atrim=0:{dur:.3f}[a]"
+# 끝없는 apad는 ffmpeg 9에서 가끔 멈춘다 — 길이를 못 박는다(현장노트 영상_ffmpeg_자막 「끝없는 `apad`를 섞은 인코딩이 …」)
+fc = ";".join(parts) + ";" + "".join(labels) + f"amix=inputs={len(labels)}:normalize=0,apad=whole_dur={dur:.3f},atrim=0:{dur:.3f}[a]"
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", clip, "-i", line, "-filter_complex", fc,
                 "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-t", f"{dur:.3f}", dst], check=True)
 print(json.dumps({"클립": clip, "영상초": round(dur, 3), "말시작": placed[0]["클립자리"] if placed else None, "토막": placed}, ensure_ascii=False))
