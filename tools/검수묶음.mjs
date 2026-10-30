@@ -7,7 +7,8 @@
 //   node tools/검수묶음.mjs 준비 <이름> --종류 화면|백엔드 --바탕 <커밋> [<경로…>] [준비 옵션]   아르곤 묶음·전후 캡처·시험 TAP·Fable 요약
 //   node tools/검수묶음.mjs 아르곤 <이름> [--수준 high|medium] [--묶음 A …] [--다시]       묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
 //   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수(2026-10-24 GPT 하나 — 막히면 아르곤 → Fable) — 아르곤과 같은 묶음·같은 대조
-//   node tools/검수묶음.mjs 처리 <이름> <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … [<번호>=재확인]   지적마다 Claude의 처리를 적는다
+//   node tools/검수묶음.mjs 처리 <이름> [<출처>:]<번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … [<번호>=재확인]   지적마다 Claude의 처리를 적는다
+//     (아르곤 F 묶음과 Fable처럼 번호가 겹치면 「Fable:F1=반영」처럼 출처를 붙인다 — 붙이지 않으면 멈춘다)
 //   node tools/검수묶음.mjs 페이블 <이름> [--시험안함 | --시험결과 <현재판.tap>] [--캡처안함]      고친 뒤 상태로 diff·시험·캡처를 다시 떠 fable.md를 쓴다
 //   node tools/검수묶음.mjs 페이블받기 <이름> [<답 파일>] [--새로]     Fable 답의 JSON 지적을 지적표에 F1…로 넣는다(다시 검수 묶음은 Fable-답-A.json을 FA1…로)
 //   node tools/검수묶음.mjs 검수받기 <이름> <답 파일> --검수자 Claude|GPT|아르곤 --묶음 A   공식 앱/CLI의 동일 입력 응답 수신(다시 검수 묶음은 Fable도)
@@ -1009,15 +1010,18 @@ const 처리말 = { 반영: '반영', 일부: '일부 반영', 일부반영: '�
 export function 처리하기(표, 토막들) {
   const 바뀜 = [];
   for (const 토막 of 토막들) {
-    const m = /^([A-Za-z]+\d+)=([^:]+)(?::([\s\S]*))?$/.exec(String(토막).trim());
-    if (!m) throw new Error(`처리 꼴이 아니다: ${토막} — <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] 또는 <번호>=재확인`);
-    const 지적 = 표.지적.find(x => x.번호.toUpperCase() === m[1].toUpperCase());
-    if (!지적) throw new Error(`없는 지적 번호: ${m[1]}`);
-    const 말 = m[2].replace(/\s+/g, '');
+    const m = /^(?:(아르곤|GPT|Claude|Fable):)?([A-Za-z]+\d+)=([^:]+)(?::([\s\S]*))?$/.exec(String(토막).trim());
+    if (!m) throw new Error(`처리 꼴이 아니다: ${토막} — [<출처>:]<번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] 또는 <번호>=재확인`);
+    // 아르곤 F 묶음의 F1과 Fable의 F1처럼 번호가 겹치면 출처를 붙여야 가린다 — 출처 없이 첫 줄에 적혀 Fable 지적이 미정으로 남았다(10-30).
+    const 같은 = 표.지적.filter(x => x.번호.toUpperCase() === m[2].toUpperCase() && (!m[1] || x.출처 === m[1]));
+    if (!같은.length) throw new Error(`없는 지적 번호: ${m[1] ? `${m[1]}:` : ''}${m[2]}`);
+    if (같은.length > 1) throw new Error(`${m[2]}이 ${같은.map(x => x.출처).join('·')} 지적에 겹친다 — 「${같은[0].출처}:${m[2]}=…」처럼 출처를 앞에 붙인다`);
+    const 지적 = 같은[0];
+    const 말 = m[3].replace(/\s+/g, '');
     if (말 === '재확인') { if (지적.처리 !== '반영' && 지적.처리 !== '일부 반영') throw new Error(`${지적.번호}: 재확인은 반영한 지적에만`); 지적.재확인 = '통과'; 바뀜.push(지적.번호); continue; }
     const 처리 = 처리말[말];
-    if (!처리) throw new Error(`모르는 처리: ${m[2]} (반영·일부·안함·재현안됨·후속·재확인)`);
-    const 이유 = (m[3] || '').trim();
+    if (!처리) throw new Error(`모르는 처리: ${m[3]} (반영·일부·안함·재현안됨·후속·재확인)`);
+    const 이유 = (m[4] || '').trim();
     if (처리 !== '반영' && !이유) throw new Error(`${지적.번호}: 「${처리}」에는 이유를 붙인다(${지적.번호}=${말}:<이유>)`);
     Object.assign(지적, { 처리, 이유, 재확인: null });
     바뀜.push(지적.번호);

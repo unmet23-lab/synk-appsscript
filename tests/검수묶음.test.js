@@ -126,6 +126,20 @@ test('처리: 줄임말을 받고, 반영 말고는 이유가 있어야 하고, 
   assert.equal(표.지적[2].재확인, '통과');
 });
 
+test('처리: 아르곤 F 묶음과 Fable의 번호가 겹치면 출처를 붙여 가리고, 붙이지 않으면 멈춘다', async () => {
+  const { 처리하기 } = await tool();
+  const 표 = { 지적: [{ 번호: 'F1', 출처: '아르곤', 등급: 'P2' }, { 번호: 'F1', 출처: 'Fable', 등급: 'P2' }, { 번호: 'F2', 출처: 'Fable', 등급: 'P3' }] };
+  assert.throws(() => 처리하기(표, ['F1=반영']), /겹친다/);
+  assert.equal(표.지적[0].처리, undefined, '멈추면 아무 칸에도 적지 않는다');
+  assert.deepEqual(처리하기(표, ['아르곤:F1=반영', 'Fable:F1=안함:표어 그대로', 'F2=반영']), ['F1', 'F1', 'F2']);
+  assert.equal(표.지적[0].처리, '반영');
+  assert.equal(표.지적[1].처리, '반영 안 함');
+  assert.equal(표.지적[1].이유, '표어 그대로');
+  assert.throws(() => 처리하기(표, ['GPT:F1=반영']), /없는 지적/);
+  처리하기(표, ['Fable:F1=반영', 'Fable:F1=재확인']);
+  assert.equal(표.지적[1].재확인, '통과');
+});
+
 test('Fable 답: 보고 끝의 json 블록을 읽고 F1…로 더하며(같은 지적은 한 번), 아르곤 지적에 의견을 붙인다', async () => {
   const { 페이블답읽기, 페이블지적넣기 } = await tool();
   const 답 = 페이블답읽기('보고 글\n```json\n{"findings":[{"grade":"P1","location":"a.js:3","quote":"x","problem":"깨짐","fix":"고침"}],"argonReview":[{"id":"A1","agree":false,"note":"아직 넘침"}],"coverage":{"reviewed":"전부","limitations":"없음","complete":true,"missing":[]},"seen":[]}\n```\n');
