@@ -2,22 +2,60 @@
   "판": [
     {
       "계정": "synkbrief-instagram",
-      "상태": "승인 대기",
-      "시각": "2026-10-30T21:00:00+09:00",
+      "상태": "게시됨",
+      "시각": "2026-10-30T12:00:00.000Z",
       "방법": "작업실",
       "작업": "c096f277b9ef2ec5457847ee43772e7cd8505c37b20782d60f919175bd6d2ef3",
-      "편ID": "synkbrief_내말투로_20261028"
+      "편ID": "synkbrief_내말투로_20261028",
+      "원고ID": "6a0a86ae-f3a0-4801-8722-a15d094e9431",
+      "게시관측시각": "2026-10-30T12:01:01.000Z",
+      "주소": "https://www.instagram.com/reel/DfHiFpSiLtR/",
+      "플랫폼": "instagram",
+      "게시물ID": "DfHiFpSiLtR",
+      "승인": "유호님 10-30 20:2x 앱 세션에서 직접 「세 편 다 올려」 — 세 편의 판 · 계정 · 시각을 표로 보인 뒤(① LAB 「haha → 하하」 유튜브 @synkkorean 21:00 · 샤오훙수 22:00 ② LAB 몽골 「와요 한 낱말」 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00 ③ synkbrief B15 「AI 티 나는 가게 공지」 인스타 · 유튜브 · 틱톡 21:00 · 네이버 블로그 synkshift 21:10)",
+      "등록": "10-30 20:2x 이 세션이 tools/작업실예약.js <편 폴더> --실행으로 손 등록(14시 회차는 상태 글 「올릴 준비 — 완성(관문 못 넘음)」이 대기열 조건에 안 맞아 빠졌고 손 등록은 그때 판정기가 막음) → 원고 6a0a86ae · 예약 둘 검토 대기 → 20:2x ego로 검토 링크 승인(「승인됐어요」)"
     },
     {
       "계정": "synkbrief-youtube",
-      "상태": "승인 대기",
-      "시각": "2026-10-30T21:00:00+09:00",
+      "상태": "게시됨",
+      "시각": "2026-10-30T12:00:00.000Z",
       "방법": "작업실",
       "작업": "2d876717c5dba0c202d2875b7734fb85aa3b6f7a69ce873fb4f0fb58645a6087",
       "후속": [
-        "고정 댓글은 게시 뒤 손으로(API에 고정 기능 없음)",
+        "고정 댓글 — 22:4x Claude가 ego로 SYNK 브리핑 이름으로 원고 pinnedComment를 달고 고정(「@synkbrief님이 고정함」, 스크립트 C:/Users/q1212/ego/tonight-plates-20261030/pin.mjs · pin-sb.mjs) · 유튜브 활성 채널은 @synkkorean으로 되돌림",
         "유튜브 표지 그림은 서버가 못 올린다 — 첫 화면이 표지"
       ],
+      "편ID": "synkbrief_내말투로_20261028",
+      "원고ID": "6a0a86ae-f3a0-4801-8722-a15d094e9431",
+      "게시관측시각": "2026-10-30T12:01:26.000Z",
+      "주소": "https://www.youtube.com/watch?v=Na8XARWi3YA",
+      "플랫폼": "youtube",
+      "게시물ID": "Na8XARWi3YA",
+      "승인": "유호님 10-30 20:2x 앱 세션에서 직접 「세 편 다 올려」 — 세 편의 판 · 계정 · 시각을 표로 보인 뒤(① LAB 「haha → 하하」 유튜브 @synkkorean 21:00 · 샤오훙수 22:00 ② LAB 몽골 「와요 한 낱말」 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00 ③ synkbrief B15 「AI 티 나는 가게 공지」 인스타 · 유튜브 · 틱톡 21:00 · 네이버 블로그 synkshift 21:10)",
+      "등록": "synkbrief-instagram 줄과 같은 등록 · 같은 검토 링크 승인"
+    },
+    {
+      "계정": "synkbrief-tiktok",
+      "상태": "게시됨",
+      "시각": "2026-10-30T21:00:00+09:00",
+      "승인": "유호님 10-30 20:2x 앱 세션에서 직접 「세 편 다 올려」 — 세 편의 판 · 계정 · 시각을 표로 보인 뒤(① LAB 「haha → 하하」 유튜브 @synkkorean 21:00 · 샤오훙수 22:00 ② LAB 몽골 「와요 한 낱말」 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00 ③ synkbrief B15 「AI 티 나는 가게 공지」 인스타 · 유튜브 · 틱톡 21:00 · 네이버 블로그 synkshift 21:10)",
+      "플랫폼": "tiktok",
+      "방법": "10-30 20:29~20:36 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) TikTok Studio 업로드 · 원본 malt-v6_master.mp4 · 캡션 03-synkbrief-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬 · 예약 칸 10-30 새 꼴 「21:00」 · 「2026-10-30」 → 「Schedule」(Content check lite 동안 「Continue to post?」 다섯 번 Cancel하고 기다림, 20:36에 통과) → tiktokstudio/content 목록 「Oct 30, 9:00 PM · Everyone」(스크립트 C:/Users/q1212/ego/tonight-plates-20261030/tk-sb-*.mjs · tk-time.mjs)",
+      "편ID": "synkbrief_내말투로_20261028",
+      "주소": "https://www.tiktok.com/@synkbrief/video/7702423353113464082",
+      "게시물ID": "7702423353113464082",
+      "게시확인": "22:4x ego 프로필 「TikTok synkbrief」(username synkbrief) 콘텐츠 목록 「Oct 30, 9:00 PM · Everyone」 · 조회 0(1시간 45분 뒤에도 0 — 지켜볼 것)"
+    },
+    {
+      "계정": "shift-naverblog",
+      "상태": "게시됨",
+      "시각": "2026-10-30T22:39:00+09:00",
+      "승인": "유호님 10-30 20:2x 앱 세션에서 직접 「세 편 다 올려」 — 세 편의 판 · 계정 · 시각을 표로 보인 뒤(① LAB 「haha → 하하」 유튜브 @synkkorean 21:00 · 샤오훙수 22:00 ② LAB 몽골 「와요 한 낱말」 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00 ③ synkbrief B15 「AI 티 나는 가게 공지」 인스타 · 유튜브 · 틱톡 21:00 · 네이버 블로그 synkshift 21:10)",
+      "플랫폼": "naverblog",
+      "주소": "https://blog.naver.com/synkshift/224459537663",
+      "게시물ID": "224459537663",
+      "방법": "21:10 계획이었으나 세션이 21:0x 기다리는 동안 다시 시작돼(앞 Claude 프로세스가 끝남) 22:36에 이어받았다 — 20:4x Aside synkshift 프로필(u1:25a13a03)에 본문 · 그림 2 · 소제목 5를 넣어 임시저장(〔영상〕 자리만 남김) → 22:39 임시저장 글을 불러와 〔영상〕 자리에 https://youtu.be/Na8XARWi3YA 영상 칸을 넣고 발행 창 카테고리 「작업 기록」 · 태그 11 · 전체 공개 · 댓글 · 검색 · 지금 발행 확인 뒤 발행(~/aside/b15-blog-20261030 run-draft.js · run-go.js)",
+      "게시확인": "발행 뒤 주소 blog.naver.com/synkshift/224459537663 · 편집기 점검 소제목 5 · 그림 2 · 영상 칸 1 · 남은 〔〕 0",
       "편ID": "synkbrief_내말투로_20261028"
     }
   ]
