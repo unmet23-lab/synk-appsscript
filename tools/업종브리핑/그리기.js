@@ -10,18 +10,23 @@ const { 채우기 } = require('./글.js');
 
 const 이스 = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-/** 지표 값 + 단위 → 보이는 글 */
+/** 지표 값 + 단위 → 보이는 글. 배수는 둘째 자리까지(0.98배를 「1배」로 보이면 평소보다 낮다는 글과 어긋난다 — 반응 리포트) */
 function 값글(x) {
   if (!x) return '—';
   if (typeof x.값 !== 'number') return String(x.값);
-  const n = Number.isInteger(x.값) ? x.값.toLocaleString('ko-KR') : (Math.round(x.값 * 10) / 10).toLocaleString('ko-KR');
+  const 자리 = x.단위 === '배' ? 100 : 10;
+  const n = Number.isInteger(x.값) ? x.값.toLocaleString('ko-KR') : (Math.round(x.값 * 자리) / 자리).toLocaleString('ko-KR');
   return `${n}${x.단위 || ''}`;
 }
 
-/** 글(자리표시자 포함) → 이스케이프한 HTML, 숫자는 굵게 + 출처 */
+/**
+ * 글(자리표시자 포함) → 이스케이프한 HTML, 숫자는 굵게 + 출처.
+ * 자리표시자를 먼저 표식으로 바꾸고 이스케이프한 뒤 끼운다 — 지표 이름에 &·'가 있으면 이스케이프가 이름을 바꿔 「—」가 되던 것(10-30 Fable 설계 검토 12)
+ */
 function 글HTML(s, 지표) {
-  const 안전 = 이스(s);
-  return 채우기(안전, 지표, (x) => `<b class="수" title="${이스(`${x.출처} — ${x.설명}`)}">${이스(값글(x))}</b>`);
+  const 끼울것 = [];
+  const 표식 = 채우기(String(s ?? '').replace(/\u0000/g, ''), 지표, (x) => { 끼울것.push(`<b class="수" title="${이스(`${x.출처} — ${x.설명}`)}">${이스(값글(x))}</b>`); return `\u0000${끼울것.length - 1}\u0000`; });
+  return 이스(표식).replace(/\u0000(\d+)\u0000/g, (_, i) => 끼울것[Number(i)]);
 }
 
 function 글너비(s, 크기) {
@@ -254,4 +259,4 @@ function 그리기(입력) {
   return { 문서, 조각 };
 }
 
-module.exports = { 그리기, 본문, 가로막대, 선그래프, 값글, 글HTML, 글너비, 이스 };
+module.exports = { 그리기, 본문, 가로막대, 선그래프, 값글, 글HTML, 글너비, 이스, 스타일 };
