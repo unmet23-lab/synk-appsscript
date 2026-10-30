@@ -516,28 +516,34 @@ function comparative(body) {
   const prefix=/^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(body);
   return prefix&&known(prefix[1])?prefix[2]:body;
 }
-function natural(quote) {
+function natural(quote, cache = new Map()) {
+  if (cache.has(quote)) { const result = cache.get(quote); return result == null ? result : copy(result); }
+  const result = naturalUncached(quote, cache);
+  cache.set(quote, result == null ? result : copy(result));
+  return result;
+}
+function naturalUncached(quote, cache) {
   let { body, condition } = normalizePrefix(quote);
   const coordinated=/^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(body);
   if(coordinated){
-    const first=natural(coordinated[1]+coordinated[3]),second=natural(coordinated[2]+coordinated[3]);
+    const first=natural(coordinated[1]+coordinated[3],cache),second=natural(coordinated[2]+coordinated[3],cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&!first.uncertain&&!second.uncertain){
       const secondGeneral=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(coordinated[2]);
       return {meanings:[...first.meanings.map(m=>({...m,condition:m.condition||condition})),...second.meanings.map(m=>({...m,condition:m.condition||(secondGeneral?null:condition)}))]};
     }
   }
   const topicList=/^(?:(?:제|내)?(?:취미|관심분야)(?:는|은))?(.+?)(?:이랑|랑|와|과)(.+?)(?:이고|고|을|를)(?:둘다|모두)(.+)$/u.exec(body);
-  if(topicList){const first=natural(topicList[1]+topicList[3]),second=natural(topicList[2]+topicList[3]);
+  if(topicList){const first=natural(topicList[1]+topicList[3],cache),second=natural(topicList[2]+topicList[3],cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&[...first.meanings,...second.meanings].every(m=>m.field==='topic'))return {meanings:[...first.meanings,...second.meanings].map(m=>({...m,condition}))};}
   const availability=/^(?:시간날때|시간이날때|여유시간에)(.+)$/u.exec(body);
-  if(availability){const activity=natural(availability[1]);if(activity?.meanings.length===1&&activity.meanings[0].field==='topic')return {meanings:activity.meanings.map(m=>({...m,condition}))};}
+  if(availability){const activity=natural(availability[1],cache);if(activity?.meanings.length===1&&activity.meanings[0].field==='topic')return {meanings:activity.meanings.map(m=>({...m,condition}))};}
   // A comparison does not authorize an opposite trait. Only its preferred arm
   // is proposed, and only when that complete arm has a supported predicate.
   body = body.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, '');
   body = comparative(body).replace(/^결론뿐아니라(?=왜그런지)/u,'');
   const explanationSequence=/^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(body);
   if(explanationSequence){
-    const first=natural(explanationSequence[1]+'보는게좋아요'),second=natural(explanationSequence[2]);
+    const first=natural(explanationSequence[1]+'보는게좋아요',cache),second=natural(explanationSequence[2],cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&first.meanings[0].value==='overview-first'&&second.meanings[0].value==='reasons-detail'&&second.meanings[0].polarity==='prefer')
       return {meanings:[...first.meanings,...second.meanings].map(m=>({...m,condition:m.condition||condition}))};
   }

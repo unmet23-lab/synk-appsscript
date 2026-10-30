@@ -45,9 +45,9 @@ test('more than 20000 events restore within a 5 MiB character quota with late pa
 test('page budget yields at its committed cursor and a fresh instance resumes before uploading', async () => {
   const events = Array.from({ length: 310 }, (_, n) => graph(n)).flat(), storage = disk(), transport = network(events);
   let sync = syncFor(game(storage), storage, transport, { maxPages: 2 });
-  assert.equal((await sync.start()).cursor, 400); assert.equal(sync.status().code, null); assert.equal(sync.status().complete, false); sync.stop();
+  assert.equal((await sync.start()).cursor, 400); assert.equal(sync.status().phase, 'offline'); assert.equal(sync.status().code, 'INCOMPLETE_HISTORY'); assert.equal(sync.status().complete, false); sync.stop();
   sync = syncFor(game(storage), storage, transport, { maxPages: 2 });
-  assert.equal((await sync.start()).cursor, 800); assert.equal(sync.status().complete, false); assert.equal(transport.calls.post, 0);
+  assert.equal((await sync.start()).cursor, 800); assert.equal(sync.status().phase, 'offline'); assert.equal(sync.status().code, 'INCOMPLETE_HISTORY'); assert.equal(sync.status().complete, false); assert.equal(transport.calls.post, 0);
   await sync.retry(); const complete = await sync.retry(); assert.equal(complete.cursor, 1240); assert.equal(complete.complete, true); assert.equal(complete.phase, 'synced'); sync.stop();
 });
 

@@ -8980,18 +8980,22 @@ var SynkLearning = (() => {
           code = null;
           message = null;
           publish();
+          const incomplete = () => {
+            continuation = auto && started;
+            if (!continuation) {
+              phase = "offline";
+              code = "INCOMPLETE_HISTORY";
+              message = "Atlas sync: bounded history scan needs another pull";
+              publish();
+            }
+            return status();
+          };
           running = (async () => {
             try {
               const pulled = await pullPages(token);
-              if (active(token) && !pulled) {
-                continuation = true;
-                return status();
-              }
+              if (active(token) && !pulled) return incomplete();
               if (active(token) && flushRequested) await flushQueue(token);
-              if (active(token) && state.missing.length && !await recover(token)) {
-                continuation = true;
-                return status();
-              }
+              if (active(token) && state.missing.length && !await recover(token)) return incomplete();
               while (active(token) && flushRequested && state.pending.length) await flushQueue(token);
               if (active(token)) {
                 phase = "synced";

@@ -11,6 +11,21 @@ const copy = value => JSON.parse(JSON.stringify(value));
 const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
 const disk = () => { const values = new Map();return { values, getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, v) }; };
 
+for (const auto of [false, true]) test(`a bounded pull without an active automatic runner reports incomplete history (auto=${auto})`, async t => {
+ const events=[],accountKey='account.manual-pages',port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:rows=>{events.push(...rows);return {added:rows.length};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage:disk(),auto,maxPages:1,transport:{post:async()=>{throw Error('Read-only scan must not upload');},get:async({after})=>({events:after===0?[{id:'first.page'}]:[],cursor:after===0?1:2,hasMore:after===0,revision:1})}});t.after(()=>sync.stop());
+ const first=await sync.pull();assert.equal(first.phase,'offline');assert.equal(first.code,'INCOMPLETE_HISTORY');assert.equal(first.complete,false);
+ const next=await sync.pull();assert.equal(next.phase,'synced');assert.equal(next.code,null);assert.equal(next.complete,true);assert.deepEqual(events.map(e=>e.id),['first.page']);
+});
+test('manual bounded recovery reports its pause and resumes the saved recovery cursor',async t=>{
+ const storage=disk(),events=[],after=[],accountKey='account.manual-recovery',event={id:'lost.event'};
+ storage.setItem(SYNC_KEY+'.'+accountKey,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:[event.id],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:rows=>{if(after.at(-1)===0)return{added:0,skipped:rows.map(e=>e.id)};events.push(...rows);return{added:rows.length};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,auto:false,maxPages:1,transport:{post:async()=>{throw Error('Read-only recovery must not upload');},get:async args=>{after.push(args.after);return{events:args.after<2?[event]:[],cursor:args.after===0?1:2,hasMore:args.after===0,revision:1};}}});t.after(()=>sync.stop());
+ const first=await sync.start();assert.equal(first.phase,'offline');assert.equal(first.code,'INCOMPLETE_HISTORY');assert.equal(first.complete,false);assert.equal(JSON.parse(storage.getItem(SYNC_KEY+'.'+accountKey)).recoveryCursor,1);
+ const next=await sync.pull();assert.equal(next.phase,'synced');assert.equal(next.complete,true);assert.deepEqual(after,[2,0,2,1]);assert.deepEqual(events,[event]);
+});
+
 test('an exhausted recovery scan preserves an acknowledged gap and refuses complete history',async()=>{
  const storage=disk(),complete=[],key=SYNC_KEY+'.account.gap';storage.setItem(key,JSON.stringify({version:2,accountKey:'account.gap',revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));
  const port={scope:'account',accountKey:'account.gap',events:()=>[],partial:()=>false,subscribe:()=>()=>{},markComplete:v=>complete.push(v),importEvents:()=>({added:0})},transport={get:async()=>({events:[],cursor:2,hasMore:false,revision:1}),post:async()=>{throw Error('A gap must not upload');}};

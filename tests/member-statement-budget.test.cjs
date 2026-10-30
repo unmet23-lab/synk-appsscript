@@ -2,6 +2,16 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
 
+test('coordinated natural-language alternatives finish within a bounded worker and preserve the unsupported quote',()=>{
+ const {spawnSync}=require('node:child_process'),modulePath=require.resolve('../experiences/synk-account/src/member-statement-contract.cjs');
+ for(const count of [23,60]){
+  const text=Array.from({length:count},(_,i)=>String.fromCharCode(44032+i)+'것도').join(', ')+' 좋아요';assert.ok(text.length<=500);
+  const result=spawnSync(process.execPath,['-e',`const C=require(${JSON.stringify(modulePath)});process.stdout.write(JSON.stringify(C.parseMemberStatement(${JSON.stringify(text)})));`],{encoding:'utf8',timeout:5000,windowsHide:true});
+  assert.equal(result.error,undefined,result.error?.message);assert.equal(result.status,0,result.stderr);
+  const parsed=JSON.parse(result.stdout);assert.equal(parsed.parserVersion,C.PARSER_VERSION);assert.deepEqual(parsed.meanings,[]);assert.ok(parsed.unresolved.length);assert.equal(parsed.unresolved[0].quote,text);
+ }
+});
+
 test('the twelfth clause keeps its meaning when only terminal separators remain',()=>{
  const text='음악 좋아요. '.repeat(11)+'요리 좋아요',baseline=C.parseMemberStatement(text);
  assert.deepEqual(baseline.meanings.map(m=>m.value),['music','cooking']);
