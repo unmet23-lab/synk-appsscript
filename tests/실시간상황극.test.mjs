@@ -13,6 +13,7 @@ import { 계량, gptLive값, gemini값, 주기, 장부읽기 } from '../experien
 import { 자막모음, 공급사표 } from '../experiences/realtime-roleplay/public/연결층.mjs';
 import { 검사 } from '../experiences/realtime-roleplay/lib/피드백.mjs';
 import { 팬사인회 } from '../experiences/realtime-roleplay/lib/장면.mjs';
+import { 키차례 } from '../experiences/realtime-roleplay/lib/오픈AI키.mjs';
 
 const 때 = (iso) => iso;
 const 줄 = (USD, 무엇 = '세션', 덧 = {}) => ({ 때: 때('2026-10-30T03:00:00Z'), 무엇, 길: 'gpt-live', USD, ...덧 });
@@ -391,4 +392,45 @@ test('서버: 화면이 준비 전 실패를 알리고 Gemini를 빼고 다시 �
   const 닫힌 = 장부읽기(장부).filter((r) => r.무엇 === '세션' && r.세션 === 다시.세션);
   assert.deepEqual(닫힌.map((r) => [r.USD, r.끝확인, r.등급]), [[0, false, '무료']]);
   assert.ok(장부읽기(장부).some((r) => r.무엇 === '연결실패' && /1006/.test(r.까닭)));
+});
+
+test('OpenAI 키: 상황극 전용 목록 다음에 일반 목록을 잇고(같은 키 파일은 한 번) 「까지」 날부터 그 키를 뺀다', (t) => {
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), '상황극키목록-'));
+  const 원래 = process.env.OPENAI_KEY_FILE;
+  delete process.env.OPENAI_KEY_FILE;
+  t.after(() => { fs.rmSync(폴더, { recursive: true, force: true }); if (원래 !== undefined) process.env.OPENAI_KEY_FILE = 원래; });
+  const 전용 = path.join(폴더, '전용.json');
+  const 일반 = path.join(폴더, '일반.json');
+  fs.writeFileSync(전용, JSON.stringify([{ 이름: '상황극', 파일: 'a.txt' }]));
+  fs.writeFileSync(일반, JSON.stringify([{ 이름: '본', 파일: 'b.txt' }, { 이름: '옛', 파일: 'c.txt', 까지: '2026-11-12' }, { 이름: '겹침', 파일: 'a.txt' }]));
+  const 전날밤 = Date.parse('2026-11-11T23:59:00+09:00');
+  const 그날 = Date.parse('2026-11-12T00:00:00+09:00');
+  assert.deepEqual(키차례([전용, 일반], 전날밤).map((k) => k.이름), ['상황극', '본', '옛']);
+  assert.deepEqual(키차례([전용, 일반], 그날).map((k) => k.이름), ['상황극', '본']);
+  assert.equal(키차례([전용, 일반], 전날밤)[0].파일, path.join(폴더, 'a.txt'));
+  assert.deepEqual(키차례([path.join(폴더, '없음.json'), 일반], 그날).map((k) => k.이름), ['본', '겹침']); // 전용 목록이 없으면 일반만
+  assert.equal(키차례([path.join(폴더, '없음.json')], 그날)[0].이름, 'openai.txt');
+  assert.deepEqual(키차례(일반, 그날).map((k) => k.이름), ['본', '겹침']); // 파일 하나를 주던 옛 부름도 그대로
+});
+
+test('서버: 끝 보고의 끊긴 까닭 · 사건 기록 꼬리는 세션 줄에 남고(토큰 가림 · 40개 · 한 줄 120자), 안 주면 칸도 없다', async (t) => {
+  const { 폴더 } = await 제미나이준비(t, 토큰답('auth_tokens/fake-token-4'));
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => s.close());
+  const 첫 = await (await 보내기('/api/연결', {})).json();
+  const 닫힘 = 'ws:close(1007 Request contains an invalid argument.)@2347';
+  const 기록 = [...Array.from({ length: 45 }, (_, i) => `voice:ACTIVITY_START@${i}`), 닫힘, '연결실패(wss://x?access_token=비밀값)@9', 'x'.repeat(300), 42];
+  const r = await 보내기('/api/끝', { 길: 'gemini-live', 세션: 첫.세션, 초: 0, 끝확인: false, 까닭: '1007 Request contains an invalid argument.', 기록, 전사: [] });
+  assert.equal(r.status, 200);
+  const 줄 = 장부읽기(장부).find((x) => x.무엇 === '세션' && x.세션 === 첫.세션);
+  assert.equal(줄.까닭, '1007 Request contains an invalid argument.');
+  assert.equal(줄.기록.length, 40);
+  assert.ok(줄.기록.includes(닫힘));
+  assert.ok(줄.기록.every((x) => x.length <= 120));
+  assert.ok(!JSON.stringify(줄).includes('비밀값'));
+  const 둘째 = await (await 보내기('/api/연결', {})).json();
+  assert.equal((await 보내기('/api/끝', { 길: 'gemini-live', 세션: 둘째.세션, 초: 30, 끝확인: true, 전사: [] })).status, 200);
+  const 줄2 = 장부읽기(장부).find((x) => x.무엇 === '세션' && x.세션 === 둘째.세션);
+  assert.ok(!('까닭' in 줄2) && !('기록' in 줄2));
 });

@@ -122,6 +122,17 @@ export function 서버만들기({ 장부 = process.env.SYNK_ROLEPLAY_LEDGER || p
   // Gemini 사용(차례마다 마지막 usageMetadata를 더한 것)은 숫자 칸만 받는다
   const 사용고르기 = (사용) => Object.fromEntries(['글입력', '음성입력', '글출력', '음성출력', '생각', '차례']
     .map((k) => [k, Math.max(0, Math.min(Number(사용?.[k]) || 0, 1e8))]));
+  // 화면이 알린 끊긴 까닭과 사건 기록 꼬리(종류 · 시각 · 닫힘 코드뿐 — 자막 글 · 토큰은 없다)를 세션 줄에 붙인다.
+  // 판이 왜 끝났는지 장부만 보고 알게(10-30 유호님 첫 판이 Gemini 준비 직후 0초에 끝났는데 까닭이 남지 않았다)
+  const 진단고르기 = (몸) => {
+    const 진단 = {};
+    if (typeof 몸.까닭 === 'string' && 몸.까닭.trim()) 진단.까닭 = 몸.까닭.trim().slice(0, 160);
+    if (Array.isArray(몸.기록)) {
+      진단.기록 = 몸.기록.filter((x) => typeof x === 'string').slice(-40)
+        .map((x) => x.replace(/access_token=[^&\s"')]+/g, 'access_token=«가림»').slice(0, 120));
+    }
+    return 진단;
+  };
 
   async function 끝(몸) {
     const 길 = 몸.길;
@@ -130,26 +141,27 @@ export function 서버만들기({ 장부 = process.env.SYNK_ROLEPLAY_LEDGER || p
     const 세션 = typeof 몸.세션 === 'string' ? 몸.세션.slice(0, 120) : null;
     if (세션 && 끝난세션.has(세션)) return [409, { 오류: '이미 끝난 세션' }];
     if (세션) { 끝난세션.add(세션); 진행중.delete(세션); }
+    const 진단 = 진단고르기(몸);
     if (길 === 'gpt-live') {
       const 초 = Math.max(0, Math.min(Number(몸.초) || 0, 3600));
-      장부적기(장부, { 무엇: '세션', 길, 세션, 초, USD: Math.max(0, gptLive값(초) - gptLive값(0)), 끝확인: !!몸.끝확인 });
+      장부적기(장부, { 무엇: '세션', 길, 세션, 초, USD: Math.max(0, gptLive값(초) - gptLive값(0)), 끝확인: !!몸.끝확인, ...진단 });
     } else if (길 === 'realtime-mini') {
       const 사용 = 몸.사용 && typeof 몸.사용 === 'object' ? 몸.사용 : {};
       const 초 = Math.max(0, Math.min(Number(몸.초) || 0, 3600));
       // 학습자 받아쓰기(gpt-4o-mini-transcribe) 값은 응답 usage에 없어 세션 초로 어림한다(분당 $0.003)
-      장부적기(장부, { 무엇: '세션', 길, 세션, 초, 사용, USD: realtime값(사용) + (초 / 60) * 0.003, 끝확인: !!몸.끝확인 });
+      장부적기(장부, { 무엇: '세션', 길, 세션, 초, 사용, USD: realtime값(사용) + (초 / 60) * 0.003, 끝확인: !!몸.끝확인, ...진단 });
     } else if (길 === 'gemini-live') {
       // 무료 등급이라 0원 — 학생에게 열기 전 유료로 바꾸면 USD를 유료였다면 값으로 센다(설계 §10.5)
       const 사용 = 사용고르기(몸.사용);
       const 초 = Math.max(0, Math.min(Number(몸.초) || 0, 3600));
-      장부적기(장부, { 무엇: '세션', 길, 세션, 초, 사용, USD: 0, 유료였다면USD: Number(gemini값(사용).toFixed(6)), 등급: '무료', 끝확인: !!몸.끝확인 });
+      장부적기(장부, { 무엇: '세션', 길, 세션, 초, 사용, USD: 0, 유료였다면USD: Number(gemini값(사용).toFixed(6)), 등급: '무료', 끝확인: !!몸.끝확인, ...진단 });
     }
     let 피드백 = null;
     if (!몸.피드백없이 && 전사.some((t) => t.누가 === '나')) {
       const 시작 = Date.now();
       try {
-        const { 답: r } = await 응답부르기(요청본문(장면, 전사));
-        장부적기(장부, { 무엇: '피드백', 길: 피드백모델, 사용: r.usage || null, USD: 글값(피드백모델, r.usage) });
+        const { 답: r, 키 } = await 응답부르기(요청본문(장면, 전사));
+        장부적기(장부, { 무엇: '피드백', 길: 피드백모델, 키, 사용: r.usage || null, USD: 글값(피드백모델, r.usage) }); // 키는 이름만(어느 조직 크레딧인지)
         피드백 = 검사(장면, JSON.parse(출력글(r) || '{}'), 전사);
         기록(`[상황극] 피드백 ${Date.now() - 시작}ms 버림 ${피드백.버림.length}`);
       } catch (e) {
