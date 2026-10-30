@@ -11,12 +11,16 @@
  */
 import * as generated from './town/data.gen.mjs';
 import { CARD_BY_ID, NAMES, lineText, newsLine, takeable, FEEDBACK, iconSvg } from './day-cards.mjs';
+import * as dayCards from './day-cards.mjs';
 import { ACTIVITY_LABELS, DETAIL_ROWS, activityLabel, evalRecord, familiarOf, knownOf, settingsOf } from './town/records.mjs';
 import { bookCells, itemPicture } from './day-gather.mjs';
 
 export const PAGES = Object.freeze([['news', '마을 소식'], ['can', '할 수 있는 생활'], ['familiar', '익숙한 생활'], ['memory', '마을이 기억하는 것'], ['book', '도감']]);
 // The gathering loop's things done with the cafe owner on a life day (W8b, design review F5): picked beside her, the day's gift.
 const GATHER_DAY = Object.freeze([['with', '찻집 주인과 잎 따기'], ['given', '찻집 주인에게 잎 드리기']]);
+// Where a card talked about at one place is taken up (C4 — 「찻집에서 」, screen review F3), read through the namespace: for
+// the cache's ten minutes after a publish a browser may still hold day-cards.mjs from before it (the line then goes without it).
+const talkWhere = card => dayCards.talkWhere?.(card) ?? '';
 export { activityLabel };
 
 /** The pages' content from a town answer ({ state, view, seen }). */
@@ -129,7 +133,7 @@ export function createNotebook(dialog, { command, onPage } = {}) {
     let content;
     if (page === 'news') content = m.news.length ? h('ul', { class: 'notebook-list' }, m.news.map(n => h('li', {}, h('span', { class: 'notebook-icon', html: iconSvg('news') }), h('span', { text: n.text })))) : empty('아직 마을 소식이 없어요. 하루가 지나면 문 앞 쪽지에 소식이 붙어요.');
     else if (page === 'can') content = m.can.length ? h('ul', { class: 'notebook-list' }, m.can.map(c => h('li', {}, h('span', { class: 'notebook-icon', html: iconSvg('sparkle') }),
-      h('span', {}, h('strong', { text: c.title }), h('span', { class: 'notebook-sub', text: c.paused ? `하던 생활이에요. ${NAMES[c.owner]}에게 말을 걸면 이어서 해요.` : `${NAMES[c.owner]}에게 말을 걸면 같이 할 수 있어요.` })))))
+      h('span', {}, h('strong', { text: c.title }), h('span', { class: 'notebook-sub', text: c.paused ? `하던 생활이에요. ${talkWhere(c.card)}${NAMES[c.owner]}에게 말을 걸면 이어서 해요.` : `${talkWhere(c.card)}${NAMES[c.owner]}에게 말을 걸면 같이 할 수 있어요.` })))))
       : empty('지금은 기다리는 생활이 없어요. 이웃의 하루를 둘러보세요.');
     else if (page === 'familiar') content = h('div', {}, m.familiar.length ? h('ul', { class: 'notebook-list' }, m.familiar.map(f => h('li', {}, h('span', { text: f.title }))))
       : empty('여러 번 함께한 생활이 여기에 모여요.'), h('p', { class: 'field-note', text: '본 것 기록을 비우면 모두 다시 새 이야기로 보여요.' }),

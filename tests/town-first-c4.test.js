@@ -265,6 +265,37 @@ test('Fable F5·F6 — 첫 C4는 찻집에서만 건네고 열리며, 한 방문
   assert.ok(next && next.key === offered.key, '다음 방문에는 같은 첫 C4를 다시 건넨다');
 });
 
+test('첫 C4를 이번 방문에 건넸거나 거절했어도 같은 찻집의 다음 카드 제안은 막히지 않는다 — 며칠씩 기다리는 C4만 되풀이해 고르지 않는다', async () => {
+  const [{ createStore }, village] = await Promise.all([townFile('server.mjs'), townModule('village')]);
+  const run = answer => {
+    const h = harness(createStore, 'acct-first-c4-next');
+    h.pulse(); h.play(10);
+    // 주인이 찻집에 선 채로 C5(C4 뒤 카드)가 서는 때를 계획에서 찾는다 — 그 곁에 가면 첫 C4도 함께 선다.
+    let found = null;
+    for (let n = 0; n < 24 * 6 && !found; n++) {
+      const v = h.store.read().state.village, out = village.planOf(v), start = startSpots(v);
+      const e = out.log.find(x => x.atMs > h.now + MIN && x.card === 'C5');
+      if (e) {
+        const at = village.placeAt(out.segments, e.npc, e.atMs + 20000, start), still = village.placeAt(out.segments, e.npc, e.atMs + 5 * MIN, start);
+        if (at && !at.walking && at.to === 'cafe' && still && !still.walking && still.to === 'cafe' && !out.log.some(x => x !== e && Math.abs(x.atMs - e.atMs) < 15 * MIN)) found = e;
+      }
+      if (!found) { h.set(h.now + HOUR); h.pulse(); h.store.read(); }
+    }
+    assert.ok(found, '엿새 안에 찻집에서 C5가 선다');
+    h.set(Math.max(h.now + 1000, found.atMs - 50000)); h.pulse();
+    h.send('DAY_MOVE', { location: 'cafe' }); if (h.store.read().state.day.home.exitTarget) h.send('DAY_EXIT');
+    while (h.now < found.atMs + 25000) h.play(5, 1);
+    const first = h.boundary(['cards', 'tea']);
+    assert.equal(first.issued?.card, 'C4', '먼저 첫 C4를 건넨다');
+    if (answer) h.send(answer, { contactId: first.issued.id });
+    h.play(183, 3);
+    const next = h.boundary(['cards', 'tea']);
+    assert.deepEqual({ card: next.issued?.card, key: next.issued?.key }, { card: 'C5', key: found.key }, '제안 사이가 지나면 다음 카드를 건넨다');
+    assert.equal(h.store.read().state.village.band.cards.C4?.status ?? h.store.read().view.day.scene.village.cards.find(c => c.card === 'C4')?.status, 'triggered', '첫 C4는 그대로 기다린다');
+  };
+  run(null); run('CARD_DECLINE');
+});
+
 test('GPT GA1 — 한 구간에 장소를 열여섯 번 넘게 바꿔도(주인을 아직 못 만남) 그 뒤 주인 곁에 머물면 첫 C4가 선다', async () => {
   const village = await townModule('village');
   const v = village.initialVillage(), close = ms => village.closeBands(v, { nowMs: ms, seed: 'first-c4-cap', offsetMin: 540, revision: 1 });

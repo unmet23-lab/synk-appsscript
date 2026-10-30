@@ -668,6 +668,9 @@ function cardOfferFor(state, host) {
     const card = CARD_BY_ID[c.card], activity = `card.${card.id}`, at = now.places[card.owner];
     const crew = [card.owner, ...(card.paths.player.with || [])];
     if (c.status !== 'triggered' || card.locked || !card.paths.player.ready || !at || crew.some(npc => held[npc] || !upFor(v, npc, host.nowMs))) continue;
+    // A rise already offered (once a visit) or a card turned down this visit is passed over, not returned for the life module to
+    // drop: C4's first waits for days and would otherwise keep every card after it from its owner's word.
+    if ((state.life?.declinedCards || []).includes(card.id) || state.life?.contacts.some(x => x.contactKey === `card:${card.id}:${c.key}`)) continue;
     // A card whose 「나와 함께」 is a life activity goes only to a screen that draws that board (W8: caps 'tea', review F13).
     if (!offerReaches(card, host.caps)) continue;
     // C4's talk is at the menu board (§12-1): its owner offers it at the cafe only.

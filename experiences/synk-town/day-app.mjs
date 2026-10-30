@@ -827,7 +827,7 @@ function renderCardDialog() {
   const confirm = $('card-confirm'); confirm.dataset.command = 'CARD_CONFIRM'; confirm.dataset.unavailable = String(!m.chosen);
   choices.hidden = m.done; confirm.hidden = m.done; confirm.disabled = busy || !available() || !m.chosen;
   // The note keeps a refused gift's reason until the card changes (W8b).
-  if (signatures.get('card-note') !== JSON.stringify([m.card, m.done])) { signatures.set('card-note', JSON.stringify([m.card, m.done])); text('card-note', m.done ? '고른 대로 남았어요. 닫아도 그대로예요.' : '닫으면 하던 생활로 남아요. 주인에게 다시 말을 걸면 이어서 해요.'); }
+  if (signatures.get('card-note') !== JSON.stringify([m.card, m.done])) { signatures.set('card-note', JSON.stringify([m.card, m.done])); text('card-note', m.done ? '고른 대로 남았어요. 닫아도 그대로예요.' : `닫으면 하던 생활로 남아요. ${dayCards.talkWhere?.(m.card) ?? ''}주인에게 다시 말을 걸면 이어서 해요.`); }
   const feedback = $('card-feedback'); feedback.hidden = !m.done || !m.eventId;
   if (m.done && m.eventId) {
     noteSeen([`line:${m.lineId}`, `card:${m.card}:player`], m.eventId);

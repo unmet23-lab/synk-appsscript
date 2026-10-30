@@ -40,6 +40,17 @@ test('주민의 한 줄 — 혼자 풀기·둘이(짝은 온 뒤에만)·쌍 이
   const waiting = [{ card: 'W1', owner: 'workshop-owner', status: 'triggered', key: 'w' }];
   assert.equal(sceneLine([], 'workshop-owner', T, { waiting }).id, 'workshop-owner.card.W1-trigger.1');
   assert.equal(sceneLine([], 'workshop-owner', T, { waiting: [{ ...waiting[0], status: 'resolving' }] }), null);
+  // 한 곳에서만 이야기하는 카드(TALK_AT — 첫 C4는 찻집 차림표 앞, §12-1)는 주인이 그곳에 와 있을 때만 필요를 말한다 — 첫 C4가 며칠씩
+  // 기다리는 동안 다른 곳의 주인은 제 마음 줄을 말한다(화면 검수 town-c4-world F2).
+  const c4 = [{ card: 'C4', owner: 'cafe-owner', status: 'triggered', key: 'c' }];
+  assert.equal(sceneLine([seg('cafe-owner', { spot: 'cafe.counter' })], 'cafe-owner', T + 1000, { waiting: c4 }).id, 'cafe-owner.card.C4-trigger.1');
+  assert.equal(sceneLine([seg('cafe-owner', { spot: 'greenhouse.bed' })], 'cafe-owner', T + 1000, { waiting: c4 }), null, '찻집 밖에서는 첫 C4를 말하지 않는다');
+  assert.equal(sceneLine([seg('cafe-owner', { spot: 'cafe.counter', arriveMs: T + 60000 })], 'cafe-owner', T + 1000, { waiting: c4 }), null, '찻집으로 걷는 동안은 아직');
+  assert.equal(sceneLine([], 'cafe-owner', T, { waiting: c4 }), null, '일과 조각이 없으면(잠) 말하지 않는다');
+  assert.equal(sceneLine([seg('cafe-owner', { spot: 'greenhouse.bed' })], 'cafe-owner', T + 1000, { waiting: [...c4, { card: 'C1', owner: 'cafe-owner', status: 'triggered', key: 'd' }] }).id,
+    'cafe-owner.card.C1-trigger.1', '찻집 밖에서도 다른 카드의 필요는 그대로');
+  const { talkWhere } = await load('day-cards.mjs');
+  assert.equal(talkWhere('C4'), '찻집에서 '); assert.equal(talkWhere('C1'), '');
 });
 
 test('인사 — 앎의 길(본 것·들은 것·소식)마다 그 주민의 틀에 소식 줄을 채우고, 말로 못 전하는 것은 말하지 않는다', async () => {

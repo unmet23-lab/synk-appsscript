@@ -12,6 +12,7 @@ import * as generated from './town/data.gen.mjs';
 import * as mood from './day-mood.mjs';
 import { authoredLevel } from './town/language-ladder.mjs';
 import { civilFromDays, dayKindOf, seasonOfMonth } from './town/clock.mjs';
+import { SPOT_BY_ID } from './town/places.mjs';
 
 // Read through the namespace: for up to the cache's ten minutes after a publish a browser may still hold the generated
 // data from before the cards existed (then no card line shows and the town still opens — a named import would stop it).
@@ -76,8 +77,9 @@ const arrived = (s, t) => t >= (s.arriveMs ?? s.startMs);
 
 /** The line a resident says at server time t, from what the plan has it doing (§8-4·§9-1): solving a card (alone, or
  * asking its pair / come to help), talking with its pair (the pair's line for their small difference's step), or — when
- * its card waits for it — that card's need. Only once it is where it does it; a pair line only when both are there (a
- * resident alone never talks to the air — review F14). Returns { id, icon, seen: [keys] } or null. waiting: the view's
+ * its card waits for it — that card's need (one talked about at one place, TALK_AT, only while it is there). Only once
+ * it is where it does it; a pair line only when both are there (a resident alone never talks to the air — review F14).
+ * Returns { id, icon, seen: [keys] } or null. waiting: the view's
  * cards still waiting ({ card, owner, status }); season: today's (a card line with seasons speaks in it, W10). */
 export function sceneLine(segments, npc, t, { steps = {}, waiting = [], season = null } = {}) {
   const seg = segments.find(s => s.npc === npc && here(s, t));
@@ -96,7 +98,10 @@ export function sceneLine(segments, npc, t, { steps = {}, waiting = [], season =
     const step = steps[pair.scene] ?? 0, id = `${npc}.pair.${pair.scene}-${step}.1`;
     return LINES.has(id) ? { id, icon: 'together', seen: [`line:${id}`, `pair:${pair.scene}:${step}`], occurrence: `${pair.scene}:${Math.min(seg.startMs, mate.startMs)}` } : null;
   }
-  const need = waiting.find(c => c.owner === npc && c.status === 'triggered');
+  // C4's first waits for the player for days: away from the cafe its owner keeps her own lines (the mood layer), since the
+  // player could not answer it there (screen review F2).
+  const at = seg && arrived(seg, t) ? SPOT_BY_ID[seg.spot]?.place ?? null : null;
+  const need = waiting.find(c => c.owner === npc && c.status === 'triggered' && (!TALK_AT[c.card] || TALK_AT[c.card] === at));
   if (need) { const id = cardLine(npc, need.card, 'trigger', season); if (LINES.has(id)) return { id, icon: CARD_ICONS[need.card] || 'sparkle', seen: [`line:${id}`], occurrence: `${need.card}:${need.key}:trigger` }; }
   return null;
 }
@@ -146,7 +151,9 @@ export function hearsayText(npc, entry, level = LEVEL) {
  * that need the tea order). */
 export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) && c.ready !== false && CARD_BY_ID.get(c.card)?.paths?.player?.ready === true && !CARD_BY_ID.get(c.card)?.locked;
 /** A card talked about at one place (§12-1 — C4 at the menu board; the server's town/cards.mjs talkPlaceOf): its need shows there. */
-const TALK_AT = Object.freeze({ C4: 'cafe' });
+export const TALK_AT = Object.freeze({ C4: 'cafe' });
+/** Where such a card is taken up, as the notebook and the card's note say it (「찻집에서 」), or ''. */
+export const talkWhere = card => (TALK_AT[card] === 'cafe' ? '찻집에서 ' : '');
 
 /** What the place's panel shows of the cards and the residents here (§8-3·§9-4): the resident who greets the player
  * with what it heard (one, once — the newest it may tell), the cards whose owner is here (its need, and 「같이 해요」 or
