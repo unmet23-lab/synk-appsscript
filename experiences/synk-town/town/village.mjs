@@ -10,7 +10,11 @@ import { bandAt, clockAt, lifeDayStartAt, recordOffset, validOffset, BAND_IDS, D
 import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
 import { paramsFor } from './params.mjs';
 import { wake } from './state.mjs';
-import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf, FIRST_STAY, firstOwed, firstPending } from './cards.mjs';
+import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf } from './cards.mjs';
+// C4's first (10-30) is read by name from the module: a browser still holding an older cards.mjs (the ten-minute cache) keeps
+// its module links — the screen reads only placeAt, caption, doing and goalOf here.
+import * as CARD_RULES from './cards.mjs';
+const { FIRST_STAY, firstOwed, firstPending } = CARD_RULES;
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
 import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
 import { habitOf, HABIT_BANDS } from './visits.mjs';

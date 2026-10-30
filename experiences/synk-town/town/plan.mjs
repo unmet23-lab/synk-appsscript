@@ -30,8 +30,11 @@ import { dayKindOf, weatherAt as clockWeatherAt, weatherChangesBetween, rainBetw
 import { paramsFor } from './params.mjs';
 import { PER_MILLE, perMille, stateOf, running, keptState, bandEvents, advance, finishSegment, replay, stateFactors, stateCandidates, available, playerMade } from './state.mjs';
 import { CARD_BY_ID, CARDS_OF, WEAR_THRESHOLDS, cardKey, statusOf, roseToday, villageStart, villageAfter, keptVillage, applySegment, applyTrigger, applyTake,
-  applyGive, givesItems, triggerHolds, pairChosen, partnerMinutes, solvingSpot, takeCovers, sceneFree, frictionStep, pairKeyOf,
-  FIRST_STAY, firstOwed, firstPending } from './cards.mjs';
+  applyGive, givesItems, triggerHolds, pairChosen, partnerMinutes, solvingSpot, takeCovers, sceneFree, frictionStep, pairKeyOf } from './cards.mjs';
+// C4's first (10-30) is read by name from the module: a browser still holding an older cards.mjs (the ten-minute cache) keeps
+// its module links — the planner never runs there.
+import * as CARD_RULES from './cards.mjs';
+const { FIRST_STAY, firstOwed, firstPending } = CARD_RULES;
 
 const CHAT_SPOTS = DATA.CHAT_SPOTS ?? {};
 export const ARCHETYPE_BY_ID = Object.freeze(Object.fromEntries(ARCHETYPES.map(a => [a.id, a])));
