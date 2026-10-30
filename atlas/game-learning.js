@@ -153,7 +153,8 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     }
     catch { readable = false; complete = false; warning = '기록을 읽지 못해 기본 연습으로 진행해요.'; notify('storage-error', 'STORAGE_ERROR'); return null; }
   }
-  const initial = readStored(); epoch = initial?.epoch || lease?.epoch || uid();
+  const initial = readStored(); let provisional = !!lease && !initial;
+  epoch = initial?.epoch || lease?.epoch || (lease ? 'initial.' + uid() : uid());
   if (lease && !lease.epoch) lease.epoch = epoch;
   ledger = initial?.ledger || null; session = newSession(initial?.events || []);
   // Keep the settled marks of entries in `known` (the kept log) only.
@@ -174,8 +175,10 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     if (!readable || !storage) return;
     const stored = readStored();
     if (!stored || stored === UNCHANGED) return;
+    // An initial owner joins waiting practice; an explicit reset still ends it.
+    if (provisional && stored.epoch.startsWith('initial.')) { epoch = stored.epoch; provisional = false; }
     if (stored.epoch !== epoch) {
-      epoch = stored.epoch; ledger = stored.ledger || null; session = newSession(stored.events); release(null);
+      epoch = stored.epoch; provisional = false; ledger = stored.ledger || null; session = newSession(stored.events); release(null);
       settled.clear(); settledVersion += 1; settle(stored.settled || [], new Set(stored.events.map(e => e.id)));
       takeDropped(stored.dropped || [], false); return;
     }
@@ -271,7 +274,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
         ...(ledger ? { ledger } : {}), ...(settled.size ? { settled: [...settled] } : {}), ...(dropped.size ? { dropped: [...dropped] } : {}) },
       typeof lastStoredRaw === 'string' ? lastStoredRaw : null);
       else { raw = snapshot(events); storage.setItem(key, raw); }
-      lastStoredRaw = raw; writable = true; waitingWrite = false; if (!quiet) notify(kind); return true;
+      lastStoredRaw = raw; provisional = false; writable = true; waitingWrite = false; if (!quiet) notify(kind); return true;
     } catch (error) { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; notify('storage-error', error.code === 'HISTORY_CAPACITY' ? 'HISTORY_CAPACITY' : 'STORAGE_ERROR'); return false; }
   }
   // Initialize one shared epoch before a second game/tab opens it.
@@ -365,7 +368,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
       const raw = JSON.stringify({ version: 1, epoch: nextEpoch, events: [], ...(storageScope === 'account' ? { owner: accountKey } : {}) });
       try { if (storage) storage.setItem(key, raw); }
       catch { writable = false; warning = '기록을 저장하지 못해 초기화하지 않았어요.'; notify('storage-error', 'STORAGE_ERROR'); throw Object.assign(new Error('Atlas: reset could not be saved'), { code: 'STORAGE_ERROR' }); }
-      epoch = nextEpoch; session = nextSession; ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false);
+      epoch = nextEpoch; provisional = false; session = nextSession; ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false);
       readable = true; writable = !!storage; complete = historyComplete; warning = null; waitingWrite = false; lastStoredRaw = storage ? raw : null;
       body = ledgerJson = settledJson = droppedJson = retryFold = null; paged = false;
       release(null); if (storage) notify('append');

@@ -10411,7 +10411,8 @@ var require_game_learning = __commonJS({
         }
       }
       const initial = readStored();
-      epoch = initial?.epoch || lease?.epoch || uid();
+      let provisional = !!lease && !initial;
+      epoch = initial?.epoch || lease?.epoch || (lease ? "initial." + uid() : uid());
       if (lease && !lease.epoch) lease.epoch = epoch;
       ledger = initial?.ledger || null;
       session = newSession(initial?.events || []);
@@ -10435,8 +10436,13 @@ var require_game_learning = __commonJS({
         if (!readable || !storage) return;
         const stored = readStored();
         if (!stored || stored === UNCHANGED) return;
+        if (provisional && stored.epoch.startsWith("initial.")) {
+          epoch = stored.epoch;
+          provisional = false;
+        }
         if (stored.epoch !== epoch) {
           epoch = stored.epoch;
+          provisional = false;
           ledger = stored.ledger || null;
           session = newSession(stored.events);
           release(null);
@@ -10573,6 +10579,7 @@ var require_game_learning = __commonJS({
             storage.setItem(key, raw);
           }
           lastStoredRaw = raw;
+          provisional = false;
           writable = true;
           waitingWrite = false;
           if (!quiet) notify(kind);
@@ -10730,6 +10737,7 @@ var require_game_learning = __commonJS({
             throw Object.assign(new Error("Atlas: reset could not be saved"), { code: "STORAGE_ERROR" });
           }
           epoch = nextEpoch;
+          provisional = false;
           session = nextSession;
           ledger = null;
           settled.clear();

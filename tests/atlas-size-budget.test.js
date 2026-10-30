@@ -15,7 +15,8 @@ const ROOT = path.join(__dirname, '..');
 // 2026-10-31: LAB games and WORLD share an exclusive browser writer; sync lease fencing, missing-history refusal and witnessed restoration (+64 lines, no new file).
 // 2026-10-31: LAB/WORLD reset commits storage before clearing memory/open work (+12 lines).
 // 2026-10-31: drain records arriving during recovery; resume fresh work after a known gap (+2 lines).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7333, capabilityDocLines: 150 });
+// 2026-10-31: distinguish initial browser ownership from explicit reset (+3 lines).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7336, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

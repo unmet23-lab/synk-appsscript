@@ -10389,7 +10389,8 @@ var SynkLearning = (() => {
           }
         }
         const initial = readStored();
-        epoch = initial?.epoch || lease?.epoch || uid();
+        let provisional = !!lease && !initial;
+        epoch = initial?.epoch || lease?.epoch || (lease ? "initial." + uid() : uid());
         if (lease && !lease.epoch) lease.epoch = epoch;
         ledger = initial?.ledger || null;
         session = newSession(initial?.events || []);
@@ -10413,8 +10414,13 @@ var SynkLearning = (() => {
           if (!readable || !storage) return;
           const stored = readStored();
           if (!stored || stored === UNCHANGED) return;
+          if (provisional && stored.epoch.startsWith("initial.")) {
+            epoch = stored.epoch;
+            provisional = false;
+          }
           if (stored.epoch !== epoch) {
             epoch = stored.epoch;
+            provisional = false;
             ledger = stored.ledger || null;
             session = newSession(stored.events);
             release(null);
@@ -10551,6 +10557,7 @@ var SynkLearning = (() => {
               storage.setItem(key, raw);
             }
             lastStoredRaw = raw;
+            provisional = false;
             writable = true;
             waitingWrite = false;
             if (!quiet) notify(kind);
@@ -10708,6 +10715,7 @@ var SynkLearning = (() => {
               throw Object.assign(new Error("Atlas: reset could not be saved"), { code: "STORAGE_ERROR" });
             }
             epoch = nextEpoch;
+            provisional = false;
             session = nextSession;
             ledger = null;
             settled.clear();
