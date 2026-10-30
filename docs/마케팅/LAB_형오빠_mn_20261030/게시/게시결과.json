@@ -1,0 +1,33 @@
+{
+  "판": [
+    {
+      "계정": "lab-instagram",
+      "상태": "예약됨",
+      "시각": "2026-10-31T21:00:00+09:00",
+      "방법": "10-31 04:44~04:46 Claude가 ego로 Business Suite 릴스 만들기(SYNK · synk.mn 한 번에 교차 게시) — 원본 01-ig-fb-mn/video.mp4 · 썸네일 cover.png · 캡션은 캡션_mn.txt(검문 통과 판) 끝에 첫댓글_mn.txt를 한 문단으로(공백 빼고 같음) · 예약 두 줄 2026-10-31 오후 9:00(새벽에 열어 오전이 기본으로 잡혀 오전/오후 칸을 오후로 고침) → 「릴스 예약됨 — Facebook · Instagram 2026. 10. 31.」, 예약 목록 두 줄(SYNK · synk.mn 「2026년 10월 31일 토요일 9:00」) 확인. AI 표시 없음(준비.json). 스크립트 C:/Users/q1212/ego/plates-20261031/bs-*.mjs",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(M19 — 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00, 편 · 판 · 계정 · 시각을 보인 뒤)"
+    },
+    {
+      "계정": "lab-facebook",
+      "상태": "예약됨",
+      "시각": "2026-10-31T21:00:00+09:00",
+      "방법": "Business Suite 릴스 예약 한 번(lab-instagram 줄)",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(M19 — 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00, 편 · 판 · 계정 · 시각을 보인 뒤)"
+    },
+    {
+      "계정": "lab-telegram",
+      "상태": "예약됨",
+      "시각": "2026-10-31T21:00:00+09:00",
+      "방법": "10-31 04:48~04:49 Claude가 ego 텔레그램 웹 SYNK LAB 채널(t.me/synkmn) — 영상 붙여 넣기 · 캡션(댓글 물음 · 「Бид SYNK LAB」 줄 빼고 게임 링크 · 해시태그, 342자). 첫 회는 보내기 창 캡션 칸에 M18 글이 초안으로 남아 있어 어긋남 → 칸을 비우고 다시 넣어 일치 · 보내기 단추 오른쪽 클릭 「Schedule Message」 → 31 · 21:00 → 「SEND TODAY AT 09:00 PM」 → Scheduled Messages에 21:00 한 줄(캡션 5번 줄 검문 판) 확인(스크립트 C:/Users/q1212/ego/plates-20261031/tg.mjs · tg2.mjs)",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(M19 — 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00, 편 · 판 · 계정 · 시각을 보인 뒤)"
+    },
+    {
+      "계정": "lab-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-10-31T21:00:00+09:00",
+      "방법": "10-31 04:52~04:53 Claude가 ego 프로필 「TikTok synk.mn」(username synk.mn 확인) — 원본 01-ig-fb-mn/video.mp4 · 캡션 캡션_mn.txt 그대로(공백 빼고 같음) · AI 표시 끔 · 예약 칸 새 꼴(TUX 입력 「21:00」 · 「2026-10-31」) → 「Schedule」(검사 창 없이) → tiktokstudio/content 목록 「Oct 31, 9:00 PM (GMT+9) Seoul · Everyone」 확인(스크립트 C:/Users/q1212/ego/plates-20261031/tk-a · t · b · c.mjs, 설정 tk-m19.json)",
+      "주소": "https://www.tiktok.com/@synk.mn",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(M19 — 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00, 편 · 판 · 계정 · 시각을 보인 뒤)"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "판": [
+    {
+      "계정": "yuhobuilds-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-10-31T21:00+09:00",
+      "방법": "10-31 04:57~04:58 Claude가 ego 프로필 「TikTok yuhobuilds」(username yuhobuilds 확인) — 원본 remotion/out/y23_final.mp4 · 캡션 01-yuhobuilds-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬 · 예약 칸 「21:00」 · 「2026-10-31」 → 「Schedule」(검사 창 없이) → 목록 「Oct 31, 9:00 PM (GMT+9) Seoul · Everyone」 확인(스크립트 C:/Users/q1212/ego/plates-20261031/tk-*.mjs, 설정 tk-y23.json)",
+      "주소": "https://www.tiktok.com/@yuhobuilds",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(Y23 — 틱톡 · X · 스레드 21:00 · 티스토리 21:30, 편 · 판 · 계정 · 시각을 보인 뒤)"
+    },
+    {
+      "계정": "yuhobuilds-x",
+      "상태": "예약됨",
+      "시각": "2026-10-31T21:00+09:00",
+      "방법": "10-31 05:02~05:03 Claude가 ego(기본 프로필, X 웹 @yuhobuilds 확인) — 원본 remotion/out/y23_final.mp4 · 글 02-yuhobuilds-x/원고.json 그대로(공백 빼고 같음) · 예약 창 칸 순서대로 10 · 31 · 2026 · 9 · 0 · PM → 「Will send on Sat, Oct 31, 2026 at 9:00 PM」 → 「Schedule」 → 예약 목록 한 줄 확인(스크립트 C:/Users/q1212/ego/plates-20261031/x-a · x-b.mjs)",
+      "주소": "https://x.com/compose/post/unsent/scheduled",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(Y23 — 틱톡 · X · 스레드 21:00 · 티스토리 21:30, 편 · 판 · 계정 · 시각을 보인 뒤)"
+    }
+  ]
+}
