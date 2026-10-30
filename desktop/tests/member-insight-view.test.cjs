@@ -338,6 +338,22 @@ test('avoided and conflicting meanings are shown, never resolved, and a question
   assert.doesNotMatch(html, /type="submit"/);
 });
 
+test('a statement question keeps all 18 options while unresolved words stay capped at 12', async () => {
+  const { renderMemberInsight } = await loaded, preview = statementPreview();
+  const contract = require('../../experiences/synk-account/src/member-statement-contract.cjs');
+  const text = '취미가 있어요', first = contract.parseMemberStatement(text);
+  const clarification = { questionId: first.question.id, optionId: 'topic' };
+  const parsed = contract.parseMemberStatement(text, { clarifications: [clarification] });
+  preview.text = text;preview.clarifications = [clarification];preview.question = parsed.question;
+  assert.equal(preview.question.options.length, 18);
+  preview.unresolved = Array.from({ length: 20 }, (_, i) => ({ quote: `남은 말 ${i}`, reasonLabel: '확인 전이에요.' }));
+  const html = renderMemberInsight({ status: 'ready', report: report({ understanding: understanding() }),
+    understandingStatementEditor: { text: preview.text, preview, stage: 'preview', acceptedIds: [], clarifications: preview.clarifications } });
+  assert.equal((html.match(/data-insight-action="understanding-answer-statement"/g) || []).length, 18);
+  for(const id of ['cooking','photography','games','nature','unsure','skip'])assert.ok(html.includes(`data-insight-option="${id}"`));
+  assert.equal((html.match(/<blockquote>남은 말 \d+<\/blockquote>/g) || []).length, 12);
+});
+
 test('clarification history stays with the draft and offers a restart without saving an answer', async () => {
   const { renderMemberInsight } = await loaded, preview = statementPreview();
   const clarifications = [{ questionId: 'scope.0', optionId: 'first-try' }];

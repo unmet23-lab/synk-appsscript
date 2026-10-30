@@ -18117,6 +18117,7 @@ function createWorldEducation({
   }
   function repaint() {
     try {
+      if (home.openPanel?.() === "") return;
       if (panelNode("[data-position-board]") && !panelNode('[data-position-board="hangul"]')) showBoard(readCoach(), { keepScroll: true });
       else if (panelNode("[data-plan-board]")) void openPlan({ keepScroll: true });
     } catch {
@@ -18137,16 +18138,22 @@ function createWorldEducation({
     if (!position) return;
     check3();
     const ticket = ++positionOpen;
+    let settled = false;
+    home.attachPanelResource?.({ dispose() {
+      if (!settled && ticket === positionOpen) positionOpen++;
+    } });
     try {
       await prepare();
     } catch {
     }
     check3();
+    if (ticket !== positionOpen) return;
     try {
       await target.SYNKLearningHost?.ready?.();
     } catch {
     }
     check3();
+    if (ticket !== positionOpen) return;
     try {
       await bankReady();
     } catch {
@@ -18175,6 +18182,7 @@ function createWorldEducation({
     }
     check3();
     if (ticket !== positionOpen) return;
+    settled = true;
     if (position.showsHangulBoard({ reading, stage })) {
       showHangul(stage);
       return;

@@ -49,7 +49,7 @@ test('Atlas 계정 저장소 호스트 한 경로의 기존 파일 교체만 허
   assert.deepEqual(정책만들기(opts,[{경로:p,상태:'M'}]).필수,['GPT','Claude']);
   assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p)},[]).필수,['GPT','Claude']);
   for(const 상태 of ['A','D','R100'])assert.throws(()=>정책만들기(opts,[{경로:p,상태}]));
-  for(const kind of ['새','지움','토큰'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]));
+  for(const kind of ['새','지움','토큰'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]),/직접 승인 범위를 벗어난 담당 예외/);
  }
  for(const p of ['desktop/renderer/platform-account.mjs','desktop/renderer/platform-continuity.css','desktop/src/auth-config.cjs'])assert.throws(()=>정책만들기(opts,[{경로:p,상태:'M'}]));
 });
@@ -57,6 +57,18 @@ test('PC 생성 청크의 교체만 삭제를 허용하고 웹 토큰은 정확�
  assert.deepEqual(정책만들기(opts,[{경로:'desktop/renderer/generated/member-shared/chunk-ABCDEFGH.mjs',상태:'D'}]).필수,['GPT','Claude']);
  const root=candidate(t,'study/index.html','토큰');assert.deepEqual(정책만들기({...opts,배포후보:root},[]).필수,['GPT','Claude']);
  fs.appendFileSync(path.join(root,'study/index.html'),'changed');assert.throws(()=>정책만들기({...opts,배포후보:root},[]),/후보 내용 불일치/);
+});
+
+test('정확한 웹 저장소 호스트 다섯 개와 PC 동결 화면 사본만 기존 파일로 바꾼다',t=>{
+ const paths=['account/dist/client.js','care/vendor/account/core.mjs','id-rehearsal/dist/app.js','id/dist/app.js','try/travel/synk-account/src/core.mjs','.github/desktop-preview/unified/source/renderer/member-insight-view.mjs'];
+ for(const p of paths){
+  assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p)},[]).필수,['GPT','Claude']);
+  for(const kind of ['새','지움','토큰'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]));
+ }
+ const copy=paths.at(-1);assert.deepEqual(정책만들기(opts,[{경로:copy,상태:'M'}]).필수,['GPT','Claude']);
+ for(const 상태 of ['A','D','R100'])assert.throws(()=>정책만들기(opts,[{경로:copy,상태}]),/직접 승인 범위를 벗어난 담당 예외/);
+ for(const p of ['desktop/renderer/member-insight-view.mjs','account/dist/auth.js','care/vendor/account/auth.mjs','desktop/releases/client.js'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p)},[]),/직접 승인 범위를 벗어난 담당 예외/);
+ assert.throws(()=>정책만들기(opts,[{경로:'desktop/renderer/member-insight-view.mjs',상태:'M'}]),/직접 승인 범위를 벗어난 담당 예외/);
 });
 test('동일 원시 본문은 한 번 읽되 모든 경로를 참조하고 변조는 거절한다',()=>{
  const body=Buffer.from('const unchanged = 1;\n'),hash=sha256(body);

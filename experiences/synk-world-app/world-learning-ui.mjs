@@ -492,6 +492,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 은행을 다 불러오면 열려 있는 판을 새 문항으로 다시 그린다(진단·연습·모의가 진행 중일 때는 건드리지 않는다).
  function repaint(){
   try{
+   if(home.openPanel?.()==='')return;
    if(panelNode('[data-position-board]')&&!panelNode('[data-position-board="hangul"]'))showBoard(readCoach(),{keepScroll:true});
    else if(panelNode('[data-plan-board]'))void openPlan({keepScroll:true});
   }catch{/* the next open draws it */}
@@ -505,16 +506,22 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  async function openPosition({start=false}={}){
   if(!position)return;
   check();const ticket=++positionOpen;
+  // 기다리는 동안 판을 닫거나 다른 판을 열면 이 표만 무효로 한다. 정상으로 그리기 직전에 settled가 되어 showPanel의 정리는 무시된다.
+  let settled=false;
+  home.attachPanelResource?.({dispose(){if(!settled&&ticket===positionOpen)positionOpen++;}});
   // 계정의 학습 호스트를 먼저 세운다(다음 연습과 같다). 세우지 못해도 판은 열고, 기록이 덜 왔다고 알린다.
   try{await prepare();}catch{/* the board shows the records as incomplete */}
-  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still shows */}
-  check();try{await bankReady();}catch{/* the board opens with the reviewed game items */}
+  check();if(ticket!==positionOpen)return;
+  try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still shows */}
+  check();if(ticket!==positionOpen)return;
+  try{await bankReady();}catch{/* the board opens with the reviewed game items */}
   check();if(ticket!==positionOpen)return;
   let coachNow=null;try{coachNow=readCoach();}catch{coachNow=null;}
   let reading=null;try{reading=getProgress().hangulReading?.()||null;}catch{reading=null;}
   let stage;
   try{stage=await hangulStage(coachNow);}catch(error){check();if(ticket===positionOpen)failed(error);return;}
   check();if(ticket!==positionOpen)return;
+  settled=true;
   if(position.showsHangulBoard({reading,stage})){showHangul(stage);return;}
   const shown=showBoard(coachNow);
   if(start&&shown.plan?.status==='ready'&&shown.plan.items.length)startDiagnostic(shown.coachNow,shown.plan,shown.map);

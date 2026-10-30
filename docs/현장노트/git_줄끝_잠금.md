@@ -743,6 +743,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 글 파일 경로로 좁히고 `--no-renames`를 붙인다: `GIT_NO_LAZY_FETCH=1 git log --all --no-renames --find-object=<blob> -- <경로>`. 이력 전체를 훑을 때는 `git rev-list --all --objects --filter=blob:limit=1m --missing=print`로 받은 blob만 골라(빠진 것은 `?`로 시작) `git cat-file --batch`로 읽는다.
 - 다시 확인: 같은 클론에서 경로 없이 돌리면 fatal, 경로와 `--no-renames`를 주면 커밋 줄이 나온다.
 
+### 부분 복제에서 `cat-file --batch`가 blob을 하나씩 받아 CI가 시간 초과한다 (2026-10-30 GPT)
+- 증상: Atlas 고정 원천 재현 CI40976632264가20분에 취소됐다. 실제 하위 과정은 `git cat-file --batch`의 누락 blob별 fetch였다.
+- 원인: batch는 원격 다운로드까지 묶지 않는다. `ls-tree -l`도 blob 크기를 읽어 같은 개별 받기를 일으키므로 이름·OID 점검에 쓰지 않는다.
+- 고침: 원래 경로/커밋을 그대로 두고 `GIT_NO_LAZY_FETCH=1 cat-file --batch-check`로 로컬 존재와 순서·종류를 확인한다. 없는 고정 OID만 `fetch origin --no-tags --no-write-fetch-head --recurse-submodules=no --filter=blob:none --stdin`으로 함께 받은 뒤 원래 materialize를 실행한다.
+- 다시 확인: 같은 부분 복제에서 정본4개·운영6개 전체 대조가171.250초·종료0. 독립 회귀는22회 요청 실패→2묶음 요청 성공, 모든 원천 바이트·HEAD·참조·pin 불변.20분 제한과 검증 목록은 그대로다.
+
 ### PC에만 있는 파일을 읽는 시험이 클라우드 클론에서 실패한다
 - 증상: 클라우드 클론에서 `미니게임_목소리`(voice-request.json), `learning-hub/server`(입문 게임 파일), `path-travel-server`(계획 화면 파일)가 404·ENOENT로 실패했다(10-17).
 - 원인: 10-14 「pending changes」 일괄 커밋들이 바뀐 파일이 import하는 새 파일만 넣어, 시험이 부르는 파일 일부가 PC 작업본에만 남았다.
