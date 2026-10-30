@@ -33,10 +33,10 @@ const N = FAILS.length; // 71
 /** 「resets Oct 26, 12pm」이 날짜 없이 「resets 12pm」으로 바뀐 첫 통(10-25 오후 12:01). */
 const SHORT_FROM = FAILS.findIndex((x) => x.day === '10-25' && x.t === '오후 12:01');
 const body = (i: number) => (i >= SHORT_FROM ? "You've hit your weekly limit · resets 12pm" : "You've hit your weekly limit · resets Oct 26, 12pm");
-const MIDNIGHT = FAILS.findIndex((x) => x.day === '10-25');
+
 
 // ───────────── 공용 ─────────────
-const Scene: React.FC<{ a: number; b: number; drift?: number; zoom?: number; children: React.ReactNode }> = ({ a, b, drift = 0.08, zoom = 0.0002, children }) => {
+const Scene: React.FC<{ a: number; b: number; drift?: number; zoom?: number; children: React.ReactNode }> = ({ a, b, drift = 0.22, zoom = 0.0007, children }) => {
   const f = useCurrentFrame();
   if (f < a || f >= b) return null;
   const k = f - a;
@@ -122,14 +122,15 @@ const Storm: React.FC = () => {
   const shake = n >= 60 && n < N ? Math.sin(f * 2.3) * 3 : 0;
   return (
     <>
-      <div style={{ position: 'absolute', left: X0, width: W, top: 190, textAlign: 'center', fontFamily: KO, opacity: t, transform: `translateY(${(1 - t) * 20}px)` }}>
+      <div style={{ position: 'absolute', left: X0, width: W, top: 272, textAlign: 'center', fontFamily: KO, opacity: t, transform: `translateY(${(1 - t) * 20}px)` }}>
         <div style={{ fontWeight: 800, fontSize: 54, color: TEXT, letterSpacing: '-0.03em' }}>AI 자동화가 보낸 실패 알림</div>
+        <div style={{ marginTop: 10, fontWeight: 760, fontSize: 38, color: MUTED, letterSpacing: '-0.02em' }}>15분마다 AI를 불러 혼자 일하는 예약 작업</div>
       </div>
-      <div style={{ position: 'absolute', left: X0, width: W, top: 262, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 250, lineHeight: 1, color: RED, letterSpacing: '-0.05em', transform: `translateX(${shake}px)`, textShadow: '0 0 70px rgba(255,75,87,0.45)' }}>
+      <div style={{ position: 'absolute', left: X0, width: W, top: 382, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 220, lineHeight: 1, color: RED, letterSpacing: '-0.05em', transform: `translateX(${shake}px)`, textShadow: '0 0 70px rgba(255,75,87,0.45)' }}>
         {n}
         <span style={{ fontFamily: KO, fontSize: 96, marginLeft: 10, letterSpacing: '-0.03em' }}>번</span>
       </div>
-      <Pile a={STORM_A} len={STORM_LEN} top={540} />
+      <Pile a={STORM_A} len={STORM_LEN} top={640} />
     </>
   );
 };
@@ -156,6 +157,13 @@ const Real: React.FC = () => {
       <div style={{ position: 'absolute', left: X0, top: 150, padding: '10px 22px 12px', borderRadius: 999, background: 'rgba(14,12,16,0.86)', fontFamily: KO, fontWeight: 800, fontSize: 36, color: TEXT, boxShadow: `inset 0 0 0 2px ${EDGE}` }}>
         실제로 온 알림
       </div>
+      {f >= B.pan ? (
+        <div style={{ position: 'absolute', left: X0, width: W, top: 1010, display: 'flex', justifyContent: 'center', opacity: ease(f, B.pan, 6) }}>
+          <div style={{ padding: '18px 36px 22px', borderRadius: 24, background: 'rgba(14,12,16,0.92)', boxShadow: `inset 0 0 0 3px ${AMBER}`, fontFamily: KO, fontWeight: 900, fontSize: 62, color: TEXT, letterSpacing: '-0.03em' }}>
+            같은 실패 알림 · <span style={{ color: AMBER }}>15분마다</span>
+          </div>
+        </div>
+      ) : null}
     </AbsoluteFill>
   );
 };
@@ -182,6 +190,9 @@ const Loop: React.FC = () => {
           <polygon points={`${cx - 4},${cy + R - 22} ${cx - 4},${cy + R + 22} ${cx - 40},${cy + R}`} fill={RED} />
         </g>
       </svg>
+      <div style={{ position: 'absolute', left: X0, width: W, top: 190, textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 50, color: TEXT, letterSpacing: '-0.03em', wordBreak: 'keep-all' }}>
+        이번 주 AI 사용량이 <span style={{ color: RED }}>다 찼는데도</span>
+      </div>
       <div style={{ position: 'absolute', left: 0, width: 1080, top: cy - 110, textAlign: 'center', fontFamily: KO }}>
         <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 150, color: TEXT, lineHeight: 1, letterSpacing: '-0.04em' }}>
           15<span style={{ fontFamily: KO, fontSize: 80 }}>분마다</span>
@@ -203,44 +214,77 @@ const Loop: React.FC = () => {
   );
 };
 
-/** 4 밤새(7.3~12.8초): 실제 시각 71줄이 쌓이며 밤이 낮이 된다 — 11.3초 큰 카드 「71번」. */
+/** 4 밤새(7.3~12.8초): 실제 시각 71줄이 쌓이며 밤이 낮이 된다. 그 사이에 온 다른 메시지 20통(내용은 가림)이 실패 알림 속에 묻힌다 — 11.3초 큰 카드 「71번」. */
+type Row = { kind: 'fail' | 'other'; t: string; day: string };
+const ROWS: Row[] = (() => {
+  const out: Row[] = [];
+  FAILS.forEach((x, i) => {
+    out.push({ kind: 'fail', t: x.t, day: x.day });
+    for (const o of ALERTS.others.rows) if (o.after === i + 1) out.push({ kind: 'other', t: o.t ?? '', day: x.day });
+  });
+  return out;
+})();
+const MID_ROW = ROWS.findIndex((r) => r.day === '10-25');
 const Night: React.FC = () => {
   const f = useCurrentFrame();
   const a = B.night + 2;
-  const len = B.count - 4 - a;
-  const rowAt = (i: number) => a + Math.round(len * Math.pow(i / (N - 1), 0.62));
+  const end = B.count - 6;
+  const M = ROWS.length;
+  // 날이 바뀌는 줄(10-25 첫 줄)이 원본 박자 9.5초에 오게 둘로 나눠 쌓는다.
+  const rowAt = (j: number) =>
+    j < MID_ROW ? a + Math.round((B.midnight - a) * Math.pow(j / MID_ROW, 0.8)) : B.midnight + Math.round((end - B.midnight) * Math.pow((j - MID_ROW) / (M - 1 - MID_ROW), 0.75));
   let k = -1;
-  for (let i = 0; i < N; i++) if (rowAt(i) <= f) k = i;
-  const ROW = 78;
+  for (let j = 0; j < M; j++) if (rowAt(j) <= f) k = j;
+  const ROW = 74;
   const DIV = 70;
-  const yOf = (i: number) => i * ROW + (i >= MIDNIGHT ? DIV : 0);
+  const yOf = (j: number) => j * ROW + (j >= MID_ROW ? DIV : 0);
   const viewTop = 300;
   const viewH = 860;
   const scroll = Math.max(0, yOf(Math.max(0, k)) + ROW - viewH + 40);
   const big = ease(f, B.count, 7);
-  const sun = k >= 0 ? Math.min(1, Math.max(0, (k - 38) / 22)) : 0; // 오전 6시 무렵부터 밝아진다
+  const nFail = ROWS.slice(0, k + 1).filter((r) => r.kind === 'fail').length;
+  const sun = Math.min(1, Math.max(0, (nFail - 38) / 22)); // 오전 6시 무렵부터 밝아진다
   return (
     <>
       <div style={{ position: 'absolute', left: X0, width: W, top: 170, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: KO, fontWeight: 800, fontSize: 44, color: TEXT }}>
-        <span>{k >= MIDNIGHT ? '10월 25일' : '10월 24일'}</span>
-        <span style={{ color: sun > 0.5 ? AMBER : MUTED }}>{sun > 0.5 ? '☀' : '☾'}</span>
+        <span>{k >= MID_ROW ? '10월 25일' : '10월 24일'}</span>
+        <span style={{ fontFamily: EN, fontWeight: 900, fontSize: 64, color: RED }}>
+          {nFail}
+          <span style={{ fontFamily: KO, fontSize: 40, color: MUTED }}> 번째 실패</span>
+        </span>
       </div>
-      <div style={{ position: 'absolute', left: X0, width: W, top: viewTop, height: viewH, overflow: 'hidden', borderRadius: 30, background: mixColor('#1A1620', '#2A2224', sun), boxShadow: `inset 0 0 0 2px ${EDGE}` }}>
+      <div style={{ position: 'absolute', left: X0, width: W, top: viewTop, height: viewH, overflow: 'hidden', borderRadius: 30, background: k >= MID_ROW ? mixColor('#2B2132', '#3A2A26', sun) : '#1A1620', boxShadow: `inset 0 0 0 ${f >= B.midnight && f < B.midnight + 18 ? 6 : 2}px ${f >= B.midnight && f < B.midnight + 18 ? AMBER : EDGE}` }}>
         <div style={{ position: 'absolute', left: 0, right: 0, top: -scroll + 20 }}>
-          {FAILS.map((x, i) => {
-            if (i > k) return null;
-            const q = ease(f, rowAt(i), 4);
+          {ROWS.map((x, j) => {
+            if (j > k) return null;
+            const q = ease(f, rowAt(j), 4);
+            const other = x.kind === 'other';
             return (
-              <React.Fragment key={i}>
-                {i === MIDNIGHT ? (
-                  <div style={{ position: 'absolute', left: 0, right: 0, top: yOf(i) - DIV + 8, height: DIV - 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 800, fontSize: 34, color: AMBER }}>
+              <React.Fragment key={j}>
+                {j === MID_ROW ? (
+                  <div style={{ position: 'absolute', left: 0, right: 0, top: yOf(j) - DIV + 8, height: DIV - 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 800, fontSize: 34, color: AMBER }}>
                     ── 날이 바뀜 · 10월 25일 ──
                   </div>
                 ) : null}
-                <div style={{ position: 'absolute', left: 36, right: 36, top: yOf(i), height: ROW - 12, display: 'flex', alignItems: 'center', gap: 22, opacity: q, fontFamily: KO }}>
-                  <span style={{ width: 210, fontFamily: KO, fontWeight: 800, fontSize: 40, color: TEXT, fontVariantNumeric: 'tabular-nums' }}>{x.t}</span>
-                  <span style={{ width: 52, height: 52, borderRadius: 14, background: RED, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: EN, fontWeight: 900, fontSize: 36 }}>✕</span>
-                  <span style={{ fontWeight: 760, fontSize: 38, color: MUTED }}>실패 · 알림</span>
+                <div style={{ position: 'absolute', left: 30, right: 30, top: yOf(j), height: ROW - 10, padding: '0 10px', boxSizing: 'border-box', borderRadius: 16, background: other ? 'rgba(90,150,255,0.16)' : 'transparent', display: 'flex', alignItems: 'center', gap: 22, opacity: q, fontFamily: KO }}>
+                  <span style={{ width: 210, fontFamily: KO, fontWeight: 800, fontSize: 38, color: other ? '#9CC0FF' : TEXT, fontVariantNumeric: 'tabular-nums' }}>{x.t}</span>
+                  {other ? (
+                    <>
+                      <span style={{ width: 50, height: 50, borderRadius: 14, background: '#3F6FD8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="28" height="22" viewBox="0 0 28 22">
+                          <rect x="1" y="1" width="26" height="20" rx="4" fill="none" stroke="#fff" strokeWidth="2.5" />
+                          <path d="M2 3l12 9 12-9" fill="none" stroke="#fff" strokeWidth="2.5" />
+                        </svg>
+                      </span>
+                      <span style={{ fontWeight: 800, fontSize: 36, color: '#9CC0FF' }}>다른 메시지</span>
+                      <span style={{ flex: 1, height: 22, borderRadius: 11, background: 'rgba(156,192,255,0.28)', filter: 'blur(3px)' }} />
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ width: 50, height: 50, borderRadius: 14, background: RED, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: EN, fontWeight: 900, fontSize: 34 }}>✕</span>
+                      <span style={{ fontWeight: 760, fontSize: 36, color: MUTED }}>실패 · 알림</span>
+                    </>
+                  )}
                 </div>
               </React.Fragment>
             );
@@ -253,7 +297,9 @@ const Night: React.FC = () => {
           <div style={{ fontFamily: EN, fontWeight: 900, fontSize: 260, lineHeight: 1.02, color: RED, letterSpacing: '-0.05em' }}>
             71<span style={{ fontFamily: KO, fontSize: 110 }}>번</span>
           </div>
-          <div style={{ fontWeight: 800, fontSize: 50, color: INK }}>똑같은 실패 · 똑같은 알림</div>
+          <div style={{ fontWeight: 800, fontSize: 48, color: INK, wordBreak: 'keep-all' }}>
+            다른 메시지는 <span style={{ color: '#3F6FD8' }}>그 속에 묻혔다</span>
+          </div>
         </div>
       ) : null}
     </>
@@ -324,7 +370,7 @@ const Rule: React.FC = () => {
 const Rest: React.FC = () => {
   const f = useCurrentFrame();
   const p = ease(f, B.rest, 7);
-  const hl = ease(f, B.rest + 14, 8);
+  const hl = ease(f, B.rest + 2, 6);
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <div style={{ position: 'absolute', left: 0, top: 190, width: 1080, height: 1053, opacity: p }}>
@@ -390,7 +436,11 @@ const Again: React.FC = () => {
   return (
     <div style={{ position: 'absolute', left: X0, width: W, top: 380, opacity: p, fontFamily: KO, textAlign: 'center' }}>
       <div style={{ fontWeight: 800, fontSize: 50, color: INK2 }}>이틀 뒤 · 10월 28일 오전 12:46</div>
-      <div style={{ marginTop: 40, height: 96, borderRadius: 48, background: '#E4DCCB', overflow: 'hidden', boxShadow: full ? `0 0 0 6px ${RED}` : undefined }}>
+      <div style={{ marginTop: 40, display: 'flex', justifyContent: 'space-between', fontWeight: 850, fontSize: 46, color: INK }}>
+        <span>이번 주 AI 사용량</span>
+        <span style={{ fontFamily: EN, color: full ? RED : INK }}>{Math.round(bar * 100)}%</span>
+      </div>
+      <div style={{ marginTop: 16, height: 96, borderRadius: 48, background: '#E4DCCB', overflow: 'hidden', boxShadow: full ? `0 0 0 6px ${RED}` : undefined }}>
         <div style={{ width: `${bar * 100}%`, height: '100%', borderRadius: 48, background: full ? RED : '#E89A5A' }} />
       </div>
       <div style={{ marginTop: 40, fontWeight: 900, fontSize: 120, color: full ? RED : INK, letterSpacing: '-0.04em' }}>{full ? '또 한도' : '사용량…'}</div>
@@ -455,8 +505,9 @@ const Cta: React.FC = () => {
   const f = useCurrentFrame();
   const p = ease(f, B.cta, 8);
   const hl = ease(f, B.cta2, 8);
+  const pop = ease(f, B.cta2, 5); // 원본 박자 31.5초 — 「영상 아래 글에 그대로」가 서며 카드가 위로
   return (
-    <div style={{ position: 'absolute', left: X0, width: W, top: 230, opacity: p, transform: `translateY(${(1 - p) * 30}px)`, fontFamily: KO }}>
+    <div style={{ position: 'absolute', left: X0, width: W, top: 230 - 60 * pop, opacity: p, transform: `translateY(${(1 - p) * 30}px)`, fontFamily: KO }}>
       <div style={{ fontWeight: 800, fontSize: 48, color: INK2 }}>자동화를 만드는 AI에 붙일 한 단락</div>
       <div style={{ marginTop: 24, padding: '34px 36px 40px', borderRadius: 30, background: '#FFFFFF', boxShadow: '0 20px 50px rgba(60,40,20,0.14)', fontWeight: 700, fontSize: 42, lineHeight: 1.5, color: INK }}>
         이 자동화가 AI 사용 한도에 걸려 실패하면 —
@@ -465,7 +516,7 @@ const Cta: React.FC = () => {
         <br />③ 시각이 지나면 저절로 다시.
         <div style={{ marginTop: 12, color: INK2, fontSize: 36 }}>…</div>
       </div>
-      <div style={{ marginTop: 34, textAlign: 'center', fontWeight: 900, fontSize: 66, color: INK, letterSpacing: '-0.03em' }}>
+      <div style={{ marginTop: 34, textAlign: 'center', fontWeight: 900, fontSize: 66 + 24 * pop, color: INK, letterSpacing: '-0.03em', opacity: pop, padding: '20px 0', borderRadius: 26, background: f >= B.cta2 ? '#DFF1E7' : 'transparent' }}>
         영상 아래 글에 <span style={{ color: GREEN }}>그대로</span>
       </div>
     </div>
@@ -475,13 +526,14 @@ const Cta: React.FC = () => {
 /** 10 끝(33.8~37.9초): 71통이 다시 몰아쳤다가 35.2초에 한 통으로 접힌다 — 가장 센 장면을 끝에 한 번 더. */
 const End: React.FC = () => {
   const f = useCurrentFrame();
-  const fold = ease(f, B.fold, 12);
+  const fold = ease(f, B.fold, 5);
   const n = f < B.fold ? countAt(f, B.end, B.fold - B.end - 6) : Math.round(mix(N, 1, fold));
   const one = ease(f, B.fold + 8, 10);
   const mark = ease(f, B.settle, 8);
   return (
     <>
       <AbsoluteFill style={{ background: INK0, opacity: 1 - fold }} />
+      {f >= B.settle ? <AbsoluteFill style={{ background: '#DCEFE3' }} /> : null}
       <div style={{ position: 'absolute', left: X0, width: W, top: 230, textAlign: 'center', fontFamily: EN, fontWeight: 900, fontSize: 230, lineHeight: 1, letterSpacing: '-0.05em', color: mixColor(RED, GREEN, fold) }}>
         {n}
         <span style={{ fontFamily: KO, fontSize: 92 }}>번</span>
@@ -507,18 +559,19 @@ const End: React.FC = () => {
 // ───────────── 자막: 판 위에 지금 줄 한 줄 ─────────────
 const Caption: React.FC = () => {
   const f = useCurrentFrame();
-  const id = ORDER.find((x) => f >= VO[x] - 2 && f < lineEnd(x) + 10) as Spoken | undefined;
-  if (!id || id === 'v8') return null; // 끝 줄은 End 장면이 크게 쓴다
+  // 판은 다음 줄이 올 때까지 남긴다(줄 사이에 판이 꺼졌다 켜지면 그것도 화면이 바뀌는 박자가 된다 — 원본 박자 수에 맞춤).
+  const id = [...ORDER].reverse().find((x) => f >= VO[x] - 2) as Spoken | undefined;
+  if (!id || id === 'v8' || f >= B.end) return null; // 끝 줄은 End 장면이 크게 쓴다
   const light = f >= B.resume && f < B.end + 20 ? true : f >= B.fold;
   const ws = words(id);
   const p = ease(f, VO[id] - 2, 5);
   return (
-    <div style={{ position: 'absolute', left: 90, width: 900, top: 1250, display: 'flex', justifyContent: 'center', opacity: p }}>
-      <div style={{ maxWidth: 900, padding: '16px 30px 20px', borderRadius: 26, background: light ? 'rgba(23,22,27,0.92)' : 'rgba(246,243,248,0.94)', fontFamily: KO, fontWeight: 800, fontSize: 50, lineHeight: 1.3, letterSpacing: '-0.025em', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.25)' }}>
+    <div style={{ position: 'absolute', left: 70, width: 850, top: 1250, display: 'flex', justifyContent: 'center', opacity: p }}>
+      <div style={{ maxWidth: 850, padding: '16px 30px 20px 36px', borderRadius: 18, background: light ? 'rgba(16,64,44,0.94)' : 'rgba(74,16,26,0.94)', borderLeft: `10px solid ${light ? '#4FD49A' : RED}`, fontFamily: KO, fontWeight: 800, fontSize: 48, lineHeight: 1.3, letterSpacing: '-0.025em', textAlign: 'center', wordBreak: 'keep-all', boxShadow: '0 10px 30px rgba(0,0,0,0.25)' }}>
         {ws.map((w, i) => {
           const said = f >= VO[id] + Math.round(w[1] * 30);
           return (
-            <span key={i} style={{ color: light ? (said ? '#FFFFFF' : 'rgba(255,255,255,0.4)') : said ? INK : 'rgba(23,22,27,0.38)' }}>
+            <span key={i} style={{ color: said ? '#FFFFFF' : 'rgba(255,255,255,0.42)' }}>
               {w[0]}
               {i < ws.length - 1 ? ' ' : ''}
             </span>
@@ -579,13 +632,13 @@ export const LimitFilm: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <Scene a={0} b={B.real}>
         <Storm />
       </Scene>
-      <Scene a={B.real} b={B.loop} drift={0} zoom={0}>
+      <Scene a={B.real} b={B.loop} drift={0} zoom={0.0012}>
         <Real />
       </Scene>
       <Scene a={B.loop} b={B.night}>
         <Loop />
       </Scene>
-      <Scene a={B.night} b={B.twist} drift={0} zoom={0}>
+      <Scene a={B.night} b={B.twist} drift={0.1} zoom={0.0006}>
         <Night />
       </Scene>
       <Scene a={B.twist} b={B.rule}>
@@ -597,13 +650,13 @@ export const LimitFilm: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <Scene a={B.rest} b={B.resume} drift={0} zoom={0.0004}>
         <Rest />
       </Scene>
-      <Scene a={B.resume} b={B.cta} drift={0.06}>
+      <Scene a={B.resume} b={B.cta} drift={0.22}>
         <After />
       </Scene>
-      <Scene a={B.cta} b={B.end} drift={0.08}>
+      <Scene a={B.cta} b={B.end} drift={0.22}>
         <Cta />
       </Scene>
-      <Scene a={B.end} b={TOTAL} drift={0} zoom={0}>
+      <Scene a={B.end} b={TOTAL} drift={0.15} zoom={0.0008}>
         <End />
       </Scene>
       <Caption />

@@ -15,7 +15,7 @@
   "seed": 1017,
   "lufs": -17
  },
- "made": "2026-10-29T22:48:47.811Z",
+ "made": "2026-10-30T05:12:07.973Z",
  "lines": [
   {
    "id": "v1",
@@ -28,21 +28,21 @@
   },
   {
    "id": "v2",
-   "text": "사용 한도에 걸렸는데도 십오 분마다 다시 돌고, 그때마다 알림을 보냈거든요.",
-   "dur": 4.149,
-   "syllablesPerSec": 7.47,
+   "text": "이번 주 AI 사용량이 다 찼는데도, 십오 분마다 다시 돌고 그때마다 알림을 보냈거든요.",
+   "dur": 4.862,
+   "syllablesPerSec": 6.79,
    "src": "v2.wav",
-   "key": "147e41e62fe8376ceb822d33208caec1",
-   "words": 10
+   "key": "d1517270218e023e7612b5ca577e8ab7",
+   "words": 13
   },
   {
    "id": "v3",
-   "text": "밤새, 다음 날 오후까지. 똑같은 실패, 똑같은 알림.",
-   "dur": 3.193,
-   "syllablesPerSec": 5.95,
+   "text": "밤새, 다음 날 오후까지요. 그 사이에 온 다른 메시지들도 실패 알림 속에 묻혔어요.",
+   "dur": 4.689,
+   "syllablesPerSec": 6.82,
    "src": "v3.wav",
-   "key": "251e993e6207ef79b22e1dd0f7f77708",
-   "words": 8
+   "key": "c2f9b73dbbfa0ded5e6ad4ab2c8ee5af",
+   "words": 13
   },
   {
    "id": "v4",

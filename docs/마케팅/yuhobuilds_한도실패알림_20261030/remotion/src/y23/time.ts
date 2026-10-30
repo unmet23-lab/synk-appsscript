@@ -35,7 +35,7 @@ export const TOTAL = F(37.9);
 export const VO: Record<Spoken, number> = {
   v1: F(0.15),
   v2: F(2.85),
-  v3: F(7.45),
+  v3: F(7.8),
   v4: F(12.9),
   v5: F(16.8),
   v6: F(20.85),

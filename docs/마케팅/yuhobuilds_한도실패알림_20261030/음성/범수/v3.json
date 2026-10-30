@@ -1,52 +1,77 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "v3",
- "text": "밤새, 다음 날 오후까지. 똑같은 실패, 똑같은 알림.",
- "dur": 3.193,
+ "text": "밤새, 다음 날 오후까지요. 그 사이에 온 다른 메시지들도 실패 알림 속에 묻혔어요.",
+ "dur": 4.689,
  "words": [
   {
    "text": "밤새,",
-   "start": 0.06,
-   "end": 0.366
+   "start": 0.02,
+   "end": 0.288
   },
   {
    "text": "다음",
-   "start": 0.557,
-   "end": 0.749
+   "start": 0.499,
+   "end": 0.71
   },
   {
    "text": "날",
-   "start": 0.806,
-   "end": 0.863
+   "start": 0.767,
+   "end": 0.824
   },
   {
-   "text": "오후까지.",
-   "start": 0.921,
-   "end": 1.303
+   "text": "오후까지요.",
+   "start": 0.882,
+   "end": 1.322
   },
   {
-   "text": "똑같은",
-   "start": 1.667,
-   "end": 2.01
+   "text": "그",
+   "start": 1.8,
+   "end": 1.877
   },
   {
-   "text": "실패,",
-   "start": 2.068,
-   "end": 2.259
+   "text": "사이에",
+   "start": 1.934,
+   "end": 2.126
   },
   {
-   "text": "똑같은",
-   "start": 2.392,
-   "end": 2.756
+   "text": "온",
+   "start": 2.202,
+   "end": 2.241
   },
   {
-   "text": "알림.",
-   "start": 2.813,
-   "end": 3.193
+   "text": "다른",
+   "start": 2.317,
+   "end": 2.528
+  },
+  {
+   "text": "메시지들도",
+   "start": 2.585,
+   "end": 3.045
+  },
+  {
+   "text": "실패",
+   "start": 3.428,
+   "end": 3.676
+  },
+  {
+   "text": "알림",
+   "start": 3.733,
+   "end": 3.906
+  },
+  {
+   "text": "속에",
+   "start": 3.963,
+   "end": 4.097
+  },
+  {
+   "text": "묻혔어요.",
+   "start": 4.154,
+   "end": 4.689
   }
  ],
  "source": {
-  "key": "251e993e6207ef79b22e1dd0f7f77708",
+  "key": "c2f9b73dbbfa0ded5e6ad4ab2c8ee5af",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -70,6 +95,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 162
+  "topPitchHz": 142
  }
 }
