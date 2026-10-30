@@ -1,7 +1,7 @@
 {
   "version": 2,
   "entry": "atlas/member-understanding.js",
-  "sha256": "2d87fd201ddf172b23812294c5b28f7963021b0619dab14181685577cb7f6182",
+  "sha256": "93427a8b3fcb099c8060f010a25e2ebf6c4b87df62507c736dc69f7e854a4c1c",
   "sources": {
     "atlas/ask.js": "a2b9f22cbb03a2fa932036c95b5f13b460c7820ce72738fb53ad80a867d298c1",
     "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
@@ -24,7 +24,7 @@
     "experiences/synk-account/src/member-statement-v7.cjs": "f22d2e56ae6af6038c2442e9201ec8e041231b1e0dfe3e4fd86d53ae2bef099d",
     "experiences/synk-account/src/member-statement-v8.cjs": "f4fec0da4af0a88d195d5c046ca16ff639a555ef8b9e62a14a415232fc864261",
     "experiences/synk-account/src/member-statement-v9.cjs": "cfe8a4a52d720975ae8f00c69014eadd0fdea35148dd5accb2b4c227995dcbc8",
-    "experiences/synk-account/src/member-statement.cjs": "54660529bf2209ba0134f93e9f2a1641d863d155360a2dcd5a772ac22a66b543",
+    "experiences/synk-account/src/member-statement.cjs": "5d222746ec2cecae068c65a4d69ac4c800b5971119e8e358cc1f6f2d9348474c",
     "experiences/synk-account/src/member-understanding-data.mjs": "6f657bd643d8fc1dac87ec26b7c9860ad59b5c52f95757464b2029ddf19793b3",
     "experiences/synk-account/src/vellum-insight.cjs": "0207b668a238e00bece9e8b2b352da1024ccaa397974e584033ddfff6a5b6b9a"
   },
@@ -66,7 +66,7 @@
       ]
     },
     "member-understanding.mjs": {
-      "sha256": "2d87fd201ddf172b23812294c5b28f7963021b0619dab14181685577cb7f6182",
+      "sha256": "93427a8b3fcb099c8060f010a25e2ebf6c4b87df62507c736dc69f7e854a4c1c",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs",
         "member-shared/chunk-IMQPIB4D.mjs",

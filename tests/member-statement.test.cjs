@@ -146,6 +146,19 @@ test('relations compare declared preference, repeated evidence and complete peri
   assert.equal(report(document(statement('혼자 하는 게 좋아')), { accountSummary: envelope }).relations.some(r => r.kind === 'activity-change'), false);
 });
 
+test('a continuous 30-day window spanning 31 Korean dates retains the declared-help comparison', () => {
+  const { bounds, practicePeriods } = require('../atlas/trail-periods'), windows = bounds(at), attempts = [];
+  for (const period of [windows.previous, windows.recent]) {
+    const start = Date.parse(period.from);
+    for (let i = 0; i <= 30; i++) attempts.push({ at: new Date(start + (i ? i * 86400000 : 1)).toISOString(), verdict: 'correct', independent: true, assisted: false });
+  }
+  const envelope = account();envelope.summary.practice.periods = practicePeriods(attempts, at);
+  assert.equal(envelope.summary.practice.periods.recent.activeDays, 31);assert.equal(envelope.summary.practice.periods.previous.activeDays, 31);
+  const doc = document(statement('혼자 하는 게 좋아')), next = report(doc, { accountSummary: envelope });
+  const comparison = next.relations.find(row => row.kind === 'activity-change');assert.ok(comparison);assert.match(comparison.line, /31건에서 31건/);assert.match(comparison.line, /실력 변화로 단정하지/);
+  envelope.summary.practice.periods.sufficient = false;assert.equal(report(doc, { accountSummary: envelope }).relations.some(row => row.kind === 'activity-change'), false);
+});
+
 test('confirmed supported interests update app links, while negation removes only its own old topic link', () => {
   const old = { id: uuid(99), facetId: 'topics', values: ['content-video', 'career-planning'], note: '', at }, doc = document(statement('영상 제작에 관심이 없어', 1, later(1)));doc.overrides = [old];
   const result = report(doc);assert.equal(result.activities.some(a => a.targetId === 'pulse'), false);assert.ok(result.activities.some(a => a.targetId === 'path'));

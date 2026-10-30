@@ -107,7 +107,7 @@ function completePeriods(periods, asOf) {
     if (instant(recent.to) - instant(recent.from) !== 30 * 86400000 || instant(previous.to) - instant(previous.from) !== 30 * 86400000
       || recent.from !== previous.to || instant(recent.to) > instant(asOf) || recent.answered < 1 || previous.answered < 1) return false;
     return ['answered', 'independent', 'assisted', 'activeDays'].every(key => Number.isSafeInteger(recent[key]) && recent[key] >= 0 && Number.isSafeInteger(previous[key]) && previous[key] >= 0
-      && periods.delta[key] === recent[key] - previous[key]) && [recent, previous].every(p => p.independent <= p.answered && p.assisted <= p.answered && p.activeDays <= 30);
+      && periods.delta[key] === recent[key] - previous[key]) && [recent, previous].every(p => p.independent <= p.answered && p.assisted <= p.answered && p.activeDays <= 31);
   } catch { return false; }
 }
 const evidence = entry => ({ kind: 'statement', ref: `statement.${entry.row.id}.${entry.meaning.id}`, label: [...entry.meaning.evidence.quote].slice(0, 120).join('') });

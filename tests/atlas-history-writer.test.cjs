@@ -23,6 +23,12 @@ for(const storageScope of ['device','account'])test(storageScope+' initial write
 test('an explicit reset is not mistaken for initial owner adoption',async t=>{
  const storage=disk(),options={storageScope:'device',learnerKey:'writer.initial-reset'},a=browser(storage,null,options),b=browser(storage,null,options),one=a.game('owner'),two=b.game('waiting');t.after(async()=>{a.hide();b.hide();await tick();await tick();});two.finishSet({kind:'short'});const ids=two.events().map(e=>e.id);for(let i=0;i<20&&!one.syncPort.canPersist();i++)await tick();one.reset();assert.deepEqual(two.events().map(e=>e.id),[]);a.hide();for(let i=0;i<20&&!two.syncPort.canPersist();i++)await tick();const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.'+options.learnerKey));for(const id of ids)assert.ok(!saved.events.some(e=>e.id===id));
 });
+for(const storageScope of ['device','account'])test(storageScope+' initial handover keeps an open question answerable and durable',async t=>{
+ const storage=disk(),options={storageScope,learnerKey:storageScope==='account'?'device':'writer.open'},accountKey='writer.open',a=browser(storage,accountKey,options),b=browser(storage,accountKey,options),one=a.game('owner'),two=b.game('waiting');t.after(async()=>{a.hide();b.hide();await tick();await tick();});
+ const pid=two.present({id:'initial.open',itemKey:'initial.open',skillId:'ko.reading.detail',modality:'reading',difficulty:1}),ids=two.events().map(e=>e.id);assert.ok(ids.length>0);
+ for(let i=0;i<20&&!one.syncPort.canPersist();i++)await tick();one.finishSet({kind:'short'});a.hide();for(let i=0;i<20&&!two.syncPort.canPersist();i++)await tick();assert.equal(two.syncPort.canPersist(),true);
+ const before=two.events().length;assert.doesNotThrow(()=>two.answer(pid,{correct:true,assessable:true}));assert.ok(two.events().length>before);const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.'+options.learnerKey));for(const id of [...ids,...two.events().map(e=>e.id)])assert.ok(saved.events.some(e=>e.id===id));
+});
 for(const paged of [false,true])test((paged?'paged':'small')+' browser histories have one writer and preserve both tabs after handover',async t=>{
  assert.ok(locks,'These integration tests require the repository Node24 test runtime');
  const storage=disk(),accountKey='writer.'+(paged?'paged':'small'),seed=createGame({gameId:'seed',map,storage,storageScope:'account',accountKey,fold:false});for(let i=0;i<(paged?520:1);i++)seed.finishSet({kind:'short'});
