@@ -259,7 +259,8 @@ test('그리기 — 자리표시자가 남지 않고, &·\' 든 이름도 값으
   assert.equal(문서.includes('{{'), false);
   assert.ok(문서.includes('1,220'));
   assert.ok(문서.includes('1.53배'));
-  assert.ok(문서.includes('이번엔 이 자료를 읽지 못했어요'), '랜딩 측정 전');
+  assert.ok(문서.includes('아직 랜딩에 측정 코드를 넣기 전이라'), '랜딩 측정 전은 읽는 사람 말로(안쪽 까닭 글을 싣지 않는다)');
+  assert.equal(문서.includes('Clarity 프로젝트가 아직 없다'), false);
   assert.ok(문서.includes('class="칸지도"'), '측정 전에도 칸 지도는 보인다');
   assert.ok(문서.includes('다음 편에서 바꿀 것'));
   assert.ok(문서.includes('A &amp; B&#39;s 가게'));
