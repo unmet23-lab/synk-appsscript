@@ -238,6 +238,39 @@ test('git 무늬 — `.`·`dir/.`·`dir/`은 그 폴더 전부, 저장소 맨 �
   assert.equal(관련.git무늬식(무늬(['ls-files', '.'], path.join(root, 'tests'))[0]).test('tests/a.test.js'), true);
 });
 
+test('불러오는파일 — 지도에 없는 시험이 require·import로 닿는 저장소 모듈을 끝까지 따라간다 · 도구 글의 경로 목록·문서·node_modules는 뺀다(10-31)', (t) => {
+  const root = 저장소(t, {
+    'tests/새.test.js': [
+      "const a = require('../tools/a.js');",
+      "const b = require(\"../tools/b\"); // 끝을 안 적어도 Node처럼 찾는다",
+      "const c = require(path.join(__dirname, '..', 'tools', 'c.js'));",
+      "const 도구경로 = path.join(REPO, 'tools', 'lib', 'd.cjs');",
+      "spawnSync(process.execPath, ['tools/e.js']);",
+      "const 값 = require('../tools/값.json');",
+      "const 폴더 = require('../tools/폴더');",
+      "const 글 = fs.readFileSync(path.join(REPO, 'docs', '트랙.md'), 'utf8');",
+      "require('../node_modules/x/index.js');",
+    ].join('\n'),
+    'tests/esm.test.mjs': "import { f } from '../tools/f.mjs';\nexport * from './g.mjs';\nconst h = await import('../tools/h.mjs');\n",
+    'tests/g.mjs': '',
+    'tools/a.js': "const a2 = require('./lib/a2.js');\nfunction 늦게() { return require('./늦은.js'); }\n",
+    // 도구 글의 경로 목록 · path.join 조각 · 감싼 require는 따라가지 않는다(짝검사 표처럼 대개 자료다)
+    'tools/lib/a2.js': "require('../a.js'); // 돌아 들어와도 한 번\nconst 목록 = ['tools/목록.js', path.join(ROOT, 'tools', '목록2.js')];\n있으면('../목록3.js');\n",
+    'tools/늦은.js': '', 'tools/b.js': '', 'tools/c.js': '', 'tools/lib/d.cjs': '', 'tools/e.js': '', 'tools/값.json': '{}',
+    'tools/폴더/index.js': '', 'tools/f.mjs': "import '../tools/a.js';\n", 'tools/h.mjs': '',
+    'tools/목록.js': '', 'tools/목록2.js': '', 'tools/목록3.js': '', 'tools/무관.js': '',
+    'docs/트랙.md': '', 'node_modules/x/index.js': '',
+  });
+  const 정렬 = (s) => [...s].sort();
+  assert.deepEqual(정렬(관련.불러오는파일(root, 'tests/새.test.js')), [
+    'tests/새.test.js', 'tools/a.js', 'tools/b.js', 'tools/c.js', 'tools/e.js', 'tools/lib/a2.js', 'tools/lib/d.cjs', 'tools/값.json', 'tools/늦은.js', 'tools/폴더/index.js',
+  ].sort());
+  assert.deepEqual(정렬(관련.불러오는파일(root, 'tests/esm.test.mjs')),
+    ['tests/esm.test.mjs', 'tests/g.mjs', 'tools/a.js', 'tools/f.mjs', 'tools/h.mjs', 'tools/lib/a2.js', 'tools/늦은.js'].sort());
+  assert.equal(관련.불러오는파일(root, 'tests/새.test.js', { 한도: 3 }), null, '한도를 넘으면 모른다(읽는다고 본다)');
+  assert.deepEqual(정렬(관련.불러오는파일(root, 'tests/없는.test.js')), ['tests/없는.test.js'], '파일이 없으면 그 시험만');
+});
+
 // ── 자리(한 PC에서 동시에 도는 push 전 관련 시험 수, 10-22) ─────────────────────────────────────
 
 const 자리폴더 = (t) => {

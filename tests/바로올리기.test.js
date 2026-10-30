@@ -2074,3 +2074,55 @@ test('관련 시험(공용 작업본): 깨진 시험이 남의 미커밋을 읽�
   assert.equal(판.원격파일('a.txt'), '2\n');
   assert.equal(판.원격파일('tools/값.json'), '{"값":1}\n', '남의 미커밋은 올라가지 않는다');
 });
+
+/** 공용 작업본 git 폴더에 받아 둔 CI 시험 지도를 둔다(tools/관련시험.js 지도읽기가 읽는 자리) — 시험마다 읽은 추적 파일. */
+function 지도두기(판, 시험) {
+  const 자리 = path.join(판.공용.gitdir(), 'synk-관련시험');
+  fs.mkdirSync(자리, { recursive: true });
+  fs.writeFileSync(path.join(자리, '지도.json'), JSON.stringify({ 판: 1, run: 1, 받은때: new Date().toISOString(), 시험 }));
+}
+const 새시험글 = "const { test } = require('node:test'); const assert = require('node:assert');\n"
+  + "test('새 도구의 값은 1이다', () => { assert.equal(require('../tools/새.js').값, 1); });\n";
+
+test('관련 시험(공용 작업본): 지도에 없는 새 시험이 깨지면 남의 미커밋이 있어도 막는다 — 그 시험이 불러오는 파일만 본다(10-30 840a50cad)', async (t) => {
+  for (const 지도있음 of [true, false]) {
+    const 판 = 관련판(t);
+    if (지도있음) 지도두기(판, { 'tests/값.test.js': { 읽음: ['tools/값.json'], 폴더: [], 무늬: [] } });
+    판.공용.쓰기('a.txt', '남이 고치다 만 줄\n'); // 다른 세션의 미커밋 둘 — 새 시험은 안 읽는다
+    판.공용.쓰기('docs/남.json', '{"남":1}\n');
+    판.공용.쓰기('tools/새.js', 'module.exports = { 값: 2 };\n');
+    판.공용.쓰기('tests/새.test.js', 새시험글);
+    const 전 = 판.원격머리();
+    const r = await 도구.올리기({ 저장소: 판.공용.폴더, 경로들: ['tools/새.js', 'tests/새.test.js'], 메시지: '새 도구', 실행: true });
+    const 판이름 = 지도있음 ? '지도에 그 시험이 없음' : '지도 없음';
+    assert.equal(r.결과, '멈춤', `${판이름}: ${JSON.stringify(r)}`);
+    assert.match(r.이유, /관련 시험이 깨졌다\(1\/1\)/, 판이름);
+    assert.deepEqual(r.관련시험.시험, ['tests/새.test.js'], 판이름);
+    assert.equal(r.관련시험.결과.실패[0].파일, 'tests/새.test.js', 판이름);
+    assert.equal(판.원격머리(), 전, `${판이름}: 아무것도 올라가지 않았다`);
+    assert.equal(판.공용.읽기('a.txt'), '남이 고치다 만 줄\n', `${판이름}: 남의 미커밋은 그대로`);
+  }
+});
+
+test('관련 시험(공용 작업본): 깨진 시험이 남이 고치는 파일을 읽으면 지금처럼 막지 않는다 — 지도에 있는 시험은 지도의 읽음, 새 시험은 require로 닿는 모듈', async (t) => {
+  const 판 = 관련판(t);
+  지도두기(판, { 'tests/값.test.js': { 읽음: ['a.txt', 'tools/값.json'], 폴더: [], 무늬: [] } });
+  판.공용.쓰기('tools/값.json', '{"값":2}\n'); // 다른 세션이 고치다 만 파일 — 기존 시험이 이것 때문에 깨진다
+  판.공용.쓰기('a.txt', '2\n');
+  const r = await 도구.올리기({ 저장소: 판.공용.폴더, 경로들: ['a.txt'], 메시지: 'a 2', 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(r.관련시험.결과.통과함, false);
+  assert.match(r.주의, /남의 미커밋\(tools\/값\.json\)/);
+  assert.equal(판.원격파일('tools/값.json'), '{"값":1}\n', '남의 미커밋은 올라가지 않는다');
+
+  const 둘 = 새판(t, { 파일: { '.github/workflows/syntax-check.yml': 관련흐름, 'tools/남.js': 'module.exports = { 값: 1 };\n', 'a.txt': '1\n' } });
+  지도두기(둘, {});
+  둘.공용.쓰기('tools/남.js', 'module.exports = { 값: 2 };\n'); // 다른 세션의 미커밋 — 새 시험이 내 도구를 거쳐 불러온다
+  둘.공용.쓰기('tools/새.js', "module.exports = require('./남.js');\n");
+  둘.공용.쓰기('tests/새.test.js', 새시험글);
+  const 새 = await 도구.올리기({ 저장소: 둘.공용.폴더, 경로들: ['tools/새.js', 'tests/새.test.js'], 메시지: '새 도구', 실행: true });
+  assert.equal(새.결과, '올림', JSON.stringify(새));
+  assert.equal(새.관련시험.결과.통과함, false);
+  assert.match(새.주의, /남의 미커밋\(tools\/남\.js\)/);
+  assert.equal(둘.원격파일('tools/남.js'), 'module.exports = { 값: 1 };\n', '남의 미커밋은 올라가지 않는다');
+});

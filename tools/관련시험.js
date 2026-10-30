@@ -25,6 +25,8 @@
  *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
  *   한 PC에서 동시에 도는 관련 시험은 자리 파일로 둘까지다(아래 「자리」 — 기다린 시간은 15분 한도에 안 든다, 10-22).
  *   원천과 짝 파일(생성물·사본)이 어긋난 push는 이 시험이 아니라 tools/짝검사.js가 먼저 막는다(CI의 시험 밖 단계까지).
+ * 깨진 시험이 공용 작업본의 남의 미커밋을 읽었나: 바로올리기가 지도로 가르고, 지도에 없는 시험은 불러오는파일(그 시험과 require·import로
+ *   닿는 모듈)로 본다(10-31 — 그전에는 다 읽는다고 봐서 처음 넣은 시험이 깨진 채 올라갔다).
  * 지도는 공용 git 폴더 안(<git-common-dir>/synk-관련시험/지도.json)에 두어 저장소에는 안 들어간다. 경로는 모두 저장소 기준이다.
  */
 const { spawnSync } = require('node:child_process');
@@ -277,6 +279,68 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
   return { 시험, 까닭, 기록전용: false, 지도: 쓸지도 ? 쓸지도.run || '로컬' : null };
 }
 
+// ── 불러오는 파일(지도에 없는 시험, 2026-10-31) ─────────────────────────────────────
+// 바로올리기는 공용 작업본에서 깨진 시험이 남의 미커밋을 읽었을 수 있으면 막지 않는다(git-publish-core.cjs 남의미커밋섞임).
+// 지도에 없는 시험(이번 push로 처음 넣은 시험 · 지도 뒤에 생긴 시험 · 지도를 못 받았을 때)을 「남의 미커밋을 다 읽는다」로 치자
+// 10-30 공용 작업본에서 처음 넣은 시험이 깨진 채 올라갔다(840a50cad, 현장노트 시험_화면확인). 그런 시험은 이것으로 본다 —
+// 그 시험 파일에서 시작해 require·require.resolve·import·import()·export from의 './'·'../' 경로를 끝까지 따라간다.
+// 시험 파일에서만 도구를 부르는 다른 꼴도 센다: './'·'../'로 시작하는 글자, path.join·path.resolve의 글자 조각(__dirname·import.meta가
+// 있으면 그 파일 폴더, 없으면 저장소 기준 — REPO·ROOT·루트), 저장소 기준 경로 글자('tools/x.js'). 도구 글의 같은 꼴은 대개 자료 목록
+// (짝검사 표·Atlas 사본 목록)이라, 따라가면 반응리포트 시험 하나가 349개로 불어 공용 작업본의 남의 미커밋(experiences 코드 수백 개)과
+// 늘 겹친다(10-31 실측 — 이 규칙이면 47개). 모듈(.js·.cjs·.mjs)과 .json만 센다 — 트랙·결정 같은 문서를 세면 늘 「읽는다」가 된다.
+// fs로 읽는 자료·문서는 못 본다. 저장소 밖·node_modules·.git은 뺀다.
+const 모듈끝 = /\.(?:[cm]?js|json)$/i;
+const 따라갈끝 = /\.[cm]?js$/i;
+const 붙일끝 = ['.js', '.cjs', '.mjs', '.json'];
+const 글자 = /(['"`])([^'"`\n$]*)\1/g;
+const 모듈꼴 = /(?:\brequire(?:\.resolve)?\s*\(\s*|\bimport\s*\(\s*|\bfrom\s+|\bimport\s+)(['"`])([^'"`\n$]+)\1/g;
+
+/** Node처럼 모듈 파일을 찾는다 — 그 파일 · 끝 붙이기 · 폴더의 index. 저장소 기준 경로, 못 찾았거나 뺄 곳이면 null. */
+function 모듈찾기(root, 전체) {
+  for (const f of [전체, ...붙일끝.map((끝) => 전체 + 끝), ...붙일끝.map((끝) => path.join(전체, `index${끝}`))]) {
+    const rel = 상대(f, root);
+    if (!rel || rel === '.' || 뺄경로(rel) || !모듈끝.test(rel)) continue;
+    try { if (fs.statSync(f).isFile()) return rel; } catch { /* 다음 후보 */ }
+  }
+  return null;
+}
+
+/** 모듈 글 하나가 부르는 저장소 안 모듈 경로들 — 모듈 꼴, 시험 파일이면 위 다른 꼴까지. */
+function 글속모듈(root, rel, 글, 시험인가) {
+  const 폴더 = path.dirname(path.join(root, rel));
+  const 찾음 = new Set();
+  const 넣기 = (전체) => { const r = 모듈찾기(root, 전체); if (r) 찾음.add(r); };
+  for (const [, , s] of 글.matchAll(모듈꼴)) if (/^\.\.?\//.test(s)) 넣기(path.resolve(폴더, s));
+  if (!시험인가) return 찾음;
+  for (const [, , s] of 글.matchAll(글자)) {
+    if (/^\.\.?\//.test(s)) 넣기(path.resolve(폴더, s));
+    else if (/^[^/:\s][^:\s]*\/[^:\s]*\.(?:[cm]?js|json)$/i.test(s)) 넣기(path.resolve(root, s));
+  }
+  for (const [, 인자] of 글.matchAll(/\b(?:join|resolve)\(((?:[^()]|\([^()]*\))*)\)/g)) {
+    const 조각 = [...인자.matchAll(글자)].map((x) => x[2]);
+    if (조각.length) 넣기(path.resolve(/__dirname|import\.meta/.test(인자) ? 폴더 : root, ...조각));
+  }
+  return 찾음;
+}
+
+/** 시험 하나가 불러오는 저장소 파일(그 시험 포함, 저장소 기준 경로의 Set). 한도를 넘으면 null — 모르니 다 읽는다고 본다. */
+function 불러오는파일(root, 시험, { 한도 = 5000 } = {}) {
+  const 처음 = String(시험).replace(/\\/g, '/');
+  const 본 = new Set();
+  const 남은 = [처음];
+  while (남은.length) {
+    const rel = 남은.pop();
+    if (본.has(rel)) continue;
+    if (본.size >= 한도) return null;
+    본.add(rel);
+    if (!따라갈끝.test(rel)) continue;
+    let 글;
+    try { 글 = fs.readFileSync(path.join(root, rel), 'utf8'); } catch { continue; }
+    for (const 다음 of 글속모듈(root, rel, 글, rel === 처음)) if (!본.has(다음)) 남은.push(다음);
+  }
+  return 본;
+}
+
 // ── 돌리기 ────────────────────────────────────────────────────────────────────
 
 /** TAP 요약과 깨진 잎 시험(「부모 › 잎」 이름·위치·시험이 찍은 → 안내) — tools/lib/tap실패.js. root 기준으로 위치를 줄인다. */
@@ -447,4 +511,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 고르기, 돌리기, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 지도이름, 지도파일이름 };
+module.exports = { 고르기, 돌리기, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, git무늬, git무늬식, 읽나, 불러오는파일, 지도이름, 지도파일이름 };
