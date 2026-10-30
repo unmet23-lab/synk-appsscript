@@ -10091,9 +10091,9 @@ var require_game_flow = __commonJS({
           return () => listeners.delete(listener);
         },
         clear() {
-          write(FLOW, null);
-          write(TODAY, null);
-          write(PRESENT, null);
+          if (!storage || !canPersist()) return;
+          const cleared = [FLOW, TODAY, PRESENT].map((name) => write(name, null));
+          if (cleared.some((ok) => !ok)) throw Object.assign(new Error("\uAE30\uAE30 \uC124\uC815\uC744 \uBAA8\uB450 \uC9C0\uC6B0\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uCD08\uAE30\uD654\uD574 \uC8FC\uC138\uC694."), { code: "STORAGE_ERROR" });
         }
       });
     }

@@ -162,7 +162,7 @@ function createFlowPort({ storage, key, clock, epoch = () => null, canPersist = 
       if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');
       listeners.add(listener); return () => listeners.delete(listener);
     },
-    clear() { write(FLOW, null); write(TODAY, null); write(PRESENT, null); },
+    clear() { if (!storage || !canPersist()) return; const cleared = [FLOW, TODAY, PRESENT].map(name => write(name, null)); if (cleared.some(ok => !ok)) throw Object.assign(new Error('기기 설정을 모두 지우지 못했어요. 다시 초기화해 주세요.'), { code: 'STORAGE_ERROR' }); },
   });
 }
 
