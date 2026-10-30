@@ -92,7 +92,7 @@ export const firstOwed = r => r?.last?.path !== 'player';
 /** Whether a band that starts with this C4 record waits for the player's first stay: owed, and not waiting already. */
 export const firstPending = r => firstOwed(r) && r?.status !== 'triggered';
 /** Where a card's 「나와 함께」 is offered and opened when that is one place (§12-1 — C4's talk is at the menu board, so its owner
- * offers it and is talked to only at the cafe; she may meet the player anywhere, Fable F6). null: wherever its owner is. */
+ * offers it and is talked to only at the cafe; she may meet the player anywhere). null: wherever its owner is. */
 export const talkPlaceOf = card => (card?.id === FIRST_STAY ? placeOfSpot(card.spot) : null);
 
 // ── what rises (§8-2) ─────────────────────────────────────────────────────────

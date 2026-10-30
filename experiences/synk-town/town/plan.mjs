@@ -258,7 +258,7 @@ export function planBand(input) {
 
 /** C4's first rise (§8-4): the earliest instant of input.playerStays ([{ place, fromMs, toMs? }] — where the player stayed in
  * the band, from the commands) at which the cafe owner is at that place in her final segments: from a segment's start when
- * she was already in that place (a move inside it, or a hold at the counter, keeps her there — Fable F4), else from her
+ * she was already in that place (a move inside it, or a hold at the counter, keeps her there), else from her
  * arrival. Only while the band starts with the first still owed and not waiting; at any band and with no state condition —
  * she is up while she has a segment. null: no stay with her in this band. */
 function firstStay(input, segments) {
@@ -532,7 +532,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
   };
   /** The card a resident's decision solves (§8-3 해결): the oldest that rose and waits for it, in a band it may be solved
    * in — never one the player holds or a neighbour already came for, nor C4's first, which waits for the player (§8-4):
-   * marked, or a C4 the player has never done that rose before this rule (a world saved waiting — GPT GA2). */
+   * marked, or a C4 the player has never done that rose before this rule (a world saved waiting). */
   const waiting = (npc, t) => {
     let best = null;
     for (const card of CARDS_OF[npc] || []) {

@@ -81,7 +81,7 @@ function validPairs(pairs) {
 }
 const validMarks = m => plain(m) && ['newToolDay', 'scenesDay', 'scenes'].every(k => m[k] === undefined || integer(m[k])) && Object.keys(m).every(k => ['newToolDay', 'scenesDay', 'scenes'].includes(k));
 /** The player's stays while C4's first is owed (§8-4, noteStay — absent in a world that never had one). Only the fields it
- * knows are checked: a later runtime may add one without an older one refusing the world (Fable F7). */
+ * knows are checked: a later runtime may add one without an older one refusing the world. */
 const validStays = list => list === undefined || Array.isArray(list) && list.length > 0 && list.length <= STAYS_HELD
   && list.every((s, i) => plain(s) && Object.hasOwn(PLACE_BY_ID, s.place) && s.place !== 'home' && integer(s.fromMs)
     && (s.toMs === undefined ? i === list.length - 1 : integer(s.toMs) && s.toMs >= s.fromMs) && (i === 0 || s.fromMs >= list[i - 1].fromMs));
@@ -187,22 +187,22 @@ function openBand(v, atMs, planCmdRev, carried, visitBands = null) {
     ...(carried?.village ? structuredClone(carried.village) : {}), ...(visitHabit ? { visitHabit } : {}) };
   // A new life day opens with the last day's news (§9-3).
   if (carried && !sameDay) morningNews(v, carried.lifeDay);
-  // A C4 saved waiting before the first-C4 rule and never done with the player is the player's first from here (GPT GA2):
+  // A C4 saved waiting before the first-C4 rule and never done with the player is the player's first from here:
   // marked, it waits outside the caps like one that rose at the player's stay (the planner already left it unsolved).
   const c4 = v.band.cards?.[FIRST_STAY];
   if (c4?.status === 'triggered' && !c4.first && firstOwed(c4)) c4.first = true;
   // C4's first (§8-4): only a band's opening lets the player's stays go — those over before it, or all of them once the first
-  // waits for the player or is done — so no read decides what a later band plans from (§15-3, Fable F1).
+  // waits for the player or is done — so no read decides what a later band plans from (§15-3).
   if (v.playerStays) {
     const r = v.band.cards?.[FIRST_STAY], kept = firstPending(r) ? v.playerStays.filter(s => s.toMs === undefined || s.toMs > v.band.startMs) : [];
     if (kept.length) v.playerStays = kept; else delete v.playerStays;
   }
 }
 
-/** Where the player stays while C4's first is owed (§8-4, Fable F1·F7): { place, fromMs, toMs? }, newest last. A command's end
+/** Where the player stays while C4's first is owed (§8-4): { place, fromMs, toMs? }, newest last. A command's end
  * and a visit's start close the open stay and add the place the player is at; a visit's end closes it (closeStay). The
  * player's home is never written — no resident comes there. A command's end finds the bands closed up to it, so a full list
- * (STAYS_MAX) is cut there by the band's own plan (GPT GA1): stays that are over and never met the cafe owner by now can never
+ * (STAYS_MAX) is cut there by the band's own plan: stays that are over and never met the cafe owner by now can never
  * meet her (what comes later re-plans only from its own instant), so they go; once she has been met the band keeps its stays
  * and adds none. A visit's start may add up to STAYS_HELD — the count it may find before the bands it missed have closed. */
 export const STAYS_MAX = 16, STAYS_HELD = 48;
