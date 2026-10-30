@@ -584,6 +584,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 바이트가 같고 git 개체가 기록 커밋과 같은지 먼저 본 뒤, 준비.json `검사.파일[].수정`을 `new Date(fs.statSync(경로).mtimeMs).toISOString()`으로 다시 적었다(같은 값이 한 번만 있는지 세고 글자 치환 — JSON을 통째로 다시 쓰지 않는다). 여러 장 글은 `올리기전검사.js`를 다시 돌리면 「파일에 영상이 없다」를 고칠 것으로 내고 확인 메모를 덮으니 다시 돌리지 않는다.
 - 다시 확인: `node tools/예약큐.js --일수 2`에서 그 편 줄이 「검사 확인할 것」이고 계정 칸이 ✗가 아니라 ○.
 
+### `file://` 저장소를 부분 클론하면 `GIT_CONFIG_*` 환경 설정이 upload-pack에 안 넘어가 blob 필터가 무시되고 전부 받는다 (2026-10-30 Claude)
+- 증상: talk CI personal_source를 흉내 내려고 appsscript를 `file://`로 sparse · `--filter=blob:none` 클론하자 필터가 안 먹고 blob 전부(약 3.5GB)를 받았다. sparse 패턴 `/atlas/`는 Git Bash가 `C:/Program Files/Git/atlas/`로 바꿨다.
+- 원인: 로컬 `file://` 전송은 받는 쪽 환경의 `GIT_CONFIG_*` 설정을 보내는 쪽 upload-pack에 넘기지 않는다. `/`로 시작하는 인자는 MSYS 경로 바꿈([윈도우 셸](윈도우_셸.md)의 같은 항목).
+- 고침: 흉내 클론의 `remote.origin.uploadpack`에 필터를 허락하는 설정을 실은 upload-pack 명령을 줬다. sparse 패턴은 `git sparse-checkout set --stdin`으로 넣는다.
+- 다시 확인: 같은 흉내 클론으로 personal_source 세 단계(고정 커밋 확보 · 릴리스 --check · 시험 65/65)가 CI 초록과 같은 결과를 냈다(talk `78b237b2` 굽기).
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
