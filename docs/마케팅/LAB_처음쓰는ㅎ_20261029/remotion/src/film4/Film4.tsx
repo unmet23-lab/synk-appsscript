@@ -17,15 +17,18 @@ const L4S: Record<Loc4, L4> = {
   en: { voice: true, bgm: 0.11, hat: 'hat', face: 'face', font: "'Inter Tight', sans-serif", subs: [] },
   zhs: {
     voice: false,
-    bgm: 0.14,
+    bgm: 0.24, // 소리가 「하하.」 세 줄뿐이라 배경음을 올린다(0.14면 음량 마감이 봉우리 −0.3 dBFS로 범위 밖)
     hat: '帽子',
     face: '脸',
     font: "'Inter Tight', 'Microsoft YaHei', sans-serif",
     subs: [
       { at: 0.12, until: 1.98, text: '「哈哈」（haha）用韩语怎么写？' },
-      { at: 2.05, until: 3.5, text: '先画一顶帽子' },
-      { at: 3.55, until: 5.05, text: '再画一张脸！' },
+      // zhs2 시험: sonnet · haiku가 같이 「모자 · 얼굴로 ㅎ을 만드는 까닭」을 짚음 — 까닭(모자 쓴 꼬마)을 첫 줄에
+      { at: 2.05, until: 3.5, text: 'ㅎ 就像戴帽子的小家伙：先画帽子' },
+      { at: 3.55, until: 5.05, text: '再画一张笑脸！' },
       { at: 5.1, until: 6.5, text: '再加上 ㅏ（a）' },
+      // zhs1 시험: haiku · GPT가 같이 「ㅏ가 무엇인지」 · 「빨간 h · a가 왜 있는지」를 짚음 — 내려앉는 동안 짝을 글로(기호만)
+      { at: T.drop[0], until: T.cut - 0.05, text: 'ㅎ = h　ㅏ = a' },
       { at: T.cut + 1.55, until: T.cut + 3.4, text: '现在你会用韩语笑了' },
     ],
   },
@@ -440,11 +443,11 @@ const Subs: React.FC = () => {
   return (
     <>
       {L.subs.map((s, i) => {
-        const o = interpolate(f, [fr(s.at), fr(s.at) + 4, fr(s.until) - 4, fr(s.until)], [0, 1, 1, 0], clamp);
+        const o = interpolate(f, [fr(s.at), fr(s.at) + 12, fr(s.until) - 10, fr(s.until)], [0, 1, 1, 0], { ...clamp, easing: EASE_IO }); // 천천히 — 화면 글이 바뀌는 순간이 박자로 잡혀 칸 수가 원본(2)보다 늘지 않게(올리기 전 검사 ⑮)
         if (o <= 0) return null;
         return (
           <div key={i} style={{ position: 'absolute', left: 0, width: 1080, top: 1290, display: 'flex', justifyContent: 'center', opacity: o }}>
-            <div style={{ background: '#FFFDF8', borderRadius: 26, padding: '14px 30px 16px', fontFamily: L.font, fontWeight: 800, fontSize: 58, color: C.brown, boxShadow: '0 6px 16px rgba(80,40,20,0.14)' }}>{s.text}</div>
+            <div style={{ background: '#FFFDF8', borderRadius: 26, padding: '14px 30px 16px', fontFamily: L.font, fontWeight: 800, fontSize: 50, color: C.brown, boxShadow: '0 6px 16px rgba(80,40,20,0.14)' }}>{s.text}</div>
           </div>
         );
       })}
