@@ -24,8 +24,8 @@ test('참조 파일이 바뀌지 않아 공개 토큰만 복원해도 import map
  const result=토큰맞춤(Buffer.from(html('candidate')),Buffer.from(html('public')),new Set(['synk.im'])),output=result.버퍼.toString('utf8'),body=/<script type="importmap">([\s\S]*?)<\/script>/u.exec(output)[1];
  assert.equal(result.맞춤,1);assert.equal(body,map('public'));assert.ok(output.includes(`'sha256-${digest(body)}'`));assert.ok(!output.includes(`'sha256-${digest(map('candidate'))}'`));assert.ok(output.includes("style-src 'self' 'sha256-style-preserved'"));assert.ok(output.includes("object-src 'none'"));assert.ok(!output.includes('unsafe-inline'));
 });
-test('지원하지 않는 일반 script 또는 default-src의 허용 해시는 조용히 깨뜨리지 않고 중단한다',()=>{
- for(const type of ['type="module"','type="importmap"']){
+test('지원하지 않는 일반 script의 허용 해시는 조용히 깨뜨리지 않고 중단한다',()=>{
+ for(const type of ['type="module"']){
   const old=Buffer.from('old'),next=Buffer.from('new'),token=crypto.createHash('sha256').update(old).digest('hex');
   const body=`import './a.js?v=${token}';`,directive=type.includes('module')?'script-src':'default-src';
   const html=Buffer.from(`<meta http-equiv="Content-Security-Policy" content="${directive} 'self' 'sha256-${digest(body)}'"><script ${type}>${body}</script>`);
@@ -56,11 +56,11 @@ test('CSP digest의 생략한 padding과 URL-safe 표기도 같은 해시로 비
  }
 });
 
-test('중복 CSP는 첫 지시문을 따르며 default-src의 지원하지 않는 변경은 중단한다',()=>{
+test('default-src의 허용 해시를 고치며 중복·비 ASCII 지시문은 첫 유효 지시문을 따른다',()=>{
  const map=token=>JSON.stringify({imports:{x:'./x.js?v='+token}}),html=(token,policy)=>`<meta http-equiv=Content-Security-Policy content="${policy(token)}"><script type=importmap>${map(token)}</script>`;
  for(const suffix of ["default-src 'none'",'default-src',"\u00a0script-src 'none'","\u017fcript-src 'none'"]){
   const policy=token=>`default-src 'sha256-${digest(map(token))}'; ${suffix}`;
-  assert.throws(()=>토큰맞춤(Buffer.from(html('candidate',policy)),Buffer.from(html('public',policy)),new Set()),/CSP 해시가 맞지/);
+  const output=토큰맞춤(Buffer.from(html('candidate',policy)),Buffer.from(html('public',policy)),new Set()).버퍼.toString('utf8');assert.ok(output.includes(`default-src 'sha256-${digest(map('public'))}'`));assert.ok(output.includes(suffix));
  }
  const policy=token=>`script-src 'sha256-${digest(map(token))}'; script-src 'none'`,out=토큰맞춤(Buffer.from(html('candidate',policy)),Buffer.from(html('public',policy)),new Set()).버퍼.toString('utf8');assert.ok(out.includes(`'sha256-${digest(map('public'))}'`));assert.ok(out.includes("; script-src 'none'"));
 });

@@ -9,6 +9,8 @@ const MEMBER_UNDERSTANDING_FACETS = Object.freeze({
     ['travel-planning', '여행 일정·동선'], ['travel-food', '여행지 음식·주문'], ['travel-stay', '여행지 숙소'],
     ['career-interview', '면접 준비'], ['career-planning', '진로 탐색'], ['content-video', '영상 제작'],
     ['content-design', '디자인 제작'], ['ai-tools', 'AI 도구 활용'], ['work-collaboration', '업무 협업'],
+    ['reading-books', '독서'], ['music', '음악'], ['exercise', '운동'], ['cooking', '요리'],
+    ['photography', '사진 촬영'], ['games', '게임'], ['nature', '자연·산책'],
   ]) }),
   'usage-repeat': Object.freeze({ title: '여러 날 다시 연 앱', multiple: false, max: 1, choices: choices([
     ['world', 'WORLD'], ['messenger', '워크스페이스'], ['path', 'PATH'], ['pulse', 'PULSE'], ['no-fixed-app', '특정 앱으로 정해 두지 않음'],

@@ -4,6 +4,15 @@ const C=require('../experiences/synk-account/src/member-statement-contract.cjs')
 const Old=require('../experiences/synk-account/src/member-statement-v10.cjs');
 const text='음악 좋아요. '.repeat(11)+'저는 취미가 있어요.';
 const at='2026-10-29T00:00:00.000Z';
+test('one-time instructions do not become automatic persistent preferences',()=>{
+ for(const text of ['이번에는 설명은 짧게 해주세요','이번엔 예시를 좋아해요','저는 이번에만 짧은 설명이 좋아요','지금은 설명은 짧게 해주세요','지금 설명은 짧게 해주세요','지금은 설명을 짧게 해주세요. 예시가 좋아요.','그와 별개로 지금은 설명은 짧게 해주세요','설명은 지금은 짧게 해주세요','지 금은 설명은 짧게 해주세요']){
+  const result=C.parseMemberStatement(text);assert.deepEqual(result.meanings,[]);assert.ok(result.unresolved.length);
+ }
+ assert.equal(C.parseMemberStatement('설명은 짧게 해주세요').meanings[0].value,'brief');
+ const text='지금은 설명은 짧게 해주세요',preview=C.parseMemberStatement(text);assert.match(preview.question.label,/이후에도/);
+ const answer=optionId=>C.parseMemberStatement(text,{clarifications:[{questionId:preview.question.id,optionId}]});assert.deepEqual(answer('not-current').meanings,[]);assert.equal(answer('confirm').meanings[0].value,'brief');
+ assert.equal(Old.parseMemberStatement('이번에는 설명은 짧게 해주세요').meanings[0].value,'brief','Saved parser10 replay remains unchanged');
+});
 const row=(parser,id,input=text)=>({id:`00000000-0000-4000-8000-${String(id).padStart(12,'0')}`,parserVersion:parser.PARSER_VERSION,text:input,at,confirmedAt:at,meanings:parser.parseMemberStatement(input).meanings,clarifications:[]});
 
 test('selecting one preference retains compatible neighbours in a non-transitive conflict',()=>{

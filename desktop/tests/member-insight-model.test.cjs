@@ -186,6 +186,13 @@ test('malformed activity is isolated to a neutral error without losing the pract
 });
 
 const understandingDocument = () => ({ version: 1, reviews: [], overrides: [] });
+test('every confirmed newly supported topic remains visible in the interest summary',async()=>{
+ const {buildMemberInsightReport}=await model;
+ for(const [text,label]of [['음악을 좋아해요','음악'],['요리 좋아요','요리'],['사진 촬영을 좋아해요','사진 촬영'],['게임을 좋아해요','게임'],['자연을 좋아해요','자연·산책'],['운동을 좋아해요','운동'],['독서를 좋아해요','독서']]){
+  const document=await confirmedStatement(text,['p0']),result=buildMemberInsightReport(understandingInput(),{understanding:document,understandingStatus:'ready'});
+  assert.equal(result.understanding.status,'ready',text);const topics=result.understanding.facets.find(row=>row.id==='topics');assert.ok(topics.choices.some(choice=>choice.label===label&&topics.selected.includes(choice.id)),text);
+ }
+});
 function understandingInput() { return require('../tools/member-insight-fixture.cjs').summary(); }
 
 test('Core understanding consumes permitted topic and repeated format aggregates without inferring app content', async () => {

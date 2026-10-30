@@ -8941,7 +8941,7 @@ var require_learning_sync = __commonJS({
             }
             const skipped = new Set(result?.skipped || []), back = new Set(found.map((event) => event.id));
             state.acknowledged = [.../* @__PURE__ */ new Set([...state.acknowledged, ...[...back].filter((eventId) => !skipped.has(eventId))])];
-            state.missing = state.missing.filter((eventId) => !back.has(eventId));
+            state.missing = state.missing.filter((eventId) => !back.has(eventId) || skipped.has(eventId));
           }
           after = response.cursor;
           state.recoveryCursor = Math.min(after, state.cursor);
@@ -9888,7 +9888,7 @@ var require_game_flow = __commonJS({
     var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
     var object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
     var presentationOf = (value) => object3(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
-    function createFlowPort({ storage, key, clock: clock2, epoch = () => null }) {
+    function createFlowPort({ storage, key, clock: clock2, epoch = () => null, canPersist = () => true }) {
       const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
       const listeners = /* @__PURE__ */ new Set();
       const notify = (change) => {
@@ -9911,7 +9911,7 @@ var require_game_flow = __commonJS({
       };
       const write = (name, value) => {
         try {
-          if (!storage) return false;
+          if (!storage || !canPersist()) return false;
           if (value == null) {
             if (typeof storage.removeItem === "function") storage.removeItem(name);
             else storage.setItem(name, "");
@@ -11063,7 +11063,7 @@ var require_game_learning = __commonJS({
           return api.summary();
         }
       };
-      flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => {
+      flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, canPersist: history.port.canPersist, epoch: () => {
         try {
           history.refresh();
         } catch {
@@ -18235,7 +18235,7 @@ function createWorldEducation({
   }
   function repaint() {
     try {
-      if (home.openPanel?.() === "") return;
+      if (home.openPanel?.() === "" || openPosition.pending) return;
       if (panelNode("[data-position-board]") && !panelNode('[data-position-board="hangul"]')) showBoard(readCoach(), { keepScroll: true });
       else if (panelNode("[data-plan-board]")) void openPlan({ keepScroll: true });
     } catch {
@@ -18256,57 +18256,65 @@ function createWorldEducation({
     if (!position) return;
     check3();
     const ticket = ++positionOpen;
-    let settled = false;
-    home.attachPanelResource?.({ dispose() {
-      if (!settled && ticket === positionOpen) positionOpen++;
-    } });
+    openPosition.pending = ticket;
     try {
-      await prepare();
-    } catch {
-    }
-    check3();
-    if (ticket !== positionOpen) return;
-    try {
-      await target.SYNKLearningHost?.ready?.();
-    } catch {
-    }
-    check3();
-    if (ticket !== positionOpen) return;
-    try {
-      await bankReady();
-    } catch {
-    }
-    check3();
-    if (ticket !== positionOpen) return;
-    let coachNow = null;
-    try {
-      coachNow = readCoach();
-    } catch {
-      coachNow = null;
-    }
-    let reading = null;
-    try {
-      reading = getProgress().hangulReading?.() || null;
-    } catch {
-      reading = null;
-    }
-    let stage;
-    try {
-      stage = await hangulStage(coachNow);
-    } catch (error2) {
+      let settled = false;
+      home.attachPanelResource?.({ dispose() {
+        if (!settled && ticket === positionOpen) {
+          positionOpen++;
+          if (openPosition.pending === ticket) openPosition.pending = 0;
+        }
+      } });
+      try {
+        await prepare();
+      } catch {
+      }
       check3();
-      if (ticket === positionOpen) failed(error2);
-      return;
+      if (ticket !== positionOpen) return;
+      try {
+        await target.SYNKLearningHost?.ready?.();
+      } catch {
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      try {
+        await bankReady();
+      } catch {
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      let coachNow = null;
+      try {
+        coachNow = readCoach();
+      } catch {
+        coachNow = null;
+      }
+      let reading = null;
+      try {
+        reading = getProgress().hangulReading?.() || null;
+      } catch {
+        reading = null;
+      }
+      let stage;
+      try {
+        stage = await hangulStage(coachNow);
+      } catch (error2) {
+        check3();
+        if (ticket === positionOpen) failed(error2);
+        return;
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      settled = true;
+      if (position.showsHangulBoard({ reading, stage })) {
+        showHangul(stage);
+        return;
+      }
+      const shown = showBoard(coachNow);
+      if (start && shown.plan?.status === "ready" && shown.plan.items.length) startDiagnostic(shown.coachNow, shown.plan, shown.map);
+    } finally {
+      if (openPosition.pending === ticket) openPosition.pending = 0;
     }
-    check3();
-    if (ticket !== positionOpen) return;
-    settled = true;
-    if (position.showsHangulBoard({ reading, stage })) {
-      showHangul(stage);
-      return;
-    }
-    const shown = showBoard(coachNow);
-    if (start && shown.plan?.status === "ready" && shown.plan.items.length) startDiagnostic(shown.coachNow, shown.plan, shown.map);
   }
   function startDiagnostic(coachNow, plan, map) {
     check3();
@@ -19049,6 +19057,7 @@ function createWorldEducation({
   }
   let planOpen = 0;
   async function openPlan({ keepScroll = false, quiet = false } = {}) {
+    if (keepScroll && openPosition.pending) return "skipped";
     check3();
     const ticket = ++planOpen;
     if (!keepScroll) {

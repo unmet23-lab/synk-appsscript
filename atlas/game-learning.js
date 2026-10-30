@@ -621,7 +621,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     },
   };
   // The flow memory follows the log's epoch, so a reset in another tab is not undone from here.
-  flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { history.refresh(); } catch { /* the log reports its own error */ } return history.state().epoch; } });
+  flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, canPersist: history.port.canPersist, epoch: () => { try { history.refresh(); } catch { /* the log reports its own error */ } return history.state().epoch; } });
   api.today = flowPort.today;
   api.setToday = flowPort.setToday;
   api.presentation = flowPort.presentation;

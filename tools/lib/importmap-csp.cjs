@@ -14,7 +14,7 @@ function inspect(text){
    // The first occurrence wins, including an empty first directive.
    // CSP3 parse-serialized-policy: discard non-ASCII directives; first name wins.
    for(const part of content.split(';')){const token=trimASCII(part);if(!token||/[^\x00-\x7f]/u.test(token))continue;const [name,...values]=token.split(/[\t\n\f\r ]+/u),key=name.toLowerCase();if(!directives.has(key))directives.set(key,values.map(canonical));}
-   policies.push({content,location:location?.attrs?.content,allowed:directives.get('script-src-elem')||directives.get('script-src')||directives.get('default-src')||[]});
+   policies.push({content,location:location?.attrs?.content,scriptExplicit:directives.has('script-src-elem')||directives.has('script-src'),allowed:directives.get('script-src-elem')||directives.get('script-src')||directives.get('default-src')||[]});
   }
   if(node.content)stack.push(node.content);if(node.childNodes)stack.push(...node.childNodes);
  }scripts.sort((a,b)=>a.at-b.at);return{scripts,policies};
@@ -30,7 +30,7 @@ function 맞춤(beforeLatin1,afterLatin1,Failure=Error){
   if(script.importmap&&script.body!==next.body)for(const algorithm of algorithms){const old=hash(script.body,algorithm),value=hash(next.body,algorithm);if(replacements.has(old)&&replacements.get(old)!==value)throw new Failure('같은 이전 import map의 새 해시가 충돌한다');replacements.set(old,value);}
  }
  const edits=[];for(const policy of after.policies){
-  const next=policy.content.replace(/(?:^|;)[\t\n\f\r ]*script-src(?:-elem)?[\t\n\f\r ]+[^;]*/gi,directive=>directive.replace(/'(?:sha256|sha384|sha512)-[A-Za-z0-9+/_-]+={0,2}'/gi,token=>replacements.get(canonical(token))||token));
+  const next=policy.content.replace(/(?:^|;)[\t\n\f\r ]*(script-src(?:-elem)?|default-src)[\t\n\f\r ]+[^;]*/gi,(directive,name)=>name.toLowerCase()==='default-src'&&policy.scriptExplicit?directive:directive.replace(/'(?:sha256|sha384|sha512)-[A-Za-z0-9+/_-]+={0,2}'/gi,token=>replacements.get(canonical(token))||token));
   if(next===policy.content)continue;if(!policy.location)throw new Failure('CSP 속성의 원래 위치를 확인하지 못했다');
   const original=afterText.slice(policy.location.startOffset,policy.location.endOffset),prefix=/^([^=]+\s*=\s*)/u.exec(original);if(!prefix)throw new Failure('CSP 속성 구조를 확인하지 못했다');
   const quote=/^[^=]+=\s*'/u.test(original)?"'":'"',escaped=next.replace(/&/gu,'&amp;').replace(/</gu,'&lt;').replace(quote==="'"?/'/gu:/"/gu,quote==="'"?'&#39;':'&quot;');

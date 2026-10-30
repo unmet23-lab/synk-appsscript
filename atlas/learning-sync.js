@@ -191,7 +191,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
         catch (error) { throw failure(error?.code || 'INVALID_EVENTS', error.message); }
         const skipped = new Set(result?.skipped || []), back = new Set(found.map(event => event.id));
         state.acknowledged = [...new Set([...state.acknowledged, ...[...back].filter(eventId => !skipped.has(eventId))])];
-        state.missing = state.missing.filter(eventId => !back.has(eventId));
+        state.missing = state.missing.filter(eventId => !back.has(eventId) || skipped.has(eventId));
       }
       after = response.cursor;
       state.recoveryCursor = Math.min(after, state.cursor);

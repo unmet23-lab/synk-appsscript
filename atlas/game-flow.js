@@ -23,7 +23,7 @@ const presentationOf = value => object(value) && Object.keys(value).length > 0
 
 // `epoch` is the learning log's current epoch: a reset (in this tab or another) starts a new one,
 // and memory written under an older epoch is never read or written back.
-function createFlowPort({ storage, key, clock, epoch = () => null }) {
+function createFlowPort({ storage, key, clock, epoch = () => null, canPersist = () => true }) {
   const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
   const listeners = new Set();
   const notify = change => { for (const listener of listeners) { try { listener(change); } catch { /* an observer cannot change the memory */ } } };
@@ -31,7 +31,7 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
   const read = (name, strict = false) => { try { const raw = storage?.getItem(name); return raw == null || raw === '' ? null : JSON.parse(raw); } catch { if (strict) throw storageError(); return null; } };
   const write = (name, value) => {
     try {
-      if (!storage) return false;
+      if (!storage || !canPersist()) return false;
       if (value == null) { if (typeof storage.removeItem === 'function') storage.removeItem(name); else storage.setItem(name, ''); }
       else storage.setItem(name, JSON.stringify(value));
       return true;

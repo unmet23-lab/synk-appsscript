@@ -318,7 +318,7 @@ const 개인화웹경로 = new Set([
 function 개인화생성물정책(o, files, candidate, 판) {
   const safe = p => typeof p === 'string' && !p.includes('\\') && !p.includes(':') && !p.split('/').some(x => !x || x === '.' || x === '..');
   const storageHost = p => /^(?:desktop\/|\.github\/desktop-preview\/unified\/source\/)renderer\/platform-continuity\.mjs$/.test(p);
-  const fixedCopy = p => storageHost(p) || p === '.github/desktop-preview/unified/source/renderer/member-insight-view.mjs';
+  const fixedCopy = p => storageHost(p) || ['.github/desktop-preview/unified/source/renderer/member-insight-view.mjs','.github/desktop-preview/unified/source/renderer/member-insight-model.mjs'].includes(p);
   const pc = p => fixedCopy(p) || /^(?:desktop\/|\.github\/desktop-preview\/unified\/source\/)(?:assets\/launcher\/(?:engine\.js|sources\.json)|renderer\/generated\/(?:member-(?:activity|understanding)(?:-data)?\.(?:mjs|manifest\.json)|member-shared\/chunk-[A-Z0-9]{8}\.mjs))$/.test(p);
   // 표준 게시의 버전 메타데이터 18개 + PC 빌드 메타데이터 3개. 읽기만 하는 client.js는 제외한다.
   const metadata = new Set(['desktop/releases/preview.json','knowledge.json','en/knowledge.json','index.html','en/index.html',

@@ -25,6 +25,20 @@ for(const paged of [false,true])test((paged?'paged':'small')+' browser histories
 test('a browser without Web Locks cannot claim a durable write',()=>{
  const storage=disk(),page=browser(storage,'writer.unsupported',{manager:null}),game=page.game('unsupported');game.finishSet({kind:'short'});assert.equal(storage.length,0);assert.equal(game.syncPort.canPersist(),false);assert.equal(game.summary().storage.available,false);page.hide();
 });
+test('flow memories and pending intents follow the history writer across tabs',async t=>{
+ const storage=disk(),a=browser(storage,'writer.flow'),b=browser(storage,'writer.flow'),one=a.game('one'),two=b.game('two'),at='2026-10-31T00:00:00.000Z';
+ t.after(async()=>{a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<20&&!one.syncPort.canPersist();i++)await tick();
+ const first=one.memoryPort.flow,second=two.memoryPort.flow;
+ assert.equal(first.decline('content-a',at,first.epoch()),true);
+ assert.equal(second.decline('content-b',at,second.epoch()),false);
+ assert.equal(two.setPresentation(null),false);second.clear();
+ assert.ok(first.memories().declined['content-a']);assert.equal(first.memories().declined['content-b'],undefined);
+ a.hide();for(let i=0;i<30&&!two.syncPort.canPersist();i++)await tick();assert.equal(two.syncPort.canPersist(),true);
+ assert.equal(second.decline('content-b',at,second.epoch()),true);
+ assert.deepEqual(Object.keys(second.memories().declined).sort(),['content-a','content-b']);
+ assert.deepEqual(second.pending().map(row=>row.entry.key).sort(),['content-a','content-b']);
+});
 
 test('a waiting synchronizer makes no requests and resumes its explicit start after handover',async t=>{
  const storage=disk(),a=browser(storage,'writer.sync'),b=browser(storage,'writer.sync'),first=a.game('first'),second=b.game('second');t.after(async()=>{a.hide();b.hide();await tick();});for(let i=0;i<20&&!first.syncPort.canPersist();i++)await tick();

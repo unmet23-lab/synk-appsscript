@@ -457,7 +457,6 @@ function surfaceDeclaration(quote) {
   if(/(?:저장|기록|입력|등록|설정|표시|분류)(?:해|하|해주|해줘)/u.test(body))return body;
   body=body.replace(/^(?:제|내)경우(?:에는|엔|는)?/u,'')
     .replace(/^(?:저에게는|나에게는|제게는|내게는|저로서는|나로서는)/u,'저는');
-  body=body.replace(/^(?:이번에는|이번엔|지금은|지금)(?=(?:저는|나는|제가|내가)?(?:채용|한국어|설명|연습|도움|음악|요리|영상))/u,'');
   body=body.replace(/주시면(?=좋겠|편하겠)/u,'주면')
     .replace(/짧았으면(?:해요|해)$/u,'짧게해주는게좋아요');
   if(/(?:설명|풀이|안내|도움|연습|소통)/u.test(body))body=body
@@ -1725,7 +1724,10 @@ function analyze(text) {
     if(!found&&!uncertain&&!declaredCondition&&/(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(body)){unresolvedCondition=true;inherited='condition';}
     if(!found&&!self&&!declaredCondition&&!unresolvedCondition&&!uncertain&&unresolvedSubject(evidence.quote))unknownSubject=true;
     if(uncertain&&/(?:지만|는데)$/u.test(body))inherited='uncertain';
-    if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
+    const scopeSurface=evidence.quote.replace(/\s/gu,'');
+    const limitedRequest=[...scopeSurface.matchAll(/이번(?:에는|엔|에만|만)|지금(?:은|엔)?|오늘만|내일만/gu)].some(match=>!quotedAt(scopeSurface,match.index));
+    if(limitedRequest){if(found)segment.candidate={...found,temporal:true};else segment.generic=true;unresolvedCondition=true;previousCondition=true;inherited='condition';segment.unresolved={...evidence,reason:'condition',reasonLabel:'이번 요청의 범위를 이후에도 반영할 선호로 정하지 않았어요.'};}
+    else if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
     else if(found){
       const ownership=!self&&found.meanings.some(m=>m.field==='topic')&&OTHER_PERSON_SUBJECT.test(normalizedClause.body);
       if(found.uncertain||found.typo||uncertain||ownership)segment.candidate={...found,uncertain:found.uncertain||uncertain||ownership,...(ownership?{ownership:true}:{})};else segment.meanings=found.meanings;
@@ -1744,8 +1746,8 @@ function stateFor(text,segments,answers,key) {
     const s=segments[index],add=meanings=>meanings.forEach(m=>raw.push({...m,evidence:copy(s.evidence)}));
     if(s.meanings){add(s.meanings);continue;}
     let handled=false;
-    if(s.candidate){question(index,'confirm',`「${s.evidence.quote}」${s.candidate.ownership?'에서 말한 관심은 본인에 대한 이야기인가요?':s.candidate.typo?'의 표기를 이렇게 이해해도 될까요?':s.candidate.restricted?'에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?':'에서 말한 뜻을 현재 선호로 확인할까요?'}`,
-      [{id:'confirm',label:s.candidate.meanings.map(meaningLabel).join(' / ')+' — 지금 원하는 내용이 맞아요'},{id:'not-current',label:'현재 선호로 확정하지 않을게요'}],answer=>{handled=true;if(answer==='confirm')add(s.candidate.meanings);});}
+    if(s.candidate){question(index,'confirm',`「${s.evidence.quote}」${s.candidate.temporal?'은 이번 요청 이후에도 반영할 선호인가요?':s.candidate.ownership?'에서 말한 관심은 본인에 대한 이야기인가요?':s.candidate.typo?'의 표기를 이렇게 이해해도 될까요?':s.candidate.restricted?'에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?':'에서 말한 뜻을 현재 선호로 확인할까요?'}`,
+      [{id:'confirm',label:s.candidate.meanings.map(meaningLabel).join(' / ')+(s.candidate.temporal?' — 이후에도 반영해 주세요':' — 지금 원하는 내용이 맞아요')},{id:'not-current',label:s.candidate.temporal?'이번 요청에서만 원해요. 저장하지 않을게요':'현재 선호로 확정하지 않을게요'}],answer=>{handled=true;if(answer==='confirm')add(s.candidate.meanings);});}
     else if(s.generic){question(index,'field',`「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`,Object.entries(FIELDS).map(([id,label])=>({id,label})),field=>{
       handled=true;if(!Object.hasOwn(VALUES,field))return;
       question(index,'value',`${FIELDS[field]}에서 어떤 내용을 확인할까요?`,VALUES[field].map(id=>({id,label:LABELS[id]})),selected=>{

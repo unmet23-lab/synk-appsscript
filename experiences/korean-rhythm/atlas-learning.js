@@ -8919,7 +8919,7 @@ var SynkLearning = (() => {
               }
               const skipped = new Set(result?.skipped || []), back = new Set(found.map((event) => event.id));
               state.acknowledged = [.../* @__PURE__ */ new Set([...state.acknowledged, ...[...back].filter((eventId) => !skipped.has(eventId))])];
-              state.missing = state.missing.filter((eventId) => !back.has(eventId));
+              state.missing = state.missing.filter((eventId) => !back.has(eventId) || skipped.has(eventId));
             }
             after = response.cursor;
             state.recoveryCursor = Math.min(after, state.cursor);
@@ -9866,7 +9866,7 @@ var SynkLearning = (() => {
       var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
       var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
       var presentationOf = (value) => object(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
-      function createFlowPort({ storage, key, clock, epoch = () => null }) {
+      function createFlowPort({ storage, key, clock, epoch = () => null, canPersist = () => true }) {
         const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
         const listeners = /* @__PURE__ */ new Set();
         const notify = (change) => {
@@ -9889,7 +9889,7 @@ var SynkLearning = (() => {
         };
         const write = (name, value) => {
           try {
-            if (!storage) return false;
+            if (!storage || !canPersist()) return false;
             if (value == null) {
               if (typeof storage.removeItem === "function") storage.removeItem(name);
               else storage.setItem(name, "");
@@ -11041,7 +11041,7 @@ var SynkLearning = (() => {
             return api.summary();
           }
         };
-        flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, epoch: () => {
+        flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, canPersist: history.port.canPersist, epoch: () => {
           try {
             history.refresh();
           } catch {

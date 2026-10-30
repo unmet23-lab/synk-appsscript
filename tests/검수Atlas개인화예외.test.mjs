@@ -7,6 +7,11 @@ import {정책만들기, 대체순서, 다시검수자들, sha256} from '../tool
 import {후보항목들, 두판diff} from '../tools/검수묶음.mjs';
 const opts={종류:'백엔드',작성자:'GPT',담당예외:'atlas-personalization-20261029',끝:'작업본'};
 const source={경로:'desktop/assets/launcher/engine.js',상태:'M'};
+test('관심 주제 표시 모델의 기존 PC 사본 교체만 이번 예외에 포함한다',t=>{
+ const p='.github/desktop-preview/unified/source/renderer/member-insight-model.mjs';
+ assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p,'바꿈')},[]).필수,['GPT','Claude']);
+ for(const kind of ['새','지움'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]),/직접 승인 범위를 벗어난 담당 예외/);
+});
 test('긴 한국어 줄의 낱말 차이가 UTF-8을 쪼개면 원래 unified diff로 보존한다',()=>{
  const before='최종 소스와 검증한 기록을 보존했다. '+ '원래 문장을 함께 읽는다. '.repeat(70);
  const after=before.replace('최종','초기').replace('보존했다','그대로 보존했다');

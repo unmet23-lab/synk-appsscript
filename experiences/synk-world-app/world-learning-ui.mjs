@@ -492,7 +492,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 은행을 다 불러오면 열려 있는 판을 새 문항으로 다시 그린다(진단·연습·모의가 진행 중일 때는 건드리지 않는다).
  function repaint(){
   try{
-   if(home.openPanel?.()==='')return;
+   if(home.openPanel?.()===''||openPosition.pending)return;
    if(panelNode('[data-position-board]')&&!panelNode('[data-position-board="hangul"]'))showBoard(readCoach(),{keepScroll:true});
    else if(panelNode('[data-plan-board]'))void openPlan({keepScroll:true});
   }catch{/* the next open draws it */}
@@ -506,9 +506,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  async function openPosition({start=false}={}){
   if(!position)return;
   check();const ticket=++positionOpen;
+  openPosition.pending=ticket;
+  try{
   // 기다리는 동안 판을 닫거나 다른 판을 열면 이 표만 무효로 한다. 정상으로 그리기 직전에 settled가 되어 showPanel의 정리는 무시된다.
   let settled=false;
-  home.attachPanelResource?.({dispose(){if(!settled&&ticket===positionOpen)positionOpen++;}});
+  home.attachPanelResource?.({dispose(){if(!settled&&ticket===positionOpen){positionOpen++;if(openPosition.pending===ticket)openPosition.pending=0;}}});
   // 계정의 학습 호스트를 먼저 세운다(다음 연습과 같다). 세우지 못해도 판은 열고, 기록이 덜 왔다고 알린다.
   try{await prepare();}catch{/* the board shows the records as incomplete */}
   check();if(ticket!==positionOpen)return;
@@ -525,6 +527,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(position.showsHangulBoard({reading,stage})){showHangul(stage);return;}
   const shown=showBoard(coachNow);
   if(start&&shown.plan?.status==='ready'&&shown.plan.items.length)startDiagnostic(shown.coachNow,shown.plan,shown.map);
+  }finally{if(openPosition.pending===ticket)openPosition.pending=0;}
  }
  // 진단 한 바퀴는 한 판 안에서 문항만 바꿔 그린다. 판을 닫거나 다른 판이 열리면(attachPanelResource) 보이던 문항은 건너뛴 것으로 남긴다.
  function startDiagnostic(coachNow,plan,map){
@@ -845,6 +848,7 @@ async function townSend(coachNow,{wait=true}={}){
  // 돌려주는 값: 'shown' · 'skipped'(뒤에 다른 열기가 왔거나 quiet인데 다른 판이 열려 있음) · 'missing'(시험 계획이 없음).
  let planOpen=0;
  async function openPlan({keepScroll=false,quiet=false}={}){
+  if(keepScroll&&openPosition.pending)return 'skipped';
   check();const ticket=++planOpen;
   if(!keepScroll){try{await prepare();}catch{/* the plan shows what this device has */}check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}check();}
   if(ticket!==planOpen||quiet&&home.openPanel?.())return 'skipped';

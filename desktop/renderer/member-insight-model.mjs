@@ -143,7 +143,7 @@ function understandingOf({ accountSummary, activity, document, status, asOf }) {
       const definition = Understanding.understandingFacet(row.id);
       if (!['observed', 'self-declared', 'empty'].includes(row.basis) || typeof row.available !== 'boolean'
         || row.multiple !== definition.multiple || !Array.isArray(row.selected)) invalid();
-      const choices = uniqueRows(row.choices, 9).map(choice => {
+      const choices = uniqueRows(row.choices, definition.choices.length).map(choice => {
         if (!definition.choices.some(allowed => allowed.id === choice.id && allowed.label === choice.label)) invalid();
         return { id: choice.id, label: text(choice.label, 160) };
       });
