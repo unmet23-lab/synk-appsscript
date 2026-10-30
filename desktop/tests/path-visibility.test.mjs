@@ -13,7 +13,7 @@ test('PATH discovery is hidden for every authentication phase without changing g
   for(const auth of [signed(),...['signed-out','unconfigured','restoring','signing-in','signing-out','error'].map(status=>({status,signedIn:false}))]){
     const original=structuredClone(auth),library=resolveLibrary(auth,preview);
     assert.deepEqual(library.appIds,APP_IDS);assert.ok(!visibleLibraryAppIds(library).includes('path'));
-    assert.deepEqual(displayLibraryAppIds(library),['world','messenger','pulse','care','fortune']);assert.deepEqual(auth,original);
+    assert.deepEqual(displayLibraryAppIds(library),['world','messenger','pulse','care']);assert.deepEqual(auth,original);
   }
   assert.ok(APP_IDS.includes('path'));assert.equal(APPS.path.name,'SYNK PATH');
 });
@@ -48,6 +48,18 @@ test('existing PATH notes remain readable and survive another app record additio
   assert.deepEqual(store.list(library),[saved]);assert.equal(data.get(key),original);
   const row=store.add(library,{kind:'task',appId:'world',title:'World task',body:'',consent:true});store.change(library,row.id,'toggle');
   assert.deepEqual(JSON.parse(data.get(key)).records.find(row=>row.id===saved.id),saved);assert.equal(store.list(library).length,2);
+});
+
+test('a stored note for the paused free fortune stays hidden and kept while other notes can be added, toggled and removed',()=>{
+  const data=new Map(),storage={getItem:key=>data.get(key),setItem:(key,value)=>data.set(key,value)},owner='synthetic-owner',key=accountStorageKey(HOME_KEY,owner),at=1793174400000;
+  const saved={id:'saved-fortune-note',kind:'note',appId:'fortune',title:'Paused fortune note',body:'synthetic private data',done:false,createdAt:at};
+  data.set(key,JSON.stringify({version:1,owner,records:[saved]}));const library=resolveLibrary(signed(owner,['world','care','fortune']),preview),store=createHomeStore(storage,{clock:()=>at+1});
+  assert.equal(APP_IDS.includes('fortune'),false);assert.equal(library.appIds.includes('fortune'),false);
+  assert.deepEqual(store.list(library),[]);assert.deepEqual(store.storageStatus(library),{ok:true});
+  assert.throws(()=>store.add(library,{kind:'task',appId:'fortune',title:'New fortune task',body:'',consent:true}),/연결할 앱/);
+  const row=store.add(library,{kind:'task',appId:'world',title:'World task',body:'',consent:true});store.change(library,row.id,'toggle');
+  assert.deepEqual(JSON.parse(data.get(key)).records.find(item=>item.id===saved.id),saved);assert.deepEqual(store.list(library).map(item=>item.id),[row.id]);
+  store.change(library,row.id,'remove');assert.deepEqual(JSON.parse(data.get(key)).records,[saved]);
 });
 
 test('reordering visible local favorites preserves hidden IDs and their slots',()=>{

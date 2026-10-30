@@ -7,7 +7,7 @@ import { targetFor } from '../../learning-hub/server.mjs';
 import { MEMBER_BENEFITS, memberBenefit } from '../../../desktop/renderer/benefits.mjs';
 
 test('fixed benefit demos are available only in a local HTTP preview', () => {
-  const previews = { care: 'http://127.0.0.1:4296/', fortune: 'http://127.0.0.1:4299/' };
+  const previews = { care: 'http://127.0.0.1:4296/' };
   for (const origin of ['http://127.0.0.1:4280/', 'http://localhost:4280/', 'http://[::1]:4280/']) {
     for (const [id, url] of Object.entries(previews)) assert.equal(localBenefitPreview(id, origin), url);
     for (const id of ['unknown', 'constructor', '__proto__']) assert.equal(localBenefitPreview(id, origin), null);
@@ -23,7 +23,7 @@ test('fixed benefit demos are available only in a local HTTP preview', () => {
 test('benefits are discoverable without being treated as installed or entitled applications', () => {
   assert.deepEqual(filterBenefits('가족').map(v => v.id), []);
   assert.deepEqual(filterBenefits('거절').map(v => v.id), []);
-  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'subscriptions', 'care', 'fortune']);
+  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'subscriptions', 'care']);
   // The PC-only AI subscription board is discoverable on the web but has no web or local entry.
   assert.equal(localBenefitPreview('subscriptions', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('subscriptions'), null);
@@ -31,18 +31,15 @@ test('benefits are discoverable without being treated as installed or entitled a
   assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
   assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('insight'), null);
-  assert.deepEqual(filterBenefits('운세').map(v => v.id), ['fortune']);
-  assert.match(benefitDetail('fortune', 'http://localhost/'), /href="http:\/\/127\.0\.0\.1:4299\/"/);
-  assert.match(benefitDetail('fortune', 'http://localhost/'), /로그인하지 않고 넣은 내용은 이 화면에만 남아요/);
-  assert.match(benefitDetail('fortune', 'http://localhost/'), /로그인한 뒤 저장하면/);
-  assert.doesNotMatch(benefitDetail('fortune', 'http://localhost/'), /기기에 저장할지는 앱에서 골라요/);
-  assert.deepEqual(normalizeLibrary({ saved: ['care', 'fortune'], favorites: ['care'] }).saved, ['care', 'fortune']);
+  assert.match(benefitDetail('care', 'http://localhost/'), /href="http:\/\/127\.0\.0\.1:4296\/"/);
+  assert.match(benefitDetail('care', 'http://localhost/'), /기기에 저장할지는 앱에서 골라요/);
+  assert.deepEqual(normalizeLibrary({ saved: ['care', 'world'], favorites: ['care'] }).saved, ['care', 'world']);
   assert.doesNotMatch(benefitDetail('family-album', 'http://localhost/'), /type="file"|data-action="launch"/);
   assert.doesNotMatch(benefitDetail('<img src=x onerror=alert(1)>', 'http://localhost/'), /onerror/);
 });
 
 test('release candidate links use only their exact public entry while development previews stay local', () => {
-  for (const id of ['care', 'fortune']) {
+  for (const id of ['care']) {
     const url = `https://synk.im/${id}/`;
     assert.equal(publicBenefitEntry(id), url);
     const publicHtml = benefitDetail(id, 'https://synk.im/platform/');
@@ -56,18 +53,29 @@ test('release candidate links use only their exact public entry while developmen
     assert.doesNotMatch(publicHtml, /href="#benefits\/[^\"]+" data-web/);
   }
   for (const id of ['unknown', 'constructor', '__proto__']) assert.equal(publicBenefitEntry(id), null);
-  assert.match(benefitDetail('fortune', 'https://synk.im/platform/'), /최근 7일을 돌아볼 수 있어요/);
+  assert.match(benefitDetail('care', 'https://synk.im/platform/'), /알림을 받으려면/);
 });
 
 test('public benefit links reject off-site, sibling, credential-bearing and normalized variants instead of widening the allowlist', () => {
-  const item = memberBenefit('fortune'), original = item.publicUrl;
+  const item = memberBenefit('care'), original = item.publicUrl;
   try {
-    for (const value of ['https://other.example/fortune/', 'https://synk.im/care/', 'https://synk.im/fortune/?from=account', 'https://synk.im/fortune/#login', 'https://user@synk.im/fortune/', 'https://synk.im:443/fortune/', 'https://synk.im/a/../fortune/', 'https://synk.im/%66ortune/', 'http://synk.im/fortune/', '//synk.im/fortune/']) {
+    for (const value of ['https://other.example/care/', 'https://synk.im/fortune/', 'https://synk.im/care/?from=account', 'https://synk.im/care/#login', 'https://user@synk.im/care/', 'https://synk.im:443/care/', 'https://synk.im/a/../care/', 'https://synk.im/%63are/', 'http://synk.im/care/', '//synk.im/care/']) {
       item.publicUrl = value;
-      assert.equal(publicBenefitEntry('fortune'), null, value);
-      assert.doesNotMatch(benefitDetail('fortune', 'https://synk.im/platform/'), /data-web="fortune"/);
+      assert.equal(publicBenefitEntry('care'), null, value);
+      assert.doesNotMatch(benefitDetail('care', 'https://synk.im/platform/'), /data-web="care"/);
     }
   } finally { item.publicUrl = original; }
+});
+
+test('paused free fortune has no catalogue, search, detail or entry link while it is rebuilt', () => {
+  assert.equal(memberBenefit('fortune'), null);
+  assert.equal(localBenefitPreview('fortune', 'http://localhost/'), null);
+  assert.equal(publicBenefitEntry('fortune'), null);
+  assert.deepEqual(filterBenefits('운세').map(v => v.id), []);
+  assert.match(benefitDetail('fortune', 'https://synk.im/account/'), /찾는 회원 혜택이 없어요/);
+  assert.doesNotMatch(benefitDetail('care', 'https://synk.im/account/'), /benefit-fortune|synk\.im\/fortune/);
+  assert.doesNotMatch(benefitCards() + benefitHero(), /운세|benefit-fortune/);
+  assert.match(benefitHero(), /셋 다 써요/);
 });
 
 test('benefit detail reflects device save and favorite state without creating a launch or changing records', () => {
@@ -77,7 +85,7 @@ test('benefit detail reflects device save and favorite state without creating a 
   assert.match(html, /data-action="favorite" data-id="care" aria-pressed="true"/);
   assert.match(html, /이 기기에 바로가기만 저장/);assert.doesNotMatch(html, /data-action="launch"/);
   assert.deepEqual(library, before);assert.deepEqual(library.recent, []);
-  assert.match(benefitDetail('fortune', 'http://localhost/', { library }), /data-action="save" data-id="fortune" aria-pressed="false"/);
+  assert.match(benefitDetail('care', 'http://localhost/', { library: normalizeLibrary() }), /data-action="save" data-id="care" aria-pressed="false"/);
   // PC 앱 안 혜택(구독 계정판)은 기기 바로가기 목록에 없어 담기·즐겨찾기 단추를 내지 않는다.
   assert.doesNotMatch(benefitDetail('subscriptions', 'http://localhost/', { library }), /data-action="(save|favorite)"/);
   // 웹 소개는 PC 앱 받기로 잇고, 카드는 「내 성향 보기」가 아니라 소개로 간다(그 단추는 성향만).
@@ -120,6 +128,6 @@ test('removed member apps have no catalogue, search, launch link or public asset
     assert.match(benefitDetail(id, 'https://synk.im/account/'), /찾는 회원 혜택이 없어요/);
   }
   for (const id of ['rehearsal','album']) assert.equal(targetFor('/synk-account/assets/member/benefit-' + id + '.webp'), null);
-  assert.deepEqual(normalizeLibrary({ saved:['care','fortune','rehearsal','family-album'], favorites:['family-album'], recent:[{id:'rehearsal',at:1,mode:'web'}] }).saved,['care','fortune']);
+  assert.deepEqual(normalizeLibrary({ saved:['care','world','rehearsal','family-album'], favorites:['family-album'], recent:[{id:'rehearsal',at:1,mode:'web'}] }).saved,['care','world']);
   assert.doesNotMatch(benefitCards()+benefitHero(), /리허설|가족 이야기|benefit-album|benefit-rehearsal/);
 });

@@ -1,4 +1,4 @@
-import {APP_IDS,APPS,statusLabel} from './state.mjs';
+import {APP_IDS,APPS,PAUSED_APP_IDS,statusLabel} from './state.mjs';
 import {accountStorageKey,displayLibraryAppId,displayLibraryAppIds,projectLibraryPreferences} from './library.mjs';
 import {createDraftRecovery} from './draft-recovery.mjs';
 
@@ -9,6 +9,8 @@ const clean=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
 const stamp=value=>Number.isSafeInteger(value)&&value>0&&value<=8640000000000000;
 const canSave=library=>library?.status==='ready'&&!!library.owner&&library.owner!=='anonymous-local';
 const activeApp=id=>id==='partners'?'pulse':id;
+// Stored notes may belong to a paused app; they stay valid and hidden (list() keeps only library apps) until it returns.
+const STORED_APP_IDS=[...APP_IDS,...PAUSED_APP_IDS];
 const arrow='<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>';
 // 싱ㅋ 시그널 2 포스터(표시 전용): 누끼 물건은 제 색으로 세우고, 장면 그림은 이중톤, 흰 바탕 사진은 인화지로 붙인다.
 const CUTOUT_ART=new Set(['world-book.avif','laptop.webp','care-note.webp','fortune-star.avif','studio-camera.webp']);
@@ -22,7 +24,7 @@ export function parseHomeRecords(raw,owner){
     const doc=JSON.parse(raw);
     if(doc?.version!==1||doc.owner!==owner||!Array.isArray(doc.records))return [];
     const seen=new Set();
-    return doc.records.filter(row=>row&&typeof row.id==='string'&&/^[a-z0-9-]{1,80}$/.test(row.id)&&!seen.has(row.id)&&seen.add(row.id)&&['task','note'].includes(row.kind)&&APP_IDS.includes(activeApp(row.appId))&&clean(row.title,80)&&stamp(row.createdAt)).slice(0,MAX_RECORDS).map(row=>({id:row.id,kind:row.kind,appId:row.appId,title:clean(row.title,80),body:clean(row.body,1200),done:row.kind==='task'&&row.done===true,createdAt:row.createdAt}));
+    return doc.records.filter(row=>row&&typeof row.id==='string'&&/^[a-z0-9-]{1,80}$/.test(row.id)&&!seen.has(row.id)&&seen.add(row.id)&&['task','note'].includes(row.kind)&&STORED_APP_IDS.includes(activeApp(row.appId))&&clean(row.title,80)&&stamp(row.createdAt)).slice(0,MAX_RECORDS).map(row=>({id:row.id,kind:row.kind,appId:row.appId,title:clean(row.title,80),body:clean(row.body,1200),done:row.kind==='task'&&row.done===true,createdAt:row.createdAt}));
   }catch{return [];}
 }
 
@@ -37,7 +39,7 @@ function writableHomeRecords(raw,owner){
   if(!object(doc)||!keys(doc,['version','owner','records'])||doc.version!==1||doc.owner!==owner||!Array.isArray(doc.records)||doc.records.length>MAX_RECORDS)throw unreadableHomeRecords();
   const seen=new Set();
   for(const row of doc.records){
-    if(!object(row)||!keys(row,['id','kind','appId','title','body','done','createdAt'])||typeof row.id!=='string'||!/^[a-z0-9-]{1,80}$/.test(row.id)||seen.has(row.id)||!['task','note'].includes(row.kind)||!APP_IDS.includes(activeApp(row.appId))||typeof row.title!=='string'||!row.title.trim()||row.title.length>80||typeof row.body!=='string'||row.body.length>1200||typeof row.done!=='boolean'||row.kind==='note'&&row.done||!stamp(row.createdAt))throw unreadableHomeRecords();
+    if(!object(row)||!keys(row,['id','kind','appId','title','body','done','createdAt'])||typeof row.id!=='string'||!/^[a-z0-9-]{1,80}$/.test(row.id)||seen.has(row.id)||!['task','note'].includes(row.kind)||!STORED_APP_IDS.includes(activeApp(row.appId))||typeof row.title!=='string'||!row.title.trim()||row.title.length>80||typeof row.body!=='string'||row.body.length>1200||typeof row.done!=='boolean'||row.kind==='note'&&row.done||!stamp(row.createdAt))throw unreadableHomeRecords();
     seen.add(row.id);
   }
   return doc.records;
@@ -184,7 +186,7 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
       +(formOpen&&model.canSave?'<form id="member-record-form" class="member-form"><label>종류<select name="kind"><option value="task">이어서 할 일</option><option value="note">결과 메모</option></select></label><label>연결할 앱<select name="appId">'+model.order.map(id=>'<option value="'+id+'">'+esc(APPS[id].name)+'</option>').join('')+'</select></label><label class="member-field-wide">제목<input name="title" required maxlength="80" placeholder="예: 다음 시안에서 확인할 부분"></label><label class="member-field-wide">내용<textarea name="body" maxlength="1200" rows="3" placeholder="다시 볼 때 필요한 것만 적어 주세요."></textarea></label><label class="member-consent member-field-wide"><input type="checkbox" name="consent" required>이 PC에 지금 계정으로 저장하는 데 동의해요.</label><div class="member-form-actions member-field-wide"><button class="solid-button" type="submit" '+(!model.order.length||storageBlocked?'disabled':'')+'>저장</button><button class="ghost-button" type="button" data-member-cancel>취소</button></div></form>':'')
       +(discardRequested?'<div class="member-draft-choice" role="group" aria-labelledby="member-draft-title"><strong id="member-draft-title">아직 저장하지 않은 내용이 있어요.</strong><p>계속 쓰거나, 쓰던 내용을 버리고 닫을 수 있어요.</p><div><button class="solid-button" type="button" data-member-keep>계속 쓰기</button><button class="ghost-button" type="button" data-member-discard>버리기</button></div></div>':'')
       +'<p class="member-message" role="status">'+esc(message)+'</p>'+(records.length?'<div class="member-record-filters"><label>메모 찾기<input type="search" data-member-record-search value="'+esc(recordQuery)+'" placeholder="제목·내용·앱 이름" aria-controls="member-record-results"></label><label>보기<select data-member-record-filter aria-controls="member-record-results">'+[['all','전부'],['pending','안 끝낸 할 일'],['done','끝낸 할 일'],['notes','결과 메모']].map(([value,label])=>'<option value="'+value+'" '+(recordFilter===value?'selected':'')+'>'+label+'</option>').join('')+'</select></label></div>':'')+'<div id="member-record-results" class="member-record-columns"><div><h3 class="member-column-title">이어서 할 일 <span>'+shownTasks.length+'</span></h3>'+(shownTasks.length?shownTasks.map(recordCard).join(''):'<p class="member-empty">'+(recordQuery||recordFilter!=='all'?'찾는 할 일이 없어요.':'이어서 할 일을 적어 두면 여기에 모여요.')+'</p>')+'</div><div><h3 class="member-column-title">저장한 결과 메모 <span>'+shownNotes.length+'</span></h3>'+(shownNotes.length?shownNotes.map(recordCard).join(''):'<p class="member-empty">'+(recordQuery||recordFilter!=='all'?'찾는 메모가 없어요.':'기억할 결과를 적어 두면 여기에 모여요.')+'</p>')+'</div></div></section>'
-      +'<section class="member-discover"><div><span class="label">SYNK FOR YOU</span><h2>회원 혜택 네 가지</h2><p>내 성향, AI 구독 계정판, 무료 운세, 플레저. 넷 다 무료예요.</p><button class="ghost-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button></div><div class="member-discover-stack" aria-hidden="true">'+[['care','플레저'],['fortune','운세'],['insight','성향'],['subscriptions','구독']].map(([id,word])=>'<span class="brand-'+id+'"><b style="--len:'+word.length+'">'+word+'</b></span>').join('')+'</div></section>';
+      +'<section class="member-discover"><div><span class="label">SYNK FOR YOU</span><h2>회원 혜택 세 가지</h2><p>내 성향, AI 구독 계정판, 플레저. 셋 다 무료예요.</p><button class="ghost-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button></div><div class="member-discover-stack" aria-hidden="true">'+[['care','플레저'],['insight','성향'],['subscriptions','구독']].map(([id,word])=>'<span class="brand-'+id+'"><b style="--len:'+word.length+'">'+word+'</b></span>').join('')+'</div></section>';
     const nextForm=root.querySelector?.('#member-record-form');
     if(draft&&nextForm){for(const [name,value]of Object.entries(draft)){const field=nextForm.elements.namedItem(name);if(name==='consent')field.checked=value;else field.value=value;}if(focusState?.name){const field=nextForm.elements.namedItem(focusState.name);field?.focus({preventScroll:true});if(typeof focusState.start==='number')field.setSelectionRange(focusState.start,focusState.end);}}
   }

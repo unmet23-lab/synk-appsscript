@@ -51,7 +51,9 @@ test('full development discovery keeps local member records private across accou
 test('public apps offer a usable browser action while packaged and unsupported apps keep honest availability',async()=>{
   const {primaryAction,statusLabel}=await stateModule,{canOpenFromHome}=await homeModule;
   const publicAppsAvailable=['care','fortune'];
-  for(const id of publicAppsAvailable){
+  // 무료 운세는 다시 만드는 동안 앱 칸이 없어, 본체가 공개 웹 목록에 남아 있어도 열기를 내지 않는다(10-30).
+  assert.deepEqual(primaryAction({id:'fortune'},{native:true,publicAppsAvailable}),{label:'이용할 수 없음',action:'none',disabled:true});
+  for(const id of ['care']){
     const action=primaryAction({id},{native:true,publicAppsAvailable});
     assert.deepEqual(action,{label:'웹에서 열기',action:'public-web',disabled:false});
     assert.equal(canOpenFromHome(action),true);

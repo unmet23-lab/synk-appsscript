@@ -42,16 +42,16 @@ export function benefitCards(query = '') {
 export function benefitHero({ home = false } = {}) {
   return `<section class="benefit-hero ${home ? 'benefit-home' : ''}" aria-labelledby="benefit-heading">
     <div class="benefit-hero-copy"><p class="sb-eyebrow">SYNK FOR YOU <span>회원 혜택</span></p>
-    <h1 id="benefit-heading">회원이면<br><span>모두 무료.</span></h1><p>내 성향, AI 구독 계정판, 무료 운세, 플레저.<br>SYNK ID 하나로 넷 다 써요.</p>
-    ${home ? '<a class="sb-btn soft" href="#benefits">회원 혜택 보기 <span aria-hidden="true">→</span></a>' : '<button class="benefit-text-link" data-action="scroll-benefits">네 가지 보기 <span aria-hidden="true">↓</span></button>'}
-    <p class="benefit-disclosure">네 가지 모두 무료예요.<br>플레저와 무료 운세는 로그인 없이도 열려요.</p></div>
+    <h1 id="benefit-heading">회원이면<br><span>모두 무료.</span></h1><p>내 성향, AI 구독 계정판, 플레저.<br>SYNK ID 하나로 셋 다 써요.</p>
+    ${home ? '<a class="sb-btn soft" href="#benefits">회원 혜택 보기 <span aria-hidden="true">→</span></a>' : '<button class="benefit-text-link" data-action="scroll-benefits">세 가지 보기 <span aria-hidden="true">↓</span></button>'}
+    <p class="benefit-disclosure">세 가지 모두 무료예요.<br>플레저는 로그인 없이도 열려요.</p></div>
     <div class="benefit-hero-art" aria-hidden="true"><span class="benefit-index">MEMBER BENEFITS</span><img class="benefit-object" src="./assets/member/benefit-gift.webp" alt=""></div>
   </section>`;
 }
 
 export function benefitsPage() {
-  return benefitHero() + `<section id="benefit-collection" class="benefit-collection" aria-labelledby="benefit-collection-title"><div class="section-heading"><div><p class="sb-eyebrow">ALL BENEFITS</p><h2 id="benefit-collection-title">네 가지 회원 혜택</h2></div><span class="benefit-count">01 — ${String(MEMBER_BENEFITS.length).padStart(2, '0')}</span></div>${benefitCards()}</section>
-  <section class="benefit-promise"><p class="sb-eyebrow">WHERE TO OPEN</p><h2>여는 곳은<br>혜택마다 달라요.</h2><div><p>플레저와 무료 운세는 웹(synk.im)에서 바로 열려요. AI 구독 계정판은 PC 앱에서만 써요.</p><p>내 성향은 로그인하면 여기서 볼 수 있어요. 기록을 남기려면 열린 화면에서 같은 SYNK ID로 로그인해 주세요.</p><a class="benefit-link" href="./client.html?product=platform">SYNK ID 관리 <span aria-hidden="true">↗</span></a></div></section>`;
+  return benefitHero() + `<section id="benefit-collection" class="benefit-collection" aria-labelledby="benefit-collection-title"><div class="section-heading"><div><p class="sb-eyebrow">ALL BENEFITS</p><h2 id="benefit-collection-title">세 가지 회원 혜택</h2></div><span class="benefit-count">01 — ${String(MEMBER_BENEFITS.length).padStart(2, '0')}</span></div>${benefitCards()}</section>
+  <section class="benefit-promise"><p class="sb-eyebrow">WHERE TO OPEN</p><h2>여는 곳은<br>혜택마다 달라요.</h2><div><p>플레저는 웹(synk.im)에서 바로 열려요. AI 구독 계정판은 PC 앱에서만 써요.</p><p>내 성향은 로그인하면 여기서 볼 수 있어요. 기록을 남기려면 열린 화면에서 같은 SYNK ID로 로그인해 주세요.</p><a class="benefit-link" href="./client.html?product=platform">SYNK ID 관리 <span aria-hidden="true">↗</span></a></div></section>`;
 }
 
 export function benefitDetail(id, base, { library = null, insight = { status: 'signed-out', report: null } } = {}) {

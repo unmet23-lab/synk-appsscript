@@ -2,7 +2,8 @@
 export const PLATFORM_APP_IDS = Object.freeze(['world','messenger','teacher','path','pulse','partners','care','fortune','rehearsal','family-album']);
 // Keep the v1 storage contract, including historical app references. New UI
 // selections use the merged catalogue without rewriting an account document.
-const RETIRED_PLATFORM_APP_IDS = new Set(['rehearsal','family-album']);
+// fortune is paused while it is rebuilt (2026-10-30): the same path hides it and keeps its favorites, recents and notes.
+const RETIRED_PLATFORM_APP_IDS = new Set(['rehearsal','family-album','fortune']);
 export const ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter(id=>id!=='partners'&&!RETIRED_PLATFORM_APP_IDS.has(id)));
 export const platformAppId = id => id==='partners'?'pulse':id;
 export const platformDisplayAppId = (id,appIds=ACTIVE_PLATFORM_APP_IDS) => platformAppId(id)==='teacher'&&appIds.includes('teacher')&&appIds.includes('messenger')?'messenger':platformAppId(id);

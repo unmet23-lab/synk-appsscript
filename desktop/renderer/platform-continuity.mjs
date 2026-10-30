@@ -2011,7 +2011,7 @@ function createAccountNotebook({
 
 // experiences/synk-account/src/platform-library-data.mjs
 var PLATFORM_APP_IDS = Object.freeze(["world", "messenger", "teacher", "path", "pulse", "partners", "care", "fortune", "rehearsal", "family-album"]);
-var RETIRED_PLATFORM_APP_IDS = /* @__PURE__ */ new Set(["rehearsal", "family-album"]);
+var RETIRED_PLATFORM_APP_IDS = /* @__PURE__ */ new Set(["rehearsal", "family-album", "fortune"]);
 var ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter((id) => id !== "partners" && !RETIRED_PLATFORM_APP_IDS.has(id)));
 var platformAppId = (id) => id === "partners" ? "pulse" : id;
 var platformDisplayAppId = (id, appIds = ACTIVE_PLATFORM_APP_IDS) => platformAppId(id) === "teacher" && appIds.includes("teacher") && appIds.includes("messenger") ? "messenger" : platformAppId(id);

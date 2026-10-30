@@ -1,5 +1,15 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="member-benefit-fortune-paused-20261030"></a>
+## 2026-10-30 무료 운세 잠시 내림
+
+유호님 요청(「우리 회원 혜택중에 운세 있잖아. 이거 지금 잠깐 비공개하자. 다시 개발해야할것같아.」)으로 무료 운세를 다시 만들 때까지 회원 혜택에서 내린다. 지금 혜택은 **내 성향 확인하기 · AI 구독 계정판 · 플레저** 셋이다. 10-18의 두 서비스 폐기와 달리 지우지 않는다.
+
+- **내린 곳:** 웹 계정 화면과 PC 앱이 함께 쓰는 혜택 목록(`desktop/renderer/benefits.mjs`)과 그 소개·검색·둘러보기·도움말 글, 계정 라이브러리(`RETIRED_PLATFORM_APP_IDS`에 fortune — 폐기 앱과 같은 길로 새 즐겨찾기·실행·메모와 「이어서 열기」에서 빠지고, 계정 문서의 기존 즐겨찾기·최근·메모는 다시 쓰지 않는다), 홈페이지 질문창(첫 문단에 「잠시 쉬고 있다」), synk.im/fortune/(「잠시 쉬어요」 안내 쪽 `experiences/daily-fortune/paused/index.html`, noindex·스크립트 없음). 새소식 맨 앞에 「무료 운세는 잠시 쉬어요」를 두었다.
+- **그대로 둔 것:** 앱 원천 `experiences/daily-fortune/`, 계정 저장 API(synk-fortune)·OAuth 클라이언트 `fortune`·저장된 기록(지우려면 처리방침 창구), 공개본의 앱 파일(안내 쪽이 부르지 않는다), PC 본체의 미리 보기·공개 웹 목록(렌더러에 앱 칸이 없어 화면에 나오지 않는다), PC 「내 홈」의 운세에 묶인 메모(`PAUSED_APP_IDS` — 숨긴 채 지키고 다른 메모 쓰기는 막지 않는다).
+- **공개:** synk.im은 공개본 묶음을 다시 만들지 않고 바꿀 곳만 얹었다(`experiences/synk-account/qa/fortune-pause-20261030/`) — synk-policy `a07ae12`(바이트 21/21 · 배포 점검 통과)·/fortune/ 기준 그림 `7e49f43`, 질문창 원고 SYNK-website `879f99a`([기록](../experiences/synk-account/qa/fortune-pause-20261030/README.md)). PC 앱은 따로 판을 내지 않고 다음 PC 판에 실린다(다음 번호는 Atlas 개인화가 후보를 구워 둔 상태). 그동안 옛 판의 운세 카드 「웹에서 열기」는 안내 쪽으로 간다.
+- **다시 열 때:** [기록의 「다시 열 때」](../experiences/synk-account/qa/fortune-pause-20261030/README.md#다시-열-때).
+
 <a id="login-ux-20261027"></a>
 ## 2026-10-27 로그인·「내 계정」 편의성 손질 — SYNK ID 첫 화면·지난번 로그인 기억·계정 화면 순서·PC 로그인 창
 

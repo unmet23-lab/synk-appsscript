@@ -18,7 +18,7 @@ test('favorite ordering preserves grouped legacy selections and passes the exist
  assert.deepEqual(validatePersonalState('platform-library',moved),moved);assert.deepEqual(doc,before);
  const hidden=updatePlatformLibrary({...make(),favorites:['world','pulse','care']},{type:'move-favorite',id:'world',direction:1},1,['world','care']);
  assert.deepEqual(hidden.favorites,['care','pulse','world']);
- for(const action of [{type:'move-favorite',id:'world',direction:2},{type:'move-favorite',id:'fortune',direction:1},{type:'move-favorite',id:'partners',direction:1}])assert.throws(()=>updatePlatformLibrary(doc,action));
+ for(const action of [{type:'move-favorite',id:'world',direction:2},{type:'move-favorite',id:'path',direction:1},{type:'move-favorite',id:'partners',direction:1}])assert.throws(()=>updatePlatformLibrary(doc,action));
 });
 
 test('Messenger teaching projection folds cards without rewriting teacher records or granting Messenger to teacher-only users',()=>{
@@ -41,7 +41,7 @@ test('unknown app IDs, arbitrary links, duplicate records and unsafe dates are r
 
 test('merged catalogue keeps historical Partners records valid and projects duplicate shortcuts without changing storage',()=>{
  const doc={...make(),favorites:['pulse','partners','world'],recent:[{id:'pulse',at:10,mode:'web'},{id:'partners',at:20,mode:'client'}],notes:[{id:'legacy',appId:'partners',title:'이전 검토',createdAt:1,done:true}]},before=structuredClone(doc);
- assert.equal(PLATFORM_APP_IDS.length,10);assert.equal(ACTIVE_PLATFORM_APP_IDS.length,7);assert.equal(ACTIVE_PLATFORM_APP_IDS.includes('partners'),false);
+ assert.equal(PLATFORM_APP_IDS.length,10);assert.equal(ACTIVE_PLATFORM_APP_IDS.length,6);assert.equal(ACTIVE_PLATFORM_APP_IDS.includes('partners'),false);
  assert.deepEqual(validatePersonalState('platform-library',doc),doc);
  const visible=projectPlatformLibrary(doc);assert.deepEqual(visible.favorites,['pulse','world']);assert.deepEqual(visible.recent,[{id:'pulse',at:20,mode:'client'}]);assert.deepEqual(visible.notes,doc.notes);assert.deepEqual(doc,before);
 });
@@ -53,6 +53,15 @@ test('only an existing Partners note may retain the retired identifier during an
  for(const type of ['note','favorite','launch'])assert.throws(()=>updatePlatformLibrary(doc,{type,id:'partners',title:'새 기록',mode:'web'}));
  assert.throws(()=>updatePlatformLibrary({...make(),notes:[{...note,appId:'world'}]},{type:'edit-note',noteId:'legacy',id:'partners',title:'수정'}));
  assert.equal(updatePlatformLibrary(doc,{type:'edit-note',noteId:'legacy',id:'pulse',title:'옮긴 검토'}).notes[0].appId,'pulse');
+});
+test('paused fortune keeps its favorites, recents and notes in the account document and takes no new selection',()=>{
+ const note={id:'old',appId:'fortune',title:'운세에 남긴 할 일',createdAt:1,done:false},doc={...make(),favorites:['fortune','world'],recent:[{id:'fortune',at:10,mode:'web'}],notes:[note]},before=structuredClone(doc);
+ assert.equal(PLATFORM_APP_IDS.includes('fortune'),true);assert.equal(ACTIVE_PLATFORM_APP_IDS.includes('fortune'),false);
+ assert.deepEqual(validatePersonalState('platform-library',doc),doc);
+ const visible=projectPlatformLibrary(doc);assert.deepEqual(visible.favorites,['world']);assert.deepEqual(visible.recent,[]);assert.deepEqual(visible.notes,[note]);assert.deepEqual(doc,before);
+ for(const action of [{type:'favorite',id:'fortune'},{type:'launch',id:'fortune',mode:'web'},{type:'note',id:'fortune',title:'새 메모'}])assert.throws(()=>updatePlatformLibrary(doc,action));
+ const kept=updatePlatformLibrary(doc,{type:'favorite',id:'care'});assert.deepEqual(kept.favorites,['fortune','world','care']);assert.deepEqual(kept.notes,[note]);assert.deepEqual(kept.recent,doc.recent);
+ assert.deepEqual(updatePlatformLibrary(doc,{type:'edit-note',noteId:'old',id:'fortune',title:'고친 메모'}).notes,[{...note,title:'고친 메모'}]);
 });
 test('a note from a retired benefit keeps its own app during an explicit edit, and no note moves into a retired app',()=>{
  const note={id:'album',appId:'family-album',title:'보관한 나의 메모',createdAt:1,done:false},doc={...make(),notes:[note]};

@@ -1,5 +1,6 @@
 // Public product introductions are separate from account-bound app entitlements.
 // A catalogue entry never grants launch access or stores personal information.
+// 무료 운세는 다시 만드는 동안 목록에서 내려 두었다(2026-10-30). 앱 원천은 experiences/daily-fortune, 계정 저장·로그인 연결은 그대로다.
 export const MEMBER_BENEFITS = [
   {
     id: 'insight',
@@ -54,24 +55,6 @@ export const MEMBER_BENEFITS = [
       { title: '장부와 마음 메모', body: '주고받은 경조사비를 사람별로 보고, 금액 도우미와 갖고 싶다고 한 것 메모로 다음 마음을 준비해요.' },
     ],
     availability: '웹(synk.im/care)에서 로그인 없이 무료로 시작해요. SYNK ID로 로그인하면 사람·일정·장부와 연락 기록을 계정에 보관해요. 창을 닫은 뒤에도 알림을 받으려면 Windows PC 앱 설정의 「플레저 PC 알림」을 켜 주세요.',
-  },
-  {
-    id: 'fortune',
-    name: '무료 운세',
-    kicker: '별자리·사주·타로로 보는 운세',
-    headline: '오늘 운세부터 궁합, 올해 흐름까지.',
-    description: '별자리나 사주로 오늘 운세와 할 일을 보고, 오늘의 카드 한 장, 궁합, 이번 달과 올해 흐름도 봐요.',
-    status: 'preview',
-    statusLabel: '웹에서 무료',
-    publicUrl: 'https://synk.im/fortune/',
-    asset: 'benefit-fortune.webp',
-    alt: '별과 초승달을 수놓은 남색 펠트 수정 구슬',
-    steps: [
-      { title: '오늘의 기운', body: '총운·애정·금전·일을 다섯 칸으로, 해 보면 좋은 것과 미뤄 두면 좋은 것, 행운의 색·숫자를 봐요.' },
-      { title: '궁합 · 이번 달 · 올해', body: '두 사람의 결, 30일 흐름에서 좋은 날, 올해의 달마다 이야기를 살펴봐요. 태어난 시간을 몰라도 돼요.' },
-      { title: '맞았는지 남기기', body: '로그인해 담아 두고 「맞았어요」를 표시하면, 최근 7일을 돌아보며 다시 열어 볼 수 있어요.' },
-    ],
-    availability: '웹(synk.im/fortune)에서 로그인 없이, 광고 없이 무료로 봐요. SYNK ID로 로그인하면 생년월일과 담아 둔 운세·메모, 궁합을 본 사람을 저장하고 최근 7일을 돌아볼 수 있어요. 풀이는 재미로 보는 참고예요.',
   },
 
 ];

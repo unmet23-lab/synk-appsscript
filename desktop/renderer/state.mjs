@@ -35,8 +35,11 @@ export const BRAND_PRESENTATION={
 // 2026-10-06 platform redesign: each app is shown as a big Hangul word (the homepage 싱ㅋ idea)
 // and a one-syllable tile. Display only; ids, names and entitlements are unchanged.
 const DISPLAY_WORDS={world:['월드','월'],messenger:['워크\n스페이스','워'],teacher:['내 수업','수'],path:['패스','패'],pulse:['펄스','펄'],care:['플레저','플'],fortune:['운세','운']};
-for(const [id,presentation] of Object.entries(BRAND_PRESENTATION)){const short=String(APPS[id].short||APPS[id].name),[word,mark]=DISPLAY_WORDS[id]||[short,short.slice(0,1)];Object.assign(APPS[id],presentation,{word,mark});}
+// 회원 혜택 목록에서 내린 것(10-30 무료 운세)은 앱 칸이 없으니 꾸밈도 건너뛴다.
+for(const [id,presentation] of Object.entries(BRAND_PRESENTATION)){if(!APPS[id])continue;const short=String(APPS[id].short||APPS[id].name),[word,mark]=DISPLAY_WORDS[id]||[short,short.slice(0,1)];Object.assign(APPS[id],presentation,{word,mark});}
 export const APP_IDS=Object.keys(APPS);
+// 목록에서 잠시 내린 앱(10-30 무료 운세). 화면·새 기록에는 안 나오지만, 이미 저장된 기록을 읽고 지키는 검사에서는 아는 앱으로 친다.
+export const PAUSED_APP_IDS=Object.freeze(['fortune']);
 export function clientRows(snapshot=[],{native=true}={}){return APP_IDS.map(id=>{const app=APPS[id];if(app.stage==='planned')return {id,status:'planned',canLaunch:false,reason:'PRODUCT_PLANNED'};if(app.stage==='preview')return {id,status:'preview',canLaunch:false,reason:'LOCAL_PREVIEW'};return snapshot.find(row=>row?.id===id)||{id,status:'unavailable',reason:native?'CHECKING':'BROWSER_PREVIEW'};});}
 export function matchesLibrary(id,{search='',filter='all',favorites=[],client,teacherAvailable=false}={}){const app=APPS[id];if(!app)return false;const text=[app.name,app.keywords,app.audience,app.summary,...(id==='messenger'&&teacherAvailable?[APPS.teacher.name,APPS.teacher.keywords,APPS.teacher.summary]:[])].join(' ').toLowerCase();if(search.trim()&&!text.includes(search.trim().toLowerCase()))return false;if(filter==='installed'&&!client?.canLaunch)return false;if(filter==='favorites'&&!favorites.includes(id))return false;if(filter==='planned'&&app.stage!=='planned')return false;if(filter==='development'&&app.stage==='planned')return false;return true;}
 export function bytes(value){if(!Number.isFinite(value)||value<0)return '—';if(value<1024)return `${value} B`;if(value<1024**2)return `${(value/1024).toFixed(1)} KB`;return `${(value/1024**2).toFixed(1)} MB`;}

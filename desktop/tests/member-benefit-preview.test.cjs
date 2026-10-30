@@ -20,5 +20,6 @@ test('remaining member services retain independent previews and personalization'
   const {createPlatformPersonalization}=await import('../renderer/personalization.mjs'),engine=require('../../atlas/personalization'),map=new Map();
   const host=createPlatformPersonalization(engine,{getItem:key=>map.get(key),setItem:(key,value)=>map.set(key,value),removeItem:key=>map.delete(key)});
   host.save({context:'everyday',goal:'prepare',textSize:'standard',explanation:'standard',motion:'full',consent:true});
-  for(const id of ['care','fortune']){const state=host.current({appIds:[id]});assert.equal(state.active,true);assert.equal(state.error,null);assert.deepEqual(state.order,[id]);assert.equal(state.selected,id);}
+  assert.deepEqual(host.current({appIds:['fortune']}).order,[],'무료 운세는 다시 만드는 동안 목록에 없다');
+  for(const id of ['care']){const state=host.current({appIds:[id]});assert.equal(state.active,true);assert.equal(state.error,null);assert.deepEqual(state.order,[id]);assert.equal(state.selected,id);}
 });

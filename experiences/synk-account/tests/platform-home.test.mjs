@@ -43,10 +43,7 @@ test('missing and local-only entries fall back to their detail without inventing
   assert.deepEqual(shortcutDestination('messenger',publicOptions),{kind:'detail',href:'#app/messenger',label:'여는 방법 보기 →'});
   assert.equal(shortcutDestination('care',publicOptions).kind,'web');
   assert.match(shortcutDestination('care',publicOptions).href,/^https:\/\//);
-  // The catalog owns current public URLs; any local preview must stay loopback-only.
-  for(const id of ['fortune']){
-    const value=shortcutDestination(id,publicOptions);
-    if(value.kind==='web')assert.match(value.href,/^https:\/\//);
-    else assert.equal(value.href,`#benefits/${id}`);
-  }
+  // The catalog owns current public URLs; a benefit taken off the catalogue (free fortune, 10-30) has no shortcut at all.
+  assert.equal(shortcutDestination('fortune',publicOptions),null);
+  assert.equal(shortcutDestination('fortune',{base:'http://127.0.0.1:4280/',clients:[]}),null);
 });
