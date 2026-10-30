@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v07",
+ "text": "모른다는 건, 진짜라는 뜻이 아니에요.",
+ "show": "「모른다」는, 진짜라는 뜻이 아니에요.",
+ "dur": 2.209,
+ "words": [
+  {
+   "text": "모른다는",
+   "start": 0.02,
+   "end": 0.441
+  },
+  {
+   "text": "건,",
+   "start": 0.501,
+   "end": 0.722
+  },
+  {
+   "text": "진짜라는",
+   "start": 0.842,
+   "end": 1.223
+  },
+  {
+   "text": "뜻이",
+   "start": 1.303,
+   "end": 1.524
+  },
+  {
+   "text": "아니에요.",
+   "start": 1.584,
+   "end": 2.209
+  }
+ ],
+ "source": {
+  "key": "f304ef5a8d6421f1a3463a5f2adcb7f8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

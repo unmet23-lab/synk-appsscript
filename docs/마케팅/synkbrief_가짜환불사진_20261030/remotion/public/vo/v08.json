@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v08",
+ "text": "원래는, 다 익은 치킨이었어요.",
+ "show": "원래는, 다 익은 치킨이었어요.",
+ "dur": 1.487,
+ "words": [
+  {
+   "text": "원래는,",
+   "start": 0.03,
+   "end": 0.382
+  },
+  {
+   "text": "다",
+   "start": 0.425,
+   "end": 0.509
+  },
+  {
+   "text": "익은",
+   "start": 0.565,
+   "end": 0.692
+  },
+  {
+   "text": "치킨이었어요.",
+   "start": 0.734,
+   "end": 1.487
+  }
+ ],
+ "source": {
+  "key": "8f595343dfc8464c9628212ed518ec0a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 128
+ }
+}

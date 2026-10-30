@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a18b7f-14e9-7aa2-b7ff-ba8857e619a0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 요청하신 이미지를 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":90311,"cached_input_tokens":76672,"cache_write_input_tokens":0,"output_tokens":742,"reasoning_output_tokens":105}}

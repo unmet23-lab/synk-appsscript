@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "치킨이 하나도 안 익었다고, 환불해 달래요.",
+ "show": "치킨이 하나도 안 익었다고, 환불해 달래요.",
+ "dur": 2.148,
+ "words": [
+  {
+   "text": "치킨이",
+   "start": 0.02,
+   "end": 0.316
+  },
+  {
+   "text": "하나도",
+   "start": 0.36,
+   "end": 0.582
+  },
+  {
+   "text": "안",
+   "start": 0.641,
+   "end": 0.7
+  },
+  {
+   "text": "익었다고,",
+   "start": 0.76,
+   "end": 1.1
+  },
+  {
+   "text": "환불해",
+   "start": 1.484,
+   "end": 1.735
+  },
+  {
+   "text": "달래요.",
+   "start": 1.78,
+   "end": 2.148
+  }
+ ],
+ "source": {
+  "key": "5bb6284a0543beaab7ef4804f9a26a3f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v05",
+ "text": "파일 그대로 올리니까, AI로 고친 기록이 나와요.",
+ "show": "파일 그대로 올리니까, AI로 고친 기록이 나와요.",
+ "dur": 3.051,
+ "words": [
+  {
+   "text": "파일",
+   "start": 0.05,
+   "end": 0.272
+  },
+  {
+   "text": "그대로",
+   "start": 0.332,
+   "end": 0.594
+  },
+  {
+   "text": "올리니까,",
+   "start": 0.654,
+   "end": 1.057
+  },
+  {
+   "text": "AI로",
+   "start": 1.58,
+   "end": 1.943
+  },
+  {
+   "text": "고친",
+   "start": 2.003,
+   "end": 2.205
+  },
+  {
+   "text": "기록이",
+   "start": 2.265,
+   "end": 2.507
+  },
+  {
+   "text": "나와요.",
+   "start": 2.567,
+   "end": 3.051
+  }
+ ],
+ "source": {
+  "key": "c655cfca48f7e3de8acf5552e61e408c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 175
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v06",
+ "text": "다시 저장한 사진은, 이 꼬리표가 떨어져 있던 거예요.",
+ "show": "다시 저장한 사진은, 이 꼬리표가 떨어져 있던 거예요.",
+ "dur": 3.058,
+ "words": [
+  {
+   "text": "다시",
+   "start": 0.03,
+   "end": 0.226
+  },
+  {
+   "text": "저장한",
+   "start": 0.272,
+   "end": 0.574
+  },
+  {
+   "text": "사진은,",
+   "start": 0.619,
+   "end": 0.996
+  },
+  {
+   "text": "이",
+   "start": 1.509,
+   "end": 1.524
+  },
+  {
+   "text": "꼬리표가",
+   "start": 1.57,
+   "end": 2.007
+  },
+  {
+   "text": "떨어져",
+   "start": 2.053,
+   "end": 2.355
+  },
+  {
+   "text": "있던",
+   "start": 2.4,
+   "end": 2.581
+  },
+  {
+   "text": "거예요.",
+   "start": 2.626,
+   "end": 3.058
+  }
+ ],
+ "source": {
+  "key": "d2e9c6d0551a6fd8452eb278ff8ec62b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

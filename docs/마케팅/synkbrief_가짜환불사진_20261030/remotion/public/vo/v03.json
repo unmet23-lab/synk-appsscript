@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "제미나이한테 AI 사진이냐고 물었더니… 모른대요.",
+ "show": "제미나이한테 AI 사진이냐고 물었더니… 모른대요.",
+ "dur": 2.937,
+ "words": [
+  {
+   "text": "제미나이한테",
+   "start": 0.02,
+   "end": 0.61
+  },
+  {
+   "text": "AI",
+   "start": 0.711,
+   "end": 0.93
+  },
+  {
+   "text": "사진이냐고",
+   "start": 0.981,
+   "end": 1.436
+  },
+  {
+   "text": "물었더니…",
+   "start": 1.487,
+   "end": 1.858
+  },
+  {
+   "text": "모른대요.",
+   "start": 2.229,
+   "end": 2.937
+  }
+ ],
+ "source": {
+  "key": "5c94ab51401a976afd9ee8c02c14429d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}
