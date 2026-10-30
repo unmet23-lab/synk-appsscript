@@ -5,6 +5,12 @@ const {createLearningSync}=require('../atlas/learning-sync');
 const file=require.resolve('../atlas/game-learning'),source=fs.readFileSync(file,'utf8'),map=createMap(require('../strata/maps/topik-i.json'));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const disk=()=>{const values=new Map();return{getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k),key:i=>[...values.keys()][i]??null,get length(){return values.size;}};};
+test('a failed reset keeps the original history through the next successful write',()=>{
+ const storage=disk(),write=storage.setItem;let full=false;storage.setItem=(key,value)=>{if(full)throw Error('synthetic quota');write(key,value);};
+ const game=createGame({gameId:'reset.quota',map,storage,fold:false});game.finishSet({kind:'short'});const ids=game.events().map(e=>e.id),epoch=game.memoryPort.epoch(),raw=storage.getItem('synk.atlas.learning.v1.device');
+ full=true;assert.throws(()=>game.reset(),error=>error.code==='STORAGE_ERROR');assert.equal(storage.getItem('synk.atlas.learning.v1.device'),raw);assert.equal(game.memoryPort.epoch(),epoch);assert.deepEqual(game.events().map(e=>e.id),ids);
+ full=false;game.finishSet({kind:'short'});const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));assert.ok(saved.events.length>ids.length);assert.equal(saved.epoch,epoch);for(const id of ids){assert.ok(game.events().some(event=>event.id===id));assert.ok(saved.events.some(event=>event.id===id));}game.reset();assert.equal(game.events().length,0);assert.notEqual(game.memoryPort.epoch(),epoch);
+});
 function browser(storage,accountKey,{manager=locks,protocol='https:',storageScope='account',learnerKey='device'}={}){
  const listeners=new Map(),context={module:{exports:{}},require:createRequire(file),document:{},location:{protocol},navigator:{locks:manager},AbortController,console,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn);}};
  vm.runInNewContext(source,context,{filename:file});

@@ -4615,18 +4615,32 @@ var SynkLearning = (() => {
           },
           reset() {
             if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
-            epoch = uid();
+            const nextEpoch = uid(), nextSession = newSession([]);
+            const raw = JSON.stringify({ version: 1, epoch: nextEpoch, events: [], ...storageScope === "account" ? { owner: accountKey } : {} });
+            try {
+              if (storage) storage.setItem(key, raw);
+            } catch {
+              writable = false;
+              warning = "기록을 저장하지 못해 초기화하지 않았어요.";
+              notify("storage-error", "STORAGE_ERROR");
+              throw Object.assign(new Error("Atlas: reset could not be saved"), { code: "STORAGE_ERROR" });
+            }
+            epoch = nextEpoch;
+            session = nextSession;
             ledger = null;
             settled.clear();
             settledVersion += 1;
             takeDropped([], false);
-            session = newSession([]);
-            release(null);
             readable = true;
             writable = !!storage;
             complete = historyComplete;
             warning = null;
-            if (!persist() && storage) throw Object.assign(new Error("Atlas: reset could not be saved"), { code: "STORAGE_ERROR" });
+            waitingWrite = false;
+            lastStoredRaw = storage ? raw : null;
+            body = ledgerJson = settledJson = droppedJson = retryFold = null;
+            paged = false;
+            release(null);
+            if (storage) notify("append");
           }
         });
       }

@@ -357,7 +357,19 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     // Before a tab closes or hides: another tab may have written an older history over this
     // one's entries in the meantime (tabs see each other's writes late), so join and write again.
     flush() { refresh(); return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true })); },
-    reset() { if (!leased) throw Object.assign(new Error('Atlas: another browser context owns this history'), { code: 'STORAGE_BUSY' }); epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false); session = newSession([]); release(null); readable = true; writable = !!storage; complete = historyComplete; warning = null; if (!persist() && storage) throw Object.assign(new Error('Atlas: reset could not be saved'), { code: 'STORAGE_ERROR' }); },
+    reset() {
+      if (!leased) throw Object.assign(new Error('Atlas: another browser context owns this history'), { code: 'STORAGE_BUSY' });
+      // Commit the empty root before changing memory or releasing open work.
+      // A failed write leaves the original epoch, events and work usable.
+      const nextEpoch = uid(), nextSession = newSession([]);
+      const raw = JSON.stringify({ version: 1, epoch: nextEpoch, events: [], ...(storageScope === 'account' ? { owner: accountKey } : {}) });
+      try { if (storage) storage.setItem(key, raw); }
+      catch { writable = false; warning = '기록을 저장하지 못해 초기화하지 않았어요.'; notify('storage-error', 'STORAGE_ERROR'); throw Object.assign(new Error('Atlas: reset could not be saved'), { code: 'STORAGE_ERROR' }); }
+      epoch = nextEpoch; session = nextSession; ledger = null; settled.clear(); settledVersion += 1; takeDropped([], false);
+      readable = true; writable = !!storage; complete = historyComplete; warning = null; waitingWrite = false; lastStoredRaw = storage ? raw : null;
+      body = ledgerJson = settledJson = droppedJson = retryFold = null; paged = false;
+      release(null); if (storage) notify('append');
+    },
   });
 }
 function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,

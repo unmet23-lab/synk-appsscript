@@ -13,7 +13,8 @@ const ROOT = path.join(__dirname, '..');
 // 2026-10-30: LAB 게임·WORLD 공용 저장 복구·자동 전송·동시 쓰기 페이지 보호 +29줄.
 // 2026-10-30: paused writers protect their own base/staging pages; later garbage collection continues (+23 lines including quota fallback).
 // 2026-10-31: LAB games and WORLD share an exclusive browser writer; sync lease fencing, missing-history refusal and witnessed restoration (+64 lines, no new file).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7319, capabilityDocLines: 150 });
+// 2026-10-31: LAB/WORLD reset commits storage before clearing memory/open work (+12 lines).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7331, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {
