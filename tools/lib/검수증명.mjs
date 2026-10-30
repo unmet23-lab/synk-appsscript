@@ -315,7 +315,8 @@ const 개인화웹경로 = new Set([
 ]);
 function 개인화생성물정책(o, files, candidate, 판) {
   const safe = p => typeof p === 'string' && !p.includes('\\') && !p.includes(':') && !p.split('/').some(x => !x || x === '.' || x === '..');
-  const pc = p => /^(?:desktop\/|\.github\/desktop-preview\/unified\/source\/)(?:assets\/launcher\/(?:engine\.js|sources\.json)|renderer\/generated\/(?:member-(?:activity|understanding)(?:-data)?\.(?:mjs|manifest\.json)|member-shared\/chunk-[A-Z0-9]{8}\.mjs))$/.test(p);
+  const storageHost = p => /^(?:desktop\/|\.github\/desktop-preview\/unified\/source\/)renderer\/platform-continuity\.mjs$/.test(p);
+  const pc = p => storageHost(p) || /^(?:desktop\/|\.github\/desktop-preview\/unified\/source\/)(?:assets\/launcher\/(?:engine\.js|sources\.json)|renderer\/generated\/(?:member-(?:activity|understanding)(?:-data)?\.(?:mjs|manifest\.json)|member-shared\/chunk-[A-Z0-9]{8}\.mjs))$/.test(p);
   // 표준 게시의 버전 메타데이터 18개 + PC 빌드 메타데이터 3개. 읽기만 하는 client.js는 제외한다.
   const metadata = new Set(['desktop/releases/preview.json','knowledge.json','en/knowledge.json','index.html','en/index.html',
     ...['lab','shift','pulse','path','atlas','founder'].flatMap(p => [p+'/index.html','en/'+p+'/index.html']),'llms.txt',
@@ -325,9 +326,11 @@ function 개인화생성물정책(o, files, candidate, 판) {
   if (판 !== 2 || o.작성자 !== 'GPT' || o.종류 !== '백엔드' || o.사용자지정 || o.예외 || o.페이블생략 || o.GPT구독 && o.GPT구독 !== '유지'
     || !candidate && !files.length
     || files.some(f => !safe(f.경로) || !(pc(f.경로) || records(f.경로))
+      || storageHost(f.경로) && f.상태 !== 'M'
       || f.옛경로 && (!safe(f.옛경로) || !pc(f.옛경로) || !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.옛경로))
       || /^[DR]/.test(f.상태 || '') && !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.경로))
     || candidate && (candidate.종류 !== 'synk.im' || candidate.항목.some(f => !safe(f.경로) || !(개인화웹경로.has(f.경로) || pc(f.경로) || meta(f.경로))
+      || storageHost(f.경로) && f.종류 !== '바꿈'
       || 개인화웹경로.has(f.경로) && /\.html?$/.test(f.경로) && f.종류 !== '토큰'
       || meta(f.경로) && f.종류 !== '바꿈'
       || f.종류 === '지움' && !/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(f.경로))))

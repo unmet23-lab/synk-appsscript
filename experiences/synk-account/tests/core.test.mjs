@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, webcrypto } from 'node:crypto';
+import Pages from '../../../atlas/learning-pages.js';
 import { readConfig, beginOAuth, consumeCallback, trustedConsentRedirect, authorizationProduct, firstPartyAuthorization, scopedStorage, tokenRequest } from '../src/core.mjs';
 const base = 'https://id.example.test/index.html';
 const raw = { version: 1, supabaseUrl: 'https://auth.example.test', supabasePublishableKey: 'sb_publishable_example', portalUrl: base,
@@ -66,6 +67,28 @@ test('account and consent revisions isolate storage, stale guards refuse writes'
   const a = scopedStorage(storage, 'A', 1, guard), b = scopedStorage(storage, 'B', 1, guard), later = scopedStorage(storage, 'A', 2, guard);
   a.setItem('learning', 'A-evidence');assert.equal(b.getItem('learning'), null);assert.equal(later.getItem('learning'), null);assert.equal(storage.getItem('synk-learning.device'), 'guest');
   active = false;assert.throws(() => a.setItem('learning', 'stale'));assert.equal(storage.getItem('synk.account.A.r1.learning'), 'A-evidence');
+});
+
+const enumerableMemory = () => { const storage=memory();Object.defineProperty(storage,'length',{get:()=>storage.values.size});storage.key=index=>[...storage.values.keys()][index]??null;return storage; };
+test('scoped key enumeration exposes only the active account revision and honors stale guards',()=>{
+ const base=enumerableMemory();let active=true;const guard=()=>{if(!active)throw Error('stale');},a=scopedStorage(base,'A',1,guard);
+ for(const [key,value]of [['synk.account.A.r1.first','a'],['synk.account.A.r1.second','b'],['synk.account.A.r2.private','later'],['synk.account.B.r1.private','other'],['guest','guest']])base.setItem(key,value);
+ assert.equal(a.length,2);assert.deepEqual(new Set([a.key(0),a.key(1)]),new Set(['first','second']));assert.equal(a.key(2),null);assert.equal(a.key(-1),null);
+ a.setItem('third','c');assert.equal(a.length,3);a.removeItem('first');assert.equal(a.length,2);assert.equal(a.getItem('third'),'c');
+ active=false;assert.throws(()=>a.length,/stale/);assert.throws(()=>a.key(0),/stale/);assert.equal(base.getItem('synk.account.B.r1.private'),'other');
+});
+test('the real scoped host adapter keeps paged outbox rewrites bounded without touching another account',()=>{
+ const base=enumerableMemory(),storage=scopedStorage(base,'A',1,()=>{}),pages=Pages.createPages(storage,'sync',['pending']);
+ const foreign='synk.account.B.r1.sync.page.protected';base.setItem(foreign,'other-account');
+ const data={pending:Array.from({length:1200},(_,i)=>({id:'answer-'+i,value:i}))};let raw=null,firstCount;
+ for(let turn=0;turn<30;turn++){data.pending.at(-1).value=turn;raw=pages.write(data,raw);assert.deepEqual(pages.decode(raw),data);const count=[...base.values.keys()].filter(k=>k.startsWith('synk.account.A.r1.sync.page.')).length;firstCount??=count;assert.ok(count<=firstCount+1,`obsolete pages accumulated: ${count} > ${firstCount+1}`);}
+ assert.equal(base.getItem(foreign),'other-account');assert.deepEqual(pages.decode(storage.getItem('sync')),data);
+});
+test('logout during enumeration never returns a scoped key snapshot',()=>{
+ const base=enumerableMemory();let active=true;const guard=()=>{if(!active)throw Error('stale');};
+ base.setItem('synk.account.A.r1.record','private');const readKey=base.key;base.key=index=>{active=false;return readKey(index);};
+ assert.throws(()=>scopedStorage(base,'A',1,guard).length,/stale/);
+ const plain=scopedStorage(memory(),'A',1,()=>{});assert.equal(Object.hasOwn(plain,'key'),false);assert.equal(Object.hasOwn(plain,'length'),false);
 });
 test('callback duplicates, fragments, token delivery and a different client redirect are rejected', async () => {
   for (const mutate of [u => u.searchParams.append('state', 'second'), u => u.searchParams.append('code', 'second'), u => u.searchParams.set('access_token', 'forbidden'), u => { u.hash = 'token'; }, u => u.searchParams.set('error', 'access_denied')]) {

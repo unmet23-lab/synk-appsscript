@@ -178,10 +178,43 @@ function firstPartyAuthorization(details, config) {
 }
 function scopedStorage(storage, accountKey, revision, guard) {
   const prefix = `synk.account.${accountKey}.r${revision}.`;
-  return Object.freeze(Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (key, ...args) => {
+  let enumeration = null;
+  const scoped = Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (key, ...args) => {
     guard();
-    return storage[method](prefix + key, ...args);
-  }])));
+    try {
+      return storage[method](prefix + key, ...args);
+    } finally {
+      if (method !== "getItem") enumeration = null;
+    }
+  }]));
+  if (storage && typeof storage.key === "function" && "length" in storage) {
+    const scan = () => {
+      guard();
+      const count = storage.length, names2 = [];
+      if (!Number.isSafeInteger(count) || count < 0) throw Error("Storage enumeration unavailable");
+      for (let index = 0; index < count; index++) {
+        const name = storage.key(index);
+        if (typeof name === "string" && name.startsWith(prefix)) names2.push(name.slice(prefix.length));
+      }
+      guard();
+      return names2;
+    };
+    Object.defineProperty(scoped, "length", { enumerable: true, get() {
+      enumeration = scan();
+      return enumeration.length;
+    } });
+    scoped.key = (index) => {
+      guard();
+      if (!Number.isSafeInteger(index) || index < 0) {
+        enumeration = null;
+        return null;
+      }
+      const names2 = enumeration || scan(), name = names2[index] ?? null;
+      enumeration = index >= names2.length - 1 ? null : names2;
+      return name;
+    };
+  }
+  return Object.freeze(scoped);
 }
 var PRODUCTS, nativeSchemes, isLoopback, base64url;
 var init_core = __esm({

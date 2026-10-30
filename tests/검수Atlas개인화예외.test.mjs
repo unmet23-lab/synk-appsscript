@@ -44,6 +44,15 @@ test('표준 버전 메타데이터 18개와 PC 빌드 메타데이터 3개만 �
  assert.equal(new Set(paths).size,21);
  for(const p of paths)assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p)},[]).필수,['GPT','Claude']);
 });
+test('Atlas 계정 저장소 호스트 한 경로의 기존 파일 교체만 허용한다',t=>{
+ for(const p of ['desktop/renderer/platform-continuity.mjs','.github/desktop-preview/unified/source/renderer/platform-continuity.mjs']){
+  assert.deepEqual(정책만들기(opts,[{경로:p,상태:'M'}]).필수,['GPT','Claude']);
+  assert.deepEqual(정책만들기({...opts,배포후보:candidate(t,p)},[]).필수,['GPT','Claude']);
+  for(const 상태 of ['A','D','R100'])assert.throws(()=>정책만들기(opts,[{경로:p,상태}]));
+  for(const kind of ['새','지움','토큰'])assert.throws(()=>정책만들기({...opts,배포후보:candidate(t,p,kind)},[]));
+ }
+ for(const p of ['desktop/renderer/platform-account.mjs','desktop/renderer/platform-continuity.css','desktop/src/auth-config.cjs'])assert.throws(()=>정책만들기(opts,[{경로:p,상태:'M'}]));
+});
 test('PC 생성 청크의 교체만 삭제를 허용하고 웹 토큰은 정확한 후보 바이트로 묶는다',t=>{
  assert.deepEqual(정책만들기(opts,[{경로:'desktop/renderer/generated/member-shared/chunk-ABCDEFGH.mjs',상태:'D'}]).필수,['GPT','Claude']);
  const root=candidate(t,'study/index.html','토큰');assert.deepEqual(정책만들기({...opts,배포후보:root},[]).필수,['GPT','Claude']);

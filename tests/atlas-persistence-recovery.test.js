@@ -7,6 +7,40 @@ const map=createMap(require('../strata/maps/topik-i.json'));
 const disk=()=>{const data=new Map();return{data,get length(){return data.size;},key:i=>[...data.keys()][i]??null,getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};};
 const game=storage=>createGame({gameId:'storage-recovery',map,storage,clock:()=> '2026-10-29T00:00:00.000Z'});
 
+test('a writer left behind after publication protects its own pages without stopping future collection',()=>{
+ const storage=disk(),key='crashed-writer',pages=createPages(storage,key,['events']),remove=storage.removeItem;
+ const data={events:Array.from({length:PAGE_ITEMS*10},(_,id)=>({id,value:0}))};
+ storage.removeItem=name=>{if(!name.startsWith(key+'.writer.'))remove(name);};
+ let raw=pages.write(data,null);const held=[...storage.data.keys()].filter(name=>name.startsWith(key+'.page.'));
+ storage.removeItem=remove;assert.equal([...storage.data.keys()].filter(name=>name.startsWith(key+'.writer.')).length,1);
+ for(let turn=1;turn<=40;turn++){data.events.at(-1).value=turn;raw=pages.write(data,raw);assert.deepEqual(createPages(storage,key,['events']).decode(raw),data);assert.ok([...storage.data.keys()].filter(name=>name.startsWith(key+'.page.')).length<=held.length+1,'a leftover writer must not disable all future collection');}
+ for(const name of held)assert.equal(typeof storage.getItem(name),'string','never expire a potentially paused writer');
+});
+test('another writer cannot collect a paused writer\'s staged pages before its root publication',()=>{
+ const storage=disk(),key='staged-writer',data={events:Array.from({length:PAGE_ITEMS*2},(_,id)=>({id,value:0}))};
+ const seed=createPages(storage,key,['events']),raw=seed.write(data,null),b=createPages(storage,key,['events']);b.decode(raw);
+ let intervene=true,protectedStage=false,newer;
+ const a=createPages({...storage,get length(){return storage.length;},setItem(name,value){
+  storage.setItem(name,value);if(intervene&&name.startsWith(key+'.page.')){intervene=false;
+   const changed=structuredClone(data);changed.events.at(-1).value=2;newer=b.write(changed,raw);
+   assert.equal(storage.getItem(name),value,'in-progress page ownership must survive another writer\'s cleanup');protectedStage=true;
+  }
+ }},key,['events']);a.decode(raw);const changed=structuredClone(data);changed.events[0].value=1;
+ assert.throws(()=>a.write(changed,raw),/changed/);assert.equal(protectedStage,true);
+ const expected=structuredClone(data);expected.events.at(-1).value=2;assert.deepEqual(createPages(storage,key,['events']).decode(newer),expected);
+});
+test('an unchanged paged write still succeeds when only a small writer fence fits the origin quota',()=>{
+ const storage=disk(),key='near-quota',pages=createPages(storage,key,['events']),data={events:Array.from({length:PAGE_ITEMS*10},(_,id)=>({id}))};
+ const raw=pages.write(data,null),limit=5*1024**2,padding='unrelated-padding';
+ const used=()=>[...storage.data].reduce((sum,[k,v])=>sum+k.length+v.length,0);
+ storage.setItem(padding,'x'.repeat(limit-used()-padding.length-128));const set=storage.setItem;
+ storage.setItem=(name,value)=>{const next=used()-(storage.data.has(name)?name.length+storage.getItem(name).length:0)+name.length+value.length;
+  if(next>limit)throw Object.assign(Error('synthetic origin quota'),{name:'QuotaExceededError'});set(name,value);
+ };
+ assert.equal(pages.write(data,raw),raw);assert.deepEqual(createPages(storage,key,['events']).decode(raw),data);
+ assert.ok(used()<=limit);assert.equal([...storage.data.keys()].filter(name=>name.startsWith(key+'.writer.')).length,0);
+});
+
 for(const afterWrite of [false,true])test(`flush recovers an unwritten answer after a transient ${afterWrite?'acknowledgement':'write'} failure`,()=>{
  const storage=disk(),set=storage.setItem;let failing=false;
  storage.setItem=(key,value)=>{if(afterWrite)set(key,value);if(failing)throw Error('synthetic storage failure');if(!afterWrite)set(key,value);};

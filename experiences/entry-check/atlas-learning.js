@@ -8508,6 +8508,16 @@ var SynkLearning = (() => {
         };
         let root = null, decodedRaw = null;
         const validKey = (name) => typeof name === "string" && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
+        function protection(snapshot, self) {
+          const held = /* @__PURE__ */ new Set(), staged = [];
+          for (const name of snapshot.filter((name2) => name2.startsWith(writers) && name2 !== self)) {
+            const fence = JSON.parse(storage.getItem(name));
+            if (!fence || fence.version !== 1 || fence.prefix !== `${prefix}${name.slice(writers.length)}-` || !Array.isArray(fence.pages) || !fence.pages.every(validKey)) return null;
+            fence.pages.forEach((name2) => held.add(name2));
+            staged.push(fence.prefix);
+          }
+          return (name) => held.has(name) || staged.some((prefix2) => name.startsWith(prefix2));
+        }
         const manifest = (value) => value && value.paged === 1 && value.version === 1 && value.data && typeof value.data === "object" && !Array.isArray(value.data) && value.arrays && typeof value.arrays === "object" && !Array.isArray(value.arrays);
         function decodeOnce(raw) {
           const value = JSON.parse(raw);
@@ -8557,10 +8567,18 @@ var SynkLearning = (() => {
         };
         function write(data, expectedRaw) {
           const next = { paged: 1, version: 1, data: { ...data }, arrays: {} }, created = [];
-          const writer = typeof storage.key === "function" ? `${writers}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}` : null;
+          const generation = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, staging = `${prefix}${generation}-`;
+          const writer = typeof storage.key === "function" ? `${writers}${generation}` : null;
           let publishedRaw = null;
           try {
-            if (writer) storage.setItem(writer, "1");
+            if (writer) {
+              try {
+                storage.setItem(writer, JSON.stringify({ version: 1, prefix: staging, pages: Object.values(root?.arrays || {}).flat().map((page) => page.key) }));
+              } catch (error) {
+                if (error?.name !== "QuotaExceededError") throw error;
+                storage.setItem(writer, "1");
+              }
+            }
             for (const name of arrays) {
               if (!Object.hasOwn(data, name)) continue;
               if (!Array.isArray(data[name])) throw failure();
@@ -8570,7 +8588,7 @@ var SynkLearning = (() => {
                 const rows = data[name].slice(at, at + PAGE_ITEMS), text = encodePage(rows), prior = root?.arrays?.[name]?.[at / PAGE_ITEMS];
                 if (prior && (cache.get(prior.key) ?? storage.getItem(prior.key)) === text) next.arrays[name].push(prior);
                 else {
-                  const pageKey = `${prefix}${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${at}-${name}`;
+                  const pageKey = `${staging}${at}-${name}`;
                   created.push(pageKey);
                   storage.setItem(pageKey, text);
                   cache.set(pageKey, text);
@@ -8586,10 +8604,13 @@ var SynkLearning = (() => {
             root = next;
             try {
               const snapshot = keys(), checked = keys();
-              if (snapshot && checked && snapshot.length === checked.length && snapshot.every((name, i) => name === checked[i]) && !checked.some((name) => name.startsWith(writers) && name !== writer) && storage.getItem(key) === raw) {
-                const obsolete = snapshot.filter((name) => validKey(name) && !retained.has(name));
-                remove(obsolete);
-                for (const name of obsolete) cache.delete(name);
+              if (snapshot && checked && snapshot.length === checked.length && snapshot.every((name, i) => name === checked[i]) && storage.getItem(key) === raw) {
+                const protectedByWriter = protection(checked, writer);
+                if (protectedByWriter) {
+                  const obsolete = snapshot.filter((name) => validKey(name) && !retained.has(name) && !protectedByWriter(name));
+                  remove(obsolete);
+                  for (const name of obsolete) cache.delete(name);
+                }
               }
             } catch {
             }

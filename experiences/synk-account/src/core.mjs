@@ -133,5 +133,25 @@ export function firstPartyAuthorization(details, config) {
 }
 export function scopedStorage(storage, accountKey, revision, guard) {
   const prefix = `synk.account.${accountKey}.r${revision}.`;
-  return Object.freeze(Object.fromEntries(['getItem', 'setItem', 'removeItem'].map(method => [method, (key, ...args) => { guard();return storage[method](prefix + key, ...args); }])));
+  let enumeration=null;
+  const scoped=Object.fromEntries(['getItem','setItem','removeItem'].map(method=>[method,(key,...args)=>{
+    guard();try{return storage[method](prefix+key,...args);}finally{if(method!=='getItem')enumeration=null;}
+  }]));
+  if(storage&&typeof storage.key==='function'&&'length' in storage){
+    const scan=()=>{
+      guard();const count=storage.length,names=[];
+      if(!Number.isSafeInteger(count)||count<0)throw Error('Storage enumeration unavailable');
+      for(let index=0;index<count;index++){const name=storage.key(index);if(typeof name==='string'&&name.startsWith(prefix))names.push(name.slice(prefix.length));}
+      guard();return names;
+    };
+    // One length/key pass shares a scoped snapshot, avoiding an origin-wide
+    // rescan for every page. Each new pass and every write refreshes it.
+    Object.defineProperty(scoped,'length',{enumerable:true,get(){enumeration=scan();return enumeration.length;}});
+    scoped.key=index=>{
+      guard();if(!Number.isSafeInteger(index)||index<0){enumeration=null;return null;}
+      const names=enumeration||scan(),name=names[index]??null;
+      enumeration=index>=names.length-1?null:names;return name;
+    };
+  }
+  return Object.freeze(scoped);
 }
