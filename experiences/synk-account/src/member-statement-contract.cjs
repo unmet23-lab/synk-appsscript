@@ -1770,7 +1770,8 @@ function stateFor(text,segments,answers,key) {
   for(;;){
     const resolved=active.map(groupFor).find(group=>group.length>1&&answers[conflictId(group)]!==undefined);
     if(!resolved)break;
-    const answer=answers[conflictId(resolved)];active=active.filter(p=>!resolved.includes(p)||p.id===answer);
+    const answer=answers[conflictId(resolved)],chosen=resolved.find(p=>p.id===answer);
+    active=active.filter(p=>!resolved.includes(p)||p.id===answer||chosen&&!meaningsConflict(chosen,p));
   }
   const grouped=new Set();
   for(const m of active){if(grouped.has(m.id))continue;const group=groupFor(m);if(group.length<2)continue;group.forEach(p=>grouped.add(p.id));

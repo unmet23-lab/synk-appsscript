@@ -1,6 +1,8 @@
 'use strict';
 // Immutable pages first, one root pointer last. A failed write leaves the previous
 // root readable; callers advance the network cursor only after this returns.
+// Browser callers hold the game-learning history lease for every write. The
+// expected-root check detects stale data; it does not itself provide a mutex.
 const PAGE_ITEMS = 128, THRESHOLD = 1024;
 const failure = () => Object.assign(new Error('Atlas: unreadable paged history'), { code: 'STORAGE_ERROR' });
 // Pages repeat field names, scopes, timestamps and policy identifiers. A page-local

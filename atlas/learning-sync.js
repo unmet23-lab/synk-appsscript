@@ -22,6 +22,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   batchSize = 100, maxAttempts = 3, maxPages = 200, timeoutMs = 15000,
   backoffMs = [500, 1500, 5000], sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), auto = true } = {}) {
   const port = adapter?.syncPort;
+  const canPersist = () => typeof port?.canPersist !== 'function' || port.canPersist();
   if (!id(accountKey) || !Number.isSafeInteger(revision) || revision < 1 || !port
     || port.scope !== 'account' || port.accountKey !== accountKey || !storage?.getItem || !storage?.setItem
     || typeof transport?.get !== 'function' || typeof transport?.post !== 'function') throw new TypeError('Atlas sync: an authenticated account adapter, isolated durable store and transport are required');
@@ -56,6 +57,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     return { ...stored, version: 2, pending: v1 ? stored.pending.map(e => e.id) : stored.pending, missing: stored.missing || [] };
   };
   const save = () => {
+    if (!canPersist()) throw failure('STORAGE_BUSY', 'Atlas sync: another browser context owns this history');
     try {
       const current = storage.getItem(key);
       if (current !== lastStoredRaw) {
@@ -112,11 +114,18 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   };
   const unsubscribe = port.subscribe(change => {
     if (stopped || phase === 'blocked' || change.kind === 'import') return;
+    if (change.kind === 'storage-wait') {
+      generation++; clearTimeout(timer); timer = null; for (const controller of controllers) controller.abort();
+      phase = 'offline'; code = 'STORAGE_BUSY'; message = 'Atlas sync: waiting for the other browser context'; publish(); return;
+    }
     if (change.kind === 'storage-error') { block(failure(change.code || 'STORAGE_ERROR', 'Atlas sync: local learning could not be saved')); return; }
+    if (!canPersist()) return;
+    if (code === 'STORAGE_BUSY') { phase = 'idle'; code = null; message = null; }
     try { collect(); publish(); schedule(); } catch (error) { block(error); }
+    if (change.kind === 'storage-ready' && started) void Promise.resolve(running).then(() => { if (!stopped && canPersist()) return run(!flushRequested); });
   });
-  if (phase !== 'blocked') { try { collect(); } catch (error) { block(error); } }
-  const active = token => !stopped && token === generation;
+  if (phase !== 'blocked' && canPersist()) { try { collect(); } catch (error) { block(error); } }
+  const active = token => !stopped && token === generation && canPersist();
   const request = async (method, body, token) => {
     let last;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -186,10 +195,13 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       }
       after = response.cursor;
       state.recoveryCursor = Math.min(after, state.cursor);
-      // The whole server log has been read: what is still missing is not there (stop asking).
-      if (!response.hasMore || after >= state.cursor) { state.missing = []; }
+      // Exhausting a server scan is not evidence that a missing acknowledged
+      // event was restored. Keep the gap durable and retry from the start later.
+      const exhausted = (!response.hasMore || after >= state.cursor) && state.missing.length > 0;
+      if (exhausted) state.recoveryCursor = 0;
       if (!state.missing.length) state.recoveryCursor = 0;
       save(); port.markComplete(whole()); publish();
+      if (exhausted) throw failure('INCOMPLETE_HISTORY', 'Atlas sync: previously acknowledged history is still missing');
     }
     return !state.missing.length;
   };
@@ -221,6 +233,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   };
   function run(pullOnly = false) {
     if (stopped || phase === 'blocked') return Promise.resolve(status());
+    if (!canPersist()) { flushRequested ||= !pullOnly; phase = 'offline'; code = 'STORAGE_BUSY'; message = 'Atlas sync: waiting for the other browser context'; publish(); return Promise.resolve(status()); }
     if (running) { if (!pullOnly) flushRequested = true; return running; }
     flushRequested = !pullOnly;
     const token = generation;let continuation = false;phase = 'syncing';code = null;message = null;publish();

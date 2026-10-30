@@ -6,6 +6,13 @@ const text='음악 좋아요. '.repeat(11)+'저는 취미가 있어요.';
 const at='2026-10-29T00:00:00.000Z';
 const row=(parser,id,input=text)=>({id:`00000000-0000-4000-8000-${String(id).padStart(12,'0')}`,parserVersion:parser.PARSER_VERSION,text:input,at,confirmedAt:at,meanings:parser.parseMemberStatement(input).meanings,clarifications:[]});
 
+test('selecting one preference retains compatible neighbours in a non-transitive conflict',()=>{
+ const text='예시를 좋아해요. 혼자 하는 게 좋아요. 예시가 싫어요.',preview=C.parseMemberStatement(text),choice=preview.question.options.find(o=>o.id==='p1'),clarifications=[{questionId:preview.question.id,optionId:choice.id}],next=C.parseMemberStatement(text,{clarifications});
+ assert.equal(next.question,null);assert.deepEqual(next.meanings.map(m=>[m.value,m.polarity]),[['independent','prefer'],['example','avoid']]);
+ const saved={...row(C,3,text),meanings:next.meanings,clarifications};assert.deepEqual(C.validateMemberStatement(saved),saved);
+ const legacy=Old.parseMemberStatement(text),old=Old.parseMemberStatement(text,{clarifications:[{questionId:legacy.question.id,optionId:'p1'}]});assert.equal(old.meanings.length,1,'Saved parser10 behavior remains frozen');
+});
+
 test('saved parser 10 rows retain their original validation and byte identity',()=>{
  assert.equal(Old.PARSER_VERSION,'member-statement-ko-10');
  assert.equal(crypto.createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v10.cjs'))).digest('hex'),'4519aca79459b4742aca5e009d1b571d0c3698b9db6eb87076b691c1ce7e315f');

@@ -12,7 +12,8 @@ const ROOT = path.join(__dirname, '..');
 // 최초 순증 15줄 + LAB·WORLD 제외 전파·오디오 자격·대기 이력 49줄 + 완료·ID·명시적 철회·질문 계산과 판 검사 정리 10줄.
 // 2026-10-30: LAB 게임·WORLD 공용 저장 복구·자동 전송·동시 쓰기 페이지 보호 +29줄.
 // 2026-10-30: paused writers protect their own base/staging pages; later garbage collection continues (+23 lines including quota fallback).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7253, capabilityDocLines: 150 });
+// 2026-10-31: LAB games and WORLD share an exclusive browser writer; sync lease fencing, missing-history refusal and witnessed restoration (+64 lines, no new file).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7317, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

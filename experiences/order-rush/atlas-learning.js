@@ -8688,6 +8688,7 @@ var SynkLearning = (() => {
         auto = true
       } = {}) {
         const port = adapter?.syncPort;
+        const canPersist = () => typeof port?.canPersist !== "function" || port.canPersist();
         if (!id(accountKey) || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || !storage?.getItem || !storage?.setItem || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas sync: an authenticated account adapter, isolated durable store and transport are required");
         if (![batchSize, maxAttempts, maxPages, timeoutMs].every((n) => Number.isInteger(n) && n > 0) || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length || backoffMs.some((ms) => !Number.isFinite(ms) || ms < 0)) throw new TypeError("Atlas sync: invalid retry bounds");
         const key = `${SYNC_KEY}.${accountKey}`;
@@ -8732,6 +8733,7 @@ var SynkLearning = (() => {
           return { ...stored, version: 2, pending: v1 ? stored.pending.map((e) => e.id) : stored.pending, missing: stored.missing || [] };
         };
         const save = () => {
+          if (!canPersist()) throw failure("STORAGE_BUSY", "Atlas sync: another browser context owns this history");
           try {
             const current = storage.getItem(key);
             if (current !== lastStoredRaw) {
@@ -8801,9 +8803,26 @@ var SynkLearning = (() => {
         };
         const unsubscribe = port.subscribe((change) => {
           if (stopped || phase === "blocked" || change.kind === "import") return;
+          if (change.kind === "storage-wait") {
+            generation++;
+            clearTimeout(timer);
+            timer = null;
+            for (const controller of controllers) controller.abort();
+            phase = "offline";
+            code = "STORAGE_BUSY";
+            message = "Atlas sync: waiting for the other browser context";
+            publish();
+            return;
+          }
           if (change.kind === "storage-error") {
             block(failure(change.code || "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
             return;
+          }
+          if (!canPersist()) return;
+          if (code === "STORAGE_BUSY") {
+            phase = "idle";
+            code = null;
+            message = null;
           }
           try {
             collect();
@@ -8812,15 +8831,18 @@ var SynkLearning = (() => {
           } catch (error) {
             block(error);
           }
+          if (change.kind === "storage-ready" && started) void Promise.resolve(running).then(() => {
+            if (!stopped && canPersist()) return run(!flushRequested);
+          });
         });
-        if (phase !== "blocked") {
+        if (phase !== "blocked" && canPersist()) {
           try {
             collect();
           } catch (error) {
             block(error);
           }
         }
-        const active = (token) => !stopped && token === generation;
+        const active = (token) => !stopped && token === generation && canPersist();
         const request = async (method, body, token) => {
           let last;
           for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -8901,13 +8923,13 @@ var SynkLearning = (() => {
             }
             after = response.cursor;
             state.recoveryCursor = Math.min(after, state.cursor);
-            if (!response.hasMore || after >= state.cursor) {
-              state.missing = [];
-            }
+            const exhausted = (!response.hasMore || after >= state.cursor) && state.missing.length > 0;
+            if (exhausted) state.recoveryCursor = 0;
             if (!state.missing.length) state.recoveryCursor = 0;
             save();
             port.markComplete(whole());
             publish();
+            if (exhausted) throw failure("INCOMPLETE_HISTORY", "Atlas sync: previously acknowledged history is still missing");
           }
           return !state.missing.length;
         };
@@ -8939,6 +8961,14 @@ var SynkLearning = (() => {
         };
         function run(pullOnly = false) {
           if (stopped || phase === "blocked") return Promise.resolve(status());
+          if (!canPersist()) {
+            flushRequested ||= !pullOnly;
+            phase = "offline";
+            code = "STORAGE_BUSY";
+            message = "Atlas sync: waiting for the other browser context";
+            publish();
+            return Promise.resolve(status());
+          }
           if (running) {
             if (!pullOnly) flushRequested = true;
             return running;
@@ -10190,6 +10220,55 @@ var SynkLearning = (() => {
       var RESPONSE_MS = 30 * 864e5;
       var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+      var historyLeases = /* @__PURE__ */ new Map();
+      var LEASE_WARNING = "다른 탭에서 이 기록을 사용 중이에요. 그 탭을 닫으면 이곳에서 저장할 수 있어요.";
+      function browserHistoryLease(name) {
+        if (typeof globalThis.document !== "object") return null;
+        if (globalThis.location?.protocol === "synk-desktop:" && typeof globalThis.synkDesktop === "object") return null;
+        const manager = globalThis.navigator?.locks;
+        if (historyLeases.has(name)) return historyLeases.get(name);
+        const entry = { epoch: null, active: false, supported: !!manager, listeners: /* @__PURE__ */ new Set() };
+        let pending = false, wanted = true, release = null, controller = null;
+        const announce = (active) => {
+          entry.active = active;
+          for (const listener of entry.listeners) {
+            try {
+              listener(active);
+            } catch {
+            }
+          }
+        };
+        entry.start = () => {
+          wanted = true;
+          if (pending || !manager) return;
+          pending = true;
+          controller = new AbortController();
+          const signal = controller.signal;
+          Promise.resolve().then(() => manager.request("synk.atlas.history." + name, { mode: "exclusive", signal }, () => new Promise((done) => {
+            release = done;
+            announce(true);
+          }))).catch(() => {
+            if (!signal.aborted) {
+              wanted = false;
+              announce(false);
+            }
+          }).finally(() => {
+            pending = false;
+            release = null;
+            if (wanted) entry.start();
+          });
+        };
+        const pause = () => {
+          wanted = false;
+          announce(false);
+          controller?.abort();
+          release?.();
+        };
+        globalThis.addEventListener?.("pagehide", pause);
+        globalThis.addEventListener?.("pageshow", entry.start);
+        historyLeases.set(name, entry);
+        return entry;
+      }
       function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
         const options = { scope, asOf, prior };
         const report = Temper.followups({
@@ -10245,6 +10324,9 @@ var SynkLearning = (() => {
       }
       var AHEAD_MS = 5 * 6e4;
       function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
+        const lease = storage ? browserHistoryLease(JSON.stringify([key, storageScope, accountKey])) : null;
+        let leased = !lease, waitingWrite = false;
+        const leaseWarning = lease && !lease.supported ? "이 환경에서는 기록을 안전하게 저장할 수 없어 기본 연습으로 진행해요." : LEASE_WARNING;
         const pages = storageScope === "account" && storage ? createPages(storage, key, ["events", "settled", "dropped"]) : null;
         let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
         const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
@@ -10306,7 +10388,8 @@ var SynkLearning = (() => {
           }
         }
         const initial = readStored();
-        epoch = initial?.epoch || uid();
+        epoch = initial?.epoch || lease?.epoch || uid();
+        if (lease && !lease.epoch) lease.epoch = epoch;
         ledger = initial?.ledger || null;
         session = newSession(initial?.events || []);
         const settle = (ids, known) => {
@@ -10432,6 +10515,13 @@ var SynkLearning = (() => {
           }
         }
         function persist(kind = "append", { quiet = false } = {}) {
+          waitingWrite = true;
+          if (!leased) {
+            writable = false;
+            warning = leaseWarning;
+            notify("storage-wait", "STORAGE_BUSY");
+            return false;
+          }
           if (!storage || !readable) {
             complete = false;
             notify("storage-error", "STORAGE_ERROR");
@@ -10461,6 +10551,7 @@ var SynkLearning = (() => {
             }
             lastStoredRaw = raw;
             writable = true;
+            waitingWrite = false;
             if (!quiet) notify(kind);
             return true;
           } catch (error) {
@@ -10474,11 +10565,13 @@ var SynkLearning = (() => {
         if (!initial && readable && storage) persist();
         const requireDurable = () => {
           refresh();
+          if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
           if (!readable || !writable) throw Object.assign(new Error("Atlas: local history is not durable"), { code: "STORAGE_ERROR" });
         };
         const port = Object.freeze({
           scope: storageScope,
           accountKey,
+          canPersist: () => leased,
           // The kept entries. A synchronised store's folded entries are on the server; whether this
           // history can be sent at all is partial().
           events() {
@@ -10557,6 +10650,31 @@ var SynkLearning = (() => {
             return { added: combined.length - previousLength, skipped };
           }
         });
+        if (lease) {
+          const changed = (active) => {
+            leased = active;
+            if (!active) {
+              writable = false;
+              warning = leaseWarning;
+              notify("storage-wait", "STORAGE_BUSY");
+              return;
+            }
+            writable = true;
+            if (warning === leaseWarning) warning = null;
+            try {
+              refresh();
+              if (!waitingWrite || persist("storage-ready", { quiet: true })) notify("storage-ready");
+            } catch {
+              readable = false;
+              complete = false;
+              writable = false;
+              notify("storage-error", "STORAGE_ERROR");
+            }
+          };
+          lease.listeners.add(changed);
+          changed(lease.active);
+          lease.start();
+        }
         return Object.freeze({
           port,
           refresh,

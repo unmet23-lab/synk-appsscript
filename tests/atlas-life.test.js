@@ -28,6 +28,15 @@ const receipt = (source, fields = {}) => ({ reactionId: 'first', deliveryId: 'de
   semanticKey: 'first-use', sourceIds: [source.id], revisions: { object: 1 }, contentVersion: 'content.1', mode: 'static', ...fields });
 const select = (f, candidates, options = {}) => Vellum.select({ scope, trail: f.summary(), npcId: 'resident.one',
   currentRevisions: { object: 1 }, conditions: { usable: true }, candidates, ...options });
+
+test('restored witnessed knowledge survives a later relay whose source is corrected',()=>{
+ const f=fixture(),source=f.fact(),relay=f.fact({causes:[source.id]});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.one',allowed:false,viaId:null});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.one',allowed:true,viaId:source.id});
+ f.add('life.knowledge',{factId:source.id,npcId:'resident.one',allowed:true,viaId:relay.id});
+ f.add('life.corrected',{targetId:relay.id});
+ assert.doesNotThrow(()=>f.add('life.delivered',receipt(source),{currentRevisions:{object:1}}));
+});
 test('a redundant self-source grant preserves an existing relay and still follows its withdrawal',()=>{
  const f=fixture(),source=f.fact(),relay=f.fact({causes:[source.id],knownBy:['resident.two']});
  f.add('life.knowledge',{factId:source.id,npcId:'resident.two',allowed:true,viaId:relay.id});

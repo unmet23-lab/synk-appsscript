@@ -10,6 +10,14 @@ const map = createMap(require('../strata/maps/topik-i.json'));
 const copy = value => JSON.parse(JSON.stringify(value));
 const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
 const disk = () => { const values = new Map();return { values, getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, v) }; };
+
+test('an exhausted recovery scan preserves an acknowledged gap and refuses complete history',async()=>{
+ const storage=disk(),complete=[],key=SYNC_KEY+'.account.gap';storage.setItem(key,JSON.stringify({version:2,accountKey:'account.gap',revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey:'account.gap',events:()=>[],partial:()=>false,subscribe:()=>()=>{},markComplete:v=>complete.push(v),importEvents:()=>({added:0})},transport={get:async()=>({events:[],cursor:2,hasMore:false,revision:1}),post:async()=>{throw Error('A gap must not upload');}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey:'account.gap',revision:1,storage,transport,auto:false,maxAttempts:1});
+ const result=await sync.start();assert.equal(result.phase,'offline');assert.equal(result.code,'INCOMPLETE_HISTORY');assert.equal(complete.at(-1),false);
+ assert.deepEqual(JSON.parse(storage.getItem(key)).missing,['lost.event']);assert.equal(JSON.parse(storage.getItem(key)).recoveryCursor,0);sync.stop();
+});
 const error = (code, revision = 1) => Object.assign(new Error(code), { code, revision });
 function server({ pageSize = 100, partial = false } = {}) {
   const s = { revision: 1, enabled: true, offline: false, log: [], gets: [], posts: [], lostAck: false };

@@ -499,7 +499,7 @@ function 토큰맞춤(버퍼, 공개버퍼, 호스트들) {
     맞춤++;
     return `${주소}?v=${t0}`;
   });
-  return 맞춤 ? { 버퍼: Buffer.from(새, 'latin1'), 맞춤 } : { 버퍼, 맞춤 };
+  return 맞춤 ? { 버퍼: Buffer.from(importmap해시맞춤(버퍼.toString('latin1'), 새), 'latin1'), 맞춤 } : { 버퍼, 맞춤 };
 }
 
 /**
@@ -508,35 +508,9 @@ function 토큰맞춤(버퍼, 공개버퍼, 호스트들) {
  * 반환: Map(경로 → {버퍼, 바꿈: [{참조, 대상, 전, 후, 꼬리}]}), .지운참조 · .안부름 · .모호
  */
 function importmap해시맞춤(이전, 이후) {
-  const maps = text => [...text.matchAll(/<script\b[^>]*\btype\s*=\s*(["'])importmap\1[^>]*>([\s\S]*?)<\/script\s*>/gi)].map(m => m[2]);
-  const before = maps(이전), after = maps(이후);
-  if (before.length !== after.length) throw new 멈춤('토큰 변경 중 import map 구조가 바뀌었다');
-  const hash = text => `'sha256-${crypto.createHash('sha256').update(Buffer.from(text, 'latin1')).digest('base64')}'`;
-  const changes = before.map((body, i) => [hash(body), hash(after[i])]).filter(([a, b]) => a !== b);
-  const hashes = new Map(changes);
-  const result = 이후.replace(/<meta\b[^>]*>/gi, meta => {
-    if (!/\bhttp-equiv\s*=\s*(["'])Content-Security-Policy\1/i.test(meta)) return meta;
-    return meta.replace(/\bcontent\s*=\s*(["'])([\s\S]*?)\1/i, (attr, quote, value) => {
-      const next = value.replace(/(?:^|;)\s*script-src(?:-elem)?\s+[^;]*/gi, directive => {
-        return directive.replace(/'sha256-[A-Za-z0-9+/]+=*'/g, token => hashes.get(token) || token);
-      });
-      return attr.slice(0, attr.indexOf(quote) + 1) + next + quote;
-    });
-  });
-  const inline = text => [...text.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].map(m => m[1]);
-  const policies = text => [...text.matchAll(/<meta\b[^>]*>/gi)].filter(m => /\bhttp-equiv\s*=\s*(["'])Content-Security-Policy\1/i.test(m[0])).map(m => {
-    const value = /\bcontent\s*=\s*(["'])([\s\S]*?)\1/i.exec(m[0])?.[2] || '';
-    const directives = new Map(value.split(';').map(x => x.trim().split(/\s+/)).map(([name,...values]) => [name.toLowerCase(),values]));
-    return directives.get('script-src-elem') || directives.get('script-src') || directives.get('default-src') || [];
-  });
-  const oldScripts = inline(이전), newScripts = inline(result), oldPolicies = policies(이전), newPolicies = policies(result);
-  if (oldScripts.length !== newScripts.length) throw new 멈춤('토큰 변경 중 script 구조가 바뀌었다');
-  for (const [i, body] of oldScripts.entries()) if (body !== newScripts[i]) {
-    const oldHash=hash(body),newHash=hash(newScripts[i]);
-    for (const [j, policy] of oldPolicies.entries()) if (policy.includes(oldHash) && !newPolicies[j]?.includes(newHash)) throw new 멈춤('토큰 변경 뒤 인라인 script CSP 해시가 맞지 않는다 — 해당 HTML의 해시를 함께 고친다');
-  }
-  return result;
+  return require('./lib/importmap-csp.cjs').맞춤(이전, 이후, 멈춤);
 }
+
 function 토큰고치기({ 훑을, 원래, 공개, 처음바뀜, 지움, 있나, 꼬리들, 호스트들, 정한값, 부르는가 = () => true, 받아두기 = () => {} }) {
   let 바뀐 = new Map(처음바뀜); // 경로 → 새 버퍼(내용이 바뀐 대상)
   const 공개토큰 = new Map();
@@ -2019,5 +1993,5 @@ if (require.main === module) main().then((code) => { process.exitCode = code; })
 
 module.exports = {
   올리기, 확인, 채우기, 기준, 인자읽기, main,
-  _시험: { 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식 },
+  _시험: { 토큰맞춤, 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식 },
 };
