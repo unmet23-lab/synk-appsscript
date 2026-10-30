@@ -32,17 +32,17 @@ const RowText: React.FC<{ row: Row; i: number }> = ({ row, i }) => {
   const mnRot = interpolate(p, [0, 0.5], [0, 90], clamp);
   const koRot = interpolate(p, [0.5, 1], [-90, 0], clamp);
   return (
-    <div style={{ position: 'absolute', left: X0, top: row.y - 86, width: 640, height: 172, perspective: 900, opacity: gone }}>
+    <div style={{ position: 'absolute', left: X0, top: (row.ty ?? row.y) - 86, width: 640, height: 172, perspective: 900, opacity: gone }}>
       {p < 0.5 ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', transform: `rotateX(${mnRot}deg)`, fontFamily: MN, fontWeight: 700, fontSize: 52, color: C.brown, letterSpacing: -0.5 }}>{row.mn}</div>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', transform: `rotateX(${mnRot}deg)`, fontFamily: MN, fontWeight: 700, fontSize: row.mn.length > 16 ? 46 : 52, color: C.brown, letterSpacing: -0.5 }}>{row.mn}</div>
       ) : (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', transform: `rotateX(${koRot}deg)` }}>
           <div style={{ fontFamily: KO, fontWeight: 800, fontSize: KO_SIZE, lineHeight: 1.05, color: C.brown, whiteSpace: 'nowrap' }}>
             <span style={{ display: 'inline-block', transform: `translateX(${shift}px)` }}>{row.subj}</span>
             <span style={{ display: 'inline-block', marginLeft: 16, transform: `translateX(${shift}px) scale(${1 + 0.14 * bump})`, transformOrigin: 'left center', color: C.coralShade }}>와요</span>
           </div>
-          <div style={{ fontFamily: MN, fontWeight: 600, fontSize: 34, lineHeight: 1.2, color: C.coralShade, marginTop: 6, transform: `translateX(${shift}px)` }}>{row.read}</div>
-          <div style={{ fontFamily: MN, fontWeight: 600, fontSize: 30, lineHeight: 1.2, color: C.brown, opacity: 0.72, transform: `translateX(${shift}px)` }}>{row.mn}</div>
+          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 40, lineHeight: 1.15, color: C.coralShade, marginTop: 4, transform: `translateX(${shift}px)` }}>{row.read}</div>
+          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 34, lineHeight: 1.15, color: C.brown, opacity: 0.8, transform: `translateX(${shift}px)` }}>{row.mn}</div>
         </div>
       )}
     </div>
@@ -58,7 +58,7 @@ const SnapFrame: React.FC = () => {
   if (p <= 0) return null;
   const x = X0 + SUBJ_BOX + 4;
   const y0 = ROWS[0].y - 80;
-  const y1 = ROWS[4].y - 12;
+  const y1 = (ROWS[4].ty ?? ROWS[4].y) - 4;
   const w = 158;
   const per = 2 * (w + (y1 - y0));
   return (
@@ -81,7 +81,7 @@ const Fx: React.FC<{ row: Row; i: number }> = ({ row, i }) => {
     return (
       <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0, opacity: fade }}>
         {[0, 1, 2].map((k) => (
-          <path key={k} d={`M ${318 + k * 16} ${y - 74 - k * 6} q 14 22 0 44`} fill="none" stroke={C.coralShade} strokeWidth={6} strokeLinecap="round" opacity={0.35 + 0.65 * ((w + k * 0.3) % 1)} />
+          <path key={k} d={`M ${282 + k * 14} ${y - 78 - k * 6} q 14 22 0 44`} fill="none" stroke={C.coralShade} strokeWidth={6} strokeLinecap="round" opacity={0.35 + 0.65 * ((w + k * 0.3) % 1)} />
         ))}
       </svg>
     );
@@ -136,13 +136,75 @@ const Fx: React.FC<{ row: Row; i: number }> = ({ row, i }) => {
   );
 };
 
-// ── 위 머리 글 ─────────────────────────────────────────────────────
+
+// 몽글 — 줄마다 그것이 몽글에게도 「온다」(v1 볼 이유 심사: 인형이 끝까지 아무것도 안 한다): 하트(친구) · 비구름 · 눈 · 졸음 · 벨에 놀람.
+// 와요가 맞춰지면 「!」.
+const MX = 862; // 몽글 머리 가운데(무대판 좌표)
+const MY = 1372; // 몽글 머리 꼭대기
+const MongleFx: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  const bubble = (txt: string, o: number, key: string) =>
+    o > 0 ? (
+      <div key={key} style={{ position: 'absolute', left: MX + 40, top: MY - 150 + Math.sin(t * 3) * 4, width: 92, height: 92, borderRadius: 46, background: C.cream, opacity: o, transform: `scale(${0.7 + 0.3 * o})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: MN, fontWeight: 900, fontSize: 60, color: C.coralShade, boxShadow: '0 6px 16px rgba(80,40,20,0.18)' }}>{txt}</div>
+    ) : null;
+  const parts: React.ReactNode[] = [];
+  ROWS.forEach((row, i) => {
+    const s = t - (T.flips[i] + 0.25);
+    if (s < 0 || s > 2.3) return;
+    const o = interpolate(s, [0, 0.2, 1.9, 2.3], [0, 1, 1, 0], clamp);
+    if (row.fx === 'wave') {
+      const up = interpolate(s, [0, 1.2], [0, 1], { ...clamp, easing: EASE_OUT });
+      parts.push(<div key="h" style={{ position: 'absolute', left: MX - 30, top: MY - 70 - up * 60, fontSize: 64, opacity: o, transform: `scale(${0.6 + 0.4 * up})` }}>❤️</div>);
+    } else if (row.fx === 'rain') {
+      parts.push(
+        <svg key="r" width={1080} height={1920} style={{ position: 'absolute', inset: 0, opacity: o }}>
+          {[[-60, 0, 56], [0, -14, 66], [62, 2, 52]].map(([dx, dy, r], k) => <circle key={k} cx={MX + dx} cy={MY - 130 + dy} r={r} fill="#9AA3AE" />)}
+          {Array.from({ length: 7 }, (_, k) => {
+            const ph = (s * 1.8 + random(`mr${k}`)) % 1;
+            return <ellipse key={`d${k}`} cx={MX - 90 + random(`mrx${k}`) * 180} cy={MY - 90 + ph * 120} rx={6} ry={13} fill={C.blue} opacity={0.9 * (1 - ph)} />;
+          })}
+        </svg>,
+      );
+    } else if (row.fx === 'snow') {
+      parts.push(
+        <svg key="s" width={1080} height={1920} style={{ position: 'absolute', inset: 0, opacity: o }}>
+          {Array.from({ length: 10 }, (_, k) => {
+            const ph = (s * 0.6 + random(`ms${k}`)) % 1;
+            return <circle key={k} cx={MX - 140 + random(`msx${k}`) * 280 + Math.sin((s + k) * 2) * 10} cy={MY - 200 + ph * 220} r={7 + random(`msr${k}`) * 5} fill="#FFFFFF" stroke="#D9E2EC" strokeWidth={1.5} opacity={Math.sin(Math.PI * ph)} />;
+          })}
+        </svg>,
+      );
+    } else if (row.fx === 'zzz') {
+      parts.push(
+        <div key="z" style={{ position: 'absolute', inset: 0, opacity: o }}>
+          {[0, 1, 2].map((k) => {
+            const ph = (s * 0.7 + k / 3) % 1;
+            return <div key={k} style={{ position: 'absolute', left: MX + 30 + ph * 70, top: MY - 40 - ph * 150, fontFamily: MN, fontWeight: 900, fontSize: 40 + k * 12, color: '#5A5F6E', opacity: Math.sin(Math.PI * ph) }}>z</div>;
+          })}
+        </div>,
+      );
+    } else {
+      parts.push(bubble('!', o, 'ring'));
+      const on = Math.floor(s * 10) % 2;
+      parts.push(
+        <svg key="sh" width={1080} height={1920} style={{ position: 'absolute', inset: 0, opacity: o * (on ? 1 : 0.4) }}>
+          <path d={`M ${MX - 180} ${MY + 20} l -26 -16 M ${MX - 186} ${MY + 60} l -32 0 M ${MX - 180} ${MY + 100} l -26 16`} stroke={C.coralShade} strokeWidth={7} strokeLinecap="round" />
+        </svg>,
+      );
+    }
+  });
+  const ex = interpolate(t, [T.snap + 0.1, T.snap + 0.4, T.card - 0.1, T.card + 0.2], [0, 1, 1, 0], clamp);
+  parts.push(bubble('!', ex, 'snap'));
+  return <>{parts}</>;
+};// ── 위 머리 글 ─────────────────────────────────────────────────────
 const Title: React.FC = () => {
   const f = useCurrentFrame();
-  const gone = interpolate(f, [fr(T.card), fr(T.card + 0.35)], [1, 0], clamp);
+  const second = [...T.flips].sort((x, y) => x - y)[1];
+  const gone = interpolate(f, [fr(second - 0.3), fr(second)], [1, 0], clamp); // 둘째 줄이 뒤집히면 걷는다(v1 시험: 위 제목 띠가 지난 편과 같아 보임)
   return (
-    <div style={{ position: 'absolute', left: 0, width: 1080, top: 28, display: 'flex', justifyContent: 'center', opacity: gone }}>
-      <div style={{ background: C.cream, borderRadius: 28, padding: '14px 30px 16px', fontFamily: MN, fontWeight: 800, fontSize: 42, color: C.brown, boxShadow: '0 6px 18px rgba(80,40,20,0.14)' }}>{TEXT.title}</div>
+    <div style={{ position: 'absolute', left: 0, width: 1080, top: 150, display: 'flex', justifyContent: 'center', opacity: gone }}>
+      <div style={{ background: C.cream, borderRadius: 28, padding: '12px 26px 14px', fontFamily: MN, fontWeight: 800, fontSize: 37, color: C.brown, boxShadow: '0 6px 18px rgba(80,40,20,0.14)' }}>{TEXT.title}</div>
     </div>
   );
 };
@@ -162,8 +224,9 @@ const EndCard: React.FC = () => {
       <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 46, color: C.brown }}>{TEXT.endMn}</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, marginTop: 30, width: 700 }}>
         {TEXT.endVerbs.map((v, k) => (
-          <div key={v} style={{ background: '#EFE4D2', borderRadius: 24, padding: '18px 0 20px', textAlign: 'center', fontFamily: MN, fontWeight: 700, fontSize: 50, color: C.brown, opacity: fadeIn(f, T.card + 0.08 * k, 0.3) }}>
-            {v}
+          <div key={v} style={{ background: '#EFE4D2', borderRadius: 24, padding: '14px 0 16px', textAlign: 'center', opacity: fadeIn(f, T.card + 0.08 * k, 0.3) }}>
+            <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 50, color: C.brown, lineHeight: 1.1 }}>{v}</div>
+            <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 32, color: C.brown, opacity: 0.7, marginTop: 4 }}>{TEXT.endNouns[k]}</div>
           </div>
         ))}
       </div>
@@ -173,8 +236,8 @@ const EndCard: React.FC = () => {
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 176, lineHeight: 1.05, color: C.coralShade, transform: `scale(${pop})` }}>와요</div>
         <div style={{ fontFamily: MN, fontWeight: 600, fontSize: 44, color: C.coralShade }}>ваё</div>
       </div>
-      <div style={{ opacity: q, marginTop: 30, width: 760, textAlign: 'center', fontFamily: MN, fontWeight: 700, fontSize: 38, lineHeight: 1.25, color: C.brown }}>{TEXT.endQ}</div>
-      <div style={{ opacity: c, marginTop: 14, fontFamily: MN, fontWeight: 700, fontSize: 36, color: C.coralShade }}>{TEXT.endC}</div>
+      {/* 끝 질문 · 댓글 안내는 캡션으로(v1 시험: 세 시험관이 끝 질문을 짚고, 두 시험관이 댓글 알약 끝 카드를 지난 편과 같다고 셈) — 그 자리엔 다섯 주어가 와요 하나로 모인다 */}
+      <div style={{ opacity: q, marginTop: 26, fontFamily: KO, fontWeight: 800, fontSize: 46, color: C.brown, transform: `scale(${1 + 0.06 * c})` }}>친구가 · 비가 · 눈이 · 잠이 · 전화가</div>
     </div>
   );
 };
@@ -218,10 +281,27 @@ const Sound: React.FC = () => (
 
 export const Film: React.FC = () => {
   const f = useCurrentFrame();
-  const push = interpolate(f, [0, fr(T.total)], [1, 1.035], clamp); // 끝까지 완전히 멈춘 화면이 되지 않게
+  const push = interpolate(f, [0, fr(T.total)], [1, 1.06], clamp); // 끝까지 완전히 멈춘 화면이 되지 않게
+  // 뒤집힐 때마다(와요 맞춤 때도) 그 줄 쪽으로 한 박 다가갔다 돌아온다 — 원본의 「한 줄씩 바뀌는 박자」를 화면 전체의 박자로
+  const t = f / 30;
+  const beats: [number, number][] = [...T.flips.map((b, i) => [b, ROWS[i].ty ?? ROWS[i].y] as [number, number]), [T.snap, 860]];
+  let punch = 0;
+  let oy = 768;
+  for (const [b, y] of beats) {
+    const k = interpolate(t, [b - 0.02, b + 0.1, b + 0.7], [0, 1, 0], { ...clamp, easing: EASE_IO });
+    if (k > punch) {
+      punch = k;
+      oy = y;
+    }
+  }
+  const z = push * (1 + 0.07 * punch);
+  // 원본은 손에 든 카메라 한 컷 — 판이 멈춘 그림으로 보이지 않게 느린 흔들림(올리기 전 검사 ② 정지 38% → 기준 15%)
+  const sx = 7 * Math.sin((2 * Math.PI * t) / 3.1);
+  const sy = 6 * Math.sin((2 * Math.PI * t) / 4.3 + 1);
+  const rot = 0.35 * Math.sin((2 * Math.PI * t) / 5.3);
   return (
     <AbsoluteFill style={{ backgroundColor: '#E9DCC4' }}>
-      <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: '50% 40%' }}>
+      <AbsoluteFill style={{ transform: `translate(${sx}px, ${sy}px) rotate(${rot}deg) scale(${z * 1.03})`, transformOrigin: `50% ${oy}px` }}>
         <Img src={staticFile('img/stage.jpg')} style={{ position: 'absolute', inset: 0, width: 1080, height: 1920 }} />
         {ROWS.map((r, i) => (
           <Fx key={`fx${i}`} row={r} i={i} />
@@ -230,6 +310,7 @@ export const Film: React.FC = () => {
           <RowText key={i} row={r} i={i} />
         ))}
         <SnapFrame />
+        <MongleFx />
       </AbsoluteFill>
       <Title />
       <EndCard />

@@ -5,16 +5,19 @@ export const TEXT = {
   title: 'Монголоор 4 үг, солонгосоор ганцхан үг',
   endMn: 'Монгол хэлэнд:',
   endVerbs: ['ирэх', 'орох', 'хүрэх', 'дуугарах'],
+  // 동사마다 쓰인 낱말(위 다섯 줄의 몽골어 그대로) — v1 시험: 「다섯 문장인데 왜 넷」 · 동사 넷을 고를 보기로 읽음
+  endNouns: ['найз', 'бороо · цас', 'нойр', 'утас'],
   endKo: 'Солонгос хэлэнд: ганцхан',
   endQ: 'Солонгосоор өөр юун дээр «와요» гэж хэлдэг вэ?',
   endC: 'Сэтгэгдэлд бичээрэй 👇',
 };
 
-export type Row = { mn: string; subj: string; read: string; fx: 'wave' | 'rain' | 'snow' | 'zzz' | 'ring'; y: number };
+// y = 그림 칸 가운데(움직임 자리), ty = 글 줄 가운데(없으면 y) — 다섯째 줄 글은 오른쪽 아래 몽글 머리에 걸리지 않게 위로
+export type Row = { mn: string; subj: string; read: string; fx: 'wave' | 'rain' | 'snow' | 'zzz' | 'ring'; y: number; ty?: number };
 export const ROWS: Row[] = [
   { mn: 'Найз ирж байна', subj: '친구가', read: 'чингуга ваё', fx: 'wave', y: 340 },
   { mn: 'Бороо орж байна', subj: '비가', read: 'бига ваё', fx: 'rain', y: 620 },
   { mn: 'Цас орж байна', subj: '눈이', read: 'нуни ваё', fx: 'snow', y: 920 },
-  { mn: 'Нойр хүрч байна', subj: '잠이', read: 'жами ваё', fx: 'zzz', y: 1180 },
-  { mn: 'Утас дуугарч байна', subj: '전화가', read: 'жөнхвага ваё', fx: 'ring', y: 1410 },
+  { mn: 'Нойр хүрч байна', subj: '잠이', read: 'жами ваё', fx: 'zzz', y: 1180, ty: 1148 },
+  { mn: 'Утас дуугарч байна', subj: '전화가', read: 'жөнхвага ваё', fx: 'ring', y: 1410, ty: 1346 },
 ];

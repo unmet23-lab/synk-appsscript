@@ -8,6 +8,30 @@ import { KO } from '../lib/fonts';
 import { handPath, inBox, Pt, ringPts } from '../film/geo';
 import { fr, T } from './timeline4';
 
+// 판(en · zhs). 간체판(샤오훙수 — 기획장부/LAB.md 머리말 「두 채널 판」)은 영어 목소리를 빼고 그 말을 그 초의 화면 글로,
+// 한국어 「하하.」만 소리로 남긴다(E5 간체판과 같은 꼴). 중국어 글은 게시/검문/zhs.txt 세 겹 검수를 거친 글만.
+export type Loc4 = 'en' | 'zhs';
+type Sub = { at: number; until: number; text: string };
+type L4 = { voice: boolean; bgm: number; hat: string; face: string; font: string; subs: Sub[] };
+const L4S: Record<Loc4, L4> = {
+  en: { voice: true, bgm: 0.11, hat: 'hat', face: 'face', font: "'Inter Tight', sans-serif", subs: [] },
+  zhs: {
+    voice: false,
+    bgm: 0.14,
+    hat: '帽子',
+    face: '脸',
+    font: "'Inter Tight', 'Microsoft YaHei', sans-serif",
+    subs: [
+      { at: 0.12, until: 1.98, text: '「哈哈」（haha）用韩语怎么写？' },
+      { at: 2.05, until: 3.5, text: '先画一顶帽子' },
+      { at: 3.55, until: 5.05, text: '再画一张脸！' },
+      { at: 5.1, until: 6.5, text: '再加上 ㅏ（a）' },
+      { at: T.cut + 1.55, until: T.cut + 3.4, text: '现在你会用韩语笑了' },
+    ],
+  },
+};
+const L4Ctx = React.createContext<L4>(L4S.en);
+
 const C = {
   coral: '#F96859',
   coralShade: '#AE322A',
@@ -228,11 +252,12 @@ const useSquash = (k: number) => {
 // 「hat」 · 「face」 이름표 — 목소리가 그 낱말을 말하는 동안(v6: 모자 · 얼굴이 글자의 어느 부분인지 세 시험관이 짚음)
 const LabelTag: React.FC<{ text: string; x: number; y: number; at: number; until: number }> = ({ text, x, y, at: t, until }) => {
   const f = useCurrentFrame();
+  const L = React.useContext(L4Ctx);
   const p = interpolate(f, [fr(t), fr(t + 0.25)], [0, 1], { ...clamp, easing: EASE_IO }) * interpolate(f, [fr(until), fr(until + 0.3)], [1, 0], clamp);
   if (p <= 0) return null;
   return (
     <div style={{ position: 'absolute', left: x - 70, width: 140, top: y, textAlign: 'center', opacity: p, transform: `scale(${0.85 + 0.15 * p})` }}>
-      <span style={{ display: 'inline-block', background: C.coral, color: C.brown, fontFamily: "'Inter Tight', sans-serif", fontWeight: 800, fontSize: 40, lineHeight: 1, padding: '8px 18px 10px', borderRadius: 14 }}>{text}</span>
+      <span style={{ display: 'inline-block', background: C.coral, color: C.brown, fontFamily: L.font, fontWeight: 800, fontSize: 40, lineHeight: 1, padding: '8px 18px 10px', borderRadius: 14 }}>{text}</span>
     </div>
   );
 };
@@ -313,8 +338,8 @@ const Page: React.FC = () => {
       </svg>
       <Bubble k={0} />
       <Bubble k={1} />
-      <LabelTag text="hat" x={SYL[0].x + 0.32 * S} y={SYL[0].y + 0.02 * S} at={T.hat1[0]} until={T.s2[0]} />
-      <LabelTag text="face" x={SYL[0].x + 0.32 * S} y={SYL[0].y + 0.86 * S} at={T.face1[0] - 0.1} until={T.s2[0]} />
+      <LabelTag text={React.useContext(L4Ctx).hat} x={SYL[0].x + 0.32 * S} y={SYL[0].y + 0.02 * S} at={T.hat1[0]} until={T.s2[0]} />
+      <LabelTag text={React.useContext(L4Ctx).face} x={SYL[0].x + 0.32 * S} y={SYL[0].y + 0.86 * S} at={T.face1[0] - 0.1} until={T.s2[0]} />
     </AbsoluteFill>
   );
 };
@@ -375,16 +400,22 @@ const Sfx: React.FC<{ file: string; at: number; vol: number; from?: number; dur?
 );
 const PENCIL_FROM = [0.6, 2.4, 0.2, 1.5, 4.2, 0.6, 3.1, 1.1, 2.8];
 
-const Sound: React.FC = () => (
+const Sound: React.FC = () => {
+  const L = React.useContext(L4Ctx);
+  return (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.11 * MASTER * interpolate(i, [fr(T.total) - 30, fr(T.total)], [1, 0], clamp)} />
-    <Vo id="g1" at={T.g1} />
-    <Vo id="m1" at={T.m1} />
-    <Vo id="m2" at={T.m2} />
-    <Vo id="m3" at={T.m3} />
+    <Audio src={staticFile('bgm.wav')} volume={(i) => L.bgm * MASTER * interpolate(i, [fr(T.total) - 30, fr(T.total)], [1, 0], clamp)} />
+    {L.voice ? (
+      <>
+        <Vo id="g1" at={T.g1} />
+        <Vo id="m1" at={T.m1} />
+        <Vo id="m2" at={T.m2} />
+        <Vo id="m3" at={T.m3} />
+        <Vo id="g3" at={T.g3} />
+      </>
+    ) : null}
     <Vo id="k2" at={T.k2} />
     <Vo id="k2" at={T.k2b} />
-    <Vo id="g3" at={T.g3} />
     {/* 연필 — 실제 녹음 조각, 획마다 다른 자리 */}
     {ALL_DRAWS.map(({ w }, i) => (w[1] - w[0] >= 0.15 ? <Sfx key={i} file={i % 2 ? 'pencil_b.wav' : 'pencil_a.wav'} at={w[0]} from={PENCIL_FROM[i % 9]} dur={w[1] - w[0]} vol={i < EN_DRAWS.length ? 0.4 : 0.55} /> : null))}
     {/* 반전 — 빨간 펜 */}
@@ -399,20 +430,43 @@ const Sound: React.FC = () => (
     <Vo id="k2" at={T.tip2[1] + 0.05} />
     <Sfx file="pop.wav" at={T.bubble + 0.18} vol={0.22} />
   </>
-);
+  );
+};
 
-export const Film4: React.FC = () => {
+// 간체판 화면 글 — 목소리 대신 그 초에(아래 크림 판 위 진한 글자)
+const Subs: React.FC = () => {
+  const f = useCurrentFrame();
+  const L = React.useContext(L4Ctx);
+  return (
+    <>
+      {L.subs.map((s, i) => {
+        const o = interpolate(f, [fr(s.at), fr(s.at) + 4, fr(s.until) - 4, fr(s.until)], [0, 1, 1, 0], clamp);
+        if (o <= 0) return null;
+        return (
+          <div key={i} style={{ position: 'absolute', left: 0, width: 1080, top: 1290, display: 'flex', justifyContent: 'center', opacity: o }}>
+            <div style={{ background: '#FFFDF8', borderRadius: 26, padding: '14px 30px 16px', fontFamily: L.font, fontWeight: 800, fontSize: 58, color: C.brown, boxShadow: '0 6px 16px rgba(80,40,20,0.14)' }}>{s.text}</div>
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
+export const Film4: React.FC<{ loc?: Loc4 }> = ({ loc = 'en' }) => {
   const f = useCurrentFrame();
   const after = f >= fr(T.cut);
   // 컷 뒤에는 하하로 다가간 채 아주 천천히 더 다가간다(끝까지 완전히 멈춘 화면이 되지 않게)
   const z = after ? ZOOM + interpolate(f, [fr(T.cut), fr(T.total)], [0, 0.035], clamp) : 1;
   return (
+    <L4Ctx.Provider value={L4S[loc]}>
     <AbsoluteFill style={{ backgroundColor: '#E9DCC4' }}>
       <AbsoluteFill style={{ transform: z === 1 ? undefined : `scale(${z})`, transformOrigin: ZOOM_ORIGIN }}>
         <Page />
         <Pencil />
       </AbsoluteFill>
+      <Subs />
       <Sound />
     </AbsoluteFill>
+    </L4Ctx.Provider>
   );
 };
