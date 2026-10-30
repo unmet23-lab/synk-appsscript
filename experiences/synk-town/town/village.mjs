@@ -10,7 +10,7 @@ import { bandAt, clockAt, lifeDayStartAt, recordOffset, validOffset, BAND_IDS, D
 import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
 import { paramsFor } from './params.mjs';
 import { wake } from './state.mjs';
-import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf, FIRST_STAY, firstPending } from './cards.mjs';
+import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf, FIRST_STAY, firstOwed, firstPending } from './cards.mjs';
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
 import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
 import { habitOf, HABIT_BANDS } from './visits.mjs';
@@ -183,6 +183,10 @@ function openBand(v, atMs, planCmdRev, carried, visitBands = null) {
     ...(carried?.village ? structuredClone(carried.village) : {}), ...(visitHabit ? { visitHabit } : {}) };
   // A new life day opens with the last day's news (§9-3).
   if (carried && !sameDay) morningNews(v, carried.lifeDay);
+  // A C4 saved waiting before the first-C4 rule and never done with the player is the player's first from here (GPT GA2):
+  // marked, it waits outside the caps like one that rose at the player's stay (the planner already left it unsolved).
+  const c4 = v.band.cards?.[FIRST_STAY];
+  if (c4?.status === 'triggered' && !c4.first && firstOwed(c4)) c4.first = true;
   // C4's first (§8-4): only a band's opening lets the player's stays go — those over before it, or all of them once the first
   // waits for the player or is done — so no read decides what a later band plans from (§15-3, Fable F1).
   if (v.playerStays) {

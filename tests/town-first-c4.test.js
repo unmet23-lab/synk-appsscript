@@ -292,3 +292,13 @@ test('GPT GA2 — 이 규칙 전에 저장된, 표시 없이 기다리던 C4도 
   assert.equal(out.cards.C4.status, 'triggered'); assert.equal(out.cards.C4.key, `${LIFE}.day.0`);
   assert.ok(!out.log.some(e => e.card === 'C4'), '새로 서지도 않는다(이미 기다림)');
 });
+
+test('GPT GA2 다시 — 표시 없이 기다리던 옛 C4는 다음 구간을 열 때 첫 회 표시를 받아(상한 밖) 플레이어를 기다린다', async () => {
+  const village = await townModule('village');
+  const v = village.initialVillage(), close = ms => village.closeBands(v, { nowMs: ms, seed: 'first-c4-old-mark', offsetMin: 540, revision: 1 });
+  close(NOON);
+  v.band.cards = { ...(v.band.cards || {}), C4: { status: 'triggered', key: `${v.band.lifeDay}.${v.band.band}.0`, at: v.band.startMs, day: v.band.lifeDay } };
+  assert.ok(!village.planOf(v).segments.some(s => s.card === 'C4'), '그 구간에도 주인이 풀지 않는다');
+  close(v.band.endMs + MIN);
+  assert.deepEqual({ status: v.band.cards.C4.status, first: v.band.cards.C4.first }, { status: 'triggered', first: true }, '다음 구간 — 첫 회로 이행');
+});
