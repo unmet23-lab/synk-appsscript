@@ -186,6 +186,8 @@ function 본비율Of(p, ctx) {
 }
 
 const 조회까닭 = { 없음: '72시간 조회 못 받음', 화면: '72시간 조회 못 받음(화면 값만)', '창 밖': '72시간 값이 측정 창 밖', '못 씀': '72시간 조회를 기존 판정이 비교에서 뺐다' };
+/** 평소 대비를 못 잰 까닭 — 같은 나이로 견줄 앞선 편이 모자라면 그 수(게시성과판정 multipleOf — 앞선 편은 늘지 않아 끝내 못 잰다) */
+const 못잼까닭 = m => (m?.basis === 판정.SAME_AGE && m.n < 판정.MULTIPLE_MIN ? `평소 대비 못 잼 — 같은 나이로 견줄 앞선 편 ${m.n}편` : '평소 대비 못 잼');
 
 /** 장부 줄이 있는 판 하나 → 판정(머리 주석 「편 판정」). 영구: 끝내 안 오는 자료 부족 */
 function 판결과(p, 시험, ctx) {
@@ -201,7 +203,7 @@ function 판결과(p, 시험, ctx) {
   else if (!l72 && ctx.now < p.publishedMs + WAIT_72H) [값, 까닭] = ['아직', '72시간 값 기다림'];
   else if (조회넘음 === false) [값, 까닭] = ['못 넘음', `조회 ${배글(multiple.value)}`];
   else if (삼초넘음 === false) [값, 까닭] = ['못 넘음', `3초 유지 ${판정.valueText('earlyRetention3sPct', 삼초.value)}`];
-  else if (조회넘음 === null) [값, 까닭, 영구] = ['자료 부족', !l72 ? '72시간 값 없음' : 조회까닭[조회.상태] || '평소 대비 못 잼', true];
+  else if (조회넘음 === null) [값, 까닭, 영구] = ['자료 부족', !l72 ? '72시간 값 없음' : 조회까닭[조회.상태] || 못잼까닭(l72.multiple), true];
   else if (삼초넘음 === null) [값, 까닭] = ['자료 부족', '3초 유지율 없음'];
   return {
     post: p.post, url: p.url, folder: p.folder, channel: p.channel, platform: p.platform, format: p.format, account: p.account || null,

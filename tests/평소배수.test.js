@@ -32,18 +32,6 @@ test('중앙값과 배수 — 중앙값이 없거나 0이면 못 잼(null)', () 
   assert.equal(lib.multiple(5, null), null);
 });
 
-test('그 시각의 맨 앞 12편 — 그 시각 뒤에 올라온 편은 빼고, 숫자 없는 편은 더 옛 편으로 채우지 않고, 판정하는 편은 관측값으로', () => {
-  const posts = Array.from({ length: 15 }, (_, i) => ({ id: 'p' + i, publishedAt: new Date(Date.UTC(2026, 9, 1 + i)).toISOString() }));
-  const views = { p3: null };
-  const got = lib.baselineAt({ posts, at: Date.UTC(2026, 9, 13, 12), viewsAt: id => (id in views ? views[id] : Number(id.slice(1)) * 10),
-    self: { id: 'p12', publishedAt: posts[12].publishedAt, views: 9999 } });
-  // 그 시각까지 올라온 편: p0~p12(13편) → 맨 앞 12편 = p12…p1, p3은 숫자가 없어 빠지고 p0은 12편 밖이라 들지 않는다
-  assert.equal(got.n, 11);
-  assert.equal(got.missing, 1);
-  assert.ok(got.items.some(i => i.id === 'p12' && i.views === 9999));
-  assert.ok(!got.items.some(i => i.id === 'p13' || i.id === 'p3' || i.id === 'p0'));
-});
-
 test('유튜브 주소·핸들·채널 ID를 읽는다', () => {
   assert.deepEqual(lib.youtubeTarget('@synkkorean'), { kind: 'handle', handle: 'synkkorean' });
   assert.deepEqual(lib.youtubeTarget('https://www.youtube.com/@yuhobuilds/shorts'), { kind: 'handle', handle: 'yuhobuilds' });

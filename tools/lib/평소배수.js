@@ -7,7 +7,8 @@
  *
  * 쓰는 곳
  *   - tools/평소배수.js — 유튜브 채널·영상 주소로 바로 잰다(월요일 스캔의 「같은 분야 계정에서 평소보다 크게 터진 게시물」 고르기).
- *   - tools/게시성과.js — 우리 계정 판정 줄의 배수 칸. 회사 서버가 하루 한 번 모은 게시물별 숫자(snapshots)로 그 시각의 12편을 잰다.
+ *   - lib/게시성과판정.js — 우리 계정 판정 줄의 배수 칸은 중앙값·배수만 여기서 쓰고, 기준은 다르다: 그 편 앞에 올린 12편이
+ *     같은 나이에 낸 조회(그 편 뺌, 2026-10-31). 남의 계정은 편마다 나이를 모르니 위 정의(지금 숫자) 그대로다.
  *
  * 유튜브 쇼츠 탭 목록은 업로드 재생목록의 쇼츠판(UUSH + 채널 ID 셋째 글자부터)으로 읽는다. 공식 문서에 없는 재생목록이라
  * 못 읽으면(404·빈 목록) 업로드 재생목록에서 3분 이하 영상만 고르고 그렇게 쟀다고 남긴다.
@@ -27,29 +28,6 @@ function median(values) {
 function multiple(value, middle) {
   if (typeof value !== 'number' || !Number.isFinite(value) || typeof middle !== 'number' || !(middle > 0)) return null;
   return Math.round((value / middle) * 100) / 100;
-}
-
-/**
- * 그 시각(at)의 쇼츠 탭 맨 앞 count편을 게시물 목록과 하루 숫자로 다시 세운다.
- *   posts: [{id, publishedAt}] — 같은 채널·같은 형식만 넘긴다
- *   viewsAt(postId, atMs): 그 시각까지 읽은 가장 늦은 조회수 또는 null
- *   self: {id, publishedAt, views} — 판정하는 그 편(그 시각에 관측한 값을 쓴다)
- * 맨 앞 count편을 먼저 정하고 그 안에서 숫자가 있는 편만 쓴다(쇼츠 탭과 같은 12편 — 숫자 없는 편 대신 더 옛 편을 끌어오지 않는다).
- * → {median, n, at, items:[{id, views}], missing} · 하나도 못 읽으면 median null
- */
-function baselineAt({ posts, viewsAt, at, count = KEEP, self = null }) {
-  const atMs = typeof at === 'number' ? at : Date.parse(at);
-  const list = posts.filter(p => Date.parse(p.publishedAt) <= atMs && (!self || p.id !== self.id));
-  if (self && Date.parse(self.publishedAt) <= atMs) list.push({ id: self.id, publishedAt: self.publishedAt, self: true });
-  list.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt) || String(a.id).localeCompare(String(b.id)));
-  const items = [];
-  let missing = 0;
-  for (const p of list.slice(0, count)) {
-    const views = p.self ? self.views : viewsAt(p.id, atMs);
-    if (typeof views === 'number' && Number.isFinite(views)) items.push({ id: p.id, views });
-    else missing += 1;
-  }
-  return { median: median(items.map(i => i.views)), n: items.length, at: new Date(atMs).toISOString(), items, missing };
 }
 
 // ── 유튜브(공개 숫자, Data API v3) ─────────────────────────────────────────
@@ -168,4 +146,4 @@ async function youtubeVideo({ id, token, fetchImpl = fetch }) {
   return (await videoStats(api, [id])).get(id) || null;
 }
 
-module.exports = { KEEP, median, multiple, baselineAt, youtubeTarget, youtubeShortsTab, youtubeVideo, seconds };
+module.exports = { KEEP, median, multiple, youtubeTarget, youtubeShortsTab, youtubeVideo, seconds };

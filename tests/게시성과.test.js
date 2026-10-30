@@ -156,25 +156,61 @@ test('관측 지연이 15분 넘게 다른 편과는 견주지 않는다', () =>
   assert.equal(got.judgments['72h'].facts.find(f => f.metric === 'saves').comparison.status, 'insufficient');
 });
 
-test('평소 대비 배수 — 그 시각 같은 채널·형식 최근 12편 조회 중앙값(그 편 포함)', () => {
+test('평소 대비 배수(7일) — 이 편 앞에 올린 최근 12편이 7일째에 낸 조회의 중앙값(뒤에 올린 편 · 이 편 · 그 뒤 누적은 안 씀)', () => {
+  const id = n => `V${String(n).padStart(10, '0')}`;
+  const day = n => T0 + n * 24 * H;
   const posts = [], snapshots = [];
-  for (let n = 1; n <= 14; n += 1) {
-    const published = T0 + n * 24 * H;
-    posts.push({ id: `c-yt:V${String(n).padStart(10, '0')}`, channelId: 'c-yt', externalId: `V${String(n).padStart(10, '0')}`, url: `https://www.youtube.com/watch?v=V${String(n).padStart(10, '0')}`, publishedAt: iso(published), publicationFormat: 'youtube-shorts' });
-    snapshots.push([`c-yt:V${String(n).padStart(10, '0')}`, published + 30 * 24 * H - 1, n * 100]);
+  for (let n = 1; n <= 19; n += 1) {
+    posts.push({ id: `c-yt:${id(n)}`, channelId: 'c-yt', externalId: id(n), url: `https://www.youtube.com/shorts/${id(n)}`, publishedAt: iso(day(n)), publicationFormat: 'youtube-shorts' });
+    // 7일째(같은 나이)는 n×100, 그 뒤 누적은 열 배 — 판정하는 편(16번)은 7일째 3000
+    snapshots.push(n === 16 ? [`c-yt:${id(n)}`, day(n) + 168 * H, 3000] : [`c-yt:${id(n)}`, day(n) + 168 * H, n * 100], [`c-yt:${id(n)}`, day(n) + 400 * H, n * 1000]);
   }
-  // 판정할 편(15번째) — 72시간 조회 3000
-  const published = T0 + 15 * 24 * H;
-  const entry = { id: 'y15', channelId: 'c-yt', platform: 'youtube', url: 'https://www.youtube.com/watch?v=V0000000015', publishedAt: iso(published), publicationFormat: 'youtube-shorts',
-    checkpoints: [cp(72, published, { views: 3000 }, { source: 'api:youtube-data-api-v3' })] };
-  // 하루 숫자의 시각을 판정 시각 전으로 당긴다
-  const snaps = snapshots.map(([id, , v]) => [id, published + 70 * H, v]);
-  const got = 판정.judgeAll(data({ entries: [entry], posts, snapshots: snaps }), { now: published + 80 * H }).find(x => x.record.entryId === 'y15');
-  const m = got.judgments['72h'].multiple;
-  // 최근 12편 = 이 편(3000) + 14·13·…·4번(1400…400) → 중앙값 (900+1000)/2 = 950
-  assert.equal(m.n, 12);
-  assert.equal(m.median, 950);
-  assert.equal(m.value, Math.round(3000 / 950 * 100) / 100);
+  const entry = { id: 'y16', channelId: 'c-yt', platform: 'youtube', url: `https://www.youtube.com/shorts/${id(16)}`, publishedAt: iso(day(16)), publicationFormat: 'youtube-shorts', checkpoints: [] };
+  const got = 판정.judgeAll(data({ entries: [entry], posts, snapshots }), { now: day(16) + 400 * H }).find(x => x.record.entryId === 'y16');
+  const j = got.judgments['7d'];
+  // 앞선 15편 가운데 가까운 12편 = 15…4번의 7일째 값(1500…400) → 중앙값 (900+1000)/2 = 950. 17~19번(뒤에 올림)과 이 편은 들지 않는다
+  assert.deepEqual(j.multiple, { value: Math.round(3000 / 950 * 100) / 100, median: 950, n: 12, basis: 판정.SAME_AGE });
+  assert.match(판정.judgmentLine(j), /평소 대비 3\.2배\(앞선 12편 같은 나이 중앙값 950\)/);
+});
+
+test('평소 대비 배수(24·72시간) — 앞서 올린 편의 같은 시점 체크포인트(같은 출처 · 관측 지연 차 15분 안)와 견주고, 앞선 편이 4편 미만이면 못 잰다', () => {
+  const judge72 = list => 판정.judgeAll(data({ entries: list }), { now: T0 + 40 * 24 * H }).find(x => x.record.entryId === 'e7').judgments['72h'];
+  const prior = [1, 2, 3, 4, 5].map(n => igEntry(n, 10, { views: n * 100 }));
+  const late = { ...igEntry(6, 10, { views: 9000 }), checkpoints: [cp(72, T0 + 6 * 24 * H, { views: 9000 }, { late: 60 * 60_000 })] };
+  const j = judge72([...prior, late, igEntry(7, 10, { views: 900 }), igEntry(8, 10, { views: 1 })]);
+  // 앞선 다섯 편(100…500)만 — 한 시간 늦게 관측한 6번 · 뒤에 올린 8번 · 이 편은 빼고 중앙값 300
+  assert.deepEqual(j.multiple, { value: 3, median: 300, n: 5, basis: 판정.SAME_AGE });
+  assert.match(판정.judgmentLine(j), /평소 대비 3\.0배\(앞선 5편 같은 나이 중앙값 300\)/);
+  const few = judge72([...prior.slice(0, 3), igEntry(7, 10, { views: 900 })]);
+  assert.deepEqual(few.multiple, { value: null, median: null, n: 3, basis: 판정.SAME_AGE });
+  assert.match(판정.judgmentLine(few), /평소 대비 못 잼\(같은 나이로 견줄 앞선 편 3편 — 4편부터\)/);
+});
+
+test('같은 나이 배수는 새 판정부터 — 10-31 전에 낸 판정 줄은 굳기 전에도 그 배수를 지키고(다시 덧붙이지 않는다), 처음 내는 판정만 같은 나이로 잰다', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-post-test-sameage-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const ledgerFile = path.join(dir, 'docs', '_ops', '게시성과.jsonl');
+  const prior = [1, 2, 3, 4, 5].map(n => igEntry(n, 10, { views: n * 100 }));
+  await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 10 * 24 * H + 3 * H, data: data({ entries: [...prior, igEntry(7, 10, { views: 900 })] }), shorts: new Map() });
+  // 7번의 72시간 줄을 10-31 전 정의(표식 없음 · 그 시각 최근 12편)로 바꿔 둔다 — 그때 도구가 쓴 모양 그대로
+  const old = { value: 9.9, median: 91, n: 12 };
+  const lines = 도구.readLedger(ledgerFile).map(l => (l.post === 'instagram:CODE7x' && l.point === '72h'
+    ? { ...l, multiple: old, line: l.line.replace('평소 대비 3.0배(앞선 5편 같은 나이 중앙값 300)', '평소 대비 9.9배(최근 12편 중앙값 91)') } : l));
+  assert.ok(lines.some(l => l.multiple === old && l.line.includes('평소 대비 9.9배(최근 12편 중앙값 91)')));
+  fs.writeFileSync(ledgerFile, lines.map(l => JSON.stringify(l)).join('\n') + '\n');
+  // 이틀 뒤(굳기 전) — 9번이 처음 72시간 판정을 받는다
+  const report = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 12 * 24 * H + 3 * H, data: data({ entries: [...prior, igEntry(7, 10, { views: 900 }), igEntry(9, 10, { views: 700 })] }), shorts: new Map() });
+  const after = 도구.readLedger(ledgerFile);
+  const of = (post, point) => after.filter(l => l.kind === '판정' && l.post === post && l.point === point);
+  assert.equal(of('instagram:CODE7x', '72h').length, 1, '지난 판정은 다시 재어 덧붙이지 않는다');
+  assert.deepEqual(of('instagram:CODE7x', '72h')[0].multiple, old);
+  // 9번 앞의 여섯 편(100…500, 900) → 중앙값 350, 700 ÷ 350 = 2배
+  assert.deepEqual(of('instagram:CODE9x', '72h')[0].multiple, { value: 2, median: 350, n: 6, basis: 판정.SAME_AGE });
+  assert.ok(report.새판정.every(l => !l.includes('9.9배')));
+  // 요약도 지난 판정을 그때 배수 그대로 보인다(3배 목록에 옛 9.9배가 남는다 — 다시 재는 것은 승인 뒤)
+  const summary = fs.readFileSync(path.join(dir, 'docs', '마케팅', '게시성과.md'), 'utf8');
+  assert.match(summary, /- \*\*평소 대비 3배 넘은 편\*\*[^\n]*인스타 @test\.ig 72시간 9\.9배/);
+  assert.match(summary, /평소 대비 9\.9배\(최근 12편 중앙값 91\)/);
 });
 
 test('기획.md 첫 줄에서 역할과 훅 이름표를 읽고, A는 인스타·B는 유튜브', () => {
@@ -225,6 +261,8 @@ test('--실행은 편 폴더(성과.json 자동판정 칸·기획.md 끝 묶음)
   assert.equal(result.자동판정.판[0].훅, '숫자');
   assert.equal(result.자동판정.판[0].역할, '권위');
   assert.equal(result.자동판정.판[0].시점['72시간'].판정, '상위 25%');
+  // 평소 대비는 앞선 네 편의 72시간 조회(1,000회씩)와 견주고, 새 정의라는 표시를 단다
+  assert.deepEqual(result.자동판정.판[0].시점['72시간'].평소대비, { 배수: 1, 중앙값: 1000, 편수: 4, 기준: '앞선 편 같은 나이' });
   const plan = fs.readFileSync(path.join(folder, '기획.md'), 'utf8');
   assert.match(plan, /게시성과:시작/);
   assert.match(plan, /인스타 @test\.ig · 훅 A 숫자 72시간/);
@@ -560,36 +598,39 @@ test('2주 시험 — --실행 요약에 갈래 표·편 표(추정 표시)와 �
       measurementWindowMissed: false, ...(estimated.includes(k) ? { estimated: true } : {}) }]));
     return { hours, status: 'recorded', dueAt: iso(due), closesAt: iso(due + 6 * H), observedAt, source, metrics, metricProvenance };
   };
-  // 인스타 평소 = 이전 네 편이 그 시각 100회 → 이 편 400회는 4배. 유튜브는 견줄 편이 없어 1배
-  const peers = [1, 2, 3, 4].map(n => ({ id: `c-ig:P${n}`, channelId: 'c-ig', url: `https://www.instagram.com/reel/PEER${n}x/`, publishedAt: iso(S0 - n * 24 * H), publicationFormat: 'instagram-reels' }));
+  // 인스타 평소 = 앞서 올린 네 편의 72시간 조회 100회 → 이 편 400회는 4배. 유튜브는 앞선 편이 없어 못 잰다
+  const peers = [1, 2, 3, 4].map(n => ({ id: `e-p${n}`, channelId: 'c-ig', platform: 'instagram', url: `https://www.instagram.com/reel/PEER${n}x/`, publishedAt: iso(S0 - n * 24 * H),
+    publicationFormat: 'instagram-reels', origin: 'auto', checkpoints: [cp(72, S0 - n * 24 * H, { views: 100 })] }));
   const server = {
     checkedAt: iso(S0 + 80 * H),
     channels: [{ id: 'c-ig', platform: 'instagram', handle: 'synkbrief', name: 'IG' }, { id: 'c-yt', platform: 'youtube', handle: 'synkbrief', externalId: YT, name: 'YT' }],
     entries: [
+      ...peers,
       { id: 'e-ig', channelId: 'c-ig', platform: 'instagram', url: IG, publishedAt: iso(S0), publicationFormat: 'instagram-reels', origin: 'auto',
         checkpoints: [점(24, { views: 150, earlyRetention3sPct: 33.2 }, 'api:instagram-graph', ['earlyRetention3sPct']), 점(72, { views: 400 }, 'api:instagram-graph')] },
       { id: 'e-yt', channelId: 'c-yt', platform: 'youtube', url: YTU, publishedAt: iso(S0), publicationFormat: 'youtube-shorts', origin: 'auto',
         checkpoints: [점(24, { views: 120 }, 'api:youtube-data-api-v3'), 점(72, { views: 200 }, 'api:youtube-data-api-v3')] },
     ],
-    posts: peers,
-    snapshots: peers.map(p => [p.id, S0 + 71 * H, 100]),
+    posts: [],
+    snapshots: [],
   };
   const now = S0 + 80 * H;
   const first = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now, data: server, shorts: new Map() });
   assert.equal(first.시험, '시험 편 1 · 판 2 · 갈래 1(아직 1)');
   const summaryFile = path.join(dir, 'docs', '마케팅', '게시성과.md');
   const summary = fs.readFileSync(summaryFile, 'utf8');
-  const 갈래줄 = '| 2주 시험 10-26 | @synkbrief(유튜브·인스타) | 지금 막힌 것 | 1 | 유튜브 0/1 · 인스타 1/1 | — | 아직(1편 — 3편 미만) | — |';
+  const 갈래줄 = '| 2주 시험 10-26 | @synkbrief(유튜브·인스타) | 지금 막힌 것 | 1 | 유튜브 0/1(자료 부족 1) · 인스타 1/1 | — | 아직(1편 — 3편 미만) | — |';
   assert.ok(summary.includes(갈래줄), summary);
-  assert.match(summary, /\| \[synkbrief_시험편_20261027\]\([^)]+\) \| 인스타 @synkbrief \| 지금 막힌 것 \| 400회 · 4\.0배\(최근 5편 중앙값 100\) \| 33\.2%\(추정\) \| — \| \*\*기준 넘음\*\* \|/);
-  // 유튜브 판은 이 채널의 장부 첫 편이라 본 비율을 견줄 지난 편이 없다 — 판정에서 빼고 표에만 적는다(재확인 A2)
-  assert.match(summary, /\| 유튜브 @synkbrief \| 지금 막힌 것 \| 200회 · 1\.0배\(최근 1편 중앙값 200\) \| — \| 첫 편이라 판정에서 뺌 \| \*\*못 넘음\*\*\(조회 1\.0배\) \|/);
+  assert.match(summary, /\| \[synkbrief_시험편_20261027\]\([^)]+\) \| 인스타 @synkbrief \| 지금 막힌 것 \| 400회 · 4\.0배\(앞선 4편 같은 나이 중앙값 100\) \| 33\.2%\(추정\) \| — \| \*\*기준 넘음\*\* \|/);
+  // 유튜브 판은 이 채널의 장부 첫 편이라 본 비율을 견줄 지난 편이 없다 — 판정에서 빼고 표에만 적는다(재확인 A2).
+  // 조회도 같은 나이로 견줄 앞선 편이 없어 끝내 못 잰다(10-31 전에는 이 편만 든 기준으로 늘 1.0배 → 못 넘음이었다)
+  assert.match(summary, /\| 유튜브 @synkbrief \| 지금 막힌 것 \| 200회 · 평소 대비 못 잼 \| — \| 첫 편이라 판정에서 뺌 \| 자료 부족\(평소 대비 못 잼 — 같은 나이로 견줄 앞선 편 0편\) \|/);
   assert.match(summary, /- \*\*2주 시험 갈래\*\*[^\n]*: 계속 — 없음 \/ 멈춤 — 없음 \/ 그 밖 1갈래\(아직 1\)/);
   // 기존 판정 줄은 그대로 — 이전 편이 모자라 「자료 부족」
   assert.match(summary, /인스타 @synkbrief \| 72시간 \| [^\n]*→ \*\*자료 부족\*\*/);
   // 화면에서 읽은 본 비율을 적으면 편 표에 들어간다(첫 편이라 판정에서는 뺀다)
   await 도구.run({ 실행: true, 저장소: dir, 적기: YTU, 값들: ['본비율=41'] }, { now, data: server, shorts: new Map() });
-  assert.match(fs.readFileSync(summaryFile, 'utf8'), /\| 41%\(화면\) · 첫 편이라 판정에서 뺌 \| \*\*못 넘음\*\*\(조회 1\.0배\) \|/);
+  assert.match(fs.readFileSync(summaryFile, 'utf8'), /\| 41%\(화면\) · 첫 편이라 판정에서 뺌 \| 자료 부족\(평소 대비 못 잼 — 같은 나이로 견줄 앞선 편 0편\) \|/);
   // 서버를 읽지 않는 --요약도 장부만으로 같은 표를 낸다
   const again = await 도구.run({ 요약: true, 저장소: dir, 값들: [] }, { now });
   assert.ok(again.요약.includes(갈래줄));
@@ -729,7 +770,8 @@ test('2주 시험 — 실제 판정 경로에서 72시간 목표보다 7시간 �
   const now = S0 + 90 * H;
   await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now, data: server, shorts: new Map() });
   const line = 도구.readLedger(path.join(dir, 'docs', '_ops', '게시성과.jsonl')).find(l => l.kind === '판정' && l.point === '72h');
-  assert.equal(line.multiple.value, 4, '기존 판정 줄의 배수는 그대로 둔다');
+  // 측정 창 밖에서 관측한 값은 같은 나이가 아니라 평소 대비도 못 잰다(10-31 전에는 그 시각 최근 편과 견줘 4배였다)
+  assert.deepEqual(line.multiple, { value: null, median: null, n: 0, basis: 판정.SAME_AGE });
   assert.ok(line.invalidMetrics.includes('views'), '기존 판정이 비교에서 뺀 지표를 장부에 남긴다');
   assert.equal(line.verdict, '자료 부족');
   const summary = fs.readFileSync(path.join(dir, 'docs', '마케팅', '게시성과.md'), 'utf8');

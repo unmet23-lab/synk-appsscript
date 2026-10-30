@@ -11,7 +11,9 @@
  *     하루 한 번이라 지연 규칙 없이 같은 채널·형식의 7일 값끼리 견준다(등록하지 않은 편의 숫자도 견줄 편에 든다).
  *   - 상위·하위와 다음 할 일은 v2 §6의 네 숫자(초반 유지·평균 시청과 완주·보내기와 저장·맞춤 도구 유입)로만 정한다.
  *     조회·좋아요·댓글·도달은 판정 줄에 보이기만 한다(「조회수만으로 보지 않는다」). 지표가 엇갈리면 제안하지 않는다.
- *   - 평소 대비 배수 = 이 편 조회 ÷ 그 시각 같은 채널·형식 최근 12편 조회의 중앙값(lib/평소배수.js, 그 편도 12편에 든다).
+ *   - 평소 대비 배수 = 이 편 조회 ÷ 같은 채널·형식에서 이 편 앞에 올린 최근 12편이 같은 나이에 낸 조회의 중앙값(2026-10-31, multipleOf).
+ *     같은 나이 = 같은 점의 값이다 — 24·72시간은 위 비교와 같은 조건의 체크포인트, 7일은 하루 숫자의 168시간 값. 이 편은 빼고 4편부터 잰다.
+ *     그 전에는 그 시각 최근 12편이 그때까지 받은 조회(그 편 포함)와 견줘, 나이 어린 편이 기준을 끌어내려 배수가 부풀었다(총동원 유튜브 7일 5.52배 → 3.55배).
  * 화면에서만 볼 수 있는 칸(유튜브 본 비율, 인스타 팔로우, 권한이 없어 서버가 못 받은 칸)은 「화면 필요」로 남기고
  * 한 주에 한 번 모아 읽은 값(장부의 「화면」 줄)을 72시간·7일 판정에 더한다.
  * 「2주 시험」(시청자수요조사 6-5·6-9 — 평소의 2배 · 3초 유지 30% · 3편 단위)은 이 규칙을 바꾸지 않고 lib/게시성과시험.js가 장부로 따로 낸다.
@@ -22,7 +24,10 @@ const H = 3_600_000;
 const MIN = 60_000;
 const MIN_SAMPLE = 3;
 const STANDING_MIN = 4;
+const MULTIPLE_MIN = 4;
 const DAILY_TOLERANCE = 13 * H;
+/** 같은 나이 배수의 표식(장부 multiple.basis) — 표식 없는 배수는 10-31 전 정의(그 시각 최근 12편)다 */
+const SAME_AGE = 'same-age';
 
 /** 지표 — 서버 POST_PERFORMANCE_METRICS와 같은 이름, 팔로우만 화면 전용으로 더했다. */
 const METRICS = Object.freeze({
@@ -173,14 +178,17 @@ function standingOf(value, values) {
   return { label, p25: nearest(25), p75: nearest(75), sampleCount: sorted.length };
 }
 
-/** 이전 편 값과 견준다. peers: 같은 채널·형식의 다른 기록들(이 점이 있는 것) */
-function compare(record, pointKey, metric, peers) {
+/**
+ * 이 편 값과 견줄 수 있는 이전 편들의 같은 점 값 — 가까운 편부터. 이 편 값을 견줄 수 없으면 null.
+ * peers: 같은 채널·형식의 다른 기록들(이 점이 있는 것)
+ */
+function priorValues(record, pointKey, metric, peers) {
   const mine = record.points[pointKey];
   const m = mine?.meta?.[metric];
-  if (!m || !m.valid) return { status: 'unavailable', sampleCount: 0 };
+  if (!m || !m.valid) return null;
   const values = [];
   const seen = new Set();
-  for (const peer of peers) {
+  for (const peer of [...peers].sort((a, b) => b.publishedMs - a.publishedMs || String(a.key).localeCompare(String(b.key)))) {
     if (peer === record || peer.id === record.id || peer.publishedMs >= record.publishedMs || seen.has(peer.key)) continue;
     const p = peer.points[pointKey];
     const v = p?.metrics?.[metric], pm = p?.meta?.[metric];
@@ -192,9 +200,25 @@ function compare(record, pointKey, metric, peers) {
     seen.add(peer.key);
     values.push(v);
   }
+  return values;
+}
+
+/** 이전 편 값과 견준다 */
+function compare(record, pointKey, metric, peers) {
+  const values = priorValues(record, pointKey, metric, peers);
+  if (!values) return { status: 'unavailable', sampleCount: 0 };
   if (values.length < MIN_SAMPLE) return { status: 'insufficient', sampleCount: values.length };
-  const value = mine.metrics[metric];
+  const value = record.points[pointKey].metrics[metric];
   return { status: 'ready', sampleCount: values.length, median: 배수.median(values), standing: standingOf(value, values) };
+}
+
+/** 평소 대비 배수(머리 주석) → {value, median, n, basis} · 조회가 없으면 null. 앞선 편이 MULTIPLE_MIN보다 적으면 value·median이 null */
+function multipleOf(record, pointKey, peers) {
+  const views = record.points[pointKey]?.metrics?.views;
+  if (!validValue(views, 'views')) return null;
+  const values = (priorValues(record, pointKey, 'views', peers) || []).slice(0, 배수.KEEP);
+  const median = values.length >= MULTIPLE_MIN ? 배수.median(values) : null;
+  return { value: 배수.multiple(views, median), median, n: values.length, basis: SAME_AGE };
 }
 
 /** 화면에서 읽은 값끼리 견준다(읽은 때 나이는 따지지 않고 적어 둔다) */
@@ -276,20 +300,8 @@ function buildRecords(data, { now = Date.now(), shortsByChannel = new Map(), scr
   return { records, registered: records.filter(r => r.entry), channels, snapsByPost };
 }
 
-/** 그 시각 조회수 — 하루 숫자 가운데 at 이전의 가장 늦은 값 */
-function viewsAtFactory(records) {
-  const byId = new Map(records.map(r => [r.id, r]));
-  return (id, at) => {
-    const r = byId.get(id);
-    if (!r) return null;
-    let v = null;
-    for (const s of r.snaps || []) if (s.at <= at && validValue(s.views, 'views')) v = s.views;
-    return v;
-  };
-}
-
 /** 기록 하나의 점 하나를 판정한다 → 판정 객체 또는 null(아직 값 없음) */
-function judgePoint(record, pointKey, { peers, viewsAt }) {
+function judgePoint(record, pointKey, { peers }) {
   const point = record.points[pointKey];
   if (!point || point.status !== 'recorded' && !Object.values(point.meta || {}).some(m => m.windowed)) return null;
   const facts = [];
@@ -303,16 +315,8 @@ function judgePoint(record, pointKey, { peers, viewsAt }) {
       facts.push({ metric, value, source: 'screen', screen: true, ageHours: record.screen.ageHours, comparison: compareScreen(record, metric, peers) });
     }
   }
-  const views = point.metrics?.views;
-  let multipleInfo = null;
-  if (validValue(views, 'views')) {
-    const at = point.observedAt ?? point.dueAt;
-    const base = 배수.baselineAt({ posts: peers.map(p => ({ id: p.id, publishedAt: p.publishedAt })), viewsAt, at,
-      self: { id: record.id, publishedAt: record.publishedAt, views } });
-    multipleInfo = { value: 배수.multiple(views, base.median), median: base.median, n: base.n, at: base.at };
-  }
   const verdict = verdictOf(facts);
-  return { point: pointKey, status: point.status, observedAt: point.observedAt ?? null, daily: point.daily === true, facts, multiple: multipleInfo, verdict };
+  return { point: pointKey, status: point.status, observedAt: point.observedAt ?? null, daily: point.daily === true, facts, multiple: multipleOf(record, pointKey, peers), verdict };
 }
 
 /**
@@ -340,7 +344,6 @@ function screenNeeds(record, now, channel = null) {
 function judgeAll(data, opts = {}) {
   const now = opts.now ?? Date.now();
   const built = buildRecords(data, { ...opts, now });
-  const viewsAt = viewsAtFactory(built.records);
   const group = new Map();
   for (const r of built.records) {
     const g = `${r.channelId}|${r.format}`;
@@ -351,7 +354,7 @@ function judgeAll(data, opts = {}) {
     const peers = group.get(`${record.channelId}|${record.format}`) || [];
     const judgments = {};
     for (const point of POINTS) {
-      const j = judgePoint(record, point.key, { peers, viewsAt });
+      const j = judgePoint(record, point.key, { peers });
       if (j) judgments[point.key] = j;
     }
     const channel = built.channels.get(record.channelId);
@@ -366,7 +369,14 @@ function valueText(metric, value) {
   const unit = METRICS[metric]?.unit;
   return unit === 'percent' ? `${Math.round(value * 10) / 10}%` : unit === 'seconds' ? `${Math.round(value * 10) / 10}초` : 수(value);
 }
-const 배수글 = m => (!m || m.value === null ? '평소 대비 못 잼' : `평소 대비 ${m.value >= 10 ? Math.round(m.value) : m.value.toFixed(1)}배(최근 ${m.n}편 중앙값 ${수(Math.round(m.median))})`);
+const 배수값 = v => (v >= 10 ? Math.round(v) : v.toFixed(1));
+function 배수글(m) {
+  if (!m) return '평소 대비 못 잼';
+  // 10-31 전에 낸 판정 줄의 배수(그 시각 최근 12편)는 그때 글 그대로 — 게시성과.js가 굳기 전까지 그 배수를 지킨다
+  if (m.basis !== SAME_AGE) return m.value === null ? '평소 대비 못 잼' : `평소 대비 ${배수값(m.value)}배(최근 ${m.n}편 중앙값 ${수(Math.round(m.median))})`;
+  if (m.value === null) return m.n < MULTIPLE_MIN ? `평소 대비 못 잼(같은 나이로 견줄 앞선 편 ${m.n}편 — ${MULTIPLE_MIN}편부터)` : '평소 대비 못 잼(같은 나이 중앙값 0)';
+  return `평소 대비 ${배수값(m.value)}배(앞선 ${m.n}편 같은 나이 중앙값 ${수(Math.round(m.median))})`;
+}
 const 위치글 = { top25: '상위 25%', bottom25: '하위 25%', middle: '보통' };
 
 /** 판정 한 줄(기획.md·요약 표) */
@@ -380,7 +390,7 @@ function judgmentLine(j) {
 }
 
 module.exports = {
-  METRICS, NEXT_STEP_METRICS, POINTS, PLATFORM_LABEL, SCREEN_FIELDS, NEXT, H,
-  postIdOf, formatOf, checkpointPoint, dailyPoint, standingOf, compare, verdictOf, buildRecords, judgePoint, judgeAll, screenNeeds,
+  METRICS, NEXT_STEP_METRICS, POINTS, PLATFORM_LABEL, SCREEN_FIELDS, NEXT, H, SAME_AGE, MULTIPLE_MIN,
+  postIdOf, formatOf, checkpointPoint, dailyPoint, standingOf, priorValues, compare, multipleOf, verdictOf, buildRecords, judgePoint, judgeAll, screenNeeds,
   judgmentLine, valueText, validValue,
 };

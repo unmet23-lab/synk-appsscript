@@ -110,7 +110,7 @@ function ssToday(D){
 }
 
 // ── 성과 ──
-// 배수 = 그 판 조회 ÷ 같은 계정·형식 최근 12편 조회 중앙값(그 편 포함, 장부 값). 견줄 편 4개부터 보이고, 72시간 ∧ 2배 이상만 초록(게시성과시험.js 배수 2). 「낮음」은 없다.
+// 배수 = 그 판 조회 ÷ 같은 계정·형식에서 앞서 올린 최근 12편이 같은 시점에 낸 조회의 중앙값(장부 값 — 10-31 전 판정은 그 시각 최근 12편, 게시성과판정.js). 견줄 편 4개부터 보이고, 72시간 ∧ 2배 이상만 초록(게시성과시험.js 배수 2). 「낮음」은 없다.
 function ssLatestPoint(p){const pts=p.points||{};return pts['72h']&&pts['72h'].views!==null&&pts['72h'].views!==undefined?['72시간',pts['72h']]:pts['24h']&&pts['24h'].views!==null&&pts['24h'].views!==undefined?['24시간',pts['24h']]:null;}
 const ssPassed=lp=>!!(lp&&lp[0]==='72시간'&&lp[1].multiple&&lp[1].multiple.value>=2);
 const ssTimes=v=>v>=10?v.toFixed(0):v.toFixed(1);
@@ -165,7 +165,7 @@ function ssResults(D,{brand='전체',sort='recent',open=new Set()}={}){
     +ssMeter([['올린 편',ssUnit(R.length,'편'),undefined,'올린 편'],['평소 2배 이상',ssUnit(S.passN,'판'),'green','2배 이상'],['숫자 기다림',ssUnit(S.waitingN,'판'),'butter','기다림'],['판정 자료 부족',ssUnit(S.lackN,'판'),'','자료 부족']])
     +(S.judgedN||!S.all.length?'':`<p class="ss-note">판정(3초 유지율·평균 시청·저장·도구 유입 네 숫자)은 아직 모두 「자료 부족」이에요. 같은 계정에서 견줄 편이 4편은 쌓여야 나와요.</p>`)
     +`<section class="ss-block">${ssBlockHead('편별',{hint:res.since?ssEsc(`${ssMd(res.since)} 뒤 올린 편`):'',tools:`${brands.length>2?`<div class="ss-seg" role="group" aria-label="브랜드">${brands.map(b=>`<button type="button" data-ss-action="brand" data-value="${ssEsc(b)}" aria-pressed="${brand===b}">${ssEsc(b)}</button>`).join('')}</div>`:''}<div class="ss-seg" role="group" aria-label="순서"><button type="button" data-ss-action="sort" data-value="recent" aria-pressed="${sort==='recent'}">최근 순</button><button type="button" data-ss-action="sort" data-value="best" aria-pressed="${sort==='best'}">잘된 순</button></div>`})}<div class="ss-rows">${rows||'<div class="ss-empty-day">이 기간에 올린 편이 아직 없어요</div>'}</div>`
-    +`<p class="ss-foot">${ssEsc(`배수 = 이 판 조회 ÷ 같은 계정·형식 최근 12편 조회의 가운데 값이에요. 견줄 편이 4개는 돼야 보이고, 72시간 조회가 2배 이상이면 초록이에요.${excluded.운영시험||excluded.작품?` 시험 게시 ${excluded.운영시험||0}편과 공모전 출품작 ${excluded.작품||0}편은 뺐어요.`:''}`)}</p></section>`;
+    +`<p class="ss-foot">${ssEsc(`배수 = 이 판 조회 ÷ 같은 계정·형식에서 앞서 올린 최근 12편이 같은 시점(24·72시간)에 낸 조회의 가운데 값이에요. 견줄 편이 4개는 돼야 보이고, 72시간 조회가 2배 이상이면 초록이에요.${excluded.운영시험||excluded.작품?` 시험 게시 ${excluded.운영시험||0}편과 공모전 출품작 ${excluded.작품||0}편은 뺐어요.`:''}`)}</p></section>`;
 }
 
 // ── 계정 ──
