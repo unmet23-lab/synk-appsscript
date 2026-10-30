@@ -171,7 +171,7 @@ test('계정의 CommonJS 의존 계약은 HTTP ESM으로 실행되며 원본 검
   const parsed = Statement.parseMemberStatement(text);
   assert.equal(parsed.question, null);
   const value = {
-    version: 11, reviews: [],
+    version: 12, reviews: [],
     overrides: [{ id: '11111111-1111-4111-8111-111111111111', facetId: 'topics', values: ['ai-tools', 'travel-food'], note: '', at: now }],
     statements: [{ id: '22222222-2222-4222-8222-222222222222', parserVersion: Statement.PARSER_VERSION,
       text, at: now, confirmedAt: now, meanings: parsed.meanings, clarifications: [] }],
