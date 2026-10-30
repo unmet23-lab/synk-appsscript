@@ -143,9 +143,10 @@ export function endBand(st, { atMs, awake }, log = [], params) {
   return st;
 }
 
-/** Whether a segment is a routine the player made (G4): a formed habit spot, an accepted promise, or what the time the
- * player usually comes added to the day (W6, §10-3). */
-export const playerMade = segment => segment.habit === true || segment.cause === 'promise' || segment.visitHabit === true;
+/** Whether a segment is a routine the player made (G4): a formed habit spot, an accepted promise, what the time the
+ * player usually comes added to the day (W6, §10-3), or the cafe owner lingering by the menu board over the first C4 the
+ * player's stay raised (§8-4 ③). */
+export const playerMade = segment => segment.habit === true || segment.cause === 'promise' || segment.visitHabit === true || typeof segment.linger === 'string';
 
 /** A resident's state over its segments of one band, in time order, with the band's events — the same steps the
  * planner took while placing them (a merged segment once a piece, at that piece's decision time). untilMs: events

@@ -11,6 +11,7 @@
         { "factor": "busy", "tag": "busy", "chosenKinds": ["work", "carry"] },
         { "factor": "C3", "tag": "leaves-low" },
         { "factor": "C6", "tag": "rest-poor", "chosenKinds": ["rest"] },
+        { "factor": "C4", "tag": "new-menu", "chosenArchetypes": ["menu-note"] },
         { "factor": "pair-glad", "tag": "pair-glad", "chosenArchetypes": ["prep-cups"] },
         { "factor": "with-player-glad", "tag": "with-player-glad" }
       ] },

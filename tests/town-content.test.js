@@ -156,14 +156,16 @@ test('실제 W5 원고 — 카드마다 여섯 줄(둘이는 주인·짝), 쌍 �
   const { build } = await toolModule('town-data-build');
   assert.doesNotThrow(() => build(), '생성기가 빠진 줄을 막는다');
   const { TOWN_LINES } = await import(require('node:url').pathToFileURL(path.join(ROOT, 'experiences', 'synk-town', 'town', 'data.gen.mjs')).href);
-  const count = kind => TOWN_LINES.filter(l => l.kind === kind && !l.when?.season).length;
+  // A card's optional line (10-30, data build CARD_PARTS_MORE — C4's 「찻집에서」 where its owner is elsewhere) is counted apart.
+  const count = kind => TOWN_LINES.filter(l => l.kind === kind && !l.when?.season && !(kind === 'card' && l.when?.part === 'away')).length;
   assert.deepEqual([count('card'), count('pair'), count('news'), count('hearsay')], [108, 18, 9, 9]);
+  assert.deepEqual(TOWN_LINES.filter(l => l.when?.part === 'away').map(l => l.id), ['cafe-owner.card.C4-away.1']);
   // W10: R5의 계절 변형(계기 · 혼자 · 소식 × 봄 · 여름 · 겨울)과 인사 33(주민 셋 × 구간 넷 × 날씨 둘 + 상태 셋).
   assert.deepEqual(TOWN_LINES.filter(l => l.when?.season).map(l => `${l.id.replace(/\.\d+$/, '')}:${l.when.season}`).sort(),
     ['researcher.card.R5-self', 'researcher.card.R5-trigger', 'village.news.R5'].flatMap(id => ['spring', 'summer', 'winter'].map(s => `${id}:${s}`)).sort());
   assert.equal(count('greet'), 33);
   assert.deepEqual(TOWN_LINES.filter(row => row.when?.card === 'C4').map(row => row.id).sort(), [
     ...['trigger', 'self', 'pair', 'offer', 'result'].map(part => `cafe-owner.card.C4-${part}.1`),
-    'workshop-owner.card.C4-pair.1', 'village.news.C4.1',
-  ].sort(), 'C4 카드 여섯 줄과 소식 한 줄이 실제로 추가됐다');
+    'workshop-owner.card.C4-pair.1', 'village.news.C4.1', 'cafe-owner.card.C4-away.1',
+  ].sort(), 'C4 카드 여섯 줄과 소식 한 줄(+ 10-30 찻집 밖의 한 줄)이 실제로 있다');
 });

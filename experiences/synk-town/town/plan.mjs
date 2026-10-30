@@ -455,10 +455,11 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
     // What the time the player usually comes added (§10-3, W6): a pick from the habit pool, or the hours it stretched the
     // resident's day by — a routine the player's visits made, so it never changes the state for the worse (G4).
     const fromVisits = c.visitHabit === true || !!input.visitHabit && outsideUsual(npc, t, input);
-    const extra = { ...(c.card ? { card: c.card, key: c.key, cardRole: c.cardRole } : {}), ...(c.with ? { with: c.with } : {}), ...(c.joined ? { joined: true } : {}) };
+    const extra = { ...(c.card ? { card: c.card, key: c.key, cardRole: c.cardRole } : {}), ...(c.with ? { with: c.with } : {}), ...(c.joined ? { joined: true } : {}),
+      ...(c.linger ? { linger: c.linger } : {}) };
     const previous = made.findLast(x => x.npc === npc);
     let segment;
-    if (!c.card && !c.with && previous && !previous.cardRole && !previous.with && previous.endMs === t && previous.archetype === archetype.id
+    if (!c.card && !c.with && !c.linger && previous && !previous.cardRole && !previous.with && !previous.linger && previous.endMs === t && previous.archetype === archetype.id
       && previous.spot === spot && previous.cause === cause && (previous.reason ?? null) === reason && (previous.habit === true) === habit
       && (previous.visitHabit === true) === fromVisits) {
       // Going on with the same thing in the same place, for the same reason, is one longer segment, not a restart;
@@ -481,7 +482,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
       if (segment.archetype === 'deliver-tea') teas.push(segment);
       if (opts.apply !== false) applySegment(vs, segment, { ...step, first: true });
     }
-    finishSegment(p.state, ARCHETYPE_BY_ID[archetype.id] ?? null, { atMs: t, playerMade: playerMade({ habit, cause, visitHabit: fromVisits }) }, [], params);
+    finishSegment(p.state, ARCHETYPE_BY_ID[archetype.id] ?? null, { atMs: t, playerMade: playerMade({ habit, cause, visitHabit: fromVisits, linger: c.linger }) }, [], params);
     p.recent = [...p.recent, archetype.id].slice(-P.recentWindow);
     if (!p.placesToday.includes(placeOf(spot))) p.placesToday.push(placeOf(spot));
     if (archetype.id === 'show-drawing' && !c.card) p.showsToday += 1;
@@ -743,6 +744,11 @@ function scoreAndPick(npc, p, t, raining, input, live, vs, ctx, { replan, presen
   // The day after a night with R4's flowers, a tired researcher's doze is that night's (§7-3 sleepy-night).
   for (const c of stateCandidates(resident, p.state, params)) add({ archetype: c.archetype, spot: c.spot, cause: 'state' }, c.weight,
     c.factor.key === 'doze' && p.allNighter ? { ...c.factor, key: 'sleepy-night' } : c.factor);
+  // While C4's first waits for the player, its owner lingers by the menu board once a life day in its bands (§8-4 ③ · §7-3
+  // new-menu) — never right after the same work (repetition). A routine the player's card called up (G4: state.mjs playerMade).
+  const waits = CARD_RULES.lingerFor?.(vs, band);
+  if (waits?.owner === npc && C.newMenuWeight > 0 && p.recent.at(-1) !== 'menu-note')
+    add({ archetype: 'menu-note', spot: waits.spot, cause: 'card', linger: waits.id }, C.newMenuWeight, { kind: 'card', key: waits.id });
   // A card done with the player: at the next choice the resident is glad to use what they made (§7-3 with-player-glad).
   if (p.glad?.key === 'with-player-glad' && CARD_BY_ID[p.glad.card])
     add({ archetype: CARD_BY_ID[p.glad.card].archetype, spot: CARD_BY_ID[p.glad.card].spot, cause: 'card' }, C.withPlayerGladWeight, { kind: 'neighbour', key: 'with-player-glad' });

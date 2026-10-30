@@ -38,13 +38,16 @@ test('계기 — 마모·비·비 그침·비 갠 뒤·상태·차례·밤·계�
   vs.marks.newToolDay = LIFE - 1; assert.ok(triggerHolds(C.W5, vs, at()), '새 도구 다음 날');
   vs.marks.newToolDay = LIFE; assert.ok(!triggerHolds(C.W5, vs, at()), '바꾼 날은 아니다');
   assert.ok(triggerHolds(C.W2, vs, at({ rushAt: () => true })) && !triggerHolds(C.W2, vs, at()));
-  // C4's own trigger is its rule from the second time on (§8-4 「지금 규칙」): the planner never asks it while the first is owed —
-  // the first rises at the player's first stay with the cafe owner (tests/town-first-c4.test.js), and since that first is always
-  // the player's, a C4 the player has done never rises again (§8-4 둘째 회 일반 규칙은 후속 — 트랙).
-  assert.ok(triggerHolds(C.C4, vs, at()) && !C.C4.locked && C.C4.paths.player.ready, 'C4의 계기(풀린 적 없음) · W9 대화 장면');
+  // C4's first rises at the player's first stay with the cafe owner, never at her decision (tests/town-first-c4.test.js); once
+  // done with the player its own trigger is the general rule (§8-4 둘째 회): chores 2 or fewer and energy 40 or more.
+  assert.ok(!triggerHolds(C.C4, vs, at()) && !C.C4.locked && C.C4.paths.player.ready, 'C4의 첫 회는 결정의 계기가 아니다(플레이어 머묾) · W9 대화 장면');
   vs.cards.C4 = { status: 'idle', last: { path: 'self', day: LIFE } };
-  assert.ok(triggerHolds(C.C4, vs, at()), '계기만 보면 혼자 뒤에는 다시 선다(옛 세계 — 계획기는 첫 회로 플레이어 머묾에 세운다)');
-  vs.cards.C4.last.path = 'player'; assert.equal(triggerHolds(C.C4, vs, at()), false, '플레이어와 푼 뒤에는 서지 않는다');
+  assert.ok(!triggerHolds(C.C4, vs, at()), '플레이어와 한 적 없으면 혼자 뒤에도 결정으로는 안 선다(첫 회가 빚 — 다음 머묾에 선다)');
+  vs.cards.C4.last.path = 'player';
+  assert.ok(triggerHolds(C.C4, vs, at({ state: { energy: 40, chores: 2 } })), '플레이어와 한 뒤 — 할 일 2 이하 · 기운 40 이상');
+  assert.ok(!triggerHolds(C.C4, vs, at({ state: { energy: 40, chores: 3 } })) && !triggerHolds(C.C4, vs, at({ state: { energy: 39, chores: 0 } })), '할 일 3 · 기운 39에서는 안 선다');
+  vs.cards.C4 = { status: 'idle', last: { path: 'self', day: LIFE }, played: true };
+  assert.ok(triggerHolds(C.C4, vs, at()), '둘째 회를 혼자 푼 뒤에도 일반 규칙(played)');
 });
 
 test('카드는 주인의 결정에 생기고 다음 결정에 풀린다 — 열쇠·참조·쉼·흔적·마모, 같은 입력이면 같은 결과', async () => {

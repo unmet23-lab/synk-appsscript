@@ -189,7 +189,8 @@ async function interactWalk({ talk = false } = {}) {
   if (tea?.interact()) return;
   if (!talk && gather?.interact()) return;
   if (busy) return;
-  if (walkPanel) { const action = $('nearby-panel').querySelector('button[data-command]:not(:disabled)'); if (action) action.click(); return; }
+  // The place's own first action as before the cards could stand above it (first C4 follow-up — a card row may lead the panel).
+  if (walkPanel) { const pick = 'button[data-command]:not(:disabled)', action = $('day-actions').querySelector(pick) ?? $('nearby-panel').querySelector(pick); if (action) action.click(); return; }
   walkControls?.stop(); await flushWalk(true); const place = nearby(walk.point); if (!place) return;
   if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; placeOpens++; applyWalkView(); renderCards(); }
 }
@@ -204,11 +205,35 @@ function walkFrame(now) {
 function text(id, value = '') { if ($(id).textContent !== value) $(id).textContent = value; }
 function queue(work) { const next = tail.then(work, work); tail = next.catch(() => {}); return next; }
 function showError(message) {
+  calmRefusal();
   connected = false; presence = null; walkControls?.stop(); document.body.classList.add('walk-error'); text('error', message); $('error').hidden = false; $('retry').hidden = false; text('connection', '연결을 다시 확인해 주세요'); setBusy(false);
   // Seated, a dropped connection asks nothing of the hands (W7b): the seat and its sound stay, and the town tries again.
   if (stay?.active()) { clearTimeout(seatedRetry); seatedRetry = setTimeout(() => { if (stay?.active() && !connected) load(); }, QUIET?.lightMs ?? 10000); }
 }
-function clearError() { document.body.classList.remove('walk-error'); $('error').hidden = true; $('retry').hidden = true; }
+function clearError() { calmRefusal(); document.body.classList.remove('walk-error'); $('error').hidden = true; $('retry').hidden = true; }
+/** A card's answer the town turned down now (409 — its owner walked off, the card moved on, another window answered): no
+ * connection trouble (screen review F1). The town is read again; the words show in the card's panel when it is open, else
+ * a moment where the panel's errors do, softly (a walking panel opens for that moment, as for an error). The greeting
+ * the screen sends by itself is read again with no words. */
+const REFUSAL_MS = 6000;
+let refusalTimer = 0, cardNoteTimer = 0;
+function refused(type, error) {
+  if (error?.code === 'stale-surface') lastPulse = 0;
+  read();
+  if (type === 'GREET' || !error?.message || ['stale-command', 'stale-surface'].includes(error?.code)) return;
+  if ($('card-dialog')?.open) {
+    // The panel's own note comes back after the moment (or sooner, once the take it shows changes).
+    text('card-note', error.message); clearTimeout(cardNoteTimer);
+    cardNoteTimer = setTimeout(() => { signatures.delete('card-note'); if ($('card-dialog')?.open) renderCardDialog(); }, REFUSAL_MS);
+    return;
+  }
+  calmRefusal();
+  const note = $('error'); note.classList.add('is-soft'); text('error', error.message); note.hidden = false; $('retry').hidden = true;
+  document.body.classList.add('walk-note');
+  note.scrollIntoView?.({ block: 'nearest' });
+  refusalTimer = setTimeout(() => { if (note.classList.contains('is-soft')) { calmRefusal(); note.hidden = true; } }, REFUSAL_MS);
+}
+function calmRefusal() { clearTimeout(refusalTimer); $('error').classList.remove('is-soft'); document.body.classList.remove('walk-note'); }
 function available() { return connected && snapshot?.capabilities?.day === true; }
 function setBusy(value) {
   busy = value; $('day-app').setAttribute('aria-busy', String(value));
@@ -367,6 +392,8 @@ function tick() {
 }
 /** The commands a window holding the town sends with its fence (the host checks the window — two-window rule). */
 const WINDOW_COMMAND = /^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|LANGUAGE_|GATHER_|GREET$)/;
+/** The cards' commands whose 409 is the town's own refusal, not a lost connection (screen review F1). */
+const CARD_REFUSABLE = /^(CARD_|GREET$)/;
 async function command(type, payload = {}) {
   if (busy || !available()) return false;
   setBusy(true);
@@ -381,7 +408,11 @@ async function command(type, payload = {}) {
     });
     if (type === 'DAY_MOVE') { $('scene').focus({ preventScroll: true }); $('scene').scrollIntoView({ block: 'start', behavior: reduced.matches ? 'instant' : 'smooth' }); }
     return true;
-  } catch (e) { if (!(type === 'LANGUAGE_OFFER' && (e.code === 'language-no-offer' || e.status === 409))) showError(e.message); return false; }
+  } catch (e) {
+    if (type === 'LANGUAGE_OFFER' && (e.code === 'language-no-offer' || e.status === 409)) return false;
+    if (CARD_REFUSABLE.test(type) && e?.status === 409) refused(type, e); else showError(e.message);
+    return false;
+  }
   finally { setBusy(false); }
 }
 /** The gathering board's commands (W8b, design review F3): one after another in a line of their own — a quick second pick
@@ -687,12 +718,21 @@ function renderCards() {
   // text alternative (W10) — and only in the place the talk was left in. While it shows, the cafe owner's other words in
   // the panel wait (two lines of one resident one under the other read oddly); another resident's stay.
   const bye = farewell && farewell.location === location && (walkPanel || fallback || !renderer) ? goodbye(farewell.level) : null;
+  // A resident's card here — its need, or where it is taken up (away; from an older cached day-cards none) — comes first; the
+  // greeting under it still comes (the first C4 waits for days — it must not hold back what she heard, §9-4).
+  const away = model?.away || [], lead = !!model && model.needs.length + away.length > 0;
   const waits = npc => !!bye && npc === 'cafe-owner';
   const greet = waits(greetSession.greet?.npc) ? null : greetSession.greet, mine = greetSession.greet || waits(greetSession.own?.npc) ? null : greetSession.own;
-  const shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || model.note.length > 0);
+  const shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || away.length > 0 || model.note.length > 0);
   panel.hidden = !shown;
   if (!shown) { placeSeenSince.clear(); return; }
-  const sig = JSON.stringify([bye, greet?.ref, greet?.text, mine?.id, mine?.text, model.needs.map(n => [n.card, n.key, n.paused]), model.note.map(n => n.ref)]);
+  // With a card in it the panel goes above the place's own buttons (a phone's walking panel is 300px tall — the 「같이 해요」
+  // stood below its fold, final review F4): the reading order and the focus order are the order shown.
+  const actions = $('day-actions');
+  if (lead && panel.nextElementSibling !== actions) actions.before(panel);
+  else if (!lead && actions.nextElementSibling !== panel) actions.after(panel);
+  panel.classList.toggle('is-lead', lead);
+  const sig = JSON.stringify([bye, greet?.ref, greet?.text, mine?.id, mine?.text, model.needs.map(n => [n.card, n.key, n.paused]), away.map(a => [a.card, a.line]), model.note.map(n => n.ref)]);
   if (signatures.get('place-cards') === sig) return;
   signatures.set('place-cards', sig); placeSeenSince.clear();
   const parts = [];
@@ -701,17 +741,22 @@ function renderCards() {
     p.innerHTML = `<span class="place-icon">${iconSvg('quiet')}</span>`;
     const words = document.createElement('span'); words.textContent = `${CARD_NAMES['cafe-owner']}: ${bye}`; p.append(words); parts.push(p);
   }
-  if (greet || mine) {
-    const said = greet || mine, p = document.createElement('p'); p.className = 'place-greet';
-    p.innerHTML = `<span class="place-icon">${iconSvg(said.icon)}</span>`;
-    const words = document.createElement('span'); words.textContent = `${CARD_NAMES[said.npc]}: ${said.text}`; p.append(words); parts.push(p);
-  }
   for (const need of model.needs) {
     const row = document.createElement('div'); row.className = 'place-need';
     const line = document.createElement('p'); line.textContent = `${CARD_NAMES[need.owner]}: ${need.line || need.title}`;
     const go = document.createElement('button'); go.type = 'button'; go.className = 'felt primary'; go.textContent = need.paused ? '이어서 하기' : '같이 해요'; go.dataset.command = 'CARD_OPEN';
     go.addEventListener('click', () => openCard(need, 'direct'));
     row.append(line, go); parts.push(row);
+  }
+  for (const there of away) {
+    const p = document.createElement('p'); p.className = 'place-greet place-away';
+    p.innerHTML = `<span class="place-icon">${iconSvg(dayCards.CARD_ICONS?.[there.card] || 'sparkle')}</span>`;
+    const words = document.createElement('span'); words.textContent = `${CARD_NAMES[there.owner]}: ${there.line}`; p.append(words); parts.push(p);
+  }
+  if (greet || mine) {
+    const said = greet || mine, p = document.createElement('p'); p.className = 'place-greet';
+    p.innerHTML = `<span class="place-icon">${iconSvg(said.icon)}</span>`;
+    const words = document.createElement('span'); words.textContent = `${CARD_NAMES[said.npc]}: ${said.text}`; p.append(words); parts.push(p);
   }
   if (model.note.length) {
     const note = document.createElement('div'); note.className = 'place-note'; note.setAttribute('role', 'group'); note.setAttribute('aria-label', '문 앞 쪽지');
@@ -740,14 +785,14 @@ function cardsFrame(now) {
   const good = !panel.hidden && placePanelOpen() && !busy && connected && !stay?.active() && !gather?.active() && !document.querySelector('dialog[open]') && visible(panel, false);
   if (!good) { placeSeenSince.clear(); return; }
   const greet = greetSession?.greet, model = snapshot.view.day?.scene?.village;
-  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref && heldInSight(`greet:${greet.ref}`, panel.querySelector('.place-greet:not(.place-bye)'), now)) {
+  if (greet && !greeted.has(greet.ref) && model?.hearsay?.[greet.npc]?.ref === greet.ref && heldInSight(`greet:${greet.ref}`, panel.querySelector('.place-greet:not(.place-bye):not(.place-away)'), now)) {
     greeted.add(greet.ref); noteSeen(greet.seen, greet.ref);
     command('GREET', { npc: greet.npc, ref: greet.ref }).then(ok => { if (!ok) greeted.delete(greet.ref); });
   }
   // A resident's own words (W10) tell the server nothing but that they showed; its greeting seen, the panel opened again
   // in this place on this life day says what it is doing.
   const mine = !greet && greetSession?.own;
-  if (mine && heldInSight(`own:${mine.id}`, panel.querySelector('.place-greet:not(.place-bye)'), now)) {
+  if (mine && heldInSight(`own:${mine.id}`, panel.querySelector('.place-greet:not(.place-bye):not(.place-away)'), now)) {
     noteSeen(mine.seen, greetSession.session);
     if (mine.kind === 'greet') ownGreeted.add(`${snapshot.view.day.location}:${mine.npc}:${snapshot?.state?.village?.band?.lifeDay ?? null}`);
   }

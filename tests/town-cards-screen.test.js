@@ -47,6 +47,11 @@ test('주민의 한 줄 — 혼자 풀기·둘이(짝은 온 뒤에만)·쌍 이
   assert.equal(sceneLine([seg('cafe-owner', { spot: 'greenhouse.bed' })], 'cafe-owner', T + 1000, { waiting: c4 }), null, '찻집 밖에서는 첫 C4를 말하지 않는다');
   assert.equal(sceneLine([seg('cafe-owner', { spot: 'cafe.counter', arriveMs: T + 60000 })], 'cafe-owner', T + 1000, { waiting: c4 }), null, '찻집으로 걷는 동안은 아직');
   assert.equal(sceneLine([], 'cafe-owner', T, { waiting: c4 }), null, '일과 조각이 없으면(잠) 말하지 않는다');
+  // 첫 C4가 기다리는 동안 하루 한 번 차림표 앞에서 서성이는 조각(§8-4 ③)에서는 그 마음 줄(new-menu)이 말하고 필요 줄은 기다린다 —
+  // 마음 줄이 없는 서성임(그날 줄 상한)이면 필요 줄 그대로.
+  const lingering = seg('cafe-owner', { spot: 'cafe.counter', archetype: 'menu-note', mood: 'cafe-owner.mood.new-menu.1' }); // the view's form (core segmentView)
+  assert.equal(sceneLine([lingering], 'cafe-owner', T + 1000, { waiting: c4 }), null, '서성임 — 마음 줄 차례');
+  assert.equal(sceneLine([{ ...lingering, mood: undefined }], 'cafe-owner', T + 1000, { waiting: c4 }).id, 'cafe-owner.card.C4-trigger.1', '마음 줄이 없으면 필요 줄');
   assert.equal(sceneLine([seg('cafe-owner', { spot: 'greenhouse.bed' })], 'cafe-owner', T + 1000, { waiting: [...c4, { card: 'C1', owner: 'cafe-owner', status: 'triggered', key: 'd' }] }).id,
     'cafe-owner.card.C1-trigger.1', '찻집 밖에서도 다른 카드의 필요는 그대로');
   const { talkWhere } = await load('day-cards.mjs');
@@ -78,6 +83,15 @@ test('장소 판 — 인사는 여기 있는 주민 하나, 기다리는 생활�
   const news = ['C1', 'W3', 'R5', 'R4'].map((card, i) => ({ ref: `n${i}`, card }));
   assert.equal(placeModel({ location: 'home', residentsHere: [], hearsay, cards, news }).note.length, 3);
   assert.deepEqual(placeModel({ location: 'cafe', residentsHere: [], hearsay, cards, news }).note, []);
+  // 한 곳에서만 여는 카드(첫 C4 — 찻집 차림표 앞)는 주인이 다른 곳에 있으면 단추 없이 「찻집에서」 한 줄(away, 화면 검수 F3).
+  const c4 = [{ card: 'C4', owner: 'cafe-owner', status: 'triggered', key: 'k4', ready: true }];
+  const there = placeModel({ location: 'greenhouse', residentsHere: ['cafe-owner'], hearsay: {}, cards: c4, news: [] });
+  assert.deepEqual(there.needs, []); assert.equal(there.away.length, 1);
+  assert.ok(/찻집/.test(there.away[0].line) && there.away[0].owner === 'cafe-owner', JSON.stringify(there.away));
+  const atCafe = placeModel({ location: 'cafe', residentsHere: ['cafe-owner'], hearsay: {}, cards: c4, news: [] });
+  assert.deepEqual(atCafe.needs.map(n => n.card), ['C4']); assert.deepEqual(atCafe.away, []);
+  assert.deepEqual(placeModel({ location: 'greenhouse', residentsHere: [], hearsay: {}, cards: c4, news: [] }).away, [], '주인이 여기 없으면 없음');
+  assert.deepEqual(placeModel({ location: 'greenhouse', residentsHere: ['cafe-owner'], hearsay: {}, cards: [{ ...c4[0], status: 'paused' }], news: [], take: { card: 'C4', status: 'with' } }).away, [], '손에 든 생활이 있으면 없음');
 });
 
 test('제안·고르기 판 — 이 창의 이 판에 발급된 제안만, 고르기는 서버가 허락한 것만, 마치면 결과 줄과 응답 넷', async () => {

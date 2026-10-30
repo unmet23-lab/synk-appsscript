@@ -512,6 +512,9 @@ export function validatePairs(data, places) {
  * differences by step and the village news. Every card that can rise has its six, every pair step its two, every news
  * card its news line. The checker (town-lines-check) owns lengths and words. */
 export const CARD_PARTS = Object.freeze(['trigger', 'self', 'pair', 'offer', 'result']);
+/** A card line a card may have beyond those (10-30 first C4 follow-up): away — its owner saying the card is taken up at its own
+ * place, shown where she is elsewhere (§12-1, C4 at the cafe's menu board). */
+export const CARD_PARTS_MORE = Object.freeze(['away']);
 export const HEARSAY = Object.freeze(['seen', 'heard', 'news']);
 /** 「그동안 달라진 것」 틀(§10-2·§16-1, W6): 흔적 넷(쟁반 받침·관찰판·오늘의 차·새 차)·습관·쌍 — town/meanwhile.mjs FRAMES와 같다(시험이 견줌). */
 export const CHANGE_FRAMES = Object.freeze(['tray', 'board', 'today-tea', 'new-tea', 'habit', 'pair']);
@@ -543,7 +546,7 @@ export function validateTownLines(docs, cards, pairs, { archetypes = [], routine
     } else if (e.kind === 'card') {
       const card = cardById.get(w.card);
       const speaker = w.part === 'pair' ? [card?.owner, card?.paths.pair.partner] : [card?.owner];
-      if (!card || !CARD_PARTS.includes(w.part) || key !== `${w.card}-${w.part}` || !speaker.includes(npc) || e.npc !== npc) fail(`카드 줄 ${e.id}`);
+      if (!card || ![...CARD_PARTS, ...CARD_PARTS_MORE].includes(w.part) || key !== `${w.card}-${w.part}` || !speaker.includes(npc) || e.npc !== npc) fail(`카드 줄 ${e.id}`);
     } else if (e.kind === 'hearsay') {
       if (!HEARSAY.includes(w.how) || key !== w.how || !RESIDENT_IDS.includes(npc) || e.npc !== npc) fail(`전해 듣기 줄 ${e.id}`);
     } else if (e.kind === 'pair') {

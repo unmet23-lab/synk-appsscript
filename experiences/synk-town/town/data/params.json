@@ -1,5 +1,5 @@
 {
-  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. One dated exception (2026-10-24, decision table): W4 added the state section to town-params-1, the only version any band has run, before any band ran with other state values; W5 (2026-10-25) added the cards, pairs and knowledge sections the same way, before any band ran with cards; W8 (2026-10-27) added the tea section (the tea order, town/activities/tea-order.mjs) before any tea order ran; W8b (2026-10-28) added gather.branch, reachCm, giveReachCm and tinRelief (the gathering loop, town/activities/gather.mjs) before anything was gathered; on 2026-10-27 eval.retainLifeDays went from 180 to 30 before any evaluation line was kept (the host switch has stayed off, so no account ever consented and the store holds no line). Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
+  "$comment": "Parameter versions (vertical slice design §20-6). Every 〔초기값〕 the town code needs is read by name from one version here through town/params.mjs; code never writes these numbers. A version that has run never changes: a new value is a new version, and old ones stay for simulation and replay. One dated exception (2026-10-24, decision table): W4 added the state section to town-params-1, the only version any band has run, before any band ran with other state values; W5 (2026-10-25) added the cards, pairs and knowledge sections the same way, before any band ran with cards; W8 (2026-10-27) added the tea section (the tea order, town/activities/tea-order.mjs) before any tea order ran; W8b (2026-10-28) added gather.branch, reachCm, giveReachCm and tinRelief (the gathering loop, town/activities/gather.mjs) before anything was gathered; on 2026-10-27 eval.retainLifeDays went from 180 to 30 before any evaluation line was kept (the host switch has stayed off, so no account ever consented and the store holds no line); on 2026-10-30 cards.newMenuWeight (the cafe owner lingering by the menu board while C4's first waits for the player, vertical slice §8-4) was added the same way, before any band ran with a lingering. Multipliers and weights are per-mille integers (§2-4). Data tables (archetypes, residents, routines) keep their own values.",
   "versions": [
     {
       "paramsVer": "town-params-1",
@@ -61,6 +61,7 @@
         "teaReceivedMultiplier": 3000,
         "excitedMultiplier": 1500,
         "withPlayerGladWeight": 300,
+        "newMenuWeight": 16,
         "takesKept": 8
       },
       "pairs": { "sceneWeight": 300, "frictionBoost": 1200, "frictionMax": 2, "scenesPerDay": 3, "familyCooldownLifeDays": 2 },

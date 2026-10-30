@@ -83,14 +83,22 @@ export const roseToday = (vs, owner = null) => CARD_IDS.filter(id => vs.cards[id
 
 // ── C4's first (§8-4) ─────────────────────────────────────────────────────────
 /** The card whose first rise is the player's: it rises the first time the player stays where its owner is (planBand), waits
- * for the player alone — no resident solves it, it is outside the caps — and once done with the player it rises again only
- * by its own trigger (§8-4 「둘째 회부터는 지금 규칙」). */
+ * for the player alone — no resident solves it, it is outside the caps — and once done with the player it rises by the
+ * general rule (§8-4 「둘째 회부터는 … 일반 규칙」: its trigger's again, its bands, the caps and its rest). */
 export const FIRST_STAY = 'C4';
-/** Whether C4's first is still the player's to have: never done with the player (a world whose first was solved alone or by
- * the two of them before this rule has it again at the player's next stay — the migration, 10-30). */
-export const firstOwed = r => r?.last?.path !== 'player';
+/** Whether C4's first is still the player's to have: never done with the player — played marks it from then on, through its
+ * rest and every later solving (a second time its owner solved alone leaves the last path hers); a world whose first was
+ * solved alone or by the two of them before this rule has it again at the player's next stay (the migration, 10-30). */
+export const firstOwed = r => !r?.played && r?.last?.path !== 'player';
 /** Whether a band that starts with this C4 record waits for the player's first stay: owed, and not waiting already. */
 export const firstPending = r => firstOwed(r) && r?.status !== 'triggered';
+/** The card its owner lingers by while its first waits for the player (§8-4 ③ 「차림표 앞 서성임은 하루 한 번까지」 · §7-3
+ * new-menu): C4 waiting as the player's, in one of its bands, not yet lingered over this life day — else null. The planner
+ * adds the lingering on its owner's chosen side (plan.mjs); the segment marks the day (applySegment). */
+export function lingerFor(vs, band) {
+  const card = CARD_BY_ID[FIRST_STAY], r = vs.cards[FIRST_STAY];
+  return card && r?.status === 'triggered' && r.first === true && r.lingered !== vs.lifeDay && card.bands.includes(band) ? card : null;
+}
 /** Where a card's 「나와 함께」 is offered and opened when that is one place (§12-1 — C4's talk is at the menu board, so its owner
  * offers it and is talked to only at the cafe; she may meet the player anywhere). null: wherever its owner is. */
 export const talkPlaceOf = card => (card?.id === FIRST_STAY ? placeOfSpot(card.spot) : null);
@@ -99,6 +107,8 @@ export const talkPlaceOf = card => (card?.id === FIRST_STAY ? placeOfSpot(card.s
 
 /** Whether a card's trigger holds for its owner deciding at t. at = { t, band, state, showsToday, allNighter, firstOfDay,
  * raining(ms), rainedBetween(a, b), afterRain, season, rushAt(t), dayStartMs, seed }. */
+/** A state bound of a trigger ({ stat, below?, atLeast? }) on the owner's state at the decision. */
+const stateWithin = (bound, state) => { const value = state[bound.stat]; return (bound.below === undefined || value < bound.below) && (bound.atLeast === undefined || value >= bound.atLeast); };
 export function triggerHolds(card, vs, at, params) {
   const p = C(params), t = card.trigger, outside = obj => { const spot = vs.objects[obj]?.spot; return !!spot && !SPOT_BY_ID[spot].sheltered; };
   switch (t.kind) {
@@ -106,18 +116,16 @@ export function triggerHolds(card, vs, at, params) {
     case 'rain-start': return at.raining(at.t) && outside(t.object);
     case 'rain-stop': return !at.raining(at.t) && at.rainedBetween(at.t - p.rainStopWindowMinutes * MINUTE, at.t);
     case 'after-rain': return at.afterRain && !at.raining(at.t) && outside(t.object);
-    case 'state': {
-      const value = at.state[t.stat];
-      return (t.below === undefined || value < t.below) && (t.atLeast === undefined || value >= t.atLeast)
-        && (!t.clear || !at.raining(at.t)) && (!t.allNighter || at.allNighter === true);
-    }
+    case 'state': return stateWithin(t, at.state) && (!t.clear || !at.raining(at.t)) && (!t.allNighter || at.allNighter === true);
     case 'count': return (at.showsToday ?? 0) >= t.min;
     case 'night-clear': return !at.raining(at.t);
     case 'season-leaf': return at.season === 'autumn' ? at.rainedBetween(at.yesterdayStartMs, at.dayStartMs)
       : createRng(at.seed, 'season-leaf', vs.lifeDay).below(PER_MILLE) < p.seasonLeafShare;
     case 'after': return Number.isSafeInteger(vs.marks.newToolDay) && vs.marks.newToolDay < vs.lifeDay;
     case 'rush': return at.rushAt(at.t);
-    case 'first-visit': return !vs.cards[card.id]?.last || vs.cards[card.id].last.path === 'self';
+    // C4: its first is the player's stay's (planBand firstStay), never a decision's; once done with the player its owner's own
+    // state — not busy, not tired (§8-4 둘째 회: trigger.again).
+    case 'first-visit': return !firstOwed(vs.cards[card.id]) && (t.again || []).every(bound => stateWithin(bound, at.state));
     default: return false;
   }
 }
@@ -127,6 +135,8 @@ export function applyTrigger(vs, entry) {
   const r = record(vs, entry.card);
   Object.assign(r, { status: 'triggered', key: entry.key, at: entry.atMs, day: vs.lifeDay, ...(entry.first ? { first: true } : {}) });
   delete r.until;
+  // A rise of the general rule is its owner's (§8-4 둘째 회): the marks of a first — kept through its rest — go with it.
+  if (!entry.first) { delete r.first; delete r.lingered; }
   if (CARD_BY_ID[entry.card].trigger.kind === 'after') delete vs.marks.newToolDay;
 }
 
@@ -158,17 +168,22 @@ const covered = (takes, card, key, ms) => (takes || []).some(take => takeCovers(
  * line for the band's record. */
 function resolve(vs, card, { key, path, actors, place, atMs, startMs, choice = null, solo = false }) {
   const r = record(vs, card.id);
-  // C4's first keeps its mark through its rest: the day it rose still never counts in the caps.
+  // C4's first keeps its mark through its rest: the day it rose still never counts in the caps. Done with the player once, C4 is
+  // played for good (§8-4 둘째 회) — a world that did its first before the mark has the player's path as its last until now.
+  const played = card.id === FIRST_STAY && (path === 'player' || r.played === true || r.last?.path === 'player');
   vs.cards[card.id] = { status: 'cooldown', until: vs.lifeDay + card.cooldownLifeDays, day: r.day ?? vs.lifeDay,
-    times: (r.times || 0) + 1, last: { path, day: vs.lifeDay }, ...(r.first ? { first: true } : {}) };
+    times: (r.times || 0) + 1, last: { path, day: vs.lifeDay }, ...(r.first ? { first: true } : {}), ...(played ? { played: true } : {}) };
   if (card.trigger.kind === 'wear') vs.wear[card.trigger.object] = path === 'self' ? card.trigger.threshold >> 1 : 0;
-  if (card.trace) {
+  // A path that makes nothing new (C4 alone — 「아직이에요」, held over, §8-4) leaves no trace and is no public happening; nor does
+  // its pair when the neighbour came alone (no one tasted the tea — quietSolo).
+  const quiet = card.paths[path]?.quiet === true || solo && card.paths[path]?.quietSolo === true;
+  if (card.trace && !quiet) {
     const value = path === 'player' ? choice ?? card.paths.player.result : card.paths[path].result;
     vs.traces[card.trace.object] = { ...(vs.traces[card.trace.object] || {}), [card.trace.field]: { value, path } };
   }
   if (path === 'pair' && !solo) scene(vs, actors[0], actors[1], { family: card.paths.pair.scene ?? 'chat', card, atMs, startMs });
   const line = { ref: cardRef(vs.lifeDay, vs.band, card.id), card: card.id, key, path, actors: [...actors], place, atMs,
-    public: path !== 'player', ...(solo ? { solo: true } : {}) };
+    public: path !== 'player' && !quiet, ...(solo ? { solo: true } : {}) };
   vs.resolved.push(line);
   return line;
 }
@@ -208,6 +223,9 @@ const ARCH = new Map();
  * owner segment solved it alone if the card still waited for it. */
 export function applySegment(vs, seg, { archetypes = ARCHETYPE_BY_ID, segments, takes = [], first = true }) {
   if (seg.archetype === 'reserved') return;
+  // Its owner lingered by it today (§8-4 「하루 한 번까지」): the first's record keeps the life day.
+  const waits = seg.linger && vs.cards[seg.linger];
+  if (waits?.status === 'triggered' && waits.first === true) waits.lingered = vs.lifeDay;
   const archetype = archetypes[seg.archetype] ?? null;
   if (seg.cardRole === 'owner') { solveByOwner(vs, seg, segments); moveObject(vs, CARD_BY_ID[seg.card].moves ?? archetype?.moves, seg.spot); return; }
   if (seg.cardRole === 'partner') { solveByPartner(vs, seg, segments, takes); return; }
@@ -287,7 +305,8 @@ export function villageAfter(input, segments, log, { archetypes = ARCHETYPE_BY_I
 /** What the village keeps of a band's shared state (village.band): idle cards and empty marks leave. */
 export function keptVillage(vs) {
   const cards = Object.fromEntries(Object.entries(vs.cards).filter(([, r]) => r.status !== 'idle' || r.times || r.last)
-    .map(([id, r]) => [id, cardStatus(r, vs.lifeDay) === 'idle' && r.status === 'cooldown' ? { status: 'idle', ...(r.times ? { times: r.times } : {}), ...(r.last ? { last: r.last } : {}) } : r]));
+    .map(([id, r]) => [id, cardStatus(r, vs.lifeDay) === 'idle' && r.status === 'cooldown' ? { status: 'idle', ...(r.times ? { times: r.times } : {}), ...(r.last ? { last: r.last } : {}),
+      ...(r.played ? { played: true } : {}) } : r]));
   return { cards, wear: { ...vs.wear }, traces: vs.traces, objects: vs.objects, pairs: vs.pairs, marks: vs.marks };
 }
 
@@ -339,8 +358,9 @@ export function validCards(cards) {
     && (r.status !== 'triggered' || word(r.key) && Number.isSafeInteger(r.at) && day(r.day))
     && (r.status !== 'cooldown' || day(r.until) && (r.day === undefined || day(r.day)))
     && (r.times === undefined || day(r.times)) && (r.last === undefined || PATHS.includes(r.last.path) && day(r.last.day))
-    // C4's first (§8-4): its mark.
-    && (r.first === undefined || r.first === true && id === FIRST_STAY));
+    // C4 (§8-4): its first's mark, the life day its owner lingered over it, and that it was done with the player.
+    && (r.first === undefined || r.first === true && id === FIRST_STAY)
+    && (r.lingered === undefined || day(r.lingered) && id === FIRST_STAY) && (r.played === undefined || r.played === true && id === FIRST_STAY));
 }
 export const validWear = wear => !!wear && typeof wear === 'object' && Object.entries(wear).every(([obj, n]) => WEAR_OBJECTS.includes(obj) && Number.isSafeInteger(n) && n >= 0 && n <= 999);
 export function validTraces(traces) {

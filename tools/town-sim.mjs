@@ -115,7 +115,9 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
     // (§15-1 기운); the night-habit nights and their minutes with no one up before 02:00; the first C4 rise and solving; how
     // often a card set to less often is still offered (§20-10); the visits a learner walks into (tools/town-sim-ladder.mjs).
     visible: {}, seen: {}, moodTwice: 0, wearByPlayer: 0, wearByPlayerPieces: 0, restDays: {}, habitNights: 0, habitNightShort: 0,
-    c4: { rose: null, solved: null }, less: { rises: 0, offered: 0 }, sceneVisits: [],
+    // First C4 follow-up (10-30): the life days its first waited and those its owner lingered by the menu board (at most once, §8-4
+    // ③), each lingering's minute from the life day's start, and the general rule's rises after the first was done (§8-4 둘째 회).
+    c4: { rose: null, solved: null, waitDays: 0, lingerDays: 0, lingerOver: 0, lingerAt: [], again: 0, againPaths: {} }, less: { rises: 0, offered: 0 }, sceneVisits: [],
     // The first life day each invariant broke — the seed to replay (§15-1 「실패면 재현 씨앗·생활일」).
     first: {} };
   const flag = (key, day) => { if (!Object.hasOwn(result.first, key)) result.first[key] = day; };
@@ -170,7 +172,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
   const lastOrder = new Map(), linesPerDay = P.state.moodLinesPerDay, endAll = startMs + days * clock.DAY, lastSolved = {};
   for (let day = 0; day < days; day++) {
     const dayStartMs = startMs + day * clock.DAY, daySegments = [], dayBelow = new Set(), dayMoods = {}, dayReasons = {}, roseToday = {}, dayRest = new Set();
-    let scenesToday = 0, nightHabit = false;
+    let scenesToday = 0, nightHabit = false, waitedToday = false, lingeredToday = 0;
     while (v.band.startMs < dayStartMs + clock.DAY && v.band.startMs < endAll) {
       const b = v.band;
       // W6: a visit that begins in this band writes the ring (its life day's first) and, watched, reads what changed meanwhile
@@ -227,6 +229,10 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       if (gather) for (const visit of visits.filter(x => x.fromMs >= b.startMs && x.fromMs < b.endMs)) gatherAt(visit);
       const out = village.planOf(v), before = residentsOf(v);
       daySegments.push(...out.segments);
+      // §8-4 ③: a band of C4's that starts with its first waiting is a day it waited; its owner's lingering segments that day.
+      const c4At = b.cards?.[cards.FIRST_STAY];
+      if (c4At?.status === 'triggered' && c4At.first === true && cardsById[cards.FIRST_STAY].bands.includes(b.band)) waitedToday = true;
+      for (const s of out.segments) if (s.linger) { lingeredToday++; result.c4.lingerAt.push(Math.round((s.startMs - b.dayStartMs) / clock.MINUTE)); }
       if (v.band.visitHabit) result.habitBands++;
       result.habitSegments += out.segments.filter(x => x.visitHabit).length;
       const worse = out.stateLog.filter(x => x.cause === 'player-routine' && (x.stat === 'chores' ? x.delta > 0 : x.delta < 0)).length;
@@ -264,12 +270,14 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
         if (!e.first && lastSolved[e.card] !== undefined && b.lifeDay < lastSolved[e.card] + cardsById[e.card].cooldownLifeDays) { result.cooldownOver++; flag('cooldownOver', day); }
         if (REST_SIGNALS.includes(e.card)) dayRest.add(e.card);
         if (e.card === 'C4' && !result.c4.rose) result.c4.rose = { atMs: e.atMs, day };
+        else if (e.card === 'C4' && !e.first) result.c4.again++;
       }
       for (const line of out.resolved) {
         result.solved[`${line.card}:${line.path}`] = (result.solved[`${line.card}:${line.path}`] || 0) + 1;
         lastSolved[line.card] = b.lifeDay;
         if (line.path === 'player') { result.playerPaths++; for (const npc of line.actors) result.playerBy[npc] = (result.playerBy[npc] || 0) + 1; if (!accept) flag('playerPath', day); }
         if (line.card === 'C4' && !result.c4.solved) result.c4.solved = { path: line.path, atMs: line.atMs, day };
+        else if (line.card === 'C4') result.c4.againPaths[line.path] = (result.c4.againPaths[line.path] || 0) + 1;
       }
       scenesToday += out.scenes.length; result.scenes += out.scenes.length;
       const steps = Object.fromEntries(Object.entries(b.pairs || {}).map(([key, s]) => [key, s.friction.step]));
@@ -322,6 +330,8 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       if (twice) { result.moodTwice += twice; flag('moodTwice', day); }
     }
     for (const signal of dayRest) result.restDays[signal] = (result.restDays[signal] || 0) + 1;
+    if (waitedToday) { result.c4.waitDays++; if (lingeredToday) result.c4.lingerDays++; }
+    if (lingeredToday > 1) { result.c4.lingerOver++; flag('lingerOver', day); }
     // 만날 수 있는 시각 05:30~23:30(§4-2): 분마다 깨어 있는 주민 수.
     const awake = new Uint8Array(24 * 60);
     for (const npc of plan.RESIDENT_IDS) {
@@ -437,6 +447,8 @@ const SEASONAL = new Set(CARDS.filter(c => ['rain-start', 'rain-stop', 'after-ra
 const RAIN_MOMENT = new Set(CARDS.filter(c => ['rain-start', 'rain-stop', 'after-rain'].includes(c.trigger.kind)).map(c => c.id));
 /** 「나와 함께」로만 나오는 이유는 매일 와서 다 받는 모습에서 잰다. */
 const WITH_PLAYER = new Set(['with-player-glad']);
+/** The mood reasons C4's first brings while it waits for the player (§8-4 ③ — the cafe owner lingering by the menu board). */
+const FIRST_WAIT = new Set(['new-menu']);
 /** 밤 습관을 고리와 함께 사는 밤에만 마을(첫 시간대의 앞 씨앗 넷 — CI 시간 몫). */
 const HABIT_SEEDS = new Set(villageSeeds(4));
 /** §15-1 기운: 한 달에 한 번도 안 생기거나 매일 생기면 값을 다시 맞추는 쉼 신호 — 카드 둘과 마음 한 줄의 이유 둘. */
@@ -511,12 +523,15 @@ export const TOWN_RUNTIME = Object.freeze({
         const among = list => list.filter(life => life.moods[key]).length / Math.max(1, list.length);
         // A reason only a card done with the player brings is counted where that resident did one (§7-3 with-player-glad).
         const [npc, tag] = key.split(':');
+        // A reason only C4's waiting first brings is counted where it waited (§8-4 ③ new-menu — the gathering profile stays and never takes it).
+        // With no life where it waited (a small run), the reason is not measured.
+        if (FIRST_WAIT.has(tag)) { const waited = lives.filter(life => life.c4.waitDays > 0); return waited.length ? { key, share: among(waited), bar: MOOD_ALIVE_SHARE } : null; }
         return { key, share: WITH_PLAYER.has(tag) ? among(accept.filter(life => life.playerBy[npc])) : Math.max(among(plain), among(cold)), bar: WITH_PLAYER.has(tag) ? WITH_PLAYER_ALIVE_SHARE : MOOD_ALIVE_SHARE };
       });
-      const dead = alive.filter(a => a.share < a.bar), maxPerDay = Math.max(...lives.map(l => l.moodsMaxPerDay), ...cold.map(l => l.moodsMaxPerDay));
+      const measured = alive.filter(Boolean), dead = measured.filter(a => a.share < a.bar), maxPerDay = Math.max(...lives.map(l => l.moodsMaxPerDay), ...cold.map(l => l.moodsMaxPerDay));
       const overCap = sum('reasonsOverCap') / Math.max(1, sum('residentDays'));
       const ok = !dead.length && maxPerDay <= paramsFor().state.moodLinesPerDay && overCap <= 0.01;
-      return { status: ok ? 'pass' : 'fail', value: `가장 드문 이유 ${alive.sort((a, b) => a.share - b.share).slice(0, 2).map(a => `${a.key} ${Math.round(a.share * 100)}%`).join('·')} · 하루 최대 ${maxPerDay}줄 · 상한 전 넷 넘은 날 ${percent(overCap * 1000, 1000)}%`,
+      return { status: ok ? 'pass' : 'fail', value: `가장 드문 이유 ${measured.sort((a, b) => a.share - b.share).slice(0, 2).map(a => `${a.key} ${Math.round(a.share * 100)}%`).join('·')} · 하루 최대 ${maxPerDay}줄 · 상한 전 넷 넘은 날 ${percent(overCap * 1000, 1000)}%`,
         detail: dead.map(a => `${a.key} ${Math.round(a.share * 100)}%`).join(', ') };
     }
     if (id === 'cards') {
@@ -556,11 +571,21 @@ export const TOWN_RUNTIME = Object.freeze({
       const takers = run.villages.filter(x => x.profile === 'daily-all' && x.result.c4.stay), firstVisit = takers.filter(x => x.result.c4.stay.day === x.visits[0].lifeDayIndex).length;
       const homeRose = plain.filter(life => life.c4.rose).length, waits = gathering.filter(life => life.c4.waiting).length;
       const without = lives.filter(life => life.c4.solved && life.c4.solved.path !== 'player'), byPath = path => without.filter(life => life.c4.solved.path === path).length;
-      const ok = staying.length > 0 && atStay === staying.length && without.length === 0 && homeRose === 0 && waits === gathering.length;
+      // §8-4 ③: while the first waits its owner lingers by the menu board at most once a life day (when in it, the clock time);
+      // §8-4 둘째 회: once done with the player the general rule raises C4 again — hers, solved alone, by two or with the player.
+      const waitDays = lives.reduce((n, life) => n + life.c4.waitDays, 0), lingerDays = lives.reduce((n, life) => n + life.c4.lingerDays, 0);
+      const lingerOver = lives.reduce((n, life) => n + life.c4.lingerOver, 0), at = lives.flatMap(life => life.c4.lingerAt).sort((a, b) => a - b);
+      const clockOf = m => `${String(Math.floor((m + 300) / 60) % 24).padStart(2, '0')}:${String((m + 300) % 60).padStart(2, '0')}`, q = k => (at.length ? clockOf(at[Math.floor((at.length - 1) * k)]) : '-');
+      const played = accept.filter(life => life.c4.solved?.path === 'player'), again = played.filter(life => life.c4.again > 0).length;
+      const againBy = path => played.reduce((n, life) => n + (life.c4.againPaths[path] || 0), 0);
+      const ok = staying.length > 0 && atStay === staying.length && without.length === 0 && homeRose === 0 && waits === gathering.length
+        && lingerOver === 0 && (!played.length || again > 0);
       const first = run.villages.find(x => x.result.c4.solved && x.result.c4.solved.path !== 'player')
         ?? run.villages.find(x => x.result.c4.stay && !(x.result.c4.rose?.atMs >= x.result.c4.stay.atMs && x.result.c4.rose.atMs < x.result.c4.stay.toMs));
-      return { status: ok ? 'pass' : 'fail', value: `주인과 처음 머문 때 선 C4 ${atStay}/${staying.length}(그 방문이 첫 방문인 마을 ${percent(firstVisit, takers.length)}% — 나머지는 첫 방문 때 주인이 잠) · 집에만 머문 삶에 선 C4 ${homeRose} · 받지 않은 마을에서 끝까지 기다림 ${waits}/${gathering.length} · 첫 C4가 플레이어 없이 풀린 삶 ${without.length}/${lives.length}(혼자 ${byPath('self')} · 둘이 ${byPath('pair')})`,
-        repro: first ? `${first.villageSeed} · ${zoneName(first.tzOffsetMin)} · ${first.profile} · ${(first.result.c4.solved ?? first.result.c4.stay).day + 1}생활일` : null };
+      return { status: ok ? 'pass' : 'fail', value: `주인과 처음 머문 때 선 C4 ${atStay}/${staying.length}(그 방문이 첫 방문인 마을 ${percent(firstVisit, takers.length)}% — 나머지는 첫 방문 때 주인이 잠) · 집에만 머문 삶에 선 C4 ${homeRose} · 받지 않은 마을에서 끝까지 기다림 ${waits}/${gathering.length} · 첫 C4가 플레이어 없이 풀린 삶 ${without.length}/${lives.length}(혼자 ${byPath('self')} · 둘이 ${byPath('pair')})`
+        + ` · 서성임: 기다린 날 ${waitDays}일 가운데 ${lingerDays}일(${percent(lingerDays, waitDays)}%) · 하루 두 번 넘게 ${lingerOver} · 시각 ${q(0.25)}·${q(0.5)}·${q(0.75)}(사분위)`
+        + ` · 둘째 회: 첫 회를 마친 다 받는 마을 ${played.length}개 가운데 다시 선 마을 ${again}개(${percent(again, played.length)}%) — 혼자 ${againBy('self')} · 둘이 ${againBy('pair')} · 나와 함께 ${againBy('player')}`,
+        repro: first ? `${first.villageSeed} · ${zoneName(first.tzOffsetMin)} · ${first.profile} · ${(first.result.c4.solved ?? first.result.c4.stay).day + 1}생활일` : repro('lingerOver') };
     }
     if (id === 'meetable-residents') {
       // W11: a village whose night habit stands keeps someone up until 02:00 (the first zone's night-only villages that live with it).
@@ -663,7 +688,7 @@ export const METRICS = Object.freeze([
   ['energy', '기운', '문턱 아래 시간 15% 이하 · C6·R6·rest-poor·sleepy-night가 매일 생긴 마을 0'],
   ['mood-lines', '마음 한 줄', '이유 태그마다 30일에 한 번 이상(마을 75%) · 하루 넷 이하'],
   ['card-coverage', '카드 발생', '18장마다 30일에 한 번 이상(마을 90%, 비 순간 카드는 그 계절 50%)'],
-  ['c4-first', '첫 C4(§8-4)', 'C4 첫 회는 플레이어가 찻집 주인과 처음 머문 때 선다(첫 방문에 주인이 깨어 있으면 첫 방문) · 첫 C4가 플레이어 없이 혼자·둘이로 풀린 것 0 · 받지 않으면 기다린다'],
+  ['c4-first', '첫 C4(§8-4)', 'C4 첫 회는 플레이어가 찻집 주인과 처음 머문 때 선다(첫 방문에 주인이 깨어 있으면 첫 방문) · 첫 C4가 플레이어 없이 혼자·둘이로 풀린 것 0 · 받지 않으면 기다린다 · 그동안 주인의 차림표 앞 서성임은 하루 한 번까지 · 플레이어와 마친 뒤에는 일반 규칙으로 다시 선다'],
   ['gather', '채집·드리기(여섯째 모습, §20-8)', '잎 통 마모가 줄고 C3가 더 잦지 않다 · 한도 넘김 0'],
   ['seen-new', '「본 것」 장부(§20-10)', '잴 것만 — 방문당 처음 보는 것 수 · 30일째 남은 새 것'],
   ['less-often', '「덜 추천」(§20-10)', '잴 것만 — 덜 추천한 카드의 제안 비율'],

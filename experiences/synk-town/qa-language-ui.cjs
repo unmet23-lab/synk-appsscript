@@ -6,7 +6,7 @@
 // its drawn key rides a boundary, 「넓혀 볼래요」 moves the ladder; and end to end, five easy scenes then the tea order closed at
 // the cafe ask the host (LANGUAGE_OFFER with the scene's format) and the card stands. The conversation C4 (Atlas — help buttons,
 // the three turns) and the notebook's 「이야기 말」 are captured for the screen review. Captures at 1440 and 390.
-//   node experiences/synk-town/qa-language-ui.cjs [--out <dir>] [--only placement,widen,offer,c4,first,notebook]
+//   node experiences/synk-town/qa-language-ui.cjs [--out <dir>] [--only placement,widen,offer,c4,first,linger,notebook]
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -381,6 +381,90 @@ async function c4(browser) {
   }
 }
 
+/** First C4 follow-up (10-30): while C4's first waits for the player, its owner lingers by the menu board once a life day
+ * (§8-4 ③) — her mood line 「새 차를 …」 by her name, not the card's need — and a talk to her there opens it (CARD_OPEN direct);
+ * the place's panel puts the card above the place's buttons (a phone shows 「같이 해요」 above the fold, final review F4); a
+ * stale 「이어서 하기」 the town turns down (409 — she has left the cafe) is said softly and the town stays connected (F1); away
+ * from the cafe her line in the panel says the new tea is talked about at the cafe, with no button (F3). */
+const COUNTER = [['z', 3.9], ['x', 0.3], ['z', 0.4]];
+async function linger(browser) {
+  const village = await town('town/village.mjs');
+  for (const device of ['desktop', 'phone']) {
+    // A world past its first visited day whose C4 first waits for the player since the band before (the morning).
+    const f = await editedWorld(`linger-${device}`, kst('2026-10-28', '11:05'), (world, lifeDay) => {
+      world.village.band.cards = { ...(world.village.band.cards || {}), C4: { status: 'triggered', key: `${lifeDay}.morning.200`, at: world.village.band.startMs - 160 * MIN, day: lifeDay, first: true } };
+    });
+    try {
+      // Her lingering in this band or the next (C4's bands): from a minute ahead, so the page can open and walk there.
+      let seg = null;
+      for (let k = 0; k < 4 && !seg; k++) {
+        const v = f.store.read().state.village;
+        seg = village.planOf(v).segments.find(s => s.linger === 'C4' && s.arriveMs > f.now() + MIN) ?? null;
+        if (!seg) f.set(v.band.endMs + MIN);
+      }
+      check('linger', !!seg && seg.archetype === 'menu-note' && seg.spot === 'cafe.counter' && seg.reason === 'new-menu', `${device}: 첫 C4가 기다리는 동안 찻집 주인이 차림표 앞에서 서성인다(하루 한 번)`, seg && { at: new Date(seg.startMs).toISOString(), spot: seg.spot, reason: seg.reason, mood: seg.mood });
+      if (!seg) continue;
+      f.set(seg.startMs - 30 * 1000);
+      const s = await open(browser, f, { device });
+      try {
+        await walkTo(s.page, COUNTER);
+        const waitFor = until => s.page.waitForFunction(at => SYNKTownDay.metrics().village.serverNow >= at, until, { timeout: 120000 });
+        await waitFor(seg.arriveMs + 5000); await delay(1500);
+        const lines = await s.page.evaluate(() => SYNKTownDay.metrics().cards.lines), hers = lines.find(l => l.npc === 'cafe-owner');
+        const text = hers ? await s.page.$eval('#mood-lines .mood-card[data-npc="cafe-owner"] .mood-text', el => el.textContent) : null;
+        check('linger', /^cafe-owner\.mood\.new-menu\.[12]$/.test(hers?.line ?? '') && /새 차/.test(text ?? ''), `${device}: 서성이는 동안 이름표 곁에 마음 줄(필요 줄이 가리지 않음)`, { hers, text, walk: await walkPoint(s.page) });
+        await shot(s.page, `linger-${device}-1-mood`);
+        await s.page.keyboard.press('e');
+        await s.page.waitForFunction(() => SYNKTownDay.metrics().walk.interactionOpen, null, { timeout: 10000 }); await delay(900);
+        const go = s.page.locator('#place-cards .place-need .felt').first();
+        await go.waitFor({ timeout: 10000 });
+        const layout = await s.page.evaluate(() => {
+          const panel = document.getElementById('nearby-panel'), cards = document.getElementById('place-cards'), actions = document.getElementById('day-actions');
+          const button = cards.querySelector('.place-need .felt').getBoundingClientRect(), box = panel.getBoundingClientRect();
+          return { before: !!(cards.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING), scrollTop: panel.scrollTop,
+            inside: button.top >= box.top - 1 && button.bottom <= Math.min(box.bottom, innerHeight) + 1, button: button.toJSON(), box: box.toJSON(),
+            greet: [...cards.querySelectorAll('.place-greet:not(.place-away)')].map(el => el.textContent) };
+        });
+        check('linger', /같이 해요/.test(await go.textContent()) && layout.before && layout.inside, `${device}: 장소 판 — 카드 줄이 장면 단추 위 · 「같이 해요」가 첫 화면(접힘 위)`, layout);
+        check('linger', !layout.greet.some(t => t.startsWith('찻집 주인:')), `${device}: 같은 주인의 다른 말은 카드 줄이 있는 동안 기다린다`, layout.greet);
+        await shot(s.page, `linger-${device}-2-talk`);
+        await go.click(); await s.page.waitForSelector('#card-dialog[open]', { timeout: 15000 }); await delay(700);
+        check('linger', /새 차/.test(await s.page.$eval('#card-line', el => el.textContent)), `${device}: 서성이는 주인에게 먼저 말을 걸면 첫 C4가 열린다`);
+        await s.page.click('#card-close'); await delay(900);
+        // Where she goes next away from the cafe (arrived a while there), today.
+        const v = f.store.read().state.village, start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, at]) => at));
+        const away = village.planOf(v).segments.find(x => x.npc === 'cafe-owner' && x.startMs > f.now() && x.endMs - x.arriveMs >= 4 * MIN
+          && Object.hasOwn(ROUTES, village.placeAt([x], 'cafe-owner', x.arriveMs + MIN, start)?.to ?? '') && village.placeAt([x], 'cafe-owner', x.arriveMs + MIN, start).to !== 'cafe') ?? null;
+        check('linger', !!away, `${device}: 주인이 찻집 밖에 머무는 때를 찾았다`, away && { at: new Date(away.arriveMs).toISOString(), spot: away.spot });
+        if (away) {
+          // A stale 「이어서 하기」: the panel shows it at the cafe, then she has gone — the town turns it down (409).
+          await s.page.keyboard.press('e');
+          await s.page.waitForFunction(() => SYNKTownDay.metrics().walk.interactionOpen, null, { timeout: 10000 }).catch(() => {}); await delay(700);
+          const stale = s.page.locator('#place-cards .place-need .felt').first();
+          await stale.waitFor({ timeout: 10000 });
+          // Pressed the moment the clock has her gone (the screen's own read may redraw the panel first — the press still goes).
+          const handle = await stale.elementHandle();
+          f.set(away.arriveMs + 30 * 1000); await handle.evaluate(button => button.click()); await delay(1500);
+          const after = await s.page.evaluate(() => ({ connected: SYNKTownDay.metrics().connected, soft: document.getElementById('error').classList.contains('is-soft'),
+            shown: !document.getElementById('error').hidden, text: document.getElementById('error').textContent, retry: !document.getElementById('retry').hidden,
+            walkError: document.body.classList.contains('walk-error') }));
+          check('linger', after.connected && after.soft && after.shown && /찻집/.test(after.text) && !after.retry && !after.walkError, `${device}: 거절(409)은 연결 끊김이 아니라 그 자리의 부드러운 글`, after);
+          await shot(s.page, `linger-${device}-3-refused`);
+          await s.page.keyboard.press('Escape'); await delay(500);
+          const place = village.placeAt([away], 'cafe-owner', away.arriveMs + MIN, start).to;
+          await talkAt(s.page, place);
+          const there = await s.page.evaluate(() => ({ away: [...document.querySelectorAll('#place-cards .place-away')].map(el => el.textContent), need: document.querySelectorAll('#place-cards .place-need').length }));
+          check('linger', there.away.some(t => /찻집 주인: .*찻집/.test(t)) && there.need === 0, `${device}: 찻집 밖의 주인 곁 장소 판 — 「찻집에서」 한 줄 · 단추 없음`, there);
+          await shot(s.page, `linger-${device}-4-away`);
+        }
+        const wide = await s.page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+        check('linger', !wide, `${device}: 가로 넘침 없음`);
+        check('linger', !s.errors.length, `${device}: 오류·실패 요청 0`, s.errors);
+      } finally { await s.close(); }
+    } finally { await f.stop(); }
+  }
+}
+
 /** The notebook's 「이야기 말」 (Atlas): two seats, four choices; 「한 단계 쉽게」 fixes the seat and says so. */
 async function notebook(browser) {
   for (const device of ['desktop', 'phone']) {
@@ -409,7 +493,7 @@ async function notebook(browser) {
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist'] });
-  const scenes = { placement, widen, offer, c4, first, notebook };
+  const scenes = { placement, widen, offer, c4, first, linger, notebook };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;
