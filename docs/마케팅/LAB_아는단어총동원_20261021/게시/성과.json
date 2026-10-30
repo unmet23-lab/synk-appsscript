@@ -121,7 +121,8 @@
               "saves": 0,
               "reach": 127,
               "earlyRetention3sPct": 24.6,
-              "averageWatchSeconds": 4.215
+              "averageWatchSeconds": 4.215,
+              "follows": 0
             },
             "평소대비": {
               "배수": 1.1,
@@ -141,7 +142,8 @@
               "comments": 0,
               "shares": 0,
               "saves": 0,
-              "reach": 128
+              "reach": 128,
+              "follows": 0
             },
             "평소대비": {
               "배수": 1.12,
@@ -161,9 +163,13 @@
             "까닭": null
           }
         },
-        "화면필요": [
-          "팔로우"
-        ]
+        "화면필요": [],
+        "화면": {
+          "읽은때": "2026-10-30T01:23:06.973Z",
+          "지표": {
+            "follows": 0
+          }
+        }
       },
       {
         "계정": "lab-youtube",
