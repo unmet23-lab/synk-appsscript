@@ -387,6 +387,15 @@ async function c4(browser) {
  * stale 「이어서 하기」 the town turns down (409 — she has left the cafe) is said softly and the town stays connected (F1); away
  * from the cafe her line in the panel says the new tea is talked about at the cafe, with no button (F3). */
 const COUNTER = [['z', 3.9], ['x', 0.3], ['z', 0.4]];
+/** The walking panel opened by E where the player stands (the scene focused first — a notice may hold the keys), a few tries. */
+async function openPanel(page) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (await page.evaluate(() => SYNKTownDay.metrics().walk.interactionOpen)) return true;
+    await page.locator('#scene').focus(); await page.keyboard.press('e');
+    if (await page.waitForFunction(() => SYNKTownDay.metrics().walk.interactionOpen, null, { timeout: 4000 }).then(() => true, () => false)) { await delay(900); return true; }
+  }
+  return false;
+}
 async function linger(browser) {
   const village = await town('town/village.mjs');
   for (const device of ['desktop', 'phone']) {
@@ -414,8 +423,9 @@ async function linger(browser) {
         const text = hers ? await s.page.$eval('#mood-lines .mood-card[data-npc="cafe-owner"] .mood-text', el => el.textContent) : null;
         check('linger', /^cafe-owner\.mood\.new-menu\.[12]$/.test(hers?.line ?? '') && /새 차/.test(text ?? ''), `${device}: 서성이는 동안 이름표 곁에 마음 줄(필요 줄이 가리지 않음)`, { hers, text, walk: await walkPoint(s.page) });
         await shot(s.page, `linger-${device}-1-mood`);
-        await s.page.keyboard.press('e');
-        await s.page.waitForFunction(() => SYNKTownDay.metrics().walk.interactionOpen, null, { timeout: 10000 }); await delay(900);
+        // The panel from the cafe's talking spot (by the counter E may go to the tea board's spot instead).
+        await talkAt(s.page, 'cafe');
+        check('linger', await openPanel(s.page), `${device}: 서성이는 주인에게 찻집에서 E로 장소 판이 열린다`);
         const go = s.page.locator('#place-cards .place-need .felt').first();
         await go.waitFor({ timeout: 10000 });
         const layout = await s.page.evaluate(() => {
@@ -423,10 +433,11 @@ async function linger(browser) {
           const button = cards.querySelector('.place-need .felt').getBoundingClientRect(), box = panel.getBoundingClientRect();
           return { before: !!(cards.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING), scrollTop: panel.scrollTop,
             inside: button.top >= box.top - 1 && button.bottom <= Math.min(box.bottom, innerHeight) + 1, button: button.toJSON(), box: box.toJSON(),
-            greet: [...cards.querySelectorAll('.place-greet:not(.place-away)')].map(el => el.textContent) };
+            order: [...cards.children].map(el => (el.classList.contains('place-need') ? 'need' : el.classList.contains('place-away') ? 'away' : el.classList.contains('place-greet') ? 'greet' : el.className)) };
         });
         check('linger', /같이 해요/.test(await go.textContent()) && layout.before && layout.inside, `${device}: 장소 판 — 카드 줄이 장면 단추 위 · 「같이 해요」가 첫 화면(접힘 위)`, layout);
-        check('linger', !layout.greet.some(t => t.startsWith('찻집 주인:')), `${device}: 같은 주인의 다른 말은 카드 줄이 있는 동안 기다린다`, layout.greet);
+        // Her greeting still comes — under the card row (it carries what she heard, §9-4 — design review F2).
+        check('linger', layout.order[0] === 'need' && layout.order.lastIndexOf('need') < (layout.order.indexOf('greet') + 1 || Infinity), `${device}: 카드 줄이 먼저, 인사는 그 아래`, layout.order);
         await shot(s.page, `linger-${device}-2-talk`);
         await go.click(); await s.page.waitForSelector('#card-dialog[open]', { timeout: 15000 }); await delay(700);
         check('linger', /새 차/.test(await s.page.$eval('#card-line', el => el.textContent)), `${device}: 서성이는 주인에게 먼저 말을 걸면 첫 C4가 열린다`);
@@ -437,19 +448,37 @@ async function linger(browser) {
           && Object.hasOwn(ROUTES, village.placeAt([x], 'cafe-owner', x.arriveMs + MIN, start)?.to ?? '') && village.placeAt([x], 'cafe-owner', x.arriveMs + MIN, start).to !== 'cafe') ?? null;
         check('linger', !!away, `${device}: 주인이 찻집 밖에 머무는 때를 찾았다`, away && { at: new Date(away.arriveMs).toISOString(), spot: away.spot });
         if (away) {
-          // A stale 「이어서 하기」: the panel shows it at the cafe, then she has gone — the town turns it down (409).
-          await s.page.keyboard.press('e');
-          await s.page.waitForFunction(() => SYNKTownDay.metrics().walk.interactionOpen, null, { timeout: 10000 }).catch(() => {}); await delay(700);
+          // A stale 「이어서 하기」: the panel shows it at the cafe, then she has gone — the town turns it down (409). (E in an open
+          // panel presses the place's own first button, so it is pressed only to open it.)
+          await delay(1500); await openPanel(s.page);
           const stale = s.page.locator('#place-cards .place-need .felt').first();
-          await stale.waitFor({ timeout: 10000 });
-          // Pressed the moment the clock has her gone (the screen's own read may redraw the panel first — the press still goes).
-          const handle = await stale.elementHandle();
-          f.set(away.arriveMs + 30 * 1000); await handle.evaluate(button => button.click()); await delay(1500);
+          const standing = await stale.waitFor({ timeout: 10000 }).then(() => true, () => false);
+          if (!standing) {
+            const why = await s.page.evaluate(() => ({ panel: document.getElementById('place-cards').hidden ? null : document.getElementById('place-cards').innerText,
+              open: SYNKTownDay.metrics().walk.interactionOpen, nearby: SYNKTownDay.metrics().walk.nearby, take: SYNKTownDay.metrics().cards.take,
+              cards: SYNKTownDay.snapshot()?.view?.day?.scene?.village?.cards, dialog: !!document.querySelector('dialog[open]') }));
+            check('linger', false, `${device}: 닫은 뒤 장소 판에 「이어서 하기」`, why);
+            await shot(s.page, `linger-${device}-3-no-resume`);
+            continue;
+          }
+          // The town's refusal as the server gives it when she has just gone (409 card-too-far — core.mjs CARD_OPEN, tested there):
+          // answered for this one command, so the press is the screen's own and the race with its redraw does not come in.
+          const refuse = route => {
+            const body = JSON.parse(route.request().postData() || '{}');
+            return body.type === 'CARD_OPEN' ? route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'card-too-far', message: '찻집 주인 가까이 가서 말을 걸어 주세요.' }) }) : route.continue();
+          };
+          await s.page.route('**/api/preview/command', refuse);
+          await stale.click(); await delay(1500);
           const after = await s.page.evaluate(() => ({ connected: SYNKTownDay.metrics().connected, soft: document.getElementById('error').classList.contains('is-soft'),
             shown: !document.getElementById('error').hidden, text: document.getElementById('error').textContent, retry: !document.getElementById('retry').hidden,
             walkError: document.body.classList.contains('walk-error') }));
           check('linger', after.connected && after.soft && after.shown && /찻집/.test(after.text) && !after.retry && !after.walkError, `${device}: 거절(409)은 연결 끊김이 아니라 그 자리의 부드러운 글`, after);
           await shot(s.page, `linger-${device}-3-refused`);
+          await s.page.unroute('**/api/preview/command', refuse);
+          await delay(6500);
+          const calm = await s.page.evaluate(() => ({ shown: !document.getElementById('error').hidden, connected: SYNKTownDay.metrics().connected }));
+          check('linger', !calm.shown && calm.connected, `${device}: 거절 글은 잠시 뒤 걷히고 마을은 그대로 이어진다`, calm);
+          f.set(away.arriveMs + 30 * 1000);
           await s.page.keyboard.press('Escape'); await delay(500);
           const place = village.placeAt([away], 'cafe-owner', away.arriveMs + MIN, start).to;
           await talkAt(s.page, place);

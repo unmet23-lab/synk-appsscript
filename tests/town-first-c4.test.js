@@ -260,14 +260,22 @@ test('둘째 회 — 플레이어와 한 C4는 쉼 7생활일 뒤 일반 규칙�
   const carried = { status: 'triggered', key: `${LIFE}.morning.350`, at: DAY0 + 6 * HOUR - 10 * MIN, day: LIFE, times: 1, last: { path: 'player', day: LIFE - 9 }, played: true };
   const next = planBand(input({ C4: carried }));
   assert.ok(next.resolved.some(r => r.card === 'C4' && ['self', 'pair'].includes(r.path)) && next.cards.C4.first === undefined, '구간을 넘긴 둘째 회 — 다음 결정에 주인이 푼다');
-  // Busy (chores 3) or tired (energy 39) all band: it does not rise.
+  // Starting busy (chores 3) or tired (energy 39): the state moves through the band (guests, her own segments), and every rise
+  // finds the bounds met at its own decision — her state then is the band's start plus each change before it, the guests' and
+  // orders' at that instant too, but not the segment placed at it (backend review GA1).
   const still = { recent: [], placesToday: [], lastSpot: 'cafe.counter', firstOfDay: false, choresTick: 0, social: 60 };
-  for (const state of [{ energy: 80, chores: 3 }, { energy: 39, chores: 0 }]) {
-    const out = planBand(input({ C4: { status: 'idle', times: 1, last: { path: 'player', day: LIFE - 9 }, played: true } }, { residents: { 'cafe-owner': { ...still, ...state } } }));
-    const first = out.log.find(e => e.card === 'C4');
-    // The state moves through the band (guests, segments): a rise later in it must find the bounds met then — never at the start.
-    assert.ok(!first || first.atMs > DAY0 + 6 * HOUR, JSON.stringify(state));
+  let checked = 0;
+  for (const state of [{ energy: 80, chores: 3 }, { energy: 39, chores: 0 }]) for (let n = 0; n < 12; n++) {
+    const out = planBand({ ...input({ C4: { status: 'idle', times: 1, last: { path: 'player', day: LIFE - 9 }, played: true } }, { residents: { 'cafe-owner': { ...still, ...state } } }), villageSeed: `first-c4-bounds-${n}` });
+    for (const rise of out.log.filter(e => e.card === 'C4')) {
+      const at = { ...state };
+      for (const e of out.stateLog) if (e.npc === 'cafe-owner' && (e.atMs < rise.atMs || e.atMs === rise.atMs && !['routine', 'player-routine'].includes(e.cause))) at[e.stat] = (at[e.stat] ?? 0) + e.delta;
+      assert.ok(at.chores <= 2 && at.energy >= 40, `${n} ${JSON.stringify(state)}: 선 결정에서 할 일 ${at.chores} · 기운 ${at.energy}`);
+      checked++;
+    }
+    assert.ok(!out.log.some(e => e.card === 'C4' && e.atMs === DAY0 + 6 * HOUR), '구간 첫 결정(시작 상태 그대로)에는 안 선다');
   }
+  assert.ok(checked >= 1, `상태가 풀린 뒤 선 경우를 하나 이상 견줬다(${checked})`);
 });
 
 test('이행 — 플레이어 없이 첫 C4가 혼자(쉬는 중)·둘이로 풀린 세계는 다음 머묾에 첫 회를 다시 받고, 플레이어와 푼 세계는 받지 않는다', async () => {
