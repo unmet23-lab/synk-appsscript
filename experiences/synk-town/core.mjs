@@ -22,7 +22,7 @@ import { eventProblem, FAMILIES, relation } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks, adaptedOn } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten, ACTIVITY_MEMORY } from './town/memory.mjs';
 import { initialVillage, validVillage, GIVES_MAX, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput,
-  noteStay, closeStay, STAYS_HELD } from './town/village.mjs';
+  noteStay, closeStay } from './town/village.mjs';
 import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
 import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf, talkPlaceOf } from './town/cards.mjs';
 import { learnPrivate, hearsayFor, tell, privateOf, noteOf } from './town/knowledge.mjs';
@@ -559,7 +559,7 @@ function trackVisit(state, host) {
 function trackPlace(state, atMs, { visitStart = false } = {}) {
   if (!state.village) return;
   const visit = state.townVisit;
-  noteStay(state.village, visit && visit.endedAt === undefined ? dayPlace(state) : null, atMs, visitStart ? { cap: STAYS_HELD } : {});
+  noteStay(state.village, visit && visit.endedAt === undefined ? dayPlace(state) : null, atMs, { held: visitStart });
 }
 /** A command's end, after its 0-second chain: holds follow the scenes (a new hold opens now, a released
  * one ends now), and a new first-day agreement is its first use and tomorrow's promise (§6-5). */

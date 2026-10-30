@@ -187,7 +187,7 @@ test('Fable F1 — 방문이 구간 경계 30분 안에 끝나고 주인이 다�
     const end = B + 20 * MIN, next = B + 2 * HOUR;
     if (read) close(end + 5 * MIN, { visitEnd: end });
     village.closeStay(v, end);
-    village.noteStay(v, 'home', next, { cap: village.STAYS_HELD });
+    village.noteStay(v, 'home', next, { held: true });
     close(next);
     return v;
   };
@@ -263,4 +263,32 @@ test('Fable F5·F6 — 첫 C4는 찻집에서만 건네고 열리며, 한 방문
     h.play(20, 4);
   }
   assert.ok(next && next.key === offered.key, '다음 방문에는 같은 첫 C4를 다시 건넨다');
+});
+
+test('GPT GA1 — 한 구간에 장소를 열여섯 번 넘게 바꿔도(주인을 아직 못 만남) 그 뒤 주인 곁에 머물면 첫 C4가 선다', async () => {
+  const village = await townModule('village');
+  const v = village.initialVillage(), close = ms => village.closeBands(v, { nowMs: ms, seed: 'first-c4-cap', offsetMin: 540, revision: 1 });
+  close(NOON);
+  const out = village.planOf(v), mine = out.segments.filter(s => s.npc === 'cafe-owner' && s.startMs < NOON + 40 * MIN && s.endMs > NOON);
+  const hers = new Set(mine.map(s => s.spot.split('.')[0]));
+  const away = ['workshop', 'greenhouse', 'lane'].filter(p => !hers.has(p));
+  assert.ok(away.length >= 2, `주인이 안 가는 두 곳 ${[...hers]}`);
+  for (let k = 0; k < 20; k++) village.noteStay(v, away[k % 2], NOON + k * MIN);
+  assert.ok(v.playerStays.length <= village.STAYS_MAX, `${v.playerStays.length}줄`);
+  // Then where she is, arrived, at a later minute of the band.
+  const t = NOON + 25 * MIN, at = village.placeAt(village.planOf(v).segments, 'cafe-owner', t, startSpots(v));
+  assert.ok(at && !at.walking && at.to !== 'home', '그때 주인이 머무는 곳');
+  village.noteStay(v, at.to, t);
+  const rise = village.planOf(v).log.find(e => e.first);
+  assert.ok(rise && rise.atMs === t, `열여섯 번 넘게 바꾼 뒤에도 선다 ${JSON.stringify(rise)}`);
+});
+
+test('GPT GA2 — 이 규칙 전에 저장된, 표시 없이 기다리던 C4도 주인이 풀지 않고 플레이어를 기다린다', async () => {
+  const { planBand } = await townModule('plan');
+  const TZ = 540, LIFE = 20748, DAY0 = Date.UTC(2026, 9, 22, 5, 0) - TZ * MIN, startMs = DAY0 + 6 * HOUR;
+  const out = planBand({ villageSeed: 'first-c4-old-wait', lifeDay: LIFE, band: 'day', startMs, endMs: DAY0 + 12 * HOUR, dayStartMs: DAY0, planCmdRev: 0,
+    weatherTomorrow: 'clear', season: 'autumn', weatherAt: () => 'clear', cards: { C4: { status: 'triggered', key: `${LIFE}.day.0`, at: startMs, day: LIFE } } });
+  assert.ok(!out.segments.some(s => s.card === 'C4'), '풀기 조각 없음');
+  assert.equal(out.cards.C4.status, 'triggered'); assert.equal(out.cards.C4.key, `${LIFE}.day.0`);
+  assert.ok(!out.log.some(e => e.card === 'C4'), '새로 서지도 않는다(이미 기다림)');
 });

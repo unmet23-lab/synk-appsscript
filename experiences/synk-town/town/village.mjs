@@ -10,7 +10,7 @@ import { bandAt, clockAt, lifeDayStartAt, recordOffset, validOffset, BAND_IDS, D
 import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
 import { paramsFor } from './params.mjs';
 import { wake } from './state.mjs';
-import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf, FIRST_STAY, firstOwed, firstPending } from './cards.mjs';
+import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf, FIRST_STAY, firstPending } from './cards.mjs';
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
 import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
 import { habitOf, HABIT_BANDS } from './visits.mjs';
@@ -186,26 +186,35 @@ function openBand(v, atMs, planCmdRev, carried, visitBands = null) {
   // C4's first (§8-4): only a band's opening lets the player's stays go — those over before it, or all of them once the first
   // waits for the player or is done — so no read decides what a later band plans from (§15-3, Fable F1).
   if (v.playerStays) {
-    const r = v.band.cards?.[FIRST_STAY], kept = firstOwed(r) && !r?.first ? v.playerStays.filter(s => s.toMs === undefined || s.toMs > v.band.startMs) : [];
+    const r = v.band.cards?.[FIRST_STAY], kept = firstPending(r) ? v.playerStays.filter(s => s.toMs === undefined || s.toMs > v.band.startMs) : [];
     if (kept.length) v.playerStays = kept; else delete v.playerStays;
   }
 }
 
 /** Where the player stays while C4's first is owed (§8-4, Fable F1·F7): { place, fromMs, toMs? }, newest last. A command's end
  * and a visit's start close the open stay and add the place the player is at; a visit's end closes it (closeStay). The
- * player's home is never written — no resident comes there. A command keeps at most STAYS_MAX (more place changes in one
- * band leave the player unwritten until the next band); a visit's start may add past it up to STAYS_HELD, the count it may
- * find before the bands it missed have closed. */
+ * player's home is never written — no resident comes there. A command's end finds the bands closed up to it, so a full list
+ * (STAYS_MAX) is cut there by the band's own plan (GPT GA1): stays that are over and never met the cafe owner by now can never
+ * meet her (what comes later re-plans only from its own instant), so they go; once she has been met the band keeps its stays
+ * and adds none. A visit's start may add up to STAYS_HELD — the count it may find before the bands it missed have closed. */
 export const STAYS_MAX = 16, STAYS_HELD = 48;
-export function noteStay(v, place, atMs, { cap = STAYS_MAX } = {}) {
+export function noteStay(v, place, atMs, { cap = STAYS_MAX, held = false } = {}) {
   if (!v?.band || !integer(atMs)) return;
   const r = v.band.cards?.[FIRST_STAY];
-  if (!firstOwed(r) || r?.first) { delete v.playerStays; return; }
-  const stays = v.playerStays || [], open = stays.at(-1)?.toMs === undefined ? stays.at(-1) : null;
+  if (!firstPending(r)) { delete v.playerStays; return; }
+  let stays = v.playerStays || [];
   const here = place && place !== 'home' && Object.hasOwn(PLACE_BY_ID, place) ? place : null;
+  if (stays.at(-1)?.toMs === undefined && stays.at(-1)?.place === here && here) return;
+  if (here && !held && stays.length >= cap) {
+    // Over and never met her by now: gone. Met: only the stay she was met in still matters (the first rise is the earliest
+    // meeting), so a band that keeps changing places after it re-plans once in a list's length, not at every change.
+    const rise = planOf(v).log.find(e => e.first && e.atMs <= atMs);
+    stays = stays.filter(s => s.toMs === undefined || !!rise && s.fromMs <= rise.atMs && rise.atMs < s.toMs);
+  }
+  const open = stays.at(-1)?.toMs === undefined ? stays.at(-1) : null;
   if (open && open.place === here) return;
   if (open) { if (atMs > open.fromMs) open.toMs = atMs; else stays.pop(); }
-  if (here && stays.length < cap) stays.push({ place: here, fromMs: atMs });
+  if (here && stays.length < (held ? STAYS_HELD : cap)) stays.push({ place: here, fromMs: atMs });
   if (stays.length) v.playerStays = stays; else delete v.playerStays;
 }
 /** The visit's end closes the open stay at the instant the holds end (an end with no wall time: where it began). */

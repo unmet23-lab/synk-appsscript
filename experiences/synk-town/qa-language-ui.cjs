@@ -254,6 +254,12 @@ async function first(browser) {
         await delay(1500);
         const rise = firstRise(f, village), saved = f.store.peek().state.village;
         check('first', rise?.first === true && saved.playerStays?.at(-1)?.place === stays.place, `${device}: 걸어서 주인 곁에 가자(말 걸기 전) 첫 C4가 섰다`, { rise, stays: saved.playerStays });
+        // A talk to her (E) opens the place's panel with 「같이 해요」; Esc closes it so her own offer may come (the panel holds
+        // offers back, W5b — the W5 offer scene's order). Play time counts only while the walking window has the focus.
+        await talkAt(s.page, stays.place);
+        const panel = s.page.locator('#place-cards .place-need .felt').first();
+        check('first', await panel.count() > 0 && /같이 해요/.test(await panel.textContent()), `${device}: 주인에게 먼저 말을 걸면 장소 판에 「같이 해요」`, await panel.count() ? await panel.textContent() : null);
+        await s.page.keyboard.press('Escape'); await delay(600); await s.page.bringToFront();
         // The offer within the first-word budget (45 s of play). A placement card already standing (the first-scene door, W9)
         // is answered first — what the screen does with it is the placement scene's; here it only must not keep the offer away.
         let offered = null, placedFirst = false;

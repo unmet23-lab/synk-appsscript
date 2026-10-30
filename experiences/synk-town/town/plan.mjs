@@ -528,12 +528,13 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
     return freeSpots(pair.partnerSpot, where.at, live, pair.partner).length > 0;
   };
   /** The card a resident's decision solves (§8-3 해결): the oldest that rose and waits for it, in a band it may be solved
-   * in — never one the player holds or a neighbour already came for, nor C4's first, which waits for the player (§8-4). */
+   * in — never one the player holds or a neighbour already came for, nor C4's first, which waits for the player (§8-4):
+   * marked, or a C4 the player has never done that rose before this rule (a world saved waiting — GPT GA2). */
   const waiting = (npc, t) => {
     let best = null;
     for (const card of CARDS_OF[npc] || []) {
       const r = vs.cards[card.id];
-      if (r?.status !== 'triggered' || r.first || !card.bands.includes(input.band) || takes.some(take => takeCovers(take, card.id, r.key, t))) continue;
+      if (r?.status !== 'triggered' || r.first || card.id === FIRST_STAY && firstOwed(r) || !card.bands.includes(input.band) || takes.some(take => takeCovers(take, card.id, r.key, t))) continue;
       // A neighbour who already came for it solves it — unless the player held that rise then (a visit with no result).
       if ((partners.get(`${card.id}|${r.key}`) || []).some(ms => !takes.some(take => takeCovers(take, card.id, r.key, ms)))) continue;
       if (!best || r.at < vs.cards[best.id].at) best = card;
