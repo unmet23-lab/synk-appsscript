@@ -121,7 +121,8 @@
               "saves": 0,
               "reach": 114,
               "earlyRetention3sPct": 36.5,
-              "averageWatchSeconds": 4.784
+              "averageWatchSeconds": 4.784,
+              "follows": 0
             },
             "평소대비": {
               "배수": 0.98,
@@ -141,7 +142,8 @@
               "comments": 0,
               "shares": 1,
               "saves": 0,
-              "reach": 115
+              "reach": 115,
+              "follows": 0
             },
             "평소대비": {
               "배수": 0.98,
@@ -161,9 +163,13 @@
             "까닭": null
           }
         },
-        "화면필요": [
-          "팔로우"
-        ]
+        "화면필요": [],
+        "화면": {
+          "읽은때": "2026-10-30T01:23:47.361Z",
+          "지표": {
+            "follows": 0
+          }
+        }
       },
       {
         "계정": "lab-mm-tiktok",
