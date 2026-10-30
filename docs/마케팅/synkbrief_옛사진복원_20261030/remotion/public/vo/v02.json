@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "근데… 얼굴이, 우리 엄마가 아니에요.",
+ "show": "근데… 얼굴이, 우리 엄마가 아니에요.",
+ "dur": 1.854,
+ "words": [
+  {
+   "text": "근데…",
+   "start": 0.06,
+   "end": 0.262
+  },
+  {
+   "text": "얼굴이,",
+   "start": 0.363,
+   "end": 0.686
+  },
+  {
+   "text": "우리",
+   "start": 0.868,
+   "end": 0.969
+  },
+  {
+   "text": "엄마가",
+   "start": 1.03,
+   "end": 1.333
+  },
+  {
+   "text": "아니에요.",
+   "start": 1.393,
+   "end": 1.854
+  }
+ ],
+ "source": {
+  "key": "2ae2224fada4b4be3d12964d834c171e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 129
+ }
+}

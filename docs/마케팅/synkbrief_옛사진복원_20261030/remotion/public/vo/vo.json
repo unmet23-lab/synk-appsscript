@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1030,
+  "lufs": -17
+ },
+ "made": "2026-10-30T05:50:41.192Z",
+ "lines": [
+  {
+   "id": "v01",
+   "text": "엄마 옛날 사진이라고 치고, AI로 살려 볼게요.",
+   "show": "엄마 옛날 사진이라고 치고, AI로 살려 볼게요.",
+   "scene": "1 훅",
+   "dur": 2.77,
+   "syllablesPerSec": 6.14,
+   "src": "v01.wav",
+   "key": "1bf3561779899df9b1d37bdb76796e69",
+   "words": 7
+  },
+  {
+   "id": "v02",
+   "text": "근데… 얼굴이, 우리 엄마가 아니에요.",
+   "show": "근데… 얼굴이, 우리 엄마가 아니에요.",
+   "scene": "2 반전",
+   "dur": 1.854,
+   "syllablesPerSec": 7.55,
+   "src": "v02.wav",
+   "key": "2ae2224fada4b4be3d12964d834c171e",
+   "words": 5
+  },
+  {
+   "id": "v03",
+   "text": "얼굴은 그대로, 살짝만. 이 한 줄을 붙였더니,",
+   "show": "얼굴은 그대로, 살짝만. 이 한 줄을 붙였더니,",
+   "scene": "3 한 줄",
+   "dur": 2.876,
+   "syllablesPerSec": 5.91,
+   "src": "v03.wav",
+   "key": "bf18ba4d2bd5bafced540e8810006a21",
+   "words": 7
+  },
+  {
+   "id": "v04",
+   "text": "이제야, 우리 엄마예요.",
+   "show": "이제야, 우리 엄마예요.",
+   "scene": "4 끝",
+   "dur": 1.225,
+   "syllablesPerSec": 7.35,
+   "src": "v04.wav",
+   "key": "52760d1a6582557e46c7d50d29d52d1e",
+   "words": 3
+  }
+ ]
+}

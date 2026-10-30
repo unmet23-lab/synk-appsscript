@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "이제야, 우리 엄마예요.",
+ "show": "이제야, 우리 엄마예요.",
+ "dur": 1.225,
+ "words": [
+  {
+   "text": "이제야,",
+   "start": 0.02,
+   "end": 0.304
+  },
+  {
+   "text": "우리",
+   "start": 0.385,
+   "end": 0.487
+  },
+  {
+   "text": "엄마예요.",
+   "start": 0.548,
+   "end": 1.225
+  }
+ ],
+ "source": {
+  "key": "52760d1a6582557e46c7d50d29d52d1e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1030,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}
