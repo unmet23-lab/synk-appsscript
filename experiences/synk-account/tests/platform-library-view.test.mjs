@@ -103,6 +103,15 @@ async function fixture(t, { records = new Map(), storage = memoryStorage(), devi
   };
 }
 
+for (const native of [false, true]) test((native ? 'native' : 'web') + ' library startup rejection restores a usable connection retry', async t => {
+  const f = await fixture(t, { native }), method = native ? 'authStatus' : 'refresh', original = f.host[method];
+  f.host[method] = async () => { throw new Error('합성 연결 시작 실패'); };
+  await f.connect();
+  assert.equal(f.root.querySelector('[data-connect]').hidden, false);assert.equal(f.root.querySelector('[data-connect-button]').disabled, false);assert.equal(f.mount.hidden, true);assert.equal(f.content.hidden, true);assert.equal(f.writes().length, 0);
+  f.host[method] = original;await f.connect();
+  assert.equal(f.root.querySelector('[data-connect]').hidden, true);assert.equal(f.mount.hidden, false);assert.ok(f.calls.some(call => call.operation === 'platformLoad'));assert.equal(f.writes().length, 0);
+});
+
 test('note search and status filtering retain the live editor and make no account writes', async t => {
   const notes=[{...memo('a'),title:'다음 PATH 계획',appId:'path'},{...memo('b',true),title:'검토한 계획',appId:'path'},memo('c')];
   const f=await fixture(t,{records:new Map([['A',{revision:1,state:{...state(),notes}}]])});await f.connect();f.input('계속 작성할 초안');

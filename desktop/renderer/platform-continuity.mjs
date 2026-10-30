@@ -2807,6 +2807,15 @@ function mountPlatformLibrary(root, { getHost, ensureReady = async () => {
       render();
     } catch (error) {
       if (!disposed) {
+        if (notebook) notebook.dispose();
+        else accountAdapter?.dispose();
+        notebook = null;
+        accountAdapter = null;
+        documentReady = false;
+        initialExpansionPending = false;
+        mount.hidden = true;
+        content.hidden = true;
+        root.querySelector("[data-connect]").hidden = false;
         message = error.message || "계정 라이브러리를 켜지 못했어요. 다시 눌러 주세요.";
         summary();
       }
