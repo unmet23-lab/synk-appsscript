@@ -1571,6 +1571,23 @@ function reattributedPreference(body,segments) {
     delete prior.candidate;if(remaining.length){prior.meanings=remaining;segments.push(withheld);}else{delete prior.meanings;Object.assign(prior,withheld);}}
   return true;
 }
+function independentOwnPreference(quote) {
+  const current=/^(?:지금|요즘|현재|이제)(?:은|는|엔|부터는)?/u;
+  let body=quote.replace(/\s/gu,'').replace(current,'');
+  const owner=SELF_DECLARATION.exec(body);if(!owner)return false;
+  const nominal=/^(?:제|내)(?:일하는)?(?:취향|관심사|취미|선호)(?:은|는|이|가)$/u.test(owner[0]);
+  body=body.slice(owner[0].length).replace(current,'');
+  // This gate consumes a closed head and the entire predicate. Do not run
+  // broad discourse normalizers or discard unknown causal/reference words.
+  for(const subjects of [NATURAL_SUBJECTS,SUBJECTS])for(const [field,,pattern]of subjects){
+    const head=pattern.exec(body);if(!head||!head[0].length)continue;
+    const raw=body.slice(head[0].length);
+    if(nominal&&field==='topic'&&/^(?:이에요|예요|입니다|이야|이다)$/u.test(raw))return true;
+    const rest=raw.replace(/^(?:방식|것|게|걸|건)(?:이|은|을|도)?/u,'').replace(/^(?:에는|에도|을|를|이|가|은|는|에|엔|도)/u,'');
+    if(POSITIVE.test(rest)||NEGATIVE.test(rest)||field!=='topic'&&(ENDING.test(rest)||DENIAL.test(rest)))return true;
+  }
+  return false;
+}
 function analyze(text) {
   // Legacy's literal validator enforces the same 500-code-point/Unicode bounds.
   Legacy.parseMemberStatement(text);
@@ -1589,7 +1606,10 @@ function analyze(text) {
     if(/^(?:제|내)(?:방식|선호|취향)(?:은|는)(?:이래요|다음과같아요)$/u.test(body)){segments.push({evidence,meanings:[]});continue;}
     const aside=discourseAside(evidence.quote,segments);
     if(aside||explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[],referenceOnly:true,referenceTargets:aside||priorReferences(segments)});continue;}
-    if(inherited==='other'&&self || inherited==='past'&&current || inherited==='condition'&&generalReset || inherited==='uncertain'&&current || ['quotation','hypothetical','sensitive'].includes(inherited)&&self&&current)inherited=null;
+    if(inherited==='other'&&self || inherited==='past'&&current || inherited==='condition'&&generalReset || inherited==='uncertain'&&current || ['quotation','hypothetical'].includes(inherited)&&self&&current)inherited=null;
+    if(inherited==='sensitive'&&self&&!insideLiteral
+      &&scopeBoundaryBetween(text,segments.at(-1)?.evidence.end??evidence.start,evidence.start)
+      &&independentOwnPreference(evidence.quote))inherited=null;
     const sentenceStart=Math.max(text.lastIndexOf('.',evidence.start-1),text.lastIndexOf('!',evidence.start-1),text.lastIndexOf('?',evidence.start-1),text.lastIndexOf('\n',evidence.start-1))+1;
     const stop=/[.!?\n]/u.exec(text.slice(evidence.end)),sentenceEnd=stop?evidence.end+stop.index:text.length;
     const nounModifier=relativePersonClause(text.slice(sentenceStart,sentenceEnd).replace(/\s/gu,''));
