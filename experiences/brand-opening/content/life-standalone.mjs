@@ -8815,7 +8815,7 @@ var require_learning_sync = __commonJS({
         if (folded.size && typeof port.forget === "function") port.forget([...folded]);
       };
       const schedule = () => {
-        if (!auto || !started || stopped || phase === "blocked" || phase === "offline") return;
+        if (!auto || !started || stopped || phase === "blocked" || phase === "offline" && (code !== "INCOMPLETE_HISTORY" || !state.pending.length)) return;
         flushRequested = true;
         if (timer) return;
         timer = setTimeout(() => {
@@ -9014,6 +9014,7 @@ var require_learning_sync = __commonJS({
               continuation = true;
               return status();
             }
+            while (active(token) && flushRequested && state.pending.length) await flushQueue(token);
             if (active(token)) {
               phase = "synced";
               code = null;
@@ -9037,7 +9038,7 @@ var require_learning_sync = __commonJS({
                 timer = null;
                 void run(!flushRequested);
               }, 0);
-            }
+            } else if (active(token) && state.pending.length) schedule();
           }
           return status();
         })();

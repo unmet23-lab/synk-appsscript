@@ -19,6 +19,23 @@ test('an exhausted recovery scan preserves an acknowledged gap and refuses compl
  assert.deepEqual(JSON.parse(storage.getItem(key)).missing,['lost.event']);assert.equal(JSON.parse(storage.getItem(key)).recoveryCursor,0);sync.stop();
 });
 const error = (code, revision = 1) => Object.assign(new Error(code), { code, revision });
+test('a fresh append during a delayed successful recovery is uploaded without another user action',async t=>{
+ const storage=disk(),accountKey='account.late-recovery',events=[],sent=[];let notify,resolve,recovering=false;
+ storage.setItem(SYNC_KEY+'.'+accountKey,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:fn=>(notify=fn,()=>{}),markComplete(){},importEvents:found=>{events.push(...found);return{added:found.length,skipped:[]};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,maxAttempts:1,transport:{get:async({after})=>after===0?(recovering=true,await new Promise(done=>{resolve=done;})):{events:[],cursor:2,hasMore:false,revision:1},post:async body=>{sent.push(...body.events.map(e=>e.id));return{accepted:body.events.map(e=>e.id),revision:1};}}});t.after(()=>sync.stop());
+ const first=sync.start();for(let i=0;i<100&&!recovering;i++)await new Promise(r=>setTimeout(r,1));assert.ok(recovering);events.push({id:'fresh.event'});notify({kind:'append'});await new Promise(r=>setTimeout(r,5));resolve({events:[{id:'lost.event'}],cursor:2,hasMore:false,revision:1});await first;for(let i=0;i<100&&!sent.length;i++)await new Promise(r=>setTimeout(r,1));assert.deepEqual(sent,['fresh.event']);assert.equal(sync.status().phase,'synced');assert.equal(sync.status().queued,0);
+});
+test('new evidence automatically uploads after a recovery gap already reported offline',async t=>{
+ const storage=disk(),accountKey='account.offline-gap',events=[],sent=[];let notify;
+ storage.setItem(SYNC_KEY+'.'+accountKey,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:fn=>(notify=fn,()=>{}),markComplete(){},importEvents:()=>({added:0})};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,maxAttempts:1,transport:{get:async()=>({events:[],cursor:2,hasMore:false,revision:1}),post:async body=>{sent.push(...body.events.map(e=>e.id));return{accepted:body.events.map(e=>e.id),revision:1};}}});t.after(()=>sync.stop());assert.equal((await sync.start()).code,'INCOMPLETE_HISTORY');events.push({id:'fresh.event'});notify({kind:'append'});for(let i=0;i<100&&!sent.length;i++)await new Promise(r=>setTimeout(r,1));assert.deepEqual(sent,['fresh.event']);assert.deepEqual(JSON.parse(storage.getItem(SYNC_KEY+'.'+accountKey)).missing,['lost.event']);
+});
+test('an exactly full final upload batch is acknowledged as synced',async t=>{
+ const storage=disk(),accountKey='account.exact-batch',events=[{id:'fresh.event'}],port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:()=>({added:0})};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,auto:false,maxPages:1,transport:{get:async()=>({events:[],cursor:0,hasMore:false,revision:1}),post:async body=>({accepted:body.events.map(e=>e.id),revision:1})}});t.after(()=>sync.stop());const result=await sync.start();assert.equal(result.phase,'synced');assert.equal(result.code,null);assert.equal(result.queued,0);
+});
 test('new queued evidence uploads even while an older acknowledged gap cannot be recovered',async()=>{
  const storage=disk(),key=SYNC_KEY+'.account.recover-upload',fresh={id:'fresh.event'},sent=[];
  storage.setItem(key,JSON.stringify({version:2,accountKey:'account.recover-upload',revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));

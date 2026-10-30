@@ -40,7 +40,16 @@ export function createProgressSync({transport,storage,key,read,apply,guard=()=>{
  const check=ticket=>{if(stopped||ticket!==epoch)throw error('ACCOUNT_CHANGED');guard();};
  const snapshot=()=>progressSnapshot(read());
  const writeMeta=()=>storage.setItem(key,JSON.stringify({version:state.version,text:base}));
- function restore(value){const local=read();apply({...value,drafts:local.drafts,scene:null});}
+ function restore(value,retainDetails=false){
+  const local=read();let restored=value;
+  if(retainDetails){
+   const wire=snapshot(),before=new Map(wire.trail.map(e=>[e.id,e])),after=new Map(value.trail.map(e=>[e.id,e]));
+   const details=new Map(wire.obs.map((o,i)=>[canonical(o),local.obs[i]?.detail]));
+   const sameEvidence=ids=>{const refs=new Set(ids);for(const id of refs){const a=before.get(id),b=after.get(id);if(!a||!b||canonical(a)!==canonical(b))return false;for(const key of ['decisionId','presentationId'])if(a[key])refs.add(a[key]);}return true;};
+   restored={...value,obs:value.obs.map(o=>{const detail=details.get(canonical(o));return o.kind==='semantic'&&detail&&typeof o.ev==='string'&&sameEvidence([o.ev])?{...o,detail:structuredClone(detail)}:o;})};
+  }
+  apply({...restored,drafts:local.drafts,scene:null});
+ }
  async function init(){
   if(stopped)return state;if(pending)return pending;
   const ticket=epoch;emit('loading');
@@ -51,7 +60,7 @@ export function createProgressSync({transport,storage,key,read,apply,guard=()=>{
    let meta=null;try{meta=JSON.parse(storage.getItem(key)||'null');}catch{throw error('STORAGE');}
    state.version=saved.version;remote=saved.study;started=true;
    if(serverText===localText){base=serverText;writeMeta();return emit('synced');}
-   if(!hasHistory(local)&&saved.study||meta?.text===localText&&saved.study){restore(saved.study);base=serverText;writeMeta();return emit('synced');}
+   if(!hasHistory(local)&&saved.study||meta?.text===localText&&saved.study){restore(saved.study,true);base=serverText;writeMeta();return emit('synced');}
    if(!saved.study||meta?.version===saved.version&&meta.text===serverText){base=serverText;writeMeta();return emit(hasHistory(local)?'pending':'synced');}
    return emit('conflict',{code:'STUDY_PROGRESS_CONFLICT'});
   }catch(e){if(!stopped&&ticket===epoch)emit('blocked',{code:e.code||'UNAVAILABLE'});return {...state};}

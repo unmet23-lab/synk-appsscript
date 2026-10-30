@@ -2054,9 +2054,27 @@ function createProgressSync({ transport, storage, key, read, apply, guard = () =
   };
   const snapshot = () => progressSnapshot(read());
   const writeMeta = () => storage.setItem(key, JSON.stringify({ version: state.version, text: base }));
-  function restore(value) {
+  function restore(value, retainDetails = false) {
     const local = read();
-    apply({ ...value, drafts: local.drafts, scene: null });
+    let restored = value;
+    if (retainDetails) {
+      const wire = snapshot(), before = new Map(wire.trail.map((e) => [e.id, e])), after2 = new Map(value.trail.map((e) => [e.id, e]));
+      const details = new Map(wire.obs.map((o, i) => [canonical(o), local.obs[i]?.detail]));
+      const sameEvidence = (ids) => {
+        const refs = new Set(ids);
+        for (const id2 of refs) {
+          const a = before.get(id2), b = after2.get(id2);
+          if (!a || !b || canonical(a) !== canonical(b)) return false;
+          for (const key2 of ["decisionId", "presentationId"]) if (a[key2]) refs.add(a[key2]);
+        }
+        return true;
+      };
+      restored = { ...value, obs: value.obs.map((o) => {
+        const detail = details.get(canonical(o));
+        return o.kind === "semantic" && detail && typeof o.ev === "string" && sameEvidence([o.ev]) ? { ...o, detail: structuredClone(detail) } : o;
+      }) };
+    }
+    apply({ ...restored, drafts: local.drafts, scene: null });
   }
   async function init() {
     if (stopped) return state;
@@ -2084,7 +2102,7 @@ function createProgressSync({ transport, storage, key, read, apply, guard = () =
           return emit("synced");
         }
         if (!hasHistory(local) && saved.study || meta?.text === localText && saved.study) {
-          restore(saved.study);
+          restore(saved.study, true);
           base = serverText;
           writeMeta();
           return emit("synced");

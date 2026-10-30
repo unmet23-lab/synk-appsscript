@@ -107,7 +107,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     if (folded.size && typeof port.forget === 'function') port.forget([...folded]);
   };
   const schedule = () => {
-    if (!auto || !started || stopped || phase === 'blocked' || phase === 'offline') return;
+    if (!auto || !started || stopped || phase === 'blocked' || phase === 'offline' && (code !== 'INCOMPLETE_HISTORY' || !state.pending.length)) return;
     flushRequested = true;
     if (timer) return;
     timer = setTimeout(() => { timer = null; void run(); }, 0);
@@ -243,6 +243,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
         if (active(token) && !pulled) { continuation = true; return status(); }
         if (active(token) && flushRequested) await flushQueue(token);
         if (active(token) && state.missing.length && !await recover(token)) { continuation = true; return status(); }
+        while (active(token) && flushRequested && state.pending.length) await flushQueue(token);
         if (active(token)) { phase = 'synced';code = null;message = null;publish(); }
       } catch (error) {
         if (active(token)) {
@@ -254,6 +255,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
         if (continuation && active(token) && auto && started && !timer) {
           timer = setTimeout(() => { timer = null; void run(!flushRequested); }, 0);
         }
+        else if (active(token) && state.pending.length) schedule();
       }
       return status();
     })();

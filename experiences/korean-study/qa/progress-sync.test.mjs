@@ -53,6 +53,12 @@ test('semantic detail and local plan target stay local while minimized progress 
  assert.deepEqual(a.state(),before,'projection and acknowledgement do not rewrite the local observations');
  saved.obs.at(-1).skill='changed';saved.trail.at(-1).plan.skill='changed';assert.deepEqual(local,before,'payload mutations cannot reach local state');
 });
+test('automatic refresh retains private semantic detail only for identical linked evidence',async()=>{
+ const local=semanticProgress(),a=setup({local});await a.sync.init();await a.sync.flush();const remote=structuredClone(a.server());remote.seq+=1;
+ const checkpoint=[...a.storage.map],store=()=>{const d=disk();for(const [k,v]of checkpoint)d.setItem(k,v);return d;};
+ const b=setup({local,storage:store(),saved:remote,version:2});assert.equal((await b.sync.init()).phase,'synced');assert.deepEqual(b.state().obs.at(-1).detail,local.obs.at(-1).detail);assert.equal(b.state().seq,remote.seq);assert.equal(b.state().scene,null);assert.ok(progressSnapshot(b.state()).obs.every(o=>!o.detail));
+ const changed=structuredClone(remote);changed.trail.find(e=>e.type==='practice.presented').itemKey='w53-other';const c=setup({local,storage:store(),saved:changed,version:3});assert.equal((await c.sync.init()).phase,'synced');assert.equal(c.state().obs.at(-1).detail,undefined,'Matching observation IDs cannot override a different causal presentation');
+});
 
 test('Trail projection drops raw extensions but preserves IDs and verdicts for server validation',()=>{
  const local=semanticProgress();for(const event of local.trail){event.rawText='private event prose';event.scope.note='private scope prose';}
