@@ -223,6 +223,8 @@ function 입력그래프({ 임시, 판, 부모핀 = [], inputPins = {}, 역사 =
   // 맨 위에서 직접 읽는 핀은 상대 경로도 받는다 — 판의 evidence()·capture()가 작업 폴더(저장소 뿌리) 기준으로 푼다(676 게이트 증거가 .tmp/… 상대 경로).
   const 맨위핀꼴 = (v) => Boolean(v) && typeof v.path === 'string' && v.path.length > 0 && /^[a-f0-9]{64}$/.test(v.sha256 || '');
   const 풀기 = (p) => (path.isAbsolute(p) ? path.resolve(p) : path.resolve(뿌리, p));
+  // 유닉스 경로(캡슐 속)는 판 코드처럼 건너뛴다. Linux(CI)에서는 이 PC 파일도 /로 시작하므로 저장소 뿌리 안이면 따라간다 — Windows는 그대로.
+  const 캡슐경로 = (p) => /^\/(?!\/)/.test(p) && (process.platform === 'win32' || !안쪽(뿌리, p));
   let 밖 = 0, 건너뜀 = 0;
   function 잡기(ref, json) {
     const p = 풀기(ref.path);
@@ -241,7 +243,7 @@ function 입력그래프({ 임시, 판, 부모핀 = [], inputPins = {}, 역사 =
       if (!v || typeof v !== 'object') return;
       if (핀꼴(v)) {
         if (역사안 && 역사안.has(열쇠(v.path, v.sha256))) { 건너뜀++; return; }
-        if (!/^\/(?!\/)/.test(v.path)) { if (/\.json$/i.test(v.path)) 걷기(v); else 잡기(v, false); }
+        if (!캡슐경로(v.path)) { if (/\.json$/i.test(v.path)) 걷기(v); else 잡기(v, false); }
       }
       for (const x of Object.values(v)) if (x && typeof x === 'object') 안(x);
     })(값);

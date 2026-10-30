@@ -261,7 +261,9 @@ test('승인 모듈 옮기기: 앵커가 정확히 한 번씩일 때만, 부모 
     "async function haDeployedCanonical(load){const material=require('path').resolve(__dirname,'../../server-latency-20261013/runtime-deployment/build-material.cjs');return load();}",
     'module.exports={...previous,loadApproval,validatePriorArm};', '',
   ].join('\n');
-  const parent = { completed: { root: 'C:\\x\\.tmp\\company-completed-q', sealSha256: H('a') }, approval: { root: 'C:\\x\\.tmp\\company-approval-q', sealSha256: H('b') }, release: H('c'), previousRelease: H('d'), chainLength: 37 };
+  // 봉인 뿌리는 그 PC의 절대 경로다 — Linux CI에서 C:\…는 상대 경로라 path.resolve로 플랫폼 절대 경로를 만든다.
+  const root = n => path.resolve(path.sep, 'x', '.tmp', n);
+  const parent = { completed: { root: root('company-completed-q'), sealSha256: H('a') }, approval: { root: root('company-approval-q'), sealSha256: H('b') }, release: H('c'), previousRelease: H('d'), chainLength: 37 };
   const s = P.portApproval(old, { parentFolder, parent });
   a.ok(!/\bprevious\b/.test(s) && !s.includes(parentFolder) && !s.includes('haDeployedCanonical') && !s.includes('build-material'));
   a.ok(s.includes("trusted=require('./sealed/sealed-approval.cjs')") && s.includes('trusted.load(SEALED_PARENT,e.previousApproval)') && s.includes('trusted.validateChain(a,SEALED_PARENT);') && s.includes('trusted.validator(SEALED_PARENT).validate('));
@@ -301,5 +303,5 @@ test('새 도우미(approval-base)는 옛 맨 밑 도우미와 같은 답을 낸
   a.equal(P.baseEquivalence(next, old, probe), true);
   a.throws(() => P.baseEquivalence({ ...next, HISTORY: H('7') }, old, probe), /BASE_VALUE HISTORY/);
   a.throws(() => P.baseEquivalence({ ...next, encode: v => Buffer.from(JSON.stringify(v) + '\n') }, old, probe), /BASE_ENCODE/);
-  a.throws(() => P.approvalBase({ ...values, workers: { relative: 'C:\\abs', names: ['job.py'] } }), /BASE_WORKERS/);
+  a.throws(() => P.approvalBase({ ...values, workers: { relative: path.resolve(path.sep, 'abs'), names: ['job.py'] } }), /BASE_WORKERS/); // Windows C:\abs · Linux /abs
 });
