@@ -14,7 +14,7 @@
  *   「힉스필드 크레딧 쓰는거면 지금 당장 진행하지는 마」라 시작 그림만 먼저 굽고(결은 실사 · 3D 게임 시네마틱 · 2D 게임 쪽), 영상은 고르신 결 하나만 나중에.
  *
  *   node 영상시험.mjs 목록 | 굽기 <작업> <id…> [--동시 3] [--덮어쓰기]     시작 그림(GPT Image 2.5 Sunburst, 월 API 크레딧)
- *   node 영상시험.mjs 영상글 <결> <클립>                                  힉스필드에 낼 영상 지시문(정본)
+ *   node 영상시험.mjs 영상글 <결> <클립>  |  영상글 senior <talk2|listen>     힉스필드에 낼 영상 지시문(정본, 태오 판은 실사)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -98,6 +98,14 @@ export const 클립 = {
 };
 export const 영상글 = (결, 이름) => `${한판}\n${클립[이름].글}\n${그대로(결)}`;
 
+// 태오 판 — 유호님 「실사로」(결정 표 10-30). 대사 컷은 Seedance 2.5 omni_reference(2.0은 말을 지어냄), 듣는 컷은 2.0.
+// 빠르기 지시(「slowly」 같은)는 쓰지 않는다 — 교수 판 2.5에서 그 문장만 원본보다 1.6배 길어졌다(현장노트 higgsfield).
+export const 선배클립 = {
+ talk2: { 소리: 'ep01-senior-02.mp3', 초: 9, 모델: 'seedance_2_5', 글: `Kwon Tae-o speaks the Korean line in the audio reference directly to the camera, word for word and in sync with it, starting right away: a short warm laugh on the first word, the middle part with an easy friendly smile, and on the last sentence he points his thumb at the center of his own chest with a playful grin (hand at chest height, no larger than his face). Natural, subtle acting like a Korean campus drama — real blinks, breathing, small head movements, a light breeze in his hair. After the line he settles back.` },
+ listen: { 소리: null, 초: 5, 모델: 'seedance_2_0', 글: `Kwon Tae-o silently listens to the freshman speaking off-camera: his lips stay closed the whole time; he keeps eye contact with the camera, gives two small encouraging nods with a friendly grin and raises his eyebrows slightly as if interested, blinking naturally; a light breeze moves his hair and students pass far behind him. No speech and no mouth movement.` },
+};
+export const 선배영상글 = (이름) => `${한판}\n${선배클립[이름].글}\nKeep his face, hair and clothes identical to the first frame in every frame, and keep the look of a photoreal Korean TV drama shot in every frame. He ends in exactly the starting pose and expression, lips closed. No other speech, no music.`;
+
 async function 굽기(작업, ids, { 동시 = 3, 덮어쓰기 = false } = {}) {
  const 판 = 판목록();
  for (const id of ids) if (!판[id]) { console.error(`[영상시험] 모르는 판: ${id}`); process.exit(2); }
@@ -113,6 +121,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
  const [명령, 가, ...나머지] = process.argv.slice(2);
  if (명령 === '목록') {
   for (const [id, p] of Object.entries(판목록())) console.log(`${id}\t${p.크기}\t${p.참고.join(', ') || '-'}`);
+ } else if (명령 === '영상글' && 가 === 'senior' && 선배클립[나머지[0]]) {
+  console.log(선배영상글(나머지[0]));
  } else if (명령 === '영상글' && 결이름[가] && 클립[나머지[0]]) {
   console.log(영상글(가, 나머지[0]));
  } else if (명령 === '굽기' && 가) {
