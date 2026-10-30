@@ -1,3 +1,5 @@
 {"type":"thread.started","thread_id":"01a18b78-312a-7611-b057-1d425c930e13"}
 {"type":"turn.started"}
 {"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one portrait café scene, keeping Mongle’s felt details and a calm upper area for later text.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Sleepy Mongle yawns beside a big coffee cup, with a fluffy wool cloud floating overhead."}}
+{"type":"turn.completed","usage":{"input_tokens":108306,"cached_input_tokens":89856,"cache_write_input_tokens":0,"output_tokens":1128,"reasoning_output_tokens":156}}

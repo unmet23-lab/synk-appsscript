@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "Sleep \"comes\" in Korean 😴 잠이 와요 #learnkorean",
+ "caption": "잠이 와요 (jami wayo) = I'm sleepy — literally \"sleep comes.\"\n\nKorean uses one verb, 와요 (wayo, \"comes\"), for all of these:\n잠이 와요 — I'm sleepy\n친구가 와요 — my friend is coming\n비가 와요 — it's raining\n눈이 와요 — it's snowing\n전화가 와요 — I'm getting a call\n\n가 or 이? Same job: 가 after a vowel (친구가, 비가), 이 after a consonant (잠이, 눈이).\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreanphrases",
+ "pinnedComment": "What else \"comes\" in Korean? Guess it in the comments 👇 (hint: 봄 = spring)",
+ "alt": [
+  "A cozy needle-felted café. A coral felt ghost mascot sits by a cup of coffee while a small fluffy sleep cloud drifts in through the window; it lands on its head and the mascot gets sleepy (잠이 와요 · jami wayo · Sleep comes. = I'm sleepy). A friend in a mustard sweater opens the café door and waves (친구가 와요), rain pours outside the window (비가 와요), snow falls (눈이 와요), a phone buzzes and the mascot jumps (전화가 와요). At the end everything arrives at once: the friend waves, snow falls, the phone buzzes — and the mascot, fighting to stay awake under a card listing the five sentences with 와요 lined up, finally falls asleep. Last line: Sleep comes. 잠이 와요."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = e17 v6(20.0초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS / −1.4 dBFS → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(7.7MB). 표지 cover.png = 0.6초(졸음 구름이 창으로 들어오는 카페). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림(실존 인물 · 실제 사건처럼 보이는 장면 없음), 목소리는 특정인이 아닌 TTS(E11과 같은 판단).",
+ "version": "e17-en-v6"
+}
