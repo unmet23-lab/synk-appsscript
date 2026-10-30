@@ -1,7 +1,7 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
 <a id="yt-ai-label-38-20261029"></a>
-## 작업실 유튜브 AI 표시 오판 고침 · 사슬 38 (2026-10-29 로컬 준비 끝 · 원격 대기)
+## 작업실 유튜브 AI 표시 오판 고침 · 사슬 38 (2026-10-29 로컬 준비 · 2026-10-30 운영 반영)
 
 작업실이 YouTube로 직접 올린 영상이 공개로 잘 나가도 작업이 `unknown` · `PUBLICATION_OPTIONS_MISMATCH`(「공개 범위·아동용·AI 표시가 승인한 설정과 달라요」)로 남던 서버 오판을 고친다. `social-direct-youtube.mjs` `verifyVideo`가 `videos.list`로 읽은 `status.containsSyntheticMedia`를 승인값과 `===`로 견줬는데, YouTube는 이 칸을 읽기 응답에 넣지 않는다(10-13 실측 — [현장 노트](../../../../현장노트/브라우저_게시.md#합성-표시containssyntheticmedia가-api-읽기에-나오지-않는다)). 10-26~29 여덟 판을 사람이 `manual_complete`로 닫았다.
 
@@ -11,6 +11,10 @@
 - **검수:** 제품 `.tmp/검수/w38-yt-ai-product/` GPT 0건. 릴리스 도구 `.tmp/검수/w38-tools/` GPT 0건(37 → 38 차이 61파일, 두 묶음 끝까지 읽음) — 둘 다 「배포 조건 충족」.
 - **원격 순서:** `.tmp/yt-ai-label-38-carry-20261029/RUNBOOK-38.md`(37과 같은 열두 단계). 전제는 예비 노드 복원 연습이 다시 통과해 있는 것 — 10-29 `STANDBY_DRILL_SPACE_LOW`로 실패했고 10-22 증명은 10-29 23:26 KST에 끝났다. 재무장 `prepare-arm`이 새 연습 증명을 스스로 읽는다(`drProofSource:'weekly-standby-drill'`).
 - **10-29 공간 정리와 릴리스 계보:** 21:20 공간 정리가 사흘 넘게 안 건드린 `.tmp` 폴더를 정리 대기(`C:\Users\q1212\SYNK_정리대기\20261029`)로 옮기면서 사슬 도구가 옛 판을 거쳐 부르는 폴더(`company-sns-health-20261016` · `yt-upload-redirect-32-release-20261025` 등)까지 옮겨, 37 도구를 부르는 것만으로 `MODULE_NOT_FOUND`가 났다. 릴리스 도구 · 완료판에서 옮겨진 이름을 끝까지 따라간 224곳(37.1GiB)을 원래 자리로 되돌렸다(기록 `.tmp/yt-ai-label-38-carry-20261029/restored-from-cleanup.jsonl`).
+- **반영(10-30, 폴더 `.tmp/yt-ai-label-38-release-20261029/`):** 예비 노드 복원 연습 07:37~07:59 KST 통과(`20261029T223700Z`, 백업 10-30 03:34 KST) 뒤 격리 Linux 09:27~09:35(3,336/3,336 · 호환 2/2, 이미지 `sha256:1e9cbd713de94181a1a5f4aabcbc64536decb91a9e954e2b1cadb16e3281b651`) → 영수증 · 결속(한 번에 통과) → 재무장 Linux(Node 123 · Python 35 · 배포 126) → 계보 다시 재기(37 + 38 합집합 82곳 그대로, 38 QA 원천 893개 대조 통과 — `.tmp/_정리제외.txt` 머리말의 「QA 전 · 봐줌」을 지움) → stage 10:11~10:16 두 노드 `staged-immutable` → 반영 전 백업 10:16~10:43(1.45GB, `DISASTER_RECOVERY_BACKUP_COMPLETE`) → 교체 10:43~10:51(되돌림 없음, 상태 읽기로 본 공개 끊김 약 4분 — 10:46 STOP → 10:50 PUBLIC, 따로 재는 탐침은 이번에 돌리지 않음) → 런타임 사후 검증 passed(바뀐 표 0) · 공개 메신저 19/19 · 공개 전체 246/246 · health 200 · 보호 API 401 → 재무장 11:03 armed(epoch 7, `drProofSource:'weekly-standby-drill'`, 계약 `dcd131115896abcfe6e2aac2703f7e09a80d86953d6c93a6e0d535ec2a7c4843`) · 최종 무장 확인 · 통화 설정 그대로.
+- **재무장 첫 시도 보류:** 교체 1분 뒤 시작한 prepare-arm이 `NORMAL_REARM_OPERATION_HELD`(속 이유 `NATURAL_WINDOW_NOT_ACCEPTED` — 교체 뒤 180초 · 표본 넷의 정상 감시 창이 아직 없음)로 멈췄다. 보류된 두 파일을 `rearm/held-1-natural-window/`로 비키고 7분 뒤 다시 돌려 통과했다([현장 노트](../../../../현장노트/배포_공개.md#회사-ha-재무장-준비가-교체-직후-normal_rearm_operation_held면-교체-뒤-정상-감시-창180초--표본-넷이-아직-안-찬-것이다--보류된-두-파일을-비키고-5분-뒤-다시-돌린다-2026-10-30-claude)).
+- **완료판 보존 · 승인 결과 봉인:** `.tmp/company-completed-baaeb75e-20261030`(봉인 `a9926363e99b8edc270caf4fa94cda53a85fdcec83b6ff60653507c4141ba8d0`, 1,231파일) → `.tmp/company-approval-baaeb75e-20261030`(봉인 `52318f932ba59c98541152450059bc42cdcd21cb2563b736ba8df3d8ba8add49`, 사슬 길이 38, full-recursion, 결과 `97cfd21e…`). 둘 다 `verify` 통과 — 사슬 39부터 이 둘을 믿는다([README](../../../../../tools/company-release/README.md) 「봉인된 부모」).
+- **남은 확인(참고):** 제품 확인은 다음 작업실 유튜브(10-30 21:00 Y19 @yuhobuilds)가 `published`로 끝나고 메시지에 「AI 표시는 YouTube API가 알려 주지 않아…」가 붙는지로 본다(`node tools/작업실예약.js 상태 <편> --캐시`). 이 판을 위해 새로 게시하지 않았다.
 
 <a id="sns-simple-fix-37-production-20261029"></a>
 ## 작업실 SNS·마케팅 간편판 운영 확인 뒤 고침 넷 · 2026-10-29 운영 반영 (순서 문서 「이력 35」 · 실제 사슬 37)
