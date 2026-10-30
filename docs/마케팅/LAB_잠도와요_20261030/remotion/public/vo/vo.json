@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1030,
+  "lufs": -17
+ },
+ "made": "2026-10-29T22:53:12.831Z",
+ "lines": [
+  {
+   "id": "w1",
+   "text": "친구가 와요.",
+   "dur": 0.949,
+   "syllablesPerSec": 5.27,
+   "src": "w1.wav",
+   "key": "0adc2784a748d0f3552edd7e41d0b7b7",
+   "words": 2
+  },
+  {
+   "id": "w2",
+   "text": "비가 와요.",
+   "dur": 0.78,
+   "syllablesPerSec": 5.13,
+   "src": "w2.wav",
+   "key": "45866af579566571e9fa1496cb6d7811",
+   "words": 2
+  },
+  {
+   "id": "w3",
+   "text": "눈이 와요.",
+   "dur": 0.927,
+   "syllablesPerSec": 4.31,
+   "src": "w3.wav",
+   "key": "38b38391a3ed9c8d8b1dcfa5f5ae3ee8",
+   "words": 2
+  },
+  {
+   "id": "w4",
+   "text": "잠이 와요.",
+   "dur": 0.927,
+   "syllablesPerSec": 4.31,
+   "src": "w4.wav",
+   "key": "7e8cf14bc6eff5f876663273f07201ca",
+   "words": 2
+  },
+  {
+   "id": "w5",
+   "text": "전화가 와요.",
+   "dur": 0.925,
+   "syllablesPerSec": 5.41,
+   "src": "w5.wav",
+   "key": "bd30e8b8a7093e25cb891399fa289137",
+   "words": 2
+  },
+  {
+   "id": "w6",
+   "text": "와요!",
+   "dur": 0.631,
+   "syllablesPerSec": 3.17,
+   "src": "w6.wav",
+   "key": "7980816d3b1302409fcb7d60ea15dbdd",
+   "words": 1
+  }
+ ]
+}

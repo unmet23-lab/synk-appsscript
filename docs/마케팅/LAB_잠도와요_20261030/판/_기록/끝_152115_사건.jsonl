@@ -1,0 +1,3 @@
+{"type":"thread.started","thread_id":"01a18b78-3e08-77b3-ba4a-9f79b192bbb5"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one tall café scene, with Mongle sleeping peacefully through all the activity.\n"}}
