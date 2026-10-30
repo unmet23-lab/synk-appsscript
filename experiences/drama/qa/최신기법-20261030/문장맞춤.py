@@ -102,8 +102,13 @@ for i, p in enumerate(plan):
     parts.append(f"[1]atrim={max(0.0, a0 - 0.03):.3f}:{a1:.3f},asetpts=PTS-STARTPTS,aresample=48000,adelay={ms}|{ms}[s{i}]")
     if p.get('클립다음') is not None:
         p['겹침'] = round(p['클립자리'] + (a1 - a0) - p['클립다음'], 2)
+# 바탕 소리: 우리 녹음만 얹으면 말 사이가 디지털 무음(−180dB)이라 「영상이 낸 목소리」(캠퍼스 소음 −40dB)와 바꿔 들으면 죽은 소리로 들린다(10-31 Fable P2).
+# 클립 소리에서 모델이 말하지 않는 구간(말 토막 ±0.08초 밖)만 남겨 그대로 깐다 — 모델 목소리가 우리 녹음 밑에 겹쳐 들리지 않게.
+gate = '+'.join(f'between(t,{max(0.0, a - 0.08):.3f},{b + 0.08:.3f})' for a, b in sc) or '0'
+bed = f"[0:a]aresample=48000,volume='if({gate},0,1)':eval=frame[bed]"
+n = len(plan) + 1
 # aresample=async=1:first_pts=0 — 첫 토막이 늦게 놓이면 소리 트랙이 컨테이너에서 늦게 시작해(편집 목록 0.27초, 10-30 Fable P3) 편집 목록을 무시하는 경로에서 앞서 들린다
-fc = ';'.join(parts) + ';' + ''.join(f'[s{i}]' for i in range(len(plan))) + f"amix=inputs={len(plan)}:normalize=0:duration=longest,aresample=async=1:first_pts=0,apad=whole_dur={V:.3f},atrim=0:{V:.3f}[a]"
+fc = ';'.join(parts) + ';' + bed + ';' + ''.join(f'[s{i}]' for i in range(len(plan))) + f"[bed]amix=inputs={n}:normalize=0:duration=longest,aresample=async=1:first_pts=0,apad=whole_dur={V:.3f},atrim=0:{V:.3f}[a]"
 subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', clip, '-i', line, '-filter_complex', fc, '-map', '0:v', '-map', '[a]',
                 '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-t', f'{V:.3f}', dst], check=True)
 print(json.dumps({'클립': clip, '영상초': round(V, 3), '원본첫소리': [round(x, 2) for x in ol], '클립첫소리': [round(x, 2) for x in oc], '토막': plan}, ensure_ascii=False))

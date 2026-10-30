@@ -106,6 +106,17 @@ export const 선배클립 = {
 };
 export const 선배영상글 = (이름) => `${한판}\n${선배클립[이름].글}\nKeep his face, hair and clothes identical to the first frame in every frame, and keep the look of a photoreal Korean TV drama shot in every frame. He ends in exactly the starting pose and expression, lips closed. No other speech, no music.`;
 
+// 한 테이크 판(10-31, 유호님 「한 테이크로 구워」 · Fable 추천) — 컷마다 처음 자리로 돌아가는 것(뒤 학생 · 눈웃음 되감김)과 내 말과 무관한 같은 미소를 한 번에 없앤다.
+// 학생 · 선배 · 학생을 다 넣으면 약 17초(51크레딧)라 말씀하신 36~45 안에 들게 학생 a → 선배 2번 → 웃으며 기다리는 끝 박자 14초(42).
+// 소리 참고 = 0.3초 무음 + 학생 a(Hana, 4.03초) + 0.5초 + 선배 2번(Julian, 7.57초) + 1.2초 = 13.6초. 끝 그림은 잠그지 않는다 — 잠그면 카메라 · 사람이 굳는다
+// (현장노트 higgsfield 「끝 그림을 고정하면 사람들이 굳는다」, 낯선 사람 시험 「배경 · 머리카락이 너무 고정」). 위험: 학생 목소리 동안에도 입이 움직일 수 있다.
+export const 한테이크글 = `One single continuous take with absolutely no cut, shot like a Korean campus drama on a handheld camera held by the freshman: a gentle natural handheld drift, never a zoom, never a cut, never a new angle.
+The audio reference has two speakers. FIRST, for about the first 4.5 seconds, a young woman off-camera — the freshman — says the Korean line "네, 맞아요. 길을 잃어서 한참 헤맸어요." While she speaks, Kwon Tae-o does NOT speak: his lips stay closed. He listens to her with real attention — warm eye contact, a small sympathetic nod, his eyebrows rising a little when she says she got lost, a soft amused smile growing.
+THEN he answers with the man's lines in the audio, word for word and in sync with them: a short warm laugh first, then "여기 처음 오면 다 헤매요" with an easy smile, then "나는 3학년 권태오예요", and on "편하게 선배라고 불러요" he points his thumb at the center of his own chest with a playful grin (hand at chest height).
+AFTER his last word he keeps smiling at the camera with his lips closed, waiting for her answer.
+Natural, subtle acting — real blinks and breathing; a light breeze moves his hair and students walk past far behind him.
+Keep his face, hair and clothes identical to the first frame in every frame, and keep the look of a photoreal Korean TV drama shot in every frame. Only these two voices; no other speech, no music.`;
+
 async function 굽기(작업, ids, { 동시 = 3, 덮어쓰기 = false } = {}) {
  const 판 = 판목록();
  for (const id of ids) if (!판[id]) { console.error(`[영상시험] 모르는 판: ${id}`); process.exit(2); }
@@ -121,6 +132,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
  const [명령, 가, ...나머지] = process.argv.slice(2);
  if (명령 === '목록') {
   for (const [id, p] of Object.entries(판목록())) console.log(`${id}\t${p.크기}\t${p.참고.join(', ') || '-'}`);
+ } else if (명령 === '영상글' && 가 === 'senior' && 나머지[0] === 'onetake') {
+  console.log(한테이크글);
  } else if (명령 === '영상글' && 가 === 'senior' && 선배클립[나머지[0]]) {
   console.log(선배영상글(나머지[0]));
  } else if (명령 === '영상글' && 결이름[가] && 클립[나머지[0]]) {
