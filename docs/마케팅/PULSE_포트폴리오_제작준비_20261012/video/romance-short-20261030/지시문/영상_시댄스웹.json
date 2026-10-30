@@ -1098,10 +1098,10 @@
       "BLUE UMBRELLA",
       "BLACK UMBRELLA"
      ],
-     "동작": "Daytime rain in front of the same convenience store, seen from a low tilted angle: Taejun, from behind, stands under his open clear umbrella, the folded misty-blue umbrella in his other hand; Yuna faces him under her black umbrella. They stand still, looking at each other; rain falls steadily. Lips closed.",
-     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake. The tilted (Dutch) angle of the first frame stays exactly as it is.",
+     "동작": "Daytime rain in front of the same convenience store, seen from a low angle: Taejun, from behind, stands under his open clear umbrella, the folded misty-blue umbrella in his other hand; Yuna faces him under her black umbrella. They stand still, looking at each other; rain falls steadily. Lips closed.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false,
-     "후반": "「끝.」(오른쪽)"
+     "후반": "「끝.」(오른쪽) · 원본의 기울어진 구도는 편집에서 화면을 10° 안팎 돌려 얹는다(선버스트가 두 번 다 수평으로 그림)"
     }
    ]
   },
@@ -1508,7 +1508,7 @@
       "MINJAE (green vest)",
       "CLEAR UMBRELLA"
      ],
-     "동작": "Taejun leans forward and pours beer from a plain brown bottle into Minjae's glass, cutting him off in Korean at about 0.1 s, dry and even: \"쓸데없는 소리 말고 잔이나 비워.\" Then he sets the bottle down and stares at the glass, silent. Minjae, blurred at the right edge, keeps quiet.",
+     "동작": "Taejun leans forward and pours beer from a plain brown bottle into Minjae's glass, cutting him off in Korean at about 0.1 s, dry and even: \"쓸데없는 소리 말고 잔이나 비워.\" Then he sets the bottle down and glances across the table toward Yuna (off screen, left), silent. Minjae, blurred at the right edge, keeps quiet.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true,
      "말": [
@@ -2243,7 +2243,7 @@
     "C70"
    ],
    "길이": 7,
-   "설명": "미디엄 클로즈업 정면 · 비 갠 가로수길 — 접은 「비침」을 든 태준이 카메라 쪽으로 걸어오며 젖은 눈으로 옅게 웃는다(아픈 채 놓아 주는 웃음) → 끝 카드 → 카메라 왼쪽으로 스쳐 빠짐",
+   "설명": "미디엄 클로즈업 정면 · 비 갠 가로수길 — 태준(손의 접은 「비침」은 화면 밖)이 카메라 쪽으로 걸어오며 젖은 눈으로 옅게 웃는다(아픈 채 놓아 주는 웃음) → 끝 카드 → 카메라 왼쪽으로 스쳐 빠짐",
    "소리": "끔",
    "샷": [
     {
@@ -2251,10 +2251,9 @@
      "그림": "C70.jpg",
      "쓰는초": 5.67,
      "누구": [
-      "TAEJUN (navy jacket)",
-      "CLEAR UMBRELLA"
+      "TAEJUN (navy jacket)"
      ],
-     "동작": "Taejun walks toward the camera down the tree-lined street after the rain, his folded clear umbrella in his hand; wet eyes and a faint smile — not relief, the smile of letting go while it still hurts; near the end he passes the camera on its left.",
+     "동작": "Taejun walks toward the camera down the tree-lined street after the rain, his hands below the frame; wet eyes and a faint smile — not relief, the smile of letting go while it still hurts; near the end he passes the camera on its left.",
      "카메라": "the camera physically pulls back at walking speed as Taejun walks toward it, about 26% back and about 20% up between 0.3 s and 2.0 s at an even speed, so his face stays the same size; no lens zoom.",
      "회상": false,
      "후반": "끝 카드 「비 오는 날, 서로가 보이게 — 다 비치는 우산, 비침 · 새 색」(두 우산 나란히, 2.4초부터)"

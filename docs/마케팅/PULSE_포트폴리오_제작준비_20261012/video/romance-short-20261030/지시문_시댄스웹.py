@@ -231,10 +231,10 @@ cut("C34", [TN, YC],
 
 # ── 끝 편 ① 현재 — 마주 섬(낮비) ──
 cut("C35", [YB, TJ, CU, BU, BK],
-    "Daytime rain in front of the same convenience store, seen from a low tilted angle: Taejun, from behind, stands under his open clear umbrella, the "
+    "Daytime rain in front of the same convenience store, seen from a low angle: Taejun, from behind, stands under his open clear umbrella, the "
     "folded misty-blue umbrella in his other hand; Yuna faces him under her black umbrella. They stand still, looking at each other; rain falls "
     "steadily. Lips closed.",
-    still() + " The tilted (Dutch) angle of the first frame stays exactly as it is.", closed=[YB, TJ], post="「끝.」(오른쪽)")
+    still(), closed=[YB, TJ], post="「끝.」(오른쪽) · 원본의 기울어진 구도는 편집에서 화면을 10° 안팎 돌려 얹는다(선버스트가 두 번 다 수평으로 그림)")
 cut("C36", [YB, BK],
     "Yuna under her black umbrella looks at Taejun and says quietly in Korean at about 0.1 s, calm and sad: \"넌 그대로다.\"",
     still(), [(YB, "넌 그대로다.", 0.1, "입")])
@@ -286,7 +286,8 @@ cut("C47", [YW],
     still(), [(MG, "이 자리에 좋아하는 사람 있죠?", 0.1, "가림"), (YW, "아니요.", 3.5, "입")])
 cut("C48", [TB, MG, CU],
     "Taejun leans forward and pours beer from a plain brown bottle into Minjae's glass, cutting him off in Korean at about 0.1 s, dry and even: "
-    "\"쓸데없는 소리 말고 잔이나 비워.\" Then he sets the bottle down and stares at the glass, silent. Minjae, blurred at the right edge, keeps quiet.",
+    "\"쓸데없는 소리 말고 잔이나 비워.\" Then he sets the bottle down and glances across the table toward Yuna (off screen, left), silent. Minjae, "
+    "blurred at the right edge, keeps quiet.",
     still(), [(TB, "쓸데없는 소리 말고 잔이나 비워.", 0.1, "입")], closed=[MG], post="태준 속말 「넌 눈 하나 깜짝 안 하더라.」(2.4초~)")
 # ⑥ 빗길 — 우산 둘
 cut("C49", [YB, TJ, CU, BK],
@@ -370,8 +371,8 @@ cut("C69", [],
     "Insert of the puddle mirroring blue sky and white clouds: at about 2.4 s a man's black leather shoe steps into it, splashing; another foot passes "
     "after it. (The shoe is Taejun's — only his foot is seen.)",
     still())
-cut("C70", [TJ, CU],
-    "Taejun walks toward the camera down the tree-lined street after the rain, his folded clear umbrella in his hand; wet eyes and a faint smile — not "
+cut("C70", [TJ],
+    "Taejun walks toward the camera down the tree-lined street after the rain, his hands below the frame; wet eyes and a faint smile — not "
     "relief, the smile of letting go while it still hurts; near the end he passes the camera on its left.",
     "the camera physically pulls back at walking speed as Taejun walks toward it, about 26% back and about 20% up between 0.3 s and 2.0 s at an even "
     "speed, so his face stays the same size; no lens zoom.",

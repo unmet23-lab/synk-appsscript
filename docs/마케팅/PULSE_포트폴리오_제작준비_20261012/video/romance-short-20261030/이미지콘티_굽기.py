@@ -198,7 +198,7 @@ def board():   # 우리 그림 · 초 · 말(유호님 · 이해 시험용, 원�
             else:
                 d.rectangle([x0, y0 + 40, x0 + tw, y0 + 40 + th], fill=(40, 40, 44))
                 d.text((x0 + 20, y0 + 60), "아직 없음", font=f2, fill=(160, 160, 160))
-            head = f"{k}{' 끝 그림' if k.endswith('e') else ''} · {c['우리초'][0]:.1f}–{c['우리초'][1]:.1f}초" + (" · 회상" if c["회상"] else "")
+            head = f"{k}{' 끝 그림' if k.endswith('e') else ''} · {c['우리초'][0]:.1f}~{c['우리초'][1]:.1f}초" + (" · 회상" if c["회상"] else "")
             d.text((x0, y0 + 4), head, font=f1, fill=(255, 215, 120))
             say = " / ".join(f"{m['누가']} 「{m['대사']}」" for m in c["말"]) or c["소리"]
             for li, line in enumerate(_wrap(d, say, f2, tw)[:3]):
