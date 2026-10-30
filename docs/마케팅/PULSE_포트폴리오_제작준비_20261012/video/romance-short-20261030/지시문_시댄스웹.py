@@ -221,8 +221,8 @@ cut("C29", [YC],
     "Yuna, in near profile with her face low in the frame, lifts her eyes to him and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
     still(), [(YC, "…과장님.", 0.1, "입")])
 cut("C30", [TN, YC],
-    "Macro insert at hip height: Taejun's empty hand hangs by his side; Yuna's hand comes in from the upper left and slips into his; his hand "
-    "hesitates for a beat, then his fingers close around hers.",
+    "Macro insert at hip height: Taejun's empty hand hangs by his side (his folded umbrella is in his other hand, out of frame); Yuna's hand comes "
+    "in from the upper left and slips into his; his hand hesitates for a beat, then his fingers close around hers.",
     still(), closed=[])
 cut("C31", [TN],
     "Close on Taejun from low below his chin: he looks down at her, surprised, his eyes widening; lips just parted, silent.",

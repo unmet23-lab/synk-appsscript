@@ -312,10 +312,11 @@ C = {
                               "lamps, light and clothes; this is the end of the push-in, much closer. Do NOT copy the faces from it: both faces "
                               "must match their identity references exactly — Minjae has a round face with soft cheeks, small double-eyelid eyes "
                               "drooping at the outer corners and a rounded nose tip."),   # 10-30 첫 판 민재 닮음 0.199(같은 샷 참고의 작은 얼굴을 따라감)
-                 t=("Medium close two-shot at the pub table, the end of a slow push-in: Taejun (left) laughs and waves his raised RIGHT hand in "
-                    "denial — a BARE wrist; the black-strap smartwatch is on his LEFT wrist, which rests on the table — half-turned toward Minjae; "
+                 t=("Medium close two-shot at the pub table, the end of a slow push-in: Taejun (left) laughs and waves his raised LEFT hand in "
+                    "denial — the same hand that waves in Image N, the black-strap smartwatch on that left wrist; his right hand rests on the table "
+                    "— half-turned toward Minjae; "
                     "Minjae (right, face about 61% across and 50% down, about 27% of the frame height) grins at him. Plain beer glasses on the table "
-                    "before them.")),   # 10-30 일관성 검수 P2: 손사래 치는 오른손에 시계
+                    "before them.")),   # 10-30 일관성 검수 P2: 손사래 치는 오른손에 시계 → 확인 검수 P1: 시작 그림 C14가 왼손(시계)으로 흔들어 끝도 왼손
     "C15": dict(f="", w=["T1n"], loc="pub", light="pub", fx=None, flash=True, noloc=True,
                 t=("Extreme close-up insert, handheld with a very slight shake: Taejun's left wrist and the smartwatch fill the frame — the black "
                    "watch face is large, in the middle of the frame (about a third of the frame width), its dark screen showing one big plain "
@@ -352,7 +353,8 @@ C = {
                    "of hair behind her ear, glancing down; behind her at the left, Taejun (head about 28% across and 32% down, smaller), facing the "
                    "camera: one hand crosses his chest to brush the rain off the shoulder on the RIGHT side of the frame — the only soaked, "
                    "see-through part of his white shirt; his other hand, hanging at the right side of the frame, holds the folded clear umbrella, "
-                   "the smartwatch on that wrist. Behind them the bright shop window with a softly glowing pink neon shape with no letters.")),   # 10-30 일관성 검수 P2: 터는 어깨가 반대
+                   "the smartwatch on that wrist. Yuna has a thin cream leather shoulder-bag strap over her LEFT shoulder — the shoulder on the "
+                   "right side of the frame as she faces us. Behind them the bright shop window with a softly glowing pink neon shape with no letters.")),   # 10-30 일관성 검수 P2: 터는 어깨가 반대
     # 10-30 연출 · 앵글 검수: 둘째 판도 얼굴이 작고 뒤 태준이 빗속에 또렷이 서 초점 이동(4.2–5.2초)의 「전」이 없었다. 셋째 판(원본처럼 왼쪽을 보게)도
     # 유나가 오른쪽을 보고 태준이 또렷 — 유나 옆얼굴 참고(02_left90)가 오른쪽을 보고 태준 얼굴 참고가 「또렷한 얼굴」을 당긴다. 그래서 선버스트가 세 번 다
     # 고른 방향(유나 오른쪽 · 창 쪽, 태준 왼쪽 뒤)을 받아들이고 배치도 없이 글로 크기를 잡으며, 흐려야 할 사람의 얼굴 참고는 넣지 않는다.
@@ -524,7 +526,8 @@ C = {
     "C45": dict(f="TY", w=["T2oh", "Y2o"], loc="elev", light="elev", fx=(0, "Taejun's"), flash=True, big=True,
                 t=("Medium two-shot straight on inside the elevator, locked off: Taejun at the left reaches up with both hands to pull his "
                    "headphones down to his neck, belatedly; Yuna at the right (face about 70% across and 58% down) glances at him sideways; a thin "
-                   "black leather shoulder-bag strap over her LEFT shoulder, as a moment before. Walnut wall behind.")),   # 10-30 일관성 검수 P2: C44엔 가방끈, C45엔 없음
+                   "black leather shoulder-bag strap over her LEFT shoulder — the shoulder on the right side of the frame as she faces us — as a "
+                   "moment before. Taejun's pale-blue shirt sleeves are ROLLED UP to the elbows: bare forearms, no cuffs. Walnut wall behind.")),   # 10-30 일관성 검수 P2: C44엔 가방끈, C45엔 없음 → 확인 검수: 끈이 반대 어깨 · 소매가 커프로
     "C46": dict(f="", w=["T2o", "Y2o"], loc="elev", light="elev", fx=None, flash=True, noloc=True,
                 t=("Insert of hands on the elevator's steel handrail against the walnut wall, locked off: Taejun's hand grips the rail at the "
                    "left-middle — his pale-blue shirt sleeve ROLLED UP to the elbow, a bare forearm, the black-strap smartwatch on his bare wrist, no "
@@ -658,7 +661,8 @@ C = {
     "C70": dict(f="T", w=["T2"], loc="avenue", light="sun", fx=(0, "his"), noloc=True,   # 10-30 손의 우산이 병처럼 보이고(1판) 보이게 하면 화면이 넓어져(2판) 화면 밖으로
                 t=("Medium close-up of Taejun walking toward the camera down a quiet tree-lined street just after the rain, framed from the "
                    "middle of his chest up — his hands are below the bottom edge of the frame and nothing he carries is visible: wet eyes and a faint smile — not relief, but the smile of letting go while it "
-                   "still hurts. Lush green trees and a pale building softly out of focus behind.")),
+                   "still hurts. The camera is slightly below his eye line, looking a little up: behind his head the tops of pale buildings and a "
+                   "bright sky, the lush green trees receding, softly out of focus; a warm sun flare from the upper left.")),   # 10-30 확인 검수: 끝 컷이 눈높이 · 나무뿐
 }
 
 
