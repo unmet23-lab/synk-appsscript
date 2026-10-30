@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "How to write \"haha\" in Korean 🎩 #learnkorean",
+ "caption": "haha → 하하 (ha·ha)\n\nㅎ = h — draw a little hat (short line, long line), then a face (circle).\nㅏ = a — a tall line with a short tick to the right.\nㅎ + ㅏ = 하, so haha = 하하 😆\n\nTexting tip: Koreans also type ㅎㅎ for a soft \"hehe\".\n\nSYNK LAB\n#learnkorean #studykorean #hangul #koreanwriting",
+ "pinnedComment": "Your turn: write 하하 in the comments 👇 (hat → face → ㅏ)",
+ "alt": [
+  "Top-down view of a lined notebook. A pencil writes haha in English and draws an arrow down. A voice says How do you write haha in Korean? Under it the pencil writes the Korean letter ㅎ: a short line and a long line become a little top hat (label hat), then a circle gets laughing eyes and a red smile (label face), then ㅏ, making 하; a second 하 follows. The English letters h a h a drop down under ㅎ and ㅏ. A voice says 하하. The view moves closer: the two letters wear hats and laugh, tip their hats, speech bubbles say 하!, a voice says Now you can laugh in Korean, and the hats fly up, spin and land again."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = haha-en v7(15.0초 · 다시 살림 v4~v7 가운데 가장 나은 판 — 관문 못 넘음, 기획.md 「다시 살림 v4~v7」) → 음량마감 −14.6 LUFS / −1.3 dBFS → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(9.08MB). 표지 cover.png = 0초(연필이 haha를 쓰기 시작). 어린이 전용 아님. 합성 표시: 필수 아님 — 공책 · 연필 사진은 E5에서 구운 그림, 글씨 · 얼굴은 코드로 그은 획, 목소리는 특정인이 아닌 TTS.",
+ "version": "haha-en-v7"
+}
