@@ -5,8 +5,10 @@
 import { measureText } from '@remotion/layout-utils';
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { SCENES, Scene, TEXT } from './data';
+import { Loc, LOCS, LocPack, SCENES, Scene, TEXT } from './data';
 import { fr, T } from './timeline';
+
+// 판(en · zhs · my) — 기획장부/LAB.md 머리말 「두 채널 판」. 영어 글만 data.ts LOCS의 그 판 글로 바뀌고, 그림 · 박자 · 소리 · 자리는 모든 판이 같다.
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8', blue: '#7FA8D6', yellow: '#FFD86B' };
 const EN = "'Inter Tight', 'SUIT', sans-serif";
@@ -177,7 +179,7 @@ const Zzz: React.FC<{ t: number; x: number; y: number; big?: boolean }> = ({ t, 
 // v2 시험: 위 흰 상자가 지난 두 편 머리 글 자리와 같다(haiku 9번) · 첫 「잠이 와요」의 뜻이 늦다(sonnet · GPT) · 로마자가 읽는 법인지 모름(haiku)
 const subjW = (s: string, size: number) => measureText({ text: s, fontFamily: KO, fontSize: size, fontWeight: '800' }).width;
 const BAND_TOP = 290; // 쇼츠 안전선 안(위 269 · 아래 1428 · 오른쪽 920) — 1530은 앱 제목 · 채널 글자에 가렸다(올리기 전 검사)
-const BottomBand: React.FC = () => {
+const BottomBand: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   if (t >= T.snap) return null;
@@ -188,12 +190,13 @@ const BottomBand: React.FC = () => {
   const flip = interpolate(s, [0, 0.15], [0, 1], { ...clamp, easing: EASE_OUT }); // v3 · v4: 기울며 넘어가는 글을 「작아 못 읽음」 → 기울지 않고 바로 뜬다
   const mean = interpolate(s, [T.sub, T.sub + 0.3], [0, 1], { ...clamp, easing: EASE_OUT });
   const sc = SCENES[k];
+  const line = p.scenes[k];
   const band: React.CSSProperties = { position: 'absolute', left: 60, width: 860, top: BAND_TOP, background: 'rgba(255,253,248,0.97)', borderRadius: 40, boxShadow: '0 10px 28px rgba(60,20,10,0.28)', display: 'flex', flexDirection: 'column', alignItems: 'center' };
   return (
     <>
       {hookGone > 0 ? (
         <div style={{ ...band, padding: '44px 40px 48px', opacity: hookGone, transform: `scale(${hookIn})` }}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 56, lineHeight: 1.1, color: C.brown, textAlign: 'center' }}>{TEXT.hook}</div>
+          <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.hookSize, lineHeight: p.hookLine, color: C.brown, textAlign: 'center', whiteSpace: 'pre-line' }}>{p.hook}</div>
         </div>
       ) : null}
       {t >= T.flips[0] ? (
@@ -203,9 +206,9 @@ const BottomBand: React.FC = () => {
             <span style={{ color: C.coralShade, marginLeft: 20 }}>와요</span>
           </div>
           <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 44, color: C.coralShade, whiteSpace: 'nowrap', marginTop: 2 }}>🔊 {sc.read}</div>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 46, lineHeight: 1.2, color: C.brown, marginTop: 8, whiteSpace: 'nowrap' }}>
-            {sc.lit}
-            {sc.mean ? <span style={{ color: C.coralShade, opacity: mean, marginLeft: 16 }}>{sc.mean}</span> : null}
+          <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.litSize, lineHeight: p.litLine, color: C.brown, marginTop: 8, whiteSpace: 'nowrap' }}>
+            {line.lit}
+            {line.mean ? <span style={{ color: C.coralShade, opacity: mean, marginLeft: 16 }}>{line.mean}</span> : null}
           </div>
         </div>
       ) : null}
@@ -220,7 +223,7 @@ const BottomBand: React.FC = () => {
 const SNAP_KO = 76;
 const SUBJ_BOX = Math.max(...SCENES.map((s) => subjW(s.subj, SNAP_KO)));
 const fadeIn = (f: number, t: number, d = 0.35) => interpolate(f, [fr(t), fr(t + d)], [0, 1], { ...clamp, easing: EASE_IO });
-const EndCard: React.FC = () => {
+const EndCard: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const a = fadeIn(f, T.snap + 0.15, 0.25);
@@ -245,7 +248,7 @@ const EndCard: React.FC = () => {
               <span style={{ color: '#9A7B66' }}>{sc.subj.slice(-1)}</span>
               <span style={{ color: C.coralShade, marginLeft: 18 }}>와요</span>
             </div>
-            <div style={{ position: 'absolute', left: SUBJ_BOX + subjW('와요', SNAP_KO) + 56, fontFamily: EN, fontWeight: 800, fontSize: 42, color: C.brown, whiteSpace: 'nowrap', opacity: en }}>{sc.sent}</div>
+            <div style={{ position: 'absolute', left: SUBJ_BOX + subjW('와요', SNAP_KO) + (p.sentSize > 50 ? 40 : 56), fontFamily: p.font, fontWeight: 800, fontSize: p.sentSize, color: C.brown, whiteSpace: 'nowrap', opacity: en }}>{p.scenes[i].sent}</div>
           </div>
         );
       })}
@@ -267,7 +270,7 @@ const EndCard: React.FC = () => {
 };
 
 // 끝 줄 — 표가 걷히면 잠든 몽글 위에 한 줄(끝 3초의 그림은 다 한꺼번에 온 카페에서 잠든 몽글)
-const EndLine: React.FC = () => {
+const EndLine: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const a = fadeIn(f, T.q + 0.1, 0.35);
@@ -275,7 +278,7 @@ const EndLine: React.FC = () => {
   const bump = interpolate(t, [T.c, T.c + 0.15, T.c + 0.4], [0, 1, 0], clamp);
   return (
     <div style={{ position: 'absolute', left: 110, width: 790, top: 300, background: 'rgba(255,253,248,0.96)', borderRadius: 40, opacity: a, transform: `translateY(${(1 - a) * 18}px)`, boxShadow: '0 10px 30px rgba(80,40,20,0.18)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '26px 0 30px' }}>
-      <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 56, color: C.brown }}>{TEXT.endLine}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.endLineSize, color: C.brown }}>{p.endLine}</div>
       <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 96, lineHeight: 1.1, color: C.coralShade, transform: `scale(${1 + 0.08 * bump})` }}>{TEXT.endLineKo}</div>
     </div>
   );
@@ -330,12 +333,15 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => (
-  <AbsoluteFill style={{ backgroundColor: '#E9DCC4' }}>
-    <Plate />
-    <BottomBand />
-    <EndCard />
-    <EndLine />
-    <Sound />
-  </AbsoluteFill>
-);
+export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'en' }) => {
+  const p = LOCS[loc];
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#E9DCC4' }}>
+      <Plate />
+      <BottomBand p={p} />
+      <EndCard p={p} />
+      <EndLine p={p} />
+      <Sound />
+    </AbsoluteFill>
+  );
+};
