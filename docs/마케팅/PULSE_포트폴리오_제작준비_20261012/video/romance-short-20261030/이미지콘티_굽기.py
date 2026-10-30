@@ -5,6 +5,7 @@
 #   python -X utf8 이미지콘티_굽기.py 재기         → 선버스트/_재기.json · 얼굴마다 가장 닮은 배역과 닮음(기준선 0.363)
 #   python -X utf8 이미지콘티_굽기.py 판 [컷…]     → 선버스트/비교판/_<n>.jpg(원본 첫 프레임 | 우리 그림, 열두 컷씩 — 원본이 들어가 git 밖에만)
 #   python -X utf8 이미지콘티_굽기.py 보드         → 선버스트/보드/다비침_이미지콘티_<n>.jpg(우리 그림 · 초 · 말, 열두 컷씩) · _한눈.jpg
+#   python -X utf8 이미지콘티_굽기.py 전후 <날짜>   → 선버스트/전후_<날짜>/전후판_<n>.jpg(원본 | 고치기 전 전/<컷>.jpg | 고친 뒤 정지컷 + 메모.json의 한 줄, 여덟 컷씩)
 # 지시문은 이미지콘티_지시문.py가 낸 선버스트/작업.json. 색 · 빛은 손대지 않는다(결정 10-24) — 맞춤은 자르기 · 크기만.
 import json, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +19,9 @@ OUT = V / "선버스트"
 W, H = 1920, 1080
 MAXS = 1.8     # 받은 판이 이보다 넓으면(얼굴이 작으면) 자르지 않고 다시 굽기 — 너무 키우면 화질이 무너진다
 NEAR = 0.92    # 받은 판 얼굴이 원본의 1/이것보다 크면(너무 가까움) 다시 굽기 후보 — 자르기로는 못 넓힌다
+# 눈 익스트림 클로즈업은 얼굴이 화면을 넘어 YuNet 상자가 없거나 틀린다(원본 60은 입을 0.695로 잡음) — 눈 · 입술 자리를 격자로 재어 손으로 적는다(10-30 연출 · 앵글 검수).
+# (배율, 받은 판의 두 눈 가운데 x · y, 원본의 두 눈 가운데 x · y). 배율 = 원본 눈~입술 높이 ÷ 받은 판 눈~입술 높이(C59 0.54/0.49 · C60 0.53/0.45)
+EYECROP = {"C59": (1.15, 0.58, 0.335, 0.655, 0.43), "C60": (1.18, 0.495, 0.415, 0.535, 0.35)}
 sys.path.insert(0, str(HERE))
 
 
@@ -103,6 +107,13 @@ def fit(k):
                 rec["판정"] = "그대로"
         else:
             rec["판정"] = "얼굴 못 찾음 — 그대로"
+    elif k in EYECROP:
+        scale, ex, ey, ox, oy = EYECROP[k]
+        cw, chh = w0 / scale, h0 / scale
+        x0, y0 = ex * w0 - ox * cw, ey * h0 - oy * chh
+        x0c, y0c = min(max(x0, 0), w0 - cw), min(max(y0, 0), h0 - chh)
+        im = im[int(y0c):int(y0c + chh), int(x0c):int(x0c + cw)]
+        rec.update({"배율": scale, "밀림": [round((x0c - x0) / cw, 3), round((y0c - y0) / chh, 3)], "판정": "잘라 맞춤(눈 · 손으로 잰 자리)"})
     out = cv2.resize(im, (W, H), interpolation=cv2.INTER_CUBIC if im.shape[1] < W else cv2.INTER_AREA)
     (OUT / "정지컷").mkdir(parents=True, exist_ok=True)
     cv2.imencode(".jpg", out, [cv2.IMWRITE_JPEG_QUALITY, 93])[1].tofile(str(OUT / "정지컷" / f"{k}.jpg"))
@@ -144,7 +155,6 @@ def _font(sz, bold=True):
 
 def compare(keys):   # 원본 첫 프레임 | 우리 그림
     from PIL import Image, ImageDraw
-    import 이미지콘티_지시문 as 지시
     fits = json.load(open(OUT / "정지컷" / "_맞춤.json", encoding="utf-8")) if (OUT / "정지컷" / "_맞춤.json").exists() else {}
     ks = [k for k in jobs() if k[0] == "C" and (not keys or k in keys) and (OUT / "정지컷" / f"{k}.jpg").exists()]
     tw, th, per, cols = 480, 270, 12, 2
@@ -157,9 +167,7 @@ def compare(keys):   # 원본 첫 프레임 | 우리 그림
         d = ImageDraw.Draw(b)
         for i, k in enumerate(part):
             x0, y0 = 10 + (i % cols) * (2 * tw + 30), 10 + (i // cols) * (th + 52)
-            c = 지시.C[k]
-            fk = c.get("fk") or (k[1:-1] + "_끝" if k.endswith("e") else k[1:].zfill(2))   # 끝 그림은 원본 끝 프레임과 견준다
-            src = V / "원본첫프레임" / f"{fk}.jpg"
+            src = V / "원본첫프레임" / f"{orig_key(k)}.jpg"
             if src.exists():
                 b.paste(Image.open(src).convert("RGB").resize((tw, th)), (x0, y0 + 46))
             b.paste(Image.open(OUT / "정지컷" / f"{k}.jpg").convert("RGB").resize((tw, th)), (x0 + tw + 6, y0 + 46))
@@ -207,6 +215,40 @@ def board():   # 우리 그림 · 초 · 말(유호님 · 이해 시험용, 원�
     print("보드 →", OUT / "보드")
 
 
+def before_after(tag):   # 원본 첫 프레임 | 고치기 전 | 고친 뒤 + 무엇을 고쳤나(유호님 확인용 — 원본이 들어가 git 밖에만)
+    from PIL import Image, ImageDraw
+    base = OUT / f"전후_{tag}"
+    memo = json.load(open(base / "메모.json", encoding="utf-8"))   # {컷: "고친 것"}
+    ks = [k for k in memo if (OUT / "정지컷" / f"{k}.jpg").exists()]
+    tw, th, per = 520, 293, 8
+    f1, f2 = _font(26), _font(22, False)
+    for n in range(0, len(ks), per):
+        part = ks[n:n + per]
+        b = Image.new("RGB", (3 * tw + 40, len(part) * (th + 58) + 50), (16, 16, 18))
+        d = ImageDraw.Draw(b)
+        for c, head in enumerate(("원본", "고치기 전", "고친 뒤")):
+            d.text((10 + c * (tw + 10), 12), head, font=f1, fill=(150, 150, 160))
+        for i, k in enumerate(part):
+            y0 = 50 + i * (th + 58)
+            fk = orig_key(k)
+            for c, p in enumerate((V / "원본첫프레임" / f"{fk}.jpg", base / "전" / f"{k}.jpg", OUT / "정지컷" / f"{k}.jpg")):
+                if p.exists():
+                    b.paste(Image.open(p).convert("RGB").resize((tw, th)), (10 + c * (tw + 10), y0 + 46))
+                else:
+                    d.rectangle([10 + c * (tw + 10), y0 + 46, 10 + c * (tw + 10) + tw, y0 + 46 + th], fill=(40, 40, 44))
+                    d.text((20 + c * (tw + 10), y0 + 60), "새로 굽은 그림" if c == 1 else "없음", font=f2, fill=(160, 160, 160))
+            d.text((10, y0 + 8), k, font=f1, fill=(255, 215, 120))
+            d.text((90, y0 + 12), _wrap(d, memo[k], f2, 3 * tw - 60)[0], font=f2, fill=(225, 225, 230))
+        b.save(base / f"전후판_{n // per + 1:02d}.jpg", quality=86)
+    print("전후판 →", base, f"({len(ks)}컷)")
+
+
+def orig_key(k):   # 원본 첫 프레임 이름 — 끝 그림(…e)은 원본 끝 프레임과 견준다
+    import 이미지콘티_지시문 as 지시
+    c = 지시.C.get(k, {})
+    return c.get("fk") or (k[1:-1] + "_끝" if k.endswith("e") else k[1:].zfill(2))
+
+
 def _wrap(d, text, font, width):
     out, cur = [], ""
     for ch in text:
@@ -230,3 +272,5 @@ if __name__ == "__main__":
         compare(rest)
     elif cmd == "보드":
         board()
+    elif cmd == "전후":
+        before_after(rest[0])

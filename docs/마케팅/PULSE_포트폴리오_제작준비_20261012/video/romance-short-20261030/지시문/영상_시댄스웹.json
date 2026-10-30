@@ -1,5 +1,5 @@
 {
- "메모": "로맨스 단편 「다 비침」 4분 34.9초 · 70컷 — 시댄스 2.5 웹 판 지시문(2026-10-30). 시작 그림은 이미지 콘티 정지컷(git 밖 콘티/romance/선버스트/정지컷, 1920×1080, GPT Image 2.5 Sunburst · max — 유호님 확정 판으로 갈아 끼운다). 끝 그림 판은 C01 · C11 · C14 · C18 · C43(「끝그림」 = @이미지 2). 카메라는 02_콘티 4절(원본 프레임 실측) 그대로, 손떨림 크기는 원본 배경 실측. 길이 = max(4, ⌈쓰는 초 + 0.8⌉), 상한 8초(넘으면 「여유」 칸), 두 샷 묶음은 ⌈자르는 초 + 둘째 쓰는 초 + 0.8⌉(자르는 초 = 첫 쓰는 초 + 0.7). C53 14.39초 롱테이크는 두 토막(rs-C53a · rs-C53b — 뒤 토막 첫 그림은 앞 토막 받은 영상의 끝 프레임). C65 검은 화면 · 속말 다섯 · 손글씨 · 앞 가림(C01) · 휴대폰 사진(C51) · 화면 글 · 노래는 굽지 않고 편집에서(샷의 「후반」). 회상 31컷은 16:9로 받고 좌우 띠를 편집에서 씌운다(샷의 「회상」). 【7번과 같은 칸】 판의 「소리」: 켬(입 맞춤) · 끔 · 「B만 켬」(화면 밖 · 입이 가려진 말 — 방식 B일 때만 그 판에서 목소리를 만든다). 「소리참고」 {A: 그 판의 입 맞춤 대사를 앞 0.3초 무음 뒤 「말」의 시작 초에 놓은 mp3, B: 배역 목소리 견본, 없음}: 목소리 방식이 정해지면 채운다(지금 비움 — 결정 10-29대로 광고 배우 대사는 B: 배역마다 목소리 판에서 처음 나온 목소리를 견본으로). 「소리줄」 {A, B, 없음}: 지시문 끝 SOUND 줄. 「B길이」: 방식 B에서 대사가 컷보다 길 때 말이 끝날 때까지 받는 길이. 【7번과 다른 칸】 샷의 「말」은 목록이다(C14 · C41 · C47 · C53a는 두 사람 — 방식 B는 견본 둘 @오디오 1 · 2를 말하는 차례대로).",
+ "메모": "로맨스 단편 「다 비침」 4분 34.9초 · 70컷 — 시댄스 2.5 웹 판 지시문(2026-10-30). 시작 그림은 이미지 콘티 정지컷(git 밖 콘티/romance/선버스트/정지컷, 1920×1080, GPT Image 2.5 Sunburst · max — 유호님 확정 판으로 갈아 끼운다). 끝 그림 판은 C01 · C11 · C14 · C18 · C20 · C43 · C50(「끝그림」 = @이미지 2). 요즘 기법으로 바꾼 컷 C30 · C59 · C60(느린 다가감)은 주판이 바꾼 카메라이고, 원본 카메라 판이 「대안」(id 끝 o)으로 따로 있다 — 받은 뒤 나란히 보고 고른다(샷의 「요즘기법」 칸에 까닭 · 원본 카메라). 카메라는 02_콘티 4절(원본 프레임 실측) 그대로, 손떨림 크기는 원본 배경 실측. 길이 = max(4, ⌈쓰는 초 + 0.8⌉), 상한 8초(넘으면 「여유」 칸), 두 샷 묶음은 ⌈자르는 초 + 둘째 쓰는 초 + 0.8⌉(자르는 초 = 첫 쓰는 초 + 0.7). C53 14.39초 롱테이크는 두 토막(rs-C53a · rs-C53b — 뒤 토막 첫 그림은 앞 토막 받은 영상의 끝 프레임). C65 검은 화면 · 속말 다섯 · 손글씨 · 앞 가림(C01) · 휴대폰 사진(C51) · 화면 글 · 노래는 굽지 않고 편집에서(샷의 「후반」). 회상 31컷은 16:9로 받고 좌우 띠를 편집에서 씌운다(샷의 「회상」). 【7번과 같은 칸】 판의 「소리」: 켬(입 맞춤) · 끔 · 「B만 켬」(화면 밖 · 입이 가려진 말 — 방식 B일 때만 그 판에서 목소리를 만든다). 「소리참고」 {A: 그 판의 입 맞춤 대사를 앞 0.3초 무음 뒤 「말」의 시작 초에 놓은 mp3, B: 배역 목소리 견본, 없음}: 목소리 방식이 정해지면 채운다(지금 비움 — 결정 10-29대로 광고 배우 대사는 B: 배역마다 목소리 판에서 처음 나온 목소리를 견본으로). 「소리줄」 {A, B, 없음}: 지시문 끝 SOUND 줄. 「B길이」: 방식 B에서 대사가 컷보다 길 때 말이 끝날 때까지 받는 길이. 【7번과 다른 칸】 샷의 「말」은 목록이다(C14 · C41 · C47 · C53a는 두 사람 — 방식 B는 견본 둘 @오디오 1 · 2를 말하는 차례대로).",
  "편": "romance",
  "이름": "로맨스 단편 「다 비침」",
  "비율": "16:9",
@@ -14,12 +14,12 @@
    "TAEJUN (shirt, no tie)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in a white dress shirt with no tie, the top button open and the sleeves rolled to the elbows, charcoal trousers, a black-strap smartwatch on his left wrist.",
    "TAEJUN (blue shirt)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in a pale-blue dress shirt with a slim charcoal tie and grey trousers, a black-strap smartwatch on his left wrist.",
    "TAEJUN (blue shirt, headphones)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in a pale-blue dress shirt with a slim charcoal tie, black over-ear headphones on his head.",
-   "TAEJUN (navy jacket)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in an unstructured navy jacket over a plain white T-shirt, charcoal trousers and black leather shoes.",
+   "TAEJUN (navy jacket)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in an unstructured navy chore jacket with a shirt-style collar (no lapels) over a plain white T-shirt, charcoal trousers and black leather shoes.",
    "MINJAE (beige vest)": "Minjae — the same Korean man as in the first frame (Taejun's junior, late twenties, round face, short black hair with messy bangs) in a beige knit vest over a white shirt.",
    "MINJAE (green vest)": "Minjae — the same Korean man as in the first frame (round face, short black hair with messy bangs) in a dark-green knit vest over a white shirt.",
-   "CLEAR UMBRELLA": "the premium clear umbrella exactly as in the first frame — a crystal-clear, glass-like canopy (not cloudy vinyl), thin silver ribs and a straight clear acrylic handle with a small frosted milky-white cap; whoever carries it grips the handle; no logo, no text.",
+   "CLEAR UMBRELLA": "the premium clear umbrella exactly as in the first frame — a crystal-clear, glass-like canopy (not cloudy vinyl), thin silver ribs and a thin silver shaft, and a straight clear acrylic handle with a small frosted milky-white cap; whoever carries it grips the handle; no logo, no text.",
    "BLUE UMBRELLA": "the same premium umbrella with a misty pale-blue, still see-through canopy, exactly as in the first frame; no logo, no text.",
-   "BLACK UMBRELLA": "Yuna's plain opaque black umbrella, exactly as in the first frame; no logo.",
+   "BLACK UMBRELLA": "Yuna's plain opaque black full-length stick umbrella with a straight black handle, exactly as in the first frame; no logo.",
    "GREEN SCREEN": "the phone screen is one flat, solid bright-green rectangle (chroma key) with nothing on it — it stays exactly that green, flat and blank; no picture, no text ever appears on it."
   },
   "보기": "LOOK: a premium Korean romance brand film — real cinema camera, natural skin texture with visible pores, matte lips, true-to-life colors. Keep the first frame's light, colors and white balance to the very end — the pink-and-teal neon of the rainy night, the soft grey daylight rain, the warm pub, the cool store light, the sunshine after the rain — with no new light and no color shift; wherever rain falls in the first frame it keeps falling. The acting is subtle and natural, as in a calm Korean romance drama: small, believable expressions, never exaggerated, no big toothy grins. The camera moves only as written in CAMERA — where CAMERA says still, it is still. No new text, letters, logos or labels. Never add a person who is not in the first frame unless ACTION says so.",
@@ -112,7 +112,7 @@
       "TAEJUN (shirt, no tie)",
       "YUNA (cardigan)"
      ],
-     "동작": "Over Yuna's blurred left shoulder: Taejun looks down at her, caught off guard — he blinks once and does not answer.",
+     "동작": "Over Yuna's blurred left shoulder: Taejun looks down at her, caught off guard. At about 0.4 s his eyes drop to her lips and come straight back up to her eyes; at about 1.0 s he swallows — his throat moves — and his lips part as if to answer, then close again. He does not answer; lips closed at the end.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false
     }
@@ -177,7 +177,7 @@
      "누구": [
       "TAEJUN (shirt, no tie)"
      ],
-     "동작": "Close on Taejun: flustered, his lips part as if to answer but no sound comes; he swallows and drops his gaze. Silent.",
+     "동작": "Close on Taejun: flustered, his lips part as if to answer but no sound comes; at about 1.5 s his eyes flick up to her once more, then drop again; a short breath out through the nose. Silent.",
      "카메라": "slow truck to the camera's right: from about 0.3 s the camera physically slides sideways to its right by about 15% of the frame width, easing out and settling by about 2.9 s, with small handheld jitters (about 0.2% of the frame width); the pink neon band behind him drifts left across the frame.",
      "회상": false
     }
@@ -432,7 +432,7 @@
      "누구": [
       "TAEJUN (shirt and tie)"
      ],
-     "동작": "Close profile of Taejun facing left: tense, he keeps his head still and slides his eyes sideways to the right, toward Yuna (off screen), then quickly back. Lips closed.",
+     "동작": "Close profile of Taejun facing left: tense, he keeps his head still and slides his eyes sideways to the right, toward Yuna (off screen), then quickly back; his Adam's apple moves once; one slow blink. Lips closed.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true
     }
@@ -522,7 +522,7 @@
      "누구": [
       "YUNA (cardigan)"
      ],
-     "동작": "Yuna, holding her beer glass, lifts her head and looks across toward the left of frame, at Taejun — a quiet, searching look. Lips closed.",
+     "동작": "Yuna lifts her beer glass halfway, stops, and looks across the table toward the left of frame at Taejun over its rim — a quiet, searching look; she does not drink. Lips closed.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true
     }
@@ -594,7 +594,7 @@
       "TAEJUN (shirt, no tie)",
       "CLEAR UMBRELLA"
      ],
-     "동작": "Under the awning at night: Yuna in front tucks wet strands of hair behind her ear and glances down; behind her Taejun shakes the rain off his folded clear umbrella and brushes his soaked left shoulder with his hand. Neither speaks.",
+     "동작": "Under the awning at night: Yuna in front tucks wet strands of hair behind her ear and glances down; behind her Taejun shakes the rain off his folded clear umbrella and brushes his soaked left shoulder. At about 4.5 s he glances at the back of her head and looks away the moment she half-turns; at about 6 s her eyes land on his wet shoulder — she notices. Neither speaks.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true
     }
@@ -618,9 +618,10 @@
       "YUNA (cardigan)",
       "TAEJUN (shirt, no tie)"
      ],
-     "동작": "Close on Yuna's profile at the shop window: she glances at his wet shoulder (off screen), then peers into the shop and, at about 0.3 s, mutters to herself in Korean at an easy pace: \"어깨 다 젖으셨네… 하나 사야겠다. 어디 있더라.\" Behind her, Taejun stands watching her quietly.",
-     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake. Rack focus: from about 4.2 s to 5.2 s the focus shifts smoothly from Yuna's profile in front to Taejun behind her, and stays there.",
+     "동작": "Two faces at different depths: Yuna's profile in front, sharp — she glances at his wet shoulder, then peers down into the shop window and, at about 0.3 s, mutters to herself in Korean at an easy pace: \"어깨 다 젖으셨네… 하나 사야겠다. 어디 있더라.\" Behind her, out of focus, Taejun watches her quietly; when the focus reaches him his face is soft and unguarded, lips closed.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake. Rack focus: from about 4.2 s to 5.2 s the focus shifts smoothly from Yuna's profile in front to Taejun behind her, and stays there. It ends exactly on @이미지 2 — Taejun sharp, Yuna a soft blur.",
      "회상": true,
+     "끝그림": "C20e.jpg",
      "말": [
       {
        "누가": "YUNA (cardigan)",
@@ -705,7 +706,7 @@
       "YUNA (cardigan)",
       "TAEJUN (shirt, no tie)"
      ],
-     "동작": "Seen through the umbrella stand (blurred handles in front): Yuna turns her head toward Taejun with a curious half-smile and asks him in Korean at about 1.8 s: \"제가 투명한 거 좋아하는 건 어떻게 알아요?\" Taejun, in profile, keeps his lips closed.",
+     "동작": "Seen through the umbrella stand, its folded umbrellas a soft pale blur in front of the lens: Yuna, at the right, turns her head toward Taejun with a curious half-smile and asks him in Korean at about 1.8 s: \"제가 투명한 거 좋아하는 건 어떻게 알아요?\" Taejun, in profile at the left, keeps his lips closed; his eyes slide away from her for a moment.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true,
      "말": [
@@ -749,7 +750,7 @@
       "YUNA (cardigan)",
       "CLEAR UMBRELLA"
      ],
-     "동작": "Taejun, embarrassed, rubs his ear and lowers his eyes; behind him, out of focus, Yuna lifts one premium clear umbrella off the stand and looks at it. Nobody speaks.",
+     "동작": "Taejun, embarrassed, rubs his ear and lowers his eyes; behind him, out of focus, Yuna lifts one premium clear umbrella off the stand and looks at it. At about 1.5 s he glances back over his shoulder toward her for half a second and turns away again, rubbing his ear. Nobody speaks.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true,
      "후반": "김 서린 유리 · 손글씨 겹침(2.1–3.2초) · 좌우 띠 열림(6.1–7.8초) · 태준 속말 「몰랐다. 숨긴다고 숨긴 게, 다 보이고 있었다는 걸.」(2.5초~)"
@@ -816,7 +817,7 @@
      "누구": [
       "TAEJUN (shirt, no tie)"
      ],
-     "동작": "Taejun drops his gaze and mumbles in Korean at about 0.7 s, evasive: \"아니, 뭐….\" then falls silent.",
+     "동작": "Taejun drops his gaze and mumbles in Korean at about 0.7 s, evasive: \"아니, 뭐….\" then falls silent with a short, embarrassed breath of a laugh.",
      "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
      "회상": false,
      "말": [
@@ -883,7 +884,7 @@
       "YUNA (cardigan)",
       "TAEJUN (shirt, no tie)"
      ],
-     "동작": "Side by side under the awning: Yuna, beyond Taejun's blurred profile, smiles to herself, then turns her head toward him and points it out in Korean at about 2.5 s, warm and teasing: \"아까 우산, 다 제 쪽으로 기울였잖아요. 어깨 다 젖고.\" Taejun stays still and silent.",
+     "동작": "Side by side under the awning: Yuna, beyond Taejun's blurred profile, smiles to herself, then turns her head toward him and points it out in Korean at about 2.5 s, warm and teasing: \"아까 우산, 다 제 쪽으로 기울였잖아요. 어깨 다 젖고.\" Taejun, out of focus in the foreground, reacts in profile without a word: a slow blink at the word 우산, his jaw tightens, and at about 5 s his eyes drop toward his own wet shoulder.",
      "카메라": "slow truck to the camera's left: from about 0.5 s the camera physically slides sideways to its left by about 7% of the frame width, easing out by about 5.9 s; no push-in, no zoom.",
      "회상": false,
      "말": [
@@ -949,7 +950,7 @@
      "누구": [
       "YUNA (cardigan)"
      ],
-     "동작": "Yuna looks up at him and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
+     "동작": "Yuna, in near profile with her face low in the frame, lifts her eyes to him and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false,
      "말": [
@@ -983,7 +984,7 @@
    ],
    "길이": 5,
    "자르는초": 3.2,
-   "설명": "두 샷 묶음 — 인서트 · 유나의 손이 다가와 태준의 빈손을 잡는다 → 클로즈업(아래에서) · 놀란 눈으로 유나를 보는 태준",
+   "설명": "두 샷 묶음 — 인서트 · 유나의 손이 다가와 태준의 빈손을 잡는다 → 클로즈업(아래에서) · 놀란 눈으로 유나를 보는 태준 — 요즘 기법: C30 손에 느린 다가감 약 8%",
    "소리": "끔",
    "샷": [
     {
@@ -994,9 +995,14 @@
       "TAEJUN (shirt, no tie)",
       "YUNA (cardigan)"
      ],
-     "동작": "Insert at hip height: Taejun's empty hand hangs by his side; Yuna's hand comes in from the left and slips into his, holding it gently.",
-     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
-     "회상": false
+     "동작": "Macro insert at hip height: Taejun's empty hand hangs by his side; Yuna's hand comes in from the upper left and slips into his; his hand hesitates for a beat, then his fingers close around hers.",
+     "카메라": "very slow push-in: the camera physically moves about 8% closer toward the two hands over the whole shot in one slow, steady move — no lens zoom, no shake.",
+     "회상": false,
+     "요즘기법": {
+      "짧게": "손에 느린 다가감 약 8%",
+      "까닭": "손잡음 인서트(2.46초) — 손이 닿는 순간 화면이 조금 다가가면 「잡힘」이 사건이 된다(연출 · 앵글 검수). 근거: Heimann 외 2019(PLoS ONE 14(3):e0211026, EEG 16명) — 몸으로 다가가는 숏이 고정 · 줌보다 감각운동 반응과 실감이 큼, 2025 훙궈 연간 1위 로맨스 《盛夏芬德拉》 감독 穆裕가 감정 박에 느린 움직임을 썼다고 직접 씀(7번 근거 원자료 레퍼런스/카메라요즘/p7/웹/요약.md, 확인일 10-29). 시댄스 2.5 천천히 다가가기 「확인됨」(같은 곳 시댄스/요약.md). 움직임만으로 감정이 세지지는 않아(Yilmaz) 원본 고정 판과 나란히 보고 고른다.",
+      "원본카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+     }
     },
     {
      "컷": "C31",
@@ -1005,7 +1011,7 @@
      "누구": [
       "TAEJUN (shirt, no tie)"
      ],
-     "동작": "Close on Taejun from slightly below: he looks down at her, surprised, his eyes widening; lips just parted, silent.",
+     "동작": "Close on Taejun from low below his chin: he looks down at her, surprised, his eyes widening; lips just parted, silent.",
      "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
      "회상": false
     }
@@ -1098,7 +1104,7 @@
       "BLUE UMBRELLA",
       "BLACK UMBRELLA"
      ],
-     "동작": "Daytime rain in front of the same convenience store, seen from a low angle: Taejun, from behind, stands under his open clear umbrella, the folded misty-blue umbrella in his other hand; Yuna faces him under her black umbrella. They stand still, looking at each other; rain falls steadily. Lips closed.",
+     "동작": "Daytime rain in front of the same convenience store, seen from the ground in a tilted low angle: Taejun, from behind and close to the camera, stands under his open clear umbrella, the folded misty-blue umbrella in his other hand; a few metres beyond him Yuna faces him under her black umbrella. They stand still, looking at each other; rain falls steadily. At about 1.5 s Yuna lowers her black umbrella an inch so its rim hides her eyes from him; Taejun's clear umbrella does not move. Lips closed.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false,
      "후반": "「끝.」은 두 화 판에만(오른쪽)"
@@ -1124,7 +1130,7 @@
       "YUNA (taupe blazer)",
       "BLACK UMBRELLA"
      ],
-     "동작": "Yuna under her black umbrella looks at Taejun and says quietly in Korean at about 0.1 s, calm and sad: \"넌 그대로다.\"",
+     "동작": "Yuna under her black umbrella looks at Taejun and says quietly in Korean at about 0.1 s: \"넌 그대로다.\" She says it flatly, eyes steady, almost without expression; one drop falls from the rim of the black canopy in front of her face.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false,
      "말": [
@@ -1146,7 +1152,7 @@
       "TAEJUN (navy jacket)",
       "CLEAR UMBRELLA"
      ],
-     "동작": "Taejun under his clear umbrella, the grey sky and trees visible through the canopy, looks down at her in silence; lips closed.",
+     "동작": "Taejun under his clear umbrella, seen from below, the grey sky and treetops visible through the canopy, looks down at her; his eyes move once across her face as if searching for the old expression; at about 1.2 s he draws a breath to answer and lets it go without a word; rain beads slide down the canopy above him. Lips closed.",
      "카메라": "slow roll: from about 0.3 s to 1.8 s the camera slowly rolls about 3 degrees counter-clockwise at an even speed, with small handheld jitters (about 0.15% of the frame width); no push-in, no zoom.",
      "회상": false
     }
@@ -1222,7 +1228,7 @@
       "TAEJUN (navy jacket)",
       "CLEAR UMBRELLA"
      ],
-     "동작": "Close on Taejun under the clear canopy beaded with rain: his eyes redden and fill with tears, but he holds it in, lips pressed together.",
+     "동작": "Close on Taejun under the clear canopy beaded with rain: his eyes redden and fill with tears, but he holds it in, lips pressed together; one blink pushes a tear to the lower lid; it does not fall.",
      "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
      "회상": false
     }
@@ -1579,9 +1585,10 @@
       "CLEAR UMBRELLA",
       "BLACK UMBRELLA"
      ],
-     "동작": "Under the awning: Taejun, close to the lens, finishes folding his clear umbrella and takes out his phone to look at it; behind him Yuna, her black umbrella folded in her hand, looks at him and asks in Korean at about 4.9 s: \"뭐 봐?\"",
-     "카메라": "following: from about 1.0 s the camera follows Taejun, drifting to its left about 12% and up about 16% by about 6.1 s, speeding up a little; no zoom.",
+     "동작": "Under the awning: the shot starts on Taejun's out-of-focus jacket shoulder right in front of the lens; as the camera rises, Taejun, his clear umbrella just folded in one hand, takes out his phone and looks down at it; behind him Yuna, her black umbrella folded in her hand, looks at him and asks in Korean at about 4.9 s: \"뭐 봐?\"",
+     "카메라": "following: the shot starts close on Taejun's chest and jacket, his face cut by the top edge; from about 1.0 s the camera rises about 16% and eases back, speeding up a little, and by about 6.1 s it arrives exactly at the framing of @이미지 2 — Taejun in a medium shot looking down at his phone, his folded umbrella in his other hand, Yuna behind him under the awning. No lens zoom.",
      "회상": true,
+     "끝그림": "C50e.jpg",
      "말": [
       {
        "누가": "YUNA (taupe blazer)",
@@ -1667,7 +1674,7 @@
       "TAEJUN (navy jacket)",
       "BLUE UMBRELLA"
      ],
-     "동작": "From low inside the umbrella stand: Taejun lifts a folded misty-blue umbrella off its hook, looks at it, and at about 1.2 s starts to say softly in Korean: \"이거,\"",
+     "동작": "From knee height inside the umbrella stand, looking steeply up past the ceiling lights: Taejun lifts a folded misty-blue umbrella off the stand, looks down at it, and at about 1.2 s starts to say softly in Korean: \"이거,\"",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true,
      "말": [
@@ -1818,7 +1825,7 @@
       "YUNA (taupe blazer)",
       "BLACK UMBRELLA"
      ],
-     "동작": "Yuna holds her folded black umbrella low in front of her and lowers her eyes; she stays silent and still.",
+     "동작": "Yuna holds her folded black umbrella low in front of her and lowers her eyes. At about 2 s her thumb rubs the umbrella handle once; at about 3.5 s she closes her eyes for a slow second and opens them; at about 5.5 s she breathes out and her shoulders drop a little. No words.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": true,
      "후반": "김 서린 유리 · 손글씨 겹침(2.1–3.2초) · 좌우 띠 열림(4.6–6.8초) · 유나 속말 「우리, 한때는 서로가 다 보였다.」"
@@ -1910,7 +1917,7 @@
      "누구": [
       "YUNA (taupe blazer)"
      ],
-     "동작": "Under the awning, eyes lowered, Yuna says quietly and sadly in Korean at about 0.8 s: \"이런 거 자꾸 챙겨 주지 마. 나중에 생각나.\"",
+     "동작": "Under the awning: for the first half Yuna's eyes are on the offered umbrella (below the frame), not on him; at about 0.8 s she says quietly in Korean: \"이런 거 자꾸 챙겨 주지 마. 나중에 생각나.\" — she swallows before 나중에 생각나, and only at the end lifts her eyes to him.",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false,
      "말": [
@@ -1985,7 +1992,7 @@
     "C59"
    ],
    "길이": 4,
-   "설명": "익스트림 클로즈업 · 유나의 눈 — 눈물이 차오르며 그를 본다",
+   "설명": "익스트림 클로즈업 · 유나의 눈 — 눈물이 차오르며 그를 본다 — 요즘 기법: C59 눈에 거의 안 보이는 다가감 약 3%",
    "소리": "끔",
    "샷": [
     {
@@ -1995,9 +2002,14 @@
      "누구": [
       "YUNA (taupe blazer)"
      ],
-     "동작": "Extreme close-up of Yuna's eyes: tears well up as she looks at Taejun; she blinks slowly. No words.",
-     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
-     "회상": false
+     "동작": "Extreme close-up of Yuna's eyes: tears well up and tremble on the lower lids but do not fall; one slow blink at about 1.0 s; she keeps looking at him. No words.",
+     "카메라": "an almost imperceptible push-in: the camera physically moves about 3% closer to her eyes over the shot in one slow, steady move — no lens zoom, no shake.",
+     "회상": false,
+     "요즘기법": {
+      "짧게": "눈에 거의 안 보이는 다가감 약 3%",
+      "까닭": "눈물 클로즈업 — 고정보다 눈물의 때를 기다리게 만드는 「속마음 샷」(연출 · 앵글 검수). 얼굴이 화면 대부분이라 3%로 작게(크게 주면 얼굴이 뭉개짐). 근거: Heimann 외 2019(PLoS ONE 14(3):e0211026, EEG 16명) — 몸으로 다가가는 숏이 고정 · 줌보다 감각운동 반응과 실감이 큼, 2025 훙궈 연간 1위 로맨스 《盛夏芬德拉》 감독 穆裕가 감정 박에 느린 움직임을 썼다고 직접 씀(7번 근거 원자료 레퍼런스/카메라요즘/p7/웹/요약.md, 확인일 10-29). 시댄스 2.5 천천히 다가가기 「확인됨」(같은 곳 시댄스/요약.md). 움직임만으로 감정이 세지지는 않아(Yilmaz) 원본 고정 판과 나란히 보고 고른다.",
+      "원본카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+     }
     }
    ]
   },
@@ -2007,7 +2019,7 @@
     "C60"
    ],
    "길이": 8,
-   "설명": "익스트림 클로즈업 · 태준의 눈 — 눈물 고인 눈으로 그녀를 본다(6.9초)",
+   "설명": "익스트림 클로즈업 · 태준의 눈 — 눈물 고인 눈으로 그녀를 본다(6.9초) — 요즘 기법: C60 눈에 거의 안 보이는 다가감 약 3%",
    "소리": "끔",
    "샷": [
     {
@@ -2017,9 +2029,14 @@
      "누구": [
       "TAEJUN (navy jacket)"
      ],
-     "동작": "Extreme close-up of Taejun's eyes: wet with tears, he looks down at her; his face drifts very slightly to the right. No words.",
-     "카메라": "almost static: the camera holds; only his face drifts very slightly to the right; no push-in, no zoom.",
+     "동작": "Extreme close-up of Taejun's eyes, wet: he looks at her; at about 2 s his eyes move down (to the umbrella in her hands, off screen) and come back up at about 3 s; his lips press together; at about 5 s one tear reaches his lower lashes and stays there; his face drifts very slightly to the right. No words.",
+     "카메라": "an almost imperceptible push-in: the camera physically moves about 3% closer to his eyes over the whole shot in one slow, steady move while his face drifts very slightly to the right — no lens zoom, no shake.",
      "회상": false,
+     "요즘기법": {
+      "짧게": "눈에 거의 안 보이는 다가감 약 3%",
+      "까닭": "속말이 깔리는 6.9초 — 편에서 가장 긴 얼굴 컷. 눈물이 맺히는 때(5초)를 향해 아주 조금 다가간다(연출 · 앵글 검수). 근거: Heimann 외 2019(PLoS ONE 14(3):e0211026, EEG 16명) — 몸으로 다가가는 숏이 고정 · 줌보다 감각운동 반응과 실감이 큼, 2025 훙궈 연간 1위 로맨스 《盛夏芬德拉》 감독 穆裕가 감정 박에 느린 움직임을 썼다고 직접 씀(7번 근거 원자료 레퍼런스/카메라요즘/p7/웹/요약.md, 확인일 10-29). 시댄스 2.5 천천히 다가가기 「확인됨」(같은 곳 시댄스/요약.md). 움직임만으로 감정이 세지지는 않아(Yilmaz) 원본 고정 판과 나란히 보고 고른다.",
+      "원본카메라": "almost static: the camera holds; only his face drifts very slightly to the right; no push-in, no zoom."
+     },
      "후반": "태준 속말 「우산을 접고 나니, 서로의 얼굴이 다 말해 버렸다. 여기까지라는 걸.」"
     }
    ]
@@ -2109,7 +2126,7 @@
      "누구": [
       "TAEJUN (navy jacket)"
      ],
-     "동작": "Close on Taejun under the awning: he watches her walk away toward the right, eyes wet; he does not move.",
+     "동작": "Close on Taejun under the awning: his eyes track her slowly to the right as she walks away; at about 2 s he swallows; at about 3.5 s his gaze drops to the folded clear umbrella in his hand and he exhales. No other movement.",
      "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.15% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
      "회상": false
     }
@@ -2155,7 +2172,7 @@
       "TAEJUN (navy jacket)",
       "CLEAR UMBRELLA"
      ],
-     "동작": "Under the awning: Taejun looks up at the sky and holds his right hand out past the awning, palm up — no rain falls on it; sunlight breaks through; at about 1.8 s he says softly in Korean, a little surprised: \"어, 비 그쳤네.\"",
+     "동작": "Under the awning, seen from below: Taejun's open hand comes forward toward the camera, palm up, large in the frame; he watches it — no rain lands on it — then looks up at the sky as sunlight breaks through, and at about 1.8 s says softly in Korean, a little surprised: \"어, 비 그쳤네.\"",
      "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
      "회상": false,
      "말": [
@@ -2259,6 +2276,90 @@
      "후반": "끝 카드 「비 오는 날, 서로가 보이게 — 다 비치는 우산, 비침 · 새 색」(두 우산 나란히, 2.4초부터)"
     }
    ]
+  },
+  {
+   "id": "rs-C30-31o",
+   "컷": [
+    "C30",
+    "C31"
+   ],
+   "길이": 5,
+   "자르는초": 3.2,
+   "설명": "원본 카메라 — 요즘 기법 판(rs-C30-31)과 나란히 보고 고름 · 두 샷 묶음 — 인서트 · 유나의 손이 다가와 태준의 빈손을 잡는다 → 클로즈업(아래에서) · 놀란 눈으로 유나를 보는 태준",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "C30",
+     "그림": "C30.jpg",
+     "쓰는초": 2.46,
+     "누구": [
+      "TAEJUN (shirt, no tie)",
+      "YUNA (cardigan)"
+     ],
+     "동작": "Macro insert at hip height: Taejun's empty hand hangs by his side; Yuna's hand comes in from the upper left and slips into his; his hand hesitates for a beat, then his fingers close around hers.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "회상": false
+    },
+    {
+     "컷": "C31",
+     "그림": "C31.jpg",
+     "쓰는초": 0.79,
+     "누구": [
+      "TAEJUN (shirt, no tie)"
+     ],
+     "동작": "Close on Taejun from low below his chin: he looks down at her, surprised, his eyes widening; lips just parted, silent.",
+     "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.25% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
+     "회상": false
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "rs-C59o",
+   "컷": [
+    "C59"
+   ],
+   "길이": 4,
+   "설명": "원본 카메라 — 요즘 기법 판(rs-C59)과 나란히 보고 고름 · 익스트림 클로즈업 · 유나의 눈 — 눈물이 차오르며 그를 본다",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "C59",
+     "그림": "C59.jpg",
+     "쓰는초": 1.83,
+     "누구": [
+      "YUNA (taupe blazer)"
+     ],
+     "동작": "Extreme close-up of Yuna's eyes: tears well up and tremble on the lower lids but do not fall; one slow blink at about 1.0 s; she keeps looking at him. No words.",
+     "카메라": "static frame — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+     "회상": false
+    }
+   ],
+   "대안": true
+  },
+  {
+   "id": "rs-C60o",
+   "컷": [
+    "C60"
+   ],
+   "길이": 8,
+   "설명": "원본 카메라 — 요즘 기법 판(rs-C60)과 나란히 보고 고름 · 익스트림 클로즈업 · 태준의 눈 — 눈물 고인 눈으로 그녀를 본다(6.9초)",
+   "소리": "끔",
+   "샷": [
+    {
+     "컷": "C60",
+     "그림": "C60.jpg",
+     "쓰는초": 6.88,
+     "누구": [
+      "TAEJUN (navy jacket)"
+     ],
+     "동작": "Extreme close-up of Taejun's eyes, wet: he looks at her; at about 2 s his eyes move down (to the umbrella in her hands, off screen) and come back up at about 3 s; his lips press together; at about 5 s one tear reaches his lower lashes and stays there; his face drifts very slightly to the right. No words.",
+     "카메라": "almost static: the camera holds; only his face drifts very slightly to the right; no push-in, no zoom.",
+     "회상": false,
+     "후반": "태준 속말 「우산을 접고 나니, 서로의 얼굴이 다 말해 버렸다. 여기까지라는 걸.」"
+    }
+   ],
+   "대안": true
   }
  ]
 }
