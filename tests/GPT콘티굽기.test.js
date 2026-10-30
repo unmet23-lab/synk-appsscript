@@ -67,7 +67,7 @@ function 목록만들기(d, 키들) {
   const 목록 = 키들.map((k, i) => {
     const 파일 = `key${i}.txt`;
     fs.writeFileSync(path.join(d, 파일), `${k.값}\n`);
-    return { 이름: k.이름, 파일, ...(k.까지 ? { 까지: k.까지 } : {}) };
+    return { 이름: k.이름, 파일, ...(k.까지 ? { 까지: k.까지 } : {}), ...(k.안씀 ? { 안씀: k.안씀 } : {}) };
   });
   const p = path.join(d, '키목록.json');
   fs.writeFileSync(p, JSON.stringify(목록));
@@ -180,6 +180,39 @@ test('키 목록 — 「까지」 날이 지난 키는 부르지 않는다', asy
     assert.deepStrictEqual(받은.map((x) => x.머리.authorization), [`Bearer ${새키}`]);
   } finally {
     s.close();
+  }
+});
+
+test('키 목록 — 「안씀」에 콘티가 든 키는 굽기에서 부르지 않고, 남은 키가 바닥이면 종료 3으로 그 까닭을 알린다', async () => {
+  const 키1 = 'sk-test-main-key-0123456789';
+  const 키2 = 'sk-test-reserved-key-0123456789';
+  const { s, 받은, 바탕 } = await 서버(() => ({ 상태: 429, json: { error: { code: 'credit_balance_exhausted', message: 'exhausted' } } }));
+  try {
+    const t = 임시();
+    const 목록 = 목록만들기(t.d, [{ 이름: '주력', 값: 키1 }, { 이름: '남김', 값: 키2, 안씀: ['콘티'] }]);
+    const r = await 돌리기([t.지시문, t.나갈], { SYNK_OPENAI_BASE: 바탕, OPENAI_KEY_FILE: '', SYNK_OPENAI_KEYLIST: 목록 });
+    assert.strictEqual(r.code, 3, r.오류);
+    assert.deepStrictEqual(받은.map((x) => x.머리.authorization), [`Bearer ${키1}`]);
+    assert.match(r.오류, /「콘티」에 쓰지 않기로 한 키\(남김\)/);
+    assert.ok(!fs.existsSync(t.나갈));
+  } finally {
+    s.close();
+  }
+});
+
+test('키 차례 — 용도를 준 도구만 「안씀」 키를 빼고, 용도 없이 부르는 도구(시험관)는 그 키까지 쓴다', async () => {
+  const t = 임시();
+  const 목록 = 목록만들기(t.d, [{ 이름: '주력', 값: 'sk-test-a-key-0123456789' }, { 이름: '남김', 값: 'sk-test-b-key-0123456789', 안씀: ['콘티'] }]);
+  const 옛 = { 목록: process.env.SYNK_OPENAI_KEYLIST, 파일: process.env.OPENAI_KEY_FILE };
+  process.env.SYNK_OPENAI_KEYLIST = 목록;
+  delete process.env.OPENAI_KEY_FILE;
+  try {
+    const { 키차례 } = await import(require('node:url').pathToFileURL(path.join(REPO, 'tools', 'lib', '오픈AI키.mjs')).href);
+    assert.deepStrictEqual(키차례('콘티').map((k) => k.이름), ['주력']);
+    assert.deepStrictEqual(키차례().map((k) => k.이름), ['주력', '남김']);
+  } finally {
+    if (옛.목록 === undefined) delete process.env.SYNK_OPENAI_KEYLIST; else process.env.SYNK_OPENAI_KEYLIST = 옛.목록;
+    if (옛.파일 !== undefined) process.env.OPENAI_KEY_FILE = 옛.파일;
   }
 });
 

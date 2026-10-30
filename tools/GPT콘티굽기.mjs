@@ -13,7 +13,8 @@
  * - 참고 그림이 있으면 /v1/images/edits(넘긴 순서 그대로), 없으면 /v1/images/generations.
  * - 크기는 가로 · 세로 둘 다 16의 배수(1080x1920은 API가 거절한다). 기본은 세로 9:16 1152x2048, 가로 영상은 2048x1152.
  * - 키 차례와 넘기기(크레딧 바닥 · 401 · 403이면 다음 무료 크레딧 키, 마지막 키까지 바닥이면 종료 3)는 `tools/lib/오픈AI키.mjs`.
- *   크레딧은 GPT Pro 구독의 월 API 크레딧이다(docs/AI_계정과_크레딧.md 「GPT」).
+ *   크레딧은 GPT Pro 구독의 월 API 크레딧이다(docs/AI_계정과_크레딧.md 「GPT」). 용도 '콘티'로 불러서 키 목록의 「안씀」에
+ *   '콘티'가 든 키는 건너뛴다 — 10-30부터 unmet23(남은 크레딧은 운영 받아 적기 · 상황극 · 시험관 몫, 유호님 「응, 살려줘」).
  * - 그림 옆에 <이름>_기록.json(쓴 키 이름, 받은 크기 · 품질, 초, 요청 번호, 사용 토큰, 어림 값, 지시문 · 참고 sha256)을 남긴다.
  * - 값 · 시간 실측과 2K에서 구슬 눈에 흰자가 생기는 함정은 현장 노트 그림_굽기_오리기 「API로 GPT Image 2.5 Sunburst」.
  * - 시험은 SYNK_OPENAI_BASE로 가짜 서버를, SYNK_OPENAI_KEYLIST로 임시 키 목록을 준다(tests/GPT콘티굽기.test.js).
@@ -71,7 +72,7 @@ function 요청몸() {
 
 let 결과;
 try {
-  결과 = await 차례로부르기(요청몸, { 알림: (말) => console.error(`[GPT콘티굽기] ${말}`) });
+  결과 = await 차례로부르기(요청몸, { 용도: '콘티', 알림: (말) => console.error(`[GPT콘티굽기] ${말}`) });
 } catch (e) {
   if (e instanceof 부르기오류) 멈춤(e.message, e.코드);
   throw e;

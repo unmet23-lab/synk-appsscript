@@ -1,8 +1,9 @@
 /**
  * OpenAI API 키 차례와 부르기 — GPT Pro 구독의 월 API 크레딧을 쓰는 도구(`tools/GPT콘티굽기.mjs` · `tools/GPT시험관.mjs`)가 같이 쓴다.
  *
- * 차례: OPENAI_KEY_FILE 하나(시험 · 손으로 고를 때) → 키 목록 ~/SYNK_보안/openai_키목록.json(`[{이름, 파일, 까지?}]`, 파일은 목록 옆
+ * 차례: OPENAI_KEY_FILE 하나(시험 · 손으로 고를 때) → 키 목록 ~/SYNK_보안/openai_키목록.json(`[{이름, 파일, 까지?, 안씀?}]`, 파일은 목록 옆
  * 상대 경로, 「까지」 날 한국 시각 0시부터 그 키는 건너뛴다) → ~/SYNK_보안/openai.txt 하나. 키 값은 찍지 않는다.
+ * 부르는 도구가 용도(예: '콘티')를 주면 「안씀」 배열에 그 용도가 든 키는 건너뛴다 — 크레딧을 다른 일 몫으로 남길 때 쓴다.
  * 한 키가 크레딧 바닥(429 credit_balance_exhausted) · 키 거절(401) · 권한 없음(403)이면 다음 키로 다시 부른다 — 모두 결제 수단 없는
  * 무료 크레딧 조직이라 돈 드는 길이 아니다. 속도 제한 · 서버 오류 · 그 밖의 오류는 넘기지 않고 멈춘다. 마지막 키까지 바닥이면 코드 3.
  * 시험은 SYNK_OPENAI_BASE로 가짜 서버를, SYNK_OPENAI_KEYLIST로 임시 키 목록을 준다.
@@ -23,21 +24,29 @@ export const 바탕주소 = () => (process.env.SYNK_OPENAI_BASE || 'https://api.
 const 보안 = () => path.join(os.homedir(), 'SYNK_보안');
 export const 목록파일 = () => process.env.SYNK_OPENAI_KEYLIST || path.join(보안(), 'openai_키목록.json');
 
-/** 쓸 키 차례 — 이름과 파일만. 값은 부르기 직전에 읽는다. */
-export function 키차례() {
-  if (process.env.OPENAI_KEY_FILE) return [{ 이름: path.basename(process.env.OPENAI_KEY_FILE), 파일: process.env.OPENAI_KEY_FILE }];
+/** 쓸 키 차례 — 이름과 파일만. 값은 부르기 직전에 읽는다. 용도를 주면 「안씀」에 그 용도가 든 키를 뺀다. */
+export function 키차례(용도) {
+  return 목록키(용도).쓸;
+}
+
+/** 키 목록에서 쓸 키와, 용도 때문에 뺀 키 이름을 함께 낸다 */
+function 목록키(용도) {
+  if (process.env.OPENAI_KEY_FILE) return { 쓸: [{ 이름: path.basename(process.env.OPENAI_KEY_FILE), 파일: process.env.OPENAI_KEY_FILE }], 뺌: [] };
   const 목록경로 = 목록파일();
-  if (!fs.existsSync(목록경로)) return [{ 이름: 'openai.txt', 파일: path.join(보안(), 'openai.txt') }];
+  if (!fs.existsSync(목록경로)) return { 쓸: [{ 이름: 'openai.txt', 파일: path.join(보안(), 'openai.txt') }], 뺌: [] };
   let 목록;
   try {
     목록 = JSON.parse(fs.readFileSync(목록경로, 'utf8').replace(/^﻿/, ''));
   } catch (e) {
     throw new 부르기오류(2, `키 목록을 읽지 못했다: ${목록경로} (${e.message})`);
   }
-  if (!Array.isArray(목록)) throw new 부르기오류(2, `키 목록은 [{이름, 파일, 까지?}] 배열이어야 한다: ${목록경로}`);
-  return 목록
-    .filter((k) => !k.까지 || Date.now() < Date.parse(`${k.까지}T00:00:00+09:00`))
-    .map((k) => ({ 이름: k.이름 || k.파일, 파일: path.isAbsolute(k.파일) ? k.파일 : path.join(path.dirname(목록경로), k.파일) }));
+  if (!Array.isArray(목록)) throw new 부르기오류(2, `키 목록은 [{이름, 파일, 까지?, 안씀?}] 배열이어야 한다: ${목록경로}`);
+  const 산 = 목록.filter((k) => !k.까지 || Date.now() < Date.parse(`${k.까지}T00:00:00+09:00`));
+  const 막힘 = (k) => Boolean(용도) && Array.isArray(k.안씀) && k.안씀.includes(용도);
+  return {
+    쓸: 산.filter((k) => !막힘(k)).map((k) => ({ 이름: k.이름 || k.파일, 파일: path.isAbsolute(k.파일) ? k.파일 : path.join(path.dirname(목록경로), k.파일) })),
+    뺌: 산.filter(막힘).map((k) => k.이름 || k.파일),
+  };
 }
 
 function 키읽기({ 이름, 파일 }) {
@@ -49,11 +58,12 @@ function 키읽기({ 이름, 파일 }) {
 
 /**
  * 만들기() → { 주소, 몸, json } 을 키마다 새로 만들어 부른다. 성공하면 { 답, 글, 요청, 초, 쓴키 }.
- * 알림(말)은 다음 키로 넘길 때 한 줄씩 받는다.
+ * 알림(말)은 다음 키로 넘길 때 한 줄씩 받는다. 용도는 키 목록의 「안씀」과 맞춰 본다.
  */
-export async function 차례로부르기(만들기, { 알림 = () => {}, 제한ms = 15 * 60 * 1000 } = {}) {
-  const 키들 = 키차례();
-  if (!키들.length) throw new 부르기오류(3, `쓸 수 있는 키가 없다 — 키 목록의 「까지」가 모두 지났다: ${목록파일()}`);
+export async function 차례로부르기(만들기, { 알림 = () => {}, 제한ms = 15 * 60 * 1000, 용도 } = {}) {
+  const { 쓸: 키들, 뺌 } = 목록키(용도);
+  const 뺀말 = 뺌.length ? ` — 「${용도}」에 쓰지 않기로 한 키(${뺌.join(', ')})는 부르지 않았다(docs/AI_계정과_크레딧.md 「GPT」)` : '';
+  if (!키들.length) throw new 부르기오류(3, `쓸 수 있는 키가 없다 — 키 목록의 「까지」가 지났거나 「안씀」으로 막혔다: ${목록파일()}${뺀말}`);
   for (const [i, k] of 키들.entries()) {
     const { 주소, 몸, json } = 만들기();
     const 머리 = { Authorization: `Bearer ${키읽기(k)}` };
@@ -82,7 +92,7 @@ export async function 차례로부르기(만들기, { 알림 = () => {}, 제한m
       continue;
     }
     if (바닥) {
-      throw new 부르기오류(3, `API 크레딧이 바닥났다(마지막 키 ${k.이름} · ${res.status}) — 돈 드는 길로 돌리지 않는다. 크레딧이 든 조직의 키인지 docs/AI_계정과_크레딧.md 「GPT」를 본다(요청 ${요청})`);
+      throw new 부르기오류(3, `API 크레딧이 바닥났다(마지막 키 ${k.이름} · ${res.status}) — 돈 드는 길로 돌리지 않는다. 크레딧이 든 조직의 키인지 docs/AI_계정과_크레딧.md 「GPT」를 본다(요청 ${요청})${뺀말}`);
     }
     throw new 부르기오류(1, `오류(${k.이름}) ${res.status} ${오류.code || ''}: ${오류.message || 글.slice(0, 300)} (요청 ${요청})`);
   }
