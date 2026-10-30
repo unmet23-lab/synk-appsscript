@@ -187,8 +187,11 @@ export function advanceLife(life, context) {
       life.contacts.push({ id: `card:contact:${++life.sequence}`, contactKey: offerKey, card, key, status: 'issued',
         delivered: false, issuedU: life.uMs, issuedSurfaceId: ctx.surfaceId, issuedFence: ctx.fence });
   }
-  // A card's settled offers leave once the budget no longer counts them; the seat's stay (each seat invites once).
-  life.contacts = life.contacts.filter(c => c.card === undefined || life.uMs - c.issuedU < CARD_KEPT_U || ['issued', 'delivered', 'detail'].includes(c.status));
+  // A card's settled offers leave once the budget no longer counts them and their visit is over — a rise is offered once a
+  // visit, so C4's first, which waits for the player for days, is not offered again every quarter hour (Fable F5); the seat's
+  // stay (each seat invites once).
+  life.contacts = life.contacts.filter(c => c.card === undefined || life.uMs - c.issuedU < CARD_KEPT_U || c.issuedU >= life.visitStartU && life.activeVisit
+    || ['issued', 'delivered', 'detail'].includes(c.status));
   assertLife(life); return facts;
 }
 /** A card's offer the player answers (W5 CARD_OPEN·DECLINE·DEFER): current on this window, or opened into its detail. */

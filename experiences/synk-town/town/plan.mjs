@@ -30,7 +30,8 @@ import { dayKindOf, weatherAt as clockWeatherAt, weatherChangesBetween, rainBetw
 import { paramsFor } from './params.mjs';
 import { PER_MILLE, perMille, stateOf, running, keptState, bandEvents, advance, finishSegment, replay, stateFactors, stateCandidates, available, playerMade } from './state.mjs';
 import { CARD_BY_ID, CARDS_OF, WEAR_THRESHOLDS, cardKey, statusOf, roseToday, villageStart, villageAfter, keptVillage, applySegment, applyTrigger, applyTake,
-  applyGive, givesItems, triggerHolds, pairChosen, partnerMinutes, solvingSpot, takeCovers, sceneFree, frictionStep, pairKeyOf } from './cards.mjs';
+  applyGive, givesItems, triggerHolds, pairChosen, partnerMinutes, solvingSpot, takeCovers, sceneFree, frictionStep, pairKeyOf,
+  FIRST_STAY, firstOwed, firstPending } from './cards.mjs';
 
 const CHAT_SPOTS = DATA.CHAT_SPOTS ?? {};
 export const ARCHETYPE_BY_ID = Object.freeze(Object.fromEntries(ARCHETYPES.map(a => [a.id, a])));
@@ -234,6 +235,10 @@ export function planBand(input) {
     log = [...fixedLog, ...after.log];
   }
   segments.sort((a, b) => a.startMs - b.startMs || order(a.npc) - order(b.npc));
+  // C4's first is the player's (§8-4): it rises the first moment the player is where the cafe owner has arrived, read from the
+  // final segments — it cuts, solves and counts nothing, so it moves no one's day.
+  const firstRise = firstStay(input, segments);
+  if (firstRise) log.push(firstRise);
   log.sort((a, b) => a.atMs - b.atMs || order(a.npc) - order(b.npc));
   // What the band leaves is read from its final segments (§2-1), by the steps the planner took while placing them.
   const village = villageAfter(input, segments, log, { archetypes: ARCHETYPE_BY_ID, params });
@@ -246,6 +251,28 @@ export function planBand(input) {
   }));
   stateLog.sort((a, b) => a.atMs - b.atMs || order(a.npc) - order(b.npc));
   return { segments, residents, ...keptVillage(village), resolved: village.resolved, scenes: village.scenes, log, deferredPromises: deferred, stateLog };
+}
+
+/** C4's first rise (§8-4): the earliest instant of input.playerStays ([{ place, fromMs, toMs? }] — where the player stayed in
+ * the band, from the commands) at which the cafe owner is at that place in her final segments: from a segment's start when
+ * she was already in that place (a move inside it, or a hold at the counter, keeps her there — Fable F4), else from her
+ * arrival. Only while the band starts with the first still owed and not waiting; at any band and with no state condition —
+ * she is up while she has a segment. null: no stay with her in this band. */
+function firstStay(input, segments) {
+  const card = CARD_BY_ID[FIRST_STAY], stays = input.playerStays || [];
+  if (!stays.length || !card || !firstPending(input.cards?.[FIRST_STAY])) return null;
+  let at = null, before = input.residents?.[card.owner]?.lastSpot ?? null;
+  for (const s of segments) {
+    if (s.npc !== card.owner) continue;
+    const place = placeOf(s.spot), from = before && placeOf(before) === place ? s.startMs : s.arriveMs;
+    before = s.spot;
+    for (const stay of stays) {
+      if (stay.place !== place) continue;
+      const met = Math.max(from, stay.fromMs, input.startMs);
+      if (met < Math.min(s.endMs, stay.toMs ?? input.endMs, input.endMs) && (at === null || met < at)) at = met;
+    }
+  }
+  return at === null ? null : { card: card.id, key: cardKey(input.lifeDay, input.band, input.startMs, at), npc: card.owner, atMs: at, first: true };
 }
 
 /** A segment cut where a hold begins: it ends there, and pieces merged after that point never happened. */
@@ -385,7 +412,7 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
   // The caps count where cards rose (§8-3); a re-plan counts every rise already fixed, whenever it is — never more than the caps.
   const rose = { cards: input.cards || {}, lifeDay: input.lifeDay }, roseAll = roseToday(rose), roseOf = Object.fromEntries(RESIDENT_IDS.map(npc => [npc, roseToday(rose, npc)]));
   const capOk = npc => {
-    const band = [...(range.log || []), ...log];
+    const band = [...(range.log || []), ...log].filter(e => !e.first);
     return roseOf[npc] + band.filter(e => e.npc === npc).length < C.perResident && roseAll + band.length < C.perVillage;
   };
   // Indexes the decisions read often: which rises a neighbour already came for, and the tea that was brought.
@@ -501,12 +528,12 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
     return freeSpots(pair.partnerSpot, where.at, live, pair.partner).length > 0;
   };
   /** The card a resident's decision solves (§8-3 해결): the oldest that rose and waits for it, in a band it may be solved
-   * in — never one the player holds or a neighbour already came for. */
+   * in — never one the player holds or a neighbour already came for, nor C4's first, which waits for the player (§8-4). */
   const waiting = (npc, t) => {
     let best = null;
     for (const card of CARDS_OF[npc] || []) {
       const r = vs.cards[card.id];
-      if (r?.status !== 'triggered' || !card.bands.includes(input.band) || takes.some(take => takeCovers(take, card.id, r.key, t))) continue;
+      if (r?.status !== 'triggered' || r.first || !card.bands.includes(input.band) || takes.some(take => takeCovers(take, card.id, r.key, t))) continue;
       // A neighbour who already came for it solves it — unless the player held that rise then (a visit with no result).
       if ((partners.get(`${card.id}|${r.key}`) || []).some(ms => !takes.some(take => takeCovers(take, card.id, r.key, ms)))) continue;
       if (!best || r.at < vs.cards[best.id].at) best = card;
@@ -544,6 +571,8 @@ function planRange(npcs, starts, fixed, ctx, rngFor, promises = ctx.input.promis
       rainedBetween: ctx.rainedBetween, afterRain: ctx.afterRain, season: input.season, rushAt: ctx.rushAt,
       dayStartMs: input.dayStartMs, yesterdayStartMs: input.dayStartMs - DAY, seed: input.villageSeed };
     for (const card of CARDS_OF[npc] || []) {
+      // C4's first is the player's stay's (firstStay), never its owner's own decision (§8-4).
+      if (card.id === FIRST_STAY && firstOwed(vs.cards[card.id])) continue;
       if (!card.bands.includes(input.band) || statusOf(vs, card.id) !== 'idle' || !triggerHolds(card, vs, at, params)) continue;
       const entry = { card: card.id, key: cardKey(input.lifeDay, input.band, input.startMs, t), npc, atMs: t };
       log.push(entry); applyTrigger(vs, entry);

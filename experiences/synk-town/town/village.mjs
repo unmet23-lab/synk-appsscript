@@ -10,7 +10,7 @@ import { bandAt, clockAt, lifeDayStartAt, recordOffset, validOffset, BAND_IDS, D
 import { PLACE_BY_ID, SPOT_BY_ID } from './places.mjs';
 import { paramsFor } from './params.mjs';
 import { wake } from './state.mjs';
-import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf } from './cards.mjs';
+import { START_OBJECTS, CARD_BY_ID, WEAR_OBJECTS, validCards, validWear, validTraces, pairKeyOf, FIRST_STAY, firstOwed, firstPending } from './cards.mjs';
 import { learnBand, morningNews, validKnowledge } from './knowledge.mjs';
 import { bandChanges, keepChanges, validChanges } from './meanwhile.mjs';
 import { habitOf, HABIT_BANDS } from './visits.mjs';
@@ -76,6 +76,11 @@ function validPairs(pairs) {
     && (s.lastMet === null || plain(s.lastMet) && integer(s.lastMet.lifeDay) && BAND_IDS.includes(s.lastMet.band)));
 }
 const validMarks = m => plain(m) && ['newToolDay', 'scenesDay', 'scenes'].every(k => m[k] === undefined || integer(m[k])) && Object.keys(m).every(k => ['newToolDay', 'scenesDay', 'scenes'].includes(k));
+/** The player's stays while C4's first is owed (§8-4, noteStay — absent in a world that never had one). Only the fields it
+ * knows are checked: a later runtime may add one without an older one refusing the world (Fable F7). */
+const validStays = list => list === undefined || Array.isArray(list) && list.length > 0 && list.length <= STAYS_HELD
+  && list.every((s, i) => plain(s) && Object.hasOwn(PLACE_BY_ID, s.place) && s.place !== 'home' && integer(s.fromMs)
+    && (s.toMs === undefined ? i === list.length - 1 : integer(s.toMs) && s.toMs >= s.fromMs) && (i === 0 || s.fromMs >= list[i - 1].fromMs));
 export function validVillage(v) {
   if (!plain(v) || !(v.agreement === null || v.agreement === undefined || id(v.agreement)) || !(v.seed === null || typeof v.seed === 'string' && v.seed.length > 0 && v.seed.length <= 120)
     || !(v.sleeps === undefined || v.sleeps === true)) return false;
@@ -92,7 +97,7 @@ export function validVillage(v) {
     && (b.pairs === undefined || validPairs(b.pairs)) && (b.marks === undefined || validMarks(b.marks))
     // W6 (§10-3): the visit habit the band was planned with — only the bands it fills.
     && (b.visitHabit === undefined || HABIT_BANDS.includes(b.visitHabit)))) return false;
-  if (!validTakes(v.takes) || !validGives(v.gives) || !validKnowledge(v) || !validChanges(v.changes)) return false;
+  if (!validTakes(v.takes) || !validGives(v.gives) || !validKnowledge(v) || !validChanges(v.changes) || !validStays(v.playerStays)) return false;
   if (!Array.isArray(v.reservations) || v.reservations.length > RESERVATIONS_MAX || !v.reservations.every(r => plain(r) && id(r.id) && npcId(r.npc)
     && integer(r.fromMs) && (r.toMs === null || integer(r.toMs) && r.toMs >= r.fromMs) && id(r.by) && spotId(r.spot)
     && (r.seat === undefined || spotId(r.seat))
@@ -119,7 +124,13 @@ export function bandInput(v, b = v.band, visitEnd = null) {
       ...(resolvedAt !== undefined ? { resolvedAt } : {}), ...(choice ? { choice } : {}) }));
   // W8b: the player's gifts in the band, in time order — only when there are some, so an old band's input is as it was.
   const gives = (v.gives || []).filter(g => g.atMs >= b.startMs && g.atMs < b.endMs).map(({ atMs, object, relief, npc }) => ({ atMs, object, relief, npc }));
+  // C4's first (§8-4): where the player stayed in the band, while the band starts with the first still owed — a stay the
+  // visit's end has not closed yet ends with it, read here as the holds are.
+  const playerStays = firstPending(b.cards?.[FIRST_STAY]) ? (v.playerStays || [])
+    .map(({ place, fromMs, toMs }) => ({ place, fromMs, ...(toMs !== undefined ? { toMs } : visitEnd !== null && fromMs <= visitEnd ? { toMs: visitEnd } : {}) }))
+    .filter(s => s.fromMs < b.endMs && (s.toMs === undefined || s.toMs > b.startMs)) : [];
   return { villageSeed: v.seed, lifeDay: b.lifeDay, band: b.band, startMs: b.startMs, endMs: b.endMs, dayStartMs: b.dayStartMs, ...(gives.length ? { gives } : {}),
+    ...(playerStays.length ? { playerStays } : {}),
     planCmdRev: b.planCmdRev, weatherTomorrow: clock.weatherTomorrow, season: clock.season, visitHabit: b.visitHabit ?? null,
     residents: b.residents, objects: b.objects,
     // W5: the village the band starts from (absent in an old world: every card idle, nothing worn) and the player's takes.
@@ -172,6 +183,35 @@ function openBand(v, atMs, planCmdRev, carried, visitBands = null) {
     ...(carried?.village ? structuredClone(carried.village) : {}), ...(visitHabit ? { visitHabit } : {}) };
   // A new life day opens with the last day's news (§9-3).
   if (carried && !sameDay) morningNews(v, carried.lifeDay);
+  // C4's first (§8-4): only a band's opening lets the player's stays go — those over before it, or all of them once the first
+  // waits for the player or is done — so no read decides what a later band plans from (§15-3, Fable F1).
+  if (v.playerStays) {
+    const r = v.band.cards?.[FIRST_STAY], kept = firstOwed(r) && !r?.first ? v.playerStays.filter(s => s.toMs === undefined || s.toMs > v.band.startMs) : [];
+    if (kept.length) v.playerStays = kept; else delete v.playerStays;
+  }
+}
+
+/** Where the player stays while C4's first is owed (§8-4, Fable F1·F7): { place, fromMs, toMs? }, newest last. A command's end
+ * and a visit's start close the open stay and add the place the player is at; a visit's end closes it (closeStay). The
+ * player's home is never written — no resident comes there. A command keeps at most STAYS_MAX (more place changes in one
+ * band leave the player unwritten until the next band); a visit's start may add past it up to STAYS_HELD, the count it may
+ * find before the bands it missed have closed. */
+export const STAYS_MAX = 16, STAYS_HELD = 48;
+export function noteStay(v, place, atMs, { cap = STAYS_MAX } = {}) {
+  if (!v?.band || !integer(atMs)) return;
+  const r = v.band.cards?.[FIRST_STAY];
+  if (!firstOwed(r) || r?.first) { delete v.playerStays; return; }
+  const stays = v.playerStays || [], open = stays.at(-1)?.toMs === undefined ? stays.at(-1) : null;
+  const here = place && place !== 'home' && Object.hasOwn(PLACE_BY_ID, place) ? place : null;
+  if (open && open.place === here) return;
+  if (open) { if (atMs > open.fromMs) open.toMs = atMs; else stays.pop(); }
+  if (here && stays.length < cap) stays.push({ place: here, fromMs: atMs });
+  if (stays.length) v.playerStays = stays; else delete v.playerStays;
+}
+/** The visit's end closes the open stay at the instant the holds end (an end with no wall time: where it began). */
+export function closeStay(v, atMs) {
+  const open = v.playerStays?.at(-1);
+  if (open && open.toMs === undefined) open.toMs = Math.max(open.fromMs, integer(atMs) ? atMs : open.fromMs);
 }
 
 /** The visit-end step (a recorded lease break): holds still open stop at the wall time the visit ended

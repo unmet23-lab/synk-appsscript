@@ -52,18 +52,18 @@ async function openCard() {
   const send = (type, payload = {}) => store.execute({ id: `newtea-${++sequence}`, type, expectedRevision: store.read().state.revision,
     payload: { surfaceId: receipt.surfaceId, fence: receipt.fence, ...payload } });
   pulse();
+  // C4's first rises the moment the player stays where the cafe owner is (§8-4 — no longer at a band's first decision): go to
+  // her once she is somewhere, not walking, and open it there.
   for (let n = 0; n < 60; n++) {
-    const state = store.read().state, v = state.village, out = village.planOf(v);
+    const v = store.read().state.village, out = village.planOf(v);
     const start = Object.fromEntries(Object.entries(v.band.residents).map(([id, r]) => [id, r.lastSpot]).filter(([, at]) => at));
-    const rise = out.log.find(e => e.card === 'C4' && e.atMs >= now);
-    if (rise) {
-      now = rise.atMs + 20000; pulse();
-      const where = village.placeAt(out.segments, rise.npc, now, start);
-      if (where && !where.walking) {
-        send('DAY_MOVE', { location: where.to }); if (store.read().state.day.home.exitTarget) send('DAY_EXIT');
-        send('CARD_OPEN', { card: 'C4', key: rise.key, source: 'direct' });
-        return { store, send, pulse, set: time => { now = time; }, get now() { return now; } };
-      }
+    const where = village.placeAt(out.segments, 'cafe-owner', now, start);
+    if (where && !where.walking && where.to !== 'home') {
+      send('DAY_MOVE', { location: where.to }); if (store.read().state.day.home.exitTarget) send('DAY_EXIT');
+      const rise = village.planOf(store.read().state.village).log.find(e => e.card === 'C4' && e.first);
+      assert.ok(rise && rise.atMs === now, '주인 곁에 머문 그 순간 첫 C4가 선다');
+      send('CARD_OPEN', { card: 'C4', key: rise.key, source: 'direct' });
+      return { store, send, pulse, set: time => { now = time; }, get now() { return now; } };
     }
     now += MIN; pulse();
   }

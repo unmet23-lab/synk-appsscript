@@ -77,8 +77,23 @@ export function villageStart(input, params = input.params) {
 }
 const record = (vs, id) => (vs.cards[id] ||= { status: 'idle' });
 export const statusOf = (vs, id) => cardStatus(vs.cards[id], vs.lifeDay);
-/** Cards that rose today (the caps count them where they rose, §8-3) — of a village state or a band's stored cards. */
-export const roseToday = (vs, owner = null) => CARD_IDS.filter(id => vs.cards[id]?.day === vs.lifeDay && (!owner || CARD_BY_ID[id].owner === owner)).length;
+/** Cards that rose today (the caps count them where they rose, §8-3) — of a village state or a band's stored cards. C4's first
+ * is the player's and outside the caps (§8-4): it moves no resident's day, so it never keeps another card from rising. */
+export const roseToday = (vs, owner = null) => CARD_IDS.filter(id => vs.cards[id]?.day === vs.lifeDay && !vs.cards[id].first && (!owner || CARD_BY_ID[id].owner === owner)).length;
+
+// ── C4's first (§8-4) ─────────────────────────────────────────────────────────
+/** The card whose first rise is the player's: it rises the first time the player stays where its owner is (planBand), waits
+ * for the player alone — no resident solves it, it is outside the caps — and once done with the player it rises again only
+ * by its own trigger (§8-4 「둘째 회부터는 지금 규칙」). */
+export const FIRST_STAY = 'C4';
+/** Whether C4's first is still the player's to have: never done with the player (a world whose first was solved alone or by
+ * the two of them before this rule has it again at the player's next stay — the migration, 10-30). */
+export const firstOwed = r => r?.last?.path !== 'player';
+/** Whether a band that starts with this C4 record waits for the player's first stay: owed, and not waiting already. */
+export const firstPending = r => firstOwed(r) && r?.status !== 'triggered';
+/** Where a card's 「나와 함께」 is offered and opened when that is one place (§12-1 — C4's talk is at the menu board, so its owner
+ * offers it and is talked to only at the cafe; she may meet the player anywhere, Fable F6). null: wherever its owner is. */
+export const talkPlaceOf = card => (card?.id === FIRST_STAY ? placeOfSpot(card.spot) : null);
 
 // ── what rises (§8-2) ─────────────────────────────────────────────────────────
 
@@ -107,10 +122,10 @@ export function triggerHolds(card, vs, at, params) {
   }
 }
 
-/** Raise a card (its owner's decision at atMs). */
+/** Raise a card (its owner's decision at atMs — or, C4's first, the player's first stay with its owner). */
 export function applyTrigger(vs, entry) {
   const r = record(vs, entry.card);
-  Object.assign(r, { status: 'triggered', key: entry.key, at: entry.atMs, day: vs.lifeDay });
+  Object.assign(r, { status: 'triggered', key: entry.key, at: entry.atMs, day: vs.lifeDay, ...(entry.first ? { first: true } : {}) });
   delete r.until;
   if (CARD_BY_ID[entry.card].trigger.kind === 'after') delete vs.marks.newToolDay;
 }
@@ -143,8 +158,9 @@ const covered = (takes, card, key, ms) => (takes || []).some(take => takeCovers(
  * line for the band's record. */
 function resolve(vs, card, { key, path, actors, place, atMs, startMs, choice = null, solo = false }) {
   const r = record(vs, card.id);
+  // C4's first keeps its mark through its rest: the day it rose still never counts in the caps.
   vs.cards[card.id] = { status: 'cooldown', until: vs.lifeDay + card.cooldownLifeDays, day: r.day ?? vs.lifeDay,
-    times: (r.times || 0) + 1, last: { path, day: vs.lifeDay } };
+    times: (r.times || 0) + 1, last: { path, day: vs.lifeDay }, ...(r.first ? { first: true } : {}) };
   if (card.trigger.kind === 'wear') vs.wear[card.trigger.object] = path === 'self' ? card.trigger.threshold >> 1 : 0;
   if (card.trace) {
     const value = path === 'player' ? choice ?? card.paths.player.result : card.paths[path].result;
@@ -322,7 +338,9 @@ export function validCards(cards) {
     && !!r && ['idle', 'triggered', 'cooldown'].includes(r.status)
     && (r.status !== 'triggered' || word(r.key) && Number.isSafeInteger(r.at) && day(r.day))
     && (r.status !== 'cooldown' || day(r.until) && (r.day === undefined || day(r.day)))
-    && (r.times === undefined || day(r.times)) && (r.last === undefined || PATHS.includes(r.last.path) && day(r.last.day)));
+    && (r.times === undefined || day(r.times)) && (r.last === undefined || PATHS.includes(r.last.path) && day(r.last.day))
+    // C4's first (§8-4): its mark.
+    && (r.first === undefined || r.first === true && id === FIRST_STAY));
 }
 export const validWear = wear => !!wear && typeof wear === 'object' && Object.entries(wear).every(([obj, n]) => WEAR_OBJECTS.includes(obj) && Number.isSafeInteger(n) && n >= 0 && n <= 999);
 export function validTraces(traces) {

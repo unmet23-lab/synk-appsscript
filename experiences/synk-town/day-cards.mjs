@@ -145,6 +145,8 @@ export function hearsayText(npc, entry, level = LEVEL) {
 /** Whether a card waiting for its owner may be taken now by the player (W5: every card but the locked one and the two
  * that need the tea order). */
 export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) && c.ready !== false && CARD_BY_ID.get(c.card)?.paths?.player?.ready === true && !CARD_BY_ID.get(c.card)?.locked;
+/** A card talked about at one place (§12-1 — C4 at the menu board; the server's town/cards.mjs talkPlaceOf): its need shows there. */
+const TALK_AT = Object.freeze({ C4: 'cafe' });
 
 /** What the place's panel shows of the cards and the residents here (§8-3·§9-4): the resident who greets the player
  * with what it heard (one, once — the newest it may tell), the cards whose owner is here (its need, and 「같이 해요」 or
@@ -154,7 +156,8 @@ export const takeable = c => !!c && ['triggered', 'paused'].includes(c.status) &
 export function placeModel({ location, residentsHere = [], hearsay = {}, cards = [], news = [], take = null, level = LEVEL, season = null, own = null }) {
   const greet = residentsHere.map(npc => ({ npc, line: hearsayText(npc, hearsay[npc], level) })).find(g => g.line) ?? null;
   const open = take && ['with', 'resolved'].includes(take.status) ? take : null;
-  const needs = open ? [] : cards.filter(c => takeable(c) && residentsHere.includes(c.owner)).map(c => ({ card: c.card, key: c.key, owner: c.owner, paused: c.status === 'paused',
+  const needs = open ? [] : cards.filter(c => takeable(c) && residentsHere.includes(c.owner) && (!TALK_AT[c.card] || TALK_AT[c.card] === location))
+    .map(c => ({ card: c.card, key: c.key, owner: c.owner, paused: c.status === 'paused',
     title: CARD_BY_ID.get(c.card).title, line: lineText(cardLine(c.owner, c.card, c.status === 'paused' ? 'offer' : 'trigger', season), level) }));
   const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, lineId: newsLine(n.card, n.ref), text: lineText(newsLine(n.card, n.ref), level) })).filter(n => n.text) : [];
   const mine = !greet && typeof own === 'function' ? residentsHere.map(npc => ({ npc, id: own(npc) })).find(o => o.id && lineText(o.id, level)) ?? null : null;

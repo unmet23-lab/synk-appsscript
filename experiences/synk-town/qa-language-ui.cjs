@@ -6,7 +6,7 @@
 // its drawn key rides a boundary, 「넓혀 볼래요」 moves the ladder; and end to end, five easy scenes then the tea order closed at
 // the cafe ask the host (LANGUAGE_OFFER with the scene's format) and the card stands. The conversation C4 (Atlas — help buttons,
 // the three turns) and the notebook's 「이야기 말」 are captured for the screen review. Captures at 1440 and 390.
-//   node experiences/synk-town/qa-language-ui.cjs [--out <dir>] [--only placement,widen,offer,c4,notebook]
+//   node experiences/synk-town/qa-language-ui.cjs [--out <dir>] [--only placement,widen,offer,c4,first,notebook]
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
@@ -211,30 +211,134 @@ async function offer(browser) {
   } finally { await f.stop(); }
 }
 
+/** A while the cafe owner stands at one place the walk reaches — from a minute after now (the page opens) for eight minutes
+ * (the talk) — the clock moved to its start in ten-minute steps. null: none in three days. */
+async function ownerStays(f, village) {
+  for (let step = 0; step < 432; step++) {
+    const v = f.store.read().state.village, out = village.planOf(v), t = f.now();
+    const start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, at]) => at));
+    const a = village.placeAt(out.segments, 'cafe-owner', t + MIN, start), b = village.placeAt(out.segments, 'cafe-owner', t + 8 * MIN, start);
+    if (a && b && !a.walking && !b.walking && a.to === b.to && Object.hasOwn(ROUTES, a.to)) return { place: a.to, at: new Date(t).toISOString() };
+    f.set(t + 10 * MIN);
+  }
+  return null;
+}
+const firstRise = (f, village) => village.planOf(f.store.peek().state.village).log.find(e => e.card === 'C4') ?? null;
+/** The new tea's talk to its end: the first choice of each turn, then 「이렇게 할게요」. */
+async function talkToEnd(page) {
+  for (let turn = 0; turn < 5; turn++) {
+    const choice = page.locator('#card-choices button').first();
+    if (!(await choice.count()) || !(await choice.isVisible())) break;
+    await choice.click(); await page.waitForFunction(() => !document.querySelector('#card-confirm').disabled, null, { timeout: 8000 }).catch(() => {});
+    await page.click('#card-confirm'); await delay(900);
+  }
+}
+/** C4's first, end to end (§8-4 · §12, 10-30 first-C4 fix): a new world; the player walks to the cafe owner (no talk) — the card
+ * rises then; her offer comes within the first-word budget; 「같이 해요」 brings the placement card first (W9's first-scene door);
+ * the answer opens the talk; to its end → dialogue.closed (desktop). The phone lets the offer pass: the card still waits, the
+ * notebook's 「할 수 있는 생활」 lists it, a talk to her (E) shows 「같이 해요」 in the place's panel, 「그만할래요」 leaves it 「하던 생활」
+ * and 「이어서 하기」 takes it to its end. */
+async function first(browser) {
+  const village = await town('town/village.mjs');
+  for (const device of ['desktop', 'phone']) {
+    const f = await fixture(kst('2026-10-28', '11:30'), device === 'desktop' ? { placement: { reading: 'L3', listening: 'L3' } } : {});
+    try {
+      const stays = await ownerStays(f, village);
+      check('first', !!stays, `${device}: 찻집 주인이 머무는 때와 자리`, stays);
+      if (!stays) continue;
+      const s = await open(browser, f, { device });
+      try {
+        check('first', !firstRise(f, village), `${device}: 집에 있는 동안은 C4가 없다`);
+        await walkTo(s.page, ROUTES[stays.place]);
+        await s.page.waitForFunction(p => SYNKTownDay.metrics().walk.nearby === p, stays.place, { timeout: 8000 });
+        await delay(1500);
+        const rise = firstRise(f, village), saved = f.store.peek().state.village;
+        check('first', rise?.first === true && saved.playerStays?.at(-1)?.place === stays.place, `${device}: 걸어서 주인 곁에 가자(말 걸기 전) 첫 C4가 섰다`, { rise, stays: saved.playerStays });
+        // The offer within the first-word budget (45 s of play). A placement card already standing (the first-scene door, W9)
+        // is answered first — what the screen does with it is the placement scene's; here it only must not keep the offer away.
+        let offered = null, placedFirst = false;
+        for (const end = Date.now() + 150000; Date.now() < end && !offered;) {
+          offered = await s.page.evaluate(() => SYNKTownDay.metrics().cards.offer);
+          if (!offered && device === 'desktop' && !placedFirst && (await notices(s.page)).ask?.kind === 'placement') {
+            await shot(s.page, 'first-desktop-0-placement-before'); await s.page.click('#ask-card [data-answer="keep"]'); placedFirst = true;
+          }
+          if (!offered) await delay(2000);
+        }
+        if (!offered) {
+          const st = f.store.peek().state, c4 = f.store.read().view.day.scene.village.cards.find(c => c.card === 'C4');
+          check('first', false, `${device}: 제안이 오지 않았다`, { contacts: st.life.contacts, u: st.life.uMs - st.life.visitStartU, c4, location: st.day.location, walk: await walkPoint(s.page), notices: await notices(s.page) });
+          continue;
+        }
+        check('first', /새 차/.test(offered.text), `${device}: 찻집 주인이 먼저 건넨다(예산 안)`, offered);
+        await delay(400); await shot(s.page, `first-${device}-1-offer`);
+        if (device === 'desktop') {
+          await s.page.click('#card-offers .offer-accept');
+          if (!placedFirst) {
+            const ask = await waitAsk(s, 'placement', 15000);
+            check('first', ask?.line === '처음 이야기는 이 말로 해 볼까요?', 'desktop: 「같이 해요」 → 배치 카드가 먼저(첫 장면 문)', ask);
+            await shot(s.page, 'first-desktop-2-placement');
+            await s.page.click('#ask-card [data-answer="keep"]');
+          }
+          await s.page.waitForSelector('#card-dialog[open]', { timeout: 15000 }); await delay(700);
+          const line = await s.page.$eval('#card-line', el => el.textContent);
+          check('first', /새 차/.test(line), 'desktop: 답하면 대화가 고른 말로 열린다', line);
+          await shot(s.page, 'first-desktop-3-talk');
+          await talkToEnd(s.page);
+          await shot(s.page, 'first-desktop-4-end');
+        } else {
+          // Passed: twenty seconds with no answer and the offer goes — the card waits.
+          await s.page.waitForFunction(() => !SYNKTownDay.metrics().cards.offer, null, { timeout: 40000 });
+          const c4 = f.store.read().view.day.scene.village.cards.find(c => c.card === 'C4');
+          check('first', c4?.status === 'triggered', 'phone: 제안을 지나쳐도 카드는 기다린다', c4);
+          await s.page.click('#journal-open'); await s.page.waitForSelector('#notebook-dialog[open]');
+          await s.page.click('#notebook-tab-can'); await delay(500);
+          const can = await s.page.$eval('#notebook-page', el => el.innerText);
+          check('first', /새 차 맛 좀 봐 줄래요\?/.test(can) && /말을 걸면/.test(can), 'phone: 수첩 「할 수 있는 생활」에 남는다', can);
+          await shot(s.page, 'first-phone-2-notebook');
+          await s.page.click('#notebook-close'); await delay(400);
+          await talkAt(s.page, stays.place);
+          const go = s.page.locator('#place-cards .place-need .felt').first();
+          await go.waitFor({ timeout: 10000 });
+          check('first', /같이 해요/.test(await go.textContent()), 'phone: 주인에게 먼저 말을 걸면 장소 판에 「같이 해요」', await go.textContent());
+          await shot(s.page, 'first-phone-3-talk-first');
+          await go.click(); await s.page.waitForSelector('#card-dialog[open]', { timeout: 15000 }); await delay(600);
+          await s.page.click('#card-close'); await delay(900);
+          const paused = f.store.peek().state.village.takes.find(t => t.card === 'C4');
+          check('first', paused?.status === 'paused', 'phone: 「그만할래요」 → 하던 생활', paused && { status: paused.status });
+          await talkAt(s.page, stays.place);
+          const again = s.page.locator('#place-cards .place-need .felt').first();
+          await again.waitFor({ timeout: 10000 });
+          check('first', /이어서 하기/.test(await again.textContent()), 'phone: 다시 말을 걸면 「이어서 하기」', await again.textContent());
+          await again.click(); await s.page.waitForSelector('#card-dialog[open]', { timeout: 15000 }); await delay(600);
+          await talkToEnd(s.page);
+          await shot(s.page, 'first-phone-4-end');
+        }
+        const saved2 = f.store.peek().state, take = saved2.village.takes.find(t => t.card === 'C4');
+        const closed = (saved2.townEvents || []).filter(e => e.kind === 'dialogue.closed');
+        check('first', take?.status === 'resolved' && closed.some(e => e.outcome !== 'stopped'), `${device}: 대화 끝 → 플레이어와 풀림 · dialogue.closed`, { take: take?.status, closed: closed.map(e => e.outcome) });
+        const fit = await s.page.evaluate(() => ({ wide: document.documentElement.scrollWidth > innerWidth + 1 }));
+        check('first', !fit.wide, `${device}: 가로 넘침 없음`);
+        check('first', !s.errors.length, `${device}: 오류·실패 요청 0`, s.errors);
+      } finally { await s.close(); }
+    } finally { await f.stop(); }
+  }
+}
+
 /** C4's conversation (Atlas, §12): the panel's 「같이 해요」, the line with its three asks, 「무슨 뜻이에요?」, then the turns to the end. */
 async function c4(browser) {
   const village = await town('town/village.mjs');
   for (const device of ['desktop', 'phone']) {
     const f = await fixture(kst('2026-10-28', '07:30'));
     try {
-      // A band's rises join the plan only once that band is planned: look every ten minutes (an hour's step skips them).
-      let rise = null;
-      for (let step = 0; step < 432 && !rise; step++) {
-        const v = f.store.read().state.village, out = village.planOf(v), t = f.now();
-        const start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, at]) => at));
-        // A card rising as its band opens is already past once the band is planned: one that rose in the last quarter hour still waits.
-        const from = e => Math.max(e.atMs, t);
-        const found = out.log.map(e => ({ e, a: village.placeAt(out.segments, e.npc, from(e) + 20000, start), b: village.placeAt(out.segments, e.npc, from(e) + 4 * MIN, start) }))
-          .find(({ e, a, b }) => e.card === 'C4' && e.atMs >= t - 15 * MIN && a && b && !a.walking && !b.walking && a.to === b.to && Object.hasOwn(ROUTES, a.to));
-        rise = found ? { ...found.e, atMs: from(found.e), place: found.a.to } : null;
-        if (!rise) f.set(f.now() + 10 * MIN);
-      }
-      check('c4', !!rise, `${device}: C4 주인이 머무는 때와 자리를 찾았다`, rise && { place: rise.place });
+      // C4's first rises the moment the player stays where the cafe owner is (§8-4, 10-30): find a while she stands at a place
+      // the walk reaches, from a little after the page opens until the talk is done.
+      const rise = await ownerStays(f, village);
+      check('c4', !!rise, `${device}: 찻집 주인이 머무는 때와 자리를 찾았다`, rise);
       if (!rise) continue;
-      f.set(rise.atMs + 5000);
       const s = await open(browser, f, { device });
       try {
         await talkAt(s.page, rise.place);
+        check('c4', firstRise(f, village)?.first === true, `${device}: 주인 곁에 가자 첫 C4가 섰다`, firstRise(f, village));
         const go = s.page.locator('#place-cards .place-need .felt').first();
         await go.waitFor({ timeout: 10000 }); await go.click();
         await s.page.waitForSelector('#card-dialog[open]', { timeout: 10000 }); await delay(700);
@@ -299,7 +403,7 @@ async function notebook(browser) {
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--enable-webgl', '--ignore-gpu-blocklist'] });
-  const scenes = { placement, widen, offer, c4, notebook };
+  const scenes = { placement, widen, offer, c4, first, notebook };
   try {
     for (const [name, run] of Object.entries(scenes)) {
       if (only && !only.has(name)) continue;

@@ -128,6 +128,17 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
   let rev = 1, ring = initialVisitBands(), lastEnd = null;
   const close = nowMs => village.closeBands(v, { nowMs, seed: villageSeed, offsetMin: tzOffsetMin, revision: rev, ...(habits ? { visitBands: ring } : {}) });
   const takers = accept ? visits : [];
+  // §8-4 첫 C4: where the player stays with the cafe owner, written by the functions core.mjs uses (village.mjs noteStay ·
+  // closeStay) — the profile that takes every card goes to her a minute into each visit, the gathering one when it brings her
+  // its leaves; every other profile stays home (§15-2 ②), so its village is absence's and its first C4 never rises.
+  const stayWith = (atMs, toMs, day) => {
+    if (!cards.firstPending(v.band.cards?.[cards.FIRST_STAY]) || atMs >= v.band.endMs) return;
+    const startSpots = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
+    const at = village.placeAt(village.planOf(v).segments, 'cafe-owner', atMs, startSpots);
+    if (!at || at.to === 'home') return;
+    village.noteStay(v, at.to, atMs); village.closeStay(v, toMs);
+    result.c4.stay ||= { atMs, toMs, day };
+  };
   // W8b gathering: picked of each item on a life day, held in the basket, what grew at a visit (once an item a day).
   const picked = {}, held = {}, grew = new Set(), G = P.gather;
   const gatherAt = visit => {
@@ -148,6 +159,8 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
     const startSpots = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, spot]) => spot));
     const owner = give < v.band.endMs ? village.placeAt(village.planOf(v).segments, GATHER.owner, give, startSpots) : null;
     if (relief > 0 && village.upFor(v, GATHER.owner, give) && owner && !owner.walking) {
+      // Brought to her, the player stays beside her the rest of the visit (§8-4 첫 C4 — this profile never takes it: it waits).
+      stayWith(give, visit.toMs, visit.lifeDayIndex);
       v.gives = [...(v.gives || []), { atMs: give, object: GATHER.tin, relief: Math.min(999, relief), npc: GATHER.owner }];
       result.relief += relief;
       for (const item of Object.keys(held)) delete held[item];
@@ -179,6 +192,7 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       }
       // A visit that takes every card it meets (the accept profile): open, choose, confirm, close — at the village's own fields.
       for (const visit of takers.filter(x => x.fromMs < b.endMs && x.toMs > b.startMs)) {
+        if (visit.fromMs >= b.startMs) stayWith(visit.fromMs + MINUTE, visit.toMs, visit.lifeDayIndex);
         let t = Math.max(visit.fromMs, b.startMs), tookC4 = false;
         const until = Math.min(visit.toMs, b.endMs), passed = new Set();
         for (;;) {
@@ -245,8 +259,9 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
       // W5: what rose and how it was solved; the caps and the rests (§15-1 카드).
       for (const e of out.log) {
         result.rose[e.card] = (result.rose[e.card] || 0) + 1;
-        (roseToday[e.npc] ||= []).push(e.card);
-        if (lastSolved[e.card] !== undefined && b.lifeDay < lastSolved[e.card] + cardsById[e.card].cooldownLifeDays) { result.cooldownOver++; flag('cooldownOver', day); }
+        // C4's first is the player's, outside the caps and its rest (§8-4) — the caps count the residents' own rises.
+        if (!e.first) (roseToday[e.npc] ||= []).push(e.card);
+        if (!e.first && lastSolved[e.card] !== undefined && b.lifeDay < lastSolved[e.card] + cardsById[e.card].cooldownLifeDays) { result.cooldownOver++; flag('cooldownOver', day); }
         if (REST_SIGNALS.includes(e.card)) dayRest.add(e.card);
         if (e.card === 'C4' && !result.c4.rose) result.c4.rose = { atMs: e.atMs, day };
       }
@@ -337,6 +352,8 @@ function lifeOfVillage({ villageSeed, tzOffsetMin, startMs, days, visits = [], a
     }
   }
   for (const set of sets) set.gained.left = SEEN_CATALOG.size - Object.keys(set.seen).length;
+  // §8-4: whether C4's first still waits for the player at the end (a village that never takes it).
+  result.c4.waiting = v.band.cards?.[cards.FIRST_STAY]?.status === 'triggered' && v.band.cards[cards.FIRST_STAY].first === true;
   return result;
 
   /** W11 (§15-1 30분 방문당 눈에 띄는 변화): what each watched visit in this band saw change on the screen — a card rising or
@@ -529,17 +546,21 @@ export const TOWN_RUNTIME = Object.freeze({
       return { status: dead.length ? 'fail' : 'pass', value: `가장 드문 카드 ${live.sort((a, b) => a.share - b.share).slice(0, 3).map(c => `${c.card} ${Math.round(c.share * 100)}%`).join('·')} · C4(매일 와서 다 받는 마을) ${Math.round(live.find(c => c.card === 'C4').share * 100)}%`,
         detail: dead.map(c => `${c.card} ${Math.round(c.share * 100)}%`).join(', ') };
     }
-    // W11 (§15-1 카드 발생 · §8-4): C4's first rise comes at the player's first visit and is the player's — it never goes to
-    // the cafe owner alone or the two of them before the player has had it.
+    // W11 → 첫 C4 고침(§15-1 카드 발생 · §8-4): C4's first rises at the player's first stay with the cafe owner and is the
+    // player's — never solved by her alone or the two of them; a village that never takes it still has it waiting at the end;
+    // a village where the player only stays home never has it (§15-2 ②).
     if (id === 'c4-first') {
-      const visiting = run.villages.filter(x => x.visits.length), rose = visiting.filter(x => x.result.c4.rose);
-      const atFirst = rose.filter(x => x.result.c4.rose.atMs >= x.visits[0].fromMs && x.result.c4.rose.atMs < x.visits[0].toMs).length;
-      const before = visiting.filter(x => x.result.c4.rose && x.result.c4.rose.atMs < x.visits[0].fromMs).length;
+      const staying = lives.filter(life => life.c4.stay), gathering = staying.filter(life => life.gather);
+      const atStay = staying.filter(life => life.c4.rose && life.c4.rose.atMs >= life.c4.stay.atMs && life.c4.rose.atMs < life.c4.stay.toMs).length;
+      // The visit it rose in is the first visit where the cafe owner was up for the player to go to (the profile that takes every card).
+      const takers = run.villages.filter(x => x.profile === 'daily-all' && x.result.c4.stay), firstVisit = takers.filter(x => x.result.c4.stay.day === x.visits[0].lifeDayIndex).length;
+      const homeRose = plain.filter(life => life.c4.rose).length, waits = gathering.filter(life => life.c4.waiting).length;
       const without = lives.filter(life => life.c4.solved && life.c4.solved.path !== 'player'), byPath = path => without.filter(life => life.c4.solved.path === path).length;
-      const ok = visiting.length > 0 && atFirst === visiting.length && without.length === 0;
-      const first = run.villages.find(x => x.result.c4.solved && x.result.c4.solved.path !== 'player');
-      return { status: ok ? 'pass' : 'fail', value: `첫 방문에 선 C4 ${atFirst}/${visiting.length}(${percent(atFirst, visiting.length)}%) · 첫 방문 전에 선 마을 ${percent(before, visiting.length)}% · 첫 C4가 플레이어 없이 풀린 삶 ${without.length}/${lives.length}(혼자 ${byPath('self')} · 둘이 ${byPath('pair')})`,
-        repro: first ? `${first.villageSeed} · ${zoneName(first.tzOffsetMin)} · ${first.profile} · ${first.result.c4.solved.day + 1}생활일(${first.result.c4.solved.path})` : null };
+      const ok = staying.length > 0 && atStay === staying.length && without.length === 0 && homeRose === 0 && waits === gathering.length;
+      const first = run.villages.find(x => x.result.c4.solved && x.result.c4.solved.path !== 'player')
+        ?? run.villages.find(x => x.result.c4.stay && !(x.result.c4.rose?.atMs >= x.result.c4.stay.atMs && x.result.c4.rose.atMs < x.result.c4.stay.toMs));
+      return { status: ok ? 'pass' : 'fail', value: `주인과 처음 머문 때 선 C4 ${atStay}/${staying.length}(그 방문이 첫 방문인 마을 ${percent(firstVisit, takers.length)}% — 나머지는 첫 방문 때 주인이 잠) · 집에만 머문 삶에 선 C4 ${homeRose} · 받지 않은 마을에서 끝까지 기다림 ${waits}/${gathering.length} · 첫 C4가 플레이어 없이 풀린 삶 ${without.length}/${lives.length}(혼자 ${byPath('self')} · 둘이 ${byPath('pair')})`,
+        repro: first ? `${first.villageSeed} · ${zoneName(first.tzOffsetMin)} · ${first.profile} · ${(first.result.c4.solved ?? first.result.c4.stay).day + 1}생활일` : null };
     }
     if (id === 'meetable-residents') {
       // W11: a village whose night habit stands keeps someone up until 02:00 (the first zone's night-only villages that live with it).
@@ -642,7 +663,7 @@ export const METRICS = Object.freeze([
   ['energy', '기운', '문턱 아래 시간 15% 이하 · C6·R6·rest-poor·sleepy-night가 매일 생긴 마을 0'],
   ['mood-lines', '마음 한 줄', '이유 태그마다 30일에 한 번 이상(마을 75%) · 하루 넷 이하'],
   ['card-coverage', '카드 발생', '18장마다 30일에 한 번 이상(마을 90%, 비 순간 카드는 그 계절 50%)'],
-  ['c4-first', '첫 C4(§8-4)', 'C4 첫 회가 첫 방문에 선다 · 첫 C4가 플레이어 없이 혼자·둘이로 풀린 것 0'],
+  ['c4-first', '첫 C4(§8-4)', 'C4 첫 회는 플레이어가 찻집 주인과 처음 머문 때 선다(첫 방문에 주인이 깨어 있으면 첫 방문) · 첫 C4가 플레이어 없이 혼자·둘이로 풀린 것 0 · 받지 않으면 기다린다'],
   ['gather', '채집·드리기(여섯째 모습, §20-8)', '잎 통 마모가 줄고 C3가 더 잦지 않다 · 한도 넘김 0'],
   ['seen-new', '「본 것」 장부(§20-10)', '잴 것만 — 방문당 처음 보는 것 수 · 30일째 남은 새 것'],
   ['less-often', '「덜 추천」(§20-10)', '잴 것만 — 덜 추천한 카드의 제안 비율'],
@@ -652,9 +673,7 @@ const BAND_WORD = Object.freeze({ morning: '아침', day: '낮', evening: '저�
 const zoneName = offset => `UTC${offset >= 0 ? '+' : '−'}${Math.abs(offset) / 60}`;
 /** 알려진 실패(W11) — 잰 지표가 기준을 못 넘었고 고칠 길이 트랙에 있는 것. 보고서에는 실패로 쓰고, --check는 이것만 실패면 통과로
  * 끝낸다(기준은 그대로). 고쳐져 통과하면 --check가 「목록이 낡았다」로 실패하니 그때 이 줄을 지운다. */
-export const KNOWN_FAILURES = Object.freeze({
-  'c4-first': '첫 C4 규칙(§8-4)이 엔진에 없음 — 계획기가 구간을 시작부터 짜서 C4가 구간 첫 결정에 서고 플레이어 없이 풀림(실제 흐름: 새 세계 첫 방문 240회 중 구간 시작에 맞춰 온 60회만 열림, 둘이로 풀린 마을은 다시 안 섬). 트랙 ① 싱크타운 W11 후속(우선 — P1급 기능 구멍)',
-});
+export const KNOWN_FAILURES = Object.freeze({});
 /** What a run's check says: the failures outside the known list, and the known ones that now pass (the list is stale). */
 export function checkOutcome(result, known = KNOWN_FAILURES) {
   const failed = result.metrics.filter(m => m.status === 'fail').map(m => m.id);

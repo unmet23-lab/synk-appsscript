@@ -21,9 +21,10 @@ import { initialConsents, changeConsent, validConsents } from './town/consent.mj
 import { eventProblem, FAMILIES, relation } from './town/events.mjs';
 import { policyFor, DEFAULT_OPS, PARAMS_BY_VER, ARMS, paramsFor, eventMarks, adaptedOn } from './town/params.mjs';
 import { forgettable, forget, forgottenBy, pruneForgotten, validForgotten, ACTIVITY_MEMORY } from './town/memory.mjs';
-import { initialVillage, validVillage, GIVES_MAX, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput } from './town/village.mjs';
+import { initialVillage, validVillage, GIVES_MAX, closeBands, closeOpen, holdResidents, keepHabitSpots, recordUse, promiseTomorrow, planOf, placeAt, caption, doing, upFor, goalOf, bandInput,
+  noteStay, closeStay, STAYS_HELD } from './town/village.mjs';
 import { agreementSpot, RESIDENT_BY_ID, RESIDENT_IDS } from './town/plan.mjs';
-import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf } from './town/cards.mjs';
+import { CARD_BY_ID, CARD_REF, cardsAt, villageAt, mayTake, choiceOk, playerRelation, cardRef, placeOfSpot, holdSpotOf, talkPlaceOf } from './town/cards.mjs';
 import { learnPrivate, hearsayFor, tell, privateOf, noteOf } from './town/knowledge.mjs';
 import { createRng, hashString, seedKey } from './town/rng.mjs';
 import { PER_MILLE } from './town/state.mjs';
@@ -544,10 +545,21 @@ function trackVisit(state, host) {
   // The old pulse path gives no clock: no visit is recorded there.
   if (!Number.isSafeInteger(begun)) return;
   state.townVisit = { startAt: Math.max(begun, since ?? begun), since, ...(visit?.firstDay !== undefined ? { firstDay: visit.firstDay } : {}) };
+  // Back where the player left, the stay with the cafe owner may begin at the visit's start (§8-4).
+  trackPlace(state, state.townVisit.startAt, { visitStart: true });
   // The id comes from when the visit began (visitIdOf) — a command revision would differ between a world settled every
   // second and one settled at a command.
   if (typeof host.villageSeed === 'string' && host.villageSeed) state.policy ||= { ...policyFor({ villageSeed: host.villageSeed,
     visitId: visitIdOf(state, host.villageSeed), ops: host.ops ?? DEFAULT_OPS }) };
+}
+/** Where the player stays while C4's first is owed (§8-4, town/village.mjs noteStay): the place of the open visit, written at a
+ * command's end (the store has closed the bands up to it) and at the visit's start (its own instant — the bands it missed may
+ * not have closed yet, so it may hold more), closed at its end — never by a read or a boundary, so the first stay is the same
+ * however often the world is read (§15-3). */
+function trackPlace(state, atMs, { visitStart = false } = {}) {
+  if (!state.village) return;
+  const visit = state.townVisit;
+  noteStay(state.village, visit && visit.endedAt === undefined ? dayPlace(state) : null, atMs, visitStart ? { cap: STAYS_HELD } : {});
 }
 /** A command's end, after its 0-second chain: holds follow the scenes (a new hold opens now, a released
  * one ends now), and a new first-day agreement is its first use and tomorrow's promise (§6-5). */
@@ -557,6 +569,7 @@ function settleVillage(state, host) {
   keepHabitSpots(v, habitSpots(state));
   markTogether(state);
   holdResidents(v, heldNow(state), host.nowMs, state.revision + 1);
+  trackPlace(state, host.nowMs);
   const agreement = state.day?.agreement, spot = agreementSpot(agreement);
   if ((agreement?.resultId ?? null) === v.agreement) return;
   v.agreement = agreement?.resultId ?? null;
@@ -586,6 +599,8 @@ function endVisitScenes(state, endedAt, host = {}) {
     if (['with', 'paused'].includes(take.status)) { take.status = 'ended'; take.endAt = Math.max(take.at, endedAt ?? take.at); }
   }
   if (state.village) closeOpen(state.village, endedAt);
+  // The player's stay ends with the visit, at the instant the holds do (§8-4 first C4).
+  if (state.village) closeStay(state.village, endedAt);
 }
 /** The village as a scene at the time the world last saw a window (old screens draw npcs as given; new
  * ones interpolate scene.village.segments with the server's clock — §14-4). null before a band opens.
@@ -655,6 +670,8 @@ function cardOfferFor(state, host) {
     if (c.status !== 'triggered' || card.locked || !card.paths.player.ready || !at || crew.some(npc => held[npc] || !upFor(v, npc, host.nowMs))) continue;
     // A card whose 「나와 함께」 is a life activity goes only to a screen that draws that board (W8: caps 'tea', review F13).
     if (!offerReaches(card, host.caps)) continue;
+    // C4's talk is at the menu board (§12-1): its owner offers it at the cafe only.
+    if (talkPlaceOf(card) && at.to !== talkPlaceOf(card)) continue;
     if (!atDayPlace(state, at.to) || prefs?.approachOptOut.includes(activity) || (prefs && visitId && todayOther(prefs, visitId, activity))) continue;
     if (prefs?.lessOften.includes(activity) && createRng(v.seed, 'offer', card.id, c.key).below(PER_MILLE) >= paramsFor().prefs.lessOftenMultiplier) continue;
     return { card: card.id, key: c.key };
@@ -1190,6 +1207,8 @@ function commandCard(state, type, p, host) {
         ensure(!heldAll[npc] || heldAll[npc].by === by, 'card-owner-busy', `${label(npc)}이 하던 장면을 마친 뒤 함께할 수 있어요.`, 409);
       }
       ensure(now.places[card.owner] && atDayPlace(state, now.places[card.owner].to), 'card-too-far', `${label(card.owner)} 가까이 가서 말을 걸어 주세요.`, 409);
+      // C4's talk is at the menu board (§12-1): the cafe owner is talked to about it at the cafe (Fable F6).
+      ensure(!talkPlaceOf(card) || now.places[card.owner].to === talkPlaceOf(card), 'card-too-far', `${label(card.owner)}에게는 찻집에서 말을 걸어 주세요.`, 409);
       let contactId = null;
       if (p.source === 'contact') {
         const c = cardContactFor(state.life, p.contactId, host);
