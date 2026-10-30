@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v8",
+ "text": "「조금만 옆으로」는, AI한테 시킬 말이 아니었던 거죠.",
+ "dur": 2.858,
+ "words": [
+  {
+   "text": "「조금만",
+   "start": 0.02,
+   "end": 0.349
+  },
+  {
+   "text": "옆으로」는,",
+   "start": 0.393,
+   "end": 0.857
+  },
+  {
+   "text": "AI한테",
+   "start": 1.156,
+   "end": 1.604
+  },
+  {
+   "text": "시킬",
+   "start": 1.649,
+   "end": 1.873
+  },
+  {
+   "text": "말이",
+   "start": 1.918,
+   "end": 2.052
+  },
+  {
+   "text": "아니었던",
+   "start": 2.112,
+   "end": 2.426
+  },
+  {
+   "text": "거죠.",
+   "start": 2.47,
+   "end": 2.858
+  }
+ ],
+ "source": {
+  "key": "e9875aab3832c61634f35206cd293c31",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v6",
+ "text": "편집에서 조금 키우고, 왼쪽에서 오른쪽으로 밀면 돼요.",
+ "dur": 3.041,
+ "words": [
+  {
+   "text": "편집에서",
+   "start": 0,
+   "end": 0.403
+  },
+  {
+   "text": "조금",
+   "start": 0.446,
+   "end": 0.675
+  },
+  {
+   "text": "키우고,",
+   "start": 0.733,
+   "end": 1.035
+  },
+  {
+   "text": "왼쪽에서",
+   "start": 1.495,
+   "end": 1.883
+  },
+  {
+   "text": "오른쪽으로",
+   "start": 1.954,
+   "end": 2.357
+  },
+  {
+   "text": "밀면",
+   "start": 2.4,
+   "end": 2.616
+  },
+  {
+   "text": "돼요.",
+   "start": 2.659,
+   "end": 3.041
+  }
+ ],
+ "source": {
+  "key": "e396c50365b7ff6defa6f74b915ca820",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

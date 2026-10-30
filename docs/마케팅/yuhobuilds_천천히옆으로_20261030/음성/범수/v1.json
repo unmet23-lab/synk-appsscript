@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "카메라를 3%만 옆으로 보냈는데, 없던 집이 생겼어요.",
+ "dur": 3.162,
+ "words": [
+  {
+   "text": "카메라를",
+   "start": 0.02,
+   "end": 0.401
+  },
+  {
+   "text": "3%만",
+   "start": 0.44,
+   "end": 0.979
+  },
+  {
+   "text": "옆으로",
+   "start": 1.019,
+   "end": 1.216
+  },
+  {
+   "text": "보냈는데,",
+   "start": 1.255,
+   "end": 1.637
+  },
+  {
+   "text": "없던",
+   "start": 2.07,
+   "end": 2.281
+  },
+  {
+   "text": "집이",
+   "start": 2.321,
+   "end": 2.439
+  },
+  {
+   "text": "생겼어요.",
+   "start": 2.478,
+   "end": 3.162
+  }
+ ],
+ "source": {
+  "key": "a65cb73adaed5f063436f55f9fb225b6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

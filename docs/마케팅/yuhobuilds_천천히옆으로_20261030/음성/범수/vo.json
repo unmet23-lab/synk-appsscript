@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-30T07:51:40.812Z",
+ "lines": [
+  {
+   "id": "v1",
+   "text": "카메라를 3%만 옆으로 보냈는데, 없던 집이 생겼어요.",
+   "dur": 3.162,
+   "syllablesPerSec": 6.33,
+   "src": "v1.wav",
+   "key": "a65cb73adaed5f063436f55f9fb225b6",
+   "words": 7
+  },
+  {
+   "id": "v2",
+   "text": "골목 사진 한 장 넣고, 카메라만 아주 조금 옆으로 가 달라고 했거든요.",
+   "dur": 3.815,
+   "syllablesPerSec": 7.08,
+   "src": "v2.wav",
+   "key": "0087e03079eaa025bb9a834c60105d53",
+   "words": 12
+  },
+  {
+   "id": "v3",
+   "text": "다 돌고 보니, 오른쪽에 사진에 없던 기와집이 생겼어요.",
+   "dur": 3.131,
+   "syllablesPerSec": 7.03,
+   "src": "v3.wav",
+   "key": "81d912466839e0210140e85ee1fb1dd7",
+   "words": 8
+  },
+  {
+   "id": "v4",
+   "text": "3%만 가랬는데, 17%를 간 거예요.",
+   "dur": 2.811,
+   "syllablesPerSec": 3.56,
+   "src": "v4.wav",
+   "key": "8930b229aede1d3aed4b076773a0d063",
+   "words": 5
+  },
+  {
+   "id": "v5",
+   "text": "카메라가 옆으로 가면, 사진 밖은 AI가 채울 수밖에 없거든요. 그래서 바꿨어요. 카메라는 완전히 고정, 움직이는 건 나뭇잎만.",
+   "dur": 6.625,
+   "syllablesPerSec": 7.25,
+   "src": "v5.wav",
+   "key": "84aa1c59286ea7c6c022595490f9a947",
+   "words": 17
+  },
+  {
+   "id": "v6",
+   "text": "편집에서 조금 키우고, 왼쪽에서 오른쪽으로 밀면 돼요.",
+   "dur": 3.041,
+   "syllablesPerSec": 7.23,
+   "src": "v6.wav",
+   "key": "e396c50365b7ff6defa6f74b915ca820",
+   "words": 7
+  },
+  {
+   "id": "v7",
+   "text": "이러면 처음부터 끝까지, 넣은 사진 안에서만 움직여요. 사진 밖을 지어낸 곳이 없죠.",
+   "dur": 4.508,
+   "syllablesPerSec": 7.32,
+   "src": "v7.wav",
+   "key": "d8f6dcaaaa3a7457f7a7d3f72e154c0b",
+   "words": 12
+  },
+  {
+   "id": "v8",
+   "text": "「조금만 옆으로」는, AI한테 시킬 말이 아니었던 거죠.",
+   "dur": 2.858,
+   "syllablesPerSec": 6.65,
+   "src": "v8.wav",
+   "key": "e9875aab3832c61634f35206cd293c31",
+   "words": 7
+  },
+  {
+   "id": "v9",
+   "text": "없던 집도, 다시 뽑는 일도 줄어요.",
+   "dur": 1.761,
+   "syllablesPerSec": 7.38,
+   "src": "v9.wav",
+   "key": "41199906afac3f72d2e83a3fd0780afc",
+   "words": 6
+  },
+  {
+   "id": "v10",
+   "text": "카메라는, 고정으로만 뽑으세요.",
+   "dur": 1.7,
+   "syllablesPerSec": 7.65,
+   "src": "v10.wav",
+   "key": "a3b34ab76bc26c6a93a01c795af46cab",
+   "words": 3
+  }
+ ]
+}

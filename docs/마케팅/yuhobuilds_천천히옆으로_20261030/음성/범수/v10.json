@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v10",
+ "text": "카메라는, 고정으로만 뽑으세요.",
+ "dur": 1.7,
+ "words": [
+  {
+   "text": "카메라는,",
+   "start": 0.02,
+   "end": 0.444
+  },
+  {
+   "text": "고정으로만",
+   "start": 0.678,
+   "end": 1.149
+  },
+  {
+   "text": "뽑으세요.",
+   "start": 1.195,
+   "end": 1.7
+  }
+ ],
+ "source": {
+  "key": "a3b34ab76bc26c6a93a01c795af46cab",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

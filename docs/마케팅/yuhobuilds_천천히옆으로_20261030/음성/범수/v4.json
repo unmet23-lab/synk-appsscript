@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v4",
+ "text": "3%만 가랬는데, 17%를 간 거예요.",
+ "dur": 2.811,
+ "words": [
+  {
+   "text": "3%만",
+   "start": 0.02,
+   "end": 0.607
+  },
+  {
+   "text": "가랬는데,",
+   "start": 0.651,
+   "end": 1.073
+  },
+  {
+   "text": "17%를",
+   "start": 1.524,
+   "end": 2.111
+  },
+  {
+   "text": "간",
+   "start": 2.156,
+   "end": 2.247
+  },
+  {
+   "text": "거예요.",
+   "start": 2.291,
+   "end": 2.811
+  }
+ ],
+ "source": {
+  "key": "8930b229aede1d3aed4b076773a0d063",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 209
+ }
+}

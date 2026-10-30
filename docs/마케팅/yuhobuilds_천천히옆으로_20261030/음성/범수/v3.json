@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "다 돌고 보니, 오른쪽에 사진에 없던 기와집이 생겼어요.",
+ "dur": 3.131,
+ "words": [
+  {
+   "text": "다",
+   "start": 0.02,
+   "end": 0.112
+  },
+  {
+   "text": "돌고",
+   "start": 0.219,
+   "end": 0.465
+  },
+  {
+   "text": "보니,",
+   "start": 0.51,
+   "end": 0.694
+  },
+  {
+   "text": "오른쪽에",
+   "start": 1.138,
+   "end": 1.49
+  },
+  {
+   "text": "사진에",
+   "start": 1.536,
+   "end": 1.812
+  },
+  {
+   "text": "없던",
+   "start": 1.858,
+   "end": 2.103
+  },
+  {
+   "text": "기와집이",
+   "start": 2.164,
+   "end": 2.531
+  },
+  {
+   "text": "생겼어요.",
+   "start": 2.578,
+   "end": 3.131
+  }
+ ],
+ "source": {
+  "key": "81d912466839e0210140e85ee1fb1dd7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7",
+ "text": "이러면 처음부터 끝까지, 넣은 사진 안에서만 움직여요. 사진 밖을 지어낸 곳이 없죠.",
+ "dur": 4.508,
+ "words": [
+  {
+   "text": "이러면",
+   "start": 0.02,
+   "end": 0.243
+  },
+  {
+   "text": "처음부터",
+   "start": 0.285,
+   "end": 0.62
+  },
+  {
+   "text": "끝까지,",
+   "start": 0.662,
+   "end": 1.025
+  },
+  {
+   "text": "넣은",
+   "start": 1.527,
+   "end": 1.723
+  },
+  {
+   "text": "사진",
+   "start": 1.764,
+   "end": 1.973
+  },
+  {
+   "text": "안에서만",
+   "start": 2.015,
+   "end": 2.336
+  },
+  {
+   "text": "움직여요.",
+   "start": 2.378,
+   "end": 2.741
+  },
+  {
+   "text": "사진",
+   "start": 3.244,
+   "end": 3.425
+  },
+  {
+   "text": "밖을",
+   "start": 3.467,
+   "end": 3.649
+  },
+  {
+   "text": "지어낸",
+   "start": 3.69,
+   "end": 3.942
+  },
+  {
+   "text": "곳이",
+   "start": 3.984,
+   "end": 4.068
+  },
+  {
+   "text": "없죠.",
+   "start": 4.123,
+   "end": 4.508
+  }
+ ],
+ "source": {
+  "key": "d8f6dcaaaa3a7457f7a7d3f72e154c0b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

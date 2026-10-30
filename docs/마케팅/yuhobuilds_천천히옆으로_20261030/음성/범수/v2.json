@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "골목 사진 한 장 넣고, 카메라만 아주 조금 옆으로 가 달라고 했거든요.",
+ "dur": 3.815,
+ "words": [
+  {
+   "text": "골목",
+   "start": 0.06,
+   "end": 0.318
+  },
+  {
+   "text": "사진",
+   "start": 0.361,
+   "end": 0.548
+  },
+  {
+   "text": "한",
+   "start": 0.59,
+   "end": 0.648
+  },
+  {
+   "text": "장",
+   "start": 0.69,
+   "end": 0.79
+  },
+  {
+   "text": "넣고,",
+   "start": 0.834,
+   "end": 1.034
+  },
+  {
+   "text": "카메라만",
+   "start": 1.235,
+   "end": 1.636
+  },
+  {
+   "text": "아주",
+   "start": 1.693,
+   "end": 1.823
+  },
+  {
+   "text": "조금",
+   "start": 1.866,
+   "end": 2.124
+  },
+  {
+   "text": "옆으로",
+   "start": 2.525,
+   "end": 2.769
+  },
+  {
+   "text": "가",
+   "start": 2.811,
+   "end": 2.883
+  },
+  {
+   "text": "달라고",
+   "start": 2.926,
+   "end": 3.155
+  },
+  {
+   "text": "했거든요.",
+   "start": 3.198,
+   "end": 3.815
+  }
+ ],
+ "source": {
+  "key": "0087e03079eaa025bb9a834c60105d53",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}
