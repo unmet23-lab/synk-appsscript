@@ -203,11 +203,11 @@ cut("C27", [YC, TN],
     "about 5.9 s; no push-in, no zoom.",
     [(YC, "아까 우산, 다 제 쪽으로 기울였잖아요. 어깨 다 젖고.", 2.5, "입")])
 cut("C28", [TN, CU],
-    "Taejun glances from the folded clear umbrella he holds at chest height down to his soaked left shoulder, caught out; lips closed. At about 2.9 s "
+    "Taejun, the folded clear umbrella held at chest height, looks down at his soaked left shoulder, then at the umbrella, caught out; lips closed. At about 2.9 s "
     "Yuna's voice, off screen, begins in Korean: \"다 보여요,\"",
     still(), [(YC, "다 보여요,", 2.9, "가림")], closed=[TN])
 cut("C29", [YC],
-    "Yuna lifts her head and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
+    "Yuna looks up at him and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
     still(), [(YC, "…과장님.", 0.1, "입")])
 cut("C30", [TN, YC],
     "Insert at hip height: Taejun's empty hand hangs by his side; Yuna's hand comes in from the left and slips into his, holding it gently.",
@@ -234,7 +234,7 @@ cut("C35", [YB, TJ, CU, BU, BK],
     "Daytime rain in front of the same convenience store, seen from a low angle: Taejun, from behind, stands under his open clear umbrella, the "
     "folded misty-blue umbrella in his other hand; Yuna faces him under her black umbrella. They stand still, looking at each other; rain falls "
     "steadily. Lips closed.",
-    still(), closed=[YB, TJ], post="「끝.」(오른쪽) · 원본의 기울어진 구도는 편집에서 화면을 10° 안팎 돌려 얹는다(선버스트가 두 번 다 수평으로 그림)")
+    still(), closed=[YB, TJ], post="「끝.」은 두 화 판에만(오른쪽)")
 cut("C36", [YB, BK],
     "Yuna under her black umbrella looks at Taejun and says quietly in Korean at about 0.1 s, calm and sad: \"넌 그대로다.\"",
     still(), [(YB, "넌 그대로다.", 0.1, "입")])
@@ -281,8 +281,8 @@ cut("C46", [TB, YW],
     still(), closed=[], post="태준 속말 「그날, 내 손을 피했지.」")
 # ⑤ 회식
 cut("C47", [YW],
-    "In the warm pub, Minjae's voice asks from off screen in Korean at about 0.1 s: \"이 자리에 좋아하는 사람 있죠?\" Yuna freezes for a moment, then lifts "
-    "her chin and answers coldly in Korean at about 3.5 s: \"아니요.\"",
+    "In the warm pub, Minjae's voice asks from off screen in Korean at about 0.1 s: \"이 자리에 좋아하는 사람 있죠?\" Yuna, looking at him, freezes for a "
+    "moment, then answers coldly in Korean at about 3.5 s: \"아니요.\"",
     still(), [(MG, "이 자리에 좋아하는 사람 있죠?", 0.1, "가림"), (YW, "아니요.", 3.5, "입")])
 cut("C48", [TB, MG, CU],
     "Taejun leans forward and pours beer from a plain brown bottle into Minjae's glass, cutting him off in Korean at about 0.1 s, dry and even: "

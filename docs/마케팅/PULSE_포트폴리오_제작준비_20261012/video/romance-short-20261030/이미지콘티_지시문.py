@@ -101,8 +101,9 @@ L = {
                 "light inside dim against the grey daylight, an overcast sky, wet pale pavement, green street trees across the road."),
     "store_in": (f"Location: inside the convenience store — a tall, freestanding, open-backed umbrella display stand about as tall as a person "
                  f"(you can see through it from either side), with several rows of hooks at eye level and below where folded umbrellas hang by their "
-                 f"handles: most are {CHEAP}, and one clearly separate section holds the premium clear umbrellas with silver ribs and straight clear "
-                 "acrylic handles; behind, glass-door drink fridges and shelves of snacks in plain packaging with no readable writing, softly out of focus."),
+                 f"handles: most are {CHEAP}, and one clearly separate slotted holder section at the side holds the premium clear umbrellas standing upright, "
+                 "their STRAIGHT clear acrylic handles and small frosted milky-white caps pointing up — never a hook — clearly set apart from the hook-handled "
+                 "cheap umbrellas; behind, glass-door drink fridges and shelves of snacks in plain packaging with no readable writing, softly out of focus."),
     "office": ("Location: a modern Seoul open-plan office in the daytime — low frosted-glass partitions between white desks, black monitors, "
                "grey mesh chairs, big windows."),
     "elev": ("Location: inside an office-building elevator — warm walnut wood-panel walls, brushed-steel sliding doors, a slim steel handrail, a "
@@ -198,8 +199,8 @@ C = {
     "C01e": dict(f="YT", w=["Y1", "T1n"], loc="store_n", light="night", fx=None, p=["P1"], fk="01_끝",
                  t=("The same wide shot a moment later, locked off: Yuna (left, about 50% across) and Taejun (right, about 55% across) now "
                     "stand side by side under the convenience-store awning, very small in the frame (each about a quarter of the frame height "
-                    "head to feet), both facing the street; each holds a folded clear umbrella. The store fills the left half of the frame. "
-                    "Nothing is in front of the lens.")),
+                    "head to feet), both facing the street. Both umbrellas stay FOLDED and hang closed in their hands, tips down — nobody opens an "
+                    "umbrella; they stand dry under the awning. The store fills the left half of the frame. Nothing is in front of the lens.")),
     "C02": dict(f="Y", w=["Y1", "T1n"], loc="store_n", light="night", fx=(0, "her"),
                 t=("Close-up over Taejun's right shoulder at night under the convenience-store awning: the soft, out-of-focus blur of his white "
                    "shirt shoulder fills the lower right corner of the frame. Yuna faces him, her face turned a little toward the right of frame; "
@@ -259,7 +260,8 @@ C = {
                    "His hands are empty at his sides — no jacket, no bag on his arm.")),
     "C13": dict(f="T", w=["T1o"], loc="elev", light="elev", fx=(0, "his"), flash=True,
                 t=("Close-up of Taejun in profile facing the left of frame inside the elevator, warm walnut wall behind: tense, jaw set, his "
-                   "eyes sliding sideways toward the right of frame where Yuna stands (off screen) — a stolen glance; he does NOT look into the camera lens.")),
+                   "eyes sliding sideways toward the right of frame where Yuna stands (off screen) — a stolen glance; he does NOT look into the camera lens. "
+                   "Nobody else is in the frame — the right edge shows only the walnut wall.")),
     # ⑤ 회식
     "C14": dict(f="TM", w=["T1n", "M"], loc="pub", light="pub", fx=None, p=["P1"], flash=True,
                 t=("Wide shot across the Korean pub at seated eye height: on the far side of a long wooden table in the middle of the frame, "
@@ -280,7 +282,8 @@ C = {
     "C16": dict(f="Y", w=["Y1"], loc="pub", light="pub", fx=(0, "her"), flash=True,
                 t=("Medium close-up of Yuna seated at the pub table at the right of the frame, holding a glass of beer near her chest with "
                    "her right hand at the left; her head is still lowered toward the glass, about to lift and look across toward the left of "
-                   "frame at Taejun (off screen) — a quiet, searching look. Dark warm background with an orange lamp.")),
+                   "frame at Taejun (off screen) — a quiet, searching look. Her hair is pulled back into a low ponytail, the tail behind her shoulder — no "
+                   "long hair hanging in front of her shoulders. Dark warm background with an orange lamp.")),
     "C17": dict(f="TM", w=["T1n", "M"], loc="pub", light="pub", fx=(0, "Taejun's"), flash=True, big=True,
                 t=("Medium close-up two-shot at the pub table: Taejun (left) holds his left wrist with his right hand, covering the watch, and "
                    "awkwardly looks away toward the lower right; Minjae beside him (right, face about 67% across and 46% down) laughs, "
@@ -310,8 +313,8 @@ C = {
                 t=("Extreme close-up of Yuna's face in profile facing the right of frame, very close to the convenience-store window at night: "
                    "her profile fills most of the frame — from her forehead near the top edge to her chin near the bottom edge, about 70% of the "
                    "frame height — centered about 55% across; lips parted as she mutters to herself, eyes looking into the shop through the glass, "
-                   "which throws soft blue and teal light on her skin. Far behind her at the left edge, Taejun is only a soft, out-of-focus shape. "
-                   "Focus on Yuna. This is NOT a two-shot and NOT a medium shot.")),   # 10-30 첫 판이 두 사람 미디엄으로 나옴
+                   "which throws soft blue and teal light on her skin. A few steps behind her at the left, under the awning, Taejun stands watching her, "
+                   "out of focus, medium size. Focus on Yuna. This is NOT a two-shot with both in focus and NOT a medium shot.")),   # 10-30 첫 판이 두 사람 미디엄으로 나옴
     "C21": dict(f="Y", w=["Y1"], loc="store_in", light="store_in", fx=None, flash=True,
                 t=("Over Yuna's shoulder from behind inside the store: the out-of-focus back of her head and shoulder fill the upper left of the "
                    f"frame; she faces the umbrella rack, which fills the rest of the frame in rows — {CHEAP}, and one clearly separate section of "
@@ -320,8 +323,9 @@ C = {
                 t=("Medium close-up two-shot in profile, seen through the umbrella stand: out-of-focus umbrella handles blur across the lower "
                    "middle foreground. Taejun's head and shoulders in right-facing profile at the left (his head about 34% across, large — about "
                    "half the frame height) and Yuna's head in left-facing profile at the right (about 76% across, about 45% of the frame height); "
-                   "she turns toward him with a curious, half-smiling question, lips parted mid-word. Both faces are large in the frame — not a "
-                   "wide or full shot.")),   # 10-30 첫 판이 두 사람 전신 가까이로 작게 나옴
+                   "she turns toward him with a curious, half-smiling question, lips parted mid-word. Both faces are large in the frame, each about 45% of "
+                   "the frame height — not a wide or full shot. Neither of them touches an umbrella — both hands empty; the stand's umbrellas hang "
+                   "untouched in the blurred foreground between them.")),   # 10-30 첫 판이 두 사람 전신 가까이로 작게 나옴
     "C23": dict(f="TY", w=["T1n", "Y1"], loc="store_in", light="store_in", fx=(0, "Taejun's"), p=["P1"], flash=True,
                 t=("Medium close-up of Taejun in profile facing the left of frame at the left of the frame, embarrassed, rubbing his ear with "
                    "his hand, eyes lowered; behind him at the right, out of focus, Yuna reaches up and pulls one premium clear umbrella off the "
@@ -338,12 +342,14 @@ C = {
     "C26": dict(f="YT", w=["Y1", "T1n"], loc="store_n", light="night", fx=None, p=["P1"],
                 t=("Wide establishing shot from across the wet street at about knee height, locked off, the same view as the opening shot but "
                    "with nothing in front of the lens: the convenience store, its awning and the bicycle at the left; Yuna and Taejun stand side "
-                   "by side under the awning about 57–60% across, very small (each about a quarter of the frame height head to feet), each "
-                   "holding a folded clear umbrella. Rain pours off the awning; the wet asphalt mirrors pink, white and cyan light.")),
+                   "by side under the awning about 57–60% across, very small (each about a quarter of the frame height head to feet). Both hold a "
+                   "FOLDED clear umbrella, closed, hanging at their side; no open umbrella anywhere — they stand under the awning out of the rain. "
+                   "Rain pours off the awning; the wet asphalt mirrors pink, white and cyan light.")),
     "C27": dict(f="YT", w=["Y1", "T1n"], loc="store_n", light="night", fx=(1, "Yuna's"),
                 t=("Close two-shot side by side under the awning at night: Taejun in the right foreground, out of focus, in profile facing left; "
                    "Yuna beyond him in the middle of the frame, in focus, smiling to herself and then turning her head toward him to point "
-                   "something out, lips parted mid-word. Teal and pink light.")),
+                   "something out, lips parted mid-word. Her hair is pulled back into a low ponytail, the tail visible behind her shoulder; only two or "
+                   "three thin strands loose at the temples — no long hair hanging in front of her shoulders. Teal and pink light.")),
     "C28": dict(f="T", w=["T1n"], loc="store_n", light="night", fx=(0, "his"), p=["P1"], noloc=True,
                 t=("Close-up of Taejun under the awning at night, chest up: he has lifted his FOLDED (closed) clear umbrella to chest height in his "
                    "left hand — the canopy wrapped tight around the shaft, nothing open above his head; its straight clear handle and frosted milky "
@@ -355,9 +361,9 @@ C = {
                    "shoulder. Blurred dark street and teal light behind. At the left edge, out of focus, Taejun's shoulder in his white shirt "
                    "(sleeve rolled up) — not a dark jacket.")),
     "C30": dict(f="", w=["Y1", "T1n"], loc="store_n", light="night", fx=None, noloc=True,
-                t=("Insert of hands at about hip height, locked off: Taejun's empty right hand hangs by his side (white rolled-up sleeve, the "
-                   "edge of his charcoal trousers); Yuna's hand (a blush-pink knit cuff) comes in from the left, about to slip into his — a small "
-                   "gap between their fingers, not touching yet. Pink and dark-violet light.")),
+                t=("Tight insert, locked off, the frame filled by the two hands only: Taejun's empty hand hanging at his side (black-strap watch on the "
+                   "wrist) in the right half of the frame; Yuna's hand with a blush-pink knit cuff entering from the left, a few centimetres away, about "
+                   "to slip into his — not touching yet. No faces, no shop, no street; deep pink neon and purple light.")),
     "C31": dict(f="T", w=["T1n"], loc="store_n", light="night", fx=(0, "his"), noloc=True,
                 t=("Close-up of Taejun from slightly below, handheld with a very slight shake: he looks down at Yuna (off screen) with surprised, "
                    "widened eyes, lips just parted. Pink and white light.")),
@@ -365,7 +371,9 @@ C = {
     "C32": dict(f="", w=[], loc="puddle_n", light="splash_n", fx=None, p=["P1"],
                 t=("High-speed product shot, low and close to the wet ground: two folded clear umbrellas lie on their sides in a shallow neon-lit "
                    "puddle on dark asphalt, one rolling into the other just as they knock together — a crown of water splashes up between them, frozen droplets sparkling "
-                   "pink and teal. The umbrellas fill the middle of the frame from left to right.")),
+                   "pink and teal. Each folded umbrella is a slim, slightly loose roll of soft clear vinyl around a thin metal shaft, a strap around its "
+                   "middle and the frosted cap at one end — like a real closed umbrella lying flat; NOT a faceted crystal or gem shape, no hard geometric "
+                   "facets, no glowing edges. The umbrellas fill the middle of the frame from left to right.")),
     "C33": dict(f="", w=[], loc="puddle_n", light="splash_n", fx=None,
                 t=("Insert looking down into a rain puddle at night: rippling water full of smeared pink, purple and gold neon and shop-window light; "
                    "two small, very blurry dark shapes are only just suggested in the reflection — nobody is recognizable, no faces.")),
@@ -401,8 +409,9 @@ C = {
     # ② 제목 카드(글자 없음)
     "C40": dict(f="", w=[], loc="card", light="card", fx=None, p=["P2"],
                 t=(f"Product title shot, locked off: behind a vertical sheet of glass beaded with raindrops, one open umbrella — {BLUE} — "
-                   "stands upright on its tip, tilted slightly, in the left third of the frame (its canopy spans from about 22% to 50% across). "
-                   "The right half of the frame is empty glass with soft teal-cyan light.")),
+                   "stands upright on its tip, tilted slightly, in the left third of the frame (its canopy spans from about 22% to 50% across). The "
+                   "WHOLE canopy is a clearly visible misty pale-blue (sky-blue) tint — noticeably bluer and more saturated than the teal glass behind "
+                   "it; at a glance it must look different from a plain clear umbrella. The right half of the frame is empty glass with soft teal-cyan light.")),
     # ③ 회상 — 사무실
     "C41": dict(f="TM", w=["T2o", "M2"], loc="office", light="office", fx=None, flash=True,
                 t=("Wide shot of the open-plan office, locked off at standing eye height (the same view as before): Taejun sits at his desk in the "
@@ -411,9 +420,9 @@ C = {
                    "suspicious grin.")),
     "C42": dict(f="YT", w=["Y2o", "T2o"], loc="office", light="office", fx=(0, "Yuna's"), flash=True, big=False,
                 t=("Two-shot in the office, locked off: Yuna in the right foreground, close to the lens (her face about 64% across and 34% down, "
-                   "large), seated at her desk, eyes lowered, cool and closed off — she is OUT OF FOCUS, a soft blur; Taejun in the background at "
-                   "the left (his head about 38% across, small), seated at his desk, turning to look at her — he is in SHARP focus. The focus is "
-                   "on Taejun, not on Yuna.")),   # 10-30 첫 판이 앞 유나에 초점 · 가까움
+                   "large), seated at her desk, eyes lowered, cool and closed off; Taejun in the background at the left (his head about 38% across, "
+                   "small), seated at his desk, turning to look at her. FOCUS, most important: Yuna in the foreground is clearly OUT OF FOCUS — a soft "
+                   "blur, her features not readable; Taejun in the background is the only sharp thing in the frame.")),   # 10-30 첫 판이 앞 유나에 초점 · 가까움
     # ④ 엘리베이터
     "C43": dict(f="T", w=["T2oh"], loc="elev", light="elev", fx=None, flash=True,
                 t=("Full shot straight into the elevator from just outside, locked off: Taejun stands ALONE inside wearing headphones (his head "
@@ -442,14 +451,15 @@ C = {
                    "and side dishes on the table in the left foreground; warm dark pub behind.")),
     "C48": dict(f="TM", w=["T2o", "M2"], loc="pub", light="pub", fx=(0, "his"), p=["P1"], flash=True,
                 t=("Medium shot at the pub table: Taejun, left of center, leans forward and pours beer from a plain brown bottle with no label "
-                   "into Minjae's glass, cutting him off with a dry remark, lips parted mid-word; Minjae sits at the right edge, out of focus. "
-                   "A folded clear umbrella hangs from a bench back behind them, out of focus.")),
+                   "into Minjae's glass, cutting him off with a dry remark, lips parted mid-word; Minjae sits at the right edge, very out of focus. "
+                   "A folded clear umbrella hangs from the booth backrest behind them by its wrist strap, out of focus, its straight clear acrylic "
+                   "handle and frosted cap pointing down (no hook handle).")),
     # ⑥ 빗길 — 우산 둘
     "C49": dict(f="YT", w=["Y2", "T2"], loc="street_d", light="day", fx=(0, "Yuna's"), p=["P1"], flash=True,
                 t=(f"Medium two-shot on a tree-lined sidewalk in the daytime rain, the camera tracking alongside: Yuna at the left, nearer the "
                    f"camera, walking under her own open {BLACK} (holding it by the handle), eyes down, her face softly lit by the grey sky; Taejun at the right, a few steps ahead "
-                   f"and farther away (his head about 68% across, smaller), under his own open clear umbrella; he has just stopped and turns to "
-                   f"look back at her. A clear gap between them.")),
+                   f"and farther away (his head about 68% across, smaller), under his own open clear umbrella. Both are mid-stride, seen from the side: "
+                   f"Taejun faces FORWARD along the sidewalk, not turned toward her — we see his profile. A clear gap between them.")),
     # ⑦ 편의점
     "C50": dict(f="TY", w=["T2", "Y2"], loc="store_d", light="day", fx=None, p=["P1"], flash=True, noloc=True,
                 t=("Under the convenience-store awning in the daytime, close and out of focus in the foreground: Taejun's chest in the navy "
@@ -481,9 +491,9 @@ C = {
                    "canopy (its straight clear handle toward her); his own folded clear umbrella hangs from his left hand. He holds nothing else. "
                    "Rain falls past the awning edge behind him.")),   # 10-30 첫 판이 흰 꾸러미를 내밈
     "C56": dict(f="", w=["T2", "Y2"], loc="store_d", light="day", fx=None, p=["P2"], noloc=True,
-                t=("Insert close-up in the daytime rain: Taejun's hand (navy jacket cuff) comes in from the lower right and holds out a folded "
-                   "umbrella with a misty pale-blue canopy and a clear acrylic handle, pointing diagonally up toward the upper left, toward Yuna; "
-                   "her out-of-focus taupe shoulder at the right edge. Under the awning; grey wet street behind.")),
+                t=("Insert close-up under the awning in the daytime rain: Taejun's hand (navy jacket cuff) comes in from the LOWER LEFT, holding a "
+                   "folded umbrella with a misty pale-blue canopy by its canopy and extending its straight clear acrylic handle and frosted cap to the "
+                   "RIGHT, toward Yuna's out-of-focus taupe shoulder at the right edge — the umbrella points at her. Grey wet street behind.")),
     "C57": dict(f="Y", w=["Y2", "T2"], loc="store_d", light="day", fx=(0, "her"), noloc=True,
                 t=("Close-up of Yuna under the convenience-store awning in the daytime rain, her folded black umbrella in her hand below the "
                    "frame: eyes lowered, she speaks quietly and sadly, lips parted mid-word. Taejun's dark shoulder, out of focus, fills the right edge of the frame. "
@@ -508,7 +518,9 @@ C = {
                 t=(f"Wide shot in front of the convenience store in the daytime rain, locked off: Taejun stands in the middle (about 63% across) "
                    f"under the awning, his clear umbrella folded in his hand, turned toward the right, watching Yuna go; Yuna at the right (about 85% across), already turned away "
                    f"from him, walks off under the open misty pale-blue umbrella he gave her, holding it by its handle, her folded black "
-                   f"umbrella hanging from her other hand. The storefront and a cash machine at the left.")),
+                   f"umbrella hanging from her other hand. The same storefront as the night scenes: the drink vending machine stands to the RIGHT "
+                   f"of the glass door at the far right of the shop front and the bicycle at the LEFT end; left of the door only the big window and "
+                   f"the planter.")),
     "C63": dict(f="T", w=["T2"], loc="store_d", light="day", fx=(0, "his"), noloc=True,
                 t=("Close-up of Taejun under the awning in the daytime, handheld with a very slight shake: he watches Yuna walk away toward the "
                    "right of frame, his eyes wet. Out-of-focus storefront colors behind. He is alone in the frame — Yuna has already walked away, "
@@ -517,7 +529,7 @@ C = {
     "C64": dict(f="", w=[], loc="puddle_d", light="splash_d", fx=None, p=["P1", "P2"],
                 t=("High-speed product shot close to the wet pavement in the daytime: two folded umbrellas — one clear, one with a misty pale-blue "
                    "canopy — fall and hit the shallow puddle side by side, water splashing up around them, droplets frozen in the air. They fill "
-                   "the middle of the frame.")),
+                   "the middle of the frame. No people anywhere in the frame.")),
     "C66": dict(f="T", w=["T2"], loc="store_d", light="sun", fx=(0, "his"), p=["P1"],
                 t=("Medium close-up of Taejun from a low angle under the awning: the rain has stopped; he looks up at the sky with a faint, "
                    "surprised look and holds his right hand out, palm up, past the awning to feel for rain, lips parted as he speaks; his folded "
