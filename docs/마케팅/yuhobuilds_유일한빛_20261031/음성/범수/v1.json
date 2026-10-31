@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "낮 사진이 밤이 됐어요. AI한테 뭐가 빛인지 정해 줬더니요. 보정은 하나도 안 했어요.",
+ "dur": 4.734,
+ "words": [
+  {
+   "text": "낮",
+   "start": 0.02,
+   "end": 0.104
+  },
+  {
+   "text": "사진이",
+   "start": 0.147,
+   "end": 0.428
+  },
+  {
+   "text": "밤이",
+   "start": 0.47,
+   "end": 0.652
+  },
+  {
+   "text": "됐어요.",
+   "start": 0.694,
+   "end": 1.017
+  },
+  {
+   "text": "AI한테",
+   "start": 1.369,
+   "end": 1.832
+  },
+  {
+   "text": "뭐가",
+   "start": 1.889,
+   "end": 2.043
+  },
+  {
+   "text": "빛인지",
+   "start": 2.085,
+   "end": 2.366
+  },
+  {
+   "text": "정해",
+   "start": 2.408,
+   "end": 2.576
+  },
+  {
+   "text": "줬더니요.",
+   "start": 2.619,
+   "end": 2.998
+  },
+  {
+   "text": "보정은",
+   "start": 3.658,
+   "end": 3.968
+  },
+  {
+   "text": "하나도",
+   "start": 4.01,
+   "end": 4.192
+  },
+  {
+   "text": "안",
+   "start": 4.234,
+   "end": 4.262
+  },
+  {
+   "text": "했어요.",
+   "start": 4.318,
+   "end": 4.734
+  }
+ ],
+ "source": {
+  "key": "6249cc6db4d995c59330af6630fc5d5b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 183
+ }
+}

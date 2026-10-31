@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v4",
+ "text": "그랬더니 방 전체가 어두워지고, 얼굴에는 폰 불빛만 남았어요.",
+ "dur": 3.531,
+ "words": [
+  {
+   "text": "그랬더니",
+   "start": 0.02,
+   "end": 0.372
+  },
+  {
+   "text": "방",
+   "start": 0.572,
+   "end": 0.71
+  },
+  {
+   "text": "전체가",
+   "start": 0.756,
+   "end": 1.079
+  },
+  {
+   "text": "어두워지고,",
+   "start": 1.14,
+   "end": 1.554
+  },
+  {
+   "text": "얼굴에는",
+   "start": 2.015,
+   "end": 2.368
+  },
+  {
+   "text": "폰",
+   "start": 2.414,
+   "end": 2.506
+  },
+  {
+   "text": "불빛만",
+   "start": 2.568,
+   "end": 2.905
+  },
+  {
+   "text": "남았어요.",
+   "start": 2.951,
+   "end": 3.531
+  }
+ ],
+ "source": {
+  "key": "0c27718cdc2c15e97a3a144ce66edffe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "id": "04-yuhobuilds-x",
+ "brand": "yuhobuilds",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "platform": "x",
+ "account": "@yuhobuilds",
+ "format": "video-post",
+ "caption": "낮 사진을 밤으로 바꾸려고 AI한테 「밤처럼 어둡게 해 줘」를 시켰더니, 방이 아직 환한 저녁(밝기 80)에서 멈췄어요.\n「휴대폰 화면이 유일한 빛이야. 그 밖은 거의 검은 형체로」로 바꾸니 진짜 밤(34).\n요청문은 여기에 👇 https://synk.im/prompts/#only-light-night",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 y25_final.mp4 하나(끝 말은 질문이라 어느 판에도 없는 길을 가리키지 않음)."
+}

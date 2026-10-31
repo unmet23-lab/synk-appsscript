@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7",
+ "text": "어둡게 말고, 뭐가 빛인지 말해 주세요. 대신 먼 풍경은 어둠에 묻혀요. 여러분 사진엔, 뭐가 빛이 될까요?",
+ "dur": 5.434,
+ "words": [
+  {
+   "text": "어둡게",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "말고,",
+   "start": 0.337,
+   "end": 0.586
+  },
+  {
+   "text": "뭐가",
+   "start": 0.875,
+   "end": 1.054
+  },
+  {
+   "text": "빛인지",
+   "start": 1.095,
+   "end": 1.398
+  },
+  {
+   "text": "말해",
+   "start": 1.44,
+   "end": 1.591
+  },
+  {
+   "text": "주세요.",
+   "start": 1.632,
+   "end": 1.881
+  },
+  {
+   "text": "대신",
+   "start": 2.17,
+   "end": 2.418
+  },
+  {
+   "text": "먼",
+   "start": 2.473,
+   "end": 2.597
+  },
+  {
+   "text": "풍경은",
+   "start": 2.639,
+   "end": 2.942
+  },
+  {
+   "text": "어둠에",
+   "start": 2.983,
+   "end": 3.204
+  },
+  {
+   "text": "묻혀요.",
+   "start": 3.245,
+   "end": 3.549
+  },
+  {
+   "text": "여러분",
+   "start": 3.962,
+   "end": 4.196
+  },
+  {
+   "text": "사진엔,",
+   "start": 4.237,
+   "end": 4.54
+  },
+  {
+   "text": "뭐가",
+   "start": 4.582,
+   "end": 4.761
+  },
+  {
+   "text": "빛이",
+   "start": 4.802,
+   "end": 4.954
+  },
+  {
+   "text": "될까요?",
+   "start": 4.995,
+   "end": 5.434
+  }
+ ],
+ "source": {
+  "key": "ff33cf22f655f70bde003bf764b2c0e4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

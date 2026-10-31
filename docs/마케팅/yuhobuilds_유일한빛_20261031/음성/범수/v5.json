@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v5",
+ "text": "밝기를 재 보니, 밤처럼은 80, 빛을 정한 사진은 34. 절반도 안 돼요.",
+ "dur": 3.886,
+ "words": [
+  {
+   "text": "밝기를",
+   "start": 0.03,
+   "end": 0.355
+  },
+  {
+   "text": "재",
+   "start": 0.396,
+   "end": 0.45
+  },
+  {
+   "text": "보니,",
+   "start": 0.504,
+   "end": 0.694
+  },
+  {
+   "text": "밤처럼은",
+   "start": 0.883,
+   "end": 1.33
+  },
+  {
+   "text": "80,",
+   "start": 1.371,
+   "end": 1.709
+  },
+  {
+   "text": "빛을",
+   "start": 1.94,
+   "end": 2.157
+  },
+  {
+   "text": "정한",
+   "start": 2.197,
+   "end": 2.386
+  },
+  {
+   "text": "사진은",
+   "start": 2.427,
+   "end": 2.698
+  },
+  {
+   "text": "34.",
+   "start": 2.739,
+   "end": 3.063
+  },
+  {
+   "text": "절반도",
+   "start": 3.104,
+   "end": 3.416
+  },
+  {
+   "text": "안",
+   "start": 3.457,
+   "end": 3.538
+  },
+  {
+   "text": "돼요.",
+   "start": 3.578,
+   "end": 3.886
+  }
+ ],
+ "source": {
+  "key": "d8ec4d6e74e85a0a60fb5238426be1e8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

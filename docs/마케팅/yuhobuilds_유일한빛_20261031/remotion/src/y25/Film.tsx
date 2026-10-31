@@ -116,8 +116,10 @@ const Ring: React.FC<{ a: number; x: number; y: number; w: number; h: number; la
 /** 0~6초: 낮 사진이 0.3초부터 헤드라이트 쪽으로 밤이 된다. */
 const Hook: React.FC = () => {
   const f = useCurrentFrame();
+  // r10: 1~6초 한 구성 5초(올리기 전 검사 ⑬) — 밤이 된 뒤 헤드라이트 쪽으로 성큼 다가가 장면을 바꾼다.
+  const z = interpolate(f, [B.hook + 30, B.turn], [1.02, 1.34], { ...clamp, easing: IN_OUT });
   return (
-    <AbsoluteFill style={{ transform: `scale(${1 + 0.0007 * f})`, transformOrigin: `${HEAD.x * 100}% ${HEAD.y * 100}%` }}>
+    <AbsoluteFill style={{ transform: `scale(${f < B.hook + 30 ? 1 + 0.0007 * f : z})`, transformOrigin: `${HEAD.x * 100}% ${HEAD.y * 100}%` }}>
       <Sweep day="k_day" night={<CarNight from={B.hook} />} light={HEAD} from={B.hook} len={26} />
     </AbsoluteFill>
   );
@@ -138,7 +140,8 @@ const Turn: React.FC = () => {
         {w > 0 && w < 1080 ? <div style={{ position: 'absolute', left: w - 3, top: 0, width: 6, height: 1920, background: WHITE, opacity: 0.85 }} /> : null}
       </AbsoluteFill>
       <Bubble a={B.turn + 2}>이 사진을 밤처럼 어둡게 해 줘. …</Bubble>
-      <Ring a={B.turn2 + 26} x={30} y={930} w={360} h={400} label="방이 아직 환해요" lx={60} ly={850} />
+      {/* r10: 원이 소매를 짚었다(r9 볼 이유 심사) — 저녁 판 80 · 밤 판 34가 가장 크게 갈리는 왼쪽 벽으로. Run도 같은 자리. */}
+      <Ring a={B.turn2 + 26} x={14} y={410} w={300} h={290} label="방이 아직 환해요" lx={70} ly={716} />
     </AbsoluteFill>
   );
 };
@@ -191,7 +194,7 @@ const Run: React.FC = () => {
       <AbsoluteFill style={{ transform: `scale(${1 + 0.0004 * (f - B.run)})`, transformOrigin: `${PHONE.x * 100}% ${PHONE.y * 100}%` }}>
         <Sweep day="p_ev" night={<PersonNight from={snap} />} light={PHONE} from={snap} len={9} />
       </AbsoluteFill>
-      <Ring a={snap + 30} x={30} y={930} w={360} h={400} label="방이 어두워졌어요" lx={60} ly={850} />
+      <Ring a={snap + 30} x={14} y={410} w={300} h={290} label="방이 어두워졌어요" lx={70} ly={716} />
     </AbsoluteFill>
   );
 };
@@ -201,11 +204,20 @@ const Table: React.FC = () => {
   const f = useCurrentFrame();
   const x = interpolate(f, [B.table, B.table + 22], [1080, 540], { ...clamp, easing: IN_OUT });
   const p2 = ease(f, at('v5', String(LUX.빛)), 8);
-  const num = (txt: string, sub: string, left: number, on: number, amber: boolean) => (
-    <div style={{ position: 'absolute', left, width: 460, top: 300, textAlign: 'center', opacity: on }}>
-      <div style={{ display: 'inline-block', background: PLATE, borderRadius: 24, padding: '12px 26px 16px', fontFamily: KO, fontWeight: 900, color: amber ? AMBER : WHITE, letterSpacing: '-0.03em' }}>
+  // r10: 「사진 밝기(0 검정 · 255 흰색)」가 무엇을 재는지 시험관 셋이 다 짚었다 — 숫자 밑에 검정→흰색 막대를 깔고 그 숫자 자리에 눈금.
+  // 판은 무릎 쪽(얼굴 · 폰을 가리지 않게, 위 머리 자리 269px 아래 — 올리기 전 검사).
+  const num = (val: number, sub: string, left: number, on: number, amber: boolean) => (
+    <div style={{ position: 'absolute', left, width: 460, top: 1030, textAlign: 'center', opacity: on }}>
+      <div style={{ display: 'inline-block', background: PLATE, borderRadius: 24, padding: '12px 30px 18px', fontFamily: KO, fontWeight: 900, color: amber ? AMBER : WHITE, letterSpacing: '-0.03em' }}>
         <div style={{ fontSize: 40 }}>{sub}</div>
-        <div style={{ fontSize: 128, lineHeight: 1.08 }}>{txt}</div>
+        <div style={{ fontSize: 128, lineHeight: 1.08 }}>{val}</div>
+        <div style={{ position: 'relative', width: 300, height: 30, marginTop: 10, borderRadius: 8, background: 'linear-gradient(90deg, #000 0%, #fff 100%)', boxShadow: '0 0 0 2px rgba(255,255,255,0.55)' }}>
+          <div style={{ position: 'absolute', left: (val / 255) * 300 - 5, top: -12, width: 10, height: 54, borderRadius: 5, background: amber ? AMBER : RED, boxShadow: '0 0 0 3px rgba(0,0,0,0.7)' }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: 300, marginTop: 8, fontSize: 32, fontWeight: 800, color: 'rgba(255,255,255,0.85)' }}>
+          <span>검정</span>
+          <span>흰색</span>
+        </div>
       </div>
     </div>
   );
@@ -216,11 +228,11 @@ const Table: React.FC = () => {
         <Photo src="p_ev" />
       </div>
       <div style={{ position: 'absolute', left: x - 3, top: 0, width: 6, height: 1920, background: WHITE, opacity: 0.9 }} />
-      <div style={{ position: 'absolute', left: 0, top: 200, width: 1080, textAlign: 'center' }}>
-        <span style={{ display: 'inline-block', background: PLATE, borderRadius: 18, padding: '6px 22px 10px', fontFamily: KO, fontWeight: 800, fontSize: 46, color: WHITE, letterSpacing: '-0.03em' }}>사진 밝기(0 검정 · 255 흰색)</span>
+      <div style={{ position: 'absolute', left: 0, top: 955, width: 1080, textAlign: 'center' }}>
+        <span style={{ display: 'inline-block', background: PLATE, borderRadius: 18, padding: '6px 22px 10px', fontFamily: KO, fontWeight: 800, fontSize: 46, color: WHITE, letterSpacing: '-0.03em' }}>사진 전체 밝기</span>
       </div>
-      {num(String(LUX.밤처럼), '밤처럼', 40, ease(f, at('v5', String(LUX.밤처럼)), 8), false)}
-      {num(String(LUX.빛), '유일한 빛', 580, p2, true)}
+      {num(LUX.밤처럼, '밤처럼', 60, ease(f, at('v5', String(LUX.밤처럼)), 8), false)}
+      {num(LUX.빛, '유일한 빛', 520, p2, true)}
     </AbsoluteFill>
   );
 };
@@ -283,7 +295,8 @@ const KEY = ['밤이', '밤처럼', '어둡게', '유일한', '빛', `${LUX.밤�
 // 원본 아래 고정 자막창처럼 칸마다 그 칸 말을 한 번에 — 덩어리로 끊어 갈면 자막 바뀜이 박자로 잡혀 칸이 30이 됐다(r1).
 // 큰 글이 같은 말을 하는 자리(방법 칩 · 사진 이름 · 끝 카드)는 자막을 비워 사진을 가리지 않는다(r3 뒤).
 const CELLS: { a: number; b: number; text: string }[] = [
-  { a: 0, b: B.turn, text: '낮 사진이 밤이 됐어요. AI한테 뭐가 빛인지 정해 줬더니요. 보정은 하나도 안 했어요.' },
+  // r10: 세 줄이면 아래 앱 글자 자리(1428px)를 넘는다 — 말의 앞 두 마디만(「보정은…」은 시험관 둘이 낯설다고 짚은 말이라 화면에서 뺀다).
+  { a: 0, b: B.turn, text: '낮 사진이 밤이 됐어요. AI한테 뭐가 빛인지 정해 줬더니요.' },
   { a: B.turn, b: B.method, text: '이 사진은 밤처럼 어둡게 해 달라고 했더니, 밤이 아니라 저녁이 나왔어요. 방이 아직 환하죠.' },
   { a: B.method, b: B.run, text: '그래서 어둡게란 말을 빼고, 빛을 정해 줬어요.' },
   { a: B.run, b: B.table, text: '그랬더니 방 전체가 어두워지고, 얼굴에는 폰 불빛만 남았어요.' },
@@ -391,7 +404,7 @@ export const CoverStill: React.FC = () => (
       <Photo src="k_day" />
     </div>
     <div style={{ position: 'absolute', left: 467, top: 0, width: 6, height: 1920, background: WHITE, opacity: 0.85 }} />
-    <div style={{ position: 'absolute', left: 70, width: 850, top: 1340, display: 'flex', justifyContent: 'center' }}>
+    <div style={{ position: 'absolute', left: 70, width: 850, top: 1150, display: 'flex', justifyContent: 'center' }}>
       <div style={{ background: PLATE, borderRadius: 26, padding: '18px 36px 24px', fontFamily: KO, fontWeight: 900, fontSize: 76, color: WHITE, letterSpacing: '-0.035em', lineHeight: 1.2, textAlign: 'center' }}>
         낮 사진이 밤으로
         <br />

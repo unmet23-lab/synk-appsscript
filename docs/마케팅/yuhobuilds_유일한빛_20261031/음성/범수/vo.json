@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1031,
+  "lufs": -17
+ },
+ "made": "2026-10-31T09:28:31.276Z",
+ "lines": [
+  {
+   "id": "v1",
+   "text": "낮 사진이 밤이 됐어요. AI한테 뭐가 빛인지 정해 줬더니요. 보정은 하나도 안 했어요.",
+   "dur": 4.734,
+   "syllablesPerSec": 6.76,
+   "src": "v1.wav",
+   "key": "6249cc6db4d995c59330af6630fc5d5b",
+   "words": 13
+  },
+  {
+   "id": "v2",
+   "text": "이 사진은 밤처럼 어둡게 해 달라고 했더니, 밤이 아니라 저녁이 나왔어요. 방이 아직 환하죠.",
+   "dur": 4.912,
+   "syllablesPerSec": 7.33,
+   "src": "v2.wav",
+   "key": "585fff0b454a693abf41b9d8843121e1",
+   "words": 14
+  },
+  {
+   "id": "v3",
+   "text": "그래서 어둡게란 말을 빼고, 빛을 정해 줬어요. 휴대폰 화면이 유일한 빛이야. 그 밖은 거의 검은 형체로.",
+   "dur": 5.209,
+   "syllablesPerSec": 7.68,
+   "src": "v3.wav",
+   "key": "28b37aa02fc02fca895a84ee76810d00",
+   "words": 16
+  },
+  {
+   "id": "v4",
+   "text": "그랬더니 방 전체가 어두워지고, 얼굴에는 폰 불빛만 남았어요.",
+   "dur": 3.531,
+   "syllablesPerSec": 7.08,
+   "src": "v4.wav",
+   "key": "0c27718cdc2c15e97a3a144ce66edffe",
+   "words": 8
+  },
+  {
+   "id": "v5",
+   "text": "밝기를 재 보니, 밤처럼은 80, 빛을 정한 사진은 34. 절반도 안 돼요.",
+   "dur": 3.886,
+   "syllablesPerSec": 5.92,
+   "src": "v5.wav",
+   "key": "d8ec4d6e74e85a0a60fb5238426be1e8",
+   "words": 12
+  },
+  {
+   "id": "v6",
+   "text": "다른 사진도 해 봤어요. 초, 가게 전구, 헤드라이트. 빛을 정하니까, 전부 밤이 됐어요.",
+   "dur": 5.078,
+   "syllablesPerSec": 6.3,
+   "src": "v6.wav",
+   "key": "8427a3522bb240c4218b8521e33797f9",
+   "words": 13
+  },
+  {
+   "id": "v7",
+   "text": "어둡게 말고, 뭐가 빛인지 말해 주세요. 대신 먼 풍경은 어둠에 묻혀요. 여러분 사진엔, 뭐가 빛이 될까요?",
+   "dur": 5.434,
+   "syllablesPerSec": 7.36,
+   "src": "v7.wav",
+   "key": "ff33cf22f655f70bde003bf764b2c0e4",
+   "words": 16
+  }
+ ]
+}

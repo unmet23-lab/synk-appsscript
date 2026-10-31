@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "이 사진은 밤처럼 어둡게 해 달라고 했더니, 밤이 아니라 저녁이 나왔어요. 방이 아직 환하죠.",
+ "dur": 4.912,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.01,
+   "end": 0.024
+  },
+  {
+   "text": "사진은",
+   "start": 0.068,
+   "end": 0.374
+  },
+  {
+   "text": "밤처럼",
+   "start": 0.417,
+   "end": 0.78
+  },
+  {
+   "text": "어둡게",
+   "start": 0.839,
+   "end": 1.042
+  },
+  {
+   "text": "해",
+   "start": 1.1,
+   "end": 1.144
+  },
+  {
+   "text": "달라고",
+   "start": 1.188,
+   "end": 1.406
+  },
+  {
+   "text": "했더니,",
+   "start": 1.45,
+   "end": 1.726
+  },
+  {
+   "text": "밤이",
+   "start": 2.09,
+   "end": 2.337
+  },
+  {
+   "text": "아니라",
+   "start": 2.396,
+   "end": 2.584
+  },
+  {
+   "text": "저녁이",
+   "start": 2.628,
+   "end": 2.934
+  },
+  {
+   "text": "나왔어요.",
+   "start": 2.977,
+   "end": 3.356
+  },
+  {
+   "text": "방이",
+   "start": 3.894,
+   "end": 4.112
+  },
+  {
+   "text": "아직",
+   "start": 4.17,
+   "end": 4.33
+  },
+  {
+   "text": "환하죠.",
+   "start": 4.374,
+   "end": 4.912
+  }
+ ],
+ "source": {
+  "key": "585fff0b454a693abf41b9d8843121e1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 184
+ }
+}

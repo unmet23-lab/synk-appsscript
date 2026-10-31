@@ -1,0 +1,111 @@
+{
+ "브랜드": "yuhobuilds",
+ "날짜": "2026-10-31",
+ "슬롯": "2026-11-04",
+ "성격": "상시",
+ "역할": "유입",
+ "시한": null,
+ "상태": "완성",
+ "제목": "AI 웹툰, 칸마다 따로 그렸더니 몇 분 사이에 계절이 바뀌었다 — 모든 칸 끝에 계절 한 줄",
+ "기획": "docs/마케팅/yuhobuilds_칸마다계절_20261031/기획.md",
+ "원본": {
+  "주소": "https://www.youtube.com/shorts/VMwrKqlumr4",
+  "갈래": "같은분야",
+  "조회": 9409,
+  "배수": 7.36,
+  "올린날": "2026-10-19",
+  "오마주": "docs/마케팅/yuhobuilds_칸마다계절_20261031/오마주.json"
+ },
+ "목소리": "docs/마케팅/yuhobuilds_칸마다계절_20261031/음성/범수",
+ "길이": "50.3초(판 모두 같은 영상)",
+ "0초 훅": "크림색 종이 위 웹툰 네 칸(계절 줄 없이 실제로 구운 판) + 0.3초 큰 글 「이상한 데 하나, 보이세요?」 → 4.9~8.7초 3초 찾기",
+ "끝줄": "다음 칸 그리기 전에, 계절부터 적으세요.",
+ "최종본": [
+  "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4"
+ ],
+ "판": [
+  {
+   "계정": "yuhobuilds-instagram",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+   "올리기판": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_upload.mp4",
+   "시각": "2026-11-04T21:00+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/게시글.md",
+   "훅": "A",
+   "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/01-yuhobuilds-instagram/원고.json",
+   "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
+   "표지시각": 1.0
+  },
+  {
+   "계정": "yuhobuilds-youtube",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+   "올리기판": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_upload.mp4",
+   "시각": "2026-11-04T21:00+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/게시글.md",
+   "훅": "A",
+   "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/02-yuhobuilds-youtube/원고.json",
+   "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
+   "표지시각": 1.0
+  },
+  {
+   "계정": "yuhobuilds-tiktok",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+   "올리기판": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_upload.mp4",
+   "시각": "2026-11-04T21:00+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/게시글.md",
+   "훅": "A",
+   "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/03-yuhobuilds-tiktok/원고.json",
+   "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
+   "표지시각": 1.0
+  },
+  {
+   "계정": "yuhobuilds-x",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+   "올리기판": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_upload.mp4",
+   "시각": "2026-11-04T21:00+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/게시글.md",
+   "훅": "A",
+   "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/04-yuhobuilds-x/원고.json",
+   "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
+   "표지시각": 1.0
+  },
+  {
+   "계정": "yuho-linkedin-primary",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+   "올리기판": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_upload.mp4",
+   "시각": "2026-11-04T21:00+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/게시글.md",
+   "훅": "A",
+   "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/05-yuho-linkedin/원고.json",
+   "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
+   "표지시각": 1.0
+  },
+  {
+   "계정": "yuhobuilds-threads",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+   "시각": "2026-11-04T21:00+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/06-yuhobuilds-threads/원고.txt",
+   "_비고": "로그인돼 있을 때만(장부 머리말)"
+  },
+  {
+   "계정": "shift-tistory",
+   "파일": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/티스토리.md",
+   "시각": "2026-11-04T21:30+09:00",
+   "게시글": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/티스토리.md"
+  }
+ ],
+ "빠진판": {},
+ "틱톡없음": null,
+ "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
+ "AI 표시": "켬(내레이션 AI 음성 · 웹툰 칸 그림은 AI가 만든 것 · 칸 1 · 4 · 8 나무 표시는 편집에서 그린 도식)",
+ "아동용": "아님",
+ "유튜브 언어": "ko",
+ "끝 행동 링크": "https://synk.im/prompts/#webtoon-season-line",
+ "미룰편": [],
+ "남은위험": [],
+ "프롬프트": {
+  "id": "webtoon-season-line",
+  "주소": "https://synk.im/prompts/#webtoon-season-line",
+  "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"
+ },
+ "이해시험": {}
+}
