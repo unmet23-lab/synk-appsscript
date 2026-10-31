@@ -240,6 +240,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: 격리한 실제 Git 체크아웃의 `core.autocrlf=true/false` 양쪽에서 6개 SHA와 문항 validator를 대조하고, 내용에 공백을 더한 원문은 여전히 거절하는지 확인한다. 근거 `.tmp/atlas-world-learning-20261028/ci-fa79b062/eol-checkouts.json`.
 - 10-28 덧붙임(Claude, 워크트리에서 `git merge origin/master`로 받았을 때): 위 증거 4파일(`experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-*.json` — 커밋된 내용에 CRLF가 든 채 `text eol=lf`)이 이 PC(`core.autocrlf=true`) 워크트리에서 merge로 풀리자 작업본 바이트가 커밋과 달라졌다(`git status`에는 안 보임). 그 바이트 sha를 그대로 보는 `tools/town-data-build.mjs`가 「찻집 독립 검수 근거가 바뀌었어요.」로 멈추고, 바로올리기 관련 시험 `tests/town-places.test.js` 「생성물이 원천과 같다」가 깨져 push가 막혔다. 고침: 그 파일들을 지우고 `git -c core.autocrlf=false checkout HEAD -- <파일…>`으로 다시 풀면 sha가 커밋과 같아지고 시험이 지나간다(내용 변경 없음, 올릴 것 없음). 다시 확인: `git show HEAD:<파일> | sha256sum`과 `sha256sum < <파일>`이 같다.
 
+### 회사 운영 후보의 글 파일은 줄끝이 master와 다를 수 있다 — 작업본·CI에서 통과한 바이트 시험이 이미지 QA에서만 깨진다 (2026-10-31 Claude)
+- 증상: 사슬 38 운영 후보(`.tmp/yt-ai-label-38-candidate-20261029/candidate`)의 회사 `public/pulse-app/app.css`는 102,705바이트 CRLF, master blob은 101,641바이트 LF다(CR을 떼면 sha 같음). 반대로 `public/teaching-host.js`는 운영 판이 LF인데 이 PC 작업본은 autocrlf로 CRLF다. LF만 가정한 정규식·sha 고정 시험은 CI(Linux LF)에서 통과하고 다음 판 이미지 QA에서 깨질 판이었다.
+- 원인: 앞선 판이 Windows 작업본 바이트를 후보로 옮긴 파일은 줄끝만 다른 채 운영에 남는다. 배포 뒤 대조는 「후보와 같은가」만 보므로 줄끝은 판에서 판으로 그대로 이어진다.
+- 고침: 회사 선택 시험이 글 파일을 읽어 단언할 때는 줄끝을 맞춰 읽는다(CSS·JS `\r\n` → `\n`). sha를 고정할 때는 「모든 줄끝이 CRLF인 꼴」만 LF로 되돌려 재고, 섞인 줄끝·외톨이 CR은 원시 바이트로 재서 걸리게 한다(`teaching-restoring-client.test.mjs`의 `teachingHostBytes`). 시험만 바꿨어도 운영 후보 사본에 그 시험 파일을 얹어 한 번 돌린다.
+- 다시 확인: 사슬 38 후보 사본에 두 시험만 얹어 10/10, 거절 변이에서 LF · 전부 CRLF · 운영 바이트는 통과하고 줄끝 섞임 · 외톨이 CR은 실패.
+
 ## index.lock
 
 ### 주인 없는 0바이트 `.git/index.lock`이 남는다

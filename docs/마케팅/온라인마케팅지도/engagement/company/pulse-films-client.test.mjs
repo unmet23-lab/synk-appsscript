@@ -92,6 +92,97 @@ test('only finished films with safe media paths are drawn; an empty list hides t
   assert.doesNotMatch(unsafeTitle,/<img src=x|<script>|<i>|"><b/);
 });
 
+// 10-31 완성 광고 규칙(app.css — a656e8705·445c1d521): 회사 이미지 안의 선택 시험이 그 규칙 바이트를 직접 읽어 단언한다. 그전에는 어떤 시험도
+// .film-* 규칙을 읽지 않아 규칙 하나를 깨도 통과했다(사슬 27 도구 검수 Fable P2). 운영 판 app.css는 CRLF로 실렸다 — 줄끝만 맞춰 읽는다.
+// 장면 띠의 .film·.film-empty는 제작 설계 화면(views.mjs) 몫이라 뺀다.
+function cssDeclarations(body){
+  const decls=new Map(),bad=[];let depth=0,quote='',from=0;
+  // 한 규칙 안에 같은 속성이 두 번이면 뒤 값만 보는 단언이 앞의 !important를 놓친다 — 겹친 선언도 틀린 꼴로 센다(GPT GA1).
+  const take=end=>{const part=body.slice(from,end).trim();if(!part)return;const colon=part.indexOf(':'),name=part.slice(0,colon).trim();if(colon>0&&!decls.has(name))decls.set(name,part.slice(colon+1).trim());else bad.push(part);};
+  for(let i=0;i<body.length;i++){
+    const c=body[i];
+    if(quote){if(c==='\\')i++;else if(c===quote)quote='';continue;}
+    if(c==='"'||c==="'")quote=c;else if(c==='(')depth++;else if(c===')')depth--;else if(c===';'&&!depth){take(i);from=i+1;}
+  }
+  take(body.length);return {decls,bad};
+}
+function cssRules(source){
+  const css=source.replace(/\r\n/g,'\n').replace(/\/\*[\s\S]*?\*\//g,''),rules=[],open=[],tidy=text=>text.trim().replace(/\s+/g,' ').replace(/ ?> ?/g,'>');let mark=0,quote='';
+  for(let i=0;i<css.length;i++){
+    const c=css[i];
+    if(quote){if(c==='\\')i++;else if(c===quote)quote='';continue;}
+    if(c==='"'||c==="'")quote=c;
+    else if(c==='{'){if(open.length)open.at(-1).nested=true;open.push({prelude:tidy(css.slice(mark,i)),from:i+1,nested:false});mark=i+1;}
+    else if(c==='}'){const block=open.pop();assert.ok(block,'app.css에 짝 없는 } — '+i);if(!block.nested)rules.push({at:open.map(item=>item.prelude).join(' '),selector:block.prelude,...cssDeclarations(css.slice(block.from,i))});mark=i+1;}
+    else if(c===';'&&!open.length)mark=i+1;
+  }
+  assert.equal(open.length,0,'app.css에 닫히지 않은 {');
+  return rules;
+}
+// filmsView()가 그린 마크업을 요소 나무로 — 규칙마다 실제로 고르는 요소가 있는지 본다(자손 ' '·자식 '>' 결합자와 태그·클래스만).
+function htmlTree(html){
+  const root={tag:'#root',classes:[],children:[],parent:null},VOID=new Set(['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr']);let node=root;
+  for(const [,close,tag,attrs]of html.matchAll(/<(\/?)([a-z][a-z0-9]*)\b([^>]*)>/g)){
+    if(close){assert.equal(node.tag,tag,'닫는 태그 짝 '+tag);node=node.parent;continue;}
+    const child={tag,classes:(/\bclass="([^"]*)"/.exec(attrs)?.[1]||'').split(/\s+/).filter(Boolean),children:[],parent:node};
+    node.children.push(child);if(!VOID.has(tag))node=child;
+  }
+  assert.equal(node,root,'닫히지 않은 태그');
+  return root;
+}
+const descendants=function*(node){for(const child of node.children){yield child;yield* descendants(child);}};
+function selects(node,selector){
+  const parts=selector.replace(/>/g,' > ').trim().split(/\s+/);
+  const compound=(item,text)=>{const match=/^([a-z][a-z0-9]*)?((?:\.[A-Za-z0-9_-]+)*)$/.exec(text);assert.ok(match&&text,'이 시험이 읽지 못하는 선택자 '+selector);return (!match[1]||item.tag===match[1])&&match[2].split('.').filter(Boolean).every(name=>item.classes.includes(name));};
+  const from=(item,index)=>{
+    if(!compound(item,parts[index]))return false;if(index===0)return true;
+    if(parts[index-1]==='>')return Boolean(item.parent)&&from(item.parent,index-2);
+    for(let up=item.parent;up;up=up.parent)if(from(up,index-1))return true;return false;
+  };
+  return from(node,parts.length-1);
+}
+const classesIn=selector=>Array.from(selector.matchAll(/\.([A-Za-z0-9_-]+)/g),match=>match[1]);
+const filmClass=name=>name.startsWith('film-')&&name!=='film-empty';
+
+test('the finished films rules in app.css pair one to one with the cards films-view draws, keep the card layout and resolve their tokens',()=>{
+  const rules=cssRules(readFileSync(new URL('app.css',appDir),'utf8')),phone='@media (max-width:860px)';
+  const own=rules.filter(rule=>classesIn(rule.selector).some(filmClass));
+  // 완성 광고 규칙의 목록과 순서(넓은 화면 16 · 휴대폰 3). 규칙 하나를 지우거나 선택자를 바꾸면 여기서 걸린다.
+  assert.deepEqual(own.map(rule=>[rule.at,rule.selector]),[
+    ...['.film-list','.film-card','.film-media video','.film-copy','.film-copy h2','.film-copy p','.film-facts','.film-facts>div','.film-facts dt','.film-facts dd','.film-full',
+      '.film-credits','.film-credits>span','.film-credits ul','.film-card--portrait','.film-card--portrait .film-media video'].map(selector=>['',selector]),
+    ...['.film-card','.film-full','.film-card--portrait .film-media'].map(selector=>[phone,selector]),
+  ]);
+  // 선언은 한 속성에 한 번씩, !important 없이 — 아래 값 단언이 실제로 이기는 값을 본다.
+  for(const rule of own){assert.deepEqual(rule.bad,[],'선언 꼴이 아니거나 겹친 선언 — '+rule.selector);for(const [property,text]of rule.decls)assert.doesNotMatch(text,/!\s*important/i,`${rule.selector} ${property}`);}
+  // 짝: 규칙마다 기본 목록(세로 카드·출처·본편 단추가 다 든다)에서 고르는 요소가 있고, 그리는 film- 클래스마다 규칙이 있다.
+  const nodes=[...descendants(htmlTree(filmsView()))];
+  for(const rule of own)assert.ok(nodes.some(node=>selects(node,rule.selector)),'그리는 요소가 없는 규칙 '+rule.selector);
+  const drawn=[...new Set(nodes.flatMap(node=>node.classes))];
+  assert.deepEqual(drawn.filter(filmClass).sort(),[...new Set(own.flatMap(rule=>classesIn(rule.selector)))].sort());
+  // 함께 쓰는 클래스(eyebrow · ko · sr-only)도 app.css 어딘가에 규칙이 있다.
+  for(const name of drawn.filter(name=>!filmClass(name)))assert.ok(rules.some(rule=>classesIn(rule.selector).includes(name)),'규칙이 없는 클래스 '+name);
+  // 배치의 뼈대: 영상 큰 칸 + 글 칸, 16:9 · 세로 숏폼 300px 칸에 9:16, 860px 아래는 한 칸 · 세로 영상은 340px 안쪽 가운데 · 본편 단추는 꽉 찬 폭.
+  const value=(at,selector,property)=>own.find(rule=>rule.at===at&&rule.selector===selector)?.decls.get(property);
+  for(const [at,selector,property,expected]of [
+    ['','.film-list','display','grid'],['','.film-card','display','grid'],['','.film-card','grid-template-columns','minmax(0,1.6fr) minmax(0,1fr)'],
+    ['','.film-media video','width','100%'],['','.film-media video','aspect-ratio','16/9'],['','.film-copy','min-width','0'],
+    ['','.film-credits ul','list-style','none'],['','.film-full','min-height','42px'],
+    ['','.film-card--portrait','grid-template-columns','minmax(0,300px) minmax(0,1fr)'],['','.film-card--portrait .film-media video','aspect-ratio','9/16'],
+    [phone,'.film-card','grid-template-columns','minmax(0,1fr)'],[phone,'.film-full','width','100%'],
+    [phone,'.film-card--portrait .film-media','width','min(100%,340px)'],[phone,'.film-card--portrait .film-media','justify-self','center'],
+  ])assert.equal(value(at,selector,property),expected,`${at||'넓은 화면'} ${selector} ${property}`);
+  // 구체성이 같은 세 규칙은 뒤가 이긴다: 세로 카드는 기본 카드 뒤, 휴대폰 한 칸은 세로 카드 뒤 — 그래야 세로 카드도 휴대폰에서 한 칸이 된다.
+  const index=(at,selector)=>rules.findIndex(rule=>rule.at===at&&rule.selector===selector);
+  assert.ok(index('','.film-card')<index('','.film-card--portrait')&&index('','.film-card--portrait')<index(phone,'.film-card'));
+  // 규칙이 쓰는 색·글자 토큰은 모두 app.css에 정의돼 있다(토큰 이름 한 글자가 틀리면 그 칸은 말없이 빈 값이 된다).
+  const tokens=new Set(rules.flatMap(rule=>[...rule.decls.keys()].filter(name=>name.startsWith('--'))));
+  for(const rule of own)for(const [property,text]of rule.decls){
+    assert.match(property,/^[a-z]+(?:-[a-z]+)*$/,rule.selector);
+    for(const [,token]of text.matchAll(/var\((--[A-Za-z0-9_-]+)/g))assert.ok(tokens.has(token),`${rule.selector} ${property} — 정의 없는 ${token}`);
+  }
+});
+
 const at='2026-10-16T09:00:00Z';
 function project(){
   return {id:'p',revision:3,title:'모루 드립백 15초 광고',customerName:'모루 커피',ownerName:'김하늘',stage:'planning',dueDate:'2026-10-31',versions:[],messages:[{id:'m1',author:'staff',authorName:'김하늘',action:'reply',text:'안녕하세요.',at}],
