@@ -148,7 +148,9 @@ CUT = {
     11: (1.44, "민재 옆 실루엣(흐린 밤하늘 앞) — 어깨를 움츠리고 시끄러운 문간에 등을 돌림",
          ["MINJAE", "AUTUMN"],
          "Close-up: Minjae in profile, a pure black silhouette against the deep navy night sky with a low warm city glow and a few lit windows over the rooftops beyond the parapet; "
-         "he hunches his shoulders and turns his back on the noisy doorway off screen to the right. His face stays a solid black shape.",
+         # 10-31 검수: 「turns his back」은 이미 옆 실루엣인 그가 카메라 쪽으로 도는 동작으로 읽힐 수 있어, 옆모습 그대로 몸만 더 비키게
+         "he hunches his shoulders and leans a little further away from the noisy doorway off screen to the right, staying in profile — "
+         "he never turns toward the lens. His face stays a solid black shape.",
          "handheld: from 0 s to 1.40 s the camera eases back about 2%, moving about 1% to the right and 2% down — quick at first, slowing "
          "to a stop; light tremble (0.3%).",
          False),
@@ -195,8 +197,9 @@ CUT = {
          False),
     18: (1.28, "핼러윈 해질녘 — 마녀 모자 하린과 친구가 계단 쪽으로 멀어지고, 민재가 폰 불빛으로 그들 발밑을 비춤",
          ["MINJAE", "COAT", "HARIN", "WITCH", "CORRIDOR"],
-         "Halloween, blue dusk in the corridor: Harin in her witch hat and cape and two friends in costume (cat ears, a small halo — the third "
-         "half hidden behind) walk away from the camera toward the bright stair landing at the far end, small pumpkin buckets in their hands. At his door on the left, Minjae in his long camel coat "
+         # 10-31 검수: 「the third」가 넷째 사람으로 읽히지 않게 — 그림은 셋
+         "Halloween, blue dusk in the corridor: Harin in her witch hat and cape and two friends in costume (one with cat ears, one with a "
+         "small halo, half hidden behind the others — three people in all) walk away from the camera toward the bright stair landing at the far end, small pumpkin buckets in their hands. At his door on the left, Minjae in his long camel coat "
          "(from behind) holds his phone low and points its light at the floor ahead of their feet — a pool of white light on the concrete.",
          "almost still: from 0 s to 1.24 s the camera drifts about 1.4% to the left and about 1.7% up, slowing to a stop.",
          False),
@@ -223,7 +226,7 @@ CUT = {
          "flashlight and his keys at the keyhole; the white bag slips down his wrist. Rain blows in past the parapet on the right; behind him "
          "down the corridor, the next door's warm fairy lights blur.",
          # 원본: 카메라 왼쪽으로 2% · 아래로 7.9% · 기울기 -3.9° — 좌우를 뒤집은 판이라(10-29 일관성) 방향 · 돎을 거울로
-         "handheld in the rain: from 0 s to 1.20 s the camera jolts down about 8% of the frame height and about 2% to the right while "
+         "handheld in the rain: from 0 s to 1.20 s the camera bobs down about 8% of the frame height and about 2% to the right while "
          "the picture turns about 4° clockwise, at an even speed, with a strong rainy handheld tremble (about 0.7% of the frame).",
          False),
     22: (1.36, "크리스마스이브 아침, 현관 둥근 거울 — 턱 아래만, 회색 목도리를 두르는 두 손",
@@ -244,7 +247,7 @@ CUT = {
     24: (1.44, "눈 덮인 골목 와이드 — 봉투를 든 민재(뒷모습)가 낡은 아파트 쪽으로 멀어짐",
          ["MINJAE", "WINTER", "BAG"],
          "A snow-covered alley of old brick houses in the late-afternoon light, blue sky with golden clouds: Minjae (from behind, about half "
-         "the frame height) walks away up the alley toward the old apartment block, the white bag in his hand.",
+         "the frame height) walks away up the alley, the white bag in his hand.",   # 10-31 검수: 그림에 없는 아파트를 새로 그리지 않게
          "almost still: from 0 s to 1.40 s the camera eases back about 1.5%, drifting about 2% to the left and 3% down, slowing to a stop.",
          False),
     25: (1.56, "하린 방 — 작은 트리 곁, 성에 낀 복도 쪽 창 앞에서 계단 쪽을 내다보는 하린(뒷모습)",
@@ -271,8 +274,9 @@ CUT = {
     28: (2.76, "503 앞 미디엄(뒷모습) — 머리 위 센서등이 딸깍 켜져 있고, 폰 불빛을 내리고 열쇠를 한 번에 꽂음",
          ["MINJAE", "WINTER", "BAG", "KEYHOLE"],
          "Medium, from behind: Minjae stands at his door; the small sensor lamp above it has just clicked on and warm light pours over him "
-         "and over the brass keyhole. He lowers his phone, its flashlight still on and pointing at the floor, and with the bag in his other "
-         "hand slides the key into the keyhole in one go and turns it.",
+         # 10-31 검수 · 대조: 그림은 왼손에 봉투와 폰(불빛 켜짐)을 함께 쥐고 오른손이 자물쇠 — 「봉투는 다른 손」이 손 배치를 바꾸게 하지 않게
+         "and over the brass keyhole. His left hand holds the bag together with his phone, its flashlight still on and pointing at the "
+         "floor; with his right hand he slides the key into the brass keyhole in one go and turns it.",
          "almost still: from 0 s to 2.72 s the camera drifts about 2.5% to the left and about 2.3% down, starting very slowly and speeding "
          "up a little toward the end — no shake.",
          False),
@@ -288,22 +292,25 @@ CUT = {
          "closed-lip smile slowly spreads; snowflakes in his hair, his grey scarf, blue dusk behind.",
          # 원본 그대로(카메라 왼쪽으로 47.9% · 위로 3.9% · 물러남 2.6% · 기울기 -6.7°) — 큰 아크를 먼저 쓰고 작은 것은 뒤에(겹친 움직임은 길을 벗어남)
          "handheld, one slow arc that follows him: from 0.08 s to 2.36 s the camera travels in an arc to the left around him — quick at "
-         "first, slowing to a stop — so that the background sweeps about half the frame width, from the snowy rooftops to the decorated "
-         "corridor behind him, while his face stays in about the same place in the frame; along the way it rises a little, eases back "
+         # 10-31 검수: 「arc to the left around him」의 방향이 두 갈래로 읽혀, 바탕이 흐르는 쪽(30e 끝 그림 — 장식 문이 왼쪽에서 들어옴)을 함께 적음
+         "first, slowing to a stop — so that the background behind him sweeps about half the frame width: the snowy rooftops slide out to "
+         "the right and the decorated corridor doors come in from the left, while his face stays in about the same place in the frame; "
+         "along the way it rises a little, eases back "
          "about 2.6%, and the picture turns about 7° counter-clockwise; light tremble (0.9%). It never cuts.",
          True),
     31: (1.16, "하린 뒤통수(리본) 너머 성에 낀 부엌 창 — 새 등 아래 문을 열며 폰을 귀에 댄 민재(작게)",
          ["HARIN", "MINJAE", "WINTER"],
          "From behind Harin's head (the crimson ribbon, out of focus in the right foreground), through her small frosted kitchen window onto "
-         "the corridor: under his newly lit lamp, Minjae, small and from behind, opens his door with his phone at his ear. She stays still "
-         "and never turns her head.",
+         "the corridor: under his newly lit lamp, Minjae, small and from behind, opens his door with his phone at his ear. She stays almost "
+         "still — only a slight, breath-like sway of her head — and never turns her head.",   # 10-31 검수: CAMERA 「her head moves slightly」와 맞춤
          "locked off on a tripod — only the back of her head moves slightly in the foreground; no zoom, no drift.",
          False),
     32: (2.08, "하린 신발장 위 극접사 — 나방 붙은 옛 전구 · 1+1 상자(하나 남음) · 드라이버, 1.9초 손이 옛 전구를 집음",
          ["BOX"],
          "Extreme close-up on top of Harin's shoe cabinet: the blackened old bulb with the dry moth still stuck to it, the open white bulb "
          "box with one bulb left inside, a small screwdriver; a folding step stool at the edge; window lights behind as soft bokeh. Near the "
-         "end, at about 1.9 s, only her hand in a cream knit sleeve comes into the frame — no face, no body — and picks up the old bulb.",
+         "end, at about 1.9 s, only her hand in a cream knit sleeve comes into the frame — no face, no body — and picks up the old bulb. "
+         "Her hand is the one exception to never adding anyone new.",   # 10-31 검수: 공통 LOOK 「Never add a person」이 손 들어옴을 막지 않게
          "handheld, a slow turning push-in: from 0 s to 1.92 s the camera pushes in about 6%, moves about 9% to the left and 8% up and "
          "the picture turns about 10° counter-clockwise — quick at first, slowing to a stop.",
          False),

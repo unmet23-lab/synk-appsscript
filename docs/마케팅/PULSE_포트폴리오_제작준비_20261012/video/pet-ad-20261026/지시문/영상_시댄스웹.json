@@ -42,7 +42,7 @@
    "샷": [
     {"그림": "S04.jpg", "쓰는초": 4.73, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "In his bright one-room apartment, Minjae, smiling, opens the plain brown cardboard box on the bed, lifts out the lemon-yellow dog life vest and holds it up toward the camera with both hands to show it off, then sets the empty box aside on the bed. On the dark wooden chair at the left, sitting on its folded white mat, the dog raises its head and watches him.",
-     "카메라": "locked off on a tripod at chest height — no movement, no zoom, no shake."}
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at chest height — the room, window and furniture never shift; no push-in, no zoom, no drift, no shake; only the people and the dog move."}
    ]
   },
   {
@@ -51,10 +51,10 @@
    "샷": [
     {"그림": "S05.jpg", "쓰는초": 1.6, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "By the window, Minjae bends over the dog standing on the chair and fastens the vest's navy chest buckle with both hands; the dog stands still and calm.",
-     "카메라": "locked off on a tripod, a little above eye level looking slightly down — no movement, no zoom, no shake."},
+     "카메라": "the frame stays exactly where it is from the first frame to the last, a little above eye level looking slightly down — nothing in the room ever shifts; no push-in, no zoom, no drift, no shake; only the people and the dog move."},
     {"그림": "S06.jpg", "쓰는초": 0.63, "누구": ["DOG", "VEST"],
      "동작": "The same chair seen from the front: Minjae's two hands, reaching in from the right edge of the frame, already hold the two navy handles on the vest's back and give them one small tug upward; the dog keeps standing on the chair.",
-     "카메라": "locked off on a tripod — no movement, no zoom, no shake."}
+     "카메라": "the frame stays exactly where it is from the first frame to the last — nothing in the room ever shifts; no push-in, no zoom, no drift, no shake; only the hands and the dog move."}
    ]
   },
   {
@@ -63,10 +63,10 @@
    "샷": [
     {"그림": "S07.jpg", "쓰는초": 1.43, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "In front of the glass interior door, Minjae in blue mirrored sunglasses holds the dog up by the two vest handles like a handbag, at waist height. The dog is already up from the first frame: it just hangs calmly and sways a little; he does not lift it any higher.",
-     "카메라": "locked off on a tripod at waist height, backlit by the glass door — no movement, no zoom, no shake."},
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at waist height, backlit by the glass door — the door and the walls never shift; no push-in, no zoom, no drift, no shake; only the people and the dog move."},
     {"그림": "S08.jpg", "쓰는초": 1.37, "누구": ["DOG", "VEST"],
-     "동작": "At knee height, between Minjae's legs, the dog hangs from the two handles with its front paws dangling, the tips of its toes almost touching the toes of his black sneakers; it sways very slightly and stares to the right with a deadpan face.",
-     "카메라": "locked off on a tripod at knee height — no movement, no zoom, no shake."}
+     "동작": "At knee height, between Minjae's legs, the dog hangs from the two handles exactly at the height of the first frame, its front paws dangling loosely a hand's width above his black sneakers; its legs stay the same length, it sways very slightly and stares to the right with a deadpan face.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at knee height — the floor and the door never shift; no push-in, no zoom, no drift, no shake; only the dog sways."}
    ]
   },
   {
@@ -84,16 +84,16 @@
    "샷": [
     {"그림": "S10.jpg", "쓰는초": 2.73, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "Minjae in blue mirrored sunglasses, bent over the dog, holds the vest handles, lets go, pats the dog's head once, then straightens up, looks straight into the lens and gives a thumbs-up with a big warm smile by about 2 s, holding it to the end. The dog, without goggles, stands calmly beside his legs.",
-     "카메라": "locked off on a tripod at waist height — no movement, no zoom, no shake."}
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at waist height — the door and the walls never shift; no push-in, no zoom, no drift, no shake; only the people and the dog move."}
    ]
   },
   {
-   "id": "p11-10b", "컷": ["10"], "길이": 4, "대안": true,
+   "id": "p11-10b", "컷": ["10"], "길이": 4, "대안": false,
    "설명": "10번 둘째 길 — 쓰다듬기 없이 놓자마자 엄지척(첫 판이 늦으면)",
    "샷": [
     {"그림": "S10.jpg", "쓰는초": 2.73, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "Minjae in blue mirrored sunglasses, bent over the dog, lets go of the vest handles, straightens up at once, looks straight into the lens and gives a thumbs-up with a big warm smile by about 1.5 s, holding it to the end. The dog, without goggles, stands calmly beside his legs.",
-     "카메라": "locked off on a tripod at waist height — no movement, no zoom, no shake."}
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at waist height — the door and the walls never shift; no push-in, no zoom, no drift, no shake; only the people and the dog move."}
    ]
   },
   {"id": "p11-01", "컷": ["1"], "길이": 4, "대안": true, "설명": "묶음 대신 — 해변 외계 옆얼굴 접사",
@@ -107,18 +107,18 @@
   {"id": "p11-05", "컷": ["5"], "길이": 4, "대안": true, "설명": "묶음 대신 — 조끼 버클을 채우는 민재",
    "샷": [{"그림": "S05.jpg", "쓰는초": 1.6, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "By the window, Minjae bends over the dog standing on the chair and fastens the vest's navy chest buckle with both hands; the dog stands still and calm.",
-     "카메라": "locked off on a tripod, a little above eye level looking slightly down — no movement, no zoom, no shake."}]},
+     "카메라": "the frame stays exactly where it is from the first frame to the last, a little above eye level looking slightly down — nothing in the room ever shifts; no push-in, no zoom, no drift, no shake; only the people and the dog move."}]},
   {"id": "p11-06", "컷": ["6"], "길이": 4, "대안": true, "설명": "묶음 대신 — 손잡이 둘을 쥐고 살짝 당김",
    "샷": [{"그림": "S06.jpg", "쓰는초": 0.63, "누구": ["DOG", "VEST"],
      "동작": "The chair seen from the front: Minjae's two hands, reaching in from the right edge of the frame, already hold the two navy handles on the vest's back and give them one small tug upward; the dog keeps standing on the chair.",
-     "카메라": "locked off on a tripod — no movement, no zoom, no shake."}]},
+     "카메라": "the frame stays exactly where it is from the first frame to the last — nothing in the room ever shifts; no push-in, no zoom, no drift, no shake; only the hands and the dog move."}]},
   {"id": "p11-07", "컷": ["7"], "길이": 4, "대안": true, "설명": "묶음 대신 — 손잡이로 외계를 든 민재",
    "샷": [{"그림": "S07.jpg", "쓰는초": 1.43, "누구": ["MINJAE", "DOG", "VEST"],
      "동작": "In front of the glass interior door, Minjae in blue mirrored sunglasses holds the dog up by the two vest handles like a handbag, at waist height. The dog is already up from the first frame: it just hangs calmly and sways a little; he does not lift it any higher.",
-     "카메라": "locked off on a tripod at waist height, backlit by the glass door — no movement, no zoom, no shake."}]},
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at waist height, backlit by the glass door — the door and the walls never shift; no push-in, no zoom, no drift, no shake; only the people and the dog move."}]},
   {"id": "p11-08", "컷": ["8"], "길이": 4, "대안": true, "설명": "묶음 대신 — 무릎 높이, 다리 사이에 매달린 외계",
    "샷": [{"그림": "S08.jpg", "쓰는초": 1.37, "누구": ["DOG", "VEST"],
-     "동작": "At knee height, between Minjae's legs, the dog hangs from the two handles with its front paws dangling, the tips of its toes almost touching the toes of his black sneakers; it sways very slightly and stares to the right with a deadpan face.",
-     "카메라": "locked off on a tripod at knee height — no movement, no zoom, no shake."}]}
+     "동작": "At knee height, between Minjae's legs, the dog hangs from the two handles exactly at the height of the first frame, its front paws dangling loosely a hand's width above his black sneakers; its legs stay the same length, it sways very slightly and stares to the right with a deadpan face.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at knee height — the floor and the door never shift; no push-in, no zoom, no drift, no shake; only the dog sways."}]}
  ]
 }

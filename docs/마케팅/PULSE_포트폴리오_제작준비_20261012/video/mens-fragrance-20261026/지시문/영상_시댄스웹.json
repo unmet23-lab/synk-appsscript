@@ -23,7 +23,7 @@
    "샷": [
     {"그림": "받음/S01_g6.png", "쓰는초": 2.08, "누구": ["TAEJUN"],
      "동작": "On the dark, empty stage, Taejun — a near-silhouette, only his outline rim-lit by the beams, face and body in shadow, no facial detail readable — walks straight toward the camera with steady, deliberate steps: three to four steps in about 2 s, growing to about 1.2x his first-frame size while staying at the same spot across the frame (a little right of centre). The three wide diagonal beams of cold light behind him drift slowly and breathe — bright at first, dimmest around 1.0–1.2 s, bright again by 2 s (about ±10%). The thin glowing stage-edge line stays put and the floor below it stays pure black, with no reflections.",
-     "카메라": "locked off on a tripod — no movement, no zoom, no shake; the stage-edge line and his place across the frame stay exactly where they are from start to end; only he and the light move."}
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the glowing stage-edge line sits at the same height and he stays at the same spot across the frame the whole time; no push-in, no zoom, no drift, no shake; only he and the beams of light move."}
    ]
   },
   {
@@ -32,7 +32,7 @@
    "샷": [
     {"그림": "받음/S04_g5.png", "쓰는초": 0.8, "누구": ["TAEJUN"],
      "동작": "Very close from just behind his bare right shoulder: the rounded shoulder fills the left half of the frame, and his right arm already reaches forward below shoulder height with a loose fist from the first frame. Within about 0.8 s he raises the arm toward the bright light at the upper right and opens his hand, fingers spreading; his shoulder and upper back turn a little with the arm, changing the shoulder's shape. Only the edge of his black hair shows at the top left — his face never comes into view.",
-     "카메라": "locked off — no movement, no zoom, no shake; the far lights and floor line in the background stay exactly in place; only his arm and shoulder move."},
+     "카메라": "the frame stays exactly where it is for the whole shot — the far lights and the floor line never shift; no push-in, no zoom, no drift, no shake; only his arm and shoulder move."},
     {"그림": "정지컷/S05.png", "쓰는초": 0.96, "누구": ["TAEJUN"],
      "동작": "Low angle from the front: Taejun already stands with both arms spread wide to the sides, hands half open, head tilted back, eyes closed, face up into the hazy light pouring down from above, and holds it for about 0.6 s after the cut; then, about 0.65 s after the cut, he swings both arms up fast and surges toward the camera, the arms blurring with motion by about 1 s after the cut. Lips closed.",
      "카메라": "low angle in front of him, pushing in slowly and steadily from the cut while he moves toward it, so his body grows to about 1.5x its size by about 1 s after the cut; the last 0.3 s carries motion blur from his fast arm swing; no camera shake."}
@@ -48,12 +48,12 @@
    ]
   },
   {
-   "id": "p2-08", "컷": ["8"], "길이": 4,
+   "id": "p2-08", "컷": ["8"], "길이": 5,
    "설명": "얼음벽 사이 물보라가 솟아 렌즈를 덮음, 원본처럼 고속 촬영 슬로(10-29)",
    "샷": [
     {"그림": "받음/S08_g5.png", "쓰는초": 0.96, "슬로": true,
-     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water, every drop crisp and separate; at about 0.6 s it surges forward straight at the lens, heavy and glassy, the water hits and covers the lens, and by about 0.75 s the whole frame is filled with water — the surge and the lens-covering both happen inside the first second.",
-     "카메라": "shot on a high-speed camera at about 250 frames per second and played back at normal speed, so the splash moves about ten times slower than life — heavy, deep slow motion with every drop crisp and sharp; locked off — no movement, no zoom, no shake; only the water moves, surging at the lens."}
+     "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water, every drop crisp and separate; the crown keeps rising, then rolls forward straight at the lens, heavy and glassy — the water hits the lens and covers it completely, and from that moment to the last frame the whole frame stays filled with clear rushing water. The lens is covered early, before the middle of the clip.",
+     "카메라": "shot on a high-speed camera at about 250 frames per second and played back at normal speed, so the splash moves about ten times slower than life — heavy, deep slow motion with every drop crisp and sharp; the frame stays exactly where it is for the whole shot — no push-in, no zoom, no drift, no shake; only the water moves, surging at the lens."}
    ]
   },
   {
@@ -75,8 +75,8 @@
    ]
   },
   {
-   "id": "p2-12b", "컷": ["12"], "길이": 4, "대안": true,
-   "설명": "12번 둘째 길 — 시작 그림이 원본 끝 크기라 덜 다가감(1.15배), 첫 판이 너무 조이면",
+   "id": "p2-12b", "컷": ["12"], "길이": 4, "대안": false,
+   "설명": "12번 둘째 길 — 시작 그림이 원본 끝 크기라 덜 다가감(1.15배) · 12와 같이 내 원본 끝 구도에 가까운 판을 고름(10-31 검수)",
    "샷": [
     {"그림": "정지컷/S12.png", "쓰는초": 1.24, "누구": ["TAEJUN", "BOTTLE"],
      "동작": "Taejun, in three-quarter view turned toward frame right, already holds the bottle up in his left hand at the right of the frame from the first frame. Within about 1 s he calmly brings it in toward the left side of his neck, keeping its printed front toward the camera, and tilts the nozzle toward his neck, ready to spray, then holds it there. He never presses the cap: no spray, no mist. His gaze stays fixed past frame right.",
@@ -89,7 +89,7 @@
    "샷": [
     {"그림": "받음/S13_g5.png", "쓰는초": 0.52, "슬로": true,
      "동작": "A fine cologne mist already fills the frame against deep cobalt blue — thousands of tiny backlit droplets sparkling pale blue-white, a brighter band of denser mist running from the lower left to the upper right. The whole cloud drifts steadily to the right across the frame, droplets twinkling as they pass through the light. No bottle, hand or source of the spray in view.",
-     "카메라": "locked off — no movement, no zoom, no shake; only the mist moves, drifting to the right."}
+     "카메라": "the frame stays exactly where it is for the whole shot — no push-in, no zoom, no drift, no shake; only the mist moves, drifting to the right."}
    ]
   },
   {
@@ -125,7 +125,7 @@
   {"id": "p2-04", "컷": ["4"], "길이": 4, "대안": true, "설명": "묶음 대신 — 등 뒤 어깨 너머, 팔을 빛 쪽으로 올리며 손을 폄",
    "샷": [{"그림": "받음/S04_g5.png", "쓰는초": 0.8, "누구": ["TAEJUN"],
      "동작": "Very close from just behind his bare right shoulder: the rounded shoulder fills the left half of the frame, and his right arm already reaches forward below shoulder height with a loose fist from the first frame. Within about 0.8 s he raises the arm toward the bright light at the upper right and opens his hand, fingers spreading; his shoulder and upper back turn a little with the arm, changing the shoulder's shape. Only the edge of his black hair shows at the top left — his face never comes into view.",
-     "카메라": "locked off — no movement, no zoom, no shake; the far lights and floor line in the background stay exactly in place; only his arm and shoulder move."}]},
+     "카메라": "the frame stays exactly where it is for the whole shot — the far lights and the floor line never shift; no push-in, no zoom, no drift, no shake; only his arm and shoulder move."}]},
   {"id": "p2-05", "컷": ["5"], "길이": 4, "대안": true, "설명": "묶음 대신 — 낮은 각도 정면, 팔 벌리고 고개 젖혔다가 팔을 휘두르며 다가옴",
    "샷": [{"그림": "정지컷/S05.png", "쓰는초": 0.96, "누구": ["TAEJUN"],
      "동작": "Low angle from the front: Taejun already stands with both arms spread wide to the sides, hands half open, head tilted back, eyes closed, face up into the hazy light pouring down from above, and holds it for about 0.6 s; then, at about 0.65 s, he swings both arms up fast and surges toward the camera, the arms blurring with motion by about 1 s. Lips closed.",
@@ -138,7 +138,7 @@
      "카메라": "a slight push-in to about 1.03x while the camera sinks a little so the ice moves up about 5% of the frame height; fast at first and easing to almost still within about 0.5 s; only a very slight tremor."},
     {"그림": "받음/S08_g5.png", "쓰는초": 0.96,
      "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; about 0.6 s after the cut it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s after the cut the whole frame is filled with rushing water.",
-     "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}
+     "카메라": "the frame stays exactly where it is for the whole shot — no push-in, no zoom, no drift, no shake; only the water moves, rushing at the lens."}
    ]},
   {"id": "p2-07r", "컷": ["7"], "길이": 4, "대안": true, "설명": "7 셋째 길 — 실제 속도 낱판(10-28 대안 문장). 슬로 낱판이 깨졌는데 묶음 p2-07-08도 못 낼 때",
    "샷": [{"그림": "받음/S07_g6.png", "쓰는초": 0.48, "누구": ["ICE SCULPTURE"],
@@ -147,7 +147,7 @@
   {"id": "p2-08r", "컷": ["8"], "길이": 4, "대안": true, "설명": "8 셋째 길 — 실제 속도 낱판(10-28 대안 문장). 슬로 낱판이 깨졌는데 묶음 p2-07-08도 못 낼 때",
    "샷": [{"그림": "받음/S08_g5.png", "쓰는초": 0.96,
      "동작": "At water level between two walls of clear ice, the crown of splash in the middle is already rising out of the churning water; at about 0.6 s it surges forward straight at the lens, the water hits and covers the lens, and by about 0.75 s the whole frame is filled with rushing water.",
-     "카메라": "locked off — no movement, no zoom, no shake; only the water moves, rushing at the lens."}]},
+     "카메라": "the frame stays exactly where it is for the whole shot — no push-in, no zoom, no drift, no shake; only the water moves, rushing at the lens."}]},
   {"id": "p2-11s", "컷": ["11"], "길이": 4, "대안": true, "설명": "11 둘째 길 — 고속 촬영 슬로 낱판. 받은 주판(실제 속도)의 물이 7 · 8 슬로 옆에서 튀면",
    "샷": [{"그림": "받음/S11_g5.png", "쓰는초": 0.84, "슬로": true, "누구": ["PINE"],
      "동작": "Inside the tall block of clear ice, the frozen pine needles and tiny bubbles stay fixed in the ice; water already seeps along the horizontal crack across the middle from the first frame and keeps glistening there, a few bright drops creeping along it, every drop crisp and sharp. The block stays whole — no new cracks, no flying pieces.",

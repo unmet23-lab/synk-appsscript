@@ -1842,7 +1842,9 @@
      ],
      "동작": "Night, the hallway at home: Seojin, in profile, walks forward out of the frame to the right, passing close by the camera; as she goes, her body sweeps across the frame and she is gone, revealing the hallway seen straight down its length and Ian standing alone at its far end, staring after her, lips closed.",
      "카메라": "static frame at about chest height — the camera stays in place, almost still; while her passing body covers much of the frame (about 0.2–0.7 s) the view settles to the hallway seen head-on, and Ian is revealed exactly as in the last frame — the same hallway, still one continuous shot.",
-     "끝그림": "2-10e.jpg"
+     "끝그림": "2-10e.jpg",
+     "선버스트동작": "Night, the hallway at home: Seojin walks straight toward the camera and passes it on its left, so close that her body sweeps across and briefly fills the frame; then she is gone behind the camera, leaving the hallway seen straight down its length with Ian standing alone at its far end, staring after her, lips closed.",
+     "선버스트카메라": "static frame at about chest height, looking down the hallway — the camera stays in place, almost still; her passing body covers much of the frame (about 0.2–0.7 s) and then the view is the hallway seen head-on with Ian exactly as in the last frame — the same hallway, still one continuous shot."
     }
    ]
   },
@@ -2588,7 +2590,7 @@
       "SEOJIN (pajamas)",
       "IAN (pajamas)"
      ],
-     "동작": "From a high position looking down the kitchen: Seojin rushes out of the hallway toward the table in her satin pajamas, her feet slip on the wooden floor and she skids and drops to the floor.",
+     "동작": "From a high position looking down the kitchen: Seojin rushes out of the hallway toward the table in her satin pajamas; her feet slip on the wooden floor within the first second — by about 1.0 s she is already sliding and by about 1.5 s she is down on the floor; the slip is the one action of this shot.",
      "카메라": "handheld follow from a high position: strong constant handheld shake (about 0.6% of the frame width), the frame leaning a degree or two off level, a little motion blur on the jolts; the camera follows her as she rushes in and slides, tilting down with her, ending on her on the floor."
     }
    ]

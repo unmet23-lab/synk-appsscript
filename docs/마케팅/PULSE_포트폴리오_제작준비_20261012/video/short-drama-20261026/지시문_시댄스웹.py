@@ -333,6 +333,16 @@ cut("2-10", ["SEOJIN (wine dress)", "IAN (sweatshirt)"],
     "static frame at about chest height — the camera stays in place, almost still; while her passing body covers much of the frame (about 0.2–0.7 s) the view settles "
     "to the hallway seen head-on, and Ian is revealed exactly as in the last frame — the same hallway, still one continuous shot.")
 C["2-10"]["끝그림"] = "2-10e.jpg"
+# 10-31 검수 · 대조: 선버스트 두 길(얼굴흐림 · 새로)의 2-10 시작 그림은 서진이 정면으로 카메라를 향해 걸어오는 판이라(확정 판은 옆모습),
+# 그 길로 낼 때만 쓰는 글 — 웹꾸러미.py --7번비교는 늘, --둘째날은 --선버스트를 붙였을 때만 바꿔 쓴다(원본 11의 블로킹에도 더 가깝다)
+C["2-10"]["선버스트동작"] = (
+    "Night, the hallway at home: Seojin walks straight toward the camera and passes it on its left, so close that her body sweeps across and "
+    "briefly fills the frame; then she is gone behind the camera, leaving the hallway seen straight down its length with Ian standing alone at "
+    "its far end, staring after her, lips closed.")
+C["2-10"]["선버스트카메라"] = (
+    "static frame at about chest height, looking down the hallway — the camera stays in place, almost still; her passing body covers much of "
+    "the frame (about 0.2–0.7 s) and then the view is the hallway seen head-on with Ian exactly as in the last frame — the same hallway, still "
+    "one continuous shot.")
 # 2화 ② 회사 — 빈 도시락
 cut("2-11", ["MINJAE", "IAN (office)"],
     "Office, over Ian's blurred head: Minjae walks up and leans over the desk toward Ian, asking in Korean with a teasing look: \"오늘은 매실도 없냐?\"",
@@ -435,8 +445,9 @@ cut("2-33", ["IAN (pajamas)"],
     "Bust: Ian sits at the table with his head bowed, looking down at the paper (out of frame below), breathing slowly; his lips stay closed.",
     jit("2-33", cap=0.4))
 cut("2-34", ["SEOJIN (pajamas)", "IAN (pajamas)"],
-    "From a high position looking down the kitchen: Seojin rushes out of the hallway toward the table in her satin pajamas, her feet slip on the wooden floor and she skids "
-    "and drops to the floor.",
+    # 10-31 검수: 미끄러짐에 시각이 없어 쓰는 0.93초 밖으로 밀리지 않게
+    "From a high position looking down the kitchen: Seojin rushes out of the hallway toward the table in her satin pajamas; her feet slip on the wooden floor "
+    "within the first second — by about 1.0 s she is already sliding and by about 1.5 s she is down on the floor; the slip is the one action of this shot.",
     "handheld follow from a high position: " + strong("2-34") + "; the camera follows her as she rushes in and slides, tilting down with her, ending on her on the floor.")
 cut("2-35", ["IAN (pajamas)", "SEOJIN (pajamas)"],
     "Wide: Ian, turning on his chair at the table, stares at Seojin sprawled on the floor in front of him and right away says in Korean, alarmed: \"왜, 왜 그래.\" Seojin, "
@@ -677,6 +688,9 @@ def shot(k):
     out = {"컷": k, "그림": f"{k}.jpg", "쓰는초": used(k), "누구": s["누구"], "동작": s["동작"], "카메라": s["카메라"]}
     if s.get("끝그림"):
         out["끝그림"] = s["끝그림"]
+    for f in ("선버스트동작", "선버스트카메라"):   # 10-31 — 선버스트 길 그림일 때만 웹꾸러미가 바꿔 쓴다
+        if s.get(f):
+            out[f] = s[f]
     if k in CHANGES:
         out["카메라"] = CHANGES[k]["카메라"]
         out["원본카메라"] = s["카메라"]

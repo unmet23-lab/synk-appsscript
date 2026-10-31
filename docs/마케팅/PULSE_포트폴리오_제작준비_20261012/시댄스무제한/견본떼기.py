@@ -2,6 +2,7 @@
 #   python -X utf8 견본떼기.py [<목소리 판 id…>] [--demucs]
 #     매진 임박 hs-목소리-<배역> → synk-vendor/homeshopping-horror-20261021/목소리/시댄스견본/<jiyu · ri4 · tong2 · gangdo>.mp3
 #     7번      p7-목소리-<배역> → synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/<ian · seojin · minjae · soyeon>.mp3
+#     오미톡   om2-2(10-31 — 한결이 직접 말하는 판, 헐떡임이 섞이니 --demucs) → 웹꾸러미.py의 VOICE_FROM 자리(om2-끝말 판 견본)
 # 받기.py가 받은 받음/<판>.mp4(다시 낸 판이 있으면 가장 나중 것)에서 소리를 꺼내 앞뒤 무음을 자르고 −17 LUFS로 둔다. --demucs면 먼저 Demucs로
 # 목소리만 뗀다(C:/SYNK-LoRA/tools/demucs — 현장노트 영상 「대사 클립의 목소리만 떼기」, CPU로 11초 클립에 41초). 받아쓰기(faster-whisper medium, VAD 끔)로 그 판에 적은
 # 글을 말했는지 보고 다르면 알린다 — 다른 사람 말 · 음악이 섞인 견본은 쓰지 않는다. 다 떼면 웹꾸러미.py(둘째 날은 --둘째날 B)를 다시 돌려 대사 판 폴더를 채운다.
@@ -23,6 +24,8 @@ def targets():
         out[f"hs-목소리-{role}"] = (os.path.join(W.SEED_SAMPLES, W.SAMPLE_FILE[role]), text)
     for role, _, _, _, text in W.P7_CASTING:
         out[f"p7-목소리-{role}"] = (os.path.join(W.P7_SOUND, "B", role + ".mp3"), text)
+    for pid, (dst, text) in W.VOICE_FROM.items():   # 다른 편의 「소리 켬」 판(오미톡 om2-2 — 헐떡임이 섞이니 --demucs로)
+        out[pid] = (dst, text)
     return out
 
 

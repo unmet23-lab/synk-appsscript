@@ -55,8 +55,8 @@
      "누구": [
       "HANGYEOL"
      ],
-     "동작": "He lies flat on his back on the court exactly as in the first frame, arms flung out; the grin of the first frame fades into exhausted panting within the first half second — gasping for air, chest heaving, squinting against the low sun. At about 0.6 s, between two breaths, he says hoarsely in Korean, half to himself, in his own natural tired voice: \"아… 목 타 죽겠다.\" — his lips clearly forming the Korean words, no shouting, no exaggerated face. Then he keeps panting with his mouth slightly open. His arms and legs stay where they are; the basketball stays against his hand.",
-     "카메라": "handheld phone held by the friend standing over him, pointing down — a small natural hand shake and a slight drift, staying at the same height and framing."
+     "동작": "He lies flat on his back on the court exactly as in the first frame, arms flung out; the grin of the first frame fades into exhausted panting within the first half second — gasping for air, chest heaving, squinting against the low sun. At about 1.0 s, between two breaths, he says hoarsely in Korean, half to himself, in his own natural tired voice: \"아… 목 타 죽겠다.\" — his lips clearly forming the Korean words, no shouting, no exaggerated face. Then he keeps panting with his mouth slightly open. His arms and legs stay where they are; the basketball stays against his hand.",
+     "카메라": "handheld phone held by the friend standing over him, pointing straight down: from about 0.3 s to 1.0 s the friend crouches and brings the phone down toward his face, so that by 1.0 s his sweaty, squinting face, shoulders and heaving chest fill most of the frame — about twice as close as the first frame; then it holds there with a small natural hand shake and a slight drift. His face stays exactly the face of the first frame, only closer."
     }
    ]
   },
@@ -77,7 +77,7 @@
       "CAN",
       "STEAM"
      ],
-     "동작": "The friend's hand with the ruby-red wristband, already rising at the top left after setting the can down, keeps lifting and leaves the frame upward within 0.5 s, never coming back toward the can. The can stays exactly where it stands, upright and unchanged, for the whole clip — it never moves, tilts or slides. Around its base the ring of meltwater on the hot asphalt hisses up into a thin wisp of white steam that rises and thins out. Behind it he lies on his side propped on one elbow, one hand on his chest, already looking at the can exactly as in the first frame; at about 1.0 s his eyebrows lift and his eyes widen a touch, never leaving the can. Nothing else moves.",
+     "동작": "The friend's hand with the ruby-red wristband has just let go of the can: its open fingers, still pointing down, never close and never touch the can — the whole hand lifts straight up and leaves the frame at the top within 0.5 s, never coming back. The can stays exactly where it stands, upright and unchanged, for the whole clip — it never moves, tilts or slides. Around its base the ring of meltwater on the hot asphalt hisses up into a thin wisp of white steam that rises and thins out. Behind it he lies on his side propped on one elbow, one hand on his chest, already looking at the can exactly as in the first frame; at about 1.0 s his eyebrows lift and his eyes widen a touch, never leaving the can. Nothing else moves.",
      "카메라": "locked off — a phone lying on the court surface at ground level: the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
     }
    ]
@@ -97,7 +97,7 @@
       "STEAM"
      ],
      "동작": "The perfect wet ring left on the hot pale asphalt, where a cold can stood a moment ago, hisses away: white steam rises from it and the ring shrinks inward from its edges and fades, until only a faint darker trace remains by about 2.5 s. No can, no hand, no person appears.",
-     "카메라": "locked off at ground level, a very slow push-in — about 3% closer by the last frame — no pan, no shake."
+     "카메라": "at ground level, a very slow push-in — about 3% closer by the last frame — no pan, no tilt, no shake."
     }
    ]
   },
@@ -117,7 +117,7 @@
       "DRINK",
       "STEAM"
      ],
-     "동작": "The ruby crown hangs frozen in mid-splash for the whole shot — the drop itself never moves while the court around it cools. For the first 0.6 s thin white steam keeps hissing up from the crown over the hot, dry, sun-baked asphalt; then the steam thins out and is gone within 0.8 s, and from the exact spot of the crown a wave of coolness spreads outward across the whole court in one widening circle: inside the circle the asphalt turns dark, damp and cool, and the orange sunset light gives way to blue dusk; the heat shimmer vanishes as the circle passes; the court floodlights on their poles come on far behind. The last frame is exactly @이미지 2.",
+     "동작": "The ruby crown hangs frozen in mid-splash for the whole shot — the drop itself never moves while the court around it cools. For the first 0.6 s thin white steam keeps hissing up from the crown over the hot, dry, sun-baked asphalt; then by 1.4 s the steam is gone, and from 1.4 s to 3.2 s a wave of coolness sweeps outward from the exact spot of the crown across the whole court in one widening circle — its moving edge clearly visible: inside the circle the asphalt turns dark, damp and cool, and the orange sunset light gives way to blue dusk; the heat shimmer vanishes as the circle passes; the court floodlights on their poles come on far behind as the edge reaches them. By 3.4 s the whole frame is blue dusk and it stays unchanged, exactly as @이미지 2, to the last frame.",
      "카메라": "locked off at ground level — the frame stays exactly where it is from the first frame to the last (the last frame has the same framing): no push-in, no zoom, no pan, no shake.",
      "슬로": true
     }
@@ -159,7 +159,31 @@
      ],
      "슬로": true,
      "동작": "In the sharp foreground the clean ruby crown of the last drop on the cool wet asphalt rises a little higher and then settles back over the first 1.2 s, the tiny bead at its centre falling back in; after that the liquid soaks quietly into the ground and everything is still. There is no steam at all — the air stays perfectly clear. Behind it the can stays perfectly still and exactly as sharp as in the first frame for the whole clip — no focus change. No new drop falls, nothing enters from above. The floodlight bokeh glows steadily. Shot on a high-speed macro camera at 1000 fps, played back slowly.",
-     "카메라": "locked off at ground level — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake."
+     "카메라": "at ground level, a very slow, steady push-in of about 5% over the whole shot toward the crown and the can — no pan, no tilt, no shake."
+    }
+   ]
+  },
+  {
+   "id": "om2-끝말",
+   "컷": [
+    "7"
+   ],
+   "길이": 4,
+   "소리": "켬",
+   "목소리견본": "om2-2",
+   "소리줄": {
+    "켬": "SOUND: only his own calm voice saying these two Korean lines, over quiet outdoor court ambience — no music, no other voices, no sound effects."
+   },
+   "설명": "끝 두 줄 목소리 판(10-31 검수) — om2-2 그림 · 한결 견본(om2-2에서 뗌)으로 「다섯 가지 맛, 톡.」 · 「오미톡.」, 소리만 씀",
+   "샷": [
+    {
+     "그림": "om2-2.png",
+     "쓰는초": 3.0,
+     "누구": [
+      "HANGYEOL"
+     ],
+     "동작": "He lies on his back exactly as in the first frame and, after one slow breath, says calmly in Korean in his own natural voice, with a small satisfied smile: \"다섯 가지 맛, 톡.\" — a short pause — \"오미톡.\" His lips clearly form the Korean words; nothing else moves.",
+     "카메라": "handheld phone held by the friend standing over him, pointing down — only a tiny natural drift, no zoom, no pan."
     }
    ]
   },
@@ -219,7 +243,7 @@
       "DRINK",
       "STEAM"
      ],
-     "동작": "The ruby crown hangs frozen in mid-splash for the whole shot — the drop itself never moves while the court around it cools. For the first 0.6 s thin white steam keeps hissing up from the crown over the hot, dry, sun-baked asphalt; then the steam thins out and is gone within 0.8 s, and from the exact spot of the crown a wave of coolness spreads outward across the whole court in one widening circle: inside the circle the asphalt turns dark, damp and cool, and the orange sunset light gives way to blue dusk; the heat shimmer vanishes as the circle passes; the court floodlights on their poles come on far behind. By the end the whole court is blue dusk, dark and wet to the horizon, the floodlights glowing far behind, the frozen ruby crown unchanged.",
+     "동작": "The ruby crown hangs frozen in mid-splash for the whole shot — the drop itself never moves while the court around it cools. For the first 0.6 s thin white steam keeps hissing up from the crown over the hot, dry, sun-baked asphalt; then by 1.4 s the steam is gone, and from 1.4 s to 3.2 s a wave of coolness sweeps outward from the exact spot of the crown across the whole court in one widening circle — its moving edge clearly visible: inside the circle the asphalt turns dark, damp and cool, and the orange sunset light gives way to blue dusk; the heat shimmer vanishes as the circle passes; the court floodlights on their poles come on far behind as the edge reaches them. By 3.4 s the whole court is blue dusk, dark and wet to the horizon, the floodlights glowing far behind, the frozen ruby crown unchanged, and it stays that way to the last frame.",
      "카메라": "locked off at ground level — the frame stays exactly where it is from the first frame to the last (the last frame has the same framing): no push-in, no zoom, no pan, no shake.",
      "슬로": true
     }
@@ -240,8 +264,8 @@
      "누구": [
       "HANGYEOL"
      ],
-     "동작": "He lies flat on his back on the court exactly as in the first frame, arms flung out; the grin of the first frame fades into exhausted panting within the first half second — gasping for air, chest heaving, squinting against the low sun. At about 0.6 s, between two breaths, he says hoarsely in Korean, half to himself, in his own natural tired voice: \"아… 목 타 죽겠다.\" — his lips clearly forming the Korean words, no shouting, no exaggerated face. Then he keeps panting with his mouth slightly open. His arms and legs stay where they are; the basketball stays against his hand.",
-     "카메라": "handheld phone held by the friend standing over him, pointing down — a small natural hand shake and a slight drift, staying at the same height and framing."
+     "동작": "He lies flat on his back on the court exactly as in the first frame, arms flung out; the grin of the first frame fades into exhausted panting within the first half second — gasping for air, chest heaving, squinting against the low sun. At about 1.0 s, between two breaths, he says hoarsely in Korean, half to himself, in his own natural tired voice: \"아… 목 타 죽겠다.\" — his lips clearly forming the Korean words, no shouting, no exaggerated face. Then he keeps panting with his mouth slightly open. His arms and legs stay where they are; the basketball stays against his hand.",
+     "카메라": "handheld phone held by the friend standing over him, pointing straight down: from about 0.3 s to 1.0 s the friend crouches and brings the phone down toward his face, so that by 1.0 s his sweaty, squinting face, shoulders and heaving chest fill most of the frame — about twice as close as the first frame; then it holds there with a small natural hand shake and a slight drift. His face stays exactly the face of the first frame, only closer."
     }
    ],
    "대안": true

@@ -238,7 +238,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "숨소리 · 흐느낌(말 없음)",
-   "prompt": "Very close handheld shot of the three women sitting pressed together on the sofa. Camera, copying the original cut exactly: handheld with a strong, constant shake of about 1.6% of the frame width and a roll wobble of about 0.5°; from 0.3 s to 1.6 s it tilts up about 15% of the frame width, slowing to a stop; from 0.3 s to 2.3 s it pulls back about 4%, slowing to a stop; at 0.5 s it whips fast with heavy motion blur; from 1.7 s to 2.2 s it pans right about 4% of the frame width, at an even speed; over the shot the picture tilts about 6° counterclockwise; after 2.3 s it keeps the same handheld feel with no new moves; it starts at their waist height, on their clutched hands in their laps, and ends exactly on the end frame: the curly-haired woman with the rose crown on the left, the woman with round glasses, heart sunglasses and a red bow in the middle, the woman in the white lace veil on the right. They cling to each other and stare up toward the upper left at a man standing out of frame, eyes wide, lips trembling, breathing fast and sobbing, and keep trembling until the last frame.",
+   "prompt": "Very close handheld shot of the three women sitting pressed together on the sofa. Camera, copying the original cut exactly: handheld with a strong, constant shake of about 1.6% of the frame width and a roll wobble of about 0.5°; from 0.3 s to 1.6 s it tilts up from their laps to their faces — about one full frame height — slowing to a stop, so that their three faces fill the frame by 1.6 s and the framing then holds; from 0.3 s to 2.3 s it pulls back about 4%, slowing to a stop; at 0.5 s it whips fast with heavy motion blur; from 1.7 s to 2.2 s it pans right about 4% of the frame width, at an even speed; over the shot the picture tilts about 6° counterclockwise; after 2.3 s it keeps the same handheld feel with no new moves; it starts at their waist height, on their clutched hands in their laps, and ends exactly on the end frame: the curly-haired woman with the rose crown on the left, the woman with round glasses, heart sunglasses and a red bow in the middle, the woman in the white lace veil on the right. They cling to each other and stare up toward the upper left at a man standing out of frame, eyes wide, lips trembling, breathing fast and sobbing, and keep trembling until the last frame.",
    "공통_말없음": true,
    "요약": "허리 높이에서 붙어 앉아 맞잡은 손으로 시작해 1초 안에 얼굴까지 틸트 → 끝 그림의 겁먹은 세 얼굴로 끝 · 숨소리 · 흐느낌.",
    "카메라_원본": {
@@ -300,7 +300,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "A 「이게 전부예요!」(화면 밖 — 강도 입이 움직이지 않게 소리 참고 없음)",
-   "prompt": "Low-angle medium shot from the eye level of someone sitting on the sofa, looking up at him. Camera, copying the original cut exactly: handheld with only a faint drift (about 0.2% of the frame width); from 0.3 s to 1.8 s it pans right about 6% of the frame width, at an even speed; after 1.8 s it keeps the same handheld feel with no new moves. The masked man looks down and rummages through the small fluffy red heart pouch with his RIGHT hand, its thin chain strap swinging; the kitchen knife (a harmless film prop) and the pouch's chain hang low in his LEFT hand. He keeps his mouth closed.",
+   "prompt": "Low-angle medium shot from the eye level of someone sitting on the sofa, looking up at him. Camera, copying the original cut exactly: handheld with only a faint drift (about 0.2% of the frame width); from 0.3 s to 1.8 s it pans right about 6% of the frame width, at an even speed; after 1.8 s it keeps the same handheld feel with no new moves. The masked man looks down; his RIGHT hand, already holding the top of the small fluffy red heart pouch, pulls it open and digs inside, its thin chain strap swinging; the kitchen knife (a harmless film prop) and the pouch's chain hang low in his LEFT hand. He keeps his mouth closed.",
    "요약": "아래에서. 오른손으로 주머니를 뒤지고(왼손에 칼과 쇠사슬 끈) 끈이 흔들린다 · 강도는 입을 닫는다(대사는 화면 밖 A).",
    "공통_말없음_강도": true,
    "카메라_원본": {
@@ -1063,7 +1063,7 @@
    "id": "S23",
    "컷": 23,
    "원본": "41.33–45.75 (4.42초) 강도 · 납작한 상자를 가슴 높이에 들고 본다 → 3.9초에 내려놓고 → 4.4초에 주머니",
-   "길이": 5,
+   "길이": 6,
    "쓰는 구간": [
     0.3,
     4.42
@@ -1119,7 +1119,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "「안 돼!」 둘(44.56 · 45.79 — 얼굴이 안 보여 편집에서)",
-   "prompt": "Extreme close-up from above the huddled women, on the top of a bowed head. Camera, copying the original cut exactly: handheld with a strong, constant shake of about 2.4% of the frame width and a roll wobble of about 1.2°; from 0.3 s to 1.7 s it pushes in about 13%, speeding up; from 0.3 s to 1.8 s it tilts down about 26% of the frame width, slowing to a stop; from 0.5 s to 1.4 s it jolts hard again and again, with motion blur on each jolt; over the shot the picture tilts about 19° counterclockwise; after 1.8 s it keeps the same handheld feel with no new moves. It stays on the top of the bowed head of the woman with the red heart sunglasses and the red bow, who sobs bent forward, her head shaking; her head sinks a little lower and her face stays hidden the whole time. The hand of the woman in the veil, with a thin ring, grips her shoulder at the upper right and slides up into her hair. Nobody's face appears.",
+   "prompt": "Extreme close-up from above the huddled women, on the top of a bowed head. Camera, copying the original cut exactly: handheld with a strong, constant shake of about 2.4% of the frame width and a roll wobble of about 1.2°; from 0.3 s to 1.7 s it pushes in about 13%, speeding up; from 0.3 s to 1.8 s it tilts down about 26% of the frame width, slowing to a stop; from 0.5 s to 1.4 s it jolts hard again and again, with motion blur on each jolt; over the shot the picture tilts about 19° counterclockwise; after 1.8 s it keeps the same handheld feel with no new moves. It stays on the top of the bowed head of the woman with the red heart sunglasses and the red bow, who sobs bent forward, her head shaking; her head sinks a little lower and her face stays hidden the whole time. The hand of the woman in the veil, with a thin ring, grips her shoulder at the upper right and slides up into her hair. No full face appears — only the tops of heads, hair and the friends' hands, exactly as in the first frame.",
    "공통_말없음": true,
    "요약": "아주 가까이 · 크게 흔들림. B의 숙인 머리가 더 숙고 얼굴은 끝까지 안 보임 · 오른쪽 위 A의 반지 손이 어깨를 쥐었다 머리로 올라간다. — 10-26 밤 끝 그림을 뺌: 시작과 같은 구도의 끝 그림은 카메라를 멈추게 해(9번 세션 확인) 원본의 13% 밀기 · 26% 틸트 · 19° 기울기를 시작 그림 하나로 낸다.",
    "카메라_원본": {
@@ -1237,7 +1237,7 @@
    },
    "generate_audio": true,
    "대사": "C 「세상에…!」(원본 52.20–53.90)",
-   "prompt": "Close-up very close to her, shallow depth of field. Camera, copying the original cut exactly: handheld with a light, constant shake of about 0.8% of the frame width; until 1.2 s it holds the opening framing with that same handheld feel; from 1.2 s to 4.1 s it pans left about 10% of the frame width, at an even speed; from 2.0 s to 2.5 s it pulls back about 2%, at an even speed; from 4.4 s to 5.0 s it tilts up about 5% of the frame width, at an even speed; from 5.5 s to 7.0 s it pans left and tilts down about 17% of the frame width, speeding up; over the shot the picture tilts about 4° clockwise; from 1.2 s it is motion-blurred until about 1.4 s. It starts on the top of the curly-haired woman's bowed head with her rose crown, shaking with sobs. Over the next two to three seconds she slowly lifts her face into the frame, crying in terror and despair, her wet eyes going up toward the upper left at the man standing out of frame; then she opens her mouth wide and wails in Korean, her lips in sync with the reference audio: \"세상에…!\" ending on the same tearful face as the end frame.",
+   "prompt": "Close-up very close to her, shallow depth of field. Camera, copying the original cut exactly: handheld with a light, constant shake of about 0.8% of the frame width; until 1.2 s it holds the opening framing with that same handheld feel; from 1.2 s to 4.1 s it pans left about 10% of the frame width, at an even speed; from 2.0 s to 2.5 s it pulls back about 2%, at an even speed; from 4.4 s to 5.0 s it tilts up about 5% of the frame width, at an even speed; from 5.5 s to 7.0 s it settles with only a small handheld drift down and to the left, so that the last frame is exactly the end frame; over the shot the picture tilts about 4° clockwise; from 1.2 s it is motion-blurred until about 1.4 s. It starts on the top of the curly-haired woman's bowed head with her rose crown, shaking with sobs. Over the next two to three seconds she slowly lifts her face into the frame, crying in terror and despair, her wet eyes going up toward the upper left at the man standing out of frame; then she opens her mouth wide and wails in Korean, her lips in sync with the reference audio: \"세상에…!\" ending on the same tearful face as the end frame.",
    "요약": "숙인 정수리(꽃관)에서 2~3초에 걸쳐 얼굴을 들고 → 컷 3.2초에 「세상에…!」(소리 참고) 울부짖음 → 끝 그림 얼굴로(7초를 뽑아 끝 그림에 닿는 뒤쪽 5.79초를 씀).",
    "카메라_원본": {
     "길이초": 5.79,
@@ -1455,7 +1455,7 @@
    "소리 참고": null,
    "generate_audio": false,
    "대사": "말 없음",
-   "prompt": "Low-angle medium shot from the eye level of someone sitting on the sofa, looking up at him. Camera, copying the original cut exactly: the frame stays exactly where it is from the first frame to the last — no push-in, no zoom, no pan, no tilt, no shake — with only the faintest drift of a camera resting on a fixed mount; after 2.1 s it is still exactly the same framing. The masked man stands still facing the camera and stares straight into the lens, deadpan; the small ribbon-tied lunchbox dangles and sways slightly from the long ribbon ends wound around the fingers of his right hand, which stays at chest height. He does not move his arms.",
+   "prompt": "Low-angle medium shot from the eye level of someone sitting on the sofa, looking up at him. Camera, copying the original cut exactly: the frame stays exactly where it is from the first frame to the last — no push-in, no zoom, no pan, no tilt, no shake — with only the faintest drift of a camera resting on a fixed mount; after 2.1 s it is still exactly the same framing. The masked man stands still facing the camera and stares straight into the lens, deadpan; the small ribbon-tied lunchbox dangles and sways slightly from the long ribbon ends wound around the fingers of his right hand, which stays raised exactly where it is in the first frame. He does not move his arms.",
    "요약": "아래에서. 렌즈를 똑바로 보며 무표정 · 리본 끈에 매달린 도시락이 살짝 흔들린다 · 팔은 움직이지 않는다.",
    "공통_말없음_강도": true,
    "카메라_원본": {

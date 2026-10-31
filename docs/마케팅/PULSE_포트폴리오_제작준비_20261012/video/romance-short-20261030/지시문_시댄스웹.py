@@ -143,8 +143,8 @@ cut("C13", [TT],
     still())
 # ⑤ 회식
 cut("C14", [TN, MB, CU],
-    "In the warm pub, Minjae leans toward Taejun with a teasing grin and asks in Korean at about 1.0 s: \"이 자리에 좋아하는 사람 있죠?\" Taejun laughs "
-    "and waves his raised hand to brush it off, saying in Korean at about 4.0 s: \"에이, 없어요.\" The other customers stay blurred; in the foreground the "
+    "In the warm pub, Minjae leans toward Taejun with a teasing grin and asks in Korean at about 1.0 s: \"이 자리에 좋아하는 사람 있죠?\" Taejun listens with his lips closed, then laughs "
+    "and waves his raised hand to brush it off, saying in Korean at about 4.0 s: \"에이, 없어요.\" while Minjae only grins, lips closed. The other customers stay blurred; in the foreground the "
     "folded clear umbrella hangs from the bench back, a drop of water falling from its tip.",
     "slow push-in that speeds up: from about 0.7 s the camera physically moves forward toward the two men, gently at first and faster toward the end, "
     "ending about 2.5 times closer at about 7.0 s, where it nearly stops — it arrives exactly at the framing of @이미지 2. No lens zoom.",
@@ -191,8 +191,8 @@ cut("C22", [YC, TN],
     "keeps his lips closed; his eyes slide away from her for a moment.",
     still(), [(YC, "제가 투명한 거 좋아하는 건 어떻게 알아요?", 1.8, "입")])
 cut("C23", [TN, YC, CU],
-    "Taejun, embarrassed, rubs his ear and lowers his eyes; behind him, out of focus, Yuna lifts one premium clear umbrella off the stand and looks at "
-    "it. At about 1.5 s he glances back over his shoulder toward her for half a second and turns away again, rubbing his ear. Nobody speaks.",
+    "Taejun, embarrassed, rubs his ear and lowers his eyes; behind him, out of focus, Yuna lifts one premium clear umbrella off the stand at the right, brings it in front of her chest and "
+    "looks at it. At about 1.5 s he glances back over his shoulder toward her for half a second and turns away again, rubbing his ear. Nobody speaks.",
     still(), closed=[TN, YC], post="김 서린 유리 · 손글씨 겹침(2.1–3.2초) · 좌우 띠 열림(6.1–7.8초) · 태준 속말 「몰랐다. 숨긴다고 숨긴 게, 다 보이고 있었다는 걸.」(2.5초~)")
 # ⑨ 현재 — 들킴
 cut("C24", [YC, TN],
@@ -218,7 +218,7 @@ cut("C28", [TN, CU],
     "Yuna's voice, off screen, begins in Korean: \"다 보여요,\"",
     still(), [(YC, "다 보여요,", 2.9, "가림")], closed=[TN])
 cut("C29", [YC],
-    "Yuna, in near profile with her face low in the frame, lifts her eyes to him and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
+    "Yuna, looking up toward him at the right, lifts her eyes to his and, smiling warmly, right away finishes in Korean: \"…과장님.\"",
     still(), [(YC, "…과장님.", 0.1, "입")])
 cut("C30", [TN, YC],
     "Macro insert at hip height: Taejun's empty hand hangs by his side (his folded umbrella is in his other hand, out of frame); Yuna's hand comes "
@@ -237,7 +237,7 @@ cut("C33", [],
     "Insert of the rain puddle at night: the water ripples, smearing the pink, purple and gold neon reflections; no person is recognizable.",
     "static frame — only the reflection drifts slowly right and up (about 10%) as the water ripples; the camera itself does not move.")
 cut("C34", [TN, YC],
-    "Under the awning in soft pink light: Taejun gently takes Yuna's arm and steps closer; she looks up at him; they stand face to face, a hand's "
+    "Under the awning in soft pink light: Taejun, already holding Yuna's arm, draws her half a step closer and leans in a little; she looks up at him; they stay face to face, a hand's "
     "breadth apart, silent.",
     still(), closed=[TN, YC], post="노래 후렴 — C34 마지막 1초 페이드(시작 편 끝 카드를 뺀 자리)")
 
@@ -274,9 +274,9 @@ cut("C40", [BU],
     still(), post="뿌연 판이 0.5–2.1초에 가라앉음 · 글자 없음")
 # ③ 회상 — 사무실(앞날)
 cut("C41", [TB, MG],
-    "Office, daytime: Minjae leans on the partition and asks Taejun with a suspicious grin in Korean at about 0.1 s: \"과장님, 요즘 사내 연애 하시는 거 "
-    "아니죠?\" Taejun, at his desk, lets out a short sigh in Korean at about 2.5 s: \"아….\"",
-    still(), [(MG, "과장님, 요즘 사내 연애 하시는 거 아니죠?", 0.1, "입"), (TB, "아….", 2.5, "입")])
+    "Office, daytime: Minjae leans on the partition and asks Taejun quickly, in one breath, with a suspicious grin in Korean at about 0.1 s: \"과장님, 요즘 사내 연애 하시는 거 "
+    "아니죠?\" Taejun, at his desk, listens with his lips closed, then lets out a short sigh in Korean at about 3.3 s: \"아….\"",
+    still(), [(MG, "과장님, 요즘 사내 연애 하시는 거 아니죠?", 0.1, "입"), (TB, "아….", 3.3, "입")])
 cut("C42", [YW, TB],
     "In the office, Taejun in the background turns to look at Yuna; she keeps her eyes lowered, cool and closed off. No one speaks.",
     still() + focus("Taejun in the background", "Yuna in the foreground", 1.9, 2.4), closed=[YW, TB])
@@ -298,7 +298,7 @@ cut("C46", [TB, YW],
     still(), closed=[], post="태준 속말 「그날, 내 손을 피했지.」")
 # ⑤ 회식
 cut("C47", [YW],
-    "In the warm pub, Minjae's voice asks from off screen in Korean at about 0.1 s: \"이 자리에 좋아하는 사람 있죠?\" Yuna, looking at him, freezes for a "
+    "In the warm pub, Minjae's voice asks from off screen in Korean at about 0.1 s: \"이 자리에 좋아하는 사람 있죠?\" Yuna, looking at him, listens with her lips closed and freezes for a "
     "moment, then answers coldly in Korean at about 3.5 s: \"아니요.\"",
     still(), [(MG, "이 자리에 좋아하는 사람 있죠?", 0.1, "가림"), (YW, "아니요.", 3.5, "입")])
 cut("C48", [TB, MG, CU],
@@ -328,11 +328,11 @@ cut("C51", [TJ, YB, "GREEN SCREEN"],
     [(TJ, "응? 아무것도 아냐.", 0.3, "입")], post="휴대폰 화면 사진 — 우리 C18e 그림을 초록 화면에 합성")
 cut("C52", [TJ, BU],
     "From knee height inside the umbrella stand, looking steeply up past the ceiling lights: Taejun lifts a folded misty-blue umbrella off the stand, "
-    "looks down at it, and at about 1.2 s starts to say softly in Korean: \"이거,\"",
+    "brings it in front of his chest, looks down at it, and at about 1.2 s starts to say softly in Korean: \"이거,\"",
     still(), [(TJ, "이거,", 1.2, "입")])
 cut("C53", [TJ, YB, BU, BK],
     "In the store aisle, Taejun holds the folded misty-blue umbrella a little toward Yuna and says gently in Korean at about 0.2 s: \"…너 좋아하겠다.\" "
-    "Yuna, holding her own folded black umbrella, looks at it and does not take it; a long silence; at about 6.0 s she looks up at him and asks quietly "
+    "Yuna, holding her own folded black umbrella, looks at it with her lips closed and does not take it; a long silence; at about 6.0 s she looks up at him and asks quietly "
     "in Korean: \"바빠?\" Taejun lowers the umbrella and answers in Korean at about 8.5 s: \"아니, 괜찮아.\" He looks at her face for a moment, "
     "understands, and says quietly in Korean at about 11.8 s: \"…할 말 있구나.\" Yuna holds his gaze, then looks down.",
     still(), [(TJ, "…너 좋아하겠다.", 0.2, "입"), (YB, "바빠?", 6.0, "입"), (TJ, "아니, 괜찮아.", 8.5, "입"), (TJ, "…할 말 있구나.", 11.8, "입")])
@@ -350,9 +350,9 @@ cut("C56", [TJ, BU],
     "\"너 투명한 거 좋아하잖아.\"",
     still(), [(TJ, "너 투명한 거 좋아하잖아.", 0.0, "가림")])
 cut("C57", [YB],
-    "Under the awning: for the first half Yuna's eyes are on the offered umbrella (below the frame), not on him; at about 0.8 s she says quietly in "
+    "Under the awning: for the first half Yuna's eyes are on the offered umbrella (below the frame), not on him; at about 1.8 s she says quietly in "
     "Korean: \"이런 거 자꾸 챙겨 주지 마. 나중에 생각나.\" — she swallows before 나중에 생각나, and only at the end lifts her eyes to him.",
-    still(), [(YB, "이런 거 자꾸 챙겨 주지 마. 나중에 생각나.", 0.8, "입")])
+    still(), [(YB, "이런 거 자꾸 챙겨 주지 마. 나중에 생각나.", 1.8, "입")])
 cut("C58", [TJ, YB],
     "Over Yuna's blurred shoulder: Taejun answers with forced calm in Korean at about 1.7 s: \"그냥… 비 맞을까 봐.\" and drops his gaze.",
     still(), [(TJ, "그냥… 비 맞을까 봐.", 1.7, "입")])
@@ -383,8 +383,8 @@ cut("C64", [CU, BU],
     "side; water splashes up around them, droplets hanging in the air.",
     "the camera holds still, low at the puddle; real high-speed slow motion for this shot only.")
 cut("C66", [TJ, CU],
-    "Under the awning, seen from below: Taejun's open hand comes forward toward the camera, palm up, large in the frame; he watches it — no rain lands "
-    "on it — then looks up at the sky as sunlight breaks through, and at about 1.8 s says softly in Korean, a little surprised: \"어, 비 그쳤네.\"",
+    "Under the awning, seen from below: Taejun, already looking up past the awning edge with his right hand held out toward the camera, palm up and "
+    "large in the frame: his eyes drop to the open palm — no rain lands on it — and lift back to the sky as sunlight breaks through; at about 1.8 s he says softly in Korean, a little surprised: \"어, 비 그쳤네.\"",
     still(), [(TJ, "어, 비 그쳤네.", 1.8, "입")], post="검은 화면에서 페이드 인(0–0.95초)")
 cut("C67", [CU],
     "Insert in bright sun: Taejun's hand lifts his folded clear umbrella up into the sunlight; the water drops on the canopy glitter; a soft lens flare "
@@ -399,7 +399,7 @@ cut("C69", [],
     still())
 cut("C70", [TJ],
     "Taejun walks toward the camera down the tree-lined street after the rain, his hands below the frame; wet eyes and a faint smile — not "
-    "relief, the smile of letting go while it still hurts; near the end he passes the camera on its left.",
+    "relief, the smile of letting go while it still hurts; at about 5.1 s he walks past the camera on its left and out of frame.",
     "the camera physically pulls back at walking speed as Taejun walks toward it, about 26% back and about 20% up between 0.3 s and 2.0 s at an even "
     "speed, so his face stays the same size; no lens zoom.",
     closed=[TJ], post="끝 카드 「비 오는 날, 서로가 보이게 — 다 비치는 우산, 비침 · 새 색」(두 우산 나란히, 2.4초부터)")
@@ -575,7 +575,7 @@ def split(k, at):
                 "\"아니, 괜찮아.\" He looks at her face for a moment, understands, and says quietly in Korean at about 4.6 s: \"…할 말 있구나.\" Yuna holds "
                 "his gaze, then looks down.")
     a["동작"] = ("In the store aisle, Taejun holds the folded misty-blue umbrella a little toward Yuna and says gently in Korean at about 0.2 s: "
-                "\"…너 좋아하겠다.\" Yuna, holding her own folded black umbrella, looks at it and does not take it; a long silence; at about 6.0 s she "
+                "\"…너 좋아하겠다.\" Yuna, holding her own folded black umbrella, looks at it with her lips closed and does not take it; a long silence; at about 6.0 s she "
                 "looks up at him and asks quietly in Korean: \"바빠?\"")
     pans = []
     for tag, s, keys_says in (("a", a, [x for x in C[k]["말"] if x[2] < at]), ("b", b, [x for x in C[k]["말"] if x[2] >= at])):
@@ -595,6 +595,9 @@ def bundle(a, b, orig=False):
     ln = fit_len(cut_at + used(b) + 0.8)
     for x in sb.get("말", []):
         x["시작초"] = round(x["시작초"] + cut_at, 2)
+    # 10-31 검수(P1 rs-C36-37): 둘째 샷 글 속 「N s」는 샷 기준이라 한 판의 시간으로 옮긴다 — 말 시작초를 옮기는 것과 같은 까닭
+    for f in ("동작", "카메라"):
+        sb[f] = re.sub(r"(?<![\d.])(\d+(?:\.\d+)?) s\b", lambda m: f"{float(m.group(1)) + cut_at:.1f} s", sb[f])
     p = {"id": f"rs-{a}-{b[1:]}", "컷": [a, b], "길이": ln, "자르는초": cut_at,
          "설명": f"두 샷 묶음 — {INFO[a]['화면'].split(' — ')[0]} → {INFO[b]['화면'].split(' — ')[0]}", "소리": sound_flag([a, b]), "샷": [sa, sb]}
     if p["소리"] != "끔":

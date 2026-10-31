@@ -33,6 +33,27 @@ HS_CASTING = [   # (배역, 시작 그림을 빌릴 컷, 화면 속 사람, 대�
 ]
 CASTING_LEN = 7   # 가장 긴 판(7초)과 같게 — 1일권 길이 상한을 넘지 않게
 VOICE_TESTS = ["hs-S07-B", "hs-S12-B"]
+# 화면 밖 대사 판(10-31 검수) — 광고 카드 위에서 읊는 줄과 화면 밖 외침은 화면 컷 대사 판(B)에 없어, 10-29 타입캐스트를 뺀 뒤 낼 길이 없었다.
+#   배역마다 그 배역 그림으로 소리만 쓰는 판 하나(B — 그 배역 견본의 결로 시댄스가 연기). 줄과 자리는 04_콘티 3절 「말 · 소리」 칸 그대로
+#   (#24 「안 돼!」 둘은 콘티가 배역을 정하지 않아 지유 판 끝에 둘을 둠 — 편집에서 다른 배역 판의 외침으로 바꿔 써도 된다).
+HS_LINES = [   # (판 꼬리, 배역, 그림을 빌릴 컷, 화면 속 사람, 대명사, 길이, 쓰는 컷, 연기 · 줄)
+    ("지유", "지유", 7, "The young woman in the white lace veil", "her", 8, ["11", "24"],
+     'wails in Korean in one breath, pleading and close to tears: "안 돼, 내 금장 한정판 꽉 미니! 홈쇼핑 단독 구성이란 말이에요!" — then, after '
+     'one shaky breath, she cries out twice, a beat apart: "안 돼!" … "안 돼!"'),
+    ("리4", "리4", 8, "The young woman with round glasses, a black bob and red ribbon bows in her hair", "her", 8, ["21"],
+     'rattles off in Korean in one desperate breath, faster and faster, close to tears: '
+     '"안 돼, 내 핑크 에디션! 진공 4중 잠금 6종 세트 뚜껑 색 다른 버전! 라벨 스티커 포함! 제발요!"'),
+    ("통2", "통2", 16, "The curly-haired woman with the rose crown", "her", 8, ["3", "15", "29"],
+     'says a few short Korean lines with clear pauses between them: first, timidly holding something out, "여기요!"; after a pause, a sharp cry, '
+     '"안 돼!"; after another pause, two cries a beat apart, "안 돼!" … "안 돼!"; and last, starting to sob, "그거 내 저녁인데!"'),
+    ("강도", "강도", 23, "The man in the black balaclava", "his", 4, ["25", "27"],
+     'first lets out one short startled grunt, "으!", and after a pause asks flatly under his breath, baffled: "…왜?"'),
+]
+VOICE_LINES = (f"VOICE: {AUDIO1} is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, "
+               "but never play it and never say its words; perform only the Korean lines written above, the way this moment demands.")
+# 다른 편 판의 목소리 견본 — 판의 「목소리견본」 칸은 견본을 뗄 목소리 판 id를 적고, 파일 자리는 여기(견본떼기.py가 같은 자리에 만든다)
+OM_SAMPLE = "C:/Users/q1212/Documents/synk-vendor/pulse-rehearsal-20261029/새판/목소리/hangyeol.mp3"
+VOICE_FROM = {"om2-2": (OM_SAMPLE, "아… 목 타 죽겠다.")}
 
 # 굽는 차례 — 짧은 편부터 끝까지 마쳐 하루가 모자라도 완성 편이 남게 한다. 「시험」은 맨 앞에서 길을 확인하는 판.
 PIECES = [  # (편, 원천 폴더) — 매진 임박(hs)은 따로
@@ -102,6 +123,8 @@ def prompt(spec, p, mode=None):
     if len(shots) == 1:
         s = shots[0]
         L.append(first_line(bool(s.get("끝그림"))))
+        if p.get("참고말"):   # 10-31 검수: 판의 「참고그림」(도착 구도 등)이 몇 번 그림인지 · 무엇인지 — 판에 이 칸이 없으면 지시문은 그대로
+            L.append(p["참고말"])
         slow = s.get("슬로")
         L.append(f"ONE SINGLE CONTINUOUS SHOT of {c['장르']}, {ratio} — no cuts, no camera switch, "
                  + ("in smooth slow motion for the whole shot, no speed ramp, no end card." if slow else "no slow motion, no speed ramp, no end card."))
@@ -115,6 +138,8 @@ def prompt(spec, p, mode=None):
         L.append(f"This video is TWO SHOTS of {c['장르']}, {ratio}, joined by ONE hard cut at {t:g} s — the same moment in the same place "
                  "under the same light; any person or object seen in both shots looks exactly the same in both; nobody is added who is not "
                  "described for that shot; no other cuts, no slow motion, no speed ramp, no end card.")
+        if p.get("참고말"):
+            L.append(p["참고말"])
         keys = []
         for s in shots:
             for k in s.get("누구", []):
@@ -128,6 +153,8 @@ def prompt(spec, p, mode=None):
             L.append(f"SHOT {i + 1} ({span}) begins exactly on {tok} — same framing, light and colors. ACTION: {s['동작']} CAMERA: {s['카메라']}")
     L.append(c["보기"])
     L.append((p.get("소리줄") or {}).get(mode) or c["소리"])
+    if p.get("목소리견본"):   # 10-31 오미톡 끝 두 줄 — 그 배역 목소리 판에서 뗀 견본의 결만 따르고 말은 지시문의 한국어대로
+        L.append(VOICE_LINES)
     return "\n".join(L)
 
 
@@ -157,6 +184,23 @@ def hs_casting_prompt(who, pos, text):
         "no color shift; no added on-screen text, captions or logos.",
         f"SOUND: only {pos} natural speaking voice saying this one Korean line, over quiet room tone — no music, no other voices, no sound effects, "
         "no crying or sobbing sounds at any point.",
+    ])
+
+
+def hs_line_prompt(who, pos, act):
+    # 매진 임박 화면 밖 대사 판 — 그 배역 그림 · 견본으로 소리만 쓴다(입은 보여도 되고 화면은 쓰지 않음)
+    lips = "the lips seen through the mask opening" if "balaclava" in who else f"{pos} lips"
+    return "\n".join([
+        first_line(False),
+        "ONE SINGLE CONTINUOUS SHOT of a live-action Korean horror-comedy short film, horizontal 16:9 — no cuts, no camera switch, no slow motion, "
+        "no speed ramp, no end card.",
+        f"ACTION: {who}, looking just past the camera, {act} {lips[0].upper() + lips[1:]} clearly form the Korean words. "
+        "Everyone else in the frame keeps still with lips closed.",
+        "CAMERA: the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+        "LOOK: keep the first frame's faces, hair, outfits, the room and its dim, warm tungsten lamp light and colors to the very end; no new light, "
+        "no color shift; no added on-screen text, captions or logos.",
+        f"SOUND: only {pos} voice saying these Korean lines, over quiet room tone — no music, no other voices, no sound effects.",
+        VOICE_LINES,
     ])
 
 
@@ -233,9 +277,20 @@ def p7_casting(spec, role, cut, name, pos, text):
             "방식": "목소리 판"}
 
 
+def sunburst(p):
+    # 10-31 검수 — 선버스트 두 길 그림에만 맞는 글(7번 2-10: 옆모습 퇴장 대신 정면으로 걸어와 카메라를 스침)을 바꿔 쓴다. 그 칸이 없는 판은 그대로
+    q = copy.deepcopy(p)
+    for s in q["샷"]:
+        s["동작"] = s.get("선버스트동작") or s["동작"]
+        s["카메라"] = s.get("선버스트카메라") or s["카메라"]
+    return q
+
+
 def build_day2(mode):
     assert mode in ("A", "B"), "--둘째날 다음에 목소리 방식 A 또는 B"
     spec = json.load(open(os.path.join(VIDEO, DAY2[1], "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
+    if "--선버스트" in sys.argv:   # 7번 비교에서 선버스트 길을 골라 정지컷/을 바꾼 뒤 — 그 그림에 맞는 글(2-10)로
+        spec["판"] = [sunburst(p) for p in spec["판"]]
     by = {p["id"]: p for p in spec["판"]}   # 「후보판」은 넣지 않는다
     tests = [p7_casting(spec, *row) for row in P7_CASTING] if mode == "B" else []   # 목소리 판이 맨 앞(견본은 받은 뒤 견본떼기.py로)
     for tid in DAY2_TESTS:   # 10-29 방식 B로 정함 — 고른 방식 한 판씩(두 방식 견주기는 매진 목소리 시험 몫)
@@ -279,7 +334,7 @@ def build_compare():
     order = []
     for pid in CMP:
         for tag, folder in CMP_ROUTES:
-            it = p7_item(dict(spec, 그림=os.path.join(os.path.dirname(spec["그림"]), folder, "정지컷")), by[pid], "없음")
+            it = p7_item(dict(spec, 그림=os.path.join(os.path.dirname(spec["그림"]), folder, "정지컷")), sunburst(by[pid]), "없음")
             it.update({"id": f"{pid}-{tag}", "소리": "끔", "파일": [f for f in it["파일"] if not f[0].endswith(".mp3")], "방식": None, "시험": True,
                        "설명": it["설명"] + f" · 그림 {tag}"})
             order.append(it)
@@ -385,6 +440,13 @@ def build():
         items.append({**a, "id": f"{a['id']}-B", "방식": "B", "설명": f"매진 임박 #{r['컷']} · {role} 목소리(목소리 판에서 뗀 견본) — 시댄스가 연기",
                       "파일": a["파일"][:-1] + [("3_목소리견본.mp3", os.path.join(SEED_SAMPLES, SAMPLE_FILE[role]), "목소리 견본")],
                       "지시문": first_line(r["끝 그림"]) + "\n" + voice_b(body)})
+    for tail, role, cut, who, pos, n, used, act in HS_LINES:   # 화면 밖 대사 판(10-31) — 대사(B) 판 무리 끝에 선다
+        d = os.path.join(HS, by_cut[cut]["폴더"])
+        items.append({"id": f"hs-말-{tail}", "편": "hs", "편이름": "매진 임박", "컷": used, "길이": n, "비율": "16:9", "소리": "켬",
+                      "설명": f"{role} 화면 밖 대사(광고 카드 위 읊기 · 외침) — 소리만 씀, #{cut} 그림 · {role} 견본으로 시댄스가 연기",
+                      "파일": [("1_시작.jpg", os.path.join(d, "1_시작.jpg"), "시작"),
+                               ("3_목소리견본.mp3", os.path.join(SEED_SAMPLES, SAMPLE_FILE[role]), "목소리 견본")],
+                      "지시문": hs_line_prompt(who, pos, act), "묶음": False, "대안": False, "방식": "B"})
     for key, folder in PIECES:
         spec = specs.get(key)
         if not spec:
@@ -399,9 +461,14 @@ def build():
             else:
                 for i, s in enumerate(shots):
                     files.append((f"{i + 1}_샷{i + 1}.jpg", os.path.join(spec["그림"], s["그림"]), f"샷{i + 1}"))
+            if p.get("참고그림"):   # 10-31 검수 — 글로만 못 박는 구도(12번 16 도착 구도)를 그림 참고로. 지시문의 「참고말」이 이 번호를 부른다
+                files.append((f"{len(files) + 1}_참고.jpg", os.path.join(spec["그림"], p["참고그림"]), "참고"))
+            if p.get("목소리견본"):   # 10-31 오미톡 끝 두 줄 — 견본은 그 목소리 판을 받은 뒤 견본떼기.py가 만든다(그 전엔 「파일 아직」)
+                files.append(("3_목소리견본.mp3", VOICE_FROM[p["목소리견본"]][0], "목소리 견본"))
             items.append({"id": p["id"], "편": key, "편이름": spec["이름"], "컷": p["컷"], "길이": p["길이"], "비율": spec["비율"],
                           "소리": p.get("소리", "끔"), "설명": p["설명"], "파일": files, "지시문": prompt(spec, p, p.get("소리")),
-                          "묶음": len(shots) > 1, "대안": bool(p.get("대안")), "낱판": p.get("낱판", []), "쓰는초": [s.get("쓰는초") for s in shots]})
+                          "묶음": len(shots) > 1, "대안": bool(p.get("대안")), "낱판": p.get("낱판", []), "쓰는초": [s.get("쓰는초") for s in shots],
+                          **({"방식": "B"} if p.get("목소리견본") else {})})
     # 차례: 배역 목소리 판 → 시험 여섯(그동안 목소리 판에서 견본을 뗌) → 목소리 시험 → 매진 말 없는 판 → 매진 대사 판 → 다른 편 차례
     # (대안 판은 맨 뒤 — 묶음이 안 될 때만)
     by_id = {it["id"]: it for it in items}
