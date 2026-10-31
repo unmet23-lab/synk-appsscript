@@ -205,9 +205,11 @@ def shot_m1():
             bpy.data.objects.remove(old, do_unlink=True)
             bpy.data.meshes.remove(me)
         S.frost_sheet("결정", S.grown(arr, h, growth_t(f), soft=0.05), size, size, S.GL / 2, 0.00022, ice_mat, z0=0.0)
-        u = max(0.0, (f - 50) / 39.0)  # 끝 1.3초 — 반짝임이 결정을 가로질러 한 번 지나간다(1.8은 어느 장에도 안 잡혔다)
+        # 반짝임이 결정을 가로질러 한 번 지나간다(1.8은 어느 장에도 안 잡혔다). 15초 2판: 45–78장에 끝내고 세기 9 → 5 —
+        # 1판은 89장까지 이어져 빛 번짐이 결정 위 「연기 뭉치」로 퍼졌고, 승과 겹치는 디졸브 장에 걸렸다(Fable 1판 2.9초)
+        u = max(0.0, (f - 45) / 33.0)
         sw_pos.outputs[0].default_value = -0.022 + 0.044 * smooth(u)
-        sw_gain.outputs[0].default_value = 0.0 if u <= 0 else 9.0 * math.sin(math.pi * min(1.0, u)) ** 0.7
+        sw_gain.outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 5.0 * math.sin(math.pi * u) ** 0.7
         look(cam, cam_at(f / (N - 1)), tgt)
         render_to(f)
 
