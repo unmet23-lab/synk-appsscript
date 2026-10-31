@@ -8,7 +8,8 @@
 #   python -X utf8 이미지콘티_태준.py 굽기 머리 [컷…] [--다시]
 #   python -X utf8 이미지콘티_태준.py 재기 [컷…]              → 유호/_재기.json · 실제 사진 · 승인 얼굴 · 콘로우 바탕과 닮음
 #   python -X utf8 이미지콘티_태준.py 올리기 [컷…]            → 옛 판을 받음_M02 · 정지컷_M02에 두고 선버스트/받음 · 정지컷으로(그 뒤 이미지콘티_굽기.py 보드 · 가편집.py)
-# 그대로 두는 컷: 아주 먼 컷(C01 · C01e · C26 · C62)과 손 인서트(C10 · C15 · C30 · C46 · C56 · C67), 태준이 흐린 어깨 · 뒤통수만인 유나 컷.
+# 그대로 두는 컷: 손 인서트(C10 · C15 · C30 · C46 · C56 · C67)와 태준이 어깨만 걸린 C57.
+# 유나 컷 끝 · 뒤에 흐리게 걸린 태준(obs)과 얼굴이 안 보이는 뒷모습(back)은 옛 확정 판(_M02)에서 그의 머리만 편집한다.
 import json, shutil, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -31,7 +32,9 @@ YSIDE = {"L": [FACE / "옆얼굴_실제사진" / n for n in ("인터뷰_콘로�
 
 # 컷마다: wet = 비 맞은 뒤(결정 10-31 — 빗길 C18부터 시작 편 끝까지 · 밤 처마 밑 현재), soft = 시작 편 설렘(10-31 눈가림 — C05가 화난 사람 같다),
 # side = 90°에 가까운 옆얼굴(실제 옆얼굴 사진을 그 방향으로 넣음, 장부 S33), back = 얼굴이 안 보이는 뒷모습이라 확정 판에서 머리만 편집,
-# fg = 렌즈 앞에서 흐린 태준(흐림을 지키라고 따로 적는다 — 「흐림은 따라 하지 말 것」 줄이 C27을 또렷하게 그렸다)
+# fg = 렌즈 앞에서 흐린 태준(흐림을 지키라고 따로 적는다 — 「흐림은 따라 하지 말 것」 줄이 C27을 또렷하게 그렸다),
+# obs = 유나 컷 화면 끝 · 뒤에 흐리게 걸린 태준(어깨 너머 뒤통수 · 뒤에 선 그) — 확정 정지컷에서 그의 머리만 편집해 이어지게(front = 얼굴 쪽이 보임),
+# far = 아주 먼 와이드의 작은 태준(C01 → C01e는 한 판의 시작 · 끝, C26은 C01e와 같은 카메라라 배경이 흔들리지 않게 확정 판에서 머리만)
 T = {
     "C03": dict(wet=1, soft=1), "C05": dict(wet=1, soft=1), "C07": dict(soft=1), "C08": dict(soft=1), "C09": dict(soft=1), "C11": dict(soft=1),
     "C11e": dict(soft=1), "C12": dict(soft=1), "C13": dict(soft=1, side="L"), "C14": dict(soft=1), "C14e": dict(soft=1), "C17": dict(soft=1),
@@ -41,6 +44,18 @@ T = {
     "C35": dict(back=1), "C37": {}, "C38": {}, "C39": {}, "C41": {}, "C42": {}, "C43": {}, "C43e": {}, "C45": {}, "C48": {}, "C49": dict(side="L"),
     "C50": dict(fg=1), "C50e": {}, "C51": {}, "C52": {}, "C53": {}, "C55": {}, "C58": {}, "C60": {}, "C63": {}, "C66": {},
     "C68": dict(side="R"), "C70": {},
+    "C02": dict(obs=1, wet=1), "C04": dict(obs=1, wet=1), "C24": dict(obs=1, wet=1), "C20": dict(obs=1, wet=1, front=1),
+    "C16": dict(obs=1), "C36": dict(obs=1), "C44": dict(obs=1), "C61": dict(obs=1),
+    "C01": dict(far=1, wet=1), "C01e": dict(far=1, wet=1), "C26": dict(far=1, wet=1), "C62": {},
+}
+# 10-31 Fable 검수(P1 · P2 — git 밖 콘티/romance/검수/유호얼굴_20261031/답.md): 컷의 감정이 시작 그림에 안 보인 다섯에 연기 줄을 더한다
+ACTX = {
+    "C63": "His eyes are red-rimmed and glistening with tears that have not fallen, the inner ends of his brows slightly raised, lips closed — the same tearful state as a moment ago.",
+    "C39": "His eyes are already slightly red-rimmed with a thin film of tears, but he holds it in, lips pressed together.",
+    "C70": "His eyes are still red-rimmed and wet, and he smiles faintly with closed lips — not relief, but the smile of letting go while it still hurts.",
+    "C55": "He offers it calmly and gently — soft eyes, relaxed brows, a quiet caring look, never urgent or wide-eyed.",
+    "C13": ("STRICT SIDE PROFILE facing the left of frame, as in the approved frame: we see only his near eye, and the far eye is hidden behind the bridge of his nose; "
+            "only his eyes glance toward the left of frame. He is tense and swallows, trying to look calm."),
 }
 # 웃음은 입 다문 미소까지(장부 공통 원칙 7, 웃는 얼굴은 아직 승인 컷이 없다)
 TEXT = {"C14": ("Taejun laughs and raises one hand to wave it off", "Taejun gives a small awkward closed-lip smile and raises one hand to wave it off"),
@@ -77,8 +92,13 @@ FLAG = dict(H2=HAIRSET / "H2_가르마.png", B=HAIRSET / "세트" / "B가르마.
 HEAD = {"C07": (660, 510, 190, 170), "C18e": (765, 240, 170, 165), "C13": (900, 300, 570, 450), "C27": (1650, 300, 400, 520), "C68": (560, 280, 430, 350)}   # 옆 · 뒤로 돌아 YuNet 상자가 머리 뒤쪽을 못 덮거나(C07 · C13 · C18e · C68), 유나 얼굴까지 덮는 컷(C27)
 
 
+def confirmed(k):   # 옛 확정 정지컷 — 올리기 뒤에는 정지컷_M02에 있다(흐림 · 편집은 늘 확정 판에서)
+    q = S.OUT / "정지컷_M02" / f"{k}.jpg"
+    return q if q.exists() else STILL / f"{k}.jpg"
+
+
 def head(k):
-    im = N.read(STILL / f"{k}.jpg")
+    im = N.read(confirmed(k))
     if k in HEAD:
         return HEAD[k]
     fs = N.faces(im)
@@ -91,7 +111,7 @@ def head(k):
 
 
 def blur(k):
-    im = N.read(STILL / f"{k}.jpg")
+    im = N.read(confirmed(k))
     b = head(k)
     if b is None:
         return False
@@ -130,6 +150,8 @@ def base(k):
             raise SystemExit(f"{k}: 바꿀 글이 없음")
         t = t.replace(*TEXT[k])
     parts.append(t)
+    if k in ACTX:
+        parts.append(ACTX[k] + " Natural skin with no beauty retouch or smoothing.")
     refs.append(str(OUT / "구도" / f"{k}.png"))
     parts.append(FRAME.format(n=len(refs)))
     if o.get("fg"):
@@ -146,10 +168,15 @@ def base(k):
     return dict(id=k, prompt=" ".join(parts), refs=[S.small(r) if "/refs/" in r.replace("\\", "/") else r for r in refs])
 
 
-def edit_prompt(n_hair, wet, other="", back=False):
+def edit_prompt(n_hair, wet, other="", back=False, obs=None, far=False):
     who = "Image 2 shows" if n_hair == 1 else f"Images 2 to {n_hair + 1} show"
     tail = (f" {who} only that haircut — do not copy any face, framing, clothes or light from {'it' if n_hair == 1 else 'them'}. The hairline stays his own natural hairline; "
             "natural black hair that looks real and freshly cut. No glasses. No text, no letters, no logos, no watermark. Photorealistic film still, slight film grain.")
+    if obs:
+        return ("Edit Image 1, a film still. Keep EVERYTHING exactly as in Image 1: the woman's face, eyes, expression, hair, clothes and pose, the background, the light, "
+                f"the focus, the framing and the camera. " + (f"The man {obs} is small in the frame — keep his face, size, pose, clothes and sharpness exactly as in Image 1."
+                                                              if far else f"The man {obs} is out of focus — keep him exactly as blurred as in Image 1.") + other +
+                f" Change ONLY that man's hair: give him {CUT} — short and tapered at the back and the sides.{WET_BACK if wet else ''}" + tail)
     if back:
         return ("Edit Image 1, a film still. Keep EVERYTHING exactly as in Image 1: the same clothes, hands, umbrella, background, rain, light, framing and camera." + other +
                 f" Change ONLY the hair of the man seen from behind: give him {CUT}, seen from the back — short and tapered at the nape.{WET_BACK if wet else ''}" + tail)
@@ -179,7 +206,21 @@ def hair_job(k, base_png):
     if any("h" in w[1:] for w in c["w"] if w.startswith("T")):
         other += " His over-ear headphones stay exactly as they are."
     if o.get("fg"):
-        other += " He stays softly out of focus exactly as in Image 1, and so does his new hair."
+        other += (" He is in the foreground and OUT OF FOCUS: keep him exactly as blurry as in Image 1 — the same soft shallow-depth-of-field blur over his face and "
+                  "his new hair; do not sharpen him.")
+    if o.get("far"):   # 아주 먼 컷 — 배경이 컷끼리 어긋나지 않게 확정 판에서 한 번만, 머리만 바꾸면 작은 옛 얼굴이 남아 얼굴까지(승인 B)
+        hair = FLAG["W"] if o.get("wet") else FLAG["H2"]
+        prompt = ("Edit Image 1, a film still. Keep EVERYTHING exactly as in Image 1: the woman, the store, the street, the rain, the reflections, the light, the "
+                  "framing and the camera, and the man's size, place, pose, clothes, hands and umbrella. The man is small in the distance. Change ONLY his head: "
+                  "he is the man in Image 2 — the same face, clean-shaven, fair skin — with " + CUT + "." + (WET_BACK if o.get("wet") else "") +
+                  " Image 2 shows only his face and Image 3 only the haircut — do not copy their framing, clothes or light. His head keeps exactly the size "
+                  "and the turn of the head in Image 1. No text, no letters, no logos, no watermark. Photorealistic film still, slight film grain.")
+        return dict(id=k, refs=[str(base_png), str(YREF[0]), str(hair)], prompt=prompt)
+    if o.get("obs"):
+        where = "in the background" if o.get("front") else "seen from behind at the edge of the frame"
+        ref = FLAG["W"] if o.get("front") and o.get("wet") else FLAG["H2"]
+        hp = " His over-ear headphones stay exactly as they are." if "headphones" in other else ""
+        return dict(id=k, refs=[str(base_png), str(ref)], prompt=edit_prompt(1, o.get("wet"), hp, obs=where))
     if o.get("back"):
         return dict(id=k, refs=[str(base_png), str(FLAG["H2"])], prompt=edit_prompt(1, o.get("wet"), other, back=True))
     side, d = facing(base_png, k)
@@ -233,6 +274,12 @@ def measure(keys):
         p, b = OUT / "머리" / f"{k}.png", OUT / "바탕" / f"{k}.png"
         if not p.exists():
             continue
+        if T[k].get("obs") or T[k].get("far"):   # 유나 컷 · 아주 먼 컷 — 편집 뒤에도 유나 얼굴이 그대로인지(가장 큰 얼굴끼리)
+            old = S.OUT / "정지컷_M02" / f"{k}.jpg" if (S.OUT / "정지컷_M02" / f"{k}.jpg").exists() else STILL / f"{k}.jpg"
+            a, z = N.faces(N.read(p)), N.faces(N.read(old))
+            rec[k] = dict(유나유지=round(float(N.FR.match(a[0][1], z[0][1], cv2.FaceRecognizerSF_FR_COSINE)), 3) if a and z else None)
+            print(k, rec[k], flush=True)
+            continue
         f = best(N.read(p))
         fb = best(N.read(b)) if b.exists() else None
         rec[k] = dict(세트=None if f is None else round(m(f, YFEAT), 3), 실제=None if f is None else round(m(f, real), 3),
@@ -247,11 +294,11 @@ def main():
     OUT.mkdir(exist_ok=True)
     if cmd == "흐림":
         keys = args or list(T)
-        bad = [k for k in keys if not T[k].get("back") and not blur(k)]
+        bad = [k for k in keys if not (T[k].get("back") or T[k].get("obs") or T[k].get("far")) and not blur(k)]
         print("머리 자리를 못 찾음:", bad)
         return
     if cmd == "작업":
-        jobs = {k: base(k) for k in T if not T[k].get("back")}
+        jobs = {k: base(k) for k in T if not (T[k].get("back") or T[k].get("obs") or T[k].get("far"))}
         for k, j in jobs.items():
             if len(j["prompt"]) > 6000 or len(j["refs"]) > 5:
                 raise SystemExit(f"{k}: 지시문 {len(j['prompt'])}자 · 참고 {len(j['refs'])}장")
@@ -271,7 +318,13 @@ def main():
             o = T[k]
             if o.get("nohair"):
                 continue
-            src = S.OUT / "받음" / f"{k}.png" if o.get("back") else OUT / "바탕" / f"{k}.png"
+            # 확정 판에서 편집하는 컷은 올리기 뒤에도 옛 확정 판(_M02)을 바탕으로 — 편집 판을 또 편집하지 않는다
+            if o.get("back"):
+                src = S.OUT / "받음_M02" / f"{k}.png" if (S.OUT / "받음_M02" / f"{k}.png").exists() else S.OUT / "받음" / f"{k}.png"
+            elif o.get("obs") or o.get("far"):
+                src = S.OUT / "정지컷_M02" / f"{k}.jpg" if (S.OUT / "정지컷_M02" / f"{k}.jpg").exists() else STILL / f"{k}.jpg"
+            else:
+                src = OUT / "바탕" / f"{k}.png"
             if src.exists():
                 jobs[k] = hair_job(k, src)
                 print(k, jobs[k].get("방향"), jobs[k].get("코"), [Path(r).name for r in jobs[k]["refs"][1:]], flush=True)
@@ -297,6 +350,9 @@ def main():
             shutil.copy2(done, old)
             im = N.read(done)   # 구도가 이미 맞춘 정지컷이라 다시 자르지 않고 크기만 맞춘다(이미지콘티_굽기.py 맞춤을 또 돌리지 않는다)
             cv2.imencode(".jpg", cv2.resize(im, (1920, 1080), interpolation=cv2.INTER_CUBIC), [cv2.IMWRITE_JPEG_QUALITY, 93])[1].tofile(str(still))
+            import 이미지콘티_굽기 as G
+            if k in G.EYECROP:   # 눈 클로즈업은 잰 자리로 잘라 맞춤(C60 — 새 판 얼굴이 7% 작게 나옴)
+                G.fit(k)
         return
     raise SystemExit(__doc__ or "흐림 · 작업 · 굽기 · 머리작업 · 재기 · 올리기")
 
