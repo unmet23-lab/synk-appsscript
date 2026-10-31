@@ -310,7 +310,7 @@ def sound(args):
 
 # ── 이름 ────────────────────────────────────────────────────────────────────
 NAME_AT = 2.35  # 결 원천 시각 — 단지가 멈춘 뒤(1.9) · 유리 종(2.0) 뒤
-NAME_POS = 0.215  # 화면 높이 비율 — 제품 위 어두운 밤(아래는 앰플 반사의 뚜껑이 0.87에 오고, 세로 SNS 자막 · 단추에 가린다)
+NAME_POS = 0.265  # 화면 높이 비율 — 제품 바로 위 밤(0.215는 글자 위 1/5이 비어 「시안 · 임시 여백」, 3판 시험관 둘 · Fable). 아래는 앰플 반사의 뚜껑이 0.87에 오고, 세로 SNS 자막 · 단추에 가린다
 
 
 def name_layer(W, H):
@@ -321,13 +321,13 @@ def name_layer(W, H):
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     cx, cy = W / 2, H * NAME_POS
-    d.text((cx, cy - u * 0.020), "유리결", font=J.font(int(u * 0.066), "Medium"), fill=(243, 236, 222, 255), anchor="mm")
-    J.spaced(d, cx, cy + u * 0.040, "서리꽃 앰플 · 크림 홀리데이 세트", J.font(int(u * 0.030), "Regular"), (214, 190, 140, 255), u * 0.003)
+    d.text((cx, cy - u * 0.024), "유리결", font=J.font(int(u * 0.074), "Medium"), fill=(243, 236, 222, 255), anchor="mm")
+    J.spaced(d, cx, cy + u * 0.046, "서리꽃 앰플 · 크림 홀리데이 세트", J.font(int(u * 0.036), "Regular"), (214, 190, 140, 255), u * 0.003)
     return np.asarray(im, np.float32) / 255.0
 
 
 # ── 앉는 순간 별빛 ──────────────────────────────────────────────────────────
-STAR_AT = 2.0  # 결 원천 시각 — 유리 종과 같은 자리(움직임15.py GLINT_AT)
+STAR_AT = 1.95  # 결 원천 시각 — 결정이 앉는 순간 · 유리 종(움직임15.py FALL_T1). 2.0은 정점이 종보다 2장 늦었다(Fable 3판)
 
 
 def star_glint(v, f, amp):
