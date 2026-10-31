@@ -35,6 +35,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
 const 묶음 = require('./lib/게시묶음.js');
+const { 공용작업본 } = require('./lib/공용작업본.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
 
 const ORIGIN = 'https://workspace.synk.im';
@@ -240,8 +241,28 @@ function planBundle(bundle, workspace, opts = {}) {
 
 // ── 기록 ──
 function stateFile(bundle) { return path.join(bundle.dir, '게시', '작업실.json'); }
+function cancelMarker(bundle) { return path.join(bundle.dir, '게시', '작업실_자동등록중지.json'); }
 function readState(bundle) { try { return 묶음.readJson(stateFile(bundle)); } catch { return null; } }
 function writeJson(file, value) { fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); }
+
+// 등록·취소는 편 하나를 공유하는 모든 프로세스에서 직렬화한다. 주인 없는 잠금도 자동으로 지우지 않는다.
+async function withBundleLock(bundle, action) {
+  const file = path.join(bundle.dir, '게시', '작업실_처리중.lock');
+  let fd;
+  try { fd = fs.openSync(file, 'wx'); }
+  catch (error) {
+    if (error.code === 'EEXIST') throw Object.assign(new Error('이 편을 다른 작업이 처리 중이거나 중단된 잠금이 남아 있다 — 실행 중인 작업과 서버 상태를 확인한다'), { code: 'BUSY' });
+    throw error;
+  }
+  try {
+    fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, 시작: new Date().toISOString() }));
+    fs.closeSync(fd); fd = null;
+    return await action();
+  } finally {
+    if (fd != null) fs.closeSync(fd);
+    fs.unlinkSync(file);
+  }
+}
 
 function localLinkFile(bundle) { return path.join(LOCAL_DIR, `${bundle.name}.json`); }
 
@@ -294,26 +315,49 @@ const kst = (iso) => new Date(Date.parse(iso) + 9 * 3600000).toISOString().slice
 
 // ── 등록 ──
 async function register(bundle, ws, rows, opts = {}) {
+  return withBundleLock(bundle, () => registerLocked(bundle, ws, rows, opts));
+}
+
+async function registerLocked(bundle, ws, rows, opts = {}) {
   const prep = bundle.prep;
   const eligible = rows.filter((r) => r.eligible);
   if (!eligible.length) throw new Error('서버로 보낼 판이 없다');
   // 기록이 있으면(성공·실패 모두) 다시 만들지 않는다 — 다시 올리려면 `취소`가 서버 원고를 거두고 기록을 옮긴 뒤에.
   const old = readState(bundle);
+  if (fs.existsSync(stateFile(bundle)) && !old?.postId) throw Object.assign(new Error('이전 등록의 결과가 불확실하다 — 작업실 원고와 기록을 확인하기 전에는 다시 등록하지 않는다'), { code: 'UNCERTAIN' });
   if (old?.postId) throw Object.assign(new Error(`이미 작업실에 등록한 편이다(원고 ${old.postId}${old.실패 ? ` · 실패: ${old.실패.이유}` : ''}) — 상태는 \`상태\`, 다시 올리려면 \`취소\` 뒤에`), { code: 'ALREADY' });
   const state = { 도구: 'tools/작업실예약.js', 작업실: ws.origin, 시작: new Date().toISOString(), 자산: {}, 판: [] };
+  if (opts.queue && fs.existsSync(cancelMarker(bundle))) throw Object.assign(new Error('취소한 편의 자동 등록이 중지되어 있다'), { code: 'CANCELLED' });
+  // 첫 외부 요청 전에 독점 기록을 남긴다. 응답을 잃거나 프로세스가 죽어도 자동 재등록하지 않는다.
+  const claim = JSON.stringify({ ...state, 등록중: true }, null, 2) + '\n';
+  fs.writeFileSync(stateFile(bundle), claim, { flag: 'wx' });
   // ① 원본 영상(같은 파일은 한 번)
-  for (const row of eligible) {
-    if (!state.자산[row.video.rel]) {
-      const { asset } = await ws.upload(row.video.path, `${bundle.name} · ${path.basename(row.video.path)}`);
-      state.자산[row.video.rel] = asset.id;
+  try {
+    for (const row of eligible) {
+      if (!state.자산[row.video.rel]) {
+        const { asset } = await ws.upload(row.video.path, `${bundle.name} · ${path.basename(row.video.path)}`);
+        state.자산[row.video.rel] = asset.id;
+      }
+      row.variant.media = [{ assetId: state.자산[row.video.rel] }];
     }
-    row.variant.media = [{ assetId: state.자산[row.video.rel] }];
+  } catch (error) {
+    // 이 단계는 아직 원고 요청 전이다. 우리가 쓴 기록 그대로일 때만 거두어 재시도를 허용한다.
+    if (fs.readFileSync(stateFile(bundle), 'utf8') === claim) fs.unlinkSync(stateFile(bundle));
+    throw error;
   }
   // ② 원고
-  let { post } = await ws.post('/api/social/posts', { title: (prep.제목 || bundle.name).slice(0, 300), body: '', language: 'ko', purpose: String(prep.역할 || '').slice(0, 2000),
-    category: '1일 1편', campaignId: '', variants: eligible.map((r) => r.variant) });
+  let post;
+  try {
+    ({ post } = await ws.post('/api/social/posts', { title: (prep.제목 || bundle.name).slice(0, 300), body: '', language: 'ko', purpose: String(prep.역할 || '').slice(0, 2000),
+      category: '1일 1편', campaignId: '', variants: eligible.map((r) => r.variant) }));
+    if (!post?.id) throw new Error('응답에 원고 ID가 없다');
+  } catch (error) {
+    throw Object.assign(new Error(`원고 생성 결과가 불확실하다 — 작업실에서 원고를 확인한다: ${error.message}`), { code: 'UNCERTAIN', cause: error });
+  }
   state.postId = post.id;
   writeJson(stateFile(bundle), state); // 여기서 멈춰도 다음 실행이 같은 원고를 다시 만들지 않게
+  // 대기열이 아닌 명시적 등록만 취소 표식을 해제한다. 원고 기록을 쓴 뒤라 중단되어도 재등록하지 않는다.
+  if (!opts.queue && fs.existsSync(cancelMarker(bundle))) fs.unlinkSync(cancelMarker(bundle));
   const jobs = [];
   let lock, review;
   try {
@@ -390,8 +434,18 @@ async function cancelPost(ws, postId, note) {
 
 // 등록을 거둔다: 서버 원고를 취소(예약 작업도 함께)하고 유호님 링크를 폐기한다. 고칠 일이 생겨 다시 올릴 때 먼저 한다.
 async function cancel(bundle, ws) {
+  return withBundleLock(bundle, () => cancelLocked(bundle, ws));
+}
+
+async function cancelLocked(bundle, ws) {
   const state = readState(bundle);
-  if (!state?.postId) return null;
+  if (!state?.postId) {
+    if (fs.existsSync(stateFile(bundle))) throw Object.assign(new Error('등록 결과가 불확실해 자동으로 지우지 않았다 — 작업실 원고와 기록을 확인한다'), { code: 'UNCERTAIN' });
+    return null;
+  }
+  // 서버 취소 또는 후처리가 실패해도 자동 대기열이 이 편을 되살리지 못하게 먼저 표시한다.
+  try { fs.writeFileSync(cancelMarker(bundle), JSON.stringify({ 중지: true, 시각: new Date().toISOString() }) + '\n', { flag: 'wx' }); }
+  catch (error) { if (error.code !== 'EEXIST') throw error; }
   await cancelPost(ws, state.postId, '편을 고쳐 다시 올리려고 등록을 거둠');
   const review = await ws.get(`/api/social/posts/${state.postId}/review`);
   for (const link of review.links || []) if (!link.revokedAt) await ws.post(`/api/social/review-links/${link.id}/revoke`, { revision: link.revision }).catch(() => {});
@@ -409,13 +463,22 @@ function readyFolders(root) {
   for (const e of fs.readdirSync(root, { withFileTypes: true })) {
     if (!e.isDirectory()) continue;
     const dir = path.join(root, e.name);
-    if (!fs.existsSync(path.join(dir, '게시', '준비.json')) || fs.existsSync(path.join(dir, '게시', '작업실.json'))) continue;
+    if (!fs.existsSync(path.join(dir, '게시', '준비.json')) || fs.existsSync(path.join(dir, '게시', '작업실.json')) || fs.existsSync(cancelMarker({ dir }))) continue;
     try {
       const prep = 묶음.readJson(path.join(dir, '게시', '준비.json'));
       if (prep.작업실등록 === true && prep.상태 === '올릴 준비' && prep.검사 && prep.검사.결과 !== '고칠 것') out.push(dir);
     } catch { /* 깨진 준비.json은 건너뛴다 — 예약큐가 보인다 */ }
   }
   return out;
+}
+
+// 다른 작업본에서 직접 지정한 편을 조용히 공용 판으로 바꾸면 낡은 원고가 올라갈 수 있어 멈춘다.
+function sharedBundle(dir) {
+  const repo = 묶음.repoOf(dir), main = 공용작업본(repo);
+  const rel = path.relative(path.join(repo, 'docs', '마케팅'), path.resolve(dir));
+  const inMarketing = rel !== '..' && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
+  if (main !== repo && inMarketing) throw Object.assign(new Error(`워크트리 편은 직접 등록하지 않는다 — 내용을 확인한 뒤 공용 편 경로를 명시한다: ${path.join(main, 'docs', '마케팅', rel)}`), { code: 'WORKTREE_BUNDLE' });
+  return 묶음.load(dir);
 }
 
 // 예약큐 정기 작업이 남긴 서버 캐시(tools/lib/작업실읽기.cjs 모양)의 작업 목록.
@@ -456,7 +519,7 @@ function args(argv) {
 }
 
 async function handleOne(dir, ws, o) {
-  const bundle = 묶음.load(dir);
+  const bundle = sharedBundle(dir);
   const workspace = await ws.get('/api/social/workspace');
   const rows = planBundle(bundle, workspace, o);
   if (!o.json) printPlan(bundle, rows);
@@ -530,7 +593,7 @@ async function main() {
   if (명령 === '상태' && argv.includes('--캐시')) {
     const cached = cachedJobs();
     if (!cached) { console.log('예약큐 서버 캐시가 없다 — 정기 작업 「SYNK 예약큐」가 아직 안 돌았다'); process.exitCode = 1; return; }
-    const r = await status(묶음.load(o.rest[1]), null, { save: !o.noSave, jobs: cached.jobs });
+    const r = await status(sharedBundle(o.rest[1]), null, { save: !o.noSave, jobs: cached.jobs });
     if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
     return;
@@ -541,7 +604,7 @@ async function main() {
   }
   // 등록할 편이 없는 회차는 자격·서버를 읽지 않는다. 이미 등록했으나 못 보낸 검토 링크는 그대로 이어 보낸다.
   const queueDirs = o.queue && !['상태', '취소'].includes(명령)
-    ? readyFolders(path.join(묶음.repoOf(process.cwd()), 'docs', '마케팅')) : null;
+    ? readyFolders(path.join(공용작업본(묶음.repoOf(process.cwd())), 'docs', '마케팅')) : null;
   if (queueDirs && !queueDirs.length) {
     if (o.run && o.telegram) await resendPending();
     console.log('등록할 편이 없다');
@@ -549,20 +612,20 @@ async function main() {
   }
   const ws = await connect({ origin: o.origin });
   if (명령 === '상태') {
-    const bundle = 묶음.load(o.rest[1]);
+    const bundle = sharedBundle(o.rest[1]);
     const r = await status(bundle, ws, { save: !o.noSave });
     if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
     return;
   }
   if (명령 === '취소') {
-    const r = await cancel(묶음.load(o.rest[1]), ws);
+    const r = await cancel(sharedBundle(o.rest[1]), ws);
     console.log(r ? `  작업실 원고 ${r.postId}의 예약과 검토 링크를 거뒀다 — 고친 뒤 다시 등록한다` : '작업실에 등록한 기록이 없다');
     return;
   }
   // 지난 회차에 등록은 됐는데 텔레그램을 못 보낸 링크부터 다시 보낸다.
   if (o.queue && o.run && o.telegram) await resendPending();
-  const dirs = o.queue ? readyFolders(path.join(묶음.repoOf(process.cwd()), 'docs', '마케팅')) : o.rest.slice(0, 1);
+  const dirs = o.queue ? readyFolders(path.join(공용작업본(묶음.repoOf(process.cwd())), 'docs', '마케팅')) : o.rest.slice(0, 1);
   if (!dirs.length) { console.log(o.queue ? '등록할 편이 없다' : '사용: node tools/작업실예약.js <편 폴더> [--실행] [--텔레그램]'); if (!o.queue) process.exitCode = 2; return; }
   const results = [];
   for (const dir of dirs) {
@@ -570,8 +633,8 @@ async function main() {
       console.error(`  ✗ ${path.basename(dir)}: ${error.message}`);
       results.push({ bundle: path.basename(dir), error: error.message });
       process.exitCode = 1;
-      // 정기 작업이면 등록 실패도 한 줄 알린다(기록이 남아 같은 편을 다시 올리지 않으니 한 번만 간다).
-      if (o.queue && o.run && o.telegram && error.code !== 'ALREADY') await sendTelegram(`[작업실 등록 실패] ${path.basename(dir)}\n${error.message.slice(0, 300)}\n「오늘 편 게시」 세션이 보고 \`node tools/작업실예약.js 취소\` 뒤 다시 올립니다.`).catch(() => {});
+      // --텔레그램이 지정된 정기 작업은 등록 실패를 알린다. 업로드 전 단계 실패는 다음 회차에도 알릴 수 있다.
+      if (o.queue && o.run && o.telegram && error.code !== 'ALREADY') await sendTelegram(`[작업실 등록 실패] ${path.basename(dir)}\n${error.message.slice(0, 300)}\n「오늘 편 게시」 세션이 기록과 작업실 원고를 확인합니다.`).catch(() => {});
     }
   }
   if (o.json) console.log(JSON.stringify(results, null, 2));
@@ -579,4 +642,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, cachedJobs, sendLink, resendPending, companions, 명령이름, STATUS, LOCAL_DIR, mergeResults };
+module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, sharedBundle, cachedJobs, sendLink, resendPending, companions, 명령이름, STATUS, LOCAL_DIR, mergeResults };
