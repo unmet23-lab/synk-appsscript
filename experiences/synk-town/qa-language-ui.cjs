@@ -69,7 +69,7 @@ async function talkAt(page, place = 'cafe') {
     await walkTo(page, ROUTES[place]);
     if (await page.waitForFunction(p => SYNKTownDay.metrics().walk.nearby === p, place, { timeout: 8000 }).then(() => true, () => false)) break;
     if (tries) throw new Error(`talkAt ${place}: ${JSON.stringify(await page.evaluate(() => { const m = SYNKTownDay.metrics(), w = m.walk; return { x: w.x, z: w.z, nearby: w.nearby, enabled: w.enabled, open: w.interactionOpen,
-      inputActive: w.inputActive, sending: w.sending, backpressured: w.backpressured, connected: m.connected, busy: document.getElementById('day-app')?.getAttribute('aria-busy'),
+      inputActive: w.inputActive, sending: w.sending, backpressured: w.backpressured, connected: m.connected, error: document.getElementById('error')?.textContent, busy: document.getElementById('day-app')?.getAttribute('aria-busy'),
       dialogs: [...document.querySelectorAll('dialog[open]')].map(d => d.id || d.className), focus: document.activeElement?.id || document.activeElement?.tagName, hasFocus: document.hasFocus() }; }))}`);
   }
   await page.keyboard.press('e');
@@ -480,6 +480,7 @@ async function linger(browser) {
             return body.type === 'CARD_OPEN' ? route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'card-too-far', message: 'card-too-far' }) }) : route.continue();
           };
           await s.page.route('**/api/preview/command', refuse);
+          const scrolledBefore = await s.page.evaluate(() => document.getElementById('nearby-panel').scrollTop);
           await stale.click(); await delay(1500);
           const after = await s.page.evaluate(() => ({ connected: SYNKTownDay.metrics().connected, soft: document.getElementById('error').classList.contains('is-soft'),
             shown: !document.getElementById('error').hidden, text: document.getElementById('error').textContent, retry: !document.getElementById('retry').hidden,
@@ -488,14 +489,16 @@ async function linger(browser) {
           await shot(s.page, `linger-${device}-3-refused`);
           await s.page.unroute('**/api/preview/command', refuse);
           await delay(6500);
-          const calm = await s.page.evaluate(() => ({ shown: !document.getElementById('error').hidden, connected: SYNKTownDay.metrics().connected }));
-          check('linger', !calm.shown && calm.connected, `${device}: 거절 글은 잠시 뒤 걷히고 마을은 그대로 이어진다`, calm);
-          f.set(away.arriveMs + 30 * 1000);
+          const calm = await s.page.evaluate(() => ({ shown: !document.getElementById('error').hidden, connected: SYNKTownDay.metrics().connected, scrollTop: document.getElementById('nearby-panel').scrollTop }));
+          // (The press itself may scroll the panel a few pixels, to the button.)
+          check('linger', !calm.shown && calm.connected && calm.scrollTop <= scrolledBefore + 24, `${device}: 거절 글은 잠시 뒤 걷히고 판은 있던 자리로, 마을은 그대로 이어진다`, { ...calm, scrolledBefore });
+          // The server's clock jumps past the window's three-second lease: a pulse takes it again before the walk (a walk first gets 409 stale-surface).
+          f.set(away.arriveMs + 30 * 1000); await delay(1600);
           await s.page.keyboard.press('Escape'); await delay(500);
           const place = village.placeAt([away], 'cafe-owner', away.arriveMs + MIN, start).to;
           await talkAt(s.page, place);
-          const there = await s.page.evaluate(() => ({ away: [...document.querySelectorAll('#place-cards .place-away')].map(el => el.textContent), need: document.querySelectorAll('#place-cards .place-need').length }));
-          check('linger', there.away.some(t => /찻집 주인: .*찻집/.test(t)) && there.need === 0, `${device}: 찻집 밖의 주인 곁 장소 판 — 「찻집에서」 한 줄 · 단추 없음`, there);
+          const there = await s.page.evaluate(() => ({ away: [...document.querySelectorAll('#place-cards .place-away')].map(el => el.textContent), need: document.querySelectorAll('#place-cards .place-need').length, scrollTop: document.getElementById('nearby-panel').scrollTop }));
+          check('linger', there.away.some(t => /찻집 주인: .*찻집/.test(t)) && there.need === 0 && there.scrollTop === 0, `${device}: 찻집 밖의 주인 곁 장소 판 — 「찻집에서」 한 줄 · 단추 없음 · 판은 맨 위부터`, there);
           await shot(s.page, `linger-${device}-4-away`);
         }
         const wide = await s.page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);

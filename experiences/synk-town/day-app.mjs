@@ -192,7 +192,7 @@ async function interactWalk({ talk = false } = {}) {
   // The place's own first action as before the cards could stand above it (first C4 follow-up — a card row may lead the panel).
   if (walkPanel) { const pick = 'button[data-command]:not(:disabled)', action = $('day-actions').querySelector(pick) ?? $('nearby-panel').querySelector(pick); if (action) action.click(); return; }
   walkControls?.stop(); await flushWalk(true); const place = nearby(walk.point); if (!place) return;
-  if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; placeOpens++; applyWalkView(); renderCards(); }
+  if (await command('DAY_INTERACT', { location: place })) { walkPanel = true; placeOpens++; applyWalkView(); renderCards(); $('nearby-panel').scrollTop = 0; }
 }
 function walkFrame(now) {
   if (!walking() || !walkControls || !walk.point) { walk.idle(); return; }
@@ -233,10 +233,11 @@ function refused(type, error, payload = {}) {
     return;
   }
   calmRefusal();
-  const note = $('error'); note.classList.add('is-soft'); text('error', words); note.hidden = false; $('retry').hidden = true;
+  // Scrolled to the note for the moment, the panel goes back to where it was (a phone's panel would stay down at its end).
+  const note = $('error'), panel = $('nearby-panel'), top = panel.scrollTop; note.classList.add('is-soft'); text('error', words); note.hidden = false; $('retry').hidden = true;
   document.body.classList.add('walk-note');
   note.scrollIntoView?.({ block: 'nearest' });
-  refusalTimer = setTimeout(() => { if (note.classList.contains('is-soft')) { calmRefusal(); note.hidden = true; } }, REFUSAL_MS);
+  refusalTimer = setTimeout(() => { if (note.classList.contains('is-soft')) { calmRefusal(); note.hidden = true; panel.scrollTop = top; } }, REFUSAL_MS);
 }
 function calmRefusal() { clearTimeout(refusalTimer); $('error').classList.remove('is-soft'); document.body.classList.remove('walk-note'); }
 function available() { return connected && snapshot?.capabilities?.day === true; }

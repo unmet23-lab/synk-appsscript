@@ -195,7 +195,7 @@ export function placeModel({ location, residentsHere = [], hearsay = {}, cards =
   // button — the server takes it up only there (screen review F3).
   const away = open ? [] : cards.filter(c => takeable(c) && residentsHere.includes(c.owner) && TALK_AT[c.card] && TALK_AT[c.card] !== location)
     .map(c => ({ card: c.card, key: c.key, owner: c.owner, line: lineText(cardLine(c.owner, c.card, 'away'), level) })).filter(a => a.line);
-  const note =location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, lineId: newsLine(n.card, n.ref), text: lineText(newsLine(n.card, n.ref), level) })).filter(n => n.text) : [];
+  const note = location === 'home' ? news.slice(0, 3).map(n => ({ ref: n.ref, card: n.card, lineId: newsLine(n.card, n.ref), text: lineText(newsLine(n.card, n.ref), level) })).filter(n => n.text) : [];
   const mine = !greet && typeof own === 'function' ? residentsHere.map(npc => ({ npc, id: own(npc) })).find(o => o.id && lineText(o.id, level)) ?? null : null;
   return { greet: greet && { npc: greet.npc, ref: hearsay[greet.npc].ref, ...greet.line },
     own: mine && { npc: mine.npc, id: mine.id, kind: LINES.get(mine.id).kind, text: lineText(mine.id, level), icon: 'quiet', seen: [`line:${mine.id}`] }, needs, away, note, open };
