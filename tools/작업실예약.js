@@ -34,6 +34,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
+const { createHash } = require('node:crypto');
 const 묶음 = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
@@ -311,6 +312,82 @@ async function sendTelegram(text) {
   if (r.note) console.error(r.note);
 }
 
+// 알림은 편과 실패 단계별로 보관한다. 원고 결과가 불확실해진 경우는 앞선 업로드 실패와 별도로 알린다.
+function failureNoticeFile(dir, kind) {
+  const resolved = fs.realpathSync(dir);
+  const key = createHash('sha256').update(process.platform === 'win32' ? resolved.toLowerCase() : resolved).digest('hex');
+  return path.join(LOCAL_DIR, '등록실패알림', `${key}-${kind}.sqlite`);
+}
+function noticeKind(dir, error) {
+  return error.code === 'UNCERTAIN' || fs.existsSync(path.join(dir, '게시', '작업실.json')) ? '확인필요' : '일시실패';
+}
+const sqliteBusy = error => error?.errcode === 5 || /database is locked/i.test(error?.message || '');
+function openNotice(file) {
+  const { DatabaseSync } = require('node:sqlite');
+  const db = new DatabaseSync(file);
+  try { db.exec('CREATE TABLE IF NOT EXISTS notice (id INTEGER PRIMARY KEY CHECK(id=1), message TEXT NOT NULL, sent INTEGER NOT NULL)'); return db; }
+  catch (error) { db.close(); throw error; }
+}
+async function dispatchFailureNotice(file, send = sendTelegram) {
+  if (!fs.existsSync(file)) return false;
+  let db, started = false, sent = false;
+  try {
+    db = openNotice(file);
+    db.exec('BEGIN IMMEDIATE'); started = true;
+    const notice = db.prepare('SELECT message, sent FROM notice WHERE id=1').get();
+    if (!notice || notice.sent) { db.exec('COMMIT'); started = false; return false; }
+    await send(notice.message);
+    sent = true;
+    // 전송 직후 기록 전에 종료되면 다음 회차에 중복될 수 있다. SQLite 잠금은 종료 시 해제된다.
+    db.prepare('UPDATE notice SET sent=1 WHERE id=1').run();
+    db.exec('PRAGMA busy_timeout=5000');
+    db.exec('COMMIT'); started = false;
+    return true;
+  } catch (error) {
+    if (started) { db.exec('ROLLBACK'); started = false; }
+    if (sent) throw Object.assign(new Error(`알림은 보냈지만 기록하지 못했다 — 다음 회차에 중복될 수 있다: ${error.message}`), { cause: error });
+    if (sqliteBusy(error)) return false;
+    throw error;
+  } finally { db?.close(); }
+}
+async function notifyFailureOnce(dir, error, send = sendTelegram) {
+  const file = failureNoticeFile(dir, noticeKind(dir, error));
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const text = `[작업실 등록 실패] ${path.basename(dir)}\n${String(error.message).slice(0, 300)}\n「오늘 편 게시」 세션이 기록과 작업실 원고를 확인합니다.`;
+  let db;
+  try { db = openNotice(file); db.prepare('INSERT OR IGNORE INTO notice (id, message, sent) VALUES (1, ?, 0)').run(text); }
+  catch (e) { if (sqliteBusy(e)) return false; throw e; }
+  finally { db?.close(); }
+  return dispatchFailureNotice(file, send);
+}
+async function resendFailureNotices(send = sendTelegram) {
+  const dir = path.join(LOCAL_DIR, '등록실패알림');
+  let names;
+  try { names = fs.readdirSync(dir).filter(name => /^[a-f0-9]{64}-(일시실패|확인필요)\.sqlite$/.test(name)); }
+  catch (e) { if (e.code === 'ENOENT') return 0; throw e; }
+  let sent = 0;
+  for (const name of names) {
+    try { if (await dispatchFailureNotice(path.join(dir, name), send)) sent++; }
+    catch (error) { console.error(`  ! 등록 실패 알림을 처리하지 못했다: ${error.message}`); }
+  }
+  return sent;
+}
+async function clearFailureNotice(dir) {
+  for (const kind of ['일시실패', '확인필요']) {
+    const file = failureNoticeFile(dir, kind);
+    if (!fs.existsSync(file)) continue;
+    const deadline = Date.now() + 190000;
+    for (;;) {
+      let db;
+      try { db = openNotice(file); db.prepare('DELETE FROM notice WHERE id=1').run(); break; }
+      catch (error) {
+        if (!sqliteBusy(error) || Date.now() >= deadline) throw error;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } finally { db?.close(); }
+    }
+  }
+}
+
 const kst = (iso) => new Date(Date.parse(iso) + 9 * 3600000).toISOString().slice(5, 16).replace('T', ' ');
 
 // ── 등록 ──
@@ -473,11 +550,11 @@ function readyFolders(root) {
 }
 
 // 다른 작업본에서 직접 지정한 편을 조용히 공용 판으로 바꾸면 낡은 원고가 올라갈 수 있어 멈춘다.
-function sharedBundle(dir) {
+function sharedBundle(dir, action = '등록') {
   const repo = 묶음.repoOf(dir), main = 공용작업본(repo);
   const rel = path.relative(path.join(repo, 'docs', '마케팅'), path.resolve(dir));
   const inMarketing = rel !== '..' && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
-  if (main !== repo && inMarketing) throw Object.assign(new Error(`워크트리 편은 직접 등록하지 않는다 — 내용을 확인한 뒤 공용 편 경로를 명시한다: ${path.join(main, 'docs', '마케팅', rel)}`), { code: 'WORKTREE_BUNDLE' });
+  if (main !== repo && inMarketing) throw Object.assign(new Error(`워크트리 편의 ${action}은 공용 편 경로를 확인해 명시한다: ${path.join(main, 'docs', '마케팅', rel)}`), { code: 'WORKTREE_BUNDLE' });
   return 묶음.load(dir);
 }
 
@@ -526,6 +603,8 @@ async function handleOne(dir, ws, o) {
   if (!o.run) return { bundle: bundle.name, rows: rows.map(({ plate, ...r }) => r) };
   if (!rows.some((r) => r.eligible)) return { bundle: bundle.name, registered: false };
   const done = await register(bundle, ws, rows, o);
+  // 알림 표식 정리 실패는 이미 성공한 등록을 실패로 바꾸지 않는다.
+  try { await clearFailureNotice(bundle.dir); } catch (error) { console.error(`  ! 등록 실패 알림 표식을 정리하지 못했다: ${error.message}`); }
   console.log(`  등록 끝 · 원고 ${done.post.id} · 예약 ${done.jobs.length}개 모두 검토 대기 · 링크 만료 ${kst(done.expiresAt)}`);
   // 등록 뒤 일(텔레그램·기록 올리기)이 막혀도 등록은 된 것이다 — 따로 잡아 다음 회차가 이어 하게 한다.
   if (o.telegram) await sendLink(localLinkFile(bundle));
@@ -593,7 +672,7 @@ async function main() {
   if (명령 === '상태' && argv.includes('--캐시')) {
     const cached = cachedJobs();
     if (!cached) { console.log('예약큐 서버 캐시가 없다 — 정기 작업 「SYNK 예약큐」가 아직 안 돌았다'); process.exitCode = 1; return; }
-    const r = await status(sharedBundle(o.rest[1]), null, { save: !o.noSave, jobs: cached.jobs });
+    const r = await status(sharedBundle(o.rest[1], '상태 확인'), null, { save: !o.noSave, jobs: cached.jobs });
     if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
     return;
@@ -605,21 +684,22 @@ async function main() {
   // 등록할 편이 없는 회차는 자격·서버를 읽지 않는다. 이미 등록했으나 못 보낸 검토 링크는 그대로 이어 보낸다.
   const queueDirs = o.queue && !['상태', '취소'].includes(명령)
     ? readyFolders(path.join(공용작업본(묶음.repoOf(process.cwd())), 'docs', '마케팅')) : null;
+  if (queueDirs && o.run && o.telegram) await resendFailureNotices();
   if (queueDirs && !queueDirs.length) {
     if (o.run && o.telegram) await resendPending();
     console.log('등록할 편이 없다');
     return;
   }
+  const target = ['상태', '취소'].includes(명령) ? sharedBundle(o.rest[1], 명령 === '상태' ? '상태 확인' : '취소') : null;
   const ws = await connect({ origin: o.origin });
   if (명령 === '상태') {
-    const bundle = sharedBundle(o.rest[1]);
-    const r = await status(bundle, ws, { save: !o.noSave });
+    const r = await status(target, ws, { save: !o.noSave });
     if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
     return;
   }
   if (명령 === '취소') {
-    const r = await cancel(sharedBundle(o.rest[1]), ws);
+    const r = await cancel(target, ws);
     console.log(r ? `  작업실 원고 ${r.postId}의 예약과 검토 링크를 거뒀다 — 고친 뒤 다시 등록한다` : '작업실에 등록한 기록이 없다');
     return;
   }
@@ -633,8 +713,7 @@ async function main() {
       console.error(`  ✗ ${path.basename(dir)}: ${error.message}`);
       results.push({ bundle: path.basename(dir), error: error.message });
       process.exitCode = 1;
-      // --텔레그램이 지정된 정기 작업은 등록 실패를 알린다. 업로드 전 단계 실패는 다음 회차에도 알릴 수 있다.
-      if (o.queue && o.run && o.telegram && error.code !== 'ALREADY') await sendTelegram(`[작업실 등록 실패] ${path.basename(dir)}\n${error.message.slice(0, 300)}\n「오늘 편 게시」 세션이 기록과 작업실 원고를 확인합니다.`).catch(() => {});
+      if (o.queue && o.run && o.telegram && error.code !== 'ALREADY') await notifyFailureOnce(dir, error).catch(e => console.error(`  ! 등록 실패 알림을 처리하지 못했다: ${e.message}`));
     }
   }
   if (o.json) console.log(JSON.stringify(results, null, 2));
@@ -642,4 +721,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, status, cancel, matchChannel, checkedFile, readyFolders, sharedBundle, cachedJobs, sendLink, resendPending, companions, 명령이름, STATUS, LOCAL_DIR, mergeResults };
+module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, companions, 명령이름, STATUS, LOCAL_DIR, mergeResults };

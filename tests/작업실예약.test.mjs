@@ -180,6 +180,28 @@ test('등록을 거두면 예약 작업이 취소되고 링크가 폐기돼, 그
   assert.deepEqual(result.판.map((p) => p.상태), ['취소됨', '취소됨']);
 });
 
+test('실제 등록 흐름이 성공하면 이전 실패 알림이 지워져 새 실패를 알릴 수 있다', async (t) => {
+  const f = await fixture(t); let sent = 0;
+  await f.예약.notifyFailureOnce(f.dir, Error('먼저 실패'), async () => { sent++; });
+  await f.예약.notifyFailureOnce(f.dir, Object.assign(Error('확인 필요'), { code: 'UNCERTAIN' }), async () => { sent++; });
+  const ledger = require('../tools/lib/장부올리기.js'), before = ledger.장부올리기;
+  ledger.장부올리기 = async () => null;
+  try {
+    const result = await f.예약.handleOne(f.dir, f.ws, { run: true, json: true, telegram: false });
+    assert.equal(result.registered, true);
+  } finally { ledger.장부올리기 = before; }
+  const { DatabaseSync } = require('node:sqlite');
+  const noticeDir = path.join(f.linkDir, '등록실패알림');
+  const files = fs.readdirSync(noticeDir).filter(name => name.endsWith('.sqlite'));
+  assert.equal(files.length, 2);
+  for (const file of files) {
+    const db = new DatabaseSync(path.join(noticeDir, file));
+    try { assert.equal(db.prepare('SELECT count(*) AS n FROM notice').get().n, 0); } finally { db.close(); }
+  }
+  assert.equal(await f.예약.notifyFailureOnce(f.dir, Error('다시 실패'), async () => { sent++; }), true);
+  assert.equal(sent, 3);
+});
+
 test('대기열은 07시 작업이 「작업실등록」을 단 편만 집는다', async (t) => {
   const f = await fixture(t);
   const root = path.join(f.root, 'docs', '마케팅');

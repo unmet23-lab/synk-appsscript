@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
@@ -100,4 +100,82 @@ test('워크트리 편을 조용히 공용의 다른 판으로 바꿔 등록하�
   fs.writeFileSync(path.join(tree, 'docs', '마케팅', 'episode', '게시', '준비.json'), JSON.stringify({ 제목: '워크트리' }));
   assert.throws(() => booking.sharedBundle(path.join(tree, 'docs', '마케팅', 'episode')), { code: 'WORKTREE_BUNDLE' });
   assert.equal(booking.sharedBundle(path.join(main, 'docs', '마케팅', 'episode')).prep.제목, '공용');
+  for (const command of ['상태', '취소']) {
+    const p = spawnSync(process.execPath, [script, command, path.join(tree, 'docs', '마케팅', 'episode')], { encoding: 'utf8', env: { ...process.env, SYNK_WORKSPACE_SESSION: '', SYNK_WORKSPACE_LINK_DIR: local } });
+    assert.notEqual(p.status, 0);
+    assert.match(p.stderr, command === '상태' ? /상태 확인/ : /취소/);
+    assert.ok(p.stderr.includes(path.join(main, 'docs', '마케팅', 'episode')));
+    assert.doesNotMatch(p.stderr, /자격|로그인/);
+  }
+});
+
+test('연속 등록 실패는 한 번만 알리고, 전송 실패와 복구 뒤 새 실패는 다시 알린다', async t => {
+  const f = fixture(t); let sent = 0;
+  const send = async () => { sent++; };
+  await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('first'), async () => { throw Error('send failed'); }), /send failed/);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('first'), send), true);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('again'), send), false);
+  assert.equal(sent, 1);
+  await booking.clearFailureNotice(f.bundle.dir);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('new failure'), send), true);
+  assert.equal(sent, 2);
+});
+
+test('같은 편의 실패 알림이 동시에 시작돼도 한 통만 보낸다', async t => {
+  const f = fixture(t); let sent = 0, release;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const first = booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { sent++; await waiting; });
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { sent++; }), false);
+  release(); assert.equal(await first, true); assert.equal(sent, 1);
+});
+
+test('알림 전송과 등록 성공이 겹치면 전송이 끝난 뒤 표식을 초기화한다', async t => {
+  const f = fixture(t); let sent = 0, release;
+  const wait = new Promise(resolve => { release = resolve; });
+  const sending = booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { sent++; await wait; });
+  const clearing = booking.clearFailureNotice(f.bundle.dir);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  release(); await sending; await clearing;
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('new failure'), async () => { sent++; }), true);
+  assert.equal(sent, 2);
+});
+
+test('업로드 실패 뒤 원고 결과가 불확실해지면 별도로 알린다', async t => {
+  const f = fixture(t); const messages = [];
+  const send = async message => messages.push(message);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('upload'), send), true);
+  fs.writeFileSync(f.state, JSON.stringify({ 등록중: true }));
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Object.assign(Error('response lost'), { code: 'UNCERTAIN' }), send), true);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Object.assign(Error('response lost'), { code: 'UNCERTAIN' }), send), false);
+  assert.equal(messages.length, 2);
+});
+
+test('대기열이 비어도 전송 실패로 남은 알림을 다음 회차에 보낸다', async t => {
+  const f = fixture(t);
+  await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { throw Error('send failed'); }), /send failed/);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'booking-empty-queue-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, 'tools')); fs.mkdirSync(path.join(root, 'docs', '마케팅'), { recursive: true });
+  const calls = path.join(root, 'calls.txt'), guard = path.join(root, 'guard.cjs');
+  fs.writeFileSync(guard, `const fs=require('node:fs');global.fetch=async()=>{throw Error('NETWORK_BLOCKED')};require(${JSON.stringify(fileURLToPath(new URL('../tools/lib/헤르메스보내기.js', import.meta.url)))}).보내기=()=>{fs.appendFileSync(${JSON.stringify(calls)},'sent\\n');return {ok:true}};`);
+  const env = { ...process.env, SYNK_WORKSPACE_SESSION: '', SYNK_WORKSPACE_LINK_DIR: local };
+  const run = () => spawnSync(process.execPath, ['--require', guard, script, '--대기열', '--실행', '--텔레그램'], { cwd: root, encoding: 'utf8', env });
+  const first = run(); assert.equal(first.status, 0, first.stderr); assert.match(first.stdout, /등록할 편이 없다/);
+  assert.equal(fs.readFileSync(calls, 'utf8'), 'sent\n');
+  assert.equal(run().status, 0); assert.equal(fs.readFileSync(calls, 'utf8'), 'sent\n');
+});
+
+test('전송 중 프로세스가 종료되면 SQLite 잠금이 풀리고 미발송 알림을 재시도한다', async t => {
+  const f = fixture(t);
+  const program = `const b=require(process.argv[1]);setInterval(()=>{},1000);b.notifyFailureOnce(process.argv[2],Error('failure'),()=>new Promise(()=>{process.send('sending')}));`;
+  const child = spawn(process.execPath, ['-e', program, script, f.bundle.dir], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'], env: { ...process.env, SYNK_WORKSPACE_LINK_DIR: local } });
+  t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill(); });
+  assert.equal((await once(child, 'message'))[0], 'sending');
+  let sent = 0; const send = async () => { sent++; };
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('failure'), send), false);
+  assert.equal(sent, 0, '다른 프로세스가 전송 중이면 두 번째 전송을 시작하지 않는다');
+  child.kill(); await once(child, 'exit');
+  await booking.resendFailureNotices(send);
+  await booking.resendFailureNotices(send);
+  assert.equal(sent, 1);
 });
