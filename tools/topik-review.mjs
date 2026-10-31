@@ -5,6 +5,8 @@
 //
 //   node tools/topik-review.mjs 준비 <이름> [--새 [<묶음…>]] [--새표본 N] [--기존 [<출처…>]] [--출처마다 N] [--표본 N] [--미판정]   검수 묶음(output/topik-review/<이름>/)
 //   node tools/topik-review.mjs 준비 <이름> --찻집 [<줄 id…>]   싱크타운 찻집 주문 틀(rubric-compose-r1 — 목록이 없으면 증거 없는 요청 틀 전부), 반영은 review/town-tea-w10.json
+//   node tools/topik-review.mjs 준비 <이름> --드라마 [<줄 id…>] [--미판정]   드라마 말하기 대사 칸 명세(drama-spec-r1 — 목록이 없으면 대본의 학생 줄 + 처음 보는 대사 전부),
+//                                                                반영은 대본 검수:'passed'·검수지문과 experiences/drama/review/spec-review.json
 //   node tools/topik-review.mjs 클로드 <이름> [--보내기|--받기]   1차: 블라인드 풀이 + 기준 검수 일괄(반값)
 //   node tools/topik-review.mjs 아르곤 <이름> [--묶음 4]           2차: 독립 검수 + 해설 역번역(하나씩 차례로)
 //   node tools/topik-review.mjs 판정 <이름> [--보내기]             두 검수 합치기 · 엇갈린 문항은 Opus 판정
@@ -17,6 +19,8 @@ import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { contentHash, itemKeyOf, familyKeyOf, reviewOutcome } from '../experiences/topik-items/validate.mjs';
+import { judgeLine, allowedEndings, minSyllablesOf } from './lib/드라마판정.mjs';
+import { DRAMA_SPEC_RUBRIC, DRAMA_SPEC_RUBRICS, dramaReviewRows, dramaSpecUnit, dramaSpecHash } from './lib/drama-spec-review-unit.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -32,7 +36,16 @@ const writeJson = (file, value) => { fs.mkdirSync(path.dirname(file), { recursiv
 export const WRITING_RUBRIC_ID = 'topik-review-writing-r3';
 /** 찻집 주문 틀의 검수 꼴(다리 설계 §2-2 · 세로 조각 §16-3): 요청을 읽고 축마다 값을 적는 블라인드 풀이 + 기준 여섯. */
 export const COMPOSE_RUBRIC_ID = 'rubric-compose-r1';
-export function rubricText(kind = 'choice') {
+/** 드라마 말하기 대사 칸 명세의 검수 꼴(결정 10-31 ③): 명세 없이 쓴 시험 말을 지금 명세로 판정 + 기준 열. */
+export const DRAMA_RUBRIC_ID = DRAMA_SPEC_RUBRIC;
+const rubricKindOf = packet => packet?.rubric?.id === COMPOSE_RUBRIC_ID ? 'compose' : packet?.rubric?.id in DRAMA_SPEC_RUBRICS ? 'drama' : 'choice';
+/** kind 'drama'는 판(id)마다 기준 글이 따로다 — 묶음은 만든 때의 판으로 끝까지 본다(packet.rubric.id). */
+export function rubricText(kind = 'choice', id = null) {
+  if (kind === 'drama') {
+    const version = id && DRAMA_SPEC_RUBRICS[id] ? id : DRAMA_RUBRIC_ID;
+    const text = fs.readFileSync(path.join(root, 'experiences/drama/review', DRAMA_SPEC_RUBRICS[version]), 'utf8').replace(/\r\n/g, '\n');
+    return { text, sha: sha(text).slice(0, 16), id: version };
+  }
   if (kind === 'compose') {
     const text = fs.readFileSync(path.join(bankDir, 'review/rubric-compose-r1.md'), 'utf8').replace(/\r\n/g, '\n');
     return { text, sha: sha(text).slice(0, 16), id: COMPOSE_RUBRIC_ID };
@@ -199,14 +212,141 @@ export function composeMisses(unit, solved = []) {
   return out;
 }
 
+// ── 드라마 말하기 · 대사 칸 명세(drama-spec-r1) ─────────────────────────────
+// 대사 한 줄이 한 단위다. 블라인드 몫(종류 · 장면이나 상황 · 듣는 사람 · 앞 사람 말 · 모범 대사 · 뜻 · 능력 · 문법 · 어휘)만 보고 쓴 시험 말을
+// 이 도구가 지금 명세로 판정해 오노트(맞는 말에 노트) · 너그러움(틀린 말을 확실한 통과로)을 잰다. 검수 몫은 명세와 이 도구가 돌린 판정 시험이다.
+// 통과한 줄만 대본에 검수:'passed'와 검수지문(tools/lib/drama-spec-review-unit.mjs — 고치면 풀린다)을 단다.
+export const DRAMA_EVIDENCE_FILE = path.join(root, 'experiences/drama/review/spec-review.json');
+const DRAMA_TO = Object.freeze({ professor: '교수', senior: '선배', staff: '직원(조교 · 사감 · 교직원 · 안내 데스크 직원)', group: '여럿 앞(자기소개)', stranger: '처음 보는 어른' });
+const SPEAKING_MAP = path.join(root, 'strata/maps/ko-speaking.json');
+function judgedLabel(r) {
+  if (r.status !== 'ok') return `관문 ${r.status}`;
+  if (r.verdict === 'pass') return r.sure ? '통과 · 확실' : '통과 · 확신 아님';
+  const n = r.note || {};
+  return n.kind === 'ending' ? `노트 끝맺음(들은 꼴 ${n.got} · 바라는 꼴 ${n.want})` : n.kind === 'length' ? `노트 길이(최소 ${n.min}음절)` : `노트 빠진 말 「${n.word}」`;
+}
+const tidySay = s => String(s).replace(/\s+/g, ' ').replace(/\s+([,.?!])/g, '$1').replace(/^[\s,.]+/, '').trim();
+/** 지금 명세로 돌린 판정 시험: 모범 대사 · 허용 변형 · 핵심 말을 alts로 바꾼 말 · 끝 「요」를 뺀 말 · 핵심 말을 뺀 말. */
+export function dramaSpecTests(spec) {
+  const rows = [], add = (what, say) => { say = tidySay(say); if (!say || rows.some(r => r.말 === say)) return; rows.push({ 무엇: what, 말: say, 결과: judgedLabel(judgeLine(spec, { transcript: say })) }); };
+  add('모범 대사', spec.line);
+  for (const v of spec.variants || []) add('허용 변형', v);
+  for (const key of spec.keys || []) if (spec.line.includes(key.word)) for (const alt of key.alts || []) add(`「${key.word}」 대신 「${alt}」`, spec.line.replace(key.word, alt));
+  const yo = spec.line.replace(/요([.?!…~]*)\s*$/, '$1');
+  if (yo !== spec.line) add('끝 「요」를 뺌', yo);
+  for (const key of spec.keys || []) if (spec.line.includes(key.word)) add(`「${key.word}」를 뺌`, spec.line.replace(key.word, ''));
+  return rows;
+}
+// 대본을 새로 읽는다(같은 프로세스에서 고친 대본도 보이게 — ESM은 한 번 읽은 모듈을 기억한다).
+async function freshEpisodes(files) {
+  const out = [];
+  for (const file of files) out.push((await import(`${pathToFileURL(file).href}?at=${Date.now()}-${Math.random().toString(36).slice(2)}`)).default);
+  return out;
+}
+export async function dramaUnits(ids = null, { episodes = null } = {}) {
+  const eps = episodes || await freshEpisodes((await import('./build-world-speaking-talk.mjs')).EPISODE_FILES);
+  const map = readJson(SPEAKING_MAP), labels = Object.fromEntries(map.nodes.map(n => [n.id, n.label_ko]));
+  const idOf = new Map(map.nodes.filter(n => n.kind !== 'skill').map(n => [n.label_ko, n.id]));
+  const tags = list => (list || []).map(label => { const id = idOf.get(label) || null;
+    return { 글: label, id, TOPIK2_읽기문법_이음: Boolean(id && map.edges.some(e => e.from === id && e.to === 'ko2.reading.grammar')) }; });
+  const units = [];
+  for (const ep of eps) {
+    const rows = dramaReviewRows(ep);
+    for (const entry of rows) {
+      const { row, kind, day, before } = entry;
+      if (ids?.length && !ids.includes(row.id)) continue;
+      // 장면 대사의 듣는 사람은 그 장면 인물이고, 처음 보는 대사는 다른 상황 · 다른 사람이라 일반 이름으로 보인다.
+      const spec = { id: row.id, line: row.말, ...row.명세 }, who = kind === 'scene' ? { professor: '교수', senior: '선배' }[spec.to] : null, person = who ? ep.인물?.[who] : null;
+      const same = kind === 'unseen' ? rows.filter(r => r.kind === 'scene' && r.row.능력 === row.능력).map(r => `${r.row.id}: ${r.row.말}`) : [];
+      const blind = { 줄: row.id,
+        종류: kind === 'scene' ? '장면 대사 — 대본을 보며 연기한다(연습, 평가로 세지 않음)' : '처음 보는 대사 — 상황 카드(뜻 · 상황)만 보고 한국어 답 없이 처음 말한다(확실한 통과 = 혼자 해 봄)',
+        ...(day ? { 장면: [day.이름, day.장소].filter(Boolean).join(' · ') } : {}), ...(row.상황 ? { 상황: row.상황 } : {}),
+        듣는_사람: person ? `${spec.to} — ${who} ${person.이름}: ${person.소개} 학생에게 하는 말투: ${person.말투}` : `${spec.to} — ${DRAMA_TO[spec.to] || spec.to}`,
+        ...(before ? { 앞_사람_말: `${before.누가}: ${before.말}` } : {}),
+        모범_대사: row.말, 뜻: row.뜻 ?? null, 능력: { id: row.능력 ?? null, 이름: labels[row.능력] || null },
+        ...(row.문법?.length ? { 문법: tags(row.문법) } : {}), ...(row.어휘?.length ? { 어휘: tags(row.어휘).map(({ 글, id }) => ({ 글, id })) } : {}),
+        ...(same.length ? { 같은_능력의_장면_대사: same } : {}) };
+      const specView = { 명세: row.명세, 받는_끝맺음: allowedEndings(spec), 최소_음절: minSyllablesOf(spec), 판정_시험: dramaSpecTests(spec),
+        ...(ep.카드 ? { 회차_말투_카드: [ep.카드.제목, ...(ep.카드.줄 || [])] } : {}) };
+      units.push({ key: `drama:${row.id}`, kind: 'drama', role: kind, id: row.id, episode: ep.id, hash: dramaSpecHash(dramaSpecUnit(entry, ep.id)), blind, specView, view: { ...blind, ...specView } });
+    }
+  }
+  const missing = (ids || []).filter(id => !units.some(u => u.id === id));
+  if (missing.length) throw new Error(`드라마 줄을 못 찾았다: ${missing.join(', ')}`);
+  return units;
+}
+/** 시험 말 하나하나를 지금 명세로 판정한다. problem: false_note(맞는 말에 노트 — 두 종류 모두 검수를 막는다) · false_credit(노트 줄 말이
+ *  확실한 통과 — 처음 보는 대사만 막는다: 그 확실한 통과만 「혼자 해 봄」으로 기록에 남고, 장면 대사는 평가로 세지 않아 「노트를 못 준 것」이다).
+ *  unsure(맞는 말이 확신 아님) · no_note(노트 줄 말에 노트 없음) · other_note(다른 노트) · gate(소리 관문)는 기록만 한다. */
+export const DRAMA_SERIOUS = Object.freeze(['false_note', 'false_credit']);
+export const dramaBlocking = unit => (unit.role === 'unseen' ? DRAMA_SERIOUS : ['false_note']);
+export function dramaProbeResults(unit, probes = []) {
+  const spec = { id: unit.id, line: unit.view.모범_대사, ...unit.view.명세 };
+  return (Array.isArray(probes) ? probes : []).filter(p => typeof p?.say === 'string' && p.say.trim() && ['pass', 'note'].includes(p.expect)).map(p => {
+    const r = judgeLine(spec, { transcript: p.say });
+    const problem = p.expect === 'pass' ? (r.status !== 'ok' ? 'gate' : r.verdict === 'note' ? 'false_note' : r.sure ? null : 'unsure')
+      : r.status !== 'ok' ? 'gate' : r.verdict === 'pass' ? (r.sure ? 'false_credit' : 'no_note') : (p.kind && p.kind !== 'none' && r.note.kind !== p.kind ? 'other_note' : null);
+    return { say: p.say, expect: p.expect, kind: p.kind ?? null, why: p.why ?? '', got: judgedLabel(r), problem };
+  });
+}
+/** 검수자 한 명의 드라마 판정: 시험 말에 오노트 · 너그러움이 있으면 pass를 fix로 내린다. 시험 말이 넷보다 적으면 결과 없음. */
+function dramaVerdict(unit, review, probes) {
+  if (!review?.verdict || !Array.isArray(probes)) return null;
+  const results = dramaProbeResults(unit, probes);
+  if (results.length < 4) return null;
+  const serious = results.filter(x => dramaBlocking(unit).includes(x.problem)), count = p => results.filter(x => x.problem === p).length;
+  let verdict = review.verdict;
+  const notes = [review.summary, `시험 말 ${results.length} — 오노트 ${count('false_note')} · 너그러움 ${count('false_credit')} · 확신 아님 ${count('unsure')} · 노트 없음 ${count('no_note')} · 다른 노트 ${count('other_note')}`];
+  if (serious.length) { if (verdict === 'pass') verdict = 'fix'; notes.push(serious.map(x => `${x.problem === 'false_note' ? '오노트' : '너그러움'} 「${x.say}」 → ${x.got}`).join(' · ')); }
+  return { verdict, notes: notes.join(' / '), fixes: review.fixes || [], grammarLevels: review.grammarLevels || [], criteria: review.criteria || null, probes: results };
+}
+/** 대본 글에서 그 줄의 검수 칸을 바꾼다 — hash가 있으면 검수:'passed'·검수지문, null이면 검수 칸을 지운다(draft). 줄이 없으면 그대로. */
+export function markReviewed(text, id, hash) {
+  const re = new RegExp(`(id:'${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}',)(검수:'[^']*',검수지문:'[^']*',)?`);
+  return re.test(text) ? text.replace(re, `$1${hash ? `검수:'passed',검수지문:'${hash}',` : ''}`) : text;
+}
+export async function applyToDrama(packet, merged, { at = new Date().toISOString(), file = DRAMA_EVIDENCE_FILE, episodeFiles = null } = {}) {
+  const units = packet.units.filter(unit => unit.kind === 'drama');
+  if (!units.length) return null;
+  const files = episodeFiles || (await import('./build-world-speaking-talk.mjs')).EPISODE_FILES;
+  const now = new Map((await dramaUnits(null, { episodes: await freshEpisodes(files) })).map(u => [u.id, u.hash]));
+  const doc = fs.existsSync(file) ? readJson(file) : { task: 'drama-spec-review', rubric: DRAMA_RUBRIC_ID,
+    reviewers: [{ stage: 'claude', model: CLAUDE_MODEL }, { stage: 'argon', model: ARGON.label }], results: [] };
+  const rows = new Map(doc.results.map(row => [row.id, row])), marks = new Map(), skipped = [];
+  for (const unit of units) {
+    const m = merged[unit.ref];
+    if (!m || m.outcome === 'incomplete') continue;
+    if (now.get(unit.id) !== unit.hash) { skipped.push(unit.id); continue; } // 검수 뒤 바뀐 줄은 이 판정을 받지 않는다
+    const verdict = m.outcome === 'split' ? 'held' : m.outcome;
+    rows.set(unit.id, { id: unit.id, episode: unit.episode, kind: unit.role, hash: unit.hash, verdict, rubric: packet.rubric?.id || DRAMA_RUBRIC_ID,
+      by: [{ stage: 'claude', model: CLAUDE_MODEL, verdict: m.claude.verdict }, { stage: 'argon', model: ARGON.label, verdict: m.argon.verdict },
+        ...(m.judge ? [{ stage: 'adjudication', model: CLAUDE_MODEL, verdict: m.judge.verdict }] : [])],
+      reasons: { claude: m.claude.notes, argon: m.argon.notes, ...(m.judge ? { adjudication: m.judge.reason } : {}) },
+      fixes: [...new Set([...(m.judge?.fixes || []), ...(m.claude.fixes || []), ...(m.argon.fixes || [])])],
+      grammarLevels: { claude: m.claude.grammarLevels || [], argon: m.argon.grammarLevels || [] }, packet: packet.name, reviewedAt: at });
+    marks.set(unit.id, verdict === 'pass' ? unit.hash : null);
+  }
+  doc.results = [...rows.values()].sort((a, b) => a.id.localeCompare(b.id));
+  doc.updatedAt = at;
+  writeJson(file, doc);
+  for (const f of files) {
+    const before = fs.readFileSync(f, 'utf8');
+    let text = before;
+    for (const [id, hash] of marks) text = markReviewed(text, id, hash);
+    if (text !== before) fs.writeFileSync(f, text);
+  }
+  return { passed: [...marks.values()].filter(Boolean).length, held: [...marks.values()].filter(v => !v).length, skipped };
+}
+
 // --미판정: 지금 내용(지문)으로 이미 판정을 받은 문항은 다시 보내지 않는다. 고친 문항은 rev·지문이 달라 다시 들어간다.
-export function alreadyJudged(unit, { review = [], verdictHash = new Map() } = {}) {
+export function alreadyJudged(unit, { review = [], verdictHash = new Map(), dramaHash = new Map() } = {}) {
   if (unit.kind === 'new') return review.some(entry => entry.stage !== 'author-fix' && entry.rev === unit.rev && entry.hash === unit.hash);
   if (unit.kind === 'existing') return verdictHash.get(unit.key) === unit.hash;
+  if (unit.kind === 'drama') return dramaHash.get(unit.id) === unit.hash;
   return false;
 }
 
-export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false, teaIds = null } = {}) {
+export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false, teaIds = null, dramaIds = null } = {}) {
   const dir = path.join(root, 'output/topik-review', name);
   if (fs.existsSync(path.join(dir, 'packet.json'))) throw new Error(`이미 있는 묶음: ${dir}`);
   const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels(), rubric = rubricText();
@@ -240,6 +380,11 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
   if (writingFile) units.push(...writingUnits(writingFile));
   // 찻집 주문 틀(--찻집 [<줄 id…>]): 목록이 없으면 검수 증거가 없는 요청 틀 전부.
   if (teaIds) units.push(...await teaUnits(teaIds.length ? teaIds : null));
+  // 드라마 대사 칸 명세(--드라마 [<줄 id…>]): 목록이 없으면 대본의 학생 줄 + 처음 보는 대사 전부. --미판정이면 지금 지문으로 판정을 받은 줄은 뺀다.
+  if (dramaIds) {
+    const judged = fs.existsSync(DRAMA_EVIDENCE_FILE) ? new Map((readJson(DRAMA_EVIDENCE_FILE).results || []).map(row => [row.id, row.hash])) : new Map();
+    units.push(...(await dramaUnits(dramaIds.length ? dramaIds : null)).filter(unit => !(onlyUnjudged && alreadyJudged(unit, { dramaHash: judged }))));
+  }
   // 고친 문항만 다시 볼 때(--문항 <id…>): 나머지는 지난 판정을 그대로 둔다.
   if (onlyIds?.length) for (let i = units.length - 1; i >= 0; i--) if (!onlyIds.includes(units[i].id) && !onlyIds.includes(units[i].key)) units.splice(i, 1);
   let chosen = units;
@@ -247,8 +392,10 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
   chosen.forEach((unit, index) => { unit.ref = `u${String(index + 1).padStart(3, '0')}`; });
   const writing = chosen.some(unit => unit.kind === 'writing') ? rubricText('writing') : null;
   if (chosen.some(unit => unit.kind === 'compose') && !chosen.every(unit => unit.kind === 'compose')) throw new Error('찻집 주문 틀은 다른 문항과 한 묶음에 섞지 않는다(기준이 다르다).');
+  if (chosen.some(unit => unit.kind === 'drama') && !chosen.every(unit => unit.kind === 'drama')) throw new Error('드라마 대사 칸 명세는 다른 문항과 한 묶음에 섞지 않는다(기준이 다르다).');
   const compose = chosen.length && chosen.every(unit => unit.kind === 'compose') ? rubricText('compose') : null;
-  const packet = { name, createdAt: new Date().toISOString(), rubric: compose ? { id: compose.id, sha: compose.sha } : writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
+  const drama = chosen.length && chosen.every(unit => unit.kind === 'drama') ? rubricText('drama') : null;
+  const packet = { name, createdAt: new Date().toISOString(), rubric: drama ? { id: drama.id, sha: drama.sha } : compose ? { id: compose.id, sha: compose.sha } : writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
     : { id: RUBRIC_ID, sha: rubric.sha, ...(writing ? { writing: { id: writing.id, sha: writing.sha } } : {}) }, units: chosen };
   writeJson(path.join(dir, 'packet.json'), packet);
   return packet;
@@ -290,8 +437,33 @@ function composeClaude(unit, system) {
     messages: [{ role: 'user', content: `아래 찻집 주문을 정답을 모르는 상태에서 직접 풀어라. ${COMPOSE_ASK}\n\n${JSON.stringify(unit.view, null, 1)}` }] } }, review];
 }
 
-export function claudeRequests(packet, rubric = packet.rubric?.id === COMPOSE_RUBRIC_ID ? rubricText('compose') : rubricText(), writingRubric = packet.units.some(u => u.kind === 'writing') ? rubricText('writing') : null) {
+// 드라마 대사 칸 명세: 블라인드는 명세 없이 시험 말을 쓰고, 검수는 명세와 판정 시험을 보고 기준 열을 판정한다.
+const DRAMA_CRITERIA = ['listener_fit', 'keys_fit', 'alts_ok', 'length_fit', 'strictness', 'skill_fit', 'level_fit', 'naturalness', 'unseen_fit', 'culture_bias'];
+const dramaProbes = { type: 'array', items: { type: 'object', additionalProperties: false, required: ['say', 'expect', 'kind', 'why'],
+  properties: { say: { type: 'string' }, expect: { type: 'string', enum: ['pass', 'note'] }, kind: { type: 'string', enum: ['none', 'ending', 'length', 'missing'] }, why: { type: 'string' } } } };
+export const DRAMA_BLIND_SCHEMA = { type: 'object', additionalProperties: false, required: ['probes', 'reason'], properties: { probes: dramaProbes, reason: { type: 'string' } } };
+export const DRAMA_REVIEW_SCHEMA = { type: 'object', additionalProperties: false, required: ['verdict', 'criteria', 'fixes', 'grammarLevels', 'summary'],
+  properties: { verdict: { type: 'string', enum: ['pass', 'fix', 'drop'] },
+    criteria: { type: 'object', additionalProperties: false, required: DRAMA_CRITERIA, properties: Object.fromEntries(DRAMA_CRITERIA.map(c => [c, criterionSchema])) },
+    fixes: { type: 'array', items: { type: 'string' } },
+    grammarLevels: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['tag', 'level', 'note'],
+      properties: { tag: { type: 'string' }, level: { type: 'string', enum: ['topik1', 'topik2-3', 'topik2-4', 'topik2-5+'] }, note: { type: 'string' } } } },
+    summary: { type: 'string' } } };
+const DRAMA_PROBE_ASK = '시험 말 6~10개를 probes에 쓴다(기준 글 「시험 말 쓰기」대로 — pass와 note를 셋 이상씩, note에는 듣는 사람이 윗사람이면 ending, 그리고 length · missing을 하나씩).';
+function dramaClaude(unit, system) {
+  return [
+    { custom_id: `${unit.ref}-blind`, params: { model: CLAUDE_MODEL, max_tokens: 8000, system, output_config: { effort: 'medium', format: { type: 'json_schema', schema: DRAMA_BLIND_SCHEMA } },
+      messages: [{ role: 'user', content: `아래 대사의 칸 명세는 보여 주지 않는다. 이 줄의 상황만 보고 ${DRAMA_PROBE_ASK}\n\n${JSON.stringify(unit.blind, null, 1)}` }] } },
+    { custom_id: `${unit.ref}-review`, params: { model: CLAUDE_MODEL, max_tokens: 16000, system, output_config: { effort: 'high', format: { type: 'json_schema', schema: DRAMA_REVIEW_SCHEMA } },
+      messages: [{ role: 'user', content: `아래 대사의 칸 명세를 위 기준대로 검수하라. 「판정_시험」은 이 도구가 지금 명세로 판정을 돌린 결과다.\n\n${JSON.stringify(unit.view, null, 1)}` }] } },
+  ];
+}
+
+export function claudeRequests(packet, rubric = rubricText(rubricKindOf(packet), packet.rubric?.id), writingRubric = packet.units.some(u => u.kind === 'writing') ? rubricText('writing') : null) {
   const system = [{ type: 'text', text: rubric.text, cache_control: { type: 'ephemeral', ttl: '1h' } }];
+  // 드라마 묶음(대사 열몇 줄)은 캐시를 쓰지 않는다 — 일괄 요청이 거의 동시에 돌아 줄마다 캐시를 새로 써서(1시간 캐시 쓰기는 입력 두 배) 값만 늘었다
+  // (10-31 drama-ep01-r1: 캐시 쓰기 19만 토큰 · 읽기 5천).
+  if (packet.units.every(unit => unit.kind === 'drama')) return packet.units.flatMap(unit => dramaClaude(unit, [{ type: 'text', text: rubric.text }]));
   if (packet.units.every(unit => unit.kind === 'compose')) return packet.units.flatMap(unit => composeClaude(unit, system));
   const writingSystem = writingRubric ? [{ type: 'text', text: writingRubric.text, cache_control: { type: 'ephemeral', ttl: '1h' } }] : null;
   return packet.units.flatMap(unit => unit.kind === 'writing' ? [
@@ -360,21 +532,32 @@ export function argonComposePrompt(units, rubric = rubricText('compose')) {
     + units.map(unit => `## ref ${unit.ref}\n${JSON.stringify(unit.view, null, 1)}`).join('\n\n') + `\n\n${marker}\n` };
 }
 
+// 드라마 대사 칸 명세: 아르곤은 줄마다 「상황」 칸만 보고 시험 말을 먼저 쓴 뒤 명세 · 판정 시험을 보고 판정한다(시험 말 판정은 이 도구가 한다).
+export const ARGON_DRAMA_SCHEMA = { type: 'object', additionalProperties: false, required: ['items', 'seen'],
+  properties: { seen: { type: 'array', items: { type: 'string' } }, items: { type: 'array', items: { type: 'object', additionalProperties: false,
+    required: ['ref', 'probes', ...DRAMA_REVIEW_SCHEMA.required], properties: { ref: { type: 'string' }, probes: dramaProbes, ...DRAMA_REVIEW_SCHEMA.properties } } } } };
+export function argonDramaPrompt(units, rubric = rubricText('drama')) {
+  const marker = `END-OF-ITEMS-${sha(units.map(u => u.ref).join(',')).slice(0, 8)}`;
+  return { marker, prompt: `${rubric.text}\n\n---\n\n# 이번에 검수할 대사 ${units.length}줄\n\n줄마다 따로 검수하라. 먼저 그 줄의 「상황」 칸만 보고(「명세와 판정 시험」 칸을 보기 전에) ${DRAMA_PROBE_ASK} 그다음 명세와 판정 시험을 보고 기준대로 판정한다.\n`
+    + `seen에는 읽은 줄의 ref를 모두 적는다. 목록은 「${marker}」 줄에서 끝난다 — 그 줄을 보지 못했으면 seen에 「truncated」를 넣는다.\n\n`
+    + units.map(unit => `## ref ${unit.ref}\n### 상황\n${JSON.stringify(unit.blind, null, 1)}\n### 명세와 판정 시험\n${JSON.stringify(unit.specView, null, 1)}`).join('\n\n') + `\n\n${marker}\n` };
+}
+
 export async function runArgon(packet, dir, { groupSize = 4, call, log = console.log } = {}) {
   const outFile = path.join(dir, 'argon.json');
   const state = fs.existsSync(outFile) ? readJson(outFile) : { model: ARGON.label, rubric: packet.rubric, calls: [], results: {} };
   const pending = packet.units.filter(unit => !state.results[unit.ref]);
-  // 쓰기 · 고르기 · 찻집 줄은 기준이 달라 한 번에 섞어 보내지 않는다(쓰기는 길어 두 개씩).
-  const groups = [], kindOf = unit => (unit.kind === 'writing' || unit.kind === 'compose' ? unit.kind : 'choice');
-  for (const kind of ['choice', 'writing', 'compose']) {
+  // 쓰기 · 고르기 · 찻집 줄 · 드라마 대사는 기준이 달라 한 번에 섞어 보내지 않는다(쓰기는 길어 두 개씩).
+  const groups = [], kindOf = unit => (['writing', 'compose', 'drama'].includes(unit.kind) ? unit.kind : 'choice');
+  for (const kind of ['choice', 'writing', 'compose', 'drama']) {
     const same = pending.filter(unit => kindOf(unit) === kind), size = kind === 'writing' ? Math.min(groupSize, 2) : groupSize;
     for (let i = 0; i < same.length; i += size) groups.push({ kind, units: same.slice(i, i + size) });
   }
   for (const { kind, units: group } of groups) {
-    const { marker, prompt } = kind === 'writing' ? argonWritingPrompt(group) : kind === 'compose' ? argonComposePrompt(group) : argonPrompt(group);
+    const { marker, prompt } = kind === 'writing' ? argonWritingPrompt(group) : kind === 'compose' ? argonComposePrompt(group) : kind === 'drama' ? argonDramaPrompt(group, rubricText('drama', packet.rubric?.id)) : argonPrompt(group);
     const started = Date.now();
     let record, error = null;
-    try { record = await call({ model: ARGON.model, thinking: ARGON.thinking, prompt, schema: kind === 'writing' ? ARGON_WRITING_SCHEMA : kind === 'compose' ? ARGON_COMPOSE_SCHEMA : ARGON_SCHEMA, timeoutMs: 1_200_000 }); }
+    try { record = await call({ model: ARGON.model, thinking: ARGON.thinking, prompt, schema: kind === 'writing' ? ARGON_WRITING_SCHEMA : kind === 'compose' ? ARGON_COMPOSE_SCHEMA : kind === 'drama' ? ARGON_DRAMA_SCHEMA : ARGON_SCHEMA, timeoutMs: 1_200_000 }); }
     catch (e) { error = e.message; }
     const seconds = Math.round((Date.now() - started) / 1000);
     let parsed = null;
@@ -404,6 +587,7 @@ function composeVerdict(unit, review, solved) {
 }
 export function effectiveClaude(unit, claude) {
   const c = claude?.[unit.ref];
+  if (unit.kind === 'drama') return dramaVerdict(unit, c?.review, c?.blind?.probes) ?? { verdict: null, notes: c?.errors?.length ? c.errors.join('; ') : '결과 없음(검수 · 시험 말 넷 이상이 다 있어야 한다)' };
   if (unit.kind === 'compose') {
     const got = composeVerdict(unit, c?.review, c?.blind?.solved);
     return got ? { ...got, notes: c?.blind?.reason && got.notes.includes('풀이 어긋남') ? `${got.notes}: ${c.blind.reason}` : got.notes } : { verdict: null, notes: c?.errors?.length ? c.errors.join('; ') : '결과 없음' };
@@ -425,6 +609,7 @@ export function effectiveClaude(unit, claude) {
 export function effectiveArgon(unit, argon) {
   const a = argon?.results?.[unit.ref];
   if (!a) return { verdict: null, notes: '결과 없음' };
+  if (unit.kind === 'drama') return dramaVerdict(unit, a, a.probes) ?? { verdict: null, notes: '결과 없음(검수 · 시험 말 넷 이상이 다 있어야 한다)' };
   if (unit.kind === 'compose') return composeVerdict(unit, a, a.solved) ?? { verdict: null, notes: '결과 없음' };
   if (unit.kind === 'writing') return { verdict: a.verdict, notes: a.summary, fixes: a.fixes, altAnswers: a.altAnswers };
   let verdict = a.verdict;
@@ -446,8 +631,12 @@ export function merge(packet, claude, argon, judge = {}) {
   }));
 }
 
-export function judgeRequest(unit, merged) {
+export function judgeRequest(unit, merged, rubricId = null) {
   const compose = unit.kind === 'compose';
+  if (unit.kind === 'drama') return { model: CLAUDE_MODEL, max_tokens: 12000, system: [{ type: 'text', text: rubricText('drama', rubricId).text, cache_control: { type: 'ephemeral', ttl: '1h' } }],
+    output_config: { effort: 'high', format: { type: 'json_schema', schema: { type: 'object', additionalProperties: false, required: ['verdict', 'reason', 'fixes'],
+      properties: { verdict: { type: 'string', enum: ['pass', 'fix', 'drop'] }, reason: { type: 'string' }, fixes: { type: 'array', items: { type: 'string' } } } } } },
+    messages: [{ role: 'user', content: `두 검수자가 같은 대사 칸 명세에 다른 판정을 냈다. 대사와 두 의견을 놓고 직접 다시 따져 최종 판정을 내려라. 두 의견의 probes는 각 검수자가 명세 없이 쓴 시험 말을 이 도구가 지금 명세로 판정한 결과다(problem: false_note = 맞는 말에 노트 · false_credit = 노트 줄 말이 확실한 통과). 검수자가 잘못 쓴 시험 말(정말로는 맞는 말이 아닌 pass, 정말로는 틀린 말이 아닌 note)은 빼고 본다. 어느 쪽 지적이든 맞으면 받아들이고, 학습 근거로 써도 되는지만 본다(확신이 없으면 fix).\n\n# 대사\n${JSON.stringify(unit.view, null, 1)}\n\n# 검수자 A(Claude)\n${JSON.stringify(merged.claude, null, 1)}\n\n# 검수자 B(아르곤)\n${JSON.stringify(merged.argon, null, 1)}` }] };
   return { model: CLAUDE_MODEL, max_tokens: 12000, system: [{ type: 'text', text: rubricText(unit.kind === 'writing' ? 'writing' : compose ? 'compose' : 'choice').text, cache_control: { type: 'ephemeral', ttl: '1h' } }],
     output_config: { effort: 'high', format: { type: 'json_schema', schema: { type: 'object', additionalProperties: false, required: ['verdict', 'reason', 'fixes', ...(compose ? ['levelsOk'] : [])],
       properties: { verdict: { type: 'string', enum: ['pass', 'fix', 'drop'] }, reason: { type: 'string' }, fixes: { type: 'array', items: { type: 'string' } },
@@ -580,11 +769,11 @@ async function main([command, name, ...argv]) {
     const { exceptionCommand } = await import('./lib/topik-review-atlas-20261028.mjs');
     console.log(JSON.stringify(await exceptionCommand(command, name, argv))); return 0;
   }
-  if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); return 2; }
+  if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {
-    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정'), teaIds: list(argv, '--찻집') });
-    console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length} · 찻집 ${packet.units.filter(u => u.kind === 'compose').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
+    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정'), teaIds: list(argv, '--찻집'), dramaIds: list(argv, '--드라마') });
+    console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length} · 찻집 ${packet.units.filter(u => u.kind === 'compose').length} · 드라마 ${packet.units.filter(u => u.kind === 'drama').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
     return 0;
   }
   const { dir, packet } = load(name);
@@ -624,7 +813,7 @@ async function main([command, name, ...argv]) {
     const merged = merge(packet, claude, argon, judge);
     if (argv.includes('--보내기')) {
       for (const unit of packet.units.filter(u => merged[u.ref].outcome === 'split' && !judge[u.ref])) {
-        const { 응답 } = await 클로드.보내기(judgeRequest(unit, merged[unit.ref]), { 용도: `topik-review:${name}:판정` });
+        const { 응답 } = await 클로드.보내기(judgeRequest(unit, merged[unit.ref], packet.rubric?.id), { 용도: `topik-review:${name}:판정` });
         judge[unit.ref] = { ...JSON.parse(textOf(응답)), usage: 응답.usage, at: new Date().toISOString() };
         writeJson(judgeFile, judge);
       }
@@ -637,8 +826,8 @@ async function main([command, name, ...argv]) {
   }
   if (command === '반영') {
     const merged = readJson(path.join(dir, 'merged.json'));
-    const changed = applyToItems(packet, merged), existing = applyToExisting(packet, merged), writing = applyToWriting(packet, merged), tea = await applyToTea(packet, merged);
-    console.log(`새 문항 반영 ${changed.length} · 기존 판정 목록 ${existing ?? '그대로'}줄 · 쓰기 ${writing.length}${tea === null ? '' : ` · 찻집 틀 평가 판 있음 ${tea}`}`);
+    const changed = applyToItems(packet, merged), existing = applyToExisting(packet, merged), writing = applyToWriting(packet, merged), tea = await applyToTea(packet, merged), drama = await applyToDrama(packet, merged);
+    console.log(`새 문항 반영 ${changed.length} · 기존 판정 목록 ${existing ?? '그대로'}줄 · 쓰기 ${writing.length}${tea === null ? '' : ` · 찻집 틀 평가 판 있음 ${tea}`}${drama === null ? '' : ` · 드라마 대사 통과 ${drama.passed} · 못 넘음 ${drama.held}${drama.skipped.length ? ` · 검수 뒤 바뀌어 건너뜀 ${drama.skipped.join(',')}` : ''}`}`);
     return 0;
   }
   if (command === '보고') {
@@ -648,16 +837,28 @@ async function main([command, name, ...argv]) {
     const usd = (total?.추정USD || 0) + judgeUsd, n = packet.units.length;
     const count = outcome => Object.values(merged).filter(m => m.outcome === outcome).length;
     const argonSeconds = argon ? argon.calls.reduce((s, c) => s + c.seconds, 0) : 0;
-    const lines = [`# 검수 묶음 ${name}`, '', `- 문항 ${n}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`,
+    const dramaPacket = packet.units.every(u => u.kind === 'drama');
+    const lines = [`# 검수 묶음 ${name}`, '', dramaPacket ? `- 대사 ${n}(장면 ${packet.units.filter(u => u.role === 'scene').length} · 처음 보는 ${packet.units.filter(u => u.role === 'unseen').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`
+      : `- 문항 ${n}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`,
       `- 판정: 통과 ${count('pass')} · 고침 ${count('fix')} · 뺌 ${count('drop')} · 엇갈림(판정 전) ${count('split')} · 미완 ${count('incomplete')}`,
       `- Claude 일괄 추정 $${(total?.추정USD || 0).toFixed(4)} + 판정 $${judgeUsd.toFixed(4)} = $${usd.toFixed(4)} → 1,000문항 어림 $${(usd / n * 1000).toFixed(2)}`,
       total ? `- 토큰 합계: 입력 ${total.usage.input_tokens} · 캐시 쓰기 ${total.usage.cache_creation_input_tokens} · 캐시 읽기 ${total.usage.cache_read_input_tokens} · 출력 ${total.usage.output_tokens}` : '- Claude 결과 없음',
       `- 아르곤 호출 ${argon?.calls.length || 0}회 · ${Math.round(argonSeconds / 60)}분(구독, 추가 비용 없음)`, '', '| ref | 문항 | 결과 | Claude | 아르곤 | 메모 |', '|---|---|---|---|---|---|',
       ...packet.units.map(u => { const m = merged[u.ref]; return `| ${u.ref} | ${u.id || u.key} | ${m.outcome} | ${m.claude.verdict ?? '-'} | ${m.argon.verdict ?? '-'} | ${String(m.judge?.reason || m.claude.notes || '').replace(/\|/g, '/').slice(0, 140)} |`; })];
+    // 드라마 대사는 줄마다 통과 · 못 넘음의 까닭과 고칠 점을 남긴다(두 검수자 · 판정 · 시험 말 가운데 막은 것).
+    if (dramaPacket) for (const u of packet.units) {
+      const m = merged[u.ref], blocked = [...(m.claude.probes || []).map(p => ({ ...p, by: 'Claude' })), ...(m.argon.probes || []).map(p => ({ ...p, by: '아르곤' }))].filter(p => dramaBlocking(u).includes(p.problem));
+      const fixes = [...new Set([...(m.judge?.fixes || []), ...(m.claude.fixes || []), ...(m.argon.fixes || [])])];
+      lines.push('', `## ${u.id} · ${u.role === 'scene' ? '장면' : '처음 보는'} · ${m.outcome}`, '', `- 대사: ${u.view.모범_대사}`, `- Claude(${m.claude.verdict ?? '-'}): ${m.claude.notes}`, `- 아르곤(${m.argon.verdict ?? '-'}): ${m.argon.notes}`,
+        ...(m.judge ? [`- 판정(${m.judge.verdict}): ${m.judge.reason}`] : []),
+        ...(blocked.length ? [`- 막은 시험 말: ${blocked.map(p => `${p.by} 「${p.say}」(${p.expect === 'pass' ? '맞는 말' : `노트 줄 말 · ${p.kind}`}) → ${p.got}`).join(' · ')}`] : []),
+        ...(fixes.length ? ['- 고칠 점:', ...fixes.map(f => `  - ${f}`)] : []));
+    }
     fs.writeFileSync(path.join(dir, 'report.md'), lines.join('\n') + '\n');
-    // 저장소에도 남긴다(쓰기 세션의 review.report가 가리키는 곳). 원자료는 output/에만.
-    fs.mkdirSync(path.join(bankDir, 'review/reports'), { recursive: true });
-    fs.writeFileSync(path.join(bankDir, 'review/reports', `${name}.md`), lines.join('\n') + '\n');
+    // 저장소에도 남긴다(쓰기 세션의 review.report가 가리키는 곳 — 드라마 대사는 experiences/drama/review/reports/). 원자료는 output/에만.
+    const reportDir = dramaPacket ? path.join(root, 'experiences/drama/review/reports') : path.join(bankDir, 'review/reports');
+    fs.mkdirSync(reportDir, { recursive: true });
+    fs.writeFileSync(path.join(reportDir, `${name}.md`), lines.join('\n') + '\n');
     console.log(lines.slice(0, 7).join('\n'));
     return 0;
   }

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import ep01 from '../experiences/drama/s1/ep01.mjs';
 import {checkSpec,judgeLine} from '../tools/lib/드라마판정.mjs';
+import {dramaReviewRows,dramaSpecUnit,dramaSpecHash} from '../tools/lib/drama-spec-review-unit.mjs';
 // 드라마 말하기 1화 대본(2026-10-29 초안): 분량(기획 §6)·칸 명세 점검(tools/lib/드라마판정.mjs)·실수 유형 몇 개가 바라는 노트를 받는지.
 // 네트워크·모델을 부르지 않는다.
 
@@ -28,6 +29,15 @@ test('칸 명세 점검: 내 대사와 처음 보는 대사가 모두 자기 명
  for(const l of [...학생줄,...ep01.처음보는대사]){
   assert.ok(l.뜻,`${l.id} 뜻`);
   assert.deepEqual(checkSpec(명세(l)),[],l.id);
+ }
+});
+
+test('칸 명세 검수(결정 10-31 ③): 검수:passed인 줄은 검수지문이 지금 내용과 같다 — 검수 뒤 고쳤으면 다시 검수하거나 검수 칸을 지운다',()=>{
+ for(const entry of dramaReviewRows(ep01)){
+  const {row}=entry;
+  assert.ok(row.검수===undefined||row.검수==='passed',`${row.id} 검수 칸은 passed만`);
+  if(row.검수==='passed')assert.equal(row.검수지문,dramaSpecHash(dramaSpecUnit(entry,ep01.id)),`${row.id}: 검수 뒤 바뀜 — node tools/topik-review.mjs 준비 <이름> --드라마 ${row.id}`);
+  else assert.equal(row.검수지문,undefined,`${row.id} 검수지문만 남음`);
  }
 });
 

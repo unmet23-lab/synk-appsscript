@@ -9,6 +9,7 @@ import vm from 'node:vm';
 import {judgeModule,judgeExports,checkJudgeExports,dramaLines,readEpisodes,linesModule,linesHash,answerSecOf,TALK_FILES,JUDGE_FILE} from '../tools/build-world-speaking-talk.mjs';
 import * as judge from '../tools/lib/드라마판정.mjs';
 import {syllables} from '../tools/lib/말하기피드백.mjs';
+import {dramaReviewRows,dramaSpecUnit,dramaSpecHash} from '../tools/lib/drama-spec-review-unit.mjs';
 
 // 생성된 CommonJS를 정본 피드백 핵심의 syllables로 불러 본다(talk에서는 world-speaking-feedback.js 사본이 준다).
 const load=source=>{
@@ -41,12 +42,15 @@ test('판정 사본은 옮길 수 없는 꼴에서 멈추고, 한 줄에 여럿�
  assert.throws(()=>judgeModule(`${text}\nexport default 1;\n`),/옮기지 못하는/);
 });
 
-test('대사 은행: 대본의 학생 줄 9(scene) + 처음 보는 대사 8(unseen), 판정 명세는 대본 그대로 · 모두 검수 전(draft) · 녹음 상한 8~30초', async()=>{
- const lines=dramaLines(await readEpisodes());
+test('대사 은행: 대본의 학생 줄 9(scene) + 처음 보는 대사 8(unseen), 판정 명세는 대본 그대로 · 검수 상태는 대본의 검수지문이 지금 내용과 같은 줄만 passed · 녹음 상한 8~30초', async()=>{
+ const episodes=await readEpisodes(),lines=dramaLines(episodes);
+ const rows=episodes.flatMap(ep=>dramaReviewRows(ep).map(entry=>({entry,ep})));
  assert.deepEqual([lines.filter(l=>l.kind==='scene').length,lines.filter(l=>l.kind==='unseen').length],[9,8]);
- for(const line of lines){
+ for(const [i,line] of lines.entries()){
   assert.deepEqual(judge.checkSpec(line.spec),[],line.id);
-  assert.equal(line.review.status,'draft',line.id);
+  const {entry,ep}=rows[i];
+  assert.equal(entry.row.id,line.id);
+  assert.equal(line.review.status,entry.row.검수==='passed'&&entry.row.검수지문===dramaSpecHash(dramaSpecUnit(entry,ep.id))?'passed':'draft',line.id);
   assert.equal(line.answerSec,answerSecOf(line.line));
   assert.ok(line.answerSec>=8&&line.answerSec<=30,line.id);
  }

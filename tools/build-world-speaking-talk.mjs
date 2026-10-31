@@ -13,14 +13,16 @@
 // · 드라마 말하기(10-31): 장면 판정 tools/lib/드라마판정.mjs가 정본이고, talk에는 import 한 줄(말하기피드백.mjs의 syllables)을 그 사본
 //   world-speaking-feedback.js의 require로 바꾼 CommonJS 사본만 둔다. 대사 은행은 대본(experiences/drama/s*/ep*.mjs)의 학생 줄과 처음 보는
 //   대사이고 하나라도 자기 칸 명세(checkSpec)를 통과하지 못하면 멈춘다(조용히 빼면 화면과 서버가 다른 줄을 본다). 화면은 LINES_HASH를
-//   lines_version으로 보낸다. 칸 명세는 AI 2중 검수를 통과해야 학습 근거로 쓴다(기획 §4-1) — 대본 줄에 검수:'passed'가 없으면 draft로 실어
-//   함수가 리허설(WORLD_SPEAKING_DRAFT_ITEMS=true)에서만 연다.
+//   lines_version으로 보낸다. 칸 명세는 AI 2중 검수를 통과해야 학습 근거로 쓴다(기획 §4-1) — 대본 줄에 검수:'passed'와 그 내용의 검수지문
+//   (tools/lib/drama-spec-review-unit.mjs — 검수 도구 tools/topik-review.mjs --드라마가 단다)이 함께 있고 지문이 지금 내용과 같을 때만 passed로,
+//   아니면 draft로 실어 함수가 리허설(WORLD_SPEAKING_DRAFT_ITEMS=true)에서만 연다. 검수 뒤 고친 줄은 통과가 풀린다(빌드가 알린다).
 import {createHash} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {syllables} from './lib/말하기피드백.mjs';
 import {checkSpec,DRAMA_JUDGE_VERSION} from './lib/드라마판정.mjs';
+import {dramaReviewRows,dramaReviewStatus} from './lib/drama-spec-review-unit.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const BANK_FILE=join(root,'experiences/synk-world-app/world-speaking-items.json');
@@ -73,20 +75,21 @@ export async function checkJudgeExports(generated=judgeModule()){
 /** 녹음 상한 초(대사마다) — 학습자가 1초에 2음절쯤 말한다고 보고 시작 머뭇거림 4초를 더한다. 8~30초. 함수는 여기에 5초를 더 받는다. */
 export const answerSecOf=line=>Math.min(30,Math.max(8,Math.ceil(syllables(line)/2)+4));
 export async function readEpisodes(files=EPISODE_FILES){const out=[];for(const file of files)out.push((await import(pathToFileURL(file).href)).default);return out;}
-/** 대사 은행 — 학생 줄(scene, 장면 대사 · 연습)과 처음 보는 대사(unseen). 판정 명세는 대본 그대로 {id, line, ...명세}. */
-export function dramaLines(episodes){
+/**
+ * 대사 은행 — 학생 줄(scene, 장면 대사 · 연습)과 처음 보는 대사(unseen). 판정 명세는 대본 그대로 {id, line, ...명세}.
+ * review.status는 검수지문이 지금 내용과 같을 때만 passed다. onStale(id): 검수:'passed'인데 지문이 다른 줄(검수 뒤 고침) — draft로 싣는다.
+ */
+export function dramaLines(episodes,{onStale=()=>{}}={}){
  const lines=[],seen=new Set();
- const add=(episode,row,kind)=>{
-  const spec={id:row.id,line:row.말,...row.명세};
+ for(const episode of episodes)for(const entry of dramaReviewRows(episode)){
+  const {row,kind}=entry,spec={id:row.id,line:row.말,...row.명세};
   const problems=checkSpec(spec);
   if(problems.length)throw new Error(`대사 ${row.id} 칸 명세 문제 — ${problems.join(' · ')}`);
   if(seen.has(row.id))throw new Error(`대사 id가 겹친다: ${row.id}`);
   seen.add(row.id);
-  lines.push({id:row.id,episode:episode.id,kind,to:spec.to,line:row.말,spec,answerSec:answerSecOf(row.말),review:{status:row.검수==='passed'?'passed':'draft'}});
- };
- for(const episode of episodes){
-  for(const day of episode.촬영일||[])for(const row of day.줄||[])if(row.누가==='학생')add(episode,row,'scene');
-  for(const row of episode.처음보는대사||[])add(episode,row,'unseen');
+  const review=dramaReviewStatus(entry,episode.id);
+  if(review.stale)onStale(row.id);
+  lines.push({id:row.id,episode:episode.id,kind,to:spec.to,line:row.말,spec,answerSec:answerSecOf(row.말),review:{status:review.status}});
  }
  return lines;
 }
@@ -111,7 +114,9 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const dir=args[talk+1];if(!dir||dir.startsWith('--'))throw new Error('--talk 다음에 SYNK-talk 폴더를 주세요');
   const judgeCopy=judgeModule();
   await checkJudgeExports(judgeCopy);
-  const out={[TALK_FILES.core]:coreModule(),[TALK_FILES.items]:itemsModule(bank),[TALK_FILES.judge]:judgeCopy,[TALK_FILES.lines]:linesModule(dramaLines(await readEpisodes()))};
+  const lines=dramaLines(await readEpisodes(),{onStale:id=>console.error(`알림: 대사 ${id}는 검수 뒤 내용이 바뀌어 통과가 풀렸다(draft로 싣는다) — node tools/topik-review.mjs 준비 <이름> --드라마 ${id}로 다시 검수`)});
+  const out={[TALK_FILES.core]:coreModule(),[TALK_FILES.items]:itemsModule(bank),[TALK_FILES.judge]:judgeCopy,[TALK_FILES.lines]:linesModule(lines)};
+  console.log(`드라마 대사 ${lines.length} · 통과 ${lines.filter(l=>l.review.status==='passed').length} · LINES_HASH ${linesHash(lines)}`);
   let stale=0;
   for(const [rel,content] of Object.entries(out)){
    const file=join(resolve(dir),rel);

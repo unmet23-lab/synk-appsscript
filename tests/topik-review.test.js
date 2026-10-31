@@ -232,3 +232,107 @@ test('찻집 평가 판 — W10 증거는 기준 · 판정 계약 · 두 검수�
   assert.deepEqual(teaAssessmentMetadata([changed], axes, null, doc)[frame.id].levels, [], '검수 뒤 바뀐 글은 받지 않는다');
   assert.deepEqual(teaAssessmentMetadata([frame], axes, null, { ...doc, results: [{ ...doc.results[0], verdict: 'drop' }] })[frame.id].levels, []);
 });
+
+// ── 드라마 말하기 대사 칸 명세(drama-spec-r1, 결정 10-31 ③) ──
+const episodeFile = path.join(root, 'experiences/drama/s1/ep01.mjs');
+const freshImport = file => import(`${pathToFileURL(file).href}?t=${Date.now()}-${Math.random().toString(36).slice(2)}`);
+test('드라마 대사 — 블라인드 몫에는 명세 · 판정 시험이 없고, 검수 몫에는 도구가 지금 명세로 돌린 판정 시험이 붙으며, 지문은 빌더와 같은 단위로 잰다', async () => {
+  const t = await tool();
+  const { dramaReviewRows, dramaSpecUnit, dramaSpecHash } = await import(pathToFileURL(path.join(root, 'tools/lib/drama-spec-review-unit.mjs')));
+  const ep = (await freshImport(episodeFile)).default;
+  const units = await t.dramaUnits(null, { episodes: [ep] });
+  assert.deepEqual([units.filter(u => u.role === 'scene').length, units.filter(u => u.role === 'unseen').length], [9, 8]);
+  const rows = dramaReviewRows(ep);
+  for (const [i, u] of units.entries()) {
+    assert.equal(u.hash, dramaSpecHash(dramaSpecUnit(rows[i], ep.id)), u.id);
+    assert.ok(!('명세' in u.blind) && !('판정_시험' in u.blind) && !JSON.stringify(u.blind).includes('"alts"'), `${u.id} 블라인드에 명세가 없다`);
+    assert.equal(u.view.판정_시험[0].결과, '통과 · 확실', `${u.id} 모범 대사는 자기 명세를 확실히 통과`);
+  }
+  const yo = units.find(u => u.id === 's1e01-3').view.판정_시험.find(r => r.무엇 === '끝 「요」를 뺌');
+  assert.match(yo.결과, /^노트 끝맺음/);
+  units.forEach((u, i) => { u.ref = `u${String(i + 1).padStart(3, '0')}`; });
+  const p = { name: 'drama', rubric: { id: t.DRAMA_RUBRIC_ID, sha: '0'.repeat(16) }, units };
+  const reqs = t.claudeRequests(p);
+  assert.equal(reqs.length, 34);
+  assert.deepEqual(reqs.slice(0, 2).map(r => r.custom_id), ['u001-blind', 'u001-review']);
+  assert.ok(reqs.filter(r => r.custom_id.endsWith('-blind')).every(r => !r.params.messages[0].content.includes('"명세"') && !r.params.messages[0].content.includes('판정_시험')), '블라인드 요청에는 명세를 주지 않는다');
+  assert.ok(reqs.every(r => r.params.system[0].text.includes(t.DRAMA_RUBRIC_ID) && !r.params.system[0].cache_control), '드라마 일괄은 캐시를 쓰지 않는다(동시에 돌아 캐시 쓰기만 늘었다)');
+  assert.ok(t.claudeRequests({ ...p, rubric: { id: 'drama-spec-r1', sha: '0'.repeat(16) } })[0].params.system[0].text.includes('drama-spec-r1'), '앞 판 묶음은 앞 판 기준 글');
+  assert.ok(units.find(u => u.id === 's1e01-t8').blind.듣는_사람.startsWith('professor — 교수') && !units.find(u => u.id === 's1e01-t8').blind.듣는_사람.includes('문지영'), '처음 보는 대사는 장면 인물이 아니다');
+  const { prompt } = t.argonDramaPrompt(units.slice(0, 2));
+  assert.ok(prompt.includes('### 상황') && prompt.includes('### 명세와 판정 시험') && prompt.indexOf('### 상황') < prompt.indexOf('### 명세와 판정 시험'));
+});
+
+test('드라마 대사 — 시험 말은 지금 명세로 판정해 오노트 · 너그러움이 있으면 pass를 fix로 내리고, 엇갈리면 판정이 결론이다', async () => {
+  const t = await tool();
+  const ep = (await freshImport(episodeFile)).default;
+  const [u] = await t.dramaUnits(['s1e01-5'], { episodes: [ep] });
+  u.ref = 'u001';
+  const probe = (say, expect, kind = expect === 'pass' ? 'none' : 'ending') => ({ say, expect, kind, why: '' });
+  const clean = [probe('네, 알겠습니다. 감사합니다.', 'pass'), probe('네, 알겠어요. 감사해요, 교수님.', 'pass'), probe('알겠습니다, 교수님. 고맙습니다.', 'pass'),
+    probe('네, 알겠어. 고마워, 교수님', 'note'), probe('감사', 'note', 'length'), probe('네, 알겠어. 감사해.', 'note')];
+  const r = t.dramaProbeResults(u, clean);
+  assert.deepEqual(r.filter(x => t.DRAMA_SERIOUS.includes(x.problem)), [], JSON.stringify(r));
+  const falseNote = t.dramaProbeResults(u, [probe('알겠어요, 교수님. 정말 감사해요.', 'pass'), probe('네', 'pass')]);
+  assert.equal(falseNote[1].problem, 'false_note', '「네」 한마디는 길이 노트 — 맞는 말이라고 썼으면 오노트로 잡힌다');
+  const falseCredit = t.dramaProbeResults(u, [probe('네, 알겠습니다. 감사합니다, 교수님.', 'note')]);
+  assert.equal(falseCredit[0].problem, 'false_credit');
+  const review = verdict => ({ verdict, criteria: {}, fixes: [], grammarLevels: [], summary: verdict });
+  const p = { name: 'drama', rubric: { id: t.DRAMA_RUBRIC_ID, sha: '0'.repeat(16) }, units: [u] };
+  const claude = { u001: { blind: { probes: [...clean, probe('네', 'pass')], reason: '' }, review: review('pass'), errors: [] } };
+  const argon = { results: { u001: { ...review('pass'), probes: clean } } };
+  const merged = t.merge(p, claude, argon);
+  assert.equal(merged.u001.claude.verdict, 'fix', 'Claude 시험 말에 오노트가 있어 fix');
+  assert.equal(merged.u001.outcome, 'split');
+  assert.match(merged.u001.claude.notes, /오노트 「네」/);
+  assert.equal(t.merge(p, claude, argon, { u001: { verdict: 'pass', reason: '「네」 한마디는 대사를 한 것이 아니다 — 검수자가 잘못 쓴 시험 말', fixes: [] } }).u001.outcome, 'pass');
+  assert.equal(t.merge(p, { u001: { ...claude.u001, blind: { probes: clean.slice(0, 3), reason: '' } } }, argon).u001.outcome, 'incomplete', '시험 말이 넷보다 적으면 결과 없음');
+  // 너그러움(노트 줄 말이 확실한 통과)은 처음 보는 대사만 막는다 — 장면 대사는 평가로 세지 않아 「노트를 못 준 것」으로 적기만 한다.
+  const lenient = [...clean, probe('네, 알겠습니다. 감사합니다, 교수님.', 'note', 'missing')];
+  assert.equal(t.merge(p, { u001: { ...claude.u001, blind: { probes: lenient, reason: '' } } }, argon).u001.outcome, 'pass', '장면 대사의 너그러움은 막지 않는다');
+  const [t7] = await t.dramaUnits(['s1e01-t7'], { episodes: [ep] });
+  t7.ref = 'u001';
+  const unseen = { name: 'drama', rubric: p.rubric, units: [t7] };
+  const credit = [probe('선생님 덕분에 살았어요. 정말 감사합니다.', 'pass'), probe('선생님 덕분에 살았어요. 감사합니다.', 'pass'), probe('정말 감사합니다, 선생님.', 'pass'),
+    probe('선생님 덕분에 살았어. 정말 고마워.', 'note'), probe('감사', 'note', 'length'), probe('선생님 덕분에 살았어요. 정말 감사합니다.', 'note', 'missing')];
+  assert.equal(t.merge(unseen, { u001: { blind: { probes: credit, reason: '' }, review: review('pass'), errors: [] } }, { results: { u001: { ...review('pass'), probes: credit.slice(0, 5) } } }).u001.claude.verdict, 'fix', '처음 보는 대사의 너그러움은 막는다');
+  assert.equal(t.judgeRequest(u, merged.u001, 'drama-spec-r1').system[0].text.includes('drama-spec-r1'), true, '묶음은 만든 때의 기준 판으로 판정한다');
+  assert.equal(t.judgeRequest(u, merged.u001).system[0].text.includes('drama-spec-r2'), true);
+  assert.equal(t.rubricText('drama', 'drama-spec-r1').id, 'drama-spec-r1');
+});
+
+test('드라마 대사 — 반영: 통과한 줄에만 검수:passed와 검수지문을 달고 못 넘은 줄은 검수 칸을 지우며, 빌더는 지문이 같을 때만 passed로 싣는다(고치면 풀린다)', async () => {
+  const t = await tool();
+  const { dramaLines } = await import(pathToFileURL(path.join(root, 'tools/build-world-speaking-talk.mjs')));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-review-'));
+  try {
+    const file = path.join(dir, 'ep01.mjs'), evidence = path.join(dir, 'spec-review.json');
+    fs.copyFileSync(episodeFile, file);
+    const units = await t.dramaUnits(['s1e01-1', 's1e01-t2'], { episodes: [(await freshImport(file)).default] });
+    units.forEach((u, i) => { u.ref = `u00${i + 1}`; });
+    const p = { name: 'drama-test', rubric: { id: t.DRAMA_RUBRIC_ID, sha: '0'.repeat(16) }, units };
+    const side = verdict => ({ verdict, notes: verdict, fixes: verdict === 'pass' ? [] : ['keys[0].alts에 「반납일이」 더함'], grammarLevels: [], probes: [] });
+    const merged = { u001: { outcome: 'pass', claude: side('pass'), argon: side('pass'), judge: null }, u002: { outcome: 'fix', claude: side('fix'), argon: side('fix'), judge: null } };
+    const out = await t.applyToDrama(p, merged, { at: '2026-10-31T00:00:00Z', file: evidence, episodeFiles: [file] });
+    assert.deepEqual([out.passed, out.held, out.skipped], [1, 1, []]);
+    const text = fs.readFileSync(file, 'utf8');
+    assert.ok(text.includes(`id:'s1e01-1',검수:'passed',검수지문:'${units[0].hash}',`));
+    assert.ok(!/id:'s1e01-t2',검수/.test(text));
+    const doc = JSON.parse(fs.readFileSync(evidence, 'utf8'));
+    assert.deepEqual(doc.results.map(r => [r.id, r.verdict, r.hash]), [['s1e01-1', 'pass', units[0].hash], ['s1e01-t2', 'fix', units[1].hash]]);
+    assert.deepEqual(doc.results[1].fixes, ['keys[0].alts에 「반납일이」 더함']);
+    const status = lines => Object.fromEntries(lines.map(l => [l.id, l.review.status]));
+    const built = status(dramaLines([(await freshImport(file)).default]));
+    assert.equal(built['s1e01-1'], 'passed'); assert.equal(built['s1e01-t2'], 'draft'); assert.equal(built['s1e01-2'], 'draft');
+    // 통과한 줄을 고치면(명세의 alts 하나 더함) 통과가 풀리고 빌더가 알린다.
+    fs.writeFileSync(file, text.replace("alts:['안녕하십니까']", "alts:['안녕하십니까','안녕']"));
+    const stale = [];
+    assert.equal(status(dramaLines([(await freshImport(file)).default], { onStale: id => stale.push(id) }))['s1e01-1'], 'draft');
+    assert.deepEqual(stale, ['s1e01-1']);
+    // 바뀐 뒤의 판정이 아니면(지문이 다르면) 반영하지 않고 건너뛴다.
+    const again = await t.applyToDrama(p, { ...merged, u001: { ...merged.u001, outcome: 'fix' } }, { file: evidence, episodeFiles: [file] });
+    assert.deepEqual(again.skipped, ['s1e01-1']);
+    assert.equal(t.markReviewed("{id:'a',검수:'passed',검수지문:'x',말:'b'}", 'a', null), "{id:'a',말:'b'}");
+    assert.equal(t.markReviewed("{id:'a',말:'b'}", 'a', 'h1'), "{id:'a',검수:'passed',검수지문:'h1',말:'b'}");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
