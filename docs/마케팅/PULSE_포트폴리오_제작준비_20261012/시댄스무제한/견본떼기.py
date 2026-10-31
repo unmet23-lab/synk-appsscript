@@ -3,9 +3,12 @@
 #     매진 임박 hs-목소리-<배역> → synk-vendor/homeshopping-horror-20261021/목소리/시댄스견본/<jiyu · ri4 · tong2 · gangdo>.mp3
 #     7번      p7-목소리-<배역> → synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/<ian · seojin · minjae · soyeon>.mp3
 #     오미톡   om2-2(10-31 — 한결이 직접 말하는 판, 헐떡임이 섞이니 --demucs) → 웹꾸러미.py의 VOICE_FROM 자리(om2-끝말 판 견본)
+#     로맨스   rs-목소리-<배역>(10-31) → synk-vendor/pulse-portfolio12-20261024/소리/romance/소리참고/B/<yuna · taejun · minjae>.mp3
+#              (태준 C03 그림은 처마 밑 비가 보여 빗소리가 섞였으면 --demucs)
 # 받기.py가 받은 받음/<판>.mp4(다시 낸 판이 있으면 가장 나중 것)에서 소리를 꺼내 앞뒤 무음을 자르고 −17 LUFS로 둔다. --demucs면 먼저 Demucs로
 # 목소리만 뗀다(C:/SYNK-LoRA/tools/demucs — 현장노트 영상 「대사 클립의 목소리만 떼기」, CPU로 11초 클립에 41초). 받아쓰기(faster-whisper medium, VAD 끔)로 그 판에 적은
-# 글을 말했는지 보고 다르면 알린다 — 다른 사람 말 · 음악이 섞인 견본은 쓰지 않는다. 다 떼면 웹꾸러미.py(둘째 날은 --둘째날 B)를 다시 돌려 대사 판 폴더를 채운다.
+# 글을 말했는지 보고 다르면 알린다 — 다른 사람 말 · 음악이 섞인 견본은 쓰지 않는다. 다 떼면 웹꾸러미.py(둘째 날은 --둘째날 B, 로맨스는 --로맨스)를 다시 돌려
+# 대사 판 폴더를 채운다.
 # 견본 목소리가 어색하면(유호님 귀) 그 배역 목소리 판을 다시 내거나 대안 일레븐 v4로 간다(결정 10-29 — 7번은 고른 넷을 구워 둠,
 # 소리참고.py B <대안 폴더> <배역>). 견본이 받은 판보다 새것이면(이미 뗐거나 대안으로 바꾼 배역) 판 id를 적지 않는 한 덮지 않는다.
 import importlib.util, json, os, re, shutil, subprocess, sys, tempfile
@@ -24,6 +27,8 @@ def targets():
         out[f"hs-목소리-{role}"] = (os.path.join(W.SEED_SAMPLES, W.SAMPLE_FILE[role]), text)
     for role, _, _, _, text in W.P7_CASTING:
         out[f"p7-목소리-{role}"] = (os.path.join(W.P7_SOUND, "B", role + ".mp3"), text)
+    for role, _, _, _, text in W.RS_CASTING:   # 로맨스(10-31) — 두 사람 판은 웹꾸러미가 말하는 차례대로 견본 둘을 3_ · 4_로 넣는다
+        out[f"rs-목소리-{role}"] = (os.path.join(W.RS_SOUND, "B", role + ".mp3"), text)
     for pid, (dst, text) in W.VOICE_FROM.items():   # 다른 편의 「소리 켬」 판(오미톡 om2-2 — 헐떡임이 섞이니 --demucs로)
         out[pid] = (dst, text)
     return out

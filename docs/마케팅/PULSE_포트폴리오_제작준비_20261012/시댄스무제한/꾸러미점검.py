@@ -5,6 +5,8 @@
 # 끝 그림 줄, VOICE 줄(B 판에만 한 번), 소리 끔 판의 한국어 대사, 카메라 줄, 길이(4초~하루권 한 판 상한), 낡은 낱말을 본다.
 # 프리비즈 시험 판(id pv…, 팁 장부 36행)은 시작 그림 없이 영상 참고로 내니 첫 줄 · 카메라 줄 대신 올리는 영상 수 = 지시문이 부르는 @영상 수를 보고,
 # 판 ②의 1_프리비즈.mp4는 판 ① 받기 전이라 「프리비즈 기다림」으로 따로 센다.
+# 로맨스(웹올리기_로맨스, 10-31)는 두 사람 판이 견본 둘(3_ · 4_목소리견본_<배역>.mp3 = @오디오 1 · 2)이고, rs-C53b의 1_시작.jpg는 rs-C53a를 받은 뒤
+# 생기는 끝 프레임이라 _순서.json 「기다림」 칸에 든 파일은 기다림으로 센다. 목소리 규칙(소리 켬 = B · 목소리 판, 소리 끔 판엔 대사 없음)도 매진 · 7번처럼 건다.
 # 판 id 겹침 · 순서 끊김 · 순서표 밖 폴더도 본다. 숫자는 거르기용 — 지시문이 장면에 맞는지는 사람(검수자)이 본다.
 import json, os, re, sys
 
@@ -25,7 +27,7 @@ def ratio(s):
 def check(name):
     out = os.path.join(BASE, name)
     items = json.load(open(os.path.join(out, "_순서.json"), encoding="utf-8"))
-    bad, wait = [], 0
+    bad, wait = [], set()   # 기다림은 판 수로 센다(두 사람 판은 견본이 둘)
     ids = [x["id"] for x in items]
     dup = sorted({i for i in ids if ids.count(i) > 1})
     if dup:
@@ -57,8 +59,9 @@ def check(name):
         for f in x["파일"]:
             p = os.path.join(d, f)
             if f in x["빠진 파일"]:
-                if (f == "3_목소리견본.mp3" and x.get("방식") == "B") or (pv and f == "1_프리비즈.mp4"):
-                    wait += 1
+                if ((re.fullmatch(r"\d_목소리견본(_\w+)?\.mp3", f) and x.get("방식") == "B") or (pv and f == "1_프리비즈.mp4")
+                        or f in x.get("기다림", [])):
+                    wait.add(pid)
                 else:
                     no(f"빠진 파일 {f}")
             elif not os.path.exists(p) or os.path.getsize(p) == 0:
@@ -101,7 +104,7 @@ def check(name):
             no("B 판이 아닌데 VOICE 줄")
         # 목소리 규칙(소리 켬 = 견본 판 · 소리 끔 판엔 대사 없음)은 목소리 판 → 견본 길을 쓰는 매진 · 7번 주판에만 건다 — 다른 편의 한 줄 대사는
         # 시댄스가 그 판에서 지어내도 되고(오미톡 om2-2 · 대안 om2-2b), 7번 비교 꾸러미(10-30)는 그림만 견주려고 대사 판도 소리 끔으로 낸다
-        strict = x["편"] in ("hs", "p7") and not x.get("대안") and name != "웹올리기_7번비교"
+        strict = x["편"] in ("hs", "p7", "rs") and not x.get("대안") and name != "웹올리기_7번비교"
         if strict and x["소리"] == "끔" and re.search(r'["“][^"”]*[가-힣]', t):
             no("소리 끔 판인데 따옴표 안 한국어(대사?)")
         if strict and x["소리"] == "켬" and x.get("방식") not in ("B", "목소리 판"):
@@ -115,7 +118,7 @@ def check(name):
                 no(f"낡은 낱말 「{w}」")
     main = [x for x in items if not x.get("대안")]
     print(f"{name}: {len(items)}판(주판 {len(main)} · {sum(x['길이'] for x in main)}초, 대안 {len(items) - len(main)}) · "
-          f"가장 긴 판 {max(x['길이'] for x in items)}초 · 가장 긴 지시문 {longest[0]}자({longest[1]}) · 목소리 견본 · 프리비즈 기다림 {wait}판")
+          f"가장 긴 판 {max(x['길이'] for x in items)}초 · 가장 긴 지시문 {longest[0]}자({longest[1]}) · 목소리 견본 · 프리비즈 · 앞 토막 기다림 {len(wait)}판")
     for pid, msg in bad:
         print(f"  ⚠ {pid}: {msg}")
     if not bad:
@@ -124,7 +127,7 @@ def check(name):
 
 
 if __name__ == "__main__":
-    names = [a for a in sys.argv[1:] if not a.startswith("--")] or [n for n in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈")
+    names = [a for a in sys.argv[1:] if not a.startswith("--")] or [n for n in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스")
                                                                    if os.path.exists(os.path.join(BASE, n, "_순서.json"))]
     ok = [check(n) for n in names]
     sys.exit(0 if all(ok) else 1)

@@ -3,9 +3,10 @@
 #   python -X utf8 웹꾸러미.py --보기 p11-07-08   → 그 판의 지시문만 찍는다
 #   python -X utf8 웹꾸러미.py --둘째날 <A|B> [--보기 <판>]   → 7번 숏드라마만 웹올리기_둘째날/에(첫날 폴더는 건드리지 않음, 방식은 목소리 시험에서 고른 것)
 #   python -X utf8 웹꾸러미.py --프리비즈   → 5번 8행 프리비즈 시험 두 판만 웹올리기_프리비즈/에(팁 장부 36행 — 맨 끝 선택 판, 다른 꾸러미는 건드리지 않음)
+#   python -X utf8 웹꾸러미.py --로맨스 [B|A|없음] [--보기 <판>]   → 로맨스 단편 「다 비침」만 웹올리기_로맨스/에(따로 꾸러미 — 다른 꾸러미는 건드리지 않음, 방식은 결정 10-29대로 B)
 # 편마다 지시문 원천은 video/<편>/지시문/영상_시댄스웹.json(아래 「편」 표). 매진 임박은 이미 만든 웹올리기_v5 폴더를 그대로 옮긴다.
 # 무제한은 웹에서 사람이 한 판씩 누르는 것만 허용된다(자동화 금지 — 결정 10-26) — 이 도구는 폴더와 순서표만 만들고 누르지 않는다.
-import copy, html, json, os, re, shutil, sys
+import copy, html, json, os, re, shutil, subprocess, sys
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -100,6 +101,30 @@ P7_CASTING = [   # 배역 목소리 판(위 매진 임박과 같은 길) — (�
     ("minjae", "1-16", "Minjae", "his", "점심 뭐 먹을지 정했어? 회사 앞 국밥집 괜찮다던데. 오늘은 내가 살게."),
     ("soyeon", "1-32", "Soyeon", "her", "요즘은 애 재우고 나면 그제야 하루가 끝나. 그래도 주말엔 좀 쉬어."),
 ]
+# 로맨스 단편 「다 비침」(10-31 붙임) — 따로 낸다(웹올리기_로맨스/ — 첫날 · 둘째 날 꾸러미와 차례는 건드리지 않음, 굽기 시트 「로맨스 단편」 절).
+#   지시문은 로맨스 생성기의 preview()를 그대로 불러 「지시문_시댄스웹.py --보기 <판> B」 렌더와 글자까지 같게 한다 — 첫 줄(사람도 끝 구도로 들어옴)과
+#   고속 슬로 머리가 다른 편과 달라 prompt()로는 같아지지 않는다. 생성기 JSON이 생성기 코드와 다르면(JSON을 안 다시 만든 채) 멈춘다.
+#   로맨스만의 칸: 샷 「말」이 목록이다(C14 · C41 · C47 · C53a는 두 사람 — 견본 둘을 말하는 차례대로 3_ · 4_로 올려 @오디오 1 · 2), 판 「소리」 켬 ·
+#   「B만 켬」(방식 B일 때만 켬) · 끔, 「소리참고」 {A, B, 없음}(비면 RS_SOUND 자리), 끝 그림 일곱(2_끝.jpg), rs-C53b는 rs-C53a 받은 영상의 끝
+#   프레임으로 시작(받은 뒤 다시 돌려 채움 — 그 전엔 「파일 아직」). 회상 · 후반 · 여유 칸은 순서표 메모로만 보인다(굽지 않음 — 회상 띠 · 속말 ·
+#   손글씨 · 화면 글은 편집).
+RS = ("rs", "romance-short-20261030")
+OUT5 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_로맨스"
+RS_SOUND = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/romance/소리참고"   # A/<판 id>.mp3(입 맞춤 대사) · B/<배역>.mp3(목소리 견본)
+RS_GOT = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/받음"   # 받기.py가 받는 자리
+RS_ROLE = {"Yuna": ("yuna", "유나"), "Taejun": ("taejun", "태준"), "Minjae": ("minjae", "민재")}   # 생성기 이름 → (견본 파일, 파일 이름에 붙일 배역)
+RS_TAIL = {"rs-C53b": "rs-C53a"}   # 앞 토막 받은 영상의 끝 프레임으로 시작하는 판 → 앞 토막(14.39초 롱테이크 C53)
+RS_CASTING = [   # 배역 목소리 판(7번 P7_CASTING과 같은 길) — (견본 파일, 그림 컷, 누구 키, 대명사, 말할 글 5초 안팎 — 대사가 아닌 일상 말)
+    # 유나는 조용한 실내(엘리베이터) 큰 얼굴, 태준은 움직임 시험에서 얼굴이 지켜진 유호님 얼굴 C03(처마 밑 비가 보여 빗소리가 섞이면 견본떼기 --demucs),
+    # 민재는 얼굴이 크고 닮음이 가장 높은 C17(0.443 — 02_콘티 6절)
+    ("yuna", "C44", "YUNA (white blouse)", "her", "이번 주말에는 집에서 푹 쉬려고요. 밀린 드라마도 보고, 장도 좀 보고요."),
+    ("taejun", "C03", "TAEJUN (shirt, no tie)", "his", "아침에 커피를 못 마셨더니 하루가 길었네요. 오늘은 일찍 들어가서 쉬려고요."),
+    ("minjae", "C17", "MINJAE (beige vest)", "his", "어제 본 영화가 생각보다 재밌더라고요. 주말에 한 번 더 보러 갈까 봐요."),
+]
+# 목소리 판 뒤 견본을 떼는 동안 낼 소리 끔 판 — 그 자체가 로맨스 길 시험(끝 구도로 사람이 들어옴 · 물러나며 끝 구도 · 두 샷 · 고속 슬로 · 초점 옮김)
+RS_BUFFER = ["rs-C01", "rs-C18", "rs-C15-16", "rs-C32", "rs-C42"]
+# 견본이 들어온 뒤 먼저 낼 목소리 시험 — 한 사람(유나) · 두 사람 견본 둘(민재 → 태준 · 태준 → 유나). rs-C53a가 앞에 오면 rs-C53b 첫 그림도 일찍 생긴다
+RS_TESTS = ["rs-C02", "rs-C14", "rs-C53a"]
 
 
 def first_line(has_end):
@@ -378,6 +403,148 @@ def build_previz():
     print(f"프리비즈 시험: 판 {len(order)}개 → {OUT4}" + (f" · 파일 아직 {[os.path.basename(m) for m in missing]}(① 받은 뒤 다시 돌림)" if missing else ""))
 
 
+def rs_gen():
+    # 로맨스 생성기 모듈 — preview() · build() · first_line() · still()을 빌린다(불러올 때 git 밖 컷목록 · 원본 실측만 읽고 아무것도 쓰지 않는다)
+    import importlib.util
+    sp = importlib.util.spec_from_file_location("rs_gen", os.path.join(VIDEO, RS[1], "지시문_시댄스웹.py"))
+    g = importlib.util.module_from_spec(sp)
+    sp.loader.exec_module(g)
+    return g
+
+
+def rs_speakers(p):
+    # 말하는 차례(처음 나온 차례) — 생성기 sound_lines()가 VOICE 줄의 @오디오 1 · 2를 매기는 차례와 같다
+    out = []
+    for s in p["샷"]:
+        for m in s.get("말", []):
+            n = m["누가"].split(" ")[0].title()
+            if n not in out:
+                out.append(n)
+    return out
+
+
+def rs_sound(p, mode):
+    # 판의 소리 켬 · 끔과 올릴 소리 — A = 그 판의 입 맞춤 대사 mp3, B = 말하는 배역의 견본(두 사람이면 3_ · 4_ = @오디오 1 · 2), 없음 = 참고 없이 켬
+    if not (p["소리"] == "켬" or (p["소리"] == "B만 켬" and mode == "B")):
+        return "끔", []
+    if mode == "없음":
+        return "켬", []
+    ref = (p.get("소리참고") or {}).get(mode)
+    if mode == "A":
+        return "켬", [("3_소리.mp3", ref or os.path.join(RS_SOUND, "A", p["id"] + ".mp3"), "소리")]
+    who = rs_speakers(p)
+    refs = ref if isinstance(ref, list) else [ref] if ref else [os.path.join(RS_SOUND, "B", RS_ROLE[n][0] + ".mp3") for n in who]
+    assert len(refs) == len(who), f"{p['id']}: 소리참고 B {len(refs)}개 · 말하는 사람 {len(who)}"
+    if len(who) == 1:
+        return "켬", [("3_목소리견본.mp3", refs[0], "목소리 견본")]
+    return "켬", [(f"{i + 3}_목소리견본_{RS_ROLE[n][1]}.mp3", r, f"목소리 견본 @오디오 {i + 1}") for i, (n, r) in enumerate(zip(who, refs))]
+
+
+def rs_tail_frame(pid):
+    # 앞 토막을 받은 뒤 그 영상의 끝 프레임(받기.py 장부에서 가장 나중에 받은 판) → 받음/_끝프레임/<앞 토막>.jpg. 받기 전엔 없는 자리라 「파일 아직」.
+    # 다른 판을 고르면 그 판에서 같은 자리로 뽑아 둔다(가장 나중 판보다 새 jpg는 덮지 않음). 끝 프레임이 망가졌으면 C53.jpg를 그 자리에 둔다.
+    dst = os.path.join(RS_GOT, "_끝프레임", pid + ".jpg")
+    led = os.path.join(RS_GOT, "_받음.json")
+    got = sorted((v for v in (json.load(open(led, encoding="utf-8")) if os.path.exists(led) else {}).values() if v["판"] == pid),
+                 key=lambda v: v["만든때"])
+    clip = os.path.join(RS_GOT, got[-1]["파일"]) if got else None
+    if clip and os.path.exists(clip) and (not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(clip)):
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        subprocess.run(["ffmpeg", "-y", "-v", "error", "-sseof", "-0.5", "-i", clip, "-update", "1", "-q:v", "1", dst], check=True)
+    return dst
+
+
+def rs_item(spec, G, p, mode):
+    shots = p["샷"]
+    files, memo = [], []
+    if p["id"] in RS_TAIL:
+        files.append(("1_시작.jpg", rs_tail_frame(RS_TAIL[p["id"]]), "시작"))
+    elif len(shots) == 1:
+        files.append(("1_시작.jpg", os.path.join(spec["그림"], shots[0]["그림"]), "시작"))
+        if shots[0].get("끝그림"):
+            files.append(("2_끝.jpg", os.path.join(spec["그림"], shots[0]["끝그림"]), "끝"))
+    else:
+        for i, s in enumerate(shots):
+            files.append((f"{i + 1}_샷{i + 1}.jpg", os.path.join(spec["그림"], s["그림"]), f"샷{i + 1}"))
+    snd, refs = rs_sound(p, mode)
+    files += refs
+    txt = G.preview(spec, p, mode)
+    named = re.findall(r"@오디오 (\d+) is only a sample of (\w+)'s voice", txt)
+    if named:   # 두 사람 판 — VOICE 줄이 부르는 차례와 올리는 견본 차례가 같아야 한다
+        assert [n for _, n in named] == rs_speakers(p) and len(refs) == len(named), f"{p['id']}: VOICE 줄 {named} · 견본 {[f[0] for f in refs]}"
+    if p["소리"] == "B만 켬":
+        memo.append("화면 밖 · 입 가림 말 — 방식 B일 때만 소리 켬")
+    if len(refs) > 1:
+        memo.append("견본 둘(말하는 차례) — " + " → ".join(f"{f[0]} = @오디오 {i + 1}" for i, f in enumerate(refs)))
+    if any(s.get("회상") for s in shots):
+        memo.append("회상 — 16:9 그대로 받고 좌우 검은 띠는 편집")
+    memo += [f"후반(굽지 않음): {s['후반']}" for s in shots if s.get("후반")]
+    if p.get("여유"):
+        memo.append(p["여유"])
+    it = {"id": p["id"], "편": RS[0], "편이름": spec["이름"], "컷": p["컷"], "길이": (p.get("B길이") if mode == "B" else None) or p["길이"],
+          "비율": spec["비율"], "소리": snd, "설명": p["설명"], "파일": files, "지시문": txt, "묶음": len(shots) > 1, "대안": bool(p.get("대안")),
+          "낱판": [], "쓰는초": [s.get("쓰는초") for s in shots], "방식": mode if snd == "켬" else None, "메모": memo}
+    if p["id"] in RS_TAIL:
+        it.update({"기다림": ["1_시작.jpg"], "기다림글": f"파일 아직 — {RS_TAIL[p['id']]}를 받은 뒤 다시 만듦",
+                   "설명": p["설명"] + f" · 첫 그림 = {RS_TAIL[p['id']]} 받은 영상의 끝 프레임"})
+    return it
+
+
+def rs_casting(spec, G, role, cut, key, pos, text):
+    # 로맨스 목소리 판 — 견본 없이 말하게 해 시댄스가 처음 내는 목소리를 받는다(입은 보여도 되지만 이 판은 소리만 쓴다)
+    name = key.split(" ")[0].title()
+    kr = RS_ROLE[name][1]
+    c = spec["공통"]
+    L = [G.first_line(False),
+         f"ONE SINGLE CONTINUOUS SHOT of {c['장르']}, horizontal 16:9 — no cuts, no camera switch, no slow motion, no speed ramp, no end card.",
+         f"{key}: {c['누구'][key]}",   # 말하는 사람만 — 다른 사람 줄이 사람을 더하지 않게(7번 10-30 Fable)
+         f"ACTION: {name} lets {pos} face settle into a calm, easy expression, then looks just past the camera and says in Korean, in {pos} own "
+         "natural everyday speaking voice — relaxed and conversational, as if talking to a friend; not shouting, not whispering, not crying, not "
+         f"announcing: \"{text}\" {pos.capitalize()} lips clearly form the Korean words. No one else speaks; anyone else in the frame keeps still "
+         "with lips closed.",
+         "CAMERA: " + G.still(),
+         c["보기"],
+         f"SOUND: only {name}'s natural speaking voice saying this one Korean line, over quiet room tone — no music, no narration, no other voices, "
+         "no rain or street noise."]
+    return {"id": f"rs-목소리-{role}", "편": RS[0], "편이름": spec["이름"], "컷": [cut], "길이": CASTING_LEN, "비율": spec["비율"], "소리": "켬",
+            "설명": f"{kr} 목소리 판 — 견본 없이 일상 문장 한 줄({cut} 그림), 시댄스가 처음 낸 목소리를 {kr} 목소리로 삼는다",
+            "파일": [("1_시작.jpg", os.path.join(spec["그림"], cut + ".jpg"), "시작")], "지시문": "\n".join(L), "묶음": False, "대안": False,
+            "방식": "목소리 판", "구역": "목소리 판 — 배역마다 시댄스가 처음 내는 목소리",
+            "메모": [f"받으면 견본떼기.py rs-목소리-{role} → 소리/romance/소리참고/B/{role}.mp3, 그 뒤 웹꾸러미.py --로맨스를 다시 돌린다"]}
+
+
+def build_romance(mode):
+    assert mode in ("A", "B", "없음"), "--로맨스 다음 목소리 방식은 A · B · 없음(기본 B — 결정 10-29)"
+    spec = json.load(open(os.path.join(VIDEO, RS[1], "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
+    G = rs_gen()
+    fresh = json.loads(json.dumps({"공통": {"장르": G.GENRE, "누구": G.WHO, "보기": G.LOOK, "소리": G.SILENT}, "판": G.build()}, ensure_ascii=False))
+    if fresh["판"] != spec["판"] or fresh["공통"] != spec["공통"]:
+        raise SystemExit("로맨스 지시문 JSON이 생성기 코드와 다르다 — 먼저 python -X utf8 지시문_시댄스웹.py로 JSON을 다시 만든다")
+    items = {p["id"]: rs_item(spec, G, p, mode) for p in spec["판"]}
+    cast = [rs_casting(spec, G, *row) for row in RS_CASTING] if mode == "B" else []   # 목소리 판은 방식 B에만(견본을 뗄 판)
+    buf = [dict(items[k], 시험=True, 구역="길 시험 — 소리 끔(목소리 판 견본을 떼는 동안)") for k in RS_BUFFER] if cast else []
+    tests = [dict(items[k], 시험=True, 구역="목소리 시험 — 견본이 들어온 뒤(한 사람 · 두 사람)") for k in RS_TESTS]
+    first = {it["id"] for it in buf + tests}
+    order = cast + buf + tests + [it for k, it in items.items() if k not in first and not it["대안"]]
+    order += [dict(it, 구역="원본 카메라 판 — 요즘 기법 판(C30 · C59 · C60 느린 다가감)과 나란히 보고 고름") for it in items.values() if it["대안"]]
+    by_item = {it["id"]: it for it in order}
+    if "--보기" in sys.argv:
+        k = sys.argv[sys.argv.index("--보기") + 1]
+        print(by_item[k]["지시문"])
+        print(f"\n({len(by_item[k]['지시문'])}자 · {by_item[k]['길이']}초 · 소리 {by_item[k]['소리']} · 올릴 것 {[f[0] for f in by_item[k]['파일']]})")
+        return
+    missing = write_pack(order, OUT5, "로맨스")
+    n_alt = sum(1 for it in order if it["대안"])
+    n_story = len(order) - len(cast) - len(buf) - len(tests) - n_alt
+    print(f"로맨스 · 방식 {mode}: 판 {len(order)}개(목소리 판 {len(cast)} · 길 시험 {len(buf)} · 목소리 시험 {len(tests)} · 이야기 차례 {n_story} · "
+          f"원본 카메라 판 {n_alt}) → {OUT5}")
+    print(f"  길이 합 — 대안 뺀 {sum(it['길이'] for it in order if not it['대안'])}초 · 대안 {sum(it['길이'] for it in order if it['대안'])}초 · "
+          f"소리 켬 {sum(1 for it in order if it['소리'] == '켬')}판 · 두 샷 {sum(it['묶음'] for it in order)}판 · "
+          f"끝 그림 {sum(1 for it in order if any(f[0] == '2_끝.jpg' for f in it['파일']))}판 · 견본 둘 {sum(1 for it in order if len([f for f in it['파일'] if '목소리견본' in f[0]]) > 1)}판")
+    if missing:
+        print(f"  파일 아직 {len(missing)}개(목소리 판 · 앞 토막을 받은 뒤 다시 돌린다): {sorted({os.path.basename(m) for m in missing})}")
+
+
 def write_pack(order, out, day2):
     missing = sorted({src for it in order for _, src, _ in it["파일"] if not os.path.exists(src)})
     if os.path.isdir(out):
@@ -398,13 +565,17 @@ def write_pack(order, out, day2):
         rows.append({"순서": n, "id": it["id"], "편": it["편"], "컷": it["컷"], "폴더": os.path.basename(d), "길이": it["길이"], "비율": it["비율"],
                      "소리": it["소리"], "묶음": it["묶음"], "대안": it["대안"], "방식": it.get("방식"), "시험": bool(it.get("시험")),
                      "낱판": it.get("낱판", []), "쓰는초": it.get("쓰는초"), "파일": [f[0] for f in it["파일"]],
-                     "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])], "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"])})
+                     "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])], "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"]),
+                     **({"기다림": it["기다림"]} if it.get("기다림") else {})})   # 받은 뒤에야 생기는 그림(로맨스 rs-C53b — 꾸러미점검이 기다림으로 셈)
     json.dump(rows, open(os.path.join(out, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     open(os.path.join(out, "순서표.html"), "w", encoding="utf-8").write(page(order, day2=day2))
     return missing
 
 
 def build():
+    if "--로맨스" in sys.argv:
+        nxt = sys.argv[sys.argv.index("--로맨스") + 1:sys.argv.index("--로맨스") + 2]
+        return build_romance(nxt[0] if nxt and nxt[0] in ("A", "B", "없음") else "B")
     if "--둘째날" in sys.argv:
         return build_day2(sys.argv[sys.argv.index("--둘째날") + 1])
     if "--7번비교" in sys.argv:
@@ -567,10 +738,25 @@ PV_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")] + """<h1>PULSE 포트폴리오 · 
 """
 
 
+RS_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")].replace("둘째 날 순서표", "로맨스 순서표") + """<h1>PULSE 포트폴리오 · 시댄스 2.5 무제한 — 로맨스 단편 「다 비침」(따로 꾸러미)</h1>
+<div class="card"><b>시작 전에</b><ol>
+<li>첫날 · 둘째 날과 같습니다 — 모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b>(생성 단추에 「Unlimited」) · 화질 720p · 비율 16:9 · 소리는 판마다 적힌 대로(「소리 켬」 판만 켭니다).</li>
+<li>판마다 미디어 칸을 비우고 폴더의 파일을 <b>이름 차례대로</b> 올립니다 — 그림(1_ · 2_) 다음에 소리. 두 사람이 말하는 판 넷(C14 · C41 · C47 · C53a)은 견본이 둘입니다 — <b>3_목소리견본_…</b>이 「@오디오 1」, <b>4_목소리견본_…</b>이 「@오디오 2」(말하는 차례, 파일 이름에 배역). 「@이미지 1」 · 「@오디오 1」 글자가 꼬리표로 안 바뀌면 지우고 @로 올린 파일을 고릅니다.</li>
+<li>「두 샷」 판 일곱은 옴니 레퍼런스 모드에서 그림 둘을 참조로 올립니다 — 첫날 시험(11번 7+8)에서 두 샷이 안 됐으면 이 일곱은 내지 않고 생성기에 낱판을 더해 꾸러미를 다시 만듭니다.</li>
+<li>맨 앞 <b>목소리 판 셋</b>(유나 · 태준 · 민재 — 견본 없이 일상 문장 한 줄, 시댄스가 처음 낸 목소리를 그 배역 목소리로)을 내고 받습니다. 견본떼기.py로 목소리를 떼어 웹꾸러미.py --로맨스를 다시 돌리면 대사 판마다 <b>3_목소리견본</b>이 들어갑니다(태준 C03 그림은 처마 밑 비가 보여 빗소리가 섞이면 --demucs).</li>
+<li>견본을 떼는 동안(20분쯤) 바로 뒤 <b>길 시험 다섯</b>(소리 끔 — 끝 구도로 사람이 들어옴 · 물러나며 끝 구도 · 두 샷 · 고속 슬로 · 초점 옮김)을 이어서 냅니다.</li>
+<li>「파일 아직」이 사라지면(견본이 들어옴) <b>목소리 시험 셋</b>(C02 유나 한 사람 · C14 민재 → 태준 · C53a 태준 → 유나)을 내고, 판마다 같은 사람 목소리인지 · 견본 둘이 제 사람에게 갔는지 · 입과 소리가 맞는지 들은 뒤 이야기 차례로 잇습니다. 견본 둘이 섞이면 두 사람 판 넷은 굽기 시트 「새 방식(B)이 안 될 때」의 길로 갑니다.</li>
+<li><b>rs-C53b</b>는 rs-C53a를 받은 뒤 그 영상의 끝 프레임으로 시작합니다 — 받기.py 뒤 웹꾸러미.py --로맨스를 다시 돌리면 「파일 아직」이 사라집니다(끝 프레임이 망가졌으면 C53.jpg로).</li>
+<li>회상 31컷(C07–23 · C41–54)은 16:9 그대로 받고 좌우 검은 띠는 편집에서 씌웁니다. 카드의 「후반」(속말 · 손글씨 · 앞 가림 · 휴대폰 사진 · 화면 글 · 노래 표기)은 굽지 않습니다.</li>
+<li>맨 끝 <b>원본 카메라 판 셋</b>(id 끝 o)은 요즘 기법 판(C30 · C59 · C60 느린 다가감)과 나란히 보고 고르는 판입니다.</li>
+</ol></div>
+"""
+
+
 def page(order, day2=None):
     def esc(s):
         return html.escape(s)
-    head = PV_HEAD if day2 == "프리비즈" else CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    head = RS_HEAD if day2 == "로맨스" else PV_HEAD if day2 == "프리비즈" else CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PULSE 시댄스 순서표</title><style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1d1c1a;--mute:#6b6760;--line:#e2ddd3;--acc:#2f5bd3;--warn:#b4532a}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#212125;--ink:#ecebe8;--mute:#a19d95;--line:#33333a;--acc:#8aa6ff;--warn:#f0a07a}}
@@ -602,7 +788,7 @@ h2{font-size:18px;margin:24px 0 6px}
     out = [head]
     cur = None
     for n, it in enumerate(order, 1):
-        sec = ("목소리 판 — 배역마다 시댄스가 처음 내는 목소리" if it.get("방식") == "목소리 판"
+        sec = it.get("구역") or ("목소리 판 — 배역마다 시댄스가 처음 내는 목소리" if it.get("방식") == "목소리 판"
                else "목소리 시험 — 시댄스가 연기한 목소리가 컷마다 같은가" if it["id"] in VOICE_TESTS else "시험" if it["id"] in TESTS or it.get("시험")
                else "대안 — 묶음 판 · 새 방식이 안 될 때만" if it["대안"] else it["편이름"])
         if sec != cur:
@@ -619,12 +805,16 @@ h2{font-size:18px;margin:24px 0 6px}
             tags += '<span class="tag b">목소리 판</span>'
         if it["대안"]:
             tags += '<span class="tag w">대안</span>'
-        if any(not os.path.exists(f[1]) for f in it["파일"]):
+        miss = [f[0] for f in it["파일"] if not os.path.exists(f[1])]
+        if any(m in it.get("기다림", []) for m in miss):   # 로맨스 rs-C53b — 앞 토막을 받아야 생기는 첫 그림
+            tags += f'<span class="tag w">{esc(it["기다림글"])}</span>'
+        if any(m not in it.get("기다림", []) for m in miss):
             tags += '<span class="tag w">파일 아직 — 목소리를 고른 뒤 다시 만듦</span>'
         files = " · ".join(f"{esc(f[0])}" for f in it["파일"])
+        memo = "".join(f'<br><span class="note">· {esc(m)}</span>' for m in it.get("메모", []))   # 로맨스 — 회상 · 후반 · 견본 둘 · 여유(다른 편은 칸 없음)
         out.append(f'<div class="card" id="c{n}"><div class="row"><input type="checkbox" data-k="{esc(it["id"])}"><div class="n">{n}</div><div>'
                    f'<b>{esc(it["편이름"])}</b> 컷 {esc(", ".join(it["컷"]))} — {esc(it["설명"])}<br>{tags}<br>'
-                   f'<span class="note">폴더 {n:03d}_{esc(it["id"])} · 올릴 것: {files}</span>'
+                   f'<span class="note">폴더 {n:03d}_{esc(it["id"])} · 올릴 것: {files}</span>{memo}'
                    f'<pre id="p{n}">{esc(it["지시문"])}</pre><button data-p="p{n}">지시문 복사</button></div></div></div>')
     out.append("""<script>
 const K='pulse-seedance-day-20261028';let s={};try{s=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}

@@ -635,6 +635,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: AGENTS의 「시작할 때 `가볍게 --실행`」은 세션이 손으로 하는 단계라 바쁜 세션·GPT가 자주 건너뛴다. 앱·GPT는 `git worktree add`로 전체를 꺼낸다.
 - 고침: 공용 `.git/hooks/post-checkout`(원본 `tools/git훅/post-checkout`, 깔기 `node tools/새워크트리가볍게.js --설치`)이 새 워크트리(앞 HEAD가 0)일 때만 **그 새 워크트리 안의** `tools/새워크트리가볍게.js`를 불러, `.claude/worktrees`·`.codex/worktrees` 아래면 `바로올리기.js 가볍게`와 같은 sparse-checkout을 건다. 공용 작업본 판 코드를 부르지 않는다(talk 커밋 훅이 공용 판 가드를 불러 어긋난 일, [배포_공개](배포_공개.md)). 훅은 늘 종료 0이라 git을 막지 않는다. 원본은 `.gitattributes`로 LF이고 `--설치`도 LF로 쓴다(이 PC는 `core.autocrlf=true`라 CRLF 셸 스크립트가 될 수 있다). 깔기는 자동 모드 판정기가 막아 유호님 「응, 훅 깔아」 뒤에 했다.
 - 다시 확인: `node tools/새워크트리가볍게.js --상태`가 「깔림」이고 최근 기록에 새 워크트리가 「가볍게 함」으로 남는다(10-31 22:21 실제 저장소 임시 판 시험: 파일 2,637개 · 2.18GiB 빠짐, 상태 0줄, 공용 작업본 그대로, `--되살림 docs/캐릭터` 15초). 새 워크트리에서 `git config --show-scope --get core.sparseCheckout`이 `worktree true`.
+- 10-31 덧붙임(Claude, 로맨스 꾸러미 세션): 가볍게 한 워크트리에서는 앱의 바탕 맞추기(`sync_with_base_branch`)가 「The worktree is a sparse checkout … the app won't merge into it. Merge yourself」로 거절한다. 내 커밋이 아직 없으면 `git fetch origin` 뒤 `git merge --ff-only origin/master`로 앞당긴다 — 빨리 감기만이라 사본에서 뺀 폴더는 그대로 빠진 채다(10-31 8779c6418 → d8010d439, 상태 0줄).
 
 ### 공간 정리가 추적 파일을 지운다
 - 증상: PC 공간 정리 뒤 시험이 「파일 없음」으로 깨진다. 10-03 정리가 추적 파일 185개(142MB)를, 10-10 정리가 메인 추적 파일 217개 + 워크트리 10곳 약 8,900개를 지웠다(같은 SHA가 Drive에 있으면 로컬 삭제). 10-14에는 폴더 통째 삭제가 안쪽에 둔 git 클론까지 지웠다.

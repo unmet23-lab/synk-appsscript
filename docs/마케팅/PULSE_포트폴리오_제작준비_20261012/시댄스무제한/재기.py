@@ -1,7 +1,7 @@
 # 시댄스 2.5 무제한 날 — 받은 판을 먼저 재서 검수한다(2026-10-29). 재기만 하고 고치지 않는다(후보정 없음 — 틀린 판은 지시문을 고쳐 다시 낸다).
 #   python -X utf8 재기.py [<판 id…>]          → 받음/_검수/<판>.jpg(얼굴 띠) · 받음/_검수/_재기.json · 한 줄 표
 #   python -X utf8 재기.py --클립 <mp4> <판 id>  → 아무 클립이나 그 판의 그림 · 지시문과 견준다(시험용)
-# 받기.py가 받은 받음/<판>.mp4(다시 낸 판은 <판>__2.mp4)를 웹올리기 · 웹올리기_둘째날(7번)/<폴더>의 그림 · 지시문과 견준다:
+# 받기.py가 받은 받음/<판>.mp4(다시 낸 판은 <판>__2.mp4)를 웹올리기 · 웹올리기_둘째날(7번) · 7번비교 · 프리비즈 · 로맨스/<폴더>의 그림 · 지시문과 견준다:
 #   첫 장 — 첫 장이 시작 그림과 같은가(작게 줄인 Lab 평균 차이 · 구도가 같으면 작다). 끝 그림 판은 끝 장도, 두 샷 판은 컷 뒤 첫 장을 @이미지 2와.
 #   컷 — 이웃 장의 색 분포(HSV 히스토그램)가 크게 바뀐 곳. 한 샷 판은 0이어야, 두 샷 판은 지시문 「ONE hard cut at N s」 근처에 하나.
 #   카메라 — 샷마다 0.2초 간격으로 SIFT 특징점 맞춤(estimateAffinePartial2D · RANSAC 2px, 현장노트 영상 「위상 상관으로 재면 다가가는 컷을
@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈")], os.path.join(DAY, "받음")
+WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스")], os.path.join(DAY, "받음")
 OUT = os.path.join(GOT, "_검수")
 MOD = os.path.join(os.path.expanduser("~"), ".rembg", "models", "yunet")
 SAME = 0.363
