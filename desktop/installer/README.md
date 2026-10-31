@@ -2,6 +2,12 @@
 
 > This document preserves the Signal engine contract and dated package baselines. Current shared release inputs and publication steps are in [LIFECYCLE](../LIFECYCLE.md#platform-release-reproduction); current publication and PC receipts are in the [platform source](../../docs/SYNK_플랫폼_계정과_연결_설계.md). The 0.4.3 URLs and homepage statements below describe their recorded release, not the latest download or a new laptop verification.
 
+## 2026-10-31 automatic update failure record
+
+Every failed automatic update now writes `%LOCALAPPDATA%\SYNK\Installer\Diagnostics\<appId>.last-update-failure.json` before recovery starts: stage, outcome, error type and message, a bounded exception detail, and the id, start time and path of each process with the app's executable name. Earlier the reason was lost, because the app consumes the recovery marker and the installer window closes right after a restore. The file is kept after a later success, and a failure to write it never changes the update outcome.
+
+After the main process exits, the update now waits up to 20 seconds for other processes of that name before it verifies and preflights. It never stops a process. If one remains, Preflight refuses as before and the record names it. On 2026-10-31 an update returned to the previous version before any file changed; removing this wait in the isolated test reproduces that behaviour, but the original cause was not recorded and stays unconfirmed.
+
 ## 2026-10-14 common installer update
 
 The Platform, WORLD and Workspace wrappers all compile the same engine. The NSIS stage now has a **10-minute wall-clock limit**. `BackendProcess.cs` starts the verified backend suspended, attaches it to a private Windows Job with kill-on-close and no breakaway permission, and resumes it only after attachment. Success means every process in the job has exited. A deadline stops the job and waits up to 15 seconds for all descendants to leave before restoring files. This follows [Microsoft's Job Objects contract](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects), checked 2026-10-14.

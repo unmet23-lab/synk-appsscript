@@ -257,6 +257,73 @@ internal static class SignalInstallerTests
                         Assert(result.RecoveryFile.EndsWith(Spec.AppId+".json",StringComparison.Ordinal),"Fixture recovery file differs");File.Delete(result.RecoveryFile);
                     }
                 });
+                Func<Process> exitedParent=delegate
+                {
+                    var exited=Process.Start(new ProcessStartInfo(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)){UseShellExecute=false,CreateNoWindow=true});
+                    Assert(exited.WaitForExit(5000),"Failure-record fixture parent did not exit.");
+                    return exited;
+                };
+                Func<string,Process> holdingProcess=delegate(string name)
+                {
+                    string folder=Path.Combine(Root,name);
+                    var holder=Process.Start(new ProcessStartInfo(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName),"--hold \""+folder+"\""){UseShellExecute=false,CreateNoWindow=true});
+                    for(var clock=Stopwatch.StartNew();!File.Exists(Path.Combine(folder,"ready"));Thread.Sleep(20))Assert(clock.ElapsedMilliseconds<5000,"Held fixture did not start.");
+                    return holder;
+                };
+                Func<Process,AutomaticUpdateSession> sessionFor=delegate(Process exited)
+                {
+                    return new AutomaticUpdateSession { Parent=exited,Directory=Spec.InstallDirectory,Version=Spec.Version,ExecutableSHA256=Hash(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),AsarSHA256=Hash(Path.Combine(Spec.InstallDirectory,"resources","app.asar")),Nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N"),InstallerSHA256=new string('b',64) };
+                };
+                string failureRecord=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Diagnostics",Spec.AppId+".last-update-failure.json");
+                Check("automatic update waits for a lingering app process instead of failing preflight",delegate
+                {
+                    using(Process holder=holdingProcess("linger-short"))
+                    using(Process exited=exitedParent())
+                    {
+                        Task release=Task.Run(delegate { Thread.Sleep(1200);File.WriteAllText(Path.Combine(Root,"linger-short","stop"),"stop"); });
+                        int launches=0;var waiting=Engine(ReadSpec());
+                        var result=Task.Run(delegate { return waiting.InstallAutomaticUpdateCore(sessionFor(exited),Progress,delegate(Action<InstallProgress> progress) { Assert(holder.HasExited,"Install started while an app process was running.");throw new IOException("Synthetic payload failure"); },delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                        release.GetAwaiter().GetResult();
+                        Assert(result.Restored&&result.Relaunched&&!result.Updated&&launches==1,"Lingering process was not awaited: "+result.Message);
+                        string record=File.ReadAllText(failureRecord);
+                        Assert(record.Contains("\"stage\":\"install\"")&&record.Contains("\"outcome\":\"rolling-back\"")&&record.Contains("Synthetic payload failure"),"Failure record lost the install stage: "+record);
+                        File.Delete(failureRecord);File.Delete(result.RecoveryFile);
+                        engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    }
+                });
+                Check("a process that outlives the wait is reported with its id and leaves the app unchanged",delegate
+                {
+                    using(Process holder=holdingProcess("linger-long"))
+                    using(Process exited=exitedParent())
+                    {
+                        int launches=0;var bounded=Engine(ReadSpec());bounded.ProcessExitGraceMilliseconds=300;
+                        var elapsed=Stopwatch.StartNew();
+                        var result=Task.Run(delegate { return bounded.InstallAutomaticUpdateCore(sessionFor(exited),Progress,delegate(Action<InstallProgress> progress) { throw new InvalidOperationException("Install must not start."); },delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                        Assert(elapsed.ElapsedMilliseconds<15000,"Process wait was not bounded.");
+                        Assert(result.Restored&&result.Relaunched&&!result.Updated&&launches==1,"Blocked preflight did not reopen the app once: "+result.Message);
+                        string record=File.ReadAllText(failureRecord);
+                        Assert(record.Contains("\"stage\":\"preflight\"")&&record.Contains("\"outcome\":\"unchanged\"")&&record.Contains("\"runningProcesses\":[\""+holder.Id+" "),"Failure record did not name the running process: "+record);
+                        Assert(!holder.HasExited,"The installer stopped a running app process.");
+                        File.WriteAllText(Path.Combine(Root,"linger-long","stop"),"stop");Assert(holder.WaitForExit(5000),"Held fixture did not stop.");
+                        File.Delete(failureRecord);File.Delete(result.RecoveryFile);
+                    }
+                });
+                Check("an unwritable failure record never changes the update outcome",delegate
+                {
+                    Directory.CreateDirectory(failureRecord);
+                    try
+                    {
+                        using(Process exited=exitedParent())
+                        {
+                            int launches=0;var blocked=Engine(ReadSpec());
+                            var result=Task.Run(delegate { return blocked.InstallAutomaticUpdateCore(sessionFor(exited),Progress,delegate(Action<InstallProgress> progress) { throw new IOException("Synthetic payload failure"); },delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                            Assert(result.Restored&&result.Relaunched&&launches==1,"Failed record changed recovery: "+result.Message);
+                            File.Delete(result.RecoveryFile);
+                            Assert(Directory.GetFiles(Path.GetDirectoryName(failureRecord),"*.tmp").Length==0,"Failed record left a temporary file.");
+                        }
+                    }
+                    finally { Directory.Delete(failureRecord); }
+                });
             }
             if (Fixture.ContainsKey("autoFailure"))
             {

@@ -10,6 +10,7 @@ using System.Runtime.Serialization.Json;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Microsoft.Win32;
 
 namespace Synk.SignalInstaller
@@ -94,9 +95,25 @@ namespace Synk.SignalInstaller
         [DataMember(Name="expiresAt")] public string ExpiresAt;
         [DataMember(Name="status")] public string Status;
     }
+    [DataContract]
+    internal sealed class UpdateFailureRecord
+    {
+        [DataMember(Name="schemaVersion")] public int SchemaVersion = 1;
+        [DataMember(Name="at")] public string At;
+        [DataMember(Name="appId")] public string AppId;
+        [DataMember(Name="fromVersion")] public string FromVersion;
+        [DataMember(Name="toVersion")] public string ToVersion;
+        [DataMember(Name="stage")] public string Stage;
+        [DataMember(Name="outcome")] public string Outcome;
+        [DataMember(Name="errorType")] public string ErrorType;
+        [DataMember(Name="message")] public string Message;
+        [DataMember(Name="detail")] public string Detail;
+        [DataMember(Name="runningProcesses")] public List<string> RunningProcesses;
+    }
 
     public sealed partial class InstallerEngine
     {
+        internal int ProcessExitGraceMilliseconds = 20000;
         [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
         struct ShortcutFindData
         {
@@ -226,15 +243,23 @@ namespace Synk.SignalInstaller
             if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 다시 해 주세요.");
             UpdateBackup backup = null;
             bool mutationStarted = false;
+            string stage = "waiting-for-processes";
             try
             {
+                WaitForApplicationProcesses(ProcessExitGraceMilliseconds);
+                stage = "verify-previous";
                 VerifyPrevious(session);
+                stage = "preflight";
                 Preflight();
+                stage = "backup";
                 backup = BackupPrevious(session, progress);
                 BeginTransaction(backup);
                 mutationStarted = true;
+                stage = "install";
                 install(progress);
+                stage = "verify-installed";
                 VerifyInstalled(progress);
+                stage = "relaunch";
                 launch(Path.Combine(session.Directory,spec.ExecutableName),"");
                 EndTransaction(backup,"updated");
                 // Retain the compact transaction receipt. Verified old application
@@ -245,7 +270,9 @@ namespace Synk.SignalInstaller
             catch (Exception failure)
             {
                 var unsafeFailure=failure as InstallFailure;
-                if(unsafeFailure!=null&&(!unsafeFailure.BackendStopped||!unsafeFailure.CanRetry))
+                bool unresolved=unsafeFailure!=null&&(!unsafeFailure.BackendStopped||!unsafeFailure.CanRetry);
+                RecordUpdateFailure(session.Version,stage,unresolved?"recovery-required":mutationStarted?"rolling-back":"unchanged",failure,null);
+                if(unresolved)
                     return new AutomaticUpdateResult { Message=backup==null?failure.Message:RecoveryRequired(backup,failure).Message };
                 try
                 {
@@ -259,6 +286,7 @@ namespace Synk.SignalInstaller
                 }
                 catch (Exception recoveryFailure)
                 {
+                    RecordUpdateFailure(session.Version,stage,"recovery-required",recoveryFailure,failure);
                     return new AutomaticUpdateResult { Message=RecoveryRequired(backup,recoveryFailure).Message };
                 }
             }
@@ -347,10 +375,62 @@ namespace Synk.SignalInstaller
                 foreach(var shortcut in backup.Shortcuts)if(File.Exists(shortcut.BackupPath))File.Delete(shortcut.BackupPath);
             } catch(IOException) { } catch(UnauthorizedAccessException) { }
         }
+        static void EnsurePrivateDirectory(string root)
+        {
+            RejectReparsePoints(root);Directory.CreateDirectory(root);
+            var security=new DirectorySecurity();security.SetAccessRuleProtection(true,false);var sid=WindowsIdentity.GetCurrent().User;security.SetOwner(sid);security.AddAccessRule(new FileSystemAccessRule(sid,FileSystemRights.FullControl,InheritanceFlags.ContainerInherit|InheritanceFlags.ObjectInherit,PropagationFlags.None,AccessControlType.Allow));new DirectoryInfo(root).SetAccessControl(security);
+        }
+        // Electron's renderer, GPU and crash-reporter children can outlive the main
+        // process for a moment, and Preflight refuses any process of this name. Wait
+        // passively within a limit; never kill, and leave the decision to Preflight.
+        void WaitForApplicationProcesses(int milliseconds)
+        {
+            string name=Path.GetFileNameWithoutExtension(spec.ExecutableName);
+            for(var clock=Stopwatch.StartNew();clock.ElapsedMilliseconds<milliseconds;Thread.Sleep(100))
+            {
+                Process[] running=Process.GetProcessesByName(name);
+                int count=running.Length;
+                foreach(Process process in running)process.Dispose();
+                if(count==0)return;
+            }
+        }
+        List<string> RunningApplicationProcesses()
+        {
+            var rows=new List<string>();
+            foreach(Process process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(spec.ExecutableName)))
+            {
+                using(process)
+                {
+                    string started="?",file="?";
+                    try { started=process.StartTime.ToUniversalTime().ToString("o",CultureInfo.InvariantCulture); } catch(Exception) { }
+                    try { file=process.MainModule.FileName; } catch(Exception) { }
+                    rows.Add(process.Id.ToString(CultureInfo.InvariantCulture)+" "+started+" "+file);
+                }
+            }
+            return rows;
+        }
+        // The app consumes the recovery marker and the installer window closes right
+        // after a restore, so this file is the only place the reason survives. It is
+        // kept after a later success. A diagnostic must never change the update
+        // outcome, so every failure while writing it is deliberately swallowed.
+        internal void RecordUpdateFailure(string fromVersion,string stage,string outcome,Exception failure,Exception first)
+        {
+            string temporary=null;
+            try
+            {
+                string root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Diagnostics");EnsurePrivateDirectory(root);
+                string destination=Path.Combine(root,spec.AppId+".last-update-failure.json"),detail=(first==null?"":first+"\n--\n")+failure;
+                temporary=Path.Combine(root,System.Guid.NewGuid().ToString("N")+".tmp");
+                WriteJson(temporary,new UpdateFailureRecord { At=DateTime.UtcNow.ToString("o",CultureInfo.InvariantCulture),AppId=spec.AppId,FromVersion=fromVersion,ToVersion=spec.Version,Stage=stage,Outcome=outcome,ErrorType=failure.GetType().FullName,Message=failure.Message,Detail=detail.Length>6000?detail.Substring(0,6000):detail,RunningProcesses=RunningApplicationProcesses() });
+                if(File.Exists(destination))File.Replace(temporary,destination,null);else File.Move(temporary,destination);
+                temporary=null;
+            }
+            catch(Exception) { }
+            finally { try { if(temporary!=null)File.Delete(temporary); } catch(Exception) { } }
+        }
         string WriteRecoveryMarker(AutomaticUpdateSession session,string status)
         {
-            string root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Recovery");RejectReparsePoints(root);Directory.CreateDirectory(root);
-            var security=new DirectorySecurity();security.SetAccessRuleProtection(true,false);var sid=WindowsIdentity.GetCurrent().User;security.SetOwner(sid);security.AddAccessRule(new FileSystemAccessRule(sid,FileSystemRights.FullControl,InheritanceFlags.ContainerInherit|InheritanceFlags.ObjectInherit,PropagationFlags.None,AccessControlType.Allow));new DirectoryInfo(root).SetAccessControl(security);
+            string root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Recovery");EnsurePrivateDirectory(root);
             string destination=Path.Combine(root,spec.AppId+".json"),temporary=Path.Combine(root,session.Nonce+".tmp");DateTime now=DateTime.UtcNow;
             if(File.Exists(temporary))throw new IOException("되돌리기 실행 정보를 이미 썼어요.");
             WriteJson(temporary,new RecoveryMarker { AppId=spec.AppId,Nonce=session.Nonce,FromVersion=session.Version,ToVersion=spec.Version,ExecutablePath=Path.Combine(session.Directory,spec.ExecutableName),ExecutableSHA256=session.ExecutableSHA256,AsarSHA256=session.AsarSHA256,InstallerSHA256=session.InstallerSHA256,CreatedAt=now.ToString("o",CultureInfo.InvariantCulture),ExpiresAt=now.AddMinutes(10).ToString("o",CultureInfo.InvariantCulture),Status=status });

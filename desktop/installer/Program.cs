@@ -85,6 +85,7 @@ namespace Synk.SignalInstaller
                                 {
                                     Console.WriteLine("SYNK_UPDATE_FAILED " + automatic.Token); Console.Out.Flush();
                                     // Thrown before any file changed: the running app stays as it was.
+                                    engine.RecordUpdateFailure(null, "before-update", "unchanged", error, null);
                                     window.ShowAutomaticFailure(error.Message, true);
                                 }
                             };
