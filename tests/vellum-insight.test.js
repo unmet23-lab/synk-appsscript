@@ -56,6 +56,8 @@ test('without practice the first thing the person told leads, and an empty membe
 });
 
 test('a confirmed statement is said back whole or not at all', () => {
+  assert.match(V.memberInsightStatement([{field:'support',value:'independent',polarity:'prefer',condition:'first-try-after-example'}]),/^처음 배울 땐 예시를 본 다음엔/);
+  for(const [condition,label]of [['first-try-after-example','처음 배울 땐'],['familiar-after-example','익숙한 내용은'],['busy-after-example','바쁠 땐']])assert.ok(V.memberInsightStatement([{field:'support',value:'example',polarity:'prefer',condition:null},{field:'support',value:'independent',polarity:'prefer',condition}]).includes(label),condition);
   const said = V.memberInsightStatement([{ field: 'support', value: 'example', polarity: 'prefer', condition: 'first-try' },
     { field: 'support', value: 'independent', polarity: 'prefer', condition: 'first-try-after-example' }]);
   assert.equal(said, '처음 배울 땐 예시부터 보고, 그다음엔 혼자 해 보고 싶다고 알려 줬어요.');

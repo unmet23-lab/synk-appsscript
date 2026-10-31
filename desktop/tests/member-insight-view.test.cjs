@@ -28,6 +28,21 @@ const report = (patch = {}) => ({
   limits: [], ...patch,
 });
 
+test('helped successes share an honest heading and keep their distinct assistance tag',async()=>{
+ const {renderMemberInsight}=await loaded,r=report();r.learning.skills.push({id:'helped',label:'도움받은 연습',status:'supported',recent:0,correct:0,assisted:1,fact:'도움을 받아 한 번 해냈어요.'});const html=renderMemberInsight({status:'ready',report:r});
+ assert.match(html,/<h4 class="mi2-sub">해낸 것<\/h4>/);assert.doesNotMatch(html,/<h4[^>]*>혼자 해낸 것<\/h4>/);assert.match(html,/도움받은 연습/);assert.match(html,/도움 받고 해냄/);assert.match(html,/혼자 해냄/);
+});
+test('unknown activity connection states never claim collection is switched off',async()=>{
+ const {renderMemberInsight}=await loaded;for(const status of ['loading','error','unavailable','unknown']){const html=renderMemberInsight({status:'ready',report:report({activity:{status}})});assert.doesNotMatch(html,/앱 이용 기록: 꺼져 있어요/,status);assert.match(html,/연결 상태|켜졌는지 알 수 없어요/,status);}
+ assert.match(renderMemberInsight({status:'ready',report:report({activity:{status:'disabled'}})}),/앱 이용 기록: 꺼져 있어요/);
+ for(const status of ['ready','empty'])assert.match(renderMemberInsight({status:'ready',report:report({activity:{status}})}),/앱 이용 기록: 켜져 있어요/);
+});
+test('writing and confirming a statement disclose that its whole original text is retained',async()=>{
+ const {renderMemberInsight}=await loaded,text='짧은 설명이 좋아요',base={status:'ready',report:report({understanding:understanding()})};
+ const writing=renderMemberInsight({...base,understandingStatementEditor:{text,clarifications:[],stage:'writing'}});assert.match(writing,/입력한 원문을 계정에 저장해요/);assert.match(writing,/남기고 싶지 않은 내용/);
+ const preview={text,at:'2026-10-14T06:20:00.000Z',clarifications:[],proposals:[],unresolved:[],question:null};const html=renderMemberInsight({...base,understandingStatementEditor:{text,clarifications:[],preview,acceptedIds:[],stage:'preview'}});assert.match(html,/입력한 원문은 계정에 함께 남아요/);assert.doesNotMatch(html,/남겨 둔 부분은 저장하지 않아요/);
+});
+
 test('the first screen says one sentence about now, three counts and one white button, never a score', async () => {
   const { renderMemberInsight } = await loaded;
   const html = renderMemberInsight({ status: 'ready', report: report() });
@@ -177,11 +192,38 @@ test('disabled, loading, unavailable and failed app use never leak stale observa
   for (const status of ['disabled', 'loading', 'unavailable', 'error']) {
     const html = renderMemberInsight({ status: 'ready', report: report({ activity: usage({ status, interests: [{ id: 'path', kind: 'opened', label: 'private-stale-activity' }] }), usageLine: '' }) });
     assert.doesNotMatch(html, /private-stale-activity|앱을 연 날|앱 이용 기록 켜짐/);
-    if (['disabled', 'loading'].includes(status)) assert.match(html, /data-insight-action="enable-activity"/);
-    if (status === 'loading') assert.match(html, /data-insight-action="enable-activity" disabled/);
+    if (status === 'disabled') assert.match(html, /data-insight-action="enable-activity">켜기/);
+    else assert.doesNotMatch(html, /data-insight-action="(?:enable|disable)-activity"/, `${status} has no known switch`);
   }
   const busy = renderMemberInsight({ status: 'ready', activityPending: true, report: report({ activity: usage() }) });
   assert.match(busy, /data-insight-action="disable-activity" disabled/);assert.match(busy, /data-insight-target="world" disabled/);
+});
+
+test('only a known app-use state gets a switch; loading, failure, unavailable and unknown stay neutral', async () => {
+  const { renderMemberInsight } = await loaded;
+  const states = {
+    loading: ['앱 이용 기록 연결 상태를 확인하고 있어요.', '앱 이용 기록: 연결 상태를 확인하고 있어요.'],
+    error: ['앱 이용 기록을 불러오지 못했어요. 새로 불러오기로 다시 확인해 주세요.', '앱 이용 기록: 불러오지 못해 지금은 켜졌는지 알 수 없어요.'],
+    unavailable: ['이 환경에서는 앱 이용 기록 연결 상태를 확인할 수 없어요.', '앱 이용 기록: 이 환경에서는 연결 상태를 확인할 수 없어요.'],
+    unknown: ['앱 이용 기록 연결 상태를 아직 알 수 없어요. 새로 불러오기로 다시 확인해 주세요.', '앱 이용 기록: 연결 상태를 아직 알 수 없어요.'],
+  };
+  for (const [status, [line, basis]] of Object.entries(states)) for (const activityPending of [false, true]) {
+    const html = renderMemberInsight({ status: 'ready', activityPending, report: report({ activity: { status } }) });
+    const card = html.split('class="mi2-consent"')[1];
+    assert.ok(card.startsWith(` aria-busy="${status === 'loading' || activityPending}"`), status);
+    assert.ok(card.includes('<h4>앱 이용 기록</h4>'), status);
+    assert.ok(card.includes(`<p>${line}</p>`), status);assert.ok(html.includes(basis), status);
+    assert.doesNotMatch(html, /앱 이용 기록도 볼까요|앱 이용 기록 켜짐|>켜기<|>끄기<|>처리 중…<|data-insight-action="(?:enable|disable)-activity"/, status);
+    assert.match(card, /data-insight-action="account"[^>]*>내 정보·연결 설정/, status);
+    assert.match(html, /data-insight-action="refresh"[^>]*>새로 불러오기/, status);
+  }
+  const off = renderMemberInsight({ status: 'ready', report: report({ activity: { status: 'disabled' } }) }).split('class="mi2-consent"')[1];
+  assert.ok(off.includes('<h4>앱 이용 기록도 볼까요?</h4>'));assert.match(off, /data-insight-action="enable-activity">켜기<\/button>/);
+  for (const status of ['ready', 'empty']) {
+    const on = renderMemberInsight({ status: 'ready', report: report({ activity: usage({ status }) }) }).split('class="mi2-consent"')[1];
+    assert.ok(on.includes('<h4>앱 이용 기록 켜짐</h4>'), status);assert.match(on, /data-insight-action="disable-activity">끄기<\/button>/, status);
+  }
+  assert.match(renderMemberInsight({ status: 'ready', activityPending: true, report: report({ activity: { status: 'disabled' } }) }), /data-insight-action="enable-activity" disabled>처리 중…<\/button>/);
 });
 
 function understanding(patch = {}) {
@@ -306,7 +348,7 @@ test('「내 말로 알려 주기」 has one entrance and opens an explicit prev
   assert.equal((closed.match(/data-insight-action="understanding-describe"/g) || []).length, 1, 'one entrance');
   const html = renderMemberInsight({ status: 'ready', report: value, understandingStatementEditor: { text: '', stage: 'writing', preview: null, acceptedIds: [] } });
   assert.match(html, /data-insight-statement-editor/);assert.match(html, /data-insight-field="statement"/);
-  assert.match(html, /understanding-preview" disabled/);assert.match(html, /맞다고 고른 뜻만 저장해요/);assert.match(html, /500자 이내/);
+  assert.match(html, /understanding-preview" disabled/);assert.match(html, /맞다고 고른 뜻과 입력한 원문을 계정에 저장해요/);assert.match(html, /500자 이내/);
   assert.doesNotMatch(html, /understanding-confirm-statement|type="checkbox"|data-insight-action="understanding-describe"/);
 });
 
@@ -363,7 +405,7 @@ test('clarification history stays with the draft and offers a restart without sa
   const state = { status: 'ready', report: report({ understanding: understanding() }), understandingStatementEditor: { text: preview.text, preview, stage: 'preview', acceptedIds: [], clarifications } };
   const html = renderMemberInsight(state);
   assert.match(html, /답으로 뜻을 보완했어요/);assert.match(html, /뜻을 보완한 답 1개/);assert.match(html, /<strong>처음 배울 때<\/strong>/);
-  assert.match(html, /understanding-reset-answers">답 다시 고르기/);assert.match(html, /처음 시도하며 예시를 본 다음/);assert.match(html, /그 근거가 된 내 말·답을 저장/);
+  assert.match(html, /understanding-reset-answers">답 다시 고르기/);assert.match(html, /처음 시도하며 예시를 본 다음/);assert.match(html, /입력한 원문·답을 계정에 저장/);
   const stale = renderMemberInsight({ ...state, understandingStatementEditor: { ...state.understandingStatementEditor, clarifications: [] } });
   assert.match(stale, /data-insight-field="statement"/);assert.doesNotMatch(stale, /insight-proposal|understanding-reset-answers/);
   assert.match(renderMemberInsight({ ...state, understandingPending: true }), /understanding-reset-answers" disabled/);

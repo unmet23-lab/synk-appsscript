@@ -444,39 +444,46 @@ function surfaceDeclaration(quote) {
   if(directive)body=directive[1].replace(/해보$/u,'해보는').replace(/하$/u,'하는')+'걸원하지않아요';
   return body;
 }
-function comparative(body) {
+function comparative(body, cache) {
   const known=arm=>{
     const cleaned=arm.replace(/^(?:계속|오래)/u,'').replace(/(?:계획)만/u,'계획을');
-    return !!natural(cleaned+'좋아요')
+    return !!natural(cleaned+'좋아요', cache)
       ||/^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(cleaned);
   };
   const postposed=/^(.+?(?:게|것이|쪽이|방식이|방법이|편이))(.+?)(?:보다는|보다)(.+)$/u.exec(body);
-  if(postposed&&known(postposed[2])&&(natural(postposed[1]+postposed[3])?.meanings.length))return postposed[1]+postposed[3];
+  if(postposed&&known(postposed[2])&&(natural(postposed[1]+postposed[3], cache)?.meanings.length))return postposed[1]+postposed[3];
   const prefix=/^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(body);
   return prefix&&known(prefix[1])?prefix[2]:body;
 }
-function natural(quote) {
+// Performance-only repair: keep ko-7 interpretation/replay semantics; the original bytes remain in git 2a3a74e85.
+function natural(quote, cache = new Map()) {
+  if (cache.has(quote)) { const result = cache.get(quote); return result == null ? result : copy(result); }
+  const result = naturalUncached(quote, cache);
+  cache.set(quote, result == null ? result : copy(result));
+  return result;
+}
+function naturalUncached(quote, cache) {
   let { body, condition } = normalizePrefix(quote);
   const coordinated=/^(.+?(?:것|거)도),(.+?(?:것|거)도)(.+)$/u.exec(body);
   if(coordinated){
-    const first=natural(coordinated[1]+coordinated[3]),second=natural(coordinated[2]+coordinated[3]);
+    const first=natural(coordinated[1]+coordinated[3], cache),second=natural(coordinated[2]+coordinated[3], cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&!first.uncertain&&!second.uncertain){
       const secondGeneral=/^(?:(?:나는|난|저는|제가|내가))?(?:평소|보통은|일반적으로)/u.test(coordinated[2]);
       return {meanings:[...first.meanings.map(m=>({...m,condition:m.condition||condition})),...second.meanings.map(m=>({...m,condition:m.condition||(secondGeneral?null:condition)}))]};
     }
   }
   const topicList=/^(?:(?:제|내)?(?:취미|관심분야)(?:는|은))?(.+?)(?:이랑|랑|와|과)(.+?)(?:이고|고|을|를)(?:둘다|모두)(.+)$/u.exec(body);
-  if(topicList){const first=natural(topicList[1]+topicList[3]),second=natural(topicList[2]+topicList[3]);
+  if(topicList){const first=natural(topicList[1]+topicList[3], cache),second=natural(topicList[2]+topicList[3], cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&[...first.meanings,...second.meanings].every(m=>m.field==='topic'))return {meanings:[...first.meanings,...second.meanings].map(m=>({...m,condition}))};}
   const availability=/^(?:시간날때|시간이날때|여유시간에)(.+)$/u.exec(body);
-  if(availability){const activity=natural(availability[1]);if(activity?.meanings.length===1&&activity.meanings[0].field==='topic')return {meanings:activity.meanings.map(m=>({...m,condition}))};}
+  if(availability){const activity=natural(availability[1], cache);if(activity?.meanings.length===1&&activity.meanings[0].field==='topic')return {meanings:activity.meanings.map(m=>({...m,condition}))};}
   // A comparison does not authorize an opposite trait. Only its preferred arm
   // is proposed, and only when that complete arm has a supported predicate.
   body = body.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, '');
-  body = comparative(body).replace(/^결론뿐아니라(?=왜그런지)/u,'');
+  body = comparative(body, cache).replace(/^결론뿐아니라(?=왜그런지)/u,'');
   const explanationSequence=/^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(body);
   if(explanationSequence){
-    const first=natural(explanationSequence[1]+'보는게좋아요'),second=natural(explanationSequence[2]);
+    const first=natural(explanationSequence[1]+'보는게좋아요', cache),second=natural(explanationSequence[2], cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&first.meanings[0].value==='overview-first'&&second.meanings[0].value==='reasons-detail'&&second.meanings[0].polarity==='prefer')
       return {meanings:[...first.meanings,...second.meanings].map(m=>({...m,condition}))};
   }
@@ -940,7 +947,14 @@ function declaredCore(action,{polarity,habitual},condition,fields,source) {
   if(meaning.value==='overview-first'&&beforeRole('overview',['listen','read','receive','explain','look']))return null;
   return {meanings:unique};
 }
-function compositional(quote) {
+// Performance-only repair: keep ko-7 compositional replay unchanged.
+function compositional(quote, cache = new Map()) {
+  if (cache.has(quote)) { const result = cache.get(quote); return result == null ? result : copy(result); }
+  const result = compositionalUncached(quote, cache);
+  cache.set(quote, result == null ? result : copy(result));
+  return result;
+}
+function compositionalUncached(quote, cache) {
   let {body,condition}=normalizePrefix(surfaceDeclaration(quote));
   body=surfaceDeclaration(body);
   body=body.replace(/^(?:저는|나는|난|제가|내가|제경우엔|내경우엔)(?:요)?/u,'').replace(/^(?:대체로|주로|보통은|보통)/u,'');
@@ -949,8 +963,8 @@ function compositional(quote) {
   if(ownedExplanation){body=ownedExplanation[1]+'좋아요';fields=['explanation'];head='설명';}
   const degree=/^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(body);
   if(degree){
-    const described=compositional(degree[1].replace(/^(?:쉴때도|여유시간에도)/u,'')+'관심있어요');
-    const declared=compositional(degree[2]);
+    const described=compositional(degree[1].replace(/^(?:쉴때도|여유시간에도)/u,'')+'관심있어요', cache);
+    const declared=compositional(degree[2], cache);
     if(described?.meanings.length===1&&declared?.meanings.length===1&&described.meanings[0].field==='topic'
       &&semanticKey(described.meanings[0])===semanticKey(declared.meanings[0]))return {meanings:declared.meanings.map(m=>({...m,condition:m.condition||condition}))};
     return null;
@@ -962,8 +976,8 @@ function compositional(quote) {
   // a reason alone never becomes a second declaration or a dropped clause.
   const causal=/^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(body);
   if(causal){
-    const first=compositional(causal[1]+(causal[2]==='편해서'?'편해요':causal[2]==='선호해서'?'선호해요':'좋아해요'));
-    const second=compositional(causal[3]);
+    const first=compositional(causal[1]+(causal[2]==='편해서'?'편해요':causal[2]==='선호해서'?'선호해요':'좋아해요'), cache);
+    const second=compositional(causal[3], cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&semanticKey(first.meanings[0])===semanticKey(second.meanings[0]))
       return {meanings:first.meanings.map(m=>({...m,condition:m.condition||condition}))};
     return null;
@@ -1026,7 +1040,7 @@ function compositional(quote) {
     for(const split of separators){
       const left=split[0].startsWith('하')?action.slice(0,split.index)+'하는':action.slice(0,split.index+1),right=action.slice(split.index+split[0].length);
       if(!right||/[?!]/u.test(left+right))continue;
-      const arm=part=>natural(part)||expanded(part)||compositional(part);
+      const arm=part=>natural(part)||expanded(part)||compositional(part, cache);
       const a=arm(head+left+'좋아요'),b=arm(head+right+'좋아요');
       if(!a?.meanings.length||!b?.meanings.length||a.meanings.some(m=>m.condition)||b.meanings.some(m=>m.condition))continue;
       const joined=[...a.meanings,...b.meanings];

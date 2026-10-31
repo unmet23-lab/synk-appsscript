@@ -5,7 +5,7 @@
     "src/generated/account-client.cjs": "98cba3e339db3e9e09208e5c7776a39647df4020718d6dd6621305b0df6b48f8",
     "src/generated/wardrobe-client.cjs": "469079cbd12824fcf966ab3917081023818548f7e156a5f5cb80b3839c4c908f",
     "src/generated/wardrobe-catalog.cjs": "256735435ccba1252e2943cfc0bc21fac3f4e27244ed9e11a6de540d71736136",
-    "src/generated/world-learning-host.cjs": "70a8d99f636988a47a71dce49435fe95e9e3305de5ee69636ba41eaa2cfa5171",
+    "src/generated/world-learning-host.cjs": "c58e8674cc55f502600d30bd94e897117de733fe01f8013f4ff1bd040bc8518a",
     "assets/wardrobe/kkamong-base.webp": "38dfa064e70b80b8507ee78f10305221de003996932f9fbfd2fd457b1ee43720",
     "assets/wardrobe/kkamong-scarf.webp": "a69df98f2fa85d32a7254d1961d465cef504bcfa68e4c0281466b6d253cd82b6",
     "assets/wardrobe/kkamong-apron.webp": "68d7e4a6afc09379bcd17f31db0737c2a30641da0cc247187aabca5cae89da5a",
@@ -57,10 +57,10 @@
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
     "dist/wardrobe-three.js": "ca63e2e89a9a83c9c3ddb8641aeda6ab2aa2420e41210f1571887442ad60fe44",
     "dist/app.js": "7e4459476b2b9bcc50756fb85237c6dbe6ac3c1d331a7fe4698f6d789baa44a2",
-    "dist/client.js": "04cf41f9777aff7056c78aabecadf9a8acf87417801732ad883ae620c7005565",
-    "dist/preview.js": "3a0d1ee594c5a57e5d88b4dd6c9a425408ccc4dddc5f1e58110f633f714b16d0",
-    "dist/platform.js": "2b7fd0cd3b50976211b7e20de2e13d813b1ab87a705a6be9793b32c754b78c8c",
-    "dist/local-world.js": "d1ff7d8a146f4a08839ef13e8bb1372c8432db6f224d737d957fd32ede7dc7d6",
+    "dist/client.js": "67e55c48d95b2b3a2298ecebce003ebedd2aeac91f2d81e547c6351959a54b37",
+    "dist/preview.js": "d5d6c5ae56b3f3b87447f6a9f6ee251eaad569671951920ee9606e039031147e",
+    "dist/platform.js": "9607d4ac63ebfaa263b62f1802378130605fabad061bbd72683d4caab6ebc8d6",
+    "dist/local-world.js": "eca81e636e80431eb3527af17639910322c95792d56fd863e1a38a3b49fd996c",
     "dist/teacher.js": "56f60c73a23eab1ed18a5cf583fcc0a537a494db45415cacf57ae882f80d5265",
     "preview.html": "44db8c9bd6e1dae7b969195bd74f29ca4fba0f1a7d35367601b6f2125aa15d5e"
   }

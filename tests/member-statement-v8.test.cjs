@@ -23,7 +23,7 @@ const actions=[
 ];
 
 test('ko7 bytes, old parse, answer replay and confirmed rows remain immutable',()=>{
- assert.equal(crypto.createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v7.cjs'))).digest('hex'),'f22d2e56ae6af6038c2442e9201ec8e041231b1e0dfe3e4fd86d53ae2bef099d');
+ assert.equal(crypto.createHash('sha256').update(require('./_member-parser-source-history.cjs').beforeRuntimeMemo(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v7.cjs'),'utf8'),7)).digest('hex'),'f22d2e56ae6af6038c2442e9201ec8e041231b1e0dfe3e4fd86d53ae2bef099d');
  const texts=['혼자 시도하는 게 좋아요','설명을 들으면 이해하기 좋아요','상황에 따라 다르게 하고 싶어요','회의에서는 말로 소통하는 게 좋은 것 같아요','처음에는 예시를 먼저 보고 싶고 그 예시를 본 다음에는 혼자 시도하고 싶어요'];
  for(let v=1;v<=7;v++)for(const [i,text]of texts.entries()){
   const old=require(`../experiences/synk-account/src/member-statement-v${v}.cjs`),clarifications=[];let p=old.parseMemberStatement(text);

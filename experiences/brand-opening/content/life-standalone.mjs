@@ -8715,7 +8715,7 @@ var require_learning_sync = __commonJS({
       if (![batchSize, maxAttempts, maxPages, timeoutMs].every((n) => Number.isInteger(n) && n > 0) || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length || backoffMs.some((ms) => !Number.isFinite(ms) || ms < 0)) throw new TypeError("Atlas sync: invalid retry bounds");
       const key = `${SYNC_KEY}.${accountKey}`;
       const pages = createPages(storage, key, ["acknowledged", "pending", "missing"]);
-      let lastStoredRaw = null;
+      let lastStoredRaw = null, exhaustedRecovery = null;
       let state = { version: 2, accountKey, revision: revision2, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
       let phase = "idle", code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null, flushRequested = false;
       const controllers = /* @__PURE__ */ new Set();
@@ -8926,6 +8926,8 @@ var require_learning_sync = __commonJS({
         return false;
       };
       const recover = async (token) => {
+        const signature = state.missing.slice().sort().join("\0");
+        if (signature && exhaustedRecovery === signature) throw failure("INCOMPLETE_HISTORY", "Atlas sync: previously acknowledged history is still missing");
         let after = state.recoveryCursor || 0;
         for (let page = 0; page < maxPages && state.missing.length; page++) {
           const response = await request("get", { after, revision: revision2 }, token);
@@ -8946,7 +8948,10 @@ var require_learning_sync = __commonJS({
           after = response.cursor;
           state.recoveryCursor = Math.min(after, state.cursor);
           const exhausted = (!response.hasMore || after >= state.cursor) && state.missing.length > 0;
-          if (exhausted) state.recoveryCursor = 0;
+          if (exhausted) {
+            state.recoveryCursor = 0;
+            exhaustedRecovery = state.missing.slice().sort().join("\0");
+          }
           if (!state.missing.length) state.recoveryCursor = 0;
           save();
           port.markComplete(whole());
@@ -9055,7 +9060,10 @@ var require_learning_sync = __commonJS({
         },
         pull: () => run(true),
         flush: () => run(),
-        retry: () => run(),
+        retry: () => {
+          exhaustedRecovery = null;
+          return run();
+        },
         status,
         invalidate(code2 = "STORAGE_ERROR") {
           if (!stopped) block(failure(code2 === "HISTORY_CAPACITY" ? code2 : "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
@@ -10255,7 +10263,7 @@ var require_game_learning = __commonJS({
       const manager = globalThis.navigator?.locks;
       if (historyLeases.has(name)) return historyLeases.get(name);
       const entry = { epoch: null, active: false, supported: !!manager, listeners: /* @__PURE__ */ new Set() };
-      let pending = false, wanted = true, release = null, controller = null;
+      let pending = false, wanted = true, release = null, controller = null, retired = false;
       const announce = (active) => {
         entry.active = active;
         for (const listener of entry.listeners) {
@@ -10266,12 +10274,13 @@ var require_game_learning = __commonJS({
         }
       };
       entry.start = () => {
+        if (retired) return;
         wanted = true;
         if (pending || !manager) return;
         pending = true;
         controller = new AbortController();
         const signal = controller.signal;
-        Promise.resolve().then(() => manager.request("synk.atlas.history." + name, { mode: "exclusive", signal }, () => new Promise((done) => {
+        Promise.resolve().then(() => retired || signal.aborted ? void 0 : manager.request("synk.atlas.history." + name, { mode: "exclusive", signal }, () => new Promise((done) => {
           release = done;
           announce(true);
         }))).catch(() => {
@@ -10293,6 +10302,15 @@ var require_game_learning = __commonJS({
       };
       globalThis.addEventListener?.("pagehide", pause);
       globalThis.addEventListener?.("pageshow", entry.start);
+      entry.detach = (listener) => {
+        entry.listeners.delete(listener);
+        if (entry.listeners.size) return;
+        retired = true;
+        pause();
+        globalThis.removeEventListener?.("pagehide", pause);
+        globalThis.removeEventListener?.("pageshow", entry.start);
+        if (historyLeases.get(name) === entry) historyLeases.delete(name);
+      };
       historyLeases.set(name, entry);
       return entry;
     }
@@ -10352,7 +10370,9 @@ var require_game_learning = __commonJS({
     var AHEAD_MS = 5 * 6e4;
     function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock: clock2, held, release }) {
       const lease = storage ? browserHistoryLease(JSON.stringify([key, storageScope, accountKey])) : null;
-      let leased = !lease, waitingWrite = false;
+      let leased = !lease, waitingWrite = false, closed = false, closing = false, closedFlush = false, detachLease = () => {
+      };
+      const FINAL_FLUSH = /* @__PURE__ */ Symbol("final-history-flush");
       const leaseWarning = lease && !lease.supported ? "\uC774 \uD658\uACBD\uC5D0\uC11C\uB294 \uAE30\uB85D\uC744 \uC548\uC804\uD558\uAC8C \uC800\uC7A5\uD560 \uC218 \uC5C6\uC5B4 \uAE30\uBCF8 \uC5F0\uC2B5\uC73C\uB85C \uC9C4\uD589\uD574\uC694." : LEASE_WARNING;
       const pages = storageScope === "account" && storage ? createPages(storage, key, ["events", "settled", "dropped"]) : null;
       let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
@@ -10362,7 +10382,7 @@ var require_game_learning = __commonJS({
       const dropped = /* @__PURE__ */ new Set();
       let droppedVersion = 0;
       const UNCHANGED = /* @__PURE__ */ Symbol("unchanged-history");
-      let lastStoredRaw = /* @__PURE__ */ Symbol("unread-history"), lastTime = 0;
+      let lastStoredRaw = /* @__PURE__ */ Symbol("unread-history"), lastTime = 0, lastSavedState = null;
       const listeners = /* @__PURE__ */ new Set();
       const notify = (kind, code) => {
         for (const listener of listeners) {
@@ -10387,6 +10407,11 @@ var require_game_learning = __commonJS({
         return Atlas.createSession({ scope, events, clock: monotonicClock });
       };
       const log = (of = session) => of.snapshot ? of.snapshot() : of.events();
+      const savedState = () => [log(), ledger, epoch, settledVersion, droppedVersion, lastStoredRaw];
+      const rememberSaved = () => {
+        lastSavedState = savedState();
+      };
+      const unchangedPaged = () => lastSavedState && savedState().every((value, index) => value === lastSavedState[index]);
       const decode = (raw) => {
         if (raw == null) return null;
         const value = pages ? pages.decode(raw) : JSON.parse(raw);
@@ -10428,6 +10453,7 @@ var require_game_learning = __commonJS({
       };
       if (initial?.settled) settle(initial.settled, new Set(initial.events.map((e) => e.id)));
       for (const id of initial?.dropped || []) dropped.add(id);
+      if (initial) rememberSaved();
       const takeDropped = (ids, keepMine) => {
         const next = new Set(keepMine ? [...dropped, ...ids] : ids);
         if (next.size !== dropped.size || [...next].some((id) => !dropped.has(id))) {
@@ -10436,7 +10462,8 @@ var require_game_learning = __commonJS({
           droppedVersion += 1;
         }
       };
-      function refresh() {
+      function refresh(access = null) {
+        if (closed || closing && access !== FINAL_FLUSH) return;
         if (!readable || !storage) return;
         const stored = readStored();
         if (!stored || stored === UNCHANGED) return;
@@ -10547,7 +10574,8 @@ var require_game_learning = __commonJS({
           droppedVersion += 1;
         }
       }
-      function persist(kind = "append", { quiet = false } = {}) {
+      function persist(kind = "append", { quiet = false, access = null } = {}) {
+        if (closed || closing && access !== FINAL_FLUSH) return false;
         waitingWrite = true;
         if (!leased) {
           writable = false;
@@ -10583,6 +10611,7 @@ var require_game_learning = __commonJS({
             storage.setItem(key, raw);
           }
           lastStoredRaw = raw;
+          rememberSaved();
           provisional = false;
           writable = true;
           waitingWrite = false;
@@ -10598,6 +10627,7 @@ var require_game_learning = __commonJS({
       }
       if (!initial && readable && storage) persist();
       const requireDurable = () => {
+        if (closed || closing) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
         refresh();
         if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
         if (!readable || !writable) throw Object.assign(new Error("Atlas: local history is not durable"), { code: "STORAGE_ERROR" });
@@ -10605,7 +10635,7 @@ var require_game_learning = __commonJS({
       const port = Object.freeze({
         scope: storageScope,
         accountKey,
-        canPersist: () => leased,
+        canPersist: () => !closed && !closing && leased,
         // The kept entries. A synchronised store's folded entries are on the server; whether this
         // history can be sent at all is partial().
         events() {
@@ -10627,6 +10657,7 @@ var require_game_learning = __commonJS({
         // The sync calls this after a complete pull with every entry id the server has sent:
         // those entries may fold here. Saved quietly (it is not a new learning entry).
         settle(ids) {
+          if (closed || closing) return false;
           if (!folding?.remote || !Array.isArray(ids)) return false;
           refresh();
           if (!readable) return false;
@@ -10641,6 +10672,7 @@ var require_game_learning = __commonJS({
         },
         // The synchroniser has taken these (saved in its own outbox first).
         forget(ids) {
+          if (closed || closing) return false;
           refresh();
           if (!readable || !Array.isArray(ids)) return false;
           const version = droppedVersion;
@@ -10648,14 +10680,17 @@ var require_game_learning = __commonJS({
           return droppedVersion === version || persist("forget", { quiet: true });
         },
         subscribe(listener) {
+          if (closed || closing) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
           if (typeof listener !== "function") throw new TypeError("Atlas: listener required");
           listeners.add(listener);
           return () => listeners.delete(listener);
         },
         markComplete(value) {
+          if (closed || closing) return false;
           complete = value === true;
         },
         importEvents(incoming) {
+          if (closed || closing) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
           refresh();
           if (!readable) throw Object.assign(new Error("Atlas: local history is unreadable"), { code: "STORAGE_ERROR" });
           if (ledger?.local) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
@@ -10687,6 +10722,19 @@ var require_game_learning = __commonJS({
       if (lease) {
         const changed = (active) => {
           leased = active;
+          if (closing) {
+            if (active) {
+              try {
+                writable = true;
+                closedFlush = flushHistory(FINAL_FLUSH);
+              } catch {
+                closedFlush = false;
+              } finally {
+                retireHistory();
+              }
+            }
+            return;
+          }
           if (!active) {
             writable = false;
             warning = leaseWarning;
@@ -10706,13 +10754,44 @@ var require_game_learning = __commonJS({
           }
         };
         lease.listeners.add(changed);
+        detachLease = () => lease.detach(changed);
         changed(lease.active);
         lease.start();
+      }
+      function flushHistory(access = null) {
+        if (closed || closing && access !== FINAL_FLUSH) return closedFlush;
+        refresh(access);
+        return !!storage && readable && (writable && (paged ? unchangedPaged() : snapshot(log()) === lastStoredRaw) || persist("flush", { quiet: true, access }));
+      }
+      function retireHistory() {
+        closed = true;
+        closing = false;
+        leased = false;
+        readable = false;
+        writable = false;
+        complete = false;
+        detachLease();
       }
       return Object.freeze({
         port,
         refresh,
         clock: monotonicClock,
+        close() {
+          if (closed || closing) return closedFlush;
+          closing = true;
+          listeners.clear();
+          release(null);
+          try {
+            closedFlush = flushHistory(FINAL_FLUSH);
+          } catch {
+            retireHistory();
+            return false;
+          }
+          const pending = paged ? !unchangedPaged() : snapshot(log()) !== lastStoredRaw;
+          if (!closedFlush && pending && storage && readable && lease?.supported && !leased) return false;
+          retireHistory();
+          return closedFlush;
+        },
         // What is saved now. `session` is the log the game appends to (only this owner replaces it);
         // `available`: it can be read and written; `durable`: also complete, so only then is an answer independent.
         state() {
@@ -10724,10 +10803,7 @@ var require_game_learning = __commonJS({
         persist: () => persist(),
         // Before a tab closes or hides: another tab may have written an older history over this
         // one's entries in the meantime (tabs see each other's writes late), so join and write again.
-        flush() {
-          refresh();
-          return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist("flush", { quiet: true }));
-        },
+        flush: flushHistory,
         reset() {
           if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
           const nextEpoch = uid(), nextSession = newSession([]);
@@ -10779,7 +10855,7 @@ var require_game_learning = __commonJS({
       if (memoryOwner != null && (storageScope !== "account" || memoryOwner.scope !== "account" || !identifier(memoryOwner.accountKey) || !memoryOwner.flow || ["today", "setToday", "presentation", "setPresentation", "epoch", "memories", "save", "decline", "state", "merge", "subscribe"].some((name) => typeof memoryOwner.flow[name] !== "function"))) throw new TypeError("Atlas: a verified personal memory owner is required");
       const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
       const key = `${KEY}.${learnerKey}`;
-      let flowPort = null;
+      let flowPort = null, disposed = false;
       const active = /* @__PURE__ */ new Map(), sets2 = /* @__PURE__ */ new Map();
       const history = openHistory({
         storage,
@@ -10857,7 +10933,7 @@ var require_game_learning = __commonJS({
         const observed = view(saved), { ledger } = saved;
         const measured = () => {
           const counts = Temper.combine(ledger?.counts || null, Temper.measure(observed));
-          return ledger?.adjusted ? { ...counts, status: "approximate", approximate: true } : counts;
+          return ledger?.adjusted && counts ? { ...counts, status: counts.status === "measured" ? "approximate" : counts.status, approximate: true } : counts;
         };
         if (cached2?.summary === observed && !cached2.counts) cached2.counts = measured();
         return {
@@ -11115,6 +11191,19 @@ var require_game_learning = __commonJS({
         epoch: flowPort.epoch
       });
       api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
+      api.dispose = () => {
+        if (disposed) return;
+        disposed = true;
+        history.close();
+        cached2 = null;
+        met = null;
+      };
+      for (const [name, method] of Object.entries(api)) if (typeof method === "function" && !["dispose", "flush"].includes(name)) {
+        api[name] = (...args) => {
+          if (disposed) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
+          return method(...args);
+        };
+      }
       return api;
     }
     module.exports = {
@@ -11455,10 +11544,15 @@ var require_ask = __commonJS({
       function fromAtlas({ engine, events = [], scope, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
         if (!engine || typeof engine.decide !== "function") throw new TypeError("Ask: Core engine required");
         validate2(questions);
-        const byAbout = /* @__PURE__ */ new Map();
+        const byAbout = /* @__PURE__ */ new Map(), byTarget = /* @__PURE__ */ new Map();
         for (const q2 of questions) {
           const about = q2.about ?? q2.id, prior = byAbout.get(about);
-          if (prior && ((prior.kind ?? "setting") !== (q2.kind ?? "setting") || (q2.kind === "confirm" ? prior.line !== q2.line : (prior.field ?? about) !== (q2.field ?? about)))) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+          const confirm = q2.kind === "confirm", target = confirm ? q2.line : q2.field ?? about;
+          if (prior && (prior.kind === "confirm" !== confirm || (confirm ? prior.line : prior.field ?? about) !== target)) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+          const targets = byTarget.get(confirm) || /* @__PURE__ */ new Map();
+          if (targets.has(target) && targets.get(target) !== about) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+          targets.set(target, about);
+          byTarget.set(confirm, targets);
           byAbout.set(about, q2);
         }
         const decide = (answers) => {

@@ -149,10 +149,14 @@
   function fromAtlas({ engine, events = [], scope, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
     if (!engine || typeof engine.decide !== 'function') throw new TypeError('Ask: Core engine required');
     validate(questions);
-    const byAbout = new Map();
+    const byAbout = new Map(), byTarget = new Map();
     for (const q of questions) {
       const about = q.about ?? q.id, prior = byAbout.get(about);
-      if (prior && ((prior.kind ?? 'setting') !== (q.kind ?? 'setting') || (q.kind === 'confirm' ? prior.line !== q.line : (prior.field ?? about) !== (q.field ?? about)))) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+      const confirm = q.kind === 'confirm', target = confirm ? q.line : (q.field ?? about);
+      if (prior && ((prior.kind === 'confirm') !== confirm || (confirm ? prior.line : prior.field ?? about) !== target)) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+      const targets = byTarget.get(confirm) || new Map();
+      if (targets.has(target) && targets.get(target) !== about) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+      targets.set(target, about); byTarget.set(confirm, targets);
       byAbout.set(about, q);
     }
     const decide = answers => {

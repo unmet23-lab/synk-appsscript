@@ -33,13 +33,14 @@ function browserHistoryLease(name) {
   // app owner. Other browser documents without Web Locks remain read-only.
   if (historyLeases.has(name)) return historyLeases.get(name);
   const entry = { epoch: null, active: false, supported: !!manager, listeners: new Set() };
-  let pending = false, wanted = true, release = null, controller = null;
+  let pending = false, wanted = true, release = null, controller = null, retired = false;
   const announce = active => { entry.active = active; for (const listener of entry.listeners) { try { listener(active); } catch { /* One host cannot release another game's lease. */ } } };
   entry.start = () => {
+    if (retired) return;
     wanted = true;
     if (pending || !manager) return;
     pending = true; controller = new AbortController(); const signal = controller.signal;
-    Promise.resolve().then(() => manager.request('synk.atlas.history.' + name, { mode: 'exclusive', signal }, () => new Promise(done => {
+    Promise.resolve().then(() => retired || signal.aborted ? undefined : manager.request('synk.atlas.history.' + name, { mode: 'exclusive', signal }, () => new Promise(done => {
       release = done; announce(true);
     }))).catch(() => { if (!signal.aborted) { wanted = false; announce(false); } }).finally(() => {
       pending = false; release = null; if (wanted) entry.start();
@@ -48,6 +49,14 @@ function browserHistoryLease(name) {
   const pause = () => { wanted = false; announce(false); controller?.abort(); release?.(); };
   globalThis.addEventListener?.('pagehide', pause);
   globalThis.addEventListener?.('pageshow', entry.start);
+  entry.detach = listener => {
+    entry.listeners.delete(listener);
+    if (entry.listeners.size) return;
+    retired = true; pause();
+    globalThis.removeEventListener?.('pagehide', pause);
+    globalThis.removeEventListener?.('pageshow', entry.start);
+    if (historyLeases.get(name) === entry) historyLeases.delete(name);
+  };
   historyLeases.set(name, entry); return entry;
 }
 // Both readings use Trail: an exclusion withdraws a result without replacing its
@@ -104,7 +113,8 @@ const AHEAD_MS = 5 * 60000;
  * entries `gone(id)` names that a merge or a fold took out of the kept log. */
 function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
   const lease = storage ? browserHistoryLease(JSON.stringify([key, storageScope, accountKey])) : null;
-  let leased = !lease, waitingWrite = false;
+  let leased = !lease, waitingWrite = false, closed = false, closing = false, closedFlush = false, detachLease = () => {};
+  const FINAL_FLUSH = Symbol('final-history-flush');
   const leaseWarning = lease && !lease.supported ? '이 환경에서는 기록을 안전하게 저장할 수 없어 기본 연습으로 진행해요.' : LEASE_WARNING;
   const pages = storageScope === 'account' && storage ? createPages(storage, key, ['events', 'settled', 'dropped']) : null;
   let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
@@ -118,7 +128,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
   const dropped = new Set();
   let droppedVersion = 0;
   const UNCHANGED = Symbol('unchanged-history');
-  let lastStoredRaw = Symbol('unread-history'), lastTime = 0;
+  let lastStoredRaw = Symbol('unread-history'), lastTime = 0, lastSavedState = null;
   const listeners = new Set();
   const notify = (kind, code) => { for (const listener of listeners) { try { listener({ kind, ...(code ? { code } : {}) }); } catch { /* Host notifications cannot corrupt learning events. */ } } };
   const monotonicClock = () => { const value = Date.parse(clock()); if (!Number.isFinite(value)) throw new TypeError('Atlas: invalid clock'); lastTime = Math.max(value, lastTime); return new Date(lastTime).toISOString(); };
@@ -129,6 +139,9 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
   };
   // The session's frozen entries themselves (no copy). Older sessions only offer copies.
   const log = (of = session) => of.snapshot ? of.snapshot() : of.events();
+  const savedState = () => [log(), ledger, epoch, settledVersion, droppedVersion, lastStoredRaw];
+  const rememberSaved = () => { lastSavedState = savedState(); };
+  const unchangedPaged = () => lastSavedState && savedState().every((value, index) => value === lastSavedState[index]);
   const decode = raw => {
     if (raw == null) return null;
     const value = pages ? pages.decode(raw) : JSON.parse(raw);
@@ -166,12 +179,14 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
   };
   if (initial?.settled) settle(initial.settled, new Set(initial.events.map(e => e.id)));
   for (const id of initial?.dropped || []) dropped.add(id);
+  if (initial) rememberSaved();
   // The stored list is the current one unless this side folded more and has not written yet.
   const takeDropped = (ids, keepMine) => {
     const next = new Set(keepMine ? [...dropped, ...ids] : ids);
     if (next.size !== dropped.size || [...next].some(id => !dropped.has(id))) { dropped.clear(); for (const id of next) dropped.add(id); droppedVersion += 1; }
   };
-  function refresh() {
+  function refresh(access = null) {
+    if (closed || closing && access !== FINAL_FLUSH) return;
     if (!readable || !storage) return;
     const stored = readStored();
     if (!stored || stored === UNCHANGED) return;
@@ -260,7 +275,8 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     settledVersion += 1; release(id => planned.folded.some(e => e.id === id));
     if (folding.remote) { for (const e of planned.folded) dropped.add(e.id); droppedVersion += 1; }
   }
-  function persist(kind = 'append', { quiet = false } = {}) {
+  function persist(kind = 'append', { quiet = false, access = null } = {}) {
+    if (closed || closing && access !== FINAL_FLUSH) return false;
     waitingWrite = true;
     if (!leased) { writable = false; warning = leaseWarning; notify('storage-wait', 'STORAGE_BUSY'); return false; }
     if (!storage || !readable) { complete = false; notify('storage-error', 'STORAGE_ERROR'); return false; }
@@ -274,15 +290,15 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
         ...(ledger ? { ledger } : {}), ...(settled.size ? { settled: [...settled] } : {}), ...(dropped.size ? { dropped: [...dropped] } : {}) },
       typeof lastStoredRaw === 'string' ? lastStoredRaw : null);
       else { raw = snapshot(events); storage.setItem(key, raw); }
-      lastStoredRaw = raw; provisional = false; writable = true; waitingWrite = false; if (!quiet) notify(kind); return true;
+      lastStoredRaw = raw; rememberSaved(); provisional = false; writable = true; waitingWrite = false; if (!quiet) notify(kind); return true;
     } catch (error) { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; notify('storage-error', error.code === 'HISTORY_CAPACITY' ? 'HISTORY_CAPACITY' : 'STORAGE_ERROR'); return false; }
   }
   // Initialize one shared epoch before a second game/tab opens it.
   if (!initial && readable && storage) persist();
-  const requireDurable = () => { refresh(); if (!leased) throw Object.assign(new Error('Atlas: another browser context owns this history'), { code: 'STORAGE_BUSY' }); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' }); };
+  const requireDurable = () => { if (closed || closing) throw Object.assign(new Error('Atlas: game closed'), { code: 'GAME_CLOSED' }); refresh(); if (!leased) throw Object.assign(new Error('Atlas: another browser context owns this history'), { code: 'STORAGE_BUSY' }); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' }); };
   const port = Object.freeze({
     scope: storageScope, accountKey,
-    canPersist: () => leased,
+    canPersist: () => !closed && !closing && leased,
     // The kept entries. A synchronised store's folded entries are on the server; whether this
     // history can be sent at all is partial().
     events() { requireDurable(); return session.events(); },
@@ -295,6 +311,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     // The sync calls this after a complete pull with every entry id the server has sent:
     // those entries may fold here. Saved quietly (it is not a new learning entry).
     settle(ids) {
+      if (closed || closing) return false;
       if (!folding?.remote || !Array.isArray(ids)) return false;
       refresh(); if (!readable) return false;
       const version = settledVersion;
@@ -305,14 +322,16 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     dropped() { refresh(); return [...dropped]; },
     // The synchroniser has taken these (saved in its own outbox first).
     forget(ids) {
+      if (closed || closing) return false;
       refresh(); if (!readable || !Array.isArray(ids)) return false;
       const version = droppedVersion;
       for (const id of ids) if (dropped.delete(id)) droppedVersion = version + 1;
       return droppedVersion === version || persist('forget', { quiet: true });
     },
-    subscribe(listener) { if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
-    markComplete(value) { complete = value === true; },
+    subscribe(listener) { if (closed || closing) throw Object.assign(new Error('Atlas: game closed'), { code: 'GAME_CLOSED' });if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
+    markComplete(value) { if (closed || closing) return false;complete = value === true; },
     importEvents(incoming) {
+      if (closed || closing) throw Object.assign(new Error('Atlas: game closed'), { code: 'GAME_CLOSED' });
       refresh();
       if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
       if (ledger?.local) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
@@ -345,21 +364,38 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
   if (lease) {
     const changed = active => {
       leased = active;
+      if (closing) {
+        if (active) { try { writable = true; closedFlush = flushHistory(FINAL_FLUSH); } catch { closedFlush = false; } finally { retireHistory(); } }
+        return;
+      }
       if (!active) { writable = false; warning = leaseWarning; notify('storage-wait', 'STORAGE_BUSY'); return; }
       writable = true; if (warning === leaseWarning) warning = null;
       try { refresh(); if (!waitingWrite || persist('storage-ready', { quiet: true })) notify('storage-ready'); }
       catch { readable = false; complete = false; writable = false; notify('storage-error', 'STORAGE_ERROR'); }
     };
-    lease.listeners.add(changed); changed(lease.active); lease.start();
+    lease.listeners.add(changed); detachLease = () => lease.detach(changed); changed(lease.active); lease.start();
   }
+  function flushHistory(access = null) { if (closed || closing && access !== FINAL_FLUSH) return closedFlush; refresh(access); return !!storage && readable && (writable && (paged ? unchangedPaged() : snapshot(log()) === lastStoredRaw) || persist('flush', { quiet: true, access })); }
+  function retireHistory() { closed = true; closing = false; leased = false; readable = false; writable = false; complete = false; detachLease(); }
   return Object.freeze({ port, refresh, clock: monotonicClock,
+    close() {
+      if (closed || closing) return closedFlush;
+      closing = true; listeners.clear(); release(null);
+      try { closedFlush = flushHistory(FINAL_FLUSH); } catch { retireHistory(); return false; }
+      // A disposed game's already-created practice still owns its final write.
+      // Keep only the existing lease waiter until it merges and drains; all
+      // public ports are closed immediately, and no game callback can revive it.
+      const pending = paged ? !unchangedPaged() : snapshot(log()) !== lastStoredRaw;
+      if (!closedFlush && pending && storage && readable && lease?.supported && !leased) return false;
+      retireHistory(); return closedFlush;
+    },
     // What is saved now. `session` is the log the game appends to (only this owner replaces it);
     // `available`: it can be read and written; `durable`: also complete, so only then is an answer independent.
     state() { const of = session; return Object.freeze({ epoch, session: of, get log() { return log(of); }, ledger, available: readable && writable, durable: complete && readable && writable, warning }); },
     persist: () => persist(),
     // Before a tab closes or hides: another tab may have written an older history over this
     // one's entries in the meantime (tabs see each other's writes late), so join and write again.
-    flush() { refresh(); return !!storage && readable && (writable && snapshot(log()) === lastStoredRaw || persist('flush', { quiet: true })); },
+    flush: flushHistory,
     reset() {
       if (!leased) throw Object.assign(new Error('Atlas: another browser context owns this history'), { code: 'STORAGE_BUSY' });
       // Commit the empty root before changing memory or releasing open work.
@@ -387,7 +423,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
   const key = `${KEY}.${learnerKey}`;
   // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
-  let flowPort = null;
+  let flowPort = null, disposed = false;
   const active = new Map(), sets = new Map(); // sets: finished here in the last day (decision → time), still open to a response
   // Held open here, so never folded: an item not answered in this tab, a set still taking a response.
   // An epoch change (a reset here or in another tab) ends all of them, a fold or a merge what it took.
@@ -447,7 +483,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const counts=Temper.combine(ledger?.counts || null, Temper.measure(observed));
       // Withdrawn folded evidence is removed from policy cells. Its historical
       // local totals require the server's whole log for exact measurement.
-      return ledger?.adjusted?{...counts,status:'approximate',approximate:true}:counts;
+      return ledger?.adjusted&&counts?{...counts,status:counts.status==='measured'?'approximate':counts.status,approximate:true}:counts;
     };
     if (cached?.summary === observed && !cached.counts) cached.counts = measured();
     // `folded`/`adjusted`: entries kept only as a summary, and other devices' late entries that
@@ -647,6 +683,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     state: flowPort.state, merge: flowPort.merge, subscribe: flowPort.subscribe, flow: flowPort,
     pending: flowPort.pending, prepare: flowPort.prepare, acknowledge: flowPort.acknowledge, epoch: flowPort.epoch });
   api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
+  api.dispose = () => { if (disposed) return; disposed = true; history.close(); cached = null; met = null; };
+  for (const [name, method] of Object.entries(api)) if (typeof method === 'function' && !['dispose', 'flush'].includes(name)) {
+    api[name] = (...args) => { if (disposed) throw Object.assign(new Error('Atlas: game closed'), { code: 'GAME_CLOSED' }); return method(...args); };
+  }
   return api;
 }
 module.exports = { createGame, createLearningSync, createMemorySync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend,

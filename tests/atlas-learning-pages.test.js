@@ -14,6 +14,11 @@ const disk = (limit = Infinity) => { const data = new Map(), writes = []; let ch
   writes.push({ key: k, bytes: v.length }); data.set(k, v); chars = next;
 }, removeItem(k) { if (data.has(k)) chars -= k.length + data.get(k).length; return data.delete(k); } }; };
 const game = (storage, accountKey = 'synthetic') => createGame({ gameId: 'pages', map, storage, storageScope: 'account', accountKey, historyComplete: false, clock: () => '2026-10-18T00:00:00.000Z', fold: { remote: true } });
+test('a valid older paged root cannot make an unchanged local log skip restoring its newer practice',()=>{
+ const storage=disk(),current=game(storage);current.syncPort.importEvents(Array.from({length:240},(_,i)=>graph(i)).flat());const older=[...storage.data];
+ current.syncPort.importEvents(graph(10000));const wanted=current.events().map(e=>e.id);for(const [key,value]of older)storage.setItem(key,value);
+ assert.equal(current.flush(),true);const restored=game(storage),ids=new Set(restored.events().map(e=>e.id));for(const id of wanted)assert.ok(ids.has(id),'A valid older root lost '+id);assert.equal(ids.size,wanted.length);restored.dispose();current.dispose();
+});
 function graph(n) {
   const d = row('d' + n, 'decision.made', { experienceId: 'practice', variant: 'standard', policy: Atlas.VERSION, evidence: [] });
   const p = row('p' + n, 'practice.presented', { decisionId: d.id, taskId: 'task', taskVersion: '1', itemKey: 'i' + n, conceptIds: ['ko.reading.detail'], firstExposure: true,
@@ -27,6 +32,20 @@ function network(events) {
     post: async ({ events }) => { calls.post++; return { revision: 1, accepted: events.map(e => e.id) }; } };
 }
 const syncFor = (adapter, storage, transport, extra = {}) => createLearningSync({ adapter, storage, transport, accountKey: 'synthetic', revision: 1, auto: false, maxAttempts: 1, ...extra });
+
+test('unchanged paged history flushes without a quota write, including after reopening',()=>{
+  const storage=disk(),adapter=game(storage),events=Array.from({length:300},(_,n)=>graph(n)).flat();adapter.syncPort.importEvents(events);
+  assert.equal(JSON.parse(storage.getItem(KEY+'.device')).paged,1);const before=storage.writes.length,write=storage.setItem;let attempts=0;
+  storage.setItem=()=>{attempts++;throw Object.assign(Error('synthetic full origin'),{name:'QuotaExceededError'});};
+  assert.equal(adapter.flush(),true);const restored=game(storage);assert.equal(restored.flush(),true);assert.equal(attempts,0);assert.equal(storage.writes.length,before);assert.deepEqual(restored.syncPort.events(),events);
+  storage.setItem=write;restored.syncPort.importEvents(graph(300));assert.ok(storage.writes.length>before,'a changed log still persists');const after=storage.writes.length;assert.equal(restored.flush(),true);assert.equal(storage.writes.length,after);
+});
+
+test('withdrawn history with no measured independent response stays no_sample',()=>{
+  const storage=disk(),ledger={...require('../atlas/learning-ledger').empty(),adjusted:1};
+  storage.setItem(KEY+'.device',JSON.stringify({version:1,epoch:'synthetic.empty',events:[],owner:'synthetic',ledger}));
+  const result=game(storage).summary();assert.equal(result.counts.status,'no_sample');assert.equal(result.counts.approximate,true);assert.equal(result.counts.independent.evaluated,0);
+});
 
 test('more than 20000 events restore within a 5 MiB character quota with late parent links preserved', async () => {
   const events = Array.from({ length: 5001 }, (_, n) => graph(n)).flat();

@@ -149,8 +149,11 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     };
     // Once its run closes or another begins, a game stops; it may still write its entries once
     // more as its page closes (flush), which adds none.
+    let disconnected = false;
+    const disconnect = () => { if (disconnected) return; disconnected = true; unsubscribe(); unsubscribeMemory(); coaches.delete(coach); if (coach !== primary && coach !== personal) coach.dispose?.(); };
     const call = (method, args, closing = false) => {
       check();
+      if (disconnected) throw failure('WORLD game run ended', 'RUN_ENDED');
       if (opened !== generation && !closing) throw failure('WORLD game run ended', 'RUN_ENDED');
       if (!context) return method(...args);
       const before = new Set(logIds());
@@ -162,11 +165,11 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     // A live content (coach.live) answers through the same guard on every call, not only when it opens.
     const live = value => (...args) => Object.freeze(Object.fromEntries(Object.entries(call(value, args)).map(([name, part]) => [name, guarded(part)])));
     // The ports belong to the host's synchronisers, not to games.
-    return Object.freeze(Object.fromEntries(Object.entries(coach).filter(([name]) => name !== 'syncPort' && name !== 'memoryPort').map(([name, value]) => [name,
+    return Object.freeze(Object.fromEntries(Object.entries(coach).filter(([name]) => !['syncPort', 'memoryPort', 'dispose'].includes(name)).map(([name, value]) => [name,
       name === 'live' ? live(value) : guarded(value, name === 'flush')]).concat([
       // Each game sees the run's immutable task snapshot, without an account token.
       ['assignment', () => { check(); if (opened !== generation) throw failure('WORLD game run ended', 'RUN_ENDED'); return context?.target ? structuredClone(context.target) : null; }],
-      ['disconnect', () => { unsubscribe(); unsubscribeMemory(); coaches.delete(coach); }],
+      ['disconnect', disconnect], ['dispose', disconnect],
     ])));
   }
   // The status names the account partition and the open run, also on a device-only account.
@@ -176,8 +179,10 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     preferences() {
       check();
       if (!personal && !primary) {
+        if (!connected && !personalMemory) return null;
         if (typeof engine?.createGame !== 'function') return null;
-        createGame({ gameId: 'world-preferences' }, engine.createGame, engine.createLearningSync);
+        const bootstrap = createGame({ gameId: run?.gameId || 'world-preferences' }, engine.createGame, engine.createLearningSync);
+        bootstrap.disconnect();
       }
       const owner = personal || primary;
       if (!owner) return null;
@@ -206,6 +211,6 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
       return structuredClone(run);
     },
     closeRun() { check(); generation += 1; run = null; },
-    stop() { closed = true; generation += 1; run = null; sync?.stop(); memory?.stop(); coaches.clear(); memoryListeners.clear(); } });
+    stop() { if (closed) return; closed = true; generation += 1; run = null; sync?.stop(); memory?.stop(); const owners = new Set([...coaches, primary, personal].filter(Boolean)); coaches.clear(); for (const owner of owners) owner.dispose?.(); memoryListeners.clear(); } });
 }
 module.exports = { createWorldLearningHost };

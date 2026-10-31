@@ -1,7 +1,7 @@
 'use strict';
 // Product vocabulary and clarification replay. Core Ask chooses the next useful
 // question; Core Interpretation/Domain own evidence and confirmed declarations.
-// Frozen ko-1 through ko-10 modules keep saved rows and answer replay unchanged.
+// Frozen ko-1 through ko-11 modules keep saved rows and answer replay unchanged.
 const Legacy = require('./member-statement-v1.cjs');
 const Previous = require('./member-statement-v2.cjs');
 const Previous3 = require('./member-statement-v3.cjs');
@@ -12,8 +12,9 @@ const Previous7 = require('./member-statement-v7.cjs');
 const Previous8 = require('./member-statement-v8.cjs');
 const Previous9 = require('./member-statement-v9.cjs');
 const Previous10 = require('./member-statement-v10.cjs');
+const Previous11 = require('./member-statement-v11.cjs');
 const Ask = require('../../../atlas/ask');
-const PARSER_VERSION = 'member-statement-ko-11';
+const PARSER_VERSION = 'member-statement-ko-12';
 const MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
 const VALUES = Object.freeze({ ...Legacy.MEMBER_STATEMENT_VALUES,
   communication: Object.freeze(['listen-organize', 'share-first', 'written', 'spoken']),
@@ -1054,7 +1055,14 @@ function declaredCore(action,{polarity,habitual},condition,fields,source) {
   if(meaning.value==='overview-first'&&beforeRole('overview',['listen','read','receive','explain','look']))return null;
   return {meanings:unique};
 }
-function compositional(quote) {
+// Performance-only repair: keep ko-12 compositional replay unchanged.
+function compositional(quote, cache = new Map()) {
+  if (cache.has(quote)) { const result = cache.get(quote); return result == null ? result : copy(result); }
+  const result = compositionalUncached(quote, cache);
+  cache.set(quote, result == null ? result : copy(result));
+  return result;
+}
+function compositionalUncached(quote, cache) {
   const nominalSubject=/^([^\s]+?)(?:은|는|이|가|도)\s/u.exec(quote.trim());
   if(nominalSubject&&normalizePrefix(surfaceDeclaration(nominalSubject[0])).body&&!/^(?:저|나|제|내)$/u.test(nominalSubject[1])){
     const head=phraseUnits(nominalSubject[1],true);
@@ -1082,8 +1090,8 @@ function compositional(quote) {
   if(ownedExplanation){body=ownedExplanation[1]+'좋아요';fields=['explanation'];head='설명';}
   const degree=/^(.+?)(?:찾아볼|알아볼|배워볼)만큼(.+)$/u.exec(body);
   if(degree){
-    const described=compositional(degree[1].replace(/^(?:쉴때도|여유시간에도)/u,'')+'관심있어요');
-    const declared=compositional(degree[2]);
+    const described=compositional(degree[1].replace(/^(?:쉴때도|여유시간에도)/u,'')+'관심있어요', cache);
+    const declared=compositional(degree[2], cache);
     if(described?.meanings.length===1&&declared?.meanings.length===1&&described.meanings[0].field==='topic'
       &&semanticKey(described.meanings[0])===semanticKey(declared.meanings[0]))return {meanings:declared.meanings.map(m=>({...m,condition:m.condition||condition}))};
     return null;
@@ -1095,8 +1103,8 @@ function compositional(quote) {
   // a reason alone never becomes a second declaration or a dropped clause.
   const causal=/^(.+?)(좋아해서|좋아서|선호해서|편해서)(.+)$/u.exec(body);
   if(causal){
-    const first=compositional(causal[1]+(causal[2]==='편해서'?'편해요':causal[2]==='선호해서'?'선호해요':'좋아해요'));
-    const second=compositional(causal[3]);
+    const first=compositional(causal[1]+(causal[2]==='편해서'?'편해요':causal[2]==='선호해서'?'선호해요':'좋아해요'), cache);
+    const second=compositional(causal[3], cache);
     if(first?.meanings.length===1&&second?.meanings.length===1&&semanticKey(first.meanings[0])===semanticKey(second.meanings[0]))
       return {meanings:first.meanings.map(m=>({...m,condition:m.condition||condition}))};
     return null;
@@ -1170,7 +1178,7 @@ function compositional(quote) {
     for(const split of separators){
       const left=split[0].startsWith('하')?action.slice(0,split.index)+'하는':action.slice(0,split.index+1),right=action.slice(split.index+split[0].length);
       if(!right||/[?!]/u.test(left+right))continue;
-      const arm=part=>natural(part)||expanded(part)||compositional(part);
+      const arm=part=>natural(part)||expanded(part)||compositional(part, cache);
       const a=arm(head+left+'좋아요'),b=arm(head+right+'좋아요');
       if(!a?.meanings.length||!b?.meanings.length||a.meanings.some(m=>m.condition)||b.meanings.some(m=>m.condition))continue;
       const joined=[...a.meanings,...b.meanings];
@@ -1622,14 +1630,27 @@ function independentOwnPreference(quote) {
   }
   return !/[^\s,]/u.test(quote.slice(end));
 }
+function limitedMemberRequest(quote) {
+  let compact='';const positions=[];
+  for(let i=0;i<quote.length;i++)if(!/\s/u.test(quote[i])){compact+=quote[i];positions.push(i);}
+  const outside=pattern=>[...compact.matchAll(pattern)].some(match=>{
+    const start=positions[match.index],prefix=compact.slice(0,match.index);
+    return !quotedAt(quote,start)&&(!prefix||/\s/u.test(quote[start-1])||/(?:저는|나는|난|제가|내가|은|는|을|를|에서|엔|에)$/u.test(prefix));
+  });
+  return outside(/이번(?:에는|엔|에만(?!큼|으로)|만(?!큼|으로))|오늘만(?!큼|으로)|내일만(?!큼|으로)|지금(?:만(?!큼|으로)|한번만|한차례만)/gu)
+    ||outside(/지금(?:은|엔)|지금(?!도|까지|처럼|부터|껏|만|한번|한차례)/gu)&&requestEnding(compact.replace(/[.!?。！？]+$/u,''));
+}
 function analyze(text) {
   // Legacy's literal validator enforces the same 500-code-point/Unicode bounds.
   Legacy.parseMemberStatement(text);
-  const clauses=pieces(text),segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null;
+  const clauses=pieces(text),segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null, requestScoped=false;
   for(const [clauseIndex,evidence] of clauses.entries()) {
     const insideLiteral=quotedAt(text,evidence.start);
     const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&(normalizePrefix(evidence.quote).own||normalizePrefix(surfaceDeclaration(evidence.quote)).own), current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
     const generalReset=/^(?:(?:나는|저는|제가|내가))?(?:평소|보통은|일반적으로|상황과관계없이|일과별개로|별개로)/u.test(body);
+    const independentSelf=self&&/^(?:저는|나는|난)/u.test(body)&&/(?:좋아|선호|원해|고싶|편해)/u.test(body)&&!requestEnding(body)
+      &&scopeBoundaryBetween(text,segments.at(-1)?.evidence.end??evidence.start,evidence.start);
+    if(requestScoped&&!insideLiteral&&(generalReset||independentSelf)){requestScoped=false;if(inherited==='condition')inherited=null;previousCondition=false;continuingCondition=null;pendingScope=null;}
     // A prefix before comma-separated insets owns the following main clause.
     // It lives independently of parsed meanings and coordinating endings.
     if(pendingScope&&(scopeBoundaryBetween(text,pendingScope.end,evidence.start)||generalReset&&!insideLiteral))pendingScope=null;
@@ -1658,7 +1679,7 @@ function analyze(text) {
       const outer=normalizePrefix(surfaceDeclaration(body)).condition;
       if(pendingScope)pendingScope={...pendingScope,end:evidence.end,uncertain:true};
       else if(outer&&!insideLiteral&&(/^\s*,/u.test(text.slice(evidence.end))||quotedAt(text,evidence.end)))pendingScope={condition:outer,start:evidence.start,end:evidence.end,uncertain:true};
-      segment.unresolved={...evidence,reason:reason||'unsupported',reasonLabel:reason?EXCLUDED[reason]:'앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요.'};if(['uncertain','condition'].includes(reason))segment.generic=true;segments.push(segment);continue;
+      segment.unresolved={...evidence,reason:reason||'unsupported',reasonLabel:reason?EXCLUDED[reason]:'앞 문장에 나온 주체를 본인으로 확인하지 못해 이 내용도 성향으로 사용하지 않았어요.'};if(['uncertain','condition'].includes(reason))segment.generic=true;if(reason==='condition'&&requestScoped)segment.requiresDuration=true;segments.push(segment);continue;
     }
     const prior=segments.findLast(s=>s.meanings?.length);
     let clause=evidence.quote;
@@ -1737,19 +1758,17 @@ function analyze(text) {
     if(!found&&!uncertain&&!declaredCondition&&/(?:때|땐|경우|상황|동안|날에는|날에만|에만|에서만|에따라|오늘만|내일만|이번만|퇴근후|출근전|(?:뒤|후|다음)(?:에는|엔)|(?:에서|에)는$)/u.test(body)){unresolvedCondition=true;inherited='condition';}
     if(!found&&!self&&!declaredCondition&&!unresolvedCondition&&!uncertain&&unresolvedSubject(evidence.quote))unknownSubject=true;
     if(uncertain&&/(?:지만|는데)$/u.test(body))inherited='uncertain';
-    const scopeSurface=evidence.quote.replace(/\s/gu,'');
-    const outside=pattern=>[...scopeSurface.matchAll(pattern)].some(match=>!quotedAt(scopeSurface,match.index));
-    const limitedRequest=outside(/이번(?:에는|엔|에만|만)|오늘만|내일만|지금(?:만(?!큼|으로)|한번만|한차례만)/gu)||outside(/지금(?:은|엔)?/gu)&&requestEnding(scopeSurface);
-    if(limitedRequest){if(found)segment.candidate={...found,temporal:true};else segment.generic=true;unresolvedCondition=true;previousCondition=true;inherited='condition';segment.unresolved={...evidence,reason:'condition',reasonLabel:'이번 요청의 범위를 이후에도 반영할 선호로 정하지 않았어요.'};}
-    else if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
+    const limitedRequest=limitedMemberRequest(evidence.quote);
+    if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
     else if(found){
       const ownership=!self&&found.meanings.some(m=>m.field==='topic')&&OTHER_PERSON_SUBJECT.test(normalizedClause.body);
-      if(found.uncertain||found.typo||uncertain||ownership)segment.candidate={...found,uncertain:found.uncertain||uncertain||ownership,...(ownership?{ownership:true}:{})};else segment.meanings=found.meanings;
+      if(found.uncertain||found.typo||found.restricted||uncertain||ownership)segment.candidate={...found,uncertain:found.uncertain||uncertain||ownership,...(ownership?{ownership:true}:{})};else segment.meanings=found.meanings;
     }
     else segment.generic=true;
+    if(limitedRequest){segment.requiresDuration=true;if(segment.meanings){segment.candidate={meanings:segment.meanings,durationOnly:true};delete segment.meanings;}requestScoped=true;unresolvedCondition=true;previousCondition=true;inherited='condition';segment.unresolved??={...evidence,reason:'condition',reasonLabel:'이번 요청의 범위를 이후에도 반영할 선호로 정하지 않았어요.'};}
     if(!segment.meanings&&!segment.unresolved){const why=uncertain?'uncertain':unresolvedCondition?'condition':'unsupported';segment.unresolved={...evidence,reason:why,reasonLabel:EXCLUDED[why]};}
     segments.push(segment);
-    if(segments.length===MEMBER_STATEMENT_LIMITS.unresolved && clauseIndex+1<clauses.length){const last=segments.at(-1);delete last.meanings;delete last.candidate;delete last.generic;last.evidence={...evidence,end:text.length,quote:text.slice(evidence.start)};last.unresolved={...last.evidence,reason:'limit',reasonLabel:EXCLUDED.limit};break;}
+    if(segments.length===MEMBER_STATEMENT_LIMITS.unresolved && clauseIndex+1<clauses.length){const last=segments.at(-1);delete last.meanings;delete last.candidate;delete last.generic;delete last.requiresDuration;last.evidence={...evidence,end:text.length,quote:text.slice(evidence.start)};last.unresolved={...last.evidence,reason:'limit',reasonLabel:EXCLUDED.limit};break;}
   }
   return segments;
 }
@@ -1758,10 +1777,12 @@ function stateFor(text,segments,answers,key) {
   const question=(index,stage,label,options,apply)=>{const id=`q.${key}.${index}.${stage}`,answer=answers[id];if(answer!==undefined){apply(answer);return;}questions.push({id,about:id,kind:'follow_up',label,options:[...options,...OPTIONS_END].map(o=>({...o,value:o.id}))});};
   for(let index=0;index<segments.length;index++){
     const s=segments[index],add=meanings=>meanings.forEach(m=>raw.push({...m,evidence:copy(s.evidence)}));
+    if(s.requiresDuration){let persist=false;question(index,'duration',`「${s.evidence.quote}」에서 말한 선호를 이번 요청 이후에도 반영할까요?`,[{id:'confirm',label:'이후에도 선호로 반영해 주세요'},{id:'not-current',label:'이번 요청에서만 원해요. 지속 선호로는 반영하지 않을게요'}],answer=>{persist=answer==='confirm';});if(!persist){unresolved.push({...s.unresolved});continue;}}
+    if(s.candidate?.durationOnly){add(s.candidate.meanings);continue;}
     if(s.meanings){add(s.meanings);continue;}
     let handled=false;
-    if(s.candidate){question(index,'confirm',`「${s.evidence.quote}」${s.candidate.temporal?'은 이번 요청 이후에도 반영할 선호인가요?':s.candidate.ownership?'에서 말한 관심은 본인에 대한 이야기인가요?':s.candidate.typo?'의 표기를 이렇게 이해해도 될까요?':s.candidate.restricted?'에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?':'에서 말한 뜻을 현재 선호로 확인할까요?'}`,
-      [{id:'confirm',label:s.candidate.meanings.map(meaningLabel).join(' / ')+(s.candidate.temporal?' — 이후에도 반영해 주세요':' — 지금 원하는 내용이 맞아요')},{id:'not-current',label:s.candidate.temporal?'이번 요청에서만 원해요. 저장하지 않을게요':'현재 선호로 확정하지 않을게요'}],answer=>{handled=true;if(answer==='confirm')add(s.candidate.meanings);});}
+    if(s.candidate){question(index,'confirm',`「${s.evidence.quote}」${s.candidate.temporal?'에서 말한 선호를 이번 요청 이후에도 반영할까요?':s.candidate.ownership?'에서 말한 관심은 본인에 대한 이야기인가요?':s.candidate.typo?'의 표기를 이렇게 이해해도 될까요?':s.candidate.restricted?'에서 한 가지 방식만 쓰는 경우와, 그 방식 자체에 대한 선호를 구분할게요. 다음 뜻까지 맞나요?':'에서 말한 뜻을 현재 선호로 확인할까요?'}`,
+      [{id:'confirm',label:s.candidate.meanings.map(meaningLabel).join(' / ')+(s.candidate.temporal?' — 이후에도 반영해 주세요':' — 지금 원하는 내용이 맞아요')},{id:'not-current',label:s.candidate.temporal?'이번 요청에서만 원해요. 지속 선호로는 반영하지 않을게요':'현재 선호로 확정하지 않을게요'}],answer=>{handled=true;if(answer==='confirm')add(s.candidate.meanings);});}
     else if(s.generic){question(index,'field',`「${s.evidence.quote}」에서 확인하고 싶은 현재 선호는 어느 쪽인가요?`,Object.entries(FIELDS).map(([id,label])=>({id,label})),field=>{
       handled=true;if(!Object.hasOwn(VALUES,field))return;
       question(index,'value',`${FIELDS[field]}에서 어떤 내용을 확인할까요?`,VALUES[field].map(id=>({id,label:LABELS[id]})),selected=>{
@@ -1814,6 +1835,7 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(parserVersion===Previous8.PARSER_VERSION)return Previous8.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous9.PARSER_VERSION)return Previous9.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous10.PARSER_VERSION)return Previous10.parseMemberStatement(text,{clarifications,parserVersion});
+  if(parserVersion===Previous11.PARSER_VERSION)return Previous11.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion!==PARSER_VERSION)fail();
   if(!list(clarifications,MEMBER_STATEMENT_LIMITS.clarifications)||clarifications.some(row=>!exact(row,['questionId','optionId'])||typeof row.questionId!=='string'||typeof row.optionId!=='string'))fail();
   const segments=analyze(text),key=sourceKey(text),answers=Object.create(null),clarificationAnswers=[];let state=stateFor(text,segments,answers,key),question=choose(state,text,segments,answers,key);
@@ -1846,6 +1868,7 @@ function validateMemberStatement(row,{now=Date.now(),enforceTime=false}={}) {
   if(parserVersion===Previous8.PARSER_VERSION)return Previous8.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous9.PARSER_VERSION)return Previous9.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous10.PARSER_VERSION)return Previous10.validateMemberStatement(row,{now,enforceTime});
+  if(parserVersion===Previous11.PARSER_VERSION)return Previous11.validateMemberStatement(row,{now,enforceTime});
   if(!exact(row,['id','parserVersion','text','at','confirmedAt','meanings','clarifications'])||parserVersion!==PARSER_VERSION||typeof row.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||!list(row.meanings,MEMBER_STATEMENT_LIMITS.meanings)||!row.meanings.length)fail();
   const at=instant(row.at),confirmed=instant(row.confirmedAt),cutoff=enforceTime?typeof now==='string'?instant(now):Number.isSafeInteger(now)?now:fail():null;
   if(confirmed<at||enforceTime&&confirmed>cutoff)fail();const parsed=parseMemberStatement(row.text,{clarifications:row.clarifications});if(parsed.question)fail();

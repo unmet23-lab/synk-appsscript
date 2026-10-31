@@ -26,7 +26,7 @@ const safeText = (s, max = 160) => typeof s === 'string' && s.trim() && [...s].l
 const semantic = (c, snapshot = false) => canonical(Object.fromEntries(['version', 'kind', 'source', 'generation', 'reference', 'value', ...(snapshot ? ['count', 'total', 'activeDays', 'lastAt'] : [])].map(key => [key, c[key]])));
 function documentOf(document, asOf) {
   if (document == null) return { version: 1, reviews: [], overrides: [] };
-  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(document.version) || !exact(document, document.version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])) fail();
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(document.version) || !exact(document, document.version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])) fail();
   const ids = new Set();
   for (const [key, fields] of [['reviews', ['id', 'facetId', 'verdict', 'claim', 'note', 'at']], ['overrides', ['id', 'facetId', 'values', 'note', 'at']]]) {
     if (!Array.isArray(document[key]) || document[key].length > 50) fail();

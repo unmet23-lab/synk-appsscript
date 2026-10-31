@@ -1,6 +1,16 @@
 import { emptyMemberUnderstanding, validateMemberUnderstanding, updateMemberUnderstanding } from './generated/member-understanding-data.mjs';
 import MemberUnderstanding from './generated/member-understanding.mjs';
 const { previewMemberStatement, confirmMemberStatement } = MemberUnderstanding;
+// A member statement that met a newer document is never saved over it: the words stay and the
+// member reviews a fresh preview of the reloaded document before saving again.
+const STATEMENT_CONFLICT_MESSAGE = '그사이 다른 곳에서 내 말이 바뀌어 저장하지 않았어요. 쓴 말과 고른 뜻은 그대로 두었으니, 내용을 다시 살펴보고 「이해한 뜻 보기」를 다시 눌러 주세요.';
+const meaningKey = row => JSON.stringify([row?.field ?? null, row?.value ?? null, row?.polarity ?? null, row?.condition ?? null, row?.summary ?? null]);
+// Choices kept from a conflicted save come back only where the fresh preview means the same thing.
+function carriedSelections(retained, preview) {
+  if (!retained || !Array.isArray(retained.acceptedIds) || !Array.isArray(preview?.proposals)) return [];
+  const earlier = new Map((Array.isArray(retained.proposals) ? retained.proposals : []).map(row => [row?.id, meaningKey(row)]));
+  return preview.proposals.filter(row => row.confirmable === true && retained.acceptedIds.includes(row.id) && earlier.get(row.id) === meaningKey(row)).map(row => row.id);
+}
 
 // The host owns identity. Only explicitly submitted corrections are persisted;
 // editor drafts and account-bound response snapshots stay in memory.
@@ -69,7 +79,8 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
         if (current(owner, token)) {
           error = failure?.code === 'UNDERSTANDING_CONFLICT' ? 'conflict' : failure?.code === 'PERSONAL_DOCUMENT_VERSION_CONFLICT' ? 'version-conflict' : 'save-failed';
           if (!document) status = 'error';
-          message = error === 'conflict' ? '그사이 다른 곳에서 이 내용을 바꿨어요. 새 내용을 불러왔으니 다시 고쳐 주세요.'
+          message = failure?.statementDraft === true ? STATEMENT_CONFLICT_MESSAGE
+            : error === 'conflict' ? '그사이 다른 곳에서 이 내용을 바꿨어요. 새 내용을 불러왔으니 다시 고쳐 주세요.'
             : error === 'version-conflict' ? '저장 형식이 업데이트됐어요. 최신 플랫폼에서 다시 열어 주세요.'
             : mutation ? '저장하지 못했어요. 쓴 내용은 그대로 있으니 다시 눌러 주세요.' : '고친 내역을 불러오지 못했어요. 다시 불러와 주세요.';
         }
@@ -155,7 +166,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
     if (typeof text === 'string' && text !== statementEditor.text) {
       statementEditor.text = [...text].slice(0, 500).join(''); statementEditor.preview = null;
       statementEditor.previewInput = null; statementEditor.clarifications = [];
-      statementEditor.acceptedIds = []; statementEditor.stage = 'writing'; statementEditor.submission = null;
+      statementEditor.acceptedIds = []; statementEditor.stage = 'writing'; statementEditor.submission = null; statementEditor.retained = null;
       changed = true;
     }
     if (Array.isArray(acceptedIds) && statementEditor.preview) {
@@ -172,7 +183,11 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
       const at = new Date(now()).toISOString();
       statementEditor.preview = previewMemberStatement({ text: statementEditor.text, document, at, asOf: at, clarifications: statementEditor.clarifications });
       statementEditor.previewInput = { text: statementEditor.text, at: statementEditor.preview.at, clarifications: clone(statementEditor.clarifications) };
-      statementEditor.acceptedIds = []; statementEditor.stage = 'preview'; statementEditor.submission = null;
+      // Choices kept from a conflicted save return only where the fresh preview has the same meaning.
+      statementEditor.acceptedIds = carriedSelections(statementEditor.retained, statementEditor.preview);
+      statementEditor.retained = null; statementEditor.stage = 'preview'; statementEditor.submission = null;
+      // Only this explicit preview of the latest loaded document sets a fresh baseline.
+      statementEditor.baseline = clone(document);
       error = null; message = '';
     } catch { error = 'interpretation'; message = '원하는 방식을 500자 안으로 적어 주세요.'; }
     emit(); return error === null;
@@ -180,7 +195,7 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
   function editStatementText() {
     sync(); if (!statementEditor || pending) return false;
     statementEditor.preview = null; statementEditor.previewInput = null; statementEditor.clarifications = [];
-    statementEditor.acceptedIds = []; statementEditor.stage = 'writing'; statementEditor.submission = null;
+    statementEditor.acceptedIds = []; statementEditor.stage = 'writing'; statementEditor.submission = null; statementEditor.retained = null;
     error = null; message = ''; emit(); return true;
   }
   function hasCurrentPreview() {
@@ -207,11 +222,11 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
   function resetStatementAnswers() {
     sync(); if (stopped || pending || !statementEditor) return false;
     statementEditor.clarifications = []; statementEditor.preview = null; statementEditor.previewInput = null;
-    statementEditor.acceptedIds = []; statementEditor.submission = null;
+    statementEditor.acceptedIds = []; statementEditor.submission = null; statementEditor.retained = null;
     return previewStatement();
   }
   function mutateStatement(action, expected, expectedEditor = null, baseline = null) {
-    return enqueue(async (owner, token) => {
+    const write = async (owner, token) => {
       for (let attempt = 0; attempt < 2; attempt++) {
         await load(owner, token); if (!current(owner, token)) throw new Error('changed');
         const targetId = action.type === 'statement' ? action.value.id : action.id;
@@ -236,7 +251,23 @@ export function createMemberUnderstanding({ getIdentity, request, now = Date.now
         error = null; message = action.type === 'remove-statement' ? '내 말을 되돌렸어요. 원래 연습 기록은 그대로예요.' : '내 말을 저장했어요. 고른 뜻을 이 화면 설명에 써요.';
         return;
       }
+    };
+    // The same attempt and its automatic retry compare with the original baseline.
+    return enqueue(async (owner, token) => {
+      try { await write(owner, token); }
+      catch (failure) { keepStatementDraft(failure, action, expectedEditor, owner, token); throw failure; }
     }, true);
+  }
+  // A statement save that met a changed document keeps the words, answers and chosen meanings, drops
+  // the frozen submission and returns to writing. Its baseline stays the original one until an
+  // explicit preview of the reloaded document; nothing remote is overwritten.
+  function keepStatementDraft(failure, action, expectedEditor, owner, token) {
+    if (action.type !== 'statement' || failure?.code !== 'UNDERSTANDING_CONFLICT' || !current(owner, token)
+      || expectedEditor === null || expectedEditor !== editToken || !statementEditor) return;
+    statementEditor.retained = { acceptedIds: [...statementEditor.acceptedIds], proposals: clone(statementEditor.preview?.proposals || []) };
+    statementEditor.preview = null; statementEditor.previewInput = null;
+    statementEditor.stage = 'writing'; statementEditor.submission = null;
+    failure.statementDraft = true;
   }
   function confirmStatement() {
     sync(); if (!hasCurrentPreview() || pending) return Promise.resolve(read());

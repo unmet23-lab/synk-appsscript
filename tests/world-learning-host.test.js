@@ -3,6 +3,16 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const { createWorldLearningHost } = require('../account/world-learning-host');
 const { createGame, createLearningSync } = require('../atlas/game-browser');
 
+test('preferences without a connected or personal owner create no throwaway game',()=>{
+ let creations=0;const host=createWorldLearningHost({accountKey:'no-owner',revision:1,connected:false,guard(){},storage:{getItem:()=>null,setItem(){}},engine:{createGame(){creations++;throw Error('Unexpected game');},createLearningSync(){}}});
+ assert.equal(host.preferences(),null);assert.equal(host.preferences(),null);assert.equal(creations,0);host.stop();
+});
+test('preferences bootstrap during an active run and a disconnected game cannot write again',async()=>{
+ const values=new Map(),engine=require('../atlas/game-browser'),host=createWorldLearningHost({accountKey:'preference-bootstrap',revision:1,guard(){},storage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},transport:{get:async()=>({ok:true,revision:1,cursor:0,hasMore:false,events:[]}),post:async({events})=>({ok:true,revision:1,accepted:events.map(e=>e.id)})},engine});
+ host.beginRun({id:'active',gameId:'practice'});const preferences=host.preferences();assert.ok(preferences);preferences.setPresentation({motion:'reduced'});assert.deepEqual(preferences.presentation(),{motion:'reduced'});
+ const game=host.createGame({gameId:'practice'},createGame,createLearningSync);game.disconnect();const before=JSON.stringify([...values]);assert.throws(()=>game.finishSet({kind:'short'}),e=>e.code==='RUN_ENDED');assert.throws(()=>game.setToday('tired'),e=>e.code==='RUN_ENDED');assert.equal(JSON.stringify([...values]),before);assert.doesNotThrow(()=>host.preferences().presentation());host.stop();assert.doesNotThrow(()=>game.disconnect());
+});
+
 test('a game receives an immutable task snapshot and an ended frame cannot read the next task', async () => {
   const saved=new Map(),host=createWorldLearningHost({accountKey:'task-snapshot',revision:1,guard(){},storage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},transport:{get:async()=>({ok:true,revision:1,cursor:0,hasMore:false,events:[]}),post:async({events})=>({ok:true,revision:1,accepted:events.map(e=>e.id)})}});
   const target={skillId:'ko.reading.negation',difficulty:1,responseFormat:'single-choice',modality:'reading',familyKeys:['one'],itemKeys:['one'],requiredAttempts:1};

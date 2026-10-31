@@ -62,14 +62,15 @@ const STATEMENT_VERBS = Object.freeze({
   explanation: Object.freeze({ brief: '짧은 설명을 보고', standard: '보통 길이 설명을 보고', detailed: '자세한 설명을 보고' }),
 });
 const STATEMENT_CONDITIONS = Object.freeze({ 'first-try': '처음 배울 땐', familiar: '익숙한 내용은', busy: '바쁠 땐', 'after-example': '예시를 본 다음엔',
-  'first-try-after-example': '예시를 본 다음엔', 'familiar-after-example': '익숙한 내용은 예시를 본 다음엔', 'busy-after-example': '바쁠 땐 예시를 본 다음엔',
+  'first-try-after-example': '처음 배울 땐 예시를 본 다음엔', 'familiar-after-example': '익숙한 내용은 예시를 본 다음엔', 'busy-after-example': '바쁠 땐 예시를 본 다음엔',
   meeting: '회의할 땐', teamwork: '함께 일할 땐', planning: '계획을 세울 땐', decision: '결정할 땐' });
 function memberInsightStatement(meanings = []) {
   if (!Array.isArray(meanings) || meanings.length > 8 || meanings.some(m => !m || typeof m !== 'object')) fail('statement');
   if (!meanings.length || meanings.some(m => m.polarity !== 'prefer' || !STATEMENT_VERBS[m.field]?.[m.value]
     || m.condition != null && !Object.hasOwn(STATEMENT_CONDITIONS, m.condition))) return '';
   const parts = meanings.map((m, index) => {
-    const prefix = index && /after-example$/.test(m.condition || '') ? '그다음엔' : m.condition ? STATEMENT_CONDITIONS[m.condition] : '';
+    const prev = meanings[index - 1], base = /after-example$/.test(m.condition || '') ? m.condition.replace(/-?after-example$/, '') || null : undefined;
+    const prefix = index && base !== undefined && prev.field === 'support' && prev.value === 'example' && (prev.condition ?? null) === base ? '그다음엔' : m.condition ? STATEMENT_CONDITIONS[m.condition] : '';
     return `${prefix ? prefix + ' ' : ''}${STATEMENT_VERBS[m.field][m.value]}`;
   });
   return `${parts.join(', ')} 싶다고 알려 줬어요.`;

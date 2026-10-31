@@ -31,7 +31,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     || backoffMs.some(ms => !Number.isFinite(ms) || ms < 0)) throw new TypeError('Atlas sync: invalid retry bounds');
   const key = `${SYNC_KEY}.${accountKey}`;
   const pages = createPages(storage, key, ['acknowledged', 'pending', 'missing']);
-  let lastStoredRaw = null;
+  let lastStoredRaw = null, exhaustedRecovery = null;
   // Outbox v2 keeps ids only: the account log holds every queued entry (v1 kept a second copy).
   // `missing` names acknowledged entries the log has lost; they are fetched from the server again.
   let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
@@ -178,6 +178,8 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   };
   // Lost entries come back from the server: read it from the start, take only those ids.
   const recover = async token => {
+    const signature = state.missing.slice().sort().join('\0');
+    if (signature && exhaustedRecovery === signature) throw failure('INCOMPLETE_HISTORY', 'Atlas sync: previously acknowledged history is still missing');
     let after = state.recoveryCursor || 0;
     for (let page = 0; page < maxPages && state.missing.length; page++) {
       const response = await request('get', { after, revision }, token);
@@ -198,7 +200,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       // Exhausting a server scan is not evidence that a missing acknowledged
       // event was restored. Keep the gap durable and retry from the start later.
       const exhausted = (!response.hasMore || after >= state.cursor) && state.missing.length > 0;
-      if (exhausted) state.recoveryCursor = 0;
+      if (exhausted) { state.recoveryCursor = 0; exhaustedRecovery = state.missing.slice().sort().join('\0'); }
       if (!state.missing.length) state.recoveryCursor = 0;
       save(); port.markComplete(whole()); publish();
       if (exhausted) throw failure('INCOMPLETE_HISTORY', 'Atlas sync: previously acknowledged history is still missing');
@@ -268,7 +270,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   }
   return Object.freeze({
     start() { started = true;return run(); },
-    pull: () => run(true), flush: () => run(), retry: () => run(), status,
+    pull: () => run(true), flush: () => run(), retry: () => { exhaustedRecovery = null; return run(); }, status,
     invalidate(code = 'STORAGE_ERROR') { if (!stopped) block(failure(code === 'HISTORY_CAPACITY' ? code : 'STORAGE_ERROR', 'Atlas sync: local learning could not be saved')); return status(); },
     stop() {
       if (!stopped) { stopped = true;generation++;clearTimeout(timer);timer = null;unsubscribe();for (const controller of controllers) controller.abort();phase = 'stopped';publish(); }

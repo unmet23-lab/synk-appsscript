@@ -33,6 +33,13 @@ test('an exhausted recovery scan preserves an acknowledged gap and refuses compl
  const result=await sync.start();assert.equal(result.phase,'offline');assert.equal(result.code,'INCOMPLETE_HISTORY');assert.equal(complete.at(-1),false);
  assert.deepEqual(JSON.parse(storage.getItem(key)).missing,['lost.event']);assert.equal(JSON.parse(storage.getItem(key)).recoveryCursor,0);sync.stop();
 });
+test('a known exhausted gap is not rescanned on every flush and new work still uploads',async()=>{
+ const storage=disk(),accountKey='account.gap-cached',key=SYNC_KEY+'.'+accountKey,events=[],sent=[];let recovery=0;
+ storage.setItem(key,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:()=>({added:0})},transport={get:async({after})=>{if(after===0)recovery++;return{events:[],cursor:2,hasMore:false,revision:1};},post:async({events})=>{sent.push(...events.map(e=>e.id));return{accepted:events.map(e=>e.id),revision:1};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,transport,auto:false,maxAttempts:1});
+ try{assert.equal((await sync.start()).code,'INCOMPLETE_HISTORY');assert.equal(recovery,1);await sync.flush();assert.equal(recovery,1);events.push({id:'fresh.event'});const next=await sync.flush();assert.deepEqual(sent,['fresh.event']);assert.equal(next.queued,0);assert.equal(next.complete,false);assert.equal(recovery,1);await sync.retry();assert.equal(recovery,2,'explicit retry can recheck a repaired server');events.length=0;await sync.flush();assert.equal(recovery,3,'a newly missing event triggers a new scan');assert.deepEqual(new Set(JSON.parse(storage.getItem(key)).missing),new Set(['lost.event','fresh.event']));}finally{sync.stop();}
+});
 const error = (code, revision = 1) => Object.assign(new Error(code), { code, revision });
 test('a fresh append during a delayed successful recovery is uploaded without another user action',async t=>{
  const storage=disk(),accountKey='account.late-recovery',events=[],sent=[];let notify,resolve,recovering=false;

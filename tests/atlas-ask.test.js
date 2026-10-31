@@ -110,3 +110,16 @@ test('Atlas questions may share an about when they address the same setting',()=
   assert.doesNotThrow(()=>Ask.fromAtlas({engine,questions:[{id:'one',about:'a',options},{id:'two',about:'a',field:'a',kind:'setting',options}]}));
   assert.ok(calls>0);
 });
+
+for(const kind of ['setting','confirm'])test(`Atlas rejects different about aliases for one ${kind} target before decide`,()=>{
+  let calls=0;const engine={decide(){calls++;return {status:'ready',selected:{id:'same'},bundle:{}};}},options=[{id:'yes'},{id:'no'}];
+  const binding=kind==='confirm'?{kind,line:'one-line'}:{kind,field:'one-field'};
+  assert.throws(()=>Ask.fromAtlas({engine,questions:[{id:'one',about:'x',options,...binding},{id:'two',about:'y',options,...binding}],answers:{x:'yes'}}),/ambiguous Atlas question binding/);
+  assert.equal(calls,0);
+});
+test('confirm aliases and setting/refresh aliases preserve one actual binding',()=>{
+  for(const bindings of [[{kind:'confirm',line:'line'},{kind:'confirm',line:'line'}],[{kind:'setting',field:'field'},{kind:'refresh',field:'field'}]]){
+    let calls=0;const engine={decide(){calls++;return {status:'ready',selected:{id:'same'},bundle:{}};}},options=[{id:'yes'},{id:'no'}];
+    assert.doesNotThrow(()=>Ask.fromAtlas({engine,questions:bindings.map((binding,index)=>({id:'q'+index,about:'shared',options,...binding}))}));assert.ok(calls>0);
+  }
+});

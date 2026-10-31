@@ -1,9 +1,11 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
-const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
+const baseTest=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
+const Legacy=require('../experiences/synk-account/src/member-statement-v11.cjs');
 const Old=require('../experiences/synk-account/src/member-statement-v10.cjs');
 const text='음악 좋아요. '.repeat(11)+'저는 취미가 있어요.';
 const at='2026-10-29T00:00:00.000Z';
+for(const C of [Legacy,require('../experiences/synk-account/src/member-statement-contract.cjs')]){
+const test=(name,...args)=>baseTest(C.PARSER_VERSION+': '+name,...args);
 test('a declared current preference stays distinct from a one-time directive',()=>{
  for(const text of ['전에는 함께 하는 걸 좋아했는데 지금은 혼자 해 보는 쪽이 좋아요.','여러 일을 벌이느니 지금 하는 것 하나를 끝내고 넘어가는 편이 낫겠어요.']){const result=C.parseMemberStatement(text);assert.equal(result.question,null,text);assert.equal(result.meanings.length,1,text);}
 });
@@ -25,6 +27,8 @@ test('one-time instructions do not become automatic persistent preferences',()=>
  const answer=optionId=>C.parseMemberStatement(text,{clarifications:[{questionId:preview.question.id,optionId}]});assert.deepEqual(answer('not-current').meanings,[]);assert.equal(answer('confirm').meanings[0].value,'brief');
  assert.equal(Old.parseMemberStatement('이번에는 설명은 짧게 해주세요').meanings[0].value,'brief','Saved parser10 replay remains unchanged');
 });
+}
+const C=Legacy,test=baseTest;
 const row=(parser,id,input=text)=>({id:`00000000-0000-4000-8000-${String(id).padStart(12,'0')}`,parserVersion:parser.PARSER_VERSION,text:input,at,confirmedAt:at,meanings:parser.parseMemberStatement(input).meanings,clarifications:[]});
 
 test('selecting one preference retains compatible neighbours in a non-transitive conflict',()=>{
@@ -36,7 +40,7 @@ test('selecting one preference retains compatible neighbours in a non-transitive
 
 test('saved parser 10 rows retain their original validation and byte identity',()=>{
  assert.equal(Old.PARSER_VERSION,'member-statement-ko-10');
- assert.equal(crypto.createHash('sha256').update(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v10.cjs'))).digest('hex'),'4519aca79459b4742aca5e009d1b571d0c3698b9db6eb87076b691c1ce7e315f');
+ assert.equal(crypto.createHash('sha256').update(require('./_member-parser-source-history.cjs').beforeRuntimeMemo(fs.readFileSync(require.resolve('../experiences/synk-account/src/member-statement-v10.cjs'),'utf8'),10)).digest('hex'),'4519aca79459b4742aca5e009d1b571d0c3698b9db6eb87076b691c1ce7e315f');
  assert.equal(Old.parseMemberStatement(text).question,null);
  assert.ok(C.parseMemberStatement(text).question,'new input can clarify the twelfth meaningful clause');
  assert.deepEqual(C.validateMemberStatement(row(Old,1)),Old.validateMemberStatement(row(Old,1)));

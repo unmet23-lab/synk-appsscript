@@ -18,7 +18,9 @@ const ROOT = path.join(__dirname, '..');
 // 2026-10-31: distinguish initial browser ownership from explicit reset (+3 lines).
 // 2026-10-31: LAB/WORLD bounded manual scans expose an incomplete state instead of a stopped spinner (+5 lines).
 // 2026-10-31: reject ambiguous same-about bindings in the shared Atlas question adapter (+5 lines).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7346, capabilityDocLines: 150 });
+// LAB/WORLD dispose, unchanged paged flush, no-sample and bounded gap-recovery reuse (+27 lines).
+// A disposed waiting game drains only its existing history, then releases ownership (+19 lines).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7392, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

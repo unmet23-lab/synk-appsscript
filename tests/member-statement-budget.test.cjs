@@ -2,9 +2,9 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
 
-test('ko-4 and ko-5 keep their interpretation versions and finish coordinated inputs within a bounded worker',()=>{
+test('ko-4 through ko-11 keep their interpretation versions and finish coordinated inputs within a bounded worker',()=>{
  const {spawnSync}=require('node:child_process');
- for(const version of [4,5])for(const count of [23,60]){
+ for(const version of [4,5,6,7,8,9,10,11])for(const count of [23,60]){
   const modulePath=require.resolve(`../experiences/synk-account/src/member-statement-v${version}.cjs`),text=Array.from({length:count},(_,i)=>String.fromCharCode(44032+i)+'것도').join(', ')+' 좋아요';
   const result=spawnSync(process.execPath,['-e',`const C=require(${JSON.stringify(modulePath)});process.stdout.write(JSON.stringify(C.parseMemberStatement(${JSON.stringify(text)})));`],{encoding:'utf8',timeout:5000,windowsHide:true});
   assert.equal(result.error,undefined,result.error?.message);assert.equal(result.status,0,result.stderr);

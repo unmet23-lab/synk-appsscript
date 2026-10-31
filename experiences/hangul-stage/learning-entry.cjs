@@ -25,6 +25,8 @@ module.exports = { layer, mapVersion: map.map_ver, SKILLS: map.allNodes().filter
   createGame: options => {
     const owner = host();
     const game = owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
-    games.add(game);
-    return game;
+    const dispose = () => { games.delete(wrapped); if (typeof game.disconnect === 'function') game.disconnect(); else game.dispose?.(); };
+    const wrapped = { ...game, dispose, disconnect: dispose };
+    games.add(wrapped);
+    return wrapped;
   } };

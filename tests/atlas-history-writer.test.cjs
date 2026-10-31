@@ -11,11 +11,49 @@ test('a failed reset keeps the original history through the next successful writ
  full=true;assert.throws(()=>game.reset(),error=>error.code==='STORAGE_ERROR');assert.equal(storage.getItem('synk.atlas.learning.v1.device'),raw);assert.equal(game.memoryPort.epoch(),epoch);assert.deepEqual(game.events().map(e=>e.id),ids);
  full=false;game.finishSet({kind:'short'});const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));assert.ok(saved.events.length>ids.length);assert.equal(saved.epoch,epoch);for(const id of ids){assert.ok(game.events().some(event=>event.id===id));assert.ok(saved.events.some(event=>event.id===id));}game.reset();assert.equal(game.events().length,0);assert.notEqual(game.memoryPort.epoch(),epoch);
 });
+test('disposing retries a failed local write once and reports its actual final durability',()=>{
+ const storage=disk(),write=storage.setItem;let full=false;storage.setItem=(key,value)=>{if(full)throw Error('synthetic quota');write(key,value);};
+ const game=createGame({gameId:'dispose.retry',map,storage,fold:false});full=true;game.finishSet({kind:'short'});const ids=game.events().map(e=>e.id);full=false;game.dispose();assert.equal(game.flush(),true);const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));for(const id of ids)assert.ok(saved.events.some(e=>e.id===id));
+ const failed=createGame({gameId:'dispose.full',map,storage,fold:false});full=true;failed.finishSet({kind:'short'});failed.dispose();assert.equal(failed.flush(),false,'closing must not invent successful persistence');
+});
 function browser(storage,accountKey,{manager=locks,protocol='https:',storageScope='account',learnerKey='device'}={}){
  const listeners=new Map(),context={module:{exports:{}},require:createRequire(file),document:{},location:{protocol},navigator:{locks:manager},AbortController,console,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn);}};
  vm.runInNewContext(source,context,{filename:file});
- return{game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false}),hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();}};
+ context.removeEventListener=(name,fn)=>{listeners.set(name,(listeners.get(name)||[]).filter(other=>other!==fn));};
+ return{game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false}),capture:name=>[...(listeners.get(name)||[])],hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();},listeners:()=>[...listeners.values()].reduce((count,rows)=>count+rows.length,0)};
 }
+
+test('disposing every game releases the browser writer and prevents old callbacks from writing',async t=>{
+ const storage=disk(),a=browser(storage,'writer.dispose'),b=browser(storage,'writer.dispose'),one=a.game('one'),shared=a.game('shared'),next=b.game('next'),staleCallbacks=[...a.capture('pagehide'),...a.capture('pageshow')];t.after(async()=>{one.dispose();shared.dispose();next.dispose();await tick();});
+ for(let i=0;i<20&&!one.syncPort.canPersist();i++)await tick();assert.equal(one.syncPort.canPersist(),true);assert.equal(next.syncPort.canPersist(),false);one.finishSet({kind:'short'});one.dispose();assert.equal(shared.syncPort.canPersist(),true);assert.equal(next.syncPort.canPersist(),false);
+ shared.dispose();for(let i=0;i<20&&!next.syncPort.canPersist();i++)await tick();assert.equal(next.syncPort.canPersist(),true);assert.equal(a.listeners(),0);const before=storage.getItem('synk.atlas.learning.v1.device');
+ assert.throws(()=>one.finishSet({kind:'short'}),e=>e.code==='GAME_CLOSED');assert.throws(()=>one.setToday('tired'),e=>e.code==='GAME_CLOSED');assert.equal(staleCallbacks.length,2);for(const fn of staleCallbacks)fn();await tick();await tick();assert.equal(storage.getItem('synk.atlas.learning.v1.device'),before);assert.equal((await locks.query()).pending.filter(row=>row.name.includes('writer.dispose')).length,0);assert.equal(one.flush(),true);assert.equal(one.syncPort.canPersist(),false);
+});
+for(const storageScope of ['device','account'])test(storageScope+' disposed waiting game drains its final practice after ownership arrives',async t=>{
+ const storage=disk(),options={storageScope,learnerKey:storageScope==='device'?'writer.closed-pending':'device'},accountKey='writer.closed-pending',a=browser(storage,accountKey,options),b=browser(storage,accountKey,options),one=a.game('owner'),two=b.game('closing');
+ t.after(async()=>{one.dispose();two.dispose();a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<30&&!one.syncPort.canPersist();i++)await tick();assert.equal(one.syncPort.canPersist(),true);one.finishSet({kind:'short'});two.finishSet({kind:'short'});
+ const wanted=[...one.events(),...two.events()].map(e=>e.id),port=two.syncPort;two.dispose();assert.equal(two.flush(),false);assert.equal(port.canPersist(),false);assert.throws(()=>port.importEvents([]),e=>e.code==='GAME_CLOSED');assert.throws(()=>two.finishSet({kind:'short'}),e=>e.code==='GAME_CLOSED');
+ one.dispose();for(let i=0;i<40&&!two.flush();i++)await tick();assert.equal(two.flush(),true,'The queued final history must drain without reviving its disposed game');assert.equal(b.listeners(),0);
+ const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.'+options.learnerKey));for(const id of wanted)assert.ok(saved.events.some(e=>e.id===id),'Disposed waiting history lost '+id);assert.equal(new Set(saved.events.map(e=>e.id)).size,saved.events.length);
+});
+test('a replacement game adopts the browser writer while an older disposed game drains',async t=>{
+ const storage=disk(),a=browser(storage,'writer.closed-replacement'),b=browser(storage,'writer.closed-replacement'),one=a.game('owner'),old=b.game('old');let replacement;
+ t.after(async()=>{one.dispose();old.dispose();replacement?.dispose();a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<30&&!one.syncPort.canPersist();i++)await tick();one.finishSet({kind:'short'});old.finishSet({kind:'short'});const wanted=old.events().map(e=>e.id);old.dispose();replacement=b.game('replacement');replacement.finishSet({kind:'short'});wanted.push(...one.events().map(e=>e.id),...replacement.events().map(e=>e.id));
+ one.dispose();for(let i=0;i<40&&!replacement.syncPort.canPersist();i++)await tick();assert.equal(replacement.syncPort.canPersist(),true);assert.equal(old.flush(),true);assert.equal(old.syncPort.canPersist(),false);
+ const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));for(const id of wanted)assert.ok(saved.events.some(e=>e.id===id),'Replacement lost queued history '+id);replacement.dispose();assert.equal(b.listeners(),0);
+});
+test('an explicit reset wins over the pending final write of a disposed game',async t=>{
+ const storage=disk(),options={storageScope:'device',learnerKey:'writer.closed-reset'},a=browser(storage,null,options),b=browser(storage,null,options),one=a.game('owner'),two=b.game('closing');t.after(async()=>{one.dispose();two.dispose();a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<30&&!one.syncPort.canPersist();i++)await tick();one.finishSet({kind:'short'});two.finishSet({kind:'short'});const removed=two.events().map(e=>e.id);two.dispose();one.reset();const epoch=one.memoryPort.epoch();one.dispose();for(let i=0;i<40&&!two.flush();i++)await tick();assert.equal(two.flush(),true);
+ const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.'+options.learnerKey));assert.equal(saved.epoch,epoch);assert.ok(!saved.events.some(e=>removed.includes(e.id)),'Final draining must not resurrect records removed by an explicit reset');assert.equal(b.listeners(),0);
+});
+test('a conflicting stored event cannot strand the writer when disposal flush throws',async t=>{
+ const storage=disk(),a=browser(storage,'writer.closed-conflict'),b=browser(storage,'writer.closed-conflict'),one=a.game('owner'),two=b.game('waiting');t.after(async()=>{one.dispose();two.dispose();a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<30&&!one.syncPort.canPersist();i++)await tick();one.finishSet({kind:'short'});const raw=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));raw.events[0].at=new Date(Date.parse(raw.events[0].at)+1).toISOString();storage.setItem('synk.atlas.learning.v1.device',JSON.stringify(raw));
+ assert.doesNotThrow(()=>one.dispose());assert.equal(one.flush(),false);assert.equal(a.listeners(),0);for(let i=0;i<40&&!two.syncPort.canPersist();i++)await tick();assert.equal(two.syncPort.canPersist(),true);two.dispose();assert.equal(b.listeners(),0);
+});
 test('reset reports a partial preference clear failure and a later retry actually clears it',()=>{
  const storage=disk(),remove=storage.removeItem,game=createGame({gameId:'reset.preferences',map,storage,fold:false});game.finishSet({kind:'short'});game.setToday('tired');game.setPresentation({motion:'reduced'});const epoch=game.memoryPort.epoch();storage.removeItem=()=>{throw Error('synthetic remove denied');};
  assert.throws(()=>game.reset(),error=>error.code==='STORAGE_ERROR');assert.notEqual(game.memoryPort.epoch(),epoch);assert.equal(game.events().length,0,'The history write succeeded; never claim it was rolled back');assert.equal(game.today(),'tired');assert.deepEqual(game.presentation(),{motion:'reduced'});

@@ -74,8 +74,8 @@ test('a negative preference in a reason is never silently discarded as backgroun
 });
 
 test('legacy runtime repairs are reversible and original parser bytes remain provable',()=>{
- for(const row of pins.rows){let source=fs.readFileSync(path.join(root,row.path),'utf8');if([4,5].includes(row.version))source=beforeRuntimeMemo(source,row.version);assert.equal(sha(source),row.sha256);assert.equal(sha(source.replace(row.newRegex,row.oldRegex)),row.beforeSha256);}
- const pin9=pins.rows.at(-1),source=fs.readFileSync(path.join(root,pin9.path),'utf8').replace(pin9.newRegex,pin9.oldRegex);assert.equal(sha(source),pin9.beforeSha256);
+ for(const row of pins.rows){let source=beforeRuntimeMemo(fs.readFileSync(path.join(root,row.path),'utf8'),row.version);assert.equal(sha(source),row.sha256);assert.equal(sha(source.replace(row.newRegex,row.oldRegex)),row.beforeSha256);}
+ const pin9=pins.rows.at(-1),source=beforeRuntimeMemo(fs.readFileSync(path.join(root,pin9.path),'utf8'),pin9.version).replace(pin9.newRegex,pin9.oldRegex);assert.equal(sha(source),pin9.beforeSha256);
  const module={exports:{}};const localRequire=require('node:module').createRequire(require.resolve('../experiences/synk-account/src/member-statement-v9.cjs'));
  new Function('require','module','exports',source)(localRequire,module,module.exports);
  const old=module.exports,legacy=require('../experiences/synk-account/src/member-statement-v9.cjs');
@@ -85,7 +85,7 @@ test('legacy runtime repairs are reversible and original parser bytes remain pro
  }
 });
 test('a question applies to every coordinated clause and another actor never becomes the writer',()=>{
- assert.equal(C.PARSER_VERSION,'member-statement-ko-11');
+ assert.equal(C.PARSER_VERSION,'member-statement-ko-12');
  for(const text of ['저는 음악을 좋아하고 요리를 좋아해요?','음악가가 피곤해서 혼자 하는 걸 좋아해요.','음악가가피곤해서혼자하는걸좋아해요','음악가는피곤해서혼자하는걸좋아해요','음악가들이피곤해서혼자하는걸좋아해요','음악가님들이피곤해서혼자하는걸좋아해요','혼자 하는 게 좋아요. 그 방식이 좋아요. 친구가 좋아한다는 뜻이에요.','음악이 좋아요. 그게 취미예요. 친구가 좋아한다는 뜻이에요.','음악이 좋아요. 그게 취미예요. 그 방식이 좋아요. 친구가 좋아한다는 뜻이에요.','음악이 좋아요. 요리가 좋아요. 둘 다 좋아요. 친구가 좋아한다는 뜻이에요.'])assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
  const text='저는 음악을 좋아해요. 요리를 좋아해요?';assert.equal(C.parseMemberStatement(text).meanings[0].value,'music');
  for(const text of ['음악이 가끔 생각나요. 요리를 좋아해요.','음악이 이제 생각나요. 요리를 좋아해요.','음악이가끔생각나요. 요리를좋아해요.','음악이이제생각나요. 요리를좋아해요.'])assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.value==='cooking'),text);

@@ -346,14 +346,14 @@ function normalizePrefix(quote) {
   for (const [id, prefix] of CONDITION_PREFIXES) if (prefix.test(body)) { condition = id;body = body.replace(prefix, '');break; }
   return { body, condition };
 }
-function comparative(body) {
+function comparative(body, cache) {
   const known=arm=>{
     const cleaned=arm.replace(/^(?:계속|오래)/u,'').replace(/(?:계획)만/u,'계획을');
-    return !!natural(cleaned+'좋아요')
+    return !!natural(cleaned+'좋아요', cache)
       ||/^(?:(?:생각|의견)(?:을)?(?:말로)?(?:바로)?전하는것|말하는것|글로쓰기|혼자정하기|(?:제|내)(?:얘기|이야기)부터하기|동시에벌이기|남(?:의)?(?:얘기|이야기)만듣기|처음부터답을받기|읽는것|듣는것)$/u.test(cleaned);
   };
   const postposed=/^(.+?(?:게|것이|쪽이|방식이|방법이|편이))(.+?)(?:보다는|보다)(.+)$/u.exec(body);
-  if(postposed&&known(postposed[2])&&(natural(postposed[1]+postposed[3])?.meanings.length))return postposed[1]+postposed[3];
+  if(postposed&&known(postposed[2])&&(natural(postposed[1]+postposed[3], cache)?.meanings.length))return postposed[1]+postposed[3];
   const prefix=/^(.+?)(?:보다는|보단|보다)(.+)$/u.exec(body);
   return prefix&&known(prefix[1])?prefix[2]:body;
 }
@@ -382,7 +382,7 @@ function naturalUncached(quote, cache) {
   // A comparison does not authorize an opposite trait. Only its preferred arm
   // is proposed, and only when that complete arm has a supported predicate.
   body = body.replace(/^(?:(?:내|제)?의견(?:을)?먼저(?:내기|말하기)|(?:내|제)?생각(?:을)?먼저말하기|계획(?:을)?(?:오래|미리)?(?:세우기|짜기)|(?:한꺼번에)?여러(?:일|작업)(?:을)?(?:벌이기|하기))(?:보다는|보다)/u, '');
-  body = comparative(body).replace(/^결론뿐아니라(?=왜그런지)/u,'');
+  body = comparative(body, cache).replace(/^결론뿐아니라(?=왜그런지)/u,'');
   const explanationSequence=/^(.+?)(?:보고|본다음|본뒤)(.+)$/u.exec(body);
   if(explanationSequence){
     const first=natural(explanationSequence[1]+'보는게좋아요', cache),second=natural(explanationSequence[2], cache);
