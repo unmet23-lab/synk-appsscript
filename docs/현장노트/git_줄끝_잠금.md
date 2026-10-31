@@ -599,6 +599,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 ## 워크트리·연결 폴더·공간 정리
 
+### 워크트리에서 `sync-atlas --all --local`이 Study 묶음의 `Cannot find module …/node_modules/esbuild`로 멈춰 날 사본(path-vr trail 등)을 쓰지 않는다 — Study 빌드만 esbuild를 저장소 뿌리 경로로 찾는다 (2026-10-31 Claude)
+- 증상: Atlas 원천을 고친 워크트리에서 `node tools/sync-atlas.js --all --local`이 게임 열 · 한글 · WORLD 묶음은 다시 만들고 Study 묶음에서 실패해, 「생산자가 못 만들면 낡은 묶음을 옮기지 않는다」 규칙대로 날 사본 단계를 건너뛰었다. 이어 `--check`가 `experiences/path-vr/vendor/trail.js` 다름으로 멈췄다.
+- 원인: WORLD 묶음 생성기는 `require.resolve`로 부모 폴더를 거슬러 공용 작업본의 node_modules를 찾지만, `experiences/korean-study/build.mjs`는 `path.join(REPO,'node_modules/esbuild')`를 바로 부른다. 워크트리에는 node_modules가 없다.
+- 고침: 워크트리 `node_modules` · `desktop/node_modules` · `experiences/synk-account/node_modules`를 공용 작업본 것으로 가는 junction으로 두고(아래 항목대로 지울 때는 링크만 먼저 끊는다) 다시 `--all --local`.
+- 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
+
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
 - 증상: `git worktree remove --force`가 등록만 풀고 폴더를 남긴다. 남은 폴더를 `rm -rf`·`Remove-Item -Recurse`로 지우면 링크를 따라 공용 작업본의 node_modules까지 지울 수 있다(모든 세션의 빌드가 멈춤). `cmd /c rmdir`은 하네스가 막는다.
 - 원인: 빌드·시험용으로 `node_modules`를 공용 작업본에 잇는 junction을 만들어 둔다.
