@@ -180,8 +180,8 @@ EDGE_WHITE = 0.35  # 가지 가장자리만 가는 은빛 결(첫 결정과 같�
 # 2판 첫 시험: 0.55를 결정 모양 전체(높이 0.03~0.30 계단)에 주니 「흰 종이 눈꽃 스티커」로 돔을 덮어 제품이 안 보였다 →
 # 가지 높이에 비례(두꺼운 등뼈일수록 젖빛). 3판: 고사리 지도는 가지가 가늘어 덮는 넓이가 작아 0.35, 깨진 조각은 깨짐 동안 그 40 %로
 FROST_WHITE = 0.15
-FROST_SHARD = 0.12
-EDGE_SHARD = 0.10  # 깨진 조각의 가장자리 서리 — 조각이 「꽃무늬 타일」이 되지 않게 깨짐 동안 함께 가라앉는다
+FROST_SHARD = 0.06
+EDGE_SHARD = 0.04  # 깨진 조각의 가장자리 서리 — 깨짐 동안 함께 가라앉는다. 0.12 · 0.10에서 낮춰도 고사리가 짙은 조각 두엇은 「흰 레이스 인쇄」로 남는다(굴절이 만드는 테, 3판 CPU 점검)
 COV_LO, COV_HI = 0.60, 0.95  # 서리 흰빛이 시작 · 다 차는 가지 높이 — 등뼈의 가는 선만(0.42 · 0.82는 「흰 붓질」)
 GRAIN_S, GRAIN_FLOOR = 1800.0, 0.3  # 흰 선을 깨는 얼음 알갱이의 빽빽함(1 m당) · 알갱이 틈에 남는 흰빛 몫
 
@@ -640,7 +640,15 @@ def build_products():
     return jar_e, amp_e, lid, glint, card
 
 
-LID_FAINT = 0.3  # 첫 결정이 앉기 전 뚜껑 결정의 몫 — 옅은 서리 자국
+# 첫 결정이 앉기 전 뚜껑 결정의 몫 — 0이면 맑은 유리 뚜껑에 결정이 앉아 무늬가 된다. 0.3(옅은 서리 자국)은 맑은 판 아래로 바탕 금빛을
+# 굴절해 전 끝 초점 자리에 「구겨진 흰 막」이었다(3판 CPU 점검). 뚜껑 속 남색 몸을 반광택(거칠기 0.35 · 겉칠 0.15)으로 낮춰 보니 위
+# 반구 빛을 고르게 모아 오히려 「흰 무광 뚜껑」이라 몸의 광택은 그대로 둔다
+LID_FAINT = 0.0
+# 빛 고리 — 결정 판 전체(frost > 0.002)에 폭 3.5 mm로 두니 앉는 순간이 「흰 솜 도넛」이었다(3판 CPU 점검 결 62 · 64장).
+# 등뼈(판 높이 0.65 위로 솟은 결)에만 · 폭 1.8 mm로 좁혀 빛이 결정의 결을 따라 달리게
+RING_W = 0.0018
+RIB_LO, RIB_HI = 0.84, 0.94
+RING_PEAK = 160.0
 
 
 def add_lid_reveal(m):
@@ -670,7 +678,7 @@ def add_lid_reveal(m):
     fill.inputs["To Max"].default_value = 0.0
     l.new(off, fill.inputs["Value"])
     show = S.madd(n, l, fill.outputs["Result"], 1.0 - LID_FAINT, LID_FAINT)
-    d = S.math_node(n, l, "DIVIDE", off, 0.0035)
+    d = S.math_node(n, l, "DIVIDE", off, RING_W)
     band = S.math_node(n, l, "EXPONENT", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", d, d), -1.0))
     at = n.new("ShaderNodeAttribute")
     at.attribute_name = "frost"
@@ -678,7 +686,12 @@ def add_lid_reveal(m):
     nz.inputs["Scale"].default_value = 1400.0
     l.new(tc.outputs["Object"], nz.inputs["Vector"])
     glit = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "SUBTRACT", nz.outputs["Fac"], 0.5), 5.0), 0.0), 1.0)
-    mask = S.math_node(n, l, "MULTIPLY", S.madd(n, l, glit, 0.7, 0.3), S.math_node(n, l, "GREATER_THAN", at.outputs["Fac"], 0.002))
+    rib = n.new("ShaderNodeMapRange")
+    rib.interpolation_type = "SMOOTHSTEP"
+    rib.inputs["From Min"].default_value = RIB_LO
+    rib.inputs["From Max"].default_value = RIB_HI
+    l.new(at.outputs["Fac"], rib.inputs["Value"])
+    mask = S.math_node(n, l, "MULTIPLY", S.madd(n, l, glit, 0.7, 0.3), rib.outputs["Result"])
     em = n.new("ShaderNodeEmission")
     em.inputs["Color"].default_value = (1.0, 0.84, 0.56, 1)
     l.new(S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", band, mask), gain.outputs[0]), em.inputs["Strength"])
@@ -734,8 +747,10 @@ def link_except(light, skip):
 
 def link_scene_lights(L, floor, skip=()):
     """역광 · 키 · 윗빛은 바닥을 빼고 비춘다 — 은역광이 검은 유리 바닥에 큰 흰 원판으로 비쳤다(첫 시험 승 끝 장).
-    금역광은 단지 뚜껑도 뺀다 — 뚜껑 윗면에 비친 빛 면이 전 끝 · 결 첫머리에 제품 위 흰 덩이로 탔다(3판, 빛을 하나씩 꺼서 찾음)."""
-    lid = [o for o in bpy.context.scene.objects if o.name.startswith("단지뚜껑")]
+    금역광은 단지 뚜껑(맑은 판 · 속 남색 몸 · 결정 판)도 뺀다 — 뚜껑 윗면에 비친 빛 면이 전 끝 · 결 첫머리에 제품 위 흰 덩이로 탔고,
+    맑은 판만 빼니 판 아래 남색 몸의 겉칠에 비친 금역광이 결 끝까지 뚜껑을 옅은 회색 막으로 덮었다(3판, 빛을 하나씩 꺼서 찾음 —
+    끄면 짙은 남색 위 은빛 결정)."""
+    lid = [o for o in bpy.context.scene.objects if o.name.startswith(("단지뚜껑", "뚜껑몸", "뚜껑결정판"))]
     for nm in ("금역광", "은역광", "찬키", "윗빛"):
         link_except(L[nm], [floor, *skip, *(lid if nm == "금역광" else ())])
 
@@ -1377,7 +1392,7 @@ def shot_gyeol():
         cam.data.lens, cam.data.dof.aperture_fstop = lens, fstop
         u = clamp01((t - FALL_T1) / 0.45)  # 앉는 순간 가운데에서 은빛이 차올라 팔 끝까지(반지름 3.4 cm)
         glint[0].outputs[0].default_value = -0.01 + 0.046 * (1.0 - (1.0 - u) ** 2)
-        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 110.0 * math.sin(math.pi * u) ** 0.7  # 화면에서 가장 밝게(40은 회색 띠)
+        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else RING_PEAK * math.sin(math.pi * u) ** 0.7  # 화면에서 가장 밝게(40은 회색 띠)
         edge_n.outputs[0].default_value = lerp(EDGE_SHARD, 0.05, smooth(clamp01((t - 0.3) / 1.7)))
         gk.data.energy = lerp(gk_e0, GK_END, smooth(min(1.0, t / 1.0)))  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
         w = smooth(clamp01((t - 0.4) / 2.6))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
