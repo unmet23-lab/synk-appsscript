@@ -34,7 +34,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
-const { createHash } = require('node:crypto');
+const { createHash, randomUUID } = require('node:crypto');
 const 묶음 = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
@@ -308,7 +308,7 @@ function mergeResults(bundle, rows) {
 
 async function sendTelegram(text) {
   const r = 헤르메스.보내기(HERMES, TELEGRAM, text);
-  if (!r.ok) throw new Error('텔레그램 보내기 실패: ' + r.error);
+  if (!r.ok) throw Object.assign(new Error('텔레그램 보내기 실패: ' + r.error), { delivery: r.delivery });
   if (r.note) console.error(r.note);
 }
 
@@ -322,33 +322,62 @@ function noticeKind(dir, error) {
   return error.code === 'UNCERTAIN' || fs.existsSync(path.join(dir, '게시', '작업실.json')) ? '확인필요' : '일시실패';
 }
 const sqliteBusy = error => error?.errcode === 5 || /database is locked/i.test(error?.message || '');
-function openNotice(file) {
+function openNotice(file, busyMs = 0) {
   const { DatabaseSync } = require('node:sqlite');
   const db = new DatabaseSync(file);
-  try { db.exec('CREATE TABLE IF NOT EXISTS notice (id INTEGER PRIMARY KEY CHECK(id=1), message TEXT NOT NULL, sent INTEGER NOT NULL)'); return db; }
+  try {
+    db.exec(`PRAGMA busy_timeout=${busyMs}; PRAGMA synchronous=FULL`);
+    // sent: 0=아직 시도 안 함, 1=전송 확인, 2=시도 기록 확정·결과 미확인. 기존 0/1 기록은 그대로 읽는다.
+    db.exec('CREATE TABLE IF NOT EXISTS notice (id INTEGER PRIMARY KEY CHECK(id=1), message TEXT NOT NULL, sent INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS notice_claim (id INTEGER PRIMARY KEY CHECK(id=1), token TEXT NOT NULL)');
+    return db;
+  }
   catch (error) { db.close(); throw error; }
 }
 async function dispatchFailureNotice(file, send = sendTelegram) {
   if (!fs.existsSync(file)) return false;
-  let db, started = false, sent = false;
+  let db, started = false, notice, token;
   try {
     db = openNotice(file);
     db.exec('BEGIN IMMEDIATE'); started = true;
-    const notice = db.prepare('SELECT message, sent FROM notice WHERE id=1').get();
-    if (!notice || notice.sent) { db.exec('COMMIT'); started = false; return false; }
-    await send(notice.message);
-    sent = true;
-    // 전송 직후 기록 전에 종료되면 다음 회차에 중복될 수 있다. SQLite 잠금은 종료 시 해제된다.
-    db.prepare('UPDATE notice SET sent=1 WHERE id=1').run();
-    db.exec('PRAGMA busy_timeout=5000');
+    notice = db.prepare('SELECT message, sent FROM notice WHERE id=1').get();
+    if (!notice || notice.sent) {
+      db.exec('COMMIT'); started = false;
+      if (notice?.sent === 2) console.error('  ! 알림 전송 결과 미확인 — 중복 방지를 위해 자동 재전송하지 않는다');
+      return false;
+    }
+    token = randomUUID();
+    db.prepare('INSERT INTO notice_claim (id, token) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET token=excluded.token').run(token);
+    db.prepare('UPDATE notice SET sent=2 WHERE id=1').run();
+    // 외부 전송보다 먼저 확정한다. 여기서부터 종료·응답 유실이 나도 같은 알림을 자동으로 다시 보내지 않는다.
     db.exec('COMMIT'); started = false;
-    return true;
   } catch (error) {
     if (started) { db.exec('ROLLBACK'); started = false; }
-    if (sent) throw Object.assign(new Error(`알림은 보냈지만 기록하지 못했다 — 다음 회차에 중복될 수 있다: ${error.message}`), { cause: error });
     if (sqliteBusy(error)) return false;
     throw error;
   } finally { db?.close(); }
+
+  const finish = sent => {
+    const result = openNotice(file, 5000);
+    try {
+      // 등록 성공으로 초기화된 뒤 새 실패가 생겼어도 옛 전송의 완료·실패가 새 기록을 바꾸지 못하게 한다.
+      result.prepare('UPDATE notice SET sent=? WHERE id=1 AND sent=2 AND EXISTS (SELECT 1 FROM notice_claim WHERE id=1 AND token=?)').run(sent, token);
+    } finally { result.close(); }
+  };
+  try { await send(notice.message); }
+  catch (error) {
+    if (error?.delivery === 'not-started') {
+      try { finish(0); }
+      catch (recordError) {
+        throw Object.assign(new Error(`알림 전송을 시작하지 못했고 재시도 기록도 복구하지 못했다 — 자동 재전송하지 않는다: ${error.message} / 기록: ${recordError.message}`),
+          { code: 'NOTICE_RETRY_BLOCKED', cause: error, recordError });
+      }
+      throw error;
+    }
+    throw Object.assign(new Error(`알림 전송 결과 미확인 — 중복 방지를 위해 자동 재전송하지 않는다: ${error?.message || error}`), { code: 'NOTICE_UNCERTAIN', cause: error });
+  }
+  try { finish(1); }
+  catch (error) { throw Object.assign(new Error(`알림은 보냈지만 결과 기록을 마치지 못했다 — 자동 재전송하지 않는다: ${error.message}`), { code: 'NOTICE_UNCERTAIN', cause: error }); }
+  return true;
 }
 async function notifyFailureOnce(dir, error, send = sendTelegram) {
   const file = failureNoticeFile(dir, noticeKind(dir, error));

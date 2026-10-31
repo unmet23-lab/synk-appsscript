@@ -24,13 +24,22 @@ function 결과(r) {
     const 끝 = r.status === 0 ? '' : r.status != null ? `종료 ${r.status}` : r.error?.code || r.signal || '끝나기 전에 끊김';
     return { ok: true, note: 끝 ? `헤르메스가 보냈다고 했지만 ${끝} — 보낸 것으로 친다` : '' };
   }
-  return { ok: false, error: String((j && j.error) || r.error?.message || r.stderr || out || `종료 ${r.status}`).trim().slice(0, 200) };
+  // 프로세스를 시작하지 못한 경우만 재전송이 안전하다. 시간 초과·응답 유실·CLI 오류는 전송 여부가 불확실하다.
+  const notStarted = !r.pid && ['ENOENT', 'EACCES'].includes(r.error?.code) && !out && !String(r.stderr || '').trim();
+  return { ok: false, error: String((j && j.error) || r.error?.message || r.stderr || out || `종료 ${r.status}`).trim().slice(0, 200),
+    ...(notStarted ? { delivery: 'not-started' } : {}) };
 }
 
 /** 글 한 통을 보낸다. spawn은 시험용. */
 function 보내기(exe, target, text, { spawn = spawnSync, timeout = 한도ms } = {}) {
   const file = path.join(os.tmpdir(), `synk-hermes-${process.pid}-${Date.now()}.txt`);
-  fs.writeFileSync(file, text);
+  try { fs.writeFileSync(file, text); }
+  catch (error) {
+    let detail = error.message || String(error);
+    try { fs.rmSync(file, { force: true }); }
+    catch (cleanup) { detail += ` (임시 파일 정리 실패: ${cleanup.message})`; }
+    return { ok: false, error: detail.slice(0, 200), delivery: 'not-started' };
+  }
   try { return 결과(spawn(exe, ['send', '--json', '-t', target, '-f', file], { encoding: 'utf8', windowsHide: true, timeout })); }
   finally { fs.rmSync(file, { force: true }); }
 }

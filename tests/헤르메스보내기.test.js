@@ -3,6 +3,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const 헤르메스 = require('../tools/lib/헤르메스보내기.js');
 
 test('보냈다는 결과면 끊겼거나 0이 아닌 코드로 끝나도 보낸 것 — 까닭은 note로', () => {
@@ -34,4 +36,25 @@ test('보내기 — --json으로 부르고 3분 한도, 임시 파일은 부르�
   assert.equal(본.timeout, 180000);
   assert.equal(본.글, '비축 알림 본문');
   assert.equal(fs.existsSync(본.파일), false);
+});
+
+test('프로세스 시작 실패만 안전한 재시도 — 시간 초과와 CLI 실패는 전송 여부 미확인', () => {
+  for (const code of ['ENOENT', 'EACCES']) {
+    assert.equal(헤르메스.결과({ pid: 0, status: null, error: { code, message: code }, stdout: '', stderr: '' }).delivery, 'not-started');
+  }
+  for (const r of [
+    { pid: 20, status: null, error: { code: 'ETIMEDOUT' } },
+    { pid: 20, status: 1, stdout: '{"success":false,"error":"response lost"}' },
+    { pid: 20, status: null, error: { code: 'ENOENT' } },
+    { pid: 0, status: null, error: { code: 'ENOENT' }, stdout: '{"success":false}' },
+  ]) assert.equal(헤르메스.결과(r).delivery, undefined);
+  assert.equal(헤르메스.보내기(path.join(os.tmpdir(), `synk-missing-hermes-${process.pid}-${Date.now()}.exe`), 'telegram:1', 'fixture').delivery, 'not-started', '실제 spawnSync의 실행 파일 없음도 안전한 실패로 읽는다');
+});
+
+test('임시 글 파일을 쓰지 못하면 외부 프로세스를 시작하지 않은 실패로 돌려준다', t => {
+  const write = fs.writeFileSync;
+  fs.writeFileSync = () => { throw Object.assign(Error('temporary file denied'), { code: 'EACCES' }); };
+  t.after(() => { fs.writeFileSync = write; });
+  assert.deepEqual(헤르메스.보내기('hermes.exe', 'telegram:1', 'fixture', { spawn: () => assert.fail('파일 생성 실패 뒤에는 실행하지 않는다') }),
+    { ok: false, error: 'temporary file denied', delivery: 'not-started' });
 });
