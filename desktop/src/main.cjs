@@ -22,7 +22,7 @@ const {createMessengerTeacherService,bindMessengerTeacherIPC,sendMessengerTeache
 const {createProductPreviews}=require('./product-preview.cjs');
 const {createPublicApps}=require('./public-apps.cjs');
 const {createDownloadHandler}=require('./downloads.cjs');
-const {installDraftExitGuard}=require('./draft-exit.cjs');
+const {installDraftExitGuard,WORKSPACE_EXIT_TEXT}=require('./draft-exit.cjs');
 const {createPlatformTray}=require('./platform-tray.cjs');
 const {createDesktopPreferences}=require('./desktop-preferences.cjs');
 const {createCareNotifications,validPatch:validCareNotificationPatch}=require('./care-notifications.cjs');
@@ -269,7 +269,8 @@ function createWindow(){
   const contents=window.webContents;
   contents.on('did-finish-load',sendTeachingView);
   if(isPlatform){windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
-  if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});
+  // The Workspace page keeps unsaved drafts with beforeunload; without this prompt closing, reopening or quitting is cancelled with no word (10-22).
+  if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});else if(runtime.clientId==='messenger')installDraftExitGuard({contents,window,dialog,text:WORKSPACE_EXIT_TEXT});
   platformTray?.attachWindow(window);
   if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});

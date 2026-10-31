@@ -1,6 +1,7 @@
 'use strict';
 // Refresh the two bundled clients from their verified public packages. Only the
-// reviewed location gate, Mac icons and release identity are overlaid.
+// reviewed location gate, Mac icons and release identity are overlaid, plus the
+// Workspace unsaved-work prompt on the Workspace client (10-31).
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {inventory,audit}=require('./freeze-platform-release.cjs');
 const {sourceHash}=require('./source-hash.cjs');
@@ -33,6 +34,14 @@ function prepareChildLocation(stage,commonSource,baselineHelperSHA256=null){
   assert(/^[a-f0-9]{64}$/.test(baselineHelperSHA256||'')&&crypto.createHash('sha256').update(fs.readFileSync(helperFile)).digest('hex')===baselineHelperSHA256,'Existing child location helper differs from verified baseline');
   return {ok:true,reused:true,baselineHelperSHA256,clientId:JSON.parse(fs.readFileSync(path.join(stage,'runtime.json'))).clientId,changed:[],unchangedFiles:files.length,userDataOperations:0};
 }
+// Every reviewed overlay for one child and the only paths it may change.
+const CHILD_ALLOWED=['package.json','synk-install.json','src/main.cjs','src/mac-application-location.cjs','assets/platform.icns','assets/world.icns','assets/messenger.icns','assets/sources.json'];
+function prepareChildOverlays(stage,commonSource,baselineHelperSHA256=null){
+  const overlay=prepareChildLocation(stage,commonSource,baselineHelperSHA256);
+  const {applyChildExitGuardOverlay,EXIT_GUARD_HELPER}=require('./apply-child-exit-guard-overlay.cjs');
+  const exitGuard=JSON.parse(fs.readFileSync(path.join(stage,'runtime.json'))).clientId==='messenger'?applyChildExitGuardOverlay(stage,commonSource):null;
+  return {overlay,exitGuard,allowed:new Set([...CHILD_ALLOWED,...(exitGuard?[EXIT_GUARD_HELPER]:[])])};
+}
 async function buildChild({child,baseline,root,out,builder,platform,arch,version,buildId,releaseId,deps,sha,command,signal,powershell,electronDownload,backgroundDirectory}){
   assert(Object.hasOwn(PRODUCTS,child.id)&&/^\d+\.\d+\.\d+$/.test(version),'Invalid child release');
   assert(!fs.existsSync(out),'Preserve existing child build');fs.mkdirSync(out,{recursive:true});
@@ -51,13 +60,13 @@ async function buildChild({child,baseline,root,out,builder,platform,arch,version
   }finally{if(mounted)command('hdiutil',['detach',unpack]);}
   const before=inventory(stage),runtime=JSON.parse(fs.readFileSync(path.join(stage,'runtime.json')));
   assert(runtime.clientId===child.id&&runtime.mode==='development','Unexpected child runtime');
-  const overlay=prepareChildLocation(stage,path.join(root,'source'),baselineHelperSHA256);
+  const {overlay,exitGuard,allowed}=prepareChildOverlays(stage,path.join(root,'source'),baselineHelperSHA256);
   for(const id of Object.keys({...PRODUCTS,platform:{}}))fs.copyFileSync(path.join(root,'source/assets',id+'.icns'),path.join(stage,'assets',id+'.icns'));
   fs.copyFileSync(path.join(root,'source/assets/sources.json'),path.join(stage,'assets/sources.json'));
   const pkg=JSON.parse(fs.readFileSync(path.join(stage,'package.json')));pkg.version=version;json(path.join(stage,'package.json'),pkg);
   const metadata={clientId:child.id,mode:'development',appId:'im.synk.'+child.id+'.preview',version,arch,platform,sourceHash:sourceHash(stage),releaseId,buildId,channel:'preview'};
   json(path.join(stage,'synk-install.json'),metadata);
-  const after=inventory(stage),allowed=new Set(['package.json','synk-install.json','src/main.cjs','src/mac-application-location.cjs','assets/platform.icns','assets/world.icns','assets/messenger.icns','assets/sources.json']);
+  const after=inventory(stage);
   for(const item of before)if(!allowed.has(item.path)){const next=after.find(row=>row.path===item.path);assert(next&&next.sha256===item.sha256,'Unrelated child source changed: '+item.path);}
   for(const item of after)assert(before.some(row=>row.path===item.path)||allowed.has(item.path),'Unexpected child source added');
   audit(stage,after);const dist=path.join(out,'dist');
@@ -84,7 +93,7 @@ async function buildChild({child,baseline,root,out,builder,platform,arch,version
     const backend=path.join(signalOut,'backend/signal-backend.exe');assert(spec.product===child.id&&spec.version===version&&spec.appId===metadata.appId&&spec.executableName===product.executable+'.exe'&&sha(backend)===spec.backendSHA256&&report.backend.sha256===spec.backendSHA256&&fs.statSync(backend).size===spec.backendBytes&&report.backend.bytes===spec.backendBytes,'Child Signal backend or identity differs');
   }else{command('codesign',['--verify','--deep','--strict',app]);artifact=built.find(file=>file.endsWith('.dmg'));assert(artifact,'Missing child DMG');command('hdiutil',['verify',artifact]);}
   const release={id:child.id,mode:'development',platform,arch,version,executableSHA256:sha(executable),asarSHA256:sha(archive),installer:{relativePath:child.id+(platform==='win32'?'.exe':'.dmg'),bytes:fs.statSync(artifact).size,sha256:sha(artifact)}};
-  const report={ok:true,client:child.id,version,metadata,baseline:child,overlay,sourceFiles:after,changed:after.filter(row=>before.find(old=>old.path===row.path)?.sha256!==row.sha256).map(row=>row.path),release,artifactFile:artifact,appPath:app,executable:{sha256:release.executableSHA256},asar:{sha256:release.asarSHA256},installer:{path:path.relative(builder,artifact).split(path.sep).join('/'),bytes:release.installer.bytes,sha256:release.installer.sha256},installedStateTouched:false};
+  const report={ok:true,client:child.id,version,metadata,baseline:child,overlay,exitGuard,sourceFiles:after,changed:after.filter(row=>before.find(old=>old.path===row.path)?.sha256!==row.sha256).map(row=>row.path),release,artifactFile:artifact,appPath:app,executable:{sha256:release.executableSHA256},asar:{sha256:release.asarSHA256},installer:{path:path.relative(builder,artifact).split(path.sep).join('/'),bytes:release.installer.bytes,sha256:release.installer.sha256},installedStateTouched:false};
   json(path.join(out,'build-report.json'),report);return report;
 }
-module.exports={buildChild,PRODUCTS,prepareChildLocation,readChildLocationHelperPin};
+module.exports={buildChild,PRODUCTS,prepareChildLocation,prepareChildOverlays,readChildLocationHelperPin};

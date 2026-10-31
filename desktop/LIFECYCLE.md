@@ -79,7 +79,7 @@ snapshot은 `{ ok, state, currentVersion, currentBuildId, latestVersion, latestB
 
 1. **정의와 동결.** 검토한 `release-definition.json`에 `schemaVersion: 1`, `product: platform`, `channel: preview`, 새 `version`, `releaseId`, `buildId`, 고정 `manifestUrl`, 세 대상의 기준 설치파일 URL·크기·해시를 적는다. Windows 기준 설치파일에는 내장 `backendSHA256`도 필요하다. 승인한 자식 앱 구버전 실행을 보존할 때만 검증된 `additionalLegacyPins`를 넣는다. 이번 원본은 [0.4.4 정의](../.tmp/platform-unified-20261014/release-definition.json)다. `freeze-platform-release.cjs`가 `src`·`renderer`·`assets`를 복사하고 파일 목록·해시·공통 `sourceHash`를 기록한다.
 
-0.4.11처럼 하위 앱의 공통 변경도 반영할 때는 `refreshBundledClients: {version: <같은 새 버전>}`을 넣는다. `build-child-release.cjs`는 승인된 기존 WORLD·워크스페이스 ASAR에서 시작해 위치 확인 코드·Mac 아이콘·버전 메타데이터만 이식한다. 다른 원문과 Windows ICO는 바이트 대조하고, Windows 하위 설치기에도 같은 Signal 엔진을 컴파일한다. 새 설치파일·실행 파일·ASAR pin을 부모에 넣되 이미 설치된 구버전의 승인 pin도 유지한다.
+0.4.11처럼 하위 앱의 공통 변경도 반영할 때는 `refreshBundledClients: {version: <같은 새 버전>}`을 넣는다. `build-child-release.cjs`는 승인된 기존 WORLD·워크스페이스 ASAR에서 시작해 위치 확인 코드·Mac 아이콘·버전 메타데이터만 이식한다. 워크스페이스에는 「저장하지 않은 작업」 확인(`apply-child-exit-guard-overlay.cjs` — 진입 파일 두 줄과 `src/draft-exit.cjs`, 2026-10-31)도 얹는다. 그래서 `desktop/src`를 고쳐도 하위 앱 창에는 이 얹기에 든 것만 실린다. 다른 원문과 Windows ICO는 바이트 대조하고, Windows 하위 설치기에도 같은 Signal 엔진을 컴파일한다. 새 설치파일·실행 파일·ASAR pin을 부모에 넣되 이미 설치된 구버전의 승인 pin도 유지한다.
 
 ```powershell
 $releaseWork = '<새 작업 폴더>'

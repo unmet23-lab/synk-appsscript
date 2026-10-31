@@ -69,7 +69,7 @@ test('teacher follows Platform account selection with its own verification and n
   selected={status:'signed-in',accountId:'teacher-b',generation:'second'};await follower.refresh();assert.deepEqual(calls.slice(-4),[['bind','teacher-b'],['verify-own-vault'],['clear-own-vault'],['teacher-oauth']]);f.service.dispose();
 });
 
-async function mainFixture({argv=['--view=teaching'],authConfig=raw}={}){
+async function mainFixture({argv=['--view=teaching'],authConfig=raw,dialog={}}={}){
   const entry=messengerViewEntry(DEV_URLS.messenger,'messenger',argv),runtime={clientId:'messenger',mode:'development',entry:DEV_URLS.messenger,auth:authConfig};
   const app=new EventEmitter(),handlers=new Map(),calls=[],stores=[],auths=[],frame={url:entry},sent=[],loaded=[];let window;
   Object.assign(app,{isPackaged:true,enableSandbox(){},setName(){},setPath(){},getPath:name=>name==='home'?'C:\\Users\\synthetic':'C:\\synthetic\\messenger',getAppPath:()=>'/synthetic/app',getVersion:()=> '0.4.0',setAppUserModelId(){},requestSingleInstanceLock:()=>true,whenReady:()=>Promise.resolve()});
@@ -78,7 +78,7 @@ async function mainFixture({argv=['--view=teaching'],authConfig=raw}={}){
   const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onHeadersReceived(){}},removeAllListeners(){},on(){},protocol:{handle(){}}};
   const noop=()=>({});
   const stubs={
-    electron:{app,BrowserWindow:Window,ipcMain:{removeHandler:k=>handlers.delete(k),handle:(k,v)=>handlers.set(k,v)},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{openExternal:()=>{throw Error('No external navigation allowed');}},dialog:{},safeStorage:{}},
+    electron:{app,BrowserWindow:Window,ipcMain:{removeHandler:k=>handlers.delete(k),handle:(k,v)=>handlers.set(k,v)},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{openExternal:()=>{throw Error('No external navigation allowed');}},dialog,safeStorage:{}},
     'node:fs':{readFileSync:()=>JSON.stringify(runtime)},'node:child_process':{spawn(){throw Error('No process allowed');}},
     './auth-config-path.cjs':{resolveAuthConfigPath:()=>null},
     './auth-store.cjs':{createTokenStore:options=>{stores.push(options);return {scope:options.scope,available:()=>true};}},
@@ -105,6 +105,21 @@ test('actual Messenger main wires separate teacher auth and teaching route witho
   f.app.emit('second-instance',{},['--view=https://foreign.invalid/']);assert.equal(f.sent.length,before+1);
   f.frame.url='synk-desktop://status/index.html';f.app.emit('second-instance',{},['--view=teaching']);assert.equal(f.sent.length,before+1);
   f.frame.url='http://127.0.0.1:4191/?tab=messenger';f.contents.emit('did-finish-load');assert.deepEqual(f.sent.at(-1),['synk:open-view','teaching']);assert.equal(f.sent.length,before+2);f.app.emit('will-quit');
+});
+// The company page guards unsaved drafts with beforeunload. Electron cancels closing, reopening and quitting
+// with no word unless main handles will-prevent-unload, so a Workspace window with a draft could not be closed (10-22).
+test('Workspace window asks before unsaved company work keeps it from closing, reopening or quitting',async()=>{
+  const shown=[];let choice=0;
+  const f=await mainFixture({dialog:{showMessageBoxSync(window,options){shown.push({window,options});return choice;}}});
+  const unload=()=>{const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};f.contents.emit('will-prevent-unload',event);return event.defaultPrevented;};
+  assert.equal(unload(),false);assert.equal(shown.length,1);assert.equal(shown[0].window,f.window);
+  const options=shown[0].options;
+  assert.equal(options.title,'SYNK Workspace');assert.equal(options.message,'아직 저장하지 않은 작업이 있어요.');
+  assert.deepEqual(options.buttons,['돌아가서 저장','저장하지 않고 나가기']);assert.equal(options.defaultId,0);assert.equal(options.cancelId,0);
+  assert.match(options.detail,/저장하지 않고 나가면 그 작업은 사라져요/);assert.doesNotMatch(options.detail,/메모|되살리기/);
+  choice=1;assert.equal(unload(),true);
+  choice=-1;assert.equal(unload(),false);assert.equal(shown.length,3);
+  f.app.emit('will-quit');
 });
 test('teacher-only configured Messenger starts teaching with company auth unconfigured and unchanged',async()=>{
   const f=await mainFixture({authConfig:{...raw,clients:{teacher:raw.clients.teacher}}});
