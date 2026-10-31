@@ -1,0 +1,29 @@
+{
+  "모델": "gpt-6.1-sol",
+  "키": "unmet23",
+  "초": 10,
+  "요청": "req_714a7bcb6e7b4105afde26f0c78e5bb0",
+  "사용": {
+    "input_tokens": 8120,
+    "input_tokens_details": {
+      "cache_write_tokens": 8117,
+      "cached_tokens": 0
+    },
+    "output_tokens": 466,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 8586
+  },
+  "어림값USD": 0.0209,
+  "장면": [
+    "정지컷_01.jpg",
+    "정지컷_02.jpg",
+    "정지컷_03.jpg",
+    "정지컷_04.jpg"
+  ],
+  "지난": [
+    "지난1_LAB_화날때_mn_20261031.jpg",
+    "지난2_LAB_지마_mn_20261031.jpg"
+  ]
+}

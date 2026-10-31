@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "The real way: four strokes.",
+ "dur": 1.96,
+ "words": [
+  {
+   "text": "The",
+   "start": 0.08,
+   "end": 0.18
+  },
+  {
+   "text": "real",
+   "start": 0.24,
+   "end": 0.462
+  },
+  {
+   "text": "way:",
+   "start": 0.522,
+   "end": 0.723
+  },
+  {
+   "text": "four",
+   "start": 1.064,
+   "end": 1.285
+  },
+  {
+   "text": "strokes.",
+   "start": 1.386,
+   "end": 1.96
+  }
+ ],
+ "source": {
+  "key": "c2219c9eec4d77f2cf584b0eb986b713",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Wait, is that a dog? Okay, here is how Koreans actually write it.",
+   "next": "Top. Left. Right. Bottom."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 426
+ }
+}

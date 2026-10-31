@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19429-d5f7-7b80-aa4a-ea6a1f50c549"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the café framing fixed while changing Mongle’s bow and the boss’s gesture.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle bows tearfully against the counter as the boss raises a reassuring palm with an awkward smile."}}
+{"type":"turn.completed","usage":{"input_tokens":234030,"cached_input_tokens":213248,"cache_write_input_tokens":0,"output_tokens":1723,"reasoning_output_tokens":487}}

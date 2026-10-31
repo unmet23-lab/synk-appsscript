@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e2",
+ "text": "See? It is a little dog standing on the floor.",
+ "dur": 2.758,
+ "words": [
+  {
+   "text": "See?",
+   "start": 0.03,
+   "end": 0.211
+  },
+  {
+   "text": "It",
+   "start": 0.725,
+   "end": 0.77
+  },
+  {
+   "text": "is",
+   "start": 0.815,
+   "end": 0.876
+  },
+  {
+   "text": "a",
+   "start": 0.921,
+   "end": 0.936
+  },
+  {
+   "text": "little",
+   "start": 1.012,
+   "end": 1.193
+  },
+  {
+   "text": "dog",
+   "start": 1.253,
+   "end": 1.555
+  },
+  {
+   "text": "standing",
+   "start": 1.631,
+   "end": 1.993
+  },
+  {
+   "text": "on",
+   "start": 2.039,
+   "end": 2.084
+  },
+  {
+   "text": "the",
+   "start": 2.129,
+   "end": 2.205
+  },
+  {
+   "text": "floor.",
+   "start": 2.28,
+   "end": 2.758
+  }
+ ],
+ "source": {
+  "key": "64c6b3245aa02cea3dd6342b22f5f099",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Top, left, right, bottom. That is the letter ㅍ. Now add a head and a tail: the top line is its back, the bottom line is the floor.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 460
+ }
+}

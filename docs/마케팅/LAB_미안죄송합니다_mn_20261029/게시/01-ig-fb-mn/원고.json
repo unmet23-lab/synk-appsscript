@@ -1,0 +1,16 @@
+{
+ "id": "01-ig-fb-mn",
+ "brand": "LAB",
+ "platform": "instagram+facebook",
+ "account": "@synk.mn · SYNK(synkworld)",
+ "format": "reels",
+ "language": "mn",
+ "audioLanguage": "ko",
+ "caption": "Даргадаа «미안» гэж хэлж болохгүй 🙇\r\n«미안» (миан) — зөвхөн найздаа.\r\n«미안해요» (мианхэё) — эелдэг хэлбэр.\r\n«죄송합니다» (жвэсонхамнида) — багш, даргадаа.\r\n\r\nВидеоны төгсгөлд гардаг шиг битгий яриарай 😅 Даргаа «чи» гэж дуудах нь хамгийн том алдаа.\r\n\r\nДаргадаа «미안» гэж хэлж байсан уу? Сэтгэгдлээ бичээрэй 👇\r\n\r\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\r\n#солонгосхэл #한국어 #learnkorean #mongolia",
+ "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+ "alt": [
+  "A needle-felted cafe comedy. A coral felt mascot has bumped into the cafe boss and spilled coffee; the boss stands behind the counter with arms crossed. The mascot apologizes in three Korean levels — 미안 (to friends only), 미안해요 (polite), 죄송합니다 (to teachers and bosses) — bowing deeper each time, then lies completely flat on the counter crying 죄송합니다 three times (Level 99). The boss softens and raises a hand, the mascot peeks up with one sly eye, pops back up, leans back and talks down to the boss: it says the boss bumped into it and should raise its hourly wage, marked Level 0 with a red X — never say this to your boss. The boss is left speechless."
+ ],
+ "_비고": "video.mp4 = sorry_mn v9(14.8초 · 다시 살림도 관문 못 넘음 — 기획.md 「다시 살림 · 11-01」) → 음량마감 → CBR 10M 다시 담기. upload_10MB.mp4. Business Suite 릴스 하나로 인스타 @synk.mn · 페북 SYNK 교차 게시. 틱톡 @synk.mn · 텔레그램 SYNK LAB은 같은 영상 · 같은 캡션. 표지 cover.png = 11.6초(사장님께 따지는 몽글 · 놀란 사장님). 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림, 목소리는 특정인이 아닌 TTS.",
+ "version": "m11-mn-v9"
+}

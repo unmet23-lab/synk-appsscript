@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a2",
+ "text": "Now it's a hashtag.",
+ "dur": 1.349,
+ "words": [
+  {
+   "text": "Now",
+   "start": 0.04,
+   "end": 0.221
+  },
+  {
+   "text": "it's",
+   "start": 0.301,
+   "end": 0.442
+  },
+  {
+   "text": "a",
+   "start": 0.563,
+   "end": 0.583
+  },
+  {
+   "text": "hashtag.",
+   "start": 0.643,
+   "end": 1.349
+  }
+ ],
+ "source": {
+  "key": "4379cf928a5f16a9bd8759030d161739",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "That's pi.",
+   "next": "Wait... is that a dog?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 416
+ }
+}

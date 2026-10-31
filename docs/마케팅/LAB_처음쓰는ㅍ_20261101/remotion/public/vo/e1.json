@@ -1,0 +1,82 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "Okay... it's still a little bit of a dog.",
+ "dur": 2.226,
+ "words": [
+  {
+   "text": "Okay...",
+   "start": 0.02,
+   "end": 0.368
+  },
+  {
+   "text": "it's",
+   "start": 0.777,
+   "end": 0.913
+  },
+  {
+   "text": "still",
+   "start": 0.958,
+   "end": 1.14
+  },
+  {
+   "text": "a",
+   "start": 1.185,
+   "end": 1.2
+  },
+  {
+   "text": "little",
+   "start": 1.291,
+   "end": 1.457
+  },
+  {
+   "text": "bit",
+   "start": 1.608,
+   "end": 1.76
+  },
+  {
+   "text": "of",
+   "start": 1.835,
+   "end": 1.881
+  },
+  {
+   "text": "a",
+   "start": 1.926,
+   "end": 1.941
+  },
+  {
+   "text": "dog.",
+   "start": 1.987,
+   "end": 2.226
+  }
+ ],
+ "source": {
+  "key": "07074fb67d97149447b613af764d389a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Top, left, right, bottom. That is the letter ㅍ, written the right way. Then you add a head and a tail, and it looks like a tiny dog standing on the floor.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 461
+ }
+}

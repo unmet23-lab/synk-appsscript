@@ -1,0 +1,147 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1101,
+  "lufs": -17
+ },
+ "made": "2026-10-31T22:41:04.826Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "My first try at this letter...",
+   "dur": 1.635,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "14e49b300004179bcafe0e82293ead5a",
+   "words": 6
+  },
+  {
+   "id": "a1",
+   "text": "That's pi.",
+   "dur": 1.062,
+   "syllablesPerSec": null,
+   "src": "a1.wav",
+   "key": "b1bcbf598e9920adf834f3239cbbb55e",
+   "words": 2
+  },
+  {
+   "id": "a2",
+   "text": "Now it's a hashtag.",
+   "dur": 1.349,
+   "syllablesPerSec": null,
+   "src": "a2.wav",
+   "key": "4379cf928a5f16a9bd8759030d161739",
+   "words": 4
+  },
+  {
+   "id": "a3",
+   "text": "Wait... is that a dog?",
+   "dur": 1.534,
+   "syllablesPerSec": null,
+   "src": "a3.wav",
+   "key": "0c6323934f7b2a26c6254d28f889386d",
+   "words": 5
+  },
+  {
+   "id": "f1",
+   "text": "The real way: four strokes.",
+   "dur": 1.96,
+   "syllablesPerSec": null,
+   "src": "f1.wav",
+   "key": "c2219c9eec4d77f2cf584b0eb986b713",
+   "words": 5
+  },
+  {
+   "id": "n1",
+   "text": "Top.",
+   "dur": 0.433,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "74390e0878f0ea7d817eb8882c08361e",
+   "words": 1
+  },
+  {
+   "id": "n2",
+   "text": "Left.",
+   "dur": 0.454,
+   "syllablesPerSec": null,
+   "src": "n2.wav",
+   "key": "406ad5e72873bf9d61697318e09c59e0",
+   "words": 1
+  },
+  {
+   "id": "n3",
+   "text": "Right.",
+   "dur": 0.613,
+   "syllablesPerSec": null,
+   "src": "n3.wav",
+   "key": "56068e94f7e43814acd3eab7a7c2dab9",
+   "words": 1
+  },
+  {
+   "id": "n4",
+   "text": "Bottom.",
+   "dur": 0.554,
+   "syllablesPerSec": null,
+   "src": "n4.wav",
+   "key": "1eec341569afc931784fd4732e8c8801",
+   "words": 1
+  },
+  {
+   "id": "k1",
+   "text": "피읖.",
+   "dur": 0.372,
+   "syllablesPerSec": 5.38,
+   "src": "k1.wav",
+   "key": "be0258ad2050c40c8575714acb1cf648",
+   "words": 1
+  },
+  {
+   "id": "e1",
+   "text": "Okay... it's still a little bit of a dog.",
+   "dur": 2.226,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "07074fb67d97149447b613af764d389a",
+   "words": 9
+  },
+  {
+   "id": "e2",
+   "text": "See? It is a little dog standing on the floor.",
+   "dur": 2.758,
+   "syllablesPerSec": null,
+   "src": "e2.wav",
+   "key": "64c6b3245aa02cea3dd6342b22f5f099",
+   "words": 10
+  },
+  {
+   "id": "a3b",
+   "text": "Wait... is that a TV?",
+   "dur": 1.597,
+   "syllablesPerSec": null,
+   "src": "a3b.wav",
+   "key": "dba730e3050f03fcff9baea7c5dfe95d",
+   "words": 5
+  },
+  {
+   "id": "e3",
+   "text": "Oh! It is a little dog, standing on the floor.",
+   "dur": 2.627,
+   "syllablesPerSec": null,
+   "src": "e3.wav",
+   "key": "cd11cfa783114a12c78f4d4b1d79f203",
+   "words": 10
+  }
+ ]
+}

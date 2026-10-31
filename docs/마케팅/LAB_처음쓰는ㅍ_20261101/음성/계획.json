@@ -1,0 +1,110 @@
+{
+  "note": "LAB E23 「처음 쓰는 ㅍ」 나레이션 — 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」 10-28), 영어 줄 + 한국어 낱말 한 줄(피읖). 원본(우리편) E5 「처음 쓰는 ㄹ」의 줄 자리를 따르고 획 줄은 획 자리 이름(Top · Left · Right · Bottom). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_처음쓰는ㅍ_20261101/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1101,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "My first try at this letter...",
+      "emotion": "smart",
+      "prev": "A beginner opens a Korean handwriting notebook and picks up a pencil.",
+      "next": "That's pi."
+    },
+    {
+      "id": "a1",
+      "text": "That's pi.",
+      "emotion": "smart",
+      "prev": "My first try at this letter... It came out looking like the math symbol pi.",
+      "next": "Now it's a hashtag."
+    },
+    {
+      "id": "a2",
+      "text": "Now it's a hashtag.",
+      "emotion": "smart",
+      "prev": "That's pi.",
+      "next": "Wait... is that a dog?"
+    },
+    {
+      "id": "a3",
+      "text": "Wait... is that a dog?",
+      "emotion": "smart",
+      "prev": "Now it's a hashtag. And the third one somehow grew a head and a tail.",
+      "next": "The real way: four strokes."
+    },
+    {
+      "id": "f1",
+      "text": "The real way: four strokes.",
+      "emotion": "smart",
+      "prev": "Wait, is that a dog? Okay, here is how Koreans actually write it.",
+      "next": "Top. Left. Right. Bottom."
+    },
+    {
+      "id": "n1",
+      "text": "Top.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n2",
+      "text": "Left.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n3",
+      "text": "Right.",
+      "emotion": "normal"
+    },
+    {
+      "id": "n4",
+      "text": "Bottom.",
+      "emotion": "normal"
+    },
+    {
+      "id": "k1",
+      "text": "피읖.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "e1",
+      "text": "Okay... it's still a little bit of a dog.",
+      "emotion": "smart",
+      "prev": "Top, left, right, bottom. That is the letter ㅍ, written the right way. Then you add a head and a tail, and it looks like a tiny dog standing on the floor.",
+      "next": ""
+    },
+    {
+      "id": "e2",
+      "text": "See? It is a little dog standing on the floor.",
+      "emotion": "smart",
+      "prev": "Top, left, right, bottom. That is the letter ㅍ. Now add a head and a tail: the top line is its back, the bottom line is the floor.",
+      "next": ""
+    },
+    {
+      "id": "a3b",
+      "text": "Wait... is that a TV?",
+      "emotion": "smart",
+      "prev": "Now it is a hashtag. And the third one came out as a box with two antennas on top.",
+      "next": "The real way: four strokes."
+    },
+    {
+      "id": "e3",
+      "text": "Oh! It is a little dog, standing on the floor.",
+      "emotion": "smart",
+      "prev": "Top, left, right, bottom. That is the letter ㅍ. Then a red pen adds a head and a tail, and suddenly the top line is its back and the bottom line is the floor.",
+      "next": ""
+    }
+  ]
+}

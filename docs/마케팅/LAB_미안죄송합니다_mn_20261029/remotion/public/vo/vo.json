@@ -15,7 +15,7 @@
   "seed": 1029,
   "lufs": -16
  },
- "made": "2026-10-28T18:29:33.518Z",
+ "made": "2026-10-31T23:07:56.476Z",
  "lines": [
   {
    "id": "s1",
@@ -124,6 +124,15 @@
    "src": "m8b.wav",
    "key": "60c7fc87e3a80862bdd46cdad67a7545",
    "words": 2
+  },
+  {
+   "id": "m5c",
+   "text": "죄송합니다! 죄송합니다! 정말 죄송합니다!",
+   "dur": 3.357,
+   "syllablesPerSec": 5.06,
+   "src": "m5c.wav",
+   "key": "11bd2a46e4a3e83b6cd7c37b029cd423",
+   "words": 4
   }
  ]
 }

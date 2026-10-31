@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "My first ㅍ became π, # and a dog 😭 #learnkorean",
+ "caption": "ㅍ (say \"pee-eup\") is written in 4 strokes:\n1 top line\n2 left line\n3 right line\n4 bottom line (a little longer)\n\nKeep the two short lines between the top and bottom lines — if they poke out, it turns into #.\nEasy way to remember: a little dog standing on the floor. Top = its back, bottom = the floor.\n\nSYNK LAB\n#learnkorean #studykorean #hangul #koreanalphabet",
+ "pinnedComment": "Be honest — was your first ㅍ a π, a # or a dog? 👇",
+ "alt": [
+  "Top-down view of a Korean handwriting notebook with a pencil. In four practice boxes, a gray model letter ㅍ sits top-left; the pencil's first try curls into the math symbol π, the second pokes its lines through and becomes a hashtag, the third grows a head and a tail and turns into a little dog. The page flips: one big box shows the real way in four numbered strokes — top, left, right, bottom — and a red pen labels them back, leg, leg, floor, then adds a head and a wagging tail. The name card reads ㅍ = 피읖, say pee-eup. At the end the three tries come back small: π and # are crossed out, the dog gets a big red check."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = pieup v7b(시험 받은 v7에서 머리 글 자리만 — 18.6초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(9.43MB). 표지 cover.png = 6.0초(틀린 셋 · 이름표 둘 — 셋째 펀치 인 전). 어린이 전용 아님. 합성 표시: 필수 아님 — 화면은 코드로 그은 손글씨와 E5에서 구운 공책 · 연필 사진, 목소리는 특정인이 아닌 TTS(E17과 같은 판단).",
+ "version": "e23-en-v7"
+}

@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3",
+ "text": "Oh! It is a little dog, standing on the floor.",
+ "dur": 2.627,
+ "words": [
+  {
+   "text": "Oh!",
+   "start": 0.02,
+   "end": 0.285
+  },
+  {
+   "text": "It",
+   "start": 0.769,
+   "end": 0.832
+  },
+  {
+   "text": "is",
+   "start": 0.878,
+   "end": 0.941
+  },
+  {
+   "text": "a",
+   "start": 0.988,
+   "end": 1.003
+  },
+  {
+   "text": "little",
+   "start": 1.066,
+   "end": 1.237
+  },
+  {
+   "text": "dog,",
+   "start": 1.284,
+   "end": 1.565
+  },
+  {
+   "text": "standing",
+   "start": 1.643,
+   "end": 1.955
+  },
+  {
+   "text": "on",
+   "start": 2.002,
+   "end": 2.065
+  },
+  {
+   "text": "the",
+   "start": 2.158,
+   "end": 2.236
+  },
+  {
+   "text": "floor.",
+   "start": 2.283,
+   "end": 2.627
+  }
+ ],
+ "source": {
+  "key": "cd11cfa783114a12c78f4d4b1d79f203",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Top, left, right, bottom. That is the letter ㅍ. Then a red pen adds a head and a tail, and suddenly the top line is its back and the bottom line is the floor.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 483
+ }
+}

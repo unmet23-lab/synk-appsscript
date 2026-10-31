@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a3",
+ "text": "Wait... is that a dog?",
+ "dur": 1.534,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.04,
+   "end": 0.324
+  },
+  {
+   "text": "is",
+   "start": 0.688,
+   "end": 0.769
+  },
+  {
+   "text": "that",
+   "start": 0.89,
+   "end": 1.052
+  },
+  {
+   "text": "a",
+   "start": 1.133,
+   "end": 1.153
+  },
+  {
+   "text": "dog?",
+   "start": 1.254,
+   "end": 1.534
+  }
+ ],
+ "source": {
+  "key": "0c6323934f7b2a26c6254d28f889386d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Now it's a hashtag. And the third one somehow grew a head and a tail.",
+   "next": "The real way: four strokes."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 393
+ }
+}

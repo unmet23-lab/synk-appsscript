@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a3b",
+ "text": "Wait... is that a TV?",
+ "dur": 1.597,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.02,
+   "end": 0.342
+  },
+  {
+   "text": "is",
+   "start": 0.603,
+   "end": 0.663
+  },
+  {
+   "text": "that",
+   "start": 0.724,
+   "end": 0.864
+  },
+  {
+   "text": "a",
+   "start": 0.925,
+   "end": 0.945
+  },
+  {
+   "text": "TV?",
+   "start": 1.005,
+   "end": 1.597
+  }
+ ],
+ "source": {
+  "key": "dba730e3050f03fcff9baea7c5dfe95d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Now it is a hashtag. And the third one came out as a box with two antennas on top.",
+   "next": "The real way: four strokes."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 495
+ }
+}

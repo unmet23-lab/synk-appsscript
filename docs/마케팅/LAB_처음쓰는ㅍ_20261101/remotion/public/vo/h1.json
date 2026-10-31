@@ -1,0 +1,67 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "My first try at this letter...",
+ "dur": 1.635,
+ "words": [
+  {
+   "text": "My",
+   "start": 0.04,
+   "end": 0.172
+  },
+  {
+   "text": "first",
+   "start": 0.255,
+   "end": 0.519
+  },
+  {
+   "text": "try",
+   "start": 0.569,
+   "end": 0.833
+  },
+  {
+   "text": "at",
+   "start": 0.899,
+   "end": 0.949
+  },
+  {
+   "text": "this",
+   "start": 0.998,
+   "end": 1.147
+  },
+  {
+   "text": "letter...",
+   "start": 1.246,
+   "end": 1.635
+  }
+ ],
+ "source": {
+  "key": "14e49b300004179bcafe0e82293ead5a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "A beginner opens a Korean handwriting notebook and picks up a pencil.",
+   "next": "That's pi."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 458
+ }
+}
