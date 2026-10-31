@@ -198,3 +198,18 @@ test('명시한 허용 변형은 다른 핵심 어휘도 통과하되 닮은 다
  assert.equal(rude.note?.kind,'ending','허용 목록에 있어도 상대에 맞지 않는 끝맺음은 통과하지 않는다');
  assert.notEqual(rude.sure,true);
 });
+
+test('반말 확신 넓힘(drama-judge-5): 대사 · 허용 변형의 문장 끝말과 핵심 말 허용 표현의 끝말에서 「요」만 뺀 꼴도 반말로 확신한다 — 7번 「선배, 도서관 어디 있어?」(그림 시안 세션 · Fable)',()=>{
+ const library={id:'7',line:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?',to:'senior',names:['권태오','태오'],keys:[{word:'도서관'},{word:'어디에 있는지',alts:['어디 있는지','어디예요','어디에 있어요','어딘지']}],variants:['선배님, 도서관이 어디예요?']};
+ for(const t of ['선배, 도서관 어디 있어?','선배님, 그런데 도서관 어디에 있어?'])assert.equal(judgeLine(library,{transcript:t}).note?.kind,'ending',t);
+ // 「…알아?」는 10-30 판단 그대로 애매 — 노트 없이 통과하되 확신 아님.
+ const unsure=judgeLine(library,{transcript:'선배님, 도서관이 어디에 있는지 알아?'});
+ assert.deepEqual([unsure.note,unsure.sure],[null,false]);
+ // 높임 꼴은 그대로 확실한 통과 — 「있어서」처럼 반말 꼴이 끝에 오지 않는 말도 그대로.
+ for(const t of ['선배님, 도서관이 어디에 있어요?','선배님, 도서관 어디예요?',library.line])assert.equal(judgeLine(library,{transcript:t}).sure,true,t);
+ // 처음 보는 대사(free)도 끝맺음 노트는 그대로 준다 — 다른 문장의 끝말(「유학생이에요」 → 「유학생이에」)도 반말 꼴이 된다.
+ const intro={id:'t5',line:'이번 학기에 새로 온 유학생이에요. 잘 부탁드립니다.',to:'group',free:true,keys:[{word:'새로 온 유학생'},{word:'잘 부탁드립니다',alts:['잘 부탁해요']}]};
+ assert.equal(judgeLine(intro,{transcript:'이번 학기에 새로 온 유학생이야. 잘 부탁해.'}).note?.kind,'ending');
+ assert.equal(judgeLine(intro,{transcript:'이번 학기에 새로 온 유학생이에요. 잘 부탁해요.'}).sure,true);
+ assert.deepEqual(checkSpec(library),[]);assert.deepEqual(checkSpec(intro),[]);
+});

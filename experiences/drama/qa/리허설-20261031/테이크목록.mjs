@@ -19,7 +19,7 @@ import ep01 from '../../s1/ep01.mjs';
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 뿌리 = path.resolve(여기, '../../../..');
 const 밖 = path.join(뿌리, '.tmp/drama-rehearsal-20261031');
-const 굽기 = process.argv.includes('--굽기');
+const 굽기 = process.argv.includes('--굽기') || process.argv.includes('--다시굽기'), 다시굽기 = process.argv.includes('--다시굽기');
 const 멈춤 = (말) => { console.error(`[테이크목록] ${말}`); process.exit(1); };
 
 // 대본의 학생 줄 · 처음 보는 대사 — 판정 명세는 대본 그대로(talk 은행과 같은 꼴: {id, line, ...명세}).
@@ -38,9 +38,12 @@ const 틀린 = [
   { name: '한 낱말', line: 's1e01-3', say: '과제요.', expect: { verdict: 'note', note: 'length' } },
   { name: '핵심 말 빠짐', line: 's1e01-7', say: '네, 선배님! 그런데 혹시 화장실이 어디에 있는지 아세요?', expect: { verdict: 'note', note: 'missing' } },
   { name: '처음 보는 대사 — 맞게', line: 's1e01-t1', say: '수강 신청에 대해 여쭤볼 게 있어서 왔어요.', expect: { verdict: 'pass', sure: true } },
-  { name: '확신 없음 — 「-야」로 끝냄', line: 's1e01-t5', say: '이번 학기에 새로 온 유학생이야. 잘 부탁해.', expect: { verdict: 'pass', sure: false } },
+  { name: '반말 — 「-야」로 끝냄(처음 보는 대사)', line: 's1e01-t5', say: '이번 학기에 새로 온 유학생이야. 잘 부탁해.', expect: { verdict: 'note', note: 'ending' } },
   { name: '확신 없음 — 비슷한 핵심 말', line: 's1e01-t4', say: '선생님, 혹시 화장실이 어디에 있는지 아세요?', expect: { verdict: 'pass', sure: false } },
   { name: '한국어 아님', line: 's1e01-1', say: 'Hello professor, I am a new international student this semester.', expect: { status: 'not_korean' } },
+  // drama-judge-5(11-01): 허용 표현 끝말에서 「요」만 뺀 꼴도 반말로 확신한다 — 7번 「어디에 있어요」 → 「어디 있어?」(그림 시안 세션이 찾음). 「…알아?」는 10-30 판단대로 애매.
+  { name: '반말 — 허용 표현 끝말(「어디에 있어요」 → 「어디 있어?」)', line: 's1e01-7', say: '선배, 도서관 어디 있어?', expect: { verdict: 'note', note: 'ending' } },
+  { name: '확신 없음 — 「…알아?」로 끝냄', line: 's1e01-7', say: '선배님, 도서관이 어디에 있는지 알아?', expect: { verdict: 'pass', sure: false } },
 ];
 // 굽기 전에 글 그대로의 판정이 기대와 같은지 본다(글이 기대를 못 내면 소리로도 못 낸다).
 for (const t of 틀린) {
@@ -94,16 +97,23 @@ function wav(pcm) {
 fs.mkdirSync(밖, { recursive: true });
 const 소리파일 = (i) => path.join(밖, `wrong-${String(i + 1).padStart(2, '0')}.wav`);
 if (굽기) {
-  const 지시 = '너는 한국 드라마 촬영장의 외국인 유학생 배우다. 매번 받은 「대사」를 글자 그대로 한 번만 또박또박 말하고 멈춘다. 대사를 고치거나 높임을 바꾸거나 말을 붙이지 않는다. 영어 대사는 영어로 말한다.';
-  let 답 = null, 쓴키 = null;
-  for (const k of 키차례()) {
-    try { 답 = await 읽히기(키읽기(k), 'marin', 지시, 틀린.map((t) => t.say)); 쓴키 = k.이름; break; }
-    catch (e) { console.error(`[테이크목록] ${k.이름}: ${e.message}`); if (!/credit|quota|auth|key|permission|401|403/i.test(e.message)) break; }
+  const 지시 = '너는 한국 대학에 막 온 외국인 유학생이다. 매번 받은 「대사」를 글자 그대로 한 번만 또박또박 말하고 멈춘다. 대사를 고치거나 높임을 바꾸거나 말을 붙이지 않는다. 영어 대사는 영어로 말한다.';
+  // 소리가 없는 테이크만 굽는다(--다시굽기면 전부) — 앞 회차 결과가 쓴 소리를 덮지 않는다.
+  const 굽을 = 틀린.map((_, i) => i).filter((i) => 다시굽기 || !fs.existsSync(소리파일(i)));
+  if (!굽을.length) console.log('[테이크목록] 구울 소리가 없다(모두 있음 — 전부 다시 굽기는 --다시굽기)');
+  else {
+    let 답 = null, 쓴키 = null;
+    for (const k of 키차례()) {
+      try { 답 = await 읽히기(키읽기(k), 'marin', 지시, 굽을.map((i) => 틀린[i].say)); 쓴키 = k.이름; break; }
+      catch (e) { console.error(`[테이크목록] ${k.이름}: ${e.message}`); if (!/credit|quota|auth|key|permission|401|403/i.test(e.message)) break; }
+    }
+    if (!답) 멈춤('틀린 테이크를 굽지 못했다');
+    답.소리들.forEach((pcm, j) => fs.writeFileSync(소리파일(굽을[j]), wav(pcm)));
+    // 쓴 양은 구운 번호마다 따로 남긴다(앞 회차 기록을 덮지 않게).
+    const 기록 = 다시굽기 ? 'wrong-usage.json' : `wrong-usage-${굽을.map((i) => i + 1).join('_')}.json`;
+    fs.writeFileSync(path.join(밖, 기록), `${JSON.stringify({ at: new Date().toISOString(), model: 'gpt-realtime-2.1', voice: 'marin', key: 쓴키, takes: 굽을.map((i) => i + 1), usage: 답.사용 }, null, 2)}\n`);
+    console.log(`[테이크목록] 틀린 테이크 ${답.소리들.length}개를 구웠다(${굽을.map((i) => i + 1).join(',')}번 · 키 ${쓴키})`);
   }
-  if (!답) 멈춤('틀린 테이크를 굽지 못했다');
-  답.소리들.forEach((pcm, i) => fs.writeFileSync(소리파일(i), wav(pcm)));
-  fs.writeFileSync(path.join(밖, 'wrong-usage.json'), `${JSON.stringify({ at: new Date().toISOString(), model: 'gpt-realtime-2.1', voice: 'marin', key: 쓴키, usage: 답.사용 }, null, 2)}\n`);
-  console.log(`[테이크목록] 틀린 테이크 ${답.소리들.length}개를 구웠다(키 ${쓴키})`);
 }
 const 초 = (file) => { const b = fs.readFileSync(file); return Number((((b.length - 44) / 2) / 표본율).toFixed(2)); };
 // 모범 읽기 mp3의 길이는 받아 적기 JSON(ep01-model.json)의 줄 초를 쓴다 — 없으면 대사 음절로 어림.

@@ -8,10 +8,10 @@
 import {createHash} from 'node:crypto';
 import {DRAMA_JUDGE_VERSION} from './드라마판정.mjs';
 
-// 검수 기준 판(experiences/drama/review/rubric-spec-<판>.md). r1 · r2는 앞 두 묶음(drama-judge-3)의 기준이고, r3가 지금 기준이다
-// (drama-judge-4 — 처음 보는 대사는 빠진 말 노트 없음 · 장면 대사는 카드가 대본 낱말을 보여 준다 · 너그러움은 처음 보는 대사에서만).
-export const DRAMA_SPEC_RUBRIC='drama-spec-r3';
-export const DRAMA_SPEC_RUBRICS=Object.freeze({'drama-spec-r1':'rubric-spec-r1.md','drama-spec-r2':'rubric-spec-r2.md','drama-spec-r3':'rubric-spec-r3.md'});
+// 검수 기준 판(experiences/drama/review/rubric-spec-<판>.md). r1 · r2는 drama-judge-3, r3는 drama-judge-4 묶음의 기준이고, r4가 지금 기준이다
+// (drama-judge-5 — 허용 표현 끝말의 「요」를 뺀 꼴도 반말 확신 · 앱의 바깥 틀은 이야기 속 유학생 주인공과 이야기 밖 코치 목소리, 결정 10-31).
+export const DRAMA_SPEC_RUBRIC='drama-spec-r4';
+export const DRAMA_SPEC_RUBRICS=Object.freeze({'drama-spec-r1':'rubric-spec-r1.md','drama-spec-r2':'rubric-spec-r2.md','drama-spec-r3':'rubric-spec-r3.md','drama-spec-r4':'rubric-spec-r4.md'});
 const stable=value=>Array.isArray(value)?'['+value.map(stable).join(',')+']'
  :value&&typeof value==='object'?'{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stable(value[key])).join(',')+'}':JSON.stringify(value??null);
 

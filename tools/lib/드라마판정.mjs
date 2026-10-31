@@ -7,7 +7,7 @@
 // · 점수·등급·감정 판정을 만들지 않는다. 받아 적은 글만으로 발음 오류를 단정하지 않는다. 노트 문구는 제품 글 표에 두고 여기는 종류만 돌려준다.
 import {syllables} from './말하기피드백.mjs';
 
-export const DRAMA_JUDGE_VERSION='drama-judge-4';
+export const DRAMA_JUDGE_VERSION='drama-judge-5';
 // 받아 적은 말이 핵심 말과 HIT만큼 닮으면 말한 것, MISS보다 덜 닮으면 빠진 것으로 본다. 그 사이는 애매라 노트를 주지 않는다(시범값).
 export const HIT=0.8,MISS=0.5;
 // 통째로 이만큼 닮으면 모범 대사나 허용 변형을 그대로 말한 것으로 본다.
@@ -94,8 +94,20 @@ export function allowedEndings(spec){
  const own=endingOf(lastWord(text(spec?.line),spec?.names||[])).form;
  return own==='plain'?['plain','polite']:['polite','formal'];
 }
+/**
+ * 「요」만 빼면 반말이 되는 꼴 — 모범 대사 · 허용 변형의 문장마다 끝말과, 핵심 말(word · alts)의 끝 어절 가운데 해요체(-요 · -죠)인 것에서 「요 · 죠」를 뺀 말.
+ * 대사 끝말만 보면 「…아세요」로 끝나는 줄에서 자연스러운 반말 「…어디 있어?」를 못 잡는다 — 허용 표현 「어디에 있어요」의 「있어」로 잡는다
+ * (drama-judge-5, 10-31: 7번 줄 「선배, 도서관 어디 있어?」가 노트 없이 통과 — 그림 시안 세션 · Fable 제안, 대사 끝말 규칙을 넓힌 같은 꼴).
+ */
+function droppedForms(spec,names){
+ const out=new Set();
+ const add=word=>{const w=String(word??'').replace(/[^가-힣]/g,'');if(POLITE.test(w)){const d=w.replace(/(요|죠)$/,'');if(d)out.add(d);}};
+ for(const line of [spec?.line,...(spec?.variants||[])])for(const sentence of text(line).split(/[.?!…~\n]+/).filter(s=>/[가-힣]/.test(s)))add(lastWord(sentence,names));
+ for(const key of spec?.keys||[])for(const phrase of [key.word,...(key.alts||[])])add(chunks(phrase).pop());
+ return [...out];
+}
 function endingCheck(spec,heard){
- const names=spec.names||[],allowed=allowedEndings(spec);
+ const names=spec.names||[],allowed=allowedEndings(spec),plainForms=droppedForms(spec,names);
  const sentences=heard.split(/[.?!…~\n]+/).map(s=>s.trim()).filter(s=>/[가-힣]/.test(s));
  const lineEnd=lastWord(text(spec.line).split(/[.?!…~\n]+/).filter(s=>/[가-힣]/.test(s)).pop()||'',names).replace(/[^가-힣]/g,'');
  const lineForm=endingOf(lineEnd).form,dropped=lineEnd.replace(/(요|죠)$/,'');
@@ -106,6 +118,8 @@ function endingCheck(spec,heard){
   // 대사의 끝말에서 「요」만 뺀 꼴(「있어요」 → 「있어」, 「궁금해서요」 → 「궁금해서」)이면 반말로 확신한다 — 가장 흔한 실수다.
   // 반말 꼴 목록에 없는 끝(「-서」·「-이에」)도 잡도록 꼴은 묻지 않고, 이미 높임으로 확실한 말만 뺀다.
   if(!own.sure&&dropped!==lineEnd&&dropped.length&&near(jamo(w),jamo(dropped))>=HIT)return {form:'plain',sure:true,at:word};
+  // 허용 변형 · 다른 문장 · 허용 표현의 끝말에서 「요」만 뺀 꼴도 같다(「어디에 있어요」 → 「있어」).
+  if(!own.sure&&w&&plainForms.some(d=>near(jamo(w),jamo(d))>=HIT))return {form:'plain',sure:true,at:word};
   return {...own,at:word};
  });
  const chunk=heard.match(PLAIN_CHUNK);

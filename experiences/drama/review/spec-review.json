@@ -16,9 +16,9 @@
       "id": "s1e01-1",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "7a5a5ae8902c756a",
+      "hash": "971afd2fb44a97da",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -32,44 +32,44 @@
         }
       ],
       "reasons": {
-        "claude": "The ending (polite and formal only), keys (greeting and 새로 온 유학생), alts and minSyllables 11 all fit this greeting and self-introduction line to a professor. There are no false notes in the judge tests or the blind test utterances. The plain 「안녕…-이야」 and 「새로 온 선생님」 cases were missed notes, but scene lines are not assessed, so this is pass. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 1 · 노트 없음 1 · 다른 노트 0",
-        "argon": "지도교수 첫 방문 인사·자기소개 장면 대사로, 높임·최소 음절·핵심 말 구성이 적절하고 대본 낱말 발화에서 오노트가 없어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "This is a scene line where the student greets the professor and introduces themselves as a new international student. The listener fit, keys, alts, and length are all appropriate, and neither the judge test nor the blind test utterances produce a wrong note. The 「학생」 alt can let 「교환학생」 through, and the 「-이야」 반말 is not caught, but both are only missed notes on a scene line or judge-rule limitations. Verdict: pass. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0",
+        "argon": "지도교수 첫인사·자기소개 장면 대사로 핵심 말·허용 표현·최소 음절·높임 설정이 모두 적절하여 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
       },
       "fixes": [
-        "Optional: the vocab target 유학생 can go unspoken because of keys[1].alts 「새로 온 학생」. On the unseen line for the same skill, check that alts do not accept 「학생」 alone.",
-        "선택: keys[1].alts에서 『새로 온 학생』을 빼면 3음절 어절(유학생) 기준이 살아나 『새로 온 유학생』을 빠뜨렸을 때 확신 없음 대신 빠진 말 노트를 줄 수 있음"
+        "선택: keys[1].alts에서 「새로 온 학생」의 「학생」이 「교환학생」 속 「학생」과도 맞아 다른 사실이 확실한 통과로 지나갈 수 있다 — 장면 대사라 막지 않지만, 같은 alt를 처음 보는 대사로 옮길 때는 빼거나 「새로 온 외국 학생」 같은 꼴로 좁힐 것.",
+        "선택: 「…유학생이야」(이에요→이야) 같은 반말에 끝맺음 노트가 나지 않는 것은 판정 규칙(「요」만 뺀 꼴만 확신) 한계로 기록 — 명세로 고칠 칸 없음."
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "ko.speaking.grammar.past-modifier",
+            "tag": "-(으)ㄴ(과거 관형형)",
             "level": "topik1",
-            "note": "Past modifier -(으)ㄴ (새로 온). Beginner form."
+            "note": "「새로 온 유학생」은 초급 관형형이다. 링크된 TOPIK II 읽기 문법은 기초 문형 수준이다."
           },
           {
-            "tag": "N이에요/예요 (no tag, main pattern)",
+            "tag": "N이에요/예요(해요체 서술)",
             "level": "topik1",
-            "note": "이다 + 해요체 self-introduction pattern."
+            "note": "There is no tag. This is the line's main sentence-ending pattern and is beginner level."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "-(으)ㄴ(과거 관형형): 동사 과거 관형사형 어미(온)는 TOPIK I(1~2급) 기초 문형이다. 1화 도입 대사로는 자연스러우나 TOPIK II 읽기 문법과 이을 때는 초급 문형임을 구분할 필요가 있다.",
+            "note": "동사 과거 관형사형 -(으)ㄴ(「온」)은 TOPIK I 초급 기본 문형이다(TOPIK II 읽기 문법 이음 대상보다는 초급 기초 문형).",
             "tag": "ko.speaking.grammar.past-modifier"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-2",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "67a2a9fa04b68eae",
+      "hash": "42d42b31ad56d5e4",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -83,60 +83,58 @@
         }
       ],
       "reasons": {
-        "claude": "교수에게 한국 생활의 적응 정도를 답하는 장면 대사다. 받는 끝맺음(해요체 · 합쇼체), 핵심 말 두 개(-지만 대비 · -아/어지고 있다 변화), 최소 음절 9가 모두 알맞다. 판정 시험과 블라인드 시험 말에서 오노트가 없다. 대본 낱말을 바꾼 말이 alts로 통과하는 것은 장면 대사라 막지 않는다. 흔한 쉬운 말 몇 개를 더하는 것만 선택으로 남기고 pass로 둔다. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0",
-        "argon": "한국 생활의 현재 형편과 적응 과정을 말하는 장면 대사로, 핵심 말·허용 표현·최소 음절이 잘 설계되어 오노트 없이 작동하므로 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "교수에게 한국 생활 형편을 말하는 장면 대사다. 받는 끝맺음 · 핵심 말 · 허용 표현 · 최소 음절이 모두 맞다. 판정 시험과 블라인드 시험 말에서 오노트가 없다. 대본 낱말을 alts로 바꾼 말이 지나가는 것은 장면 대사라 막지 않는다. 통과다. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
+        "argon": "한국 생활 적응 형편과 변화를 말하는 장면 대사로 핵심 말과 허용 표현 범위, 최소 음절이 잘 잡혀 있어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[1].alts에 「적응하는 중이에요」 「좋아지고 있어요」 더함(흔한 쉬운 말)",
-        "선택: keys[0].alts의 「서툴지만」은 생활 이야기에 덜 어울리므로 빼거나 「적응이 안 됐지만」 쪽으로 바꾸기를 검토",
-        "선택: keys[1].alts 중 해요체만 있는 『적응이 되고 있어요』·『괜찮아지고 있어요』·『나아지고 있어요』에도 합쇼체(『적응이 되고 있습니다』·『괜찮아지고 있습니다』·『나아지고 있습니다』)를 더하면 어미 높임 변형을 일관되게 받을 수 있음"
+        "선택: keys[1].alts에 「적응하는 중이에요」 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "-지만 (ko.speaking.grammar.contrast)",
+            "tag": "-지만",
             "level": "topik1",
-            "note": "대비 연결 어미로, 초급 기본 문형이다."
+            "note": "맞섬 이음은 초급 문형이다. 「낯설다」와 이어 써서 쓰임은 3급 대답에 어울린다."
           },
           {
-            "tag": "-아/어지다 (ko.speaking.grammar.become)",
+            "tag": "-아/어지다",
             "level": "topik2-3",
-            "note": "형용사의 상태 변화를 나타낸다(익숙해지다). 중급 초입에서 굳히는 문형이다."
+            "note": "상태 변화(익숙해지다)로, 중급 앞자리 문형이다."
           },
           {
-            "tag": "-고 있다 (ko.speaking.grammar.progressive)",
+            "tag": "-고 있다",
             "level": "topik1",
-            "note": "진행을 나타낸다. 초급 문형이지만 -아/어지다와 겹쳐 쓰는 데에 중급 연습의 의미가 있다."
+            "note": "진행 문형은 초급이다. -아/어지다와 겹쳐 「익숙해지고 있다」로 쓰면 3급 수준이 된다."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "-지만: 대조 연결어미 자체는 TOPIK I(1급) 기초 문형이나 중급 어휘·복합 서술부와 결합해 쓰였다.",
+            "note": "대조 연결어미 -지만은 TOPIK I(1급) 기본 문형이다.",
             "tag": "ko.speaking.grammar.contrast"
           },
           {
             "level": "topik1",
-            "note": "-아/어지다: 상태 변화 보조용언은 TOPIK I(2급) 문형이며, 여기서는 -고 있다와 결합한 -아/어지고 있다 형태로 점진적 변화를 나타내 3급 발화로 자연스럽게 이어진다.",
+            "note": "상태 변화 -아/어지다는 TOPIK I(2급) 기본 문형이나 중급 어휘 및 진행형과 결합해 자연스럽게 쓰였다.",
             "tag": "ko.speaking.grammar.become"
           },
           {
             "level": "topik1",
-            "note": "-고 있다: 진행 표현 자체는 TOPIK I(1급) 문형이다.",
+            "note": "진행 상 -고 있다는 TOPIK I(1급) 기본 문형이다.",
             "tag": "ko.speaking.grammar.progressive"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-3",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "cb300e04810329d3",
+      "hash": "a13f2510ea6f3f72",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -150,60 +148,64 @@
         }
       ],
       "reasons": {
-        "claude": "Scene line to the professor. The accepted endings (polite and formal), the keys (과제 and 여쭤볼 게 있어서) and minSyllables 8 are all suitable. Correct utterances in the judge tests and the blind test utterances got no false notes, and dropping 요, length and the missing purpose expression were noted correctly. A wrong topic and the plain fragment 「…있어서.」 pass unnoted, but that comes from the rule limit on two-syllable keys and on non-certain plain endings, and it does not block a scene line. Pass. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
-        "argon": "교수님 연구실을 찾아온 용건을 밝히는 장면 대사로, 높임·길이·핵심 말·허용 표현이 기준에 맞고 오노트가 없어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "The spec for a student telling the professor why they came fits well: the endings are limited to polite/formal, the keys are 과제 and 여쭤볼 게 있어서, the alts are reasonable, and minSyllables is 8. Neither the judge test nor the blind test produced a false note. Lines that slip through without a note (plain-word alts, 숙제 substitution) do not block a scene line. Pass, with two optional refinements. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
+        "argon": "방문 용건을 공손하게 말하는 장면 대사로 높임·핵심 말·허용 표현·길이가 모두 적절하여 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
       },
       "fixes": [
-        "Optional: if a wrong topic (「시험」 · 「발표」 etc. in place of 「과제」) is to get a note in the scene line, the only option is a rule change, since 「과제」 is a two-syllable key; leave the spec as is.",
-        "Optional: alts are slipping toward non-honorific forms (물어보다 · 질문하다 · 알고 싶다), which weakens the 여쭤보다 practice. Consider having the director tag mention the honorific when one of those is heard (a rule/director-side change, not the spec).",
-        "선택: keys[1].alts에 『물어보고 싶어서』(『여쭤보고 싶어서』에 대응하는 쉬운 말 짝)를 더할 수 있음"
+        "선택: rename the -(으)ㄹ 게 있다 tag id from 「ko.speaking.grammar.have-to-do」 to something like 「ko.speaking.grammar.thing-to-do」, to avoid confusion with obligation",
+        "선택: add 「여쭤볼 일이 있어서」 and 「여쭤보고 싶은 것이 있어서」 to keys[1].alts"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "ko.speaking.grammar.honorific-ask",
             "level": "topik2-3",
-            "note": "여쭙다·여쭤보다 (honorific form of 묻다) is an intermediate honorific verb at TOPIK II level 3."
+            "note": "여쭙다/여쭤보다, the honorific form of 묻다. A typical intermediate honorific vocabulary item."
           },
           {
             "tag": "ko.speaking.grammar.have-to-do",
             "level": "topik2-3",
-            "note": "-(으)ㄹ 게 있다 (\"there is something to …\") is a pattern used often at level 3."
+            "note": "-(으)ㄹ 게(것이) 있다, meaning 'there is something to do'. Learned in early intermediate, combined with the 여쭤보다 conjugation."
           },
           {
             "tag": "ko.speaking.grammar.reason",
             "level": "topik1",
-            "note": "Reason -아/어서 is beginner grammar, but fine to mix in for episode 1."
+            "note": "-아/어서 expressing reason. A basic beginner pattern."
+          },
+          {
+            "tag": "-에 대해(서) (untagged)",
+            "level": "topik2-3",
+            "note": "Marks the topic 'about ~'. A common intermediate pattern."
           }
         ],
         "argon": [
           {
             "level": "topik2-3",
-            "note": "여쭈다·여쭙다 → 여쭤보다: 묻다의 객체높임 어휘에 보조용언 -아/어 보다를 결합한 표현으로, 교수님께 질문 용건을 꺼내는 3급 담화 목표에 잘 맞는다.",
+            "note": "객체 높임 특수 어휘(여쭙다→여쭤보다)를 격식 용건 담화에 쓰는 표현으로 초급 후반~3급 화용 목표에 해당한다(읽기 문형보다는 어휘·화용 높임 항목).",
             "tag": "ko.speaking.grammar.honorific-ask"
           },
           {
             "level": "topik1",
-            "note": "-(으)ㄹ 게 있다: 관형형 -(으)ㄹ 것(게)이 있다 구문 자체는 TOPIK I(2급) 문형 기반이며, 여쭤볼 게 있어서처럼 용건을 완곡히 제시하는 화용 표현으로 3급 담화에 이어진다.",
+            "note": "-(으)ㄹ 것이/게 있다 구문은 TOPIK I(2급) 기본 문형이다.",
             "tag": "ko.speaking.grammar.have-to-do"
           },
           {
             "level": "topik1",
-            "note": "-아/어서(까닭): 이유·까닭을 나타내는 연결어미로 TOPIK I(1급) 기초 문형이다.",
+            "note": "이유·까닭 연결어미 -아/어서는 TOPIK I(1급) 기본 문형이다.",
             "tag": "ko.speaking.grammar.reason"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-4",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "e19b2af9849d31c2",
+      "hash": "eaea3e86b3a19d97",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -217,50 +219,51 @@
         }
       ],
       "reasons": {
-        "claude": "The spec fits a scene line asking the professor about the deadline. The keys (제출 기한 · 언제까지인지), the alts and variants, the ending and the length limit are all appropriate. Judgment tests and blind test utterances show no false notes. The only addition is optional: more common easy words. / 시험 말 10 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
-        "argon": "지도교수에게 제출 기한을 묻는 장면 대사로, 핵심 말·허용 표현·최소 음절(6)·받는 끝맺음 모두 적절하며 오노트 없이 잘 작동한다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "The professor-directed polite and formal endings are right. The keys (제출 기한 · 언제까지인지) hold the essential information and target expression, and the alts are synonyms at the right politeness level. Neither the judge test nor the blind test lines produced a false note. Bare 반말 such as 「궁금해」 or 「언제까지야」 passes uncertain with no note, but scene lines are not assessed, so this does not block. Pass, with optional touch-ups only. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 1 · 노트 없음 2 · 다른 노트 0",
+        "argon": "제출 기한을 공손하게 묻는 장면 대사로 핵심 말·허용 변형·최소 음절 6 설정이 모두 적절하여 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[0].alts에 『마감 날짜』 · 『제출 마감』 더함(흔한 쉬운 말)",
-        "선택: keys[1].alts에 『언제까지 내면 되는지』 더함",
-        "선택: keys[1].alts에 『언제예요』, 『언제인가요』 더함(『까지』 없이 직접 의문형으로 물었을 때 확실한 통과 보강)"
+        "Optional: add 「제출 기한이 언제까지인지 궁금해요.」 to variants. 「궁금해」 then becomes 「요」 removed from an accepted ending, so the judge can confidently give an ending note for 「…궁금해.」.",
+        "Optional: add 「제출일」 to keys[0].alts.",
+        "Optional: add 「언제까지」 to keys[1].alts, so short questions like 「언제까지죠?」 are a sure pass.",
+        "선택: keys[1].alts에 『언제예요』, 『언제인가요』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "ko.speaking.grammar.wonder-whether",
             "level": "topik2-3",
-            "note": "명사+인지 궁금하다 — indirect question pattern, an intermediate 3급 item"
+            "note": "Indirect question 「-(으)ㄴ지/-는지 궁금하다」 (here 명사+인지). A typical TOPIK II level 3 pattern."
           },
           {
             "tag": "ko.speaking.grammar.reason-final",
             "level": "topik2-3",
-            "note": "Sentence ending -아/어서요 to give a reason — 2~3급, natural in speech"
+            "note": "「-아/어서」 is beginner level, but using it to end a sentence as a reason (「-아서요」) belongs to intermediate speaking."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "-(으)ㄴ지/-는지 궁금하다(명사+인지): 기본 문형은 TOPIK I(2급 후반) 수준이나 중급 학사 어휘와 결합한 완곡 질문 화행으로 3급 초입까지 이어진다. TOPIK II 읽기 문법에 직접 잇기에는 초급 문형에 가깝다.",
+            "note": "간접의문 명사+인지/-(으)ㄴ지/-는지 구문은 TOPIK I(2급) 도입 문형이며, 공손한 우회 질문 전략으로는 3급 초입 담화까지 이어진다.",
             "tag": "ko.speaking.grammar.wonder-whether"
           },
           {
             "level": "topik1",
-            "note": "-아/어서요: 구어에서 이유를 말하며 부드럽게 끝맺는 TOPIK I(2급) 문형으로, 문어 중심인 TOPIK II 읽기 문법과 직접 잇기보다는 구어 화용 항목에 가깝다.",
+            "note": "이유를 말하며 부드럽게 끝맺는 -아/어서요는 TOPIK I(2급) 구어 종결 표현이다(읽기 문법보다는 구어 담화 항목).",
             "tag": "ko.speaking.grammar.reason-final"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-5",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "82ac738cb594b010",
+      "hash": "4acf963d0f586cc8",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -274,39 +277,43 @@
         }
       ],
       "reasons": {
-        "claude": "교수에게 하는 맺음 인사 장면 대사다. 받는 끝맺음, 핵심 말 두 개, 최소 음절 7이 모두 맞다. 판정 시험과 블라인드 시험 말에서 오노트가 없다. 핵심 말 하나를 뺀 말이 확신 없음으로 지나가는 것은 두 핵심 말이 「…습니다」를 함께 가진 데서 오는 판정 규칙의 한계다. 장면 대사라 막지 않는다. 「알았어요·고마워요」를 alts에서 빼는 것은 선택 다듬기로 남긴다. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
-        "argon": "교수님의 마감 안내에 답하고 대화를 맺는 장면 대사로, 오노트가 없고 최소 음절(7)이 한 마디 단답을 잘 걸러 내어 그대로 쓸 수 있다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0"
+        "claude": "교수에게 마감 안내를 받고 대화를 맺는 장면 대사다. 받는 끝맺음(polite·formal), 핵심 말 두 개(알겠습니다·감사합니다)와 높임말 alts, 최소 7음절이 모두 맞다. 판정 시험과 블라인드 시험 말에서 오노트는 없다. 핵심 말 하나를 빼거나 「죄송합니다」로 바꾼 말은 자모 닮음 때문에 확신 없는 통과가 되지만, 장면 대사라 막지 않는다. pass로 둔다. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0",
+        "argon": "연구실 상담 마무리 감사 인사 장면 대사로 최소 음절과 높임·허용 표현이 잘 짜여 있어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[0].alts에서 「알았어요」를 빼는 것을 검토한다(윗사람에게 마지못한 느낌이 날 수 있다).",
-        "선택: keys[1].alts에서 「고마워요」를 빼는 것을 검토한다(지도교수에게 다소 가볍게 들린다)."
+        "선택: keys[1].alts의 「고마워요」는 지도교수에게 다소 가벼우므로, 코치 노트 문구에서 「감사합니다」가 더 정중함을 짚어 주기를 생각해 본다(판정 막지 않음)."
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "ko.speaking.grammar.formal-ending",
             "level": "topik1",
-            "note": "-습니다 합쇼체 맺음, 「알겠습니다·감사합니다」 정형 인사는 초급 문형이다."
+            "note": "-습니다 합쇼체 맺음(알겠습니다·감사합니다)은 초급 문형이다. 1화 첫 회라 섞여도 된다."
+          },
+          {
+            "tag": "-겠-(알겠습니다)",
+            "level": "topik1",
+            "note": "「알겠습니다」는 굳은 응답 표현으로 초급에서 익힌다."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "-습니다(합쇼체로 맺는 인사): TOPIK I(1급) 기초 종결어미이므로 TOPIK II 읽기 문법(ko2.reading.grammar)에 직접 잇는 대상은 아니며, 1화의 격식 전환 화용 연습 항목이다.",
+            "note": "합쇼체 종결어미 -습니다는 TOPIK I(1급) 기초 문형이다(대화를 맺는 화용 전략은 적절하나 TOPIK II 읽기 문법 이음 대상은 아님).",
             "tag": "ko.speaking.grammar.formal-ending"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-6",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "35c6431c247ebed2",
+      "hash": "47ac89076f030c88",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -320,39 +327,44 @@
         }
       ],
       "reasons": {
-        "claude": "Scene line answering a senior in polite style. The keys (reason + what happened), alts, endings, and minimum syllables are all appropriate. Blind tests show no wrong notes on correct utterances. Dropping the reason or swapping in a different verb passes unsure, which counts only as a missed note on a scene line and does not block. Pass. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 1 · 노트 없음 0 · 다른 노트 0",
-        "argon": "처음 만난 선배에게 길을 잃어 헤맨 까닭을 설명하는 장면 대사로, 핵심 말 구성과 최소 음절(8), 허용 표현이 모두 안정적이어서 통과다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "선배에게 길을 잃은 경험과 까닭을 말하는 장면 대사다. 높임 · 핵심 말 · 허용 표현 · 최소 음절이 모두 알맞다. 판정 시험과 블라인드 시험 말에 오노트가 없다. 노트를 못 준 것(까닭을 뺀 말이 확신 없는 통과로 남음, 앞 문장만 반말인 말)은 장면 대사라 막지 않는다. 그대로 통과이며, 「길을 잃고」를 더하는 것은 선택이다. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
+        "argon": "선배에게 길 잃고 헤맨 까닭을 설명하는 장면 대사로 핵심 말·높임·최소 음절이 모두 적절하여 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
       },
       "fixes": [
-        "Optional: add 「길 잃어서」 to keys[0].alts (common particle-dropped form, so it passes sure).",
-        "선택: keys[0].alts에 조사 생략형 『길 잃어서』 더함(구어 조사 생략 시 확실한 매칭 보강)"
+        "선택: keys[0].alts에 「길을 잃고」 더함(「길을 잃고 한참 헤맸어요」도 흔한 말이다).",
+        "선택: keys[0].alts에 『길 잃어서』(목적격 조사 생략 구어) 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "-아/어서(까닭)",
             "level": "topik1",
-            "note": "Beginner connective for reason. Acceptable as the explanation pattern for episode 1; links to TOPIK II reading grammar."
+            "note": "까닭을 잇는 초급 연결 어미다. TOPIK II 읽기 문법에 잇는 기초로 쓴다."
+          },
+          {
+            "tag": "-았/었어요(과거 해요체)",
+            "level": "topik1",
+            "note": "과거 경험을 말하는 기본 종결이다."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "-아/어서(까닭): TOPIK I(1급) 기본 연결어미로 TOPIK II 읽기 문법에 직접 잇기에는 낮으며, 이 줄에서는 중급 어휘(한참, 헤매다)와 함께 1화 설명 과제를 이룬다.",
+            "note": "이유·원인 연결어미 -아/어서는 TOPIK I(1급) 기본 문형이나 중급 어휘(길을 잃다·한참·헤매다)와 결합해 적절히 쓰였다.",
             "tag": "ko.speaking.grammar.reason"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-7",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "4da66e42f00d8bd4",
+      "hash": "3ff7f2508df4c781",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -366,48 +378,49 @@
         }
       ],
       "reasons": {
-        "claude": "선배에게 도서관 위치를 묻는 장면 대사다. 받는 끝맺음 polite·formal, 핵심 말 「도서관」·「어디에 있는지」, minSyllables 9가 모두 맞고 판정 시험과 시험 말에서 오노트가 없다. 반말 「알아?」를 못 거르는 것과 alts의 문장 끝 꼴이 섞인 말을 받는 것은 규칙 한계이거나 장면 대사의 너그러움이라 막지 않는다. pass로 두고, 선택 다듬기를 하나 적는다. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
-        "argon": "통과(pass). 선배에게 공손하게 도서관 위치를 묻는 장면 대사로, 높임·최소 음절(9)·핵심 말(「도서관」, 「어디에 있는지」)과 허용 표현이 모두 적절하며 대본 기반 발화에서 오노트가 없다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
+        "claude": "The keys (도서관 + asking the location) and the polite-level alts are accurate. No false notes appeared for correct utterances in script words, and place swaps and one-word answers get notes. The 「…알아?」 반말 attempt is not caught, but that is a judging-rule limitation and not blocking for a scene line. Pass, with one optional variant addition. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0",
+        "argon": "선배에게 도서관 위치를 공손히 묻는 장면 대사로, 핵심 말·최소 음절·높임 설정이 모두 적절하고 오노트가 없어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[1].alts의 「어디예요」·「어디에 있어요」·「어떻게 가요」는 문장 끝 꼴이라 「-는지 아세요」 틀에 섞인 말까지 받는다. 이 셋은 variants 쪽(예: 「선배님, 도서관에 어떻게 가요?」 더함)으로 옮기는 것을 고려한다. 장면 대사라 판정은 막지 않는다."
+        "Optional: add 「선배님, 도서관이 어디에 있는지 알아요?」 to variants. This accepts the common 해요체 「알아요」 and makes the judge confident that 「…알아?」 is 반말, so a 반말 attempt toward a senior gets an ending note.",
+        "선택: keys[1].alts에 『어디인지』(『어딘지』의 본말 표기) 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "ko.speaking.grammar.know-whether",
             "level": "topik2-3",
-            "note": "「-는지 알다/모르다」는 간접 의문으로, 중급 초반(3급) 문형이다."
+            "note": "-는지 알다/모르다 indirect question, a core TOPIK II level-3 pattern."
           },
           {
             "tag": "ko.speaking.grammar.topic-shift",
             "level": "topik1",
-            "note": "화제를 바꾸는 「그런데」는 초급 접속 부사다."
+            "note": "그런데 as a topic-shifting conjunction is beginner-level and fine as part of episode 1."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "간접의문 '-는지 알다'는 초급 후반(2급) 문형이나 공손한 질문 담화 전략으로 1화에 알맞음(TOPIK II 읽기 문법 연결 시 초급 기반 문형임 참고).",
+            "note": "「-는지 알다」: 초급(2급) 간접의문 기초 문형이지만 「혹시 … -는지 아세요?」 공손 질문 틀로 3급 말하기 도입에 자연스럽게 이어진다.",
             "tag": "ko.speaking.grammar.know-whether"
           },
           {
             "level": "topik1",
-            "note": "접속부사 '그런데'를 통한 화제 바꾸기는 초급(1~2급) 기본 담화 표지임.",
+            "note": "「그런데(화제 바꾸기)」: 초급 접속·담화 표지로 인사에 이어 본용건을 꺼내는 말하기 흐름에 쓰였다.",
             "tag": "ko.speaking.grammar.topic-shift"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-8",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "5c90cda63cb6be37",
+      "hash": "7a4ac35579be6d53",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -421,48 +434,50 @@
         }
       ],
       "reasons": {
-        "claude": "듣는 사람에 맞는 끝맺음, 목표 표현을 정확히 잡은 핵심 말, 적절한 최소 음절을 갖춘 명세입니다. 판정 시험과 블라인드 시험 말 모두에서 오노트가 없습니다. 「때문에」나 「좋았어요」로 바꾼 말에 노트를 못 주는 것은 자모 닮음의 한계이며, 장면 대사라 막지 않습니다. pass로 둡니다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
-        "argon": "통과(pass). 선배의 도움 제안에 「덕분에 살았어요」로 고마움을 전하는 장면 대사로, 핵심 말·허용 표현·최소 음절(7)이 모두 알맞고 오노트가 없다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0"
+        "claude": "Accepting polite and formal endings for a senior is correct. The keys 「덕분에」 and 「살았어요」 capture the thanks and relief, and minSyllables 7 lets the shortest correct answer through. Neither the judging tests nor the blind test utterances produced a wrong note, so the verdict is pass. Adding 「덕에」 and other short forms is optional polishing. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
+        "argon": "선배에게 「덕분에 살았어요」로 고마움을 전하는 장면 대사로, 핵심 말과 쉬운 대체 표현·최소 음절이 잘 잡혀 있어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[1].alts에서 「도움이 됐어요」를 빼는 것을 검토합니다(「덕분에 도움이 됐어요」가 중복 표현이라 어색함). 장면 대사라 판정에는 영향이 없습니다."
+        "Optional: add 「덕에」 to keys[0].alts (a common short form of 「덕분에」; currently it only goes to the not-sure path).",
+        "Optional: consider adding 「고마워요」 or 「감사해요」 to keys[1].alts, or check whether 「도움이 됐어요」 sounds awkward combined with 「덕분에」 (does not block).",
+        "선택: keys[1].alts에 합쇼체 짝인 『도움이 됐습니다』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "ko.speaking.grammar.thanks-to",
             "level": "topik2-3",
-            "note": "N 덕분에: 고마운 원인을 나타내는 연결 표현으로, 중급 초반 문형입니다."
+            "note": "「N 덕분에」 — the cause of a good result; intermediate level 3."
           },
           {
             "tag": "ko.speaking.grammar.idiom-saved",
             "level": "topik2-3",
-            "note": "「살았다」: 곤란에서 벗어났음을 나타내는 구어 관용 표현입니다. 「덕분에 살았어요」로 통째로 익히기 좋습니다."
+            "note": "「살았다」 — idiom of relief; colloquial, around level 3."
           }
         ],
         "argon": [
           {
             "level": "topik2-3",
-            "note": "긍정적 원인과 감사를 나타내는 '덕분에'는 2급 후반~3급 수준으로 TOPIK II 3급 문법·표현과 자연스럽게 이어짐.",
+            "note": "「덕분에」: 긍정적인 이유·원인을 나타내는 중급(3급) 문법으로 「때문에」와의 쓰임 구별이 중요하다.",
             "tag": "ko.speaking.grammar.thanks-to"
           },
           {
             "level": "topik2-3",
-            "note": "곤란에서 벗어나 안도·고마움을 전하는 관용적 '살았다'는 3급 구어 표현 수준에 알맞음(문법보다는 관용 표현에 해당).",
+            "note": "「살았다(관용 표현)」: 어려움을 넘기거나 큰 도움을 받았을 때 쓰는 고빈도 중급 구어 관용 표현으로 3~4급 회화 학습에 알맞다.",
             "tag": "ko.speaking.grammar.idiom-saved"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-9",
       "episode": "s1e01",
       "kind": "scene",
-      "hash": "c373982c6025cfd8",
+      "hash": "f110ec628f8020bd",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -476,38 +491,38 @@
         }
       ],
       "reasons": {
-        "claude": "The spec for this scene line's promise reply (「네, 꼭 살게요!」) is accurate. The key is just 「살게요」, the polite and formal endings are accepted, and the minimum of 3 syllables is appropriate. Lines spoken with the script words get no false notes, and both the ending note and the length note fire correctly. That one-sound differences such as 「갈게요」 slip through is a limit of the judge rules. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
-        "argon": "통과(pass). 커피를 사겠다고 약속하는 장면 대사로, 핵심 말(「살게요」)과 높임·구어 허용 표현, 최소 음절(3)이 모두 적절하며 맞는 대본 발화에서 오노트가 없다. / 시험 말 8 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0"
+        "claude": "A short promise line to a senior. The spec's key, alts, ending and minimum syllables all fit the line's purpose. The judge test and blind test utterances produced no false notes. 「갈게요」 being accepted is a limit of jamo similarity, not a spec fault. Pass, with one optional alt to add. / 시험 말 9 — 오노트 0 · 너그러움 2 · 확신 아님 0 · 노트 없음 0 · 다른 노트 0",
+        "argon": "선배에게 커피를 사겠다고 약속하는 장면 마무리 대사로, 핵심 말·허용 표현·최소 음절이 모두 알맞고 오노트가 없어 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
       },
       "fixes": [
-        "선택: 「사 줄게요」 is common among peers but slightly casual for a senior, so leaving it out of the alts is right (it only lands as uncertain, with no note)."
+        "Optional: add 『낼게요』 to keys[0].alts (common phrasing for promising to pay for coffee; same meaning and politeness level)"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "-(으)ㄹ게요(약속)",
             "level": "topik1",
-            "note": "A beginner promise ending. Acceptable in episode 1 as a review pattern in the scene."
+            "note": "Basic beginner pattern for a promise or intention. Equivalent alts -겠습니다 (intention) and -아/어 드리다 are also beginner level."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "약속의 '-(으)ㄹ게요'는 초급(1~2급) 종결 어미이므로 TOPIK II 읽기 문법과 직접 이을 때는 수준 차이를 고려해야 하나, 1화 대화 마무리 연습으로는 자연스러움.",
+            "note": "「-(으)ㄹ게요(약속)」: 초급(TOPIK I) 약속 종결 어미로, 1화 장면 대화 마무리와 높임 끝맺음 연습용으로 쓰였다.",
             "tag": "ko.speaking.grammar.promise"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-t1",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "0cd0ea248954ef84",
+      "hash": "e377a449f6290de1",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -526,75 +541,67 @@
         }
       ],
       "reasons": {
-        "claude": "조교에게 수강 신청 용건을 말하는 처음 보는 대사다. 판정 시험과 블라인드 시험 말 모두에서 오노트가 없고, 다른 정보(졸업 신청 · 수강 취소)를 말하면 보류로 남아 너그러움도 없다. 끝 「요」 빠짐은 끝맺음 노트로, 한 낱말 대답은 길이 노트로 거른다. 흔한 「물어볼 게 있는데」류를 alts에 더하면 「혼자 해 봄」을 더 셀 수 있다(선택). / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 1",
-        "argon": "높임과 최소 음절은 적절하나, keys[1].alts에 '묻다' 뜻이 없는 『때문에 왔어요』 계열이 들어 있어 다른 용건 발화까지 확실한 통과가 되고 합쇼체 『여쭤보고 싶습니다』 계열이 빠져 있어 고쳐야 한다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0 / 너그러움 「수강 신청 서류 때문에 왔어요.」 → 통과 · 확실",
-        "adjudication": "명세는 조교(staff)에게 해요체·합쇼체만 받고, 끝 「요」를 뺀 반말에는 끝맺음 노트를, 「수강 신청요」 같은 단답에는 길이 노트(최소 8음절)를 준다. 「수강 신청 때문에요」(8음절)처럼 맞는 짧은 대답은 막지 않는다. 판정 시험과 두 검수자의 시험 말에서 오노트는 없다. 「장학금」 같은 다른 화제나 화제가 빠진 말은 확신 없음으로 남아 확실한 통과가 되지 않는다. B가 너그러움으로 든 「수강 신청 서류 때문에 왔어요.」는 잘못 쓴 note 시험 말로 보고 뺐다. 화제(수강 신청)가 맞고, 「N 때문에 왔어요」는 학과 사무실에서 찾아온 까닭을 말하는 자연스럽고 흔한 용건 말하기다. 「서류」는 다른 사실이 아니라 같은 화제의 덧붙인 정보다. 이 능력(ko.speaking.purpose)의 목적은 찾아온 까닭 말하기이고, 뜻이 통하는 쉬운 말을 alts로 받는 것은 이 앱의 선이므로 「때문에 왔어요」 계열을 빼야 할 까닭이 없다. B가 지적한 합쇼체 「여쭤보고 싶습니다」는 B의 시험 말에서도 이미 확실한 통과로 나와 막는 문제가 아니다. 판정 시험의 「…때문에 왔어요 왔어요」 같은 줄은 도구가 낱말을 기계적으로 갈아 끼워 생긴 비문이고 명세 문제는 아니다. 높임, 길이, 능력, 수준, 처음 보는 대사로서의 옮김 모두 맞다."
+        "claude": "조교에게 수강 신청 용건을 말하는 처음 보는 대사로, 명세는 학습 근거로 쓸 만하다. 받는 끝맺음(polite · formal)과 핵심 말 두 개(무엇을 · 왜)가 알맞다. 판정 시험과 블라인드 시험 말에서 오노트도 너그러움도 없다. 「하고 싶어서」가 alts 「알고 싶어서」에 닮음으로 걸리는 것은 판정 규칙의 한계로 적는다. 흔한 「질문 있어요」 등을 alts에 더하는 것은 선택 다듬기다. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
+        "argon": "학과 사무실에서 수강 신청 질문 용건을 말하는 과제로 상황·능력·수준이 잘 맞으나, keys[1].alts에 질문 뜻이 없는 '때문에 왔어요·일로 왔어요·문제로 왔어요·관련해서 왔어요'가 들어 있어 다른 용건('수강 신청 취소 때문에 왔어요')까지 확실한 통과가 되므로 이를 빼고 '질문하려고·질문드리러' 등 누락된 질문 표현을 더해야 한다. / 시험 말 9 — 오노트 0 · 너그러움 1 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0 / 너그러움 「수강 신청 취소 때문에 왔어요.」 → 통과 · 확실",
+        "adjudication": "조교(staff)에게 polite · formal만 받는 것은 맞고, 핵심 말 두 개(수강 신청 · 찾아온 까닭)도 용건 말하기의 필요한 정보를 잘 잡는다. 판정 시험과 두 검수자의 맞는 시험 말에서 오노트는 없다. B가 너그러움으로 든 「수강 신청 취소 때문에 왔어요.」는 잘못 쓴 시험 말로 보고 뺀다. 이 과제의 능력은 ko.speaking.purpose(찾아온 까닭 말하기)이고, 이 말은 필요한 정보(수강 신청)를 담아 높임을 맞춰 용건을 밝힌다. 「취소」는 수강 신청 안의 더 구체적인 용건일 뿐 다른 사실로 바꾼 것이 아니어서, 교사가 빠진 말 노트를 줄 말이 아니다. 같은 까닭으로 「때문에 왔어요 · 일로 왔어요 · 문제로 왔어요 · 관련해서 왔어요」는 학과 사무실에서 용건을 밝히는 아주 흔하고 자연스러운 말이라 alts에서 빼면 오히려 맞는 말이 확신 없음으로 빠진다(A의 「수강 신청 때문에 왔습니다」가 확실한 통과인 것이 맞다). 「장학금…」 · 「여쭤볼 게 있어서 왔어요」(정보 빠짐)는 확신 없음으로 남아 너그러움이 아니다. B의 「수강 신청 좀 물어보려고.」도 확신 없음 통과라 기록되지 않아 괜찮다. 「수강 신청을 하고 싶어서 왔어요」가 「알고 싶어서」와 닮아 확실한 통과가 되는 것은 자모 닮음 규칙의 한계다. 게다가 이 말도 용건 말하기로는 통한다. 흔한 「질문 있어요」 · 「질문하려고」 등이 확신 없음으로 빠지는 것은 「혼자 해 봄」을 덜 셀 뿐이므로 선택 다듬기로 적는다."
       },
       "fixes": [
-        "선택: keys[1].alts에 「물어볼 게 있는데」 더함",
-        "선택: keys[1].alts에 「여쭤보고 싶은 게 있는데」 더함",
-        "선택: keys[1].alts에 「문의할 게 있는데」 더함",
-        "선택: keys[1].alts에 「질문 있어서」 더함",
-        "선택: keys[1].alts에 「질문드릴 게 있어서」 · 「질문드리러」 더함",
-        "keys[1].alts에서 '묻다·여쭙다' 뜻이 없는 『때문에 왔어요』 · 『때문에 왔습니다』 · 『때문에 왔는데요』 · 『일로 왔어요』 · 『일로 왔습니다』 · 『문제로 왔어요』 · 『관련해서 왔어요』 뺌",
-        "keys[1].alts에 합쇼체 발화를 받도록 『여쭤보고 싶습니다』 · 『물어보고 싶습니다』 · 『알고 싶습니다』 · 『문의드리고 싶습니다』 · 『질문드리러』 · 『질문드릴 게 있어서』 더함"
+        "선택: keys[1].alts에 「질문 있어요」 · 「질문 있어서」 더함(조사 빠진 흔한 말)",
+        "선택: keys[1].alts에 「질문하려고」 · 「질문하고 싶어서」 · 「질문드리러」 · 「질문드리려고」 · 「질문드릴 게 있어서」 · 「문의하려고」 더함",
+        "선택: keys[1].alts에 「때문에요」 더함(「수강 신청 때문에요」 같은 짧은 용건 말을 확실한 통과로 세려면)",
+        "선택: keys[1].alts에 「물어보려고요」 · 「여쭤보려고요」 · 「궁금해서요」 더해, 「요」만 뺀 반말 끝(「…물어보려고.」)도 끝맺음 노트로 확신하게 함",
+        "선택: keys[1].alts에 「질문 있어요」 · 「질문이 있어요」 더함(조사 빠진 흔한 말이 확신 없음으로 빠짐)",
+        "선택: keys[1].alts에 「문의하려고」 더함",
+        "keys[1].alts에서 질문·문의 뜻이 없는 『때문에 왔어요』 · 『때문에 왔습니다』 · 『때문에 왔는데요』 · 『일로 왔어요』 · 『일로 왔습니다』 · 『문제로 왔어요』 · 『관련해서 왔어요』 뺌",
+        "keys[1].alts에 『질문하려고』 · 『질문하고 싶어서』 · 『질문드리러』 · 『질문드리려고』 · 『질문드릴 게 있어서』 더함",
+        "선택: keys[1].alts에 『여쭤보려고요』 · 『물어보려고요』 · 『궁금해서요』 · 『여쭤볼 게 있는데요』 · 『질문이 있는데요』를 더해 요 탈락 반말 끝맺음도 확신하게 다듬음"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "N에 대해(서)",
+            "tag": "-에 대해(서)",
             "level": "topik2-3",
-            "note": "화제 표시. 중급 초반 문형이다."
+            "note": "화제를 나타내는 중급 표현. TOPIK II 읽기 문법에 잇는다."
           },
           {
             "tag": "-(으)ㄹ 게(것이) 있다",
-            "level": "topik2-3",
-            "note": "여쭤볼 게 있다. 3급 빈출 문형이다."
-          },
-          {
-            "tag": "-아서/어서 (까닭)",
             "level": "topik1",
-            "note": "초급 문형이지만 1화라 괜찮다."
+            "note": "관형형 + 것 + 있다, 초급 후반 문형."
           },
           {
-            "tag": "여쭙다/여쭤보다 (높임 어휘)",
-            "level": "topik2-3",
-            "note": "회차 말투 카드의 목표 어휘다."
-          },
-          {
-            "tag": "-(으)러 오다",
+            "tag": "-아서/어서 (이유) + 왔어요",
             "level": "topik1",
-            "note": "alts에서 쓰이는 목적 표현이다."
+            "note": "이유 · 목적을 말하는 기본 연결 어미."
+          },
+          {
+            "tag": "여쭤보다(높임 어휘)",
+            "level": "topik2-3",
+            "note": "묻다 · 물어보다의 높임말. 회차 말투 카드의 목표 표현."
           }
         ],
         "argon": [
           {
-            "level": "topik1",
-            "note": "화제·대상을 지정하는 조사 결합형으로 용건 말하기의 기본 틀을 이룬다.",
-            "tag": "N에 대해(서)"
+            "level": "topik2-3",
+            "note": "질문 대상을 한자어 명사구('수강 신청')와 함께 지정하는 3급 문형이다.",
+            "tag": "N에 대해"
           },
           {
             "level": "topik1",
-            "note": "초급 관형사형·의존명사 구문이나 객체높임 동사 『여쭙다』와 결합해 3급 화용 맥락에 맞다.",
-            "tag": "-(으)ㄹ 게 있다"
-          },
-          {
-            "level": "topik1",
-            "note": "찾아온 까닭을 연결하는 이유 연결어미다.",
-            "tag": "-아/어서"
+            "note": "'-(으)ㄹ 것이 있다'의 구어 축약과 이유의 '-아/어서' 결합으로, 초급 문형이지만 특수 높임 동사 '여쭤보다'와 결합해 3~4급 공손한 용건 말하기 과제로 적절하다.",
+            "tag": "-(으)ㄹ 게 있어서"
           }
         ]
       },
-      "packet": "drama-ep01-r6",
-      "reviewedAt": "2026-10-31T14:31:28.759Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-t2",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "df24e5fb01cf3553",
+      "hash": "80e149aca33875c5",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -608,59 +615,56 @@
         }
       ],
       "reasons": {
-        "claude": "The unseen line in the library asking for the return date has keys that capture both 'returning this book' and 'when', so wrong-information lines do not become sure passes. Ending and length notes go only to the right lines. Neither the judge test nor the blind test lines showed false notes or leniency, so the verdict is pass. Optionally, adding 「대출 기간」 and 「내야」 to the alts would count more common phrasings as 'tried alone'. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0",
-        "argon": "듣는 사람에 맞는 높임, 최소 음절(6), 핵심 말과 허용 표현 구성이 모두 촘촘하여 오노트와 너그러움 없이 학습 근거로 쓸 수 있다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
+        "claude": "도서관 직원에게 반납 기한을 묻는 처음 보는 대사로, 명세가 잘 맞는다. 직원에게 해요체·합쇼체만 받고, 핵심 말 두 개(반납·때를 묻기)가 모두 들려야 확실한 통과라서 다른 요청은 확신 없음으로 빠진다. minSyllables 6은 한두 낱말 대답만 거른다. 판정 시험과 시험 말에서 오노트·너그러움이 없어 pass다. 「며칠 빌릴」·「대출 기간」을 alts에 더하는 것은 선택이다. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0",
+        "argon": "도서관 안내 데스크에서 책 반납 기한을 묻는 과제로, 장면 대사 s1e01-4와의 전이 구성이 자연스럽고 핵심 말·허용 표현·최소 음절이 모두 탄탄하여 오노트와 너그러움 없이 그대로 쓸 수 있다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0"
       },
       "fixes": [
-        "Optional: add 「대출 기간」 and 「내야」 to keys[0].alts. These are common library phrasings such as 「이 책 대출 기간이 언제까지예요?」 and 「이 책 언제까지 내야 돼요?」, and adding them reduces uncertain results.",
-        "Optional: add 「갖다 줘야」 to keys[0].alts."
+        "선택: keys[0].alts에 『며칠 빌릴』 더함(「이 책 며칠 빌릴 수 있어요?」가 확실한 통과가 되도록)",
+        "선택: keys[0].alts에 『대출 기간』 더함(「이 책 대출 기간이 어떻게 돼요?」가 확실한 통과가 되도록)",
+        "선택: keys[1].alts에 『날짜가 궁금』 더함 (『기한이 궁금』 · 『반납일이 궁금』 · 『날짜가 어떻게 되』와 짝 맞춤)",
+        "선택: keys[0].alts에 『돌려주면』 · 『돌려드리면』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "-(으)ㄴ지 궁금하다",
+            "tag": "-(으)ㄴ지 궁금하다(간접 의문)",
             "level": "topik2-3",
-            "note": "Indirect question + 궁금하다, the target pattern of the line."
+            "note": "「언제까지인지 궁금해서요」 — 장면 대사 s1e01-4와 같은 목표 문형이다."
           },
           {
-            "tag": "-아서요 (reason, trailing clause)",
+            "tag": "-아서요(이유로 문장 끝맺기)",
             "level": "topik2-3",
-            "note": "Polite softening of the request by ending on a reason clause."
+            "note": "「궁금해서요」 — 말을 부드럽게 끝맺는 해요체 꼴이다."
           },
           {
-            "tag": "N까지",
+            "tag": "N까지(때의 끝)",
             "level": "topik1",
-            "note": "Particle marking a time limit."
-          },
-          {
-            "tag": "-아야 하다/되다 (expected in learner answers)",
-            "level": "topik1",
-            "note": "Likely in learner answers such as 「언제까지 반납해야 돼요?」."
+            "note": "「언제까지」 — 초급 조사이지만 핵심 정보를 싣는다."
           }
         ],
         "argon": [
           {
-            "level": "topik1",
-            "note": "의문사 뒤에 결합해 묻는 내용을 간접의문절로 만드는 기본 문형이다.",
-            "tag": "N인지 / -는지"
+            "level": "topik2-3",
+            "note": "의문사구 '언제까지' 뒤에 '-인지'를 붙여 간접의문절로 안기는 문형으로 3급 수준에 맞다.",
+            "tag": "-인지 (간접의문)"
           },
           {
             "level": "topik2-3",
-            "note": "질문이나 용건의 까닭을 공손하고 부드럽게 맺는 구어 종결형으로 3급 말하기에 적합하다.",
-            "tag": "-아/어서요"
+            "note": "이유의 연결어미에 '요'를 붙여 상대의 물음에 용건을 부드럽게 답하는 구어 종결형으로 3급 대화에 알맞다.",
+            "tag": "-아/어서요 (완곡 종결)"
           }
         ]
       },
-      "packet": "drama-ep01-r6",
-      "reviewedAt": "2026-10-31T14:31:28.759Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-t3",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "f3117493da73d799",
+      "hash": "b6a294eb147bcbef",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -674,60 +678,71 @@
         }
       ],
       "reasons": {
-        "claude": "Unseen line for the dorm supervisor (staff). Politeness, keys, alts and minimum length (9 syllables) are all appropriate. Neither the judging tests nor my blind test utterances produced a false note or leniency. Adding the very common answer 「이제/지금은 괜찮아요」 to keys[1].alts is optional: it would let that answer pass as sure. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 1 · 노트 없음 1 · 다른 노트 1",
-        "argon": "과거 형편과 현재 변화 두 핵심 축, 허용 표현, 최소 음절(9)이 모두 적절하여 오노트와 너그러움 없이 안정적으로 작동한다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
+        "claude": "사감에게 처음의 어려움과 지금의 적응을 말하는 처음 보는 대사다. 끝맺음(polite·formal), 두 핵심 말, 최소 9음절 모두 맞고, 판정_시험과 블라인드 시험 말에서 오노트·너그러움이 없다. 흔한 대답 「괜찮아요」와 「불편했지만/불편했는데」를 alts에 더하면 혼자 해 봄을 더 잘 센다(선택). / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
+        "argon": "기숙사 사감 선생님께 처음의 어려움과 적응해 가는 변화를 말하는 과제로, 과거 형편과 현재 호전 두 핵심 축·허용 표현·최소 음절이 모두 잘 설계되어 있고 drama-judge-5의 반말 끝맺음 판정과도 잘 맞물려 그대로 쓸 수 있다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[1].alts에 「이제 괜찮아요」 · 「지금은 괜찮아요」 더함 (아주 흔한 대답인데 지금은 확신 없음으로 빠져 혼자 해 봄을 덜 셈)",
-        "선택: keys[1].alts에 「많이 익숙해요」 · 「적응이 돼요」 더함",
-        "선택: keys[1].alts에 합쇼체 『이제 익숙합니다』 · 『지금은 익숙합니다』 · 『괜찮아졌습니다』 · 『편해졌습니다』 더함"
+        "선택: keys[1].alts에 「괜찮아요」 더함 (「지금은·이제·요즘은 괜찮아요」 같은 흔한 대답을 확실한 통과로 세려고)",
+        "선택: keys[0].alts에 「불편했지만」 「불편했는데」 더함 (기숙사 생활에서 흔한 말)",
+        "선택: keys[1].alts에 『좋아지고 있어요』 · 『편해지고 있어요』 더함",
+        "선택: keys[0].alts에 『불편했지만』 · 『불편했는데』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "-지만 (대조)",
+            "tag": "-았/었지만",
             "level": "topik1",
-            "note": "Basic contrastive connective."
+            "note": "과거 대조. 초급 연결 어미이지만 1화라 섞여도 된다."
           },
           {
-            "tag": "-아/어지다 (상태 변화)",
+            "tag": "-아/어지다",
             "level": "topik2-3",
-            "note": "익숙해지다 · 괜찮아지다: change of state."
+            "note": "익숙해지다·괜찮아지다처럼 상태 변화를 나타낸다. 이 대사의 목표 문형이다."
           },
           {
-            "tag": "-고 있다 (진행)",
+            "tag": "-고 있다",
             "level": "topik1",
-            "note": "Progressive aspect. In combination with -아/어지다 it works as a grade-3 pattern."
+            "note": "진행. -아/어지고 있다로 묶이면 변화가 진행 중임을 나타낸다(3급 수준 쓰임)."
           },
           {
-            "tag": "-엔 (-에는 준말, 화제·대조)",
+            "tag": "-는 중이다",
             "level": "topik2-3",
-            "note": "Contrastive topic 「처음엔」, used in speech."
+            "note": "허용 표현 「익숙해지는 중이에요」에 쓰인다."
+          },
+          {
+            "tag": "-(으)ㄹ 만하다",
+            "level": "topik2-3",
+            "note": "허용 표현 「지낼 만해요」에 쓰이고, 질문의 말과도 맞물린다."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "과거의 어려웠던 형편과 현재 상태를 대조해 잇는 연결어미다.",
-            "tag": "-았/었지만"
+            "note": "과거의 어려움과 현재 상태를 대조하는 초급 연결어미로 1화 과제에 자연스럽게 섞여 있다.",
+            "tag": "-지만"
           },
           {
             "level": "topik2-3",
-            "note": "상태 변화 『-아/어지다』와 진행 『-고 있다』가 결합해 조금씩 적응해 가는 변화를 나타내는 3급 수준 표현이다.",
-            "tag": "-아/어지고 있다"
+            "note": "형용사 '익숙하다'에 결합해 상태 변화를 나타내며 진행 표현과 함께 점진적 적응을 나타내는 2급 후반~3급 문형이다.",
+            "tag": "-아/어지다"
+          },
+          {
+            "level": "topik1",
+            "note": "적응해 가는 변화가 지금도 이어지고 있음을 나타내는 진행 문형이다.",
+            "tag": "-고 있다"
           }
         ]
       },
-      "packet": "drama-ep01-r6",
-      "reviewedAt": "2026-10-31T14:31:28.759Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-t4",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "e70cc857f0d84c6f",
+      "hash": "dfaebce1c61f43b1",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -741,60 +756,117 @@
         }
       ],
       "reasons": {
-        "claude": "교직원에게 복사실 위치를 묻는 처음 보는 대사다. 높임(polite · formal), 핵심 말(복사실 · 위치 묻기), 허용 표현, 최소 음절 6이 모두 알맞고, 판정 시험과 블라인드 시험 말에서 오노트도 너그러움도 없다. 반말 「어디 있어?」가 노트 없이 보류되는 것은 규칙의 한계다. 「복사하는 곳」을 alts에 더하는 것은 선택 다듬기다. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 4 · 다른 노트 0",
-        "argon": "처음 본 교직원에게 복사실 위치를 묻는 처음 보는 대사로, 높임·최소 음절(6)·핵심 말 구성이 모두 적절해 오노트와 너그러움 없이 작동한다. 『어디인지』·『어딘가요』 등 자모 닮음 경계(0.8) 바로 아래에 걸리는 표현만 선택 보강으로 제안한다. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0"
+        "claude": "Unseen line asking staff where the copy room is. The accepted endings (polite · formal) and the keys (복사실 + location question) are right, and the alts are all expressions asking for a location. The judging test and the blind test lines show no false notes and no leniency. Optional only: add alts for 복사실 (복사하는 곳 · 복사기) and 어디 있나요. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0",
+        "argon": "처음 본 교직원께 복사실 위치를 묻는 처음 보는 대사로, 핵심 말·최소 음절·반말 검출(drama-judge-5) 모두 빈틈없이 작동하여 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[0].alts에 「복사하는 곳」 「복사할 수 있는 곳」 더함 — 「복사실」 대신 풀어 말한 맞는 말도 확실한 통과로 센다",
-        "선택: keys[1].alts에 『어디인지』, 『어딘가요』, 『어디인가요』, 『어디죠』, 『어떻게 가는지』, 『어떻게 가면』 더함",
-        "선택: keys[0].alts에 『복사하는 곳』, 『복사하는 데』 더함"
+        "선택: 없음 → keys[0].alts에 『복사하는 곳』 · 『복사기』 더함 (흔한 바꿔 말하기를 확실한 통과로 셈)",
+        "선택: keys[1].alts에 『어디에 있나요』 · 『어디 있나요』 더함 (아주 흔한 공손한 물음 끝)",
+        "선택: keys[1].alts에 『어떻게 가는지』, 『어떻게 가면』, 『어딘가요』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "-는지 알다/모르다 (간접의문: 어디에 있는지 아세요?)",
+            "tag": "-(으)ㄴ/는지 알다 (간접 의문)",
             "level": "topik2-3",
-            "note": "의문사와 함께 쓰는 간접의문. 3급 핵심 문형"
+            "note": "Core pattern of 「어디에 있는지 아세요?」."
           },
           {
             "tag": "-(으)세요 주체 높임 (아세요)",
             "level": "topik1",
-            "note": "초급 높임. 1화라 섞여도 무방"
+            "note": "Basic honorific."
           },
           {
-            "tag": "N이/가 어디에 있다",
+            "tag": "혹시 (공손한 물음 앞말)",
             "level": "topik1",
-            "note": "위치 묻기 기본 문형. 허용 표현 「어디에 있어요?」로 받는다"
+            "note": "Vocabulary that softens the question."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "의문사(어디)와 결합한 간접의문 문형으로, 『혹시 … -는지 아세요?』 틀을 통해 공손하게 정보를 묻는 데 쓰인다.",
+            "note": "의문사 간접의문(『어디에 있는지』)과 『아세요?』가 결합한 공손 질문 문형으로 1화 도입 과제로 알맞다.",
             "tag": "-는지 알다"
           },
           {
             "level": "topik1",
-            "note": "처음 본 교직원을 높여 묻는 주체 높임·해요체 의문 종결 표현이다.",
-            "tag": "-(으)시- (아세요)"
-          },
-          {
-            "level": "topik1",
-            "note": "시설의 존재와 위치를 나타내는 기본 처소 표현이다.",
-            "tag": "명사+에 있다"
+            "note": "주체 높임 선어말어미(『아세요』)로 처음 본 교직원에게 쓰는 기본 높임이다.",
+            "tag": "-(으)시-"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-t5",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "1c72b8b742081373",
+      "hash": "d4bca4ad250b919f",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ],
+      "reasons": {
+        "claude": "여럿 앞 자기소개를 보는 처음 보는 대사다. 받는 끝맺음(polite·formal), 두 핵심 말, 최소 음절 9가 모두 맞다. 판정 시험과 블라인드 시험 말에서 오노트도 너그러움도 없어 pass로 둔다. 앞 문장만 반말인 섞인 말은 판정의 한계로 적었다. 흔한 말(입학했어요 등)을 더하는 다듬기는 선택으로 남긴다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
+        "argon": "오리엔테이션 여럿 앞 자기소개 대사로, 두 핵심 축과 최소 음절(9음절), 반말 끝맺음 검출이 모두 잘 맞물려 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 1 · 노트 없음 2 · 다른 노트 0"
+      },
+      "fixes": [
+        "선택: keys[0].alts에 「입학했」·「이번 학기에 온 유학생」 더함 — 흔한 맞는 소개를 확실한 통과로 더 셈",
+        "선택: keys[0].alts의 줄기 「새로 왔」·「새로 들어왔」·「처음 왔」 옆에 「새로 왔어요」·「새로 들어왔어요」·「처음 왔어요」를 더함 — 「요」를 뺀 「왔어」·「들어왔어」가 반말로 확신돼, 앞 문장만 반말인 「새로 왔어. 잘 부탁해요.」를 잡을 수 있게(판정이 문장마다 끝을 볼 때)",
+        "선택: keys[0].alts에 『새로 입학한 유학생』, 『입학한 유학생』, 『새로 온 외국인 유학생』 더함"
+      ],
+      "grammarLevels": {
+        "claude": [
+          {
+            "tag": "-(으)ㄴ 관형형(새로 온)",
+            "level": "topik1",
+            "note": "동사 과거 관형형, 초급"
+          },
+          {
+            "tag": "N이에요/입니다",
+            "level": "topik1",
+            "note": "자기소개 기본 문형"
+          },
+          {
+            "tag": "잘 부탁드립니다(-아/어 드리다 높임)",
+            "level": "topik1",
+            "note": "굳은 인사 표현, 초급"
+          }
+        ],
+        "argon": [
+          {
+            "level": "topik1",
+            "note": "동사 과거 관형사형(『새로 온』)으로 자신의 신분과 상태를 수식해 소개하는 기본 문형이다.",
+            "tag": "-(으)ㄴ"
+          },
+          {
+            "level": "topik1",
+            "note": "겸양 어휘 『드리다』와 합쇼체 종결이 결합한 관용 인사로 여럿 앞 공식 자리에 알맞다.",
+            "tag": "-ㅂ니다/습니다 (잘 부탁드립니다)"
+          }
+        ]
+      },
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
+    },
+    {
+      "id": "s1e01-t6",
+      "episode": "s1e01",
+      "kind": "unseen",
+      "hash": "ccb7c181ee482b79",
+      "verdict": "pass",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -813,133 +885,67 @@
         }
       ],
       "reasons": {
-        "claude": "여럿 앞 자기소개 처음 보는 대사로, 끝맺음·핵심 말·최소 음절이 알맞다. 판정 시험과 블라인드 시험 말에서 오노트와 명세 탓 너그러움이 없다. 「몽골에서 온 유학생입니다」 같은 흔한 맞는 말이 보류로 빠지는 점만 선택 다듬기로 적었다. 앞 문장 반말이 통과하는 것은 판정 규칙의 한계다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 2 · 노트 없음 3 · 다른 노트 0",
-        "argon": "오리엔테이션 여럿 앞 자기소개 과제로 상황 전이·높임·최소 음절은 적절하나, keys[0].alts에 『유학생』 정보가 빠진 『새로 왔 · 처음 왔 · 신입생 · 새로 온 학생』이 포함되어 유학생임을 말하지 않은 대사까지 확실한 통과가 된다. 핵심 말을 『새로 온』과 『유학생』으로 분리하고 『입학한』 등 3~4급에서 흔한 표현을 보완해야 한다. / 시험 말 8 — 오노트 0 · 너그러움 1 · 확신 아님 1 · 노트 없음 2 · 다른 노트 0 / 너그러움 「이번 학기에 새로 왔어요. 잘 부탁드립니다.」 → 통과 · 확실",
-        "adjudication": "여럿 앞 자기소개라 받는 끝맺음(polite·formal)이 맞고, 최소 음절 9는 「유학생이에요」·「잘 부탁드립니다」 같은 한 토막 대답만 거른다. 판정 시험과 두 검수자의 시험 말 모두에서 오노트가 없다. B가 너그러움으로 든 「이번 학기에 새로 왔어요. 잘 부탁드립니다.」는 오리엔테이션 자기소개 자리에서 뜻과 높임이 맞는 소개로 보는 것이 옳다. 이 과제의 능력은 인사하고 나를 소개하기이고, 이 말은 「유학생」을 굳이 말하지 않았을 뿐 다른 사실을 말하지 않았다. 「새로 왔」·「신입생」을 받는 것은 그 자리에 뜻이 통하는 쉬운 말을 받는 이 앱의 선 안이므로, 이 시험 말은 잘못 쓴 note로 빼고 본다. B의 「유학생」 분리 고침은 오히려 맞는 소개(「새로 온 학생이에요」 등)를 확신 없음으로 떨어뜨려 「혼자 해 봄」을 덜 세게 된다. 반말 시험 말은 모두 판정 보류로 남아 확실한 통과가 되지 않는다. 앞 문장만 반말인 말이 통과하는 것은 문장 끝만 보는 판정 규칙의 한계다. 「교환학생」·인사만 한 말·부탁 인사를 뺀 말이 보류로 남는 것은 처음 보는 대사 규칙상 괜찮다. 남는 것은 흔한 맞는 소개(「몽골에서 온 유학생」·「입학한 유학생」)가 보류로 빠지는 점뿐이라 선택 다듬기로 둔다."
+        "claude": "The spec for this unseen line is sound. The judge accepts only polite and formal endings toward a stranger. The keys are just 「정문」 and the question expression, so different information (후문, 도서관) does not become a sure pass. The alts broadly cover common ways of asking directions with suitable politeness. In both the judge test and the blind test utterances there are no false notes and no leniency, and minSyllables 6 filters only one- or two-word replies. Adding 「어디 있나요」 and 「가는 방법」 to the alts would let more correct replies count toward 'tried it without help', but this is optional. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0",
+        "argon": "높임·최소 음절(6)·핵심 말 구성과 전이 설계가 모두 탄탄하고 오노트·너그러움도 없으나, 처음 보는 대사에서 3~4급 학습자가 흔히 쓰는 『어디인지』(『어딘지』·『어디 있는지』와 자모 닮음 0.8 미만), 『어디로 가는지』, 『위치』가 keys[1].alts에 빠져 확실한 통과가 누락되므로 alts 보강(fix)을 권한다. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 1 · 노트 없음 3 · 다른 노트 0",
+        "adjudication": "The spec is usable as learning evidence. Toward a stranger, the judge accepts only polite and formal endings. Banmal formed by dropping 「요」 (「…어디에 있어?」) gets a sure ending note. Other banmal (「어디야?」, 「알아?」) is held as unsure and is not recorded, so it never counts as a sure pass. The keys are just 「정문」 and the question expression. Different information (후문, 도서관) and a missing question stay unsure, so in neither reviewer's test utterances does a wrong reply count as 'tried it without help'. There are no false notes: every correct utterance in the judge test and in both reviewers' test utterances is a sure pass or unsure. minSyllables 6 catches one-word replies like 「정문이요?」 and lets 「정문 어디예요?」 (6 syllables) through. Reviewer B's main ground for fix was that 「어디인지」 does not match. That is contradicted by B's own test utterance (「…정문이 어디인지 아세요?」 → 통과 · 확실), so it is excluded. The remaining forms are 「위치」, 「어디로 가는지」, 「가는 방법」 and 「어디 있나요」, which sits at the 0.8 boundary. Missing them only drops a correct reply to unsure, with no note and no record. The alts already cover common direction-asking forms broadly, so these are refinements rather than blockers. Skill (ko.speaking.ask), level, naturalness, transfer from s1e01-7 and culture_bias are all fine."
       },
       "fixes": [
-        "선택: keys[0].alts에 「에서 온 유학생」 더함(「몽골에서 온 유학생입니다」 같은 가장 흔한 자기소개가 확실한 통과로 세지게)",
-        "선택: keys[0].alts에 「입학한 유학생」·「이번에 온 유학생」·「입학했」 더함",
-        "참고(판정 규칙): 앞 문장 반말 + 끝 문장 해요체(「유학생이야. 잘 부탁해요」)가 확실한 통과가 되는 것은 문장 끝만 보는 규칙의 한계 — 명세로 고칠 수 없음",
-        "선택: keys[0].alts에 「에서 온 유학생」 더함(「몽골에서 온 유학생 ○○입니다」 같은 가장 흔한 자기소개가 혼자 해 봄으로 세지게)",
-        "선택: keys[0].alts에 「새로 입학한」 「이번에 온 유학생」 더함",
-        "참고(판정 규칙): 앞 문장 반말 + 끝 문장 해요체(「유학생이야. 잘 부탁해요」)가 확실한 통과가 되는 것은 문장 끝만 보는 규칙의 한계 — 명세로는 고칠 수 없음",
-        "keys[0]을 {\"word\": \"새로 온\", \"alts\": [\"새로 들어온\", \"처음 온\", \"새 유학생\", \"신입 유학생\", \"입학한\", \"입학했\", \"새로 왔\", \"새로 들어왔\", \"처음 왔\", \"이번 학기에 온\", \"이번 학기부터\"]}로 고침",
-        "keys[1]에 {\"word\": \"유학생\", \"alts\": [\"외국인 학생\"]}를 넣고 기존 keys[1](「잘 부탁드립니다」)을 keys[2]로 옮김"
+        "Optional: add 「위치」 to keys[1].alts (so that 「정문 위치 좀 알려 주세요 / 정문 위치 아세요?」 counts as a sure pass)",
+        "Optional: add 「가는 방법」 to keys[1].alts",
+        "Optional: add 「어디 있나요」 to keys[1].alts (currently at the 0.8 boundary)",
+        "Optional: add 「어디로 가는지」 to keys[1].alts",
+        "Optional: add 「어디 있나요」 to keys[1].alts (currently borderline at 0.8 against 「어디 있어요」).",
+        "Optional: add 「가는 방법」 to keys[1].alts (so that the common reply 「정문 가는 방법 알려 주세요」 also counts toward 'tried it without help').",
+        "keys[1].alts에 『어디인지』 더함",
+        "keys[1].alts에 『어디로 가는지』 더함",
+        "keys[1].alts에 『위치』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "N이에요/입니다 (이다 해요체·합쇼체)",
-            "level": "topik1",
-            "note": "자기소개 기본 문형"
-          },
-          {
-            "tag": "V-(으)ㄴ N (과거 관형형: 새로 온 유학생)",
-            "level": "topik1",
-            "note": "초급 관형형"
-          },
-          {
-            "tag": "잘 부탁드립니다 (-드리다 겸양)",
-            "level": "topik1",
-            "note": "굳은 인사 표현"
-          }
-        ],
-        "argon": [
-          {
-            "level": "topik1",
-            "note": "동사 과거 관형사형(새로 온 유학생) — 명사를 수식해 자기 신분을 소개하는 뼈대 문형",
-            "tag": "동사 + -(으)ㄴ"
-          },
-          {
-            "level": "topik1",
-            "note": "해요체 지정사 서술형(유학생이에요) — 기본 신분 소개 문형",
-            "tag": "명사 + 이에요/예요"
-          },
-          {
-            "level": "topik1",
-            "note": "합쇼체 종결어미와 겸양 표현 결합(잘 부탁드립니다) — 여럿 앞 공식 자리의 정중한 마무리 인사",
-            "tag": "-ㅂ니다/습니다 (잘 부탁드립니다)"
-          }
-        ]
-      },
-      "packet": "drama-ep01-r8",
-      "reviewedAt": "2026-10-31T14:42:24.233Z"
-    },
-    {
-      "id": "s1e01-t6",
-      "episode": "s1e01",
-      "kind": "unseen",
-      "hash": "2de4c2fb72c4d453",
-      "verdict": "pass",
-      "rubric": "drama-spec-r3",
-      "by": [
-        {
-          "stage": "claude",
-          "model": "claude-opus-5-5",
-          "verdict": "pass"
-        },
-        {
-          "stage": "argon",
-          "model": "gemini-4-argon-high",
-          "verdict": "pass"
-        }
-      ],
-      "reasons": {
-        "claude": "모르는 어른에게 정문 위치를 묻는 처음 보는 대사다. 끝맺음(polite·formal), 핵심 말(정문 + 위치·길 묻기), alts, 최소 음절 7이 모두 맞다. 시험 말에서 오노트도 없고 너그러움도 없다. 반말과 다른 장소로 바꾼 말은 판정 보류로 빠지는데, 규칙의 한계라 괜찮다. 막지 않는 다듬기로 「어딨어요」를 더하는 것만 제안한다. / 시험 말 10 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 4 · 다른 노트 0",
-        "argon": "사정 설명(길을 잃었어요)과 가상 학교명(새솔대)을 필수 핵심 말에서 빼고 『정문』과 위치 질문 표현에 집중해 오노트·너그러움 없이 안정적으로 판정하며, minSyllables 7이 질문 없는 『길을 잃었어요』(6음절) 단독 발화까지 잘 거른다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0"
-      },
-      "fixes": [
-        "선택: keys[1].alts에 「어딨어요」 더함(구어 축약이 0.8 경계라 판정 보류로 빠지지 않게)",
-        "선택: keys[1].alts에 「어디쯤」 더함",
-        "선택: keys[1].alts에 『어디인지』, 『어딘가요』, 『어디인가요』, 『어디죠』, 『위치』 더함"
-      ],
-      "grammarLevels": {
-        "claude": [
-          {
-            "tag": "-았/었어요 (과거 해요체: 잃었어요)",
-            "level": "topik1",
-            "note": "초급 과거형"
-          },
-          {
-            "tag": "-는지 알다 (간접 의문: 어디에 있는지 아세요)",
+            "tag": "-는지 알다 (indirect question: 어디에 있는지 아세요?)",
             "level": "topik2-3",
-            "note": "간접 의문으로 공손하게 묻기, 읽기 문법 3급대"
+            "note": "Core intermediate pattern; links to ko2.reading.grammar indirect questions."
           },
           {
-            "tag": "-(으)세요 (주체 높임 의문: 아세요)",
+            "tag": "-았/었어요 (past 해요체: 길을 잃었어요)",
             "level": "topik1",
-            "note": "알다→아세요 ㄹ탈락 포함 초급 높임"
+            "note": "Beginner pattern."
+          },
+          {
+            "tag": "-(으)시- subject honorific (아세요)",
+            "level": "topik1",
+            "note": "Beginner honorific; politeness toward a stranger."
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "길을 잃은 상황의 원인이 된 일을 밝히는 기본 과거 시제 표현(길을 잃었어요)이다.",
-            "tag": "-았/었- (과거 시제)"
+            "note": "초급(2급) 간접의문 문형이나, 1화 처음 보는 대사에서 주체높임과 결합해 공손한 질문을 스스로 구성하는 말하기 근거로 적절하다.",
+            "tag": "-는지 알다 (어디에 있는지 아세요?)"
           },
           {
             "level": "topik1",
-            "note": "의문사(어디)와 결합해 낯선 어른께 정중히 위치를 묻는 간접의문 표현(어디에 있는지 아세요?)이다.",
-            "tag": "-는지 알다"
-          },
-          {
-            "level": "topik1",
-            "note": "처음 보는 어른을 높이는 주체 높임·해요체 의문 종결 표현이다.",
+            "note": "초급 주체높임 의문 표현으로, 처음 보는 어른께 공손히 묻는 회차 말투 목표에 맞는다.",
             "tag": "-(으)시- (아세요)"
+          },
+          {
+            "level": "topik1",
+            "note": "질문 앞 사정 설명에 쓰인 초급 과거 시제 문형이다.",
+            "tag": "-었/았- (길을 잃었어요)"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r11",
+      "reviewedAt": "2026-10-31T16:12:43.776Z"
     },
     {
       "id": "s1e01-t7",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "b95c1c6da3ba64a4",
+      "hash": "21136f4917c0ae04",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -953,64 +959,60 @@
         }
       ],
       "reasons": {
-        "claude": "조교에게 고마움을 전하는 처음 보는 대사다. 핵심 말 「덕분에」 · 「감사합니다」와 그 alts가 과제 목적을 잘 잡고, 높임도 맞다. 반말 끝맺음과 한 낱말 대답은 노트로 거르고, 맞는 다양한 감사 표현은 확실한 통과로 센다. 오노트 · 너그러움이 없어 pass로 둔다. 과거형 감사 alts 더하기는 선택 다듬기다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0",
-        "argon": "장면 대사 s1e01-5('감사합니다')와 s1e01-8('덕분에 살았어요')을 조교 선생님께 감사하는 새 상황으로 자연스럽게 옮긴 처음 보는 대사다. 핵심 말 두 개('덕분에', '감사합니다')와 폭넓은 alts, minSyllables 6, 해요체·합쇼체 허용이 잘 맞물려 오노트와 너그러움 없이 통과한다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "조교에게 고마움을 전하는 처음 보는 대사다. 받는 끝맺음(polite·formal), 두 칸 핵심 말(도움 알아주기 + 감사), minSyllables 6이 모두 맞고, 판정 시험과 시험 말에서 오노트와 너그러움이 없다. 흔한 「알려 주셔서」, 「설명해 주셔서」를 alts에 더하면 혼자 해 봄을 더 세게 된다(선택). / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
+        "argon": "도와준 조교 선생님께 고마움을 전하는 대사로, 앞선 두 장면 대사를 자연스럽게 묶어 전이시켰으며 판정 명세도 촘촘해 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[1].alts에 「감사했습니다」 · 「고마웠어요」 · 「고마웠습니다」 더함(과거형 감사 인사를 확실한 통과로 세기 위해)",
-        "선택: keys[0].alts에 『살려 주셨어요』, 『살려주셨어요』 더함 ('도와주셔서·도와주셨어요' 쌍처럼 평서문 활용형 보강)"
+        "선택: keys[0].alts에 「알려 주셔서」, 「알려주셔서」, 「설명해 주셔서」, 「안내해 주셔서」, 「도와 주셔서」 더함 — 조교에게 흔한 감사 문형이 확신 없음으로 빠지지 않게",
+        "선택: keys[1].alts에 「감사했습니다」, 「감사했어요」, 「고마웠습니다」 더함",
+        "선택: keys[0].alts에 『큰일 날 뻔했』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
             "tag": "N 덕분에",
             "level": "topik2-3",
-            "note": "도움의 공을 상대에게 돌리는 목표 문형. TOPIK II 3급 읽기 문법에 잇는다."
+            "note": "까닭(좋은 결과)을 나타내는 중급 문형. ko2.reading.grammar의 이유 표현에 잇는다."
           },
           {
-            "tag": "-(스)ㅂ니다 (합쇼체 감사 인사)",
+            "tag": "-았/었어요 (살았어요)",
             "level": "topik1",
-            "note": "「감사합니다」는 굳은 인사 표현이다."
+            "note": "과거 해요체."
           },
           {
-            "tag": "-았/었어요 (해요체 과거)",
+            "tag": "-습니다 (감사합니다)",
             "level": "topik1",
-            "note": "「살았어요」는 관용적으로 쓰인다."
+            "note": "합쇼체 끝인사."
           },
           {
             "tag": "-아/어 주셔서 (alts)",
             "level": "topik2-3",
-            "note": "「-아/어 주시다」와 이유의 「-아서」가 결합한 감사 표현이다."
+            "note": "-아/어 주다 + -시- + -아서. 감사 이유를 말하는 흔한 문형."
           }
         ],
         "argon": [
           {
-            "level": "topik2-3",
-            "note": "긍정적 결과의 원인을 나타내는 표현으로, 구어 관용 표현 '덕분에 살았어요'와 결합해 3급 수준 말하기 근거로 적절함",
-            "tag": "N 덕분에"
+            "level": "topik1",
+            "note": "긍정적 원인을 나타내는 『명사 + 덕분에』에 관용 표현 『살았어요』가 결합해 구어 활용도가 높다.",
+            "tag": "덕분에"
           },
           {
             "level": "topik1",
-            "note": "과거 시제 해요체 종결어미(초급 기본 문형)",
-            "tag": "-았/었어요"
-          },
-          {
-            "level": "topik1",
-            "note": "합쇼체 평서형 종결어미로 정중한 감사 인사('감사합니다') 및 대화 마무리에 쓰임",
-            "tag": "-습니다"
+            "note": "격식체 감사 인사로 고마움을 전하며 대화를 정중히 마무리하는 표현이다.",
+            "tag": "-ㅂ니다/습니다 (감사합니다)"
           }
         ]
       },
-      "packet": "drama-ep01-r9",
-      "reviewedAt": "2026-10-31T14:50:27.902Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     },
     {
       "id": "s1e01-t8",
       "episode": "s1e01",
       "kind": "unseen",
-      "hash": "a6444df0a2287f8a",
+      "hash": "8f2c7c03a5eb8125",
       "verdict": "pass",
-      "rubric": "drama-spec-r3",
+      "rubric": "drama-spec-r4",
       "by": [
         {
           "stage": "claude",
@@ -1024,58 +1026,64 @@
         }
       ],
       "reasons": {
-        "claude": "교수에게 과제 낼 곳을 묻는 처음 보는 대사다. 끝맺음(polite · formal), 핵심 말(과제 · 어디에 내야), 최소 음절 7이 모두 맞다. 판정 시험과 블라인드 시험 말에서 오노트도, 너그러움도 없었다. 반말 「내야 해?」를 확신하지 못하는 것은 판정 규칙의 한계라 막지 않는다. 「보고서 · 리포트」, 「어디에 하면」 더하기는 선택 고침이다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0",
-        "argon": "높임, 최소 음절(7), 핵심 말과 허용 표현 13개가 모두 촘촘하게 설계되어 오노트와 너그러움 없이 학습 근거로 쓸 수 있다. '-ㄹ까요/-나요' 활용형만 선택 다듬기로 제안한다. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 1 · 다른 노트 0"
+        "claude": "교수에게 과제 낼 곳을 묻는 처음 보는 대사다. 명세가 높임(polite · formal) · 핵심 정보(과제 · 어디) · 길이(7)를 알맞게 잡았다. 판정_시험과 블라인드 시험 말에서 오노트도 너그러움도 없어 pass로 둔다. 다음은 막지 않는 다듬기로 선택 고침에 적었다. 「리포트/레포트」와 명사형 물음(「제출은 어디에」 · 「내는 곳」)을 alts에 더해 「혼자 해 봄」을 더 세게 하는 것. 「돼요/해요」 끝 alts를 더해 교수에게 한 다른 꼴의 반말에도 끝맺음 노트를 주게 하는 것. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0",
+        "argon": "교수님께 과제 제출 장소를 공손히 묻는 대사로, 핵심 정보(과제 · 어디에 내야)와 최소 음절(7음절), 높임 설정이 모두 적절해 통과(pass)다. / 시험 말 8 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0"
       },
       "fixes": [
-        "선택: keys[0].alts에 「보고서」 · 「리포트」 더함(대학 과제를 흔히 이렇게 부른다)",
-        "선택: keys[1].alts에 「어디에 하면」 더함(「과제 제출은 어디에 하면 돼요?」를 확실한 통과로 세려고)",
-        "선택: keys[1].alts에 『어디에 낼까요』, 『어디에 제출할까요』, 『어디에 내나요』, 『어디에 제출하나요』 더함"
+        "선택: keys[0].alts에 「리포트」 · 「레포트」 더함(한국 대학에서 흔한 말 — 지금은 확신 없음으로 빠짐)",
+        "선택: keys[1].alts에 「어디에 제출」 · 「내는 곳」 더함(「과제 제출은 어디에 해요?」 · 「과제 내는 곳이 어디예요?」 같은 명사형 물음을 확실한 통과로 셈)",
+        "선택: keys[1].alts에 「어디에 내야 돼요」 · 「어디에 내야 해요」 더함(끝 어절 「돼요 · 해요」에서 「요」를 뺀 「돼 · 해」를 반말로 확신해, 교수에게 「과제 어디에 내야 돼?」라고 한 말에 끝맺음 노트를 줄 수 있음)",
+        "선택: keys[1].alts에 『제출 장소』, 『내는 곳』, 『제출하는 곳』 더함"
       ],
       "grammarLevels": {
         "claude": [
           {
-            "tag": "-는지 (간접 의문)",
-            "level": "topik2-3",
-            "note": "「어디에 내야 하는지」. 장면 대사 s1e01-4 · 7과 같은 문형이다."
-          },
-          {
-            "tag": "-아/어야 하다 (의무)",
+            "tag": "-아/어야 하다(의무)",
             "level": "topik1",
-            "note": "「내야 하다」. 초급 문형이다."
+            "note": "「내야 하다」 — 초급 문형"
           },
           {
-            "tag": "-아/어도 되다 + -ㄹ까요 (허락 묻기)",
-            "level": "topik1",
-            "note": "「여쭤봐도 될까요?」. 초급 문형을 공손 틀로 묶은 것이다."
-          },
-          {
-            "tag": "여쭤보다 (높임 어휘)",
+            "tag": "-는지(간접 의문)",
             "level": "topik2-3",
-            "note": "「물어보다」의 높임말이다. 회차 말투 카드와 맞는다."
+            "note": "「어디에 내야 하는지」 — 장면 대사 s1e01-4 · 7과 같은 묻기 틀"
+          },
+          {
+            "tag": "여쭤보다(높임 어휘)",
+            "level": "topik2-3",
+            "note": "회차 말투 카드에서 다룬 객체 높임 어휘"
+          },
+          {
+            "tag": "-아/어도 되다(허락)",
+            "level": "topik1",
+            "note": "「여쭤봐도 되다」"
+          },
+          {
+            "tag": "-(으)ㄹ까요(정중한 물음)",
+            "level": "topik1",
+            "note": "「될까요?」 — 공손하게 허락 묻기"
           }
         ],
         "argon": [
           {
             "level": "topik1",
-            "note": "의무·필요를 나타내는 초급(2급) 기본 문형('내야 하다').",
-            "tag": "-아야/어야 하다"
+            "note": "의무·필요를 나타내는 『-어야/아야 하다』(『내야 하는지』)로 방법·장소를 물을 때 기본이 되는 문형이다.",
+            "tag": "-어야/아야 하다"
+          },
+          {
+            "level": "topik1",
+            "note": "간접의문 어미로 질문 내용을 안긴문장으로 묶어 완곡하게 묻는다.",
+            "tag": "-는지"
           },
           {
             "level": "topik2-3",
-            "note": "의문사절을 안은문장으로 연결해 간접적으로 공손히 묻는 중급(3급) 핵심 문형('어디에 내야 하는지').",
-            "tag": "-는지 (간접의문)"
-          },
-          {
-            "level": "topik2-3",
-            "note": "허락 문형 '-아/어도 되다'(초급)에 겸양 동사 '여쭙다'와 완곡 의문 '-ㄹ까요?'를 결합해 윗사람에게 정중히 질문하는 3급 화용 표현.",
-            "tag": "여쭤봐도 될까요? (-아/어도 되다 + 여쭙다)"
+            "note": "허락 문형 『-어도/아도 되다』에 겸양어 『여쭤보다』와 『-(으)ㄹ까요?』를 결합한 공손 질문 화법으로 3급 담화 격식 연습에 알맞다.",
+            "tag": "-어도/아도 될까요? (여쭤봐도 될까요?)"
           }
         ]
       },
-      "packet": "drama-ep01-r3",
-      "reviewedAt": "2026-10-31T14:17:08.964Z"
+      "packet": "drama-ep01-r10",
+      "reviewedAt": "2026-10-31T16:12:43.141Z"
     }
   ],
-  "updatedAt": "2026-10-31T14:50:27.902Z"
+  "updatedAt": "2026-10-31T16:12:43.776Z"
 }

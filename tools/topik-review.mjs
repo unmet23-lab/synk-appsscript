@@ -259,7 +259,7 @@ export async function dramaUnits(ids = null, { episodes = null } = {}) {
       const spec = dramaSpecOf(entry), who = kind === 'scene' ? { professor: '교수', senior: '선배' }[spec.to] : null, person = who ? ep.인물?.[who] : null;
       const same = kind === 'unseen' ? rows.filter(r => r.kind === 'scene' && r.row.능력 === row.능력).map(r => `${r.row.id}: ${r.row.말}`) : [];
       const blind = { 줄: row.id,
-        종류: kind === 'scene' ? '장면 대사 — 대본을 보며 연기한다(연습, 평가로 세지 않음)' : '처음 보는 대사 — 상황 카드(뜻 · 상황)만 보고 한국어 답 없이 처음 말한다(확실한 통과 = 혼자 해 봄)',
+        종류: kind === 'scene' ? '장면 대사 — 대사 카드를 보며 이야기 속 장면의 대사를 말한다(연습, 평가로 세지 않음)' : '처음 보는 대사 — 상황 카드(뜻 · 상황)만 보고 한국어 답 없이 처음 말한다(확실한 통과 = 혼자 해 봄)',
         ...(day ? { 장면: [day.이름, day.장소].filter(Boolean).join(' · ') } : {}), ...(row.상황 ? { 상황: row.상황 } : {}),
         듣는_사람: person ? `${spec.to} — ${who} ${person.이름}: ${person.소개} 학생에게 하는 말투: ${person.말투}` : `${spec.to} — ${DRAMA_TO[spec.to] || spec.to}`,
         ...(before ? { 앞_사람_말: `${before.누가}: ${before.말}` } : {}),
