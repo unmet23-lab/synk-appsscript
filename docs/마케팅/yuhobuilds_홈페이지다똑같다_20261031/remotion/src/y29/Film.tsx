@@ -439,10 +439,13 @@ const Chips: React.FC = () => {
 type Hit = { at: number; src: string; v: number; len?: number };
 const flipFrames = [...R0.map((_, i) => i * B.riffle), ...RB.slice(1).map((_, i) => B.flipsB + (i + 1) * FLIP), ...RE.slice(1).map((_, i) => B.flipsE + (i + 1) * FLIP), ...R0.map((_, i) => B.endFlip + i * 4)];
 const hits = (cut: Cut): Hit[] => {
-  const k = cut === 'B' ? 1.6 : 1; // B판은 작업 소리가 말 자리를 맡는다(통째 크기를 A판과 맞춤 — 10-31 첫 렌더 B −23.3 · A −17.1 LUFS)
+  // B판은 작업 소리가 말 자리를 맡는다. 타자는 작은 소리라 1.6배, 휙 · 클릭 · 엔터는 1.1배(11-01 아르곤: B의 휙 · 클릭이 음악보다 도드라진다 — 1.6배였다).
+  // A판의 타자는 말과 겹치니 0.5배(11-01 아르곤: 요청 칸 타자가 말을 살짝 덮는다 — 타자 봉우리 −9 dBFS 실측).
+  const kType = cut === 'B' ? 1.6 : 0.5;
+  const k = cut === 'B' ? 1.1 : 1;
   const typing = (a: number, b: number): Hit[] => {
     const out: Hit[] = [];
-    for (let t = a; t < b; t += 42) out.push({ at: t, src: 'sfx/typing.mp3', v: 0.34 * k, len: Math.min(44, b - t + 4) });
+    for (let t = a; t < b; t += 42) out.push({ at: t, src: 'sfx/typing.mp3', v: 0.34 * kType, len: Math.min(44, b - t + 4) });
     return out;
   };
   return [
