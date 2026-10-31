@@ -77,7 +77,8 @@ def onsets(ws, sp, side):
             after = float(a[1:].split(':')[side])
             got.append(after)
             continue
-        w = next((w for w in ws if w[1] >= after - 0.05 and w[0].startswith(a)), None)
+        # 낱말 「끝」이 앞 닻 뒤인 것을 찾는다 — 「시작」은 앞 쉼을 끌어안아 웃음 닻(@)보다 앞설 수 있다(10-31 벚꽃 판 「여기」 6.24 < 웃음 6.42)
+        w = next((w for w in ws if w[2] > after and w[0].startswith(a)), None)
         if not w:
             raise SystemExit(f'닻 「{a}」를 받아쓰기에서 못 찾았다')
         seg = next((s for s in sp if s[0] - 0.05 <= w[2] <= s[1] + 0.05), None) or min(sp, key=lambda s: abs(s[0] - w[2]))

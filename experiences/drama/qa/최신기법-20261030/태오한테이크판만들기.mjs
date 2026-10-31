@@ -159,7 +159,7 @@ ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;overflow-wrap:anywhere}
   </div>
  </section>
  <section aria-labelledby="h-cmp" style="display:grid;gap:12px">
-  <div style="display:grid;gap:6px"><p class="slate">셋을 나란히</p><h2 id="h-cmp">같은 장면, 세 얼굴</h2></div>
+  <div style="display:grid;gap:6px"><p class="slate">셋을 나란히</p><h2 id="h-cmp">같은 장면, 세 판</h2></div>
   <p class="cap" id="cmpcap"></p>
   <div class="controls"><button type="button" class="play" id="both" aria-pressed="false">셋 다 재생</button></div>
   <div class="pair" id="pair"></div>
@@ -281,12 +281,12 @@ async function save() {
  writing = true;
  try { do { again = false; await db.doc('picks/voice').set({ 값: chosen, 이름: names[chosen] || '', 한줄: $('#note').value.trim().slice(0, 500), 때: new Date().toISOString() }); } while (again);
   $('#status').className = 'status ok'; $('#status').textContent = '「' + names[chosen] + '」(으)로 저장했습니다.'; $('#voicebox').classList.add('chosen');
- } catch (e) { $('#status').className = 'status'; $('#status').textContent = '저장하지 못했습니다(' + (e && e.code || '오류') + '). 채팅에 「' + names[chosen] + '」라고 알려 주세요.'; }
+ } catch (e) { $('#status').className = 'status'; $('#status').textContent = '저장하지 못했습니다(' + (e && e.code || '오류') + '). 고르신 목소리를 채팅에 알려 주세요.'; }
  finally { writing = false; }
 }
 function choose(c) {
  chosen = c;
- if (!db || !canWrite) { $('#status').className = 'status'; $('#status').textContent = '「' + names[c] + '」로 바꿔 들려 드립니다. 이 화면에서는 저장이 안 되니 고르시면 채팅에 알려 주세요.'; return; }
+ if (!db || !canWrite) { $('#status').className = 'status'; $('#status').textContent = '「' + names[c] + '」(으)로 바꿔 들려 드립니다. 이 화면에서는 저장이 안 되니 고르시면 채팅에 알려 주세요.'; return; }
  $('#status').className = 'status'; $('#status').textContent = '저장하는 중…'; save();
 }
 $('#note').addEventListener('change', () => { if (chosen != null && db && canWrite) save(); });
@@ -297,13 +297,12 @@ async function saveLook() {
  const name = () => (D.판.find((p) => p.값 === lookChosen) || {}).이름 || '';
  try { do { lookAgain = false; await db.doc('picks/look').set({ 값: lookChosen, 이름: name(), 한줄: $('#looknote').value.trim().slice(0, 500), 때: new Date().toISOString() }); } while (lookAgain);
   $('#lookstatus').className = 'status ok'; $('#lookstatus').textContent = '「' + name() + '」(으)로 저장했습니다.'; $('#lookbox').classList.add('chosen');
- } catch (e) { $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '저장하지 못했습니다(' + (e && e.code || '오류') + '). 채팅에 「' + name() + '」라고 알려 주세요.'; }
+ } catch (e) { $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '저장하지 못했습니다(' + (e && e.code || '오류') + '). 고르신 판을 채팅에 알려 주세요.'; }
  finally { lookWriting = false; }
 }
 function chooseLook(k) {
  lookChosen = k;
- const n = (D.판.find((p) => p.값 === k) || {}).이름 || '';
- if (!db || !canWrite) { $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '이 화면에서는 저장이 안 되니 고르시면 채팅에 「' + n + '」라고 알려 주세요.'; return; }
+  if (!db || !canWrite) { $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '이 화면에서는 저장이 안 됩니다. 고르신 판을 채팅에 알려 주세요.'; return; }
  $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '저장하는 중…'; saveLook();
 }
 $('#looknote').addEventListener('change', () => { if (lookChosen != null && db && canWrite) saveLook(); });
