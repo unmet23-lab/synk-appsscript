@@ -1073,4 +1073,10 @@
 - 증상: 팁 35행 `security-audit`의 두 검증기가 `OS no-follow and nonblocking input protection is unavailable`로 모든 입력을 거절한다. 보안 점검 · Apps Script 두 회차에서 재확인했다.
 - 원인: Windows Node에는 검증기의 파일 읽기가 요구하는 `O_NOFOLLOW`·`O_NONBLOCK`이 없다. 원본 의미 검사 오류와 구분한다.
 - 고침: 저장소 밖 `~/security-audit-skill/windows-tools/validate-windows.py`가 Win32 핸들로 부모·leaf를 reparse 거부 및 쓰기·삭제 공유 금지 상태로 열어 유지하고, 일반 파일·단일 링크·5MiB·UTF-8·전후 identity를 검사한다. 그 내용을 원본 `validateDocument`와 원본 schema에 넘긴다. 원본 스킬·검증기는 수정하지 않으며 모듈·bridge도 Node 종료까지 잠근다. JSON 입력 읽기 대체일 뿐 대상 코드 sandbox나 실행 증거 승격 도구가 아니다.
-- 다시 확인: `python -X utf8 "$env:USERPROFILE/security-audit-skill/windows-tools/test-windows.py"` 13/13. `validate-windows.py coverage <coverage-ledger.json>` / `findings <findings.json>`으로 두 회차 결과가 통과했다. upstream 원본 시험은 통과46·기존 CLI 읽기 실패7·skip12로 별도 기록한다. 원본 CLI가 Windows에서 통과했다고 쓰지 않는다. 대상 실행·실배포 상태는 미확인이며 상세 보고서는 저장소 밖에 둔다.
+- 다시 확인: `python -X utf8 "$env:USERPROFILE/security-audit-skill/windows-tools/test-windows.py"` 13/13. `validate-windows.py coverage <coverage-ledger.json>` / `findings <findings.json>`으로 두 회차 결과가 통과했다. upstream 원본 시험은 통과46·기존 CLI 읽기 실패7·skip12로 별도 기록한다. 원본 CLI가 Windows에서 통과했다고 쓰지 않는다. 후속에서 운영 설정 읽기·격리 모의 실행을 별도로 마쳤고 상세 보고서는 저장소 밖에 둔다.
+
+### Windows 감사의 입력 reader는 대상 코드를 격리해 실행하지 않는다 (2026-10-31 GPT)
+- 증상: Win32 JSON reader가 통과해도 대상 코드의 외부 연결·파일 쓰기·자격 사용을 제한하는 실행 경계는 생기지 않는다. Linux 사전 확인에서는 `/proc/self/limits` 단위 뒤 공백 때문에 실행 전에 멈춘 적도 있다.
+- 원인: 입력 검증과 OS 실행 격리는 다른 통제이며, Docker의 읽기 전용 root만으로는 기본 마운트 전부가 읽기 전용이 되지 않는다. limits 행은 단위 뒤에 공백이 붙는다.
+- 고침: 기존 Linux의 고정 이미지로 네트워크 차단·최소 환경·운영 데이터 제외·권한 제거·자원 한도·scratch 외 읽기 전용을 확인한 뒤에만 대상 코드를 실행한다. limits 숫자는 유지하고 행 끝 가로 공백만 허용한다. 종료 후 허용 파일만 no-follow FD·단일 링크·크기·전후 identity로 확인해 비공개 증거 폴더로 승격한다.
+- 다시 확인: 같은 배포 소스의 격리 모의 시험84/84·실패/skip0, 별도 종료 확인에서 컨테이너·scratch 마운트0. 실운영의 정상 읽기와 모의 API 효과를 구분하고, 공개 저장소에는 방법·집계만 남긴다. 남은 CI도 같은 커밋의 기존 workflow를 전용 임시 ref로 실행해 5묶음 성공을 확인했다.
