@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "Why Korean elevators have no 4 👻 사 = 4 #learnkorean",
+ "caption": "In Korean, 4 is 사 (sa) — and 사 (死) also means death. Same sound.\nSo many buildings in Korea label the 4th floor F, for Four.\n\nCount with me:\n일 (il) 1\n이 (i) 2\n삼 (sam) 3\n사 (sa) 4\n\nNot every building does this, but you'll see it a lot.\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreanculture",
+ "pinnedComment": "Is there an unlucky number in your language? 👇",
+ "alt": [
+  "A needle-felted coral ghost mascot in a tiny brass elevator searches for floor 4: the buttons read 1, 2, 3, F, 5. A Korean voice counts 일, 이, 삼, 사; at 사 the music stops, the lights flicker and a tiny white ghost peeks out beside the glowing F button. On screen: 4 = 사, death = 사. An F patch stitched over the 4 lifts at one corner. The doors open on a dim hallway where small white ghosts at a tea table all turn to stare; one lifts a teacup. The mascot slams the doors shut and sighs with relief — and then a tiny ghost appears on its head and whispers 사."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = e19 v7(17.5초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.7 LUFS / −1.3 dBFS → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(8.5MB). 표지 cover.png = 0.6초(버튼판을 보는 몽글 · Where’s floor 4?). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림, 목소리는 특정인이 아닌 TTS(E17과 같은 판단).",
+ "version": "e19-en-v7"
+}

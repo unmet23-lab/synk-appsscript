@@ -1,0 +1,13 @@
+{
+  "note": "LAB 영어 E19 「4층 F」 — 말은 한국어 숫자 넷만(영어 목소리 없음, 그래서 두 채널 판도 같은 소리). 해설 소진 세기 1.0. 「사」는 낮고 천천히. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_사층F_20261031/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1031, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "c1", "text": "일." },
+    { "id": "c2", "text": "이." },
+    { "id": "c3", "text": "삼." },
+    { "id": "c4", "text": "사.", "emotion": "tonedown", "tempo": 0.8 }
+  ]
+}

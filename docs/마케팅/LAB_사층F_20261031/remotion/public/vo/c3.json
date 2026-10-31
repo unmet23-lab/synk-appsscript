@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c3",
+ "text": "삼.",
+ "dur": 0.427,
+ "words": [
+  {
+   "text": "삼.",
+   "start": 0.02,
+   "end": 0.427
+  }
+ ],
+ "source": {
+  "key": "dabb6d916a9fe579f616bc05f7d8fe05",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 385
+ }
+}

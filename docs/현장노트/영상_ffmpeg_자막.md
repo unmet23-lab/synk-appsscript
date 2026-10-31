@@ -399,6 +399,12 @@
 - 고침: 내 연결만 끊고(PowerShell `[System.IO.Directory]::Delete(<연결>)` — 안쪽은 안 지운다) 실제 폴더가 있는 편(10-24는 yuhobuilds_세션공유4기가, 10-27은 LAB_처음쓰는ㄹ_20261024 — 4.0.535)에 다시 걸었다.
 - 다시 확인: 걸 곳의 `(Get-Item <편>\remotion\node_modules -Force).LinkType`이 비어 있고 `Test-Path <편>\remotion\node_modules\.bin\remotion.cmd`가 True다. 렌더 전에 내 편의 `Test-Path remotion\node_modules\.bin\remotion.cmd`부터 본다(어제 돌던 연결도 오늘 끊겨 있을 수 있다).
 
+### Git Bash의 `ln -s`는 `node_modules`를 연결하지 않고 통째로 복사한다 (2026-10-31 Claude)
+- 증상: 새 편 폴더에서 `ln -s <실제 편>/remotion/node_modules node_modules`가 오류 없이 끝났는데, 1분 넘게 걸리고 `ls -la`에 `l`이 아니라 `d`로 나온다. 렌더는 되지만 편마다 수백 MB가 생긴다.
+- 원인: Git Bash(MSYS)의 기본 `ln -s`는 윈도우 심볼릭 링크를 만들지 않고 대상을 복사한다.
+- 고침: PowerShell `New-Item -ItemType Junction`에 `-Path`(내 편의 node_modules)와 `-Target`(실제 편의 node_modules)을 준다. 잘못 만든 복사본은 `(Get-Item … -Force).LinkType`이 비었는지 확인하고 지운다.
+- 다시 확인: 내 편의 `LinkType`이 `Junction`이고 `.bin/remotion.cmd`가 있다.
+
 ### Remotion 편 폴더에서 `npx tsc`가 타입 검사 대신 엉뚱한 `tsc` 패키지를 받는다 (2026-10-24 Claude)
 - 증상: `npx tsc --noEmit -p .`가 「This is not the tsc command you are looking for」를 띄우고 끝났다(npm이 `tsc@2.0.4`를 받아 왔다).
 - 원인: 연결해 쓰는 편들의 `node_modules`에 typescript가 없다. npx는 없는 명령을 같은 이름의 패키지에서 찾는다.
