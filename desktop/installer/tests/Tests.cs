@@ -397,6 +397,11 @@ internal static class SignalInstallerTests
                 using (var uninstall = hive.OpenSubKey(UninstallKey()))
                     if (uninstall == null) hive.DeleteSubKeyTree(InstallKey(), false);
                 using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))hive.DeleteSubKeyTree(AppModelKey(),false);
+                // Every failing automatic-update check now writes a record named by
+                // this fixture's AppId; remove only that file from the shared folder.
+                string fixtureFailureRecord=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Diagnostics",Spec.AppId+".last-update-failure.json");
+                try { if(File.Exists(fixtureFailureRecord))File.Delete(fixtureFailureRecord); }
+                catch (Exception cleanupError) { Console.Error.WriteLine("Fixture cleanup: " + cleanupError.Message); }
             }
         }
     }
