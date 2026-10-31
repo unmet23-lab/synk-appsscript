@@ -988,6 +988,12 @@
 - 10-23 GPT 확인: 사용자가 검수할 Claude 계정을 지정하면 SYNK Desktop 계정판의 기존 `AiSubscriptions/accounts/claude-…` 프로필도 먼저 확인한다(`desktop/src/ai-subscriptions.cjs`의 `CLAUDE_CONFIG_DIR` 경로). 검수 자식 프로세스에만 그 경로를 주고 공식 `claude auth status --json`의 실제 이메일을 대조하면 기본 로그인·다른 세션을 바꾸지 않고 기존 구독으로 실행할 수 있다. 프로필에 모델 설정이 없으면 사용자의 기존 모델·추론 설정을 실행 인자로 보존한다. 자격 파일의 토큰은 열거나 출력하지 않는다.
 - 같은 날 도구를 끈 검수 답변에도 「직접 파일을 읽고 시험했다」는 설명이 섞였다. 실행 기록과 맞지 않는 설명은 증거로 쓰지 않고, 실제 시험 TAP·파일 SHA와 코드 지적을 따로 대조한다. 후속 검수에는 제공된 입력만 읽는다는 점과 입력 SHA·끝 표식·답 길이를 명시한다.
 
+### 진행 중인 Claude `stream-json` 기록의 마지막 줄을 읽으면 JSON 구문 오류가 난다 (2026-10-31 GPT)
+- 증상: 검수 CLI가 정상 실행 중인데 기록을 읽는 Python에서 `Unterminated string`이 나고, 다음 파싱에서는 `message`에 `.get()`을 써 `str` 오류가 났다.
+- 원인: 파일을 읽는 순간 마지막 JSON 한 줄이 아직 다 쓰이지 않았다. 이벤트의 `message`도 항상 객체는 아니며 권한 오류 등에서는 문자열이다.
+- 고침: 진행 확인은 개행으로 끝난 줄까지만 파싱하고 `message`가 객체인 이벤트의 `content`만 읽는다. 종료 후에는 파일 전체를 엄격하게 읽어 최종 result 1개·`is_error: false`·프로세스 종료 0을 확인한다. 미완성 끝 줄을 버리는 것은 진행 확인에만 쓰고 완료 증거에서는 생략하지 않는다.
+- 다시 확인: 문자 비교 Fable 검수에서 진행 상태를 읽고, 종료 후 전체 JSONL·실제 모델·최종 응답·시험 출력과 후보 해시 14개를 대조했다(`.tmp/검수/text-compare-js-fable-20261031/`, [결과](../_ops/qa/text-compare-fable-20261031/README.md)).
+
 ### 아스트라 검수를 `--ephemeral`로 돌리면 하위 협업 스레드 띄우기가 한 번 실패한다 — 본 답은 끝난다 (2026-10-20 Claude)
 - 증상: 10-20 WORLD TOPIK 검수 3차를 `node tools/codex계정.js exec -m gpt-6-astra -s read-only --skip-git-repo-check --ephemeral -C <빈 폴더> -o <답 파일> -`와 표준입력 묶음(152,701바이트)으로 돌렸다. 시작 14초 뒤 stderr에 `collab spawn failed … no rollout found for thread id`가 한 번 찍혔다.
 - 원인: 아스트라가 하위 협업 스레드를 띄우려 했는데, `--ephemeral`이라 부모 스레드 기록(rollout)이 없어 실패한 것으로 보인다(추정).
