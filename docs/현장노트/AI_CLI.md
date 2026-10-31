@@ -1065,3 +1065,10 @@
 - 원인: `automation.py`가 90초가 넘은 `monitor.cjs`를 강제로 끝내면 `finally`가 돌지 않아 잠금이 남는다. 회수 논리는 잠금의 pid가 없을 때(ESRCH)만 잠금을 치웠는데, Windows는 끝난 pid를 곧 다른 프로세스에 준다. 18:19에도 같은 일이 났지만 그때는 pid가 비어 있어 저절로 회수됐다.
 - 고침: 잠금 파일이 5분보다 오래되면 pid가 살아 있어도 주인 없는 잠금으로 보고 이름을 바꿔 옆에 둔다(`monitor.cjs` `STALE_LOCK_MS`). 감시 회차는 발송부가 90초에 끊으므로 5분 넘게 잠금을 쥔 정상 회차는 없다. 그날 남은 잠금은 같은 방식으로 이름만 바꿨다(`monitor.lock.orphan-pidreuse-*`).
 - 다시 확인: `node --test tests/hermes-synk-monitor.test.cjs`의 「a lock left by a killed collector …」. 라이브에서는 `%LOCALAPPDATA%/hermes/runtime/synk-automation/health.json`이 `ok`로 돌아오는지, `monitor.lock`이 회차 사이에 남지 않는지 본다.
+
+### security-audit 검증기의 POSIX 파일 읽기가 Windows에서 멈춘다 (2026-10-31 GPT)
+
+- 증상: 팁 35행 `security-audit`의 두 검증기가 `OS no-follow and nonblocking input protection is unavailable`로 모든 입력을 거절한다. 보안 점검 · Apps Script 두 회차에서 재확인했다.
+- 원인: Windows Node에는 검증기의 파일 읽기가 요구하는 `O_NOFOLLOW`·`O_NONBLOCK`이 없다. 원본 의미 검사 오류와 구분한다.
+- 고침: 저장소 밖 `~/security-audit-skill/windows-tools/validate-windows.py`가 Win32 핸들로 부모·leaf를 reparse 거부 및 쓰기·삭제 공유 금지 상태로 열어 유지하고, 일반 파일·단일 링크·5MiB·UTF-8·전후 identity를 검사한다. 그 내용을 원본 `validateDocument`와 원본 schema에 넘긴다. 원본 스킬·검증기는 수정하지 않으며 모듈·bridge도 Node 종료까지 잠근다. JSON 입력 읽기 대체일 뿐 대상 코드 sandbox나 실행 증거 승격 도구가 아니다.
+- 다시 확인: `python -X utf8 "$env:USERPROFILE/security-audit-skill/windows-tools/test-windows.py"` 13/13. `validate-windows.py coverage <coverage-ledger.json>` / `findings <findings.json>`으로 두 회차 결과가 통과했다. upstream 원본 시험은 통과46·기존 CLI 읽기 실패7·skip12로 별도 기록한다. 원본 CLI가 Windows에서 통과했다고 쓰지 않는다. 대상 실행·실배포 상태는 미확인이며 상세 보고서는 저장소 밖에 둔다.
