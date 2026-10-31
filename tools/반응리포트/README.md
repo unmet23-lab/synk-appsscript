@@ -41,11 +41,11 @@ node --test tests/반응리포트.test.js
 
 ## Clarity 켜기(처음 한 번)
 
-SYNK 프로젝트: `z67ez8kfp3`(이름 SYNK · synk.im · B2B 서비스, unmet23@gmail.com 구글 로그인 — 10-31 유호님 가입 · Claude가 ego에서 만듦).
+SYNK 프로젝트: `z67ez8kfp3`(이름 SYNK · synk.im · B2B 서비스, unmet23@gmail.com 구글 로그인 — 10-31 유호님 가입 · Claude가 ego에서 만듦). 아래 1~3은 10-31에 끝났고(공개 synk-policy `4841c3d`, 토큰 이름 `synk-report`), 4의 예약 등록이 남았다. 하루 받기 등록: 운영 사본에서 `pwsh -NoProfile -File tools/반응리포트/예약/install-task.ps1 -TaskName "SYNK 반응 리포트 랜딩 받기"`(자동 모드 판정기가 예약 등록을 막으니 유호님이 이 작업 이름을 대서 승인해야 한다). 마스킹은 기본 「균형」에 질문창 가림 — 까닭과 실측은 [설계](../../docs/마케팅/PULSE_반응브리핑/반응리포트_설계.md).
 
 1. 유호님: [clarity.microsoft.com](https://clarity.microsoft.com)에 가입하고 프로젝트를 만든다(주소 https://synk.im). 설정 › Data Export › 새 토큰을 만들어 복사한다. ego의 구글 계정 목록에 그 계정이 있으면 프로젝트 만들기는 Claude가 해도 된다(비밀번호 없이 계정 고르기로 들어간다).
 2. Claude: 토큰을 `~/SYNK_보안/clarity_<프로젝트 id>.txt`에 둔다(출력 · 기록하지 않음). 캠페인 설정 `랜딩.프로젝트`에 id를 적는다.
-3. Claude: 측정 코드를 synk.im/pulse 쪽에만 넣고(원천 SYNK-website `site-v10`), 개인정보처리방침의 「별도의 방문자 분석 스크립트나 광고 추적 기능을 설치하지 않았습니다」를 Clarity(Microsoft · 국외 처리 · 쿠키 · 세션 녹화, 마스킹 strict) 안내로 바꿔 같은 `node tools/공개.js` 회차로 올린다(화면 검수 규칙 그대로).
+3. Claude: 측정 코드를 synk.im/pulse 쪽에만 넣고, 개인정보처리방침의 「외부 방문자 분석 서비스를 설치하지 않았습니다」를 Clarity(Microsoft · 국외 처리 · 쿠키 · 세션 재생) 안내로 바꿔 같은 `node tools/공개.js` 회차로 올린다(화면 검수 규칙 그대로). 방문자가 글을 적는 칸은 `data-clarity-mask="True"`로 가리고 나가는 내용을 풀어 재 본다.
 4. Claude: 하루 받기(`랜딩받기 --전부`)를 Windows 예약 작업 하나로 켜고 [관문 · 자동화 한 장](../../docs/_ops/관문_자동화.md)에 적는다. 첫 주에 실제 응답으로 칸 이름 · 봇 세션 처리를 확인해 시험 견본을 갈아 끼운다.
 
 고객 랜딩은 고객이 자기 Clarity 프로젝트에 우리를 관리자로 넣거나 토큰을 주고, 측정 고지는 고객 사이트 방침 몫이다.
