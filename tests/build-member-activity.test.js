@@ -81,6 +81,20 @@ test('shared statement code preserves the canonical API and document validation'
   assert.equal(row.parserVersion,'member-statement-ko-13');assert.ok(row.meanings.length);
   assert.equal(outcome(()=>schema.validateMemberUnderstanding(currentDocument)).ok,true);
   assert.deepEqual(outcome(()=>schema.validateMemberUnderstanding(currentDocument)),outcome(()=>canonicalSchema.validateMemberUnderstanding(currentDocument)));
+  // This deployed ko12 row used p0 for music; ko13 adds a preceding support
+  // meaning. A generated consumer must replay the old IDs without relabelling
+  // the saved statement or silently promoting its document.
+  const frozen12=require('../experiences/synk-account/src/member-statement-v12.cjs');
+  const oldText='도움받기 전에는 혼자 해 보고 싶어요. 요즘 저는 음악을 좋아해요.';
+  const oldRow={...row,id:'00000000-0000-4000-8000-000000000003',parserVersion:frozen12.PARSER_VERSION,text:oldText,meanings:frozen12.parseMemberStatement(oldText).meanings};
+  const oldDocument={version:13,reviews:[],overrides:[],statements:[oldRow]};
+  assert.equal(oldRow.meanings.find(m=>m.value==='music').id,'p0');
+  assert.equal(current.parseMemberStatement(oldText).meanings.find(m=>m.value==='music').id,'p1');
+  assert.deepEqual(schema.validateMemberUnderstanding(oldDocument),oldDocument);
+  assert.throws(()=>schema.validateMemberUnderstanding({...oldDocument,statements:[{...oldRow,meanings:current.parseMemberStatement(oldText).meanings}]}),{code:'INVALID_PERSONAL_STATE'});
+  assert.equal(schema.updateMemberUnderstanding(oldDocument,{type:'clear'},row.at).version,13);
+  const promoted=schema.updateMemberUnderstanding(oldDocument,{type:'statement',value:row,replaceId:null},row.at);
+  assert.equal(promoted.version,14);assert.deepEqual(promoted.statements.find(s=>s.id===oldRow.id),oldRow);
   assert.equal(outcome(()=>schema.validateMemberUnderstanding({version:15,reviews:[],overrides:[],statements:[]})).ok,false,'unknown future documents remain rejected');
   // ko13 preserves the exact deployed ko12 source. Bound that compatibility
   // cost and compare the same four public entries without sharing.
