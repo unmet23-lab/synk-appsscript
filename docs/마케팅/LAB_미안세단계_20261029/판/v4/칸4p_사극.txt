@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a comic daydream cutaway inside a vertical comedy short: an over-the-top apology imagined as a scene from a Korean historical palace drama. Needle-felted wool miniature set, photographed like a real macro photo.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video crops about 8% off the left and right edges, so keep everything important inside the central 84% of the width.
+
+THE SET: the throne hall of a Joseon-era Korean palace made of felt: deep red wooden pillars, dancheong painted beams in green and red, a folding screen behind the throne with a sun and moon and mountains, a long stone-grey floor. Warm candle-like light, rich and cinematic.
+
+THE KING: the teacher doll from the FIRST attached photo (same round felt face, thin round wire glasses, neat grey felt bun) sits high on the golden throne at the top centre of the image, wearing a red royal Joseon king's robe with a gold dragon roundel and a black king's hat. Her robe has one big dark-brown coffee stain on the chest, and she holds a small paper coffee cup like a royal sceptre. She looks down, stern and unimpressed. She occupies between 14% and 36% of the image height.
+
+THE PROSTRATE MASCOT: at the bottom of the image, large and close to the camera, the coral felt ghost-shaped mascot from the SECOND attached photo (same coral wool, fuzzy texture, scalloped hem with cream running stitch, glossy black bead eyes; no arms, no legs, no hands, ever) is pressed low to the stone floor in a deep kowtow bow toward the throne, wearing a tiny black Korean horsehair gat hat, streams of light-blue felt tears. It occupies between 72% and 94% of the image height, centered horizontally.
+
+KEEP CLEAR: between 38% and 68% of the image height there is only the empty long stone floor, because a speech bubble goes there.
+
+It reads instantly at phone size as "a Korean palace drama: the mascot begging for its life before the king". PHOTOGRAPHY: real handmade needle-felt craft, macro lens, cinematic light, visible wool fibers. Do not use coral anywhere except the mascot. Absolutely no text, letters, numbers, logos, hanja or watermarks anywhere; the screen and beams have only shapes.

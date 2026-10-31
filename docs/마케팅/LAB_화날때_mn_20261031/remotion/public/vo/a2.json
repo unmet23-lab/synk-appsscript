@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a2",
+ "text": "열받아!",
+ "dur": 0.947,
+ "words": [
+  {
+   "text": "열받아!",
+   "start": 0.02,
+   "end": 0.947
+  }
+ ],
+ "source": {
+  "key": "ea3717704e1bd40eb5a9a909d63976e5",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1033,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "짜증 나! 눈앞에서 마지막 김밥을 뺏겼다. 끓어오른다.",
+   "next": "어이없어..."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 469
+ }
+}

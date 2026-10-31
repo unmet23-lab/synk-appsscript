@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a comic daydream cutaway inside a vertical comedy short: the roles have flipped. Same felt school hallway world, same mascot and same teacher doll as the attached photos. Needle-felted wool miniature set, photographed like a real macro photo.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video crops about 8% off the left and right edges, so keep everything important inside the central 84% of the width.
+
+THE SET: the same school hallway as the FIRST attached photo, with the same lockers, warm golden light and the same red velvet throne chair, but the camera is now close to the throne, and the towers of paper coffee cups stand on both sides.
+
+THE MASCOT ON THE THRONE: ONE coral felt ghost-shaped mascot from the SECOND attached photo (same coral wool, fuzzy texture, scalloped hem with cream running stitch, glossy black bead eyes; no arms, no legs, no hands, ever) now sits smugly on the red velvet throne, centered, big, wearing a tiny gold felt crown tilted to one side. One eyelid half-closed, a smug little smirk, chin up. A cup of coffee steams on the armrest. It occupies between 34% and 66% of the image height.
+
+THE TEACHER: the teacher doll (grey bun, round wire glasses, mustard cardigan, white blouse with the big coffee stain) now stands at the bottom-left foreground, seen from behind at a three-quarter angle so her glasses and shocked side profile are visible, bowing slightly and holding up a small round tray with one paper coffee cup toward the throne, with one big light-blue felt sweat drop. She occupies between 62% and 96% of the image height, on the left side of the image.
+
+KEEP THE TOP CLEAR: the top 30% of the image is only calm lockers and wall, because text goes there.
+
+It reads instantly at phone size as "the mascot is the king now and the teacher serves it coffee". PHOTOGRAPHY: real handmade needle-felt craft, macro lens, soft golden light, visible wool fibers. Do not use coral anywhere except the mascot. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere.

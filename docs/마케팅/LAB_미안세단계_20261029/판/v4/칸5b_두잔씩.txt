@@ -1,0 +1,5 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — edit of the attached photo. Keep the hallway, camera, light, the teacher on her throne and every mascot in exactly the same place and size. Change ONLY this: every mascot now carries TWO white paper coffee cups with brown sleeves stacked on its head instead of one, the stacks wobbling a little. In addition, around the teacher at the far end of the hallway there is now a huge pile of hundreds of empty and full paper cups, stacked up on both sides of her throne like towers, higher than her head. Her expression changes to slightly overwhelmed. The nearest mascot sweats and strains under its two cups.
+
+Keep the top 34% of the image calm with no cups. Needle-felted wool craft, macro photo. Do not use coral anywhere except the mascots. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere.

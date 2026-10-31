@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "3 levels of \"sorry\" in Korean 🙇 미안 · 미안해요 · 죄송합니다 #learnkorean",
+ "caption": "미안 (mi-an) — sorry. Friends only.\n미안해요 (mi-an-hae-yo) — I'm sorry. Polite.\n죄송합니다 (joe-song-ham-ni-da) — I'm very sorry. For teachers, bosses and anyone older.\n\n전하 (jeon-ha) = Your Majesty. Palace dramas only. Please don't try it on your teacher.\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreanphrases",
+ "pinnedComment": "Which level for your teacher — 1, 2 or 3? 👇",
+ "alt": [
+  "A needle-felted school hallway. A coral felt ghost mascot crashes into a teacher doll and coffee explodes across the frame. The mascot apologises in three rising levels — 미안 (friends only), 미안해요 (polite), 죄송합니다 (for teachers) — then in an imagined palace drama it kowtows to the teacher as king (전하! 죄송합니다!), then an endless line of mascots carries coffee to the teacher, buried in a mountain of cups. At 근데… every copy stops crying and glares; they accuse her (네가 부딪쳤잖아!), and the mascot sits crowned on a throne while the teacher serves it coffee. A replay of the crash shows the mascot did it, the teacher stares, and one tiny flattened mascot whispers 죄송합니다."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = sorry v12(18.9초) → 음량마감 −14.5 LUFS / −1.5 dBFS → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4. 표지 cover.png = 8.6초(컵 산 · LV.999). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림(실존 인물 · 실제 사건처럼 보이는 장면 없음), 목소리는 특정인이 아닌 TTS(E11 · E17과 같은 판단).",
+ "version": "e9-en-v12"
+}

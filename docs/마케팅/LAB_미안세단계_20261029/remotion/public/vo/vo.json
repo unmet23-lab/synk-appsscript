@@ -15,7 +15,7 @@
   "seed": 1029,
   "lufs": -16
  },
- "made": "2026-10-28T18:23:32.642Z",
+ "made": "2026-10-31T07:26:53.219Z",
  "lines": [
   {
    "id": "s1",
@@ -124,6 +124,33 @@
    "src": "s5b.wav",
    "key": "8077b57d7ecf7246b3afcf0ed565d048",
    "words": 8
+  },
+  {
+   "id": "s10",
+   "text": "죄송합니다.",
+   "dur": 1.187,
+   "syllablesPerSec": 4.21,
+   "src": "s10.wav",
+   "key": "6228dd776c3f693899bcb392e4645e8e",
+   "words": 1
+  },
+  {
+   "id": "s4b",
+   "text": "전하! 죄송합니다!",
+   "dur": 1.786,
+   "syllablesPerSec": 3.92,
+   "src": "s4b.wav",
+   "key": "a5f8182db2129d30cc0cb945732dbaf0",
+   "words": 2
+  },
+  {
+   "id": "s5c",
+   "text": "평생 커피 사겠습니다, 매일 두 잔씩!",
+   "dur": 2.286,
+   "syllablesPerSec": 6.12,
+   "src": "s5c.wav",
+   "key": "ebd1e2c2597711276e4cdedcdcb4e97f",
+   "words": 6
   }
  ]
 }

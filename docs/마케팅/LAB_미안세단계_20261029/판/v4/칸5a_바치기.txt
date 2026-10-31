@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a comic daydream cutaway inside a vertical comedy short: the mascot's over-the-top promise "I will buy your coffee for the rest of my life", shown literally. Needle-felted wool miniature set, photographed like a real macro photo. Same felt school hallway world and same teacher doll as the FIRST attached photo, but this is a different camera angle: looking straight down the length of the hallway.
+
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video crops about 8% off the left and right edges, so keep everything important inside the central 84% of the width.
+
+THE SCENE: a long hallway seen in one-point perspective, sage-green and mustard felt lockers along both side walls, a light grey felt floor, warm golden daylight. At the far end of the hallway, small and centered, the teacher doll from the FIRST attached photo (grey bun, round glasses, mustard cardigan, coffee stain on her blouse) sits on a little red velvet felt throne chair, looking pleased and a bit surprised.
+
+THE LINE: a very long, perfectly straight single-file line of about twenty coral felt mascots runs from the bottom-centre foreground all the way down the hallway to the teacher, getting smaller and smaller with distance. Each mascot is the coral ghost-shaped mascot from the SECOND attached photo (same body shape, coral wool, fuzzy texture, scalloped hem with cream running stitch, glossy black bead eyes; no arms, no legs, no hands, ever), bowing forward, carrying exactly ONE white paper coffee cup with a brown sleeve balanced on top of its head. The nearest mascot is big, at the bottom of the image, between 62% and 95% of the image height, crying happy little tears. Every mascot is clearly a mascot with a cup, readable at phone size. It reads instantly as "an endless parade delivering coffee to the teacher, forever".
+
+KEEP THE TOP CLEAR: the top 34% of the image is only calm upper lockers, wall and ceiling, because text goes there. Put the teacher at about 40% of the image height.
+
+PHOTOGRAPHY: real handmade needle-felt craft, macro lens, deep perspective, soft golden light, visible wool fibers. Do not use coral anywhere except the mascots. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere.

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "짜증 나!",
+ "dur": 0.714,
+ "words": [
+  {
+   "text": "짜증",
+   "start": 0.02,
+   "end": 0.404
+  },
+  {
+   "text": "나!",
+   "start": 0.828,
+   "end": 0.714
+  }
+ ],
+ "source": {
+  "key": "c84225917c997f2ea13a87fe91184712",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1031,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "버스가 눈앞에서 가 버리고 흙탕물까지 튀었다. 친구에게 투덜거린다.",
+   "next": "열받아!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 439
+ }
+}

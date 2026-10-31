@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1031,
+  "lufs": -16
+ },
+ "made": "2026-10-31T07:46:01.937Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "짜증 나!",
+   "dur": 0.714,
+   "syllablesPerSec": 4.2,
+   "src": "a1.wav",
+   "key": "c84225917c997f2ea13a87fe91184712",
+   "words": 2
+  },
+  {
+   "id": "a2",
+   "text": "열받아!",
+   "dur": 0.947,
+   "syllablesPerSec": 3.17,
+   "src": "a2.wav",
+   "key": "ea3717704e1bd40eb5a9a909d63976e5",
+   "words": 1
+  },
+  {
+   "id": "a3",
+   "text": "어이없어...",
+   "dur": 1.027,
+   "syllablesPerSec": 3.89,
+   "src": "a3.wav",
+   "key": "ab4a475c3f035f921e3d432c4f91c80f",
+   "words": 1
+  },
+  {
+   "id": "a4",
+   "text": "억울해!",
+   "dur": 1.245,
+   "syllablesPerSec": 2.41,
+   "src": "a4.wav",
+   "key": "2a5c8ef23c1389dad4aea9e604785be7",
+   "words": 1
+  },
+  {
+   "id": "a5",
+   "text": "네, 사장님~",
+   "dur": 1.027,
+   "syllablesPerSec": 3.89,
+   "src": "a5.wav",
+   "key": "3c55b9ebb37cd6119ebb1a811df85a16",
+   "words": 2
+  }
+ ]
+}

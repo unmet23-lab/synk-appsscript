@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a4",
+ "text": "억울해!",
+ "dur": 1.245,
+ "words": [
+  {
+   "text": "억울해!",
+   "start": 0.02,
+   "end": 1.245
+  }
+ ],
+ "source": {
+  "key": "2a5c8ef23c1389dad4aea9e604785be7",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1031,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "내가 안 깼는데 혼났다. 눈물을 참으며.",
+   "next": "네, 사장님."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 546
+ }
+}

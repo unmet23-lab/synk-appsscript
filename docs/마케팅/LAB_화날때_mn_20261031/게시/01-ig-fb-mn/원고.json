@@ -1,0 +1,16 @@
+{
+ "id": "01-ig-fb-mn",
+ "brand": "LAB",
+ "platform": "instagram+facebook",
+ "account": "@synk.mn · SYNK(synkworld)",
+ "format": "reels",
+ "language": "mn",
+ "audioLanguage": "ko",
+ "caption": "Уурласан үедээ солонгосоор юу гэж хэлэх вэ?\n\n짜증 나 (жажын на) — ямар бухимдмаар юм бэ\n열받아 (ёлбада) — дотор минь буцалж байна\n어이없어 (өи өбсө) — хэлэх үг олдохгүй байна\n억울해 (өгурэ) — ямар гомдмоор юм бэ\n\nЭдгээр нь дотно хүмүүсийн хооронд хэлдэг үгс. Зөвхөн найздаа хэлээрэй. Ахмад хүний өмнө бол дотроо л бодоорой!\n\nТа уурласан үедээ юу гэж хэлдэг вэ? Сэтгэгдэл дээр бичээрэй 👇\n\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+ "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+ "alt": [
+  "A needle-felted comedy about one bad day. A coral felt mascot boils with rage; a green bus leaves and splashes it with muddy water (짜증 나!); someone takes the last triangle kimbap and the mascot becomes a whistling kettle on a stove (열받아!); a friend who owes it money shows off new sneakers and its soul floats out (어이없어…); a cafe owner blames it for a mug the cat broke and it cries (억울해!). A gauge on the left fills up at each step. In front of the owner it smiles sweetly and says 네, 사장님~ while a volcano erupts in its thought cloud. Mongolian lines explain each phrase and the end says to keep it inside in front of elders. The owner walks away and the cat pushes another mug."
+ ],
+ "_비고": "video.mp4 = angry v6(28.6초 · 화면 글 몽골어 + 한국어 목소리 소진) → 음량마감 → CBR 10M 다시 담기. upload_10MB.mp4. Business Suite 릴스 하나로 인스타 @synk.mn · 페북 SYNK 교차 게시(M19와 같은 길). 틱톡 @synk.mn · 텔레그램 SYNK LAB은 같은 영상 · 같은 캡션. 표지 cover.png = 23.9초(웃는 몽글 · 속 화산). 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림(실존 인물 · 실제 사건처럼 보이는 장면 없음), 목소리는 특정인이 아닌 TTS.",
+ "version": "m1-mn-v6"
+}

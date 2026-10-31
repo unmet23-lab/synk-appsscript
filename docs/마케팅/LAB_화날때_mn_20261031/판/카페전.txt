@@ -1,0 +1,8 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the neighbourhood felt cafe from the SECOND attached photo. On the wooden floor in the foreground lies one broken white mug in pieces with a small coffee puddle. A stern middle-aged felt cafe owner doll, in a dark apron, stands on the left with a frowning face, pointing one felt finger down at the broken mug and straight at Mongle. Mongle, wearing a tiny cream felt apron, stands on the right, shaking its body in denial, one sweat drop. On the counter directly behind them, a small grey felt cat with a smug face calmly pushes a second mug toward the edge with its paw: clearly the real culprit, and neither of them sees it. It reads as 'I got blamed but the cat did it'.
+
+STYLE: a needle-felted wool miniature world photographed like a real macro photo: visible wool fibers, soft shallow focus, rich warm light, a comedy short with big readable shapes at phone size.
+MONGLE: the coral felt ghost-shaped mascot in the attached photo — use it for its shape, coral wool, fuzzy texture, scalloped hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. Do not use coral anywhere except Mongle.
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video crops about 8% off the left and right edges, so keep everything important inside the central 84% of the width. Keep the top 32% of the image calm and simple, because text goes there; nothing important there.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere, including on signs, buses and packages: use blank shapes.

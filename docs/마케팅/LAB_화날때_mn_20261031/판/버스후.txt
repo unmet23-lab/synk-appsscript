@@ -1,0 +1,8 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the same felt Seoul street and bus stop. The bus is gone in the far distance. Mongle stands alone and big in the centre of the image, completely soaked in dirty brown puddle water that was just splashed all over it: wet matted wool, brown drips running down, a small leaf stuck to its head. One eye twitching, flat mouth, dead tired fury. Water drops still in the air. It reads as 'the bus left AND splashed me'.
+
+STYLE: a needle-felted wool miniature world photographed like a real macro photo: visible wool fibers, soft shallow focus, rich warm light, a comedy short with big readable shapes at phone size.
+MONGLE: the coral felt ghost-shaped mascot in the attached photo — use it for its shape, coral wool, fuzzy texture, scalloped hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. Do not use coral anywhere except Mongle.
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video crops about 8% off the left and right edges, so keep everything important inside the central 84% of the width. Keep the top 32% of the image calm and simple, because text goes there; nothing important there.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere, including on signs, buses and packages: use blank shapes.

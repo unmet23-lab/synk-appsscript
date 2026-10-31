@@ -1,0 +1,8 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — an extreme close-up of Mongle in the same felt cafe, wearing its tiny cream felt apron, big in the lower two thirds of the image, fighting back tears: big glossy wobbling eyes, two thick streams of light-blue felt tears, lips pressed in a trembling wavy line, its coral wool a deep hot red. Behind it, softly blurred, the smug grey felt cat sits on the counter licking its paw. It reads as 'it's so unfair, I didn't do it'.
+
+STYLE: a needle-felted wool miniature world photographed like a real macro photo: visible wool fibers, soft shallow focus, rich warm light, a comedy short with big readable shapes at phone size.
+MONGLE: the coral felt ghost-shaped mascot in the attached photo — use it for its shape, coral wool, fuzzy texture, scalloped hem with a cream running stitch and glossy black bead eyes. No arms, no legs, no hands, ever. Do not use coral anywhere except Mongle.
+FORMAT: one PORTRAIT image, 2:3 (taller than wide). The video crops about 8% off the left and right edges, so keep everything important inside the central 84% of the width. Keep the top 32% of the image calm and simple, because text goes there; nothing important there.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere, including on signs, buses and packages: use blank shapes.
