@@ -1452,16 +1452,18 @@ const EXCLUDED = Object.freeze({ other:'다른 사람의 이야기여서 본인�
   hypothetical:'가정한 내용을 현재 선호로 사용하지 않아요.', quotation:'인용된 말의 주체와 뜻을 분명하게 확인하지 못했어요.',
   unsupported:'이 문장의 뜻을 현재 지원하는 항목으로 정확히 옮기지 못했어요.', sensitive:'이 내용은 성향 항목으로 추정하거나 분류하지 않아요.',
   condition:'이 조건의 범위를 정확히 이해하지 못했어요.', uncertain:'확실하지 않은 뜻은 확인 가능한 선호로 정하지 않았어요.', limit:'이번에 확인할 수 있는 범위를 넘어 남겨 두었어요.' });
-function excludedOrigin(body) {
+function excludedOrigin(body,surface=body) {
   if (/["“”‘’「」『』]/u.test(body) || /(?:라고|다고)(?:했|하셨|말(?:했|하셨|해|합|하고)|들)|(?:라는|다는)(?:말|이야기)/u.test(body)) return 'quotation';
-  if(/^(?:우리|저희).{1,20}?(?:은|는|이(?!랑)|가)/u.test(body)
-    ||/^(?:담당|옆자리|새로온|같은팀의)?(?:조장|팀장|부장|대표|리더|담당자|선생님|고객|참가자)(?:님)?(?:은|는|이|가)/u.test(body))return 'other';
+  if(/^(?:우리|저희).{1,20}?(?:은|는|이(?!랑|야기)|가)/u.test(body)
+    ||/^(?:담당|옆자리|새로온|같은팀의)?(?:조장|팀장|부장|대표|리더|담당자|선생님|고객|참가자)(?:님)?(?:은|는|이(?!랑|야기)|가)/u.test(body))return 'other';
   // Topic-marked plural subjects and honorific subjects are unambiguously
   // other people here. A plural -이 clause may instead modify the topic
   // ("팀원들이 함께 일하는 협업 방식에 관심…"); complete existing grammar
   // can recognise that, while the loose semantic fallback rejects its agency.
-  if (/^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|다른분|그녀|그|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑)|가)/u.test(body)) return 'other';
-  if (/(?:예전|과거|전에는|옛날|어렸을때|어릴때|즐겼|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(body)) return 'past';
+  if (/^(?:(?:내|제|우리|저희)?(?:친구|동료|팀원|상사|선생님|교수님|엄마|아빠|어머니|아버지|가족|동생|형|오빠|누나|언니)|그사람|다른사람|다른분|그녀|그(?=분|들)|너|당신)(?:분)?(?:들(?:은|는|께서는|께서|에게는|한테는)|께서는|께서|에게는|한테는|은|는|이(?!랑|야기)|가)/u.test(body)
+    ||/^(?:(?:요즘|지금|현재)\s+)?그(?:께서는|께서|에게는|한테는|이는|은|는|가|이)(?=\s|$)/u.test(surface.trim())) return 'other';
+  if (/^(?:저는|나는|제가|내가|저도|나도)?(?:(?:이|그|오래|한참|얼마|조금|좀)?전에는)/u.test(body)
+    ||/(?:예전|과거|옛날|어렸을때|어릴때|즐겼|좋아했|선호했|필요했|원했|했었|좋았|편했|싶었|마음에들었|그랬|했어요|했습니다)/u.test(body)) return 'past';
   if (/(?:우울증|불안장애|ADHD|자폐|정신질환|진단|약물|치료|정당|정치성향|진보|보수|대통령|종교|성적지향|성정체성|MBTI|혈액형)/iu.test(body)) return 'sensitive';
   // A recognised factual scope such as familiar material is different from
   // imagining a preference. Unknown conditional clauses remain withheld.
@@ -1643,7 +1645,7 @@ function limitedMemberRequest(quote) {
 function analyze(text) {
   // Legacy's literal validator enforces the same 500-code-point/Unicode bounds.
   Legacy.parseMemberStatement(text);
-  const clauses=pieces(text),segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null, requestScoped=false;
+  const clauses=pieces(text),segments=[];let inherited=null, previousCondition=false, continuingCondition=null, unknownSubject=false, pendingScope=null, requestScoped=false, introductionOwnership=false;
   for(const [clauseIndex,evidence] of clauses.entries()) {
     const insideLiteral=quotedAt(text,evidence.start);
     const body=selfSurface(evidence.quote).replace(/\s/gu,''), self=!insideLiteral&&(normalizePrefix(evidence.quote).own||normalizePrefix(surfaceDeclaration(evidence.quote)).own), current=/^(?:(?:나는|저는|제가|내가))?(?:지금|요즘|현재|이제)/u.test(body);
@@ -1657,8 +1659,20 @@ function analyze(text) {
     if(pendingScope&&insideLiteral)pendingScope={...pendingScope,uncertain:true};
     if(self&&!insideLiteral)unknownSubject=false;
     if(inherited==='quotation'&&self&&!insideLiteral)inherited=null;
-    if(!insideLiteral&&reattributedPreference(body,segments)){segments.push({evidence,unresolved:{...evidence,reason:'other',reasonLabel:EXCLUDED.other}});continue;}
-    if(/^(?:제|내)(?:방식|선호|취향)(?:은|는)(?:이래요|다음과같아요)$/u.test(body)){segments.push({evidence,meanings:[]});continue;}
+    if(!insideLiteral&&reattributedPreference(body,segments)){
+      inherited='other';continuingCondition=null;previousCondition=false;pendingScope=null;
+      segments.push({evidence,unresolved:{...evidence,reason:'other',reasonLabel:EXCLUDED.other}});continue;
+    }
+    if(!insideLiteral&&/^(?:제|내)(?:방식|선호|취향)(?:은|는)(?:이래요|다음과같아요)$/u.test(body)){
+      unknownSubject=false;
+      if(['other','quotation'].includes(inherited)){
+        // An unquoted first person can still be the reported speaker.
+        // Resume parsing but require the existing ownership confirmation.
+        introductionOwnership=true;
+        inherited=requestScoped?'condition':null;continuingCondition=null;previousCondition=false;pendingScope=null;
+      }
+      segments.push({evidence,meanings:[]});continue;
+    }
     const aside=discourseAside(evidence.quote,segments);
     if(aside||explanatoryAside(evidence.quote,segments.at(-1))){segments.push({evidence,meanings:[],referenceOnly:true,referenceTargets:aside||priorReferences(segments)});continue;}
     if(inherited==='other'&&self || inherited==='past'&&current || inherited==='condition'&&generalReset || inherited==='uncertain'&&current || ['quotation','hypothetical'].includes(inherited)&&self&&current)inherited=null;
@@ -1671,7 +1685,7 @@ function analyze(text) {
     const stop=/[.!?\n]/u.exec(text.slice(evidence.end)),sentenceEnd=stop?evidence.end+stop.index:text.length;
     const nounModifier=relativePersonClause(text.slice(sentenceStart,sentenceEnd).replace(/\s/gu,''));
     const localRelative=/(?:좋아하는|싫어하는|선호하는|편한|좋은)[가-힣A-Za-z]{1,24}(?:이|가)(?:제게|저에게|내게|나에게|우리에게)/u.test(body);
-    const segment={evidence}, reason=(nounModifier||localRelative?'other':excludedOrigin(body))||inherited;
+    const segment={evidence}, reason=(nounModifier||localRelative?'other':excludedOrigin(body,evidence.quote))||inherited;
     if(reason||unknownSubject) {
       inherited=reason;continuingCondition=null;
       // Rejecting a quoted/other-owned inset rejects its content, not the
@@ -1761,7 +1775,7 @@ function analyze(text) {
     const limitedRequest=limitedMemberRequest(evidence.quote);
     if(asking){if(found)segment.candidate={...found,uncertain:true};else segment.generic=true;segment.unresolved={...evidence,reason:'uncertain',reasonLabel:'질문으로 적은 내용을 현재 선호로 정하지 않았어요.'};}
     else if(found){
-      const ownership=!self&&found.meanings.some(m=>m.field==='topic')&&OTHER_PERSON_SUBJECT.test(normalizedClause.body);
+      const ownership=introductionOwnership||!self&&found.meanings.some(m=>m.field==='topic')&&OTHER_PERSON_SUBJECT.test(normalizedClause.body);
       if(found.uncertain||found.typo||found.restricted||uncertain||ownership)segment.candidate={...found,uncertain:found.uncertain||uncertain||ownership,...(ownership?{ownership:true}:{})};else segment.meanings=found.meanings;
     }
     else segment.generic=true;

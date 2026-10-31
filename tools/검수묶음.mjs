@@ -158,13 +158,15 @@ export function 바뀐파일들({ 바탕, 끝 = '작업본', 경로 = [], cwd = 
 
 /** 긴 줄 파일의 바뀐 낱말만 앞뒤 맥락과 함께(git diff --word-diff=porcelain -U0). 한 항목 「[파일:줄] …앞 [-옛-]{+새+} 뒤…」. */
 export function 낱말줄이기(porcelain, { 맥락 = 70, 파일이름 = null } = {}) {
+  if (Buffer.isBuffer(porcelain)) porcelain = UTF8낱말원문(porcelain);
   let file = 파일이름, line = 0, segs = [];
   const out = [];
   const cut = (s, where) => {
-    if (s.length <= 맥락 * 2 + 5) return s;
-    if (where === 'head') return s.slice(0, 맥락) + ' …';
-    if (where === 'tail') return '… ' + s.slice(-맥락);
-    return s.slice(0, 맥락) + ' … ' + s.slice(-맥락);
+    const chars = Array.from(s);
+    if (chars.length <= 맥락 * 2 + 5) return s;
+    if (where === 'head') return chars.slice(0, 맥락).join('') + ' …';
+    if (where === 'tail') return '… ' + chars.slice(-맥락).join('');
+    return chars.slice(0, 맥락).join('') + ' … ' + chars.slice(-맥락).join('');
   };
   const flush = () => {
     if (!segs.some(s => s.t !== ' ')) { segs = []; return; }
@@ -191,6 +193,13 @@ export function 낱말줄이기(porcelain, { 맥락 = 70, 파일이름 = null } 
   return out;
 }
 
+// Preserve non-ASCII byte runs as whole words before Git inserts markers.
+// The POSIX punctuation class alone can split a UTF-8 character on Windows.
+const 낱말정규식 = '[^ -~\t\r\n]+|[A-Za-z0-9_$]+|[[:punct:]]';
+export function UTF8낱말원문(raw) {
+  return new TextDecoder('utf-8', { fatal: true }).decode(raw);
+}
+
 const 머리줄 = /^(diff --git|index |--- |\+\+\+ |similarity index|dissimilarity index|rename from|rename to|copy from|copy to|new file mode|deleted file mode|old mode|new mode)/;
 /** 한 파일의 diff 글: unified(앞뒤 5줄) · 긴 줄이면 낱말 · 추적 안 된 새 파일은 + 줄로. 아주 긴 줄은 가운데를 줄인다. */
 export function 파일diff(f, 설정) {
@@ -205,8 +214,7 @@ export function 파일diff(f, 설정) {
     .split('\n').filter(l => !머리줄.test(l)).join('\n').trim();
   if (f.상태 === 'M' && 몸.split('\n').some(l => /^[+-]/.test(l) && l.length > 긴줄)) {
     // 낱말 = 글자 덩이 또는 문장 부호 하나. 띄어쓰기로만 자르면 띄어쓰기 없는 템플릿 한 줄이 통째로 한 낱말이 된다.
-    const 낱말 = 낱말줄이기(git(['diff', '--word-diff=porcelain', '--word-diff-regex=[^[:space:][:punct:]]+|[[:punct:]]', '-U0', '--no-color', ...범위(설정), '--', ...경로들], { cwd }), { 파일이름: path.posix.basename(f.경로) });
-    if (!낱말.some(l => l.includes('\uFFFD'))) return { 꼴: '낱말', 글: 낱말.join('\n') };
+    try { const 낱말 = 낱말줄이기(git(['diff', '--word-diff=porcelain', '--word-diff-regex=' + 낱말정규식, '-U0', '--no-color', ...범위(설정), '--', ...경로들], { cwd, buffer: true }), { 파일이름: path.posix.basename(f.경로) }); return { 꼴: '낱말', 글: 낱말.join('\n') }; } catch { return { 글: 몸.split('\n').map(긴줄줄임).join('\n'), 꼴: 'diff' }; }
   }
   return { 꼴: 'diff', 글: 몸.split('\n').map(긴줄줄임).join('\n') };
 }
@@ -1749,15 +1757,14 @@ export function 두판diff(앞, 지금, 경로) {
   try {
     fs.writeFileSync(path.join(임시, 'a'), 앞 || '');
     fs.writeFileSync(path.join(임시, 'b'), 지금 || '');
-    const 견주기 = args => {
-      const r = gitRaw(['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', ...args, 'a', 'b'], { cwd: 임시 });
+    const 견주기 = (args, buffer = false) => {
+      const r = gitRaw(['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', ...args, 'a', 'b'], { cwd: 임시, buffer });
       if (r.error || r.status > 1) throw new Error(`git diff --no-index 실패(${r.status}): ${String(r.stderr || r.error || '').trim().slice(0, 300)}`);
-      return String(r.stdout || '').replace(/\r\n/g, '\n');
+      return buffer ? r.stdout : String(r.stdout || '').replace(/\r\n/g, '\n');
     };
     const 몸 = 견주기(['-U5']).split('\n').filter(l => !머리줄.test(l)).join('\n').trim();
     if (몸.split('\n').some(l => /^[+-]/.test(l) && l.length > 긴줄)) {
-      const 낱말 = 낱말줄이기(견주기(['--word-diff=porcelain', '--word-diff-regex=[^[:space:][:punct:]]+|[[:punct:]]', '-U0']), { 파일이름: path.posix.basename(경로) });
-      if (!낱말.some(l => l.includes('\uFFFD'))) return { 꼴: '낱말', 글: 낱말.join('\n') };
+      try { const 낱말 = 낱말줄이기(견주기(['--word-diff=porcelain', '--word-diff-regex=' + 낱말정규식, '-U0'], true), { 파일이름: path.posix.basename(경로) }); return { 꼴: '낱말', 글: 낱말.join('\n') }; } catch { /* Keep the full unified diff if raw bytes cannot be decoded exactly. */ }
     }
     return { 꼴: 'diff', 글: 몸 };
   } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
