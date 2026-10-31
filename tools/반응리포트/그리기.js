@@ -9,7 +9,7 @@ const 브 = require('../업종브리핑/그리기.js');
 const 플랫폼 = require('./플랫폼.js');
 const 글모듈 = require('./글.js');
 
-const { 이스, 값글, 글HTML, 가로막대 } = 브;
+const { 이스, 값글, 글HTML } = 브;
 
 const 더스타일 = `
 .시험판{align-self:flex-start;font-size:12px;font-weight:700;color:var(--muted);border:1px dashed var(--quiet);border-radius:999px;padding:1px 10px}
@@ -47,43 +47,105 @@ th,td{padding:9px 8px}
 .어디{border:0;padding:0;font-weight:600}
 .못읽음{border:0;border-left:2px solid var(--line);border-radius:0;padding:2px 0 2px 14px}
 .칸지도 rect.칸{fill:var(--bg)} .칸지도 rect.칸.짝{fill:var(--soft)}
-/* 평소 대비 순위표 — 막대 · 세로선(평소 1배)은 CSS 폭이라 휴대폰에서도 같이 줄어든다 */
-.순위표{font-size:15px;table-layout:fixed}
+/* 평소 대비 순위표 — 편차 점(10-31 유호님 「③ 편차 점으로」): 평소(1배) 점선에서 뻗는 가는 선과 점, 곱절 눈금(0.5 · 1 · 2 · 4 · 8배가
+   같은 간격). 눈금 · 선 · 점 자리는 칸 폭에 대한 비율(--x)이라 휴대폰에서도 같이 줄어든다. 색은 평소보다 많은 줄만 베리. */
+.순위표{font-size:15px;table-layout:fixed;--왼:3.75rem;--오른:5rem}
 .순위표 th{padding:0 0 12px;border-bottom:1px solid var(--line);color:var(--muted)}
 .순위표 td{padding:0;height:52px;vertical-align:middle;border-bottom:1px solid var(--line)}
 .순위표 .순{width:2.5rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .순위표 .이름{width:17rem} .순위표 td.이름{padding-right:16px;overflow-wrap:anywhere}
+@media (max-width:1100px){.순위표 .이름{width:13rem}}
 .순위표 .광고{font-weight:500}
 .순위표 .곳{font-size:12px;color:var(--muted);margin-left:6px;white-space:nowrap}
 .순위표 .조회{width:5.5rem;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.막대줄{position:relative;display:flex;align-items:center;gap:10px;height:52px}
-.막대줄::before{content:'';position:absolute;top:0;bottom:0;left:calc((100% - 4.5rem) * var(--기준));border-left:1px dashed var(--ref)}
-.띠{position:relative;flex:none;height:18px;width:max(2px,calc((100% - 4.5rem) * var(--w)));border-radius:2px;background:var(--bar)}
-.띠.강조{background:var(--accent)}
-.배{position:relative;font-variant-numeric:tabular-nums;white-space:nowrap}
+.순위표 th.축칸{position:relative}
+.축{position:absolute;left:var(--왼);right:var(--오른);bottom:12px;height:1.65em}
+.축 span{position:absolute;top:0;left:calc(100% * var(--x));transform:translateX(-50%);line-height:1.65;color:var(--muted);white-space:nowrap}
+.축 span.일{color:var(--fg)}
+.숨김{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.막대줄{position:relative;height:52px}
+.막대줄 > *{position:absolute;--폭:calc(100% - var(--왼) - var(--오른));--자리:calc(var(--왼) + var(--폭) * var(--x, 0))}
+.눈금{top:0;bottom:0;left:var(--자리);border-left:1px solid var(--line)}
+.눈금.일{border-left:1px dashed var(--ref)}
+.줄기{top:50%;height:2px;margin-top:-1px;left:calc(var(--왼) + var(--폭) * var(--a));width:calc(var(--폭) * var(--l));background:var(--bar)}
+.줄기.강조{background:var(--accent)}
+.점{top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;left:var(--자리);background:var(--bg);box-shadow:inset 0 0 0 2px var(--bar)}
+.점.강조{background:var(--accent);box-shadow:none}
+.배{top:50%;transform:translateY(-50%);left:calc(var(--자리) + 8px);padding:0 3px;line-height:1.4;background:var(--bg);font-variant-numeric:tabular-nums;white-space:nowrap}
+.배.왼{left:auto;right:calc(100% - var(--자리) + 8px)}
 .좁을때{display:none}
-@media (max-width:600px){
-  .순위표,.순위표 tbody{display:block}
-  .순위표 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media (max-width:860px){
+  .순위표{--왼:3rem;--오른:4.25rem}
+  .순위표,.순위표 thead,.순위표 tbody{display:block}
   .순위표 tr{display:grid;grid-template-columns:1.75rem 1fr auto;grid-template-areas:"순 이름 조회" "순 막대 막대";column-gap:8px;row-gap:2px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .순위표 thead tr{grid-template-areas:"순 막대 막대";padding:0 0 6px}
+  .순위표 thead th.순,.순위표 thead th.이름,.순위표 thead th.조회{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;padding:0;border:0}
+  .순위표 th.축칸{grid-area:막대;height:1.65em;padding:0;border:0}
+  .축{top:0;bottom:auto}
   .순위표 td{display:block;height:auto;border:0;width:auto}
   .순위표 td.순{grid-area:순;width:auto} .순위표 td.이름{grid-area:이름;width:auto;padding:0} .순위표 td.조회{grid-area:조회;width:auto} .순위표 td.막대칸{grid-area:막대}
   .막대줄{height:28px}
   .좁을때{display:inline;font-size:12px;color:var(--muted)}
 }
+/* 0부터 세는 양 — 빗금 막대(그래프 문법 docs/디자인/그래프_문법.md): 꽉 찬 면 대신 가는 사선 + 끝에만 단단한 선, 강조할 줄만 사업 색 */
+.빗금표{display:flex;flex-direction:column;container-type:inline-size}
+.빗줄{display:grid;grid-template-columns:minmax(6rem,11rem) minmax(0,1fr);align-items:center;column-gap:16px;min-height:38px;border-bottom:1px solid var(--line)}
+.빗줄:first-child{border-top:1px solid var(--line)}
+.빗이름{font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.빗칸{display:flex;align-items:center;gap:8px;min-width:0}
+.빗띠{flex:none;height:14px;width:max(2px,calc((100% - 6.5rem) * var(--w)));--색:var(--bar);background:repeating-linear-gradient(-45deg,var(--색) 0 1.2px,transparent 1.2px 4px);box-shadow:inset -2px 0 0 var(--색)}
+.빗띠.강조{--색:var(--accent)}
+.빗값{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 화면 폭이 아니라 판 폭으로 쌓는다 — 랜딩 두 열 판(680~860px 화면)에서 막대가 몇 px로 줄던 것(10-31 Fable P2) */
+@container (max-width:26rem){.빗줄{grid-template-columns:minmax(0,1fr);row-gap:4px;padding:8px 0}}
 `;
 
 /**
+ * 빗금 막대: [{이름, 값, 메모, 강조}] — 0부터 세는 양(비율 · 개수). 값은 0~최대, 넣은 순서대로.
+ * 표시 글은 이름 · 메모 그대로라 화면 읽기에도 읽힌다(막대는 빈 칸).
+ */
+function 빗금막대(줄, { 최대, 이름표 = '' }) {
+  if (!줄.length) return '';
+  const 위 = 최대 > 0 ? 최대 : 1;
+  return `<div class="빗금표" role="list" aria-label="${이스(이름표)}">${줄.map((d) => `<div class="빗줄" role="listitem"><span class="빗이름">${이스(d.이름)}</span><span class="빗칸"><span class="빗띠${d.강조 ? ' 강조' : ''}" style="--w:${Math.min(1, Math.max(0, Number(d.값) || 0) / 위).toFixed(4)}"></span><span class="빗값">${이스(d.메모)}</span></span></div>`).join('')}</div>`;
+}
+
+/**
+ * 곱절 눈금 범위 — 2의 거듭제곱 칸(0.5 · 1 · 2 · 4 · 8배…). 평소(1배)를 늘 넣고, 가장 작은 · 큰 값이 끝에 붙지 않게 한 칸씩 띄운다.
+ * x(v)는 칸 폭에 대한 비율(0~1). 0 이하 값은 왼쪽 끝에 둔다.
+ */
+function 곱절범위(값들) {
+  const 양 = 값들.filter((v) => Number.isFinite(v) && v > 0);
+  const 작 = Math.min(1, ...양), 큰 = Math.max(1, ...양);
+  const 아래 = Math.min(-1, Math.ceil(Math.log2(작)) - 1), 위 = Math.max(1, Math.floor(Math.log2(큰)) + 1);
+  const x = (v) => (Math.log2(Math.max(Number(v) || 0, 2 ** 아래)) - 아래) / (위 - 아래);
+  const 눈금 = [];
+  for (let k = 아래; k <= 위; k++) 눈금.push({ k, x: (k - 아래) / (위 - 아래), 글: k === 0 ? '평소' : `${Number((2 ** k).toFixed(2)).toLocaleString('ko-KR')}배` });
+  return { 아래, 위, x, 눈금 };
+}
+
+/**
  * 평소 대비 순위표: [{이름, 곳, 값, 메모, 강조, 조회, 출처}] — 넣은 순서대로(부르는 쪽이 배수 큰 순으로 정렬).
+ * 막대 대신 평소(1배) 점선에서 뻗는 선 · 점(편차 점, 곱절 눈금). 눈금 글이 일곱 넘게 서면 평소에서 두 칸 간격(0.25 · 평소 · 4 · 16배…)으로만 단다.
  * 넓은 화면은 표, 좁은 화면은 한 줄 두 단 격자 — 표시를 바꿔도 표 뜻이 남게 role을 붙인다.
  */
-function 순위표(줄, { 최대 }) {
+function 순위표(줄) {
   if (!줄.length) return '';
-  const 행 = 줄.map((d, i) => `<tr role="row"><td role="cell" class="순">${i + 1}</td>`
-    + `<td role="cell" class="이름"><span class="광고">${이스(d.이름)}</span> <span class="곳">${이스(d.곳)}</span></td>`
-    + `<td role="cell" class="막대칸"><div class="막대줄" style="--w:${(Math.max(0, d.값) / 최대).toFixed(4)}"><span class="${d.강조 ? '띠 강조' : '띠'}"></span><span class="배"${d.출처 ? ` title="${이스(d.출처)}"` : ''}>${이스(d.메모)}</span></div></td>`
-    + `<td role="cell" class="조회"><span class="좁을때">조회 </span>${Number.isFinite(d.조회) ? d.조회.toLocaleString('ko-KR') : '—'}</td></tr>`).join('');
-  return `<table class="순위표" role="table" style="--기준:${(1 / 최대).toFixed(4)}"><thead role="rowgroup"><tr role="row"><th role="columnheader" class="순">#</th><th role="columnheader" class="이름">게시물</th><th role="columnheader">평소 대비</th><th role="columnheader" class="조회">조회</th></tr></thead><tbody role="rowgroup">${행}</tbody></table>`;
+  const 범 = 곱절범위(줄.map((d) => d.값));
+  const 촘촘 = 범.눈금.length > 7;
+  const 축 = 범.눈금.filter((t) => !촘촘 || t.k % 2 === 0)
+    .map((t) => `<span${t.k === 0 ? ' class="일"' : ''} style="--x:${t.x.toFixed(4)}">${이스(t.글)}</span>`).join('');
+  const 눈금선 = 범.눈금.map((t) => `<i class="눈금${t.k === 0 ? ' 일' : ''}" style="--x:${t.x.toFixed(4)}"></i>`).join('');
+  const 일 = 범.x(1);
+  const 행 = 줄.map((d, i) => {
+    const x = 범.x(d.값);
+    return `<tr role="row"><td role="cell" class="순">${i + 1}</td>`
+      + `<td role="cell" class="이름"><span class="광고">${이스(d.이름)}</span> <span class="곳">${이스(d.곳)}</span></td>`
+      + `<td role="cell" class="막대칸"><div class="막대줄">${눈금선}<i class="줄기${d.강조 ? ' 강조' : ''}" style="--a:${Math.min(일, x).toFixed(4)};--l:${Math.abs(x - 일).toFixed(4)}"></i>`
+      + `<i class="점${d.강조 ? ' 강조' : ''}" style="--x:${x.toFixed(4)}"></i><span class="배${d.값 < 1 ? ' 왼' : ''}" style="--x:${x.toFixed(4)}"${d.출처 ? ` title="${이스(d.출처)}"` : ''}>${이스(d.메모)}</span></div></td>`
+      + `<td role="cell" class="조회"><span class="좁을때">조회 </span>${Number.isFinite(d.조회) ? d.조회.toLocaleString('ko-KR') : '—'}</td></tr>`;
+  }).join('');
+  return `<table class="순위표" role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" class="순">#</th><th role="columnheader" class="이름">게시물</th><th role="columnheader" class="축칸"><span class="숨김">평소 대비</span><div class="축" aria-hidden="true">${축}</div></th><th role="columnheader" class="조회">조회</th></tr></thead><tbody role="rowgroup">${행}</tbody></table>`;
 }
 
 function 못읽음(글, 덧 = '') {
@@ -133,7 +195,8 @@ function 짧은이름(이름, 지표) {
   if (m[0] === '광고' && m.length === 4) return `「${m[1]}」 ${m[2]} ${칸말[m[3]] || m[3]}`;
   if (m[0] === '플랫폼' && m[2] === '평소대비중앙') return `${m[1]} 평소 대비 중앙값`;
   if (m[0] === '댓글' && m[1] === '주제') return `「${m[2]}」 댓글 ${m[3] === '좋아요' ? '좋아요' : m[3] === '비율' ? '비율' : '수'}`;
-  return 짧게(지표?.설명 || 이름, 24);
+  // 설명의 괄호 풀이는 떼고 줄인다 — 괄호 안에서 잘려 짝이 깨지던 것(10-31 아르곤 B2)
+  return 짧게(String(지표?.설명 || 이름).replace(/\s*\(.*$/, ''), 24);
 }
 
 const 유지칸 = [['앞3초유지', '앞 3초 유지'], ['본비율', '본 비율'], ['평균시청', '평균 시청'], ['평균조회율', '평균 조회율'], ['완주율', '완주율']];
@@ -144,7 +207,6 @@ function 플랫폼칸(그림, 지표, 글, 상태, 설정) {
   const 광고이름 = (키) => (설정.광고 || []).find((a) => a.키 === 키)?.이름 || 키;
   let 안 = '';
   if (p.막대.length) {
-    const 최대 = Math.max(2, ...p.막대.map((b) => b.배수));
     // 배수 큰 순(같으면 광고 순서 그대로). 조회 · 평소 출처는 그 막대를 만든 표 행에서 — 막대는 「평소가 있는 표 행」을
     // 같은 차례로 옮긴 것이라(집계.js) 차례로 짝짓는다. 한 광고에 같은 플랫폼 주소가 둘이어도 제 행을 찾게(10-31 Fable P3).
     const 짝행 = p.표.filter((r) => r.숫자?.평소);
@@ -157,7 +219,7 @@ function 플랫폼칸(그림, 지표, 글, 상태, 설정) {
         조회: 숫자?.숫자?.조회, 출처: 평소 ? `${평소.출처} — 앞선 ${평소.편수}편이 같은 나이에 낸 조회의 중앙값 ${Number(평소.중앙).toLocaleString('ko-KR')}회` : '',
       };
     });
-    안 += `<div class="판"><h3>평소와 견주면</h3><p class="작은글">같은 계정에서 앞서 올린 게시물들이 같은 나이에 낸 조회의 중앙값을 1로 두고 견준 배수예요. 세로선이 평소(1배)이고, 평소보다 많았던 곳만 색으로 칠했어요. 견줄 게시물이 넉넉하지 않은 곳은 뺐어요.</p>${순위표(줄, { 최대 })}</div>`;
+    안 += `<div class="판"><h3>평소와 견주면</h3><p class="작은글">같은 계정에서 앞서 올린 게시물들이 같은 나이에 낸 조회의 중앙값을 평소(1배)로 두고 견준 배수예요. 점이 점선보다 오른쪽이면 평소보다 많이, 왼쪽이면 적게 본 것이고 평소보다 많았던 곳만 색으로 칠했어요. 눈금은 곱절 간격이라 1배에서 2배까지와 2배에서 4배까지가 같은 거리예요. 견줄 게시물이 넉넉하지 않은 곳은 뺐어요.</p>${순위표(줄)}</div>`;
   }
   const 수칸 = (r, k) => (Number.isFinite(r.숫자?.숫자?.[k]) ? `${r.숫자.숫자[k].toLocaleString('ko-KR')}${['조회', '좋아요', '댓글', '공유', '저장'].includes(k) ? '' : 플랫폼.단위[k] || ''}` : '—');
   const 유지글 = (r) => {
@@ -200,7 +262,7 @@ function 랜딩칸(그림, 지표, 글, 상태, 설정, 지도들) {
   const 신호 = [['랜딩.헛클릭비율', '헛클릭'], ['랜딩.분노클릭비율', '분노 클릭'], ['랜딩.되돌아감비율', '바로 되돌아감']].filter(([k]) => 지표[k]);
   let 안 = `<section class="넷" aria-label="랜딩 숫자">${타일}</section>`;
   안 += `<div class="격자판"><div class="판"><h3>평균적으로 어디까지 내려 봤나</h3><p class="작은글">선은 평균이에요 — 끝까지 본 사람과 첫 화면만 본 사람이 섞여 있어요. 칸 위치는 우리가 쪽을 열어 잰 지도예요.</p>${지도판(평균들)}</div>`
-    + (신호.length ? `<div class="판"><h3>막힌 신호</h3><p class="작은글">그 신호가 한 번이라도 나온 세션의 비율이에요.</p>${가로막대(신호.map(([k, 이름]) => ({ 이름, 값: 지표[k].값, 메모: `${지표[k].값}%`, 강조: false })), { 최대: Math.max(10, ...신호.map(([k]) => 지표[k].값)), 이름표: '막힌 신호 비율' })}</div>` : '') + '</div>';
+    + (신호.length ? `<div class="판"><h3>막힌 신호</h3><p class="작은글">그 신호가 한 번이라도 나온 세션의 비율이에요.</p>${빗금막대(신호.map(([k, 이름]) => ({ 이름, 값: 지표[k].값, 메모: `${지표[k].값}%`, 강조: false })), { 최대: Math.max(10, ...신호.map(([k]) => 지표[k].값)), 이름표: '막힌 신호 비율' })}</div>` : '') + '</div>';
   const 캠 = Object.entries(L.캠페인 || {});
   if (캠.length) 안 += `<div class="판"><h3>광고 링크마다</h3><div class="표감싸기"><table><thead><tr><th>링크(utm_campaign)</th><th class="오">세션</th><th class="오">평균 스크롤</th></tr></thead><tbody>${캠.map(([이름, r]) => `<tr><td>${이스(이름)}</td><td class="오">${r.세션.toLocaleString('ko-KR')}</td><td class="오">${r.평균스크롤 ?? '—'}%</td></tr>`).join('')}</tbody></table></div></div>`;
   if (글?.랜딩) 안 += `<p>${글HTML(글.랜딩, 지표)}</p>`;
@@ -216,7 +278,7 @@ function 댓글칸(그림, 지표, 글, 상태, 표본) {
   if (!d.줄.length) 안 += `<p class="못읽음">유튜브 댓글이 ${(지표['댓글.수']?.값 ?? 0).toLocaleString('ko-KR')}개라 주제를 나누지 않았어요.${이스(다른글)}</p>`;
   else {
     const 비율 = d.줄.some((r) => r.비율 !== null);
-    안 += `<div class="판"><h3>댓글이 말한 것</h3><p class="작은글">유튜브 댓글 ${이스(값글(지표['댓글.수']))}을 주제로 나눴어요(한 댓글이 두 주제에 들 수 있어요).${비율 ? '' : ' 댓글이 적어 비율 대신 개수로 보여요.'}${이스(다른글)}</p>${가로막대(d.줄.slice(0, 8).map((r) => ({ 이름: r.이름, 값: 비율 ? r.비율 : r.수, 메모: 비율 ? `${r.비율}% · ${r.수}개` : `${r.수}개`, 강조: false })), { 최대: Math.max(...d.줄.slice(0, 8).map((r) => (비율 ? r.비율 : r.수))), 이름표: '댓글 주제' })}</div>`;
+    안 += `<div class="판"><h3>댓글이 말한 것</h3><p class="작은글">유튜브 댓글 ${이스(값글(지표['댓글.수']))}를 주제로 나눴어요(한 댓글이 두 주제에 들 수 있어요).${비율 ? '' : ' 댓글이 적어 비율 대신 개수로 보여요.'}${이스(다른글)}</p>${빗금막대(d.줄.slice(0, 8).map((r) => ({ 이름: r.이름, 값: 비율 ? r.비율 : r.수, 메모: 비율 ? `${r.비율}% · ${r.수}개` : `${r.수}개`, 강조: false })), { 최대: Math.max(...d.줄.slice(0, 8).map((r) => (비율 ? r.비율 : r.수))), 이름표: '댓글 주제' })}</div>`;
   }
   const 원 = (키) => Object.values(표본?.댓글 || {}).flat().find((c) => c.키 === 키);
   const 예 = (글?.예시 || []).map((e) => { const c = 원(e.댓글); return c ? `<li>${이스(e.뜻)} <a href="https://www.youtube.com/shorts/${이스(c.영상)}" target="_blank" rel="noopener">좋아요 ${c.좋아요.toLocaleString('ko-KR')}</a></li>` : ''; }).filter(Boolean);
@@ -272,4 +334,4 @@ function 그리기(입력) {
   return { 문서, 조각 };
 }
 
-module.exports = { 그리기, 본문, 칸지도그림, 순위표 };
+module.exports = { 그리기, 본문, 칸지도그림, 순위표, 곱절범위, 빗금막대 };
