@@ -41,7 +41,7 @@ node --test tests/반응리포트.test.js
 
 ## Clarity 켜기(처음 한 번)
 
-SYNK 프로젝트: `z67ez8kfp3`(이름 SYNK · synk.im · B2B 서비스, unmet23@gmail.com 구글 로그인 — 10-31 유호님 가입 · Claude가 ego에서 만듦). 아래 1~3은 10-31에 끝났고(공개 synk-policy `4841c3d`, 토큰 이름 `synk-report`), 4의 예약 등록이 남았다. 하루 받기 등록: 운영 사본에서 `pwsh -NoProfile -File tools/반응리포트/예약/install-task.ps1 -TaskName "SYNK 반응 리포트 랜딩 받기"`(자동 모드 판정기가 예약 등록을 막으니 유호님이 이 작업 이름을 대서 승인해야 한다). 마스킹은 기본 「균형」에 질문창 가림 — 까닭과 실측은 [설계](../../docs/마케팅/PULSE_반응브리핑/반응리포트_설계.md).
+SYNK 프로젝트: `z67ez8kfp3`(이름 SYNK · synk.im · B2B 서비스, unmet23@gmail.com 구글 로그인 — 10-31 유호님 가입 · Claude가 ego에서 만듦). 아래 1~4는 10-31에 끝났다(공개 synk-policy `4841c3d`, 토큰 이름 `synk-report`, 예약 「SYNK 반응 리포트 랜딩 받기」 — 기록 `output/반응리포트/예약실행.log`). 다시 등록하려면 운영 사본에서 `pwsh -NoProfile -File tools/반응리포트/예약/install-task.ps1 -TaskName "SYNK 반응 리포트 랜딩 받기"`(끄기는 `-Remove`, 자동 모드 판정기가 예약 등록을 막으니 유호님 말이 있어야 한다). 마스킹은 기본 「균형」에 질문창 가림 — 까닭과 실측은 [설계](../../docs/마케팅/PULSE_반응브리핑/반응리포트_설계.md).
 
 1. 유호님: [clarity.microsoft.com](https://clarity.microsoft.com)에 가입하고 프로젝트를 만든다(주소 https://synk.im). 설정 › Data Export › 새 토큰을 만들어 복사한다. ego의 구글 계정 목록에 그 계정이 있으면 프로젝트 만들기는 Claude가 해도 된다(비밀번호 없이 계정 고르기로 들어간다).
 2. Claude: 토큰을 `~/SYNK_보안/clarity_<프로젝트 id>.txt`에 둔다(출력 · 기록하지 않음). 캠페인 설정 `랜딩.프로젝트`에 id를 적는다.

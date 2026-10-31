@@ -504,6 +504,12 @@
 - 다시 확인: 10-24 읽기만 돌림 — `claude auto-mode defaults`의 「Account & Standing-Rule Changes」 줄에 scheduled jobs와 「must name: the setting or rule being changed」가 있다. `Get-ScheduledTask`에서 「SYNK GitHub 커밋 백업」이 우선순위 5·시작 :45·2시간 반복이다(10-21 바꾼 그대로). `~/.claude/settings.json`의 `autoMode.allow` 다섯 줄에 SQL 읽기 허락이 없고, 상시 허락 줄은 「not SQL reads of customer tables」로 뺀다. 판정기가 포괄 요청을 지금도 막는지, 상시 허락 줄(10-21)을 넣기 전부터 떠 있던 CLI가 새 설정을 읽는지는 (10-24 메모에서 옮김, 다시 확인 전).
 - 덧붙임(10-26, Claude · 매일 판 4일 앞): 다른 세션이 맡긴 일(유호님 말씀은 「제대로 지금 설정해 두자」)로 앱 예약 다섯 개를 `update_scheduled_task`로 고치자 셋을 한꺼번에 부른 첫 묶음에서 LAB · synkbrief 둘이 이유 없이 거절됐고, 같은 값으로 하나씩 다시 부르자 둘 다 통과했다. 그런데 따라잡기로 `run_scheduled_task`(「지금 실행」)를 LAB · yuhobuilds에 부르자 둘 다 거절됐다 — 지금 도는 세션을 새로 띄우는 일은 고치기보다 무겁게 본다(추정). 고침: 실행할 예약 작업 이름을 적은 문장(「LAB · synkbrief · yuhobuilds 고른 기획 제작 셋을 지금 한 번씩 실행」)으로 유호님 승인을 받거나, 유호님이 앱 예약 화면에서 「지금 실행」을 누른다. 우회(다른 세션에 시키기)는 하지 않는다.
 
+### Windows 예약 작업 등록이 「Unauthorized Persistence」로 막힌다 — 일을 맡긴 말로는 부족하고, 그 등록을 유호님 말로 받으면 같은 명령이 지나간다 (2026-10-31 Claude)
+- 증상: 광고 반응 리포트의 하루 받기를 운영 사본에서 `install-task.ps1`로 등록하자 판정기가 「[Unauthorized Persistence]」로 거절했다. 유호님은 「그 뒤 하루 받기는 Claude」라는 안내를 받고 토큰을 허락한 뒤였다.
+- 원인: 판정 모델은 사용자 말과 명령만 보고 Claude의 안내는 보지 않는다. 상시 실행을 새로 만드는 일은 사용자 말에 그 행동이 있어야 지나간다(「번호나 오래된 말로 승인하면」 절과 같은 뿌리).
+- 고침: 우회하지 않는다 — 있는 예약의 실행기에 끼워 넣거나 앱 예약으로 바꾸는 것도 같은 일이다. 다음 단계 상자에 그 등록을 묻고 유호님 말에 행동이 담기게 한다. 단추 글은 네 낱말(24자)까지라 긴 작업 이름은 닫는 글에 적어 둔다.
+- 다시 확인: 유호님 「랜딩 받기 예약 작업 등록해」 뒤 같은 명령이 지나가 작업이 Ready가 됐다.
+
 ## Claude 앱 세션
 
 ### 스스로 보관한 세션이 부모 세션에는 「끝나기 전에 사용자가 보관했다」로 온다 (2026-10-20 Claude)
