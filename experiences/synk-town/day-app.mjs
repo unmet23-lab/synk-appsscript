@@ -404,7 +404,7 @@ const WINDOW_COMMAND = /^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|LANGUAGE_|GATHE
 /** The cards' commands whose 409 is the town's own refusal, not a lost connection (screen review F1). */
 const CARD_REFUSABLE = /^(CARD_|GREET$)/;
 /** What the screen tells the server by itself: its success leaves alone a refusal the player is reading. */
-const BY_ITSELF = /^(GREET|LANGUAGE_OFFER)$/;
+const BY_ITSELF = /^(GREET|LANGUAGE_OFFER|LIFE_ACK|ACK|DAY_OBSERVED|BAZAAR_OBSERVED)$/;
 async function command(type, payload = {}) {
   if (busy || !available()) return false;
   setBusy(true);
@@ -731,7 +731,7 @@ function renderCards() {
   const bye = farewell && farewell.location === location && (walkPanel || fallback || !renderer) ? goodbye(farewell.level) : null;
   // A resident's card here — its need, or where it is taken up (away; from an older cached day-cards none) — comes first; the
   // greeting under it still comes (the first C4 waits for days — it must not hold back what she heard, §9-4).
-  const away = model?.away || [], lead = !!model && model.needs.length + away.length > 0;
+  const away = model?.away || [], lead = !!model && model.needs.length > 0;
   const waits = npc => !!bye && npc === 'cafe-owner';
   const greet = waits(greetSession.greet?.npc) ? null : greetSession.greet, mine = greetSession.greet || waits(greetSession.own?.npc) ? null : greetSession.own;
   const shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || away.length > 0 || model.note.length > 0);
@@ -740,7 +740,7 @@ function renderCards() {
   panel.hidden = !shown;
   // Nothing to show: no old 「같이 해요」 stays behind it for E to press, and the next showing draws anew.
   if (!shown) { placeSeenSince.clear(); panel.replaceChildren(); panel.classList.remove('is-lead'); signatures.delete('place-cards'); return; }
-  // With a card in it the panel goes above the place's own buttons (a phone's walking panel is 300px tall — the 「같이 해요」
+  // With a card to take up the panel goes above the place's own buttons (a phone's walking panel is 300px tall — the 「같이 해요」
   // stood below its fold, final review F4): the reading order and the focus order are the order shown.
   const actions = $('day-actions');
   if (lead && panel.nextElementSibling !== actions) actions.before(panel);
