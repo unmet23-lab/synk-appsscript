@@ -1,0 +1,27 @@
+{
+  "reviewDate": "2026-10-31",
+  "scope": "문서 반영 전 개선 초안과 기존 기획/BM 전문의 1회 사전 설계 검토. 최종 diff 재검수나 구현/학습 효과 시험이 아님.",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "turns": 1,
+  "durationMs": 983870,
+  "creditRoute": "기존 크레딧실행 공식 Claude CLI 경로",
+  "estimatedListCostUSD": 2.3016276,
+  "cashChargeVerified": false,
+  "inputGitRevision": "753ba000d38fb2283f8c54ffe6ab03b30da9efdd",
+  "sourceInputs": [
+    {
+      "file": "docs/드라마말하기_기획.md",
+      "sha256": "64251f56700a63e58d156c23842ff93f5b6efcb26c806894dd93ad4dd53e7382"
+    },
+    {
+      "file": "docs/드라마말하기_BM.md",
+      "sha256": "dd03d16b8cfeb5097a6d8c37d5c0ca5fa915cb9e7bd1f5ff7caae85cfa6f09af"
+    }
+  ],
+  "draftSHA256": "bf9e2e82bfde43b06c9e7bfaac874e2fe9ace250a4113b9deca643027beced01",
+  "fullInputSHA256": "58635934a630fb3c5da38292bb4144e869a2f8fa1a76aaa9c8bbad99cb0d08db",
+  "reviewSHA256": "e6f394ec36b6fde15589da0d1b266068a8cb9fbc04cad45bee60985a8fdfc6f9",
+  "endMarkerVerified": true
+}

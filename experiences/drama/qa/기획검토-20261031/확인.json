@@ -1,0 +1,87 @@
+{
+  "checkedAt": "2026-10-31T10:47:33.755Z",
+  "kind": "문서 정합·링크·가정 산식 확인, 실제 학생/원가/앱 실행 시험 아님",
+  "relativeFileTargetsValid": true,
+  "filesChecked": [
+    "docs/드라마말하기_기획.md",
+    "docs/드라마말하기_BM.md",
+    "docs/BM_목록.md",
+    "experiences/drama/qa/기획검토-20261031/Claude_설계검토.md"
+  ],
+  "reviewModel": [
+    "claude-opus-5-5"
+  ],
+  "endMarkerVerified": true,
+  "FXassumption": 1400,
+  "netRevenueAssumption": 6104.545454545454,
+  "paidIncrementAssumption": 1000,
+  "calculations": [
+    {
+      "D": 30,
+      "sttPerUser": 188.99999999999997,
+      "mediaPerUser": 147.65625,
+      "cF": 336.65625,
+      "threshold": 0.06595224844167409,
+      "rows": [
+        {
+          "F": 500000,
+          "P": 164,
+          "marginAtP": 489.2045454544714,
+          "at4": -132.47443181818184,
+          "needAt4": null,
+          "needAt8": 6973
+        },
+        {
+          "F": 1500000,
+          "P": 360,
+          "marginAtP": 980.1136363632977,
+          "at4": -132.47443181818184,
+          "needAt4": null,
+          "needAt8": 20919
+        },
+        {
+          "F": 3000000,
+          "P": 654,
+          "marginAtP": 1716.477272727061,
+          "at4": -132.47443181818184,
+          "needAt4": null,
+          "needAt8": 41837
+        }
+      ]
+    },
+    {
+      "D": 10,
+      "sttPerUser": 63,
+      "mediaPerUser": 49.21875,
+      "cF": 112.21875,
+      "threshold": 0.021984082813891366,
+      "rows": [
+        {
+          "F": 500000,
+          "P": 120,
+          "marginAtP": 326.7045454544714,
+          "at4": 91.96306818181816,
+          "needAt4": 5437,
+          "needAt8": 1689
+        },
+        {
+          "F": 1500000,
+          "P": 316,
+          "marginAtP": 817.6136363635305,
+          "at4": 91.96306818181816,
+          "needAt4": 16311,
+          "needAt8": 5066
+        },
+        {
+          "F": 3000000,
+          "P": 610,
+          "marginAtP": 1553.977272727061,
+          "at4": 91.96306818181816,
+          "needAt4": 32622,
+          "needAt8": 10131
+        }
+      ]
+    }
+  ],
+  "net30DaysOf8Week": 5340.097402597401
+}
