@@ -2,81 +2,81 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "r1",
  "text": "부탁 맨 끝에 이 한 줄을 붙였어요. 단, 내가 승인이라고 하기 전엔 올리지 마.",
- "dur": 3.902,
+ "dur": 4.391,
  "words": [
   {
    "text": "부탁",
-   "start": 0.02,
-   "end": 0.254
+   "start": 0.07,
+   "end": 0.319
   },
   {
    "text": "맨",
-   "start": 0.296,
-   "end": 0.379
+   "start": 0.376,
+   "end": 0.452
   },
   {
    "text": "끝에",
-   "start": 0.42,
-   "end": 0.682
+   "start": 0.509,
+   "end": 0.757
   },
   {
    "text": "이",
-   "start": 0.778,
-   "end": 0.792
+   "start": 0.91,
+   "end": 0.929
   },
   {
    "text": "한",
-   "start": 0.875,
-   "end": 0.971
+   "start": 1.005,
+   "end": 1.081
   },
   {
    "text": "줄을",
-   "start": 1.012,
-   "end": 1.15
+   "start": 1.139,
+   "end": 1.291
   },
   {
    "text": "붙였어요.",
-   "start": 1.191,
-   "end": 1.606
+   "start": 1.348,
+   "end": 1.749
   },
   {
    "text": "단,",
-   "start": 1.95,
-   "end": 2.129
+   "start": 2.169,
+   "end": 2.36
   },
   {
    "text": "내가",
-   "start": 2.39,
-   "end": 2.556
+   "start": 2.799,
+   "end": 2.97
   },
   {
    "text": "승인이라고",
-   "start": 2.611,
-   "end": 3.011
+   "start": 3.027,
+   "end": 3.409
   },
   {
    "text": "하기",
-   "start": 3.052,
-   "end": 3.163
+   "start": 3.466,
+   "end": 3.561
   },
   {
    "text": "전엔",
-   "start": 3.204,
-   "end": 3.383
+   "start": 3.619,
+   "end": 3.79
   },
   {
    "text": "올리지",
-   "start": 3.425,
-   "end": 3.659
+   "start": 3.847,
+   "end": 4.058
   },
   {
    "text": "마.",
-   "start": 3.7,
-   "end": 3.902
+   "start": 4.115,
+   "end": 4.391
   }
  ],
  "source": {
-  "key": "836ff9799484d6f161503dbcf34d0d81",
+  "key": "80baafcd79a1d40e7d8869982b5466ed",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -87,11 +87,19 @@
    "emotion": "normal",
    "intensity": 1,
    "tempo": 1.12,
-   "seed": 1017,
+   "seed": 1041,
    "lufs": -17,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
   },
   "speed": 1.05,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
  }
 }

@@ -2,71 +2,71 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "c1",
  "text": "이 한 줄은 아래 글에 적어 뒀어요. 부탁 맨 끝에 그대로 붙이세요.",
- "dur": 3.326,
+ "dur": 3.414,
  "words": [
   {
    "text": "이",
-   "start": 0.04,
-   "end": 0.053
+   "start": 0.01,
+   "end": 0.024
   },
   {
    "text": "한",
-   "start": 0.121,
-   "end": 0.229
+   "start": 0.107,
+   "end": 0.203
   },
   {
    "text": "줄은",
-   "start": 0.27,
-   "end": 0.458
+   "start": 0.245,
+   "end": 0.439
   },
   {
    "text": "아래",
-   "start": 0.512,
-   "end": 0.634
+   "start": 0.48,
+   "end": 0.619
   },
   {
    "text": "글에",
    "start": 0.688,
-   "end": 0.823
+   "end": 0.826
   },
   {
    "text": "적어",
-   "start": 0.864,
-   "end": 1.039
+   "start": 0.868,
+   "end": 1.034
   },
   {
    "text": "뒀어요.",
-   "start": 1.079,
-   "end": 1.417
+   "start": 1.076,
+   "end": 1.421
   },
   {
    "text": "부탁",
-   "start": 1.875,
-   "end": 2.078
+   "start": 1.809,
+   "end": 2.058
   },
   {
    "text": "맨",
-   "start": 2.119,
-   "end": 2.186
+   "start": 2.1,
+   "end": 2.182
   },
   {
    "text": "끝에",
-   "start": 2.24,
-   "end": 2.456
+   "start": 2.251,
+   "end": 2.486
   },
   {
    "text": "그대로",
-   "start": 2.51,
-   "end": 2.712
+   "start": 2.583,
+   "end": 2.805
   },
   {
    "text": "붙이세요.",
-   "start": 2.753,
-   "end": 3.326
+   "start": 2.846,
+   "end": 3.414
   }
  ],
  "source": {
-  "key": "83cf6446bcf2607378f97bb677648ddc",
+  "key": "492e2c1303fba42c8cd3d02c45bda2a4",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -77,11 +77,19 @@
    "emotion": "normal",
    "intensity": 1,
    "tempo": 1.12,
-   "seed": 1017,
+   "seed": 1021,
    "lufs": -17,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
   },
   "speed": 1.05,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
  }
 }

@@ -2,51 +2,51 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "h2",
  "text": "그런데 한 줄을 붙였더니, 아직 안 올렸다며 기다려요.",
- "dur": 2.596,
+ "dur": 2.835,
  "words": [
   {
    "text": "그런데",
-   "start": 0.06,
-   "end": 0.297
+   "start": 0.02,
+   "end": 0.296
   },
   {
    "text": "한",
-   "start": 0.347,
-   "end": 0.434
+   "start": 0.366,
+   "end": 0.463
   },
   {
    "text": "줄을",
-   "start": 0.471,
-   "end": 0.621
+   "start": 0.504,
+   "end": 0.656
   },
   {
    "text": "붙였더니,",
-   "start": 0.658,
-   "end": 1.082
+   "start": 0.711,
+   "end": 1.099
   },
   {
    "text": "아직",
-   "start": 1.406,
-   "end": 1.555
+   "start": 1.584,
+   "end": 1.75
   },
   {
    "text": "안",
-   "start": 1.617,
-   "end": 1.668
+   "start": 1.806,
+   "end": 1.861
   },
   {
    "text": "올렸다며",
-   "start": 1.73,
-   "end": 2.09
+   "start": 1.902,
+   "end": 2.276
   },
   {
    "text": "기다려요.",
-   "start": 2.129,
-   "end": 2.596
+   "start": 2.317,
+   "end": 2.835
   }
  ],
  "source": {
-  "key": "f5075d90fa51ec14ef7b06b8abb146c8",
+  "key": "f13b5b502ecacfd64fe28d5b4154299c",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -57,11 +57,19 @@
    "emotion": "normal",
    "intensity": 1,
    "tempo": 1.12,
-   "seed": 1017,
+   "seed": 1059,
    "lufs": -17,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
   },
   "speed": 1.05,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
  }
 }

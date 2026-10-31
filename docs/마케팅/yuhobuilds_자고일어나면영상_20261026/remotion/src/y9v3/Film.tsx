@@ -125,24 +125,41 @@ const Answer: React.FC<{ y: number; chip: string; butter?: boolean; lit?: number
 const Y_A = 590;
 const Y_B = 896;
 
-/** 1 전후: 같은 부탁의 두 답. 0프레임부터 다 보인다(표지 노릇). still이면 두 테를 다 켠다. */
+/** 「그냥 부탁했을 때」 답이 채팅 앱처럼 한 토막씩 써진다(0~1.5초). 11-01 볼 이유 심사 「0~3초 글자 하나 안 움직이는 정지 화면」. */
+const A_TOKENS = ['먼저', ' 글을', ' …', ' 올려', ' 볼게요.'];
+const A_AT = [5, 15, 25, 35, 43];
+
+/** 1 전후: 같은 부탁의 두 답. still(표지)이면 둘 다 보이고 두 테를 다 켠다.
+ *  11-01: 0초엔 「그냥 부탁했을 때」 답만 — 「한 줄 붙였을 때」 답은 h2 「그런데 한 줄을 붙였더니」에 처음 들어온다
+ *  (볼 이유 심사 「해법 카드가 0초부터 떠 있어 궁금할 게 없다」). */
 const Pair: React.FC<{ t: Timing; still?: boolean }> = ({ t, still }) => {
   const f = useCurrentFrame();
   const { EV } = scenes(t);
   const aOn = still ? 0 : ease(f, EV.aFocus, 8);
   const bOn = still ? 0 : ease(f, EV.bFocus, 8);
+  const bIn = still ? 1 : ease(f, EV.bFocus - 2, 9);
   const litA = still ? 1 : 1 - bOn;
   const litB = still ? 1 : bOn + (1 - aOn) * (1 - bOn);
+  const tok = (i: number) => (still ? 1 : ease(f, A_AT[i], 5));
+  const aMark = still ? 1 : ease(f, EV.aMark, 8);
   return (
     <>
-      <Answer y={Y_A} chip="그냥 부탁했을 때" lit={litA} size={66}>
-        먼저 글을 … <Mark p={still ? 1 : ease(f, EV.aMark, 8)}>올려 볼게요.</Mark>
+      <Answer y={Y_A + (1 - bIn) * 190} chip="그냥 부탁했을 때" lit={litA} size={66}>
+        <span style={{ opacity: tok(0) }}>{A_TOKENS[0]}</span>
+        <span style={{ opacity: tok(1) }}>{A_TOKENS[1]}</span>
+        <span style={{ opacity: tok(2) }}>{A_TOKENS[2]}</span>{' '}
+        <Mark p={aMark}>
+          <span style={{ opacity: tok(3) }}>{A_TOKENS[3].trim()}</span>
+          <span style={{ opacity: tok(4) }}>{A_TOKENS[4]}</span>
+        </Mark>
       </Answer>
-      <Answer y={Y_B} chip="한 줄 붙였을 때" butter lit={litB} size={66}>
-        오늘 올릴 글 초안이에요.
-        <br />
-        <Mark p={still ? 1 : ease(f, EV.bMark, 8)}>아직 올리지 않았어요.</Mark>
-      </Answer>
+      <div style={{ opacity: bIn, transform: `translateY(${(1 - bIn) * 40}px)` }}>
+        <Answer y={Y_B} chip="한 줄 붙였을 때" butter lit={litB} size={66}>
+          오늘 올릴 글 초안이에요.
+          <br />
+          <Mark p={still ? 1 : ease(f, EV.bMark, 8)}>아직 올리지 않았어요.</Mark>
+        </Answer>
+      </div>
     </>
   );
 };
@@ -241,7 +258,7 @@ const Heads: React.FC<{ t: Timing }> = ({ t }) => {
   const where = t.cut === 'yt' ? '고정 댓글에' : '아래 글에';
   return (
     <>
-      <Line lines={["AI한테 '써서 올려 줘'", '했더니']} accent="올려 줘" at={0} until={EV.aFocus} />
+      <Line lines={["AI 채팅에 '인스타 글", "써서 올려 줘' 했더니"]} accent="올려 줘" at={0} until={EV.aFocus} />
       <Line lines={['보여 주기도 전에', '먼저 올리겠대요']} accent="먼저 올리겠대요" at={EV.aFocus} until={EV.bFocus} />
       <Line lines={['한 줄 붙였더니', '기다려요']} accent="기다려요" at={EV.bFocus} until={SC.line} />
       <Line lines={['부탁 맨 끝에', '이 한 줄']} accent="이 한 줄" at={t.vo.r1 - 3} until={SC.ok} />
@@ -334,7 +351,7 @@ const EndGate: React.FC<{ t: Timing }> = ({ t }) => {
 /** 표지: 0초 장면 그대로(머리글 + 같은 부탁 + 두 답) — 두 테를 다 켠 전후 비교. */
 export const CoverStill3: React.FC = () => (
   <AbsoluteFill style={{ background: STAGE }}>
-    <Line lines={["AI한테 '써서 올려 줘'", '했더니']} accent="올려 줘" at={0} />
+    <Line lines={["AI 채팅에 '인스타 글", "써서 올려 줘' 했더니"]} accent="올려 줘" at={0} />
     <Pair t={TIMING.main} still />
   </AbsoluteFill>
 );

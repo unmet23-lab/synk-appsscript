@@ -2,36 +2,36 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "fo",
  "text": "팔로우하면 다음 편도 보여 드릴게요.",
- "dur": 2.093,
+ "dur": 2.023,
  "words": [
   {
    "text": "팔로우하면",
-   "start": 0.02,
-   "end": 0.716
+   "start": 0.03,
+   "end": 0.698
   },
   {
    "text": "다음",
-   "start": 0.91,
-   "end": 1.12
+   "start": 0.838,
+   "end": 1.024
   },
   {
    "text": "편도",
-   "start": 1.169,
-   "end": 1.363
+   "start": 1.07,
+   "end": 1.272
   },
   {
    "text": "보여",
-   "start": 1.411,
-   "end": 1.557
+   "start": 1.319,
+   "end": 1.474
   },
   {
    "text": "드릴게요.",
-   "start": 1.606,
-   "end": 2.093
+   "start": 1.521,
+   "end": 2.023
   }
  ],
  "source": {
-  "key": "e5e603a6e35f2a6e66831f682daa78bf",
+  "key": "fc80dd656a54278ae88c678cc2ba37d2",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -48,5 +48,13 @@
   },
   "speed": 1,
   "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 163
  }
 }
