@@ -37,14 +37,22 @@
     {
       "계정": "synkbrief-tiktok",
       "상태": "게시됨",
-      "시각": "2026-10-30T21:00:00+09:00",
-      "승인": "유호님 10-30 20:2x 앱 세션에서 직접 「세 편 다 올려」 — 세 편의 판 · 계정 · 시각을 표로 보인 뒤(① LAB 「haha → 하하」 유튜브 @synkkorean 21:00 · 샤오훙수 22:00 ② LAB 몽골 「와요 한 낱말」 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00 ③ synkbrief B15 「AI 티 나는 가게 공지」 인스타 · 유튜브 · 틱톡 21:00 · 네이버 블로그 synkshift 21:10)",
+      "시각": "2026-10-31T19:22:00+09:00",
+      "승인": "유호님 10-31 19:1x 앱 세션에서 직접 「지우고 다시 올리기」 — 바로 앞 다음 단계 상자 「B15 틱톡(조회 0)은 어떻게 할까요?」의 단추(같은 영상 · 캡션으로 지금 다시)",
       "플랫폼": "tiktok",
-      "방법": "10-30 20:29~20:36 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) TikTok Studio 업로드 · 원본 malt-v6_master.mp4 · 캡션 03-synkbrief-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬 · 예약 칸 10-30 새 꼴 「21:00」 · 「2026-10-30」 → 「Schedule」(Content check lite 동안 「Continue to post?」 다섯 번 Cancel하고 기다림, 20:36에 통과) → tiktokstudio/content 목록 「Oct 30, 9:00 PM · Everyone」(스크립트 C:/Users/q1212/ego/tonight-plates-20261030/tk-sb-*.mjs · tk-time.mjs)",
+      "방법": "10-31 19:22 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) TikTok Studio 업로드 · 원본 malt-v6_master.mp4 · 캡션 03-synkbrief-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬 · 「Now」 → 「Post」(이번엔 「Continue to post?」 없이 바로 콘텐츠 목록으로, 스크립트 C:/Users/q1212/ego/tonight-plates-20261030/tk-repost.mjs)",
       "편ID": "synkbrief_내말투로_20261028",
-      "주소": "https://www.tiktok.com/@synkbrief/video/7702423353113464082",
-      "게시물ID": "7702423353113464082",
-      "게시확인": "22:4x ego 프로필 「TikTok synkbrief」 콘텐츠 목록 「Oct 30, 9:00 PM · Everyone」 · 10-31 19:1x 공개 화면은 열림(「SYNK 브리핑 · 22시간 전」)인데 프로필 격자 조회 0(같은 계정 앞 세 편 93 · 117 · 116), 분석 화면 「동영상 조회수 --」 — 틱톡이 퍼뜨리지 않는 것으로 보임, 까닭 미확인"
+      "주소": "https://www.tiktok.com/@synkbrief/video/7702775327335959828",
+      "게시물ID": "7702775327335959828",
+      "게시확인": "19:2x 프로필 격자 맨 앞 새 영상 7702775327335959828 · 19:35(13분 뒤)에도 조회 0 — 옛 판과 같은 모습이면 영상 쪽 까닭(내일 다시 볼 것)",
+      "옛판": {
+        "주소": "https://www.tiktok.com/@synkbrief/video/7702423353113464082",
+        "게시물ID": "7702423353113464082",
+        "시각": "2026-10-30T21:00:00+09:00",
+        "방법": "10-30 20:29~20:36 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) TikTok Studio 업로드 · 원본 malt-v6_master.mp4 · 캡션 03-synkbrief-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬 · 예약 칸 10-30 새 꼴 「21:00」 · 「2026-10-30」 → 「Schedule」(Content check lite 동안 「Continue to post?」 다섯 번 Cancel하고 기다림, 20:36에 통과) → tiktokstudio/content 목록 「Oct 30, 9:00 PM · Everyone」(스크립트 C:/Users/q1212/ego/tonight-plates-20261030/tk-sb-*.mjs · tk-time.mjs)",
+        "게시확인": "22:4x ego 프로필 「TikTok synkbrief」 콘텐츠 목록 「Oct 30, 9:00 PM · Everyone」 · 10-31 19:1x 공개 화면은 열림(「SYNK 브리핑 · 22시간 전」)인데 프로필 격자 조회 0(같은 계정 앞 세 편 93 · 117 · 116), 분석 화면 「동영상 조회수 --」 — 틱톡이 퍼뜨리지 않는 것으로 보임, 까닭 미확인",
+        "지움": "10-31 19:2x Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) Studio 콘텐츠 목록 B15 줄 「…」 → Delete → 「Delete post?」 Delete — 22시간째 조회 0(같은 계정 앞 편 93~117)이라 유호님 10-31 앱 「지우고 다시 올리기」. 틱톡 「최근 삭제됨」에서 30일 안에 되살릴 수 있음"
+      }
     },
     {
       "계정": "shift-naverblog",
