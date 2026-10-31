@@ -713,8 +713,8 @@
       "publisher": "direct-after-connection",
       "connection": "needs-meta-app-and-media-host",
       "profileStatus": "MN-KR-bio-publicly-rechecked-2026-09-14-after-user-mobile-edit; trailing-SYNK-LAB-dot-preserved-as-user-current-value; clickable-website-user-saved-and-agent-click-through-verified; name-photo-handle-unchanged; posts-remain-0; native-language-review-incomplete",
-      "websiteUrl": "https://synk.im/",
-      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
+      "websiteUrl": "https://synk.im/?from=ig-synkmn",
+      "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate; from-tag-saved-via-business-suite-profile-edit-2026-10-31-after-user-approved-meta-consent; logged-out-public-profile-confirmed; bio-unchanged",
       "dailyLine": "LAB 몽골"
     },
     "lab-tiktok": {
