@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>네온 필라테스 학원</title>
+<link href="https://fonts.googleapis.com/css2?family=Monoton&family=Noto+Sans+KR:wght@300;400;700&family=Gaegu:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0610;
+  --neon:#ff4fb8;
+  --neon-soft:#ff9bd8;
+  --text:#ffe9f6;
+  --muted:#c9a3bc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse at 50% 30%,#2a0f26 0%,var(--bg) 65%);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 5vw}
+.logo{font-family:'Gaegu',cursive;font-size:1.6rem;color:var(--neon-soft);text-shadow:0 0 6px var(--neon),0 0 16px var(--neon)}
+nav a{color:var(--muted);text-decoration:none;margin-left:24px;font-size:.95rem}
+nav a:hover{color:var(--neon-soft);text-shadow:0 0 8px var(--neon)}
+.hero{text-align:center;padding:10vh 5vw 8vh}
+.sign{font-family:'Gaegu',cursive;font-size:clamp(3.2rem,12vw,8rem);line-height:1.1;color:#fff0fa;
+  text-shadow:0 0 4px #fff,0 0 12px var(--neon),0 0 28px var(--neon),0 0 56px var(--neon),0 0 90px #ff1f9c;
+  animation:flicker 5s infinite}
+.sign small{display:block;font-size:.32em;letter-spacing:.35em;margin-top:.4em;color:var(--neon-soft)}
+@keyframes flicker{0%,18%,22%,60%,64%,100%{opacity:1}20%,62%{opacity:.7}}
+.lead{margin:36px auto 40px;max-width:520px;color:var(--muted);line-height:1.8;font-weight:300}
+.btn{display:inline-block;padding:14px 38px;border:2px solid var(--neon);border-radius:999px;color:var(--text);text-decoration:none;font-weight:700;
+  box-shadow:0 0 10px var(--neon),inset 0 0 10px rgba(255,79,184,.5);transition:.25s}
+.btn:hover{background:var(--neon);color:#1a0615;box-shadow:0 0 28px var(--neon)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;padding:0 5vw 80px;max-width:1000px;margin:auto}
+.card{border:1.5px solid var(--neon);border-radius:18px;padding:28px 22px;text-align:center;
+  box-shadow:0 0 12px rgba(255,79,184,.55),inset 0 0 14px rgba(255,79,184,.2)}
+.card h3{font-family:'Gaegu',cursive;font-size:1.6rem;color:var(--neon-soft);text-shadow:0 0 8px var(--neon);margin-bottom:8px}
+.card p{color:var(--muted);font-size:.92rem;line-height:1.6}
+footer{text-align:center;padding:24px;color:var(--muted);font-size:.85rem;border-top:1px solid rgba(255,79,184,.3)}
+@media(max-width:560px){nav a{margin-left:12px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Neon Pilates</div>
+  <nav><a href="#">클래스</a><a href="#">강사진</a><a href="#">시간표</a><a href="#">오시는 길</a></nav>
+</header>
+
+<section class="hero">
+  <h1 class="sign">NEON<br>PILATES<small>필라테스 학원</small></h1>
+  <p class="lead">분홍빛 간판 불이 켜지는 곳, 오늘도 몸의 중심을 다시 세워 보세요. 소수 정원 맞춤 수업으로 처음이어도 편안하게 시작합니다.</p>
+  <a class="btn" href="#">무료 체험 신청</a>
+</section>
+
+<section class="cards">
+  <div class="card"><h3>매트 필라테스</h3><p>기본 호흡과 코어 감각을 익히는 입문 클래스</p></div>
+  <div class="card"><h3>기구 필라테스</h3><p>리포머 중심 1:4 소그룹 수업</p></div>
+  <div class="card"><h3>강사 자격 과정</h3><p>현장 실습 중심으로 준비하는 지도자 과정</p></div>
+</section>
+
+<footer>서울시 어딘가 1층 분홍 네온 간판 앞 · 평일 10:00 – 22:00 · 문의 02-000-0000</footer>
+</body>
+</html>

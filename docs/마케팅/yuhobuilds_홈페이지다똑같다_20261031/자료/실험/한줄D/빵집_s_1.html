@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>밀과 소금 제과점</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* 기준 물건: 가게 앞 청록 에나멜 간판 (짙은 청록 바탕, 크림색 글씨, 금색 테두리선) */
+:root{
+  --enamel:#0f3b33;
+  --enamel-deep:#0a2a24;
+  --cream:#f4e8c8;
+  --gold:#d4a73c;
+  --rust:#c4552f;
+  --serif:"Noto Serif KR","Batang",serif;
+  --sans:"Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--enamel-deep);color:var(--cream);font-family:var(--sans);line-height:1.7}
+a{color:inherit;text-decoration:none}
+
+.nav{display:flex;justify-content:space-between;align-items:center;padding:20px 32px;font-size:15px;letter-spacing:.04em}
+.nav .logo{font-family:var(--serif);font-weight:900;font-size:19px;color:var(--gold)}
+.nav ul{display:flex;gap:28px;list-style:none}
+.nav a:hover{color:var(--gold)}
+
+.hero{padding:0 24px 56px;display:flex;justify-content:center}
+.sign{
+  width:min(980px,100%);
+  background:var(--enamel);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 30px 60px -20px #000a, inset 0 0 0 2px #0006;
+  position:relative;
+}
+.sign-inner{
+  border:3px solid var(--gold);
+  border-radius:6px;
+  outline:1px solid var(--gold);
+  outline-offset:-10px;
+  padding:64px 32px 56px;
+  text-align:center;
+  position:relative;
+}
+.rivet{position:absolute;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f2dc9a,#8a6a1c);}
+.r1{top:20px;left:20px}.r2{top:20px;right:20px}.r3{bottom:20px;left:20px}.r4{bottom:20px;right:20px}
+.since{font-size:13px;letter-spacing:.5em;color:var(--gold);margin-bottom:18px}
+h1{font-family:var(--serif);font-weight:900;font-size:clamp(48px,10vw,108px);line-height:1.1;letter-spacing:.06em;color:var(--cream)}
+h1 em{font-style:normal;color:var(--gold)}
+.rule{display:flex;align-items:center;gap:16px;justify-content:center;margin:26px auto;max-width:420px;color:var(--gold)}
+.rule::before,.rule::after{content:"";flex:1;height:1px;background:var(--gold)}
+.tag{font-family:var(--serif);font-size:clamp(17px,2.4vw,22px);font-weight:500}
+.hours{margin-top:30px;display:inline-block;border:1px solid var(--gold);padding:8px 22px;font-size:14px;letter-spacing:.08em}
+.hours b{color:var(--gold);font-weight:500}
+
+.cta{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+.btn{padding:14px 30px;font-family:var(--serif);font-weight:700;font-size:16px;border-radius:2px;transition:.2s}
+.btn.fill{background:var(--rust);color:var(--cream)}
+.btn.fill:hover{background:#d8643b}
+.btn.line{border:1.5px solid var(--cream)}
+.btn.line:hover{background:var(--cream);color:var(--enamel)}
+
+.menu{max-width:980px;margin:0 auto;padding:16px 24px 72px}
+.menu h2{font-family:var(--serif);font-size:28px;color:var(--gold);margin-bottom:6px}
+.menu p.sub{font-size:14px;opacity:.7;margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.item{background:var(--enamel);border:1px solid #d4a73c55;padding:24px 22px;border-radius:4px}
+.item .no{font-family:var(--serif);color:var(--gold);font-size:13px;letter-spacing:.2em}
+.item h3{font-family:var(--serif);font-size:21px;margin:6px 0 8px}
+.item p{font-size:14px;opacity:.8}
+.item .price{margin-top:14px;font-family:var(--serif);font-weight:700;color:var(--gold)}
+
+footer{border-top:1px solid #d4a73c44;padding:28px 24px;text-align:center;font-size:13px;opacity:.75}
+@media(max-width:560px){.nav ul{display:none}.sign-inner{padding:48px 18px 44px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <span class="logo">밀과 소금</span>
+  <ul><li><a href="#menu">오늘의 빵</a></li><li><a href="#">예약 주문</a></li><li><a href="#">오시는 길</a></li></ul>
+</nav>
+
+<header class="hero">
+  <div class="sign">
+    <div class="sign-inner">
+      <i class="rivet r1"></i><i class="rivet r2"></i><i class="rivet r3"></i><i class="rivet r4"></i>
+      <div class="since">SINCE 1998 · 동네 제과점</div>
+      <h1>밀과 <em>소금</em></h1>
+      <div class="rule">&#10022;</div>
+      <p class="tag">새벽 네 시에 반죽하고, 아침 일곱 시에 문을 엽니다.</p>
+      <div class="hours"><b>OPEN</b> &nbsp;07:00 – 20:00 &nbsp;·&nbsp; 매주 월요일 휴무</div>
+      <div class="cta">
+        <a class="btn fill" href="#menu">오늘 나온 빵 보기</a>
+        <a class="btn line" href="#">전화 주문 031-000-0000</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="menu" id="menu">
+  <h2>오늘의 빵</h2>
+  <p class="sub">구워 나오는 시간에 따라 일찍 동날 수 있어요.</p>
+  <div class="grid">
+    <article class="item"><span class="no">NO. 01</span><h3>소금 버터롤</h3><p>겉은 바삭, 속은 촉촉. 게랑드 소금을 살짝 얹었어요.</p><div class="price">2,800원</div></article>
+    <article class="item"><span class="no">NO. 02</span><h3>통밀 식빵</h3><p>하루 숙성한 반죽으로 구운 담백한 식빵.</p><div class="price">6,500원</div></article>
+    <article class="item"><span class="no">NO. 03</span><h3>단팥 크림빵</h3><p>직접 쑨 팥소와 생크림을 가득 채웠어요.</p><div class="price">3,500원</div></article>
+    <article class="item"><span class="no">NO. 04</span><h3>사과 호두 파이</h3><p>계피 향이 은은한 제철 사과 파이.</p><div class="price">4,200원</div></article>
+  </div>
+</section>
+
+<footer>밀과 소금 제과점 · 서울시 ○○구 ○○로 12 · 07:00–20:00 (월 휴무)</footer>
+</body>
+</html>

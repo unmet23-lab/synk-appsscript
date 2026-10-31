@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>한서윤 세무회계사무소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* 기준 물건: 사무실 출입문 옆에 붙이는 황동 명패 (짙은 녹색 래커판 + 황동 음각 글씨) */
+:root{
+  --lacquer:#0e2822;
+  --lacquer-2:#143630;
+  --brass:#c9a85c;
+  --brass-hi:#ecd9a0;
+  --brass-lo:#8a6d2f;
+  --text:#d9cfb4;
+  --serif:'Noto Serif KR','Batang',serif;
+  --sans:'Noto Sans KR','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(ellipse at 50% 30%,#1a4036 0%,var(--lacquer) 55%,#08181a 100%);
+  color:var(--text);font-family:var(--sans);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px 48px;
+}
+.brass{
+  background:linear-gradient(100deg,var(--brass-lo),var(--brass-hi) 30%,var(--brass) 52%,var(--brass-lo) 80%,var(--brass-hi));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+nav{
+  width:100%;max-width:1040px;display:flex;justify-content:space-between;align-items:center;
+  padding:22px 0;font-size:14px;letter-spacing:.08em;
+}
+nav .mark{font-family:var(--serif);font-weight:600;font-size:15px}
+nav ul{display:flex;gap:28px;list-style:none;padding:0}
+nav a{color:var(--text);text-decoration:none;opacity:.85}
+nav a:hover{color:var(--brass-hi);opacity:1}
+@media(max-width:560px){nav ul{gap:16px;font-size:13px}}
+
+.plaque{
+  position:relative;margin-top:4vh;width:100%;max-width:760px;
+  padding:clamp(36px,7vw,72px) clamp(22px,6vw,72px);
+  background:linear-gradient(160deg,var(--lacquer-2),#0b211d);
+  border:2px solid var(--brass);
+  box-shadow:0 0 0 7px var(--lacquer),0 0 0 8px var(--brass-lo),0 30px 60px rgba(0,0,0,.55),inset 0 0 60px rgba(0,0,0,.45);
+  text-align:center;
+}
+.plaque::before{ /* 안쪽 가는 선 */
+  content:"";position:absolute;inset:12px;border:1px solid rgba(201,168,92,.45);pointer-events:none;
+}
+.screw{position:absolute;width:12px;height:12px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--brass-hi),var(--brass-lo));
+  box-shadow:0 1px 2px rgba(0,0,0,.7)}
+.screw::after{content:"";position:absolute;left:2px;right:2px;top:5px;height:2px;background:rgba(0,0,0,.55);transform:rotate(35deg)}
+.screw.a{top:22px;left:22px}.screw.b{top:22px;right:22px}
+.screw.c{bottom:22px;left:22px}.screw.d{bottom:22px;right:22px}
+
+.plaque .kind{font-family:var(--serif);font-size:clamp(13px,2.4vw,16px);letter-spacing:.7em;margin-right:-.7em;color:var(--brass)}
+.plaque h1{
+  font-family:var(--serif);font-weight:900;font-size:clamp(40px,9vw,84px);line-height:1.15;
+  letter-spacing:.14em;margin:22px -.14em 10px 0;
+  filter:drop-shadow(0 -1px 0 rgba(0,0,0,.6)) drop-shadow(0 1px 0 rgba(236,217,160,.25));
+}
+.plaque .rule{width:64px;height:1px;background:var(--brass);margin:22px auto}
+.plaque .name{font-family:var(--serif);font-size:clamp(16px,3vw,20px);letter-spacing:.3em;color:var(--brass-hi)}
+.plaque .tag{margin-top:18px;font-size:clamp(14px,2.4vw,16px);line-height:1.9;color:var(--text)}
+
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+.cta a{
+  font-family:var(--serif);font-size:15px;text-decoration:none;padding:13px 26px;letter-spacing:.1em;
+  border:1px solid var(--brass);color:var(--brass-hi);transition:.2s;
+}
+.cta a.fill{background:var(--brass);color:#10241f;font-weight:600}
+.cta a:hover{background:var(--brass-hi);color:#10241f}
+.cta a:focus-visible{outline:2px solid var(--brass-hi);outline-offset:3px}
+
+.info{
+  width:100%;max-width:760px;margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border-top:1px solid rgba(201,168,92,.5);
+}
+.info div{padding:22px 16px 0;text-align:center}
+.info div+div{border-left:1px solid rgba(201,168,92,.25)}
+.info h3{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--brass);margin-bottom:8px;letter-spacing:.1em}
+.info p{font-size:14px;line-height:1.7;opacity:.9}
+@media(max-width:600px){
+  .info{grid-template-columns:1fr}
+  .info div+div{border-left:0;border-top:1px solid rgba(201,168,92,.25);margin-top:20px}
+}
+.foot{margin-top:36px;font-size:13px;opacity:.7;text-align:center;line-height:1.8}
+.foot b{font-weight:500;color:var(--brass-hi)}
+</style>
+</head>
+<body>
+<nav>
+  <span class="mark brass">한서윤 세무회계사무소</span>
+  <ul>
+    <li><a href="#services">업무</a></li>
+    <li><a href="#visit">찾아오시는 길</a></li>
+    <li><a href="#contact">상담</a></li>
+  </ul>
+</nav>
+
+<main class="plaque" aria-labelledby="title">
+  <i class="screw a"></i><i class="screw b"></i><i class="screw c"></i><i class="screw d"></i>
+  <div class="kind">세 무 사</div>
+  <h1 id="title" class="brass">한서윤<br>세무회계</h1>
+  <div class="rule"></div>
+  <div class="name">세무사 한서윤</div>
+  <p class="tag">대표 세무사가 처음부터 끝까지 직접 봅니다.<br>개인사업자 · 프리랜서 · 소규모 법인의 장부와 신고.</p>
+  <div class="cta">
+    <a class="fill" href="tel:0212345678" id="contact">전화 상담 02-1234-5678</a>
+    <a href="#services">업무 안내</a>
+  </div>
+</main>
+
+<section class="info" id="services">
+  <div><h3>기장 · 부가세</h3><p>월 단위 장부 관리와<br>부가가치세 신고</p></div>
+  <div><h3>종합소득세</h3><p>5월 신고, 절세 항목을<br>미리 점검</p></div>
+  <div><h3>법인 · 세무조사</h3><p>법인 결산, 조사 통지<br>대응 동행</p></div>
+</section>
+
+<p class="foot" id="visit">
+  <b>평일 09:30 – 18:00</b> · 점심 12:30 – 13:30<br>
+  서울특별시 ○○구 ○○로 00, 5층 502호 (○○역 2번 출구 도보 3분)
+</p>
+</body>
+</html>

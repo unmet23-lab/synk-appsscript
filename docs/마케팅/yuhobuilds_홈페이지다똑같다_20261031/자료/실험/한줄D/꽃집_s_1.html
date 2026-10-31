@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>담쟁이꽃집 | 동네 꽃집</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,800;1,500&display=swap" rel="stylesheet">
+<style>
+/* 기준 물건: 가게 앞 간판 — 병녹색 에나멜 바탕에 크림색 페인트 글씨, 금박 테두리 */
+:root{
+  --enamel:#12372c;
+  --enamel-deep:#0b2820;
+  --cream:#f3ead2;
+  --gold:#c9a24b;
+  --rose:#c4566b;
+  --text:#f3ead2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--enamel-deep);
+  color:var(--text);
+  font-family:"Gowun Batang","Batang",serif;
+  line-height:1.7;
+  min-height:100vh;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;font-size:15px;letter-spacing:.08em}
+nav .links{display:flex;gap:26px}
+nav a{color:var(--cream);text-decoration:none;opacity:.85}
+nav a:hover{opacity:1;color:var(--gold)}
+.mark{font-family:"Playfair Display",serif;font-style:italic;color:var(--gold);font-size:18px}
+
+/* 간판 */
+.sign{
+  margin:14px 0 0;
+  background:
+    radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.07),transparent 60%),
+    var(--enamel);
+  border:2px solid var(--gold);
+  outline:1px solid var(--gold);
+  outline-offset:-12px;
+  border-radius:6px;
+  padding:72px 24px 64px;
+  text-align:center;
+  position:relative;
+  box-shadow:0 30px 60px rgba(0,0,0,.45), inset 0 0 80px rgba(0,0,0,.35);
+}
+.sign::before,.sign::after{
+  content:"";position:absolute;top:50%;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#e8d08a,#7a5d1c);
+}
+.sign::before{left:26px}.sign::after{right:26px}
+.est{font-family:"Playfair Display",serif;letter-spacing:.5em;font-size:13px;color:var(--gold);text-transform:uppercase}
+h1{
+  font-family:"Gowun Batang",serif;font-weight:700;
+  font-size:clamp(54px,11vw,120px);
+  letter-spacing:.12em;line-height:1.15;margin:18px 0 6px;
+  color:var(--cream);
+  text-shadow:0 2px 0 rgba(0,0,0,.35);
+}
+.en{
+  font-family:"Playfair Display",serif;font-style:italic;font-weight:500;
+  font-size:clamp(20px,3.4vw,32px);color:var(--gold);
+}
+.rule{display:flex;align-items:center;gap:14px;justify-content:center;margin:30px auto 22px;max-width:360px;color:var(--gold)}
+.rule i{flex:1;height:1px;background:var(--gold)}
+.tag{font-size:19px;max-width:520px;margin:0 auto}
+.cta{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+.btn{
+  display:inline-block;padding:13px 30px;border-radius:2px;text-decoration:none;
+  font-family:inherit;font-size:16px;letter-spacing:.06em;
+}
+.btn.fill{background:var(--cream);color:var(--enamel)}
+.btn.fill:hover{background:var(--gold)}
+.btn.line{border:1px solid var(--cream);color:var(--cream)}
+.btn.line:hover{border-color:var(--gold);color:var(--gold)}
+
+/* 간판 아래 안내 */
+.info{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  margin:40px 0 0;border-top:1px solid rgba(201,162,75,.5);
+}
+.info div{padding:26px 22px;border-right:1px solid rgba(201,162,75,.25)}
+.info div:last-child{border-right:0}
+.info h3{font-family:"Playfair Display",serif;color:var(--gold);font-size:13px;letter-spacing:.3em;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+.info p{font-size:17px}
+.info .today{color:var(--rose);color:#e48a9c}
+
+.seasonal{
+  margin:36px 0 56px;padding:24px 28px;border:1px dashed rgba(201,162,75,.6);
+  display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+}
+.seasonal b{font-family:"Playfair Display",serif;color:var(--gold);font-weight:600;font-style:italic;font-size:20px}
+.seasonal span{font-size:17px}
+footer{text-align:center;padding:0 0 40px;font-size:13px;opacity:.6;letter-spacing:.1em}
+
+@media(max-width:720px){
+  nav .links{gap:16px;font-size:14px}
+  .sign{padding:56px 16px 48px;outline-offset:-8px}
+  .sign::before,.sign::after{display:none}
+  .info{grid-template-columns:1fr}
+  .info div{border-right:0;border-bottom:1px solid rgba(201,162,75,.25)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="mark">Daengi &amp; Co.</span>
+    <div class="links">
+      <a href="#">오늘의 꽃</a>
+      <a href="#">꽃다발 주문</a>
+      <a href="#">화분·정기배송</a>
+      <a href="#">오시는 길</a>
+    </div>
+  </nav>
+
+  <header class="sign">
+    <div class="est">Flower Shop · Since 2014</div>
+    <h1>담쟁이꽃집</h1>
+    <div class="en">fresh flowers, every morning</div>
+    <div class="rule"><i></i><span>✿</span><i></i></div>
+    <p class="tag">매일 아침 새벽 시장에서 골라온 꽃으로,<br>오늘 필요한 마음만큼 묶어 드립니다.</p>
+    <div class="cta">
+      <a class="btn fill" href="#">꽃다발 주문하기</a>
+      <a class="btn line" href="#">오늘 들어온 꽃 보기</a>
+    </div>
+  </header>
+
+  <section class="info">
+    <div>
+      <h3>Open</h3>
+      <p>매일 09:00 – 20:00<br>일요일은 오후 6시까지</p>
+    </div>
+    <div>
+      <h3>Today</h3>
+      <p class="today">라넌큘러스 · 작약 · 유칼립투스<br>오늘 아침 입고</p>
+    </div>
+    <div>
+      <h3>Visit</h3>
+      <p>행복동 12-3 1층<br>02-123-4567</p>
+    </div>
+  </section>
+
+  <div class="seasonal">
+    <b>이번 주 제안</b>
+    <span>당일 배달 · 오후 3시 전 주문 시 같은 날 동네 안으로 보내 드려요.</span>
+    <a class="btn line" href="#">자세히</a>
+  </div>
+
+  <footer>© 담쟁이꽃집 · 행복동 12-3</footer>
+</div>
+</body>
+</html>

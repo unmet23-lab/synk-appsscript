@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>하늘 물뿌리개 꽃집</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tin:#8EC5DE;        /* 하늘색 양철 */
+    --tin-light:#BFE0EE;
+    --tin-deep:#4F94B5;
+    --tin-ink:#1F4A62;
+    --cream:#FBF7EC;
+    --rust:#C8744A;
+    --petal:#F2A9B8;
+    --leaf:#5F8F5B;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{
+    font-family:'Gowun Dodum',sans-serif;
+    background:var(--cream);
+    color:var(--tin-ink);
+    line-height:1.7;
+  }
+  .display{font-family:'Black Han Sans','Gowun Dodum',sans-serif;letter-spacing:.04em}
+  header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 5vw;background:var(--tin);
+    border-bottom:6px solid var(--tin-deep);
+  }
+  header .logo{font-size:1.5rem;color:var(--cream);text-shadow:2px 2px 0 var(--tin-deep)}
+  nav a{color:var(--tin-ink);text-decoration:none;margin-left:22px;font-size:1rem}
+  nav a:hover{text-decoration:underline wavy var(--rust)}
+  .hero{
+    background:
+      radial-gradient(circle at 15% 20%,var(--tin-light) 0 18%,transparent 19%),
+      var(--tin);
+    padding:64px 5vw 80px;
+    display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;
+    position:relative;
+  }
+  .hero::after{ /* 양철 리벳 줄 */
+    content:"";position:absolute;left:0;right:0;bottom:14px;height:8px;
+    background:radial-gradient(circle,var(--tin-deep) 0 3px,transparent 4px) 0 0/28px 8px repeat-x;
+    opacity:.7;
+  }
+  .eyebrow{display:inline-block;border:2px solid var(--tin-ink);padding:2px 14px;border-radius:99px;font-size:.9rem;margin-bottom:18px}
+  h1{font-size:clamp(2.4rem,6vw,4.2rem);line-height:1.15;color:var(--cream);text-shadow:3px 3px 0 var(--tin-deep)}
+  .hero p{margin:20px 0 28px;font-size:1.1rem;max-width:30em}
+  .btn{
+    display:inline-block;padding:14px 28px;border-radius:10px;text-decoration:none;
+    background:var(--cream);color:var(--tin-ink);border:3px solid var(--tin-ink);
+    box-shadow:4px 4px 0 var(--tin-ink);font-weight:bold;
+  }
+  .btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--tin-ink)}
+  .btn.alt{background:transparent;margin-left:12px;box-shadow:none}
+  .can{width:100%;max-width:420px;justify-self:center}
+  .strip{padding:56px 5vw}
+  .strip h2{font-size:2rem;margin-bottom:28px;color:var(--tin-deep)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
+  .card{
+    background:#fff;border:3px solid var(--tin);border-radius:14px;padding:22px;
+    position:relative;
+  }
+  .card::before{content:"";position:absolute;top:10px;right:12px;width:10px;height:10px;border-radius:50%;background:var(--tin);box-shadow:inset -2px -2px 0 var(--tin-deep)}
+  .card .dot{width:54px;height:54px;border-radius:50%;margin-bottom:12px}
+  .card h3{font-size:1.25rem;margin-bottom:6px}
+  .card .price{color:var(--rust);font-weight:bold;margin-top:8px}
+  .info{
+    background:var(--tin-ink);color:var(--cream);
+    padding:48px 5vw;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;
+  }
+  .info h3{color:var(--tin);margin-bottom:8px;font-size:1.3rem}
+  footer{background:var(--tin);padding:18px 5vw;text-align:center;font-size:.9rem;border-top:6px solid var(--tin-deep)}
+  @media(max-width:760px){
+    .hero{grid-template-columns:1fr;padding-top:40px}
+    nav a{margin-left:12px;font-size:.9rem}
+    .btn.alt{margin:12px 0 0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo display">하늘 물뿌리개</div>
+  <nav>
+    <a href="#flowers">오늘의 꽃</a>
+    <a href="#visit">찾아오는 길</a>
+    <a href="#visit">주문 문의</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <span class="eyebrow">동네 꽃집 · 매일 아침 새 꽃</span>
+    <h1 class="display">오늘도<br>꽃에 물 주러<br>오세요</h1>
+    <p>골목 모퉁이 하늘색 양철 물뿌리개가 걸린 집. 그날 들어온 제철 꽃으로 손수 묶어 드리는 작은 꽃집입니다.</p>
+    <a class="btn" href="#flowers">오늘의 꽃 보기</a>
+    <a class="btn alt" href="#visit">전화로 주문하기</a>
+  </div>
+
+  <svg class="can" viewBox="0 0 400 340" role="img" aria-label="하늘색 양철 물뿌리개 일러스트">
+    <ellipse cx="190" cy="318" rx="130" ry="12" fill="#1F4A62" opacity=".18"/>
+    <!-- 주둥이 -->
+    <path d="M95 190 L20 80 L36 70 L118 170Z" fill="#BFE0EE" stroke="#1F4A62" stroke-width="5" stroke-linejoin="round"/>
+    <ellipse cx="22" cy="70" rx="24" ry="12" transform="rotate(-30 22 70)" fill="#FBF7EC" stroke="#1F4A62" stroke-width="5"/>
+    <!-- 손잡이 -->
+    <path d="M250 110 C340 70 360 230 270 250" fill="none" stroke="#1F4A62" stroke-width="16" stroke-linecap="round"/>
+    <path d="M250 110 C340 70 360 230 270 250" fill="none" stroke="#8EC5DE" stroke-width="8" stroke-linecap="round"/>
+    <!-- 몸통 -->
+    <path d="M90 130 H275 L290 295 Q190 320 80 295Z" fill="#8EC5DE" stroke="#1F4A62" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M110 150 V280" stroke="#FBF7EC" stroke-width="8" stroke-linecap="round" opacity=".6"/>
+    <path d="M85 215 Q185 235 285 215" fill="none" stroke="#4F94B5" stroke-width="6"/>
+    <path d="M82 255 Q185 275 288 255" fill="none" stroke="#4F94B5" stroke-width="6"/>
+    <!-- 윗입구 -->
+    <ellipse cx="182" cy="130" rx="93" ry="22" fill="#BFE0EE" stroke="#1F4A62" stroke-width="5"/>
+    <ellipse cx="182" cy="132" rx="70" ry="13" fill="#1F4A62"/>
+    <!-- 꽃 -->
+    <path d="M150 128 C140 90 130 60 120 30" stroke="#5F8F5B" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M185 128 C190 90 200 50 215 22" stroke="#5F8F5B" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M215 128 C230 100 255 70 275 52" stroke="#5F8F5B" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g fill="#F2A9B8" stroke="#1F4A62" stroke-width="3">
+      <circle cx="120" cy="18" r="11"/><circle cx="108" cy="30" r="11"/><circle cx="132" cy="30" r="11"/><circle cx="120" cy="42" r="11"/>
+    </g>
+    <circle cx="120" cy="30" r="7" fill="#F4D35E" stroke="#1F4A62" stroke-width="3"/>
+    <g fill="#FBF7EC" stroke="#1F4A62" stroke-width="3">
+      <circle cx="215" cy="12" r="11"/><circle cx="203" cy="24" r="11"/><circle cx="227" cy="24" r="11"/><circle cx="215" cy="36" r="11"/>
+    </g>
+    <circle cx="215" cy="24" r="7" fill="#C8744A" stroke="#1F4A62" stroke-width="3"/>
+    <g fill="#E58A6B" stroke="#1F4A62" stroke-width="3">
+      <circle cx="277" cy="44" r="10"/><circle cx="266" cy="55" r="10"/><circle cx="288" cy="55" r="10"/><circle cx="277" cy="66" r="10"/>
+    </g>
+    <circle cx="277" cy="55" r="6" fill="#F4D35E" stroke="#1F4A62" stroke-width="3"/>
+    <!-- 글씨 -->
+    <text x="185" y="200" text-anchor="middle" font-family="Black Han Sans, sans-serif" font-size="26" fill="#FBF7EC" stroke="#1F4A62" stroke-width="1">꽃집</text>
+  </svg>
+</section>
+
+<section class="strip" id="flowers">
+  <h2 class="display">이번 주 꽃</h2>
+  <div class="cards">
+    <article class="card"><div class="dot" style="background:var(--petal)"></div><h3>튤립 한 다발</h3><p>부드럽게 퍼지는 분홍빛. 5송이 묶음.</p><div class="price">12,000원</div></article>
+    <article class="card"><div class="dot" style="background:#fff;border:3px solid var(--tin)"></div><h3>안개꽃 작은 부케</h3><p>책상 위에 두기 좋은 가벼운 한 줌.</p><div class="price">9,000원</div></article>
+    <article class="card"><div class="dot" style="background:#E58A6B"></div><h3>거베라 믹스</h3><p>기분 전환이 필요한 날의 따뜻한 색.</p><div class="price">15,000원</div></article>
+    <article class="card"><div class="dot" style="background:var(--leaf)"></div><h3>작은 화분</h3><p>물만 잘 주면 오래 가는 초록이.</p><div class="price">8,000원부터</div></article>
+  </div>
+</section>
+
+<section class="info" id="visit">
+  <div><h3 class="display">영업시간</h3><p>매일 오전 9시 ~ 오후 8시<br>매주 일요일은 쉽니다</p></div>
+  <div><h3 class="display">찾아오는 길</h3><p>동네 큰길 건너 첫 번째 골목<br>하늘색 물뿌리개가 걸린 집</p></div>
+  <div><h3 class="display">주문 문의</h3><p>전화 000-0000-0000<br>당일 꽃다발은 오후 5시 전까지</p></div>
+</section>
+
+<footer>© 하늘 물뿌리개 꽃집 · 오늘도 좋은 하루 되세요</footer>
+</body>
+</html>
