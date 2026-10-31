@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, readdir, rm, access, symlink } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFile } from 'node:child_process';
@@ -81,4 +82,55 @@ test('backup CLI sanitizes malformed private integration configuration without p
   const f=await closedFixture(t),privateValue='SYNTHETIC_PRIVATE_CONFIG_MUST_NOT_PRINT';await writeFile(join(f.companyDir,'workspace-integration.json'),'{"private":"'+privateValue+'" invalid');
   let failure;try{await promisify(execFile)(process.execPath,['--no-warnings',fileURLToPath(new URL('./workspace-backup.mjs',import.meta.url)),join(f.root,'backups')],{env:{...process.env,SYNK_COMPANY_DATA:f.companyDir}});}catch(error){failure=error;}
   assert.equal(failure?.code,2);assert.match(failure.stderr,/WORKSPACE_BACKUP_FAILED/);assert.equal(failure.stdout,'');assert.equal(failure.stderr.includes(privateValue),false);assert.equal(failure.stderr.includes(f.root),false);await assert.rejects(access(join(f.root,'backups')),{code:'ENOENT'});
+});
+
+async function mediaFixture(t) {
+  const f=await closedFixture(t),company=new Store(f.companyDir);
+  const first='61234567-1234-4234-8234-123456789abc.mp4',second='71234567-1234-4234-8234-123456789abc.png',twin='81234567-1234-4234-8234-123456789abc.mp4';
+  try{company.put('studioMedia','one',{diskName:first});company.put('studioMedia','two',{diskName:second});company.put('socialMedia','three',{diskName:twin});}finally{company.close();}
+  await mkdir(join(f.companyDir,'studio-media'));
+  await writeFile(join(f.companyDir,'studio-media',first),'synthetic video body');await writeFile(join(f.companyDir,'studio-media',second),'synthetic image body');
+  await writeFile(join(f.companyDir,'studio-media',twin),'synthetic video body');await writeFile(join(f.companyDir,'studio-media','unreferenced.mp4'),'never listed');
+  const sha=value=>createHash('sha256').update(value).digest('hex');
+  return {...f,names:[first,second,twin],expected:new Map([[first,sha('synthetic video body')],[second,sha('synthetic image body')],[twin,sha('synthetic video body')]])};
+}
+
+test('default copy backup keeps the old layout with no media list', async t => {
+  const f=await mediaFixture(t),target=await backupWorkspace({destination:join(f.root,'backups'),companyDataDir:f.companyDir});
+  assert.deepEqual((await readdir(join(target,'company','studio-media'))).sort(),[...f.names].sort());
+  await assert.rejects(access(join(target,'media-manifest.json')),{code:'ENOENT'});
+  const manifest=JSON.parse(await readFile(join(target,'integration-manifest.json'),'utf8'));
+  assert.equal(manifest.mediaCount,3);assert.equal('mediaManifest' in manifest,false);assert.equal('mediaBytesIncluded' in manifest,false);
+});
+
+test('both and manifest backups list every referenced media file by sha256; manifest keeps no media bytes', async t => {
+  const f=await mediaFixture(t);
+  for(const mode of ['both','manifest']){
+    const target=await backupWorkspace({destination:join(f.root,'backups-'+mode),companyDataDir:f.companyDir,media:mode});
+    const list=JSON.parse(await readFile(join(target,'media-manifest.json'),'utf8')),manifest=JSON.parse(await readFile(join(target,'integration-manifest.json'),'utf8'));
+    assert.equal(list.schema,'synk-workspace-media/v1');assert.equal(list.bytesIncluded,mode==='both');assert.equal(list.createdAt,manifest.createdAt);
+    assert.deepEqual(list.files.map(file=>file.diskName).sort(),[...f.names].sort());
+    for(const file of list.files){assert.equal(file.sha256,f.expected.get(file.diskName));assert.equal(file.bytes,20);}
+    assert.equal(manifest.mediaCount,3);assert.equal(manifest.mediaManifest,'media-manifest.json');assert.equal(manifest.mediaBytesIncluded,mode==='both');
+    if(mode==='both')assert.deepEqual((await readdir(join(target,'company','studio-media'))).sort(),[...f.names].sort());
+    else await assert.rejects(access(join(target,'company','studio-media')),{code:'ENOENT'});
+    const note=await readFile(join(target,'RESTORE.txt'),'utf8');assert.match(note,mode==='manifest'?/backup-media\.py hydrate/:/company\/studio-media에 있고/);
+    assert.equal(await readFile(join(target,'COMPLETE'),'utf8'),'ok\n');
+  }
+});
+
+test('a referenced media file missing from the live folder still fails the backup in every mode', async t => {
+  const f=await mediaFixture(t);await rm(join(f.companyDir,'studio-media',f.names[1]));
+  for(const media of ['copy','both','manifest'])await assert.rejects(backupWorkspace({destination:join(f.root,'missing-'+media),companyDataDir:f.companyDir,media}),{code:'ENOENT'});
+  await assert.rejects(backupWorkspace({destination:join(f.root,'bad'),companyDataDir:f.companyDir,media:'bytes'}),/영상 백업 방식/);
+});
+
+test('backup CLI accepts only --media=both or --media=manifest after the folder', async t => {
+  const f=await mediaFixture(t),cli=fileURLToPath(new URL('./workspace-backup.mjs',import.meta.url)),run=args=>promisify(execFile)(process.execPath,['--no-warnings',cli,...args],{env:{...process.env,SYNK_COMPANY_DATA:f.companyDir}});
+  const out=await run([join(f.root,'cli'),'--media=manifest']),target=out.stdout.trim();
+  assert.equal(JSON.parse(await readFile(join(target,'media-manifest.json'),'utf8')).bytesIncluded,false);
+  for(const args of [[join(f.root,'cli2'),'--media=copy'],[join(f.root,'cli3'),'--media'],[join(f.root,'cli4'),'--media=manifest','extra']]){
+    let failure;try{await run(args);}catch(error){failure=error;}
+    assert.equal(failure?.code,2);assert.match(failure.stderr,/WORKSPACE_BACKUP_FAILED/);
+  }
 });

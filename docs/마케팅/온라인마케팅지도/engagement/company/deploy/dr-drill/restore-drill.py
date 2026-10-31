@@ -50,7 +50,11 @@ CONTAINER_LABEL = 'synk.restore-drill'
 # Release QA on this node: never overlap it.
 FOREIGN_QA = re.compile(r'synk-(compat-qa|worker-qa|infra-dr|isolated-dr)-')
 PAYLOADS = ('restored', 'readonly-snapshot', 'disposable-company', 'archived-disposable-company', 'recovery.tar.gz',
-            'identity-public.json', 'disaster-restore.py', 'disaster-rehearsal.mjs', 'session-proof.mjs')
+            'identity-public.json', 'disaster-restore.py', 'disaster-rehearsal.mjs', 'session-proof.mjs', 'media')
+MEDIA_SCHEMA = 'synk-workspace-media/v1'
+MEDIA_PREFIX = 'company/production/'
+MEDIA_OBJECT = re.compile(r'company/production/(synk-workspace-[0-9TZ-]+)\.media-([0-9a-f]{64})')
+MEDIA_NAME = re.compile(r'[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)', re.I)
 EMPLOYEE_IDENTITY = {'SYNK_ID_ACCOUNT_API_URL', 'SYNK_ID_PUBLISHABLE_KEY', 'SYNK_ID_SUPABASE_URL', 'SYNK_ID_MESSENGER_CLIENT_ID'}
 CUSTOMER_IDENTITY = {'SYNK_ID_CUSTOMER_' + k for k in ('ACCOUNT_API_URL', 'PUBLISHABLE_KEY', 'SUPABASE_URL', 'CLIENT_ID', 'REDIRECT_URI')}
 
@@ -356,6 +360,177 @@ def download(bucket, name, generation, target, size):
             need(total <= size, 'DOWNLOAD_TOO_LARGE')
             output.write(block)
     need(total == size, 'DOWNLOAD_SIZE_MISMATCH')
+
+
+# ---- studio media kept once per sha256 (deploy/backup-media.py) ---------------
+# A backup made with --media=manifest lists its studio media in media-manifest.json
+# and keeps each body beside its archive as company/production/<backup>.media-<sha256>
+# (same 30-day life as the archive). The drill fills the restored copies from this
+# backup's own sidecars, so the archived rehearsal still compares snapshot and data
+# bytes; with --media=both it streams every sidecar once to prove them before media
+# leaves the archives.
+
+def media_list(manifest, integration):
+    """Checked media list or None for an archive from before the list existed."""
+    if manifest is None:
+        need(integration.get('mediaManifest') is None and integration.get('mediaBytesIncluded') is None, 'MEDIA_LIST_MISSING')
+        return None
+    need(isinstance(manifest, dict) and manifest.get('schema') == MEDIA_SCHEMA and type(manifest.get('bytesIncluded')) is bool, 'MEDIA_LIST_INVALID')
+    files = manifest.get('files')
+    need(isinstance(files, list) and len(files) <= 100000, 'MEDIA_LIST_INVALID')
+    contents, names = {}, set()
+    for item in files:
+        need(isinstance(item, dict) and set(item) == {'diskName', 'sha256', 'bytes'}, 'MEDIA_LIST_INVALID')
+        need(isinstance(item['diskName'], str) and MEDIA_NAME.fullmatch(item['diskName']) and item['diskName'] not in names, 'MEDIA_LIST_INVALID')
+        need(isinstance(item['sha256'], str) and re.fullmatch('[0-9a-f]{64}', item['sha256']), 'MEDIA_LIST_INVALID')
+        need(type(item['bytes']) is int and 0 <= item['bytes'] <= 64 << 30, 'MEDIA_LIST_INVALID')
+        need(contents.setdefault(item['sha256'], item['bytes']) == item['bytes'], 'MEDIA_LIST_INVALID')
+        names.add(item['diskName'])
+    need(integration.get('mediaCount') == len(files) and integration.get('mediaManifest') == 'media-manifest.json'
+         and integration.get('mediaBytesIncluded') is manifest['bytesIncluded'], 'MEDIA_LIST_INVALID')
+    return {'included': manifest['bytesIncluded'], 'files': files, 'contents': contents}
+
+
+def list_media(bucket, backup):
+    """sha256 -> this backup's own sidecar objects, newest first (one listing by prefix)."""
+    need(re.fullmatch(r'synk-workspace-[0-9TZ-]+', backup), 'DATA_SNAPSHOT_NAME')
+    base = 'https://storage.googleapis.com/storage/v1/b/' + bucket + '/o'
+    items, page = [], None
+    for _ in range(1000):
+        query = {'prefix': MEDIA_PREFIX + backup + '.media-', 'maxResults': '1000', 'fields': 'items(name,generation,size,md5Hash,timeCreated),nextPageToken'}
+        if page:
+            query['pageToken'] = page
+        body = cloud_json(base + '?' + urllib.parse.urlencode(query))
+        items += body.get('items', [])
+        page = body.get('nextPageToken')
+        if not page:
+            break
+    else:
+        raise Hold('MEDIA_LISTING_TOO_LONG')
+    copies = {}
+    for item in items:
+        match = MEDIA_OBJECT.fullmatch(item.get('name', ''))
+        if match and match.group(1) == backup and str(item.get('generation', '')).isdigit() and str(item.get('size', '')).isdigit():
+            copies.setdefault(match.group(2), []).append(item)
+    for rows in copies.values():
+        rows.sort(key=lambda row: (row.get('timeCreated', ''), int(row['generation'])), reverse=True)
+    return copies
+
+
+def stream_object(bucket, item, size, write):
+    """One exact generation, hashed as it streams; returns (sha256 hex, md5 base64)."""
+    url = object_url(bucket, item['name']) + '?alt=media&generation=' + str(item['generation'])
+    sha, md5, total = hashlib.sha256(), hashlib.md5(), 0
+    with cloud(url, timeout=120) as response:
+        need(response.status == 200 and response.headers.get('x-goog-generation') == str(item['generation']), 'EXACT_GCS_GENERATION_REQUIRED')
+        while True:
+            block = response.read(1 << 20)
+            if not block:
+                break
+            total += len(block)
+            need(total <= size, 'MEDIA_DOWNLOAD_TOO_LARGE')
+            sha.update(block)
+            md5.update(block)
+            write(block)
+    need(total == size, 'MEDIA_DOWNLOAD_SIZE')
+    return sha.hexdigest(), base64.b64encode(md5.digest()).decode()
+
+
+def good_copy(bucket, rows, sha256, size, target=None):
+    """Newest listed copy whose bytes really are `sha256`; into `target` when given."""
+    for row in rows:
+        if str(row.get('size')) != str(size):
+            continue
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_BINARY', 0)
+        fd = os.open(target, flags, 0o600) if target else None
+        good = False
+        try:
+            got_sha, got_md5 = stream_object(bucket, row, size, (lambda block: os.write(fd, block)) if fd is not None else (lambda block: None))
+            good = got_sha == sha256 and got_md5 == row.get('md5Hash')
+        except Exception as error:  # this copy failed: try an older one, but a stop request stops
+            if isinstance(error, Hold) and str(error) == 'TERMINATED':
+                raise
+            good = False
+        finally:
+            if fd is not None:
+                os.close(fd)
+                if not good:
+                    os.unlink(target)
+        if good:
+            return True
+    return False
+
+
+def can_link(folder):
+    probe = folder / '.link-probe'
+    probe.write_bytes(b'')
+    try:
+        os.link(probe, folder / '.link-probe-2')
+        os.unlink(folder / '.link-probe-2')
+        return True
+    except OSError:
+        return False
+    finally:
+        probe.unlink()
+
+
+def place(source, target, link):
+    need(not os.path.lexists(target), 'MEDIA_TARGET_EXISTS')
+    if link:
+        try:
+            os.link(source, target)
+            return
+        except OSError:
+            pass
+    shutil.copyfile(source, target)
+    os.chmod(target, 0o600)
+
+
+def media_step(bucket, run_dir, snapshot, data_dirs, backup):
+    """Fill or prove the restored studio media; returns the report's `media` part."""
+    manifest_file = snapshot / 'media-manifest.json'
+    integration = json.loads(inside(snapshot, 'integration-manifest.json').read_text())
+    manifest = json.loads(inside(snapshot, 'media-manifest.json').read_text()) if manifest_file.exists() else None
+    media = media_list(manifest, integration)
+    if media is None:
+        return {'mode': 'absent'}
+    contents, total = media['contents'], sum(media['contents'].values())
+    report = {'files': len(media['files']), 'contents': len(contents), 'bytes': total}
+    snapshot_media = snapshot / 'company' / 'studio-media'
+    copies = list_media(bucket, backup) if contents else {}
+    if media['included']:
+        for item in media['files']:
+            need(digest(inside(snapshot_media.parent, 'studio-media/' + item['diskName'])) == item['sha256'], 'MEDIA_LIST_BYTES_MISMATCH')
+        for sha256, size in contents.items():
+            need(good_copy(bucket, copies.get(sha256, []), sha256, size), 'MEDIA_OFFSITE_MISSING')
+        return dict(report, mode='included', offsiteVerified=True)
+    data_media = [folder / 'studio-media' for folder in data_dirs]
+    need(not any(os.path.lexists(folder) for folder in [snapshot_media] + data_media), 'MEDIA_LIST_WITH_BYTES')
+    staging = run_dir / 'media'
+    staging.mkdir(mode=0o700)
+    linked = can_link(staging)
+    free = shutil.disk_usage(run_dir).free
+    # The snapshot gets its own copy, so the rehearsal still compares two separate copies;
+    # the two throwaway volumes share the verified download when the disk allows it.
+    # Without links every name is a full copy: the download plus three per file.
+    per_file = sum(item['bytes'] for item in media['files'])
+    need(free > (2 * total if linked else total + 3 * per_file) + 1024 ** 3, 'STANDBY_DRILL_MEDIA_SPACE_LOW')
+    for folder in [snapshot_media] + data_media:
+        folder.mkdir(mode=0o700)
+    for sha256, size in contents.items():
+        body = staging / sha256
+        need(good_copy(bucket, copies.get(sha256, []), sha256, size, body), 'MEDIA_OFFSITE_MISSING')
+        own = None  # names with the same content share the snapshot's own copy
+        for item in media['files']:
+            if item['sha256'] == sha256:
+                target = snapshot_media / item['diskName']
+                place(own or body, target, link=own is not None)
+                own = own or target
+                for folder in data_media:
+                    place(body, folder / item['diskName'], link=True)
+    for item in media['files']:  # the separate snapshot copy must still be what the list says
+        need(digest(snapshot_media / item['diskName']) == item['sha256'], 'MEDIA_COPY_MISMATCH')
+    return dict(report, mode='external', offsiteVerified=True, linked=linked, freeBytesBeforeMedia=free)
 
 
 def run(args, timeout=60):
@@ -672,6 +847,10 @@ def restore(cfg, run_dir, before, report, archive_item, sidecar_item):
         shutil.copytree(prepared / 'prepared-company', target, symlinks=True)
     for target in (snapshot, data, data_archived):
         plain_tree(target)
+    progress(run_dir, 'studio-media')
+    # A list-only backup gets its bodies from its GCS sidecars: a separate copy in the
+    # snapshot, one shared copy for the two throwaway volumes.
+    report['media'] = media_step(cfg['backupBucket'], run_dir, snapshot, (data, data_archived), snapshots[0].name)
     for target in (data, data_archived):
         inside(target, 'PREPARATION_INCOMPLETE').unlink()
     for target in (snapshot, data, data_archived):
@@ -872,6 +1051,88 @@ def tick():
     return result
 
 
+def run_now():
+    """Root-only manual drill: the same checks and records as a due tick, without the weekly schedule."""
+    cfg = load_config()
+    state_dir = pathlib.Path(cfg['stateDir'])
+    state_dir.mkdir(mode=0o700, exist_ok=True)
+    state = read_json(state_dir / 'state.json') or {'schema': STATE_SCHEMA}
+    result = {'decision': 'manual'}
+    result.update(attempt(cfg, state, utcnow()))
+    state = read_json(state_dir / 'state.json') or state
+    result['delivered'] = deliver(state_dir, drill_alerts(state, cfg['installedAt'], utcnow()), utcnow(), project)
+    return result
+
+
+def nested_media_lists(archive):
+    """(media-manifest.json or None, integration-manifest.json, snapshot name) of the data archive inside a capsule, streamed."""
+    with tarfile.open(archive, 'r:gz') as capsule:
+        for member in capsule:
+            if member.name != 'data/workspace.tar.gz':
+                continue
+            need(member.isfile(), 'DATA_ARCHIVE_TYPE')
+            found, roots = {}, set()
+            with tarfile.open(fileobj=capsule.extractfile(member), mode='r|gz') as data:
+                for inner in data:
+                    parts = inner.name.split('/')
+                    roots.add(parts[0])
+                    if len(parts) == 2 and parts[1] in ('media-manifest.json', 'integration-manifest.json'):
+                        need(inner.isfile() and inner.size <= 16 << 20 and parts[1] not in found, 'DATA_ARCHIVE_LIST_INVALID')
+                        found[parts[1]] = json.loads(data.extractfile(inner).read())
+            need('integration-manifest.json' in found and len(roots) == 1, 'DATA_ARCHIVE_INCOMPLETE')
+            return found.get('media-manifest.json'), found['integration-manifest.json'], roots.pop()
+    raise Hold('DATA_ARCHIVE_MISSING')
+
+
+def verify_media():
+    """Root-only, read-only for GCS: does every studio medium of the newest capsule have a good sidecar of its backup?
+    Needs one capsule of disk, streams the bodies without keeping them, never touches the drill state."""
+    cfg = load_config()
+    state_dir = pathlib.Path(cfg['stateDir'])
+    state_dir.mkdir(mode=0o700, exist_ok=True)
+    report = {'schema': 'synk-company-media-verify/v1', 'startedAt': utcnow().isoformat(), 'status': 'pending'}
+    root = pathlib.Path(cfg['root'])
+    work = None
+    try:
+        need(metadata('instance/id') == cfg['standbyNodeId'], 'STANDBY_INSTANCE_REQUIRED')
+        need(metadata('instance/service-accounts/default/email') == cfg['serviceAccount'], 'VM_SERVICE_ACCOUNT_REQUIRED')
+        need(root.is_dir() and not root.is_symlink() and root.stat().st_uid == 0 and not root.stat().st_mode & 0o077, 'PRIVATE_DRILL_ROOT_REQUIRED')
+        for old in root.iterdir():
+            if re.fullmatch(r'media-verify-[0-9]{8}T[0-9]{6}Z', old.name) and old.is_dir() and not old.is_symlink():
+                remove(root, old)
+        bucket = cfg['backupBucket']
+        archive_item, sidecar_item = newest_bundle(list_bundles(bucket))
+        work = root / ('media-verify-' + utcnow().strftime('%Y%m%dT%H%M%SZ'))
+        work.mkdir(mode=0o700)
+        need(int(sidecar_item['size']) <= 1 << 20, 'RECEIPT_TOO_LARGE')
+        receipt_file = work / 'receipt.json'
+        download(bucket, sidecar_item['name'], sidecar_item['generation'], receipt_file, int(sidecar_item['size']))
+        need(digest(receipt_file, 'md5') == sidecar_item['md5Hash'], 'RECEIPT_MD5_MISMATCH')
+        receipt = json.loads(receipt_file.read_text())
+        check_receipt(receipt, archive_item, utcnow())
+        need(shutil.disk_usage(work).free > receipt['bytes'] + 1024 ** 3, 'STANDBY_VERIFY_SPACE_LOW')
+        archive = work / 'recovery.tar.gz'
+        download(bucket, receipt['archiveObject'], receipt['generation'], archive, receipt['bytes'])
+        need(digest(archive) == receipt['sha256'] and digest(archive, 'md5') == receipt['md5Hash'], 'ARCHIVE_INTEGRITY_MISMATCH')
+        manifest, integration, backup = nested_media_lists(archive)
+        media = media_list(manifest, integration)
+        archive.unlink()
+        need(media is not None, 'MEDIA_LIST_MISSING')
+        copies = list_media(bucket, backup) if media['contents'] else {}
+        missing = sum(1 for sha256, size in media['contents'].items() if not good_copy(bucket, copies.get(sha256, []), sha256, size))
+        report.update({'status': 'verified' if not missing else 'incomplete', 'archiveGeneration': receipt['generation'],
+                       'dataBackupCreatedAt': receipt['dataBackupCreatedAt'], 'mode': 'included' if media['included'] else 'external',
+                       'files': len(media['files']), 'contents': len(media['contents']), 'bytes': sum(media['contents'].values()), 'missing': missing})
+    except Exception as error:
+        report.update(status='failed', code=str(error) if isinstance(error, Hold) else 'VERIFY_' + type(error).__name__.upper())
+    finally:
+        if work is not None and work.exists():
+            remove(root, work)
+        report['completedAt'] = utcnow().isoformat()
+        save_json(state_dir / 'media-verify-latest.json', report)
+    return report
+
+
 def on_terminate(signum, frame):
     # One stop request is enough: later ones are ignored so they never cut the cleanup short.
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
@@ -891,8 +1152,10 @@ class stop_held:
 
 if __name__ == '__main__':
     sys.dont_write_bytecode = True
-    if sys.argv[1:] != ['tick']:
-        raise SystemExit('usage: restore-drill.py tick')
+    # tick: the timer. run-now: one drill by hand (root), skipping only the weekly schedule.
+    # verify-media: GCS studio media of the newest capsule, no drill and no drill state.
+    if sys.argv[1:] not in (['tick'], ['run-now'], ['verify-media']):
+        raise SystemExit('usage: restore-drill.py tick|run-now|verify-media')
     if os.geteuid() != 0:
         raise SystemExit('root required')
     os.umask(0o077)
@@ -905,8 +1168,12 @@ if __name__ == '__main__':
         print(json.dumps({'status': 'already-running'}))
         raise SystemExit(0)
     signal.signal(signal.SIGTERM, on_terminate)
+    if sys.argv[1] == 'verify-media':
+        verified = verify_media()
+        print(json.dumps(verified))
+        raise SystemExit(0 if verified['status'] == 'verified' else 1)
     try:
-        print(json.dumps(tick()))
+        print(json.dumps(tick() if sys.argv[1] == 'tick' else run_now()))
     except Exception as error:
         code = str(error) if isinstance(error, Hold) else 'TICK_' + type(error).__name__.upper()
         print(json.dumps({'status': 'hold', 'code': code}))

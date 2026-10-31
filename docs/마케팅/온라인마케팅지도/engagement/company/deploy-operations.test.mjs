@@ -67,6 +67,7 @@ async function fixture(t) {
 [[ "\${MOCK_LOCK_BUSY:-0}" = 0 ]]`,
     stat: `if [[ "$2" = '%u:%a' ]]; then
   if [[ "$4" = "$COMPANY_ARCHIVE_DIR" ]]; then printf '%s\\n' "\${MOCK_ARCHIVE_META:-0:700}"; else printf '%s\\n' "\${MOCK_PARENT_META:-0:755}"; fi
+elif [[ "$2" = '%u:%a:%h' ]]; then printf '%s\\n' "\${MOCK_FLAG_META:-0:600:1}"
 else printf '%s\\n' "\${MOCK_ENV_MODE:-600}"; fi`,
     docker: `printf 'docker %s\n' "$*" >> "$MOCK_CALLS"
 if [[ "$1" = inspect ]]; then case "\${MOCK_HEALTH:-failed}" in ready) printf 'healthy\\n' ;; starting|stopped) printf '%s\\n' "$MOCK_HEALTH" ;; inspect-failed) exit 1 ;; *) printf 'unhealthy\\n' ;; esac; exit 0; fi
@@ -76,6 +77,7 @@ if [[ "$*" = *workspace-backup.mjs* ]]; then
   name=synk-workspace-2026-10-08T00-00-00-000Z
   mkdir -p "$COMPANY_BACKUP_DIR/$name"
   printf 'synthetic database bytes\n' > "$COMPANY_BACKUP_DIR/$name/snapshot.txt"
+  if [[ "\${MOCK_NO_MEDIA_LIST:-0}" = 0 && "$*" = *' --media=both' || "\${MOCK_NO_MEDIA_LIST:-0}" = 0 && "$*" = *' --media=manifest' ]]; then printf '{"schema":"synk-workspace-media/v1"}\n' > "$COMPANY_BACKUP_DIR/$name/media-manifest.json"; fi
   if [[ "\${MOCK_INCOMPLETE:-0}" = 0 ]]; then printf 'ok\n' > "$COMPANY_BACKUP_DIR/$name/COMPLETE"; fi
   printf '/backups/%s\n' "$name"
 fi
@@ -105,6 +107,16 @@ if [[ "\${MOCK_UPLOAD_FAIL:-0}" = 1 || "\${MOCK_OBJECT_EXISTS:-0}" = 1 ]]; then
   exit 22
 fi
 printf '%s' "\${MOCK_HTTP_STATUS:-200}"`,
+    python3: `printf 'python3 %s\n' "$*" >> "$MOCK_CALLS"
+[[ ! \${access_token+x} ]] || exit 96
+[[ "$*" != *synthetic.fixture-token* ]] || exit 91
+token="$(cat)"
+[[ "$token" = 'synthetic.fixture-token_1234567890' ]] || exit 92
+printf 'PYTHON_TOKEN_STDIN_OK\n' >> "$MOCK_CALLS"
+[[ "$1" = -I && "$2" = -B && "$3" = */deploy/backup-media.py && "$4" = upload ]] || exit 93
+if [[ "\${MOCK_MEDIA_FAIL:-0}" = 1 ]]; then printf 'SYNK_BACKUP_MEDIA MEDIA_UPLOAD_FAILED\n' >&2; exit 1; fi
+closed=true; [[ "\${MOCK_MEDIA_OPEN:-0}" = 0 ]] || closed=false
+printf '{"bytes": 41, "contents": 2, "files": 3, "mode": "both", "setClosed": %s, "status": "%s", "uploaded": 2, "uploadedBytes": 41}\n' "$closed" "\${MOCK_MEDIA_STATUS:-complete}"`,
   };
   for (const [name, body] of Object.entries(commands)) await writeFile(join(root, 'bin', name), '#!/usr/bin/env bash\n' + body + '\n', { mode: 0o755 });
   const env = { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^path$|^SYNK_|^COMPANY_|^CADDY_|^MOCK_/i.test(key))),
@@ -366,4 +378,48 @@ test('dangling archive and sidecar links never cause a privileged write', { skip
     assert.equal(result.status, 1); assert.match(result.stderr, /BACKUP_ARCHIVE_EXISTS/);
     assert.equal(existsSync(target), false); assert.doesNotMatch(await f.calls(), /gcloud|curl/);
   }
+});
+
+test('backup sends its studio media as archive sidecars after the archive and before the upload marker, with the token only on the helper stdin', { skip }, async t => {
+  const f = await fixture(t), result = f.run('company-backup', { access_token: 'inherited-fixture-placeholder' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^SYNK_COMPANY_OPS MEDIA_MODE_BOTH\nSYNK_COMPANY_OPS MEDIA_OFFSITE_COMPLETE \{.*"setClosed": true, "status": "complete".*\}\nSYNK_COMPANY_OPS OFFSITE_BACKUP_COMPLETE\n$/);
+  const calls = await f.calls(), lines = calls.split('\n');
+  assert.match(calls, /workspace-backup\.mjs \/backups --media=both\n/);
+  const media = lines.findIndex(line => line.startsWith('python3 ')), upload = lines.findIndex(line => line.startsWith('curl '));
+  assert.ok(upload > 0 && media > upload, 'bodies are created after their archive, so they never expire first');
+  assert.equal(lines[media], 'python3 -I -B ' + unix(deploy) + 'backup-media.py upload --snapshot ' + f.env.COMPANY_BACKUP_DIR + '/synk-workspace-2026-10-08T00-00-00-000Z --volume '
+    + f.env.COMPANY_VOLUME_DIR + ' --destination gs://synthetic-fixture/backups');
+  assert.match(calls, /PYTHON_TOKEN_STDIN_OK/); assert.equal((calls.match(/^gcloud /gm) || []).length, 2);
+  assert.doesNotMatch(calls + result.stdout + result.stderr, /synthetic.fixture-token/);
+});
+
+test('a reviewed MEDIA_EXTERNAL flag keeps only the media list; a malformed flag stops before any snapshot', { skip }, async t => {
+  const flag = f => join(f.root, 'disk/archives/MEDIA_EXTERNAL');
+  const good = await fixture(t); await writeFile(flag(good), 'media-external 2026-11-06 GCS media verified after the first both backup\n');
+  const result = good.run('company-backup');
+  assert.equal(result.status, 0, result.stderr); assert.match(result.stdout, /^SYNK_COMPANY_OPS MEDIA_MODE_MANIFEST\n/);
+  assert.match(await good.calls(), /workspace-backup\.mjs \/backups --media=manifest\n/);
+  for (const [text, values] of [['media-external 2026-11-06 ok\n', { MOCK_FLAG_META: '1000:600:1' }], ['media-external 2026-11-06 ok\n', { MOCK_FLAG_META: '0:644:1' }],
+    ['media-external 2026-11-06 ok\n', { MOCK_FLAG_META: '0:600:2' }], ['external\n', {}], ['media-external 2026-11-06 \u0007bell\n', {}], ['media-external 2026-11-06 \n', {}]]) {
+    const f = await fixture(t); await writeFile(flag(f), text);
+    const bad = f.run('company-backup', values);
+    assert.equal(bad.status, 1); assert.equal(bad.stderr, 'SYNK_COMPANY_OPS MEDIA_MODE_FLAG_INVALID\n'); assert.equal(await f.calls(), '');
+  }
+  const folder = await fixture(t); await mkdir(flag(folder));
+  assert.equal(folder.run('company-backup').stderr, 'SYNK_COMPANY_OPS MEDIA_MODE_FLAG_INVALID\n'); assert.equal(await folder.calls(), '');
+});
+
+test('a media failure or an unexpected helper answer writes no upload marker after the archive went out', { skip }, async t => {
+  for (const values of [{ MOCK_MEDIA_FAIL: '1' }, { MOCK_MEDIA_STATUS: 'partial' }, { MOCK_MEDIA_OPEN: '1' }]) {
+    const f = await fixture(t), result = f.run('company-backup', values);
+    assert.equal(result.status, 1); assert.match(result.stderr, /SYNK_COMPANY_OPS MEDIA_OFFSITE_FAILED\n$/);
+    assert.doesNotMatch(result.stdout, /OFFSITE_BACKUP_COMPLETE/);
+    assert.equal(((await f.calls()).match(/^curl /gm) || []).length, 1);
+    const files = await readdir(join(f.root, 'disk/archives'));
+    assert.deepEqual(files.sort(), ['synk-workspace-2026-10-08T00-00-00-000Z.tar.gz', 'synk-workspace-2026-10-08T00-00-00-000Z.tar.gz.sha256']);
+    assert.ok((await readdir(join(f.root, 'disk/backups'))).includes('synk-workspace-2026-10-08T00-00-00-000Z'));
+  }
+  const f = await fixture(t), missing = f.run('company-backup', { MOCK_NO_MEDIA_LIST: '1' });
+  assert.equal(missing.status, 1); assert.match(missing.stderr, /BACKUP_INCOMPLETE/); assert.doesNotMatch(await f.calls(), /gcloud|python3/);
 });

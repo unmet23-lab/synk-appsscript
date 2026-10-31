@@ -18,9 +18,23 @@ if [[ "$location" = */* ]]; then
 fi
 command -v gcloud >/dev/null || fail GCLOUD_REQUIRED
 command -v curl >/dev/null || fail CURL_REQUIRED
+command -v python3 >/dev/null || fail PYTHON_REQUIRED
+# Studio media: by default the archive keeps the bytes and the bodies also go to
+# GCS as sidecars of this archive, once per sha256 (backup-media.py). A reviewed
+# operator flag on the data disk (it follows the writer node) keeps only the list
+# in the archive, so local archives and recovery capsules stop growing with video.
+media_mode=both
+media_flag="$archive_directory/MEDIA_EXTERNAL"
+if [[ -e "$media_flag" || -L "$media_flag" ]]; then
+  [[ -f "$media_flag" && ! -L "$media_flag" && "$(stat -c '%u:%a:%h' -- "$media_flag" 2>/dev/null)" = 0:600:1 ]] || fail MEDIA_MODE_FLAG_INVALID
+  flag_text="$(head -c 256 -- "$media_flag")" || fail MEDIA_MODE_FLAG_INVALID
+  [[ "$flag_text" =~ ^media-external\ 20[0-9]{2}-[01][0-9]-[0-3][0-9]\ [^[:cntrl:]]{1,160}$ ]] || fail MEDIA_MODE_FLAG_INVALID
+  media_mode=manifest
+fi
+event "MEDIA_MODE_${media_mode^^}"
 # Online backups are sequential read-only SQLite snapshots, not a coordinated
 # cross-database instant. Final migration still requires all writers stopped.
-snapshot="$(compose exec -T company node "$COMPANY_PATH/workspace-backup.mjs" /backups 2>/dev/null)" || fail BACKUP_FAILED
+snapshot="$(compose exec -T company node "$COMPANY_PATH/workspace-backup.mjs" /backups "--media=$media_mode" 2>/dev/null)" || fail BACKUP_FAILED
 snapshot="${snapshot%$'\r'}"
 [[ "$snapshot" =~ ^/backups/synk-workspace-[0-9TZ-]+$ ]] || fail BACKUP_RESULT_INVALID
 name="${snapshot##*/}"; directory="$COMPANY_BACKUP_DIR/$name"
@@ -30,6 +44,7 @@ archive="$archive_directory/$name.tar.gz"
 for target in "$archive" "$archive.partial" "$archive.sha256" "$archive.uploaded"; do
   [[ ! -e "$target" && ! -L "$target" ]] || fail BACKUP_ARCHIVE_EXISTS
 done
+[[ -f "$directory/media-manifest.json" && ! -L "$directory/media-manifest.json" ]] || fail BACKUP_INCOMPLETE
 tar -C "$COMPANY_BACKUP_DIR" -czf - -- "$name" > "$archive.partial" 2>/dev/null || fail BACKUP_ARCHIVE_FAILED
 mv -- "$archive.partial" "$archive"
 sha256sum -- "$archive" > "$archive.sha256"
@@ -59,6 +74,25 @@ if ! http_status="$(printf 'header = "Authorization: Bearer %s"\n' "$access_toke
 fi
 unset access_token
 [[ "$http_status" = 200 || "$http_status" = 201 ]] || fail OFFSITE_BACKUP_FAILED
+# Studio media after the archive: GCS ends each object 30 days after it was
+# created, so bodies created after their archive never expire before it. The
+# helper sends the bodies as <name>.media-<sha256> and closes the set with
+# <name>.media-complete; it reads the token from stdin and prints only counts or
+# a code. If it fails, GCS keeps an archive without (all) its media and this node
+# writes no upload marker, so DR capture, the backup watch and local retention
+# never treat that run as a backup.
+unset access_token
+access_token="$(gcloud auth print-access-token --quiet 2>/dev/null)" || fail MEDIA_OFFSITE_FAILED
+[[ ${#access_token} -ge 20 && ${#access_token} -le 16384 && "$access_token" =~ ^[A-Za-z0-9._~+/-]+={0,2}$ ]] || fail MEDIA_OFFSITE_FAILED
+media_result=''
+if ! media_result="$(printf '%s\n' "$access_token" | python3 -I -B "$DEPLOY_DIR/backup-media.py" upload --snapshot "$directory" \
+    --volume "$COMPANY_VOLUME_DIR" --destination "gs://$bucket${prefix:+/$prefix}")"; then
+  unset access_token
+  fail MEDIA_OFFSITE_FAILED
+fi
+unset access_token
+[[ "$media_result" =~ ^\{[^[:cntrl:]]*\"setClosed\":\ true[^[:cntrl:]]*\"status\":\ \"complete\"[^[:cntrl:]]*\}$ ]] || fail MEDIA_OFFSITE_FAILED
+printf 'SYNK_COMPANY_OPS MEDIA_OFFSITE_COMPLETE %s\n' "$media_result"
 printf '%s\n' "$object" > "$archive.uploaded"
 event OFFSITE_BACKUP_COMPLETE
 # Keep local archives on success and failure. Retention requires a reviewed

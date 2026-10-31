@@ -30,6 +30,15 @@
    python3 disaster-restore.py prepare recovery.tar.gz --sha256 "$expected_sha" --destination "$PWD/restored-new"
    ```
 
+   **작업실 영상(2026-11 회사 판부터):** 데이터 스냅숏 맨 위의 `media-manifest.json`이 `"bytesIncluded": false`이면 영상 본문은 묶음에 없고 같은 버킷의 그 데이터 백업 곁 객체 `company/production/<스냅숏 이름>.media-<sha256>`에 있다([영상 곁 객체](CLOUD-OPERATIONS.md#media-once-20261101)). 묶음 안 릴리스의 `deploy/backup-media.py`로 스냅숏과 준비된 회사 볼륨을 함께 채운 뒤 다음 단계로 간다. 자기 곁 객체를 먼저 쓰고 같은 내용이면 다른 백업의 곁 객체도 받는다. 목록의 sha256이 맞는 사본만 쓰고, 틀린 사본은 건너뛰며, 하나라도 없으면 멈춘다.
+
+   ```sh
+   media_tool="$(find "$PWD/restored-new/host/opt/synk/releases" -path '*/engagement/company/deploy/backup-media.py' | head -n 1)"
+   snapshot="$(find "$PWD/restored-new/data-snapshots" -mindepth 1 -maxdepth 1 -type d)"
+   gcloud auth print-access-token | python3 -I -B "$media_tool" hydrate --snapshot "$snapshot" \
+     --prepared "$PWD/prepared-company" --source "gs://<백업 버킷>/company/production"
+   ```
+
 3. 기존 VM·디스크가 살아 있으면 먼저 보존하고 실제 복구가 필요한지 판단한다. 다른 VM으로 전환할 경우 옛 writer를 정지·격리해 두 서버가 동시에 고객·직원 변경과 예약 작업을 처리하지 않게 한다. 새 서버·새 요금·권한이 필요한 조치는 해당 시점에 확인한다. 원래 서버가 사라졌다는 이유로 빈 DB나 새 암호 키를 만들지 않는다.
 4. 보호된 복원본의 `recovery-manifest.json`에 기록된 host 경로·mode·uid/gid를 확인한다. `/etc/synk/*.env`는 root600, 데이터는 기존 회사 UID1000 계약을 유지한다. 복원 도구가 모든 추출 파일을600으로 제한하므로 host 복사 때 manifest의 원래 권한을 복구해야 한다. `images/images.tar`를 Docker에 load하고 이미지 ID를 manifest와 대조한 뒤 기존 compose reference를 같은 ID로 연결한다. pull/build로 다른 코드를 가져오지 않는다.
 5. manifest의 `releaseRoot`를 `/opt/synk/current`로 연결하고 spaceship의 compose 경로·서비스, 보관된 DR helper와 backup drop-in을 복구한다. `companyVolume`에는 **인수한 데이터 사본**을 둔다. `/etc/fstab`은 새 디스크 UUID와 비교해 조정하며 옛 UUID를 그대로 적용하지 않는다. Caddy 데이터·설정 경로와 원래 서비스 enable 상태도 확인한다. 복구 사본은 OS 전체 디스크 이미지가 아니므로 지원되는 Linux·Docker Compose·Python·gcloud·기존 Cloud 권한을 준비한다.

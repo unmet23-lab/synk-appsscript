@@ -177,3 +177,16 @@ test('restore CLI explicitly selects cloud volume layout and refuses unknown lay
   const result=await run(process.execPath,[...args,'--cloud-volume']),report=JSON.parse(result.stdout);assert.equal(report.preparedLayout,'cloud-volume');await access(join(destination,'company.sqlite'));noSecrets(f,report);
   let failure;try{await run(process.execPath,[...args.slice(0,-1),destination+'-wrong','--cloud-volume-typo']);}catch(error){failure=error;}assert.equal(failure?.code,2);assert.deepEqual(JSON.parse(failure.stdout).issues,['RESTORE_LAYOUT_INVALID']);await assert.rejects(access(destination+'-wrong'),{code:'ENOENT'});
 });
+
+test('a list-only server backup is accepted only after its studio media is hydrated and matches the list',async t=>{
+  const f=await fixture(t),listOnly=await backupWorkspace({destination:join(f.root,'list-only'),companyDataDir:f.companyDir,media:'manifest'});
+  const baseline=await backupWorkspace({destination:join(f.root,'list-baseline'),companyDataDir:f.companyDir,media:'both'});
+  const accept=async candidateDirectory=>acceptWorkspaceRestore({candidateDirectory,baselineDirectory:baseline,freshnessEvidence:await f.evidence(baseline)});
+  assert.deepEqual((await accept(listOnly)).issues,['REFERENCED_MEDIA_MISSING']);
+  await mkdir(join(listOnly,'company','studio-media'));await writeFile(join(listOnly,'company','studio-media',f.media),'synthetic-media');
+  const hydrated=await accept(listOnly);assert.equal(hydrated.status,'candidate-matches-declared-baseline',JSON.stringify(hydrated));
+  await writeFile(join(listOnly,'company','studio-media',f.media),'synthetic-MEDIA');
+  assert.deepEqual((await accept(listOnly)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
+  const broken=await f.clone('list-broken',baseline);await rm(join(broken,'media-manifest.json'));
+  assert.deepEqual((await accept(broken)).issues,['MEDIA_LIST_INVALID']);
+});

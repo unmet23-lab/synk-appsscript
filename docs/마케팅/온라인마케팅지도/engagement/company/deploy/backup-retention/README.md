@@ -15,6 +15,8 @@
 
 10-22의 수동 규칙([static/README §3](../static/README.md#3-보존-규칙최근-n개) — 압축본 14일·10벌, 펼친 사본 3개)보다 줄였다. 영상이 매 백업에 통째로 들어 한 벌이 1GB를 넘고, 캡처가 `3 × (이미지 + 원문 + 최신 압축본) + 2 × 펼친 자료 + 1GiB`를 비워 두라고 해서다.
 
+2026-11 회사 판부터 작업실 영상은 백업마다 GCS에 그 압축본의 곁 객체(`<이름>.media-<sha256>`, `../backup-media.py`)로 올라가고, 깃발 `MEDIA_EXTERNAL`을 켠 뒤의 압축본·펼친 사본에는 영상 목록만 든다 — 그 뒤 로컬 사본은 빠른 복원용이라도 영상은 GCS에서 채워야 한다([영상 곁 객체](../../CLOUD-OPERATIONS.md#media-once-20261101)). 같은 폴더의 깃발 `MEDIA_EXTERNAL`은 이 규칙의 이름 밖이라 지우지 않는다. 영상 올리기가 실패한 회차는 압축본·체크섬·펼친 사본이 업로드 표시 없이 남아 이 규칙이 지우지 않는다 — 깃발 전(바이트를 담는 동안)에는 그 묶음이 영상 크기의 두 배쯤이니 `HEADROOM_LOW`·백업 실패 경보를 보고 손으로 치운다.
+
 ## 도는 자리
 
 - 자동: `synk-company-backup.service`의 drop-in [`40-local-retention.conf.in`](40-local-retention.conf.in)(설치 때 `@SHA256@`를 스크립트 해시로) — `ExecStartPost=-/usr/bin/python3 -I -B /opt/synk/backup-retention/<sha256>/local-retention.py --apply`. 업로드가 성공한 백업 뒤에만 돌고(`ExecStart` 실패면 안 돈다), 파일 이름 차례로 `disaster-recovery.conf`보다 앞이라 DR 캡처가 여유를 재기 전에 비운다. `-` 접두라 여기서 멈춰도 DR 캡처는 그대로 돈다. 저널에 `SYNK_LOCAL_RETENTION LOCAL_RETENTION_COMPLETE|LOCAL_RETENTION_HEADROOM_LOW|LOCAL_RETENTION_HELD {…}` 한 줄을 남긴다(`HEADROOM_LOW`는 정리 뒤 여유가 다음 캡처 예상 필요량의 1.25배보다 적을 때 — 예상치일 뿐이다).
