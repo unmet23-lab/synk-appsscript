@@ -10,6 +10,7 @@ import { stagePublicationDelivery } from '../tools/완성본등록.mjs';
 import { Store } from '../docs/마케팅/온라인마케팅지도/engagement/company/store.mjs';
 import { createStudioService } from '../docs/마케팅/온라인마케팅지도/engagement/company/studio-service.mjs';
 import { createPublicationInboxService } from '../docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.mjs';
+import { compareText as legacyCompare } from '../tools/text-compare-bench/baseline.mjs';
 
 async function fixture(t) {
   const parent = await realpath(tmpdir()), root = await mkdtemp(path.join(parent, 'synk-media-inspection-')), cleanup = [];
@@ -140,4 +141,18 @@ test('inspection CLI distinguishes review warnings, blocked input and execution 
   assert.equal(blocked.status,2,blocked.stderr);assert.equal(JSON.parse(blocked.stdout).status,'blocked');
   const failed = inspect(['--video',path.join(root,'없는영상.mp4'),'--out',path.join(root,'failed')]);
   assert.equal(failed.status,1);assert.match(failed.stderr,/ENOENT/);
+});
+
+test('integrated comparison preserves report values and the strict 95 percent warning boundary', async t => {
+  const { root, video } = await fixture(t);
+  const script = path.join(root, 'threshold-script.txt'), transcript = path.join(root, 'threshold-transcript.json');
+  const expected = Array.from({ length: 100 }, (_, i) => String.fromCodePoint(0xac00 + i)).join('');
+  await writeFile(script, expected);
+  for (const edits of [4, 5, 6]) {
+    const observed = '힣'.repeat(edits) + expected.slice(edits);
+    await writeFile(transcript, JSON.stringify({ text: observed }));
+    const report = await inspectMedia({ video, script, transcript, out: path.join(root, 'threshold-' + edits) });
+    assert.deepEqual(report.comparisons, [{ kind: 'provided-transcript', ...legacyCompare(expected, observed) }]);
+    assert.equal(report.issues.some(issue => issue.code === 'script-provided-transcript'), edits > 5);
+  }
 });

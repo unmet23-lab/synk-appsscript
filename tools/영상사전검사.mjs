@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { compareTextJs, normalizeText as normalize } from './lib/text-compare.mjs';
 
 const execute = promisify(execFile);
 const decoder = new TextDecoder('utf-8', { fatal: true });
@@ -15,7 +16,6 @@ const SUBTITLE_SOURCE = new URL('../docs/마케팅/온라인마케팅지도/enga
 const finite = value => value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value)) ? Number(value) : null;
 const fraction = value => { const [a, b = 1] = String(value || '').split('/').map(Number); return b && a > 0 ? a / b : null; };
 const escape = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-const normalize = value => String(value).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 
 export async function fingerprint(file, limit = 2 * 1024 ** 3) {
   const absolute = path.resolve(file), before = await lstat(absolute);
@@ -63,15 +63,7 @@ export function uploadQualityIssues(video, audio = [], format = {}) {
 }
 
 export function compareText(expected, observed) {
-  const a = [...normalize(expected)], b = [...normalize(observed)];
-  if (a.length > 12000 || b.length > 12000) throw new Error('대본 대조는 문장부호·공백을 뺀 12,000자까지 지원합니다. 편을 나눠 주세요.');
-  let previous = Uint16Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    const current = new Uint16Array(b.length + 1); current[0] = i;
-    for (let j = 1; j <= b.length; j++) current[j] = Math.min(current[j - 1] + 1, previous[j] + 1, previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-    previous = current;
-  }
-  return { expectedCharacters: a.length, observedCharacters: b.length, editDistance: previous[b.length], similarity: Math.max(a.length, b.length) ? 1 - previous[b.length] / Math.max(a.length, b.length) : 1, method: 'normalized-character-edit-distance' };
+  return compareTextJs(expected, observed);
 }
 
 async function inputText(file) {

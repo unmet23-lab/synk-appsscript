@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { cpus, totalmem, platform, release } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { compareText as baseline } from '../영상사전검사.mjs';
+import { compareText as baseline } from './baseline.mjs';
 import { compareTextJs, distanceJs, prepare } from './compare.mjs';
 import { createRustComparison, wasmUrl } from './rust.mjs';
 import { benchmarkCases } from './cases.mjs';
@@ -85,7 +85,7 @@ for (let i = 0; i < 7; i++) {
   assert.equal(sample.distance, 1);
   cold.push({ ...sample, freshNodeProcessWallMs: performance.now() - start });
 }
-const sourceFiles = ['../영상사전검사.mjs', './compare.mjs', './rust.mjs', './cases.mjs', './bench.mjs',
+const sourceFiles = ['../영상사전검사.mjs', '../lib/text-compare.mjs', './baseline.mjs', './compare.mjs', './rust.mjs', './cases.mjs', './bench.mjs',
   './cold-start.mjs', './rust/src/lib.rs', './rust/Cargo.toml', './rust/Cargo.lock'];
 const sourceSha256 = {};
 for (const file of sourceFiles) sourceSha256[file] = createHash('sha256').update(await readFile(new URL(file, import.meta.url))).digest('hex');
@@ -103,7 +103,7 @@ const report = {
     fullFunctionExcludes: 'one-time read/compile/instantiate (reported separately), Rust build/install',
     coreIncludes: 'prepared Unicode codepoints; Rust includes JS/WASM crossing and input copying',
     dataset: 'synthetic deterministic Hangul and a newly written short script, not a production workload sample',
-    scope: 'Rust is WASM in Node V8, not a native executable or Node native addon; production function untouched',
+    scope: 'Rust is WASM in Node V8, not a native executable or Node native addon; JS shares the media-preflight implementation; frozen baseline preserves the pre-optimization algorithm',
     concurrency: 'one benchmark process, sequential implementations; other desktop workloads not controlled' },
   sourceSha256, rows, coldStart: { samples: cold,
     initialize: stats(cold.map(s => s.initializeMs)),
