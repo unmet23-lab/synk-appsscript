@@ -37,7 +37,7 @@ test('full history defaults to one cumulative series and a start-day baseline, n
   assert.match(html,/선택 시작일 대비<\/span><strong>\+40/);
   assert.match(html,/일평균 증감<\/span><strong>\+6.7/);
   assert.match(html,/최고 성장일<\/span><strong>\+20/,'baseline day 900 and partial day 99 must be excluded');
-  assert.match(html,/2026-08-29 · 비교 완료 2\/6일 중/);
+  assert.match(html,/2026-08-29 · 모두 비교한 2\/6일 가운데/);
   assert.match(html,/data-history-hover-summary>9.3 · 140회/);
   assert.match(html,/<details class="gh-more-metrics">/);assert.match(html,/<details class="gh-method">/);
   assert.equal((html.match(/role="slider"/g)||[]).length,1);
@@ -142,7 +142,7 @@ test('day request is scoped, deduplicated, escaped, and explicitly marks partial
   const first=f.run('historyLoadDay("2026-09-03")');const duplicate=f.run('historyLoadDay("2026-09-03")');assert.equal(f.calls.length,1);
   const url=new URL(f.calls[0].path,'http://localhost');assert.equal(url.pathname,'/api/day');assert.equal(url.searchParams.get('scope'),'team');assert.equal(url.searchParams.get('teamId'),'team-a');assert.equal(url.searchParams.get('date'),'2026-09-03');assert.equal(url.searchParams.has('start'),false);
   f.calls[0].resolve({groups:[{label:'<img src=x onerror=alert(1)>',metrics:{views:{latest:14,count:2,eligible:2,day:{delta:-3,complete:false,count:1,eligible:2}}}}]});await first;await duplicate;
-  const html=f.run('historyChannelMarkup(historyContext().selected)');assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<img/);assert.match(html,/일부 비교 · 1\/2개 비교/);assert.match(html,/>-3<small>/);
+  const html=f.run('historyChannelMarkup(historyContext().selected)');assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<img/);assert.match(html,/1\/2개만 비교/);assert.match(html,/>-3<small>/);
   await f.run('historyLoadDay("2026-09-03")');assert.equal(f.calls.length,1);
 });
 

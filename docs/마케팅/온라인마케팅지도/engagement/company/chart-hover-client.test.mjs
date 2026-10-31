@@ -55,7 +55,7 @@ test('hover debounces rapid date changes and requests the exact scoped compact d
   f.emit('pointerover',b,{pointerType:'mouse'});await f.advance(129);assert.equal(f.requests.length,0);await f.advance(1);assert.equal(f.requests.length,1);
   const url=new URL(f.requests[0].path,'http://localhost');assert.equal(url.pathname,'/api/day');
   assert.deepEqual(Object.fromEntries(url.searchParams),{scope:'team',teamId:'team-a',ownerId:'owner-a',platform:'youtube',channel:'channel-a',date:'2026-09-29',leaders:'1',metric:'views',mode:'change'});
-  f.requests[0].resolve(response());await flush();assert.match(f.popup().innerHTML,/확인한 콘텐츠/);assert.match(f.popup().innerHTML,/4\/5개 콘텐츠 기준 · 일부 기록/);
+  f.requests[0].resolve(response());await flush();assert.match(f.popup().innerHTML,/확인한 콘텐츠/);assert.match(f.popup().innerHTML,/4\/5개 콘텐츠 기준 · 일부만 비교/);
 });
 
 test('pending requests deduplicate across leave/re-enter and completed results cache without another request',async()=>{
@@ -108,7 +108,7 @@ test('cache is bounded at 64 date/context results',async()=>{
 
 test('titles and attribution are escaped, complete zero/decrease stay ranked, and missing data has no fabricated values',()=>{
   const f=fixture();f.context.options={date:'2026-09-30',metric:'views',mode:'change',value:0};f.context.result={count:3,eligible:3,complete:true,items:[{rank:1,title:'긴 제목 '.repeat(40)+'<img src=x onerror=alert(1)>',value:0,creatorLabel:'당시 담당 크루',creatorNames:['<script>크루</script>']},{rank:2,title:'감소 기록',value:-4,creatorLabel:'제작자 미등록',creatorNames:[]},{rank:3,title:'세 번째',value:-9},{rank:4,title:'네 번째 숨김',value:-10}]};
-  const html=f.run('leadersMarkup(options,result)');assert.equal((html.match(/<li>/g)||[]).length,3);assert.match(html,/&lt;img/);assert.match(html,/&lt;script&gt;크루/);assert.doesNotMatch(html,/<img|<script|네 번째 숨김|\+0|NaN|Infinity/);assert.match(html,/>-4<small>/);assert.match(html,/3\/3개 콘텐츠 기준/);assert.doesNotMatch(html,/일부 기록/);assert.ok(html.includes('긴 제목 '.repeat(40)),'full title remains in the DOM even if CSS limits visible lines');
+  const html=f.run('leadersMarkup(options,result)');assert.equal((html.match(/<li>/g)||[]).length,3);assert.match(html,/&lt;img/);assert.match(html,/&lt;script&gt;크루/);assert.doesNotMatch(html,/<img|<script|네 번째 숨김|\+0|NaN|Infinity/);assert.match(html,/>-4<small>/);assert.match(html,/3\/3개 콘텐츠 기준/);assert.doesNotMatch(html,/일부만/);assert.ok(html.includes('긴 제목 '.repeat(40)),'full title remains in the DOM even if CSS limits visible lines');
   f.context.options.value=null;f.context.result={count:0,eligible:5,items:[]};assert.match(f.run('leadersMarkup(options,result)'),/이날 비교할 수 있는 콘텐츠 기록이 없어요/);assert.match(f.run('leadersMarkup(options,result)'),/<b>—/);
   f.context.options.metric='followers';f.context.result.emptyReason='account-metric';assert.match(f.run('leadersMarkup(options,result)'),/콘텐츠별 순위를 나눌 수 없어요/);
 });

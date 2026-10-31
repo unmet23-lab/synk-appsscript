@@ -47,8 +47,8 @@ export function buildTeamTrends({teams, channels, records, ownTeamId, query, tod
   });
   return {start,end,metric,label:definition.label,ownTeamId:teamIds.has(ownTeamId) ? ownTeamId : null,teams:result,
     aggregateOnly:true,limitedHistory:query.get('range') === 'all' && !!first && first < earliest,
-    definitions:{scope:'활성 팀에 배정된 채널의 팀 단위 집계입니다. 채널 세부자료 열람 권한은 별도로 유지합니다.',
-      total:'누적값은 그날까지 마지막으로 확인한 수치의 합입니다. 이전 기록과 일부 기록은 별도 표시합니다.',
-      change:'하루 증감은 전날과 당일 비교 가능한 같은 대상의 차이입니다. 미수집 값은 0으로 채우지 않습니다.',
-      units:'도달·팔로워는 게시물·계정별 보고값 합계이며 중복 제거한 사람 수가 아닙니다.'}};
+    definitions:{scope:'운영 중인 팀에 넣은 채널을 팀마다 더한 값이에요. 채널별 자세한 자료는 볼 권한이 있는 사람만 봐요.',
+      total:'누적은 그날까지 마지막으로 확인한 수치의 합이에요. 이전 기록과 일부만 확인한 값은 따로 표시해요.',
+      change:'하루 증감은 전날과 그날 모두 기록이 있는 같은 대상의 차이예요. 기록이 없는 값은 0으로 채우지 않아요.',
+      units:'도달·팔로워는 게시물·계정마다 플랫폼이 알려 준 값을 더한 것이라, 같은 사람을 여러 번 셀 수 있어요.'}};
 }

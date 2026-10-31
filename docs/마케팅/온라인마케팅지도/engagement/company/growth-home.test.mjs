@@ -19,8 +19,8 @@ test('home prioritizes four weekly figures, same-weekday graph, and a separate m
   const f=fixture(),html=f.render();
   assert.equal((html.match(/<article class="growth-stat/g)||[]).length,4);
   assert.match(html,/>150<small>회/);assert.match(html,/>120<small>회/);assert.match(html,/>\+30<small>회/);assert.match(html,/>\+100<small>회/);assert.match(html,/\+25% · 같은 요일까지 비교/);
-  assert.match(html,/이번 주 누적 조회수/);assert.match(html,/지난주 누적 조회수/);assert.match(html,/전주 대비/);assert.match(html,/전월 동기 대비/);
-  assert.match(html,/이번 주 조회수 증가량은 지난주 같은 기간보다 30회 높아요/);assert.match(html,/오늘 누적 1,200회 \(2\/2개 확인\)/);assert.match(html,/어제 대비 \+50회/);assert.match(html,/전체 관측일 · 이번 주 3\/3일 · 지난주 3\/3일/);
+  assert.match(html,/이번 주 누적 조회수/);assert.match(html,/지난주 누적 조회수/);assert.match(html,/지난주 대비/);assert.match(html,/지난달 같은 기간 대비/);
+  assert.match(html,/이번 주 조회수 증가량은 지난주 같은 기간보다 30회 높아요/);assert.match(html,/오늘 누적 1,200회 \(2\/2개 확인\)/);assert.match(html,/어제 대비 \+50회/);assert.match(html,/모두 비교한 날 · 이번 주 3\/3일 · 지난주 3\/3일/);
   assert.match(html,/>월<\/text>/);assert.match(html,/>화<\/text>/);assert.match(html,/>수<\/text>/);assert.doesNotMatch(html,/>목<\/text>|이번 달의 성장|765,432|654,321/);
   assert.match(html,/growth-chart-svg is-desktop/);assert.match(html,/growth-chart-svg is-mobile/);assert.match(html,/viewBox="0 0 360 230"/);
   assert.doesNotMatch(html,/data-action="report-view"/,'the workspace heading owns navigation, so the graph does not duplicate it');
@@ -45,7 +45,7 @@ test('incomplete observations are explicitly partial and are never connected acr
   metric.week.trend=[{day:1,date:'2026-09-28',value:10,current:comparison(10)},{day:2,date:'2026-09-29',value:null,current:comparison(null,false,0)},{day:3,date:'2026-09-30',value:-5,current:comparison(-5)},{day:4,date:'2026-10-01',value:12,current:comparison(12,false,1)},{day:5,date:'2026-10-02',value:20,current:comparison(20)}];
   const rows=f.run('growthSeries(report.growth,report.growth.metrics.views.week)'),segments=f.run('growthSegments(growthSeries(report.growth,report.growth.metrics.views.week))');
   assert.deepEqual(Array.from(rows,row=>row.day),[0,1,2,3,4,5]);assert.deepEqual(Array.from(segments,segment=>Array.from(segment,row=>row.day)),[[0,1],[3],[5]]);
-  const html=f.render();assert.match(html,/1\/2개 확인/);assert.match(html,/1\/2개 비교 · 일부 기록/);assert.match(html,/두 주의 비교 가능한 기록이 더 필요해요/);assert.match(html,/growth-dot is-current is-partial/);
+  const html=f.render();assert.match(html,/1\/2개 확인/);assert.match(html,/1\/2개만 비교/);assert.match(html,/두 주의 비교 가능한 기록이 더 필요해요/);assert.match(html,/growth-dot is-current is-partial/);
   const chart=f.run('growthChart(report.growth,report.growth.metrics.views,growthMetric())');assert.equal((chart.match(/<polyline class="growth-curve is-current"/g)||[]).length,2,'only the baseline-to-first-day segment exists in each responsive view');
   metric.week.trend[0].current.complete=false;assert.notEqual(f.run('growthSeries(report.growth,report.growth.metrics.views.week)')[0].day,0,'no invented baseline when the first record is incomplete');
 });

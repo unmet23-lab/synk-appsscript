@@ -97,7 +97,7 @@ test('the banner distinguishes demo data, escapes persona fields and shows crew,
     {id:'b',name:'크루 둘',teamName:'디자인'}, {id:'c',name:'크루 셋',teamName:'마케팅'},
   ]}};
   const html=f.run('demoBanner()');
-  assert.match(html,/크루 3명 · 채널 6개 · 가상 게시글 18개/);assert.match(html,/실제 업로드나 수집 기록이 아닙니다/);
+  assert.match(html,/크루 3명 · 채널 6개 · 가상 게시글 18개/);assert.match(html,/실제로 올리거나 모은 기록이 아니에요/);
   assert.match(html,/value="a&quot; injected=&quot;x" selected/);assert.match(html,/&lt;img/);assert.match(html,/A &amp; B/);assert.doesNotMatch(html,/<img| injected="x/);
   const information=html.match(/<details id="demo-information"[^>]*>/)?.[0];assert.ok(information);assert.doesNotMatch(information,/\bopen\b/,'the detailed demo explanation starts collapsed');
   assert.equal((html.match(/<option /g)||[]).length,3);assert.equal((html.match(/실제 데이터로 돌아가기/g)||[]).length,1);
