@@ -115,5 +115,35 @@
     "금지": "섹시 연출, 교복 · 체크 치마 · 넥타이 · 세일러 깃, 10대 연출(21세 성인으로 읽혀야 함)",
     "업종": "간식 · 아이스크림, 운동화 · 스포츠 캐주얼, 게임(가안 — 캐스팅북에 올릴 때 업종 문구로 다시 정함)"
   },
+  "데이터셋": {
+    "트리거": "pls_f10",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/F10_gg_maknae/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (F10_gg_maknae/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/F10_gg_maknae/v2",
+      "장수": 37,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (F10_gg_maknae/captions_v2.json)",
+      "새컷": "10-19 Gemini Ultra 나노바나나 2.1, 참조 4장, 23장",
+      "장면": "C:/SYNK-LoRA/validation/F10_gg_maknae/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/F10_gg_maknae/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/F10_gg_maknae/job_config_v2.json",
+    "학습": "v2(2026-10-31) — 37장(세트 14 + 새 컷 23: 데이터셋 검수대로 20(B3) 단색 회색 게임기·다리 덮인 판으로 다시 뽑음·27(B10) 눈 내리깐 무쌍 판으로 다시 뽑음·21 캡션 고침·14/19/23 선택 캡션, 학습 전 게이트 뒤 근접 B17~B20 넷 더함 — B17·B18은 눈 띠 참조로 다시 구운 판, B19·B20은 처음 판) · 3,700스텝 · lr 1e-4 · rank 32/alpha 32(conv 16) · 해상도 512·768·1024 · 캡션 드롭아웃 0.05 · flip 없음 · 마스크 없음 · 트리거 pls_f10 · Z-Image Turbo bf16 + 학습 어댑터 v2 · 17:35~22:17 한 번에(진행 4시간 16분, 4.16 s/it + 견본 16회), 재시작·오류 없음 · 가중치 C:/SYNK-LoRA/outputs/f10_gg_maknae_v2/f10_gg_maknae_v2.safetensors(250스텝마다 14개 저장점 보관) · 견본은 트리거만 적은 줄전구 클로즈업이 1,000부터 3,700까지 이 사람 고정(250·500은 앞머리 있는 다른 여자), 트리거만 적은 도서관은 1,000부터(그 전 짧은 머리 소년), 자전거는 1,250부터 이 사람이되 1,750에 남자로 한 번 뒤집힘 → 2,000부터 고정, 트리거 없는 a young Korean woman 도서관은 250부터 끝까지 이 사람(누출), 도서관 full body는 끝까지 전신 유지"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f10",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f10_gg_maknae_v2/f10_gg_maknae_v2.safetensors (마지막 3,700스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f10_gg_maknae_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f10, a Korean woman in her early twenties, <구도·표정·옷·배경·조명>",
+      "검증": "조건부 통과 — 다시 학습 쪽에 가까운 조건부(2026-10-31, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 이 사람으로 보인다(예 9·약함 1·아니오 0, V01 플래시 광각·V06 촛불·V07 파란 빛·V09 형광등·V08 71px은 경계 예). 지킬 특징 ① 무쌍은 7/10 — V04 흐린 날 하이앵글·V06 촛불 측광·V07 파란 측광에서 두 눈 모두 속눈썹 위 얇은 쌍꺼풀 선(원본 4~9배에서 또렷, 피드 크기에선 무쌍으로 읽힘), V02 가까운 눈 얇은 접힘 의심, V05 찡그림·V10 큰 웃음은 접힘이 선으로 굳음, 깨끗한 칸 V01·V03(한 눈)·V09, V08 못 봄. 출처는 데이터셋 37(B20 차 안 측광) 두 눈 얇은 선 또렷·35(B18 다시 구운 판) 옅은 선(다시 구운 11·27은 깨끗). ② 토끼 앞니는 이 보이는 칸이 V10 하나뿐 — ○(앞니 둘 조금 크고 둥금, 아랫니까지 보임). 점: V07 오른볼 바깥 2px 하나 의심, 콧방울 옆 버릇 자리는 0/10. 보이는 나이 20~27, 가운데 20~24, 위로 V05 23~27·V06 23~26, 아래로 없음(10대로 읽히는 칸 없음). 함께: 반묶음+흰 리본 10/10·앞머리 없음 10/10·짙은 갈색 홍채 10/10·작은 달걀형 9/10(V05 아래턱 0.881로 넓어짐, 나머지 정면 칸은 학습 범위 0.72~0.82 안·돌아간 칸 cos 보정 0.81~0.84)·옅은 눈썹 9/10(V05 굵음), 머리색은 코랄 색상이 10/10 남되 밤·촛불·그늘에서 어두워짐(ΔE 19~26 7칸). 결 평균 2.7(V08 제외): 결 문장 넣은 V01만 4, 자연광 V03·V04·V05 3·V02 2.5, 인공광·색 조명 V06·V07 2.5·V09·V10 2 — 밀랍 아니라 적어야 나오는 상태. 실제 촬영 같음 평균 3.4(V02·V03·V08 4, V01·V04·V05·V06 3.5, V07 3, V09·V10 2.5; 단체 컷 2 → 3.4, 맥락 없는 시험관 셋 3.5·3·3), 얼굴 빛 방향·그림자 7칸(V02·V03·V05·V06·V07·V08·V10)+V01 턱 밑, 평평 V04·V09. 약한 칸: V05 한낮 로우앵글(squinting이 세트 06 화남으로 새어 눈썹 굵고 미간 내려가고 턱 넓어지고 입술 두꺼운 윤기 코랄 — 23~27의 다른 사람 가까움). 전신 V08 등신 6.62~6.66(기준 6.68~6.75)·다리 0.487(하한 0.496 살짝 아래 — 보폭·긴 코트)·어깨/얼굴폭 2.33(코트 어깨) — 눈으로는 160cm 아담 체형 유지. 좌우 방향 V02 왼쪽 ✓·V03 오른쪽 +58.8°(참조 +59.8과 같은 참 옆얼굴) ✓·V09 오른쪽 ✗(화면 왼쪽 −17.6) 2/3, front view V01·V04·V08·V10 정면·V07 −22°, 돌아봄 몸 87°/얼굴 −27°. 옷 안 적은 V01은 흰 티(기본값), 레몬 옐로 배경·노란 겉옷 안 샘, 표정 기본값 다문 입(큰 웃음 아님), neutral은 입꼬리 내려감(V07). V09 뒤 인물 둘에게 흰 리본·코랄 머리가 번짐(시험관 셋 공통 지적). 남은 AI 티: V10 비닐 피부·광섬유 머리·치아 줄, V01 광각 통통·윤기 입술, V07·V09 도자기 피부, V04 가지런한 정수리. 조건: 무쌍 문장을 넣어 V04·V06·V07 같은 시드로 3장 다시 뽑아 두 눈 4배 확인 — 선이 남으면 v3(37·35 다시 뽑기 + 무쌍 근접 2~3장) 필수",
+      "검증표": "C:/SYNK-LoRA/validation/F10_gg_maknae/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F10_gg_maknae/verify_v2_jobs.json",
+      "주의": "지시문엔 pls_f10, a Korean woman in her early twenties를 늘 함께 적고(트리거만은 1,000스텝부터 고정되나 자전거 견본이 1,750에 남자로 한 번 뒤집힘, 트리거 없는 a young Korean woman은 250부터 이 얼굴) 걸그룹 단체 컷은 멤버마다 따로 뽑아 합친다; young·pretty·idol은 쓰지 않고 룩은 small oval face with high round cheeks and a softly pointed chin, clean monolid almond eyes, small short nose with a low bridge, light eyebrows, apricot coral straight hair half-up with one white satin bow, no bangs. 무쌍 문장 both eyes are smooth clean monolids with no crease or fold line, even in side light를 늘 적고 뽑은 뒤 두 눈을 4배로 봐 선이 있으면 시드를 바꿔 다시 뽑는다(눈은 후보정 금지 — 안 적은 검증에서 흐린 날 하이앵글 V04·촛불 측광 V06·파란 측광 V07에 두 눈 얇은 선, 역광 V02 한 눈 의심); 웃음 컷은 her eyes narrow into soft crescents, the upper lids staying smooth without a fold line, squinting·frown은 쓰지 않는다(V05 — 세트 06 화남이 새어 눈썹 굵고 턱 넓어지고 입술 두꺼워 23~27, relaxed brow, soft eyes slightly narrowed, soft closed-lip smile + soft diffused sunlight로 시드 2~3개). 결은 적어야 나온다 — natural skin texture with visible pores, unretouched skin(V01 4, 안 적은 9칸 2~3), 플래시·candid snapshot 클로즈업은 광각으로 뺨·코가 넓어지니(V01) 85mm portrait lens, 무대 색 조명·형광등은 비닐·도자기 피부(V10·V09)라 matte skin, soft light, 윤기 입술은 matte natural lips. 점은 no moles, beauty marks or spots를 늘 적고 양 볼·콧방울 옆 4배 확인(V07 오른볼 바깥 2px 의심, 콧방울 옆 0/10) 뒤 점메우기.py. neutral expression은 입꼬리가 내려가 뾰로통(V07)하니 calm expression, lips closed, mouth corners level; focused는 카메라를 본다(V09); 큰 웃음은 기본값이 아니라 토끼 앞니가 보여야 하는 컷은 laughing with a big smile showing her upper teeth, the two front teeth slightly larger and rounded(아랫니 숨기려면 only her upper teeth showing)로 적고 입을 3배로 확인(검증에선 V10 한 칸만 시험). 나이는 센 빛·찡그림·촛불 화장기가 23~27로 올리고(V05·V06) 파란 빛·형광등은 도자기 얼굴 22~25(V07·V09)라 she is 21, natural light makeup, light eyebrows, matte lips, high round cheeks, 교복·하이틴 소품·10대 연출 금지. 다른 사람이 있는 장면은 흰 리본·코랄 머리가 뒤 인물에게 번지니(V09 둘 다) the other people have dark hair and no hair accessories를 적고 4배 확인하거나 배경 인물 없이 뽑아 합치고, 거리 컷엔 no other person anywhere; 리본 꼬리는 one white satin bow with two short tails. 머리색은 안 적어도 코랄이지만 밤·촛불·그늘·형광등에서 어두워지니(ΔE 19~26 7칸) 색이 중요한 컷은 apricot coral hair, her hair color still visible in this light + 머리 ΔE ≤ 15 확인. 좌우 방향은 2/3(V09 right가 화면 왼쪽)라 화면 기준으로 적고 각도를 재며 좌우 표식이 없어 뒤집어도 된다, front view는 looking straight into the lens, both ears equally visible(V07 −22°), 45°는 18~22°에 그치니 three-quarter view, 45 degrees, far ear hidden, 옆얼굴은 side profile만으로 +59°. 전신은 160 cm, petite slim dancer build, camera at waist height(코트 컷은 fitted shoulders)를 적고 등신을 재며(V08 6.62~6.66, 다리 0.487·어깨/얼굴폭 2.33은 보폭·코트 탓) 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 손은 숨기거나 하나만(V06 평평·V09 소매 가림), 간판·패널·화면 글자는 가짜로 나오니 비운다. 입술은 촛불·형광등·그늘에서 어둡게(V06·V09·V08) soft coral-pink lips, 촛불 주황·형광등 보라·무대 피부는 연속 컷 후보정"
+    }
+  },
   "목소리": "아직 — 로드맵 7절 5단계(광고 배우 목소리 엔진은 결정 10-29 먼저 확인)"
 }
