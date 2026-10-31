@@ -1,0 +1,1227 @@
+{
+  "map_ver": "ko-speaking-1-6703a8fbbd8e",
+  "subject": "ko",
+  "sources": {
+    "practice-taxonomy": {
+      "path": "strata/topik-ii.skills.json",
+      "sha256": "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+    },
+    "speaking-items": {
+      "path": "strata/ko-speaking.json",
+      "sha256": "c7d20e345c4751bf4c4a9422493256ac0b7e368c3ae1ca742d83a7de39f103f6"
+    }
+  },
+  "nodes": [
+    {
+      "id": "ko2.listening.response",
+      "kind": "skill",
+      "label_ko": "듣고 알맞게 대답하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.detail",
+      "kind": "skill",
+      "label_ko": "듣고 세부 내용 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.main",
+      "kind": "skill",
+      "label_ko": "듣고 중심 생각 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.inference",
+      "kind": "skill",
+      "label_ko": "듣고 상황 짐작하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.attitude",
+      "kind": "skill",
+      "label_ko": "듣고 의도·태도 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.grammar",
+      "kind": "skill",
+      "label_ko": "문법 표현 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.vocabulary",
+      "kind": "skill",
+      "label_ko": "어휘·관용 표현 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.detail",
+      "kind": "skill",
+      "label_ko": "읽고 세부 내용 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.main",
+      "kind": "skill",
+      "label_ko": "읽고 중심 내용 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.context",
+      "kind": "skill",
+      "label_ko": "문맥으로 내용 짐작하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.structure",
+      "kind": "skill",
+      "label_ko": "글의 흐름 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.attitude",
+      "kind": "skill",
+      "label_ko": "필자·인물의 태도와 심정 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.sentence",
+      "kind": "skill",
+      "label_ko": "문맥에 맞는 문장 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.description",
+      "kind": "skill",
+      "label_ko": "자료를 설명하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.argument",
+      "kind": "skill",
+      "label_ko": "주장하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.greet",
+      "kind": "skill",
+      "label_ko": "인사하고 나를 소개하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.status",
+      "kind": "skill",
+      "label_ko": "지내는 형편과 바뀐 점 말하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.purpose",
+      "kind": "skill",
+      "label_ko": "찾아온 까닭(용건) 말하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.ask",
+      "kind": "skill",
+      "label_ko": "알고 싶은 것을 공손하게 묻기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.explain",
+      "kind": "skill",
+      "label_ko": "겪은 일과 그 까닭 말하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.thank",
+      "kind": "skill",
+      "label_ko": "고마움을 전하고 대화 맺기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.promise",
+      "kind": "skill",
+      "label_ko": "하겠다고 약속하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.past-modifier",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄴ(과거 관형형)",
+      "forms": [
+        "-(으)ㄴ"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.past-modifier"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.contrast",
+      "kind": "grammar_point",
+      "label_ko": "-지만",
+      "forms": [
+        "-지만"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.contrast"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.become",
+      "kind": "grammar_point",
+      "label_ko": "-아/어지다",
+      "forms": [
+        "-아지다",
+        "-어지다"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.become"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.progressive",
+      "kind": "grammar_point",
+      "label_ko": "-고 있다",
+      "forms": [
+        "-고 있다"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.progressive"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.honorific-ask",
+      "kind": "grammar_point",
+      "label_ko": "여쭈다·여쭙다(묻다의 높임) → 여쭤보다",
+      "forms": [
+        "여쭈다",
+        "여쭙다",
+        "여쭤보다"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.honorific-ask"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.have-to-do",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 게 있다",
+      "forms": [
+        "-(으)ㄹ 게 있다",
+        "-(으)ㄹ 것이 있다"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.have-to-do"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.reason",
+      "kind": "grammar_point",
+      "label_ko": "-아/어서(까닭)",
+      "forms": [
+        "-아서",
+        "-어서"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.wonder-whether",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄴ지/-는지 궁금하다(명사+인지)",
+      "forms": [
+        "-(으)ㄴ지 궁금하다",
+        "-는지 궁금하다",
+        "인지 궁금하다"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.wonder-whether"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.reason-final",
+      "kind": "grammar_point",
+      "label_ko": "-아/어서요",
+      "forms": [
+        "-아서요",
+        "-어서요"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason-final"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.formal-ending",
+      "kind": "grammar_point",
+      "label_ko": "-습니다(합쇼체로 맺는 인사)",
+      "forms": [
+        "-습니다",
+        "-ㅂ니다"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.formal-ending"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.know-whether",
+      "kind": "grammar_point",
+      "label_ko": "-는지 알다",
+      "forms": [
+        "-는지 알다",
+        "-는지 아세요"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.know-whether"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.topic-shift",
+      "kind": "grammar_point",
+      "label_ko": "그런데(화제 바꾸기)",
+      "forms": [
+        "그런데"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.topic-shift"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.thanks-to",
+      "kind": "grammar_point",
+      "label_ko": "덕분에",
+      "forms": [
+        "덕분에"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.thanks-to"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.idiom-saved",
+      "kind": "grammar_point",
+      "label_ko": "살았다(관용 표현)",
+      "forms": [
+        "살았다",
+        "살았어요"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.idiom-saved"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.grammar.promise",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ게요(약속)",
+      "forms": [
+        "-(으)ㄹ게요"
+      ],
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.promise"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.this-semester",
+      "kind": "word",
+      "label_ko": "이번 학기",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.this-semester"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.international-student",
+      "kind": "word",
+      "label_ko": "유학생",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.international-student"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.unfamiliar",
+      "kind": "word",
+      "label_ko": "낯설다",
+      "pos": "형",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.unfamiliar"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.familiar",
+      "kind": "word",
+      "label_ko": "익숙하다",
+      "pos": "형",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.familiar"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.assignment",
+      "kind": "word",
+      "label_ko": "과제",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.assignment"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.submission",
+      "kind": "word",
+      "label_ko": "제출",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.submission"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.deadline",
+      "kind": "word",
+      "label_ko": "기한",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.deadline"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.get-lost",
+      "kind": "word",
+      "label_ko": "길을 잃다",
+      "pos": "구",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.get-lost"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.long-while",
+      "kind": "word",
+      "label_ko": "한참",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.long-while"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.wander",
+      "kind": "word",
+      "label_ko": "헤매다",
+      "pos": "동",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.wander"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.senior",
+      "kind": "word",
+      "label_ko": "선배님",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.senior"
+        }
+      ]
+    },
+    {
+      "id": "ko.speaking.word.library",
+      "kind": "word",
+      "label_ko": "도서관",
+      "pos": "명",
+      "level": null,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.word.library"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "ko.speaking.grammar.past-modifier",
+      "to": "ko.speaking.greet",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.past-modifier"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.past-modifier",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.past-modifier"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.contrast",
+      "to": "ko.speaking.status",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.contrast"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.contrast",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.contrast"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.become",
+      "to": "ko.speaking.status",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.become"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.become",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.become"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.progressive",
+      "to": "ko.speaking.status",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.progressive"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.progressive",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.progressive"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.honorific-ask",
+      "to": "ko.speaking.purpose",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.honorific-ask"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.honorific-ask",
+      "to": "ko.speaking.ask",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.honorific-ask"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.honorific-ask",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.honorific-ask"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.have-to-do",
+      "to": "ko.speaking.purpose",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.have-to-do"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.have-to-do",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.have-to-do"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.reason",
+      "to": "ko.speaking.purpose",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.reason",
+      "to": "ko.speaking.explain",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.reason",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.wonder-whether",
+      "to": "ko.speaking.ask",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.wonder-whether"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.wonder-whether",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.wonder-whether"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.reason-final",
+      "to": "ko.speaking.ask",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason-final"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.reason-final",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.reason-final"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.formal-ending",
+      "to": "ko.speaking.thank",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.formal-ending"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.formal-ending",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.formal-ending"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.know-whether",
+      "to": "ko.speaking.ask",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.know-whether"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.know-whether",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.know-whether"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.topic-shift",
+      "to": "ko.speaking.ask",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.topic-shift"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.topic-shift",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.topic-shift"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.thanks-to",
+      "to": "ko.speaking.thank",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.thanks-to"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.thanks-to",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.thanks-to"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.idiom-saved",
+      "to": "ko.speaking.thank",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.idiom-saved"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.idiom-saved",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.idiom-saved"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.promise",
+      "to": "ko.speaking.promise",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.promise"
+        }
+      ]
+    },
+    {
+      "from": "ko.speaking.grammar.promise",
+      "to": "ko2.reading.grammar",
+      "type": "part_of",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "speaking-items",
+          "selector": "ko.speaking.grammar.promise"
+        }
+      ]
+    }
+  ],
+  "tag_vocabulary": [],
+  "links": {
+    "tags": [],
+    "goals": []
+  }
+}

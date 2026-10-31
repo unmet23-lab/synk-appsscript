@@ -62,6 +62,24 @@ const map2 = { map_ver: `${taxonomy2.json.version}-${taxonomy2.sha.slice(0, 12)}
   edges: [], tag_vocabulary: [], links: { tags: [], goals: [] } };
 validateMap(map2);
 output(path.join(root, 'strata/maps/topik-ii.json'), JSON.stringify(map2, null, 2) + '\n');
+// Drama speaking (2026-10-31) is its own map too: speaking abilities (ko.speaking.*) and the grammar and words of the
+// drama lines, carried with the 15 TOPIK II abilities under their own ids so a line's grammar point is part_of
+// ko2.reading.grammar (a draft link, never a grade). WORLD's map and the games do not bundle it, and its content ids
+// are its own: Core lifts a candidate by a content node's state across response formats.
+const speaking = read('strata/ko-speaking.json');
+const speakingRef = selector => ({ source: 'speaking-items', selector });
+const map3 = { map_ver: `${speaking.json.version}-${crypto.createHash('sha256').update(taxonomy2.sha + speaking.sha).digest('hex').slice(0, 12)}`, subject: 'ko',
+  sources: { 'practice-taxonomy': { path: taxonomy2.rel, sha256: taxonomy2.sha }, 'speaking-items': { path: speaking.rel, sha256: speaking.sha } },
+  nodes: [...map2.nodes,
+    ...speaking.json.skills.map(([id, label_ko]) => ({ id, kind: 'skill', label_ko, domain: 'speaking', level: null,
+      difficulty: { authored: null, measured: null, n: 0 }, source_refs: [speakingRef('skills')] })),
+    ...speaking.json.grammar.map(([id, label_ko, forms]) => ({ id, kind: 'grammar_point', label_ko, forms, level: null, source_refs: [speakingRef(id)] })),
+    ...speaking.json.words.map(([id, label_ko, pos]) => ({ id, kind: 'word', label_ko, pos, level: null, source_refs: [speakingRef(id)] }))],
+  edges: speaking.json.grammar.flatMap(([id, , , skills]) => [...skills, 'ko2.reading.grammar'].map(to => ({ from: id, to, type: 'part_of',
+    confidence: 'ai_draft', reviewed: false, source_refs: [speakingRef(id)] }))),
+  tag_vocabulary: [], links: { tags: [], goals: [] } };
+validateMap(map3);
+output(path.join(root, 'strata/maps/ko-speaking.json'), JSON.stringify(map3, null, 2) + '\n');
 const esbuild = require(require.resolve('esbuild', { paths: [root, path.join(root, '영상')] }));
 const bundled = esbuild.buildSync({ absWorkingDir: root, entryPoints: ['atlas/game-browser.js'], bundle: true,
   write: false, platform: 'browser', format: 'iife', globalName: 'SynkLearning', target: ['es2022'], charset: 'utf8',

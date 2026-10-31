@@ -114,7 +114,7 @@ function 기본표(root = 뿌리) {
     });
     표.push({
       이름: 'learning: 9 games', 단계: ATLAS단계, 명령: ['tools/build-game-learning.js', '--check'], 고침: 'node tools/build-game-learning.js',
-      결과물: ['strata/maps/topik-i.json', 'strata/maps/topik-ii.json', ...atlas.GAMES.map((g) => `experiences/${g}/atlas-learning.js`)],
+      결과물: ['strata/maps/topik-i.json', 'strata/maps/topik-ii.json', 'strata/maps/ko-speaking.json', ...atlas.GAMES.map((g) => `experiences/${g}/atlas-learning.js`)],
       원천: ['strata/*.json', 'strata/*.js'], 주석원천: ['experiences/korean-racing/atlas-learning.js'], 낡음: /Learning source differs/,
     });
     표.push({

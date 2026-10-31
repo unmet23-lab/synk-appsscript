@@ -1,0 +1,49 @@
+{
+  "version": "ko-speaking-1",
+  "note": "드라마 말하기 시즌 1 대사의 말하기 항목 층(2026-10-31, 제작용 초안 — 교원 검수 전). 능력은 말로 하는 일(인사·용건·묻기…)이고 급수가 아니다. 대사마다의 능력은 대본(experiences/drama/s*/ep*.mjs)의 「능력」 칸이 가리킨다. 문형·낱말은 그 대사가 쓰는 내용이며 대본의 「문법」·「어휘」 글과 글자 그대로 같다. 지도(strata/maps/ko-speaking.json)는 TOPIK II 능력 15칸(strata/topik-ii.skills.json)을 같은 이름으로 함께 싣고, 문형을 말하기 능력과 TOPIK II 「문법 표현 읽기」(ko2.reading.grammar)에 잇는다 — 모두 ai_draft이며 TOPIK 급수 판정이 아니다. 이름은 WORLD 지도(topik-i·topik-ii)의 문형·낱말과 나눈다: Core가 내용 근거를 응답 꼴과 상관없이 추천 가산에 쓰므로, 같은 이름이면 드라마 결과가 WORLD 추천을 움직인다(결정 표 2026-10-31 「Claude 판단」).",
+  "fields": {
+    "skills": ["id", "label_ko"],
+    "grammar": ["id", "label_ko(대본 「문법」 글)", "forms", "skills"],
+    "words": ["id", "label_ko(대본 「어휘」 글)", "pos"]
+  },
+  "skills": [
+    ["ko.speaking.greet", "인사하고 나를 소개하기"],
+    ["ko.speaking.status", "지내는 형편과 바뀐 점 말하기"],
+    ["ko.speaking.purpose", "찾아온 까닭(용건) 말하기"],
+    ["ko.speaking.ask", "알고 싶은 것을 공손하게 묻기"],
+    ["ko.speaking.explain", "겪은 일과 그 까닭 말하기"],
+    ["ko.speaking.thank", "고마움을 전하고 대화 맺기"],
+    ["ko.speaking.promise", "하겠다고 약속하기"]
+  ],
+  "grammar": [
+    ["ko.speaking.grammar.past-modifier", "-(으)ㄴ(과거 관형형)", ["-(으)ㄴ"], ["ko.speaking.greet"]],
+    ["ko.speaking.grammar.contrast", "-지만", ["-지만"], ["ko.speaking.status"]],
+    ["ko.speaking.grammar.become", "-아/어지다", ["-아지다", "-어지다"], ["ko.speaking.status"]],
+    ["ko.speaking.grammar.progressive", "-고 있다", ["-고 있다"], ["ko.speaking.status"]],
+    ["ko.speaking.grammar.honorific-ask", "여쭈다·여쭙다(묻다의 높임) → 여쭤보다", ["여쭈다", "여쭙다", "여쭤보다"], ["ko.speaking.purpose", "ko.speaking.ask"]],
+    ["ko.speaking.grammar.have-to-do", "-(으)ㄹ 게 있다", ["-(으)ㄹ 게 있다", "-(으)ㄹ 것이 있다"], ["ko.speaking.purpose"]],
+    ["ko.speaking.grammar.reason", "-아/어서(까닭)", ["-아서", "-어서"], ["ko.speaking.purpose", "ko.speaking.explain"]],
+    ["ko.speaking.grammar.wonder-whether", "-(으)ㄴ지/-는지 궁금하다(명사+인지)", ["-(으)ㄴ지 궁금하다", "-는지 궁금하다", "인지 궁금하다"], ["ko.speaking.ask"]],
+    ["ko.speaking.grammar.reason-final", "-아/어서요", ["-아서요", "-어서요"], ["ko.speaking.ask"]],
+    ["ko.speaking.grammar.formal-ending", "-습니다(합쇼체로 맺는 인사)", ["-습니다", "-ㅂ니다"], ["ko.speaking.thank"]],
+    ["ko.speaking.grammar.know-whether", "-는지 알다", ["-는지 알다", "-는지 아세요"], ["ko.speaking.ask"]],
+    ["ko.speaking.grammar.topic-shift", "그런데(화제 바꾸기)", ["그런데"], ["ko.speaking.ask"]],
+    ["ko.speaking.grammar.thanks-to", "덕분에", ["덕분에"], ["ko.speaking.thank"]],
+    ["ko.speaking.grammar.idiom-saved", "살았다(관용 표현)", ["살았다", "살았어요"], ["ko.speaking.thank"]],
+    ["ko.speaking.grammar.promise", "-(으)ㄹ게요(약속)", ["-(으)ㄹ게요"], ["ko.speaking.promise"]]
+  ],
+  "words": [
+    ["ko.speaking.word.this-semester", "이번 학기", "명"],
+    ["ko.speaking.word.international-student", "유학생", "명"],
+    ["ko.speaking.word.unfamiliar", "낯설다", "형"],
+    ["ko.speaking.word.familiar", "익숙하다", "형"],
+    ["ko.speaking.word.assignment", "과제", "명"],
+    ["ko.speaking.word.submission", "제출", "명"],
+    ["ko.speaking.word.deadline", "기한", "명"],
+    ["ko.speaking.word.get-lost", "길을 잃다", "구"],
+    ["ko.speaking.word.long-while", "한참", "명"],
+    ["ko.speaking.word.wander", "헤매다", "동"],
+    ["ko.speaking.word.senior", "선배님", "명"],
+    ["ko.speaking.word.library", "도서관", "명"]
+  ]
+}

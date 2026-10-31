@@ -3,6 +3,8 @@
 // · 학생 배역은 이름이 없다(녹음 목소리가 학생 이름을 부를 수 없다 — 기획 §2). 나라 말은 시범판(몽골 유학생)에 맞춘 칸이다.
 // · 「뜻」은 학습자 언어 자막의 영어 초안이다. 몽골어는 회차마다 몽골어 검문(tools/몽골어대조.js)을 거쳐 넣는다. 발음 줄은 회차 빌더에서 만든다.
 // · 인물 이름·학교 이름은 지어낸 것이다. 실제 연예인의 이름·얼굴·목소리는 쓰지 않는다.
+// · 「능력」은 Strata 말하기 지도(strata/maps/ko-speaking.json)의 말하기 능력이고, 「문법」·「어휘」는 같은 지도의 문형·낱말 글과 글자 그대로 같다(10-31).
+//   처음 보는 대사는 같은 목적의 장면 대사와 같은 능력을 가리킨다 — Temper의 다시 확인이 같은 능력의 다른 줄을 본다.
 // · 칸 명세의 alts·variants는 「높임이 맞은 쉬운 말은 통과, 높임 어휘는 카드와 모범 읽기가 가르친다」는 선으로 넓혔다(10-30 Fable 실측).
 
 export default {
@@ -45,34 +47,34 @@ export default {
   {n:1,이름:'대본 리딩',하는일:'칸 1~15를 보며 이번 회 전체를 듣는다(다시 듣기·느리게). 내 대사는 미리 듣기만 한다.'},
   {n:2,이름:'장면 1 — 교수님 연구실',장소:'국제학부 연구동 512호, 오전',칸:[3,4,5,6,7,8,9],줄:[
    {누가:'교수',말:'네, 들어오세요.',뜻:'Yes, come in.',지문:'책에서 눈을 떼며, 부드럽게'},
-   {누가:'학생',id:'s1e01-1',말:'안녕하세요, 교수님. 이번 학기에 새로 온 유학생이에요.',뜻:'Hello, Professor. I\'m a new international student this semester.',문법:['-(으)ㄴ(과거 관형형)'],어휘:['이번 학기','유학생'],
+   {누가:'학생',id:'s1e01-1',능력:'ko.speaking.greet',말:'안녕하세요, 교수님. 이번 학기에 새로 온 유학생이에요.',뜻:'Hello, Professor. I\'m a new international student this semester.',문법:['-(으)ㄴ(과거 관형형)'],어휘:['이번 학기','유학생'],
     명세:{to:'professor',keys:[{word:'안녕하세요',alts:['안녕하십니까']},{word:'새로 온 유학생',alts:['새로 온 학생','새로 온 교환학생','새로 입학한 유학생','새로 들어온 유학생']}],variants:['안녕하세요, 교수님. 이번에 새로 온 유학생이에요.']}},
    {누가:'교수',말:'아, 학생이 그 신입생이군요. 학과 사무실에서 얘기 들었어요. 한국 생활은 좀 어때요?',뜻:'Ah, so you\'re the new student. The department office told me about you. How are you finding life in Korea?',지문:'반갑게, 조금 웃으며'},
-   {누가:'학생',id:'s1e01-2',말:'아직 낯설지만 조금씩 익숙해지고 있어요.',뜻:'It\'s still unfamiliar, but I\'m getting used to it little by little.',문법:['-지만','-아/어지다','-고 있다'],어휘:['낯설다','익숙하다'],
+   {누가:'학생',id:'s1e01-2',능력:'ko.speaking.status',말:'아직 낯설지만 조금씩 익숙해지고 있어요.',뜻:'It\'s still unfamiliar, but I\'m getting used to it little by little.',문법:['-지만','-아/어지다','-고 있다'],어휘:['낯설다','익숙하다'],
     명세:{to:'professor',keys:[{word:'낯설지만',alts:['힘들지만','어렵지만','어색하지만','익숙하지 않지만','서툴지만']},{word:'익숙해지고 있어요',alts:['익숙해지고 있습니다','익숙해졌어요','적응하고 있어요','적응하고 있습니다','적응했어요','적응이 되고 있어요','괜찮아지고 있어요','나아지고 있어요']}]}},
    {누가:'교수',말:'처음엔 다 그래요. 우리 연구동도 미로 같죠? 그런데 오늘은 무슨 일로 왔어요?',뜻:'Everyone feels that way at first. This building is a maze too, isn\'t it? So, what brings you here today?',지문:'고개를 끄덕이고, 「미로」에서 살짝 웃으며 안경을 내려놓는다'},
-   {누가:'학생',id:'s1e01-3',말:'과제에 대해 여쭤볼 게 있어서 왔어요.',뜻:'I came to ask you something about the assignment.',문법:['여쭈다·여쭙다(묻다의 높임) → 여쭤보다','-(으)ㄹ 게 있다','-아/어서(까닭)'],어휘:['과제'],
+   {누가:'학생',id:'s1e01-3',능력:'ko.speaking.purpose',말:'과제에 대해 여쭤볼 게 있어서 왔어요.',뜻:'I came to ask you something about the assignment.',문법:['여쭈다·여쭙다(묻다의 높임) → 여쭤보다','-(으)ㄹ 게 있다','-아/어서(까닭)'],어휘:['과제'],
     명세:{to:'professor',keys:[{word:'과제'},{word:'여쭤볼 게 있어서',alts:['여쭤볼 것이 있어서','여쭈어볼 게 있어서','질문이 있어서','여쭤보고 싶은 게 있어서','여쭤보려고','물어볼 게 있어서','궁금한 게 있어서']}]}},
    {누가:'교수',말:'그래요? 뭐든지 물어봐요.',뜻:'Oh? Sure, ask me anything.',지문:'의자를 조금 당기며'},
-   {누가:'학생',id:'s1e01-4',말:'제출 기한이 언제까지인지 궁금해서요.',뜻:'I was wondering when the deadline is.',문법:['-(으)ㄴ지/-는지 궁금하다(명사+인지)','-아/어서요'],어휘:['제출','기한'],
+   {누가:'학생',id:'s1e01-4',능력:'ko.speaking.ask',말:'제출 기한이 언제까지인지 궁금해서요.',뜻:'I was wondering when the deadline is.',문법:['-(으)ㄴ지/-는지 궁금하다(명사+인지)','-아/어서요'],어휘:['제출','기한'],
     명세:{to:'professor',keys:[{word:'제출 기한'},{word:'언제까지인지',alts:['언제까지예요','언제까지인가요','언제까지입니까','언제인지','언제까지 내야 하는지']}],variants:['제출 기한이 언제까지예요?','제출 기한이 언제까지인가요?','제출 기한이 언제까지입니까?']}},
    {누가:'교수',말:'다음 주 금요일 오후 여섯 시까지예요. 늦게 내면 안 돼요.',뜻:'By 6 p.m. next Friday. No late submissions.',지문:'달력을 짚으며, 마지막 말은 또박또박 단호하게'},
-   {누가:'학생',id:'s1e01-5',말:'네, 알겠습니다. 감사합니다, 교수님.',뜻:'Yes, I understand. Thank you, Professor.',문법:['-습니다(합쇼체로 맺는 인사)'],
+   {누가:'학생',id:'s1e01-5',능력:'ko.speaking.thank',말:'네, 알겠습니다. 감사합니다, 교수님.',뜻:'Yes, I understand. Thank you, Professor.',문법:['-습니다(합쇼체로 맺는 인사)'],
     명세:{to:'professor',keys:[{word:'알겠습니다',alts:['알겠어요','알았습니다']},{word:'감사합니다',alts:['감사해요','고맙습니다']}]}},
    {누가:'교수',말:'그래요. 모르는 거 있으면 언제든지 와요.',뜻:'Come by any time if you have any questions.',지문:'다시 따뜻하게'},
   ]},
   {n:3,이름:'장면 2 — 학생 식당',장소:'학생 식당, 점심',칸:[10,11,12,13,14],줄:[
    {누가:'선배',말:'저기, 혹시 신입생이에요? 아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?',뜻:'Hey, are you a freshman by any chance? You were circling around the campus map by the main gate earlier, right?',지문:'식판을 내려놓으며, 반갑게 아는 척'},
-   {누가:'학생',id:'s1e01-6',말:'네, 맞아요. 길을 잃어서 한참 헤맸어요.',뜻:'Yes, that\'s right. I got lost and wandered around for a long time.',문법:['-아/어서(까닭)'],어휘:['길을 잃다','한참','헤매다'],
+   {누가:'학생',id:'s1e01-6',능력:'ko.speaking.explain',말:'네, 맞아요. 길을 잃어서 한참 헤맸어요.',뜻:'Yes, that\'s right. I got lost and wandered around for a long time.',문법:['-아/어서(까닭)'],어휘:['길을 잃다','한참','헤매다'],
     명세:{to:'senior',names:['권태오','태오'],keys:[{word:'길을 잃어서',alts:['길을 잃어버려서','길을 몰라서','길을 잃었는데']},{word:'헤맸어요',alts:['헤맸습니다','헤매었어요','헤매고 있었어요','돌아다녔어요']}]}},
    {누가:'선배',말:'하하, 여기 처음 오면 다 헤매요. 나는 3학년 권태오예요. 편하게 선배라고 불러요.',뜻:'Haha, everyone gets lost here at first. I\'m Taeo, a third-year. Just call me sunbae (senior).',지문:'웃음을 참지 못하고, 엄지로 자기를 가리키며'},
-   {누가:'학생',id:'s1e01-7',말:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?',뜻:'Yes, sunbae-nim! By the way, do you happen to know where the library is?',문법:['-는지 알다','그런데(화제 바꾸기)'],어휘:['선배님','도서관'],
+   {누가:'학생',id:'s1e01-7',능력:'ko.speaking.ask',말:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?',뜻:'Yes, sunbae-nim! By the way, do you happen to know where the library is?',문법:['-는지 알다','그런데(화제 바꾸기)'],어휘:['선배님','도서관'],
     명세:{to:'senior',names:['권태오','태오'],minSyllables:9,keys:[{word:'도서관'},{word:'어디에 있는지',alts:['어디 있는지','어디예요','어디에 있어요','어딘지','어디로 가야 하는지']}],variants:['선배님, 혹시 도서관이 어디에 있는지 아세요?','선배님, 도서관이 어디예요?']}},
    {누가:'선배',말:'선배님은 좀 부담스러운데… 뭐, 편한 대로 해요. 도서관? 밥 먹고 같이 가요. 내가 데려다줄게요.',뜻:'"Sunbae-nim" feels like a bit much... well, whatever you\'re comfortable with. The library? Let\'s go together after we eat. I\'ll take you there.',지문:'「님」에서 손사래를 치며 웃고, 숟가락을 들며 아무렇지 않게'},
-   {누가:'학생',id:'s1e01-8',말:'정말요? 선배님 덕분에 살았어요.',뜻:'Really? You\'re a lifesaver, sunbae-nim.',문법:['덕분에','살았다(관용 표현)'],
+   {누가:'학생',id:'s1e01-8',능력:'ko.speaking.thank',말:'정말요? 선배님 덕분에 살았어요.',뜻:'Really? You\'re a lifesaver, sunbae-nim.',문법:['덕분에','살았다(관용 표현)'],
     명세:{to:'senior',names:['권태오','태오'],keys:[{word:'덕분에'},{word:'살았어요',alts:['살았습니다','살았네요']}]}},
    {누가:'선배',말:'에이, 뭘요. 대신 다음 주 동아리 박람회 때 커피 한 잔 사요. 내가 데려갈게요.',뜻:'Oh, it\'s nothing. But you\'re buying me a coffee at the club fair next week — I\'ll take you there.',지문:'장난스럽게, 한쪽 눈썹을 올리며'},
-   {누가:'학생',id:'s1e01-9',말:'네, 꼭 살게요!',뜻:'Yes, I promise I\'ll buy you one!',문법:['-(으)ㄹ게요(약속)'],
+   {누가:'학생',id:'s1e01-9',능력:'ko.speaking.promise',말:'네, 꼭 살게요!',뜻:'Yes, I promise I\'ll buy you one!',문법:['-(으)ㄹ게요(약속)'],
     명세:{to:'senior',names:['권태오','태오'],keys:[{word:'살게요',alts:['사겠습니다','사 드릴게요']}]}},
   ]},
   {n:4,이름:'재촬영 + 처음 보는 대사',하는일:'막혔던 대사를 다시 찍고, 처음 보는 대사 풀에서 그날 2~3줄. 말투·문화 카드와 다음 회 예고로 끝낸다.'},
@@ -80,21 +82,21 @@ export default {
 
  // 같은 표현을 다른 상황·다른 사람에게 — 이것만 「혼자 해냄」으로 센다(기획 원칙 4). 카드는 뜻(학습자 언어)과 첫 글자만 보인다.
  처음보는대사:[
-  {id:'s1e01-t1',상황:'학과 사무실, 조교 선생님께',말:'수강 신청에 대해 여쭤볼 게 있어서 왔어요.',뜻:'I came to ask about course registration.',
+  {id:'s1e01-t1',능력:'ko.speaking.purpose',상황:'학과 사무실, 조교 선생님께',말:'수강 신청에 대해 여쭤볼 게 있어서 왔어요.',뜻:'I came to ask about course registration.',
    명세:{to:'staff',keys:[{word:'수강 신청'},{word:'여쭤볼 게 있어서',alts:['여쭤볼 것이 있어서','여쭈어볼 게 있어서','질문이 있어서','여쭤보고 싶은 게 있어서','여쭤보려고','물어볼 게 있어서','궁금한 게 있어서']}]}},
-  {id:'s1e01-t2',상황:'도서관 안내 데스크, 직원이 「무엇을 도와드릴까요?」라고 물을 때',말:'이 책 반납 기한이 언제까지인지 궁금해서요.',뜻:'I was wondering when this book is due.',
+  {id:'s1e01-t2',능력:'ko.speaking.ask',상황:'도서관 안내 데스크, 직원이 「무엇을 도와드릴까요?」라고 물을 때',말:'이 책 반납 기한이 언제까지인지 궁금해서요.',뜻:'I was wondering when this book is due.',
    명세:{to:'staff',keys:[{word:'반납 기한',alts:['반납일']},{word:'언제까지인지',alts:['언제까지예요','언제까지인가요','언제까지입니까','언제인지']}],variants:['이 책 반납 기한이 언제까지예요?','이 책 반납 기한이 언제까지인가요?']}},
-  {id:'s1e01-t3',상황:'기숙사 사감 선생님이 지낼 만하냐고 물으실 때',말:'처음엔 힘들었지만 조금씩 익숙해지고 있어요.',뜻:'It was hard at first, but I\'m getting used to it little by little.',
+  {id:'s1e01-t3',능력:'ko.speaking.status',상황:'기숙사 사감 선생님이 지낼 만하냐고 물으실 때',말:'처음엔 힘들었지만 조금씩 익숙해지고 있어요.',뜻:'It was hard at first, but I\'m getting used to it little by little.',
    명세:{to:'staff',keys:[{word:'힘들었지만',alts:['어려웠지만','낯설었지만','힘들었는데']},{word:'익숙해지고 있어요',alts:['익숙해지고 있습니다','익숙해졌어요','적응하고 있어요','적응하고 있습니다','적응했어요','적응이 되고 있어요','괜찮아지고 있어요','나아지고 있어요']}]}},
-  {id:'s1e01-t4',상황:'복사실을 못 찾아, 처음 본 교직원께',말:'선생님, 혹시 복사실이 어디에 있는지 아세요?',뜻:'Excuse me, do you happen to know where the copy room is?',
+  {id:'s1e01-t4',능력:'ko.speaking.ask',상황:'복사실을 못 찾아, 처음 본 교직원께',말:'선생님, 혹시 복사실이 어디에 있는지 아세요?',뜻:'Excuse me, do you happen to know where the copy room is?',
    명세:{to:'staff',keys:[{word:'복사실'},{word:'어디에 있는지',alts:['어디 있는지','어디예요','어디에 있어요','어딘지']}]}},
-  {id:'s1e01-t5',상황:'오리엔테이션 자기소개 차례에',말:'이번 학기에 새로 온 유학생이에요. 잘 부탁드립니다.',뜻:'I\'m a new international student this semester. I look forward to studying with you all.',
+  {id:'s1e01-t5',능력:'ko.speaking.greet',상황:'오리엔테이션 자기소개 차례에',말:'이번 학기에 새로 온 유학생이에요. 잘 부탁드립니다.',뜻:'I\'m a new international student this semester. I look forward to studying with you all.',
    명세:{to:'group',keys:[{word:'새로 온 유학생',alts:['새로 온 학생','새로 온 교환학생']},{word:'잘 부탁드립니다',alts:['잘 부탁드려요','잘 부탁합니다','잘 부탁해요']}]}},
-  {id:'s1e01-t6',상황:'학교 앞 버스 정류장에서, 지나가는 어른께',말:'길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?',뜻:'I\'m lost. Do you know where the main gate of Saesol University is?',
+  {id:'s1e01-t6',능력:'ko.speaking.ask',상황:'학교 앞 버스 정류장에서, 지나가는 어른께',말:'길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?',뜻:'I\'m lost. Do you know where the main gate of Saesol University is?',
    명세:{to:'stranger',keys:[{word:'길을 잃었어요',alts:['길을 잃어서','길을 잃어버렸어요','길을 잃었는데요']},{word:'정문'},{word:'어디에 있는지',alts:['어디 있는지','어디예요','어디에 있어요','어딘지']}]}},
-  {id:'s1e01-t7',상황:'도와준 조교 선생님께 고마움을 전할 때',말:'선생님 덕분에 살았어요. 정말 감사합니다.',뜻:'You\'re a lifesaver. Thank you so much.',
+  {id:'s1e01-t7',능력:'ko.speaking.thank',상황:'도와준 조교 선생님께 고마움을 전할 때',말:'선생님 덕분에 살았어요. 정말 감사합니다.',뜻:'You\'re a lifesaver. Thank you so much.',
    명세:{to:'staff',keys:[{word:'덕분에'},{word:'감사합니다',alts:['감사해요','고맙습니다']}]}},
-  {id:'s1e01-t8',상황:'교수님 연구실 앞, 과제를 어디에 내야 할지 모를 때',말:'교수님, 과제를 어디에 내야 하는지 여쭤봐도 될까요?',뜻:'Professor, may I ask where I should hand in the assignment?',
+  {id:'s1e01-t8',능력:'ko.speaking.ask',상황:'교수님 연구실 앞, 과제를 어디에 내야 할지 모를 때',말:'교수님, 과제를 어디에 내야 하는지 여쭤봐도 될까요?',뜻:'Professor, may I ask where I should hand in the assignment?',
    명세:{to:'professor',keys:[{word:'어디에 내야',alts:['어디에 제출해야','어디 내야','어디로 내야','어디에 내면','어디에 제출하면']},{word:'여쭤봐도 될까요',alts:['여쭤봐도 돼요','물어봐도 될까요','여쭤봐도 됩니까','여쭤봐도 괜찮을까요']}]}},
  ],
 
