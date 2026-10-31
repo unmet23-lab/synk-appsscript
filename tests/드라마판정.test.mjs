@@ -110,7 +110,12 @@ test('확신이 없으면 노트 없음: 이름씨로 끝난 말·애매한 닮�
 test('소리 관문: 말 없음·한국어 아님·사람이 낼 수 없는 빠르기·받아 적기가 놓친 말은 판정하지 않는다',()=>{
  assert.equal(gate({transcript:''}),'no_speech');
  assert.equal(gate({transcript:'Hello my name is Bayar'}),'not_korean');
- assert.equal(gate({transcript:'안녕하세요',language:'other'}),'not_korean');
+ // 들은 언어가 다르다고 와도 받아 적은 글이 한글이면 한국어로 본다 — 짧은 대답에서 언어를 틀린다(10-31 리허설 「과제요.」 → zh).
+ assert.equal(gate({transcript:'과제요.',language:'other'}),'ok');
+ assert.equal(gate({transcript:'안녕하세요',language:'other'}),'ok');
+ assert.equal(gate({transcript:'Hello, professor.',language:'other'}),'not_korean');
+ assert.equal(gate({transcript:'课题哟',language:'other'}),'not_korean');
+ assert.equal(gate({transcript:'안녕 Bayar Bold',language:'other'}),'not_korean','한글이 다른 글자의 두 배가 안 되면 들은 언어를 믿는다');
  assert.equal(gate({transcript:'과제에 대해 질문이 있어서 왔어요 제출 기한이 언제까지예요',seconds:2}),'too_fast');
  assert.equal(gate({transcript:'과제에 대해 질문이 있어서 왔어요',seconds:4}),'ok');
  assert.equal(say(L3,'').status,'no_speech');
