@@ -6,6 +6,7 @@
 # 10-30 첫 판은 끝없는 apad 때문에 ffmpeg가 10분 넘게 멈췄다(현장노트 영상_ffmpeg_자막에 이미 있던 함정) → apad=whole_dur로 길이를 못 박는다.
 #   python -X utf8 문장맞춤.py <클립.mp4> <대사.mp3> <나갈.mp4> --닻 여기,나는,편하게 [--힌트 권태오]
 #   받아쓰기는 <나갈>.낱말.json에 남겨 다시 돌릴 때 쓴다.
+#   낱말로 안 잡히는 소리(웃음)는 잰 시각을 닻으로 준다: @원본초:클립초 (한 테이크 3판 --닻 네,@4.89:5.42,여기,나는,편하게 — 안 주면 웃음이 앞 문장에 붙어 0.5초 일찍 난다).
 import json
 import os
 import subprocess
@@ -69,9 +70,13 @@ def dur(path, stream):
                                 capture_output=True, text=True, check=True).stdout.strip())
 
 
-def onsets(ws, sp):
+def onsets(ws, sp, side):
     got, after = [], 0.0
     for a in anchors:
+        if a.startswith('@'):
+            after = float(a[1:].split(':')[side])
+            got.append(after)
+            continue
         w = next((w for w in ws if w[1] >= after - 0.05 and w[0].startswith(a)), None)
         if not w:
             raise SystemExit(f'닻 「{a}」를 받아쓰기에서 못 찾았다')
@@ -83,7 +88,7 @@ def onsets(ws, sp):
 
 W = words({'원본': line, '클립': clip})
 sl, sc = spans(line), spans(clip)
-ol, oc = onsets(W['원본'], sl), onsets(W['클립'], sc)
+ol, oc = onsets(W['원본'], sl, 0), onsets(W['클립'], sc, 1)
 L, V = dur(line, 'a:0'), dur(clip, 'v:0')
 plan = []
 head_l = [s for s in sl if s[1] <= ol[0] + 0.01]
@@ -106,9 +111,15 @@ for i, p in enumerate(plan):
 # 클립 소리에서 모델이 말하지 않는 구간(말 토막 ±0.08초 밖)만 남겨 그대로 깐다 — 모델 목소리가 우리 녹음 밑에 겹쳐 들리지 않게.
 gate = '+'.join(f'between(t,{max(0.0, a - 0.08):.3f},{b + 0.08:.3f})' for a, b in sc) or '0'
 bed = f"[0:a]aresample=48000,volume='if({gate},0,1)':eval=frame[bed]"
-n = len(plan) + 1
+# 비운 자리가 디지털 무음이면 우리 녹음이 모델 말보다 먼저 끝나는 곳에서 소음이 끊겼다 돌아온다(10-31 Fable P3, 「헤맸어요」 뒤 0.27초) — 클립의 가장 긴 조용한 구간을 되풀이해 비운 자리에만 깐다.
+edges = [0.0] + [t for s in sc for t in s] + [V]
+q0, q1 = max(zip(edges[::2], edges[1::2]), key=lambda q: q[1] - q[0])
+q0, q1 = q0 + 0.1, q1 - 0.1
+tone = (f"[0:a]atrim={q0:.3f}:{q1:.3f},asetpts=PTS-STARTPTS,aresample=48000,aloop=loop={int(V / (q1 - q0)) + 1}:size={int((q1 - q0) * 48000)},"
+        f"asetpts=N/SR/TB,atrim=0:{V:.3f},volume='if({gate},1,0)':eval=frame[tone]")
+n = len(plan) + 2
 # aresample=async=1:first_pts=0 — 첫 토막이 늦게 놓이면 소리 트랙이 컨테이너에서 늦게 시작해(편집 목록 0.27초, 10-30 Fable P3) 편집 목록을 무시하는 경로에서 앞서 들린다
-fc = ';'.join(parts) + ';' + bed + ';' + ''.join(f'[s{i}]' for i in range(len(plan))) + f"[bed]amix=inputs={n}:normalize=0:duration=longest,aresample=async=1:first_pts=0,apad=whole_dur={V:.3f},atrim=0:{V:.3f}[a]"
+fc = ';'.join(parts) + ';' + bed + ';' + tone + ';' + ''.join(f'[s{i}]' for i in range(len(plan))) + f"[bed][tone]amix=inputs={n}:normalize=0:duration=longest,aresample=async=1:first_pts=0,apad=whole_dur={V:.3f},atrim=0:{V:.3f}[a]"
 subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', clip, '-i', line, '-filter_complex', fc, '-map', '0:v', '-map', '[a]',
                 '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-t', f'{V:.3f}', dst], check=True)
 print(json.dumps({'클립': clip, '영상초': round(V, 3), '원본첫소리': [round(x, 2) for x in ol], '클립첫소리': [round(x, 2) for x in oc], '토막': plan}, ensure_ascii=False))

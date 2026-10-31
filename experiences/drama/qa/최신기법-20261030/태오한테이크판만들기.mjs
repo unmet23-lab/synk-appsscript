@@ -4,9 +4,10 @@
  * Seedance 2.5 한 컷. 앞 판(태오판만들기.mjs)의 두 컷 이어 붙이기는 컷마다 뒤 학생 · 눈웃음이 처음 자리로 돌아갔다.
  * 비디오 하나를 재생 위치(학생 · 선배 구간, 한테이크결과.json)에 맞춰 대사 상자를 바꾸고, 「내가 말해 보기」는 학생 구간만 소리를 끈다.
  * 목소리는 「영상이 낸 목소리」와 「원래 녹음(Hana · Julian)」을 바꿔 들을 수 있고, 고른 것은 db picks/voice에 누르는 즉시 남는다.
+ * 구도 · 깜빡임을 고정한 판(10-31 유호님 「다음 판 구워」)부터는 앞 판과 나란히 재생하는 칸을 더했다(고친 일은 전후를 보게 보고).
  * 같은 claude.ai 주소(태오판.html)로 다시 올린다.
  *
- *   node 태오한테이크판만들기.mjs <작업>     <작업>/영상/한테이크결과.json → <작업>/태오판.html · <작업>/태오판_파일.json
+ *   node 태오한테이크판만들기.mjs <작업>     <작업>/영상/한테이크2결과.json → <작업>/태오판.html · <작업>/태오판_파일.json
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,7 +20,7 @@ const 작업 = process.argv[2];
 if (!작업) { console.error('쓰는 법: node 태오한테이크판만들기.mjs <작업 폴더>'); process.exit(2); }
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 소리폴더 = path.resolve(여기, '../../s1/소리');
-const 결과 = JSON.parse(fs.readFileSync(path.join(작업, '영상', '한테이크결과.json'), 'utf8'));
+const 결과 = JSON.parse(fs.readFileSync(path.join(작업, '영상', '한테이크2결과.json'), 'utf8'));
 
 const 파일 = {};
 const 붙임 = (이름, 원본) => {
@@ -41,9 +42,11 @@ const 줄 = (역, 번호) => {
 };
 
 const 쓸것 = {
- 포스터: 포스터(path.join(작업, 결과.own), 'senior-onetake'),
- own: 붙임('video/senior-onetake-own.mp4', path.join(작업, 결과.own)),
- original: 붙임('video/senior-onetake-original.mp4', path.join(작업, 결과.original)),
+ 포스터: 포스터(path.join(작업, 결과.own), 'senior-onetake2'),
+ own: 붙임('video/senior-onetake2-own.mp4', path.join(작업, 결과.own)),
+ original: 붙임('video/senior-onetake2-original.mp4', path.join(작업, 결과.original)),
+ 앞판: 붙임('video/senior-onetake-own.mp4', path.join(작업, 결과.앞판)),
+ 앞판포스터: 포스터(path.join(작업, 결과.앞판), 'senior-onetake'),
  학생구간: 결과.학생, 선배구간: 결과.선배,
  학생: 줄('model', 6), 선배: 줄('senior', 2),
  기록: 결과.기록 || [],
@@ -109,6 +112,10 @@ button.voice[aria-pressed="true"]{background:var(--ink);color:var(--paper);borde
 label{font-size:14px;color:var(--muted)}
 textarea{width:100%;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--card);color:var(--ink);min-height:44px;resize:vertical}
 ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;overflow-wrap:anywhere}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px}
+.pair figure{margin:0;display:grid;gap:6px}
+.pair video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:var(--stage);display:block}
+.pair figcaption{font-size:13px;color:var(--muted)}
 </style>
 
 <div class="wrap">
@@ -141,6 +148,15 @@ ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;overflow-wrap:anywhere}
    </div>
   </div>
  </section>
+ <section aria-labelledby="h-cmp" style="display:grid;gap:12px">
+  <div style="display:grid;gap:6px"><p class="slate">앞 판과 나란히</p><h2 id="h-cmp">무엇이 달라졌나</h2></div>
+  <p class="cap" id="cmpcap"></p>
+  <div class="controls"><button type="button" class="play" id="both" aria-pressed="false">둘 다 재생</button></div>
+  <div class="pair">
+   <figure><video id="vOld" playsinline muted preload="metadata"></video><figcaption>앞 판</figcaption></figure>
+   <figure><video id="vNew" playsinline preload="metadata"></video><figcaption>이번 판</figcaption></figure>
+  </div>
+ </section>
  <section aria-labelledby="h-rec" style="display:grid;gap:10px">
   <div style="display:grid;gap:6px"><p class="slate">기록</p><h2 id="h-rec">이번 판에서 잰 것</h2></div>
   <ul class="plain" id="rec"></ul>
@@ -155,6 +171,7 @@ const make = (tag, cls, text) => { const e = document.createElement(tag); if (cl
 $('#lead').textContent = D.글.머리;
 $('#before').textContent = D.글.앞상황;
 $('#trycap').textContent = D.글.해보기;
+$('#cmpcap').textContent = D.글.나란히;
 for (const s of D.기록) $('#rec').append(make('li', null, s));
 for (const s of D.글.걸림) $('#warn').append(make('li', null, s));
 
@@ -179,14 +196,15 @@ function setState(k) {
 // 화면 갱신(requestAnimationFrame)은 창이 뒤로 가면 멈춘다(10-31 앱 안 브라우저에서 「내가 말해 보기」 소리가 안 켜짐) → 재생 시각 알림(timeupdate)으로도 갱신한다.
 function update() {
  const t = v.currentTime, [s0, s1] = D.학생구간, [t0, t1] = D.선배구간;
- if (t < s1 + 0.15) {
+ // 내 차례는 선배가 웃기 시작하기 직전까지 — 말이 끝나고 1초쯤 선배가 웃으며 듣는 사이에 선배 대사가 먼저 뜨지 않게 하고, 말해 보는 사람에게 그만큼 여유를 준다.
+ // 내 상자가 닫히는 자리에서 바로 선배 상자를 연다 — 사이를 두면 0.12초 상자가 사라졌다 뜬다(10-31 Fable P3)
+ if (t < t0 - 0.1) {
   setState('me');
   v.muted = mode === 'try';
   const on = mode === 'try';
   $('#bar').classList.toggle('on', on); if (on) $('#bar').style.width = Math.min(100, Math.max(0, (t - s0) / (s1 - s0) * 100)) + '%';
  } else {
   v.muted = false; $('#bar').classList.remove('on');
-  // 학생 상자가 닫히는 자리에서 바로 선배 상자를 연다 — 사이를 두면 0.12초 상자가 사라졌다 뜬다(10-31 Fable P3)
   setState(t < t1 + 0.4 ? 'senior' : 'none');
  }
 }
@@ -197,7 +215,7 @@ function stop() {
  $('#play').setAttribute('aria-pressed', 'false'); $('#try').setAttribute('aria-pressed', 'false');
 }
 function scene(m) {
- stop(); mode = m;
+ stop(); stopBoth(); mode = m;
  $(m === 'auto' ? '#play' : '#try').setAttribute('aria-pressed', 'true');
  if (v.getAttribute('src') !== srcFor()) v.src = srcFor();
  v.currentTime = 0; v.muted = m === 'try';
@@ -206,6 +224,17 @@ function scene(m) {
 v.addEventListener('ended', () => { setState('none'); $('#bar').classList.remove('on'); mode = null; cancelAnimationFrame(raf); $('#play').setAttribute('aria-pressed', 'false'); $('#try').setAttribute('aria-pressed', 'false'); });
 $('#play').addEventListener('click', () => ($('#play').getAttribute('aria-pressed') === 'true' ? stop() : scene('auto')));
 $('#try').addEventListener('click', () => ($('#try').getAttribute('aria-pressed') === 'true' ? stop() : scene('try')));
+
+// ── 앞 판과 나란히: 앞 판은 소리를 끄고 이번 판 소리만 낸다 ──
+const vOld = $('#vOld'), vNew = $('#vNew');
+vOld.poster = D.앞판포스터; vOld.src = D.앞판; vNew.poster = D.포스터; vNew.src = D.own;
+function stopBoth() { vOld.pause(); vNew.pause(); $('#both').setAttribute('aria-pressed', 'false'); }
+$('#both').addEventListener('click', () => {
+ if ($('#both').getAttribute('aria-pressed') === 'true') { stopBoth(); return; }
+ stop(); vOld.currentTime = 0; vNew.currentTime = 0; $('#both').setAttribute('aria-pressed', 'true');
+ Promise.all([vOld.play(), vNew.play()]).catch(stopBoth);
+});
+vNew.addEventListener('ended', stopBoth);
 
 // ── 목소리: 바꿔 듣기 + 고른 것은 db picks/voice에 바로 저장 ──
 const names = {};

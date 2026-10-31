@@ -117,6 +117,16 @@ AFTER his last word he keeps smiling at the camera with his lips closed, waiting
 Natural, subtle acting — real blinks and breathing; a light breeze moves his hair and students walk past far behind him.
 Keep his face, hair and clothes identical to the first frame in every frame, and keep the look of a photoreal Korean TV drama shot in every frame. Only these two voices; no other speech, no music.`;
 
+// 한 테이크 3판(10-31, 유호님 「다음 판 구워」) — 앞 판은 끝 그림이 없어 구도를 두 배 당기고(얼굴 28% → 60%) 깜빡임이 0이었다. 같은 날 끝 그림이 있던 대사 컷은 구도가 그대로였다.
+// 구도: 시작 그림 + 끝 그림 = 듣는 컷의 36번째 프레임(end-onetake2.png, 같은 구도 · 뒤 학생은 다른 자리 · 고개 기울임이라 시작 그림과 같은 그림을 끝으로 줄 때의 되감김을 피함).
+// 깜빡임: 시각 대신 낱말에 묶어 횟수를 못 박는다(지시문의 초는 잘 안 지켜짐). 손은 끈으로 돌아와 끝 그림과 맞춘다.
+export const 한테이크2글 = `One single continuous take with absolutely no cut, shot like a Korean campus drama by a real person holding the camera right in front of him: small constant natural handheld jitters, but the distance never changes. Keep exactly the framing of the first frame in every frame — a medium shot from mid-chest up, his head the same size as in the first frame, with his varsity jacket, gray hoodie, backpack strap and the sunny campus behind him always visible. The camera never moves closer, never cuts, never switches angle.
+The audio reference has two speakers. FIRST, for about the first 4.5 seconds, a young woman off-camera — the freshman — says the Korean line "네, 맞아요. 길을 잃어서 한참 헤맸어요." While she speaks, Kwon Tae-o does NOT speak: his lips stay closed and he reacts to each part of what she says. On "네, 맞아요" he blinks once — both eyelids fully close for a moment — and gives one small nod. On "길을 잃어서" his eyebrows lift. On "한참 헤맸어요" he blinks once more, tilts his head a little and a soft amused smile grows.
+THEN he answers with the man's lines in the audio, word for word and in sync with them: a short warm laugh first, his eyes closing as he laughs, then "여기 처음 오면 다 헤매요" with an easy smile, then he blinks, then "나는 3학년 권태오예요", then he blinks again, and on "편하게 선배라고 불러요" his hand leaves the strap and he points his thumb at the center of his own chest with a playful grin (hand at chest height, fully inside the frame).
+AFTER his last word his hand returns to the strap, he blinks once and keeps smiling at the camera with his lips closed, head slightly tilted, waiting for her answer.
+A light breeze moves his hair the whole time and students keep walking past far behind him until the very last frame.
+Keep his face, hair and clothes identical to the first frame in every frame, with real skin texture and sunlight on his face, and keep the look of a photoreal Korean TV drama shot in every frame. Only these two voices; no other speech, no music.`;
+
 async function 굽기(작업, ids, { 동시 = 3, 덮어쓰기 = false } = {}) {
  const 판 = 판목록();
  for (const id of ids) if (!판[id]) { console.error(`[영상시험] 모르는 판: ${id}`); process.exit(2); }
@@ -134,6 +144,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   for (const [id, p] of Object.entries(판목록())) console.log(`${id}\t${p.크기}\t${p.참고.join(', ') || '-'}`);
  } else if (명령 === '영상글' && 가 === 'senior' && 나머지[0] === 'onetake') {
   console.log(한테이크글);
+ } else if (명령 === '영상글' && 가 === 'senior' && 나머지[0] === 'onetake2') {
+  console.log(한테이크2글);
  } else if (명령 === '영상글' && 가 === 'senior' && 선배클립[나머지[0]]) {
   console.log(선배영상글(나머지[0]));
  } else if (명령 === '영상글' && 결이름[가] && 클립[나머지[0]]) {
