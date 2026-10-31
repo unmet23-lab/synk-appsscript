@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the attached image. Keep absolutely everything exactly the same — the same night café, chairs on the tables, lamp, counter, plate position, window, street lamp and the small barista walking away outside, same camera. Change only:
+
+1. The strawberry shortcake slice now has one small round bite taken out of its corner, with a few crumbs on the plate.
+2. Mongle's cheeks are puffed full (it is chewing the cake), its eyes squeezed shut in two small curved stitches, a clear felt tear still on its body, a small brave smile. It is eating and crying at the same time. Same size and same place.
+
+Absolutely no text, letters, numbers, logos or symbols. Mongle has no arms and no hands.

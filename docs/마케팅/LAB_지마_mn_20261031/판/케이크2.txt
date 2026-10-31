@@ -1,0 +1,5 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the attached image. Keep absolutely everything exactly the same — the café, the barista and his raised hand, Mongle, the light, the camera. Change only the strawberry cake: the plate now rests solidly ON the wooden counter right in front of Mongle (no floating, no shadow gap under it). No text, letters or symbols anywhere.

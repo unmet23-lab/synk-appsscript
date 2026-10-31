@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "열지 마!",
+ "dur": 0.685,
+ "words": [
+  {
+   "text": "열지",
+   "start": 0.02,
+   "end": 0.283
+  },
+  {
+   "text": "마!",
+   "start": 0.344,
+   "end": 0.685
+  }
+ ],
+ "source": {
+  "key": "b83edbc4913f8246f9316e5f419fe2a5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

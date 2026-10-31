@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1031,
+  "lufs": -17
+ },
+ "made": "2026-10-31T07:24:12.939Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "먹지 마!",
+   "dur": 0.561,
+   "syllablesPerSec": 5.35,
+   "src": "m1.wav",
+   "key": "adbb473d6a2d2502e1c556f3f6db4d3c",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "눕지 마!",
+   "dur": 0.697,
+   "syllablesPerSec": 4.3,
+   "src": "m2.wav",
+   "key": "300e27eb361a03ad25323a1d39c98405",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "열지 마!",
+   "dur": 0.685,
+   "syllablesPerSec": 4.38,
+   "src": "m3.wav",
+   "key": "b83edbc4913f8246f9316e5f419fe2a5",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "가지 마…",
+   "dur": 1.322,
+   "syllablesPerSec": 2.27,
+   "src": "m4.wav",
+   "key": "4c9ca34a331508446541db6a138ef001",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "울지 마.",
+   "dur": 1.064,
+   "syllablesPerSec": 2.82,
+   "src": "m5.wav",
+   "key": "3e236de8fc17977771431881a3213c8d",
+   "words": 2
+  },
+  {
+   "id": "m6",
+   "text": "먹어.",
+   "dur": 0.672,
+   "syllablesPerSec": 2.98,
+   "src": "m6.wav",
+   "key": "7819c009651aa75d6c04852baeb1a49f",
+   "words": 1
+  }
+ ]
+}

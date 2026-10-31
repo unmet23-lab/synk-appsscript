@@ -1,0 +1,70 @@
+{
+  "note": "LAB 몽골 M22 「-지 마」 — 화면 글 편(몽골어 목소리 없음)에 한국어 말만 소리로. 바리스타 = 범수(LAB 머리말), 몽글의 「가지 마…」는 해설 소진이 대신 낸다(몽글은 말풍선과 몽글 소리로만). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_지마_mn_20261031/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1031,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "m1",
+      "text": "먹지 마!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      }
+    },
+    {
+      "id": "m2",
+      "text": "눕지 마!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      }
+    },
+    {
+      "id": "m3",
+      "text": "열지 마!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      }
+    },
+    {
+      "id": "m4",
+      "text": "가지 마…",
+      "emotion": "sad",
+      "tempo": 0.85
+    },
+    {
+      "id": "m5",
+      "text": "울지 마.",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "tonedown",
+      "tempo": 0.9
+    },
+    {
+      "id": "m6",
+      "text": "먹어.",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "tonedown",
+      "tempo": 0.9
+    }
+  ]
+}

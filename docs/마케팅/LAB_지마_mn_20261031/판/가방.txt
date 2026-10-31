@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the same café, counter, espresso machine, plants, warm late-afternoon light, camera angle and the same barista in the same apron. Remove the felt speech bubble and the cake. Change only:
+
+1. Behind the counter next to the barista's legs stands a small brown felt suitcase, half hidden — the same suitcase as in the SECOND attached image.
+2. The barista has spun around in a panic and spreads both arms wide to block the view of the suitcase, eyes wide, an awkward forced smile: he does not want it seen.
+3. Mongle has floated up on tiptoe height at the left, leaning far over the counter, trying to peek past him at the suitcase, eyes curious and bead-bright.
+
+Keep the top 24% of the image calm (plain wall).
+
+Mongle: the coral needle-felted wool ghost-shaped mascot (use the attached reference photos ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with NO white in them). No arms, no legs, no hands, ever.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.

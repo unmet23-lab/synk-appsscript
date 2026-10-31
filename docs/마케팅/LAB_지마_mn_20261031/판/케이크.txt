@@ -1,0 +1,5 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the attached image. Keep absolutely everything exactly the same — the café, the barista and his raised hand, Mongle, the floating strawberry cake, the light, the camera — and remove ONLY the felt speech bubble above the barista's hand, leaving the plain cream wall there. No text, letters or symbols anywhere.

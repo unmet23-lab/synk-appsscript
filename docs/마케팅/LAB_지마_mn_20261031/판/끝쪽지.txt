@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the attached image. Keep absolutely everything exactly the same pixel for pixel — the night café, chairs on the tables, lamp, counter, Mongle, plate, cake, window and the small figure walking away outside. Add only ONE thing:
+
+A small folded cream paper note leaning against the front of the plate, tilted slightly, big enough to read, with two Korean letters handwritten on it in dark brown ink: 먹어
+
+Those two letters must be written correctly: 먹 then 어. They are the only characters in the image. A hand-written note someone left behind. Nothing else changes.

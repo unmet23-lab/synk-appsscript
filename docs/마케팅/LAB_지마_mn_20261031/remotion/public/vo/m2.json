@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "눕지 마!",
+ "dur": 0.697,
+ "words": [
+  {
+   "text": "눕지",
+   "start": 0.02,
+   "end": 0.266
+  },
+  {
+   "text": "마!",
+   "start": 0.348,
+   "end": 0.697
+  }
+ ],
+ "source": {
+  "key": "300e27eb361a03ad25323a1d39c98405",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}
