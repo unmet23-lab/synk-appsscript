@@ -85,7 +85,7 @@ test('legacy runtime repairs are reversible and original parser bytes remain pro
  }
 });
 test('a question applies to every coordinated clause and another actor never becomes the writer',()=>{
- assert.equal(C.PARSER_VERSION,'member-statement-ko-12');
+ assert.equal(C.PARSER_VERSION,'member-statement-ko-13');
  for(const text of ['저는 음악을 좋아하고 요리를 좋아해요?','음악가가 피곤해서 혼자 하는 걸 좋아해요.','음악가가피곤해서혼자하는걸좋아해요','음악가는피곤해서혼자하는걸좋아해요','음악가들이피곤해서혼자하는걸좋아해요','음악가님들이피곤해서혼자하는걸좋아해요','혼자 하는 게 좋아요. 그 방식이 좋아요. 친구가 좋아한다는 뜻이에요.','음악이 좋아요. 그게 취미예요. 친구가 좋아한다는 뜻이에요.','음악이 좋아요. 그게 취미예요. 그 방식이 좋아요. 친구가 좋아한다는 뜻이에요.','음악이 좋아요. 요리가 좋아요. 둘 다 좋아요. 친구가 좋아한다는 뜻이에요.'])assert.deepEqual(C.parseMemberStatement(text).meanings,[],text);
  const text='저는 음악을 좋아해요. 요리를 좋아해요?';assert.equal(C.parseMemberStatement(text).meanings[0].value,'music');
  for(const text of ['음악이 가끔 생각나요. 요리를 좋아해요.','음악이 이제 생각나요. 요리를 좋아해요.','음악이가끔생각나요. 요리를좋아해요.','음악이이제생각나요. 요리를좋아해요.'])assert.ok(C.parseMemberStatement(text).meanings.some(m=>m.value==='cooking'),text);

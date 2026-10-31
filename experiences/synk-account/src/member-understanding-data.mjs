@@ -24,7 +24,7 @@ const emptyFor = version => version >= 2 ? { version, reviews: [], overrides: []
 
 export function validateMemberUnderstanding(value, { now = Date.now(), enforceTime = false } = {}) {
   const version = object(value) && Object.getOwnPropertyDescriptor(value, 'version')?.value;
-  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(version) || !exact(value, version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(version) || !exact(value, version >= 2 ? ['version', 'reviews', 'overrides', 'statements'] : ['version', 'reviews', 'overrides'])
     || !list(value.reviews, MEMBER_UNDERSTANDING_LIMITS.reviews) || !list(value.overrides, MEMBER_UNDERSTANDING_LIMITS.overrides)
     || version >= 2 && !list(value.statements, MEMBER_UNDERSTANDING_LIMITS.statements)) invalid();
   const ids = new Set(), cutoff = enforceTime ? clock(now) : null;
@@ -74,7 +74,7 @@ export function updateMemberUnderstanding(value, action, now = Date.now()) {
   }
   if (action.type === 'statement') {
     if (!exact(action, ['type', 'value', 'replaceId']) || action.replaceId !== null && !uuid(action.replaceId)) invalid();
-    const row = validateMemberUnderstanding({ ...emptyFor(13), statements: [action.value] }, { now, enforceTime: true }).statements[0];
+    const row = validateMemberUnderstanding({ ...emptyFor(14), statements: [action.value] }, { now, enforceTime: true }).statements[0];
     const replaceId = action.replaceId?.toLowerCase() || null, statements = current.statements || [];
     if (replaceId === row.id) invalid();
     const existing = [...current.reviews, ...current.overrides, ...statements].find(item => item.id === row.id);
@@ -83,7 +83,7 @@ export function updateMemberUnderstanding(value, action, now = Date.now()) {
       return current;
     }
     if (replaceId && !statements.some(item => item.id === replaceId)) invalid();
-    const version = Math.max(current.version, { 'member-statement-ko-1': 2, 'member-statement-ko-2': 3, 'member-statement-ko-3': 4, 'member-statement-ko-4': 5, 'member-statement-ko-5': 6, 'member-statement-ko-6': 7, 'member-statement-ko-7': 8, 'member-statement-ko-8': 9, 'member-statement-ko-9': 10, 'member-statement-ko-10': 11, 'member-statement-ko-11': 12, 'member-statement-ko-12': 13 }[row.parserVersion]);
+    const version = Math.max(current.version, { 'member-statement-ko-1': 2, 'member-statement-ko-2': 3, 'member-statement-ko-3': 4, 'member-statement-ko-4': 5, 'member-statement-ko-5': 6, 'member-statement-ko-6': 7, 'member-statement-ko-7': 8, 'member-statement-ko-8': 9, 'member-statement-ko-9': 10, 'member-statement-ko-10': 11, 'member-statement-ko-11': 12, 'member-statement-ko-12': 13, 'member-statement-ko-13': 14 }[row.parserVersion]);
     return validateMemberUnderstanding({ ...current, version, statements: [...statements.filter(item => item.id !== replaceId), row]
       .sort((a, b) => a.confirmedAt.localeCompare(b.confirmedAt) || a.id.localeCompare(b.id, 'en')) }, { now, enforceTime: true });
   }

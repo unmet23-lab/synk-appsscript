@@ -1,7 +1,7 @@
 'use strict';
 // Product vocabulary and clarification replay. Core Ask chooses the next useful
 // question; Core Interpretation/Domain own evidence and confirmed declarations.
-// Frozen ko-1 through ko-11 modules keep saved rows and answer replay unchanged.
+// Frozen ko-1 through ko-12 modules keep saved rows and answer replay unchanged.
 const Legacy = require('./member-statement-v1.cjs');
 const Previous = require('./member-statement-v2.cjs');
 const Previous3 = require('./member-statement-v3.cjs');
@@ -13,8 +13,9 @@ const Previous8 = require('./member-statement-v8.cjs');
 const Previous9 = require('./member-statement-v9.cjs');
 const Previous10 = require('./member-statement-v10.cjs');
 const Previous11 = require('./member-statement-v11.cjs');
+const Previous12 = require('./member-statement-v12.cjs');
 const Ask = require('../../../atlas/ask');
-const PARSER_VERSION = 'member-statement-ko-12';
+const PARSER_VERSION = 'member-statement-ko-13';
 const MEMBER_STATEMENT_LIMITS = Object.freeze({ ...Legacy.MEMBER_STATEMENT_LIMITS, clarifications: 12 });
 const VALUES = Object.freeze({ ...Legacy.MEMBER_STATEMENT_VALUES,
   communication: Object.freeze(['listen-organize', 'share-first', 'written', 'spoken']),
@@ -1850,6 +1851,7 @@ function parseMemberStatement(text,{clarifications=[],parserVersion=PARSER_VERSI
   if(parserVersion===Previous9.PARSER_VERSION)return Previous9.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous10.PARSER_VERSION)return Previous10.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion===Previous11.PARSER_VERSION)return Previous11.parseMemberStatement(text,{clarifications,parserVersion});
+  if(parserVersion===Previous12.PARSER_VERSION)return Previous12.parseMemberStatement(text,{clarifications,parserVersion});
   if(parserVersion!==PARSER_VERSION)fail();
   if(!list(clarifications,MEMBER_STATEMENT_LIMITS.clarifications)||clarifications.some(row=>!exact(row,['questionId','optionId'])||typeof row.questionId!=='string'||typeof row.optionId!=='string'))fail();
   const segments=analyze(text),key=sourceKey(text),answers=Object.create(null),clarificationAnswers=[];let state=stateFor(text,segments,answers,key),question=choose(state,text,segments,answers,key);
@@ -1883,6 +1885,7 @@ function validateMemberStatement(row,{now=Date.now(),enforceTime=false}={}) {
   if(parserVersion===Previous9.PARSER_VERSION)return Previous9.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous10.PARSER_VERSION)return Previous10.validateMemberStatement(row,{now,enforceTime});
   if(parserVersion===Previous11.PARSER_VERSION)return Previous11.validateMemberStatement(row,{now,enforceTime});
+  if(parserVersion===Previous12.PARSER_VERSION)return Previous12.validateMemberStatement(row,{now,enforceTime});
   if(!exact(row,['id','parserVersion','text','at','confirmedAt','meanings','clarifications'])||parserVersion!==PARSER_VERSION||typeof row.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||!list(row.meanings,MEMBER_STATEMENT_LIMITS.meanings)||!row.meanings.length)fail();
   const at=instant(row.at),confirmed=instant(row.confirmedAt),cutoff=enforceTime?typeof now==='string'?instant(now):Number.isSafeInteger(now)?now:fail():null;
   if(confirmed<at||enforceTime&&confirmed>cutoff)fail();const parsed=parseMemberStatement(row.text,{clarifications:row.clarifications});if(parsed.question)fail();

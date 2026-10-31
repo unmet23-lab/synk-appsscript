@@ -11,7 +11,7 @@ function persistentMusic(){let a=[];for(const option of ['confirm','topic','musi
 const row=(parser,input,parsed,clarifications=[])=>({id:'00000000-0000-4000-8000-000000000012',parserVersion:parser.PARSER_VERSION,text:input,at,confirmedAt:at,meanings:parsed.meanings,clarifications});
 
 test('an unrecognized one-time request asks duration before selecting any lasting preference',()=>{
- const r=C.parseMemberStatement(text);assert.equal(r.parserVersion,'member-statement-ko-12');assert.deepEqual(r.meanings,[]);assert.match(r.question.label,/이후에도/);assert.deepEqual(r.question.options.map(o=>o.id).slice(0,2),['confirm','not-current']);
+ const r=C.parseMemberStatement(text);assert.equal(r.parserVersion,'member-statement-ko-13');assert.deepEqual(r.meanings,[]);assert.match(r.question.label,/이후에도/);assert.deepEqual(r.question.options.map(o=>o.id).slice(0,2),['confirm','not-current']);
  for(const option of ['not-current','skip']){const a=answer(text,[],option),next=C.parseMemberStatement(text,{clarifications:a});assert.equal(next.question,null);assert.deepEqual(next.meanings,[]);assert.equal(next.unresolved[0].reason,'condition');}
 });
 test('a lasting preference requires both explicit duration consent and the complete interpretation',()=>{
@@ -44,6 +44,6 @@ test('saved ko11 original source, interpretation and confirmation replay are rec
 });
 test('document13 preserves old confirmed rows and rejects a new parser row in an old document',async()=>{
  const D=await import('../experiences/synk-account/src/member-understanding-data.mjs'),oldText='짧은 설명이 좋아요',oldRow={...row(Old,oldText,Old.parseMemberStatement(oldText)),id:'00000000-0000-4000-8000-000000000011'},before={version:12,reviews:[],overrides:[],statements:[oldRow]},fresh=persistentMusic(),saved=row(C,text,fresh.parsed,fresh.clarifications);
- const next=D.updateMemberUnderstanding(before,{type:'statement',value:saved,replaceId:null},at);assert.equal(next.version,13);assert.deepEqual(next.statements.find(r=>r.id===oldRow.id),oldRow);assert.deepEqual(D.validateMemberUnderstanding(next),next);
- assert.throws(()=>D.validateMemberUnderstanding({...next,version:12}),e=>e.code==='INVALID_PERSONAL_STATE');assert.throws(()=>C.validateMemberStatement({...saved,parserVersion:Old.PARSER_VERSION}),TypeError);
+ const next=D.updateMemberUnderstanding(before,{type:'statement',value:saved,replaceId:null},at);assert.equal(next.version,14);assert.deepEqual(next.statements.find(r=>r.id===oldRow.id),oldRow);assert.deepEqual(D.validateMemberUnderstanding(next),next);
+ assert.throws(()=>D.validateMemberUnderstanding({...next,version:13}),e=>e.code==='INVALID_PERSONAL_STATE');assert.throws(()=>C.validateMemberStatement({...saved,parserVersion:Old.PARSER_VERSION}),TypeError);
 });

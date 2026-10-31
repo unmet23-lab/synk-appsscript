@@ -114,13 +114,13 @@ test('confirmed text survives a new analysis and undo preserves existing correct
   const f = fixture({ state: original }); await f.controller.refresh(); describe(f);
   assert.equal(f.calls.filter(x => x.operation === 'understandingSave').length, 0);
   await f.controller.confirmStatement();
-  const saved = f.saved().state; assert.equal(saved.version, 13); assert.equal(saved.statements.length, 1);
+  const saved = f.saved().state; assert.equal(saved.version, 14); assert.equal(saved.statements.length, 1);
   assert.equal(saved.statements[0].meanings.length, 2); assert.deepEqual(saved.overrides, original.overrides);
   const next = fixture({ state: saved }); await next.controller.refresh();
   assert.deepEqual(next.controller.read().document.statements, saved.statements);
   await next.controller.removeStatement({ id: saved.statements[0].id });
   assert.equal(next.saved().state.statements.length, 0); assert.deepEqual(next.saved().state.overrides, original.overrides);
-  await f.controller.clear(); assert.equal(f.calls.at(-1).params.document_version, 13);
+  await f.controller.clear(); assert.equal(f.calls.at(-1).params.document_version, 14);
 });
 
 test('version-three documents retain their delete acknowledgement and existing corrections', async () => {
@@ -172,7 +172,7 @@ test('successive clarification answers remain local until the newly interpreted 
   ready.text = '혼자 하는 게 좋아요.'; ready.clarifications[0].optionId = 'explanation'; ready.preview.proposals[0].value = 'independent';
   await f.controller.confirmStatement();
   const state = f.saved().state;
-  assert.equal(state.version, 13); assert.equal(state.statements[0].text, clarificationText);
+  assert.equal(state.version, 14); assert.equal(state.statements[0].text, clarificationText);
   assert.equal(state.statements[0].clarifications.length, 4); assert.equal(state.statements[0].meanings[0].value, 'example');
   const reopened = fixture({ state }); await reopened.controller.refresh(); assert.deepEqual(reopened.controller.read().document, state);
 });
@@ -226,7 +226,7 @@ test('statement acknowledgement timeout retries one UUID and preserves other con
 test('a fresh explicit preview after a conflict can save while preserving the other device statement',async()=>{
  const f=fixture();await f.controller.refresh();describe(f,'짧은 설명이 좋아요');
  const Parser=require('../experiences/synk-account/src/member-statement-contract.cjs'),text='예시를 먼저 보는 게 좋아요',parsed=Parser.parseMemberStatement(text),other={id:randomUUID(),parserVersion:Parser.PARSER_VERSION,text,at:iso(NOW),confirmedAt:iso(NOW),meanings:parsed.meanings,clarifications:[]};assert.equal(parsed.question,null);
- f.records.set(f.owner,{state:{version:13,reviews:[],overrides:[],statements:[other]},revision:2});await f.controller.confirmStatement();assert.equal(f.controller.read().error,'conflict');assert.equal(f.saved().state.statements.length,1);
+ f.records.set(f.owner,{state:{version:14,reviews:[],overrides:[],statements:[other]},revision:2});await f.controller.confirmStatement();assert.equal(f.controller.read().error,'conflict');assert.equal(f.saved().state.statements.length,1);
  assert.equal(f.controller.editStatementText(),true);assert.equal(f.controller.previewStatement(),true);f.controller.updateStatementDraft({acceptedIds:f.controller.read().statementEditor.preview.proposals.filter(p=>p.confirmable).map(p=>p.id)});await f.controller.confirmStatement();
  assert.equal(f.controller.read().statementEditor,null);assert.equal(f.saved().state.statements.length,2);assert.deepEqual(f.saved().state.statements.find(r=>r.id===other.id),other);
 });
@@ -240,7 +240,7 @@ function otherDeviceStatement(text = '예시를 먼저 보는 게 좋아요') {
 test('a statement baseline conflict keeps the draft, returns to writing and saves only after a new explicit preview', async () => {
   const f = fixture(); await f.controller.refresh(); describe(f, '짧은 설명이 좋아요');
   const chosen = f.controller.read().statementEditor.acceptedIds; assert.ok(chosen.length);
-  const other = otherDeviceStatement(); f.records.set(f.owner, { state: { version: 13, reviews: [], overrides: [], statements: [other] }, revision: 2 });
+  const other = otherDeviceStatement(); f.records.set(f.owner, { state: { version: 14, reviews: [], overrides: [], statements: [other] }, revision: 2 });
   await f.controller.confirmStatement();
   const state = f.controller.read();
   assert.equal(state.error, 'conflict'); assert.match(state.message, /이해한 뜻 보기/); assert.doesNotMatch(state.message, /다시 고쳐 주세요/);
@@ -269,7 +269,7 @@ test('the automatic retry of a statement save keeps the original preview baselin
   const other = otherDeviceStatement(); let raced = false;
   f.setHook((call, dispatch) => {
     if (call.operation === 'understandingSave' && !raced) {
-      raced = true; f.records.set(f.owner, { state: { version: 13, reviews: [], overrides: [], statements: [other] }, revision: f.saved().revision + 1 });
+      raced = true; f.records.set(f.owner, { state: { version: 14, reviews: [], overrides: [], statements: [other] }, revision: f.saved().revision + 1 });
       throw Object.assign(new Error('CAS'), { code: 'REVISION_CONFLICT' });
     }
     return dispatch();
@@ -291,8 +291,8 @@ test('note, forget and statement-undo conflicts keep their existing message and 
   await f.controller.refresh(); f.records.set(f.owner, { state: { ...empty(), overrides: [remote, row('explanation', ['brief'])] }, revision: 3 });
   await f.controller.clear(); state = f.controller.read();
   assert.equal(state.error, 'conflict'); assert.match(state.message, /다시 고쳐 주세요/); assert.equal(f.saved().state.overrides.length, 2);
-  const other = otherDeviceStatement(), g = fixture({ state: { version: 13, reviews: [], overrides: [], statements: [other] } }); await g.controller.refresh();
-  g.records.set(g.owner, { state: { version: 13, reviews: [], overrides: [], statements: [] }, revision: 2 });
+  const other = otherDeviceStatement(), g = fixture({ state: { version: 14, reviews: [], overrides: [], statements: [other] } }); await g.controller.refresh();
+  g.records.set(g.owner, { state: { version: 14, reviews: [], overrides: [], statements: [] }, revision: 2 });
   await g.controller.removeStatement({ id: other.id }); state = g.controller.read();
   assert.equal(state.error, 'conflict'); assert.match(state.message, /다시 고쳐 주세요/); assert.equal(state.statementEditor, null);
   assert.equal(g.calls.filter(x => x.operation === 'understandingSave').length, 0);

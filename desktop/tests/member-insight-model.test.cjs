@@ -299,7 +299,7 @@ async function confirmedStatement(text, acceptedIds = ['p0', 'p1']) {
   }
   const row = core.confirmMemberStatement({ preview, acceptedIds, id: '00000000-0000-4000-8000-000000000001', at: asOf });
   const saved = schema.updateMemberUnderstanding(document, { type: 'statement', value: row, replaceId: null }, Date.parse(asOf));
-  assert.equal(saved.version,13);assert.equal(row.parserVersion,'member-statement-ko-12');return saved;
+  assert.equal(saved.version,14);assert.equal(row.parserVersion,'member-statement-ko-13');return saved;
 }
 
 test('confirmed natural wording reaches conditional analysis and reversible history without changing raw settings', async () => {
