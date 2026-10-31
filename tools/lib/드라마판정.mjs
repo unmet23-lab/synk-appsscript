@@ -7,7 +7,7 @@
 // · 점수·등급·감정 판정을 만들지 않는다. 받아 적은 글만으로 발음 오류를 단정하지 않는다. 노트 문구는 제품 글 표에 두고 여기는 종류만 돌려준다.
 import {syllables} from './말하기피드백.mjs';
 
-export const DRAMA_JUDGE_VERSION='drama-judge-2';
+export const DRAMA_JUDGE_VERSION='drama-judge-3';
 // 받아 적은 말이 핵심 말과 HIT만큼 닮으면 말한 것, MISS보다 덜 닮으면 빠진 것으로 본다. 그 사이는 애매라 노트를 주지 않는다(시범값).
 export const HIT=0.8,MISS=0.5;
 // 통째로 이만큼 닮으면 모범 대사나 허용 변형을 그대로 말한 것으로 본다.
@@ -138,8 +138,8 @@ function keyCheck(spec,heard){
  }
  return {missing,unsure};
 }
-// 한글 밖의 글자(로마자·키릴·가나·한자) — 받아 적은 글이 어느 말로 적혔는지 본다.
-const OTHER_LETTERS=/[A-Za-zА-Яа-яЁёӨөҮү぀-ヿ一-鿿]/g;
+// 한글 밖의 글자 — 어느 문자권이든(로마자·키릴·가나·한자·버마·타이…) 글자면 센다(GPT 2차 검수 GA2: 몇 문자권만 세면 버마어가 0으로 빠졌다).
+const OTHER_LETTERS=/(?!\p{Script=Hangul})\p{L}/gu;
 /**
  * 소리 관문: 말이 없거나(no_speech) 한국어가 아니거나(not_korean) 사람이 낼 수 없게 빠르면(too_fast) 판정하지 않는다 — 학생의 약점으로 세지 않는다.
  * 받아 적기가 들은 언어(language 'other')는 받아 적은 글이 거의 한글(한글 음절이 다른 글자의 두 배 이상)이면 믿지 않는다 — 1초 남짓한 짧은 대답에서
@@ -148,7 +148,7 @@ const OTHER_LETTERS=/[A-Za-zА-Яа-яЁёӨөҮү぀-ヿ一-鿿]/g;
 export function gate({transcript,seconds=0,language=''}={}){
  const t=text(transcript,1200),n=syllables(t),other=(t.match(OTHER_LETTERS)||[]).length;
  const hangul=n>=1&&n>=2*other;
- if((language==='other'&&!hangul)||(n<2&&(t.match(/[A-Za-zА-Яа-яЁёӨөҮү]/g)||[]).length>=6))return 'not_korean';
+ if((language==='other'&&!hangul)||(n<2&&other>=6))return 'not_korean';
  if(n<1)return 'no_speech';
  if(Number(seconds)>0&&n/Number(seconds)>MAX_SYLLABLES_PER_SECOND)return 'too_fast';
  return 'ok';
@@ -167,12 +167,14 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  const n=syllables(transcript),min=minSyllablesOf(spec),speech=Number(heard.speechSeconds)||0;
  if(n<min&&speech>0&&n/speech<MIN_SYLLABLES_PER_SPEECH_SECOND)return {status:'unclear',verdict:null,note:null,sure:false,checks:null};
  const ending=endingCheck(spec,transcript);
+ const keys=keyCheck(spec,transcript);
  // 통째로 닮아도 끝맺음은 먼저 본다 — 긴 대사에서 「요」 하나 빠진 것은 자모 한두 개 차이라 통째 닮음에 묻힌다.
  // 끝맺음이 애매하면(「…아세요」 대신 「…알아?」) 노트 없이 통과하되 혼자 해냄으로 세지 않는다(10-30 Fable 실측).
- if(whole&&ending.state!=='off'&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
-  return {status,verdict:'pass',note:null,sure:ending.state==='ok',checks:{whole:true,ending}};
+ // 핵심 말도 먼저 본다 — 긴 대사에서 짧은 핵심 말 하나를 바꾼 것(「정문」 → 「후문」)도 통째 닮음 0.9를 넘는다(GPT 2차 검수 GA2).
+ // 빠진 핵심 말이 있으면 통째 통과가 아니고(아래에서 노트), 확신 없는 핵심 말이 있으면 통과하되 혼자 해냄으로 세지 않는다.
+ if(whole&&ending.state!=='off'&&!keys.missing.length&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
+  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&!keys.unsure.length,checks:{whole:true,ending,keys}};
  const length={state:n>=min?'ok':'short',min,got:n};
- const keys=keyCheck(spec,transcript);
  let note=null;
  if(ending.state==='off')note={kind:'ending',want:ending.want,got:ending.got,at:ending.at};
  else if(length.state==='short')note={kind:'length',min};

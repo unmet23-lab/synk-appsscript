@@ -55,7 +55,7 @@ const 결과 = [];
 let 맞음수 = 0, 쓴돈 = 0;
 for (const [i, t] of 목록.takes.entries()) {
   const body = { action: 'take', request_id: crypto.randomUUID(), consent: 'send-once', line_id: t.line, lines_version: LINES.LINES_HASH, lang: 'mn',
-    audio: { mime: t.mime, data: fs.readFileSync(t.file).toString('base64') }, seconds: t.seconds, take: { judged: 0, unheard: 0 } };
+    audio: { mime: t.mime, data: fs.readFileSync(t.file).toString('base64') }, seconds: t.seconds, speech_seconds: t.speechSeconds ?? t.seconds, take: { judged: 0, unheard: 0 } };
   const started = Date.now();
   const res = await 보내기(body);
   const take = res.j?.take || null, 맞음 = res.j?.status === 'ok' && 같다(take, t.expect);

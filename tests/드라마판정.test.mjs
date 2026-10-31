@@ -116,6 +116,9 @@ test('소리 관문: 말 없음·한국어 아님·사람이 낼 수 없는 빠�
  assert.equal(gate({transcript:'Hello, professor.',language:'other'}),'not_korean');
  assert.equal(gate({transcript:'课题哟',language:'other'}),'not_korean');
  assert.equal(gate({transcript:'안녕 Bayar Bold',language:'other'}),'not_korean','한글이 다른 글자의 두 배가 안 되면 들은 언어를 믿는다');
+ // 다른 글자는 문자권을 가리지 않고 센다(GPT 2차 검수 GA2 — 버마어가 0으로 빠졌다).
+ assert.equal(gate({transcript:'네 မင်္ဂလာပါ',language:'other'}),'not_korean');
+ assert.equal(gate({transcript:'မင်္ဂလာပါ ခင်ဗျာ'}),'not_korean');
  assert.equal(gate({transcript:'과제에 대해 질문이 있어서 왔어요 제출 기한이 언제까지예요',seconds:2}),'too_fast');
  assert.equal(gate({transcript:'과제에 대해 질문이 있어서 왔어요',seconds:4}),'ok');
  assert.equal(say(L3,'').status,'no_speech');
@@ -151,4 +154,17 @@ test('칸 명세 점검: 시안 대사는 문제 없음, 틀린 명세는 고를
  assert.ok(problems.includes('최소 길이가 대사보다 김'));
  assert.ok(problems.some(p=>p.startsWith('허용 변형이 통과하지 못함')));
  assert.deepEqual(checkSpec({line:''}),['id 없음','대사 없음']);
+});
+
+test('통째로 닮아도 핵심 말은 먼저 본다 — 짧은 핵심 말 하나를 바꾸면 확신하지 않고, 빠진 핵심 말이 있으면 통째 통과가 아니다(GPT 2차 검수 GA2)',()=>{
+ const spec={id:'t6',line:'길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?',to:'stranger',keys:[{word:'길을 잃었어요',alts:['길을 잃어서']},{word:'정문'},{word:'어디에 있는지',alts:['어디 있는지']}]};
+ const swapped=judgeLine(spec,{transcript:'길을 잃었어요. 새솔대 후문이 어디에 있는지 아세요?'});
+ assert.ok(similarity(spec.line,'길을 잃었어요. 새솔대 후문이 어디에 있는지 아세요?')>=0.9,'통째 닮음은 0.9를 넘는다');
+ assert.deepEqual([swapped.verdict,swapped.note,swapped.sure],['pass',null,false]);
+ assert.deepEqual(judgeLine(spec,{transcript:spec.line}).sure,true);
+ const library={id:'7',line:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?',to:'senior',names:['태오'],keys:[{word:'도서관'},{word:'어디에 있는지'}]};
+ const missing=judgeLine(library,{transcript:'네, 선배님! 그런데 혹시 화장실이 어디에 있는지 아세요?'});
+ assert.deepEqual([missing.checks.whole,missing.verdict,missing.note?.kind,missing.note?.word],[false,'note','missing','도서관'],'빠진 핵심 말이 있으면 통째 통과로 넘기지 않는다');
+ // 소리가 닮은 말(도서실)은 애매라 빠졌다고 단정하지 않는다 — 통과하되 확신 아님.
+ assert.deepEqual([judgeLine(library,{transcript:'네, 선배님! 그런데 혹시 도서실이 어디에 있는지 아세요?'}).sure],[false]);
 });

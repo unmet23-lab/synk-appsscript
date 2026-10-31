@@ -56,11 +56,19 @@ export function judgeModule(source=readFileSync(JUDGE_FILE,'utf8')){
   throw new Error('드라마판정.mjs의 import는 말하기피드백.mjs의 syllables 하나만 옮긴다(talk 사본은 world-speaking-feedback.js를 require한다)');
  const names=[];
  const body=text.replace(imports[0][0],"const { syllables } = require('./world-speaking-feedback.js');")
-  .replace(/^export const ((?:[A-Za-z_$][\w$]*=[^,;()[\]{}'"`\n]*,)+[A-Za-z_$][\w$]*=[^,;()[\]{}'"`\n]*);$/gm,(_,list)=>{for(const m of list.matchAll(/(?:^|,)([A-Za-z_$][\w$]*)=/g))names.push(m[1]);return `const ${list};`;})
+  .replace(/^export const ((?:\s*[A-Za-z_$][\w$]*\s*=[^,;()[\]{}'"`\n]*,)+\s*[A-Za-z_$][\w$]*\s*=[^,;()[\]{}'"`\n]*);[ \t]*$/gm,(_,list)=>{for(const m of list.matchAll(/(?:^|,)\s*([A-Za-z_$][\w$]*)\s*=/g))names.push(m[1]);return `const ${list};`;})
   .replace(/^export (const|function|async function) ([A-Za-z_$][\w$]*)/gm,(_,kind,name)=>{names.push(name);return `${kind} ${name}`;});
  if(/^\s*(export|import)\b/m.test(body))throw new Error('드라마판정.mjs에 옮기지 못하는 import·export 꼴이 있다');
  const hash=createHash('sha256').update(text).digest('hex').slice(0,16);
  return `'use strict';\n// 생성물 — SYNK-appsscript tools/build-world-speaking-talk.mjs가 tools/lib/드라마판정.mjs(ESM, 원본 지문 ${hash})를 CommonJS로 옮겼다. 손으로 고치지 않는다.\n${body.replace(/\n*$/,'\n')}\nmodule.exports = { ${names.join(', ')} };\n`;
+}
+/** 사본이 내보내는 이름(module.exports 줄). */
+export const judgeExports=generated=>(String(generated).match(/^module\.exports = \{ ([^}]*) \};$/m)?.[1]||'').split(',').map(s=>s.trim()).filter(Boolean);
+/** 사본이 정본의 export 이름을 하나도 빠뜨리거나 더하지 않았는지 — 변환이 못 알아본 선언 꼴(GPT 2차 검수 GA1)은 여기서 멈춘다. */
+export async function checkJudgeExports(generated=judgeModule()){
+ const want=Object.keys(await import(pathToFileURL(JUDGE_FILE).href)).sort(),got=[...judgeExports(generated)].sort();
+ if(JSON.stringify(want)!==JSON.stringify(got))throw new Error(`드라마 판정 사본의 export가 정본과 다르다 — 정본 ${want.join(',')} · 사본 ${got.join(',')}`);
+ return got;
 }
 /** 녹음 상한 초(대사마다) — 학습자가 1초에 2음절쯤 말한다고 보고 시작 머뭇거림 4초를 더한다. 8~30초. 함수는 여기에 5초를 더 받는다. */
 export const answerSecOf=line=>Math.min(30,Math.max(8,Math.ceil(syllables(line)/2)+4));
@@ -101,7 +109,9 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const talk=args.indexOf('--talk');
  if(talk>=0){
   const dir=args[talk+1];if(!dir||dir.startsWith('--'))throw new Error('--talk 다음에 SYNK-talk 폴더를 주세요');
-  const out={[TALK_FILES.core]:coreModule(),[TALK_FILES.items]:itemsModule(bank),[TALK_FILES.judge]:judgeModule(),[TALK_FILES.lines]:linesModule(dramaLines(await readEpisodes()))};
+  const judgeCopy=judgeModule();
+  await checkJudgeExports(judgeCopy);
+  const out={[TALK_FILES.core]:coreModule(),[TALK_FILES.items]:itemsModule(bank),[TALK_FILES.judge]:judgeCopy,[TALK_FILES.lines]:linesModule(dramaLines(await readEpisodes()))};
   let stale=0;
   for(const [rel,content] of Object.entries(out)){
    const file=join(resolve(dir),rel);

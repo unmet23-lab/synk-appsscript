@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
-import {judgeModule,dramaLines,readEpisodes,linesModule,linesHash,answerSecOf,TALK_FILES,JUDGE_FILE} from '../tools/build-world-speaking-talk.mjs';
+import {judgeModule,judgeExports,checkJudgeExports,dramaLines,readEpisodes,linesModule,linesHash,answerSecOf,TALK_FILES,JUDGE_FILE} from '../tools/build-world-speaking-talk.mjs';
 import * as judge from '../tools/lib/드라마판정.mjs';
 import {syllables} from '../tools/lib/말하기피드백.mjs';
 
@@ -31,7 +31,11 @@ test('판정 사본: CommonJS로 옮겨 정본의 이름을 모두 내보내고,
  assert.deepEqual(plain(copy.nextTake({result:copy.judgeLine(lines[0].spec,{transcript:'',seconds:3}),attempt:0,unheard:3})),plain(judge.nextTake({result:judge.judgeLine(lines[0].spec,{transcript:'',seconds:3}),attempt:0,unheard:3})));
 });
 
-test('판정 사본은 옮길 수 없는 꼴에서 멈춘다 — 다른 import, 이름 없는 export', ()=>{
+test('판정 사본은 옮길 수 없는 꼴에서 멈추고, 한 줄에 여럿인 선언은 띄어 써도 이름을 모두 모은다 — 빌드는 정본 export와 이름이 다르면 멈춘다(GPT 2차 검수 GA1)', async()=>{
+ await checkJudgeExports();
+ const header="import {syllables} from './말하기피드백.mjs';\n";
+ assert.deepEqual(judgeExports(judgeModule(header+'export const FIRST = 1, SECOND = 2;\n')),['FIRST','SECOND']);
+ await assert.rejects(checkJudgeExports(judgeModule(fs.readFileSync(JUDGE_FILE,'utf8')+'\nexport const EXTRA=1;\n')),/export가 정본과 다르다/);
  const text=fs.readFileSync(JUDGE_FILE,'utf8');
  assert.throws(()=>judgeModule(`import {x} from './다른.mjs';\n${text}`),/syllables 하나만/);
  assert.throws(()=>judgeModule(`${text}\nexport default 1;\n`),/옮기지 못하는/);
