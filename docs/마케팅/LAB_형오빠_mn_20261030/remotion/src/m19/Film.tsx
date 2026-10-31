@@ -256,9 +256,15 @@ const Sfx: React.FC<{ file: string; at: number; vol: number }> = ({ file, at, vo
     <Audio src={staticFile(`sfx/${file}`)} volume={vol * MASTER} />
   </Sequence>
 );
+// bgm.wav는 18초짜리라 27.4초 영상에서 18초 뒤가 완전 무음이었다 — 곡 끝 여운(17초~)에 겹쳐 한 번 더 깐다(10-31 검수)
+const BGM_AGAIN = 17;
+const bgmVol = (f: number) => 0.11 * MASTER * interpolate(f, [0, 8, fr(T.total) - 30, fr(T.total)], [0, 1, 1, 0], clamp);
 const Sound: React.FC = () => (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.11 * MASTER * interpolate(i, [0, 8, fr(T.total) - 30, fr(T.total)], [0, 1, 1, 0], clamp)} />
+    <Audio src={staticFile('bgm.wav')} volume={bgmVol} />
+    <Sequence from={fr(BGM_AGAIN)} layout="none">
+      <Audio src={staticFile('bgm.wav')} volume={(i) => bgmVol(i + fr(BGM_AGAIN))} />
+    </Sequence>
     <Sfx file="bell.wav" at={0.05} vol={0.3} />
     <Sfx file="pop.wav" at={T.boy} vol={0.22} />
     <Vo id="h1" at={T.boy + 0.05} />

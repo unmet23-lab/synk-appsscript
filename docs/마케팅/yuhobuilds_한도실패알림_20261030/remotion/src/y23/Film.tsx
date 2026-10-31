@@ -153,7 +153,7 @@ const Real: React.FC = () => {
   const top = 900 - (cy + panY) * z;
   return (
     <AbsoluteFill style={{ background: '#000' }}>
-      <Img src={staticFile('real/chat_storm.png')} style={{ position: 'absolute', left, top, width: 1080 * z, height: 2400 * z }} />
+      <Img src={staticFile('real/chat_storm2.png')} style={{ position: 'absolute', left, top, width: 1080 * z, height: 2400 * z }} />
       <div style={{ position: 'absolute', left: X0, top: 150, padding: '10px 22px 12px', borderRadius: 999, background: 'rgba(14,12,16,0.86)', fontFamily: KO, fontWeight: 800, fontSize: 36, color: TEXT, boxShadow: `inset 0 0 0 2px ${EDGE}` }}>
         실제로 온 알림
       </div>
@@ -638,7 +638,7 @@ export const LimitFilm: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <Scene a={B.loop} b={B.night}>
         <Loop />
       </Scene>
-      <Scene a={B.night} b={B.twist} drift={0.1} zoom={0.0006}>
+      <Scene a={B.night} b={B.twist} drift={0.1} zoom={0.0003}>
         <Night />
       </Scene>
       <Scene a={B.twist} b={B.rule}>
@@ -650,10 +650,11 @@ export const LimitFilm: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <Scene a={B.rest} b={B.resume} drift={0} zoom={0.0004}>
         <Rest />
       </Scene>
-      <Scene a={B.resume} b={B.cta} drift={0.22}>
+      {/* 긴 장면에 기본 확대(프레임당 0.0007)를 그대로 쓰면 8.3초에 17%가 커져 카드가 화면 양끝을 넘고 제목 첫 글자가 잘린다(10-31 검수) — 4% 안팎으로 */}
+      <Scene a={B.resume} b={B.cta} drift={0.22} zoom={0.00016}>
         <After />
       </Scene>
-      <Scene a={B.cta} b={B.end} drift={0.22}>
+      <Scene a={B.cta} b={B.end} drift={0.22} zoom={0.0002}>
         <Cta />
       </Scene>
       <Scene a={B.end} b={TOTAL} drift={0.15} zoom={0.0008}>

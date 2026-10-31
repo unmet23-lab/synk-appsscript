@@ -301,12 +301,18 @@ const FX_SFX: Record<Scene['fx'], { file: string; vol: number; dur?: number; at?
   bell: { file: 'bell.wav', vol: 0.4, at: 0.02 },
   rain: { file: 'rain.wav', vol: 0.32, dur: 2.72, at: 0 },
   snow: { file: 'sparkle.wav', vol: 0.22, at: 0.1 },
-  buzz: { file: 'buzz.wav', vol: 0.42, at: 0.05 },
+  buzz: { file: 'buzz.wav', vol: 0.16, at: 0.05 }, // 0.42는 「전화가 와요」 목소리와 크기가 같아 말을 묻었다(10-31 검수)
 };
 
+// bgm.wav는 18초짜리라 20초 영상의 끝 2초가 비고 마지막 대사 앞이 완전 무음이었다 — 곡 끝 여운(17초~)에 겹쳐 한 번 더 깐다(10-31 검수)
+const BGM_AGAIN = 17;
+const bgmVol = (f: number) => 0.11 * MASTER * interpolate(f, [0, 8, fr(T.total) - 30, fr(T.total)], [0, 1, 1, 0], clamp);
 const Sound: React.FC = () => (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.11 * MASTER * interpolate(i, [0, 8, fr(T.total) - 30, fr(T.total)], [0, 1, 1, 0], clamp)} />
+    <Audio src={staticFile('bgm.wav')} volume={bgmVol} />
+    <Sequence from={fr(BGM_AGAIN)} layout="none">
+      <Audio src={staticFile('bgm.wav')} volume={(i) => bgmVol(i + fr(BGM_AGAIN))} />
+    </Sequence>
     {SCENES.map((sc, i) => {
       const x = FX_SFX[sc.fx];
       return (
