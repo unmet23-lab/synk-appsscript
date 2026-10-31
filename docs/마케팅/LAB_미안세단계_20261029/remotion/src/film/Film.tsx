@@ -122,7 +122,7 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
       {pairRows.map(([ko, en], k) => (
         <div key={k} style={{ marginTop: k ? 10 : 0 }}>
           <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.12 }}>{ko}</div>
-          <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: m.size, color: MEAN, lineHeight: 1.14 }}>{en}</div>
+          <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: m.size, color: L.meanColor ?? MEAN, lineHeight: 1.14 }}>{en}</div>
         </div>
       ))}
     </div>
@@ -174,7 +174,7 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
           {koLine}
           {c.roman ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 40, color: '#8A7563', lineHeight: 1.15, marginTop: 2 }}>{c.roman}</div> : null}
           {pairRows ? null : (
-            <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: m.size, color: MEAN, lineHeight: 1.16, marginTop: 8, whiteSpace: 'pre-line' }}>
+            <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: m.size, color: L.meanColor ?? MEAN, lineHeight: 1.16, marginTop: 8, whiteSpace: 'pre-line' }}>
               {m.text}
               {m.more ? <span style={{ color: CORAL, opacity: moreOn ? 1 : 0, display: 'block' }}>{m.more}</span> : null}
             </div>

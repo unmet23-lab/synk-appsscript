@@ -76,6 +76,7 @@ export type LocText = {
   font: string | null; // 뜻 줄 글꼴 줄 — null이면 Inter Tight
   levelWord: string; // 단계 표 앞말(LV)
   levelTail?: string; // 단계 표 뒷말(간체 「第○级」)
+  meanColor?: string; // 뜻 줄 색 — 간체는 더 어둡게(획이 굵어 올리기 전 검사 ⑤-2가 흰 말풍선을 「흰 기본 글자」로 오인했다, 10-31)
   teacher: string; // 선생님 이름표(시험관이 「이 할머니가 선생님인가」를 확신 못 함)
   you: string; // 화살표 옆 「네가 = ○」의 ○
   replay: string; // 되감기 칸 표시
@@ -113,6 +114,7 @@ export const LOCALES: Record<Loc, LocText> = {
     levelWord: '第',
     levelTail: '级',
     teacher: '老师',
+    meanColor: '#8A2414',
     you: '你',
     replay: '回放',
     student: '学生',
