@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {slotsFromText,normalizeFeedback,normalizeTurn,nextStep,audioGate,priceVertex,priceClaude,vertexSchema,claudeSchema,LISTEN_SCHEMA,TURN_SCHEMA,syllables,taskBrief,listenPrompt,reserveEstimate} from '../../../tools/lib/말하기피드백.mjs';
+import {slotsFromText,normalizeFeedback,normalizeTurn,nextStep,audioGate,heardFromTranscription,priceVertex,priceClaude,vertexSchema,claudeSchema,LISTEN_SCHEMA,TURN_SCHEMA,syllables,taskBrief,listenPrompt,reserveEstimate} from '../../../tools/lib/말하기피드백.mjs';
 import STRINGS from '../../brand-opening/world-strings.mjs';
 import {t} from '../../brand-opening/world-lang.mjs';
 import {bankHash,coreModule,itemsModule,TALK_FILES} from '../../../tools/build-world-speaking-talk.mjs';
@@ -102,6 +102,25 @@ test('소리 관문과 값 셈',()=>{
  assert.ok(Math.abs(c.list-(400*2+1200*.2+600*10)/1e6)<1e-12);
  assert.ok(reserveEstimate({model:'gemini-3.8-flash',seconds:80})>0);
  assert.equal(reserveEstimate({model:'gemini-3.8-flash',seconds:NaN}),null);assert.equal(reserveEstimate({model:'gemini-3.8-flash',seconds:-1}),null);
+});
+
+test('짧은 대답의 들은 언어: 받아 적은 글이 거의 한글이면 받아 적기가 돌려준 다른 언어를 믿지 않는다 — 역할극 차례 · 문항 연습 모두(10-31 드라마 리허설 「과제요.」 → zh와 같은 길)',()=>{
+ const rp=bank.roleplays[0];
+ // OpenAI 파일 받아 적기는 1초 남짓한 대답에서 들은 언어를 틀린다 — 글은 한글로 맞게 적었다.
+ for(const [text,languages] of [['네, 맞아요.',[{code:'zh'}]],['가져갈게요.',['ja']],['여기서 마실게요.',['zh','en']]]){
+  const heard=heardFromTranscription({text,languages});
+  assert.equal(heard.audio.language,'ko',text);
+  assert.notEqual(normalizeTurn({heard:heard.transcript,audio:heard.audio,...slotsFromText(heard.transcript),better:'',tip:''},{roleplay:rp,stepId:'place'}).status,'not_korean',text);
+  assert.notEqual(audioGate(heard).status,'not_korean',text);
+ }
+ // 한국어가 아닌 말은 그대로 다른 언어다 — 로마자 · 키릴 · 한자 · 가나 · 버마 글자로 적힌 대답.
+ for(const [text,code] of [['I will take it to go.','en'],['Би авч явна.','mn'],['我要带走。','zh'],['持ち帰ります。','ja'],['ယူသွားမယ်။','my']])
+  assert.equal(heardFromTranscription({text,languages:[code]}).audio.language,'other',text);
+ // 한글이 다른 글자의 두 배가 안 되면(「coffee 주세요」) 받아 적기의 언어를 따른다. 한국어가 들렸다고 하면 지금처럼 ko · mixed, 목록이 비면 ko.
+ assert.equal(heardFromTranscription({text:'coffee 주세요',languages:['en']}).audio.language,'other');
+ assert.equal(heardFromTranscription({text:'네, 맞아요.',languages:['ko']}).audio.language,'ko');
+ assert.equal(heardFromTranscription({text:'네, 맞아요.',languages:['ko','mn']}).audio.language,'mixed');
+ assert.equal(heardFromTranscription({text:'I will take it to go.',languages:[]}).audio.language,'ko');
 });
 
 test('출력 꼴: Vertex는 대문자 형·속성 순서, Claude는 모든 객체에 additionalProperties:false',()=>{

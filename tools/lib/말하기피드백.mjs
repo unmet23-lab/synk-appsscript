@@ -218,13 +218,22 @@ export function audioGate(raw){
  * 이 모델은 글과 들은 언어만 준다 — 소리 상태(일부 안 들림·거의 안 들림)와 전달 관찰은 지어내지 않는다: 글이 비면 말 없음, 있으면 clear,
  * 전달 관찰은 빈 목록이라 쓰기 단계가 전달력을 보류한다. 언어는 코드 목록으로 — 한국어가 없으면 other, 다른 말과 함께면 mixed,
  * 목록이 비면(믿을 만한 예측이 없다는 뜻) ko로 두고 audioGate의 글자 검사에 맡긴다.
+ * 다만 받아 적은 글이 거의 한글이면(mostlyHangul) 목록에 한국어가 없어도 ko다 — 1초 남짓한 짧은 대답에서 들은 언어를 틀린다(10-31 드라마
+ * 리허설: 「과제요.」를 한글로 맞게 적고 언어는 zh). 다른 말을 한글 소리로 옮겨 적는 일은 언어 힌트를 줄 때 났고(10-30 측정) 힌트는 주지 않는다.
  */
 export function heardFromTranscription(body){
  const transcript=text(body?.text,1200);
  const codes=(Array.isArray(body?.languages)?body.languages:[]).map(l=>typeof l==='string'?l:l?.code).filter(c=>typeof c==='string').map(c=>c.trim().toLowerCase()).filter(Boolean);
  const korean=codes.some(c=>c==='ko'||c==='kor'||c.startsWith('ko-'));
- const language=!codes.length?'ko':!korean?'other':codes.length>1?'mixed':'ko';
+ const language=!codes.length?'ko':korean?(codes.length>1?'mixed':'ko'):mostlyHangul(transcript)?'ko':'other';
  return {transcript,audio:{speech:transcript.replace(/[\s(?)]/g,'')?'clear':'none',language},delivery_notes:[],speech_seconds:null};
+}
+// 한글 밖의 글자 — 어느 문자권이든(로마자·키릴·한자·가나·버마…) 글자면 센다. 드라마 판정 gate(tools/lib/드라마판정.mjs)와 같은 선이다.
+const OTHER_LETTERS=/(?!\p{Script=Hangul})\p{L}/gu;
+/** 받아 적은 글이 거의 한글인가 — 한글 음절이 하나 이상이고 다른 글자의 두 배 이상. */
+export function mostlyHangul(value){
+ const t=text(value,1200),n=syllables(t);
+ return n>=1&&n>=2*(t.match(OTHER_LETTERS)||[]).length;
 }
 // 사람은 한국어를 1초에 9음절보다 빨리 말하지 못한다. 녹음 길이에 비해 받아 적은 음절이 너무 많으면 지어낸 받아쓰기로 보고 피드백하지 않는다.
 const MAX_SYLLABLES_PER_SECOND=9;
