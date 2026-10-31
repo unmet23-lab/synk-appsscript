@@ -97,8 +97,8 @@
 |---|---|---|
 | `/opt/synk/releases` (A·B 부팅 디스크) | 지금 판 + 최근 5판 | 되돌리기는 바로 앞 판으로 간다. 5판이면 바쁜 날 하루치다(10-08~20 하루 최대 12판, 보통 2~6). 판마다 약 55MB이고, 원문은 GCS DR 묶음과 PC 후보 폴더에 남는다 |
 | 회사 도커 이미지(A·B) | 남긴 릴리스의 이미지 + 쓰이는 이미지 | 이미지가 없으면 그 판으로 못 돌아간다. 층을 나눠 쓰므로 옛 태그를 지워도 줄어드는 양은 작다. `--force`는 쓰지 않는다 |
-| `/srv/synk/backups` 펼친 스냅숏(A) | 최근 3개 | 압축본과 같은 내용이다. 사흘치만 빠른 로컬 복원용으로 둔다 |
-| `/srv/synk/backup-archives`(A) | 14일 안 + 적어도 최근 10개, 업로드 성공 표시(`.uploaded`)가 없는 것은 늘 남김 | GCS와 Drive가 전부를 갖는다. 로컬은 2주치 빠른 복원용이다. 회사 데이터와 같은 50GB 디스크다 |
+| `/srv/synk/backups` 펼친 스냅숏(A) | ~~최근 3개~~ → 10-31부터 **최근 1개**, 백업마다 자동([backup-retention](../backup-retention/README.md)) | 압축본과 같은 내용이다. 작업실 영상이 매 백업에 통째로 들어 한 벌이 1GB를 넘는다 |
+| `/srv/synk/backup-archives`(A) | ~~14일 안 + 적어도 최근 10개~~ → 10-31부터 **업로드 확인된 최근 3벌**, 백업마다 자동([backup-retention](../backup-retention/README.md)). 업로드 확인이 없는 것은 늘 남김 | GCS와 Drive가 전부를 갖는다. 14일 규칙은 손으로만 돌아 10-22 한 번 뒤 다시 찼다(10-31 `DISASTER_DISK_SPACE_LOW`) |
 | `/srv/synk/stage`(A·B) | 최근 2개 | 델타 전송은 지금·앞 판만 쓴다 |
 | `/opt/synk/ha-qa/infra-dr-*`(B) | 최근 1개 | 일회용 복원 사본(회차당 1~2GB)이다. 새 복원에 백업×12+2GB(약 8.7GB)가 필요한데 여유는 약 8GB였다 |
 | `/srv/synk/static/sets` | 최근 5개 + 지금 묶음 | 되돌리기용이다. 하드링크라 거의 공간을 쓰지 않는다. `node deploy/static/swap.mjs prune-plan`(읽기만, 지울 묶음·끊긴 쓰기 `.work-*`·실제로 비는 바이트·계획 해시) → `prune --plan-sha256 <해시>`(같은 계획일 때만 지움, 쓰기 노드 잠금 안). 10-22 운영 `prune-plan`: 지금 `a8270c62…`·시험 묶음 `e841d3ee…` 둘 다 남김, 지울 것 0 |

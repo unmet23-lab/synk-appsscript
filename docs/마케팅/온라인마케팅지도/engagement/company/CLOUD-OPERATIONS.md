@@ -37,6 +37,18 @@
 
 v3 후보 `b7f10d57…`의 격리 로컬 QA는 **3,340/3,340·실패/건너뜀 0·원본 불변**이다(`-qa-v3/result.json`, 22:13–22:18 KST). 운영 자격증명과 외부 통신을 차단한 별도 사본으로 실행했다. Linux QA·후보 배포 승인을 대신하지 않는다. 22:18 운영 재확인에서도 판 38·백업 실패·여유 약 10.7GB는 같았으며, 회사 컨테이너 CPU 15.11%·메모리 512MiB였으므로 앞의 낮은 CPU 한 표본을 상시 상태로 보지 않는다.
 
+<a id="local-backup-retention-20261031"></a>
+## 주 노드 백업 디스크 정리 · 로컬 백업 사본 보존 상한 (2026-10-31 운영 반영)
+
+10-31 03:36 KST 정기 백업부터 재해 복구 캡처가 `DISASTER_DISK_SPACE_LOW`로 실패해 사슬 39의 반영 전 백업이 멈췄다. 주 노드 `/srv/synk`(52.5GB, 여유 10.73GB)를 로컬 백업 사본이 채웠다 — 작업실 압축본 170세트 20.4GB(10-08부터 전부) · 펼친 사본 32개 14.65GB. 줄이는 장치는 손 도구 `deploy/retention.py`(10-22 한 번)뿐이었고, 작업실 영상이 매 백업에 통째로 들어(라이브 studio-media 61개 1.37GB) 한 벌이 1GB를 넘었다.
+
+- **원격 사본(읽기):** GCS `company/production/`(434개, PC unmet27 자격 목록)에 로컬 작업실 압축본 170개가 모두 같은 이름·크기로 있고, 지운 167개는 실행 안에서 객체 md5까지 맞았다. 끝난 주의 마지막 판(10-11·10-18·10-25)은 unmet23 `SYNK_금고`에, 날마다의 재해 복구 묶음(작업실 압축본을 품음)은 77yuhbs `server-independent/company`에 있다. 재해 복구 묶음 넷 중 GCS에 없는 10-11·10-20 둘(0.72GB)은 남겼다.
+- **정리(유호님 「웅 진행해」 — 허락 문장의 대상):** [`deploy/backup-retention/local-retention.py`](deploy/backup-retention/README.md)를 손으로 plan → dry(167개 GCS md5 대조) → 실제. 계획 `5682d077…` 532항목 = 압축본 167세트(10-08 ~ 10-29 11:30, 17.63GB) + 펼친 사본 31개(10-21 ~ 10-30 01:16, 13.28GB). 여유 10.73 → **41.65GB**(다음 캡처 예상 필요량 약 11.09GB). 남김: 압축본 최신 3벌 · 펼친 사본 최신 1개 · 재해 복구 묶음 전부 · 운영 데이터 `recovery-final-*`. 실제 실행 둘은 지우기 전 `RELEASE_LOCK_HELD`로 멈췄다(1분 상태 점검이 매분 :44~:48초에 배포 잠금을 공유로 쥠 — 손 실행은 시작과 md5 대조 뒤 두 번 본다) → 노드 :50 무렵 시작으로 두 확인을 그 칸 밖에 두어 통과.
+- **보존 상한(두 노드, 자동):** 같은 스크립트를 백업 drop-in `40-local-retention.conf`(`ExecStartPost=-…/local-retention.py --apply`, DR drop-in보다 앞)로 설치 — `/opt/synk/backup-retention/655bb1eb…/`. 업로드가 확인된 압축본 3벌 · 펼친 사본 1벌만 남긴다. 설치 전후 HA 가드 검사 0 · DR drop-in 바이트 그대로 · `ExecStartPost` 차례 [보존(ignore_errors=yes), DR(no)]. 리눅스 시험 15/15(예비 노드 임시 폴더, Python 3.11.2).
+- **검수:** GPT 2건(반영 2 — 손 삭제도 같은 실행에서 GCS md5 대조 필수 · 설치 도구의 `ExecStartPost` 명령 단위 파싱과 실패 때 drop-in 되돌림) → 다시 0건 · 아르곤 끝 판 0건(`.tmp/검수/company-local-retention-20261031*`).
+- **확인 백업(서비스 한 번, failed 상태 풀고):** 1회차(13:38:58Z, `52cc530f…`)는 `OFFSITE_BACKUP_COMPLETE` → `LOCAL_RETENTION_COMPLETE`(4개 2.24GB, 여유 41.40GB) 뒤 DR 캡처가 `RUNNING_CONTAINER_SET_CHANGED`로 실패 — 캡처가 컨테이너 이름을 재는 13:41:05에 spaceship 이미지의 짧은 컨테이너(13:41:04~12, 이름 없음 · 네트워크 없음)가 떠 있었다. 공간과는 상관없고, 띄운 주체는 못 찾았다(아래 남은 것). 2회차(13:52:20Z, `6eaeb598…`)는 `OFFSITE_BACKUP_COMPLETE` → `LOCAL_RETENTION_COMPLETE`(4개 2.37GB) → **`DISASTER_RECOVERY_BACKUP_COMPLETE`**, 서비스 inactive · success, 새 DR 묶음 `synk-server-recovery-2026-10-31T13-56-00Z-1050611`(1.56GB, 운영 38판, 업로드 · md5 대조 complete). 끝 상태: 압축본 3세트 · 펼친 사본 1개 · DR 묶음 4(올린 둘 + GCS에 없는 10-11 · 10-20) · 여유 41.12GB. 사슬 39의 반영 전 백업 요청 기록은 아직 없어(이 실행과 안 겹침) 그 세션이 RUNBOOK-39 6단계부터 잇는다.
+- **남은 것:** 영상이 매 백업에 통째로 드는 한 캡처 요구량(`3 × 압축본 + 2 × 펼친 자료 + …`)이 영상의 약 5배로 늘어, 하루 약 0.17GB씩이면 보존 상한만으로는 약 2~3주 뒤(11월 중순) 다시 모자란다 — 영상을 한 번만 백업하거나 객체 저장소로 옮기는 회사 판이 필요하다. 저널의 `SYNK_LOCAL_RETENTION LOCAL_RETENTION_HEADROOM_LOW`가 먼저 알린다(경보는 아님). 1회차를 떨어뜨린 짧은 spaceship 컨테이너가 무엇인지 — 배포된 HA · 운영 코드와 cron에 `docker run`이 없고, 그 순간 1분 상태 점검의 앞단 가드가 평소 5초 대신 22초 걸렸다. 주 노드 부팅 디스크도 stage 사본 32개(각 0.29GB) · 릴리스 24판이 쌓인다(여유 21GB / 42GB). 도구·실행 기록 `.tmp/primary-backup-space-20261031/`(워크트리 nostalgic-lederberg-82468b — 공용 작업본 같은 경로에 사본).
+
 <a id="post-gone-39-20261031"></a>
 ## 게시 성과 「목록에 없는 글」 놓침 고침 · 사슬 39 (2026-10-31 로컬 준비 · 원격은 반영 전 백업에서 멈춤 — 주 노드 백업 디스크)
 

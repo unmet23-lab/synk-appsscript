@@ -1,0 +1,2 @@
+[Service]
+ExecStartPost=-/usr/bin/python3 -I -B /opt/synk/backup-retention/@SHA256@/local-retention.py --apply
