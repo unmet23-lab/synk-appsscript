@@ -59,6 +59,29 @@ test('대사 은행: 대본의 학생 줄 9(scene) + 처음 보는 대사 8(unse
  assert.match(linesModule(lines),new RegExp(`LINES_HASH = "${linesHash(lines)}"`));
 });
 
+test('검수 관문: 검수:passed와 지금 내용의 검수지문이 함께 있을 때만 passed로 싣고, 지문이 다르거나 없거나 검수 값이 passed가 아니면 draft(지문이 다르면 알린다)', async()=>{
+ const [ep]=await readEpisodes();
+ const entry=dramaReviewRows(ep).find(e=>e.row.id==='s1e01-t4'),hash=dramaSpecHash(dramaSpecUnit(entry,ep.id));
+ const withRow=row=>({...ep,처음보는대사:ep.처음보는대사.map(r=>r.id==='s1e01-t4'?row:r)});
+ const statusOf=(row,stale=[])=>dramaLines([withRow(row)],{onStale:id=>stale.push(id)}).find(l=>l.id==='s1e01-t4').review.status;
+ const {검수:_a,검수지문:_b,...bare}=entry.row;
+ assert.equal(statusOf({...bare,검수:'passed',검수지문:hash}),'passed');
+ const stale=[];
+ assert.equal(statusOf({...bare,검수:'passed',검수지문:'0'.repeat(16)},stale),'draft','지문이 다르면 draft');
+ assert.deepEqual(stale,['s1e01-t4'],'지문이 다르면 알린다');
+ assert.equal(statusOf({...bare,검수:'passed'}),'draft','지문이 없으면 draft');
+ assert.equal(statusOf({...bare,검수:'pass',검수지문:hash}),'draft','검수 값이 passed가 아니면 draft');
+ assert.equal(statusOf({...bare,검수지문:hash}),'draft','검수 값이 없으면 draft');
+ // 지문은 명세 · 대사 · 판정 판을 덮는다 — 명세를 고치면 같은 지문으로는 통과가 풀린다.
+ const changed={...bare,검수:'passed',검수지문:hash,명세:{...bare.명세,minSyllables:(bare.명세.minSyllables||6)+1}};
+ assert.equal(statusOf(changed),'draft','명세를 고치면 통과가 풀린다');
+ assert.equal(statusOf({...bare,검수:'passed',검수지문:hash,말:bare.말.replace('복사실','복사실이')}),'draft','대사를 고치면 통과가 풀린다');
+ // 처음 보는 대사의 판정 명세에는 free가 붙고, 장면 대사에는 붙지 않는다(drama-judge-4).
+ const lines=dramaLines([ep]);
+ assert.ok(lines.filter(l=>l.kind==='unseen').every(l=>l.spec.free===true));
+ assert.ok(lines.filter(l=>l.kind==='scene').every(l=>!('free' in l.spec)));
+});
+
 test('칸 명세를 통과하지 못하는 대사가 하나라도 있으면 사본을 만들지 않는다(조용히 빼지 않는다)', async()=>{
  const [ep]=await readEpisodes();
  const broken={...ep,처음보는대사:[...ep.처음보는대사,{id:'s1e01-bad',말:'괜찮아요.',명세:{to:'staff',keys:[{word:'없는 말'}]}}]};

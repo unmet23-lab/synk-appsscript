@@ -323,7 +323,10 @@ test('드라마 대사 — 반영: 통과한 줄에만 검수:passed와 검수�
     assert.deepEqual(doc.results[1].fixes, ['keys[0].alts에 「반납일이」 더함']);
     const status = lines => Object.fromEntries(lines.map(l => [l.id, l.review.status]));
     const built = status(dramaLines([(await freshImport(file)).default]));
-    assert.equal(built['s1e01-1'], 'passed'); assert.equal(built['s1e01-t2'], 'draft'); assert.equal(built['s1e01-2'], 'draft');
+    assert.equal(built['s1e01-1'], 'passed'); assert.equal(built['s1e01-t2'], 'draft');
+    // 반영한 두 줄 밖의 줄은 원래 대본의 상태 그대로다.
+    const before = status(dramaLines([(await freshImport(episodeFile)).default]));
+    for (const id of Object.keys(before).filter(id => !['s1e01-1', 's1e01-t2'].includes(id))) assert.equal(built[id], before[id], id);
     // 통과한 줄을 고치면(명세의 alts 하나 더함) 통과가 풀리고 빌더가 알린다.
     fs.writeFileSync(file, text.replace("'새로 입학한 유학생'", "'새로 입학한 유학생','새로 온 신입생'"));
     const stale = [];
