@@ -6,6 +6,8 @@
 
     python -I -X utf8 서리결정.py --mode macro  --n 1024 --steps 30000 --seed 7  --out <폴더>
     python -I -X utf8 서리결정.py --mode window --n 1536 --steps 40000 --seed 11 --nuclei 16 --out <폴더>
+    python -I -X utf8 서리결정.py --mode dome --n 4096 --steps 70000 --seed 21 --r0 100 --hole 90 --out <폴더>
+      (dome: 15초 3판 — 첫 결정 여섯 팔 끝에서 뻗는 이어진 고사리. 가운데 빈 자리 = 첫 결정, 방위등거리로 돔에 감는다 — 움직임15.py)
     (GPU) <torch가 있는 파이썬> 서리결정.py … --gpu   → arrival · phi만 남긴다. 높이 · 미리보기는 scipy가 있는 파이썬으로
           python -I -X utf8 서리결정.py --mode <같은 모드> --out <같은 폴더> --post
     numpy(CPU)는 1024칸 한 단계에 0.18초라 30분 넘게 걸려 GPU 판을 더했다(같은 식 · 같은 씨앗).
@@ -27,7 +29,7 @@ from pathlib import Path
 import numpy as np
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--mode", default="macro", choices=["macro", "window"])
+ap.add_argument("--mode", default="macro", choices=["macro", "window", "dome"])
 ap.add_argument("--n", type=int, default=512)
 ap.add_argument("--steps", type=int, default=4000)
 ap.add_argument("--seed", type=int, default=7)
@@ -42,6 +44,11 @@ ap.add_argument("--grad", type=float, default=0.0, help="창 아래가 더 차�
 ap.add_argument("--inner", type=float, default=0.15, help="안쪽 씨앗을 둘 범위(가장자리에서 이 비율만큼 비움)")
 ap.add_argument("--fill", type=float, default=0.62, help="window 채움이 이만큼이면 멈춤(잔 결정 막은 0.9)")
 ap.add_argument("--gap", type=float, default=0.9, help="씨앗 사이 최소 거리 = gap · N / √씨앗 수")
+ap.add_argument("--arms", default="23,82,142,203,262,322", help="dome 씨앗 방향(도, 위가 +) — 첫 결정의 여섯 팔")
+ap.add_argument("--r0", type=float, default=100.0, help="dome 씨앗 반지름(칸) — 첫 결정 팔 끝")
+ap.add_argument("--hole", type=float, default=90.0, help="dome 가운데 빈 자리 반지름(칸) — 첫 결정 자리")
+ap.add_argument("--wander", type=float, default=0.16, help="dome 방향장의 느린 흔들림(rad) — 가지가 곧은 자가 되지 않고 휘게")
+ap.add_argument("--uneven", type=float, default=0.03, help="dome 차가움의 느린 얼룩 — 자리마다 빠르기 · 굵기가 달라지게")
 ap.add_argument("--gpu", action="store_true")
 ap.add_argument("--post", action="store_true")
 ap.add_argument("--out", required=True)
@@ -91,6 +98,10 @@ yy, xx = np.mgrid[0:N, 0:N]
 # 씨앗 — macro는 가운데 하나, window는 흩어진 여럿
 if a.mode == "macro":
     seeds = [(N / 2, N / 2, rng.uniform(0, math.pi / 3))]
+elif a.mode == "dome":
+    # 팔 끝마다 씨앗 하나, 결정 방향은 그 팔이 바깥을 보게(배열은 y가 아래라 각의 부호가 뒤집힌다)
+    seeds = [(N / 2 + a.r0 * math.cos(math.radians(d)), N / 2 - a.r0 * math.sin(math.radians(d)), -math.radians(d) + rng.normal(0, 0.03))
+             for d in (float(v) for v in a.arms.split(","))]
 else:
     # 창 서리는 가장 찬 창틀 가장자리에서 먼저 돋아 안쪽으로 고사리처럼 뻗는다 — 씨앗 반은 아래 · 옆 가장자리, 반은 안쪽 흠집
     seeds = []
@@ -108,6 +119,8 @@ else:
 # 둘레 띠는 늘 비운다 — 주기 경계로 반대편에 넘어가 자라지 않게(띠를 녹는점으로 두면 그 열이 가장자리 씨앗을 녹였다)
 band0 = np.zeros((N, N), bool)
 band0[:4], band0[-4:], band0[:, :4], band0[:, -4:] = True, True, True, True
+if a.mode == "dome":
+    band0 |= (xx - N / 2) ** 2 + (yy - N / 2) ** 2 < a.hole ** 2  # 가운데는 첫 결정 자리 — 서리가 안으로 들어오지 않게
 
 # 결정마다 방향 — 가장 가까운 씨앗의 θ0를 그 자리의 방향으로(결정끼리 만나는 경계 = 보로노이 경계)
 d2 = np.full((N, N), np.inf, f32)
@@ -120,6 +133,17 @@ for sx, sy, th in seeds:
     p0[dd < 5.0 ** 2] = 1.0
 
 teq0 = (teq * (1.0 + a.grad * (yy / (N - 1) - 0.5))).astype(f32)
+if a.mode == "dome":
+    def slow_field(n_wave, wave_px):
+        """느린 잡음 — 파장이 wave_px 언저리인 코사인 n_wave개의 합(−1~1 남짓). scipy 없이 GPU 파이썬에서도 돈다."""
+        f = np.zeros((N, N), f32)
+        for _ in range(n_wave):
+            ang_, lam = rng.uniform(0, 2 * math.pi), rng.uniform(0.6, 1.6) * wave_px
+            kx, ky = 2 * math.pi * math.cos(ang_) / lam, 2 * math.pi * math.sin(ang_) / lam
+            f += np.cos(kx * xx + ky * yy + rng.uniform(0, 2 * math.pi)).astype(f32)
+        return f / math.sqrt(n_wave / 2)
+    theta00 += (a.wander * slow_field(10, 700)).astype(f32)
+    teq0 = (teq0 * (1.0 + a.uneven * slow_field(10, 500))).astype(f32)
 
 if a.gpu:
     import torch as xp
@@ -200,8 +224,8 @@ for step in range(1, a.steps + 1):
             if a.mode == "window" and fill - last_fill < 0.002 and step > 4000:
                 break
             last_fill = fill
-            # 가장자리에 닿으면 멈춘다(macro — 둘레가 주기 경계로 넘어가 다시 들어오지 않게)
-            if a.mode == "macro" and rimmax(p) > 0.5:
+            # 가장자리에 닿으면 멈춘다(macro · dome — 둘레가 주기 경계로 넘어가 다시 들어오지 않게)
+            if a.mode in ("macro", "dome") and rimmax(p) > 0.5:
                 break
 
 arrival = tonp(arrival)

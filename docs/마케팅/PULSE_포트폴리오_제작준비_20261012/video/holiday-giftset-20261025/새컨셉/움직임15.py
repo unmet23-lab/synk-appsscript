@@ -11,6 +11,8 @@
 # 따뜻한 빛 · 금빛 둘레를 카메라에서 돔 너머로, 결 밑동 조각(「석탄」)을 뺌, 뚜껑 결정을 첫 결정 재질로 · 첫 결정이
 # 내려와 겹쳐 앉음(opus), 금은 깨지는 자리 둘레만(깨지기 전 장은 온전한 돔으로 가림), 렌즈 앞 · 제품 앞 조각 비우기,
 # 금 방울 뺌, 앰플 새김은 앞면 겉에만 옅게.
+# 3판(10-31, 2판 시험 · Fable 뒤): 서리를 잔 결정 지도(「같은 눈꽃 스텐실」)에서 첫 결정 여섯 팔 끝에서 뻗는 이어진 고사리 지도로,
+# 뚜껑은 전까지 옅은 서리 자국 → 첫 결정이 앉는 순간 가운데에서 은빛이 차오름, 결 초점은 뚜껑에 · 조리개를 조임.
 #   blender -b --python 움직임15.py -- --shot 승|전|결 [--res 1080x1920] [--samples 256] [--s 0 --e 89 | --frames 0,45,89]
 # 장면 거리 · 재질은 시안.py · 움직임.py를 가져다 쓴다. GPU는 공용 줄로(_공용차례/README.md 「GPU」).
 import math
@@ -151,41 +153,42 @@ def solidify(ob, thick=0.0035):
 
 
 def frost_maps():
-    """carpet4096 잔 결정 1,279개 — 도착 시각 · 높이를 16비트 PNG로(한 번 만들어 둔다). 높이는 99번째 값으로 맞춘다."""
+    """돔 서리 지도 — 서리결정.py --mode dome 4096칸: 첫 결정 여섯 팔 끝에서 뻗는 이어진 고사리. 도착 시각 · 높이를 16비트 PNG로
+    (한 번 만들어 둔다). 높이는 99번째 값으로 맞춘다. 3판: 2판의 carpet4096(잔 결정 1,279개)은 같은 크기 · 같은 모양 눈송이를 고르게
+    흩뿌린 「눈꽃 스텐실 · 포장지」였고 첫 결정 둘레엔 맑은 고리가 남았다(Fable 2판 P1-A, 시험관 셋 「반복되는 눈꽃」)."""
     d = os.path.join(S.결정, "_지도")
-    pa, ph = os.path.join(d, "껍질_도착4096.png"), os.path.join(d, "껍질_높이4096.png")
+    pa, ph = os.path.join(d, "돔서리_도착4096.png"), os.path.join(d, "돔서리_높이4096.png")
     if not (os.path.exists(pa) and os.path.exists(ph)):
         os.makedirs(d, exist_ok=True)
-        arr = np.load(os.path.join(S.결정, "carpet4096", "window_arrival.npy"))
-        h = np.load(os.path.join(S.결정, "carpet4096", "window_height.npy"))
-        S.png16(pa, np.clip(arr, 0.0, 1.0))
+        arr = np.load(os.path.join(S.결정, "dome4096", "dome_arrival.npy"))
+        h = np.load(os.path.join(S.결정, "dome4096", "dome_height.npy"))
+        S.png16(pa, np.clip(arr, 0, 1))
         S.png16(ph, np.clip(h / max(1e-6, float(np.percentile(h[h > 0], 99))), 0.0, 1.0))
     return S.load_map(pa), S.load_map(ph)
 
 
-TMAX = 0.5  # 결정끼리 막 닿은 무렵(m2 조각 무늬와 같은 때)
-K_GROW = 1.0  # 서리 머리가 1 rad 나아가는 동안 잔 결정이 자라는 몫(도착 시각 단위)
-A_DEAD = 0.175  # 첫 결정(반지름 1.6 cm = 0.152 rad) 자리엔 잔 결정을 안 둔다
-MAP_SCALE = 1.3
+TAU_FULL = 1.2  # 서리 머리(지도의 도착 시각 단위)가 이 값이면 다 자란 돔 — 조각 무늬
+MAP_K = 640.0 / 4096.0  # 지도 한 변(1 uv) 안에서 1 rad의 길이 — 시뮬에서 첫 결정 반지름 0.156 rad = 100칸, 돔 뒤까지 3.2 rad = 2048칸
 # 첫 시험(10-30): 범프 0.35는 굴절을 크게 비틀어 돔이 「구겨진 비닐」로, 막 자란 끝의 흰 띠(도착 시각 0.10 폭)는 「흰 낙서」로 읽혔다.
 # 2판: 0.16도 돔 너머 제품을 네모 알갱이로 깨 「모자이크 · 각설탕 더미」(Fable 1판 4.6초)
-BUMP = 0.07
-FRESH_W = 0.025
+BUMP = 0.05
+FRESH_W = 0.012
 FRESH_WHITE = 0.12  # 2차 시험 0.70은 「흰 테두리 스티커 · 레이스」, 1판 0.25도 자라는 송이 둘레가 「흰 풀 · 치약 테두리」(Fable 3.6초)
-EDGE_WHITE = 0.16  # 가지 가장자리만 가는 은빛 결(얼어붙은 비눗방울 사진처럼) — 넓은 젖빛은 「흰 도자기」(10-30 현장노트)
+EDGE_WHITE = 0.05  # 가지 가장자리만 가는 은빛 결(얼어붙은 비눗방울 사진처럼) — 넓은 젖빛은 「흰 도자기」(10-30 현장노트)
 # 2판: 자란 가지 자리는 흰 반투명 산란(젖빛 유리 + 확산 투과) — 1판은 굴절 요철뿐이라 깜깜한 바탕을 비춰 서리가
 # 「검정 · 회색 곰팡이 스노볼」이었다(Fable P1-1). 돔 안 따뜻한 빛과 돔 너머 금빛 둘레를 받아 하얗게 빛난다.
 # 2판 첫 시험: 0.55를 결정 모양 전체(높이 0.03~0.30 계단)에 주니 「흰 종이 눈꽃 스티커」로 돔을 덮어 제품이 안 보였다 →
-# 가지 높이에 비례(두꺼운 등뼈일수록 젖빛). 0.22도 조각마다 흰 눈꽃이 찍혀 「꽃무늬 타일 · 눈꽃 스티커 유리」(같은 시험 전) →
-# 0.12 · 거의 젖빛 유리(뒤 금빛을 흐리게 비춤)로, 전은 깨지며 0.04로(조각은 굴절 요철로 읽히게 — 1판 「점 찍은 유리」는 괜찮았다)
-FROST_WHITE = 0.12
-FROST_SHARD = 0.04
+# 가지 높이에 비례(두꺼운 등뼈일수록 젖빛). 3판: 고사리 지도는 가지가 가늘어 덮는 넓이가 작아 0.35, 깨진 조각은 깨짐 동안 그 40 %로
+FROST_WHITE = 0.30
+FROST_SHARD = 0.12
+COV_LO, COV_HI = 0.60, 0.95  # 서리 흰빛이 시작 · 다 차는 가지 높이 — 등뼈의 가는 선만(0.42 · 0.82는 「흰 붓질」)
+GRAIN_S, GRAIN_FLOOR = 1800.0, 0.3  # 흰 선을 깨는 얼음 알갱이의 빽빽함(1 m당) · 알갱이 틈에 남는 흰빛 몫
 
 
 def mat_frost_shell(name, arr_img, h_img, coord_attr=None):
-    """승의 돔과 전 · 결의 조각이 함께 쓰는 얼음 껍질 — 맑은 얼음 위로 잔 결정이 첫 결정에서 번져 나간 자리가 흰 반투명
+    """승의 돔과 전 · 결의 조각이 함께 쓰는 얼음 껍질 — 맑은 얼음 위로 고사리 서리가 첫 결정에서 번져 나간 자리가 흰 반투명
     서리(산란)와 굴절 속 요철, 막 자란 끝은 잠깐 서리 흰빛으로 빛나다 가라앉는다(m1 결정의 「막 자란 끝만 서리」와 같은 결).
-    PHI 값 노드(서리 머리의 각, rad)를 장마다 바꾼다 — 크게 두면 m2처럼 다 자란 무늬. 무늬 좌표는 깨지기 전 자리라
+    TAU 값 노드(지금 시각, 지도의 도착 시각 단위)를 장마다 바꾼다 — 크게 두면 다 자란 무늬. 무늬 좌표는 깨지기 전 자리라
     돔(물체 좌표)과 조각(orig 속성)이 같은 무늬다."""
     m, n, l, out = S.new_mat(name)
     if coord_attr:
@@ -194,48 +197,46 @@ def mat_frost_shell(name, arr_img, h_img, coord_attr=None):
         P = at.outputs["Vector"]
     else:
         P = n.new("ShaderNodeTexCoord").outputs["Object"]
-    mp = n.new("ShaderNodeMapping")
-    mp.inputs["Location"].default_value = (0.5, 0.5, 0.5)
-    mp.inputs["Scale"].default_value = (MAP_SCALE,) * 3  # 잔 결정 한 송이 약 2.3 cm — 첫 결정(3.2 cm)보다 작게 · 가까이서도 흐리지 않게
-    l.new(P, mp.inputs["Vector"])
+    # 방위등거리 — 첫 결정(P0)을 지도 가운데에: 각 거리 = 반지름, 접평면(E1 · E2) 방위 = 방향. 돔 뒤끝(P0 맞은편)만 몰린다
+    nv = n.new("ShaderNodeVectorMath")
+    nv.operation = "NORMALIZE"
+    l.new(P, nv.inputs[0])
+
+    def dot(v):
+        d_ = n.new("ShaderNodeVectorMath")
+        d_.operation = "DOT_PRODUCT"
+        l.new(nv.outputs[0], d_.inputs[0])
+        d_.inputs[1].default_value = tuple(v)
+        return d_.outputs["Value"]
+
+    ang = S.math_node(n, l, "ARCCOSINE", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MINIMUM", dot(P0), 1.0), -1.0))
+    dx, dy = dot(E1), dot(E2)
+    rho = S.math_node(n, l, "SQRT", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "ADD", S.math_node(n, l, "MULTIPLY", dx, dx),
+                                                                             S.math_node(n, l, "MULTIPLY", dy, dy)), 1e-8))
+    k = S.math_node(n, l, "DIVIDE", S.math_node(n, l, "MULTIPLY", ang, MAP_K), rho)
+    uv = n.new("ShaderNodeCombineXYZ")
+    l.new(S.madd(n, l, dx, k, 0.5), uv.inputs["X"])
+    l.new(S.madd(n, l, dy, k, 0.5), uv.inputs["Y"])
 
     def tex(im, interp):
         t = n.new("ShaderNodeTexImage")
         t.image = im
-        t.projection = "BOX"
-        t.projection_blend = 0.25
         t.interpolation = interp
         t.extension = "EXTEND"
-        l.new(mp.outputs["Vector"], t.inputs["Vector"])
+        l.new(uv.outputs[0], t.inputs["Vector"])
         return t.outputs["Color"]
 
     arr = tex(arr_img, "Linear")
     hh = tex(h_img, "Cubic")
-    nv = n.new("ShaderNodeVectorMath")
-    nv.operation = "NORMALIZE"
-    l.new(P, nv.inputs[0])
-    dt = n.new("ShaderNodeVectorMath")
-    dt.operation = "DOT_PRODUCT"
-    l.new(nv.outputs[0], dt.inputs[0])
-    dt.inputs[1].default_value = tuple(P0)
-    ang = S.math_node(n, l, "ARCCOSINE", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MINIMUM", dt.outputs["Value"], 1.0), -1.0))
-    nz = n.new("ShaderNodeTexNoise")
-    nz.inputs["Scale"].default_value = 22.0
-    l.new(P, nz.inputs["Vector"])
-    act = S.madd(n, l, nz.outputs["Fac"], 0.5, S.math_node(n, l, "SUBTRACT", ang, 0.25))  # 머리가 손가락처럼 고르지 않게 ±0.25 rad
     phi = n.new("ShaderNodeValue")
-    phi.name = "PHI"
-    phi.outputs[0].default_value = 100.0
-    teff = S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "SUBTRACT", phi.outputs[0], act), K_GROW)
-    teff = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", teff, 0.0), TMAX)
-    teff = S.math_node(n, l, "MULTIPLY", teff, S.math_node(n, l, "GREATER_THAN", ang, A_DEAD))
-    grown = S.math_node(n, l, "SUBTRACT", teff, arr)  # 이 자리가 자란 지 얼마나 됐나(도착 시각 단위)
-    age = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "DIVIDE", grown, 0.06), 0.0), 1.0)
+    phi.name = "TAU"
+    phi.outputs[0].default_value = TAU_FULL
+    grown = S.math_node(n, l, "SUBTRACT", phi.outputs[0], arr)  # 이 자리가 자란 지 얼마나 됐나(도착 시각 단위)
+    age = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "DIVIDE", grown, 0.02), 0.0), 1.0)
     hvis = S.math_node(n, l, "MULTIPLY", hh, S.math_node(n, l, "SQRT", age))
     fresh = S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "GREATER_THAN", grown, 0.0),
                         S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "SUBTRACT", 1.0, S.math_node(n, l, "DIVIDE", grown, FRESH_W)), 0.0))
-    done = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "DIVIDE", S.math_node(n, l, "SUBTRACT", TMAX, teff), 0.12), 1.0)
-    fresh = S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", fresh, done), S.math_node(n, l, "GREATER_THAN", hh, 0.02))
+    fresh = S.math_node(n, l, "MULTIPLY", fresh, S.math_node(n, l, "GREATER_THAN", hh, 0.02))
     # 가지 가장자리(높이가 막 오르는 얇은 띠)만 은빛 — 자란 자리에만
     edge = n.new("ShaderNodeMapRange")
     edge.interpolation_type = "SMOOTHSTEP"
@@ -258,8 +259,20 @@ def mat_frost_shell(name, arr_img, h_img, coord_attr=None):
     bp.inputs["Distance"].default_value = 0.0006
     l.new(hvis, bp.inputs["Height"])
     l.new(bp.outputs["Normal"], ice.inputs["Normal"])
-    # 자란 가지 = 흰 반투명 서리(젖빛 유리 0.85 : 확산 투과 0.15, 거칠기 0.35) — 가지 높이에 비례, FROSTW 값 노드로 몫을 정한다
-    cov = S.math_node(n, l, "POWER", S.math_node(n, l, "MULTIPLY", hvis, 1.4, clamp=True), 0.8)
+    # 가지 등뼈의 가는 선 = 흰 반투명 서리(젖빛 유리 0.85 : 확산 투과 0.15, 거칠기 0.35) — 가지 너비 전체는 굴절 요철로만 남긴다.
+    # 3판 첫 시험: 가지 전체를 희게 하니 고사리가 굵어 「흰 물감 잎 무늬」로 제품을 가렸다. 큰 등뼈일수록 넓고 곁가지는 가늘다
+    cov_n = n.new("ShaderNodeMapRange")
+    cov_n.interpolation_type = "SMOOTHSTEP"
+    cov_n.inputs["From Min"].default_value = COV_LO
+    cov_n.inputs["From Max"].default_value = COV_HI
+    l.new(hvis, cov_n.inputs["Value"])
+    # 흰 선을 고운 얼음 알갱이로 깬다 — 고른 흰빛은 「칠한 선 · 붓질」(3판 둘째 시험)
+    gr = n.new("ShaderNodeTexNoise")
+    gr.inputs["Scale"].default_value = GRAIN_S
+    gr.inputs["Detail"].default_value = 3.0
+    l.new(P, gr.inputs["Vector"])
+    speck = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "SUBTRACT", gr.outputs["Fac"], 0.40), 6.0), 0.0), 1.0)
+    cov = S.math_node(n, l, "MULTIPLY", cov_n.outputs["Result"], S.madd(n, l, speck, 1.0 - GRAIN_FLOOR, GRAIN_FLOOR))
     frw = n.new("ShaderNodeValue")
     frw.name = "FROSTW"
     frw.outputs[0].default_value = FROST_WHITE
@@ -577,7 +590,7 @@ def build_world():
     return floor, L
 
 
-AMP_PAT_ROUGH, AMP_BUMP = 0.05, 0.35  # 앰플 새김 자리 거칠기 · 범프 — 0.12 · 0.6도 세럼 속 옅은 얼룩으로 보였다(2판 진단)
+AMP_PAT_ROUGH, AMP_BUMP = 0.04, 0.2  # 앰플 새김 자리 거칠기 · 범프 — 0.12 · 0.6은 세럼 속 옅은 얼룩, 0.05 · 0.35도 가까이서 「흰 눈꽃 스티커」(Fable 2판 10.6초)
 
 
 def ampoule_front_only(amp_parts):
@@ -622,10 +635,64 @@ def build_products():
     gk.visible_camera = False
     gk.parent = jar_e
     S.light_only(gk, [lid])
-    # 뚜껑 결정 반짝임 — 점광(20 W)은 결 시험에서 안 보였다. m1 끝과 같은 「얇은 가장자리만 빛나는 띠」가 대각으로 한 번
-    glint = M.add_sweep(lid.data.materials[0], (1.0, 1.0, 0.0), width=0.0030, color=(1.0, 0.82, 0.52))
+    # 뚜껑 결정 반짝임 — 점광(20 W)은 결 시험에서 안 보였고, 대각 띠는 「뿌옇게 밝아질 뿐」(Fable 2판 12.68초)
+    glint = add_lid_reveal(lid.data.materials[0])
     card = S.serum_card(amp_e, M.m2_cam(1.0), strength=1.3, rgb=(1.0, 0.80, 0.50))
     return jar_e, amp_e, lid, glint, card
+
+
+LID_FAINT = 0.3  # 첫 결정이 앉기 전 뚜껑 결정의 몫 — 옅은 서리 자국
+
+
+def add_lid_reveal(m):
+    """뚜껑 결정 — 첫 결정이 앉기 전엔 옅은 서리 자국(LID_FAINT), 앉는 순간 가운데에서 바깥으로 은빛이 차오르고 그 머리에 빛 고리가
+    결을 따라 지나간다(RING 머리 반지름 · RINGGAIN 세기를 장마다). 3판: 2판은 뚜껑에 같은 무늬가 6초부터 이미 있어 「무늬가 된다」가
+    아니라 「무늬 위에 하나 더」였고, 앉는 순간이 뿌옇게 밝아질 뿐이었다(Fable 2판 P1-C)."""
+    n, l = m.node_tree.nodes, m.node_tree.links
+    out = next(x for x in n if x.type == "OUTPUT_MATERIAL")
+    base = out.inputs["Surface"].links[0].from_socket
+    tc = n.new("ShaderNodeTexCoord")
+    sp = n.new("ShaderNodeSeparateXYZ")
+    l.new(tc.outputs["Object"], sp.inputs["Vector"])
+    r = S.math_node(n, l, "SQRT", S.math_node(n, l, "ADD", S.math_node(n, l, "MULTIPLY", sp.outputs["X"], sp.outputs["X"]),
+                                              S.math_node(n, l, "MULTIPLY", sp.outputs["Y"], sp.outputs["Y"])))
+    ring = n.new("ShaderNodeValue")
+    ring.name = "RING"
+    ring.outputs[0].default_value = -0.01
+    gain = n.new("ShaderNodeValue")
+    gain.name = "RINGGAIN"
+    gain.outputs[0].default_value = 0.0
+    off = S.math_node(n, l, "SUBTRACT", r, ring.outputs[0])
+    fill = n.new("ShaderNodeMapRange")
+    fill.interpolation_type = "SMOOTHSTEP"
+    fill.inputs["From Min"].default_value = -0.005
+    fill.inputs["From Max"].default_value = 0.0
+    fill.inputs["To Min"].default_value = 1.0
+    fill.inputs["To Max"].default_value = 0.0
+    l.new(off, fill.inputs["Value"])
+    show = S.madd(n, l, fill.outputs["Result"], 1.0 - LID_FAINT, LID_FAINT)
+    d = S.math_node(n, l, "DIVIDE", off, 0.0035)
+    band = S.math_node(n, l, "EXPONENT", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", d, d), -1.0))
+    at = n.new("ShaderNodeAttribute")
+    at.attribute_name = "frost"
+    nz = n.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 1400.0
+    l.new(tc.outputs["Object"], nz.inputs["Vector"])
+    glit = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "SUBTRACT", nz.outputs["Fac"], 0.5), 5.0), 0.0), 1.0)
+    mask = S.math_node(n, l, "MULTIPLY", S.madd(n, l, glit, 0.7, 0.3), S.math_node(n, l, "GREATER_THAN", at.outputs["Fac"], 0.002))
+    em = n.new("ShaderNodeEmission")
+    em.inputs["Color"].default_value = (1.0, 0.84, 0.56, 1)
+    l.new(S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", band, mask), gain.outputs[0]), em.inputs["Strength"])
+    tr = n.new("ShaderNodeBsdfTransparent")
+    mx = n.new("ShaderNodeMixShader")
+    l.new(show, mx.inputs["Fac"])
+    l.new(tr.outputs[0], mx.inputs[1])
+    l.new(base, mx.inputs[2])
+    add = n.new("ShaderNodeAddShader")
+    l.new(mx.outputs[0], add.inputs[0])
+    l.new(em.outputs[0], add.inputs[1])
+    l.new(add.outputs[0], out.inputs["Surface"])
+    return ring, gain
 
 
 def ice_edge(m):
@@ -766,11 +833,9 @@ def seung_cam(t):
     return loc, tgt, lens, axial(loc, tgt, fp), fstop, up
 
 
-def seung_phi(t):
-    """서리 머리의 각(rad) — 0.45초에 첫 결정 둘레에서 떠나(카메라가 물러나 잔 결정이 흐리지 않을 때) 점점 빨라져
-    2.7초에 돔 뒤까지(그 뒤 0.3초는 다 덮인 돔)."""
-    s = clamp01((t - 0.45) / 2.25)
-    return A_DEAD - 0.30 + (math.pi + 0.9 - A_DEAD + 0.30) * s ** 1.4
+def seung_tau(t):
+    """서리 머리(지도의 도착 시각 단위) — 0.6초에 첫 결정 팔 끝에서 떠나 점점 빨라져 1.87초(화면 4.6초)에 돔 절반, 2.75초에 돔 뒤까지."""
+    return 1.05 * clamp01((t - 0.6) / 2.15) ** 1.3 - 0.002
 
 
 def seung_light(t):
@@ -795,6 +860,7 @@ def shot_seung():
         S.light_only(lt, [crystal])
         crys.append((lt, e))
     link_scene_lights(L, floor, skip=[crystal])
+    link_except(L["윗빛"], [floor, crystal, dome])  # 돔 위에 비친 띠가 「유리 긁힘 · 머리카락」 같은 흰 곡선(Fable 2판 4.6초)
     for g in L["반짝"]:
         S.light_only(g, [dome])
     inner = inner_light([dome] + product_meshes(jar_e, amp_e))
@@ -817,7 +883,7 @@ def shot_seung():
         if done(f):
             continue
         t = f / FPS
-        phi.outputs[0].default_value = seung_phi(t)
+        phi.outputs[0].default_value = seung_tau(t)
         k = seung_light(t)
         wk.inputs[1].default_value = k
         for ob, e0 in ramp:
@@ -1094,6 +1160,7 @@ def shot_jeon():
     for g in L["반짝"]:
         S.light_only(g, shards)
     link_scene_lights(L, floor, skip=[crystal])
+    link_except(L["윗빛"], [floor, crystal, cover])  # 승과 같게
     strips = [(lt, lt.data.energy) for lt in (L["찬키"], L["윗빛"])]  # 승 끝의 0.6배에서 깨짐 동안 1배로
     # 돔 안 빛은 승 끝과 같은 세기에서 — 껍질이 깨지며 갇혔던 빛이 빠진다(4–20장)
     inner = inner_light([m[0] for m in movers if m[7] == "조각"] + [cover] + product_meshes(jar_e, amp_e))
@@ -1109,7 +1176,7 @@ def shot_jeon():
         t = f / FPS
         # 금 — 깨지는 자리 둘레에서 0–4장에 번지며 머리만 번쩍이고(5장에 꺼짐), 지나간 금은 맑은 틈으로 남는다
         crack.outputs[0].default_value = crack_head(f)
-        glow.outputs[0].default_value = 1.0 * (1.0 if f <= 3 else max(0.0, 1.0 - (f - 3) / 2.0))  # 6은 「흰 벌집 그물」(2차 시험), 2판 2 → 1
+        glow.outputs[0].default_value = 0.6 * (1.0 if f <= 3 else max(0.0, 1.0 - (f - 3) / 2.0))  # 6은 「흰 벌집 그물」(2차 시험), 2판 2 → 1, 3판 0.6(「같은 굵기 흰 선」)
         inner.data.energy = INNER_W * (1.0 - smooth(clamp01((f - 4) / 16.0)))
         frostw.outputs[0].default_value = lerp(FROST_WHITE, FROST_SHARD, smooth(clamp01((f - 4) / 12.0)))  # 깨지며 서리 흰빛이 가라앉음
         for ob, e0 in strips:
@@ -1160,6 +1227,9 @@ CAM_G1_TGT = Vector((0.006, -0.003, ZF + 0.055))  # 제품을 조금 아래로 �
 CAM_G1 = (math.radians(2), math.radians(27), 0.44, 50.0, 4.5)
 # 결의 뚜껑 금빛 키 — 1판 25 W는 맑은 결정 가장자리를 하얗게 날렸다(2판 진단, LID_EDGE와 함께 낮춤)
 GK_END = 16.0
+FALL_K = 0.35  # 떨어지는 결정의 네 빛 — 0.55는 「흰 솜 · 깃털」(Fable 2판 11.8초)
+FALL_EDGE = 0.2  # 떨어지는 결정의 얇은 가장자리 서리 몫 — 멀리서 0.55는 희게 뭉친다(LID_EDGE와 같은 까닭)
+GYEOL_F = 8.0  # 결의 조리개 — 0.6초에 f/3.5 → f/8, 결정 · 제품을 함께 심도 안에(2판은 초점이 결정을 따라가 제품이 1.2초 흐렸다, Fable P1-B)
 
 
 def gyeol_cam(t):
@@ -1175,7 +1245,7 @@ def gyeol_cam(t):
     loc = CAM_G1_TGT + Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el))) * d
     # 처음은 전 끝 자리 그대로(돌아가는 중심이 달라 생기는 튐을 0으로)
     loc = loc + (e0 - (CAM_G1_TGT + Vector((math.sin(az0) * math.cos(el0), -math.cos(az0) * math.cos(el0), math.sin(el0))) * rel0.length)) * (1 - u)
-    return loc, tgt, lerp_log(40.0, lens1, u), lerp_log(3.5, f1, u)
+    return loc, tgt, lerp_log(40.0, lens1, u), lerp_log(3.5, GYEOL_F, smooth(clamp01(t / 0.6)))
 
 
 def land_pose(float_end, stand, t_land, wob_amp, r_base, t):
@@ -1223,12 +1293,12 @@ def shot_gyeol():
     # 첫 결정이 조각에서 떨어져 내려와 뚜껑 결정에 겹쳐 앉는다(opus 제안) — 뚜껑 결정과 같은 판(lid_array · 같은 재질)을
     # 처음엔 첫 결정 크기(0.032/0.056)로 · 첫 결정 자리 · 결 방향(결 = 돔 안쪽, x → E1 · y → −E2 · z → −N0)으로 두고 시작한다
     fall_mat = M.mat_ice_crystal()
-    fall_edge = ice_edge(fall_mat)  # 처음은 첫 결정(m1)의 0.55, 앉으며 뚜껑 결정 값으로
+    ice_edge(fall_mat).inputs["To Min"].default_value = FALL_EDGE
     fade = add_fade(fall_mat)
     fall = S.relief_sheet("떨어지는결정", lid_array(), LID_SIZE, 0.0, LID_HMAX, fall_mat, step=1)
     fall_lights = []
     for nm, (x, y, z), e, sz, rgb in CRYSTAL_LIGHTS:  # 전과 같은 네 빛을 결정 틀에 매단 자리로(크기는 따라가지 않는다)
-        lt = S.area_light(nm, (0, 0, 0.1), (0, 0, 0), e * CRYSTAL_K, sz, rgb=rgb)
+        lt = S.area_light(nm, (0, 0, 0.1), (0, 0, 0), e * FALL_K, sz, rgb=rgb)
         lt.visible_camera = False
         S.light_only(lt, [fall])
         fall_lights.append((lt, Vector((x, -z, y - 0.0035))))
@@ -1277,7 +1347,7 @@ def shot_gyeol():
     def fall_pose(t):
         """조각이 빠지는 동안 남겨진 결정이 눈송이처럼 옆으로 한 번 흔들리며 내려와(크기는 뚜껑 결정까지 자람) 뚜껑에 겹쳐 앉는다.
         눕는 회전은 앉기 조금 전에 끝난다(앉을 땐 평평하게 미끄러져 든다)."""
-        w = smoother((t - FALL_T0) / (FALL_T1 - FALL_T0))
+        w = smooth(clamp01((t - FALL_T0) / (FALL_T1 - FALL_T0)))
         l1, q1 = lid_world(t)
         loc = loc0.lerp(l1, w) + sway_dir * (math.sin(math.pi * w) * 0.012) + UP * (math.sin(math.pi * w) * 0.010)
         q = q0.slerp(q1, smooth(clamp01(w / 0.85)))
@@ -1303,10 +1373,9 @@ def shot_gyeol():
         t = f / FPS
         loc, tgt, lens, fstop = gyeol_cam(t)
         cam.data.lens, cam.data.dof.aperture_fstop = lens, fstop
-        u = clamp01((t - GLINT_AT) / 0.5)
-        glint[0].outputs[0].default_value = -0.035 + 0.07 * smooth(u)
-        # 화면에서 가장 밝은 점이 되게(1판 24 — Fable 「부드럽게 밝아질 뿐 또렷한 글린트로는 안 잡힌다」), 10은 흰 결정에 묻혔다
-        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 110.0 * math.sin(math.pi * u) ** 0.7  # 40은 회색 띠(2판 진단)
+        u = clamp01((t - FALL_T1) / 0.45)  # 앉는 순간 가운데에서 은빛이 차올라 팔 끝까지(반지름 3.4 cm)
+        glint[0].outputs[0].default_value = -0.01 + 0.046 * (1.0 - (1.0 - u) ** 2)
+        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 110.0 * math.sin(math.pi * u) ** 0.7  # 화면에서 가장 밝게(40은 회색 띠)
         edge_n.outputs[0].default_value = lerp(EDGE_WHITE, 0.05, smooth(clamp01((t - 0.3) / 1.7)))
         gk.data.energy = lerp(gk_e0, GK_END, smooth(min(1.0, t / 1.0)))  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
         w = smooth(clamp01((t - 0.4) / 2.6))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
@@ -1320,7 +1389,6 @@ def shot_gyeol():
             lt.location = f_loc + Rf @ off
             lt.rotation_euler = (f_loc - lt.location).to_track_quat("-Z", "Y").to_euler()
         fade.outputs[0].default_value = smooth(clamp01((t - FALL_T1) / FADE_T))
-        fall_edge.inputs["To Min"].default_value = lerp(0.55, LID_EDGE, smooth(smoother((t - FALL_T0) / (FALL_T1 - FALL_T0))))
         items = []
         for mv in movers:
             items.append((mv[0], lambda dt, mv=mv, t=t: shard_pose(mv, t + dt)))
@@ -1339,9 +1407,9 @@ def shot_gyeol():
         items.append((cam, cam_pose))
         jp, jr = land_pose(jar_end, JAR_STAND, LAND["단지"], 2.4, 0.038, t)
         lid_now = jp + jr.to_matrix() @ Vector((0, 0, 0.0628))
-        # 초점: 전 끝(뚜껑)에서 0.15–0.6초에 떨어지는 결정으로 옮겨 따라가고, 결정이 뚜껑에 앉으면 다시 뚜껑 자리
+        # 초점: 뚜껑에 두되 떨어지는 결정 쪽으로 3분의 1만 끌어(f/8 심도 안에 둘 다) — 결정이 앉으면 뚜껑 자리
         kf = smooth(clamp01((t - 0.15) / 0.45))
-        cam.data.dof.focus_distance = lerp(axial(loc, tgt, lid_now), axial(loc, tgt, f_loc), kf)
+        cam.data.dof.focus_distance = lerp(axial(loc, tgt, lid_now), axial(loc, tgt, f_loc), kf * 0.33)
         aim_serum_card(card, amp_e, loc)
         key3(items, lambda f=f: render_to(f))
 
