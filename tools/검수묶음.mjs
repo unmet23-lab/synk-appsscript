@@ -1749,6 +1749,27 @@ function 앞내용찾기(해시, 경로, 꼴, { 폴더들 = [], 저장소, 판�
   return undefined;
 }
 /** 앞 판 → 지금 판 diff(앞뒤 5줄, 긴 줄 파일은 바뀐 낱말만). 없는 쪽은 null, 이진이면 해시·크기만. */
+export function 해시청크이름짝(경로들, 앞맵, 지금맵) {
+  const groups=new Map(),pairs=new Map();
+  for(const p of 경로들){
+    if(!/\/renderer\/generated\/member-shared\/chunk-[A-Z0-9]{8}\.mjs$/.test(p))continue;
+    const a=앞맵.get(p),b=지금맵.get(p),kind=a?.sha256&&!b?.sha256?'old':!a?.sha256&&b?.sha256?'next':null;
+    if(!kind)continue;const dir=path.posix.dirname(p),g=groups.get(dir)||{old:[],next:[]};g[kind].push(p);groups.set(dir,g);
+  }
+  for(const g of groups.values())if(g.old.length===1&&g.next.length===1){
+    const a=앞맵.get(g.old[0]),b=지금맵.get(g.next[0]);
+    if(a.모드&&a.모드===b.모드&&a.종류===b.종류)pairs.set(g.next[0],g.old[0]);
+  }
+  return pairs;
+}
+export function 후보내용대조(경로, 앞, 지금, 앞내용, 지금내용, { 옛경로=null, 새경로=null, 새항목=null }={}) {
+  if(앞?.sha256&&(!앞내용||sha(앞내용)!==앞.sha256))throw new Error(`앞 후보 내용이 manifest와 다르다: ${옛경로||경로}`);
+  if(지금?.sha256&&(!지금내용||sha(지금내용)!==지금.sha256))throw new Error(`지금 후보 내용이 manifest와 다르다: ${경로}`);
+  if(새경로)return{꼴:'경로 대조 안내',글:`앞 경로 ${경로} (SHA ${앞.sha256}) → 새 경로 ${새경로} (SHA ${새항목.sha256}).\n본문의 전체 앞→뒤 변경은 ${새경로} 항목에서 한 번 대조한다. 두 경로·종류·모드·SHA는 전체 manifest 대조에 그대로 남는다.`};
+  const d=앞?.sha256&&지금?.sha256&&앞.sha256===지금.sha256?{꼴:'모드',글:`(내용은 같고 종류·모드만 ${앞.종류}/${앞.모드??'-'} → ${지금.종류}/${지금.모드??'-'})`}:두판diff(앞내용,지금내용,경로);
+  if(옛경로)d.글=`앞 경로 ${옛경로} (SHA ${앞.sha256}) → 새 경로 ${경로} (SHA ${지금.sha256})\n${d.글}`;
+  return d;
+}
 export function 두판diff(앞, 지금, 경로) {
   const 이진 = b => Boolean(b) && b.subarray(0, 8000).includes(0);
   const 판말 = b => `sha256 ${sha(b).slice(0, 12)} · ${b.length}바이트`;
@@ -1904,17 +1925,20 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
   }
   if (본바뀐.후보.length) {
     const 앞후보맵 = new Map((본후보?.항목 || []).map(x => [x.경로, x])), 지금후보맵 = new Map((지금후보?.항목 || []).map(x => [x.경로, x]));
+    const 이름짝=해시청크이름짝(본바뀐.후보,앞후보맵,지금후보맵),옛이름짝=new Map([...이름짝].map(([next,old])=>[old,next]));
     항목들.push(항목('P00', '배포 후보 manifest에서 바뀐 칸 — 앞 → 지금', JSON.stringify(본바뀐.후보.map(p => ({ 경로: p, 앞: 앞후보맵.get(p) ?? null, 지금: 지금후보맵.get(p) ?? null })), null, 2)));
     for (const [i, p] of 본바뀐.후보.entries()) {
       const a = 앞후보맵.get(p), b = 지금후보맵.get(p);
-      const 앞b = a?.sha256 ? 앞바이트(a.sha256, p, 'raw', 본고리.목록.설정?.배포후보 || null) : null;
+      const 옛경로=이름짝.get(p),앞항목=옛경로?앞후보맵.get(옛경로):a;
+      const 앞b = 앞항목?.sha256 ? 앞바이트(앞항목.sha256, 옛경로||p, 'raw', 본고리.목록.설정?.배포후보 || null) : null;
       let 지금b = null;
       if (b?.sha256) {
         지금b = fs.readFileSync(안전경로(설정.배포후보, p));
         if (sha(지금b) !== b.sha256) throw new Error(`배포 후보 내용이 manifest와 다르다: ${p}`);
         내용.set(b.sha256, 지금b);
       }
-      const d = a?.sha256 && b?.sha256 && a.sha256 === b.sha256 ? { 꼴: '모드', 글: `(내용은 같고 종류·모드만 ${a.종류}/${a.모드} → ${b.종류}/${b.모드})` } : 두판diff(앞b, 지금b, p);
+      const 새경로=옛이름짝.get(p);
+      const d = 후보내용대조(p,앞항목,b,앞b,지금b,{옛경로,새경로,새항목:새경로?지금후보맵.get(새경로):null});
       if (정책.사용자지정?.taskId === Atlas작업ID && 지금b) {
         const item = 후보항목들({ 항목: [b] }, [지금b], { 동일본문참조: true, 단독음성검수: true, 사용자지정작업: Atlas작업ID })[1];
         if (item.몸.startsWith('음성 자산 원시 SHA:')) d.글 = `앞 원음 SHA: ${a?.sha256 ?? '없음'}\n${item.몸}`;
