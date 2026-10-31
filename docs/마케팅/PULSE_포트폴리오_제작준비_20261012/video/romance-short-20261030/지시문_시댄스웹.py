@@ -1,7 +1,7 @@
 # 로맨스 단편 「다 비침」 — 시댄스 2.5 웹 판 지시문을 만든다(2026-10-30, 7번 지시문_시댄스웹.py와 같은 꼴).
 #   python -X utf8 지시문_시댄스웹.py            → 지시문/영상_시댄스웹.json(조율 세션의 ../../시댄스무제한/웹꾸러미.py가 읽는 꼴) · 판 수 · 길이 합
 #   python -X utf8 지시문_시댄스웹.py --보기 <판 id> [A|B|없음]   → 그 판의 웹 지시문을 꾸러미와 같은 순서로 찍는다(소리 줄은 고른 방식)
-# 시작 그림은 이미지 콘티 정지컷(git 밖 콘티/romance/선버스트/정지컷, 1920×1080 — GPT Image 2.5 Sunburst · max). 끝 그림이 있는 컷(C01 · C11 · C14 · C18 · C20 ·
+# 시작 그림은 이미지 콘티 정지컷(git 밖 콘티/romance/선버스트/정지컷, 1920×1080 — GPT Image 2.5, 태준 컷은 10-31부터 유호님 얼굴 · 이미지콘티_태준.py). 끝 그림이 있는 컷(C01 · C11 · C14 · C18 · C20 ·
 # C43 · C50)은 「@이미지 2」로 끝 구도를 준다. 카메라는 02_콘티 4절 카메라 칸(원본 프레임 실측 · 눈 확인)을 그대로 옮기고, 손떨림 크기는 원본 배경 실측
 # (레퍼런스/romance/원본실측/romance_컷확정.json 「카메라 · 배경 · 흔들림%」)이다. 동작은 4절 「우리 화면」 · 이야기 3.1판대로 한 가지씩, 리액션은 낮게.
 # 10-30 연출 · 앵글 검수(git 밖 검수/제대로_20261030/답_연출앵글.md 표 2): 말 없는 판이 「looks at her, silent」 한 상태로 끝나 감정의 박이 없던 자리에
@@ -23,11 +23,11 @@ WHO = {
     "YUNA (cardigan)": "Yuna — the same Korean woman as in the first frame (late twenties, long dark-brown wavy hair in a low ponytail, small gold stud earrings) in a soft blush-pink chunky knit cardigan over a white collared blouse and cream wide-leg trousers.",
     "YUNA (white blouse)": "Yuna — the same Korean woman as in the first frame (long dark-brown wavy hair worn down, small gold stud earrings) in a plain white silk blouse and dark-grey slacks.",
     "YUNA (taupe blazer)": "Yuna — the same Korean woman as in the first frame (long dark-brown wavy hair worn down, small gold stud earrings) in a taupe tailored blazer over a black knit top and black trousers.",
-    "TAEJUN (shirt and tie)": "Taejun — the same Korean man as in the first frame (mid-thirties, tousled black hair falling over his forehead, light stubble) in a white dress shirt with a slim dark-navy tie and charcoal trousers, a black-strap smartwatch on his left wrist.",
-    "TAEJUN (shirt, no tie)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in a white dress shirt with no tie, the top button open and the sleeves rolled to the elbows, charcoal trousers, a black-strap smartwatch on his left wrist.",
-    "TAEJUN (blue shirt)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in a pale-blue dress shirt with a slim charcoal tie and grey trousers, a black-strap smartwatch on his left wrist.",
-    "TAEJUN (blue shirt, headphones)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in a pale-blue dress shirt with a slim charcoal tie, black over-ear headphones on his head.",
-    "TAEJUN (navy jacket)": "Taejun — the same Korean man as in the first frame (tousled black hair, light stubble) in an unstructured navy chore jacket with a shirt-style collar (no lapels) over a plain white T-shirt, charcoal trousers and black leather shoes.",
+    "TAEJUN (shirt and tie)": "Taejun — the same Korean man as in the first frame (mid-thirties, short side-parted black hair exactly as in the first frame, clean-shaven, slim) in a white dress shirt with a slim dark-navy tie and charcoal trousers, a black-strap smartwatch on his left wrist.",
+    "TAEJUN (shirt, no tie)": "Taejun — the same Korean man as in the first frame (short side-parted black hair exactly as in the first frame, clean-shaven, slim) in a white dress shirt with no tie, the top button open and the sleeves rolled to the elbows, charcoal trousers, a black-strap smartwatch on his left wrist.",
+    "TAEJUN (blue shirt)": "Taejun — the same Korean man as in the first frame (short side-parted black hair exactly as in the first frame, clean-shaven, slim) in a pale-blue dress shirt with a slim charcoal tie and grey trousers, a black-strap smartwatch on his left wrist.",
+    "TAEJUN (blue shirt, headphones)": "Taejun — the same Korean man as in the first frame (short side-parted black hair exactly as in the first frame, clean-shaven, slim) in a pale-blue dress shirt with a slim charcoal tie, black over-ear headphones on his head.",
+    "TAEJUN (navy jacket)": "Taejun — the same Korean man as in the first frame (short side-parted black hair exactly as in the first frame, clean-shaven, slim) in an unstructured navy chore jacket with a shirt-style collar (no lapels) over a plain white T-shirt, charcoal trousers and black leather shoes.",
     "MINJAE (beige vest)": "Minjae — the same Korean man as in the first frame (Taejun's junior, late twenties, round face, short black hair with messy bangs) in a beige knit vest over a white shirt.",
     "MINJAE (green vest)": "Minjae — the same Korean man as in the first frame (round face, short black hair with messy bangs) in a dark-green knit vest over a white shirt.",
     "CLEAR UMBRELLA": "the premium clear umbrella exactly as in the first frame — a crystal-clear, glass-like canopy (not cloudy vinyl), thin silver ribs and a thin silver shaft, and a straight clear acrylic handle with a small frosted milky-white cap; whoever carries it grips the handle; no logo, no text.",
@@ -38,7 +38,7 @@ WHO = {
 NAME = {k: k.split(" ")[0].title() for k in WHO if k.split(" ")[0] in ("YUNA", "TAEJUN", "MINJAE")}
 
 GENRE = "a Korean romance brand film (a premium short-film advert)"
-LOOK = ("LOOK: a premium Korean romance brand film — real cinema camera, natural skin texture with visible pores, matte lips, true-to-life colors. "
+LOOK = ("LOOK: a premium Korean romance brand film — real cinema camera, natural skin texture, matte lips, true-to-life colors. "
         "Keep the first frame's light, colors and white balance to the very end — the pink-and-teal neon of the rainy night, the soft grey daylight "
         "rain, the warm pub, the cool store light, the sunshine after the rain — with no new light and no color shift; wherever rain falls in the first "
         "frame it keeps falling. The acting is subtle and natural, as in a calm Korean romance drama: small, believable expressions, never "
