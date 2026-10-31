@@ -289,6 +289,8 @@ def mix(film):
         place(T("결", 1.30 + dt), sfx("놓음")[: int(0.25 * SR)], lv, pan=0.15)
     # 유리 종 — 뚜껑 결정 반짝임과 같은 자리(결 2.0초). 깨짐 한 방(−8)보다 작고 맑게
     place(T("결", 2.0), glass_bell(), -15, at="start")
+    # 4.1판: 빛 한 줄이 제품 앞을 훑는 동안(결 2.7~3.9초) 가는 얼음 쉬머 — 그림은 바뀌었는데 소리가 없었다(Fable 4판 P3)
+    place(T("결", 2.8), frozen_shimmer(sfx("유리깨짐"), 1.0, seed=11), -34, at="start", fade_in=0.35, fade_out=0.55, pan=0.1)
     # 작은 공간 소리 — 디지털 무음 대신(지난 판 원본 실측 −41), 끝 0.4초에 잦아든다
     rng = np.random.default_rng(7)
     air = bandpass(rng.standard_normal((n, 2)).astype(np.float32), 60, 1500)

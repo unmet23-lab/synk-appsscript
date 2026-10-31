@@ -1250,7 +1250,14 @@ CAM_G1 = (math.radians(2), math.radians(27), 0.44, 50.0, 4.5)
 # 결의 뚜껑 금빛 키 — 1판 25 W는 맑은 결정 가장자리를 하얗게 날렸다(2판 진단, LID_EDGE와 함께 낮춤)
 GK_END = 16.0
 FALL_FACE, FALL_LAY = 0.25, (0.5, 0.9)  # 내려오는 결정이 카메라 쪽으로 도는 몫(0 → 0.25) · 눕는 몫(0.5 → 0.9) — 내려옴 전체를 1로
-FALL_K = 0.45  # 떨어지는 결정의 네 빛(4판 0.35 → 0.45 — 얼굴을 보이니 결이 서게) — 0.55는 「흰 솜 · 깃털」(Fable 2판 11.8초)
+FALL_K = 0.6  # 떨어지는 결정의 네 빛(4판 0.35 → 0.45, 4.1판 0.6 — Fable 4판 P2-2). 2판 0.55는 다 자란 결정에 「흰 솜 · 깃털」(Fable 2판 11.8초)
+# 4.1판: 내려오는 결정은 기의 0.5~1초 무렵(팔 사이가 빈 별)으로 — 다 자란 결정은 이 크기 · 밝기에서 안 결이 「헤어라인 회색 판 · 시퀸」이었다
+# (Fable 4판 P2-2). 뚜껑에 앉으면 다 자란 뚜껑 결정이 가운데에서 차올라 「앉은 눈송이가 무늬로 피어난다」
+FALL_GROWN = 0.35
+# 4.1판: 훑는 빛이 지날 때 뚜껑 결정도 반짝 — 뚜껑 윗면의 거울 방향은 카메라 반대쪽 뒤 위라 앞에서 훑는 빛이 결정에 안 닿았다
+# (Fable 4판 P2-1 「빛이 지나갔는데 결정은 안 반짝인다」). 결정 판에만 이어 둔 작은 빛을 거울 방향에서 옆으로 지나가게
+LID_SWEEP_W, LID_SWEEP_D, LID_SWEEP_X, LID_SWEEP_EL = 0.6, 0.35, 0.10, math.radians(7)
+# 거울 방향에 정확히 두니 납작한 판 전체가 한꺼번에 흰 판으로 탔다(4.1판 첫 시험, 4 W · 2 cm) — 7° 위로 비켜 기울어진 등뼈 면만 받게, 작게 · 약하게
 FALL_EDGE = 0.2  # 떨어지는 결정의 얇은 가장자리 서리 몫 — 멀리서 0.55는 희게 뭉친다(LID_EDGE와 같은 까닭)
 # 결의 조리개 — 4판: 결정이 내려오는 동안 f/11(결정 · 제품을 함께 심도 안에, 3판 f/8은 11.8초 내려오는 결정이 「회색 글리터 판」 — Fable P2-2),
 # 앉은 뒤 f/6.3으로 열어 바닥 반사 · 바탕에 깊이(3판 f/8 끝 장은 눈가림 셋이 「정지된 제품 렌더 · 3D 견본」), 초점은 앰플과 단지 사이
@@ -1327,7 +1334,9 @@ def shot_gyeol():
     fall_mat = M.mat_ice_crystal()
     ice_edge(fall_mat).inputs["To Min"].default_value = FALL_EDGE
     fade = add_fade(fall_mat)
-    fall = S.relief_sheet("떨어지는결정", lid_array(), LID_SIZE, 0.0, LID_HMAX, fall_mat, step=1)
+    arr_m, h_m = S.load_sim(S.MACRO_SIM, "macro")
+    fall_h = np.ascontiguousarray(S.grown(arr_m, M.plate(h_m), FALL_GROWN, soft=0.05)[::-1])
+    fall = S.relief_sheet("떨어지는결정", fall_h, LID_SIZE, 0.0, LID_HMAX, fall_mat, step=1)
     fall_lights = []
     for nm, (x, y, z), e, sz, rgb in CRYSTAL_LIGHTS:  # 전과 같은 네 빛을 결정 틀에 매단 자리로(크기는 따라가지 않는다)
         lt = S.area_light(nm, (0, 0, 0.1), (0, 0, 0), e * FALL_K, sz, rgb=rgb)
@@ -1341,6 +1350,8 @@ def shot_gyeol():
     prods = [o for o in bpy.context.scene.objects if o.type == "MESH" and o.parent in (jar_e, amp_e)]
     sweep = S.glint_only(S.area_light("훑는빛", (0, 0, 0.3), (0, 0, 0), 0.0, SWEEP_SIZE[0], rgb=(1.0, 0.94, 0.84), size_y=SWEEP_SIZE[1]))
     S.light_only(sweep, prods)
+    lid_sweep = S.glint_only(S.area_light("결정훑는빛", (0, 0, 0.3), (0, 0, 0), 0.0, 0.006, rgb=(1.0, 0.95, 0.88)))
+    S.light_only(lid_sweep, [lid])
     crack.outputs[0].default_value = math.pi + 0.3
     glow.outputs[0].default_value = 0.0
     frostw.outputs[0].default_value = FROST_SHARD  # 전 끝과 같게
@@ -1424,7 +1435,15 @@ def shot_gyeol():
         side = toward.cross(UP).normalized()
         sweep.location = mid + toward * SWEEP_D + side * lerp(SWEEP_X, -SWEEP_X, smooth(sw)) + UP * 0.10
         sweep.rotation_euler = (mid - sweep.location).to_track_quat("-Z", "Y").to_euler()
-        sweep.data.energy = SWEEP_W * math.sin(math.pi * sw) ** 0.6 if 0.0 < sw < 1.0 else 0.0  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
+        sweep.data.energy = SWEEP_W * math.sin(math.pi * sw) ** 0.6 if 0.0 < sw < 1.0 else 0.0
+        jp_s, jr_s = land_pose(jar_end, JAR_STAND, LAND["단지"], 2.4, 0.038, t)
+        lc = jp_s + jr_s.to_matrix() @ Vector((0, 0, LID_Z))
+        hz = Vector((loc.x - lc.x, loc.y - lc.y, 0.0))
+        el = math.atan2(loc.z - lc.z, hz.length) + LID_SWEEP_EL
+        back = -hz.normalized()
+        lid_sweep.location = lc + (back * math.cos(el) + UP * math.sin(el)) * LID_SWEEP_D + hz.normalized().cross(UP).normalized() * lerp(LID_SWEEP_X, -LID_SWEEP_X, smooth(sw))
+        lid_sweep.rotation_euler = (lc - lid_sweep.location).to_track_quat("-Z", "Y").to_euler()
+        lid_sweep.data.energy = LID_SWEEP_W * math.sin(math.pi * sw) ** 0.6 if 0.0 < sw < 1.0 else 0.0  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
         w = smooth(clamp01((t - 0.4) / 2.6))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
         pw.inputs[1].default_value = lerp(40.0, 90.0, w)
         gain.inputs[1].default_value = lerp(0.30, 0.22, w)
