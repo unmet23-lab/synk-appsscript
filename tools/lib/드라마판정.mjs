@@ -171,12 +171,16 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  if(n<min&&speech>0&&n/speech<MIN_SYLLABLES_PER_SPEECH_SECOND)return {status:'unclear',verdict:null,note:null,sure:false,checks:null};
  const ending=endingCheck(spec,transcript);
  const keys=keyCheck(spec,transcript);
+ // 명시한 허용 변형을 그대로 말한 경우는 원문과 다른 핵심 어휘도 허용한다.
+ // 근사 일치는 이 예외가 아니다 — 「정문」을 「후문」으로 바꾸는 오통과를 다시 열지 않는다.
+ const literal=value=>String(value??'').normalize('NFC').replace(/[\s\p{P}]/gu,'');
+ const exactVariant=(spec.variants||[]).some(v=>literal(v)&&literal(v)===literal(transcript));
  // 통째로 닮아도 끝맺음은 먼저 본다 — 긴 대사에서 「요」 하나 빠진 것은 자모 한두 개 차이라 통째 닮음에 묻힌다.
  // 끝맺음이 애매하면(「…아세요」 대신 「…알아?」) 노트 없이 통과하되 혼자 해냄으로 세지 않는다(10-30 Fable 실측).
  // 핵심 말도 먼저 본다 — 긴 대사에서 짧은 핵심 말 하나를 바꾼 것(「정문」 → 「후문」)도 통째 닮음 0.9를 넘는다(GPT 2차 검수 GA2).
  // 빠진 핵심 말이 있으면 통째 통과가 아니고(아래에서 노트), 확신 없는 핵심 말이 있으면 통과하되 혼자 해냄으로 세지 않는다.
- if(whole&&ending.state!=='off'&&!keys.missing.length&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
-  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&!keys.unsure.length,checks:{whole:true,ending,keys}};
+ if(whole&&ending.state!=='off'&&(!keys.missing.length||exactVariant)&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
+  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&(exactVariant||!keys.unsure.length),checks:{whole:true,ending,keys,exactVariant}};
  const length={state:n>=min?'ok':'short',min,got:n};
  let note=null;
  if(ending.state==='off')note={kind:'ending',want:ending.want,got:ending.got,at:ending.at};

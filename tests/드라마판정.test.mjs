@@ -182,3 +182,19 @@ test('스스로 만드는 말(free — 처음 보는 대사)은 빠진 말 노�
  assert.equal(judgeLine(free,{transcript:scene.line}).sure,true);
  assert.deepEqual(checkSpec(free),[],'모범 대사는 그대로 확실한 통과');
 });
+
+test('명시한 허용 변형은 다른 핵심 어휘도 통과하되 닮은 다른 장소는 확신하지 않는다',()=>{
+ const spec={id:'accepted-variant',line:'아이스크림을 주세요.',to:'staff',ending:['polite','formal'],keys:[{word:'아이스크림'}],variants:['빙과를 주세요.']};
+ for(const transcript of ['빙과를 주세요.','빙과를  주세요!']){
+  const r=judgeLine(spec,{transcript});
+  assert.deepEqual([r.verdict,r.note,r.sure,r.checks.exactVariant],['pass',null,true,true]);
+ }
+ assert.deepEqual(checkSpec(spec),[],'허용 변형은 자기 명세 검문도 통과');
+ const location={id:'variant-place',line:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?',to:'senior',keys:[{word:'도서관'},{word:'어디에 있는지'}],variants:['선배님, 도서관이 어디에 있어요?']};
+ const wrong=judgeLine(location,{transcript:'선배님, 화장실이 어디에 있어요?'});
+ assert.notEqual(wrong.sure,true,'허용 변형과 가까운 다른 장소는 예외가 아니다');
+ assert.equal(wrong.note?.kind,'missing');
+ const rude=judgeLine({...spec,variants:['고마워. 빙과를 주세요.']},{transcript:'고마워. 빙과를 주세요.'});
+ assert.equal(rude.note?.kind,'ending','허용 목록에 있어도 상대에 맞지 않는 끝맺음은 통과하지 않는다');
+ assert.notEqual(rude.sure,true);
+});

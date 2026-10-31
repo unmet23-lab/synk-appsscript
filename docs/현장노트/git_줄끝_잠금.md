@@ -605,6 +605,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: WORLD 묶음 생성기는 `require.resolve`로 부모 폴더를 거슬러 공용 작업본의 node_modules를 찾지만, `experiences/korean-study/build.mjs`는 `path.join(REPO,'node_modules/esbuild')`를 바로 부른다. 워크트리에는 node_modules가 없다.
 - 고침: 워크트리 `node_modules` · `desktop/node_modules` · `experiences/synk-account/node_modules`를 공용 작업본 것으로 가는 junction으로 두고(아래 항목대로 지울 때는 링크만 먼저 끊는다) 다시 `--all --local`.
 - 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
+- 추가 실측(2026-11-01 GPT): 드라마 시범의 새 워크트리도 node_modules가 없어 `바로올리기` 관련 시험의 `공개.test.js`에서 `Cannot find module 'parse5'`가 났다(첫 회502/511, push 안 됨). 오류 뒤 해당 시험 프로세스만 남아 끝나지 않아 PID·부모 PID·시험 경로를 대조해 그 프로세스만 끝내고 실패 요약 로그를 보존했다(임시 TAP 전문은 도구가 종료 시 지워 보존하지 못함). 이 작업본에서는 junction 대신 기존 lock의 `npm ci --no-fund --no-audit`로9개를 설치했다. package.json·lock은 바뀌지 않았다. `require('parse5').parse`와 `esbuild.transformSync`가 정상임을 확인한 뒤 같은 반영 명령으로 관련 시험을 다시 돌린다(시험을 빼거나 실패를 통과로 바꾸지 않음).
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
 - 증상: `git worktree remove --force`가 등록만 풀고 폴더를 남긴다. 남은 폴더를 `rm -rf`·`Remove-Item -Recurse`로 지우면 링크를 따라 공용 작업본의 node_modules까지 지울 수 있다(모든 세션의 빌드가 멈춤). `cmd /c rmdir`은 하네스가 막는다.
@@ -749,6 +750,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 관련 시험은 CI 지도에서 고르므로 커밋과 닿지 않는 시험도 든다. ④는 지면 목록의 파일이 작업본에 있는지 보는데, 워크트리 시작 때 가볍게가 `docs/캐릭터`를 sparse로 뺐다.
 - 고침: `node tools/바로올리기.js 가볍게 --되살림 docs/캐릭터 --실행` 뒤 같은 `--실행`을 다시 한다.
 - 다시 확인: `CI=1 node --test tests/지면폰트.test.js` 9/9. CI 없이 돌리면 ⑦이 따로 깨지지만 바로올리기는 CI 조건으로 돈다.
+- 2026-11-01 GPT 재확인: 드라마 시범도 관련 시험32파일에 이 검사가 섞여528/529에서 멈췄다. 단독 CI 조건에서 똑같이8/9(위 캐릭터 지면3벌 없음)를 재현하고, 같은 되살림 뒤9/9였다. 소스와 닿는 시험만으로 sparse 복원 필요를 판단하지 말고 반영 도구가 고른 관련 시험 목록도 먼저 본다. 앞뒤의 실제 TAP은 시범 작업본 `.tmp/drama-pilot-20261031/font-{before,after}-restore.tap`에 남겼다.
 
 ### 공간 정리에서 `git prune --expire=3.days.ago`는 자동 모드 판정기가 「Irreversible Deletion」으로 막는다 — 같은 정리의 세션 임시 폴더·gh-artifact zip·git `tmp_*` 지우기는 지나갔다 (2026-10-24 Claude · 메모에서 옮김)
 - 증상: 10-13 공간 정리에서 `git prune --expire=3.days.ago`가 실행 전에 「Irreversible Deletion」으로 거절됐다. 같은 정리의 `%TEMP%` 세션 폴더, gh-artifact zip, git이 남긴 `tmp_*` 파일 지우기는 지나갔다.
