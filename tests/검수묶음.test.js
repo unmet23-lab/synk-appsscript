@@ -504,7 +504,7 @@ test('화면 Fable 생략(10-24): 아르곤만 끝까지 읽으면 통과, 막�
   assert.deepEqual(d.목록.검수자들, ['아르곤', 'Fable']);
   assert.deepEqual(d.목록.대상.map(x => x.번호), ['A1']);
   // ④ 다시 볼 지적이 없는 다시 검수는 아르곤만 본다
-  const e = await api.다시하기({ 이름: 'skip-again', 폴더: path.join(r.뿌리, 'skip-again'), 앞: s.폴더 });
+  const e = await api.다시하기({ 이름: 'skip-again', 폴더: path.join(r.뿌리, 'skip-again'), 앞: s.폴더, 함께올림: '시험' });
   assert.deepEqual(e.목록.검수자들, ['아르곤']); assert.deepEqual(e.목록.대상, []);
   await api.아르곤보내기(e.폴더, e.목록, { call: 다시답하기(), 몫: 몫충분 });
   const ok = api.검수확인(e.폴더);
@@ -583,13 +583,13 @@ test('GPT 작성은 외부 Claude 응답 필요, 한도 실패 원문만 대체 
   assert.match(api.검수확인(other.폴더).사유.join(' / '), /필수 GPT 검수 미완료/);
 });
 
-test('정책 판 2(10-24): Claude 백엔드는 GPT 하나 — 막히면 아르곤 → Fable, 옛 판 1 증거(아르곤+GPT·GPT만)도 통과', async t => {
+test('정책 판 2·5: Claude 백엔드는 GPT 하나 — 막히면 아르곤 → Fable, 옛 판 1 증거(아르곤+GPT·GPT만)도 통과', async t => {
   const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, ...덧 });
   const 한도 = 누구 => async () => { throw new Error(누구 === 'GPT' ? 'You have hit your usage limit' : 'RESOURCE_EXHAUSTED quota'); };
   // GPT 하나로 통과 — 아르곤은 돌리지 않는다
   const a = await 준비('gpt-only');
-  assert.equal(a.목록.정책.판, 2); assert.deepEqual(a.목록.정책.필수, ['GPT']);
+  assert.equal(a.목록.정책.판, 5); assert.deepEqual(a.목록.정책.필수, ['GPT']);
   assert.match(api.검수확인(a.폴더).사유.join(' / '), /필수 GPT 검수 미완료/);
   await api.GPT보내기(a.폴더, a.목록, { call: 답하기(), 몫: 몫충분 });
   assert.deepEqual(api.검수확인(a.폴더).사유, []);
@@ -1007,7 +1007,7 @@ test('다시: 대상 지적 없는 고침(P2)도 정책의 첫 검수자가 보�
   await assert.rejects(api.다시하기({ 이름: 'same', 폴더: path.join(r.뿌리, 'same'), 앞: x.폴더 }), /다시 볼 것이 없다/);
   api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
   r.쓰기('a.js', 'a=2 // 이름 고침\n');
-  const y = await api.다시하기({ 이름: 'p2-again', 폴더: path.join(r.뿌리, 'p2-again'), 앞: x.폴더 });
+  const y = await api.다시하기({ 이름: 'p2-again', 폴더: path.join(r.뿌리, 'p2-again'), 앞: x.폴더, 함께올림: '시험' });
   assert.deepEqual(y.목록.대상, []); assert.deepEqual(y.목록.검수자들, ['GPT']);
   await api.GPT보내기(y.폴더, y.목록, { call: async () => { throw new Error('You have hit your usage limit'); }, 몫: 몫충분 });
   assert.match(api.검수확인(y.폴더).사유.join(' / '), /다시 검수 아르곤 미완료.*GPT 검수가 한도·로그인으로 막혀 대신/);

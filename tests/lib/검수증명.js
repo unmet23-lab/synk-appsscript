@@ -34,7 +34,7 @@ async function 검수증거({ 저장소, 바탕, 배포후보, 폴더 }) {
 /** 고친 뒤 바뀐 diff만 다시 본 증거(검수묶음 다시): 다시 볼 지적은 모두 풀렸다고, 새 지적은 없다고 답한다. 끝 폴더를 돌려준다. */
 async function 다시증거({ 앞, 저장소, 배포후보 = null, 폴더 }) {
   const 도구 = await import(pathToFileURL(path.resolve(__dirname, '../../tools/검수묶음.mjs')));
-  const { 목록 } = await 도구.다시하기({ 이름: path.basename(폴더), 폴더, 앞, 저장소, ...(배포후보 ? { 배포후보 } : {}) });
+  const { 목록 } = await 도구.다시하기({ 이름: path.basename(폴더), 폴더, 앞, 저장소, 함께올림: '배포 통합시험 — 사슬 끝 후보만 본다', ...(배포후보 ? { 배포후보 } : {}) });
   const 답 = prompt => JSON.stringify({ findings: [], targets: [...prompt.matchAll(/^- \[(Q\d+)\]/gm)].map(x => ({ id: x[1], resolved: true, note: '고친 diff에서 확인' })),
     seen: [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(x => x[1]), coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] },
     endMarker: /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1] });

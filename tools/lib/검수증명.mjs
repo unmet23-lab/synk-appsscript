@@ -74,9 +74,24 @@ export function 후보읽기(folder) {
   const manifest = { 판: 1, 종류: raw.종류, 항목 };
   return { ...manifest, manifestSha256: 정규해시(manifest) };
 }
+const 블롭번호 = b => crypto.createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${b.length}\0`), b])).digest('hex');
+/** 공개 도구가 후보 곁에 남긴 앞 공개본(`.앞판/<경로>`, 후보.json의 앞판 = 경로 → git blob 번호). 번호가 맞는 것만 돌려준다 — 없거나 어긋나면 그 파일은 통째로 검수한다.
+ *  증명 칸(위 · 항목)은 배포 증명에 묶여, 공개 도구가 그 공개 커밋에 정말 그 판이 있는지 대조한다. */
+export function 후보앞판읽기(folder) {
+  const 판 = new Map(), 항목 = {};
+  if (!folder) return { 판, 증명: null };
+  const root = path.resolve(folder), raw = JSON.parse(fs.readFileSync(path.join(root, '후보.json'), 'utf8').replace(/^﻿/, ''));
+  for (const [경로, 번호] of Object.entries(raw.앞판 || {})) {
+    let b;
+    try { b = fs.readFileSync(안전경로(root, `.앞판/${경로}`)); } catch { continue; }
+    if (블롭번호(b) === 번호) { 판.set(경로, b); 항목[경로] = 번호; }
+  }
+  return { 판, 증명: 판.size ? { 위: raw.위 ?? null, 항목 } : null };
+}
 // 검수 정책 판. 2(2026-10-24 다섯 가지 ①)부터 Claude 백엔드의 필수 검수는 GPT 하나다. 1(10-22~24)은 아르곤·GPT 둘을 적었다 —
 // 옛 판 묶음도 판정은 아래 대체순서(지금 규칙)로 하므로, 둘 다 받은 옛 증거와 GPT만 받은 옛 증거가 그대로 통과한다.
-export const 정책판 = 2;
+// 5(2026-10-31 검수 효율 여섯 가지)부터 GPT 작성의 다시 검수는 GPT만 보고, Claude는 첫 판·끝 판과 자기가 낸 지적만 본다. 3·4는 사용자지정 판이다.
+export const 정책판 = 5;
 // 일회 작업의 직접 사용자 지정. 기본 정책/과거 증명에는 적용하지 않는다.
 export const 사용자지정원문 = Object.freeze({
   implementation: '이번 4건은 GPT 구현 허용',
@@ -346,7 +361,7 @@ function 개인화생성물정책(o, files, candidate, 판) {
 }
 
 export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
-  if (![1, 2, 3, 4].includes(판) || ([3, 4].includes(판)) !== Boolean(o.사용자지정)) throw new Error(`모르는 검수 정책 판 또는 사용자지정 누락: ${판}`);
+  if (![1, 2, 3, 4, 5].includes(판) || ([3, 4].includes(판)) !== Boolean(o.사용자지정)) throw new Error(`모르는 검수 정책 판 또는 사용자지정 누락: ${판}`);
   const candidate = 후보읽기(o.배포후보);
   const 기준이미지만 = candidate?.종류 === 'synk.im' && candidate.항목.every(f => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(f.경로));
   if (o.담당예외 === 개인화생성물작업ID) return 개인화생성물정책(o, files, candidate, 판);
@@ -474,10 +489,13 @@ export function 바뀐경로들(앞판, 지금판, 앞후보 = null, 지금후�
   const 후보 = [...new Set([...후보앞.keys(), ...후보지금.keys()])].filter(k => 정규해시(후보앞.get(k) ?? null) !== 정규해시(후보지금.get(k) ?? null)).sort();
   return { 소스, 후보 };
 }
-/** 다시 검수자: 그 지적을 낸 검수자. GPT 작성은 GPT·Claude 둘 다, 화면은 Fable이 끝 상태를 본다, 대상이 없으면 정책의 첫 검수자.
+/** GPT 작성 작업의 Claude를 첫 판·끝 판과 자기 지적으로 줄인 정책인가(판 5). 담당예외는 직접 승인한 검수자 그대로다. */
+export const 끝판정책 = 정책 => 정책.판 === 5 && 정책.작성자 === 'GPT' && !정책.담당예외 && !정책.사용자지정;
+/** 다시 검수자: 그 지적을 낸 검수자. GPT 작성은 GPT(판 5부터 Claude는 끝 판과 자기 지적만, 옛 판은 둘 다), 화면은 Fable이 끝 상태를 본다, 대상이 없으면 정책의 첫 검수자.
  *  화면 Fable 생략 묶음은 다시 볼 지적이 없으면 아르곤만 — 고친 P0·P1이 있으면 화면을 보는 Fable이 함께 본다. */
-export function 다시검수자들(정책, 대상) {
+export function 다시검수자들(정책, 대상, { 끝판 = false } = {}) {
   if (정책.사용자지정) return [...정책.필수];
+  if (끝판정책(정책)) return 끝판 || 대상.some(t => t.출처 === 'Claude') ? ['GPT', 'Claude'] : ['GPT'];
   if (정책.작성자 === 'GPT') return [...정책.필수];
   const 낸 = ['아르곤', 'GPT', 'Fable'].filter(w => 대상.some(t => t.출처 === w));
   if (정책.종류 === '화면') return 정책.페이블생략 && !낸.length ? ['아르곤'] : [...new Set([...낸, 'Fable'])];
@@ -490,8 +508,8 @@ export function 대신할검수자(정책, 누구) {
   const 차례 = ['GPT', '아르곤', 'Fable'], i = 차례.indexOf(누구);
   return i < 0 ? [누구] : 차례.slice(i);
 }
-export function 입력증명({ 정책, 파일, 배포후보 = null, 항목 = [], 자료해시 = null, 보조파일 = [] }) {
-  const body = { 정책, 파일, 배포후보, 항목, 자료해시, 보조파일 };
+export function 입력증명({ 정책, 파일, 배포후보 = null, 항목 = [], 자료해시 = null, 보조파일 = [], 후보앞판 = null }) {
+  const body = { 정책, 파일, 배포후보, 항목, 자료해시, 보조파일, ...(후보앞판 ? { 후보앞판 } : {}) };
   const 검토입력해시 = 정규해시(body);
   return { ...body, 검토입력해시, 표식: `END_OF_FINAL_REVIEW_${검토입력해시}`, 항목 };
 }

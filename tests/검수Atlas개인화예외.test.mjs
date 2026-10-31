@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {정책만들기, 대체순서, 다시검수자들, sha256} from '../tools/lib/검수증명.mjs';
+import {정책만들기 as 지금정책, 대체순서, 다시검수자들, sha256} from '../tools/lib/검수증명.mjs';
 import {후보항목들, 두판diff, 준비하기, 개인화신규검수검사} from '../tools/검수묶음.mjs';
+// 은퇴한 일회 예외는 그때의 정책 판 2로만 읽는다(과거 증명 확인) — 새 판으로는 만들지 않는다.
+const 정책만들기=(o,files,덧)=>지금정책(o,files,덧??(o.담당예외?{판:2}:undefined));
 const opts={종류:'백엔드',작성자:'GPT',담당예외:'atlas-personalization-20261029',끝:'작업본'};
 const source={경로:'desktop/assets/launcher/engine.js',상태:'M'};
 test('관심 주제 표시 모델의 기존 PC 사본 교체만 이번 예외에 포함한다',t=>{

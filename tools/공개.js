@@ -1143,13 +1143,13 @@ function 커밋만들기(git, 위, 항목들, 메시지, 작성자) {
   }
 }
 
-function 후보폴더쓰기(폴더, 후보) {
+function 후보폴더쓰기(폴더, 후보, git, 저장) {
   const 뿌리 = path.resolve(폴더);
   if (fs.existsSync(뿌리) && fs.readdirSync(뿌리).length) {
     // 이 도구가 전에 써 둔 후보 폴더(후보.json에 적힌 파일만 있음)면 비우고 다시 쓴다. 다른 파일이 섞였으면 멈춘다.
     let 전 = null;
     try { 전 = JSON.parse(fs.readFileSync(path.join(뿌리, '후보.json'), 'utf8')); } catch (_) { /* 우리 폴더가 아니다 */ }
-    const 적힌 = new Set(전 && Array.isArray(전.항목) ? [...전.항목.map((x) => x.경로), '후보.json'] : []);
+    const 적힌 = new Set(전 && Array.isArray(전.항목) ? [...전.항목.map((x) => x.경로), ...Object.keys(전.앞판 || {}).map((p) => `.앞판/${p}`), '후보.json'] : []);
     const 있는 = 폴더걷기(뿌리);
     if (!전 || 있는.연결.length || 있는.파일.some((f) => !적힌.has(f))) throw new 멈춤(`--후보폴더가 비어 있지 않다(이 도구가 쓴 후보 폴더가 아니다): ${뿌리}`);
     fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 });
@@ -1160,8 +1160,17 @@ function 후보폴더쓰기(폴더, 후보) {
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(f, x.버퍼);
   }
+  // 앞 공개본 — 검수가 통째가 아니라 바뀐 곳만 읽는다(2026-10-31). 경로 → blob 번호를 적어, 공개 때 그 커밋의 그 판인지 후보검수확인이 대조한다.
+  const 앞판 = {};
+  for (const x of 후보.항목) {
+    if (!x.버퍼 || !x.전) continue;
+    const f = path.join(뿌리, '.앞판', ...x.경로.split('/'));
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, 블롭(git, 저장, x.전));
+    앞판[x.경로] = x.전;
+  }
   fs.mkdirSync(뿌리, { recursive: true });
-  const 기록 = { ...검수후보(후보), 위: 후보.위, 계획: 후보.계획 };
+  const 기록 = { ...검수후보(후보), 위: 후보.위, 계획: 후보.계획, 앞판 };
   fs.writeFileSync(path.join(뿌리, '후보.json'), `${JSON.stringify(기록, null, 1)}\n`);
   return 뿌리;
 }
@@ -1176,10 +1185,17 @@ function 검수후보(후보) {
 
 /** 검수 사슬(처음 검수 → 고친 diff만 다시 본 검수 …)의 끝 후보가 최종 공개 바이트와 같아야 한다(2026-10-24 다섯 가지 ⑤).
  *  사슬 이음(해시)·고리마다 검수·끝 후보와 지금 원천 대조는 검수확인이 보고, 여기서는 끝 후보 = 최종 바이트·삭제·모드를 그대로 본다. */
-async function 후보검수확인(후보, 옵션) {
+async function 후보검수확인(후보, 옵션, git, 위) {
   const { 검수확인 } = await import('./검수묶음.mjs');
   const r = await 검수확인(옵션.검수, { 저장소: 옵션.검수저장소 });
   if (!r.통과) return { 통과: false, 사유: r.사유 || ['검수 증거 확인 실패'] };
+  // 검수자는 앞 공개본과 달라진 곳만 읽었다 — 그 앞 판이 지금 올릴 커밋 바로 앞의 공개본이어야 검수가 실제 변경을 본 것이다(2026-10-31).
+  // 옛 커밋의 판과 맞춰 두면 그사이 바뀐 공개본을 되돌리는 후보가 「달라진 곳 없음」으로 보이므로, 최종 바이트를 보는 이 자리에서 위 커밋과 견준다.
+  const 앞 = r.증명?.후보앞판;
+  if (앞) {
+    const 트리 = 트리읽기(git, 위), 다름 = Object.entries(앞.항목).filter(([경로, 번호]) => 트리.get(경로)?.oid !== 번호).map(([경로]) => 경로);
+    if (다름.length) return { 통과: false, 사유: [`검수가 견준 앞 공개본이 지금 공개본과 다르다: ${다름.join(', ')} — 공개 도구의 --후보폴더로 후보를 다시 만들어 처음부터 검수한다`] };
+  }
   // 공개 경로가 운영자 전용인지 보증하는 매핑이 없다. 호출자가 붙인 이름으로 공개 화면을 제외하지 않는다.
   if (r.증명?.정책?.예외?.종류 === '내부') return { 통과: false, 사유: ['synk.im 공개 후보에는 내부 예외를 적용할 수 없다 — 해당 후보의 필수 검수를 받는다'] };
   const 기준전용 = 후보.항목.length && 후보.항목.every(x => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(x.경로));
@@ -1413,12 +1429,12 @@ async function 올리기(옵션 = {}) {
       if (후보.폴더멈춤) return { 결과: '멈춤', 이유: '기준(--기준·--기준폴더) 없이 폴더를 줬다 — 남이 공개본을 직접 고친 파일까지 덮을 수 있어 목록만 보인다(모두 올리려면 --전부)', ...요약 };
       if (후보.걸림.length) return { 결과: '걸림', 이유: '검사에 걸렸다 — 아무것도 올리지 않았다', ...요약 };
       if (!후보.항목.length) return { 결과: '올릴 것 없음', 이유: '바뀌는 파일이 없다', ...요약 };
-      if (옵션.후보폴더 && 차례 === 1 && !옵션.실행) 요약.후보폴더 = 후보폴더쓰기(옵션.후보폴더, 후보);
+      if (옵션.후보폴더 && 차례 === 1 && !옵션.실행) 요약.후보폴더 = 후보폴더쓰기(옵션.후보폴더, 후보, git, 저장);
       if (!옵션.실행) return { 결과: '미리 보기', ...요약 };
       if (옵션.계획 !== 후보.계획) {
         return { 결과: '멈춤', 이유: `계획이 미리 보기와 다르다(${옵션.계획} → ${후보.계획}) — 그사이 공개본이나 내 파일이 바뀌었다. 후보를 다시 준비하고 검수 증거를 맞춘다`, ...요약 };
       }
-      요약.검수 = await 후보검수확인(후보, 옵션);
+      요약.검수 = await 후보검수확인(후보, 옵션, git, 위);
       if (!요약.검수.통과) return { 결과: '멈춤', 이유: `배포 전 검수: ${요약.검수.사유.join(' / ')}`, ...요약 };
       const 작성자 = 옵션.작성자 || 기본작성자;
       블롭들쓰기(git, 저장, 후보.항목);
@@ -1426,7 +1442,7 @@ async function 올리기(옵션 = {}) {
       // 커밋 직전·push 직전에 origin/main이 그대로인지 다시 본다(움직였으면 새 판 위에서 처음부터)
       if (await 받아오기(git) !== 위) { 알리기('origin/main이 움직여 새 판 위에서 다시 만든다'); continue; }
       if (옵션._밀기전) await 옵션._밀기전();
-      요약.검수 = await 후보검수확인(후보, 옵션);
+      요약.검수 = await 후보검수확인(후보, 옵션, git, 위);
       if (!요약.검수.통과) return { 결과: '멈춤', 이유: `push 직전 검수: ${요약.검수.사유.join(' / ')}`, ...요약 };
       const p = git.돌리기(['push', '--porcelain', 'origin', `${커밋}:refs/heads/main`], { 허용: null });
       const 출력 = `${p.stdout}\n${p.stderr}`;

@@ -182,6 +182,15 @@ test('3방향(--기준): 기준 뒤 남이 같은 파일을 고쳤으면 둘 다
   assert.match(합친, /줄 2 — 남이 공개본에서 고침/);
   assert.match(합친, /줄 9 — 내가 고침/);
 
+  // 앞 공개본을 후보 곁에 남긴다 — 검수는 달라진 곳만 읽고, manifest에는 들지 않는다. 같은 폴더로 다시 미리 봐도 멈추지 않는다
+  const 기록 = JSON.parse(fs.readFileSync(path.join(후보, '후보.json'), 'utf8'));
+  const 앞글 = fs.readFileSync(path.join(후보, '.앞판', 'page.html'));
+  assert.equal(기록.앞판['page.html'], 블롭id(앞글));
+  assert.match(앞글.toString('utf8'), /줄 2 — 남이 공개본에서 고침/);
+  assert.doesNotMatch(앞글.toString('utf8'), /내가 고침/);
+  assert.equal(기록.항목.some((x) => x.경로.startsWith('.앞판')), false);
+  assert.equal((await 도구.올리기(공.옵션({ 원본: 내판, 항목: ['page.html'], 기준, 후보폴더: 후보 }))).결과, '미리 보기');
+
   // 기준 없이 덮으면 남의 변경이 되돌아간다 — 하루 안에 남이 고친 파일이라고 알린다
   const 덮기 = await 도구.올리기(공.옵션({ 원본: 내판, 항목: ['page.html'] }));
   assert.ok(덮기.알림.some((x) => x.검사 === '덮어쓰기' && x.경로 === 'page.html'));
@@ -886,6 +895,52 @@ test('검수 관문: 검수 뒤 고친 후보는 바뀐 diff만 다시 본 사�
   assert.equal(올림.결과, '올림', 올림.이유);
   assert.deepEqual(올림.검수.사슬, ['review', 'review-2']);
   assert.equal(공.파일('a.txt').toString(), '새 고침\n');
+});
+
+test('검수 관문: 검수가 견준 앞 공개본이 지금 공개본의 그 판이 아니면(꾸밈·되돌리기) 올리지 않고, 공개본이 다른 파일로 움직인 것은 잇는다', async t => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n', 'b.txt': '다른 파일\n' });
+  const 빌드 = 공.로컬('build', { 'a.txt': '새\n' });
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 빌드, 항목: ['a.txt'], 후보폴더: 후보 });
+  const 미리 = await 원도구.올리기(입력);
+  const 실행 = { ...입력, 실행: true, 계획: 미리.계획, 메시지: 'Publish', 받기: async () => ({ 상태: 200, 버퍼: Buffer.from('새\n'), 머리: '' }) };
+  const 진짜 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'real') });
+
+  // .앞판과 후보.json을 함께 고쳐 후보 바이트를 앞 판처럼 꾸미면 검수 묶음에는 달라진 곳이 없다고 나온다 — 공개 커밋과 대조해 막는다
+  const 기록파일 = path.join(후보, '후보.json'), 기록 = JSON.parse(fs.readFileSync(기록파일, 'utf8')), 옛번호 = 기록.앞판['a.txt'];
+  쓰기(후보, '.앞판/a.txt', '새\n');
+  fs.writeFileSync(기록파일, JSON.stringify({ ...기록, 앞판: { 'a.txt': 블롭id(글('새\n')) } }));
+  const 꾸밈 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'forged') });
+  const 막힘 = await 원도구.올리기({ ...실행, 검수: 꾸밈 });
+  assert.equal(막힘.결과, '멈춤');
+  assert.match(막힘.이유, /검수가 견준 앞 공개본이 지금 공개본과 다르다: a\.txt/);
+  assert.equal(공.머리(), 공.바탕);
+
+  쓰기(후보, '.앞판/a.txt', '옛\n');
+  fs.writeFileSync(기록파일, JSON.stringify({ ...기록, 앞판: { 'a.txt': 옛번호 } }));
+
+  // 진짜 앞 판이면 그사이 다른 파일이 공개돼도 올라간다
+  공.올림({ 'b.txt': '남의 공개\n' });
+  const 새계획 = await 원도구.올리기({ ...입력, 후보폴더: undefined });
+  const 올림 = await 원도구.올리기({ ...실행, 계획: 새계획.계획, 검수: 진짜 });
+  assert.equal(올림.결과, '올림', 올림.이유);
+  assert.equal(공.파일('a.txt').toString(), '새\n');
+
+  // 되돌리기: 옛 커밋의 판을 앞 판으로 대고 그사이 바뀐 공개본을 옛 바이트로 되돌리는 후보는, 검수 diff가 비어도 지금 공개본과 견줘 막는다
+  const 옛커밋 = 공.머리();
+  공.올림({ 'a.txt': '남이 다시 고침\n' });
+  const 되돌림빌드 = 공.로컬('rollback', { 'a.txt': '새\n' });
+  const 되돌림후보 = 공.후보폴더();
+  const 되돌림입력 = 공.옵션({ 원본: 되돌림빌드, 항목: ['a.txt'], 후보폴더: 되돌림후보 });
+  const 되돌림미리 = await 원도구.올리기(되돌림입력);
+  const 되기록파일 = path.join(되돌림후보, '후보.json'), 되기록 = JSON.parse(fs.readFileSync(되기록파일, 'utf8'));
+  쓰기(되돌림후보, '.앞판/a.txt', '새\n');
+  fs.writeFileSync(되기록파일, JSON.stringify({ ...되기록, 위: 옛커밋, 앞판: { 'a.txt': 블롭id(글('새\n')) } }));
+  const 되검수 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 되돌림후보, 폴더: path.join(공.뿌리, 'rollback-review') });
+  const 되막힘 = await 원도구.올리기({ ...되돌림입력, 실행: true, 계획: 되돌림미리.계획, 메시지: 'Rollback', 검수: 되검수, 받기: async () => ({ 상태: 200, 버퍼: Buffer.from('새\n'), 머리: '' }) });
+  assert.equal(되막힘.결과, '멈춤');
+  assert.match(되막힘.이유, /검수가 견준 앞 공개본이 지금 공개본과 다르다: a\.txt/);
+  assert.equal(공.파일('a.txt').toString(), '남이 다시 고침\n');
 });
 
 test('검수 관문: 자동 토큰 파일·삭제·모드를 포함한 최종 후보 전체가 검수에 있어야 한다', async t => {
