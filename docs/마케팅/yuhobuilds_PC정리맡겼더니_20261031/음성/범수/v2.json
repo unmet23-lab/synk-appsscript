@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "1초 만에 치웠는데, 그날 밤 회사 업데이트가 멈췄습니다.",
+ "dur": 2.972,
+ "words": [
+  {
+   "text": "1초",
+   "start": 0.02,
+   "end": 0.194
+  },
+  {
+   "text": "만에",
+   "start": 0.234,
+   "end": 0.355
+  },
+  {
+   "text": "치웠는데,",
+   "start": 0.396,
+   "end": 0.812
+  },
+  {
+   "text": "그날",
+   "start": 1.255,
+   "end": 1.444
+  },
+  {
+   "text": "밤",
+   "start": 1.484,
+   "end": 1.578
+  },
+  {
+   "text": "회사",
+   "start": 1.631,
+   "end": 1.78
+  },
+  {
+   "text": "업데이트가",
+   "start": 1.86,
+   "end": 2.264
+  },
+  {
+   "text": "멈췄습니다.",
+   "start": 2.304,
+   "end": 2.972
+  }
+ ],
+ "source": {
+  "key": "2aa9dd32eb28af51a1fa7ac4b4dcd0fa",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

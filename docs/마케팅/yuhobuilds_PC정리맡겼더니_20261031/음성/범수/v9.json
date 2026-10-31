@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v9",
+ "text": "바로 지웠으면, 못 살렸습니다.",
+ "dur": 1.663,
+ "words": [
+  {
+   "text": "바로",
+   "start": 0.02,
+   "end": 0.199
+  },
+  {
+   "text": "지웠으면,",
+   "start": 0.24,
+   "end": 0.803
+  },
+  {
+   "text": "못",
+   "start": 0.926,
+   "end": 0.995
+  },
+  {
+   "text": "살렸습니다.",
+   "start": 1.036,
+   "end": 1.663
+  }
+ ],
+ "source": {
+  "key": "f9657a4958dafb957607e9cf6b65e864",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

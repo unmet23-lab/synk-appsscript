@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1017,
+  "lufs": -17
+ },
+ "made": "2026-10-31T07:53:11.059Z",
+ "lines": [
+  {
+   "id": "v1",
+   "text": "53기가가, 전부 쓰레기랍니다. AI 말로는요.",
+   "dur": 2.94,
+   "syllablesPerSec": 5.1,
+   "src": "v1.wav",
+   "key": "b636b83224dd9a4f9015fee2628841fc",
+   "words": 5
+  },
+  {
+   "id": "v2",
+   "text": "1초 만에 치웠는데, 그날 밤 회사 업데이트가 멈췄습니다.",
+   "dur": 2.972,
+   "syllablesPerSec": 7.4,
+   "src": "v2.wav",
+   "key": "2aa9dd32eb28af51a1fa7ac4b4dcd0fa",
+   "words": 8
+  },
+  {
+   "id": "v3",
+   "text": "PC 정리를 맡겼더니, 사흘 넘게 안 건드린 폴더를 쓰레기로 본 거예요.",
+   "dur": 3.633,
+   "syllablesPerSec": 7.16,
+   "src": "v3.wav",
+   "key": "ffe744f4dd224174c85358a2643311df",
+   "words": 11
+  },
+  {
+   "id": "v3b",
+   "text": "왜 멈췄을까요?",
+   "dur": 0.906,
+   "syllablesPerSec": 6.62,
+   "src": "v3b.wav",
+   "key": "a69c21b5b73667cc1672a046bc590ff7",
+   "words": 2
+  },
+  {
+   "id": "v4",
+   "text": "그 폴더 안에, 업데이트에 쓰던 파일이 있었거든요.",
+   "dur": 2.491,
+   "syllablesPerSec": 8.03,
+   "src": "v4.wav",
+   "key": "31d695357a7ed7c2ff80b020641ff424",
+   "words": 7
+  },
+  {
+   "id": "v5",
+   "text": "안 건드렸다고, 안 쓰는 게 아니었어요.",
+   "dur": 2.243,
+   "syllablesPerSec": 6.69,
+   "src": "v5.wav",
+   "key": "831df465611a34eeb8cef6f22eac27d6",
+   "words": 6
+  },
+  {
+   "id": "v6",
+   "text": "지우지는 않았어요. 정리 대기 폴더로, 옮겨만 뒀습니다.",
+   "dur": 2.85,
+   "syllablesPerSec": 7.72,
+   "src": "v6.wav",
+   "key": "f60aa8546423c171dcd4f306afbca1b2",
+   "words": 7
+  },
+  {
+   "id": "v7b",
+   "text": "어디서 쓰는지 따라가 되돌리니, 업데이트가 다시 돌아갔습니다.",
+   "dur": 3.342,
+   "syllablesPerSec": 7.78,
+   "src": "v7b.wav",
+   "key": "7c6d20f4992f361b70e30d5c369e9bd9",
+   "words": 7
+  },
+  {
+   "id": "v7",
+   "text": "그럼 진짜 쓰레기는, 얼마였을까요?",
+   "dur": 1.704,
+   "syllablesPerSec": 8.22,
+   "src": "v7.wav",
+   "key": "19331a07d78deba7e77e04f330bc0e89",
+   "words": 4
+  },
+  {
+   "id": "v8",
+   "text": "53기가 중에, 6.7기가뿐이었어요.",
+   "dur": 2.208,
+   "syllablesPerSec": 4.98,
+   "src": "v8.wav",
+   "key": "023afb05b4492a241eb44c64022aaf5f",
+   "words": 3
+  },
+  {
+   "id": "v9",
+   "text": "바로 지웠으면, 못 살렸습니다.",
+   "dur": 1.663,
+   "syllablesPerSec": 7.22,
+   "src": "v9.wav",
+   "key": "f9657a4958dafb957607e9cf6b65e864",
+   "words": 4
+  },
+  {
+   "id": "v10",
+   "text": "그래서 이제 AI한테는, 옮기는 것까지만 시킵니다.",
+   "dur": 2.567,
+   "syllablesPerSec": 7.4,
+   "src": "v10.wav",
+   "key": "4e318cac9a1787305532179065871f6a",
+   "words": 6
+  }
+ ]
+}

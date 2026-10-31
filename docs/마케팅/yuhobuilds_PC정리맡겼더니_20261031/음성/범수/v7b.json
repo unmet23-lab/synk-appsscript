@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7b",
+ "text": "어디서 쓰는지 따라가 되돌리니, 업데이트가 다시 돌아갔습니다.",
+ "dur": 3.342,
+ "words": [
+  {
+   "text": "어디서",
+   "start": 0.01,
+   "end": 0.251
+  },
+  {
+   "text": "쓰는지",
+   "start": 0.296,
+   "end": 0.581
+  },
+  {
+   "text": "따라가",
+   "start": 0.626,
+   "end": 0.912
+  },
+  {
+   "text": "되돌리니,",
+   "start": 0.957,
+   "end": 1.393
+  },
+  {
+   "text": "업데이트가",
+   "start": 1.979,
+   "end": 2.415
+  },
+  {
+   "text": "다시",
+   "start": 2.46,
+   "end": 2.61
+  },
+  {
+   "text": "돌아갔습니다.",
+   "start": 2.655,
+   "end": 3.342
+  }
+ ],
+ "source": {
+  "key": "7c6d20f4992f361b70e30d5c369e9bd9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

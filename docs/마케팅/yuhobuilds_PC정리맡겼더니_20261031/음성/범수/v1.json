@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "53기가가, 전부 쓰레기랍니다. AI 말로는요.",
+ "dur": 2.94,
+ "words": [
+  {
+   "text": "53기가가,",
+   "start": 0.01,
+   "end": 0.66
+  },
+  {
+   "text": "전부",
+   "start": 0.87,
+   "end": 1.08
+  },
+  {
+   "text": "쓰레기랍니다.",
+   "start": 1.138,
+   "end": 1.653
+  },
+  {
+   "text": "AI",
+   "start": 2.036,
+   "end": 2.283
+  },
+  {
+   "text": "말로는요.",
+   "start": 2.341,
+   "end": 2.94
+  }
+ ],
+ "source": {
+  "key": "b636b83224dd9a4f9015fee2628841fc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 164
+ }
+}

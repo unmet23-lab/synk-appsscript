@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v4",
+ "text": "그 폴더 안에, 업데이트에 쓰던 파일이 있었거든요.",
+ "dur": 2.491,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.05,
+   "end": 0.117
+  },
+  {
+   "text": "폴더",
+   "start": 0.198,
+   "end": 0.427
+  },
+  {
+   "text": "안에,",
+   "start": 0.481,
+   "end": 0.617
+  },
+  {
+   "text": "업데이트에",
+   "start": 0.927,
+   "end": 1.332
+  },
+  {
+   "text": "쓰던",
+   "start": 1.372,
+   "end": 1.575
+  },
+  {
+   "text": "파일이",
+   "start": 1.616,
+   "end": 1.844
+  },
+  {
+   "text": "있었거든요.",
+   "start": 1.885,
+   "end": 2.491
+  }
+ ],
+ "source": {
+  "key": "31d695357a7ed7c2ff80b020641ff424",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

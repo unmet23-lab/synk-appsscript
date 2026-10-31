@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v5",
+ "text": "안 건드렸다고, 안 쓰는 게 아니었어요.",
+ "dur": 2.243,
+ "words": [
+  {
+   "text": "안",
+   "start": 0.02,
+   "end": 0.081
+  },
+  {
+   "text": "건드렸다고,",
+   "start": 0.141,
+   "end": 0.657
+  },
+  {
+   "text": "안",
+   "start": 1.234,
+   "end": 1.265
+  },
+  {
+   "text": "쓰는",
+   "start": 1.326,
+   "end": 1.523
+  },
+  {
+   "text": "게",
+   "start": 1.569,
+   "end": 1.599
+  },
+  {
+   "text": "아니었어요.",
+   "start": 1.645,
+   "end": 2.243
+  }
+ ],
+ "source": {
+  "key": "831df465611a34eeb8cef6f22eac27d6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

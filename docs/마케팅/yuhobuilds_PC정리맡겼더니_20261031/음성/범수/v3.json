@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "PC 정리를 맡겼더니, 사흘 넘게 안 건드린 폴더를 쓰레기로 본 거예요.",
+ "dur": 3.633,
+ "words": [
+  {
+   "text": "PC",
+   "start": 0.02,
+   "end": 0.197
+  },
+  {
+   "text": "정리를",
+   "start": 0.235,
+   "end": 0.501
+  },
+  {
+   "text": "맡겼더니,",
+   "start": 0.539,
+   "end": 0.969
+  },
+  {
+   "text": "사흘",
+   "start": 1.36,
+   "end": 1.575
+  },
+  {
+   "text": "넘게",
+   "start": 1.613,
+   "end": 1.815
+  },
+  {
+   "text": "안",
+   "start": 1.866,
+   "end": 1.916
+  },
+  {
+   "text": "건드린",
+   "start": 1.967,
+   "end": 2.245
+  },
+  {
+   "text": "폴더를",
+   "start": 2.283,
+   "end": 2.624
+  },
+  {
+   "text": "쓰레기로",
+   "start": 2.662,
+   "end": 2.99
+  },
+  {
+   "text": "본",
+   "start": 3.029,
+   "end": 3.13
+  },
+  {
+   "text": "거예요.",
+   "start": 3.18,
+   "end": 3.633
+  }
+ ],
+ "source": {
+  "key": "ffe744f4dd224174c85358a2643311df",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}

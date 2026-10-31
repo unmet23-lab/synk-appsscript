@@ -1,0 +1,13 @@
+{
+ "id": "04-yuhobuilds-x",
+ "brand": "yuhobuilds",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "platform": "x",
+ "account": "@yuhobuilds",
+ "format": "video-post",
+ "caption": "AI가 쓰레기라고 고른 폴더 53기가. 지우지 않고 옮겨 뒀는데도 그날 밤 회사 업데이트가 멈췄고, 끝까지 따라가 보니 진짜 쓰레기는 6.7기가뿐이었어요.\nAI한테는 「지우지 말고 옮겨 둬」라고만 시킵니다. 요청문은 여기에 👉 https://synk.im/prompts/#move-dont-delete-cleanup",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 y27_final.mp4 하나(끝 화면 synk.im/prompts — 어느 판에도 없는 길을 가리키지 않음)."
+}

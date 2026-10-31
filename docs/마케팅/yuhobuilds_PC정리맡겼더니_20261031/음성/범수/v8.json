@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v8",
+ "text": "53기가 중에, 6.7기가뿐이었어요.",
+ "dur": 2.208,
+ "words": [
+  {
+   "text": "53기가",
+   "start": 0.02,
+   "end": 0.507
+  },
+  {
+   "text": "중에,",
+   "start": 0.55,
+   "end": 0.728
+  },
+  {
+   "text": "6.7기가뿐이었어요.",
+   "start": 0.919,
+   "end": 2.2
+  }
+ ],
+ "source": {
+  "key": "023afb05b4492a241eb44c64022aaf5f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

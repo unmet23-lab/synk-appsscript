@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v10",
+ "text": "그래서 이제 AI한테는, 옮기는 것까지만 시킵니다.",
+ "dur": 2.567,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.24
+  },
+  {
+   "text": "이제",
+   "start": 0.295,
+   "end": 0.432
+  },
+  {
+   "text": "AI한테는,",
+   "start": 0.542,
+   "end": 1.202
+  },
+  {
+   "text": "옮기는",
+   "start": 1.435,
+   "end": 1.724
+  },
+  {
+   "text": "것까지만",
+   "start": 1.765,
+   "end": 2.094
+  },
+  {
+   "text": "시킵니다.",
+   "start": 2.135,
+   "end": 2.567
+  }
+ ],
+ "source": {
+  "key": "4e318cac9a1787305532179065871f6a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1017,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 132
+ }
+}
