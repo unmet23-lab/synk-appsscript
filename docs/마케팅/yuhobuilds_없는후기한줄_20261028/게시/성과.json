@@ -3,6 +3,17 @@
     "설명": "tools/게시성과.js가 회사 서버 기록으로 다시 쓴다(AI 없음). 판정 규칙과 칸 뜻은 docs/마케팅/게시성과.md",
     "판": [
       {
+        "계정": "yuhobuilds-instagram",
+        "채널": "인스타 @yuhobuilds",
+        "주소": "https://www.instagram.com/reel/DfKG3Eqko2O/",
+        "형식": "instagram-reels",
+        "게시": "2026-10-31T12:01:22.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "yuhobuilds-tiktok",
         "채널": "틱톡 @yuhobuilds",
         "주소": "https://www.tiktok.com/@yuhobuilds/video/7702087452617428242?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
@@ -31,6 +42,17 @@
             "까닭": "견줄 이전 편이 모자란다(공유 1편 — 4편부터)"
           }
         },
+        "화면필요": []
+      },
+      {
+        "계정": "yuhobuilds-youtube",
+        "채널": "유튜브 @yuhobuilds",
+        "주소": "https://www.youtube.com/watch?v=gPoPYWFt8cU",
+        "형식": "youtube-shorts",
+        "게시": "2026-10-31T12:01:12.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
         "화면필요": []
       }
     ]
