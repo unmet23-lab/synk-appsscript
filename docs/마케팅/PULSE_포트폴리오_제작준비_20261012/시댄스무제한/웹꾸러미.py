@@ -2,6 +2,7 @@
 #   python -X utf8 웹꾸러미.py          → synk-vendor/pulse-seedance-day-20261028/웹올리기/<순번>_<판>/ · 순서표.html · _순서.json
 #   python -X utf8 웹꾸러미.py --보기 p11-07-08   → 그 판의 지시문만 찍는다
 #   python -X utf8 웹꾸러미.py --둘째날 <A|B> [--보기 <판>]   → 7번 숏드라마만 웹올리기_둘째날/에(첫날 폴더는 건드리지 않음, 방식은 목소리 시험에서 고른 것)
+#   python -X utf8 웹꾸러미.py --프리비즈   → 5번 8행 프리비즈 시험 두 판만 웹올리기_프리비즈/에(팁 장부 36행 — 맨 끝 선택 판, 다른 꾸러미는 건드리지 않음)
 # 편마다 지시문 원천은 video/<편>/지시문/영상_시댄스웹.json(아래 「편」 표). 매진 임박은 이미 만든 웹올리기_v5 폴더를 그대로 옮긴다.
 # 무제한은 웹에서 사람이 한 판씩 누르는 것만 허용된다(자동화 금지 — 결정 10-26) — 이 도구는 폴더와 순서표만 만들고 누르지 않는다.
 import copy, html, json, os, re, shutil, sys
@@ -59,6 +60,14 @@ P7_ROLE = {"IAN": "ian", "SEOJIN": "seojin", "MINJAE": "minjae", "SOYEON": "soye
 OUT3 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_7번비교"
 CMP = ["p7-1-5", "p7-2-45", "p7-2-40", "p7-1-38", "p7-1-16", "p7-1-32", "p7-1-26-27", "p7-2-10"]   # 얼굴 가까이 · 두 사람 · 우는 얼굴 · 사무실 · 카페 · 소품 두 샷 · 끝 그림
 CMP_ROUTES = [("얼굴흐림", "선버스트_얼굴흐림"), ("새로", "선버스트_새로")]   # video/short-drama-20261026/이미지콘티_선버스트.py --길
+# 프리비즈 시험(팁 장부 36행 · 10-31) — 블렌더 없이 원본 컷을 시댄스로 회색 마네킹 판(①)으로 바꾸고, 시작 그림 없이 ① + 정지컷 · 배역 · 배경 참고로 마지막 판(②).
+#   ① 참고 = 원본 8행 컷만(11.84–14.02초 — 앞뒤 여유를 붙이면 앞 컷 · 뒤 컷의 원본 얼굴이 들어와 컷만 자름), ② 참고 = ①의 받은 영상 + S08 · R3 · R2.
+#   ②의 1_프리비즈.mp4는 ①을 받은 뒤 이 자리에 두고 다시 돌린다(없으면 「파일 아직」). 원본 조각 · 프리비즈는 git 밖에만.
+OUT4 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_프리비즈"
+PV_DIR = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p5/프리비즈"
+PV_SRC = PV_DIR + "/원본_8행_컷만_11.84-14.02초.mp4"
+PV_OUT1 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/받음/pv5-08-1.mp4"   # 받기.py가 받는 자리 — 받은 뒤 원본 생김새 0을 눈으로 보고 --프리비즈를 다시 돌린다
+VIDEO1 = "@영상 1"   # 영상 꼬리표(확인 전) — 화면에서 꼬리표로 안 바뀌면 지우고 @로 올린 영상을 고른다
 DAY2_BUFFER = ["p7-1-1", "p7-1-7", "p7-1-12", "p7-1-22", "p7-1-24", "p7-1-26-27"]   # 소리 끔 판 — 목소리 판 뒤 견본이 들어올 때까지(10-30)
 DAY2_TESTS = ["p7-1-16", "p7-2-28"]   # 두 방식을 같은 컷으로(02_콘티 8-4) — 고른 방식 판이 그 컷의 주판을 겸한다
 CAMERA_ALT = {   # 카메라 줄을 「기법 이름 + 끝 모습만」 꼴로 나란히(02_콘티 8-4 · 시댄스 도움말이 바로 알아듣는 낱말 「truck」)
@@ -278,6 +287,42 @@ def build_compare():
     print(f"7번 비교: 판 {len(order)}개({len(CMP)}판 × {[t for t, _ in CMP_ROUTES]}) → {OUT3}" + (f" · ⚠ 없는 그림 {missing}" if missing else ""))
 
 
+def build_previz():
+    # 팁 장부 36행 프리비즈 시험 두 판 — 5번 8행(땅 높이 슬로모션 한 걸음). 지시문 틀은 참고카드 2026-10-30_프리비즈_마네킹참고영상.md, 카메라 · 신발은 5번 지시문 그대로.
+    spec = json.load(open(os.path.join(VIDEO, "sports-manifesto-20261026", "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
+    p8 = next(p for p in spec["판"] if p["id"] == "p5-08")["샷"][0]   # 카메라 줄만 빌린다 — 동작 줄은 「이미 딛은 발」에서 시작해 프리비즈 동작(위에서 내려와 딛음)과 다르다
+    shoes = spec["공통"]["누구"]["SHOES"]
+    pv1 = (f"Re-create {VIDEO1} as a previz. Keep every motion, pose, timing and camera move exactly as in {VIDEO1}, from its first frame — "
+           "the foot plants, the weight rolls forward and the heel slowly lifts while the toe stays down, in the same slow motion; when the "
+           f"motion of {VIDEO1} ends, the foot holds still. The camera stays exactly as in {VIDEO1}: fixed low on the ground, no push-in, no zoom, "
+           "no pan, no tilt, no shake. Replace the runner's lower leg and foot with a smooth, faceless artist mannequin in orange; any other "
+           "person in blue; background people in plain gray. No faces, no hair, no clothes, no shoe details, no laces, no logos, no text. "
+           "Replace the place with a plain gray studio of the same layout — a flat gray ground with one lighter gray lane line in the same place. "
+           "Soft, even studio light from above with soft contact shadows under the feet. Neutral gray tones everywhere except the two "
+           "mannequin colors. No sound.")
+    pv2 = (f"{VIDEO1} is a gray mannequin previz — take ONLY its motion, poses, timing and camera. Never show a mannequin or a gray studio. "
+           f"Her lower leg and running shoe look exactly like {TOKEN1}, and the shoe exactly like @이미지 2 — {shoes} "
+           f"The place looks exactly like @이미지 3: the near-black smoky night track, red rubber surface, white lane lines, lit only by the "
+           "distant white light pillar behind, which rims the shoe. ONE SINGLE CONTINUOUS SHOT. "
+           f"ACTION: exactly the motion and timing of {VIDEO1} — in slow motion her foot in the white running shoe comes down from the upper "
+           "right, plants on the red rubber track near the centre with the toe angled toward the lower left, then her weight rolls forward and "
+           "the heel slowly lifts as the sole flexes; the toe is still on the ground at the end. Only her lower leg and the shoe are in frame; "
+           f"a hard white backlight from far behind rims the shoe. CAMERA: {p8['카메라']} "
+           + spec["공통"]["보기"].replace("first frame's own light", f"light of {TOKEN1}") + " " + spec["공통"]["소리"])
+    base = {"편": "p5", "편이름": "5번 프리비즈 시험(팁 장부 36행)", "컷": ["8"], "길이": 4, "비율": "16:9", "소리": "끔", "묶음": False,
+            "대안": False, "시험": True}
+    order = [
+        dict(base, id="pv5-08-1", 설명="판 ① 프리비즈 — 원본 8행 컷을 회색 스튜디오 · 주황 마네킹 발로(화면에 안 나가는 중간물)",
+             파일=[("1_원본8행.mp4", PV_SRC, "영상")], 지시문=pv1),
+        dict(base, id="pv5-08-2", 설명="판 ② 마지막 — 시작 그림 칸은 비우고 ① + S08 · R3 · R2를 모두 참고로(옴니 레퍼런스). p5-08 시작 그림 판과 나란히 봄",
+             파일=[("1_프리비즈.mp4", PV_OUT1, "영상"), ("2_S08.jpg", os.path.join(spec["그림"], "S08.png"), "참고"),
+                  ("3_R3.jpg", os.path.join(spec["그림"], "R3.png"), "참고"), ("4_R2.jpg", os.path.join(spec["그림"], "R2.png"), "참고")],
+             지시문=pv2),
+    ]
+    missing = write_pack(order, OUT4, "프리비즈")
+    print(f"프리비즈 시험: 판 {len(order)}개 → {OUT4}" + (f" · 파일 아직 {[os.path.basename(m) for m in missing]}(① 받은 뒤 다시 돌림)" if missing else ""))
+
+
 def write_pack(order, out, day2):
     missing = sorted({src for it in order for _, src, _ in it["파일"] if not os.path.exists(src)})
     if os.path.isdir(out):
@@ -290,7 +335,7 @@ def write_pack(order, out, day2):
         for name, src, _ in it["파일"]:
             if not os.path.exists(src):
                 continue
-            if name.endswith(".mp3"):
+            if name.endswith((".mp3", ".mp4")):
                 shutil.copy2(src, os.path.join(d, name))
             else:
                 save_jpg(src, os.path.join(d, name))
@@ -309,6 +354,8 @@ def build():
         return build_day2(sys.argv[sys.argv.index("--둘째날") + 1])
     if "--7번비교" in sys.argv:
         return build_compare()
+    if "--프리비즈" in sys.argv:
+        return build_previz()
     specs = load_specs()
     items = []   # 순서표 한 줄 = 한 판
     # 매진 임박 — 이미 만든 웹올리기_v5를 그대로(첫 줄만 웹 꼬리표로)
@@ -443,10 +490,20 @@ CMP_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")] + """<h1>PULSE 포트폴리오 ·
 """
 
 
+PV_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")] + """<h1>PULSE 포트폴리오 · 5번 프리비즈 시험(팁 장부 36행 · 10-31)</h1>
+<div class="card"><b>시작 전에</b><ol>
+<li>무제한 날 첫날 꾸러미의 <b>맨 끝 선택 판</b>입니다 — 첫날 순서 · 판 수는 그대로이고, 자리가 없으면 둘째 날 맨 앞으로 옮깁니다.</li>
+<li>모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b>(생성 단추에 「Unlimited」가 보일 때만 — 안 보이면 내지 않습니다. 크레딧 길은 480p 4초 한 판 12크레딧) · 720p · 16:9 · 소리 끔 · <b>옴니 레퍼런스(참조) 모드</b> — 시작 프레임 칸은 비웁니다.</li>
+<li><b>판 ①</b>: 1_원본8행.mp4 하나만 영상 참조로 올리고 지시문을 붙여 냅니다. 받으면 Claude가 원본 생김새(얼굴 · 신발 무늬 · 글자)가 0인지 보고 1_프리비즈.mp4로 판 ② 폴더에 넣습니다 — 「순서표를 새로 고쳐 주세요」라고 알려 드리면 그때 판 ②를 냅니다.</li>
+<li><b>판 ②</b>: 영상 1 · 그림 셋을 이름 차례대로 올립니다(「@영상 1」 · 「@이미지 1~3」이 꼬리표로 안 바뀌면 지우고 @로 고릅니다).</li>
+</ol></div>
+"""
+
+
 def page(order, day2=None):
     def esc(s):
         return html.escape(s)
-    head = CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    head = PV_HEAD if day2 == "프리비즈" else CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PULSE 시댄스 순서표</title><style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1d1c1a;--mute:#6b6760;--line:#e2ddd3;--acc:#2f5bd3;--warn:#b4532a}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#212125;--ink:#ecebe8;--mute:#a19d95;--line:#33333a;--acc:#8aa6ff;--warn:#f0a07a}}

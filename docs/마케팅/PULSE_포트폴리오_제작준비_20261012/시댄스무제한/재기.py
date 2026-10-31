@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교")], os.path.join(DAY, "받음")
+WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈")], os.path.join(DAY, "받음")
 OUT = os.path.join(GOT, "_검수")
 MOD = os.path.join(os.path.expanduser("~"), ".rembg", "models", "yunet")
 SAME = 0.363
@@ -212,9 +212,11 @@ def measure(clip, board):
             alerts.append(f"두 샷인데 컷 {len(cut_i)}개 {[round(i / fps, 2) for i in cut_i]}")
         elif abs(cut_i[0] / fps - want_cut) > 0.5:
             alerts.append(f"컷이 {cut_i[0] / fps:.2f}초(지시 {want_cut:g}초)")
+    # 프리비즈 판(id pv…, 팁 장부 36행)은 시작 프레임 칸을 비우고 그림을 생김새 참고로만 준다 — 첫 장 숫자는 남기되 불일치 알림은 내지 않는다
+    previz = board["id"].startswith("pv")
     for s in shots:
         alerts += [f"샷{s['샷']} {x}" for x in s["알림"]]
-        if s.get("첫장SSIM", 1) < 0.8 or s.get("첫장차이", 0) > 15:
+        if not previz and (s.get("첫장SSIM", 1) < 0.8 or s.get("첫장차이", 0) > 15):
             alerts.append(f"샷{s['샷']} 첫 장이 그림과 다름(SSIM {s['첫장SSIM']} · 색 {s['첫장차이']})")
     if end_diff is not None and (end_diff > 15 or end_ssim < 0.8):
         alerts.append(f"끝 장이 끝 그림과 다름(SSIM {end_ssim:.3f} · 색 {end_diff})")
