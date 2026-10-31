@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19187-49e0-7e33-869f-f9efc4c82568"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 참고 그림 속 서아의 얼굴과 차림을 유지하고, 창가 자리에서 옆자리 남학생에게 손 흔드는 장면을 세로 4:5 한 칸으로 그릴게요.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":153169,"cached_input_tokens":136192,"cache_write_input_tokens":0,"output_tokens":1438,"reasoning_output_tokens":51}}

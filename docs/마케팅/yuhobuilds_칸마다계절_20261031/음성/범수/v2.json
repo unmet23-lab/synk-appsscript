@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v2",
+ "text": "정문에선 나무가 거의 맨가지인데, 몇 분 뒤 강의실 창밖은 초록 잎이 가득해요.",
+ "dur": 4.188,
+ "words": [
+  {
+   "text": "정문에선",
+   "start": 0.04,
+   "end": 0.455
+  },
+  {
+   "text": "나무가",
+   "start": 0.497,
+   "end": 0.76
+  },
+  {
+   "text": "거의",
+   "start": 0.815,
+   "end": 0.968
+  },
+  {
+   "text": "맨가지인데,",
+   "start": 1.01,
+   "end": 1.564
+  },
+  {
+   "text": "몇",
+   "start": 1.979,
+   "end": 2.117
+  },
+  {
+   "text": "분",
+   "start": 2.159,
+   "end": 2.256
+  },
+  {
+   "text": "뒤",
+   "start": 2.297,
+   "end": 2.353
+  },
+  {
+   "text": "강의실",
+   "start": 2.409,
+   "end": 2.699
+  },
+  {
+   "text": "창밖은",
+   "start": 2.741,
+   "end": 3.129
+  },
+  {
+   "text": "초록",
+   "start": 3.184,
+   "end": 3.391
+  },
+  {
+   "text": "잎이",
+   "start": 3.447,
+   "end": 3.571
+  },
+  {
+   "text": "가득해요.",
+   "start": 3.613,
+   "end": 4.188
+  }
+ ],
+ "source": {
+  "key": "ee2e5f585c991ff75f7ecacf639e0c67",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19187-3dc6-7fd2-991c-98d2bd56ae97"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 서아의 얼굴과 옷차림을 유지하고, 봄 아침 캠퍼스 정문으로 들어서는 장면을 세로 4:5 한 칸으로 그릴게요.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":156064,"cached_input_tokens":140672,"cache_write_input_tokens":0,"output_tokens":1408,"reasoning_output_tokens":257}}

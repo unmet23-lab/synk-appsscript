@@ -19,7 +19,7 @@
  "목소리": "docs/마케팅/yuhobuilds_칸마다계절_20261031/음성/범수",
  "길이": "50.3초(판 모두 같은 영상)",
  "0초 훅": "크림색 종이 위 웹툰 네 칸(계절 줄 없이 실제로 구운 판) + 0.3초 큰 글 「이상한 데 하나, 보이세요?」 → 4.9~8.7초 3초 찾기",
- "끝줄": "다음 칸 그리기 전에, 계절부터 적으세요.",
+ "끝줄": "처음에, 몇 초 만에 찾으셨어요?",
  "최종본": [
   "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4"
  ],
@@ -33,7 +33,7 @@
    "훅": "A",
    "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/01-yuhobuilds-instagram/원고.json",
    "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
-   "표지시각": 1.0
+   "표지시각": 1
   },
   {
    "계정": "yuhobuilds-youtube",
@@ -44,7 +44,7 @@
    "훅": "A",
    "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/02-yuhobuilds-youtube/원고.json",
    "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
-   "표지시각": 1.0
+   "표지시각": 1
   },
   {
    "계정": "yuhobuilds-tiktok",
@@ -55,7 +55,7 @@
    "훅": "A",
    "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/03-yuhobuilds-tiktok/원고.json",
    "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
-   "표지시각": 1.0
+   "표지시각": 1
   },
   {
    "계정": "yuhobuilds-x",
@@ -66,7 +66,7 @@
    "훅": "A",
    "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/04-yuhobuilds-x/원고.json",
    "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
-   "표지시각": 1.0
+   "표지시각": 1
   },
   {
    "계정": "yuho-linkedin-primary",
@@ -77,7 +77,7 @@
    "훅": "A",
    "원고": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/05-yuho-linkedin/원고.json",
    "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
-   "표지시각": 1.0
+   "표지시각": 1
   },
   {
    "계정": "yuhobuilds-threads",
@@ -96,16 +96,119 @@
  "빠진판": {},
  "틱톡없음": null,
  "표지": "docs/마케팅/yuhobuilds_칸마다계절_20261031/게시/표지_1080x1920.jpg",
- "AI 표시": "켬(내레이션 AI 음성 · 웹툰 칸 그림은 AI가 만든 것 · 칸 1 · 4 · 8 나무 표시는 편집에서 그린 도식)",
+ "AI 표시": "켬(내레이션 AI 음성 · 웹툰 칸 그림과 인물 설정 그림은 AI가 만든 것)",
  "아동용": "아님",
  "유튜브 언어": "ko",
  "끝 행동 링크": "https://synk.im/prompts/#webtoon-season-line",
  "미룰편": [],
- "남은위험": [],
+ "남은위험": [
+  "관문 못 넘음 — 재미 3 · 3 · 3(한 명 4 이상 못 됨) · 볼 이유 2(r5, r3 · r4는 3) · 「둘 다 아님」. 볼 이유 심사의 약한 자리: 첫 판 칸 1에도 새순 · 분홍 꽃이 있어 「거의 맨가지 ↔ 초록 잎 가득」 대비가 약하다 — 실험 결과 그대로라 더 센 판을 골라 뽑지 않았다. 마감(11-03 15시 회차)이 남았다.",
+  "시험관 둘이 같이 짚은 글 셋(카운트다운이 무엇을 찾으라는지 · 「참고로 넣은 인물 그림」 · 「지시문」)은 r6에서 「이상한 곳 찾기 · 3초」 · 「칸마다 참고로 넣은 인물 그림」 · 「그림 AI에 보내는 글(지시문) 끝에 한 줄」로 고쳤다 — 글만 바꾼 판이라 다시 시험하지 않았다.",
+  "계절 줄 판 칸 3은 첫 판에 옆자리 남학생 옷이 남색 카디건으로 바뀌어(시험관 둘이 짚음) 옷 한 줄(소매를 걷은 하늘색 셔츠)을 더해 다시 구웠다 — 캡션 · 티스토리에 밝힘.",
+  "확인할 것 — 오른쪽 단추 · 왼쪽 가장자리 · 아래 앱 글자 자리: 칸 위 꼬리표(「초록 잎 가득」 · 「거의 맨가지」 · 「맨가지」)가 천천히 다가가는 움직임 끝에 가장자리로 밀린다. 그 칸의 뜻은 같은 자리 다른 꼬리표와 자막으로도 전해져 그대로 둔다.",
+  "확인할 것 — 「초록 잎 가득」은 빨간 판 위 흰 글자다(검사기가 판을 그림으로 읽음).",
+  "확인할 것 — 소리 301kbps: 마감 판이 384k로 담겼고 실측이 낮게 읽힌 것. 올리기판은 128k AAC(10MB 아래).",
+  "확인할 것 — 표지의 「틔다그」는 그림 속 장면을 글자로 잘못 읽은 것(표지 글은 가운데 판 안).",
+  "틱톡 판: 끝 말이 질문(「처음에, 몇 초 만에 찾으셨어요?」)이라 고정 댓글을 가리키지 않아 유튜브 판과 같은 영상."
+ ],
  "프롬프트": {
   "id": "webtoon-season-line",
   "주소": "https://synk.im/prompts/#webtoon-season-line",
   "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"
  },
- "이해시험": {}
+ "이해시험": {
+  "판": "r5(장면 · 말) + r6 · r7(글 셋 · 움직임 · 검사 고침만)",
+  "답1": "r3~r5 아홉 번 다 한 문장과 같음",
+  "이해": "sonnet 4 · haiku 4 · GPT 4(r5)",
+  "재미": "3 · 3 · 3",
+  "넘김": "r5 sonnet · haiku 끝까지 · GPT 37초(결과 뒤)",
+  "저장": "sonnet · haiku 저장, GPT 안 함",
+  "지난편": "r5 셋 다 달라 보임(r3 · r4 haiku 같아 보임)",
+  "볼이유": "r5 2 · 둘 다 아님 · 슬롭 아님(r3 · r4는 3)",
+  "판정": "관문 못 넘음(재미 · 볼 이유)"
+ },
+ "검사": {
+  "도구": "tools/올리기전검사.js",
+  "시각": "2026-10-31T21:07:10+09:00",
+  "결과": "확인할 것",
+  "고칠것": [],
+  "확인할것": [
+   "yuhobuilds-tiktok · 고정 댓글이 있는 유튜브 판과 같은 영상이다 — 끝 말이 고정 댓글을 가리키면 끝 말만 바꾼 틱톡판을 렌더한다",
+   "remotion/out/y28_final.mp4 · 소리 비트레이트가 301kbps입니다. 올림 기준은 스테레오 384kbps입니다.",
+   "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-tiktok · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 1군데 — 「틔다그」 오른쪽 끝 1067px(안전선 920)",
+   "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-tiktok · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 왼쪽 가장자리 1군데 — 「틔다그」 왼쪽 끝 13px(안전선 65)",
+   "remotion/out/y28_final.mp4 · 오른쪽 단추 자리 7군데 — 8.5초 「정문에선 나무가 거의 맨가지인데′」 오른쪽 끝 984px(안전선 920) · 11.0초 「초록 잎 가득 4」 오른쪽 끝 1038px(안전선 920) · 장면표 .tmp/올리기전검사/yuhobuilds_칸마다계절_20261031/글자표_remotion_out_y28_final.jpg",
+   "remotion/out/y28_final.mp4 · 아래 앱 글자 자리 1군데 — 11.0초 「초록 잎 가득 4」 아래 끝 1559px(안전선 1428) · 장면표 .tmp/올리기전검사/yuhobuilds_칸마다계절_20261031/글자표_remotion_out_y28_final.jpg",
+   "remotion/out/y28_final.mp4 · 왼쪽 가장자리 3군데 — 12.5초 「3월 초 • 거의 엔가지」 왼쪽 끝 8px(안전선 65) · 37.5초 「낸가지」 왼쪽 끝 11px(안전선 65) · 장면표 .tmp/올리기전검사/yuhobuilds_칸마다계절_20261031/글자표_remotion_out_y28_final.jpg",
+   "remotion/out/y28_final.mp4 · 판 없이 그림 위에 얹은 짧은 밝은 글자 1군데 — 12.0초 「초록 잎 가득」 바탕 얼룩 31 · 흰 글자 둘레 어두운 칸 0% · 장면표 .tmp/올리기전검사/yuhobuilds_칸마다계절_20261031/글자표_remotion_out_y28_final.jpg"
+  ],
+  "파일": [
+   {
+    "경로": "docs/마케팅/yuhobuilds_칸마다계절_20261031/remotion/out/y28_final.mp4",
+    "판": [
+     "yuhobuilds-instagram",
+     "yuhobuilds-youtube",
+     "yuhobuilds-tiktok",
+     "yuhobuilds-x",
+     "yuho-linkedin-primary",
+     "yuhobuilds-threads"
+    ],
+    "바이트": 64700700,
+    "수정": "2026-10-31T12:05:39.022Z",
+    "sha256": "58659ce89fcbdf6e77b9837f27537c71ab196dfd0504057b186f528a7095a70b",
+    "길이": 50.3,
+    "해상도": "1080×1920",
+    "평균Mbps": 10.3,
+    "음량": -14.6,
+    "봉우리": -1.4,
+    "정지": "9% 통과",
+    "끝화면": 5.9,
+    "한구성": 2.75,
+    "소리빈자리": {
+     "합": 0.34,
+     "최장": 0.34,
+     "자리": 1
+    },
+    "사전검사": ".tmp/올리기전검사/yuhobuilds_칸마다계절_20261031/영상사전검사_remotion_out_y28_final/inspection-e1d432ef-b1b9-499a-aef4-358b6e312a05/검사.json"
+   }
+  ],
+  "목소리": {
+   "줄": 8,
+   "최고음높이": 186,
+   "잘림": 0,
+   "엉킨목소리": []
+  },
+  "지난편": [
+   {
+    "편": "yuhobuilds_PC정리맡겼더니_20261031",
+    "판": [
+     "yuhobuilds-instagram",
+     "yuhobuilds-youtube",
+     "yuhobuilds-tiktok",
+     "yuhobuilds-x",
+     "yuho-linkedin-primary",
+     "yuhobuilds-threads"
+    ],
+    "첫장면": 0.327,
+    "끝장면": 0.44,
+    "끝줄": 0
+   },
+   {
+    "편": "yuhobuilds_유일한빛_20261031",
+    "판": [
+     "yuhobuilds-instagram",
+     "yuhobuilds-youtube",
+     "yuhobuilds-tiktok",
+     "yuhobuilds-x",
+     "yuho-linkedin-primary",
+     "yuhobuilds-threads"
+    ],
+    "첫장면": 0.23,
+    "끝장면": 0.823,
+    "끝줄": 0
+   }
+  ],
+  "기록": ".tmp/올리기전검사/yuhobuilds_칸마다계절_20261031"
+ },
+ "작업실등록": true
 }

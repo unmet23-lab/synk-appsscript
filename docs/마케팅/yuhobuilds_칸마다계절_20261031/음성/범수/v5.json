@@ -1,0 +1,140 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v5",
+ "text": "그래서 모든 칸 끝에 계절 한 줄을 붙였어요. 삼월 첫 주, 나무는 아직 맨가지. 창밖 나무도 똑같이. 초록 잎, 벚꽃은 없음.",
+ "dur": 6.89,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.261
+  },
+  {
+   "text": "모든",
+   "start": 0.318,
+   "end": 0.531
+  },
+  {
+   "text": "칸",
+   "start": 0.588,
+   "end": 0.673
+  },
+  {
+   "text": "끝에",
+   "start": 0.716,
+   "end": 0.943
+  },
+  {
+   "text": "계절",
+   "start": 1.014,
+   "end": 1.227
+  },
+  {
+   "text": "한",
+   "start": 1.27,
+   "end": 1.327
+  },
+  {
+   "text": "줄을",
+   "start": 1.37,
+   "end": 1.511
+  },
+  {
+   "text": "붙였어요.",
+   "start": 1.553,
+   "end": 1.966
+  },
+  {
+   "text": "삼월",
+   "start": 2.334,
+   "end": 2.548
+  },
+  {
+   "text": "첫",
+   "start": 2.59,
+   "end": 2.704
+  },
+  {
+   "text": "주,",
+   "start": 2.747,
+   "end": 2.846
+  },
+  {
+   "text": "나무는",
+   "start": 3.102,
+   "end": 3.4
+  },
+  {
+   "text": "아직",
+   "start": 3.443,
+   "end": 3.556
+  },
+  {
+   "text": "맨가지.",
+   "start": 3.599,
+   "end": 3.953
+  },
+  {
+   "text": "창밖",
+   "start": 4.224,
+   "end": 4.508
+  },
+  {
+   "text": "나무도",
+   "start": 4.55,
+   "end": 4.777
+  },
+  {
+   "text": "똑같이.",
+   "start": 4.834,
+   "end": 5.204
+  },
+  {
+   "text": "초록",
+   "start": 5.572,
+   "end": 5.814
+  },
+  {
+   "text": "잎,",
+   "start": 5.899,
+   "end": 5.985
+  },
+  {
+   "text": "벚꽃은",
+   "start": 6.141,
+   "end": 6.482
+  },
+  {
+   "text": "없음.",
+   "start": 6.524,
+   "end": 6.89
+  }
+ ],
+ "source": {
+  "key": "1576bc6e40f22d43fde36136aa9085a9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 186
+ }
+}

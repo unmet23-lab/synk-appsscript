@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v8",
+ "text": "처음에, 몇 초 만에 찾으셨어요?",
+ "dur": 1.738,
+ "words": [
+  {
+   "text": "처음에,",
+   "start": 0.04,
+   "end": 0.332
+  },
+  {
+   "text": "몇",
+   "start": 0.747,
+   "end": 0.824
+  },
+  {
+   "text": "초",
+   "start": 0.886,
+   "end": 0.916
+  },
+  {
+   "text": "만에",
+   "start": 0.962,
+   "end": 1.085
+  },
+  {
+   "text": "찾으셨어요?",
+   "start": 1.131,
+   "end": 1.738
+  }
+ ],
+ "source": {
+  "key": "dd9186c07e9ea2b3f034f113d4ee6781",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 174
+ }
+}

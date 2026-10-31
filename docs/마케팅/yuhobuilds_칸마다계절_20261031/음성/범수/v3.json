@@ -1,0 +1,110 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "이른 봄, 삼월 초 이야기인데요. 칸마다 따로 그리니까, 계절을 안 적은 칸은 초록으로 채운 거예요.",
+ "dur": 4.994,
+ "words": [
+  {
+   "text": "이른",
+   "start": 0.02,
+   "end": 0.22
+  },
+  {
+   "text": "봄,",
+   "start": 0.291,
+   "end": 0.449
+  },
+  {
+   "text": "삼월",
+   "start": 0.677,
+   "end": 0.92
+  },
+  {
+   "text": "초",
+   "start": 0.963,
+   "end": 1.049
+  },
+  {
+   "text": "이야기인데요.",
+   "start": 1.106,
+   "end": 1.621
+  },
+  {
+   "text": "칸마다",
+   "start": 1.878,
+   "end": 2.192
+  },
+  {
+   "text": "따로",
+   "start": 2.235,
+   "end": 2.421
+  },
+  {
+   "text": "그리니까,",
+   "start": 2.464,
+   "end": 2.85
+  },
+  {
+   "text": "계절을",
+   "start": 3.135,
+   "end": 3.45
+  },
+  {
+   "text": "안",
+   "start": 3.492,
+   "end": 3.55
+  },
+  {
+   "text": "적은",
+   "start": 3.592,
+   "end": 3.75
+  },
+  {
+   "text": "칸은",
+   "start": 3.792,
+   "end": 3.992
+  },
+  {
+   "text": "초록으로",
+   "start": 4.035,
+   "end": 4.336
+  },
+  {
+   "text": "채운",
+   "start": 4.379,
+   "end": 4.579
+  },
+  {
+   "text": "거예요.",
+   "start": 4.622,
+   "end": 4.994
+  }
+ ],
+ "source": {
+  "key": "7a2a879d2f61f1b9d09e326eae3ccccd",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}

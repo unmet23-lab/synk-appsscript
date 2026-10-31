@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v6",
+ "text": "같은 네 칸을 다시 그리니까, 창밖까지 전부 맨가지가 됐어요.",
+ "dur": 3.432,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.251
+  },
+  {
+   "text": "네",
+   "start": 0.294,
+   "end": 0.352
+  },
+  {
+   "text": "칸을",
+   "start": 0.425,
+   "end": 0.627
+  },
+  {
+   "text": "다시",
+   "start": 0.67,
+   "end": 0.858
+  },
+  {
+   "text": "그리니까,",
+   "start": 0.902,
+   "end": 1.278
+  },
+  {
+   "text": "창밖까지",
+   "start": 1.77,
+   "end": 2.218
+  },
+  {
+   "text": "전부",
+   "start": 2.261,
+   "end": 2.478
+  },
+  {
+   "text": "맨가지가",
+   "start": 2.522,
+   "end": 2.912
+  },
+  {
+   "text": "됐어요.",
+   "start": 2.955,
+   "end": 3.432
+  }
+ ],
+ "source": {
+  "key": "2208d0c064f07cfa6b21111ef1680615",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

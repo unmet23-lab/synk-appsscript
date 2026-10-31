@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1031,
+  "lufs": -17
+ },
+ "made": "2026-10-31T11:39:02.495Z",
+ "lines": [
+  {
+   "id": "v1",
+   "text": "AI로 웹툰 네 칸을 그렸어요. 개강 첫날 아침, 몇 분 사이 이야기인데요. 이상한 데 하나, 보이세요?",
+   "dur": 5.098,
+   "syllablesPerSec": 7.06,
+   "src": "v1.wav",
+   "key": "78e65f9d7580dffb3599868c4897f3a7",
+   "words": 16
+  },
+  {
+   "id": "v2",
+   "text": "정문에선 나무가 거의 맨가지인데, 몇 분 뒤 강의실 창밖은 초록 잎이 가득해요.",
+   "dur": 4.188,
+   "syllablesPerSec": 7.4,
+   "src": "v2.wav",
+   "key": "ee2e5f585c991ff75f7ecacf639e0c67",
+   "words": 12
+  },
+  {
+   "id": "v3",
+   "text": "이른 봄, 삼월 초 이야기인데요. 칸마다 따로 그리니까, 계절을 안 적은 칸은 초록으로 채운 거예요.",
+   "dur": 4.994,
+   "syllablesPerSec": 7.61,
+   "src": "v3.wav",
+   "key": "7a2a879d2f61f1b9d09e326eae3ccccd",
+   "words": 15
+  },
+  {
+   "id": "v4",
+   "text": "같은 인물 그림을 넣어도, 얼굴이랑 옷은 붙잡는데 계절은 안 붙잡아요.",
+   "dur": 3.683,
+   "syllablesPerSec": 7.6,
+   "src": "v4.wav",
+   "key": "cfcae318eb2239cc9349131517f0c929",
+   "words": 10
+  },
+  {
+   "id": "v5",
+   "text": "그래서 모든 칸 끝에 계절 한 줄을 붙였어요. 삼월 첫 주, 나무는 아직 맨가지. 창밖 나무도 똑같이. 초록 잎, 벚꽃은 없음.",
+   "dur": 6.89,
+   "syllablesPerSec": 6.53,
+   "src": "v5.wav",
+   "key": "1576bc6e40f22d43fde36136aa9085a9",
+   "words": 21
+  },
+  {
+   "id": "v6",
+   "text": "같은 네 칸을 다시 그리니까, 창밖까지 전부 맨가지가 됐어요.",
+   "dur": 3.432,
+   "syllablesPerSec": 6.99,
+   "src": "v6.wav",
+   "key": "2208d0c064f07cfa6b21111ef1680615",
+   "words": 9
+  },
+  {
+   "id": "v7",
+   "text": "얼굴, 옷, 가방, 창밖까지. 이제 네 칸이 같은 아침이에요.",
+   "dur": 3.327,
+   "syllablesPerSec": 6.31,
+   "src": "v7.wav",
+   "key": "075eb13cf665c8d3ca4401adf2a71474",
+   "words": 9
+  },
+  {
+   "id": "v8",
+   "text": "처음에, 몇 초 만에 찾으셨어요?",
+   "dur": 1.738,
+   "syllablesPerSec": 6.9,
+   "src": "v8.wav",
+   "key": "dd9186c07e9ea2b3f034f113d4ee6781",
+   "words": 5
+  }
+ ]
+}

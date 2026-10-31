@@ -1,0 +1,3 @@
+[codex계정] 보조 계정이 모두 막혀 예비 bake3(synk.yuh@gmail.com)로 굽는다
+2026-10-31T10:47:35.028632Z ERROR codex_core::tools::router: error=exec_command failed: CreateProcess { message: "Rejected(\"`\\\"C:\\\\\\\\Users\\\\\\\\q1212\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Microsoft\\\\\\\\WindowsApps\\\\\\\\pwsh.exe\\\" -Command \\\"Get-Content -LiteralPath 'C:/Users/q1212/.codex-bake/bake3/skills/.system/imagegen/SKILL.md'\\\"` rejected: blocked by policy\")" }
+[굽기] 칸2_계절 → docs\마케팅\yuhobuilds_칸마다계절_20261031\판\칸2_계절_194709.png · 계정 bake3 · thread 01a19192-1779-7c41-9335-7af5aebe296f · 178초

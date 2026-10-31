@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7",
+ "text": "얼굴, 옷, 가방, 창밖까지. 이제 네 칸이 같은 아침이에요.",
+ "dur": 3.327,
+ "words": [
+  {
+   "text": "얼굴,",
+   "start": 0.02,
+   "end": 0.307
+  },
+  {
+   "text": "옷,",
+   "start": 0.555,
+   "end": 0.65
+  },
+  {
+   "text": "가방,",
+   "start": 0.804,
+   "end": 1.071
+  },
+  {
+   "text": "창밖까지.",
+   "start": 1.129,
+   "end": 1.587
+  },
+  {
+   "text": "이제",
+   "start": 1.892,
+   "end": 2.027
+  },
+  {
+   "text": "네",
+   "start": 2.103,
+   "end": 2.179
+  },
+  {
+   "text": "칸이",
+   "start": 2.275,
+   "end": 2.39
+  },
+  {
+   "text": "같은",
+   "start": 2.447,
+   "end": 2.676
+  },
+  {
+   "text": "아침이에요.",
+   "start": 2.733,
+   "end": 3.327
+  }
+ ],
+ "source": {
+  "key": "075eb13cf665c8d3ca4401adf2a71474",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

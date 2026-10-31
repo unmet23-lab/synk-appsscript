@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a191ca-2a81-7682-b966-8fd1af52adf6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 서아의 외형과 옷차림을 유지하고, 창밖에 잎 없는 나무가 보이는 세로 4:5 웹툰 한 칸을 그릴게요.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":235448,"cached_input_tokens":203904,"cache_write_input_tokens":0,"output_tokens":1489,"reasoning_output_tokens":235}}

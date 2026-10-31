@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v1",
+ "text": "AI로 웹툰 네 칸을 그렸어요. 개강 첫날 아침, 몇 분 사이 이야기인데요. 이상한 데 하나, 보이세요?",
+ "dur": 5.098,
+ "words": [
+  {
+   "text": "AI로",
+   "start": 0.02,
+   "end": 0.358
+  },
+  {
+   "text": "웹툰",
+   "start": 0.417,
+   "end": 0.651
+  },
+  {
+   "text": "네",
+   "start": 0.696,
+   "end": 0.754
+  },
+  {
+   "text": "칸을",
+   "start": 0.798,
+   "end": 0.974
+  },
+  {
+   "text": "그렸어요.",
+   "start": 1.019,
+   "end": 1.386
+  },
+  {
+   "text": "개강",
+   "start": 2.002,
+   "end": 2.208
+  },
+  {
+   "text": "첫날",
+   "start": 2.252,
+   "end": 2.429
+  },
+  {
+   "text": "아침,",
+   "start": 2.487,
+   "end": 2.751
+  },
+  {
+   "text": "몇",
+   "start": 2.898,
+   "end": 3.001
+  },
+  {
+   "text": "분",
+   "start": 3.045,
+   "end": 3.118
+  },
+  {
+   "text": "사이",
+   "start": 3.162,
+   "end": 3.294
+  },
+  {
+   "text": "이야기인데요.",
+   "start": 3.338,
+   "end": 3.75
+  },
+  {
+   "text": "이상한",
+   "start": 4.058,
+   "end": 4.322
+  },
+  {
+   "text": "데",
+   "start": 4.366,
+   "end": 4.395
+  },
+  {
+   "text": "하나,",
+   "start": 4.439,
+   "end": 4.571
+  },
+  {
+   "text": "보이세요?",
+   "start": 4.615,
+   "end": 5.098
+  }
+ ],
+ "source": {
+  "key": "78e65f9d7580dffb3599868c4897f3a7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}
