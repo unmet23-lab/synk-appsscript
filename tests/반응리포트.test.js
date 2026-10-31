@@ -278,6 +278,43 @@ test('그리기 — 자리표시자가 남지 않고, &·\' 든 이름도 값으
   assert.match(브리핑그리기.글HTML("{{R&D 팀's.조회}} 보였어요 <b>", 지표), /<b class="수"[^>]*>5회<\/b> 보였어요 &lt;b&gt;/);
 });
 
+test('순위표 — 배수 큰 순 · 같은 광고 · 플랫폼의 조회를 붙이고 · 이름은 이스케이프 · 평소(1배) 자리는 최대에 맞춰', () => {
+  const { 설정, 모음 } = 한벌();
+  const { 문서 } = 그리기모듈.그리기({ 지표: 모음.지표, 그림: 모음.그림, 표본: 모음.표본, 글: 좋은글(모음), 상태: 모음.상태, 설정, 시점: '1주', 기준일: '2026-10-30', 지도들: [] });
+  const 표 = 문서.slice(문서.indexOf('<table class="순위표"'), 문서.indexOf('</table>', 문서.indexOf('<table class="순위표"')));
+  assert.ok(표.length > 0, '플랫폼 칸에 순위표가 있다');
+  const 배수들 = [...표.matchAll(/<span class="배"[^>]*>([\d.]+)배<\/span>/g)].map((m) => Number(m[1]));
+  assert.equal(배수들.length, 모음.그림.플랫폼.막대.length);
+  assert.deepEqual(배수들, [...배수들].sort((a, b) => b - a), '배수 큰 순');
+  const 첫 = [...모음.그림.플랫폼.막대].sort((a, b) => b.배수 - a.배수)[0];
+  const 첫조회 = 모음.그림.플랫폼.표.find((r) => r.광고 === 첫.광고 && r.플랫폼 === 첫.플랫폼).숫자.숫자.조회;
+  assert.ok(표.split('</tr>')[1].includes(`${첫조회.toLocaleString('ko-KR')}</td>`), '첫 줄 조회는 같은 광고 · 플랫폼 행에서');
+
+  // 한 광고에 같은 플랫폼 주소가 둘이어도 줄마다 제 행의 조회를 단다(막대는 평소 있는 표 행을 같은 차례로 옮긴 것)
+  const 그림 = structuredClone(모음.그림);
+  const 원행 = 그림.플랫폼.표.find((r) => r.숫자?.평소);
+  const 둘째 = structuredClone(원행); 둘째.숫자.숫자.조회 = 77777; 둘째.숫자.평소.배수 = 9.99;
+  그림.플랫폼.표.splice(그림.플랫폼.표.indexOf(원행) + 1, 0, 둘째);
+  그림.플랫폼.막대 = 그림.플랫폼.표.filter((r) => r.숫자?.평소).map((r) => ({ 광고: r.광고, 플랫폼: r.플랫폼, 배수: r.숫자.평소.배수 }));
+  const 겹친 = 그리기모듈.그리기({ 지표: 모음.지표, 그림, 표본: 모음.표본, 글: 좋은글(모음), 상태: 모음.상태, 설정, 시점: '1주', 기준일: '2026-10-30', 지도들: [] }).문서;
+  const 겹친표 = 겹친.slice(겹친.indexOf('<table class="순위표"'), 겹친.indexOf('</table>', 겹친.indexOf('<table class="순위표"'))).split('</tr>');
+  assert.ok(겹친표[1].includes('9.99배') && 겹친표[1].includes('77,777</td>'), '둘째 주소 줄은 제 조회');
+  const 원줄 = 겹친표.find((x) => x.includes(`>${원행.숫자.평소.배수}배<`));
+  assert.ok(원줄 && 원줄.includes(`${원행.숫자.숫자.조회.toLocaleString('ko-KR')}</td>`) && !원줄.includes('77,777'), '첫 주소 줄은 첫 행 조회');
+
+  const 작은 = 그리기모듈.순위표([
+    { 이름: '<b>A & B</b>', 곳: '유튜브', 값: 4, 메모: '4배', 강조: true, 조회: 1200, 출처: '서버 "하루"' },
+    { 이름: '둘', 곳: '인스타', 값: 0.5, 메모: '0.5배', 강조: false, 조회: undefined },
+  ], { 최대: 4 });
+  assert.ok(작은.includes('&lt;b&gt;A &amp; B&lt;/b&gt;'));
+  assert.ok(작은.includes('title="서버 &quot;하루&quot;"'));
+  assert.ok(작은.includes('style="--기준:0.2500"'), '평소 1배 = 1 / 최대');
+  assert.ok(작은.includes('style="--w:1.0000"><span class="띠 강조">'));
+  assert.ok(작은.includes('style="--w:0.1250"><span class="띠">'));
+  assert.ok(작은.includes('<span class="좁을때">조회 </span>—</td>'), '조회가 없으면 —');
+  assert.equal(그리기모듈.순위표([], { 최대: 2 }), '');
+});
+
 test('랜딩 기간 — 첫 게시 ~ min(기준일 끝, 마지막 게시 + 시점)', () => {
   const 설정 = { 납품일: '2026-10-20' };
   const 행 = (게시때) => ({ 숫자: { 게시때 } });

@@ -21,9 +21,70 @@ const 더스타일 = `
 .칸지도 line.평균{stroke:var(--accent);stroke-width:2} .칸지도 text.평균글{font-size:12px;font-weight:700;fill:var(--accent-text)}
 td.작,th.작{font-size:12px;color:var(--muted)}
 .넓은표{min-width:54rem} .넓은표 td:nth-child(-n+2),.넓은표 th{white-space:nowrap}
-.좁은그림{max-width:36rem}
 .칸지도 text.칸위{font-size:11px}
+/* 결 — 상자 · 굵은 글씨 대신 크기 · 회색 · 얇은 선으로 위계를 만든다(10-31 유호님이 고른 리더보드 문법 · 시험판 A′).
+   업종 브리핑 스타일 위에 이 리포트만 덮는다(브리핑 바이트는 그대로). 강조색은 PULSE 베리(--accent) 하나. */
+:root{--bg:#FFFFFF;--fg:#222326;--muted:#6B6F76;--line:#E8E8E6;--soft:#F5F5F3;--bar:#A3A6AC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111215;--fg:#EDEDEF;--muted:#A3A7AE;--line:#2A2B31;--soft:#18191D;--bar:#5E626A}}
+:root[data-theme="dark"]{--bg:#111215;--fg:#EDEDEF;--muted:#A3A7AE;--line:#2A2B31;--soft:#18191D;--bar:#5E626A}
+.br{gap:56px}
+.br h1{font-weight:560;letter-spacing:-.03em}
+.br h2{font-size:22px;font-weight:600;letter-spacing:-.015em;padding-top:22px;border-top:1px solid var(--line)}
+.br h3{font-size:16px;font-weight:600}
+.꼬리표{font-weight:600;letter-spacing:.02em}
+.칸{gap:18px}
+.판{background:none;border:0;border-radius:0;padding:0}
+.넷,.셋{gap:28px} .격자판{gap:28px 40px}
+.넷{grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr));gap:28px 20px}
+@media (max-width:719px){.넷{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.넷 > .타일,.셋 > .판{border-top:1px solid var(--line);padding-top:16px}
+.타일 .큰수{font-size:34px;font-weight:500;letter-spacing:-.025em;color:var(--fg)}
+.타일 .라벨{font-size:12.5px;font-weight:500}
+.수{font-weight:650}
+th{font-size:12.5px;font-weight:500}
+th,td{padding:9px 8px}
+.시험판{border:0;padding:0;font-weight:500}
+.어디{border:0;padding:0;font-weight:600}
+.못읽음{border:0;border-left:2px solid var(--line);border-radius:0;padding:2px 0 2px 14px}
+.칸지도 rect.칸{fill:var(--bg)} .칸지도 rect.칸.짝{fill:var(--soft)}
+/* 평소 대비 순위표 — 막대 · 세로선(평소 1배)은 CSS 폭이라 휴대폰에서도 같이 줄어든다 */
+.순위표{font-size:15px;table-layout:fixed}
+.순위표 th{padding:0 0 12px;border-bottom:1px solid var(--line);color:var(--muted)}
+.순위표 td{padding:0;height:52px;vertical-align:middle;border-bottom:1px solid var(--line)}
+.순위표 .순{width:2.5rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.순위표 .이름{width:17rem} .순위표 td.이름{padding-right:16px;overflow-wrap:anywhere}
+.순위표 .광고{font-weight:500}
+.순위표 .곳{font-size:12px;color:var(--muted);margin-left:6px;white-space:nowrap}
+.순위표 .조회{width:5.5rem;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.막대줄{position:relative;display:flex;align-items:center;gap:10px;height:52px}
+.막대줄::before{content:'';position:absolute;top:0;bottom:0;left:calc((100% - 4.5rem) * var(--기준));border-left:1px dashed var(--ref)}
+.띠{position:relative;flex:none;height:18px;width:max(2px,calc((100% - 4.5rem) * var(--w)));border-radius:2px;background:var(--bar)}
+.띠.강조{background:var(--accent)}
+.배{position:relative;font-variant-numeric:tabular-nums;white-space:nowrap}
+.좁을때{display:none}
+@media (max-width:600px){
+  .순위표,.순위표 tbody{display:block}
+  .순위표 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .순위표 tr{display:grid;grid-template-columns:1.75rem 1fr auto;grid-template-areas:"순 이름 조회" "순 막대 막대";column-gap:8px;row-gap:2px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .순위표 td{display:block;height:auto;border:0;width:auto}
+  .순위표 td.순{grid-area:순;width:auto} .순위표 td.이름{grid-area:이름;width:auto;padding:0} .순위표 td.조회{grid-area:조회;width:auto} .순위표 td.막대칸{grid-area:막대}
+  .막대줄{height:28px}
+  .좁을때{display:inline;font-size:12px;color:var(--muted)}
+}
 `;
+
+/**
+ * 평소 대비 순위표: [{이름, 곳, 값, 메모, 강조, 조회, 출처}] — 넣은 순서대로(부르는 쪽이 배수 큰 순으로 정렬).
+ * 넓은 화면은 표, 좁은 화면은 한 줄 두 단 격자 — 표시를 바꿔도 표 뜻이 남게 role을 붙인다.
+ */
+function 순위표(줄, { 최대 }) {
+  if (!줄.length) return '';
+  const 행 = 줄.map((d, i) => `<tr role="row"><td role="cell" class="순">${i + 1}</td>`
+    + `<td role="cell" class="이름"><span class="광고">${이스(d.이름)}</span> <span class="곳">${이스(d.곳)}</span></td>`
+    + `<td role="cell" class="막대칸"><div class="막대줄" style="--w:${(Math.max(0, d.값) / 최대).toFixed(4)}"><span class="${d.강조 ? '띠 강조' : '띠'}"></span><span class="배"${d.출처 ? ` title="${이스(d.출처)}"` : ''}>${이스(d.메모)}</span></div></td>`
+    + `<td role="cell" class="조회"><span class="좁을때">조회 </span>${Number.isFinite(d.조회) ? d.조회.toLocaleString('ko-KR') : '—'}</td></tr>`).join('');
+  return `<table class="순위표" role="table" style="--기준:${(1 / 최대).toFixed(4)}"><thead role="rowgroup"><tr role="row"><th role="columnheader" class="순">#</th><th role="columnheader" class="이름">게시물</th><th role="columnheader">평소 대비</th><th role="columnheader" class="조회">조회</th></tr></thead><tbody role="rowgroup">${행}</tbody></table>`;
+}
 
 function 못읽음(글, 덧 = '') {
   return `<p class="못읽음">이번엔 이 자료를 읽지 못했어요. ${이스(글 || '')}${덧}</p>`;
@@ -84,7 +145,19 @@ function 플랫폼칸(그림, 지표, 글, 상태, 설정) {
   let 안 = '';
   if (p.막대.length) {
     const 최대 = Math.max(2, ...p.막대.map((b) => b.배수));
-    안 += `<div class="판"><h3>평소와 견주면</h3><p class="작은글">같은 계정에서 앞서 올린 게시물들이 같은 나이에 낸 조회의 중앙값을 1로 두고 견준 배수예요. 점선이 평소(1배)예요. 견줄 게시물이 넉넉하지 않은 곳은 뺐어요.</p><div class="좁은그림">${가로막대(p.막대.map((b) => ({ 이름: `${광고이름(b.광고)} · ${플랫폼.플랫폼이름[b.플랫폼] || b.플랫폼}`, 값: b.배수, 메모: `${b.배수}배`, 강조: b.배수 > 1 })), { 최대, 기준선: 1, 너비: 420, 이름표: '게시물별 평소 대비 배수' })}</div></div>`;
+    // 배수 큰 순(같으면 광고 순서 그대로). 조회 · 평소 출처는 그 막대를 만든 표 행에서 — 막대는 「평소가 있는 표 행」을
+    // 같은 차례로 옮긴 것이라(집계.js) 차례로 짝짓는다. 한 광고에 같은 플랫폼 주소가 둘이어도 제 행을 찾게(10-31 Fable P3).
+    const 짝행 = p.표.filter((r) => r.숫자?.평소);
+    const 행찾기 = (b, i) => (짝행.length === p.막대.length && 짝행[i].광고 === b.광고 && 짝행[i].플랫폼 === b.플랫폼 ? 짝행[i] : p.표.find((r) => r.광고 === b.광고 && r.플랫폼 === b.플랫폼))?.숫자;
+    const 줄 = p.막대.map((b, i) => ({ b, i })).sort((x, y) => y.b.배수 - x.b.배수 || x.i - y.i).map(({ b, i }) => {
+      const 숫자 = 행찾기(b, i);
+      const 평소 = 숫자?.평소;
+      return {
+        이름: 광고이름(b.광고), 곳: 플랫폼.플랫폼이름[b.플랫폼] || b.플랫폼, 값: b.배수, 메모: 값글({ 값: b.배수, 단위: '배' }), 강조: b.배수 > 1,
+        조회: 숫자?.숫자?.조회, 출처: 평소 ? `${평소.출처} — 앞선 ${평소.편수}편이 같은 나이에 낸 조회의 중앙값 ${Number(평소.중앙).toLocaleString('ko-KR')}회` : '',
+      };
+    });
+    안 += `<div class="판"><h3>평소와 견주면</h3><p class="작은글">같은 계정에서 앞서 올린 게시물들이 같은 나이에 낸 조회의 중앙값을 1로 두고 견준 배수예요. 세로선이 평소(1배)이고, 평소보다 많았던 곳만 색으로 칠했어요. 견줄 게시물이 넉넉하지 않은 곳은 뺐어요.</p>${순위표(줄, { 최대 })}</div>`;
   }
   const 수칸 = (r, k) => (Number.isFinite(r.숫자?.숫자?.[k]) ? `${r.숫자.숫자[k].toLocaleString('ko-KR')}${['조회', '좋아요', '댓글', '공유', '저장'].includes(k) ? '' : 플랫폼.단위[k] || ''}` : '—');
   const 유지글 = (r) => {
@@ -199,4 +272,4 @@ function 그리기(입력) {
   return { 문서, 조각 };
 }
 
-module.exports = { 그리기, 본문, 칸지도그림 };
+module.exports = { 그리기, 본문, 칸지도그림, 순위표 };
