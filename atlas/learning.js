@@ -2,7 +2,7 @@
 // Core: operational practice priorities, NOT calibrated proficiency or TOPIK grades.
 // Receives Trail provenance and Strata nodes; owns neither identity nor storage.
 const POLICY = Object.freeze({ version: 'learning-priority-4', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
-const RESPONSE_FORMATS = Object.freeze(['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown']);
+const RESPONSE_FORMATS = Object.freeze(['binary-choice', 'single-choice', 'cup-compose', 'action', 'spoken', 'unknown']); // spoken: a learner's own line judged by rules on its transcript
 const { learningReason, activityReason, SUPPORTS } = require('./vellum');
 const Ledger = require('./learning-ledger');
 const DAY = 86400000;

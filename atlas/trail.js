@@ -82,7 +82,7 @@
         if (Object.keys(m).some(k => !keys.includes(k) && k !== 'responseFormat') || keys.some(k => !Object.hasOwn(m, k))
           || !id(m.skillId) || !event.conceptIds.includes(m.skillId) || !id(m.familyKey)
           || typeof m.modality !== 'string' || !/^[a-z][a-z0-9_-]{0,40}$/.test(m.modality) || ![1, 2, 3].includes(m.difficulty)
-          || (Object.hasOwn(m, 'responseFormat') && !['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown'].includes(m.responseFormat))
+          || (Object.hasOwn(m, 'responseFormat') && !['binary-choice', 'single-choice', 'cup-compose', 'action', 'spoken', 'unknown'].includes(m.responseFormat))
           || typeof m.audioRequired !== 'boolean' || typeof m.confounded !== 'boolean') throw new TypeError('Trail: invalid measurement contract');
       }
     } else if (event.type === TYPES[1]) {

@@ -20,7 +20,7 @@ const MEMBER_UNDERSTANDING_FACETS = Object.freeze({
   ]) }),
   'practice-response': Object.freeze({ title: '기록에 반복해서 나타난 응답 방식', multiple: false, max: 1, choices: choices([
     ['binary-choice', '두 보기에서 고르기'], ['single-choice', '여러 보기에서 고르기'], ['cup-compose', '낱말을 조합하기'],
-    ['action', '행동으로 답하기'], ['mixed', '여러 방식을 함께'], ['no-fixed-format', '특정 방식으로 정해 두지 않음'],
+    ['action', '행동으로 답하기'], ['spoken', '말로 답하기'], ['mixed', '여러 방식을 함께'], ['no-fixed-format', '특정 방식으로 정해 두지 않음'],
   ]) }),
   'learning-topic': Object.freeze({ title: '실제로 다룬 학습 내용', multiple: false, max: 1, choices: choices([
     ['interested', '관심 있는 내용이에요'], ['practice-only', '연습에서 다룬 내용일 뿐이에요'], ['not-now', '지금 관심 있는 내용은 아니에요'],

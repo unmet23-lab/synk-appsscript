@@ -3,7 +3,7 @@
 // Taxonomy membership is evidence of content encountered, never of liking it.
 const Periods = require('./trail-periods');
 const MODES = ['listening', 'reading'];
-const FORMATS = ['binary-choice', 'single-choice', 'cup-compose', 'action'];
+const FORMATS = ['binary-choice', 'single-choice', 'cup-compose', 'action', 'spoken'];
 const KINDS = ['situation', 'topic', 'word', 'grammar_point', 'skill', 'concept'];
 function memberPracticeObservations({ attempts, map, asOf }) {
   const period = Periods.bounds(asOf).recent;
