@@ -203,6 +203,19 @@ svg text{font-family:inherit}
 .점{fill:var(--accent)} .점글{font-size:12px;fill:var(--fg);font-weight:600}
 .방법 p{font-size:13px;color:var(--muted);max-width:88ch}
 a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* 휴대폰 — 선 그래프는 좁은 판용 판을 따로(글자가 화면 px 그대로), 큰 영상 표는 줄마다 두 줄 카드. 둘 다 판 폭으로 바꾼다 */
+.선그림{container-type:inline-size} .선그림 svg{display:block} .선그림 .좁은{display:none}
+@container (max-width:34rem){.선그림 .넓은{display:none} .선그림 .좁은{display:block}}
+.튄감싸기{container-type:inline-size} .튄표 .붙임{display:none}
+@container (max-width:36rem){
+  .튄표,.튄표 tbody{display:block}
+  .튄표 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .튄표 tr{display:flex;flex-wrap:wrap;column-gap:12px;row-gap:3px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .튄표 td{display:block;padding:0;border:0;text-align:left;font-size:12.5px;color:var(--muted)}
+  .튄표 td.제목칸{flex-basis:100%;font-size:14px;line-height:1.45;color:var(--fg);word-break:keep-all;overflow-wrap:anywhere}
+  .튄표 td.오{text-align:left;white-space:nowrap}
+  .튄표 .붙임{display:inline}
+}
 /* 0부터 세는 양 — 빗금 막대: 꽉 찬 면 대신 가는 사선 + 끝에만 단단한 선, 강조할 줄만 사업 색. 쌓기는 화면이 아니라 판 폭으로 */
 .빗금표{display:flex;flex-direction:column;container-type:inline-size}
 .빗줄{display:grid;grid-template-columns:minmax(6rem,11rem) minmax(0,1fr);align-items:center;column-gap:16px;min-height:38px;border-bottom:1px solid var(--line)}
@@ -264,7 +277,7 @@ function 본문({ 지표, 그림, 글, 글까닭 = null, 상태, 설정, 기준�
     let 안 = '';
     if (검?.length) {
       const 시작 = (() => { const d = new Date(`${기준일}T00:00:00Z`); d.setUTCFullYear(d.getUTCFullYear() - 3); return d.toISOString().slice(0, 10); })();
-      안 += `<div class="판"><h3>${이스(검.slice(0, 3).map((x) => x.이름).join(' · '))} 검색, 주마다</h3><p class="작은글">네이버 검색어 트렌드${설정.네이버?.성별 === 'f' ? ', 여성' : 설정.네이버?.성별 === 'm' ? ', 남성' : ''}. 하루 값을 주 평균으로 묶었고, 기간 안 가장 높은 날을 100으로 둔 상대값이에요. 점은 해마다 지금부터 반년 안에서 「${이스(검[0].이름)}」 검색이 가장 높았던 주예요.</p>${선그래프(검, { 시작 })}</div>`;
+      안 += `<div class="판"><h3>${이스(검.slice(0, 3).map((x) => x.이름).join(' · '))} 검색, 주마다</h3><p class="작은글">네이버 검색어 트렌드${설정.네이버?.성별 === 'f' ? ', 여성' : 설정.네이버?.성별 === 'm' ? ', 남성' : ''}. 하루 값을 주 평균으로 묶었고, 기간 안 가장 높은 날을 100으로 둔 상대값이에요. 점은 해마다 지금부터 반년 안에서 「${이스(검[0].이름)}」 검색이 가장 높았던 주예요.</p><div class="선그림"><div class="넓은">${선그래프(검, { 시작 })}</div><div class="좁은">${선그래프(검, { 시작, 너비: 360, 높이: 240 })}</div></div></div>`;
       const 줄 = 검.map((x) => [x.이름, 지표[`검색.${x.이름}.지난정점`], 지표[`검색.${x.이름}.다가올정점`], 지표[`검색.${x.이름}.작년대비`]]);
       안 += `<div class="격자판"><div class="판"><h3>해마다 가장 높았던 주</h3><p class="작은글">지난 세 해, 지금 날짜를 가운데 두고 앞뒤 반년 안에서 가장 높았던 주의 범위예요.</p><div class="표감싸기"><table class="정점표"><thead><tr><th>검색어</th><th>지금 앞 반년</th><th>지금부터 반년</th><th class="오">작년 같은 주 대비</th></tr></thead><tbody>${줄.map(([이름, a, b, c]) => `<tr><td>${이스(이름)}</td><td>${범위꺾임(값글(a))}</td><td>${범위꺾임(값글(b))}</td><td class="오">${이스(값글(c))}</td></tr>`).join('')}</tbody></table></div></div>`
         + (g?.언제 ? `<div class="판"><h3>그래서</h3><p>${텍(g.언제)}</p></div>` : '') + '</div>';
@@ -282,7 +295,7 @@ function 본문({ 지표, 그림, 글, 글까닭 = null, 상태, 설정, 기준�
       안 += `<div class="격자판"><div class="판"><h3>영상 각도별로 튄 비율</h3><p class="작은글">제목으로 각도를 나눴어요(한 영상이 여러 각도에 들 수 있어요). 점선은 전체 평균 ${이스(값글(지표['영상.튄비율']))}.</p>${빗금막대(영.각도줄.map((a) => ({ 이름: a.이름, 값: a.튄비율, 메모: `${a.튄비율}% · ${a.편수}편`, 강조: 강조각도.has(a.이름) })), { 최대: 100, 기준선: 전체, 이름표: '영상 각도별 튄 비율' })}</div>`
         + `<div class="판"><h3>길이별로 튄 비율</h3><p class="작은글">점선은 전체 평균이에요.</p>${빗금막대(영.길이줄.map((a) => ({ 이름: a.이름, 값: a.튄비율, 메모: `${a.튄비율}% · ${a.편수}편`, 강조: a.튄비율 > 전체 })), { 최대: 100, 기준선: 전체, 이름표: '길이별 튄 비율' })}</div></div>`;
       if (g?.반응) 안 += `<p>${텍(g.반응)}</p>`;
-      if (영.튄순.length) 안 += `<div class="판"><h3>가장 크게 튄 영상</h3><div class="표감싸기"><table><thead><tr><th>영상</th><th>채널</th><th class="오">구독</th><th class="오">조회</th><th class="오">평소의 몇 배</th><th class="오">길이</th></tr></thead><tbody>${영.튄순.map((v) => `<tr><td><a href="${이스(v.주소)}" target="_blank" rel="noopener">${이스(v.제목)}</a></td><td>${이스(v.채널)}</td><td class="오">${v.구독 == null ? '—' : v.구독.toLocaleString('ko-KR')}</td><td class="오">${v.조회.toLocaleString('ko-KR')}</td><td class="오">${v.배수}배</td><td class="오">${v.길이}초</td></tr>`).join('')}</tbody></table></div></div>`;
+      if (영.튄순.length) 안 += `<div class="판"><h3>가장 크게 튄 영상</h3><div class="표감싸기 튄감싸기"><table class="튄표" role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader">영상</th><th role="columnheader">채널</th><th role="columnheader" class="오">구독</th><th role="columnheader" class="오">조회</th><th role="columnheader" class="오">평소의 몇 배</th><th role="columnheader" class="오">길이</th></tr></thead><tbody role="rowgroup">${영.튄순.map((v) => `<tr role="row"><td role="cell" class="제목칸"><a href="${이스(v.주소)}" target="_blank" rel="noopener">${이스(v.제목)}</a></td><td role="cell">${이스(v.채널)}</td><td role="cell" class="오"><span class="붙임">구독 </span>${v.구독 == null ? '—' : v.구독.toLocaleString('ko-KR')}</td><td role="cell" class="오"><span class="붙임">조회 </span>${v.조회.toLocaleString('ko-KR')}</td><td role="cell" class="오"><span class="붙임">평소의 </span>${v.배수}배</td><td role="cell" class="오">${v.길이}초</td></tr>`).join('')}</tbody></table></div></div>`;
     } else 안 = 못읽음(상태.영상);
     칸.push(`<section class="칸" id="react"><h2>무엇에 반응했나</h2>${안}</section>`);
   }
