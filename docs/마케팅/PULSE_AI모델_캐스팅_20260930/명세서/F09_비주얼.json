@@ -1,0 +1,149 @@
+{
+  "버전": "v1",
+  "작성일": "2026-10-31",
+  "코드": "F09",
+  "키": "없음(가번호 — 캐스팅북 반영 때 붙음)",
+  "이름": "비주얼(가칭 — 멤버 이름은 그룹 이름과 함께 정함)",
+  "그룹": {
+    "이름": "미정",
+    "팀": "걸그룹(셋)",
+    "함께": [
+      "F08",
+      "F10"
+    ],
+    "멤버_색": "로즈 핑크",
+    "기준": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/아이돌그룹_걸그룹시험_20261030.md"
+  },
+  "틀": "1차 · 한결과 같은 기본 명세서 + 「바뀌면_안되는_것」(로드맵 7절 4단계) + 「그룹」. 목소리 · 데이터셋 · LoRA 칸은 그 단계 뒤에 더한다.",
+  "콘셉트": "걸그룹(「첫사랑의 설렘 × 레몬소다의 상큼함」) 비주얼 · 센터 — 차분하고 우아한 로맨틱, 멤버 색 로즈 핑크",
+  "기준파일": {
+    "대표사진": "C:/SYNK-LoRA/casting/idol_gg_20261030/대표/B_h1.jpg",
+    "원래_후보": "C:/SYNK-LoRA/casting/idol_gg_20261030/받음/B2_164123.jpg",
+    "전신": "C:/SYNK-LoRA/casting/idol_gg_20261030/세트/F09_fullbody.jpg",
+    "세트_한장표": "C:/SYNK-LoRA/casting/idol_gg_20261030/세트/F09_세트_한장표.jpg",
+    "후보_검수": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/fable/걸그룹후보_검수_20261030.md",
+    "세트_검수": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/fable/걸그룹세트_F09_검수_20261031.md"
+  },
+  "바뀌면_안되는_것": {
+    "지킬_특징": [
+      "작은 하트형 얼굴(넓은 이마 → 작은 뾰족 턱)",
+      "크고 둥근 겉쌍꺼풀 눈(눈꼬리 수평)"
+    ],
+    "보이는_나이": "21~25세(22)",
+    "함께": "가는 콧대, 작은 장밋빛 입술, 애교살 반짝임, 짙은 갈색 홍채, 로즈 브라운 가슴 아래 긴 웨이브(가운데~옆 가르마), 점 없음(볼 · 콧대 옆 메운 뒤), 169cm 가늘고 긴 목",
+    "점": "없음 — 후보 B2의 볼 · 콧대 옆 점 둘은 그 자리만 메웠다(10-30). 새 컷 · LoRA 지시문에 「no moles, beauty marks or spots」"
+  },
+  "몸": {
+    "키_cm": 169,
+    "체형": "가늘고 긴 체형(긴 목 · 긴 다리)",
+    "사이즈": {
+      "상의": "55 (S)",
+      "하의": "25",
+      "신발": "245",
+      "설명": "어림 — 세트 전신을 보고 정함"
+    },
+    "측정_전신기준": {
+      "도구": "C:/SYNK-LoRA/tools/measure/measure_body.py",
+      "측정일": "2026-10-31",
+      "등신_머리카락포함": 7.03,
+      "어깨_얼굴폭_비": 2.12,
+      "다리비율_골반관절에서바닥": 0.523,
+      "몸통비율_어깨에서골반": 0.269
+    },
+    "검사_허용범위": {
+      "설명": "새로 만든 정면 전신 사진을 measure_body.py로 쟀을 때 이 범위 밖이면 눈으로 다시 확인한다. 자세 · 옷 · 카메라 높이에 따라 몇 % 흔들린다(1차와 같은 폭).",
+      "등신": [
+        6.71,
+        7.35
+      ],
+      "어깨_얼굴폭_비": [
+        1.97,
+        2.27
+      ],
+      "다리비율": [
+        0.501,
+        0.545
+      ]
+    }
+  },
+  "색": {
+    "도구": "C:/SYNK-LoRA/tools/measure/colors.py",
+    "측정일": "2026-10-31",
+    "측정사진": "대표(h1) · 세트 angle-front · exp-smile · hair-3",
+    "머리": "#A36158",
+    "피부": "#F3BAB7",
+    "입술": "#E3828D",
+    "측정범위_대표사진외3장": {
+      "머리": [
+        "#A36158",
+        "#A9675F"
+      ],
+      "피부": [
+        "#EFB9B5",
+        "#F3BCBA"
+      ],
+      "입술": [
+        "#E47B88",
+        "#E68893"
+      ]
+    }
+  },
+  "얼굴": [
+    {
+      "항목": "얼굴선",
+      "내용": "넓은 이마에서 작고 뾰족한 턱으로 좁아지는 작은 하트형 얼굴이에요."
+    },
+    {
+      "항목": "눈",
+      "내용": "크고 둥근 겉쌍꺼풀 눈이고 눈꼬리가 수평이에요. 애교살이 반짝여요."
+    },
+    {
+      "항목": "코 · 입",
+      "내용": "콧대가 가늘고 입술이 작은 장밋빛이에요."
+    },
+    {
+      "항목": "피부",
+      "내용": "밝은 핑크 톤 피부이고 점이 없어요."
+    },
+    {
+      "항목": "머리",
+      "내용": "로즈 브라운 긴 웨이브가 가슴 아래까지 내려와요."
+    }
+  ],
+  "쓰임": {
+    "역할": "뷰티 · 향수 · 주얼리 모델, 로맨틱한 데이트 장면, 그룹 단체 컷의 가운데(센터)",
+    "금지": "섹시 연출, 교복 · 체크 치마 · 넥타이 · 세일러 깃, 10대 연출",
+    "업종": "스킨케어 · 메이크업, 향수 · 주얼리, 로맨틱 패션(가안 — 캐스팅북에 올릴 때 업종 문구로 다시 정함)"
+  },
+  "데이터셋": {
+    "트리거": "pls_f09",
+    "v1": {
+      "폴더": "C:/SYNK-LoRA/datasets/F09_gg_visual/v1",
+      "장수": 14,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v1.py (F09_gg_visual/captions_v1.json)"
+    },
+    "v2": {
+      "폴더": "C:/SYNK-LoRA/datasets/F09_gg_visual/v2",
+      "장수": 36,
+      "스크립트": "C:/SYNK-LoRA/validation/_v2공통/make_v2.py (F09_gg_visual/captions_v2.json)",
+      "새컷": "10-19 Gemini Ultra 나노바나나 2.1, 참조 4장, 22장",
+      "장면": "C:/SYNK-LoRA/validation/F09_gg_visual/shots_v2.json",
+      "한장표": "C:/SYNK-LoRA/validation/F09_gg_visual/v2_check/_새컷_한장.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/F09_gg_visual/job_config_v2.json",
+    "학습": "v2(2026-10-31) — 36장(세트 14 + 새 컷 22: 데이터셋 검수대로 B7 장미정원 뺌 · 24(B8) 캡션 고침 · 12 진주 귀걸이 · 19/31 결 구절 더함, 학습 전 게이트 뒤 창빛 · 자연광 근접 B17~B20 넷 더함) · 3,600스텝 · lr 1e-4 · rank 32/alpha 32(conv 16) · 해상도 512·768·1024 · 캡션 드롭아웃 0.05 · 마스크 없음 · 트리거 pls_f09 · Z-Image Turbo bf16 + 학습 어댑터 v2 · 07:53~12:02 한 번에(학습 3시간 49분, 3.81 s/it + 견본 16회), 재시작 없음 · 가중치 C:/SYNK-LoRA/outputs/f09_gg_visual_v2/f09_gg_visual_v2.safetensors(250스텝마다 14개 저장점 보관) · 견본은 트리거 없는 a young Korean woman 도서관이 250부터 끝까지 이 사람, 트리거만 적은 줄전구 클로즈업은 2,000부터 이 사람(그 전엔 앞머리 여자 · 다른 여자), 트리거만 적은 도서관은 남자 · 서양 여자로 흔들리다 3,000부터 이 사람, 자전거는 끝까지 서양 여자 — 얼굴이 트리거보다 캡션의 a Korean woman in her early twenties에 묶임"
+  },
+  "LoRA": {
+    "v2": {
+      "트리거": "pls_f09",
+      "쓸_판": "C:/SYNK-LoRA/outputs/f09_gg_visual_v2/f09_gg_visual_v2.safetensors (마지막 3,600스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/f09_gg_visual_v2/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_f09, a Korean woman in her early twenties, <구도·표정·옷·배경·조명>",
+      "검증": "조건부 통과(2026-10-31, Fable 판정) — 학습에 없던 각도·조명 10장이 모두 이 사람으로 보인다(예 9·약함 1·아니오 0, V08 전신은 경계 예). 지킬 특징 둘 다 유지: 작은 하트형 얼굴 10/10(아래턱 폭 0.737~0.836이 학습 정면 컷 범위 안, 턱 넓어진 칸 없음), 크고 둥근 겉쌍꺼풀 눈·수평 눈꼬리 10/10(눈꼬리 각 V05만 4.7/1.1°로 처짐, 기준 9.5/8.7). 점: V10 오른볼 눈 밑 또렷 1(2px)·V09 아래 오른볼·V05 오른볼 희미 1씩(맨 지시문이라 no moles 문장 없었음) — 후보정. 보이는 나이 19~28, 가운데 21~25, V05만 24~28로 위 끝, V04 19~22·V10 20~23이 게이트(18~26) 안 아래쪽. 함께: 가는 콧대 9/10·작은 장밋빛 입술 7/10(V05 코랄·V06 어두운 로즈·V09 모브)·긴 목·웨이브 10/10, 로즈 브라운 머리색은 2/10(V04·V05)뿐 — 갈색 V01·V03·V07·V08·V09, 코랄 V02, 버건디 V06, 무대 조명 V10. 결 평균 2.45(데이터셋 게이트 2.5 못 넘음)이되 결 문장을 넣은 V01이 4(모공 보임)이고 안 넣은 9칸은 데이터셋 평균(2.5)대로 2.3 — 밀랍이 아니라 적어야 나오는 상태. 실제 촬영 같음 평균 3.4(단체 컷 2 → 3.4, 맥락 없는 시험관 둘은 3), 얼굴 그림자는 V07(볼 차 22)·V05(14.5)·V03(11)·V10에서 생김. 약한 칸: V05 아래에서 한낮(squinting이 세트 06 화남으로 새어 눈썹 굵고 곧아지고 눈꼬리 처지며 햇빛 하이라이트에 콧대 굵고 입술 도톰한 코랄 — 24~28의 다른 사람 같음). 전신 V08 등신 7.31·어깨/얼굴폭 2.18·다리 0.522로 허용 안(윗끝), 체형 유지. 좌우 방향 V02 왼쪽 ✓·V03 오른쪽 ✗(화면 왼쪽 −48°)·V09 오른쪽 ✗(−18°) 1/3, front view V01·V04·V08·V10 ±3°·V07 −19°, 돌아봄 몸 87°/얼굴 −23°. 옷·배경 안 적은 칸에 핑크 레이스·핑크 배경 안 샘, 블러셔는 4칸에 따라옴, 표정 기본값 다문 입, excited smile은 아랫니까지(V10), V04·V09 손가락 뭉개짐, V08·V09 간판·화면은 가짜 글자(읽히는 글자 없음). 트리거 결속 약함(한결보다 심함): 둘을 함께 적은 검증 꼴에서만 9/10",
+      "검증표": "C:/SYNK-LoRA/validation/F09_gg_visual/v2_validate/verify_v2_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/F09_gg_visual/verify_v2_jobs.json",
+      "주의": "지시문엔 pls_f09, a Korean woman in her early twenties를 늘 함께 적는다 — 트리거만으론 자전거·도서관 견본이 남자·서양 여자로 나오고 트리거 없는 a young Korean woman은 이 얼굴이 되니, 걸그룹 단체 컷은 멤버마다 따로 뽑아 합친다(한 지시문에 세 LoRA·젊은 한국 여자 셋을 세우지 않음). young·pretty·idol은 쓰지 않고 룩은 small heart-shaped face with a delicate pointed chin, large round double-lidded eyes with level outer corners, slim nose bridge, small rosy lips, long slender neck. 결은 적어야 나온다 — natural skin texture with visible pores, unretouched skin(V01 4, 안 적은 9칸 2.3), 플래시 번들거림은 도자기로 읽히니 matte skin, no flash sheen, candid snapshot은 광각이라 85mm portrait lens. 머리색은 rose brown long wavy hair를 적고 어두운 장면은 her rose-brown hair color still visible in this light, 뽑은 뒤 머리 ΔE ≤ 15 확인(안 적으면 2/10만 로즈 — 창가·파란 빛·형광등·그늘 갈색, 노을 코랄, 촛불 버건디). 점은 no moles, beauty marks or spots를 늘 적고(장면 컷은 두 번) 볼·콧대 옆을 4배로 봐 1~2개는 점메우기.py(V10 눈 밑 점·V09·V05 잡티). squinting·frown·한낮 직사광 로우앵글은 세트 06 화남이 새어 눈썹·눈꼬리·콧대·입술이 바뀌니(V05) relaxed brow, soft eyes slightly narrowed, soft closed-lip smile + soft diffused sunlight, 시드 2~3개. 나이는 하이앵글·큰 웃음·핑크 조명·블러셔가 19~23으로 내리고(V04·V10, 블러셔는 안 적어도 따라옴) 촛불·형광등이 23~26으로 올리니(V06·V09) 뷰티 컷은 눈높이 카메라·다문 입 미소·blush kept low and sheer, small pearl earrings. 좌우 방향은 1/3만 따르니 화면 기준(her face turned toward the right edge of the frame)으로 적고 각도를 재며 좌우 표식이 없어 뒤집어도 된다, front view는 looking straight into the lens, 45°는 18~23°에 그치니 three-quarter view, 45 degrees, far ear hidden, 옆얼굴은 true 90-degree profile, far eye hidden. 전신은 169 cm, slender long-limbed build, camera at waist height를 적고 등신을 재며(7.31 허용 윗끝) 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 손은 숨기거나 하나만(V04·V09 뭉개짐), 간판·화면 글자는 가짜로 나오니 비운다. 표정 기본값은 다문 입, excited smile은 아랫니까지(V10)라 smiling with only her upper teeth showing. 입술은 촛불·형광등·그늘에서 어두운 로즈·모브(V06·V09·V08)라 small glossy rosy-pink lips, 피부는 명세서보다 늘 어두우니 뷰티 컷은 bright pink-toned skin, 차가운 빛은 dark brown eyes(V07 홍채 밝아짐)"
+    }
+  },
+  "목소리": "아직 — 로드맵 7절 5단계(광고 배우 목소리 엔진은 결정 10-29 먼저 확인)"
+}
