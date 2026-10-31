@@ -20,6 +20,8 @@
  * 아르곤: 분해 폴더의 원본(소리째)을 Gemini 웹 「4 Argon」 · 사고 수준 「높음」 새 대화에 올려 지시문을 보내고 답을 받는다. 같은 계정을 여러
  *   세션이 쓰므로 먼저 `python synk-vendor/_공용차례/차례.py gemini 기다리기 <이름> <할 일>`로 차례를 잡고 --u에 그 줄의 계정 번호를 준다.
  *   영상 권리 동의 창 · 한도 · 로봇 확인이 보이면 누르지 않고 멈춘다. 답은 .tmp(git 밖)에만 남는다 — 남의 말 · 가사 · 화면 글이 들어 있다.
+ *   화면 다루기는 tools/아르곤웹.mjs(사진 · 지시문 검수와 같은 페이지 스크립트, 10-31). 보내기를 누른 뒤 끝나면 `아르곤_답.md.보냄.json`
+ *   표시가 남는다 — 그때 같은 명령을 다시 부르면 다시 보내지 않고 같은 작업 공간의 탭에서 읽기만 한다(10-29 같은 원본을 두 번 보냄).
  * 나란히: 우리 영상의 컷을 같은 셈으로 재 오마주.json의 원본 컷과 견준다 — 길이 · 컷 수 · 첫 2초 · 박자(같은 순서로 0.5초 안에 짝지어지는
  *   컷 비율). 원본 파일이 .tmp에 있으면 같은 자리의 두 장면을 나란히 묶은 그림도 만든다(git 밖). tools/올리기전검사.js ⑮가 같은 셈을 쓴다.
  */
@@ -431,13 +433,25 @@ function argon(id, opts = {}) {
   const prompt = fs.readFileSync(path.join(dir, '아르곤_지시문.md'), 'utf8').trim();
   const u = String(opts.u || 4);
   if (!/^\d$/.test(u)) throw new Error('--u는 Gemini 계정 번호 한 자리(a 줄 77yuhbs = 4 · b 줄 unmet25 = 1)');
-  const job = { video: video.replace(/\\/g, '/'), prompt, out: path.join(dir, '아르곤_답.md').replace(/\\/g, '/'), shots: dir.replace(/\\/g, '/'), u: Number(u) };
-  const body = fs.readFileSync(path.join(__dirname, '오마주_아르곤.mjs'), 'utf8');
-  const script = `globalThis.JOB = ${JSON.stringify(job)};\n${body}`;
-  const r = spawnSync('ego-browser nodejs', { input: script, encoding: 'utf8', windowsHide: true, timeout: 15 * 60_000, shell: true });
-  process.stdout.write(r.stdout || '');
-  if (r.status !== 0) throw new Error('아르곤 보내기 실패: ' + String(r.stderr || r.stdout || '').trim().split('\n').slice(-3).join(' '));
-  return job.out;
+  const job = argonJob(dir, video, prompt);
+  const 웹 = require('./아르곤웹.js');
+  const mode = fs.existsSync(웹.표시경로(job.out)) ? '읽기' : '보내기';
+  const 시작 = Date.now();
+  const r = spawnSync('ego-browser nodejs', { input: 웹.페이지글(job, u, mode), encoding: 'utf8', windowsHide: true, timeout: (job.answerMin + 18) * 60_000, shell: true });
+  const 출력 = `${r.stdout || ''}\n${r.stderr || ''}`; // ego는 스크립트 출력을 표준 오류로 낸다(10-31)
+  process.stdout.write(`${출력.trim()}\n`);
+  const 결과 = 웹.결과가르기(출력, fs.existsSync(웹.표시경로(job.out)), 웹.새답(job.out, 시작));
+  if (결과.결과 === '받음') return job.out;
+  if (결과.결과 === '보냄') throw new Error(`아르곤에 보냈지만 답을 못 받음 — 다시 보내지 말고 15분 뒤 같은 명령으로 읽는다(${결과.까닭})`);
+  throw new Error(`아르곤 ${mode} 실패: ${결과.까닭}`);
+}
+
+// 아르곤 첫 분석 작업 — 원본 영상 하나를 tools/아르곤웹.mjs로 보낸다. 영상은 처리가 길어 답을 15분까지 기다린다.
+function argonJob(dir, video, prompt) {
+  return {
+    이름: path.basename(dir), files: [video], prompt, out: path.join(dir, '아르곤_답.md'), shots: dir,
+    head: '아르곤 첫 분석', space: 'synk-homage-argon', failShot: path.join(dir, '아르곤_실패.png'), answerMin: 15,
+  };
 }
 
 // ── 입구 ──
@@ -483,4 +497,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 2; }
 }
 
-module.exports = { compare, pairCuts, cutStarts, beatTimes, cutsOf, measure, parseSource, probe, cutTable, sideCheck, episodeVideo, 칸들, 기준, 갈래들 };
+module.exports = { compare, pairCuts, cutStarts, beatTimes, cutsOf, measure, parseSource, probe, cutTable, sideCheck, episodeVideo, argonJob, 칸들, 기준, 갈래들 };
