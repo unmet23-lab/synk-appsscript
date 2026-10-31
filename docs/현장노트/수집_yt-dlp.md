@@ -17,6 +17,7 @@
 - 틱톡 「Unable to extract secondary user ID」는 흉내내기(curl_cffi) 없는 판에서 잦다(서버에선 거의 다, PC에서도 가끔) → curl_cffi가 든 공식 단독 실행판으로 부른다 ([자세히](#틱톡-프로필이-unable-to-extract-secondary-user-id로-실패한다--흉내내기curl_cffi가-없어서다-2026-10-25-claude))
 - 차례(잠금)를 기다리는 동안 댓글 · 몇 개의 검색은 Data API로(`commentThreads` 1단위 · `search.list` 100단위), exa 무료 몫은 금방 끝나니 숫자 확인은 공식 · 공개 API로 ([댓글 · 검색](#댓글--검색도-data-api로-읽으면-유튜브-차례잠금가-필요-없다--댓글은-commentthreads1단위-검색은-searchlist100단위라-꼭-필요한-것만-2026-10-26-claude) · [exa · 비메오](#웹-조사exa--비메오))
 - 네이버 데이터랩은 curl로 부르면 접근 오류 쪽만 온다(10-30) → ego에서 그 쪽을 연 뒤 `page.fetch`로 쇼핑인사이트 내부 주소를 부르고, 검색어 트렌드는 하루 단위로 받아 결과 그래프의 점에서 값을 읽는다 ([쇼핑](#네이버-데이터랩은-curl로-부르면-접근-오류-쪽만-온다--ego-쪽-안에서-pagefetch로-쇼핑인사이트-내부-주소를-부른다-2026-10-30-claude) · [검색어](#데이터랩-검색어-트렌드는-주월-단위와-qctype을-받지-않고-결과-숫자는-그래프-점에만-있다-2026-10-30-claude))
+- Steam 리뷰 JSON의 옛 주소 `appreviews/<appid>?json=1`이 10-31 확인 때 302로 상점 첫 화면에 넘어갔다 → 상점 페이지가 부르는 `ajaxappreviews/<appid>?…`로 받는다(응답 꼴 같음) ([자세히](#steam-리뷰-json의-옛-주소-appreviews가-상점-첫-화면으로-302된다--상점-페이지가-부르는-ajaxappreviews로-받는다-2026-10-31-claude))
 
 ## 목차
 
@@ -39,6 +40,7 @@
 - [데이터랩 검색어 트렌드는 주·월 단위와 qcType을 받지 않고, 결과 숫자는 그래프 점에만 있다](#데이터랩-검색어-트렌드는-주월-단위와-qctype을-받지-않고-결과-숫자는-그래프-점에만-있다-2026-10-30-claude)
 - [공모전·디자인 레퍼런스 사이트](#공모전디자인-레퍼런스-사이트) — 공모전 모음 사이트 다섯 곳의 목록 주소·API와 본문 자르기, 지자체 공고 첨부 받기(한글 주소 · 새올), Cosmos 공개 컬렉션 GraphQL과 인기 신호
 - [웹 조사(exa · 비메오)](#웹-조사exa--비메오) — exa 무료 몫은 하위 조사 하나가 11~25번에 끝남, 비메오 공개 API
+- [Steam 리뷰 JSON의 옛 주소(`appreviews`)가 상점 첫 화면으로 302된다 — 상점 페이지가 부르는 `ajaxappreviews`로 받는다](#steam-리뷰-json의-옛-주소-appreviews가-상점-첫-화면으로-302된다--상점-페이지가-부르는-ajaxappreviews로-받는다-2026-10-31-claude)
 
 ## yt-dlp
 
@@ -185,3 +187,11 @@
 - 원인: exa 무료 한도가 세션 · 하위 에이전트 몫을 가리지 않고 짧은 시간 호출 수로 걸리는 것으로 보인다(정확한 수는 모름).
 - 고침: 갈래마다 exa는 처음 넓게 찾을 때만 쓰고 숫자 확인은 공식 API(유튜브 Data API) · 공개 API로 한다. 비메오는 로그인 없이 `https://vimeo.com/api/v2/video/<id>.json`으로 재생 수 · 좋아요 · 길이 · 해상도를 읽는다(일부 영상은 재생 수가 비어 온다, 지운 영상은 404).
 - 다시 확인: 하위 에이전트 답에 exa 한도에 걸린 호출 번째와 그 뒤 메운 길이 적혀 있는지.
+
+## Steam
+
+### Steam 리뷰 JSON의 옛 주소(`appreviews`)가 상점 첫 화면으로 302된다 — 상점 페이지가 부르는 `ajaxappreviews`로 받는다 (2026-10-31 Claude)
+- 증상: 10-31 WORLD 게임 방향 벤치마크(게임 25개 리뷰 수집)에서 `https://store.steampowered.com/appreviews/<appid>?json=1&…`이 매개변수와 상관없이 모두 `302 → https://store.steampowered.com/`였다. 이 PC의 curl · PowerShell, ego 브라우저, WebFetch, exa(다른 IP)가 다 같았고, 같은 때 `api/appdetails?appids=<id>`와 상점 HTML은 200이었다.
+- 원인: Steam이 옛 공개 리뷰 주소를 상점 첫 화면으로 돌린다(언제부터인지 · 다시 열릴지는 모름). 상점 페이지는 리뷰를 `ajaxappreviews`로 부른다.
+- 고침: `https://store.steampowered.com/ajaxappreviews/<appid>?filter=all|recent&language=english&num_per_page=100&cursor=*`로 받는다 — curl로 되고 JSON 꼴(`query_summary` · `reviews` · `cursor`)은 옛 주소와 같다. 전체 규모는 `language=all&num_per_page=1`의 `query_summary`. 도움 순(`filter=all`)은 최근 365일 안에서만 고르므로 오래된 평가는 날짜 구간으로 따로 받는다. 원자료에는 작성자 steamid · 닉네임이 들어 있어 공개 저장소에 올리지 않는다(이번엔 `SYNK-보관함/WORLD_게임방향_20261031/벤치마크_원자료/`).
+- 다시 확인: `curl -s -o /dev/null -w "%{http_code} %{redirect_url}" "https://store.steampowered.com/appreviews/413150?json=1"`이 아직 302인지, `ajaxappreviews/413150?filter=recent&language=english&num_per_page=1&cursor=*`가 200 JSON인지.
