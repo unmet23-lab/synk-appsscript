@@ -786,3 +786,10 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: `core.autocrlf=true`인 체크아웃에서 모델 JSON·문서10개가 CRLF로 바뀌었다. 공개 모델 주소는 파일 SHA 묶음으로 계산하므로 원래 LF 모델과 다른 revision이 됐다.
 - 고침: `.gitattributes`에서 `experiences/path-vr/models/whisper-base/`의 JSON·TXT·MD만 `text eol=lf`로 고정했다. 바뀐 줄끝은 Git blob 바이트로 복원했고 가중치·영수증·내용은 바꾸지 않았다.
 - 다시 확인: 실제 모델·영상 패키지 관련 묶음29/29, `core.autocrlf=true` Git archive의 모델 텍스트11개가 원 blob과 전량 바이트 일치. 기존 작업본은 새 속성으로 재체크아웃한 뒤 재검사한다.
+
+### 생성 청크의 삭제·추가가 이름 변경으로 묶여 CI 범위 검사에서 빠진다 (2026-10-31 GPT)
+
+증상: 새 PC 원천의 선언된 삭제 한 개와 추가 한 개를 모두 색인에 반영했는데 CI 경로 목록에는 새 청크만 나온다.
+- 원인: 내용이 비슷해 Git의 이름 변경 탐지가 기존 청크→새 청크로 묶었고 `diff --cached --name-only`가 도착 경로만 냈다.
+- 고침: 선언된 삭제·추가의 원시 경로를 대조하는 검사에는 `--no-renames`를 명시한다.
+- 다시 확인: 이전 청크 삭제와 새 청크 추가가 각각 나타나 정확한 동결 원천의 CI 범위 대조를 통과했다. 이전 실패 기록도 보존했다.

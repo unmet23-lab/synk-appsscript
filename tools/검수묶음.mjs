@@ -43,6 +43,12 @@ import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 정책만들
   맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 대신할검수자, 사용자지정사슬검사, 사용자지정판, Atlas작업ID } from './lib/검수증명.mjs';
 
 const require = createRequire(import.meta.url);
+
+// The one-task approval remains readable in historical policies and proofs.
+// It no longer authorizes a new preparation or a new delta.
+export function 개인화신규검수검사(id) {
+  if (id === 'atlas-personalization-20261029') throw new Error('이번 Atlas 개인화 작업의 신규 검수 생성은 은퇴했다 — 과거 정책·증명 확인은 유지한다');
+}
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const ARGON = { model: 'gemini-4-argon' };
 // 한 묶음 바이트(머리말 포함) — 10-18 한 번에 넘긴 745KB가 뒷부분이 잘려 0건이었고 190KB 언저리에서도 잘렸다(현장 노트 AI_CLI).
@@ -647,6 +653,7 @@ export function 설정만들기(o) {
 }
 
 export async function 준비하기(o, { 알리기 = () => {} } = {}) {
+  개인화신규검수검사(o.담당예외);
   const 설정 = 설정만들기(o);
   const 폴더 = 폴더찾기(o.이름, o.폴더);
   if (fs.existsSync(path.join(폴더, '묶음.json'))) throw new Error(`이미 있는 묶음: ${폴더} — 다른 이름을 쓴다`);
@@ -1627,6 +1634,7 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
   const 앞 = 사슬판정(앞폴더이름, { 저장소: o.저장소 || null, 지금대조: false, 끝반영: '대상', 사용자최종판정: !o.사용자지정 });   // 사용자지정의 중간 후보는 delta 준비만 가능하며 실제 배포 확인은 최종 Claude를 요구한다.
   if (앞.사유.length) throw new Error(`앞 검수 ${path.basename(앞폴더이름)}가 아직 끝나지 않았다 — ${앞.사유.join(' / ')}`);
   const 처음 = 앞.고리들[0], 끝고리 = 앞.고리들.at(-1), 앞설정 = 처음.목록.설정;
+  개인화신규검수검사(앞설정.담당예외);
   let 정책 = 끝고리.정책;
   if (Boolean(정책.사용자지정) !== Boolean(o.사용자지정)) throw new Error('사용자지정 다시는 기존 정책에 추가할 수 없고 새 --사용자지정 봉인이 필요하다');
   if (정책.사용자지정 && (앞.고리들.some(g => g.최종.파일.length) || !o.배포후보 || 앞.고리들.some(g => path.resolve(o.배포후보) === path.resolve(g.목록.설정.배포후보) || path.resolve(o.사용자지정) === path.resolve(g.목록.설정.사용자지정)))) throw new Error('사용자지정 다시는 원천 없는 후보와 새 봉인·새 후보 경로가 필요하다');

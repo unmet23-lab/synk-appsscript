@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {정책만들기, 대체순서, 다시검수자들, sha256} from '../tools/lib/검수증명.mjs';
-import {후보항목들, 두판diff} from '../tools/검수묶음.mjs';
+import {후보항목들, 두판diff, 준비하기, 개인화신규검수검사} from '../tools/검수묶음.mjs';
 const opts={종류:'백엔드',작성자:'GPT',담당예외:'atlas-personalization-20261029',끝:'작업본'};
 const source={경로:'desktop/assets/launcher/engine.js',상태:'M'};
 test('관심 주제 표시 모델의 기존 PC 사본 교체만 이번 예외에 포함한다',t=>{
@@ -26,6 +26,18 @@ function candidate(t,name='study/app.js',kind='바꿈'){
  fs.writeFileSync(path.join(root,'후보.json'),JSON.stringify({판:1,종류:'synk.im',항목:[{경로:name,종류:kind,모드:kind==='지움'?null:'100644',sha256:kind==='지움'?null:sha256(body)}]}));
  return root;
 }
+test('마감한 개인화 예외는 새 폴더를 만들기 전에 거절하고 과거 정책은 계속 읽는다',async t=>{
+ const root=candidate(t),folder=path.join(root,'new-review');
+ await assert.rejects(준비하기({...opts,이름:'retired-personalization',폴더:folder}),/신규 검수 생성은 은퇴/);
+ assert.equal(fs.existsSync(folder),false);
+ const historical=정책만들기({...opts,배포후보:root},[]);
+ assert.deepEqual(historical.필수,['GPT','Claude']);assert.equal(대체순서(historical),null);
+});
+test('개인화 신규 생성 은퇴는 일반 검수나 다른 작업의 승인 범위를 바꾸지 않는다',()=>{
+ for(const id of [undefined,null,'topik-writing-semantic-20261028'])assert.doesNotThrow(()=>개인화신규검수검사(id));
+ assert.throws(()=>개인화신규검수검사(opts.담당예외),/은퇴/);
+ assert.deepEqual(정책만들기({종류:'백엔드',작성자:'GPT'},[source]).필수,['GPT','Claude']);
+});
 test('이번 Atlas 생성물은 GPT·Claude 둘 다 필수이며 기존 정책은 유지한다',t=>{
  const p=정책만들기({...opts,배포후보:candidate(t)},[]);
  assert.deepEqual(p.필수,['GPT','Claude']);assert.equal(p.예외,null);assert.equal(대체순서(p),null);
