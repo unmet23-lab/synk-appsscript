@@ -314,14 +314,15 @@ NAME_POS = 0.215  # 화면 높이 비율 — 제품 위 어두운 밤(아래는 
 
 
 def name_layer(W, H):
-    """「유리결」 + 서리꽃 홀리데이 에디션(작게) — 상아 · 옅은 금, 가는 명조."""
+    """「유리결」 + 무엇을 파는지 한 줄 — 상아 · 옅은 금, 가는 명조. 2판(「서리꽃 홀리데이 에디션」 · 글자 2 %)은 낯선 사람 시험 셋이
+    폰에서 못 읽었고 「무슨 제품인지 끝까지 모름」이었다 — 없는 브랜드라 제품 종류를 글로 말해야 한다."""
     from PIL import Image, ImageDraw
     u = min(W, H)
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     cx, cy = W / 2, H * NAME_POS
-    d.text((cx, cy - u * 0.016), "유리결", font=J.font(int(u * 0.058), "Medium"), fill=(243, 236, 222, 255), anchor="mm")
-    J.spaced(d, cx, cy + u * 0.034, "서리꽃 홀리데이 에디션", J.font(int(u * 0.020), "Regular"), (214, 190, 140, 255), u * 0.004)
+    d.text((cx, cy - u * 0.020), "유리결", font=J.font(int(u * 0.066), "Medium"), fill=(243, 236, 222, 255), anchor="mm")
+    J.spaced(d, cx, cy + u * 0.040, "서리꽃 앰플 · 크림 홀리데이 세트", J.font(int(u * 0.030), "Regular"), (214, 190, 140, 255), u * 0.003)
     return np.asarray(im, np.float32) / 255.0
 
 

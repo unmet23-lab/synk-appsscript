@@ -174,13 +174,14 @@ MAP_K = 640.0 / 4096.0  # 지도 한 변(1 uv) 안에서 1 rad의 길이 — 시
 BUMP = 0.05
 FRESH_W = 0.012
 FRESH_WHITE = 0.12  # 2차 시험 0.70은 「흰 테두리 스티커 · 레이스」, 1판 0.25도 자라는 송이 둘레가 「흰 풀 · 치약 테두리」(Fable 3.6초)
-EDGE_WHITE = 0.05  # 가지 가장자리만 가는 은빛 결(얼어붙은 비눗방울 사진처럼) — 넓은 젖빛은 「흰 도자기」(10-30 현장노트)
+EDGE_WHITE = 0.35  # 가지 가장자리만 가는 은빛 결(첫 결정과 같은 규칙) — 넓은 젖빛은 「흰 도자기」(10-30), 0.05 · 등뼈 0.30은 본 해상도에서 「흰 밧줄」(3판)
 # 2판: 자란 가지 자리는 흰 반투명 산란(젖빛 유리 + 확산 투과) — 1판은 굴절 요철뿐이라 깜깜한 바탕을 비춰 서리가
 # 「검정 · 회색 곰팡이 스노볼」이었다(Fable P1-1). 돔 안 따뜻한 빛과 돔 너머 금빛 둘레를 받아 하얗게 빛난다.
 # 2판 첫 시험: 0.55를 결정 모양 전체(높이 0.03~0.30 계단)에 주니 「흰 종이 눈꽃 스티커」로 돔을 덮어 제품이 안 보였다 →
 # 가지 높이에 비례(두꺼운 등뼈일수록 젖빛). 3판: 고사리 지도는 가지가 가늘어 덮는 넓이가 작아 0.35, 깨진 조각은 깨짐 동안 그 40 %로
-FROST_WHITE = 0.30
+FROST_WHITE = 0.15
 FROST_SHARD = 0.12
+EDGE_SHARD = 0.10  # 깨진 조각의 가장자리 서리 — 조각이 「꽃무늬 타일」이 되지 않게 깨짐 동안 함께 가라앉는다
 COV_LO, COV_HI = 0.60, 0.95  # 서리 흰빛이 시작 · 다 차는 가지 높이 — 등뼈의 가는 선만(0.42 · 0.82는 「흰 붓질」)
 GRAIN_S, GRAIN_FLOOR = 1800.0, 0.3  # 흰 선을 깨는 얼음 알갱이의 빽빽함(1 m당) · 알갱이 틈에 남는 흰빛 몫
 
@@ -583,10 +584,8 @@ def build_world():
     L["반짝"] = [S.glint_only(S.point_light(f"반짝{i}", p, e, (1.0, 0.92, 0.80), radius=0.004)) for i, (p, e) in enumerate(
         (((0.30, -0.22, 0.18), 9.0), ((-0.24, -0.10, -0.02), 7.0), ((-0.18, -0.30, 0.26), 8.0),
          ((0.22, 0.10, -0.02), 7.0), ((0.05, -0.35, 0.02), 8.0), ((-0.30, 0.15, 0.20), 6.0)))]
-    # 먼 보케 — 짙은 살구색 원판이 「색종이 · 납작한 원판」으로 읽혀(Fable 2 · 3차) 밝은 금빛으로 · 적게 · 작게
-    # (크림빛은 결 끝 장에서 「흰 눈덩이」로 읽혔다 — 첫 시험)
-    S.bokeh_in_view(M.m2_cam(0.5), C, 12, 3.0, 7.0, 0.8, [(1.0, 0.70, 0.36), (1.0, 0.62, 0.28), (1.0, 0.78, 0.46)], 80.0,
-                    0.004, 0.011, seed=13)
+    # 먼 보케는 뺐다 — 살구색은 「색종이 · 납작한 원판」(Fable 2 · 3차), 크림빛은 「흰 눈덩이」, 금빛 작은 것은 승 하늘과 끝 장 이름
+    # 옆에 먼지 같은 점 두어 개로 남았다(3판 f/8). 바탕은 금빛 둘레와 밤만
     return floor, L
 
 
@@ -734,9 +733,11 @@ def link_except(light, skip):
 
 
 def link_scene_lights(L, floor, skip=()):
-    """역광 · 키 · 윗빛은 바닥을 빼고 비춘다 — 은역광이 검은 유리 바닥에 큰 흰 원판으로 비쳤다(첫 시험 승 끝 장)."""
+    """역광 · 키 · 윗빛은 바닥을 빼고 비춘다 — 은역광이 검은 유리 바닥에 큰 흰 원판으로 비쳤다(첫 시험 승 끝 장).
+    금역광은 단지 뚜껑도 뺀다 — 뚜껑 윗면에 비친 빛 면이 전 끝 · 결 첫머리에 제품 위 흰 덩이로 탔다(3판, 빛을 하나씩 꺼서 찾음)."""
+    lid = [o for o in bpy.context.scene.objects if o.name.startswith("단지뚜껑")]
     for nm in ("금역광", "은역광", "찬키", "윗빛"):
-        link_except(L[nm], [floor, *skip])
+        link_except(L[nm], [floor, *skip, *(lid if nm == "금역광" else ())])
 
 
 def world_nodes():
@@ -1178,6 +1179,7 @@ def shot_jeon():
         crack.outputs[0].default_value = crack_head(f)
         glow.outputs[0].default_value = 0.6 * (1.0 if f <= 3 else max(0.0, 1.0 - (f - 3) / 2.0))  # 6은 「흰 벌집 그물」(2차 시험), 2판 2 → 1, 3판 0.6(「같은 굵기 흰 선」)
         inner.data.energy = INNER_W * (1.0 - smooth(clamp01((f - 4) / 16.0)))
+        edge_n.outputs[0].default_value = lerp(EDGE_WHITE, EDGE_SHARD, smooth(clamp01((f - 4) / 12.0)))
         frostw.outputs[0].default_value = lerp(FROST_WHITE, FROST_SHARD, smooth(clamp01((f - 4) / 12.0)))  # 깨지며 서리 흰빛이 가라앉음
         for ob, e0 in strips:
             ob.data.energy = e0 * lerp(0.6, 1.0, smooth(clamp01((f - 4) / 16.0)))
@@ -1376,7 +1378,7 @@ def shot_gyeol():
         u = clamp01((t - FALL_T1) / 0.45)  # 앉는 순간 가운데에서 은빛이 차올라 팔 끝까지(반지름 3.4 cm)
         glint[0].outputs[0].default_value = -0.01 + 0.046 * (1.0 - (1.0 - u) ** 2)
         glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else 110.0 * math.sin(math.pi * u) ** 0.7  # 화면에서 가장 밝게(40은 회색 띠)
-        edge_n.outputs[0].default_value = lerp(EDGE_WHITE, 0.05, smooth(clamp01((t - 0.3) / 1.7)))
+        edge_n.outputs[0].default_value = lerp(EDGE_SHARD, 0.05, smooth(clamp01((t - 0.3) / 1.7)))
         gk.data.energy = lerp(gk_e0, GK_END, smooth(min(1.0, t / 1.0)))  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
         w = smooth(clamp01((t - 0.4) / 2.6))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
         pw.inputs[1].default_value = lerp(40.0, 90.0, w)
