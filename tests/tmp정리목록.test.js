@@ -26,7 +26,8 @@ test('14일 넘게 손대지 않은 폴더만 후보로 — 최근 파일이 하
     만들기('옛작은것', [['c.txt', 10]]);
     만들기('보존', [['_보존.txt', 1], ['d.txt', 10]]);
     만들기('섞임', [['e.txt', 10]]);
-    옛날로(path.join(임시, '옛큰것'), 30); 옛날로(path.join(임시, '옛작은것'), 20); 옛날로(path.join(임시, '보존'), 40); 옛날로(path.join(임시, '섞임'), 30);
+    만들기('보존_작업트리_20261001', [['f.txt', 10]]);
+    옛날로(path.join(임시, '옛큰것'), 30); 옛날로(path.join(임시, '옛작은것'), 20); 옛날로(path.join(임시, '보존'), 40); 옛날로(path.join(임시, '섞임'), 30); 옛날로(path.join(임시, '보존_작업트리_20261001'), 30);
     fs.writeFileSync(path.join(임시, '섞임', '새.txt'), '최근');
     fs.writeFileSync(path.join(임시, '맨위.log'), Buffer.alloc(2048)); 옛날로(path.join(임시, '맨위.log'), 15);
     fs.mkdirSync(path.join(대기, '20261001', '지난것'), { recursive: true });
