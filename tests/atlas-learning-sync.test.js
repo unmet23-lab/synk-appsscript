@@ -11,6 +11,15 @@ const copy = value => JSON.parse(JSON.stringify(value));
 const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
 const disk = () => { const values = new Map();return { values, getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, v) }; };
 
+test('a recovered gap can be recovered again after the same ID is lost later',async t=>{
+ const storage=disk(),accountKey='sync.repeated-loss',events=[];let recover=false,scans=0;
+ storage.setItem(SYNC_KEY+'.'+accountKey,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:['lost.event'],pending:[],missing:[]}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:found=>{if(!recover)return{added:0,skipped:['lost.event']};events.push(...found);return{added:found.length,skipped:[]};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,auto:false,maxAttempts:1,transport:{get:async({after})=>{if(after===0)scans++;return{events:after===0?[{id:'lost.event'}]:[],cursor:2,hasMore:false,revision:1};},post:async body=>({accepted:body.events.map(e=>e.id),revision:1})}});t.after(()=>sync.stop());
+ assert.equal((await sync.start()).code,'INCOMPLETE_HISTORY');events.push({id:'lost.event'});assert.equal((await sync.flush()).phase,'synced');const previous=scans;events.length=0;recover=true;
+ assert.equal((await sync.flush()).phase,'synced');assert.ok(scans>previous);assert.deepEqual(events.map(e=>e.id),['lost.event']);
+});
+
 for (const auto of [false, true]) test(`a bounded pull without an active automatic runner reports incomplete history (auto=${auto})`, async t => {
  const events=[],accountKey='account.manual-pages',port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:rows=>{events.push(...rows);return {added:rows.length};}};
  const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage:disk(),auto,maxPages:1,transport:{post:async()=>{throw Error('Read-only scan must not upload');},get:async({after})=>({events:after===0?[{id:'first.page'}]:[],cursor:after===0?1:2,hasMore:after===0,revision:1})}});t.after(()=>sync.stop());

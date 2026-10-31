@@ -8805,6 +8805,7 @@ var require_learning_sync = __commonJS({
           port.markComplete(false);
         }
         state.acknowledged = state.acknowledged.filter((eventId) => localIds.has(eventId));
+        if (state.missing.some((eventId) => localIds.has(eventId))) exhaustedRecovery = null;
         state.missing = state.missing.filter((eventId) => !localIds.has(eventId));
         const queued = new Set(state.pending), acknowledged = new Set(state.acknowledged);
         for (const event of local) if (!queued.has(event.id) && !acknowledged.has(event.id)) {
@@ -8943,6 +8944,7 @@ var require_learning_sync = __commonJS({
             }
             const skipped = new Set(result?.skipped || []), back = new Set(found.map((event) => event.id));
             state.acknowledged = [.../* @__PURE__ */ new Set([...state.acknowledged, ...[...back].filter((eventId) => !skipped.has(eventId))])];
+            if (state.missing.some((eventId) => back.has(eventId) && !skipped.has(eventId))) exhaustedRecovery = null;
             state.missing = state.missing.filter((eventId) => !back.has(eventId) || skipped.has(eventId));
           }
           after = response.cursor;

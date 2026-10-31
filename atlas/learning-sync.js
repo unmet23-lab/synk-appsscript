@@ -99,7 +99,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       state.missing = [...new Set([...state.missing, ...lost])]; port.markComplete(false);
     }
     state.acknowledged = state.acknowledged.filter(eventId => localIds.has(eventId));
-    state.missing = state.missing.filter(eventId => !localIds.has(eventId));
+    if (state.missing.some(eventId => localIds.has(eventId))) exhaustedRecovery = null; state.missing = state.missing.filter(eventId => !localIds.has(eventId));
     const queued = new Set(state.pending), acknowledged = new Set(state.acknowledged);
     for (const event of local) if (!queued.has(event.id) && !acknowledged.has(event.id)) { queued.add(event.id); state.pending.push(event.id); }
     save();
@@ -193,7 +193,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
         catch (error) { throw failure(error?.code || 'INVALID_EVENTS', error.message); }
         const skipped = new Set(result?.skipped || []), back = new Set(found.map(event => event.id));
         state.acknowledged = [...new Set([...state.acknowledged, ...[...back].filter(eventId => !skipped.has(eventId))])];
-        state.missing = state.missing.filter(eventId => !back.has(eventId) || skipped.has(eventId));
+        if (state.missing.some(eventId => back.has(eventId) && !skipped.has(eventId))) exhaustedRecovery = null; state.missing = state.missing.filter(eventId => !back.has(eventId) || skipped.has(eventId));
       }
       after = response.cursor;
       state.recoveryCursor = Math.min(after, state.cursor);
