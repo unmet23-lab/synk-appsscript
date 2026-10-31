@@ -1480,4 +1480,8 @@ test('배포 점검 결과·기준: 칸이 빠진 결과 JSON도 출력이 터�
   const 견줌없음 = await 도구.기준(공.옵션({ gh: 가짜gh(회차, { 아티팩트: { 'site-check-shots': { 'manifest.json': JSON.stringify(이번), 'baseline-before.json': JSON.stringify({ shots: { '/': { desktop: { file: 'desktop/home.jpg' } } } }), 'desktop/home.jpg': '새' } } }), 전부: true }));
   assert.equal(견줌없음.결과, '멈춤');
   assert.match(견줌없음.이유, /견줌 결과\(site-check-result\)를 못 받아/);
+  // 캡처를 못 받으면 gh 오류를 까닭으로 보인다(10-31 — 있는 아티팩트를 못 받았는데 「없다」로만 나왔다)
+  const 못받음 = await 도구.기준(공.옵션({ gh: 가짜gh(회차) }));
+  assert.equal(못받음.결과, '멈춤');
+  assert.match(못받음.이유, /점검 90의 캡처 아티팩트\(site-check-shots\)를 못 받았다 — gh run download 실패 — no artifact matches site-check-shots/);
 });

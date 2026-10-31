@@ -1370,12 +1370,13 @@ function 실패단계읽기(gh, 저장소이름, 실행) {
   }
 }
 
-/** gh run download로 아티팩트 하나를 폴더에 받는다. 못 받으면 false. */
-function 아티팩트받기(gh, 저장소이름, 실행, 이름, 폴더) {
+/** gh run download로 아티팩트 하나를 폴더에 받는다. 못 받으면 false — 까닭(gh 오류)은 실패.이유에 남긴다. */
+function 아티팩트받기(gh, 저장소이름, 실행, 이름, 폴더, 실패 = {}) {
   try {
     gh(['run', 'download', String(실행), '-R', 저장소이름, '-n', 이름, '-D', 폴더]);
     return true;
-  } catch (_) {
+  } catch (e) {
+    실패.이유 = e.이유 || e.message;
     return false;
   }
 }
@@ -1640,8 +1641,10 @@ async function 기준(옵션 = {}) {
     if (!회차) return { 결과: '멈춤', 이유: '끝난 배포 점검 회차가 없다' };
     const 실행 = 회차.databaseId;
     const 사진 = path.join(방, 'shots');
-    if (!아티팩트받기(gh, 저장소이름, 실행, 'site-check-shots', 사진) || !fs.existsSync(path.join(사진, 'manifest.json'))) {
-      return { 결과: '멈춤', 이유: `점검 ${실행}에 캡처 아티팩트(site-check-shots)가 없다 — 6단계 전의 점검이거나 30일이 지났다. 새 회차를 기다리거나 --점검으로 고른다`, 실행 };
+    // 받기 실패의 까닭(gh 오류)을 그대로 보인다 — 10-31 있는 아티팩트를 한 번 못 받았는데 「없다 — 6단계 전이거나 30일 지남」으로만 나와 까닭을 몰랐다
+    const 못받음 = {};
+    if (!아티팩트받기(gh, 저장소이름, 실행, 'site-check-shots', 사진, 못받음) || !fs.existsSync(path.join(사진, 'manifest.json'))) {
+      return { 결과: '멈춤', 이유: `점검 ${실행}의 캡처 아티팩트(site-check-shots)를 못 받았다 — ${못받음.이유 || '받은 폴더에 manifest.json이 없다'}. 아티팩트가 없으면(6단계 전의 점검이거나 30일이 지남) 새 회차를 기다리거나 --점검으로 고르고, 있는데 못 받았으면 다시 한다`, 실행 };
     }
     const 읽기 = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (_) { return null; } };
     const 런 = 읽기(path.join(사진, 'manifest.json'));
