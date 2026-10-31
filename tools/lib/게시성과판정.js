@@ -369,13 +369,10 @@ function valueText(metric, value) {
   const unit = METRICS[metric]?.unit;
   return unit === 'percent' ? `${Math.round(value * 10) / 10}%` : unit === 'seconds' ? `${Math.round(value * 10) / 10}초` : 수(value);
 }
-const 배수값 = v => (v >= 10 ? Math.round(v) : v.toFixed(1));
 function 배수글(m) {
   if (!m) return '평소 대비 못 잼';
-  // 10-31 전에 낸 판정 줄의 배수(그 시각 최근 12편)는 그때 글 그대로 — 게시성과.js가 굳기 전까지 그 배수를 지킨다
-  if (m.basis !== SAME_AGE) return m.value === null ? '평소 대비 못 잼' : `평소 대비 ${배수값(m.value)}배(최근 ${m.n}편 중앙값 ${수(Math.round(m.median))})`;
   if (m.value === null) return m.n < MULTIPLE_MIN ? `평소 대비 못 잼(같은 나이로 견줄 앞선 편 ${m.n}편 — ${MULTIPLE_MIN}편부터)` : '평소 대비 못 잼(같은 나이 중앙값 0)';
-  return `평소 대비 ${배수값(m.value)}배(앞선 ${m.n}편 같은 나이 중앙값 ${수(Math.round(m.median))})`;
+  return `평소 대비 ${m.value >= 10 ? Math.round(m.value) : m.value.toFixed(1)}배(앞선 ${m.n}편 같은 나이 중앙값 ${수(Math.round(m.median))})`;
 }
 const 위치글 = { top25: '상위 25%', bottom25: '하위 25%', middle: '보통' };
 

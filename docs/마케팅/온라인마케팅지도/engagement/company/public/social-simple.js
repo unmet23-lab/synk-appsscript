@@ -110,7 +110,7 @@ function ssToday(D){
 }
 
 // ── 성과 ──
-// 배수 = 그 판 조회 ÷ 같은 계정·형식에서 앞서 올린 최근 12편이 같은 시점에 낸 조회의 중앙값(장부 값 — 10-31 전 판정은 그 시각 최근 12편, 게시성과판정.js). 견줄 편 4개부터 보이고, 72시간 ∧ 2배 이상만 초록(게시성과시험.js 배수 2). 「낮음」은 없다.
+// 배수 = 그 판 조회 ÷ 같은 계정·형식에서 앞서 올린 최근 12편이 같은 시점에 낸 조회의 중앙값(장부 값, 게시성과판정.js multipleOf). 견줄 편 4개부터 보이고, 72시간 ∧ 2배 이상만 초록(게시성과시험.js 배수 2). 「낮음」은 없다.
 function ssLatestPoint(p){const pts=p.points||{};return pts['72h']&&pts['72h'].views!==null&&pts['72h'].views!==undefined?['72시간',pts['72h']]:pts['24h']&&pts['24h'].views!==null&&pts['24h'].views!==undefined?['24시간',pts['24h']]:null;}
 const ssPassed=lp=>!!(lp&&lp[0]==='72시간'&&lp[1].multiple&&lp[1].multiple.value>=2);
 const ssTimes=v=>v>=10?v.toFixed(0):v.toFixed(1);

@@ -186,31 +186,35 @@ test('평소 대비 배수(24·72시간) — 앞서 올린 편의 같은 시점 
   assert.match(판정.judgmentLine(few), /평소 대비 못 잼\(같은 나이로 견줄 앞선 편 3편 — 4편부터\)/);
 });
 
-test('같은 나이 배수는 새 판정부터 — 10-31 전에 낸 판정 줄은 굳기 전에도 그 배수를 지키고(다시 덧붙이지 않는다), 처음 내는 판정만 같은 나이로 잰다', async t => {
+test('옛 정의 배수 다시 재기(10-31 유호님 승인) — 굳기 전 판정은 같은 나이 줄을 덧붙이고, 이미 굳은 판정과 장부의 기존 줄은 손대지 않는다', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-post-test-sameage-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const ledgerFile = path.join(dir, 'docs', '_ops', '게시성과.jsonl');
-  const prior = [1, 2, 3, 4, 5].map(n => igEntry(n, 10, { views: n * 100 }));
-  await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 10 * 24 * H + 3 * H, data: data({ entries: [...prior, igEntry(7, 10, { views: 900 })] }), shorts: new Map() });
-  // 7번의 72시간 줄을 10-31 전 정의(표식 없음 · 그 시각 최근 12편)로 바꿔 둔다 — 그때 도구가 쓴 모양 그대로
-  const old = { value: 9.9, median: 91, n: 12 };
-  const lines = 도구.readLedger(ledgerFile).map(l => (l.post === 'instagram:CODE7x' && l.point === '72h'
-    ? { ...l, multiple: old, line: l.line.replace('평소 대비 3.0배(앞선 5편 같은 나이 중앙값 300)', '평소 대비 9.9배(최근 12편 중앙값 91)') } : l));
-  assert.ok(lines.some(l => l.multiple === old && l.line.includes('평소 대비 9.9배(최근 12편 중앙값 91)')));
-  fs.writeFileSync(ledgerFile, lines.map(l => JSON.stringify(l)).join('\n') + '\n');
-  // 이틀 뒤(굳기 전) — 9번이 처음 72시간 판정을 받는다
-  const report = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 12 * 24 * H + 3 * H, data: data({ entries: [...prior, igEntry(7, 10, { views: 900 }), igEntry(9, 10, { views: 700 })] }), shorts: new Map() });
+  const entries = [...[1, 2, 3, 4, 5].map(n => igEntry(n, 10, { views: n * 100 })), igEntry(7, 10, { views: 900 })];
+  await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 10 * 24 * H + 3 * H, data: data({ entries }), shorts: new Map() });
+  // 7번 · 1번의 72시간 줄을 10-31 전 정의(표식 없음 · 그 시각 최근 12편)로 바꿔 둔다 — 그때 도구가 쓴 모양 그대로
+  const 옛배수 = { 'instagram:CODE7x': { value: 9.9, median: 91, n: 12 }, 'instagram:CODE1x': { value: 0.9, median: 111, n: 12 } };
+  const 옛줄 = l => ({ ...l, multiple: 옛배수[l.post], line: l.line.replace(/평소 대비 .*?\) →/, `평소 대비 ${옛배수[l.post].value}배(최근 12편 중앙값 ${옛배수[l.post].median}) →`) });
+  const before = 도구.readLedger(ledgerFile).map(l => JSON.stringify(l.point === '72h' && 옛배수[l.post] ? 옛줄(l) : l)).join('\n') + '\n';
+  assert.match(before, /평소 대비 9\.9배\(최근 12편 중앙값 91\) →/);
+  fs.writeFileSync(ledgerFile, before);
+  // 1번(게시 3일 뒤 관측)은 열흘이 지나 굳고, 7번(게시 3일 뒤 관측)은 아직 굳기 전인 때
+  const report = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 15 * 24 * H, data: data({ entries }), shorts: new Map() });
+  assert.ok(fs.readFileSync(ledgerFile, 'utf8').startsWith(before), '장부의 기존 줄은 한 글자도 바뀌지 않는다');
   const after = 도구.readLedger(ledgerFile);
   const of = (post, point) => after.filter(l => l.kind === '판정' && l.post === post && l.point === point);
-  assert.equal(of('instagram:CODE7x', '72h').length, 1, '지난 판정은 다시 재어 덧붙이지 않는다');
-  assert.deepEqual(of('instagram:CODE7x', '72h')[0].multiple, old);
-  // 9번 앞의 여섯 편(100…500, 900) → 중앙값 350, 700 ÷ 350 = 2배
-  assert.deepEqual(of('instagram:CODE9x', '72h')[0].multiple, { value: 2, median: 350, n: 6, basis: 판정.SAME_AGE });
-  assert.ok(report.새판정.every(l => !l.includes('9.9배')));
-  // 요약도 지난 판정을 그때 배수 그대로 보인다(3배 목록에 옛 9.9배가 남는다 — 다시 재는 것은 승인 뒤)
+  // 7번 — 옛 줄 뒤에 같은 나이 줄이 붙는다(앞선 다섯 편 100…500 → 중앙값 300, 900 ÷ 300 = 3배). 1번은 굳어 옛 줄 하나 그대로
+  assert.deepEqual(of('instagram:CODE7x', '72h').map(l => l.multiple), [옛배수['instagram:CODE7x'], { value: 3, median: 300, n: 5, basis: 판정.SAME_AGE }]);
+  assert.deepEqual(of('instagram:CODE1x', '72h').map(l => l.multiple), [옛배수['instagram:CODE1x']]);
+  assert.equal(report.새판정.length, 1, '다시 재어 달라진 판정만 덧붙는다');
+  // 요약은 가장 늦은 줄을 읽는다 — 3배 목록은 다시 잰 값, 굳은 판정은 옛 글 그대로
   const summary = fs.readFileSync(path.join(dir, 'docs', '마케팅', '게시성과.md'), 'utf8');
-  assert.match(summary, /- \*\*평소 대비 3배 넘은 편\*\*[^\n]*인스타 @test\.ig 72시간 9\.9배/);
-  assert.match(summary, /평소 대비 9\.9배\(최근 12편 중앙값 91\)/);
+  assert.match(summary, /- \*\*평소 대비 3배 넘은 편\*\*[^\n]*인스타 @test\.ig 72시간 3\.0배/);
+  assert.doesNotMatch(summary, /9\.9배/);
+  assert.match(summary, /평소 대비 0\.9배\(최근 12편 중앙값 111\)/);
+  // 한 번 더 돌아도 더 붙지 않는다
+  const again = await 도구.run({ 실행: true, 저장소: dir, 값들: [] }, { now: T0 + 15 * 24 * H + 3 * H, data: data({ entries }), shorts: new Map() });
+  assert.equal(again.새판정.length, 0);
 });
 
 test('기획.md 첫 줄에서 역할과 훅 이름표를 읽고, A는 인스타·B는 유튜브', () => {
