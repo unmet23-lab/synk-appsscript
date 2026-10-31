@@ -4,10 +4,11 @@
  * Seedance 2.5 한 컷. 앞 판(태오판만들기.mjs)의 두 컷 이어 붙이기는 컷마다 뒤 학생 · 눈웃음이 처음 자리로 돌아갔다.
  * 비디오 하나를 재생 위치(학생 · 선배 구간, 한테이크결과.json)에 맞춰 대사 상자를 바꾸고, 「내가 말해 보기」는 학생 구간만 소리를 끈다.
  * 목소리는 「영상이 낸 목소리」와 「원래 녹음(Hana · Julian)」을 바꿔 들을 수 있고, 고른 것은 db picks/voice에 누르는 즉시 남는다.
- * 구도 · 깜빡임을 고정한 판(10-31 유호님 「다음 판 구워」)부터는 앞 판과 나란히 재생하는 칸을 더했다(고친 일은 전후를 보게 보고).
+ * 구도 · 깜빡임을 고정한 판(10-31 유호님 「다음 판 구워」)부터는 나란히 재생하는 칸을 더했다(고친 일은 전후를 보게 보고).
+ * 나노바나나 판(10-31 유호님 「같은 태오 2.1이랑 글로만 벚꽃 2.1 둘 다 테스트해보자」)부터는 판을 바꿔 보고 셋을 나란히 재생하며, 고른 판은 db picks/look에 남는다.
  * 같은 claude.ai 주소(태오판.html)로 다시 올린다.
  *
- *   node 태오한테이크판만들기.mjs <작업>     <작업>/영상/한테이크3결과.json → <작업>/태오판.html · <작업>/태오판_파일.json
+ *   node 태오한테이크판만들기.mjs <작업>     <작업>/영상/한테이크4결과.json → <작업>/태오판.html · <작업>/태오판_파일.json
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +21,7 @@ const 작업 = process.argv[2];
 if (!작업) { console.error('쓰는 법: node 태오한테이크판만들기.mjs <작업 폴더>'); process.exit(2); }
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 소리폴더 = path.resolve(여기, '../../s1/소리');
-const 결과 = JSON.parse(fs.readFileSync(path.join(작업, '영상', '한테이크3결과.json'), 'utf8'));
+const 결과 = JSON.parse(fs.readFileSync(path.join(작업, '영상', '한테이크4결과.json'), 'utf8'));
 
 const 파일 = {};
 const 붙임 = (이름, 원본) => {
@@ -42,12 +43,13 @@ const 줄 = (역, 번호) => {
 };
 
 const 쓸것 = {
- 포스터: 포스터(path.join(작업, 결과.own), 'senior-onetake3'),
- own: 붙임('video/senior-onetake3-own.mp4', path.join(작업, 결과.own)),
- original: 붙임('video/senior-onetake3-original.mp4', path.join(작업, 결과.original)),
- 앞판: 붙임('video/senior-onetake2-own.mp4', path.join(작업, 결과.앞판)),
- 앞판포스터: 포스터(path.join(작업, 결과.앞판), 'senior-onetake2'),
- 학생구간: 결과.학생, 선배구간: 결과.선배,
+ 판: 결과.판.map((p) => ({
+  값: p.값, 이름: p.이름, 설명: p.설명,
+  포스터: 포스터(path.join(작업, p.own), `senior-${p.값}`),
+  own: 붙임(`video/senior-${p.값}-own.mp4`, path.join(작업, p.own)),
+  original: 붙임(`video/senior-${p.값}-original.mp4`, path.join(작업, p.original)),
+  학생구간: p.학생, 선배구간: p.선배,
+ })),
  학생: 줄('model', 6), 선배: 줄('senior', 2),
  기록: 결과.기록 || [],
  글,
@@ -88,7 +90,7 @@ button{font:inherit;font-size:14px;border-radius:8px;padding:8px 14px;cursor:poi
 button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.play{border-color:var(--rec);color:var(--rec)}
 button.play[aria-pressed="true"]{background:var(--rec);color:#fff}
-button.voice[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+button.voice[aria-pressed="true"],button.look[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .theatre{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
 @media (max-width:760px){.theatre{grid-template-columns:minmax(0,1fr)}}
 .stage{position:relative;width:100%;aspect-ratio:9/16;overflow:hidden;border-radius:22px;background:var(--stage);box-shadow:0 0 0 1px var(--rule)}
@@ -112,7 +114,7 @@ button.voice[aria-pressed="true"]{background:var(--ink);color:var(--paper);borde
 label{font-size:14px;color:var(--muted)}
 textarea{width:100%;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--card);color:var(--ink);min-height:44px;resize:vertical}
 ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;overflow-wrap:anywhere}
-.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px}
+.pair{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px}
 .pair figure{margin:0;display:grid;gap:6px}
 .pair video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:var(--stage);display:block}
 .pair figcaption{font-size:13px;color:var(--muted)}
@@ -135,6 +137,14 @@ ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;overflow-wrap:anywhere}
    </div>
    <div class="side">
     <p class="cap" id="before"></p>
+    <div class="box" id="lookbox">
+     <h3 style="font-size:17px">어느 판이 좋은가요?</h3>
+     <div class="controls" role="group" aria-label="판" id="looks"></div>
+     <p class="cap" id="lookcap"></p>
+     <label for="looknote">한 줄(골라도 되고 비워도 됩니다)</label>
+     <textarea id="looknote" rows="2"></textarea>
+     <p class="status" id="lookstatus" role="status">판을 고르면 바로 저장됩니다.</p>
+    </div>
     <div class="controls"><button type="button" class="play" id="play" aria-pressed="false">장면 보기</button><button type="button" id="try" aria-pressed="false">내가 말해 보기</button></div>
     <p class="cap" id="trycap"></p>
     <div class="box" id="voicebox">
@@ -149,13 +159,10 @@ ul.plain{margin:0;padding-left:20px;display:grid;gap:6px;overflow-wrap:anywhere}
   </div>
  </section>
  <section aria-labelledby="h-cmp" style="display:grid;gap:12px">
-  <div style="display:grid;gap:6px"><p class="slate">앞 판과 나란히</p><h2 id="h-cmp">무엇이 달라졌나</h2></div>
+  <div style="display:grid;gap:6px"><p class="slate">셋을 나란히</p><h2 id="h-cmp">같은 장면, 세 얼굴</h2></div>
   <p class="cap" id="cmpcap"></p>
-  <div class="controls"><button type="button" class="play" id="both" aria-pressed="false">둘 다 재생</button></div>
-  <div class="pair">
-   <figure><video id="vOld" playsinline muted preload="metadata"></video><figcaption>앞 판</figcaption></figure>
-   <figure><video id="vNew" playsinline preload="metadata"></video><figcaption>이번 판</figcaption></figure>
-  </div>
+  <div class="controls"><button type="button" class="play" id="both" aria-pressed="false">셋 다 재생</button></div>
+  <div class="pair" id="pair"></div>
  </section>
  <section aria-labelledby="h-rec" style="display:grid;gap:10px">
   <div style="display:grid;gap:6px"><p class="slate">기록</p><h2 id="h-rec">이번 판에서 잰 것</h2></div>
@@ -176,9 +183,12 @@ for (const s of D.기록) $('#rec').append(make('li', null, s));
 for (const s of D.글.걸림) $('#warn').append(make('li', null, s));
 
 // ── 무대: 비디오 하나, 재생 위치로 대사 상자 · 내 차례 · 소리 끄기를 바꾼다 ──
-const v = $('#v'); v.poster = D.포스터;
-let voice = 'own', mode = null, raf = 0;
-function srcFor() { return voice === 'own' ? D.own : D.original; }
+const v = $('#v');
+let look = D.판[0].값, voice = 'original', mode = null, raf = 0;   // 목소리는 유호님이 고른 원래 녹음부터(10-31 picks/voice)
+const cur = () => D.판.find((p) => p.값 === look);
+const srcOf = (p) => (voice === 'own' ? p.own : p.original);
+function srcFor() { return srcOf(cur()); }
+v.poster = cur().포스터;
 v.src = srcFor();
 function show(who, line, me) {
  const d = $('#dialog');
@@ -195,7 +205,7 @@ function setState(k) {
 }
 // 화면 갱신(requestAnimationFrame)은 창이 뒤로 가면 멈춘다(10-31 앱 안 브라우저에서 「내가 말해 보기」 소리가 안 켜짐) → 재생 시각 알림(timeupdate)으로도 갱신한다.
 function update() {
- const t = v.currentTime, [s0, s1] = D.학생구간, [t0, t1] = D.선배구간;
+ const t = v.currentTime, [s0, s1] = cur().학생구간, [t0, t1] = cur().선배구간;
  // 내 차례는 선배가 웃기 시작하기 직전까지 — 말이 끝나고 1초쯤 선배가 웃으며 듣는 사이에 선배 대사가 먼저 뜨지 않게 하고, 말해 보는 사람에게 그만큼 여유를 준다.
  // 내 상자가 닫히는 자리에서 바로 선배 상자를 연다 — 사이를 두면 0.12초 상자가 사라졌다 뜬다(10-31 Fable P3)
  if (t < t0 - 0.1) {
@@ -225,16 +235,34 @@ v.addEventListener('ended', () => { setState('none'); $('#bar').classList.remove
 $('#play').addEventListener('click', () => ($('#play').getAttribute('aria-pressed') === 'true' ? stop() : scene('auto')));
 $('#try').addEventListener('click', () => ($('#try').getAttribute('aria-pressed') === 'true' ? stop() : scene('try')));
 
-// ── 앞 판과 나란히: 앞 판은 소리를 끄고 이번 판 소리만 낸다 ──
-const vOld = $('#vOld'), vNew = $('#vNew');
-vOld.poster = D.앞판포스터; vOld.src = D.앞판; vNew.poster = D.포스터; vNew.src = D.own;
-function stopBoth() { vOld.pause(); vNew.pause(); $('#both').setAttribute('aria-pressed', 'false'); }
+// ── 셋을 나란히: 고른 판의 소리만 낸다 ──
+const trio = D.판.map((p) => {
+ const f = make('figure'), w = document.createElement('video');
+ w.playsInline = true; w.muted = true; w.preload = 'metadata'; w.poster = p.포스터; w.src = srcOf(p);
+ f.append(w, make('figcaption', null, p.이름)); $('#pair').append(f);
+ return { p, w };
+});
+function stopBoth() { for (const { w } of trio) w.pause(); $('#both').setAttribute('aria-pressed', 'false'); }
 $('#both').addEventListener('click', () => {
  if ($('#both').getAttribute('aria-pressed') === 'true') { stopBoth(); return; }
- stop(); vOld.currentTime = 0; vNew.currentTime = 0; $('#both').setAttribute('aria-pressed', 'true');
- Promise.all([vOld.play(), vNew.play()]).catch(stopBoth);
+ stop(); $('#both').setAttribute('aria-pressed', 'true');
+ for (const { p, w } of trio) { w.muted = p.값 !== look; w.currentTime = 0; }
+ Promise.all(trio.map(({ w }) => w.play())).catch(stopBoth);
 });
-vNew.addEventListener('ended', stopBoth);
+trio[0].w.addEventListener('ended', stopBoth);
+function resrc() { for (const { p, w } of trio) { if (w.getAttribute('src') !== srcOf(p)) w.src = srcOf(p); } }
+
+// ── 판 고르기: 무대를 그 판으로 바꾸고 db picks/look에 바로 저장 ──
+function paintLook() {
+ for (const b of document.querySelectorAll('button.look')) b.setAttribute('aria-pressed', String(b.dataset.v === look));
+ $('#lookcap').textContent = cur().설명 || '';
+}
+function setLook(k) { look = k; stop(); stopBoth(); v.poster = cur().포스터; v.src = srcFor(); paintLook(); }
+for (const p of D.판) {
+ const b = make('button', 'look', p.이름); b.type = 'button'; b.dataset.v = p.값;
+ b.addEventListener('click', () => { setLook(p.값); chooseLook(p.값); }); $('#looks').append(b);
+}
+paintLook();
 
 // ── 목소리: 바꿔 듣기 + 고른 것은 db picks/voice에 바로 저장 ──
 const names = {};
@@ -244,7 +272,7 @@ function paintVoice() {
 }
 for (const o of D.글.목소리) {
  names[o.값] = o.이름; const b = make('button', 'voice', o.이름); b.type = 'button'; b.dataset.v = o.값;
- b.addEventListener('click', () => { voice = o.값; paintVoice(); stop(); v.src = srcFor(); choose(o.값); }); $('#voices').append(b);
+ b.addEventListener('click', () => { voice = o.값; paintVoice(); stop(); stopBoth(); v.src = srcFor(); resrc(); choose(o.값); }); $('#voices').append(b);
 }
 paintVoice();
 let db = null, canWrite = true, writing = false, again = false, chosen = null;
@@ -262,12 +290,34 @@ function choose(c) {
  $('#status').className = 'status'; $('#status').textContent = '저장하는 중…'; save();
 }
 $('#note').addEventListener('change', () => { if (chosen != null && db && canWrite) save(); });
+let lookChosen = null, lookWriting = false, lookAgain = false;
+async function saveLook() {
+ if (lookWriting) { lookAgain = true; return; }
+ lookWriting = true;
+ const name = () => (D.판.find((p) => p.값 === lookChosen) || {}).이름 || '';
+ try { do { lookAgain = false; await db.doc('picks/look').set({ 값: lookChosen, 이름: name(), 한줄: $('#looknote').value.trim().slice(0, 500), 때: new Date().toISOString() }); } while (lookAgain);
+  $('#lookstatus').className = 'status ok'; $('#lookstatus').textContent = '「' + name() + '」(으)로 저장했습니다.'; $('#lookbox').classList.add('chosen');
+ } catch (e) { $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '저장하지 못했습니다(' + (e && e.code || '오류') + '). 채팅에 「' + name() + '」라고 알려 주세요.'; }
+ finally { lookWriting = false; }
+}
+function chooseLook(k) {
+ lookChosen = k;
+ const n = (D.판.find((p) => p.값 === k) || {}).이름 || '';
+ if (!db || !canWrite) { $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '이 화면에서는 저장이 안 되니 고르시면 채팅에 「' + n + '」라고 알려 주세요.'; return; }
+ $('#lookstatus').className = 'status'; $('#lookstatus').textContent = '저장하는 중…'; saveLook();
+}
+$('#looknote').addEventListener('change', () => { if (lookChosen != null && db && canWrite) saveLook(); });
 (async () => {
  try { db = await window.claude?.use?.('db'); const u = await window.claude?.use?.('user'); if (u && typeof u.can === 'function') { const w = await u.can('data.write'); if (w === false) canWrite = false; } } catch (e) { db = null; }
  if (!db) return;
+ db.doc('picks/look').onSnapshot((snap) => {
+  if (!snap.exists) return; const d = snap.data();
+  if (d.값 && D.판.some((p) => p.값 === d.값) && !lookWriting) { lookChosen = d.값; if (d.값 !== look && !mode) setLook(d.값); $('#lookbox').classList.add('chosen'); $('#lookstatus').className = 'status ok'; $('#lookstatus').textContent = '「' + d.이름 + '」(으)로 저장되어 있습니다.'; }
+  if (d.한줄 && !$('#looknote').value) $('#looknote').value = d.한줄;
+ }, () => {});
  db.doc('picks/voice').onSnapshot((snap) => {
   if (!snap.exists) return; const d = snap.data();
-  if (d.값 && names[d.값] && !writing) { chosen = d.값; voice = d.값; paintVoice(); if (!mode) v.src = srcFor(); $('#voicebox').classList.add('chosen'); $('#status').className = 'status ok'; $('#status').textContent = '「' + names[d.값] + '」(으)로 저장되어 있습니다.'; }
+  if (d.값 && names[d.값] && !writing) { chosen = d.값; voice = d.값; paintVoice(); if (!mode) { v.src = srcFor(); resrc(); } $('#voicebox').classList.add('chosen'); $('#status').className = 'status ok'; $('#status').textContent = '「' + names[d.값] + '」(으)로 저장되어 있습니다.'; }
   if (d.한줄 && !$('#note').value) $('#note').value = d.한줄;
  }, () => {});
 })();

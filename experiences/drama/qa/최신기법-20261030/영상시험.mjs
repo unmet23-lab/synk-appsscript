@@ -137,6 +137,16 @@ AFTER his last word his hand returns to the strap and he keeps smiling at the ca
 A light breeze moves his hair the whole time and students keep walking past far behind him until the very last frame.
 Keep his face, hair and clothes identical to the first frame in every frame, with real skin texture and sunlight on his face, and keep the look of a photoreal Korean TV drama shot in every frame. Only these two voices; no other speech, no music.`;
 
+// 나노바나나 시작 그림 판(10-31, 유호님 「같은 태오 2.1이랑 글로만 벚꽃 2.1 둘 다 테스트해보자」) — 4판 지시문에서 눈 크기 지시만 뺐다(「eyes widen a little」이 크게 먹어 빤히 쳐다봄).
+const 나노자리 = {
+ t1: { 뒤: 'the sunny campus behind him', 바람: 'A light breeze moves his hair the whole time' },
+ n2: { 뒤: 'the cherry-blossom campus avenue behind him', 바람: 'A light breeze moves his hair and a few pink-white petals keep drifting through the air the whole time' },
+};
+export const 나노바나나글 = (자리) => 한테이크3글
+ .replace('the sunny campus behind him', 나노자리[자리].뒤)
+ .replace('slowly tilts his head to one side and his eyes widen a little with curiosity', 'slowly tilts his head to one side with a curious little smile, his eyes soft and relaxed')
+ .replace('A light breeze moves his hair the whole time', 나노자리[자리].바람);
+
 async function 굽기(작업, ids, { 동시 = 3, 덮어쓰기 = false } = {}) {
  const 판 = 판목록();
  for (const id of ids) if (!판[id]) { console.error(`[영상시험] 모르는 판: ${id}`); process.exit(2); }
@@ -158,6 +168,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   console.log(한테이크2글);
  } else if (명령 === '영상글' && 가 === 'senior' && 나머지[0] === 'onetake3') {
   console.log(한테이크3글);
+ } else if (명령 === '영상글' && 가 === 'nano' && 나노자리[나머지[0]]) {
+  console.log(나노바나나글(나머지[0]));
  } else if (명령 === '영상글' && 가 === 'senior' && 선배클립[나머지[0]]) {
   console.log(선배영상글(나머지[0]));
  } else if (명령 === '영상글' && 결이름[가] && 클립[나머지[0]]) {

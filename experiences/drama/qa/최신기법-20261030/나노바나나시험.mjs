@@ -44,6 +44,11 @@ for (const [이름, 판] of Object.entries(글)) {
  작업들[`${이름}p`] = { id: `${이름}p`, ratio: '9:16', engine: 'pro', refs: 판.refs, prompt: 한줄(판.글) };
  작업들[`${이름}a`] = { id: `${이름}a`, ratio: '9:16', refs: 판.refs, prompt: 한줄(판.글) };
 }
+// 끝 그림(10-31, 유호님 「둘 다 테스트해보자」) — 끝 그림이 구도를 붙든다(만족 사례 S39). 시작 그림과 같은 구도의 다른 순간이어야 하므로 고른 판을 Image 1로 한 번 편집한다(크레딧 0).
+const 끝글 = `Edit Image 1. This is the same photograph taken a few seconds later. Keep EXACTLY the same man, his face, hair, clothes, backpack and the hand on the strap, the same camera position, framing, lens, light and color, and the same buildings, trees and sky. Change only two things: his head tilts slightly the other way as he waits with a warm closed-mouth smile, looking straight into the lens with relaxed eyes; and the people far behind him have walked on, so they stand in different places. No text, letters, logos or watermark anywhere.`;
+for (const [id, 판] of Object.entries({ E1: 'T1a', E2: 'N2a' })) {
+ 작업들[id] = { id, ratio: '9:16', refs: [path.resolve(작업, `나노바나나/시작-${판}.png`).replace(/\\/g, '/')], prompt: 끝글 };
+}
 const 나갈 = path.join(작업, '나노바나나', 'ego', 'jobs.json');
 fs.mkdirSync(path.dirname(나갈), { recursive: true });
 fs.writeFileSync(나갈, JSON.stringify(작업들, null, 1));
