@@ -37,6 +37,8 @@
  *   ⑯ 지난 편 되풀이(10-30, tools/무대반복.js — 제작 절차 「한 장면 먼저」) — 판 계정마다 그 계정의 지난 두 편과 무대(첫 · 끝 장면 축소판이
  *      둘 다 닮음)나 끝 줄(끝 장면 화면 글 · 나레이션 마지막 줄 · 준비.json 「끝줄」)이 같으면 고칠 것, 한쪽 장면만 닮거나 끝 줄이 비슷하면
  *      확인할 것 — 10-28 · 29 B8 · B14가 같은 청금석 틀에 같은 끝 줄로 이틀 잇달아 나갔다
+ *   ⑰ 소리 빈자리(10-31, tools/소리빈자리.js) — 처음 · 끝 0.4초 말고 −62 dB 아래가 0.25초 넘게 이어지는 자리의 합이 4초를 넘고 가장 긴 자리가
+ *      1초를 넘으면 고칠 것, 하나만 넘으면 확인할 것 — 18초 배경음이 끝나 말 사이가 빈 M19 · E17이 ④ 음량을 넘겨 예약까지 갔다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -51,6 +53,7 @@ const 묶음 = require('./lib/게시묶음.js');
 const 규칙 = require('./lib/게시글규칙.js');
 const 정지 = require('./정지구간.js');
 const 한구성 = require('./한구성.js');
+const 소리빈자리 = require('./소리빈자리.js');
 const 타입캐스트 = require('./lib/타입캐스트.cjs');
 const 오마주 = require('./오마주.js');
 const 반복 = require('./무대반복.js');
@@ -296,6 +299,17 @@ function ocrCover(file, dir, label, { allowHan }) {
   }).filter(Boolean);
 }
 
+// ⑰ 소리 빈자리(10-31) — 합계와 가장 긴 자리가 다 넘으면 고칠 것, 하나만 넘으면 확인할 것(문턱과 실측은 tools/소리빈자리.js)
+function gapFinding(r) {
+  if (r.pass) return null;
+  const where = r.gaps.slice(0, 6).map((g) => `${g.start.toFixed(1)}~${g.end.toFixed(1)}`).join(' · ') + `초${r.gaps.length > 6 ? ` 외 ${r.gaps.length - 6}곳` : ''}`;
+  const measured = `말 사이 소리가 완전히 빈 자리 합 ${r.total.toFixed(1)}초 · 최장 ${r.longest.toFixed(1)}초(${where})`;
+  if (r.fix) {
+    return { level: FIX, code: 'audio-gap', message: `${measured} — 기준 합 ${소리빈자리.TOTAL_LIMIT}초 · 최장 ${소리빈자리.LONGEST_LIMIT}초 안. 배경음이 없거나 영상보다 짧으면 이렇게 빈다 — 영상 길이만큼 이어 깔고 다시 렌더 → 음량 마감(현장노트 영상 「18초 배경음」)` };
+  }
+  return { level: LOOK, code: 'audio-gap', message: `${measured} — 일부러 둔 정적인지 듣고, 배경음이 끊긴 자리면 고친다` };
+}
+
 // ── 영상 하나 ──
 async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null }) {
   const 사전 = await import(pathToFileURL(path.join(__dirname, '영상사전검사.mjs')).href);
@@ -330,6 +344,14 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
     add(원본도 ? LOOK : FIX, 'one-composition', `${s.start.toFixed(1)}~${s.end.toFixed(1)}초 한 구성 ${s.length.toFixed(1)}초${s.endCard ? '(끝 화면 — 6초까지)' : ''} — 같은 장면에서 글 강조 · 테 · 밝기만 바뀌는 칸은 4초 안으로 줄이거나 장면을 바꾼다(제작 절차 3 · 10-28)`
       + (원본도 ? ' · 원본도 같은 자리가 한 구성이고 나란히가 맞아 확인할 것으로 둔다' : ''));
   }
+  let gap = null;
+  try {
+    gap = 소리빈자리.analyze(file);
+    const f = gapFinding(gap);
+    if (f) add(f.level, f.code, f.message);
+  } catch (error) {
+    add(LOOK, 'audio-gap-unknown', `소리 빈자리를 재지 못했다(${error.message}) — 말 사이가 비지 않는지 귀로 듣는다`);
+  }
   if (!still.end) add(LOOK, 'end-card-unknown', '끝 화면을 재지 못했다(마지막 12초 안에 화면 전체가 바뀌는 컷이 없음) — 4초 안팎인지 눈으로 본다');
   else if (still.end.length < END_CARD[0] || still.end.length > END_CARD[1]) add(LOOK, 'end-card', `끝 화면 ${still.end.length.toFixed(1)}초(${still.end.start.toFixed(1)}초 컷부터) — v2 §2-4 「4초 안팎」`);
   let ocr = { findings: [], text: '' };
@@ -347,6 +369,7 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
       해상도: `${m.width}×${m.height}`, 평균Mbps: stream, 음량: loud?.integratedLufs ?? null, 봉우리: loud?.truePeakDbfs ?? null,
       정지: `${Math.round(still.ratio * 100)}%${still.pass ? ' 통과' : ' 고칠 것'}`, 끝화면: still.end ? Math.round(still.end.length * 10) / 10 : null,
       한구성: Math.round(구성.longest * 100) / 100,
+      ...(gap ? { 소리빈자리: { 합: Math.round(gap.total * 100) / 100, 최장: Math.round(gap.longest * 100) / 100, 자리: gap.gaps.length } } : {}),
       사전검사: path.relative(repo, report.reportPath).split(path.sep).join('/') },
   };
 }
@@ -841,7 +864,7 @@ async function main() {
   if (opts.json) console.log(JSON.stringify({ ...record, 항목: findings }, null, 2));
   else {
     console.log(`올리기 전 검사 · ${bundle.name} · ${record.결과}${opts.noSave ? '' : ' (준비.json 「검사」에 남김)'}`);
-    for (const f of record.파일) console.log(`  영상 ${f.경로.split('/').slice(-2).join('/')} · ${f.길이}초 · ${f.해상도} · 평균 ${f.평균Mbps}Mbps · ${f.음량} LUFS / ${f.봉우리} dBFS · 정지 ${f.정지} · 끝 화면 ${f.끝화면 ?? '모름'}초 · 가장 긴 한 구성 ${f.한구성}초`);
+    for (const f of record.파일) console.log(`  영상 ${f.경로.split('/').slice(-2).join('/')} · ${f.길이}초 · ${f.해상도} · 평균 ${f.평균Mbps}Mbps · ${f.음량} LUFS / ${f.봉우리} dBFS · 정지 ${f.정지} · 끝 화면 ${f.끝화면 ?? '모름'}초 · 가장 긴 한 구성 ${f.한구성}초 · 소리 빈자리 ${f.소리빈자리 ? `${f.소리빈자리.합}초(최장 ${f.소리빈자리.최장}초)` : '모름'}`);
     if (record.목소리) console.log(`  목소리 줄 ${record.목소리.줄}개 · 최고 음높이 ${record.목소리.최고음높이 ?? '모름'}Hz · 잘린 줄 ${record.목소리.잘림}`);
     if (record.고칠것.length) { console.log(`고칠 것 ${record.고칠것.length}`); record.고칠것.forEach((x) => console.log(`  ✗ ${x}`)); }
     if (record.확인할것.length) { console.log(`확인할 것 ${record.확인할것.length}`); record.확인할것.forEach((x) => console.log(`  ? ${x}`)); }
@@ -853,4 +876,4 @@ async function main() {
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
 module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, voiceFiles, voiceFindings, parseTangle, tangledVoices,
-  homageFindings, compositionLikeOriginal, stillLikeOriginal, SAFE };
+  homageFindings, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

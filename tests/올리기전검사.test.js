@@ -370,3 +370,17 @@ test('⑭ 목소리 엉킴 — 목소리마다 프레임 가중 평균, 기본�
   const files = [{ wav: 'C:/e/vo/n1.wav', voice: '하나' }, { wav: 'C:/e/vo/n3.wav', voice: '하나' }, { wav: 'C:/e/vo/b1.wav', voice: '범수' }, { wav: 'C:/e/vo/s1.wav', voice: '소진' }];
   assert.deepEqual(검사.tangledVoices(files, m), [{ voice: '하나', pct: 16.2, f0: 480, lines: 2 }], '범수 57%는 남자 목소리라 넘기고, 소진 0%는 깨끗하다');
 });
+
+test('⑰ 소리 빈자리 — 합계 · 최장이 다 넘으면 고칠 것, 하나만 넘으면 확인할 것, 말 사이 쉼은 넘긴다(10-31 M19 · E17)', () => {
+  const { gaps, judge } = require('../tools/소리빈자리.js');
+  const 판정 = (runs, duration) => judge(gaps(runs.map(([start, end]) => ({ start, end })), duration));
+  const 화날때 = 검사.gapFinding(판정([[5.85, 6.5], [7.22, 8.6], [8.67, 9.6], [12.05, 12.6], [12.68, 14.41], [17.19, 17.5], [17.9, 19.55], [22.23, 22.5], [25.07, 27.5]], 28.61));
+  assert.equal(`${화날때.level}:${화날때.code}`, '고칠 것:audio-gap');
+  assert.match(화날때.message, /합 9\.9초 · 최장 2\.4초\(5\.8~6\.5 · 7\.2~8\.6 · 8\.7~9\.6 · 12\.1~12\.6 · 12\.7~14\.4 · 17\.2~17\.5초 외 3곳\)/);
+  assert.match(화날때.message, /영상 길이만큼 이어 깔고/);
+  const 와요 = 검사.gapFinding(판정([[17.97, 19.61]], 20.01));
+  assert.equal(`${와요.level}:${와요.code}`, '확인할 것:audio-gap');
+  assert.match(와요.message, /일부러 둔 정적인지/);
+  assert.equal(검사.gapFinding(판정([[1.16, 1.92], [7.48, 7.84], [13.86, 14.74], [15.39, 16.3]], 19.9)), null, '내 말투로 2.9 · 0.91은 넘긴다');
+  assert.equal(검사.gapFinding(판정([], 20)), null);
+});
