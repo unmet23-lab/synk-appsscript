@@ -94,6 +94,9 @@ function writeJSON(file, value) {
   try { fs.writeFileSync(fd, JSON.stringify(value, null, 2)); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
   fs.renameSync(temp, file);
 }
+// The sender kills a collector after 90 seconds, which leaves its lock behind, and Windows soon hands that pid to another
+// process (10-31: a conhost held a dead collector's pid and every later round stayed busy). A lock this old has no live owner.
+const STALE_LOCK_MS = 5 * 60_000;
 function acquire(folder) {
   fs.mkdirSync(folder, {recursive: true});
   const lock = path.join(folder, 'monitor.lock');
@@ -105,7 +108,9 @@ function acquire(folder) {
       try { guardFd=fs.openSync(guard,'wx',0o600); } catch {return null;}
       try {
         const owner=readJSON(lock, {}); if(!Number.isInteger(owner.pid)) return null;
-        try { process.kill(owner.pid, 0); return null; } catch(probe) { if(probe.code !== 'ESRCH') return null; }
+        if (Date.now() - fs.statSync(lock).mtimeMs < STALE_LOCK_MS) {
+          try { process.kill(owner.pid, 0); return null; } catch(probe) { if(probe.code !== 'ESRCH') return null; }
+        }
         // Reclaimers serialize and re-read ownership; a live replacement is never removed.
         fs.renameSync(lock, lock + '.orphan-' + crypto.randomBytes(5).toString('hex'));
       } catch {return null;} finally {fs.closeSync(guardFd);fs.unlinkSync(guard);}
@@ -200,7 +205,7 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     return {first:result.first,checkedAt:now.toISOString(),policy:POLICY,notifications,coverage:overview.coverage};
   } finally {release();}
 }
-module.exports={plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
+module.exports={STALE_LOCK_MS,plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
 if(require.main===module) {
   const home=process.env.HERMES_HOME || path.join(process.env.LOCALAPPDATA,'hermes');
   const {readOverview}=require('./overview.cjs');

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {plan,collect,kst,clean,awakeSince,POLICY}=require('../tools/hermes-synk/monitor.cjs');
+const {plan,collect,kst,clean,awakeSince,POLICY,STALE_LOCK_MS}=require('../tools/hermes-synk/monitor.cjs');
 const event=(fingerprint='a',extra={})=>({id:'task:one',kind:'task',severity:'info',needs_attention:false,title:'작업 응답',detail:'검증 대기',fingerprint,...extra});
 const at=x=>new Date(x);
 const {tipStatusEvents}=require('../tools/hermes-synk/overview.cjs');
@@ -141,6 +141,20 @@ test('concurrent collectors execute only one source read',async()=>{
   const reader=async()=>{reads++;await new Promise(r=>setTimeout(r,50));return {events:[]};};
   const pair=await Promise.all([collect({home,root:home,readOverview:reader}),collect({home,root:home,readOverview:reader})]);
   assert.equal(reads,1);assert.equal(pair.filter(x=>x.busy).length,1);
+});
+test('a lock left by a killed collector is reclaimed once it is old, even when its pid now belongs to another process',async()=>{
+  const home=fs.mkdtempSync(path.join(os.tmpdir(),'synk-monitor-lock-'));
+  const folder=path.join(home,'runtime/synk-automation'),lock=path.join(folder,'monitor.lock');
+  fs.mkdirSync(folder,{recursive:true});
+  // A live pid (this test process) stands in for the reused one.
+  fs.writeFileSync(lock,JSON.stringify({pid:process.pid}));
+  const reader=async()=>({events:[]});
+  assert.equal((await collect({home,root:home,readOverview:reader})).busy,true,'a fresh lock with a live owner is respected');
+  const old=new Date(Date.now()-STALE_LOCK_MS-60_000);fs.utimesSync(lock,old,old);
+  const out=await collect({home,root:home,readOverview:reader});
+  assert.notEqual(out.busy,true);
+  assert.equal(fs.existsSync(lock),false,'the collector released its own new lock');
+  assert.equal(fs.readdirSync(folder).filter(name=>name.startsWith('monitor.lock.orphan-')).length,1,'the old lock is set aside, not deleted');
 });
 test('old daily and info drafts are preserved with suppressed receipts and never returned for delivery',async()=>{
   const home=fs.mkdtempSync(path.join(os.tmpdir(),'synk-monitor-backlog-'));

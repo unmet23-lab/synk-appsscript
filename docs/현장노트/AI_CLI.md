@@ -1057,3 +1057,9 @@
 - 원인: 분해 폴더 이름에 곳 표시가 붙는다(`yt_<영상 ID>`). 몽골어대조는 첫 인자가 `--파일`이어야 파일 모드로 읽는다.
 - 고침: `node tools/오마주.js 아르곤 yt_<영상 ID> --u <번호>` · `node tools/몽골어대조.js --파일 <경로> --구독`.
 - 다시 확인: 대조 결과 파일에 「■ 문법·자연스러움」 줄이 있다. 같은 날 agy 「빈 답」은 잠시 뒤 그대로 다시 부르면 지나갔다(10-31 16시대 세 번 중 두 번).
+
+### 헤르메스 감시 회차가 90초에 끊기면 잠금이 남고, 그 프로세스 번호를 다른 프로세스가 다시 쓰면 감시가 계속 「바쁨」으로 멈춘다 (2026-10-31 Claude)
+- 증상: 10-31 19:18 KST 감시 회차가 PC 과부하로 90초 제한에 걸려 `collector_failed`가 됐다. 그 뒤 회차들이 `monitor.lock`(pid 49492)에 막혔는데, 그 pid는 19:38에 뜬 conhost였다. 같은 회차의 실패 알림 발송은 텔레그램 연결이 끊겨 19:35까지 붙잡혀 있었고(영수증 `unconfirmed`), 그동안 다음 회차도 돌지 않았다.
+- 원인: `automation.py`가 90초가 넘은 `monitor.cjs`를 강제로 끝내면 `finally`가 돌지 않아 잠금이 남는다. 회수 논리는 잠금의 pid가 없을 때(ESRCH)만 잠금을 치웠는데, Windows는 끝난 pid를 곧 다른 프로세스에 준다. 18:19에도 같은 일이 났지만 그때는 pid가 비어 있어 저절로 회수됐다.
+- 고침: 잠금 파일이 5분보다 오래되면 pid가 살아 있어도 주인 없는 잠금으로 보고 이름을 바꿔 옆에 둔다(`monitor.cjs` `STALE_LOCK_MS`). 감시 회차는 발송부가 90초에 끊으므로 5분 넘게 잠금을 쥔 정상 회차는 없다. 그날 남은 잠금은 같은 방식으로 이름만 바꿨다(`monitor.lock.orphan-pidreuse-*`).
+- 다시 확인: `node --test tests/hermes-synk-monitor.test.cjs`의 「a lock left by a killed collector …」. 라이브에서는 `%LOCALAPPDATA%/hermes/runtime/synk-automation/health.json`이 `ok`로 돌아오는지, `monitor.lock`이 회차 사이에 남지 않는지 본다.
