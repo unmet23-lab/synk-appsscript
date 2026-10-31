@@ -228,7 +228,9 @@ test('the board asks members to sign in, then starts first-time members from one
   board.dispose();
 });
 
-test('the Gemini row shows both quota groups and its guide walks through the console sign-in',async()=>{
+test('the Gemini row shows both quota groups and its guide walks through the console sign-in',async t=>{
+  // This case expects a same-day one-hour reset; keep its fixture away from midnight.
+  t.mock.timers.enable({apis:['Date'],now:Date.parse('2026-10-31T03:00:00.000Z')});
   prepare();
   const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
   const gemini=row({service:'gemini',label:'Gemini',email:null,live:{readAt:Date.now(),weekly:{usedPercent:36,resetsAt:Date.now()+3*864e5},session:{usedPercent:10,resetsAt:Date.now()+3600e3},models:[{name:'Claude·GPT 모델',usedPercent:0,resetsAt:Date.now()+3*864e5}]}});
