@@ -225,6 +225,11 @@ test('a weekly service warns only when every usable account runs out three hours
   // 풀렸을 계정이 있으면 남은 양을 몰라 말하지 않는다.
   const passed=gpt('p',{readAt:NOW-3*H,session:{usedPercent:100,resetsAt:NOW-H},weekly:{usedPercent:20,resetsAt:NOW+3*D}});
   assert.equal(pace([a,passed],[20,20]),null);
+  // 읽은 때보다 앞선 초기화 시각이 와 풀렸을 계정으로 세지 않아도, 어림(guess)인 주간 창은 남은 양을 몰라 서비스 전체를 말하지 않는다(10-31 Fable F3).
+  const early=gpt('early',{readAt:NOW-10*60e3,weekly:{usedPercent:90,resetsAt:NOW-20*60e3}});
+  assert.deepEqual([serviceGroups([early],NOW)[0].projected.length,serviceGroups([early],NOW)[0].usable[0].g.weekly.guess],[0,true]);
+  assert.ok(pace([a,b],[20,20]));
+  assert.equal(pace([a,b,early],[20,20,20]),null);
 });
 
 test('reset passes: use now only when every account is blocked for more than a day, otherwise warn three days before they expire',async()=>{

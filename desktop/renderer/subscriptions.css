@@ -118,7 +118,7 @@
 /* 01 지금 쓸 계정: 서비스마다 한 줄 */
 .member-subs .ms-list{display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line,rgba(255,255,255,.075));border-radius:var(--r-panel,22px);background:var(--surface-1,#121317)}
 .member-subs .ms-svc+.ms-svc{border-top:1px solid var(--line,rgba(255,255,255,.075))}
-.member-subs .ms-svc-row{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr) 220px 20px;align-items:center;gap:20px;width:100%;min-height:92px;padding:18px 22px 18px 24px;border:0;background:none;color:inherit;text-align:left}
+.member-subs .ms-svc-row{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr) 248px 20px;align-items:center;gap:20px;width:100%;min-height:92px;padding:18px 22px 18px 24px;border:0;background:none;color:inherit;text-align:left}
 .member-subs .ms-svc-row:hover{background:color-mix(in srgb,var(--ink,#FAFAF9) 2.5%,transparent)}
 .member-subs .ms-svc-row:focus-visible,.member-subs .ms-help-q:focus-visible{outline-offset:-2px}
 .member-subs .ms-pool{display:flex;flex-direction:column;gap:9px}
@@ -127,11 +127,16 @@
 .member-subs .ms-count .ms-soft::before{content:'· '}
 .member-subs .ms-count em{color:var(--ink,#FAFAF9);font-style:normal;font-weight:650}
 .member-subs .ms-dots{display:flex;flex-wrap:wrap;gap:6px}
+/* 한도 숫자의 기준(10-31): GPT는 Codex, Gemini는 Antigravity CLI(agy) — 그 서비스 웹·앱 전체 사용량으로 읽히지 않게 줄 왼쪽에 작게 */
+.member-subs .ms-basis{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;line-height:1.45}
+/* 01 읽는 법 한 줄(10-31): 주간·5시간의 뜻, 사용과 남음, 큰 숫자가 어느 창인지 */
+.member-subs .ms-legend{margin:0 0 12px;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450;line-height:1.6}
+.member-subs .ms-legend b{color:var(--ink,#FAFAF9);font-weight:650}
 .member-subs .ms-pick{display:flex;flex-direction:column;gap:4px}
 .member-subs .ms-pick-label{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
 .member-subs .ms-pick-name{display:flex;align-items:baseline;gap:8px;overflow:hidden;font-size:1.25rem;font-weight:650;letter-spacing:-.02em;white-space:nowrap}
 .member-subs .ms-pick-name>span{overflow:hidden;text-overflow:ellipsis}
-.member-subs .ms-pick-name small{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;letter-spacing:0}
+.member-subs .ms-pick-name small{flex:none;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;letter-spacing:0}
 .member-subs .ms-pick-name.is-none{color:var(--ink-2,rgba(250,250,249,.72));font-size:1.0625rem}
 .member-subs .ms-chev{flex:none;width:20px;height:20px;color:var(--ink-3,rgba(250,250,249,.52))}
 .member-subs .open>.ms-svc-row .ms-chev,.member-subs .ms-help-item.open .ms-chev{transform:rotate(90deg)}
@@ -151,6 +156,13 @@
 .member-subs .ms-big.is-wait b{font-size:1.25rem;font-weight:650;line-height:1.2;white-space:nowrap}
 .member-subs .ms-gauge[data-level=low] .ms-big-num{color:var(--ms-warn)}
 .member-subs .ms-value.is-guess :is(.ms-arc,.ms-big-num){opacity:.7}
+/* 큰 숫자 둘레(10-31): 위에 창 이름(· 덜 남은 쪽), 숫자 옆에 「사용」, 아래에 같은 창의 남은 %, 맨 아래 다른 창의 짝 */
+.member-subs .ms-big>.ms-big-win{color:var(--ink-2,rgba(250,250,249,.72));font-weight:600}
+.member-subs .ms-big>.ms-big-line{display:flex;align-items:baseline;gap:5px;color:var(--ink,#FAFAF9)}
+.member-subs .ms-big-unit{color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:600}
+.member-subs .ms-big>.ms-big-left{color:var(--ink-2,rgba(250,250,249,.72))}
+.member-subs .ms-big-left b{color:var(--ink,#FAFAF9);font-weight:650}
+.member-subs .ms-big>.ms-big-other{margin-top:2px}
 .member-subs .ms-gauge.is-drawing .ms-arc{animation:ms-arc .9s cubic-bezier(.2,.8,.2,1) both}
 @keyframes ms-arc{from{stroke-dashoffset:100}}
 /* 숫자 굴림: WORLD world-motion.css의 .w-roll과 같은 띠·곡선·간격 */
@@ -166,7 +178,7 @@
 .member-subs .ms-detail{padding:4px 22px 18px 24px;border-top:1px solid var(--line,rgba(255,255,255,.075));background:color-mix(in srgb,var(--bg,#060709) 30%,transparent)}
 .member-subs .ms-acc-group+.ms-acc-group{margin-top:8px}
 .member-subs .ms-acc-group h3{margin:14px 0 6px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:600}
-.member-subs .ms-acc{display:grid;grid-template-columns:12px minmax(110px,.6fr) minmax(0,1.7fr) 120px 112px;align-items:center;gap:14px;min-height:46px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
+.member-subs .ms-acc{display:grid;grid-template-columns:12px minmax(110px,.6fr) minmax(0,1.7fr) 112px 136px;align-items:center;gap:14px;min-height:46px;border-top:1px solid var(--line,rgba(255,255,255,.075))}
 .member-subs .ms-acc-group h3+.ms-acc{border-top:0}
 .member-subs .ms-acc-name{overflow:hidden;font-size:.9375rem;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .member-subs .ms-acc-name small{margin-left:7px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
@@ -174,9 +186,12 @@
 .member-subs .ms-bar{grid-column:4;height:6px;overflow:hidden;border-radius:999px;background:var(--line-2,rgba(255,255,255,.14))}
 .member-subs .ms-bar>i{display:block;height:100%;border-radius:inherit;background:var(--ms-ok)}
 .member-subs .ms-bar[data-state=low]>i{background:var(--ms-warn)}
-.member-subs .ms-acc-val{grid-column:5;display:inline-flex;align-items:baseline;justify-self:end;gap:4px;white-space:nowrap}
+.member-subs .ms-acc-val{grid-column:5;display:flex;flex-direction:column;align-items:flex-end;justify-self:end;gap:1px;padding:6px 0;text-align:right;white-space:nowrap}
 .member-subs .ms-acc-val b{font-size:.9375rem}
 .member-subs .ms-acc-val small{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
+/* 펼친 줄 보조 글(10-31): 첫 줄은 다른 창의 사용(남음) 짝, 둘째 줄은 창마다 초기화 때와 마지막 확인 — 앞으로 올 때와 지난 때를 떼어 둔다 */
+.member-subs .ms-acc-sub{display:flex;flex-direction:column;gap:2px;padding:6px 0}
+.member-subs .ms-win-meta{display:flex;flex-wrap:wrap;gap:0 14px;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
 .member-subs .ms-acc-when{grid-column:3/5;color:var(--ink-2,rgba(250,250,249,.72));font-size:.875rem;font-weight:450}
 .member-subs .ms-acc-when b{color:var(--ink,#FAFAF9)}
 .member-subs .ms-acc-msg{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -325,6 +340,10 @@
   .member-subs .ms-count .ms-soft{display:block}
   .member-subs .ms-count .ms-soft::before{content:none}
   .member-subs .ms-mtool-note{display:none}
+  /* 한도형 줄(10-31, 대기 · 예상 상태 포함 — 아르곤 A3): 창 이름 · 사용 · 남음 · 다른 창 짝이 붙어 값이 넓으니, 계정 이름이 잘리지 않게 값을 이름 아래 한 줄로 내린다(크레딧 줄은 그대로) */
+  .member-subs .ms-svc-row:has(.ms-big-win,.ms-value.is-limit){grid-template-areas:'pool pool' 'pick pick' 'value value'}
+  .member-subs .ms-svc-row:has(.ms-big-win,.ms-value.is-limit) .ms-value{justify-self:start;justify-content:flex-start;text-align:left}
+  .member-subs .ms-svc-row:has(.ms-big-win,.ms-value.is-limit) .ms-big{align-items:flex-start}
   .member-subs .ms-ring{width:44px;height:44px}
   .member-subs .ms-big-num{font-size:1.75rem}
   .member-subs .ms-detail{padding:4px 16px 14px 18px}

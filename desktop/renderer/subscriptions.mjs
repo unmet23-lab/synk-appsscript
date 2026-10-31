@@ -6,7 +6,7 @@
 //  · 3차(10-19): 한 달 요약과 연간 결제·할인 시기 팁은 돈 이야기라 계정 관리 「요금·결제일」 칸 머리에, 한눈에 아래 입구 글에 한 줄로
 //  · 10-23(감사 C10): 요금·한도·목표·기간·추천 계산은 subscriptions-model.mjs(DOM 없음)가 하고, 이 파일은 그 숫자를 글과 HTML로 옮긴다.
 //    예전부터 여기서 내보내던 계산 함수는 같은 이름으로 다시 내보낸다(기존 import·시험 그대로).
-import { DAY_MS, ORDER, SHORT, GOAL_KEYS, num, hasReset, isUsedUp, nextBill, usedShown, gaugeLevel, planName, nameOf, passesOf, API_CREDIT_SERVICES, apiCreditPlan, apiCreditOf, apiCredits, serviceGroups, upcoming, freshness, officialPrice, costOf, billList, nextMonthlyBill, usageBars, passPlan, pickUsageTips, restWeeks, restingCount, summaryOn, monthSummary, shownAnnual } from './subscriptions-model.mjs';
+import { DAY_MS, ORDER, SHORT, GOAL_KEYS, num, hasReset, isUsedUp, nextBill, leftPercent, gaugeLevel, planName, nameOf, passesOf, API_CREDIT_SERVICES, apiCreditPlan, apiCreditOf, apiCredits, serviceGroups, upcoming, freshness, officialPrice, costOf, billList, nextMonthlyBill, usageBars, passPlan, pickUsageTips, restWeeks, restingCount, summaryOn, monthSummary, shownAnnual } from './subscriptions-model.mjs';
 export { hasReset, nextReset, isUsedUp, nextBill, balance, isLow, leftPercent, usedShown, limitGauge, gaugeLevel, planName, nameOf, accountState, passesOf, serviceGroups, upcoming, costSummary, freshness } from './subscriptions-model.mjs';
 const DAY = ['일', '월', '화', '수', '목', '금', '토'];
 const KINDS = [['weekly', '주간 한도', '주간 %와 초기화 시각'], ['credit', '크레딧', '잔액과 충전·결제일'], ['plan', '월 구독만', '결제일과 요금']];
@@ -20,7 +20,7 @@ const AUTO = {
 };
 // 한눈에 화면의 서비스 순서(ORDER)와 짧은 이름(SHORT)은 계산과 같이 쓰므로 subscriptions-model.mjs에 있다.
 // 지난 7일 사용량(10-19, Fable 검수 반영): 줄 왼쪽 보조 글은 무엇에 대한 숫자인지 말한다.
-const USAGE_UNIT = { claude: '주간 한도 대비', gpt: 'Codex 한도 기준', gemini: 'Antigravity 기준', higgsfield: '쓴 크레딧', typecast: '쓴 크레딧' };
+const USAGE_UNIT = { claude: '주간 한도 대비', gpt: 'Codex 한도 기준', gemini: 'Antigravity CLI(agy) 한도 기준', higgsfield: '쓴 크레딧', typecast: '쓴 크레딧' };
 // 아끼는 팁. 사실을 말하는 문장은 공식 원문으로 확인한 것만 쓰고 확인한 날을 붙인다(checked). 「공식 안내」는 그 근거 페이지.
 // Typecast는 계정판이 API 요금제를 읽고, 확인한 사실(미리 듣기 무료·이월 없음)은 웹 스튜디오 기준이라 사실 없는 팁만 둔다.
 const SAVE_TIPS = {
@@ -109,8 +109,17 @@ const pair = (krw, usd) => [krw ? money(krw, 'KRW') : '', usd ? money(usd, 'USD'
 // 크레딧: 펼친 줄·관리 화면은 소수 둘째 자리까지, 한눈에 줄은 100 이상이면 소수 없이.
 const credits = (v, round = false) => Number(v).toLocaleString('ko-KR', { maximumFractionDigits: round && Math.abs(v) >= 100 ? 0 : 2 });
 const WINDOW_NAME = { session: '5시간', weekly: '주간' };
-// 「주간 14% 사용」 한 덩이는 좁은 창에서도 갈라지지 않게 붙인다(줄은 덩이 사이 「 · 」에서만 바뀐다).
-const useText = (name, n) => `${name}\u00a0${n}%\u00a0사용`;
+const otherWindow = k => (k === 'session' ? 'weekly' : 'session');
+// 한도 창 하나는 늘 쓴 %와 남은 %를 짝으로 말한다(10-31 유호님: 주간·5시간, 쓴 양·남은 양이 헷갈리지 않게).
+// 두 숫자는 leftPercent · usedShown 규칙이라 합이 100이다(left는 모델이 내림한 남은 %). 「주간 14% 사용(86% 남음)」 한 덩이는
+// 좁은 창에서도 갈라지지 않게 붙인다(줄은 덩이 사이 「 · 」에서만 바뀐다).
+const pairText = (name, left) => `${name}\u00a0${100 - left}%\u00a0사용(${left}%\u00a0남음)`;
+// 읽은 뒤 초기화 시각이 지난 창(모델 guess)은 그사이 쓴 양을 몰라 숫자 대신 이렇게만 말한다.
+const guessText = name => `${name}\u00a0다시\u00a0찼을\u00a0거예요(예상)`;
+const windowText = (name, w) => (w.guess ? guessText(name) : pairText(name, w.left));
+// 한도 숫자가 무엇 기준인지(10-31): GPT는 Codex, Gemini는 Antigravity CLI(agy)가 알려 주는 한도라 각 서비스 웹·앱 전체 사용량이 아니다.
+// Claude 주간 %는 대화와 Claude Code가 같이 쓰는 한도라 따로 붙이지 않는다.
+const BASIS = { gpt: 'Codex 한도 기준', gemini: 'Antigravity CLI(agy) 한도 기준 · Gemini 웹·앱 사용량이 아니에요' };
 const billWord = d => (d === 0 ? '오늘' : `D-${d}`);
 const modelName = name => (/모델$/.test(name) ? name : `${name} 모델`);
 const shortVersion = v => (v ? String(v).replace(/\s*\(.*\)\s*$/, '').replace(/^(codex-cli|higgsfield)\s+/i, '') : '');
@@ -318,7 +327,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button>
       <header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
         <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || 'SYNK FOR YOU / AI SUBSCRIPTIONS')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
-        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>AI 구독마다<br>이번 주에 남은 양을 보여 줘요.</p></div>
+        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>AI 구독마다<br>얼마나 썼고 얼마나 남았는지 보여 줘요.</p></div>
         <div class="ms-hero-note"><span class="ms-note">${note}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }
@@ -348,10 +357,22 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     return `${n}개 중 <em>${g.ready.length}개</em> ${credit ? '넉넉' : '바로 써요'}${tail ? ` <span class="ms-soft">${tail}</span>` : ''}`;
   }
   function valueHtml(g, now, stale) {
-    const best = g.best, read = stale && best?.row?.live?.readAt ? ` · ${stamp(best.row.live.readAt, now)}` : '', guess = best?.projected ? ' · 예상' : '';
-    if (best && g.kind === 'credit' && best.credits !== undefined) return `<span class="ms-gauge ms-value" data-level="${best.state}"><span class="ms-big"><b class="ms-big-num" data-roll="c-${esc(g.key)}">${credits(best.credits, true)}</b><span>크레딧${read}</span></span></span>`;
-    if (best?.g) { const w = best.g[best.focus]; return `<span class="ms-gauge ms-value${best.projected ? ' is-guess' : ''}" data-level="${gaugeLevel(w)}">${ring(w)}<span class="ms-big"><b class="ms-big-num" data-roll="r-${esc(g.key)}">${100 - w.left}<small>%</small></b><span>${WINDOW_NAME[best.focus]} 사용${guess}${read}</span></span></span>`; }
-    const wait = (big, small) => `<span class="ms-value"><span class="ms-big is-wait"><b>${big}</b><span>${small}</span></span></span>`;
+    // 읽은 때는 「확인」을 붙여 초기화 시각과 헷갈리지 않게 한다(10-31: 「5시간 사용 · 17:12」가 초기화 때로 읽혔다).
+    // 값이 오래됐을 때와, 읽은 뒤 한 창의 초기화가 지나 그 계정 값이 지난 확인 기준일 때(projected), 어림(guess) 창이 있을 때 붙인다(10-31 Fable F3).
+    const best = g.best, readAt = best?.row?.live?.readAt, read = (stale || best?.projected || best?.g?.session?.guess || best?.g?.weekly?.guess) && readAt ? ` · ${stamp(readAt, now)}\u00a0확인` : '';
+    // 한도형 줄의 대기 · 예상 값(다시 찼을 거예요 · 다 씀 · 손볼 것 · 확인 전)은 좁은 폭에서 숫자 값과 같이 이름 아래 줄로 내린다(10-31 아르곤 A3).
+    const wait = (big, small) => `<span class="ms-value${g.kind === 'weekly' ? ' is-limit' : ''}"><span class="ms-big is-wait"><b>${big}</b><span>${small}</span></span></span>`;
+    if (best && g.kind === 'credit' && best.credits !== undefined) return `<span class="ms-gauge ms-value" data-level="${best.state}"><span class="ms-big"><b class="ms-big-num" data-roll="c-${esc(g.key)}">${credits(best.credits, true)}</b><span>크레딧${stale ? read : ''}</span></span></span>`;
+    // 한도형(10-31): 큰 숫자는 덜 남은 창(focus)의 쓴 % — 바로 위에 그 창 이름, 옆에 「사용」, 아래에 같은 창의 남은 %를 붙이고,
+    // 나머지 창은 그 아래 한 줄에 쓴 %(남은 %) 짝으로. 두 창을 모두 확인한 숫자로 읽었을 때만 왜 이 창이 큰 숫자인지(남은 비율이 덜 남은 쪽) 이름 옆에 짧게 —
+    // 한 창이 어림(guess)이면 비교하지 않는다(10-31 아르곤 A1). 두 창은 분모가 달라 어느 쪽에 먼저 막힐지는 말하지 않는다.
+    // 큰 숫자 창이 초기화가 지나 다시 찼을 창(guess)이면 0% 사용 · 100% 남음을 확인한 값처럼 보이지 않게 숫자를 쓰지 않는다.
+    if (best?.g) {
+      const k = best.focus, w = best.g[k], o = best.g[otherWindow(k)];
+      if (w.guess) return wait('다시 찼을 거예요', `${WINDOW_NAME[k]} 한도 · 예상${read}`);
+      const why = o && !o.guess && o.left !== w.left ? ' · 덜 남은 쪽' : '';
+      return `<span class="ms-gauge ms-value" data-level="${gaugeLevel(w)}">${ring(w)}<span class="ms-big"><span class="ms-big-win">${WINDOW_NAME[k]} 한도${why}</span><span class="ms-big-line"><b class="ms-big-num" data-roll="r-${esc(g.key)}">${100 - w.left}<small>%</small></b><span class="ms-big-unit">사용</span></span><span class="ms-big-left"><b class="ms-num">${w.left}%</b> 남음${read}</span>${o ? `<span class="ms-big-other">${windowText(WINDOW_NAME[otherWindow(k)], o)}</span>` : ''}</span></span>`;
+    }
     if (best) return wait('직접 넣음', g.kind === 'credit' ? '잔액을 안 넣었어요' : '한도 숫자 없음');
     const first = g.out[0];
     if (first?.unblock) return wait(`<span class="ms-num">${esc(soon(first.unblock, now))}</span>`, '가장 먼저 풀려요');
@@ -369,38 +390,47 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const here = n - g.away.length;
     const pick = here > 1 ? (g.today ? '오늘은 이 계정부터' : g.best && !g.best.projected && g.best.state === 'low' ? '남은 건 이것뿐' : '추천') : g.away.length ? '지금 로그인된 계정' : g.service === 'typecast' ? '연결한 키' : g.service ? '연결한 계정' : '직접 넣은 구독';
     const plan = g.best && g.service ? planName(g.best.row.plan, g.service) : '';
-    // 초기화 때와 쓴 %(고리와 같은 숫자 하나 — 「남음」은 쓰지 않는다). 한 덩이 안은 줄이 갈리지 않게 붙인다.
-    const todayNote = g.today ? `<span class="ms-pick-note">${esc(soon(g.today.g.weekly.resetsAt, now)).replace(/ /g, '\u00a0')}\u00a0초기화 · 아직\u00a0${100 - g.today.g.weekly.left}%만\u00a0썼어요</span>` : '';
+    // 주간 초기화 때와 주간 쓴 %(10-31: 어느 창인지 밝힌다 — 큰 숫자는 5시간 창일 수 있다). 한 덩이 안은 줄이 갈리지 않게 붙인다.
+    const todayNote = g.today ? `<span class="ms-pick-note">${esc(soon(g.today.g.weekly.resetsAt, now)).replace(/ /g, '\u00a0')}\u00a0주간\u00a0초기화 · 아직 주간\u00a0${100 - g.today.g.weekly.left}%만\u00a0썼어요</span>` : '';
+    const basis = g.service && BASIS[g.service] ? `<span class="ms-basis">${esc(BASIS[g.service])}</span>` : '';
     return `<div class="ms-svc${open ? ' open' : ''} ${svcClass(g.service)}">
       <button type="button" class="ms-svc-row" data-subs="toggle" data-id="${esc(id)}" aria-expanded="${open}">
-        <span class="ms-pool"><span class="ms-pool-top"><span class="ms-tag">${esc(g.label)}</span><span class="ms-count">${countText(g)}</span></span><span class="ms-dots" aria-hidden="true">${dots}</span></span>
+        <span class="ms-pool"><span class="ms-pool-top"><span class="ms-tag">${esc(g.label)}</span><span class="ms-count">${countText(g)}</span></span><span class="ms-dots" aria-hidden="true">${dots}</span>${basis}</span>
         <span class="ms-pick"><span class="ms-pick-label${g.today && here > 1 ? ' is-today' : ''}">${pick}</span><span class="ms-pick-name${g.best ? '' : ' is-none'}">${g.best ? `<span>${esc(g.best.name)}</span>${plan ? `<small>${esc(plan)}</small>` : ''}` : '지금은 없어요'}</span>${todayNote}</span>
         ${valueHtml(g, now, stale)}${chevron}
       </button>${open ? detailHtml(g, now) : ''}</div>`;
   }
-  // 펼친 줄의 보조 글: 오른쪽 값(덜 남은 창)은 빼고 나머지 창 — 주간, 모델별 주간(Gemini의 Claude·GPT 모델 — Claude의 Fable 주간은 본체가 읽지 않는다), 5시간 순 — 의 쓴 %와 주간 초기화 때.
-  function windowsText(a, now) {
-    const { g } = a, parts = [];
-    if (g.weekly && a.focus !== 'weekly') parts.push(useText('주간', 100 - g.weekly.left));
-    for (const m of a.row.live?.models || []) if (Number.isFinite(Number(m.usedPercent))) parts.push(useText(modelName(m.name), usedShown(Math.min(100, Math.max(0, Number(m.usedPercent))))));
-    if (g.session && a.focus !== 'session') parts.push(useText('5시간', 100 - g.session.left));
-    if (g.weekly?.resetsAt) parts.push(`${soon(g.weekly.resetsAt, now)} 주간 초기화`);
-    return parts.join(' · ');
+  // 펼친 줄의 계정 하나(10-31): 오른쪽 값은 덜 남은 창(focus)의 쓴 %와 남은 %. 보조 글 첫 줄은 나머지 창 — 주간 또는 5시간,
+  // 모델별 주간(Gemini의 Claude·GPT 모델 — Claude의 Fable 주간은 본체가 읽지 않는다) — 의 쓴 %(남은 %) 짝, 둘째 줄은 창마다의 초기화 때와
+  // 이 계정을 마지막으로 읽은 때. 앞으로 올 초기화와 지난 확인을 한 덩이에 섞지 않는다. 읽지 못한 창은 쓰지 않는다(0%로 채우지 않는다).
+  function windowsHtml(a, now, { lead = '', extra = '', read = true } = {}) {
+    const { g } = a, o = otherWindow(a.focus), others = [];
+    if (g[o]) others.push(esc(windowText(WINDOW_NAME[o], g[o])));
+    for (const m of a.row.live?.models || []) {
+      if (!Number.isFinite(Number(m.usedPercent))) continue;
+      // 부가 모델(Gemini의 Claude·GPT 모델) 값은 주간 한도라 창 이름을 붙인다(10-31 아르곤 A2 · B1).
+      const name = `${modelName(m.name)}\u00a0주간`;
+      others.push(esc(m.resetsAt && now >= m.resetsAt ? guessText(name) : pairText(name, leftPercent(Math.min(100, Math.max(0, Number(m.usedPercent)))))));
+    }
+    const resets = ['session', 'weekly'].filter(k => g[k]?.resetsAt).map(k => `${WINDOW_NAME[k]}\u00a0${esc(soon(g[k].resetsAt, now)).replace(/ /g, '\u00a0')}`);
+    const readAt = read && a.row.live?.readAt ? `<span class="ms-win-read">마지막 확인\u00a0${esc(stamp(a.row.live.readAt, now)).replace(/ /g, '\u00a0')}</span>` : '';
+    const first = [lead, ...others, extra].filter(Boolean).join(' · ');
+    return `${first ? `<span class="ms-win-line">${first}</span>` : ''}${resets.length || readAt ? `<span class="ms-win-meta">${resets.length ? `<span>초기화 ${resets.join(' · ')}</span>` : ''}${readAt}</span>` : ''}`;
   }
   function detailHtml(g, now) {
     const credit = g.kind === 'credit';
     // 계정 이름 옆에 요금제(Max 5x·Max 20x·Pro 200 등)를 작게 붙여 계정마다 등급이 보이게 한다.
     const tierOf = a => (a.row.source === 'auto' ? planName(a.row.plan, a.row.service) : '');
     const line = (a, body, action = '') => `<div class="ms-acc" data-row="${esc(a.row.id)}"><i class="ms-dot" data-state="${a.away ? 'away' : a.projected ? 'projected' : a.state}" aria-hidden="true"></i><span class="ms-acc-name">${esc(a.name)}${tierOf(a) ? `<small>${esc(tierOf(a))}</small>` : ''}</span>${body}${action ? `<span class="ms-acc-act">${action}</span>` : ''}</div>`;
-    // 막대·값은 쓴 만큼 찬다(꽉 차면 그 창은 다 씀).
-    const value = a => `<span class="ms-acc-val"><b class="ms-num">${100 - a.left}%</b><small>${WINDOW_NAME[a.focus]} 사용</small></span>`;
-    const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${100 - a.left}%"></i></span>`;
+    // 막대·값은 쓴 만큼 찬다(꽉 차면 그 창은 다 씀). 값은 그 창 이름과 쓴 %·남은 % 짝(10-31). 다시 찼을 창(guess)은 숫자 없이 「예상」.
+    const value = a => { const w = a.g[a.focus], name = WINDOW_NAME[a.focus]; return w.guess ? `<span class="ms-acc-val is-guess"><b>예상</b><small>${name}\u00a0다시\u00a0찼을\u00a0거예요</small></span>` : `<span class="ms-acc-val"><b class="ms-num">${100 - w.left}%\u00a0사용</b><small>${name}\u00a0·\u00a0${w.left}%\u00a0남음</small></span>`; };
+    const bar = a => `<span class="ms-bar" data-state="${a.state}" aria-hidden="true"><i style="width:${a.g[a.focus].guess ? 0 : 100 - a.left}%"></i></span>`;
     const usable = g.usable.map(a => credit
       ? line(a, `<span class="ms-acc-sub">${a.state === 'low' ? '크레딧 부족' : ''}</span><span class="ms-acc-val"><b class="ms-num">${credits(a.credits)}</b></span>`)
-      : line(a, `<span class="ms-acc-sub">${[esc(windowsText(a, now)), a.pass ? passHtml(a.pass, now) : ''].filter(Boolean).join(' · ')}</span>${bar(a)}${value(a)}`)).join('');
-    const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요${a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}${a.pass ? ` · ${passHtml(a.pass, now)}` : ''}</span>${bar(a)}${value(a)}`)).join('');
+      : line(a, `<span class="ms-acc-sub">${windowsHtml(a, now, { extra: a.pass ? passHtml(a.pass, now) : '' })}</span>${bar(a)}${value(a)}`)).join('');
+    const projected = g.projected.map(a => line(a, `<span class="ms-acc-sub">${windowsHtml(a, now, { lead: `${esc(hm(a.projected))}에 풀렸을 거예요 · 지금 확인하면 정확해요`, extra: a.pass ? passHtml(a.pass, now) : '' })}</span>${bar(a)}${value(a)}`)).join('');
     const manual = g.manual.map(a => line(a, `<span class="ms-acc-when">${credit ? '잔액을 넣지 않았어요' : '직접 넣은 주간 구독이에요 · 다 쓰면 「다 씀 표시」를 눌러요'}</span>`, credit ? '' : usedButton(a.row, now))).join('');
-    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · ${useText('주간', 100 - a.g.weekly.left)}` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}${a.pass ? ` · ${passHtml(a.pass, now)} · ${passAdvice(g, a, now)}` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : a.pass ? passButton(a.row, a.name) : '')).join('');
+    const out = g.out.map(a => line(a, `<span class="ms-acc-when">${WINDOW_NAME[a.focus]} 한도 · ${a.unblock ? `<b>${esc(soon(a.unblock, now))}</b>${a.focus === 'weekly' ? ' 주간 초기화' : ''}에 풀려요(${esc(after(a.unblock - now))})` : '풀리는 때를 몰라요'}${a.focus === 'session' && a.g.weekly ? ` · ${windowText('주간', a.g.weekly)}` : ''}${a.focus === 'session' && a.g.weekly?.resetsAt ? ` · ${esc(soon(a.g.weekly.resetsAt, now))} 주간 초기화` : ''}${a.pass ? ` · ${passHtml(a.pass, now)} · ${passAdvice(g, a, now)}` : ''}</span>`, a.row.source !== 'auto' ? usedButton(a.row, now) : a.pass ? passButton(a.row, a.name) : '')).join('');
     // 긴 이유는 두 줄까지만 보이고(전문은 title과 계정 관리 ⋯), 마지막으로 읽은 값의 시각을 붙인다.
     const reason = a => `${a.row.stateMessage || '읽지 못했어요.'}${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}`;
     const error = g.error.map(a => line(a, `<span class="ms-acc-when ms-acc-msg" title="${esc(reason(a))}">${esc(reason(a))}</span>`, `<button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button>`)).join('');
@@ -410,7 +440,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 본체가 「로그인된 계정이 없음」(awayReason 'none')으로 알리면 그렇게 말한다(Fable 10-22 P2-1).
     const awayWhy = a => (a.row.awayReason === 'none' ? 'Antigravity에 로그인된 계정이 없어' : 'Antigravity에 다른 계정이 로그인돼 있어');
     const awayWhen = a => [a.readAt ? `${awayWhy(a)} ${stamp(a.readAt, now)}에 마지막으로 읽은 값이에요` : `${awayWhy(a)} 아직 읽은 값이 없어요`, a.projected ? `${stamp(a.projected, now)}에 풀렸을 거예요` : a.state === 'out' && a.unblock ? `${soon(a.unblock, now)}에 풀려요` : ''].filter(Boolean).join(' · ');
-    const away = g.away.map(a => line(a, `<span class="ms-acc-sub">${esc(awayWhen(a))}</span>${a.g ? `${bar(a)}${value(a)}` : ''}`)).join('');
+    const away = g.away.map(a => line(a, `<span class="ms-acc-sub">${a.g ? windowsHtml(a, now, { lead: esc(awayWhen(a)), read: false }) : esc(awayWhen(a))}</span>${a.g ? `${bar(a)}${value(a)}` : ''}`)).join('');
     const part = (title, body) => (body ? `<div class="ms-acc-group"><h3>${title}</h3>${body}</div>` : '');
     return `<div class="ms-detail">${part(credit ? '남은 크레딧' : '바로 쓸 수 있어요', usable)}${part('풀렸을 거예요', projected)}${part('직접 넣은 구독', manual)}${part('막혀 있어요', out)}${part('손볼 것', error + login)}${part('확인 전', pending)}${part('지금 로그인 안 됨', away)}</div>`;
   }
@@ -449,13 +479,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const note = stale ? `<span class="ms-stale-note"><i class="ms-led-warn" aria-hidden="true"></i>${stamp(snapshot.check.at, now)}에 읽은 값 · <button type="button" class="ms-link" data-subs="check" ${checkBusy() ? 'disabled' : ''}>지금 확인</button></span>` : '줄을 누르면 계정 전체가 보여요.';
     const missing = ORDER.filter(k => !groups.some(g => g.service === k));
     const more = missing.length ? `<div class="ms-svc-more">${esc(missing.map(k => AUTO[k].short).join(' · '))}도 연결할 수 있어요 <button type="button" class="ms-link" data-subs="manage">계정 관리</button></div>` : '';
-    return section('01', '지금 쓸 계정', note, `<div class="ms-list">${groups.map(g => groupRow(g, now, stale)).join('')}${more}</div>`);
+    // 한도형 줄의 읽는 법(10-31): 두 창의 뜻, 사용과 남음의 관계, 큰 숫자가 어느 창인지와 그 까닭. 크레딧만 있으면 두지 않는다.
+    const legend = groups.some(g => g.kind === 'weekly') ? '<p class="ms-legend"><b>주간</b> 한도는 7일, <b>5시간</b> 한도는 5시간 단위로 다시 차요. 한 한도 안에서 사용과 남음을 더하면 100%예요. 두 한도를 모두 확인했으면 남은 비율이 더 적은 한도를 크게 보여 줘요.</p>' : '';
+    return section('01', '지금 쓸 계정', note, `${legend}<div class="ms-list">${groups.map(g => groupRow(g, now, stale)).join('')}${more}</div>`);
   }
   function nextLine(item, now) {
     const label = labelOf(item.row), name = nameOf(item.row);
     // API 크레딧(Claude 10-28 · GPT 10-29)은 결제가 아니라 사라지는 돈이라 「만료」 대신 「사라져요」(「청구」로 읽힌 10-28 전례). 결제일과 같은 날이면 결제 줄에 붙는다(bill.api).
     const gone = amount => `API 크레딧 ${esc(money(amount, 'USD'))} 사라져요`;
-    const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${useText('주간', 100 - item.after)}` : ''}${item.pass ? ` · ${passHtml(item.pass, now)}` : ''}`
+    const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${pairText('주간', item.after)}` : ''}${item.pass ? ` · ${passHtml(item.pass, now)}` : ''}`
       : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : item.type === 'pass' ? `${esc(label)} · 초기화권 ${item.count}장 만료` : item.type === 'api' ? `${esc(label)} · ${gone(item.amount)}` : `${esc(label)} · 결제${num(item.row.price) !== null ? ` ${esc(money(item.row.price, item.row.currency))}` : '일'}${item.api ? ` · ${gone(item.api)}` : ''}`;
     // 결제와 API 크레딧은 날짜만 안다(시각을 말하지 않는다).
     const days = item.type === 'bill' ? item.days : item.type === 'api' ? Math.round((item.t - new Date(now).setHours(0, 0, 0, 0)) / DAY_MS) : null;

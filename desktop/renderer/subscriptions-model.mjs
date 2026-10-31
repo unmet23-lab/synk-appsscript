@@ -85,12 +85,14 @@ export const leftPercent = used => Math.max(0, Math.floor(100 - Number(used) + 1
 export const usedShown = used => 100 - leftPercent(used);
 
 // 한도 창 두 개(5시간 · 주간). 초기화 시각이 지난 창은 다시 가득 찬 것으로 본다.
+// 그 창은 읽은 값이 아니라 어림이라 guess를 붙인다 — 화면은 그 창의 0% 사용 · 100% 남음을 확인한 숫자처럼 쓰지 않는다(10-31).
+// 읽지 못한 창(값 없음)은 null 그대로다(0% 사용으로 채우지 않는다).
 // 「지금 쓸 수 있는 만큼」은 두 창 중 덜 남은 쪽(focus)을 따른다.
 export function limitGauge(row, now) {
   if (row?.kind !== 'weekly') return null;
   const shape = w => {
     if (!w || !Number.isFinite(Number(w.usedPercent))) return null;
-    if (w.resetsAt && now >= w.resetsAt) return { used: 0, left: 100, resetsAt: null };
+    if (w.resetsAt && now >= w.resetsAt) return { used: 0, left: 100, resetsAt: null, guess: true };
     const used = Math.min(100, Math.max(0, Number(w.usedPercent)));
     return { used, left: leftPercent(used), resetsAt: w.resetsAt || null };
   };
@@ -250,7 +252,7 @@ export function upcoming(rows, now, checkAt = null) {
   const items = [];
   for (const row of rows || []) {
     const a = accountState(row, now, checkAt), pass = passesOf(row, now);
-    if (a.state === 'out' && a.unblock) items.push({ t: a.unblock, type: 'unblock', row, focus: a.focus, after: a.focus === 'session' && a.g.weekly ? a.g.weekly.left : null, pass });
+    if (a.state === 'out' && a.unblock) items.push({ t: a.unblock, type: 'unblock', row, focus: a.focus, after: a.focus === 'session' && a.g.weekly && !a.g.weekly.guess ? a.g.weekly.left : null, pass });
     else if ((a.state === 'ok' || a.state === 'low') && a.g?.weekly?.resetsAt && a.g.weekly.resetsAt - now <= 7 * DAY_MS) items.push({ t: a.g.weekly.resetsAt, type: 'reset', row });
     // 연간으로 표시한 줄(3차)의 「매월 n일」은 달마다 오는 결제가 아니라 세지 않는다.
     const dd = row.cycle === 'annual' ? null : nextBill(row.billDay, now), bill = dd !== null && dd <= 6 ? { t: today.getTime() + dd * DAY_MS, type: 'bill', row, days: dd } : null;
@@ -366,7 +368,8 @@ export function spikeTip(snapshot, g, u, now) {
 export function paceTip(snapshot, g, now) {
   const stats = snapshot?.usage?.accounts || {}, live = g.usable.filter(a => a.g?.weekly);
   // 풀렸을 계정은 남은 양을 몰라서, 기록이 3일 안 된 계정이 있으면 속도를 몰라서 말하지 않는다.
-  if (!live.length || g.projected.length || live.some(a => !Number.isFinite(stats[a.row.id]?.rate3))) return null;
+  // 초기화가 지나 어림(guess)인 주간 창도 풀렸을 계정처럼 남은 양을 몰라 서비스 전체를 예측하지 않는다(10-31 Fable F3 — 읽은 때보다 앞선 초기화 시각이 와도).
+  if (!live.length || g.projected.length || live.some(a => a.g.weekly.guess || !Number.isFinite(stats[a.row.id]?.rate3))) return null;
   let left = 0, rate = 0, weight = 0;
   for (const a of live) { const w = weightOf(a.row); left += a.g.weekly.left * w; rate += stats[a.row.id].rate3 * w; weight += w; }
   const releases = [...live.map(a => a.g.weekly.resetsAt), ...g.out.map(a => a.unblock)].filter(Boolean);
