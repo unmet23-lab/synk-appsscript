@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v04",
+ "text": "미국 FBI도 권해요. 가족끼리 암호 한 단어만 정해 두세요.",
+ "show": "미국 FBI도 권해요. 가족끼리 암호 한 단어만 정해 두세요.",
+ "dur": 3.317,
+ "words": [
+  {
+   "text": "미국",
+   "start": 0.02,
+   "end": 0.239
+  },
+  {
+   "text": "FBI도",
+   "start": 0.283,
+   "end": 0.792
+  },
+  {
+   "text": "권해요.",
+   "start": 0.836,
+   "end": 1.157
+  },
+  {
+   "text": "가족끼리",
+   "start": 1.535,
+   "end": 1.928
+  },
+  {
+   "text": "암호",
+   "start": 2.016,
+   "end": 2.147
+  },
+  {
+   "text": "한",
+   "start": 2.191,
+   "end": 2.293
+  },
+  {
+   "text": "단어만",
+   "start": 2.336,
+   "end": 2.599
+  },
+  {
+   "text": "정해",
+   "start": 2.642,
+   "end": 2.832
+  },
+  {
+   "text": "두세요.",
+   "start": 2.875,
+   "end": 3.317
+  }
+ ],
+ "source": {
+  "key": "2f75dbc35aec1cda0c3608115a034e57",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}

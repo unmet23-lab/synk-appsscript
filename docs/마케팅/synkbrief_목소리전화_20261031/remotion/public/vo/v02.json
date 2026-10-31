@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v02",
+ "text": "금융감독원이 경보까지 낸 수법이에요.",
+ "show": "금융감독원이 경보까지 낸 수법이에요.",
+ "dur": 1.991,
+ "words": [
+  {
+   "text": "금융감독원이",
+   "start": 0.02,
+   "end": 0.682
+  },
+  {
+   "text": "경보까지",
+   "start": 0.724,
+   "end": 1.165
+  },
+  {
+   "text": "낸",
+   "start": 1.207,
+   "end": 1.317
+  },
+  {
+   "text": "수법이에요.",
+   "start": 1.359,
+   "end": 1.991
+  }
+ ],
+ "source": {
+  "key": "f31237483922baef3866499fadc0855d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

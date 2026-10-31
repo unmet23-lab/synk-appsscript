@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m01",
+ "text": "민지 어머니시죠? 따님, 저랑 같이 있어요.",
+ "show": "민지 어머니시죠? 따님, 저랑 같이 있어요.",
+ "dur": 3.011,
+ "words": [
+  {
+   "text": "민지",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "어머니시죠?",
+   "start": 0.363,
+   "end": 0.907
+  },
+  {
+   "text": "따님,",
+   "start": 1.41,
+   "end": 1.793
+  },
+  {
+   "text": "저랑",
+   "start": 1.934,
+   "end": 2.237
+  },
+  {
+   "text": "같이",
+   "start": 2.317,
+   "end": 2.458
+  },
+  {
+   "text": "있어요.",
+   "start": 2.519,
+   "end": 3.011
+  }
+ ],
+ "source": {
+  "key": "7d5790aff94f4c1d8c5459550808d97b",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.02,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

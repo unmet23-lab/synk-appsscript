@@ -1,0 +1,98 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.02,
+  "seed": 1031,
+  "lufs": -17
+ },
+ "made": "2026-10-31T07:14:44.022Z",
+ "lines": [
+  {
+   "id": "m01",
+   "text": "민지 어머니시죠? 따님, 저랑 같이 있어요.",
+   "show": "민지 어머니시죠? 따님, 저랑 같이 있어요.",
+   "scene": "사기범 전화",
+   "dur": 3.011,
+   "syllablesPerSec": 5.31,
+   "src": "m01.wav",
+   "key": "7d5790aff94f4c1d8c5459550808d97b",
+   "words": 6
+  },
+  {
+   "id": "m02",
+   "text": "오십만 원만 보내세요. 전화는 끊지 마시고요.",
+   "show": "오십만 원만 보내세요. 전화는 끊지 마시고요.",
+   "scene": "사기범 전화",
+   "dur": 2.969,
+   "syllablesPerSec": 6.06,
+   "src": "m02.wav",
+   "key": "711fe4f267b125986f656d00a37fe7a1",
+   "words": 6
+  },
+  {
+   "id": "v01",
+   "text": "AI가 만든 목소리예요.",
+   "show": "AI가 만든 목소리예요.",
+   "scene": "정체",
+   "dur": 1.46,
+   "syllablesPerSec": 5.48,
+   "src": "v01.wav",
+   "key": "e9534956ff64b698d6c104d288e886b1",
+   "words": 3
+  },
+  {
+   "id": "v02",
+   "text": "금융감독원이 경보까지 낸 수법이에요.",
+   "show": "금융감독원이 경보까지 낸 수법이에요.",
+   "scene": "실제 화면",
+   "dur": 1.991,
+   "syllablesPerSec": 8.04,
+   "src": "v02.wav",
+   "key": "f31237483922baef3866499fadc0855d",
+   "words": 4
+  },
+  {
+   "id": "v03",
+   "text": "우는 소리는, 부모도 바로 못 가린대요.",
+   "show": "우는 소리는, 부모도 바로 못 가린대요.",
+   "scene": "까닭",
+   "dur": 2.041,
+   "syllablesPerSec": 7.35,
+   "src": "v03.wav",
+   "key": "adcf7a1dc164e02c217a59fe77db7d4b",
+   "words": 6
+  },
+  {
+   "id": "v04",
+   "text": "미국 FBI도 권해요. 가족끼리 암호 한 단어만 정해 두세요.",
+   "show": "미국 FBI도 권해요. 가족끼리 암호 한 단어만 정해 두세요.",
+   "scene": "따라 할 것",
+   "dur": 3.317,
+   "syllablesPerSec": 6.33,
+   "src": "v04.wav",
+   "key": "2f75dbc35aec1cda0c3608115a034e57",
+   "words": 9
+  },
+  {
+   "id": "v05",
+   "text": "목소리는 베껴도, 우리 집 암호는 몰라요.",
+   "show": "목소리는 베껴도, 우리 집 암호는 몰라요.",
+   "scene": "끝 줄",
+   "dur": 2.199,
+   "syllablesPerSec": 7.28,
+   "src": "v05.wav",
+   "key": "1f01178f34026cc9ab9df2ea39c8aa1e",
+   "words": 6
+  }
+ ]
+}

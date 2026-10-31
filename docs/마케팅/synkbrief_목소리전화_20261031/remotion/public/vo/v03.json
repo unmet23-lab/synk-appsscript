@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v03",
+ "text": "우는 소리는, 부모도 바로 못 가린대요.",
+ "show": "우는 소리는, 부모도 바로 못 가린대요.",
+ "dur": 2.041,
+ "words": [
+  {
+   "text": "우는",
+   "start": 0.02,
+   "end": 0.181
+  },
+  {
+   "text": "소리는,",
+   "start": 0.229,
+   "end": 0.567
+  },
+  {
+   "text": "부모도",
+   "start": 0.761,
+   "end": 1.051
+  },
+  {
+   "text": "바로",
+   "start": 1.115,
+   "end": 1.26
+  },
+  {
+   "text": "못",
+   "start": 1.309,
+   "end": 1.389
+  },
+  {
+   "text": "가린대요.",
+   "start": 1.437,
+   "end": 2.041
+  }
+ ],
+ "source": {
+  "key": "adcf7a1dc164e02c217a59fe77db7d4b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

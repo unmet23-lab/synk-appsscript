@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m02",
+ "text": "오십만 원만 보내세요. 전화는 끊지 마시고요.",
+ "show": "오십만 원만 보내세요. 전화는 끊지 마시고요.",
+ "dur": 2.969,
+ "words": [
+  {
+   "text": "오십만",
+   "start": 0.02,
+   "end": 0.341
+  },
+  {
+   "text": "원만",
+   "start": 0.402,
+   "end": 0.622
+  },
+  {
+   "text": "보내세요.",
+   "start": 0.683,
+   "end": 1.064
+  },
+  {
+   "text": "전화는",
+   "start": 1.586,
+   "end": 1.968
+  },
+  {
+   "text": "끊지",
+   "start": 2.028,
+   "end": 2.269
+  },
+  {
+   "text": "마시고요.",
+   "start": 2.329,
+   "end": 2.969
+  }
+ ],
+ "source": {
+  "key": "711fe4f267b125986f656d00a37fe7a1",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.02,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 206
+ }
+}

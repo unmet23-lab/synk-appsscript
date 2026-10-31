@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a190d3-7fe4-7ad1-9b82-652e82cff73a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to change the poses and expressions while preserving the reference’s people, room, framing, and light.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":138866,"cached_input_tokens":129152,"cache_write_input_tokens":0,"output_tokens":1085,"reasoning_output_tokens":90}}

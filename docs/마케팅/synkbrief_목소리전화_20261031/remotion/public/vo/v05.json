@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v05",
+ "text": "목소리는 베껴도, 우리 집 암호는 몰라요.",
+ "show": "목소리는 베껴도, 우리 집 암호는 몰라요.",
+ "dur": 2.199,
+ "words": [
+  {
+   "text": "목소리는",
+   "start": 0.03,
+   "end": 0.439
+  },
+  {
+   "text": "베껴도,",
+   "start": 0.485,
+   "end": 0.819
+  },
+  {
+   "text": "우리",
+   "start": 1.122,
+   "end": 1.229
+  },
+  {
+   "text": "집",
+   "start": 1.274,
+   "end": 1.365
+  },
+  {
+   "text": "암호는",
+   "start": 1.411,
+   "end": 1.654
+  },
+  {
+   "text": "몰라요.",
+   "start": 1.699,
+   "end": 2.199
+  }
+ ],
+ "source": {
+  "key": "1f01178f34026cc9ab9df2ea39c8aa1e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v01",
+ "text": "AI가 만든 목소리예요.",
+ "show": "AI가 만든 목소리예요.",
+ "dur": 1.46,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.439
+  },
+  {
+   "text": "만든",
+   "start": 0.491,
+   "end": 0.718
+  },
+  {
+   "text": "목소리예요.",
+   "start": 0.77,
+   "end": 1.451
+  }
+ ],
+ "source": {
+  "key": "e9534956ff64b698d6c104d288e886b1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 123
+ }
+}
