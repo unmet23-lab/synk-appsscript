@@ -1,0 +1,191 @@
+{
+ "메모": "1번 음료 제품 광고 「오미톡」 15초 세로 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-31). 10-29 결정 「포트폴리오도 시댄스 2.5 720p, Omni · H3로 내지 않음」으로 Omni였던 4 · 5번(붓기 · 기포)을 시댄스로 옮긴 판이다 — 시작 그림 = 블렌더 렌더 c4_first · c5_first, 끝 그림 = 같은 장면을 카메라 키 마지막 프레임(2.13초)으로 렌더한 c4_f64 · c5_f64(02_콘티 4-1절). 판은 최소 4초라 2.2초에 끝 구도에 닿고 버티게 썼고, 4초에 걸쳐 늘어지면 끝 그림 없는 둘째 길(p1-04b · p1-05b, 대안)로 간다. 1 · 2 · 3 · 6번은 블렌더 렌더가 본길(라벨 · 낱말표를 지키려고 카메라 키까지 풀어 둠 — 렌더는 이 꾸러미 밖)이고, 시댄스 판 넷은 콘티의 「질감 맞추기 (나) 길」 재료로 대안에 둔다. 카메라 문장은 4-1절 표(원본 프레임 곡선, 01 2-1절)를 굽기 시트 규칙으로 다듬음 — 1번 고정은 긍정 문구, 2번 0.2° · 5번 0.4° 롤은 뺌, 6번 3.6°는 남김, 「around the can」 같은 도는 말은 뺌. 4번만 원본이 슬로모션. 말 없음 · 소리 끔(음악 · 사건 소리는 후반), 끝 1초 글자(omitok · 「다섯 가지 맛, 톡.」)는 후반 — 6번 시작 그림은 글자 없는 c6_first. TV 16:9 판은 가로 렌더가 없어 아직 판이 없다(가로 시작 · 끝 그림 렌더 필요), 6초 판은 본편 컷의 앞부분을 잘라 써서 판이 없다(콘티 5절). 캔 「누구」 문장은 오미톡 리허설 판(omitok-20261029)과 같은 꼴. 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p1",
+ "이름": "1번 음료 제품 광고 「오미톡」",
+ "비율": "9:16",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p1p3/렌더/최종",
+ "공통": {
+  "장르": "a premium Korean sparkling-drink commercial — photoreal studio macro product footage of an omija soda can and its drink",
+  "누구": {
+   "CAN": "the soda can exactly as in the first frame — dark navy with its printed label (the round ruby emblem with white berries, the white wordmark, the small lettering and the ruby band at the bottom); the printing, logo and letters never change, move, melt or multiply, the can never changes shape, and no new text appears on it.",
+   "CAN_TOP": "the can's top exactly as in the first frame — a pale silver aluminium lid with its rolled rim, the pull tab and the drinking opening; the metal never bends, melts or changes shape, and no text or logo appears on it.",
+   "DRINK": "the drink is a clear, sparkling, translucent ruby-red liquid with fine bubbles, glowing ruby when lit from behind — exactly the color of the first frame, never brown like cola.",
+   "GLASS": "the clear, thin-walled drinking glass exactly as in the first frame — its thin rim, the tiny condensation droplets on its wall and the clear ice cubes inside; it never changes shape.",
+   "COOLER": "the cooler exactly as in the first frame — a white lid with a recessed handle slot, a navy body and a thin navy-blue LED glow along the seam between them; inside, crushed ice around the can.",
+   "CAN_REVEAL": "the can revealed inside the cooler once the lid lifts — the same dark navy can with its printed label, its round ruby emblem with white berries facing the camera, frosted with cold; the printing, logo and letters never change, move, melt or multiply, and no new text appears on it.",
+   "VAPOR": "any vapor is thin, translucent white cold mist from the ice — never smoke."
+  },
+  "보기": "LOOK: photoreal studio macro product footage — shallow depth of field, crisp highlights, real liquid and ice physics; keep the first frame's light, colors, brightness and white balance to the very end — its deep navy, ruby and soft pastel backlight; every printed letter, logo and object that is in the first frame keeps its exact shape and position and is never redrawn; no new text, letters, numbers or logos appear anywhere; no hands, no people, and no cans or glasses beyond those in the first frame.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p1-04",
+   "컷": [
+    "4"
+   ],
+   "길이": 4,
+   "설명": "붓기 극접사(드롭) — 기울인 캔 입구에서 루비 줄기가 오른쪽 아래로 쏟아지는 슬로모션, 첫 프레임부터 6.7% 다가가며 점점 느려짐. 시작 c4_first · 끝 c4_f64(같은 장면을 카메라 키 마지막 프레임으로 렌더) — 2.2초에 끝 구도에 닿고 남은 1.8초는 그 구도로 버팀(앞 2.17초를 씀)",
+   "샷": [
+    {
+     "그림": "c4_first.png",
+     "끝그림": "c4_f64.png",
+     "쓰는초": 2.17,
+     "누구": [
+      "CAN_TOP",
+      "DRINK"
+     ],
+     "동작": "Extreme close-up of the top of the tilted can, seen from below at an angle: its pale silver lid fills the upper left of the frame, the pull tab peeking in at the top left edge and the bright rolled rim curving down on the right; from the dark drinking opening at the left, a thick, round, glossy stream of the ruby drink pours out and runs diagonally down to the lower right corner, its core glowing ruby where the light shines through it, with tiny bubbles inside and sharp highlights along its edges, against a deep navy backdrop; a faint cold mist hangs at the lower left. The stream pours steadily for the whole clip as one smooth, unbroken column — it never splashes, breaks or changes direction. In high-speed-camera slow motion the liquid is visibly flowing the whole time: fine ripples and the tiny bubbles inside crawl slowly down the length of the stream, and the sharp highlights along its edges shimmer and slide downward with them, while the column itself keeps its exact shape, thickness and position. The can itself stays still; apart from the flowing liquid, only the camera moves.",
+     "카메라": "the camera physically moves forward toward the stream from the very first frame — fastest at the start and steadily easing out: the lid and the stream grow by about 4% in the first second and about 6.7% by 2.2 s, the camera heading toward a point low in the frame (44% across, 84% down), so the picture drifts up by about 2% of its height. The whole move is finished by about 2.2 s, when the camera has reached exactly the framing of @이미지 2; from then until the very last frame the camera itself does not move at all — the framing stays locked on @이미지 2 — while the liquid never stops: the stream keeps pouring and its ripples keep crawling down in slow motion; one single camera move early in the clip, then a motionless camera over a still-flowing stream; never a cut, a dissolve or a second move. Smooth as a slider: no shake, no pan, no tilt; focus stays on the stream just below the opening.",
+     "슬로": true
+    }
+   ],
+   "끝그림말": "@이미지 2 is the exact last frame: the camera reaches exactly that framing early, by about 2.2 s, and then holds that framing — the camera motionless, the liquid still flowing — to the very end."
+  },
+  {
+   "id": "p1-04b",
+   "컷": [
+    "4"
+   ],
+   "길이": 4,
+   "설명": "p1-04 둘째 길 — 같이 낸다(무제한 날 크레딧 0, 10-31 Fable): 끝 그림 없이 원본 빠르기 곡선을 글로(같은 시작 그림). 받은 뒤 14_카메라곡선.py로 재어 4번 2.2초 배율 1.05 이상인 판을 고른다 · p1-04가 다가감을 4초에 걸쳐 늘이거나(재기 배율이 2.2초에 1.05 밑) 끝 그림 앞에서 녹임 · 튐이 생길 때: 끝 그림 없이 원본 빠르기 곡선을 글로(같은 시작 그림)",
+   "샷": [
+    {
+     "그림": "c4_first.png",
+     "쓰는초": 2.17,
+     "누구": [
+      "CAN_TOP",
+      "DRINK"
+     ],
+     "동작": "Extreme close-up of the top of the tilted can, seen from below at an angle: its pale silver lid fills the upper left of the frame, the pull tab peeking in at the top left edge and the bright rolled rim curving down on the right; from the dark drinking opening at the left, a thick, round, glossy stream of the ruby drink pours out and runs diagonally down to the lower right corner, its core glowing ruby where the light shines through it, with tiny bubbles inside and sharp highlights along its edges, against a deep navy backdrop; a faint cold mist hangs at the lower left. The stream pours steadily for the whole clip as one smooth, unbroken column — it never splashes, breaks or changes direction. In high-speed-camera slow motion the liquid is visibly flowing the whole time: fine ripples and the tiny bubbles inside crawl slowly down the length of the stream, and the sharp highlights along its edges shimmer and slide downward with them, while the column itself keeps its exact shape, thickness and position. The can itself stays still; apart from the flowing liquid, only the camera moves.",
+     "카메라": "the camera physically moves forward toward the stream from the very first frame — fastest at the start and steadily easing out: the lid and the stream grow by about 2% at 0.5 s, 4% at 1 s, 5.5% at 1.5 s and 6.4% at 2 s, then the camera barely creeps on to the end; it heads toward a point low in the frame (44% across, 84% down), so the picture drifts up by about 2% of its height. Smooth as a slider: no shake, no pan, no tilt; focus stays on the stream just below the opening.",
+     "슬로": true
+    }
+   ]
+  },
+  {
+   "id": "p1-05",
+   "컷": [
+    "5"
+   ],
+   "길이": 4,
+   "설명": "잔 가장자리 높이 접사 — 루비 음료에 거품 띠가 차오르고 기포가 촘촘히 오름, 오른쪽에 가는 붓는 줄기. 첫 프레임부터 왼쪽으로 고르게 미끄러지며 8.4% 다가감(점점 느려짐). 시작 c5_first · 끝 c5_f64 — 2.2초에 끝 구도에 닿고 버팀(앞 2.17초를 씀)",
+   "샷": [
+    {
+     "그림": "c5_first.png",
+     "끝그림": "c5_f64.png",
+     "쓰는초": 2.17,
+     "누구": [
+      "GLASS",
+      "DRINK"
+     ],
+     "동작": "A close-up at the height of the glass rim: the thin clear rim of the glass runs across the top of the frame; behind the clear glass, soft blurred bars of pale lavender-blue and pink light glow, and near the right edge a thin dark-ruby stream pours straight down into the glass. The empty upper part of the glass wall is dotted with tiny condensation droplets that stay where they are; below, the glass is filled with the ruby drink and clear ice cubes, one large cube tilted at the lower left, topped by a band of fine white, faintly pink foam. From the first frame to the last, countless fine bubbles stream upward through the ruby drink and the foam band seethes in place at the same height from the first frame to the last — tiny bubbles bursting and re-forming along its ragged top edge, a little extra fizz where the thin stream lands — as the stream keeps pouring in, steady and unbroken; the ice cubes stay in place, bobbing only very slightly.",
+     "카메라": "from the very first frame the camera physically glides to the left while moving forward: the glass rim, the droplets on the glass and the ice slide to the right across the frame at an even pace — about 12.6% of the frame width by 2.2 s — while everything grows by about 8.4%, the forward move fastest at the start and easing out (about 4.9% after one second). The whole move is finished by about 2.2 s, when the camera has reached exactly the framing of @이미지 2; from then until the very last frame the camera itself does not move at all — the framing stays locked on @이미지 2 — while the drink never stops moving: the bubbles keep streaming up and the foam keeps seething; one single camera move early in the clip, then a motionless camera over a still-fizzing drink; never a cut, a dissolve or a second move. Smooth as a slider: no shake, no tilt; focus stays on the droplets on the glass wall and the rising bubbles."
+    }
+   ],
+   "끝그림말": "@이미지 2 is the exact last frame: the camera reaches exactly that framing early, by about 2.2 s, and then holds that framing — the camera motionless, the bubbles still rising — to the very end."
+  },
+  {
+   "id": "p1-05b",
+   "컷": [
+    "5"
+   ],
+   "길이": 4,
+   "설명": "p1-05 둘째 길 — 같이 낸다(무제한 날 크레딧 0, 10-31 Fable): 끝 그림 없이 원본 빠르기 곡선을 글로(같은 시작 그림). 받은 뒤 14_카메라곡선.py로 재어 5번 2.2초 옆 이동 폭 9% 이상인 판을 고른다 · p1-05가 옆 흐름을 4초에 걸쳐 늘이거나(재기 옆 이동이 2.2초에 폭 9% 밑) 2초 앞에서 멈춰 버릴 때, 끝에서 녹임 · 튐이 생길 때: 끝 그림 없이 옆으로 끝까지 고르게(원본은 컷 밖으로 이어지던 움직임)",
+   "샷": [
+    {
+     "그림": "c5_first.png",
+     "쓰는초": 2.17,
+     "누구": [
+      "GLASS",
+      "DRINK"
+     ],
+     "동작": "A close-up at the height of the glass rim: the thin clear rim of the glass runs across the top of the frame; behind the clear glass, soft blurred bars of pale lavender-blue and pink light glow, and near the right edge a thin dark-ruby stream pours straight down into the glass. The empty upper part of the glass wall is dotted with tiny condensation droplets that stay where they are; below, the glass is filled with the ruby drink and clear ice cubes, one large cube tilted at the lower left, topped by a band of fine white, faintly pink foam. From the first frame to the last, countless fine bubbles stream upward through the ruby drink and the foam band rises a little in the first second — by about a finger's width — then holds that height, seething, tiny bubbles bursting and re-forming along its ragged top edge, as the stream keeps pouring in, steady and unbroken; the ice cubes stay in place, bobbing only very slightly.",
+     "카메라": "from the very first frame to the last the camera physically glides to the left at an even pace while moving forward: the glass rim, the droplets on the glass and the ice slide to the right across the frame by about 5.8% of the frame width every second, without slowing; the forward move is fastest at the start and eases out — everything grows by about 4.9% at 1 s and 8.1% at 2 s, then barely creeps on. Smooth as a slider: no shake, no tilt; focus stays on the droplets on the glass wall and the rising bubbles."
+    }
+   ]
+  },
+  {
+   "id": "p1-01",
+   "컷": [
+    "1"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "1번 아이스박스 뚜껑 열림 · 김 — 고정(원본 0.2% 안) — 대안 (나) 길(콘티 3 · 4절 「질감 맞추기」): 본길은 블렌더 렌더(카메라 키 풀어 둠)다. 4 · 5번을 받은 뒤 블렌더 렌더(최종이 없으면 렌더/움직임/c?_시험540s.mp4)와 경계 3→4 · 5→6을 나란히 놓아 질감이 튀면 여섯 컷을 시댄스로 맞출 재료 — 무제한 날 안에 내 두면 크레딧 0, 길을 바꾸는 것은 유호님께 여쭙는다. 라벨 · 낱말표가 조금이라도 무너지면 쓰지 않는다",
+   "샷": [
+    {
+     "그림": "c1_first.png",
+     "쓰는초": 1.13,
+     "누구": [
+      "COOLER",
+      "CAN_REVEAL",
+      "VAPOR"
+     ],
+     "동작": "A low, front-on view at the height of the cooler's front edge. At first the white lid fills the top two-thirds of the frame — a recessed handle slot across its face with a soft navy-blue glow deep inside the slot — a thin navy-blue LED line glows along the seam, and the dark navy body of the cooler fills the bottom. From the very first frame the lid lifts and tips back away from the camera; by about 0.8 s its front face has risen toward the top of the frame, opening a wide gap: inside, the frosted can stands upright in crushed ice, its round ruby emblem facing the camera, lit by cold navy-blue LED light, while thin white cold vapor spills out over the front edge and drifts. Once open, the lid stays tipped back in that raised position for the rest of the clip, perfectly still; only the vapor keeps drifting. The can and the ice stay still.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, at the height of the cooler's front edge — the cooler never shifts; no push-in, no zoom, no drift, no shake; only the lid and the vapor move. Focus is on the lid handle at first and, as the lid rises away by about 0.5 s, settles on the revealed can, which keeps getting sharper to the end."
+    }
+   ]
+  },
+  {
+   "id": "p1-02",
+   "컷": [
+    "2"
+   ],
+   "길이": 5,
+   "대안": true,
+   "설명": "2번 캔 몸통 극접사(세로 낱말표 · 물방울 · 성에) — 옆으로 고르게 12.5% + S자로 6.6% 다가감 — 대안 (나) 길(콘티 3 · 4절 「질감 맞추기」): 본길은 블렌더 렌더(카메라 키 풀어 둠)다. 4 · 5번을 받은 뒤 블렌더 렌더(최종이 없으면 렌더/움직임/c?_시험540s.mp4)와 경계 3→4 · 5→6을 나란히 놓아 질감이 튀면 여섯 컷을 시댄스로 맞출 재료 — 무제한 날 안에 내 두면 크레딧 0, 길을 바꾸는 것은 유호님께 여쭙는다. 라벨 · 낱말표가 조금이라도 무너지면 쓰지 않는다 · 라벨 · 작은 글자 위험이 커 두 번 낸다(10-31 Fable)",
+   "샷": [
+    {
+     "그림": "c2_first.png",
+     "쓰는초": 3.3,
+     "누구": [
+      "CAN"
+     ],
+     "동작": "Extreme macro of the side of the can: the big white vertical wordmark stands on the left half of the frame, reading from bottom to top, on the dark navy can body covered in large clear water droplets, with clumps of white frost along the left edge, the bottom and the right side, and a ruby band across the bottom of the frame; a cool pale-blue rim light glows along the left edge. One or two water droplets slowly roll down the can, sliding over the printed letters without disturbing them — the wordmark stays crisp and every letter keeps its exact shape, spacing and place on the can; nothing else changes.",
+     "카메라": "from the very first frame to the last the camera glides smoothly to the left while slowly moving forward: the can surface, its wordmark and the droplets slide to the right across the frame at an even pace — about 12.5% of the frame width over 3.3 s — and the picture drifts down by about 2.4% of its height; the forward move follows an S-curve — very slow for the first half second (0.7%), fastest between 1.0 and 2.5 s (4.3% at 2 s), easing out after 3 s (6.2% at 3 s, about 6.6% by the end). Smooth as a slider — no shake; shallow depth of field, focus stays on the vertical wordmark."
+    }
+   ]
+  },
+  {
+   "id": "p1-03",
+   "컷": [
+    "3"
+   ],
+   "길이": 6,
+   "대안": true,
+   "설명": "3번 젖은 반사 바닥 위 캔 셋 · 네온 역광 — 오른쪽으로 미끄러짐 · 1.95–2.6초 초점 넘김 · 3.2초부터 다가감(뒤 캔 +20%) — 대안 (나) 길(콘티 3 · 4절 「질감 맞추기」): 본길은 블렌더 렌더(카메라 키 풀어 둠)다. 4 · 5번을 받은 뒤 블렌더 렌더(최종이 없으면 렌더/움직임/c?_시험540s.mp4)와 경계 3→4 · 5→6을 나란히 놓아 질감이 튀면 여섯 컷을 시댄스로 맞출 재료 — 무제한 날 안에 내 두면 크레딧 0, 길을 바꾸는 것은 유호님께 여쭙는다. 라벨 · 낱말표가 조금이라도 무너지면 쓰지 않는다 · 라벨 · 작은 글자 위험이 커 두 번 낸다(10-31 Fable)",
+   "샷": [
+    {
+     "그림": "c3_first_v2.png",
+     "쓰는초": 4.37,
+     "누구": [
+      "CAN"
+     ],
+     "동작": "On a wet, glossy black floor the hero can stands sharp in the middle of the frame, beaded with droplets and mirrored in the floor; a big blurred navy can stands in the left foreground, its edge lit soft pink-red by the neon, and another can stands blurred far behind on the right; tall vertical neon bars of white, ruby and soft pink glow out of focus behind them. The cans never move — only the camera and the focus move.",
+     "카메라": "the camera is already gliding sideways to the right at the first frame: the blurred foreground can slides out of the frame on the left by about 0.5 s; the sharp hero can slides left at an even speed, about a third of the frame width in the first 1.5 s, reaching the left edge of the frame and drifting on, half out of the picture; the far can on the right drifts left only about half as fast and slows down after 2.0 s, ending a little right of center. Between 1.95 and 2.6 s the focus racks from the hero can to the far can (both are soft around 2.2 s; the far can is sharpest by about 3.6 s). From 3.2 s the camera moves forward, faster and faster, so that by about 4.4 s the far can has grown by about 20%, and it keeps creeping forward to the end. Perfectly smooth — no shake."
+    }
+   ]
+  },
+  {
+   "id": "p1-06",
+   "컷": [
+    "6"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "6번 기울인 캔 윗부분 엠블럼 극접사 — 고른 빠르기로 왼쪽 16% · 아래 3.7% · 반시계 3.6° · 다가감 1%(끝 1초 글자는 후반, 시작 그림은 글자 없는 c6_first) — 대안 (나) 길(콘티 3 · 4절 「질감 맞추기」): 본길은 블렌더 렌더(카메라 키 풀어 둠)다. 4 · 5번을 받은 뒤 블렌더 렌더(최종이 없으면 렌더/움직임/c?_시험540s.mp4)와 경계 3→4 · 5→6을 나란히 놓아 질감이 튀면 여섯 컷을 시댄스로 맞출 재료 — 무제한 날 안에 내 두면 크레딧 0, 길을 바꾸는 것은 유호님께 여쭙는다. 라벨 · 낱말표가 조금이라도 무너지면 쓰지 않는다",
+   "샷": [
+    {
+     "그림": "c6_first.png",
+     "쓰는초": 2.23,
+     "누구": [
+      "CAN"
+     ],
+     "동작": "Extreme close-up of the upper front of the tilted can: the round ruby emblem with its white ring and five white berries on a stem fills the upper left, the white wordmark runs diagonally across the lower right, cut off by the frame edge, with small lettering below it, on the dark navy can; a long soft light streak runs along the can's axis at the upper right against a deep blue backdrop. The can itself never moves — only the camera moves, and the light streak glides a little across the curved metal as it does.",
+     "카메라": "a smooth slide at one even pace from the very first frame to the last: the emblem and the wordmark move left by about 16% of the frame width and down by about 3.7% while the picture turns counter-clockwise by about 3.6°, with a barely noticeable 1% push-in. No shake; focus stays on the emblem."
+    }
+   ]
+  }
+ ]
+}

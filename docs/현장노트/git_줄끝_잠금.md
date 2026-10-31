@@ -27,6 +27,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 공간 정리가 추적 파일과 안쪽 git 클론까지 지운다 → `git ls-files` 경로와 `.git` 든 폴더를 목록에서 뺀다 ([자세히](#공간-정리가-추적-파일을-지운다))
 - junction이 든 워크트리를 `rm -rf`로 지우면 공용 `node_modules`까지 지워진다 → 링크부터 끊고 지운다 ([자세히](#junction이-든-워크트리를-통째로-지우면-공용-node_modules가-지워질-수-있다))
 - 새 세션 워크트리에는 docs/캐릭터·홍보물·라디오가 없다(10-31부터 git 훅이 만들 때 뺀다) → 그 폴더가 필요하면 `node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행`(15초쯤) ([자세히](#세션-워크트리가-가볍게를-빠뜨려-사본마다-2gb가-그대로-쌓인다--10-31부터-git-훅이-만들-때-뺀다-2026-10-31-claude))
+- 그래서 앱의 「기준 가지로 맞추기」 도구는 세션 워크트리를 sparse라 거절한다 → origin 최신은 `node tools/바로올리기.js 따라가기 --실행`으로 받는다 ([자세히](#앱의-기준-가지로-맞추기sync_with_base_branch가-가벼운-워크트리를-거절한다-2026-11-01-claude))
 
 ## 목차
 
@@ -81,6 +82,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 바로올리기는 작업본과 HEAD(바탕)의 차이만 origin 위에 새 커밋으로 쌓는다 — HEAD에 이미 든 로컬 커밋은 보지 않는다.
 - 고침: 로컬 커밋을 가지로 남기고(`git branch <이름> HEAD` — 검수 사슬이 그 해시를 다시 읽는다) `git reset --mixed <로컬 커밋 앞 바탕>`으로 파일만 남긴 뒤 같은 경로로 바로올리기. 올라간 커밋은 새 해시 하나라, 그 해시를 원천으로 적는 곳(talk 매니페스트 `sources.appsscript` 등)은 올린 뒤 바이트 같음을 대조하고 바꿔 적는다.
 - 다시 확인: 미리 보기 「올릴 커밋 … 9파일 · 내 판」 → `df5170bec` push, 공용 작업본 · 운영 사본 따라감.
+
+### 앱의 「기준 가지로 맞추기」(sync_with_base_branch)가 가벼운 워크트리를 거절한다 (2026-11-01 Claude)
+- 증상: 세션 워크트리에서 origin 최신을 받으려고 앱 도구 `sync_with_base_branch`를 부르니 「The worktree is a sparse checkout … the app won't merge into it」로 거절됐다.
+- 원인: 새 세션 워크트리는 만들 때 git 훅이 큰 미디어 폴더를 sparse로 뺀다(`tools/새워크트리가볍게.js`, 10-31) — 앱은 sparse 사본에 병합하지 않는다.
+- 고침: 이 저장소에서는 앱 도구 대신 `node tools/바로올리기.js 따라가기`(미리 보기 → `--실행`)로 받는다. 미커밋이 없고 가지에 따로 쌓은 커밋이 없으면 `git fetch origin master` 뒤 `git merge --ff-only origin/master`도 된다(sparse로 빠진 폴더는 그대로 빠진 채).
+- 다시 확인: `git log --oneline HEAD..origin/master`가 비고, `git status`에 sparse 폴더가 지워진 것으로 나오지 않는다.
 
 ## 줄끝(CRLF·LF)
 

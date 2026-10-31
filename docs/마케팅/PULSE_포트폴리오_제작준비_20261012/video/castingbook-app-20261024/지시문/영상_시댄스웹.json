@@ -1,0 +1,555 @@
+{
+ "메모": "8번 앱 소개 30초(캐스팅북) — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-31, 생성기 ../지시문_시댄스웹.py). 시작 그림은 확정 이미지 콘티(git 밖 콘티/p8/ — 정지컷 · 합성판 컷/ · 받음/)를 시댄스/에 모은 것(1920×1080, 합성기와 같은 바꿈). 폰 화면 컷 여섯은 초록 화면 그대로(녹화는 후반), 인쇄물 컷은 하린 사진을 붙인 합성판(흔들리면 초록 대안). 카메라는 01 2-1절 원본 실측 — 모두 고정, 4 · 17번 다가감은 원본도 편집기 디지털 줌이라 후반에서 원 곡선 그대로. 19번만 소리 켬(손님 말 · 소연 웃음, 입 맞춤 없음). 내레이션 · 노래 · 글자 · 제목 · 끝 화면(21번)은 후반. 꾸러미는 ../../../시댄스무제한/웹꾸러미.py.",
+ "편": "p8",
+ "이름": "8번 앱 소개 「캐스팅북」",
+ "비율": "16:9",
+ "그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p8/시댄스",
+ "공통": {
+  "장르": "a cinematic live-action Korean app commercial",
+  "누구": {
+   "SOYEON": "the same Korean woman as in the first frame, in every frame — collarbone-length dark brown hair with softly curled ends, a light-blue chambray shirt under a plain canvas work apron, exactly as in the first frame. She does not speak; her lips stay closed unless this shot says otherwise.",
+   "HANDS": "Soyeon's own hands and light-blue chambray shirt cuffs, exactly as in the first frame.",
+   "PHONE": "her black smartphone, held exactly as in the first frame. Its screen is a flat, evenly lit chroma-green area with small white crosses in a regular grid — it stays plain green with the same white crosses, fixed to the glass, for the whole clip: never draw an app, a picture, text, a glow or a reflection on it, and the finger's edges stay crisp against the green.",
+   "WALKER": "a passer-by seen only from the waist down, exactly as in the first frame — dark navy trousers and white sneakers — carrying a white paper shopping bag with thin rope handles.",
+   "PAIR": "two passers-by seen from behind, exactly as in the first frame — on the left a woman with a short dark bob in a long camel coat, on the right a man in a gray padded jacket and dark trousers. Their faces are never seen.",
+   "CUSTOMER": "a woman customer seen from behind over her shoulder, exactly as in the first frame — dark shoulder-length hair, an oatmeal knit sweater. Her face stays hidden the whole time.",
+   "GUESTS": "two customers at the round table seen from behind and above, exactly as in the first frame — a man in a dark jacket and a woman with a dark bob in a cream cardigan. Their faces stay turned away as in the first frame."
+  },
+  "보기": "LOOK: true-to-life cinematic commercial footage with a shallow depth of field and natural motion blur; keep the first frame's own light, colors, brightness and white balance exactly to the very end — no new light, no flicker, no color shift. Every printed photo in the scene (on a bag, a window poster, a sticker, a street banner or a wall frame) is a flat, still print whose picture never moves or changes. No added text, letters, numbers, logos or captions anywhere; never add a person or an object that is not in the first frame.",
+  "소리": "SOUND: silent clip — no dialogue, no narration, no music."
+ },
+ "판": [
+  {
+   "id": "p8-01",
+   "컷": [
+    "1"
+   ],
+   "길이": 4,
+   "설명": "카페 손님 자리 · 의자 뒤 머리 높이 — 머리를 젖힌 소연의 거꾸로 얼굴(뒤는 민무늬 회청 — 등받이는 그림에 없음), 두 손에 든 폰(뒷면), 0.5초 심심한 숨",
+   "샷": [
+    {
+     "그림": "C01.png",
+     "쓰는초": 1.44,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Seen from right behind her chair at head height: Soyeon has slumped back with her head tipped far back, so her face is seen upside down and fills the lower half of the frame, her hair hanging down toward the bottom edge against the plain blue-gray background — only her face, hair, hands, phone and that plain background are in the frame; she holds her phone up above her face in both hands (only its back is seen) and stares at it with a bored, blank face. At about 0.5 s she lets out one slow, bored breath — her chest sinks a little, her lips stay closed — while her eyes keep drifting over the screen; otherwise she stays almost still. The soft blue-gray background stays featureless.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her upside-down face, the phone and the soft blue-gray background never shift; no push-in, no zoom, no drift, no shake; only her eyes, her breath and her fingers move."
+    }
+   ]
+  },
+  {
+   "id": "p8-02",
+   "컷": [
+    "2"
+   ],
+   "길이": 4,
+   "설명": "와이드 — 조명 꺼진 빈 카페, 가운데 손님 자리에 작게 젖혀 앉은 소연, 창밖 가로등에 작은 하린 배너(13번 복선) · 먼 행인 하나",
+   "샷": [
+    {
+     "그림": "C02.jpg",
+     "쓰는초": 0.97,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "A wide shot of the empty café on a gray afternoon, all its lamps off: Soyeon sits small near the middle of the room, slumped far back in a wooden chair on the customer side of the counter, holding her phone up above her face and scrolling lazily with her thumb. Outside the big windows the gray street is quiet; the small banner on the street lamp outside hangs still, and one tiny passer-by walks slowly along the far sidewalk. Nothing else moves.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the tables, chairs, windows and counter never shift; no push-in, no zoom, no drift, no shake; only Soyeon's hand and the far passer-by move."
+    }
+   ]
+  },
+  {
+   "id": "p8-03",
+   "컷": [
+    "3"
+   ],
+   "길이": 4,
+   "설명": "폰 앞 고정 — 오른손에 세로로 든 폰(초록 화면), 왼손 검지가 두 번 올려 넘김(원본 손가락: 0.13초 뗌 · 0.77초 다시 닿음 · 1.13초 뗌) — 녹화 R3은 후반",
+   "샷": [
+    {
+     "그림": "C03.png",
+     "쓰는초": 1.7,
+     "누구": [
+      "HANDS",
+      "PHONE"
+     ],
+     "동작": "Close on Soyeon's right hand holding her phone upright in front of the softly blurred café window; the tip of her left index finger already rests on the lower part of the green screen. The finger flicks quickly upward and lifts off at about 0.13 s, hovers just above the glass, touches the lower part of the screen again at about 0.77 s, flicks upward once more and lifts off at about 1.13 s, then hovers still just above the screen until the end.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, and the phone stays perfectly still in her hand — the screen's position, angle and size never change and the blurred window behind never shifts; no push-in, no zoom, no drift, no shake; only the finger moves."
+    }
+   ]
+  },
+  {
+   "id": "p8-04",
+   "컷": [
+    "4"
+   ],
+   "길이": 4,
+   "설명": "거꾸로 얼굴 클로즈업 — 떠돌던 눈이 0.3초에 한 곳에 멈춤. 다가감(0.88초에 4.5%)은 원본도 편집기 디지털 줌 — 영상은 고정, 줌은 후반에서 원 곡선 그대로(02_콘티 2-1절)",
+   "샷": [
+    {
+     "그림": "C04.png",
+     "쓰는초": 1.83,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Close on Soyeon's upside-down face, exactly as in the first frame — her head tipped far back, her hair hanging down toward the bottom of the frame, her forearms and the edge of her phone at the top edge. Her eyes, drifting over the phone above her, stop and lock onto one spot on it at about 0.3 s; she goes completely still, staring, lips closed — only one slow blink at about 1.2 s.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her face, the phone edge and the soft blue-gray background never shift; no push-in, no zoom, no drift, no shake; only her eyes move."
+    }
+   ]
+  },
+  {
+   "id": "p8-05",
+   "컷": [
+    "5"
+   ],
+   "길이": 4,
+   "설명": "가게 밖 보도 높이 — 행인 다리가 오른쪽으로 지나가고(0.6초에 나감) 뒤로 든 쇼핑백 앞면 하린(풀밭 · 누워서 웃음)이 따라 지나감(1.0초에 나감 — 손에 들려 있어 원본의 개처럼 늦게 남지 못함), 창 너머 젖혀 앉은 소연",
+   "샷": [
+    {
+     "그림": "C05.jpg",
+     "쓰는초": 1.5,
+     "누구": [
+      "WALKER",
+      "SOYEON"
+     ],
+     "동작": "Low on the sidewalk outside the café window, just above the pavement: the walker strides to the right across the frame — the legs leave the frame on the right at about 0.6 s. The white paper shopping bag in the walker's trailing hand swings gently along behind, its front — a printed photo of a smiling young woman lying on grass — facing the camera the whole time, and it leaves the frame on the right at about 1.0 s. Behind the glass, Soyeon stays slumped back in her chair with her phone held up, almost still. The yellow ginkgo leaves on the pavement stay where they are.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the window, the pavement and Soyeon behind the glass never shift; no push-in, no zoom, no drift, no shake; only the walker and the bag move."
+    }
+   ]
+  },
+  {
+   "id": "p8-06",
+   "컷": [
+    "6"
+   ],
+   "길이": 4,
+   "설명": "폰 화면 극접사(초록) — 오른쪽 엄지가 천천히 아래로 조금 끌어(원본 화면 높이의 1/18) 1.4초에 멈춤 — 녹화 R6(하린 대표 사진)은 후반",
+   "샷": [
+    {
+     "그림": "C06.png",
+     "쓰는초": 1.37,
+     "누구": [
+      "HANDS",
+      "PHONE"
+     ],
+     "동작": "An extreme close-up of the phone screen filling most of the frame, held in Soyeon's left hand at the left edge; her right thumb rests on the right side of the green screen. From the first frame the thumb drags slowly downward by only a short distance — about a twentieth of the screen height — reaching that spot by about 1.4 s, then rests there, still, on the glass until the end.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, and the phone stays perfectly still in her hand — the screen's position, angle and size never change and the blurred background at the edges never shifts; no push-in, no zoom, no drift, no shake; only the finger moves."
+    }
+   ]
+  },
+  {
+   "id": "p8-07",
+   "컷": [
+    "7"
+   ],
+   "길이": 4,
+   "설명": "정면 미디엄(첫 · 끝 그림) — 젖혀 있던 소연이 0.8초까지 바로 앉아 폰을 가슴 높이로, 1.6초 눈썹이 올라가며 입술이 살짝 열림 → 끝 그림 그대로 멈춤",
+   "샷": [
+    {
+     "그림": "C07.png",
+     "쓰는초": 2.47,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "A medium shot from seated eye level in front of the café counter: at first Soyeon is slumped far back in her chair, so only her two hands holding the phone and the tip of her chin show at the bottom of the frame. From the first frame she sits up straight in one smooth movement, reaching the upright pose by about 0.8 s with the phone held at chest height in both hands, and looks down at the screen; at about 1.6 s her eyebrows lift slightly and her lips part a little in quiet surprise; then she holds that pose, still, until the end — exactly as in the last frame.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the counter, the shelves, the espresso machine and the drinks fridge never shift; no push-in, no zoom, no drift, no shake; only Soyeon moves.",
+     "끝그림": "C07e.png"
+    }
+   ]
+  },
+  {
+   "id": "p8-08",
+   "컷": [
+    "8"
+   ],
+   "길이": 4,
+   "설명": "길 건너 와이드 — 옆 가게 유리창 포스터 하린(스킨케어) 앞, 뒷모습 둘 — 왼쪽 사람이 0.3초에 포스터를 한 번 가리키고(손은 포스터 밖) 옆 사람에게 기울면 남자가 0.7초에 고개를 기울임",
+   "샷": [
+    {
+     "그림": "C08.jpg",
+     "쓰는초": 0.83,
+     "누구": [
+      "PAIR"
+     ],
+     "동작": "A wide shot from across the quiet street: the two passers-by stand at the shop window with their backs to the camera, looking at the poster behind the glass — a printed photo of a smiling young woman touching her cheek. The woman in the camel coat, already leaning toward the poster, points at it once at about 0.3 s with her hand staying just outside the poster's edge, then leans toward the man as if to say something; he tilts his head toward her by about 0.7 s. Their faces stay hidden and nothing passes in front of the poster. The blurred bicycle in the foreground stays still.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the shop front, the street and the bicycle in the foreground never shift; no push-in, no zoom, no drift, no shake; only the two passers-by move."
+    }
+   ]
+  },
+  {
+   "id": "p8-09",
+   "컷": [
+    "9"
+   ],
+   "길이": 4,
+   "설명": "소연 클로즈업 — 바로 앉아 눈을 내리깔고 폰에 집중, 0.6초 엄지 한 번 · 1.2초 느린 깜빡임",
+   "샷": [
+    {
+     "그림": "C09.png",
+     "쓰는초": 2.07,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "A close-up: Soyeon sits upright with her eyes lowered to the phone in her hand at the lower left, absorbed in it. Her thumb scrolls once with a small movement at about 0.6 s and she blinks slowly once at about 1.2 s; otherwise she stays still and focused, lips closed.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her face and the softly blurred shelves behind her never shift; no push-in, no zoom, no drift, no shake; only her eyes and her thumb move."
+    }
+   ]
+  },
+  {
+   "id": "p8-10",
+   "컷": [
+    "10"
+   ],
+   "길이": 4,
+   "설명": "비스듬한 폰 극접사(초록) — 오른쪽 아래 엄지가 0.1초부터 빠르게 쓸어 올리고 0.35초에 화면 밖으로 — 녹화 R10(장면 격자 흐름)은 후반",
+   "샷": [
+    {
+     "그림": "C10.png",
+     "쓰는초": 1.0,
+     "누구": [
+      "HANDS",
+      "PHONE"
+     ],
+     "동작": "An extreme close-up of the tilted phone screen, its top and bottom beyond the frame, held in Soyeon's hands; her thumb rests at the lower right corner of the green screen. At about 0.1 s the thumb flicks quickly up across the right part of the screen — fastest between 0.2 and 0.3 s — and lifts away out of the frame by about 0.35 s; then only the still phone and its green screen remain.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, and the phone stays perfectly still in her hand — the screen's position, angle and size never change and the blurred background at the left never shifts; no push-in, no zoom, no drift, no shake; only the finger moves."
+    }
+   ]
+  },
+  {
+   "id": "p8-11",
+   "컷": [
+    "11"
+   ],
+   "길이": 4,
+   "설명": "음료 냉장고 유리문 스티커 접사 — 하린(웃음), 움직임 없음(유리에 옅은 반사만)",
+   "샷": [
+    {
+     "그림": "C11.jpg",
+     "쓰는초": 0.67,
+     "누구": [],
+     "동작": "Close on the glass door of the drinks fridge beside the counter: a sticker on the glass shows a printed photo of a smiling young woman; behind the glass, bottles of milk and juice stand in cold white light. Nothing moves — the sticker stays a flat, still print; only a faint shimmer of reflection drifts slowly across the glass beside the sticker, never over the sticker itself.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the fridge door, the sticker and the bottles never shift; no push-in, no zoom, no drift, no shake; only the faint reflections on the glass move."
+    }
+   ]
+  },
+  {
+   "id": "p8-12",
+   "컷": [
+    "12"
+   ],
+   "길이": 4,
+   "설명": "오른손에 든 폰(초록) — 화면 가운데 닿아 있던 왼손 검지가 0.13초에 올려 넘기고 뗌 — 녹화 R12(「딸기 라떼 신메뉴」 · 01 하린)는 후반",
+   "샷": [
+    {
+     "그림": "C12.png",
+     "쓰는초": 0.83,
+     "누구": [
+      "HANDS",
+      "PHONE"
+     ],
+     "동작": "Soyeon holds the phone upright in her right hand; the tip of her left index finger already rests on the middle of the green screen, exactly as in the first frame. It flicks upward and lifts off at about 0.13 s, then hovers just above the glass, still, until the end.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, and the phone stays perfectly still in her hand — the screen's position, angle and size never change and the blurred café behind never shifts; no push-in, no zoom, no drift, no shake; only the finger moves."
+    }
+   ]
+  },
+  {
+   "id": "p8-13",
+   "컷": [
+    "13"
+   ],
+   "길이": 4,
+   "설명": "가로등 세로 배너 하린(소파 · 폰 보며 웃음) · 길 아래 다음 가로등에 같은 배너가 작게 — 배너는 팽팽히 고정(원본 나무 소매처럼), 나뭇잎만 살짝",
+   "샷": [
+    {
+     "그림": "C13.jpg",
+     "쓰는초": 0.84,
+     "누구": [],
+     "동작": "A quiet city street on a gray autumn afternoon: on the street lamp in the foreground hangs a tall vertical banner with a printed photo of a smiling young woman, and the same banner hangs small on the next lamp down the street. The banners hang perfectly still and taut — flat prints that never move; only the yellowing leaves on the trees stir very slightly in a light breeze; no cars or people appear.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the lamp posts, the buildings and the street never shift; no push-in, no zoom, no drift, no shake; only the leaves on the trees stir, very slightly."
+    }
+   ]
+  },
+  {
+   "id": "p8-14",
+   "컷": [
+    "14"
+   ],
+   "길이": 4,
+   "설명": "소연 클로즈업 — 0.3초 말 없는 감탄 숨(입술이 조금 더 열리고 눈이 살짝 커짐) · 빠져듦(숨 소리는 후반)",
+   "샷": [
+    {
+     "그림": "C14.png",
+     "쓰는초": 1.43,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "A close-up: Soyeon looks down at her phone, her lips already slightly parted. At about 0.3 s she draws in a small, soundless breath of wonder — her lips part a little more and her eyes widen slightly — and she stays drawn in, gazing at the screen without speaking, until the end.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her face and the softly blurred shelves behind her never shift; no push-in, no zoom, no drift, no shake; only her eyes and lips move."
+    }
+   ]
+  },
+  {
+   "id": "p8-15",
+   "컷": [
+    "15"
+   ],
+   "길이": 4,
+   "설명": "어깨 너머 비스듬한 폰(초록) — 왼손 검지가 0.40초에 화면 가운데를 눌러 0.47초까지, 뒤 뗌 — 녹화 R15(크게 보기) · 글자 1은 후반",
+   "샷": [
+    {
+     "그림": "C15.png",
+     "쓰는초": 1.13,
+     "누구": [
+      "HANDS",
+      "PHONE"
+     ],
+     "동작": "Seen over her shoulder, which stays a dark, soft blur at the left edge exactly as in the first frame: she holds the phone tilted in her right hand; her left index finger, raised just in front of the screen, moves in and taps the middle of the green screen at about 0.40 s, stays pressed until about 0.47 s, then lifts away and drifts back off the screen.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, and the phone stays perfectly still in her hand — the screen's position, angle and size never change and the softly blurred café behind never shifts; no push-in, no zoom, no drift, no shake; only the finger moves."
+    }
+   ]
+  },
+  {
+   "id": "p8-16",
+   "컷": [
+    "16"
+   ],
+   "길이": 4,
+   "설명": "소연 클로즈업 — 아래에서 오는 폰 빛, 0.3초 입꼬리에 작은 결심(입 다묾) — 글자 2는 후반",
+   "샷": [
+    {
+     "그림": "C16.png",
+     "쓰는초": 0.9,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "A close-up: Soyeon's face fills most of the frame, lit softly from below by the glow of the phone at the lower left; she looks down at the screen and, at about 0.3 s, a small, decided smile settles at the corners of her mouth, lips closed; then she stays still.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her face and the dark surroundings never shift; no push-in, no zoom, no drift, no shake; only her mouth and eyes move."
+    }
+   ]
+  },
+  {
+   "id": "p8-17",
+   "컷": [
+    "17"
+   ],
+   "길이": 4,
+   "설명": "폰 귀퉁이 극접사(초록) — 엄지가 0.67초에 화면으로 올라와 위 가운데(「+ 패키지」 자리)를 0.77~0.97초 누르고 1.0초에 뗌. 0.33초에 1.50배 다가감은 원본도 편집기 디지털 줌 — 영상은 고정, 녹화 R17(9배)을 붙인 뒤 후반 줌",
+   "샷": [
+    {
+     "그림": "C17.png",
+     "쓰는초": 1.37,
+     "누구": [
+      "HANDS",
+      "PHONE"
+     ],
+     "동작": "An extreme close-up of the lower left corner of the phone, held in Soyeon's left hand; the green screen fills the upper part of the frame and her thumb rests on the phone's lower edge. At about 0.67 s her thumb lifts and moves onto the screen, presses one spot in the upper middle of the green area (about 70% across the frame, a quarter of the way down) from about 0.77 s to 0.97 s, lifts off at about 1.0 s and moves back to rest on the phone's edge.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last, and the phone stays perfectly still in her hand — the screen's position, angle and size never change and the blurred background never shifts; no push-in, no zoom, no drift, no shake; only the finger moves."
+    }
+   ]
+  },
+  {
+   "id": "p8-18",
+   "컷": [
+    "18"
+   ],
+   "길이": 4,
+   "설명": "따뜻한 빛 — 소연의 손이 스팀 피처로 딸기 퓌레 유리잔에 찬 우유를 1.5초까지 붓고 멈춤(잔은 4/5 · 넘치지 않음), 분홍 구름이 퍼짐(라테아트 없음)",
+   "샷": [
+    {
+     "그림": "C18.png",
+     "쓰는초": 1.27,
+     "누구": [
+      "HANDS"
+     ],
+     "동작": "Warm, golden café light: a close-up of Soyeon's hands — one holds a tall glass with strawberry purée at the bottom, the other keeps pouring cold milk into it from a steel milk pitcher in a steady stream for the first 1.5 s — the milk swirls into the red purée and a soft pink cloud spreads up through the glass, which fills to about four fifths and never overflows; at about 1.5 s she tilts the pitcher back so the stream stops, and both hands hold still. The surface stays plain, with no pattern drawn on it.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the glass, the counter and the warm background never shift; no push-in, no zoom, no drift, no shake; only the hands, the pitcher and the milk move."
+    }
+   ]
+  },
+  {
+   "id": "p8-19",
+   "컷": [
+    "19"
+   ],
+   "길이": 4,
+   "설명": "카운터 너머 미디엄(소리 켬) — 소연이 손님(왼쪽 앞 어깨 너머 뒷모습)에게 딸기 라떼를 건네며 웃음, 손님 「포스터 보고 왔어요」 0.1~1.4초 · 소연 웃음 1.7~3.0초, 벽 액자 = 15번에서 연 하린 · 딸기 라떼",
+   "샷": [
+    {
+     "그림": "C19.jpg",
+     "쓰는초": 3.07,
+     "누구": [
+      "SOYEON",
+      "CUSTOMER"
+     ],
+     "동작": "Warm afternoon light with the pendant lamps on: over the shoulder of the customer in the left foreground, Soyeon stands behind the counter and hands a strawberry latte across to her, smiling. The customer takes the glass and draws it toward herself by about 1.0 s, saying a short line as she does — her face stays hidden. Soyeon lets go, looks at her and, from about 1.7 s to 3.0 s, laughs softly with a warm, open smile; she says no words. The framed poster on the wall at the top left — a printed photo of a young woman holding a strawberry latte — stays a flat, still print.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the counter, the wall poster and the windows never shift; no push-in, no zoom, no drift, no shake; only the people move."
+    }
+   ],
+   "소리": "켬",
+   "소리줄": {
+    "켬": "SOUND: only the sound of this moment — the customer, seen from behind, says one short line in Korean in a warm, casual voice: \"포스터 보고 왔어요.\" (from about 0.1 s to 1.4 s). Only the customer speaks — Soyeon's lips never form any words; from about 1.7 s she only laughs softly. Quiet café room tone. No music, no narration, no other voices or words."
+   }
+  },
+  {
+   "id": "p8-20",
+   "컷": [
+    "20"
+   ],
+   "길이": 4,
+   "설명": "천장 모서리 높은 앵글 와이드 — 따뜻한 낮은 햇살, 딸기 라떼를 놓고 작게 웃는 손님 둘(뒷모습), 카운터에 손을 얹은 채 그들을 보며 웃는 소연(행주 없음) — 제목은 후반",
+   "샷": [
+    {
+     "그림": "C20.png",
+     "쓰는초": 1.74,
+     "누구": [
+      "SOYEON",
+      "GUESTS"
+     ],
+     "동작": "A high-angle wide shot from a ceiling corner of the warm café, golden low sunlight streaming in through the windows and the pendant lamps on: the two customers sit at the round table in the foreground with their strawberry lattes, chatting and laughing quietly — small nods and a tilt of the head, without turning toward the camera; behind the counter, Soyeon rests one hand on the counter exactly as in the first frame, looks over at the two customers and smiles warmly. The long sun shadows on the wooden floor stay still.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the room, the tables, the counter and the windows never shift; no push-in, no zoom, no drift, no shake; only the people move."
+    }
+   ]
+  },
+  {
+   "id": "p8-01b",
+   "컷": [
+    "1"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 1번 거꾸로 얼굴이 바로 서려 하거나 일그러질 때만: 확정 판을 돌리기 전 바로 선 판(위에서 내려다본 얼굴)으로 내고, 받은 뒤 180° 돌려 쓴다",
+   "샷": [
+    {
+     "그림": "C01b_바로.png",
+     "쓰는초": 1.44,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Seen from directly above: Soyeon lies on her back on a plain blue-gray surface, her face upright in the frame and her dark hair spread out around her head; she holds her phone in both hands at the bottom of the frame, just below her chin (only its back is seen), and stares at it with a bored, blank face. At about 0.5 s she lets out one slow, bored breath — her chest sinks a little, her lips stay closed — while her eyes keep drifting over the screen; otherwise she stays almost still.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her face, the phone and the plain blue-gray surface never shift; no push-in, no zoom, no drift, no shake; only her eyes, her breath and her fingers move."
+    }
+   ]
+  },
+  {
+   "id": "p8-04b",
+   "컷": [
+    "4"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 4번 거꾸로 얼굴이 바로 서려 하거나 일그러질 때만: 확정 판을 돌리기 전 바로 선 판(위에서 내려다본 얼굴)으로 내고, 받은 뒤 180° 돌려 쓴다",
+   "샷": [
+    {
+     "그림": "C04b_바로.png",
+     "쓰는초": 1.83,
+     "누구": [
+      "SOYEON"
+     ],
+     "동작": "Seen from directly above, close on Soyeon's face: she lies on her back on a plain blue-gray surface, her face upright in the frame, her dark hair spread out above her head, her forearms resting out to the sides at the bottom of the frame with the top of her phone at the bottom edge. Her eyes, drifting over the phone, stop and lock onto one spot on it at about 0.3 s; she goes completely still, staring, lips closed — only one slow blink at about 1.2 s.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — her face, her forearms, the phone edge and the plain blue-gray surface never shift; no push-in, no zoom, no drift, no shake; only her eyes move."
+    }
+   ]
+  },
+  {
+   "id": "p8-05b",
+   "컷": [
+    "5"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 5번 인쇄물 사진 속 얼굴이 흔들리거나 바뀔 때만: 초록 대역 판으로 내고 후반에서 하린 사진을 평면 추적으로 붙인다(02_콘티 4절)",
+   "샷": [
+    {
+     "그림": "C05_초록.png",
+     "쓰는초": 1.5,
+     "누구": [
+      "WALKER",
+      "SOYEON"
+     ],
+     "동작": "Low on the sidewalk outside the café window, just above the pavement: the walker strides to the right across the frame — the legs leave the frame on the right at about 0.6 s. The white paper shopping bag in the walker's trailing hand swings gently along behind, its front — a flat, plain, evenly lit chroma-green panel that stays plain green, with nothing ever drawn on it — facing the camera the whole time, and it leaves the frame on the right at about 1.0 s. Behind the glass, Soyeon stays slumped back in her chair with her phone held up, almost still. The yellow ginkgo leaves on the pavement stay where they are.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the window, the pavement and Soyeon behind the glass never shift; no push-in, no zoom, no drift, no shake; only the walker and the bag move."
+    }
+   ]
+  },
+  {
+   "id": "p8-08b",
+   "컷": [
+    "8"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 8번 인쇄물 사진 속 얼굴이 흔들리거나 바뀔 때만: 초록 대역 판으로 내고 후반에서 하린 사진을 평면 추적으로 붙인다(02_콘티 4절)",
+   "샷": [
+    {
+     "그림": "C08_초록.png",
+     "쓰는초": 0.83,
+     "누구": [
+      "PAIR"
+     ],
+     "동작": "A wide shot from across the quiet street: the two passers-by stand at the shop window with their backs to the camera, looking at the poster behind the glass — a flat, plain, evenly lit chroma-green panel that stays plain green, with nothing ever drawn on it. The woman in the camel coat, already leaning toward the poster, points at it once at about 0.3 s with her hand staying just outside the poster's edge, then leans toward the man as if to say something; he tilts his head toward her by about 0.7 s. Their faces stay hidden and nothing passes in front of the poster. The blurred bicycle in the foreground stays still.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the shop front, the street and the bicycle in the foreground never shift; no push-in, no zoom, no drift, no shake; only the two passers-by move."
+    }
+   ]
+  },
+  {
+   "id": "p8-11b",
+   "컷": [
+    "11"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 11번 인쇄물 사진 속 얼굴이 흔들리거나 바뀔 때만: 초록 대역 판으로 내고 후반에서 하린 사진을 평면 추적으로 붙인다(02_콘티 4절)",
+   "샷": [
+    {
+     "그림": "C11_초록.png",
+     "쓰는초": 0.67,
+     "누구": [],
+     "동작": "Close on the glass door of the drinks fridge beside the counter: a sticker on the glass is a flat, plain, evenly lit chroma-green rectangle that stays plain green, with nothing ever drawn on it; behind the glass, bottles of milk and juice stand in cold white light. Nothing moves — the sticker stays plain green; only a faint shimmer of reflection drifts slowly across the glass beside the sticker, never over the sticker itself.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the fridge door, the sticker and the bottles never shift; no push-in, no zoom, no drift, no shake; only the faint reflections on the glass move."
+    }
+   ]
+  },
+  {
+   "id": "p8-13b",
+   "컷": [
+    "13"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 13번 인쇄물 사진 속 얼굴이 흔들리거나 바뀔 때만: 초록 대역 판으로 내고 후반에서 하린 사진을 평면 추적으로 붙인다(02_콘티 4절)",
+   "샷": [
+    {
+     "그림": "C13_초록.png",
+     "쓰는초": 0.84,
+     "누구": [],
+     "동작": "A quiet city street on a gray autumn afternoon: on the street lamp in the foreground hangs a tall vertical banner that is a flat, plain, evenly lit chroma-green panel, and a second plain green banner hangs small on the next lamp down the street. The banners hang perfectly still and taut — plain green panels that never move, with nothing ever drawn on them; only the yellowing leaves on the trees stir very slightly in a light breeze; no cars or people appear.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the lamp posts, the buildings and the street never shift; no push-in, no zoom, no drift, no shake; only the leaves on the trees stir, very slightly."
+    }
+   ]
+  },
+  {
+   "id": "p8-19b",
+   "컷": [
+    "19"
+   ],
+   "길이": 4,
+   "대안": true,
+   "설명": "대안 — 19번 인쇄물 사진 속 얼굴이 흔들리거나 바뀔 때만: 초록 대역 판으로 내고 후반에서 하린 사진을 평면 추적으로 붙인다(02_콘티 4절)",
+   "샷": [
+    {
+     "그림": "C19_초록.png",
+     "쓰는초": 3.07,
+     "누구": [
+      "SOYEON",
+      "CUSTOMER"
+     ],
+     "동작": "Warm afternoon light with the pendant lamps on: over the shoulder of the customer in the left foreground, Soyeon stands behind the counter and hands a strawberry latte across to her, smiling. The customer takes the glass and draws it toward herself by about 1.0 s, saying a short line as she does — her face stays hidden. Soyeon lets go, looks at her and, from about 1.7 s to 3.0 s, laughs softly with a warm, open smile; she says no words. The framed poster on the wall at the top left is a flat, plain, evenly lit chroma-green panel that stays plain green, with nothing ever drawn on it.",
+     "카메라": "the frame stays exactly where it is from the first frame to the last — the counter, the wall poster and the windows never shift; no push-in, no zoom, no drift, no shake; only the people move."
+    }
+   ],
+   "소리": "켬",
+   "소리줄": {
+    "켬": "SOUND: only the sound of this moment — the customer, seen from behind, says one short line in Korean in a warm, casual voice: \"포스터 보고 왔어요.\" (from about 0.1 s to 1.4 s). Only the customer speaks — Soyeon's lips never form any words; from about 1.7 s she only laughs softly. Quiet café room tone. No music, no narration, no other voices or words."
+   }
+  }
+ ]
+}
