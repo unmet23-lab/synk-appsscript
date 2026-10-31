@@ -88,17 +88,20 @@
   },
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-10-30T14:27:10+09:00",
-    "결과": "확인할 것",
-    "고칠것": [],
+    "시각": "2026-10-31T18:28:22+09:00",
+    "결과": "고칠 것",
+    "고칠것": [
+      "블로그 티스토리.md · 상대 날짜 「이번 주」 — 게시일은 승인 뒤에 정해지니 날짜나 날짜와 상관없는 말로"
+    ],
     "확인할것": [
       "remotion/out/y23_final.mp4 · 소리 비트레이트가 302kbps입니다. 올림 기준은 스테레오 384kbps입니다.",
-      "표지(yuhobuilds-tiktok · yuhobuilds-x · yuhobuilds-threads) · 표지 오른쪽 단추 자리 4군데 — 「오후 3:02」 오른쪽 끝 985px(안전선 920) · 「오후 2:46」 오른쪽 끝 976px(안전선 920)",
-      "표지(yuhobuilds-tiktok · yuhobuilds-x · yuhobuilds-threads) · 표지 아래 앱 글자 자리 2군데 — 「시 자동화 , 실패」 아래 끝 1488px(안전선 1428) · 「Youlve hit your we」 아래 끝 1553px(안전선 1428)",
-      "remotion/out/y23_final.mp4 · 오른쪽 단추 자리 14군데 — 11.5초 「71 실패」 오른쪽 끝 1052px(안전선 920) · 13.0초 「오후 846」 오른쪽 끝 987px(안전선 920) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
+      "표지(yuhobuilds-tiktok · yuhobuilds-x · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 4군데 — 「오후 3:02」 오른쪽 끝 985px(안전선 920) · 「오후 2:46」 오른쪽 끝 976px(안전선 920)",
+      "표지(yuhobuilds-tiktok · yuhobuilds-x · yuhobuilds-threads · shift-tistory) · 표지 아래 앱 글자 자리 2군데 — 「시 자동화 , 실패」 아래 끝 1488px(안전선 1428) · 「Youlve hit your we」 아래 끝 1553px(안전선 1428)",
+      "remotion/out/y23_final.mp4 · 오른쪽 단추 자리 13군데 — 11.5초 「71 실패」 오른쪽 끝 1033px(안전선 920) · 13.0초 「오후 846」 오른쪽 끝 987px(안전선 920) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
       "remotion/out/y23_final.mp4 · 아래 앱 글자 자리 1군데 — 3.0초 「보냈거든요.」 아래 끝 1443px(안전선 1428) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
-      "remotion/out/y23_final.mp4 · 위 머리 자리 17군데 — 1.5초 「시 자동화가 보낸 실패 알림」 위 끝 251px(안전선 269) · 3.0초 「실제로 온 알림」 위 끝 155px(안전선 269) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
-      "remotion/out/y23_final.mp4 · 왼쪽 가장자리 27군데 — 8.0초 「10월 24일」 왼쪽 끝 57px(안전선 65) · 10.0초 「10월 25일」 왼쪽 끝 40px(안전선 65) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
+      "remotion/out/y23_final.mp4 · 위 머리 자리 18군데 — 1.5초 「시 자동화가 보낸 실패 알림」 위 끝 251px(안전선 269) · 3.0초 「실제로 온 알림」 위 끝 155px(안전선 269) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
+      "remotion/out/y23_final.mp4 · 왼쪽 가장자리 19군데 — 9.5초 「10월 25일」 왼쪽 끝 55px(안전선 65) · 11.5초 「10월 25일」 왼쪽 끝 46px(안전선 65) · 장면표 .tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/글자표_remotion_out_y23_final.jpg",
+      "블로그 티스토리.md · 영상·게시글에 없는 수 2분 · 15분 · 4분 · 1분 · 24시간 — 옛 숫자가 남았는지 본다(Fable 10-21 P1)",
       "프롬프트 · 준비.json 「프롬프트」({\"id\",\"주소\"})가 없다 — 이 편의 가져갈 프롬프트를 synk.im/prompts에 올려 적는다(프롬프트가 맞지 않는 편이면 까닭을 남은위험에)"
     ],
     "파일": [
@@ -109,18 +112,18 @@
           "yuhobuilds-x",
           "yuhobuilds-threads"
         ],
-        "바이트": 48729308,
-        "수정": "2026-10-30T05:26:23.388Z",
-        "sha256": "7f933be0e51b1bad6e69980e70c84c1df508f6f336c3b20bffee35ccb2cefcdd",
+        "바이트": 48728982,
+        "수정": "2026-10-31T09:24:32.290Z",
+        "sha256": "ea63cb748626a4f01ad1953567409d6b41f4345ea86783c064e37e5d13f51606",
         "길이": 37.9,
         "해상도": "1080×1920",
         "평균Mbps": 10.3,
         "음량": -14.6,
         "봉우리": -1.5,
-        "정지": "0% 통과",
+        "정지": "4% 통과",
         "끝화면": 2.6,
         "한구성": 2.25,
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/영상사전검사_remotion_out_y23_final/inspection-12fdafea-878f-44fe-9ebb-bf5d90d2a4e4/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_한도실패알림_20261030/영상사전검사_remotion_out_y23_final/inspection-85ca0133-ed0f-4fc6-bacd-fa2023e236d0/검사.json"
       }
     ],
     "목소리": {
@@ -140,6 +143,9 @@
         "끝장면": 0.157,
         "끝줄": 0.06
       }
+    ],
+    "건너뜀": [
+      "링크"
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_한도실패알림_20261030"
   },
