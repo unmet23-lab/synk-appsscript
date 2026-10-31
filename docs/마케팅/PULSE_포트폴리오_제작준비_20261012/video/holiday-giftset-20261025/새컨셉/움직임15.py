@@ -152,16 +152,21 @@ def solidify(ob, thick=0.0035):
     return so
 
 
+# 돔 서리 풀이 — 4판: 이방성 0.07 · 잠열 2.2 · 방향 흔들림 0.05(1024칸 여섯 판 시험의 C). 3판 dome4096(0.04 · 1.8 · 0.16)은 가지가 휘감겨
+# 「같은 굵기 흰 관이 고리로 감김 — 뇌산호 · 미로 · 회로기판」(Fable 3판 P1 · 눈가림 셋). 4판은 곧은 등뼈에서 곁가지가 60°로 뻗고 사이가 빈다
+FROST_SIM = "dome4096_4판"
+
+
 def frost_maps():
     """돔 서리 지도 — 서리결정.py --mode dome 4096칸: 첫 결정 여섯 팔 끝에서 뻗는 이어진 고사리. 도착 시각 · 높이를 16비트 PNG로
     (한 번 만들어 둔다). 높이는 99번째 값으로 맞춘다. 3판: 2판의 carpet4096(잔 결정 1,279개)은 같은 크기 · 같은 모양 눈송이를 고르게
     흩뿌린 「눈꽃 스텐실 · 포장지」였고 첫 결정 둘레엔 맑은 고리가 남았다(Fable 2판 P1-A, 시험관 셋 「반복되는 눈꽃」)."""
     d = os.path.join(S.결정, "_지도")
-    pa, ph = os.path.join(d, "돔서리_도착4096.png"), os.path.join(d, "돔서리_높이4096.png")
+    pa, ph = os.path.join(d, f"돔서리_도착_{FROST_SIM}.png"), os.path.join(d, f"돔서리_높이_{FROST_SIM}.png")
     if not (os.path.exists(pa) and os.path.exists(ph)):
         os.makedirs(d, exist_ok=True)
-        arr = np.load(os.path.join(S.결정, "dome4096", "dome_arrival.npy"))
-        h = np.load(os.path.join(S.결정, "dome4096", "dome_height.npy"))
+        arr = np.load(os.path.join(S.결정, FROST_SIM, "dome_arrival.npy"))
+        h = np.load(os.path.join(S.결정, FROST_SIM, "dome_height.npy"))
         S.png16(pa, np.clip(arr, 0, 1))
         S.png16(ph, np.clip(h / max(1e-6, float(np.percentile(h[h > 0], 99))), 0.0, 1.0))
     return S.load_map(pa), S.load_map(ph)
@@ -171,18 +176,18 @@ TAU_FULL = 1.2  # 서리 머리(지도의 도착 시각 단위)가 이 값이면
 MAP_K = 640.0 / 4096.0  # 지도 한 변(1 uv) 안에서 1 rad의 길이 — 시뮬에서 첫 결정 반지름 0.156 rad = 100칸, 돔 뒤까지 3.2 rad = 2048칸
 # 첫 시험(10-30): 범프 0.35는 굴절을 크게 비틀어 돔이 「구겨진 비닐」로, 막 자란 끝의 흰 띠(도착 시각 0.10 폭)는 「흰 낙서」로 읽혔다.
 # 2판: 0.16도 돔 너머 제품을 네모 알갱이로 깨 「모자이크 · 각설탕 더미」(Fable 1판 4.6초)
-BUMP = 0.05
+BUMP = 0.04
 FRESH_W = 0.012
 FRESH_WHITE = 0.12  # 2차 시험 0.70은 「흰 테두리 스티커 · 레이스」, 1판 0.25도 자라는 송이 둘레가 「흰 풀 · 치약 테두리」(Fable 3.6초)
-EDGE_WHITE = 0.35  # 가지 가장자리만 가는 은빛 결(첫 결정과 같은 규칙) — 넓은 젖빛은 「흰 도자기」(10-30), 0.05 · 등뼈 0.30은 본 해상도에서 「흰 밧줄」(3판)
+EDGE_WHITE = 0.15  # 가지 가장자리 은빛 결 — 넓은 젖빛은 「흰 도자기」(10-30), 3판 0.05 · 등뼈 0.30은 「흰 밧줄」, 4판 지도에 0.35는 가지마다 흰 윤곽선만 둘러 「흰 펜 외곽선 · 꼬불꼬불한 손가락」
 # 2판: 자란 가지 자리는 흰 반투명 산란(젖빛 유리 + 확산 투과) — 1판은 굴절 요철뿐이라 깜깜한 바탕을 비춰 서리가
 # 「검정 · 회색 곰팡이 스노볼」이었다(Fable P1-1). 돔 안 따뜻한 빛과 돔 너머 금빛 둘레를 받아 하얗게 빛난다.
 # 2판 첫 시험: 0.55를 결정 모양 전체(높이 0.03~0.30 계단)에 주니 「흰 종이 눈꽃 스티커」로 돔을 덮어 제품이 안 보였다 →
 # 가지 높이에 비례(두꺼운 등뼈일수록 젖빛). 3판: 고사리 지도는 가지가 가늘어 덮는 넓이가 작아 0.35, 깨진 조각은 깨짐 동안 그 40 %로
-FROST_WHITE = 0.15
+FROST_WHITE = 0.20  # 4판: 가는 가지 안을 옅은 알갱이 서리로 채운다(3판 시험2/값 채움a · c 사이)
 FROST_SHARD = 0.06
 EDGE_SHARD = 0.04  # 깨진 조각의 가장자리 서리 — 깨짐 동안 함께 가라앉는다. 0.12 · 0.10에서 낮춰도 고사리가 짙은 조각 두엇은 「흰 레이스 인쇄」로 남는다(굴절이 만드는 테, 3판 CPU 점검)
-COV_LO, COV_HI = 0.60, 0.95  # 서리 흰빛이 시작 · 다 차는 가지 높이 — 등뼈의 가는 선만(0.42 · 0.82는 「흰 붓질」)
+COV_LO, COV_HI = 0.38, 0.88  # 서리 흰빛이 시작 · 다 차는 가지 높이 — 3판 굵은 가지 지도는 0.60 · 0.95(0.42 · 0.82는 「흰 붓질」), 4판 가는 가지는 너비를 채운다
 GRAIN_S, GRAIN_FLOOR = 1800.0, 0.3  # 흰 선을 깨는 얼음 알갱이의 빽빽함(1 m당) · 알갱이 틈에 남는 흰빛 몫
 
 
@@ -858,7 +863,7 @@ def seung_light(t):
     """장면 빛이 차오르는 몫 — 승 첫 장은 m1처럼 결정만 빛나는 어둠(기 → 승을 한 숏으로 잇는 자리, 첫 시험은 흐린 제품 ·
     흰 줄 빛이 결정 뒤를 채워 m1 끝 장과 딴 그림이었다). 2판: 1.3초 → 2.0초에 다 차게 — 1판 3.6초(승 0.87초)에 이미 69 %가 차
     결정 뒤가 밝은 흐림으로 채워져 결정이 「흰 불투명 플라스틱」이 됐다(Fable P1-5)."""
-    return smooth(clamp01((t - 0.30) / 1.7))
+    return smooth(clamp01((t - 0.20) / 1.7))  # 4판: 0.30 → 0.20 — 3.6초 결정 둘레 가지가 어둠 속 「회색 솜털」(Fable 3판 P2-1)
 
 
 def shot_seung():
@@ -1244,9 +1249,17 @@ CAM_G1_TGT = Vector((0.006, -0.003, ZF + 0.055))  # 제품을 조금 아래로 �
 CAM_G1 = (math.radians(2), math.radians(27), 0.44, 50.0, 4.5)
 # 결의 뚜껑 금빛 키 — 1판 25 W는 맑은 결정 가장자리를 하얗게 날렸다(2판 진단, LID_EDGE와 함께 낮춤)
 GK_END = 16.0
-FALL_K = 0.35  # 떨어지는 결정의 네 빛 — 0.55는 「흰 솜 · 깃털」(Fable 2판 11.8초)
+FALL_FACE, FALL_LAY = 0.25, (0.5, 0.9)  # 내려오는 결정이 카메라 쪽으로 도는 몫(0 → 0.25) · 눕는 몫(0.5 → 0.9) — 내려옴 전체를 1로
+FALL_K = 0.45  # 떨어지는 결정의 네 빛(4판 0.35 → 0.45 — 얼굴을 보이니 결이 서게) — 0.55는 「흰 솜 · 깃털」(Fable 2판 11.8초)
 FALL_EDGE = 0.2  # 떨어지는 결정의 얇은 가장자리 서리 몫 — 멀리서 0.55는 희게 뭉친다(LID_EDGE와 같은 까닭)
-GYEOL_F = 8.0  # 결의 조리개 — 0.6초에 f/3.5 → f/8, 결정 · 제품을 함께 심도 안에(2판은 초점이 결정을 따라가 제품이 1.2초 흐렸다, Fable P1-B)
+# 결의 조리개 — 4판: 결정이 내려오는 동안 f/11(결정 · 제품을 함께 심도 안에, 3판 f/8은 11.8초 내려오는 결정이 「회색 글리터 판」 — Fable P2-2),
+# 앉은 뒤 f/6.3으로 열어 바닥 반사 · 바탕에 깊이(3판 f/8 끝 장은 눈가림 셋이 「정지된 제품 렌더 · 3D 견본」), 초점은 앰플과 단지 사이
+FALL_F, END_F = 11.0, 6.3
+# 끝 — 멈추지 않고 천천히 다가간다(3.5 %), 빛 한 줄이 병 · 단지 앞을 훑고 지나간다(반사로만 · 제품만 받음)
+PUSH, PUSH_T0 = 0.035, 2.6
+SWEEP_T0, SWEEP_T1, SWEEP_W, SWEEP_D, SWEEP_X = 2.7, 3.9, 28.0, 0.40, 0.30  # 40 W는 바닥에 비친 단지 앞면이 은빛 판으로 탔다
+SWEEP_SIZE = (0.012, 0.40)
+GYEOL_F = 8.0  # (3판 값 — 4판은 FALL_F · END_F) 결의 조리개 — 0.6초에 f/3.5 → f/8, 결정 · 제품을 함께 심도 안에(2판은 초점이 결정을 따라가 제품이 1.2초 흐렸다, Fable P1-B)
 
 
 def gyeol_cam(t):
@@ -1259,10 +1272,12 @@ def gyeol_cam(t):
     el0 = math.asin(rel0.z / rel0.length)
     az1, el1, d1, lens1, f1 = CAM_G1
     az, el, d = lerp(az0, az1, u), lerp(el0, el1, u), lerp(rel0.length, d1, u)
+    d *= 1.0 - PUSH * smooth(clamp01((t - PUSH_T0) / (GYEOL_T - PUSH_T0)))
     loc = CAM_G1_TGT + Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el))) * d
     # 처음은 전 끝 자리 그대로(돌아가는 중심이 달라 생기는 튐을 0으로)
     loc = loc + (e0 - (CAM_G1_TGT + Vector((math.sin(az0) * math.cos(el0), -math.cos(az0) * math.cos(el0), math.sin(el0))) * rel0.length)) * (1 - u)
-    return loc, tgt, lerp_log(40.0, lens1, u), lerp_log(3.5, GYEOL_F, smooth(clamp01(t / 0.6)))
+    fs = lerp_log(3.5, FALL_F, smooth(clamp01(t / 0.6)))
+    return loc, tgt, lerp_log(40.0, lens1, u), lerp_log(fs, END_F, smooth(clamp01((t - 2.3) / 1.0)))
 
 
 def land_pose(float_end, stand, t_land, wob_amp, r_base, t):
@@ -1323,6 +1338,9 @@ def shot_gyeol():
     for g in L["반짝"]:
         S.light_only(g, shards)
     link_scene_lights(L, floor, skip=[fall])
+    prods = [o for o in bpy.context.scene.objects if o.type == "MESH" and o.parent in (jar_e, amp_e)]
+    sweep = S.glint_only(S.area_light("훑는빛", (0, 0, 0.3), (0, 0, 0), 0.0, SWEEP_SIZE[0], rgb=(1.0, 0.94, 0.84), size_y=SWEEP_SIZE[1]))
+    S.light_only(sweep, prods)
     crack.outputs[0].default_value = math.pi + 0.3
     glow.outputs[0].default_value = 0.0
     frostw.outputs[0].default_value = FROST_SHARD  # 전 끝과 같게
@@ -1367,7 +1385,12 @@ def shot_gyeol():
         w = smooth(clamp01((t - FALL_T0) / (FALL_T1 - FALL_T0)))
         l1, q1 = lid_world(t)
         loc = loc0.lerp(l1, w) + sway_dir * (math.sin(math.pi * w) * 0.012) + UP * (math.sin(math.pi * w) * 0.010)
-        q = q0.slerp(q1, smooth(clamp01(w / 0.85)))
+        # 4판: 내려오는 동안 카메라 쪽으로 얼굴을 돌려 눈송이 모양을 보이고 앉기 전에 눕는다 — 3판은 처음부터 비스듬히 돌며
+        # 내려와 「결 없는 회색 글리터 판」이었다(Fable P2-2). 맑은 결정이라 앞뒤 어느 면이든 되니 덜 도는 쪽으로
+        to_cam = gyeol_cam(t)[0] - loc
+        z0 = q0.to_matrix() @ Vector((0, 0, 1))
+        qf = to_cam.to_track_quat("Z" if z0.dot(to_cam) >= 0 else "-Z", "Y")
+        q = q0.slerp(qf, smooth(clamp01(w / FALL_FACE))).slerp(q1, smooth(clamp01((w - FALL_LAY[0]) / (FALL_LAY[1] - FALL_LAY[0]))))
         return loc, q, lerp(s0, 1.0, smooth(w))
 
     pw, gain, _, _ = world_nodes()
@@ -1394,7 +1417,14 @@ def shot_gyeol():
         glint[0].outputs[0].default_value = -0.01 + 0.046 * (1.0 - (1.0 - u) ** 2)
         glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else RING_PEAK * math.sin(math.pi * u) ** 0.7  # 화면에서 가장 밝게(40은 회색 띠)
         edge_n.outputs[0].default_value = lerp(EDGE_SHARD, 0.05, smooth(clamp01((t - 0.3) / 1.7)))
-        gk.data.energy = lerp(gk_e0, GK_END, smooth(min(1.0, t / 1.0)))  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
+        gk.data.energy = lerp(gk_e0, GK_END, smooth(min(1.0, t / 1.0)))
+        sw = clamp01((t - SWEEP_T0) / (SWEEP_T1 - SWEEP_T0))
+        mid = (JAR_STAND[0] + AMP_STAND[0]) * 0.5 + Vector((0, 0, 0.05))
+        toward = Vector((loc.x - mid.x, loc.y - mid.y, 0.0)).normalized()
+        side = toward.cross(UP).normalized()
+        sweep.location = mid + toward * SWEEP_D + side * lerp(SWEEP_X, -SWEEP_X, smooth(sw)) + UP * 0.10
+        sweep.rotation_euler = (mid - sweep.location).to_track_quat("-Z", "Y").to_euler()
+        sweep.data.energy = SWEEP_W * math.sin(math.pi * sw) ** 0.6 if 0.0 < sw < 1.0 else 0.0  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
         w = smooth(clamp01((t - 0.4) / 2.6))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
         pw.inputs[1].default_value = lerp(40.0, 90.0, w)
         gain.inputs[1].default_value = lerp(0.30, 0.22, w)
@@ -1426,7 +1456,9 @@ def shot_gyeol():
         lid_now = jp + jr.to_matrix() @ Vector((0, 0, 0.0628))
         # 초점: 뚜껑에 두되 떨어지는 결정 쪽으로 3분의 1만 끌어(f/8 심도 안에 둘 다) — 결정이 앉으면 뚜껑 자리
         kf = smooth(clamp01((t - 0.15) / 0.45))
-        cam.data.dof.focus_distance = lerp(axial(loc, tgt, lid_now), axial(loc, tgt, f_loc), kf * 0.33)
+        mid_f = lid_now.lerp(AMP_STAND[0] + Vector((0, 0, 0.05)), 0.5)
+        k_mid = smooth(clamp01((t - 2.3) / 1.0))
+        cam.data.dof.focus_distance = lerp(lerp(axial(loc, tgt, lid_now), axial(loc, tgt, f_loc), kf * 0.33), axial(loc, tgt, mid_f), k_mid)
         aim_serum_card(card, amp_e, loc)
         key3(items, lambda f=f: render_to(f))
 
