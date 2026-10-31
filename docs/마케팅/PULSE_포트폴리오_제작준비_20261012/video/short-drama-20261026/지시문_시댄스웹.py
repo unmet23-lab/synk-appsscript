@@ -94,9 +94,9 @@ cut("1-3", ["LUNCHBOX"],
     jit("1-3"))
 cut("1-4", ["IAN (office)", "LUNCHBOX"],
     "With Minjae's hands resting on his shoulders from behind (Minjae's face is out of frame), Ian holds the lunchbox low, looks up from it with a sheepish wince and explains "
-    "with his right hand raised palm up. Right away he says in Korean, at a brisk natural pace: \"결혼 얘기 피했더니… 반찬이 끊겼어.\"",
+    "with his right hand raised palm up. Right away he says in Korean, at a brisk natural pace: \"결혼 얘기 피한 벌이야.\"",
     jit("1-4"),
-    ("IAN (office)", "결혼 얘기 피했더니… 반찬이 끊겼어.", 0.1, "입"))
+    ("IAN (office)", "결혼 얘기 피한 벌이야.", 0.1, "입"))
 # 1화 ② 회상 · 어젯밤 집 식탁
 cut("1-5", ["SEOJIN (cardigan)", "IAN (sweatshirt)"],
     "Night, at the kitchen table: Seojin leans forward over the table, holding her open planner notebook toward him, and right away says in Korean, firm but calm: "
@@ -160,10 +160,10 @@ cut("1-16", ["MINJAE", "IAN (office)"],
     jit("1-16"),
     ("MINJAE", "그 도시락, 사랑 한 칸은 있냐?", 0.2, "입"))
 cut("1-17", ["IAN (office)"],
-    "Side profile, medium: Ian, chopsticks in hand at his desk, looks toward Minjae (off frame to the left) and grumbles in Korean, half to himself: "
-    "\"이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해.\"",
+    "Side profile, medium: Ian, chopsticks in hand at his desk, looks toward Minjae (off frame to the left) and grumbles in Korean, half to himself, trailing off: "
+    "\"이미 같이 사는데, 종이 한 장이 뭐…\"",
     jit("1-17"),
-    ("IAN (office)", "이미 같이 사는데, 종이 한 장이 뭐가 그렇게 중요해.", 0.1, "입"))
+    ("IAN (office)", "이미 같이 사는데, 종이 한 장이 뭐…", 0.1, "입"))
 cut("1-18", ["IAN (office)"],
     "Close-up: Ian chews the sour pickled plum with a pinched face, the chopsticks still at his lips, and from about 0.3 s mutters through the chewing in Korean: "
     "\"…반찬도 안 싸 주고.\"",
@@ -406,29 +406,29 @@ cut("2-24", ["SEOJIN (pajamas)", "IAN (pajamas)"],
     jit("2-24"))
 cut("2-25", ["SEOJIN (pajamas)", "IAN (pajamas)"],
     "Over Seojin's shoulder (her head and hands soft in the foreground): she rubs hand cream into her hands; beyond her Ian lies on his side facing away, his mouth hidden. "
-    "Under the shot Ian's voice says in Korean: \"새 옷에, 늦게 오고,\"",
+    "Under the shot Ian's voice says in Korean: \"새 옷에, 늦게 오고, 향수도…\"",
     jit("2-25"),
-    ("IAN (pajamas)", "새 옷에, 늦게 오고,", 0.2, "가림"))
+    ("IAN (pajamas)", "새 옷에, 늦게 오고, 향수도…", 0.2, "가림"))
 cut("2-26", ["IAN (pajamas)"],
-    "Medium close: Ian, his cheek on the pillow, eyes up at her, right away says quietly in Korean: \"향수도 바뀌었고.\" — his lips visible above the pillow.",
+    "Medium close: Ian, his cheek on the pillow, eyes up at her, right away finishes quietly in Korean: \"…바뀌었고.\" — his lips visible above the pillow.",
     jit("2-26"),
-    ("IAN (pajamas)", "향수도 바뀌었고.", 0.0, "입"))
+    ("IAN (pajamas)", "…바뀌었고.", 0.0, "입"))
 cut("2-27", ["SEOJIN (pajamas)", "IAN (pajamas)"],
     "Over Ian's blurred shoulder: Seojin, sitting on the bed, shakes her head with a too-casual little laugh and says in Korean: \"그런 거 아니라니까.\"",
     jit("2-27"),
     ("SEOJIN (pajamas)", "그런 거 아니라니까.", 0.1, "입"))
 cut("2-28", ["IAN (pajamas)"],
     "Medium: Ian, already sitting up in bed, straightens and leans a little toward her, and from about 0.3 s says in Korean, quiet and hurt: "
-    "\"너 거짓말할 때 귀 빨개지는 거 알아?\"",
+    "\"너 거짓말하면 귀 빨개져.\"",
     # 원본 47은 누웠다 일어나는 남자를 따라 20% 오르지만, 우리 시작 그림(과 앞 컷 2-27의 어깨)은 이미 앉은 자세라 오름을 10%로 줄였다(10-29 아르곤 대조)
     "handheld rise: as he straightens and leans in (about 0.2–0.9 s) the camera rises a little with him, about 10% of the frame height, slowing to a stop, ending on "
     "him sitting upright; " + strong("2-28") + ".",
-    ("IAN (pajamas)", "너 거짓말할 때 귀 빨개지는 거 알아?", 0.3, "입"))
+    ("IAN (pajamas)", "너 거짓말하면 귀 빨개져.", 0.3, "입"))
 cut("2-29", ["SEOJIN (pajamas)", "IAN (pajamas)"],
     "Seojin sits on the bed holding the hand-cream tube, frozen; Ian gets up and walks past in the soft foreground, his body sweeping across the frame between 0.5 s and "
-    "1.0 s. Seojin's lips stay closed. Under the shot Ian's voice says in Korean: \"…나 잠깐 나가 있을게.\"",
+    "1.0 s. Seojin's lips stay closed. Under the shot Ian's voice says in Korean: \"…잠깐 나가 있을게.\"",
     "static frame — the camera stays in place, almost perfectly still; only Ian's passing body moves across the foreground.",
-    ("IAN (pajamas)", "…나 잠깐 나가 있을게.", 0.2, "가림"), closed=["SEOJIN (pajamas)"])
+    ("IAN (pajamas)", "…잠깐 나가 있을게.", 0.2, "가림"), closed=["SEOJIN (pajamas)"])
 cut("2-30", ["SEOJIN (pajamas)", "IAN (pajamas)"],
     "Over Seojin's back: Ian walks out through the bedroom door and pulls it shut behind him; the door closes. Nobody speaks.",
     still())
