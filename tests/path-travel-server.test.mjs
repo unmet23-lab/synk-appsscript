@@ -177,6 +177,7 @@ test('계정의 CommonJS 의존 계약은 HTTP ESM으로 실행되며 원본 검
       text, at: now, confirmedAt: now, meanings: parsed.meanings, clarifications: [] }],
   };
   const options = { now, enforceTime: true };
+  assert.equal(Statement.PARSER_VERSION,'member-statement-ko-12');
   assert.deepEqual(browserModule.validateMemberUnderstanding(value, options), validateMemberUnderstanding(value, options));
   for (const bad of [
     { ...value, accountId: 'another-owner' },

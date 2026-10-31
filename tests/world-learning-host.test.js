@@ -3,6 +3,21 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const { createWorldLearningHost } = require('../account/world-learning-host');
 const { createGame, createLearningSync } = require('../atlas/game-browser');
 
+test('ending the account while a disposed game waits for ownership cannot restore cleared account history',async t=>{
+ const fs=require('node:fs'),vm=require('node:vm'),{createRequire}=require('node:module'),{locks}=require('node:worker_threads'),file=require.resolve('../atlas/game-learning'),source=fs.readFileSync(file,'utf8'),map=require('../strata').createMap(require('../strata/maps/topik-i.json')),data=new Map(),disk={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)},tick=()=>new Promise(done=>setImmediate(done)),accountKey='account-close-waiter';
+ const realm=()=>{const listeners=new Map(),box={module:{exports:{}},require:createRequire(file),document:{},location:{protocol:'https:'},navigator:{locks},AbortController,console,addEventListener:(n,f)=>{if(!listeners.has(n))listeners.set(n,new Set());listeners.get(n).add(f);},removeEventListener:(n,f)=>listeners.get(n)?.delete(f)};vm.runInNewContext(source,box,{filename:file});return{engine:box.module.exports,hide:()=>{for(const f of listeners.get('pagehide')||[])f();}};};
+ const a=realm(),b=realm(),one=a.engine.createGame({gameId:'holder',map,storage:disk,storageScope:'account',accountKey,fold:false}),created=[];
+ const factory=options=>{const game=b.engine.createGame({...options,map,fold:false});created.push(game);return game;};
+ const manual=()=>({start:async()=>({complete:false}),status:()=>({complete:false}),stop(){},flush:async()=>({complete:false}),retry:async()=>({complete:false}),invalidate(){}});
+ const host=createWorldLearningHost({accountKey,revision:1,guard(){},storage:disk,connected:true,transport:{get:async()=>({events:[],revision:1,cursor:0,hasMore:false}),post:async()=>{throw Error('No network in ownership regression');}},engine:{createGame:factory,createLearningSync:manual}});
+ t.after(async()=>{host.stop();one.dispose();a.hide();b.hide();await tick();await tick();});
+ for(let i=0;i<30&&!one.syncPort.canPersist();i++)await tick();assert.equal(one.syncPort.canPersist(),true);
+ const game=host.createGame({gameId:'waiting'},factory,manual),raw=created.at(-1);game.finishSet({kind:'short'});assert.ok(raw.events().length);game.disconnect();assert.equal(raw.flush(),false);
+ host.stop();data.clear();a.hide();for(let i=0;i<40;i++)await tick();
+ assert.equal(raw.flush(),false,'an ended account never reports a late successful save');assert.equal(data.size,0,'the internal final drain cannot restore cleared account data after session end');
+ assert.equal((await locks.query()).pending.filter(row=>row.name.includes(accountKey)).length,0,'ended history releases its old waiter');
+});
+
 test('preferences without a connected or personal owner create no throwaway game',()=>{
  let creations=0;const host=createWorldLearningHost({accountKey:'no-owner',revision:1,connected:false,guard(){},storage:{getItem:()=>null,setItem(){}},engine:{createGame(){creations++;throw Error('Unexpected game');},createLearningSync(){}}});
  assert.equal(host.preferences(),null);assert.equal(host.preferences(),null);assert.equal(creations,0);host.stop();
