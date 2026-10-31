@@ -9,7 +9,7 @@
 //                                                                반영은 대본 검수:'passed'·검수지문과 experiences/drama/review/spec-review.json
 //   node tools/topik-review.mjs 클로드 <이름> [--보내기|--받기]   1차: 블라인드 풀이 + 기준 검수 일괄(반값)
 //   node tools/topik-review.mjs 아르곤 <이름> [--묶음 4]           2차: 독립 검수 + 해설 역번역(하나씩 차례로)
-//   node tools/topik-review.mjs 판정 <이름> [--보내기]             두 검수 합치기 · 엇갈린 문항은 Opus 판정
+//   node tools/topik-review.mjs 판정 <이름> [--보내기 [--줄 <id…>]]  두 검수 합치기 · 엇갈린 문항은 Opus 판정(--줄이면 그 줄만)
 //   node tools/topik-review.mjs 반영 <이름>                         새 문항 review 줄·reviewStatus, 기존 문항 existing-verdicts.json
 //   node tools/topik-review.mjs 보고 <이름>                         판정 수·쓴 비용·1,000문항 어림(report.md)
 import fs from 'node:fs';
@@ -814,7 +814,9 @@ async function main([command, name, ...argv]) {
   if (command === '판정') {
     const merged = merge(packet, claude, argon, judge);
     if (argv.includes('--보내기')) {
-      for (const unit of packet.units.filter(u => merged[u.ref].outcome === 'split' && !judge[u.ref])) {
+      // --줄 <id…>: 그 줄만 판정을 보낸다(검수 뒤 고쳐 다음 묶음으로 넘긴 줄에 판정 값을 쓰지 않으려고).
+      const only = list(argv, '--줄');
+      for (const unit of packet.units.filter(u => merged[u.ref].outcome === 'split' && !judge[u.ref] && (!only?.length || only.includes(u.id) || only.includes(u.key)))) {
         const { 응답 } = await 클로드.보내기(judgeRequest(unit, merged[unit.ref], packet.rubric?.id), { 용도: `topik-review:${name}:판정` });
         judge[unit.ref] = { ...JSON.parse(textOf(응답)), usage: 응답.usage, at: new Date().toISOString() };
         writeJson(judgeFile, judge);
