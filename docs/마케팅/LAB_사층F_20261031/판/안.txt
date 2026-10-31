@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep exactly the same elevator, camera, brass panel on the right wall and felt textures. Change only:
+1. The F button is unlit: the same cream felt as the other four buttons, no glow at all.
+2. Mongle has turned its body a little to the right and looks up at the button panel, puzzled, its body tilted slightly — it is searching for a button that is not there. Same size, same place.
+The buttons stay, top to bottom: 5, F, 3, 2, 1. Keep the top 22% of the image calm (plain walnut wall).
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with NO white in them). No arms, no legs, no hands, ever.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm amber light, gentle depth of field, cute but not babyish (for university students and young workers). The only readable characters allowed anywhere are the embroidered button digits; no other text, letters, logos or symbols.

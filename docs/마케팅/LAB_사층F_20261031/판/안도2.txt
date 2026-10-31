@@ -1,0 +1,5 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the attached image. Keep absolutely everything exactly the same pixel for pixel — the elevator, brass doors, floor dial, carpet, light and Mongle (same size, same place, same happy closed eyes). Change only ONE thing: remove the small white ghost from the top of Mongle's head completely. The top of Mongle's coral wool head is simply bare. No text, letters or symbols.

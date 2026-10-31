@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Extreme close-up of one single round elevator button from the attached image, filling most of the frame, same brass ring, same cream wool felt, warm amber glow around the ring. The button carries a felt patch with the embroidered letter F, sewn on top of it with a few big visible stitches. One corner of the patch has come loose and curls up, and underneath it you can clearly see the original embroidered number 4 on the button. So the picture says: somebody stitched an F over the 4. The number 4 must be clearly readable under the lifted patch, and the letter F clearly readable on the patch. These are the only characters in the image.
+
+Keep the top 24% of the image calm (plain out-of-focus brass).
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm amber light, shallow depth of field.

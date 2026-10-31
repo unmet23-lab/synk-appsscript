@@ -1,0 +1,5 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the attached image. Keep absolutely everything exactly the same pixel for pixel — the elevator, doors, hallway, lantern, table, Mongle and seven of the small ghosts. Change only ONE thing: the small white ghost sitting at the front center of the table now lifts a tiny teacup into the air toward the camera, as if inviting the viewer to join them (the cup floats up beside its head, it has no hands). No text, letters or symbols.

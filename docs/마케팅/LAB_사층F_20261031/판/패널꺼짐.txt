@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep exactly the same camera, framing, brass plate, button positions, button sizes, felt textures and the blurry coral reflection on the brass. Change only two things:
+1. Remove the small white ghost completely (bare brass where it was).
+2. The F button is now unlit: the same cream felt and dark brass ring as the other four buttons, no glow at all.
+The five embroidered buttons stay, top to bottom: 5, F, 3, 2, 1. Nothing else changes.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm amber light, gentle depth of field, cute but not babyish (for university students and young workers). The only readable characters allowed anywhere are the embroidered button digits; no other text, letters, logos or symbols.
