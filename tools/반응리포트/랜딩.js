@@ -212,4 +212,12 @@ async function 하루받기({ 프로젝트, 토큰 = 열쇠읽기(프로젝트),
   return { 상태: '됨', 줄들 };
 }
 
-module.exports = { API, 받을차원, 응답읽기, 주소다듬기, 랜딩인가, 기간고르기, 행합치기, 칸얹기, 기기지도, 랜딩모으기, 하루받기, 열쇠자리, 열쇠읽기, 글수, 신호들 };
+/** 공개 쪽에 측정 코드가 있나 — true · false, 쪽을 못 읽으면 null(읽기 실패를 코드 없음으로 치지 않는다) */
+async function 측정코드있나(주소, 프로젝트, fetch기 = (...a) => fetch(...a)) {
+  try {
+    const res = await fetch기(`${주소}${String(주소).includes('?') ? '&' : '?'}probe=${Date.now()}`, { headers: { 'cache-control': 'no-cache' }, signal: AbortSignal.timeout(30000) });
+    return res.ok ? (await res.text()).includes(`"${프로젝트}"`) : null;
+  } catch { return null; }
+}
+
+module.exports = { API, 받을차원, 응답읽기, 주소다듬기, 랜딩인가, 기간고르기, 측정코드있나, 행합치기, 칸얹기, 기기지도, 랜딩모으기, 하루받기, 열쇠자리, 열쇠읽기, 글수, 신호들 };

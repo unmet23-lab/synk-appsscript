@@ -168,6 +168,14 @@ test('기간 합치기 — 세션은 합, 스크롤 · 시간 · 헛클릭 비�
   assert.equal(랜딩.랜딩모으기({ 장부: [], 랜딩: { 주소: 'https://synk.im/pulse/' }, 시작: '2026-10-20', 끝: '2026-10-27' }).상태, '측정 전');
 });
 
+test('측정 코드 확인 — 있음 · 없음 · 못 읽음을 가른다', async () => {
+  const 응답 = (ok, 글) => async () => ({ ok, text: async () => 글 });
+  assert.equal(await 랜딩.측정코드있나('https://synk.im/pulse/', 'z67ez8kfp3', 응답(true, '<script>(window,document,"clarity","script","z67ez8kfp3");</script>')), true);
+  assert.equal(await 랜딩.측정코드있나('https://synk.im/pulse/', 'z67ez8kfp3', 응답(true, '<html></html>')), false);
+  assert.equal(await 랜딩.측정코드있나('https://synk.im/pulse/', 'z67ez8kfp3', 응답(false, '')), null, '쪽을 못 읽으면 코드 없음으로 치지 않는다');
+  assert.equal(await 랜딩.측정코드있나('https://synk.im/pulse/', 'z67ez8kfp3', async () => { throw new Error('끊김'); }), null);
+});
+
 test('칸 지도에 평균 스크롤 얹기 — 칸 안 자리와 경계', () => {
   const 지도 = { 폭: 390, 칸: [{ id: 'top', 이름: '첫 화면', 위: 0, 아래: 8.5 }, { id: 'film', 이름: '영상', 위: 8.5, 아래: 45 }, { id: 'contact', 이름: '문의', 위: 84, 아래: 91.7 }] };
   assert.deepEqual(랜딩.칸얹기(지도, 10), { id: 'film', 이름: '영상', 칸안: '앞부분' });
