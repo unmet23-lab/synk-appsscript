@@ -7,6 +7,9 @@
 # 배포 준비·검증 도구의 실행 증거가 실제 소스 SHA를 기록한다.
 tools/company-release/*.cjs text eol=lf
 
+# git 훅 원본은 sh가 읽는다 — Windows 체크아웃에서도 LF(깔기는 tools/새워크트리가볍게.js --설치).
+tools/git훅/* text eol=lf
+
 # PATH 음성 모델의 공개 주소·업로드 영수증은 파일 SHA로 정한다. Windows 체크아웃도 같은 바이트를 쓴다.
 experiences/path-vr/models/whisper-base/*.json text eol=lf
 experiences/path-vr/models/whisper-base/*.txt text eol=lf

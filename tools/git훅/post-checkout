@@ -1,0 +1,15 @@
+#!/bin/sh
+# SYNK 새 워크트리 가볍게 — Claude·GPT 세션이 새 워크트리를 만들면 큰 미디어 폴더(docs/캐릭터·홍보물·라디오)를 뺀다.
+# 원본: tools/git훅/post-checkout · 까는 법: node tools/새워크트리가볍게.js --설치 (2026-10-31)
+# 늘 종료 0 — git worktree add를 막지 않는다. 한 번만 끄려면 SYNK_LIGHT_OFF=1.
+case "$1" in
+  0000000000000000000000000000000000000000*) ;;
+  *) exit 0 ;;
+esac
+top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+s="$top/tools/새워크트리가볍게.js"
+[ -f "$s" ] || exit 0
+n=node
+command -v node >/dev/null 2>&1 || n="/c/Program Files/nodejs/node.exe"
+"$n" "$s" "$@" </dev/null >/dev/null 2>&1
+exit 0

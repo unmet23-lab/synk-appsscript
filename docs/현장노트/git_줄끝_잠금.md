@@ -1,6 +1,6 @@
 # 현장 노트 · git 줄끝·잠금·공용 작업본
 
-> 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 등록된 훅 없음
+> 판: Git for Windows 2.55 · 시스템 설정 `core.autocrlf=true` · 공용 `.git/config`에 `diff.autoRefreshIndex=false`(10-13)·`extensions.worktreeConfig=true` · 훅은 공용 `.git/hooks/post-checkout` 하나(새 워크트리 가볍게, 10-31)
 > 마지막 확인: 2026-10-22(따라가기 바탕 `받은것만바탕` 시험·실제 공용 작업본 계획 점검); 2026-10-21(`tools/공개검사.js`를 바로올리기·내커밋에 붙인 시험·재생; 10-20 `tools/master맞추기.js` 보강 시험 — 10-19 `tools/내커밋.js` 시험·워크트리 잠금 경로; 그 밖의 항목은 각 다시 확인 날짜 참조)
 > 쓴 AI: Claude Code·GPT(Codex) — 누가 언제 무엇을 더했는지는 [지난 기록](지난기록/git_줄끝_잠금.md#쓴-기록)에 있다.
 
@@ -26,6 +26,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 파이썬 text 모드·`sed -i`로 쓰면 줄끝이 뒤집혀 diff가 통째로 난다 → 바이트로 읽고 쓰거나 `newline=""` ([자세히](#공용-문서-하나가-줄끝만-바뀌어-통째로-diff가-된다))
 - 공간 정리가 추적 파일과 안쪽 git 클론까지 지운다 → `git ls-files` 경로와 `.git` 든 폴더를 목록에서 뺀다 ([자세히](#공간-정리가-추적-파일을-지운다))
 - junction이 든 워크트리를 `rm -rf`로 지우면 공용 `node_modules`까지 지워진다 → 링크부터 끊고 지운다 ([자세히](#junction이-든-워크트리를-통째로-지우면-공용-node_modules가-지워질-수-있다))
+- 새 세션 워크트리에는 docs/캐릭터·홍보물·라디오가 없다(10-31부터 git 훅이 만들 때 뺀다) → 그 폴더가 필요하면 `node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행`(15초쯤) ([자세히](#세션-워크트리가-가볍게를-빠뜨려-사본마다-2gb가-그대로-쌓인다--10-31부터-git-훅이-만들-때-뺀다-2026-10-31-claude))
 
 ## 목차
 
@@ -628,6 +629,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 앱은 깨끗한 작업트리를 보관된 세션에서 떼어 재사용 대기로 두고, 다음 새 세션에 다시 쓰거나 스스로 치운다. 미커밋 변경이 있는 것만 「보관 뒤에도 남긴 작업트리」(kept_after_archive)로 따로 센다.
 - 고침: 재사용 대기 작업트리는 지우지 않는다. 지우면 다음 새 세션이 4.1GB를 새로 만들 뿐이다. 공간을 실제로 늘리는 것은 앱 밖에서 만든 작업트리(`Documents/SYNK-worktrees` 등), 일이 끝난 세션 보관, 미커밋 변경을 살린 뒤의 `discard_kept_worktree`다.
 - 다시 확인: 정리 후보를 고르기 전에 `get_storage_usage`의 `kept_ready_count`·`kept_after_archive`와 그 작업트리의 `.git/worktrees/<이름>/HEAD`(분리 상태인지)를 본다.
+
+### 세션 워크트리가 「가볍게」를 빠뜨려 사본마다 2GB가 그대로 쌓인다 — 10-31부터 git 훅이 만들 때 뺀다 (2026-10-31 Claude)
+- 증상: 10-31 저녁 세션 워크트리 18개 중 8개가 가볍게 없이 docs/캐릭터·홍보물·라디오(약 2.1GB)를 그대로 들고 있었다. 같은 저녁 C: 여유가 3시간에 31GB, 이어 1시간 40분에 50GB 줄었다(새 Claude·GPT 사본, PC 릴리스 묶음이 한꺼번에).
+- 원인: AGENTS의 「시작할 때 `가볍게 --실행`」은 세션이 손으로 하는 단계라 바쁜 세션·GPT가 자주 건너뛴다. 앱·GPT는 `git worktree add`로 전체를 꺼낸다.
+- 고침: 공용 `.git/hooks/post-checkout`(원본 `tools/git훅/post-checkout`, 깔기 `node tools/새워크트리가볍게.js --설치`)이 새 워크트리(앞 HEAD가 0)일 때만 **그 새 워크트리 안의** `tools/새워크트리가볍게.js`를 불러, `.claude/worktrees`·`.codex/worktrees` 아래면 `바로올리기.js 가볍게`와 같은 sparse-checkout을 건다. 공용 작업본 판 코드를 부르지 않는다(talk 커밋 훅이 공용 판 가드를 불러 어긋난 일, [배포_공개](배포_공개.md)). 훅은 늘 종료 0이라 git을 막지 않는다. 원본은 `.gitattributes`로 LF이고 `--설치`도 LF로 쓴다(이 PC는 `core.autocrlf=true`라 CRLF 셸 스크립트가 될 수 있다). 깔기는 자동 모드 판정기가 막아 유호님 「응, 훅 깔아」 뒤에 했다.
+- 다시 확인: `node tools/새워크트리가볍게.js --상태`가 「깔림」이고 최근 기록에 새 워크트리가 「가볍게 함」으로 남는다(10-31 22:21 실제 저장소 임시 판 시험: 파일 2,637개 · 2.18GiB 빠짐, 상태 0줄, 공용 작업본 그대로, `--되살림 docs/캐릭터` 15초). 새 워크트리에서 `git config --show-scope --get core.sparseCheckout`이 `worktree true`.
 
 ### 공간 정리가 추적 파일을 지운다
 - 증상: PC 공간 정리 뒤 시험이 「파일 없음」으로 깨진다. 10-03 정리가 추적 파일 185개(142MB)를, 10-10 정리가 메인 추적 파일 217개 + 워크트리 10곳 약 8,900개를 지웠다(같은 SHA가 Drive에 있으면 로컬 삭제). 10-14에는 폴더 통째 삭제가 안쪽에 둔 git 클론까지 지웠다.
