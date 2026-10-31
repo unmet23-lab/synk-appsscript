@@ -32,7 +32,7 @@ function fakeForm(html){
 }
 
 // home.openPanel()은 지금 열린 판의 종류('' = 닫힘)를 돌려준다(brand-opening/home.mjs와 같다). prepare: 학습 호스트 준비(시험이 끼어들 자리).
-function setup({reading='reads',saved=null,position=worldPosition,prepare=async()=>{}}={}){
+function setup({reading='reads',saved=null,position=worldPosition,prepare=async()=>{},speakingPractice=null}={}){
  const storage=memory(),panels=[],toasts=[],launched=[];let form=null,kind='';
  const progress=createLifeProgress({storage,now:()=>AT});
  if(reading)progress.setHangulReading(reading,{via:'question'});
@@ -40,11 +40,21 @@ function setup({reading='reads',saved=null,position=worldPosition,prepare=async(
  const home={updateStudy(){},toast:message=>toasts.push(message),openPanel:()=>kind,closePanel(){kind='';if(form)form.isConnected=false;},
   showPanel(title,html,options){panels.push({title,html,options});kind=options?.type||'panel';if(form)form.isConnected=false;form=options?.type==='world-study'?fakeForm(html):null;}};
  const target={localStorage:storage,document:{querySelector:selector=>selector==='#world-study-form'?form:null},addEventListener(){},removeEventListener(){}};
- const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:createWorldLearningPlan,position,target,prepare,
+ const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:createWorldLearningPlan,position,target,prepare,speakingPractice,
   launchGame:id=>launched.push(['game',id]),startLesson:id=>launched.push(['lesson',id]),startReview:id=>launched.push(['review',id])});
  return {education,progress,home,panels,toasts,launched,form:()=>form,goal:()=>panels.filter(p=>p.options?.type==='world-study').at(-1),plan:()=>panels.filter(p=>p.options?.eyebrow==='MY WEEK').at(-1)};
 }
 const checked=(html,name,value)=>new RegExp(`name="${name}" value="${value}" checked>`).test(html);
+
+test('a rejected speaking selection keeps the goal form open and reports the save failure',async()=>{
+ let refused=true,prepared=0;
+ const s=setup({prepare:async()=>{prepared++;},speakingPractice:{available:()=>true,candidates:()=>[{id:'speaking-one',route:'speaking:1',minutes:1}],chosen:()=>false,choose(){if(refused)throw Error('말하기 선택 저장 실패');}}});
+ try{
+  await s.education.examLink('topik1');const form=s.form();assert.ok(form.elements.speakingExam);form.elements.speakingExam.checked=true;form.elements.consent.checked=true;form.submit();
+  await until(()=>form.status.textContent||!form.isConnected,'저장 결과');assert.equal(form.isConnected,true);assert.match(form.status.textContent,/말하기 선택 저장 실패/);assert.equal(s.plan(),undefined);assert.ok(prepared>=1,'the saved goal is prepared even when the auxiliary choice fails');
+  refused=false;form.submit();await until(()=>!form.isConnected,'같은 창에서 실제 재시도');assert.equal(form.isConnected,false);
+ }finally{s.education.dispose();}
+});
 
 test('처음 온 손님: TOPIK II 주소는 「시험·자격 준비 → TOPIK II」를 채운 목표 창을 열고, 열기만으로는 아무것도 저장하지 않는다',async()=>{
  const s=setup();

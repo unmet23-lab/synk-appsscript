@@ -14,7 +14,7 @@ function setup({prepare=null,ready=null,bank=null,hangul=null}={}){
  const board=node(),panels=[],rows=new Map(),coaches=[];let writes=0,resource=null,panelKind='';
  const storage={getItem:k=>rows.get(k)??null,setItem:(k,v)=>{writes++;rows.set(k,String(v));},removeItem:k=>{writes++;rows.delete(k);}};
  const progress={owner:'account-fixture',learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>({audio:'off',primaryReason:'exam',reasons:['exam'],examType:'topik1',targetGrade:2}),status:()=>({phase:'blocked',scoped:true}),exportSnapshot:()=>({}),flush:async()=>{},hangulReading:()=>null};
- const target={localStorage:storage,addEventListener(){},removeEventListener(){},document:{querySelector(selector){return selector==='#panel-content [data-position-board]'?board:null;}},
+ const target={localStorage:storage,addEventListener(){},removeEventListener(){},document:{querySelector(selector){return panelKind!=='other'&&selector==='#panel-content [data-position-board]'?board:null;}},
   SYNKLearningHost:{ready:()=>{entered.ready.resolve();return ready?ready.promise:Promise.resolve();},createGame(options){const coach=worldLearning.engine.createGame({...options,storage});coaches.push(coach);return coach;}}};
  const drop=()=>{const r=resource;resource=null;r?.dispose?.();};
  // Closing keeps the old DOM connected during the real home's 160ms fade.
@@ -36,6 +36,15 @@ for(const stage of ['prepare','ready','bank','hangul'])test(`closing the panel d
   if(stage!=='bank')assert.equal(fixture.writes(),writesAtClose,'the cancelled continuation performs no writes');
   if(stage==='prepare'||stage==='ready')assert.equal(writesAtClose,0);
  }finally{fixture.education.dispose();}
+});
+
+for(const stage of ['prepare','ready','bank'])test(`leaving during the ${stage} wait cancels a short practice launch`,async()=>{
+ const gate=deferred(),fixture=setup({[stage]:gate});
+ try{
+  const opening=fixture.education.practice('ko.reading.negation');await fixture.entered[stage].promise;
+  fixture.home.showPanel('다른 화면','다른 화면',{type:'other'});gate.resolve();await opening;
+  assert.equal(fixture.panels.length,1);assert.equal(fixture.home.openPanel(),'other');assert.equal(fixture.events().length,0);if(stage!=='bank')assert.equal(fixture.writes(),0);
+ }finally{gate.resolve();fixture.education.dispose();}
 });
 test('a newer opening replaces the old pending resource without cancelling itself',async()=>{
  const gate=deferred(),fixture=setup({prepare:gate});

@@ -50,13 +50,15 @@ export function createWorldGameHost({accountId,revision,connected,play,learning,
   if(!connected)return {added:result.added,skipped:result.skipped.length,confirmed:true,local:true};
   // 동기화가 아직 없으면(놀이 충돌로 준비가 일찍 끝난 경로) 세운다. 없는 동기화의 'idle'은 보낸 것이 아니다(10-21 검수).
   try{learnHost.preferences?.();}catch{/* the status below decides */}
-  try{await learnHost.retry?.();}catch{/* the status below decides */}
-  for(const until=Date.now()+timeoutMs;;){
+  const until=Date.now()+timeoutMs;let timer,retried;
+  try{retried=await Promise.race([Promise.resolve().then(()=>learnHost.retry?.()).then(()=>true,()=>true),new Promise(resolve=>{timer=setTimeout(()=>resolve(false),Math.max(0,until-Date.now()));})]);}finally{clearTimeout(timer);}
+  check();
+  for(;;){
    check();const state=learnHost.status();
    if(['blocked','stopped','offline'].includes(state.phase))return {added:result.added,skipped:result.skipped.length,confirmed:false,code:state.code||state.phase.toUpperCase()};
    if(!state.queued&&(state.phase==='synced'||!result.added&&state.phase==='idle'))return {added:result.added,skipped:result.skipped.length,confirmed:true};
-   if(Date.now()>until)return {added:result.added,skipped:result.skipped.length,confirmed:false,code:'TIMEOUT'};
-   await sleep(pollMs);
+   if(!retried||Date.now()>=until)return {added:result.added,skipped:result.skipped.length,confirmed:false,code:'TIMEOUT'};
+   await sleep(Math.min(pollMs,Math.max(0,until-Date.now())));
   }
  }
  const publicHandle=Object.freeze({status,flush,async resolve(choice){check();await playHost.resolve(choice);check();return status();},closeGame(){

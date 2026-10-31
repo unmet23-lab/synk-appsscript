@@ -17688,7 +17688,8 @@ function createWorldEducation({
   const speakingCall = (name, ...args) => {
     try {
       return typeof speakingPractice?.[name] === "function" ? speakingPractice[name](...args) : null;
-    } catch {
+    } catch (error2) {
+      if (name === "choose") throw error2;
       return null;
     }
   };
@@ -18005,9 +18006,15 @@ function createWorldEducation({
       form.querySelectorAll("button").forEach((b) => b.disabled = true);
       try {
         valid();
-        operation();
+        const afterWrite = operation();
         boardExam = null;
         revision2 = progress2.learningProfile().profile.revision;
+        let afterWriteFailure;
+        try {
+          if (typeof afterWrite === "function") afterWrite();
+        } catch (error2) {
+          afterWriteFailure = { error: error2 };
+        }
         await progress2.flush();
         valid();
         if (progress2.learningProfile().profile.status !== "skipped") {
@@ -18021,6 +18028,7 @@ function createWorldEducation({
           if (applyPreferences({ explicit: true }) === false) throw Error("\uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
         }
         refresh();
+        if (afterWriteFailure) throw afterWriteFailure.error;
         home.closePanel();
         if (after) await after();
         else if (continueAfter) await next();
@@ -18055,7 +18063,7 @@ function createWorldEducation({
       void run(
         () => {
           progress2.updateLearningProfile({ consent: true, expectedRevision: revision2, values: { reasons: reason2 ? [reason2] : null, primaryReason: reason2 || null, goal: null, support: form.elements.support.value, explanation: form.elements.explanation.value, ...examValues(reason2) }, today: { ...minutes2 ? { minutes: minutes2 } : {}, audio: form.elements.audio.value } });
-          saveSpeaking(reason2);
+          return () => saveSpeaking(reason2);
         },
         // 주소로 연 창의 「저장하고 시작하기」: 시험을 고른 채 저장했으면 이번 주 계획, 학생이 이유를 시험 밖으로 바꿨으면 첫 실행처럼 다음 연습.
         // 계획을 띄우지 못하면(그사이 다른 판을 열었거나 계획이 없음) 저장 알림만, 그사이 계정이 바뀌어 이 화면이 닫혔으면 아무것도.
@@ -18077,7 +18085,9 @@ function createWorldEducation({
     });
     form.querySelectorAll("[data-study-clear]").forEach((button) => button.addEventListener("click", () => void run(() => {
       progress2.clearLearningProfile({ mode: button.dataset.studyClear, expectedRevision: revision2 });
-      if (button.dataset.studyClear === "delete" && speakingChosen()) speakingCall("choose", owner, false);
+      return () => {
+        if (button.dataset.studyClear === "delete" && speakingChosen()) speakingCall("choose", owner, false);
+      };
     })));
   }
   async function examLink(type) {
@@ -18717,26 +18727,34 @@ function createWorldEducation({
     if (!position?.practice) return;
     check3();
     const ticket = ++practiceOpen;
+    let launching = true;
+    home.attachPanelResource?.({ dispose() {
+      if (launching && ticket === practiceOpen) practiceOpen++;
+    } });
+    const active = () => {
+      check3();
+      return ticket === practiceOpen;
+    };
     try {
       await prepare();
     } catch {
     }
-    check3();
+    if (!active()) return;
     try {
       await target.SYNKLearningHost?.ready?.();
     } catch {
     }
-    check3();
+    if (!active()) return;
     try {
       await bankReady();
     } catch {
     }
+    if (!active()) return;
     if (followupId) {
       await Promise.race([loadFollowupBank(), new Promise((resolve) => setTimeout(resolve, 4e3))]);
-      check3();
+      if (!active()) return;
     }
-    check3();
-    if (ticket !== practiceOpen) return;
+    if (!active()) return;
     const coachNow = readPracticeCoach();
     if (!coachNow) {
       home.toast(t2("practice.unavailable"));
@@ -18789,6 +18807,7 @@ function createWorldEducation({
       }
       queueMicrotask(() => refresh());
     };
+    launching = false;
     home.showPanel(t2(listening ? "practice.title.listening" : "practice.title"), '<div class="wpos-stage" data-practice-stage></div>', { ...PANEL, eyebrow: "PRACTICE" });
     home.attachPanelResource?.({ dispose: stop });
     const box = panelNode("[data-practice-stage]");
