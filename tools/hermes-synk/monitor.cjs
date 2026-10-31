@@ -18,7 +18,7 @@ function clean(value, max = 220) {
 }
 function eventView(event) {
   return {id: clean(event.id, 180), kind: clean(event.kind, 50), severity: clean(event.severity, 40), notify: event.notify !== false,
-    needs_attention: event.needs_attention === true, attention_fingerprint: clean(event.attention_fingerprint || event.fingerprint, 100),
+    needs_attention: event.needs_attention === true, notify_recovery: event.notify_recovery === true, attention_fingerprint: clean(event.attention_fingerprint || event.fingerprint, 100),
     title: clean(event.title, 150), detail: clean(event.detail, 240), fingerprint: clean(event.fingerprint, 100)};
 }
 function attentionNotification(events) {
@@ -28,7 +28,15 @@ function attentionNotification(events) {
     text:'SYNK · 판단이 필요한 일\n'+events.slice(0,6).map(x=>'- '+x.title+(x.detail?'\n  '+x.detail:'')).join('\n')
       +(events.length>6?'\n그 밖에 '+(events.length-6)+'건 · /synk_today 에서 전체 확인':'')};
 }
-function plan(previous, overview, now = new Date()) {
+// Keeps needs_attention:true because the sender delivers nothing else; it is only ever built for an incident someone was alerted to.
+function recoveryNotification(events) {
+  const id = 'event-' + hash([POLICY, 'recovery', events.map(x => [x.id, x.incident]).sort()]).slice(0, 24);
+  return {id, kind:'recovery',policy:POLICY,needs_attention:true,
+    events:events.map(x=>({id:x.id,incident:x.incident,notice:x.notice})),
+    text:'SYNK · 풀린 일\n'+events.slice(0,6).map(x=>'- '+x.title+(x.detail?'\n  '+x.detail:'')).join('\n')
+      +(events.length>6?'\n그 밖에 '+(events.length-6)+'건 · /synk_today 에서 전체 확인':'')};
+}
+function plan(previous, overview, now = new Date(), {delivered: sent = () => true} = {}) {
   const events = (overview.events || []).map(eventView).filter(x => x.id && x.fingerprint);
   const current = Object.fromEntries(events.map(x => [x.id, x]));
   const first = !previous;
@@ -39,6 +47,7 @@ function plan(previous, overview, now = new Date()) {
   state.pending = {};
   state.attentionObserved ||= {};
   state.attentionIncidents ||= {};
+  state.attentionAlerted ||= {};
   for (const event of events) {
     if (event.needs_attention) {
       let incident=state.attentionIncidents[event.id];
@@ -51,6 +60,14 @@ function plan(previous, overview, now = new Date()) {
   }
   const urgent = first ? [] : events.filter(x => x.needs_attention && x.notify
     && state.attentionObserved[x.id] !== x.incident);
+  // Only a present, healthy row proves recovery, and only for an incident someone was actually told about.
+  // An alert withdrawn before sending (its source healed first) leaves nothing to recover from.
+  const told = id => { const value = state.attentionAlerted[id]; return typeof value === 'string' ? {incident:value} : value || null; };
+  const healed = first ? [] : events.filter(x => !x.needs_attention && x.notify_recovery && told(x.id));
+  const recovered = healed.filter(x => !told(x.id).notice || sent(told(x.id).notice)).map(x => ({...x,...told(x.id)}));
+  const alert = urgent.length ? attentionNotification(urgent) : null;
+  for (const event of urgent) if (event.notify_recovery) state.attentionAlerted[event.id] = {incident:event.incident,notice:alert.id};
+  for (const event of healed) delete state.attentionAlerted[event.id];
   // Absence is never completion: failed/partial readers must not erase evidence.
   state.observed = {...state.observed, ...current};
   for (const event of events) {
@@ -58,13 +75,15 @@ function plan(previous, overview, now = new Date()) {
     else {delete state.attentionObserved[event.id];delete state.attentionIncidents[event.id];}
   }
   const notifications = [];
-  if (urgent.length) notifications.push(attentionNotification(urgent));
+  if (alert) notifications.push(alert);
+  if (recovered.length) notifications.push(recoveryNotification(recovered));
   state.awakeSince = awakeSince(previous, now);
   state.checkedAt = now.toISOString();
   // Bound old observations and accumulated change summaries, without interpreting deletion.
   state.observed = Object.fromEntries(Object.entries(state.observed).slice(-2500));
   state.attentionObserved = Object.fromEntries(Object.entries(state.attentionObserved).slice(-1000));
   state.attentionIncidents = Object.fromEntries(Object.entries(state.attentionIncidents).slice(-1000));
+  state.attentionAlerted = Object.fromEntries(Object.entries(state.attentionAlerted).slice(-1000));
   return {state, notifications, first};
 }
 function readJSON(file, fallback) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch(e) { if(e.code === 'ENOENT') return fallback; throw new Error('state_unreadable'); } }
@@ -99,6 +118,16 @@ function attentionDraft(item) {
     && Array.isArray(item.events) && item.events.length > 0 && item.events.every(event => event?.needs_attention === true)
     && typeof item.text === 'string' && item.text.trim();
 }
+function recoveryDraft(item) {
+  return item && item.policy === POLICY && item.kind === 'recovery' && item.needs_attention === true
+    && Array.isArray(item.events) && item.events.length > 0 && typeof item.text === 'string' && item.text.trim();
+}
+// The sender claims a draft before it sends; a withdrawn draft carries a suppressed receipt instead.
+function delivered(outbox, id) {
+  let claim;
+  try { claim = fs.readFileSync(path.join(outbox, id + '.claim'), 'utf8'); } catch { return false; }
+  try { return JSON.parse(claim).status !== 'suppressed'; } catch { return true; }
+}
 function suppressDraft(outbox, item, now) {
   if (!/^(?:event-[a-f0-9]{24}|daily-\d{4}-\d{2}-\d{2})$/.test(item.id || '')) throw new Error('invalid_draft');
   const claim = path.join(outbox, item.id + '.claim');
@@ -122,7 +151,7 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     const refresh = !previous || now.getTime() - Date.parse(previous.remoteRefreshAt || previous.baselineAt) >= 3600000;
     // Only this monitor persists the backup failure marks; ad-hoc /synk_today reads stay write-free.
     const overview=await readOverview({root,hermesHome:home,now,remoteRefresh:refresh,persistState:true});
-    const result=plan(previous, overview, now);
+    const result=plan(previous, overview, now, {delivered:id=>delivered(path.join(folder,'outbox'),id)});
     result.state.remoteRefreshAt = refresh ? now.toISOString() : previous.remoteRefreshAt;
     for(const item of result.notifications) {
       const output=path.join(folder,'outbox',item.id+'.json');
@@ -138,6 +167,14 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
       .sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt))):[];
     const notifications=[];
     for (const draft of drafts) {
+      if (recoveryDraft(draft)) {
+        // A queued recovery must not arrive after the same source broke again.
+        const broken = new Set((overview.events || []).map(eventView).filter(event=>event.needs_attention).map(event=>event.id));
+        // Nor may it announce something nobody heard about: every source's alert must have actually gone out.
+        if (draft.events.some(source=>broken.has(source.id)) || !draft.events.every(source=>!source.notice || delivered(outbox,source.notice))) suppressDraft(outbox,draft,now);
+        else if (notifications.length < 20) notifications.push(draft);
+        continue;
+      }
       if (!attentionDraft(draft)) suppressDraft(outbox,draft,now);
       else {
         const current = new Map((overview.events || []).map(eventView).map(event=>[event.id,{...event,incident:result.state.attentionIncidents[event.id]?.id||''}]));
@@ -163,7 +200,7 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     return {first:result.first,checkedAt:now.toISOString(),policy:POLICY,notifications,coverage:overview.coverage};
   } finally {release();}
 }
-module.exports={plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,suppressDraft,attentionNotification,awakeSince,AWAKE_GAP_MS,POLICY};
+module.exports={plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
 if(require.main===module) {
   const home=process.env.HERMES_HOME || path.join(process.env.LOCALAPPDATA,'hermes');
   const {readOverview}=require('./overview.cjs');

@@ -60,3 +60,9 @@ test('contractCheck separates a moved pin from changed content and flags Hermes-
   fs.writeFileSync(path.join(home,'runtime/synk-automation/config.json'),JSON.stringify(config));
   assert.deepEqual(check(ops).differs,['없앨 고정: tools/old.cjs']);
 });
+
+test('감시가 부르는 모든 코드는 계약 목록에 든다 — 빠지면 고쳐도 다시 잡히지 않는다',()=>{
+  const folder=path.join(__dirname,'../tools/hermes-synk');
+  const list=fs.readFileSync(path.join(folder,'install-automation.cjs'),'utf8');
+  for(const file of ['monitor.cjs','overview.cjs']) for(const [,name] of fs.readFileSync(path.join(folder,file),'utf8').matchAll(/require\('\.\/([\w-]+\.cjs)'\)/g)) assert.ok(list.includes(`'${name}'`),name);
+});

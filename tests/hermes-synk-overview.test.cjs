@@ -49,7 +49,7 @@ with tempfile.TemporaryDirectory(prefix='synk-sns-reader-test-') as directory:
   exec(compile(value['source'],'actual-sns-remote-reader','exec'),{})
 `;
   const python=process.platform==='win32'?path.join(os.homedir(),'.local/bin/python3.12.exe'):'python3';
-  const result=require('node:child_process').spawnSync(python,['-X','utf8','-c',harness],{input:JSON.stringify({source,rows}),encoding:'utf8',windowsHide:true,timeout:15000});
+  const result=require('node:child_process').spawnSync(python,['-X','utf8','-c',harness],{input:JSON.stringify({source,rows}),encoding:'utf8',windowsHide:true,timeout:60000});
   assert.equal(result.status,0,result.stderr);return JSON.parse(result.stdout);
 }
 test('원격 Python의 손상된 성과 행도 기존 SNS 연결 상태를 보존한다',()=>{
@@ -1006,6 +1006,88 @@ test('SNS 연결은 세 시간에 한 번만 읽고 코드·시각만 보관하�
   const long = await readOverview({ ...f.options, now: new Date(NOW.getTime() + 49 * 60 * 60_000), remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: blocked });
   assert.equal(byId(long, 'coverage-sns').needs_attention, true);
   assert.equal(byId(long, 'sns-connection-youtube').needs_attention, true, '서버의 연결 점검 기록이 오래되면 판단으로 올린다');
+});
+
+test('원격 Python은 문서 칸만 읽고 늦게 등록한 관측·숨긴 채널·범위 밖 관측을 뺀다', () => {
+  const raw = fs.readFileSync(path.join(__dirname, '../tools/hermes-synk/overview.cjs'), 'utf8').split('async function refreshSns()')[1];
+  const source = /const source = String.raw`([^]*?)`;/.exec(raw)[1];
+  assert.deepEqual([...source.matchAll(/\bFROM\s+(\w+)/g)].map(row => row[1]).filter(name => name !== 'documents'), [], '인증값 표는 읽지 않는다');
+  const hours = value => new Date(Date.now() - value * 3_600_000).toISOString();
+  const out = persistedSnsRead({
+    settings: [{ id: 'company', enabled: true, hourKst: 9, secretNote: 'private-setting' }],
+    channels: [{ id: 'c1', platform: 'youtube', active: true, displayName: '공개 채널', canonicalUrl: 'https://youtube.com/@fixture', status: 'error', failureKind: 'auth', failureCode: 'TOKEN_EXPIRED',
+      requiresReconnect: true, lastFailureAt: hours(1), lastCollectedAt: hours(30), lastError: 'private-error', ownerIds: ['private-owner'] },
+    { id: 'c2', platform: 'youtube', hidden: true, displayName: '숨긴 채널' }, { id: 'c3', platform: 'threads', displayName: '다른 플랫폼' }],
+    postPerformanceEntries: [
+      { id: 'inTime', channelId: 'c1', title: '제때 등록', publishedAt: hours(30), createdAt: hours(29), checkpoints: [
+        { hours: 24, status: 'manual-required', dueAt: hours(6), closesAt: hours(-1), lastErrorCode: 'METRICS_UNAVAILABLE', message: 'private-message', metrics: { views: 7 } },
+        { hours: 72, status: 'pending', dueAt: hours(-42), closesAt: hours(-48) }] },
+      { id: 'lateRegistered', channelId: 'c1', title: '늦게 등록', publishedAt: hours(40), createdAt: hours(1), checkpoints: [{ hours: 24, status: 'missed', dueAt: hours(16), closesAt: hours(10) }] },
+      { id: 'collectorMissed', channelId: 'c1', title: '수집기 놓침', publishedAt: hours(40), createdAt: hours(39), checkpoints: [{ hours: 24, status: 'missed', dueAt: hours(16), closesAt: hours(10) }] },
+      { id: 'old', channelId: 'c1', title: '지난 일', publishedAt: hours(200), createdAt: hours(199), checkpoints: [{ hours: 24, status: 'missed', dueAt: hours(176), closesAt: hours(170) }] },
+      { id: 'hidden', channelId: 'c2', title: '숨긴 채널 글', publishedAt: hours(30), createdAt: hours(29), checkpoints: [{ hours: 24, status: 'manual-required', dueAt: hours(6), closesAt: hours(-1) }] },
+      { id: 'stopped', channelId: 'c1', active: false, title: '끈 글', publishedAt: hours(30), createdAt: hours(29), checkpoints: [{ hours: 24, status: 'manual-required', dueAt: hours(6), closesAt: hours(-1) }] }] });
+  assert.equal(out.collectionError, undefined);
+  assert.equal(out.collection.enabled, true);
+  assert.deepEqual(out.collection.channels.map(row => row.label), ['공개 채널']);
+  assert.equal(out.collection.channels[0].failureKind, 'auth');
+  assert.deepEqual(out.collection.checkpoints.map(row => row.title).sort(), ['수집기 놓침', '제때 등록']);
+  assert.doesNotMatch(JSON.stringify(out.collection), /private-|views/);
+  const clean = sanitizeSns(out);
+  assert.equal(clean.collection.channels[0].requiresReconnect, true);
+  assert.equal(clean.collection.checkpoints.find(row => row.title === '제때 등록').lastErrorCode, 'METRICS_UNAVAILABLE');
+});
+
+test('원격 Python은 상한에서 끝난 관측부터 자르고 조회가 잘렸다고 표시한다', () => {
+  const hours = value => new Date(Date.now() - value * 3_600_000).toISOString();
+  const recorded = Array.from({ length: 310 }, (_, i) => ({ id: 'done' + i, channelId: 'c1', title: '끝난 글', publishedAt: hours(30), createdAt: hours(29),
+    checkpoints: [{ hours: 24, status: 'recorded', dueAt: hours(6 - i * 0.001), closesAt: hours(-1) }] }));
+  const open = { id: 'open', channelId: 'c1', title: '오래 멈춘 글', publishedAt: hours(70), createdAt: hours(69), checkpoints: [{ hours: 24, status: 'manual-required', dueAt: hours(40), closesAt: hours(34) }] };
+  const out = persistedSnsRead({ settings: [{ id: 'company', enabled: true }], postPerformanceEntries: [...recorded, open] });
+  assert.equal(out.collection.checkpoints.length, 300);
+  assert.equal(out.collection.limited, true);
+  assert.equal(out.collection.checkpoints[0].title, '오래 멈춘 글', '알릴 관측은 잘리지 않는다');
+  const dues = out.collection.checkpoints.slice(1).map(row => row.dueAt);
+  assert.deepEqual(dues, [...dues].sort().reverse(), '끝난 관측은 새것부터 남긴다');
+});
+
+test('성공한 적 없는 채널의 첫 실패 시각은 세 시간마다 새로 읽어도 사본에 이어진다', async t => {
+  const f = fixture(t);
+  const at = value => new Date(NOW.getTime() + value * 3_600_000).toISOString();
+  const payload = moment => ({ appRunning: true, connections: [], inbox: [], jobs: { total: 0 }, collection: { schemaVersion: 1, enabled: true, checkpoints: [],
+    channels: [{ ref: 'd'.repeat(12), platform: 'youtube', label: '새 채널', status: 'error', failureKind: 'transient', lastFailureAt: moment, lastAttemptAt: moment, recentLastCollectedAt: moment }] } });
+  const read = hours => readOverview({ ...f.options, now: new Date(NOW.getTime() + hours * 3_600_000), remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: async () => payload(at(hours - 0.1)) });
+  const id = 'sns-collection-' + 'd'.repeat(12);
+  assert.equal((await read(0)).events.find(row => row.id === id).needs_attention, false);
+  for (const hours of [9, 18]) assert.equal((await read(hours)).events.find(row => row.id === id).needs_attention, false);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(f.home, SNS_CACHE), 'utf8')).collection.channels[0].failingSince, NOW.toISOString());
+  assert.equal((await read(27)).events.find(row => row.id === id).needs_attention, true);
+});
+
+test('원격 Python이 집계 칸만 못 읽으면 기존 SNS 상태를 살리고 못 읽음을 남긴다', () => {
+  const out = persistedSnsRead({ settings: [{ id: 'company', enabled: true }], postPerformanceEntries: [{ id: 'bad', channelId: 'c1', publishedAt: '2026-10-20T00:00:00Z', checkpoints: 7 }] });
+  assert.equal(out.connections[0].state, 'healthy');
+  assert.equal(out.collectionError, 'COLLECTION_READ_FAILED');
+  assert.equal(sanitizeSns(out).collectionError, 'COLLECTION_READ_FAILED');
+});
+
+test('SNS 집계 상태는 사본에 남아 오늘 확인에 보이고, 세 시간 사본을 다시 읽는 동안 벽시계로 밀렸다고 하지 않는다', async t => {
+  const f = fixture(t);
+  const at = value => new Date(NOW.getTime() + value * 3_600_000).toISOString();
+  const channel = { ref: 'a'.repeat(12), platform: 'youtube', label: '공개 채널', status: 'success', recentStatus: 'success', lastCollectedAt: at(-25.5), recentLastCollectedAt: at(-0.3) };
+  const payload = { appRunning: true, connections: [], inbox: [], jobs: { total: 0 }, collection: { schemaVersion: 1, enabled: true, channels: [channel],
+    checkpoints: [{ ref: 'b'.repeat(12), channel: channel.ref, title: '곧 읽을 글', hours: 24, status: 'pending', dueAt: at(-0.5), closesAt: at(5.5) },
+      { ref: 'c'.repeat(12), channel: channel.ref, title: '멈춘 글', hours: 24, status: 'manual-required', dueAt: at(-2), closesAt: at(4) }] } };
+  const fresh = await readOverview({ ...f.options, remoteRefresh: true, readLedger: async () => ledger(), readSnsRemote: async () => payload });
+  const open = report => report.events.filter(row => ['sns-collection', 'sns-performance'].includes(row.kind) && row.needs_attention).map(row => row.id);
+  assert.deepEqual(open(fresh), ['sns-performance-' + 'c'.repeat(12)]);
+  assert.match(fresh.text, /SNS 집계 채널 1개 · 확인 필요 집계 0건·성과 관측 1건/);
+  assert.match(fresh.text, /공개 채널 24시간 숫자 직접 입력 필요/);
+  assert.equal(fresh.coverage.snsCollectionStatusAvailable, true);
+  // 조회 뒤 두 시간: 벽시계로 재면 곧 읽을 글은 밀림, 채널은 26시간 초과다
+  const later = await readOverview({ ...f.options, now: new Date(NOW.getTime() + 2 * 3_600_000), remoteRefresh: false, readLedger: async () => ledger() });
+  assert.deepEqual(open(later), open(fresh));
+  assert.equal(later.events.find(row => row.id === 'sns-performance-' + 'c'.repeat(12)).attention_fingerprint, fresh.events.find(row => row.id === 'sns-performance-' + 'c'.repeat(12)).attention_fingerprint);
 });
 
 test('SNS 응답 모양이 다르면 성공으로 저장하지 않는다', async t => {

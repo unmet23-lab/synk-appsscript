@@ -75,7 +75,7 @@ function main() {
   const before=jobs(home).filter(j=>j.name===NAME);
   if(before.length>1) throw new Error('Duplicate named schedules; refusing another schedule.');
   const destination=path.join(home,'scripts/synk_automation.py');
-  const originals=['monitor.cjs','awake-time.cjs','overview.cjs','tip-worker-status.cjs','tip-intake-status.cjs','status.cjs','workspace.cjs','validation.cjs','validation-preview.cjs','validation-data.cjs','validation-python.cjs','validation-python.py','validation-web.cjs','integration.cjs','integration-windows.ps1','plugin/__init__.py','plugin/tip_intake.py','plugin/plugin.yaml','automation.py'].map(x=>path.join(__dirname,x));
+  const originals=['monitor.cjs','awake-time.cjs','overview.cjs','tip-worker-status.cjs','tip-intake-status.cjs','sns-health.cjs','status.cjs','workspace.cjs','validation.cjs','validation-preview.cjs','validation-data.cjs','validation-python.cjs','validation-python.py','validation-web.cjs','integration.cjs','integration-windows.ps1','plugin/__init__.py','plugin/tip_intake.py','plugin/plugin.yaml','automation.py'].map(x=>path.join(__dirname,x));
   const shared=['tools/운영홈.js','tools/operations-home/source-state.cjs','tools/operations-home/resume.js','tools/operations-home/native-status.js','tools/operations-home/operations-status.cjs','tools/operations-home/performance-summary.cjs','tools/참고카드_목록.js','tools/server-backup/read-status.cjs','tools/모델정책.js','tools/lib/공용작업본.js'].map(x=>path.join(root,x));
   const native=['pyproject.toml','gateway/session_context.py'].map(x=>path.join(home,'hermes-agent',x));
   const files=[...originals,...shared,...native];

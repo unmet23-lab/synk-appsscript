@@ -88,6 +88,17 @@ class DeliveryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 module.deliver(Path(temp),{'id':'../../x','text':'x','needs_attention':True},lambda _: {},'123')
 
+    def test_recovery_notice_passes_the_sender_gate_once(self):
+        item={'id':'event-'+'a'*24,'kind':'recovery','policy':'attention_only_v1','needs_attention':True,'text':'SYNK · 풀린 일'}
+        sent=[]
+        def sender(payload):
+            sent.append(payload)
+            return {'success':True,'message_id':'1'}
+        with tempfile.TemporaryDirectory() as temp:
+            self.assertEqual(module.deliver(Path(temp),item,sender,'123'),'sent')
+            self.assertEqual(module.deliver(Path(temp),item,sender,'123'),'already_claimed')
+        self.assertEqual(len(sent),1)
+
     def test_normal_and_legacy_notifications_cannot_send_even_if_collector_returns_them(self):
         with self.busy_fixture() as (folder,clock,messages,run):
             run.return_value=subprocess.CompletedProcess([],0,json.dumps({'notifications':[

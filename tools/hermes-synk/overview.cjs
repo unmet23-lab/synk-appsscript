@@ -13,6 +13,7 @@ const { awakeSince } = require('./awake-time.cjs');
 const { tipWorkerSnapshot } = require('./tip-worker-status.cjs');
 const { tipIntakeSnapshot, lookupHash } = require('./tip-intake-status.cjs');
 const { sanitizePerformance } = require('../operations-home/performance-summary.cjs');
+const { sanitizeCollection, carryFailingSince, healthRows } = require('./sns-health.cjs');
 const runFile = promisify(execFile);
 const ROOT = path.resolve(__dirname, '../..');
 const LEDGER_CACHE = 'runtime/synk-overview/ledger-cache.json';
@@ -507,8 +508,11 @@ function sanitizeSns(payload) {
   if (list(payload.connections).length > 40 || list(payload.inbox).length > 20) throw new Error('SNS_SHAPE');
   const jobs = payload.jobs && typeof payload.jobs === 'object' ? payload.jobs : {};
   let performance = null;
+  let collection = null;
+  let collectionError = payload.collectionError === 'COLLECTION_READ_FAILED';
   // Optional metrics must not hide the existing connection/publishing health.
   try { if (payload.performance) performance = sanitizePerformance(payload.performance); } catch {}
+  try { if (payload.collection) collection = sanitizeCollection(payload.collection); } catch { collectionError = true; }
   return { appRunning: payload.appRunning,
     connections: list(payload.connections).map(row => ({ platform: platform(row?.platform, ['youtube', 'instagram', 'facebook']), state: code(row?.state),
       errorCode: code(row?.errorCode), checkedAt: iso(row?.checkedAt), requiresReconnect: row?.requiresReconnect === true, failureCode: code(row?.failureCode) })),
@@ -517,6 +521,8 @@ function sanitizeSns(payload) {
     jobs: { total: count(jobs.total), overdue: count(jobs.overdue), overdueRefs: refs(jobs.overdueRefs), recentFailed: count(jobs.recentFailed), recentFailedRefs: refs(jobs.recentFailedRefs) },
     ...(performance ? { performance } : {}),
     ...(payload.performanceError === 'PERFORMANCE_READ_FAILED' ? { performanceError: 'PERFORMANCE_READ_FAILED' } : {}),
+    ...(collection ? { collection } : {}),
+    ...(collectionError ? { collectionError: 'COLLECTION_READ_FAILED' } : {}),
   };
 }
 
@@ -607,6 +613,30 @@ if app and app.get('State',{}).get('Running') is True and mount:
     observations.append({'id':e['_id'],'channelId':e['channelId'],'title':str(e.get('title') or '게시물')[:240],'url':e.get('url'),'publishedAt':e['publishedAt'],'expiresAt':e.get('expiresAt'),'checkpoints':points})
    out['performance']={'schemaVersion':1,'checkedAt':out['checkedAt'],'appRunning':True,'channels':accounts,'entries':observations,'coverage':{'channels':len(visible),'entries':len(entries),'limited':len(visible)>200 or len(entries)>100}}
   except Exception:out['performanceError']='PERFORMANCE_READ_FAILED'
+  # Collection health stays on document fields only; a connection is inferred from collection traces, never from credentials.
+  try:
+   setting=db.execute("SELECT body FROM documents WHERE kind='settings' AND id='company'").fetchone()
+   schedule=json.loads(setting[0]) if setting else {}
+   visible=[c for c in channels.values() if c.get('active') is not False and not c.get('hidden') and c.get('platform') in ('youtube','instagram','facebook','tiktok')]
+   visible.sort(key=lambda c:c['_id'])
+   clock=('nextRetryAt','lastFailureAt','lastCollectedAt','lastAttemptAt','recentNextRetryAt','recentLastFailureAt','recentLastCollectedAt')
+   codes=('status','failureKind','failureCode','recentStatus','recentFailureKind','recentFailureCode')
+   chosen=visible[:100];known={c['_id'] for c in chosen}
+   states=[dict({k:when(c.get(k)) for k in clock},**{k:code(c.get(k)) for k in codes},ref=ref(c['_id']),platform=c['platform'],label=str(c.get('displayName') or c.get('handle') or c['platform'])[:80],disabled=c.get('collectionDisabled') is True,requiresReconnect=c.get('requiresReconnect') is True,recentRequiresReconnect=c.get('recentRequiresReconnect') is True) for c in chosen]
+   points=[]
+   for e in rows('postPerformanceEntries'):
+    if e.get('channelId') not in known or e.get('active') is False or e.get('hidden'):continue
+    for p in e.get('checkpoints') or []:
+     if not isinstance(p,dict) or p.get('hours') not in (24,72):continue
+     due=age(p.get('dueAt'));closing=age(p.get('closesAt'));created=age(e.get('createdAt'))
+     if due is None or closing is None or due<0 or closing>3*86400:continue
+     # Registered after its window closed: the collector never had a chance, so this is not a stalled observation.
+     if created is not None and created<closing:continue
+     points.append({'ref':ref(str(e['_id'])+':'+str(p['hours'])),'channel':ref(e['channelId']),'title':str(e.get('title') or '게시물')[:80],'hours':p['hours'],'status':code(p.get('status')),'dueAt':when(p.get('dueAt')),'closesAt':when(p.get('closesAt')),'nextAttemptAt':when(p.get('nextAttemptAt')),'attemptedAt':when(p.get('attemptedAt')),'lastErrorCode':code(p.get('lastErrorCode'))})
+   # Open observations go first so the row cap can only ever drop finished ones.
+   points.sort(key=lambda p:p['dueAt'],reverse=True);points.sort(key=lambda p:p['status']=='recorded')
+   out['collection']={'schemaVersion':1,'enabled':schedule.get('enabled'),'channels':states,'checkpoints':points[:300],'limited':len(visible)>100 or len(points)>300}
+  except Exception:out['collectionError']='COLLECTION_READ_FAILED'
  finally:
   db.rollback();db.close()
 print(json.dumps(out))
@@ -636,7 +666,9 @@ async function snsSnapshot({ hermesHome, now, remoteRefresh, readSnsRemote }) {
   const due = !cached || now.getTime() - Date.parse(cached.checkedAt) >= SNS_REFRESH_MS;
   if (remoteRefresh && due) {
     try {
-      cached = { checkedAt: now.toISOString(), ...sanitizeSns(await (readSnsRemote || refreshSns)({ hermesHome, now })) };
+      const fresh = sanitizeSns(await (readSnsRemote || refreshSns)({ hermesHome, now }));
+      if (fresh.collection) fresh.collection = carryFailingSince(fresh.collection, cached?.collection, now.toISOString());
+      cached = { checkedAt: now.toISOString(), ...fresh };
       try { saveCache(hermesHome, 'sns-cache.json', cached); } catch {}
     } catch { refreshFailed = true; }
   }
@@ -644,7 +676,7 @@ async function snsSnapshot({ hermesHome, now, remoteRefresh, readSnsRemote }) {
   const available = !!cached && age >= -60_000;
   return { available, checkedAt: available ? cached.checkedAt : null, refreshFailed, stale: !available || age > SNS_STALE_MS,
     appRunning: available ? cached.appRunning : null, connections: available ? cached.connections : [], inbox: available ? cached.inbox : [],
-    jobs: available ? cached.jobs : null };
+    jobs: available ? cached.jobs : null, collection: available ? cached.collection || null : null, collectionError: available && !!cached.collectionError };
 }
 
 function stage(value) {
@@ -780,6 +812,18 @@ function snsEvents(sns, now) {
   return rows;
 }
 
+// Rows carry notify_recovery so the monitor reports the first positive proof of recovery once.
+// A failed or stale read emits nothing: absence is never recovery.
+function snsHealthEvents(sns) {
+  if (!sns?.available || sns.stale || sns.appRunning === false) return [];
+  return healthRows({ collection: sns.collection, failed: sns.collectionError, checkedAt: sns.checkedAt, formatTime }).map(row => {
+    const output = attention(event(row.id, row.kind, row.severity, row.title, row.detail, row.content), row.needed, row.content);
+    output.notify_recovery = row.recovery !== false;
+    if (row.notify === false) output.notify = false;
+    return output;
+  });
+}
+
 function tipStatusEvents(worker, intake) {
   const rows = [];
   if (worker?.available) {
@@ -892,7 +936,7 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
   }
   for (const runtime of runtimes) events.push(event('runtime-' + runtime.source, 'runtime', 'info', runtime.source + ' 작업 조회', runtime.note,
     { connected: runtime.connected, stale: runtime.stale }));
-  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops), ...tipStatusEvents(tipWorker, tipIntake));
+  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...snsHealthEvents(sns), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops), ...tipStatusEvents(tipWorker, tipIntake));
   return events.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -935,6 +979,13 @@ function formatOverview(report) {
     const broken = events.filter(row => row.kind === 'sns' && row.needs_attention).length;
     lines.push(`- SNS 연결 ${sns.connections.length}개·댓글 수집 ${sns.inbox.length}개${broken ? ' · 확인 필요 ' + broken + '건' : ' · 이상 없음'} · 조회 ${formatTime(sns.checkedAt)}${sns.stale ? ' · 오래됨' : ''}`);
   } else if (sns) lines.push('- SNS 연결 상태 미확인(회사 서버 조회 전)');
+  if (sns?.available && sns.collection) {
+    const open = events.filter(row => ['sns-collection', 'sns-performance'].includes(row.kind) && row.needs_attention);
+    const count = kind => open.filter(row => row.kind === kind).length;
+    lines.push(`- SNS 집계 채널 ${sns.collection.channels.length}개${open.length ? ` · 확인 필요 집계 ${count('sns-collection')}건·성과 관측 ${count('sns-performance')}건` : ' · 이상 없음'} · 조회 ${formatTime(sns.checkedAt)}`);
+    for (const row of open.slice(0, 5)) lines.push(`  ${row.title}`);
+    if (open.length > 5) lines.push(`  그 밖에 ${open.length - 5}건`);
+  }
   const gateway = snapshot.gateway;
   if (gateway?.available || gateway?.stopped) {
     const row = events.find(item => item.id === 'gateway-recovery');
@@ -988,6 +1039,7 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
       ledgerComplete: ledger.available && !ledger.limited, researchComplete: research.available && research.complete === true,
       argonRemoteVerified: false, argonStatusAvailable: research.remoteStatusAvailable === true, argonStatusStale: research.stale !== false,
       backupStatusAvailable: backup.available, snsStatusAvailable: sns.available, snsStatusStale: sns.stale !== false,
+      snsCollectionStatusAvailable: !!sns.collection && !sns.collectionError,
       gatewayRecoveryStatusAvailable: gateway.available, opsCopyStatusAvailable: ops.available,
       tipWorkerStatusAvailable: tipWorker.available, tipWorkerStatusStale: tipWorker.stale,
       tipIntakeAvailable: tipIntake.available, tipIntakeComplete: tipIntake.complete,
@@ -1007,6 +1059,6 @@ async function main(args = process.argv.slice(2)) {
 if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오늘 조회를 확인하지 못했습니다. 원문·PC 연결을 확인해 주세요.\n'); process.exitCode = 1; });
 
 module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, argonStatusSource, argonRoles, reconcileTips, buildEvents, tipStatusEvents,
-  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, gatewayRecoverySnapshot, opsCopySnapshot, opsCopyEvents,
+  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, snsHealthEvents, gatewayRecoverySnapshot, opsCopySnapshot, opsCopyEvents,
   LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS,
   MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS, OPS_STALL_MS, OPS_UNPUSHED_MS };
