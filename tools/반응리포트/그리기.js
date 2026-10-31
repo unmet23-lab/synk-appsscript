@@ -1,7 +1,7 @@
 'use strict';
 /**
  * 광고 반응 리포트 · 그리기 — 지표 · 그림 자료 · 글로 한 장짜리 HTML을 만든다. 순수 함수(파일 · 네트워크 없음).
- * 색 토큰 · 막대 · 글자 · 출처 붙은 숫자는 업종 브리핑 그리기.js를 그대로 쓰고(한 곳에서 고친다), 칸 지도 그림 하나를 더한다.
+ * 색 토큰 · 결 · 빗금 막대 · 글자 · 출처 붙은 숫자는 업종 브리핑 그리기.js를 그대로 쓰고(한 곳에서 고친다), 편차 점 순위표 · 칸 지도 그림을 더한다.
  * 자료를 못 읽은 칸은 「이번엔 못 읽음 · 까닭」으로 남긴다. 돌려주는 것: {문서: 혼자 여는 HTML, 조각: 아티팩트에 올릴 본문}
  */
 const 폰트 = require('../lib/브랜드폰트.js');
@@ -9,44 +9,19 @@ const 브 = require('../업종브리핑/그리기.js');
 const 플랫폼 = require('./플랫폼.js');
 const 글모듈 = require('./글.js');
 
-const { 이스, 값글, 글HTML } = 브;
+const { 이스, 값글, 글HTML, 빗금막대 } = 브;
 
 const 더스타일 = `
-.시험판{align-self:flex-start;font-size:12px;font-weight:700;color:var(--muted);border:1px dashed var(--quiet);border-radius:999px;padding:1px 10px}
-.어디{align-self:flex-start;font-size:12px;font-weight:700;color:var(--accent-text);border:1px solid var(--accent);border-radius:999px;padding:1px 10px}
+.시험판{align-self:flex-start;font-size:12px;font-weight:500;color:var(--muted)}
+.어디{align-self:flex-start;font-size:12px;font-weight:600;color:var(--accent-text)}
 .바꿀 .어떻게{font-weight:650}
 .지도들{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:14px}
-.칸지도 rect.칸{fill:var(--panel);stroke:var(--line)} .칸지도 rect.칸.짝{fill:var(--bg)}
+.칸지도 rect.칸{fill:var(--bg);stroke:var(--line)} .칸지도 rect.칸.짝{fill:var(--soft)}
 .칸지도 text.칸글{font-size:12px;fill:var(--fg)} .칸지도 text.칸위{font-size:11px;fill:var(--muted)}
 .칸지도 line.평균{stroke:var(--accent);stroke-width:2} .칸지도 text.평균글{font-size:12px;font-weight:700;fill:var(--accent-text)}
 td.작,th.작{font-size:12px;color:var(--muted)}
 .넓은표{min-width:54rem} .넓은표 td:nth-child(-n+2),.넓은표 th{white-space:nowrap}
 .칸지도 text.칸위{font-size:11px}
-/* 결 — 상자 · 굵은 글씨 대신 크기 · 회색 · 얇은 선으로 위계를 만든다(10-31 유호님이 고른 리더보드 문법 · 시험판 A′).
-   업종 브리핑 스타일 위에 이 리포트만 덮는다(브리핑 바이트는 그대로). 강조색은 PULSE 베리(--accent) 하나. */
-:root{--bg:#FFFFFF;--fg:#222326;--muted:#6B6F76;--line:#E8E8E6;--soft:#F5F5F3;--bar:#A3A6AC}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111215;--fg:#EDEDEF;--muted:#A3A7AE;--line:#2A2B31;--soft:#18191D;--bar:#5E626A}}
-:root[data-theme="dark"]{--bg:#111215;--fg:#EDEDEF;--muted:#A3A7AE;--line:#2A2B31;--soft:#18191D;--bar:#5E626A}
-.br{gap:56px}
-.br h1{font-weight:560;letter-spacing:-.03em}
-.br h2{font-size:22px;font-weight:600;letter-spacing:-.015em;padding-top:22px;border-top:1px solid var(--line)}
-.br h3{font-size:16px;font-weight:600}
-.꼬리표{font-weight:600;letter-spacing:.02em}
-.칸{gap:18px}
-.판{background:none;border:0;border-radius:0;padding:0}
-.넷,.셋{gap:28px} .격자판{gap:28px 40px}
-.넷{grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr));gap:28px 20px}
-@media (max-width:719px){.넷{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.넷 > .타일,.셋 > .판{border-top:1px solid var(--line);padding-top:16px}
-.타일 .큰수{font-size:34px;font-weight:500;letter-spacing:-.025em;color:var(--fg)}
-.타일 .라벨{font-size:12.5px;font-weight:500}
-.수{font-weight:650}
-th{font-size:12.5px;font-weight:500}
-th,td{padding:9px 8px}
-.시험판{border:0;padding:0;font-weight:500}
-.어디{border:0;padding:0;font-weight:600}
-.못읽음{border:0;border-left:2px solid var(--line);border-radius:0;padding:2px 0 2px 14px}
-.칸지도 rect.칸{fill:var(--bg)} .칸지도 rect.칸.짝{fill:var(--soft)}
 /* 평소 대비 순위표 — 편차 점(10-31 유호님 「③ 편차 점으로」): 평소(1배) 점선에서 뻗는 가는 선과 점, 곱절 눈금(0.5 · 1 · 2 · 4 · 8배가
    같은 간격). 눈금 · 선 · 점 자리는 칸 폭에 대한 비율(--x)이라 휴대폰에서도 같이 줄어든다. 색은 평소보다 많은 줄만 베리. */
 .순위표{font-size:15px;table-layout:fixed;--왼:3.75rem;--오른:5rem}
@@ -87,28 +62,7 @@ th,td{padding:9px 8px}
   .막대줄{height:28px}
   .좁을때{display:inline;font-size:12px;color:var(--muted)}
 }
-/* 0부터 세는 양 — 빗금 막대(그래프 문법 docs/디자인/그래프_문법.md): 꽉 찬 면 대신 가는 사선 + 끝에만 단단한 선, 강조할 줄만 사업 색 */
-.빗금표{display:flex;flex-direction:column;container-type:inline-size}
-.빗줄{display:grid;grid-template-columns:minmax(6rem,11rem) minmax(0,1fr);align-items:center;column-gap:16px;min-height:38px;border-bottom:1px solid var(--line)}
-.빗줄:first-child{border-top:1px solid var(--line)}
-.빗이름{font-size:14px;line-height:1.4;overflow-wrap:anywhere}
-.빗칸{display:flex;align-items:center;gap:8px;min-width:0}
-.빗띠{flex:none;height:14px;width:max(2px,calc((100% - 6.5rem) * var(--w)));--색:var(--bar);background:repeating-linear-gradient(-45deg,var(--색) 0 1.2px,transparent 1.2px 4px);box-shadow:inset -2px 0 0 var(--색)}
-.빗띠.강조{--색:var(--accent)}
-.빗값{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-/* 화면 폭이 아니라 판 폭으로 쌓는다 — 랜딩 두 열 판(680~860px 화면)에서 막대가 몇 px로 줄던 것(10-31 Fable P2) */
-@container (max-width:26rem){.빗줄{grid-template-columns:minmax(0,1fr);row-gap:4px;padding:8px 0}}
 `;
-
-/**
- * 빗금 막대: [{이름, 값, 메모, 강조}] — 0부터 세는 양(비율 · 개수). 값은 0~최대, 넣은 순서대로.
- * 표시 글은 이름 · 메모 그대로라 화면 읽기에도 읽힌다(막대는 빈 칸).
- */
-function 빗금막대(줄, { 최대, 이름표 = '' }) {
-  if (!줄.length) return '';
-  const 위 = 최대 > 0 ? 최대 : 1;
-  return `<div class="빗금표" role="list" aria-label="${이스(이름표)}">${줄.map((d) => `<div class="빗줄" role="listitem"><span class="빗이름">${이스(d.이름)}</span><span class="빗칸"><span class="빗띠${d.강조 ? ' 강조' : ''}" style="--w:${Math.min(1, Math.max(0, Number(d.값) || 0) / 위).toFixed(4)}"></span><span class="빗값">${이스(d.메모)}</span></span></div>`).join('')}</div>`;
-}
 
 /**
  * 곱절 눈금 범위 — 2의 거듭제곱 칸(0.5 · 1 · 2 · 4 · 8배…). 평소(1배)를 늘 넣고, 가장 작은 · 큰 값이 끝에 붙지 않게 한 칸씩 띄운다.
