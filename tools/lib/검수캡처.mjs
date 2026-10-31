@@ -1,6 +1,7 @@
 // 검수 묶음의 전후 캡처(2026-10-21, tools/검수묶음.mjs). 화면마다 바탕 판(전)과 지금 판(후)을 1440·390 폭으로 띄워
 // 전체 화면 그림·보이는 글·콘솔 오류·실패한 요청·가로 넘침을 남기고, 전후 그림 차이를 odiff로 잰다.
 // 「전」은 같은 서버에서 바뀐 파일만 바탕 판 바이트로 바꿔 내려 준다(context.route). 서버가 만들어 주는 글·자료는 전후 모두 지금 판이다.
+// 배포 후보를 준 검수는 후보가 아는 파일을 지금 공개본(.앞판)으로 바꿔 내려 준다 — 무엇을 끼울지는 tools/검수묶음.mjs 「전」 판보기가 정한다(2026-11-01).
 // 바꿔 내려 주는 것은 이 PC 주소(127.0.0.1·localhost)뿐이고 밖의 사이트 요청은 건드리지 않는다.
 // 그림은 두 번 잇달아 같게 나올 때까지 기다렸다 찍는다(늦게 뜨는 그림·나타나기 효과 — 10-21 synk.im 두 회차 견줌에서 /world/가 한 번은 검은 화면이었다).
 // 그림이 Chromium 한 장 한계(16,384화소)를 넘는 긴 쪽은 그 안의 조각으로 나눠 찍어 기기 배율 그대로 잇는다(2026-10-24 — 휴대폰 몽골어 신청 페이지).
@@ -57,6 +58,17 @@ export function 정적서버(뿌리) {
   });
 }
 
+/** 이 PC 주소의 출처와 길(풀어 쓴 경로 · 폴더 주소는 index.html). 밖의 주소·못 읽는 주소는 null. */
+export function 이PC주소(주소) {
+  let u;
+  try { u = new URL(주소); } catch { return null; }
+  if (!이PC.has(u.hostname)) return null;
+  let 길;
+  try { 길 = decodeURIComponent(u.pathname); } catch { return null; }
+  if (길.endsWith('/')) 길 += 'index.html';
+  return { 출처: u.origin, 길 };
+}
+
 /**
  * 주소 → 저장소 경로. 이 PC 주소만 본다. 이 도구의 정적 서버면 경로 그대로, --주소뿌리(<주소 앞>=<저장소 경로 앞>)에 맞으면 그 앞을 바꾸고,
  * 그 밖에는 바뀐 파일 가운데 주소 경로로 끝나는 것이 하나뿐일 때 그것으로 본다(여럿이면 헷갈림으로 남긴다).
@@ -64,19 +76,16 @@ export function 정적서버(뿌리) {
 export function 경로찾기만들기({ 정적주소 = null, 주소뿌리 = [], 바뀐경로들 = [], 헷갈림 = new Set() }) {
   const 정적 = 정적주소 ? new URL(정적주소).origin : null;
   return 주소 => {
-    let u;
-    try { u = new URL(주소); } catch { return null; }
-    if (!이PC.has(u.hostname)) return null;
-    let 길;
-    try { 길 = decodeURIComponent(u.pathname); } catch { return null; }
-    if (길.endsWith('/')) 길 += 'index.html';
-    if (정적 && u.origin === 정적) return 길.replace(/^\/+/, '');
+    const 곳 = 이PC주소(주소);
+    if (!곳) return null;
+    const { 출처, 길 } = 곳;
+    if (정적 && 출처 === 정적) return 길.replace(/^\/+/, '');
     for (const [앞, 저장소앞] of 주소뿌리) {
       const 앞u = new URL(앞);
       const 앞길 = decodeURIComponent(앞u.pathname);
       // 경로 경계에서만 맞춘다(/app이 /apple/…에 맞지 않게). 저장소 쪽은 Windows 역슬래시도 받는다.
       const 맞음 = 앞길.endsWith('/') ? 길.startsWith(앞길) : 길 === 앞길 || 길.startsWith(`${앞길}/`);
-      if (u.origin === 앞u.origin && 맞음) return (저장소앞.replace(/\\/g, '/').replace(/\/?$/, '/') + 길.slice(앞길.length).replace(/^\/+/, '')).replace(/^\/+/, '');
+      if (출처 === 앞u.origin && 맞음) return (저장소앞.replace(/\\/g, '/').replace(/\/?$/, '/') + 길.slice(앞길.length).replace(/^\/+/, '')).replace(/^\/+/, '');
     }
     const 맞음 = 바뀐경로들.filter(p => ('/' + p).endsWith(길));
     if (맞음.length === 1) return 맞음[0];

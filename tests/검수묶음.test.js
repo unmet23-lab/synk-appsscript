@@ -305,6 +305,109 @@ test('화면 캡처: 「전」은 바뀐 파일만 바탕 판으로 끼우고, �
   assert.match(둘글, /화면 「첫-2」[\s\S]*눌러서 바뀐 글/);
 });
 
+const 블롭 = b => crypto.createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${Buffer.byteLength(b)}\0`), Buffer.from(b)])).digest('hex');
+const 넣기 = (뿌리, 표) => { for (const [p, v] of Object.entries(표)) { const f = path.join(뿌리, ...p.split('/')); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, v); } };
+
+test('「전」 판보기(배포 후보, 11-01): 후보 뿌리는 후보 경로를 가장 많이 품은 폴더 하나, 아는 공개 경로는 앞판·새 파일은 404, 그 밖은 바탕 판', async () => {
+  const api = await tool();
+  const { 경로찾기만들기 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
+  // SYNK-website 꼴: dist/가 공개 뿌리이고, 꼬리가 같은 src/index.html · qa 백업도 있다
+  const 파일들 = ['dist/index.html', 'dist/en/index.html', 'dist/mn/index.html', 'dist/assets/v10/home-body.css', 'src/index.html', 'qa/backup/dist/atlas/index.html', 'site-v10/home-body.css'];
+  assert.deepEqual(api.후보뿌리찾기(파일들, ['index.html', 'en/index.html', 'assets/v10/home-body.css']), { 뿌리: 'dist/', 동률: [] });
+  const 하나 = api.후보뿌리찾기(파일들, ['index.html']);
+  assert.equal(하나.뿌리, null, 'index.html 하나로는 dist/·dist/en/·src/가 같아 고르지 않는다');
+  assert.ok(하나.동률.includes('dist/') && 하나.동률.includes('src/'));
+  assert.deepEqual(api.후보뿌리찾기(파일들, ['없음.js']), { 뿌리: null, 동률: [] });
+  assert.deepEqual(api.후보뿌리찾기(['index.html', 'a/b.js', 'x/a/b.js'], ['index.html', 'a/b.js']), { 뿌리: '', 동률: [] }, '저장소 맨 위가 공개 뿌리일 수도 있다');
+  // 원고 안(무시 안 된 qa·.tmp)에 둔 후보 폴더와 옛 후보 폴더는 모든 경로를 품어도 뿌리가 아니다(GPT GA1) — 후보.json이 든 폴더는 뺀다
+  const 후보안 = ['qa/pub-cand/후보.json', 'qa/pub-cand/index.html', 'qa/pub-cand/en/index.html', 'qa/pub-cand/assets/v10/home-body.css', 'qa/pub-cand/new/index.html',
+    'qa/pub-cand/.앞판/index.html', 'qa/pub-cand/.앞판/en/index.html', '.tmp/pub-cand6/후보.json', '.tmp/pub-cand6/index.html', '.tmp/pub-cand6/en/index.html'];
+  const 넷 = ['index.html', 'en/index.html', 'assets/v10/home-body.css', 'new/index.html'];
+  assert.deepEqual(api.후보뿌리찾기([...파일들, ...후보안], 넷), { 뿌리: 'dist/', 동률: [] });
+
+  const 바탕판 = { 'dist/en/index.html': '바탕 옛 영어', 'dist/en/new/index.html': '바탕에만 있는 새 쪽', 'src/index.html': '바탕 틀' };
+  const 바탕 = Object.assign(p => (바탕판[p] == null ? undefined : Buffer.from(바탕판[p])), { 경로들: Object.keys(바탕판) });
+  const 앞판 = new Map([['en/index.html', Buffer.from('공개본 영어')], ['index.html', Buffer.from('공개본 홈')]]);
+  const 보기 = api.전판보기만들기(바탕, { 앞판, 새: new Set(['en/new/index.html']), 뿌리: 'dist/' });
+  assert.equal(String(보기('dist/en/index.html')), '공개본 영어', '바탕 커밋의 낡은 dist 대신 지금 공개본');
+  assert.equal(String(보기(`${api.공개표}index.html`)), '공개본 홈');
+  assert.equal(보기('dist/en/new/index.html'), null, '후보가 「새」로 적은 파일은 공개본에 없다(404)');
+  assert.equal(String(보기('src/index.html')), '바탕 틀', '뿌리 밖은 꼬리가 같아도 바탕 판');
+  assert.equal(보기('dist/assets/other.css'), undefined, '후보 밖 파일은 지금처럼');
+  assert.equal(보기.공개경로('dist/en/index.html'), 'en/index.html');
+  assert.equal(보기.공개경로('dist/assets/other.css'), null);
+  assert.deepEqual(보기.경로들, 바탕.경로들);
+  const 뿌리없음 = api.전판보기만들기(바탕, { 앞판, 뿌리: null });
+  assert.equal(String(뿌리없음('dist/en/index.html')), '바탕 옛 영어', '뿌리를 못 정하면 저장소 경로 요청은 지금처럼 바탕 판');
+  assert.equal(String(뿌리없음(`${api.공개표}en/index.html`)), '공개본 영어', '주소로 찾은 공개 경로는 뿌리 없이도 잇는다');
+
+  const 헷갈림 = new Set();
+  const 경로찾기 = 경로찾기만들기({ 정적주소: 'http://127.0.0.1:5555', 바뀐경로들: ['dist/en/index.html', 'dist/index.html', 'dist/assets/v10/home-ask.css'], 헷갈림 });
+  const 찾기 = api.전경로찾기만들기({ 명시찾기: 경로찾기만들기({ 정적주소: 'http://127.0.0.1:5555' }), 경로찾기, 아는: 보기.아는 });
+  assert.equal(찾기('http://127.0.0.1:4871/en/'), `${api.공개표}en/index.html`, '공개 트리를 내주는 이 PC 서버의 길 = 공개 경로');
+  assert.equal(찾기('http://127.0.0.1:4871/'), `${api.공개표}index.html`, '꼬리 맞춤으로는 헷갈리는 첫 쪽도 잇는다');
+  assert.equal(헷갈림.size, 0);
+  assert.equal(찾기('http://127.0.0.1:4871/assets/v10/home-ask.css?v=1'), 'dist/assets/v10/home-ask.css', '후보 밖 파일은 지금처럼 꼬리 맞춤');
+  assert.equal(찾기('http://127.0.0.1:5555/dist/en/index.html'), 'dist/en/index.html', '이 도구의 정적 서버는 저장소 경로 그대로');
+  assert.equal(찾기('https://synk.im/en/'), null, '밖의 사이트는 건드리지 않는다');
+});
+
+test('화면 캡처(배포 후보, 11-01): 「전」은 바탕 커밋의 낡은 dist가 아니라 후보의 .앞판(지금 공개본)을 끼우고, 후보가 없으면 지금처럼 바탕 판', async t => {
+  let browser;
+  try {
+    const { chromium } = require('playwright');
+    browser = await chromium.launch({ channel: 'chrome', headless: true }).catch(() => chromium.launch({ headless: true }));
+  } catch { /* 아래에서 건너뜀 */ }
+  if (!browser) return t.skip('브라우저를 띄울 수 없다(playwright·Chrome 없음)');
+  await browser.close();
+  const { 준비하기 } = await tool();
+  const { 정적서버 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
+  const 쪽 = 글 => `<!doctype html><html lang="ko"><meta charset="utf-8"><link rel="icon" href="data:,"><title>시험</title><main><p id="p">${글}</p></main></html>`;
+  // 10-31 home-slim-20261031-c 꼴: 바탕 커밋의 dist는 공개본보다 낡았고, 합친 다른 가지가 dist/en/index.html을 바꿔 바탕과 작업본이 다르다
+  const r = 임시저장소(t, { 'dist/index.html': 쪽('바탕 홈'), 'dist/en/index.html': 쪽('바탕 영어 줄이기 전'), 'site/content.mjs': "export const 홈 = '옛';\n" });
+  r.쓰기('site/content.mjs', "export const 홈 = '새';\n");
+  r.쓰기('dist/en/index.html', 쪽('합친 가지의 영어'));
+  const 후보 = { 'index.html': 쪽('후보 홈'), 'en/index.html': 쪽('후보 영어'), 'en/new/index.html': 쪽('새 쪽') };
+  const 공개본 = { 'index.html': 쪽('공개본 홈'), 'en/index.html': 쪽('공개본 영어 줄인 뒤') };
+  // 후 = 공개 트리(지금 공개본 + 후보)를 내주는 이 PC 서버 — 전도 같은 주소다(바꿔 끼우는 것은 도구)
+  const 공개트리 = path.join(r.뿌리, 'pub');
+  넣기(공개트리, 후보);
+  const 서버 = await 정적서버(공개트리);
+  t.after(() => 서버.닫기());
+  const 글 = (폴더, 목록, 판, 이름) => fs.readFileSync(path.join(폴더, 목록.화면.장들.find(x => x.판 === 판 && x.기기 === '1440' && x.이름 === 이름).그림.replace(/\.png$/, '.txt')), 'utf8');
+
+  const 없음 = await 준비하기({ 이름: '바탕전', 폴더: path.join(r.뿌리, 'out-base'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕,
+    화면: [`영어=${서버.주소}/en/`, '정적=dist/en/index.html'] });
+  assert.match(글(없음.폴더, 없음.목록, '전', '영어'), /바탕 영어 줄이기 전/, '후보가 없으면 지금처럼 바뀐 파일만 바탕 판');
+  assert.match(글(없음.폴더, 없음.목록, '전', '정적'), /바탕 영어 줄이기 전/);
+  assert.equal(없음.목록.화면.전앞판, undefined);
+  assert.match(fs.readFileSync(path.join(없음.폴더, 'fable.md'), 'utf8'), /전 = 바탕 판, 후 = 지금 판/);
+
+  // 공개 도구(--후보폴더)가 쓴 꼴: 후보 바이트 · .앞판(그 공개 커밋의 blob) · 후보.json. 원고 안의 무시 안 된 qa/에 둔다 —
+  // 후보 자신(과 그 .앞판)이 모든 공개 경로를 품어도 후보 뿌리로 뽑히면 안 된다(GPT GA1). 검수 범위는 --경로로 원고만.
+  const 후보폴더 = path.join(r.저장소, 'qa', 'pub-cand');
+  넣기(후보폴더, 후보); 넣기(path.join(후보폴더, '.앞판'), 공개본);
+  fs.writeFileSync(path.join(후보폴더, '후보.json'), JSON.stringify({ 판: 1, 종류: 'synk.im', 위: 'abc123', 계획: '0abf52b987c8',
+    항목: Object.entries(후보).map(([경로, v]) => ({ 경로, 종류: 공개본[경로] ? '바꿈' : '새', sha256: crypto.createHash('sha256').update(v).digest('hex'), 모드: '100644' })),
+    앞판: Object.fromEntries(Object.entries(공개본).map(([경로, v]) => [경로, 블롭(v)])) }));
+  const 있음 = await 준비하기({ 이름: '앞판전', 폴더: path.join(r.뿌리, 'out-cand'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 배포후보: 후보폴더, 경로: ['site', 'dist'],
+    화면: [`영어=${서버.주소}/en/`, `새쪽=${서버.주소}/en/new/`, '정적=dist/en/index.html'] });
+  assert.deepEqual(있음.목록.파일.map(f => f.경로), ['dist/en/index.html', 'site/content.mjs']);
+  assert.match(글(있음.폴더, 있음.목록, '전', '영어'), /공개본 영어 줄인 뒤/, '주소 화면의 전 = 후보의 .앞판(지금 공개본)');
+  assert.doesNotMatch(글(있음.폴더, 있음.목록, '전', '영어'), /바탕 영어|합친 가지/);
+  assert.match(글(있음.폴더, 있음.목록, '후', '영어'), /후보 영어/, '후는 서버가 내주는 그대로');
+  assert.match(글(있음.폴더, 있음.목록, '전', '정적'), /공개본 영어 줄인 뒤/, '저장소 경로 화면도 후보 뿌리(dist/)로 이어 공개본');
+  assert.match(글(있음.폴더, 있음.목록, '후', '정적'), /합친 가지의 영어/);
+  assert.match(글(있음.폴더, 있음.목록, '전', '새쪽'), /그 판에 없음/, '후보가 「새」로 적은 쪽은 공개본에 없다(404)');
+  assert.match(글(있음.폴더, 있음.목록, '후', '새쪽'), /새 쪽/);
+  assert.deepEqual(있음.목록.화면.전앞판, { 앞판: 2, 새: 1, 끼움: ['en/index.html', 'en/new/index.html'], 뿌리찾기: { 뿌리: 'dist/', 동률: [] } });
+  assert.ok(!있음.목록.화면.못끼움.includes('dist/en/index.html'), '공개본으로 끼운 파일은 못 끼운 것으로 세지 않는다');
+  assert.deepEqual(있음.목록.증명.후보앞판, { 위: 'abc123', 항목: Object.fromEntries(Object.entries(공개본).map(([경로, v]) => [경로, 블롭(v)])) }, '전 캡처가 쓴 앞판이 증명에 묶인 그 판이다');
+  const 묶음글 = 있음.목록.묶음.map(b => fs.readFileSync(path.join(있음.폴더, b.파일), 'utf8')).join('\n');
+  assert.match(묶음글, /화면 「영어」[^\n]*\(전: 같은 주소에 배포 후보의 파일은 지금 공개본\(\.앞판\), 그 밖의 바뀐 파일은 바탕 판\)/);
+  assert.match(fs.readFileSync(path.join(있음.폴더, 'fable.md'), 'utf8'), /전 = 지금 공개본\(배포 후보의 \.앞판 2개를 끼움/);
+});
+
 test('가져온 캡처(--캡처): 전·후/<기기>/<이름>.png를 그대로 견주고, fable.md 표에 1440·390 밖의 기기도 싣는다', async t => {
   let odiff = null;
   try { odiff = require('odiff-bin'); } catch { /* 건너뜀 */ }
