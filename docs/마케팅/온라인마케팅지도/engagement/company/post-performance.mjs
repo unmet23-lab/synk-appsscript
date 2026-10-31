@@ -170,6 +170,19 @@ function valuesAndReasons(values, platform, { manual = false, unavailable = [], 
 }
 // 일시 오류로 지원 지표가 빈 관측은 관측 기간 안에서 이만큼까지 다시 확인한 뒤에 있는 값만 기록한다.
 const GAP_ATTEMPTS = 4, GAP_LAST_CHANCE = 30 * 60000;
+// 이번 최근 수집이 이 게시물의 게시 시각을 덮는 목록을 끝까지 받았는가 — 다음 쪽·한도·순서 불확실·게시일 없는 콘텐츠·빠진 콘텐츠가 없다.
+// 이런 목록에 없는 글은 플랫폼에서 지웠거나 비공개·예약 취소된 것이라 모을 기간 내내 다시 봐도 나오지 않는다(10-31 운영: 지우고 다시 올린
+// 인스타그램 글, 공개 전에 집계된 페이스북 예약 릴스가 POST_NOT_IN_RESPONSE 재시도만 하다 놓침으로 끝났다). 인사이트 일부가 빈 것은 상관없다.
+function inventoryCovers(result, publishedAt) {
+  const coverage = result?.coverage, recent = coverage?.recent, at = Date.parse(publishedAt);
+  return !!recent && coverage.scope === 'recent' && coverage.inventoryComplete === true && recent.uncertainOrder === false && recent.invalidDates === 0
+    && Number.isFinite(at) && Date.parse(recent.since) <= at && at <= Date.parse(recent.until);
+}
+// 「사라짐」은 주소 모양과 게시 시각을 플랫폼이 준 기록에만 판정한다 — 집계가 자동 등록한 기록(수집기가 준 주소·시각)이거나, 앞 시점을 API로
+// 기록하며 같은 글을 이미 찾은 기록. 사람이 넣은 시각이 실제보다 늦거나 주소 모양이 수집기와 다른 글은 살아 있어도 목록 창 밖·다른 정체로 빠져
+// 없어 보이므로, 그런 기록은 예전처럼 다시 보다 놓침으로 남긴다(GPT 검수 10-31 두 회차 — 창을 넓혀도 더 어긋난 시각은 못 덮는다).
+const platformAnchored = row => row.origin === 'auto' || row.checkpoints.some(item => item.status === 'recorded' && !!item.providerPublishedAt);
+const POST_GONE_MESSAGE = '플랫폼 게시물 목록을 두 번 끝까지 봤는데 이 게시물이 없었어요. 지웠거나 비공개·예약 취소로 바뀐 것 같아 자동 수집을 멈췄어요. 다시 공개했다면 자동 수집을 다시 켜 주세요.';
 
 export function createPostPerformanceService({ store, clock = () => new Date().toISOString(), collector = collectChannel, windowCollector = null, fetchImpl = globalThis.fetch,
   getCredentials = channel => ({ ...store.secret(`provider:${channel.platform}`), ...store.secret(`channel:${channel.id}`) }),
@@ -331,7 +344,8 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const delayMinutes = Math.max(0, Math.round((Date.parse(observedAt) - Date.parse(checkpoint.dueAt)) / 60000));
     const normalized = valuesAndReasons(values, platform, { manual, unavailable, hours: checkpoint.hours, transient }), timing = delayMinutes > 15 ? 'late' : 'on-time', measurementWindowMissed = Date.parse(observedAt) > Date.parse(checkpoint.closesAt);
     const metricProvenance = Object.fromEntries(POST_PERFORMANCE_METRICS.filter(item => normalized.metrics[item.id] !== null).map(item => [item.id, { source, observedAt, recordedAt, unit: item.unit, timing, measurementWindowMissed, ...(manual ? {} : derivation(details?.[item.id])) }]));
-    return keepWindowValues(checkpoint, { ...checkpoint, ...normalized, metricProvenance, status: 'recorded', timing, observedAt, recordedAt,
+    const { absentConfirmedAt: _absent, ...base } = checkpoint;
+    return keepWindowValues(checkpoint, { ...base, ...normalized, metricProvenance, status: 'recorded', timing, observedAt, recordedAt,
       delayMinutes, recordingDelayMinutes: Math.max(0, Math.round((Date.parse(recordedAt) - Date.parse(checkpoint.dueAt)) / 60000)), source, note,
       nextAttemptAt: null, lastErrorCode: null, measurementWindowMissed,
       message: manual ? '사람이 직접 보고 넣은 누적 숫자예요. 본 시각과 저장한 시각을 따로 남겨요.' : '서버가 이 시각에 읽은 누적 숫자예요. 목표 시각 그때의 값을 거슬러 구한 건 아니에요.' });
@@ -380,7 +394,10 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
   function setActive(user, id, active) {
     if (typeof active !== 'boolean') throw fail('자동 수집을 켤지 멈출지 골라 주세요.');
     const next = store.transaction(() => {
-      const row = accessEntry(user, id, true), updated = { ...row, active, updatedAt: stamp() };
+      const row = accessEntry(user, id, true);
+      let updated = { ...row, active, updatedAt: stamp() };
+      // 사라진 게시물로 멈춘 기록을 다시 켜면 그 판정을 지우고, 없다는 확인도 처음부터 두 번 다시 한다.
+      if (active) { const { inactiveReason: _reason, goneAt: _gone, ...rest } = updated; updated = { ...rest, checkpoints: row.checkpoints.map(({ absentConfirmedAt: _absent, ...checkpoint }) => checkpoint) }; }
       store.put(KIND, id, updated); return updated;
     });
     return { entry: view(user, next) };
@@ -422,7 +439,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     // 서버 예약 회차에서만 새 게시물을 찾아 올린다. 사람이 누른 「지금 확인」은 고른 기록만 다룬다.
     const discovered = !user && !entryId ? discover() : null;
     const requester = user ? currentUser(user) : null;
-    const summary = { checked: 0, recorded: 0, manualRequired: 0, missed: 0, retried: 0, skipped: 0, windowChecked: 0, windowRecorded: 0, windowRetried: 0, windowUnavailable: 0, autoRegistered: discovered?.registered || 0 };
+    const summary = { checked: 0, recorded: 0, manualRequired: 0, missed: 0, retried: 0, gone: 0, skipped: 0, windowChecked: 0, windowRecorded: 0, windowRetried: 0, windowUnavailable: 0, autoRegistered: discovered?.registered || 0 };
     const initial = stamp(), due = row => row.checkpoints.some(checkpoint => eligible(checkpoint, initial) || windowEligible(windowPlan(row, checkpoint), initial));
     const candidateChannels = [...new Set(store.all(KIND).filter(row => row.active !== false && (!entryId || row.id === entryId) && (!requester || canWriteChannel(requester, store.get('channels', row.channelId))) && due(row)).map(row => row.channelId))].slice(0, 20);
     for (const channelId of candidateChannels) {
@@ -497,7 +514,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
         for (const selected of claim.selected) {
           const row = store.get(KIND, selected.id), checkpoint = row?.checkpoints.find(item => item.hours === selected.hours);
           if (!row || checkpoint?.leaseToken !== token || checkpoint.status !== 'collecting') continue;
-          let next;
+          let next, rowPatch = null;
           if (authorizationLost || row.active === false || connectionChanged || !ownsAutomation(row, live)) {
             next = { ...checkpoint, status: 'manual-required', nextAttemptAt: atPlus(at, HOUR), message: '받는 사이 채널 연결이나 담당 권한이 바뀌어 받은 숫자를 저장하지 않았어요. 한 시간 뒤 다시 확인해요.' }; summary.manualRequired++;
           } else if (at > checkpoint.closesAt || lock.leaseUntil < at) {
@@ -513,6 +530,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             const gapMetrics = new Set([...(capability?.metrics || []), ...(capability?.postMetrics || [])].filter(key => !lagged.has(key)));
             const gap = !error && post && !mismatch && hasMetric && !!result.coverage?.collectionError && metricIds.some(key => gapMetrics.has(key) && post.metrics?.[key] === null);
             const lastChance = checkpoint.attempts >= GAP_ATTEMPTS || Date.parse(at) + GAP_LAST_CHANCE >= Date.parse(checkpoint.closesAt);
+            const absent = !error && !post && platformAnchored(row) && inventoryCovers(result, row.publishedAt);
             if (!error && post && !mismatch && hasMetric && (!gap || lastChance)) {
               next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: gap ? [] : result.coverage?.unavailableMetrics || [], platform: row.platform, details: post.metricDetails, transient: gap });
               next.providerPublishedAt = post.publishedAt; summary.recorded++;
@@ -521,16 +539,24 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
               next = { ...checkpoint, status: 'retry', nextAttemptAt: new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt) - 10 * 60000)).toISOString(), lastErrorCode: String(result.coverage.collectionError.code || 'METRICS_PARTIAL').slice(0, 40),
                 message: '플랫폼 일시 오류로 일부 숫자를 받지 못했어요. 모을 기간 안에 몇 번 더 받아 볼게요.' };
               summary.retried++;
+            } else if (absent && checkpoint.absentConfirmedAt) {
+              // 끝까지 받은 목록에 두 번(다른 회차) 없었다. 남은 시간 내내 헛되이 다시 보고 놓침으로 끝내지 않고, 기록의 자동 수집을 멈춘다.
+              // 지우지 않으므로 다시 켜면 이어서 본다. 한 기록의 24·72시간 모을 기간은 겹치지 않아 한 회차에 한 시점만 여기 온다.
+              next = { ...checkpoint, status: 'retry', nextAttemptAt: null, lastErrorCode: 'POST_GONE', message: POST_GONE_MESSAGE };
+              rowPatch = { active: false, inactiveReason: 'post-gone', goneAt: at }; summary.gone++;
             } else {
               const retryable = !mismatch && (!error || error.retryable), retry = retryable && at < checkpoint.closesAt;
               const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
               next = { ...checkpoint, status: retry ? 'retry' : 'manual-required', nextAttemptAt: retry ? new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt))).toISOString() : at < checkpoint.closesAt ? checkpoint.closesAt : atPlus(checkpoint.closesAt, 1), lastErrorCode: mismatch ? 'PUBLISHED_AT_MISMATCH' : error?.code || (post ? 'METRICS_UNAVAILABLE' : 'POST_NOT_IN_RESPONSE'),
                 message: mismatch ? '플랫폼의 게시 시각이 기록한 시각과 5분 넘게 달라 자동으로 기록하지 않았어요. 플랫폼 화면에서 본 숫자를 직접 넣어 주세요.' : retry ? '이 게시물 숫자를 받지 못했어요. 모을 기간이 끝날 때까지 몇 번 더 받아 볼게요.' : '이 게시물 숫자를 자동으로 받지 못했어요. 플랫폼 화면에서 본 숫자를 직접 넣어 주세요.' };
+              // 처음 없다는 확인은 남겨 두고 다음 회차에 한 번 더 본다(한 번 비어 나온 목록만으로 멈추지 않는다).
+              if (absent) next.absentConfirmedAt = at;
               if (retry) summary.retried++; else summary.manualRequired++;
             }
+            if (post) delete next.absentConfirmedAt;
           }
           delete next.leaseToken; delete next.leaseUntil;
-          store.put(KIND, row.id, { ...row, updatedAt: at, checkpoints: row.checkpoints.map(item => item.hours === selected.hours ? next : item) });
+          store.put(KIND, row.id, { ...row, ...rowPatch, updatedAt: at, checkpoints: row.checkpoints.map(item => item.hours === selected.hours ? next : item) });
         }
         for (const selected of claim.windows) {
           const row = store.get(KIND, selected.id), checkpoint = row?.checkpoints.find(item => item.hours === 72), plan = checkpoint?.window;

@@ -89,3 +89,87 @@ test('the performance screen compares a post only with earlier posts of the same
   const latest=f.service.list(f.owner).entries.find(row=>row.id===ids[5]).checkpoints[0].comparison.views;
   assert.equal(latest.sampleCount,3,'three earlier shorts, not the long video');assert.equal(latest.median,200);
 });
+
+// 10-31 운영: 최근 3일 놓친 관측 다섯 건이 모두 POST_NOT_IN_RESPONSE — 지우고 다시 올린 인스타그램 글과, 공개 전에 집계된 페이스북 예약 릴스였다.
+// 목록을 끝까지 받았는데 없는 글은 모을 기간 내내 다시 봐도 나오지 않는다. 주소·시각을 플랫폼이 준 기록만 그렇게 판정한다(GPT 검수 두 회차).
+const inventory=(options,posts,{recent={},...coverage}={})=>({posts,coverage:{source:'instagram-login-api',status:'complete',scope:'recent',inventoryComplete:true,...coverage,
+  recent:{since:options.recentSince,until:options.now,complete:true,uncertainOrder:false,invalidDates:0,...recent}}});
+const other={url:'https://www.instagram.com/reel/OTHER1/',publishedAt:BASE,metrics:{views:5,likes:1,comments:0,shares:0,saves:0,reach:4}};
+// 집계가 자동 등록한 기록(discover: 수집기가 준 주소·시각)과 같은 꼴.
+const autoEntry=f=>{const entry=f.service.register(f.owner,{channelId:'channel',url:reel,publishedAt:BASE}).entry;f.store.put('postPerformanceEntries',entry.id,{...f.store.get('postPerformanceEntries',entry.id),origin:'auto'});return entry;};
+
+test('an auto-registered post missing from two complete lists stops its collection instead of retrying until it is missed',async t=>{
+  // 인사이트 일부가 한도에 걸린 응답(partial)이어도 목록 자체를 끝까지 받았으면 같다.
+  const f=fixture(t,{collector:(live,credentials,options)=>inventory(options,[other],{status:'partial',collectionError:{code:'RATE_LIMITED',retryable:true}})});
+  const entry=autoEntry(f);
+  f.now(24.01);const first=await f.service.collectDue();let point=f.checkpoint(entry.id);
+  assert.deepEqual([first.retried,first.gone,point.status,point.lastErrorCode,point.absentConfirmedAt],[1,0,'retry','POST_NOT_IN_RESPONSE',atHours(24.01)],'one empty answer is not enough');
+  assert.notEqual(f.store.get('postPerformanceEntries',entry.id).active,false);
+  f.now(24.2);const second=await f.service.collectDue();
+  const row=f.store.get('postPerformanceEntries',entry.id);point=f.checkpoint(entry.id);
+  assert.deepEqual([second.gone,row.active,row.inactiveReason,row.goneAt,point.status,point.lastErrorCode,point.nextAttemptAt],[1,false,'post-gone',atHours(24.2),'retry','POST_GONE',null]);
+  assert.match(point.message,/자동 수집을 멈췄어요/);assert.equal('leaseToken' in point,false);
+  const calls=f.calls();for(const hours of [24.6,25.2,31,72.1,79])f.now(hours),await f.service.collectDue();
+  assert.equal(f.calls(),calls,'a stopped entry is not fetched again');
+  assert.deepEqual(f.store.get('postPerformanceEntries',entry.id).checkpoints.map(item=>item.status),['retry','pending'],'never closed as missed');
+});
+
+test('a post deleted after its 24-hour point was read from the API stops at 72 hours',async t=>{
+  let deleted=false;
+  const f=fixture(t,{collector:(live,credentials,options)=>inventory(options,deleted?[other]:[{...other,url:reel}])});
+  const entry=f.service.register(f.owner,{channelId:'channel',url:reel,publishedAt:BASE}).entry;
+  f.now(24.01);await f.service.collectDue();assert.equal(f.checkpoint(entry.id).providerPublishedAt,BASE);
+  deleted=true;f.now(72.01);await f.service.collectDue();f.now(72.2);const late=await f.service.collectDue();
+  const row=f.store.get('postPerformanceEntries',entry.id);
+  assert.deepEqual([late.gone,row.active,f.checkpoint(entry.id,24).status,f.checkpoint(entry.id,72).lastErrorCode],[1,false,'recorded','POST_GONE']);
+});
+
+test('a hand-registered post the platform has not matched yet is never stopped, even when two complete lists lack it',async t=>{
+  // GPT 검수 10-31: 실제 10:00 글을 12:00으로 넣으면(또는 하루 넘게 어긋나면) 최근 목록 창 밖으로 빠져 살아 있어도 없어 보인다.
+  const f=fixture(t,{collector:(live,credentials,options)=>inventory(options,[{...other,url:reel,publishedAt:BASE}].filter(post=>post.publishedAt>=options.recentSince))});
+  f.now(27);const entry=f.service.register(f.owner,{channelId:'channel',url:reel,publishedAt:atHours(26)}).entry;let gone=0;
+  for(const hours of [50.01,50.2,50.6,51.2,52])f.now(hours),gone+=(await f.service.collectDue()).gone;
+  const point=f.checkpoint(entry.id);
+  assert.deepEqual([gone,f.store.get('postPerformanceEntries',entry.id).active,point.status,point.lastErrorCode,'absentConfirmedAt' in point],[0,true,'retry','POST_NOT_IN_RESPONSE',false]);
+  f.now(56.01);await f.service.collectDue();assert.equal(f.checkpoint(entry.id).status,'missed','as before the change');
+});
+
+test('turning a stopped entry back on forgets the verdict and records the post once it is listed',async t=>{
+  let listed=false;
+  const f=fixture(t,{collector:(live,credentials,options)=>inventory(options,listed?[other,{...other,url:reel,metrics:{...other.metrics,views:80}}]:[other])});
+  const entry=autoEntry(f);
+  f.now(24.01);await f.service.collectDue();f.now(24.2);await f.service.collectDue();
+  assert.equal(f.store.get('postPerformanceEntries',entry.id).active,false);
+  listed=true;f.now(24.3);const resumed=f.service.setActive(f.owner,entry.id,true).entry;
+  assert.deepEqual([resumed.active,'inactiveReason' in resumed,'goneAt' in resumed,'absentConfirmedAt' in resumed.checkpoints[0]],[true,false,false,false]);
+  const result=await f.service.collectDue(),point=f.checkpoint(entry.id);
+  assert.deepEqual([result.recorded,point.status,point.metrics.views,point.lastErrorCode,'absentConfirmedAt' in point],[1,'recorded',80,null,false]);
+});
+
+test('a first absence is forgotten when the post shows up on the next try',async t=>{
+  let call=0;
+  const f=fixture(t,{collector:(live,credentials,options)=>inventory(options,++call===1?[other]:[{...other,url:reel}])});
+  const entry=autoEntry(f);
+  f.now(24.01);await f.service.collectDue();assert.equal(f.checkpoint(entry.id).absentConfirmedAt,atHours(24.01));
+  f.now(24.2);await f.service.collectDue();const point=f.checkpoint(entry.id);
+  assert.deepEqual([point.status,point.metrics.views,'absentConfirmedAt' in point,f.store.get('postPerformanceEntries',entry.id).active],['recorded',5,false,true]);
+});
+
+test('a list that may be cut short, or an error, keeps retrying inside the window and never stops the entry',async t=>{
+  const cases={
+    'more pages':options=>inventory(options,[other],{inventoryComplete:false}),
+    'order unknown':options=>inventory(options,[other],{recent:{uncertainOrder:true}}),
+    'a post without a date':options=>inventory(options,[other],{recent:{invalidDates:1}}),
+    'list starts after the post':options=>inventory(options,[other],{recent:{since:atHours(1)}}),
+    'full collection, not the recent list':options=>({posts:[other],coverage:{source:'instagram-login-api',status:'complete',inventoryComplete:true}}),
+    'network error':()=>{throw Object.assign(new Error('offline'),{code:'NETWORK_ERROR',retryable:true});},
+  };
+  for(const [name,collector] of Object.entries(cases)){
+    const f=fixture(t,{collector:(live,credentials,options)=>collector(options)});
+    const entry=autoEntry(f);let gone=0;
+    for(const hours of [24.01,24.2,24.6,25.2,26])f.now(hours),gone+=(await f.service.collectDue()).gone;
+    const point=f.checkpoint(entry.id);
+    assert.deepEqual([gone,f.store.get('postPerformanceEntries',entry.id).active,point.status,'absentConfirmedAt' in point],[0,true,'retry',false],name);
+    f.now(30.01);await f.service.collectDue();assert.equal(f.checkpoint(entry.id).status,'missed',name);
+  }
+});

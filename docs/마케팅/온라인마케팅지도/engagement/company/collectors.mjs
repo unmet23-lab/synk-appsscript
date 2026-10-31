@@ -529,15 +529,24 @@ async function facebook(channel, credentials, request, recent) {
   const known=new Map();list.entries.forEach((p,i)=>{known.set(String(p.id),posts[i]);for(const attachment of p.attachments?.data||[])if(attachment.target?.id)known.set(String(attachment.target.id),posts[i]);const id=videoId(p.permalink_url);if(id)known.set(id,posts[i]);});
   if(posts.length<cap.maxPosts&&pages<cap.maxPages){
     try{
-      const videos=await graphList(`${pageId}/videos`,{fields:'id,title,description,created_time,permalink_url,views,likes.limit(0).summary(true),comments.limit(0).summary(true)'},api,{...cap,maxPosts:cap.maxPosts-posts.length,maxPages:cap.maxPages-pages},recent,v=>v.created_time);
+      // /videos에는 예약·초안처럼 아직 공개하지 않은 영상(published:false)도 업로드 시각으로 나온다. 게시물로 세면 집계와 성과 자동 등록이
+      // 공개 전 시각으로 잡히고, 예약 릴스는 공개 때 다른 번호로 나와 그 번호는 끝내 목록에서 사라진다(10-31 운영: 페이스북 SYNK의 놓친 관측 전부).
+      // 공개 여부 칸을 받지 못하는 응답(400)이면 예전처럼 칸 없이 한 번 더 받고 그렇다고 적는다.
+      const videoFields='id,title,description,created_time,permalink_url,views,likes.limit(0).summary(true),comments.limit(0).summary(true)',videoCap={...cap,maxPosts:cap.maxPosts-posts.length,maxPages:cap.maxPages-pages};
+      let videos,publishedKnown=true,unpublished=0;
+      try{videos=await graphList(`${pageId}/videos`,{fields:videoFields+',published'},api,videoCap,recent,v=>v.created_time);}
+      catch(error){if(error.code!=='API_ERROR'||error.status!==400)throw error;publishedKnown=false;videos=await graphList(`${pageId}/videos`,{fields:videoFields},api,videoCap,recent,v=>v.created_time);}
       hasMore=hasMore||videos.hasMore;pages+=videos.pages;warnings.push(...videos.warnings);
+      if(!publishedKnown)warnings.push('Facebook이 영상의 공개 여부를 알려 주지 않아, 예약·초안 영상이 게시물에 섞였을 수 있어요.');
       for(const video of videos.entries){
+        if(video.published===false){unpublished++;continue;}
         const id=String(video.id),existing=known.get(id);
         if(existing){existing.metrics.views=number(video.views);continue;}
         const url=typeof video.permalink_url==='string'?safeUrl(new URL(video.permalink_url,'https://www.facebook.com').href):null;
         posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:isoDate(video.created_time),thumbnailUrl:null,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
         known.set(id,posts.at(-1));
       }
+      if(unpublished)warnings.push(`예약·초안처럼 아직 공개하지 않은 영상 ${unpublished}개는 게시물로 세지 않았어요.`);
     }catch(error){if(error.code==='CANCELLED')throw error;optionalFailure(error,recent,true);videosPartial=true;warnings.push('Facebook 영상·릴스 목록을 받지 못해 전체 게시물 수와 영상 조회수가 일부만 모였어요.');}
   }else{hasMore=true;warnings.push(capWarning(cap));}
   const collected=result({ externalId: pageId, displayName: text(page.name) || channel.handle || pageId, followers: number(page.followers_count), views: null, metrics: { likes: number(page.fan_count) } }, posts, { warnings, partial:videosPartial,hasMore, pages, ownerAuthorized: true, source: 'facebook-pages-api', unavailable: ['saves', 'reach', 'channel.views',...(posts.some(p=>p.metrics.views!==null)?[]:['views'])] });

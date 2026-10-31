@@ -347,6 +347,59 @@ test('Facebook numeric URL requires the matching page and does not infer absent 
   await assert.rejects(collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async () => ok({ id: '456' }) }), error => error.code === 'ACCOUNT_MISMATCH');
 });
 
+// 10-31 운영: Business Suite로 예약한 릴스는 공개 전부터 /videos에 업로드 시각으로 나오고(published:false), 공개 때 다른 번호의 릴스가 피드에 생긴다.
+// 그 예약 번호를 게시물로 세어 성과에 자동 등록했다가 매번 POST_NOT_IN_RESPONSE로 놓쳤다.
+test('Facebook leaves scheduled and draft videos out of posts and keeps the recent inventory complete', async () => {
+  const videoFields = [];
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { recentSince: '2026-10-29T00:00:00Z', now: '2026-10-30T13:00:00Z', fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123', followers_count: 5 });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:47Z', permalink_url: 'https://www.facebook.com/reel/1855123958997265/', reactions: { summary: { total_count: 3 } }, comments: { summary: { total_count: 1 } } }] });
+    if (url.pathname.endsWith('/videos')) {
+      videoFields.push(url.searchParams.get('fields').split(',').includes('published'));
+      return ok({ data: [
+        { id: '1855123958997265', created_time: '2026-10-29T12:00:47Z', permalink_url: '/reel/1855123958997265/', views: 420, published: true },
+        { id: '1150238227804970', created_time: '2026-10-29T10:33:42Z', permalink_url: '/reel/1150238227804970/', views: 0, published: false },
+        { id: '1636019544649958', created_time: '2026-10-30T11:27:39Z', permalink_url: '/reel/1636019544649958/', published: false },
+      ] });
+    }
+    throw new Error('unexpected ' + url.pathname);
+  } });
+  assert.deepEqual(videoFields, [true]);
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.url, post.metrics.views]), [['123_700', 'https://www.facebook.com/reel/1855123958997265/', 420]]);
+  assert.ok(result.warnings.some(warning => /아직 공개하지 않은 영상 2개/.test(warning)));
+  assert.equal(result.coverage.inventoryComplete, true, 'leaving out unpublished videos does not make the list look cut short');
+  assert.equal(result.coverage.recent.uncertainOrder, false);
+});
+
+test('Facebook reads videos once more without the published field only when Meta rejects that query', async () => {
+  const videoFields = [];
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [] });
+    if (url.pathname.endsWith('/videos')) {
+      const asked = url.searchParams.get('fields').split(',').includes('published'); videoFields.push(asked);
+      return asked ? fail(400, { error: { code: 100, message: 'FIXTURE_SECRET (#100) nonexisting field (published)' } }) : ok({ data: [{ id: '900', created_time: '2026-10-29T12:00:00Z', permalink_url: '/reel/900/', views: 7 }] });
+    }
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(videoFields, [true, false]);
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.metrics.views]), [['900', 7]]);
+  assert.ok(result.warnings.some(warning => /공개 여부를 알려 주지 않아/.test(warning)));
+  assert.equal(result.coverage.status, 'complete');
+  assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+  // 한도·권한 오류는 칸을 빼고 다시 묻지 않는다.
+  let limited = 0;
+  const halted = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [] });
+    limited++; return fail(400, { error: { code: 4, message: 'limit' } });
+  } });
+  assert.equal(limited, 1); assert.equal(halted.coverage.inventoryComplete, false);
+});
+
 test('Meta rate limit halts optional insights without request storm or exposing error payloads', async () => {
   let insightCalls = 0;
   const result = await collectChannel('https://instagram.com/synk', { accessToken: 'fixture', accountId: '1234' }, { fetchImpl: async raw => {
