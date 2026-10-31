@@ -41,7 +41,9 @@ node --test tests/반응리포트.test.js
 
 ## Clarity 켜기(처음 한 번)
 
-1. 유호님: [clarity.microsoft.com](https://clarity.microsoft.com)에 가입하고 프로젝트를 만든다(주소 https://synk.im). 설정 › Data Export › 새 토큰을 만들어 복사한다.
+SYNK 프로젝트: `z67ez8kfp3`(이름 SYNK · synk.im · B2B 서비스, unmet23@gmail.com 구글 로그인 — 10-31 유호님 가입 · Claude가 ego에서 만듦).
+
+1. 유호님: [clarity.microsoft.com](https://clarity.microsoft.com)에 가입하고 프로젝트를 만든다(주소 https://synk.im). 설정 › Data Export › 새 토큰을 만들어 복사한다. ego의 구글 계정 목록에 그 계정이 있으면 프로젝트 만들기는 Claude가 해도 된다(비밀번호 없이 계정 고르기로 들어간다).
 2. Claude: 토큰을 `~/SYNK_보안/clarity_<프로젝트 id>.txt`에 둔다(출력 · 기록하지 않음). 캠페인 설정 `랜딩.프로젝트`에 id를 적는다.
 3. Claude: 측정 코드를 synk.im/pulse 쪽에만 넣고(원천 SYNK-website `site-v10`), 개인정보처리방침의 「별도의 방문자 분석 스크립트나 광고 추적 기능을 설치하지 않았습니다」를 Clarity(Microsoft · 국외 처리 · 쿠키 · 세션 녹화, 마스킹 strict) 안내로 바꿔 같은 `node tools/공개.js` 회차로 올린다(화면 검수 규칙 그대로).
 4. Claude: 하루 받기(`랜딩받기 --전부`)를 Windows 예약 작업 하나로 켜고 [관문 · 자동화 한 장](../../docs/_ops/관문_자동화.md)에 적는다. 첫 주에 실제 응답으로 칸 이름 · 봇 세션 처리를 확인해 시험 견본을 갈아 끼운다.
