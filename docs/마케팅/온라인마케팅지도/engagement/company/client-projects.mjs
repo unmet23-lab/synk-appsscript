@@ -34,6 +34,20 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   function subscribeChanges(listener){if(typeof listener!=='function')throw new TypeError('변경 알림 설정이 이상해요.');changeListeners.add(listener);return ()=>changeListeners.delete(listener);}
   function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('읽기만 할 수 있는 계정이에요.',403);return live;}
   function allowed(user,row){return user.role==='admin'||row.ownerId===user.id||(row.reviewerId===user.id&&user.role!=='viewer'&&user.teamId&&user.teamId===row.teamId)||(['manager','viewer'].includes(user.role)&&user.teamId&&user.teamId===row.teamId);}
+  // Filter before decoding large documents. Keep the original ACL as a final
+  // check, and read the current user/rows each time (including raw SQL writers).
+  const readableQuery=store.db.prepare(`SELECT body FROM documents WHERE kind='clientProjects' AND
+    (?='admin' OR json_extract(body,'$.ownerId')=?
+      OR (?=1 AND json_extract(body,'$.reviewerId')=? AND json_extract(body,'$.teamId')=?)
+      OR (?=1 AND json_extract(body,'$.teamId')=?)) ORDER BY rowid`);
+  function readableSources(user){
+    user=current(user);
+    // Preserve the original ACL for legacy/external documents whose field
+    // types SQLite cannot bind (or would compare differently from JS).
+    if(typeof user.id!=='string'||typeof user.role!=='string'||(user.teamId!=null&&typeof user.teamId!=='string'))return store.all('clientProjects').filter(row=>allowed(user,row));
+    return readableQuery.all(user.role,user.id,Number(user.role!=='viewer'&&!!user.teamId),user.id,user.teamId??null,Number(['manager','viewer'].includes(user.role)&&!!user.teamId),user.teamId??null)
+      .map(row=>JSON.parse(row.body)).filter(row=>allowed(user,row));
+  }
   function project(user,id,write=false){user=current(user,write);const row=store.get('clientProjects',id);if(!row||!allowed(user,row))throw fail('그 프로젝트를 찾지 못했어요.',404);if(write&&user.role!=='admin'&&row.ownerId!==user.id&&!(user.role==='manager'&&user.teamId&&user.teamId===row.teamId))throw fail('이 프로젝트의 담당자나 관리자만 바꿀 수 있어요.',403);if(write&&row.stage==='archived')throw fail('보관한 프로젝트예요. 보관을 풀어야 바꿀 수 있어요.',409);return row;}
   function revision(row,input){if(input.revision!==row.revision)throw fail('그사이 다른 창이나 고객이 내용을 바꿨어요. 새로 불러온 뒤 다시 저장해 주세요.',409);}
   function append(row,action,actor){return {...row,revision:row.revision+1,updatedAt:clock(),history:[...row.history,{id:randomUUID(),action,actor,at:clock()}].slice(-300)};}
@@ -54,10 +68,10 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   }
   function staffView(row,user=null){const {inviteHash,inviteRevision,notificationEvents,...safe}=row,closeout=buildClientCloseout(row,{now:clock()}),canEdit=!!user&&row.stage!=='archived'&&user.role!=='viewer'&&(user.role==='admin'||row.ownerId===user.id||user.role==='manager'&&user.teamId&&user.teamId===row.teamId);if(safe.studio?.feedbackRounds){safe.studio={...safe.studio,feedbackRounds:{...safe.studio.feedbackRounds}};delete safe.studio.feedbackRounds.drafts;}if(user)closeout.canEdit=canEdit;return {...safe,closeout,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자 없음',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock())};}
   function customerView(row){return {id:row.id,title:row.title,customerName:row.customerName,summary:row.summary,terms:row.terms,stage:row.stage,stageLabel:CLIENT_STAGES[row.stage],dueDate:row.dueDate,nextStep:row.nextStep,revision:row.revision,updatedAt:row.updatedAt,ownerName:store.get('users',row.ownerId)?.name||'PULSE 담당자',versions:row.versions.map(({media,...v})=>({...v,...(media?{media:{id:media.id,mimeType:media.mimeType,fileName:media.fileName,byteSize:media.byteSize,url:'/pulse/api/media/'+media.id}}:{})})),messages:row.messages.filter(m=>m.visibility==='customer').map(({workflow,...message})=>message),previewApproval:buildCustomerPreviewApproval(row),closeout:customerClientCloseout(row),kickoff:customerClientKickoff(row,{now:clock()}),changes:customerClientChanges(row),sceneRequests:customerSceneRequests(row,sceneRequestContext(row))};}
-  function workspace(user){user=current(user);return {projects:store.all('clientProjects').filter(row=>allowed(user,row)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)).map(row=>staffView(row,user)),members:store.all('users').filter(member=>member.active&&member.role!=='viewer'&&(user.role==='admin'||member.id===user.id||user.role==='manager'&&user.teamId&&member.teamId===user.teamId)).map(({id,name})=>({id,name})),reviewers:store.all('users').filter(member=>member.active&&member.role!=='viewer'&&(user.role==='admin'||member.role==='admin'||user.teamId&&member.teamId===user.teamId)).map(({id,name,teamId,role})=>({id,name,teamId,role})),stages:CLIENT_STAGES,canWrite:user.role!=='viewer',canImport:user.role==='admin'};}
+  function workspace(user){return store.readScope(()=>{user=current(user);return {projects:readableSources(user).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)).map(row=>staffView(row,user)),members:store.all('users').filter(member=>member.active&&member.role!=='viewer'&&(user.role==='admin'||member.id===user.id||user.role==='manager'&&user.teamId&&member.teamId===user.teamId)).map(({id,name})=>({id,name})),reviewers:store.all('users').filter(member=>member.active&&member.role!=='viewer'&&(user.role==='admin'||member.role==='admin'||user.teamId&&member.teamId===user.teamId)).map(({id,name,teamId,role})=>({id,name,teamId,role})),stages:CLIENT_STAGES,canWrite:user.role!=='viewer',canImport:user.role==='admin'};});}
   // Search shares the workspace ACL but needs no schedule, kickoff or workflow
   // calculations. Only current source collections are exposed to the search service.
-  function searchSources(user){user=current(user);return store.all('clientProjects').filter(row=>allowed(user,row)).map(row=>{
+  function searchSources(user){return readableSources(user).map(row=>{
     const fields=['id','revision','title','customerName','receiptId','summary','terms','nextStep','internalNotes','stage','updatedAt','messages','versions','deleted','deletedAt','hidden','visibility'];
     return {...Object.fromEntries(fields.filter(key=>Object.hasOwn(row,key)).map(key=>[key,row[key]])),intake:row.intake?{files:row.intake.files,receivedAt:row.intake.receivedAt}:null,studio:row.studio?Object.fromEntries(['assets','references','concepts','scenes','sceneReviews','comments'].map(key=>[key,row.studio[key]])):null};
   });}
@@ -193,5 +207,5 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     const next=append(row,'자동 안내','pulse-auto-reply');next.history=[...next.history.slice(0,-1),{...next.history.at(-1),actorName:'자동 안내'}];
     storeRow({...next,messages:[...row.messages,message]});return {posted:true,messageId:message.id};
   });}
-  return {workspace,searchSources,save,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
+  return {workspace,readableSources,searchSources,save,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
 }

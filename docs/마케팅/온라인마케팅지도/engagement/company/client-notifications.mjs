@@ -125,9 +125,11 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   function projected(user,projectId=null){
     const result=[];
     // Re-read the actual user and current project ACL on every list/count/read.
-    const projects=projectId?[clientProjects.project(user,projectId)]:clientProjects.workspace(user).projects;
-    for(const project of projects){
-      const source=store.get('clientProjects',project.id);if(!source)continue;
+    // Notifications need durable events, not the workspace's schedule/kickoff/
+    // workflow views. These sources apply the same current project ACL once.
+    const projects=projectId?[clientProjects.project(user,projectId)]:clientProjects.readableSources(user);
+    for(const source of projects){
+      if(source.stage==='archived'||user.role==='viewer'||!source.notificationEvents?.length)continue;
       const messages=new Map(source.messages.map(message=>[message.id,message])),versions=new Map(source.versions.map(version=>[version.id,version]));
       for(const event of source.notificationEvents||[]){
         if(!eligible(user,source,event))continue;

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
 import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
@@ -27,12 +28,19 @@ async function fixture(t,options={}){
 const card=(report,id)=>report.cards.find(row=>row.id===id);
 
 test('a composed health read shares projections only for that read and immediately observes changed ownership and source failures',async t=>{
+  let reads=0,broken=false;const prepare=DatabaseSync.prototype.prepare;
+  t.mock.method(DatabaseSync.prototype,'prepare',function(sql){
+    const statement=prepare.call(this,sql),all=statement.all;
+    if(/SELECT.*FROM documents/i.test(sql))t.mock.method(statement,'all',function(...args){
+      if(sql.includes("kind='clientProjects'")||args[0]==='clientProjects'){reads++;if(broken)throw Error('PRIVATE scoped source failure');}
+      return all.apply(this,args);
+    });return statement;
+  });
   const f=await fixture(t,{automationHealthSchedule:false}),owner=f.users.owner,other=f.users.other;
   const saved=f.app.clientProjects.save(owner,{title:'Scoped synthetic project',customerName:'Synthetic customer',stage:'review'}).project;
   const raw=f.app.store.get('clientProjects',saved.id);
   f.app.store.put('clientProjects',saved.id,{...raw,versions:[{id:'approved-preview',kind:'preview',label:'Synthetic approval',createdAt:'2026-10-12T00:00:00.000Z',approvedAt:'2026-10-12T00:00:00.000Z'}]});
-  const original=f.app.store.all.bind(f.app.store);let reads=0,broken=false;
-  f.app.store.all=kind=>{if(kind==='clientProjects'){reads++;if(broken)throw Error('PRIVATE scoped source failure');}return original(kind);};
+  reads=0;
   let report=f.app.automationHealth.get(owner);assert.equal(reads,1);assert.equal(card(report,'delivery').counts.targets,1);
   reads=0;f.app.automationHealth.get(owner);assert.equal(reads,1);
   const current=f.app.store.get('clientProjects',saved.id);f.app.store.put('clientProjects',saved.id,{...current,ownerId:other.id});

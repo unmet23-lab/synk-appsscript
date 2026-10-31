@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
 import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
@@ -56,8 +57,15 @@ test('current permissions apply to both grouped endpoints after ownership, archi
 });
 
 test('an unreadable source is explicit rather than an empty all-clear group, then recovers on the next read',async t=>{
-  const f=await fixture(t),all=f.app.store.all.bind(f.app.store);let broken=true;
-  f.app.store.all=kind=>{if(broken&&kind==='clientProjects')throw Error('PRIVATE_SOURCE_FAILURE');return all(kind);};
+  let broken=false;const prepare=DatabaseSync.prototype.prepare;
+  t.mock.method(DatabaseSync.prototype,'prepare',function(sql){
+    const statement=prepare.call(this,sql),all=statement.all;
+    if(/SELECT.*FROM documents/i.test(sql))t.mock.method(statement,'all',function(...args){
+      if(broken&&(sql.includes("kind='clientProjects'")||args[0]==='clientProjects'))throw Error('PRIVATE_SOURCE_FAILURE');
+      return all.apply(this,args);
+    });return statement;
+  });
+  const f=await fixture(t);broken=true;
   const failed=await f.api('owner','/api/automation-health');assert.equal(failed.status,200);assert.equal(failed.data.projectGroups,null);assert.match(failed.data.projectGroupsError,/불러오지 못/);assert.equal(failed.data.cards.find(row=>row.id==='today').status,'partial');assert.doesNotMatch(JSON.stringify(failed.data),/PRIVATE_SOURCE_FAILURE/);
   broken=false;const recovered=(await f.api('owner','/api/automation-health')).data;assert.equal(recovered.projectGroups.length,1);assert.equal(recovered.projectGroupsError,undefined);
 });

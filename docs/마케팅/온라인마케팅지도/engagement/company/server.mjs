@@ -943,7 +943,7 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/static-set')return send(res,200,staticSet.status());
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
-    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.all('users').length===0,platformUrl});
+    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.count('users')===0,platformUrl});
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
