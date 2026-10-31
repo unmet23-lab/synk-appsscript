@@ -37,10 +37,12 @@ const 글 = {
  N1: { 글: 그대로, refs: [] },
  N2: { 글: 벚꽃, refs: [] },
 };
+// 입력칸에서 줄바꿈이 두 글자로 세어져 실행기의 글 길이 확인에 걸린다(10-31) — 한 줄로 잇는다
+const 한줄 = (글) => 글.split('\n').map((줄) => 줄.trim()).join(' ');
 const 작업들 = {};
 for (const [이름, 판] of Object.entries(글)) {
- 작업들[`${이름}p`] = { id: `${이름}p`, ratio: '9:16', engine: 'pro', refs: 판.refs, prompt: 판.글 };
- 작업들[`${이름}a`] = { id: `${이름}a`, ratio: '9:16', refs: 판.refs, prompt: 판.글 };
+ 작업들[`${이름}p`] = { id: `${이름}p`, ratio: '9:16', engine: 'pro', refs: 판.refs, prompt: 한줄(판.글) };
+ 작업들[`${이름}a`] = { id: `${이름}a`, ratio: '9:16', refs: 판.refs, prompt: 한줄(판.글) };
 }
 const 나갈 = path.join(작업, '나노바나나', 'ego', 'jobs.json');
 fs.mkdirSync(path.dirname(나갈), { recursive: true });
