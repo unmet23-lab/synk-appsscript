@@ -8,9 +8,10 @@
 import {createHash} from 'node:crypto';
 import {DRAMA_JUDGE_VERSION} from './드라마판정.mjs';
 
-// 검수 기준 판(experiences/drama/review/rubric-spec-<판>.md). r1은 첫 묶음의 기준이고, r2가 지금 기준이다(장면 대사의 쉬운 같은 뜻 말 · 너그러움은 처음 보는 대사에서만).
-export const DRAMA_SPEC_RUBRIC='drama-spec-r2';
-export const DRAMA_SPEC_RUBRICS=Object.freeze({'drama-spec-r1':'rubric-spec-r1.md','drama-spec-r2':'rubric-spec-r2.md'});
+// 검수 기준 판(experiences/drama/review/rubric-spec-<판>.md). r1 · r2는 앞 두 묶음(drama-judge-3)의 기준이고, r3가 지금 기준이다
+// (drama-judge-4 — 처음 보는 대사는 빠진 말 노트 없음 · 장면 대사는 카드가 대본 낱말을 보여 준다 · 너그러움은 처음 보는 대사에서만).
+export const DRAMA_SPEC_RUBRIC='drama-spec-r3';
+export const DRAMA_SPEC_RUBRICS=Object.freeze({'drama-spec-r1':'rubric-spec-r1.md','drama-spec-r2':'rubric-spec-r2.md','drama-spec-r3':'rubric-spec-r3.md'});
 const stable=value=>Array.isArray(value)?'['+value.map(stable).join(',')+']'
  :value&&typeof value==='object'?'{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stable(value[key])).join(',')+'}':JSON.stringify(value??null);
 
@@ -24,6 +25,9 @@ export function dramaReviewRows(episode){
  for(const row of episode?.처음보는대사||[])out.push({row,kind:'unseen',day:null,before:null});
  return out;
 }
+/** 판정 명세 — 대본 그대로 {id, line, ...명세}. 처음 보는 대사는 free(학습자가 스스로 만드는 말 — 빠진 말 노트를 주지 않는다, drama-judge-4).
+ *  talk 대사 은행(빌더)과 검수 도구가 이 함수 하나로 만든다. */
+export const dramaSpecOf=({row,kind})=>({id:row.id,line:row.말,...row.명세,...(kind==='unseen'?{free:true}:{})});
 /** 검수 단위(지문을 재는 내용). */
 export function dramaSpecUnit({row,kind,before=null},episodeId){
  return {episode:episodeId,id:row.id,kind,능력:row.능력??null,말:row.말,뜻:row.뜻??null,문법:row.문법||[],어휘:row.어휘||[],

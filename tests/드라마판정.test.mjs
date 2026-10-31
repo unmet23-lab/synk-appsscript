@@ -168,3 +168,17 @@ test('통째로 닮아도 핵심 말은 먼저 본다 — 짧은 핵심 말 하�
  // 소리가 닮은 말(도서실)은 애매라 빠졌다고 단정하지 않는다 — 통과하되 확신 아님.
  assert.deepEqual([judgeLine(library,{transcript:'네, 선배님! 그런데 혹시 도서실이 어디에 있는지 아세요?'}).sure],[false]);
 });
+
+test('스스로 만드는 말(free — 처음 보는 대사)은 빠진 말 노트를 주지 않는다: 바꿔 말한 맞는 말은 확신 없음, 끝맺음 · 길이 노트는 그대로, 확실한 통과는 핵심 말이 모두 들릴 때만(drama-judge-4)',()=>{
+ const scene={id:'7',line:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?',to:'senior',names:['태오'],keys:[{word:'도서관'},{word:'어디에 있는지'}]};
+ const free={...scene,free:true};
+ const other='네, 선배님! 그런데 혹시 화장실이 어디에 있는지 아세요?';
+ assert.equal(judgeLine(scene,{transcript:other}).note?.kind,'missing','장면 대사는 그대로 빠진 말 노트');
+ const withheld=judgeLine(free,{transcript:other});
+ assert.deepEqual([withheld.verdict,withheld.note,withheld.sure,withheld.checks.keys.missing,withheld.checks.keys.unsure],['pass',null,false,[],['도서관']]);
+ assert.equal(judgeLine(free,{transcript:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 알아?'}).sure,false,'끝맺음 애매는 그대로 확신 아님');
+ assert.equal(judgeLine(free,{transcript:'네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세?'}).note?.kind,'ending','대사 끝에서 「요」만 뺀 꼴은 끝맺음 노트');
+ assert.equal(judgeLine(free,{transcript:'도서관이요?'}).note?.kind,'length','한두 낱말은 길이 노트');
+ assert.equal(judgeLine(free,{transcript:scene.line}).sure,true);
+ assert.deepEqual(checkSpec(free),[],'모범 대사는 그대로 확실한 통과');
+});

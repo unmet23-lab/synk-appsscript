@@ -7,7 +7,7 @@
 // · 점수·등급·감정 판정을 만들지 않는다. 받아 적은 글만으로 발음 오류를 단정하지 않는다. 노트 문구는 제품 글 표에 두고 여기는 종류만 돌려준다.
 import {syllables} from './말하기피드백.mjs';
 
-export const DRAMA_JUDGE_VERSION='drama-judge-3';
+export const DRAMA_JUDGE_VERSION='drama-judge-4';
 // 받아 적은 말이 핵심 말과 HIT만큼 닮으면 말한 것, MISS보다 덜 닮으면 빠진 것으로 본다. 그 사이는 애매라 노트를 주지 않는다(시범값).
 export const HIT=0.8,MISS=0.5;
 // 통째로 이만큼 닮으면 모범 대사나 허용 변형을 그대로 말한 것으로 본다.
@@ -134,7 +134,9 @@ function keyCheck(spec,heard){
    return parts.length<2?miss(w):parts.some(c=>syllables(c)>=3&&miss(c))||parts.every(miss);
   };
   // 짧은 낱말은 받아 적기가 자주 빠뜨리고 바꿔 쓴다 — 빠졌다고 단정하지 않는다.
-  if(syllables(key.word)>=3&&words.every(absent))missing.push(key.word);else unsure.push(key.word);
+  // 학습자가 스스로 만드는 말(spec.free — 처음 보는 대사)은 핵심 말이 없어도 다른 말로 했을 수 있어 빠졌다고 단정하지 않는다(기획 §3-5 「명세 밖 표현 →
+  // 판정 보류」 — drama-judge-4, 10-31 칸 명세 검수 두 회차가 맞는 바꿔 말하기에 빠진 말 노트를 짚었다). 확실한 통과는 핵심 말이 모두 들렸을 때만이다.
+  if(syllables(key.word)>=3&&words.every(absent)&&!spec.free)missing.push(key.word);else unsure.push(key.word);
  }
  return {missing,unsure};
 }
@@ -155,7 +157,8 @@ export function gate({transcript,seconds=0,language=''}={}){
 }
 
 /**
- * 대사 한 줄의 판정. spec: 칸 명세 {id, line, to, ending?, keys:[{word, alts?}], names?(장면에 나오는 사람 이름 모두 — 학습자 배역 포함), variants?, minSyllables?}.
+ * 대사 한 줄의 판정. spec: 칸 명세 {id, line, to, ending?, keys:[{word, alts?}], names?(장면에 나오는 사람 이름 모두 — 학습자 배역 포함), variants?, minSyllables?,
+ * free?(학습자가 스스로 만드는 말 — 처음 보는 대사: 빠진 말 노트를 주지 않는다)}.
  * heard: {transcript, seconds?(녹음 길이), speechSeconds?(실제로 말한 시간), language?}.
  * 돌려주는 것: {status:'ok'|'no_speech'|'not_korean'|'too_fast'|'unclear', verdict:'pass'|'note'|null, note:null|{kind:'ending'|'length'|'missing',…}, sure, checks}
  * — sure는 노트 없이 통과했고 모든 칸이 확실할 때만 true다(혼자 해냄으로 셀 수 있는 통과).

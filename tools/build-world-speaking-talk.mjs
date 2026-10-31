@@ -22,7 +22,7 @@ import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {syllables} from './lib/말하기피드백.mjs';
 import {checkSpec,DRAMA_JUDGE_VERSION} from './lib/드라마판정.mjs';
-import {dramaReviewRows,dramaReviewStatus} from './lib/drama-spec-review-unit.mjs';
+import {dramaReviewRows,dramaReviewStatus,dramaSpecOf} from './lib/drama-spec-review-unit.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const BANK_FILE=join(root,'experiences/synk-world-app/world-speaking-items.json');
@@ -76,13 +76,14 @@ export async function checkJudgeExports(generated=judgeModule()){
 export const answerSecOf=line=>Math.min(30,Math.max(8,Math.ceil(syllables(line)/2)+4));
 export async function readEpisodes(files=EPISODE_FILES){const out=[];for(const file of files)out.push((await import(pathToFileURL(file).href)).default);return out;}
 /**
- * 대사 은행 — 학생 줄(scene, 장면 대사 · 연습)과 처음 보는 대사(unseen). 판정 명세는 대본 그대로 {id, line, ...명세}.
- * review.status는 검수지문이 지금 내용과 같을 때만 passed다. onStale(id): 검수:'passed'인데 지문이 다른 줄(검수 뒤 고침) — draft로 싣는다.
+ * 대사 은행 — 학생 줄(scene, 장면 대사 · 연습)과 처음 보는 대사(unseen). 판정 명세는 대본 그대로 {id, line, ...명세}이고 처음 보는 대사는 free
+ * (dramaSpecOf — 빠진 말 노트를 주지 않는다). review.status는 검수지문이 지금 내용과 같을 때만 passed다.
+ * onStale(id): 검수:'passed'인데 지문이 다른 줄(검수 뒤 고침) — draft로 싣는다.
  */
 export function dramaLines(episodes,{onStale=()=>{}}={}){
  const lines=[],seen=new Set();
  for(const episode of episodes)for(const entry of dramaReviewRows(episode)){
-  const {row,kind}=entry,spec={id:row.id,line:row.말,...row.명세};
+  const {row,kind}=entry,spec=dramaSpecOf(entry);
   const problems=checkSpec(spec);
   if(problems.length)throw new Error(`대사 ${row.id} 칸 명세 문제 — ${problems.join(' · ')}`);
   if(seen.has(row.id))throw new Error(`대사 id가 겹친다: ${row.id}`);

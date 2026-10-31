@@ -20,7 +20,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { contentHash, itemKeyOf, familyKeyOf, reviewOutcome } from '../experiences/topik-items/validate.mjs';
 import { judgeLine, allowedEndings, minSyllablesOf } from './lib/드라마판정.mjs';
-import { DRAMA_SPEC_RUBRIC, DRAMA_SPEC_RUBRICS, dramaReviewRows, dramaSpecUnit, dramaSpecHash } from './lib/drama-spec-review-unit.mjs';
+import { DRAMA_SPEC_RUBRIC, DRAMA_SPEC_RUBRICS, dramaReviewRows, dramaSpecUnit, dramaSpecHash, dramaSpecOf } from './lib/drama-spec-review-unit.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -256,7 +256,7 @@ export async function dramaUnits(ids = null, { episodes = null } = {}) {
       const { row, kind, day, before } = entry;
       if (ids?.length && !ids.includes(row.id)) continue;
       // 장면 대사의 듣는 사람은 그 장면 인물이고, 처음 보는 대사는 다른 상황 · 다른 사람이라 일반 이름으로 보인다.
-      const spec = { id: row.id, line: row.말, ...row.명세 }, who = kind === 'scene' ? { professor: '교수', senior: '선배' }[spec.to] : null, person = who ? ep.인물?.[who] : null;
+      const spec = dramaSpecOf(entry), who = kind === 'scene' ? { professor: '교수', senior: '선배' }[spec.to] : null, person = who ? ep.인물?.[who] : null;
       const same = kind === 'unseen' ? rows.filter(r => r.kind === 'scene' && r.row.능력 === row.능력).map(r => `${r.row.id}: ${r.row.말}`) : [];
       const blind = { 줄: row.id,
         종류: kind === 'scene' ? '장면 대사 — 대본을 보며 연기한다(연습, 평가로 세지 않음)' : '처음 보는 대사 — 상황 카드(뜻 · 상황)만 보고 한국어 답 없이 처음 말한다(확실한 통과 = 혼자 해 봄)',
@@ -266,9 +266,10 @@ export async function dramaUnits(ids = null, { episodes = null } = {}) {
         모범_대사: row.말, 뜻: row.뜻 ?? null, 능력: { id: row.능력 ?? null, 이름: labels[row.능력] || null },
         ...(row.문법?.length ? { 문법: tags(row.문법) } : {}), ...(row.어휘?.length ? { 어휘: tags(row.어휘).map(({ 글, id }) => ({ 글, id })) } : {}),
         ...(same.length ? { 같은_능력의_장면_대사: same } : {}) };
-      const specView = { 명세: row.명세, 받는_끝맺음: allowedEndings(spec), 최소_음절: minSyllablesOf(spec), 판정_시험: dramaSpecTests(spec),
+      const specView = { 명세: row.명세, ...(spec.free ? { 판정_종류: '스스로 만드는 말(free) — 핵심 말이 없어도 빠진 말 노트를 주지 않고 확신 없음으로 둔다' } : {}),
+        받는_끝맺음: allowedEndings(spec), 최소_음절: minSyllablesOf(spec), 판정_시험: dramaSpecTests(spec),
         ...(ep.카드 ? { 회차_말투_카드: [ep.카드.제목, ...(ep.카드.줄 || [])] } : {}) };
-      units.push({ key: `drama:${row.id}`, kind: 'drama', role: kind, id: row.id, episode: ep.id, hash: dramaSpecHash(dramaSpecUnit(entry, ep.id)), blind, specView, view: { ...blind, ...specView } });
+      units.push({ key: `drama:${row.id}`, kind: 'drama', role: kind, id: row.id, episode: ep.id, hash: dramaSpecHash(dramaSpecUnit(entry, ep.id)), spec, blind, specView, view: { ...blind, ...specView } });
     }
   }
   const missing = (ids || []).filter(id => !units.some(u => u.id === id));
@@ -281,7 +282,8 @@ export async function dramaUnits(ids = null, { episodes = null } = {}) {
 export const DRAMA_SERIOUS = Object.freeze(['false_note', 'false_credit']);
 export const dramaBlocking = unit => (unit.role === 'unseen' ? DRAMA_SERIOUS : ['false_note']);
 export function dramaProbeResults(unit, probes = []) {
-  const spec = { id: unit.id, line: unit.view.모범_대사, ...unit.view.명세 };
+  // 판정 명세는 묶음을 만든 때의 것(unit.spec). 그것이 없는 옛 묶음(drama-ep01-r1 · r2 — drama-judge-3)은 free 없이 그때와 같게 본다.
+  const spec = unit.spec || { id: unit.id, line: unit.view.모범_대사, ...unit.view.명세 };
   return (Array.isArray(probes) ? probes : []).filter(p => typeof p?.say === 'string' && p.say.trim() && ['pass', 'note'].includes(p.expect)).map(p => {
     const r = judgeLine(spec, { transcript: p.say });
     const problem = p.expect === 'pass' ? (r.status !== 'ok' ? 'gate' : r.verdict === 'note' ? 'false_note' : r.sure ? null : 'unsure')

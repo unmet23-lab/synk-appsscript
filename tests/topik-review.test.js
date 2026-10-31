@@ -297,7 +297,7 @@ test('드라마 대사 — 시험 말은 지금 명세로 판정해 오노트 ·
     probe('선생님 덕분에 살았어. 정말 고마워.', 'note'), probe('감사', 'note', 'length'), probe('선생님 덕분에 살았어요. 정말 감사합니다.', 'note', 'missing')];
   assert.equal(t.merge(unseen, { u001: { blind: { probes: credit, reason: '' }, review: review('pass'), errors: [] } }, { results: { u001: { ...review('pass'), probes: credit.slice(0, 5) } } }).u001.claude.verdict, 'fix', '처음 보는 대사의 너그러움은 막는다');
   assert.equal(t.judgeRequest(u, merged.u001, 'drama-spec-r1').system[0].text.includes('drama-spec-r1'), true, '묶음은 만든 때의 기준 판으로 판정한다');
-  assert.equal(t.judgeRequest(u, merged.u001).system[0].text.includes('drama-spec-r2'), true);
+  assert.equal(t.judgeRequest(u, merged.u001).system[0].text.includes(t.DRAMA_RUBRIC_ID), true);
   assert.equal(t.rubricText('drama', 'drama-spec-r1').id, 'drama-spec-r1');
 });
 
@@ -325,7 +325,7 @@ test('드라마 대사 — 반영: 통과한 줄에만 검수:passed와 검수�
     const built = status(dramaLines([(await freshImport(file)).default]));
     assert.equal(built['s1e01-1'], 'passed'); assert.equal(built['s1e01-t2'], 'draft'); assert.equal(built['s1e01-2'], 'draft');
     // 통과한 줄을 고치면(명세의 alts 하나 더함) 통과가 풀리고 빌더가 알린다.
-    fs.writeFileSync(file, text.replace("alts:['안녕하십니까']", "alts:['안녕하십니까','안녕']"));
+    fs.writeFileSync(file, text.replace("'새로 입학한 유학생'", "'새로 입학한 유학생','새로 온 신입생'"));
     const stale = [];
     assert.equal(status(dramaLines([(await freshImport(file)).default], { onStale: id => stale.push(id) }))['s1e01-1'], 'draft');
     assert.deepEqual(stale, ['s1e01-1']);
