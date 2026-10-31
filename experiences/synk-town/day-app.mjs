@@ -102,7 +102,8 @@ let walkControls = null, walkPanel = false, walkFlushing = null, walkInputMode =
 const walk = createWalkPackets();
 const walking = () => walkWanted && !fallback && snapshot?.state.day?.walk?.enabled === true;
 const nearby = point => { const value = point && nearbyPlace(point); return typeof value === 'string' ? value : value?.id || value?.location || null; };
-function dismissWalkPanel() { walkPanel = false; document.body.classList.remove('walk-engaged'); }
+// A refusal shown in the panel goes with it (with the panel closed the words keep their moment while the player walks on).
+function dismissWalkPanel() { if (walkPanel && $('error').classList.contains('is-soft')) { calmRefusal(); $('error').hidden = true; } walkPanel = false; document.body.classList.remove('walk-engaged'); }
 function pauseWalkInput() { walkControls?.stop(); walk.halt(); if (!walkFlushing) reconcileWalk(); }
 function applyWalkView(force = false) {
   const enabled = walking(), place = enabled ? nearby(walk.point) : null;
@@ -216,14 +217,15 @@ function clearError() { calmRefusal(); document.body.classList.remove('walk-erro
  * a moment where the panel's errors do, softly (a walking panel opens for that moment, as for an error). The greeting
  * the screen sends by itself is read again with no words. */
 const REFUSAL_MS = 6000;
-let refusalTimer = 0, cardNoteTimer = 0;
+let refusalTimer = 0, refusalTop = null, cardNoteTimer = 0;
 function refused(type, error, payload = {}) {
   if (error?.code === 'stale-surface') lastPulse = 0;
   // Through a WORLD account only the code comes (its client reads the answer's top message): the cards' module says the
   // town's words for it, from the town as this screen has it (an older cached module has none — the words that came, if any).
+  // Walking, the place is where the player stands, as the server measures it — day.location stays the last place spoken at.
   const v = snapshot?.view.day?.scene?.village, message = error?.message && error.message !== error.code ? error.message : null;
   const words = type === 'GREET' || ['stale-command', 'stale-surface'].includes(error?.code) ? null
-    : dayCards.refusalWords?.(error?.code, error?.message, { card: payload.card, places: v ? villageRows(v).places : {}, holds: v?.holds || {}, location: snapshot?.view.day?.location }) ?? message;
+    : dayCards.refusalWords?.(error?.code, error?.message, { card: payload.card, places: v ? villageRows(v).places : {}, holds: v?.holds || {}, location: walking() ? nearby(walk.point) : snapshot?.view.day?.location }) ?? message;
   read();
   if (!words) return;
   if ($('card-dialog')?.open) {
@@ -233,13 +235,14 @@ function refused(type, error, payload = {}) {
     return;
   }
   calmRefusal();
-  // Scrolled to the note for the moment, the panel goes back to where it was (a phone's panel would stay down at its end).
-  const note = $('error'), panel = $('nearby-panel'), top = panel.scrollTop; note.classList.add('is-soft'); text('error', words); note.hidden = false; $('retry').hidden = true;
+  // Scrolled to the note for the moment, the panel goes back to where it was (a phone's panel would stay down at its end) —
+  // however the moment ends, while the panel still shows (calmRefusal).
+  const note = $('error'), panel = $('nearby-panel'); refusalTop = panel.scrollTop; note.classList.add('is-soft'); text('error', words); note.hidden = false; $('retry').hidden = true;
   document.body.classList.add('walk-note');
   note.scrollIntoView?.({ block: 'nearest' });
-  refusalTimer = setTimeout(() => { if (note.classList.contains('is-soft')) { calmRefusal(); note.hidden = true; panel.scrollTop = top; } }, REFUSAL_MS);
+  refusalTimer = setTimeout(() => { if (note.classList.contains('is-soft')) { calmRefusal(); note.hidden = true; } }, REFUSAL_MS);
 }
-function calmRefusal() { clearTimeout(refusalTimer); $('error').classList.remove('is-soft'); document.body.classList.remove('walk-note'); }
+function calmRefusal() { clearTimeout(refusalTimer); if (refusalTop !== null) { $('nearby-panel').scrollTop = refusalTop; refusalTop = null; } $('error').classList.remove('is-soft'); document.body.classList.remove('walk-note'); }
 function available() { return connected && snapshot?.capabilities?.day === true; }
 function setBusy(value) {
   busy = value; $('day-app').setAttribute('aria-busy', String(value));
@@ -400,6 +403,8 @@ function tick() {
 const WINDOW_COMMAND = /^(DAY_|LIFE_|BAZAAR_|SUPPORT_|CARD_|TEA_|LANGUAGE_|GATHER_|GREET$)/;
 /** The cards' commands whose 409 is the town's own refusal, not a lost connection (screen review F1). */
 const CARD_REFUSABLE = /^(CARD_|GREET$)/;
+/** What the screen tells the server by itself: its success leaves alone a refusal the player is reading. */
+const BY_ITSELF = /^(GREET|LANGUAGE_OFFER)$/;
 async function command(type, payload = {}) {
   if (busy || !available()) return false;
   setBusy(true);
@@ -410,7 +415,7 @@ async function command(type, payload = {}) {
         payload = { ...payload, surfaceId, fence: presence.fence };
       }
       const value = await request('command', { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision });
-      accept(value); clearError();
+      accept(value); if (!BY_ITSELF.test(type)) clearError();
     });
     if (type === 'DAY_MOVE') { $('scene').focus({ preventScroll: true }); $('scene').scrollIntoView({ block: 'start', behavior: reduced.matches ? 'instant' : 'smooth' }); }
     return true;
@@ -730,8 +735,11 @@ function renderCards() {
   const waits = npc => !!bye && npc === 'cafe-owner';
   const greet = waits(greetSession.greet?.npc) ? null : greetSession.greet, mine = greetSession.greet || waits(greetSession.own?.npc) ? null : greetSession.own;
   const shown = !!model && (!!bye || !!greet || !!mine || model.needs.length > 0 || away.length > 0 || model.note.length > 0);
+  // The keys stay on their button through a redraw or a move (the same words, the same button — screen review E1).
+  const held = panel.contains(document.activeElement) ? document.activeElement.textContent : null;
   panel.hidden = !shown;
-  if (!shown) { placeSeenSince.clear(); return; }
+  // Nothing to show: no old 「같이 해요」 stays behind it for E to press, and the next showing draws anew.
+  if (!shown) { placeSeenSince.clear(); panel.replaceChildren(); panel.classList.remove('is-lead'); signatures.delete('place-cards'); return; }
   // With a card in it the panel goes above the place's own buttons (a phone's walking panel is 300px tall — the 「같이 해요」
   // stood below its fold, final review F4): the reading order and the focus order are the order shown.
   const actions = $('day-actions');
@@ -774,6 +782,7 @@ function renderCards() {
     note.append(list, more); parts.push(note);
   }
   panel.replaceChildren(...parts);
+  if (held) [...panel.querySelectorAll('button')].find(b => b.textContent === held)?.focus({ preventScroll: true });
 }
 /** Whether a line of the place's panel has stood wholly inside the panel's box (and the window) for a moment. A line
  * taller than what the box shows (a long greeting on a small phone) counts once it fills the box (review FA1). */
@@ -1192,6 +1201,8 @@ notebook = createNotebook($('notebook-dialog'), { command: async (type, payload)
 } });
 $('journal-open').addEventListener('click', () => { notebook.render(snapshot); notebook.open(); }); $('notebook-close').addEventListener('click', () => $('notebook-dialog').close());
 $('card-confirm').addEventListener('click', async () => { await command('CARD_CONFIRM'); refocusCard({ next: true }); });
+// A refusal's words show here while the dialog holds the screen — #error's alert behind it is inert.
+$('card-note').setAttribute('aria-live', 'polite');
 $('card-close').addEventListener('click', closeCard);
 $('card-dialog').addEventListener('cancel', event => { event.preventDefault(); closeCard(); });
 $('retry').addEventListener('click', load);

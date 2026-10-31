@@ -263,4 +263,6 @@ test('카드 거절 글 — WORLD 계정 경로는 코드만 남아도(마을 �
   assert.match(app, /dayCards\.refusalWords\?\.\(/);
   assert.doesNotMatch(app, /import \{[^}]*\brefusalWords\b[^}]*\} from '\.\/day-cards\.mjs'/);
   assert.doesNotMatch(app.slice(app.indexOf('function refused('), app.indexOf('function calmRefusal(')), /error\.message\)/);
+  // Walking, the words read where the player stands, as the server does (day.location stays the last place spoken at).
+  assert.match(app.slice(app.indexOf('function refused('), app.indexOf('function calmRefusal(')), /location: walking\(\) \? nearby\(walk\.point\)/);
 });

@@ -288,7 +288,7 @@ body.walk-mode{overflow:hidden;background:var(--w-bg);--edge:24px;--top:calc(16p
   .walk-interact.felt{width:164px;min-height:58px;bottom:calc(var(--bottom) + 24px);padding:6px 14px;font-size:15.5px}
   .walk-interact.felt:disabled{font-size:13.5px}
   .walk-status{left:var(--edge);right:var(--edge);bottom:calc(var(--bottom) + 138px);transform:none;max-width:none;padding:9px 14px;border-radius:var(--w-r-md);font-size:13px;text-align:left}
-  .walk-mode.walk-engaged .walk-status,.walk-mode.walk-engaged .walk-help{display:none}
+  .walk-mode.walk-engaged .walk-status,.walk-mode.walk-engaged .walk-help,.walk-mode.walk-note .walk-status,.walk-mode.walk-note .walk-help{display:none}
   .walk-mode .scene-caption{left:var(--edge);right:var(--edge);bottom:calc(var(--bottom) + 138px);transform:none;width:auto;max-height:80px;padding:9px 13px;font-size:13px;line-height:1.6;text-align:left}
   .walk-mode .nearby{top:calc(var(--top) + 104px);left:var(--edge);right:var(--edge);width:auto;max-height:min(40dvh,300px);padding:13px 14px 15px;border-radius:20px}
   .walk-mode .nearby-head{gap:8px}
@@ -388,7 +388,7 @@ body[data-walk-input=touch] .walk-help{display:none}
 @media(max-width:760px){
   .walk-mode .town-map{width:176px;padding:9px 10px 10px;gap:7px}
   .town-map-plot{height:80px}
-  .walk-mode.walk-engaged .town-map{display:none}
+  .walk-mode.walk-engaged .town-map,.walk-mode.walk-note .town-map{display:none}
   .walk-mode .walk-help{top:calc(var(--top) + 56px + 168px);max-width:176px}
 }
 @media(max-width:360px){

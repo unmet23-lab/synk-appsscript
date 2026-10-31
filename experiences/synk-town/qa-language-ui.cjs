@@ -444,10 +444,12 @@ async function linger(browser) {
         });
         check('linger', /같이 해요/.test(await go.textContent()) && layout.before && layout.inside, `${device}: 장소 판 — 카드 줄이 장면 단추 위 · 「같이 해요」가 첫 화면(접힘 위)`, layout);
         // Her greeting still comes — under the card row (it carries what she heard, §9-4 — design review F2).
-        check('linger', layout.order[0] === 'need' && layout.order.lastIndexOf('need') < (layout.order.indexOf('greet') + 1 || Infinity), `${device}: 카드 줄이 먼저, 인사는 그 아래`, layout.order);
+        check('linger', layout.order[0] === 'need' && layout.order.includes('greet') && layout.order.lastIndexOf('need') < layout.order.indexOf('greet'), `${device}: 카드 줄이 먼저, 인사는 그 아래`, layout.order);
         await shot(s.page, `linger-${device}-2-talk`);
         await go.click(); await s.page.waitForSelector('#card-dialog[open]', { timeout: 15000 }); await delay(700);
         check('linger', /새 차/.test(await s.page.$eval('#card-line', el => el.textContent)), `${device}: 서성이는 주인에게 먼저 말을 걸면 첫 C4가 열린다`);
+        // A refusal's words show in the dialog's note while #error behind it is inert (screen review I1).
+        check('linger', await s.page.$eval('#card-note', el => el.getAttribute('aria-live')) === 'polite', `${device}: 카드 대화창의 쪽지는 보조기기에도 읽힌다`);
         await s.page.click('#card-close'); await delay(900);
         // Where she goes next away from the cafe (arrived a while there), today.
         const v = f.store.read().state.village, start = Object.fromEntries(Object.entries(v.band.residents).map(([npc, r]) => [npc, r.lastSpot]).filter(([, at]) => at));
@@ -487,19 +489,59 @@ async function linger(browser) {
             walkError: document.body.classList.contains('walk-error') }));
           check('linger', after.connected && after.soft && after.shown && after.text === '찻집 주인 가까이 가서 말을 걸어 주세요.' && !after.retry && !after.walkError, `${device}: 거절(409)은 연결 끊김이 아니라 그 자리의 부드러운 마을 말(코드만 온 WORLD 꼴도)`, after);
           await shot(s.page, `linger-${device}-3-refused`);
+          // Turned down again inside the moment (no press of the tool's to scroll it back up): the panel still goes back (screen review D3).
+          await stale.evaluate(el => el.click()); await delay(800);
           await s.page.unroute('**/api/preview/command', refuse);
           await delay(6500);
           const calm = await s.page.evaluate(() => ({ shown: !document.getElementById('error').hidden, connected: SYNKTownDay.metrics().connected, scrollTop: document.getElementById('nearby-panel').scrollTop }));
           // (The press itself may scroll the panel a few pixels, to the button.)
           check('linger', !calm.shown && calm.connected && calm.scrollTop <= scrolledBefore + 24, `${device}: 거절 글은 잠시 뒤 걷히고 판은 있던 자리로, 마을은 그대로 이어진다`, { ...calm, scrolledBefore });
+          // Closing the panel takes its refusal along (screen review D2); closed before the answer came, the words open it for
+          // their moment, over where a phone has its map (H1).
+          const moment = () => s.page.evaluate(() => ({ note: document.body.classList.contains('walk-note'), shown: !document.getElementById('error').hidden,
+            nearby: getComputedStyle(document.getElementById('nearby-panel')).display, map: getComputedStyle(document.getElementById('town-map')).display }));
+          const closePanel = () => s.page.evaluate(() => document.getElementById('walk-close').click());
+          await s.page.route('**/api/preview/command', refuse);
+          await stale.evaluate(el => el.click()); await delay(800);
+          await closePanel(); await delay(300);
+          const closed = await moment();
+          check('linger', !closed.note && !closed.shown && closed.nearby === 'none', `${device}: 판을 닫으면 그 판의 거절 글도 함께 걷힌다`, closed);
+          await s.page.unroute('**/api/preview/command', refuse);
+          await openPanel(s.page); await stale.waitFor({ timeout: 10000 });
+          const late = async route => { if (JSON.parse(route.request().postData() || '{}').type === 'CARD_OPEN') await delay(500); await refuse(route); };
+          await s.page.route('**/api/preview/command', late);
+          await stale.evaluate(el => el.click()); await closePanel(); await delay(1200);
+          const opened = await moment();
+          check('linger', opened.note && opened.shown && opened.nearby !== 'none' && (device === 'desktop' || opened.map === 'none'), `${device}: 판을 닫은 사이 온 거절은 그 글만큼 판을 열고, 휴대폰은 지도가 비킨다`, opened);
+          await shot(s.page, `linger-${device}-3b-closed`);
+          await s.page.unroute('**/api/preview/command', late);
+          await delay(6500);
+          const after6 = await moment();
+          check('linger', !after6.note && !after6.shown && after6.nearby === 'none', `${device}: 닫힌 판은 글이 걷히면 도로 닫힌다`, after6);
+          await openPanel(s.page);
           // The server's clock jumps past the window's three-second lease: a pulse takes it again before the walk (a walk first gets 409 stale-surface).
           f.set(away.arriveMs + 30 * 1000); await delay(1600);
+          // She has gone: no old button stays in the panel for E to press, and the panel's place is back (screen review A1).
+          const cardsNow = () => s.page.evaluate(() => { const cards = document.getElementById('place-cards'), actions = document.getElementById('day-actions');
+            return { hidden: cards.hidden, buttons: cards.querySelectorAll('button[data-command]').length, rows: cards.children.length, lead: cards.classList.contains('is-lead'), after: actions.nextElementSibling === cards, text: cards.textContent }; });
+          const left = await cardsNow();
+          check('linger', !left.buttons && !left.lead && left.after, `${device}: 주인이 떠나면 장소 판에 옛 단추가 남지 않고 자리도 돌아온다`, left);
           await s.page.keyboard.press('Escape'); await delay(500);
           const place = village.placeAt([away], 'cafe-owner', away.arriveMs + MIN, start).to;
           await talkAt(s.page, place);
           const there = await s.page.evaluate(() => ({ away: [...document.querySelectorAll('#place-cards .place-away')].map(el => el.textContent), need: document.querySelectorAll('#place-cards .place-need').length, scrollTop: document.getElementById('nearby-panel').scrollTop }));
           check('linger', there.away.some(t => /찻집 주인: .*찻집/.test(t)) && there.need === 0 && there.scrollTop === 0, `${device}: 찻집 밖의 주인 곁 장소 판 — 「찻집에서」 한 줄 · 단추 없음 · 판은 맨 위부터`, there);
           await shot(s.page, `linger-${device}-4-away`);
+          // Everyone gone from here and nothing left to show: nothing of the card row stays behind the hidden panel (A1).
+          const now = f.store.read().state.village, plan = village.planOf(now).segments, npcs = [...new Set(plan.map(x => x.npc))];
+          let nobody = null;
+          for (let t = f.now() + MIN; t < now.band.endMs && !nobody; t += MIN) if (!npcs.some(npc => village.placeAt(plan, npc, t, start)?.to === place)) nobody = t;
+          check('linger', !!nobody, `${device}: 그곳에 아무도 없는 때를 찾았다`, nobody && new Date(nobody).toISOString());
+          if (nobody) f.set(nobody + 15 * 1000);
+          // (The greeting a visit began with stays that visit: the panel is opened again.)
+          await delay(1600); await s.page.keyboard.press('Escape'); await delay(500); await openPanel(s.page);
+          const empty = await cardsNow();
+          check('linger', empty.hidden && !empty.rows && !empty.lead, `${device}: 보일 것이 없으면 숨은 판에 카드 줄이 남지 않는다`, empty);
         }
         const wide = await s.page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
         check('linger', !wide, `${device}: 가로 넘침 없음`);
