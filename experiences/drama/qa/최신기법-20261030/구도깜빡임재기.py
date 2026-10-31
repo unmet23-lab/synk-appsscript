@@ -55,8 +55,8 @@ def main():
 
     cap = cv2.VideoCapture(a.영상)
     fps = cap.get(cv2.CAP_PROP_FPS) or 24
-    폭들, 눈값, 띠차, 온차, 눈칸 = [], [], [], [], []
-    앞띠 = None
+    폭들, 눈값, 띠차, 온차, 눈칸, 얼굴차 = [], [], [], [], [], []
+    앞띠, 앞얼굴, 상자 = None, None, None
     while True:
         ok, 화면 = cap.read()
         if not ok:
@@ -73,9 +73,16 @@ def main():
         if f is None:
             폭들.append(np.nan)
             눈값.append(np.nan)
+            얼굴차.append(np.nan)
             continue
         폭 = float(f[2])
         폭들.append(폭 / w)
+        # 얼굴 상자 움직임: 첫 화면의 상자를 고정해 재야 고개가 움직인 만큼 차가 난다(듣는 동안 정지 판별, 3판 2.4~4.2초 0.22~0.5)
+        if 상자 is None:
+            x, y, w2, h2 = [int(v) for v in f[:4]]
+            상자 = (max(0, y), y + h2, max(0, x), x + w2)
+        얼굴차.append(np.nan if 앞얼굴 is None else float(np.abs(회색[상자[0]:상자[1], 상자[2]:상자[3]] - 앞얼굴).mean()))
+        앞얼굴 = 회색[상자[0]:상자[1], 상자[2]:상자[3]]
         if a.시트 and len(폭들) % 3 == 1:
             ex, ey = (f[4] + f[6]) / 2, (f[5] + f[7]) / 2
             칸 = cv2.resize(화면[max(0, int(ey - 폭 * .26)):int(ey + 폭 * .26), max(0, int(ex - 폭 * .62)):int(ex + 폭 * .62)], (216, 92), interpolation=cv2.INTER_CUBIC)
@@ -119,9 +126,10 @@ def main():
     print(f"깜빡임 후보 {len(골)}번: " + (' · '.join(f"{k / fps:.2f}초({l}프레임, {d * 100:.0f}%)" for k, l, d in 골) or '없음'))
 
     구간들 = [tuple(float(x) for x in s.split('-')) for s in a.구간]
+    얼 = np.array(얼굴차)
     for s, e in 구간들:
         c = sum(1 for k, _, _ in 골 if s <= k / fps <= e)
-        print(f"  {s:.2f}~{e:.2f}초 안 깜빡임 후보 {c}번")
+        print(f"  {s:.2f}~{e:.2f}초: 깜빡임 후보 {c}번 · 얼굴 상자 움직임 {np.nanmean(얼[int(s * fps):int(e * fps)]):.2f}")
 
     띠 = np.array(띠차)
     끝 = 띠[-int(fps * 2):]

@@ -7,7 +7,7 @@
  * 구도 · 깜빡임을 고정한 판(10-31 유호님 「다음 판 구워」)부터는 앞 판과 나란히 재생하는 칸을 더했다(고친 일은 전후를 보게 보고).
  * 같은 claude.ai 주소(태오판.html)로 다시 올린다.
  *
- *   node 태오한테이크판만들기.mjs <작업>     <작업>/영상/한테이크2결과.json → <작업>/태오판.html · <작업>/태오판_파일.json
+ *   node 태오한테이크판만들기.mjs <작업>     <작업>/영상/한테이크3결과.json → <작업>/태오판.html · <작업>/태오판_파일.json
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +20,7 @@ const 작업 = process.argv[2];
 if (!작업) { console.error('쓰는 법: node 태오한테이크판만들기.mjs <작업 폴더>'); process.exit(2); }
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 소리폴더 = path.resolve(여기, '../../s1/소리');
-const 결과 = JSON.parse(fs.readFileSync(path.join(작업, '영상', '한테이크2결과.json'), 'utf8'));
+const 결과 = JSON.parse(fs.readFileSync(path.join(작업, '영상', '한테이크3결과.json'), 'utf8'));
 
 const 파일 = {};
 const 붙임 = (이름, 원본) => {
@@ -42,11 +42,11 @@ const 줄 = (역, 번호) => {
 };
 
 const 쓸것 = {
- 포스터: 포스터(path.join(작업, 결과.own), 'senior-onetake2'),
- own: 붙임('video/senior-onetake2-own.mp4', path.join(작업, 결과.own)),
- original: 붙임('video/senior-onetake2-original.mp4', path.join(작업, 결과.original)),
- 앞판: 붙임('video/senior-onetake-own.mp4', path.join(작업, 결과.앞판)),
- 앞판포스터: 포스터(path.join(작업, 결과.앞판), 'senior-onetake'),
+ 포스터: 포스터(path.join(작업, 결과.own), 'senior-onetake3'),
+ own: 붙임('video/senior-onetake3-own.mp4', path.join(작업, 결과.own)),
+ original: 붙임('video/senior-onetake3-original.mp4', path.join(작업, 결과.original)),
+ 앞판: 붙임('video/senior-onetake2-own.mp4', path.join(작업, 결과.앞판)),
+ 앞판포스터: 포스터(path.join(작업, 결과.앞판), 'senior-onetake2'),
  학생구간: 결과.학생, 선배구간: 결과.선배,
  학생: 줄('model', 6), 선배: 줄('senior', 2),
  기록: 결과.기록 || [],
