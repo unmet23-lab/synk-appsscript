@@ -93,3 +93,20 @@ test('with an Atlas session, an empty setting that would change the plan is aske
   const known = Ask.fromAtlas({ engine: Atlas, events: session.events(), scope, at, experienceId: 'letter', candidates, levers, questions: [goal, time], answers: { goal: 'work', time: 'short' } });
   assert.equal(known.status, 'none');
 });
+
+for (const [label, first, second] of [
+  ['different context fields', { kind: 'setting', field: 'a' }, { kind: 'setting', field: 'b' }],
+  ['different understanding lines', { kind: 'confirm', line: 'a' }, { kind: 'confirm', line: 'b' }],
+  ['different answer kinds', { kind: 'setting', field: 'a' }, { kind: 'confirm', line: 'a' }],
+]) test(`Atlas questions reject one about bound to ${label} before simulating a misleading decision`, () => {
+  let calls=0;
+  const engine={decide(){calls++;return {status:'ready',selected:{id:'same'},bundle:{}};}},options=[{id:'yes'},{id:'no'}];
+  assert.throws(()=>Ask.fromAtlas({engine,questions:[{id:'one',about:'shared',options,...first},{id:'two',about:'shared',options,...second}]}),/ambiguous Atlas question binding/);
+  assert.equal(calls,0);
+});
+
+test('Atlas questions may share an about when they address the same setting',()=>{
+  let calls=0;const engine={decide(){calls++;return {status:'ready',selected:{id:'same'},bundle:{}};}},options=[{id:'yes'},{id:'no'}];
+  assert.doesNotThrow(()=>Ask.fromAtlas({engine,questions:[{id:'one',about:'a',options},{id:'two',about:'a',field:'a',kind:'setting',options}]}));
+  assert.ok(calls>0);
+});

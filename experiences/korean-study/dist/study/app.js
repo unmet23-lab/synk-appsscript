@@ -169,7 +169,12 @@ var require_ask = __commonJS({
       function fromAtlas({ engine, events = [], scope, at, experienceId, candidates, levers = [], questions, ...rest } = {}) {
         if (!engine || typeof engine.decide !== "function") throw new TypeError("Ask: Core engine required");
         validate(questions);
-        const byAbout = new Map(questions.map((q) => [q.about ?? q.id, q]));
+        const byAbout = /* @__PURE__ */ new Map();
+        for (const q of questions) {
+          const about = q.about ?? q.id, prior = byAbout.get(about);
+          if (prior && ((prior.kind ?? "setting") !== (q.kind ?? "setting") || (q.kind === "confirm" ? prior.line !== q.line : (prior.field ?? about) !== (q.field ?? about)))) throw new TypeError(`Ask: ambiguous Atlas question binding ${about}`);
+          byAbout.set(about, q);
+        }
         const decide = (answers) => {
           const extra = [];
           for (const [about, value] of Object.entries(answers)) {

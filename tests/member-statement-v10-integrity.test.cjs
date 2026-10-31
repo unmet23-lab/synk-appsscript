@@ -2,6 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process');
 const C=require('../experiences/synk-account/src/member-statement-contract.cjs');
 const root=path.resolve(__dirname,'..'),pins=require('./fixtures/member-parser-compatibility-20261029.json');
+const {beforeRuntimeMemo}=require('./_member-parser-source-history.cjs');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 
 test('an outer self prefix never claims another actor\'s subordinate behaviour',()=>{
@@ -72,8 +73,8 @@ test('a negative preference in a reason is never silently discarded as backgroun
  }
 });
 
-test('legacy parsing changed only an equivalent nonempty suffix regex; original bytes remain provable',()=>{
- for(const row of pins.rows){const source=fs.readFileSync(path.join(root,row.path),'utf8');assert.equal(sha(source),row.sha256);assert.equal(sha(source.replace(row.newRegex,row.oldRegex)),row.beforeSha256);}
+test('legacy runtime repairs are reversible and original parser bytes remain provable',()=>{
+ for(const row of pins.rows){let source=fs.readFileSync(path.join(root,row.path),'utf8');if([4,5].includes(row.version))source=beforeRuntimeMemo(source,row.version);assert.equal(sha(source),row.sha256);assert.equal(sha(source.replace(row.newRegex,row.oldRegex)),row.beforeSha256);}
  const pin9=pins.rows.at(-1),source=fs.readFileSync(path.join(root,pin9.path),'utf8').replace(pin9.newRegex,pin9.oldRegex);assert.equal(sha(source),pin9.beforeSha256);
  const module={exports:{}};const localRequire=require('node:module').createRequire(require.resolve('../experiences/synk-account/src/member-statement-v9.cjs'));
  new Function('require','module','exports',source)(localRequire,module,module.exports);
