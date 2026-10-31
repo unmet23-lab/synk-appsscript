@@ -36,11 +36,21 @@
     },
     {
       "계정": "synkbrief-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-10-31T21:00:00+09:00",
       "방법": "10-31 04:54~04:55 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) — 원본 b16_master.mp4 · 캡션 03-synkbrief-tiktok/원고.json 그대로(공백 빼고 같음) · AI-generated content 켬 · 예약 칸 「21:00」 · 「2026-10-31」 → 「Schedule」(검사 창 없이) → 목록 「Oct 31, 9:00 PM (GMT+9) Seoul · Everyone」 확인(스크립트 C:/Users/q1212/ego/plates-20261031/tk-*.mjs, 설정 tk-b16.json)",
-      "주소": "https://www.tiktok.com/@synkbrief",
-      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(B16 — 인스타 · 유튜브 · 틱톡 21:00, 네이버 블로그 21:10, 편 · 판 · 계정 · 시각을 보인 뒤) · 작업실 검토 링크 승인과 같은 원본 영상 판"
+      "주소": "https://www.tiktok.com/@synkbrief/video/7702551778021166388",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(B16 — 인스타 · 유튜브 · 틱톡 21:00, 네이버 블로그 21:10, 편 · 판 · 계정 · 시각을 보인 뒤) · 작업실 검토 링크 승인과 같은 원본 영상 판",
+      "확인": "10-31 21:21 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief)로 Studio 목록 「Oct 31, 9:00 PM · Everyone」 0:48을 확인"
+    },
+    {
+      "계정": "shift-naverblog",
+      "상태": "게시됨",
+      "시각": "2026-10-31T21:23:11+09:00",
+      "주소": "https://blog.naver.com/synkshift/224460443906",
+      "방법": "10-31 05:2x Aside synkshift 프로필(u1)에 임시저장 → 21:08 한 번짜리 예약 작업 blogs-post-20261031은 발행 단계가 자동 모드 판정기에 막힘(임시저장 그대로) → 21:22 Claude가 승인이 대화에 있는 앱 세션에서 같은 run-go.js로 영상 칸(https://youtu.be/SkISQVDrjN8)을 넣어 발행 — 제목이 맞는 임시저장 글만 불러오고 본문(소제목 5 · 그림 2 · 영상 1 · 남은 자리 표시 0)과 발행 설정(작업 기록 · 태그 11/11 · 전체 공개 · 댓글 · 검색 · 지금 발행 · 공지 아님)이 다 맞을 때만 「발행」 한 번 · ~/aside/b16-blog-20261031",
+      "확인": "글 목록 21:23:11 한 줄(두 번 오르지 않음) · PostView 소제목 5 · 그림 2 · 영상 1(SkISQVDrjN8)",
+      "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(B16 — 네이버 블로그 21:10) · 15:4x 「응, 21:08로 걸어」"
     }
   ]
 }
