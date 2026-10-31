@@ -284,3 +284,12 @@ test('passing account options over a guest or another account store never adopts
   const wrongAccount = client(s, { storage: proper.storage, accountKey: 'account.b' });await wrongAccount.sync.start();
   assert.equal(wrongAccount.sync.status().code, 'STORAGE_ERROR');assert.equal(wrongAccount.adapter.events().length, 0);wrongAccount.sync.stop();
 });
+
+test('server imports clear a previous exhausted set before the same ID is lost again',async t=>{
+ const diskStore=disk(),accountKey='followup.server-recovery',events=[{id:'second.event'}];let recover=false,scans=0;
+ diskStore.setItem(SYNC_KEY+'.'+accountKey,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:['first.event','second.event'],pending:[],missing:[]}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},importEvents:found=>{if(!recover)return{added:0,skipped:found.filter(e=>e.id==='first.event').map(e=>e.id)};const added=found.filter(e=>!events.some(local=>local.id===e.id));events.push(...added);return{added:added.length,skipped:[]};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage:diskStore,auto:false,maxAttempts:1,transport:{get:async({after})=>{if(after===0)scans++;return{events:after===0?[{id:'first.event'},{id:'second.event'}]:[],cursor:2,hasMore:false,revision:1};},post:async()=>{throw Error('Acknowledged server imports must never upload');}}});t.after(()=>sync.stop());
+ assert.equal((await sync.start()).code,'INCOMPLETE_HISTORY');events.length=0;recover=true;assert.equal((await sync.flush()).phase,'synced');assert.deepEqual(events.map(e=>e.id),['first.event','second.event']);const previousScans=scans;
+ events.splice(events.findIndex(e=>e.id==='first.event'),1);assert.equal((await sync.flush()).phase,'synced');assert.ok(scans>previousScans);assert.deepEqual(events.map(e=>e.id).sort(),['first.event','second.event']);
+});
