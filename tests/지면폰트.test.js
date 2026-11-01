@@ -106,6 +106,9 @@ const 제외 = [
     + 'css·글꼴·그림을 안에 싣고 Chrome 으로 PNG·A4 PDF 를 찍으며, 글꼴이 다 들어왔는지까지 확인한다. 글꼴은 신청 페이지 빌드'
     + '(`experiences/lab-topik4/build.mjs`)가 쓰는 글자만 남긴 줄인 SUIT(`dist/lab/topik4/assets/SUIT-subset.woff2`)라 '
     + '정본과 바이트가 다르다 — 위 허브 원고와 같은 꼴이다(10-21 `3a669019e` 이 지면이 들어오자 master CI 가 빨개졌다).'],
+  [/^docs\/디자인\/드라마_장면\/_src_시안\.html$/, '드라마 장면 화면 움직이는 시안의 원고다. 같은 폴더의 `굽기.mjs` 가 '
+    + '쓰인 글자만 남긴 SUIT · Inter Tight · DM Mono 를 data URI 로 심어 `.tmp/drama-scene-design/`(git 밖 산출물)에 쓴다 — '
+    + '발표물 `_src_` 와 같은 통로라 원고는 `/*FONTS*/` 자리만 둔다(11-02).'],
   [/^docs\/PATH_정착관리\/제안\/[^/]+_원고\.html$/, '전북 협력 제안 PDF 들(협력제안서·참고 자료·한 장 요약·의향서·참여 안내)의 원고다. '
     + '같은 폴더의 `굽기.cjs` 가 굽기 때 임시 원고에 `브랜드폰트.블록()`(정본 SUIT Variable)을 얹고 `docs/tools/브랜드폰트_임베드.py` 로 '
     + '나머지 서체를 심어 PDF 를 찍는다 — 나가는 것은 PDF 이고, 가변 서체(약 610KB)를 원고에 박지 않고 이름만 적는 것이 '

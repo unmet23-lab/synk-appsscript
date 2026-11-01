@@ -1,0 +1,376 @@
+<title>시네마 자막 모션</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/*FONTS*/
+:root{color-scheme:dark;
+ --bg:#060608;--ink:#f4f5f8;--dim:rgba(244,245,248,.62);--faint:rgba(244,245,248,.38);
+ --accent:#8b7bff;--accent-2:#6fd3ff;--warm:#ffcf5c;--slip:#ff6b81;
+ --sans:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+ --mono:'DM Mono',ui-monospace,monospace;
+ --spring:cubic-bezier(.23,1,.32,1);--snap:cubic-bezier(.25,1,.5,1)}
+html,body{background:var(--bg);color:var(--ink)}
+/* 배치: 가운데 실제 폰 한 대가 장면을 처음부터 끝까지 돈다(약 26초 반복) · 오른쪽(휴대폰에선 아래)에 지금 무엇이 움직이는지 장면 목록과 쓰인 움직임 규칙 */
+.page{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:48px;align-items:center;max-width:1100px;margin:0 auto;padding:36px max(16px,env(safe-area-inset-left,0px)) 56px max(16px,env(safe-area-inset-right,0px));font:15px/1.6 var(--sans);word-break:keep-all}
+.stagewrap{display:grid;justify-items:center;gap:16px}
+.ctrl{display:flex;gap:8px}
+.ctrl button{font:600 13px/1 var(--sans);color:var(--ink);background:rgba(255,255,255,.08);border:0;border-radius:999px;padding:10px 16px;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);transition:background .15s}
+.ctrl button:hover{background:rgba(255,255,255,.14)}
+.ctrl button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* 폰 */
+.phone{position:relative;width:340px;height:720px;border-radius:52px;padding:11px;background:#111214;box-shadow:0 50px 100px -40px rgba(120,100,255,.35),inset 0 0 0 2px #2a2c31,0 0 0 1px #000}
+.scr{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:#09090b;isolation:isolate}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:96px;height:28px;border-radius:16px;background:#000;z-index:20}
+.status{position:absolute;inset:0 0 auto 0;height:46px;display:flex;justify-content:space-between;align-items:flex-end;padding:0 28px 6px;font:600 13px/1 var(--sans);z-index:19}
+/* 장면 영상 자리(사진 + 아주 느린 밀기) */
+.shot{position:absolute;inset:0 0 auto 0;height:74%;overflow:hidden}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;opacity:0}
+.shot::after{content:'';position:absolute;inset:-1px;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent 18%,transparent 40%,rgba(9,9,11,.8) 72%,#09090b 96%);z-index:2}
+.grain{position:absolute;inset:0;z-index:3;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* 위 띠 */
+.top{position:absolute;top:52px;left:16px;right:16px;z-index:10;display:flex;align-items:center;gap:10px}
+.ep{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);white-space:nowrap}
+.prog{flex:1;display:flex;gap:4px}
+.prog i{position:relative;flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
+.prog i::after{content:'';position:absolute;inset:0;background:#fff;transform:scaleX(var(--p,0));transform-origin:left;transition:transform .6s var(--spring)}
+/* 회차 표지 */
+.title{position:absolute;inset:0;z-index:15;display:grid;place-content:center;justify-items:center;gap:10px;background:#060608;text-align:center}
+.title .k{font:500 11px/1 var(--mono);letter-spacing:.32em;color:var(--dim);text-transform:uppercase}
+.title .t{font-weight:820;font-size:44px;letter-spacing:-.05em;line-height:1.05}
+.title .t span{display:inline-block}
+.title .s{font-size:14px;color:var(--dim)}
+.title .bar{width:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+/* 자막 */
+.sub{position:absolute;left:18px;right:18px;top:47%;z-index:10;text-align:center;display:grid;justify-items:center;gap:4px}
+.who{font:500 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#c2c9ff;opacity:0}
+.line{font-weight:760;font-size:23px;line-height:1.32;letter-spacing:-.035em;text-shadow:0 2px 18px rgba(0,0,0,.65)}
+.line .w{display:inline-block;opacity:0;filter:blur(8px);transform:translateY(8px)}
+.mean{font-size:12px;color:var(--dim);opacity:0}
+/* 아래 판 */
+.panel{position:absolute;left:12px;right:12px;bottom:16px;z-index:12;display:grid;gap:10px}
+.mine{justify-self:end;max-width:86%;font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.88);padding:8px 12px;border-radius:16px 16px 5px 16px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);opacity:0}
+.mine .caret{display:inline-block;width:2px;height:1em;vertical-align:-.12em;background:var(--accent-2);margin-left:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.slipw{position:relative;white-space:nowrap}
+.slipw svg{position:absolute;left:0;right:0;bottom:-5px;width:100%;height:6px;overflow:visible}
+.slipw path{fill:none;stroke:var(--slip);stroke-width:2;stroke-linecap:round;stroke-dasharray:60;stroke-dashoffset:60}
+.yo{color:var(--warm);text-shadow:0 0 14px rgba(255,207,92,.55)}
+.card{border-radius:22px;padding:13px 15px 14px;background:rgba(255,255,255,.075);box-shadow:inset 0 0 0 1px rgba(255,255,255,.13);backdrop-filter:blur(16px);transform:translateY(130%);opacity:0}
+.card .k{display:flex;align-items:center;gap:7px;font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#a9b4ff}
+.card .k .dot{width:6px;height:6px;border-radius:50%;background:var(--slip);box-shadow:0 0 10px var(--slip)}
+.card .k b{font:700 11.5px/1 var(--sans);letter-spacing:0;text-transform:none;color:var(--dim)}
+.card p{margin:6px 0 0;font-size:17px;font-weight:760;letter-spacing:-.02em;line-height:1.55}
+.card .mean2{margin-top:3px;font-size:11.5px;color:var(--faint);font-weight:500;letter-spacing:0}
+.blank{position:relative;display:inline-grid;place-items:center;min-width:calc(var(--n)*.86em);height:1.25em;vertical-align:-.28em;margin:0 2px;border-radius:7px;background:rgba(139,123,255,.14);box-shadow:inset 0 -2px 0 var(--accent);overflow:hidden;padding:0 4px}
+.blank::before{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.22) 50%,transparent 80%);transform:translateX(-120%);animation:shine 2.4s var(--snap) infinite}
+@keyframes shine{60%,100%{transform:translateX(120%)}}
+.blank .fill{opacity:0;transform:translateY(60%);color:#fff;font-weight:780}
+.blank.done{background:rgba(111,211,255,.14);box-shadow:inset 0 -2px 0 var(--accent-2)}
+.blank.done::before{display:none}
+/* 말하기 구 — Orbloom(MIT, orbloom@0.1.0)을 그대로 쓴다. 아래는 패키지 orb.css를 옮긴 것 */
+.orb-motion {
+  --orb-diameter: 104px;
+  --orb-shell-blur: 8px;
+  position: relative;
+  width: var(--orb-diameter);
+  height: var(--orb-diameter);
+  contain: layout paint style;
+}
+
+.orb-motion[data-ambient-motion="true"] {
+  animation: orb-ambient-motion var(--orb-motion-duration, 7s) ease-in-out var(--orb-motion-delay, 0s) infinite;
+  will-change: transform;
+}
+
+.orb-shell,
+.orb-clip,
+.orb-canvas,
+.orb-fallback,
+.orb-chrome {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.orb-shell {
+  position: relative;
+}
+
+.orb-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  clip-path: circle(50% at 50% 50%);
+  -webkit-clip-path: circle(50% at 50% 50%);
+  mask-image: radial-gradient(closest-side, #000 calc(100% - 0.5px), transparent);
+  -webkit-mask-image: radial-gradient(closest-side, #000 calc(100% - 0.5px), transparent);
+}
+
+.orb-canvas {
+  position: relative;
+  z-index: 1;
+  clip-path: circle(50% at 50% 50%);
+  -webkit-clip-path: circle(50% at 50% 50%);
+}
+
+.orb-fallback {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 62% 42%, rgba(240, 245, 255, 0.75) 0 1px, transparent 4px),
+    radial-gradient(circle at 40% 52%, rgba(255, 255, 255, 0.8) 0 1px, transparent 5px),
+    radial-gradient(ellipse at 58% 62%, rgba(156, 178, 106, 0.5), transparent 23%),
+    radial-gradient(ellipse at 42% 32%, rgba(58, 92, 169, 0.48), transparent 22%),
+    radial-gradient(circle, #07100e 0 72%, rgba(154, 168, 157, 0.75) 97%, transparent 100%);
+}
+
+.orb-chrome {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.35;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 var(--orb-shell-blur) rgba(255, 255, 255, 0.18);
+}
+
+.orb-no-webgl .orb-canvas {
+  display: none;
+}
+
+.orb-no-webgl .orb-fallback {
+  opacity: 1;
+}
+
+.orb-motion[data-entrance="true"] {
+  animation-name: orb-entrance, orb-ambient-motion;
+  animation-duration: 600ms, var(--orb-motion-duration, 7s);
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-in-out;
+  animation-delay: var(--orb-entrance-delay, 0s), var(--orb-motion-delay, 0s);
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: backwards, none;
+}
+
+.orb-motion[data-playback-state="paused"] {
+  animation-play-state: paused;
+}
+
+@keyframes orb-ambient-motion {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(var(--orb-motion-distance, -8px)) scale(var(--orb-motion-scale, 1));
+  }
+}
+
+@keyframes orb-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-motion,
+  .orb-motion[data-ambient-motion="true"],
+  .orb-motion[data-entrance="true"] {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .orb-shell {
+    border-radius: 50%;
+    outline: 1px solid CanvasText;
+  }
+}
+
+.mic{justify-self:center;display:grid;justify-items:center;gap:8px;padding-top:2px}
+.orbwrap{position:relative;filter:drop-shadow(0 10px 30px rgba(139,123,255,.35))}
+.mstate{font:500 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--faint);transition:color .18s}
+.mstate.on{color:#c2c9ff}
+.hint{position:absolute;left:0;right:0;bottom:-2px;text-align:center;font:500 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+/* 순간 — 성공 칩(여기만 K팝 크롬 포인트) */
+.win{position:absolute;left:50%;top:39%;z-index:16;transform:translate(-50%,0) scale(.6);opacity:0;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:rgba(10,10,14,.6);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 10px 40px -10px rgba(139,123,255,.7)}
+.win .chk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent-2),var(--accent))}
+.win b{font-weight:800;font-size:15px;letter-spacing:-.02em;background:linear-gradient(100deg,#fff 0,#cfd5e6 30%,#8a90a8 48%,#fff 62%,#b8bed0 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:chrome 1.8s linear infinite}
+@keyframes chrome{to{background-position:-200% 0}}
+.spark{position:absolute;z-index:16;width:6px;height:6px;border-radius:50%;opacity:0;pointer-events:none}
+/* 오른쪽 설명 */
+.side{display:grid;gap:18px;align-content:center}
+.side .eb{font:500 11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.side h1{margin:0;font-size:34px;line-height:1.12;letter-spacing:-.045em;font-weight:820}
+.side h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent-2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.side p{margin:0;color:var(--dim)}
+.beats{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:b}
+.beats li{counter-increment:b;display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:9px 10px;border-radius:12px;color:var(--faint);transition:background .3s var(--spring),color .3s}
+.beats li::before{content:counter(b,decimal-leading-zero);font:500 11px/1.6 var(--mono);letter-spacing:.08em}
+.beats li b{display:block;color:inherit;font-weight:700}
+.beats li span{font-size:13px}
+.beats li.on{background:rgba(255,255,255,.06);color:var(--ink)}
+.beats li.on::before{color:var(--accent-2)}
+.rules{display:grid;gap:6px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);font-size:13px;color:var(--dim)}
+.rules b{color:var(--ink);font-weight:700}
+@media (max-width:900px){.page{grid-template-columns:minmax(0,1fr);gap:28px}.side{order:2}}
+@media (max-width:380px){.phone{transform:scale(.92);transform-origin:top center;margin-bottom:-58px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<div class="page">
+ <div class="stagewrap">
+  <div class="phone" aria-label="시네마 자막 장면 화면이 처음부터 끝까지 움직이는 시안">
+   <div class="scr" id="scr">
+    <span class="island"></span>
+    <div class="status"><span>9:41</span><span>●●●</span></div>
+    <div class="shot"><img id="img1" src="img/p11-hello.jpg" alt=""><img id="img2" src="img/p12-intro.jpg" alt=""><img id="img3" src="img/p13-wave.jpg" alt=""><div class="grain"></div></div>
+    <div class="top"><span class="ep">EP.01 · Scene 2</span><span class="prog" id="prog"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="sub"><span class="who" id="who">Taeo</span><div class="line" id="line"></div><span class="mean" id="mean"></span></div>
+    <div class="win" id="win"><span class="chk"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6.5 5 9l5-6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b id="wint">좋아요</b></div>
+    <div class="panel">
+     <div class="mine" id="mine"></div>
+     <div class="card" id="card"><span class="k"><span class="dot"></span>Your turn <b id="cardk">빈칸을 채워 말해 봐요</b></span><p id="cardp"></p><div class="mean2" id="cardm"></div></div>
+     <div class="mic"><div class="orbwrap"><div class="orb-motion" data-ambient-motion="true"><div class="orb-shell"><div class="orb-clip"><canvas id="orbc" class="orb-canvas" width="208" height="208" aria-label="말소리에 반응하는 구"></canvas><div class="orb-fallback" aria-hidden="true"></div></div><div class="orb-chrome" aria-hidden="true"></div></div></div></div><span class="mstate" id="mstate">Tap to speak</span></div>
+    </div>
+    <span class="hint" id="hint"></span>
+    <div class="title" id="title"><span class="k">Episode 01</span><span class="t" id="tt">개강 첫날</span><span class="bar" id="tbar"></span><span class="s">나는 한국에 막 온 유학생</span></div>
+   </div>
+  </div>
+  <div class="ctrl"><button type="button" id="replay">처음부터</button><button type="button" id="pause">멈춤</button></div>
+ </div>
+
+ <div class="side">
+  <span class="eb">Drama · Scene UI · Motion</span>
+  <h1>영상이 주인공, <em>대사는 자막</em>처럼</h1>
+  <p>A 시네마 자막에 움직임을 입힌 시안입니다. 글자는 깔끔하게 두고, 포인트는 말하는 순간(빛나는 구)과 해낸 순간(크롬 칩) 두 곳에만 줬습니다.</p>
+  <ol class="beats" id="beats">
+   <li><div><b>회차 표지</b><span>글자가 한 자씩 흐림에서 또렷하게</span></div></li>
+   <li><div><b>선배가 말을 건다</b><span>자막이 낱말마다 떠오름 · 사진은 아주 느리게 밀림</span></div></li>
+   <li><div><b>내 차례 ①</b><span>카드가 탄력 있게 올라오고 빈칸이 반짝임 · 구가 소리에 반응</span></div></li>
+   <li><div><b>끝 「요」를 빠뜨림</b><span>받아 적은 말이 타자로 찍히고 「헤맸어」에 물결선이 그려짐</span></div></li>
+   <li><div><b>선배 되묻기</b><span>자막이 톡 튀어 들어옴</span></div></li>
+   <li><div><b>스스로 고쳐 다시</b><span>빈칸에 낱말이 넘겨 들어가고 「요」가 따뜻하게 빛남</span></div></li>
+   <li><div><b>해냈다</b><span>크롬 칩 · 작은 불꽃 · 진행 띠가 한 칸 참</span></div></li>
+   <li><div><b>선배가 받아친다</b><span>웃음 대사로 장면이 이어짐</span></div></li>
+  </ol>
+  <div class="rules"><b>쓴 움직임 규칙</b>들어옴 0.35~0.6초 탄력 곡선(.23,1,.32,1) · 바뀜 0.15초 · 글자 흐림 8px → 0 · 강조색 둘(보라 · 하늘)과 「요」의 따뜻한 빛 하나 · 크롬은 해낸 순간에만 · 움직임 줄이기 설정이면 멈춤</div>
+ </div>
+</div>
+
+<script type="module">
+import { createOrb, createOrbTheme } from "https://cdn.jsdelivr.net/npm/orbloom@0.1.0/src/index.js";
+try {
+ const theme = createOrbTheme({ preset: "nebula-violet-02", id: "synk-drama", seed: 2.4,
+  colors: { base: "#0d0b1c", interior: "#030208", accents: ["#8b7bff", "#6fd3ff", "#ffffff"] },
+  appearance: { intensity: 1, detail: .78, glass: .5, glow: .95 },
+  motion: { speed: .8, drift: .6 },
+  audioResponse: { brightness: 1.25, motion: .65, pulse: .95 } });
+ window.__orb = createOrb(document.getElementById("orbc"), { theme, quality: "balanced", state: "idle" });
+} catch (e) { document.querySelector(".orb-motion").classList.add("orb-no-webgl"); }
+</script>
+<script>
+(() => {
+ const $ = (id) => document.getElementById(id);
+ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const S = { run: 0, paused: false };
+ const E = 'cubic-bezier(.23,1,.32,1)';
+ const wait = (ms, run) => new Promise((res, rej) => { const t0 = performance.now(); const tick = () => { if (run !== S.run) return rej('stop'); if (S.paused) { requestAnimationFrame(tick); return; } if (performance.now() - t0 >= ms) res(); else requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+ const anim = (el, kf, o) => el.animate(kf, { fill: 'forwards', easing: E, ...o });
+ const beats = [...$('beats').children];
+ const beat = (i) => beats.forEach((b, k) => b.classList.toggle('on', k === i));
+ const prog = (n) => [...$('prog').children].forEach((x, k) => x.style.setProperty('--p', k < n ? 1 : 0));
+ // 말하기 구 — Orbloom. 시안이라 마이크 대신 말소리 꼴의 세기(음절마다 오르내림)를 넣는다.
+ let level = 0; let orbState = 'idle';
+ const orb = () => window.__orb;
+ const mode = (st, label) => { orbState = st; if (orb()) orb().setState(st); $('mstate').textContent = label; $('mstate').classList.toggle('on', st === 'speaking' || st === 'listening'); };
+ const loop = () => { const t = performance.now() / 1000; let v = 0; if (level) { const syl = Math.max(0, Math.sin(t * 11.5)) ** 1.6; const phrase = .55 + .45 * Math.sin(t * 1.7); v = Math.min(1, .15 + .8 * syl * phrase + .1 * Math.random()); } if (orb()) orb().setAudioLevel(v); requestAnimationFrame(loop); };
+ requestAnimationFrame(loop);
+ // 사진 바꾸기: 새 사진은 0.6초에 떠오르며 9초 동안 아주 느리게 밀리고, 앞 사진은 0.5초에 사라진다(끝 상태가 남아 겹치지 않게 앞 애니메이션을 지운다)
+ const shot = (id) => { ['img1', 'img2', 'img3'].forEach((k) => { const el = $(k); const was = getComputedStyle(el).opacity; el.getAnimations().forEach((a) => a.cancel()); if (k === id) { el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: E, fill: 'forwards' }); el.animate([{ transform: 'scale(1.1)' }, { transform: 'scale(1.0)' }], { duration: 9000, easing: 'linear', fill: 'forwards' }); } else el.animate([{ opacity: was }, { opacity: 0 }], { duration: 500, easing: E, fill: 'forwards' }); }); };
+ const say = async (who, text, mean, run, { pop = false } = {}) => {
+  const line = $('line'); line.innerHTML = ''; $('mean').textContent = mean;
+  anim($('who'), [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
+  $('who').textContent = who;
+  const ws = text.split(' ').map((w) => { const s = document.createElement('span'); s.className = 'w'; s.textContent = w; line.append(s, ' '); return s; });
+  if (pop) { ws.forEach((s) => { s.style.opacity = 1; s.style.filter = 'none'; s.style.transform = 'none'; }); anim(line, [{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.08)', opacity: 1, offset: .6 }, { transform: 'rotate(-1.5deg) scale(1.02)', offset: .8 }, { transform: 'none', opacity: 1 }], { duration: 520 }); }
+  else for (const s of ws) { anim(s, [{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 520 }); await wait(110, run); }
+  anim($('mean'), [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 150 });
+ };
+ const unsay = () => { anim($('line'), [{ opacity: 1 }, { opacity: 0 }], { duration: 200 }); anim($('who'), [{ opacity: 1 }, { opacity: 0 }], { duration: 200 }); anim($('mean'), [{ opacity: 1 }, { opacity: 0 }], { duration: 200 }); };
+ const cardText = (filled) => { const p = $('cardp'); p.innerHTML = '네, 맞아요. <span class="blank" style="--n:5"><span class="fill">길을 잃어서</span></span> 한참 <span class="blank" style="--n:4"><span class="fill">헤맸어<span class="yo">요</span></span></span>.'; $('cardm').textContent = "Yes, that's right. I got lost and wandered around for a long time."; };
+ const type = async (el, html, run, speed = 55) => { el.innerHTML = '<span class="t"></span><span class="caret"></span>'; const t = el.querySelector('.t'); const txt = html.replace(/<[^>]+>/g, ''); for (let i = 1; i <= txt.length; i++) { t.textContent = txt.slice(0, i); await wait(speed, run); } t.innerHTML = html; el.querySelector('.caret').remove(); };
+ const sparks = () => { const scr = $('scr'); const cols = ['#6fd3ff', '#8b7bff', '#ffcf5c', '#fff']; for (let i = 0; i < 14; i++) { const s = document.createElement('i'); s.className = 'spark'; s.style.background = cols[i % 4]; s.style.left = '50%'; s.style.top = '42%'; scr.appendChild(s); const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 70; s.animate([{ opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 0, transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(.3)` }], { duration: 800 + Math.random() * 300, easing: E, fill: 'forwards' }).onfinish = () => s.remove(); } };
+
+ async function play() {
+  const run = ++S.run; S.paused = false; $('pause').textContent = '멈춤';
+  // 처음 상태
+  level = 0; mode('idle','Tap to speak'); prog(0); $('line').innerHTML = ''; ['who', 'mean', 'mine', 'win'].forEach((k) => { $(k).getAnimations().forEach((a) => a.cancel()); $(k).style.opacity = 0; });
+  $('card').getAnimations().forEach((a) => a.cancel()); $('mine').innerHTML = ''; $('hint').textContent = '';
+  const title = $('title'); title.getAnimations().forEach((a) => a.cancel()); title.style.opacity = 1; title.style.display = 'grid';
+  try {
+   // 01 회차 표지
+   beat(0); const tt = $('tt'); tt.innerHTML = [...'개강 첫날'].map((c) => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+   [...tt.children].forEach((s, i) => anim(s, [{ opacity: 0, filter: 'blur(10px)', transform: 'translateY(14px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 650, delay: 120 + i * 70 }));
+   anim($('tbar'), [{ width: '0px' }, { width: '120px' }], { duration: 900, delay: 500 });
+   await wait(2200, run);
+   anim(title, [{ opacity: 1 }, { opacity: 0 }], { duration: 450 }); await wait(450, run); title.style.display = 'none';
+   // 02 선배가 말을 건다
+   beat(1); shot('img1'); prog(1); await wait(300, run);
+   await say('Taeo · 3학년 선배', '저기, 혹시 신입생이에요?', 'Hey, are you a freshman?', run); await wait(1600, run);
+   unsay(); await wait(250, run);
+   // 03 내 차례 카드
+   mode('listening','Your turn'); beat(2); shot('img2'); prog(2); cardText();
+   anim($('card'), [{ opacity: 0, transform: 'translateY(130%)' }, { opacity: 1, transform: 'translateY(-6px)', offset: .7 }, { opacity: 1, transform: 'none' }], { duration: 700 });
+   await wait(900, run); mode('speaking','Speaking'); level = 1;
+   // 04 받아 적기 + 물결선
+   beat(3); anim($('mine'), [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
+   await type($('mine'), '네, 맞아요. 길을 잃어서 한참 헤맸어.', run);
+   $('mine').innerHTML = '네, 맞아요. 길을 잃어서 한참 <span class="slipw">헤맸어<svg viewBox="0 0 60 6" preserveAspectRatio="none"><path d="M1 3 C 8 0, 12 6, 20 3 S 32 0, 40 3 S 52 6, 59 3"/></svg></span>.';
+   level = 0; mode('listening','Listening');
+   const path = $('mine').querySelector('path'); path.animate([{ strokeDashoffset: 60 }, { strokeDashoffset: 0 }], { duration: 600, easing: E, fill: 'forwards' });
+   await wait(700, run);
+   // 05 되묻기
+   beat(4); await say('Taeo', '응? 응? 뭐라고요?', 'Huh? What did you say?', run, { pop: true }); await wait(1700, run);
+   unsay(); await wait(200, run);
+   // 06 스스로 고쳐 다시
+   beat(5); $('cardk').textContent = '다시 말해 봐요'; anim($('mine'), [{ opacity: 1 }, { opacity: .25 }], { duration: 300 });
+   mode('speaking','Speaking'); level = 1; await wait(500, run);
+   const fills = [...document.querySelectorAll('.blank')];
+   for (const b of fills) { const f = b.querySelector('.fill'); b.classList.add('done'); anim(f, [{ opacity: 0, transform: 'translateY(60%) rotateX(80deg)' }, { opacity: 1, transform: 'none' }], { duration: 520 }); await wait(650, run); }
+   level = 0; mode('listening','Listening');
+   const yo = document.querySelector('.blank .yo'); anim(yo, [{ textShadow: '0 0 0 rgba(255,207,92,0)' }, { textShadow: '0 0 18px rgba(255,207,92,.9)' }, { textShadow: '0 0 12px rgba(255,207,92,.55)' }], { duration: 900 });
+   await wait(400, run);
+   // 07 해냈다
+   beat(6); prog(3); mode('success','Nice'); const win = $('win');
+   anim(win, [{ opacity: 0, transform: 'translate(-50%,0) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1.06)', offset: .65 }, { opacity: 1, transform: 'translate(-50%,0) scale(1)' }], { duration: 600 });
+   sparks(); await wait(1500, run);
+   anim(win, [{ opacity: 1 }, { opacity: 0, transform: 'translate(-50%,-10px) scale(.96)' }], { duration: 300 });
+   anim($('card'), [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(40%)' }], { duration: 400 });
+   anim($('mine'), [{ opacity: .25 }, { opacity: 0 }], { duration: 300 });
+   await wait(400, run);
+   // 08 선배가 받아친다
+   mode('idle','Tap to speak'); beat(7); shot('img3'); await say('Taeo', '하하, 여기 처음 오면 다 헤매요.', 'Haha, everyone gets lost here at first.', run); await wait(1600, run);
+   unsay(); await wait(300, run);
+   $('hint').textContent = '';
+   await wait(600, run); play();
+  } catch (e) { if (e !== 'stop') throw e; }
+ }
+ $('replay').addEventListener('click', () => play());
+ $('pause').addEventListener('click', () => { S.paused = !S.paused; $('pause').textContent = S.paused ? '이어서' : '멈춤'; document.getAnimations().forEach((a) => (S.paused ? a.pause() : a.play())); });
+ if (reduce) { $('title').style.display = 'none'; shot('img2'); cardText(); $('card').style.opacity = 1; $('card').style.transform = 'none'; $('line').textContent = '응? 응? 뭐라고요?'; $('who').style.opacity = 1; $('who').textContent = 'Taeo'; beat(4); }
+ else play();
+})();
+</script>
