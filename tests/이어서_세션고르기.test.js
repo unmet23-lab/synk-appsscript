@@ -77,6 +77,29 @@ test('원문 끝: 멈춤 줄 뒤에 글이 이어졌으면 멈춤이 아니다(�
   assert.equal(판.종류, '끝남');
 });
 
+/* 11-02 1481ae86·b596135f — 한도로 끊긴 뒤 곁 에이전트 실패 알림이 들어와 CLI가 0턴으로 넘겼다. */
+const 실패알림 = (시각, 덧 = { origin: { kind: 'task-notification' } }) => ({
+  type: 'user',
+  timestamp: new Date(시각).toISOString(),
+  ...덧,
+  message: { role: 'user', content: '<task-notification>\n<task-id>a944ad53</task-id>\n<status>failed</status>\n</task-notification>' },
+});
+
+test('원문 끝: 한도·오류 응답 뒤에 작업 알림만 들어와 답 없이 끝났으면 그 오류를 앞오류로 단다', () => {
+  const 한도 = 답("You've hit your session limit · resets 2:20am (Asia/Seoul)", 지금 - 5 * 분, { isApiErrorMessage: true });
+  const 판 = 고르기.끝판정([사람('해 줘'), 한도, 실패알림(지금 - 4 * 분), 실패알림(지금 - 2 * 분)]);
+  assert.equal(판.종류, '답없음');
+  assert.equal(판.앞오류.종류, '한도');
+  assert.match(판.앞오류.글, /session limit/);
+  assert.equal(고르기.끝판정([한도, 실패알림(지금 - 2 * 분, {})]).앞오류.종류, '한도', 'origin 없이 글만 알림이어도 알림이다');
+  const 오류 = 답('API Error: 500 Internal server error', 지금 - 5 * 분, { isApiErrorMessage: true });
+  assert.equal(고르기.끝판정([오류, 실패알림(지금 - 2 * 분)]).앞오류.종류, '오류');
+  assert.equal(고르기.끝판정([한도, 사람('이어서 해')]).앞오류, undefined, '사람 글에 답이 없는 것은 알림 뒤가 아니다');
+  assert.equal(고르기.끝판정([한도, 실패알림(지금 - 3 * 분), 사람('이어서 해')]).앞오류, undefined);
+  assert.equal(고르기.끝판정([답('다 했습니다.'), 실패알림(지금 - 2 * 분)]).앞오류, undefined, '보통 끝 뒤의 알림은 지금처럼 답없음');
+  assert.equal(고르기.끝판정([실패알림(지금 - 2 * 분)]).앞오류, undefined, '앞을 못 읽었으면 모른다');
+});
+
 /* ── 끊김·상태 ────────────────────────────────────────────────────────── */
 
 test('끊김: 앱 기록의 한도 오류, 지난 오류, Stop 표식, 앱 종료 표식', () => {
@@ -107,6 +130,21 @@ test('끊김: 앱 기록의 한도 오류, 지난 오류, Stop 표식, 앱 종�
   assert.equal(고르기.끊김(기록({ lastTurnCutShort: true }), { 종류: '모름' }, 지금).종류, '불명');
   assert.equal(고르기.끊김(기록({ postTurnSummary: { status_category: 'failed' } }), undefined, 지금).종류, '오류');
   assert.equal(고르기.끊김(기록({}), { 종류: '끝남', 시각: 지금 - 6 * 분 }, 지금), null);
+});
+
+test('끊김: 한도 뒤 작업 알림만 받고 답 없이 끝난 세션은 앱 표식이 켜져도 한도로 깨운다(그 차례의 Stop은 이긴다)', () => {
+  const 알림뒤 = { 종류: '답없음', 시각: 지금 - 2 * 분, 앞오류: { 종류: '한도', 글: "You've hit your session limit" } };
+  const k = 고르기.끊김(기록({ lastTurnCutShort: true }), 알림뒤, 지금);
+  assert.equal(k.종류, '한도');
+  assert.equal(k.글, "You've hit your session limit");
+  assert.equal(고르기.끊김(기록({}), 알림뒤, 지금).종류, '한도', '표식이 꺼져 있어도 답없음보다 한도가 정확한 까닭이다');
+  const Stop = { 의도: { 원인: 'Stop', 시각: 지금 - 1 * 분 } };
+  assert.equal(고르기.끊김(기록({ lastTurnCutShort: true }), 알림뒤, 지금, Stop).원인, 'Stop');
+  assert.equal(고르기.끊김(기록({ lastTurnCutShort: true }), { 종류: '답없음', 시각: 지금 - 2 * 분 }, 지금).종류, '불명', '앞오류 없는 답없음은 지금처럼');
+  const 세션 = 기록({ lastTurnCutShort: true });
+  const r = 고르기.나누기([세션], new Map([[세션.sessionId, 알림뒤]]), { self: 'x', busy: [], 지금 });
+  assert.equal(r.보냄[0].id, 세션.sessionId);
+  assert.equal(r.보냄[0].이유, '사용량 한도로 끊김');
 });
 
 test('끊김: 앱 로그의 멈춤 원인 — Stop·Esc·다른 세션은 멈춤, 일하다 앱 종료로 끊긴 것은 재시작', () => {

@@ -183,7 +183,7 @@ description: 계정 전환·사용량 한도 초기화·앱 재시작 뒤 멈춘
 - 대상은 `list_sessions`의 `isRunning: false`이고 `lastActivityAt`이 10분보다 오래되고 7일보다 최근인 세션이다. 「전부」면 7일 제한을 뺀다.
 - 그 세션이 띄운 세션(`startedBy`가 그 세션)이 일하는 중이면 빼고 「곁 세션 기다림」으로 센다.
 - 남은 세션마다 `list_events(session_id, limit: 6)`로 마지막 차례를 읽는다.
-  - 한도·API 오류로 끝남, 또는 도구 호출 중에 끝남(「the session ended before this call」, 「No response requested.」) → 보냄
+  - 한도·API 오류로 끝남(그 뒤에 작업 알림 `<task-notification>`만 들어와 「0 turns」로 넘긴 것 포함), 또는 도구 호출 중에 끝남(「the session ended before this call」, 「No response requested.」) → 보냄
   - 승인·고르기·최종 검토를 기다린다고 끝남, 또는 질문으로 끝남 → 유호님 차례
   - 「[Request interrupted by user]」로 끝남 → 직접 멈춤
   - 보통으로 끝남 → 보냄. 단 `list_sessions`에서 `pinned: true`인 세션은 보내지 않고 「고정 — 그대로 둠」으로 센다(`pinned` 칸이 없으면 고정 아님)
