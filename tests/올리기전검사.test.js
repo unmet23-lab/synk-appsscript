@@ -184,6 +184,8 @@ test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것,
   assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook', 'lab-telegram'), { 틱톡없음: '여러 장 편' }), [], '옛 「틱톡없음」도 받는다');
   assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook'), { 빠진판: { 'lab-tiktok': ' ' } }), ['daily-plate:lab-tiktok', 'daily-plate:lab-telegram'], '빈 까닭은 까닭이 아니다');
   assert.deepEqual(codes(plates('yuhobuilds-instagram')), [], '막힌 계정은 판이 없어도 된다');
+  const blocked = 검사.dailyFindings(plates('yuhobuilds-instagram', 'yuhobuilds-x'), {}, known);
+  assert.deepEqual(blocked.map((f) => `${f.level}:${f.code}:${f.where}`), ['고칠 것:blocked-plate:yuhobuilds-x'], '막힌 계정에 판이 있으면 고칠 것(11-01 틱톡 쉼)');
   assert.deepEqual(codes(plates('lab-youtube', 'lab-us-youtube')), [], '줄 하나에 계정 하나 · 매일 판 밖 계정은 줄을 만들지 않는다');
   assert.deepEqual(검사.tiktokFindings(plates('lab-instagram'), {}, known).filter((f) => f.code === 'tiktok-plate'), [], '짝 틱톡이 매일 판이면 ⑩이 본다');
   assert.equal(검사.tiktokFindings(plates('lab-instagram'), {}, {}).filter((f) => f.code === 'tiktok-plate').length, 1, '계정 표에 줄이 없으면 ⑨가 그대로 본다');

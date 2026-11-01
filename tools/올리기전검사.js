@@ -684,8 +684,13 @@ function tiktokFindings(plates, prep, known = {}) {
 }
 
 // ⑩ 매일 판. 한 편은 그 줄의 모든 계정에 간다(유호님 10-26 「하루에 모든 계정에 하나씩」). 막힌 계정(dailyBlocked)은 빼고 본다.
+// 막힌 계정에 판이 달려 있으면 고칠 것 — 14시 게시 세션 · 검토 링크 「함께」가 판대로 걸기 때문이다(11-01 틱톡 @yuhobuilds 쉼, 유호님 「쉬게 해」).
 function dailyFindings(plates, prep, known = {}) {
   const out = [];
+  for (const p of plates) {
+    const why = known[p.account]?.dailyBlocked;
+    if (why) out.push({ level: FIX, code: 'blocked-plate', where: p.account, message: `막힌 계정이다(${why}) — 판에서 빼고 준비.json 「빠진판」에 {"${p.account}": "쉼"}을 적는다` });
+  }
   const have = new Set(plates.map((p) => p.account));
   const excused = prep.빠진판 && typeof prep.빠진판 === 'object' && !Array.isArray(prep.빠진판) ? prep.빠진판 : {};
   const lines = [...new Set(plates.map((p) => known[p.account]?.dailyLine).filter(Boolean))];

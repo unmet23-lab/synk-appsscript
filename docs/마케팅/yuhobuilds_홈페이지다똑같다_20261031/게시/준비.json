@@ -45,16 +45,6 @@
       "훅": "A"
     },
     {
-      "계정": "yuhobuilds-tiktok",
-      "파일": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/remotion/out/y29_final.mp4",
-      "시각": "2026-11-06T21:00+09:00",
-      "게시글": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/게시/게시글.md",
-      "원고": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/게시/03-yuhobuilds-tiktok/원고.json",
-      "표지": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/게시/표지_1080x1920.jpg",
-      "표지시각": 3.17,
-      "훅": "A"
-    },
-    {
       "계정": "yuhobuilds-x",
       "파일": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/remotion/out/y29_final.mp4",
       "시각": "2026-11-06T21:00+09:00",
@@ -88,7 +78,9 @@
       "게시글": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/게시/티스토리.md"
     }
   ],
-  "빠진판": {},
+  "빠진판": {
+    "yuhobuilds-tiktok": "쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)"
+  },
   "틱톡없음": null,
   "표지": "docs/마케팅/yuhobuilds_홈페이지다똑같다_20261031/게시/표지_1080x1920.jpg",
   "AI 표시": "켬(내레이션 AI 음성 · 화면 속 홈페이지는 AI가 만든 것)",

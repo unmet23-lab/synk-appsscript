@@ -47,17 +47,6 @@
    "표지시각": 1.2
   },
   {
-   "계정": "yuhobuilds-tiktok",
-   "파일": "docs/마케팅/yuhobuilds_유일한빛_20261031/remotion/out/y25_final.mp4",
-   "올리기판": "docs/마케팅/yuhobuilds_유일한빛_20261031/remotion/out/y25_upload.mp4",
-   "시각": "2026-11-02T21:00+09:00",
-   "게시글": "docs/마케팅/yuhobuilds_유일한빛_20261031/게시/게시글.md",
-   "훅": "A",
-   "원고": "docs/마케팅/yuhobuilds_유일한빛_20261031/게시/03-yuhobuilds-tiktok/원고.json",
-   "표지": "docs/마케팅/yuhobuilds_유일한빛_20261031/게시/표지_1080x1920.jpg",
-   "표지시각": 1.2
-  },
-  {
    "계정": "yuhobuilds-x",
    "파일": "docs/마케팅/yuhobuilds_유일한빛_20261031/remotion/out/y25_final.mp4",
    "올리기판": "docs/마케팅/yuhobuilds_유일한빛_20261031/remotion/out/y25_upload.mp4",
@@ -93,7 +82,9 @@
    "게시글": "docs/마케팅/yuhobuilds_유일한빛_20261031/게시/티스토리.md"
   }
  ],
- "빠진판": {},
+ "빠진판": {
+  "yuhobuilds-tiktok": "쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)"
+ },
  "틱톡없음": null,
  "표지": "docs/마케팅/yuhobuilds_유일한빛_20261031/게시/표지_1080x1920.jpg",
  "AI 표시": "켬(내레이션 AI 음성 · 사진 · 움직이는 컷은 AI가 만든 것 · 낮에서 밤으로 덮이는 움직임은 편집)",
