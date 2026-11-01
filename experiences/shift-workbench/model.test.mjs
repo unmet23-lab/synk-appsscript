@@ -19,7 +19,7 @@ test('a missed completeness check suggests a matching new task but never claims 
   let s=start({goal:'work',minutes:10});s.run.prompt=TASKS.meeting.template;s.run.draft=filled().run.draft;s.run.reviewed=true;
   for(const c of TASKS.meeting.checks)s.run.answers[c.id]={kind:c.id==='missing'?'match':c.answer,source:c.source};
   s.run.result=evaluate(s.run);s=completeRun(s,engine,later);
-  assert.deepEqual(s.history[0].missed,['completeness']);assert.deepEqual(nextTaskSuggestion(s),{task:'planning',focus:'completeness'});
+  assert.deepEqual(s.history[0].missed,['completeness']);assert.deepEqual(nextTaskSuggestion(s,later),{task:'planning',focus:'completeness'});
   const explicit=startRun(s,{task:'research',goal:'work',minutes:10,support:'step'},engine,'2026-10-02T00:00:02.000Z');
   assert.equal(explicit.run.task,'research');assert.equal(explicit.run.checkIds[0],'ratio');assert.doesNotMatch(explicit.run.reason,/누락·성공 기준|지난 실습의/);
   const suggested=startRun(s,{task:'planning',goal:'work',minutes:10,support:'step'},engine,'2026-10-02T00:00:02.000Z');
@@ -53,12 +53,12 @@ function finishPractice(state,task,wrongIds,startedAt,completedAt){
 test('unobserved focus survives another successful task and the shown reason refers to its actual completion',()=>{
   let s=finishPractice(newState(),'meeting',['missing'],at,later);const missed=s.run.completionId;
   s=finishPractice(s,'research',[],'2026-10-02T00:01:00.000Z','2026-10-02T00:02:00.000Z');
-  assert.equal(nextTaskSuggestion(s).focus,'completeness');assert.notEqual(nextTaskSuggestion(s).task,'research');
+  assert.equal(nextTaskSuggestion(s,'2026-10-02T00:02:00.000Z').focus,'completeness');assert.notEqual(nextTaskSuggestion(s,'2026-10-02T00:02:00.000Z').task,'research');
   s=startRun(s,{task:'planning',goal:'clarity',minutes:5,support:'step'},engine,'2026-10-02T00:03:00.000Z');
   assert.equal(s.run.checkIds[0],'criteria');assert.equal(s.run.focusDecision.selected.id,'criteria');
   assert.deepEqual(s.run.focusDecision.selected.reasons.find(r=>r.field==='completeness').evidence,[`${missed}.missing`]);
-  assert.equal(decisionEvidence(s,s.run.focusDecision)[0].task,'meeting');
-  assert.match(practiceBasis(s)[0],/회의를 실행으로.*누락.*안내 사용/);
+  assert.equal(decisionEvidence(s,s.run.focusDecision,'2026-10-02T00:03:00.000Z')[0].task,'meeting');
+  assert.match(practiceBasis(s,'2026-10-02T00:03:00.000Z')[0],/회의를 실행으로.*누락.*안내 사용/);
   assert.match(s.run.reason,/업무 능력 평가는 아닙니다/);
 });
 test('conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased',()=>{
@@ -67,11 +67,11 @@ test('conflicting checks stay unresolved rather than becoming a fixed weakness o
   s=startRun(s,{task:'meeting',goal:'work',minutes:10,support:'step'},engine,'2026-10-02T00:03:00.000Z');
   const field=s.run.focusDecision.understanding.fields.find(f=>f.id==='completeness');
   assert.equal(field.status,'conflicted');assert.equal(field.usable,false);assert.equal(field.evidence.length,2);
-  assert.deepEqual(s.run.checkIds,['missing','deadline','approval']);assert.match(practiceBasis(s).join(' '),/전체 판단은 보류/);
+  assert.deepEqual(s.run.checkIds,['missing','deadline','approval']);assert.match(practiceBasis(s,'2026-10-02T00:03:00.000Z').join(' '),/전체 판단은 보류/);
 });
 test('legacy missed summaries do not invent unpresented successes and expire after their declared lifetime',()=>{
   let s=finishPractice(newState(),'meeting',['missing'],at,later);delete s.history[0].review;delete s.history[0].completionId;
-  assert.deepEqual(practiceObservations(s).map(o=>[o.field,o.value]),[['completeness','incorrect']]);
+  assert.deepEqual(practiceObservations(s,SCOPE,later).map(o=>[o.field,o.value]),[['completeness','incorrect']]);
   s=startRun(s,{task:'planning',goal:'work',minutes:10,support:'step'},engine,'2026-11-03T00:00:00.000Z');
   assert.equal(s.run.focusDecision.understanding.fields.find(f=>f.id==='completeness').status,'expired');
   assert.deepEqual(s.run.checkIds,['audience','budget','criteria']);assert.doesNotMatch(s.run.reason,/지난 실습의/);
@@ -163,9 +163,9 @@ for(const target of ['completion','decision'])test(`excluding a ${target} remove
   const former=s.run.nextDecision;
   const session=core.createSession({scope:engine.coreScope(s.profile),events:s.events,clock:()=> '2026-10-02T00:00:02.000Z',id:()=>`exclude-${target}`});
   session.exclude(target==='completion'?s.run.completionId:s.run.decisionId);s.events=session.events();
-  assert.deepEqual(practiceObservations(s),[]);assert.deepEqual(decisionEvidence(s,former),[]);assert.equal(nextTaskSuggestion(s).focus,null);
+  assert.deepEqual(practiceObservations(s,SCOPE,'2026-10-02T00:00:02.000Z'),[]);assert.deepEqual(decisionEvidence(s,former,'2026-10-02T00:00:02.000Z'),[]);assert.equal(nextTaskSuggestion(s,'2026-10-02T00:00:02.000Z').focus,null);
   s=startRun(s,{task:'meeting',goal:'clarity',minutes:5,support:'step'},engine,'2026-10-02T00:00:03.000Z');
-  assert.equal(s.run.checkIds[0],'deadline');assert.doesNotMatch(s.run.reason,/지난 실습의/);assert.deepEqual(practiceBasis(s),[]);
+  assert.equal(s.run.checkIds[0],'deadline');assert.doesNotMatch(s.run.reason,/지난 실습의/);assert.deepEqual(practiceBasis(s,'2026-10-02T00:00:03.000Z'),[]);
 });
 for(const target of ['completion','decision'])test(`excluding a ${target} also removes its result from descriptive outcome accounting`,()=>{
   let s=completeRun(recordPracticeExposure(filled(),at),engine,later);
@@ -178,10 +178,10 @@ for(const target of ['completion','decision'])test(`excluding a ${target} also r
 });
 test('an already prepared screen stops explaining its order with subsequently excluded evidence',()=>{
   let s=finishPractice(newState(),'meeting',['approval'],at,later);const completionId=s.run.completionId;
-  s=startRun(s,{task:'meeting',goal:'clarity',minutes:5,support:'step'},engine,'2026-10-02T00:00:02.000Z');assert.match(practiceReason(s),/지난 실습의/);
+  s=startRun(s,{task:'meeting',goal:'clarity',minutes:5,support:'step'},engine,'2026-10-02T00:00:02.000Z');assert.match(practiceReason(s,'2026-10-02T00:00:02.000Z'),/지난 실습의/);
   const session=core.createSession({scope:engine.coreScope(s.profile),events:s.events,clock:()=> '2026-10-02T00:00:03.000Z',id:()=> 'withdrawn-prepared-screen'});
   session.exclude(completionId);s.events=session.events();
-  assert.doesNotMatch(practiceReason(s),/지난 실습의/);assert.deepEqual(practiceBasis(s),[]);
+  assert.doesNotMatch(practiceReason(s,'2026-10-02T00:00:03.000Z'),/지난 실습의/);assert.deepEqual(practiceBasis(s,'2026-10-02T00:00:03.000Z'),[]);
 });
 
 test('a missing review module gives the prepared Korean notice instead of an internal adapter error',()=>{
