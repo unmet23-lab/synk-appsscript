@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "all3",
+ "text": "색을 빼도, 이번엔 다 달라요. 물건은 에이아이 말고, 사장님이 고르세요.",
+ "dur": 3.96,
+ "words": [
+  {
+   "text": "색을",
+   "start": 0.02,
+   "end": 0.234
+  },
+  {
+   "text": "빼도,",
+   "start": 0.283,
+   "end": 0.48
+  },
+  {
+   "text": "이번엔",
+   "start": 0.759,
+   "end": 1.022
+  },
+  {
+   "text": "다",
+   "start": 1.072,
+   "end": 1.121
+  },
+  {
+   "text": "달라요.",
+   "start": 1.17,
+   "end": 1.532
+  },
+  {
+   "text": "물건은",
+   "start": 1.827,
+   "end": 2.172
+  },
+  {
+   "text": "에이아이",
+   "start": 2.222,
+   "end": 2.435
+  },
+  {
+   "text": "말고,",
+   "start": 2.484,
+   "end": 2.731
+  },
+  {
+   "text": "사장님이",
+   "start": 2.994,
+   "end": 3.372
+  },
+  {
+   "text": "고르세요.",
+   "start": 3.421,
+   "end": 3.96
+  }
+ ],
+ "source": {
+  "key": "bf34929a27ce9e6e5418e297e8655e68",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

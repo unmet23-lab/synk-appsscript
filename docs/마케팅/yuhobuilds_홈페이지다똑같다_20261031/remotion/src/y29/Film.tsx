@@ -8,6 +8,9 @@
 //    「작은 폰 카드 줄이라 눈에 박히는 장면이 없다」 · 「18~20초 작은 두 줄이 멈춰 있다」 · 「색이 달라 '다 똑같다'가 안 와닿는다」).
 //  · v8(둘째 시험 반영): 회색 벽 위로 가장 센 결과(빨간 우체통) 한 장이 올라오는 약속 · 「방법 n」 · 「또 비슷한」 · 성공 예를 빨간 우체통으로.
 //  · v9(셋째 시험 반영): 방법 3은 넘김 없이 바로 초록 벽(여섯 모두 16~20초에서 넘김) · 끝은 첫 장면의 회색 일곱 장이 한 장씩 제 물건 색으로(우체통 반복 대신).
+//  · v11(유호님 「A 범수판」 뒤 A판만, 넷째 시험 반영): 방법 2 · 3을 한 칸으로(방법 셋) · 끝에 「색을 빼도 이번엔 다 다르다」로 첫 장면과 맞물림.
+//  · v12(다섯째 시험 반영): 우체통 결과 화면을 우체통까지 내려 보이고(「우체통 그림이 없다」), 끝 줄에서 우체통 세무사 한 장이 화면 가득.
+//  · v13(올리기 전 검사 ②): 끝 벽이 색을 뺐다 입히는 3초 동안 8% 다가간다 — 거의 멈춘 시간 19% → 기준 15% 아래.
 import { Audio } from '@remotion/media';
 import React from 'react';
 import { AbsoluteFill, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
@@ -60,7 +63,8 @@ const RD_HIT = [true, true, false, true, true, false, true]; // 짙은 초록 + 
 const RE = ['세무사_s_1', '꽃집_s_1', '빵집_s_2', '빵집_s_1', '필라테스_s_1', '세무사_s_2', '필라테스_s_2'].map((n) => shot('한줄E', n));
 // 끝: R0(기준) 자리마다 같은 가게의 한줄E — 「같은 7개, 물건 하나씩 정해 줬더니」
 const RE_END = ['꽃집_s_1', '세무사_s_1', '필라테스_s_1', '빵집_s_2', '세무사_s_2', '필라테스_s_2', '빵집_s_1'].map((n) => shot('한줄E', n));
-const PROMISE = shot('한줄E', '세무사_s_1'); // 약속 · 성공 예 · 끝이 같은 화면(가장 센 결과 — 둘째 시험 볼 이유 둘: 파란 차양 빵집은 약하다)
+const PROMISE = shot('한줄E', '세무사_s_1');
+const END_SHOT = 'shot/끝_세무사_s_1.png'; // 390 폭 · 3배 · 전체 높이 — 끝에 화면 가득 // 약속 · 성공 예 · 끝이 같은 화면(가장 센 결과 — 둘째 시험 볼 이유 둘: 파란 차양 빵집은 약하다)
 
 // 큰 화면에 들어갈 것(시각 순서). mode: swipe = 다음 결과로 넘김, wipe = 위에서 아래로 새로 덮임(생성), cut = 바로.
 type Item = { src: string; at: number; mode: 'swipe' | 'wipe' | 'cut'; scroll?: [number, number, number, number]; tag?: string; counter?: string };
@@ -68,9 +72,9 @@ const counter = (i: number) => `${i + 1} / 7`;
 const ITEMS: Item[] = [
   ...R0.map((src, i) => ({ src, at: i * B.riffle, mode: i === 0 ? ('cut' as const) : ('swipe' as const), counter: counter(i) })),
   { src: RB[0], at: B.result1, mode: 'wipe', counter: counter(0) },
-  ...RB.slice(1).map((src, i) => ({ src, at: B.flipsB + (i + 1) * FLIP, mode: 'swipe' as const, counter: counter(i + 1) })),
+  ...RB.slice(1).map((src, i) => ({ src, at: B.flipsB + (i + 1) * B.flipB, mode: 'swipe' as const, counter: counter(i + 1) })),
   { src: shot('기준', '세무사_s_1'), at: B.cut5, mode: 'cut', tag: '그냥 맡긴 세무사' },
-  { src: RE[0], at: B.result3, mode: 'wipe', tag: '세무사 하나 · 문 앞 빨간 우체통', scroll: [B.result3 + 20, B.flipsE, 0, 36] },
+  { src: RE[0], at: B.result3, mode: 'wipe', tag: '세무사 하나 · 문 앞 빨간 우체통', scroll: [B.result3 + 24, B.flipsE - 4, 0, 300] }, // 우체통(CSS 490~790)까지 내려간다
   ...RE.slice(1).map((src, i) => ({ src, at: B.flipsE + (i + 1) * FLIP, mode: 'swipe' as const, counter: counter(i + 1) })),
   { src: shot('한줄E', '꽃집_s_1'), at: B.cut7, mode: 'swipe', scroll: [B.cut7 + 8, B.chip2, 0, 30] },
   { src: shot('한줄E', '빵집_s_2'), at: B.chip2, mode: 'swipe', scroll: [B.chip2 + 6, B.chip3, 0, 24] },
@@ -84,6 +88,8 @@ const WALLS = [
   { a: B.revealD, b: B.cut5 },
   { a: B.end, b: B.total + 30 }, // 끝: 회색 일곱 장이 다시 서고 한 장씩 제 물건 색으로
 ];
+// 끝 벽: 일곱 장이 다 바뀐 뒤 색을 뺐다 다시 입히는 동안 눈에 띄게 다가간다(v13 — 올리기 전 검사 ② 31~34초가 멈춘 화면이었다).
+const endZoom = (f: number) => 1 + 0.08 * interpolate(f, [B.endFlip + 6 * 4, B.colorBack + 16], [0, 1], clamp);
 const wallK = (f: number, i: number) => ease(f, WALLS[i].a, 12, EASE_MOVE) * (1 - ease(f, WALLS[i].b, 8));
 const anyWall = (f: number) => Math.max(...WALLS.map((_, i) => wallK(f, i)));
 
@@ -143,20 +149,20 @@ const Heads: React.FC = () => (
     <Head lines={['AI가 만든', '홈페이지 7개']} accent="7개" a={0} b={B.wall0} />
     <Head lines={['색만 빼면', '7개 다 이 모양']} accent="다 이 모양" a={B.wall0} b={B.promise} />
     <Head lines={['물건 하나면', '이렇게 바뀐다']} accent="이렇게" a={B.promise} b={B.card1} />
-    <Kicker text="방법 2 · 물건도 AI가 고르게" a={B.card1} b={B.card2} />
-    <Head lines={['물건 하나까지', 'AI가 알아서 고르게']} accent="AI가 알아서" a={B.card1} b={B.result1} />
+    <Kicker text="방법 2 · 물건도 AI가 고르게" a={B.card1} b={B.cut5} />
+    <Head lines={['물건 고르기까지', 'AI한테 맡겼다']} accent="AI한테" a={B.card1} b={B.result1} />
     <Head lines={['확 달라졌는데']} accent="확" a={B.result1} b={B.revealB} />
     <Head lines={['7개 중 6개가', '또 비슷한 종이 느낌']} accent="또 비슷한" a={B.revealB} b={B.card2} />
-    <Kicker text="방법 3 · 종이는 빼고" a={B.card2} b={B.cut5} />
-    <Head lines={['“종이는 빼 줘”']} accent="빼 줘" a={B.card2} b={at('s4b', '이번엔') - 2} />
-    <Head lines={['이번엔 5개가', '또 초록 · 금색']} accent="또 초록 · 금색" a={at('s4b', '이번엔') - 2} b={B.thesis} />
+    <Head lines={['“종이는 빼 줘”']} accent="빼 줘" a={B.card2} b={at('s4', '이번엔') - 2} />
+    <Head lines={['이번엔 5개가', '또 초록 · 금색']} accent="또 초록 · 금색" a={at('s4', '이번엔') - 2} b={B.thesis} />
     <Head lines={['AI가 고르면', '또 다 비슷해진다']} accent="또 다 비슷해진다" a={B.thesis} b={B.cut5} />
-    <Kicker text="방법 4 · 물건은 내가 정하기" a={B.cut5} b={B.cut7} />
-    <Kicker text="정해 준 물건 → 나온 화면" a={B.cut7} b={B.end} />
+    <Kicker text="방법 3 · 물건은 내가 정하기" a={B.cut5} b={B.cut7} />
     <Head lines={['물건을 하나하나', '제가 정해 줬어요']} accent="제가" a={B.cut5} b={B.flipsE} />
     <Head lines={['이번엔 7개 다', '정해 준 물건대로']} accent="정해 준 물건대로" a={B.flipsE} b={B.cut7} />
+    <Kicker text="정해 준 물건 → 나온 화면" a={B.cut7} b={B.end} />
     <Kicker text="@yuhobuilds" a={B.end} b={B.total} font={MONO} />
-    <Head lines={['같은 7개에', '물건만 하나씩 정해 주면']} accent="물건만 하나씩" a={B.end + 4} b={B.endLine} />
+    <Head lines={['같은 7개에', '물건만 하나씩 정해 주면']} accent="물건만 하나씩" a={B.end + 4} b={B.desat} />
+    <Head lines={['색을 빼도', '이번엔 다 다르다']} accent="다 다르다" a={B.desat} b={B.colorBack} />
     <Head lines={['물건은 AI 말고', '사장님이 고르세요']} accent="사장님이" a={B.endLine} b={B.total + 1} />
   </>
 );
@@ -224,7 +230,7 @@ const Tag: React.FC<{ text: string; at: number }> = ({ text, at: a }) => {
 // ───────────── 위 칸 → 큰 벽 ─────────────
 /** 한 장: 위 칸 작은 화면(k=0)에서 큰 벽 칸(k=1)으로 자리 · 크기를 옮긴다. 그림은 위에 붙여 아래를 자른다. */
 type Over = { x: number; y: number; rot: number; fade: number; c: number };
-const Tile: React.FC<{ src: string; i: number; a: number; k: number; hit?: number; miss?: number; gray?: number; zoom?: number; over?: Over; to?: { src: string; at: number } }> = ({ src, i, a, k, hit = 0, miss = 0, gray = 0, zoom = 1, over, to }) => {
+const Tile: React.FC<{ src: string; i: number; a: number; k: number; hit?: number; miss?: number; gray?: number; zoom?: number; over?: Over; to?: { src: string; at: number; gray?: number } }> = ({ src, i, a, k, hit = 0, miss = 0, gray = 0, zoom = 1, over, to }) => {
   const f = useCurrentFrame();
   if (f < a) return null;
   const p = a <= 0 ? 1 : ease(f, a, 6);
@@ -243,21 +249,22 @@ const Tile: React.FC<{ src: string; i: number; a: number; k: number; hit?: numbe
     <div style={{ position: 'absolute', left: x, top: y, width: w, height: h, opacity: p * (1 - 0.62 * miss) * (1 - (over?.fade ?? 0) * c), transform: `scale(${0.86 + 0.14 * p}) rotate(${(over?.rot ?? 0) * c}deg)` }}>
       <div style={{ position: 'absolute', inset: 0, borderRadius: r, overflow: 'hidden', background: '#fff', boxShadow: `0 0 0 ${lerp(2.5, 4, k)}px ${BEZEL}, 0 ${lerp(10, 24, k)}px ${lerp(22, 50, k)}px rgba(20,20,18,${lerp(0.18, 0.24, k)})` }}>
         <Img src={staticFile(src)} style={{ position: 'absolute', left: 0, top: 0, width: w, filter: gray > 0 ? `grayscale(${gray})` : undefined }} />
-        {to && f >= to.at ? <Img src={staticFile(to.src)} style={{ position: 'absolute', left: 0, top: 0, width: w, clipPath: `inset(0 0 ${(1 - ease(f, to.at, 7, EASE_MOVE)) * 100}% 0)` }} /> : null}
+        {to && f >= to.at ? <Img src={staticFile(to.src)} style={{ position: 'absolute', left: 0, top: 0, width: w, clipPath: `inset(0 0 ${(1 - ease(f, to.at, 7, EASE_MOVE)) * 100}% 0)`, filter: to.gray ? `grayscale(${to.gray})` : undefined }} /> : null}
       </div>
       {hit > 0 ? <div style={{ position: 'absolute', inset: -9, borderRadius: r + 8, boxShadow: `0 0 0 ${lerp(4, 7, k)}px ${MARK}`, opacity: hit, transform: `scale(${1.04 - 0.04 * hit})` }} /> : null}
       {to && f >= to.at ? <div style={{ position: 'absolute', inset: -2, borderRadius: r + 2, background: '#fff', opacity: 0.55 * (1 - ease(f, to.at, 10)) }} /> : null}
     </div>
   );
 };
-const Round: React.FC<{ list: string[]; t0: number; wall?: number; hits?: boolean[]; out: number; gray?: [number, number]; clump?: number; step?: number; to?: string[]; toAt?: number; toStep?: number }> = ({ list, t0, wall, hits, out, gray, clump, step = FLIP, to, toAt = 0, toStep = 4 }) => {
+const Round: React.FC<{ list: string[]; t0: number; wall?: number; hits?: boolean[]; out: number; gray?: [number, number]; clump?: number; step?: number; to?: string[]; toAt?: number; toStep?: number; toGray?: [number, number]; fadeAt?: number }> = ({ list, t0, wall, hits, out, gray, clump, step = FLIP, to, toAt = 0, toStep = 4, toGray, fadeAt }) => {
   const f = useCurrentFrame();
   if (f >= out + 8) return null;
-  const o = 1 - ease(f, out, 8);
+  const o = (1 - ease(f, out, 8)) * (fadeAt !== undefined ? 1 - 0.85 * ease(f, fadeAt, 12) : 1);
   const k = wall === undefined ? 0 : wallK(f, wall);
   const w = wall === undefined ? { a: 1e9, b: 1e9 + 100 } : WALLS[wall];
-  const zoom = 1 + 0.035 * interpolate(f, [w.a + 12, w.b], [0, 1], clamp); // 벽이 머무는 동안 아주 천천히 다가간다(멈춘 화면 막기)
+  const zoom = wall === 3 ? endZoom(f) : 1 + 0.035 * interpolate(f, [w.a + 12, w.b], [0, 1], clamp); // 벽이 머무는 동안 아주 천천히 다가간다(멈춘 화면 막기)
   const g = gray ? ease(f, gray[0], gray[1]) : 0;
+  const tg = toGray ? ease(f, toGray[0], 10) * (1 - ease(f, toGray[1], 10)) : 0; // 끝: 바뀐 일곱 장도 색을 뺐다가 다시 입힌다
   // 「또 한쪽으로 몰린다」: 같은 쪽 장들은 한가운데로 부채처럼 모이고(앞쪽이 위), 다른 장들은 양옆 아래로 밀려나 흐려진다
   const c = clump !== undefined ? ease(f, clump, 16, EASE_MOVE) : 0;
   const hitIdx = hits ? hits.map((h, i) => (h ? i : -1)).filter((i) => i >= 0) : [];
@@ -279,7 +286,7 @@ const Round: React.FC<{ list: string[]; t0: number; wall?: number; hits?: boolea
       {order.map((i) => {
         const src = list[i];
         const h = hits ? ease(f, w.a + 10 + 2 * i, 8) : 0;
-        return <Tile key={i} src={src} i={i} a={t0 + i * step} k={k} zoom={zoom} hit={hits?.[i] ? h : 0} miss={hits && !hits[i] ? h : 0} gray={g} over={overOf(i)} to={to ? { src: to[i], at: toAt + i * toStep } : undefined} />;
+        return <Tile key={i} src={src} i={i} a={t0 + i * step} k={k} zoom={zoom} hit={hits?.[i] ? h : 0} miss={hits && !hits[i] ? h : 0} gray={g} over={overOf(i)} to={to ? { src: to[i], at: toAt + i * toStep, gray: tg } : undefined} />;
       })}
     </div>
   );
@@ -301,14 +308,36 @@ const Promise: React.FC = () => {
     </div>
   );
 };
+/** 끝: 일곱 칸 가운데 빨간 우체통 세무사(위 줄 둘째 칸) 한 장이 화면 가득 커지고, 우체통까지 천천히 내려간다. */
+const HERO: Box = { x: 60, y: 470, w: 960, h: 1450 };
+const Hero: React.FC = () => {
+  const f = useCurrentFrame();
+  if (f < B.colorBack) return null;
+  const p = ease(f, B.colorBack, 16, EASE_MOVE);
+  const t = tileXY(1);
+  const zoom = endZoom(f); // 끝 벽이 다가간 만큼(커지기 시작할 때 벽 칸과 겹친다)
+  const from: Box = { x: 540 + (t.x - 540) * zoom, y: 890 + (t.y - 890) * zoom, w: TILE.w * zoom, h: TILE.h * zoom };
+  const box = lerpBox(from, HERO, p);
+  const scroll = interpolate(f, [B.colorBack + 18, B.total - 6], [0, 175], { ...clamp, easing: Easing.inOut(Easing.sin) });
+  const k = box.w / 390;
+  return (
+    <div style={{ position: 'absolute', left: box.x, top: box.y, width: box.w, height: box.h, zIndex: 4 }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: lerp(18, 24, p), overflow: 'hidden', background: '#fff', boxShadow: `0 0 0 ${lerp(4, 0, p)}px ${BEZEL}, 0 40px 90px rgba(20,20,18,0.3)` }}>
+        <Img src={staticFile(END_SHOT)} style={{ position: 'absolute', left: 0, top: -scroll * k, width: box.w }} />
+      </div>
+      {p > 0.6 ? <Tag text="세무사 하나 · 문 앞 빨간 우체통" at={B.colorBack + 10} /> : null}
+    </div>
+  );
+};
 const Walls: React.FC = () => (
   <>
     <Round list={R0} t0={0} wall={0} out={B.card1} gray={[B.gray0, 12]} step={B.riffle} />
     <Promise />
-    <Round list={RB} t0={B.flipsB} wall={1} hits={RB_HIT} out={B.card2} clump={B.revealB + 50} />
+    <Round list={RB} t0={B.flipsB} step={B.flipB} wall={1} hits={RB_HIT} out={B.card2} clump={B.clumpB} />
     <Round list={RD} t0={B.revealD} step={3} wall={2} hits={RD_HIT} out={B.cut5} clump={B.thesis + 4} />
     <Round list={RE} t0={B.flipsE} out={B.cut7} />
-    <Round list={R0} t0={B.end} step={2} wall={3} gray={[B.end - 30, 1]} out={B.total + 30} to={RE_END} toAt={B.endFlip} toStep={4} />
+    <Round list={R0} t0={B.end} step={2} wall={3} gray={[B.end - 30, 1]} out={B.total + 30} to={RE_END} toAt={B.endFlip} toStep={4} toGray={[B.desat, B.colorBack]} fadeAt={B.colorBack + 4} />
+    <Hero />
   </>
 );
 
@@ -437,7 +466,7 @@ const Chips: React.FC = () => {
 
 // ───────────── 소리 ─────────────
 type Hit = { at: number; src: string; v: number; len?: number };
-const flipFrames = [...R0.map((_, i) => i * B.riffle), ...RB.slice(1).map((_, i) => B.flipsB + (i + 1) * FLIP), ...RE.slice(1).map((_, i) => B.flipsE + (i + 1) * FLIP), ...R0.map((_, i) => B.endFlip + i * 4)];
+const flipFrames = [...R0.map((_, i) => i * B.riffle), ...RB.slice(1).map((_, i) => B.flipsB + (i + 1) * B.flipB), ...RE.slice(1).map((_, i) => B.flipsE + (i + 1) * FLIP), ...R0.map((_, i) => B.endFlip + i * 4)];
 const hits = (cut: Cut): Hit[] => {
   // B판은 작업 소리가 말 자리를 맡는다. 타자는 작은 소리라 1.6배, 휙 · 클릭 · 엔터는 1.1배(11-01 아르곤: B의 휙 · 클릭이 음악보다 도드라진다 — 1.6배였다).
   // A판의 타자는 말과 겹치니 0.5배(11-01 아르곤: 요청 칸 타자가 말을 살짝 덮는다 — 타자 봉우리 −9 dBFS 실측).
@@ -459,6 +488,7 @@ const hits = (cut: Cut): Hit[] => {
     { at: B.promise, src: 'sfx/pop.mp3', v: 0.3 * k },
     ...[B.revealB, B.revealD].map((a) => ({ at: a + 10, src: 'sfx/pop.mp3', v: 0.24 * k })),
     { at: B.endFlip + 26, src: 'sfx/pop.mp3', v: 0.3 * k },
+    ...[B.desat, B.colorBack].map((a) => ({ at: a, src: 'sfx/whoosh-short.mp3', v: 0.14 * k })),
     ...[B.cut5, B.cut7].map((a) => ({ at: a - 2, src: 'sfx/whoosh-short.mp3', v: 0.18 * k })),
     ...[B.chip2, B.chip3].map((a) => ({ at: a, src: 'sfx/click-soft.mp3', v: 0.3 * k })),
   ];
@@ -508,3 +538,20 @@ export const Y29Film: React.FC<{ cut: Cut }> = ({ cut }) => {
     </AbsoluteFill>
   );
 };
+
+/** 표지: 영상 정지컷 대신 따로 짠 한 장 — 회색이 된 같은 틀 일곱 장 위로 빨간 우체통 한 장(영상 2.8초 약속 장면), 위에 제목.
+ *  찍기: npx remotion still src/index.ts cover out/cover.png --frame=<COVER_FRAME> (Root에서 기본 프레임으로 둔다). */
+export const COVER_FRAME = B.promise + 16;
+export const Y29Cover: React.FC = () => (
+  <AbsoluteFill style={{ background: `linear-gradient(180deg, ${STAGE} 0%, ${STAGE} 40%, ${STAGE2} 100%)` }}>
+    {/* 프로필 격자(3:4 — 위아래 240px씩 잘림) 안에 위 줄까지 들어오게 통째로 90px 내린다(올리기 전 검사 표지 위 머리 자리) */}
+    <AbsoluteFill style={{ transform: 'translateY(90px)' }}>
+      <Walls />
+      <div style={{ position: 'absolute', left: 74, top: KICK_Y, fontFamily: KO, fontWeight: 680, fontSize: 32, letterSpacing: '-0.02em', color: MUTED }}>AI한테 홈페이지 7번 맡겨 봤다</div>
+      <div style={{ position: 'absolute', left: 72, top: HEAD_Y, fontFamily: KO, fontWeight: 780, fontSize: 82, lineHeight: 1.16, letterSpacing: '-0.045em', color: INK }}>
+        <div>{paint('AI 홈페이지가', undefined)}</div>
+        <div>{paint('다 똑같은 이유', '다 똑같은')}</div>
+      </div>
+    </AbsoluteFill>
+  </AbsoluteFill>
+);

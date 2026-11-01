@@ -302,6 +302,20 @@ test('흰 기본 글자 — 판 · 테두리 없이 얼룩진 그림 위 흰 글
   assert.equal(검사.plainWhite(회색판(w, h, 그림), w, h, 줄상자).plain, false, '흰 글자가 없으면 아니다');
 });
 
+test('⑤-3 화면 캡처 속 흰 글자 — 준비.json 「화면캡처」 구간 안에서만 보인 줄만 확인할 것으로 내린다(11-01 Y29)', () => {
+  assert.deepEqual(검사.shotRanges({}), { ranges: [], 까닭: '', error: null }, '칸이 없으면 그대로');
+  const ok = 검사.shotRanges({ 화면캡처: { 까닭: 'AI가 만든 홈페이지 캡처', 구간: [[0, 3.5], [17.5, 23]] } });
+  assert.equal(ok.error, null);
+  assert.equal(검사.inShot([18, 18.5, 19], ok.ranges), true, '구간 안에서만 보였다');
+  assert.equal(검사.inShot([17, 17.5, 18], ok.ranges), false, '구간 밖에서 한 번이라도 보이면 그대로 고칠 것');
+  assert.equal(검사.inShot([], ok.ranges), false);
+  for (const bad of [{ 구간: [[0, 3]] }, { 까닭: '캡처', 구간: [] }, { 까닭: '캡처', 구간: [[3, 1]] }, { 까닭: '캡처', 구간: [[0, '3']] }, '캡처', null]) {
+    const r = 검사.shotRanges({ 화면캡처: bad });
+    assert.ok(r.error, `틀린 꼴은 알리고 쓰지 않는다: ${JSON.stringify(bad)}`);
+    assert.deepEqual(r.ranges, []);
+  }
+});
+
 // 16비트 모노 wav(48kHz)
 function wav(file, samples) {
   const data = Buffer.alloc(samples.length * 2);

@@ -9,24 +9,24 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const VOICE = path.join(HERE, '..', '음성', '범수');
-// 원고는 두 번(all1 · all2)에 나눠 굽는다 — 333자 한 번은 Typecast가 22초부터 같은 구절을 되풀이했다(11-01 v8, 받아쓰기로 확인).
-const TAKES = ['all1', 'all2'].map((id) => ({ id, ...JSON.parse(fs.readFileSync(path.join(VOICE, `${id}.json`), 'utf8')) }));
+// 원고는 세 번(all1 · all2 · all3)에 나눠 굽는다 — 333자 한 번(v8)과 「…우체통의 색과 글씨로. 이번엔…」 뒤에 한 줄을 더한 165자(v11)는
+// Typecast가 같은 구절을 되풀이했다(받아쓰기로 확인). all2는 멀쩡했던 v9 판 그대로, 끝 두 문장은 all3.
+const TAKES = ['all1', 'all2', 'all3'].map((id) => ({ id, ...JSON.parse(fs.readFileSync(path.join(VOICE, `${id}.json`), 'utf8')) }));
 
 // 줄마다 그 줄의 첫 낱말 · 끝 낱말(받아쓰기 글에 들어 있는 말). 원고가 바뀌면 여기도 고친다.
 export const SEGS = [
   ['s1', 'all1', '에이아이', '모양.'],
   ['s1b', 'all1', '물건', '바뀌어요.'],
-  ['s2', 'all1', '먼저,', '했죠.'],
-  ['s3a', 'all1', '확', '달라졌어요.'],
-  ['s3b', 'all1', '그런데', '느낌.'],
-  ['s4a', 'all1', '종이는', '했어요.'],
-  ['s4b', 'all1', '이번엔', '금색.'],
-  ['s4c', 'all1', '에이아이한테', '비슷해져요.'],
+  ['s2', 'all1', '먼저,', '맡겼어요.'],
+  ['s3', 'all1', '확', '종이.'],
+  ['s4', 'all1', '종이를', '금색.'],
+  ['s4c', 'all1', '고르는', '비슷해져요.'],
   ['s5a', 'all2', '그래서', '줬어요.'],
   ['s5b', 'all2', '세무사', '글씨로.'],
   ['s6', 'all2', '이번엔', '나왔어요.'],
   ['s7', 'all2', '하늘색', '필라테스.'],
-  ['s8', 'all2', '물건은', '고르세요.'],
+  ['s7b', 'all3', '색을', '달라요.'],
+  ['s8', 'all3', '물건은', '고르세요.'],
 ];
 
 // 받아쓰기 낱말을 굽기마다 차례로 줄에 나눈다(첫 낱말부터 끝 낱말까지 순서대로 찾는다).

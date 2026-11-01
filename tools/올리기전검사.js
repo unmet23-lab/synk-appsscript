@@ -116,8 +116,24 @@ function linesOf(image, { allowHan = false } = {}) {
 }
 
 const KINDS = { right: '오른쪽 단추 자리', bottom: '아래 앱 글자 자리', top: '위 머리 자리', left: '왼쪽 가장자리', small: '작은 글자',
-  white: '흰 기본 글자(판 · 테두리 없이 그림 위)', whiteShort: '판 없이 그림 위에 얹은 짧은 밝은 글자' };
+  white: '흰 기본 글자(판 · 테두리 없이 그림 위)', whiteShort: '판 없이 그림 위에 얹은 짧은 밝은 글자',
+  whiteShot: '화면 캡처 속 흰 글자(준비.json 「화면캡처」 구간 — 우리가 얹은 글이 아닌지 눈으로 본다)' };
 const FIX_KINDS = new Set(['white']);
+
+// ⑤-3 화면 캡처 속 흰 글자(11-01) — AI가 만든 화면(웹 페이지 · 앱) 캡처를 그대로 보여 주는 편은 그 화면 안의 흰 제목 · 본문이
+// ⑤-2에 걸린다(yuhobuilds Y29 — 남색 · 빨간 바탕 홈페이지 캡처의 글 9군데). 그 글은 우리가 얹은 글이 아니라 보여 주려는 화면이다.
+// 준비.json 「화면캡처」: {"까닭": "…", "구간": [[시작초, 끝초], …]}에 적은 구간 안에서만 보인 줄은 고칠 것에서 확인할 것으로 내리고
+// 까닭을 같이 적는다. 구간 밖에서 한 번이라도 보인 줄과 다른 종류(안전 영역 · 작은 글자 · 짧은 밝은 글자)는 그대로다. 편의 영상 모두에 쓴다.
+function shotRanges(prep) {
+  const v = prep ? prep.화면캡처 : undefined;
+  if (v === undefined) return { ranges: [], 까닭: '', error: null };
+  const 까닭 = v && typeof v.까닭 === 'string' ? v.까닭.trim() : '';
+  const ranges = v && Array.isArray(v.구간) ? v.구간 : [];
+  const ok = 까닭 && ranges.length && ranges.every((r) => Array.isArray(r) && r.length === 2 && r.every((t) => Number.isFinite(t)) && r[0] >= 0 && r[0] < r[1]);
+  if (!ok) return { ranges: [], 까닭: '', error: '준비.json 「화면캡처」는 {"까닭": "…", "구간": [[시작초, 끝초], …]} 꼴이어야 한다 — 이번 검사에는 쓰지 않았다' };
+  return { ranges, 까닭, error: null };
+}
+const inShot = (times, ranges) => times.length > 0 && times.every((t) => ranges.some(([a, b]) => t >= a && t <= b));
 
 // ⑤-2 흰 기본 글자(10-28) — 판(글 상자) · 테두리 · 그림자 없이 그림 위에 바로 얹은 흰 글자. LAB E8 끝 화면의 흰 글 넉 줄이 바리스타
 // 머리 위에 겹쳐 휴대폰에서 잘 안 읽혔다(10-28 점검). 글자 줄 상자(540×960 회색) 안에서 흰 칸(215 이상)이 5~42%이고, 흰 칸 둘레 2칸
@@ -199,7 +215,7 @@ function sheet(frames, dir, file) {
 
 // 영상 장면: 0.5초마다 뽑아 읽는다. 같은 글이 같은 자리에 두 장면 넘게(0.5초 넘게) 머문 것만 센다 — 들어오고 나가는 움직임은 뺀다.
 // 결과는 걸린 종류마다 한 줄(몇 군데, 예 둘)과 빨간 상자를 그린 장면표 한 장이다. 화면 속 캡처 그림의 작은 글자도 걸리니 눈으로 가린다.
-function ocrVideo(file, dir, label, { allowHan, repo, sheetFile: sheetPath }) {
+function ocrVideo(file, dir, label, { allowHan, repo, sheetFile: sheetPath, shots = { ranges: [], 까닭: '' } }) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', file, '-vf', `fps=${1 / FRAME_STEP}`, '-q:v', '3', path.join(dir, 'f%04d.jpg')],
@@ -239,7 +255,8 @@ function ocrVideo(file, dir, label, { allowHan, repo, sheetFile: sheetPath }) {
     one.times.forEach((t, i) => { run = i > 0 && Math.abs(t - one.times[i - 1] - FRAME_STEP) < 0.01 ? run + 1 : 1; best = Math.max(best, run); });
     const chars = [...String(one.text).replace(/\s/g, '')];
     const clean = chars.filter((c) => /[\p{L}\p{N}'"“”‘’.,!?…:-]/u.test(c)).length / Math.max(1, chars.length) >= 0.95; // 「c:℃아않 파리만 날려요」 같은 잘못 읽은 줄은 빼고
-    const kind = norm(one.text).length > 6 && best >= 2 && clean && r.ringDark < 0.45 ? 'white' : 'whiteShort';
+    let kind = norm(one.text).length > 6 && best >= 2 && clean && r.ringDark < 0.45 ? 'white' : 'whiteShort';
+    if (kind === 'white' && inShot(one.times, shots.ranges)) kind = 'whiteShot';
     const p = { kind, text: `바탕 얼룩 ${Math.round(r.bgStd)} · 흰 글자 둘레 어두운 칸 ${Math.round(r.ringDark * 100)}%` };
     if (seen.has(key)) seen.get(key).problems.push(p);
     else seen.set(key, { text: one.text, problems: [p], times: one.times, frames: one.frames, box: one.box });
@@ -259,7 +276,8 @@ function ocrVideo(file, dir, label, { allowHan, repo, sheetFile: sheetPath }) {
     const hits = steady.filter((item) => item.problems.some((p) => p.kind === kind));
     if (!hits.length) continue;
     const examples = hits.slice(0, 2).map((item) => `${item.times[0].toFixed(1)}초 「${item.text.slice(0, 18)}」 ${item.problems.find((p) => p.kind === kind).text}`);
-    findings.push({ level: FIX_KINDS.has(kind) ? FIX : LOOK, code: `text-${kind}`, kind, where: label, count: hits.length, examples, sheet: sheetRel });
+    findings.push({ level: FIX_KINDS.has(kind) ? FIX : LOOK, code: `text-${kind}`, kind, where: label, count: hits.length, examples, sheet: sheetRel,
+      ...(kind === 'whiteShot' ? { note: `까닭: ${shots.까닭}` } : {}) });
   }
   return { findings, text: texts.join('\n') };
 }
@@ -278,7 +296,7 @@ function mergeAcrossFiles(list) {
     const sheets = group.map((f) => f.sheet).filter(Boolean);
     const counts = group.length > 1 ? `(${group.map((f) => `${short(f.where)} ${f.count}`).join(' · ')})` : '';
     return { level: group.some((f) => f.level === FIX) ? FIX : LOOK, code: top.code, where: group.length > 1 ? `영상 ${group.length}개` : top.where,
-      message: `${KINDS[top.kind]} ${group.reduce((n, f) => n + f.count, 0)}군데${counts} — ${top.examples.join(' · ')}${sheets.length ? ` · 장면표 ${sheets.join(' · ')}` : ''}` };
+      message: `${KINDS[top.kind]} ${group.reduce((n, f) => n + f.count, 0)}군데${counts} — ${top.examples.join(' · ')}${top.note ? ` · ${top.note}` : ''}${sheets.length ? ` · 장면표 ${sheets.join(' · ')}` : ''}` };
   });
 }
 
@@ -311,7 +329,7 @@ function gapFinding(r) {
 }
 
 // ── 영상 하나 ──
-async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null }) {
+async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null, shots }) {
   const 사전 = await import(pathToFileURL(path.join(__dirname, '영상사전검사.mjs')).href);
   const 음량 = await import(pathToFileURL(path.join(__dirname, '음량마감.mjs')).href);
   const findings = [];
@@ -356,7 +374,7 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   else if (still.end.length < END_CARD[0] || still.end.length > END_CARD[1]) add(LOOK, 'end-card', `끝 화면 ${still.end.length.toFixed(1)}초(${still.end.start.toFixed(1)}초 컷부터) — v2 §2-4 「4초 안팎」`);
   let ocr = { findings: [], text: '' };
   if (!skipOcr) {
-    try { ocr = ocrVideo(file, path.join(out, '장면_' + slug), label, { allowHan, repo, sheetFile: path.join(out, `글자표_${slug}.jpg`) }); } catch (error) {
+    try { ocr = ocrVideo(file, path.join(out, '장면_' + slug), label, { allowHan, repo, sheetFile: path.join(out, `글자표_${slug}.jpg`), shots }); } catch (error) {
       add(LOOK, 'ocr-failed', `글자 인식을 못 했다(${error.message}) — 글자 크기·안전 영역은 눈으로 본다`);
     }
   }
@@ -774,11 +792,13 @@ async function run(dir, opts = {}) {
   const ocrFindings = [];
   const screenTexts = [];
   const hanLanguage = (plate) => /^(zh|ja)/.test(plate.language || '') || plate.platform === 'xiaohongshu';
+  const shots = shotRanges(bundle.prep);
+  if (shots.error) add(LOOK, 'shot-ranges', '준비.json', shots.error);
   for (const [file, users] of videos) {
     try {
       const label = labelOf(bundle, file);
       const h = homage.per.get(file);
-      const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label, homage: h && h.그대로 ? h : null });
+      const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label, homage: h && h.그대로 ? h : null, shots });
       findings.push(...r.findings);
       ocrFindings.push(...r.ocrFindings);
       screenTexts.push(r.ocrText);
@@ -875,5 +895,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };
