@@ -257,10 +257,17 @@
         "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.73/SYNK-Platform-Preview-0.4.73-Signal-mac-x64.dmg"
       }
     ],
-    "localInstalledPackageVersionObserved": "0.4.70",
+    "localInstalledPackageVersionObserved": "0.4.73",
     "forcedLocalRestart": false,
     "installed73NotInferredFromFeed": true,
-    "localInstalledObservedAt": "2026-11-01T06:08:30.534Z"
+    "localInstalledObservedAt": "2026-11-01T06:48:24.161Z",
+    "priorLocalInstalledObservation": {
+      "version": "0.4.70",
+      "at": "2026-11-01T06:08:30.534Z"
+    },
+    "localInstalledPayloadSha256": "31fe1a7de0d5222b35c5bffe2f47549545e20d529745f2d65547661a7eab51d3",
+    "localInstalledPayloadMatchesPublishedWindowsArtifact": true,
+    "localRuntimeUIOrAllDeviceLoginNotInferred": true
   },
   "server": {
     "personalVersion": 74,
@@ -277,7 +284,25 @@
     "document14FenceGeneratedTests": 4,
     "document14FenceTestsPassed": true,
     "oldKo12SourcePreserved": true,
-    "onlyTestsAndRecordsChangedAfterFunctionalReview": true
+    "onlyTestsAndRecordsChangedAfterFunctionalReview": true,
+    "sourceOwnCommit": "b88d868f96fba2ad678c5e9163d9fba4fe1f320e",
+    "sourceSyntaxCI": {
+      "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/41280676538",
+      "conclusion": "success"
+    },
+    "sourceRecordsCI": {
+      "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/41280676595",
+      "conclusion": "success"
+    },
+    "successfulCodeCIDescendant": {
+      "head": "504247d7b0e70f81bec4cf2c87fcd90de297bc8a",
+      "url": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/41280963817",
+      "conclusion": "success",
+      "groups": 5,
+      "ownCommitIncluded": true
+    },
+    "ownWideRunSupersededByNewPush": true,
+    "relatedUploadTests": 30
   },
   "computerUseCalls": 0
 }
