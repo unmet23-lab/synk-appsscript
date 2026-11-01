@@ -294,9 +294,12 @@ const Titles: React.FC = () => {
   const f = useCurrentFrame();
   const t = f / 30;
   const fade = (a: number, b: number) => interpolate(t, [a, a + 0.12, b - 0.12, b], [0, 1, 1, 0], clamp);
+  // 목소리 없는 판(두 채널): 영어 목소리의 말을 제목 자리 둘째 줄로 — 아래 앱 글자 자리(1428px)를 비운다(11-01 검사)
+  const says = !L.voice && L.says ? (t >= T.tag3 - 0.1 ? L.says.a3 : t >= T.tag2 - 0.1 ? L.says.a2 : t >= T.tag1 - 0.1 ? L.says.a1 : null) : null;
+  const saysStyle: React.CSSProperties = { display: 'inline-block', background: '#FFF8EC', border: `4px solid ${C.coral}`, borderRadius: 20, padding: '8px 22px 10px', fontFamily: EN, fontWeight: 800, fontSize: 50, lineHeight: 1.3, color: C.brown, marginTop: 16 };
   if (t < T.flip[0] + 0.1) {
     return (
-      <TitleZone top={310} height={260} opacity={Math.min(interpolate(t, [T.flip[0] - 0.1, T.flip[0] + 0.1], [1, 0], clamp), interpolate(t, [T.tag3 - 0.05, T.tag3 + 0.12], [1, 0], clamp))}>
+      <TitleZone top={L.voice ? 310 : 300} height={260} opacity={Math.min(interpolate(t, [T.flip[0] - 0.1, T.flip[0] + 0.1], [1, 0], clamp), L.voice ? interpolate(t, [T.tag3 - 0.05, T.tag3 + 0.12], [1, 0], clamp) : 1)}>
         <div style={big}>
           {L.title.map((line, i) => (
             <React.Fragment key={i}>
@@ -305,9 +308,13 @@ const Titles: React.FC = () => {
             </React.Fragment>
           ))}
         </div>
-        <div style={{ fontFamily: EN, fontWeight: L.voice ? 600 : 800, fontSize: L.size.sub, lineHeight: L.voice ? undefined : 1.4, color: C.coralShade, marginTop: 14 }}>
-          {L.sub.split('{pieup}').flatMap((part, i) => (i ? [<span key={i} style={{ fontFamily: MONO, fontWeight: 500 }}>pieup</span>, ...withHangul(part)] : withHangul(part)))}
-        </div>
+        {says ? (
+          <Pop at={t >= T.tag3 - 0.1 ? T.tag3 - 0.1 : t >= T.tag2 - 0.1 ? T.tag2 - 0.1 : T.tag1 - 0.1}><span style={saysStyle}>{says}</span></Pop>
+        ) : (
+          <div style={{ fontFamily: EN, fontWeight: L.voice ? 600 : 800, fontSize: L.size.sub, lineHeight: L.voice ? undefined : 1.4, color: C.coralShade, marginTop: 14 }}>
+            {L.sub.split('{pieup}').flatMap((part, i) => (i ? [<span key={i} style={{ fontFamily: MONO, fontWeight: 500 }}>pieup</span>, ...withHangul(part)] : withHangul(part)))}
+          </div>
+        )}
       </TitleZone>
     );
   }
@@ -319,6 +326,7 @@ const Titles: React.FC = () => {
           <br />
           <Pop at={T.f1 + 1.0} style={{ color: C.coralShade }}>{L.fix[1]}</Pop>
         </div>
+        {!L.voice && L.says?.d ? <Pop at={T.dog[0]}><span style={saysStyle}>{L.says.d}</span></Pop> : null}
       </TitleZone>
     );
   }
@@ -345,31 +353,8 @@ const Titles: React.FC = () => {
           <span style={{ fontFamily: "'Segoe UI Emoji', 'Noto Color Emoji', sans-serif", fontWeight: 400, marginLeft: 12 }}>🐶</span>
         </Pop> : null}
       </div>
+      {!L.voice && L.says ? <Pop at={T.e1}><span style={{ ...saysStyle, fontSize: 44 }}>{L.says.e1}</span></Pop> : null}
     </TitleZone>
-  );
-};
-
-// 목소리 없는 판 — 그 말을 칸 위 크림 판으로(E5 · E11 간체판 꼴)
-const Says: React.FC = () => {
-  const L = useLoc();
-  const f = useCurrentFrame();
-  const t = f / 30;
-  if (L.voice || !L.says) return null;
-  const rows: [number, number, string][] = [
-    [T.tag1 - 0.1, T.tag2 - 0.15, L.says.a1],
-    [T.tag2 - 0.1, T.tag3 - 0.15, L.says.a2],
-    [T.tag3 - 0.1, T.flip[0], L.says.a3],
-    [T.e1, T.total, L.says.e1],
-  ];
-  const row = rows.find(([a, b]) => t >= a && t < b);
-  if (!row) return null;
-  const [a, b, text] = row;
-  const o = interpolate(t, [a, a + 0.15, b - 0.15, b], [0, 1, 1, b >= T.total ? 1 : 0], clamp);
-  const top = a >= T.e1 ? 1560 : 1430;
-  return (
-    <div style={{ position: 'absolute', left: 110, width: 860, top, display: 'flex', justifyContent: 'center', opacity: o }}>
-      <div style={{ background: '#FFF8EC', border: `4px solid ${C.coral}`, borderRadius: 22, padding: '14px 26px 16px', fontFamily: EN, fontWeight: 800, fontSize: 50, lineHeight: 1.3, color: C.brown, textAlign: 'center', boxShadow: '0 6px 14px rgba(80,30,20,0.16)' }}>{text}</div>
-    </div>
   );
 };
 
@@ -455,7 +440,7 @@ const StrokeRow: React.FC = () => {
   const t = f / 30;
   const show = interpolate(t, [GUIDE_AT, GUIDE_AT + 0.25], [0, 1], clamp);
   if (show <= 0) return null;
-  const color = (i: number) => (t >= STROKE_T[i][0] && t < STROKE_T[i][1] + 0.2 ? C.coral : t >= STROKE_T[i][0] ? C.brown : 'rgba(43,26,20,0.3)');
+  const color = (i: number) => (t >= STROKE_T[i][0] && t < STROKE_T[i][1] + 0.2 ? C.coral : t >= STROKE_T[i][0] ? C.brown : 'rgba(43,26,20,0.5)');
   return (
     <div style={{ position: 'absolute', left: 60, width: 960, top: BIG.y - 92, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, fontFamily: EN, fontWeight: 800, fontSize: L.size.strokes, lineHeight: 1, opacity: show }}>
       {L.strokes.map((w, i) => (
@@ -488,9 +473,10 @@ const FAIL_AT = T.back + 0.35;
 const FailRow: React.FC = () => {
   const f = useCurrentFrame();
   if (f < fr(FAIL_AT)) return null;
-  const scs = [0.42, 0.42, 0.62];
-  const cxs = [215, 445, 760];
-  const cy = 1555;
+  // 11-01: 둘 이상이 「끝 그림이 작다」고 짚어 키움(글 · 크기만 — 다시 시험 안 함)
+  const scs = [0.5, 0.5, 0.74];
+  const cxs = [190, 440, 775];
+  const cy = useLoc().voice ? 1555 : 1665;
   return (
     <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0 }}>
       <PencilDefs />
@@ -520,6 +506,7 @@ const FailRow: React.FC = () => {
 };
 
 const PageTwo: React.FC = () => {
+  const L = useLoc();
   const f = useCurrentFrame();
   const snap = interpolate(f, [fr(T.snap[0]), fr(T.snap[1])], [0, 1], { ...clamp, easing: EASE_IO });
   const drift = 0.3 * interpolate(f, [fr(T.explode[1]), fr(T.snap[0])], [0, 1], clamp);
@@ -554,8 +541,8 @@ const PageTwo: React.FC = () => {
               </g>
             ) : null}
             {f >= fr(STROKE_T[i][1] - 0.05) ? (
-              <text x={PART[i].at[0]} y={PART[i].at[1]} textAnchor={PART[i].anchor} dominantBaseline="central" fontFamily="Inter Tight" fontWeight={800} fontSize={64 * Math.min(1, 0.5 + 0.5 * interpolate(f, [fr(STROKE_T[i][1] - 0.05), fr(STROKE_T[i][1] + 0.15)], [0, 1], clamp))} fill={C.red} transform={`rotate(-4 ${PART[i].at[0]} ${PART[i].at[1]})`}>
-                {PART[i].text}
+              <text x={PART[i].at[0]} y={PART[i].at[1]} textAnchor={PART[i].anchor} dominantBaseline="central" fontFamily={L.partFont ?? "Inter Tight"} fontWeight={800} fontSize={(L.partSize ?? 64) * Math.min(1, 0.5 + 0.5 * interpolate(f, [fr(STROKE_T[i][1] - 0.05), fr(STROKE_T[i][1] + 0.15)], [0, 1], clamp))} fill={C.red} transform={`rotate(-4 ${PART[i].at[0]} ${PART[i].at[1]})`}>
+                {L.parts[i]}
               </text>
             ) : null}
           </g>
@@ -699,7 +686,6 @@ export const Film: React.FC<{ loc?: Loc; plain?: boolean }> = ({ loc = 'en', pla
         ) : null}
         <Pencil />
         {plain ? null : <Titles />}
-        <Says />
         </AbsoluteFill>
         <Sound />
       </AbsoluteFill>
