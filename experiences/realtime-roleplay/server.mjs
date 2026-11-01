@@ -34,6 +34,7 @@ export function 서버만들기({ 장부 = process.env.SYNK_ROLEPLAY_LEDGER || p
   const 끝난세션 = new Set();
   const 진행중 = new Map(); // 세션 → {길, 시작} — 끝 보고 없이 새 연결이 오면(새로 고침 · 탭 닫힘) 지난 시간으로 닫는다
   const 은행판 = new Map(); // 답 은행 길 세션 → {순간, 차례, 되묻기, 도움, 처리중} — 대화가 어느 순간에 있는지는 서버가 쥔다
+  const 모델쉼 = new Map(); // Gemini 모델 → 다시 앞에 둘 시각 — 시한을 넘긴 모델은 10분 동안 맨 뒤로(듣기 · 돌아보기가 같이 쓴다)
   // 제미나이빼기: 화면이 Gemini 준비 전 실패를 알리고 다시 열 때(이번 한 번은 OpenAI 길로)
   const 지금계량 = (제미나이빼기 = false) => 계량({ 줄들: 장부읽기(장부), 예산USD, 리셋날, 상한초: 장면.상한초, 제미나이: !제미나이빼기 && 공급사들['gemini-live'].쓸수있나() });
   const 남은세션닫기 = (까닭) => {
@@ -154,10 +155,10 @@ export function 서버만들기({ 장부 = process.env.SYNK_ROLEPLAY_LEDGER || p
       const 앞순간 = 판.순간;
       let 고름;
       try {
-        고름 = await 듣고고르기(앞순간, wav);
+        고름 = await 듣고고르기(앞순간, wav, { 쉼: 모델쉼 });
       } catch (e) {
         if (e.상태 === 400) throw e; // 모르는 순간 — 서버 잘못이다
-        장부적기(장부, { 무엇: '차례실패', 길: '은행', 세션, USD: 0, 까닭: `${e.상태 || '네트워크'} ${String(e.message).slice(0, 80)}` });
+        장부적기(장부, { 무엇: '차례실패', 길: '은행', 세션, USD: 0, 까닭: `${e.상태 || '네트워크'} ${String(e.message).slice(0, 80)}`, ...(e.건넘?.length ? { 건넘: e.건넘 } : {}) });
         기록(`[상황극] 은행 듣기 실패 ${e.상태 || '네트워크'}: ${String(e.message).slice(0, 80)}`);
         const 되 = 답짓기(앞순간, { 판단: '되묻기' }, 판.되묻기++);
         return [200, { 실패: e.상태 === 429 ? 'Gemini 무료 몫' : 'Gemini 연결 실패', 받아적기: '', 판단: '되묻기', 조각: 되.조각, 순간: 판.순간, 끝남: false }];
@@ -166,7 +167,7 @@ export function 서버만들기({ 장부 = process.env.SYNK_ROLEPLAY_LEDGER || p
       판.순간 = 답짓기결과.다음순간;
       판.차례 += 1;
       // 장부에는 고른 반응 id · 시간 · 토큰 수만 — 받아 적은 글은 남기지 않는다
-      장부적기(장부, { 무엇: '차례', 길: '은행', 세션, 모델: 고름.모델, ms: 고름.ms, 판단: 고름.판단, 반응: 고름.반응, 순간: [앞순간, 판.순간], 사용: 고름.사용 ? { 입력: 고름.사용.promptTokenCount || 0, 출력: 고름.사용.candidatesTokenCount || 0 } : null, USD: 0, 등급: '무료' });
+      장부적기(장부, { 무엇: '차례', 길: '은행', 세션, 모델: 고름.모델, ms: 고름.ms, ...(고름.건넘?.length ? { 건넘: 고름.건넘 } : {}), 판단: 고름.판단, 반응: 고름.반응, 순간: [앞순간, 판.순간], 사용: 고름.사용 ? { 입력: 고름.사용.promptTokenCount || 0, 출력: 고름.사용.candidatesTokenCount || 0 } : null, USD: 0, 등급: '무료' });
       return [200, { 받아적기: 고름.받아적기, 판단: 고름.판단, 조각: 답짓기결과.조각, 순간: 판.순간, 끝남: 판.순간 === '끝남', ms: 고름.ms }];
     } finally {
       판.처리중 = false;
@@ -231,8 +232,8 @@ export function 서버만들기({ 장부 = process.env.SYNK_ROLEPLAY_LEDGER || p
     } catch (e) {
       if (!공급사들['gemini-live'].쓸수있나()) throw e;
       기록(`[상황극] 피드백 OpenAI 실패(${String(e.message).slice(0, 60)}) — Gemini 무료 등급으로`);
-      const g = await 제미나이부르기(제미나이요청본문(장면, 전사), { 모델들: 피드백제미나이모델들, 시한ms: 45000 });
-      장부적기(장부, { 무엇: '피드백', 길: g.모델, 키: 'Gemini 무료 키', 사용: g.사용 ? { 입력: g.사용.promptTokenCount || 0, 출력: g.사용.candidatesTokenCount || 0, 생각: g.사용.thoughtsTokenCount || 0 } : null, USD: 0, 등급: '무료' });
+      const g = await 제미나이부르기(제미나이요청본문(장면, 전사), { 모델들: 피드백제미나이모델들, 시한ms: 45000, 쉼: 모델쉼 });
+      장부적기(장부, { 무엇: '피드백', 길: g.모델, 키: 'Gemini 무료 키', ms: g.ms, ...(g.건넘.length ? { 건넘: g.건넘 } : {}), 사용: g.사용 ? { 입력: g.사용.promptTokenCount || 0, 출력: g.사용.candidatesTokenCount || 0, 생각: g.사용.thoughtsTokenCount || 0 } : null, USD: 0, 등급: '무료' });
       return 검사(장면, g.출력, 전사);
     }
   }

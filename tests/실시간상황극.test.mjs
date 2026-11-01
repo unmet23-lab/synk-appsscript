@@ -594,6 +594,8 @@ test('서버: 답 은행 길 — 연결 · Zoe 소리 · 차례(가짜 Gemini가
   assert.deepEqual(줄들[1].반응, ['이름']);
   assert.deepEqual(줄들[1].순간, ['처음', '나라']);
   assert.deepEqual(줄들[1].사용, { 입력: 900, 출력: 40 });
+  assert.equal(줄들[1].건넘, undefined); // 넘긴 모델이 없으면 칸도 없다
+  assert.deepEqual(줄들[2].건넘.map((x) => [x.모델, x.상태]), 듣기모델들.map((m) => [m, 429])); // 몫이 찬 차례는 모델마다 429
   assert.deepEqual([줄들.at(-1).길, 줄들.at(-1).USD, 줄들.at(-1).등급], ['gemini-3.6-flash', 0, '무료']);
   assert.ok(!장부읽기(장부).some((r) => r.무엇 === '몫바닥'));
   const 장부글 = fs.readFileSync(장부, 'utf8');
@@ -622,10 +624,17 @@ test('답 은행: 사인은 사인 부탁 반응을 고른 차례에만 들은 �
 
   const 앞수 = 가짜.받은.length;
   답할것 = { 좋음: true };
-  const 넘김 = await 제미나이부르기({ contents: [] }, { 모델들: ['느림', '빠름'], 키: 'AIzaFakeGeminiKeyMustNotLeak', 시한ms: 300 });
+  const 쉼 = new Map();
+  const 넘김 = await 제미나이부르기({ contents: [] }, { 모델들: ['느림', '빠름'], 키: 'AIzaFakeGeminiKeyMustNotLeak', 시한ms: 300, 쉼 });
   assert.equal(넘김.모델, '빠름');
   assert.deepEqual(넘김.출력, { 좋음: true });
-  assert.deepEqual(가짜.받은.slice(앞수).map((r) => decodeURIComponent(r.주소)), ['/v1beta/models/느림:generateContent', '/v1beta/models/빠름:generateContent']);
+  assert.deepEqual(넘김.건넘.map((x) => [x.모델, x.상태]), [['느림', 504]]); // 넘긴 모델은 장부에서 보이게 돌려준다
+  assert.ok(넘김.건넘[0].ms >= 250);
+  assert.ok(쉼.get('느림') > Date.now() + 9 * 60e3); // 시한을 넘긴 모델은 10분 동안 맨 뒤로
+  const 다음 = await 제미나이부르기({ contents: [] }, { 모델들: ['느림', '빠름'], 키: 'AIzaFakeGeminiKeyMustNotLeak', 시한ms: 300, 쉼 });
+  assert.equal(다음.모델, '빠름');
+  assert.deepEqual(다음.건넘, []); // 다시 시한을 물지 않는다
+  assert.deepEqual(가짜.받은.slice(앞수).map((r) => decodeURIComponent(r.주소).replace('/v1beta/models/', '')), ['느림:generateContent', '빠름:generateContent', '빠름:generateContent']);
   await assert.rejects(제미나이부르기({ contents: [] }, { 모델들: ['느림'], 키: 'AIzaFakeGeminiKeyMustNotLeak', 시한ms: 200 }), (e) => e.상태 === 504);
 });
 

@@ -118,8 +118,8 @@
 ### Gemini Flash-Lite에 소리를 직접 들려 고르게 하면 평소 2초인 한 번이 28초 걸릴 때가 있고, thinkingConfig를 넣으면 400이다 (2026-11-02 Claude)
 - 증상: 11-02 실시간 상황극 답 은행 길(`experiences/realtime-roleplay/lib/답은행.mjs`)에서 `gemini-3.1-flash-lite` generateContent(16k WAV + responseSchema, 무료 키)가 대개 1.8~4초인데 녹음 대화 첫 줄 한 번이 28.1초 걸렸다(같은 줄을 다시 부르면 4초). 그동안 학습자는 하온 답 없이 서 있다. 그 전에 `generationConfig.thinkingConfig: { thinkingBudget: 0 }`을 넣은 본문은 400 INVALID_ARGUMENT였다.
 - 원인: 28초는 확인 못 했다(무료 등급 대기로 보인다). thinkingConfig는 이 모델이 받지 않는 칸이다.
-- 고침: `lib/공급사.mjs`의 `제미나이부르기`가 모델마다 시한(`AbortSignal.timeout`)을 두고 넘기면 다음 모델로 간다 — 듣기 8초, 돌아보기(3.6 Flash, 생각 포함 9~13초) 45초. thinkingConfig는 넣지 않는다.
-- 다시 확인: `node --test tests/실시간상황극.test.mjs`의 「시한을 넘기면 다음 모델」 시험(답하지 않는 가짜 모델 → 다음 모델), 장부(`.tmp/realtime-roleplay/예산장부.jsonl`) 「차례」 줄의 `ms` · `모델`.
+- 고침: `lib/공급사.mjs`의 `제미나이부르기`가 모델마다 시한(`AbortSignal.timeout`)을 두고 넘기면 다음 모델로 간다 — 듣기 8초, 돌아보기(3.6 Flash, 생각 포함 9~13초) 45초. 같은 날 3.1 Flash-Lite가 한동안 차례마다 8초를 넘겨(다음 모델 `gemini-flash-lite-latest`는 2초) 차례가 10초씩 걸렸다 → 시한을 넘긴 모델은 서버의 쉼 표에 적어 10분 동안 맨 뒤로 돌리고, 넘긴 모델은 장부 줄 `건넘`({모델, 상태, ms})에 남긴다. thinkingConfig는 넣지 않는다.
+- 다시 확인: `node --test tests/실시간상황극.test.mjs`의 「시한을 넘기면 다음 모델」 시험(답하지 않는 가짜 모델 → 다음 모델, 두 번째 부름은 기다리지 않음), 장부(`.tmp/realtime-roleplay/예산장부.jsonl`) 「차례」 · 「피드백」 줄의 `ms` · `모델` · `건넘`.
 
 ### 몽골어 검문에서 `--구독`을 `--파일` 앞에 두면 쓰는 법만 찍고 끝난다 (2026-10-19)
 - 증상: 10-19 `node tools/몽골어대조.js --구독 --파일 <경로>`가 검문 없이 「쓰는 법」만 찍었다. `--구독` 없이 돌리면 무료 키 파일(`~/SYNK_보안/제미나이_무료.txt`)이 없다며 멈춘다(새 노트북).

@@ -160,6 +160,7 @@ async function 견본돌리기(견본) {
   const 틀기 = (버퍼) => new Promise((r) => { const s = 견본.ctx.createBufferSource(); s.buffer = 버퍼; s.connect(견본.목적지); s.onended = r; s.start(); });
   for (const [i, 버퍼] of 견본.소리들.entries()) {
     await 기다리기(() => 상대말함 && performance.now() - 마지막소리 > 1600, 30000);
+    if (끝내는중 || 연결?.끝남?.()) break; // 답 은행 길에서 하온이 작별까지 했으면 다음 줄을 넣지 않는다(넣으면 그 소리만큼 자동 끝이 늦다)
     상대말함 = false;
     $('시험글').hidden = false;
     $('시험글').textContent = `시험: 학습자 ${i + 1}번 줄을 넣는 중`;
