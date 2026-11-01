@@ -732,6 +732,12 @@
 - 고침: 검수 에이전트에게 주는 글에 「탐침 · 헤드리스는 백그라운드로 돌리지 말고 앞에서 돌려 결과를 받은 뒤 이어서 마쳐라, 오래 걸리면 `--only`로 나눠라」를 적는다(3회차 `-s3`부터). 「기다리는 중」 알림이 오면 그 에이전트의 출력 폴더 파일 시각과 node 프로세스(`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`)를 보고, 도는 것이 없으면 SendMessage로 「도는 작업은 없다, 지금 결과로 답을 써라」를 보낸다. 한도로 멈춘 에이전트는 새로 띄우지 않고 초기화 뒤 SendMessage로 잇는다(위 「곁 에이전트 넷을 …」 항목과 같다).
 - 다시 확인: 답 파일(`Fable-답-A.json` · `페이블-답.json`)이 생기고 `페이블받기`가 지적을 넣는다.
 
+### GPT 시험관이 API 크레딧 바닥(종료 3)으로 멈추면 구독 `codex계정.js exec -i`로 같은 질문을 보낸다 (2026-11-01 Claude)
+- 증상: /world 입구 시안 눈가림 시험에서 `tools/GPT시험관.mjs`가 두 키 모두 `429 credit_balance_exhausted`로 종료 3을 냈다. Claude 시험관만 남으면 다른 회사 눈이 빠진다.
+- 원인: 시험관 도구는 API 크레딧만 쓴다. ChatGPT 구독 몫은 API 크레딧과 따로다.
+- 고침: 질문을 표준입력으로 주고 `node tools/codex계정.js exec --skip-git-repo-check -C <시험관 폴더> -s read-only -o <시험관 폴더>/답_gpt.md -i <그림1> -i <그림2> …`로 부른다. 질문의 「이 폴더 그림을 열어라」 · 「파일에 답을 써라」 줄은 「붙인 순서대로 01번」 · 「마지막 메시지로 답하라」로 바꾼다. 현금은 들지 않고 굽기 계정 주간 몫에서 빠진다.
+- 다시 확인: 그림 열 장 · 일곱 장 · 네 장 세 회차가 모두 종료 0으로 끝났고, `답_gpt.md`에 그림 번호별 표가 왔다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.

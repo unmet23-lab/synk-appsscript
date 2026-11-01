@@ -1,4 +1,3 @@
-// 2026-11-01 실사 입구 임시 판부터 이 스크립트는 옛 펠트 타이틀 기준이다(.opening-enter 전체 화면 · .opening-title · 회사 구간 img) — 입구 판 QA가 필요해지면 .opening-skip → .entrance-drama · .entrance-town으로 고쳐 쓴다.
 const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const base=process.env.SYNK_OPENING_QA_URL||'http://127.0.0.1:4307';
