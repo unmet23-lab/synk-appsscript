@@ -8,6 +8,7 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
+import {serverReady} from './server-ready.mjs';
 // 계정 모드 WORLD(실제 Chromium/Edge)의 내 계정 시트에서 「우리 반 수업」을 합성 계정·합성 수업 응답으로 연다.
 // 운영 계정·서버·방송을 쓰지 않는다. 바깥 주소는 막고, 계정 API 주소는 아래 고정 응답만 받는다.
 // 캡처와 result.json은 SYNK_CLASSROOM_QA_OUT(기본 qa/classroom-lessons-20261019/)에 쓴다. 그림은 .gitignore 대상이다.
@@ -62,7 +63,7 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
  try{
-  for(let i=0;i<100;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/world/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   const context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});

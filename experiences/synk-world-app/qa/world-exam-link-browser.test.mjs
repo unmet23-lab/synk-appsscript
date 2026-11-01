@@ -8,6 +8,7 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {createLifeProgress} from '../life-progress.mjs';
+import {serverReady} from './server-ready.mjs';
 // WORLD ?exam= 바로가기(10-22, 메일·신청 페이지의 무료 연습 링크) 실제 브라우저 확인 — 계정 모드 WORLD(헤드리스 Edge)의 손님:
 // A. 처음 온 기기에서 /world/?exam=topik2&lang=mn(375): 언어 고르기(몽골어가 미리 눌림) → 한글 질문 → 튜터 → TOPIK II를 채운 학습 목표 창
 //    (열기만으로는 저장 안 됨) → 스위치 없이 누르면 안내만 → 「이 기기에 저장」을 켜고 저장 → 이번 주 계획.
@@ -46,7 +47,7 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
  let browser;
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
-  for(let i=0;i<100;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/world/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   // 기기 하나. seed가 있으면 첫 실행을 마친 생활 진도와 화면 언어를 심는다. 목표 창이 한 번이라도 뜨면 window.__qaGoalSeen에 남는다.
   async function device({seed=null,lang=null,viewport=VIEWPORTS.phone}={}){

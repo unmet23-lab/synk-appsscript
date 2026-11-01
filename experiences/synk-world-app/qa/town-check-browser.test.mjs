@@ -9,6 +9,7 @@ import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {createAccountTownHost} from '../town-host.mjs';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
+import {serverReady} from './server-ready.mjs';
 
 // 싱크타운 「마을 준비 확인」을 실제 Chrome·계정 모드 WORLD에서 끝까지 — 학습·개인화 다리 설계 §4-2.
 // 서버 판정(SYNK-talk town-entry-r1)은 가짜 서버가 흉내만 낸다(보낸 답의 영역·맞힘을 세어 읽기 6 중 4 ∧ 듣기 4 중 3). 판정 규칙 자체는 talk 시험이 본다.
@@ -33,7 +34,7 @@ async function scenario(t,{sync=false,gateReason='learning-check',trial=true,rat
  let serverOutput='';server.stderr.on('data',chunk=>serverOutput+=chunk);server.stdout.on('data',chunk=>serverOutput+=chunk);
  const url=`http://127.0.0.1:${port}`,calls=[],errors=[];let browserServer,browser;
  t.after(async()=>{await browser?.close().catch(()=>{});await browserServer?.close().catch(()=>{});server.kill('SIGKILL');});
- for(let i=0;i<80;i++){try{const r=await fetch(url+'/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+ await serverReady(url+'/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
  const town=createAccountTownHost({directory:path.join(directory,'fixture-town')}),binding={kind:'personal',classId:null,townId:null,learnerId:null,membershipRevision:null,sharing:{enabled:false,revision:0,since:null,blockedByLearningSharing:!sync}};
  const learning={enabled:sync,revision:1},learningEvents=[],playState=emptyPlayState();let playRevision=0;
  const gate={allowed:false,reason:gateReason,access:gateReason==='access'?null:null};let checks=0,hold=null,lastCheck=null;

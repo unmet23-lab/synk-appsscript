@@ -10,6 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {endingOf} from '../world-writing-check.mjs';
 import {drillPool,drillWeights,focusNeed} from '../world-writing-focus.mjs';
+import {serverReady} from './server-ready.mjs';
 // 계정 모드 WORLD(실제 Edge)에서 배우기 판 → 「TOPIK II 쓰기 연습」 → 51·53·54 쓰기 → 규칙 점검 → 자동 피드백(가짜 서버) → 예시답.
 // 운영 계정·서버·AI를 쓰지 않는다. 바깥 주소는 막고 계정 API는 아래 가짜만 받는다. 문항 은행은 시험에서만 모두 「검수 통과」로 바꿔 준다.
 // 캡처와 result.json은 SYNK_WRITING_QA_OUT(기본 qa/world-writing-20261020/)에 쓴다(그림은 git 밖).
@@ -42,7 +43,7 @@ test('계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·�
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  const playState=emptyPlayState();let playRevision=0;
  try{
-  for(let i=0;i<100;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/world/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});

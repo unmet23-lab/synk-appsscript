@@ -7,6 +7,7 @@ import net from 'node:net';
 import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
+import {serverReady} from './server-ready.mjs';
 // 말하기 연습(10-21 공개 판)을 리허설 WORLD(실제 Edge, 합성 계정 player-a)에서 끝까지 돈다. 마이크는 Edge의 가짜 장치에 이 시험이 만든
 // 합성 소리(사람 목소리가 아니다)를 물린다. 자동 피드백·역할극 서버 몫은 가짜 응답이라 모델·운영 서버·돈을 쓰지 않는다.
 // 플래그 없이 배우기 판에 줄이 있다 → 이 기기 끄는 스위치(synk.world.speaking.preview=0)면 모듈도 줄도 없다 → 스위치를 지우고 연다
@@ -52,7 +53,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
  const fake={feedback:'ok',remaining:4,turn:'ok'};
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
-  for(let i=0;i<150;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   // 개발 서버 몫 자체: 플래그 없는 기본 실행은 꺼짐으로 답한다(로그인 없이 부르면 401).
   assert.equal((await fetch(url+'/api/world/speaking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status'})})).status,401);
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream',`--use-file-for-fake-audio-capture=${wav}`,'--autoplay-policy=no-user-gesture-required']});

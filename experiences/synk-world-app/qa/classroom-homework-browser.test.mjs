@@ -9,6 +9,7 @@ import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {homeworkWindow,homeworkDate} from '../classroom-homework.mjs';
+import {serverReady} from './server-ready.mjs';
 // 계정 모드 WORLD(실제 Edge)의 내 계정 시트에서 「이번 주 과제」를 합성 계정·합성 반·합성 학생 글로 연다.
 // 운영 계정·서버를 쓰지 않는다. 바깥 주소는 막고, 계정 API 주소는 아래 가짜 과제 서버(SYNK-talk lib/synk-classroom-homework.js와 같은 규칙)만 받는다.
 // 시계는 Playwright로 고정한다(1기 가상 일정: 2027-03-06 토요일 시작). 캡처와 result.json은 SYNK_HOMEWORK_QA_OUT(기본 qa/classroom-homework-20261020/)에 쓴다.
@@ -113,7 +114,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
  try{
-  for(let i=0;i<100;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/world/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.clock.setFixedTime(clock);

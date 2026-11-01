@@ -9,6 +9,7 @@ import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {createLifeProgress} from '../life-progress.mjs';
 import {PACKS,LESSONS} from '../life-content.mjs';
+import {serverReady} from './server-ready.mjs';
 // WORLD 학습 알림(10-19 결정 「WORLD 알림 · 주 1~2회 · 학습 일만」) 실제 브라우저 확인 — 계정 모드 WORLD(헤드리스 Edge)의 손님 학생:
 // 앱 안에서 먼저 묻기 → 「알려 주세요」를 누른 뒤에만 OS 권한 → 다음 날 저녁 7시 예약 → 시계를 넘겨 그 시각에 알림 → 누르면 복습,
 // 거절(다시 묻지 않음)·설정에서 켜기·OS에서 막힘·끄기, 시험일 2주 전 점검 → 시험 형식 카드 → 이번 주 계획, 세 언어(ko·en·mn)·390·1280.
@@ -49,7 +50,7 @@ test('WORLD 학습 알림: 앱 안 묻기 → OS 권한 → 예약 → 알림 �
  let browser;
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
-  for(let i=0;i<100;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/world/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   // 새 기기 하나: 심은 생활 진도·화면 언어와 가짜 OS 알림(권한은 이 기기의 localStorage에 남는다 — 다시 열어도 같다).
   async function device({lang='ko',exam=null,answer='granted',viewport=VIEWPORTS.phone}={}){

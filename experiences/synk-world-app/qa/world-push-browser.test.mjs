@@ -12,6 +12,7 @@ import STRINGS from '../../brand-opening/world-strings.mjs';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
 import {createLifeProgress,LIFE_PROGRESS_KEY} from '../life-progress.mjs';
 import {PACKS,LESSONS} from '../life-content.mjs';
+import {serverReady} from './server-ready.mjs';
 // WORLD 학습 알림 2단(앱을 닫아도 받기, 설계 qa/push-reminders-20261022/설계.md) 실제 브라우저 확인 — 계정 모드 WORLD(헤드리스 Edge)의 로그인 학생:
 // PC 설정 「앱을 닫아도 받기」 → 동의 상자 → 「동의하고 켜기」 → 실제 서비스 워커(world-push-sw.js)에 푸시를 넣어 알림 → 알림 주소로 들어와 그 자리 ·
 // 누름 알림 → 끄기, 휴대폰(안드로이드)의 묻는 카드 → 동의 시트 → 켜기, 아이폰 안내, 세 언어(ko·en·mn)·390·1280.
@@ -71,7 +72,7 @@ test('WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 �
  let browser;
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
-  for(let i=0;i<100;i++){if(server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/world/health');if(r.ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
+  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   // 새 기기 하나: 로그인한 계정(합성 토큰), 화면 언어, 가짜 푸시 구독(브라우저 저장소에 남는다 — 다시 열어도 같은 구독).
   async function device({lang='ko',viewport=VIEWPORTS.desk,userAgent,notifications=true,features=true}={}){

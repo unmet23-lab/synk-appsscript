@@ -12,6 +12,7 @@ import {createAccountTownHost} from '../town-host.mjs';
 import {emptyPlayState,validatePlayChanges} from '../../play-common/play-data.mjs';
 import {awardMiniGame} from '../../korean-racing/garage-core.js';
 import {LESSONS} from '../life-content.mjs';
+import {serverReady} from './server-ready.mjs';
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');}catch{playwright=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
 const A='11111111-1111-4111-8111-111111111111',C='22222222-2222-4222-8222-222222222222';
@@ -32,7 +33,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
  const url=`http://127.0.0.1:${port}`,calls=[],errors=[],external=[],assetErrors=[];let browserServer,browser,page,output;
  output=fs.mkdtempSync(path.join(directory,'evidence-'));console.log('QA evidence: '+output);
  t.signal.addEventListener('abort',()=>{browserServer?.process()?.kill('SIGKILL');server.kill?.('SIGKILL');server.closeAllConnections?.();server.close?.();},{once:true});
- async function waitServer(){for(let i=0;i<80;i++){if(server.exitCode!==undefined&&server.exitCode!==null)throw Error(serverOutput);try{const r=await fetch(url+'/health');if(r.ok)return await r.json();}catch{}await new Promise(r=>setTimeout(r,100));}throw Error('server start timeout '+serverOutput);}
+ async function waitServer(){return (await serverReady(url+'/health',{signal:t.signal,exited:()=>server.exitCode!=null,output:()=>serverOutput})).json();}
  const town=createAccountTownHost({directory:path.join(directory,'fixture-town')}),binding={kind:'academy',classId:C,townId:C,learnerId:A,membershipRevision:1,sharing:{enabled:false,revision:1,blockedByLearningSharing:false}};
  let learning={enabled:false,revision:1},playRevision=0,conflictNext=false,conflictInjected=false,classroomLinked=false,entryHold=null;const playState=emptyPlayState(),playCommands=new Map(),learningEvents=[];
  const snapshot={ok:true,accountId:A,revision:1,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[{itemId:'mongle-apron-starter'}],activeRun:null};
