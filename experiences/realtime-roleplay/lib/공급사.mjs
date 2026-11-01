@@ -115,6 +115,41 @@ export const 공급사들 = {
   },
 };
 
+/** Gemini generateContent(무료 키, JSON 답) — 답 은행 길의 듣고 고르기와 OpenAI 크레딧이 바닥났을 때의 돌아보기가 같이 쓴다.
+ *  모델을 차례로 부르고 몫 · 과부하 · 없는 모델(429 · 500 · 503 · 404) · 시한 넘김이면 다음 모델로. 돌려줌: {출력(JSON 풀이), 모델, ms, 사용}
+ *  시한: 11-02 시험에서 평소 2초인 듣기 한 번이 28초 걸린 적이 있다 — 학습자를 그만큼 세워 두지 않게 다음 모델로 넘긴다 */
+export async function 제미나이부르기(본문, { 모델들, 키 = 모델정책.제미나이키('글'), 시한ms = 30000 }) {
+  if (!키) throw Object.assign(new Error('Gemini 무료 키가 없다'), { 상태: 503 });
+  const 몸 = JSON.stringify(본문);
+  let 마지막 = null;
+  for (const 모델 of 모델들) {
+    const 시작 = Date.now();
+    let r;
+    let 글;
+    try {
+      r = await fetch(`${제미나이바탕()}/models/${모델}:generateContent`, { method: 'POST', headers: { 'x-goog-api-key': 키, 'Content-Type': 'application/json' }, body: 몸, signal: AbortSignal.timeout(시한ms) });
+      글 = await r.text();
+    } catch (e) {
+      if (e.name !== 'TimeoutError') throw e;
+      마지막 = Object.assign(new Error(`Gemini ${모델} ${시한ms}ms 넘김`), { 상태: 504 });
+      continue;
+    }
+    if (!r.ok) {
+      마지막 = Object.assign(new Error(`Gemini ${모델} ${r.status}`), { 상태: r.status === 429 ? 429 : 502, 본문: 글.split(키).join('«키»').slice(0, 300) });
+      if ([429, 500, 503, 404].includes(r.status)) continue;
+      throw 마지막;
+    }
+    try {
+      const j = JSON.parse(글);
+      const 출력 = JSON.parse(j.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '{}');
+      return { 출력, 모델, ms: Date.now() - 시작, 사용: j.usageMetadata || null };
+    } catch {
+      throw Object.assign(new Error(`Gemini ${모델} 답이 JSON이 아니다`), { 상태: 502 });
+    }
+  }
+  throw 마지막 || Object.assign(new Error('Gemini 모델이 없다'), { 상태: 503 });
+}
+
 /** 글 상황극 · 피드백이 같이 쓰는 Responses 부르기 — 답 JSON과 쓴 키 */
 export async function 응답부르기(본문) {
   const { res, 키 } = await 키로부르기((v) => fetch(`${바탕()}/responses`, {

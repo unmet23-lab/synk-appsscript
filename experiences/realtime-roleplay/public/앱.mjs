@@ -1,18 +1,20 @@
 // 팬사인회 상황극 화면(2026-10-30 시제품) — 준비 → 대화(자막 · 힌트 · 시계) → 돌아보기. 공급사 차이는 연결층.mjs가 맡는다.
-// ?길=gemini-live|gpt-live|realtime-mini|글 은 예산 계량기 대신 길을 고정하고(시험용), ?시험=1 은 마이크 대신 견본 학습자 소리 3줄을 넣는다(재생은 음소거).
+// ?길=gemini-live|gpt-live|realtime-mini|글|은행 은 예산 계량기 대신 길을 고정하고(시험용), ?시험=1 은 마이크 대신 견본 학습자 소리 3줄을 넣는다(재생은 음소거).
 // ?반이중=1 은 Gemini 길에서 하온이 말하는 동안 마이크를 쉰다(헤드폰 없이 스피커로 할 때), ?시험=1&상한=40 은 시계를 줄여 마무리 · 자동 끝까지 본다.
+// 「Zoe 목소리로 말 걸기」는 답 은행 길(미리 녹음한 하온 답, 11-02) — 예산 계량기가 고르지 않고 이 단추로만 연다.
 import { 열기, 글열기 } from './연결층.mjs';
 
 const $ = (id) => document.getElementById(id);
 const 쿼리 = new URLSearchParams(location.search);
 const 시험 = 쿼리.get('시험') === '1';
-const 강제길 = ['gemini-live', 'gpt-live', 'realtime-mini', '글'].includes(쿼리.get('길')) ? 쿼리.get('길') : undefined;
+const 강제길 = ['gemini-live', 'gpt-live', 'realtime-mini', '글', '은행'].includes(쿼리.get('길')) ? 쿼리.get('길') : undefined;
 const 반이중 = 쿼리.get('반이중') === '1';
 const 상한덮기 = 시험 ? Math.max(0, Math.round(Number(쿼리.get('상한')) || 0)) : 0;
-const 길이름 = { 'gemini-live': '음성(Gemini Kore · 무료)', 'gpt-live': '음성(GPT-Live · 유료)', 'realtime-mini': '가벼운 음성(mini · 유료)', 글: '글 상황극' };
+const 길이름 = { 'gemini-live': '음성(Gemini Kore · 무료)', 'gpt-live': '음성(GPT-Live · 유료)', 'realtime-mini': '가벼운 음성(mini · 유료)', 글: '글 상황극', 은행: '음성(하온 Zoe 녹음 답 · 무료)' };
 const 넘김까닭 = { 'Gemini 무료 몫': 'Gemini 무료 몫이 차서', 'Gemini 연결 실패': 'Gemini 연결이 안 돼서' };
 let 장면 = null;
 let 연결 = null;
+let 이번길 = 강제길; // 이번 판의 길 — 「Zoe 목소리로 말 걸기」를 누르면 '은행'
 let 시계타이머 = null;
 let 남은초 = 0;
 let 힌트번호 = 0;
@@ -40,7 +42,7 @@ function 예산표시(계) {
   if (!계) return;
   const 퍼 = 계.비율 == null ? '–' : `${Math.round(계.비율 * 100)}%`;
   const 몫쉼 = 계.제미나이?.몫막힘까지 ? ` · Gemini 무료 몫 쉼(${new Date(계.제미나이.몫막힘까지).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}까지)` : '';
-  $('예산').textContent = `이번 달 $${계.쓴값.toFixed(2)} / $${계.예산USD} (${퍼}) · 지금 길: ${길이름[강제길 || 계.길]}${몫쉼}`;
+  $('예산').textContent = `이번 달 $${계.쓴값.toFixed(2)} / $${계.예산USD} (${퍼}) · 지금 길: ${길이름[이번길 || 계.길]}${몫쉼}`;
 }
 
 function 미션그리기(곳, 판정) {
@@ -95,12 +97,15 @@ function 시계시작() {
     // 그 말이 멎고 받아쓰기가 올 때까지 기다린다 — 하온 소리 끝 1.3초로 끊으면 그 말이 전사에서 빠졌다(10-30 검수)
     const 상대끝 = Math.max(마지막상대, 연결?.상대소리끝?.() || 0);
     if (마무리보냄 && 마무리뒤말함 && performance.now() - Math.max(상대끝, 마지막내소리) > 2500) 끝내기();
+    // 답 은행 길은 하온이 작별 인사까지 하면(서버 순간 「끝남」) 그 소리가 끝나고 2.5초 뒤에 끝낸다
+    if (연결?.끝남?.() && performance.now() - Math.max(상대끝, 마지막내소리) > 2500) 끝내기();
     if (남은초 <= -15) 끝내기();
   }, 1000);
 }
 
 function 되돌리기() {
   $('시작').disabled = false;
+  $('은행시작').disabled = false;
   $('견본').disabled = false;
   $('장면').hidden = false;
   $('대화').hidden = true;
@@ -115,6 +120,7 @@ async function 상태읽기() {
   미션그리기($('미션'));
   예산표시(j.계량);
   $('시작').disabled = false;
+  $('은행시작').disabled = false;
   if (시험) $('견본').hidden = false;
 }
 
@@ -167,8 +173,10 @@ async function 견본돌리기(견본) {
   await 끝내기();
 }
 
-async function 시작(견본모드, 이어서 = false) {
+async function 시작(견본모드, 이어서 = false, 길 = 강제길) {
+  이번길 = 길;
   $('시작').disabled = true;
+  $('은행시작').disabled = true;
   $('견본').disabled = true;
   $('장면').hidden = true;
   $('대화').hidden = false;
@@ -186,7 +194,7 @@ async function 시작(견본모드, 이어서 = false) {
   $('자막').textContent = '';
   $('힌트').hidden = true;
   상태(이어서 ? '연결이 잠깐 끊겨서 다시 잇는 중…' : '연결하는 중…');
-  if (강제길 === '글') return 글시작();
+  if (길 === '글') return 글시작();
   let 트랙;
   let 견본 = null;
   try {
@@ -207,7 +215,7 @@ async function 시작(견본모드, 이어서 = false) {
   }
   마이크재기(트랙);
   try {
-    연결 = await 열기({ 길: 강제길, 입력트랙: 트랙, 출력: $('소리'), 반이중 });
+    연결 = await 열기({ 길, 입력트랙: 트랙, 출력: $('소리'), 반이중 });
   } catch (e) {
     트랙.stop();
     상태(`연결하지 못했어요: ${e.message}`);
@@ -218,7 +226,9 @@ async function 시작(견본모드, 이어서 = false) {
   예산표시(연결.계량);
   // Gemini가 막혀 다른 길로 넘어왔으면 목소리가 바뀌는 까닭을 먼저 알린다
   const 넘김글 = 연결.넘김 ? `지금은 ${넘김까닭[연결.넘김] || 'Gemini를 쓸 수 없어서'} ${길이름[연결.길] || '다른 길'}로 이어가요(목소리가 달라요). ` : '';
-  연결.on('준비', () => { 준비때 = performance.now(); 상태(`${넘김글}${이가(장면.상대.이름)} 먼저 인사해요 — 편하게 대답해 보세요`); 시계시작(); });
+  // 답 은행 길은 하온이 말하는 동안 내 말을 듣지 않는다(녹음 답이라 끼어들기가 없다) — 하온 말이 끝난 뒤에 말하게 알린다
+  const 차례글 = 연결.길 === '은행' ? '하온 말이 끝나면 편하게 대답해 보세요' : '편하게 대답해 보세요';
+  연결.on('준비', () => { 준비때 = performance.now(); 상태(`${넘김글}${이가(장면.상대.이름)} 먼저 인사해요 — ${차례글}`); 시계시작(); });
   연결.on('끊김', 끊겼을때);
   연결.on('자막', (z) => {
     자막그리기(연결.자막.줄들, $('자막'));
@@ -250,7 +260,7 @@ async function 끊겼을때(까닭) {
     await 연결.끝내기().catch(() => null); // 끊긴 판도 장부에 까닭과 함께 닫는다 — 닫는 동안 나오는 자막 사건이 연결을 읽으니 그 뒤에 비운다
     연결 = null;
     $('끝내기').disabled = false;
-    return 시작(false, true);
+    return 시작(false, true, 이번길);
   }
   끊긴까닭 = 까닭 || '까닭 모름';
   return 끝내기();
@@ -358,7 +368,8 @@ async function 끝내기() {
 }
 
 $('시작').addEventListener('click', () => 시작(false));
+$('은행시작').addEventListener('click', () => 시작(false, false, '은행'));
 $('견본').addEventListener('click', () => 시작(true));
 $('끝내기').addEventListener('click', 끝내기);
-$('다시').addEventListener('click', () => { $('피드백').hidden = true; 연결 = null; 되돌리기(); 상태읽기(); });
+$('다시').addEventListener('click', () => { $('피드백').hidden = true; 연결 = null; 이번길 = 강제길; 되돌리기(); 상태읽기(); });
 상태읽기().catch(() => { $('예산').textContent = '서버에 닿지 않아요 — 시제품 서버가 켜져 있는지 확인해 주세요'; });

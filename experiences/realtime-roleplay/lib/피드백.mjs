@@ -84,6 +84,31 @@ export function 요청본문(장면, 전사) {
   };
 }
 
+/** JSON 스키마 → Gemini responseSchema(형 이름은 대문자, additionalProperties는 없음) */
+export function 제미나이스키마(s) {
+  if (Array.isArray(s)) return s.map(제미나이스키마);
+  if (!s || typeof s !== 'object') return s;
+  const o = {};
+  for (const [k, v] of Object.entries(s)) {
+    if (k === 'additionalProperties') continue;
+    if (k === 'type') o.type = String(v).toUpperCase();
+    else if (k === 'properties') o.properties = Object.fromEntries(Object.entries(v).map(([pk, pv]) => [pk, 제미나이스키마(pv)]));
+    else if (k === 'items') o.items = 제미나이스키마(v);
+    else o[k] = v;
+  }
+  return o;
+}
+
+/** OpenAI 크레딧이 바닥났을 때 같은 지시 · 같은 스키마로 Gemini(무료 등급)에 부탁하는 본문 — 출력은 같은 검사()를 거친다 */
+export function 제미나이요청본문(장면, 전사) {
+  const 줄 = 전사.map((t) => `${t.누가 === '나' ? '나' : '상대'}: ${t.글}`).join('\n');
+  return {
+    systemInstruction: { parts: [{ text: 지시(장면) }] },
+    contents: [{ role: 'user', parts: [{ text: `전사:\n${줄}` }] }],
+    generationConfig: { temperature: 0.2, responseMimeType: 'application/json', responseSchema: 제미나이스키마(스키마(장면)) },
+  };
+}
+
 export function 출력글(답) {
   return (답?.output || []).flatMap((o) => o.content || []).filter((c) => c.type === 'output_text').map((c) => c.text).join('');
 }

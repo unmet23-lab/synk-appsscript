@@ -2,6 +2,7 @@
 // 공통 사건: '준비' · '자막'({번호, 누가:'상대'|'나', 글}) · '상태'(글) · '끝'({초, 사용, 끝확인}) · '오류'(글) · '끊김'(까닭)
 // 운반 둘 — WebRTC(OpenAI: 소리 트랙 마이크 → 공급사 · 공급사 → <audio>, 자막 · 명령은 데이터 채널 「oai-events」),
 // WebSocket(Gemini: 마이크를 16k PCM으로 보내고 24k PCM을 받아 예약 재생 → <audio>, 자막 · 명령은 같은 소켓). 키는 서버만 쥔다.
+// 그리고 답 은행 길(11-02) — 공급사와 바로 잇지 않고, 학습자 말 한 차례를 WAV로 서버에 보내 미리 녹음한 하온 답(Zoe)을 받아 튼다(은행열기).
 
 export const 공급사표 = {
   'gemini-live': {
@@ -153,6 +154,7 @@ const 기록꼬리 = () => (globalThis.__상황극기록 || []).slice(-30).map((
 export async function 열기({ 길, 입력트랙, 출력, 반이중 = false, 제외 }, 다시 = 0, 남기기 = 기록판()) {
   if (길 && 공급사표[길]?.운반 === 'webrtc') return 웹RTC열기(길, { 입력트랙, 출력, 남기기 });
   const 답 = await 서버('/api/연결', { 길, ...(제외 ? { 제외 } : {}) });
+  if (답.상태 === 201 && 답.운반 === '은행') return 은행열기(답, { 입력트랙, 출력, 남기기 });
   if (답.상태 === 409 && 답.길 === '글') return { 길: '글', 계량: 답.계량, 넘김: 답.까닭 };
   if (답.상태 === 428 && 공급사표[답.길]?.운반 === 'webrtc') {
     const 연결 = await 웹RTC열기(답.길, { 입력트랙, 출력, 남기기 });
@@ -573,6 +575,277 @@ async function 소켓열기(결과, { 입력트랙, 출력, 남기기, 반이중
       정리();
       통.내기('끝', { 초, 사용, 끝확인: 열려있음 });
       return 서버('/api/끝', { 길: 결과.길, 세션: 결과.세션, 초, 사용, 끝확인: 열려있음, 전사: 자막.보낼것(), ...(끊긴까닭 ? { 까닭: 끊긴까닭 } : {}), 기록: 기록꼬리() });
+    },
+  };
+}
+
+/** 16kHz 모노 PCM16 묶음들 → WAV 한 덩이(ArrayBuffer) — 답 은행 길이 학습자 말 한 차례를 서버로 보낼 때 */
+export function wav만들기(묶음들, 표본율 = 16000) {
+  const n = 묶음들.reduce((s, b) => s + b.length, 0);
+  const 버퍼 = new ArrayBuffer(44 + n * 2);
+  const v = new DataView(버퍼);
+  const 쓰기 = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  쓰기(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); 쓰기(8, 'WAVE');
+  쓰기(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 표본율, true); v.setUint32(28, 표본율 * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  쓰기(36, 'data'); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (const b of 묶음들) { for (let i = 0; i < b.length; i++) v.setInt16(o + i * 2, b[i], true); o += b.length * 2; }
+  return 버퍼;
+}
+
+// 답 은행 길의 값 — 말 차례 끊기(50ms 묶음 소리 크기)와 하온 답 잇기. 조각 사이 0.2초 · 「짠!」 앞 1.2초는 이어 붙이기 시험(11-02 유호님 「되게 좋다」)과 같다
+const 은행값 = { 문턱: 0.02, 시작묶음: 2, 앞여유묶음: 6, 끝침묵ms: 1200, 끝여유ms: 300, 최소말ms: 250, 최대말ms: 15000, 꼬리ms: 400, 도움ms: 8000, 작별기다림ms: 3000, 조각틈: 0.2, 사인틈: 1.2 };
+
+/** 답 은행 길(11-02, 유호님 「응, 붙여 봐」) — 하온 답은 미리 녹음한 Zoe 소리(/하온소리/NNN.mp3)를 이어 틀고, 학습자 말은 소리 크기로 차례를 끊어
+ *  (문턱을 0.1초 넘으면 말 시작 · 앞 0.3초를 붙임 · 1.2초 조용하면 끝 · 최대 15초) 16k WAV 한 덩이로 서버에 보낸다. 서버가 Gemini로 듣고 골라
+ *  하온 답 조각을 돌려준다. 하온이 말하는 동안(+0.4초)과 서버가 듣는 동안은 마이크를 듣지 않는다(녹음 답이라 끼어들기가 없고, 스피커 메아리도 안 들어간다).
+ *  8초 조용하면 서버가 되묻기 줄을 주고, 시간 상한 20초 전 마무리도 서버의 녹음 줄로 한다. 듣기가 두 번 잇따라 안 되면 끊는다. */
+async function 은행열기(결과, { 입력트랙, 출력, 남기기 }) {
+  const 통 = 사건통();
+  const 자막 = 자막모음();
+  const 지금 = () => performance.now();
+  let 준비 = false;
+  let 닫힘 = false;
+  let 끝남 = false;
+  let 끊긴까닭 = '';
+  let 시작시각 = 0;
+  let 순간 = '처음';
+  let 생각중 = false; // 서버가 듣고 고르는 중 · 하온 답을 불러오는 중
+  let 말하는중 = false;
+  let 앞묶음 = [];
+  let 말묶음 = [];
+  let 큰연속 = 0;
+  let 말시작 = 0;
+  let 마지막큰 = 0;
+  let 큰ms = 0;
+  let 자리 = '';
+  let 말수 = 0;
+  let 답수 = 0;
+  let 도움보냄 = false;
+  let 마무리대기 = false;
+  let 마무리보냄 = false;
+  let 연속실패 = 0;
+  let 받은 = 0;
+  let 보낸 = 0;
+
+  const 재생 = new AudioContext();
+  const 목적지 = 재생.createMediaStreamDestination();
+  const 예약 = new Set();
+  let 재생끝 = 0; // 재생 문맥 시각(초)
+  let 재생끝ms = 0; // performance.now() 시각 — 자동 끝내기 · 마이크 쉬기가 본다
+  출력.srcObject = 목적지.stream;
+  출력.play().catch(() => 통.내기('상태', '소리가 막혔어요 — 화면을 한 번 눌러 주세요'));
+  let 받아;
+  try { 받아 = new AudioContext({ sampleRate: 16000 }); } catch { 받아 = new AudioContext(); }
+  let 살핌 = null;
+  const 대기글 = new Map(); // 자막 타이머 → 낼 자막(하온 조각은 그 소리가 들리기 시작할 때 낸다)
+  const 넣고알리기 = (s) => { const 번호 = 자막.넣기(s); 통.내기('자막', { 번호, ...(자막.줄들[번호] || {}), 누가: s.누가 || '나' }); };
+  const 글다내기 = () => { for (const [타이머, s] of 대기글) { clearTimeout(타이머); 넣고알리기(s); } 대기글.clear(); };
+  const 빈자리버리기 = () => { 자막.빈자리지우기(); 통.내기('자막', { 번호: 자막.줄들.length - 1, 누가: '나' }); }; // 화면이 다시 그리게
+  const 정리 = () => {
+    clearInterval(살핌);
+    for (const s of 예약) { try { s.stop(); } catch { /* 이미 끝남 */ } }
+    예약.clear();
+    받아.close().catch(() => {});
+    재생.close().catch(() => {});
+    출력.srcObject = null;
+  };
+  const 켜짐 = await Promise.race([Promise.all([재생.resume(), 받아.resume()]).then(() => true), new Promise((r) => setTimeout(() => r(false), 2000))]);
+  if (!켜짐) {
+    통.내기('상태', '소리를 켜려면 화면을 한 번 눌러 주세요');
+    addEventListener('pointerdown', () => { 재생.resume(); 받아.resume(); }, { once: true });
+  }
+  let 일꾼;
+  try {
+    await 받아.audioWorklet.addModule(new URL('./소리일꾼.mjs', import.meta.url));
+    일꾼 = new AudioWorkletNode(받아, '받아쓰기', { processorOptions: { 묶음: 800 } });
+    받아.createMediaStreamSource(new MediaStream([입력트랙])).connect(일꾼);
+    일꾼.connect(받아.destination);
+  } catch (e) {
+    정리();
+    throw new Error(`소리 장치를 준비하지 못했어요: ${e.message}`);
+  }
+  남기기(`ctx:${재생.state}/${받아.state}@${받아.sampleRate}`);
+
+  // 하온 답 소리 — 한 번 받은 줄은 다시 받지 않는다
+  const 버퍼들 = new Map();
+  const 불러오기 = (주소) => {
+    if (!버퍼들.has(주소)) {
+      버퍼들.set(주소, fetch(주소).then(async (r) => {
+        if (!r.ok) throw new Error(`하온 소리를 불러오지 못했어요(${r.status})`);
+        const b = await r.arrayBuffer();
+        받은 += b.byteLength;
+        return 재생.decodeAudioData(b);
+      }));
+      버퍼들.get(주소).catch(() => 버퍼들.delete(주소));
+    }
+    return 버퍼들.get(주소);
+  };
+  /** 조각들을 이어 예약한다(같은 차례 0.2초 · 「짠!」 앞 1.2초) — 소리를 다 불러와 예약하면 돌아온다(다 틀 때까지 기다리지 않는다) */
+  async function 말하기(조각) {
+    if (!조각?.length || 닫힘) return;
+    const 응답 = `은행답${++답수}`;
+    let 소리들;
+    try { 소리들 = await Promise.all(조각.map((c) => 불러오기(c.소리))); } catch (e) { 통.내기('오류', e.message); return; }
+    if (닫힘) return;
+    let 때 = Math.max(재생.currentTime + 0.05, 재생끝);
+    조각.forEach((c, i) => {
+      if (i) 때 += c.글.startsWith('짠!') ? 은행값.사인틈 : 은행값.조각틈;
+      const s = 재생.createBufferSource();
+      s.buffer = 소리들[i];
+      s.connect(목적지);
+      s.start(때);
+      예약.add(s);
+      s.onended = () => 예약.delete(s);
+      const 글 = { 누가: '상대', 조각: `${i ? ' ' : ''}${c.글}`, 응답 };
+      const 타이머 = setTimeout(() => { 대기글.delete(타이머); 넣고알리기(글); }, Math.max(0, (때 - 재생.currentTime) * 1000));
+      대기글.set(타이머, 글);
+      때 += 소리들[i].duration;
+    });
+    재생끝 = 때;
+    재생끝ms = 지금() + (때 - 재생.currentTime) * 1000;
+  }
+  /** 하온 차례 하나(서버 부르기 + 틀기) — 그동안 마이크를 듣지 않고, 끝나면 미뤄 둔 마무리를 한다 */
+  async function 하온차례(일) {
+    생각중 = true;
+    try { await 일(); } finally {
+      생각중 = false;
+      if (마무리대기 && !닫힘) { 마무리대기 = false; 마무리보내기(); }
+    }
+  }
+  const 끊기 = (까닭) => {
+    if (닫힘 || 끊긴까닭) return;
+    끊긴까닭 = String(까닭).slice(0, 160);
+    남기기('끊김', { 내용: 끊긴까닭 });
+    통.내기('오류', 까닭);
+    통.내기('끊김', 끊긴까닭);
+  };
+  const 서버받기 = (r) => { if (r.순간) 순간 = r.순간; if (r.끝남 || r.순간 === '끝남') 끝남 = true; };
+  const 마무리보내기 = () => {
+    마무리보냄 = true;
+    남기기('마무리');
+    return 하온차례(async () => {
+      const r = await 서버('/api/은행마무리', { 세션: 결과.세션 }).catch(() => null);
+      if (r?.상태 === 200 && !닫힘) { 서버받기(r); await 말하기(r.조각); }
+    });
+  };
+
+  // 학습자 말 한 차례 → 서버(듣고 고르기) → 받아 적은 글로 내 자리를 채우고 하온 답을 튼다
+  const 차례보내기 = (묶음들, 내자리) => 하온차례(async () => {
+    const 몸 = wav만들기(묶음들);
+    보낸 += 몸.byteLength;
+    남기기('차례보냄', { 내용: `${Math.round((몸.byteLength - 44) / 32)}ms` });
+    let r;
+    try {
+      const res = await fetch(`/api/은행차례?세션=${encodeURIComponent(결과.세션)}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: 몸 });
+      r = { 상태: res.status, ...(await res.json().catch(() => ({}))) };
+    } catch (e) {
+      r = { 상태: 0, 오류: `서버에 닿지 않아요: ${e.message}` };
+    }
+    if (닫힘) return;
+    if (r.상태 !== 200) { 빈자리버리기(); 끊기(r.오류 || `듣기 실패(${r.상태})`); return; }
+    넣고알리기({ 채움: 내자리, 글: r.받아적기 || '' }); // 받아 적은 글이 없으면 빈 자리로 남고 화면이 감춘다
+    if (r.실패) {
+      남기기('듣기실패', { 내용: r.실패 });
+      if (++연속실패 >= 2) { 끊기(`${r.실패} — 하온이 두 번 잇따라 듣지 못했어요`); return; }
+    } else 연속실패 = 0;
+    서버받기(r);
+    await 말하기(r.조각);
+  });
+
+  const 말끝 = () => {
+    말하는중 = false;
+    const 묶음들 = 말묶음;
+    말묶음 = [];
+    if (큰ms < 은행값.최소말ms) {
+      // 기침 · 딸깍 소리 — 버리고 다시 듣는다
+      빈자리버리기();
+      남기기('짧은소리');
+      if (마무리대기) { 마무리대기 = false; 마무리보내기(); }
+      return;
+    }
+    const 뺄묶음 = Math.max(0, Math.floor((지금() - 마지막큰 - 은행값.끝여유ms) / 50)); // 끝 침묵은 0.3초만 남긴다
+    차례보내기(묶음들.slice(0, Math.max(1, 묶음들.length - 뺄묶음)), 자리);
+  };
+
+  일꾼.port.onmessage = ({ data }) => {
+    if (!준비 || 닫힘 || 끝남) return;
+    const 묶음 = new Int16Array(data);
+    const t = 지금();
+    // 하온 차례(서버가 듣는 중 · 하온 소리 + 꼬리)에는 듣지 않는다
+    if (생각중 || t < 재생끝ms + 은행값.꼬리ms) { 앞묶음 = []; 큰연속 = 0; return; }
+    let 합 = 0;
+    for (let i = 0; i < 묶음.length; i += 4) 합 += 묶음[i] * 묶음[i];
+    const 큼 = Math.sqrt(합 / (묶음.length / 4)) / 32768 > 은행값.문턱;
+    if (!말하는중) {
+      앞묶음.push(묶음);
+      if (앞묶음.length > 은행값.앞여유묶음) 앞묶음.shift();
+      큰연속 = 큼 ? 큰연속 + 1 : 0;
+      if (큰연속 >= 은행값.시작묶음) {
+        말하는중 = true;
+        말시작 = t;
+        마지막큰 = t;
+        큰ms = 큰연속 * 50;
+        말묶음 = 앞묶음;
+        앞묶음 = [];
+        도움보냄 = false;
+        자리 = `은행말${++말수}`;
+        자막.빈자리지우기();
+        넣고알리기({ 누가: '나', 자리 });
+        남기기('말시작');
+      }
+      return;
+    }
+    말묶음.push(묶음);
+    if (큼) { 마지막큰 = t; 큰ms += 50; }
+    if (t - 마지막큰 >= 은행값.끝침묵ms || t - 말시작 >= 은행값.최대말ms) 말끝();
+  };
+
+  // 0.25초마다: 침묵 도움(8초 — 학습자가 다시 말할 때까지 한 번)
+  살핌 = setInterval(() => {
+    if (!준비 || 닫힘 || 끝남 || 생각중 || 말하는중 || 도움보냄 || 마무리보냄 || 마무리대기) return;
+    if (지금() - Math.max(재생끝ms, 마지막큰, 시작시각) < 은행값.도움ms) return;
+    도움보냄 = true;
+    남기기('침묵도움');
+    하온차례(async () => {
+      const r = await 서버('/api/은행도움', { 세션: 결과.세션 }).catch(() => null);
+      if (r?.상태 === 200 && !닫힘) { 서버받기(r); await 말하기(r.조각); }
+    });
+  }, 250);
+
+  준비 = true;
+  시작시각 = 지금();
+  // 첫 인사와 「준비」는 화면이 듣는 손을 단 뒤에(이 함수가 돌려준 다음 차례)
+  setTimeout(() => { 통.내기('준비', { 길: '은행' }); 하온차례(() => 말하기([결과.첫인사])); }, 0);
+  const 지난초 = () => Math.round((지금() - 시작시각) / 1000);
+
+  return {
+    길: '은행',
+    세션: 결과.세션,
+    계량: 결과.계량,
+    on: 통.on,
+    자막,
+    /** 상한 20초 전 — 듣는 중이거나 학습자가 말하는 중이면 그 차례 뒤로 미룬다 */
+    마무리() { if (마무리보냄 || 마무리대기) return; if (생각중 || 말하는중) 마무리대기 = true; else 마무리보내기(); },
+    /** 자동 끝내기가 보는 시각 — 듣는 중 · 말하는 중이면 지금, 작별을 기다리는 순간이면 학습자가 인사할 3초를 더 준다 */
+    상대소리끝: () => (생각중 || 말하는중 ? 지금() : 재생끝ms + (순간 === '작별뒤' ? 은행값.작별기다림ms : 0)),
+    /** 하온이 작별 인사까지 했다(서버 순간 「끝남」) — 화면이 그 소리 끝 뒤에 끝낸다 */
+    끝남: () => 끝남,
+    비상보고() {
+      if (닫힘) return null;
+      return { 길: '은행', 세션: 결과.세션, 초: 지난초(), 끝확인: false, 피드백없이: true, 전사: [], 까닭: 끊긴까닭 || '페이지 닫힘', 기록: 기록꼬리() };
+    },
+    async 통계() { return { 받은, 보낸 }; },
+    async 끝내기() {
+      if (닫힘) return null;
+      닫힘 = true;
+      글다내기();
+      const 초 = 지난초();
+      입력트랙.stop();
+      정리();
+      통.내기('끝', { 초, 사용: null, 끝확인: true });
+      return 서버('/api/끝', { 길: '은행', 세션: 결과.세션, 초, 끝확인: !끊긴까닭, 전사: 자막.보낼것(), ...(끊긴까닭 ? { 까닭: 끊긴까닭 } : {}), 기록: 기록꼬리() });
     },
   };
 }

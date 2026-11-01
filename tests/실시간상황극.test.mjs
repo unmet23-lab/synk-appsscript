@@ -1,4 +1,4 @@
-// 실시간 음성 상황극 시제품(experiences/realtime-roleplay) — 예산 계량기 · 자막 모음 · 피드백 검사 · 서버 길(가짜 OpenAI · 가짜 Gemini).
+// 실시간 음성 상황극 시제품(experiences/realtime-roleplay) — 예산 계량기 · 자막 모음 · 피드백 검사 · 서버 길(가짜 OpenAI · 가짜 Gemini) · 답 은행 길(Zoe).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -10,7 +10,9 @@ import http from 'node:http';
 process.env.GEMINI_KEY_PATH_FREE = path.join(os.tmpdir(), '실시간상황극-시험-없는-제미나이키.txt');
 process.env.SYNK_GEMINI_BASE = 'http://127.0.0.1:9/v1beta';
 import { 계량, gptLive값, gemini값, 주기, 장부읽기 } from '../experiences/realtime-roleplay/lib/예산.mjs';
-import { 자막모음, 공급사표 } from '../experiences/realtime-roleplay/public/연결층.mjs';
+import { 자막모음, 공급사표, wav만들기 } from '../experiences/realtime-roleplay/public/연결층.mjs';
+import { 답짓기, 침묵도움, 시간마무리, 소리폴더, 듣기모델들, 듣고고르기, 은행 } from '../experiences/realtime-roleplay/lib/답은행.mjs';
+import { 제미나이부르기 } from '../experiences/realtime-roleplay/lib/공급사.mjs';
 import { 검사 } from '../experiences/realtime-roleplay/lib/피드백.mjs';
 import { 팬사인회 } from '../experiences/realtime-roleplay/lib/장면.mjs';
 import { 키차례 } from '../experiences/realtime-roleplay/lib/오픈AI키.mjs';
@@ -433,4 +435,205 @@ test('서버: 끝 보고의 끊긴 까닭 · 사건 기록 꼬리는 세션 줄�
   assert.equal((await 보내기('/api/끝', { 길: 'gemini-live', 세션: 둘째.세션, 초: 30, 끝확인: true, 전사: [] })).status, 200);
   const 줄2 = 장부읽기(장부).find((x) => x.무엇 === '세션' && x.세션 === 둘째.세션);
   assert.ok(!('까닭' in 줄2) && !('기록' in 줄2));
+});
+
+// ── 답 은행 길(Zoe 녹음 답, 11-02): 가짜 Gemini가 학습자 WAV를 듣고 고른 것처럼 답한다 ──
+const 제미나이글답 = (res, 출력, 사용 = { promptTokenCount: 900, candidatesTokenCount: 40 }) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(출력) }] } }], usageMetadata: 사용 }));
+};
+const 작은wav = () => Buffer.from(wav만들기([new Int16Array(1600).map((_, i) => Math.round(Math.sin(i / 8) * 8000))]));
+const 환경되돌림 = (k, v) => { if (v === undefined) delete process.env[k]; else process.env[k] = v; };
+
+test('답 은행: WAV는 16k 모노 PCM16 머리, 고를 수 있는 반응 · 되묻기 · 침묵 도움 · 시간 마무리가 내는 줄은 모두 Zoe 소리가 있다', () => {
+  const w = Buffer.from(wav만들기([new Int16Array([1, -2]), new Int16Array([32767])]));
+  assert.equal(w.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(w.toString('ascii', 8, 12), 'WAVE');
+  assert.deepEqual([w.readUInt16LE(22), w.readUInt32LE(24), w.readUInt16LE(34), w.readUInt32LE(40)], [1, 16000, 16, 6]);
+  assert.deepEqual([w.readInt16LE(44), w.readInt16LE(46), w.readInt16LE(48)], [1, -2, 32767]);
+
+  const 쓴소리 = new Set();
+  let 셈 = 0;
+  for (const 순간 of ['처음', '나라', '좋아함', '사인', '끝', '작별뒤']) {
+    const ids = 은행.고를반응(순간).map((r) => r.id);
+    for (const a of ids) for (const b of [null, ...ids]) for (const 변형 of [0, 1]) for (const 들은 of [[], ['이름', '나라', '좋아함']]) {
+      for (const c of 답짓기(순간, { 판단: '고름', 반응: b ? [a, b] : [a], 들은것: 들은 }, 변형).조각) 쓴소리.add(c.소리); // 목록에 없는 줄이면 소리찾기가 던진다
+      셈 += 1;
+    }
+    for (const 변형 of [0, 1, 2]) {
+      for (const c of [...답짓기(순간, { 판단: '되묻기' }, 변형).조각, ...침묵도움(순간, 변형).조각]) 쓴소리.add(c.소리);
+    }
+    for (const c of 시간마무리(순간).조각) 쓴소리.add(c.소리);
+  }
+  assert.ok(셈 > 10000, `조합 ${셈}`);
+  for (const 소리 of 쓴소리) assert.ok(fs.existsSync(path.join(소리폴더, path.basename(소리))), 소리);
+  // 끝 · 작별뒤 되묻기 줄은 그 자체가 작별 인사라 다음 순간으로, 사인을 다 해 준 끝에서 조용하면 기다리지 않고 작별로
+  assert.equal(답짓기('끝', { 판단: '되묻기' }).다음순간, '작별뒤');
+  assert.equal(답짓기('작별뒤', { 판단: '되묻기' }).다음순간, '끝남');
+  assert.equal(답짓기('나라', { 판단: '되묻기' }).다음순간, '나라');
+  assert.deepEqual(침묵도움('끝').조각.map((c) => c.글), ['오늘 와 줘서 진짜 고마워요. 다음에 또 만나요, 약속!']);
+  assert.equal(침묵도움('끝').다음순간, '작별뒤');
+  assert.deepEqual(침묵도움('작별뒤').조각, []);
+  assert.deepEqual(시간마무리('끝남').조각, []);
+});
+
+test('서버: 답 은행 길 — 연결 · Zoe 소리 · 차례(가짜 Gemini가 WAV를 듣고 고름) · 몫 찬 되묻기 · 침묵 도움 · 시간 마무리 · 작별 · 장부(받아 적은 글 · 키 없음) · Gemini 돌아보기', async (t) => {
+  let 답할것 = null;
+  let 몫찼음 = false;
+  const { 폴더, 가짜 } = await 제미나이준비(t, (req, res) => {
+    if (!/^\/v1beta\/models\/[^/]+:generateContent$/.test(req.url)) { res.writeHead(404).end('{}'); return; }
+    if (몫찼음) { res.writeHead(429, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: { status: 'RESOURCE_EXHAUSTED' } })); return; }
+    제미나이글답(res, 답할것);
+  });
+  // 돌아보기 — OpenAI는 크레딧 바닥(429 credit_balance_exhausted) → 같은 지시로 Gemini 무료 등급
+  const 키파일 = path.join(폴더, 'k.txt');
+  fs.writeFileSync(키파일, 'sk-test');
+  const 오픈 = await 가짜OpenAI((req, res) => { res.writeHead(429, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: { code: 'credit_balance_exhausted' } })); });
+  const 원래 = { base: process.env.SYNK_OPENAI_BASE, key: process.env.OPENAI_KEY_FILE };
+  process.env.SYNK_OPENAI_BASE = 오픈.주소;
+  process.env.OPENAI_KEY_FILE = 키파일;
+  const 장부 = path.join(폴더, '장부.jsonl');
+  const { s, 바탕, 보내기 } = await 띄우기({ 장부, 예산USD: 50 });
+  t.after(() => { s.close(); 오픈.s.close(); 환경되돌림('SYNK_OPENAI_BASE', 원래.base); 환경되돌림('OPENAI_KEY_FILE', 원래.key); });
+  const 차례 = (세션, 몸 = 작은wav(), 머리 = {}) => fetch(`${바탕}/api/은행차례?세션=${encodeURIComponent(세션)}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav', Origin: 바탕, ...머리 }, body: 몸 });
+
+  const 연 = await 보내기('/api/연결', { 길: '은행' });
+  assert.equal(연.status, 201);
+  const 연몸 = await 연.json();
+  assert.equal(연몸.운반, '은행');
+  assert.match(연몸.세션, /^bank_[0-9a-f]{18}$/);
+  assert.match(연몸.첫인사.글, /이름이 뭐예요\?$/);
+  assert.match(연몸.첫인사.소리, /^\/하온소리\/\d{3}\.mp3$/);
+  assert.equal(가짜.받은.length, 0); // 여는 데는 Gemini를 부르지 않는다
+  const 소리 = await fetch(`${바탕}${연몸.첫인사.소리}`);
+  assert.equal(소리.status, 200);
+  assert.equal(소리.headers.get('content-type'), 'audio/mpeg');
+  assert.ok((await 소리.arrayBuffer()).byteLength > 1000);
+  assert.equal((await fetch(`${바탕}/하온소리/999.mp3`)).status, 404);
+  assert.equal((await fetch(`${바탕}/하온소리/1.mp3`)).status, 404);
+
+  // 거절: 다른 출처 · 없는 세션 · WAV 아님 · 소리 형 아님 — Gemini까지 가지 않는다
+  assert.equal((await 차례(연몸.세션, 작은wav(), { Origin: 'http://evil.example' })).status, 403);
+  assert.equal((await 차례('bank_없음')).status, 404);
+  assert.equal((await 차례(연몸.세션, Buffer.from('x'.repeat(80)))).status, 400);
+  assert.equal((await fetch(`${바탕}/api/은행차례?세션=${연몸.세션}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 바탕 }, body: '{}' })).status, 415);
+  assert.equal(가짜.받은.length, 0);
+
+  // 처음: 이름을 말함 → 이름 칭찬 + 나라 묻기, 순간 나라. 그 순간에 없는 반응 · 미션은 버린다
+  답할것 = { 받아적기: '저는 바트예요', 판단: '고름', 반응: ['이름', '없는반응'], 들은것: ['이름', '이상한'], 확신: 0.9 };
+  const wav = 작은wav();
+  const r1 = await 차례(연몸.세션, wav);
+  assert.equal(r1.status, 200);
+  const 몸1 = await r1.json();
+  assert.equal(몸1.받아적기, '저는 바트예요');
+  assert.equal(몸1.순간, '나라');
+  assert.equal(몸1.끝남, false);
+  assert.equal(몸1.조각.at(-1).글, '어디에서 왔어요?');
+  for (const c of 몸1.조각) assert.match(c.소리, /^\/하온소리\/\d{3}\.mp3$/);
+  const 들음 = 가짜.받은[0];
+  assert.equal(들음.주소, `/v1beta/models/${듣기모델들[0]}:generateContent`);
+  assert.equal(들음.머리['x-goog-api-key'], 'AIzaFakeGeminiKeyMustNotLeak');
+  const 들은몸 = JSON.parse(들음.몸);
+  const 소리칸 = 들은몸.contents[0].parts.find((p) => p.inlineData).inlineData;
+  assert.equal(소리칸.mimeType, 'audio/wav');
+  assert.equal(소리칸.data, wav.toString('base64'));
+  assert.ok(들은몸.generationConfig.responseSchema.properties.반응.items.enum.includes('나라.몽골'));
+  assert.match(들은몸.contents[0].parts[0].text, /이름이 뭐예요/);
+
+  // 침묵 도움 — 그 순간(나라)의 되묻기 줄, 순간 그대로
+  const 도움 = await (await 보내기('/api/은행도움', { 세션: 연몸.세션 })).json();
+  assert.deepEqual(도움.조각.map((c) => c.글), [은행.되묻기('나라')[0]]);
+  assert.equal(도움.순간, '나라');
+
+  // 모든 듣기 모델의 무료 몫이 차면 하온이 되묻고(순간 · 차례 그대로) 실패를 알린다 — Gemini Live 몫쉼(몫바닥 줄)에는 적지 않는다
+  몫찼음 = true;
+  const 앞수 = 가짜.받은.length;
+  const 몸2 = await (await 차례(연몸.세션)).json();
+  assert.equal(몸2.실패, 'Gemini 무료 몫');
+  assert.equal(몸2.순간, '나라');
+  assert.equal(몸2.조각.length, 1);
+  assert.ok(은행.되묻기('나라').includes(몸2.조각[0].글));
+  assert.equal(가짜.받은.length - 앞수, 듣기모델들.length);
+  몫찼음 = false;
+
+  // 시간 마무리 — 「아쉽지만 오늘은 시간이 다 됐어요.」 + 긴 마무리, 순간 작별뒤 · 두 번째는 빈 조각
+  const 마 = await (await 보내기('/api/은행마무리', { 세션: 연몸.세션 })).json();
+  assert.deepEqual(마.조각.map((c) => c.글), ['아쉽지만 오늘은 시간이 다 됐어요.', '오늘 와 줘서 진짜 고마워요. 다음에 또 만나요, 약속!']);
+  assert.equal(마.순간, '작별뒤');
+  assert.deepEqual((await (await 보내기('/api/은행마무리', { 세션: 연몸.세션 })).json()).조각, []);
+
+  // 작별뒤: 작별 인사 → 하온 작별, 대화 끝 · 그 뒤 차례는 409
+  답할것 = { 받아적기: '안녕히 계세요', 판단: '고름', 반응: ['끝.작별'], 들은것: ['끝인사'], 확신: 0.9 };
+  const 몸3 = await (await 차례(연몸.세션)).json();
+  assert.equal(몸3.순간, '끝남');
+  assert.equal(몸3.끝남, true);
+  assert.equal((await 차례(연몸.세션)).status, 409);
+
+  // 끝 — 세션 줄(차례 수) · 돌아보기는 Gemini가 같은 스키마로(형 이름 대문자 · additionalProperties 없음), 출력은 같은 검사를 거친다
+  답할것 = { 미션: [{ id: '이름', 해냄: true, 근거: '저는 바트예요' }, { id: '나라', 해냄: true, 근거: '몽골에서 왔어요' }], 잘한말: [{ 말: '저는 바트예요', 왜: '이름을 또렷하게 말했어요.' }], 고칠말: [], 써볼말: ['사인해 주세요.'], 한마디: '잘했어요!' };
+  const 전사 = [{ 누가: '상대', 글: 연몸.첫인사.글 }, { 누가: '나', 글: '저는 바트예요' }, { 누가: '상대', 글: 몸1.조각.map((c) => c.글).join(' ') }, { 누가: '나', 글: '안녕히 계세요' }];
+  const 끝 = await 보내기('/api/끝', { 길: '은행', 세션: 연몸.세션, 초: 41, 끝확인: true, 전사 });
+  assert.equal(끝.status, 200);
+  const 끝몸 = await 끝.json();
+  assert.deepEqual(끝몸.피드백.미션.filter((m) => m.해냄).map((m) => m.id), ['이름']); // 나라 근거는 전사에 없어 버린다
+  assert.equal(끝몸.피드백.한마디, '잘했어요!');
+  assert.equal(오픈.받은.length, 1); // OpenAI를 먼저 해 봤다
+  assert.equal(가짜.받은.at(-1).주소, '/v1beta/models/gemini-3.6-flash:generateContent');
+  const 돌아보기요청 = JSON.parse(가짜.받은.at(-1).몸);
+  const 스키마 = 돌아보기요청.generationConfig.responseSchema;
+  assert.equal(스키마.type, 'OBJECT');
+  assert.equal(스키마.additionalProperties, undefined);
+  assert.equal(스키마.properties.미션.items.properties.id.type, 'STRING');
+  assert.match(돌아보기요청.contents[0].parts[0].text, /나: 저는 바트예요/);
+  assert.equal((await 보내기('/api/끝', { 길: '은행', 세션: 연몸.세션, 초: 41 })).status, 409);
+
+  const 줄들 = 장부읽기(장부).filter((r) => r.세션 === 연몸.세션 || r.무엇 === '피드백');
+  assert.deepEqual(줄들.map((r) => r.무엇), ['세션시작', '차례', '차례실패', '차례', '세션', '피드백']);
+  const 세션줄 = 줄들.find((r) => r.무엇 === '세션');
+  assert.deepEqual([세션줄.길, 세션줄.차례, 세션줄.초, 세션줄.USD, 세션줄.등급], ['은행', 2, 41, 0, '무료']);
+  assert.deepEqual(줄들[1].반응, ['이름']);
+  assert.deepEqual(줄들[1].순간, ['처음', '나라']);
+  assert.deepEqual(줄들[1].사용, { 입력: 900, 출력: 40 });
+  assert.deepEqual([줄들.at(-1).길, 줄들.at(-1).USD, 줄들.at(-1).등급], ['gemini-3.6-flash', 0, '무료']);
+  assert.ok(!장부읽기(장부).some((r) => r.무엇 === '몫바닥'));
+  const 장부글 = fs.readFileSync(장부, 'utf8');
+  assert.ok(!장부글.includes('바트')); // 받아 적은 글 · 전사는 장부에 남기지 않는다
+  for (const 글 of [JSON.stringify(연몸), JSON.stringify(몸1), JSON.stringify(몸2), JSON.stringify(끝몸), 장부글]) assert.ok(!글.includes('AIzaFake'));
+});
+
+test('답 은행: 사인은 사인 부탁 반응을 고른 차례에만 들은 것으로 치고, Gemini가 시한을 넘기면 다음 모델로 넘어간다', async (t) => {
+  let 답할것 = null;
+  const { 가짜 } = await 제미나이준비(t, (req, res) => {
+    if (decodeURIComponent(req.url).includes('/models/느림:')) return; // 답하지 않는다 — 시한을 넘긴다
+    제미나이글답(res, 답할것);
+  });
+  // 사진 부탁인데 들은것에 사인이 끼면 버린다(하온이 부탁받지 않은 사인을 「짠!」으로 끝내지 않게) — 다른 미션은 그대로
+  답할것 = { 받아적기: '사진 같이 찍어도 돼요?', 판단: '고름', 반응: ['부탁.사진'], 들은것: ['사인', '좋아함'], 확신: 0.8 };
+  const 사진 = await 듣고고르기('사인', 작은wav());
+  assert.deepEqual(사진.들은것, ['좋아함']);
+  assert.equal(답짓기('사인', 사진).다음순간, '사인');
+  답할것 = { 받아적기: '사인해 주세요', 판단: '고름', 반응: ['부탁.사인'], 들은것: ['사인'], 확신: 0.9 };
+  const 사인 = await 듣고고르기('사인', 작은wav());
+  assert.deepEqual(사인.들은것, ['사인']);
+  assert.equal(답짓기('사인', 사인).다음순간, '끝');
+  // 고른 반응이 그 순간에 없으면 되묻기
+  답할것 = { 받아적기: '음', 판단: '고름', 반응: ['없는반응'], 들은것: [], 확신: 0.3 };
+  assert.equal((await 듣고고르기('나라', 작은wav())).판단, '되묻기');
+
+  const 앞수 = 가짜.받은.length;
+  답할것 = { 좋음: true };
+  const 넘김 = await 제미나이부르기({ contents: [] }, { 모델들: ['느림', '빠름'], 키: 'AIzaFakeGeminiKeyMustNotLeak', 시한ms: 300 });
+  assert.equal(넘김.모델, '빠름');
+  assert.deepEqual(넘김.출력, { 좋음: true });
+  assert.deepEqual(가짜.받은.slice(앞수).map((r) => decodeURIComponent(r.주소)), ['/v1beta/models/느림:generateContent', '/v1beta/models/빠름:generateContent']);
+  await assert.rejects(제미나이부르기({ contents: [] }, { 모델들: ['느림'], 키: 'AIzaFakeGeminiKeyMustNotLeak', 시한ms: 200 }), (e) => e.상태 === 504);
+});
+
+test('서버: Gemini 무료 키가 없으면 답 은행 길은 503(다른 길로 넘기지 않는다)', async (t) => {
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), '상황극-'));
+  const { s, 보내기 } = await 띄우기({ 장부: path.join(폴더, '장부.jsonl'), 예산USD: 50 });
+  t.after(() => s.close());
+  const r = await 보내기('/api/연결', { 길: '은행' });
+  assert.equal(r.status, 503);
+  assert.match((await r.json()).오류, /Gemini 무료 키/);
 });
