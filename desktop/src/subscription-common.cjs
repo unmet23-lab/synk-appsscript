@@ -28,6 +28,13 @@ const HELP_LINKS=Object.freeze({
   // GPT API 크레딧(10-29 확인): Pro 요금제에 딸려 오는 금액·만료(공식 안내)와, 남은 금액이 보이는 OpenAI 플랫폼 결제 › Credit grants. 공식 안내는 요금표의 출처로도 쓴다.
   'gpt-api-credits':'https://help.openai.com/en/articles/20001626-api-credits-benefit-for-eligible-chatgpt-subscriptions',
   'gpt-credit-grants':'https://platform.openai.com/settings/organization/billing/credit-grants',
+  // Gemini 무료 크레딧(11-02 확인): 요금제에 매달 쌓이는 Google Cloud 크레딧의 금액·연결 순서(AI Studio 공식 안내), 남은 금액이 보이는 AI Studio 결제,
+  // 그 크레딧을 결제 계정에 붙이는 개발자 프로그램 혜택, 매달 다시 차는 Flow 크레딧(남은 개수는 Flow 오른쪽 위 프로필)과 그 공식 도움말.
+  'gemini-api-credits':'https://aistudio.google.com/learn/use-google-ai-plan-credits-in-ai-studio',
+  'gemini-ai-studio-billing':'https://aistudio.google.com/billing',
+  'gemini-dev-benefits':'https://me.developers.google.com/benefits',
+  'flow-app':'https://flow.google.com/',
+  'flow-credits':'https://support.google.com/flow/answer/16526234',
   // 요금표·연간 결제(3차, 10-19 확인): 요금표의 출처와 연간 결제 팁의 근거. 받은 요금표는 이 열쇠로만 출처를 가리킨다.
   'higgsfield-pricing':'https://higgsfield.ai/pricing',
   'higgsfield-annual':'https://higgsfield.ai/creator-hub/help-center/plans/can-i-switch-between-monthly-and-annual-billing',

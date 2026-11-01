@@ -6,12 +6,12 @@
 const PRICES_URL='https://synk.im/desktop/ai-prices.json';
 const MAX_BYTES=32*1024,DAY=864e5,FLOOR=new Date(2026,0,1).getTime(),DEAL_DAYS=62;
 // 서비스마다 받을 요금제 열쇠(계정판이 읽는 요금제 이름을 소문자·기호 없이)와 출처로 쓸 수 있는 공식 안내 열쇠.
-const PLAN_KEYS=Object.freeze({claude:['pro','max5x','max20x'],gpt:['prolite','pro','promax'],higgsfield:['starter','plus','ultra'],typecast:['free','lite','plus']});
-const SOURCES=Object.freeze({claude:['claude-plans'],gpt:['gpt-api-credits'],higgsfield:['higgsfield-pricing','higgsfield-annual'],typecast:['typecast-api-pricing']});
+const PLAN_KEYS=Object.freeze({claude:['pro','max5x','max20x'],gpt:['prolite','pro','promax'],higgsfield:['starter','plus','ultra'],typecast:['free','lite','plus'],gemini:['plus','pro','ultra5x','ultra20x','family']});
+const SOURCES=Object.freeze({claude:['claude-plans'],gpt:['gpt-api-credits'],higgsfield:['higgsfield-pricing','higgsfield-annual'],typecast:['typecast-api-pricing'],gemini:['gemini-plans']});
 // synk.im 공개본은 서비스·출처를 짧은 부호로 적는다. synk.im 배포 점검(.github/site-check/check.mjs)이 공개 파일의 제작 도구 이름을,
 // 공개 도구(tools/공개.js)가 더한 줄의 AI 이름을 막기 때문이다(10-19 첫 게시 미리 보기에서 걸림). 부호는 이 표로만 풀고, 앱 안 기본 사본은 이름 그대로다.
-const WIRE_SERVICES=Object.freeze({s1:'claude',s2:'higgsfield',s3:'typecast',s4:'gpt'});
-const WIRE_SOURCES=Object.freeze({'s1-plans':'claude-plans','s2-pricing':'higgsfield-pricing','s2-annual':'higgsfield-annual','s3-api':'typecast-api-pricing','s4-credits':'gpt-api-credits'});
+const WIRE_SERVICES=Object.freeze({s1:'claude',s2:'higgsfield',s3:'typecast',s4:'gpt',s5:'gemini'});
+const WIRE_SOURCES=Object.freeze({'s1-plans':'claude-plans','s2-pricing':'higgsfield-pricing','s2-annual':'higgsfield-annual','s3-api':'typecast-api-pricing','s4-credits':'gpt-api-credits','s5-plans':'gemini-plans'});
 const swap=o=>Object.freeze(Object.fromEntries(Object.entries(o).map(([k,v])=>[v,k])));
 const SERVICE_WIRE=swap(WIRE_SERVICES),SOURCE_WIRE=swap(WIRE_SOURCES);
 // 앱 안 기본 사본(10-19 공식 요금표를 앱 안 브라우저로 직접 확인). month: 월 결제 한 달, year: 연간 결제 1년 치(없으면 연간 결제가 없다), credits: 한 달 크레딧.
@@ -34,6 +34,14 @@ const DEFAULT_PRICES=Object.freeze({
     higgsfield:{checked:'2026-10-19',source:'higgsfield-pricing',currency:'USD',tax:'excluded',annualLock:true,plans:{starter:{month:19,year:228,credits:270},plus:{month:59,year:564,credits:1200},ultra:{month:129,year:1188,credits:3000}}},
     // typecast.ai API 요금표(계정판은 API 키로 읽는다): 무료 $0 · 라이트 $15 · 플러스 $280, 한 달 크레딧 15,000 · 200,000 · 4,000,000. API 요금제에는 연간 결제가 없다(연간 10% 할인은 스튜디오 요금제).
     typecast:{checked:'2026-10-19',source:'typecast-api-pricing',currency:'USD',tax:null,plans:{free:{month:0,credits:15000},lite:{month:15,credits:200000},plus:{month:280,credits:4000000}}},
+    // Gemini(11-02): 한국 요금표(gemini.google/kr/subscriptions, 앱 안 브라우저로 한국에서 확인) — Plus ₩7,500 · Ultra 5x ₩119,000 · Ultra 20x ₩300,000(월, 부가세 포함 원화).
+    // Pro는 로그인 계정이 이미 Pro라 그 쪽에 금액이 보이지 않아 월 요금을 두지 않는다(크레딧만). 열쇠는 계정판 요금제 이름(회원이 고른다 — agy는 등급을 알려 주지 않는다).
+    // flowCredits: 매달 딸려 오는 Google Flow 크레딧(같은 쪽 · Flow 도움말 16526234 — 결제 주기 시작에 다시 차고 이월 없음, 날마다 주는 50개는 빼고 센다).
+    // apiCredit: 매달 쌓이는 Google Cloud 크레딧 — 요금이 원화여도 apiCredit은 늘 달러다. AI Studio 안내 「Use Your Google AI Plan Credits in AI Studio」(10-13 갱신, HELP_LINKS gemini-api-credits):
+    // Pro $10 · Ultra 5x $40 · Ultra 20x $100, 받은 날부터 12개월(쌓인다), Plus는 없다. 쓰려면 AI Studio 선불 결제와 개발자 프로그램 혜택에서 붙여야 한다.
+    // family: 가족 공유로 받는 계정(관리자가 내서 따로 내지 않는다 — 한 달 구독료에 두 번 세지 않게, Fable 설계 검토 P1-2). Cloud 크레딧은 가족과 나누지 않고(Ultra 혜택 안내),
+    // Flow 크레딧을 가족이 어떻게 나누는지는 확인하지 못해 두지 않는다.
+    gemini:{checked:'2026-11-02',source:'gemini-plans',currency:'KRW',tax:'included',plans:{plus:{month:7500,flowCredits:200},pro:{apiCredit:10,flowCredits:1000},ultra5x:{month:119000,apiCredit:40,flowCredits:10000},ultra20x:{month:300000,apiCredit:100,flowCredits:25000},family:{month:0}}},
   },
   // 할인 시기: 공식 공지로 날짜를 확인한 할인만 synk.im 갱신본에 넣는다(앱 기본 사본에는 없다).
   deals:[],
@@ -46,7 +54,8 @@ function dayStamp(value){
   const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
   return d.getFullYear()===Number(m[1])&&d.getMonth()===Number(m[2])-1&&d.getDate()===Number(m[3])?d.getTime():null;
 }
-const price=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=100000?Math.round(v*100)/100:null;
+// 금액 상한: 달러 100,000 · 원화 1억(Gemini Ultra 20x가 월 ₩300,000이라 달러 상한으로는 버려진다, 11-02).
+const price=(v,max=100000)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=max?Math.round(v*100)/100:null;
 const amount=v=>Number.isSafeInteger(v)&&v>0&&v<=1e9?v:null;
 const plain=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 // 확인한 날은 2026년부터 오늘(하루 여유)까지만 받는다 — 앞날짜로 60일 문을 피하지 못하게.
@@ -57,17 +66,20 @@ function cleanService(service,raw,now,trusted=false){
   if(!plain(raw)||checkedAt(raw.checked,now,trusted)===null||!SOURCES[service].includes(raw.source)||!['USD','KRW'].includes(raw.currency))return null;
   // krVat: 한국 결제에 붙는 부가세율(0~30%). 모양이 틀리면 그 서비스를 받지 않는다(금액을 반쯤 맞게 말하지 않게).
   if(raw.krVat!==undefined&&raw.krVat!==null&&!(typeof raw.krVat==='number'&&raw.krVat>=0&&raw.krVat<=0.3))return null;
-  const plans={};
+  const plans={},cap=raw.currency==='KRW'?1e8:1e5;
+  // 요금제에 딸려 오는 크레딧(0은 「없음」을 일부러 적은 것 — 갱신본으로 거두는 길, 합치기가 빠진 칸만 앞 판에서 잇는다).
+  const grant=v=>v===undefined||v===null?null:v===0?0:amount(v);
   for(const key of PLAN_KEYS[service]){
     const p=raw.plans?.[key];if(!plain(p))continue;
-    const month=price(p.month),year=p.year===undefined||p.year===null?null:price(p.year),credits=p.credits===undefined||p.credits===null?null:amount(p.credits);
-    // apiCredit(10-28): 요금제에 매달 딸려 오는 API 크레딧(달러, Claude Max · GPT Pro). 0은 「없음」을 일부러 적은 것이다(갱신본으로 거두는 길 — 합치기가 빠진 칸만 앞 판에서 잇는다).
-    const apiCredit=p.apiCredit===undefined||p.apiCredit===null?null:p.apiCredit===0?0:amount(p.apiCredit);
-    // 월 요금 없이 API 크레딧만 적은 요금제(GPT, 10-29)도 받는다 — 그 요금제는 금액을 말하지 않고 크레딧만 센다.
-    const creditOnly=(p.month===undefined||p.month===null)&&apiCredit!==null;
+    const month=price(p.month,cap),year=p.year===undefined||p.year===null?null:price(p.year,cap),credits=p.credits===undefined||p.credits===null?null:amount(p.credits);
+    // apiCredit(10-28): 매달 딸려 오는 API 크레딧(달러, Claude Max · GPT Pro · Gemini Pro·Ultra의 Google Cloud 크레딧 11-02).
+    // flowCredits(11-02): 매달 딸려 오는 Google Flow 크레딧(개수, Gemini).
+    const apiCredit=grant(p.apiCredit),flowCredits=grant(p.flowCredits);
+    // 월 요금 없이 크레딧만 적은 요금제(GPT 10-29 · Gemini Pro 11-02)도 받는다 — 그 요금제는 금액을 말하지 않고 크레딧만 센다.
+    const creditOnly=(p.month===undefined||p.month===null)&&(apiCredit!==null||flowCredits!==null);
     // 숫자 하나라도 모양이 틀리면 그 요금제는 통째로 버린다(반쯤 맞는 값으로 말하지 않게).
-    if((month===null&&!creditOnly)||(p.year!==undefined&&p.year!==null&&year===null)||(p.credits!==undefined&&p.credits!==null&&credits===null)||(p.apiCredit!==undefined&&p.apiCredit!==null&&apiCredit===null))continue;
-    plans[key]={...(month===null?{}:{month}),...(year===null?{}:{year}),...(credits===null?{}:{credits}),...(apiCredit===null?{}:{apiCredit})};
+    if((month===null&&!creditOnly)||(p.year!==undefined&&p.year!==null&&year===null)||(p.credits!==undefined&&p.credits!==null&&credits===null)||(p.apiCredit!==undefined&&p.apiCredit!==null&&apiCredit===null)||(p.flowCredits!==undefined&&p.flowCredits!==null&&flowCredits===null))continue;
+    plans[key]={...(month===null?{}:{month}),...(year===null?{}:{year}),...(credits===null?{}:{credits}),...(apiCredit===null?{}:{apiCredit}),...(flowCredits===null?{}:{flowCredits})};
   }
   if(!Object.keys(plans).length)return null;
   // krVat은 적혀 있으면 0도 그대로 둔다(「한국 부가세 없음」을 일부러 적은 것) — 빠진 것과 나눠야 합치기가 기본 사본 값을 이을 수 있다.
@@ -117,8 +129,9 @@ function mergePrices(base,extra){
     const prev=services[service];
     if(!prev||entry.checked>prev.checked){
       let next=entry.krVat===undefined&&prev?.krVat!==undefined?{...entry,krVat:prev.krVat}:entry;
-      // 요금제에 딸린 API 크레딧(10-28)도 같다 — 더 새 판이 금액만 고치고 그 칸을 빠뜨려도 「매달 $200」이 조용히 사라지지 않게(Fable 최종 P3). 0을 적었으면 0을 따른다.
-      const carried=Object.fromEntries(Object.entries(next.plans||{}).map(([key,plan])=>[key,plan.apiCredit===undefined&&prev?.plans?.[key]?.apiCredit!==undefined?{...plan,apiCredit:prev.plans[key].apiCredit}:plan]));
+      // 요금제에 딸린 크레딧(API 10-28 · Flow 11-02)도 같다 — 더 새 판이 금액만 고치고 그 칸을 빠뜨려도 「매달 $200」이 조용히 사라지지 않게(Fable 최종 P3). 0을 적었으면 0을 따른다.
+      const carry=(key,plan)=>['apiCredit','flowCredits'].reduce((out,field)=>out[field]===undefined&&prev?.plans?.[key]?.[field]!==undefined?{...out,[field]:prev.plans[key][field]}:out,plan);
+      const carried=Object.fromEntries(Object.entries(next.plans||{}).map(([key,plan])=>[key,carry(key,plan)]));
       if(Object.keys(carried).some(key=>carried[key]!==next.plans[key]))next={...next,plans:carried};
       services[service]=next;
     }

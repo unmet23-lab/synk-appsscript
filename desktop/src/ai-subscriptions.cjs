@@ -88,6 +88,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       // API 크레딧(회원이 넣음, Claude 10-28 · GPT 10-29): Claude Max는 Console 조직, GPT Pro는 OpenAI API 조직에 들어오는 크레딧. 잔액을 읽는 공식 경로가 없어
       // 그 결제 화면(Console 결제 · OpenAI Credit grants)의 남은 금액(달러, 센트까지)과 만료 날짜를 넣는다. apiCreditAt은 넣은 때(본체가 찍는다). 받는 줄은 어댑터 editable이 정한다.
       apiCredit:(n=>n===null?null:Math.round(n*100)/100)(clampNumber(row.apiCredit,0,1e5)),apiCreditUntil:clampNumber(row.apiCreditUntil,0,9e15),apiCreditAt:clampNumber(row.apiCreditAt,0,9e15),
+      // Flow 크레딧(회원이 넣음, Gemini 11-02): 요금제에 매달 딸려 오는 Google Flow 크레딧의 남은 개수와 다시 차는 때(Flow 프로필의 「… 초기화」).
+      // 읽는 공식 경로가 없어 회원이 넣고, flowCreditAt은 넣은 때(본체가 찍는다). 받는 줄은 어댑터 editable이 정한다.
+      flowCredit:(n=>n===null?null:Math.round(n))(clampNumber(row.flowCredit,0,1e7)),flowCreditUntil:clampNumber(row.flowCreditUntil,0,9e15),flowCreditAt:clampNumber(row.flowCreditAt,0,9e15),
       // 결제 주기(3차): 회원이 「이미 연간이에요」로 연간 결제라고 알려 준 줄만 'annual'. 모르면 비운다(월 결제로 단정하지 않는다).
       cycle:row.cycle==='annual'?'annual':null,
       // API 키로 연결한 줄: 같은 키를 두 번 넣었는지 가리는 지문(화면에는 안 보냄)과 끝 네 글자.
@@ -136,7 +139,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(result.email){
       const email=cleanText(result.email,254);
       // 같은 줄에 다른 계정이 로그인됐으면(이 PC의 기본 로그인을 바꾼 경우 등) 앞 계정을 보고 넣은 초기화권·API 크레딧은 비운다(10-28 Fable 설계 검토 P3-9).
-      if(row.email&&row.email.toLowerCase()!==email.toLowerCase())Object.assign(row,{passCount:null,passUntil:null,apiCredit:null,apiCreditUntil:null,apiCreditAt:null});
+      // Flow 크레딧과 회원이 고른 요금제(Gemini, 11-02)도 그 계정의 것이라 같이 비운다.
+      if(row.email&&row.email.toLowerCase()!==email.toLowerCase())Object.assign(row,{passCount:null,passUntil:null,apiCredit:null,apiCreditUntil:null,apiCreditAt:null,flowCredit:null,flowCreditUntil:null,flowCreditAt:null},providerPolicy(row.service)?.planChoices?{plan:null}:{});
       row.email=email;
     }
     // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
@@ -305,11 +309,15 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     }
     if(patch.row&&typeof patch.row==='object'){
       const row=b.rows.find(r=>r.id===patch.row.id);if(!row)return {ok:false,code:'UNKNOWN_ROW'};
-      const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt','cycle',...(row.source==='manual'?['label','kind']:[]),...(providerPolicy(row.service)?.editable||[])];
+      const policy=providerPolicy(row.service);
+      const editable=['price','currency','billDay','credits','lowAt','note','resetDay','resetHour','resetMinute','usedUpAt','cycle',...(row.source==='manual'?['label','kind']:[]),...(policy?.editable||[])];
+      // 회원이 고르는 요금제(Gemini 11-02 — agy는 등급을 알려 주지 않는다): 정해진 이름이나 비우기(null)만 받는다. 모르는 값이면 아무것도 바꾸지 않고 거절한다.
+      if(editable.includes('plan')&&Object.hasOwn(patch.row,'plan')&&patch.row.plan!==null&&!(policy?.planChoices||[]).includes(patch.row.plan))return {ok:false,code:'INVALID_REQUEST'};
       const next={...row};for(const key of editable)if(Object.hasOwn(patch.row,key))next[key]=patch.row[key];
       if(Object.hasOwn(patch.row,'credits'))next.creditsAt=now();
-      // 금액을 비우면 만료 날짜도 같이 비운다(넣은 값이 없는데 「사라졌어요」 흔적이 남지 않게).
+      // 금액(개수)을 비우면 만료(다시 차는) 날짜도 같이 비운다(넣은 값이 없는데 「사라졌어요」 흔적이 남지 않게).
       if(editable.includes('apiCredit')&&Object.hasOwn(patch.row,'apiCredit')){const kept=clampNumber(patch.row.apiCredit,0,1e5)!==null;next.apiCreditAt=kept?now():null;if(!kept)next.apiCreditUntil=null;}
+      if(editable.includes('flowCredit')&&Object.hasOwn(patch.row,'flowCredit')){const kept=clampNumber(patch.row.flowCredit,0,1e7)!==null;next.flowCreditAt=kept?now():null;if(!kept)next.flowCreditUntil=null;}
       Object.assign(row,normalizeRow({...next,id:row.id,service:row.service,source:row.source,folder:row.folder,live:row.live,email:row.email}));
     }
     if(typeof patch.remove==='string'){

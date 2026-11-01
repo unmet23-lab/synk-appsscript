@@ -4,7 +4,8 @@
 //  · 요금표(3차): 확인한 지 60일 신선도·한국 부가세·연간 결제 값·공식 요금으로 셈하는 줄
 //  · 지난 7일 사용량 막대와 팁(크레딧 급증·속도·초기화권·요금제 맞추기·안 쓰는 구독), 목표·쉬는 팁·둘까지 고르기
 //  · 한 달 요약·연간 결제·할인 시기
-//  · API 크레딧(Claude 10-28 · GPT 10-29): 요금제로 매달 들어오는 금액과 회원이 넣은 남은 금액·만료(서비스마다 따로 센다)
+//  · API 크레딧(Claude 10-28 · GPT 10-29 · Gemini 11-02): 요금제로 매달 들어오는 금액과 회원이 넣은 남은 금액·만료(서비스마다 따로 센다)
+//  · Flow 크레딧(Gemini 11-02): 요금제로 매달 다시 차는 개수와 회원이 넣은 남은 개수·다시 차는 때(지나면 한 번만 한 달 양으로 굴린다)
 // 여기서는 문장을 만들지 않는다. 숫자를 글자로 바꾸는 형식(₩·$ 표기와 자리수, 천 원 어림, % 정수 표기, 날짜 말)과 문장 조립은 화면 몫이다.
 // (옮겨 온 nameOf·serviceGroups의 이름 글자 둘 — 「이 PC 로그인」·「직접 넣은 구독」 — 만 예전 그대로 둔다.)
 export const DAY_MS = 864e5;
@@ -110,10 +111,11 @@ export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ?
 // 공식 출력의 요금제 이름(prolite 등)을 사람이 읽는 이름으로. 남은 %가 같을 때는 큰 요금제를 먼저 추천한다.
 // Claude Max는 본체가 등급을 붙여 max_5x·max_20x로 준다(등급을 못 읽으면 max).
 // GPT Pro 세 등급(10-29)은 OpenAI 공식 이름 Pro 100 · 200 · 500으로 — Codex 이름 prolite · pro · promax(ai-prices.cjs GPT 줄의 근거). Claude의 pro와 열쇠가 같아 서비스로 가른다.
-const PLAN = { max20x: 'Max 20x', max5x: 'Max 5x', max: 'Max', ultra: 'Ultra', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
+// Gemini 요금제(11-02)는 회원이 고른다(agy는 등급을 알려 주지 않는다): 공식 이름 Ultra 5x · Ultra 20x, 가족 공유로 받는 계정(family), ultra는 등급을 모르는 옛 값.
+const PLAN = { max20x: 'Max 20x', max5x: 'Max 5x', max: 'Max', ultra20x: 'Ultra 20x', ultra5x: 'Ultra 5x', ultra: 'Ultra', family: '가족 공유', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
 const GPT_PLAN = { prolite: 'Pro 100', pro: 'Pro 200', promax: 'Pro 500' };
-// 같은 서비스 안에서만 견준다: Claude max20x > max5x > max > pro, GPT promax > pro > prolite > plus, Gemini ultra > pro, Higgsfield ultra > plus, Typecast plus > lite.
-const TIER = { max20x: 10, max5x: 9, max: 8, promax: 7, ultra: 6, pro: 5, prolite: 4, plus: 3, lite: 1 };
+// 같은 서비스 안에서만 견준다: Claude max20x > max5x > max > pro, GPT promax > pro > prolite > plus, Gemini ultra20x > ultra · family > ultra5x > pro > plus, Higgsfield ultra > plus, Typecast plus > lite.
+const TIER = { max20x: 10, max5x: 9, max: 8, promax: 7, ultra20x: 6.6, ultra: 6, family: 6, ultra5x: 5.9, pro: 5, prolite: 4, plus: 3, lite: 1 };
 export const planKey = plan => String(plan || '').toLowerCase().replace(/[\s_-]/g, '');
 export const planName = (plan, service = null) => (plan ? (service === 'gpt' && GPT_PLAN[planKey(plan)]) || PLAN[planKey(plan)] || String(plan) : '');
 // 계정 이름: 메일 앞부분(Gemini도 — 본체가 agy 기록에서 지금 로그인된 계정 메일을 읽는다, 10-22) → API 키 끝 네 글자(서비스가 이미 Typecast라
@@ -167,20 +169,27 @@ export function passesOf(row, now) {
 //  · Claude(공식 안내 10-28): Max 5x $100 · Max 20x $200, claude.ai에서 Console 조직을 연결해야 받는다. 남은 금액은 Console 결제 화면(개인 조직은 Admin API도 열리지 않는다).
 //  · GPT(공식 안내 10-29): Pro 100 · 200 · 500이 $100 · $200 · $500, ChatGPT 설정 › 결제에서 같은 메일의 API 조직 하나를 연결해야 받는다(Plus 없음, 구독 7일 뒤).
 //    남은 금액은 OpenAI 플랫폼 결제 › Credit grants. Codex에는 API 키로도 쓰이지 않는다.
+//  · Gemini(AI Studio 공식 안내 11-02): Google AI Pro $10 · Ultra 5x $40 · Ultra 20x $100의 Google Cloud 크레딧이 매달 쌓이고 받은 달마다 12개월씩 차례로 사라진다
+//    (Plus · 가족 공유 계정은 없음). 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 쓰고, 남은 금액은 AI Studio 결제 화면. 한 날짜에 다 사라지지 않아
+//    만료 날짜는 받지 않는다(넣은 금액과 넣은 날만 — Fable 설계 검토 P1-1). 등급은 agy가 알려 주지 않아 회원이 고른다(등급을 모르는 옛 ultra는 「모름」).
 // 서비스마다 다른 조직의 돈이라 판 합계(apiCredits)도 서비스마다 따로 센다(서로 바꿔 쓸 수 없다).
 // 계정판이 스스로 아는 것은 요금제로 들어오는 금액뿐이다 — 요금표(본체가 준 snapshot.prices)의 apiCredit에서, 금액과 같은 60일 문을 따른다.
-// 받지 못하는 요금제(Claude Pro · GPT Plus 등)는 말하지 않고, 등급을 못 읽은 Claude Max는 「모름」(unknown)이다(GPT는 Codex가 등급까지 준다).
+// 받지 못하는 요금제(Claude Pro · GPT Plus · Gemini Plus 등)는 말하지 않고, 등급을 못 읽은 Claude Max · 등급을 고르지 않은 Gemini Ultra는 「모름」(unknown)이다.
 // 공식 요금처럼(officialPrice) 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 세지 않는다(Fable 최종 P3).
-export const API_CREDIT_SERVICES = ['claude', 'gpt'];
-// 크레딧을 받는 요금제(공식): Claude는 Max(등급 모름 포함), GPT는 Pro 세 등급. 화면의 「API 크레딧」 단추와 결제일 채우기가 이 기준이다.
-export const apiCreditPlan = row => (row?.service === 'claude' ? /^max/.test(planKey(row.plan)) : row?.service === 'gpt' ? ['prolite', 'pro', 'promax'].includes(planKey(row.plan)) : false);
+export const API_CREDIT_SERVICES = ['claude', 'gpt', 'gemini'];
+// 크레딧을 받는 요금제(공식): Claude는 Max(등급 모름 포함), GPT는 Pro 세 등급, Gemini는 Pro · Ultra(등급 모름 포함). 화면의 「API 크레딧」 단추가 이 기준이다.
+export const apiCreditPlan = row => (row?.service === 'claude' ? /^max/.test(planKey(row.plan)) : row?.service === 'gpt' ? ['prolite', 'pro', 'promax'].includes(planKey(row.plan)) : row?.service === 'gemini' ? ['pro', 'ultra', 'ultra5x', 'ultra20x'].includes(planKey(row.plan)) : false);
+// 크레딧이 결제 주기 끝에 한꺼번에 사라져 만료 날짜를 받는 서비스(Claude · GPT — 그 날이 곧 결제일이다). Gemini Cloud 크레딧은 받은 달마다 12개월이라 받지 않는다.
+export const apiCreditEndsAtBill = row => apiCreditPlan(row) && row.service !== 'gemini';
+// 등급을 모르는 요금제: Claude는 본체가 등급을 못 읽은 max, Gemini는 회원이 등급을 고르지 않은 ultra.
+const UNKNOWN_TIER = { claude: 'max', gemini: 'ultra' };
 function grantOf(prices, row, now) {
   if (row?.source !== 'auto' || !API_CREDIT_SERVICES.includes(row.service)) return null;
   if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
   const table = priceTable(prices, row.service, now), key = planKey(row.plan);
   if (!table) return null;
   const v = num(table.plans?.[key]?.apiCredit);
-  return v > 0 ? { grant: v } : row.service === 'claude' && key === 'max' ? { unknown: true } : null;
+  return v > 0 ? { grant: v } : UNKNOWN_TIER[row.service] === key ? { unknown: true } : null;
 }
 export const apiGrant = (prices, row, now) => grantOf(prices, row, now)?.grant ?? null;
 // 계정 하나: 넣은 값(left·until·at) · 넣은 값의 만료가 지남(left null, expired) · 안 넣음(left null — 등급을 못 읽은 Max면 unknown).
@@ -188,7 +197,8 @@ export const apiGrant = (prices, row, now) => grantOf(prices, row, now)?.grant ?
 // 만료일은 그날 0시로 받아 그날부터 없는 것으로 본다(사라지는 시각을 몰라 남은 양을 부풀리지 않는 쪽). 그래서 화면은 날짜만 말한다.
 export function apiCreditOf(prices, row, now) {
   if (row?.source !== 'auto' || !API_CREDIT_SERVICES.includes(row.service)) return null;
-  const g = grantOf(prices, row, now), grant = g?.grant ?? null, left = num(row.apiCredit), until = num(row.apiCreditUntil), at = num(row.apiCreditAt);
+  // Gemini는 만료 날짜를 받지 않는다(받은 달마다 12개월씩 차례로 사라진다) — 남은 저장 값이 있어도 「사라져요」로 세지 않는다.
+  const g = grantOf(prices, row, now), grant = g?.grant ?? null, left = num(row.apiCredit), until = row.service === 'gemini' ? null : num(row.apiCreditUntil), at = num(row.apiCreditAt);
   if (left === null) return grant ? { grant, left: null } : g?.unknown ? { grant: null, left: null, unknown: true } : null;
   if (until !== null && until <= now) return { grant, left: null, expired: until, at };
   return { grant, left, until, at };
@@ -210,6 +220,55 @@ export function apiCredits(prices, rows, now, service = 'claude') {
     if (a.until && a.left > 0 && (!first || a.until < first.until)) first = { row, until: a.until, left: a.left };
   }
   return entered || granted || unknown ? { left: Math.round(left * 100) / 100, entered, oldest, newest, monthly, granted, unknown, first } : null;
+}
+
+/* ---------- Flow 크레딧(Gemini 11-02) ---------- */
+// Google AI 요금제에 매달 딸려 오는 Google Flow 크레딧(영상·그림 만들기). Plus 200 · Pro 1,000 · Ultra 5x 10,000 · Ultra 20x 25,000개가 결제 주기 시작에
+// 그 양으로 다시 차고 남은 건 이월되지 않는다(공식 요금표 · Flow 도움말 16526234, 날마다 주는 50개는 세지 않는다 — 그날 안 쓰면 사라진다).
+// 남은 개수와 다시 차는 때는 Flow 오른쪽 위 프로필(「Google Flow 크레딧 25,038개 · 12월 1일 오후 9:29에 초기화」)에만 보이고 읽는 공식 경로가 없어 회원이 넣는다.
+// API 크레딧과 달리 연결 없이 요금제로 꼭 들어오므로, 넣어 둔 다시 차는 때가 지나면 한 번만 그 요금제의 한 달 양으로 다시 찼다고 굴린다(refilled — 그 뒤 쓴 만큼은 모른다).
+// 그다음 차는 때까지 지나면 넣은 값이 너무 오래돼(그사이 요금제를 바꾸거나 끊었을 수 있다) 숫자를 말하지 않고 다시 넣어 달라고만 한다(old — Fable 설계 검토 P1-3).
+// 한 달 양을 모르면(등급 모름 · 가족 공유) 굴리지 않고 「다시 찼어요」(expired)만 말한다. 한 달 양은 요금제 사실이라 요금표 60일 문 밖에서 읽는다(monthCredits처럼 — P2-3).
+function flowGrantOf(prices, row, now) {
+  if (row?.source !== 'auto' || row.service !== 'gemini') return null;
+  if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  const key = planKey(row.plan), v = num(prices?.services?.gemini?.plans?.[key]?.flowCredits);
+  return v > 0 ? { grant: v } : key === 'ultra' ? { unknown: true } : null;
+}
+// t에서 k달 뒤 같은 날 같은 시각(그달에 그날이 없으면 그달 마지막 날 — 1/31은 2/28, 3/31로).
+export const monthAfter = (t, k) => { const d = new Date(t), y = d.getFullYear(), m = d.getMonth() + k; return new Date(y, m, Math.min(d.getDate(), new Date(y, m + 1, 0).getDate()), d.getHours(), d.getMinutes(), 0, 0).getTime(); };
+// 계정 하나: 넣은 값(left·until·at) · 다시 차는 때가 지나 한 번 굴린 값(left = 한 달 양, refilled 그때, until 다음 차는 때) ·
+// 그다음 차는 때도 지남(left null, old 넣은 때 · refilled 넣어 둔 다시 차는 때) · 한 달 양을 몰라 못 굴림(left null, expired) ·
+// 안 넣음(left null — 등급을 고르지 않은 Ultra면 unknown). Gemini 자동 연결 줄이 아니거나 넣은 값도 한 달 양도 없으면 null.
+export function flowCreditOf(prices, row, now) {
+  if (row?.source !== 'auto' || row.service !== 'gemini') return null;
+  const g = flowGrantOf(prices, row, now), grant = g?.grant ?? null, left = num(row.flowCredit), until = num(row.flowCreditUntil), at = num(row.flowCreditAt);
+  if (left === null) return grant ? { grant, left: null } : g?.unknown ? { grant: null, left: null, unknown: true } : null;
+  if (until !== null && until <= now) {
+    if (!grant) return { grant: null, left: null, expired: until, at };
+    const next = monthAfter(until, 1);
+    return next > now ? { grant, left: grant, until: next, at: null, refilled: until } : { grant, left: null, old: at, refilled: until };
+  }
+  return { grant, left, until, at };
+}
+// 판 전체: left 넣은(또는 한 번 굴린) 남은 개수의 합 · typed 그 가운데 넣은 값만의 합(굴린 값은 숫자로 말하지 않는 자리에 — 입구 글) · entered 그 계정 수 ·
+// refilled 그 가운데 굴린 계정 수 · oldest·newest 넣은 때(굴린 값은 빼고) · monthly 매달 들어오는 양의 합 · granted 그 계정 수 ·
+// unknown 등급을 고르지 않은 Ultra 계정 수 · next 가장 먼저 다시 차는 계정. 셀 계정이 없으면 null.
+export function flowCredits(prices, rows, now) {
+  let left = 0, typed = 0, entered = 0, refilled = 0, monthly = 0, granted = 0, unknown = 0, oldest = null, newest = null, next = null;
+  for (const row of rows || []) {
+    if (row?.service !== 'gemini') continue;
+    if (flowGrantOf(prices, row, now)?.unknown) unknown++;
+    const f = flowCreditOf(prices, row, now);
+    if (!f) continue;
+    if (f.grant) { monthly += f.grant; granted++; }
+    if (f.left === null) continue;
+    left += f.left; entered++;
+    if (f.refilled) refilled++;
+    else { typed += f.left; if (f.at) { oldest = oldest === null ? f.at : Math.min(oldest, f.at); newest = newest === null ? f.at : Math.max(newest, f.at); } }
+    if (f.until && (!next || f.until < next.until)) next = { row, until: f.until, left: f.left, grant: f.grant };
+  }
+  return entered || granted || unknown ? { left, typed, entered, refilled, oldest, newest, monthly, granted, unknown, next } : null;
 }
 
 // 한눈에 화면의 서비스 묶음(직접 넣은 구독은 이름·종류마다). 월 구독만 넣은 줄은 한도가 없어 「요금·결제일」에만 보인다.
@@ -245,9 +304,9 @@ export function serviceGroups(rows, now, checkAt = null) {
 }
 
 // 이번 주 일정: 다 쓴 계정이 다시 열리는 때(unblock) · 쓸 수 있는 계정의 주간 초기화(reset) · 7일 안 결제(bill) · 7일 안 초기화권 만료(pass) ·
-// 7일 안 API 크레딧 만료(api, Claude · GPT)를 시간순으로.
+// 7일 안 API 크레딧 만료(api, Claude · GPT · Gemini) · 7일 안 Flow 크레딧이 다시 차는 때(flow, Gemini 11-02 — prices가 있어야 한 달 양을 안다)를 시간순으로.
 // 한눈에 화면은 unblock의 앞 셋만 보이고, 「모두 보기」를 누르면 그 자리에서 전부 펼친다.
-export function upcoming(rows, now, checkAt = null) {
+export function upcoming(rows, now, checkAt = null, prices = null) {
   const today = new Date(now); today.setHours(0, 0, 0, 0);
   const items = [];
   for (const row of rows || []) {
@@ -265,6 +324,13 @@ export function upcoming(rows, now, checkAt = null) {
       if (bill && new Date(bill.t).toDateString() === new Date(api.until).toDateString()) bill.api = api.left;
       else items.push({ t: api.until, type: 'api', row, amount: api.left });
     }
+    // Flow 크레딧(Gemini 11-02)은 결제 주기 시작에 다시 찬다: 넣은(굴린) 다시 차는 때가 7일 안이면 그때를, 결제일과 같은 날이면 결제 줄에 붙인다(bill.flow).
+    // 넣은 값이 없어도 등급을 아는 Gemini 줄의 결제일이 7일 안이면 그 결제 줄에 한 달 양을 붙인다(결제일이 곧 다시 차는 날이다).
+    const flow = flowCreditOf(prices, row, now);
+    if (flow?.until && flow.until - now <= 7 * DAY_MS) {
+      if (bill && new Date(bill.t).toDateString() === new Date(flow.until).toDateString()) bill.flow = flow.grant ?? true;
+      else items.push({ t: flow.until, type: 'flow', row, amount: flow.grant });
+    } else if (bill && flow && flow.left === null && flow.grant && !flow.expired) bill.flow = flow.grant;
   }
   return items.sort((a, b) => a.t - b.t);
 }

@@ -1085,7 +1085,8 @@ test('the monthly summary prices the last four weeks, says where the room is and
   assert.match(el.innerHTML,/넣은 요금을 먼저 쓰고, 넣지 않은 계정은 공식 요금으로 셈해요\./);
   // ⋯ 메뉴도 공식 요금으로 셈한다고 말하고, 편집 칸은 공식 요금을 자리 표시로(달러) 보인다.
   await d.click({subs:'menu',id:'calm'});
-  assert.match(el.innerHTML,/<p>공식 요금 월 \$110\(한국 결제 · 부가세 10% 포함\)로 셈해요 · 다르면 「요금·결제일」에서 고쳐 주세요<\/p>/);
+  // 「포함」 뒤라 「으로」(11-02 아르곤 C1 — 그 전엔 「포함)로」였다).
+  assert.match(el.innerHTML,/<p>공식 요금 월 \$110\(한국 결제 · 부가세 10% 포함\)으로 셈해요 · 다르면 「요금·결제일」에서 고쳐 주세요<\/p>/);
   await d.click({subs:'edit',id:'calm'});
   assert.match(el.innerHTML,/name="price" type="number" min="0" step="any" value="" placeholder="110"><select name="currency" aria-label="통화"><option value="KRW">원<\/option><option value="USD" selected>달러<\/option>/);
   // 요약 끄기: 그 자리에 한 줄, 기록은 지우지 않는다.
@@ -1482,5 +1483,122 @@ test('the big number names its window, pairs used with left, and never turns a g
   // 5시간 창이 막힌 계정의 「다음에 풀려요」는 어림인 주간 창의 남은 %를 붙이지 않는다.
   const blocked=row({id:'blocked',email:'b@example.com',live:{readAt:now-2*H,session:{usedPercent:100,resetsAt:now+H},weekly:{usedPercent:60,resetsAt:now-60e3}}});
   assert.deepEqual(upcoming([blocked],now).map(i=>[i.type,i.after]),[['unblock',null]]);
+  board.dispose();
+});
+
+/* ---------- Gemini 요금제 · 포함된 크레딧(11-02): 유호님 「클로드나 gpt나 제미나이 울트라나 무료 api 제공하는거 얼만큼 남았는지 … 제미나이는 무료제공크레딧도」 ---------- */
+test('Gemini gets a plan picker, a Flow credit box that refills once, and a Cloud credit box without an expiry, next to Claude and GPT',async()=>{
+  prepare();
+  const D=864e5,H=3600e3,fresh=Date.now(),md=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()}`;},hm=t=>{const d=new Date(t);return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
+  const week={readAt:fresh,weekly:{usedPercent:20,resetsAt:fresh+5*D}};
+  const refill=new Date(fresh+29*D);refill.setHours(21,29,0,0);
+  const gem=(id,extra={})=>row({id,service:'gemini',label:'Gemini',email:`${id}@example.com`,plan:'ultra_20x',live:week,...extra});
+  const g=gem('g',{flowCredit:25038,flowCreditUntil:refill.getTime(),flowCreditAt:fresh-H,apiCredit:12.5,apiCreditAt:fresh-H,billDay:refill.getDate()});
+  const m=row({id:'m',email:'m@example.com',plan:'max_20x',apiCredit:150,apiCreditUntil:new Date(fresh+12*D).setHours(0,0,0,0),apiCreditAt:fresh-D,live:week});
+  let f=phase3([m,g],{}),{el,board,d}=await manageCost(f);
+  // 요금·결제일: 돈 줄(구독료 · 7일 안 결제 · 환산)과 「구독에 포함된 크레딧」 줄(Claude · Gemini API · Flow)이 따로 선다(한 줄 일곱 칸이면 어긋난다).
+  assert.match(el.innerHTML,/<\/div>\s*<\/div><h3 class="ms-metrics-head">구독에 포함된 크레딧<\/h3><div class="ms-metrics ms-metrics-credit"><div class="ms-metric ms-metric-api"><span>Claude API 크레딧<\/span>/);
+  // Ultra 20x는 공식 요금 ₩300,000으로 한 달 구독료에 들어간다(Claude $220과 함께).
+  assert.match(el.innerHTML,/<span>한 달 구독료<\/span><strong class="ms-num">약 ₩608,000<\/strong><small>₩300,000 \+ \$220 · 구독 2개 · 공식 요금 2개<\/small>/);
+  // Gemini API 칸: 넣은 금액과 넣은 날, 매달 쌓이는 금액. 만료 날짜는 없다(받은 달마다 12개월).
+  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api"><span>Gemini API 크레딧</span><strong class="ms-num">\\$12.5 남음</strong><small>${md(fresh-H)}에 넣은 값 · 계정 1개 · 매달 \\$100\\(Ultra 20x 1개\\)</small></div>`));
+  // Flow 칸: 넣은 개수 · 넣은 날 · 가장 먼저 다시 차는 계정 · 매달 들어오는 양.
+  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api ms-metric-flow"><span>Flow 크레딧\\(영상·그림\\)</span><strong class="ms-num">25,038개 남음</strong><small>${md(fresh-H)}에 넣은 값 · <b>g</b> ${md(refill)}에 다시 차요 · 매달 25,000개\\(Ultra 20x 1개\\)</small></div>`));
+  // 결제 목록의 Gemini 줄: 공식 요금 ₩300,000 옆에 Flow · API 크레딧 한 줄(만료 없이).
+  assert.match(el.innerHTML,new RegExp(`<small class="ms-bill-api">Flow 크레딧 25,038개 · ${md(refill)}에 다시 차요 · API 크레딧 \\$12.5</small></span><span class="ms-bill-price ms-num">₩300,000<small>공식 요금</small>`));
+  // ⋯ 패널: 공식 요금 · Flow 한 줄(시각까지) · API 한 줄 · 단추 「Flow 크레딧」 · 「API 크레딧」.
+  await d.click({subs:'menu',id:'g'});
+  assert.match(el.innerHTML,/<span class="ms-mplan">Ultra 20x<\/span>/);
+  assert.match(el.innerHTML,/<p>공식 요금 월 ₩300,000\(부가세 포함\)으로 셈해요 · 다르면 「요금·결제일」에서 고쳐 주세요 · 매월 \d+일 결제/);
+  assert.match(el.innerHTML,new RegExp(`<p>Flow 크레딧 · ${md(refill)} 21:29에 다시 차요 · ${md(fresh-H)}에 25,038개 남아 있었어요</p>`));
+  assert.match(el.innerHTML,new RegExp(`<p>API 크레딧 · ${md(fresh-H)}에 \\$12.5 남아 있었어요 · 받은 달마다 12개월 뒤 사라져요</p>`));
+  assert.match(el.innerHTML,/data-subs="flow-edit" data-id="g"/);assert.match(el.innerHTML,/data-subs="api-edit" data-id="g"/);
+  // 요금·결제일 칸 맨 위에 요금제 고르기(ultra는 옛 값이라 지금 그 값인 줄에만).
+  await d.click({subs:'edit',id:'g'});
+  assert.match(el.innerHTML,/<label class="ms-wide">요금제<select name="plan"><option value="">고르지 않음<\/option><option value="pro">Pro<\/option><option value="ultra_5x">Ultra 5x<\/option><option value="ultra_20x" selected>Ultra 20x<\/option><option value="plus">Plus<\/option><option value="family">가족 공유\(관리자가 결제\)<\/option><\/select>/);
+  const submit=async(form,id,values)=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:form,id},querySelector:sel=>{const x=/\[name="([^"]+)"\]/.exec(sel);return x&&Object.hasOwn(values,x[1])?{value:values[x[1]]}:null;}})}});await tick();await tick();};
+  await submit('edit','g',{plan:'family',price:'',currency:'KRW',bill:'',cycle:'',note:''});
+  assert.equal(f.saves.at(-1).row.plan,'family');
+  await submit('edit','g',{plan:'ultra_99x',price:'',currency:'KRW',bill:'',cycle:'',note:''});
+  assert.equal(f.saves.at(-1).row.plan,null);
+  // Flow 넣는 칸: Flow 프로필의 개수와 「… 초기화」 날짜 · 시각(비우면 23:59). 결제일을 아직 안 넣은 줄이면 그날의 일로 채운다.
+  await d.click({subs:'flow-edit',id:'g'});
+  assert.match(el.innerHTML,/<form class="ms-form ms-pass-form ms-flow-form" data-subs-form="flow" data-id="g">/);
+  assert.match(el.innerHTML,/<b>g<\/b> 계정으로 로그인한 브라우저에서 Google Flow를 열고 오른쪽 위 프로필을 누르면 보이는/);
+  assert.match(el.innerHTML,new RegExp(`name="flowTime" type="time" value="21:29"`));
+  await submit('flow','g',{flowCredit:'25038.5',flowDate:'2099-01-01',flowTime:''});assert.equal(f.toasts.at(-1),'남은 Flow 크레딧은 0에서 10,000,000 사이 정수로 넣어 주세요.');
+  await submit('flow','g',{flowCredit:'100',flowDate:'',flowTime:''});assert.equal(f.toasts.at(-1),'Flow 프로필에 보이는 다시 차는 날짜(초기화 날짜)도 넣어 주세요.');
+  const saves=f.saves.length;
+  await submit('flow','g',{flowCredit:'100',flowDate:'2000-01-01',flowTime:''});assert.equal(f.toasts.at(-1),'다시 차는 때가 이미 지났어요. 날짜와 시각을 확인해 주세요.');assert.equal(f.saves.length,saves);
+  board.dispose();
+  // 결제일이 빈 줄: Flow 다시 차는 날의 일로 결제일도 채운다(시각을 비우면 그날 23:59).
+  const nb=gem('nb');f=phase3([nb],{});({el,board,d}=await manageCost(f));
+  await d.click({subs:'menu',id:'nb'});await d.click({subs:'flow-edit',id:'nb'});
+  const due=new Date(fresh+20*D),ymd=`${due.getFullYear()}-${String(due.getMonth()+1).padStart(2,'0')}-${String(due.getDate()).padStart(2,'0')}`;
+  const submit2=async values=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'flow',id:'nb'},querySelector:sel=>{const x=/\[name="([^"]+)"\]/.exec(sel);return x&&Object.hasOwn(values,x[1])?{value:values[x[1]]}:null;}})}});await tick();await tick();};
+  await submit2({flowCredit:'24000',flowDate:ymd,flowTime:''});
+  assert.deepEqual(f.saves.at(-1),{row:{id:'nb',flowCredit:24000,flowCreditUntil:new Date(due.getFullYear(),due.getMonth(),due.getDate(),23,59).getTime(),billDay:due.getDate()}});
+  assert.equal(f.toasts.at(-1),`Flow 크레딧 24,000개를 넣었어요. Flow 크레딧은 결제 주기가 시작될 때 다시 차서 결제일도 매월 ${due.getDate()}일로 넣어 뒀어요.`);
+  // API 넣는 칸(Gemini): 금액만 — 날짜 칸이 없고, 결제일을 채우지 않는다. 개발자 프로그램 혜택 · AI Studio 결제를 연다.
+  await d.click({subs:'api-edit',id:'nb'});
+  assert.doesNotMatch(el.innerHTML,/name="apiDate"/);assert.match(el.innerHTML,/data-link="gemini-ai-studio-billing"/);assert.match(el.innerHTML,/data-link="gemini-dev-benefits"/);
+  const submit3=async values=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'api',id:'nb'},querySelector:sel=>{const x=/\[name="([^"]+)"\]/.exec(sel);return x&&Object.hasOwn(values,x[1])?{value:values[x[1]]}:null;}})}});await tick();await tick();};
+  await submit3({apiCredit:'40.004'});
+  assert.deepEqual(f.saves.at(-1),{row:{id:'nb',apiCredit:40}});assert.equal(f.toasts.at(-1),'API 크레딧 $40를 넣었어요.');
+  board.dispose();
+  // 다시 차는 때가 지나면 한 번만 「다시 찼을 거예요」 — 칸 · 패널 · 입구 글 모두 굴린 숫자를 넣은 값처럼 말하지 않는다.
+  const passed=new Date(fresh-2*H);
+  const r=gem('r',{flowCredit:300,flowCreditUntil:passed.getTime(),flowCreditAt:fresh-20*D});
+  f=phase3([r],{});({el,board,d}=await manageCost(f));
+  assert.match(el.innerHTML,/<strong class="ms-num">25,000개 남음<\/strong><small>다시 찼을 거예요\(그 뒤 쓴 만큼은 몰라요\)/);
+  await d.click({subs:'menu',id:'r'});
+  assert.match(el.innerHTML,new RegExp(`<p>Flow 크레딧 · ${md(passed)} ${hm(passed)}에 25,000개로 다시 찼을 거예요\\(그 뒤 쓴 만큼은 몰라요\\)`));
+  board.dispose();
+  ({el,board}=await draw2(phase3([r],{})));
+  assert.match(el.innerHTML,/Flow 크레딧 다시 찼을 거예요/);assert.doesNotMatch(el.innerHTML,/Flow 크레딧 25,000개/);
+  board.dispose();
+  // 요금제를 고르지 않은 새 회원: 공식 요금 · 크레딧은 모르고, 고르면 무엇을 알게 되는지 한 줄. Flow 단추는 그래도 있다(넣을 수는 있다).
+  const fresh0=gem('n0',{plan:null});
+  f=phase3([fresh0],{});({el,board,d}=await manageCost(f));
+  assert.ok(!el.innerHTML.includes('ms-metrics-head'));
+  await d.click({subs:'menu',id:'n0'});
+  assert.match(el.innerHTML,/<p class="ms-soft">요금제를 「요금·결제일」에서 고르면 매달 딸려 오는 Flow · API 크레딧과 공식 요금\(확인한 요금제만\)을 알려 드려요\.<\/p>/);
+  assert.match(el.innerHTML,/data-subs="flow-edit" data-id="n0"/);assert.ok(!el.innerHTML.includes('data-subs="api-edit" data-id="n0"'));
+  board.dispose();
+  // 가족 공유로 받는 계정: 따로 내지 않는다고 말하고 한 달 구독료에 세지 않는다. 등급 모르는 옛 ultra는 칸에서 「고르세요」.
+  f=phase3([gem('fam',{plan:'family'}),gem('old',{plan:'ultra'})],{});({el,board,d}=await manageCost(f));
+  assert.match(el.innerHTML,/<strong class="ms-num">Ultra 1개<\/strong><small>요금제 등급\(5x·20x\)을 아직 고르지 않아 매달 쌓이는 금액을 몰라요 · 계정 줄 ⋯의 「요금·결제일」에서 골라 주세요<\/small>/);
+  // 결제 목록도 「₩0 공식 요금」이 아니라 「가족 공유」(위 칸의 구독 · 공식 요금 수에 세지 않는 것과 맞게 — 아르곤 C3). 무료 요금제(₩0)가 아닌 다른 줄은 그대로.
+  assert.match(el.innerHTML,/<span class="ms-bill-who">fam<\/span>|<span class="ms-bill-name">fam<\/span>/);
+  assert.match(el.innerHTML,/<span class="ms-bill-name">fam<\/span><span class="ms-bill-price ms-num"><small>가족 공유<\/small><\/span>/);assert.doesNotMatch(el.innerHTML,/₩0<small>공식 요금<\/small>/);
+  await d.click({subs:'menu',id:'fam'});
+  assert.match(el.innerHTML,/<p>가족 공유로 받아 따로 내지 않아요\(한 달 구독료에 세지 않아요\)<\/p>/);assert.ok(!el.innerHTML.includes('data-subs="api-edit" data-id="fam"'));
+  board.dispose();
+});
+
+test('Gemini review fixes: an unknown monthly amount never reads as "1개", family Flow saves keep the bill day empty, mixed plans are named',async()=>{
+  prepare();
+  const D=864e5,H=3600e3,fresh=Date.now(),week={readAt:fresh,weekly:{usedPercent:20,resetsAt:fresh+5*D}};
+  const gem=(id,extra={})=>row({id,service:'gemini',label:'Gemini',email:`${id}@example.com`,plan:'ultra_20x',live:week,...extra});
+  // 아르곤 A1: 가족 공유(한 달 양 모름) 줄의 Flow가 결제일과 같은 날 다시 차면 결제 줄에 붙되 「1개로」 같은 개수를 말하지 않는다.
+  const soon=new Date(fresh+3*D);soon.setHours(21,29,0,0);
+  const fam=gem('fam',{plan:'family',billDay:soon.getDate(),flowCredit:120,flowCreditUntil:soon.getTime(),flowCreditAt:fresh-H});
+  const out=row({id:'out',email:'out@example.com',plan:'max_20x',live:{readAt:fresh,weekly:{usedPercent:100,resetsAt:fresh+2*D}}});
+  let f=phase3([out,fam],{}),{el,board,d}=await draw2(f);
+  await d.click({subs:'more'});
+  assert.match(el.innerHTML,/<b>fam<\/b> Gemini · 결제일 · Flow 크레딧 다시 차요<\/span>/);assert.doesNotMatch(el.innerHTML,/Flow 크레딧 1개로/);
+  board.dispose();
+  // 아르곤 A3: 가족 공유 줄에 Flow를 넣어도 결제일은 채우지 않는다(따로 결제하지 않는다).
+  const fam2=gem('fam2',{plan:'family'});f=phase3([fam2],{});({el,board,d}=await manageCost(f));
+  await d.click({subs:'menu',id:'fam2'});await d.click({subs:'flow-edit',id:'fam2'});
+  const due=new Date(fresh+20*D),ymd=`${due.getFullYear()}-${String(due.getMonth()+1).padStart(2,'0')}-${String(due.getDate()).padStart(2,'0')}`;
+  await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'flow',id:'fam2'},querySelector:sel=>{const x=/\[name="([^"]+)"\]/.exec(sel),v={flowCredit:'5000',flowDate:ymd,flowTime:'21:29'};return x&&Object.hasOwn(v,x[1])?{value:v[x[1]]}:null;}})}});await tick();await tick();
+  assert.deepEqual(f.saves.at(-1),{row:{id:'fam2',flowCredit:5000,flowCreditUntil:new Date(due.getFullYear(),due.getMonth(),due.getDate(),21,29).getTime()}});
+  assert.equal(f.toasts.at(-1),'Flow 크레딧 5,000개를 넣었어요.');
+  board.dispose();
+  // 아르곤 A4: 요금제가 섞이면 그 이름들을 그대로(Plus · Pro), Cloud 크레딧은 받는 요금제만(Plus는 없다 — Pro).
+  f=phase3([gem('pl',{plan:'plus'}),gem('pr',{plan:'pro'})],{});({el,board}=await manageCost(f));
+  assert.match(el.innerHTML,/<strong class="ms-num">매달 1,200개<\/strong><small>매달 1,200개\(Plus · Pro 2개\)/);
+  assert.match(el.innerHTML,/<strong class="ms-num">매달 \$10<\/strong><small>Pro 계정 1개 · 매달 쌓이고 받은 달마다 12개월 뒤 사라져요/);
   board.dispose();
 });

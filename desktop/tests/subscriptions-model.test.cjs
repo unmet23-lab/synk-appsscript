@@ -406,7 +406,8 @@ test('GPT API credits: Pro 100 · 200 · 500 bring $100 · $200 · $500, Plus no
   assert.deepEqual(['prolite','pro','promax','plus'].map(plan=>planName(plan,'gpt')),['Pro 100','Pro 200','Pro 500','Plus']);
   // Claude의 pro는 그대로 Pro(같은 열쇠라 서비스로 가른다).
   assert.deepEqual([planName('pro','claude'),planName('pro'),planName('prolite')],['Pro','Pro','Pro Lite']);
-  assert.deepEqual([gpt('a',{},{plan:'promax'}),gpt('b',{},{plan:'plus'}),row({plan:'max'}),row({plan:'pro'}),row({service:'gemini',plan:'ultra'})].map(apiCreditPlan),[true,false,true,false,false]);
+  // Gemini Ultra도 11-02부터 받는다(요금제에 매달 쌓이는 Google Cloud 크레딧 — 등급을 고르지 않은 ultra는 「모름」).
+  assert.deepEqual([gpt('a',{},{plan:'promax'}),gpt('b',{},{plan:'plus'}),row({plan:'max'}),row({plan:'pro'}),row({service:'gemini',plan:'ultra'}),row({service:'gemini',plan:'plus'})].map(apiCreditPlan),[true,false,true,false,true,false]);
   // 등급 「모름」은 Claude Max에만 있다 — GPT는 Codex가 등급까지 주고, 모르는 이름이면 말하지 않는다.
   assert.equal(apiCreditOf(prices,gpt('x',{},{plan:'pro_new'}),NOW),null);
   assert.deepEqual(apiCreditOf(prices,gpt('y',{}),NOW),{grant:200,left:null});
@@ -432,4 +433,73 @@ test('GPT API credits: Pro 100 · 200 · 500 bring $100 · $200 · $500, Plus no
   // 남은 %가 같으면 큰 등급부터: Pro 500 > Pro 200 > Pro 100 > Plus(예전엔 Pro 500이 맨 뒤 · Plus가 Pro 100 앞이었다).
   const tie=plan=>gpt('t-'+plan,{weekly:{usedPercent:30,resetsAt:NOW+D}},{plan});
   assert.deepEqual(serviceGroups([tie('plus'),tie('prolite'),tie('promax'),tie('pro')],NOW)[0].usable.map(a=>a.row.plan),['promax','pro','prolite','plus']);
+});
+
+/* ---------- Gemini 요금제 · 포함된 크레딧(11-02) ---------- */
+const gem=(id,extra={})=>row({id,service:'gemini',label:'Gemini',email:`${id}@example.com`,plan:'ultra_20x',live:{readAt:NOW,weekly:{usedPercent:10,resetsAt:NOW+3*D}},...extra});
+
+test('Gemini plans are picked by the member: Ultra 20x is ₩300,000 with 25,000 Flow and $100 Cloud credits, family is ₩0 and counted once',async()=>{
+  const {planName,officialPrice,costSummary,apiGrant,apiCreditPlan,apiCreditEndsAtBill,serviceGroups}=await model;
+  const prices=priceBook();
+  assert.deepEqual(['ultra_20x','ultra_5x','ultra','pro','plus','family'].map(p=>planName(p,'gemini')),['Ultra 20x','Ultra 5x','Ultra','Pro','Plus','가족 공유']);
+  // 한국 원화 요금(부가세 포함): Ultra 20x ₩300,000 · 5x ₩119,000 · Plus ₩7,500. Pro는 금액을 확인하지 못해 「요금 모름」, 등급을 고르지 않은 ultra도 모름.
+  assert.deepEqual(['ultra_20x','ultra_5x','plus','family','pro','ultra',null].map(plan=>officialPrice(prices,gem('g',{plan}),NOW)?.price??null),[300000,119000,7500,0,null,null,null]);
+  // 가족 공유로 받는 계정은 ₩0이라 구독으로 세지 않는다 — 관리자 계정의 ₩300,000만 한 번(Fable 설계 검토 P1-2).
+  const c=costSummary([gem('owner'),gem('fam',{plan:'family'})],NOW,1400,r=>officialPrice(prices,r,NOW));
+  assert.deepEqual([c.krw,c.count,c.unknown],[300000,1,0]);
+  // Google Cloud(API) 크레딧: Pro $10 · Ultra 5x $40 · Ultra 20x $100(달러), Plus · 가족 공유는 없다. 결제일을 채우는 것은 결제 주기 끝에 한꺼번에 사라지는 Claude · GPT만.
+  assert.deepEqual(['pro','ultra_5x','ultra_20x','plus','family'].map(plan=>apiGrant(prices,gem('g',{plan}),NOW)),[10,40,100,null,null]);
+  assert.deepEqual(['ultra_20x','ultra','pro','plus','family',null].map(plan=>apiCreditPlan(gem('g',{plan}))),[true,true,true,false,false,false]);
+  assert.equal(apiCreditEndsAtBill(gem('g')),false);assert.equal(apiCreditEndsAtBill(row({plan:'max_20x'})),true);
+  // 같은 %면 큰 등급부터: Ultra 20x > Ultra(등급 모름) > Ultra 5x > Pro.
+  const tie=plan=>gem('t-'+plan,{plan,live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+D}}});
+  assert.deepEqual(serviceGroups([tie('pro'),tie('ultra_5x'),tie('ultra'),tie('ultra_20x')],NOW)[0].usable.map(a=>a.row.plan),['ultra_20x','ultra','ultra_5x','pro']);
+});
+
+test('Gemini Cloud credits take no expiry date (each month lasts 12 months), and an unpicked Ultra is "unknown"',async()=>{
+  const {apiCreditOf,apiCredits,upcoming}=await model;
+  const prices=priceBook();
+  assert.deepEqual(apiCreditOf(prices,gem('g'),NOW),{grant:100,left:null});
+  assert.deepEqual(apiCreditOf(prices,gem('u',{plan:'ultra'}),NOW),{grant:null,left:null,unknown:true});
+  // 저장된 만료 값이 있어도 Gemini는 「사라져요」로 세지 않는다(받은 달마다 12개월씩 차례로 사라진다 — Fable 설계 검토 P1-1).
+  const typed=gem('t',{apiCredit:55.5,apiCreditAt:NOW-D,apiCreditUntil:NOW-H});
+  assert.deepEqual(apiCreditOf(prices,typed,NOW),{grant:100,left:55.5,until:null,at:NOW-D});
+  const all=apiCredits(prices,[typed,gem('u',{plan:'ultra'}),row({id:'m',plan:'max_20x',apiCredit:150,apiCreditUntil:NOW+9*D,apiCreditAt:NOW-D})],NOW,'gemini');
+  assert.deepEqual(all,{left:55.5,entered:1,oldest:NOW-D,newest:NOW-D,monthly:100,granted:1,unknown:1,first:null});
+  assert.deepEqual(upcoming([typed],NOW,null,prices).filter(i=>i.type==='api'),[]);
+});
+
+test('Flow credits: typed count until the refill time, one projected refill to the monthly amount, then ask again',async()=>{
+  const {flowCreditOf,flowCredits,monthAfter,upcoming}=await model;
+  const prices=priceBook();
+  // 요금제로 매달 들어오는 양(안 넣음): Ultra 20x 25,000 · Ultra 5x 10,000 · Pro 1,000 · Plus 200. 가족 공유는 몰라서 말하지 않고, 등급 모르는 Ultra는 「모름」.
+  assert.deepEqual(['ultra_20x','ultra_5x','pro','plus'].map(plan=>flowCreditOf(prices,gem('g',{plan}),NOW)),[25000,10000,1000,200].map(grant=>({grant,left:null})));
+  assert.equal(flowCreditOf(prices,gem('f',{plan:'family'}),NOW),null);
+  assert.deepEqual(flowCreditOf(prices,gem('u',{plan:'ultra'}),NOW),{grant:null,left:null,unknown:true});
+  // 한 달 양은 요금제 사실이라 요금표가 60일 지나도 쓴다(Fable 설계 검토 P2-3).
+  assert.deepEqual(flowCreditOf(priceBook(NOW-61*D),gem('g'),NOW),{grant:25000,left:null});
+  // 넣은 값: 다시 차는 때(Flow 프로필의 「오후 9:29」) 전까지 그대로.
+  const refill=new Date(2026,10,1,21,29).getTime(),typed=gem('t',{flowCredit:25038,flowCreditUntil:refill,flowCreditAt:NOW-H});
+  assert.deepEqual(flowCreditOf(prices,typed,NOW),{grant:25000,left:25038,until:refill,at:NOW-H});
+  assert.deepEqual(flowCreditOf(prices,typed,refill-60e3).left,25038);
+  // 다시 차는 때가 지나면 한 번만 한 달 양으로 굴리고(넣은 때는 버린다), 그다음 차는 때도 지나면 숫자를 말하지 않는다(그사이 요금제를 바꿨을 수 있다 — P1-3).
+  assert.deepEqual(flowCreditOf(prices,typed,refill),{grant:25000,left:25000,until:monthAfter(refill,1),at:null,refilled:refill});
+  assert.deepEqual(flowCreditOf(prices,typed,monthAfter(refill,1)),{grant:25000,left:null,old:NOW-H,refilled:refill});
+  // 한 달 양을 모르면(등급 모름) 굴리지 않고 「다시 찼어요」만.
+  assert.deepEqual(flowCreditOf(prices,gem('x',{plan:'ultra',flowCredit:10,flowCreditUntil:NOW-H,flowCreditAt:NOW-D}),NOW),{grant:null,left:null,expired:NOW-H,at:NOW-D});
+  // 달 끝: 1/31에 차면 다음은 2/28(그달 마지막 날), 그다음은 3/31.
+  const jan=new Date(2027,0,31,21,29).getTime();
+  assert.deepEqual([monthAfter(jan,1),monthAfter(jan,2)].map(t=>[new Date(t).getMonth()+1,new Date(t).getDate(),new Date(t).getHours()]),[[2,28,21],[3,31,21]]);
+  // 판 전체: 넣은 값 · 굴린 값 · 넣은 값만의 합(입구 글에 쓰는 숫자) · 가장 먼저 다시 차는 계정.
+  const two=[typed,gem('r',{flowCredit:900,flowCreditUntil:NOW-2*H,flowCreditAt:NOW-3*D}),gem('u',{plan:'ultra'})];
+  const f=flowCredits(prices,two,NOW);
+  assert.deepEqual({...f,next:f.next.row.id},{left:50038,typed:25038,entered:2,refilled:1,oldest:NOW-H,newest:NOW-H,monthly:50000,granted:2,unknown:1,next:'t'});
+  // 일정: 7일 안에 다시 차면 Flow 줄, 그 계정의 결제일과 같은 날이면 결제 줄에 붙는다. 넣은 값이 없어도 등급을 아는 줄의 결제일이 7일 안이면 결제 줄에 한 달 양을 붙인다.
+  const soon=new Date(NOW+3*D);soon.setHours(21,29,0,0);
+  const plan=(rows,p)=>upcoming(rows,NOW,null,p).filter(i=>i.type!=='reset');
+  assert.deepEqual(plan([gem('s',{flowCredit:300,flowCreditUntil:soon.getTime(),flowCreditAt:NOW})],prices).map(i=>[i.type,i.amount]),[['flow',25000]]);
+  assert.deepEqual(plan([gem('b',{billDay:soon.getDate(),flowCredit:300,flowCreditUntil:soon.getTime(),flowCreditAt:NOW})],prices).map(i=>[i.type,i.flow]),[['bill',25000]]);
+  assert.deepEqual(plan([gem('n',{billDay:soon.getDate()})],prices).map(i=>[i.type,i.flow]),[['bill',25000]]);
+  // 요금표를 안 주면(옛 부름) Flow 일정은 넣은 값의 때만 — 한 달 양 없이.
+  assert.deepEqual(plan([gem('s',{flowCredit:300,flowCreditUntil:soon.getTime(),flowCreditAt:NOW})],null).map(i=>[i.type,i.amount]),[['flow',null]]);
 });

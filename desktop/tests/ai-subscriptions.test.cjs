@@ -1030,6 +1030,46 @@ test('API credits are typed in by the member on Claude and GPT rows, rounded to 
   assert.deepEqual(await f.service.openHelp('gpt-api-credits'),{ok:true});assert.equal(f.opened.at(-1),'https://help.openai.com/en/articles/20001626-api-credits-benefit-for-eligible-chatgpt-subscriptions');
 });
 
+test('Gemini rows take a member-picked plan, Flow credits with a refill time and Cloud credits without an expiry',async()=>{
+  const f=fakeSystem(),D=864e5;
+  assert.equal((await f.service.useExisting('gemini')).ok,true);
+  let snap=await f.service.snapshot();
+  const id=snap.rows.find(r=>r.service==='gemini').id,get=()=>snap.rows.find(r=>r.id===id);
+  // 요금제(11-02 — agy는 등급을 알려 주지 않는다): 정해진 이름만(가족 공유 포함), 모르는 값이면 아무것도 바꾸지 않고 거절한다. 비우면(null) 고르지 않음.
+  snap=await f.service.save({row:{id,plan:'ultra_20x'}});assert.equal(get().plan,'ultra_20x');
+  assert.deepEqual(await f.service.save({row:{id,plan:'ultra_99x',price:1}}),{ok:false,code:'INVALID_REQUEST'});
+  snap=await f.service.snapshot();assert.deepEqual([get().plan,get().price],['ultra_20x',null]);
+  snap=await f.service.save({row:{id,plan:'family'}});assert.equal(get().plan,'family');
+  snap=await f.service.save({row:{id,plan:null}});assert.equal(get().plan,null);
+  // 읽기는 Gemini 요금제를 주지 않아 고른 값이 남는다.
+  snap=await f.service.save({row:{id,plan:'ultra_20x'}});snap=await f.service.check([id]);assert.deepEqual([get().state,get().plan],['ok','ultra_20x']);
+  // Flow 크레딧: 정수 개수와 다시 차는 때, 넣은 때는 본체가 찍는다. 비우면 다시 차는 때도 비우고, 범위를 벗어난 개수는 받지 않는다.
+  const flow=()=>[get().flowCredit,get().flowCreditUntil,get().flowCreditAt];
+  snap=await f.service.save({row:{id,flowCredit:25038.4,flowCreditUntil:NOW+29*D}});assert.deepEqual(flow(),[25038,NOW+29*D,NOW]);
+  snap=await f.service.save({row:{id,flowCredit:null}});assert.deepEqual(flow(),[null,null,null]);
+  snap=await f.service.save({row:{id,flowCredit:2e7,flowCreditUntil:NOW+D}});assert.deepEqual(flow(),[null,null,null]);
+  // Cloud(API) 크레딧: 금액만 — 받은 달마다 12개월씩 차례로 사라져 만료 날짜는 Gemini 줄에 저장하지 않는다(Fable 설계 검토 P1-1).
+  const api=()=>[get().apiCredit,get().apiCreditUntil,get().apiCreditAt];
+  snap=await f.service.save({row:{id,apiCredit:55.5,apiCreditUntil:NOW+7*D}});assert.deepEqual(api(),[55.5,null,NOW]);
+  // 다른 Google 계정으로 agy를 바꾸면 그 계정 줄이 새로 생기고, 앞 계정 줄은 고른 요금제 · 넣은 크레딧을 그대로 둔 채 「지금 로그인 안 됨」이 된다.
+  snap=await f.service.save({row:{id,flowCredit:900,flowCreditUntil:NOW+9*D}});
+  f.state.geminiEmail='family@example.com';snap=await f.service.check();
+  const other=snap.rows.find(r=>r.service==='gemini'&&r.email==='family@example.com');
+  assert.deepEqual([other.plan,other.flowCredit,other.apiCredit],[null,null,null]);
+  assert.deepEqual([get().state,get().plan,get().flowCredit,get().apiCredit],['elsewhere','ultra_20x',900,55.5]);
+  // 다른 서비스 줄은 요금제를 손으로 바꾸지 못한다(Claude · GPT는 공식 프로그램이 알려 준다).
+  assert.equal((await f.service.useExisting('claude')).ok,true);snap=await f.service.snapshot();
+  const claude=snap.rows.find(r=>r.service==='claude');
+  snap=await f.service.save({row:{id:claude.id,plan:'pro',flowCredit:5}});
+  assert.deepEqual([snap.rows.find(r=>r.id===claude.id).plan,snap.rows.find(r=>r.id===claude.id).flowCredit],[claude.plan,null]);
+  // 새 안내는 고정 주소로만 연다.
+  assert.deepEqual(await f.service.openHelp('gemini-api-credits'),{ok:true});assert.equal(f.opened.at(-1),'https://aistudio.google.com/learn/use-google-ai-plan-credits-in-ai-studio');
+  assert.deepEqual(await f.service.openHelp('gemini-ai-studio-billing'),{ok:true});assert.equal(f.opened.at(-1),'https://aistudio.google.com/billing');
+  assert.deepEqual(await f.service.openHelp('gemini-dev-benefits'),{ok:true});assert.equal(f.opened.at(-1),'https://me.developers.google.com/benefits');
+  assert.deepEqual(await f.service.openHelp('flow-app'),{ok:true});assert.equal(f.opened.at(-1),'https://flow.google.com/');
+  assert.deepEqual(await f.service.openHelp('flow-credits'),{ok:true});assert.equal(f.opened.at(-1),'https://support.google.com/flow/answer/16526234');
+});
+
 test('keeps the chosen tip goal and the tips-off switch, and refuses anything else',async()=>{
   const f=fakeSystem();
   let snap=await f.service.save({settings:{goal:'save'}});assert.equal(snap.settings.goal,'save');
@@ -1064,6 +1104,16 @@ test('the price table keeps only checked, known values and the newer check wins 
   assert.deepEqual(validatePrices(priceDoc({gpt:gptEntry({pro:{apiCredit:0},promax:{month:500,apiCredit:500}})}),gptAt).services.gpt.plans,{pro:{apiCredit:0},promax:{month:500,apiCredit:500}});
   // GPT 출처는 그 공식 안내 열쇠만(요금표 출처 열쇠를 빌려 쓰지 못한다).
   assert.equal(validatePrices(priceDoc({gpt:{...gptEntry({pro:{apiCredit:200}}),source:'claude-plans'}}),gptAt),null);
+  // Gemini(11-02): 한국 원화 요금(부가세 포함) — Ultra 20x ₩300,000은 달러 상한(100,000)에 걸리지 않고 받는다. 요금제마다 매달 딸려 오는
+  // Flow 크레딧(개수)과 Google Cloud 크레딧(apiCredit, 달러). Pro는 금액을 확인하지 못해 크레딧만, 모양이 틀린 Flow 크레딧이면 그 요금제를 버린다.
+  const gemAt=new Date(2026,10,2,12,0).getTime(),gemBase=validatePrices(DEFAULT_PRICES,gemAt);
+  // 가족 공유로 받는 계정(family)은 따로 내지 않아 ₩0 — 한 달 구독료에 두 번 세지 않는다(Fable 설계 검토 P1-2).
+  assert.deepEqual(gemBase.services.gemini,{checked:'2026-11-02',source:'gemini-plans',currency:'KRW',tax:'included',plans:{plus:{month:7500,flowCredits:200},pro:{apiCredit:10,flowCredits:1000},ultra5x:{month:119000,apiCredit:40,flowCredits:10000},ultra20x:{month:300000,apiCredit:100,flowCredits:25000},family:{month:0}}});
+  const gemEntry=plans=>({checked:'2026-11-02',source:'gemini-plans',currency:'KRW',tax:'included',plans});
+  assert.deepEqual(validatePrices(priceDoc({gemini:gemEntry({ultra20x:{month:300000,flowCredits:2.5},ultra5x:{month:119000,flowCredits:-1},pro:{},plus:{month:200000000}})}),gemAt),null);
+  assert.deepEqual(validatePrices(priceDoc({gemini:gemEntry({pro:{flowCredits:1000},ultra20x:{month:300000,flowCredits:0}})}),gemAt).services.gemini.plans,{pro:{flowCredits:1000},ultra20x:{month:300000,flowCredits:0}});
+  // 달러 서비스의 상한은 그대로다(Claude 월 $150,000은 버린다).
+  assert.equal(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),plans:{max20x:{month:150000}}}}),at),null);
   assert.equal(base.services.claude.tax,'excluded');assert.equal(base.services.claude.krVat,0.1);assert.equal(base.services.higgsfield.annualLock,true);assert.equal(base.services.higgsfield.tax,'excluded');
   // 부가세율 모양이 틀리면 그 서비스를 받지 않는다.
   for(const krVat of [0.5,-0.1,'0.1'])assert.equal(validatePrices(priceDoc({claude:{...claudeEntry('2026-10-19'),krVat}}),at),null);
@@ -1088,9 +1138,11 @@ test('the price table keeps only checked, known values and the newer check wins 
   const wireText=JSON.stringify(toWire(DEFAULT_PRICES));
   assert.doesNotMatch(wireText,/claude|higgsfield|typecast|gpt|openai|chatgpt/i);
   assert.deepEqual(validatePrices(JSON.parse(wireText),at),base);
-  // GPT 줄은 s4 · s4-credits로 오고 풀면 같은 값이다(10-29 확인한 줄이라 그날 뒤에 받는다).
-  assert.deepEqual(Object.keys(JSON.parse(wireText).services).sort(),['s1','s2','s3','s4']);
+  // GPT 줄은 s4 · s4-credits로 오고 풀면 같은 값이다(10-29 확인한 줄이라 그날 뒤에 받는다). Gemini 줄은 s5 · s5-plans(11-02 확인).
+  assert.deepEqual(Object.keys(JSON.parse(wireText).services).sort(),['s1','s2','s3','s4','s5']);
   assert.deepEqual(validatePrices(JSON.parse(wireText),gptAt).services.gpt,gptBase.services.gpt);
+  assert.doesNotMatch(wireText,/gemini/i);
+  assert.deepEqual(validatePrices(JSON.parse(wireText),gemAt).services.gemini,gemBase.services.gemini);
   const wireDeal={...deal,service:'s2',source:'s2-pricing'};
   assert.deepEqual(toWire(priceDoc({},[deal])).deals,[wireDeal]);
   assert.deepEqual(validatePrices(priceDoc({s9:claudeEntry('2026-10-19')},[wireDeal,{...wireDeal,service:'s9'},{...wireDeal,source:'s1-plans'}]),at),{services:{},deals:[deal]});
@@ -1108,6 +1160,9 @@ test('the price table keeps only checked, known values and the newer check wins 
   assert.deepEqual(later.services.claude.plans.max20x,{month:220,apiCredit:200});
   const zero=mergePrices(base,validatePrices(priceDoc({claude:{...claudeEntry('2026-10-20',25),plans:{max5x:{month:110},max20x:{month:220,apiCredit:0}}}}),at+864e5));
   assert.deepEqual([zero.services.claude.plans.max5x,zero.services.claude.plans.max20x],[{month:110,apiCredit:100},{month:220,apiCredit:0}]);
+  // Flow 크레딧(Gemini 11-02)도 같다 — 금액만 고친 갱신본이 Flow 칸을 빠뜨려도 매달 25,000개를 잇고, 0을 적었으면 0.
+  const gemNext=mergePrices(gemBase,validatePrices(priceDoc({gemini:{...gemEntry({ultra20x:{month:310000},ultra5x:{month:119000,apiCredit:40,flowCredits:0}}),checked:'2026-11-03'}}),gemAt+864e5));
+  assert.deepEqual([gemNext.services.gemini.plans.ultra20x,gemNext.services.gemini.plans.ultra5x],[{month:310000,apiCredit:100,flowCredits:25000},{month:119000,apiCredit:40,flowCredits:0}]);
 });
 
 test('the price table comes from synk.im at most once a day, is checked before it is kept and asks for nothing else',async()=>{
