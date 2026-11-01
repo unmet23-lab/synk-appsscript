@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "In Korean, a fish is 'water meat' 🐟 물고기 #learnkorean",
+ "caption": "물 (mul) means water. Korean builds a lot of words just by adding them up:\n\n물 + 고기 (meat) = 물고기 — fish\n눈 (eye) + 물 = 눈물 — tears\n물 + 개 (dog) = 물개 — seal\n\nSay them with me: mul-go-gi, nun-mul, mul-gae.\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreanwords",
+ "pinnedComment": "Guess this one: 눈 + 사람 (person) = ? Hint: it is not 'eye person' 👀",
+ "alt": [
+  "A needle-felted cafe counter. A marbled felt steak drops into a round glass fishbowl with a splash. Word cards read 물 water and 고기 meat, and the steak starts swimming: 물고기, water meat? The coral felt mascot gasps \"My lunch!!\" A real orange goldfish swims up and stares at the steak: 물고기, FISH. The mascot cries over an empty plate; the camera moves to its eye, 눈, and a tear, 물: 눈물, TEARS. A felt puppy leaps into the bowl and paddles: 물개, water dog? The water bursts and a grey felt seal rises with the steak balanced on its nose: 물개, SEAL. The mascot bounces with joy. Last line: Just add 물."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = e22 v8(24.5초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS / −1.3 dBFS → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(9.3MB). 표지 cover.png = 3.6초(어항을 헤엄치는 스테이크 · 물고기 water meat?). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림, 목소리는 특정인이 아닌 TTS(E17과 같은 판단).",
+ "version": "e22-en-v8"
+}

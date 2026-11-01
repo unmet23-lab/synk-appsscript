@@ -1,0 +1,18 @@
+{
+  "note": "LAB 영어 E22 「물고기」 — 말은 한국어 낱말만(영어 목소리 없음, 그래서 두 채널 판도 같은 소리). 해설 소진 세기 1.0. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_물고기_20261101/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1101, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "w", "text": "물." },
+    { "id": "g", "text": "고기." },
+    { "id": "fq", "text": "물고기?", "emotion": "toneup" },
+    { "id": "f", "text": "물고기!" },
+    { "id": "n", "text": "눈." },
+    { "id": "t", "text": "눈물…", "emotion": "tonedown", "tempo": 0.85 },
+    { "id": "d", "text": "개." },
+    { "id": "sq", "text": "물개?", "emotion": "toneup" },
+    { "id": "s", "text": "물개!" }
+  ]
+}
