@@ -39,6 +39,14 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
  const lifeKey='synk.life-korean.progress.v1',lifeEvidence={};
  try{
   const health=await waitServer();assert.equal(health.mode,'account');assert.equal(health.database,null);assert.equal(health.rehearsal,false);
+  if(!publicPayload){
+   for(const file of ['holdout.mjs','review/holdout-20261028.json']){
+    const response=await fetch(url+'/world/topik-items/'+file);assert.equal(response.status,200);
+    assert.equal(await response.text(),fs.readFileSync(path.join(root,'experiences/topik-items',file),'utf8'));
+   }
+   for(const file of ['catalog.mjs','review/holdout-20261028.json.bak'])assert.equal((await fetch(url+'/world/topik-items/'+file)).status,404);
+   assert.equal((await fetch(url+'/world/topik-items/review%5Choldout-20261028.json')).status,403);
+  }
   assert.equal((await fetch(url+'/api/world/rehearsal/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accountKey:'player-a'})})).status,404);
   browserServer=await playwright.chromium.launchServer({channel:'chrome',headless:true,ignoreDefaultArgs:['--disable-back-forward-cache'],timeout:30000});browser=await playwright.chromium.connect(browserServer.wsEndpoint());
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});context.setDefaultTimeout(20000);
@@ -140,7 +148,8 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await page.getByRole('button',{name:/내 차림으로 동네 열기/}).click();await page.waitForFunction(()=>!!document.querySelector('iframe'));
   const frame=()=>page.frames().find(f=>f.url().includes('/town/day.html'));await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SYNKTownDay?.metrics().connected);
   assert.equal(await frame().evaluate(()=>SYNKTownDay.metrics().worldLinked),true);assert.ok(calls.some(c=>c.path.endsWith('/synk-town/state')));assert.ok(calls.some(c=>c.path.endsWith('/synk-town/pulse')&&c.classId===C));assert.ok(!calls.some(c=>c.path.endsWith('/synk-town/presence')),'W3 town keeps its lease by pulse');
-  const exposed=await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost));assert.deepEqual(exposed,['appearance','subscribe','refresh','request','placement','choosePlacement','dispose']);
+  const exposed=await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost));assert.deepEqual(exposed,['appearance','subscribe','languageContext','refresh','request','placement','choosePlacement','dispose']);
+  assert.deepEqual(await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost.languageContext())),['summary','today']);
   await page.screenshot({path:path.join(output,'town-mobile.png')});
   await page.evaluate(()=>window.__synkWorld.client.logout());assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.client.snapshot),null);assert.equal(await page.evaluate(()=>window.SYNKWorldTownHost),undefined);
   // Restore an actual verified browser account after sign-out, including a historical stale marker.

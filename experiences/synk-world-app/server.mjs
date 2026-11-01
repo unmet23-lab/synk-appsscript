@@ -93,8 +93,10 @@ const server=http.createServer(async(req,res)=>{
   else if(allowedGames.has(first)){base=path.resolve(root,'..',first);pathname=pathname.slice(first.length+1);}
   // 내 위치 짧은 진단의 낱말 듣기(world-diagnostic-items.mjs): 레이싱은 게임 폴더를 열지 않고 낱말 녹음만 내준다.
   else if(/^\/korean-racing\/assets\/narration\/w\d{4}\.mp3$/.test(pathname)){base=path.resolve(root,'../korean-racing');pathname=pathname.slice('/korean-racing'.length);}
-  // TOPIK 문항 묶음의 듣기 소리(공개 은행 world-topik-items.json의 audio.file): 문항 폴더는 열지 않고 소리만.
+  // 공개 듣기 소리와 학습 클라이언트의 평가 문항 제외 목록만 제공한다.
   else if(/^\/topik-items\/audio\/[a-z0-9-]+\.mp3$/.test(pathname)){base=path.resolve(root,'../topik-items');pathname=pathname.slice('/topik-items'.length);}
+  else if(['/topik-items/holdout.mjs','/topik-items/review/holdout-20261028.json'].includes(pathname)){base=path.resolve(root,'../topik-items');pathname=pathname.slice('/topik-items'.length);}
+  else if(pathname.startsWith('/topik-items/')){res.writeHead(404).end();return;}
   else if(pathname.startsWith('/synk-world-home/')){pathname=pathname.slice('/synk-world-home'.length);base=home;}
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
   // 말하기 연습 시범(10-21, 플래그 꺼짐 · 공개 빌드 목록에는 아직 없다): 모듈·글·문항과 3번 문항 그림 칸.
