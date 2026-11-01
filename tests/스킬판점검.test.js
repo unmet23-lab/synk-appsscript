@@ -23,14 +23,16 @@ const os = require('node:os');
 const ROOT = path.join(__dirname, '..');
 const 점검 = require(path.join(ROOT, 'tools', '스킬판점검.js'));
 
-/* 표를 임시로 갈아 끼우고 읽어 본다 — 원본은 반드시 되돌린다. */
+/* 표를 임시 파일에 써서 읽어 본다 — 실물 표는 건드리지 않는다. 실물을 갈아 끼웠다 되돌리던 때는 공용 작업본에서
+ * 둘이 함께 돌면 뒤엣것이 가짜 표를 「원본」으로 읽어 되돌려, 실물이 아래 「〃」 시험의 첫째·둘째 표로 남았다(11-02). */
 function 표로읽기(내용) {
-  const 원본 = fs.readFileSync(점검.표경로);
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), '스킬판점검-'));
   try {
-    fs.writeFileSync(점검.표경로, 내용, 'utf8');
-    return 점검.표읽기();
+    const 임시 = path.join(폴더, '외부반입_출처.md');
+    fs.writeFileSync(임시, 내용, 'utf8');
+    return 점검.표읽기(임시);
   } finally {
-    fs.writeFileSync(점검.표경로, 원본);
+    fs.rmSync(폴더, { recursive: true, force: true });
   }
 }
 

@@ -46,11 +46,11 @@ const 조용한날 = 7;
 // 표의 「원본이 있는 곳」 칸에서 owner/repo 와 폴더 경로를 뽑는다.
 // 적는 꼴은 줄마다 `owner/repo` → `폴더경로` 하나뿐이다. 「〃」 상속을 일부러 안 받는다 —
 // 상속은 줄을 옮기거나 지울 때 조용히 엉뚱한 저장소를 가리킨다.
-function 표읽기() {
-  if (!fs.existsSync(표경로)) {
-    return { 오류: `표가 없다: ${path.relative(저장소뿌리, 표경로)}` };
+function 표읽기(경로 = 표경로) {
+  if (!fs.existsSync(경로)) {
+    return { 오류: `표가 없다: ${path.relative(저장소뿌리, 경로)}` };
   }
-  const 줄들 = fs.readFileSync(표경로, 'utf8').split(/\r?\n/);
+  const 줄들 = fs.readFileSync(경로, 'utf8').split(/\r?\n/);
   const 항목 = [];
   const 성한줄 = [];
 
