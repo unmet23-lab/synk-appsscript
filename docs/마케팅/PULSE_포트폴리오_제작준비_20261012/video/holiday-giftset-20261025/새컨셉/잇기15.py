@@ -291,6 +291,10 @@ def mix(film):
     place(T("결", 2.0), glass_bell(), -15, at="start")
     # 4.1판: 빛 한 줄이 제품 앞을 훑는 동안(결 2.7~3.9초) 가는 얼음 쉬머 — 그림은 바뀌었는데 소리가 없었다(Fable 4판 P3)
     place(T("결", 2.8), frozen_shimmer(sfx("유리깨짐"), 1.0, seed=11), -34, at="start", fade_in=0.35, fade_out=0.55, pan=0.1)
+    # 4.2판: 훑기 정점(결 3.45초 — 단지 금박이 가장 밝을 때)에 작은 봉우리(Fable 4.1 「종 꼬리와 3 dB 차 평탄」)
+    place(T("결", 3.42), frozen_shimmer(sfx("유리깨짐"), 0.4, seed=12), -28, at="start", fade_in=0.06, fade_out=0.25, pan=0.2)
+    # 4.2판: 14.5초 앰플 캡 글린트에 짧은 「팅」 — 그림은 별인데 귀가 조용했다(Fable 4.2). 유리 종 머리만 높은 몫으로, 앰플이 왼쪽
+    place(T("결", 3.77), highpass(glass_bell(1.0), 2500)[: int(0.45 * SR)], -30, at="start", fade_out=0.3, pan=-0.25)
     # 작은 공간 소리 — 디지털 무음 대신(지난 판 원본 실측 −41), 끝 0.4초에 잦아든다
     rng = np.random.default_rng(7)
     air = bandpass(rng.standard_normal((n, 2)).astype(np.float32), 60, 1500)
@@ -311,7 +315,7 @@ def sound(args):
 
 
 # ── 이름 ────────────────────────────────────────────────────────────────────
-NAME_AT = 2.35  # 결 원천 시각 — 단지가 멈춘 뒤(1.9) · 유리 종(2.0) 뒤
+NAME_AT = 2.45  # 결 원천 시각 — 단지가 멈춘 뒤(1.9) · 유리 종(2.0) 뒤, 4.2판은 뚜껑 결정이 다 자라 가는 뒤(2.35 → 2.45, Fable 4.1 P2-A)
 NAME_POS = 0.265  # 화면 높이 비율 — 제품 바로 위 밤(0.215는 글자 위 1/5이 비어 「시안 · 임시 여백」, 3판 시험관 둘 · Fable). 아래는 앰플 반사의 뚜껑이 0.87에 오고, 세로 SNS 자막 · 단추에 가린다
 
 
@@ -353,6 +357,30 @@ def star_glint(v, f, amp):
     return v
 
 
+# 4.2판: 끝 표면 — 14.5초 앰플 캡 꼭짓점 글린트 한 점, 끝 0.3초 뚜껑 결정 팔 위 미세 반짝임 둘(Fable 4.1 P2-B 「끝 1.5초가 비고 면이
+# 완벽해 견본 티」). (결 원천 시각, 화면 x · y(1080×1920, 결 113장에서 잰 자리), 세기, 빛줄 길이)
+# 뚜껑 반짝임 둘은 0.55 · 0.45 · 빛줄 42 · 36 px에서 스틸로 점이 안 짚였다(Fable 4.2 「훑기가 떠나는 하이라이트에 섞임」) — 세게 · 크게
+END_GLINTS = ((3.77, 327.0, 717.0, 0.75, 70.0), (3.86, 790.0, 930.0, 1.0, 58.0), (3.95, 592.0, 905.0, 0.9, 52.0))
+
+
+def small_glint(v, cx, cy, amp, L):
+    """작은 별빛 한 점 — 가는 빛줄 셋(결정 팔 방향) + 작은 심, 스크린 섞기."""
+    x0, x1, y0, y1 = int(cx - 2.2 * L), int(cx + 2.2 * L), int(cy - 2.2 * L), int(cy + 2.2 * L)
+    yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+    dx, dy = xx - cx, yy - cy
+    glow = np.exp(-(dx ** 2 + dy ** 2) / (2 * 4.0 ** 2)) + 0.2 * np.exp(-(dx ** 2 + dy ** 2) / (2 * 14.0 ** 2))
+    for deg in (23.0, 82.0, 142.0):
+        a = math.radians(deg)
+        al = dx * math.cos(a) - dy * math.sin(a)
+        pe = dx * math.sin(a) + dy * math.cos(a)
+        glow = glow + np.exp(-np.abs(al) / (L * 0.42)) * np.exp(-(pe / 1.1) ** 2 / (1 + np.abs(al) / L))
+    glow = np.clip(glow * amp, 0, 1)[..., None]
+    col = np.array([1.0, 0.95, 0.86], np.float32)
+    seg = v[y0:y1, x0:x1] / 255.0
+    v[y0:y1, x0:x1] = (1 - (1 - seg) * (1 - glow * col)) * 255.0
+    return v
+
+
 # ── 잇기 ────────────────────────────────────────────────────────────────────
 def load(d, f, size):
     from PIL import Image
@@ -387,6 +415,11 @@ def assemble(args):
                 star = (1 + u / 0.05) if -0.05 < u <= 0 else (math.exp(-u / 0.07) if u > 0 else 0.0)
                 if star > 0.02:
                     v = star_glint(v, f, star)
+                for t_g, gx, gy, ga, gl in END_GLINTS:
+                    ug = f / FPS - t_g
+                    k = (1 + ug / 0.04) if -0.04 < ug <= 0 else (math.exp(-ug / 0.08) if ug > 0 else 0.0)
+                    if k > 0.02:
+                        v = small_glint(v, gx, gy, ga * k, gl)
             t = i / FPS
             a = min(1.0, max(0.0, (t - name_at) / 0.6))
             if a > 0:
