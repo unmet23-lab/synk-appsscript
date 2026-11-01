@@ -115,7 +115,7 @@ export const PILOT = {
   media: ['taeo-listen.mp4', 'taeo-reply.mp4', 'taeo-still.webp', 'taeo-still-blur.webp',
    'senior-01.mp3', 'senior-03.mp3', 'senior-04.mp3', 'senior-ask-1.mp3', 'senior-ask-2.mp3', 'senior-ask-3.mp3',
    'model-6.mp3', 'model-7.mp3', 'model-8.mp3', 'SUIT-Variable.woff2',
-   ...[...Object.values(COACH_VOICE).map((v) => v.file), ...SHOWCASE_CUTS.flatMap((c) => cutParts(c).map((p) => cutFile(c, p)))].filter(built)],
+   ...['InterTight-Medium.woff2', 'InterTight-Bold.woff2', 'DMMono-Regular.woff2', 'DMMono-Medium.woff2', ...Object.values(COACH_VOICE).map((v) => v.file), ...SHOWCASE_CUTS.flatMap((c) => cutParts(c).map((p) => cutFile(c, p)))].filter(built)],
   listenLoop: '/media/taeo-listen.mp4',
   poster: STILL,
   backdrop: '/media/taeo-still-blur.webp',

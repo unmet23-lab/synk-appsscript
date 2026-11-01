@@ -206,3 +206,29 @@ test('쇼케이스 영상 자리는 학생 목소리 구간 뒤에서만 선배 
   const jobs=showcaseJobs([{cut:'C2',src:'C2.mp4',listen:[0.3,4.2],reply:[4.3,null],reask:null}]);
   assert.deepEqual(jobs.map(j=>[j.out,j.kind]),[['c2-listen.mp4','video-silent'],['c2-reply.mp4','video']]);
 });
+// 11-02 장면 화면 = 시네마 자막 — 음성 구는 시범판 서버가 내는 Orbloom 사본(MIT)이고, 화면은 바깥 스크립트·글꼴을 부르지 않는다.
+test('장면 화면은 바깥 스크립트 없이 Orbloom 사본을 쓰고 고정폭 라벨에 한글을 넣지 않는다',async t=>{
+  const dir=new URL('../experiences/drama/pilot/',import.meta.url);
+  const read=f=>fs.readFile(new URL(f,dir),'utf8');
+  const [html,js,css,orb]=await Promise.all(['index.html','pilot.mjs','pilot.css','orbloom.mjs'].map(read));
+  assert.match(orb,/^\/\*! orbloom@0\.1\.0[\s\S]*MIT License[\s\S]*Ricky Bharti/);
+  for(const src of [html,js,css,orb])assert.doesNotMatch(src,/https?:\/\/(?!github\.com\/rickybharti)[^\s'"]+\.(?:m?js|css|woff2?)/);
+  assert.deepEqual([...js.matchAll(/(?:import\s*\(|from\s+)'([^']+)'/g)].map(m=>m[1]).sort(),['./orbloom.mjs','./strings.mjs']);
+  // 고정폭(.k · .who · .ep · .mstate · 표지 k) 자리에 넣는 글은 영문만이다. tx(...)·h('b', ...)(산세리프 한글 안내)는 빼고 본다.
+  const hangul=/[가-힣]/;
+  const literals=src=>[...src.replace(/tx\([^)]*\)/g,'').replace(/h\('b'[^)]*\)/g,'').matchAll(/'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`]*)`/g)].map(m=>m[1]??m[2]);
+  const spots=[
+    ...[...js.matchAll(/h\('p', \{ class: 'k' \},([^\n]*)/g)].map(m=>m[1]),                    // .k 줄
+    ...[...js.matchAll(/orbMode\('[a-z]+', ([^{\n]*?)(?:, \{|\);)/g)].map(m=>m[1]),            // 구 상태 라벨
+    ...[...js.matchAll(/const label = \(sec\) => (`[^`]*`)/g)].map(m=>m[1]),                     // 녹음 중 라벨
+    ...[...js.matchAll(/subs\([^,\n]+, [^,\n]+, ([^,)\n]+)/g)].map(m=>m[1]),                    // 자막 화자
+    ...[...js.matchAll(/\bk: ('[^']*')/g)].map(m=>m[1]),                                        // 표지 작은 글
+    js.match(/const PHASE_TAG = \{[^}]*\}/)[0],                                                  // 회차 알약
+  ];
+  assert.ok(spots.length>=12,`찾은 자리 ${spots.length}`);
+  for(const spot of spots)for(const lit of literals(spot))assert.doesNotMatch(lit,hangul,`${lit} ← ${spot.slice(0,80)}`);
+  const app=await setup(t);
+  await fs.writeFile(path.join(app.testRoot,'orbloom.mjs'),'export {};');
+  const served=await fetch(`${app.origin}/orbloom.mjs`);
+  assert.equal(served.status,200);assert.match(served.headers.get('content-type'),/javascript/);
+});

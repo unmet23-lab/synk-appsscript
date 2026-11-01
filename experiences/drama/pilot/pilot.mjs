@@ -8,10 +8,29 @@
 //  · 녹음 중에는 어떤 소리도 틀지 않고, 소리가 나는 동안에는 녹음을 시작하지 않는다(스피커 소리가 「내 대답」으로 받아 적히지 않게).
 //  · 새 상황의 한국어 모범은 /api/reveal 응답으로만 보인다. 첫 제출 전 화면에 한국어 답·첫 글자가 없다.
 //  · 마이크 거절·미지원은 한 번만 묻고, 이후엔 녹음 없이 따라 읽기로 이어 간다. 받아쓰기가 안 되면 자동으로 잘했다고 하지 않는다.
+//  · 겉은 장면 화면 = 시네마 자막(11-02, docs/디자인/드라마_장면/README.md): 대사는 자막, 아래 유리 카드, 녹음은 음성 구(Orbloom)를 누른다.
+//    구의 소리 세기는 녹음 스트림에서 이 창 안에서만 잰다(마이크를 따로 열지 않고, 소리를 밖으로 보내지 않는다).
+//    크롬 칩 · 불꽃은 해낸 순간(장면에서 되물은 뒤 스스로 고침 · 테이크 2 통과 · 새 상황 통과)에만.
 import { STR, endingFix } from './strings.mjs';
 
 const $ = (id) => document.getElementById(id);
-const ui = { stage: $('stage'), still: $('still'), loop: $('loop'), reply: $('reply'), subs: $('subs'), slate: $('slate'), panel: $('panel'), dialog: $('dialog'), voice: $('voice'), chip: $('analysisChip'), lang: $('langBtn') };
+const ui = { stage: $('stage'), still: $('still'), loop: $('loop'), reply: $('reply'), subs: $('subs'), slate: $('slate'), panel: $('panel'), dialog: $('dialog'), voice: $('voice'), chip: $('analysisChip'), lang: $('langBtn'),
+ app: $('app'), ep: $('epTag'), prog: $('prog'), win: $('win'), winText: $('winText'), mic: $('mic'), orbBtn: $('orbBtn'), orbCanvas: $('orbCanvas'), mstate: $('mstate'), micSub: $('micSub') };
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SPRING = 'cubic-bezier(.23,1,.32,1)';
+// fill 'both': 늦게 시작하는 움직임(delay)도 기다리는 동안 첫 모습(흐림·투명)을 유지한다 — 먼저 또렷하게 보였다 사라지지 않게.
+const anim = (el, kf, o) => (reduceMotion() || !el?.animate ? null : el.animate(kf, { fill: 'both', easing: SPRING, ...o }));
+// 자막 · 표지는 아래 판(카드 + 구) 위에서 끝나게 — 판 높이를 재어 --dock-h로 넘긴다(짧은 화면에서 겹치지 않게).
+const dockEl = document.querySelector('.dock');
+// 판이 화면을 거의 다 덮으면(긴 기록 · 새 상황 결과) 자막 · 표지를 둘 자리가 없어 숨긴다 — 같은 말은 카드에 있다.
+// 자막 · 표지를 띄우는 순간에도 직접 잰다(크기 감시는 다음 그림 때 돌아 한 박자 늦을 수 있다).
+function syncDock() {
+ if (!dockEl) return;
+ const dh = Math.ceil(dockEl.getBoundingClientRect().height);
+ ui.app.style.setProperty('--dock-h', `${dh}px`);
+ ui.app.classList.toggle('crowded', dh > ui.app.clientHeight - 230);
+}
+if (window.ResizeObserver && dockEl) new ResizeObserver(syncDock).observe(dockEl);
 
 // bootstrap이 아래 칸을 넘기지 않아도 돌도록 둔 기본값(content.mjs와 같은 파일).
 const FALLBACK = {
@@ -46,6 +65,7 @@ const S = {
  firstExposure: null,      // bootstrap·reset이 준 값(이번 실행 시작 때 새 상황이 처음인지)
  upload: null, rec: null, micWait: null, playing: false, listenLoop: '', loopHeld: false,
  step: 'boot', render: null,
+ orb: null, orbAction: null, cardKey: null, // 음성 구 · 구를 눌렀을 때 할 일 · 지금 떠 있는 대사 카드(올라오는 움직임은 새 카드에만)
 };
 const t = () => STR[S.lang];
 const tx = (key, ...a) => { const v = t()[key]; return typeof v === 'function' ? v(...a) : v; };
@@ -65,7 +85,86 @@ function h(tag, props = {}, ...kids) {
  for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
  return n;
 }
-const panel = (...nodes) => { ui.panel.replaceChildren(...nodes.flat(Infinity).filter((n) => n != null && n !== false)); ui.panel.scrollTop = 0; syncPlayable(); };
+// busy: 녹음 · 받아 적기 동안 카드를 보이되 누르지도 키보드로 닿지도 못하게(inert).
+const setBusy = (on) => { ui.panel.classList.toggle('busy', on); ui.panel.inert = on; };
+const panel = (...nodes) => { setBusy(false); ui.panel.replaceChildren(...nodes.flat(Infinity).filter((n) => n != null && n !== false)); ui.panel.scrollTop = 0; syncPlayable(); syncDock(); };
+// 대사 카드가 새로 뜰 때만 아래에서 탄력 있게 올라온다(같은 차례를 다시 그릴 때는 그대로).
+function cardIn(key) {
+ if (S.cardKey === key) return;
+ S.cardKey = key;
+ // fill 'backwards': 끝난 뒤에는 움직임 값을 남기지 않는다 — 남기면 .busy의 흐려짐(opacity)이 먹지 않는다.
+ anim(ui.panel, [{ opacity: 0, transform: 'translateY(60%)' }, { opacity: 1, transform: 'translateY(-6px)', offset: .7 }, { opacity: 1, transform: 'none' }], { duration: 650, fill: 'backwards' });
+}
+
+/* ───────── 위 띠: 회차 알약 · 진행 띠 ───────── */
+const PHASE_TAG = { intro: 'EP.01 · Scene 2', scene: 'EP.01 · Scene 2', take2: 'EP.01 · Take 2', transfer: 'New situation', wrap: 'EP.01 · Today' };
+function progCells() { return S.boot ? sceneItems().length + 3 : 10; }
+function setProg(n) {
+ const total = progCells();
+ if (ui.prog.children.length !== total) ui.prog.replaceChildren(...Array.from({ length: total }, () => h('i')));
+ [...ui.prog.children].forEach((c, k) => c.style.setProperty('--p', k < n ? 1 : 0));
+}
+function setPhase(phase, n) { ui.ep.textContent = PHASE_TAG[phase] || PHASE_TAG.scene; if (n != null) setProg(n); }
+
+/* ───────── 음성 구(Orbloom) ───────── */
+const ORB_THEME = { preset: 'nebula-violet-02', id: 'synk-drama', seed: 2.4,
+ colors: { base: '#0d0b1c', interior: '#030208', accents: ['#8b7bff', '#6fd3ff', '#ffffff'] },
+ appearance: { intensity: 1, detail: .78, glass: .5, glow: .95 }, motion: { speed: .8, drift: .6 },
+ audioResponse: { brightness: 1.25, motion: .65, pulse: .95 } };
+async function initOrb() {
+ try {
+  const { createOrb, createOrbTheme } = await import('./orbloom.mjs');
+  S.orb = createOrb(ui.orbCanvas, { theme: createOrbTheme(ORB_THEME), quality: 'balanced', state: 'idle' });
+ } catch { ui.orbBtn.querySelector('.orb-motion')?.classList.add('orb-no-webgl'); }
+}
+// 구 상태와 아래 라벨(고정폭 영문 — 한글은 넣지 않는다). action이 있으면 구를 눌러 그 일을 한다.
+function orbMode(state, label, { action = null, aria = '', sub = null } = {}) {
+ try { S.orb?.setState(state); } catch {}
+ ui.mstate.textContent = label;
+ ui.mstate.classList.toggle('on', state === 'speaking' || state === 'listening');
+ S.orbAction = action;
+ // 누를 수 없음(disabled)과 흐리게 보임은 나눈다 — 흐린 구는 「소리가 끝나면 누를 수 있음」(wait)일 때만, 해낸 순간은 밝게.
+ ui.orbBtn.disabled = !action || (state === 'listening' && S.playing);
+ ui.orbBtn.classList.toggle('wait', state === 'listening' && S.playing);
+ ui.orbBtn.setAttribute('aria-label', aria || label);
+ ui.micSub.replaceChildren(...(sub ? [sub] : []));
+ ui.mic.hidden = false;
+ syncDock();
+}
+function hideMic() { S.orbAction = null; ui.mic.hidden = true; syncDock(); try { S.orb?.setState('idle'); S.orb?.setAudioLevel(0); } catch {} }
+ui.orbBtn.addEventListener('click', () => { const f = S.orbAction; if (f && !ui.orbBtn.disabled) f(); });
+// 녹음 스트림의 세기를 구에 넣는다. 돌려줌: 끊는 함수.
+function orbListen(stream) {
+ if (!S.orb || !stream) return () => {};
+ try {
+  const ctx = new AudioContext(); const src = ctx.createMediaStreamSource(stream);
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80;
+  const an = ctx.createAnalyser(); an.fftSize = 1024; an.smoothingTimeConstant = 0;
+  const mute = ctx.createGain(); mute.gain.value = 0;
+  src.connect(hp); hp.connect(an); an.connect(mute); mute.connect(ctx.destination);
+  ctx.resume().catch(() => {});
+  const detach = S.orb.attachAudioSource(an);
+  return () => { try { detach?.(); } catch {} try { src.disconnect(); hp.disconnect(); an.disconnect(); mute.disconnect(); ctx.close(); } catch {} try { S.orb.setAudioLevel(0); } catch {} };
+ } catch { return () => {}; }
+}
+
+/* ───────── 해낸 순간 — 크롬 칩 · 작은 불꽃(여기만) ───────── */
+function celebrate(s) {
+ ui.winText.textContent = tx('winChip');
+ ui.win.hidden = false;
+ anim(ui.win, [{ opacity: 0, transform: 'translate(-50%,0) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1.06)', offset: .65 }, { opacity: 1, transform: 'translate(-50%,0) scale(1)' }], { duration: 600 });
+ if (!reduceMotion()) {
+  const cols = ['#6fd3ff', '#8b7bff', '#ffcf5c', '#fff'];
+  for (let i = 0; i < 14; i++) {
+   const p = h('i', { class: 'spark', style: `background:${cols[i % 4]};left:50%;top:39%` }); ui.app.append(p);
+   const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 70;
+   p.animate([{ opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 0, transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(.3)` }], { duration: 800 + Math.random() * 300, easing: SPRING, fill: 'forwards' }).onfinish = () => p.remove();
+  }
+ }
+ try { S.orb?.setState('success'); } catch {}
+ const hide = () => { const a = anim(ui.win, [{ opacity: 1 }, { opacity: 0, transform: 'translate(-50%,-10px) scale(.96)' }], { duration: 300 }); if (a) a.onfinish = () => { ui.win.hidden = true; }; else ui.win.hidden = true; };
+ setTimeout(hide, 1500); // 단계가 바뀌어도 칩은 제때 사라진다
+}
 function applyStaticText() {
  document.documentElement.lang = S.lang;
  for (const n of document.querySelectorAll('[data-s]')) n.textContent = tx(n.dataset.s);
@@ -96,6 +195,7 @@ function syncPlayable() {
  // 소리가 나는 동안 녹음 단추를 막고, 녹음하는 동안 소리 단추를 막는다.
  for (const b of ui.panel.querySelectorAll('[data-rec]')) b.disabled = S.playing;
  for (const b of ui.panel.querySelectorAll('[data-sound]')) b.disabled = !!S.rec;
+ if (S.orbAction && !S.rec && !S.upload) { ui.orbBtn.disabled = S.playing; ui.orbBtn.classList.toggle('wait', S.playing); }
 }
 function stopSound() {
  for (const m of [ui.voice, ui.reply]) { try { m.pause(); } catch {} }
@@ -157,17 +257,36 @@ function startHeldLoop() {
 // 그 차례의 쇼케이스 고리: 장면에서 아직 어긋남이 없는 첫 시도면 listenFirst(C3), 그다음은 listen(C2·C4).
 const listenOf = (item, ctx) => (ctx.phase === 'scene' && !line(item.id).misses && item.listenFirst) || item.listen || null;
 const subsShowing = (ko) => !!ko && ui.subs.querySelector('.ko')?.textContent === ko;
-function subs(ko, meaning, who) {
+// 자막: 말하는 사람(고정폭 영문) · 대사 · 뜻. motion 'words'는 낱말마다 110ms로 흐림에서 떠오르고, 'pop'은 0.6배에서 톡 튀어 들어온다(되묻기).
+function subs(ko, meaning, who, motion = null) {
  if (!ko) { ui.subs.replaceChildren(); return; }
- ui.subs.replaceChildren(...[
-  who ? h('span', { class: 'who' }, who) : null,
-  h('p', { class: 'ko', lang: 'ko' }, ko),
-  meaning ? h('p', { class: 'mean', lang: 'en' }, meaning) : null].filter(Boolean));
+ syncDock();
+ const words = ko.split(' ').map((w) => h('span', { class: 'w' }, w));
+ const line = h('p', { class: 'ko', lang: 'ko' }, words.flatMap((w, i) => (i ? [' ', w] : [w])));
+ const whoEl = who ? h('span', { class: 'who' }, who) : null;
+ const meanEl = meaning ? h('p', { class: 'mean', lang: 'en' }, meaning) : null;
+ ui.subs.replaceChildren(...[whoEl, line, meanEl].filter(Boolean));
+ if (!motion) return;
+ anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
+ if (motion === 'pop') anim(line, [{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.08)', opacity: 1, offset: .6 }, { transform: 'rotate(-1.5deg) scale(1.02)', offset: .8 }, { transform: 'none', opacity: 1 }], { duration: 520 });
+ else words.forEach((w, i) => anim(w, [{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 520, delay: i * 110 }));
+ anim(meanEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: motion === 'pop' ? 150 : 150 + words.length * 110 });
 }
-function hideSlate() { clearTimeout(slate.t); ui.slate.hidden = true; ui.slate.classList.remove('go'); }
-function slate(text, ms = 1400) {
- ui.slate.textContent = text; ui.slate.hidden = false; ui.slate.classList.remove('go'); void ui.slate.offsetWidth; ui.slate.classList.add('go');
- clearTimeout(slate.t); slate.t = setTimeout(() => { ui.slate.hidden = true; }, ms);
+// 장면 사진은 0.6초에 떠오르고 9초 동안 1.1 → 1.0으로 아주 느리게 밀린다.
+function pushStill() { anim(ui.still, [{ transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 9000, easing: 'linear' }); }
+// 표지(회차 · 장면 끝): 작은 고정폭 영문 · 큰 제목(글자마다 70ms 흐림 → 또렷) · 빛 줄 · 작은 글. ms 뒤 사라진다(0이면 남긴다).
+function hideSlate() { clearTimeout(slate.t); ui.slate.hidden = true; }
+function slate(title, { k = '', sub = '', ms = 1400 } = {}) {
+ const t = h('span', { class: 't' }, [...title].map((c) => h('span', {}, c === ' ' ? ' ' : c)));
+ const bar = h('span', { class: 'bar' });
+ ui.slate.replaceChildren(...[k ? h('span', { class: 'k' }, k) : null, t, bar, sub ? h('span', { class: 's' }, sub) : null].filter(Boolean));
+ syncDock();
+ ui.slate.hidden = false;
+ anim(ui.slate, [{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+ [...t.children].forEach((c, i) => anim(c, [{ opacity: 0, filter: 'blur(10px)', transform: 'translateY(14px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 650, delay: 120 + i * 70 }));
+ anim(bar, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 900, delay: 400 });
+ clearTimeout(slate.t);
+ if (ms) slate.t = setTimeout(() => { const a = anim(ui.slate, [{ opacity: 1 }, { opacity: 0 }], { duration: 450 }); if (a) a.onfinish = () => { ui.slate.hidden = true; }; else ui.slate.hidden = true; }, ms);
 }
 
 /* ───────── 대화창(<dialog>) ───────── */
@@ -278,9 +397,10 @@ async function recordOnce(s, { onStart, onTick } = {}) {
   const t0 = performance.now(); let iv = 0; let deadline = 0; let finished = false;
   const limit = Math.max(1, S.maxSeconds - AUTO_STOP_MARGIN);
   const state = { rec, cancelled: false, unsupported: false, finish: null };
+  let unlisten = () => {};
   state.finish = () => {
    if (finished) return; finished = true;
-   clearInterval(iv); clearTimeout(deadline); stopStream(stream);
+   clearInterval(iv); clearTimeout(deadline); unlisten(); stopStream(stream);
    if (S.rec === state) S.rec = null;
    syncPlayable(); document.body.classList.remove('is-recording');
    const seconds = (performance.now() - t0) / 1000;
@@ -294,6 +414,7 @@ async function recordOnce(s, { onStart, onTick } = {}) {
   S.rec = state;
   try { rec.start(250); } catch { state.unsupported = true; state.finish(); return; }
   document.body.classList.add('is-recording');
+  unlisten = orbListen(stream);
   onStart?.();
   syncPlayable();
   // 자동 멈춤은 표시용 tick과 따로 잡는다(200ms 간격 검사로 늦게 멈추지 않게).
@@ -332,10 +453,21 @@ const lessonExtra = (k) => S.boot.lesson[k] || FALLBACK[k];
 const goalItem = () => studentItems().find((x) => x.goal) || studentItems().find((x) => x.id === 's1e01-7') || studentItems()[0];
 
 /* ───────── 공통 패널 조각 ───────── */
+// 단계 표시는 위 띠(회차 알약 · 진행 띠)가 맡는다 — 패널 안 단계 줄은 두지 않는다(시네마 자막 결). 돌려줌 null.
 function stepper(active) {
- const steps = [['scene', tx('scene')], ['take2', tx('take2')], ['transfer', tx('transferTitle')], ['wrap', tx('wrapTitle')]];
- const idx = steps.findIndex(([k]) => k === active);
- return h('ol', { class: 'steps', 'aria-label': 'progress' }, steps.map(([k, label], i) => h('li', { class: i < idx ? 'done' : i === idx ? 'now' : '' , 'aria-current': i === idx ? 'step' : null }, label)));
+ const base = S.boot ? sceneItems().length : 7;
+ setPhase(active, active === 'take2' ? base + 1 : active === 'transfer' ? base + 2 : active === 'wrap' ? base + 3 : null);
+ return null;
+}
+// 장면 카드의 빈칸에 낱말을 넘겨 넣는다(통과한 줄). 끝맺음을 고친 줄이면 마지막 「요」가 따뜻하게 빛난다.
+function revealBlanks(warmYo) {
+ const blanks = [...ui.panel.querySelectorAll('.blank')];
+ blanks.forEach((b, i) => {
+  const f = b.querySelector('.fill'); if (!f) return;
+  if (warmYo && i === blanks.length - 1 && f.textContent.endsWith('요')) f.replaceChildren(f.textContent.slice(0, -1), h('span', { class: 'yo' }, '요'));
+  b.classList.add('done'); b.removeAttribute('aria-label'); f.removeAttribute('aria-hidden');
+  anim(f, [{ opacity: 0, transform: 'translateY(60%) rotateX(80deg)' }, { opacity: 1, transform: 'none' }], { duration: 520, delay: i * 150 });
+ });
 }
 function blanked(text, item) {
  const words = (item.blanks || item.spec?.keys?.map((k) => k.word) || []).filter(Boolean).sort((a, b) => b.length - a.length);
@@ -346,7 +478,7 @@ function blanked(text, item) {
   for (const k of words) { const i = rest.indexOf(k); if (i >= 0 && (best < 0 || i < best)) { best = i; w = k; } }
   if (best < 0) { out.push(h('span', {}, rest)); break; }
   if (best) out.push(h('span', {}, rest.slice(0, best)));
-  out.push(h('span', { class: 'blank', style: `--n:${[...w].length}`, 'aria-label': '빈칸' }));
+  out.push(h('span', { class: 'blank', style: `--n:${[...w].length}`, 'aria-label': '빈칸' }, h('span', { class: 'fill', 'aria-hidden': 'true' }, w)));
   rest = rest.slice(best + w.length);
  }
  return out;
@@ -421,12 +553,13 @@ async function boot() {
  intro();
 }
 
+// 첫 화면: 회차 표지(「Episode 01 · 개강 첫날 · 나는 한국에 막 온 유학생」)가 장면 위에 남고, 아래 유리 카드에 상대 · 때와 곳 · 시작 단추.
 function intro() {
- const s = newScope(); S.step = 'intro'; S.render = intro; hideSlate();
- stageMode('still'); subs(null);
+ const s = newScope(); S.step = 'intro'; S.render = intro; S.cardKey = null;
+ stageMode('still'); subs(null); hideMic(); setPhase('intro', 0); pushStill();
+ slate(tx('episodeTitle'), { k: 'Episode 01', sub: tx('heroLine'), ms: 0 });
+ cardIn('intro');
  panel(h('div', { class: 'intro' },
-  h('p', { class: 'eyebrow' }, tx('episode')),
-  h('h1', {}, tx('heroLine')),
   h('dl', { class: 'cast' },
    h('div', {}, h('dt', {}, tx('partner')), h('dd', {}, tx('rolePartner'))),
    h('div', {}, h('dt', {}, tx('placeLabel')), h('dd', {}, tx('place'))),
@@ -440,6 +573,7 @@ function intro() {
 /* ───────── 장면 ───────── */
 async function runScene(i) {
  const s = newScope(); S.step = 'scene'; S.render = () => runScene(i); hideSlate();
+ setPhase('scene', i);
  const item = sceneItems()[i];
  if (!item) return afterScene();
  if (item.type === 'actor') {
@@ -450,13 +584,14 @@ async function runScene(i) {
  return studentTurn(item, s, { phase: 'scene', onDone: () => runScene(i + 1) });
 }
 
+// 선배 대사: 아래 카드는 내리고 대사는 자막으로만(영상이 주인공). 구는 쉬는 상태.
 async function actorBeat(item, s, { from } = {}) {
- const who = tx('rolePartner').split(' · ')[0];
- panel(stepper(S.step === 'scene' ? 'scene' : 'take2'), h('div', { class: 'beat' }, h('p', { class: 'eyebrow' }, who), h('p', { class: 'actor-line', lang: 'ko' }, item.text), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null));
- subs(item.text, item.meaning);
+ S.cardKey = null; panel();
+ orbMode('idle', 'Listen');
+ subs(item.text, item.meaning, 'Taeo', 'words');
  let ok;
  if (item.video) { stageMode('reply'); ok = await playVideo(item.video, from ?? item.videoStart ?? 0, item.videoEnd, s); }
- else { stageMode('still'); ok = await playUrl(item.audio, s); }
+ else { stageMode('still'); pushStill(); ok = await playUrl(item.audio, s); }
  if (!live(s)) return false;
  if (!ok) {
   const v = await choose(s, (go) => [stepper(S.step === 'scene' ? 'scene' : 'take2'), h('div', { class: 'beat' }, h('p', { class: 'actor-line', lang: 'ko' }, item.text), h('div', { class: 'notice quiet' }, tx('mediaFail')),
@@ -471,7 +606,8 @@ async function actorBeat(item, s, { from } = {}) {
 async function reask(s, idx, item) {
  const r = lessonExtra('reasks')[Math.min(idx, 2)];
  if (!r) return;
- subs(r.text, null);
+ subs(r.text, null, 'Taeo', 'pop');
+ orbMode('idle', 'Listen');
  let ok = false;
  if (idx === 0 && item?.reaskVideo) { stageMode('reply'); ok = await playVideo(item.reaskVideo, 0, null, s); }
  if (!ok && live(s)) { stageMode('still'); await playUrl(r.audio, s); }
@@ -480,48 +616,53 @@ async function reask(s, idx, item) {
 }
 
 // 내 차례 패널. 돌려줌: 'record' | 'next' | 'skip' | 'mic' | 'open' | null
+// 대사 카드(유리): YOUR TURN + 한글 안내, 빈칸 대사, 뜻, 작은 단추. 녹음은 아래 음성 구를 누른다.
 function turnPanel(item, s, ctx, extra = []) {
  const L = line(item.id);
  const showFull = L.opened || micUnusable() || ctx.mode === 'readAlong';
  const practice = ctx.mode === 'practice' && !L.practiceOpened;
- return choose(s, (go) => [
-  stepper(ctx.phase === 'scene' ? 'scene' : 'take2'),
-  h('div', { class: 'turn' },
-   h('p', { class: 'eyebrow' }, h('span', { class: 'live-dot', 'aria-hidden': 'true' }), ctx.phase === 'retake' ? `${tx('take2')} · ${tx('yourTurn')}` : tx('yourTurn')),
-   micNotice(),
-   ...extra,
-   h('div', { class: 'card' },
+ const hint = practice ? tx('cardHintPractice') : ctx.phase === 'retake' ? tx('cardHintRetake') : showFull ? tx('cardHintFull') : tx('cardHint');
+ const p = choose(s, (go) => {
+  if (micUnusable()) hideMic();
+  else orbMode('listening', 'Tap to speak', { action: () => go('record'), aria: tx('record') });
+  return [
+   stepper(ctx.phase === 'scene' ? 'scene' : 'take2'),
+   h('div', { class: 'turn' },
+    h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), ctx.phase === 'retake' ? 'Take 2 · Your turn' : 'Your turn', h('b', {}, hint)),
+    micNotice(),
+    ...extra,
     practice
      ? [h('p', { class: 'mean big' }, item.meaning || ''), h('p', { class: 'fine' }, tx('practiceHint'))]
-     : [h('p', { class: 'ko line', lang: 'ko' }, showFull ? item.text : blanked(item.text, item)), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null]),
-   h('div', { class: 'row aux' },
-    item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null,
-    (!showFull || practice) ? h('button', { type: 'button', class: 'ghost', on: { click: () => go('open') } }, tx('openCard')) : null),
-   micUnusable()
-    ? h('div', { class: 'row main' },
-      h('p', { class: 'fine' }, tx('readAlong')),
-      h('button', { type: 'button', class: 'pill', on: { click: () => go('next') } }, tx('next')),
-      h('button', { type: 'button', class: 'link', on: { click: () => go('mic') } }, tx('micRetry')))
-    : h('div', { class: 'row main' },
-      h('button', { type: 'button', class: 'rec', data: { rec: '1' }, disabled: S.playing, on: { click: () => go('record') } }, h('span', { class: 'rec-dot', 'aria-hidden': 'true' }), tx('record')),
-      h('button', { type: 'button', class: 'link', on: { click: () => go('skip') } }, tx('skipLine'))),
-  )]);
+     : [h('p', { class: 'cardline ko', lang: 'ko' }, showFull ? item.text : blanked(item.text, item)), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null],
+    h('div', { class: 'row aux' },
+     item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null,
+     (!showFull || practice) ? h('button', { type: 'button', class: 'ghost', on: { click: () => go('open') } }, tx('openCard')) : null,
+     micUnusable() ? null : h('button', { type: 'button', class: 'link', on: { click: () => go('skip') } }, tx('skipLine'))),
+    micUnusable()
+     ? h('div', { class: 'row main' },
+       h('p', { class: 'fine' }, tx('readAlong')),
+       h('button', { type: 'button', class: 'pill', on: { click: () => go('next') } }, tx('next')),
+       h('button', { type: 'button', class: 'link', on: { click: () => go('mic') } }, tx('micRetry')))
+     : null,
+   )];
+ });
+ cardIn(`${ctx.phase}:${item.id}`);
+ return p;
 }
 
+// 녹음 중: 카드는 그대로 두고(누를 수 없게) 구가 말소리에 반응한다. 구를 다시 누르면 말 끝, 아래 「취소」.
 function recordingPanel(s) {
- const left = h('span', { class: 'left' }, tx('secondsLeft', S.maxSeconds));
- panel(h('div', { class: 'turn recording' },
-  h('p', { class: 'eyebrow' }, h('span', { class: 'live-dot rec', 'aria-hidden': 'true' }), tx('recording'), ' · ', left),
-  h('div', { class: 'meter', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i'), h('i')),
-  h('div', { class: 'row main' },
-   h('button', { type: 'button', class: 'rec on', on: { click: () => stopRecorder(false) } }, h('span', { class: 'stop-sq', 'aria-hidden': 'true' }), tx('stop')),
-   h('button', { type: 'button', class: 'link', on: { click: () => stopRecorder(true) } }, tx('cancel')))));
- return (sec) => { left.textContent = tx('secondsLeft', sec); };
+ setBusy(true);
+ const label = (sec) => `Speaking · ${sec}s`;
+ orbMode('speaking', label(S.maxSeconds), { action: () => stopRecorder(false), aria: tx('stop'),
+  sub: h('button', { type: 'button', class: 'link', on: { click: () => stopRecorder(true) } }, tx('cancel')) });
+ return (sec) => { ui.mstate.textContent = label(sec); };
 }
 
+// 받아 적는 중: 카드는 그대로, 구는 생각하는 상태.
 async function sendingPanel(item, phase, take, s) {
- panel(h('div', { class: 'turn' }, h('div', { class: 'wait' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), tx('sending')),
-  h('button', { type: 'button', class: 'link', on: { click: () => S.upload?.abort() } }, tx('cancelSend'))));
+ setBusy(true);
+ orbMode('thinking', 'Transcribing', { aria: tx('sending'), sub: h('button', { type: 'button', class: 'link', on: { click: () => S.upload?.abort() } }, tx('cancelSend')) });
  return sendTake(item.id, phase, take, s);
 }
 
@@ -546,16 +687,20 @@ function selfCheckPanel(s, take, msgKey, stepKey) {
 }
 
 // 녹음 → (받아쓰기) 한 번. 돌려줌 {take, res} | {mic:false} | null
+// 마이크 준비: 카드는 그대로(누를 수 없게), 구 아래에 허용 안내와 「취소」.
 function micWaitPanel() {
- panel(h('div', { class: 'turn preparing' },
-  h('div', { class: 'wait' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), tx('micPreparing')),
-  h('p', { class: 'fine' }, tx('micPreparingHint')),
-  h('button', { type: 'button', class: 'link', on: { click: () => stopRecorder(true) } }, tx('cancel'))));
+ setBusy(true);
+ orbMode('thinking', 'Preparing mic', { aria: tx('micPreparing'),
+  sub: h('span', { class: 'mic-hint' }, h('span', { class: 'fine' }, tx('micPreparingHint')), h('button', { type: 'button', class: 'link', on: { click: () => stopRecorder(true) } }, tx('cancel'))) });
 }
 async function captureAndSend(item, ctx, s) {
  micWaitPanel();
  let tick = null;
  const out = await recordOnce(s, { onStart: () => { if (live(s)) { tick = recordingPanel(s); startHeldLoop(); } }, onTick: (sec) => tick?.(sec) });
+ // 녹음이 끝나면 구를 내린다 — 다음 단계(받아 적는 중 · 되묻기 · 통과 · 다음 차례)가 구를 다시 정하고,
+ // 직접 확인 · 다시 녹음 · 너무 짧음 카드는 카드 안 단추로 잇는다(누를 일 없는 구에 상황과 다른 라벨을 남기지 않게).
+ const rest = () => { if (live(s)) hideMic(); };
+ rest();
  if (!live(s)) return null;
  if (!out) return null;
  if (out.mic === false) return { mic: false };
@@ -566,6 +711,7 @@ async function captureAndSend(item, ctx, s) {
  const take = addTake(item.id, ctx.phase, out.blob);
  if (!analysisOn()) return { take, res: { kind: 'off' } };
  const res = await sendingPanel(item, ctx.phase, take, s);
+ rest();
  return { take, res };
 }
 
@@ -628,8 +774,18 @@ async function studentTurn(item, s, ctx) {
   L.last = { obs, takeId: take.id, transcript: d.transcript || '' };
   if (obs.kind === 'note' && obs.note) {
    L.misses += 1;
+   if (obs.note.kind === 'ending') L.endingMissed = true;
    if (L.misses === 1) { await reask(s, 0, item); continue; }
    if (L.misses === 2) { L.opened = true; L.helped = true; continue; }
+  }
+  // 통과: 빈칸에 낱말이 넘겨 들어가고, 되물은 뒤 스스로 고친 줄이면 해낸 순간(크롬 칩 · 불꽃). 말로 판정하지는 않는다.
+  if (obs.kind === 'pass') {
+   setBusy(false); // 같은 카드에서
+   revealBlanks(!!L.endingMissed);
+   orbMode('success', 'Nice');
+   if (L.misses) celebrate(s);
+   await sleep(s, L.misses ? 1500 : 800);
+   if (!live(s)) return;
   }
   // pass · pending · 세 번째 어긋남 → 진행
   return ctx.onDone({ take, data: d });
@@ -656,16 +812,16 @@ function noteLines(note) {
 // 코치 목소리를 틀고 자막을 단다. 녹음 전(audio null)이면 아무것도 하지 않는다 — 패널 글로 충분하고, 들리지 않는 말을 자막으로 띄우지 않는다.
 function coachSay(cue, s, { replay = true } = {}) {
  if (!cue?.audio) { subs(null); return; }
- if (replay) { subs(cue.text, null, tx('coach')); playUrl(cue.audio, s); }
- else if (subsShowing(cue.text)) subs(cue.text, null, tx('coach'));
+ if (replay) { subs(cue.text, null, 'Coach', 'words'); playUrl(cue.audio, s); }
+ else if (subsShowing(cue.text)) subs(cue.text, null, 'Coach');
  else subs(null);
 }
 
 async function afterScene() {
  const s = newScope(); S.step = 'cut'; S.render = afterScene;
  const c = lessonExtra('coach');
- stageMode('still'); subs(null);
- slate(tx('sceneEnd'));
+ stageMode('still'); subs(null); hideMic(); S.cardKey = null; panel();
+ slate(tx('sceneEnd'), { k: 'Episode 01' });
  const cand = pickNote();
  const goal = goalItem();
  if (cand) {
@@ -674,23 +830,26 @@ async function afterScene() {
   const lastGoal = [...S.takes].reverse().find((x) => x.lineId === goal.id && x.phase === 'scene');
   S.retake = { lineId: goal.id, mode: 'practice', note: null, noteTakeId: lastGoal?.id || null, take2Id: null };
  }
- await sleep(s, 500);
+ await sleep(s, 1850); // 「장면 끝」 표지가 사라진 뒤에 카드가 올라온다(겹치지 않게)
  if (!live(s)) return;
+ hideSlate();
  // 코치 말은 노트가 있을 때만(연습 「다른 말로 한번 더」는 글 카드만). 기다리지 않는다 — 단추를 누르면 다음 단계의 newScope()가 소리를 정리한다.
  if (cand) coachSay(cand.note.kind === 'ending' ? c.noteEnding : c.noteOther, s);
  const item = studentItems().find((x) => x.id === S.retake.lineId);
  const noteTake = takeById(S.retake.noteTakeId);
  const [noteText, noteFix] = cand ? noteLines(cand.note) : [];
- const v = await choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
-  h('p', { class: 'eyebrow' }, cand ? tx('sceneEnd') : h('span', { class: 'tag' }, tx('practiceTag'))),
+ const chosen = choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
+  h('p', { class: 'k' }, cand ? 'Coach note' : 'Practice', h('b', {}, tx('sceneEnd'))),
   h('h2', {}, cand ? tx('coachNote') : tx('practiceTitle')),
   h('div', { class: 'card' }, h('p', { class: 'ko line', lang: 'ko' }, item.text), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null),
-  cand ? [h('p', { class: 'lead' }, noteText), h('p', { class: 'lead strong', lang: endingFix(cand.note) ? 'ko' : null }, noteFix), h('p', { class: 'fine' }, tx('noteHedge'))]
+  cand ? [h('p', { class: 'lead' }, noteText), endingFix(cand.note) ? h('p', { class: 'fix ko', lang: 'ko' }, noteFix.slice(0, -1), h('span', { class: 'yo' }, '요')) : h('p', { class: 'lead strong' }, noteFix), h('p', { class: 'fine' }, tx('noteHedge'))]
    : [h('p', { class: 'lead' }, tx('practiceBody'))],
   h('div', { class: 'row aux' }, noteTake ? mineBtn(noteTake, s) : null, item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null),
   h('p', { class: 'fine' }, tx('take2Lead')),
   h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('go') } }, tx('take2Start')),
    h('button', { type: 'button', class: 'link', on: { click: () => go('skip') } }, tx('toTransfer'))))]);
+ cardIn('after');
+ const v = await chosen;
  if (!live(s) || v == null) return;
  if (v === 'skip') { S.retake.skipped = true; return runTransfer(); }
  subs(null);
@@ -726,8 +885,11 @@ async function retakeResult(item, r) {
  }
  const noteTake = takeById(R.noteTakeId); const t2 = takeById(R.take2Id);
  let checked = null;
+ hideMic(); S.cardKey = null;
+ // 해낸 순간은 처음 그릴 때 한 번만(언어 바꾸기 · 확인 단추로 다시 그릴 때는 없이).
+ if (passed && !r.celebrated) { r.celebrated = true; celebrate(s); }
  const render = () => choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
-  h('p', { class: 'eyebrow' }, R.mode === 'practice' ? h('span', { class: 'tag' }, tx('practiceTag')) : tx('take2')),
+  h('p', { class: 'k' }, R.mode === 'practice' ? 'Practice · Take 2' : 'Take 2'),
   h('h2', {}, R.mode === 'practice' ? tx('practiceTitle') : tx('take2')),
   data?.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, data.transcript)) : null,
   msg ? h('p', { class: passed ? 'lead passed' : 'lead' }, passed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, msg) : null,
@@ -760,8 +922,9 @@ async function runTransfer() {
   T.spoke += 1;
  };
  const tr = S.boot.lesson.transfer;
- stageMode('still'); subs(null);
- if (T.tries === 0 && !T.introShown) { T.introShown = true; slate(tx('transferTitle'), 1200); }
+ stageMode('still'); subs(null); hideMic(); S.cardKey = null; panel();
+ // 표지가 사라진 뒤에 카드가 올라온다(겹치지 않게).
+ if (T.tries === 0 && !T.introShown) { T.introShown = true; slate(tx('transferTitle'), { k: 'New situation', ms: 1200 }); await sleep(s, 1650); if (!live(s)) return; hideSlate(); }
  await ensureConsent(s);
  if (!live(s)) return;
  const item = { id: tr.id };
@@ -792,6 +955,7 @@ async function runTransfer() {
    if (d.status === 'unclear') d.observation = { kind: 'pending', note: null, sure: false };
    T.unheard = 0;
    T.last = { kind: 'result', data: d };
+   if (d.observation?.kind === 'pass') celebrate(s); // 해낸 순간 — 처음 보는 상황에서 장소와 묻는 말을 찾았을 때
   }
  }
 }
@@ -816,8 +980,11 @@ function transferPanel(s, tr, T) {
    ...lines);
  }
  const promptKo = S.lang === 'ko' && tr.promptKo ? tr.promptKo : null;
- return choose(s, (go) => [stepper('transfer'), h('div', { class: 'transfer' },
-  h('p', { class: 'eyebrow' }, tx('transferTitle')),
+ const p = choose(s, (go) => {
+  if (micUnusable()) hideMic();
+  else orbMode('listening', T.tries ? 'Say it again' : 'Tap to speak', { action: () => go('record'), aria: T.tries ? tx('tryAgain') : tx('record') });
+  return [stepper('transfer'), h('div', { class: 'transfer' },
+  h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx('transferTitle'))),
   h('p', { class: 'lead' }, tx('transferLead')),
   h('div', { class: 'card situation' }, h('p', { class: 'fine' }, tx('transferPromptLabel')), h('p', { class: 'mean big', lang: 'en' }, tr.prompt), promptKo ? h('p', { class: 'fine' }, promptKo) : null),
   micNotice(),
@@ -829,11 +996,14 @@ function transferPanel(s, tr, T) {
   lastTake ? h('div', { class: 'row' }, mineBtn(lastTake, s)) : null,
   micUnusable()
    ? h('div', { class: 'row main' }, h('p', { class: 'fine' }, tx('readAlong')), h('button', { type: 'button', class: 'link', on: { click: () => go('mic') } }, tx('micRetry')))
-   : h('div', { class: 'row main' }, h('button', { type: 'button', class: T.tries ? 'ghost' : 'rec', data: { rec: '1' }, disabled: S.playing, on: { click: () => go('record') } }, h('span', { class: 'rec-dot', 'aria-hidden': 'true' }), T.tries ? tx('tryAgain') : tx('record'))),
+   : null,
   h('div', { class: 'row' },
    !T.revealed ? h('button', { type: 'button', class: 'link', on: { click: () => go('hint') } }, tx('hintBtn')) : null,
    (T.tries || micUnusable() || T.revealed || T.invalid >= INVALID_REPEAT) ? h('button', { type: 'button', class: T.tries ? 'pill' : 'ghost', on: { click: () => go('finish') } }, tx('finish')) : null),
- )]);
+  )];
+ });
+ cardIn('transfer');
+ return p;
 }
 
 async function revealModel(s, T) {
@@ -855,7 +1025,8 @@ async function revealModel(s, T) {
 /* ───────── 마침 ───────── */
 async function wrap({ replay = true } = {}) {
  const s = newScope(); S.step = 'wrap'; S.render = () => wrap({ replay: false }); hideSlate();
- stageMode('still');
+ stageMode('still'); hideMic();
+ if (replay) S.cardKey = null;
  // 언어 전환·실패 화면에서 돌아올 때는 코치 마침 말을 다시 틀지 않는다.
  coachSay(lessonExtra('coach').wrap, s, { replay });
  const items = studentItems();
@@ -873,7 +1044,8 @@ async function wrap({ replay = true } = {}) {
   // 촬영 이력(이번 실행에서 받아쓰기로 보낸 적 있음)과 지금 동의 상태를 따로 보인다. 철회해도 이미 받은 분석을 없던 일로 쓰지 않는다.
   const mode = S.sentRun ? 'on' : analysisCapable() ? 'off' : 'na';
   const withdrawn = S.sentRun && !analysisOn();
-  return choose(s, (go) => [stepper('wrap'), h('div', { class: 'wrap' },
+  const p = choose(s, (go) => [stepper('wrap'), h('div', { class: 'wrap' },
+  h('p', { class: 'k' }, 'Today', h('b', {}, tx('episode'))),
   h('h2', {}, tx('wrapTitle')),
   h('ul', { class: 'log' },
    h('li', {}, tick(spoken > 0), h('div', {}, h('b', {}, tx('wrapSpoken')), h('p', {}, tx('wrapLines', spoken, items.length)),
@@ -897,6 +1069,8 @@ async function wrap({ replay = true } = {}) {
    analysisOn() ? h('button', { type: 'button', class: 'link', on: { click: () => go('withdraw') } }, tx('withdrawShort')) : null),
   h('p', { class: 'fine foot' }, tx('privacyFoot')),
   )]);
+  cardIn('wrap');
+  return p;
  };
  let msg = null;
  for (;;) {
@@ -910,7 +1084,7 @@ async function wrap({ replay = true } = {}) {
 
 async function restart() {
  S.epoch += 1;
- const s = newScope(); S.step = 'reset'; S.render = null; subs(null);
+ const s = newScope(); S.step = 'reset'; S.render = null; subs(null); hideMic();
  panel(h('div', { class: 'wait' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), tx('loading')));
  let r = null;
  try { r = await api('/api/reset', { method: 'POST', json: {}, signal: s.signal }); } catch {}
@@ -939,4 +1113,5 @@ ui.lang.addEventListener('click', () => {
 window.addEventListener('pagehide', () => { stopRecorder(true); S.upload?.abort(); clearTakes(); });
 
 applyStaticText();
+initOrb();
 boot();

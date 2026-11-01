@@ -8,7 +8,7 @@
 //    선배의 대답(웃음+대사)은 학생 소리가 끝난 뒤(4.05초)부터 따로 자른다. 어떤 경로로도 Hana 소리가 「내 대답」처럼 나지 않는다.
 //  · mp3는 소리를 다시 인코딩하지 않는다(승인 목소리 그대로). ID3·인코더 표식만 뺀다.
 //  · 결과: experiences/drama/pilot/media/ + manifest.json(파일·바이트·sha256). 원천은 덮지 않는다.
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,6 +21,13 @@ const OUT = path.join(ROOT, 'experiences/drama/pilot/media');
 const SOUND = path.join(ROOT, 'experiences/drama/s1/소리');
 const FONT = path.join(ROOT, 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2');
 const FONT_SHA = 'aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23';
+const LATIN_FONTS = [
+ { src: 'docs/브랜드_폰트/InterTight/InterTight-Medium.ttf', out: 'InterTight-Medium.woff2' },
+ { src: 'docs/브랜드_폰트/InterTight/InterTight-Bold.ttf', out: 'InterTight-Bold.woff2' },
+ { src: 'docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf', out: 'DMMono-Regular.woff2' },
+ { src: 'docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf', out: 'DMMono-Medium.woff2' },
+];
+const LATIN_RANGE = 'U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+2190-2193,U+2713';
 
 const argv = process.argv.slice(2);
 const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : null; };
@@ -137,6 +144,15 @@ function main() {
  if (sha(FONT) !== FONT_SHA) throw new Error('SUIT 글꼴 지문이 다릅니다');
  if (!CHECK_ONLY) fs.copyFileSync(FONT, path.join(OUT, 'SUIT-Variable.woff2'));
  files.push({ file: 'SUIT-Variable.woff2', kind: 'font', source: 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2', sourceSha256: FONT_SHA });
+ // 장면 화면(11-02 시네마 자막)의 영문 Inter Tight · 영문 라벨 DM Mono — 영문·숫자·문장부호만 남긴 woff2(한글은 SUIT가 맡는다).
+ for (const f of LATIN_FONTS) {
+  const src = path.join(ROOT, f.src); const dst = path.join(OUT, f.out);
+  if (!CHECK_ONLY) {
+   const r = spawnSync('python', ['-m', 'fontTools.subset', src, `--unicodes=${LATIN_RANGE}`, `--output-file=${dst}`, '--flavor=woff2', '--layout-features=*', '--no-hinting'], { encoding: 'utf8' });
+   if (r.status !== 0) { console.error(`${f.out}: 글꼴을 줄이지 못했다(python fontTools 필요) — 화면은 SUIT로 대신한다\n${r.stderr || r.error || ''}`); fs.rmSync(dst, { force: true }); continue; }
+  }
+  if (fs.existsSync(dst)) files.push({ file: f.out, kind: 'font', source: f.src, sourceSha256: sha(src) });
+ }
 
  const problems = [];
  for (const f of files) {
