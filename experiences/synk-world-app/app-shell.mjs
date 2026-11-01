@@ -42,12 +42,14 @@ const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs')))
 let client,sheet=null,writing=null,writingOwner=null;
 let entryGate=null,worldRequested=false,sessionTask=null,sessionConfirmed=false,accountActionPending=false,entryIdentity='',entryDestinationHandled=false;
 let finishInitialRestore;const initialRestoreReady=new Promise(resolve=>{finishInitialRestore=resolve;});
+// 계정 기록이 서기 전에 고른 화면 언어 — 첫 계정 복원이 한 번만 존중하고 비운다(display-language-sync.mjs restoreDisplayLanguage choice).
+const languageChoice={language:null};
 // Loading and session restoration run behind the company splash. A failed
 // optional opening must never disable the existing account or guest entrance.
 function startOpening(replay=false){
  worldRequested=false;entryGate?.invalidate();home.setSceneActive?.(false);home.setEntryState?.({phase:'restoring'});
  return import(worldUrl('brand-opening/opening.mjs')).then(async({mountBrandOpening})=>{
-  const opening=mountBrandOpening({replay,reducedMotion:home.state.reduced});window.__synkOpening=opening;
+  const opening=mountBrandOpening({replay,reducedMotion:home.state.reduced,onLanguage:language=>{void selectLanguage(language).catch(()=>{});}});window.__synkOpening=opening;
   const reason=await opening.done;
   if(['pagehide','destroy'].includes(reason))return;
   worldRequested=true;await initialRestoreReady;return entryGate?.start();
@@ -218,7 +220,7 @@ function tutorStatus(owner=client.snapshot?.accountId||'guest'){
 function restoreTutor(){
  try{restoreTutorSelection({progress:life.progress,owner:life.owner,storage:localStorage,apply:(id,owner)=>home.applyTutorChoice?.(id,owner)});}catch{/* Preserve unreadable/conflicting records and expose recovery. */}
  // 계정에 고른 화면 언어가 있으면 그 언어로, 없으면 이 기기에서 고른 언어를 계정에 채운다(튜터 선택과 같은 기록).
- try{restoreDisplayLanguage({progress:life.progress});}catch{/* 저장 확인 화면이 따로 알린다. */}
+ try{restoreDisplayLanguage({progress:life.progress,choice:languageChoice});}catch{/* 저장 확인 화면이 따로 알린다. */}
  home.refreshTutorStatus?.();
 }
 async function prepareTutor(){
@@ -251,8 +253,12 @@ function resumeEntryAfterClosedLogin(){
 }
 // 화면 언어를 고르면(첫 실행·설정) 계정이면 생활 기록에도 둔다. 손님은 이 기기에만 둔다.
 async function selectLanguage(language){
+ languageChoice.language=language;
  const owner=client.snapshot?.accountId||'guest',generation=client.generation;
  if(owner==='guest')return {saved:true,mode:'device'};
+ try{return await commitAccountLanguage(language,owner,generation);}finally{if(languageChoice.language===language)languageChoice.language=null;}
+}
+async function commitAccountLanguage(language,owner,generation){
  const guard=()=>{if(owner!==(client.snapshot?.accountId||'guest')||generation!==client.generation)throw Object.assign(Error('로그인한 계정이 바뀌었어요. 다시 골라 주세요.'),{code:'ACCOUNT_CHANGED'});};
  await life.ensure();guard();
  const progress=life.progress;

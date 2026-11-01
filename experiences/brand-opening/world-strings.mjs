@@ -57,13 +57,10 @@ export default {
  'opening.startProduct':{ko:'{product} 시작하기',en:'Start {product}',mn:'{product} эхлүүлэх'},
  'opening.soundOn':{ko:'소리 켜기',en:'Turn sound on',mn:'Дууг асаах'},
  'opening.soundOff':{ko:'소리 끄기',en:'Turn sound off',mn:'Дууг унтраах'},
- // 11-01 실사 입구 임시 판(opening.mjs): 1화 장면 2 사진 위의 두 길. 3급이 아는 쉬운 말로, 펠트 동네는 「이전 판」이라고 적는다.
- 'opening.entrance.alt':{ko:'학생 식당에서 식판을 내려놓으며 반갑게 손을 드는 권태오 선배',en:'Taeo setting his tray down in the student cafeteria and raising a hand in greeting',mn:'Оюутны хоолны газарт тавиураа тавингаа баяртайгаар гараа өргөж мэндэлж буй ахлах курсийн Квон Тэо'},
- 'opening.entrance.subtitle':{ko:'드라마 속 유학생이 되어 한국어로 말해요',en:'Be the international student in the drama and speak Korean',mn:'Драмын гадаад оюутан болж, солонгос хэлээр ярина'},
- 'opening.entrance.drama':{ko:'드라마로 말해 보기',en:'Try speaking in the drama',mn:'Драмд орж ярьж үзэх'},
- 'opening.entrance.dramaNote':{ko:'시범판 · 1화를 바로 해 볼 수 있어요',en:'Pilot · try Episode 1 right now',mn:'Туршилтын хувилбар · 1-р ангийг шууд туршиж болно'},
- 'opening.entrance.town':{ko:'우리 동네로 가기',en:'Go to our town',mn:'Манай хотхон руу очих'},
- 'opening.entrance.townNote':{ko:'이전 판 · 로그인해서 이어 하기',en:'Previous version · sign in to continue',mn:'Өмнөх хувилбар · нэвтэрч үргэлжлүүлэх'},
+ // 11-02 펠트 안녕 콘서트 타이틀(opening.mjs): 사진 설명 · 로고 아래 한 줄 · 왼쪽 위 언어 단추. 한 줄은 11-01 입구 판에서 쓰던 문장을 그대로 옮겼다.
+ 'opening.concert.alt':{ko:'한강 둔치 콘서트 무대에 선 커다란 펠트 글자 「안녕」 앞에서 공연하는 다섯 사람과 응원봉을 든 관객',en:'Five performers in front of giant felt letters that say annyeong (hello) on a Han River concert stage, with a crowd holding lightsticks',mn:'Хан мөрний эрэг дээр концерт болж байна. Тайзан дээр солонгосоор «сайн уу» гэж бичсэн том эсгий үсгүүдийн өмнө таван хүн үзүүлбэр үзүүлж, үзэгчид гэрэлт саваа барьж байна'},
+ 'opening.concert.line':{ko:'드라마 속 유학생이 되어 한국어로 말해요',en:'Be the international student in the drama and speak Korean',mn:'Драмын гадаад оюутан болж, солонгос хэлээр ярина'},
+ 'opening.concert.lang':{ko:'화면 언어 바꾸기. 지금 언어: {lang}',en:'Change screen language. Current: {lang}',mn:'Дэлгэцийн хэл солих. Одоогийн хэл: {lang}'},
 
  // ── 홈: 장소·머리·상태 ──
  'home.place.town':{ko:'우리 동네',en:'Our town',mn:'Манай хотхон'},

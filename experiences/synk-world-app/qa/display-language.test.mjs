@@ -61,6 +61,47 @@ test('계정: 다른 기기에서 고른 계정 언어가 이 기기 언어를 �
  assert.equal(f.calls.length,0);
 });
 
+// 11-02 첫 화면 언어 단추(opening.mjs onLanguage → app-shell selectLanguage → choice 상자): 회사 화면 동안 고른 언어가 늦게 올라온 계정 기록에 덮이지 않는다.
+test('이번 페이지에서 고른 언어가 계정 복원을 한 번 이기고 계정 칸에 쓰인 뒤 상자를 비운다',async t=>{
+ const f=await fixture({display:{version:1,language:'mn'}});t.after(()=>f.port.dispose());
+ lang.setLang('en');const choice={language:'en'};
+ assert.equal(restoreDisplayLanguage({progress:f.progress,choice}),'en');
+ assert.equal(lang.currentLang(),'en');assert.equal(f.progress.displayLanguage(),'en');assert.equal(choice.language,null);
+ await f.progress.flush();
+ assert.deepEqual(f.server().display,{version:1,language:'en'});
+});
+
+test('고른 언어가 계정 언어와 같으면 다시 쓰지 않는다',async t=>{
+ const f=await fixture({display:{version:1,language:'mn'}});t.after(()=>f.port.dispose());
+ assert.equal(restoreDisplayLanguage({progress:f.progress,choice:{language:'mn'}}),'mn');
+ await f.progress.flush();
+ assert.equal(f.calls.length,0);
+});
+
+test('손님일 때 고른 언어는 첫 계정 복원에만 한 번 쓰이고, 다음 계정은 자기 언어로 돌아온다',async t=>{
+ const choice={language:'en'};
+ const guest=createLifeProgress({owner:'guest',storage:memory()});
+ assert.equal(restoreDisplayLanguage({progress:guest,choice}),null,'손님 생활 기록(범위 밖)은 꺼내지 않는다');
+ assert.equal(choice.language,'en');
+ const a=await fixture({display:{version:1,language:'mn'}});t.after(()=>a.port.dispose());
+ assert.equal(restoreDisplayLanguage({progress:a.progress,choice}),'en','첫 계정은 방금 고른 언어');
+ assert.equal(choice.language,null,'한 번 쓰면 비운다');
+ const b=await fixture({display:{version:1,language:'mn'}});t.after(()=>b.port.dispose());
+ assert.equal(restoreDisplayLanguage({progress:b.progress,choice}),'mn','다음 계정은 자기 저장 언어');
+ assert.equal(b.progress.displayLanguage(),'mn');
+});
+
+test('app-shell: 첫 화면 언어 단추를 selectLanguage로 잇고, 고른 언어를 choice 상자로 복원에 넘기며, 계정에 쓴 뒤 비운다',async()=>{
+ const fs=await import('node:fs');
+ const shell=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8');
+ assert.match(shell,/mountBrandOpening\(\{[^}]*onLanguage:language=>\{void selectLanguage\(language\)/);
+ assert.match(shell,/const languageChoice=\{language:null\};/);
+ assert.match(shell,/restoreDisplayLanguage\(\{progress:life\.progress,choice:languageChoice\}\)/);
+ assert.match(shell,/async function selectLanguage\(language\)\{\r?\n languageChoice\.language=language;/);
+ assert.match(shell,/finally\{if\(languageChoice\.language===language\)languageChoice\.language=null;\}/);
+ assert.doesNotMatch(shell,/createLanguageChoice/,'캐시에 남은 옛 display-language-sync.mjs에 없는 이름을 부르지 않는다');
+});
+
 test('계정에 아직 언어가 없으면 이 기기에서 고른 언어로 채워 보낸다',async t=>{
  const f=await fixture({});t.after(()=>f.port.dispose());
  lang.setLang('en');
