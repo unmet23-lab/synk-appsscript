@@ -127,20 +127,18 @@
   },
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-11-01T19:24:35+09:00",
+    "시각": "2026-11-02T02:55:19+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
-      "yuhobuilds-tiktok · 키워드 DM(「전후」) 인스타 판과 같은 영상이다 — 끝 말이 DM을 약속하면 끝 말만 바꾼 틱톡판을 렌더한다",
-      "yuhobuilds-tiktok · 고정 댓글이 있는 유튜브 판과 같은 영상이다 — 끝 말이 고정 댓글을 가리키면 끝 말만 바꾼 틱톡판을 렌더한다",
       "y29_final.mp4 · 원본과 칸 수이 다르다 — 원본 15칸(바로 넘기는 컷 7) · 우리 33칸(컷 18) · 다르게: 시도마다 일곱 판을 한 화면에서 넘겨 세는 장치(10-31 관문 조건 「7번 돌렸다 — 7번 다 이 화면」이 넘어가는 한 화면) — 넘김 하나하나가 칸 · 박자로 잡힌다. 넘김 말고는 원본 뼈대(훅 0초 · 약속 · 요청 → 결과 · 업종 셋 · 끝 장치)를 같은 순서로 지킨다. v11(11-01, 유호님 「A 범수판」 뒤)은 이해 시험 넷째까지 시험관 여섯 · 볼 이유 둘이 같이 짚은 16~20초 되풀이(원본 13.2~20.2 숫자 칸 자리)를 줄이려 방법 2 · 3을 한 칸으로 묶어 37.5초(87%)가 되며 그 뒤 박자가 4.9초씩 당겨졌다",
       "y29_final.mp4 · 원본과 첫 2초이 다르다 — 원본 첫 2초 박자 0(없음) · 우리 3(0.5초 · 0.8초 · 1.5초) · 다르게: 원본 첫 3.5초는 진행자 말 한 장면(자막만 바뀜)이고, 우리는 같은 틀 일곱 장이 0.3초씩 넘어가며 「7번 맡겼다」를 세는 것이 훅이다(10-31 관문 조건). 첫 박자 자리(3.5초 요청 칸)는 원본과 같다",
       "y29_final.mp4 · 원본과 박자이 다르다 — 원본 박자 14번 · 우리 32번 가운데 7번이 같은 순서로 0.6초 안(많은 쪽의 22%) · 짝의 중앙 어긋남 0.22초 · 다르게: 시도마다 일곱 판을 한 화면에서 넘겨 세는 장치(10-31 관문 조건 「7번 돌렸다 — 7번 다 이 화면」이 넘어가는 한 화면) — 넘김 하나하나가 칸 · 박자로 잡힌다. 넘김 말고는 원본 뼈대(훅 0초 · 약속 · 요청 → 결과 · 업종 셋 · 끝 장치)를 같은 순서로 지킨다. v11(11-01, 유호님 「A 범수판」 뒤)은 이해 시험 넷째까지 시험관 여섯 · 볼 이유 둘이 같이 짚은 16~20초 되풀이(원본 13.2~20.2 숫자 칸 자리)를 줄이려 방법 2 · 3을 한 칸으로 묶어 37.5초(87%)가 되며 그 뒤 박자가 4.9초씩 당겨졌다",
       "y29_final.mp4 · 원본과 뼈대 자리이 다르다 — 원본 끝 37.8초 — 우리 영상에서 끝 자리(원본 길이에 맞춘 ±0.7초)에 바뀌는 순간이 없다 · 다르게: v14(11-01 유호님 「그래서 어떤 프롬프트나 쉬운 방법을 왜 최종적으로 알려주지 않은 거야」)에 끝 장치 — 가져갈 한 줄 카드 「우리 가게 [빈칸]의 색과 글씨로 화면을 만들어 줘.」와 예시 셋 — 를 더해 46.2초가 됐다. 원본 끝 장치(37.8초, 바로 쓰는 것을 건네는 자리)에 해당하는 한 줄 카드는 36.4초(원본 길이로 33.9초)에 들어오고, 빈칸 예시 칸이 서는 40.7초(원본 길이로 37.9초)는 작은 변화라 박자로 잡히지 않는다. 말 석 줄이 더 들어가 카드가 앞당겨졌다",
       "remotion/out/y29_final.mp4 · 소리 비트레이트가 312kbps입니다. 올림 기준은 스테레오 384kbps입니다.",
       "remotion/out/y29_final.mp4 · 끝 화면 9.5초(36.7초 컷부터) — v2 §2-4 「4초 안팎」",
-      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-tiktok · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 5군데 — 「고소한아 메뉴 매장에4 모시는」 오른쪽 끝 1013px(안전선 920) · 「매일 아침 구워내는」 오른쪽 끝 1002px(안전선 920)",
-      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-tiktok · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 작은 글자 34군데 — 「* CF온 꽃 꽃 상품 매장 안내」 글자 상자 15px(키트 최소 24px 글자는 약 18px) · 「한결 세무회계사무소」 글자 상자 12px(키트 최소 24px 글자는 약 18px)",
+      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 5군데 — 「고소한아 메뉴 매장에4 모시는」 오른쪽 끝 1013px(안전선 920) · 「매일 아침 구워내는」 오른쪽 끝 1002px(안전선 920)",
+      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 작은 글자 34군데 — 「* CF온 꽃 꽃 상품 매장 안내」 글자 상자 15px(키트 최소 24px 글자는 약 18px) · 「한결 세무회계사무소」 글자 상자 12px(키트 최소 24px 글자는 약 18px)",
       "remotion/out/y29_final.mp4 · 오른쪽 단추 자리 15군데 — 1.5초 「매일 아침 구워내는」 오른쪽 끝 991px(안전선 920) · 1.5초 「따뜻한 빵 한 조각」 오른쪽 끝 985px(안전선 920) · 장면표 .tmp/올리기전검사/yuhobuilds_홈페이지다똑같다_20261031/글자표_remotion_out_y29_final.jpg",
       "remotion/out/y29_final.mp4 · 아래 앱 글자 자리 1군데 — 38.5초 「T A )(」 아래 끝 1559px(안전선 1428) · 장면표 .tmp/올리기전검사/yuhobuilds_홈페이지다똑같다_20261031/글자표_remotion_out_y29_final.jpg",
       "remotion/out/y29_final.mp4 · 위 머리 자리 9군데 — 0.0초 「방법 1」 위 끝 234px(안전선 269) · 0.0초 「그냥 맡기기」 위 끝 234px(안전선 269) · 장면표 .tmp/올리기전검사/yuhobuilds_홈페이지다똑같다_20261031/글자표_remotion_out_y29_final.jpg",
@@ -155,13 +153,12 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
-          "yuhobuilds-tiktok",
           "yuhobuilds-x",
           "yuho-linkedin-primary",
           "yuhobuilds-threads"
         ],
         "바이트": 59332207,
-        "수정": "2026-11-01T10:23:53.634Z",
+        "수정": "2026-11-01T06:14:56.972Z",
         "sha256": "f9b9234ef711f604be7c22a6a331e64decd4c5e7a802c6dac672fb5800a4a448",
         "길이": 46.2,
         "해상도": "1080×1920",
@@ -176,7 +173,7 @@
           "최장": 0,
           "자리": 0
         },
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_홈페이지다똑같다_20261031/영상사전검사_remotion_out_y29_final/inspection-f7d89744-37fe-43e7-a151-7a42cfd8a0c2/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_홈페이지다똑같다_20261031/영상사전검사_remotion_out_y29_final/inspection-31f5aa21-d374-4025-8b38-cb899ca47a99/검사.json"
       }
     ],
     "목소리": {
@@ -191,7 +188,6 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
-          "yuhobuilds-tiktok",
           "yuhobuilds-x",
           "yuho-linkedin-primary",
           "yuhobuilds-threads"
@@ -205,7 +201,6 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
-          "yuhobuilds-tiktok",
           "yuhobuilds-x",
           "yuho-linkedin-primary",
           "yuhobuilds-threads"
