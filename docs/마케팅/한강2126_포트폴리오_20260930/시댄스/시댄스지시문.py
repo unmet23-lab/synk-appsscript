@@ -410,7 +410,7 @@ for pid, k, used, who, wave, word, robot, cam in GREET:
         메모=["인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · "
               "베트남어는 시험에서 먼저)"])
 pan("2D", ["2D"], "자기 책상의 빨간머리가 몸을 내밀어 그의 컵을 빤히 — 「음.. 커피 어디서 샀어요?」 → 그가 돌아봄(K19)", [S(
-    "K19", 3.208, ["HIM", "KKAMONG", "CUP_SAME", "COLLEAGUE"],
+    "K19", 3.208, ["HIM", "GLASSES", "KKAMONG", "CUP_SAME", "COLLEAGUE"],   # 안경: 11-02 시험 판에서 돌아볼 때 안경다리가 갈색 무늬로 바뀜
     "At her own desk, the red-haired colleague leans out of her chair toward him and stares at the iced americano he holds up between them, sniffs the "
     "air and asks in Korean, curious and friendly: \"음.. 커피 어디서 샀어요?\" At about 2.6 s he slowly turns his head toward her - we see him "
     "from behind and the side, his face stays mostly turned away - and says nothing. They never touch.",
