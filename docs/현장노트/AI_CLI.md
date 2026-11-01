@@ -685,6 +685,12 @@
 - 고침: 알림은 작업에 지장이 없다. 10-17 전역 `SessionEnd` 훅(`~/.ai-accounts/claude-artifact-account-hook.mjs session-end`)이 세션이 내려갈 때 켜진 지켜보기를 모두 끄는 줄을 덧붙인다 — 대가로 자동 답장은 재시작을 넘어 이어지지 않고, 그 페이지를 다시 올리면 켜진다. 시작 훅은 되살리기보다 늦게 돌아 안 된다. 종료 훅 전에 내려간 세션의 묵은 켜짐은 같은 훅의 `prune-idle`로 정리한다. 다시 올릴 때 그 계정 몫 사본 주소가 이미 있으면 그 주소를 `url`로 주고 `capabilities: {"db": {}}`를 함께 넘긴다(그 주소의 옛 파일을 이번 세션에서 안 봤다고 거절되면 `read`로 읽은 뒤). 파일 다시 올리기는 [브라우저·게시](브라우저_게시.md) 「새 주소에 파일 300개를 다시 올릴 때」. db 문서는 옛 계정일 때 `list`로 읽어 둔 내용을 새 페이지에 `batch`(50개씩, 이미 있는 문서는 `if_version`)로 옮긴다 — 계정이 바뀐 뒤에는 옛 페이지를 못 읽는다.
 - 다시 확인: 10-24 읽기만 — `~/.claude/settings.json` hooks에 이 훅이 PreToolUse `pre`·PostToolUse `post`·PostToolUseFailure `failure`(셋 다 matcher `Artifact`)와 SessionEnd `session-end`로 걸려 있고, 훅 파일에 `prune-idle`이 있다. 알림이 다시 안 뜨는지는 계정을 바꿔야 보여 (10-24 메모에서 옮김, 다시 확인 전).
 
+### 계정이 바뀐 세션에서 앞서 올린 아티팩트를 `open`하면 「No Artifact … that the user can see」로 안 열린다 (2026-11-02 Claude)
+- 증상: 11-02 유호님 「다시 보여줄래?」에 앞 차례에 올린 비교 페이지를 `Artifact` `open`으로 열자 「No Artifact at … that the user can see — it may have been deleted, or it has not been shared with them」이 나왔다. 그 사이 세션 계정이 unmet25에서 77unmet으로 바뀌어 있었다(`CLAUDE_CODE_USER_EMAIL`).
+- 원인: 아티팩트는 올린 계정(조직)에만 묶인다(위 절). `open`은 게시가 아니라서 아티팩트 계정 훅이 사본을 만들지 않는다.
+- 고침: 같은 파일을 그대로 다시 게시한다. 훅이 `artifact-accounts/<메일>/` 사본으로 돌려 이 계정 몫 새 주소를 만든다. 새 주소를 알리고, 트랙처럼 다시 열 기록의 링크에는 두 계정 주소를 함께 적는다(로그인한 계정 쪽만 열린다). 주인 계정은 `~/.ai-accounts/claude-artifact-owners.json`에서 찾는다.
+- 다시 확인: 11-02 같은 파일을 다시 올리자 새 주소(`S5xdhs5E…`)가 생겼고, 트랙 §1 링크에 두 주소를 적었다(`b2080460d`).
+
 ### 워크트리 세션은 `change_directory`로 공용 작업본에 옮겨 가지 못하고, `request_directory`로 접근을 받아도 공용 작업본 Edit이 막힐 때가 있다 (2026-10-24 Claude · 메모에서 옮김)
 - 증상: 10-09 앱이 `.claude/worktrees/<이름>`에서 연 세션이 공용 작업본 파일을 Edit하자 PreToolUse 보호 장치가 「isolated worktree … base repo checkout」으로 막았다(유호님 「다시 시도」에도 같음). `change_directory`는 「워크트리 세션은 옮길 수 없다, request_directory를 쓰라」로 거절됐고, `request_directory`(경로 지정)로 접근을 받은 뒤에는 그날 작업본·master를 맞출 수 있었다. 10-18(S4 수집기 멈춤 경고 세션)에는 `request_directory`로 접근을 받은 뒤에도 Edit이 같은 문구로 막혔다(읽기·node 실행은 됐다).
 - 원인: 보호 장치가 워크트리 세션의 공용 작업본 쓰기를 막는다. 접근 허락이 그 막음을 푸는지는 때마다 달랐고 까닭은 확인 못 했다. 두 도구 설명(10-24 읽음)에는 워크트리 세션 제한이 적혀 있지 않다 — 거절은 부를 때 나온다.
