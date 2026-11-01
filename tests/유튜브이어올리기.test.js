@@ -85,13 +85,16 @@ function youtube({ privacy = 'private', channelId = 'fixture-channel', remoteCap
   };
   return { calls, fetchImpl };
 }
-const dayAfter = (iso) => () => new Date(new Date(iso).getTime() + 24 * 3600e3);
+// 서머타임이 끝나는 태평양 날짜는 25시간이다. 다음 날짜의 실제 자정으로 이동한다.
+const dayAfter = (iso) => () => R.nextReset(iso);
 const quiet = { log: () => {} };
 
 test('한도가 풀리는 때: 태평양 자정(서머타임 한국 16:00, 아니면 17:00)', () => {
   assert.equal(R.nextReset('2026-10-19T06:30:00Z').toISOString(), '2026-10-19T07:00:00.000Z'); // 15:30 KST 실패 → 16:00 KST
   assert.equal(R.nextReset('2026-10-19T08:10:00Z').toISOString(), '2026-10-20T07:00:00.000Z'); // 17:10 KST 실패(이미 새 날) → 다음 날 16:00
   assert.equal(R.nextReset('2026-11-10T07:30:00Z').toISOString(), '2026-11-10T08:00:00.000Z'); // 11월(PST) 16:30 KST → 17:00 KST
+  assert.equal(R.nextReset('2026-11-01T07:30:00Z').toISOString(), '2026-11-02T08:00:00.000Z'); // 서머타임 종료일은 25시간
+  assert.equal(R.nextReset('2026-03-08T08:30:00Z').toISOString(), '2026-03-09T07:00:00.000Z'); // 시작일은 23시간
   assert.equal(R.isQuotaError(QUOTA), true);
   assert.equal(R.isQuotaError('YouTube ko 자막 업로드 실패 500: backendError'), false);
 });
@@ -99,10 +102,25 @@ test('한도가 풀리는 때: 태평양 자정(서머타임 한국 16:00, 아�
 test('한도가 안 풀린 같은 태평양 날짜에는 네트워크 없이 멈춘다', async () => {
   const f = await partialFixture();
   const yt = youtube();
-  const now = () => new Date(new Date(f.failedAt).getTime() + 60000);
+  const now = () => new Date(f.failedAt);
   await assert.rejects(R.resumeItem(f.planFile, f.id, '한도 걸린 mn 자막 채우기', { accountsFile: f.accountsFile, fetchImpl: yt.fetchImpl, readCredentialImpl, now, ...quiet }), /아직 안 풀렸습니다/);
   assert.equal(yt.calls.length, 0);
   assert.equal(P.readJson(f.resultFile).items[f.id].state, 'partial');
+});
+
+test('서머타임 종료일에는 24시간 뒤에도 한도를 막고 다음 태평양 자정부터 허용한다', async () => {
+  const f = await partialFixture();
+  const result = P.readJson(f.resultFile);
+  result.items[f.id].failedAt = '2026-11-01T07:30:00.000Z';
+  fs.writeFileSync(f.resultFile, JSON.stringify(result));
+  const ctx = loadForInspect(f);
+  for (const instant of ['2026-11-02T07:30:00.000Z', '2026-11-02T07:59:59.999Z']) {
+    const inspection = R.inspect(ctx, f.id, { now: new Date(instant), readCredentialImpl });
+    assert.equal(inspection.ready, false);
+    assert.equal(inspection.resetAt, '2026-11-02T08:00:00.000Z');
+    assert.match(inspection.reasons.join(' '), /아직 안 풀렸습니다/);
+  }
+  assert.equal(R.inspect(ctx, f.id, { now: new Date('2026-11-02T08:00:00.000Z'), readCredentialImpl }).ready, true);
 });
 
 test('한도가 풀린 뒤: 새로 올리지 않고 빠진 자막·재생목록만 채워 private으로 마친다', async () => {
