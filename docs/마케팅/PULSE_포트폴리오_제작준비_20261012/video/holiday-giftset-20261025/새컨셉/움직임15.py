@@ -13,6 +13,8 @@
 # 금 방울 뺌, 앰플 새김은 앞면 겉에만 옅게.
 # 3판(10-31, 2판 시험 · Fable 뒤): 서리를 잔 결정 지도(「같은 눈꽃 스텐실」)에서 첫 결정 여섯 팔 끝에서 뻗는 이어진 고사리 지도로,
 # 뚜껑은 전까지 옅은 서리 자국 → 첫 결정이 앉는 순간 가운데에서 은빛이 차오름, 결 초점은 뚜껑에 · 조리개를 조임.
+# 5판(11-01, 유호님 「줄여 보기」): 전 5초 → 2초(같은 길을 빠르게 지나감), 결 4초 → 7초 — 별이 천천히 내려와 앉고 뚜껑 무늬가
+# 2.6초 동안 피어난 뒤 이름 · 훑기. opus 볼 이유 심사가 네 판 내리 짚은 「떠 있기만 하는 전 5초」 · 「0.9초에 쫓기는 피어남」.
 #   blender -b --python 움직임15.py -- --shot 승|전|결 [--res 1080x1920] [--samples 256] [--s 0 --e 89 | --frames 0,45,89]
 # 장면 거리 · 재질은 시안.py · 움직임.py를 가져다 쓴다. GPU는 공용 줄로(_공용차례/README.md 「GPU」).
 import math
@@ -33,7 +35,7 @@ import 움직임 as M  # noqa: E402
 
 FPS = 30.0
 SHOT = S.arg("--shot", "승")
-NF = {"승": 90, "전": 150, "결": 120}[SHOT]
+NF = {"승": 90, "전": 60, "결": 210}[SHOT]  # JEON_T · GYEOL_T와 같게(5판 전 2초 · 결 7초)
 F0, F1 = int(S.arg("--s", "0")), int(S.arg("--e", str(NF - 1)))
 FRAMES = [int(x) for x in S.arg("--frames", "").split(",") if x] or list(range(F0, F1 + 1))
 DIR = S.arg("--dir", os.path.join(S.밖, "움직임", "15초", SHOT + ("" if S.RES[0] >= 1000 else "_미리")))
@@ -451,6 +453,41 @@ def lid_array():
     return np.ascontiguousarray(crystal_grown()[::-1])
 
 
+def lid_sim():
+    """뚜껑 결정의 도착 시각 · 판 높이 지도(행을 뒤집은 것 — lid_array와 같은 결)."""
+    if "lid" not in _GROWN:
+        arr, h = S.load_sim(S.MACRO_SIM, "macro")
+        _GROWN["lid"] = (np.ascontiguousarray(arr[::-1]), np.ascontiguousarray(M.plate(h)[::-1]))
+    return _GROWN["lid"]
+
+
+def set_arrival(ob):
+    """뚜껑 결정 메시 점마다 시뮬레이션 도착 시각(arr 속성) — 막 자란 머리 빛(add_lid_reveal)이 읽는다. 점 자리(relief_sheet의 칸
+    → x · y)를 거꾸로 칸으로 돌려 찾는다."""
+    arr, _ = lid_sim()
+    N0, N1 = arr.shape
+    me = ob.data
+    co = np.empty(len(me.vertices) * 3, np.float32)
+    me.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    cc = np.clip(np.rint((co[:, 0] / LID_SIZE + 0.5) * (N1 - 1)), 0, N1 - 1).astype(np.int64)
+    rr = np.clip(np.rint((0.5 - co[:, 1] / LID_SIZE) * (N0 - 1)), 0, N0 - 1).astype(np.int64)
+    at = me.attributes.get("arr") or me.attributes.new("arr", "FLOAT", "POINT")
+    at.data.foreach_set("value", np.ascontiguousarray(arr[rr, cc], np.float32))
+
+
+def regrow_lid(lid, g):
+    """뚜껑 결정을 자람 시각 g까지 자란 결로(기 m1 · 떨어지는 별과 같은 grown) — 메시만 바꾼다(물체 이름 · 재질 · 단지에 매단 자리 ·
+    빛 잇기는 그대로). g = 1이면 lid_array와 같다."""
+    arr, pl = lid_sim()
+    new = S.relief_sheet("뚜껑결정판_자람", S.grown(arr, pl, g, soft=0.05), LID_SIZE, LID_Z, LID_HMAX, lid.data.materials[0], step=1)
+    old = lid.data
+    lid.data = new.data
+    bpy.data.objects.remove(new, do_unlink=True)
+    bpy.data.meshes.remove(old)
+    set_arrival(lid)
+
+
 def crystal_base():
     """첫 결정 밑면 가운데 — 돔 안쪽 면(두께 3.5 mm) 위."""
     return P0 * (R * (1.0 + 0.012 * noise.noise(P0 * (R * 28.0))) - 0.0035 - 0.00003)
@@ -632,6 +669,7 @@ def build_products():
     # 기의 은빛 결정과 딴 물건 「흰 분필 · 종이 도일리」였다(Fable P1-3)
     lid = S.relief_sheet("뚜껑결정판", lid_array(), LID_SIZE, LID_Z, LID_HMAX, M.mat_ice_crystal(), step=1)
     ice_edge(lid.data.materials[0]).inputs["To Min"].default_value = LID_EDGE
+    set_arrival(lid)
     S.parent_to([lid], jar_e)
     jp.append(lid)
     # 뚜껑 결정 한 면만 금빛 키(Fable 3차: 푸른 흰 결정이 금빛 장면에 붙여 넣은 듯) — 단지에 매달아 같이 움직인다
@@ -649,17 +687,17 @@ def build_products():
 # 굴절해 전 끝 초점 자리에 「구겨진 흰 막」이었다(3판 CPU 점검). 뚜껑 속 남색 몸을 반광택(거칠기 0.35 · 겉칠 0.15)으로 낮춰 보니 위
 # 반구 빛을 고르게 모아 오히려 「흰 무광 뚜껑」이라 몸의 광택은 그대로 둔다
 LID_FAINT = 0.0
-# 빛 고리 — 결정 판 전체(frost > 0.002)에 폭 3.5 mm로 두니 앉는 순간이 「흰 솜 도넛」이었다(3판 CPU 점검 결 62 · 64장).
-# 등뼈(판 높이 0.65 위로 솟은 결)에만 · 폭 1.8 mm로 좁혀 빛이 결정의 결을 따라 달리게
-RING_W = 0.0018
-RIB_LO, RIB_HI = 0.84, 0.94
-RING_PEAK = 160.0
+# 막 자란 머리 빛 — 5판: 뚜껑 결정은 앉은 별에서 시뮬레이션 도착 시각을 따라 메시째 다시 자라고(regrow_lid), 도착 시각이 지금 자람
+# 시각(GROW) 둘레인 점만 옅게 빛난다. 4.2판까지는 반지름 고리(머리 반지름 · 등뼈에만 · 폭 1.8 mm · 세기 160)로 차오르게 했는데,
+# 2.6초로 늘리니 둥근 흰 원판이 커지는 것으로 보였다(5판 첫 미리보기 10.5~11.7초 — 결정이 아니라 「솜 원판」). 3판 CPU 점검에서
+# 판 전체 빛 고리는 「흰 솜 도넛」이었다. 시험 0.035 · 30은 자라는 동안 결정이 「흰 설탕 판」 쪽이라 조금 낮춘다
+FRONT_W, FRONT_PEAK = 0.03, 20.0
 
 
 def add_lid_reveal(m):
-    """뚜껑 결정 — 첫 결정이 앉기 전엔 옅은 서리 자국(LID_FAINT), 앉는 순간 가운데에서 바깥으로 은빛이 차오르고 그 머리에 빛 고리가
-    결을 따라 지나간다(RING 머리 반지름 · RINGGAIN 세기를 장마다). 3판: 2판은 뚜껑에 같은 무늬가 6초부터 이미 있어 「무늬가 된다」가
-    아니라 「무늬 위에 하나 더」였고, 앉는 순간이 뿌옇게 밝아질 뿐이었다(Fable 2판 P1-C)."""
+    """뚜껑 결정 — 첫 결정이 앉기 전엔 보이지 않고(RING −0.01; LID_FAINT 몫만), 앉은 뒤엔 다 보인다(RING 1). 자라는 동안 막 자란
+    머리(arr 속성이 GROW 둘레)가 빛난다(FRONTGAIN). 3판: 2판은 뚜껑에 같은 무늬가 6초부터 이미 있어 「무늬가 된다」가 아니라
+    「무늬 위에 하나 더」였고, 앉는 순간이 뿌옇게 밝아질 뿐이었다(Fable 2판 P1-C)."""
     n, l = m.node_tree.nodes, m.node_tree.links
     out = next(x for x in n if x.type == "OUTPUT_MATERIAL")
     base = out.inputs["Surface"].links[0].from_socket
@@ -672,8 +710,11 @@ def add_lid_reveal(m):
     ring.name = "RING"
     ring.outputs[0].default_value = -0.01
     gain = n.new("ShaderNodeValue")
-    gain.name = "RINGGAIN"
+    gain.name = "FRONTGAIN"
     gain.outputs[0].default_value = 0.0
+    grow = n.new("ShaderNodeValue")
+    grow.name = "GROW"
+    grow.outputs[0].default_value = 0.0
     off = S.math_node(n, l, "SUBTRACT", r, ring.outputs[0])
     fill = n.new("ShaderNodeMapRange")
     fill.interpolation_type = "SMOOTHSTEP"
@@ -683,23 +724,17 @@ def add_lid_reveal(m):
     fill.inputs["To Max"].default_value = 0.0
     l.new(off, fill.inputs["Value"])
     show = S.madd(n, l, fill.outputs["Result"], 1.0 - LID_FAINT, LID_FAINT)
-    d = S.math_node(n, l, "DIVIDE", off, RING_W)
-    band = S.math_node(n, l, "EXPONENT", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", d, d), -1.0))
     at = n.new("ShaderNodeAttribute")
-    at.attribute_name = "frost"
+    at.attribute_name = "arr"
+    d = S.math_node(n, l, "DIVIDE", S.math_node(n, l, "SUBTRACT", grow.outputs[0], at.outputs["Fac"]), FRONT_W)
+    band = S.math_node(n, l, "EXPONENT", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", d, d), -1.0))
     nz = n.new("ShaderNodeTexNoise")
     nz.inputs["Scale"].default_value = 1400.0
     l.new(tc.outputs["Object"], nz.inputs["Vector"])
     glit = S.math_node(n, l, "MINIMUM", S.math_node(n, l, "MAXIMUM", S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "SUBTRACT", nz.outputs["Fac"], 0.5), 5.0), 0.0), 1.0)
-    rib = n.new("ShaderNodeMapRange")
-    rib.interpolation_type = "SMOOTHSTEP"
-    rib.inputs["From Min"].default_value = RIB_LO
-    rib.inputs["From Max"].default_value = RIB_HI
-    l.new(at.outputs["Fac"], rib.inputs["Value"])
-    mask = S.math_node(n, l, "MULTIPLY", S.madd(n, l, glit, 0.7, 0.3), rib.outputs["Result"])
     em = n.new("ShaderNodeEmission")
     em.inputs["Color"].default_value = (1.0, 0.84, 0.56, 1)
-    l.new(S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", band, mask), gain.outputs[0]), em.inputs["Strength"])
+    l.new(S.math_node(n, l, "MULTIPLY", S.math_node(n, l, "MULTIPLY", band, S.madd(n, l, glit, 0.7, 0.3)), gain.outputs[0]), em.inputs["Strength"])
     tr = n.new("ShaderNodeBsdfTransparent")
     mx = n.new("ShaderNodeMixShader")
     l.new(show, mx.inputs["Fac"])
@@ -709,7 +744,7 @@ def add_lid_reveal(m):
     l.new(mx.outputs[0], add.inputs[0])
     l.new(em.outputs[0], add.inputs[1])
     l.new(add.outputs[0], out.inputs["Surface"])
-    return ring, gain
+    return ring, gain, grow
 
 
 def ice_edge(m):
@@ -930,7 +965,7 @@ def shot_seung():
 
 
 # ── 전 ────────────────────────────────────────────────────────────────────────
-JEON_T = 5.0
+JEON_T = 2.0  # 5판: 5초는 세 칸이 같은 구도로 떠 있기만 했다(opus 볼 이유 네 판 내리) — 같은 m2 길을 2초에 지나간다
 CRACK_F = (0, 4)  # 금이 깨지는 자리에서 번져 나가는 장
 BURST_F = (4, 14)  # 조각이 멈춘 자리로 터져 나가는 장(빨랐다가 멎음)
 
@@ -1212,8 +1247,8 @@ def shot_jeon():
         pw.inputs[1].default_value = lerp(HALO_SEUNG, 40.0, smooth(clamp01(f / 60.0)))  # 승 끝의 좁은 둘레에서 1판 넓이로(결은 40에서)
         jar_front = (JAR_FLOAT[0] + Vector((0, 0, 0.03))) + (loc - JAR_FLOAT[0]).normalized() * 0.033
         lid_top = jar_e.location + jar_e.rotation_euler.to_matrix() @ Vector((0, 0, 0.0628))
-        k_focus = smooth(clamp01((f - 4) / 26.0))  # 깨짐 뒤 0.9초 — 돔 앞면에서 단지 앞면(이름)으로
-        k_lid = smooth(max(0.0, (t - 4.1) / 0.9))  # 끝 0.9초 — 뚜껑 결정으로
+        k_focus = smooth(clamp01((f - 4) / 16.0))  # 깨짐 뒤 0.5초 — 돔 앞면에서 단지 앞면(이름)으로(5초 전은 0.9초)
+        k_lid = smooth(max(0.0, (t - (JEON_T - 0.6)) / 0.6))  # 끝 0.6초 — 뚜껑 결정으로(결 첫 장의 초점 자리)
         fpt = front.lerp(jar_front, k_focus).lerp(lid_top, k_lid)
         cam.data.dof.focus_distance = (fpt - loc).length
         cam.data.dof.aperture_fstop = lerp_log(8.0, 3.5, k_focus)
@@ -1238,11 +1273,13 @@ def shot_jeon():
 
 
 # ── 결 ────────────────────────────────────────────────────────────────────────
-GYEOL_T = 4.0
-STILL_AT = 3.0  # 14.0초부터 카메라 정지
-LAND = {"단지": 1.30, "앰플": 1.15}  # 바닥에 닿는 때(결 시각) — 12.3 · 12.15초
-GLINT_AT = 2.0  # 13.0초 뚜껑 결정 반짝임 · 유리 종
-FALL_T0, FALL_T1 = 0.10, 1.95  # 첫 결정이 조각에서 떨어져 내려와 뚜껑 결정에 겹쳐 앉는 때(앉는 순간 반짝임 · 유리 종)
+# 5판(전 2초 뒤 결 7초, 화면 7.73초부터): 별이 2.3초에 걸쳐 내려와 앉고(10.13초) 뚜껑 무늬가 2.6초 동안 피어난다(12.73초),
+# 이름은 피어남 끝에 앉고(잇기15.py) 훑는 빛 · 캡 글린트 뒤 끝. 4.2판은 결 4초 안에 내려옴 1.85초 · 피어남 0.7초였다
+GYEOL_T = 7.0
+STILL_AT = 3.4  # 11.1초부터 카메라는 다가가기(PUSH)만
+LAND = {"단지": 1.30, "앰플": 1.15}  # 바닥에 닿는 때(결 시각) — 9.03 · 8.88초
+GLINT_AT = 2.4  # 10.13초 뚜껑 결정 반짝임 · 유리 종(= FALL_T1)
+FALL_T0, FALL_T1 = 0.10, 2.40  # 첫 결정이 조각에서 떨어져 내려와 뚜껑 결정에 겹쳐 앉는 때(앉는 순간 반짝임 · 유리 종)
 FADE_T = 0.15  # 겹쳐 앉은 결정이 뚜껑 결정으로 스며드는 몫(초)
 CAM_G1_TGT = Vector((0.006, -0.003, ZF + 0.055))  # 제품을 조금 아래로 — 위 어둠에 이름 자리
 # (방위, 높이, 거리, 렌즈, 조리개) — 첫 시험 21° · 33.5 cm는 단지가 오른쪽에서 잘리고 뚜껑 결정이 작았다
@@ -1254,9 +1291,9 @@ FALL_K = 0.75  # 4.2판 0.6 → 0.75(별 실루엣이 「회색 별 스티커」
 # 4.1판: 내려오는 결정은 기의 0.5~1초 무렵(팔 사이가 빈 별)으로 — 다 자란 결정은 이 크기 · 밝기에서 안 결이 「헤어라인 회색 판 · 시퀸」이었다
 # (Fable 4판 P2-2). 뚜껑에 앉으면 다 자란 뚜껑 결정이 가운데에서 차올라 「앉은 눈송이가 무늬로 피어난다」
 FALL_GROWN = 0.35
-# 4.2판: 앉은 별 둘레에서 뚜껑 결정이 0.7초 동안 바깥으로 자란다 — 4.1판은 0.45초 · 처음이 빠른 곡선이라 12.75 → 12.85 0.1초에 거의
-# 다 차 별빛에 묻혀 「피어난다」가 아니라 「번쩍하고 나타난다」였다(Fable 4.1 P2-A). 별 크기(반지름 약 8 mm)에서 시작
-BLOOM_T, BLOOM_R0 = 0.7, 0.008
+# 앉은 뒤 뚜껑 결정이 피어나는 시간 — 4.1판 0.45초 「번쩍하고 나타난다」, 4.2판 0.7초(반지름 고리 · 앞이 빠른 곡선이라 눈에 보인 것은
+# 0.35초, Fable 4.2 「앞 쏠림」), 5판 2.6초 — 앉은 별(자람 FALL_GROWN)에서 기 m1과 같은 도착 시각을 따라 다 자란 결정(1)까지
+BLOOM_T = 2.6
 # 4.1판: 훑는 빛이 지날 때 뚜껑 결정도 반짝 — 뚜껑 윗면의 거울 방향은 카메라 반대쪽 뒤 위라 앞에서 훑는 빛이 결정에 안 닿았다
 # (Fable 4판 P2-1 「빛이 지나갔는데 결정은 안 반짝인다」). 결정 판에만 이어 둔 작은 빛을 거울 방향에서 옆으로 지나가게
 LID_SWEEP_W, LID_SWEEP_D, LID_SWEEP_X, LID_SWEEP_EL = 0.6, 0.35, 0.10, math.radians(7)
@@ -1266,8 +1303,9 @@ FALL_EDGE = 0.32  # 4.2판 0.2 → 0.32 — 별은 다 자란 결정보다 작�
 # 앉은 뒤 f/6.3으로 열어 바닥 반사 · 바탕에 깊이(3판 f/8 끝 장은 눈가림 셋이 「정지된 제품 렌더 · 3D 견본」), 초점은 앰플과 단지 사이
 FALL_F, END_F = 11.0, 6.3
 # 끝 — 멈추지 않고 천천히 다가간다(3.5 %), 빛 한 줄이 병 · 단지 앞을 훑고 지나간다(반사로만 · 제품만 받음)
-PUSH, PUSH_T0 = 0.035, 2.6
-SWEEP_T0, SWEEP_T1, SWEEP_W, SWEEP_D, SWEEP_X = 2.7, 3.9, 28.0, 0.40, 0.30  # 40 W는 바닥에 비친 단지 앞면이 은빛 판으로 탔다
+PUSH, PUSH_T0 = 0.035, 2.4  # 5판: 별이 앉는 때부터 끝까지(4.2판 2.6 → 4.0초)
+# 5판: 이름(4.4 → 5.0초) 뒤 1.4초 — 4.2판 2.7 → 3.9초
+SWEEP_T0, SWEEP_T1, SWEEP_W, SWEEP_D, SWEEP_X = 5.2, 6.6, 28.0, 0.40, 0.30  # 40 W는 바닥에 비친 단지 앞면이 은빛 판으로 탔다
 SWEEP_SIZE = (0.012, 0.40)
 GYEOL_F = 8.0  # (3판 값 — 4판은 FALL_F · END_F) 결의 조리개 — 0.6초에 f/3.5 → f/8, 결정 · 제품을 함께 심도 안에(2판은 초점이 결정을 따라가 제품이 1.2초 흐렸다, Fable P1-B)
 
@@ -1287,7 +1325,36 @@ def gyeol_cam(t):
     # 처음은 전 끝 자리 그대로(돌아가는 중심이 달라 생기는 튐을 0으로)
     loc = loc + (e0 - (CAM_G1_TGT + Vector((math.sin(az0) * math.cos(el0), -math.cos(az0) * math.cos(el0), math.sin(el0))) * rel0.length)) * (1 - u)
     fs = lerp_log(3.5, FALL_F, smooth(clamp01(t / 0.6)))
-    return loc, tgt, lerp_log(40.0, lens1, u), lerp_log(fs, END_F, smooth(clamp01((t - 2.3) / 1.0)))
+    return loc, tgt, lerp_log(40.0, lens1, u), lerp_log(fs, END_F, smooth(clamp01((t - FALL_T1 - 0.35) / 1.0)))
+
+
+def bloom(t):
+    """앉은 뒤 뚜껑 결정의 (자람 시각, 피어남 몫 u) — FALL_GROWN(앉은 별과 같은 결)에서 1(다 자람 = lid_array)까지 BLOOM_T 동안,
+    기 m1의 growth_t처럼 끝으로 늦춰 가며. 앉기 전은 (None, 0)."""
+    if t < FALL_T1:
+        return None, 0.0
+    u = min(1.0, (t - FALL_T1) / BLOOM_T)
+    return FALL_GROWN + (1.0 - FALL_GROWN) * (1.0 - (1.0 - u) ** 1.25), u
+
+
+def track_lid(cam, lid_world):
+    """결 장마다 뚜껑 가운데의 화면 자리(1080 × 1920 px) → DIR/결_자리.json — 잇기15.py가 앉는 순간 별빛을 이 자리에 얹는다
+    (4.2판까지는 렌더에서 잰 직선 식이라 결 시간표가 바뀌면 다시 재야 했다)."""
+    import json
+    from bpy_extras.object_utils import world_to_camera_view
+    sc = bpy.context.scene
+    out = {}
+    for f in range(NF):
+        t = f / FPS
+        loc, tgt, lens, _ = gyeol_cam(t)
+        cam.location = loc
+        cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
+        cam.data.lens = lens
+        bpy.context.view_layer.update()
+        p = world_to_camera_view(sc, cam, lid_world(t)[0])
+        out[f] = [round(p.x * 1080.0, 1), round((1.0 - p.y) * 1920.0, 1)]
+    with open(os.path.join(DIR, "결_자리.json"), "w", encoding="utf-8") as fp:
+        json.dump(out, fp)
 
 
 def land_pose(float_end, stand, t_land, wob_amp, r_base, t):
@@ -1411,6 +1478,9 @@ def shot_gyeol():
     cam = S.camera(E, T, lens=40, fstop=3.5)
     M.round_bokeh(cam)
     blur_on()
+    track_lid(cam, lid_world)
+    grown_at = [1.0]  # 지금 메시의 자람 시각(build_products는 다 자란 결 = 1)
+    lid_edge = ice_edge(lid.data.materials[0]).inputs["To Min"]
     gk = next(o for o in bpy.context.scene.objects if o.name.startswith("뚜껑금키"))
     gk_e0 = gk.data.energy  # 전 끝과 같은 세기에서 시작해 1초에 걸쳐 25 W로(컷 자리에서 튀지 않게)
 
@@ -1427,9 +1497,16 @@ def shot_gyeol():
         t = f / FPS
         loc, tgt, lens, fstop = gyeol_cam(t)
         cam.data.lens, cam.data.dof.aperture_fstop = lens, fstop
-        u = clamp01((t - FALL_T1) / BLOOM_T)  # 앉은 별 둘레에서 은빛 결정이 바깥으로 자라 팔 끝까지(반지름 3.6 cm)
-        glint[0].outputs[0].default_value = -0.01 if t < FALL_T1 else lerp(BLOOM_R0, 0.036, smooth(u))
-        glint[1].outputs[0].default_value = 0.0 if u <= 0 or u >= 1 else RING_PEAK * math.sin(math.pi * u) ** 0.7  # 화면에서 가장 밝게(40은 회색 띠)
+        # 앉은 별이 뚜껑에서 기와 같은 결로 다시 자란다(메시째) — 막 자란 머리만 옅게 빛나고, 가장자리 흰빛은 별(FALL_EDGE)에서 뚜껑 값으로
+        g, u = bloom(t)
+        ring, front, grow = glint
+        ring.outputs[0].default_value = -0.01 if g is None else 1.0
+        if g is not None and g != grown_at[0]:
+            regrow_lid(lid, g)
+            grown_at[0] = g
+        grow.outputs[0].default_value = g or 0.0
+        front.outputs[0].default_value = 0.0 if g is None else FRONT_PEAK * smooth(clamp01(u / 0.06)) * (1.0 - smooth(clamp01((u - 0.7) / 0.3)))
+        lid_edge.default_value = LID_EDGE if g is None else lerp(FALL_EDGE, LID_EDGE, smooth(clamp01(u / 0.6)))
         edge_n.outputs[0].default_value = lerp(EDGE_SHARD, 0.05, smooth(clamp01((t - 0.3) / 1.7)))
         gk.data.energy = lerp(gk_e0, GK_END, smooth(min(1.0, t / 1.0)))
         sw = clamp01((t - SWEEP_T0) / (SWEEP_T1 - SWEEP_T0))
@@ -1447,7 +1524,7 @@ def shot_gyeol():
         lid_sweep.location = lc + (back * math.cos(el) + UP * math.sin(el)) * LID_SWEEP_D + hz.normalized().cross(UP).normalized() * lerp(LID_SWEEP_X, -LID_SWEEP_X, smooth(sw))
         lid_sweep.rotation_euler = (lc - lid_sweep.location).to_track_quat("-Z", "Y").to_euler()
         lid_sweep.data.energy = LID_SWEEP_W * math.sin(math.pi * sw) ** 0.6 if 0.0 < sw < 1.0 else 0.0  # 금빛 키가 결정 한 면에 보이게(2.2 · 8 W는 안 보였다)
-        w = smooth(clamp01((t - 0.4) / 2.6))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
+        w = smooth(clamp01((t - 0.4) / (STILL_AT - 0.4)))  # 시간이 흐르며 둘레 빛이 좁아져 바탕이 밤으로 가라앉는다
         pw.inputs[1].default_value = lerp(40.0, 90.0, w)
         gain.inputs[1].default_value = lerp(0.30, 0.22, w)
         # 떨어지는 결정 — 자리 · 네 빛 · 스며듦
@@ -1479,7 +1556,7 @@ def shot_gyeol():
         # 초점: 뚜껑에 두되 떨어지는 결정 쪽으로 3분의 1만 끌어(f/8 심도 안에 둘 다) — 결정이 앉으면 뚜껑 자리
         kf = smooth(clamp01((t - 0.15) / 0.45))
         mid_f = lid_now.lerp(AMP_STAND[0] + Vector((0, 0, 0.05)), 0.5)
-        k_mid = smooth(clamp01((t - 2.3) / 1.0))
+        k_mid = smooth(clamp01((t - FALL_T1 - 0.35) / 1.0))
         cam.data.dof.focus_distance = lerp(lerp(axial(loc, tgt, lid_now), axial(loc, tgt, f_loc), kf * 0.33), axial(loc, tgt, mid_f), k_mid)
         aim_serum_card(card, amp_e, loc)
         key3(items, lambda f=f: render_to(f))
