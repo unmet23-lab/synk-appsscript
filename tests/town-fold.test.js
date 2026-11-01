@@ -9,6 +9,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const { pathToFileURL } = require('node:url');
 const { ROOT, townModule, runUnderTimezone } = require('./lib/town.js');
+const { cpuBatches, assertCpuGrowth } = require('./lib/cpu-batches.js');
 
 const townFile = name => import(pathToFileURL(path.join(ROOT, 'experiences/synk-town', name)).href);
 // 거의 매번 접히는 문턱. 화면이 읽는 몫(삶의 기억 여섯, 추천의 바로 앞 넷)은 접기 함수가 스스로 지킨다.
@@ -274,7 +275,7 @@ test('UTC 호스트의 기본 시간대는 저장 뒤 다시 열어도 같은 0�
   assert.deepEqual(result, { offsetMin: 0, roundTripSame: true });
 });
 
-test('사건이 수천 개 쌓여도 세계는 내용 수에 묶이고(64KB 안) 한 바퀴 비용은 늘지 않는다 — 1만 개는 tools/town-bench.mjs', async () => {
+test('사건이 수천 개 쌓여도 세계는 내용 수에 묶이고(64KB 안) 한 바퀴 CPU 비용은 늘지 않는다 — 응답시간은 tools/town-bench.mjs', async t => {
   const { createStore } = await townFile('server.mjs');
   let at = 100000, n = 0, last;
   const store = createStore({ now: () => at });
@@ -282,7 +283,7 @@ test('사건이 수천 개 쌓여도 세계는 내용 수에 묶이고(64KB 안)
     payload: { ...(/^(DAY_|LIFE_)/.test(type) ? { surfaceId: last.presence.surfaceId, fence: last.presence.fence } : {}), ...payload } }), presence: last.presence });
   const pulse = ms => { at += ms; last = store.presence({ surfaceId: 'grow', surface: 'day', foreground: true, safe: true }); };
   const go = location => { run('DAY_MOVE', { location }); if (last.state.day.home.exitTarget) run('DAY_EXIT'); };
-  const lap = () => { const started = process.hrtime.bigint(); for (let i = 0; i < 20; i++) { pulse(100); go(i % 2 ? 'home' : 'cafe'); } return Number(process.hrtime.bigint() - started) / 1e6 / 20; };
+  const lap = () => cpuBatches(i => { pulse(100); go(i % 2 ? 'home' : 'cafe'); });
   pulse(0);
   let cycle = 0, largest = 0, early;
   while (store.stats().lines < 2500) {
@@ -297,7 +298,8 @@ test('사건이 수천 개 쌓여도 세계는 내용 수에 묶이고(64KB 안)
   assert.ok(Object.keys(state.trail.facts).length <= 256 && state.day.emitted.length <= 256 && Object.keys(state.lifeFactIds).length <= 256);
   assert.ok(largest < 64 * 1024, `세계 ${largest}B`);
   const late = lap();
-  assert.ok(late < Math.max(5, early * 3), `한 바퀴(맥박 + 명령 한둘) 처음 ${early.toFixed(2)}ms · 나중 ${late.toFixed(2)}ms`);
+  t.diagnostic(JSON.stringify({ metric: 'process-cpu-ms-per-lap', early, late }));
+  assertCpuGrowth(early, late);
 });
 
 test('세계 창 밖의 오래된 명령도 영수증으로 같은 답을 받고, 내용이 다르면 거절된다', async () => {
