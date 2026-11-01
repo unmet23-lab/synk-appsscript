@@ -41,10 +41,27 @@ function 서버(답) {
   });
 }
 
+/* 가짜 codex계정(구독 경로): FAKE_CODEX=ok면 -C 폴더의 generated_images에 그림을 두고 그 경로를 -o 파일에 답한다.
+ * 그 밖이면 굽기 계정이 없을 때처럼 종료 3. 받은 인자 · 표준입력은 FAKE_CODEX_LOG에 적는다. 진짜 Codex는 부르지 않는다. */
+const 가짜구독 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'gpt-conti-fake-codex-')), 'codex계정.js');
+fs.writeFileSync(가짜구독, `
+const fs = require('fs'); const path = require('path');
+const a = process.argv.slice(2); const 값 = (f) => a[a.indexOf(f) + 1];
+let 입력 = ''; process.stdin.on('data', (d) => { 입력 += d; });
+process.stdin.on('end', () => {
+  if (process.env.FAKE_CODEX_LOG) fs.writeFileSync(process.env.FAKE_CODEX_LOG, JSON.stringify({ 인자: a, 입력 }));
+  if (process.env.FAKE_CODEX !== 'ok') { process.stderr.write('[codex계정] 쓸 수 있는 굽기 계정이 없다\\n'); process.exit(3); }
+  const 그림 = path.join(값('-C'), 'generated_images', 'fake.png');
+  fs.mkdirSync(path.dirname(그림), { recursive: true });
+  fs.writeFileSync(그림, Buffer.from(process.env.FAKE_CODEX_PNG, 'base64'));
+  fs.writeFileSync(값('-o'), 그림 + '\\n');
+});
+`);
+
 /* 서버가 같은 프로세스에 있으므로 spawnSync가 아니라 spawn으로 돌린다 */
 function 돌리기(인자, env) {
   return new Promise((resolve) => {
-    const c = spawn(process.execPath, [도구, ...인자], { cwd: REPO, env: { ...process.env, ...env } });
+    const c = spawn(process.execPath, [도구, ...인자], { cwd: REPO, env: { ...process.env, SYNK_CODEX_ROTATE: 가짜구독, FAKE_CODEX: '', ...env } });
     let 출력 = '';
     let 오류 = '';
     c.stdout.on('data', (d) => { 출력 += d; });
@@ -118,15 +135,49 @@ test('참고 그림이 있으면 edits로 보내고 image[]를 넘긴 순서대�
   }
 });
 
-test('크레딧이 바닥나면(429 credit_balance_exhausted) 종료 3 — 다시 부르지 않고 그림도 남기지 않는다', async () => {
+test('크레딧이 바닥나고(429 credit_balance_exhausted) 구독 굽기 계정도 없으면 종료 3 — API는 다시 부르지 않고 그림도 남기지 않는다', async () => {
   const { s, 받은, 바탕 } = await 서버(() => ({ 상태: 429, json: { error: { code: 'credit_balance_exhausted', message: 'Your credit balance is exhausted.' } } }));
   try {
     const t = 임시();
     const r = await 돌리기([t.지시문, t.나갈], { SYNK_OPENAI_BASE: 바탕, OPENAI_KEY_FILE: t.키 });
     assert.strictEqual(r.code, 3, r.오류);
     assert.match(r.오류, /크레딧이 바닥났다/);
+    assert.match(r.오류, /구독 굽기 계정도 없다/);
     assert.strictEqual(받은.length, 1);
     assert.ok(!fs.existsSync(t.나갈));
+  } finally {
+    s.close();
+  }
+});
+
+test('쓸 API 크레딧이 없으면 구독 경로로 같은 지시문 · 참고 그림을 넘겨 굽고, 기록에 구독 · 받은 크기 · 어림 0을 남긴다', async () => {
+  const { s, 받은, 바탕 } = await 서버(() => ({ 상태: 429, json: { error: { code: 'credit_balance_exhausted', message: 'exhausted' } } }));
+  try {
+    const t = 임시();
+    const 가 = path.join(t.d, 'a_세트.jpg');
+    const 나 = path.join(t.d, 'b_인물.jpg');
+    fs.writeFileSync(가, Buffer.from('jpeg-a'));
+    fs.writeFileSync(나, Buffer.from('jpeg-b'));
+    const 로그 = path.join(t.d, '구독받음.json');
+    const r = await 돌리기([t.지시문, t.나갈, 가, 나, '--크기', '2048x1152'], {
+      SYNK_OPENAI_BASE: 바탕, OPENAI_KEY_FILE: t.키, FAKE_CODEX: 'ok', FAKE_CODEX_PNG: 그림.toString('base64'), FAKE_CODEX_LOG: 로그,
+    });
+    assert.strictEqual(r.code, 0, r.오류);
+    assert.strictEqual(받은.length, 1, 'API를 한 번만 불러야 한다');
+    assert.match(r.오류, /구독 경로\(Codex\)로 굽는다/);
+    assert.ok(fs.readFileSync(t.나갈).equals(그림));
+    const 넘김 = JSON.parse(fs.readFileSync(로그, 'utf8'));
+    assert.deepStrictEqual(넘김.인자.slice(0, 2), ['exec', '--skip-git-repo-check']);
+    assert.strictEqual(넘김.인자[넘김.인자.indexOf('-s') + 1], 'read-only');
+    assert.deepStrictEqual(넘김.인자.filter((_, i, a) => a[i - 1] === '-i'), [path.resolve(가), path.resolve(나)]);
+    assert.ok(넘김.입력.includes('Use your built-in image generation tool'));
+    assert.ok(넘김.입력.includes('Image size: 2048x1152 pixels'));
+    assert.ok(넘김.입력.includes('iced coffee on a cafe counter'));
+    const 기록 = JSON.parse(fs.readFileSync(t.나갈.replace(/\.png$/, '_기록.json'), 'utf8'));
+    assert.deepStrictEqual([기록.키, 기록.어림값USD, 기록.받은크기, 기록.크기], ['구독', 0, '1x1', '2048x1152']);
+    assert.match(기록.API넘긴까닭, /크레딧이 바닥났다/);
+    assert.strictEqual(기록.참고.length, 2);
+    assert.ok(!`${r.출력}${r.오류}${JSON.stringify(기록)}${넘김.입력}`.includes(가짜키), '키가 출력 · 기록 · 구독 지시문에 들어갔다');
   } finally {
     s.close();
   }
@@ -183,7 +234,7 @@ test('키 목록 — 「까지」 날이 지난 키는 부르지 않는다', asy
   }
 });
 
-test('키 목록 — 「안씀」에 콘티가 든 키는 굽기에서 부르지 않고, 남은 키가 바닥이면 종료 3으로 그 까닭을 알린다', async () => {
+test('키 목록 — 「안씀」에 콘티가 든 키는 굽기에서 부르지 않고, 남은 키가 바닥인데 구독 굽기 계정도 없으면 종료 3으로 그 까닭을 알린다', async () => {
   const 키1 = 'sk-test-main-key-0123456789';
   const 키2 = 'sk-test-reserved-key-0123456789';
   const { s, 받은, 바탕 } = await 서버(() => ({ 상태: 429, json: { error: { code: 'credit_balance_exhausted', message: 'exhausted' } } }));

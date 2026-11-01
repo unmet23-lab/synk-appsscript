@@ -15,13 +15,20 @@
  * - 키 차례와 넘기기(크레딧 바닥 · 401 · 403이면 다음 무료 크레딧 키, 마지막 키까지 바닥이면 종료 3)는 `tools/lib/오픈AI키.mjs`.
  *   크레딧은 GPT Pro 구독의 월 API 크레딧이다(docs/AI_계정과_크레딧.md 「GPT」). 용도 '콘티'로 불러서 키 목록의 「안씀」에
  *   '콘티'가 든 키는 건너뛴다 — 10-30부터 unmet23(남은 크레딧은 운영 받아 적기 · 상황극 · 시험관 몫, 유호님 「응, 살려줘」).
+ * - 쓸 API 크레딧이 없으면(종료 3이 될 때) 같은 지시문 · 참고 그림으로 구독 경로(Codex 그림 도구, `tools/codex계정.js exec`)에서
+ *   굽는다(2026-11-02 유호님 「무료 api 크레딧 없으면 구독제로 바꿔서 구워도 돼」). 구독 경로는 품질 max · 정확한 크기를 지정하지
+ *   못해 크기는 지시문에 비율로만 적고, 기록에 경로 · 받은 크기를 남긴다. 구독 굽기 계정도 없으면 종료 3.
+ *   시험은 SYNK_CODEX_ROTATE로 가짜 codex계정을 준다.
  * - 그림 옆에 <이름>_기록.json(쓴 키 이름, 받은 크기 · 품질, 초, 요청 번호, 사용 토큰, 어림 값, 지시문 · 참고 sha256)을 남긴다.
  * - 값 · 시간 실측과 2K에서 구슬 눈에 흰자가 생기는 함정은 현장 노트 그림_굽기_오리기 「API로 GPT Image 2.5 Sunburst」.
  * - 시험은 SYNK_OPENAI_BASE로 가짜 서버를, SYNK_OPENAI_KEYLIST로 임시 키 목록을 준다(tests/GPT콘티굽기.test.js).
  */
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { 바탕주소, 차례로부르기, 부르기오류 } from './lib/오픈AI키.mjs';
 
 const 모델 = 'gpt-image-2.5-sunburst';
@@ -70,30 +77,81 @@ function 요청몸() {
   return { 주소: `${바탕주소()}/images/edits`, 몸, json: false };
 }
 
-let 결과;
+const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
+const 참고기록 = () => 참고.map((p) => ({ 이름: path.basename(p), sha256: sha(fs.readFileSync(p)) }));
+
+/* 구독 경로 — 혜택포스터 · 마스코트 사진 굽기와 같은 꼴(내장 그림 도구로 한 장, 셸 · 파일 손대지 않기, 저장한 경로만 답) */
+const 구독머리 = 'Use your built-in image generation tool to create exactly ONE image. Do not run any shell commands and do not '
+  + 'create or edit any files yourself. After the image is generated, reply with only the absolute path of the saved image file.\n\n';
+function PNG크기(b) {
+  return b.length > 24 && b.readUInt32BE(0) === 0x89504e47 ? `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}` : null;
+}
+async function 구독굽기(API까닭) {
+  const [가로, 세로] = 크기.split('x').map(Number);
+  const 방향 = 가로 > 세로 ? 'landscape' : 가로 < 세로 ? 'portrait' : 'square';
+  const 글 = `${구독머리}Image size: ${가로}x${세로} pixels if possible (${방향}; keep this exact aspect ratio).\n\n${지시문}`;
+  const 작업 = fs.mkdtempSync(path.join(os.tmpdir(), 'gpt-conti-sub-'));
+  const 답파일 = path.join(작업, 'last.txt');
+  const 돌림 = process.env.SYNK_CODEX_ROTATE || path.join(path.dirname(fileURLToPath(import.meta.url)), 'codex계정.js');
+  const 인자 = [돌림, 'exec', '--skip-git-repo-check', '-C', 작업, '-s', 'read-only', ...참고.flatMap((p) => ['-i', path.resolve(p)]), '-o', 답파일, '-'];
+  const 시작 = Date.now();
+  const r = await new Promise((resolve) => {
+    const c = spawn(process.execPath, 인자, { timeout: 20 * 60 * 1000 });
+    let 로그 = '';
+    c.stdout.on('data', (d) => { 로그 += d; });
+    c.stderr.on('data', (d) => { 로그 += d; });
+    c.on('error', (e) => resolve({ code: 1, 로그: `${로그}\n${e.message}` }));
+    c.on('close', (code) => resolve({ code, 로그 }));
+    c.stdin.end(글);
+  });
+  const 초 = Math.round((Date.now() - 시작) / 1000);
+  if (r.code === 3) 멈춤(`API 크레딧이 없어 구독 경로로 넘겼지만 쓸 수 있는 구독 굽기 계정도 없다(codex계정 종료 3 — node tools/codex계정.js로 본다). API: ${API까닭}`, 3);
+  const 답 = fs.existsSync(답파일) ? fs.readFileSync(답파일, 'utf8') : '';
+  const 그림 = (`${답}\n${r.로그}`.match(/[A-Za-z]:[\\/][^\s"'`]+?\.png/g) || []).reverse()
+    .find((p) => p.includes('generated_images') && fs.existsSync(p));
+  if (!그림) 멈춤(`구독 경로에서 그림을 받지 못했다(종료 ${r.code}): ${(답 || r.로그).slice(-400)}`, 1);
+  fs.mkdirSync(path.dirname(path.resolve(나갈)), { recursive: true });
+  fs.copyFileSync(그림, 나갈);
+  const 받은크기 = PNG크기(fs.readFileSync(나갈));
+  const 기록 = {
+    때: new Date().toISOString(), 경로: '구독(Codex 그림 도구 — 모델 · 품질은 지정하지 못함)', 크기, 키: '구독', 받은크기, 받은품질: null, 초,
+    어림값USD: 0, API넘긴까닭: API까닭, 지시문sha256: sha(지시문), 참고: 참고기록(),
+  };
+  fs.writeFileSync(나갈.replace(/\.png$/i, '_기록.json'), `${JSON.stringify(기록, null, 2)}\n`);
+  console.log(`[GPT콘티굽기] ${나갈} · 구독(Codex) · ${받은크기 || '크기 모름'} · ${초}초 · API 크레딧 0`);
+}
+
+function API그림남기기({ 답, 글, 요청, 초, 쓴키 }) {
+  const b64 = 답.data?.[0]?.b64_json;
+  if (!b64) 멈춤(`그림이 없는 답: ${글.slice(0, 300)}`, 1);
+  if (답.quality && 답.quality !== 품질) console.error(`[GPT콘티굽기] 알림: 받은 품질이 ${답.quality}다(${품질}가 아님) — 보고에 그대로 적는다`);
+
+  fs.mkdirSync(path.dirname(path.resolve(나갈)), { recursive: true });
+  fs.writeFileSync(나갈, Buffer.from(b64, 'base64'));
+  const u = 답.usage || {};
+  const 글입력 = u.input_tokens_details?.text_tokens ?? 0;
+  const 그림입력 = u.input_tokens_details?.image_tokens ?? 0;
+  const 출력 = u.output_tokens ?? 0;
+  const 어림 = Number((글입력 * 값표.글입력 + 그림입력 * 값표.그림입력 + 출력 * 값표.출력).toFixed(4));
+  const 기록 = {
+    때: new Date().toISOString(), 모델, 품질, 크기, 키: 쓴키, 받은크기: 답.size ?? null, 받은품질: 답.quality ?? null, 초, 요청,
+    사용: u, 어림값USD: 어림, 지시문sha256: sha(지시문), 참고: 참고기록(),
+  };
+  fs.writeFileSync(나갈.replace(/\.png$/i, '_기록.json'), `${JSON.stringify(기록, null, 2)}\n`);
+  console.log(`[GPT콘티굽기] ${나갈} · 키 ${쓴키} · ${답.size || 크기} · ${답.quality || 품질} · ${초}초 · 어림 $${어림} · 요청 ${요청}`);
+}
+
+let 결과 = null;
+let API까닭 = null;
 try {
   결과 = await 차례로부르기(요청몸, { 용도: '콘티', 알림: (말) => console.error(`[GPT콘티굽기] ${말}`) });
 } catch (e) {
-  if (e instanceof 부르기오류) 멈춤(e.message, e.코드);
-  throw e;
+  if (!(e instanceof 부르기오류)) throw e;
+  if (e.코드 !== 3) 멈춤(e.message, e.코드);
+  API까닭 = e.message;
 }
-const { 답, 글, 요청, 초, 쓴키 } = 결과;
-const b64 = 답.data?.[0]?.b64_json;
-if (!b64) 멈춤(`그림이 없는 답: ${글.slice(0, 300)}`, 1);
-if (답.quality && 답.quality !== 품질) console.error(`[GPT콘티굽기] 알림: 받은 품질이 ${답.quality}다(${품질}가 아님) — 보고에 그대로 적는다`);
-
-fs.mkdirSync(path.dirname(path.resolve(나갈)), { recursive: true });
-fs.writeFileSync(나갈, Buffer.from(b64, 'base64'));
-const u = 답.usage || {};
-const 글입력 = u.input_tokens_details?.text_tokens ?? 0;
-const 그림입력 = u.input_tokens_details?.image_tokens ?? 0;
-const 출력 = u.output_tokens ?? 0;
-const 어림 = Number((글입력 * 값표.글입력 + 그림입력 * 값표.그림입력 + 출력 * 값표.출력).toFixed(4));
-const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
-const 기록 = {
-  때: new Date().toISOString(), 모델, 품질, 크기, 키: 쓴키, 받은크기: 답.size ?? null, 받은품질: 답.quality ?? null, 초, 요청,
-  사용: u, 어림값USD: 어림, 지시문sha256: sha(지시문),
-  참고: 참고.map((p) => ({ 이름: path.basename(p), sha256: sha(fs.readFileSync(p)) })),
-};
-fs.writeFileSync(나갈.replace(/\.png$/i, '_기록.json'), `${JSON.stringify(기록, null, 2)}\n`);
-console.log(`[GPT콘티굽기] ${나갈} · 키 ${쓴키} · ${답.size || 크기} · ${답.quality || 품질} · ${초}초 · 어림 $${어림} · 요청 ${요청}`);
+if (결과) API그림남기기(결과);
+else {
+  console.error(`[GPT콘티굽기] 쓸 API 크레딧이 없어 구독 경로(Codex)로 굽는다 — 품질 max · 정확한 크기는 보장되지 않는다: ${API까닭}`);
+  await 구독굽기(API까닭);
+}
