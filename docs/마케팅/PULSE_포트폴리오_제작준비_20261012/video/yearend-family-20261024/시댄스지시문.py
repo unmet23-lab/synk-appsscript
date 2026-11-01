@@ -62,8 +62,8 @@ CARD_MAX = 8   # 무제한 카드의 한 판 길이 상한 — 10 이상으로 �
         "ROOM": "the daughter's tidy bedroom, exactly as in the first frame — a light-oak desk and chair, two white storage boxes, a round "
                 "tabletop mirror on a small round side table, a light-oak single bed, a small pressed-flower frame on the wall, a window "
                 "with a thin curtain.",
-        "BLANKET": "the new winter blanket on the single bed, exactly as in the first frame — a warm oatmeal-cream quilt with small diamond "
-                   "stitching and thin terracotta piping, its top folded back to show the brick-red underside, with a matching pillow; no "
+        "BLANKET": "the new winter blanket on the single bed, exactly as in the first frame — a thick, plump oatmeal-cream duvet with diamond "
+                   "quilting and thin terracotta piping, its top folded back to show the brick-red underside, with a matching plump pillow; no "
                    "letters, no logo, no label.",
     },
     "보기": "LOOK: a quiet, tender cinematic family film — cinema camera, soft natural light, fine film grain, natural textures, "

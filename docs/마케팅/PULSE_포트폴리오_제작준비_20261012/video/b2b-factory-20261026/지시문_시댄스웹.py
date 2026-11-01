@@ -303,13 +303,14 @@ CUT = {
          lambda o: "Medium close-up of Junho's face at dusk, looking far into the distance with quiet pride; warm sunset light on one side of his "
                    "face; a soft breeze stirs his hair slightly; his lips stay closed.",
          lambda o: "handheld with a small natural shake, moving in slightly (about 5%) over 1.25 s."),
-    37: (4.00, "노을 하늘 — 송전탑 꼭대기 · 송전선이 카메라 옆을 스쳐 지나 뒤로 멀어지고 멀리 도시 불빛이 구역마다 번지며 더 밝아짐(S37은 이미 불이 켜진 그림 · 끝 글자 · 로고는 후반)",
+    37: (4.00, "노을 하늘 — 송전탑 꼭대기 · 송전선이 카메라 옆을 스쳐 지나 뒤로 멀어지고 멀리 어두운 도시의 불이 한 구역씩 켜짐(11-01 S37을 불 꺼진 어스름 판으로 다시 구움 · 끝 글자 · 로고는 후반)",
          [],
          lambda o: "High in the air at dusk under glowing orange-pink clouds: the top of a steel transmission tower with its insulators stands "
-                   "close beside the camera on the left, the power lines sloping away toward a wide city far below. As the camera flies past it, "
-                   "the tower sweeps past the left side and falls away behind; then, from about 1.8 s to 3.8 s, the city glow grows: more windows "
-                   "and streets light up district by district, the lit areas spreading and brightening until the whole city glows clearly "
-                   "brighter than at the start, while the sky keeps its dusk colors. The tower's steel lattice stays rigid and sharp-edged as "
+                   "close beside the camera on the left, the power lines sloping away toward a wide city far below. The city is still dark — calm "
+                   "blue-grey shapes with almost no lights on. As the camera flies past it, "
+                   "the tower sweeps past the left side and falls away behind; then, from about 1.8 s to 3.8 s, the city lights come on one district "
+                   "at a time: a block of windows and streets switches on in warm gold, then the next block, then the next, each in a quick step "
+                   "rather than a slow fade, until most of the city glows, while the sky keeps its dusk colors. The tower's steel lattice stays rigid and sharp-edged as "
                    "it passes, and the power lines stay thin, straight and continuous.",
          lambda o: "a smooth aerial move: almost still for the first 0.5 s, then the camera flies forward past the tower — the tower sweeps out "
                    "of the frame on the left, fastest between 0.75 s and 1.5 s; the camera keeps gliding gently toward the city while slowing "
@@ -405,7 +406,7 @@ def build():
                  "노래 · 화면 글 · 회사 이름은 후반. 길이 = max(4, ⌈쓰는 초 + 0.8⌉), 두 샷 = ⌈자르는 초 + 둘째 쓰는 초 + 0.8⌉. 꾸러미는 "
                  "../../../시댄스무제한/웹꾸러미.py. 10-31 Fable 결제 전 검수(P1 2 · P2 8 · P3 6, git 밖 콘티/검수/시댄스앞_여섯편_20261031/p10/review.md) 반영 — "
                  "12 둘째 작업자는 화면 오른쪽 밖에서 들어오고 공통 LOOK은 「not in the first frame or written in ACTION」, 37은 S37이 이미 불이 켜진 그림이라 "
-                 "「불빛이 번져 더 밝아짐」, 28 날개는 천천히 선명하게, 8+9는 샷마다 제 빛, 29 · 30 낱판은 묶음과 함께 주판."),
+                 "「불빛이 번져 더 밝아짐」(11-01 유호님 「둘 다 구워」로 S37을 불 꺼진 어스름 판으로 다시 구워 「한 구역씩 켜짐」으로 되돌림), 28 날개는 천천히 선명하게, 8+9는 샷마다 제 빛, 29 · 30 낱판은 묶음과 함께 주판."),
         "편": "p10",
         "이름": "10번 B2B 기업 홍보영상 「도담중공업」",
         "비율": "16:9",
