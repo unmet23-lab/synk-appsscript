@@ -11,8 +11,9 @@
     return s.length > max ? s.slice(0, max).trim() : s;
   }
 
+  // 한 번에 바꾼다 — 차례로 바꾸면 업종 칸에 적은 「{물건}」이 다시 바뀐다. 함수로 넘겨 「$」도 그대로 둔다
   function build(template, kind, object) {
-    return String(template).replace('{업종}', function () { return kind; }).replace('{물건}', function () { return object; });
+    return String(template).replace(/\{업종\}|\{물건\}/g, function (m) { return m === '{업종}' ? kind : object; });
   }
 
   // 두 칸이 다 차야 완성이다. 비었으면 빈칸 자리를 【】로 보이고 복사는 막는다.

@@ -10,14 +10,16 @@
   // ── 요청문 만들기 ──
   var form = $('[data-make]'), kindEl = $('#make-kind'), objectEl = $('#make-object');
   var out = $('[data-out]'), copyBtn = $('[data-copy]'), status = $('[data-status]');
+  // 틀과 알림 글은 page.js가 내용.json에서 속성으로 넘긴다
   var template = form.getAttribute('data-template');
+  var msg = { empty: form.getAttribute('data-msg-empty'), done: form.getAttribute('data-msg-done'), fail: form.getAttribute('data-msg-fail') };
   var current = { ready: false, text: '' };
 
   function update() {
     current = H.request(template, kindEl.value, objectEl.value);
     out.value = current.text;
     copyBtn.disabled = !current.ready;
-    status.textContent = current.ready ? '' : '업종과 물건을 적으면 복사할 수 있어요.';
+    status.textContent = current.ready ? '' : msg.empty;
     $$('[data-kind]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-kind') === H.clean(kindEl.value, H.MAX.kind))); });
   }
 
@@ -33,14 +35,14 @@
 
   copyBtn.addEventListener('click', function () {
     if (!current.ready) return;
-    var ok = function () { status.textContent = '복사했어요. 채팅 AI 새 대화에 붙여 넣으세요.'; };
+    var ok = function () { status.textContent = msg.done; };
     var fallback = function () {
       // 앱 안 브라우저처럼 클립보드가 막힌 곳: 요청문 칸을 골라 execCommand로, 그것도 막히면 길게 눌러 복사하게 둔다
       out.focus();
       out.setSelectionRange(0, out.value.length);
       var done = false;
       try { done = document.execCommand('copy'); } catch (e) { done = false; }
-      if (done) ok(); else status.textContent = '복사하지 못했어요. 위 글을 길게 눌러 복사해 주세요.';
+      if (done) ok(); else status.textContent = msg.fail;
     };
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(current.text).then(ok, fallback);
     else fallback();
@@ -86,8 +88,9 @@
   prev.addEventListener('click', function () { show(at - 1); });
   next.addEventListener('click', function () { show(at + 1); });
   $('[data-close]', box).addEventListener('click', function () { box.close(); });
-  // 그림 밖(어두운 뒤판)을 누르면 닫는다
-  box.addEventListener('click', function (e) { if (e.target === box) box.close(); });
+  // 그림 밖(어두운 뒤판 · 그림 옆 빈자리)을 누르면 닫는다 — 휴대폰에선 figure가 화면 폭을 다 덮는다
+  var figure = $('figure', box);
+  box.addEventListener('click', function (e) { if (e.target === box || e.target === figure) box.close(); });
   box.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') { e.preventDefault(); show(at - 1); }
     if (e.key === 'ArrowRight') { e.preventDefault(); show(at + 1); }

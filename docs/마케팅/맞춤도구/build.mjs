@@ -90,9 +90,9 @@ async function buildStatic(name) {
   console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
   subsetLatin(path.join(out, 'assets'));
   if (rendered) {
-    printOnePage(rendered.guide, path.join(out, 'guide.pdf'), page.WIDTH);
+    const printed = printOnePage(rendered.guide, path.join(out, 'guide.pdf'), page.WIDTH);
     fs.rmSync(rendered.guide);
-    console.log(`${name}: PDF 한 장 생성`);
+    if (printed) console.log(`${name}: PDF 한 장 생성`);
   }
   if (fs.existsSync(og) && chrome(['--window-size=1200,630', `--screenshot=${path.join(out, 'og.png')}`, pathToFileURL(og).href])) console.log(`${name}: 링크 미리보기 이미지 생성`);
   console.log(`${name}: ${writeManifest(name, out)}개 파일 → dist/${tool.out}/`);
@@ -154,10 +154,11 @@ function chrome(args) {
 function printOnePage(html, pdf, width) {
   const url = pathToFileURL(html).href;
   const dom = chrome([`--window-size=${width},1000`, '--dump-dom', url]);
-  const height = dom && Number((/data-height="(\d+)"/.exec(dom.stdout) || [])[1]);
+  if (!dom) return false; // Chrome이 없으면 다른 PDF처럼 건너뛴다(경고는 chrome()이 낸다)
+  const height = Number((/data-height="(\d+)"/.exec(dom.stdout) || [])[1]);
   if (!height) throw new Error('PDF 원고의 높이를 재지 못했어요.');
   fs.writeFileSync(html, fs.readFileSync(html, 'utf8').replace('__HEIGHT__', String(height + 2)));
-  chrome(['--no-pdf-header-footer', `--print-to-pdf=${pdf}`, url]);
+  return chrome(['--no-pdf-header-footer', `--print-to-pdf=${pdf}`, url]);
 }
 
 function writeManifest(name, out, extra = {}) {

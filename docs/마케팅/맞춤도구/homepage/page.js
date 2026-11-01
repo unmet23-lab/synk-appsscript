@@ -24,8 +24,12 @@ const BEYOND = [
 ];
 
 function textsOf(data) {
-  const out = [['제목', data.제목], ['부제', data.부제], ['요약', data.요약], ['메타설명', data.메타설명], ['이렇게', data.이렇게.머리], ['이렇게', data.이렇게.쪽], ['고르는법', data.고르는법.머리], ['만들기', data.만들기.머리], ['만들기', data.만들기.PDF], ['만들기', data.만들기.약속]];
-  for (const s of data.단계) out.push([s.id, s.이름], [s.id, s.풀이], [s.id, s.결과]);
+  const a = data.만들기;
+  const out = [['제목', data.제목], ['부제', data.부제], ['요약', data.요약], ['메타설명', data.메타설명], ['요청문', data.요청문], ['이렇게', data.이렇게.머리], ['이렇게', data.이렇게.쪽], ['고르는법', data.고르는법.머리], ['만들기', a.머리], ['만들기', a.PDF], ['만들기', a.약속], ['만들기', a.예시.업종], ['만들기', a.예시.물건]];
+  for (const t of [...data.구역, ...a.업종예시, ...Object.values(a.알림)]) out.push(['쪽 글', t]);
+  for (const p of data.판) out.push([p.id, p.이름], [p.id, p.업종], [p.id, p.물건]);
+  for (const l of data.더보기) out.push(['더보기', l.제목], ['더보기', l.글]);
+  for (const s of data.단계) out.push(...[s.이름, s.풀이, s.결과, s.붙인말, s.붙인말없음].filter(Boolean).map((t) => [s.id, t]));
   for (const r of data.고르는법.기준) out.push(['기준', r.제목], ['기준', r.글]);
   for (const r of data.한계) out.push(['한계', r.제목], ['한계', r.글]);
   return out;
@@ -58,7 +62,9 @@ function check(data) {
 function shotLink(data, stage, p, no) {
   const on = stage.몰린판.includes(p.id);
   const cap = `${no}단계 · ${p.이름}${stage.끝 ? ` · ${p.물건}` : ''}`;
-  return `<a class="shot${on ? ' on' : ''}" href="${large(stage.id, p.id)}" data-open="${stage.id}" data-cap="${esc(cap)}" data-alt="${esc(`${cap} 실제 화면`)}"><img src="${thumb(stage.id, p.id)}" alt="${esc(`${cap} 실제 화면`)}" width="240" height="519" loading="lazy" decoding="async"></a>`;
+  // 몰린 판은 노란 테로만 보이지 않게 대체 글에도 적는다(화면 낭독기)
+  const alt = `${cap} 실제 화면${on ? ', 한쪽으로 몰린 판' : ''}`;
+  return `<a class="shot${on ? ' on' : ''}" href="${large(stage.id, p.id)}" data-open="${stage.id}" data-cap="${esc(cap)}" data-alt="${esc(alt)}"><img src="${thumb(stage.id, p.id)}" alt="${esc(alt)}" width="240" height="519" loading="lazy" decoding="async"></a>`;
 }
 
 function roundBlock(data, s, i) {
@@ -97,6 +103,7 @@ section.block>h2 .no::before{content:counter(blk,decimal-leading-zero)}
 .shot img{width:100%;height:auto;aspect-ratio:3/5;object-fit:cover;object-position:top;transition:filter .18s var(--ease)}
 .shot.on::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 3px var(--led-check);pointer-events:none}
 .shots.gray img{filter:grayscale(1)}
+@media(forced-colors:active){.shot.on{outline:3px solid Highlight;outline-offset:-3px}}
 .tally{display:flex;flex-direction:column;justify-content:flex-end;gap:4px;min-width:0;padding:10px;border-radius:10px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2)}
 .tally b{font-size:30px;font-weight:680;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .tally span{font-size:13px;font-weight:550;line-height:1.3;color:var(--ink-2)}
@@ -146,8 +153,9 @@ dl.facts dd{margin:0;max-width:66ch;font-size:15.5px;line-height:1.66;color:var(
 /* 크게 보기 */
 .lb{width:min(100vw,460px);max-width:100vw;max-height:100dvh;margin:auto;padding:0;border:0;background:transparent;color:#FAFAF9;overflow:hidden}
 .lb::backdrop{background:rgba(6,7,9,.95)}
-.lb figure{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
-.lb img{width:auto;max-width:100%;height:auto;max-height:calc(100dvh - 128px);aspect-ratio:390/844;border-radius:12px;background:#121317}
+.lb figure{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(12px + env(safe-area-inset-bottom,0px))}
+/* 그림 밖 칸(위아래 여백 · 캡션 두 줄 · 단추 줄 · 홈 막대)을 다 빼고 남는 높이만 그림에 준다 */
+.lb img{width:auto;max-width:100%;height:auto;max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));aspect-ratio:390/844;border-radius:12px;background:#121317}
 .lb figcaption{min-height:1.5em;font-size:14px;font-weight:550;text-align:center}
 .lb-bar{display:flex;gap:8px;width:100%}
 .lb-bar button{flex:1;min-height:48px;border:0;border-radius:999px;background:rgba(255,255,255,.1);color:#FAFAF9;font-size:15px;font-weight:600}
@@ -177,13 +185,15 @@ dl.facts dd{margin:0;max-width:66ch;font-size:15.5px;line-height:1.66;color:var(
   .intro .meta{display:none}
   .intro .lead{margin-bottom:20px}
 }
-@media print{.bar,.gray-btn,.lb{display:none}}`;
+@media print{.bar,.gray-btn,.lb{display:none}.maker .copybox textarea{display:block!important}}`;
 
 function renderPage(data) {
   const [c1, c2, c3, c4] = data.구역;
   const a = data.만들기;
   const start = fill(data.요청문, '【업종】', '【물건】');
-  const picks = data.판.map((p) => `<li><a class="pick" href="${large('s4', p.id)}" data-open="picks" data-cap="${esc(`${p.이름} · ${p.물건}`)}" data-alt="${esc(`${p.물건}으로 만든 ${p.이름} 실제 화면`)}"><img src="${large('s4', p.id)}" alt="${esc(`${p.물건}으로 만든 ${p.이름} 실제 화면`)}" width="585" height="1266" loading="lazy" decoding="async"><b>${esc(p.물건)}</b><span>${esc(p.이름)}</span></a></li>`).join('');
+  // 물건 이름 뒤에 조사를 붙이지 않는다(받침에 따라 으로 · 로가 갈린다)
+  const pickAlt = (p) => esc(`${p.이름} 실제 화면, 정해 준 물건은 ${p.물건}`);
+  const picks = data.판.map((p) => `<li><a class="pick" href="${large('s4', p.id)}" data-open="picks" data-cap="${esc(`${p.이름} · ${p.물건}`)}" data-alt="${pickAlt(p)}"><img src="${large('s4', p.id)}" alt="${pickAlt(p)}" width="585" height="1266" loading="lazy" decoding="async"><b>${esc(p.물건)}</b><span>${esc(p.이름)}</span></a></li>`).join('');
   return `<!doctype html>
 <html lang="ko">
 <head>
@@ -227,7 +237,7 @@ ${CSS}
         <p class="eyebrow">Homepage</p>
         <h1 tabindex="-1">${esc(data.제목)}<br><span class="hl">${esc(data.부제)}</span></h1>
         <p class="lead">${esc(data.요약)}</p>
-        <ul class="meta" aria-label="이 쪽에 든 것">
+        <ul class="meta" aria-label="이 화면에 든 것">
           <li>실제 화면 28장</li>
           <li>물건 고르는 법</li>
           <li>요청문 만들기</li>
@@ -263,7 +273,7 @@ ${data.단계.map((s, i) => roundBlock(data, s, i)).join('\n')}
     <section class="block" id="make" aria-labelledby="h-make">
       <h2 id="h-make"><span class="no"></span>${esc(c3)}</h2>
       <p class="sub">${esc(a.머리)}</p>
-      <form class="maker" data-make data-template="${esc(data.요청문)}" autocomplete="off">
+      <form class="maker" data-make data-template="${esc(data.요청문)}" data-msg-empty="${esc(a.알림.빈칸)}" data-msg-done="${esc(a.알림.복사됨)}" data-msg-fail="${esc(a.알림.실패)}" autocomplete="off">
         <div class="fld">
           <label for="make-kind">어떤 가게인가요?</label>
           <input id="make-kind" name="kind" type="text" maxlength="40" placeholder="${esc(a.예시.업종)}" enterkeyhint="next">
@@ -287,7 +297,7 @@ ${data.단계.map((s, i) => roundBlock(data, s, i)).join('\n')}
       <h2 id="h-limit"><span class="no"></span>${esc(c4)}</h2>
       <dl class="facts">${data.한계.map((r) => `<div><dt>${esc(r.제목)}</dt><dd>${esc(r.글)}</dd></div>`).join('')}</dl>
       <ul class="links">
-        <li><a href="guide.pdf" download="${PDF_NAME}"><b>PDF로 받기</b><span>이 쪽과 같은 내용 한 장</span></a></li>
+        <li><a href="guide.pdf" download="${PDF_NAME}"><b>PDF로 받기</b><span>이 화면과 같은 내용 한 장</span></a></li>
 ${data.더보기.map((l) => `        <li><a href="${esc(l.주소)}"><b>${esc(l.제목)}</b><span>${esc(l.글)}</span></a></li>`).join('\n')}
       </ul>
     </section>
