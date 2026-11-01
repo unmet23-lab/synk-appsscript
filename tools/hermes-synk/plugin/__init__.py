@@ -473,7 +473,9 @@ def _result_text(record: dict, parsed: dict, *, limit: int = 12000) -> str:
     text = "\n".join(_safe_text(line, 2000) for line in text.splitlines())
     # send_message's MEDIA syntax is executable attachment intent; this adapter
     # delivers text only and must not promote a CLI's quoted path into an upload.
-    text = text.replace("MEDIA:", "MEDIA :").replace("[[as_document]]", "").replace("[[audio_as_voice]]", "")
+    # 공백으로 바꿔 표식 앞뒤 조각이 새 MEDIA 지시로 합쳐지지 않게 한다.
+    text = re.sub(r"\[\[(?:as_document|audio_as_voice)\]\]", " ", text, flags=re.IGNORECASE)
+    text = re.sub(r"MEDIA:", "MEDIA :", text, flags=re.IGNORECASE)
     if len(text) > limit:
         text = text[:limit] + "\n… 결과 본문 일부 생략"
     label = "Claude Code" if record["engine"] == "claude" else "Codex CLI"
@@ -1373,9 +1375,14 @@ def _active_approvals() -> list[dict]:
 
 
 def _approval_by_sentence(text: str) -> dict | None:
+    active = _active_approvals()
+    exact = [record for record in active if (record.get("notice") or {}).get("sentence") == text]
+    if exact:
+        return exact[0] if len(exact) == 1 else None
     key = _sentence_key(text)
-    return next((record for record in _active_approvals()
-                 if key and _sentence_key((record.get("notice") or {}).get("sentence")) == key), None)
+    matches = [record for record in active
+               if key and _sentence_key((record.get("notice") or {}).get("sentence")) == key]
+    return matches[0] if len(matches) == 1 else None
 
 
 def _approval_notice(native_session_id: str) -> dict | None:
@@ -1408,10 +1415,14 @@ def _approval_dispatch(event=None, **_kwargs):
                              if str((record.get("notice") or {}).get("message_id") or "") == reply_to), None)
         approval = approval or _approval_by_sentence(text)
         if approval is None:
-            return None
+            sentence_key = _sentence_key(text)
+            if not sentence_key or not any(_sentence_key((record.get("notice") or {}).get("sentence")) == sentence_key
+                                           for record in _active_approvals()):
+                return None
+            # 충돌한 문장은 임의 세션으로 넘기지 않고 명령 경로에서 답장을 요구한다.
         # 명령 인자로 넘어가며 공백·대시가 바뀌지 않게 원래 글을 메시지 ID로 붙들어 둔다.
         for key in {str(getattr(event, "message_id", "") or ""), str(getattr(source, "message_id", "") or "")} - {""}:
-            _APPROVAL_MATCHES[key] = (approval["session_id"], text)
+            _APPROVAL_MATCHES[key] = (approval["session_id"] if approval else None, text)
         while len(_APPROVAL_MATCHES) > 50:
             _APPROVAL_MATCHES.pop(next(iter(_APPROVAL_MATCHES)))
         return {"action": "rewrite", "text": "/synk_continue " + text}
@@ -1606,6 +1617,8 @@ def _continue_command(ctx, raw: str) -> str:
         route = _authorized()
         message_id = _env("HERMES_SESSION_MESSAGE_ID")
         session, text = _APPROVAL_MATCHES.pop(message_id, ("", raw)) if message_id else ("", raw)
+        if session is None:
+            raise UserError("같은 문장으로 고를 수 있는 알림이 여러 개예요. 이어 갈 알림에 답장으로 보내 주세요.")
         return _continue(ctx, route, session, text)
     except UserError as error:
         return str(error)

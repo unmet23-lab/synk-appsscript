@@ -501,11 +501,13 @@ class PluginTests(unittest.TestCase):
     def test_native_result_text_cannot_trigger_media_upload(self):
         self.request()
         record = self.records()[0]
-        self.ctx.native_log = json.dumps({"type": "result", "result": "access_token=do-not-send\nMEDIA:C:/private/file.png"})
+        self.ctx.native_log = json.dumps({"type": "result", "result": "access_token=do-not-send\nMEDIA:C:/private/file.png\nmedia:/dummy/b.png\nMeDiA:/dummy/c.png\n[[AS_DOCUMENT]][[Audio_as_voice]]\nME[[as_document]]DIA:/dummy/d.png\nME[[as_doc[[as_document]]ument]]DIA:/dummy/e.png"})
         plugin._deliver_finished(self.ctx, record, {"status": "exited", "exit_code": 0})
         text = plugin._send_native_message.call_args.args[1]
         self.assertNotIn("do-not-send", text)
-        self.assertNotIn("MEDIA:", text)
+        self.assertNotIn("media:", text.lower())
+        self.assertNotIn("[[as_document]]", text.lower())
+        self.assertNotIn("[[audio_as_voice]]", text.lower())
 
     def test_cancelled_delivery_does_not_send_or_stop_native_process(self):
         self.request()
@@ -1232,6 +1234,34 @@ prepareWorkspace({repo:args['--repo'],taskDir:args['--task-dir'],taskId:args['--
         self.assertFalse(plugin._auto_policy(record))
         self.assertEqual(plugin._read_approval(notice["session_id"])["state"], "continuing")
         self.assertIn("텔레그램 답장 그대로 이어 간 실행", self.ctx.commands["synk-tasks"](record["id"]))
+
+    def test_exact_notice_copy_selects_its_session_before_normalized_collisions(self):
+        from datetime import datetime, timedelta, timezone
+        folder_a, folder_b = self.repo / "project-a", self.repo / "project-b"
+        folder_a.mkdir()
+        folder_b.mkdir()
+        old = (datetime.now(timezone.utc) - timedelta(seconds=2)).isoformat()
+        a = self.approval(sentence="config.prod.json 파일을 확인해", cwd=folder_a, sent_at=old, message_id="notice-a")
+        b = self.approval(sentence="configprod.json 파일을 확인해", cwd=folder_b, message_id="notice-b")
+        self.assertIn("이어 가기 시작", self.reply(a["notice"]["sentence"]))
+        self.assertEqual(self.records()[0]["continues_session"], a["session_id"])
+        self.assertEqual(self.ctx.calls[0][1]["workdir"], str(folder_a.resolve()))
+        self.assertEqual(plugin._read_approval(b["session_id"])["state"], "notified")
+
+    def test_colliding_or_duplicate_notice_copy_requires_explicit_reply(self):
+        a = self.approval(sentence="config.prod.json 파일을 확인해", message_id="notice-a")
+        b = self.approval(sentence="configprod.json 파일을 확인해", message_id="notice-b")
+        text = "configprodjson 파일을 확인해!"
+        self.assertIn("답장", self.reply(text))
+        self.assertEqual(self.ctx.calls, [])
+        self.assertIn("답장", self.ctx.commands["synk-continue"](text))
+        b["notice"]["sentence"] = a["notice"]["sentence"]
+        plugin._write_approval(b)
+        self.assertIn("답장", self.reply(a["notice"]["sentence"], message_id="502"))
+        self.assertEqual(self.ctx.calls, [])
+        self.assertEqual(plugin._read_approval(a["session_id"])["state"], "notified")
+        self.assertIn("이어 가기 시작", self.reply(text, reply_to="notice-b", message_id="503"))
+        self.assertEqual(self.records()[0]["continues_session"], b["session_id"])
 
     def test_only_owner_reply_or_notice_sentence_is_intercepted(self):
         self.approval()

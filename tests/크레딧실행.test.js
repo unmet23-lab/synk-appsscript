@@ -12,6 +12,7 @@ const 실행기 = require('../tools/크레딧실행.js');
 const 가짜claude = `const fs=require('fs');let input='';process.stdin.on('data',d=>input+=d).on('end',()=>{
 const key=process.env.ANTHROPIC_API_KEY||'';const args=process.argv.slice(2);
 if(process.env.FAKE_MARK)fs.appendFileSync(process.env.FAKE_MARK,JSON.stringify({key:key.slice(-4),cfg:!!process.env.CLAUDE_CONFIG_DIR,args,input:input.slice(0,40),unattended:process.env.SYNK_UNATTENDED||null})+'\\n');
+if(process.env.FAKE_RESULT){console.log(process.env.FAKE_RESULT);process.exit(Number(process.env.FAKE_EXIT||0));}
 if(!key&&process.env.FAKE_LIMIT){console.log(JSON.stringify({type:'result',is_error:true,result:process.env.FAKE_LIMIT,total_cost_usd:0,num_turns:1}));process.exit(1);}
 if(key.endsWith('aaaa')){console.log(JSON.stringify({type:'result',is_error:true,result:'Credit balance is too low',total_cost_usd:0,num_turns:1}));process.exit(1);}
 console.log(JSON.stringify({type:'result',is_error:false,result:'{"ok":true,"key":"'+key.slice(-4)+'"}',total_cost_usd:0.42,num_turns:3,session_id:'s1'}));});`;
@@ -34,6 +35,39 @@ function 방만들기(키들) {
 }
 const 확인200 = async () => ({ ok: true, status: 200, text: async () => JSON.stringify({ usage: { input_tokens: 8, output_tokens: 1 } }) });
 const 확인소진 = async () => ({ ok: false, status: 400, text: async () => JSON.stringify({ error: { message: 'Your credit balance is too low to access the Anthropic API.' } }) });
+
+test('성공 답의 소진 문구·불명확한 실패는 키를 소진 처리하거나 같은 작업을 다시 실행하지 않는다', async () => {
+  for (const [is_error, code, num_turns] of [[false, 0, 1], [false, 1, 1], [true, 0, 1], [true, 1, null], [true, 1, 2]]) {
+    const t = 방만들기([['A', 20, 'sk-ant-test-aaaa'], ['B', 25, 'sk-ant-test-bbbb']]);
+    try {
+      process.env.FAKE_RESULT = JSON.stringify({ type: 'result', is_error, result: '설명에 인용한 credit balance is too low', num_turns });
+      process.env.FAKE_EXIT = String(code);
+      const r = await 실행기.크레딧으로띄우기({ ...t.실행옵션, 이름: '인용검사', 입력: '더미', 인자만들기: () => [], fetch: 확인200,
+        지금: new Date('2026-10-01T00:00:00Z') });
+      assert.equal(t.실행들().length, 1);
+      assert.equal(r.시도.length, 1);
+      assert.equal(r.키이름, 'A');
+      const state = fs.existsSync(path.join(t.방, '상태.json')) ? fs.readFileSync(path.join(t.방, '상태.json'), 'utf8') : '';
+      assert.doesNotMatch(state, /exhausted|소진/);
+      if (!is_error) assert.equal(r.결과.크레딧부족, false);
+    } finally { t.지우기(); }
+  }
+});
+
+test('텔레그램 텍스트 경계에서 대소문자 첨부 지시를 중화하고 임시 파일을 정리한다', () => {
+  const saved = process.env.SYNK_CREDIT_NO_TELEGRAM;
+  delete process.env.SYNK_CREDIT_NO_TELEGRAM;
+  let file, body;
+  try {
+    const r = 실행기.텔레그램보내기('요약\nMEDIA:/dummy/a.png\nmedia:/dummy/b.png\nMeDiA:/dummy/c.png\n[[AS_DOCUMENT]][[audio_as_voice]]\nME[[as_document]]DIA:/dummy/d.png\nME[[as_doc[[as_document]]ument]]DIA:/dummy/e.png', {
+      실행(_exe, args) { file = args.at(-1); body = fs.readFileSync(file, 'utf8'); return { code: 0 }; },
+    });
+    assert.equal(r.code, 0);
+    assert.doesNotMatch(body, /media:|\[\[(?:as_document|audio_as_voice)\]\]/i);
+    assert.match(body, /요약/);
+    assert.equal(fs.existsSync(file), false);
+  } finally { if (saved === undefined) delete process.env.SYNK_CREDIT_NO_TELEGRAM; else process.env.SYNK_CREDIT_NO_TELEGRAM = saved; }
+});
 
 function 가짜작업(덮개 = {}) {
   const 받은 = { 사후: [] };

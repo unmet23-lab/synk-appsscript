@@ -106,7 +106,8 @@ ${자료.덧붙임 ? `\n${자료.덧붙임}\n` : ''}
   async 사후(결과, 자료, ctx) {
     const 답 = JSON뽑기(결과.글);
     const 줄들 = Array.isArray(답.줄) ? 답.줄 : [];
-    const 요청한 = new Set(자료.줄.map((x) => String(x.row)));
+    const 요청한 = new Map(자료.줄.map((x) => [String(x.row), String(x.게시물ID || '')]));
+    const 처리한 = new Set();
     const 문제 = [];
     const 카드표 = ctx.실행(process.execPath, ['tools/참고카드_목록.js', '--json']);
     try {
@@ -116,15 +117,21 @@ ${자료.덧붙임 ? `\n${자료.덧붙임}\n` : ''}
     ctx.실행(process.execPath, ['tools/참고카드_목록.js']);
     let 기록 = 0;
     for (const 줄 of 줄들) {
-      if (!요청한.has(String(줄.row)) || !/^[\w-]+$/.test(String(줄.게시물ID || ''))) { 문제.push(`이번 줄이 아닌 답(${줄.row})은 기록하지 않음`); continue; }
+      const 행 = String(줄?.row);
+      const 게시물ID = 요청한.get(행);
+      if (!게시물ID || !/^[\w-]+$/.test(게시물ID) || 줄?.게시물ID !== 게시물ID || 처리한.has(행)) {
+        문제.push(`이번 줄과 맞지 않거나 중복된 답(${행})은 기록하지 않음`); continue;
+      }
+      처리한.add(행);
       if (줄.카드 && !fs.existsSync(path.join(ctx.루트, 줄.카드))) 문제.push(`${줄.row}행 카드 파일 없음(${줄.카드})`);
-      const 방 = path.join(캐시, 줄.게시물ID);
+      const 방 = path.join(캐시, 게시물ID);
       fs.mkdirSync(방, { recursive: true });
       const 파일 = path.join(방, 'claude_review.json');
       const 칸 = ['row', '게시물ID', '종류', '어디에', '가져올 것', '적용안', '언제', '카드'];
       fs.writeFileSync(파일, JSON.stringify(Object.fromEntries(칸.map((k) => [k, 줄[k] ?? ''])), null, 1));
       const r = ctx.실행(파이썬, [장부, 'review', 파일]);
-      if (r.code === 0) 기록++; else 문제.push(`${줄.row}행 장부 기록 실패(다음 실행에 다시 나옴)`);
+      if (r.code !== 0) { 문제.push(`${줄.row}행 장부 기록 실패(다음 실행에 다시 나옴)`); continue; }
+      기록++;
       if (줄.종류 !== '디자인 참고') {
         // 영상 한 편은 video.mp4, 카드뉴스·여러 영상 묶음은 video-NN.mp4다(10-21 수집 고침).
         for (const f of fs.readdirSync(방)) if (/^video[.-]/.test(f)) fs.rmSync(path.join(방, f), { force: true });

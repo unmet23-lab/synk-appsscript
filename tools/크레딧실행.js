@@ -88,7 +88,7 @@ function 결과읽기(stdout) {
   const 글 = String(결과.result ?? '');
   return {
     읽음: true, 오류: !!결과.is_error, 글, 비용: Number(결과.total_cost_usd) || 0, 턴: 결과.num_turns ?? null,
-    세션: 결과.session_id ?? null, 크레딧부족: /credit balance is too low/i.test(글), 인증,
+    세션: 결과.session_id ?? null, 크레딧부족: 결과.is_error === true && /credit balance is too low/i.test(글), 인증,
   };
 }
 
@@ -184,11 +184,13 @@ function 명령실행(명령, 인자 = [], { cwd = 루트, 입력 } = {}) {
   return { code: r.status ?? (r.error ? 127 : 1), stdout: r.stdout || '', stderr: r.stderr || String(r.error?.message || '') };
 }
 
-function 텔레그램보내기(글) {
+function 텔레그램보내기(글, { 실행 = 명령실행 } = {}) {
   if (process.env.SYNK_CREDIT_NO_TELEGRAM === '1') return { code: 0, 건너뜀: true };
   const 파일 = path.join(os.tmpdir(), `synk-credit-msg-${process.pid}-${Date.now()}.txt`);
-  fs.writeFileSync(파일, 가리기(글), 'utf8');
-  try { return 명령실행(헤르메스, ['send', '-t', 텔레그램대상, '-f', 파일]); }
+  // 요약·오류 본문은 글로만 보낸다. Hermes의 대소문자 무관 첨부 문법과 분리한다.
+  const 본문 = 가리기(글).replace(/\[\[(?:as_document|audio_as_voice)\]\]/gi, ' ').replace(/MEDIA:/gi, 'MEDIA :');
+  fs.writeFileSync(파일, 본문, 'utf8');
+  try { return 실행(헤르메스, ['send', '-t', 텔레그램대상, '-f', 파일]); }
   finally { fs.rmSync(파일, { force: true }); }
 }
 
@@ -216,7 +218,8 @@ async function 크레딧으로띄우기({ 이름, 인자만들기, 입력, cwd =
     if (크레딧 && 결과.인증 && 결과.인증 !== 'ANTHROPIC_API_KEY') 결과.경고 = `크레딧으로 띄웠는데 인증이 ${결과.인증}`;
     시도.push({ 경로: 크레딧 ? '크레딧' : '구독', 키이름: 고른.이름, code: r.code, 오류: 결과.오류, 크레딧부족: 결과.크레딧부족, 인증: 결과.인증, stderr: 가리기(r.stderr).slice(-600) });
     // 첫 턴에서 크레딧 부족이면 아직 아무 도구도 돌지 않았다 — 같은 요청을 다음 키로 다시 보내도 겹치지 않는다.
-    if (크레딧 && 결과.크레딧부족 && (결과.턴 ?? 1) <= 1) {
+    if (크레딧 && r.code !== 0 && 결과.오류 && 결과.크레딧부족
+        && Number.isInteger(결과.턴) && 결과.턴 >= 0 && 결과.턴 <= 1) {
       클로드.소진표시(고른.이름, { ...키경로(), 지금 });
       고른 = await 클로드.키고르기({ ...키경로(), 용도: 이름, fetch, 지금 });
       continue;
