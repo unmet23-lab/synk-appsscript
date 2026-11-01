@@ -80,9 +80,18 @@ test('Windows applies bounded additions/deletions through owned handles', {skip:
 test('Windows actual open writer prevents application and preserves bytes', {skip:process.platform!=='win32'},async t=>{
   const f=fixture(t),work=await f.workspace();fs.writeFileSync(path.join(work,'docs/task.md'),'agent\n');const plan=await prepareIntegration(f.options);validate(f,plan);
   const script=path.join(f.root,'hold.ps1'),ready=path.join(f.root,'ready');fs.writeFileSync(script,"param($File,$Ready)\n$s=[IO.FileStream]::new($File,[IO.FileMode]::Open,[IO.FileAccess]::ReadWrite,[IO.FileShare]::Read)\n[IO.File]::WriteAllText($Ready,'ready')\ntry{Start-Sleep -Seconds 30}finally{$s.Dispose()}\n");
-  const child=spawn('pwsh.exe',['-NoProfile','-File',script,path.join(f.repo,'docs/task.md'),ready],{windowsHide:true,stdio:'ignore'});t.after(()=>child.kill());
-  const deadline=Date.now()+10000;while(!fs.existsSync(ready)&&Date.now()<deadline)await new Promise(r=>setTimeout(r,50));assert.equal(fs.existsSync(ready),true);
-  const result=await applyIntegration(f.options);assert.equal(result.state,'needs_attention',JSON.stringify(result));assert.equal(fs.readFileSync(path.join(f.repo,'docs/task.md'),'utf8'),'first\nsecond\nthird\nfourth\nfifth\n');child.kill();
+  const child=spawn('pwsh.exe',['-NoProfile','-File',script,path.join(f.repo,'docs/task.md'),ready],{windowsHide:true,stdio:'ignore'});
+  let spawnError;child.once('error',error=>{spawnError=error;});
+  const closed=new Promise(resolve=>child.once('close',resolve));
+  try{
+    const deadline=Date.now()+10000;while(!fs.existsSync(ready)&&!spawnError&&Date.now()<deadline)await new Promise(r=>setTimeout(r,50));
+    if(spawnError)throw spawnError;assert.equal(fs.existsSync(ready),true);
+    const result=await applyIntegration(f.options);assert.equal(result.state,'needs_attention',JSON.stringify(result));assert.equal(fs.readFileSync(path.join(f.repo,'docs/task.md'),'utf8'),'first\nsecond\nthird\nfourth\nfifth\n');
+  }finally{
+    // kill() requests termination; close confirms the writer released its Windows handle.
+    // Finish this even after an assertion fails, before fixture(t)'s removal hook runs.
+    child.kill();await closed;
+  }
 });
 test('Windows journal restart resumes only unapplied deltas and keeps original preimage backup', {skip:process.platform!=='win32'},async t=>{
   const f=fixture(t),work=await f.workspace();fs.writeFileSync(path.join(work,'docs/task.md'),'agent\n');fs.writeFileSync(path.join(work,'docs/new.md'),'new\n');const plan=await prepareIntegration(f.options);validate(f,plan);
