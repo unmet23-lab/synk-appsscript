@@ -10,12 +10,15 @@ import { 출력글 } from '../../lib/피드백.mjs';
 import { 글값 } from '../../lib/예산.mjs';
 import { 단계 } from './단계.mjs';
 import { 묶음들 } from './은행.mjs';
-import 학습자말 from './학습자말.mjs';
+import 학습자말A from './학습자말.mjs';
 
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 인자 = (이름, 기본) => { const i = process.argv.indexOf(이름); return i > 0 ? process.argv[i + 1] : 기본; };
 const 모델 = 인자('--모델', 'gpt-6-luna');
 const 동시 = Number(인자('--동시', 6));
+// --자료 B: 2판 시험 때 같은 1판 고르기를 나판(학습자말B.mjs)에도 돌려 나란히 견준다(결과 파일 이름 앞에 B)
+const 판 = 인자('--자료', 'A');
+const 학습자말 = 판 === 'B' ? (await import('./학습자말B.mjs')).default : 학습자말A;
 const 몇 = Number(인자('--몇', 0)) || 학습자말.length;
 // 생각 수준 — 실시간 차례에 쓰려면 고르기가 1초 안팎이어야 한다(11-01 첫 확인: luna 기본 생각으로 4.6~5.3초). 이름 뒤에 붙여 결과 파일을 나눈다.
 const 생각 = 인자('--생각', '');
@@ -86,13 +89,13 @@ async function 하나(말) {
 }
 
 if (process.argv[1] && path.basename(process.argv[1]) === '고르기.mjs') { // 다른 스크립트가 고르기본문만 가져갈 때는 돌지 않는다
-  const 파일 = path.join(여기, `고르기_${모델}${생각 ? `_${생각}` : ''}.jsonl`);
+  const 파일 = path.join(여기, `고르기${판 === 'B' ? 'B' : ''}_${모델}${생각 ? `_${생각}` : ''}.jsonl`);
   // --이어서: 이미 성공한 줄은 두고 나머지만 부른다. 결과는 한 줄씩 바로 덧붙여 진행이 보이게 한다.
   const 앞 = process.argv.includes('--이어서') && fs.existsSync(파일)
     ? new Map(fs.readFileSync(파일, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l)).filter((r) => !r.오류).map((r) => [r.id, r]))
     : new Map();
   const 대상 = 학습자말.slice(0, 몇).filter((m) => !앞.has(m.id));
-  const 진행 = path.join(여기, `고르기_${모델}${생각 ? `_${생각}` : ''}.진행.jsonl`);
+  const 진행 = path.join(여기, `고르기${판 === 'B' ? 'B' : ''}_${모델}${생각 ? `_${생각}` : ''}.진행.jsonl`);
   fs.writeFileSync(진행, '');
   const 새 = new Map();
   let 다음 = 0;

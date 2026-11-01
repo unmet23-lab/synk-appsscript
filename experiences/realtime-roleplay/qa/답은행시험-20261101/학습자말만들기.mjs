@@ -77,7 +77,9 @@ function 지시(d) {
 
 // 순간마다 받자마자 git 밖 조각으로 저장하고, 다시 돌리면 받은 순간은 건너뛴다(11-01 첫 판: 503 · 300초 시간 초과가 이어져
 // 끝에서만 저장하던 판은 한 순간이 세 번 실패하면 앞 순간까지 잃었다).
-const 조각폴더 = path.join(루트, '.tmp', '답은행시험-20261101', '학습자말조각');
+// `--판 B`: 은행 2판을 재려고 같은 지시로 새로 받는 판(나판 — 은행이 본 적 없는 말). 조각 · 결과 파일 · id가 따로다.
+const 판B = 값('--판', '') === 'B';
+const 조각폴더 = path.join(루트, '.tmp', '답은행시험-20261101', 판B ? '학습자말조각B' : '학습자말조각');
 fs.mkdirSync(조각폴더, { recursive: true });
 const 결과 = [];
 const 기록 = [];
@@ -100,7 +102,7 @@ for (const d of 단계들) {
       await new Promise((r) => setTimeout(r, 30_000 * 회));
     }
   }
-  받음.말들.forEach((m, i) => 결과.push({ id: `${d.id}-${String(i + 1).padStart(2, '0')}`, 단계: d.id, 앞말: d.앞말, ...m }));
+  받음.말들.forEach((m, i) => 결과.push({ id: `${판B ? 'B.' : ''}${d.id}-${String(i + 1).padStart(2, '0')}`, 단계: d.id, 앞말: d.앞말, ...m }));
   기록.push({ 단계: d.id, 개수: 받음.말들.length, 모델판: 받음.모델판, 입력토큰: 받음.사용?.promptTokenCount, 출력토큰: 받음.사용?.candidatesTokenCount, 생각토큰: 받음.사용?.thoughtsTokenCount });
   console.log(`${d.id}: ${받음.말들.length}줄 (${받음.모델판})`);
 }
@@ -109,5 +111,6 @@ const 머리 = `// 답 은행 시험(2026-11-01) — 가짜 학습자 말. 학�
 // 만든 때: ${new Date().toISOString()} · 단계별 기록: ${JSON.stringify(기록)}
 // 이름은 지어낸 몽골 이름이고, 학습자가 말하는 실제 아이돌 · 노래 이름은 학습자 말 흉내일 뿐이다(학생 정보 없음).
 `;
-fs.writeFileSync(path.join(여기, '학습자말.mjs'), `${머리}export default ${JSON.stringify(결과, null, 1)};\n`);
-console.log(`모두 ${결과.length}줄 → 학습자말.mjs`);
+const 나갈 = 판B ? '학습자말B.mjs' : '학습자말.mjs';
+fs.writeFileSync(path.join(여기, 나갈), `${머리}export default ${JSON.stringify(결과, null, 1)};\n`);
+console.log(`모두 ${결과.length}줄 → ${나갈}`);

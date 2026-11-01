@@ -3,7 +3,7 @@
 //   → 은행 답(되묻기면 그 순간의 되묻기 줄, 생성이면 gpt-6-luna가 시제품 지시문으로 한 줄). 고른 하온 말은 Gemini 3.8 Live Kore가 글자 그대로
 //   읽는다 — 실시간판과 같은 목소리라 내용만 비교된다(실제 앱이면 미리 구운 소리를 바로 튼다).
 // · 실시간판 = 시제품과 같은 지시문(../../lib/장면.mjs)으로 Gemini 3.8 Live Kore가 자유롭게 받아친다.
-// 쓰는 법: node 나란히듣기.mjs <학습자|은행|실시간|엮기|전부>
+// 쓰는 법: node 나란히듣기.mjs <학습자|은행|은행2|실시간|엮기|전부>  (은행2 = 답 은행 2판 — 2판 AI 고르기 + 은행2 조립, 11-01 2판 시험)
 // 소리 · 기록은 git 밖 .tmp/답은행시험-20261101/. 키: Gemini 「글」 무료 키(지어낸 대본만) · OpenAI 상황극 키 목록(결제 수단 없는 월 크레딧).
 // Gemini 연결 · 소리 펌프 · 답 끝 재기는 듣기 시험 녹음.mjs(10-29 실측 9판)에서 옮겼다.
 import fs from 'node:fs';
@@ -119,7 +119,8 @@ function 다음순간(단계id, 묶음id) {
 }
 async function 생성한줄(대화, 단계id) {
   const 본문 = {
-    model: 'gpt-6-luna', max_output_tokens: 300,
+    model: 'gpt-6.1-terra', reasoning: { effort: 'none' }, max_output_tokens: 300, // 11-01 luna는 조직 토큰 상한에 닿아 terra로
+
     input: [
       { role: 'developer', content: [{ type: 'input_text', text: `${지시문(팬사인회)}\n이번 답은 한두 문장으로 짧게, 끝에 「${꼬리[단계id]}」로 돌아온다. 하온의 말만 쓴다.` }] },
       ...대화.map((t) => ({ role: t.누가 === '나' ? 'user' : 'assistant', content: [{ type: t.누가 === '나' ? 'input_text' : 'output_text', text: t.글 }] })),
@@ -128,6 +129,36 @@ async function 생성한줄(대화, 단계id) {
   const { 답 } = await 응답부르기(본문);
   return 출력글(답).trim();
 }
+// ── 답 은행 2판 길: 받아 적기 → 2판 AI 고르기(반응 · 들은 것) → 은행2 조립(반응 + 아직 안 들은 질문) ──
+const 이끔다음순간 = { 이름: '처음', 나라: '나라', 좋아함: '좋아함', 사인: '사인', 사인끝: '끝', 마무리: '작별뒤', 작별: '끝남' };
+async function 은행2길() {
+  const { AI고르기 } = await import('./고르기2.mjs');
+  const { 조립: 조립2, 되묻기: 되묻기2 } = await import('./은행2.mjs');
+  const 기록 = {};
+  for (const [대, d] of Object.entries(대화들)) {
+    let 단계id = '처음';
+    const 대화 = [{ 누가: '상대', 글: 팬사인회.첫인사 }];
+    const 차례 = [];
+    for (const [i, 말] of d.줄.entries()) {
+      if (단계id === '끝남') { 차례.push({ 말, 건너뜀: '대화가 이미 끝남' }); continue; }
+      const 들음 = await 받아적기(pcm24(대, i));
+      대화.push({ 누가: '나', 글: 들음.글 });
+      const 고름 = await AI고르기({ 단계: 단계id, 받아적기: 들음.글 });
+      if (고름.오류) throw new Error(`2판 고르기 실패: ${고름.오류}`);
+      let 하온; let 다음 = 단계id;
+      if (고름.판단 === '고름') { const r = 조립2(단계id, 고름.반응, i, 고름.들은것); 하온 = r.글; 다음 = 이끔다음순간[r.이끔미션] || 단계id; }
+      else if (고름.판단 === '되묻기') { const 줄들 = 되묻기2(단계id); 하온 = 줄들[i % 줄들.length]; }
+      else 하온 = await 생성한줄(대화, 단계id);
+      대화.push({ 누가: '상대', 글: 하온 });
+      차례.push({ 말, 받아적기: 들음.글, 받아적기ms: 들음.ms, 순간: 단계id, 판단: 고름.판단, 반응: 고름.반응, 들은것: 고름.들은것, 확신: 고름.확신, 고르기ms: 고름.ms, 하온 });
+      console.log(`[나란히] 은행2 ${대}_${i + 1} ${단계id} 「${들음.글}」 → ${고름.판단} ${(고름.반응 || []).join('+')} (${고름.ms}ms) 「${하온}」`);
+      단계id = 다음;
+    }
+    기록[대] = { 첫인사: 팬사인회.첫인사, 차례 };
+  }
+  fs.writeFileSync(path.join(작업, '은행2길.json'), JSON.stringify(기록, null, 1));
+}
+
 async function 은행길() {
   const { 고르기본문 } = await import('./고르기.mjs'); // 고르기.mjs는 학습자말.mjs를 읽으므로 이 길에서만 부른다
   const 기록 = {};
@@ -295,19 +326,19 @@ async function 실시간판() {
   fs.writeFileSync(path.join(작업, '실시간판.json'), JSON.stringify(기록, null, 1));
 }
 
-async function 은행판() {
-  const 길 = JSON.parse(fs.readFileSync(path.join(작업, '은행길.json'), 'utf8'));
+async function 은행판(이름 = '은행', 길파일 = '은행길.json') {
+  const 길 = JSON.parse(fs.readFileSync(path.join(작업, 길파일), 'utf8'));
   const 기록 = {};
   for (const [대, d] of Object.entries(대화들)) {
     const 차례 = 길[대].차례.filter((t) => !t.건너뜀);
     const 상대줄 = [길[대].첫인사, ...차례.map((t) => t.하온)];
     const 대본 = [`상대역: ${상대줄[0]}`, ...차례.flatMap((t, i) => [`학습자: ${t.말}`, `상대역: ${상대줄[i + 1]}`])].join('\n');
     const 지시 = `${듣기대본.공통지시}\n\n장면: 팬사인회. 너의 역할: 하온(가상 아이돌). 연기: ${팬사인회.상대.연기}\n\n대본:\n${대본}`;
-    console.log(`[나란히] 은행판 ${대}`);
+    console.log(`[나란히] ${이름}판 ${대}`);
     const 결과 = await gemini돌리기({ 지시, 첫지시: `(상황극 시작) 지금 상대역 1번 줄을 글자 그대로 말한다: 「${상대줄[0]}」 그다음 학습자가 말할 때까지 기다린다.`, 학습자줄: 차례.map((_, i) => 학습자16k(대, i)) });
-    기록[대] = { ...판저장('은행', 대, 결과), 대본줄: 상대줄 };
+    기록[대] = { ...판저장(이름, 대, 결과), 대본줄: 상대줄 };
   }
-  fs.writeFileSync(path.join(작업, '은행판.json'), JSON.stringify(기록, null, 1));
+  fs.writeFileSync(path.join(작업, `${이름}판.json`), JSON.stringify(기록, null, 1));
 }
 
 // ── 엮기: 같은 간격(0.45초)으로 하온 · 학습자 줄을 이어 mp3 한 판씩 ──
@@ -315,10 +346,10 @@ function 엮기() {
   const 간격 = Buffer.alloc(Math.round(표본율 * 0.45) * 2);
   const 나갈폴더 = path.join(작업, '엮음');
   fs.mkdirSync(나갈폴더, { recursive: true });
-  const 길 = JSON.parse(fs.readFileSync(path.join(작업, '은행길.json'), 'utf8'));
-  for (const 판 of ['은행', '실시간']) {
+  const 길들 = Object.fromEntries([['은행', '은행길.json'], ['은행2', '은행2길.json']].filter(([, f]) => fs.existsSync(path.join(작업, f))).map(([판, f]) => [판, JSON.parse(fs.readFileSync(path.join(작업, f), 'utf8'))]));
+  for (const 판 of ['은행', '은행2', '실시간'].filter((p) => p === '실시간' || 길들[p])) {
     for (const [대, d] of Object.entries(대화들)) {
-      const n = 판 === '은행' ? 길[대].차례.filter((t) => !t.건너뜀).length : d.줄.length;
+      const n = 판 === '실시간' ? d.줄.length : 길들[판][대].차례.filter((t) => !t.건너뜀).length;
       const 조각 = [];
       for (let i = 0; i <= n; i++) {
         const 하온 = path.join(작업, 판, `${대}_${i}.wav`);
@@ -336,6 +367,7 @@ function 엮기() {
 const 명령 = process.argv[2];
 if (명령 === '학습자' || 명령 === '전부') await 학습자굽기();
 if (명령 === '은행' || 명령 === '전부') { await 은행길(); await 은행판(); }
+if (명령 === '은행2' || 명령 === '전부') { await 은행2길(); await 은행판('은행2', '은행2길.json'); }
 if (명령 === '실시간' || 명령 === '전부') await 실시간판();
 if (명령 === '엮기' || 명령 === '전부') 엮기();
-if (!['학습자', '은행', '실시간', '엮기', '전부'].includes(명령)) 멈춤('명령: 학습자 | 은행 | 실시간 | 엮기 | 전부', 1);
+if (!['학습자', '은행', '은행2', '실시간', '엮기', '전부'].includes(명령)) 멈춤('명령: 학습자 | 은행 | 은행2 | 실시간 | 엮기 | 전부', 1);
