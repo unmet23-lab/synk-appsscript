@@ -667,6 +667,7 @@
 - 고침: 다시 걸기 전에 PowerShell로 그 스크립트 이름이 든 node 프로세스를 찾아 끈다 — `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*watch-chain.cjs*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }`. 감시는 「시작 뒤 파일 시각」으로 다시 훑는 꼴로 짜고, 새로 걸 때 이전과 같은 `--after`를 줘서 끊긴 사이의 사건을 놓치지 않는다.
 - 다시 확인: 10-23 재시작마다 남은 감시 하나씩을 끄고 다시 걸어 사슬 24·25·26 armed를 모두 받았다(`local/watch.log`).
 - 덧붙임(10-26 PULSE 12번): `TaskStop`으로 멈춘 유튜브 잠금 대기 bash 고리(`잠금돌기.sh`) 셋이 살아남아, 공용 차례가 번호표로 바뀐 뒤에도 줄을 무시하고 잠금을 두 번 잡았다(16:19 · 16:31, 같은 검색 파일에 둘이 겹쳐 씀). 대기 · 잠금 스크립트를 멈추거나 바꿀 땐 `ps -ef | grep <스크립트 이름>`으로 bash와 그 자식 python을 찾아 `kill -9`로 끄고(SIGKILL이면 trap이 돌지 않아 남의 잠금을 지우지 않는다), 잠금 `owner.txt`가 내 것일 때만 지운다.
+- 덧붙임(11-02 Y29, Claude): 게시 대기 bash(`~/ego/y29-plates-20261102/y29-21h.sh` — 11-06 21시까지 1분마다 기다렸다 게시)도 앱이 다시 뜬 뒤 「stopped」로 왔지만 `ps -ef | grep y29-21h`에 살아 있었다(자식 `sleep 60`이 계속 돔). 게시 대기를 그냥 다시 걸면 둘이 같은 순간에 올려 두 번 게시될 수 있다 — 먼저 `ps`로 찾아 하나만 남기고, 살아 있는 쪽을 그대로 두려면 `while kill -0 <pid>; do sleep 60; done` 감시를 새로 걸어 알림만 받는다. 스크립트를 고쳐 다시 걸 땐 옛 bash를 먼저 끈다(돌고 있는 bash는 스크립트 파일을 조금씩 읽어, 고친 파일을 엉뚱한 자리부터 읽을 수 있다).
 
 ### 스킬을 끌지 고를 때 Skill 호출 수만 세면 실제 쓰임을 놓친다 — 파일을 직접 읽은 세션과 엔진을 가져다 쓰는 곳까지 센다 (2026-10-24 Claude)
 - 증상: 10-24 경량화에서 대화 기록의 `"name":"Skill","input":{"skill":"…"}` 호출만 세어 `last30days`(3번)·HyperFrames 계열(2번)·Remotion(0번)·Higgsfield(0번)를 끄자고 권했다. 다시 세어 보니 이 스킬 파일을 Read로 바로 연 세션이 하루 1~21개였고, 레딧 원문 읽기는 `.claude/skills/last30days/scripts` 엔진을 불러 쓰며([브라우저·게시](브라우저_게시.md)), 만족 사례 S16·S17·S22·S23의 방법에 Remotion이 들어 있었다. 그대로 껐으면 수요 조사·영상 재현 품질이 떨어질 뻔했다.
