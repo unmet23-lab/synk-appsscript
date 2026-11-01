@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q02",
+ "text": "여기 사장님, 친절하시네.",
+ "show": "“여기 사장님, 친절하시네.”",
+ "dur": 1.877,
+ "words": [
+  {
+   "text": "여기",
+   "start": 0.21,
+   "end": 0.412
+  },
+  {
+   "text": "사장님,",
+   "start": 0.473,
+   "end": 0.938
+  },
+  {
+   "text": "친절하시네.",
+   "start": 1.039,
+   "end": 1.877
+  }
+ ],
+ "source": {
+  "key": "787cb8ab7c86522df68260b3d14ba4f1",
+  "voice": {
+   "id": "tc_66b4523f259dc43de649c1d1",
+   "name": "민채"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.05,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_66b4523f259dc43de649c1d1"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 376
+ }
+}

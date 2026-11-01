@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q01",
+ "text": "사장님이 좀 예민하신가?",
+ "show": "“사장님이 좀 예민하신가?”",
+ "dur": 1.463,
+ "words": [
+  {
+   "text": "사장님이",
+   "start": 0.02,
+   "end": 0.445
+  },
+  {
+   "text": "좀",
+   "start": 0.505,
+   "end": 0.647
+  },
+  {
+   "text": "예민하신가?",
+   "start": 0.707,
+   "end": 1.463
+  }
+ ],
+ "source": {
+  "key": "58d50b04e163fff9c5eb20983ac950a6",
+  "voice": {
+   "id": "tc_66b4523f259dc43de649c1d1",
+   "name": "민채"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "tonedown",
+   "intensity": 1,
+   "tempo": 1.1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_66b4523f259dc43de649c1d1"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 271
+ }
+}

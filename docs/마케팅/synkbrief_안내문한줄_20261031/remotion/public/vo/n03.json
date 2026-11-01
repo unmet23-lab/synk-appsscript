@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "규칙은 그대로, 말투만 바꿨어요.",
+ "show": "규칙은 그대로, 말투만 바꿨어요.",
+ "dur": 2.173,
+ "words": [
+  {
+   "text": "규칙은",
+   "start": 0.02,
+   "end": 0.382
+  },
+  {
+   "text": "그대로,",
+   "start": 0.442,
+   "end": 0.744
+  },
+  {
+   "text": "말투만",
+   "start": 1.086,
+   "end": 1.488
+  },
+  {
+   "text": "바꿨어요.",
+   "start": 1.548,
+   "end": 2.173
+  }
+ ],
+ "source": {
+  "key": "ad0d89192edacebc5b0235542770bf43",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

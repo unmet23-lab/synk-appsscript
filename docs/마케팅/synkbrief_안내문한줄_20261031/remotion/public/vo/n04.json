@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n04",
+ "text": "안내문 붙이기 전엔, 손님 눈으로 한 번.",
+ "show": "안내문 붙이기 전엔, 손님 눈으로 한 번.",
+ "dur": 2.104,
+ "words": [
+  {
+   "text": "안내문",
+   "start": 0.03,
+   "end": 0.34
+  },
+  {
+   "text": "붙이기",
+   "start": 0.387,
+   "end": 0.665
+  },
+  {
+   "text": "전엔,",
+   "start": 0.712,
+   "end": 0.991
+  },
+  {
+   "text": "손님",
+   "start": 1.146,
+   "end": 1.424
+  },
+  {
+   "text": "눈으로",
+   "start": 1.502,
+   "end": 1.657
+  },
+  {
+   "text": "한",
+   "start": 1.703,
+   "end": 1.796
+  },
+  {
+   "text": "번.",
+   "start": 1.843,
+   "end": 2.104
+  }
+ ],
+ "source": {
+  "key": "c635ebddcefd0a0df3e7279b2dce17ad",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

@@ -1,0 +1,86 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n01",
+ "text": "그날 밤, AI한테 딱 한 줄. 손님 눈으로 읽어 줘.",
+ "show": "그날 밤, AI한테 딱 한 줄 — 「손님 눈으로 읽어 줘」",
+ "dur": 3.28,
+ "words": [
+  {
+   "text": "그날",
+   "start": 0.07,
+   "end": 0.271
+  },
+  {
+   "text": "밤,",
+   "start": 0.331,
+   "end": 0.471
+  },
+  {
+   "text": "AI한테",
+   "start": 0.952,
+   "end": 1.454
+  },
+  {
+   "text": "딱",
+   "start": 1.514,
+   "end": 1.674
+  },
+  {
+   "text": "한",
+   "start": 1.734,
+   "end": 1.794
+  },
+  {
+   "text": "줄.",
+   "start": 1.855,
+   "end": 1.995
+  },
+  {
+   "text": "손님",
+   "start": 2.215,
+   "end": 2.456
+  },
+  {
+   "text": "눈으로",
+   "start": 2.516,
+   "end": 2.717
+  },
+  {
+   "text": "읽어",
+   "start": 2.777,
+   "end": 3.058
+  },
+  {
+   "text": "줘.",
+   "start": 3.158,
+   "end": 3.28
+  }
+ ],
+ "source": {
+  "key": "479f223eeb59b32235e30e2378787032",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

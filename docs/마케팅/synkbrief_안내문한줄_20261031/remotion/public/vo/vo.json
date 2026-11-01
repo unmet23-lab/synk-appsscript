@@ -1,0 +1,98 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1101,
+  "lufs": -17
+ },
+ "made": "2026-11-01T00:25:57.929Z",
+ "lines": [
+  {
+   "id": "n00",
+   "text": "규칙대로 말했을 뿐인데, 손님은 케이크만 두고 나갔어요.",
+   "show": "규칙대로 말했을 뿐인데, 손님은 케이크만 두고 나갔어요.",
+   "scene": "손님이 나간 뒤",
+   "dur": 2.964,
+   "syllablesPerSec": 7.76,
+   "src": "n00.wav",
+   "key": "37b7112c9c10d21acf78078e9b1d7529",
+   "words": 7
+  },
+  {
+   "id": "n01",
+   "text": "그날 밤, AI한테 딱 한 줄. 손님 눈으로 읽어 줘.",
+   "show": "그날 밤, AI한테 딱 한 줄 — 「손님 눈으로 읽어 줘」",
+   "scene": "그날 밤 · 요청",
+   "dur": 3.28,
+   "syllablesPerSec": 4.88,
+   "src": "n01.wav",
+   "key": "479f223eeb59b32235e30e2378787032",
+   "words": 10
+  },
+  {
+   "id": "n02",
+   "text": "필수는 혼나는 느낌, 이용 불가는 거절이래요.",
+   "show": "「필수!!!」는 혼나는 느낌, 「이용 불가」는 거절",
+   "scene": "AI 답",
+   "dur": 2.677,
+   "syllablesPerSec": 6.72,
+   "src": "n02.wav",
+   "key": "c3cc27d7789683abb28ed56befa72e56",
+   "words": 6
+  },
+  {
+   "id": "q01",
+   "text": "사장님이 좀 예민하신가?",
+   "show": "“사장님이 좀 예민하신가?”",
+   "scene": "AI가 읽은 손님 마음(11-01 넷째 답의 인용 그대로)",
+   "dur": 1.463,
+   "syllablesPerSec": 6.84,
+   "src": "q01.wav",
+   "key": "58d50b04e163fff9c5eb20983ac950a6",
+   "words": 3
+  },
+  {
+   "id": "n03",
+   "text": "규칙은 그대로, 말투만 바꿨어요.",
+   "show": "규칙은 그대로, 말투만 바꿨어요.",
+   "scene": "다음 날",
+   "dur": 2.173,
+   "syllablesPerSec": 5.98,
+   "src": "n03.wav",
+   "key": "ad0d89192edacebc5b0235542770bf43",
+   "words": 4
+  },
+  {
+   "id": "n04",
+   "text": "안내문 붙이기 전엔, 손님 눈으로 한 번.",
+   "show": "안내문 붙이기 전엔, 손님 눈으로 한 번.",
+   "scene": "끝 줄",
+   "dur": 2.104,
+   "syllablesPerSec": 7.13,
+   "src": "n04.wav",
+   "key": "c635ebddcefd0a0df3e7279b2dce17ad",
+   "words": 7
+  },
+  {
+   "id": "q02",
+   "text": "여기 사장님, 친절하시네.",
+   "show": "“여기 사장님, 친절하시네.”",
+   "scene": "같은 순간 다시 · 손님 속마음(재연 — AI 답이 아니라 지어낸 되받기)",
+   "dur": 1.877,
+   "syllablesPerSec": 5.33,
+   "src": "q02.wav",
+   "key": "787cb8ab7c86522df68260b3d14ba4f1",
+   "words": 3
+  }
+ ]
+}

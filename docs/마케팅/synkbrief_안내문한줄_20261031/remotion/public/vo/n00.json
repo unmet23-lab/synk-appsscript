@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n00",
+ "text": "규칙대로 말했을 뿐인데, 손님은 케이크만 두고 나갔어요.",
+ "show": "규칙대로 말했을 뿐인데, 손님은 케이크만 두고 나갔어요.",
+ "dur": 2.964,
+ "words": [
+  {
+   "text": "규칙대로",
+   "start": 0.03,
+   "end": 0.43
+  },
+  {
+   "text": "말했을",
+   "start": 0.471,
+   "end": 0.775
+  },
+  {
+   "text": "뿐인데,",
+   "start": 0.816,
+   "end": 1.134
+  },
+  {
+   "text": "손님은",
+   "start": 1.382,
+   "end": 1.713
+  },
+  {
+   "text": "케이크만",
+   "start": 1.768,
+   "end": 2.169
+  },
+  {
+   "text": "두고",
+   "start": 2.21,
+   "end": 2.334
+  },
+  {
+   "text": "나갔어요.",
+   "start": 2.376,
+   "end": 2.964
+  }
+ ],
+ "source": {
+  "key": "37b7112c9c10d21acf78078e9b1d7529",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 176
+ }
+}
