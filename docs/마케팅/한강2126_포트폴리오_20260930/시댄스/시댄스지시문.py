@@ -11,10 +11,12 @@
 # 그래서 시작 그림이 하나인 판(로비 · PATH 헤드셋 · VR 방)은 뒤 샷을 글로만 쓰고(「SHOT k …, new angle:」), 그림이 둘인 판은 굽기 시트의
 # 두 샷 꼴 그대로다. 같은 그림에서 이어지는 컷(O2+O3 · O10+O11 · S2a+S2b · L1+L2 · L5~L7 등)은 한 샷으로 이어 찍고 편집에서 자른다.
 # 대사(10-19 결정 — 03 대본 3절): 조연 여섯은 v34 목소리 견본(견본만들기.py)을 3_목소리견본.mp3로 넣는 새 방식(B) — 시댄스가 그 결로 연기한다.
-#   그(유호님)의 줄은 v34 영상 속 그 목소리 녹음을 후반에 입에 맞춰 얹는 것이 주판(소리 끔 — 얼굴 정지컷에 소리 참고를 같이 주면 첫 화면을 다시 짠다,
-#   현장노트 higgsfield · 장부 S15), 그 목소리 견본으로 시댄스가 연기하는 B 판은 대안(새 대사 F2는 유호님이 고를 목소리 후보도 된다).
-#   화면 밖 줄(L3 선생님 · P8 상담사 · F7 면접관)은 매진 「화면 밖 대사 판」 꼴로 그 배역 그림 · 견본에서 소리만 쓴다. 인사 다섯(2C)은 v34 목소리가 없어
-#   03 대본대로 Gemini 원어민(유호님 고름)을 후반에 얹는다 — 판은 소리 끔이고 입은 그 나라 말 인사 모양.
+#   11-01 저녁 유호님 「지금 여기서 생성하는 목소리가 다 ai같아 …」 → 「사람 목소리 들어가는곳은 왠만하면 전체적으로 … 첫 시도는 시댄스 생성본으로
+#   하고 이상할떄에만 대비책」(10-29 제작 규칙 「소리」 그대로): 그(유호님)의 줄도 소리 켬 — 시댄스가 v34 그 목소리 견본으로 그 판에서 연기한 소리가
+#   주판이다(「읍!」 · 한숨 · 「모악산 배네치아요」 · 「네.」 · 「잘 부탁드립니다!」 · 새 대사 · 「아니요」). 얼굴 정지컷에 소리 참고를 같이 주면 첫 화면을
+#   다시 짠 적이 있어(현장노트 higgsfield · 장부 S15) 얼굴 판마다 소리 끔 「-무음」 판을 대비책으로 두고, 그때만 v34 녹음(새 대사는 hg-말-그)을 얹는다.
+#   화면 밖 줄(L3 선생님 · P8 상담사 · F7 면접관 · 대비책 F2)은 매진 「화면 밖 대사 판」 꼴로 그 배역 그림 · 견본에서 소리만 쓴다. 인사 다섯(2C)은 소리 켬 —
+#   넷은 견본 없이 시댄스가 그 나라 말로(그 사람들은 이 한 줄뿐), 빨간머리는 2D와 같은 사람이라 그 견본으로. 본뜬 CosyVoice · Gemini TTS는 안 쓴다.
 # 굽지 않는 것: 1층 옷 교차 몽타주 S2c~S2e(v20 장면 S2_v19 그대로 — 업스케일/S2_v19_1층_4.92-12.63_1080p.mp4), O8 타이틀 글자(시안1 — 컵 착지
 #   1.0초에 후반으로), 층 자막 · 2B 「AI 처리」 숫자 · VR STAGE 글자 · Q 카드, F3 크래시 줌(F1 끝을 후반에서 2.4배 + 움직임 흐림), TAIL 로고 카드.
 import json
@@ -96,6 +98,7 @@ LOOK = ("LOOK: photoreal documentary-plate realism, light 35mm film grain, faint
         "letters, numbers or logos anywhere; felt \"synk\" signs already in the first frame stay exactly as they are. Never add a person or "
         "creature who is not in the first frame unless ACTION brings them in.")
 SILENT = "SOUND: silent clip - no dialogue, no narration, no music."
+NATURAL = "casual, like greeting a coworker across the office - an ordinary person's voice, not a voice actor or announcer"
 VOICE = ("VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age, pitch, pace and Korean accent "
          "exactly, but never play the sample itself; perform only the Korean words written above, once, live in this shot, in sync with the "
          "speaker's lips.")
@@ -177,7 +180,7 @@ pan("O1b", ["O1b"], "커피 광고 클로즈업 — 왼쪽 옆얼굴로 한 모�
     f"85 mm close-up, {SWAY} - no push-in, so the domed lid stays whole in the frame; the camera stays where it is while he turns away - it "
     "never cuts.")],
     메모=["얼굴 컷(3:4 → 9:16, 돔 뚜껑이 안 잘리게 cx 0.52) — 소리 끔. 11-01 콘티 검수: 1.2 → 1.6초(편집에서 O2를 0.3초 줄이거나 전체를 0.4초 늘림)"])
-pan("O2-O3", ["O2", "O3"], "옆에서 본 투샷 — 폰만 보는 상어와 컵을 내려다보며 걷는 그가 가운데서 어깨빵(K01b, 한 샷을 O2 · O3로 자름)", [S(
+o23 = pan("O2-O3", ["O2", "O3"], "옆에서 본 투샷 — 폰만 보는 상어와 컵을 내려다보며 걷는 그가 가운데서 어깨빵(K01b, 한 샷을 O2 · O3로 자름)", [S(
     "K01b", 2.5, ["HIM", "GLASSES", "KKAMONG", "CUP_DOME", "SHARK"],
     "Side two-shot at shoulder height, the river and the black railing behind them: in the first frame they are already within one step of "
     "each other, both looking down - he at the iced americano in his right hand, the shark at the phone in its fin - and neither ever looks "
@@ -187,7 +190,7 @@ pan("O2-O3", ["O2", "O3"], "옆에서 본 투샷 — 폰만 보는 상어와 컵
     "handheld at shoulder height from the side, 50 mm, small constant jitters; at the moment of impact it jolts once with the hit, then "
     "holds.")],
     메모=["11-01 Fable P1: 시작 그림이 어깨가 닿기 직전이라 충돌은 첫 0.4초 안 — 편집에서 O2 1.5초는 O1b 끝(돌아섬) + 이 판 앞 0.4~0.7초로 채운다",
-          "그의 「읍!」(충돌 순간)은 v34 녹음 01을 후반에 얹는다 — 판은 소리 끔"])
+          "그의 「읍!」은 이 판에서 시댄스가 낸 소리를 먼저 쓴다(11-01 저녁) — 얼굴이 바뀌면 대비책 hg-O2-O3-무음 + v34 녹음 01"])
 pan("O4", ["O4"], "초고속 슬로모션 — 뒤로 붕 뜬 그, 안경이 떨어지고 컵이 돌고 까몽이 턱까지 튐(K03 시작 · 같은 옆 카메라)", [S(
     "K03", 2.5, ["HIM", "KKAMONG", "SHARK"],
     "The instant after the collision, in extreme high-speed slow motion at about one-tenth of real speed: he hangs in mid-air tipping over "
@@ -213,13 +216,14 @@ pan("O6", ["O6"], "같은 옆 카메라 — 그는 왼쪽 바닥으로 넘어지
     "the top rail with one fin and just barely stops itself - it does not go over.",
     "the same side camera, handheld at chest height with small constant jitters; at about 0.5 s, as he hits the ground, it jolts once with the "
     "impact, then holds; it never cuts.")])
-pan("O7", ["O7"], "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름)", [S(
+o7 = pan("O7", ["O7"], "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름)", [S(
     "K04", 3.5, ["HIM", "KKAMONG"],
     "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps "
     "still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, "
     "slow, defeated sigh - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end.",
     "no push-in: the frame stays where it is with only a breath-like sway, and the glasses beside his head stay fully in the frame to the end.")],
-    메모=["얼굴 컷(3:4 → 9:16, 옆 안경이 다 들어오게 cx 0.42) — 한숨 「하아……」는 v34 녹음 02를 후반에 얹는다(판은 소리 끔). 정적 1초 이상 · 한숨 여유 1초(03 대본)"])
+    메모=["얼굴 컷(3:4 → 9:16, 옆 안경이 다 들어오게 cx 0.42) — 한숨 「하아……」는 이 판에서 시댄스가 낸 소리를 먼저 쓴다(11-01 저녁), 얼굴이 바뀌면 "
+          "대비책 hg-O7-무음 + v34 녹음 02. 정적 1초 이상 · 한숨 여유 1초(03 대본)"])
 pan("O8", ["O8"], "수직 탑뷰 — 대자로 누운 그, 위에서 컵이 떨어져 머리 오른쪽에 똑바로 착지 = 타이틀 히트(K04b)", [S(
     "K04b", 3.0, ["HIM", "KKAMONG"],
     "A straight top-down view: he lies spread-eagle on the granite pavers, perfectly still, staring straight up, his glasses on the paving beside "
@@ -356,7 +360,7 @@ a2 = pan("2A-2B", ["2A", "2B"], "어깨 너머 접수원 「면접이시죠? 14�
       HOLD),
 ], 소리="켬", 목소리견본="receptionist", 낱판=["hg-2A", "hg-2B"],
     메모=["두 샷 판 — 옴니 레퍼런스(참조) 모드에서 그림 둘. 안 되면 대안 낱판 hg-2A(소리 켬) · hg-2B", "후반: 화면판에 「AI 처리」 + 올라가는 숫자(1,284 → 1,287)"])
-GREET = [   # (K, 쓰는초, 사람, 인사 동작, 입 모양 인사, 로봇 팔, 카메라 — 11-01 콘티 검수: 다섯 칸이 모두 눈높이 미디엄이라 카메라로 반복을 푼다)
+GREET = [   # (K, 쓰는초, 사람, 인사 동작, 인사말, 로봇 팔, 카메라 — 11-01 콘티 검수: 다섯 칸이 모두 눈높이 미디엄이라 카메라로 반복을 푼다)
     ("2C1", "K18e", 1.0, "the Mongolian colleague in a grey sweater, round face and long hair tied high, at her desk",
      "waves at him with both hands and a bright smile", "Сайн байна уу!",
      "beside her, the small deep-blue felt robot arm on her desk keeps writing notes in her notebook by itself.",
@@ -368,28 +372,43 @@ GREET = [   # (K, 쓰는초, 사람, 인사 동작, 입 모양 인사, 로봇 �
      "from the very first frame the camera pushes in quickly toward her over the felt partition, closing about 8% within the first second, "
      "then holds there with small constant jitters."),
     ("2C3", "K18", 1.0, "the Middle-Eastern colleague in a navy cardigan at his desk",
-     "raises one hand in greeting, then lays it on his chest, smiling warmly", "As-salamu alaykum!",
+     "raises one hand in greeting, then lays it on his chest, smiling warmly", "السلام عليكم",
      "the small deep-blue felt robot arm on his desk keeps typing on his keyboard by itself.",
      "from the very first frame a quick pan to the left eases into a gentle push-in, both within the first second, then it holds with small "
      "constant jitters."),
     ("2C4", "K18c2", 0.917, "the bearded Russian colleague leaning back in his chair by the window",
-     "waves at him with one raised hand", "Zdravstvuyte!",
+     "waves at him with one raised hand", "Здравствуйте!",
      "the small deep-blue felt robot arm on his desk stamps the stack of papers twice, bang bang, by itself.",
      "from the very first frame the camera sinks quickly to desk height so the stamping felt arm looms large in the foreground within the first "
      "second, then holds with small constant jitters."),
     ("2C5", "K18d", 0.917, "the red-haired colleague in a cream cable-knit sweater at her desk",
-     "waves at him cheerfully", "Nǐ hǎo!",
+     "waves at him cheerfully", "你好!",
      "on her desk a small deep-blue felt quadcopter drone sits still on its charging pad.",
      "85 mm: from the very first frame a quick push-in toward her face, closing about 10% within the first second, the drone soft in the "
      "foreground, then it holds."),
 ]
+# 인사말 → (그 나라 말, 소리 줄의 목소리, 대명사, 읽는 법). 11-01 저녁: 소리 켬 — 넷은 견본 없이 시댄스가 그 나라 말로, 빨간머리(2C5)는 2D와 같은
+# 사람이라 그 견본(colleague)으로 결만 따른다. 빨간머리만 일부러 그에게 「니하오!」
+SPEAK = {"Сайн байна уу!": ("Mongolian", "a young Mongolian woman's natural, bright voice", "her", "sain baina uu"),
+         "Xin chào!": ("Vietnamese", "a young Vietnamese woman's natural, warm voice", "her", "sin chow"),
+         "السلام عليكم": ("Arabic", "a Middle-Eastern man's natural, warm voice", "his", "as-salamu alaykum"),
+         "Здравствуйте!": ("Russian", "a Russian man's natural, hearty voice", "his", "zdravstvuyte"),
+         "你好!": ("Mandarin Chinese with a light American accent", "a young American woman's natural, cheerful voice", "her", "nǐ hǎo")}
+GREET_VOICE = ("VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but never "
+               "play the sample itself; perform only the greeting written above, once, live in this shot, in sync with the speaker's lips.")
 for pid, k, used, who, wave, word, robot, cam in GREET:
-    pan(pid, [pid], f"인사 퀵컷 — {word} ({k}, 소리 끔 · 원어민 목소리는 후반)", [S(
-        k, used, [],
-        f"In the bright SHIFT office, {who} {wave}, lips clearly forming the greeting \"{word}\" (no sound is recorded); {robot} Everyone "
-        "else keeps working.",
+    lang, voice, pron, rom = SPEAK[word]
+    same = word == "你好!"
+    pan(pid, [pid], f"인사 퀵컷 — {word} ({k}, 소리 켬 · 시댄스가 그 나라 말로{' · 2D와 같은 빨간머리 견본' if same else ''})", [S(
+        k, used, ["COLLEAGUE"] if same else [],
+        f"In the bright SHIFT office, {who} {wave} and, right at the start (by about 0.2 s), says the greeting aloud once in {lang}: "
+        f"\"{word}\" ({rom}) - {pron} lips clearly forming the words; {robot} Everyone else keeps working.",
         cam)],
-        메모=["인사 소리는 03 대본대로 Gemini 원어민 후보에서 유호님이 고른 목소리를 후반에 얹는다(빨간머리만 일부러 「니하오!」)"])
+        소리="켬", 소리줄=f"SOUND: only {pron} voice saying \"{word}\" once in {lang} - {voice}, {NATURAL} - over quiet office room tone; "
+        "no music, no narration, no other voices.",
+        **({"목소리견본": "colleague", "목소리줄": GREET_VOICE} if same else {}),
+        메모=["인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · "
+              "베트남어는 시험에서 먼저)"])
 pan("2D", ["2D"], "자기 책상의 빨간머리가 몸을 내밀어 그의 컵을 빤히 — 「음.. 커피 어디서 샀어요?」 → 그가 돌아봄(K19)", [S(
     "K19", 3.208, ["HIM", "KKAMONG", "CUP_SAME", "COLLEAGUE"],
     "At her own desk, the red-haired colleague leans out of her chair toward him and stares at the iced americano he holds up between them, sniffs the "
@@ -404,7 +423,8 @@ e2 = pan("2E", ["2E"], "그 정면 미디엄 — 무표정 「…모악산 배�
     "Then the focus racks from him to Marin standing on the reception counter "
     "behind him, which comes sharp while he softens.",
     "85 mm, handheld with only a breath-like sway, drifting in by about 3%; the rack focus to Marin runs from about 1.4 s to 1.8 s.")],
-    메모=["얼굴 컷 — 주판은 소리 끔, 대사는 v34 녹음 09를 입에 맞춰 얹는다(10-19). 그 목소리 견본으로 시댄스가 연기하는 판은 대안 hg-2E-B"])
+    메모=["얼굴 컷 — 첫 시도는 이 판에서 시댄스가 v34 그 목소리 견본으로 낸 목소리(11-01 저녁). 얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 "
+          "있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터 보고, 바뀌면 대비책 hg-2E-무음 + v34 녹음 09"])
 pan("2F", ["2F"], "접수대 위 종이컵 옆 마린 — 그의 대답에 고개를 갸웃(K21)", [S(
     "K21", 1.0, ["MARIN"],
     "Marin, standing on the deep-blue felt reception counter beside a white paper cup, reacts to his answer by tilting its whole helmet to one "
@@ -490,7 +510,7 @@ l6 = pan("L6", ["L6"], "LAB 그 정면 — 무표정 「네.」(시선은 화면
     "Front medium shot: he stands still, expressionless, his eyes turned to the right of the frame, the coral steering wheel low in his hands; "
     "at about 0.3 s he silently mouths one flat Korean word, his lips barely moving (no sound is recorded): \"네.\" Then he stays still.",
     f"85 mm, {SWAY}.")],
-    메모=["얼굴 컷 — 주판은 소리 끔, 대사는 v34 녹음 14를 얹는다. 시댄스 연기 판은 대안 hg-L6-B"])
+    메모=["얼굴 컷 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁), 얼굴이 바뀌면 대비책 hg-L6-무음 + v34 녹음 14"])
 
 # ── T3 코랄 아치 터널 → PATH ─────────────────────────────────────────────────────────────────────
 t3 = pan("T3", ["T3"], "스테디캠 — 그를 뒤따라 깊이 1m 코랄 아치 터널 → 어둠 0.3초 → 세이지 PATH 라운지(K31 → K32 끝 그림)", [S(
@@ -555,7 +575,8 @@ p6 = pan("P6", ["P6"], "뒤에서 — 면접관 마린 · 몽글 쪽으로 90도
     "to a full 90 degrees toward them and holds the bow - his face stays hidden the whole time; his backpack stays on, the iced americano in "
     "his right hand by his side.",
     STILL, end="K35")],
-    메모=["그의 「잘 부탁드립니다!」는 v34 녹음 17을 얹는다(얼굴 안 보임 — 판은 소리 끔)", "절 끝 구도 = P7 첫 구도(매치컷)"])
+    메모=["그의 「잘 부탁드립니다!」는 이 판에서 시댄스가 낸 목소리를 먼저 쓴다(11-01 저녁), 어색하면 같은 영상에 v34 녹음 17을 얹는다(얼굴이 안 "
+          "보여 소리만 바꿈)", "절 끝 구도 = P7 첫 구도(매치컷)"])
 pan("P7", ["P7"], "매치컷 반전 — 같은 구도로 라운지의 빈 안락의자 둘에 절하는 그(헤드셋), 의자 너머 소파 사람들, 발치의 마린(K36)", [S(
     "K36", 3.0, ["HIM", "CUP", "MARIN"],
     "In the real sage-green lounge, from behind: he is still bowed deeply at 90 degrees, a white VR headset on his head, toward two EMPTY sage "
@@ -604,8 +625,8 @@ f2 = pan("F2", ["F2"], "창 쪽에서 본 그의 오른쪽 옆얼굴 — 0.6초 
     "silently mouths the Korean words, very seriously, like a factual report, his lips moving clearly but only a little (no sound is "
     "recorded): \"…상어랑 어깨빵했어요.\" Then he holds still again. Behind him Marin sits on the felt stool by the wall.",
     f"85 mm, {SWAY}, drifting in by about 3%.")],
-    메모=["얼굴 컷 — 주판은 소리 끔. 새 대사(v34에 없음)라 목소리는 유호님이 고른다 — 후보: v34 그 목소리를 본뜬 CosyVoice 판(소리/그_목소리본뜨기/) · "
-          "시댄스가 그 목소리 견본으로 연기하는 대안 hg-F2-B"])
+    메모=["얼굴 컷 — 새 대사(v34에 없음)도 첫 시도는 이 판에서 시댄스가 v34 그 목소리 견본으로 낸 목소리(11-01 저녁, 본뜬 CosyVoice 판은 안 씀). "
+          "재기 첫 장 · 얼굴 닮음부터(장부 S15), 바뀌면 대비책 hg-F2-무음 + 화면 밖 대사 판 hg-말-그 소리"])
 pan("F3-F4", ["F3", "F4"], "면접관 85mm 클로즈업 — 무표정 → 눈이 창밖 강으로 갔다 돌아옴 → 「수영 잘해요?」(K40b)", [S(
     "K40b", 2.292, ["INTERVIEWER", "KKAMONG_RACK"],
     "Close-up of the interviewer: she stays completely still and expressionless for about 0.5 s; then her eyes slide slowly to the window at "
@@ -625,7 +646,7 @@ f6 = pan("F6", ["F6"], "그 옆얼굴 — 한 박 쉬고 「…아니요.」(F2 
     앞토막="hg-F2",
     메모=["11-01 콘티 검수: F2의 끝 프레임에서 시작한다(같은 K41에서 시작하면 F5 → F6 컷에서 자세가 F2 첫 자세로 되돌아감) — hg-F2를 받은 뒤 "
           "웹꾸러미.py --한강을 다시 돌리면 1_시작이 채워진다(끝 프레임이 망가졌으면 K41)",
-          "얼굴 컷 — 주판은 소리 끔, 대사는 v34 녹음 22를 얹는다. 시댄스 연기 판은 대안 hg-F6-B"])
+          "얼굴 컷 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁), 얼굴이 바뀌면 대비책 hg-F6-무음 + v34 녹음 22"])
 pan("F7", ["F7"], "면접관 손이 분홍 펠트 카드를 책상에 내려놓음 — 「솔직해서, 합격.」은 화면 밖(K43)", [S(
     "K43", 2.792, ["KKAMONG_RACK"],
     "On the honey-oak desk, the interviewer's hand in a charcoal blazer sleeve slides a small pink felt card - completely blank, no writing - "
@@ -685,19 +706,43 @@ pan("E4", ["E4"], "하드컷 — 방 안쪽에서 옆으로, 창 앞 그의 오�
     메모=["11-01 콘티 검수(넷 가운데 그림 힘이 가장 약한 끝): 편집은 빨대 소리가 끝나면 검정으로 하드컷, 다음 박에 로고 — 2.0초는 늘리지 않는다"])
 
 # ── 화면 밖 대사 판(매진 꼴) — 그 배역 그림 · 견본으로 소리만 쓴다(화면은 안 씀) ─────────────────────────────────
-OFF = [   # (판 꼬리, 배역, 그림 K, 화면 속 사람, 쓰는 컷, 연기 · 줄)
-    ("선생님", "teacher", "K29", "The teacher", ["L3"],
-     "says in Korean like a cheerful game-show host: \"한 번 해 보세요. 병원!\""),
-    ("상담사", "counselor", "K33", "The counselor in the sage cardigan", ["P8"],
-     "says in Korean, warmly pleased: \"좋아요. 진짜는 4층이에요.\""),
-    ("면접관", "interviewer", "K40b", "The interviewer", ["F7"],
-     "says in Korean, completely dry, with a half-beat pause at the comma: \"솔직해서, 합격.\""),
+OFF = [   # (판 꼬리, 배역, 그림 K, 누구, 화면 속 사람, 쓰는 컷, 연기 · 줄, 고르는 법)
+    ("선생님", "teacher", "K29", ["TEACHER"], "The teacher", ["L3"],
+     "says in Korean like a cheerful game-show host: \"한 번 해 보세요. 병원!\"", "v34 녹음과 들어 보고 고름"),
+    ("상담사", "counselor", "K33", ["COUNSELOR"], "The counselor in the sage cardigan", ["P8"],
+     "says in Korean, warmly pleased: \"좋아요. 진짜는 4층이에요.\"", "v34 녹음과 들어 보고 고름"),
+    ("면접관", "interviewer", "K40b", ["INTERVIEWER"], "The interviewer", ["F7"],
+     "says in Korean, completely dry, with a half-beat pause at the comma: \"솔직해서, 합격.\"", "v34 녹음과 들어 보고 고름"),
+    ("그", "him", "K41", ["HIM_ROOM", "GLASSES"], "He, sitting at the interview desk", ["F2"],   # 11-01 저녁 — 대비책 hg-F2-무음의 소리
+     "after a short pause says in Korean, very seriously, like a factual report: \"…상어랑 어깨빵했어요.\"",
+     "F2 소리 켬 판이 얼굴을 지키면 안 씀"),
 ]
-for tail, role, k, who, used, act in OFF:
-    pan("말-" + tail, used, f"{ROLE[role][1]} 화면 밖 대사 — 소리만 씀({k} 그림 · v34 {tail} 견본으로 시댄스가 연기)", [S(
-        k, 3.0, [ROLE[role][0]], f"{who}, looking just past the camera, {act}", STILL)],
+for tail, role, k, keys, who, used, act, how in OFF:
+    pan("말-" + tail, used, f"{tail} 화면 밖 대사 — 소리만 씀({k} 그림 · v34 {tail} 목소리 견본으로 시댄스가 연기)", [S(
+        k, 3.0, keys, f"{who}, looking just past the camera, {act}", STILL)],
         소리="켬", 목소리견본=role, 화면밖=True,
-        메모=[f"소리만 쓴다 — {' · '.join(used)} 자리에 얹음(v34 녹음과 들어 보고 고름)"])
+        메모=[f"소리만 쓴다 — {' · '.join(used)} 자리에 얹음({how})"])
+
+# ── 그의 목소리 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁 유호님), 얼굴 판은 소리 끔 「-무음」이 대비책 ─────────────────
+SAYS = {   # 판 → (소리 끔 글, 소리 켬 글) — 나머지 얼굴 판은 「silently mouths … (no sound is recorded)」를 「says」로
+    "hg-O2-O3": ("his head snaps back and the cup jerks up in his hand.",
+                 "his head snaps back, the cup jerks up in his hand and he lets out one short, choked grunt: \"읍!\""),
+    "hg-O7": ("he lets out one long, slow, defeated sigh - ", "he lets out one long, slow, defeated sigh out loud, \"하아……\" - "),
+    "hg-P6": ("bows deeply from the waist to a full 90 degrees toward them and holds the bow",
+              "bows deeply from the waist to a full 90 degrees toward them, saying loudly and earnestly in Korean as he goes down: "
+              "\"잘 부탁드립니다!\" - and holds the bow"),
+}
+for src, n in ((o23, "01"), (o7, "02"), (e2, "09"), (l6, "14"), (f2, None), (f6, "22"), (p6, "17")):
+    over = f"v34 녹음 {n}" if n else "화면 밖 대사 판 hg-말-그의 소리"
+    if src is not p6:   # P6은 얼굴이 안 보여 같은 영상에 소리만 바꾼다
+        alt(src, src["id"][3:] + "-무음", src["설명"] + f" — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 {over}를 입에 맞춰 얹음",
+            메모=[f"소리 켬 주판 {src['id']}의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 {over}"]
+            + (["F2도 소리 끔 판으로 가면 앞토막을 hg-F2-무음으로 바꿔 꾸러미를 다시 만든다"] if src is f6 else []))
+    a, b = SAYS.get(src["id"], ("silently mouths", "says"))
+    s0 = src["샷"][0]
+    assert s0["동작"].count(a) == 1, src["id"]
+    s0["동작"] = s0["동작"].replace(a, b).replace(" (no sound is recorded)", "")
+    src.update(소리="켬", 목소리견본="him")
 
 # ── 대안 ──────────────────────────────────────────────────────────────────────────────────────
 for src, k in ((t0, "K09"), (t1, "K15"), (t5, "K45")):   # 도착 구도를 참고 대신 끝 그림으로 잠금(하드컷 위험 — 현장노트)
@@ -708,11 +753,6 @@ for src, k in ((t0, "K09"), (t1, "K15"), (t5, "K45")):   # 도착 구도를 참�
 for src in (t3, p6):   # 끝 그림 판의 둘째 길 — 끝 그림 없이 끝 모습을 글로만
     s = {k: v for k, v in src["샷"][0].items() if k != "끝그림"}
     alt(src, src["id"][3:] + "b", src["설명"] + " — 둘째 길: 끝 그림 없이(끝 그림 판이 하드컷 · 녹음이 되면)", 샷=[s], 메모=None)
-for src, n in ((e2, "09"), (l6, "14"), (f2, "20(새 대사)"), (f6, "22")):   # 그 목소리 견본으로 시댄스가 연기(얼굴이 바뀌는지 먼저 봄)
-    q = alt(src, src["id"][3:] + "-B", src["설명"] + " — 대안: v34 그 목소리 견본으로 시댄스가 연기(B)", 소리="켬", 목소리견본="him",
-            메모=[f"얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터. 주판은 v34 녹음 {n}을 얹는 소리 끔 판"]
-            + (["F2를 받은 뒤 그 끝 프레임으로 시작(주판 F6과 같은 앞토막)"] if src.get("앞토막") else []))
-    q["샷"][0]["동작"] = q["샷"][0]["동작"].replace("silently mouths", "says").replace(" (no sound is recorded)", "")
 for src in [p for p in PANS if p["id"] in ("hg-F1", "hg-F3-F4")]:   # 11-01 Fable P2 ⑭ — 소리 참고 판이 첫 화면을 다시 짜면 낼 둘째 길(같은 구도 끝 그림이 닻)
     s0 = dict(src["샷"][0], 끝그림=src["샷"][0]["그림"], 동작=src["샷"][0]["동작"] + " The shot ends on exactly the first frame's framing and her resting pose.")
     alt(src, src["id"][3:] + "-E", src["설명"] + " — 대안: 시작과 같은 그림을 끝 그림으로(소리 참고 판이 첫 화면을 다시 짤 때의 닻)", 샷=[s0],
@@ -740,6 +780,8 @@ def who_lines(keys):
 
 
 def sound_line(p):
+    if p.get("소리줄"):
+        return p["소리줄"]
     if not p.get("목소리견본"):
         return SILENT
     name = ROLE[p["목소리견본"]][1]
@@ -807,7 +849,7 @@ def preview(spec, p):
     L.append(LOOK)
     L.append(sound_line(p))
     if p.get("목소리견본"):
-        L.append(VOICE)
+        L.append(p.get("목소리줄") or VOICE)
     return "\n".join(L)
 
 

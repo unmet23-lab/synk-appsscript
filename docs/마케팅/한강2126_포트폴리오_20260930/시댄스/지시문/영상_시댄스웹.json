@@ -108,14 +108,16 @@
       "CUP_DOME",
       "SHARK"
      ],
-     "동작": "Side two-shot at shoulder height, the river and the black railing behind them: in the first frame they are already within one step of each other, both looking down - he at the iced americano in his right hand, the shark at the phone in its fin - and neither ever looks up. Within the first 0.4 s each takes that last step and they bump shoulder to shoulder, head-on, right in the middle of the frame, with a hard jolt: his head snaps back and the cup jerks up in his hand. Right after the hit both stagger half a step apart, still not looking up, and the shot holds on them to the end.",
+     "동작": "Side two-shot at shoulder height, the river and the black railing behind them: in the first frame they are already within one step of each other, both looking down - he at the iced americano in his right hand, the shark at the phone in its fin - and neither ever looks up. Within the first 0.4 s each takes that last step and they bump shoulder to shoulder, head-on, right in the middle of the frame, with a hard jolt: his head snaps back, the cup jerks up in his hand and he lets out one short, choked grunt: \"읍!\" Right after the hit both stagger half a step apart, still not looking up, and the shot holds on them to the end.",
      "카메라": "handheld at shoulder height from the side, 50 mm, small constant jitters; at the moment of impact it jolts once with the hit, then holds."
     }
    ],
    "메모": [
     "11-01 Fable P1: 시작 그림이 어깨가 닿기 직전이라 충돌은 첫 0.4초 안 — 편집에서 O2 1.5초는 O1b 끝(돌아섬) + 이 판 앞 0.4~0.7초로 채운다",
-    "그의 「읍!」(충돌 순간)은 v34 녹음 01을 후반에 얹는다 — 판은 소리 끔"
-   ]
+    "그의 「읍!」은 이 판에서 시댄스가 낸 소리를 먼저 쓴다(11-01 저녁) — 얼굴이 바뀌면 대비책 hg-O2-O3-무음 + v34 녹음 01"
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-O4",
@@ -207,13 +209,15 @@
       "HIM",
       "KKAMONG"
      ],
-     "동작": "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, slow, defeated sigh - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end.",
+     "동작": "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, slow, defeated sigh out loud, \"하아……\" - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end.",
      "카메라": "no push-in: the frame stays where it is with only a breath-like sway, and the glasses beside his head stay fully in the frame to the end."
     }
    ],
    "메모": [
-    "얼굴 컷(3:4 → 9:16, 옆 안경이 다 들어오게 cx 0.42) — 한숨 「하아……」는 v34 녹음 02를 후반에 얹는다(판은 소리 끔). 정적 1초 이상 · 한숨 여유 1초(03 대본)"
-   ]
+    "얼굴 컷(3:4 → 9:16, 옆 안경이 다 들어오게 cx 0.42) — 한숨 「하아……」는 이 판에서 시댄스가 낸 소리를 먼저 쓴다(11-01 저녁), 얼굴이 바뀌면 대비책 hg-O7-무음 + v34 녹음 02. 정적 1초 이상 · 한숨 여유 1초(03 대본)"
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-O8",
@@ -612,19 +616,21 @@
     "2C1"
    ],
    "길이": 4,
-   "설명": "인사 퀵컷 — Сайн байна уу! (K18e, 소리 끔 · 원어민 목소리는 후반)",
+   "설명": "인사 퀵컷 — Сайн байна уу! (K18e, 소리 켬 · 시댄스가 그 나라 말로)",
    "샷": [
     {
      "그림": "K18e.jpg",
      "K": "K18e",
      "쓰는초": 1.0,
      "누구": [],
-     "동작": "In the bright SHIFT office, the Mongolian colleague in a grey sweater, round face and long hair tied high, at her desk waves at him with both hands and a bright smile, lips clearly forming the greeting \"Сайн байна уу!\" (no sound is recorded); beside her, the small deep-blue felt robot arm on her desk keeps writing notes in her notebook by itself. Everyone else keeps working.",
+     "동작": "In the bright SHIFT office, the Mongolian colleague in a grey sweater, round face and long hair tied high, at her desk waves at him with both hands and a bright smile and, right at the start (by about 0.2 s), says the greeting aloud once in Mongolian: \"Сайн байна уу!\" (sain baina uu) - her lips clearly forming the words; beside her, the small deep-blue felt robot arm on her desk keeps writing notes in her notebook by itself. Everyone else keeps working.",
      "카메라": "from the very first frame the camera, slightly above eye level, tilts down toward the felt arm writing in the notebook, arriving within the first second, then holds with small constant jitters."
     }
    ],
+   "소리": "켬",
+   "소리줄": "SOUND: only her voice saying \"Сайн байна уу!\" once in Mongolian - a young Mongolian woman's natural, bright voice, casual, like greeting a coworker across the office - an ordinary person's voice, not a voice actor or announcer - over quiet office room tone; no music, no narration, no other voices.",
    "메모": [
-    "인사 소리는 03 대본대로 Gemini 원어민 후보에서 유호님이 고른 목소리를 후반에 얹는다(빨간머리만 일부러 「니하오!」)"
+    "인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · 베트남어는 시험에서 먼저)"
    ]
   },
   {
@@ -633,19 +639,21 @@
     "2C2"
    ],
    "길이": 4,
-   "설명": "인사 퀵컷 — Xin chào! (K18b, 소리 끔 · 원어민 목소리는 후반)",
+   "설명": "인사 퀵컷 — Xin chào! (K18b, 소리 켬 · 시댄스가 그 나라 말로)",
    "샷": [
     {
      "그림": "K18b.jpg",
      "K": "K18b",
      "쓰는초": 0.792,
      "누구": [],
-     "동작": "In the bright SHIFT office, the Vietnamese colleague with round glasses at her desk behind a deep-blue felt partition waves at him with one hand, smiling, lips clearly forming the greeting \"Xin chào!\" (no sound is recorded); the small deep-blue felt robot arm on her desk holds a teacup to her lips for her; her hands never touch the cup. Everyone else keeps working.",
+     "동작": "In the bright SHIFT office, the Vietnamese colleague with round glasses at her desk behind a deep-blue felt partition waves at him with one hand, smiling and, right at the start (by about 0.2 s), says the greeting aloud once in Vietnamese: \"Xin chào!\" (sin chow) - her lips clearly forming the words; the small deep-blue felt robot arm on her desk holds a teacup to her lips for her; her hands never touch the cup. Everyone else keeps working.",
      "카메라": "from the very first frame the camera pushes in quickly toward her over the felt partition, closing about 8% within the first second, then holds there with small constant jitters."
     }
    ],
+   "소리": "켬",
+   "소리줄": "SOUND: only her voice saying \"Xin chào!\" once in Vietnamese - a young Vietnamese woman's natural, warm voice, casual, like greeting a coworker across the office - an ordinary person's voice, not a voice actor or announcer - over quiet office room tone; no music, no narration, no other voices.",
    "메모": [
-    "인사 소리는 03 대본대로 Gemini 원어민 후보에서 유호님이 고른 목소리를 후반에 얹는다(빨간머리만 일부러 「니하오!」)"
+    "인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · 베트남어는 시험에서 먼저)"
    ]
   },
   {
@@ -654,19 +662,21 @@
     "2C3"
    ],
    "길이": 4,
-   "설명": "인사 퀵컷 — As-salamu alaykum! (K18, 소리 끔 · 원어민 목소리는 후반)",
+   "설명": "인사 퀵컷 — السلام عليكم (K18, 소리 켬 · 시댄스가 그 나라 말로)",
    "샷": [
     {
      "그림": "K18.jpg",
      "K": "K18",
      "쓰는초": 1.0,
      "누구": [],
-     "동작": "In the bright SHIFT office, the Middle-Eastern colleague in a navy cardigan at his desk raises one hand in greeting, then lays it on his chest, smiling warmly, lips clearly forming the greeting \"As-salamu alaykum!\" (no sound is recorded); the small deep-blue felt robot arm on his desk keeps typing on his keyboard by itself. Everyone else keeps working.",
+     "동작": "In the bright SHIFT office, the Middle-Eastern colleague in a navy cardigan at his desk raises one hand in greeting, then lays it on his chest, smiling warmly and, right at the start (by about 0.2 s), says the greeting aloud once in Arabic: \"السلام عليكم\" (as-salamu alaykum) - his lips clearly forming the words; the small deep-blue felt robot arm on his desk keeps typing on his keyboard by itself. Everyone else keeps working.",
      "카메라": "from the very first frame a quick pan to the left eases into a gentle push-in, both within the first second, then it holds with small constant jitters."
     }
    ],
+   "소리": "켬",
+   "소리줄": "SOUND: only his voice saying \"السلام عليكم\" once in Arabic - a Middle-Eastern man's natural, warm voice, casual, like greeting a coworker across the office - an ordinary person's voice, not a voice actor or announcer - over quiet office room tone; no music, no narration, no other voices.",
    "메모": [
-    "인사 소리는 03 대본대로 Gemini 원어민 후보에서 유호님이 고른 목소리를 후반에 얹는다(빨간머리만 일부러 「니하오!」)"
+    "인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · 베트남어는 시험에서 먼저)"
    ]
   },
   {
@@ -675,19 +685,21 @@
     "2C4"
    ],
    "길이": 4,
-   "설명": "인사 퀵컷 — Zdravstvuyte! (K18c2, 소리 끔 · 원어민 목소리는 후반)",
+   "설명": "인사 퀵컷 — Здравствуйте! (K18c2, 소리 켬 · 시댄스가 그 나라 말로)",
    "샷": [
     {
      "그림": "K18c2.jpg",
      "K": "K18c2",
      "쓰는초": 0.917,
      "누구": [],
-     "동작": "In the bright SHIFT office, the bearded Russian colleague leaning back in his chair by the window waves at him with one raised hand, lips clearly forming the greeting \"Zdravstvuyte!\" (no sound is recorded); the small deep-blue felt robot arm on his desk stamps the stack of papers twice, bang bang, by itself. Everyone else keeps working.",
+     "동작": "In the bright SHIFT office, the bearded Russian colleague leaning back in his chair by the window waves at him with one raised hand and, right at the start (by about 0.2 s), says the greeting aloud once in Russian: \"Здравствуйте!\" (zdravstvuyte) - his lips clearly forming the words; the small deep-blue felt robot arm on his desk stamps the stack of papers twice, bang bang, by itself. Everyone else keeps working.",
      "카메라": "from the very first frame the camera sinks quickly to desk height so the stamping felt arm looms large in the foreground within the first second, then holds with small constant jitters."
     }
    ],
+   "소리": "켬",
+   "소리줄": "SOUND: only his voice saying \"Здравствуйте!\" once in Russian - a Russian man's natural, hearty voice, casual, like greeting a coworker across the office - an ordinary person's voice, not a voice actor or announcer - over quiet office room tone; no music, no narration, no other voices.",
    "메모": [
-    "인사 소리는 03 대본대로 Gemini 원어민 후보에서 유호님이 고른 목소리를 후반에 얹는다(빨간머리만 일부러 「니하오!」)"
+    "인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · 베트남어는 시험에서 먼저)"
    ]
   },
   {
@@ -696,19 +708,25 @@
     "2C5"
    ],
    "길이": 4,
-   "설명": "인사 퀵컷 — Nǐ hǎo! (K18d, 소리 끔 · 원어민 목소리는 후반)",
+   "설명": "인사 퀵컷 — 你好! (K18d, 소리 켬 · 시댄스가 그 나라 말로 · 2D와 같은 빨간머리 견본)",
    "샷": [
     {
      "그림": "K18d.jpg",
      "K": "K18d",
      "쓰는초": 0.917,
-     "누구": [],
-     "동작": "In the bright SHIFT office, the red-haired colleague in a cream cable-knit sweater at her desk waves at him cheerfully, lips clearly forming the greeting \"Nǐ hǎo!\" (no sound is recorded); on her desk a small deep-blue felt quadcopter drone sits still on its charging pad. Everyone else keeps working.",
+     "누구": [
+      "COLLEAGUE"
+     ],
+     "동작": "In the bright SHIFT office, the red-haired colleague in a cream cable-knit sweater at her desk waves at him cheerfully and, right at the start (by about 0.2 s), says the greeting aloud once in Mandarin Chinese with a light American accent: \"你好!\" (nǐ hǎo) - her lips clearly forming the words; on her desk a small deep-blue felt quadcopter drone sits still on its charging pad. Everyone else keeps working.",
      "카메라": "85 mm: from the very first frame a quick push-in toward her face, closing about 10% within the first second, the drone soft in the foreground, then it holds."
     }
    ],
+   "소리": "켬",
+   "소리줄": "SOUND: only her voice saying \"你好!\" once in Mandarin Chinese with a light American accent - a young American woman's natural, cheerful voice, casual, like greeting a coworker across the office - an ordinary person's voice, not a voice actor or announcer - over quiet office room tone; no music, no narration, no other voices.",
+   "목소리견본": "colleague",
+   "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but never play the sample itself; perform only the greeting written above, once, live in this shot, in sync with the speaker's lips.",
    "메모": [
-    "인사 소리는 03 대본대로 Gemini 원어민 후보에서 유호님이 고른 목소리를 후반에 얹는다(빨간머리만 일부러 「니하오!」)"
+    "인사 소리는 시댄스가 이 판에서 낸 목소리를 쓴다(11-01 저녁 유호님 — Gemini TTS는 「ai같아」). 발음이 틀리면 다시 뽑는다(몽골어 · 베트남어는 시험에서 먼저)"
    ]
   },
   {
@@ -755,13 +773,15 @@
       "CUP",
       "MARIN_S"
      ],
-     "동작": "Front medium shot in the bright office: he stands still, completely expressionless; after a short pause (at about 0.6 s) he silently mouths the Korean words, flat and expressionless, his lips moving clearly but only a little (no sound is recorded): \"…모악산 배네치아요.\" Then the focus racks from him to Marin standing on the reception counter behind him, which comes sharp while he softens.",
+     "동작": "Front medium shot in the bright office: he stands still, completely expressionless; after a short pause (at about 0.6 s) he says the Korean words, flat and expressionless, his lips moving clearly but only a little: \"…모악산 배네치아요.\" Then the focus racks from him to Marin standing on the reception counter behind him, which comes sharp while he softens.",
      "카메라": "85 mm, handheld with only a breath-like sway, drifting in by about 3%; the rack focus to Marin runs from about 1.4 s to 1.8 s."
     }
    ],
    "메모": [
-    "얼굴 컷 — 주판은 소리 끔, 대사는 v34 녹음 09를 입에 맞춰 얹는다(10-19). 그 목소리 견본으로 시댄스가 연기하는 판은 대안 hg-2E-B"
-   ]
+    "얼굴 컷 — 첫 시도는 이 판에서 시댄스가 v34 그 목소리 견본으로 낸 목소리(11-01 저녁). 얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터 보고, 바뀌면 대비책 hg-2E-무음 + v34 녹음 09"
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-2F",
@@ -1045,13 +1065,15 @@
       "KKAMONG",
       "CUP"
      ],
-     "동작": "Front medium shot: he stands still, expressionless, his eyes turned to the right of the frame, the coral steering wheel low in his hands; at about 0.3 s he silently mouths one flat Korean word, his lips barely moving (no sound is recorded): \"네.\" Then he stays still.",
+     "동작": "Front medium shot: he stands still, expressionless, his eyes turned to the right of the frame, the coral steering wheel low in his hands; at about 0.3 s he says one flat Korean word, his lips barely moving: \"네.\" Then he stays still.",
      "카메라": "85 mm, handheld, with only a breath-like sway in place."
     }
    ],
    "메모": [
-    "얼굴 컷 — 주판은 소리 끔, 대사는 v34 녹음 14를 얹는다. 시댄스 연기 판은 대안 hg-L6-B"
-   ]
+    "얼굴 컷 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁), 얼굴이 바뀌면 대비책 hg-L6-무음 + v34 녹음 14"
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-T3",
@@ -1260,15 +1282,17 @@
       "MARIN",
       "MONGLE"
      ],
-     "동작": "The same symmetrical wide from behind him: he faces Marin and Mongle at the white tables and, at about 0.9 s, bows deeply from the waist to a full 90 degrees toward them and holds the bow - his face stays hidden the whole time; his backpack stays on, the iced americano in his right hand by his side.",
+     "동작": "The same symmetrical wide from behind him: he faces Marin and Mongle at the white tables and, at about 0.9 s, bows deeply from the waist to a full 90 degrees toward them, saying loudly and earnestly in Korean as he goes down: \"잘 부탁드립니다!\" - and holds the bow - his face stays hidden the whole time; his backpack stays on, the iced americano in his right hand by his side.",
      "카메라": "the frame stays exactly where it is from the first frame to the last.",
      "끝그림": "K35.jpg"
     }
    ],
    "메모": [
-    "그의 「잘 부탁드립니다!」는 v34 녹음 17을 얹는다(얼굴 안 보임 — 판은 소리 끔)",
+    "그의 「잘 부탁드립니다!」는 이 판에서 시댄스가 낸 목소리를 먼저 쓴다(11-01 저녁), 어색하면 같은 영상에 v34 녹음 17을 얹는다(얼굴이 안 보여 소리만 바꿈)",
     "절 끝 구도 = P7 첫 구도(매치컷)"
-   ]
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-P7",
@@ -1427,13 +1451,15 @@
       "CUP_DESK",
       "MARIN_S"
      ],
-     "동작": "His right profile, seen from the window side: he sits at the desk, completely expressionless, and holds still for about 0.6 s; then he silently mouths the Korean words, very seriously, like a factual report, his lips moving clearly but only a little (no sound is recorded): \"…상어랑 어깨빵했어요.\" Then he holds still again. Behind him Marin sits on the felt stool by the wall.",
+     "동작": "His right profile, seen from the window side: he sits at the desk, completely expressionless, and holds still for about 0.6 s; then he says the Korean words, very seriously, like a factual report, his lips moving clearly but only a little: \"…상어랑 어깨빵했어요.\" Then he holds still again. Behind him Marin sits on the felt stool by the wall.",
      "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%."
     }
    ],
    "메모": [
-    "얼굴 컷 — 주판은 소리 끔. 새 대사(v34에 없음)라 목소리는 유호님이 고른다 — 후보: v34 그 목소리를 본뜬 CosyVoice 판(소리/그_목소리본뜨기/) · 시댄스가 그 목소리 견본으로 연기하는 대안 hg-F2-B"
-   ]
+    "얼굴 컷 — 새 대사(v34에 없음)도 첫 시도는 이 판에서 시댄스가 v34 그 목소리 견본으로 낸 목소리(11-01 저녁, 본뜬 CosyVoice 판은 안 씀). 재기 첫 장 · 얼굴 닮음부터(장부 S15), 바뀌면 대비책 hg-F2-무음 + 화면 밖 대사 판 hg-말-그 소리"
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-F3-F4",
@@ -1498,15 +1524,17 @@
       "CUP_DESK",
       "MARIN_S"
      ],
-     "동작": "His right profile, seen from the window side: after a beat of stillness (about 0.6 s) he silently mouths the Korean words, flatly, his lips moving only a little (no sound is recorded): \"…아니요.\" Then he holds still.",
+     "동작": "His right profile, seen from the window side: after a beat of stillness (about 0.6 s) he says the Korean words, flatly, his lips moving only a little: \"…아니요.\" Then he holds still.",
      "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%."
     }
    ],
    "앞토막": "hg-F2",
    "메모": [
     "11-01 콘티 검수: F2의 끝 프레임에서 시작한다(같은 K41에서 시작하면 F5 → F6 컷에서 자세가 F2 첫 자세로 되돌아감) — hg-F2를 받은 뒤 웹꾸러미.py --한강을 다시 돌리면 1_시작이 채워진다(끝 프레임이 망가졌으면 K41)",
-    "얼굴 컷 — 주판은 소리 끔, 대사는 v34 녹음 22를 얹는다. 시댄스 연기 판은 대안 hg-F6-B"
-   ]
+    "얼굴 컷 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁), 얼굴이 바뀌면 대비책 hg-F6-무음 + v34 녹음 22"
+   ],
+   "소리": "켬",
+   "목소리견본": "him"
   },
   {
    "id": "hg-F7",
@@ -1703,7 +1731,7 @@
     "L3"
    ],
    "길이": 4,
-   "설명": "the teacher 화면 밖 대사 — 소리만 씀(K29 그림 · v34 선생님 견본으로 시댄스가 연기)",
+   "설명": "선생님 화면 밖 대사 — 소리만 씀(K29 그림 · v34 선생님 목소리 견본으로 시댄스가 연기)",
    "샷": [
     {
      "그림": "K29.jpg",
@@ -1729,7 +1757,7 @@
     "P8"
    ],
    "길이": 4,
-   "설명": "the counselor 화면 밖 대사 — 소리만 씀(K33 그림 · v34 상담사 견본으로 시댄스가 연기)",
+   "설명": "상담사 화면 밖 대사 — 소리만 씀(K33 그림 · v34 상담사 목소리 견본으로 시댄스가 연기)",
    "샷": [
     {
      "그림": "K33.jpg",
@@ -1755,7 +1783,7 @@
     "F7"
    ],
    "길이": 4,
-   "설명": "the interviewer 화면 밖 대사 — 소리만 씀(K40b 그림 · v34 면접관 견본으로 시댄스가 연기)",
+   "설명": "면접관 화면 밖 대사 — 소리만 씀(K40b 그림 · v34 면접관 목소리 견본으로 시댄스가 연기)",
    "샷": [
     {
      "그림": "K40b.jpg",
@@ -1774,6 +1802,198 @@
    "메모": [
     "소리만 쓴다 — F7 자리에 얹음(v34 녹음과 들어 보고 고름)"
    ]
+  },
+  {
+   "id": "hg-말-그",
+   "컷": [
+    "F2"
+   ],
+   "길이": 4,
+   "설명": "그 화면 밖 대사 — 소리만 씀(K41 그림 · v34 그 목소리 견본으로 시댄스가 연기)",
+   "샷": [
+    {
+     "그림": "K41.jpg",
+     "K": "K41",
+     "쓰는초": 3.0,
+     "누구": [
+      "HIM_ROOM",
+      "GLASSES"
+     ],
+     "동작": "He, sitting at the interview desk, looking just past the camera, after a short pause says in Korean, very seriously, like a factual report: \"…상어랑 어깨빵했어요.\"",
+     "카메라": "the frame stays exactly where it is from the first frame to the last."
+    }
+   ],
+   "소리": "켬",
+   "목소리견본": "him",
+   "화면밖": true,
+   "메모": [
+    "소리만 쓴다 — F2 자리에 얹음(F2 소리 켬 판이 얼굴을 지키면 안 씀)"
+   ]
+  },
+  {
+   "id": "hg-O2-O3-무음",
+   "컷": [
+    "O2",
+    "O3"
+   ],
+   "길이": 4,
+   "설명": "옆에서 본 투샷 — 폰만 보는 상어와 컵을 내려다보며 걷는 그가 가운데서 어깨빵(K01b, 한 샷을 O2 · O3로 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 01를 입에 맞춰 얹음",
+   "샷": [
+    {
+     "그림": "K01b.jpg",
+     "K": "K01b",
+     "쓰는초": 2.5,
+     "누구": [
+      "HIM",
+      "GLASSES",
+      "KKAMONG",
+      "CUP_DOME",
+      "SHARK"
+     ],
+     "동작": "Side two-shot at shoulder height, the river and the black railing behind them: in the first frame they are already within one step of each other, both looking down - he at the iced americano in his right hand, the shark at the phone in its fin - and neither ever looks up. Within the first 0.4 s each takes that last step and they bump shoulder to shoulder, head-on, right in the middle of the frame, with a hard jolt: his head snaps back and the cup jerks up in his hand. Right after the hit both stagger half a step apart, still not looking up, and the shot holds on them to the end.",
+     "카메라": "handheld at shoulder height from the side, 50 mm, small constant jitters; at the moment of impact it jolts once with the hit, then holds."
+    }
+   ],
+   "메모": [
+    "소리 켬 주판 hg-O2-O3의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 01"
+   ],
+   "대안": true
+  },
+  {
+   "id": "hg-O7-무음",
+   "컷": [
+    "O7"
+   ],
+   "길이": 5,
+   "설명": "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 02를 입에 맞춰 얹음",
+   "샷": [
+    {
+     "그림": "K04.jpg",
+     "K": "K04",
+     "쓰는초": 3.5,
+     "누구": [
+      "HIM",
+      "KKAMONG"
+     ],
+     "동작": "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, slow, defeated sigh - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end.",
+     "카메라": "no push-in: the frame stays where it is with only a breath-like sway, and the glasses beside his head stay fully in the frame to the end."
+    }
+   ],
+   "메모": [
+    "소리 켬 주판 hg-O7의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 02"
+   ],
+   "대안": true
+  },
+  {
+   "id": "hg-2E-무음",
+   "컷": [
+    "2E"
+   ],
+   "길이": 4,
+   "설명": "그 정면 미디엄 — 무표정 「…모악산 배네치아요.」 → 초점이 뒤 접수대 위 마린으로(K20 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 09를 입에 맞춰 얹음",
+   "샷": [
+    {
+     "그림": "K20.jpg",
+     "K": "K20",
+     "쓰는초": 1.792,
+     "누구": [
+      "HIM",
+      "GLASSES",
+      "KKAMONG",
+      "CUP",
+      "MARIN_S"
+     ],
+     "동작": "Front medium shot in the bright office: he stands still, completely expressionless; after a short pause (at about 0.6 s) he silently mouths the Korean words, flat and expressionless, his lips moving clearly but only a little (no sound is recorded): \"…모악산 배네치아요.\" Then the focus racks from him to Marin standing on the reception counter behind him, which comes sharp while he softens.",
+     "카메라": "85 mm, handheld with only a breath-like sway, drifting in by about 3%; the rack focus to Marin runs from about 1.4 s to 1.8 s."
+    }
+   ],
+   "메모": [
+    "소리 켬 주판 hg-2E의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 09"
+   ],
+   "대안": true
+  },
+  {
+   "id": "hg-L6-무음",
+   "컷": [
+    "L6"
+   ],
+   "길이": 4,
+   "설명": "LAB 그 정면 — 무표정 「네.」(시선은 화면 오른쪽)(K30 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 14를 입에 맞춰 얹음",
+   "샷": [
+    {
+     "그림": "K30.jpg",
+     "K": "K30",
+     "쓰는초": 0.792,
+     "누구": [
+      "HIM",
+      "GLASSES",
+      "KKAMONG",
+      "CUP"
+     ],
+     "동작": "Front medium shot: he stands still, expressionless, his eyes turned to the right of the frame, the coral steering wheel low in his hands; at about 0.3 s he silently mouths one flat Korean word, his lips barely moving (no sound is recorded): \"네.\" Then he stays still.",
+     "카메라": "85 mm, handheld, with only a breath-like sway in place."
+    }
+   ],
+   "메모": [
+    "소리 켬 주판 hg-L6의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 14"
+   ],
+   "대안": true
+  },
+  {
+   "id": "hg-F2-무음",
+   "컷": [
+    "F2"
+   ],
+   "길이": 4,
+   "설명": "창 쪽에서 본 그의 오른쪽 옆얼굴 — 0.6초 무표정 뒤 「…상어랑 어깨빵했어요.」(K41 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 화면 밖 대사 판 hg-말-그의 소리를 입에 맞춰 얹음",
+   "샷": [
+    {
+     "그림": "K41.jpg",
+     "K": "K41",
+     "쓰는초": 2.792,
+     "누구": [
+      "HIM_ROOM",
+      "GLASSES",
+      "CUP_DESK",
+      "MARIN_S"
+     ],
+     "동작": "His right profile, seen from the window side: he sits at the desk, completely expressionless, and holds still for about 0.6 s; then he silently mouths the Korean words, very seriously, like a factual report, his lips moving clearly but only a little (no sound is recorded): \"…상어랑 어깨빵했어요.\" Then he holds still again. Behind him Marin sits on the felt stool by the wall.",
+     "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%."
+    }
+   ],
+   "메모": [
+    "소리 켬 주판 hg-F2의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 화면 밖 대사 판 hg-말-그의 소리"
+   ],
+   "대안": true
+  },
+  {
+   "id": "hg-F6-무음",
+   "컷": [
+    "F6"
+   ],
+   "길이": 4,
+   "설명": "그 옆얼굴 — 한 박 쉬고 「…아니요.」(F2 받은 영상의 끝 프레임에서 시작 · 받기 전 자리는 K41) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 22를 입에 맞춰 얹음",
+   "샷": [
+    {
+     "그림": "K41.jpg",
+     "K": "K41",
+     "쓰는초": 1.208,
+     "누구": [
+      "HIM_ROOM",
+      "GLASSES",
+      "CUP_DESK",
+      "MARIN_S"
+     ],
+     "동작": "His right profile, seen from the window side: after a beat of stillness (about 0.6 s) he silently mouths the Korean words, flatly, his lips moving only a little (no sound is recorded): \"…아니요.\" Then he holds still.",
+     "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%."
+    }
+   ],
+   "앞토막": "hg-F2",
+   "메모": [
+    "소리 켬 주판 hg-F6의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 22",
+    "F2도 소리 끔 판으로 가면 앞토막을 hg-F2-무음으로 바꿔 꾸러미를 다시 만든다"
+   ],
+   "대안": true
   },
   {
    "id": "hg-T0e",
@@ -1903,130 +2123,13 @@
       "MARIN",
       "MONGLE"
      ],
-     "동작": "The same symmetrical wide from behind him: he faces Marin and Mongle at the white tables and, at about 0.9 s, bows deeply from the waist to a full 90 degrees toward them and holds the bow - his face stays hidden the whole time; his backpack stays on, the iced americano in his right hand by his side.",
+     "동작": "The same symmetrical wide from behind him: he faces Marin and Mongle at the white tables and, at about 0.9 s, bows deeply from the waist to a full 90 degrees toward them, saying loudly and earnestly in Korean as he goes down: \"잘 부탁드립니다!\" - and holds the bow - his face stays hidden the whole time; his backpack stays on, the iced americano in his right hand by his side.",
      "카메라": "the frame stays exactly where it is from the first frame to the last."
     }
    ],
+   "소리": "켬",
+   "목소리견본": "him",
    "대안": true
-  },
-  {
-   "id": "hg-2E-B",
-   "컷": [
-    "2E"
-   ],
-   "길이": 4,
-   "설명": "그 정면 미디엄 — 무표정 「…모악산 배네치아요.」 → 초점이 뒤 접수대 위 마린으로(K20 · 3:4 자름) — 대안: v34 그 목소리 견본으로 시댄스가 연기(B)",
-   "샷": [
-    {
-     "그림": "K20.jpg",
-     "K": "K20",
-     "쓰는초": 1.792,
-     "누구": [
-      "HIM",
-      "GLASSES",
-      "KKAMONG",
-      "CUP",
-      "MARIN_S"
-     ],
-     "동작": "Front medium shot in the bright office: he stands still, completely expressionless; after a short pause (at about 0.6 s) he says the Korean words, flat and expressionless, his lips moving clearly but only a little: \"…모악산 배네치아요.\" Then the focus racks from him to Marin standing on the reception counter behind him, which comes sharp while he softens.",
-     "카메라": "85 mm, handheld with only a breath-like sway, drifting in by about 3%; the rack focus to Marin runs from about 1.4 s to 1.8 s."
-    }
-   ],
-   "메모": [
-    "얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터. 주판은 v34 녹음 09을 얹는 소리 끔 판"
-   ],
-   "대안": true,
-   "소리": "켬",
-   "목소리견본": "him"
-  },
-  {
-   "id": "hg-L6-B",
-   "컷": [
-    "L6"
-   ],
-   "길이": 4,
-   "설명": "LAB 그 정면 — 무표정 「네.」(시선은 화면 오른쪽)(K30 · 3:4 자름) — 대안: v34 그 목소리 견본으로 시댄스가 연기(B)",
-   "샷": [
-    {
-     "그림": "K30.jpg",
-     "K": "K30",
-     "쓰는초": 0.792,
-     "누구": [
-      "HIM",
-      "GLASSES",
-      "KKAMONG",
-      "CUP"
-     ],
-     "동작": "Front medium shot: he stands still, expressionless, his eyes turned to the right of the frame, the coral steering wheel low in his hands; at about 0.3 s he says one flat Korean word, his lips barely moving: \"네.\" Then he stays still.",
-     "카메라": "85 mm, handheld, with only a breath-like sway in place."
-    }
-   ],
-   "메모": [
-    "얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터. 주판은 v34 녹음 14을 얹는 소리 끔 판"
-   ],
-   "대안": true,
-   "소리": "켬",
-   "목소리견본": "him"
-  },
-  {
-   "id": "hg-F2-B",
-   "컷": [
-    "F2"
-   ],
-   "길이": 4,
-   "설명": "창 쪽에서 본 그의 오른쪽 옆얼굴 — 0.6초 무표정 뒤 「…상어랑 어깨빵했어요.」(K41 · 3:4 자름) — 대안: v34 그 목소리 견본으로 시댄스가 연기(B)",
-   "샷": [
-    {
-     "그림": "K41.jpg",
-     "K": "K41",
-     "쓰는초": 2.792,
-     "누구": [
-      "HIM_ROOM",
-      "GLASSES",
-      "CUP_DESK",
-      "MARIN_S"
-     ],
-     "동작": "His right profile, seen from the window side: he sits at the desk, completely expressionless, and holds still for about 0.6 s; then he says the Korean words, very seriously, like a factual report, his lips moving clearly but only a little: \"…상어랑 어깨빵했어요.\" Then he holds still again. Behind him Marin sits on the felt stool by the wall.",
-     "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%."
-    }
-   ],
-   "메모": [
-    "얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터. 주판은 v34 녹음 20(새 대사)을 얹는 소리 끔 판"
-   ],
-   "대안": true,
-   "소리": "켬",
-   "목소리견본": "him"
-  },
-  {
-   "id": "hg-F6-B",
-   "컷": [
-    "F6"
-   ],
-   "길이": 4,
-   "설명": "그 옆얼굴 — 한 박 쉬고 「…아니요.」(F2 받은 영상의 끝 프레임에서 시작 · 받기 전 자리는 K41) — 대안: v34 그 목소리 견본으로 시댄스가 연기(B)",
-   "샷": [
-    {
-     "그림": "K41.jpg",
-     "K": "K41",
-     "쓰는초": 1.208,
-     "누구": [
-      "HIM_ROOM",
-      "GLASSES",
-      "CUP_DESK",
-      "MARIN_S"
-     ],
-     "동작": "His right profile, seen from the window side: after a beat of stillness (about 0.6 s) he says the Korean words, flatly, his lips moving only a little: \"…아니요.\" Then he holds still.",
-     "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%."
-    }
-   ],
-   "앞토막": "hg-F2",
-   "메모": [
-    "얼굴 정지컷 + 소리 참고는 첫 화면을 다시 짠 적이 있다(장부 S15) — 재기 첫 장 · 얼굴 닮음부터. 주판은 v34 녹음 22을 얹는 소리 끔 판",
-    "F2를 받은 뒤 그 끝 프레임으로 시작(주판 F6과 같은 앞토막)"
-   ],
-   "대안": true,
-   "소리": "켬",
-   "목소리견본": "him"
   },
   {
    "id": "hg-F1-E",
