@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { 녹음줄수 as 녹음줄수3, 반응들 as 반응들3 } from './은행3.mjs';
 import { X는3판 } from './판정3.mjs';
 import { 차림 } from './판정4.mjs';
+import { 차례들 as 이음차례, 맞장구들, 판들 as 이음판들 } from './이어붙이기.mjs';
 
 const require = createRequire(import.meta.url);
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
@@ -205,6 +206,12 @@ const 되풀이 = (줄) => 줄.filter((r) => r.id.startsWith('C.작별뒤') && (
 const 작별뒤수 = 판정4.팔['3판'].순간별.작별뒤.페이블.n;
 const 심함 = (p) => 판정4.팔[p].오류별.심함;
 
+// ── 이어 붙인 소리: 조각을 따로 구워 이은 네 판(이어붙이기.mjs) ──
+const 이음점검 = 읽기('이음/점검.json');
+const 판이름 = { 실시간: ['실시간', 'Gemini Live가 새로 말함'], 소리만: ['이음새만', '기다림 없이 이음새만'], 지금속도: ['지금 속도', '말 끝 뒤 3.4초'], 맞장구: ['맞장구 먼저', '1.2초에 맞장구, 2.9초에 답'] };
+const 이음들기 = (대, 작은글 = true) => `<div class="들기">${이음판들.map((판) => `<figure><figcaption>${판이름[판][0]}${작은글 ? ` <span>${판이름[판][1]}</span>` : ''}</figcaption><audio controls preload="none" src="이음_${판}_${대}.mp3"></audio></figure>`).join('')}</div>`;
+const 이음대사 = (대) => `<div class="표틀"><table class="대사 이음표"><thead><tr><th>학습자</th><th>이어 붙인 조각</th></tr></thead><tbody>${이음차례(대).map((t) => `<tr><td class="학습자">${글(t.말)}</td><td>${t.조각.map((g) => `<span class="이음조각">${글(g)}</span>`).join('')}</td></tr>`).join('')}</tbody></table></div>`;
+
 // ── 빗금 막대: 3판 다판의 약한 곳 ──
 function 막대줄(이름, c, 강조 = false) {
   return `<div class="막대줄"><div class="막대이름">${글(이름)} <span class="작게">${c.n}줄</span></div>
@@ -330,6 +337,10 @@ td.학습자{width:24%}
 .엉뚱들{display:grid;gap:14px;padding-left:18px;margin:0}
 .엉뚱말{font-weight:650}
 .수표 td:first-child,.수표 th:first-child{min-width:10rem}
+.판표 td:first-child{white-space:nowrap;font-weight:650}
+table.이음표{min-width:0;margin-top:0}
+.이음표 td.학습자{width:32%}
+.이음조각{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:1px 7px;margin:2px 4px 2px 0;background:var(--soft)}
 .수표 td:not(:first-child),.수표 th:not(:first-child),.값표 td:nth-child(2),.값표 th:nth-child(2){text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:30rem){.막대줄{grid-template-columns:1fr 3.4rem 3.4rem}.막대칸{grid-column:1/-1;order:2}.숫자+.숫자{padding-left:0;border-left:0;border-top:1px solid var(--line)}}
 </style>
@@ -337,7 +348,7 @@ td.학습자{width:24%}
 <header class="머리">
   <div class="작은머리">실시간 음성 상황극 · 하온 팬사인회 · 2026년 11월 1일 · 3판 · 기준선</div>
   <h1>미리 써 둔 답으로 하온이 받아칠 수 있을까</h1>
-  <p class="판정">같은 200줄 · 같은 블라인드로 매 차례 생성한 답까지 매겼더니 <b>3판의 엉뚱 ${둘글(판정4.팔['3판'].전체)}(Fable · GPT)가 Gemini Live ${둘글(판정4.팔.제미나이.전체)}, 글 생성 ${둘글(판정4.팔.글.전체)}보다 낮았어요.</b> 5%는 실시간도 못 넘는 잣대였어요. 다만 차이의 대부분은 작별 되풀이와 받아 적기 오류에서 왔고, 둘을 뺀 ${조건95['3판'].페이블.n}줄에서는 3판 ${둘글(조건95['3판'])}, Gemini Live ${둘글(조건95.제미나이)}로 사실상 비겨요. 이 시험으로 보면 품질은 실시간에 뒤지지 않아요. 남은 쟁점은 말 끝에서 첫 소리까지 ${초(은행답지연)}초(실시간 ${초(실시간지연)}초)와 이어 붙인 소리예요.</p>
+  <p class="판정">같은 200줄 · 같은 블라인드로 매 차례 생성한 답까지 매겼더니 <b>3판의 엉뚱 ${둘글(판정4.팔['3판'].전체)}(Fable · GPT)가 Gemini Live ${둘글(판정4.팔.제미나이.전체)}, 글 생성 ${둘글(판정4.팔.글.전체)}보다 낮았어요.</b> 5%는 실시간도 못 넘는 잣대였어요. 다만 차이의 대부분은 작별 되풀이와 받아 적기 오류에서 왔고, 둘을 뺀 ${조건95['3판'].페이블.n}줄에서는 3판 ${둘글(조건95['3판'])}, Gemini Live ${둘글(조건95.제미나이)}로 사실상 비겨요. 이 시험으로 보면 품질은 실시간에 뒤지지 않아요. 남은 쟁점은 말 끝에서 첫 소리까지 ${초(은행답지연)}초(실시간 ${초(실시간지연)}초)와 이어 붙인 소리예요. 이어 붙인 소리는 바로 아래에서 들어 보실 수 있어요.</p>
   <div class="숫자들">
     <div class="숫자"><div class="작게">3판 · 엉뚱한 답 · 다판 200줄</div><div class="큰">${엉률(팔('3판')).toFixed(1)}%</div><div class="설명">Fable · GPT ${둘글(판정4.팔['3판'].전체)} · 판마다 ${팔범위글('3판', 엉률)}%</div></div>
     <div class="숫자"><div class="작게">Gemini Live · 엉뚱한 답 · 같은 200줄</div><div class="큰">${엉률(팔('제미나이')).toFixed(1)}%</div><div class="설명">Fable · GPT ${둘글(판정4.팔.제미나이.전체)} · 판마다 ${팔범위글('제미나이', 엉률)}%</div></div>
@@ -345,6 +356,29 @@ td.학습자{width:24%}
     <div class="숫자"><div class="작게">말 끝 → 첫 소리(은행 답 · 중앙)</div><div class="큰">${초(은행답지연)}<small>초</small></div><div class="설명">실시간 ${초(실시간지연)}초 · 글 생성 ${초(글길지연)}초</div></div>
   </div>
 </header>
+
+<section>
+  <h2>이어 붙인 소리를 들어 보세요</h2>
+  <p>지금까지 들은 3판은 Kore가 대본을 한 번에 읽은 판이었어요. 이번에는 앱에서 실제로 쓸 방식대로 조각을 하나씩 따로 구워 이어 붙였어요. 고른 답은 3판 그대로이고, 두 대화에 조각 ${이음점검.조각 - 1}개와 맞장구 ${맞장구들.length}개를 썼어요.</p>
+  <div class="표틀"><table class="판표"><thead><tr><th>판</th><th>무엇을 듣나</th></tr></thead><tbody>
+    <tr><td>실시간</td><td>Gemini Live가 새로 말한 답이에요. 답이 나온 실제 지연(1.2초 안팎)을 그대로 넣었어요.</td></tr>
+    <tr><td>이음새만</td><td>이어 붙인 답을 차례 사이 0.45초로 틀어요. 기다림을 빼고 이음새만 들어요.</td></tr>
+    <tr><td>지금 속도</td><td>이어 붙인 답을 말이 끝나고 ${초(은행답지연)}초 뒤에 틀어요. 지금 만든 그대로의 기다림이에요.</td></tr>
+    <tr><td>맞장구 먼저</td><td>말이 끝나고 1.2초에 「${맞장구들.join(' · ')}」를 바로 틀고, ${초(첫반응지연)}초에 답을 틀어요. 아직 만들지 않은 설계를 소리로 흉내 낸 판이에요.</td></tr>
+  </tbody></table></div>
+  <h3>평범한 판</h3>
+  ${이음들기('A')}
+  <h3>까다로운 판</h3>
+  ${이음들기('B', false)}
+  <ul class="관찰">
+    <li><b>이음새.</b> 조각 사이가 끊겨 들리는지, 한 사람이 이어 말하는 것처럼 들리는지 들어 봐 주세요. 조각마다 문장 끝처럼 내려앉고 다음 조각이 새로 시작하는 느낌이 가장 걱정되는 곳이에요.</li>
+    <li><b>빠르기.</b> 조각을 따로 구워서 빠르기가 달라요(초당 ${Math.min(...이음점검.줄.filter((r) => r.음절 >= 5).map((r) => r.초당))}~${Math.max(...이음점검.줄.filter((r) => r.음절 >= 5).map((r) => r.초당))}음절, 중앙 ${이음점검.중앙음절초}). 「어느 나라에서 왔어요?」처럼 짧은 질문 조각이 앞 조각보다 빨라요.</li>
+    <li><b>기다림.</b> ${초(은행답지연)}초가 답답한지, 맞장구가 그 답답함을 덜어 주는지, 오히려 거슬리는지 들어 봐 주세요.</li>
+  </ul>
+  ${이음대사('A')}
+  ${이음대사('B')}
+  <p class="작게">손질은 앞뒤 무음 자르기 · 세기 맞춤 · 5ms 페이드뿐이고 조각 사이는 0.2초로 같아요. 기다림은 속도 시험의 중앙값이라 실제로는 차례마다 조금씩 달라요. 내용이 빠짐없이 들어갔는지는 받아쓰기로 확인했지만, 이음새가 자연스러운지는 기계로 재지 못했어요. 「오~」는 다섯 번 구워도 받아쓰기가 비어 내용을 확인할 수 없어 뺐어요.</p>
+</section>
 
 <section>
   <h2>매 차례 생성과 같은 잣대로</h2>
@@ -478,8 +512,8 @@ td.학습자{width:24%}
 <section>
   <h2>다음에 볼 곳</h2>
   <ul class="관찰">
-    <li><b>이어 붙인 소리.</b> 위의 3판 소리는 Kore가 대본을 한 번에 읽은 판이에요. 미리 구운 조각을 실제로 이어 붙이면 어떻게 들리는지가 남은 가장 큰 미지수예요.</li>
-    <li><b>속도.</b> 고르기 흘려 받기와 맞장구 먼저 틀기를 붙여, 실제 기다림까지 넣어 귀로 들어 봐요.</li>
+    <li><b>이어 붙인 소리.</b> 맨 위 네 판을 듣고 어느 길이 쓸 만한지 정해요. 이음새가 거슬리면 자주 쓰는 반응 + 질문 묶음을 한 번에 구워 두는 길이 있어요.</li>
+    <li><b>속도.</b> 맞장구 판이 쓸 만하면 고르기 흘려 받기와 맞장구를 실제 길에 붙여요.</li>
     <li><b>실제 학습자 소리.</b> 이번 입력은 받아 적은 글이에요. Live가 몽골 학습자 소리를 어떻게 듣는지, 받아 적기가 얼마나 틀리는지는 동의 받은 녹음으로만 알 수 있어요.</li>
     <li><b>시제품 지시문.</b> 은행을 쓰든 안 쓰든 작별 되풀이는 고쳐야 해요. 고친 뒤 같은 25줄로 다시 재요.</li>
     <li><b>은행 줄 · 생성 지시문(4판).</b> 묻는 말부터 답하기, 지나가며 말한 것 듣기, 흠 있는 줄 고치기.</li>
@@ -506,5 +540,6 @@ const { 심기 } = require(path.join(저장소, 'tools/lib/브랜드폰트.js'))
 const 심음 = 심기(html);
 fs.writeFileSync(path.join(폴더, 'index.html'), 심음.html);
 for (const f of ['은행3_A.mp3', '은행3_B.mp3', '은행2_A.mp3', '은행2_B.mp3', '실시간_A.mp3', '실시간_B.mp3']) fs.copyFileSync(path.join(작업, '엮음', f), path.join(폴더, f));
+for (const 판 of 이음판들) for (const 대 of ['A', 'B']) fs.copyFileSync(path.join(작업, '이음', `이음_${판}_${대}.mp3`), path.join(폴더, `이음_${판}_${대}.mp3`));
 for (const f of ['은행_A.mp3', '은행_B.mp3']) fs.rmSync(path.join(폴더, f), { force: true }); // 1판 소리는 이번 페이지에 안 싣는다
 console.log(`페이지 → ${path.join(폴더, 'index.html')} (${Math.round(심음.html.length / 1024)}KB)`);
