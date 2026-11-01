@@ -823,3 +823,10 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 내용이 비슷해 Git의 이름 변경 탐지가 기존 청크→새 청크로 묶었고 `diff --cached --name-only`가 도착 경로만 냈다.
 - 고침: 선언된 삭제·추가의 원시 경로를 대조하는 검사에는 `--no-renames`를 명시한다.
 - 다시 확인: 이전 청크 삭제와 새 청크 추가가 각각 나타나 정확한 동결 원천의 CI 범위 대조를 통과했다. 이전 실패 기록도 보존했다.
+
+### 용량 한도 안의 큰 push가 `Broken pipe` · `remote end hung up`으로 끊긴다 — 더 작게 나눠 올린다 (2026-11-01 Claude)
+
+- 증상: 편 두 개를 한 번에 올리는 `바로올리기`가 저장 용량 · 공개 검사를 다 넘고도 `sha1 file '<stdout>' write error: Broken pipe` · `send-pack: unexpected disconnect` · `the remote end hung up unexpectedly`로 멈췄다. 약 45MB · 약 25MB 커밋 둘 다 같았다. 원격은 그대로이고 `ls-remote`는 멀쩡했다.
+- 원인: 그때 회선의 SSH 업로드가 끊긴 것으로 본다(`http.postBuffer`는 SSH에 안 먹는다). 정확한 까닭은 못 찾았다.
+- 고침: 글 · 기록 묶음, 시험 묶음, 편마다 `remotion`, 그림 판으로 나눠 16MB 안쪽으로 올린다. 도구가 멈출 때 아무것도 올리지 않으니 같은 경로를 잘라 다시 부르면 된다.
+- 다시 확인: 같은 파일을 다섯 커밋으로 나눠 다 올라갔고 `origin 확인 ✓`가 찍혔다.
