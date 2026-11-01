@@ -22,6 +22,6 @@
 - 마감 홀: `python -I -X utf8 칸합성.py 판/hall-rain-gpt3_142655.png 판/hall-rain-plant-gpt_143113.png 묶음/hall-rain-plant-merged.png --칸 "958,165 1122,58 1122,553 958,525" --머리 "930,495,1122,600:85" --페더 4` — `--머리`는 칸 아래 변에 걸친 손님 머리를 윤곽대로 뺀다(Fable P2-1).
 - 나노바나나 견줌 판: 첫 판(0단계 맑은 카운터를 구도 참고로)은 창밖이 맑게 나와, GPT 비 오는 판에서 머리만 흐린 구도로 다시 구웠다(`nb/jobs.json`의 `talk2`).
 
-**검수 · 시험(11-01):** Fable 화면 P0 0 · P1 2 · P2 9 · P3 10, Fable 그림 P0 0 · P1 1 · P2 6 · P3 5 — P1 셋은 고쳐 같은 Fable 다시 확인. 맥락 없는 시험관 흐름 둘 · 얼굴 결 넷. 결과 · 판단은 기획 §13-1, 유호님 고르기 페이지 https://claude.ai/artifact/9KzAH9mqavd5GUDNQL22Z9 (db `picks/counter-face` · `picks/screens`).
+**검수 · 시험(11-01):** Fable 화면 P0 0 · P1 2 · P2 9 · P3 10, Fable 그림 P0 0 · P1 1 · P2 6 · P3 5 — P1 셋은 고쳐 같은 Fable 다시 확인. 맥락 없는 시험관 흐름 둘 · 얼굴 결 넷. 결과 · 판단은 기획 §13-1, 유호님 고르기 페이지 https://claude.ai/artifact/EhNsq9CSiErVaRmU76s85R (db `picks/counter-face` · `picks/screens`).
 
 **지킬 것:** 인물은 지어낸 인물(문지영 교수 — 드라마 1화 승인 얼굴)이고 학생 얼굴은 그리지 않는다. 그림은 구독 경로만(현금 0). 공개 전에는 실존 인물 닮음 대조를 다시 한다. 화면 글은 시안이라 손님 대사 · 안내문 원고는 세로 조각 때 대사 칸 명세 2중 검수 · 한국어 교사 검수를 거친다.
